@@ -51,7 +51,8 @@ lemma reflectT_evalRingHom (P : Polynomial (Polynomial ℤ)) (s : ℤ) :
   rw [reflectT, Polynomial.map_map]
   congr 1
   apply Polynomial.ringHom_ext
-  · intro n; simp
+  · intro n
+    simp
   · simp
 
 /-- Reflection preserves monicity in `Y`. -/
@@ -82,35 +83,45 @@ lemma reflectT_no_root {P : Polynomial (Polynomial ℤ)}
   -- Let's choose any $a$ in the fraction field of $\mathbb{Q}[X]$.
   intro a
   by_contra h_contra
-  generalize_proofs at *;
+  generalize_proofs at *
   -- Let's obtain the ℚ[T]-automorphism `hσ` induced by `X ↦ -X`.
   obtain ⟨hσ, hσ_inv⟩ : ∃ hσ : Polynomial ℚ ≃+* Polynomial ℚ, ∀ p : Polynomial ℚ, hσ p = p.comp (-Polynomial.X) := by
-    refine' ⟨ _, _ ⟩;
-    refine' { Equiv.ofBijective ( fun p => p.comp ( -Polynomial.X ) ) ⟨ fun p q h => _, fun p => _ ⟩ with .. };
-    any_goals intros; simp [ Polynomial.comp_assoc ];
-    · exact Polynomial.funext fun x => by simpa using congr_arg ( Polynomial.eval ( -x ) ) h;
-    · exact ⟨ p.comp ( -Polynomial.X ), by simp [ Polynomial.comp_assoc ] ⟩
-  generalize_proofs at *;
+    refine' ⟨_, _⟩
+    refine' { Equiv.ofBijective (fun p => p.comp (-Polynomial.X)) ⟨fun p q h => _, fun p => _⟩ with .. }
+    any_goals
+      intros
+      simp
+    · exact Polynomial.funext fun x => by simpa using congr_arg (Polynomial.eval (-x)) h
+    · exact ⟨p.comp (-Polynomial.X), by simp [Polynomial.comp_assoc]⟩
+  generalize_proofs at *
   -- Let's obtain the automorphism `τ` of the fraction field `K` induced by `hσ`.
-  obtain ⟨τ, hτ⟩ : ∃ τ : FractionRing (Polynomial ℚ) ≃+* FractionRing (Polynomial ℚ), ∀ p : Polynomial ℚ, τ (algebraMap (Polynomial ℚ) (FractionRing (Polynomial ℚ)) p) = algebraMap (Polynomial ℚ) (FractionRing (Polynomial ℚ)) (hσ p) := by
-    exact ⟨ IsFractionRing.ringEquivOfRingEquiv hσ, fun p => IsFractionRing.ringEquivOfRingEquiv_algebraMap hσ p ⟩
-  generalize_proofs at *; (
+  obtain ⟨τ, hτ⟩ :
+      ∃ τ : FractionRing (Polynomial ℚ) ≃+* FractionRing (Polynomial ℚ),
+        ∀ p : Polynomial ℚ,
+          τ (algebraMap (Polynomial ℚ) (FractionRing (Polynomial ℚ)) p) =
+            algebraMap (Polynomial ℚ) (FractionRing (Polynomial ℚ)) (hσ p) := by
+    exact ⟨IsFractionRing.ringEquivOfRingEquiv hσ, fun p => IsFractionRing.ringEquivOfRingEquiv_algebraMap hσ p⟩
+  generalize_proofs at *
   -- By definition of `toRatFunc`, we know that `τ.toRingHom.comp toRatFunc = toRatFunc.comp σ`.
-  have h_comm : τ.toRingHom.comp toRatFunc = toRatFunc.comp (Polynomial.aeval (-Polynomial.X : Polynomial ℤ)).toRingHom := by
-    ext; simp [toRatFunc, hτ];
-    convert hτ ( Polynomial.X ) using 1 ; simp [ toRatFunc ];
-    simp [ toRatFunc, hσ_inv ]
-  generalize_proofs at *; (
+  have h_comm :
+      τ.toRingHom.comp toRatFunc = toRatFunc.comp (Polynomial.aeval (-Polynomial.X : Polynomial ℤ)).toRingHom := by
+    ext
+    simp [toRatFunc]
+    convert hτ (Polynomial.X) using 1
+    simp [toRatFunc]
+    simp [toRatFunc, hσ_inv]
+  generalize_proofs at *
   -- By definition of `reflectT`, we know that `(reflectT P).map toRatFunc = P.map (τ.toRingHom.comp toRatFunc)`.
   have h_map : (reflectT P).map toRatFunc = P.map (τ.toRingHom.comp toRatFunc) := by
-    unfold reflectT; aesop;
-  generalize_proofs at *; (
+    unfold reflectT
+    aesop
+  generalize_proofs at *
   -- By definition of `map`, we know that `(P.map (τ.toRingHom.comp toRatFunc)).eval a = τ ((P.map toRatFunc).eval (τ.symm a))`.
   have h_eval : (P.map (τ.toRingHom.comp toRatFunc)).eval a = τ ((P.map toRatFunc).eval (τ.symm a)) := by
-    simp [ Polynomial.eval_map, Polynomial.eval₂_comp ];
-    simp [ Polynomial.eval₂_eq_sum_range, Polynomial.sum_over_range ]
-  generalize_proofs at *; (
-  simp_all [ Polynomial.IsRoot ]))))
+    simp [Polynomial.eval_map]
+    simp [Polynomial.eval₂_eq_sum_range]
+  generalize_proofs at *
+  simp_all [Polynomial.IsRoot]
 
 /-- A fixed model branch `x ↦ √x` used to pad the two branch families to a common size.
 It carries the full analytic package for every `k ≥ 2`. -/
@@ -135,7 +146,8 @@ lemma dummyBranch_package (k : ℕ) (hk : 2 ≤ k) :
       omega)
   have hrate := rpow_mul_hasKDerivDecay 1 (1 / 2) k hk (by linarith)
   have hfun : (fun x : ℝ => (1 : ℝ) * x ^ (1 / 2 : ℝ)) = dummyBranch := by
-    funext x; simp [dummyBranch, one_mul]
+    funext x
+    simp [dummyBranch, one_mul]
   rw [hfun] at h hrate
   exact ⟨h.1, h.2.1, h.2.2, hrate⟩
 
@@ -165,10 +177,16 @@ lemma dorge_branch_third_deriv_sign_change :
     rw [iteratedDeriv_eq_iterate, iteratedDeriv_eq_iterate,
         Real.iter_deriv_rpow_const, Real.iter_deriv_rpow_const,
         descPochhammer_eval_eq_prod_range, descPochhammer_eval_eq_prod_range]
+    have he1 : ((4:ℝ)/3 - (3:ℕ)) = -(8:ℝ)/3 + 1 := by
+      push_cast
+      ring
     have h1 : x ^ ((4:ℝ)/3 - (3:ℕ)) = x ^ (-(8:ℝ)/3) * x := by
-      rw [show ((4:ℝ)/3 - (3:ℕ)) = -(8:ℝ)/3 + 1 by push_cast; ring, Real.rpow_add hx, Real.rpow_one]
+      rw [he1, Real.rpow_add hx, Real.rpow_one]
+    have he2 : ((1:ℝ)/3 - (3:ℕ)) = -(8:ℝ)/3 := by
+      push_cast
+      ring
     have h2 : x ^ ((1:ℝ)/3 - (3:ℕ)) = x ^ (-(8:ℝ)/3) := by
-      rw [show ((1:ℝ)/3 - (3:ℕ)) = -(8:ℝ)/3 by push_cast; ring]
+      rw [he2]
     rw [h1, h2]
     simp only [Finset.prod_range_succ, Finset.prod_range_zero, one_mul]
     push_cast
@@ -191,48 +209,74 @@ lemma contDiff_extend_by_zero {n : ℕ} {c : ℝ} {f : ℝ → ℝ}
     (hf : ContDiffOn ℝ n f (Set.Ici c))
     (hvanish : ∀ j ≤ n, iteratedDerivWithin j f (Set.Ici c) c = 0) :
     ContDiff ℝ n (fun x => if c ≤ x then f x else 0) := by
-  induction' n with n ih generalizing f c;
-  · simp_all [ continuous_iff_continuousAt ];
-    intro x; by_cases hx : x = c;
-    · rw [ Metric.continuousAt_iff ];
-      intro ε hε; have := Metric.continuousOn_iff.mp hf c ( by norm_num ) ε hε; simp_all [ dist_eq_norm ] ;
-      obtain ⟨ δ, hδ, H ⟩ := this; exact ⟨ δ, hδ, fun x hx => by split_ifs <;> simp [ * ] ⟩ ;
-    · by_cases hx' : x < c;
-      · exact ContinuousAt.congr ( continuousAt_const ) ( Filter.EventuallyEq.symm <| Filter.eventuallyEq_of_mem ( Iio_mem_nhds hx' ) fun y hy => if_neg hy.out.not_ge );
-      · exact ContinuousAt.congr ( hf.continuousAt <| Ici_mem_nhds <| lt_of_le_of_ne ( le_of_not_gt hx' ) ( Ne.symm hx ) ) ( Filter.EventuallyEq.symm <| Filter.eventuallyEq_of_mem ( Ioi_mem_nhds <| lt_of_le_of_ne ( le_of_not_gt hx' ) ( Ne.symm hx ) ) fun y hy => if_pos hy.out.le );
-  · have h_deriv : ∀ x, HasDerivAt (fun x => if c ≤ x then f x else 0) (if c ≤ x then derivWithin f (Set.Ici c) x else 0) x := by
+  induction' n with n ih generalizing f c
+  · simp_all [continuous_iff_continuousAt]
+    intro x
+    by_cases hx : x = c
+    · rw [Metric.continuousAt_iff]
+      intro ε hε
+      have := Metric.continuousOn_iff.mp hf c (by norm_num) ε hε
+      simp_all [dist_eq_norm]
+      obtain ⟨δ, hδ, H⟩ := this
+      exact ⟨δ, hδ, fun x hx => by split_ifs <;> simp [*]⟩
+    · by_cases hx' : x < c
+      · exact ContinuousAt.congr (continuousAt_const)
+          (Filter.EventuallyEq.symm <|
+            Filter.eventuallyEq_of_mem (Iio_mem_nhds hx') fun y hy => if_neg hy.out.not_ge)
+      · have hlt : c < x := lt_of_le_of_ne (le_of_not_gt hx') (Ne.symm hx)
+        exact ContinuousAt.congr (hf.continuousAt <| Ici_mem_nhds hlt)
+          (Filter.EventuallyEq.symm <| Filter.eventuallyEq_of_mem (Ioi_mem_nhds hlt) fun y hy => if_pos hy.out.le)
+  · have h_deriv :
+        ∀ x, HasDerivAt (fun x => if c ≤ x then f x else 0) (if c ≤ x then derivWithin f (Set.Ici c) x else 0) x := by
       intro x
-      by_cases hx : c ≤ x;
-      · by_cases hx' : x = c;
+      by_cases hx : c ≤ x
+      · by_cases hx' : x = c
         · have h_deriv_zero : HasDerivWithinAt f 0 (Set.Ici c) c := by
             have h_deriv_zero : derivWithin f (Set.Ici c) c = 0 := by
-              simpa using hvanish 1 ( by linarith );
+              simpa using hvanish 1 (by linarith)
             have h_deriv_zero : DifferentiableWithinAt ℝ f (Set.Ici c) c := by
-              have := hf.differentiableOn ( by norm_num );
-              exact this c ( by norm_num );
-            convert h_deriv_zero.hasDerivWithinAt using 1 ; aesop;
+              have := hf.differentiableOn (by norm_num)
+              exact this c (by norm_num)
+            convert h_deriv_zero.hasDerivWithinAt using 1
+            aesop
           have h_deriv_zero : HasDerivWithinAt (fun x => if c ≤ x then f x else 0) 0 (Set.Ici c) c := by
-            exact h_deriv_zero.congr ( fun x hx => by aesop ) ( by aesop );
+            exact h_deriv_zero.congr (fun x hx => by aesop) (by aesop)
           have h_deriv_zero : HasDerivWithinAt (fun x => if c ≤ x then f x else 0) 0 (Set.Iic c) c := by
-            rw [ hasDerivWithinAt_iff_tendsto ] at *;
-            rw [ Metric.tendsto_nhdsWithin_nhds ] at *;
-            intro ε hε; use 1; norm_num; intro x hx₁ hx₂; split_ifs <;> norm_num at *;
-            · norm_num [ show x = c by linarith ] ; linarith;
-            · specialize hvanish 0 ; aesop;
+            rw [hasDerivWithinAt_iff_tendsto] at *
+            rw [Metric.tendsto_nhdsWithin_nhds] at *
+            intro ε hε
+            use 1
+            norm_num
+            intro x hx₁ hx₂
+            split_ifs <;> norm_num at *
+            · norm_num [show x = c by linarith]
+              linarith
+            · specialize hvanish 0
+              aesop
           have h_deriv_zero : HasDerivWithinAt (fun x => if c ≤ x then f x else 0) 0 (Set.Ici c ∪ Set.Iic c) c := by
-            exact HasDerivWithinAt.union ‹_› ‹_›;
-          convert h_deriv_zero.hasDerivAt _ using 1;
-          · rw [ hx', if_pos le_rfl, derivWithin ];
-            exact HasDerivWithinAt.derivWithin ‹_› ( uniqueDiffOn_Ici c c <| by norm_num );
-          · exact Filter.mem_of_superset ( Metric.ball_mem_nhds _ zero_lt_one ) fun x hx => by cases le_total x c <;> aesop;
-        · convert HasDerivAt.congr_of_eventuallyEq ( hf.differentiableOn ( by norm_num ) |> DifferentiableOn.hasDerivAt <| Ici_mem_nhds <| lt_of_le_of_ne hx <| Ne.symm hx' ) ( Filter.eventuallyEq_of_mem ( Ioi_mem_nhds <| lt_of_le_of_ne hx <| Ne.symm hx' ) fun y hy => if_pos hy.out.le ) using 1;
-          rw [ if_pos hx, derivWithin_of_mem_nhds ( Ici_mem_nhds ( lt_of_le_of_ne hx ( Ne.symm hx' ) ) ) ];
-      · exact HasDerivAt.congr_of_eventuallyEq ( hasDerivAt_const _ _ ) ( Filter.eventuallyEq_of_mem ( Iio_mem_nhds ( lt_of_not_ge hx ) ) fun y hy => if_neg hy.out.not_ge ) |> HasDerivAt.congr_deriv <| by aesop;
-    have := @ih c ( derivWithin f ( Set.Ici c ) ) ?_ ?_ <;> simp_all [ iteratedDerivWithin_succ' ];
-    · rw [ contDiff_succ_iff_deriv ];
-      exact ⟨ fun x => ( h_deriv x |> HasDerivAt.differentiableAt ), by tauto, by rw [ show deriv _ = _ from funext fun x => HasDerivAt.deriv ( h_deriv x ) ] ; exact this ⟩;
-    · exact hf.derivWithin ( uniqueDiffOn_Ici c ) ( by aesop );
-    · intro j hj; specialize hvanish ( j + 1 ) ( by linarith ) ; simp_all [ iteratedDerivWithin_succ' ] ;
+            exact HasDerivWithinAt.union ‹_› ‹_›
+          convert h_deriv_zero.hasDerivAt _ using 1
+          · rw [hx', if_pos le_rfl, derivWithin]
+            exact HasDerivWithinAt.derivWithin ‹_› (uniqueDiffOn_Ici c c <| by norm_num)
+          · exact Filter.mem_of_superset (Metric.ball_mem_nhds _ zero_lt_one)
+              fun x hx => by cases le_total x c <;> aesop
+        · have hlt : c < x := lt_of_le_of_ne hx <| Ne.symm hx'
+          convert HasDerivAt.congr_of_eventuallyEq
+            (hf.differentiableOn (by norm_num) |> DifferentiableOn.hasDerivAt <| Ici_mem_nhds hlt)
+            (Filter.eventuallyEq_of_mem (Ioi_mem_nhds hlt) fun y hy => if_pos hy.out.le) using 1
+          rw [if_pos hx, derivWithin_of_mem_nhds (Ici_mem_nhds hlt)]
+      · exact HasDerivAt.congr_of_eventuallyEq (hasDerivAt_const _ _)
+          (Filter.eventuallyEq_of_mem (Iio_mem_nhds (lt_of_not_ge hx)) fun y hy => if_neg hy.out.not_ge)
+          |> HasDerivAt.congr_deriv <| by aesop
+    have := @ih c (derivWithin f (Set.Ici c)) ?_ ?_ <;> simp_all
+    · rw [contDiff_succ_iff_deriv]
+      refine ⟨fun x => (h_deriv x |> HasDerivAt.differentiableAt), by tauto, ?_⟩
+      rw [show deriv _ = _ from funext fun x => HasDerivAt.deriv (h_deriv x)]
+      exact this
+    · exact hf.derivWithin (uniqueDiffOn_Ici c) (by aesop)
+    · intro j hj
+      specialize hvanish (j + 1) (by linarith)
+      simp_all [iteratedDerivWithin_succ']
 
 /-
 Iterated derivatives of a finite Taylor-type sum `∑_{j≤m} b j · (x-c)^j` at the base
@@ -241,14 +285,21 @@ point `c`: the `i`-th derivative (for `i ≤ m`) picks out `b i · i!`.
 lemma iteratedDeriv_pow_sub_sum_at (m : ℕ) (c : ℝ) (b : ℕ → ℝ) (i : ℕ) (hi : i ≤ m) :
     iteratedDeriv i (fun x => ∑ j ∈ Finset.range (m + 1), b j * (x - c) ^ j) c
       = b i * (Nat.factorial i) := by
-  rw [ iteratedDeriv_eq_iterate ];
+  rw [iteratedDeriv_eq_iterate]
   -- By induction on $i$, we can show that the $i$-th derivative of $f(x) = \sum_{j=0}^{m} b_j (x-c)^j$ at $x=c$ is $b_i \cdot i!$.
-  have h_ind : ∀ i ≤ m, deriv^[i] (fun x => ∑ j ∈ Finset.range (m + 1), b j * (x - c) ^ j) = fun x => ∑ j ∈ Finset.range (m + 1), b j * Nat.descFactorial j i * (x - c) ^ (j - i) := by
-    intro i hi; induction' i with i ih <;> simp_all [ Function.iterate_succ_apply' ] ;
-    rw [ ih ( Nat.le_of_lt hi ) ] ; ext; norm_num [ mul_assoc, mul_comm, mul_left_comm, tsub_add_eq_tsub_tsub ] ;
-  simp_all [ Nat.descFactorial_self ];
-  rw [ Finset.sum_eq_single i ] <;> simp_all [ Nat.descFactorial_self ];
-  exact fun j hj hij => if h : j < i then Or.inl <| Or.inr h else Or.inr <| Nat.sub_ne_zero_of_lt <| lt_of_le_of_ne ( le_of_not_gt h ) ( Ne.symm hij )
+  have h_ind :
+      ∀ i ≤ m, deriv^[i] (fun x => ∑ j ∈ Finset.range (m + 1), b j * (x - c) ^ j) =
+        fun x => ∑ j ∈ Finset.range (m + 1), b j * Nat.descFactorial j i * (x - c) ^ (j - i) := by
+    intro i hi
+    induction' i with i ih <;> simp_all [Function.iterate_succ_apply']
+    rw [ih (Nat.le_of_lt hi)]
+    ext
+    norm_num [mul_assoc, mul_comm, mul_left_comm, tsub_add_eq_tsub_tsub]
+  simp_all
+  rw [Finset.sum_eq_single i] <;> simp_all [Nat.descFactorial_self]
+  exact fun j hj hij =>
+    if h : j < i then Or.inl <| Or.inr h
+    else Or.inr <| Nat.sub_ne_zero_of_lt <| lt_of_le_of_ne (le_of_not_gt h) (Ne.symm hij)
 
 /-
 The top iterated derivative (order `m`) of the Taylor-type sum `∑_{j≤m} b j · (x-c)^j`
@@ -258,12 +309,18 @@ lemma iteratedDeriv_pow_sub_sum_top (m : ℕ) (c : ℝ) (b : ℕ → ℝ) (x : �
     iteratedDeriv m (fun x => ∑ j ∈ Finset.range (m + 1), b j * (x - c) ^ j) x
       = b m * (Nat.factorial m) := by
   -- Apply the linearity of the derivative and the power rule.
-  have h_deriv : ∀ k ≤ m, iteratedDeriv k (fun x => ∑ j ∈ Finset.range (m + 1), b j * (x - c) ^ j) = fun x => ∑ j ∈ Finset.range (m + 1), b j * Nat.descFactorial j k * (x - c) ^ (j - k) := by
-    intro k hk; induction' k with k ih <;> simp_all [ iteratedDeriv_succ ] ;
-    rw [ ih ( Nat.le_of_lt hk ) ] ; ext x; norm_num [ Nat.sub_sub ] ; ring;
-    ac_rfl;
-  simp_all [ Finset.sum_range_succ ];
-  simp [ Nat.descFactorial_self, Finset.sum_range, Nat.descFactorial_eq_zero_iff_lt.mpr ]
+  have h_deriv :
+      ∀ k ≤ m, iteratedDeriv k (fun x => ∑ j ∈ Finset.range (m + 1), b j * (x - c) ^ j) =
+        fun x => ∑ j ∈ Finset.range (m + 1), b j * Nat.descFactorial j k * (x - c) ^ (j - k) := by
+    intro k hk
+    induction' k with k ih <;> simp_all [iteratedDeriv_succ]
+    rw [ih (Nat.le_of_lt hk)]
+    ext x
+    norm_num [Nat.sub_sub]
+    ring_nf
+    ac_rfl
+  simp_all [Finset.sum_range_succ]
+  simp [Nat.descFactorial_self, Finset.sum_range, Nat.descFactorial_eq_zero_iff_lt.mpr]
 
 /-
 **Extension of a branch tail from `[T₀,∞)` to `[1,∞)`.**
@@ -284,7 +341,7 @@ below `c` and `f^{(k+1)}` (same sign) above `c`, hence is sign-definite on `(1,�
 extension step from the genuinely deep branch-existence content.
 -/
 set_option maxHeartbeats 1600000 in
-lemma extend_to_Ici_one (f : ℝ → ℝ) (k : ℕ) (hk : 2 ≤ k) (T₀ : ℝ) (hT₀ : 1 ≤ T₀)
+lemma extend_to_Ici_one (f : ℝ → ℝ) (k : ℕ) (_hk : 2 ≤ k) (T₀ : ℝ) (hT₀ : 1 ≤ T₀)
     (hf : ContDiffOn ℝ (k + 1) f (Set.Ici T₀))
     (hsign : (∀ x ∈ Set.Ioi T₀, 0 < iteratedDerivWithin (k + 1) f (Set.Ici T₀) x) ∨
              (∀ x ∈ Set.Ioi T₀, iteratedDerivWithin (k + 1) f (Set.Ici T₀) x < 0))
@@ -296,7 +353,7 @@ lemma extend_to_Ici_one (f : ℝ → ℝ) (k : ℕ) (hk : 2 ≤ k) (T₀ : ℝ) 
       Filter.Tendsto (iteratedDerivWithin k g (Set.Ici 1)) Filter.atTop (nhds 0) ∧
       (∀ x, T₁ ≤ x → g x = f x) := by
   cases' hsign with hsign_pos hsign_neg
-  generalize_proofs at *;
+  generalize_proofs at *
   · -- Set `c := T₀ + 1`, so `1 < c`, `T₀ < c`, and `c ∈ Set.Ioi T₀`.
     set c := T₀ + 1 with hc_def
     have hc_pos : 1 < c := by
@@ -304,212 +361,293 @@ lemma extend_to_Ici_one (f : ℝ → ℝ) (k : ℕ) (hk : 2 ≤ k) (T₀ : ℝ) 
     have hc_gt_T₀ : T₀ < c := by
       linarith
     have hc_mem_Ioi : c ∈ Set.Ioi T₀ := by
-      exact hc_gt_T₀;
+      exact hc_gt_T₀
     -- Define the Taylor coefficients `b : ℕ → ℝ := fun j => iteratedDeriv j f c / (Nat.factorial j)`, the polynomial `p : ℝ → ℝ := fun x => ∑ j ∈ Finset.range (k+2), b j * (x - c)^j`, the correction `e : ℝ → ℝ := fun x => if c ≤ x then (f x - p x) else 0`, and `g := fun x => p x + e x`.
     set b : ℕ → ℝ := fun j => iteratedDeriv j f c / (Nat.factorial j)
     set p : ℝ → ℝ := fun x => ∑ j ∈ Finset.range (k + 2), b j * (x - c) ^ j
     set e : ℝ → ℝ := fun x => if c ≤ x then (f x - p x) else 0
-    set g : ℝ → ℝ := fun x => p x + e x;
+    set g : ℝ → ℝ := fun x => p x + e x
     -- Show that `g` is `C^{k+1}` on `[1,∞)`.
     have hg_contDiff : ContDiff ℝ (k + 1) g := by
-      apply_rules [ ContDiff.add, contDiff_extend_by_zero ];
-      · exact ContDiff.sum fun _ _ => ContDiff.mul ( contDiff_const ) ( ContDiff.pow ( contDiff_id.sub contDiff_const ) _ );
-      · refine' ContDiffOn.sub _ _;
-        · exact hf.mono ( Set.Ici_subset_Ici.mpr hc_gt_T₀.le );
-        · exact ContDiff.contDiffOn ( by exact ContDiff.sum fun _ _ => ContDiff.mul ( contDiff_const ) ( ContDiff.pow ( contDiff_id.sub contDiff_const ) _ ) );
-      · intro j hj; rw [ iteratedDerivWithin_eq_iteratedDeriv ] ;
+      apply_rules [ContDiff.add, contDiff_extend_by_zero]
+      · exact ContDiff.sum fun _ _ =>
+          ContDiff.mul (contDiff_const) (ContDiff.pow (contDiff_id.sub contDiff_const) _)
+      · refine' ContDiffOn.sub _ _
+        · exact hf.mono (Set.Ici_subset_Ici.mpr hc_gt_T₀.le)
+        · exact ContDiff.contDiffOn
+            (ContDiff.sum fun _ _ =>
+              ContDiff.mul (contDiff_const) (ContDiff.pow (contDiff_id.sub contDiff_const) _))
+      · intro j hj
+        rw [iteratedDerivWithin_eq_iteratedDeriv]
         · have h_deriv_zero : iteratedDeriv j (fun x => f x - p x) c = iteratedDeriv j f c - iteratedDeriv j p c := by
-            apply_rules [ iteratedDeriv_sub ];
-            · exact hf.contDiffAt ( Ici_mem_nhds hc_gt_T₀ ) |> ContDiffAt.of_le <| mod_cast hj;
-            · fun_prop;
+            apply_rules [iteratedDeriv_sub]
+            · exact hf.contDiffAt (Ici_mem_nhds hc_gt_T₀) |> ContDiffAt.of_le <| mod_cast hj
+            · fun_prop
           have h_deriv_zero : iteratedDeriv j p c = b j * (Nat.factorial j) := by
-            convert iteratedDeriv_pow_sub_sum_at ( k + 1 ) c b j ( by exact Nat.le_trans hj ( Nat.le_refl _ ) ) using 1;
-          rw [ ‹iteratedDeriv j ( fun x => f x - p x ) c = iteratedDeriv j f c - iteratedDeriv j p c›, h_deriv_zero, div_mul_cancel₀ _ ( by positivity ), sub_self ];
-        · exact uniqueDiffOn_Ici _;
-        · refine' ContDiffAt.sub _ _;
-          · exact hf.contDiffAt ( Ici_mem_nhds hc_mem_Ioi ) |> ContDiffAt.of_le <| mod_cast hj;
-          · fun_prop;
-        · norm_num;
-    refine' ⟨ c, g, by linarith, hg_contDiff.contDiffOn, _, _, _ ⟩;
+            convert iteratedDeriv_pow_sub_sum_at (k + 1) c b j (by exact Nat.le_trans hj (Nat.le_refl _)) using 1
+          rw [‹iteratedDeriv j (fun x => f x - p x) c = iteratedDeriv j f c - iteratedDeriv j p c›,
+            h_deriv_zero, div_mul_cancel₀ _ (by positivity), sub_self]
+        · exact uniqueDiffOn_Ici _
+        · refine' ContDiffAt.sub _ _
+          · exact hf.contDiffAt (Ici_mem_nhds hc_mem_Ioi) |> ContDiffAt.of_le <| mod_cast hj
+          · fun_prop
+        · norm_num
+    refine' ⟨c, g, by linarith, hg_contDiff.contDiffOn, _, _, _⟩
     · -- For `x ∈ Set.Ioi 1`, `iteratedDerivWithin (k + 1) g (Set.Ici 1) x = iteratedDeriv (k + 1) g x`.
-      have h_iteratedDerivWithin_eq_iteratedDeriv : ∀ x ∈ Set.Ioi 1, iteratedDerivWithin (k + 1) g (Set.Ici 1) x = iteratedDeriv (k + 1) g x := by
-        intro x hx; rw [ iteratedDerivWithin_eq_iteratedDeriv ] ;
-        · exact uniqueDiffOn_Ici _;
-        · exact hg_contDiff.contDiffAt.of_le ( by norm_num );
-        · exact hx.out.le;
+      have h_iteratedDerivWithin_eq_iteratedDeriv :
+          ∀ x ∈ Set.Ioi 1, iteratedDerivWithin (k + 1) g (Set.Ici 1) x = iteratedDeriv (k + 1) g x := by
+        intro x hx
+        rw [iteratedDerivWithin_eq_iteratedDeriv]
+        · exact uniqueDiffOn_Ici _
+        · exact hg_contDiff.contDiffAt.of_le (by norm_num)
+        · exact hx.out.le
       -- For `x < c`, `iteratedDeriv (k + 1) g x = iteratedDeriv (k + 1) p x = V`.
       have h_iteratedDeriv_g_lt_c : ∀ x ∈ Set.Iio c, iteratedDeriv (k + 1) g x = iteratedDeriv (k + 1) f c := by
         intros x hx
         have h_eq : ∀ y ∈ Set.Iio c, g y = p y := by
-          grind;
+          grind
         have h_iteratedDeriv_g_lt_c : iteratedDeriv (k + 1) g x = iteratedDeriv (k + 1) p x := by
-          apply_rules [ Filter.EventuallyEq.iteratedDeriv_eq ];
-          filter_upwards [ Iio_mem_nhds hx ] with y hy using h_eq y hy;
-        rw [ h_iteratedDeriv_g_lt_c, iteratedDeriv_pow_sub_sum_top ];
-        rw [ div_mul_cancel₀ _ ( by positivity ) ];
+          apply_rules [Filter.EventuallyEq.iteratedDeriv_eq]
+          filter_upwards [Iio_mem_nhds hx] with y hy using h_eq y hy
+        rw [h_iteratedDeriv_g_lt_c, iteratedDeriv_pow_sub_sum_top]
+        rw [div_mul_cancel₀ _ (by positivity)]
       -- For `x > c`, `iteratedDeriv (k + 1) g x = iteratedDeriv (k + 1) f x`.
       have h_iteratedDeriv_g_gt_c : ∀ x ∈ Set.Ioi c, iteratedDeriv (k + 1) g x = iteratedDeriv (k + 1) f x := by
         intro x hx
         have h_eq : ∀ y ∈ Set.Ioi c, g y = f y := by
-          grind;
-        rw [ Filter.EventuallyEq.iteratedDeriv_eq ];
-        filter_upwards [ Ioi_mem_nhds hx ] with y hy using h_eq y hy;
+          grind
+        rw [Filter.EventuallyEq.iteratedDeriv_eq]
+        filter_upwards [Ioi_mem_nhds hx] with y hy using h_eq y hy
       -- For `x = c`, `iteratedDeriv (k + 1) g x = iteratedDeriv (k + 1) f c`.
       have h_iteratedDeriv_g_eq_c : iteratedDeriv (k + 1) g c = iteratedDeriv (k + 1) f c := by
-        have h_iteratedDeriv_g_eq_c : Filter.Tendsto (fun x => iteratedDeriv (k + 1) g x) (nhdsWithin c (Set.Iio c)) (nhds (iteratedDeriv (k + 1) g c)) := by
+        have h_iteratedDeriv_g_eq_c :
+            Filter.Tendsto (fun x => iteratedDeriv (k + 1) g x)
+              (nhdsWithin c (Set.Iio c)) (nhds (iteratedDeriv (k + 1) g c)) := by
           have h_cont : Continuous (iteratedDeriv (k + 1) g) := by
-            apply_rules [ ContDiff.continuous_iteratedDeriv ];
-            norm_cast;
-          exact h_cont.continuousWithinAt;
-        exact tendsto_nhds_unique h_iteratedDeriv_g_eq_c ( Filter.Tendsto.congr' ( Filter.eventuallyEq_of_mem self_mem_nhdsWithin fun x hx => by rw [ h_iteratedDeriv_g_lt_c x hx ] ) tendsto_const_nhds );
-      left; intro x hx; by_cases hx' : x < c <;> by_cases hx'' : x = c <;> simp_all ;
-      · convert hsign_pos ( T₀ + 1 ) ( by linarith ) using 1;
-        rw [ iteratedDerivWithin_eq_iteratedDeriv ];
-        · exact uniqueDiffOn_Ici _;
-        · exact hf.contDiffAt ( Ici_mem_nhds ( by linarith ) );
-        · norm_num;
-      · convert hsign_pos ( T₀ + 1 ) ( by linarith ) using 1;
-        rw [ iteratedDerivWithin_eq_iteratedDeriv ];
-        · exact uniqueDiffOn_Ici _;
-        · exact hf.contDiffAt ( Ici_mem_nhds ( by linarith ) );
-        · norm_num;
-      · rw [ h_iteratedDeriv_g_gt_c x ( lt_of_le_of_ne hx' ( Ne.symm hx'' ) ) ];
-        convert hsign_pos x ( by linarith ) using 1;
-        rw [ iteratedDerivWithin_eq_iteratedDeriv ];
-        · exact uniqueDiffOn_Ici _;
-        · exact hf.contDiffAt ( Ici_mem_nhds <| by linarith );
-        · exact Set.mem_Ici.mpr ( by linarith );
+            apply_rules [ContDiff.continuous_iteratedDeriv]
+            norm_cast
+          exact h_cont.continuousWithinAt
+        exact tendsto_nhds_unique h_iteratedDeriv_g_eq_c
+          (Filter.Tendsto.congr'
+            (Filter.eventuallyEq_of_mem self_mem_nhdsWithin fun x hx => by rw [h_iteratedDeriv_g_lt_c x hx])
+            tendsto_const_nhds)
+      left
+      intro x hx
+      by_cases hx' : x < c <;> by_cases hx'' : x = c <;> simp_all
+      · convert hsign_pos (T₀ + 1) (by linarith) using 1
+        rw [iteratedDerivWithin_eq_iteratedDeriv]
+        · exact uniqueDiffOn_Ici _
+        · exact hf.contDiffAt (Ici_mem_nhds (by linarith))
+        · norm_num
+      · convert hsign_pos (T₀ + 1) (by linarith) using 1
+        rw [iteratedDerivWithin_eq_iteratedDeriv]
+        · exact uniqueDiffOn_Ici _
+        · exact hf.contDiffAt (Ici_mem_nhds (by linarith))
+        · norm_num
+      · rw [h_iteratedDeriv_g_gt_c x (lt_of_le_of_ne hx' (Ne.symm hx''))]
+        convert hsign_pos x (by linarith) using 1
+        rw [iteratedDerivWithin_eq_iteratedDeriv]
+        · exact uniqueDiffOn_Ici _
+        · exact hf.contDiffAt (Ici_mem_nhds <| by linarith)
+        · exact Set.mem_Ici.mpr (by linarith)
     · -- For `x > c`, `iteratedDerivWithin k g (Set.Ici 1) x = iteratedDeriv k g x = iteratedDeriv k f x = iteratedDerivWithin k f (Set.Ici T₀) x`.
       have h_eq : ∀ x > c, iteratedDerivWithin k g (Set.Ici 1) x = iteratedDerivWithin k f (Set.Ici T₀) x := by
         intros x hx_gt_c
         have h_eq : ∀ j ≤ k, iteratedDeriv j g x = iteratedDeriv j f x := by
           intros j hj_le_k
           have h_eq : ∀ y ∈ Set.Ioi c, g y = f y := by
-            grind;
-          rw [ Filter.EventuallyEq.iteratedDeriv_eq ];
-          filter_upwards [ lt_mem_nhds hx_gt_c ] with y hy using h_eq y hy;
-        convert h_eq k le_rfl using 1;
-        · rw [ iteratedDerivWithin_eq_iteratedDeriv ];
-          · exact uniqueDiffOn_Ici _;
-          · exact hg_contDiff.contDiffAt.of_le ( by norm_num );
-          · exact Set.mem_Ici.mpr ( by linarith );
-        · rw [ iteratedDerivWithin_eq_iteratedDeriv ];
-          · exact uniqueDiffOn_Ici _;
-          · exact hf.contDiffAt ( Ici_mem_nhds <| by linarith ) |> ContDiffAt.of_le <| by norm_num;
-          · exact Set.mem_Ici.mpr ( by linarith );
-      exact htend.congr' ( by filter_upwards [ Filter.eventually_gt_atTop c ] with x hx using h_eq x hx ▸ rfl );
-    · grind;
+            grind
+          rw [Filter.EventuallyEq.iteratedDeriv_eq]
+          filter_upwards [lt_mem_nhds hx_gt_c] with y hy using h_eq y hy
+        convert h_eq k le_rfl using 1
+        · rw [iteratedDerivWithin_eq_iteratedDeriv]
+          · exact uniqueDiffOn_Ici _
+          · exact hg_contDiff.contDiffAt.of_le (by norm_num)
+          · exact Set.mem_Ici.mpr (by linarith)
+        · rw [iteratedDerivWithin_eq_iteratedDeriv]
+          · exact uniqueDiffOn_Ici _
+          · exact hf.contDiffAt (Ici_mem_nhds <| by linarith) |> ContDiffAt.of_le <| by norm_num
+          · exact Set.mem_Ici.mpr (by linarith)
+      exact htend.congr' (by filter_upwards [Filter.eventually_gt_atTop c] with x hx using h_eq x hx ▸ rfl)
+    · grind
   · obtain ⟨c, hc⟩ : ∃ c > T₀, iteratedDerivWithin (k + 1) f (Set.Ici T₀) c < 0 := by
-      exact ⟨ T₀ + 1, by linarith, hsign_neg _ <| by norm_num ⟩;
-    obtain ⟨g, hg⟩ : ∃ g : ℝ → ℝ, ContDiff ℝ (k + 1) g ∧ (∀ x, c ≤ x → g x = f x) ∧ (∀ x, x < c → g x = ∑ j ∈ Finset.range (k + 2), (iteratedDeriv j f c / (Nat.factorial j)) * (x - c) ^ j) := by
-      obtain ⟨g, hg⟩ : ∃ g : ℝ → ℝ, ContDiff ℝ (k + 1) g ∧ (∀ x, c ≤ x → g x = f x - ∑ j ∈ Finset.range (k + 2), (iteratedDeriv j f c / (Nat.factorial j)) * (x - c) ^ j) ∧ (∀ x, x < c → g x = 0) := by
-        have := @contDiff_extend_by_zero ( k + 1 ) c ( fun x => f x - ∑ j ∈ Finset.range ( k + 2 ), iteratedDeriv j f c / ( j.factorial : ℝ ) * ( x - c ) ^ j ) ?_ ?_;
-        · exact ⟨ _, this, fun x hx => if_pos hx, fun x hx => if_neg hx.not_ge ⟩;
-        · refine' ContDiffOn.sub _ _;
-          · exact hf.mono ( Set.Ici_subset_Ici.mpr hc.1.le );
-          · exact ContDiffOn.sum fun _ _ => ContDiffOn.mul ( contDiffOn_const ) ( ContDiffOn.pow ( contDiffOn_id.sub contDiffOn_const ) _ );
+      exact ⟨T₀ + 1, by linarith, hsign_neg _ <| by norm_num⟩
+    obtain ⟨g, hg⟩ :
+        ∃ g : ℝ → ℝ, ContDiff ℝ (k + 1) g ∧
+          (∀ x, c ≤ x → g x = f x) ∧
+          (∀ x, x < c → g x = ∑ j ∈ Finset.range (k + 2), (iteratedDeriv j f c / (Nat.factorial j)) * (x - c) ^ j) := by
+      obtain ⟨g, hg⟩ :
+          ∃ g : ℝ → ℝ, ContDiff ℝ (k + 1) g ∧
+            (∀ x, c ≤ x →
+              g x = f x - ∑ j ∈ Finset.range (k + 2), (iteratedDeriv j f c / (Nat.factorial j)) * (x - c) ^ j) ∧
+            (∀ x, x < c → g x = 0) := by
+        have := @contDiff_extend_by_zero (k + 1) c
+          (fun x => f x - ∑ j ∈ Finset.range (k + 2),
+            iteratedDeriv j f c / (j.factorial : ℝ) * (x - c) ^ j) ?_ ?_
+        · exact ⟨_, this, fun x hx => if_pos hx, fun x hx => if_neg hx.not_ge⟩
+        · refine' ContDiffOn.sub _ _
+          · exact hf.mono (Set.Ici_subset_Ici.mpr hc.1.le)
+          · exact ContDiffOn.sum fun _ _ =>
+              ContDiffOn.mul (contDiffOn_const) (ContDiffOn.pow (contDiffOn_id.sub contDiffOn_const) _)
         · intro j hj
-          have h_deriv : iteratedDerivWithin j (fun x => f x - ∑ j ∈ Finset.range (k + 2), iteratedDeriv j f c / (j.factorial : ℝ) * (x - c) ^ j) (Set.Ici c) c = iteratedDeriv j (fun x => f x - ∑ j ∈ Finset.range (k + 2), iteratedDeriv j f c / (j.factorial : ℝ) * (x - c) ^ j) c := by
-            rw [ iteratedDerivWithin_eq_iteratedDeriv ];
-            · exact uniqueDiffOn_Ici _;
-            · refine' ContDiffAt.sub _ _;
-              · exact hf.contDiffAt ( Ici_mem_nhds hc.1 ) |> ContDiffAt.of_le <| mod_cast by linarith;
-              · fun_prop;
-            · norm_num;
-          have h_deriv : iteratedDeriv j (fun x => f x - ∑ j ∈ Finset.range (k + 2), iteratedDeriv j f c / (j.factorial : ℝ) * (x - c) ^ j) c = iteratedDeriv j f c - iteratedDeriv j (fun x => ∑ j ∈ Finset.range (k + 2), iteratedDeriv j f c / (j.factorial : ℝ) * (x - c) ^ j) c := by
-            apply_rules [ iteratedDeriv_sub ];
+          have h_deriv :
+              iteratedDerivWithin j
+                  (fun x => f x - ∑ j ∈ Finset.range (k + 2),
+                    iteratedDeriv j f c / (j.factorial : ℝ) * (x - c) ^ j) (Set.Ici c) c =
+                iteratedDeriv j
+                  (fun x => f x - ∑ j ∈ Finset.range (k + 2),
+                    iteratedDeriv j f c / (j.factorial : ℝ) * (x - c) ^ j) c := by
+            rw [iteratedDerivWithin_eq_iteratedDeriv]
+            · exact uniqueDiffOn_Ici _
+            · refine' ContDiffAt.sub _ _
+              · exact hf.contDiffAt (Ici_mem_nhds hc.1) |> ContDiffAt.of_le <| mod_cast by linarith
+              · fun_prop
+            · norm_num
+          have h_deriv :
+              iteratedDeriv j
+                  (fun x => f x - ∑ j ∈ Finset.range (k + 2),
+                    iteratedDeriv j f c / (j.factorial : ℝ) * (x - c) ^ j) c =
+                iteratedDeriv j f c - iteratedDeriv j
+                  (fun x => ∑ j ∈ Finset.range (k + 2),
+                    iteratedDeriv j f c / (j.factorial : ℝ) * (x - c) ^ j) c := by
+            apply_rules [iteratedDeriv_sub]
             · have h_cont_diff : ContDiffOn ℝ (k + 1) f (Set.Ici T₀) := by
-                exact hf;
-              exact h_cont_diff.contDiffAt ( Ici_mem_nhds hc.1 ) |> ContDiffAt.of_le <| mod_cast by linarith;
-            · fun_prop;
-          have h_deriv : iteratedDeriv j (fun x => ∑ j ∈ Finset.range (k + 2), iteratedDeriv j f c / (j.factorial : ℝ) * (x - c) ^ j) c = iteratedDeriv j f c := by
-            convert iteratedDeriv_pow_sub_sum_at ( k + 1 ) c ( fun j => iteratedDeriv j f c / ( j.factorial : ℝ ) ) j hj using 1;
-            rw [ div_mul_cancel₀ _ ( by positivity ) ];
-          linarith;
-      use fun x => g x + ∑ j ∈ Finset.range (k + 2), (iteratedDeriv j f c / (Nat.factorial j)) * (x - c) ^ j;
-      exact ⟨ hg.1.add <| ContDiff.sum fun _ _ => ContDiff.mul ( contDiff_const ) <| ContDiff.pow ( contDiff_id.sub contDiff_const ) _, fun x hx => by simp [ hg.2.1 x hx ], fun x hx => by simp [ hg.2.2 x hx ] ⟩;
-    refine' ⟨ c, g, by linarith, hg.1.contDiffOn, _, _, _ ⟩ <;> norm_num [ hg.2 ];
-    · have h_deriv_neg : ∀ x, iteratedDeriv (k + 1) g x = if x < c then iteratedDeriv (k + 1) g c else iteratedDerivWithin (k + 1) f (Set.Ici T₀) x := by
-        intro x; split_ifs <;> simp_all [ iteratedDerivWithin_eq_iteratedDeriv ] ;
-        · have h_deriv_neg : ∀ x, x < c → iteratedDeriv (k + 1) g x = iteratedDeriv (k + 1) (fun x => ∑ j ∈ Finset.range (k + 2), (iteratedDeriv j f c / (Nat.factorial j)) * (x - c) ^ j) x := by
-            intro x hx; exact (by
-            rw [ Filter.EventuallyEq.iteratedDeriv_eq ] ; filter_upwards [ Iio_mem_nhds hx ] with y hy ; aesop;);
-          have h_deriv_neg : ∀ x, iteratedDeriv (k + 1) (fun x => ∑ j ∈ Finset.range (k + 2), (iteratedDeriv j f c / (Nat.factorial j)) * (x - c) ^ j) x = iteratedDeriv (k + 1) (fun x => ∑ j ∈ Finset.range (k + 2), (iteratedDeriv j f c / (Nat.factorial j)) * (x - c) ^ j) c := by
-            intro x; exact (by
-            rw [ iteratedDeriv_pow_sub_sum_top, iteratedDeriv_pow_sub_sum_top ]);
-          have h_deriv_neg : iteratedDeriv (k + 1) g c = iteratedDeriv (k + 1) (fun x => ∑ j ∈ Finset.range (k + 2), (iteratedDeriv j f c / (Nat.factorial j)) * (x - c) ^ j) c := by
-            have h_deriv_neg : Filter.Tendsto (fun x => iteratedDeriv (k + 1) g x) (nhdsWithin c (Set.Iio c)) (nhds (iteratedDeriv (k + 1) g c)) := by
+                exact hf
+              exact h_cont_diff.contDiffAt (Ici_mem_nhds hc.1) |> ContDiffAt.of_le <| mod_cast by linarith
+            · fun_prop
+          have h_deriv :
+              iteratedDeriv j
+                  (fun x => ∑ j ∈ Finset.range (k + 2),
+                    iteratedDeriv j f c / (j.factorial : ℝ) * (x - c) ^ j) c = iteratedDeriv j f c := by
+            convert iteratedDeriv_pow_sub_sum_at (k + 1) c
+              (fun j => iteratedDeriv j f c / (j.factorial : ℝ)) j hj using 1
+            rw [div_mul_cancel₀ _ (by positivity)]
+          linarith
+      use fun x => g x + ∑ j ∈ Finset.range (k + 2), (iteratedDeriv j f c / (Nat.factorial j)) * (x - c) ^ j
+      refine ⟨?_, ?_, ?_⟩
+      · exact hg.1.add <| ContDiff.sum fun _ _ =>
+          ContDiff.mul (contDiff_const) <| ContDiff.pow (contDiff_id.sub contDiff_const) _
+      · exact fun x hx => by simp [hg.2.1 x hx]
+      · exact fun x hx => by simp [hg.2.2 x hx]
+    refine' ⟨c, g, by linarith, hg.1.contDiffOn, _, _, _⟩ <;> norm_num [hg.2]
+    · have h_deriv_neg :
+          ∀ x, iteratedDeriv (k + 1) g x =
+            if x < c then iteratedDeriv (k + 1) g c else iteratedDerivWithin (k + 1) f (Set.Ici T₀) x := by
+        intro x
+        split_ifs <;> simp_all
+        · have h_deriv_neg :
+              ∀ x, x < c → iteratedDeriv (k + 1) g x =
+                iteratedDeriv (k + 1) (fun x => ∑ j ∈ Finset.range (k + 2),
+                  (iteratedDeriv j f c / (Nat.factorial j)) * (x - c) ^ j) x := by
+            intro x hx
+            rw [Filter.EventuallyEq.iteratedDeriv_eq]
+            filter_upwards [Iio_mem_nhds hx] with y hy
+            aesop
+          have h_deriv_neg :
+              ∀ x, iteratedDeriv (k + 1) (fun x => ∑ j ∈ Finset.range (k + 2),
+                    (iteratedDeriv j f c / (Nat.factorial j)) * (x - c) ^ j) x =
+                iteratedDeriv (k + 1) (fun x => ∑ j ∈ Finset.range (k + 2),
+                    (iteratedDeriv j f c / (Nat.factorial j)) * (x - c) ^ j) c := by
+            intro x
+            rw [iteratedDeriv_pow_sub_sum_top, iteratedDeriv_pow_sub_sum_top]
+          have h_deriv_neg :
+              iteratedDeriv (k + 1) g c =
+                iteratedDeriv (k + 1) (fun x => ∑ j ∈ Finset.range (k + 2),
+                    (iteratedDeriv j f c / (Nat.factorial j)) * (x - c) ^ j) c := by
+            have h_deriv_neg :
+                Filter.Tendsto (fun x => iteratedDeriv (k + 1) g x)
+                  (nhdsWithin c (Set.Iio c)) (nhds (iteratedDeriv (k + 1) g c)) := by
               have h_deriv_neg : ContinuousAt (iteratedDeriv (k + 1) g) c := by
                 have h_deriv_neg : ContDiff ℝ (k + 1 - (k + 1)) (iteratedDeriv (k + 1) g) := by
-                  convert hg.1.continuous_iteratedDeriv _ using 1;
-                  rotate_left;
-                  exact k + 1;
-                  norm_num [ contDiff_iff_continuous_differentiable ];
-                exact h_deriv_neg.continuous.continuousAt;
-              exact h_deriv_neg.mono_left inf_le_left;
-            exact tendsto_nhds_unique h_deriv_neg ( Filter.Tendsto.congr' ( Filter.eventuallyEq_of_mem self_mem_nhdsWithin fun x hx => by aesop ) tendsto_const_nhds );
-          grind +ring;
-        · rw [ iteratedDerivWithin_eq_iteratedDeriv ];
+                  convert hg.1.continuous_iteratedDeriv _ using 1
+                  rotate_left
+                  exact k + 1
+                  norm_num [contDiff_iff_continuous_differentiable]
+                exact h_deriv_neg.continuous.continuousAt
+              exact h_deriv_neg.mono_left inf_le_left
+            exact tendsto_nhds_unique h_deriv_neg
+              (Filter.Tendsto.congr'
+                (Filter.eventuallyEq_of_mem self_mem_nhdsWithin fun x hx => by aesop) tendsto_const_nhds)
+          grind +ring
+        · rw [iteratedDerivWithin_eq_iteratedDeriv]
           · have h_deriv_neg : ∀ x, c < x → iteratedDeriv (k + 1) g x = iteratedDeriv (k + 1) f x := by
-              intro x hx; exact (by
-              apply_rules [ Filter.EventuallyEq.iteratedDeriv_eq ];
-              filter_upwards [ lt_mem_nhds hx ] with y hy using hg.2.1 y hy.le);
-            cases lt_or_eq_of_le ‹_› <;> simp_all [ iteratedDerivWithin_eq_iteratedDeriv ];
-            have h_deriv_neg : Filter.Tendsto (fun y => iteratedDeriv (k + 1) g y) (nhdsWithin x (Set.Ioi x)) (nhds (iteratedDeriv (k + 1) g x)) := by
+              intro x hx
+              apply_rules [Filter.EventuallyEq.iteratedDeriv_eq]
+              filter_upwards [lt_mem_nhds hx] with y hy using hg.2.1 y hy.le
+            cases lt_or_eq_of_le ‹_› <;> simp_all
+            have h_deriv_neg :
+                Filter.Tendsto (fun y => iteratedDeriv (k + 1) g y)
+                  (nhdsWithin x (Set.Ioi x)) (nhds (iteratedDeriv (k + 1) g x)) := by
               have h_deriv_neg : ContinuousAt (iteratedDeriv (k + 1) g) x := by
                 have h_deriv_neg : ContDiff ℝ (↑k + 1) g := by
-                  exact hg.1;
-                fun_prop;
-              exact h_deriv_neg.mono_left inf_le_left;
-            have h_deriv_neg : Filter.Tendsto (fun y => iteratedDeriv (k + 1) f y) (nhdsWithin x (Set.Ioi x)) (nhds (iteratedDeriv (k + 1) f x)) := by
+                  exact hg.1
+                fun_prop
+              exact h_deriv_neg.mono_left inf_le_left
+            have h_deriv_neg :
+                Filter.Tendsto (fun y => iteratedDeriv (k + 1) f y)
+                  (nhdsWithin x (Set.Ioi x)) (nhds (iteratedDeriv (k + 1) f x)) := by
               have h_deriv_neg : ContDiffOn ℝ (↑(k + 1 - (k + 1))) (iteratedDeriv (k + 1) f) (Set.Ioi T₀) := by
                 have h_deriv_neg : ContDiffOn ℝ (↑(k + 1)) f (Set.Ioi T₀) := by
-                  exact hf.mono <| Set.Ioi_subset_Ici_self;
+                  exact hf.mono <| Set.Ioi_subset_Ici_self
                 have h_deriv_neg : ∀ m ≤ k + 1, ContDiffOn ℝ (↑(k + 1 - m)) (iteratedDeriv m f) (Set.Ioi T₀) := by
-                  intro m hm; induction' m with m ih <;> simp_all [ iteratedDeriv_succ ] ;
-                  have := ih ( by linarith );
-                  convert this.deriv_of_isOpen isOpen_Ioi _ using 1;
-                  norm_cast ; omega;
-                exact h_deriv_neg _ le_rfl;
-              exact h_deriv_neg.continuousOn.continuousAt ( Ioi_mem_nhds hc.1 ) |> fun h => h.mono_left inf_le_left;
-            exact tendsto_nhds_unique ‹_› ( h_deriv_neg.congr' <| Filter.eventuallyEq_of_mem self_mem_nhdsWithin fun y hy => by aesop );
-          · exact uniqueDiffOn_Ici _;
-          · exact hf.contDiffAt ( Ici_mem_nhds ( by linarith ) ) |> ContDiffAt.of_le <| by norm_num;
-          · exact le_trans hc.1.le ‹_›;
+                  intro m hm
+                  induction' m with m ih <;> simp_all [iteratedDeriv_succ]
+                  have := ih (by linarith)
+                  convert this.deriv_of_isOpen isOpen_Ioi _ using 1
+                  norm_cast
+                  omega
+                exact h_deriv_neg _ le_rfl
+              exact h_deriv_neg.continuousOn.continuousAt (Ioi_mem_nhds hc.1)
+                |> fun h => h.mono_left inf_le_left
+            exact tendsto_nhds_unique ‹_›
+              (h_deriv_neg.congr' <| Filter.eventuallyEq_of_mem self_mem_nhdsWithin fun y hy => by aesop)
+          · exact uniqueDiffOn_Ici _
+          · exact hf.contDiffAt (Ici_mem_nhds (by linarith)) |> ContDiffAt.of_le <| by norm_num
+          · exact le_trans hc.1.le ‹_›
       have h_deriv_neg : ∀ x, 1 < x → iteratedDerivWithin (k + 1) g (Set.Ici 1) x = iteratedDeriv (k + 1) g x := by
-        intro x hx; rw [ iteratedDerivWithin_eq_iteratedDeriv ] ;
-        · exact uniqueDiffOn_Ici _;
-        · exact hg.1.contDiffAt.of_le ( by norm_num );
-        · exact hx.le;
-      grind;
+        intro x hx
+        rw [iteratedDerivWithin_eq_iteratedDeriv]
+        · exact uniqueDiffOn_Ici _
+        · exact hg.1.contDiffAt.of_le (by norm_num)
+        · exact hx.le
+      grind
     · have h_tendsto : Filter.Tendsto (fun x => iteratedDerivWithin k g (Set.Ici 1) x) Filter.atTop (nhds 0) := by
         have h_eq : ∀ x > c, iteratedDerivWithin k g (Set.Ici 1) x = iteratedDerivWithin k f (Set.Ici T₀) x := by
           intros x hx
           have h_eq : ∀ j ≤ k, iteratedDerivWithin j g (Set.Ici 1) x = iteratedDerivWithin j f (Set.Ici T₀) x := by
             intros j hj
-            have h_eq : ∀ y ∈ Set.Ioi c, iteratedDerivWithin j g (Set.Ici 1) y = iteratedDerivWithin j f (Set.Ici T₀) y := by
+            have h_eq :
+                ∀ y ∈ Set.Ioi c, iteratedDerivWithin j g (Set.Ici 1) y = iteratedDerivWithin j f (Set.Ici T₀) y := by
               intros y hy
               have h_eq : ∀ j ≤ k, iteratedDerivWithin j g (Set.Ici 1) y = iteratedDerivWithin j f (Set.Ici T₀) y := by
                 intro j hj
                 have h_eq : ∀ y ∈ Set.Ioi c, g y = f y := by
                   exact fun y hy => hg.2.1 y hy.out.le
-                have h_eq : ∀ j ≤ k, iteratedDerivWithin j g (Set.Ici 1) y = iteratedDerivWithin j f (Set.Ici T₀) y := by
+                have h_eq :
+                    ∀ j ≤ k, iteratedDerivWithin j g (Set.Ici 1) y = iteratedDerivWithin j f (Set.Ici T₀) y := by
                   intro j hj
-                  have h_eq : ∀ y ∈ Set.Ioi c, iteratedDerivWithin j g (Set.Ici 1) y = iteratedDerivWithin j f (Set.Ici T₀) y := by
-                    induction' j with j ih generalizing y <;> simp_all [ iteratedDerivWithin_succ ];
-                    intro y hy; rw [ Filter.EventuallyEq.derivWithin_eq ] ;
-                    any_goals exact fun x => iteratedDerivWithin j f ( Set.Ici T₀ ) x;
-                    · rw [ derivWithin_of_mem_nhds ( Ici_mem_nhds <| by linarith ), derivWithin_of_mem_nhds ( Ici_mem_nhds <| by linarith ) ];
-                    · filter_upwards [ self_mem_nhdsWithin, mem_nhdsWithin_of_mem_nhds ( Ioi_mem_nhds hy ) ] with x hx₁ hx₂ using ih x hx₂ ( by linarith ) x hx₂;
-                    · exact ih y hy ( by linarith ) y hy
-                  exact h_eq y hy;
+                  have h_eq :
+                      ∀ y ∈ Set.Ioi c, iteratedDerivWithin j g (Set.Ici 1) y =
+                        iteratedDerivWithin j f (Set.Ici T₀) y := by
+                    induction' j with j ih generalizing y <;> simp_all [iteratedDerivWithin_succ]
+                    intro y hy
+                    rw [Filter.EventuallyEq.derivWithin_eq]
+                    any_goals exact fun x => iteratedDerivWithin j f (Set.Ici T₀) x
+                    · rw [derivWithin_of_mem_nhds (Ici_mem_nhds <| by linarith),
+                        derivWithin_of_mem_nhds (Ici_mem_nhds <| by linarith)]
+                    · filter_upwards [self_mem_nhdsWithin,
+                        mem_nhdsWithin_of_mem_nhds (Ioi_mem_nhds hy)]
+                        with x hx₁ hx₂ using ih x hx₂ (by linarith) x hx₂
+                    · exact ih y hy (by linarith) y hy
+                  exact h_eq y hy
                 exact h_eq j hj
-              generalize_proofs at *;
-              exact h_eq j hj;
-            exact h_eq x hx;
+              generalize_proofs at *
+              exact h_eq j hj
+            exact h_eq x hx
           exact h_eq k le_rfl
-        exact Filter.Tendsto.congr' ( Filter.eventuallyEq_of_mem ( Filter.Ioi_mem_atTop c ) fun x hx => by rw [ h_eq x hx ] ) htend;
-      exact h_tendsto;
+        exact Filter.Tendsto.congr'
+          (Filter.eventuallyEq_of_mem (Filter.Ioi_mem_atTop c) fun x hx => by rw [h_eq x hx]) htend
+      exact h_tendsto
     · exact hg.2.1
 
 /-
@@ -537,24 +675,44 @@ lemma asymptotic_deriv_analytic_package
       ((∀ x, T₁ < x → 0 < iteratedDeriv (k + 1) f x) ∨
         (∀ x, T₁ < x → iteratedDeriv (k + 1) f x < 0)) ∧
       Filter.Tendsto (iteratedDeriv k f) Filter.atTop (nhds 0) := by
-  refine ⟨ m₀ + ⌈s⌉₊ + 2, ?_, fun k hk => ?_ ⟩;
-  · linarith;
+  refine ⟨m₀ + ⌈s⌉₊ + 2, ?_, fun k hk => ?_⟩
+  · linarith
   · -- For the (k+1)-th derivative, since $c \cdot \prod_{i=0}^{k}(s-i) \neq 0$, the sign of $c \cdot \prod_{i=0}^{k}(s-i) \cdot x^{s-(k+1)}$ is constant for large $x$.
     have h_sign : ∃ T₁ : ℝ, (∀ x > T₁, 0 < iteratedDeriv (k + 1) f x) ∨ (∀ x > T₁, iteratedDeriv (k + 1) f x < 0) := by
-      have h_sign : Filter.Tendsto (fun x => iteratedDeriv (k + 1) f x / x ^ (s - (k + 1))) Filter.atTop (nhds (c * (descPochhammer ℝ (k + 1)).eval s)) := by
-        exact_mod_cast hasymp _ ( by linarith );
+      have h_sign :
+          Filter.Tendsto (fun x => iteratedDeriv (k + 1) f x / x ^ (s - (k + 1)))
+            Filter.atTop (nhds (c * (descPochhammer ℝ (k + 1)).eval s)) := by
+        exact_mod_cast hasymp _ (by linarith)
       have h_sign_ne_zero : c * (descPochhammer ℝ (k + 1)).eval s ≠ 0 := by
-        simp_all [ descPochhammer_eval_eq_prod_range ];
-        exact Finset.prod_ne_zero_iff.mpr fun i hi => sub_ne_zero_of_ne <| hs i;
-      cases lt_or_gt_of_ne h_sign_ne_zero <;> simp_all [ div_eq_mul_inv ];
-      · have := h_sign.eventually ( gt_mem_nhds ‹_› );
-        rw [ Filter.eventually_atTop ] at this; rcases this with ⟨ T₁, hT₁ ⟩ ; exact ⟨ Max.max T₁ 1, Or.inr fun x hx => by have := hT₁ x ( le_of_lt ( lt_of_le_of_lt ( le_max_left _ _ ) hx ) ) ; exact lt_of_not_ge fun h => this.not_ge <| mul_nonneg h <| inv_nonneg.mpr <| Real.rpow_nonneg ( by linarith [ le_max_right T₁ 1 ] ) _ ⟩ ;
-      · have := h_sign.eventually ( lt_mem_nhds ‹_› );
-        rw [ Filter.eventually_atTop ] at this; rcases this with ⟨ T₁, hT₁ ⟩ ; exact ⟨ Max.max T₁ 1, Or.inl fun x hx => by have := hT₁ x ( le_of_lt ( lt_of_le_of_lt ( le_max_left _ _ ) hx ) ) ; exact by nlinarith [ inv_pos.mpr ( Real.rpow_pos_of_pos ( by linarith [ le_max_right T₁ 1 ] : 0 < x ) ( s - ( k + 1 ) ) ) ] ⟩ ;
-    have h_tendsto : Filter.Tendsto (fun x => (iteratedDeriv k f x) / x ^ (s - k) * x ^ (s - k)) Filter.atTop (nhds 0) := by
-      convert Filter.Tendsto.mul ( hasymp k ( by linarith ) ) ( tendsto_rpow_neg_atTop ( show 0 < ( k : ℝ ) - s by linarith [ Nat.le_ceil s, show ( k : ℝ ) ≥ m₀ + ⌈s⌉₊ + 2 by norm_cast ] ) ) using 2 ; ring;
-      ring;
-    exact ⟨ h_sign.choose, h_sign.choose_spec, h_tendsto.congr' <| by filter_upwards [ Filter.eventually_gt_atTop 0 ] with x hx using by rw [ div_mul_cancel₀ _ <| ne_of_gt <| Real.rpow_pos_of_pos hx _ ] ⟩
+        simp_all [descPochhammer_eval_eq_prod_range]
+        exact Finset.prod_ne_zero_iff.mpr fun i hi => sub_ne_zero_of_ne <| hs i
+      cases lt_or_gt_of_ne h_sign_ne_zero <;> simp_all [div_eq_mul_inv]
+      · have := h_sign.eventually (gt_mem_nhds ‹_›)
+        rw [Filter.eventually_atTop] at this
+        rcases this with ⟨T₁, hT₁⟩
+        refine ⟨Max.max T₁ 1, Or.inr fun x hx => ?_⟩
+        have := hT₁ x (le_of_lt (lt_of_le_of_lt (le_max_left _ _) hx))
+        exact lt_of_not_ge fun h => this.not_ge <| mul_nonneg h <|
+          inv_nonneg.mpr <| Real.rpow_nonneg (by linarith [le_max_right T₁ 1]) _
+      · have := h_sign.eventually (lt_mem_nhds ‹_›)
+        rw [Filter.eventually_atTop] at this
+        rcases this with ⟨T₁, hT₁⟩
+        refine ⟨Max.max T₁ 1, Or.inl fun x hx => ?_⟩
+        have := hT₁ x (le_of_lt (lt_of_le_of_lt (le_max_left _ _) hx))
+        have := inv_pos.mpr (Real.rpow_pos_of_pos (by linarith [le_max_right T₁ 1] : 0 < x) (s - (k + 1)))
+        nlinarith
+    have h_tendsto :
+        Filter.Tendsto (fun x => (iteratedDeriv k f x) / x ^ (s - k) * x ^ (s - k))
+          Filter.atTop (nhds 0) := by
+      convert Filter.Tendsto.mul (hasymp k (by linarith))
+        (tendsto_rpow_neg_atTop
+          (show 0 < (k : ℝ) - s by
+            linarith [Nat.le_ceil s, show (k : ℝ) ≥ m₀ + ⌈s⌉₊ + 2 by norm_cast])) using 2
+      ring_nf
+      ring
+    refine ⟨h_sign.choose, h_sign.choose_spec, h_tendsto.congr' ?_⟩
+    filter_upwards [Filter.eventually_gt_atTop 0] with x hx
+    rw [div_mul_cancel₀ _ <| ne_of_gt <| Real.rpow_pos_of_pos hx _]
 
 /-- `dummyBranch = x ↦ √x` is `C^∞` on any positive tail `[T₀,∞)` (`T₀ ≥ 1`). -/
 lemma dummyBranch_contDiffOn_top (T₀ : ℤ) (hT₀ : 1 ≤ T₀) :
@@ -564,7 +722,8 @@ lemma dummyBranch_contDiffOn_top (T₀ : ℤ) (hT₀ : 1 ≤ T₀) :
   intro x hx
   have : (1 : ℝ) ≤ (T₀ : ℝ) := by exact_mod_cast hT₀
   simp only [Set.mem_Ici] at hx
-  simp only [id]; nlinarith
+  simp only [id]
+  nlinarith
 
 /-- The pure-power model branch `dummyBranch = x ↦ √x` has the exact leading derivative
 asymptotic with `c = 1` and `s = 1/2` (indeed the ratio is *constant* on the positive
@@ -609,27 +768,44 @@ lemma realPoly_ratl_of_infinite_int_values (q : Polynomial ℝ)
     (hinf : {t : ℤ | ∃ z : ℤ, q.eval (t : ℝ) = (z : ℝ)}.Infinite) :
     ∃ q' : Polynomial ℚ, q'.map (algebraMap ℚ ℝ) = q := by
   -- Let $d = q.natDegree$.
-  set d := q.natDegree with hd;
+  set d := q.natDegree with hd
   -- Choose $d + 1$ distinct integers $t_0, t_1, \ldots, t_d$ from the infinite set.
-  obtain ⟨t, ht_distinct, ht_mem⟩ : ∃ t : Fin (d + 1) → ℤ, Function.Injective t ∧ ∀ i, ∃ z : ℤ, q.eval (t i : ℝ) = z := by
-    have := hinf.exists_subset_card_eq ( d + 1 );
-    obtain ⟨ t, ht₁, ht₂ ⟩ := this; exact ⟨ fun i ↦ t.orderEmbOfFin ( by aesop ) i, by aesop_cat, fun i ↦ ht₁ <| by aesop ⟩ ;
-  choose z hz using ht_mem;
+  obtain ⟨t, ht_distinct, ht_mem⟩ :
+      ∃ t : Fin (d + 1) → ℤ, Function.Injective t ∧ ∀ i, ∃ z : ℤ, q.eval (t i : ℝ) = z := by
+    have := hinf.exists_subset_card_eq (d + 1)
+    obtain ⟨t, ht₁, ht₂⟩ := this
+    exact ⟨fun i ↦ t.orderEmbOfFin (by aesop) i, by aesop_cat, fun i ↦ ht₁ <| by aesop⟩
+  choose z hz using ht_mem
   -- By Lagrange interpolation, there exists a unique polynomial $q'$ of degree at most $d$ such that $q'(t_i) = z_i$ for all $i$.
   obtain ⟨q', hq'⟩ : ∃ q' : Polynomial ℚ, q'.degree ≤ d ∧ ∀ i, q'.eval (t i : ℚ) = z i := by
-    use Finset.sum Finset.univ fun i => Polynomial.C (z i : ℚ) * Finset.prod (Finset.erase Finset.univ i) fun j => Polynomial.C (1 / (t i - t j : ℚ)) * (Polynomial.X - Polynomial.C (t j : ℚ));
-    refine' ⟨ le_trans ( Polynomial.degree_sum_le _ _ ) _, _ ⟩;
-    · simp [ Polynomial.degree_prod ];
-      exact fun i => le_trans ( add_le_add ( Polynomial.degree_C_le ) ( Finset.sum_le_sum fun j hj => add_le_add ( Polynomial.degree_C_le ) ( Polynomial.degree_X_sub_C_le _ ) ) ) ( by norm_num );
-    · intro i; rw [ Polynomial.eval_finset_sum, Finset.sum_eq_single i ] <;> simp_all [ Polynomial.eval_prod, Finset.prod_eq_zero_iff, sub_eq_zero, ht_distinct.eq_iff ] ;
-      · rw [ Finset.prod_eq_one fun j hj => by rw [ inv_mul_cancel₀ ] ; exact sub_ne_zero_of_ne <| mod_cast ht_distinct.ne <| by aesop ] ; norm_num;
-      · exact fun j hj => Or.inr ⟨ i, Ne.symm hj, Or.inr rfl ⟩;
-  use q';
-  refine' Polynomial.eq_of_degree_sub_lt_of_eval_finset_eq _ _ _;
-  exact Finset.image ( fun i : Fin ( d + 1 ) => ( t i : ℝ ) ) Finset.univ;
-  · refine' lt_of_le_of_lt ( Polynomial.degree_sub_le _ _ ) _ ; simp_all [ Finset.card_image_of_injective _ ( show Function.Injective ( fun i : Fin ( d + 1 ) => ( t i : ℝ ) ) from fun i j hij => by simpa [ ht_distinct.eq_iff ] using hij ) ];
-    exact ⟨ lt_of_le_of_lt hq'.1 ( WithBot.coe_lt_coe.mpr ( Nat.lt_succ_self _ ) ), lt_of_le_of_lt ( Polynomial.degree_le_natDegree ) ( WithBot.coe_lt_coe.mpr ( Nat.lt_succ_self _ ) ) ⟩;
-  · simp_all [ Polynomial.eval_map ]
+    use Finset.sum Finset.univ fun i =>
+      Polynomial.C (z i : ℚ) * Finset.prod (Finset.erase Finset.univ i) fun j =>
+        Polynomial.C (1 / (t i - t j : ℚ)) * (Polynomial.X - Polynomial.C (t j : ℚ))
+    refine' ⟨le_trans (Polynomial.degree_sum_le _ _) _, _⟩
+    · simp [Polynomial.degree_prod]
+      exact fun i => le_trans
+        (add_le_add (Polynomial.degree_C_le)
+          (Finset.sum_le_sum fun j hj =>
+            add_le_add (Polynomial.degree_C_le) (Polynomial.degree_X_sub_C_le _)))
+        (by norm_num)
+    · intro i
+      rw [Polynomial.eval_finset_sum, Finset.sum_eq_single i] <;>
+        simp_all [Polynomial.eval_prod, Finset.prod_eq_zero_iff, sub_eq_zero, ht_distinct.eq_iff]
+      · rw [Finset.prod_eq_one fun j hj => by
+          rw [inv_mul_cancel₀]
+          exact sub_ne_zero_of_ne <| mod_cast ht_distinct.ne <| by aesop]
+        norm_num
+      · exact fun j hj => Or.inr ⟨i, Ne.symm hj, Or.inr rfl⟩
+  use q'
+  refine' Polynomial.eq_of_degree_sub_lt_of_eval_finset_eq _ _ _
+  exact Finset.image (fun i : Fin (d + 1) => (t i : ℝ)) Finset.univ
+  · refine' lt_of_le_of_lt (Polynomial.degree_sub_le _ _) _
+    have hinj : Function.Injective (fun i : Fin (d + 1) => (t i : ℝ)) :=
+      fun i j hij => by simpa [ht_distinct.eq_iff] using hij
+    simp_all [Finset.card_image_of_injective _ hinj]
+    exact ⟨lt_of_le_of_lt hq'.1 (WithBot.coe_lt_coe.mpr (Nat.lt_succ_self _)),
+      lt_of_le_of_lt (Polynomial.degree_le_natDegree) (WithBot.coe_lt_coe.mpr (Nat.lt_succ_self _))⟩
+  · simp_all [Polynomial.eval_map]
 
 /-
 **A rational eventual root of `P` gives a root in `ℚ(T)`.** -/
@@ -644,23 +820,31 @@ lemma ratl_eventual_root_gives_ratFunc_root
     -- By definition of $Ψ$, we know that $Ψ.map (algebraMap ℚ ℝ)$ is a polynomial in $ℝ[X]$.
     have hΨ_poly : ∀ x : ℝ, T₀ ≤ x → (Ψ.map (algebraMap ℚ ℝ)).eval x = 0 := by
       intro x hx
-      have h_eval : Polynomial.eval x (Polynomial.map (algebraMap ℚ ℝ) Ψ) = Polynomial.eval (Polynomial.eval x (Polynomial.map (algebraMap ℚ ℝ) q')) (Polynomial.map (evalIntPolyReal x) P) := by
-        simp [Ψ];
-        simp [ Polynomial.eval_map, Polynomial.eval₂_eq_sum_range ];
-        simp [ evalIntPolyReal, Polynomial.aeval_def, Polynomial.eval_map ];
-        simp [ Polynomial.eval₂_map ];
+      have h_eval :
+          Polynomial.eval x (Polynomial.map (algebraMap ℚ ℝ) Ψ) =
+            Polynomial.eval (Polynomial.eval x (Polynomial.map (algebraMap ℚ ℝ) q'))
+              (Polynomial.map (evalIntPolyReal x) P) := by
+        simp [Ψ]
+        simp [Polynomial.eval_map, Polynomial.eval₂_eq_sum_range]
+        simp [evalIntPolyReal, Polynomial.aeval_def, Polynomial.eval_map]
+        simp [Polynomial.eval₂_map]
         congr! 2
       rw [h_eval]
-      exact hroot x hx;
+      exact hroot x hx
     have hΨ_inf_roots : Set.Infinite {x : ℝ | (Ψ.map (algebraMap ℚ ℝ)).eval x = 0} := by
-      exact Set.Infinite.mono hΨ_poly <| Set.Ici_infinite T₀;
-    exact Classical.not_not.1 fun h => hΨ_inf_roots <| Set.Finite.subset ( Polynomial.map ( algebraMap ℚ ℝ ) Ψ |> Polynomial.roots |> Multiset.toFinset |> Finset.finite_toSet ) fun x hx => by aesop;
-  simp_all [ Polynomial.ext_iff ];
+      exact Set.Infinite.mono hΨ_poly <| Set.Ici_infinite T₀
+    exact Classical.not_not.1 fun h =>
+      hΨ_inf_roots <| Set.Finite.subset
+        (Polynomial.map (algebraMap ℚ ℝ) Ψ |> Polynomial.roots |> Multiset.toFinset |> Finset.finite_toSet)
+        fun x hx => by aesop
+  simp_all [Polynomial.ext_iff]
   -- Since Ψ is the zero polynomial, we have that P(q') = 0 in ℚ(T).
-  use (algebraMap (Polynomial ℚ) (FractionRing (Polynomial ℚ))) q';
-  convert congr_arg ( algebraMap ( Polynomial ℚ ) ( FractionRing ( Polynomial ℚ ) ) ) ( show Ψ = 0 from Polynomial.ext hΨ ) using 1;
-  · unfold Ψ toRatFunc; simp [ Polynomial.eval_map ] ;
-    simp [ Polynomial.eval₂_eq_sum_range ];
+  use (algebraMap (Polynomial ℚ) (FractionRing (Polynomial ℚ))) q'
+  convert congr_arg (algebraMap (Polynomial ℚ) (FractionRing (Polynomial ℚ)))
+    (show Ψ = 0 from Polynomial.ext hΨ) using 1
+  · unfold Ψ toRatFunc
+    simp [Polynomial.eval_map]
+    simp [Polynomial.eval₂_eq_sum_range]
   · norm_num
 
 /-- The real specialization `P.map (evalIntPolyReal x)` is monic (for `P` monic), since
@@ -683,13 +867,13 @@ theorem.
 -/
 lemma evalIntPolyReal_eval_contDiff (P : Polynomial (Polynomial ℤ)) :
     ContDiff ℝ ⊤ (fun p : ℝ × ℝ => (P.map (evalIntPolyReal p.1)).eval p.2) := by
-  unfold evalIntPolyReal;
-  simp [ Polynomial.eval_map ];
-  rw [ Polynomial.as_sum_range_C_mul_X_pow P ];
-  simp [ Polynomial.eval₂_finset_sum ];
-  refine' ContDiff.sum fun i hi => ContDiff.mul _ _;
-  · simp [ Polynomial.eval_eq_sum_range ];
-    exact ContDiff.sum fun _ _ => ContDiff.mul ( contDiff_const ) ( contDiff_fst.pow _ );
+  unfold evalIntPolyReal
+  simp [Polynomial.eval_map]
+  rw [Polynomial.as_sum_range_C_mul_X_pow P]
+  simp [Polynomial.eval₂_finset_sum]
+  refine' ContDiff.sum fun i hi => ContDiff.mul _ _
+  · simp [Polynomial.eval_eq_sum_range]
+    exact ContDiff.sum fun _ _ => ContDiff.mul (contDiff_const) (contDiff_fst.pow _)
   · exact contDiff_snd.pow i
 
 /-
@@ -708,34 +892,51 @@ lemma real_branch_at_simple_root (P : Polynomial (Polynomial ℤ)) (x₀ y₀ : 
     ∃ φ : ℝ → ℝ, φ x₀ = y₀ ∧ ContDiffAt ℝ ⊤ φ x₀ ∧
       ∀ᶠ x : ℝ in nhds x₀, (P.map (evalIntPolyReal x)).eval (φ x) = 0 := by
   -- Define the function F : ℝ × ℝ → ℝ by F(x, y) = P(x, y).
-  set F : ℝ × ℝ → ℝ := fun p => (P.map (evalIntPolyReal p.1)).eval p.2;
+  set F : ℝ × ℝ → ℝ := fun p => (P.map (evalIntPolyReal p.1)).eval p.2
   -- Apply the implicit function theorem to F at the point (x₀, y₀).
-  obtain ⟨φ, hφ⟩ : ∃ φ : ℝ → ℝ, HasFDerivAt F (fderiv ℝ F (x₀, y₀)) (x₀, y₀) ∧ ContDiffAt ℝ ⊤ φ x₀ ∧ φ x₀ = y₀ ∧ ∀ᶠ x in nhds x₀, F (x, φ x) = F (x₀, y₀) := by
+  obtain ⟨φ, hφ⟩ :
+      ∃ φ : ℝ → ℝ, HasFDerivAt F (fderiv ℝ F (x₀, y₀)) (x₀, y₀) ∧ ContDiffAt ℝ ⊤ φ x₀ ∧
+        φ x₀ = y₀ ∧ ∀ᶠ x in nhds x₀, F (x, φ x) = F (x₀, y₀) := by
     have h_implicit : IsContDiffImplicitAt ⊤ F (fderiv ℝ F (x₀, y₀)) (x₀, y₀) := by
-      constructor;
-      · exact DifferentiableAt.hasFDerivAt ( by exact ( evalIntPolyReal_eval_contDiff P |> ContDiff.differentiable <| by norm_num ) _ );
-      · exact evalIntPolyReal_eval_contDiff P |> ContDiff.contDiffAt;
-      · have hL : ∀ x, (fderiv ℝ F (x₀, y₀)).comp (ContinuousLinearMap.inr ℝ ℝ ℝ) x = (Polynomial.derivative (P.map (evalIntPolyReal x₀))).eval y₀ * x := by
+      constructor
+      · exact DifferentiableAt.hasFDerivAt
+          ((evalIntPolyReal_eval_contDiff P |> ContDiff.differentiable <| by norm_num) _)
+      · exact evalIntPolyReal_eval_contDiff P |> ContDiff.contDiffAt
+      · have hL :
+            ∀ x, (fderiv ℝ F (x₀, y₀)).comp (ContinuousLinearMap.inr ℝ ℝ ℝ) x =
+              (Polynomial.derivative (P.map (evalIntPolyReal x₀))).eval y₀ * x := by
           intro x
-          have hL : (fderiv ℝ F (x₀, y₀)).comp (ContinuousLinearMap.inr ℝ ℝ ℝ) x = deriv (fun y => (P.map (evalIntPolyReal x₀)).eval y) y₀ * x := by
-            have hL : deriv (fun y => (P.map (evalIntPolyReal x₀)).eval y) y₀ = (fderiv ℝ F (x₀, y₀)).comp (ContinuousLinearMap.inr ℝ ℝ ℝ) 1 := by
-              convert HasDerivAt.deriv _ using 1;
-              convert HasFDerivAt.hasDerivAt ( HasFDerivAt.comp y₀ ( show HasFDerivAt F ( fderiv ℝ F ( x₀, y₀ ) ) ( x₀, y₀ ) from DifferentiableAt.hasFDerivAt ( by
-                                                                      convert ( evalIntPolyReal_eval_contDiff P |> ContDiff.differentiable <| by norm_num ) ( x₀, y₀ ) using 1 ) ) ( HasFDerivAt.prodMk ( hasFDerivAt_const _ _ ) ( hasFDerivAt_id _ ) ) ) using 1;
-            rw [ hL, mul_comm ];
-            convert ( ContinuousLinearMap.map_smul ( ( fderiv ℝ F ( x₀, y₀ ) ).comp ( ContinuousLinearMap.inr ℝ ℝ ℝ ) ) x 1 ) using 1 ; norm_num;
-          convert hL using 1;
-          norm_num [ Polynomial.derivative_eval ];
-        constructor;
-        · exact fun x y hxy => mul_left_cancel₀ hsimple <| by aesop;
-        · exact fun x => ⟨ x / ( Polynomial.eval y₀ ( Polynomial.derivative ( Polynomial.map ( evalIntPolyReal x₀ ) P ) ) ), by rw [ hL, mul_div_cancel₀ _ hsimple ] ⟩;
-      · decide +revert;
-    refine' ⟨ h_implicit.implicitFunction, _, _, _, _ ⟩;
-    · exact h_implicit.hasFDerivAt;
-    · exact h_implicit.contDiffAt_implicitFunction;
-    · convert h_implicit.eventually_implicitFunction_apply_eq.self_of_nhds using 1;
-      aesop;
-    · convert h_implicit.apply_implicitFunction using 1;
+          have hL :
+              (fderiv ℝ F (x₀, y₀)).comp (ContinuousLinearMap.inr ℝ ℝ ℝ) x =
+                deriv (fun y => (P.map (evalIntPolyReal x₀)).eval y) y₀ * x := by
+            have hL :
+                deriv (fun y => (P.map (evalIntPolyReal x₀)).eval y) y₀ =
+                  (fderiv ℝ F (x₀, y₀)).comp (ContinuousLinearMap.inr ℝ ℝ ℝ) 1 := by
+              convert HasDerivAt.deriv _ using 1
+              have hdiff := (evalIntPolyReal_eval_contDiff P |> ContDiff.differentiable <| by norm_num) (x₀, y₀)
+              have hFderiv : HasFDerivAt F (fderiv ℝ F (x₀, y₀)) (x₀, y₀) :=
+                DifferentiableAt.hasFDerivAt (by convert hdiff using 1)
+              convert HasFDerivAt.hasDerivAt
+                (HasFDerivAt.comp y₀ hFderiv
+                  (HasFDerivAt.prodMk (hasFDerivAt_const _ _) (hasFDerivAt_id _))) using 1
+            rw [hL, mul_comm]
+            convert (ContinuousLinearMap.map_smul
+              ((fderiv ℝ F (x₀, y₀)).comp (ContinuousLinearMap.inr ℝ ℝ ℝ)) x 1) using 1
+            norm_num
+          convert hL using 1
+          norm_num [Polynomial.derivative_eval]
+        constructor
+        · exact fun x y hxy => mul_left_cancel₀ hsimple <| by aesop
+        · exact fun x =>
+            ⟨x / (Polynomial.eval y₀ (Polynomial.derivative (Polynomial.map (evalIntPolyReal x₀) P))),
+              by rw [hL, mul_div_cancel₀ _ hsimple]⟩
+      · decide +revert
+    refine' ⟨h_implicit.implicitFunction, _, _, _, _⟩
+    · exact h_implicit.hasFDerivAt
+    · exact h_implicit.contDiffAt_implicitFunction
+    · convert h_implicit.eventually_implicitFunction_apply_eq.self_of_nhds using 1
+      aesop
+    · convert h_implicit.apply_implicitFunction using 1
   grind
 
 /-- The `Y`-derivative of the real specialization is the specialization of the
@@ -795,10 +996,12 @@ lemma exists_smooth_separable_reduction
   set Fbar : Polynomial (Polynomial ℝ) := P.map (Polynomial.mapRingHom (Int.castRingHom ℝ)) with hFbar
   have hFbar_monic : Fbar.Monic := hP_monic.map _
   have hFbar_deg : 2 ≤ Fbar.natDegree := by
-    rw [hFbar, hP_monic.natDegree_map]; exact hP_deg
+    rw [hFbar, hP_monic.natDegree_map]
+    exact hP_deg
   have hbridge : ∀ x : ℝ, P.map (evalIntPolyReal x) = Fbar.map (evalRingHom x) := by
     intro x
-    rw [hFbar, Polynomial.map_map]; rfl
+    rw [hFbar, Polynomial.map_map]
+    rfl
   obtain ⟨d, R, T₀r, hT₀r, hd, hRmon, hRdeg, hRsmooth, hRsep, hRroots⟩ :=
     SmoothSeparableReduction.exists_smooth_separable_reduction_real Fbar hFbar_monic hFbar_deg
   refine ⟨d, R, ⌈T₀r⌉, ?_, hd, hRmon, hRdeg, hRsmooth, ?_, ?_⟩
@@ -847,10 +1050,14 @@ branch.
 -/
 lemma real_poly_eval_abs_le (p : Polynomial ℝ) (x : ℝ) :
     |p.eval x| ≤ (∑ j ∈ Finset.range (p.natDegree + 1), |p.coeff j|) * (1 + |x|) ^ p.natDegree := by
-  rw [ Polynomial.eval_eq_sum_range ];
-  refine' le_trans ( Finset.abs_sum_le_sum_abs _ _ ) _;
-  norm_num [ abs_mul, Finset.sum_mul _ _ _ ];
-  exact Finset.sum_le_sum fun i hi => mul_le_mul_of_nonneg_left ( pow_le_pow_left₀ ( by positivity ) ( by linarith [ abs_nonneg x ] ) _ |> le_trans <| pow_le_pow_right₀ ( by linarith [ abs_nonneg x ] ) <| Finset.mem_range_succ_iff.mp hi ) <| abs_nonneg _
+  rw [Polynomial.eval_eq_sum_range]
+  refine' le_trans (Finset.abs_sum_le_sum_abs _ _) _
+  norm_num [abs_mul, Finset.sum_mul _ _ _]
+  exact Finset.sum_le_sum fun i hi =>
+    mul_le_mul_of_nonneg_left
+      (pow_le_pow_left₀ (by positivity) (by linarith [abs_nonneg x]) _ |> le_trans <|
+        pow_le_pow_right₀ (by linarith [abs_nonneg x]) <| Finset.mem_range_succ_iff.mp hi)
+      (abs_nonneg _)
 
 /-
 **Polynomial growth of an algebraic branch.**  A real root `g x` of the monic
@@ -867,44 +1074,72 @@ lemma real_root_branch_poly_growth
   -- Choose the constant and exponent uniformly.
   set d := P.natDegree
   set N := (Finset.range d).sup (fun i => ((P.coeff i).map (Int.castRingHom ℝ)).natDegree) with hN_def
-  set S := (Finset.range d).sup' (by
-  exact ⟨ _, Finset.mem_range.mpr hP_deg ⟩) (fun i => ∑ j ∈ Finset.range (((P.coeff i).map (Int.castRingHom ℝ)).natDegree + 1), |((P.coeff i).map (Int.castRingHom ℝ)).coeff j|) with hS_def
-  generalize_proofs at *;
+  set S := (Finset.range d).sup' (by exact ⟨_, Finset.mem_range.mpr hP_deg⟩)
+    (fun i => ∑ j ∈ Finset.range (((P.coeff i).map (Int.castRingHom ℝ)).natDegree + 1),
+      |((P.coeff i).map (Int.castRingHom ℝ)).coeff j|) with hS_def
+  generalize_proofs at *
   -- By real_poly_eval_abs_le, for each i, |c_i| ≤ S * (1+|x|)^N.
   have h_coeff_bound : ∀ x : ℝ, ∀ i < d, |((P.map (evalIntPolyReal x)).coeff i)| ≤ S * (1 + |x|) ^ N := by
     intros x i hi
-    have h_coeff_bound_i : |((P.map (evalIntPolyReal x)).coeff i)| ≤ (∑ j ∈ Finset.range (((P.coeff i).map (Int.castRingHom ℝ)).natDegree + 1), |((P.coeff i).map (Int.castRingHom ℝ)).coeff j|) * (1 + |x|) ^ (((P.coeff i).map (Int.castRingHom ℝ)).natDegree) := by
-      convert real_poly_eval_abs_le ( Polynomial.map ( Int.castRingHom ℝ ) ( P.coeff i ) ) x using 1;
-      unfold evalIntPolyReal; aesop;
-    generalize_proofs at *;
-    refine le_trans h_coeff_bound_i ?_;
-    gcongr;
-    · exact le_trans ( by positivity ) ( Finset.le_sup' ( fun i => ∑ j ∈ Finset.range ( ( map ( Int.castRingHom ℝ ) ( P.coeff i ) ).natDegree + 1 ), |( map ( Int.castRingHom ℝ ) ( P.coeff i ) ).coeff j| ) ( Finset.mem_range.mpr hi ) );
-    · exact Finset.le_sup' ( fun i => ∑ j ∈ Finset.range ( ( map ( Int.castRingHom ℝ ) ( P.coeff i ) |> Polynomial.natDegree ) + 1 ), |( map ( Int.castRingHom ℝ ) ( P.coeff i ) |> Polynomial.coeff ) j| ) ( Finset.mem_range.mpr hi );
-    · linarith [ abs_nonneg x ];
-    · exact Finset.le_sup ( f := fun i => Polynomial.natDegree ( Polynomial.map ( Int.castRingHom ℝ ) ( P.coeff i ) ) ) ( Finset.mem_range.mpr hi )
-  generalize_proofs at *;
+    have h_coeff_bound_i :
+        |((P.map (evalIntPolyReal x)).coeff i)| ≤
+          (∑ j ∈ Finset.range (((P.coeff i).map (Int.castRingHom ℝ)).natDegree + 1),
+            |((P.coeff i).map (Int.castRingHom ℝ)).coeff j|) *
+            (1 + |x|) ^ (((P.coeff i).map (Int.castRingHom ℝ)).natDegree) := by
+      convert real_poly_eval_abs_le (Polynomial.map (Int.castRingHom ℝ) (P.coeff i)) x using 1
+      unfold evalIntPolyReal
+      aesop
+    generalize_proofs at *
+    refine le_trans h_coeff_bound_i ?_
+    gcongr
+    · exact le_trans (by positivity)
+        (Finset.le_sup'
+          (fun i => ∑ j ∈ Finset.range ((map (Int.castRingHom ℝ) (P.coeff i)).natDegree + 1),
+            |(map (Int.castRingHom ℝ) (P.coeff i)).coeff j|) (Finset.mem_range.mpr hi))
+    · exact Finset.le_sup'
+        (fun i => ∑ j ∈ Finset.range ((map (Int.castRingHom ℝ) (P.coeff i) |> Polynomial.natDegree) + 1),
+          |(map (Int.castRingHom ℝ) (P.coeff i) |> Polynomial.coeff) j|) (Finset.mem_range.mpr hi)
+    · linarith [abs_nonneg x]
+    · exact Finset.le_sup (f := fun i => Polynomial.natDegree (Polynomial.map (Int.castRingHom ℝ) (P.coeff i)))
+        (Finset.mem_range.mpr hi)
+  generalize_proofs at *
   -- Apply cauchy_root_bound_max to qc with the bound B(x): ‖(g x : ℂ)‖ ≤ 1 + d * B(x).
   have h_cauchy_bound : ∀ x : ℝ, ↑T₀ ≤ x → ‖(g x : ℂ)‖ ≤ 1 + d * S * (1 + |x|) ^ N := by
     intro x hx
     set qc := (P.map (evalIntPolyReal x)).map (algebraMap ℝ ℂ) with hqc_def
     have hqc_root : qc.IsRoot (g x : ℂ) := by
-      simp_all [ Polynomial.eval_map ];
-      convert congr_arg ( algebraMap ℝ ℂ ) ( hroot x hx ) using 1 ; simp [ Polynomial.eval₂_map ];
-      simp [ Polynomial.eval₂_eq_sum_range, Polynomial.eval_eq_sum_range ]
+      simp_all [Polynomial.eval_map]
+      convert congr_arg (algebraMap ℝ ℂ) (hroot x hx) using 1
+      simp [Polynomial.eval₂_map]
+      simp [Polynomial.eval₂_eq_sum_range]
     have hqc_monic : qc.Monic := by
-      exact Polynomial.Monic.map _ ( evalIntPolyReal_map_monic _ hP_monic _ )
+      exact Polynomial.Monic.map _ (evalIntPolyReal_map_monic _ hP_monic _)
     have hqc_deg : qc.natDegree = d := by
-      rw [ Polynomial.natDegree_map_of_leadingCoeff_ne_zero, Polynomial.natDegree_map_of_leadingCoeff_ne_zero ] <;> norm_num [ hP_monic, hP_deg ];
-      intro h; simp_all [ Polynomial.Monic.def ] ;
+      rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero, Polynomial.natDegree_map_of_leadingCoeff_ne_zero] <;>
+        norm_num [hP_monic, hP_deg]
+      intro h
+      simp_all [Polynomial.Monic.def]
     have hqc_coeff_bound : ∀ i < d, ‖qc.coeff i‖ ≤ S * (1 + |x|) ^ N := by
-      intro i hi; specialize h_coeff_bound x i hi; simp_all [ Polynomial.coeff_map ] ;
-    generalize_proofs at *;
-    have := cauchy_root_bound_max hqc_monic hqc_root ( by linarith ) ( fun i hi => hqc_coeff_bound i ( by linarith [ hqc_deg ▸ hi ] ) ) ; simp_all [ mul_assoc ] ;
-  generalize_proofs at *;
-  refine' ⟨ 1 + d * S, N, _, _ ⟩;
-  · exact add_nonneg zero_le_one ( mul_nonneg ( Nat.cast_nonneg _ ) ( by exact le_trans ( by norm_num ) ( Finset.le_sup' ( fun i => ∑ j ∈ Finset.range ( ( map ( Int.castRingHom ℝ ) ( P.coeff i ) |> Polynomial.natDegree ) + 1 ), |( map ( Int.castRingHom ℝ ) ( P.coeff i ) |> Polynomial.coeff ) j| ) ( Finset.mem_range.mpr hP_deg ) |> le_trans ( Finset.sum_nonneg fun _ _ => abs_nonneg _ ) ) ) );
-  · intro x hx; specialize h_cauchy_bound x hx; norm_num at h_cauchy_bound ⊢; nlinarith [ pow_le_pow_right₀ ( by linarith [ abs_nonneg x ] : 1 ≤ 1 + |x| ) ( show N ≥ 0 by exact Nat.zero_le _ ) ] ;
+      intro i hi
+      specialize h_coeff_bound x i hi
+      simp_all [Polynomial.coeff_map]
+    generalize_proofs at *
+    have := cauchy_root_bound_max hqc_monic hqc_root (by linarith)
+      (fun i hi => hqc_coeff_bound i (by linarith [hqc_deg ▸ hi]))
+    simp_all [mul_assoc]
+  generalize_proofs at *
+  refine' ⟨1 + d * S, N, _, _⟩
+  · have hS_nonneg : (0 : ℝ) ≤ S :=
+      le_trans (by norm_num)
+        (Finset.le_sup'
+          (fun i => ∑ j ∈ Finset.range ((map (Int.castRingHom ℝ) (P.coeff i) |> Polynomial.natDegree) + 1),
+            |(map (Int.castRingHom ℝ) (P.coeff i) |> Polynomial.coeff) j|)
+          (Finset.mem_range.mpr hP_deg) |> le_trans (Finset.sum_nonneg fun _ _ => abs_nonneg _))
+    exact add_nonneg zero_le_one (mul_nonneg (Nat.cast_nonneg _) hS_nonneg)
+  · intro x hx
+    specialize h_cauchy_bound x hx
+    norm_num at h_cauchy_bound ⊢
+    nlinarith [pow_le_pow_right₀ (by linarith [abs_nonneg x] : 1 ≤ 1 + |x|) (show N ≥ 0 by exact Nat.zero_le _)]
 
 /-
 **A continuous real root selection eventually coincides with a single smooth branch.**
@@ -931,55 +1166,79 @@ lemma real_root_branch_eq_ordered_branch
       (∀ i, ContDiffOn ℝ ⊤ (b i) (Set.Ici T₁)) ∧
       (∀ i x, T₁ ≤ x → (P.map (evalIntPolyReal x)).eval (b i x) = 0) ∧
       (∀ x, T₁ ≤ x → g x = b j x) := by
-  obtain ⟨d, R, Tr, hTr, hd, hRmon, hRdeg, hRsmooth, hRsep, hRroots⟩ := exists_smooth_separable_reduction P hP_monic hP_deg;
+  obtain ⟨d, R, Tr, hTr, hd, hRmon, hRdeg, hRsmooth, hRsep, hRroots⟩ :=
+    exists_smooth_separable_reduction P hP_monic hP_deg
   -- Apply `SmoothRootBranches.smooth_separable_family_root_branches` to get the branches `b`.
-  obtain ⟨n, b, hb⟩ := SmoothRootBranches.smooth_separable_family_root_branches R (Tr : ℝ) d hd hRmon hRdeg hRsmooth hRsep;
+  obtain ⟨n, b, hb⟩ :=
+    SmoothRootBranches.smooth_separable_family_root_branches R (Tr : ℝ) d hd hRmon hRdeg hRsmooth hRsep
   -- Define the index function `f : S → Fin n` by `f x = the unique i with g x = b i x`.
   obtain ⟨f, hf⟩ : ∃ f : ℝ → Fin n, ∀ x : ℝ, (max T₀ Tr : ℝ) ≤ x → g x = b (f x) x := by
     have hf_exists : ∀ x : ℝ, (max T₀ Tr : ℝ) ≤ x → ∃ j : Fin n, g x = b j x := by
-      exact fun x hx => by obtain ⟨ j, hj ⟩ := hb.2.2.1 x ( le_trans ( le_max_right _ _ ) hx ) ( g x ) ( hRroots x ( le_trans ( le_max_right _ _ ) hx ) _ |>.2 ( hroot x ( le_trans ( le_max_left _ _ ) hx ) ) ) ; exact ⟨ j, hj.symm ⟩ ;
-    exact ⟨ fun x => if hx : max ( T₀ : ℝ ) Tr ≤ x then Classical.choose ( hf_exists x hx ) else ⟨ 0, by
-      cases n <;> norm_num at *;
-      linarith [ hf_exists ( Max.max ( T₀ : ℝ ) Tr ) ( le_max_left _ _ ), le_max_right ( T₀ : ℝ ) Tr ] ⟩, fun x hx => by simpa [ hx ] using Classical.choose_spec ( hf_exists x hx ) ⟩;
+      intro x hx
+      obtain ⟨j, hj⟩ := hb.2.2.1 x (le_trans (le_max_right _ _) hx) (g x)
+        (hRroots x (le_trans (le_max_right _ _) hx) _ |>.2 (hroot x (le_trans (le_max_left _ _) hx)))
+      exact ⟨j, hj.symm⟩
+    refine ⟨fun x => if hx : max (T₀ : ℝ) Tr ≤ x then Classical.choose (hf_exists x hx) else ⟨0, ?_⟩, ?_⟩
+    · cases n <;> norm_num at *
+      linarith [hf_exists (Max.max (T₀ : ℝ) Tr) (le_max_left _ _), le_max_right (T₀ : ℝ) Tr]
+    · exact fun x hx => by simpa [hx] using Classical.choose_spec (hf_exists x hx)
   -- Show that `f` is locally constant on `S`.
-  have hf_loc_const : ∀ x : ℝ, (max T₀ Tr : ℝ) ≤ x → ∃ U : Set ℝ, IsOpen U ∧ x ∈ U ∧ ∀ y ∈ U, (max T₀ Tr : ℝ) ≤ y → f y = f x := by
+  have hf_loc_const :
+      ∀ x : ℝ, (max T₀ Tr : ℝ) ≤ x → ∃ U : Set ℝ, IsOpen U ∧ x ∈ U ∧ ∀ y ∈ U, (max T₀ Tr : ℝ) ≤ y → f y = f x := by
     intro x hx
     have h_cont : ContinuousOn (fun y => g y - b (f x) y) (Set.Ici (max T₀ Tr : ℝ)) := by
-      exact ContinuousOn.sub ( hg.mono ( Set.Ici_subset_Ici.mpr ( le_max_left _ _ ) ) ) ( hb.1 ( f x ) |> ContDiffOn.continuousOn |> ContinuousOn.mono <| Set.Ici_subset_Ici.mpr ( le_max_right _ _ ) );
-    have h_cont : ∀ i : Fin n, i ≠ f x → ∃ U : Set ℝ, IsOpen U ∧ x ∈ U ∧ ∀ y ∈ U, (max T₀ Tr : ℝ) ≤ y → b i y ≠ g y := by
+      exact ContinuousOn.sub (hg.mono (Set.Ici_subset_Ici.mpr (le_max_left _ _)))
+        (hb.1 (f x) |> ContDiffOn.continuousOn |> ContinuousOn.mono <| Set.Ici_subset_Ici.mpr (le_max_right _ _))
+    have h_cont :
+        ∀ i : Fin n, i ≠ f x → ∃ U : Set ℝ, IsOpen U ∧ x ∈ U ∧ ∀ y ∈ U, (max T₀ Tr : ℝ) ≤ y → b i y ≠ g y := by
       intro i hi_ne_fx
       have h_cont : ContinuousOn (fun y => b i y - g y) (Set.Ici (max T₀ Tr : ℝ)) := by
-        exact ContinuousOn.sub ( hb.1 i |> ContDiffOn.continuousOn |> ContinuousOn.mono <| Set.Ici_subset_Ici.mpr <| by norm_num ) ( hg.mono <| Set.Ici_subset_Ici.mpr <| by norm_num );
-      have := Metric.continuousOn_iff.mp h_cont x hx;
-      obtain ⟨ δ, δ_pos, H ⟩ := this ( |b i x - g x| ) ( abs_pos.mpr ( sub_ne_zero.mpr <| by intro h; have := hb.2.2.2 x ( by linarith [ le_max_right ( T₀ : ℝ ) Tr ] ) ; exact hi_ne_fx <| this <| by aesop ) );
-      exact ⟨ Metric.ball x δ, Metric.isOpen_ball, Metric.mem_ball_self δ_pos, fun y hy₁ hy₂ => fun hy₃ => by have := H y hy₂ hy₁; cases abs_cases ( b i x - g x ) <;> linarith [ abs_lt.mp this ] ⟩;
-    choose! U hU₁ hU₂ hU₃ using h_cont;
-    use ⋂ i ∈ Finset.univ.erase (f x), U i;
-    simp_all [ Finset.mem_erase, Finset.mem_univ, Set.mem_iInter ];
-    refine' ⟨ _, _ ⟩;
-    · exact isOpen_iInter_of_finite fun i => isOpen_iInter_of_finite fun hi => hU₁ i hi;
-    · grind;
+        exact ContinuousOn.sub
+          (hb.1 i |> ContDiffOn.continuousOn |> ContinuousOn.mono <| Set.Ici_subset_Ici.mpr <| by norm_num)
+          (hg.mono <| Set.Ici_subset_Ici.mpr <| by norm_num)
+      have := Metric.continuousOn_iff.mp h_cont x hx
+      have hne : b i x ≠ g x := by
+        intro h
+        have := hb.2.2.2 x (by linarith [le_max_right (T₀ : ℝ) Tr])
+        exact hi_ne_fx <| this <| by aesop
+      obtain ⟨δ, δ_pos, H⟩ := this (|b i x - g x|) (abs_pos.mpr (sub_ne_zero.mpr hne))
+      refine ⟨Metric.ball x δ, Metric.isOpen_ball, Metric.mem_ball_self δ_pos, fun y hy₁ hy₂ hy₃ => ?_⟩
+      have := H y hy₂ hy₁
+      cases abs_cases (b i x - g x) <;> linarith [abs_lt.mp this]
+    choose! U hU₁ hU₂ hU₃ using h_cont
+    use ⋂ i ∈ Finset.univ.erase (f x), U i
+    simp_all [Finset.mem_erase, Finset.mem_univ, Set.mem_iInter]
+    refine' ⟨_, _⟩
+    · exact isOpen_iInter_of_finite fun i => isOpen_iInter_of_finite fun hi => hU₁ i hi
+    · grind
   -- Since `S` is preconnected and `f` is locally constant on `S`, `f` is constant on `S`.
   have hf_const : ∀ x y : ℝ, (max T₀ Tr : ℝ) ≤ x → (max T₀ Tr : ℝ) ≤ y → f x = f y := by
     intros x y hx hy
     have h_const : IsPreconnected (Set.Ici (max T₀ Tr : ℝ)) := by
-      exact isPreconnected_Ici;
+      exact isPreconnected_Ici
     have h_const : IsLocallyConstant (fun x : Set.Ici (max T₀ Tr : ℝ) => f x) := by
-      intro x;
-      rw [ isOpen_iff_mem_nhds ];
-      intro y hy;
-      obtain ⟨ U, hU₁, hU₂, hU₃ ⟩ := hf_loc_const y y.2;
-      filter_upwards [ IsOpen.mem_nhds ( show IsOpen ( Subtype.val ⁻¹' U ) from hU₁.preimage continuous_subtype_val ) hU₂ ] with z hz using by aesop;
-    have := h_const.apply_eq_of_isPreconnected ( show IsPreconnected ( Set.univ : Set ( Set.Ici ( max ( T₀ : ℝ ) Tr ) ) ) from by
-                                                  convert ‹IsPreconnected ( Set.Ici ( max ( T₀ : ℝ ) Tr ) ) ›.image _ _;
-                                                  rotate_left;
-                                                  use fun x => ⟨ Max.max ( T₀ : ℝ ) Tr + Max.max ( 0 : ℝ ) ( x - Max.max ( T₀ : ℝ ) Tr ), by norm_num ⟩;
-                                                  · fun_prop;
-                                                  · grind ) ( Set.mem_univ ⟨ x, hx ⟩ ) ( Set.mem_univ ⟨ y, hy ⟩ ) ; aesop;
-  refine' ⟨ n, b, max T₀ Tr, f ( max T₀ Tr ), _, _, _, _ ⟩ <;> norm_num;
-  · exact fun i => hb.1 i |> ContDiffOn.mono <| Set.Ici_subset_Ici.mpr <| le_max_right _ _;
-  · exact fun i x hx₁ hx₂ => hRroots x hx₂ _ |>.1 ( hb.2.1 i x hx₂ );
-  · exact fun x hx₁ hx₂ => by rw [ hf x ( by cases max_cases ( T₀ : ℝ ) Tr <;> linarith ), hf_const x ( max ( T₀ : ℝ ) Tr ) ( by cases max_cases ( T₀ : ℝ ) Tr <;> linarith ) ( by cases max_cases ( T₀ : ℝ ) Tr <;> linarith ) ] ;
+      intro x
+      rw [isOpen_iff_mem_nhds]
+      intro y hy
+      obtain ⟨U, hU₁, hU₂, hU₃⟩ := hf_loc_const y y.2
+      filter_upwards
+        [IsOpen.mem_nhds (show IsOpen (Subtype.val ⁻¹' U) from hU₁.preimage continuous_subtype_val) hU₂]
+        with z hz using by aesop
+    have huniv : IsPreconnected (Set.univ : Set (Set.Ici (max (T₀ : ℝ) Tr))) := by
+      convert ‹IsPreconnected (Set.Ici (max (T₀ : ℝ) Tr)) ›.image _ _
+      rotate_left
+      use fun x => ⟨Max.max (T₀ : ℝ) Tr + Max.max (0 : ℝ) (x - Max.max (T₀ : ℝ) Tr), by norm_num⟩
+      · fun_prop
+      · grind
+    have := h_const.apply_eq_of_isPreconnected huniv (Set.mem_univ ⟨x, hx⟩) (Set.mem_univ ⟨y, hy⟩)
+    aesop
+  refine' ⟨n, b, max T₀ Tr, f (max T₀ Tr), _, _, _, _⟩ <;> norm_num
+  · exact fun i => hb.1 i |> ContDiffOn.mono <| Set.Ici_subset_Ici.mpr <| le_max_right _ _
+  · exact fun i x hx₁ hx₂ => hRroots x hx₂ _ |>.1 (hb.2.1 i x hx₂)
+  · exact fun x hx₁ hx₂ => by
+      rw [hf x (by cases max_cases (T₀ : ℝ) Tr <;> linarith),
+        hf_const x (max (T₀ : ℝ) Tr) (by cases max_cases (T₀ : ℝ) Tr <;> linarith)
+          (by cases max_cases (T₀ : ℝ) Tr <;> linarith)]
 
 
 

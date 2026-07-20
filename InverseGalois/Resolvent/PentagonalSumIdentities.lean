@@ -82,7 +82,9 @@ lemma psSq_esymm2 {L : Type*} [CommRing L] (v0 v1 v2 v3 v4 : L)
   have hE3 : re_e3_2.eval ρ = 0 := by
     simp only [re_e3_2, RE.eval, hρ, List.getD_cons_zero, List.getD_cons_succ]
     linear_combination he3
-  have hev : evalNF ρ cNF2 = 0 := by rw [cNF2_zero]; rfl
+  have hev : evalNF ρ cNF2 = 0 := by
+    rw [cNF2_zero]
+    rfl
   unfold cNF2 at hev
   rw [evalNF_nfAdd, evalNF_nfNeg, evalNF_nfAdd, evalNF_nfAdd,
       evalNF_nfMul, evalNF_nfMul, evalNF_nfMul,

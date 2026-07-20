@@ -61,7 +61,7 @@ The generic polynomial has degree n.
 -/
 lemma genericSplitPoly_natDegree (n : ℕ) : (genericSplitPoly n).natDegree = n := by
   unfold genericSplitPoly
-  simp [ Polynomial.natDegree_sub_eq_left_of_natDegree_lt ]
+  simp [Polynomial.natDegree_sub_eq_left_of_natDegree_lt]
 
 /-
 The coefficients of the generic polynomial are elementary symmetric polynomials.
@@ -70,12 +70,12 @@ Specifically, the coefficient of X^(n-k) in ∏(X - xᵢ) is (-1)^k · eₖ(x₁
 lemma genericSplitPoly_coeff (n k : ℕ) (hk : k ≤ n) :
     (genericSplitPoly n).coeff (n - k) =
       (-1) ^ k * MvPolynomial.esymm (Fin n) ℚ k := by
-        rw [ esymm ];
-        erw [ genericSplitPoly, Finset.prod_congr rfl fun _ _ => sub_eq_add_neg _ _ ];
-        rw [ Finset.prod_congr rfl fun _ _ => by rw [ ← Polynomial.C_neg ] ];
-        erw [ Finset.prod_X_add_C_coeff ];
-        · simp [ Nat.sub_sub_self hk, Finset.mul_sum _ _ _ ];
-          exact Finset.sum_congr rfl fun x hx => by rw [ Finset.prod_congr rfl fun _ _ => neg_eq_neg_one_mul _, Finset.prod_mul_distrib ] ; simp_all only [Finset.mem_powersetCard, Finset.subset_univ, true_and, Finset.prod_const];
+        rw [esymm];
+        erw [genericSplitPoly, Finset.prod_congr rfl fun _ _ => sub_eq_add_neg _ _];
+        rw [Finset.prod_congr rfl fun _ _ => by rw [← Polynomial.C_neg]];
+        erw [Finset.prod_X_add_C_coeff];
+        · simp [Nat.sub_sub_self hk, Finset.mul_sum _ _ _];
+          exact Finset.sum_congr rfl fun x hx => by rw [Finset.prod_congr rfl fun _ _ => neg_eq_neg_one_mul _, Finset.prod_mul_distrib] ; simp_all only [Finset.mem_powersetCard, Finset.subset_univ, true_and, Finset.prod_const];
         · simp +arith +decide
 
 /-!
@@ -101,7 +101,7 @@ lemma perm_action_faithful (n : ℕ) (hn : 2 ≤ n) :
           intro σ hσ
           obtain ⟨i, hi⟩ : ∃ i : Fin n, σ i ≠ i := by
             exact not_forall.mp fun h => hσ <| Equiv.ext h;
-          refine' ⟨ MvPolynomial.X i, _ ⟩ ; simp_all [ MvPolynomial.rename_X ]
+          refine' ⟨MvPolynomial.X i, _⟩ ; simp_all [MvPolynomial.rename_X]
 
 /-
 The fixed field of the Sₙ action on ℚ(x₁,...,xₙ) is exactly ℚ(e₁,...,eₙ),

@@ -154,62 +154,70 @@ def evalNF (ρ : ℕ → R) (f : NF) : R := (f.map (fun p => (p.2 : R) * evalMon
 
 theorem evalMono_monoMul (ρ : ℕ → R) (m m' : Mono) :
     evalMono ρ (monoMul m m') = evalMono ρ m * evalMono ρ m' := by
-      induction' m with i a m ih generalizing m';
-      · induction m' <;> simp [ *, monoMul ]; all_goals simp [ evalMono ];
-      · induction' m' with j b m' ih';
-        · simp [ monoMul, evalMono ];
-        · unfold monoMul;
-          split_ifs <;> simp_all [ evalMono ];
-          · ring;
-          · ring;
+      induction' m with i a m ih generalizing m'
+      · induction m' <;> simp [*, monoMul]
+        all_goals simp [evalMono]
+      · induction' m' with j b m' ih'
+        · simp [monoMul, evalMono]
+        · unfold monoMul
+          split_ifs <;> simp_all [evalMono]
+          · ring
+          · ring
           · grind
 
 theorem evalNF_nfInsert (ρ : ℕ → R) (m : Mono) (c : ℤ) (f : NF) :
     evalNF ρ (nfInsert m c f) = (c : R) * evalMono ρ m + evalNF ρ f := by
-      induction' f with f_head f_tail ih generalizing m c;
-      · by_cases hc : c = 0 <;> simp [ hc, evalNF, evalMono, nfInsert ];
-      · by_cases hm : m = f_head.1 <;> simp_all [ nfInsert ];
-        · split_ifs <;> simp_all [ evalNF ];
-          · simp_all [ ← add_assoc, ← eq_sub_iff_add_eq' ];
-          · ring;
-        · split_ifs <;> simp_all [ evalNF ];
+      induction' f with f_head f_tail ih generalizing m c
+      · by_cases hc : c = 0 <;> simp [hc, evalNF, evalMono, nfInsert]
+      · by_cases hm : m = f_head.1 <;> simp_all [nfInsert]
+        · split_ifs <;> simp_all [evalNF]
+          · simp_all [← add_assoc, ← eq_sub_iff_add_eq']
+          · ring
+        · split_ifs <;> simp_all [evalNF]
           ring
 
 theorem evalNF_nfAdd (ρ : ℕ → R) (f g : NF) :
     evalNF ρ (nfAdd f g) = evalNF ρ f + evalNF ρ g := by
-  induction' n : f.length + g.length using Nat.strong_induction_on with n ih generalizing f g;
-  rcases f with ( _ | ⟨ m, c ⟩ ) <;> rcases g with ( _ | ⟨ m', c' ⟩ ) <;> simp_all;
-  · unfold nfAdd; simp [ evalNF ] ;
-  · unfold nfAdd; subst n
-    simp_all only [Order.lt_add_one_iff];
-  · unfold nfAdd; subst n
-    simp_all only [Order.lt_add_one_iff];
-  · unfold nfAdd;
-    split_ifs <;> simp_all [ evalNF ];
-    · split_ifs <;> simp_all [ add_assoc ];
-      · rw [ ih _ ( by linarith ) _ _ rfl ];
-        rw [ show m.2 = -m'.2 by linarith ] ; simp ; ring;
-      · rw [ ih _ ( by linarith ) _ _ rfl ] ; ring;
-    · grind;
+  induction' n : f.length + g.length using Nat.strong_induction_on with n ih generalizing f g
+  rcases f with (_ | ⟨m, c⟩) <;> rcases g with (_ | ⟨m', c'⟩) <;> simp_all
+  · unfold nfAdd
+    simp [evalNF]
+  · unfold nfAdd
+    subst n
+    simp_all only [Order.lt_add_one_iff]
+  · unfold nfAdd
+    subst n
+    simp_all only [Order.lt_add_one_iff]
+  · unfold nfAdd
+    split_ifs <;> simp_all [evalNF]
+    · split_ifs <;> simp_all [add_assoc]
+      · rw [ih _ (by linarith) _ _ rfl]
+        rw [show m.2 = -m'.2 by linarith]
+        simp
+        ring
+      · rw [ih _ (by linarith) _ _ rfl]
+        ring
+    · grind
     · grind
 
 theorem evalNF_nfMulMono (ρ : ℕ → R) (m : Mono) (c : ℤ) (g : NF) :
     evalNF ρ (nfMulMono m c g) = (c : R) * evalMono ρ m * evalNF ρ g := by
-      unfold nfMulMono;
-      induction' g with p g ih;
-      · simp [ evalNF ];
-      · simp [ evalNF_nfInsert, evalMono_monoMul, ih ];
-        simp [ evalNF, List.map_cons, List.sum_cons ] ; ring
+      unfold nfMulMono
+      induction' g with p g ih
+      · simp [evalNF]
+      · simp [evalNF_nfInsert, evalMono_monoMul, ih]
+        simp [evalNF, List.map_cons, List.sum_cons]
+        ring
 
 theorem evalNF_nfMulL (ρ : ℕ → R) (f g : NF) :
     evalNF ρ (nfMulL f g) = evalNF ρ f * evalNF ρ g := by
       -- We'll use induction on `f`.
-      induction' f with m c f ih generalizing g;
-      · simp [ nfMulL ];
+      induction' f with m c f ih generalizing g
+      · simp [nfMulL]
       · have h_fold : evalNF ρ (nfMulL (m :: c) g) = ((m.2 : R) * evalMono ρ m.1 + evalNF ρ c) * evalNF ρ g := by
-          convert congr_arg₂ ( · + · ) ( evalNF_nfMulMono ρ m.1 m.2 g ) ( f g ) using 1;
-          · convert evalNF_nfAdd ρ ( nfMulMono m.1 m.2 g ) ( nfMulL c g ) using 1;
-          · ring;
+          convert congr_arg₂ (· + ·) (evalNF_nfMulMono ρ m.1 m.2 g) (f g) using 1
+          · convert evalNF_nfAdd ρ (nfMulMono m.1 m.2 g) (nfMulL c g) using 1
+          · ring
         convert h_fold using 1
 
 theorem evalNF_nfMul (ρ : ℕ → R) (f g : NF) :
@@ -221,18 +229,20 @@ theorem evalNF_nfMul (ρ : ℕ → R) (f g : NF) :
 
 theorem evalNF_nfNeg (ρ : ℕ → R) (f : NF) :
     evalNF ρ (nfNeg f) = - evalNF ρ f := by
-      unfold evalNF;
-      unfold nfNeg; simp [ List.sum_neg ] ;
-      congr! 2;
-      ext; simp ;
+      unfold evalNF
+      unfold nfNeg
+      simp [List.sum_neg]
+      congr! 2
+      ext
+      simp
 
 theorem evalNF_nfPow (ρ : ℕ → R) (base : NF) (k : ℕ) :
     evalNF ρ (nfPow base k) = (evalNF ρ base) ^ k := by
-      induction' k with k ih <;> simp_all [ pow_succ ];
-      · unfold nfPow;
-        simp [ evalNF, evalMono ];
-      · convert evalNF_nfMul ρ base ( nfPow base k ) using 1;
-        rw [ ih, mul_comm ]
+      induction' k with k ih <;> simp_all [pow_succ]
+      · unfold nfPow
+        simp [evalNF, evalMono]
+      · convert evalNF_nfMul ρ base (nfPow base k) using 1
+        rw [ih, mul_comm]
 
 /-
 **Soundness**: evaluating a reflected expression agrees with evaluating its normal form.

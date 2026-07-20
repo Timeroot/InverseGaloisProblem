@@ -116,7 +116,9 @@ theorem fullResolventProduct_natDegree {A : Type*} [CommRing A] [Nontrivial A] (
 /-- The Morse family `Xⁿ − X − T` is monic (for `n ≥ 2`, so the leading `Xⁿ` term dominates
 the `−X` and `−T` terms). -/
 theorem genPoly_monic (n : ℕ) (hn : 2 ≤ n) : (genPoly n).Monic := by
-  have h : genPoly n = X ^ n - (X + C X) := by unfold genPoly; ring
+  have h : genPoly n = X ^ n - (X + C X) := by
+    unfold genPoly
+    ring
   rw [h]
   apply monic_X_pow_sub
   have hle : (X + C X : Polynomial (Polynomial ℚ)).degree ≤ 1 := by
@@ -132,7 +134,8 @@ theorem genPoly_natDegree (n : ℕ) (hn : 2 ≤ n) : (genPoly n).natDegree = n :
   have h1 : ((X : Polynomial (Polynomial ℚ))^n - X).natDegree = n := by
     rw [natDegree_sub_eq_left_of_natDegree_lt]
     · simp
-    · simp; omega
+    · simp
+      omega
   rw [natDegree_sub_eq_left_of_natDegree_lt]
   · simpa using h1
   · rw [h1]
@@ -149,34 +152,68 @@ theorem genPoly_separable_cofinite (n : ℕ) (hn : 2 ≤ n) :
   -- By definition of $D$, we know that its roots are finite.
   have hD_roots_finite : Set.Finite (SetLike.coe (Polynomial.roots
       (Polynomial.C (n : ℚ) * Polynomial.X ^ (n - 1) - 1 : Polynomial ℚ)).toFinset) := by
-    exact Set.toFinite _;
-  have hD_roots_finite : Set.Finite {t : ℚ | ∃ r : AlgebraicClosure ℚ, Polynomial.eval r (Polynomial.map (algebraMap ℚ (AlgebraicClosure ℚ)) (Polynomial.C (n : ℚ) * Polynomial.X ^ (n - 1) - 1)) = 0 ∧ Polynomial.eval r (Polynomial.map (algebraMap ℚ (AlgebraicClosure ℚ)) (Polynomial.X ^ n - Polynomial.X - Polynomial.C (t : ℚ))) = 0} := by
-    refine' Set.Finite.subset ( hD_roots_finite.image ( fun r : ℚ => r ^ n - r ) |> Set.Finite.image ( fun t : ℚ => t ) ) _;
-    intro t ht; obtain ⟨ r, hr₁, hr₂ ⟩ := ht; simp_all [ sub_eq_iff_eq_add ] ;
+    exact Set.toFinite _
+  have hD_roots_finite : Set.Finite {t : ℚ | ∃ r : AlgebraicClosure ℚ,
+      Polynomial.eval r (Polynomial.map (algebraMap ℚ (AlgebraicClosure ℚ))
+        (Polynomial.C (n : ℚ) * Polynomial.X ^ (n - 1) - 1)) = 0 ∧
+      Polynomial.eval r (Polynomial.map (algebraMap ℚ (AlgebraicClosure ℚ))
+        (Polynomial.X ^ n - Polynomial.X - Polynomial.C (t : ℚ))) = 0} := by
+    refine' Set.Finite.subset (hD_roots_finite.image (fun r : ℚ => r ^ n - r)
+      |> Set.Finite.image (fun t : ℚ => t)) _
+    intro t ht
+    obtain ⟨r, hr₁, hr₂⟩ := ht
+    simp_all [sub_eq_iff_eq_add]
     have h_rational : ∃ q : ℚ, r = algebraMap ℚ (AlgebraicClosure ℚ) q := by
       have h_rational : r ^ (n - 1) = 1 / (n : ℚ) := by
-        exact eq_one_div_of_mul_eq_one_right <| by simpa [ mul_comm ] using hr₁;
+        exact eq_one_div_of_mul_eq_one_right <| by simpa [mul_comm] using hr₁
       have h_rational : r ^ n = r * (1 / (n : ℚ)) := by
-        rw [ ← h_rational, ← pow_succ', Nat.sub_add_cancel ( by linarith ) ];
-      simp_all;
-      exact ⟨ t / ( ( n : ℚ ) ⁻¹ - 1 ), by push_cast; rw [ eq_div_iff ( sub_ne_zero_of_ne <| by aesop ) ] ; linear_combination' hr₂ ⟩;
-    obtain ⟨ q, rfl ⟩ := h_rational; use q; simp_all;
-    norm_cast at *;
-    exact ⟨ ⟨ ne_of_apply_ne Polynomial.natDegree <| by erw [ Polynomial.natDegree_C_mul_X_pow ] <;> aesop, hr₁ ⟩, hr₂ ⟩;
-  refine' Set.Finite.subset ( hD_roots_finite.preimage _ ) _;
-  use fun t => t;
-  · exact fun x hx y hy hxy => by simpa using hxy;
-  · intro t ht; contrapose! ht; simp_all [ Polynomial.Separable ] ;
+        rw [← h_rational, ← pow_succ', Nat.sub_add_cancel (by linarith)]
+      simp_all
+      refine ⟨t / ((n : ℚ) ⁻¹ - 1), ?_⟩
+      push_cast
+      rw [eq_div_iff (sub_ne_zero_of_ne <| by aesop)]
+      linear_combination' hr₂
+    obtain ⟨q, rfl⟩ := h_rational
+    use q
+    simp_all
+    norm_cast at *
+    exact ⟨⟨ne_of_apply_ne Polynomial.natDegree <| by erw [Polynomial.natDegree_C_mul_X_pow] <;> aesop, hr₁⟩, hr₂⟩
+  refine' Set.Finite.subset (hD_roots_finite.preimage _) _
+  use fun t => t
+  · exact fun x hx y hy hxy => by simpa using hxy
+  · intro t ht
+    contrapose! ht
+    simp_all [Polynomial.Separable]
     -- By definition of $D$, we know that its roots are finite, so we can apply the fact that a polynomial is separable if and only if it has no repeated roots.
-    have h_separable : ∀ x : AlgebraicClosure ℚ, Polynomial.eval x (Polynomial.map (algebraMap ℚ (AlgebraicClosure ℚ)) (specialize (genPoly n) t)) = 0 → Polynomial.eval x (Polynomial.map (algebraMap ℚ (AlgebraicClosure ℚ)) (derivative (specialize (genPoly n) t))) ≠ 0 := by
-      intro x hx; specialize ht x; simp_all [ specialize, genPoly ] ;
-      cases n <;> simp_all [ Polynomial.derivative_pow ];
-    apply isCoprime_of_irreducible_dvd;
-    · unfold specialize; simp [ genPoly ] ;
-      intro h; replace h := congr_arg ( fun p => Polynomial.coeff p n ) h; rcases n with ( _ | _ | n ) <;> simp_all [ Polynomial.coeff_eq_zero_of_natDegree_lt ] ;
-    · intro z hz hz' hz''; contrapose! h_separable; simp_all [ Polynomial.eval_map ] ;
-      obtain ⟨ x, hx ⟩ := ( IsAlgClosed.exists_root ( z.map ( algebraMap ℚ ( AlgebraicClosure ℚ ) ) ) ( by rw [ Polynomial.degree_map ] ; exact hz.degree_pos.ne' ) ) ; use x; simp_all [ Polynomial.eval₂_eq_eval_map ] ;
-      exact ⟨ by simpa [ hx ] using Polynomial.eval₂_eq_zero_of_dvd_of_eval₂_eq_zero ( algebraMap ℚ ( AlgebraicClosure ℚ ) ) x hz' hx, by simpa [ hx ] using Polynomial.eval₂_eq_zero_of_dvd_of_eval₂_eq_zero ( algebraMap ℚ ( AlgebraicClosure ℚ ) ) x hz'' hx ⟩
+    have h_separable : ∀ x : AlgebraicClosure ℚ,
+        Polynomial.eval x (Polynomial.map (algebraMap ℚ (AlgebraicClosure ℚ))
+          (specialize (genPoly n) t)) = 0 →
+        Polynomial.eval x (Polynomial.map (algebraMap ℚ (AlgebraicClosure ℚ))
+          (derivative (specialize (genPoly n) t))) ≠ 0 := by
+      intro x hx
+      specialize ht x
+      simp_all [specialize, genPoly]
+      cases n <;> simp_all [Polynomial.derivative_pow]
+    apply isCoprime_of_irreducible_dvd
+    · unfold specialize
+      simp [genPoly]
+      intro h
+      replace h := congr_arg (fun p => Polynomial.coeff p n) h
+      rcases n with (_ | _ | n) <;> simp_all [Polynomial.coeff_eq_zero_of_natDegree_lt]
+    · intro z hz hz' hz''
+      contrapose! h_separable
+      simp_all [Polynomial.eval_map]
+      have hdeg : (z.map (algebraMap ℚ (AlgebraicClosure ℚ))).degree ≠ 0 := by
+        rw [Polynomial.degree_map]
+        exact hz.degree_pos.ne'
+      obtain ⟨x, hx⟩ := IsAlgClosed.exists_root _ hdeg
+      use x
+      simp_all [Polynomial.eval₂_eq_eval_map]
+      refine ⟨?_, ?_⟩
+      · simpa [hx] using
+          Polynomial.eval₂_eq_zero_of_dvd_of_eval₂_eq_zero (algebraMap ℚ (AlgebraicClosure ℚ)) x hz' hx
+      · simpa [hx] using
+          Polynomial.eval₂_eq_zero_of_dvd_of_eval₂_eq_zero (algebraMap ℚ (AlgebraicClosure ℚ)) x hz'' hx
 
 /-
 **Symmetry of the universal resolvent's coefficients.** Over `MvPolynomial (Fin n) ℚ` with
@@ -187,15 +224,20 @@ product unchanged.
 theorem fullResolventProduct_isSymmetric (n : ℕ) (k : ℕ) :
     (fullResolventProduct n (fun i => (MvPolynomial.X i : MvPolynomial (Fin n) ℚ))).coeff k
       |>.IsSymmetric := by
-  intro e;
-  convert congr_arg ( fun p : Polynomial ( MvPolynomial ( Fin n ) ℚ ) => Polynomial.coeff p k ) ( show ( fullResolventProduct n fun i => MvPolynomial.X i |> MvPolynomial.rename e ) = fullResolventProduct n fun i => MvPolynomial.X i from ?_ ) using 1;
-  · convert congr_arg ( fun p : Polynomial ( MvPolynomial ( Fin n ) ℚ ) => Polynomial.coeff p k ) ( fullResolventProduct_map ( MvPolynomial.rename e |> AlgHom.toRingHom ) n fun i => MvPolynomial.X i ) using 1;
-    simp [ Polynomial.coeff_map ];
-  · apply Finset.prod_bij (fun σ _ => e * σ);
-    · exact fun _ _ => Finset.mem_univ _;
-    · aesop;
-    · exact fun b _ => ⟨ e⁻¹ * b, Finset.mem_univ _, by simp ⟩;
-    · unfold genForm; aesop;
+  intro e
+  convert congr_arg (fun p : Polynomial (MvPolynomial (Fin n) ℚ) => Polynomial.coeff p k)
+    (show (fullResolventProduct n fun i => MvPolynomial.X i |> MvPolynomial.rename e)
+      = fullResolventProduct n fun i => MvPolynomial.X i from ?_) using 1
+  · convert congr_arg (fun p : Polynomial (MvPolynomial (Fin n) ℚ) => Polynomial.coeff p k)
+      (fullResolventProduct_map (MvPolynomial.rename e |> AlgHom.toRingHom) n fun i => MvPolynomial.X i)
+      using 1
+    simp [Polynomial.coeff_map]
+  · apply Finset.prod_bij (fun σ _ => e * σ)
+    · exact fun _ _ => Finset.mem_univ _
+    · aesop
+    · exact fun b _ => ⟨e⁻¹ * b, Finset.mem_univ _, by simp⟩
+    · unfold genForm
+      aesop
 
 /-- The ℚ-analogue of `ResolventConstruction.exists_esymm_lift`: a polynomial whose
 coefficients are symmetric functions lifts along the elementary-symmetric substitution
@@ -205,17 +247,21 @@ theorem exists_esymm_lift_rat (d : ℕ) (U : Polynomial (MvPolynomial (Fin d) �
     ∃ Uhat : Polynomial (MvPolynomial (Fin d) ℚ),
       Uhat.map ((MvPolynomial.aeval
         (fun i : Fin d => MvPolynomial.esymm (Fin d) ℚ (↑i + 1))).toRingHom) = U := by
-  have h_coeff : ∀ i, ∃ p : Polynomial (MvPolynomial (Fin d) ℚ), Polynomial.map (MvPolynomial.aeval (fun i => MvPolynomial.esymm (Fin d) ℚ (i.val + 1))).toRingHom p = Polynomial.C (U.coeff i) := by
+  have h_coeff : ∀ i, ∃ p : Polynomial (MvPolynomial (Fin d) ℚ),
+      Polynomial.map (MvPolynomial.aeval (fun i => MvPolynomial.esymm (Fin d) ℚ (i.val + 1))).toRingHom p
+        = Polynomial.C (U.coeff i) := by
     intro i
     have := hU i
-    obtain ⟨ p, hp ⟩ := MvPolynomial.esymmAlgHom_surjective ℚ ( show Fintype.card ( Fin d ) ≤ d by simp ) ⟨ U.coeff i, this ⟩
+    obtain ⟨p, hp⟩ := MvPolynomial.esymmAlgHom_surjective ℚ
+      (show Fintype.card (Fin d) ≤ d by simp) ⟨U.coeff i, this⟩
     use Polynomial.C p
     convert congr_arg Subtype.val hp using 1
-    simp [ MvPolynomial.esymmAlgHom_apply ]
+    simp [MvPolynomial.esymmAlgHom_apply]
   choose p hp using h_coeff
-  use ∑ i ∈ U.support, Polynomial.monomial i ( p i |> Polynomial.coeff <| 0 )
-  ext i; simp [ Polynomial.coeff_monomial ]
-  split_ifs with h <;> simp_all [ Polynomial.ext_iff ]
+  use ∑ i ∈ U.support, Polynomial.monomial i (p i |> Polynomial.coeff <| 0)
+  ext i
+  simp [Polynomial.coeff_monomial]
+  split_ifs with h <;> simp_all [Polynomial.ext_iff]
 
 /-
 **The descent identity (existence of the descended resolvent as a bare `IsFullResolvent`).**
@@ -234,42 +280,50 @@ follows from `fullResolventProduct_map` and Vieta as in
 theorem fullResolvent_identity (F : Polynomial (Polynomial ℚ)) (hF : F.Monic)
     (n : ℕ) (hFdeg : F.natDegree = n) :
     ∃ G : Polynomial (Polynomial ℚ), IsFullResolvent n F G := by
-  obtain ⟨Uhat, hU⟩ : ∃ Uhat : Polynomial (MvPolynomial (Fin n) ℚ), Uhat.map ((MvPolynomial.aeval (fun i : Fin n => MvPolynomial.esymm (Fin n) ℚ (i.val + 1))).toRingHom) = fullResolventProduct n (fun i => MvPolynomial.X i : Fin n → MvPolynomial (Fin n) ℚ) := by
-    apply exists_esymm_lift_rat n (fullResolventProduct n (fun i => MvPolynomial.X i : Fin n → MvPolynomial (Fin n) ℚ)) (fun i => fullResolventProduct_isSymmetric n i);
+  obtain ⟨Uhat, hU⟩ : ∃ Uhat : Polynomial (MvPolynomial (Fin n) ℚ),
+      Uhat.map ((MvPolynomial.aeval (fun i : Fin n => MvPolynomial.esymm (Fin n) ℚ (i.val + 1))).toRingHom)
+        = fullResolventProduct n (fun i => MvPolynomial.X i : Fin n → MvPolynomial (Fin n) ℚ) := by
+    exact exists_esymm_lift_rat n _ (fun i => fullResolventProduct_isSymmetric n i)
   -- Set `cval := (MvPolynomial.aeval (fun i : Fin n => (-1)^(i.val+1) * F.coeff (n-(i.val+1)))).toRingHom` and `G := Uhat.map cval`.
-  set cval : MvPolynomial (Fin n) ℚ →+* ℚ[X] := (MvPolynomial.aeval (fun i : Fin n => (-1)^(i.val+1) * F.coeff (n-(i.val+1)))).toRingHom
-  set G : Polynomial ℚ[X] := Uhat.map cval;
-  use G; intro A _ ev x hx hx'; simp_all;
-  convert congr_arg ( Polynomial.map ( ( MvPolynomial.aeval x ).toRingHom ) ) hU using 1;
-  any_goals exact ( ev.comp Polynomial.C ).toAlgebra;
-  · rw [ Polynomial.map_map, Polynomial.map_map ];
-    congr! 1;
-    ext i; simp [ cval ] ;
-    have h_vieta : ∀ i : Fin n, ev (F.coeff (n - (i.val + 1))) = (-1)^(i.val + 1) * (Finset.univ.val.map x).esymm (i.val + 1) := by
+  set cval : MvPolynomial (Fin n) ℚ →+* ℚ[X] :=
+    (MvPolynomial.aeval (fun i : Fin n => (-1)^(i.val+1) * F.coeff (n-(i.val+1)))).toRingHom
+  set G : Polynomial ℚ[X] := Uhat.map cval
+  use G
+  intro A _ ev x hx hx'
+  simp_all
+  convert congr_arg (Polynomial.map ((MvPolynomial.aeval x).toRingHom)) hU using 1
+  any_goals exact (ev.comp Polynomial.C).toAlgebra
+  · rw [Polynomial.map_map, Polynomial.map_map]
+    congr! 1
+    ext i
+    simp [cval]
+    have h_vieta : ∀ i : Fin n,
+        ev (F.coeff (n - (i.val + 1))) = (-1)^(i.val + 1) * (Finset.univ.val.map x).esymm (i.val + 1) := by
       intro i
-      have h_vieta : (F.map ev) = Polynomial.C (ev (F.leadingCoeff)) * Multiset.prod (Multiset.map (fun β => Polynomial.X - Polynomial.C β) (Finset.univ.val.map x)) := by
-        convert Polynomial.Splits.eq_prod_roots_of_monic _ _;
-        all_goals try infer_instance;
-        · aesop;
-        · rw [ Polynomial.splits_iff_card_roots ];
-          rw [ hx', Polynomial.natDegree_map_of_leadingCoeff_ne_zero ] <;> aesop;
-        · exact hF.map ev;
-      convert congr_arg ( fun p => p.coeff ( n - ( i.val + 1 ) ) ) h_vieta using 1;
-      · rw [ Polynomial.coeff_map ];
-      · rw [ Polynomial.coeff_C_mul, Multiset.prod_X_sub_C_coeff ];
-        · simp [ hF.leadingCoeff ];
-          rw [ Nat.sub_sub_self ( by linarith [ Fin.is_lt i ] ) ];
-        · simp;
-    simp +zetaDelta at *;
+      have h_vieta : (F.map ev) = Polynomial.C (ev (F.leadingCoeff))
+          * Multiset.prod (Multiset.map (fun β => Polynomial.X - Polynomial.C β) (Finset.univ.val.map x)) := by
+        convert Polynomial.Splits.eq_prod_roots_of_monic _ _
+        all_goals try infer_instance
+        · aesop
+        · rw [Polynomial.splits_iff_card_roots]
+          rw [hx', Polynomial.natDegree_map_of_leadingCoeff_ne_zero] <;> aesop
+        · exact hF.map ev
+      convert congr_arg (fun p => p.coeff (n - (i.val + 1))) h_vieta using 1
+      · rw [Polynomial.coeff_map]
+      · rw [Polynomial.coeff_C_mul, Multiset.prod_X_sub_C_coeff]
+        · simp [hF.leadingCoeff]
+          rw [Nat.sub_sub_self (by linarith [Fin.is_lt i])]
+        · simp
+    simp +zetaDelta at *
     rw [h_vieta i]
     ring_nf
-    simp [ pow_mul', MvPolynomial.aeval_esymm_eq_multiset_esymm ];
-  · convert fullResolventProduct_map _ _ _ using 1;
-    rotate_left;
-    convert fullResolventProduct_map _ _ _ using 1;
-    simp [ fullResolventProduct ];
-    simp [ Polynomial.map_prod, genForm ];
-    simp [ Polynomial.map_sum, Polynomial.map_mul, Polynomial.map_C, MvPolynomial.aeval_X ]
+    simp [pow_mul', MvPolynomial.aeval_esymm_eq_multiset_esymm]
+  · convert fullResolventProduct_map _ _ _ using 1
+    rotate_left
+    convert fullResolventProduct_map _ _ _ using 1
+    simp [fullResolventProduct]
+    simp [Polynomial.map_prod, genForm]
+    simp [Polynomial.map_sum, Polynomial.map_mul, Polynomial.map_C, MvPolynomial.aeval_X]
 
 theorem exists_descended_resolvent (F : Polynomial (Polynomial ℚ)) (hF : F.Monic)
     (n : ℕ) (hFdeg : F.natDegree = n) :
@@ -284,7 +338,9 @@ theorem exists_descended_resolvent (F : Polynomial (Polynomial ℚ)) (hF : F.Mon
   have hinj : Function.Injective ev₀ :=
     (algebraMap (FractionRing (Polynomial ℚ)) K).injective.comp
       (IsFractionRing.injective (Polynomial ℚ) (FractionRing (Polynomial ℚ)))
-  have hlc : ev₀ (F.leadingCoeff) ≠ 0 := by rw [hF.leadingCoeff, map_one]; exact one_ne_zero
+  have hlc : ev₀ (F.leadingCoeff) ≠ 0 := by
+    rw [hF.leadingCoeff, map_one]
+    exact one_ne_zero
   have hdeg₀ : (F.map ev₀).natDegree = n := by
     rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero ev₀ hlc, hFdeg]
   have hsplit : (F.map ev₀).Splits := IsAlgClosed.splits _
@@ -294,13 +350,16 @@ theorem exists_descended_resolvent (F : Polynomial (Polynomial ℚ)) (hF : F.Mon
   have hGmap : G.map ev₀ = fullResolventProduct n x := hG ev₀ x hdeg₀ hx.symm
   refine ⟨G, ?_, ?_, hG⟩
   · -- monic
-    have hm : (G.map ev₀).leadingCoeff = 1 := by rw [hGmap]; exact fullResolventProduct_monic n x
+    have hm : (G.map ev₀).leadingCoeff = 1 := by
+      rw [hGmap]
+      exact fullResolventProduct_monic n x
     rw [Polynomial.leadingCoeff_map_of_injective hinj] at hm
     show G.leadingCoeff = 1
     exact hinj (hm.trans (map_one ev₀).symm)
   · -- degree n!
     have hd : (G.map ev₀).natDegree = n.factorial := by
-      rw [hGmap]; exact fullResolventProduct_natDegree n x
+      rw [hGmap]
+      exact fullResolventProduct_natDegree n x
     rwa [Polynomial.natDegree_map_eq_of_injective hinj] at hd
 
 /-
@@ -319,26 +378,27 @@ theorem resolvent_root_property (F G : Polynomial (Polynomial ℚ)) (hF : F.Moni
   set A := (specialize F t).SplittingField
   set ι := algebraMap ℚ A
   set p := specialize F t
-  set ev := ι.comp (Polynomial.evalRingHom (t : ℚ));
+  set ev := ι.comp (Polynomial.evalRingHom (t : ℚ))
   -- By `ResolventConstruction.exists_fin_map_eq` applied to `(F.map ev).roots` (card `n`), get `x : Fin n → A` with `Finset.univ.val.map x = (F.map ev).roots`.
   obtain ⟨x, hx⟩ : ∃ x : Fin n → A, Finset.univ.val.map x = (F.map ev).roots := by
-    apply ResolventConstruction.exists_fin_map_eq;
+    apply ResolventConstruction.exists_fin_map_eq
     have h_card_roots : (F.map ev).roots.card = (F.map ev).natDegree := by
-      convert Polynomial.splits_iff_card_roots.mp _;
-      convert Polynomial.SplittingField.splits ( specialize F t ) using 1;
-      unfold specialize; aesop;
-    rw [ h_card_roots, Polynomial.natDegree_map_of_leadingCoeff_ne_zero ] <;> aesop;
+      convert Polynomial.splits_iff_card_roots.mp _
+      convert Polynomial.SplittingField.splits (specialize F t) using 1
+      unfold specialize
+      aesop
+    rw [h_card_roots, Polynomial.natDegree_map_of_leadingCoeff_ne_zero] <;> aesop
   -- By `hG`, we have `G.map ev = fullResolventProduct n x`.
   have hG_map : G.map ev = fullResolventProduct n x := by
-    convert hG ev x _ _;
-    · rw [ Polynomial.natDegree_map_of_leadingCoeff_ne_zero ] <;> norm_num [ hF, hFdeg ];
-    · exact hx.symm;
+    convert hG ev x _ _
+    · rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] <;> norm_num [hF, hFdeg]
+    · exact hx.symm
   -- Let `α := genForm n x (1 : Equiv.Perm (Fin n))`.
-  use genForm n x (1 : Equiv.Perm (Fin n));
-  convert congr_arg ( Polynomial.eval ( genForm n x 1 ) ) hG_map using 1;
-  · simp [ specialize, aeval_def, Polynomial.eval_map ];
-    rw [ Polynomial.eval₂_map ];
-  · simp [ fullResolventProduct, Finset.prod_eq_prod_diff_singleton_mul ( Finset.mem_univ ( 1 : Equiv.Perm ( Fin n ) ) ) ]
+  use genForm n x (1 : Equiv.Perm (Fin n))
+  convert congr_arg (Polynomial.eval (genForm n x 1)) hG_map using 1
+  · simp [specialize, aeval_def, Polynomial.eval_map]
+    rw [Polynomial.eval₂_map]
+  · simp [fullResolventProduct, Finset.prod_eq_prod_diff_singleton_mul (Finset.mem_univ (1 : Equiv.Perm (Fin n)))]
 
 /-- **Existence of the descended resolvent (symmetric-function descent).**
 
@@ -412,53 +472,93 @@ it and its derivative `nXⁿ⁻¹ − 1` would force `α = t·n/(1−n) ∈ ℚ�
 -/
 set_option maxHeartbeats 1000000 in
 theorem morseOverFrac_separable (n : ℕ) (hn : 2 ≤ n) : (morseOverFrac n).Separable := by
-  refine' IsCoprime.symm _;
-  by_contra h_not_coprime;
+  refine' IsCoprime.symm _
+  by_contra h_not_coprime
   -- Let $L$ be an algebraic closure of $\mathbb{Q}(T)$.
-  set L := AlgebraicClosure (FractionRing (Polynomial (AlgebraicClosure ℚ)));
+  set L := AlgebraicClosure (FractionRing (Polynomial (AlgebraicClosure ℚ)))
   -- Let $α$ be a root of $morseOverFrac n$ in $L$.
-  obtain ⟨α, hα⟩ : ∃ α : L, (α^n - α - (algebraMap (FractionRing (Polynomial (AlgebraicClosure ℚ))) L) (algebraMap (Polynomial (AlgebraicClosure ℚ)) (FractionRing (Polynomial (AlgebraicClosure ℚ))) (Polynomial.X))) = 0 ∧ (n * α^(n-1) - 1) = 0 := by
-    have h_common_root : ∃ α : L, Polynomial.eval α (Polynomial.map (algebraMap (FractionRing (Polynomial (AlgebraicClosure ℚ))) L) (morseOverFrac n)) = 0 ∧ Polynomial.eval α (Polynomial.map (algebraMap (FractionRing (Polynomial (AlgebraicClosure ℚ))) L) (Polynomial.derivative (morseOverFrac n))) = 0 := by
-      contrapose! h_not_coprime;
-      apply isCoprime_of_irreducible_dvd;
-      · intro h; have := morseOverFrac_natDegree n hn; aesop;
-      · intro z hz hz' hz'';
-        obtain ⟨α, hα⟩ : ∃ α : L, Polynomial.eval α (Polynomial.map (algebraMap (FractionRing (Polynomial (AlgebraicClosure ℚ))) L) z) = 0 := by
-          apply_rules [ @IsAlgClosed.exists_root ];
-          rw [ Polynomial.degree_map ];
-          exact ne_of_gt ( Polynomial.degree_pos_of_irreducible hz );
-        exact h_not_coprime α ( by simpa [ hα ] using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero ( Polynomial.map_dvd ( algebraMap ( FractionRing ( Polynomial ( AlgebraicClosure ℚ ) ) ) L ) hz'' ) hα ) ( by simpa [ hα ] using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero ( Polynomial.map_dvd ( algebraMap ( FractionRing ( Polynomial ( AlgebraicClosure ℚ ) ) ) L ) hz' ) hα );
-    convert h_common_root using 4;
-    · unfold morseOverFrac; simp [ genPoly ] ;
-      unfold toClosureFrac; aesop;
-    · unfold morseOverFrac; norm_num [ Polynomial.derivative_pow ] ;
-      unfold genPoly; norm_num [ Polynomial.derivative_pow ] ;
+  obtain ⟨α, hα⟩ : ∃ α : L,
+      (α^n - α - (algebraMap (FractionRing (Polynomial (AlgebraicClosure ℚ))) L)
+        (algebraMap (Polynomial (AlgebraicClosure ℚ)) (FractionRing (Polynomial (AlgebraicClosure ℚ)))
+          (Polynomial.X))) = 0 ∧ (n * α^(n-1) - 1) = 0 := by
+    have h_common_root : ∃ α : L,
+        Polynomial.eval α (Polynomial.map
+          (algebraMap (FractionRing (Polynomial (AlgebraicClosure ℚ))) L) (morseOverFrac n)) = 0 ∧
+        Polynomial.eval α (Polynomial.map
+          (algebraMap (FractionRing (Polynomial (AlgebraicClosure ℚ))) L)
+            (Polynomial.derivative (morseOverFrac n))) = 0 := by
+      contrapose! h_not_coprime
+      apply isCoprime_of_irreducible_dvd
+      · intro h
+        have := morseOverFrac_natDegree n hn
+        aesop
+      · intro z hz hz' hz''
+        obtain ⟨α, hα⟩ : ∃ α : L,
+          Polynomial.eval α (Polynomial.map (algebraMap (FractionRing (Polynomial (AlgebraicClosure ℚ))) L) z) = 0 := by
+          apply_rules [@IsAlgClosed.exists_root]
+          rw [Polynomial.degree_map]
+          exact ne_of_gt (Polynomial.degree_pos_of_irreducible hz)
+        refine h_not_coprime α ?_ ?_
+        · simpa [hα] using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero
+            (Polynomial.map_dvd (algebraMap (FractionRing (Polynomial (AlgebraicClosure ℚ))) L) hz'') hα
+        · simpa [hα] using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero
+            (Polynomial.map_dvd (algebraMap (FractionRing (Polynomial (AlgebraicClosure ℚ))) L) hz') hα
+    convert h_common_root using 4
+    · unfold morseOverFrac
+      simp [genPoly]
+      unfold toClosureFrac
+      aesop
+    · unfold morseOverFrac
+      norm_num [Polynomial.derivative_pow]
+      unfold genPoly
+      norm_num [Polynomial.derivative_pow]
   -- From $n * α^{n-1} - 1 = 0$, we get $α^{n-1} = 1/n$. Substitute into $α^n - α - t = 0$: $α/n - α - t = 0$, hence $α = t * n / (1 - n)$.
-  have hα_val : α = (algebraMap (FractionRing (Polynomial (AlgebraicClosure ℚ))) L) (algebraMap (Polynomial (AlgebraicClosure ℚ)) (FractionRing (Polynomial (AlgebraicClosure ℚ))) (Polynomial.X)) * (n : L) / (1 - (n : L)) := by
+  have hα_val : α = (algebraMap (FractionRing (Polynomial (AlgebraicClosure ℚ))) L)
+      (algebraMap (Polynomial (AlgebraicClosure ℚ)) (FractionRing (Polynomial (AlgebraicClosure ℚ)))
+        (Polynomial.X)) * (n : L) / (1 - (n : L)) := by
     have hα_val : α^n = α / (n : L) := by
-      rw [ eq_div_iff ];
-      · cases n <;> simp_all [ pow_succ, mul_comm, mul_assoc ];
-        linear_combination' hα.2 * α;
-      · aesop;
-    rw [ eq_div_iff ] at * <;> norm_num at *;
-    · grind +revert;
-    · linarith;
-    · rw [ sub_eq_zero ] ; norm_cast ; linarith;
+      rw [eq_div_iff]
+      · cases n <;> simp_all [pow_succ, mul_comm, mul_assoc]
+        linear_combination' hα.2 * α
+      · aesop
+    rw [eq_div_iff] at * <;> norm_num at *
+    · grind +revert
+    · linarith
+    · rw [sub_eq_zero]
+      norm_cast
+      linarith
   -- Substitute $α = t * n / (1 - n)$ into $α^{n-1} = 1/n$: $(t * n / (1 - n))^{n-1} = 1/n$.
-  have h_subst : ((algebraMap (Polynomial (AlgebraicClosure ℚ)) (FractionRing (Polynomial (AlgebraicClosure ℚ))) (Polynomial.X)) * (n : FractionRing (Polynomial (AlgebraicClosure ℚ))) / (1 - (n : FractionRing (Polynomial (AlgebraicClosure ℚ)))) ) ^ (n - 1) = 1 / (n : FractionRing (Polynomial (AlgebraicClosure ℚ))) := by
-    simp_all [ sub_eq_iff_eq_add ];
-    rw [ inv_eq_of_mul_eq_one_right ];
-    convert hα.2 using 1;
-    erw [ ← RingHom.injective ( algebraMap ( FractionRing ( Polynomial ( AlgebraicClosure ℚ ) ) ) L ) |>.eq_iff ] ; norm_num;
+  have h_subst : ((algebraMap (Polynomial (AlgebraicClosure ℚ))
+        (FractionRing (Polynomial (AlgebraicClosure ℚ))) (Polynomial.X))
+          * (n : FractionRing (Polynomial (AlgebraicClosure ℚ)))
+          / (1 - (n : FractionRing (Polynomial (AlgebraicClosure ℚ))))) ^ (n - 1)
+        = 1 / (n : FractionRing (Polynomial (AlgebraicClosure ℚ))) := by
+    simp_all [sub_eq_iff_eq_add]
+    rw [inv_eq_of_mul_eq_one_right]
+    convert hα.2 using 1
+    erw [← RingHom.injective (algebraMap (FractionRing (Polynomial (AlgebraicClosure ℚ))) L) |>.eq_iff]
+    norm_num
   -- This gives a nonzero polynomial equation over `AlgebraicClosure ℚ` satisfied by `T`, contradicting the transcendence of `T`.
-  have h_poly_eq : ∃ p : Polynomial (AlgebraicClosure ℚ), p ≠ 0 ∧ p.eval₂ (algebraMap (AlgebraicClosure ℚ) (FractionRing (Polynomial (AlgebraicClosure ℚ)))) (algebraMap (Polynomial (AlgebraicClosure ℚ)) (FractionRing (Polynomial (AlgebraicClosure ℚ))) (Polynomial.X)) = 0 := by
-    refine' ⟨ ( Polynomial.X * Polynomial.C ( n : AlgebraicClosure ℚ ) ) ^ ( n - 1 ) - Polynomial.C ( ( 1 - n : AlgebraicClosure ℚ ) ^ ( n - 1 ) / n : AlgebraicClosure ℚ ), _, _ ⟩ <;> norm_num;
-    · refine' ne_of_apply_ne Polynomial.natDegree _ ; norm_num [ Polynomial.natDegree_sub_eq_left_of_natDegree_lt, Polynomial.natDegree_mul', show n ≠ 0 by linarith ];
-      omega;
-    · convert sub_eq_zero.mpr ( congr_arg ( fun x : FractionRing ( Polynomial ( AlgebraicClosure ℚ ) ) => x * ( 1 - n : FractionRing ( Polynomial (AlgebraicClosure ℚ) ) ) ^ ( n - 1 ) ) h_subst ) using 1
+  have h_poly_eq : ∃ p : Polynomial (AlgebraicClosure ℚ), p ≠ 0 ∧
+      p.eval₂ (algebraMap (AlgebraicClosure ℚ) (FractionRing (Polynomial (AlgebraicClosure ℚ))))
+        (algebraMap (Polynomial (AlgebraicClosure ℚ)) (FractionRing (Polynomial (AlgebraicClosure ℚ)))
+          (Polynomial.X)) = 0 := by
+    refine' ⟨(Polynomial.X * Polynomial.C (n : AlgebraicClosure ℚ)) ^ (n - 1)
+      - Polynomial.C ((1 - n : AlgebraicClosure ℚ) ^ (n - 1) / n : AlgebraicClosure ℚ), _, _⟩ <;>
+      norm_num
+    · refine' ne_of_apply_ne Polynomial.natDegree _
+      norm_num [Polynomial.natDegree_sub_eq_left_of_natDegree_lt, Polynomial.natDegree_mul', show n ≠ 0 by linarith]
+      omega
+    · convert sub_eq_zero.mpr (congr_arg (fun x : FractionRing (Polynomial (AlgebraicClosure ℚ)) =>
+        x * (1 - n : FractionRing (Polynomial (AlgebraicClosure ℚ))) ^ (n - 1)) h_subst) using 1
       ring_nf
-      norm_num [ show ( 1 - n : FractionRing ( Polynomial ( AlgebraicClosure ℚ ) ) ) ≠ 0 from sub_ne_zero_of_ne <| by norm_cast; linarith ];
-  obtain ⟨ p, hp_ne_zero, hp_root ⟩ := h_poly_eq; simp_all [ Polynomial.eval₂_eq_eval_map ] ;
+      have hne : (1 - n : FractionRing (Polynomial (AlgebraicClosure ℚ))) ≠ 0 :=
+        sub_ne_zero_of_ne <| by
+          norm_cast
+          linarith
+      norm_num [hne]
+  obtain ⟨p, hp_ne_zero, hp_root⟩ := h_poly_eq
+  simp_all [Polynomial.eval₂_eq_eval_map]
 
 /-- Auxiliary coefficient embedding `A[X] → A[X][X]` used to build the variable swap of
 `A[X][X]`: it sends the inner indeterminate to the outer one and constants `a` to `C (C a)`. -/
@@ -475,7 +575,8 @@ theorem swapVars_comp_swapCoeffHom (A : Type*) [CommRing A] :
     (swapVars A).comp (swapCoeffHom A)
       = (Polynomial.C : Polynomial A →+* Polynomial (Polynomial A)) := by
   apply Polynomial.ringHom_ext
-  · intro a; simp [swapVars, swapCoeffHom]
+  · intro a
+    simp [swapVars, swapCoeffHom]
   · simp [swapVars, swapCoeffHom]
 
 theorem swapVars_involutive (A : Type*) [CommRing A] :
@@ -496,9 +597,11 @@ def swapVarsEquiv (A : Type*) [CommRing A] :
   toFun := swapVars A
   invFun := swapVars A
   left_inv := fun x => by
-    have := RingHom.congr_fun (swapVars_involutive A) x; simpa using this
+    have := RingHom.congr_fun (swapVars_involutive A) x
+    simpa using this
   right_inv := fun x => by
-    have := RingHom.congr_fun (swapVars_involutive A) x; simpa using this
+    have := RingHom.congr_fun (swapVars_involutive A) x
+    simpa using this
   map_mul' := map_mul _
   map_add' := map_add _
 
@@ -535,7 +638,9 @@ theorem morseOverFrac_irreducible (n : ℕ) (hn : 2 ≤ n) : Irreducible (morseO
     rw [morseOverFrac, Polynomial.map_map, toClosureFrac]
   set P := (genPoly n).map (mapRingHom (algebraMap ℚ (AlgebraicClosure ℚ))) with hPdef
   have hP : P = X ^ n - X - C (X : Polynomial (AlgebraicClosure ℚ)) := by
-    rw [hPdef]; unfold genPoly; simp [Polynomial.map_sub, Polynomial.map_pow]
+    rw [hPdef]
+    unfold genPoly
+    simp [Polynomial.map_sub, Polynomial.map_pow]
   have hPmonic : P.Monic := (genPoly_monic n hn).map _
   rw [hmap, ← Monic.irreducible_iff_irreducible_map_fraction_map hPmonic, hP]
   exact X_pow_sub_X_sub_C_X_irreducible (AlgebraicClosure ℚ) n
@@ -586,9 +691,11 @@ theorem galActionHom_surjective_of_isPreprimitive_of_swap {F E : Type} [Field F]
       (p.rootSet E) := by
     let f : (p.rootSet E) →ₑ[(Gal.galActionHom p E).rangeRestrict] (p.rootSet E) :=
       { toFun := id
-        map_smul' := by intro g x; rfl }
+        map_smul' := fun g x => rfl }
     exact MulAction.IsPreprimitive.of_surjective (M := p.Gal) (f := f) Function.surjective_id
-  have hmem : (Gal.galActionHom p E σ) ∈ G := by rw [hG]; exact ⟨σ, rfl⟩
+  have hmem : (Gal.galActionHom p E σ) ∈ G := by
+    rw [hG]
+    exact ⟨σ, rfl⟩
   have htop : G = ⊤ :=
     Equiv.Perm.subgroup_eq_top_of_isPreprimitive_of_isSwap_mem hequiv _ hσ hmem
   rw [← MonoidHom.range_eq_top, ← hG, htop]
@@ -602,7 +709,8 @@ theorem morseOverFrac_eq_morseGeomPoly (n : ℕ) : morseOverFrac n = morseGeomPo
     rw [morseOverFrac, Polynomial.map_map, toClosureFrac]
   have hP : (genPoly n).map (mapRingHom (algebraMap ℚ (AlgebraicClosure ℚ)))
       = genPolyC n := by
-    unfold genPoly genPolyC; simp [Polynomial.map_sub, Polynomial.map_pow]
+    unfold genPoly genPolyC
+    simp [Polynomial.map_sub, Polynomial.map_pow]
   rw [hmap, hP, morseGeomPoly]
 
 open scoped Classical in
@@ -650,32 +758,34 @@ theorem Monic.irreducible_of_galois_orbit_card
     Irreducible q := by
   -- Since $w$ is a root of $q$, the minimal polynomial of $w$ over $L$ divides $q$.
   have h_minpoly_div : minpoly L w ∣ q := by
-    exact minpoly.dvd L w hw;
+    exact minpoly.dvd L w hw
   -- Since $w$ is a root of $q$, the minimal polynomial of $w$ over $L$ has degree equal to the cardinality of its Galois orbit.
   have h_minpoly_deg : (minpoly L w).natDegree = Nat.card (MulAction.orbit (Gal(M/L)) w) := by
     have h_minpoly_deg : (minpoly L w).rootSet M = (MulAction.orbit (Gal(M/L)) w : Set M) := by
-      ext x;
-      rw [ Polynomial.mem_rootSet ];
-      rw [ ← Normal.minpoly_eq_iff_mem_orbit ];
-      constructor <;> intro h <;> simp_all;
-      · refine' minpoly.eq_of_irreducible_of_monic _ _ _;
-        · exact minpoly.irreducible ( IsGalois.integral L x );
+      ext x
+      rw [Polynomial.mem_rootSet]
+      rw [← Normal.minpoly_eq_iff_mem_orbit]
+      constructor <;> intro h <;> simp_all
+      · refine' minpoly.eq_of_irreducible_of_monic _ _ _
+        · exact minpoly.irreducible (IsGalois.integral L x)
         · have h_minpoly_eq : minpoly L w = minpoly L x := by
-            refine' minpoly.eq_of_irreducible_of_monic _ _ _;
-            · exact minpoly.irreducible ( show IsIntegral L w from by exact ( IsIntegral.of_finite L w ) );
-            · exact h.2;
-            · exact minpoly.monic ( show IsIntegral L w from by exact ( IsIntegral.of_finite L w ) );
-          exact h_minpoly_eq ▸ minpoly.aeval L w;
-        · exact minpoly.monic ( show IsIntegral L x from by exact ( IsGalois.integral L x ) );
-      · exact ⟨ minpoly.ne_zero ( show IsIntegral L w from by exact ( IsGalois.integral L w ) ), by rw [ ← h, minpoly.aeval ] ⟩;
-    rw [ ← h_minpoly_deg, Nat.card_eq_fintype_card ];
-    rw [ Polynomial.card_rootSet_eq_natDegree ];
-    · exact IsGalois.separable L w;
-    · exact IsGalois.splits L w;
-  obtain ⟨ p, rfl ⟩ := h_minpoly_div;
-  rw [ Polynomial.natDegree_mul' ] at hcard;
-  · rw [ irreducible_mul_iff ];
-    exact Or.inl ⟨ minpoly.irreducible ( show IsIntegral L w from by exact ( IsIntegral.of_finite L w ) ), Polynomial.isUnit_iff_degree_eq_zero.mpr ( by rw [ Polynomial.degree_eq_natDegree ] <;> aesop ) ⟩;
+            refine' minpoly.eq_of_irreducible_of_monic _ _ _
+            · exact minpoly.irreducible (show IsIntegral L w from by exact (IsIntegral.of_finite L w))
+            · exact h.2
+            · exact minpoly.monic (show IsIntegral L w from by exact (IsIntegral.of_finite L w))
+          exact h_minpoly_eq ▸ minpoly.aeval L w
+        · exact minpoly.monic (show IsIntegral L x from by exact (IsGalois.integral L x))
+      · exact ⟨minpoly.ne_zero (show IsIntegral L w from by exact (IsGalois.integral L w)),
+          by rw [← h, minpoly.aeval]⟩
+    rw [← h_minpoly_deg, Nat.card_eq_fintype_card]
+    rw [Polynomial.card_rootSet_eq_natDegree]
+    · exact IsGalois.separable L w
+    · exact IsGalois.splits L w
+  obtain ⟨p, rfl⟩ := h_minpoly_div
+  rw [Polynomial.natDegree_mul'] at hcard
+  · rw [irreducible_mul_iff]
+    exact Or.inl ⟨minpoly.irreducible (show IsIntegral L w from by exact (IsIntegral.of_finite L w)),
+      Polynomial.isUnit_iff_degree_eq_zero.mpr (by rw [Polynomial.degree_eq_natDegree] <;> aesop)⟩
   · aesop
 
 /-
@@ -697,38 +807,49 @@ theorem genForm_perm_injective {n : ℕ} {M : Type*} [CommRing M] [IsDomain M] [
   intro σ τ hστ
   by_contra h_neq
   obtain ⟨a, b, hab⟩ : ∃ a b : Fin n, a ≠ b ∧ (σ.symm a : ℤ) - (τ.symm a : ℤ) ≠ (σ.symm b : ℤ) - (τ.symm b : ℤ) := by
-    by_cases h_eq : ∀ a b : Fin n, (σ.symm a : ℤ) - (τ.symm a : ℤ) = (σ.symm b : ℤ) - (τ.symm b : ℤ);
+    by_cases h_eq : ∀ a b : Fin n, (σ.symm a : ℤ) - (τ.symm a : ℤ) = (σ.symm b : ℤ) - (τ.symm b : ℤ)
     · have h_eq_all : ∃ k : ℤ, ∀ a : Fin n, (σ.symm a : ℤ) = (τ.symm a : ℤ) + k := by
-        rcases n with ( _ | _ | n ) <;> norm_num at *;
-        exact ⟨ ( σ.symm 0 : ℤ ) - ( τ.symm 0 : ℤ ), fun a => by linarith [ h_eq a 0 ] ⟩;
-      obtain ⟨ k, hk ⟩ := h_eq_all
+        rcases n with (_ | _ | n) <;> norm_num at *
+        exact ⟨(σ.symm 0 : ℤ) - (τ.symm 0 : ℤ), fun a => by linarith [h_eq a 0]⟩
+      obtain ⟨k, hk⟩ := h_eq_all
       have h_sum_eq : ∑ a : Fin n, (σ.symm a : ℤ) = ∑ a : Fin n, (τ.symm a : ℤ) := by
-        exact Equiv.sum_comp σ.symm ( fun a => ( a : ℤ ) ) ▸ Equiv.sum_comp τ.symm ( fun a => ( a : ℤ ) ) ▸ rfl
+        exact Equiv.sum_comp σ.symm (fun a => (a : ℤ)) ▸ Equiv.sum_comp τ.symm (fun a => (a : ℤ)) ▸ rfl
       have h_k_zero : k = 0 := by
-        simp_all [ Finset.sum_add_distrib ];
-        cases n <;> simp_all;
-        exact False.elim ( h_neq ( Subsingleton.elim _ _ ) )
+        simp_all [Finset.sum_add_distrib]
+        cases n <;> simp_all
+        exact False.elim (h_neq (Subsingleton.elim _ _))
       have h_sigma_eq_tau : σ.symm = τ.symm := by
-        ext a; specialize hk a; aesop;
+        ext a
+        specialize hk a
+        aesop
       have h_sigma_eq_tau' : σ = τ := by
         simpa using congr_arg Equiv.symm h_sigma_eq_tau
-      contradiction;
-    · grind +ring;
+      contradiction
+    · grind +ring
   obtain ⟨f, hf⟩ := hswap a b hab.left
   have h_eq : ∑ j : Fin n, ((σ.symm j : ℤ) - (τ.symm j : ℤ)) * (x j - f (x j)) = 0 := by
     have h_eq : ∑ j : Fin n, ((σ.symm j : ℤ) - (τ.symm j : ℤ)) * x j = 0 := by
-      convert sub_eq_zero.mpr hστ using 1;
-      simp [ sub_mul, Finset.sum_sub_distrib, genForm ];
-      exact congrArg₂ _ ( by rw [ ← Equiv.sum_comp σ ] ; simp ) ( by rw [ ← Equiv.sum_comp τ ] ; simp );
+      convert sub_eq_zero.mpr hστ using 1
+      simp [sub_mul, Finset.sum_sub_distrib, genForm]
+      exact congrArg₂ _
+        (by
+          rw [← Equiv.sum_comp σ]
+          simp)
+        (by
+          rw [← Equiv.sum_comp τ]
+          simp)
     have h_eq_f : ∑ j : Fin n, ((σ.symm j : ℤ) - (τ.symm j : ℤ)) * f (x j) = 0 := by
-      replace h_eq := congr_arg f h_eq; simp_all [ sub_mul ] ;
-    simp_all [ mul_sub ];
-  rw [ Finset.sum_eq_add ( a ) ( b ) ] at h_eq;
-  · simp_all [ sub_eq_iff_eq_add ];
-    exact hab.2 ( by exact_mod_cast ( mul_left_cancel₀ ( sub_ne_zero_of_ne ( hxinj.ne hab.1 ) ) <| by linear_combination' h_eq : ( σ.symm a : M ) = ( σ.symm b : M ) - ( τ.symm b : M ) + ( τ.symm a : M ) ) );
-  · exact hab.1;
-  · simp +contextual [ hf, Equiv.swap_apply_def ];
-  · exact fun h => False.elim <| h <| Finset.mem_univ a;
+      replace h_eq := congr_arg f h_eq
+      simp_all [sub_mul]
+    simp_all [mul_sub]
+  rw [Finset.sum_eq_add (a) (b)] at h_eq
+  · simp_all [sub_eq_iff_eq_add]
+    have hcast : (σ.symm a : M) = (σ.symm b : M) - (τ.symm b : M) + (τ.symm a : M) :=
+      mul_left_cancel₀ (sub_ne_zero_of_ne (hxinj.ne hab.1)) <| by linear_combination' h_eq
+    exact hab.2 (by exact_mod_cast hcast)
+  · exact hab.1
+  · simp +contextual [hf, Equiv.swap_apply_def]
+  · exact fun h => False.elim <| h <| Finset.mem_univ a
   · exact fun h => False.elim <| h <| Finset.mem_univ b
 
 /-
@@ -744,10 +865,16 @@ theorem orbit_genForm_eq_range {n : ℕ} {L M : Type*} [Field L] [Field M] [Alge
     MulAction.orbit (M ≃ₐ[L] M) (genForm n x 1)
       = Set.range (fun σ : Equiv.Perm (Fin n) => genForm n x σ) := by
   ext y
-  simp [MulAction.orbit];
-  constructor;
-  · rintro ⟨ γ, rfl ⟩ ; obtain ⟨ σ, hσ ⟩ := hgal γ; use σ; simp [ genForm, hσ ] ;
-  · rintro ⟨ σ, rfl ⟩ ; obtain ⟨ γ, hγ ⟩ := hsurj2 σ; use γ; simp [ genForm, hγ ] ;
+  simp [MulAction.orbit]
+  constructor
+  · rintro ⟨γ, rfl⟩
+    obtain ⟨σ, hσ⟩ := hgal γ
+    use σ
+    simp [genForm, hσ]
+  · rintro ⟨σ, rfl⟩
+    obtain ⟨γ, hγ⟩ := hsurj2 σ
+    use γ
+    simp [genForm, hγ]
 
 /-- **Realising root permutations by automorphisms.**  If the permutation representation of
 `p.Gal` on the roots is surjective, then every permutation `π` of the root set is induced by an
@@ -790,91 +917,149 @@ theorem morse_root_enum (n : ℕ) (hn : 2 ≤ n)
         ∃ γ : (morseOverFrac n).SplittingField ≃ₐ[FractionRing (Polynomial (AlgebraicClosure ℚ))]
           (morseOverFrac n).SplittingField, ∀ i, γ (x i) = x (σ i)) := by
   obtain ⟨x, hx⟩ : ∃ x : Fin n → (morseOverFrac n).SplittingField,
-      (map ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac) (genPoly n)).roots = Multiset.map x Finset.univ.val := by
-        have h_card : Multiset.card (Polynomial.roots (Polynomial.map ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac) (genPoly n))) = n := by
-          have h_card : Polynomial.natDegree (Polynomial.map ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac) (genPoly n)) = n := by
-            rw [ Polynomial.natDegree_map_of_leadingCoeff_ne_zero ] <;> norm_num [ genPoly ];
-            · rw [ Polynomial.natDegree_sub_eq_left_of_natDegree_lt ] <;> norm_num ; linarith;
-            · rw [ Polynomial.leadingCoeff, Polynomial.natDegree_sub_C, Polynomial.natDegree_sub_eq_left_of_natDegree_lt ] <;> norm_num [ Polynomial.coeff_X, Polynomial.coeff_C, show n > 1 by linarith ];
-              aesop;
-          convert Polynomial.splits_iff_card_roots.mp _;
-          · exact h_card.symm;
-          · convert Polynomial.SplittingField.splits ( morseOverFrac n ) using 1;
-            unfold morseOverFrac; aesop;
-        have := @ResolventConstruction.exists_fin_map_eq;
-        exact Exists.elim ( this _ _ h_card ) fun x hx => ⟨ x, hx.symm ⟩;
-  refine' ⟨ x, _, _, hx, _, _ ⟩;
-  · have h_distinct_roots : Multiset.Nodup (Polynomial.roots (map ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac) (genPoly n))) := by
-      convert Polynomial.nodup_roots _;
-      convert morseOverFrac_separable n hn |> Polynomial.Separable.map;
-      unfold morseOverFrac; aesop;
-    simp_all [ Function.Injective ];
-    rw [ List.nodup_ofFn ] at h_distinct_roots ; aesop;
-  · convert morseOverFrac_natDegree n hn using 1;
-    unfold morseOverFrac;
-    rw [ Polynomial.natDegree_map_of_leadingCoeff_ne_zero, Polynomial.natDegree_map_of_leadingCoeff_ne_zero ] <;> norm_num [ genPoly_monic n hn ];
+      (map
+        ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac)
+        (genPoly n)).roots = Multiset.map x Finset.univ.val := by
+        have h_card : Multiset.card (Polynomial.roots (Polynomial.map
+          ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac)
+          (genPoly n))) = n := by
+          have h_card : Polynomial.natDegree (Polynomial.map
+            ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac)
+            (genPoly n)) = n := by
+            rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] <;> norm_num [genPoly]
+            · rw [Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num
+              linarith
+            · rw [Polynomial.leadingCoeff, Polynomial.natDegree_sub_C,
+                Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num [Polynomial.coeff_X,
+                Polynomial.coeff_C, show n > 1 by linarith]
+              aesop
+          convert Polynomial.splits_iff_card_roots.mp _
+          · exact h_card.symm
+          · convert Polynomial.SplittingField.splits (morseOverFrac n) using 1
+            unfold morseOverFrac
+            aesop
+        have := @ResolventConstruction.exists_fin_map_eq
+        exact Exists.elim (this _ _ h_card) fun x hx => ⟨x, hx.symm⟩
+  refine' ⟨x, _, _, hx, _, _⟩
+  · have h_distinct_roots : Multiset.Nodup (Polynomial.roots (map
+      ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac)
+      (genPoly n))) := by
+      convert Polynomial.nodup_roots _
+      convert morseOverFrac_separable n hn |> Polynomial.Separable.map
+      unfold morseOverFrac
+      aesop
+    simp_all [Function.Injective]
+    rw [List.nodup_ofFn] at h_distinct_roots
+    aesop
+  · convert morseOverFrac_natDegree n hn using 1
+    unfold morseOverFrac
+    rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero,
+      Polynomial.natDegree_map_of_leadingCoeff_ne_zero] <;> norm_num [genPoly_monic n hn]
   · intro γ
-    have h_root : ∀ i, γ (x i) ∈ (map ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac) (genPoly n)).roots := by
+    have h_root : ∀ i, γ (x i) ∈ (map
+      ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac)
+      (genPoly n)).roots := by
       intro i
-      have h_root : x i ∈ (map ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac) (genPoly n)).roots := by
-        aesop;
-      simp +zetaDelta at *;
-      rw [ Polynomial.eval_map ] at *;
-      rw [ Polynomial.eval₂_eq_sum_range ] at *;
-      exact ⟨ h_root.1, by simpa [ map_sum, map_mul, map_pow ] using congr_arg ( fun x => γ x ) h_root.2 ⟩;
+      have h_root : x i ∈ (map
+        ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac)
+        (genPoly n)).roots := by
+        aesop
+      simp +zetaDelta at *
+      rw [Polynomial.eval_map] at *
+      rw [Polynomial.eval₂_eq_sum_range] at *
+      exact ⟨h_root.1, by simpa [map_sum, map_mul, map_pow] using congr_arg (fun x => γ x) h_root.2⟩
     have h_unique : ∀ i, ∃ j, γ (x i) = x j := by
-      intro i; specialize h_root i; rw [ hx ] at h_root; rw [ Multiset.mem_map ] at h_root; obtain ⟨ j, hj, hj' ⟩ := h_root; use j; aesop;
-    choose σ hσ using h_unique;
+      intro i
+      specialize h_root i
+      rw [hx] at h_root
+      rw [Multiset.mem_map] at h_root
+      obtain ⟨j, hj, hj'⟩ := h_root
+      use j
+      aesop
+    choose σ hσ using h_unique
     have h_inj : Function.Injective σ := by
-      intro i j hij; have := γ.injective; simp_all;
+      intro i j hij
+      have := γ.injective
+      simp_all
       have h_distinct : Multiset.Nodup (Multiset.ofList (List.ofFn x)) := by
-        have h_distinct : Polynomial.Separable (map ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac) (genPoly n)) := by
-          convert morseOverFrac_separable n hn |> Polynomial.Separable.map using 1;
-          unfold morseOverFrac; aesop;
-        exact hx ▸ Polynomial.nodup_roots h_distinct;
-      simp_all [ List.nodup_ofFn ];
-      have := @this ( x i ) ( x j ) ; aesop;
-    exact ⟨ Equiv.ofBijective σ ⟨ h_inj, Finite.injective_iff_surjective.mp h_inj ⟩, hσ ⟩;
-  · intro σ;
-    obtain ⟨γ, hγ⟩ : ∃ γ : (morseOverFrac n).SplittingField ≃ₐ[FractionRing (Polynomial (AlgebraicClosure ℚ))] (morseOverFrac n).SplittingField, ∀ i, γ (x i) = x (σ i) := by
+        have h_distinct : Polynomial.Separable (map
+          ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac)
+          (genPoly n)) := by
+          convert morseOverFrac_separable n hn |> Polynomial.Separable.map using 1
+          unfold morseOverFrac
+          aesop
+        exact hx ▸ Polynomial.nodup_roots h_distinct
+      simp_all [List.nodup_ofFn]
+      have := @this (x i) (x j)
+      aesop
+    exact ⟨Equiv.ofBijective σ ⟨h_inj, Finite.injective_iff_surjective.mp h_inj⟩, hσ⟩
+  · intro σ
+    obtain ⟨γ, hγ⟩ : ∃ γ : (morseOverFrac n).SplittingField
+        ≃ₐ[FractionRing (Polynomial (AlgebraicClosure ℚ))] (morseOverFrac n).SplittingField,
+        ∀ i, γ (x i) = x (σ i) := by
       have h_root_set : ∀ i, x i ∈ Polynomial.rootSet (morseOverFrac n) (morseOverFrac n).SplittingField := by
         intro i
-        have h_root : x i ∈ (map ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac) (genPoly n)).roots := by
-          aesop;
-        convert h_root using 1;
-        ext; simp [morseOverFrac];
-        simp [Polynomial.mem_rootSet];
-        simp [Polynomial.eval_map];
-        simp [ Polynomial.map, Polynomial.eval₂_eq_sum_range ];
-        intro h; rw [ Polynomial.ext_iff ] ; simp [ Polynomial.ext_iff ] ;
-      have h_root_set_equiv : Function.Bijective (fun i : Fin n => ⟨x i, h_root_set i⟩ : Fin n → Polynomial.rootSet (morseOverFrac n) (morseOverFrac n).SplittingField) := by
+        have h_root : x i ∈ (map
+          ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac)
+          (genPoly n)).roots := by
+          aesop
+        convert h_root using 1
+        ext
+        simp [morseOverFrac]
+        simp [Polynomial.mem_rootSet]
+        simp [Polynomial.eval_map]
+        simp [Polynomial.map, Polynomial.eval₂_eq_sum_range]
+        intro h
+        rw [Polynomial.ext_iff]
+        simp [Polynomial.ext_iff]
+      have h_root_set_equiv : Function.Bijective
+          (fun i : Fin n => ⟨x i, h_root_set i⟩ :
+            Fin n → Polynomial.rootSet (morseOverFrac n) (morseOverFrac n).SplittingField) := by
         have h_inj : Function.Injective x := by
-          have h_distinct_roots : Multiset.Nodup (Polynomial.roots (Polynomial.map ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac) (genPoly n))) := by
-            have h_distinct_roots : Polynomial.Separable (Polynomial.map ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac) (genPoly n)) := by
-              convert morseOverFrac_separable n hn |> Polynomial.Separable.map;
-              unfold morseOverFrac; aesop;
-            exact Polynomial.nodup_roots h_distinct_roots;
-          simp_all [ Function.Injective ];
-          rw [ List.nodup_ofFn ] at h_distinct_roots ; aesop;
+          have h_distinct_roots : Multiset.Nodup (Polynomial.roots (Polynomial.map
+            ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac)
+            (genPoly n))) := by
+            have h_distinct_roots : Polynomial.Separable (Polynomial.map
+              ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac)
+              (genPoly n)) := by
+              convert morseOverFrac_separable n hn |> Polynomial.Separable.map
+              unfold morseOverFrac
+              aesop
+            exact Polynomial.nodup_roots h_distinct_roots
+          simp_all [Function.Injective]
+          rw [List.nodup_ofFn] at h_distinct_roots
+          aesop
         have h_card : Fintype.card (Polynomial.rootSet (morseOverFrac n) (morseOverFrac n).SplittingField) = n := by
-          convert congr_arg Multiset.card hx using 1;
-          · convert Polynomial.card_rootSet_eq_natDegree _ _;
-            · convert congr_arg Multiset.card hx using 1;
-              convert morseOverFrac_natDegree n hn using 1;
-              simp;
-            · exact morseOverFrac_separable n hn;
-            · convert SplittingField.splits ( morseOverFrac n ) using 1;
-          · simp;
-        have h_surj : Function.Surjective (fun i : Fin n => ⟨x i, h_root_set i⟩ : Fin n → Polynomial.rootSet (morseOverFrac n) (morseOverFrac n).SplittingField) := by
-          exact ( Fintype.bijective_iff_injective_and_card _ ).mpr ⟨ fun i j hij => h_inj <| by simpa using hij, by aesop ⟩ |>.2;
-        exact ⟨ fun i j hij => h_inj <| by simpa using congr_arg Subtype.val hij, h_surj ⟩;
-      obtain ⟨γ, hγ⟩ : ∃ γ : Polynomial.rootSet (morseOverFrac n) (morseOverFrac n).SplittingField ≃ Polynomial.rootSet (morseOverFrac n) (morseOverFrac n).SplittingField, ∀ i, γ (⟨x i, h_root_set i⟩) = ⟨x (σ i), h_root_set (σ i)⟩ := by
-        have h_root_set_equiv : Function.Bijective (fun i : Fin n => ⟨x (σ i), h_root_set (σ i)⟩ : Fin n → Polynomial.rootSet (morseOverFrac n) (morseOverFrac n).SplittingField) := by
-          exact Function.Bijective.comp h_root_set_equiv ( σ.bijective );
-        exact ⟨ Equiv.ofBijective _ h_root_set_equiv |> Equiv.trans ( Equiv.ofBijective _ ‹Function.Bijective fun i => ⟨ x i, h_root_set i ⟩ › |> Equiv.symm ), fun i => by simp ⟩;
-      obtain ⟨γ', hγ'⟩ : ∃ γ' : (morseOverFrac n).SplittingField ≃ₐ[FractionRing (Polynomial (AlgebraicClosure ℚ))] (morseOverFrac n).SplittingField, ∀ r : Polynomial.rootSet (morseOverFrac n) (morseOverFrac n).SplittingField, γ' (r : (morseOverFrac n).SplittingField) = (γ r : (morseOverFrac n).SplittingField) := by
-        convert exists_algEquiv_of_galActionHom_surjective ( morseOverFrac n ) hsurj γ;
-      exact ⟨ γ', fun i => by simpa [ hγ ] using hγ' ⟨ x i, h_root_set i ⟩ ⟩;
+          convert congr_arg Multiset.card hx using 1
+          · convert Polynomial.card_rootSet_eq_natDegree _ _
+            · convert congr_arg Multiset.card hx using 1
+              convert morseOverFrac_natDegree n hn using 1
+              simp
+            · exact morseOverFrac_separable n hn
+            · convert SplittingField.splits (morseOverFrac n) using 1
+          · simp
+        have h_surj : Function.Surjective
+            (fun i : Fin n => ⟨x i, h_root_set i⟩ :
+              Fin n → Polynomial.rootSet (morseOverFrac n) (morseOverFrac n).SplittingField) := by
+          exact (Fintype.bijective_iff_injective_and_card _).mpr ⟨fun i j hij => h_inj <| by simpa using hij,
+            by aesop⟩ |>.2
+        exact ⟨fun i j hij => h_inj <| by simpa using congr_arg Subtype.val hij, h_surj⟩
+      obtain ⟨γ, hγ⟩ : ∃ γ : Polynomial.rootSet (morseOverFrac n) (morseOverFrac n).SplittingField
+          ≃ Polynomial.rootSet (morseOverFrac n) (morseOverFrac n).SplittingField,
+          ∀ i, γ (⟨x i, h_root_set i⟩) = ⟨x (σ i), h_root_set (σ i)⟩ := by
+        have h_root_set_equiv : Function.Bijective
+            (fun i : Fin n => ⟨x (σ i), h_root_set (σ i)⟩ :
+              Fin n → Polynomial.rootSet (morseOverFrac n) (morseOverFrac n).SplittingField) := by
+          exact Function.Bijective.comp h_root_set_equiv (σ.bijective)
+        exact ⟨Equiv.ofBijective _ h_root_set_equiv |> Equiv.trans
+          (Equiv.ofBijective _ ‹Function.Bijective fun i => ⟨x i, h_root_set i⟩ › |> Equiv.symm),
+          fun i => by simp⟩
+      obtain ⟨γ', hγ'⟩ : ∃ γ' : (morseOverFrac n).SplittingField
+          ≃ₐ[FractionRing (Polynomial (AlgebraicClosure ℚ))] (morseOverFrac n).SplittingField,
+          ∀ r : Polynomial.rootSet (morseOverFrac n) (morseOverFrac n).SplittingField,
+          γ' (r : (morseOverFrac n).SplittingField) = (γ r : (morseOverFrac n).SplittingField) := by
+        convert exists_algEquiv_of_galActionHom_surjective (morseOverFrac n) hsurj γ
+      exact ⟨γ', fun i => by simpa [hγ] using hγ' ⟨x i, h_root_set i⟩⟩
     use γ
 
 /-
@@ -892,27 +1077,34 @@ theorem morseResolventFrac_irreducible (n : ℕ) (hn : 2 ≤ n)
     (hsurj : Function.Surjective
       (Gal.galActionHom (morseOverFrac n) (morseOverFrac n).SplittingField)) :
     Irreducible (G.map toClosureFrac) := by
-  obtain ⟨x, hxinj, hdeg, hroots, hgal, hsurj2⟩ := morse_root_enum n hn hsurj;
+  obtain ⟨x, hxinj, hdeg, hroots, hgal, hsurj2⟩ := morse_root_enum n hn hsurj
   -- Let `w := genForm n x (1 : Equiv.Perm (Fin n))`. Then `aeval w q = 0`.
   set w := genForm n x 1
   have hw : (aeval w) (map toClosureFrac G) = 0 := by
-    specialize hG ( ( algebraMap ( FractionRing ( Polynomial ( AlgebraicClosure ℚ ) ) ) ( morseOverFrac n ).SplittingField ).comp toClosureFrac ) x hdeg hroots;
-    convert congr_arg ( Polynomial.eval w ) hG using 1;
-    · simp [ Polynomial.aeval_def, Polynomial.eval_map ];
-      simp [ Polynomial.eval₂_map ];
-    · simp [ fullResolventProduct ];
-      rw [ Polynomial.eval_prod, Finset.prod_eq_zero ( Finset.mem_univ 1 ) ] ; aesop;
-  convert Monic.irreducible_of_galois_orbit_card _ hw _;
-  · convert IsGalois.of_separable_splitting_field ( morseOverFrac_separable n hn );
-    infer_instance;
-  · exact hGmonic.map _;
-  · convert Nat.card_range_of_injective ( genForm_perm_injective x hxinj _ ) using 1;
-    · rw [ orbit_genForm_eq_range x hgal hsurj2 ];
-    · convert fullResolventProduct_natDegree n x using 1;
-      · convert congr_arg Polynomial.natDegree ( hG ( algebraMap ( FractionRing ( Polynomial ( AlgebraicClosure ℚ ) ) ) ( morseOverFrac n ).SplittingField |> RingHom.comp <| toClosureFrac ) x hdeg hroots ) using 1;
-        rw [ Polynomial.natDegree_map_of_leadingCoeff_ne_zero, Polynomial.natDegree_map_of_leadingCoeff_ne_zero ] <;> norm_num [ hGmonic ];
-      · simp [ Fintype.card_perm ];
-    · exact fun a b hab => by obtain ⟨ γ, hγ ⟩ := hsurj2 ( Equiv.swap a b ) ; exact ⟨ γ, hγ ⟩ ;
+    specialize hG ((algebraMap (FractionRing (Polynomial (AlgebraicClosure ℚ)))
+      (morseOverFrac n).SplittingField).comp toClosureFrac) x hdeg hroots
+    convert congr_arg (Polynomial.eval w) hG using 1
+    · simp [Polynomial.aeval_def, Polynomial.eval_map]
+      simp [Polynomial.eval₂_map]
+    · simp [fullResolventProduct]
+      rw [Polynomial.eval_prod, Finset.prod_eq_zero (Finset.mem_univ 1)]
+      aesop
+  convert Monic.irreducible_of_galois_orbit_card _ hw _
+  · convert IsGalois.of_separable_splitting_field (morseOverFrac_separable n hn)
+    infer_instance
+  · exact hGmonic.map _
+  · convert Nat.card_range_of_injective (genForm_perm_injective x hxinj _) using 1
+    · rw [orbit_genForm_eq_range x hgal hsurj2]
+    · convert fullResolventProduct_natDegree n x using 1
+      · convert congr_arg Polynomial.natDegree
+          (hG (algebraMap (FractionRing (Polynomial (AlgebraicClosure ℚ)))
+              (morseOverFrac n).SplittingField |> RingHom.comp <| toClosureFrac) x hdeg hroots) using 1
+        rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero,
+          Polynomial.natDegree_map_of_leadingCoeff_ne_zero] <;> norm_num [hGmonic]
+      · simp [Fintype.card_perm]
+    · exact fun a b hab => by
+        obtain ⟨γ, hγ⟩ := hsurj2 (Equiv.swap a b)
+        exact ⟨γ, hγ⟩
 
 /-- **Reduction: full geometric Galois group ⟹ the resolvent is absolutely irreducible.**
 
@@ -932,7 +1124,8 @@ theorem abs_irreducible_of_geometric_galois_surjective (n : ℕ) (hn : 2 ≤ n)
       (algebraMap (Polynomial (AlgebraicClosure ℚ))
         (FractionRing (Polynomial (AlgebraicClosure ℚ))))
       = G.map toClosureFrac := by
-    rw [Polynomial.map_map]; rfl
+    rw [Polynomial.map_map]
+    rfl
   rw [heq]
   exact morseResolventFrac_irreducible n hn G hGmonic hG hsurj
 
@@ -980,14 +1173,16 @@ theorem resolvent_family_core_one :
       Irreducible (G.map (mapRingHom (algebraMap ℚ (AlgebraicClosure ℚ)))) ∧
       {t : ℤ | ¬ (specialize F t).Separable}.Finite ∧
       (∀ t : ℤ, ∃ α : (specialize F t).SplittingField, (aeval α) (specialize G t) = 0) := by
-  use Polynomial.X - Polynomial.C Polynomial.X, Polynomial.X;
-  simp [ specialize ];
-  refine' ⟨ _, _, _, _ ⟩;
-  · exact Polynomial.monic_X_sub_C _;
-  · exact Polynomial.irreducible_X;
-  · exact Polynomial.irreducible_X;
-  · refine' Set.Finite.subset ( Set.finite_singleton 0 ) _;
-    intro t ht; contrapose! ht; simp_all [ Polynomial.Separable ] ;
+  use Polynomial.X - Polynomial.C Polynomial.X, Polynomial.X
+  simp [specialize]
+  refine' ⟨_, _, _, _⟩
+  · exact Polynomial.monic_X_sub_C _
+  · exact Polynomial.irreducible_X
+  · exact Polynomial.irreducible_X
+  · refine' Set.Finite.subset (Set.finite_singleton 0) _
+    intro t ht
+    contrapose! ht
+    simp_all [Polynomial.Separable]
     exact isCoprime_one_right
 
 /-- **The core of `exists_resolvent_family`**: for every `n ≥ 1` there is a Morse family

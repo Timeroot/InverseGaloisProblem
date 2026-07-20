@@ -48,26 +48,30 @@ theorem galRestrictionProd_injective (K L : IntermediateField F E) [Normal F K] 
   have h_eq_K : ∀ x ∈ K, σ x = τ x := by
     intro x hx
     have h_eq_K : (galRestrictionProd K L σ).1 ⟨x, hx⟩ = (galRestrictionProd K L τ).1 ⟨x, hx⟩ := by
-      grind;
-    convert h_eq_K using 1;
-    simp [ galRestrictionProd ];
+      grind
+    convert h_eq_K using 1
+    simp [galRestrictionProd]
     grind only [AlgEquiv.restrictNormalHom_apply, #f843]
   have h_eq_L : ∀ x ∈ L, σ x = τ x := by
-    intro x hx; replace h_eq := congr_arg ( fun f => f.2 ( ⟨ x, hx ⟩ : L ) ) h_eq; simp_all [ galRestrictionProd ] ;
-    grind only [AlgEquiv.restrictNormalHom_apply];
-  ext x;
+    intro x hx
+    replace h_eq := congr_arg (fun f => f.2 (⟨x, hx⟩ : L)) h_eq
+    simp_all [galRestrictionProd]
+    grind only [AlgEquiv.restrictNormalHom_apply]
+  ext x
   have h_eq_adjoin : ∀ x ∈ IntermediateField.adjoin F (K ∪ L), σ x = τ x := by
-    intro x hx; induction hx using adjoin_induction; rename_i hx
+    intro x hx
+    induction hx using adjoin_induction
+    rename_i hx
     simp_all only [Set.mem_union, SetLike.mem_coe]
     cases hx with
     | inl h => simp_all only
-    | inr h_1 => simp_all only;
-    · simp [ AlgEquiv.commutes ];
-    · simp_all only [map_add];
-    · simp_all only [map_inv₀];
-    · simp [ *, map_mul ];
-  convert h_eq_adjoin x _;
-  convert mem_top ( x := x )
+    | inr h_1 => simp_all only
+    · simp [AlgEquiv.commutes]
+    · simp_all only [map_add]
+    · simp_all only [map_inv₀]
+    · simp [*, map_mul]
+  convert h_eq_adjoin x _
+  convert mem_top (x := x)
 
 /-- If `K ⊔ L = ⊤` and `K ⊓ L = ⊥` with both `K/F` and `L/F` Galois, then
 `Gal(E/F) ≅ Gal(K/F) × Gal(L/F)`. -/
@@ -92,17 +96,12 @@ theorem IntermediateField.inf_eq_bot_of_isGalois_coprime [FiniteDimensional F E]
     (K L : IntermediateField F E) [IsGalois F K] [IsGalois F L]
     (hcop : Nat.Coprime (finrank F K) (finrank F L)) :
     K ⊓ L = ⊥ := by
-  have h_deg_K : finrank F (↥(K ⊓ L)) ∣ finrank F K := by
-    convert IntermediateField.finrank_dvd_of_le_right ( inf_le_left : K ⊓ L ≤ K ) using 1
-  have h_deg_L : finrank F (↥(K ⊓ L)) ∣ finrank F L := by
-    have h_deg_L : finrank F (↥(K ⊓ L)) ∣ finrank F L := by
-      have h_sub : (K ⊓ L : IntermediateField F E) ≤ L := by
-        exact inf_le_right
-      have h_deg_L : ∀ (K L : IntermediateField F E), K ≤ L → finrank F K ∣ finrank F L := by
-        exact fun K L a => finrank_dvd_of_le_right a;
-      exact h_deg_L _ _ h_sub;
-    exact h_deg_L;
-  have := Nat.dvd_gcd h_deg_K h_deg_L; simp_all ;
+  have h_deg_K : finrank F (↥(K ⊓ L)) ∣ finrank F K :=
+    finrank_dvd_of_le_right inf_le_left
+  have h_deg_L : finrank F (↥(K ⊓ L)) ∣ finrank F L :=
+    finrank_dvd_of_le_right inf_le_right
+  have := Nat.dvd_gcd h_deg_K h_deg_L
+  simp_all
 
 /-
 Given a Galois extension `L/ℚ`, its image under an embedding into the algebraic closure
@@ -113,13 +112,13 @@ lemma IsInverseGalois.galois_image_in_algClosure
     (i : L →ₐ[ℚ] AlgebraicClosure ℚ) :
     IsGalois ℚ i.fieldRange ∧
     Nonempty (Gal(L/ℚ) ≃* Gal(i.fieldRange / ℚ)) := by
-  constructor;
-  · convert IsGalois.of_algEquiv _;
-    exact L;
-    all_goals try infer_instance;
-    exact AlgEquiv.ofInjectiveField i;
-  · refine' ⟨ _ ⟩;
-    refine' AlgEquiv.autCongr _;
+  constructor
+  · convert IsGalois.of_algEquiv _
+    exact L
+    all_goals try infer_instance
+    exact AlgEquiv.ofInjectiveField i
+  · refine' ⟨_⟩
+    refine' AlgEquiv.autCongr _
     exact AlgEquiv.ofInjective i i.injective
 
 /-!
@@ -142,7 +141,8 @@ instance algSupLeft : Algebra ↥K₁' ↥(K₁' ⊔ K₂') :=
 /-- Scalar tower F → K₁ → ↥(K₁ ⊔ K₂). -/
 instance towerSupLeft : IsScalarTower F' ↥K₁' ↥(K₁' ⊔ K₂') :=
   IsScalarTower.of_algebraMap_eq fun x => by
-    ext; simp [RingHom.algebraMap_toAlgebra, IntermediateField.inclusion, Subalgebra.inclusion]
+    ext
+    simp [RingHom.algebraMap_toAlgebra, IntermediateField.inclusion, Subalgebra.inclusion]
 
 /-- Algebra structure on K₂ → ↥(K₁ ⊔ K₂) via inclusion. -/
 instance algSupRight : Algebra ↥K₂' ↥(K₁' ⊔ K₂') :=
@@ -151,7 +151,8 @@ instance algSupRight : Algebra ↥K₂' ↥(K₁' ⊔ K₂') :=
 /-- Scalar tower F → K₂ → ↥(K₁ ⊔ K₂). -/
 instance towerSupRight : IsScalarTower F' ↥K₂' ↥(K₁' ⊔ K₂') :=
   IsScalarTower.of_algebraMap_eq fun x => by
-    ext; simp [RingHom.algebraMap_toAlgebra, IntermediateField.inclusion, Subalgebra.inclusion]
+    ext
+    simp [RingHom.algebraMap_toAlgebra, IntermediateField.inclusion, Subalgebra.inclusion]
 
 /-- The restriction map from `Gal(↥(K₁ ⊔ K₂)/F)` to `Gal(K₁/F) × Gal(K₂/F)`. -/
 def galSupRestrictionProd [Normal F' K₁'] [Normal F' K₂'] :
@@ -168,14 +169,16 @@ theorem galSupRestrictionProd_injective [Normal F' K₁'] [Normal F' K₂']
   have hK₂ : σ.restrictNormal ↥K₂' = τ.restrictNormal ↥K₂' := congr_arg Prod.snd h_eq
   ext ⟨a, ha⟩
   have ha_adj : a ∈ IntermediateField.adjoin F' (↑K₁' ∪ ↑K₂') := by
-    rw [← IntermediateField.sup_def]; exact ha
+    rw [← IntermediateField.sup_def]
+    exact ha
   induction ha_adj using IntermediateField.adjoin_induction with
   | mem x hx =>
     rcases hx with hx | hx
     · have commσ := AlgEquiv.restrictNormal_commutes σ ↥K₁' (⟨x, hx⟩ : ↥K₁')
       have commτ := AlgEquiv.restrictNormal_commutes τ ↥K₁' (⟨x, hx⟩ : ↥K₁')
       have key : (algebraMap ↥K₁' ↥(K₁' ⊔ K₂') ⟨x, hx⟩ : ↥(K₁' ⊔ K₂')) = ⟨x, ha⟩ := by
-        ext; simp [RingHom.algebraMap_toAlgebra, IntermediateField.inclusion, Subalgebra.inclusion]
+        ext
+        simp [RingHom.algebraMap_toAlgebra, IntermediateField.inclusion, Subalgebra.inclusion]
       rw [key] at commσ commτ
       have heq : σ.restrictNormal ↥K₁' ⟨x, hx⟩ = τ.restrictNormal ↥K₁' ⟨x, hx⟩ := by rw [hK₁]
       exact congr_arg (fun a => (a : ↥(K₁' ⊔ K₂')).val)
@@ -183,7 +186,8 @@ theorem galSupRestrictionProd_injective [Normal F' K₁'] [Normal F' K₂']
     · have commσ := AlgEquiv.restrictNormal_commutes σ ↥K₂' (⟨x, hx⟩ : ↥K₂')
       have commτ := AlgEquiv.restrictNormal_commutes τ ↥K₂' (⟨x, hx⟩ : ↥K₂')
       have key : (algebraMap ↥K₂' ↥(K₁' ⊔ K₂') ⟨x, hx⟩ : ↥(K₁' ⊔ K₂')) = ⟨x, ha⟩ := by
-        ext; simp [RingHom.algebraMap_toAlgebra, IntermediateField.inclusion, Subalgebra.inclusion]
+        ext
+        simp [RingHom.algebraMap_toAlgebra, IntermediateField.inclusion, Subalgebra.inclusion]
       rw [key] at commσ commτ
       have heq : σ.restrictNormal ↥K₂' ⟨x, hx⟩ = τ.restrictNormal ↥K₂' ⟨x, hx⟩ := by rw [hK₂]
       exact congr_arg (fun a => (a : ↥(K₁' ⊔ K₂')).val)
@@ -216,13 +220,16 @@ theorem galSup_card_eq [IsGalois F' K₁'] [IsGalois F' K₂']
     Nat.card Gal(↥(K₁' ⊔ K₂')/F') = Nat.card (Gal(↥K₁'/F') × Gal(↥K₂'/F')) := by
   -- Use the fact that the cardinality of the Galois group of a finite Galois extension is equal to the degree of the extension.
   have h_card_galois_sup : Nat.card (Gal(↥(K₁' ⊔ K₂')/F')) = finrank F' ↥(K₁' ⊔ K₂') := by
-    apply IsGalois.card_aut_eq_finrank;
+    apply IsGalois.card_aut_eq_finrank
   have h_card_galois_K1K2 : Nat.card (Gal(↥K₁'/F') × Gal(↥K₂'/F')) = finrank F' K₁' * finrank F' K₂' := by
-    simp [ Nat.card_prod, IsGalois.card_aut_eq_finrank ];
-    convert congr_arg₂ ( · * · ) ( IsGalois.card_aut_eq_finrank F' K₁' ) ( IsGalois.card_aut_eq_finrank F' K₂' ) using 1;
-    · exact FiniteDimensional.of_injective ( IntermediateField.inclusion ( le_sup_left : K₁' ≤ K₁' ⊔ K₂' ) ).toLinearMap ( IntermediateField.inclusion ( le_sup_left : K₁' ≤ K₁' ⊔ K₂' ) ).injective;
-    · exact FiniteDimensional.of_injective ( IntermediateField.inclusion ( le_sup_right : K₂' ≤ K₁' ⊔ K₂' ) ).toLinearMap ( IntermediateField.inclusion ( le_sup_right : K₂' ≤ K₁' ⊔ K₂' ) ).injective;
-  convert IntermediateField.LinearDisjoint.finrank_sup _;
+    simp [Nat.card_prod]
+    convert congr_arg₂ (· * ·) (IsGalois.card_aut_eq_finrank F' K₁')
+      (IsGalois.card_aut_eq_finrank F' K₂') using 1
+    · have h := IntermediateField.inclusion (le_sup_left : K₁' ≤ K₁' ⊔ K₂')
+      exact FiniteDimensional.of_injective h.toLinearMap h.injective
+    · have h := IntermediateField.inclusion (le_sup_right : K₂' ≤ K₁' ⊔ K₂')
+      exact FiniteDimensional.of_injective h.toLinearMap h.injective
+  convert IntermediateField.LinearDisjoint.finrank_sup _
   grind only [LinearDisjoint.of_finrank_coprime]
 
 /-- If `K₁` and `K₂` are Galois intermediate fields with coprime degrees, then
@@ -288,8 +295,10 @@ theorem IsInverseGalois.prod_of_coprime {G₁ G₂ : Type*} [Group G₁] [Group 
   -- Show coprimality of the degrees
   have hcop' : Nat.Coprime (finrank ℚ K₁) (finrank ℚ K₂) := by
     rwa [show finrank ℚ K₁ = Nat.card G₁ from ?_, show finrank ℚ K₂ = Nat.card G₂ from ?_]
-    · rw [← IsGalois.card_aut_eq_finrank]; exact Nat.card_congr (ψ₂.symm.trans φ₂).toEquiv
-    · rw [← IsGalois.card_aut_eq_finrank]; exact Nat.card_congr (ψ₁.symm.trans φ₁).toEquiv
+    · rw [← IsGalois.card_aut_eq_finrank]
+      exact Nat.card_congr (ψ₂.symm.trans φ₂).toEquiv
+    · rw [← IsGalois.card_aut_eq_finrank]
+      exact Nat.card_congr (ψ₁.symm.trans φ₁).toEquiv
   -- Apply the helper
   exact of_coprime_intermediate_fields K₁ K₂ hcop' (ψ₁.symm.trans φ₁) (ψ₂.symm.trans φ₂)
 

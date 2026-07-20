@@ -42,7 +42,8 @@ namespace D5
 
 /-- `f_d5 = X⁵ − 5X + 12` written in the resolvent normal form `X⁵ + C(-5)·X + C 12`. -/
 lemma f_d5_eq : f_d5 = X ^ 5 + C (-5 : ℚ) * X + C 12 := by
-  simp only [f_d5, map_neg]; ring
+  simp only [f_d5, map_neg]
+  ring
 
 /-- The sextic resolvent of `X⁵ − 5X + 12` (`p = -5, q = 12`) has the rational root `25`.
 This is the algebraic input that forces `|Gal f| ∣ 20`. -/

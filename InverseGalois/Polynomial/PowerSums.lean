@@ -24,10 +24,12 @@ Vandermonde det squared equals det of the Gram matrix.
 lemma vandermonde_det_sq (v : Fin 5 → K) :
     (Matrix.vandermonde v).det ^ 2 =
     (gramMatrixOfPowerSums (fun k => ∑ i : Fin 5, v i ^ k)).det := by
-      convert Matrix.det_mul ( Matrix.transpose ( vandermonde v ) ) ( vandermonde v ) using 1;
-      · rw [ Matrix.det_mul, Matrix.det_transpose, sq ];
-      · convert Matrix.det_mul _ _ using 2;
-        ext i j; simp [ Matrix.mul_apply, gramMatrixOfPowerSums ] ; ring;
+      convert Matrix.det_mul (Matrix.transpose (vandermonde v)) (vandermonde v) using 1
+      · rw [Matrix.det_mul, Matrix.det_transpose, sq]
+      · convert Matrix.det_mul _ _ using 2
+        ext i j
+        simp [Matrix.mul_apply, gramMatrixOfPowerSums]
+        ring_nf
 
 /-
 If the power sums have specific values, the Gram matrix determinant is 32000².
@@ -45,10 +47,16 @@ lemma gram_det_value (r : Fin 5 → K)
     (gramMatrixOfPowerSums (fun k => ∑ i : Fin 5, r i ^ k)).det =
     (32000 : K) ^ 2 := by
       -- Show that the matrix equals the specific matrix.
-      have h_matrix : gramMatrixOfPowerSums (fun k => ∑ i, r i ^ k) = !![5, 0, 0, 0, -80; 0, 0, 0, -80, -80; 0, 0, -80, -80, 0; 0, -80, -80, 0, 0; -80, -80, 0, 0, 1600] := by
-        ext i j; fin_cases i <;> fin_cases j <;> simp_all [ gramMatrixOfPowerSums ] ;
-      simp only [h_matrix, det_succ_row_zero];
-      simp [ Fin.sum_univ_succ, Fin.succAbove ];
+      have h_matrix : gramMatrixOfPowerSums (fun k => ∑ i, r i ^ k) =
+          !![5, 0, 0, 0, -80; 0, 0, 0, -80, -80; 0, 0, -80, -80, 0;
+            0, -80, -80, 0, 0; -80, -80, 0, 0, 1600] := by
+        ext i j
+        fin_cases i <;> fin_cases j <;>
+          simp only [gramMatrixOfPowerSums, Matrix.of_apply, Nat.reduceAdd,
+            hp0, hp1, hp2, hp3, hp4, hp5, hp6, hp7, hp8] <;>
+          simp
+      simp only [h_matrix, det_succ_row_zero]
+      simp [Fin.sum_univ_succ, Fin.succAbove]
       grind
 
 end

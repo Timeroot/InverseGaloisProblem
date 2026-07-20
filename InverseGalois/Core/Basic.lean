@@ -48,7 +48,8 @@ theorem of_surjective_galHom (L : Type) [Field L] [Algebra ℚ L]
     (hψ : Function.Surjective ψ) : IsInverseGalois H := by
   let N := ψ.ker
   refine ⟨fixedField N, inferInstance, (fixedField N).algebra', ?_, ?_, ⟨?_⟩⟩
-  · have : FiniteDimensional ℚ (fixedField N) := inferInstance; convert this
+  · have : FiniteDimensional ℚ (fixedField N) := inferInstance
+    convert this
   · exact IsGalois.of_fixedField_normal_subgroup N
   · exact (IsGalois.normalAutEquivQuotient N).symm.trans
       (QuotientGroup.quotientKerEquivOfSurjective ψ hψ)

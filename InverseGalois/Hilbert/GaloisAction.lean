@@ -45,7 +45,9 @@ theorem of_galActionHom_bijective' (n : ℕ) (f : ℚ[X]) (hf_irr : Irreducible 
       (IsAlgClosed.splits _), hf_deg, Fintype.card_fin]
   exact (IsInverseGalois.of_galActionHom_bijective f hf_irr hf_bij).of_mulEquiv
     { Equiv.permCongr (Fintype.equivOfCardEq h_card) with
-      map_mul' := fun σ τ => by ext; simp [Equiv.permCongr] }
+      map_mul' := fun σ τ => by
+        ext
+        simp [Equiv.permCongr] }
 
 /-- If `f` is irreducible and `Nat.card f.Gal = (natDegree f)!`, then `galActionHom f ℂ`
 is bijective. -/
@@ -64,7 +66,8 @@ theorem galActionHom_bijective_of_card_eq_factorial (f : ℚ[X]) (hf_irr : Irred
         Nat.card α = Nat.card β → ∀ {f : α → β}, Function.Injective f →
         Function.Surjective f := by
       intros α β hα hβ h_card f hf_inj
-      haveI := Fintype.ofFinite α; haveI := Fintype.ofFinite β
+      haveI := Fintype.ofFinite α
+      haveI := Fintype.ofFinite β
       exact ((Fintype.bijective_iff_injective_and_card f).mpr
         ⟨hf_inj, by simpa [Nat.card_eq_fintype_card] using h_card⟩).2
     grind only [Gal.galActionHom_injective, #fd6b]
@@ -98,7 +101,9 @@ theorem subgroup_eq_top_of_swap_and_cycle {α : Type*} [DecidableEq α] [Fintype
   obtain ⟨τ, hτG, hτ_swap⟩ := h_swap
   obtain ⟨c, hc⟩ : ∃ c, c ∉ σ.support ∧ ∀ x, x ≠ c → x ∈ σ.support := by
     obtain ⟨c, hc⟩ : ∃ c, c ∉ σ.support := by
-      exact not_forall.mp fun h => by have := Finset.eq_univ_of_forall h; aesop
+      exact not_forall.mp fun h => by
+        have := Finset.eq_univ_of_forall h
+        aesop
     have := Finset.eq_of_subset_of_card_le
       (show σ.support ⊆ Finset.univ \ {c} from fun x hx =>
         Finset.mem_sdiff.mpr ⟨Finset.mem_univ _, fun hx' => by aesop⟩)
@@ -107,9 +112,13 @@ theorem subgroup_eq_top_of_swap_and_cycle {α : Type*} [DecidableEq α] [Fintype
     obtain ⟨a, b, hab, hτ_ab⟩ := hτ_swap
     obtain ⟨g, hgG, hg⟩ := h_trans a c
     refine ⟨g b, ?_, ?_⟩ <;> simp_all
-    · intro h; have := g.injective (hg.trans h.symm); aesop
+    · intro h
+      have := g.injective (hg.trans h.symm)
+      aesop
     · convert G.mul_mem (G.mul_mem hgG hτG) (G.inv_mem hgG) using 1
-      ext x; simp [Equiv.swap_apply_def]; aesop
+      ext x
+      simp [Equiv.swap_apply_def]
+      aesop
   have h_star : ∀ x, x ≠ c → (Equiv.swap c x) ∈ G := by
     intro x hx
     have h_conj : ∀ k : ℕ, (Equiv.swap c (σ^[k] d)) ∈ G := by
@@ -118,7 +127,8 @@ theorem subgroup_eq_top_of_swap_and_cycle {α : Type*} [DecidableEq α] [Fintype
         G.mul_mem (G.mul_mem (G.pow_mem hσG k) hd.2) (G.inv_mem (G.pow_mem hσG k))
       convert this using 1
       simp [Equiv.Perm.ext_iff, Equiv.swap_apply_def]
-      intro x; split_ifs <;> simp_all [Equiv.symm_apply_eq]
+      intro x
+      split_ifs <;> simp_all [Equiv.symm_apply_eq]
       · exact False.elim (‹¬c = (σ ^ k) c› (by
           rw [show (σ ^ k) c = c from by
             exact Nat.recOn k (by simp) fun n ihn => by simp [*, pow_succ']]))
@@ -127,7 +137,8 @@ theorem subgroup_eq_top_of_swap_and_cycle {α : Type*} [DecidableEq α] [Fintype
       · exact ‹¬(σ ^ k) c = c›
           (by rw [Equiv.Perm.pow_apply_eq_self_of_apply_eq_self hc.1])
     have h_orbit : ∀ x ∈ σ.support, ∃ k : ℕ, σ^[k] d = x := by
-      intro x hx; simp_all [Equiv.Perm.IsCycle]
+      intro x hx
+      simp_all [Equiv.Perm.IsCycle]
       obtain ⟨k, hk⟩ := hσ_cycle.1.choose_spec.2 hx
       obtain ⟨m, hm⟩ := hσ_cycle.1.choose_spec.2 (show ¬σ d = d from by aesop)
       use Int.toNat ((k - m) % (orderOf σ))
@@ -135,7 +146,8 @@ theorem subgroup_eq_top_of_swap_and_cycle {α : Type*} [DecidableEq α] [Fintype
         Int.toNat_of_nonneg (Int.emod_nonneg _
           (Int.natCast_ne_zero.mpr (ne_of_gt (orderOf_pos σ)))), zpow_mod_orderOf]
       simp [zpow_sub]
-    obtain ⟨k, rfl⟩ := h_orbit x (hc.2 x hx); exact h_conj k
+    obtain ⟨k, rfl⟩ := h_orbit x (hc.2 x hx)
+    exact h_conj k
   have h_all : ∀ x y, x ≠ y → (Equiv.swap x y) ∈ G := by
     intro x y hxy
     by_cases hx : x = c
@@ -164,8 +176,11 @@ def xnSubXSubOne (n : ℕ) : ℚ[X] := X ^ n - X - C 1
 
 lemma xnSubXSubOne_natDegree (n : ℕ) (hn : 2 ≤ n) :
     (xnSubXSubOne n).natDegree = n := by
-  unfold xnSubXSubOne; rw [ Polynomial.natDegree_sub_eq_left_of_natDegree_lt ] <;> rw [ Polynomial.natDegree_sub_eq_left_of_natDegree_lt ] <;> norm_num ; linarith;
-  · linarith;
+  unfold xnSubXSubOne
+  rw [Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;>
+    rw [Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num
+  linarith
+  · linarith
   · lia
 
 /-- **Selmer's Theorem** (1956): The polynomial `Xⁿ - X - 1` is irreducible over `ℚ`
@@ -174,7 +189,8 @@ in Mathlib. -/
 theorem selmer_irreducible (n : ℕ) (hn : 2 ≤ n) :
     Irreducible (xnSubXSubOne n) := by
   have := Polynomial.X_pow_sub_X_sub_one_irreducible_rat (show n ≠ 1 by omega)
-  unfold xnSubXSubOne; convert this using 1
+  unfold xnSubXSubOne
+  convert this using 1
 
 /-
 For `n = 2`, the Galois group of `X² - X - 1` has order `2 = 2!`.
@@ -185,22 +201,34 @@ theorem gal_xnSubXSubOne_card_two :
     Nat.card (xnSubXSubOne 2).Gal = Nat.factorial 2 := by
   -- The Galois group of $X^2 - X - 1$ is isomorphic to $S_2$, which has order 2.
   have h_galois : Nat.card (xnSubXSubOne 2).Gal ∣ 2 := by
-    convert Subgroup.card_subgroup_dvd_card ( Subgroup.map ( Polynomial.Gal.galActionHom ( xnSubXSubOne 2 ) ℂ ) ⊤ ) using 1;
-    all_goals norm_num [ Fintype.card_perm ];
-    convert Fintype.card_congr ( Equiv.ofInjective _ <| Polynomial.Gal.galActionHom_injective _ _ );
-    exact Set.Finite.fintype ( Set.toFinite _ );
-    · exact ⟨ IsAlgClosed.splits _ ⟩;
-    · rw [ Fintype.card_ofFinset ];
-      · rw [ show ( xnSubXSubOne 2 : ℚ[X] ) = X ^ 2 - X - 1 by rfl, Polynomial.aroots_def ] ; norm_num;
-        rw [ show ( X ^ 2 - X - 1 : Polynomial ℂ ) = ( X - Polynomial.C ( ( 1 + Real.sqrt 5 ) / 2 : ℂ ) ) * ( X - Polynomial.C ( ( 1 - Real.sqrt 5 ) / 2 : ℂ ) ) by exact Polynomial.funext fun x => by norm_num; ring_nf; norm_num [ ← Complex.ofReal_pow ] ; ring ];
-        rw [ Polynomial.roots_mul <| by exact mul_ne_zero ( Polynomial.X_sub_C_ne_zero _ ) ( Polynomial.X_sub_C_ne_zero _ ), Polynomial.roots_X_sub_C, Polynomial.roots_X_sub_C ] ; norm_num;
-        rw [ Finset.card_insert_of_notMem, Finset.card_singleton ] <;> norm_num [ Complex.ext_iff ];
-        nlinarith [ Real.sq_sqrt ( show 0 ≤ 5 by norm_num ) ];
-      · simp [ Polynomial.rootSet_def ];
+    convert Subgroup.card_subgroup_dvd_card (Subgroup.map (Polynomial.Gal.galActionHom (xnSubXSubOne 2) ℂ) ⊤) using 1
+    all_goals norm_num [Fintype.card_perm]
+    convert Fintype.card_congr (Equiv.ofInjective _ <| Polynomial.Gal.galActionHom_injective _ _)
+    exact Set.Finite.fintype (Set.toFinite _)
+    · exact ⟨IsAlgClosed.splits _⟩
+    · rw [Fintype.card_ofFinset]
+      · rw [show (xnSubXSubOne 2 : ℚ[X]) = X ^ 2 - X - 1 by rfl, Polynomial.aroots_def]
+        norm_num
+        have hfac : (X ^ 2 - X - 1 : Polynomial ℂ) =
+            (X - Polynomial.C ((1 + Real.sqrt 5) / 2 : ℂ)) *
+              (X - Polynomial.C ((1 - Real.sqrt 5) / 2 : ℂ)) := by
+          refine Polynomial.funext fun x => ?_
+          norm_num
+          ring_nf
+          norm_num [← Complex.ofReal_pow]
+          ring
+        rw [hfac]
+        rw [Polynomial.roots_mul <| mul_ne_zero (Polynomial.X_sub_C_ne_zero _)
+            (Polynomial.X_sub_C_ne_zero _),
+          Polynomial.roots_X_sub_C, Polynomial.roots_X_sub_C]
+        norm_num
+        rw [Finset.card_insert_of_notMem, Finset.card_singleton] <;> norm_num [Complex.ext_iff]
+        nlinarith [Real.sq_sqrt (show 0 ≤ 5 by norm_num)]
+      · simp [Polynomial.rootSet_def]
   have h_galois_order : 2 ∣ Nat.card (xnSubXSubOne 2).Gal := by
-    convert Polynomial.Gal.prime_degree_dvd_card ( selmer_irreducible 2 ( by decide ) ) _;
-    · erw [ Polynomial.natDegree_sub_C, Polynomial.natDegree_sub_eq_left_of_natDegree_lt ] <;> norm_num;
-    · erw [ xnSubXSubOne_natDegree ] <;> norm_num;
+    convert Polynomial.Gal.prime_degree_dvd_card (selmer_irreducible 2 (by decide)) _
+    · erw [Polynomial.natDegree_sub_C, Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num
+    · erw [xnSubXSubOne_natDegree] <;> norm_num
   exact Nat.dvd_antisymm h_galois h_galois_order
 
 /-! -/

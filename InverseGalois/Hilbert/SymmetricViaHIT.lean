@@ -53,32 +53,35 @@ theorem card_gal_eq_factorial_of_root
     (hgdeg : g.natDegree = f.natDegree.factorial)
     (α : f.SplittingField) (hα : (aeval α) g = 0) :
     Nat.card f.Gal = f.natDegree.factorial := by
-  refine' le_antisymm _ _;
+  refine' le_antisymm _ _
   · have h_card_le : Nat.card f.Gal ≤ Nat.card (Equiv.Perm (f.rootSet f.SplittingField)) := by
-      apply_rules [ Nat.card_le_card_of_injective ];
-      convert Polynomial.Gal.galActionHom_injective f f.SplittingField;
-      exact ⟨ Polynomial.SplittingField.splits f ⟩;
-    refine' le_trans h_card_le _;
-    haveI := Classical.decEq ( Polynomial.rootSet f f.SplittingField ) ; simp [ Fintype.card_perm ] ;
-    rw [ Polynomial.card_rootSet_eq_natDegree ];
-    · exact hf;
-    · exact Polynomial.SplittingField.splits f;
+      apply_rules [Nat.card_le_card_of_injective]
+      convert Polynomial.Gal.galActionHom_injective f f.SplittingField
+      exact ⟨Polynomial.SplittingField.splits f⟩
+    refine' le_trans h_card_le _
+    haveI := Classical.decEq (Polynomial.rootSet f f.SplittingField)
+    simp [Fintype.card_perm]
+    rw [Polynomial.card_rootSet_eq_natDegree]
+    · exact hf
+    · exact Polynomial.SplittingField.splits f
   · have h_subfield : Module.finrank ℚ (↥(IntermediateField.adjoin ℚ {α})) =
         f.natDegree.factorial := by
       have h_minpoly : minpoly ℚ α = Polynomial.C (1 / g.leadingCoeff) * g := by
-        refine' Eq.symm ( minpoly.eq_of_irreducible_of_monic _ _ _ );
-        · rw [ irreducible_mul_iff ] ; aesop;
-        · aesop;
-        · rw [ Polynomial.Monic, Polynomial.leadingCoeff_mul, Polynomial.leadingCoeff_C, div_mul_cancel₀ ] ; aesop;
-      rw [ IntermediateField.adjoin.finrank ];
-      · rw [ h_minpoly, Polynomial.natDegree_C_mul ] <;> aesop;
-      · refine IsIntegral.of_finite ℚ α;
+        refine' Eq.symm (minpoly.eq_of_irreducible_of_monic _ _ _)
+        · rw [irreducible_mul_iff]
+          aesop
+        · aesop
+        · rw [Polynomial.Monic, Polynomial.leadingCoeff_mul, Polynomial.leadingCoeff_C, div_mul_cancel₀]
+          aesop
+      rw [IntermediateField.adjoin.finrank]
+      · rw [h_minpoly, Polynomial.natDegree_C_mul] <;> aesop
+      · refine IsIntegral.of_finite ℚ α
     have h_subfield : Module.finrank ℚ f.SplittingField ≥ Module.finrank ℚ (↥(IntermediateField.adjoin ℚ {α})) := by
-      have := Module.finrank_mul_finrank ℚ ( IntermediateField.adjoin ℚ { α } ) f.SplittingField;
-      exact Nat.le_of_dvd ( Module.finrank_pos ) ( dvd_of_mul_right_eq _ this );
+      have := Module.finrank_mul_finrank ℚ (IntermediateField.adjoin ℚ { α }) f.SplittingField
+      exact Nat.le_of_dvd (Module.finrank_pos) (dvd_of_mul_right_eq _ this)
     have h_card : Nat.card f.Gal = Module.finrank ℚ f.SplittingField := by
-      convert IsGalois.card_aut_eq_finrank ℚ f.SplittingField;
-      apply_rules [ IsGalois.mk ];
+      convert IsGalois.card_aut_eq_finrank ℚ f.SplittingField
+      apply_rules [IsGalois.mk]
     linarith
 
 /-- If `f` is separable and its Galois action on the complex roots is bijective, then the
@@ -99,7 +102,9 @@ theorem of_galActionHom_bijective_sep (f : ℚ[X]) (hf : f.Separable)
     rw [Polynomial.card_rootSet_eq_natDegree hf (IsAlgClosed.splits _), Fintype.card_fin]
   exact h_ig.of_mulEquiv
     { Equiv.permCongr (Fintype.equivOfCardEq h_card) with
-      map_mul' := fun σ τ => by ext; simp [Equiv.permCongr] }
+      map_mul' := fun σ τ => by
+        ext
+        simp [Equiv.permCongr] }
 
 /-- The Galois action of a separable polynomial is bijective when its Galois group has
 order `f.natDegree.factorial`.

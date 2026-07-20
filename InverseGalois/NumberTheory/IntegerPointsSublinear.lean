@@ -49,10 +49,11 @@ The `n`-th derivative of the evaluation of a polynomial is the evaluation of the
 -/
 lemma iteratedDeriv_polynomial_eval (p : ℝ[X]) (n : ℕ) (x : ℝ) :
     iteratedDeriv n (fun x => p.eval x) x = (((⇑derivative)^[n]) p).eval x := by
-  induction' n with n ih generalizing x;
-  · rfl;
-  · rw [ iteratedDeriv_succ ];
-    rw [ show iteratedDeriv n _ = _ from funext ih ] ; norm_num [ Function.iterate_succ_apply' ]
+  induction' n with n ih generalizing x
+  · rfl
+  · rw [iteratedDeriv_succ]
+    rw [show iteratedDeriv n _ = _ from funext ih]
+    norm_num [Function.iterate_succ_apply']
 
 /-
 For a polynomial `p` of degree `≤ k`, the `k`-th derivative of its evaluation is the
@@ -60,12 +61,13 @@ constant `k! · p.coeff k`.
 -/
 lemma iteratedDeriv_eval_top (p : ℝ[X]) (k : ℕ) (hp : p.natDegree ≤ k) (x : ℝ) :
     iteratedDeriv k (fun x => p.eval x) x = (k.factorial : ℝ) * p.coeff k := by
-  rw [ iteratedDeriv_polynomial_eval ];
-  rw [ Polynomial.eval ];
-  rw [ Polynomial.eval₂_eq_sum_range' ];
-  case n => exact 1;
-  · simp [ Polynomial.coeff_iterate_derivative, Nat.descFactorial_self ];
-  · exact lt_of_le_of_lt ( Polynomial.natDegree_le_of_degree_le <| Polynomial.degree_le_of_natDegree_le <| Polynomial.natDegree_iterate_derivative p k ) ( by omega )
+  rw [iteratedDeriv_polynomial_eval]
+  rw [Polynomial.eval]
+  rw [Polynomial.eval₂_eq_sum_range']
+  case n => exact 1
+  · simp [Polynomial.coeff_iterate_derivative, Nat.descFactorial_self]
+  · exact lt_of_le_of_lt (Polynomial.natDegree_le_of_degree_le <|
+      Polynomial.degree_le_of_natDegree_le <| Polynomial.natDegree_iterate_derivative p k) (by omega)
 
 /-! ### Iterated Rolle -/
 
@@ -79,33 +81,41 @@ lemma exists_iteratedDeriv_eq_zero (n : ℕ) (hn : 1 ≤ n) (g : ℝ → ℝ) (a
     (z : Fin (n + 1) → ℝ) (hz_mono : StrictMono z) (hz_mem : ∀ i, z i ∈ Set.Icc a b)
     (hz_zero : ∀ i, g (z i) = 0) :
     ∃ ξ ∈ Set.Ioo a b, iteratedDeriv n g ξ = 0 := by
-  induction' n with n ih generalizing g a b;
-  · grind;
-  · by_cases hn : 1 ≤ n;
-    · obtain ⟨w, hw_mono, hw_mem, hw_zero⟩ : ∃ w : Fin (n + 1) → ℝ, StrictMono w ∧ (∀ i : Fin (n + 1), w i ∈ Ioo a b) ∧ (∀ i : Fin (n + 1), deriv g (w i) = 0) := by
+  induction' n with n ih generalizing g a b
+  · grind
+  · by_cases hn : 1 ≤ n
+    · obtain ⟨w, hw_mono, hw_mem, hw_zero⟩ : ∃ w : Fin (n + 1) → ℝ, StrictMono w ∧ (∀ i : Fin (n + 1),
+        w i ∈ Ioo a b) ∧ (∀ i : Fin (n + 1), deriv g (w i) = 0) := by
         have h_rolle : ∀ i : Fin (n + 1), ∃ w ∈ Set.Ioo (z i.castSucc) (z i.succ), deriv g w = 0 := by
-          intro i;
-          apply_mod_cast exists_deriv_eq_zero <;> try linarith [ hz_mono i.castSucc_lt_succ ];
-          · exact hg.continuousOn.mono ( Set.Icc_subset_Icc ( hz_mem _ |>.1 ) ( hz_mem _ |>.2 ) );
-          · rw [ hz_zero, hz_zero ];
-        choose w hw₁ hw₂ using h_rolle;
-        refine' ⟨ w, _, _, hw₂ ⟩;
-        · intro i j hij;
-          exact lt_of_lt_of_le ( hw₁ i |>.2 ) ( le_of_lt ( hw₁ j |>.1 ) |> le_trans ( hz_mono.monotone ( Nat.succ_le_of_lt hij ) ) );
-        · exact fun i => ⟨ by linarith [ Set.mem_Ioo.mp ( hw₁ i ), Set.mem_Icc.mp ( hz_mem ( Fin.castSucc i ) ) ], by linarith [ Set.mem_Ioo.mp ( hw₁ i ), Set.mem_Icc.mp ( hz_mem ( Fin.succ i ) ) ] ⟩;
-      specialize ih hn ( deriv g ) ( w 0 ) ( w ( Fin.last n ) ) ?_ ?_ w hw_mono ?_ hw_zero;
-      · exact hw_mono ( Nat.zero_lt_of_lt hn );
+          intro i
+          apply_mod_cast exists_deriv_eq_zero <;> try linarith [hz_mono i.castSucc_lt_succ]
+          · exact hg.continuousOn.mono (Set.Icc_subset_Icc (hz_mem _ |>.1) (hz_mem _ |>.2))
+          · rw [hz_zero, hz_zero]
+        choose w hw₁ hw₂ using h_rolle
+        refine' ⟨w, _, _, hw₂⟩
+        · intro i j hij
+          exact lt_of_lt_of_le (hw₁ i |>.2) (le_of_lt (hw₁ j |>.1) |>
+            le_trans (hz_mono.monotone (Nat.succ_le_of_lt hij)))
+        · exact fun i => ⟨by linarith [Set.mem_Ioo.mp (hw₁ i), Set.mem_Icc.mp (hz_mem (Fin.castSucc i))],
+            by linarith [Set.mem_Ioo.mp (hw₁ i), Set.mem_Icc.mp (hz_mem (Fin.succ i))]⟩
+      specialize ih hn (deriv g) (w 0) (w (Fin.last n)) ?_ ?_ w hw_mono ?_ hw_zero
+      · exact hw_mono (Nat.zero_lt_of_lt hn)
       · have h_cont_diff : ContDiffOn ℝ (n + 1) g (Set.Ioo a b) := by
-          exact hg.mono <| Set.Ioo_subset_Icc_self;
+          exact hg.mono <| Set.Ioo_subset_Icc_self
         have h_cont_diff : ContDiffOn ℝ n (deriv g) (Set.Ioo a b) := by
-          exact h_cont_diff.deriv_of_isOpen isOpen_Ioo ( by norm_num );
-        exact h_cont_diff.mono ( Set.Icc_subset_Ioo ( hw_mem 0 |>.1 ) ( hw_mem ( Fin.last n ) |>.2 ) );
-      · exact fun i => ⟨ hw_mono.monotone ( Nat.zero_le _ ), hw_mono.monotone ( Fin.le_last _ ) ⟩;
-      · obtain ⟨ ξ, hξ₁, hξ₂ ⟩ := ih; use ξ; simp_all [ iteratedDeriv_succ' ] ;
-        constructor <;> linarith [ hw_mem 0, hw_mem ( Fin.last n ) ];
-    · interval_cases n ; simp_all [ iteratedDeriv_succ' ];
-      have := exists_deriv_eq_zero ( show z 0 < z 1 from hz_mono ( by decide ) ) ( show ContinuousOn g ( Set.Icc ( z 0 ) ( z 1 ) ) from hg.continuousOn.mono ( Set.Icc_subset_Icc ( by linarith ) ( by linarith ) ) ) ( by aesop );
-      exact ⟨ this.choose, ⟨ by linarith [ this.choose_spec.1.1 ], by linarith [ this.choose_spec.1.2 ] ⟩, this.choose_spec.2 ⟩
+          exact h_cont_diff.deriv_of_isOpen isOpen_Ioo (by norm_num)
+        exact h_cont_diff.mono (Set.Icc_subset_Ioo (hw_mem 0 |>.1) (hw_mem (Fin.last n) |>.2))
+      · exact fun i => ⟨hw_mono.monotone (Nat.zero_le _), hw_mono.monotone (Fin.le_last _)⟩
+      · obtain ⟨ξ, hξ₁, hξ₂⟩ := ih
+        use ξ
+        simp_all [iteratedDeriv_succ']
+        constructor <;> linarith [hw_mem 0, hw_mem (Fin.last n)]
+    · interval_cases n
+      simp_all [iteratedDeriv_succ']
+      have := exists_deriv_eq_zero (show z 0 < z 1 from hz_mono (by decide))
+        (show ContinuousOn g (Set.Icc (z 0) (z 1)) from
+          hg.continuousOn.mono (Set.Icc_subset_Icc (by linarith) (by linarith))) (by aesop)
+      exact ⟨this.choose, ⟨by linarith [this.choose_spec.1.1], by linarith [this.choose_spec.1.2]⟩, this.choose_spec.2⟩
 
 /-! ### The `k`-th divided difference via Lagrange interpolation -/
 
@@ -125,29 +135,37 @@ lemma ddiff_mul_prod_isInt (t : Fin (k + 1) → ℤ) (ht : Function.Injective t)
         (∏ p ∈ (Finset.univ : Finset (Fin (k + 1) × Fin (k + 1))).filter (fun p => p.1 ≠ p.2),
           ((t p.1 : ℝ) - (t p.2 : ℝ))) = (z : ℝ) := by
   -- By definition of $ddiff$, we have:
-  have h_ddiff : ddiff (Finset.image (fun i : Fin (k + 1) => (t i : ℝ)) Finset.univ) f = ∑ i : Fin (k + 1), (f (t i : ℝ)) * (1 / (∏ j ∈ Finset.univ.erase i, ((t i : ℝ) - (t j : ℝ)))) := by
-    unfold ddiff Lagrange.interpolate;
-    simp [ Finset.card_image_of_injective _ ( show Function.Injective ( fun i : Fin ( k + 1 ) => ( t i : ℝ ) ) from fun i j hij => ht <| by simpa using hij ) ];
-    rw [ Finset.sum_image <| by intros i hi j hj hij; exact ht <| by simpa using hij ];
-    refine' Finset.sum_congr rfl fun i hi => congr_arg _ _;
-    convert Lagrange.leadingCoeff_basis _ _ using 1;
-    convert Polynomial.coeff_natDegree using 1;
-    convert rfl;
-    · rw [ Lagrange.natDegree_basis ] <;> norm_num [ Finset.card_image_of_injective _ ( show Function.Injective ( fun i : Fin ( k + 1 ) => ( t i : ℝ ) ) from fun i j hij => ht <| by simpa using hij ) ];
-    · refine' congr_arg _ ( Finset.prod_bij ( fun j hj => ( t j : ℝ ) ) _ _ _ _ ) <;> simp [ ht.eq_iff ];
-      exact fun b hb x hx => ⟨ x, by rintro rfl; exact hb hx.symm, hx ⟩;
-    · exact fun x hx y hy hxy => by aesop;
-    · exact Finset.mem_image_of_mem _ hi;
-  choose m hm using hf;
+  have h_ddiff : ddiff (Finset.image (fun i : Fin (k + 1) => (t i : ℝ)) Finset.univ) f =
+      ∑ i : Fin (k + 1), (f (t i : ℝ)) * (1 / (∏ j ∈ Finset.univ.erase i,
+      ((t i : ℝ) - (t j : ℝ)))) := by
+    unfold ddiff Lagrange.interpolate
+    simp [Finset.card_image_of_injective _ (show Function.Injective (fun i : Fin (k + 1) => (t i : ℝ)) from
+      fun i j hij => ht <| by simpa using hij)]
+    rw [Finset.sum_image <| fun i hi j hj hij => ht <| by simpa using hij]
+    refine' Finset.sum_congr rfl fun i hi => congr_arg _ _
+    convert Lagrange.leadingCoeff_basis _ _ using 1
+    convert Polynomial.coeff_natDegree using 1
+    convert rfl
+    · rw [Lagrange.natDegree_basis] <;> norm_num [Finset.card_image_of_injective _
+        (show Function.Injective (fun i : Fin (k + 1) => (t i : ℝ)) from fun i j hij => ht <| by simpa using hij)]
+    · refine' congr_arg _ (Finset.prod_bij (fun j hj => (t j : ℝ)) _ _ _ _) <;> simp [ht.eq_iff]
+      refine fun b hb x hx => ⟨x, ?_, hx⟩
+      rintro rfl
+      exact hb hx.symm
+    · exact fun x hx y hy hxy => by aesop
+    · exact Finset.mem_image_of_mem _ hi
+  choose m hm using hf
   -- Rewrite the product $\prod_{p \in \text{univ.filter} (\lambda p : \text{Fin} (k + 1) \times \text{Fin} (k + 1), p.1 \neq p.2)} (t p.1 - t p.2)$ as $\prod_{i \in \text{univ}} \prod_{j \in \text{univ.erase} i} (t i - t j)$.
-  have h_prod : ∏ p ∈ Finset.univ.filter (fun p : Fin (k + 1) × Fin (k + 1) => p.1 ≠ p.2), ((t p.1 : ℝ) - (t p.2 : ℝ)) = ∏ i : Fin (k + 1), ∏ j ∈ Finset.univ.erase i, ((t i : ℝ) - (t j : ℝ)) := by
-    rw [ Finset.prod_sigma' ];
-    refine' Finset.prod_bij ( fun p hp => ⟨ p.1, p.2 ⟩ ) _ _ _ _ <;> aesop;
-  use ∑ i : Fin (k + 1), m i * ∏ j ∈ Finset.univ.erase i, ∏ k ∈ Finset.univ.erase j, (t j - t k);
-  simp_all [ Finset.sum_mul ];
-  refine Finset.sum_congr rfl fun i hi => ?_;
-  rw [ mul_assoc, inv_mul_eq_div, div_eq_mul_inv ];
-  rw [ ← Finset.prod_erase_mul _ _ hi, mul_assoc, mul_inv_cancel₀ ( Finset.prod_ne_zero_iff.mpr fun j hj => sub_ne_zero_of_ne <| mod_cast ht.ne <| by aesop ), mul_one ]
+  have h_prod : ∏ p ∈ Finset.univ.filter (fun p : Fin (k + 1) × Fin (k + 1) => p.1 ≠ p.2), ((t p.1 : ℝ) - (t p.2 : ℝ)) =
+      ∏ i : Fin (k + 1), ∏ j ∈ Finset.univ.erase i, ((t i : ℝ) - (t j : ℝ)) := by
+    rw [Finset.prod_sigma']
+    refine' Finset.prod_bij (fun p hp => ⟨p.1, p.2⟩) _ _ _ _ <;> aesop
+  use ∑ i : Fin (k + 1), m i * ∏ j ∈ Finset.univ.erase i, ∏ k ∈ Finset.univ.erase j, (t j - t k)
+  simp_all [Finset.sum_mul]
+  refine Finset.sum_congr rfl fun i hi => ?_
+  rw [mul_assoc, inv_mul_eq_div, div_eq_mul_inv]
+  rw [← Finset.prod_erase_mul _ _ hi, mul_assoc,
+    mul_inv_cancel₀ (Finset.prod_ne_zero_iff.mpr fun j hj => sub_ne_zero_of_ne <| mod_cast ht.ne <| by aesop), mul_one]
 
 /-
 **Mean value theorem for divided differences.**  For `f` that is `Cᵏ` on `[a,b]` and
@@ -162,39 +180,63 @@ lemma exists_ddiff_eq (k : ℕ) (hk : 1 ≤ k) (f : ℝ → ℝ) (a b : ℝ) (ha
   -- By definition of $L$, we know that its $k$-th derivative is $k! \cdot \text{coeff}(L, k)$.
   set L : Polynomial ℝ := Lagrange.interpolate (Finset.image t Finset.univ) id f
   have hL_deriv : ∀ x ∈ Set.Ioo a b, iteratedDeriv k (fun x => L.eval x) x = k.factorial * L.coeff k := by
-    intro x hx; rw [ iteratedDeriv_eval_top ] ;
+    intro x hx
+    rw [iteratedDeriv_eval_top]
     have hL_deg : L.natDegree ≤ k := by
       have hL_card : (Finset.image t Finset.univ).card = k + 1 := by
-        rw [ Finset.card_image_of_injective _ ht_mono.injective, Finset.card_fin ]
-      convert Polynomial.natDegree_le_of_degree_le ( Lagrange.degree_interpolate_le _ _ ) using 1 ; aesop;
+        rw [Finset.card_image_of_injective _ ht_mono.injective, Finset.card_fin]
+      convert Polynomial.natDegree_le_of_degree_le (Lagrange.degree_interpolate_le _ _) using 1
+      aesop
       exact fun x hx y hy hxy => hxy
-    generalize_proofs at *; (
+    generalize_proofs at *
+    (
     exact hL_deg)
-  generalize_proofs at *; (
+  generalize_proofs at *
+  (
   -- By Rolle's theorem, there exists a point $\xi \in (a, b)$ such that $g^{(k)}(\xi) = 0$.
   obtain ⟨ξ, hξ⟩ : ∃ ξ ∈ Set.Ioo a b, iteratedDeriv k (fun x => f x - L.eval x) ξ = 0 := by
     apply exists_iteratedDeriv_eq_zero k hk (fun x => f x - L.eval x) a b hab (by
-    refine' hf.sub _;
-    exact ContDiff.contDiffOn ( by simpa only [ Polynomial.eval_eq_sum_range ] using ContDiff.sum fun i hi => ContDiff.mul ( contDiff_const ) ( contDiff_id.pow i ) )) t ht_mono ht_mem (by
-    simp +zetaDelta at *;
-    intro i; rw [ Polynomial.eval_finset_sum, Finset.sum_eq_single ( t i ) ] <;> simp [ Lagrange.basis ] ;
-    · simp [ Polynomial.eval_prod, Lagrange.basisDivisor ];
-      rw [ Finset.prod_eq_one fun x hx => by rw [ inv_mul_cancel₀ ] ; exact sub_ne_zero_of_ne <| by intro h; have := Finset.mem_erase.mp hx; aesop ] ; ring;
-    · intro j hj; rw [ Polynomial.eval_prod ] ; exact Or.inr <| Finset.prod_eq_zero ( Finset.mem_erase_of_ne_of_mem ( Ne.symm hj ) <| Finset.mem_image_of_mem _ <| Finset.mem_univ _ ) <| by simp [ Lagrange.basisDivisor ] ;)
-  generalize_proofs at *; (
+    refine' hf.sub _
+    refine ContDiff.contDiffOn ?_
+    simpa only [Polynomial.eval_eq_sum_range] using
+      ContDiff.sum fun i hi => ContDiff.mul contDiff_const (contDiff_id.pow i)) t ht_mono ht_mem (by
+    simp +zetaDelta at *
+    intro i
+    rw [Polynomial.eval_finset_sum, Finset.sum_eq_single (t i)] <;> simp [Lagrange.basis]
+    · simp [Polynomial.eval_prod, Lagrange.basisDivisor]
+      rw [Finset.prod_eq_one fun x hx => by
+        rw [inv_mul_cancel₀]
+        refine sub_ne_zero_of_ne ?_
+        intro h
+        have := Finset.mem_erase.mp hx
+        aesop]
+      ring
+    · intro j hj
+      rw [Polynomial.eval_prod]
+      refine Or.inr <| Finset.prod_eq_zero
+        (Finset.mem_erase_of_ne_of_mem (Ne.symm hj) <| Finset.mem_image_of_mem _ <|
+          Finset.mem_univ _) ?_
+      simp [Lagrange.basisDivisor])
+  generalize_proofs at *
+  (
   -- By definition of $g$, we know that its $k$-th derivative is $f^{(k)}(\xi) - L^{(k)}(\xi)$.
-  have hg_deriv : iteratedDeriv k (fun x => f x - L.eval x) ξ = iteratedDeriv k f ξ - iteratedDeriv k (fun x => L.eval x) ξ := by
-    apply_rules [ iteratedDeriv_sub ];
-    · exact hf.contDiffAt ( Icc_mem_nhds hξ.1.1 hξ.1.2 );
-    · simp +zetaDelta at *;
-      simp [ Polynomial.eval_finset_sum ];
-      refine' ContDiffAt.sum fun i hi => ContDiffAt.mul _ _ <;> norm_num [ Polynomial.eval_eq_sum_range ];
-      · exact contDiffAt_const;
-      · exact ContDiffAt.sum fun _ _ => ContDiffAt.mul ( contDiffAt_const ) ( contDiffAt_id.pow _ )
-  generalize_proofs at *; (
-  simp_all [ ddiff ];
-  simp +zetaDelta at *;
-  exact ⟨ ξ, hξ.1, by rw [ Finset.card_image_of_injective _ ht_mono.injective ] ; norm_num [ Finset.card_univ ] ; linarith [ hL_deriv ξ hξ.1.1 hξ.1.2 ] ⟩)))
+  have hg_deriv : iteratedDeriv k (fun x => f x - L.eval x) ξ =
+      iteratedDeriv k f ξ - iteratedDeriv k (fun x => L.eval x) ξ := by
+    apply_rules [iteratedDeriv_sub]
+    · exact hf.contDiffAt (Icc_mem_nhds hξ.1.1 hξ.1.2)
+    · simp +zetaDelta at *
+      simp [Polynomial.eval_finset_sum]
+      refine' ContDiffAt.sum fun i hi => ContDiffAt.mul _ _ <;> norm_num [Polynomial.eval_eq_sum_range]
+      · exact contDiffAt_const
+      · exact ContDiffAt.sum fun _ _ => ContDiffAt.mul (contDiffAt_const) (contDiffAt_id.pow _)
+  generalize_proofs at *
+  (
+  simp_all [ddiff]
+  simp +zetaDelta at *
+  exact ⟨ξ, hξ.1, by
+    rw [Finset.card_image_of_injective _ ht_mono.injective]
+    norm_num [Finset.card_univ]
+    linarith [hL_deriv ξ hξ.1.1 hξ.1.2]⟩)))
 
 /-
 **Two distinct zeros of the `n`-th derivative from `n+2` zeros.**  A counting form of
@@ -208,34 +250,44 @@ lemma exists_two_iteratedDeriv_eq_zero (n : ℕ) (hn : 1 ≤ n) (g : ℝ → ℝ
     (hz_zero : ∀ i, g (z i) = 0) :
     ∃ ξ₁ ξ₂, ξ₁ ∈ Set.Ioo a b ∧ ξ₂ ∈ Set.Ioo a b ∧ ξ₁ ≠ ξ₂ ∧
       iteratedDeriv n g ξ₁ = 0 ∧ iteratedDeriv n g ξ₂ = 0 := by
-  induction' n, hn using Nat.le_induction with n hn ih generalizing g a b;
-  · simp_all [ iteratedDeriv_eq_iterate ];
+  induction' n, hn using Nat.le_induction with n hn ih generalizing g a b
+  · simp_all [iteratedDeriv_eq_iterate]
     -- By Rolle's theorem, between any two zeros of $g$, there is at least one zero of $g'$.
     have h_rolle : ∀ i j : Fin 3, i < j → ∃ ξ ∈ Set.Ioo (z i) (z j), deriv g ξ = 0 := by
-      intros i j hij; apply_mod_cast exists_deriv_eq_zero <;> try linarith [ hz_mono hij ] ;
-      · exact hg.continuousOn.mono ( Set.Icc_subset_Icc ( hz_mem i |>.1 ) ( hz_mem j |>.2 ) );
-      · rw [ hz_zero i, hz_zero j ];
-    obtain ⟨ ξ₁, hξ₁₁, hξ₁₂ ⟩ := h_rolle 0 1 ( by decide ) ; obtain ⟨ ξ₂, hξ₂₁, hξ₂₂ ⟩ := h_rolle 1 2 ( by decide ) ; exact ⟨ ξ₁, ⟨ by linarith [ hz_mem 0, hz_mem 1, hξ₁₁.1 ], by linarith [ hz_mem 0, hz_mem 1, hξ₁₁.2 ] ⟩, ξ₂, ⟨ by linarith [ hz_mem 1, hz_mem 2, hξ₂₁.1 ], by linarith [ hz_mem 1, hz_mem 2, hξ₂₁.2 ] ⟩, by linarith [ hξ₁₁.1, hξ₁₁.2, hξ₂₁.1, hξ₂₁.2 ], hξ₁₂, hξ₂₂ ⟩ ;
+      intros i j hij
+      apply_mod_cast exists_deriv_eq_zero <;> try linarith [hz_mono hij]
+      · exact hg.continuousOn.mono (Set.Icc_subset_Icc (hz_mem i |>.1) (hz_mem j |>.2))
+      · rw [hz_zero i, hz_zero j]
+    obtain ⟨ξ₁, hξ₁₁, hξ₁₂⟩ := h_rolle 0 1 (by decide)
+    obtain ⟨ξ₂, hξ₂₁, hξ₂₂⟩ := h_rolle 1 2 (by decide)
+    exact ⟨ξ₁, ⟨by linarith [hz_mem 0, hz_mem 1, hξ₁₁.1], by linarith [hz_mem 0, hz_mem 1, hξ₁₁.2]⟩, ξ₂,
+      ⟨by linarith [hz_mem 1, hz_mem 2, hξ₂₁.1], by linarith [hz_mem 1, hz_mem 2, hξ₂₁.2]⟩,
+      by linarith [hξ₁₁.1, hξ₁₁.2, hξ₂₁.1, hξ₂₁.2], hξ₁₂, hξ₂₂⟩
   · obtain ⟨w, hw⟩ : ∃ w : Fin (n + 2) → ℝ, StrictMono w ∧ (∀ i, w i ∈ Set.Ioo a b) ∧ (∀ i, deriv g (w i) = 0) := by
       have h_rolle : ∀ i : Fin (n + 2), ∃ w_i ∈ Set.Ioo (z i.castSucc) (z i.succ), deriv g w_i = 0 := by
-        intro i;
-        apply_mod_cast exists_deriv_eq_zero <;> try linarith [ hz_mono i.castSucc_lt_succ ];
-        · exact hg.continuousOn.mono ( Set.Icc_subset_Icc ( hz_mem _ |>.1 ) ( hz_mem _ |>.2 ) );
-        · rw [ hz_zero, hz_zero ];
-      choose w hw using h_rolle;
-      refine' ⟨ w, _, _, _ ⟩;
-      · intro i j hij;
-        exact lt_of_lt_of_le ( hw i |>.1.2 ) ( le_of_lt ( hw j |>.1.1 ) |> le_trans ( hz_mono.monotone ( Nat.succ_le_of_lt hij ) ) );
-      · grind +qlia;
-      · exact fun i => hw i |>.2;
-    specialize ih ( deriv g ) ( w 0 ) ( w ( Fin.last _ ) ) ?_ ?_ w hw.1 ?_ hw.2.2;
-    · exact hw.1 ( Nat.zero_lt_succ _ );
+        intro i
+        apply_mod_cast exists_deriv_eq_zero <;> try linarith [hz_mono i.castSucc_lt_succ]
+        · exact hg.continuousOn.mono (Set.Icc_subset_Icc (hz_mem _ |>.1) (hz_mem _ |>.2))
+        · rw [hz_zero, hz_zero]
+      choose w hw using h_rolle
+      refine' ⟨w, _, _, _⟩
+      · intro i j hij
+        exact lt_of_lt_of_le (hw i |>.1.2) (le_of_lt (hw j |>.1.1) |>
+          le_trans (hz_mono.monotone (Nat.succ_le_of_lt hij)))
+      · grind +qlia
+      · exact fun i => hw i |>.2
+    specialize ih (deriv g) (w 0) (w (Fin.last _)) ?_ ?_ w hw.1 ?_ hw.2.2
+    · exact hw.1 (Nat.zero_lt_succ _)
     · have h_cont_diff : ContDiffOn ℝ (n + 1) g (Set.Ioo a b) := by
-        exact hg.mono <| Set.Ioo_subset_Icc_self;
-      exact h_cont_diff.deriv_of_isOpen isOpen_Ioo ( by norm_num ) |> ContDiffOn.mono <| Set.Icc_subset_Ioo ( hw.2.1 0 |>.1 ) ( hw.2.1 ( Fin.last _ ) |>.2 );
-    · exact fun i => ⟨ hw.1.monotone ( Nat.zero_le _ ), hw.1.monotone ( Fin.le_last _ ) ⟩;
-    · obtain ⟨ ξ₁, ξ₂, hξ₁, hξ₂, hne, h₁, h₂ ⟩ := ih; use ξ₁, ξ₂; simp_all [ iteratedDeriv_succ' ] ;
-      exact ⟨ ⟨ by linarith [ hw.2.1 0 ], by linarith [ hw.2.1 ( Fin.last _ ) ] ⟩, ⟨ by linarith [ hw.2.1 0 ], by linarith [ hw.2.1 ( Fin.last _ ) ] ⟩ ⟩
+        exact hg.mono <| Set.Ioo_subset_Icc_self
+      exact h_cont_diff.deriv_of_isOpen isOpen_Ioo (by norm_num) |> ContDiffOn.mono <|
+        Set.Icc_subset_Ioo (hw.2.1 0 |>.1) (hw.2.1 (Fin.last _) |>.2)
+    · exact fun i => ⟨hw.1.monotone (Nat.zero_le _), hw.1.monotone (Fin.le_last _)⟩
+    · obtain ⟨ξ₁, ξ₂, hξ₁, hξ₂, hne, h₁, h₂⟩ := ih
+      use ξ₁, ξ₂
+      simp_all [iteratedDeriv_succ']
+      exact ⟨⟨by linarith [hw.2.1 0], by linarith [hw.2.1 (Fin.last _)]⟩, ⟨by linarith [hw.2.1 0],
+        by linarith [hw.2.1 (Fin.last _)]⟩⟩
 
 /-
 **The `k`-th divided difference vanishes on a small block.**  For `k+1` strictly
@@ -256,33 +308,45 @@ lemma block_ddiff_zero (f : ℝ → ℝ) (k : ℕ) (hk : 2 ≤ k)
   obtain ⟨z, hz⟩ : ∃ z : ℤ, ddiff (Finset.image (fun i => ((p i : ℤ) : ℝ)) Finset.univ) f *
       (∏ p' ∈ (Finset.univ : Finset (Fin (k + 1) × Fin (k + 1))).filter (fun p' => p'.1 ≠ p'.2),
         ((p p'.1 : ℝ) - (p p'.2 : ℝ))) = (z : ℝ) := by
-          convert ddiff_mul_prod_isInt p hp_mono.injective f hp_int using 1;
+          convert ddiff_mul_prod_isInt p hp_mono.injective f hp_int using 1
   -- From Step A, we have $|d| = |iteratedDeriv k f ξ| / k!$.
-  obtain ⟨ξ, hξ⟩ : ∃ ξ ∈ Set.Ioo ((p 0 : ℝ)) ((p (Fin.last k) : ℝ)), ddiff (Finset.image (fun i => ((p i : ℤ) : ℝ)) Finset.univ) f * (k.factorial : ℝ) = iteratedDeriv k f ξ := by
-    convert exists_ddiff_eq k ( by linarith ) f ( p 0 : ℝ ) ( p ( Fin.last k ) : ℝ ) _ _ _ _ _ using 1;
-    · exact_mod_cast hp_mono ( Nat.zero_lt_of_lt hk );
-    · exact hf.mono ( Set.Icc_subset_Ici_self.trans ( Set.Ici_subset_Ici.2 <| by linarith [ hp_mem 0 ] ) );
-    · exact fun i j hij => Int.cast_lt.mpr ( hp_mono hij );
-    · exact fun i => ⟨ mod_cast hp_mono.monotone ( Nat.zero_le _ ), mod_cast hp_mono.monotone ( Fin.le_last _ ) ⟩;
+  obtain ⟨ξ, hξ⟩ : ∃ ξ ∈ Set.Ioo ((p 0 : ℝ)) ((p (Fin.last k) : ℝ)),
+      ddiff (Finset.image (fun i => ((p i : ℤ) : ℝ)) Finset.univ) f * (k.factorial : ℝ) = iteratedDeriv k f ξ := by
+    convert exists_ddiff_eq k (by linarith) f (p 0 : ℝ) (p (Fin.last k) : ℝ) _ _ _ _ _ using 1
+    · exact_mod_cast hp_mono (Nat.zero_lt_of_lt hk)
+    · exact hf.mono (Set.Icc_subset_Ici_self.trans (Set.Ici_subset_Ici.2 <| by linarith [hp_mem 0]))
+    · exact fun i j hij => Int.cast_lt.mpr (hp_mono hij)
+    · exact fun i => ⟨mod_cast hp_mono.monotone (Nat.zero_le _), mod_cast hp_mono.monotone (Fin.le_last _)⟩
   -- From Step C, we have $|P| \leq H^{k(k+1)}$.
-  have hP_bound : |∏ p' ∈ (Finset.univ : Finset (Fin (k + 1) × Fin (k + 1))).filter (fun p' => p'.1 ≠ p'.2), ((p p'.1 : ℝ) - (p p'.2 : ℝ))| ≤ H ^ (k * (k + 1)) := by
-    rw [ Finset.abs_prod ];
-    refine' le_trans ( Finset.prod_le_prod ( fun _ _ => abs_nonneg _ ) fun _ _ => show |( p _ : ℝ ) - p _| ≤ H from _ ) _;
-    · exact abs_sub_le_iff.mpr ⟨ by linarith [ hp_mem ‹Fin ( k + 1 ) × Fin ( k + 1 ) ›.1, hp_mem ‹Fin ( k + 1 ) × Fin ( k + 1 ) ›.2 ], by linarith [ hp_mem ‹Fin ( k + 1 ) × Fin ( k + 1 ) ›.1, hp_mem ‹Fin ( k + 1 ) × Fin ( k + 1 ) ›.2 ] ⟩;
-    · norm_num [ Finset.filter_not, Finset.card_sdiff ];
-      rw [ show ( Finset.univ.filter fun a : Fin ( k + 1 ) × Fin ( k + 1 ) => a.1 = a.2 ) = Finset.image ( fun i : Fin ( k + 1 ) => ( i, i ) ) Finset.univ from by ext ⟨ i, j ⟩ ; aesop ] ; rw [ Finset.card_image_of_injective _ fun i j hij => by simpa using hij ] ; norm_num [ Nat.succ_mul ];
+  have hP_bound : |∏ p' ∈ (Finset.univ : Finset (Fin (k + 1) × Fin (k + 1))).filter (fun p' => p'.1 ≠ p'.2),
+      ((p p'.1 : ℝ) - (p p'.2 : ℝ))| ≤ H ^ (k * (k + 1)) := by
+    rw [Finset.abs_prod]
+    refine' le_trans (Finset.prod_le_prod (fun _ _ => abs_nonneg _) fun _ _ => show |(p _ : ℝ) - p _| ≤ H from _) _
+    · refine abs_sub_le_iff.mpr ⟨?_, ?_⟩ <;>
+        linarith [hp_mem ‹Fin (k + 1) × Fin (k + 1)›.1, hp_mem ‹Fin (k + 1) × Fin (k + 1)›.2]
+    · norm_num [Finset.filter_not, Finset.card_sdiff]
+      have hfilter : (Finset.univ.filter fun a : Fin (k + 1) × Fin (k + 1) => a.1 = a.2) =
+          Finset.image (fun i : Fin (k + 1) => (i, i)) Finset.univ := by
+        ext ⟨i, j⟩
+        aesop
+      rw [hfilter]
+      rw [Finset.card_image_of_injective _ fun i j hij => by simpa using hij]
+      norm_num [Nat.succ_mul]
   -- From Step D, we have $|z| < 1$.
   have hz_lt_one : |(z : ℝ)| < 1 := by
     have hz_lt_one : |iteratedDeriv k f ξ| * H ^ (k * (k + 1)) < k.factorial := by
-      convert hsmall ξ ⟨ by linarith [ hξ.1.1, hp_mem 0 ], by linarith [ hξ.1.2, hp_mem ( Fin.last k ) ] ⟩ using 1;
-      rw [ iteratedDerivWithin_eq_iteratedDeriv ];
-      · exact uniqueDiffOn_Ici _;
-      · exact hf.contDiffAt ( Ici_mem_nhds <| by linarith [ hξ.1.1, hp_mem 0 ] );
-      · exact Set.mem_Ici.mpr ( by linarith [ hξ.1.1, hp_mem 0 ] );
-    rw [ ← hz, abs_mul ];
-    rw [ ← hξ.2, abs_mul, abs_of_nonneg ( by positivity : ( 0 : ℝ ) ≤ k.factorial ) ] at *;
-    nlinarith [ show ( k.factorial : ℝ ) > 0 by positivity, mul_le_mul_of_nonneg_left hP_bound <| show ( 0 : ℝ ) ≤ |ddiff ( Finset.image ( fun i : Fin ( k + 1 ) => ( p i : ℝ ) ) Finset.univ ) f| by positivity ];
-  norm_cast at hz_lt_one; simp_all [ Finset.prod_eq_zero_iff, sub_eq_zero, hp_mono.injective.eq_iff ] ;
+      convert hsmall ξ ⟨by linarith [hξ.1.1, hp_mem 0], by linarith [hξ.1.2, hp_mem (Fin.last k)]⟩ using 1
+      rw [iteratedDerivWithin_eq_iteratedDeriv]
+      · exact uniqueDiffOn_Ici _
+      · exact hf.contDiffAt (Ici_mem_nhds <| by linarith [hξ.1.1, hp_mem 0])
+      · exact Set.mem_Ici.mpr (by linarith [hξ.1.1, hp_mem 0])
+    rw [← hz, abs_mul]
+    rw [← hξ.2, abs_mul, abs_of_nonneg (by positivity : (0 : ℝ) ≤ k.factorial)] at *
+    nlinarith [show (k.factorial : ℝ) > 0 by positivity,
+      mul_le_mul_of_nonneg_left hP_bound <|
+        show (0 : ℝ) ≤ |ddiff (Finset.image (fun i : Fin (k + 1) => (p i : ℝ)) Finset.univ) f| by positivity]
+  norm_cast at hz_lt_one
+  simp_all [Finset.prod_eq_zero_iff, sub_eq_zero, hp_mono.injective.eq_iff]
 
 /-
 **`k+2` block points lie on a common polynomial of degree `< k`.**  Every `k+1`-subset
@@ -300,40 +364,59 @@ lemma block_common_poly (f : ℝ → ℝ) (k : ℕ) (hk : 2 ≤ k)
     (hp_mem : ∀ i, a ≤ (p i : ℝ) ∧ (p i : ℝ) ≤ a + H)
     (hp_int : ∀ i, ∃ m : ℤ, f ((p i : ℤ) : ℝ) = (m : ℝ)) :
     ∃ Q : Polynomial ℝ, Q.natDegree < k ∧ ∀ i, f ((p i : ℤ) : ℝ) = Q.eval ((p i : ℤ) : ℝ) := by
-  have hQ : ∀ (q : Fin (k + 1) → ℤ), StrictMono q → (∀ i, a ≤ (q i : ℝ) ∧ (q i : ℝ) ≤ a + H) → (∀ i, ∃ m : ℤ, f ((q i : ℤ) : ℝ) = (m : ℝ)) → ∃ Q : Polynomial ℝ, Q.natDegree < k ∧ ∀ i : Fin (k + 1), f ((q i : ℤ) : ℝ) = Q.eval ((q i : ℤ) : ℝ) := by
+  have hQ : ∀ (q : Fin (k + 1) → ℤ), StrictMono q → (∀ i, a ≤ (q i : ℝ) ∧ (q i : ℝ) ≤ a + H) →
+      (∀ i, ∃ m : ℤ, f ((q i : ℤ) : ℝ) = (m : ℝ)) →
+      ∃ Q : Polynomial ℝ, Q.natDegree < k ∧ ∀ i : Fin (k + 1), f ((q i : ℤ) : ℝ) = Q.eval ((q i : ℤ) : ℝ) := by
     intros q hq_mono hq_mem hq_int
     set Q := Lagrange.interpolate (Finset.image (fun i => ((q i : ℤ) : ℝ)) Finset.univ) id f with hQ_def
     have hQ_deg : Q.natDegree < k := by
       have hQ_deg : Q.coeff k = 0 := by
-        convert block_ddiff_zero f k hk hf a H ha hsmall q hq_mono hq_mem hq_int using 1;
-        rw [ show ddiff ( Finset.image ( fun i : Fin ( k + 1 ) => ( q i : ℝ ) ) Finset.univ ) f = Q.coeff ( Finset.card ( Finset.image ( fun i : Fin ( k + 1 ) => ( q i : ℝ ) ) Finset.univ ) - 1 ) from rfl ] ; rw [ Finset.card_image_of_injective _ fun i j hij => by simpa [ hq_mono.injective.eq_iff ] using hij ] ; simp [ Finset.card_univ ] ;
+        convert block_ddiff_zero f k hk hf a H ha hsmall q hq_mono hq_mem hq_int using 1
+        rw [show ddiff (Finset.image (fun i : Fin (k + 1) => (q i : ℝ)) Finset.univ) f =
+          Q.coeff (Finset.card (Finset.image (fun i : Fin (k + 1) => (q i : ℝ)) Finset.univ) - 1) from rfl]
+        rw [Finset.card_image_of_injective _ fun i j hij => by simpa [hq_mono.injective.eq_iff] using hij]
+        simp [Finset.card_univ]
       have hQ_deg : Q.degree ≤ k := by
-        convert Lagrange.degree_interpolate_le _ _;
-        · rw [ Finset.card_image_of_injective _ fun i j hij => by simpa [ hq_mono.injective.eq_iff ] using hij ] ; simp +arith +decide;
-        · exact fun x hx y hy hxy => by aesop;
-      exact lt_of_le_of_ne ( Polynomial.natDegree_le_of_degree_le hQ_deg ) fun h => by have := ‹Q.coeff k = 0›; rw [ ← h, Polynomial.coeff_natDegree ] at this; aesop;
-    use Q;
-    simp_all;
-    intro i; rw [ Polynomial.eval_finset_sum, Finset.sum_eq_single ( q i : ℝ ) ] <;> simp [ Lagrange.basis ] ;
-    · simp [ Polynomial.eval_prod, Lagrange.basisDivisor ];
-      rw [ Finset.prod_eq_one fun x hx => by rw [ inv_mul_cancel₀ ] ; exact sub_ne_zero_of_ne <| by aesop ] ; ring;
-    · intro j hj; right; rw [ Polynomial.eval_prod ] ; exact Finset.prod_eq_zero ( Finset.mem_erase_of_ne_of_mem ( by aesop ) ( Finset.mem_image_of_mem _ ( Finset.mem_univ i ) ) ) ( by aesop ) ;
+        convert Lagrange.degree_interpolate_le _ _
+        · rw [Finset.card_image_of_injective _ fun i j hij => by simpa [hq_mono.injective.eq_iff] using hij]
+          simp +arith +decide
+        · exact fun x hx y hy hxy => by aesop
+      refine lt_of_le_of_ne (Polynomial.natDegree_le_of_degree_le hQ_deg) fun h => ?_
+      have := ‹Q.coeff k = 0›
+      rw [← h, Polynomial.coeff_natDegree] at this
+      aesop
+    use Q
+    simp_all
+    intro i
+    rw [Polynomial.eval_finset_sum, Finset.sum_eq_single (q i : ℝ)] <;> simp [Lagrange.basis]
+    · simp [Polynomial.eval_prod, Lagrange.basisDivisor]
+      rw [Finset.prod_eq_one fun x hx => by
+        rw [inv_mul_cancel₀]
+        exact sub_ne_zero_of_ne (by aesop)]
+      ring
+    · intro j hj
+      right
+      rw [Polynomial.eval_prod]
+      exact Finset.prod_eq_zero (Finset.mem_erase_of_ne_of_mem (by aesop)
+        (Finset.mem_image_of_mem _ (Finset.mem_univ i))) (by aesop)
   obtain ⟨Q1, hQ1⟩ := hQ (fun i => p (Fin.castSucc i)) (by
-  exact hp_mono.comp ( Fin.strictMono_castSucc )) (by
+  exact hp_mono.comp (Fin.strictMono_castSucc)) (by
   exact fun i => hp_mem _) (by
   exact fun i => hp_int _)
   obtain ⟨Q2, hQ2⟩ := hQ (fun i => p (Fin.succ i)) (by
-  exact fun i j hij => hp_mono ( Nat.succ_lt_succ hij )) (by
+  exact fun i j hij => hp_mono (Nat.succ_lt_succ hij)) (by
   exact fun i => hp_mem _) (by
-  exact fun i => hp_int _);
+  exact fun i => hp_int _)
   have hQ_eq : Q1 = Q2 := by
-    refine' Polynomial.eq_of_degree_sub_lt_of_eval_finset_eq _ _ _;
-    exact Finset.image ( fun i : Fin k => ( p ( Fin.succ ( Fin.castSucc i ) ) : ℝ ) ) Finset.univ;
-    · rw [ Finset.card_image_of_injective _ fun i j hij => _ ] <;> norm_num [ Fin.ext_iff, hp_mono.injective.eq_iff ] at *;
-      exact lt_of_le_of_lt ( Polynomial.degree_sub_le _ _ ) ( max_lt ( lt_of_le_of_lt ( Polynomial.degree_le_natDegree ) ( WithBot.coe_lt_coe.mpr hQ1.1 ) ) ( lt_of_le_of_lt ( Polynomial.degree_le_natDegree ) ( WithBot.coe_lt_coe.mpr hQ2.1 ) ) );
-    · grind +extAll;
-  use Q1;
-  simp_all [ Fin.forall_fin_succ ]
+    refine' Polynomial.eq_of_degree_sub_lt_of_eval_finset_eq _ _ _
+    exact Finset.image (fun i : Fin k => (p (Fin.succ (Fin.castSucc i)) : ℝ)) Finset.univ
+    · rw [Finset.card_image_of_injective _ fun i j hij => _] <;> norm_num [Fin.ext_iff, hp_mono.injective.eq_iff] at *
+      exact lt_of_le_of_lt (Polynomial.degree_sub_le _ _) (max_lt
+        (lt_of_le_of_lt (Polynomial.degree_le_natDegree) (WithBot.coe_lt_coe.mpr hQ1.1))
+        (lt_of_le_of_lt (Polynomial.degree_le_natDegree) (WithBot.coe_lt_coe.mpr hQ2.1)))
+    · grind +extAll
+  use Q1
+  simp_all [Fin.forall_fin_succ]
 
 /-! ### Per-block bound -/
 
@@ -354,48 +437,68 @@ lemma block_card_le (f : ℝ → ℝ) (k : ℕ) (hk : 2 ≤ k)
     (hsmall : ∀ x ∈ Set.Icc a (a + H),
       |iteratedDerivWithin k f (Set.Ici 1) x| * H ^ (k * (k + 1)) < (k.factorial : ℝ)) :
     {t : ℤ | a ≤ (t : ℝ) ∧ (t : ℝ) ≤ a + H ∧ ∃ m : ℤ, f (t : ℝ) = (m : ℝ)}.ncard ≤ k + 1 := by
-  contrapose! hone with h;
+  contrapose! hone with h
   have h_finite : Set.Finite {t : ℤ | a ≤ (t : ℝ) ∧ (t : ℝ) ≤ a + H ∧ ∃ m : ℤ, f (t : ℝ) = (m : ℝ)} := by
-    exact Set.finite_of_ncard_pos ( pos_of_gt h );
-  obtain ⟨s, hs⟩ : ∃ s : Finset ℤ, s.card = k + 2 ∧ ∀ t ∈ s, a ≤ (t : ℝ) ∧ (t : ℝ) ≤ a + H ∧ ∃ m : ℤ, f (t : ℝ) = (m : ℝ) := by
-    have := Set.Finite.exists_finset_coe h_finite;
-    obtain ⟨ s', hs' ⟩ := this; exact Exists.elim ( Finset.exists_subset_card_eq ( by linarith [ Set.ncard_coe_finset s' ▸ hs'.symm ▸ h ] : k + 2 ≤ s'.card ) ) fun t ht => ⟨ t, ht.2, fun x hx => hs'.subset <| Finset.mem_coe.1 <| ht.1 hx ⟩ ;
+    exact Set.finite_of_ncard_pos (pos_of_gt h)
+  obtain ⟨s,
+    hs⟩ : ∃ s : Finset ℤ, s.card = k + 2 ∧ ∀ t ∈ s, a ≤ (t : ℝ) ∧ (t : ℝ) ≤ a + H ∧ ∃ m : ℤ, f (t : ℝ) = (m : ℝ) := by
+    have := Set.Finite.exists_finset_coe h_finite
+    obtain ⟨s', hs'⟩ := this
+    refine Exists.elim (Finset.exists_subset_card_eq
+      (by linarith [Set.ncard_coe_finset s' ▸ hs'.symm ▸ h] : k + 2 ≤ s'.card)) fun t ht => ?_
+    exact ⟨t, ht.2, fun x hx => hs'.subset <| Finset.mem_coe.1 <| ht.1 hx⟩
   obtain ⟨p, hp_mono, hp_mem⟩ : ∃ p : Fin (k + 2) → ℤ, StrictMono p ∧ ∀ i, p i ∈ s := by
-    exact ⟨ fun i => s.orderEmbOfFin ( by aesop ) i, by aesop_cat, fun i => by aesop ⟩;
+    exact ⟨fun i => s.orderEmbOfFin (by aesop) i, by aesop_cat, fun i => by aesop⟩
   obtain ⟨Q, hQdeg, hQ⟩ : ∃ Q : Polynomial ℝ, Q.natDegree < k ∧ ∀ i, f ((p i : ℤ) : ℝ) = Q.eval ((p i : ℤ) : ℝ) := by
-    apply block_common_poly f k hk hf a H ha hsmall p hp_mono (fun i => ⟨hs.right (p i) (hp_mem i) |>.1, hs.right (p i) (hp_mem i) |>.2.1⟩) (fun i => hs.right (p i) (hp_mem i) |>.2.2);
-  obtain ⟨ξ₁, ξ₂, hξ₁, hξ₂, hξ₁ξ₂, hξ₁_zero, hξ₂_zero⟩ : ∃ ξ₁ ξ₂ : ℝ, ξ₁ ∈ Set.Ioo (p 0 : ℝ) (p (Fin.last (k + 1)) : ℝ) ∧ ξ₂ ∈ Set.Ioo (p 0 : ℝ) (p (Fin.last (k + 1)) : ℝ) ∧ ξ₁ ≠ ξ₂ ∧ iteratedDeriv k (fun x => f x - Q.eval x) ξ₁ = 0 ∧ iteratedDeriv k (fun x => f x - Q.eval x) ξ₂ = 0 := by
-    apply exists_two_iteratedDeriv_eq_zero;
-    grind +revert;
-    any_goals intro i; exact ( p i : ℝ );
-    · exact_mod_cast hp_mono ( Fin.last_pos );
-    · refine' ContDiffOn.sub _ _;
-      · exact hf.mono ( Set.Icc_subset_Ici_self.trans ( Set.Ici_subset_Ici.2 <| mod_cast hs.2 _ ( hp_mem _ ) |>.1.trans' ha ) );
-      · exact ContDiff.contDiffOn ( by simpa only [ Polynomial.eval_eq_sum_range ] using ContDiff.sum fun i hi => ContDiff.mul ( contDiff_const ) ( contDiff_id.pow i ) );
-    · exact fun i j hij => Int.cast_lt.mpr ( hp_mono hij );
-    · exact fun i => ⟨ mod_cast hp_mono.monotone ( Nat.zero_le _ ), mod_cast hp_mono.monotone ( Fin.le_last _ ) ⟩;
-    · aesop;
-  have hξ₁_zero : iteratedDeriv k (fun x => f x - Q.eval x) ξ₁ = iteratedDeriv k f ξ₁ - iteratedDeriv k (fun x => Q.eval x) ξ₁ := by
-    apply_rules [ iteratedDeriv_sub ];
-    · exact hf.contDiffAt ( Ici_mem_nhds <| by linarith [ hξ₁.1, show ( p 0 : ℝ ) ≥ 1 by exact_mod_cast ha.trans ( hs.2 _ ( hp_mem 0 ) |>.1 ) ] );
-    · simp [ Polynomial.eval_eq_sum_range ];
+    apply block_common_poly f k hk hf a H ha hsmall p hp_mono (fun i => ⟨hs.right (p i) (hp_mem i) |>.1,
+      hs.right (p i) (hp_mem i) |>.2.1⟩) (fun i => hs.right (p i) (hp_mem i) |>.2.2)
+  obtain ⟨ξ₁, ξ₂, hξ₁, hξ₂, hξ₁ξ₂, hξ₁_zero, hξ₂_zero⟩ :
+      ∃ ξ₁ ξ₂ : ℝ, ξ₁ ∈ Set.Ioo (p 0 : ℝ) (p (Fin.last (k + 1)) : ℝ) ∧
+        ξ₂ ∈ Set.Ioo (p 0 : ℝ) (p (Fin.last (k + 1)) : ℝ) ∧ ξ₁ ≠ ξ₂ ∧
+        iteratedDeriv k (fun x => f x - Q.eval x) ξ₁ = 0 ∧ iteratedDeriv k (fun x => f x - Q.eval x) ξ₂ = 0 := by
+    apply exists_two_iteratedDeriv_eq_zero
+    grind +revert
+    any_goals (intro i <;> exact (p i : ℝ))
+    · exact_mod_cast hp_mono (Fin.last_pos)
+    · refine' ContDiffOn.sub _ _
+      · exact hf.mono (Set.Icc_subset_Ici_self.trans (Set.Ici_subset_Ici.2 <|
+          mod_cast hs.2 _ (hp_mem _) |>.1.trans' ha))
+      · refine ContDiff.contDiffOn ?_
+        simpa only [Polynomial.eval_eq_sum_range] using
+          ContDiff.sum fun i hi => ContDiff.mul contDiff_const (contDiff_id.pow i)
+    · exact fun i j hij => Int.cast_lt.mpr (hp_mono hij)
+    · exact fun i => ⟨mod_cast hp_mono.monotone (Nat.zero_le _), mod_cast hp_mono.monotone (Fin.le_last _)⟩
+    · aesop
+  have hξ₁_zero : iteratedDeriv k (fun x => f x - Q.eval x) ξ₁ =
+      iteratedDeriv k f ξ₁ - iteratedDeriv k (fun x => Q.eval x) ξ₁ := by
+    apply_rules [iteratedDeriv_sub]
+    · exact hf.contDiffAt (Ici_mem_nhds <|
+        by linarith [hξ₁.1, show (p 0 : ℝ) ≥ 1 by exact_mod_cast ha.trans (hs.2 _ (hp_mem 0) |>.1)])
+    · simp [Polynomial.eval_eq_sum_range]
       fun_prop
-  have hξ₂_zero : iteratedDeriv k (fun x => f x - Q.eval x) ξ₂ = iteratedDeriv k f ξ₂ - iteratedDeriv k (fun x => Q.eval x) ξ₂ := by
-    apply_rules [ iteratedDeriv_sub ];
-    · refine' hf.contDiffAt ( Ici_mem_nhds _ );
-      grind +splitIndPred;
-    · simp [ Polynomial.eval_eq_sum_range ];
-      exact ContDiffAt.sum fun _ _ => ContDiffAt.mul ( contDiffAt_const ) ( contDiffAt_id.pow _ );
+  have hξ₂_zero : iteratedDeriv k (fun x => f x - Q.eval x) ξ₂ =
+      iteratedDeriv k f ξ₂ - iteratedDeriv k (fun x => Q.eval x) ξ₂ := by
+    apply_rules [iteratedDeriv_sub]
+    · refine' hf.contDiffAt (Ici_mem_nhds _)
+      grind +splitIndPred
+    · simp [Polynomial.eval_eq_sum_range]
+      exact ContDiffAt.sum fun _ _ => ContDiffAt.mul (contDiffAt_const) (contDiffAt_id.pow _)
   have hξ₁_zero : iteratedDeriv k (fun x => Q.eval x) ξ₁ = 0 := by
-    convert iteratedDeriv_eval_top Q k ( by linarith ) ξ₁ using 1;
-    rw [ Polynomial.coeff_eq_zero_of_natDegree_lt hQdeg, MulZeroClass.mul_zero ]
+    convert iteratedDeriv_eval_top Q k (by linarith) ξ₁ using 1
+    rw [Polynomial.coeff_eq_zero_of_natDegree_lt hQdeg, MulZeroClass.mul_zero]
   have hξ₂_zero : iteratedDeriv k (fun x => Q.eval x) ξ₂ = 0 := by
-    rw [ iteratedDeriv_eval_top ] <;> norm_num [ hQdeg ];
-    · exact Or.inr <| Polynomial.coeff_eq_zero_of_natDegree_lt hQdeg;
-    · linarith;
-  use ξ₁, ξ₂;
-  simp_all;
-  exact ⟨ by linarith [ hs.2 ( p 0 ) ( hp_mem 0 ) ], by linarith [ hs.2 ( p 0 ) ( hp_mem 0 ) ], by rw [ iteratedDerivWithin_eq_iteratedDeriv ( uniqueDiffOn_Ici _ ) ( hf.contDiffAt ( Ici_mem_nhds ( by linarith [ hs.2 ( p 0 ) ( hp_mem 0 ) ] ) ) ) ( by norm_num; linarith [ hs.2 ( p 0 ) ( hp_mem 0 ) ] ) ] ; linarith, by rw [ iteratedDerivWithin_eq_iteratedDeriv ( uniqueDiffOn_Ici _ ) ( hf.contDiffAt ( Ici_mem_nhds ( by linarith [ hs.2 ( p 0 ) ( hp_mem 0 ) ] ) ) ) ( by norm_num; linarith [ hs.2 ( p 0 ) ( hp_mem 0 ) ] ) ] ; linarith ⟩
+    rw [iteratedDeriv_eval_top] <;> norm_num [hQdeg]
+    · exact Or.inr <| Polynomial.coeff_eq_zero_of_natDegree_lt hQdeg
+    · linarith
+  use ξ₁, ξ₂
+  simp_all
+  refine ⟨by linarith [hs.2 (p 0) (hp_mem 0)], by linarith [hs.2 (p 0) (hp_mem 0)], ?_, ?_⟩ <;>
+    rw [iteratedDerivWithin_eq_iteratedDeriv (uniqueDiffOn_Ici _)
+        (hf.contDiffAt (Ici_mem_nhds (by linarith [hs.2 (p 0) (hp_mem 0)])))
+        (by
+          norm_num
+          linarith [hs.2 (p 0) (hp_mem 0)])] <;>
+      linarith
 
 /-! ### Counting -/
 
@@ -414,118 +517,207 @@ lemma count_of_block_bound (S : Set ℤ) (B : ℕ) (c e : ℝ) (hc : 0 < c) (he0
       (Set.ncard (S ∩ {t : ℤ | (1 : ℝ) ≤ (t : ℝ) ∧ (t : ℝ) ≤ (N : ℝ)}) : ℝ) ≤
         C * (N : ℝ) ^ α := by
   -- Set `g : ℕ → ℕ := fun m => (S ∩ {t : ℤ | 1 ≤ (t:ℝ) ∧ (t:ℝ) ≤ (2^m:ℝ)}).ncard`.
-  set g : ℕ → ℕ := fun m => (S ∩ {t : ℤ | 1 ≤ (t : ℝ) ∧ (t : ℝ) ≤ (2 ^ m : ℝ)}).ncard;
+  set g : ℕ → ℕ := fun m => (S ∩ {t : ℤ | 1 ≤ (t : ℝ) ∧ (t : ℝ) ≤ (2 ^ m : ℝ)}).ncard
   -- Step 1: Prove the recurrence relation for `g`.
   have h_recurrence : ∀ m : ℕ, g (m + 1) ≤ g m + B * (Nat.ceil ((2 ^ m : ℝ) / (c * (2 ^ m) ^ e)) + 1) := by
     intro m
-    have h_cover : (S ∩ {t : ℤ | (2 ^ m : ℝ) < (t : ℝ) ∧ (t : ℝ) ≤ (2 ^ (m + 1) : ℝ)}).ncard ≤ B * (Nat.ceil ((2 ^ m : ℝ) / (c * (2 ^ m) ^ e)) + 1) := by
+    have h_cover : (S ∩ {t : ℤ | (2 ^ m : ℝ) < (t : ℝ) ∧ (t : ℝ) ≤ (2 ^ (m + 1) : ℝ)}).ncard ≤
+        B * (Nat.ceil ((2 ^ m : ℝ) / (c * (2 ^ m) ^ e)) + 1) := by
       -- Cover the interval $(2^m, 2^{m+1}]$ with blocks of length $c \cdot (2^m)^e$.
-      have h_cover : {t : ℤ | (2 ^ m : ℝ) < (t : ℝ) ∧ (t : ℝ) ≤ (2 ^ (m + 1) : ℝ)} ⊆ ⋃ i ∈ Finset.range (Nat.ceil ((2 ^ m : ℝ) / (c * (2 ^ m) ^ e)) + 1), {t : ℤ | (2 ^ m + i * c * (2 ^ m) ^ e : ℝ) ≤ (t : ℝ) ∧ (t : ℝ) ≤ (2 ^ m + (i + 1) * c * (2 ^ m) ^ e : ℝ)} := by
+      have h_cover : {t : ℤ | (2 ^ m : ℝ) < (t : ℝ) ∧ (t : ℝ) ≤ (2 ^ (m + 1) : ℝ)} ⊆
+          ⋃ i ∈ Finset.range (Nat.ceil ((2 ^ m : ℝ) / (c * (2 ^ m) ^ e)) + 1),
+            {t : ℤ | (2 ^ m + i * c * (2 ^ m) ^ e : ℝ) ≤ (t : ℝ) ∧
+              (t : ℝ) ≤ (2 ^ m + (i + 1) * c * (2 ^ m) ^ e : ℝ)} := by
         intro t ht
         obtain ⟨ht1, ht2⟩ := ht
-        have h_block : ∃ i ∈ Finset.range (Nat.ceil ((2 ^ m : ℝ) / (c * (2 ^ m) ^ e)) + 1), (2 ^ m + i * c * (2 ^ m) ^ e : ℝ) ≤ (t : ℝ) ∧ (t : ℝ) ≤ (2 ^ m + (i + 1) * c * (2 ^ m) ^ e : ℝ) := by
-          refine' ⟨ ⌊ ( t - 2 ^ m ) / ( c * ( 2 ^ m ) ^ e ) ⌋₊, _, _, _ ⟩ <;> norm_num;
-          · refine' Nat.le_of_lt_succ _;
-            rw [ Nat.floor_lt', div_lt_iff₀ ] <;> norm_num [ pow_succ' ] at *;
-            · nlinarith [ Nat.le_ceil ( ( 2 ^ m : ℝ ) / ( c * ( 2 ^ m ) ^ e ) ), show ( 0 : ℝ ) < c * ( 2 ^ m ) ^ e by positivity, div_mul_cancel₀ ( 2 ^ m : ℝ ) ( show ( c * ( 2 ^ m ) ^ e ) ≠ 0 by positivity ) ];
-            · positivity;
-          · nlinarith [ Nat.floor_le ( show 0 ≤ ( t - 2 ^ m : ℝ ) / ( c * ( 2 ^ m ) ^ e ) by exact div_nonneg ( sub_nonneg.mpr ht1.le ) ( by positivity ) ), show 0 < c * ( 2 ^ m ) ^ e by positivity, mul_div_cancel₀ ( t - 2 ^ m : ℝ ) ( by positivity : ( c * ( 2 ^ m ) ^ e ) ≠ 0 ) ];
-          · nlinarith [ Nat.lt_floor_add_one ( ( t - 2 ^ m : ℝ ) / ( c * ( 2 ^ m ) ^ e ) ), show 0 < c * ( 2 ^ m : ℝ ) ^ e by positivity, mul_div_cancel₀ ( t - 2 ^ m : ℝ ) ( show ( c * ( 2 ^ m : ℝ ) ^ e ) ≠ 0 by positivity ) ];
-        aesop;
+        have h_block : ∃ i ∈ Finset.range (Nat.ceil ((2 ^ m : ℝ) / (c * (2 ^ m) ^ e)) + 1),
+            (2 ^ m + i * c * (2 ^ m) ^ e : ℝ) ≤ (t : ℝ) ∧
+              (t : ℝ) ≤ (2 ^ m + (i + 1) * c * (2 ^ m) ^ e : ℝ) := by
+          refine' ⟨⌊ (t - 2 ^ m) / (c * (2 ^ m) ^ e) ⌋₊, _, _, _⟩ <;> norm_num
+          · refine' Nat.le_of_lt_succ _
+            rw [Nat.floor_lt', div_lt_iff₀] <;> norm_num [pow_succ'] at *
+            · nlinarith [Nat.le_ceil ((2 ^ m : ℝ) / (c * (2 ^ m) ^ e)), show (0 : ℝ) < c * (2 ^ m) ^ e by positivity,
+                div_mul_cancel₀ (2 ^ m : ℝ) (show (c * (2 ^ m) ^ e) ≠ 0 by positivity)]
+            · positivity
+          · have hnn : 0 ≤ (t - 2 ^ m : ℝ) / (c * (2 ^ m) ^ e) :=
+              div_nonneg (sub_nonneg.mpr ht1.le) (by positivity)
+            nlinarith [Nat.floor_le hnn, show 0 < c * (2 ^ m) ^ e by positivity,
+              mul_div_cancel₀ (t - 2 ^ m : ℝ) (by positivity : (c * (2 ^ m) ^ e) ≠ 0)]
+          · nlinarith [Nat.lt_floor_add_one ((t - 2 ^ m : ℝ) / (c * (2 ^ m) ^ e)),
+              show 0 < c * (2 ^ m : ℝ) ^ e by positivity,
+              mul_div_cancel₀ (t - 2 ^ m : ℝ) (show (c * (2 ^ m : ℝ) ^ e) ≠ 0 by positivity)]
+        aesop
       -- Apply the block bound to each block in the cover.
-      have h_block_bound : ∀ i ∈ Finset.range (Nat.ceil ((2 ^ m : ℝ) / (c * (2 ^ m) ^ e)) + 1), (S ∩ {t : ℤ | (2 ^ m + i * c * (2 ^ m) ^ e : ℝ) ≤ (t : ℝ) ∧ (t : ℝ) ≤ (2 ^ m + (i + 1) * c * (2 ^ m) ^ e : ℝ)}).ncard ≤ B := by
-        intro i hi;
-        refine' le_trans _ ( hblock ( 2 ^ m + i * c * ( 2 ^ m ) ^ e ) _ );
-        · fapply Set.ncard_le_ncard;
-          · intro t ht; simp_all [ add_mul, add_assoc ] ;
-            refine' le_trans ht.2.2 _;
-            gcongr;
-            exact le_add_of_nonneg_right ( by positivity );
-          · refine' Set.Finite.subset ( Set.finite_Icc ( ⌈2 ^ m + i * c * ( 2 ^ m ) ^ e⌉ ) ( ⌊2 ^ m + i * c * ( 2 ^ m ) ^ e + c * ( 2 ^ m + i * c * ( 2 ^ m ) ^ e ) ^ e⌋ ) ) _;
-            exact fun x hx => ⟨ Int.ceil_le.mpr hx.2.1, Int.le_floor.mpr hx.2.2 ⟩;
-        · exact le_add_of_le_of_nonneg ( one_le_pow₀ ( by norm_num ) ) ( by positivity );
-      have h_union_bound : (S ∩ ⋃ i ∈ Finset.range (Nat.ceil ((2 ^ m : ℝ) / (c * (2 ^ m) ^ e)) + 1), {t : ℤ | (2 ^ m + i * c * (2 ^ m) ^ e : ℝ) ≤ (t : ℝ) ∧ (t : ℝ) ≤ (2 ^ m + (i + 1) * c * (2 ^ m) ^ e : ℝ)}).ncard ≤ ∑ i ∈ Finset.range (Nat.ceil ((2 ^ m : ℝ) / (c * (2 ^ m) ^ e)) + 1), (S ∩ {t : ℤ | (2 ^ m + i * c * (2 ^ m) ^ e : ℝ) ≤ (t : ℝ) ∧ (t : ℝ) ≤ (2 ^ m + (i + 1) * c * (2 ^ m) ^ e : ℝ)}).ncard := by
-        convert Finset.set_ncard_biUnion_le _ _ using 2 ; aesop;
-      refine le_trans ?_ ( h_union_bound.trans ?_ );
-      · apply_rules [ Set.ncard_le_ncard ];
-        · exact fun x hx => ⟨ hx.1, h_cover hx.2 ⟩;
-        · refine Set.Finite.subset ( Set.finite_Icc ( -⌈2 ^ m + ( ⌈2 ^ m / ( c * ( 2 ^ m ) ^ e ) ⌉₊ + 1 ) * c * ( 2 ^ m ) ^ e⌉₊ : ℤ ) ⌈2 ^ m + ( ⌈2 ^ m / ( c * ( 2 ^ m ) ^ e ) ⌉₊ + 1 ) * c * ( 2 ^ m ) ^ e⌉₊ ) ?_;
-          simp [ Set.subset_def ];
-          intro x hx i hi₁ hi₂ hi₃; constructor <;> norm_num at *;
-          · exact Int.le_of_lt_add_one ( by rw [ ← @Int.cast_lt ℝ ] ; push_cast; nlinarith [ Nat.le_ceil ( 2 ^ m + ( ⌈2 ^ m / ( c * ( 2 ^ m ) ^ e ) ⌉₊ + 1 ) * c * ( 2 ^ m ) ^ e ), show ( 0 : ℝ ) ≤ c * ( 2 ^ m ) ^ e by positivity, show ( 0 : ℝ ) ≤ 2 ^ m by positivity ] );
-          · exact Int.le_of_lt_add_one ( by rw [ ← @Int.cast_lt ℝ ] ; push_cast; nlinarith [ Nat.le_ceil ( 2 ^ m + ( ⌈2 ^ m / ( c * ( 2 ^ m ) ^ e ) ⌉₊ + 1 ) * c * ( 2 ^ m ) ^ e ), show ( i : ℝ ) ≤ ⌈2 ^ m / ( c * ( 2 ^ m ) ^ e ) ⌉₊ by exact_mod_cast hi₂, show ( 0 : ℝ ) < c * ( 2 ^ m ) ^ e by positivity ] );
-      · simpa [ mul_comm ] using Finset.sum_le_sum h_block_bound;
-    convert Set.ncard_union_le _ _ |> le_trans <| add_le_add_left h_cover _ using 1;
-    any_goals exact S ∩ { t : ℤ | 1 ≤ ( t : ℝ ) ∧ ( t : ℝ ) ≤ 2 ^ m };
-    · simp +zetaDelta at *;
-      congr with x ; norm_cast ; simp [ pow_succ' ];
-      grind +splitImp;
-    · ring!;
+      have h_block_bound : ∀ i ∈ Finset.range (Nat.ceil ((2 ^ m : ℝ) / (c * (2 ^ m) ^ e)) + 1),
+          (S ∩ {t : ℤ | (2 ^ m + i * c * (2 ^ m) ^ e : ℝ) ≤ (t : ℝ) ∧
+            (t : ℝ) ≤ (2 ^ m + (i + 1) * c * (2 ^ m) ^ e : ℝ)}).ncard ≤ B := by
+        intro i hi
+        refine' le_trans _ (hblock (2 ^ m + i * c * (2 ^ m) ^ e) _)
+        · fapply Set.ncard_le_ncard
+          · intro t ht
+            simp_all [add_mul, add_assoc]
+            refine' le_trans ht.2.2 _
+            gcongr
+            exact le_add_of_nonneg_right (by positivity)
+          · refine' Set.Finite.subset (Set.finite_Icc (⌈2 ^ m + i * c * (2 ^ m) ^ e⌉)
+              (⌊2 ^ m + i * c * (2 ^ m) ^ e + c * (2 ^ m + i * c * (2 ^ m) ^ e) ^ e⌋)) _
+            exact fun x hx => ⟨Int.ceil_le.mpr hx.2.1, Int.le_floor.mpr hx.2.2⟩
+        · exact le_add_of_le_of_nonneg (one_le_pow₀ (by norm_num)) (by positivity)
+      have h_union_bound : (S ∩ ⋃ i ∈ Finset.range (Nat.ceil ((2 ^ m : ℝ) / (c * (2 ^ m) ^ e)) + 1),
+          {t : ℤ | (2 ^ m + i * c * (2 ^ m) ^ e : ℝ) ≤ (t : ℝ) ∧
+            (t : ℝ) ≤ (2 ^ m + (i + 1) * c * (2 ^ m) ^ e : ℝ)}).ncard ≤
+          ∑ i ∈ Finset.range (Nat.ceil ((2 ^ m : ℝ) / (c * (2 ^ m) ^ e)) + 1),
+            (S ∩ {t : ℤ | (2 ^ m + i * c * (2 ^ m) ^ e : ℝ) ≤ (t : ℝ) ∧
+              (t : ℝ) ≤ (2 ^ m + (i + 1) * c * (2 ^ m) ^ e : ℝ)}).ncard := by
+        convert Finset.set_ncard_biUnion_le _ _ using 2
+        aesop
+      refine le_trans ?_ (h_union_bound.trans ?_)
+      · apply_rules [Set.ncard_le_ncard]
+        · exact fun x hx => ⟨hx.1, h_cover hx.2⟩
+        · refine Set.Finite.subset (Set.finite_Icc
+            (-⌈2 ^ m + (⌈2 ^ m / (c * (2 ^ m) ^ e) ⌉₊ + 1) * c * (2 ^ m) ^ e⌉₊ : ℤ)
+            ⌈2 ^ m + (⌈2 ^ m / (c * (2 ^ m) ^ e) ⌉₊ + 1) * c * (2 ^ m) ^ e⌉₊) ?_
+          simp [Set.subset_def]
+          intro x hx i hi₁ hi₂ hi₃
+          constructor <;> norm_num at *
+          · refine Int.le_of_lt_add_one ?_
+            rw [← @Int.cast_lt ℝ]
+            push_cast
+            nlinarith [Nat.le_ceil (2 ^ m + (⌈2 ^ m / (c * (2 ^ m) ^ e) ⌉₊ + 1) * c * (2 ^ m) ^ e),
+              show (0 : ℝ) ≤ c * (2 ^ m) ^ e by positivity, show (0 : ℝ) ≤ 2 ^ m by positivity]
+          · refine Int.le_of_lt_add_one ?_
+            rw [← @Int.cast_lt ℝ]
+            push_cast
+            nlinarith [Nat.le_ceil (2 ^ m + (⌈2 ^ m / (c * (2 ^ m) ^ e) ⌉₊ + 1) * c * (2 ^ m) ^ e),
+              show (i : ℝ) ≤ ⌈2 ^ m / (c * (2 ^ m) ^ e) ⌉₊ by exact_mod_cast hi₂,
+              show (0 : ℝ) < c * (2 ^ m) ^ e by positivity]
+      · simpa [mul_comm] using Finset.sum_le_sum h_block_bound
+    convert Set.ncard_union_le _ _ |> le_trans <| add_le_add_left h_cover _ using 1
+    any_goals exact S ∩ {t : ℤ | 1 ≤ (t : ℝ) ∧ (t : ℝ) ≤ 2 ^ m}
+    · simp +zetaDelta at *
+      congr with x
+      norm_cast
+      simp [pow_succ']
+      grind +splitImp
+    · ring!
   -- Step 2: Solve the recurrence relation for `g`.
   obtain ⟨C, hC⟩ : ∃ C : ℝ, ∀ m : ℕ, g m ≤ C * (2 ^ m : ℝ) ^ (max (1 - e) (1 / 2)) := by
     -- We'll use that $⌈(2^m)/(c*(2^m)^e)⌉₊ + 1 ≤ C' * ((2^m)^(1-e) + 1)$ for some constant $C'$.
-    obtain ⟨C', hC'⟩ : ∃ C' : ℝ, ∀ m : ℕ, (Nat.ceil ((2 ^ m : ℝ) / (c * (2 ^ m : ℝ) ^ e)) + 1) ≤ C' * ((2 ^ m : ℝ) ^ (1 - e) + 1) := by
+    obtain ⟨C',
+      hC'⟩ : ∃ C' : ℝ, ∀ m : ℕ, (Nat.ceil ((2 ^ m : ℝ) / (c * (2 ^ m : ℝ) ^ e)) + 1) ≤
+          C' * ((2 ^ m : ℝ) ^ (1 - e) + 1) := by
       -- We'll use that $⌈(2^m)/(c*(2^m)^e)⌉₊ + 1 ≤ C' * ((2^m)^(1-e) + 1)$ for some constant $C'$ by bounding the ceiling function.
-      have h_ceil_bound : ∀ m : ℕ, (Nat.ceil ((2 ^ m : ℝ) / (c * (2 ^ m : ℝ) ^ e)) : ℝ) ≤ (2 ^ m : ℝ) / (c * (2 ^ m : ℝ) ^ e) + 1 := by
-        exact fun m => le_of_lt <| Nat.ceil_lt_add_one <| by positivity;
+      have h_ceil_bound : ∀ m : ℕ, (Nat.ceil ((2 ^ m : ℝ) / (c * (2 ^ m : ℝ) ^ e)) : ℝ) ≤
+          (2 ^ m : ℝ) / (c * (2 ^ m : ℝ) ^ e) + 1 := by
+        exact fun m => le_of_lt <| Nat.ceil_lt_add_one <| by positivity
       -- We'll use that $2^m / (c * (2^m)^e) = (2^m)^{1-e} / c$.
       have h_exp : ∀ m : ℕ, (2 ^ m : ℝ) / (c * (2 ^ m : ℝ) ^ e) = (2 ^ m : ℝ) ^ (1 - e) / c := by
-        intro m; rw [ Real.rpow_sub ( by positivity ), Real.rpow_one ] ; ring;
-      use 2 / c + 1;
-      intro m; specialize h_ceil_bound m; specialize h_exp m; ring_nf at *; nlinarith [ inv_pos.mpr hc, mul_inv_cancel₀ hc.ne', show ( 1 : ℝ ) ≤ 2 ^ m by exact one_le_pow₀ ( by norm_num ), show ( 2 ^ m : ℝ ) ^ ( 1 - e ) ≥ 1 by exact Real.one_le_rpow ( one_le_pow₀ ( by norm_num ) ) ( by linarith ) ] ;
+        intro m
+        rw [Real.rpow_sub (by positivity), Real.rpow_one]
+        ring
+      use 2 / c + 1
+      intro m
+      specialize h_ceil_bound m
+      specialize h_exp m
+      ring_nf at *
+      nlinarith [inv_pos.mpr hc, mul_inv_cancel₀ hc.ne', show (1 : ℝ) ≤ 2 ^ m by exact one_le_pow₀ (by norm_num),
+        show (2 ^ m : ℝ) ^ (1 - e) ≥ 1 by exact Real.one_le_rpow (one_le_pow₀ (by norm_num)) (by linarith)]
     -- We'll use that $g(m) ≤ C'' * (Σ_{i<m} (2^i)^(1-e) + m + 1)$ for some constant $C''$.
-    obtain ⟨C'', hC''⟩ : ∃ C'' : ℝ, ∀ m : ℕ, (g m : ℝ) ≤ C'' * (∑ i ∈ Finset.range m, (2 ^ i : ℝ) ^ (1 - e) + m + 1) := by
-      use (g 0 + B * C') + 1;
-      intro m; induction' m with m ih <;> norm_num [ Finset.sum_range_succ ] at *;
-      · exact le_add_of_le_of_nonneg ( le_add_of_nonneg_right <| mul_nonneg ( Nat.cast_nonneg _ ) <| by have := hC' 0; norm_num at this; nlinarith ) zero_le_one;
-      · refine le_trans ( Nat.cast_le.mpr ( h_recurrence m ) ) ?_;
-        norm_num +zetaDelta at *;
-        refine le_trans ( add_le_add ih ( mul_le_mul_of_nonneg_left ( hC' m ) ( Nat.cast_nonneg _ ) ) ) ?_;
-        nlinarith [ show 0 ≤ ( B : ℝ ) * C' by exact mul_nonneg ( Nat.cast_nonneg _ ) ( show 0 ≤ C' by have := hC' 0; norm_num at this; nlinarith ), show ( 2 ^ m : ℝ ) ^ ( 1 - e ) ≥ 0 by positivity ];
+    obtain ⟨C'', hC''⟩ : ∃ C'' : ℝ, ∀ m : ℕ, (g m : ℝ) ≤ C'' * (∑ i ∈ Finset.range m,
+      (2 ^ i : ℝ) ^ (1 - e) + m + 1) := by
+      use (g 0 + B * C') + 1
+      intro m
+      induction' m with m ih <;> norm_num [Finset.sum_range_succ] at *
+      · refine le_add_of_le_of_nonneg (le_add_of_nonneg_right <| mul_nonneg (Nat.cast_nonneg _) ?_) zero_le_one
+        have := hC' 0
+        norm_num at this
+        nlinarith
+      · refine le_trans (Nat.cast_le.mpr (h_recurrence m)) ?_
+        norm_num +zetaDelta at *
+        refine le_trans (add_le_add ih (mul_le_mul_of_nonneg_left (hC' m) (Nat.cast_nonneg _))) ?_
+        have hC'0 : 0 ≤ C' := by
+          have := hC' 0
+          norm_num at this
+          nlinarith
+        nlinarith [show 0 ≤ (B : ℝ) * C' by exact mul_nonneg (Nat.cast_nonneg _) hC'0,
+          show (2 ^ m : ℝ) ^ (1 - e) ≥ 0 by positivity]
     -- We'll use that $\sum_{i=0}^{m-1} (2^i)^{1-e} \leq C''' \cdot (2^m)^{\max(1-e, 1/2)}$ for some constant $C'''$.
-    obtain ⟨C''', hC'''⟩ : ∃ C''' : ℝ, ∀ m : ℕ, (∑ i ∈ Finset.range m, (2 ^ i : ℝ) ^ (1 - e)) ≤ C''' * (2 ^ m : ℝ) ^ (max (1 - e) (1 / 2)) := by
-      by_cases h_case : 1 - e ≤ 1 / 2;
+    obtain ⟨C''', hC'''⟩ : ∃ C''' : ℝ, ∀ m : ℕ, (∑ i ∈ Finset.range m,
+      (2 ^ i : ℝ) ^ (1 - e)) ≤ C''' * (2 ^ m : ℝ) ^ (max (1 - e) (1 / 2)) := by
+      by_cases h_case : 1 - e ≤ 1 / 2
       · -- Since $1 - e \leq 1/2$, we have $\sum_{i<m} (2^i)^{1-e} \leq \sum_{i<m} (2^i)^{1/2}$.
-        have h_sum_bound_case1 : ∀ m : ℕ, (∑ i ∈ Finset.range m, (2 ^ i : ℝ) ^ (1 - e)) ≤ (∑ i ∈ Finset.range m, (2 ^ i : ℝ) ^ (1 / 2 : ℝ)) := by
-          exact fun m => Finset.sum_le_sum fun i _ => Real.rpow_le_rpow_of_exponent_le ( one_le_pow₀ ( by norm_num ) ) h_case;
+        have h_sum_bound_case1 : ∀ m : ℕ, (∑ i ∈ Finset.range m, (2 ^ i : ℝ) ^ (1 - e)) ≤ (∑ i ∈ Finset.range m,
+          (2 ^ i : ℝ) ^ (1 / 2 : ℝ)) := by
+          exact fun m => Finset.sum_le_sum fun i _ =>
+            Real.rpow_le_rpow_of_exponent_le (one_le_pow₀ (by norm_num)) h_case
         -- Since $\sum_{i<m} (2^i)^{1/2}$ is a geometric series with ratio $2^{1/2}$, it converges to a constant multiple of $(2^m)^{1/2}$.
-        have h_geo_series : ∃ C''' : ℝ, ∀ m : ℕ, (∑ i ∈ Finset.range m, (2 ^ i : ℝ) ^ (1 / 2 : ℝ)) ≤ C''' * (2 ^ m : ℝ) ^ (1 / 2 : ℝ) := by
-          use 2 / (Real.sqrt 2 - 1);
-          intro m; rw [ div_mul_eq_mul_div, le_div_iff₀ ] <;> norm_num [ ← Real.sqrt_eq_rpow ];
-          · induction m <;> norm_num [ Finset.sum_range_succ, pow_succ' ] at *;
-            nlinarith [ Real.sqrt_nonneg 2, Real.sq_sqrt zero_le_two, Real.sqrt_nonneg ( 2 ^ ‹_› : ℝ ), Real.sq_sqrt ( show 0 ≤ 2 ^ ‹_› by positivity ) ];
-          · norm_num [ Real.lt_sqrt ];
-        exact ⟨ h_geo_series.choose, fun m => le_trans ( h_sum_bound_case1 m ) ( le_trans ( h_geo_series.choose_spec m ) ( by rw [ max_eq_right h_case ] ) ) ⟩;
+        have h_geo_series : ∃ C''' : ℝ, ∀ m : ℕ, (∑ i ∈ Finset.range m,
+          (2 ^ i : ℝ) ^ (1 / 2 : ℝ)) ≤ C''' * (2 ^ m : ℝ) ^ (1 / 2 : ℝ) := by
+          use 2 / (Real.sqrt 2 - 1)
+          intro m
+          rw [div_mul_eq_mul_div, le_div_iff₀] <;> norm_num [← Real.sqrt_eq_rpow]
+          · induction m <;> norm_num [Finset.sum_range_succ, pow_succ'] at *
+            nlinarith [Real.sqrt_nonneg 2, Real.sq_sqrt zero_le_two, Real.sqrt_nonneg (2 ^ ‹_› : ℝ),
+              Real.sq_sqrt (show 0 ≤ 2 ^ ‹_› by positivity)]
+          · norm_num [Real.lt_sqrt]
+        exact ⟨h_geo_series.choose,
+          fun m => le_trans (h_sum_bound_case1 m) (le_trans (h_geo_series.choose_spec m) (by rw [max_eq_right h_case]))⟩
       · -- Since $1 - e > 1/2$, we have $\sum_{i<m} (2^i)^{1-e} \leq \frac{(2^m)^{1-e}}{2^{1-e} - 1}$.
-        have h_sum_bound_case2 : ∀ m : ℕ, (∑ i ∈ Finset.range m, (2 ^ i : ℝ) ^ (1 - e)) ≤ (2 ^ m : ℝ) ^ (1 - e) / (2 ^ (1 - e) - 1) := by
-          intro m; rw [ le_div_iff₀ ( sub_pos.mpr <| Real.one_lt_rpow one_lt_two <| by linarith ) ] ; induction' m with m ih <;> norm_num [ Finset.sum_range_succ, pow_succ' ] at *;
-          rw [ Real.mul_rpow ( by positivity ) ( by positivity ) ];
-          linarith;
-        use 1 / (2 ^ (1 - e) - 1);
-        intro m; convert h_sum_bound_case2 m using 1; rw [ max_eq_left ( by linarith ) ] ; ring;
+        have h_sum_bound_case2 : ∀ m : ℕ, (∑ i ∈ Finset.range m,
+          (2 ^ i : ℝ) ^ (1 - e)) ≤ (2 ^ m : ℝ) ^ (1 - e) / (2 ^ (1 - e) - 1) := by
+          intro m
+          rw [le_div_iff₀ (sub_pos.mpr <| Real.one_lt_rpow one_lt_two <| by linarith)]
+          induction' m with m ih <;> norm_num [Finset.sum_range_succ, pow_succ'] at *
+          rw [Real.mul_rpow (by positivity) (by positivity)]
+          linarith
+        use 1 / (2 ^ (1 - e) - 1)
+        intro m
+        convert h_sum_bound_case2 m using 1
+        rw [max_eq_left (by linarith)]
+        ring
     -- We'll use that $m \leq C'''' \cdot (2^m)^{\max(1-e, 1/2)}$ for some constant $C''''$.
     obtain ⟨C'''', hC''''⟩ : ∃ C'''' : ℝ, ∀ m : ℕ, (m : ℝ) ≤ C'''' * (2 ^ m : ℝ) ^ (max (1 - e) (1 / 2)) := by
-      use 2 / Real.log 2;
-      intro m; rw [ div_mul_eq_mul_div, le_div_iff₀ ( Real.log_pos one_lt_two ) ] ; norm_num [ Real.rpow_def_of_pos ] ; ring_nf; (
-      nlinarith [ Real.add_one_le_exp ( m * Real.log 2 * max ( 1 - e ) ( 1 / 2 ) ), Real.log_pos one_lt_two, show ( 0 : ℝ ) ≤ m * Real.log 2 by positivity, show ( 0 : ℝ ) ≤ m * Real.log 2 * max ( 1 - e ) ( 1 / 2 ) by exact mul_nonneg ( mul_nonneg ( Nat.cast_nonneg _ ) ( Real.log_nonneg one_le_two ) ) ( by positivity ), show ( max ( 1 - e ) ( 1 / 2 ) : ℝ ) ≥ 1 / 2 by exact le_max_right _ _ ]);
-    use C'' * (C''' + C'''' + 1);
-    intro m; specialize hC'' m; specialize hC''' m; specialize hC'''' m; rcases lt_trichotomy C'' 0 with hC'' | rfl | hC'' <;> norm_num at *;
-    · nlinarith [ show 0 ≤ ∑ i ∈ Finset.range m, ( 2 ^ i : ℝ ) ^ ( 1 - e ) by exact Finset.sum_nonneg fun _ _ => Real.rpow_nonneg ( by positivity ) _, show 0 ≤ ( m : ℝ ) by positivity ];
-    · exact hC'';
-    · nlinarith [ show ( 1 : ℝ ) ≤ ( 2 ^ m ) ^ max ( 1 - e ) ( 1 / 2 ) by exact Real.one_le_rpow ( one_le_pow₀ ( by norm_num ) ) ( by positivity ) ];
-  refine' ⟨ Max.max C 1 * 2 ^ ( Max.max ( 1 - e ) ( 1 / 2 ) ), Max.max ( 1 - e ) ( 1 / 2 ), _, _, _, _ ⟩ <;> norm_num;
-  · positivity;
-  · linarith;
+      use 2 / Real.log 2
+      intro m
+      rw [div_mul_eq_mul_div, le_div_iff₀ (Real.log_pos one_lt_two)]
+      norm_num [Real.rpow_def_of_pos]
+      ring_nf
+      (
+      have hmnn : (0 : ℝ) ≤ m * Real.log 2 * max (1 - e) (1 / 2) :=
+        mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (Real.log_nonneg one_le_two)) (by positivity)
+      nlinarith [Real.add_one_le_exp (m * Real.log 2 * max (1 - e) (1 / 2)), Real.log_pos one_lt_two,
+        show (0 : ℝ) ≤ m * Real.log 2 by positivity, hmnn,
+        show (max (1 - e) (1 / 2) : ℝ) ≥ 1 / 2 by exact le_max_right _ _])
+    use C'' * (C''' + C'''' + 1)
+    intro m
+    specialize hC'' m
+    specialize hC''' m
+    specialize hC'''' m
+    rcases lt_trichotomy C'' 0 with hC'' | rfl | hC'' <;> norm_num at *
+    · nlinarith [show 0 ≤ ∑ i ∈ Finset.range m,
+        (2 ^ i : ℝ) ^ (1 - e) by exact Finset.sum_nonneg fun _ _ => Real.rpow_nonneg (by positivity) _,
+        show 0 ≤ (m : ℝ) by positivity]
+    · exact hC''
+    · have h1 : (1 : ℝ) ≤ (2 ^ m) ^ max (1 - e) (1 / 2) :=
+        Real.one_le_rpow (one_le_pow₀ (by norm_num)) (by positivity)
+      nlinarith [h1]
+  refine' ⟨Max.max C 1 * 2 ^ (Max.max (1 - e) (1 / 2)), Max.max (1 - e) (1 / 2), _, _, _, _⟩ <;> norm_num
+  · positivity
+  · linarith
   · intro N hN
     have h_card : (S ∩ {t : ℤ | 1 ≤ (t : ℝ) ∧ (t : ℝ) ≤ N}).ncard ≤ g (Nat.log 2 N + 1) := by
-      fapply Set.ncard_le_ncard;
-      · exact fun x hx => ⟨ hx.1, hx.2.1, hx.2.2.trans <| mod_cast Nat.le_of_lt <| Nat.lt_pow_succ_log_self ( by decide ) _ ⟩;
-      · exact Set.Finite.subset ( Set.finite_Icc ( 1 : ℤ ) ( 2 ^ ( Nat.log 2 N + 1 ) ) ) fun x hx => ⟨ mod_cast hx.2.1, mod_cast hx.2.2 ⟩;
-    refine' le_trans ( Nat.cast_le.mpr h_card ) ( le_trans ( hC _ ) _ );
-    rw [ mul_assoc, ← Real.mul_rpow ( by positivity ) ( by positivity ) ];
-    gcongr;
-    · norm_num;
-    · exact_mod_cast by rw [ pow_succ' ] ; exact Nat.mul_le_mul_left 2 ( Nat.pow_log_le_self 2 hN.ne' ) ;
+      fapply Set.ncard_le_ncard
+      · exact fun x hx => ⟨hx.1, hx.2.1,
+          hx.2.2.trans <| mod_cast Nat.le_of_lt <| Nat.lt_pow_succ_log_self (by decide) _⟩
+      · exact Set.Finite.subset (Set.finite_Icc (1 : ℤ) (2 ^ (Nat.log 2 N + 1))) fun x hx => ⟨mod_cast hx.2.1,
+          mod_cast hx.2.2⟩
+    refine' le_trans (Nat.cast_le.mpr h_card) (le_trans (hC _) _)
+    rw [mul_assoc, ← Real.mul_rpow (by positivity) (by positivity)]
+    gcongr
+    · norm_num
+    · exact_mod_cast by
+        rw [pow_succ']
+        exact Nat.mul_le_mul_left 2 (Nat.pow_log_le_self 2 hN.ne')
 
 /-! ### Main theorem -/
 
@@ -560,7 +752,9 @@ theorem integerValue_count_sublinear
     · exact hm.injOn (Set.mem_Ici.mpr hx) (Set.mem_Ici.mpr hy) (by rw [hx0, hy0])
   -- Positivity facts.
   set n : ℕ := k * (k + 1) with hn_def
-  have hnpos : 0 < n := by rw [hn_def]; positivity
+  have hnpos : 0 < n := by
+    rw [hn_def]
+    positivity
   have hkk : (0 : ℝ) < (n : ℝ) := by exact_mod_cast hnpos
   set C₀' : ℝ := max C₀ 1 with hC₀'
   have hC₀'pos : 0 < C₀' := lt_of_lt_of_le one_pos (le_max_right _ _)
@@ -582,7 +776,9 @@ theorem integerValue_count_sublinear
   have hbound_c : C₀' * c ^ n < (k.factorial : ℝ) := by
     rw [hcpow]
     have hkfac : (0 : ℝ) < (k.factorial : ℝ) := by exact_mod_cast Nat.factorial_pos k
-    have h1 : C₀' / (C₀' + 1) < 1 := by rw [div_lt_one (by linarith)]; linarith
+    have h1 : C₀' / (C₀' + 1) < 1 := by
+      rw [div_lt_one (by linarith)]
+      linarith
     calc C₀' * ((k.factorial : ℝ) / (C₀' + 1))
         = (k.factorial : ℝ) * (C₀' / (C₀' + 1)) := by ring
       _ < (k.factorial : ℝ) * 1 := mul_lt_mul_of_pos_left h1 hkfac
@@ -629,13 +825,17 @@ theorem integerValue_count_sublinear
             exact mul_le_mul_of_nonneg_left haβ (by positivity)
         _ = C₀' * c ^ n * (a ^ (-β) * a ^ β) := by ring
         _ = C₀' * c ^ n := by
-            rw [← Real.rpow_add hapos]; norm_num
+            rw [← Real.rpow_add hapos]
+            norm_num
         _ < (k.factorial : ℝ) := hbound_c
     have hcard := block_card_le f k hk hf hone a (c * a ^ e) ha hsmall
     calc (S ∩ {t : ℤ | a ≤ (t : ℝ) ∧ (t : ℝ) ≤ a + c * a ^ e}).ncard
         = {t : ℤ | a ≤ (t : ℝ) ∧ (t : ℝ) ≤ a + c * a ^ e ∧
             ∃ m : ℤ, f (t : ℝ) = (m : ℝ)}.ncard := by
-          congr 1; ext t; simp only [hS, Set.mem_inter_iff, Set.mem_setOf_eq]; tauto
+          congr 1
+          ext t
+          simp only [hS, Set.mem_inter_iff, Set.mem_setOf_eq]
+          tauto
       _ ≤ k + 1 := hcard
   obtain ⟨C, α, hC, hα0, hα1, hbound⟩ :=
     count_of_block_bound S (k + 1) c e hcpos he0 he1 hblock
@@ -643,7 +843,9 @@ theorem integerValue_count_sublinear
   have hset : {t : ℤ | (1 : ℝ) ≤ (t : ℝ) ∧ (t : ℝ) ≤ (N : ℝ) ∧
       ∃ m : ℤ, f (t : ℝ) = (m : ℝ)} =
       S ∩ {t : ℤ | (1 : ℝ) ≤ (t : ℝ) ∧ (t : ℝ) ≤ (N : ℝ)} := by
-    ext t; simp only [hS, Set.mem_inter_iff, Set.mem_setOf_eq]; tauto
+    ext t
+    simp only [hS, Set.mem_inter_iff, Set.mem_setOf_eq]
+    tauto
   rw [hset]
   exact hbound N hN
 

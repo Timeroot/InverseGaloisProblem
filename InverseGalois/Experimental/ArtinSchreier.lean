@@ -72,14 +72,14 @@ lemma frobenius_preserves_roots_of_zmod_poly
           have h_char : ringChar K = p := by
             have h_char : ringChar K = ringChar (ZMod p) := by
               grind only [Algebra.ringChar_eq];
-            rw [ h_char, ZMod.ringChar_zmod_n ];
-          haveI := ringChar.of_eq h_char; simp [ add_pow_char ] ;
-        simp [ Polynomial.eval_map, Polynomial.eval₂_eq_sum, Polynomial.sum_def, h_frobenius ];
-        induction' g.support using Finset.induction <;> simp_all [ pow_succ, mul_assoc, mul_comm, mul_left_comm ];
-        · rw [ zero_pow hp.1.ne_zero ];
-        · simp [ mul_pow, ← pow_mul ];
-          simp [ mul_comm, ← map_pow ];
-      simp_all [ Polynomial.aeval_def ];
+            rw [h_char, ZMod.ringChar_zmod_n];
+          haveI := ringChar.of_eq h_char; simp [add_pow_char] ;
+        simp [Polynomial.eval_map, Polynomial.eval₂_eq_sum, Polynomial.sum_def, h_frobenius];
+        induction' g.support using Finset.induction <;> simp_all [pow_succ, mul_assoc, mul_comm, mul_left_comm];
+        · rw [zero_pow hp.1.ne_zero];
+        · simp [mul_pow, ← pow_mul];
+          simp [mul_comm, ← map_pow];
+      simp_all [Polynomial.aeval_def];
       exact hp.1.ne_zero
 
 /-
@@ -87,17 +87,17 @@ The degree of X^p - X - C a is p for p prime.
 -/
 lemma artinSchreier_natDegree (a : ZMod p) :
     (X ^ p - X - C a : Polynomial (ZMod p)).natDegree = p := by
-      rw [ Polynomial.natDegree_sub_C, Polynomial.natDegree_sub_eq_left_of_natDegree_lt ] <;> norm_num [ hp.1.one_lt ]
+      rw [Polynomial.natDegree_sub_C, Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num [hp.1.one_lt]
 
 /-
 X^p - X - C a is monic.
 -/
 lemma artinSchreier_monic (a : ZMod p) :
     (X ^ p - X - C a : Polynomial (ZMod p)).Monic := by
-      rw [ Polynomial.Monic, Polynomial.leadingCoeff_sub_of_degree_lt ];
-      · rw [ Polynomial.leadingCoeff_sub_of_degree_lt ] <;> norm_num [ hp.1.one_lt ];
-      · rw [ Polynomial.degree_sub_eq_left_of_degree_lt ] <;> norm_num [ hp.1.one_lt ];
-        exact lt_of_le_of_lt Polynomial.degree_C_le ( WithBot.coe_lt_coe.mpr hp.1.pos )
+      rw [Polynomial.Monic, Polynomial.leadingCoeff_sub_of_degree_lt];
+      · rw [Polynomial.leadingCoeff_sub_of_degree_lt] <;> norm_num [hp.1.one_lt];
+      · rw [Polynomial.degree_sub_eq_left_of_degree_lt] <;> norm_num [hp.1.one_lt];
+        exact lt_of_le_of_lt Polynomial.degree_C_le (WithBot.coe_lt_coe.mpr hp.1.pos)
 
 /-
 If a polynomial over an integral domain has n distinct roots, its degree is at least n.
@@ -106,7 +106,7 @@ lemma natDegree_ge_of_distinct_roots {R : Type*} [CommRing R] [IsDomain R]
     (g : Polynomial R) (hg : g ≠ 0) (S : Finset R)
     (hS : ∀ x ∈ S, Polynomial.IsRoot g x) :
     S.card ≤ g.natDegree := by
-      simp_all [ Polynomial.eval_eq_sum_range ];
+      simp_all [Polynomial.eval_eq_sum_range];
       contrapose! hS;
       by_contra! h;
       -- Let $f(x) = \sum_{i=0}^{g.natDegree} g.coeff i * x^i$.
@@ -115,12 +115,12 @@ lemma natDegree_ge_of_distinct_roots {R : Type*} [CommRing R] [IsDomain R]
       have h_f_zero : f = 0 := by
         refine' Polynomial.eq_of_degree_sub_lt_of_eval_finset_eq _ _ _;
         exact S;
-        · rw [ sub_zero, Polynomial.degree_lt_iff_coeff_zero ];
+        · rw [sub_zero, Polynomial.degree_lt_iff_coeff_zero];
           simp +zetaDelta at *;
           grobner;
         · simp +zetaDelta at *;
-          simpa [ Polynomial.eval_finset_sum ] using h;
-      replace h_f_zero := congr_arg ( fun q => Polynomial.coeff q ( g.natDegree ) ) h_f_zero ; simp_all only [finset_sum_coeff, coeff_C_mul, coeff_X_pow, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq,
+          simpa [Polynomial.eval_finset_sum] using h;
+      replace h_f_zero := congr_arg (fun q => Polynomial.coeff q (g.natDegree)) h_f_zero ; simp_all only [finset_sum_coeff, coeff_C_mul, coeff_X_pow, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq,
       Finset.mem_range, lt_add_iff_pos_right, zero_lt_one, ↓reduceIte, coeff_natDegree, coeff_zero, leadingCoeff_eq_zero,
       f]
 
@@ -154,49 +154,49 @@ lemma artinSchreier_factor_degree (a : ZMod p) (ha : a ≠ 0)
         -- Since $g$ is irreducible, $K$ is a finite field with $p^{\deg(g)}$ elements.
         have hK_card : Fintype K := by
           have hK_card : FiniteDimensional (ZMod p) K := by
-            exact Module.Basis.finiteDimensional_of_finite ( PowerBasis.basis ( AdjoinRoot.powerBasis hg_irr.ne_zero ) );
-          convert ( Fintype.ofEquiv ( Fin ( Module.finrank ( ZMod p ) K ) → ZMod p ) ?_ );
-          exact ( LinearEquiv.toEquiv ( ( Module.finBasis ( ZMod p ) K ).equivFun ) ) |> Equiv.symm
+            exact Module.Basis.finiteDimensional_of_finite (PowerBasis.basis (AdjoinRoot.powerBasis hg_irr.ne_zero));
+          convert (Fintype.ofEquiv (Fin (Module.finrank (ZMod p) K) → ZMod p) ?_);
+          exact (LinearEquiv.toEquiv ((Module.finBasis (ZMod p) K).equivFun)) |> Equiv.symm
         have hK_card_eq : Fintype.card K = p ^ g.natDegree := by
           have hK_card_eq : Fintype.card K = Fintype.card (Fin (g.natDegree) → ZMod p) := by
             refine' Fintype.card_congr _;
             have hK_card_eq : K ≃ₗ[ZMod p] (Fin (g.natDegree) → ZMod p) := by
-              refine' ( AdjoinRoot.powerBasis hg_irr.ne_zero ).basis.equivFun;
+              refine' (AdjoinRoot.powerBasis hg_irr.ne_zero).basis.equivFun;
             exact hK_card_eq.toEquiv;
           simp_all only [ne_eq, Fintype.card_pi, ZMod.card, Finset.prod_const, Finset.card_univ, Fintype.card_fin, K];
         -- Since $K$ is a finite field with $p^{\deg(g)}$ elements, every element of $K$ satisfies $x^{p^{\deg(g)}} = x$.
         have hK_poly : ∀ x : K, x ^ (p ^ g.natDegree) = x := by
-          simp [ ← hK_card_eq, FiniteField.pow_card ];
+          simp [← hK_card_eq, FiniteField.pow_card];
           haveI := Fact.mk hg_irr; exact FiniteField.pow_card;
-        rw [ ← AdjoinRoot.mk_eq_zero ];
+        rw [← AdjoinRoot.mk_eq_zero];
         simp_all only [ne_eq, map_sub, map_pow, AdjoinRoot.mk_X, sub_self, K];
       -- Since $g$ divides $X^p - X - C a$, it also divides $X^{p^d} - X - C (d * a)$ for any integer $d$.
       have h_div_shift : g ∣ (X ^ (p ^ (g.natDegree)) - X - C (g.natDegree * a) : Polynomial (ZMod p)) := by
         have h_div_shift : ∀ k : ℕ, g ∣ (X ^ (p ^ k) - X - C (k * a) : Polynomial (ZMod p)) := by
-          intro k; induction' k with k ih <;> simp_all [ pow_succ, pow_mul ] ;
+          intro k; induction' k with k ih <;> simp_all [pow_succ, pow_mul] ;
           have h_div_shift : g ∣ ((X ^ (p ^ k)) ^ p - X ^ p - C (k * a) : Polynomial (ZMod p)) := by
-            convert ih.trans ( show X ^ p ^ k - X - ↑k * C a ∣ ( X ^ p ^ k ) ^ p - X ^ p - C ( ↑k * a ) from ?_ ) using 1;
+            convert ih.trans (show X ^ p ^ k - X - ↑k * C a ∣ (X ^ p ^ k) ^ p - X ^ p - C (↑k * a) from ?_) using 1;
             have h_div_shift : (X ^ (p ^ k) - X - C (k * a) : Polynomial (ZMod p)) ∣ ((X ^ (p ^ k)) ^ p - X ^ p - C (k * a) ^ p : Polynomial (ZMod p)) := by
               have h_div_shift : ∀ (x y : Polynomial (ZMod p)), x - y ∣ x ^ p - y ^ p := by
                 exact fun x y => sub_dvd_pow_sub_pow x y p;
-              convert h_div_shift ( X ^ p ^ k ) ( X + C ( k * a ) ) using 1 ; ring;
-              simp [ add_pow_char, sub_sub ];
-            convert h_div_shift using 1 ; norm_num [ ← Polynomial.C_pow, ← Polynomial.C_mul ];
-            rw [ ← map_pow, ZMod.pow_card ];
+              convert h_div_shift (X ^ p ^ k) (X + C (k * a)) using 1 ; ring;
+              simp [add_pow_char, sub_sub];
+            convert h_div_shift using 1 ; norm_num [← Polynomial.C_pow, ← Polynomial.C_mul];
+            rw [← map_pow, ZMod.pow_card];
           convert dvd_add h_div_shift hg_dvd using 1 ; ring;
-          norm_num [ sub_eq_add_neg, add_comm, add_left_comm, add_assoc ];
+          norm_num [sub_eq_add_neg, add_comm, add_left_comm, add_assoc];
         exact h_div_shift _;
-      have := dvd_sub h_div h_div_shift; simp_all [ ← ZMod.natCast_eq_zero_iff ] ;
+      have := dvd_sub h_div h_div_shift; simp_all [← ZMod.natCast_eq_zero_iff] ;
       -- Since $g$ is irreducible and divides $g.natDegree$, it must be that $g.natDegree$ is a multiple of $p$.
       have h_natDegree_mul_p : p ∣ g.natDegree := by
         contrapose! this;
         -- Since $g$ is irreducible and does not divide $p$, it must be that $g$ is a unit.
         have h_unit : IsUnit (Polynomial.C (g.natDegree : ZMod p)) := by
-          exact Polynomial.isUnit_C.mpr ( isUnit_iff_ne_zero.mpr <| by rw [ Ne.eq_def, ZMod.natCast_eq_zero_iff ] ; exact this );
+          exact Polynomial.isUnit_C.mpr (isUnit_iff_ne_zero.mpr <| by rw [Ne.eq_def, ZMod.natCast_eq_zero_iff] ; exact this);
         exact fun h => hg_irr.not_isUnit <| isUnit_of_dvd_unit h <| by simpa using h_unit;
-      have := Polynomial.natDegree_le_of_dvd hg_dvd; simp_all [ Polynomial.natDegree_sub_eq_left_of_natDegree_lt ] ;
-      rw [ Polynomial.natDegree_sub_eq_left_of_natDegree_lt ] at this <;> simp_all [ Polynomial.natDegree_sub_eq_left_of_natDegree_lt, hp.1.one_lt ];
-      exact le_antisymm ( this ( by exact ne_of_apply_ne Polynomial.natDegree <| by erw [ Polynomial.natDegree_sub_C ] ; erw [ Polynomial.natDegree_sub_eq_left_of_natDegree_lt ] <;> norm_num <;> linarith [ hp.1.one_lt ] ) ) ( Nat.le_of_dvd ( Polynomial.natDegree_pos_iff_degree_pos.mpr <| Polynomial.degree_pos_of_irreducible hg_irr ) h_natDegree_mul_p )
+      have := Polynomial.natDegree_le_of_dvd hg_dvd; simp_all [Polynomial.natDegree_sub_eq_left_of_natDegree_lt] ;
+      rw [Polynomial.natDegree_sub_eq_left_of_natDegree_lt] at this <;> simp_all [Polynomial.natDegree_sub_eq_left_of_natDegree_lt, hp.1.one_lt];
+      exact le_antisymm (this (by exact ne_of_apply_ne Polynomial.natDegree <| by erw [Polynomial.natDegree_sub_C] ; erw [Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num <;> linarith [hp.1.one_lt])) (Nat.le_of_dvd (Polynomial.natDegree_pos_iff_degree_pos.mpr <| Polynomial.degree_pos_of_irreducible hg_irr) h_natDegree_mul_p)
 
 /-
 The minimal polynomial of a root of X^p - X - C a over F_p has degree p.
@@ -210,17 +210,17 @@ lemma frobenius_iterate {K : Type*} [Field K] [Algebra (ZMod p) K]
     (a : ZMod p) (α : K)
     (hα : α ^ p = α + algebraMap (ZMod p) K a) :
     ∀ k : ℕ, α ^ (p ^ k) = α + algebraMap (ZMod p) K (k * a) := by
-      intro k; induction' k with k ih; simp_all [ pow_succ, pow_mul ] ;
+      intro k; induction' k with k ih; simp_all [pow_succ, pow_mul] ;
       have h_frobenius : ∀ x y : K, (x + y) ^ p = x ^ p + y ^ p := by
         intro x y
         have h_char : ringChar K = p := by
           grind only [ringChar.spec, Algebra.ringChar_eq, ringChar.eq]
-        haveI := ringChar.of_eq h_char; simp [ add_pow_char ] ;
-      simp_all [ pow_succ, pow_mul ];
-      rw [ mul_pow, add_mul, one_mul, add_assoc ];
-      simp [ ← mul_pow, ← map_pow ];
-      rw [ add_comm, ← map_natCast ( algebraMap ( ZMod p ) K ) ];
-      rw [ ← map_pow, ZMod.pow_card ]
+        haveI := ringChar.of_eq h_char; simp [add_pow_char] ;
+      simp_all [pow_succ, pow_mul];
+      rw [mul_pow, add_mul, one_mul, add_assoc];
+      simp [← mul_pow, ← map_pow];
+      rw [add_comm, ← map_natCast (algebraMap (ZMod p) K)];
+      rw [← map_pow, ZMod.pow_card]
 
 lemma artinSchreier_minpoly_degree (a : ZMod p) (ha : a ≠ 0)
     (α : AlgebraicClosure (ZMod p))
@@ -228,9 +228,9 @@ lemma artinSchreier_minpoly_degree (a : ZMod p) (ha : a ≠ 0)
     (minpoly (ZMod p) α).natDegree = p := by
       -- Since $α$ is a root of $X^p - X - C a$, we have that $minpoly (ZMod p) α$ divides $X^p - X - C a$.
       have h_div : (minpoly (ZMod p) α) ∣ (Polynomial.X ^ p - Polynomial.X - Polynomial.C a) := by
-        exact minpoly.dvd ( ZMod p ) α hα;
-      convert artinSchreier_factor_degree a ha ( minpoly ( ZMod p ) α ) ?_ h_div;
-      exact minpoly.irreducible ( show IsIntegral ( ZMod p ) α from by exact Algebra.IsIntegral.isIntegral α )
+        exact minpoly.dvd (ZMod p) α hα;
+      convert artinSchreier_factor_degree a ha (minpoly (ZMod p) α) ?_ h_div;
+      exact minpoly.irreducible (show IsIntegral (ZMod p) α from by exact Algebra.IsIntegral.isIntegral α)
 
 /-
 The Artin-Schreier polynomial `X^p - X - C a` is irreducible over `𝔽_p`
@@ -256,18 +256,18 @@ theorem artinSchreier_irreducible (a : ZMod p) (ha : a ≠ 0) :
           apply minpoly.monic;
           exact Algebra.IsIntegral.isIntegral α
         have h_div : minpoly (ZMod p) α ∣ f := by
-          exact minpoly.dvd ( ZMod p ) α hα
+          exact minpoly.dvd (ZMod p) α hα
         have h_eq : minpoly (ZMod p) α = f := by
-          obtain ⟨ g, hg ⟩ := h_div;
+          obtain ⟨g, hg⟩ := h_div;
           have h_deg_f : f.natDegree = p := by
-            rw [ Polynomial.natDegree_sub_C, Polynomial.natDegree_sub_eq_left_of_natDegree_lt ] <;> norm_num [ hp.1.one_lt ]
+            rw [Polynomial.natDegree_sub_C, Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num [hp.1.one_lt]
           have h_deg_g : g.natDegree = 0 := by
-            by_cases hg_zero : g = 0 <;> simp_all [ Polynomial.natDegree_mul' ]
+            by_cases hg_zero : g = 0 <;> simp_all [Polynomial.natDegree_mul']
           have h_g_monic : g.Monic := by
-            apply_fun Polynomial.leadingCoeff at hg; simp_all [ Polynomial.leadingCoeff_mul ] ;
-            rw [ Polynomial.Monic, ← hg, Polynomial.leadingCoeff, h_deg_f ];
+            apply_fun Polynomial.leadingCoeff at hg; simp_all [Polynomial.leadingCoeff_mul] ;
+            rw [Polynomial.Monic, ← hg, Polynomial.leadingCoeff, h_deg_f];
             simp +zetaDelta at *;
-            rw [ Polynomial.coeff_X, Polynomial.coeff_C, if_neg ( by linarith [ hp.1.one_lt ] ), if_neg ( by linarith [ hp.1.one_lt ] ) ] ; norm_num
+            rw [Polynomial.coeff_X, Polynomial.coeff_C, if_neg (by linarith [hp.1.one_lt]), if_neg (by linarith [hp.1.one_lt])] ; norm_num
           have h_g_one : g = 1 := by
             exact eq_one_of_monic_natDegree_zero h_g_monic h_deg_g
           subst h_g_one
@@ -276,12 +276,12 @@ theorem artinSchreier_irreducible (a : ZMod p) (ha : a ≠ 0) :
       -- Let α be a root of f in the algebraic closure.
       obtain ⟨α, hα⟩ : ∃ α : AlgebraicClosure (ZMod p), Polynomial.aeval α f = 0 := by
         have h_root : ∃ α : AlgebraicClosure (ZMod p), Polynomial.eval α (f.map (algebraMap (ZMod p) (AlgebraicClosure (ZMod p)))) = 0 := by
-          apply_rules [ @IsAlgClosed.exists_root ];
-          rw [ Polynomial.degree_map, Polynomial.degree_sub_C ] <;> rw [ Polynomial.degree_sub_eq_left_of_degree_lt ] <;> norm_num [ hp.1.one_lt ];
+          apply_rules [@IsAlgClosed.exists_root];
+          rw [Polynomial.degree_map, Polynomial.degree_sub_C] <;> rw [Polynomial.degree_sub_eq_left_of_degree_lt] <;> norm_num [hp.1.one_lt];
           · exact hp.1.ne_zero;
           · exact hp.1.pos;
-        simpa [ Polynomial.eval_map ] using h_root;
-      have := minpoly.irreducible ( show IsIntegral ( ZMod p ) α from ?_ );
+        simpa [Polynomial.eval_map] using h_root;
+      have := minpoly.irreducible (show IsIntegral (ZMod p) α from ?_);
       · simp_all only [ne_eq, aeval_sub, map_pow, aeval_X, aeval_C, f];
       · exact Algebra.IsIntegral.isIntegral α
 

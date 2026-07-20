@@ -66,7 +66,9 @@ noncomputable def morseGeomPoly (n : ℕ) : GeomBase[X] :=
 
 /-- `genPolyC n = Xⁿ − X − C X` is monic for `n ≥ 2`. -/
 theorem genPolyC_monic (n : ℕ) (hn : 2 ≤ n) : (genPolyC n).Monic := by
-  have h : genPolyC n = X ^ n - (X + C X) := by unfold genPolyC; ring
+  have h : genPolyC n = X ^ n - (X + C X) := by
+    unfold genPolyC
+    ring
   rw [h]
   apply Polynomial.monic_X_pow_sub
   have hle : (X + C X : (Polynomial (AlgebraicClosure ℚ))[X]).degree ≤ 1 := by
@@ -88,7 +90,8 @@ variable-swap automorphism `Polynomial.Bivariate.swap` turns it into (a unit mul
 transported back along the algebra automorphism.  (No lower bound on `n` is needed.) -/
 theorem genPolyC_irreducible (n : ℕ) : Irreducible (genPolyC n) := by
   have hswap : Polynomial.Bivariate.swap (genPolyC n) = -(Polynomial.X - C (X ^ n - X)) := by
-    unfold genPolyC; simp
+    unfold genPolyC
+    simp
   have hirr : Irreducible (Polynomial.Bivariate.swap (genPolyC n)) := by
     rw [hswap]
     have h := irreducible_X_sub_C (R := (Polynomial (AlgebraicClosure ℚ))) (X ^ n - X)
@@ -157,23 +160,27 @@ theorem isPreprimitive_range_of_isPreprimitive
   have hφ : Function.Surjective φ := MonoidHom.rangeRestrict_surjective _
   let f : p.rootSet E →ₑ[φ] p.rootSet E :=
     { toFun := id
-      map_smul' := by intro m a; show m • a = (φ m) • a; rfl }
+      map_smul' := by
+        intro m a
+        show m • a = (φ m) • a
+        rfl }
   exact (MulAction.isPreprimitive_congr (f := f) hφ Function.bijective_id).mp h
 
 /-
 `genPolyC n = Xⁿ − X − C X` has degree `n` for `n ≥ 2`.
 -/
 theorem genPolyC_natDegree (n : ℕ) (hn : 2 ≤ n) : (genPolyC n).natDegree = n := by
-  unfold genPolyC;
-  rw [ Polynomial.natDegree_sub_C ] ; rw [ Polynomial.natDegree_sub_eq_left_of_natDegree_lt ] <;> norm_num [ hn ];
+  unfold genPolyC
+  rw [Polynomial.natDegree_sub_C]
+  rw [Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num [hn]
   grind
 
 /-
 `morseGeomPoly n = Xⁿ − X − T` has degree `n` for `n ≥ 2`.
 -/
 theorem morseGeomPoly_natDegree (n : ℕ) (hn : 2 ≤ n) : (morseGeomPoly n).natDegree = n := by
-  convert Polynomial.natDegree_map_eq_of_injective _ _;
-  · rw [ genPolyC_natDegree n hn ];
+  convert Polynomial.natDegree_map_eq_of_injective _ _
+  · rw [genPolyC_natDegree n hn]
   · exact IsFractionRing.injective _ _
 
 /-
@@ -223,7 +230,9 @@ theorem morseGeomPoly_blocks_trivial_of_prime (n : ℕ) (hn : n.Prime)
     {B : Set ((morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField)}
     (hB : MulAction.IsBlock (morseGeomPoly n).Gal B) : MulAction.IsTrivialBlock B := by
   rcases B.eq_empty_or_nonempty with hB0 | hBne
-  · exact Or.inl (by rw [hB0]; exact Set.subsingleton_empty)
+  · refine Or.inl ?_
+    rw [hB0]
+    exact Set.subsingleton_empty
   · have hdvd := morseGeomPoly_block_ncard_dvd n hn.two_le hB hBne
     rcases (Nat.dvd_prime hn).mp hdvd with h1 | hn'
     · obtain ⟨a, rfl⟩ := Set.ncard_eq_one.mp h1
@@ -270,12 +279,22 @@ theorem xnSubX_crit_value_inj (n : ℕ) (hn : 2 ≤ n) {a b : AlgebraicClosure �
     (hb : (n : AlgebraicClosure ℚ) * b ^ (n - 1) = 1)
     (hval : a ^ n - a = b ^ n - b) : a = b := by
   have hn0 : (n : AlgebraicClosure ℚ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
-  have hae : a ^ n = a * a ^ (n-1) := by rw [← pow_succ']; congr 1; omega
-  have hbe : b ^ n = b * b ^ (n-1) := by rw [← pow_succ']; congr 1; omega
+  have hae : a ^ n = a * a ^ (n-1) := by
+    rw [← pow_succ']
+    congr 1
+    omega
+  have hbe : b ^ n = b * b ^ (n-1) := by
+    rw [← pow_succ']
+    congr 1
+    omega
   have han : a ^ n = a * (n:AlgebraicClosure ℚ)⁻¹ := by
-    rw [hae]; field_simp; linear_combination a * ha
+    rw [hae]
+    field_simp
+    linear_combination a * ha
   have hbn : b ^ n = b * (n:AlgebraicClosure ℚ)⁻¹ := by
-    rw [hbe]; field_simp; linear_combination b * hb
+    rw [hbe]
+    field_simp
+    linear_combination b * hb
   rw [han, hbn] at hval
   have hfac : (a - b) * ((n:AlgebraicClosure ℚ)⁻¹ - 1) = 0 := by linear_combination hval
   have hne : (n:AlgebraicClosure ℚ)⁻¹ - 1 ≠ 0 := by
@@ -296,7 +315,8 @@ theorem xnSubX_deriv_separable (n : ℕ) (hn : 2 ≤ n) :
   have hn0 : (n : AlgebraicClosure ℚ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
   have key : (C (n : AlgebraicClosure ℚ) * X ^ (n - 1) - 1 : (AlgebraicClosure ℚ)[X])
       = C (n:AlgebraicClosure ℚ) * (X ^ (n-1) - C ((n:AlgebraicClosure ℚ)⁻¹)) := by
-    rw [mul_sub, ← C_mul, mul_inv_cancel₀ hn0]; simp
+    rw [mul_sub, ← C_mul, mul_inv_cancel₀ hn0]
+    simp
   rw [key]
   have hsep : (X ^ (n-1) - C ((n:AlgebraicClosure ℚ)⁻¹) : (AlgebraicClosure ℚ)[X]).Separable := by
     apply Polynomial.separable_X_pow_sub_C
@@ -312,28 +332,41 @@ roots `x₁, x₂` with `g(x₁) = g(x₂)` are critical points of `Xⁿ − X` 
 `g₀′ = g′ · (h′ ∘ g)`) with the same critical value, forcing `x₁ = x₂` via
 `xnSubX_crit_value_inj`. -/
 theorem xnSubX_comp_deriv_distinct_roots_le (n : ℕ) (hn : 2 ≤ n)
-    {h g : (AlgebraicClosure ℚ)[X]} (hh : 2 ≤ h.natDegree) (hg : 2 ≤ g.natDegree)
+    {h g : (AlgebraicClosure ℚ)[X]} (_hh : 2 ≤ h.natDegree) (_hg : 2 ≤ g.natDegree)
     (h_eq : (X ^ n - X : (AlgebraicClosure ℚ)[X]) = h.comp g) :
     ((derivative h).comp g).roots.toFinset.card ≤ (derivative h).roots.toFinset.card := by
   -- Let `D := C (n:F) * X^(n-1) - 1`. Then `D = derivative g * dh.comp g`.
   set D : (AlgebraicClosure ℚ)[X] := C (n : AlgebraicClosure ℚ) * X ^ (n - 1) - 1
   have hD : D = derivative g * (derivative h).comp g := by
-    convert congr_arg Polynomial.derivative h_eq using 1;
-    · simp +zetaDelta at *;
-      norm_num [ Polynomial.derivative_pow ];
-    · rw [ Polynomial.derivative_comp ];
-  refine' Finset.card_le_card_of_injOn _ _ _;
-  use fun x => g.eval x;
-  · intro x hx; simp_all [ Polynomial.eval_comp ] ;
-    intro H; simp_all [ Polynomial.derivative_comp ] ;
-  · intro x hx y hy; have := congr_arg ( Polynomial.eval x ) hD; have := congr_arg ( Polynomial.eval y ) hD; norm_num at *;
-    have h_critical : ∀ x : AlgebraicClosure ℚ, (derivative h).eval (g.eval x) = 0 → (n : AlgebraicClosure ℚ) * x ^ (n - 1) = 1 := by
-      intro x hx; replace hD := congr_arg ( Polynomial.eval x ) hD; simp_all [ Polynomial.eval_comp ] ;
-      simp +zetaDelta at *;
-      exact eq_of_sub_eq_zero hD;
-    have h_critical_value : ∀ x : AlgebraicClosure ℚ, (derivative h).eval (g.eval x) = 0 → x ^ n - x = h.eval (g.eval x) := by
-      intro x hx; replace h_eq := congr_arg ( Polynomial.eval x ) h_eq; aesop;
-    exact fun h => xnSubX_crit_value_inj n hn ( h_critical x hx.2 ) ( h_critical y hy.2 ) ( by rw [ h_critical_value x hx.2, h_critical_value y hy.2, h ] )
+    convert congr_arg Polynomial.derivative h_eq using 1
+    · simp +zetaDelta at *
+      norm_num [Polynomial.derivative_pow]
+    · rw [Polynomial.derivative_comp]
+  refine' Finset.card_le_card_of_injOn _ _ _
+  use fun x => g.eval x
+  · intro x hx
+    simp_all [Polynomial.eval_comp]
+    intro H
+    simp_all
+  · intro x hx y hy
+    have := congr_arg (Polynomial.eval x) hD
+    have := congr_arg (Polynomial.eval y) hD
+    norm_num at *
+    have h_critical : ∀ x : AlgebraicClosure ℚ,
+        (derivative h).eval (g.eval x) = 0 → (n : AlgebraicClosure ℚ) * x ^ (n - 1) = 1 := by
+      intro x hx
+      replace hD := congr_arg (Polynomial.eval x) hD
+      simp_all [Polynomial.eval_comp]
+      simp +zetaDelta at *
+      exact eq_of_sub_eq_zero hD
+    have h_critical_value : ∀ x : AlgebraicClosure ℚ,
+        (derivative h).eval (g.eval x) = 0 → x ^ n - x = h.eval (g.eval x) := by
+      intro x hx
+      replace h_eq := congr_arg (Polynomial.eval x) h_eq
+      aesop
+    intro h
+    refine xnSubX_crit_value_inj n hn (h_critical x hx.2) (h_critical y hy.2) ?_
+    rw [h_critical_value x hx.2, h_critical_value y hy.2, h]
 
 /-- **Indecomposability of `Xⁿ − X` (all `n ≥ 2`).**
 
@@ -354,7 +387,8 @@ theorem xnSubX_indecomposable (n : ℕ) (hn : 2 ≤ n)
   set b := g.natDegree with hb_def
   have hCne : (n : AlgebraicClosure ℚ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
   have hdegXnX : (X ^ n - X : (AlgebraicClosure ℚ)[X]).natDegree = n := by
-    rw [natDegree_sub_eq_left_of_natDegree_lt] <;> simp <;> omega
+    rw [natDegree_sub_eq_left_of_natDegree_lt] <;> simp
+    omega
   have hab : a * b = n := by
     have h2 := congrArg Polynomial.natDegree h_eq
     rw [hdegXnX, natDegree_comp] at h2
@@ -369,18 +403,23 @@ theorem xnSubX_indecomposable (n : ℕ) (hn : 2 ≤ n)
   have hDdeg : D.natDegree = n - 1 := by
     have hstep : D.natDegree = (C (n:AlgebraicClosure ℚ) * X^(n-1)).natDegree := by
       rw [hD_def]
-      exact natDegree_sub_eq_left_of_natDegree_lt
-        (by rw [natDegree_C_mul_X_pow _ _ hCne, natDegree_one]; omega)
+      refine natDegree_sub_eq_left_of_natDegree_lt ?_
+      rw [natDegree_C_mul_X_pow _ _ hCne, natDegree_one]
+      omega
     rw [hstep, natDegree_C_mul_X_pow _ _ hCne]
   have hDne : D ≠ 0 := by
-    intro h0; rw [h0] at hDdeg; simp at hDdeg; omega
+    intro h0
+    rw [h0] at hDdeg
+    simp at hDdeg
+    omega
   have hsplit : D.Splits := IsAlgClosed.splits D
   have hcardD : D.roots.toFinset.card = n - 1 := by
     rw [Multiset.toFinset_card_of_nodup (nodup_roots hDsep),
         (splits_iff_card_roots.mp hsplit), hDdeg]
   have hprodne : derivative g * (derivative h).comp g ≠ 0 := hDeq ▸ hDne
   have hrootseq : D.roots = (derivative g).roots + ((derivative h).comp g).roots := by
-    rw [hDeq]; exact roots_mul hprodne
+    rw [hDeq]
+    exact roots_mul hprodne
   have hsub : D.roots.toFinset =
       (derivative g).roots.toFinset ∪ ((derivative h).comp g).roots.toFinset := by
     rw [hrootseq, Multiset.toFinset_add]
@@ -416,16 +455,14 @@ an order dual turns atoms into coatoms. -/
 theorem isCoatom_fixingSubgroup_iff_isAtom {F E : Type*} [Field F] [Field E] [Algebra F E]
     [FiniteDimensional F E] [IsGalois F E] (M : IntermediateField F E) :
     IsCoatom M.fixingSubgroup ↔ IsAtom M := by
-  convert OrderIso.isAtom_iff ( IsGalois.intermediateFieldEquivSubgroup ) M using 1
+  convert OrderIso.isAtom_iff (IsGalois.intermediateFieldEquivSubgroup) M using 1
 
 /-- The restriction endomorphism `Gal.restrict p SF : p.Gal →* p.Gal` (to the splitting field
 itself) is bijective: it is surjective (`Gal.restrict_surjective`, `SF` normal) on a finite
 group. -/
-theorem morseGeomPoly_restrict_bijective (n : ℕ) (hn : 2 ≤ n) :
+theorem morseGeomPoly_restrict_bijective (n : ℕ) (_hn : 2 ≤ n) :
     Function.Bijective
       (Gal.restrict (morseGeomPoly n) (morseGeomPoly n).SplittingField) := by
-  haveI : IsGalois GeomBase (morseGeomPoly n).SplittingField :=
-    IsGalois.of_separable_splitting_field (morseGeomPoly_separable n hn)
   refine ⟨?_, Gal.restrict_surjective _ _⟩
   exact Finite.injective_iff_surjective.mpr (Gal.restrict_surjective _ _)
 
@@ -448,18 +485,20 @@ theorem morseGeomPoly_stabilizer_eq_map_fixingSubgroup (n : ℕ) (hn : 2 ≤ n)
           (IntermediateField.fixingSubgroup
             (IntermediateField.adjoin GeomBase
               {(↑a : (morseGeomPoly n).SplittingField)})) := by
-  refine' le_antisymm _ _ <;> intro x hx <;> simp_all [ Subgroup.mem_map, Subgroup.mem_comap ];
-  · obtain ⟨ y, hy ⟩ := ( morseGeomPoly_restrict_bijective n hn ).surjective x;
-    refine' ⟨ y, _, hy ⟩;
-    intro x hx;
-    induction hx using IntermediateField.adjoin_induction;
-    · replace hx := congr_arg Subtype.val hx; aesop;
-    · exact y.commutes _;
-    · aesop;
-    · rw [ map_inv₀, ‹y _ = _› ];
-    · aesop;
-  · obtain ⟨ y, hy, rfl ⟩ := hx;
-    rw [ ← Subtype.coe_inj ] ; simp [ Gal.restrict_smul, hy ] ;
+  refine' le_antisymm _ _ <;> intro x hx <;> simp_all [Subgroup.mem_map]
+  · obtain ⟨y, hy⟩ := (morseGeomPoly_restrict_bijective n hn).surjective x
+    refine' ⟨y, _, hy⟩
+    intro x hx
+    induction hx using IntermediateField.adjoin_induction
+    · replace hx := congr_arg Subtype.val hx
+      aesop
+    · exact y.commutes _
+    · aesop
+    · rw [map_inv₀, ‹y _ = _›]
+    · aesop
+  · obtain ⟨y, hy, rfl⟩ := hx
+    rw [← Subtype.coe_inj]
+    simp [Gal.restrict_smul]
     exact hy _ <| IntermediateField.subset_adjoin GeomBase _ <| Set.mem_singleton _
 
 /-
@@ -473,14 +512,21 @@ theorem morseGeomPoly_adjoin_root_ne_bot (n : ℕ) (hn : 2 ≤ n)
     IntermediateField.adjoin GeomBase {(↑a : (morseGeomPoly n).SplittingField)} ≠ ⊥ := by
   -- Since $a$ is a root of $morseGeomPoly n$, which is irreducible over $GeomBase$, the minimal polynomial of $a$ over $GeomBase$ is $morseGeomPoly n$.
   have h_min_poly : minpoly GeomBase (a : (morseGeomPoly n).SplittingField) = morseGeomPoly n := by
-    refine' Eq.symm ( minpoly.eq_of_irreducible_of_monic _ _ _ ) <;> norm_num [ morseGeomPoly_irreducible n hn, morseGeomPoly_monic n hn ];
-    exact Polynomial.mem_rootSet.mp a.2 |>.2;
-  intro h;
+    refine' Eq.symm (minpoly.eq_of_irreducible_of_monic _ _ _) <;>
+      norm_num [morseGeomPoly_irreducible n hn, morseGeomPoly_monic n hn]
+    exact Polynomial.mem_rootSet.mp a.2 |>.2
+  intro h
   have h_deg : (minpoly GeomBase (a : (morseGeomPoly n).SplittingField)).natDegree ≤ 1 := by
     have h_deg : ∃ c : GeomBase, (algebraMap GeomBase (morseGeomPoly n).SplittingField) c = a := by
-      exact IntermediateField.mem_bot.mp ( h ▸ IntermediateField.mem_adjoin_simple_self GeomBase _ );
-    obtain ⟨ c, hc ⟩ := h_deg; rw [ show ( a : ( morseGeomPoly n ).SplittingField ) = ( algebraMap GeomBase ( morseGeomPoly n ).SplittingField ) c by exact hc.symm ] ; simp [ minpoly.eq_X_sub_C ] ;
-  exact absurd h_deg ( by rw [ h_min_poly, morseGeomPoly_natDegree n hn ] ; linarith )
+      exact IntermediateField.mem_bot.mp (h ▸ IntermediateField.mem_adjoin_simple_self GeomBase _)
+    obtain ⟨c, hc⟩ := h_deg
+    have hac : (a : (morseGeomPoly n).SplittingField)
+        = (algebraMap GeomBase (morseGeomPoly n).SplittingField) c := hc.symm
+    rw [hac]
+    simp [minpoly.eq_X_sub_C]
+  refine absurd h_deg ?_
+  rw [h_min_poly, morseGeomPoly_natDegree n hn]
+  linarith
 
 /-!
 ### The `ℚ̄(a) ≅ ℚ̄(X)` transport for `morseGeomPoly_no_intermediate`
@@ -506,10 +552,11 @@ theorem morse_aeval_gsub (n : ℕ)
     aeval (↑a : (morseGeomPoly n).SplittingField) (X ^ n - X : (AlgebraicClosure ℚ)[X])
       = algebraMap GeomBase (morseGeomPoly n).SplittingField
           (algebraMap (AlgebraicClosure ℚ)[X] GeomBase X) := by
-  obtain ⟨a_val, ha⟩ := a;
-  rw [ Polynomial.mem_rootSet ] at ha;
-  unfold morseGeomPoly at ha;
-  unfold genPolyC at ha; simp_all [ Polynomial.eval_map ] ;
+  obtain ⟨a_val, ha⟩ := a
+  rw [Polynomial.mem_rootSet] at ha
+  unfold morseGeomPoly at ha
+  unfold genPolyC at ha
+  simp_all
   exact eq_of_sub_eq_zero ha.2
 
 /-
@@ -518,10 +565,14 @@ The base transcendental `T = algebraMap ℚ̄[X] GeomBase X` is transcendental o
 theorem geomBase_gen_transcendental :
     Transcendental (AlgebraicClosure ℚ)
       (algebraMap (AlgebraicClosure ℚ)[X] GeomBase X) := by
-  rw [ transcendental_iff_injective ];
-  have h_aeval_eq_algebraMap : (aeval (algebraMap (AlgebraicClosure ℚ)[X] GeomBase X) : (AlgebraicClosure ℚ)[X] →ₐ[AlgebraicClosure ℚ] GeomBase) = IsScalarTower.toAlgHom (AlgebraicClosure ℚ) (AlgebraicClosure ℚ)[X] GeomBase := by
-    ext; simp [IsScalarTower.toAlgHom];
-  rw [ h_aeval_eq_algebraMap ];
+  rw [transcendental_iff_injective]
+  have h_aeval_eq_algebraMap :
+      (aeval (algebraMap (AlgebraicClosure ℚ)[X] GeomBase X) :
+        (AlgebraicClosure ℚ)[X] →ₐ[AlgebraicClosure ℚ] GeomBase)
+        = IsScalarTower.toAlgHom (AlgebraicClosure ℚ) (AlgebraicClosure ℚ)[X] GeomBase := by
+    ext
+    simp [IsScalarTower.toAlgHom]
+  rw [h_aeval_eq_algebraMap]
   exact IsFractionRing.injective _ _
 
 /-
@@ -531,17 +582,22 @@ theorem morse_root_transcendental (n : ℕ)
     (a : (morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField) :
     Transcendental (AlgebraicClosure ℚ) (↑a : (morseGeomPoly n).SplittingField) := by
   -- By `morse_aeval_gsub n a`, `aeval x (X^n - X) = algebraMap GeomBase L t₀` with t₀ := algebraMap (AlgebraicClosure ℚ)[X] GeomBase X.
-  have h_tL : (↑a : (morseGeomPoly n).SplittingField) ^ n - (↑a : (morseGeomPoly n).SplittingField) = algebraMap GeomBase (morseGeomPoly n).SplittingField (algebraMap (AlgebraicClosure ℚ)[X] GeomBase X) := by
-    convert morse_aeval_gsub n a using 1;
-    norm_num;
+  have h_tL : (↑a : (morseGeomPoly n).SplittingField) ^ n
+        - (↑a : (morseGeomPoly n).SplittingField)
+      = algebraMap GeomBase (morseGeomPoly n).SplittingField
+          (algebraMap (AlgebraicClosure ℚ)[X] GeomBase X) := by
+    convert morse_aeval_gsub n a using 1
+    norm_num
   -- Since $t₀$ is transcendental over $\mathbb{Q}$, and $algebraMap GeomBase L$ is injective, $algebraMap GeomBase L t₀$ is also transcendental over $\mathbb{Q}$.
-  have h_tL_transcendental : Transcendental (AlgebraicClosure ℚ) (algebraMap GeomBase (morseGeomPoly n).SplittingField (algebraMap (AlgebraicClosure ℚ)[X] GeomBase X)) := by
-    intro h;
-    convert geomBase_gen_transcendental using 1;
-    constructor <;> intro h <;> rw [ Transcendental ] at * <;> simp_all [ IsAlgebraic ];
-  contrapose! h_tL_transcendental;
-  simp_all [ Transcendental ];
-  exact h_tL ▸ IsAlgebraic.sub ( h_tL_transcendental.pow _ ) h_tL_transcendental
+  have h_tL_transcendental : Transcendental (AlgebraicClosure ℚ)
+      (algebraMap GeomBase (morseGeomPoly n).SplittingField
+        (algebraMap (AlgebraicClosure ℚ)[X] GeomBase X)) := by
+    intro h
+    convert geomBase_gen_transcendental using 1
+    constructor <;> intro h <;> rw [Transcendental] at * <;> simp_all [IsAlgebraic]
+  contrapose! h_tL_transcendental
+  simp_all [Transcendental]
+  exact h_tL ▸ IsAlgebraic.sub (h_tL_transcendental.pow _) h_tL_transcendental
 
 /-- The `ℚ̄`-algebra hom `Ψ : RatFunc ℚ̄ →ₐ[ℚ̄] L` sending `X ↦ ↑a`, well-defined and injective
 because `↑a` is transcendental over `ℚ̄`. -/
@@ -556,14 +612,17 @@ theorem morseLift_apply_poly (n : ℕ)
     (a : (morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField) (p : (AlgebraicClosure ℚ)[X]) :
     morseLift n a (algebraMap (AlgebraicClosure ℚ)[X] (RatFunc (AlgebraicClosure ℚ)) p)
       = aeval (↑a : (morseGeomPoly n).SplittingField) p := by
-  have h := @RatFunc.liftAlgHom_apply_div;
-  convert h ( Polynomial.aeval ( a : ( morseGeomPoly n ).SplittingField ) ) ( nonZeroDivisors_le_comap_nonZeroDivisors_of_injective _ ( transcendental_iff_injective.mp ( morse_root_transcendental n a ) ) ) p 1 using 1 <;> simp [ morseLift ]
+  have h := @RatFunc.liftAlgHom_apply_div
+  have hnz := nonZeroDivisors_le_comap_nonZeroDivisors_of_injective _
+    (transcendental_iff_injective.mp (morse_root_transcendental n a))
+  convert h (Polynomial.aeval (a : (morseGeomPoly n).SplittingField)) hnz p 1 using 1 <;>
+    simp [morseLift]
 
 theorem morseLift_injective (n : ℕ)
     (a : (morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField) :
     Function.Injective (morseLift n a) := by
-  convert RatFunc.liftAlgHom_injective _ _;
-  exact transcendental_iff_injective.mp ( morse_root_transcendental n a )
+  convert RatFunc.liftAlgHom_injective _ _
+  exact transcendental_iff_injective.mp (morse_root_transcendental n a)
 
 /-
 The range of `Ψ` is `ℚ̄(↑a)`.
@@ -572,17 +631,20 @@ theorem morseLift_fieldRange (n : ℕ)
     (a : (morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField) :
     (morseLift n a).fieldRange
       = IntermediateField.adjoin (AlgebraicClosure ℚ) {(↑a : (morseGeomPoly n).SplittingField)} := by
-  refine' le_antisymm _ _;
+  refine' le_antisymm _ _
   · intro x hx
     obtain ⟨p, hp⟩ := hx
-    simp [morseLift_apply_poly] at hp;
+    simp at hp
     have h_image : p ∈ IntermediateField.adjoin (AlgebraicClosure ℚ) {RatFunc.X} := by
-      rw [ RatFunc.adjoin_X_top ] at * ; aesop;
-    rw [ ← hp, IntermediateField.mem_adjoin_simple_iff ] at *;
-    obtain ⟨ r, s, rfl ⟩ := h_image; use r, s; simp [ morseLift_apply_poly ] ;
-  · simp [ IntermediateField.adjoin_le_iff, Set.singleton_subset_iff ];
-    use RatFunc.X;
-    convert morseLift_apply_poly n a Polynomial.X using 1;
+      rw [RatFunc.adjoin_X_top] at *
+      aesop
+    rw [← hp, IntermediateField.mem_adjoin_simple_iff] at *
+    obtain ⟨r, s, rfl⟩ := h_image
+    use r, s
+    simp [morseLift_apply_poly]
+  · simp [IntermediateField.adjoin_le_iff, Set.singleton_subset_iff]
+    use RatFunc.X
+    convert morseLift_apply_poly n a Polynomial.X using 1
     norm_num
 
 /-
@@ -594,16 +656,25 @@ theorem geomBase_image_mem_adjoin (n : ℕ)
       ∈ IntermediateField.adjoin (AlgebraicClosure ℚ)
           {(↑a : (morseGeomPoly n).SplittingField) ^ n - ↑a} := by
   -- By `IsFractionRing.div_surjective y` (GeomBase = FractionRing Qbar[X]), obtain num den with den ∈ nonZeroDivisors and `algebraMap Qbar[X] GeomBase num / algebraMap Qbar[X] GeomBase den = y`.
-  obtain ⟨num, den, hden, hy⟩ : ∃ num den : Polynomial (AlgebraicClosure ℚ), den ∈ nonZeroDivisors (Polynomial (AlgebraicClosure ℚ)) ∧ y = (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase num) / (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase den) := by
-    have := IsFractionRing.div_surjective ( A := Polynomial ( AlgebraicClosure ℚ ) ) y; aesop;
+  obtain ⟨num, den, hden, hy⟩ :
+      ∃ num den : Polynomial (AlgebraicClosure ℚ),
+        den ∈ nonZeroDivisors (Polynomial (AlgebraicClosure ℚ)) ∧
+          y = (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase num)
+            / (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase den) := by
+    have := IsFractionRing.div_surjective (A := Polynomial (AlgebraicClosure ℚ)) y
+    aesop
   -- By `IsScalarTower.algebraMap_apply`, we have `algebraMap GeomBase L (algebraMap Qbar[X] GeomBase p) = algebraMap Qbar[X] L p`.
-  have h_algebraMap : ∀ p : Polynomial (AlgebraicClosure ℚ), algebraMap GeomBase (morseGeomPoly n).SplittingField (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase p) = aeval (↑a ^ n - ↑a : (morseGeomPoly n).SplittingField) p := by
-    intro p;
-    induction p using Polynomial.induction_on <;> simp_all [ Polynomial.aeval_def ];
-    · convert rfl;
-    · have := morse_aeval_gsub n a; simp_all [ pow_succ, mul_assoc ] ;
-  simp_all [ IntermediateField.mem_adjoin_simple_iff ];
-  exact ⟨ num, den, rfl ⟩
+  have h_algebraMap : ∀ p : Polynomial (AlgebraicClosure ℚ),
+      algebraMap GeomBase (morseGeomPoly n).SplittingField
+          (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase p)
+        = aeval (↑a ^ n - ↑a : (morseGeomPoly n).SplittingField) p := by
+    intro p
+    induction p using Polynomial.induction_on <;> simp_all [Polynomial.aeval_def]
+    · convert rfl
+    · have := morse_aeval_gsub n a
+      simp_all [pow_succ]
+  simp_all [IntermediateField.mem_adjoin_simple_iff]
+  exact ⟨num, den, rfl⟩
 
 /-
 The base subfield `GeomBase`, restricted to `ℚ̄`, equals `ℚ̄(↑aⁿ − ↑a)`.
@@ -614,13 +685,13 @@ theorem geomBase_bot_restrict (n : ℕ)
         (AlgebraicClosure ℚ)
       = IntermediateField.adjoin (AlgebraicClosure ℚ)
           {(↑a : (morseGeomPoly n).SplittingField) ^ n - ↑a} := by
-  refine' le_antisymm _ _;
-  · intro z hz;
-    obtain ⟨ y, rfl ⟩ := hz;
-    convert geomBase_image_mem_adjoin n a y using 1;
-  · simp [ IntermediateField.adjoin_simple_le_iff, IntermediateField.mem_restrictScalars, IntermediateField.mem_bot ];
-    use algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase (Polynomial.X);
-    exact morse_aeval_gsub n a ▸ by simp [ Polynomial.aeval_def ] ;
+  refine' le_antisymm _ _
+  · intro z hz
+    obtain ⟨y, rfl⟩ := hz
+    convert geomBase_image_mem_adjoin n a y using 1
+  · simp [IntermediateField.mem_bot]
+    use algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase (Polynomial.X)
+    exact morse_aeval_gsub n a ▸ by simp [Polynomial.aeval_def]
 
 /-
 `ℚ̄(T)(↑a) = ℚ̄(↑a)`: the base-restriction of `adjoin GeomBase {↑a}` is `ℚ̄(↑a)`.
@@ -630,15 +701,21 @@ theorem adjoin_geomBase_restrict (n : ℕ)
     (IntermediateField.adjoin GeomBase {(↑a : (morseGeomPoly n).SplittingField)}).restrictScalars
         (AlgebraicClosure ℚ)
       = IntermediateField.adjoin (AlgebraicClosure ℚ) {(↑a : (morseGeomPoly n).SplittingField)} := by
-  refine' le_antisymm _ _;
-  · intro x hx;
-    have := geomBase_bot_restrict n a;
-    have h_adjoin : IntermediateField.adjoin (AlgebraicClosure ℚ) {(↑a : (morseGeomPoly n).SplittingField) ^ n - ↑a} ≤ IntermediateField.adjoin (AlgebraicClosure ℚ) {(↑a : (morseGeomPoly n).SplittingField)} := by
-      exact IntermediateField.adjoin_simple_le_iff.mpr ( by aesop );
-    rw [ ← this ] at *;
-    simp_all [ IntermediateField.restrictScalars ];
-    rw [ Subsemiring.mem_closure ] at hx;
-    exact hx _ fun y hy => by rcases hy with ( rfl | ⟨ y, rfl ⟩ ) <;> [ exact IntermediateField.subset_adjoin _ _ ( Set.mem_singleton _ ) ; exact h_adjoin ( Set.mem_range_self _ ) ] ;
+  refine' le_antisymm _ _
+  · intro x hx
+    have := geomBase_bot_restrict n a
+    have h_adjoin : IntermediateField.adjoin (AlgebraicClosure ℚ)
+          {(↑a : (morseGeomPoly n).SplittingField) ^ n - ↑a}
+        ≤ IntermediateField.adjoin (AlgebraicClosure ℚ)
+            {(↑a : (morseGeomPoly n).SplittingField)} :=
+      IntermediateField.adjoin_simple_le_iff.mpr (by aesop)
+    rw [← this] at *
+    simp_all [IntermediateField.restrictScalars]
+    rw [Subsemiring.mem_closure] at hx
+    refine hx _ fun y hy => ?_
+    rcases hy with (rfl | ⟨y, rfl⟩)
+    · exact IntermediateField.subset_adjoin _ _ (Set.mem_singleton _)
+    · exact h_adjoin (Set.mem_range_self _)
   · simp +zetaDelta at *
 
 /- -/
@@ -647,47 +724,66 @@ theorem morseGeomPoly_no_intermediate (n : ℕ) (hn : 2 ≤ n)
     (b : IntermediateField GeomBase (morseGeomPoly n).SplittingField)
     (hb : b < IntermediateField.adjoin GeomBase {(↑a : (morseGeomPoly n).SplittingField)}) :
     b = ⊥ := by
-  by_contra h;
+  by_contra h
   -- Let $M := \text{comap}(\Psi)(b.restrictScalars(\mathbb{Q}))$.
-  set M := IntermediateField.comap (morseLift n a) (b.restrictScalars (AlgebraicClosure ℚ));
+  set M := IntermediateField.comap (morseLift n a) (b.restrictScalars (AlgebraicClosure ℚ))
   -- By `IsCoatom`, we have `M = ⊤` or `M = adjoin (AlgebraicClosure ℚ) {w₀}`.
-  have hM : M = ⊤ ∨ M = IntermediateField.adjoin (AlgebraicClosure ℚ) {(algebraMap (AlgebraicClosure ℚ)[X] (RatFunc (AlgebraicClosure ℚ)) (X ^ n - X : (AlgebraicClosure ℚ)[X]))} := by
-    have hM : IsCoatom (IntermediateField.adjoin (AlgebraicClosure ℚ) {(algebraMap (AlgebraicClosure ℚ)[X] (RatFunc (AlgebraicClosure ℚ)) (X ^ n - X : (AlgebraicClosure ℚ)[X]))}) := by
-      apply RatFunc.isCoatom_adjoin_of_indecomposable;
-      · rw [ Polynomial.natDegree_sub_eq_left_of_natDegree_lt ] <;> norm_num <;> linarith;
-      · exact fun h g hh hg => xnSubX_indecomposable n hn hh hg;
-    have hM : IntermediateField.adjoin (AlgebraicClosure ℚ) {(algebraMap (AlgebraicClosure ℚ)[X] (RatFunc (AlgebraicClosure ℚ)) (X ^ n - X : (AlgebraicClosure ℚ)[X]))} ≤ M := by
-      rw [ IntermediateField.adjoin_simple_le_iff ];
-      have hM : (morseLift n a) (algebraMap (AlgebraicClosure ℚ)[X] (RatFunc (AlgebraicClosure ℚ)) (X ^ n - X : (AlgebraicClosure ℚ)[X])) ∈ b := by
-        convert b.algebraMap_mem ( algebraMap ( AlgebraicClosure ℚ )[X] GeomBase X ) using 1;
-        convert morse_aeval_gsub n a using 1;
-        exact morseLift_apply_poly n a _;
-      exact hM;
-    cases eq_or_lt_of_le hM <;> simp_all [ IsCoatom ];
-    grind;
-  cases' hM with hM hM;
-  · -- If `M = ⊤`, then `b.restrictScalars (AlgebraicClosure ℚ)` contains the image of `Ψ`, which is `adjoin (AlgebraicClosure ℚ) {a}`.
-    have h_image : IntermediateField.adjoin (AlgebraicClosure ℚ) {(↑a : (morseGeomPoly n).SplittingField)} ≤ b.restrictScalars (AlgebraicClosure ℚ) := by
-      have h_image : IntermediateField.map (morseLift n a) ⊤ ≤ b.restrictScalars (AlgebraicClosure ℚ) := by
-        rw [ IntermediateField.map_le_iff_le_comap ] ; aesop;
-      convert h_image using 1;
-      rw [ ← morseLift_fieldRange ];
-      ext; simp [AlgHom.fieldRange_eq_map];
-    exact hb.not_ge ( by simpa [ adjoin_geomBase_restrict ] using h_image );
+  have hM : M = ⊤ ∨ M = IntermediateField.adjoin (AlgebraicClosure ℚ)
+      {(algebraMap (AlgebraicClosure ℚ)[X] (RatFunc (AlgebraicClosure ℚ))
+        (X ^ n - X : (AlgebraicClosure ℚ)[X]))} := by
+    have hM : IsCoatom (IntermediateField.adjoin (AlgebraicClosure ℚ)
+        {(algebraMap (AlgebraicClosure ℚ)[X] (RatFunc (AlgebraicClosure ℚ))
+          (X ^ n - X : (AlgebraicClosure ℚ)[X]))}) := by
+      apply RatFunc.isCoatom_adjoin_of_indecomposable
+      · rw [Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num <;> linarith
+      · exact fun h g hh hg => xnSubX_indecomposable n hn hh hg
+    have hM : IntermediateField.adjoin (AlgebraicClosure ℚ)
+          {(algebraMap (AlgebraicClosure ℚ)[X] (RatFunc (AlgebraicClosure ℚ))
+            (X ^ n - X : (AlgebraicClosure ℚ)[X]))} ≤ M := by
+      rw [IntermediateField.adjoin_simple_le_iff]
+      have hM : (morseLift n a) (algebraMap (AlgebraicClosure ℚ)[X] (RatFunc (AlgebraicClosure ℚ))
+          (X ^ n - X : (AlgebraicClosure ℚ)[X])) ∈ b := by
+        convert b.algebraMap_mem (algebraMap (AlgebraicClosure ℚ)[X] GeomBase X) using 1
+        convert morse_aeval_gsub n a using 1
+        exact morseLift_apply_poly n a _
+      exact hM
+    cases eq_or_lt_of_le hM <;> simp_all [IsCoatom]
+    grind
+  cases' hM with hM hM
+  · -- If `M = ⊤`, then `b.restrictScalars (AlgebraicClosure ℚ)` contains the image of `Ψ`,
+    -- which is `adjoin (AlgebraicClosure ℚ) {a}`.
+    have h_image : IntermediateField.adjoin (AlgebraicClosure ℚ)
+          {(↑a : (morseGeomPoly n).SplittingField)}
+        ≤ b.restrictScalars (AlgebraicClosure ℚ) := by
+      have h_image : IntermediateField.map (morseLift n a) ⊤
+          ≤ b.restrictScalars (AlgebraicClosure ℚ) := by
+        rw [IntermediateField.map_le_iff_le_comap]
+        aesop
+      convert h_image using 1
+      rw [← morseLift_fieldRange]
+      ext
+      simp [AlgHom.fieldRange_eq_map]
+    exact hb.not_ge (by simpa [adjoin_geomBase_restrict] using h_image)
   · -- By `IntermediateField.map_comap_eq`, we have `map Ψ M = b.restrictScalars (AlgebraicClosure ℚ)`.
     have h_map : IntermediateField.map (morseLift n a) M = b.restrictScalars (AlgebraicClosure ℚ) := by
-      rw [ IntermediateField.map_comap_eq ];
-      refine' inf_eq_left.mpr _;
-      rw [ morseLift_fieldRange ];
-      exact le_trans ( IntermediateField.restrictScalars_le_iff _ |>.2 hb.le ) ( by simp [ adjoin_geomBase_restrict ] );
+      rw [IntermediateField.map_comap_eq]
+      refine' inf_eq_left.mpr _
+      rw [morseLift_fieldRange]
+      exact le_trans (IntermediateField.restrictScalars_le_iff _ |>.2 hb.le)
+        (by simp [adjoin_geomBase_restrict])
     -- By `IntermediateField.adjoin_map`, we have `map Ψ M = adjoin (AlgebraicClosure ℚ) {Ψ w₀}`.
-    have h_map_adjoin : IntermediateField.map (morseLift n a) M = IntermediateField.adjoin (AlgebraicClosure ℚ) {(↑a : (morseGeomPoly n).SplittingField) ^ n - ↑a} := by
-      rw [ hM, IntermediateField.adjoin_map ];
-      rw [ Set.image_singleton ];
-      rw [ morseLift_apply_poly ] ; norm_num;
-    have h_contra : b.restrictScalars (AlgebraicClosure ℚ) = (⊥ : IntermediateField GeomBase (morseGeomPoly n).SplittingField).restrictScalars (AlgebraicClosure ℚ) := by
-      rw [ ← h_map, h_map_adjoin, ← geomBase_bot_restrict n a ];
-    exact h ( by simpa using congr_arg ( fun x => x ) h_contra )
+    have h_map_adjoin : IntermediateField.map (morseLift n a) M
+        = IntermediateField.adjoin (AlgebraicClosure ℚ)
+            {(↑a : (morseGeomPoly n).SplittingField) ^ n - ↑a} := by
+      rw [hM, IntermediateField.adjoin_map]
+      rw [Set.image_singleton]
+      rw [morseLift_apply_poly]
+      norm_num
+    have h_contra : b.restrictScalars (AlgebraicClosure ℚ)
+        = (⊥ : IntermediateField GeomBase (morseGeomPoly n).SplittingField).restrictScalars
+            (AlgebraicClosure ℚ) := by
+      rw [← h_map, h_map_adjoin, ← geomBase_bot_restrict n a]
+    exact h (by simpa using congr_arg (fun x => x) h_contra)
 
 theorem morseGeomPoly_adjoin_root_isAtom (n : ℕ) (hn : 2 ≤ n)
     (a : (morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField) :
@@ -733,7 +829,8 @@ theorem morseGeomPoly_primitive (n : ℕ) (hn : 2 ≤ n) :
     Gal.galAction_isPretransitive (morseGeomPoly n) (morseGeomPoly n).SplittingField
       (morseGeomPoly_irreducible n hn)
   haveI hnt : Nontrivial ((morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField) := by
-    rw [← Fintype.one_lt_card_iff_nontrivial, morseGeomPoly_card_rootSet n hn]; omega
+    rw [← Fintype.one_lt_card_iff_nontrivial, morseGeomPoly_card_rootSet n hn]
+    omega
   obtain ⟨a⟩ := (inferInstance : Nonempty
     ((morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField))
   have hco := morseGeomPoly_stabilizer_isCoatom n hn a

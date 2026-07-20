@@ -21,7 +21,8 @@ theorem natDegree_dvd_card {F : Type*} [Field F] [CharZero F] {p : Polynomial F}
   rw [Polynomial.Gal.card_of_separable p_irr.separable]
   have hp : p.degree ≠ 0 := by
     have := Irreducible.natDegree_pos p_irr
-    simp [Polynomial.degree_eq_natDegree p_irr.ne_zero]; omega
+    simp [Polynomial.degree_eq_natDegree p_irr.ne_zero]
+    omega
   let α : p.SplittingField :=
     rootOfSplits (SplittingField.splits p) (by rwa [degree_map])
   have hα : IsIntegral F α := .of_finite F α
@@ -40,6 +41,7 @@ theorem natDegree_dvd_card {F : Type*} [Field F] [CharZero F] {p : Polynomial F}
 /-- For a separable polynomial of degree n, the number of complex roots equals n. -/
 theorem card_rootSet_eq_natDegree (p : Polynomial ℚ) (hp : p.Separable) (hp0 : p ≠ 0) :
     Fintype.card (p.rootSet ℂ) = p.natDegree := by
+  have := hp0
   simp_rw [rootSet_def, Finset.coe_sort_coe, Fintype.card_coe]
   rw [Multiset.toFinset_card_of_nodup, ← Polynomial.Splits.natDegree_eq_card_roots,
     natDegree_map]
@@ -52,13 +54,13 @@ from the injective Galois action on roots (Lagrange's theorem).
 -/
 theorem card_gal_dvd_card_rootSet_factorial (p : Polynomial ℚ) :
     Nat.card p.Gal ∣ (Fintype.card (p.rootSet ℂ)).factorial := by
-      by_contra! h_contra;
+      by_contra! h_contra
       -- By the properties of the Galois group, we know that $|Gal(p)|$ divides $|S_n| = n!$.
       have h_div : Nat.card p.Gal ∣ Fintype.card (Equiv.Perm (p.rootSet ℂ)) := by
-        convert Subgroup.card_subgroup_dvd_card (MonoidHom.range (Polynomial.Gal.galActionHom p ℂ)) using 1;
-        convert Nat.card_congr ( Equiv.ofInjective _ <| Polynomial.Gal.galActionHom_injective p ℂ ) using 1;
-        · rw [ Nat.card_eq_fintype_card ];
-        · exact Gal.splits_ℚ_ℂ;
-      simp_all [ Fintype.card_perm ]
+        convert Subgroup.card_subgroup_dvd_card (MonoidHom.range (Polynomial.Gal.galActionHom p ℂ)) using 1
+        convert Nat.card_congr (Equiv.ofInjective _ <| Polynomial.Gal.galActionHom_injective p ℂ) using 1
+        · rw [Nat.card_eq_fintype_card]
+        · exact Gal.splits_ℚ_ℂ
+      simp_all [Fintype.card_perm]
 
 end

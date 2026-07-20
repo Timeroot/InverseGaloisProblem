@@ -29,38 +29,44 @@ theorem A5_no_subgroup_order_20 :
       -- The homomorphism $A_5 \to S_3$ by left multiplication on $A_5/H$.
       intros H hH
       have h_hom : ∃ f : alternatingGroup (Fin 5) →* Equiv.Perm (alternatingGroup (Fin 5) ⧸ H), f.ker ≠ ⊤ := by
-        refine' ⟨ _, _ ⟩;
+        refine' ⟨_, _⟩
         exact MulAction.toPermHom (alternatingGroup (Fin 5))
-          ((alternatingGroup (Fin 5)) ⧸ H);
+          ((alternatingGroup (Fin 5)) ⧸ H)
         intro h_top
         have h_contra : ∀ g : alternatingGroup (Fin 5), ∀ x : alternatingGroup (Fin 5) ⧸ H, g • x = x := by
-          simp_all +decide [ Subgroup.eq_top_iff' ];
-          exact fun a ha x => by simpa using congr_arg ( fun f => f x ) ( h_top a ha ) ;
+          simp_all +decide [Subgroup.eq_top_iff']
+          exact fun a ha x => by simpa using congr_arg (fun f => f x) (h_top a ha)
         have h_contra : ∀ g : alternatingGroup (Fin 5), g ∈ H := by
-          intro g; specialize h_contra g ( QuotientGroup.mk 1 ) ; simp_all +decide [ QuotientGroup.eq ] ;
-        have := Subgroup.card_mul_index H; simp_all +decide ;
+          intro g
+          specialize h_contra g (QuotientGroup.mk 1)
+          simp_all +decide [QuotientGroup.eq]
+        have := Subgroup.card_mul_index H
+        simp_all +decide
       -- Since $A_5$ is simple, the kernel of $f$ must be trivial.
-      obtain ⟨f, hf⟩ := h_hom;
+      obtain ⟨f, hf⟩ := h_hom
       have h_ker_trivial : f.ker = ⊥ := by
-        contrapose! hf;
+        contrapose! hf
         have h_ker_trivial : ∀ N : Subgroup (alternatingGroup (Fin 5)), N.Normal → N ≠ ⊥ → N = ⊤ := by
           intro N hN hN_ne_bot
           have h_simple : IsSimpleGroup (alternatingGroup (Fin 5)) := by
-            infer_instance;
-          have := h_simple.2 N hN; simp_all only [ne_eq, false_or];
-        exact h_ker_trivial _ ( by infer_instance ) hf;
+            infer_instance
+          have := h_simple.2 N hN
+          simp_all only [ne_eq, false_or]
+        exact h_ker_trivial _ (by infer_instance) hf
       -- Since $f$ is injective, $A_5$ is isomorphic to a subgroup of $S_3$.
       have h_iso : Function.Injective f := by
-        exact ( MonoidHom.ker_eq_bot_iff _ ).mp h_ker_trivial;
+        exact (MonoidHom.ker_eq_bot_iff _).mp h_ker_trivial
       have h_card : Nat.card (alternatingGroup (Fin 5)) ≤ Nat.card (Equiv.Perm (alternatingGroup (Fin 5) ⧸ H)) := by
-        apply_rules [ Nat.card_le_card_of_injective ];
+        apply_rules [Nat.card_le_card_of_injective]
       have h_card : Nat.card (Equiv.Perm (alternatingGroup (Fin 5) ⧸ H)) = Nat.factorial 3 := by
         have h_card : Nat.card (alternatingGroup (Fin 5) ⧸ H) = 3 := by
-          have := Subgroup.card_eq_card_quotient_mul_card_subgroup H; simp_all +decide ;
-          exact Eq.symm ( by rw [ show Fintype.card { x : Equiv.Perm ( Fin 5 ) // Equiv.Perm.sign x = 1 } = 60 by native_decide ] at this; linarith );
-        rw [ ← h_card ];
-        exact Nat.card_perm;
-      simp_all +decide [ Nat.factorial ]
+          have := Subgroup.card_eq_card_quotient_mul_card_subgroup H
+          simp_all +decide
+          rw [show Fintype.card { x : Equiv.Perm (Fin 5) // Equiv.Perm.sign x = 1 } = 60 by native_decide] at this
+          exact Eq.symm (by linarith)
+        rw [← h_card]
+        exact Nat.card_perm
+      simp_all +decide [Nat.factorial]
 
 
 /-
@@ -69,8 +75,9 @@ There is no element of order 10 in the symmetric group on five points
 of `5` has lcm `10`).
 -/
 lemma perm_fin5_no_order_ten (g : Equiv.Perm (Fin 5)) : orderOf g ≠ 10 := by
-  simp_all +decide [ orderOf_eq_iff ];
-  revert g; native_decide;
+  simp_all +decide [orderOf_eq_iff]
+  revert g
+  native_decide
 
 /-
 Any non-cyclic finite group of order 10 is isomorphic to the dihedral group `D₅`.
@@ -82,111 +89,158 @@ inversion automorphism, which is exactly the defining relation of `DihedralGroup
 lemma iso_dihedral_five_of_card_ten {G : Type*} [Group G] [Finite G]
     (hcard : Nat.card G = 10) (hncyc : ¬ IsCyclic G) :
     Nonempty (G ≃* DihedralGroup 5) := by
-  haveI := Fintype.ofFinite G; simp_all +decide [ Nat.card_eq_fintype_card ] ;
+  haveI := Fintype.ofFinite G
+  simp_all +decide [Nat.card_eq_fintype_card]
   obtain ⟨a, ha⟩ : ∃ a : G, orderOf a = 5 := by
-    have := Fact.mk ( by decide : Nat.Prime 5 ) ; exact Exists.imp (by intro a a_1; simp_all only) ( exists_prime_orderOf_dvd_card 5 ( by rw [ hcard ] ; decide ) ) ;
+    have := Fact.mk (by decide : Nat.Prime 5)
+    exact Exists.imp (fun a a_1 => by simp_all only) (exists_prime_orderOf_dvd_card 5 (by
+      rw [hcard]
+      decide))
   obtain ⟨b, hb⟩ : ∃ b : G, orderOf b = 2 := by
-    exact Exists.imp (by intro a_1 a_2; simp_all only) ( exists_prime_orderOf_dvd_card 2 ( by rw [ hcard ] ; decide ) )
+    exact Exists.imp (fun a_1 a_2 => by simp_all only) (exists_prime_orderOf_dvd_card 2 (by
+      rw [hcard]
+      decide))
   have h_normal : Subgroup.Normal (Subgroup.zpowers a) := by
-    refine' Subgroup.normal_of_index_eq_two _;
-    have := Subgroup.index_mul_card ( Subgroup.zpowers a ) ; simp_all +decide [ Fintype.card_zpowers ] ;
+    refine' Subgroup.normal_of_index_eq_two _
+    have := Subgroup.index_mul_card (Subgroup.zpowers a)
+    simp_all +decide [Fintype.card_zpowers]
     linarith
   have h_conj : b * a * b⁻¹ = a⁻¹ := by
     -- Since $b * a * b⁻¹ \in \langle a \rangle$, we have $b * a * b⁻¹ = a^k$ for some integer $k$.
     obtain ⟨k, hk⟩ : ∃ k : ℤ, b * a * b⁻¹ = a^k := by
-      exact Subgroup.mem_zpowers_iff.mp ( h_normal.conj_mem _ ( Subgroup.mem_zpowers a ) b ) |> fun ⟨ k, hk ⟩ => ⟨ k, hk.symm ⟩
+      exact Subgroup.mem_zpowers_iff.mp (h_normal.conj_mem _ (Subgroup.mem_zpowers a) b) |> fun ⟨k, hk⟩ => ⟨k, hk.symm⟩
     have hk_order : k ^ 2 ≡ 1 [ZMOD 5] := by
       have hk_order : a = b^2 * a * b⁻¹^2 := by
         simp +decide [hb ▸ pow_orderOf_eq_one b]
       have hk_order : a = a^(k^2) := by
-        convert hk_order using 1 ; simp +decide [sq, mul_assoc];
-        simp +decide [ ← mul_assoc, ← hk, zpow_mul ]
+        convert hk_order using 1
+        simp +decide [sq, mul_assoc]
+        simp +decide [← mul_assoc, ← hk, zpow_mul]
       have hk_order : k^2 ≡ 1 [ZMOD 5] := by
         have hk_order : a^(k^2 - 1) = 1 := by
-          rw [ zpow_sub_one ] ; norm_num [ ← hk_order ];
-        have := orderOf_dvd_iff_zpow_eq_one.mpr hk_order; norm_num [ ha ] at this; exact Int.ModEq.symm ( Int.modEq_of_dvd <| by simpa [ ← Int.natCast_dvd_natCast ] using this ) ;
+          rw [zpow_sub_one]
+          norm_num [← hk_order]
+        have := orderOf_dvd_iff_zpow_eq_one.mpr hk_order
+        norm_num [ha] at this
+        exact Int.ModEq.symm (Int.modEq_of_dvd <| by simpa [← Int.natCast_dvd_natCast] using this)
       exact hk_order
     have hk_cases : k ≡ 1 [ZMOD 5] ∨ k ≡ -1 [ZMOD 5] := by
-      norm_num [ Int.ModEq, Int.mul_emod, sq ] at hk_order ⊢; have := Int.emod_nonneg k ( by decide : ( 5 : ℤ ) ≠ 0 ) ; have := Int.emod_lt_of_pos k ( by decide : ( 5 : ℤ ) > 0 ) ; interval_cases k % 5 <;> trivial;
+      norm_num [Int.ModEq, Int.mul_emod, sq] at hk_order ⊢
+      have := Int.emod_nonneg k (by decide : (5 : ℤ) ≠ 0)
+      have := Int.emod_lt_of_pos k (by decide : (5 : ℤ) > 0)
+      interval_cases k % 5 <;> trivial
     have hk_neg : k ≡ -1 [ZMOD 5] := by
       by_contra hk_pos
       have h_comm : Commute a b := by
         have hk_one : a^k = a := by
-          rw [ ← Int.emod_add_mul_ediv k 5, hk_cases.resolve_right hk_pos ] ; norm_num [ zpow_add, zpow_mul, ha ] ;
-          norm_cast ; simp +decide [ ← ha, pow_orderOf_eq_one ];
-        simp_all +decide [ mul_inv_eq_iff_eq_mul ];
+          rw [← Int.emod_add_mul_ediv k 5, hk_cases.resolve_right hk_pos]
+          norm_num [zpow_add, zpow_mul, ha]
+          norm_cast
+          simp +decide [← ha, pow_orderOf_eq_one]
+        simp_all +decide [mul_inv_eq_iff_eq_mul]
         exact (commute_iff_eq a b).mpr (id (Eq.symm hk))
       have h_cyclic : IsCyclic G := by
         have h_cyclic : orderOf (a * b) = 10 := by
-          rw [ h_comm.orderOf_mul_eq_mul_orderOf_of_coprime ] <;> simp +decide [ *, Nat.coprime_iff_gcd_eq_one ];
+          rw [h_comm.orderOf_mul_eq_mul_orderOf_of_coprime] <;> simp +decide [*, Nat.coprime_iff_gcd_eq_one]
         have h_cyclic : ∀ g : G, g ∈ Subgroup.zpowers (a * b) := by
           have h_cyclic : Fintype.card (Subgroup.zpowers (a * b)) = 10 := by
-            rw [ Fintype.card_zpowers, h_cyclic ];
-          have := Subgroup.card_mul_index ( Subgroup.zpowers ( a * b ) ) ; simp_all +decide ;
-        exact ⟨ a * b, fun g => by obtain ⟨ n, rfl ⟩ := h_cyclic g; exact ⟨ n, rfl ⟩ ⟩
+            rw [Fintype.card_zpowers, h_cyclic]
+          have := Subgroup.card_mul_index (Subgroup.zpowers (a * b))
+          simp_all +decide
+        exact ⟨a * b, fun g => by
+          obtain ⟨n, rfl⟩ := h_cyclic g
+          exact ⟨n, rfl⟩⟩
       contradiction
     have hk_final : b * a * b⁻¹ = a⁻¹ := by
-      rw [ hk, ← Int.emod_add_mul_ediv k 5, hk_neg ] ; norm_num [ zpow_add, zpow_mul ] ;
-      simp_all +decide [orderOf_eq_iff];
-      simp_all +decide [ zpow_ofNat, pow_succ ];
+      rw [hk, ← Int.emod_add_mul_ediv k 5, hk_neg]
+      norm_num [zpow_add, zpow_mul]
+      simp_all +decide [orderOf_eq_iff]
+      simp_all +decide [zpow_ofNat, pow_succ]
       exact eq_inv_of_mul_eq_one_left ha.1 ▸ rfl
-    exact hk_final;
+    exact hk_final
   -- Define the homomorphism $\phi: D_5 \to G$ by $\phi(r) = a$ and $\phi(s) = b$.
   obtain ⟨ϕ, hϕ⟩ : ∃ ϕ : DihedralGroup 5 →* G, ϕ (DihedralGroup.r 1) = a ∧ ϕ (DihedralGroup.sr 0) = b := by
-    refine' ⟨ _, _, _ ⟩;
-    refine' MonoidHom.mk' _ _;
-    use fun x => match x with | DihedralGroup.r i => a ^ i.val | DihedralGroup.sr i => b * a ^ i.val;
-    all_goals norm_num [ pow_succ, mul_assoc, orderOf_eq_iff ] at *;
-    · intro x y; rcases x with ( _ | _ ) <;> rcases y with ( _ | _ ) <;> simp +decide [*, mul_assoc] ;
-      · rename_i i j; rw [ ← pow_add ] ;
-        rw [ ← Nat.mod_add_div ( i.val + j.val ) 5, pow_add, pow_mul ] ; simp_all +decide [ pow_succ, mul_assoc ];
-        fin_cases i <;> fin_cases j <;> rfl;
-      · rename_i i j;
+    refine' ⟨_, _, _⟩
+    refine' MonoidHom.mk' _ _
+    use fun x => match x with | DihedralGroup.r i => a ^ i.val | DihedralGroup.sr i => b * a ^ i.val
+    all_goals norm_num [pow_succ, mul_assoc, orderOf_eq_iff] at *
+    · intro x y
+      rcases x with (_ | _) <;> rcases y with (_ | _) <;> simp +decide [*, mul_assoc]
+      · rename_i i j
+        rw [← pow_add]
+        rw [← Nat.mod_add_div (i.val + j.val) 5, pow_add, pow_mul]
+        simp_all +decide [pow_succ, mul_assoc]
+        fin_cases i <;> fin_cases j <;> rfl
+      · rename_i i j
         -- Using the relation $b * a * b⁻¹ = a⁻¹$, we can rewrite $b * a^k$ as $a^{-k} * b$.
         have h_conj_pow : ∀ k : ℕ, b * a ^ k = a⁻¹ ^ k * b := by
-          intro k; induction k <;> simp_all +decide [ pow_succ, mul_assoc ] ;
-          simp +decide [ ← mul_assoc, ← h_conj, ‹_› ];
-        simp_all +decide [← mul_assoc];
-        rw [ inv_eq_of_mul_eq_one_right ];
-        simp +decide [← mul_assoc, ← pow_add];
-        rw [ show ( j - i ).val + i.val = j.val + 5 * ( if j.val < i.val then 1 else 0 ) by fin_cases i <;> fin_cases j <;> trivial ] ; simp +decide [pow_add];
-        exact fun _ => by rw [ pow_succ, pow_succ, pow_succ, pow_succ, pow_one ] ; simp +decide [ ha.1 ] ;
-      · rename_i i j; rw [ ← pow_add ] ; rw [ ← Nat.mod_add_div ( i.val + j.val ) 5 ] ; simp +decide [pow_add, pow_mul] ;
-        simp_all +decide [ show a ^ 5 = 1 by simp_all +decide [ pow_succ, mul_assoc ] ];
-        fin_cases i <;> fin_cases j <;> rfl;
-      · rename_i i j;
+          intro k
+          induction k <;> simp_all +decide [pow_succ, mul_assoc]
+          simp +decide [← mul_assoc, ← h_conj, ‹_›]
+        simp_all +decide [← mul_assoc]
+        rw [inv_eq_of_mul_eq_one_right]
+        simp +decide [← mul_assoc, ← pow_add]
+        have hji : (j - i).val + i.val = j.val + 5 * (if j.val < i.val then 1 else 0) := by
+          fin_cases i <;> fin_cases j <;> trivial
+        rw [hji]
+        simp +decide [pow_add]
+        exact fun _ => by
+          rw [pow_succ, pow_succ, pow_succ, pow_succ, pow_one]
+          simp +decide [ha.1]
+      · rename_i i j
+        rw [← pow_add]
+        rw [← Nat.mod_add_div (i.val + j.val) 5]
+        simp +decide [pow_add, pow_mul]
+        simp_all +decide [show a ^ 5 = 1 by simp_all +decide [pow_succ, mul_assoc]]
+        fin_cases i <;> fin_cases j <;> rfl
+      · rename_i i j
         -- Using the relation $b * a * b⁻¹ = a⁻¹$, we can simplify the expression.
         have h_simp : ∀ i : ℕ, b * a ^ i * b⁻¹ = a⁻¹ ^ i := by
-          intro i; induction i <;> simp_all +decide [ pow_succ, mul_assoc ] ;
-          simp +decide [ ← mul_assoc, ← h_conj, ← ‹b * ( a ^ _ * b⁻¹ ) = ( a ^ _ ) ⁻¹› ];
+          intro i
+          induction i <;> simp_all +decide [pow_succ, mul_assoc]
+          simp +decide [← mul_assoc, ← h_conj, ← ‹b * (a ^ _ * b⁻¹) = (a ^ _) ⁻¹›]
         have h_simp : a ^ (j - i).val = a⁻¹ ^ i.val * a ^ j.val := by
           have h_simp : a ^ (j - i).val = a ^ (5 - i.val + j.val) := by
             have h_simp : (j - i).val ≡ 5 - i.val + j.val [MOD 5] := by
-              fin_cases i <;> fin_cases j <;> trivial;
-            rw [ ← Nat.mod_add_div ( ( j - i ).val ) 5, ← Nat.mod_add_div ( 5 - i.val + j.val ) 5, h_simp ] ; simp +decide [pow_add, pow_mul] ;
-            simp_all +decide [ pow_succ, mul_assoc ];
-          simp_all +decide [pow_add];
-          exact eq_inv_of_mul_eq_one_right ( by rw [ ← pow_add, Nat.add_sub_of_le ( show i.val ≤ 5 from i.val_lt.le ) ] ; simp_all +decide [ pow_succ, mul_assoc ] );
-        simp_all +decide [ ← mul_assoc, ← ‹∀ i : ℕ, b * a ^ i * b⁻¹ = a⁻¹ ^ i› ];
-        rw [ inv_eq_of_mul_eq_one_right hb.1 ];
-    · simp +decide [ ZMod.val ];
+              fin_cases i <;> fin_cases j <;> trivial
+            rw [← Nat.mod_add_div ((j - i).val) 5, ← Nat.mod_add_div (5 - i.val + j.val) 5, h_simp]
+            simp +decide [pow_add, pow_mul]
+            simp_all +decide [pow_succ, mul_assoc]
+          simp_all +decide [pow_add]
+          exact eq_inv_of_mul_eq_one_right (by
+            rw [← pow_add, Nat.add_sub_of_le (show i.val ≤ 5 from i.val_lt.le)]
+            simp_all +decide [pow_succ, mul_assoc])
+        simp_all +decide [← mul_assoc, ← ‹∀ i : ℕ, b * a ^ i * b⁻¹ = a⁻¹ ^ i›]
+        rw [inv_eq_of_mul_eq_one_right hb.1]
+    · simp +decide [ZMod.val]
   -- Show that $\phi$ is surjective.
   have h_surj : Function.Surjective ϕ := by
     have h_surj : Subgroup.closure ({a, b} : Set G) = ⊤ := by
       have h_surj : Fintype.card (Subgroup.closure ({a, b} : Set G)) = 10 := by
-        have h_card : 5 ∣ Fintype.card (Subgroup.closure ({a, b} : Set G)) ∧ 2 ∣ Fintype.card (Subgroup.closure ({a, b} : Set G)) := by
+        have h_card : 5 ∣ Fintype.card (Subgroup.closure ({a, b} : Set G)) ∧
+            2 ∣ Fintype.card (Subgroup.closure ({a, b} : Set G)) := by
           have h_card : 5 ∣ Fintype.card (Subgroup.zpowers a) ∧ 2 ∣ Fintype.card (Subgroup.zpowers b) := by
-            simp +decide [ Fintype.card_zpowers, ha, hb ];
-          exact ⟨ dvd_trans h_card.1 ( by simpa using Subgroup.card_dvd_of_le ( show Subgroup.zpowers a ≤ Subgroup.closure { a, b } from Subgroup.zpowers_le.mpr ( Subgroup.subset_closure ( Set.mem_insert _ _ ) ) ) ), dvd_trans h_card.2 ( by simpa using Subgroup.card_dvd_of_le ( show Subgroup.zpowers b ≤ Subgroup.closure { a, b } from Subgroup.zpowers_le.mpr ( Subgroup.subset_closure ( Set.mem_insert_of_mem _ ( Set.mem_singleton _ ) ) ) ) ) ⟩;
-        have := Subgroup.card_subgroup_dvd_card ( Subgroup.closure { a, b } ) ; simp_all +decide ;
-        have := Nat.le_of_dvd ( by decide ) this; interval_cases Fintype.card ( Subgroup.closure { a, b } ) <;> trivial;
-      exact Subgroup.eq_top_of_card_eq _ ( by simp_all only [Nat.card_eq_fintype_card] );
+            simp +decide [Fintype.card_zpowers, ha, hb]
+          refine ⟨dvd_trans h_card.1 ?_, dvd_trans h_card.2 ?_⟩
+          · simpa using Subgroup.card_dvd_of_le (show Subgroup.zpowers a ≤ Subgroup.closure { a, b } from
+              Subgroup.zpowers_le.mpr (Subgroup.subset_closure (Set.mem_insert _ _)))
+          · simpa using Subgroup.card_dvd_of_le (show Subgroup.zpowers b ≤ Subgroup.closure { a, b } from
+              Subgroup.zpowers_le.mpr (Subgroup.subset_closure (Set.mem_insert_of_mem _ (Set.mem_singleton _))))
+        have := Subgroup.card_subgroup_dvd_card (Subgroup.closure { a, b })
+        simp_all +decide
+        have := Nat.le_of_dvd (by decide) this
+        interval_cases Fintype.card (Subgroup.closure { a, b }) <;> trivial
+      exact Subgroup.eq_top_of_card_eq _ (by simp_all only [Nat.card_eq_fintype_card])
     intro g
     have hg : g ∈ Subgroup.closure ({a, b} : Set G) := by
-      simp_all only [Subgroup.mem_top];
-    rw [ Subgroup.mem_closure ] at hg;
-    exact hg ( ϕ.range ) ( by rintro x ( rfl | rfl ) <;> [ exact ⟨ DihedralGroup.r 1, hϕ.1 ⟩ ; exact ⟨ DihedralGroup.sr 0, hϕ.2 ⟩ ] ) |> fun h => by obtain ⟨ x, rfl ⟩ := h; exact ⟨ x, rfl ⟩ ;
+      simp_all only [Subgroup.mem_top]
+    rw [Subgroup.mem_closure] at hg
+    obtain ⟨x, rfl⟩ := hg ϕ.range (by
+      rintro x (rfl | rfl)
+      · exact ⟨DihedralGroup.r 1, hϕ.1⟩
+      · exact ⟨DihedralGroup.sr 0, hϕ.2⟩)
+    exact ⟨x, rfl⟩
   -- Since $\phi$ is surjective and $G$ has order 10, $\phi$ must be injective.
   have h_inj : Function.Injective ϕ := by
-    exact ( Fintype.bijective_iff_surjective_and_card ϕ ).mpr ⟨ h_surj, by simp +decide [ hcard ] ⟩ |>.1;
-  exact ⟨ MulEquiv.symm ( MulEquiv.ofBijective ϕ ⟨ h_inj, h_surj ⟩ ) ⟩
+    exact (Fintype.bijective_iff_surjective_and_card ϕ).mpr ⟨h_surj, by simp +decide [hcard]⟩ |>.1
+  exact ⟨MulEquiv.symm (MulEquiv.ofBijective ϕ ⟨h_inj, h_surj⟩)⟩
