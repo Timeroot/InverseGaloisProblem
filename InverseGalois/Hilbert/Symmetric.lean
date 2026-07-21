@@ -31,8 +31,8 @@ theorem perm_fin_one : IsInverseGalois (Equiv.Perm (Fin 1)) :=
 
 /-- `S₂ = Equiv.Perm (Fin 2)` is cyclic of order 2, hence inverse Galois. -/
 theorem perm_fin_two : IsInverseGalois (Equiv.Perm (Fin 2)) := by
-  haveI : Fact (Nat.Prime 2) := ⟨by norm_num⟩
-  haveI : IsCyclic (Equiv.Perm (Fin 2)) := by
+  have : Fact (Nat.Prime 2) := ⟨by norm_num⟩
+  have : IsCyclic (Equiv.Perm (Fin 2)) := by
     apply isCyclic_of_prime_card (p := 2)
     simp [Nat.card_eq_fintype_card, Fintype.card_perm]
   exact of_isCyclic _
@@ -62,9 +62,9 @@ private lemma q₅_irreducible : Irreducible q₅ := by
     · intro n hn
       interval_cases n <;> norm_num [Polynomial.coeff_X, Polynomial.coeff_C, Ideal.mem_span_singleton]
     · norm_num [Ideal.span_singleton_pow, Ideal.mem_span_singleton]
-    · exact Polynomial.Monic.isPrimitive (by
-        erw [Polynomial.Monic, Polynomial.leadingCoeff, Polynomial.natDegree_add_C,
-          Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num [Polynomial.coeff_X])
+    · apply Polynomial.Monic.isPrimitive
+      erw [Polynomial.Monic, Polynomial.leadingCoeff, Polynomial.natDegree_add_C,
+        Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num [Polynomial.coeff_X]
   convert h_eisenstein_int
   constructor
   · grind only
@@ -74,10 +74,10 @@ private lemma q₅_irreducible : Irreducible q₅ := by
       -- Since the polynomial is primitive, we can apply Gauss's Lemma to conclude that it is irreducible over ℚ.
       have h_primitive : Polynomial.IsPrimitive
           (Polynomial.X ^ 5 - 4 * Polynomial.X + 2 : Polynomial ℤ) := by
-        refine Polynomial.Monic.isPrimitive (by
-          erw [Polynomial.Monic, Polynomial.leadingCoeff]
-          erw [Polynomial.natDegree_add_C, Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;>
-            norm_num [Polynomial.coeff_X])
+        apply Polynomial.Monic.isPrimitive
+        erw [Polynomial.Monic, Polynomial.leadingCoeff]
+        erw [Polynomial.natDegree_add_C, Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;>
+          norm_num [Polynomial.coeff_X]
       exact (IsPrimitive.Int.irreducible_iff_irreducible_map_cast h_primitive).mp h_eisenstein_int
     convert h_irred_rat using 1
     norm_num [q₅]
@@ -89,28 +89,28 @@ private lemma q₅_natDegree : q₅.natDegree = 5 := by
 private lemma q₅_roots_card :
     Fintype.card (q₅.rootSet ℂ) = Fintype.card (q₅.rootSet ℝ) + 2 := by
       have h_real_roots : ∃ x ∈ Set.Ioo (-2 : ℝ) (-1), x^5 - 4 * x + 2 = 0 := by
-        apply_rules [intermediate_value_Ioo] <;> norm_num
+        apply intermediate_value_Ioo <;> norm_num
         exact Continuous.continuousOn (by continuity)
       have h_real_roots2 : ∃ y ∈ Set.Ioo (0 : ℝ) (1), y^5 - 4 * y + 2 = 0 := by
-        apply_rules [intermediate_value_Ioo'] <;> norm_num
+        apply intermediate_value_Ioo' <;> norm_num
         exact Continuous.continuousOn (by continuity)
       have h_real_roots3 : ∃ z ∈ Set.Ioo (1 : ℝ) (2), z^5 - 4 * z + 2 = 0 := by
-        apply_rules [intermediate_value_Ioo] <;> norm_num
+        apply intermediate_value_Ioo <;> norm_num
         exact Continuous.continuousOn (by continuity)
       obtain ⟨x, hx⟩ := h_real_roots
       obtain ⟨y, hy⟩ := h_real_roots2
       obtain ⟨z, hz⟩ := h_real_roots3
       have h_real_roots_count : (q₅.map (algebraMap ℚ ℝ)).roots.toFinset.card ≤ 3 := by
-        -- Since $q₅'$ has exactly 2 real roots, $q₅$ can have at most 3 real roots.
+        -- Since `q₅'` has exactly 2 real roots, `q₅` can have at most 3 real roots.
         have h_deriv_roots : (Polynomial.derivative (q₅.map (algebraMap ℚ ℝ))).roots.toFinset.card ≤ 2 := by
           unfold q₅
           norm_num [Polynomial.derivative_pow]
           ring_nf
-          refine' le_trans (Finset.card_le_card _) _
-          exact { Real.sqrt (Real.sqrt (4 / 5)), -Real.sqrt (Real.sqrt (4 / 5)) }
+          refine le_trans (Finset.card_le_card
+              (t := { Real.sqrt (Real.sqrt (4 / 5)), -Real.sqrt (Real.sqrt (4 / 5)) }) ?_) ?_
           · intro x hx
-            simp_all +decide [sub_eq_iff_eq_add]
-            refine' eq_or_eq_neg_of_sq_eq_sq _ _ _
+            simp_all [sub_eq_iff_eq_add]
+            apply eq_or_eq_neg_of_sq_eq_sq
             ring_nf
             norm_num [Real.sqrt_nonneg]
             have := Real.sqrt_nonneg 5
@@ -119,11 +119,11 @@ private lemma q₅_roots_card :
             rw [← sq_eq_sq₀] <;> ring_nf <;> norm_num <;> nlinarith
           · exact Finset.card_insert_le _ _
         have h_real_roots : ∀ p : Polynomial ℝ, p ≠ 0 →
-            (p.roots.toFinset.card ≤ (p.derivative.roots.toFinset.card + 1)) := by
-          exact fun p a => card_roots_toFinset_le_derivative p
-        exact le_trans (h_real_roots _ <| by exact ne_of_apply_ne (Polynomial.eval 0) <| by norm_num [q₅]) (by linarith)
+            (p.roots.toFinset.card ≤ (p.derivative.roots.toFinset.card + 1)) :=
+          fun p _ ↦ card_roots_toFinset_le_derivative p
+        exact le_trans (h_real_roots _ <| ne_of_apply_ne (Polynomial.eval 0) <| by norm_num [q₅]) (by linarith)
       have h_real_roots_count : (q₅.map (algebraMap ℚ ℝ)).roots.toFinset.card = 3 := by
-        refine' le_antisymm h_real_roots_count (Finset.two_lt_card.mpr _)
+        refine le_antisymm h_real_roots_count (Finset.two_lt_card.mpr ?_)
         norm_num [q₅] at *
         refine ⟨x, ⟨?_, hx.2⟩, y, ⟨?_, hy.2⟩, z, ⟨?_, hz.2⟩, ?_, ?_, ?_⟩
         · exact ne_of_apply_ne (Polynomial.eval 0) (by norm_num)
@@ -134,13 +134,12 @@ private lemma q₅_roots_card :
         · linarith
       have h_complex_roots_count : (q₅.map (algebraMap ℚ ℂ)).roots.toFinset.card = 5 := by
         rw [Multiset.toFinset_card_of_nodup]
-        · have h_complex_roots_count : (q₅.map (algebraMap ℚ ℂ)).Splits := by
-            exact IsAlgClosed.splits (Polynomial.map (algebraMap ℚ ℂ) q₅)
+        · have h_complex_roots_count : (q₅.map (algebraMap ℚ ℂ)).Splits :=
+            IsAlgClosed.splits (Polynomial.map (algebraMap ℚ ℂ) q₅)
           have := Polynomial.Splits.natDegree_eq_card_roots h_complex_roots_count
-          exact this ▸ by erw [Polynomial.natDegree_map, q₅_natDegree]
-        · refine' Polynomial.nodup_roots _
-          exact Polynomial.Separable.map (q₅_irreducible.separable)
-      simp_all +decide [Polynomial.rootSet_def]
+          exact this ▸ by rw [Polynomial.natDegree_map, q₅_natDegree]
+        · exact Polynomial.nodup_roots (Polynomial.Separable.map q₅_irreducible.separable)
+      simp_all [Polynomial.rootSet_def]
 
 /-- `S₅ = Equiv.Perm (Fin 5)` is an inverse Galois group. -/
 theorem perm_fin_five : IsInverseGalois (Equiv.Perm (Fin 5)) := by

@@ -205,8 +205,8 @@ theorem evalNF_nfMulMono (ρ : ℕ → R) (m : Mono) (c : ℤ) (g : NF) :
       unfold nfMulMono
       induction' g with p g ih
       · simp [evalNF]
-      · simp [evalNF_nfInsert, evalMono_monoMul, ih]
-        simp [evalNF, List.map_cons, List.sum_cons]
+      · simp only [List.foldr_cons, evalNF_nfInsert, Int.cast_mul, evalMono_monoMul, ih]
+        simp only [evalNF, List.map_cons, List.sum_cons]
         ring
 
 theorem evalNF_nfMulL (ρ : ℕ → R) (f g : NF) :
@@ -216,9 +216,9 @@ theorem evalNF_nfMulL (ρ : ℕ → R) (f g : NF) :
       · simp [nfMulL]
       · have h_fold : evalNF ρ (nfMulL (m :: c) g) = ((m.2 : R) * evalMono ρ m.1 + evalNF ρ c) * evalNF ρ g := by
           convert congr_arg₂ (· + ·) (evalNF_nfMulMono ρ m.1 m.2 g) (f g) using 1
-          · convert evalNF_nfAdd ρ (nfMulMono m.1 m.2 g) (nfMulL c g) using 1
+          · exact evalNF_nfAdd ρ (nfMulMono m.1 m.2 g) (nfMulL c g)
           · ring
-        convert h_fold using 1
+        exact h_fold
 
 theorem evalNF_nfMul (ρ : ℕ → R) (f g : NF) :
     evalNF ρ (nfMul f g) = evalNF ρ f * evalNF ρ g := by
@@ -229,9 +229,8 @@ theorem evalNF_nfMul (ρ : ℕ → R) (f g : NF) :
 
 theorem evalNF_nfNeg (ρ : ℕ → R) (f : NF) :
     evalNF ρ (nfNeg f) = - evalNF ρ f := by
-      unfold evalNF
-      unfold nfNeg
-      simp [List.sum_neg]
+      unfold evalNF nfNeg
+      simp only [List.map_map, List.sum_neg]
       congr! 2
       ext
       simp

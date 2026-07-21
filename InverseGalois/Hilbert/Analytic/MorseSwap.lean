@@ -61,14 +61,14 @@ instance : Algebra.IsIntegral Abase (Bring n) :=
   IsIntegralClosure.isIntegral_algebra Abase (Lfield n)
 
 instance sccGeom : SMulCommClass (morseGeomPoly n).Gal GeomBase (Lfield n) :=
-  ⟨fun g a x => by
+  ⟨fun g a x ↦ by
     rw [Algebra.smul_def, Algebra.smul_def, smul_mul']
     congr 1
     rw [AlgEquiv.smul_def]
     exact AlgEquiv.commutes g a⟩
 
 instance sccA : SMulCommClass (morseGeomPoly n).Gal Abase (Lfield n) :=
-  ⟨fun g a x => by
+  ⟨fun g a x ↦ by
     have h1 : g • (algebraMap Abase (Lfield n) a) = algebraMap Abase (Lfield n) a := by
       rw [IsScalarTower.algebraMap_apply Abase GeomBase (Lfield n)]
       exact smul_algebraMap g (algebraMap Abase GeomBase a)
@@ -79,9 +79,9 @@ instance sccA : SMulCommClass (morseGeomPoly n).Gal Abase (Lfield n) :=
 
 instance iggL : IsGaloisGroup (morseGeomPoly n).Gal GeomBase (Lfield n) :=
   IsGaloisGroup.of_mulEquiv (G := Lfield n ≃ₐ[GeomBase] Lfield n)
-    ({ toFun := id, invFun := id, left_inv := fun _ => rfl, right_inv := fun _ => rfl,
-       map_mul' := fun _ _ => rfl } : (morseGeomPoly n).Gal ≃* (Lfield n ≃ₐ[GeomBase] Lfield n))
-    (fun _ _ => rfl)
+    ({ toFun := id, invFun := id, left_inv := fun _ ↦ rfl, right_inv := fun _ ↦ rfl,
+       map_mul' := fun _ _ ↦ rfl } : (morseGeomPoly n).Gal ≃* (Lfield n ≃ₐ[GeomBase] Lfield n))
+    (fun _ _ ↦ rfl)
 
 instance iggB : IsGaloisGroup (morseGeomPoly n).Gal Abase (Bring n) :=
   IsGaloisGroup.of_isFractionRing (morseGeomPoly n).Gal Abase (Bring n) GeomBase (Lfield n)
@@ -93,19 +93,19 @@ Every root of `genPolyC n` in `B` maps to a root of `morseGeomPoly n` in `L`.
 -/
 lemma rootMap_mem (x : (genPolyC n).rootSet (Bring n)) :
     ((x : Bring n) : Lfield n) ∈ (morseGeomPoly n).rootSet (Lfield n) := by
-  -- Since $x$ is a root of $genPolyC n$ in $ Bring n$, we have $aeval (x : Bring n) (genPolyC n) = 0$.
+  -- Since `x` is a root of `genPolyC n` in `Bring n`, we have `aeval (x : Bring n) (genPolyC n) = 0`.
   have h_root : aeval (x.val : (Lfield n)) (genPolyC n) = 0 := by
     convert Polynomial.aeval_eq_zero_of_mem_rootSet x.2 using 1
     erw [← Subtype.coe_inj]
     aesop
   rw [Polynomial.mem_rootSet']
-  refine' ⟨_, _⟩
-  · refine' ne_of_apply_ne Polynomial.natDegree _
+  constructor
+  · refine ne_of_apply_ne Polynomial.natDegree ?_
     simp [morseGeomPoly_natDegree n hn2.1]
     linarith [hn2.1]
   · unfold morseGeomPoly
     simp_all [genPolyC]
-    convert h_root using 1
+    exact h_root
 
 /-- The inclusion `B ↪ L` on roots. -/
 def rootMap (x : (genPolyC n).rootSet (Bring n)) : (morseGeomPoly n).rootSet (Lfield n) :=
@@ -114,21 +114,20 @@ def rootMap (x : (genPolyC n).rootSet (Bring n)) : (morseGeomPoly n).rootSet (Lf
 lemma rootMap_bijective : Function.Bijective (rootMap n) := by
   constructor
   · intro x y hxy
-    simp [rootMap] at hxy
-    exact hxy
+    simpa [rootMap] using hxy
   · intro y
-    -- Let $y$ be a root of $morseGeomPoly n$ in $Lfield n$. Then $y$ is integral over $Abase$.
+    -- Let `y` be a root of `morseGeomPoly n` in `Lfield n`. Then `y` is integral over `Abase`.
     have hy_integral : IsIntegral Abase (y.val : Lfield n) := by
-      refine' ⟨genPolyC n, _, _⟩
+      refine ⟨genPolyC n, ?_, ?_⟩
       · exact genPolyC_monic n hn2.1
       · convert Polynomial.aeval_eq_zero_of_mem_rootSet y.2 using 1
         unfold morseGeomPoly
         aesop
-    refine' ⟨⟨⟨y.val, hy_integral⟩, _⟩, _⟩
+    refine ⟨⟨⟨y.val, hy_integral⟩, ?_⟩, ?_⟩
     all_goals norm_num [rootMap]
     rw [Polynomial.mem_rootSet']
-    refine' ⟨_, _⟩
-    · refine' ne_of_apply_ne Polynomial.natDegree _
+    constructor
+    · refine ne_of_apply_ne Polynomial.natDegree ?_
       simp [genPolyC]
       rw [Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num <;> linarith [hn2.1]
     · convert Polynomial.aeval_eq_zero_of_mem_rootSet y.2 using 1
@@ -207,10 +206,10 @@ lemma galActionHom_eq_permCongr (g : (morseGeomPoly n).Gal) :
 lemma genPolyC_splits_B : ((genPolyC n).map (algebraMap Abase (Bring n))).Splits := by
   obtain ⟨s, hs⟩ : ∃ s : Multiset (↥(Bring n)),
       (genPolyC n).map (algebraMap Abase (↥(Bring n)))
-        = Multiset.prod (Multiset.map (fun r : ↥(Bring n) => Polynomial.X - Polynomial.C r) s) := by
+        = Multiset.prod (Multiset.map (fun r : ↥(Bring n) ↦ Polynomial.X - Polynomial.C r) s) := by
     have h_root : ∃ s : Multiset (↥(Bring n)),
         (genPolyC n).map (algebraMap Abase (↥(Bring n)))
-          = Multiset.prod (Multiset.map (fun r : ↥(Bring n) => Polynomial.X - Polynomial.C r) s) := by
+          = Multiset.prod (Multiset.map (fun r : ↥(Bring n) ↦ Polynomial.X - Polynomial.C r) s) := by
       have h_root : ∀ r ∈ (genPolyC n).rootSet (Lfield n), r ∈ Set.range (algebraMap (Bring n) (Lfield n)) := by
         intro r hr
         have h_root : IsIntegral Abase r := by
@@ -219,7 +218,7 @@ lemma genPolyC_splits_B : ((genPolyC n).map (algebraMap Abase (Bring n))).Splits
           exact ⟨genPolyC_monic n hn2.1, hr.2⟩
         exact ⟨⟨r, h_root⟩, rfl⟩
       have h_prod : (genPolyC n).map (algebraMap Abase (Lfield n))
-          = Multiset.prod (Multiset.map (fun r : Lfield n => Polynomial.X - Polynomial.C r)
+          = Multiset.prod (Multiset.map (fun r : Lfield n ↦ Polynomial.X - Polynomial.C r)
               (Polynomial.roots (genPolyC n |> Polynomial.map (algebraMap Abase (Lfield n))))) := by
         convert Polynomial.Splits.eq_prod_roots_of_monic _ _
         · convert Polynomial.IsSplittingField.splits (Lfield n) (morseGeomPoly n) using 1
@@ -227,7 +226,7 @@ lemma genPolyC_splits_B : ((genPolyC n).map (algebraMap Abase (Bring n))).Splits
           aesop
         · exact Polynomial.Monic.map _ (genPolyC_monic n hn2.1)
       obtain ⟨s, hs⟩ : ∃ s : Multiset (↥(Bring n)),
-          Multiset.map (fun r : ↥(Bring n) => algebraMap (Bring n) (Lfield n) r) s
+          Multiset.map (fun r : ↥(Bring n) ↦ algebraMap (Bring n) (Lfield n) r) s
             = Polynomial.roots (genPolyC n |> Polynomial.map (algebraMap Abase (Lfield n))) := by
         have h_prod : ∀ r ∈ Polynomial.roots (genPolyC n |> Polynomial.map (algebraMap Abase (Lfield n))),
             r ∈ Set.range (algebraMap (Bring n) (Lfield n)) := by
@@ -237,17 +236,17 @@ lemma genPolyC_splits_B : ((genPolyC n).map (algebraMap Abase (Bring n))).Splits
         use Multiset.map f (Polynomial.roots (genPolyC n |> Polynomial.map (algebraMap Abase (Lfield n))))
         rw [Multiset.map_map]
         rw [Multiset.map_congr rfl]
-        exacts [Multiset.map_id _, fun x hx => hf x hx]
+        exacts [Multiset.map_id _, fun x hx ↦ hf x hx]
       use s
-      refine' Polynomial.map_injective (algebraMap (Bring n) (Lfield n))
-        (IsIntegralClosure.algebraMap_injective (Bring n) (Abase) (Lfield n)) _
+      refine Polynomial.map_injective (algebraMap (Bring n) (Lfield n))
+        (IsIntegralClosure.algebraMap_injective (Bring n) (Abase) (Lfield n)) ?_
       convert h_prod using 1
       · ext
         simp [genPolyC]
       · simp [← hs, Polynomial.map_multiset_prod]
     exact h_root
   rw [hs, Splits]
-  refine' Submonoid.multiset_prod_mem _ _ _
+  apply Submonoid.multiset_prod_mem
   simp +zetaDelta at *
   rintro a x hx hx' rfl
   exact Submonoid.subset_closure <| Or.inr ⟨-x, by aesop⟩
@@ -256,7 +255,7 @@ lemma genPolyC_splits_B : ((genPolyC n).map (algebraMap Abase (Bring n))).Splits
 
 instance pretransitive_B :
     MulAction.IsPretransitive (morseGeomPoly n).Gal ((genPolyC n).rootSet (Bring n)) := by
-  refine ⟨fun x y => ?_⟩
+  refine ⟨fun x y ↦ ?_⟩
   set e := (rootEquiv n).trans (Gal.rootsEquivRoots (morseGeomPoly n) (Lfield n))
   obtain ⟨g, hg⟩ := (Gal.galAction_isPretransitive (morseGeomPoly n) (Lfield n)
       (morseGeomPoly_irreducible n hn2.out)).exists_smul_eq (e x) (e y)
@@ -269,7 +268,7 @@ instance pretransitive_B :
 lemma toPermHom_B_injective :
     Function.Injective (MulAction.toPermHom (morseGeomPoly n).Gal
       ((genPolyC n).rootSet (Bring n))) := by
-  refine' (MonoidHom.ker_eq_bot_iff _).mp _
+  refine (MonoidHom.ker_eq_bot_iff _).mp ?_
   rw [Subgroup.eq_bot_iff_forall]
   intro x hx
   ext
@@ -282,7 +281,7 @@ lemma toPermHom_B_injective :
   obtain ⟨r, rfl⟩ := h_root
   specialize hx _ _ r.2
   simp_all [Subtype.ext_iff]
-  convert hx using 1
+  exact hx
 
 /-! ## A ramified branch point via Kummer–Dedekind (elementary inputs) -/
 
@@ -297,7 +296,7 @@ lemma exists_critPoint :
     convert IsAlgClosed.exists_pow_nat_eq _ _
     · infer_instance
     · exact Nat.sub_pos_of_lt hn2.1
-  refine' ⟨c, _, _⟩ <;> simp_all [ne_of_gt (zero_lt_two.trans_le hn2.1)]
+  refine ⟨c, ?_, ?_⟩ <;> simp_all [ne_of_gt (zero_lt_two.trans_le hn2.1)]
   rintro rfl
   rcases n with (_ | _ | n) <;> norm_num at *
   · exact hn2.elim
@@ -345,12 +344,12 @@ theorem genC_common_root_unique {F : Type*} [CommRing F] [IsDomain F] {m : ℕ} 
     (hb : (X ^ m - X - C c : F[X]).IsRoot b)
     (hb' : (derivative (X ^ m - X - C c : F[X])).IsRoot b) : a = b := by
   simp_all [Polynomial.derivative_pow]
-  -- Since $m \geq 2$, we have $m = (m-1) + 1$, thus $a^m = a \cdot a^{m-1}$.
+  -- Since `m ≥ 2`, we have `m = (m-1) + 1`, thus `a^m = a * a^(m-1)`.
   have ha_pow : a ^ m = a * a ^ (m - 1) := by
     rw [← pow_succ', Nat.sub_add_cancel (by linarith)]
   have hb_pow : b ^ m = b * b ^ (m - 1) := by
     rw [← pow_succ', Nat.sub_add_cancel (by linarith)]
-  refine' mul_left_cancel₀ (sub_ne_zero_of_ne hn1) _
+  refine mul_left_cancel₀ (sub_ne_zero_of_ne hn1) ?_
   grind
 
 /-
@@ -366,7 +365,7 @@ theorem genC_rootMultiplicity_le_two {F : Type*} [CommRing F] [IsDomain F] {m : 
   by_contra h_contra
   have h_div : (X - C a) ^ 3 ∣ (X ^ m - X - C c : F[X]) := by
     exact dvd_trans (pow_dvd_pow _ (not_le.mp h_contra)) (Polynomial.pow_rootMultiplicity_dvd _ _)
-  -- Since $(X - C a)^3$ divides $p$, we have $p(a) = 0$, $p'(a) = 0$, and $p''(a) = 0$.
+  -- Since `(X - C a)^3` divides `p`, we have `p(a) = 0`, `p'(a) = 0`, and `p''(a) = 0`.
   have h_eval : Polynomial.eval a (Polynomial.X ^ m - Polynomial.X - Polynomial.C c) = 0 ∧
       Polynomial.eval a (Polynomial.derivative (Polynomial.X ^ m - Polynomial.X - Polynomial.C c)) = 0 ∧
       Polynomial.eval a (Polynomial.derivative (Polynomial.derivative
@@ -388,8 +387,8 @@ theorem genC_ncard_roots_field {F : Type*} [CommRing F] [IsDomain F] [DecidableE
     (X ^ m - X - C c : F[X]).roots.card ≤ (X ^ m - X - C c : F[X]).roots.toFinset.card + 1 := by
   set p : F[X] := X ^ m - X - C c with hp
   have h_at_most_one_repeated :
-      (p.roots.toFinset.filter (fun a => p.rootMultiplicity a ≥ 2)).card ≤ 1 := by
-    refine' Finset.card_le_one.2 fun a ha b hb => _
+      (p.roots.toFinset.filter (fun a ↦ p.rootMultiplicity a ≥ 2)).card ≤ 1 := by
+    refine Finset.card_le_one.2 fun a ha b hb ↦ ?_
     simp_all
     apply genC_common_root_unique hm c hnz hn1
     · aesop
@@ -398,7 +397,7 @@ theorem genC_ncard_roots_field {F : Type*} [CommRing F] [IsDomain F] [DecidableE
     · exact Polynomial.isRoot_iterate_derivative_of_lt_rootMultiplicity hb.2
   have h_sum_le_one :
       ∑ a ∈ p.roots.toFinset, (p.rootMultiplicity a - 1)
-        ≤ (p.roots.toFinset.filter (fun a => p.rootMultiplicity a ≥ 2)).card := by
+        ≤ (p.roots.toFinset.filter (fun a ↦ p.rootMultiplicity a ≥ 2)).card := by
     rw [Finset.card_filter]
     gcongr
     split_ifs <;> simp_all
@@ -412,7 +411,7 @@ theorem genC_ncard_roots_field {F : Type*} [CommRing F] [IsDomain F] [DecidableE
       ∑ a ∈ p.roots.toFinset, (p.rootMultiplicity a - 1)
           + ∑ a ∈ p.roots.toFinset, 1 = Multiset.card p.roots := by
     rw [← Finset.sum_add_distrib,
-      Finset.sum_congr rfl fun x hx =>
+      Finset.sum_congr rfl fun x hx ↦
         tsub_add_cancel_of_le <| Nat.succ_le_of_lt <| Nat.pos_of_ne_zero <| by aesop]
     aesop
   norm_num at *
@@ -435,7 +434,7 @@ theorem morse_ncard_bound_abstract {R S : Type*} [CommRing R] [CommRing S] [IsDo
     intro h
     have := congr_arg (Polynomial.eval 0) h
     norm_num [hf] at this
-    replace h := congr_arg (fun q => Polynomial.coeff q (m : ℕ)) h
+    replace h := congr_arg (fun q ↦ Polynomial.coeff q (m : ℕ)) h
     simp_all
     rcases m with (_ | _ | m) <;> simp_all [Polynomial.coeff_eq_zero_of_natDegree_lt]
   convert h1.trans _
@@ -452,7 +451,7 @@ theorem morse_ncard_bound_abstract {R S : Type*} [CommRing R] [CommRing S] [IsDo
 /-- For any maximal ideal `P` of `B`, the roots of `genPolyC` collide at most once modulo `P`. -/
 lemma morse_ncard_bound (P : Ideal (Bring n)) [P.IsMaximal] :
     ((genPolyC n).rootSet (Bring n)).ncard ≤ ((genPolyC n).rootSet (Bring n ⧸ P)).ncard + 1 := by
-  haveI : CharZero (Bring n ⧸ P) := by
+  have : CharZero (Bring n ⧸ P) := by
     have inj : Function.Injective
         ((Ideal.Quotient.mk P).comp ((algebraMap Abase (Bring n)).comp
           (Polynomial.C : AlgebraicClosure ℚ →+* Abase))) := RingHom.injective _
@@ -484,9 +483,9 @@ lemma inertia_of_ramified
     ∃ (P : Ideal (Bring n)), P.IsMaximal ∧
       ∃ g : (morseGeomPoly n).Gal, g ∈ P.inertia (morseGeomPoly n).Gal ∧ g ≠ 1 := by
   obtain ⟨⟨Q, hQprime, hQover⟩⟩ := PS.nonempty_primesOver (S := Bring n)
-  haveI : Q.IsPrime := hQprime
-  haveI : Q.LiesOver PS := hQover
-  haveI : Q.LiesOver p := Ideal.LiesOver.trans Q PS p
+  have : Q.IsPrime := hQprime
+  have : Q.LiesOver PS := hQover
+  have : Q.LiesOver p := Ideal.LiesOver.trans Q PS p
   have hle : Ideal.map (algebraMap Smid (Bring n)) PS ≤ Q :=
     Ideal.map_le_iff_le_comap.mpr (le_of_eq (Ideal.LiesOver.over (P := Q) (p := PS)))
   have htower := Ideal.ramificationIdx_algebra_tower (R := Abase) (S := Smid) (T := Bring n)
@@ -496,7 +495,7 @@ lemma inertia_of_ramified
     apply hp
     have hpu := Ideal.LiesOver.over (P := Q) (p := p)
     rw [hpu, h, Ideal.under, Ideal.comap_bot_of_injective _ hinj]
-  haveI : Q.IsMaximal := Ideal.IsPrime.isMaximal hQprime hQbot
+  have : Q.IsMaximal := Ideal.IsPrime.isMaximal hQprime hQbot
   have heQPS : Ideal.ramificationIdx (algebraMap Smid (Bring n)) PS Q ≠ 0 :=
     Ideal.IsDedekindDomain.ramificationIdx_ne_zero hmapSB hQprime hle
   have h2 : 2 ≤ Ideal.ramificationIdx (algebraMap Abase (Bring n)) p Q := by
@@ -506,7 +505,7 @@ lemma inertia_of_ramified
   have hIn : p.ramificationIdxIn (Bring n) =
       Ideal.ramificationIdx (algebraMap Abase (Bring n)) p Q :=
     Ideal.ramificationIdxIn_eq_ramificationIdx p Q (morseGeomPoly n).Gal
-  haveI := hsep Q
+  have := hsep Q
   have hcard := Ideal.card_inertia_eq_ramificationIdxIn (G := (morseGeomPoly n).Gal) p hp Q
   have h2card : 2 ≤ Nat.card (Ideal.inertia (morseGeomPoly n).Gal Q) := by
     rw [hcard, hIn]
@@ -527,7 +526,7 @@ lemma exists_rootB : ∃ x : Bring n, (aeval x) (genPolyC n) = 0 := by
   obtain ⟨r, hr⟩ : ∃ r : (genPolyC n).rootSet (Bring n), True := by
     obtain ⟨r, hr⟩ : ∃ r : (morseGeomPoly n).rootSet (Lfield n), True := by
       have := morseGeomPoly_card_rootSet n hn2.out
-      exact Fintype.card_pos_iff.mp (this.symm ▸ hn2.1.trans_lt' (by decide)) |> fun ⟨r⟩ => ⟨r, trivial⟩
+      exact Fintype.card_pos_iff.mp (this.symm ▸ hn2.1.trans_lt' (by decide)) |> fun ⟨r⟩ ↦ ⟨r, trivial⟩
     obtain ⟨s, hs⟩ := rootMap_bijective n |>.2 r
     use s
   exact ⟨r, Polynomial.aeval_eq_zero_of_mem_rootSet r.2⟩
@@ -544,28 +543,28 @@ abbrev Smid : Type := ↑(Algebra.adjoin Abase ({rootB n} : Set (Bring n)))
 def xS : Smid n := ⟨rootB n, Algebra.subset_adjoin (Set.mem_singleton _)⟩
 
 instance : Module.IsTorsionFree Abase (Bring n) := by
-  refine' ⟨_⟩
+  constructor
   intro r hr x hx h
   replace h := congr_arg Subtype.val h
   simp_all [Algebra.smul_def]
   exact h.resolve_right (by simpa [IsScalarTower.algebraMap_apply Abase GeomBase (Lfield n)] using hr.left.ne_zero)
 
 instance : Module.IsTorsionFree Abase (Smid n) := by
-  refine' ⟨_⟩
+  constructor
   intro r hr x y hxy
   replace hxy := congr_arg Subtype.val hxy
   simp_all [Algebra.smul_def]
   exact hxy.resolve_right (by simpa using hr.left.ne_zero)
 
 instance : Module.IsTorsionFree (Smid n) (Bring n) := by
-  refine' ⟨fun x hx => _⟩
+  refine ⟨fun x hx ↦ ?_⟩
   intro y z h_eq
   simp_all
 
 instance : Module.Finite (Smid n) (Bring n) := by
   have h_finite : Module.Finite Abase (Bring n) := by
     infer_instance
-  convert h_finite.of_restrictScalars_finite Abase (Smid n) (Bring n) using 1
+  exact h_finite.of_restrictScalars_finite Abase (Smid n) (Bring n)
 
 instance : Algebra.IsIntegral (Smid n) (Bring n) := by
   all_goals infer_instance
@@ -574,8 +573,7 @@ omit hn2 in
 lemma algebraMap_Abase_Bring_injective : Function.Injective (algebraMap Abase (Bring n)) := by
   -- Assume `x : Abase` maps to `0 : Bring n`. Then `x = 0` because (by `integralClosure`/`IsIntegralClosure`) the algebra map `Abase ↪ Lfield n` is injective, and `Bring n ↪ Lfield n` is injective (`subtype quotation`).
   intro x y hxy
-  simp at hxy
-  exact hxy
+  simpa using hxy
 
 lemma xS_conductor_top : conductor Abase (xS n) = ⊤ := by
   convert (conductor_eq_top_iff_adjoin_eq_top (R := Abase) (x := xS n)).mpr _ using 1
@@ -583,17 +581,17 @@ lemma xS_conductor_top : conductor Abase (xS n) = ⊤ := by
   intro y
   simp [xS]
   rcases y with ⟨y, hy⟩
-  refine' Algebra.adjoin_induction _ _ _ _ hy
-  · exact fun x hx => Algebra.subset_adjoin <| by aesop
-  · exact fun r => Subalgebra.algebraMap_mem _ r
-  · exact fun x y hx hy hx' hy' => Subalgebra.add_mem _ hx' hy'
-  · exact fun x y hx hy hx' hy' => Subalgebra.mul_mem _ hx' hy'
+  refine Algebra.adjoin_induction ?_ ?_ ?_ ?_ hy
+  · exact fun x hx ↦ Algebra.subset_adjoin <| by aesop
+  · exact fun r ↦ Subalgebra.algebraMap_mem _ r
+  · exact fun x y hx hy hx' hy' ↦ Subalgebra.add_mem _ hx' hy'
+  · exact fun x y hx hy hx' hy' ↦ Subalgebra.mul_mem _ hx' hy'
 
 lemma xS_minpoly : minpoly Abase (xS n) = genPolyC n := by
   -- Since `genPolyC n` is irreducible and monic, and `xS n` is a root, it must be the minimal polynomial.
   have h_minpoly_div : minpoly Abase (xS n) ∣ genPolyC n := by
-    refine' minpoly.isIntegrallyClosed_dvd _ _
-    · refine' ⟨genPolyC n, _, _⟩
+    refine minpoly.isIntegrallyClosed_dvd ?_ ?_
+    · refine ⟨genPolyC n, ?_, ?_⟩
       · exact genPolyC_monic n hn2.1
       · convert rootB_spec n using 1
         simp [aeval_def, Polynomial.eval₂_eq_sum_range]
@@ -603,10 +601,10 @@ lemma xS_minpoly : minpoly Abase (xS n) = genPolyC n := by
       erw [← Subtype.coe_inj]
       simp [xS]
   have h_irreducible : Irreducible (genPolyC n) := by
-    convert genPolyC_irreducible n using 1
-  refine' Polynomial.eq_of_monic_of_associated _ _ _
+    exact genPolyC_irreducible n
+  refine Polynomial.eq_of_monic_of_associated ?_ ?_ ?_
   · apply minpoly.monic
-    refine' ⟨genPolyC n, _, _⟩
+    refine ⟨genPolyC n, ?_, ?_⟩
     · exact genPolyC_monic n hn2.1
     · convert rootB_spec n using 1
       simp [xS, aeval_def, Polynomial.eval₂_eq_sum_range]
@@ -615,8 +613,8 @@ lemma xS_minpoly : minpoly Abase (xS n) = genPolyC n := by
   · obtain ⟨q, hq⟩ := h_minpoly_div
     have := h_irreducible.2
     specialize this hq
-    exact this.elim (fun h => False.elim <| minpoly.not_isUnit Abase (xS n) h)
-      fun h => associated_of_dvd_dvd (by aesop) (by aesop)
+    exact this.elim (fun h ↦ False.elim <| minpoly.not_isUnit Abase (xS n) h)
+      fun h ↦ associated_of_dvd_dvd (by aesop) (by aesop)
 
 /-
 The image of the base variable `T` in `A[x]` is `xⁿ - x`.
@@ -641,8 +639,8 @@ lemma Smid_eval_surjective :
     intro y
     apply Algebra.eq_top_iff.mp (by
     convert (conductor_eq_top_iff_adjoin_eq_top (R := Abase) (x := xS n)).mp (xS_conductor_top n) using 1) y
-  refine' Algebra.adjoin_induction _ _ _ _ (h_span y)
-  · exact fun x hx => ⟨Polynomial.X, by aesop⟩
+  refine Algebra.adjoin_induction ?_ ?_ ?_ ?_ (h_span y)
+  · exact fun x hx ↦ ⟨Polynomial.X, by aesop⟩
   · intro r
     use Polynomial.comp r (Polynomial.X ^ n - Polynomial.X)
     simp [Polynomial.eval₂_comp]
@@ -655,7 +653,7 @@ lemma Smid_eval_surjective :
     exact ⟨a * b, by simp⟩
 
 instance : IsDedekindDomain (Smid n) := by
-  haveI : IsPrincipalIdealRing (Smid n) :=
+  have : IsPrincipalIdealRing (Smid n) :=
     IsPrincipalIdealRing.of_surjective _ (Smid_eval_surjective n)
   infer_instance
 
@@ -751,7 +749,7 @@ lemma branch_ramified :
   have hmapI_ne : Ideal.map (algebraMap Abase (Smid n)) (branchIdeal n) ≠ ⊥ := Ideal.map_ne_bot_of_ne_bot hI'
   have hPS_ne : PS.1 ≠ ⊥ := UniqueFactorizationMonoid.ne_zero_of_mem_normalizedFactors hmem
   have hPS_prime : Prime PS.1 := UniqueFactorizationMonoid.prime_of_normalized_factor _ hmem
-  haveI hPS_isPrime : PS.1.IsPrime := Ideal.isPrime_of_prime hPS_prime
+  have hPS_isPrime : PS.1.IsPrime := Ideal.isPrime_of_prime hPS_prime
   have hle : Ideal.map (algebraMap Abase (Smid n)) (branchIdeal n) ≤ PS.1 :=
     (Ideal.dvd_iff_le).mp (UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors hmem)
   have hcomap : Ideal.comap (algebraMap Abase (Smid n)) PS.1 = branchIdeal n := by
@@ -761,7 +759,7 @@ lemma branch_ramified :
       intro h
       exact hPS_isPrime.ne_top (Ideal.comap_eq_top_iff.mp h)) hIle with h
     exact h.symm
-  haveI hLiesOver : PS.1.LiesOver (branchIdeal n) := ⟨hcomap.symm⟩
+  have hLiesOver : PS.1.LiesOver (branchIdeal n) := ⟨hcomap.symm⟩
   refine ⟨PS.1, hPS_isPrime, hLiesOver, ?_, Ideal.map_ne_bot_of_ne_bot hPS_ne⟩
   rw [Ideal.IsDedekindDomain.ramificationIdx_eq_normalizedFactors_count hmapI_ne hPS_isPrime hPS_ne]
   have hkd := KummerDedekind.emultiplicity_factors_map_eq_emultiplicity
@@ -790,10 +788,10 @@ extension is separable.
 -/
 lemma branch_residue_separable (Q : Ideal (Bring n)) [Q.LiesOver (branchIdeal n)] [Q.IsMaximal] :
     Algebra.IsSeparable (Abase ⧸ branchIdeal n) ((Bring n) ⧸ Q) := by
-  haveI : CharZero (Abase ⧸ branchIdeal n) := algebraRat.charZero _
-  haveI : Algebra.IsIntegral (Abase ⧸ branchIdeal n) ((Bring n) ⧸ Q) :=
+  have : CharZero (Abase ⧸ branchIdeal n) := algebraRat.charZero _
+  have : Algebra.IsIntegral (Abase ⧸ branchIdeal n) ((Bring n) ⧸ Q) :=
     Ideal.Quotient.algebra_isIntegral_of_liesOver Q (branchIdeal n)
-  haveI : Algebra.IsAlgebraic (Abase ⧸ branchIdeal n) ((Bring n) ⧸ Q) :=
+  have : Algebra.IsAlgebraic (Abase ⧸ branchIdeal n) ((Bring n) ⧸ Q) :=
     Algebra.IsIntegral.isAlgebraic
   exact Algebra.IsAlgebraic.isSeparable_of_perfectField
 
@@ -801,8 +799,8 @@ lemma exists_nontrivial_inertia :
     ∃ (P : Ideal (Bring n)), P.IsMaximal ∧
       ∃ g : (morseGeomPoly n).Gal, g ∈ P.inertia (morseGeomPoly n).Gal ∧ g ≠ 1 := by
   obtain ⟨PS, hPSprime, hPSover, hPSe, hPSmap⟩ := branch_ramified n
-  haveI := hPSprime
-  haveI := hPSover
+  have := hPSprime
+  have := hPSover
   refine inertia_of_ramified n (Smid n) (branchIdeal n) (branchIdeal_ne_bot n)
     (algebraMap_Abase_Bring_injective n) PS hPSe hPSmap ?_ ?_
   · exact Ideal.map_ne_bot_of_ne_bot (branchIdeal_ne_bot n)
@@ -815,7 +813,7 @@ lemma exists_nontrivial_inertia :
 lemma isSwap_permCongr {α β : Type*} [DecidableEq α] [DecidableEq β] (e : α ≃ β)
     {σ : Equiv.Perm α} (h : σ.IsSwap) : (e.permCongr σ).IsSwap := by
   obtain ⟨a, b, hab, rfl⟩ := h
-  refine' ⟨e a, e b, by simp [hab], _⟩
+  refine ⟨e a, e b, by simp [hab], ?_⟩
   grind +qlia
 
 /-! ## Assembling the transposition -/
@@ -826,7 +824,7 @@ theorem swap_input_final :
           g ∈ (Gal.galActionHom (morseGeomPoly n) (Lfield n)).range := by
   classical
   obtain ⟨P, hPmax, g, hg_in, hg_ne⟩ := exists_nontrivial_inertia n
-  haveI : P.IsPrime := hPmax.isPrime
+  have : P.IsPrime := hPmax.isPrime
   -- residue field is `ℚ̄`, hence separable over `A/(P ∩ A)`
   -- Morse: `toPermHom g` is `1` or a swap
   have hmorse := Polynomial.Splits.toPermHom_apply_eq_one_or_isSwap_of_ncard_le_of_mem_inertia
@@ -860,7 +858,7 @@ theorem morseGeomPoly_hasSwap (n : ℕ) (hn : 2 ≤ n) :
     ∃ g : Equiv.Perm ((morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField),
         g.IsSwap ∧
           g ∈ (Gal.galActionHom (morseGeomPoly n) (morseGeomPoly n).SplittingField).range := by
-  haveI : Fact (2 ≤ n) := ⟨hn⟩
+  have : Fact (2 ≤ n) := ⟨hn⟩
   exact MorseSwap.swap_input_final n
 
 open scoped Classical in
@@ -897,7 +895,7 @@ theorem morseGeomPoly_isPreprimitive (n : ℕ) (hn : 2 ≤ n) :
       ((morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField) :=
     Gal.galAction_isPretransitive _ _ (morseGeomPoly_irreducible n hn)
   exact { toIsPretransitive := htrans
-          isTrivialBlock_of_isBlock := fun {B} hB => morseGeomPoly_blocks_trivial n hn hB }
+          isTrivialBlock_of_isBlock := fun {B} hB ↦ morseGeomPoly_blocks_trivial n hn hB }
 
 /-- **The geometric-monodromy surjectivity, via Jordan's theorem.**
 
@@ -931,7 +929,7 @@ theorem morseGeomPoly_range_contains_generating_swaps (n : ℕ) (hn : 2 ≤ n) :
       (∀ t ∈ S, t ∈ (Gal.galActionHom (morseGeomPoly n) (morseGeomPoly n).SplittingField).range) ∧
       Subgroup.closure S = ⊤ := by
   classical
-  refine ⟨{σ | σ.IsSwap}, fun t ht => ht, ?_, Equiv.Perm.closure_isSwap⟩
+  refine ⟨{σ | σ.IsSwap}, fun t ht ↦ ht, ?_, Equiv.Perm.closure_isSwap⟩
   intro t _
   rw [MonoidHom.range_eq_top.mpr (morseGeomPoly_galActionHom_surjective n hn)]
   exact Subgroup.mem_top t

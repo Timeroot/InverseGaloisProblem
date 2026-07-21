@@ -47,17 +47,15 @@ lemma radical_monic {F : Polynomial (Polynomial ℝ)} (hF : F.Monic) :
     (radical F).Monic := by
   -- Since `radical F ∣ F` and `F` is monic, that leading coefficient divides `1`, i.e. is a unit of `ℝ[x]`.
   have h_leading_coeff_unit : IsUnit ((radical F).leadingCoeff : Polynomial ℝ) := by
-    have h_leading_coeff_div : (radical F).leadingCoeff ∣ (F).leadingCoeff := by
-      have h_leading_coeff_div : radical F ∣ F := by
-        exact radical_dvd_self
-      exact Polynomial.leadingCoeff_dvd_leadingCoeff h_leading_coeff_div
+    have h_leading_coeff_div : (radical F).leadingCoeff ∣ (F).leadingCoeff :=
+      Polynomial.leadingCoeff_dvd_leadingCoeff radical_dvd_self
     exact isUnit_of_dvd_one (h_leading_coeff_div.trans (by aesop))
   -- Since `radical F` is a product of normalized prime factors, it is itself normalized.
   have h_radical_normalized : normalize (radical F) = radical F := by
     simp [radical]
-    refine' Finset.prod_congr rfl _
+    refine Finset.prod_congr rfl ?_
     simp +contextual [primeFactors]
-    exact fun x a => normalize_normalized_factor x a
+    exact normalize_normalized_factor
   rw [Polynomial.Monic, ← h_radical_normalized, Polynomial.leadingCoeff_normalize]
   exact normalize_eq_one.mpr h_leading_coeff_unit
 
@@ -71,21 +69,20 @@ the product of the same primes to the first power, so `F ∣ (radical F) ^ m`.
 lemma dvd_radical_pow {F : Polynomial (Polynomial ℝ)} (hF0 : F ≠ 0) :
     ∃ m, 1 ≤ m ∧ F ∣ (radical F) ^ m := by
   by_contra h_contra
-  -- Since $F \neq 0$, we can use the fact that $F$ is relatively prime to the set of its prime divisors.
+  -- Since `F ≠ 0`, we can use the fact that `F` is relatively prime to the set of its prime divisors.
   have h_prime_divisors :
       ∀ p ∈ UniqueFactorizationMonoid.normalizedFactors F, p ∣ radical F := by
     intro p hp
     have h_prime_divisor : p ∈ primeFactors F := by
       simp_all [primeFactors]
     exact Finset.dvd_prod_of_mem _ h_prime_divisor
-  -- Since $F$ is relatively prime to the set of its prime divisors, we can use the fact that $F$ divides the product of its prime divisors raised to the power of their multiplicities.
+  -- Since `F` is relatively prime to the set of its prime divisors, we can use the fact that `F` divides the product of its prime divisors raised to the power of their multiplicities.
   have h_divides_product :
-      F ∣ Multiset.prod (Multiset.map (fun p => p) (UniqueFactorizationMonoid.normalizedFactors F)) := by
-    have := UniqueFactorizationMonoid.prod_normalizedFactors hF0
-    simpa using this.symm.dvd
-  refine' h_contra ⟨Multiset.card (UniqueFactorizationMonoid.normalizedFactors F) + 1,
-    Nat.succ_pos _, dvd_trans h_divides_product _⟩
-  refine' dvd_trans (Multiset.prod_dvd_prod_of_dvd _ _ fun p hp => h_prime_divisors p hp) _
+      F ∣ Multiset.prod (Multiset.map (fun p ↦ p) (UniqueFactorizationMonoid.normalizedFactors F)) := by
+    simpa using (UniqueFactorizationMonoid.prod_normalizedFactors hF0).symm.dvd
+  refine h_contra ⟨Multiset.card (UniqueFactorizationMonoid.normalizedFactors F) + 1,
+    Nat.succ_pos _, dvd_trans h_divides_product ?_⟩
+  apply dvd_trans (Multiset.prod_dvd_prod_of_dvd _ _ h_prime_divisors)
   norm_num [pow_succ']
 
 /-
@@ -105,7 +102,7 @@ lemma squarefree_map_frac {s : Polynomial (Polynomial ℝ)}
     rw [Polynomial.map_eq_zero_iff] at hx <;> aesop_cat
   have hxm_assoc : Associated x xm := by
     by_cases hx : x = 0 <;> simp_all [Polynomial.Monic.def]
-    refine' associated_of_dvd_dvd _ _ <;> norm_num [hx]
+    refine associated_of_dvd_dvd ?_ ?_ <;> norm_num [hx]
   have hxm_dvd : xm ∣ Polynomial.map (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ))) s := by
     exact dvd_trans (hxm_assoc.symm.dvd) (dvd_of_mul_left_dvd hx)
   have hxm_sq_dvd : xm * xm ∣ Polynomial.map (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ))) s := by
@@ -122,13 +119,13 @@ lemma squarefree_map_frac {s : Polynomial (Polynomial ℝ)}
       have := @IsIntegrallyClosed.eq_map_mul_C_of_dvd
       specialize this (FractionRing (Polynomial ℝ)) hmon hxm_dvd
       aesop
-    refine' ⟨x', hx', _⟩
+    refine ⟨x', hx', ?_⟩
     convert hxm_monic using 1
     rw [← hx', Polynomial.Monic.def, Polynomial.Monic.def,
       Polynomial.leadingCoeff_map_of_leadingCoeff_ne_zero]
-    aesop
-    intro h
-    simp_all [Polynomial.Monic.def]
+    · aesop
+    · intro h
+      simp_all [Polynomial.Monic.def]
   -- By `Monic.dvd_iff_fraction_map_dvd_fraction_map` (`R` integrally closed, `x'` and `s` monic) we get `x' * x' ∣ s`.
   have hx'_sq_dvd : x' * x' ∣ s := by
     rw [← Polynomial.map_dvd_map (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ)))]
@@ -167,7 +164,7 @@ lemma exists_bezout_of_squarefree {s : Polynomial (Polynomial ℝ)}
   obtain ⟨w0, hw0⟩ :
       ∃ w0 : Polynomial ℝ, w0 ≠ 0 ∧ ∃ A B : Polynomial (Polynomial ℝ),
         A * s + B * (derivative s) = Polynomial.C w0 := by
-    -- Let $w0$ be a common denominator of $U$ and $V$.
+    -- Let `w0` be a common denominator of `U` and `V`.
     obtain ⟨w0, hw0⟩ :
         ∃ w0 : Polynomial ℝ, w0 ≠ 0 ∧ ∃ A B : Polynomial (Polynomial ℝ),
           Polynomial.map (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ))) A =
@@ -191,7 +188,7 @@ lemma exists_bezout_of_squarefree {s : Polynomial (Polynomial ℝ)}
             by simp [*, add_mul, mul_comm, mul_left_comm]⟩
         · rename_i n a
           obtain ⟨w0, hw0⟩ := IsLocalization.surj (nonZeroDivisors (Polynomial ℝ)) a
-          refine' ⟨w0.2, _, _⟩ <;> simp_all [← Polynomial.C_mul_X_pow_eq_monomial]
+          refine ⟨w0.2, ?_, ?_⟩ <;> simp_all [← Polynomial.C_mul_X_pow_eq_monomial]
           exact ⟨Polynomial.C w0.1 * Polynomial.X ^ n, by simp [← hw0, mul_assoc]⟩
       obtain ⟨w0, hw0, A, hA⟩ := h_clear_denom U
       obtain ⟨w1, hw1, B, hB⟩ := h_clear_denom V
@@ -245,36 +242,35 @@ theorem exists_smooth_separable_reduction_real
         (∃ m : ℕ, 1 ≤ m ∧ F ∣ s ^ m) ∧
         (∃ A B : Polynomial (Polynomial ℝ), ∃ w0 : Polynomial ℝ,
           w0 ≠ 0 ∧ A * s + B * Polynomial.derivative s = C w0) := by
-    refine' ⟨radical F, radical_monic hFmon, radical_dvd_self,
+    exact ⟨radical F, radical_monic hFmon, radical_dvd_self,
       squarefree_radical, dvd_radical_pow (by aesop_cat),
       exists_bezout_of_squarefree squarefree_radical (radical_monic hFmon)⟩
   obtain ⟨m, hm⟩ := hs.right.right.right.left
   obtain ⟨A, B, w0, hw0_ne_zero, h_bezout⟩ := hs.right.right.right.right
-  use s.natDegree, fun x => s.map (evalRingHom x)
+  use s.natDegree, fun x ↦ s.map (evalRingHom x)
   obtain ⟨T₀, hT₀⟩ : ∃ T₀ : ℝ, 1 ≤ T₀ ∧ ∀ x ≥ T₀, w0.eval x ≠ 0 := by
     refine ⟨∑ x ∈ w0.roots.toFinset, |x| + 1, ?_, ?_⟩
     · linarith [show 0 ≤ ∑ x ∈ w0.roots.toFinset, |x| by
-        exact Finset.sum_nonneg fun _ _ => abs_nonneg _]
+        exact Finset.sum_nonneg fun _ _ ↦ abs_nonneg _]
     · intro x hx hx'
       cases abs_cases x <;>
-        linarith [Finset.single_le_sum (fun x _ => abs_nonneg x)
+        linarith [Finset.single_le_sum (fun x _ ↦ abs_nonneg x)
           (show x ∈ w0.roots.toFinset from by aesop)]
-  refine' ⟨T₀, hT₀.1, _, _, _, contDiff_bivar_eval s, _, _⟩
+  refine ⟨T₀, hT₀.1, ?_, ?_, ?_, contDiff_bivar_eval s, ?_, ?_⟩
   · have := Polynomial.natDegree_le_of_dvd hm.2
     simp_all [Polynomial.natDegree_pow]
-    exact Nat.pos_of_ne_zero fun h => by
+    exact Nat.pos_of_ne_zero fun h ↦ by
       have := this (by aesop)
       nlinarith
-  · exact fun x => hs.1.map _
-  · exact fun x => Polynomial.natDegree_map_of_leadingCoeff_ne_zero _ (by aesop)
+  · exact fun x ↦ hs.1.map _
+  · exact fun x ↦ Polynomial.natDegree_map_of_leadingCoeff_ne_zero _ (by aesop)
   · intro x hx
-    specialize hT₀
     have := hT₀.2 x hx
     simp_all [Polynomial.Separable]
     replace h_bezout := congr_arg (Polynomial.map (evalRingHom x)) h_bezout
     simp_all [Polynomial.map_add, Polynomial.map_mul, Polynomial.map_C]
     refine ⟨Polynomial.C (eval x w0) ⁻¹ * map (evalRingHom x) A,
-      Polynomial.C (eval x w0) ⁻¹ * map (evalRingHom x) B, Polynomial.funext fun y => ?_⟩
+      Polynomial.C (eval x w0) ⁻¹ * map (evalRingHom x) B, Polynomial.funext fun y ↦ ?_⟩
     simpa [hT₀.2 x hx, mul_assoc, mul_left_comm, mul_add, add_mul, Polynomial.eval_C,
       Polynomial.eval_mul, Polynomial.eval_add, Polynomial.eval_X] using by
       have := congr_arg (Polynomial.eval y) h_bezout

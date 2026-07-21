@@ -52,26 +52,21 @@ theorem galRestrictionProd_injective (K L : IntermediateField F E) [Normal F K] 
     convert h_eq_K using 1
     simp [galRestrictionProd]
     grind only [AlgEquiv.restrictNormalHom_apply, #f843]
-  have h_eq_L : ∀ x ∈ L, σ x = τ x := by
-    intro x hx
-    replace h_eq := congr_arg (fun f => f.2 (⟨x, hx⟩ : L)) h_eq
-    simp_all [galRestrictionProd]
-    grind only [AlgEquiv.restrictNormalHom_apply]
   ext x
-  have h_eq_adjoin : ∀ x ∈ IntermediateField.adjoin F (K ∪ L), σ x = τ x := by
-    intro x hx
-    induction hx using adjoin_induction
-    rename_i hx
+  have hx : x ∈ IntermediateField.adjoin F (K ∪ L) := by convert mem_top (x := x)
+  induction hx using adjoin_induction with
+  | mem x hx =>
     simp_all only [Set.mem_union, SetLike.mem_coe]
     cases hx with
     | inl h => simp_all only
-    | inr h_1 => simp_all only
-    · simp [AlgEquiv.commutes]
-    · simp_all only [map_add]
-    · simp_all only [map_inv₀]
-    · simp [*, map_mul]
-  convert h_eq_adjoin x _
-  convert mem_top (x := x)
+    | inr h_1 =>
+      replace h_eq := congr_arg (fun f => f.2 (⟨x, h_1⟩ : L)) h_eq
+      simp_all [galRestrictionProd]
+      grind only [AlgEquiv.restrictNormalHom_apply]
+  | algebraMap r => simp [AlgEquiv.commutes]
+  | add x y hx hy ihx ihy => simp_all only [map_add]
+  | inv x hx ih => simp_all only [map_inv₀]
+  | mul x y hx hy ihx ihy => simp [*, map_mul]
 
 /-- If `K ⊔ L = ⊤` and `K ⊓ L = ⊥` with both `K/F` and `L/F` Galois, then
 `Gal(E/F) ≅ Gal(K/F) × Gal(L/F)`. -/
@@ -113,13 +108,8 @@ lemma IsInverseGalois.galois_image_in_algClosure
     IsGalois ℚ i.fieldRange ∧
     Nonempty (Gal(L/ℚ) ≃* Gal(i.fieldRange / ℚ)) := by
   constructor
-  · convert IsGalois.of_algEquiv _
-    exact L
-    all_goals try infer_instance
-    exact AlgEquiv.ofInjectiveField i
-  · refine' ⟨_⟩
-    refine' AlgEquiv.autCongr _
-    exact AlgEquiv.ofInjective i i.injective
+  · exact IsGalois.of_algEquiv (AlgEquiv.ofInjectiveField i)
+  · exact ⟨(AlgEquiv.ofInjective i i.injective).autCongr⟩
 
 /-!
 ## Direct product via the compositum
@@ -240,10 +230,10 @@ def galSupProdEquiv [IsGalois F' K₁'] [IsGalois F' K₂']
     (hcop : Nat.Coprime (finrank F' K₁') (finrank F' K₂')) :
     Gal(↥(K₁' ⊔ K₂')/F') ≃* Gal(↥K₁'/F') × Gal(↥K₂'/F') :=
   MulEquiv.ofBijective (galSupRestrictionProd K₁' K₂') <| by
-    haveI : FiniteDimensional F' ↥K₁' := by
+    have : FiniteDimensional F' ↥K₁' := by
       have h := IntermediateField.inclusion (le_sup_left : K₁' ≤ K₁' ⊔ K₂')
       exact FiniteDimensional.of_injective h.toLinearMap h.injective
-    haveI : FiniteDimensional F' ↥K₂' := by
+    have : FiniteDimensional F' ↥K₂' := by
       have h := IntermediateField.inclusion (le_sup_right : K₂' ≤ K₁' ⊔ K₂')
       exact FiniteDimensional.of_injective h.toLinearMap h.injective
     rw [Nat.bijective_iff_injective_and_card]
@@ -262,8 +252,8 @@ theorem IsInverseGalois.of_coprime_intermediate_fields
     (e₁ : Gal(K₁/ℚ) ≃* G₁) (e₂ : Gal(K₂/ℚ) ≃* G₂) :
     IsInverseGalois (G₁ × G₂) := by
   -- The compositum K₁ ⊔ K₂ is finite-dimensional and Galois over ℚ
-  haveI : FiniteDimensional ℚ ↥(K₁ ⊔ K₂) := IntermediateField.finiteDimensional_sup K₁ K₂
-  haveI : IsGalois ℚ ↥(K₁ ⊔ K₂) :=
+  have : FiniteDimensional ℚ ↥(K₁ ⊔ K₂) := IntermediateField.finiteDimensional_sup K₁ K₂
+  have : IsGalois ℚ ↥(K₁ ⊔ K₂) :=
     FiniteGaloisIntermediateField.instIsGaloisSubtypeMemIntermediateFieldMax K₁ K₂
   -- Use the compositum as the realizing extension
   refine ⟨↥(K₁ ⊔ K₂), inferInstance, inferInstance, inferInstance, inferInstance, ⟨?_⟩⟩
@@ -288,9 +278,9 @@ theorem IsInverseGalois.prod_of_coprime {G₁ G₂ : Type*} [Group G₁] [Group 
   obtain ⟨hg₁, ⟨ψ₁⟩⟩ := galois_image_in_algClosure L₁ i₁
   obtain ⟨hg₂, ⟨ψ₂⟩⟩ := galois_image_in_algClosure L₂ i₂
   -- FiniteDimensional instances for the images
-  haveI : FiniteDimensional ℚ K₁ := FiniteDimensional.of_injective
+  have : FiniteDimensional ℚ K₁ := FiniteDimensional.of_injective
     (AlgEquiv.ofInjectiveField i₁).symm.toLinearMap (AlgEquiv.ofInjectiveField i₁).symm.injective
-  haveI : FiniteDimensional ℚ K₂ := FiniteDimensional.of_injective
+  have : FiniteDimensional ℚ K₂ := FiniteDimensional.of_injective
     (AlgEquiv.ofInjectiveField i₂).symm.toLinearMap (AlgEquiv.ofInjectiveField i₂).symm.injective
   -- Show coprimality of the degrees
   have hcop' : Nat.Coprime (finrank ℚ K₁) (finrank ℚ K₂) := by
@@ -324,10 +314,10 @@ def galSupProdEquiv' [IsGalois F' K₁'] [IsGalois F' K₂']
     [FiniteDimensional F' ↥(K₁' ⊔ K₂')]
     (h_inf : K₁' ⊓ K₂' = ⊥) :
     Gal(↥(K₁' ⊔ K₂')/F') ≃* Gal(↥K₁'/F') × Gal(↥K₂'/F') := by
-  haveI : FiniteDimensional F' ↥K₁' := by
+  have : FiniteDimensional F' ↥K₁' := by
     have h := IntermediateField.inclusion (le_sup_left : K₁' ≤ K₁' ⊔ K₂')
     exact FiniteDimensional.of_injective h.toLinearMap h.injective
-  haveI : FiniteDimensional F' ↥K₂' := by
+  have : FiniteDimensional F' ↥K₂' := by
     have h := IntermediateField.inclusion (le_sup_right : K₂' ≤ K₁' ⊔ K₂')
     exact FiniteDimensional.of_injective h.toLinearMap h.injective
   exact MulEquiv.ofBijective (galSupRestrictionProd K₁' K₂') <| by
@@ -352,8 +342,8 @@ theorem IsInverseGalois.of_disjoint_intermediate_fields
     {G₁ G₂ : Type*} [Group G₁] [Group G₂]
     (e₁ : Gal(K₁/ℚ) ≃* G₁) (e₂ : Gal(K₂/ℚ) ≃* G₂) :
     IsInverseGalois (G₁ × G₂) := by
-  haveI : FiniteDimensional ℚ ↥(K₁ ⊔ K₂) := IntermediateField.finiteDimensional_sup K₁ K₂
-  haveI : IsGalois ℚ ↥(K₁ ⊔ K₂) :=
+  have : FiniteDimensional ℚ ↥(K₁ ⊔ K₂) := IntermediateField.finiteDimensional_sup K₁ K₂
+  have : IsGalois ℚ ↥(K₁ ⊔ K₂) :=
     FiniteGaloisIntermediateField.instIsGaloisSubtypeMemIntermediateFieldMax K₁ K₂
   refine ⟨↥(K₁ ⊔ K₂), inferInstance, inferInstance, inferInstance, inferInstance, ⟨?_⟩⟩
   exact (galSupProdEquiv' K₁ K₂ h_inf).trans (MulEquiv.prodCongr e₁ e₂)

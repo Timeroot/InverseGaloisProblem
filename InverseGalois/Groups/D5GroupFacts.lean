@@ -26,23 +26,22 @@ homomorphism A₅ → S₃, impossible by simplicity since |S₃| < |A₅|).
 -/
 theorem A5_no_subgroup_order_20 :
     ∀ H : Subgroup (alternatingGroup (Fin 5)), Nat.card H ≠ 20 := by
-      -- The homomorphism $A_5 \to S_3$ by left multiplication on $A_5/H$.
+      -- The homomorphism `A₅ → S₃` by left multiplication on `A₅ ⧸ H`.
       intros H hH
       have h_hom : ∃ f : alternatingGroup (Fin 5) →* Equiv.Perm (alternatingGroup (Fin 5) ⧸ H), f.ker ≠ ⊤ := by
-        refine' ⟨_, _⟩
-        exact MulAction.toPermHom (alternatingGroup (Fin 5))
-          ((alternatingGroup (Fin 5)) ⧸ H)
+        refine ⟨MulAction.toPermHom (alternatingGroup (Fin 5))
+          ((alternatingGroup (Fin 5)) ⧸ H), ?_⟩
         intro h_top
         have h_contra : ∀ g : alternatingGroup (Fin 5), ∀ x : alternatingGroup (Fin 5) ⧸ H, g • x = x := by
           simp_all +decide [Subgroup.eq_top_iff']
-          exact fun a ha x => by simpa using congr_arg (fun f => f x) (h_top a ha)
+          exact fun a ha x ↦ by simpa using congr_arg (fun f ↦ f x) (h_top a ha)
         have h_contra : ∀ g : alternatingGroup (Fin 5), g ∈ H := by
           intro g
           specialize h_contra g (QuotientGroup.mk 1)
           simp_all +decide [QuotientGroup.eq]
         have := Subgroup.card_mul_index H
         simp_all +decide
-      -- Since $A_5$ is simple, the kernel of $f$ must be trivial.
+      -- Since `A₅` is simple, the kernel of `f` must be trivial.
       obtain ⟨f, hf⟩ := h_hom
       have h_ker_trivial : f.ker = ⊥ := by
         contrapose! hf
@@ -51,13 +50,13 @@ theorem A5_no_subgroup_order_20 :
           have h_simple : IsSimpleGroup (alternatingGroup (Fin 5)) := by
             infer_instance
           have := h_simple.2 N hN
-          simp_all only [ne_eq, false_or]
+          simp_all
         exact h_ker_trivial _ (by infer_instance) hf
-      -- Since $f$ is injective, $A_5$ is isomorphic to a subgroup of $S_3$.
+      -- Since `f` is injective, `A₅` is isomorphic to a subgroup of `S₃`.
       have h_iso : Function.Injective f := by
         exact (MonoidHom.ker_eq_bot_iff _).mp h_ker_trivial
       have h_card : Nat.card (alternatingGroup (Fin 5)) ≤ Nat.card (Equiv.Perm (alternatingGroup (Fin 5) ⧸ H)) := by
-        apply_rules [Nat.card_le_card_of_injective]
+        exact Nat.card_le_card_of_injective _ h_iso
       have h_card : Nat.card (Equiv.Perm (alternatingGroup (Fin 5) ⧸ H)) = Nat.factorial 3 := by
         have h_card : Nat.card (alternatingGroup (Fin 5) ⧸ H) = 3 := by
           have := Subgroup.card_eq_card_quotient_mul_card_subgroup H
@@ -89,26 +88,26 @@ inversion automorphism, which is exactly the defining relation of `DihedralGroup
 lemma iso_dihedral_five_of_card_ten {G : Type*} [Group G] [Finite G]
     (hcard : Nat.card G = 10) (hncyc : ¬ IsCyclic G) :
     Nonempty (G ≃* DihedralGroup 5) := by
-  haveI := Fintype.ofFinite G
+  have := Fintype.ofFinite G
   simp_all +decide [Nat.card_eq_fintype_card]
   obtain ⟨a, ha⟩ : ∃ a : G, orderOf a = 5 := by
     have := Fact.mk (by decide : Nat.Prime 5)
-    exact Exists.imp (fun a a_1 => by simp_all only) (exists_prime_orderOf_dvd_card 5 (by
+    exact Exists.imp (fun a a_1 ↦ by simp_all only) (exists_prime_orderOf_dvd_card 5 (by
       rw [hcard]
       decide))
   obtain ⟨b, hb⟩ : ∃ b : G, orderOf b = 2 := by
-    exact Exists.imp (fun a_1 a_2 => by simp_all only) (exists_prime_orderOf_dvd_card 2 (by
+    exact Exists.imp (fun a_1 a_2 ↦ by simp_all only) (exists_prime_orderOf_dvd_card 2 (by
       rw [hcard]
       decide))
   have h_normal : Subgroup.Normal (Subgroup.zpowers a) := by
-    refine' Subgroup.normal_of_index_eq_two _
+    apply Subgroup.normal_of_index_eq_two
     have := Subgroup.index_mul_card (Subgroup.zpowers a)
     simp_all +decide [Fintype.card_zpowers]
     linarith
   have h_conj : b * a * b⁻¹ = a⁻¹ := by
-    -- Since $b * a * b⁻¹ \in \langle a \rangle$, we have $b * a * b⁻¹ = a^k$ for some integer $k$.
+    -- Since `b * a * b⁻¹ ∈ ⟨a⟩`, we have `b * a * b⁻¹ = a ^ k` for some integer `k`.
     obtain ⟨k, hk⟩ : ∃ k : ℤ, b * a * b⁻¹ = a^k := by
-      exact Subgroup.mem_zpowers_iff.mp (h_normal.conj_mem _ (Subgroup.mem_zpowers a) b) |> fun ⟨k, hk⟩ => ⟨k, hk.symm⟩
+      exact Subgroup.mem_zpowers_iff.mp (h_normal.conj_mem _ (Subgroup.mem_zpowers a) b) |> fun ⟨k, hk⟩ ↦ ⟨k, hk.symm⟩
     have hk_order : k ^ 2 ≡ 1 [ZMOD 5] := by
       have hk_order : a = b^2 * a * b⁻¹^2 := by
         simp +decide [hb ▸ pow_orderOf_eq_one b]
@@ -116,14 +115,12 @@ lemma iso_dihedral_five_of_card_ten {G : Type*} [Group G] [Finite G]
         convert hk_order using 1
         simp +decide [sq, mul_assoc]
         simp +decide [← mul_assoc, ← hk, zpow_mul]
-      have hk_order : k^2 ≡ 1 [ZMOD 5] := by
-        have hk_order : a^(k^2 - 1) = 1 := by
-          rw [zpow_sub_one]
-          norm_num [← hk_order]
-        have := orderOf_dvd_iff_zpow_eq_one.mpr hk_order
-        norm_num [ha] at this
-        exact Int.ModEq.symm (Int.modEq_of_dvd <| by simpa [← Int.natCast_dvd_natCast] using this)
-      exact hk_order
+      have hk_order : a^(k^2 - 1) = 1 := by
+        rw [zpow_sub_one]
+        norm_num [← hk_order]
+      have := orderOf_dvd_iff_zpow_eq_one.mpr hk_order
+      norm_num [ha] at this
+      exact Int.ModEq.symm (Int.modEq_of_dvd <| by simpa [← Int.natCast_dvd_natCast] using this)
     have hk_cases : k ≡ 1 [ZMOD 5] ∨ k ≡ -1 [ZMOD 5] := by
       norm_num [Int.ModEq, Int.mul_emod, sq] at hk_order ⊢
       have := Int.emod_nonneg k (by decide : (5 : ℤ) ≠ 0)
@@ -147,22 +144,19 @@ lemma iso_dihedral_five_of_card_ten {G : Type*} [Group G] [Finite G]
             rw [Fintype.card_zpowers, h_cyclic]
           have := Subgroup.card_mul_index (Subgroup.zpowers (a * b))
           simp_all +decide
-        exact ⟨a * b, fun g => by
+        exact ⟨a * b, fun g ↦ by
           obtain ⟨n, rfl⟩ := h_cyclic g
           exact ⟨n, rfl⟩⟩
       contradiction
-    have hk_final : b * a * b⁻¹ = a⁻¹ := by
-      rw [hk, ← Int.emod_add_mul_ediv k 5, hk_neg]
-      norm_num [zpow_add, zpow_mul]
-      simp_all +decide [orderOf_eq_iff]
-      simp_all +decide [zpow_ofNat, pow_succ]
-      exact eq_inv_of_mul_eq_one_left ha.1 ▸ rfl
-    exact hk_final
-  -- Define the homomorphism $\phi: D_5 \to G$ by $\phi(r) = a$ and $\phi(s) = b$.
+    rw [hk, ← Int.emod_add_mul_ediv k 5, hk_neg]
+    norm_num [zpow_add, zpow_mul]
+    simp_all +decide [orderOf_eq_iff]
+    simp_all +decide [zpow_ofNat, pow_succ]
+    exact eq_inv_of_mul_eq_one_left ha.1 ▸ rfl
+  -- Define the homomorphism `φ : D₅ → G` by `φ r = a` and `φ s = b`.
   obtain ⟨ϕ, hϕ⟩ : ∃ ϕ : DihedralGroup 5 →* G, ϕ (DihedralGroup.r 1) = a ∧ ϕ (DihedralGroup.sr 0) = b := by
-    refine' ⟨_, _, _⟩
-    refine' MonoidHom.mk' _ _
-    use fun x => match x with | DihedralGroup.r i => a ^ i.val | DihedralGroup.sr i => b * a ^ i.val
+    refine ⟨MonoidHom.mk' (fun x ↦ match x with
+      | DihedralGroup.r i => a ^ i.val | DihedralGroup.sr i => b * a ^ i.val) ?_, ?_, ?_⟩
     all_goals norm_num [pow_succ, mul_assoc, orderOf_eq_iff] at *
     · intro x y
       rcases x with (_ | _) <;> rcases y with (_ | _) <;> simp +decide [*, mul_assoc]
@@ -172,7 +166,7 @@ lemma iso_dihedral_five_of_card_ten {G : Type*} [Group G] [Finite G]
         simp_all +decide [pow_succ, mul_assoc]
         fin_cases i <;> fin_cases j <;> rfl
       · rename_i i j
-        -- Using the relation $b * a * b⁻¹ = a⁻¹$, we can rewrite $b * a^k$ as $a^{-k} * b$.
+        -- Using the relation `b * a * b⁻¹ = a⁻¹`, we can rewrite `b * a ^ k` as `a⁻¹ ^ k * b`.
         have h_conj_pow : ∀ k : ℕ, b * a ^ k = a⁻¹ ^ k * b := by
           intro k
           induction k <;> simp_all +decide [pow_succ, mul_assoc]
@@ -184,7 +178,7 @@ lemma iso_dihedral_five_of_card_ten {G : Type*} [Group G] [Finite G]
           fin_cases i <;> fin_cases j <;> trivial
         rw [hji]
         simp +decide [pow_add]
-        exact fun _ => by
+        exact fun _ ↦ by
           rw [pow_succ, pow_succ, pow_succ, pow_succ, pow_one]
           simp +decide [ha.1]
       · rename_i i j
@@ -194,7 +188,7 @@ lemma iso_dihedral_five_of_card_ten {G : Type*} [Group G] [Finite G]
         simp_all +decide [show a ^ 5 = 1 by simp_all +decide [pow_succ, mul_assoc]]
         fin_cases i <;> fin_cases j <;> rfl
       · rename_i i j
-        -- Using the relation $b * a * b⁻¹ = a⁻¹$, we can simplify the expression.
+        -- Using the relation `b * a * b⁻¹ = a⁻¹`, we can simplify the expression.
         have h_simp : ∀ i : ℕ, b * a ^ i * b⁻¹ = a⁻¹ ^ i := by
           intro i
           induction i <;> simp_all +decide [pow_succ, mul_assoc]
@@ -213,7 +207,7 @@ lemma iso_dihedral_five_of_card_ten {G : Type*} [Group G] [Finite G]
         simp_all +decide [← mul_assoc, ← ‹∀ i : ℕ, b * a ^ i * b⁻¹ = a⁻¹ ^ i›]
         rw [inv_eq_of_mul_eq_one_right hb.1]
     · simp +decide [ZMod.val]
-  -- Show that $\phi$ is surjective.
+  -- Show that `φ` is surjective.
   have h_surj : Function.Surjective ϕ := by
     have h_surj : Subgroup.closure ({a, b} : Set G) = ⊤ := by
       have h_surj : Fintype.card (Subgroup.closure ({a, b} : Set G)) = 10 := by
@@ -230,17 +224,17 @@ lemma iso_dihedral_five_of_card_ten {G : Type*} [Group G] [Finite G]
         simp_all +decide
         have := Nat.le_of_dvd (by decide) this
         interval_cases Fintype.card (Subgroup.closure { a, b }) <;> trivial
-      exact Subgroup.eq_top_of_card_eq _ (by simp_all only [Nat.card_eq_fintype_card])
+      exact Subgroup.eq_top_of_card_eq _ (by simp_all [Nat.card_eq_fintype_card])
     intro g
     have hg : g ∈ Subgroup.closure ({a, b} : Set G) := by
-      simp_all only [Subgroup.mem_top]
+      simp_all
     rw [Subgroup.mem_closure] at hg
     obtain ⟨x, rfl⟩ := hg ϕ.range (by
       rintro x (rfl | rfl)
       · exact ⟨DihedralGroup.r 1, hϕ.1⟩
       · exact ⟨DihedralGroup.sr 0, hϕ.2⟩)
     exact ⟨x, rfl⟩
-  -- Since $\phi$ is surjective and $G$ has order 10, $\phi$ must be injective.
+  -- Since `φ` is surjective and `G` has order 10, `φ` must be injective.
   have h_inj : Function.Injective ϕ := by
     exact (Fintype.bijective_iff_surjective_and_card ϕ).mpr ⟨h_surj, by simp +decide [hcard]⟩ |>.1
   exact ⟨MulEquiv.symm (MulEquiv.ofBijective ϕ ⟨h_inj, h_surj⟩)⟩

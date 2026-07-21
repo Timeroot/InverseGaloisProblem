@@ -9,3 +9,4 @@ rev = "v4.28.0"
 [[lean_lib]]
 name = "InverseGalois"
 roots = ["InverseGalois"]
+leanOptions = { linter.style.multiGoal = true }

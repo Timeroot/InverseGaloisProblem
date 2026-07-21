@@ -51,25 +51,25 @@ lemma finite_puiseux_deriv_asymptotic
     Filter.Tendsto
       (fun x => iteratedDeriv m (fun y => ∑ σ ∈ I, a σ * y ^ σ) x / x ^ (s - (m : ℝ)))
       Filter.atTop (nhds (a s * Polynomial.eval s (descPochhammer ℝ m))) := by
-  have h_eq : ∀ x : ℝ, 0 < x → iteratedDeriv m (fun y => ∑ σ ∈ I, a σ * y ^ σ) x
+  have h_eq : ∀ x : ℝ, 0 < x → iteratedDeriv m (fun y ↦ ∑ σ ∈ I, a σ * y ^ σ) x
       = ∑ σ ∈ I, a σ * Polynomial.eval σ (descPochhammer ℝ m) * x ^ (σ - (m:ℝ)) := by
     intro x hx
     clear hsI hstop
     induction I using Finset.induction with
     | empty => simp
     | insert σ' I' hσ' ih =>
-      have hrpow : ∀ σ : ℝ, ContDiffAt ℝ (m:ℕ) (fun y : ℝ => y ^ σ) x := fun σ => by
-        have : ContDiffAt ℝ (m:ℕ∞) (fun y : ℝ => y ^ σ) x :=
+      have hrpow : ∀ σ : ℝ, ContDiffAt ℝ (m:ℕ) (fun y : ℝ ↦ y ^ σ) x := fun σ ↦ by
+        have : ContDiffAt ℝ (m:ℕ∞) (fun y : ℝ ↦ y ^ σ) x :=
           Real.contDiffAt_rpow_const_of_ne (ne_of_gt hx)
         exact_mod_cast this
-      have hterm : ContDiffAt ℝ (m:ℕ) (fun y => a σ' * y ^ σ') x :=
+      have hterm : ContDiffAt ℝ (m:ℕ) (fun y ↦ a σ' * y ^ σ') x :=
         (contDiffAt_const).mul (hrpow σ')
-      have hsum : ContDiffAt ℝ (m:ℕ) (fun y => ∑ σ ∈ I', a σ * y ^ σ) x := by
+      have hsum : ContDiffAt ℝ (m:ℕ) (fun y ↦ ∑ σ ∈ I', a σ * y ^ σ) x := by
         apply ContDiffAt.sum
         intro σ hσ
         exact (contDiffAt_const).mul (hrpow σ)
-      have hfun : (fun y => ∑ σ ∈ insert σ' I', a σ * y ^ σ)
-          = (fun y => a σ' * y ^ σ') + (fun y => ∑ σ ∈ I', a σ * y ^ σ) := by
+      have hfun : (fun y ↦ ∑ σ ∈ insert σ' I', a σ * y ^ σ)
+          = (fun y ↦ a σ' * y ^ σ') + (fun y ↦ ∑ σ ∈ I', a σ * y ^ σ) := by
         funext y
         simp [Finset.sum_insert hσ']
       rw [hfun, iteratedDeriv_add hterm hsum, ih, Finset.sum_insert hσ']
@@ -77,15 +77,15 @@ lemma finite_puiseux_deriv_asymptotic
       rw [iteratedDeriv_const_mul (a σ') (hrpow σ'), iteratedDeriv_eq_iterate,
         Real.iter_deriv_rpow_const]
       ring
-  have h_ev : (fun x => iteratedDeriv m (fun y => ∑ σ ∈ I, a σ * y ^ σ) x / x ^ (s - (m : ℝ)))
-      =ᶠ[atTop] (fun x => ∑ σ ∈ I, a σ * Polynomial.eval σ (descPochhammer ℝ m) * x ^ (σ - s)) := by
+  have h_ev : (fun x ↦ iteratedDeriv m (fun y ↦ ∑ σ ∈ I, a σ * y ^ σ) x / x ^ (s - (m : ℝ)))
+      =ᶠ[atTop] (fun x ↦ ∑ σ ∈ I, a σ * Polynomial.eval σ (descPochhammer ℝ m) * x ^ (σ - s)) := by
     filter_upwards [eventually_gt_atTop (0:ℝ)] with x hx
     rw [h_eq x hx, Finset.sum_div]
     apply Finset.sum_congr rfl
     intro σ hσ
     rw [mul_div_assoc, ← Real.rpow_sub hx, sub_sub_sub_cancel_right]
   rw [tendsto_congr' h_ev]
-  have h_lim : Tendsto (fun x => ∑ σ ∈ I, a σ * Polynomial.eval σ (descPochhammer ℝ m) * x ^ (σ - s))
+  have h_lim : Tendsto (fun x ↦ ∑ σ ∈ I, a σ * Polynomial.eval σ (descPochhammer ℝ m) * x ^ (σ - s))
       atTop (nhds (∑ σ ∈ I, if σ = s then a σ * Polynomial.eval σ (descPochhammer ℝ m) else 0)) := by
     apply tendsto_finset_sum
     intro σ hσ
@@ -100,13 +100,13 @@ lemma finite_puiseux_deriv_asymptotic
         rcases lt_or_eq_of_le this with h | h
         · linarith
         · exact absurd h hσs
-      have ht : Tendsto (fun x : ℝ => x ^ (σ - s)) atTop (nhds 0) := by
+      have ht : Tendsto (fun x : ℝ ↦ x ^ (σ - s)) atTop (nhds 0) := by
         have := tendsto_rpow_neg_atTop (y := s - σ) (by linarith)
         simpa [neg_sub] using this
       simpa using ht.const_mul (a σ * Polynomial.eval σ (descPochhammer ℝ m))
   have hval : (∑ σ ∈ I, if σ = s then a σ * Polynomial.eval σ (descPochhammer ℝ m) else 0)
       = a s * Polynomial.eval s (descPochhammer ℝ m) := by
-    rw [Finset.sum_ite_eq' I s (fun σ => a σ * Polynomial.eval σ (descPochhammer ℝ m))]
+    rw [Finset.sum_ite_eq' I s (fun σ ↦ a σ * Polynomial.eval σ (descPochhammer ℝ m))]
     simp [hsI]
   rwa [hval] at h_lim
 
@@ -159,34 +159,34 @@ lemma iteratedDeriv_ofReal_eq_of_holo
   intro y hy₁ hy₂
   have h := ih y hy₁ hy₂
   simp_all [Complex.ext_iff]
-  have h_deriv : HasDerivAt (fun y => iteratedDeriv m G y) (deriv (iteratedDeriv m G) y) y := by
+  have h_deriv : HasDerivAt (fun y ↦ iteratedDeriv m G y) (deriv (iteratedDeriv m G) y) y := by
     have h_deriv : AnalyticOnNhd ℂ (iteratedDeriv m G) (Metric.ball (x : ℂ) r) := by
       have h_deriv_eq : AnalyticOnNhd ℂ G (Metric.ball (x : ℂ) r) := by
         exact hGdiff.analyticOnNhd (Metric.isOpen_ball)
-      refine' Nat.recOn m _ _ <;> simp_all [iteratedDeriv_succ]
-      exact fun n hn => hn.deriv
+      refine Nat.recOn m ?_ ?_ <;> simp_all [iteratedDeriv_succ]
+      exact fun n hn ↦ hn.deriv
     convert h_deriv.differentiableOn.differentiableAt (Metric.isOpen_ball.mem_nhds <|
       show (y : ℂ) ∈ Metric.ball (x : ℂ) r from ?_) |> DifferentiableAt.hasDerivAt using 1
     simp [Complex.dist_eq, Complex.normSq, Complex.norm_def]
     rw [Real.sqrt_mul_self_eq_abs, abs_lt]
     constructor <;> linarith
-  have h_deriv_real : HasDerivAt (fun y : ℝ => (iteratedDeriv m G y).re)
+  have h_deriv_real : HasDerivAt (fun y : ℝ ↦ (iteratedDeriv m G y).re)
       ((deriv (iteratedDeriv m G) y).re) y ∧
-      HasDerivAt (fun y : ℝ => (iteratedDeriv m G y).im) ((deriv (iteratedDeriv m G) y).im) y := by
-    have h_deriv_real : HasDerivAt (fun y : ℝ => iteratedDeriv m G y)
+      HasDerivAt (fun y : ℝ ↦ (iteratedDeriv m G y).im) ((deriv (iteratedDeriv m G) y).im) y := by
+    have h_deriv_real : HasDerivAt (fun y : ℝ ↦ iteratedDeriv m G y)
         (deriv (iteratedDeriv m G) y) y := by
-      convert h_deriv.comp_ofReal using 1
+      exact h_deriv.comp_ofReal
     refine ⟨?_, ?_⟩
     · simpa using Complex.reCLM.hasFDerivAt.comp_hasDerivAt y h_deriv_real
     · simpa using Complex.imCLM.hasFDerivAt.comp_hasDerivAt y h_deriv_real
-  have h_deriv_real_eq : HasDerivAt (fun y : ℝ => iteratedDeriv m R y)
+  have h_deriv_real_eq : HasDerivAt (fun y : ℝ ↦ iteratedDeriv m R y)
       ((deriv (iteratedDeriv m G) y).re) y ∧
-      HasDerivAt (fun y : ℝ => 0) ((deriv (iteratedDeriv m G) y).im) y := by
+      HasDerivAt (fun y : ℝ ↦ 0) ((deriv (iteratedDeriv m G) y).im) y := by
     refine ⟨?_, ?_⟩
     · exact h_deriv_real.1.congr_of_eventuallyEq (Filter.eventuallyEq_of_mem
-        (Ioo_mem_nhds hy₁ hy₂) fun z hz => by rw [ih z hz.1 hz.2 |>.1])
+        (Ioo_mem_nhds hy₁ hy₂) fun z hz ↦ by rw [ih z hz.1 hz.2 |>.1])
     · exact h_deriv_real.2.congr_of_eventuallyEq (Filter.eventuallyEq_of_mem
-        (Ioo_mem_nhds hy₁ hy₂) fun z hz => by rw [ih z hz.1 hz.2 |>.2])
+        (Ioo_mem_nhds hy₁ hy₂) fun z hz ↦ by rw [ih z hz.1 hz.2 |>.2])
   exact ⟨by rw [← h_deriv_real_eq.1.deriv], by simpa using h_deriv_real_eq.2.deriv.symm⟩
 
 /-
@@ -248,8 +248,8 @@ theorem puiseux_principal_part_diffContOnCl
     have := abs_le.mp (h2.trans hz)
     exact Complex.mem_slitPlane_iff.mpr (Or.inl (by linarith [this.1]))
   apply DifferentiableOn.add (poly.differentiable.differentiableOn)
-  have hrw : (fun z : ℂ => ∑ σ ∈ I, a σ * z ^ (σ : ℂ))
-      = ∑ σ ∈ I, (fun z : ℂ => a σ * z ^ (σ : ℂ)) := by
+  have hrw : (fun z : ℂ ↦ ∑ σ ∈ I, a σ * z ^ (σ : ℂ))
+      = ∑ σ ∈ I, (fun z : ℂ ↦ a σ * z ^ (σ : ℂ)) := by
     ext z
     simp [Finset.sum_apply]
   rw [hrw]
@@ -277,9 +277,9 @@ lemma evalIntPolyComplex_eval_contDiff (P : Polynomial (Polynomial ℤ)) :
   simp [Polynomial.eval_map]
   rw [Polynomial.as_sum_range_C_mul_X_pow P]
   simp [Polynomial.eval₂_finset_sum]
-  refine' ContDiff.sum fun i hi => ContDiff.mul _ _
+  refine' ContDiff.sum fun i hi ↦ ContDiff.mul _ _
   · simp [Polynomial.eval_eq_sum_range]
-    exact ContDiff.sum fun _ _ => ContDiff.mul (contDiff_const) (contDiff_fst.pow _)
+    exact ContDiff.sum fun _ _ ↦ ContDiff.mul (contDiff_const) (contDiff_fst.pow _)
   · exact contDiff_snd.pow i
 
 /-
@@ -314,7 +314,7 @@ lemma complex_branch_at_simple_root (P : Polynomial (Polynomial ℤ)) (z₀ w₀
     (hsimple : (P.map (evalIntPolyComplex z₀)).derivative.eval w₀ ≠ 0) :
     ∃ φ : ℂ → ℂ, φ z₀ = w₀ ∧ ContDiffAt ℂ ⊤ φ z₀ ∧
       ∀ᶠ z : ℂ in nhds z₀, (P.map (evalIntPolyComplex z)).eval (φ z) = 0 := by
-  set F : ℂ × ℂ → ℂ := fun p => (P.map (evalIntPolyComplex p.1)).eval p.2
+  set F : ℂ × ℂ → ℂ := fun p ↦ (P.map (evalIntPolyComplex p.1)).eval p.2
   obtain ⟨φ, hφ⟩ : ∃ φ : ℂ → ℂ, HasFDerivAt F (fderiv ℂ F (z₀, w₀)) (z₀, w₀) ∧
       ContDiffAt ℂ ⊤ φ z₀ ∧ φ z₀ = w₀ ∧ ∀ᶠ z in nhds z₀, F (z, φ z) = F (z₀, w₀) := by
     have h_implicit : IsContDiffImplicitAt ⊤ F (fderiv ℂ F (z₀, w₀)) (z₀, w₀) := by
@@ -326,8 +326,8 @@ lemma complex_branch_at_simple_root (P : Polynomial (Polynomial ℤ)) (z₀ w₀
             (Polynomial.derivative (P.map (evalIntPolyComplex z₀))).eval w₀ * z := by
           intro z
           have hL : (fderiv ℂ F (z₀, w₀)).comp (ContinuousLinearMap.inr ℂ ℂ ℂ) z =
-              deriv (fun w => (P.map (evalIntPolyComplex z₀)).eval w) w₀ * z := by
-            have hL : deriv (fun w => (P.map (evalIntPolyComplex z₀)).eval w) w₀ =
+              deriv (fun w ↦ (P.map (evalIntPolyComplex z₀)).eval w) w₀ * z := by
+            have hL : deriv (fun w ↦ (P.map (evalIntPolyComplex z₀)).eval w) w₀ =
                 (fderiv ℂ F (z₀, w₀)).comp (ContinuousLinearMap.inr ℂ ℂ ℂ) 1 := by
               convert HasDerivAt.deriv _ using 1
               have hFdiff : HasFDerivAt F (fderiv ℂ F (z₀, w₀)) (z₀, w₀) :=
@@ -343,17 +343,17 @@ lemma complex_branch_at_simple_root (P : Polynomial (Polynomial ℤ)) (z₀ w₀
           convert hL using 1
           norm_num [Polynomial.derivative_eval]
         constructor
-        · exact fun z w hzw => mul_left_cancel₀ hsimple <| by aesop
-        · refine fun z => ⟨z / (Polynomial.eval w₀ (Polynomial.derivative
+        · exact fun z w hzw ↦ mul_left_cancel₀ hsimple <| by aesop
+        · refine fun z ↦ ⟨z / (Polynomial.eval w₀ (Polynomial.derivative
             (Polynomial.map (evalIntPolyComplex z₀) P))), ?_⟩
           rw [hL, mul_div_cancel₀ _ hsimple]
       · decide +revert
-    refine' ⟨h_implicit.implicitFunction, _, _, _, _⟩
+    refine ⟨h_implicit.implicitFunction, ?_, ?_, ?_, ?_⟩
     · exact h_implicit.hasFDerivAt
     · exact h_implicit.contDiffAt_implicitFunction
     · convert h_implicit.eventually_implicitFunction_apply_eq.self_of_nhds using 1
       aesop
-    · convert h_implicit.apply_implicitFunction using 1
+    · exact h_implicit.apply_implicitFunction
   grind
 
 /-- **Local holomorphic continuation of a real branch off the real axis.**  If the real
@@ -403,13 +403,12 @@ lemma complex_branch_root_of_holo_extension
     (hHag : ∀ y : ℝ, |y - x| < x / 2 → H (y : ℂ) = (g y : ℂ)) :
     ∀ z ∈ Metric.ball (x : ℂ) (x / 2),
       (P.map (evalIntPolyComplex z)).eval (H z) = 0 := by
-  -- Define Φ : ℂ → ℂ := fun z => (P.map (evalIntPolyComplex z)).eval (H z).
-  set Φ : ℂ → ℂ := fun z => (P.map (evalIntPolyComplex z)).eval (H z)
+  set Φ : ℂ → ℂ := fun z ↦ (P.map (evalIntPolyComplex z)).eval (H z)
   -- Apply the identity theorem for holomorphic functions.
   have h_id : AnalyticOnNhd ℂ Φ (Metric.ball (x : ℂ) (x / 2)) ∧
       (∀ y : ℝ, |y - x| < x / 2 → Φ (y : ℂ) = 0) := by
     constructor
-    · apply_rules [DifferentiableOn.analyticOnNhd]
+    · apply DifferentiableOn.analyticOnNhd
       · convert (evalIntPolyComplex_eval_contDiff P |> ContDiff.differentiable <| by norm_num) |>
           Differentiable.comp_differentiableOn <| differentiableOn_id.prodMk hHolo using 1
       · exact Metric.isOpen_ball
@@ -422,7 +421,7 @@ lemma complex_branch_root_of_holo_extension
     have h_acc : ∃ᶠ y in nhdsWithin (x : ℂ) { (x : ℂ) }ᶜ, Φ y = 0 := by
       rw [Metric.nhdsWithin_basis_ball.frequently_iff]
       intro ε ε_pos
-      refine' ⟨↑ (x + Min.min ε (x / 2) / 2), _, _⟩ <;>
+      refine ⟨↑ (x + Min.min ε (x / 2) / 2), ?_, ?_⟩ <;>
         norm_num [abs_of_pos, ε_pos, hx2]
       · refine ⟨?_, by positivity⟩
         rw [abs_of_nonneg (by positivity)]
@@ -431,10 +430,8 @@ lemma complex_branch_root_of_holo_extension
         · norm_num [Complex.ofReal_add, Complex.ofReal_div]
         · rw [abs_of_nonneg] <;>
             linarith [show 0 < Min.min ε (x / 2) by positivity, min_le_left ε (x / 2), min_le_right ε (x / 2)]
-    apply h_id.left.eqOn_zero_of_preconnected_of_frequently_eq_zero
-    exact convex_ball _ _ |> Convex.isPreconnected
-    rotate_right
-    exacts [↑x, by simpa using by positivity, h_acc, hz]
+    apply h_id.left.eqOn_zero_of_preconnected_of_frequently_eq_zero (z₀ := ↑x)
+    exacts [convex_ball _ _ |> Convex.isPreconnected, by simpa using by positivity, h_acc, hz]
   exact h_id
 
 /-
@@ -459,9 +456,9 @@ lemma holo_extension_unique_on_inter
     (hag₂ : ∀ y : ℝ, |y - x₂| < r₂ → H₂ (y : ℂ) = (g y : ℂ))
     (hy₁ : |y₀ - x₁| < r₁) (hy₂ : |y₀ - x₂| < r₂) :
     Set.EqOn H₁ H₂ (Metric.ball (x₁ : ℂ) r₁ ∩ Metric.ball (x₂ : ℂ) r₂) := by
-  -- Define $D(z) = H₁(z) - H₂(z)$.
-  set D : ℂ → ℂ := fun z => H₁ z - H₂ z
-  -- By the identity theorem for holomorphic functions, since $D$ is holomorphic on the intersection of the two balls and vanishes on a set with an accumulation point, $D$ must be identically zero on the intersection.
+  set D : ℂ → ℂ := fun z ↦ H₁ z - H₂ z
+  -- By the identity theorem, since `D` is holomorphic on the intersection of the two balls and
+  -- vanishes on a set with an accumulation point, `D` is identically zero on the intersection.
   have hD_zero : ∀ z ∈ Metric.ball (x₁ : ℂ) r₁ ∩ Metric.ball (x₂ : ℂ) r₂, D z = 0 := by
     have h_acc : ∃ᶠ z in nhdsWithin (y₀ : ℂ) { (y₀ : ℂ) }ᶜ, D z = 0 := by
       rw [Metric.nhdsWithin_basis_ball.frequently_iff]
@@ -471,7 +468,7 @@ lemma holo_extension_unique_on_inter
           (isOpen_lt (continuous_abs.comp (continuous_sub_right _)) continuous_const |>
             IsOpen.inter <| isOpen_lt (continuous_abs.comp (continuous_sub_right _)) continuous_const)
           ⟨hy₁, hy₂⟩)
-      refine' ⟨y₀ + Min.min ε δ / 2, _, _⟩ <;> norm_num
+      refine ⟨y₀ + Min.min ε δ / 2, ?_, ?_⟩ <;> norm_num
       · refine ⟨?_, by positivity⟩
         rw [abs_of_nonneg (by positivity)]
         linarith [min_le_left ε δ, min_le_right ε δ]
@@ -486,10 +483,10 @@ lemma holo_extension_unique_on_inter
     · exact DifferentiableOn.analyticOnNhd (hH₁.mono (Set.inter_subset_left) |>
         DifferentiableOn.sub <| hH₂.mono (Set.inter_subset_right))
         (Metric.isOpen_ball.inter Metric.isOpen_ball)
-    · exact Convex.isPreconnected (convex_ball _ _ |> fun h => h.inter (convex_ball _ _))
+    · exact Convex.isPreconnected (convex_ball _ _ |> fun h ↦ h.inter (convex_ball _ _))
     · simp_all [Complex.dist_eq, Complex.normSq, Complex.norm_def]
       exact ⟨by rwa [Real.sqrt_mul_self_eq_abs], by rwa [Real.sqrt_mul_self_eq_abs]⟩
-  exact fun z hz => sub_eq_zero.mp (hD_zero z hz)
+  exact fun z hz ↦ sub_eq_zero.mp (hD_zero z hz)
 
 /-
 **Local holomorphic continuation of a real branch, agreeing with `g` on the real axis.**
@@ -515,18 +512,18 @@ lemma real_branch_local_holomorphic_continuation_agrees
     ∃ φ : ℂ → ℂ, ContDiffAt ℂ ⊤ φ (x₀ : ℂ) ∧ φ (x₀ : ℂ) = (w₀ : ℂ) ∧
       (∀ᶠ x : ℝ in nhds x₀, φ (x : ℂ) = (g x : ℂ)) ∧
       (∀ᶠ z : ℂ in nhds (x₀ : ℂ), (P.map (evalIntPolyComplex z)).eval (φ z) = 0) := by
-  -- Let's choose any $\phi$ that satisfies the conditions.
+  -- Choose any `φ` that satisfies the conditions.
   obtain ⟨φ, hφ⟩ := real_branch_local_holomorphic_continuation P x₀ w₀ hsep
     (by simpa [hgval] using hgroot.self_of_nhds)
-  have h_implicit : IsContDiffImplicitAt ⊤ (fun p : ℂ × ℂ => (P.map (evalIntPolyComplex p.1)).eval p.2)
-      (fderiv ℂ (fun p : ℂ × ℂ => (P.map (evalIntPolyComplex p.1)).eval p.2) (x₀, w₀)) (x₀, w₀) := by
+  have h_implicit : IsContDiffImplicitAt ⊤ (fun p : ℂ × ℂ ↦ (P.map (evalIntPolyComplex p.1)).eval p.2)
+      (fderiv ℂ (fun p : ℂ × ℂ ↦ (P.map (evalIntPolyComplex p.1)).eval p.2) (x₀, w₀)) (x₀, w₀) := by
     constructor
     · have h_diff : DifferentiableAt ℂ
-          (fun p : ℂ × ℂ => (P.map (evalIntPolyComplex p.1)).eval p.2) (x₀, w₀) := by
+          (fun p : ℂ × ℂ ↦ (P.map (evalIntPolyComplex p.1)).eval p.2) (x₀, w₀) := by
         convert (evalIntPolyComplex_eval_contDiff P |> ContDiff.differentiable <| by norm_num)
           (x₀, w₀) using 1
       exact h_diff.hasFDerivAt
-    · convert evalIntPolyComplex_eval_contDiff P |> ContDiff.contDiffAt using 1
+    · exact evalIntPolyComplex_eval_contDiff P |> ContDiff.contDiffAt
     · have h_deriv_ne_zero : (P.map (evalIntPolyComplex (x₀ : ℂ))).derivative.eval (w₀ : ℂ) ≠ 0 := by
         have h_deriv_ne_zero : (P.map (evalIntPolyReal x₀)).derivative.eval w₀ ≠ 0 := by
           apply eval_derivative_ne_zero_of_separable hsep
@@ -534,14 +531,14 @@ lemma real_branch_local_holomorphic_continuation_agrees
         convert h_deriv_ne_zero using 1
         rw [← Complex.ofReal_inj]
         norm_num [evalIntPolyComplex_ofReal, evalIntPolyComplex_derivative_ofReal]
-      have h_deriv_ne_zero : (fderiv ℂ (fun p : ℂ × ℂ => (P.map (evalIntPolyComplex p.1)).eval p.2)
+      have h_deriv_ne_zero : (fderiv ℂ (fun p : ℂ × ℂ ↦ (P.map (evalIntPolyComplex p.1)).eval p.2)
           (x₀, w₀)) (0, 1) = (P.map (evalIntPolyComplex (x₀ : ℂ))).derivative.eval (w₀ : ℂ) := by
-        have h_deriv_ne_zero : (fderiv ℂ (fun p : ℂ × ℂ => (P.map (evalIntPolyComplex p.1)).eval p.2)
-            (x₀, w₀)) (0, 1) = (deriv (fun y : ℂ => (P.map (evalIntPolyComplex (x₀ : ℂ))).eval y) (w₀ : ℂ)) := by
+        have h_deriv_ne_zero : (fderiv ℂ (fun p : ℂ × ℂ ↦ (P.map (evalIntPolyComplex p.1)).eval p.2)
+            (x₀, w₀)) (0, 1) = (deriv (fun y : ℂ ↦ (P.map (evalIntPolyComplex (x₀ : ℂ))).eval y) (w₀ : ℂ)) := by
           rw [deriv]
-          have hcomp : (fun y : ℂ => eval y (Polynomial.map (evalIntPolyComplex ↑x₀) P)) =
-              (fun p : ℂ × ℂ => eval p.2 (Polynomial.map (evalIntPolyComplex p.1) P)) ∘
-                (fun y : ℂ => (↑x₀, y)) := by
+          have hcomp : (fun y : ℂ ↦ eval y (Polynomial.map (evalIntPolyComplex ↑x₀) P)) =
+              (fun p : ℂ × ℂ ↦ eval p.2 (Polynomial.map (evalIntPolyComplex p.1) P)) ∘
+                (fun y : ℂ ↦ (↑x₀, y)) := by
             ext
             simp
           rw [hcomp, fderiv_comp] <;> norm_num
@@ -554,35 +551,35 @@ lemma real_branch_local_holomorphic_continuation_agrees
       constructor
       · intro a b hab
         simp_all [ContinuousLinearMap.comp_apply, ContinuousLinearMap.inr_apply]
-        have h_deriv_ne_zero : (fderiv ℂ (fun p : ℂ × ℂ => (P.map (evalIntPolyComplex p.1)).eval p.2)
+        have h_deriv_ne_zero : (fderiv ℂ (fun p : ℂ × ℂ ↦ (P.map (evalIntPolyComplex p.1)).eval p.2)
             (x₀, w₀)) (0, a) = a * (P.map (evalIntPolyComplex (x₀ : ℂ))).derivative.eval (w₀ : ℂ) := by
-          convert congr_arg (fun x => a * x) h_deriv_ne_zero using 1
+          convert congr_arg (fun x ↦ a * x) h_deriv_ne_zero using 1
           · rw [← smul_eq_mul, ← ContinuousLinearMap.map_smul]
             norm_num [Prod.smul_def]
           · simp [Polynomial.derivative_map]
-        have h_deriv_ne_zero : (fderiv ℂ (fun p : ℂ × ℂ => (P.map (evalIntPolyComplex p.1)).eval p.2)
+        have h_deriv_ne_zero : (fderiv ℂ (fun p : ℂ × ℂ ↦ (P.map (evalIntPolyComplex p.1)).eval p.2)
             (x₀, w₀)) (0, b) = b * (P.map (evalIntPolyComplex (x₀ : ℂ))).derivative.eval (w₀ : ℂ) := by
-          convert congr_arg (fun x => b * x)
-            ‹(fderiv ℂ (fun p : ℂ × ℂ => eval p.2 (Polynomial.map (evalIntPolyComplex p.1) P)) (x₀, w₀)) (0, 1) =
+          convert congr_arg (fun x ↦ b * x)
+            ‹(fderiv ℂ (fun p : ℂ × ℂ ↦ eval p.2 (Polynomial.map (evalIntPolyComplex p.1) P)) (x₀, w₀)) (0, 1) =
               eval (w₀ : ℂ) (Polynomial.map (evalIntPolyComplex x₀) (derivative P))› using 1
           · rw [← smul_eq_mul, ← ContinuousLinearMap.map_smul]
             norm_num [Prod.smul_def]
           · simp [Polynomial.derivative_map]
         simp_all [Polynomial.derivative_map]
       · intro y
-        use y / (fderiv ℂ (fun p : ℂ × ℂ => (P.map (evalIntPolyComplex p.1)).eval p.2) (x₀, w₀)) (0, 1)
+        use y / (fderiv ℂ (fun p : ℂ × ℂ ↦ (P.map (evalIntPolyComplex p.1)).eval p.2) (x₀, w₀)) (0, 1)
         simp_all
-        have hkey : (fderiv ℂ (fun p : ℂ × ℂ => eval p.2 (Polynomial.map (evalIntPolyComplex p.1) P))
+        have hkey : (fderiv ℂ (fun p : ℂ × ℂ ↦ eval p.2 (Polynomial.map (evalIntPolyComplex p.1) P))
             (x₀, w₀)) (0, y / eval (w₀ : ℂ) (Polynomial.map (evalIntPolyComplex x₀) (derivative P))) =
             (y / eval (w₀ : ℂ) (Polynomial.map (evalIntPolyComplex x₀) (derivative P))) *
-              (fderiv ℂ (fun p : ℂ × ℂ => eval p.2 (Polynomial.map (evalIntPolyComplex p.1) P))
+              (fderiv ℂ (fun p : ℂ × ℂ ↦ eval p.2 (Polynomial.map (evalIntPolyComplex p.1) P))
                 (x₀, w₀)) (0, 1) := by
           rw [← smul_eq_mul, ← ContinuousLinearMap.map_smul]
           norm_num [h_deriv_ne_zero]
         rw [hkey]
         aesop
     · decide +revert
-  refine' ⟨h_implicit.implicitFunction, _, _, _, _⟩
+  refine ⟨h_implicit.implicitFunction, ?_, ?_, ?_, ?_⟩
   · exact h_implicit.contDiffAt_implicitFunction
   · convert h_implicit.eventually_implicitFunction_apply_eq.self_of_nhds using 1
     grind
@@ -595,9 +592,9 @@ lemma real_branch_local_holomorphic_continuation_agrees
     have h_eq : ∀ᶠ (x : ℝ) in nhds x₀, (P.map (evalIntPolyComplex (x : ℂ))).eval (g x : ℂ) = 0 := by
       filter_upwards [hgroot] with x hx using by
         simpa [evalIntPolyComplex_ofReal] using congr_arg ((↑) : ℝ → ℂ) hx
-    have h_eq : Filter.Tendsto (fun x : ℝ => ((x : ℂ), (g x : ℂ))) (nhds x₀) (nhds (x₀, w₀)) := by
+    have h_eq : Filter.Tendsto (fun x : ℝ ↦ ((x : ℂ), (g x : ℂ))) (nhds x₀) (nhds (x₀, w₀)) := by
       exact Filter.Tendsto.prodMk_nhds (Complex.continuous_ofReal.continuousAt)
-        (Complex.continuous_ofReal.continuousAt.comp hg.continuousAt) |> fun h => h.trans (by aesop)
+        (Complex.continuous_ofReal.continuousAt.comp hg.continuousAt) |> fun h ↦ h.trans (by aesop)
     filter_upwards [h_eq.eventually ‹_›,
       ‹∀ᶠ x : ℝ in nhds x₀, eval (g x : ℂ) (Polynomial.map (evalIntPolyComplex x) P) = 0›]
       with x hx₁ hx₂ using hx₁ hx₂

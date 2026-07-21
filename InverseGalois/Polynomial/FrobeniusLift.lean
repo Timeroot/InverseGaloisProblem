@@ -38,8 +38,8 @@ lemma isIntegral_root_of_monic_intPoly {K : Type*} [Field K] [Algebra ℚ K]
     (hα : Polynomial.aeval α (f.map (Int.castRingHom ℚ)) = 0) :
     IsIntegral ℤ α := by
   refine ⟨f, hf, ?_⟩
-  rw [← eq_comm, Polynomial.aeval_def, Polynomial.eval₂_eq_sum_range] at *
-  simp_all [Polynomial.coeff_map]
+  rw [← eq_comm, aeval_def, eval₂_eq_sum_range] at *
+  simp_all [coeff_map]
 
 /-- Roots of a monic integer polynomial in a field extension lie in the ring of integers. -/
 lemma root_mem_ringOfIntegers {K : Type*} [Field K] [Algebra ℚ K]
@@ -47,7 +47,7 @@ lemma root_mem_ringOfIntegers {K : Type*} [Field K] [Algebra ℚ K]
     (hα : α ∈ (f.map (Int.castRingHom ℚ)).rootSet K) :
     ∃ (β : 𝓞 K), (β : K) = α := by
   obtain ⟨β, hβ⟩ := isIntegral_root_of_monic_intPoly f hf α
-    (by rw [Polynomial.mem_rootSet] at hα
+    (by rw [mem_rootSet] at hα
         exact hα.2)
   exact ⟨⟨α, ⟨β, hβ.1, hβ.2⟩⟩, rfl⟩
 
@@ -85,9 +85,10 @@ lemma residue_field_charP (P : Ideal (𝓞 K)) [P.IsMaximal]
   have hp_mem : (algebraMap ℤ (𝓞 K)) (p : ℤ) ∈ P :=
     hP (Ideal.mem_map_of_mem _ (Ideal.mem_span_singleton_self _))
   have hp_zero : (p : 𝓞 K ⧸ P) = 0 := by
-    rw [show (p : 𝓞 K ⧸ P) = Ideal.Quotient.mk P ((algebraMap ℤ (𝓞 K)) (p : ℤ)) from by
+    have hcast : (p : 𝓞 K ⧸ P) = Ideal.Quotient.mk P ((algebraMap ℤ (𝓞 K)) (p : ℤ)) := by
       push_cast
-      rfl]
+      rfl
+    rw [hcast]
     exact Ideal.Quotient.eq_zero_iff_mem.mpr hp_mem
   exact (CharP.charP_iff_prime_eq_zero hp.out).mpr hp_zero
 
@@ -113,21 +114,21 @@ lemma reduction_of_root_is_root
     (f : ℤ[X]) (P : Ideal (𝓞 K)) [P.IsMaximal]
     (α : 𝓞 K) (hα : Polynomial.aeval (α : K) (f.map (Int.castRingHom ℚ)) = 0) :
     Polynomial.aeval (Ideal.Quotient.mk P α) (f.map (Int.castRingHom (𝓞 K ⧸ P))) = 0 := by
-  have h0 : Polynomial.eval₂ (Int.castRingHom (𝓞 K)) α f = 0 := by
+  have h0 : eval₂ (Int.castRingHom (𝓞 K)) α f = 0 := by
     apply_fun (algebraMap (𝓞 K) K) using Subtype.val_injective
-    rw [map_zero, Polynomial.hom_eval₂]
-    rw [Polynomial.aeval_def, Polynomial.eval₂_map] at hα
+    rw [map_zero, hom_eval₂]
+    rw [aeval_def, eval₂_map] at hα
     have : (algebraMap ℚ K).comp (Int.castRingHom ℚ) =
       (algebraMap (𝓞 K) K).comp (Int.castRingHom (𝓞 K)) := by
       ext n
       simp
     rwa [← this]
-  simp only [Polynomial.aeval_def, Polynomial.eval₂_map]
+  simp only [aeval_def, eval₂_map]
   have : (algebraMap (𝓞 K ⧸ P) (𝓞 K ⧸ P)).comp (Int.castRingHom (𝓞 K ⧸ P)) =
     (Ideal.Quotient.mk P).comp (Int.castRingHom (𝓞 K)) := by
     ext n
     simp
-  rw [this, ← Polynomial.hom_eval₂ f (Int.castRingHom (𝓞 K)) (Ideal.Quotient.mk P) α,
+  rw [this, ← hom_eval₂ f (Int.castRingHom (𝓞 K)) (Ideal.Quotient.mk P) α,
     h0, map_zero]
 
 end RootReduction
@@ -176,8 +177,6 @@ lemma liesOver_of_map_le (L : Type*) [CommRing L] [Algebra ℤ L]
     exact Ideal.span_singleton_eq_bot.not.mpr (Int.natCast_ne_zero.mpr hp.out.ne_zero)
   have h4 : Ideal.comap (algebraMap ℤ L) Q ≠ ⊤ :=
     Ideal.comap_ne_top _ (Ideal.IsMaximal.ne_top ‹_›)
-  show Ideal.span {(p : ℤ)} = Ideal.under ℤ Q
-  unfold Ideal.under
   exact h2.eq_of_le h4 h1
 
 /-
@@ -199,8 +198,6 @@ private instance isInvariant_ringOfIntegers (L : Type*) [Field L] [NumberField L
     rw [IntermediateField.mem_fixedField_iff]
     intro σ _
     show σ (b : L) = (b : L)
-    have : ((σ • b : 𝓞 L) : L) = σ (b : L) := rfl
-    rw [← this]
     exact congrArg Subtype.val (hb σ)
   rw [IsGalois.fixedField_top, IntermediateField.mem_bot] at h_fixed
   obtain ⟨q, hq⟩ := h_fixed
@@ -222,7 +219,7 @@ private instance charP_quotient_int :
   intro n
   rw [show (n : ℤ ⧸ Ideal.span {(p : ℤ)}) = Ideal.Quotient.mk _ (n : ℤ) from rfl]
   rw [Ideal.Quotient.eq_zero_iff_mem, Ideal.mem_span_singleton]
-  exact ⟨fun h => Int.natCast_dvd_natCast.mp h, fun h => Int.natCast_dvd_natCast.mpr h⟩
+  exact Int.natCast_dvd_natCast
 
 /-- The Frobenius endomorphism x ↦ x^p on the residue field 𝓞_L/Q,
 viewed as an algebra automorphism over ℤ/(p). -/
@@ -232,22 +229,22 @@ private def frobeniusResidueField
     (hQ : Ideal.map (algebraMap ℤ (𝓞 L)) (Ideal.span {(p : ℤ)}) ≤ Q)
     [Q.LiesOver (Ideal.span {(p : ℤ)})] :
     (𝓞 L ⧸ Q) ≃ₐ[ℤ ⧸ Ideal.span {(p : ℤ)}] (𝓞 L ⧸ Q) := by
-  haveI : CharP (𝓞 L ⧸ Q) p := residue_field_charP Q hQ
-  haveI : Finite (𝓞 L ⧸ Q) := residue_field_finite Q
-  haveI : ExpChar (𝓞 L ⧸ Q) p := ExpChar.prime hp.out
-  haveI : Fintype (𝓞 L ⧸ Q) := Fintype.ofFinite _
-  haveI : ExpChar (ℤ ⧸ Ideal.span {(p : ℤ)}) p := ExpChar.prime hp.out
+  have : CharP (𝓞 L ⧸ Q) p := residue_field_charP Q hQ
+  have : Finite (𝓞 L ⧸ Q) := residue_field_finite Q
+  have : ExpChar (𝓞 L ⧸ Q) p := ExpChar.prime hp.out
+  have : Fintype (𝓞 L ⧸ Q) := Fintype.ofFinite _
+  have : ExpChar (ℤ ⧸ Ideal.span {(p : ℤ)}) p := ExpChar.prime hp.out
   exact AlgEquiv.ofRingEquiv
     (f := RingEquiv.ofBijective (frobenius (𝓞 L ⧸ Q) p)
       ⟨frobenius_inj (𝓞 L ⧸ Q) p,
        Finite.surjective_of_injective (frobenius_inj (𝓞 L ⧸ Q) p)⟩)
-    (fun a => by
+    (fun a ↦ by
       show (algebraMap _ (𝓞 L ⧸ Q) a) ^ p = algebraMap _ _ a
       rw [← map_pow]
       congr 1
       obtain ⟨n, rfl⟩ := Ideal.Quotient.mk_surjective a
-      rw [← map_pow, Ideal.Quotient.eq, Ideal.mem_span_singleton]
-      rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
+      rw [← map_pow, Ideal.Quotient.eq, Ideal.mem_span_singleton,
+        ← ZMod.intCast_zmod_eq_zero_iff_dvd]
       push_cast
       simp [ZMod.pow_card])
 
@@ -276,17 +273,17 @@ lemma exists_frobenius_element_over_Q
     ∃ σ : L ≃ₐ[ℚ] L, ∀ (x : 𝓞 L),
       Ideal.Quotient.mk Q (galRestrict ℤ ℚ L (𝓞 L) σ x) =
       (Ideal.Quotient.mk Q x) ^ p := by
-  haveI : Q.LiesOver (Ideal.span {(p : ℤ)}) := liesOver_of_map_le (𝓞 L) Q hQ
+  have : Q.LiesOver (Ideal.span {(p : ℤ)}) := liesOver_of_map_le (𝓞 L) Q hQ
   let frob := frobeniusResidueField L Q hQ
   obtain ⟨⟨σ, hσ_stab⟩, hσ⟩ :=
     Ideal.Quotient.stabilizerHom_surjective (L ≃ₐ[ℚ] L) (Ideal.span {(p : ℤ)}) Q frob
-  refine ⟨σ, fun x => ?_⟩
+  refine ⟨σ, fun x ↦ ?_⟩
   rw [← smul_eq_galRestrict]
-  rw [show Ideal.Quotient.mk Q (σ • x) =
-    Ideal.Quotient.stabilizerHom Q (Ideal.span {(p : ℤ)}) (L ≃ₐ[ℚ] L) ⟨σ, hσ_stab⟩
-      (Ideal.Quotient.mk Q x) from by
-    simp [Ideal.Quotient.stabilizerHom]]
-  rw [hσ]
+  have hstab : Ideal.Quotient.mk Q (σ • x) =
+      Ideal.Quotient.stabilizerHom Q (Ideal.span {(p : ℤ)}) (L ≃ₐ[ℚ] L) ⟨σ, hσ_stab⟩
+        (Ideal.Quotient.mk Q x) := by
+    simp [Ideal.Quotient.stabilizerHom]
+  rw [hstab, hσ]
   exact frobeniusResidueField_apply L Q hQ _
 
 end FrobeniusElement
@@ -300,8 +297,8 @@ lemma permCongr_cycleType {α β : Type*} [Fintype α] [Fintype β]
     [DecidableEq α] [DecidableEq β]
     (e : α ≃ β) (σ : Equiv.Perm α) :
     (Equiv.permCongr e σ).cycleType = σ.cycleType := by
-  convert Equiv.Perm.cycleType_extendDomain
-    (f := e.trans (Equiv.Set.univ β).symm) (g := σ) using 1
+  exact Equiv.Perm.cycleType_extendDomain
+    (f := e.trans (Equiv.Set.univ β).symm) (g := σ)
 
 /-- If two permutations on finite types are conjugate via an equiv,
 they have the same cycle type. -/
@@ -313,21 +310,20 @@ lemma cycleType_eq_of_conjugate {α β : Type*} [Fintype α] [Fintype β]
   have : τ = Equiv.permCongr e σ := by
     ext x
     have := h (e.symm x)
-    simp at this
-    exact this.symm
+    simpa using this.symm
   rw [this, permCongr_cycleType]
 
 /-- The auxiliary permutation from galActionAux. -/
 def galActionAux_perm {F : Type*} [Field F] (p : Polynomial F) (σ : p.Gal) :
     Equiv.Perm (p.rootSet p.SplittingField) :=
-  letI := Polynomial.Gal.galActionAux p
+  let _ := Gal.galActionAux p
   MulAction.toPerm σ
 
 /-- galActionAux_perm maps a root x to σ(x). -/
 lemma galActionAux_perm_val {F : Type*} [Field F] (p : Polynomial F) (σ : p.Gal)
     (x : p.rootSet p.SplittingField) :
     ((galActionAux_perm p σ) x : p.SplittingField) = σ (x : p.SplittingField) := by
-  simp [galActionAux_perm, MulAction.toPerm, Polynomial.Gal.galActionAux]
+  simp only [galActionAux_perm, MulAction.toPerm, Gal.galActionAux, Equiv.coe_fn_mk]
   rfl
 
 /-- galActionHom equals permCongr of the auxiliary action. -/
@@ -337,9 +333,9 @@ lemma galActionHom_eq_permCongr {F : Type*} [Field F] (p : Polynomial F)
     Polynomial.Gal.galActionHom p E σ =
     Equiv.permCongr (Polynomial.Gal.rootsEquivRoots p E) (galActionAux_perm p σ) := by
   ext ⟨x, hx⟩
-  simp only [Polynomial.Gal.galActionHom, MulAction.toPermHom_apply, Equiv.permCongr_apply]
-  have h := Polynomial.Gal.smul_def p E σ (⟨x, hx⟩ : p.rootSet E)
-  apply_fun (fun y => (y : E)) at h
+  simp only [Gal.galActionHom, MulAction.toPermHom_apply, Equiv.permCongr_apply]
+  have h := Gal.smul_def p E σ (⟨x, hx⟩ : p.rootSet E)
+  apply_fun (fun y ↦ (y : E)) at h
   exact h
 
 /-- The cycle type of galActionHom is independent of the target field.
@@ -351,7 +347,7 @@ lemma galActionHom_cycleType_eq {F : Type*} [Field F] (p : Polynomial F)
     (σ : p.Gal) :
     (@Polynomial.Gal.galActionHom _ _ p E _ _ ‹_› σ).cycleType =
     (@Polynomial.Gal.galActionHom _ _ p p.SplittingField _ _ ⟨Polynomial.SplittingField.splits p⟩ σ).cycleType := by
-  haveI : Fact (p.map (algebraMap F p.SplittingField)).Splits := ⟨Polynomial.SplittingField.splits p⟩
+  have : Fact (p.map (algebraMap F p.SplittingField)).Splits := ⟨Polynomial.SplittingField.splits p⟩
   rw [galActionHom_eq_permCongr p E σ, galActionHom_eq_permCongr p p.SplittingField σ,
       permCongr_cycleType, permCongr_cycleType]
 

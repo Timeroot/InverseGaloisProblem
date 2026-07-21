@@ -72,7 +72,7 @@ lemma psSq_esymm2 {L : Type*} [CommRing L] (v0 v1 v2 v3 v4 : L)
     (he2 : v0*v1+v0*v2+v0*v3+v0*v4+v1*v2+v1*v3+v1*v4+v2*v3+v2*v4+v3*v4 = 0)
     (he3 : v0*v1*v2+v0*v1*v3+v0*v1*v4+v0*v2*v3+v0*v2*v4+v0*v3*v4+v1*v2*v3+v1*v2*v4+v1*v3*v4+v2*v3*v4 = 0) :
     (v0*v1+v1*v2+v2*v3+v3*v4+v4*v0)^2*(v0*v1+v1*v2+v2*v4+v4*v3+v3*v0)^2 + (v0*v1+v1*v2+v2*v3+v3*v4+v4*v0)^2*(v0*v1+v1*v3+v3*v2+v2*v4+v4*v0)^2 + (v0*v1+v1*v2+v2*v3+v3*v4+v4*v0)^2*(v0*v1+v1*v3+v3*v4+v4*v2+v2*v0)^2 + (v0*v1+v1*v2+v2*v3+v3*v4+v4*v0)^2*(v0*v1+v1*v4+v4*v2+v2*v3+v3*v0)^2 + (v0*v1+v1*v2+v2*v3+v3*v4+v4*v0)^2*(v0*v1+v1*v4+v4*v3+v3*v2+v2*v0)^2 + (v0*v1+v1*v2+v2*v4+v4*v3+v3*v0)^2*(v0*v1+v1*v3+v3*v2+v2*v4+v4*v0)^2 + (v0*v1+v1*v2+v2*v4+v4*v3+v3*v0)^2*(v0*v1+v1*v3+v3*v4+v4*v2+v2*v0)^2 + (v0*v1+v1*v2+v2*v4+v4*v3+v3*v0)^2*(v0*v1+v1*v4+v4*v2+v2*v3+v3*v0)^2 + (v0*v1+v1*v2+v2*v4+v4*v3+v3*v0)^2*(v0*v1+v1*v4+v4*v3+v3*v2+v2*v0)^2 + (v0*v1+v1*v3+v3*v2+v2*v4+v4*v0)^2*(v0*v1+v1*v3+v3*v4+v4*v2+v2*v0)^2 + (v0*v1+v1*v3+v3*v2+v2*v4+v4*v0)^2*(v0*v1+v1*v4+v4*v2+v2*v3+v3*v0)^2 + (v0*v1+v1*v3+v3*v2+v2*v4+v4*v0)^2*(v0*v1+v1*v4+v4*v3+v3*v2+v2*v0)^2 + (v0*v1+v1*v3+v3*v4+v4*v2+v2*v0)^2*(v0*v1+v1*v4+v4*v2+v2*v3+v3*v0)^2 + (v0*v1+v1*v3+v3*v4+v4*v2+v2*v0)^2*(v0*v1+v1*v4+v4*v3+v3*v2+v2*v0)^2 + (v0*v1+v1*v4+v4*v2+v2*v3+v3*v0)^2*(v0*v1+v1*v4+v4*v3+v3*v2+v2*v0)^2 = 55*(v0*v1*v2*v3+v0*v1*v2*v4+v0*v1*v3*v4+v0*v2*v3*v4+v1*v2*v3*v4)^2 := by
-  set ρ : ℕ → L := (fun i => [v0,v1,v2,v3,v4].getD i 0) with hρ
+  set ρ : ℕ → L := (fun i ↦ [v0,v1,v2,v3,v4].getD i 0) with hρ
   have hE1 : re_e1_2.eval ρ = 0 := by
     simp only [re_e1_2, RE.eval, hρ, List.getD_cons_zero, List.getD_cons_succ]
     linear_combination he1

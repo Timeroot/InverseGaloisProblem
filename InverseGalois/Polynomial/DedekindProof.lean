@@ -40,13 +40,13 @@ private lemma expChar_algClosure : ExpChar (AlgebraicClosure (ZMod p)) p :=
   expChar_of_injective_ringHom (algebraMap (ZMod p) (AlgebraicClosure (ZMod p))).injective p
 
 private lemma perfectRing_algClosure : PerfectRing (AlgebraicClosure (ZMod p)) p := by
-  haveI := expChar_algClosure (p := p)
+  have := expChar_algClosure (p := p)
   exact PerfectField.toPerfectRing p
 
 /-- Over 𝔽_p, expanding a polynomial by p gives the polynomial raised to the p-th power. -/
 lemma expand_eq_pow_zmod (f : Polynomial (ZMod p)) :
     (Polynomial.expand (ZMod p) p) f = f ^ p := by
-  haveI := expChar_zmod (p := p)
+  have := expChar_zmod (p := p)
   have h := Polynomial.map_frobenius_expand (R := ZMod p) p f
   have frob_eq : frobenius (ZMod p) p = RingHom.id (ZMod p) := by
     ext x
@@ -57,7 +57,7 @@ lemma expand_eq_pow_zmod (f : Polynomial (ZMod p)) :
 lemma eval₂_pow_char (f : Polynomial (ZMod p)) (α : AlgebraicClosure (ZMod p)) :
     Polynomial.eval₂ (algebraMap _ _) (α ^ p) f =
     (Polynomial.eval₂ (algebraMap _ _) α f) ^ p := by
-  haveI := expChar_algClosure (p := p)
+  have := expChar_algClosure (p := p)
   rw [← Polynomial.eval_map, ← Polynomial.eval_map]
   set φ := algebraMap (ZMod p) (AlgebraicClosure (ZMod p))
   set g := f.map φ
@@ -85,16 +85,16 @@ lemma frobenius_maps_roots (f : Polynomial (ZMod p)) (α : AlgebraicClosure (ZMo
 nonzero polynomial f ∈ 𝔽_p[X] in the algebraic closure. -/
 def frobeniusPermOnRoots (f : Polynomial (ZMod p)) (_hf : f ≠ 0) :
     Equiv.Perm (f.rootSet (AlgebraicClosure (ZMod p))) := by
-  haveI : Fintype (f.rootSet (AlgebraicClosure (ZMod p))) :=
+  have : Fintype (f.rootSet (AlgebraicClosure (ZMod p))) :=
     (Polynomial.rootSet_finite f _).fintype
-  haveI := expChar_algClosure (p := p)
+  have := expChar_algClosure (p := p)
   exact Equiv.ofBijective
-    (fun ⟨α, hα⟩ => ⟨α ^ p, frobenius_maps_roots f α hα⟩)
-    ⟨fun ⟨x, _⟩ ⟨y, _⟩ h => by
+    (fun ⟨α, hα⟩ ↦ ⟨α ^ p, frobenius_maps_roots f α hα⟩)
+    ⟨fun ⟨x, _⟩ ⟨y, _⟩ h ↦ by
         simp only [Subtype.mk.injEq] at h ⊢
         exact (frobenius (AlgebraicClosure (ZMod p)) p).injective
           (by rwa [frobenius_def, frobenius_def]),
-     Finite.surjective_of_injective (fun ⟨x, _⟩ ⟨y, _⟩ h => by
+     Finite.surjective_of_injective (fun ⟨x, _⟩ ⟨y, _⟩ h ↦ by
         simp only [Subtype.mk.injEq] at h ⊢
         exact (frobenius (AlgebraicClosure (ZMod p)) p).injective
           (by rwa [frobenius_def, frobenius_def]))⟩
@@ -108,7 +108,7 @@ lemma frobeniusPermOnRoots_val (f : Polynomial (ZMod p)) (hf : f ≠ 0)
 /-- Monic polynomials over ℤ map to nonzero polynomials over ZMod p. -/
 lemma monic_map_ne_zero (f : ℤ[X]) (hf : f.Monic) :
     f.map (Int.castRingHom (ZMod p)) ≠ 0 :=
-  fun h => Polynomial.not_monic_zero (h ▸ hf.map (Int.castRingHom (ZMod p)))
+  fun h ↦ Polynomial.not_monic_zero (h ▸ hf.map (Int.castRingHom (ZMod p)))
 
 /-!
 ## Section 2: Frobenius cycle type equals factorization type
@@ -141,13 +141,13 @@ lemma frobenius_on_irred_is_cycle
         specialize this (g.map (algebraMap (ZMod p) (AlgebraicClosure (ZMod p))))
         simp_all [Polynomial.degree_map]
         exact this (ne_of_gt (Polynomial.natDegree_pos_iff_degree_pos.mp (pos_of_gt h_deg)))
-          |> fun ⟨x, hx⟩ => ⟨x, by simpa [Polynomial.eval₂_eq_eval_map] using hx⟩
+          |> fun ⟨x, hx⟩ ↦ ⟨x, by simpa [Polynomial.eval₂_eq_eval_map] using hx⟩
       refine ⟨α, ?_⟩
       rw [Polynomial.mem_rootSet]
       aesop
     -- The orbit of α under Frobenius has size exactly d.
     have h_orbit_size :
-        Finset.card (Finset.image (fun k : ℕ => α ^ (p ^ k)) (Finset.range g.natDegree)) = g.natDegree := by
+        Finset.card (Finset.image (fun k : ℕ ↦ α ^ (p ^ k)) (Finset.range g.natDegree)) = g.natDegree := by
       -- If α^(p^k) = α for some k < d, then α would be in the field with p^k elements, contradicting the fact that α is a root of an irreducible polynomial of degree d.
       have h_contra : ∀ k < g.natDegree, k ≠ 0 → α ^ (p ^ k) ≠ α := by
         intros k hk_lt hk_ne_zero hk_eq
@@ -159,7 +159,7 @@ lemma frobenius_on_irred_is_cycle
             rw [show minpoly (ZMod p) α = Polynomial.C (g.leadingCoeff) ⁻¹ * g from _]
             · rw [Polynomial.natDegree_C_mul]
               aesop
-            · refine' Eq.symm (minpoly.eq_of_irreducible_of_monic _ _ _)
+            · refine Eq.symm (minpoly.eq_of_irreducible_of_monic ?_ ?_ ?_)
               · rw [irreducible_mul_iff]
                 aesop
               · aesop
@@ -179,7 +179,7 @@ lemma frobenius_on_irred_is_cycle
               x ∈ (Polynomial.X ^ (p ^ k) - Polynomial.X : Polynomial (ZMod p)).rootSet
                 (AlgebraicClosure (ZMod p)) := by
             simp_all [Polynomial.mem_rootSet]
-            exact fun x hx => ne_of_apply_ne Polynomial.natDegree <| by
+            exact fun x hx ↦ ne_of_apply_ne Polynomial.natDegree <| by
               rw [Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;>
                 norm_num [hp.1.ne_zero, hp.1.one_lt, hk_ne_zero]
           have h_contra :
@@ -216,16 +216,16 @@ lemma frobenius_on_irred_is_cycle
               simp [ENat.card]
             apply h_contra
             exact FiniteDimensional.of_finrank_pos (by linarith)
-          exact le_of_not_gt fun h => by linarith [pow_lt_pow_right₀ hp.1.one_lt h]
+          exact le_of_not_gt fun h ↦ by linarith [pow_lt_pow_right₀ hp.1.one_lt h]
         linarith [hk_lt]
       rw [Finset.card_image_of_injOn, Finset.card_range]
       intros k hk l hl hkl
       by_contra hkl_ne
-      -- Without loss of generality, assume $k < l$.
+      -- Without loss of generality, assume `k < l`.
       wlog hkl_lt : k < l generalizing k l
       · exact this hl hk (by simpa only [eq_comm] using hkl) (Ne.symm hkl_ne)
           (lt_of_le_of_ne (le_of_not_gt hkl_lt) (Ne.symm hkl_ne))
-      · -- Since $k < l$, we have $α^{p^l} = α^{p^k}$ implies $α^{p^{l-k}} = α$.
+      · -- Since `k < l`, `α ^ (p ^ l) = α ^ (p ^ k)` implies `α ^ (p ^ (l - k)) = α`.
         have h_exp : α ^ (p ^ (l - k)) = α := by
           have h_exp : α ^ (p ^ l) = (α ^ (p ^ k)) ^ (p ^ (l - k)) := by
             rw [← pow_mul, ← pow_add, Nat.add_sub_of_le hkl_lt.le]
@@ -242,10 +242,10 @@ lemma frobenius_on_irred_is_cycle
           omega) (Nat.sub_ne_zero_of_lt hkl_lt) h_exp
     -- Since the orbit has size d = |rootSet|, the permutation is a single cycle on the entire set, hence IsCycle.
     have h_orbit_eq_rootSet :
-        Finset.image (fun k : ℕ => α ^ (p ^ k)) (Finset.range g.natDegree) =
-          Finset.image (fun x : g.rootSet (AlgebraicClosure (ZMod p)) => x.val)
+        Finset.image (fun k : ℕ ↦ α ^ (p ^ k)) (Finset.range g.natDegree) =
+          Finset.image (fun x : g.rootSet (AlgebraicClosure (ZMod p)) ↦ x.val)
             (Finset.univ : Finset (g.rootSet (AlgebraicClosure (ZMod p)))) := by
-      refine' Finset.eq_of_subset_of_card_le (Finset.image_subset_iff.mpr _) _
+      refine Finset.eq_of_subset_of_card_le (Finset.image_subset_iff.mpr ?_) ?_
       · intro k hk
         induction' k with k ih <;> simp_all [pow_succ, pow_mul]
         convert frobenius_maps_roots g _ (ih (Nat.lt_of_succ_lt hk)) using 1
@@ -259,7 +259,7 @@ lemma frobenius_on_irred_is_cycle
       have := congr_arg Subtype.val h
       simp_all
       replace h_orbit_eq_rootSet := Finset.card_image_iff.mp
-        (by aesop : Finset.card (Finset.image (fun k => α ^ p ^ k) (Finset.range g.natDegree)) = _)
+        (by aesop : Finset.card (Finset.image (fun k ↦ α ^ p ^ k) (Finset.range g.natDegree)) = _)
       simp_all [Finset.card_image_of_injective, Function.Injective]
       have := @h_orbit_eq_rootSet 0
         (by norm_num
@@ -275,14 +275,15 @@ lemma frobenius_on_irred_is_cycle
       obtain ⟨k, hk₁, hk₂⟩ := h_orbit_eq_rootSet
       use k
       simp_all
-      refine' Subtype.ext _
+      apply Subtype.ext
       convert hk₂ using 1
-      refine' Nat.recOn k _ _ <;> simp_all [pow_succ, pow_mul]
+      refine Nat.recOn k ?_ ?_ <;> simp_all [pow_succ, pow_mul]
       intro n hn
-      erw [show (frobeniusPermOnRoots g hg ^ n) (frobeniusPermOnRoots g hg ⟨α, hα⟩) =
-          frobeniusPermOnRoots g hg ((frobeniusPermOnRoots g hg ^ n) ⟨α, hα⟩) from ?_]
+      have hpow : (frobeniusPermOnRoots g hg ^ n) (frobeniusPermOnRoots g hg ⟨α, hα⟩) =
+          frobeniusPermOnRoots g hg ((frobeniusPermOnRoots g hg ^ n) ⟨α, hα⟩) :=
+        Nat.recOn n rfl fun n ihn ↦ by simp [*, pow_succ']
+      erw [hpow]
       simp_all [frobeniusPermOnRoots_val]
-      exact Nat.recOn n rfl fun n ihn => by simp [*, pow_succ']
 
 /-
 For an irreducible polynomial g over 𝔽_p of degree d, the Frobenius permutation
@@ -292,12 +293,14 @@ lemma frobenius_on_irred_support_card
     (g : Polynomial (ZMod p)) (hg : g ≠ 0) (hirr : Irreducible g)
     (hd : g.natDegree ≥ 2) :
     (frobeniusPermOnRoots g hg).support.card = g.natDegree := by
-  -- Since $g$ is irreducible and has degree $d \geq 2$, the Frobenius permutation on its roots is a single cycle of length $d$. Therefore, the support of the Frobenius permutation is exactly the set of roots of $g$.
+  -- Since `g` is irreducible and has degree `d ≥ 2`, the Frobenius permutation on its roots is a
+  -- single cycle of length `d`, so its support is exactly the set of roots of `g`.
   have h_support : (frobeniusPermOnRoots g hg).support = Finset.univ := by
     apply Finset.eq_univ_of_forall
     intro x
     simp [frobeniusPermOnRoots]
-    -- Since $x$ is a root of $g$, we have $g(x) = 0$. If $x^p = x$, then $x$ would be a root of $x^p - x$, which contradicts the irreducibility of $g$.
+    -- Since `x` is a root of `g`, `g x = 0`. If `x ^ p = x`, then `x` would be a root of
+    -- `x ^ p - x`, which contradicts the irreducibility of `g`.
     have h_contradiction : ¬(x.val ^ p = x.val) := by
       intro h_contra
       have h_root : x.val ∈ Set.range (algebraMap (ZMod p) (AlgebraicClosure (ZMod p))) := by
@@ -305,11 +308,12 @@ lemma frobenius_on_irred_support_card
           have h_poly : (Polynomial.X ^ p - Polynomial.X : Polynomial (AlgebraicClosure (ZMod p))) =
               ∏ a ∈ Finset.univ,
                 (Polynomial.X - Polynomial.C (algebraMap (ZMod p) (AlgebraicClosure (ZMod p)) a)) := by
-            refine' Polynomial.eq_of_degree_sub_lt_of_eval_finset_eq _ _ _
-            exact Finset.image (fun a : ZMod p => algebraMap (ZMod p) (AlgebraicClosure (ZMod p)) a) Finset.univ
+            refine Polynomial.eq_of_degree_sub_lt_of_eval_finset_eq
+              (Finset.image (fun a : ZMod p ↦ algebraMap (ZMod p) (AlgebraicClosure (ZMod p)) a)
+                Finset.univ) ?_ ?_
             · convert Polynomial.degree_sub_lt _ _ ?_ <;>
                 norm_num [Polynomial.degree_prod, Polynomial.degree_X_pow_sub_C]
-              · rw [Finset.card_image_of_injective _ fun a b h => by simpa using h, Finset.card_univ]
+              · rw [Finset.card_image_of_injective _ fun a b h ↦ by simpa using h, Finset.card_univ]
                 norm_num [Polynomial.degree_sub_eq_left_of_degree_lt, hp.1.one_lt]
               · rw [Polynomial.degree_sub_eq_left_of_degree_lt] <;> norm_num [hp.1.one_lt]
               · exact ne_of_apply_ne (Polynomial.derivative) (by simp [Polynomial.derivative_pow])
@@ -322,18 +326,19 @@ lemma frobenius_on_irred_support_card
               exact_mod_cast ZMod.pow_card a
           replace h_poly := congr_arg (Polynomial.eval (x : AlgebraicClosure (ZMod p))) h_poly
           simp_all [Polynomial.eval_prod]
-          exact Exists.elim (Finset.prod_eq_zero_iff.mp h_poly.symm) fun y hy => ⟨y, by linear_combination -hy.2⟩
+          exact Exists.elim (Finset.prod_eq_zero_iff.mp h_poly.symm) fun y hy ↦ ⟨y, by linear_combination -hy.2⟩
         exact h_root
       obtain ⟨y, hy⟩ := h_root
       simp_all
-      have := Polynomial.degree_eq_one_of_irreducible_of_root hirr (show g.eval y = 0 from ?_)
+      have hgy : g.eval y = 0 := by
+        have := x.2
+        rw [Polynomial.mem_rootSet] at this
+        aesop
+      have := Polynomial.degree_eq_one_of_irreducible_of_root hirr hgy
       rw [Polynomial.degree_eq_natDegree hirr.ne_zero] at this
       norm_cast at this
       linarith
-      have := x.2
-      rw [Polynomial.mem_rootSet] at this
-      aesop
-    exact fun h => h_contradiction <| Subtype.ext_iff.mp h
+    exact fun h ↦ h_contradiction <| Subtype.ext_iff.mp h
   rw [h_support, Finset.card_univ]
   exact Polynomial.card_rootSet_eq_natDegree
     (PerfectField.separable_of_irreducible hirr) (IsAlgClosed.splits _)
@@ -348,7 +353,7 @@ lemma frobenius_cycleType_irred
     (frobeniusPermOnRoots g hg).cycleType = factorizationType g := by
   -- For an irreducible polynomial g over a field, the normalized factors are {normalize g}.
   have h_normalized_factors : normalizedFactors g = {normalize g} := by
-    convert UniqueFactorizationMonoid.normalizedFactors_irreducible hirr
+    exact UniqueFactorizationMonoid.normalizedFactors_irreducible hirr
   by_cases hd : g.natDegree ≥ 2
   · -- Since g is irreducible, the Frobenius permutation on its roots is a single cycle of length g.natDegree.
     have h_frobenius_cycle : (frobeniusPermOnRoots g hg).IsCycle ∧
@@ -365,7 +370,7 @@ lemma frobenius_cycleType_irred
         have hsub : (g.rootSet (AlgebraicClosure (ZMod p))).toFinset ⊆
             (g.map (algebraMap (ZMod p) (AlgebraicClosure (ZMod p)))
               |> Polynomial.roots |> Multiset.toFinset) :=
-          fun x hx => by simp_all [Polynomial.mem_rootSet]
+          fun x hx ↦ by simp_all [Polynomial.mem_rootSet]
         refine le_trans (Finset.card_le_card hsub) ?_
         refine le_trans (Multiset.toFinset_card_le _) ?_
         refine le_trans (Polynomial.card_roots' _) ?_
@@ -419,22 +424,21 @@ private lemma frobeniusPermOnRoots_unit_mul'
     (frobeniusPermOnRoots g hg).cycleType := by
   convert Equiv.Perm.cycleType_extendDomain _
   rotate_left
-  exact Set.Finite.fintype (Polynomial.rootSet_finite _ _)
-  infer_instance
-  exact fun x => x.val ∈ g.rootSet (AlgebraicClosure (ZMod p))
-  exact fun x => inferInstance
-  exact ⟨fun x => ⟨⟨x, by
-    grind only [rootSet_unit_mul']⟩, by
-    exact x.2⟩, fun x => ⟨x.val, by
-    exact x.2⟩, fun x => by
-    aesop, fun x => by
-    aesop⟩
-  generalize_proofs at *
-  ext
-  simp [Equiv.Perm.extendDomain]
-  grind only [Equiv.Perm.subtypeCongr.apply, Equiv.permCongr_def, frobeniusPermOnRoots_val,
-    rootSet_unit_mul', Equiv.permCongr_apply, = Equiv.trans_apply, Equiv.coe_fn_mk,
-    Equiv.coe_fn_symm_mk]
+  · exact Set.Finite.fintype (Polynomial.rootSet_finite _ _)
+  · infer_instance
+  · exact fun x ↦ x.val ∈ g.rootSet (AlgebraicClosure (ZMod p))
+  · exact fun x ↦ inferInstance
+  · exact ⟨fun x ↦ ⟨⟨x, by
+      grind only [rootSet_unit_mul']⟩, by
+      exact x.2⟩, fun x ↦ ⟨x.val, by
+      exact x.2⟩, fun x ↦ by
+      aesop, fun x ↦ by
+      aesop⟩
+  · ext
+    simp [Equiv.Perm.extendDomain]
+    grind only [Equiv.Perm.subtypeCongr.apply, Equiv.permCongr_def, frobeniusPermOnRoots_val,
+      rootSet_unit_mul', Equiv.permCongr_apply, = Equiv.trans_apply, Equiv.coe_fn_mk,
+      Equiv.coe_fn_symm_mk]
 
 /-
 General permutation decomposition: if σ preserves two complementary disjoint
@@ -462,8 +466,7 @@ private lemma perm_cycleType_decompose {α : Type*} [Fintype α] [DecidableEq α
     · simp [Equiv.Perm.subtypeCongr, Equiv.setCongr]
       simp [Equiv.sumCompl, Equiv.subtypeEquivProp]
       grind
-  generalize_proofs at *
-  refine' h_contra _
+  apply h_contra
   convert congr_arg Equiv.Perm.cycleType h_split using 1
   rw [Equiv.Perm.Disjoint.cycleType_mul]
   · rw [Equiv.Perm.cycleType_extendDomain, Equiv.Perm.cycleType_extendDomain]
@@ -491,7 +494,7 @@ private lemma subtypePerm_cycleType_eq_of_equiv {α : Type*} [Fintype α] [Decid
   -- Since σ and e.permCongr τ are equal, their cycle types are equal.
   have h_cycleType_eq : σ.cycleType = (Equiv.permCongr e τ).cycleType := by
     congr
-    exact Equiv.ext fun x => by simpa using h (e.symm x)
+    exact Equiv.ext fun x ↦ by simpa using h (e.symm x)
   convert h_cycleType_eq using 1
   apply Eq.symm
   exact (by
@@ -515,9 +518,9 @@ private lemma frobenius_cycleType_coprime_mul'
     (_hsf : Squarefree (g * h)) :
     (frobeniusPermOnRoots (g * h) hgh).cycleType =
       (frobeniusPermOnRoots g hg).cycleType + (frobeniusPermOnRoots h hh).cycleType := by
-  -- Define P := fun x => x.val ∈ g.rootSet K and Q := fun x => x.val ∈ h.rootSet K on rootSet(g*h).
-  set P : (g * h).rootSet (AlgebraicClosure (ZMod p)) → Prop := fun x => x.val ∈ g.rootSet (AlgebraicClosure (ZMod p))
-  set Q : (g * h).rootSet (AlgebraicClosure (ZMod p)) → Prop := fun x => x.val ∈ h.rootSet (AlgebraicClosure (ZMod p))
+  -- Define P := fun x ↦ x.val ∈ g.rootSet K and Q := fun x ↦ x.val ∈ h.rootSet K on rootSet(g*h).
+  set P : (g * h).rootSet (AlgebraicClosure (ZMod p)) → Prop := fun x ↦ x.val ∈ g.rootSet (AlgebraicClosure (ZMod p))
+  set Q : (g * h).rootSet (AlgebraicClosure (ZMod p)) → Prop := fun x ↦ x.val ∈ h.rootSet (AlgebraicClosure (ZMod p))
   -- Show P and Q are preserved by σ := frobeniusPermOnRoots (g*h) hgh.
   have hP : ∀ x, P (frobeniusPermOnRoots (g * h) hgh x) ↔ P x := by
     simp +zetaDelta at *
@@ -526,7 +529,7 @@ private lemma frobenius_cycleType_coprime_mul'
     simp_all [Polynomial.mem_rootSet]
     have := eval₂_pow_char g a
     simp_all [Polynomial.aeval_def]
-    exact fun _ => hp.1.ne_zero
+    exact fun _ ↦ hp.1.ne_zero
   have hQ : ∀ x, Q (frobeniusPermOnRoots (g * h) hgh x) ↔ Q x := by
     simp +zetaDelta at *
     simp_all [Polynomial.mem_rootSet]
@@ -535,7 +538,7 @@ private lemma frobenius_cycleType_coprime_mul'
     intro a ha
     specialize hP a ha
     simp_all [eval₂_pow_char]
-    exact fun _ => hp.1.ne_zero
+    exact fun _ ↦ hp.1.ne_zero
   -- Show P and Q are disjoint and cover.
   have h_disjoint : ∀ x, ¬(P x ∧ Q x) := by
     simp +zetaDelta at *
@@ -548,26 +551,25 @@ private lemma frobenius_cycleType_coprime_mul'
     simp +zetaDelta at *
     simp [Polynomial.mem_rootSet, hg, hh]
   rw [perm_cycleType_decompose _ hP hQ h_disjoint h_cover]
-  refine' congrArg₂ (· + ·) _ _
-  · refine' subtypePerm_cycleType_eq_of_equiv _ _ _ _
-    refine' Equiv.ofBijective _ ⟨_, _⟩
-    use fun x => ⟨⟨x.val, by
-      simp_all [Polynomial.mem_rootSet]
-      exact Or.inl <| Polynomial.mem_rootSet.mp x.2 |>.2⟩, by
-      exact x.2⟩
+  refine congrArg₂ (· + ·) ?_ ?_
+  · refine subtypePerm_cycleType_eq_of_equiv _ _
+      (Equiv.ofBijective (fun x ↦ ⟨⟨x.val, by
+          simp_all [Polynomial.mem_rootSet]
+          exact Or.inl <| Polynomial.mem_rootSet.mp x.2 |>.2⟩, by
+          exact x.2⟩) ⟨?_, ?_⟩) ?_
     all_goals simp [Function.Injective, Function.Surjective]
-    · exact fun a ha ha' => ha'
+    · exact fun a ha ha' ↦ ha'
     · intro a ha
       ext
       simp [frobeniusPermOnRoots_val]
-  · refine' subtypePerm_cycleType_eq_of_equiv _ _ _ _
-    refine' Equiv.ofBijective _ ⟨_, _⟩
-    use fun x => ⟨⟨x.val, by
-      simp_all [Polynomial.mem_rootSet]
-      exact Or.inr (by simpa [Polynomial.eval₂_eq_eval_map] using Polynomial.mem_rootSet.mp x.2 |>.2)⟩, by
-      exact x.2⟩
+  · refine subtypePerm_cycleType_eq_of_equiv _ _
+      (Equiv.ofBijective (fun x ↦ ⟨⟨x.val, by
+          simp_all [Polynomial.mem_rootSet]
+          exact Or.inr (by simpa [Polynomial.eval₂_eq_eval_map]
+            using Polynomial.mem_rootSet.mp x.2 |>.2)⟩, by
+          exact x.2⟩) ⟨?_, ?_⟩) ?_
     all_goals norm_num [Function.Injective, Function.Surjective]
-    · exact fun a ha ha' => ha'
+    · exact fun a ha ha' ↦ ha'
     · intro a ha
       ext
       simp [frobeniusPermOnRoots_val]
@@ -591,7 +593,7 @@ theorem frobenius_cycleType_eq_factorizationType
       (hc : IsCoprime g h) (hsf : Squarefree (g * h)),
       (frobeniusPermOnRoots (g * h) hgh).cycleType =
         (frobeniusPermOnRoots g hg).cycleType + (frobeniusPermOnRoots h hh).cycleType := by
-    exact fun g h hg hh hgh hc hsf => frobenius_cycleType_coprime_mul' g h hg hh hgh hc hsf
+    exact fun g h hg hh hgh hc hsf ↦ frobenius_cycleType_coprime_mul' g h hg hh hgh hc hsf
   have h_segment_mul : ∀ (g : Polynomial (ZMod p)) (hg : g ≠ 0) (hsf : Squarefree g),
       (frobeniusPermOnRoots g hg).cycleType = factorizationType g := by
     intro g hg hsf
@@ -611,7 +613,7 @@ theorem frobenius_cycleType_eq_factorizationType
       · rw [h_segment g hg₂.ne_zero hg₂, hg₃ hg₁]
         · rw [factorizationType_mul' g ih hg₂.ne_zero hg₁]
         · exact hsf.of_mul_right
-      · refine' hg₂.coprime_iff_not_dvd.mpr _
+      · apply hg₂.coprime_iff_not_dvd.mpr
         intro h
         have := hsf g
         simp_all
@@ -680,21 +682,18 @@ private lemma reduction_injective_on_roots_aux (f : ℤ[X]) (hf_monic : f.Monic)
     simp_all [Polynomial.eval_map]
     convert reduction_of_root_is_root f Q α hα using 1
     simp [Polynomial.aeval_def, Polynomial.eval₂_map, h_eq]
-  -- Since $f$ is squarefree over $\mathbb{Z}/p\mathbb{Z}$, it is separable over $\mathbb{Z}/p\mathbb{Z}$.
+  -- Since `f` is squarefree over `ZMod p`, it is separable over `ZMod p`.
   have h_separable : Polynomial.Separable (f.map (Int.castRingHom (ZMod p))) := by
-    convert squarefree_separable_of_perfectField _ h_sep
-  -- Since $f$ is separable over $\mathbb{Z}/p\mathbb{Z}$, it is also separable over $\mathcal{O}_L/Q$.
+    exact squarefree_separable_of_perfectField _ h_sep
+  -- Since `f` is separable over `ZMod p`, it is also separable over `𝓞 L ⧸ Q`.
   have h_separable_Q : Polynomial.Separable (f.map (Int.castRingHom (𝓞 L ⧸ Q))) := by
     obtain ⟨a, b, h⟩ := h_separable
-    -- Since $Q$ is a maximal ideal above $p$, the quotient $\mathcal{O}_L/Q$ is a field extension of $\mathbb{Z}/p\mathbb{Z}$.
+    -- Since `Q` is a maximal ideal above `p`, the quotient `𝓞 L ⧸ Q` is a field extension of `ZMod p`.
     have h_field_extension : ∃ (φ : ZMod p →+* 𝓞 L ⧸ Q), Function.Injective φ := by
-      have h_field_extension : ∃ (φ : ZMod p →+* 𝓞 L ⧸ Q), Function.Injective φ := by
-        have h_char : CharP (𝓞 L ⧸ Q) p := by
-          exact residue_field_charP Q hQ
-        exact ⟨ZMod.castHom (by aesop) _, ZMod.castHom_injective _⟩
-      exact h_field_extension
+      have h_char : CharP (𝓞 L ⧸ Q) p := residue_field_charP Q hQ
+      exact ⟨ZMod.castHom (by aesop) _, ZMod.castHom_injective _⟩
     obtain ⟨φ, hφ⟩ := h_field_extension
-    refine' ⟨Polynomial.map φ a, Polynomial.map φ b, _⟩
+    refine ⟨Polynomial.map φ a, Polynomial.map φ b, ?_⟩
     convert congr_arg (Polynomial.map φ) h using 1 <;> simp [Polynomial.map_map]
     congr! 2
     · ext
@@ -711,12 +710,12 @@ private noncomputable def residueFieldEmbedding
     (Q : Ideal (𝓞 L)) [Q.IsMaximal]
     (hQ : Ideal.map (algebraMap ℤ (𝓞 L)) (Ideal.span {(p : ℤ)}) ≤ Q) :
     𝓞 L ⧸ Q →+* AlgebraicClosure (ZMod p) := by
-  haveI : CharP (𝓞 L ⧸ Q) p := residue_field_charP Q hQ
-  haveI : Finite (𝓞 L ⧸ Q) := residue_field_finite Q
-  haveI : Fintype (𝓞 L ⧸ Q) := Fintype.ofFinite _
-  haveI : Field (𝓞 L ⧸ Q) := Ideal.Quotient.field Q
-  letI := ZMod.algebra (𝓞 L ⧸ Q) p
-  haveI : Algebra.IsAlgebraic (ZMod p) (𝓞 L ⧸ Q) := Algebra.IsAlgebraic.of_finite _ _
+  have : CharP (𝓞 L ⧸ Q) p := residue_field_charP Q hQ
+  have : Finite (𝓞 L ⧸ Q) := residue_field_finite Q
+  have : Fintype (𝓞 L ⧸ Q) := Fintype.ofFinite _
+  have : Field (𝓞 L ⧸ Q) := Ideal.Quotient.field Q
+  let _ := ZMod.algebra (𝓞 L ⧸ Q) p
+  have : Algebra.IsAlgebraic (ZMod p) (𝓞 L ⧸ Q) := Algebra.IsAlgebraic.of_finite _ _
   exact (IsAlgClosed.lift (R := ZMod p) (S := 𝓞 L ⧸ Q)
     (M := AlgebraicClosure (ZMod p))).toRingHom
 
@@ -725,9 +724,9 @@ private lemma residueFieldEmbedding_injective
     (Q : Ideal (𝓞 L)) [Q.IsMaximal]
     (hQ : Ideal.map (algebraMap ℤ (𝓞 L)) (Ideal.span {(p : ℤ)}) ≤ Q) :
     Function.Injective (residueFieldEmbedding Q hQ) := by
-  haveI : CharP (𝓞 L ⧸ Q) p := residue_field_charP Q hQ
-  letI : Field (𝓞 L ⧸ Q) := Ideal.Quotient.field Q
-  haveI : IsSimpleRing (𝓞 L ⧸ Q) := inferInstance
+  have : CharP (𝓞 L ⧸ Q) p := residue_field_charP Q hQ
+  let _ : Field (𝓞 L ⧸ Q) := Ideal.Quotient.field Q
+  have : IsSimpleRing (𝓞 L ⧸ Q) := inferInstance
   exact (residueFieldEmbedding Q hQ).injective
 
 /-- The reduction-embedding map sends roots of f over ℚ to roots of f mod p. -/
@@ -817,11 +816,11 @@ theorem frobenius_lift (f : ℤ[X]) (hf_monic : f.Monic)
   set fp := f.map (Int.castRingHom (ZMod p)) with hfp_def
   set L := fQ.SplittingField
   -- L is Galois over ℚ and a number field
-  haveI : IsGalois ℚ L := IsGalois.of_separable_splitting_field hf_irr.separable
-  haveI : NumberField L := ⟨⟩
+  have : IsGalois ℚ L := IsGalois.of_separable_splitting_field hf_irr.separable
+  have : NumberField L := ⟨⟩
   -- Get maximal ideal Q above p and Frobenius element σ
   obtain ⟨Q, hQmax, hQp⟩ := @exists_maximal_ideal_above p hp L _ _
-  haveI := hQmax
+  have := hQmax
   obtain ⟨σ, hσ⟩ := @exists_frobenius_element_over_Q p hp L _ _ _ _ Q hQmax hQp
   -- σ is our candidate
   refine ⟨σ, ?_⟩
@@ -844,7 +843,7 @@ theorem frobenius_lift (f : ℤ[X]) (hf_monic : f.Monic)
     exact (Polynomial.mem_rootSet.mp hα).2
   -- Define the function rootSet(fQ, L) → rootSet(fp, AlgClosure)
   let φ : fQ.rootSet L → fp.rootSet (AlgebraicClosure (ZMod p)) :=
-    fun α => ⟨ι (Ideal.Quotient.mk Q (root_mem_ringOfIntegers f hf_monic (α : L) α.2).choose), h_map α⟩
+    fun α ↦ ⟨ι (Ideal.Quotient.mk Q (root_mem_ringOfIntegers f hf_monic (α : L) α.2).choose), h_map α⟩
   -- Show φ is injective
   have hφ_inj : Function.Injective φ := by
     intro a b hab
@@ -855,7 +854,7 @@ theorem frobenius_lift (f : ℤ[X]) (hf_monic : f.Monic)
     exact rootSet_card_eq f hf_monic hf_irr h_sep
   -- Therefore φ is a bijection → construct Equiv
   have hφ_bij : Function.Bijective φ := by
-    refine ⟨hφ_inj, fun b => ?_⟩
+    refine ⟨hφ_inj, fun b ↦ ?_⟩
     have h_range : Finset.image φ Finset.univ = Finset.univ := by
       apply Finset.eq_univ_of_card
       rw [Finset.card_image_of_injective _ hφ_inj, Finset.card_univ, h_card]
@@ -865,7 +864,7 @@ theorem frobenius_lift (f : ℤ[X]) (hf_monic : f.Monic)
   -- Construct the Equiv
   let e : fQ.rootSet L ≃ fp.rootSet (AlgebraicClosure (ZMod p)) := Equiv.ofBijective φ hφ_bij
   -- The galActionHom needs the Fact that fQ splits in L = SplittingField
-  haveI : Fact (fQ.map (algebraMap ℚ L)).Splits := ⟨Polynomial.SplittingField.splits fQ⟩
+  have : Fact (fQ.map (algebraMap ℚ L)).Splits := ⟨Polynomial.SplittingField.splits fQ⟩
   -- Use galActionHom = permCongr(rootsEquivRoots)(galActionAux_perm)
   -- So galActionHom.cycleType = galActionAux_perm.cycleType
   rw [galActionHom_eq_permCongr, permCongr_cycleType]

@@ -61,10 +61,10 @@ lemma branch_unique_on_connected
         simp_all [Metric.eventually_nhds_iff]
         obtain ⟨ε, hε₁, hε₂⟩ := hφ₄
         obtain ⟨δ, hδ₁, hδ₂⟩ := Metric.continuousAt_iff.mp
-          (show ContinuousAt (fun x : ℂ => (x, g₁ x)) z from
+          (show ContinuousAt (fun x : ℂ ↦ (x, g₁ x)) z from
             ContinuousAt.prodMk continuousAt_id (hg₁.continuousAt (hUopen.mem_nhds hz.1))) ε hε₁
         obtain ⟨δ', hδ'₁, hδ'₂⟩ := Metric.continuousAt_iff.mp
-          (show ContinuousAt (fun x : ℂ => (x, g₂ x)) z from
+          (show ContinuousAt (fun x : ℂ ↦ (x, g₂ x)) z from
             ContinuousAt.prodMk continuousAt_id (hg₂.continuousAt (hUopen.mem_nhds hz.1))) ε hε₁
         use Min.min δ δ'
         simp_all [Prod.dist_eq]
@@ -81,10 +81,10 @@ lemma branch_unique_on_connected
   have hA_compl_open : IsOpen (U \ A) := by
     have hA_compl_open : IsOpen (U ∩ {z ∈ U | g₁ z - g₂ z ≠ 0}) := by
       have hA_compl_open : IsOpen {z ∈ U | g₁ z - g₂ z ≠ 0} := by
-        have h_cont : ContinuousOn (fun z => g₁ z - g₂ z) U := ContinuousOn.sub hg₁ hg₂
-        exact isOpen_iff_mem_nhds.mpr fun x hx =>
+        have h_cont : ContinuousOn (fun z ↦ g₁ z - g₂ z) U := ContinuousOn.sub hg₁ hg₂
+        exact isOpen_iff_mem_nhds.mpr fun x hx ↦
           Filter.inter_mem (hUopen.mem_nhds hx.1)
-            (h_cont.continuousAt (hUopen.mem_nhds hx.1) |> fun h => h.eventually_ne hx.2)
+            (h_cont.continuousAt (hUopen.mem_nhds hx.1) |> fun h ↦ h.eventually_ne hx.2)
       exact hUopen.inter hA_compl_open
     convert hA_compl_open using 1
     ext
@@ -116,8 +116,8 @@ lemma branch_unique_on_connected_comp
     ∀ ζ ∈ U, g₁ ζ = g₂ ζ := by
   contrapose! hUconn
   simp_all [IsPreconnected]
-  refine' ⟨{ ζ ∈ U | g₁ ζ = g₂ ζ }, _, { ζ ∈ U | g₁ ζ ≠ g₂ ζ }, _, _, _, _⟩ <;> norm_num [Set.Nonempty]
-  · refine' isOpen_iff_mem_nhds.mpr fun ζ hζ => _
+  refine ⟨{ ζ ∈ U | g₁ ζ = g₂ ζ }, ?_, { ζ ∈ U | g₁ ζ ≠ g₂ ζ }, ?_, ?_, ?_, ?_⟩ <;> norm_num [Set.Nonempty]
+  · refine isOpen_iff_mem_nhds.mpr fun ζ hζ ↦ ?_
     obtain ⟨b, hb⟩ := DorgeBauer.complex_branch_at_simple_root_unique P (φ ζ) (g₁ ζ) (by
     exact hr₁ ζ hζ.1) (by
     intro h
@@ -126,12 +126,12 @@ lemma branch_unique_on_connected_comp
     obtain ⟨a, b, H⟩ := hsep
     replace H := congr_arg (Polynomial.eval (g₂ ζ)) H
     simp_all [Polynomial.eval_map])
-    have h_cont : Filter.Tendsto (fun ζ => (φ ζ, g₁ ζ)) (nhds ζ) (nhds (φ ζ, g₁ ζ)) ∧
-        Filter.Tendsto (fun ζ => (φ ζ, g₂ ζ)) (nhds ζ) (nhds (φ ζ, g₁ ζ)) := by
+    have h_cont : Filter.Tendsto (fun ζ ↦ (φ ζ, g₁ ζ)) (nhds ζ) (nhds (φ ζ, g₁ ζ)) ∧
+        Filter.Tendsto (fun ζ ↦ (φ ζ, g₂ ζ)) (nhds ζ) (nhds (φ ζ, g₁ ζ)) := by
       refine ⟨Filter.Tendsto.prodMk_nhds (hφ.continuousAt (hUopen.mem_nhds hζ.1))
           (hg₁.continuousAt (hUopen.mem_nhds hζ.1)), ?_⟩
       exact Filter.Tendsto.prodMk_nhds (hφ.continuousAt (hUopen.mem_nhds hζ.1))
-        (hg₂.continuousAt (hUopen.mem_nhds hζ.1) |> fun h => h.trans (by aesop))
+        (hg₂.continuousAt (hUopen.mem_nhds hζ.1) |> fun h ↦ h.trans (by aesop))
     filter_upwards [h_cont.1.eventually hb.2.2.2, h_cont.2.eventually hb.2.2.2,
       hUopen.mem_nhds hζ.1] with ζ hζ₁ hζ₂ hζ₃
     refine ⟨hζ₃, ?_⟩
@@ -140,11 +140,11 @@ lemma branch_unique_on_connected_comp
     aesop
   · have h_open : ∀ ζ ∈ U, g₁ ζ ≠ g₂ ζ → ∃ ε > 0, ∀ z ∈ Metric.ball ζ ε, z ∈ U → g₁ z ≠ g₂ z := by
       intro ζ hζ hneq
-      have h_cont : ContinuousAt (fun z => g₁ z - g₂ z) ζ :=
+      have h_cont : ContinuousAt (fun z ↦ g₁ z - g₂ z) ζ :=
         ContinuousAt.sub (hg₁.continuousAt (hUopen.mem_nhds hζ)) (hg₂.continuousAt (hUopen.mem_nhds hζ))
       have h_neq : g₁ ζ - g₂ ζ ≠ 0 := sub_ne_zero_of_ne hneq
       have h_ball : ∃ ε > 0, ∀ z ∈ Metric.ball ζ ε, z ∈ U → g₁ z - g₂ z ≠ 0 :=
-        Metric.mem_nhds_iff.mp (h_cont.eventually_ne h_neq) |> fun ⟨ε, ε_pos, hε⟩ => ⟨ε, ε_pos, fun z hz hzU => hε hz⟩
+        Metric.mem_nhds_iff.mp (h_cont.eventually_ne h_neq) |> fun ⟨ε, ε_pos, hε⟩ ↦ ⟨ε, ε_pos, fun z hz hzU ↦ hε hz⟩
       obtain ⟨ε, hε_pos, hε⟩ := h_ball
       use ε, hε_pos
       intro z hz hzU
@@ -154,7 +154,7 @@ lemma branch_unique_on_connected_comp
     rcases h_open x hx.1 hx.2 with ⟨ε, ε_pos, hε⟩
     filter_upwards [Metric.ball_mem_nhds x ε_pos, hUopen.mem_nhds hx.1] with y hy₁ hy₂
       using ⟨hy₂, hε y hy₁ hy₂⟩
-  · exact fun x hx => if h : g₁ x = g₂ x then Or.inl ⟨hx, h⟩ else Or.inr ⟨hx, h⟩
+  · exact fun x hx ↦ if h : g₁ x = g₂ x then Or.inl ⟨hx, h⟩ else Or.inr ⟨hx, h⟩
   · exact ⟨z₀, hz₀, hbase⟩
   · grind +qlia
 
@@ -177,12 +177,12 @@ lemma root_comp_holomorphic
     have h_eq : ∀ᶠ w' in nhdsWithin w V,
         (φ w', F w') ∈ {p : ℂ × ℂ | Polynomial.eval p.2 (Polynomial.map (evalIntPolyComplex p.1) P) = 0} ∧
         (φ w', F w') ∈ {p : ℂ × ℂ | b p.1 = p.2} := by
-      have h_eq : Filter.Tendsto (fun w' => (φ w', F w')) (nhdsWithin w V) (nhds (φ w, F w)) :=
+      have h_eq : Filter.Tendsto (fun w' ↦ (φ w', F w')) (nhdsWithin w V) (nhds (φ w, F w)) :=
         Filter.Tendsto.prodMk_nhds (hφ.continuousOn.continuousWithinAt hw) (hF.continuousWithinAt hw)
       filter_upwards [h_eq.eventually hb.2.2.2, self_mem_nhdsWithin] with w' hw' hw''
         using ⟨hroot w' hw'', hw' (hroot w' hw'')⟩
     filter_upwards [h_eq] with w' hw' using hw'.2.symm
-  refine' DifferentiableWithinAt.congr_of_eventuallyEq _ h_eq _
+  refine DifferentiableWithinAt.congr_of_eventuallyEq ?_ h_eq ?_
   · exact DifferentiableAt.comp_differentiableWithinAt w (hb.2.1.differentiableAt (by norm_num))
       (hφ.differentiableAt (hVopen.mem_nhds hw) |> DifferentiableAt.differentiableWithinAt)
   · rw [hb.1]
@@ -212,27 +212,21 @@ lemma exists_exp_lift
         exact hQsep)
       have h_contractible : ContractibleSpace {ζ : ℂ | Real.log B < ζ.re} := by
         convert Convex.contractibleSpace (convex_halfSpace_re_gt (Real.log B)) using 1
-        exact ⟨fun h => fun _ => h, fun h => h ⟨ζ₀, hζ₀⟩⟩
-      have h_lift : ∃ (F : {ζ : ℂ | Real.log B < ζ.re} → rootVariety Q),
-        Continuous F ∧
-        F ⟨ζ₀, hζ₀⟩ = ⟨(Complex.exp ζ₀, w₀), hw₀⟩ ∧
-        ∀ ζ, (rootProj Q (F ζ)) = Complex.exp ζ := by
-        have h_simply_connected : SimplyConnectedSpace {ζ : ℂ | Real.log B < ζ.re} := by
-          infer_instance
-        have h_locally_path_connected : LocPathConnectedSpace {ζ : ℂ | Real.log B < ζ.re} :=
-          IsOpen.locPathConnectedSpace (isOpen_lt continuous_const Complex.continuous_re)
-        have := h_covering.existsUnique_continuousMap_lifts
-          (f := ⟨fun ζ : {ζ : ℂ | Real.log B < ζ.re} => Complex.exp ζ, by continuity⟩)
-          (a₀ := ⟨ζ₀, hζ₀⟩) (e₀ := ⟨(Complex.exp ζ₀, w₀), hw₀⟩) (hs := ?_) ?_ <;> norm_num at *
-        · exact ⟨this.exists.choose, this.exists.choose.continuous, this.exists.choose_spec.1,
-            fun a ha => congr_fun this.exists.choose_spec.2 ⟨a, ha⟩⟩
-        · rfl
-        · intro a ha
-          rw [Complex.norm_exp]
-          exact Real.log_lt_iff_lt_exp (by positivity) |>.1 ha
-      generalize_proofs at *
-      exact h_lift
-  refine' ⟨fun ζ => if h : Real.log B < ζ.re then (F ⟨ζ, h⟩ : ℂ × ℂ).2 else w₀, _, _, _⟩
+        exact ⟨fun h ↦ fun _ ↦ h, fun h ↦ h ⟨ζ₀, hζ₀⟩⟩
+      have h_simply_connected : SimplyConnectedSpace {ζ : ℂ | Real.log B < ζ.re} := by
+        infer_instance
+      have h_locally_path_connected : LocPathConnectedSpace {ζ : ℂ | Real.log B < ζ.re} :=
+        IsOpen.locPathConnectedSpace (isOpen_lt continuous_const Complex.continuous_re)
+      have := h_covering.existsUnique_continuousMap_lifts
+        (f := ⟨fun ζ : {ζ : ℂ | Real.log B < ζ.re} ↦ Complex.exp ζ, by continuity⟩)
+        (a₀ := ⟨ζ₀, hζ₀⟩) (e₀ := ⟨(Complex.exp ζ₀, w₀), hw₀⟩) (hs := ?_) ?_ <;> norm_num at *
+      · exact ⟨this.exists.choose, this.exists.choose.continuous, this.exists.choose_spec.1,
+          fun a ha ↦ congr_fun this.exists.choose_spec.2 ⟨a, ha⟩⟩
+      · rfl
+      · intro a ha
+        rw [Complex.norm_exp]
+        exact Real.log_lt_iff_lt_exp (by positivity) |>.1 ha
+  refine ⟨fun ζ ↦ if h : Real.log B < ζ.re then (F ⟨ζ, h⟩ : ℂ × ℂ).2 else w₀, ?_, ?_, ?_⟩
   · rw [continuousOn_iff_continuous_restrict]
     convert continuous_snd.comp (continuous_subtype_val.comp hF.1) using 1
     grind
@@ -265,7 +259,7 @@ lemma exists_periodic_exp_lift
   -- By the pigeonhole principle, since the polynomial $Q.map (evalIntPolyComplex (exp ζ₀))$ has finitely many roots, there exist $m \neq n$ such that $g(ζ₀ + 2πi·m) = g(ζ₀ + 2πi·n)$.
   obtain ⟨m, n, hmn, h_eq⟩ :
       ∃ m n : ℕ, m < n ∧ g (ζ₀ + 2 * Real.pi * Complex.I * m) = g (ζ₀ + 2 * Real.pi * Complex.I * n) := by
-    have h_finite : Set.Finite (Set.range (fun n : ℕ => g (ζ₀ + 2 * Real.pi * Complex.I * n))) := by
+    have h_finite : Set.Finite (Set.range (fun n : ℕ ↦ g (ζ₀ + 2 * Real.pi * Complex.I * n))) := by
       refine Set.Finite.subset (Polynomial.map (evalIntPolyComplex (Complex.exp ζ₀)) Q
         |> Polynomial.roots |> Multiset.toFinset |> Finset.finite_toSet) ?_
       rintro _ ⟨n, rfl⟩
@@ -279,27 +273,23 @@ lemma exists_periodic_exp_lift
       simp_all
       exact Polynomial.Monic.ne_zero (hQ_monic.map _)
     contrapose! h_finite
-    exact Set.infinite_range_of_injective fun m n hmn => le_antisymm
-      (le_of_not_gt fun hmn' => h_finite _ _ hmn' hmn.symm)
-      (le_of_not_gt fun hmn' => h_finite _ _ hmn' hmn)
-  refine' ⟨n - m, g, _, _, _, _, _⟩
-  · exact Nat.sub_pos_of_lt hmn
-  · exact hg₁
-  · exact hg₂
-  · exact hg₃
+    exact Set.infinite_range_of_injective fun m n hmn ↦ le_antisymm
+      (le_of_not_gt fun hmn' ↦ h_finite _ _ hmn' hmn.symm)
+      (le_of_not_gt fun hmn' ↦ h_finite _ _ hmn' hmn)
+  refine ⟨n - m, g, Nat.sub_pos_of_lt hmn, hg₁, hg₂, hg₃, ?_⟩
   · intro ζ hζ
     have := @branch_unique_on_connected_comp Q {ζ : ℂ | Real.log B < ζ.re} (by
     exact isOpen_lt continuous_const Complex.continuous_re) (by
-    exact convex_halfSpace_re_gt _ |> Convex.isPreconnected) (fun ζ => Complex.exp ζ) (by
+    exact convex_halfSpace_re_gt _ |> Convex.isPreconnected) (fun ζ ↦ Complex.exp ζ) (by
     exact Complex.continuous_exp.continuousOn) (by
     intro ζ hζ
     apply hQsep
     simp_all [Complex.norm_exp]
     rwa [Real.log_lt_iff_lt_exp (by positivity)] at hζ)
-              (fun ζ => g (ζ + 2 * Real.pi * Complex.I * m))
-              (fun ζ => g (ζ + 2 * Real.pi * Complex.I * n)) (by
-    exact hg₁.comp (continuousOn_id.add continuousOn_const) fun x hx => by simpa using hx) (by
-    exact hg₁.comp (continuousOn_id.add continuousOn_const) fun x hx => by simpa using hx) (by
+              (fun ζ ↦ g (ζ + 2 * Real.pi * Complex.I * m))
+              (fun ζ ↦ g (ζ + 2 * Real.pi * Complex.I * n)) (by
+    exact hg₁.comp (continuousOn_id.add continuousOn_const) fun x hx ↦ by simpa using hx) (by
+    exact hg₁.comp (continuousOn_id.add continuousOn_const) fun x hx ↦ by simpa using hx) (by
     simp_all [mul_comm (2 * Real.pi * Complex.I)]
     intro ζ hζ
     convert hg₃ (ζ + m * (2 * Real.pi * Complex.I)) (by simpa using hζ) using 1
@@ -332,7 +322,7 @@ lemma periodic_log_comp_continuous
     (hgc : ContinuousOn g {ζ : ℂ | Real.log B < ζ.re})
     (hper : ∀ ζ : ℂ, Real.log B < ζ.re →
         g (ζ + 2 * Real.pi * Complex.I * (e : ℂ)) = g ζ) :
-    ContinuousOn (fun w : ℂ => g (-(e : ℂ) * Complex.log w))
+    ContinuousOn (fun w : ℂ ↦ g (-(e : ℂ) * Complex.log w))
       {w : ℂ | 0 < ‖w‖ ∧ ‖w‖ < Real.exp (-(Real.log B) / e)} := by
   -- By the integer periodicity, $g(-(e:ℂ) * ℓ w) = g(-(e:ℂ) * Complex.log w)$ for all $w$ in the punctured disk.
   have h_eq : ∀ w : ℂ, 0 < ‖w‖ ∧ ‖w‖ < Real.exp (-Real.log B / e) →
@@ -359,13 +349,13 @@ lemma periodic_log_comp_continuous
         mul_div_cancel₀ (-Real.log B) (by positivity : (e : ℝ) ≠ 0)]
   intro w hw
   by_cases hw' : w.im = 0 ∧ w.re ≤ 0
-  · have h_cont : ContinuousWithinAt (fun w => g (-(e : ℂ) * (Complex.log (-w) + Real.pi * Complex.I)))
+  · have h_cont : ContinuousWithinAt (fun w ↦ g (-(e : ℂ) * (Complex.log (-w) + Real.pi * Complex.I)))
         {w : ℂ | 0 < ‖w‖ ∧ ‖w‖ < Real.exp (-Real.log B / e)} w := by
-      refine' ContinuousAt.continuousWithinAt _
-      refine' hgc.continuousAt _ |> ContinuousAt.comp <| ContinuousAt.mul continuousAt_const <|
-        ContinuousAt.add (Complex.differentiableAt_log _ |> DifferentiableAt.continuousAt |>
+      apply ContinuousAt.continuousWithinAt
+      refine hgc.continuousAt ?_ |> ContinuousAt.comp <| ContinuousAt.mul continuousAt_const <|
+        ContinuousAt.add (Complex.differentiableAt_log ?_ |> DifferentiableAt.continuousAt |>
           ContinuousAt.comp <| ContinuousAt.neg continuousAt_id) continuousAt_const
-      · refine' IsOpen.mem_nhds _ _ <;> norm_num [Complex.log_re, Complex.log_im] at *
+      · refine IsOpen.mem_nhds ?_ ?_ <;> norm_num [Complex.log_re, Complex.log_im] at *
         · exact isOpen_lt continuous_const Complex.continuous_re
         · have := Real.log_lt_log (norm_pos_iff.mpr hw.1) hw.2
           simp_all [div_eq_mul_inv]
@@ -374,18 +364,18 @@ lemma periodic_log_comp_continuous
         refine lt_of_le_of_ne hw'.2 ?_
         rintro h
         exact hw.1 <| by simp [Complex.ext_iff, h, hw'.1]
-    exact h_cont.congr (fun x hx => h_eq x hx ▸ rfl) (h_eq w hw ▸ rfl)
-  · refine' ContinuousAt.continuousWithinAt _
-    refine' hgc.continuousAt _ |> ContinuousAt.comp <| ContinuousAt.mul continuousAt_const <|
-      Complex.differentiableAt_log _ |> DifferentiableAt.continuousAt
-    · refine' IsOpen.mem_nhds _ _
+    exact h_cont.congr (fun x hx ↦ h_eq x hx ▸ rfl) (h_eq w hw ▸ rfl)
+  · apply ContinuousAt.continuousWithinAt
+    refine hgc.continuousAt ?_ |> ContinuousAt.comp <| ContinuousAt.mul continuousAt_const <|
+      Complex.differentiableAt_log ?_ |> DifferentiableAt.continuousAt
+    · apply IsOpen.mem_nhds
       · exact isOpen_lt continuous_const Complex.continuous_re
       · simp_all [Complex.log_re]
         have := Real.log_lt_log (norm_pos_iff.mpr hw.1) hw.2
         rw [Real.log_exp] at this
         nlinarith [show (e : ℝ) ≥ 1 by norm_cast,
           mul_div_cancel₀ (-Real.log B) (by positivity : (e : ℝ) ≠ 0)]
-    · refine Classical.or_iff_not_imp_left.2 fun h => ?_
+    · refine Classical.or_iff_not_imp_left.2 fun h ↦ ?_
       contrapose! hw'
       aesop
 
@@ -404,8 +394,8 @@ lemma cpow_neg_e_log (e : ℕ) (he : 1 ≤ e) (z : ℂ) (hz : 0 < z.re) :
     rw [if_neg (by linarith [Real.pi_pos, Complex.neg_pi_lt_arg z, Complex.arg_le_pi z, harg2])]
   rw [Complex.cpow_def_of_ne_zero] <;> norm_num [h_arg, Complex.exp_ne_zero]
   · rw [Complex.log_exp] <;> norm_num [Complex.log, h_arg]
-    ring_nf
-    · simp [mul_assoc, mul_comm, ne_of_gt (zero_lt_one.trans_le he)]
+    · ring_nf
+      simp [mul_assoc, mul_comm, ne_of_gt (zero_lt_one.trans_le he)]
     · rw [mul_inv_lt_iff₀ (by positivity)]
       rw [Complex.arg]
       split_ifs <;> nlinarith [Real.pi_pos, show (e : ℝ) ≥ 1 by norm_cast,
@@ -463,19 +453,19 @@ lemma branch_match_real_ray
         have hH_eq_phi : ∀ᶠ y in nhds (x : ℂ),
             (y, H y) ∈ {p : ℂ × ℂ | Polynomial.eval p.2 (Polynomial.map (evalIntPolyComplex p.1) Q) = 0} := by
           filter_upwards [Metric.ball_mem_nhds _ (show 0 < x / 2 by linarith)] with y hy using hHroot x hxT₁ y hy
-        have htend : Filter.Tendsto (fun y : ℂ => (y, H y)) (nhds (x : ℂ)) (nhds (x, H x)) := by
+        have htend : Filter.Tendsto (fun y : ℂ ↦ (y, H y)) (nhds (x : ℂ)) (nhds (x, H x)) := by
           refine Filter.Tendsto.prodMk_nhds Filter.tendsto_id ?_
           have := hcont x hxT₁
           convert this.continuousOn.continuousAt _ using 1
           exact Filter.mem_of_superset (Metric.ball_mem_nhds _ <| half_pos <| by linarith)
-            fun y hy => subset_closure hy
+            fun y hy ↦ subset_closure hy
         filter_upwards [hH_eq_phi, hφ₄.filter_mono htend] with y hy₁ hy₂ using by aesop
       have hg_log_eq_phi : ∀ᶠ y in nhds (x : ℂ), g (Complex.log y) = φ y := by
         have hg_log_eq_phi : ∀ᶠ y in nhds (x : ℂ), (Q.map (evalIntPolyComplex y)).eval (g (Complex.log y)) = 0 := by
           have hg_log_eq_phi : ∀ᶠ y in nhds (x : ℂ), Real.log B < (Complex.log y).re := by
-            have h_log_cont : Filter.Tendsto (fun y : ℂ => (Complex.log y).re) (nhds (x : ℂ)) (nhds (Real.log x)) := by
+            have h_log_cont : Filter.Tendsto (fun y : ℂ ↦ (Complex.log y).re) (nhds (x : ℂ)) (nhds (Real.log x)) := by
               have h_log_cont :
-                  Filter.Tendsto (fun y : ℂ => Complex.log y) (nhds (x : ℂ)) (nhds (Complex.log (x : ℂ))) := by
+                  Filter.Tendsto (fun y : ℂ ↦ Complex.log y) (nhds (x : ℂ)) (nhds (Complex.log (x : ℂ))) := by
                 convert Complex.differentiableAt_log _ |> DifferentiableAt.continuousAt using 1
                 refine Or.inl ?_
                 norm_num
@@ -489,13 +479,13 @@ lemma branch_match_real_ray
           filter_upwards [hg_log_eq_phi, isOpen_ne.mem_nhds hxne] with y hy₁ hy₂
           convert hgroot (Complex.log y) hy₁ using 1
           rw [Complex.exp_log hy₂]
-        have htend : Filter.Tendsto (fun y : ℂ => (y, g (Complex.log y))) (nhds (x : ℂ)) (nhds (x, H x)) := by
-          refine' Filter.Tendsto.prodMk_nhds _ _
+        have htend : Filter.Tendsto (fun y : ℂ ↦ (y, g (Complex.log y))) (nhds (x : ℂ)) (nhds (x, H x)) := by
+          apply Filter.Tendsto.prodMk_nhds
           · exact Filter.tendsto_id
-          · have hg_log_eq_phi : ContinuousAt (fun y => g (Complex.log y)) (x : ℂ) := by
-              refine' hgc.continuousAt _ |> ContinuousAt.comp <|
-                Complex.differentiableAt_log _ |> DifferentiableAt.continuousAt
-              · refine' IsOpen.mem_nhds _ _
+          · have hg_log_eq_phi : ContinuousAt (fun y ↦ g (Complex.log y)) (x : ℂ) := by
+              refine hgc.continuousAt ?_ |> ContinuousAt.comp <|
+                Complex.differentiableAt_log ?_ |> DifferentiableAt.continuousAt
+              · apply IsOpen.mem_nhds
                 · exact isOpen_lt continuous_const Complex.continuous_re
                 · norm_num [Complex.log_re]
                   exact Real.log_lt_log (by linarith) (by linarith)
@@ -504,7 +494,7 @@ lemma branch_match_real_ray
                 linarith
             exact hg_log_eq_phi.tendsto.trans (by aesop)
         filter_upwards [hg_log_eq_phi, hφ₄.filter_mono htend] with y hy₁ hy₂ using by aesop
-      exact Metric.mem_nhds_iff.mp (hH_eq_phi.and hg_log_eq_phi) |> fun ⟨ε, hε₁, hε₂⟩ => ⟨ε, hε₁, fun y hy => hε₂ hy⟩
+      exact Metric.mem_nhds_iff.mp (hH_eq_phi.and hg_log_eq_phi) |> fun ⟨ε, hε₁, hε₂⟩ ↦ ⟨ε, hε₁, fun y hy ↦ hε₂ hy⟩
     use ε, hε_pos
     intro y hy₁ hy₂
     specialize hε y
@@ -513,17 +503,17 @@ lemma branch_match_real_ray
   -- We show that $A$ is relatively closed in $[T₁, \infty)$.
   have hA_closed : ∀ x : ℝ, T₁ ≤ x → (∀ ε > 0, ∃ y : ℝ, T₁ ≤ y ∧ |y - x| < ε ∧ y ∈ A) → x ∈ A := by
     intros x hx hseq
-    have h_cont : ContinuousOn (fun y : ℝ => H (y : ℂ) - g (Complex.log (y : ℂ))) (Set.Ici T₁) := by
-      refine' ContinuousOn.sub _ _
+    have h_cont : ContinuousOn (fun y : ℝ ↦ H (y : ℂ) - g (Complex.log (y : ℂ))) (Set.Ici T₁) := by
+      apply ContinuousOn.sub
       · intro y hy
         specialize hcont y hy
         have := hcont.continuousOn
-        refine' ContinuousAt.continuousWithinAt _
-        refine' this.continuousAt _ |> ContinuousAt.comp <| Complex.continuous_ofReal.continuousAt
+        apply ContinuousAt.continuousWithinAt
+        refine this.continuousAt ?_ |> ContinuousAt.comp <| Complex.continuous_ofReal.continuousAt
         rw [closure_ball] <;> norm_num [show y ≠ 0 by linarith [Set.mem_Ici.mp hy]]
         exact Metric.closedBall_mem_nhds _ (half_pos (by linarith [Set.mem_Ici.mp hy]))
-      · refine' hgc.comp _ _
-        · refine' ContinuousOn.clog _ _
+      · apply hgc.comp
+        · apply ContinuousOn.clog
           · exact Complex.continuous_ofReal.continuousOn
           · intro x hx
             refine Or.inl ?_
@@ -533,50 +523,50 @@ lemma branch_match_real_ray
           simp [Complex.log_re]
           exact Real.log_lt_log (by linarith) (by linarith [Set.mem_Ici.mp hy])
     have h_seq : ∃ seq : ℕ → ℝ, (∀ n, T₁ ≤ seq n ∧ seq n ∈ A) ∧ Filter.Tendsto seq Filter.atTop (nhds x) := by
-      exact ⟨fun n => Classical.choose (hseq (1 / (n + 1)) (by positivity)),
-        fun n => ⟨Classical.choose_spec (hseq (1 / (n + 1)) (by positivity)) |>.1,
+      exact ⟨fun n ↦ Classical.choose (hseq (1 / (n + 1)) (by positivity)),
+        fun n ↦ ⟨Classical.choose_spec (hseq (1 / (n + 1)) (by positivity)) |>.1,
           Classical.choose_spec (hseq (1 / (n + 1)) (by positivity)) |>.2.2⟩,
-        tendsto_iff_norm_sub_tendsto_zero.mpr <| squeeze_zero (fun _ => by positivity)
-          (fun n => Classical.choose_spec (hseq (1 / (n + 1)) (by positivity)) |>.2.1.le) <|
+        tendsto_iff_norm_sub_tendsto_zero.mpr <| squeeze_zero (fun _ ↦ by positivity)
+          (fun n ↦ Classical.choose_spec (hseq (1 / (n + 1)) (by positivity)) |>.2.1.le) <|
           tendsto_one_div_add_atTop_nhds_zero_nat⟩
     obtain ⟨seq, hseq₁, hseq₂⟩ := h_seq
-    have h_seq_zero : Filter.Tendsto (fun n => H (seq n : ℂ) - g (Complex.log (seq n : ℂ))) Filter.atTop (nhds 0) :=
-      tendsto_const_nhds.congr fun n => by rw [hseq₁ n |>.2.2, sub_self]
+    have h_seq_zero : Filter.Tendsto (fun n ↦ H (seq n : ℂ) - g (Complex.log (seq n : ℂ))) Filter.atTop (nhds 0) :=
+      tendsto_const_nhds.congr fun n ↦ by rw [hseq₁ n |>.2.2, sub_self]
     have := h_cont.continuousWithinAt (show x ∈ Set.Ici T₁ from hx)
     refine ⟨hx, ?_⟩
     simpa [sub_eq_zero] using
       tendsto_nhds_unique (this.tendsto.comp (show Filter.Tendsto seq Filter.atTop
         (nhdsWithin x (Set.Ici T₁)) from tendsto_nhdsWithin_iff.mpr
-          ⟨hseq₂, Filter.Eventually.of_forall fun n => hseq₁ n |>.1⟩)) h_seq_zero
+          ⟨hseq₂, Filter.Eventually.of_forall fun n ↦ hseq₁ n |>.1⟩)) h_seq_zero
   -- Since $A$ is both open and closed in $[T₁, \infty)$, and $T₁ \in A$, it follows that $A = [T₁, \infty)$.
   have hA_eq : A = Set.Ici T₁ := by
     apply Set.eq_of_subset_of_subset
-    · exact fun x hx => hx.1
+    · exact fun x hx ↦ hx.1
     · intro x hx
       contrapose! hA_closed
       use sInf { y : ℝ | T₁ ≤ y ∧ y ∉ A }
-      refine' ⟨le_csInf ⟨x, hx, hA_closed⟩ fun y hy => hy.1, _, _⟩
+      refine ⟨le_csInf ⟨x, hx, hA_closed⟩ fun y hy ↦ hy.1, ?_, ?_⟩
       · intro ε ε_pos
         by_cases h_inf : sInf { y : ℝ | T₁ ≤ y ∧ y ∉ A } = T₁
         · exact ⟨T₁, le_rfl, by simpa [h_inf] using ε_pos, ⟨le_rfl, by simp [hbase]⟩⟩
         · obtain ⟨y, hy₁, hy₂⟩ :
               ∃ y ∈ Set.Ioo T₁ (sInf {y : ℝ | T₁ ≤ y ∧ y ∉ A}), |y - sInf {y : ℝ | T₁ ≤ y ∧ y ∉ A}| < ε := by
             have h_inf_gt_T1 : T₁ < sInf { y : ℝ | T₁ ≤ y ∧ y ∉ A } :=
-              lt_of_le_of_ne (le_csInf ⟨x, hx, hA_closed⟩ fun y hy => hy.1) (Ne.symm h_inf)
+              lt_of_le_of_ne (le_csInf ⟨x, hx, hA_closed⟩ fun y hy ↦ hy.1) (Ne.symm h_inf)
             by_cases h_inf_gt_T1 : sInf { y : ℝ | T₁ ≤ y ∧ y ∉ A } - T₁ < ε
             · exact ⟨(T₁ + sInf {y : ℝ | T₁ ≤ y ∧ y ∉ A}) / 2, ⟨by linarith, by linarith⟩,
                 abs_lt.mpr ⟨by linarith, by linarith⟩⟩
             · exact ⟨sInf {y : ℝ | T₁ ≤ y ∧ y ∉ A} - ε / 2, ⟨by linarith, by linarith⟩,
                 abs_lt.mpr ⟨by linarith, by linarith⟩⟩
           exact ⟨y, hy₁.1.le, hy₂,
-            Classical.not_not.1 fun hy₃ => hy₁.2.not_ge <| csInf_le ⟨T₁, fun x hx => hx.1⟩ ⟨hy₁.1.le, hy₃⟩⟩
+            Classical.not_not.1 fun hy₃ ↦ hy₁.2.not_ge <| csInf_le ⟨T₁, fun x hx ↦ hx.1⟩ ⟨hy₁.1.le, hy₃⟩⟩
       · intro h
         obtain ⟨ε, ε_pos, hε⟩ := hA_open _ h
         obtain ⟨y, hy₁, hy₂⟩ := exists_lt_of_csInf_lt
           (show {y : ℝ | T₁ ≤ y ∧ y ∉ A}.Nonempty from ⟨x, hx, hA_closed⟩) (lt_add_of_pos_right _ ε_pos)
-        have hle : sInf {y : ℝ | T₁ ≤ y ∧ y ∉ A} ≤ y := csInf_le ⟨T₁, fun z hz => hz.1⟩ hy₁
+        have hle : sInf {y : ℝ | T₁ ≤ y ∧ y ∉ A} ≤ y := csInf_le ⟨T₁, fun z hz ↦ hz.1⟩ hy₁
         exact hy₁.2 <| hε y hy₁.1 <| abs_lt.mpr ⟨by linarith [hle], by linarith [hle]⟩
-  exact fun x hx => hA_eq.symm.subset hx |>.2
+  exact fun x hx ↦ hA_eq.symm.subset hx |>.2
 
 /-
 **Matching the branch on the tail spheres.**
@@ -598,8 +588,8 @@ lemma branch_match_tail
     ∀ x : ℝ, T₁ ≤ x → ∀ z ∈ Metric.sphere (x : ℂ) (x / 2),
       H z = g (Complex.log z) := by
   intro x hx z hz
-  have h_cont : ContinuousOn (fun z => g (Complex.log z)) (Metric.closedBall (x : ℂ) (x / 2)) := by
-    refine' hgc.comp (ContinuousOn.clog _ _) _
+  have h_cont : ContinuousOn (fun z ↦ g (Complex.log z)) (Metric.closedBall (x : ℂ) (x / 2)) := by
+    refine hgc.comp (ContinuousOn.clog ?_ ?_) ?_
     · exact continuousOn_id
     · norm_num [Complex.slitPlane]
       intro w hw
@@ -614,8 +604,8 @@ lemma branch_match_tail
       linarith [abs_of_nonneg (by linarith : 0 ≤ x), dist_eq_norm z x]
   have h_eq : ∀ z' ∈ Metric.ball (x : ℂ) (x / 2), H z' = g (Complex.log z') := by
     apply DorgeBauer.branch_unique_on_connected
-    exact Metric.isOpen_ball
-    exact Metric.isPreconnected_ball
+    · exact Metric.isOpen_ball
+    · exact Metric.isPreconnected_ball
     any_goals exact Q
     any_goals exact hcont x hx |>.differentiableOn.continuousOn
     any_goals exact Metric.mem_ball_self (by linarith)
@@ -648,18 +638,18 @@ lemma branch_match_tail
       rw [closure_ball (x : ℂ) (by linarith)]
       exact hz'
     obtain ⟨seq, hseq⟩ := mem_closure_iff_seq_limit.mp hz'cl
-    have h_eq_seq : Filter.Tendsto (fun n => H (seq n)) Filter.atTop (nhds (H z')) := by
+    have h_eq_seq : Filter.Tendsto (fun n ↦ H (seq n)) Filter.atTop (nhds (H z')) := by
       have := hcont x hx
       have := this.continuousOn
-      exact this.continuousWithinAt hz'cl |> fun h => h.tendsto.comp <|
+      exact this.continuousWithinAt hz'cl |> fun h ↦ h.tendsto.comp <|
         Filter.tendsto_inf.mpr ⟨hseq.2, Filter.tendsto_principal.mpr <|
-          Filter.Eventually.of_forall fun n => subset_closure <| hseq.1 n⟩
+          Filter.Eventually.of_forall fun n ↦ subset_closure <| hseq.1 n⟩
     refine tendsto_nhds_unique h_eq_seq ?_
     simpa only [h_eq _ (hseq.1 _)] using
       h_cont.continuousWithinAt (show z' ∈ Metric.closedBall (x : ℂ) (x / 2) from hz') |>
-        fun h => h.tendsto.comp <| Filter.tendsto_inf.mpr ⟨hseq.2,
-          Filter.tendsto_principal.mpr <| Filter.Eventually.of_forall fun n =>
-            by simpa using hseq.1 n |> Metric.mem_ball.mp |> fun h => by simpa using h.le⟩
+        fun h ↦ h.tendsto.comp <| Filter.tendsto_inf.mpr ⟨hseq.2,
+          Filter.tendsto_principal.mpr <| Filter.Eventually.of_forall fun n ↦
+            by simpa using hseq.1 n |> Metric.mem_ball.mp |> fun h ↦ by simpa using h.le⟩
   exact h_eq_closure z <| Metric.sphere_subset_closedBall hz
 
 end DorgeBauer

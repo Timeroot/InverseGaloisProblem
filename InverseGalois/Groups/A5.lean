@@ -99,7 +99,7 @@ private lemma f_a5_Z_irreducible : Irreducible f_a5_Z := by
       obtain ⟨c1, c2, c3, c4, c5, c6⟩ := h_coeff
       exact h_coeff_cases _ _ _ _ _ _ _ c1 c2 c3 c4 c5 c6
     constructor
-    · exact fun h => absurd (Polynomial.degree_eq_zero_of_isUnit h) (by
+    · exact fun h ↦ absurd (Polynomial.degree_eq_zero_of_isUnit h) (by
         erw [Polynomial.degree_add_C] <;>
           repeat (first
             | erw [Polynomial.degree_add_eq_left_of_degree_lt]
@@ -118,10 +118,10 @@ private lemma f_a5_Z_irreducible : Irreducible f_a5_Z := by
       have h_deg_cases : p.degree = 1 ∧ q.degree = 4 ∨ p.degree = 4 ∧ q.degree = 1 ∨
           p.degree = 2 ∧ q.degree = 3 ∨ p.degree = 3 ∧ q.degree = 2 := by
         rw [Polynomial.isUnit_iff_degree_eq_zero, Polynomial.isUnit_iff_degree_eq_zero] at h_contra
-        have hp0 : p ≠ 0 := fun h => by
+        have hp0 : p ≠ 0 := fun h ↦ by
           subst h
           exact absurd hpq <| by exact ne_of_apply_ne (Polynomial.eval 0) <| by simp +decide
-        have hq0 : q ≠ 0 := fun h => by
+        have hq0 : q ≠ 0 := fun h ↦ by
           subst h
           exact absurd hpq <| by exact ne_of_apply_ne (Polynomial.eval 0) <| by simp +decide
         rw [Polynomial.degree_eq_natDegree hp0, Polynomial.degree_eq_natDegree hq0] at *
@@ -172,13 +172,13 @@ private lemma three_dvd_card_gal : 3 ∣ Nat.card f_a5.Gal := by
     convert f_a5_irreducible using 1
     exact f_a5_eq_map.symm) 7 f_a5_mod7_squarefree
   generalize_proofs at *
-  have h3_div_order : 3 ∣ orderOf (Polynomial.Gal.galActionHom (Polynomial.map (Int.castRingHom ℚ) f_a5_Z) ℂ σ) := by
+  have h3_div_order : 3 ∣ orderOf (Gal.galActionHom (Polynomial.map (Int.castRingHom ℚ) f_a5_Z) ℂ σ) := by
     have h3_div_order :
-        3 ∈ (Polynomial.Gal.galActionHom (Polynomial.map (Int.castRingHom ℚ) f_a5_Z) ℂ σ).cycleType := by
+        3 ∈ (Gal.galActionHom (Polynomial.map (Int.castRingHom ℚ) f_a5_Z) ℂ σ).cycleType := by
       exact hσ.symm ▸ f_a5_mod7_factorizationType
     exact dvd_trans (by aesop) (Multiset.dvd_lcm h3_div_order) |> dvd_trans <| by rw [Equiv.Perm.lcm_cycleType]
   have h3_div_order_sigma : 3 ∣ orderOf σ := by
-    exact dvd_trans h3_div_order (orderOf_map_dvd _ _)
+    exact h3_div_order.trans (orderOf_map_dvd _ _)
   convert h3_div_order_sigma.trans (orderOf_dvd_natCard σ) using 1
   rw [show f_a5 = Polynomial.map (Int.castRingHom ℚ) f_a5_Z from f_a5_eq_map]
 
@@ -196,7 +196,7 @@ The connection between discriminant and alternating group uses the
 classical identity σ(δ) = sign(σ)·δ where δ = ∏_{i<j}(r_i - r_j).
 -/
 private lemma card_gal_ne_120 : Nat.card f_a5.Gal ≠ 120 := by
-  convert card_gal_a5_ne_120 using 1
+  exact card_gal_a5_ne_120
 
 /-
 The Galois group order divides 60 = |A₅|.
@@ -205,7 +205,7 @@ private lemma card_gal_dvd_60 : Nat.card f_a5.Gal ∣ 60 := by
   -- Use card_gal_dvd_card_rootSet_factorial, card_rootSet_eq_natDegree, and f_a5_natDegree.
   have h_card_gal_div_120 : Nat.card f_a5.Gal ∣ Nat.factorial 5 := by
     have h_div : Nat.card f_a5.Gal ∣ (Fintype.card (f_a5.rootSet ℂ)).factorial := by
-      convert card_gal_dvd_card_rootSet_factorial f_a5 using 1
+      exact card_gal_dvd_card_rootSet_factorial f_a5
     convert h_div using 1
     rw [card_rootSet_eq_natDegree] <;> norm_num [f_a5_natDegree, f_a5_irreducible.separable, f_a5_ne_zero]
   have h_card_gal_div_120 : 15 ∣ Nat.card f_a5.Gal := by
@@ -247,18 +247,15 @@ private lemma sixty_dvd_card_gal : 60 ∣ Nat.card f_a5.Gal := by
   -- The Galois group injects into S₅ via galActionHom.
   have h_inj : ∃ H : Subgroup (Equiv.Perm (f_a5.rootSet ℂ)), Nat.card H = Nat.card f_a5.Gal := by
     have h_inj : ∃ f : f_a5.Gal →* Equiv.Perm (f_a5.rootSet ℂ), Function.Injective f := by
-      refine' ⟨_, _⟩
-      convert Polynomial.Gal.galActionHom f_a5 ℂ
-      all_goals generalize_proofs at *
-      · grind only [Gal.splits_ℚ_ℂ]
-      · convert Polynomial.Gal.galActionHom_injective f_a5 ℂ
+      have : Fact ((f_a5.map (algebraMap ℚ ℂ)).Splits) := ⟨IsAlgClosed.splits _⟩
+      exact ⟨Gal.galActionHom f_a5 ℂ, Gal.galActionHom_injective f_a5 ℂ⟩
     obtain ⟨f, hf⟩ := h_inj
     use f.range
     simp +decide [Nat.card_eq_fintype_card]
     exact Fintype.card_congr (Equiv.ofInjective _ hf) |> Eq.symm
   -- Since rootSet ℂ has 5 elements, Perm(rootSet ℂ) is isomorphic to Perm(Fin 5).
   have h_iso : ∃ e : f_a5.rootSet ℂ ≃ Fin 5, True := by
-    refine' ⟨Fintype.equivOfCardEq _, trivial⟩
+    refine ⟨Fintype.equivOfCardEq ?_, trivial⟩
     convert card_rootSet_eq_natDegree f_a5 _ _
     · erw [Polynomial.natDegree_add_C, Polynomial.natDegree_add_eq_left_of_natDegree_lt] <;> norm_num
     · exact f_a5_irreducible.separable
@@ -267,10 +264,10 @@ private lemma sixty_dvd_card_gal : 60 ∣ Nat.card f_a5.Gal := by
   obtain ⟨e, he⟩ := h_iso
   have h_iso_perm : ∃ H' : Subgroup (Equiv.Perm (Fin 5)), Nat.card H' = Nat.card f_a5.Gal := by
     obtain ⟨H, hH⟩ := h_inj
-    refine' ⟨H.map (Equiv.permCongr e |> MonoidHom.mk' <| by aesop), _⟩
+    refine ⟨H.map (Equiv.permCongr e |> MonoidHom.mk' <| by aesop), ?_⟩
     rw [← hH, Nat.card_congr]
     symm
-    refine' Equiv.ofBijective (fun x => ⟨_, Subgroup.mem_map_of_mem _ x.2⟩) ⟨fun x y hxy => _, fun x => _⟩ <;> aesop
+    refine' Equiv.ofBijective (fun x ↦ ⟨_, Subgroup.mem_map_of_mem _ x.2⟩) ⟨fun x y hxy ↦ _, fun x ↦ _⟩ <;> aesop
   obtain ⟨H', hH'⟩ := h_iso_perm
   have := Perm_Fin5_no_subgroup_order_15 H'
   have := Perm_Fin5_no_subgroup_order_30 H'
@@ -292,49 +289,29 @@ private lemma gal_iso_alt5 :
       have h_subgroup : ∃ (f : f_a5.Gal →* Equiv.Perm (f_a5.rootSet ℂ)),
           Function.Injective f ∧ (Nat.card (MonoidHom.range f)) = 60 := by
         obtain ⟨f, hf⟩ : ∃ f : f_a5.Gal →* Equiv.Perm (f_a5.rootSet (f_a5.SplittingField)), Function.Injective f := by
-          refine' ⟨_, _⟩
-          refine' { .. }
-          refine' fun σ => Equiv.ofBijective (fun x => ⟨σ x, _⟩) ⟨_, _⟩
-          all_goals norm_num [Function.Injective, Function.Surjective, Equiv.Perm.ext_iff]
-          · rw [Polynomial.mem_rootSet] at *
-            have := x.2
-            rw [Polynomial.mem_rootSet] at this
-            rw [aeval_def, Polynomial.eval₂_eq_sum_range] at *
-            refine ⟨this.1, ?_⟩
-            simpa [map_sum, map_mul, map_pow] using
-              congr_arg (σ : f_a5.SplittingField → f_a5.SplittingField) this.2
-          · intro a ha
-            refine' ⟨σ.symm a, _, _⟩ <;> simp_all +decide [Polynomial.mem_rootSet]
-            · convert congr_arg (σ.symm : f_a5.SplittingField → f_a5.SplittingField) ha.2 using 1
-              · simp +decide [Polynomial.aeval_def, Polynomial.eval₂_eq_sum_range]
-              · norm_num
-            · exact σ.apply_symm_apply a
-          · aesop
-          · aesop
-          · intro a₁ a₂ h
-            ext x
-            by_cases hx : x ∈ f_a5.rootSet f_a5.SplittingField <;> aesop
+          have : Fact ((f_a5.map (algebraMap ℚ f_a5.SplittingField)).Splits) := ⟨SplittingField.splits f_a5⟩
+          exact ⟨Gal.galActionHom f_a5 f_a5.SplittingField,
+            Gal.galActionHom_injective f_a5 f_a5.SplittingField⟩
         have h_iso : Nat.card f_a5.Gal = 60 := by
-          convert card_gal_a5
+          exact card_gal_a5
         have h_iso : Nat.card (MonoidHom.range f) = Nat.card f_a5.Gal := by
-          exact Nat.card_congr (Equiv.ofInjective _ hf) |> Eq.symm
+          exact (Nat.card_congr (Equiv.ofInjective _ hf)).symm
         have h_iso : Nonempty (Equiv.Perm (f_a5.rootSet (f_a5.SplittingField)) ≃* Equiv.Perm (f_a5.rootSet ℂ)) := by
-          refine' ⟨_⟩
-          refine' { Equiv.permCongr _ with .. }
-          refine' Fintype.equivOfCardEq _
-          all_goals norm_num [Fintype.card_perm]
-          rw [Polynomial.card_rootSet_eq_natDegree, Polynomial.card_rootSet_eq_natDegree]
-          · exact f_a5_irreducible.separable
-          · exact IsAlgClosed.splits (Polynomial.map (algebraMap ℚ ℂ) f_a5)
-          · exact f_a5_irreducible.separable
-          · exact Polynomial.SplittingField.splits _
+          have hcard : Fintype.card (f_a5.rootSet f_a5.SplittingField) =
+              Fintype.card (f_a5.rootSet ℂ) := by
+            rw [Polynomial.card_rootSet_eq_natDegree, Polynomial.card_rootSet_eq_natDegree]
+            · exact f_a5_irreducible.separable
+            · exact IsAlgClosed.splits (Polynomial.map (algebraMap ℚ ℂ) f_a5)
+            · exact f_a5_irreducible.separable
+            · exact Polynomial.SplittingField.splits _
+          exact ⟨{ Equiv.permCongr (Fintype.equivOfCardEq hcard) with map_mul' := by aesop }⟩
         obtain ⟨g⟩ := h_iso
-        refine' ⟨g.toMonoidHom.comp f, _, _⟩ <;> simp_all +decide [Function.Injective]
+        refine ⟨g.toMonoidHom.comp f, ?_, ?_⟩ <;> simp_all +decide [Function.Injective]
         · assumption
         · convert h_iso using 1
           rw [← Nat.card_eq_fintype_card]
           rw [← Nat.card_congr]
-          exact ⟨fun x => ⟨g x, by aesop⟩, fun x => ⟨g.symm x, by aesop⟩, fun x => by aesop, fun x => by aesop⟩
+          exact ⟨fun x ↦ ⟨g x, by aesop⟩, fun x ↦ ⟨g.symm x, by aesop⟩, fun x ↦ by aesop, fun x ↦ by aesop⟩
       obtain ⟨f, hf_inj, hf_card⟩ := h_subgroup
       have h_image : MonoidHom.range f = alternatingGroup (f_a5.rootSet ℂ) := by
         have h_unique : ∀ (H : Subgroup (Equiv.Perm (f_a5.rootSet ℂ))),
@@ -353,23 +330,23 @@ private lemma gal_iso_alt5 :
           grind only [Equiv.Perm.eq_alternatingGroup_of_index_eq_two]
         exact h_unique _ hf_card
       have h_iso : Nonempty (f_a5.Gal ≃* alternatingGroup (f_a5.rootSet ℂ)) := by
-        refine' ⟨_⟩
-        refine' { Equiv.ofBijective (fun x => ⟨f x, _⟩) ⟨fun x y hxy => _, fun x => _⟩ with .. }
+        refine ⟨?_⟩
+        refine' { Equiv.ofBijective (fun x ↦ ⟨f x, _⟩) ⟨fun x y hxy ↦ _, fun x ↦ _⟩ with .. }
         all_goals simp_all +decide [SetLike.ext_iff]
         any_goals rw [← h_image _ |>.1 ⟨x, rfl⟩]
         · exact hf_inj <| Subtype.ext_iff.mp hxy
-        · exact Exists.elim (h_image x |>.2 x.2) fun y hy => ⟨y, Subtype.ext hy⟩
+        · exact Exists.elim (h_image x |>.2 x.2) fun y hy ↦ ⟨y, Subtype.ext hy⟩
         · aesop
       have h_card : Nat.card (f_a5.rootSet ℂ) = 5 := by
+        rw [Nat.card_eq_fintype_card]
         convert Polynomial.card_rootSet_eq_natDegree _ _
-        convert Nat.card_eq_fintype_card
         · erw [Polynomial.natDegree_add_C, Polynomial.natDegree_add_eq_left_of_natDegree_lt] <;> norm_num
         · exact f_a5_irreducible.separable
         · exact IsAlgClosed.splits (Polynomial.map (algebraMap ℚ ℂ) f_a5)
       have h_iso_fin : Nonempty (f_a5.rootSet ℂ ≃ Fin 5) := by
         exact ⟨Fintype.equivOfCardEq <| by simpa [Nat.card_eq_fintype_card] using h_card⟩
       obtain ⟨e⟩ := h_iso_fin
-      refine' ⟨h_iso.some.trans _⟩
+      refine ⟨h_iso.some.trans ?_⟩
       exact e.altCongrHom
 
 /-- The alternating group `A₅` is an inverse Galois group, realized as the

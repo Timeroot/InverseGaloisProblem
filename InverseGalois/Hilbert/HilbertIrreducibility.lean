@@ -69,8 +69,8 @@ If `f ∈ ℚ[T][X]` is monic in `X`, then `f(t₀, X)` is monic for all `t₀`.
 -/
 lemma specialize_monic (f : Polynomial (Polynomial ℚ))
     (hf_monic : f.Monic) (t : ℤ) :
-    (specialize f t).Monic := by
-      exact hf_monic.map _
+    (specialize f t).Monic :=
+  hf_monic.map _
 
 /-
 Specialization preserves the degree for monic polynomials.
@@ -99,15 +99,15 @@ lemma union_sublinear_ncard {n : ℕ} (S : Fin n → Set ℤ)
       (Set.ncard ((⋃ i, S i) ∩ Set.Icc (-(N : ℤ)) (N : ℤ)) : ℝ) ≤ n * C * (N : ℝ) ^ α := by
   intro N hN
   rw [Set.inter_comm, Set.ncard_eq_toFinset_card']
-  refine' le_trans _ (show (∑ i : Fin n, (Set.ncard (S i ∩ Set.Icc (-N : ℤ) N) : ℝ)) ≤ n * C * N ^ α from _)
+  refine le_trans ?_ (show (∑ i : Fin n, (Set.ncard (S i ∩ Set.Icc (-N : ℤ) N) : ℝ)) ≤ n * C * N ^ α from ?_)
   · norm_cast
     convert Finset.card_biUnion_le
     any_goals try infer_instance
-    any_goals exact fun i => (S i ∩ Set.Icc (-N : ℤ) N).toFinset
+    any_goals exact fun i ↦ (S i ∩ Set.Icc (-N : ℤ) N).toFinset
     · ext
       aesop
     · rw [Set.ncard_eq_toFinset_card']
-  · simpa [mul_assoc] using Finset.sum_le_sum fun i (hi : i ∈ Finset.univ) => hS i N hN
+  · simpa [mul_assoc] using Finset.sum_le_sum fun i (hi : i ∈ Finset.univ) ↦ hS i N hN
 
 /-
 The monic case of HIT: for monic irreducible f of degree ≥ 2, the irreducible
@@ -141,10 +141,10 @@ lemma irreducible_comp_C_mul_X {L : Type*} [Field L] (q : Polynomial L) {c : L} 
         aesop
       · rcases hq_reducible with ⟨a, b, rfl, ha, hb⟩
         refine ⟨a, ?_, b, ?_, rfl⟩
-        · exact not_le.mp fun ha' => ha <| Polynomial.isUnit_iff_degree_eq_zero.mpr <|
-            le_antisymm ha' <| le_of_not_gt fun ha'' => by aesop
-        · exact not_le.mp fun hb' => hb <| Polynomial.isUnit_iff_degree_eq_zero.mpr <|
-            le_antisymm hb' <| le_of_not_gt fun hb'' => by aesop
+        · exact not_le.mp fun ha' ↦ ha <| Polynomial.isUnit_iff_degree_eq_zero.mpr <|
+            le_antisymm ha' <| le_of_not_gt fun ha'' ↦ by aesop
+        · exact not_le.mp fun hb' ↦ hb <| Polynomial.isUnit_iff_degree_eq_zero.mpr <|
+            le_antisymm hb' <| le_of_not_gt fun hb'' ↦ by aesop
     simp_all [Polynomial.isUnit_iff_degree_eq_zero]
     cases this rfl <;>
       simp_all [Polynomial.degree_eq_natDegree (show a ≠ 0 from by aesop_cat),
@@ -192,8 +192,8 @@ lemma monicAssociate_absIrr (f : Polynomial (Polynomial ℚ)) (hf_deg : 2 ≤ f.
         Polynomial.C (fK.leadingCoeff ^ (fK.natDegree - 1)) * fK := by
       convert congr_arg (Polynomial.map φ) (monicAssociate_comp_identity f (by linarith)) using 1
       · rw [Polynomial.leadingCoeff_map_of_leadingCoeff_ne_zero]
-        aesop
-        aesop
+        · aesop
+        · aesop
       · simp +zetaDelta at *
         rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] <;> norm_num
         · rw [Polynomial.leadingCoeff_map_of_leadingCoeff_ne_zero] <;> aesop
@@ -221,68 +221,8 @@ theorem hilbert_irreducibility_monic (f : Polynomial (Polynomial ℚ))
     (hf_abs_irr :
       Irreducible (f.map (mapRingHom (algebraMap ℚ (AlgebraicClosure ℚ))))) :
     Set.Infinite {t : ℤ | Irreducible (specialize f t)} := by
-  apply Set.Infinite.mono _
-  swap
-  exact Set.univ \ ⋃ k ∈ Finset.Ico 1 f.natDegree,
-    { t : ℤ | ∃ g : Polynomial ℚ, g.natDegree = k ∧ g.Monic ∧ g ∣ specialize f t }
-  · have h_union_sublinear : ∃ (C : ℝ) (α : ℝ), 0 < C ∧ 0 ≤ α ∧ α < 1 ∧ ∀ N : ℕ, 0 < N →
-      (Set.ncard ((⋃ k ∈ Finset.Ico 1 f.natDegree, {t : ℤ | ∃ g : Polynomial ℚ,
-          g.natDegree = k ∧ g.Monic ∧ g ∣ specialize f t}) ∩
-        Set.Icc (-(N : ℤ)) (N : ℤ)) : ℝ) ≤ C * (N : ℝ) ^ α := by
-          have h_union_sublinear : ∀ k ∈ Finset.Ico 1 f.natDegree,
-              ∃ (C : ℝ) (α : ℝ), 0 < C ∧ 0 ≤ α ∧ α < 1 ∧ ∀ N : ℕ, 0 < N →
-              (Set.ncard ({t : ℤ | ∃ g : Polynomial ℚ, g.natDegree = k ∧ g.Monic ∧ g ∣ specialize f t} ∩
-                Set.Icc (-(N : ℤ)) (N : ℤ)) : ℝ) ≤ C * (N : ℝ) ^ α := by
-                  exact fun k hk =>
-                    dorge_density_estimate f hf hf_monic hf_abs_irr k
-                      (Finset.mem_Ico.mp hk |>.1) (Finset.mem_Ico.mp hk |>.2)
-          choose! C α hC hα hα' h using h_union_sublinear
-          refine' ⟨∑ k ∈ Finset.Ico 1 f.natDegree, C k, sSup (Finset.image α (Finset.Ico 1 f.natDegree)), _, _, _, _⟩
-          · exact Finset.sum_pos hC (Finset.nonempty_Ico.mpr hf_deg)
-          · apply_rules [Real.sSup_nonneg]
-            aesop
-          · rcases Finset.eq_empty_or_nonempty (Finset.image α (Finset.Ico 1 f.natDegree)) with h | ⟨x, hx⟩ <;> simp_all
-            -- Since the image of α over the finite set {1, ..., f.natDegree - 1} is finite, its supremum is attained.
-            obtain ⟨k, hk⟩ : ∃ k ∈ Finset.Ico 1 f.natDegree, ∀ j ∈ Finset.Ico 1 f.natDegree, α j ≤ α k := by
-              exact Finset.exists_max_image _ _ ⟨hx.choose, Finset.mem_Ico.mpr hx.choose_spec.1⟩
-            exact lt_of_le_of_lt
-              (csSup_le (Set.Nonempty.image _ <| Set.nonempty_Ico.mpr <| by linarith) <|
-                Set.forall_mem_image.mpr fun j hj => hk.2 j <| Finset.mem_Ico.mpr hj) <|
-              hα' k (Finset.mem_Ico.mp hk.1 |>.1) (Finset.mem_Ico.mp hk.1 |>.2)
-          · intro N hN_pos
-            have h_union_sublinear : (Set.ncard ((⋃ k ∈ Finset.Ico 1 f.natDegree, {t : ℤ | ∃ g : Polynomial ℚ,
-              g.natDegree = k ∧ g.Monic ∧ g ∣ specialize f t}) ∩
-              Set.Icc (-(N : ℤ)) (N : ℤ)) : ℝ) ≤
-                ∑ k ∈ Finset.Ico 1 f.natDegree, (Set.ncard ({t : ℤ | ∃ g : Polynomial ℚ,
-              g.natDegree = k ∧ g.Monic ∧ g ∣ specialize f t} ∩
-              Set.Icc (-(N : ℤ)) (N : ℤ)) : ℝ) := by
-                rw [Set.inter_comm, Set.inter_iUnion₂]
-                norm_cast
-                have h_union_sublinear : ∀ (s : Finset ℕ) (f : ℕ → Set ℤ),
-                    (Set.ncard (⋃ k ∈ s, f k)) ≤ ∑ k ∈ s, (Set.ncard (f k)) := by
-                  exact fun s f => Finset.set_ncard_biUnion_le s f
-                simpa only [Set.inter_comm] using
-                  h_union_sublinear (Finset.Ico 1 f.natDegree) fun k =>
-                    Set.Icc (-N : ℤ) N ∩ { t : ℤ | ∃ g : Polynomial ℚ, g.natDegree = k ∧ g.Monic ∧ g ∣ specialize f t }
-            refine' le_trans h_union_sublinear _
-            rw [Finset.sum_mul _ _ _]
-            have hbdd : ∀ k ∈ Finset.Ico 1 f.natDegree,
-                α k ≤ sSup (Finset.image α (Finset.Ico 1 f.natDegree)) :=
-              fun k hk => le_csSup (Set.Finite.bddAbove <| Finset.finite_toSet _)
-                (Finset.mem_image_of_mem _ hk)
-            exact Finset.sum_le_sum fun k hk =>
-              le_trans (h k hk N hN_pos)
-                (mul_le_mul_of_nonneg_left
-                  (Real.rpow_le_rpow_of_exponent_le (mod_cast hN_pos) (hbdd k hk))
-                  (le_of_lt <| hC k hk))
-    obtain ⟨C, α, hC, hα, hα', h⟩ := h_union_sublinear
-    convert infinite_complement_of_sublinear_ncard hC hα' _ using 1
-    exact
-      Eq.symm
-        (Set.compl_eq_univ_diff
-          (⋃ k ∈ Finset.Ico 1 f.natDegree,
-            {t | ∃ g, g.natDegree = k ∧ g.Monic ∧ g ∣ specialize f t}))
-    convert h using 1
+  refine Set.Infinite.mono (s := Set.univ \ ⋃ k ∈ Finset.Ico 1 f.natDegree,
+    { t : ℤ | ∃ g : Polynomial ℚ, g.natDegree = k ∧ g.Monic ∧ g ∣ specialize f t }) ?_ ?_
   · intro t ht
     simp [specialize] at *
     constructor
@@ -301,10 +241,10 @@ theorem hilbert_irreducibility_monic (f : Polynomial (Polynomial ℚ))
         · exact Nat.pos_of_ne_zero ht.1
       have hb_deg : 1 ≤ b.natDegree := by
         by_cases hb : b = 0 <;> simp_all [Polynomial.degree_eq_natDegree]
-        · replace hab := congr_arg (fun p => p.coeff (Polynomial.natDegree f)) hab
+        · replace hab := congr_arg (fun p ↦ p.coeff (Polynomial.natDegree f)) hab
           simp_all [Polynomial.coeff_map]
         · exact Nat.pos_of_ne_zero ht.2
-      refine' ⟨Polynomial.C (a.leadingCoeff) ⁻¹ * a, _, _, _, _⟩
+      refine ⟨Polynomial.C (a.leadingCoeff) ⁻¹ * a, ?_, ?_, ?_, ?_⟩
       · rw [Polynomial.natDegree_C_mul] <;> aesop
       · rw [Polynomial.natDegree_C_mul] <;> norm_num [ha_deg, hb_deg]
         · have := congr_arg Polynomial.natDegree hab
@@ -314,9 +254,62 @@ theorem hilbert_irreducibility_monic (f : Polynomial (Polynomial ℚ))
         · aesop_cat
       · rw [Polynomial.Monic, Polynomial.leadingCoeff_mul, Polynomial.leadingCoeff_C, inv_mul_cancel₀]
         aesop
-      · refine' ⟨Polynomial.C a.leadingCoeff * b, _⟩
+      · refine ⟨Polynomial.C a.leadingCoeff * b, ?_⟩
         ring_nf
         rw [mul_assoc, ← Polynomial.C_mul, inv_mul_cancel₀ (by aesop_cat), Polynomial.C_1, mul_one]
+  · have h_union_sublinear : ∃ (C : ℝ) (α : ℝ), 0 < C ∧ 0 ≤ α ∧ α < 1 ∧ ∀ N : ℕ, 0 < N →
+      (Set.ncard ((⋃ k ∈ Finset.Ico 1 f.natDegree, {t : ℤ | ∃ g : Polynomial ℚ,
+          g.natDegree = k ∧ g.Monic ∧ g ∣ specialize f t}) ∩
+        Set.Icc (-(N : ℤ)) (N : ℤ)) : ℝ) ≤ C * (N : ℝ) ^ α := by
+          have h_union_sublinear : ∀ k ∈ Finset.Ico 1 f.natDegree,
+              ∃ (C : ℝ) (α : ℝ), 0 < C ∧ 0 ≤ α ∧ α < 1 ∧ ∀ N : ℕ, 0 < N →
+              (Set.ncard ({t : ℤ | ∃ g : Polynomial ℚ, g.natDegree = k ∧ g.Monic ∧ g ∣ specialize f t} ∩
+                Set.Icc (-(N : ℤ)) (N : ℤ)) : ℝ) ≤ C * (N : ℝ) ^ α := by
+                  exact fun k hk ↦
+                    dorge_density_estimate f hf hf_monic hf_abs_irr k
+                      (Finset.mem_Ico.mp hk |>.1) (Finset.mem_Ico.mp hk |>.2)
+          choose! C α hC hα hα' h using h_union_sublinear
+          refine ⟨∑ k ∈ Finset.Ico 1 f.natDegree, C k, sSup (Finset.image α (Finset.Ico 1 f.natDegree)), ?_, ?_, ?_, ?_⟩
+          · exact Finset.sum_pos hC (Finset.nonempty_Ico.mpr hf_deg)
+          · apply Real.sSup_nonneg
+            aesop
+          · rcases Finset.eq_empty_or_nonempty (Finset.image α (Finset.Ico 1 f.natDegree)) with h | ⟨x, hx⟩ <;> simp_all
+            -- Since the image of α over the finite set {1, ..., f.natDegree - 1} is finite, its supremum is attained.
+            obtain ⟨k, hk⟩ : ∃ k ∈ Finset.Ico 1 f.natDegree, ∀ j ∈ Finset.Ico 1 f.natDegree, α j ≤ α k := by
+              exact Finset.exists_max_image _ _ ⟨hx.choose, Finset.mem_Ico.mpr hx.choose_spec.1⟩
+            exact lt_of_le_of_lt
+              (csSup_le (Set.Nonempty.image _ <| Set.nonempty_Ico.mpr <| by linarith) <|
+                Set.forall_mem_image.mpr fun j hj ↦ hk.2 j <| Finset.mem_Ico.mpr hj) <|
+              hα' k (Finset.mem_Ico.mp hk.1 |>.1) (Finset.mem_Ico.mp hk.1 |>.2)
+          · intro N hN_pos
+            have h_union_sublinear : (Set.ncard ((⋃ k ∈ Finset.Ico 1 f.natDegree, {t : ℤ | ∃ g : Polynomial ℚ,
+              g.natDegree = k ∧ g.Monic ∧ g ∣ specialize f t}) ∩
+              Set.Icc (-(N : ℤ)) (N : ℤ)) : ℝ) ≤
+                ∑ k ∈ Finset.Ico 1 f.natDegree, (Set.ncard ({t : ℤ | ∃ g : Polynomial ℚ,
+              g.natDegree = k ∧ g.Monic ∧ g ∣ specialize f t} ∩
+              Set.Icc (-(N : ℤ)) (N : ℤ)) : ℝ) := by
+                rw [Set.inter_comm, Set.inter_iUnion₂]
+                norm_cast
+                have h_union_sublinear : ∀ (s : Finset ℕ) (f : ℕ → Set ℤ),
+                    (Set.ncard (⋃ k ∈ s, f k)) ≤ ∑ k ∈ s, (Set.ncard (f k)) := by
+                  exact fun s f ↦ Finset.set_ncard_biUnion_le s f
+                simpa only [Set.inter_comm] using
+                  h_union_sublinear (Finset.Ico 1 f.natDegree) fun k ↦
+                    Set.Icc (-N : ℤ) N ∩ { t : ℤ | ∃ g : Polynomial ℚ, g.natDegree = k ∧ g.Monic ∧ g ∣ specialize f t }
+            refine le_trans h_union_sublinear ?_
+            rw [Finset.sum_mul]
+            have hbdd : ∀ k ∈ Finset.Ico 1 f.natDegree,
+                α k ≤ sSup (Finset.image α (Finset.Ico 1 f.natDegree)) :=
+              fun k hk ↦ le_csSup (Set.Finite.bddAbove <| Finset.finite_toSet _)
+                (Finset.mem_image_of_mem _ hk)
+            exact Finset.sum_le_sum fun k hk ↦
+              le_trans (h k hk N hN_pos)
+                (mul_le_mul_of_nonneg_left
+                  (Real.rpow_le_rpow_of_exponent_le (mod_cast hN_pos) (hbdd k hk))
+                  (le_of_lt <| hC k hk))
+    obtain ⟨C, α, hC, hα, hα', h⟩ := h_union_sublinear
+    rw [← Set.compl_eq_univ_diff]
+    exact infinite_complement_of_sublinear_ncard hC hα' h
 
 /-- A degree-one bivariate polynomial has infinitely many irreducible integer
 specializations. Only the finitely many zeros of its leading coefficient are excluded. -/
@@ -330,7 +323,7 @@ lemma hit_degree_one (f : Polynomial (Polynomial ℚ))
       aesop
   -- The set {t : a(t) = 0} is finite (a is a nonzero polynomial, has finitely many roots).
   have h_finite_roots : Set.Finite {t : ℤ | a.eval (t : ℚ) = 0} := by
-    exact Set.Finite.subset (a.roots.toFinset.finite_toSet.preimage Int.cast_injective.injOn) fun x hx => by aesop
+    exact Set.Finite.subset (a.roots.toFinset.finite_toSet.preimage Int.cast_injective.injOn) fun x hx ↦ by aesop
   refine Set.Infinite.mono ?_ (h_finite_roots.infinite_compl)
   intro t ht
   simp_all [specialize]
@@ -413,7 +406,7 @@ lemma reducibleLocus_not_univ (f : Polynomial (Polynomial ℚ))
       Irreducible (f.map (mapRingHom (algebraMap ℚ (AlgebraicClosure ℚ)))))
     (k : ℕ) (hk : 1 ≤ k) (hk' : k < f.natDegree) :
     (reducibleLocus f k) ≠ Set.univ := by
-      convert Set.nonempty_compl.1 ?_
+      refine Set.nonempty_compl.1 ?_
       obtain ⟨C, α, hC, hα, hα', h⟩ := dorge_density_estimate f hf hf_monic hf_abs_irr k hk hk'
       convert infinite_complement_of_sublinear_ncard hC hα' _ |> Set.Infinite.nonempty
       convert h using 1
@@ -440,9 +433,9 @@ lemma irreducible_iff_not_in_reducibleLocus (f : Polynomial (Polynomial ℚ))
           rw [irreducible_iff]
           simp_all [Polynomial.Monic.def]
           obtain ⟨q, hq⟩ := hg₄
-          use fun _ => ⟨g, q, by linear_combination' hq,
-            fun h => by linarith [Polynomial.natDegree_eq_zero_of_isUnit h],
-            fun h => by
+          use fun _ ↦ ⟨g, q, by linear_combination' hq,
+            fun h ↦ by linarith [Polynomial.natDegree_eq_zero_of_isUnit h],
+            fun h ↦ by
               have h1 := Polynomial.natDegree_eq_zero_of_isUnit h
               have h2 := congr_arg Polynomial.natDegree hq
               rw [Polynomial.natDegree_mul'] at h2 <;> aesop⟩
@@ -462,29 +455,29 @@ lemma irreducible_iff_not_in_reducibleLocus (f : Polynomial (Polynomial ℚ))
                         ¬IsUnit g ∧ ¬IsUnit h := by
                     rw [irreducible_iff] at h
                     push_neg at h
-                    exact Exists.elim (h (by tauto)) fun a ha =>
-                      Exists.elim ha fun b hb =>
+                    exact Exists.elim (h (by tauto)) fun a ha ↦
+                      Exists.elim ha fun b hb ↦
                         ⟨a, b, hb.1.symm ▸ dvd_mul_right _ _, hb.1.symm ▸ dvd_mul_left _ _,
                           hb.1.symm, hb.2.1, hb.2.2⟩
-                  refine' ⟨g, h, hg, hh, ?_, ?_, ?_⟩
+                  refine ⟨g, h, hg, hh, ?_, ?_, ?_⟩
                   · rw [← hgh.1, Polynomial.natDegree_mul']
                     aesop
-                  · exact Nat.pos_of_ne_zero fun con =>
+                  · exact Nat.pos_of_ne_zero fun con ↦
                       hgh.2.1 <| Polynomial.isUnit_iff_degree_eq_zero.mpr <|
                         by rw [Polynomial.degree_eq_natDegree] <;> aesop
-                  · exact Nat.pos_of_ne_zero fun con =>
+                  · exact Nat.pos_of_ne_zero fun con ↦
                       hgh.2.2 <| Polynomial.isUnit_iff_degree_eq_zero.mpr <|
                         by rw [Polynomial.degree_eq_natDegree] <;> aesop
                 grind
               aesop
-          refine' ⟨Polynomial.C g.leadingCoeff⁻¹ * g, ?_, ?_, ?_, ?_⟩
+          refine ⟨Polynomial.C g.leadingCoeff⁻¹ * g, ?_, ?_, ?_, ?_⟩
           · rw [Polynomial.natDegree_C_mul] <;> aesop
           · rw [Polynomial.natDegree_C_mul] <;> aesop
           · rw [Polynomial.Monic, Polynomial.leadingCoeff_mul,
               Polynomial.leadingCoeff_C, inv_mul_cancel₀]
             exact Polynomial.leadingCoeff_ne_zero.mpr (by aesop)
-          · refine' dvd_trans _ hg.1
-            refine' ⟨Polynomial.C g.leadingCoeff, _⟩
+          · refine dvd_trans ?_ hg.1
+            refine ⟨Polynomial.C g.leadingCoeff, ?_⟩
             rw [mul_right_comm, ← Polynomial.C_mul, inv_mul_cancel₀ (by aesop_cat), Polynomial.C_1, one_mul]
 
 end

@@ -33,9 +33,7 @@ theorem IsInverseGalois.units_zmod (n : ℕ) [NeZero n] : IsInverseGalois (ZMod 
   let L := CyclotomicField n ℚ
   have : IsCyclotomicExtension {n} ℚ L := CyclotomicField.isCyclotomicExtension n ℚ
   have hirr : Irreducible (cyclotomic n ℚ) := cyclotomic.irreducible_rat (NeZero.pos n)
-  refine ⟨L, inferInstance, inferInstance, inferInstance, ?_, ⟨?_⟩⟩
-  · exact IsCyclotomicExtension.isGalois {n} ℚ L
-  · exact autEquivPow L hirr
+  exact ⟨L, inferInstance, inferInstance, inferInstance, isGalois {n} ℚ L, ⟨autEquivPow L hirr⟩⟩
 
 /-
 **Consequence of Dirichlet's theorem on primes in arithmetic progressions.**
@@ -48,15 +46,14 @@ theorem ZMod.exists_units_surjection (n : ℕ) [NeZero n] :
     ∃ (m : ℕ) (_ : NeZero m) (f : (ZMod m)ˣ →* Multiplicative (ZMod n)),
       Function.Surjective f := by
   -- By Dirichlet's theorem, there exists a prime `p` such that `p ≡ 1 (mod n)`.
-  obtain ⟨p, hp⟩ : ∃ p : ℕ, Nat.Prime p ∧ p ≡ 1 [MOD n] ∧ n < p := by
-    exact Exists.imp (by tauto) (Nat.exists_prime_gt_modEq_one n (NeZero.ne n))
+  obtain ⟨p, hp⟩ : ∃ p : ℕ, Nat.Prime p ∧ p ≡ 1 [MOD n] ∧ n < p :=
+    Exists.imp (by tauto) (Nat.exists_prime_gt_modEq_one n (NeZero.ne n))
   -- Since `p` is prime, `(ZMod p)ˣ` is cyclic and has cardinality `p-1`, hence `zmodCyclicMulEquiv` gives an equivalence with `Multiplicative (ZMod (p-1))`.
   let e : (ZMod p)ˣ ≃* Multiplicative (ZMod (p - 1)) := by
-    haveI := Fact.mk hp.1
-    have h_cyclic : IsCyclic (ZMod p)ˣ := by infer_instance
+    have := Fact.mk hp.1
     have h_card : Nat.card (ZMod p)ˣ = p - 1 := by
       simp [Nat.totient_prime hp.1]
-    exact (zmodCyclicMulEquiv h_cyclic).symm.trans (by rw [h_card])
+    exact (zmodCyclicMulEquiv inferInstance).symm.trans (by rw [h_card])
   -- Since `n ∣ p - 1`, reduction modulo `n` gives the required quotient map.
   have h_div : n ∣ p - 1 := by
     rw [← Int.natCast_dvd_natCast]
@@ -75,8 +72,8 @@ theorem IsInverseGalois.multiplicative_zmod (n : ℕ) [NeZero n] :
 /-- Every finite cyclic group is an inverse Galois group over `ℚ`. -/
 theorem IsInverseGalois.of_isCyclic (G : Type*) [Group G] [Finite G] [IsCyclic G] :
     IsInverseGalois G := by
-  haveI : NeZero (Nat.card G) := ⟨Nat.card_pos.ne'⟩
+  have : NeZero (Nat.card G) := ⟨Nat.card_pos.ne'⟩
   exact (IsInverseGalois.multiplicative_zmod (Nat.card G)).of_mulEquiv
-    (zmodCyclicMulEquiv (inferInstance : IsCyclic G))
+    (zmodCyclicMulEquiv inferInstance)
 
 end

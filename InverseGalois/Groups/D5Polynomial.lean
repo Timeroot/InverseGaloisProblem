@@ -75,11 +75,11 @@ lemma f_d5_irreducible : Irreducible f_d5 := by
       interval_cases n <;> norm_num [Polynomial.coeff_one, Polynomial.coeff_X]
     · ring_nf
       repeat (first | erw [Polynomial.degree_add_eq_right_of_degree_lt] | erw [Polynomial.degree_C]) <;> norm_num
-    · refine' Polynomial.Monic.isPrimitive _
+    · apply Polynomial.Monic.isPrimitive
       rw [Polynomial.Monic, Polynomial.leadingCoeff]
       norm_num [Polynomial.coeff_X, Polynomial.natDegree_add_eq_left_of_natDegree_lt,
         Polynomial.natDegree_sub_eq_left_of_natDegree_lt]
-  -- Since $f(X-2)$ is irreducible over $\mathbb{Z}$, it is also irreducible over $\mathbb{Q}$.
+  -- Since `f(X-2)` is irreducible over ℤ, it is also irreducible over ℚ.
   have h_irred_Q : Irreducible (Polynomial.map (algebraMap ℤ ℚ)
       (Polynomial.X ^ 5 - 10 * Polynomial.X ^ 4 + 40 * Polynomial.X ^ 3
         - 80 * Polynomial.X ^ 2 + 75 * Polynomial.X - 10 : Polynomial ℤ)) := by
@@ -95,7 +95,7 @@ lemma f_d5_irreducible : Irreducible f_d5 := by
       norm_num [Polynomial.coeff_one, Polynomial.coeff_X] at h
       exact isUnit_of_dvd_one h
     grind only [IsPrimitive.irreducible_iff_irreducible_map_fraction_map]
-  -- Since $f(X-2)$ is irreducible over $\mathbb{Q}$, it follows that $f(X)$ is also irreducible over $\mathbb{Q}$.
+  -- Since `f(X-2)` is irreducible over ℚ, it follows that `f(X)` is also irreducible over ℚ.
   have h_irred_Q : Irreducible (f_d5.comp (Polynomial.X - 2) : Polynomial ℚ) := by
     convert h_irred_Q using 1
     norm_num [f_d5]
@@ -104,7 +104,7 @@ lemma f_d5_irreducible : Irreducible f_d5 := by
       norm_num
       ring
   rw [irreducible_iff] at *
-  refine' ⟨_, _⟩
+  constructor
   · exact fun h => absurd (Polynomial.degree_eq_zero_of_isUnit h)
       (by
         erw [Polynomial.degree_add_C] <;>
@@ -192,7 +192,7 @@ lemma disc_value_d5 (v : Fin 5 ≃ (f_d5.rootSet f_d5.SplittingField)) :
             simp_all +decide [Finset.prod_eq_prod_diff_singleton_mul (Finset.mem_univ i)]
           linear_combination' h_root
         simp_all +decide
-        rw [← Finset.mul_sum _ _ _, h_power_sums.1]
+        rw [← Finset.mul_sum, h_power_sums.1]
         norm_num
       have h_power_sums_6 : ∑ i : Fin 5, (v i : f_d5.SplittingField) ^ 6 = 0 := by
         simp_all +decide [Fin.sum_univ_five, pow_succ']
@@ -206,7 +206,7 @@ lemma disc_value_d5 (v : Fin 5 ≃ (f_d5.rootSet f_d5.SplittingField)) :
               congr_arg (Polynomial.eval (v i : f_d5.SplittingField)) h_factor
             simp_all +decide [Finset.prod_eq_prod_diff_singleton_mul (Finset.mem_univ i)]
           linear_combination' h_root * (v i : f_d5.SplittingField) ^ 2
-        simp_all +decide [← Finset.mul_sum _ _ _]
+        simp_all +decide [← Finset.mul_sum]
       have h_power_sums_8 : ∑ i : Fin 5, (v i : f_d5.SplittingField) ^ 8 = 100 := by
         simp_all +decide [Fin.sum_univ_five, pow_succ']
         grind +ring
@@ -239,24 +239,23 @@ non-real.
 lemma f_d5_nonreal_root :
     ∃ z : ℂ, (Polynomial.aeval z) f_d5 = 0 ∧ z.im ≠ 0 := by
   by_contra! h
-  -- If all roots of $f_d5$ were real, then $f_d5$ would have 5 distinct real roots.
+  -- If all roots of `f_d5` were real, then `f_d5` would have 5 distinct real roots.
   have h_real_roots : Fintype.card (f_d5.rootSet ℂ) ≤ Fintype.card (f_d5.rootSet ℝ) := by
-    -- If all roots of $f_d5$ were real, then the set of roots in $\mathbb{C}$ would be in bijection with the set of roots in $\mathbb{R}$.
+    -- If all roots of `f_d5` were real, then the roots in ℂ would be in bijection with the roots in ℝ.
     have h_bij : (f_d5.rootSet ℂ).toFinset ⊆ Finset.image (fun x : ℝ => x : ℝ → ℂ) (f_d5.rootSet ℝ).toFinset := by
       simp_all [Finset.subset_iff, Polynomial.mem_rootSet]
       exact fun z h1 h2 =>
         ⟨z.re, by simpa [Complex.ext_iff, pow_succ, h z h2] using h2, by simp [Complex.ext_iff, h z h2]⟩
     have := Finset.card_le_card h_bij
     simp_all [Finset.card_image_of_injective, Function.Injective]
-  -- However, we have that $f_d5$ has at most 3 distinct real roots.
+  -- However, `f_d5` has at most 3 distinct real roots.
   have h_real_roots_card : Fintype.card (f_d5.rootSet ℝ) ≤ 3 := by
     have h_real_roots_card : Fintype.card (f_d5.rootSet ℝ) ≤
         Fintype.card ((Polynomial.derivative f_d5).rootSet ℝ) + 1 := by
-      convert Polynomial.card_rootSet_le_derivative (f_d5)
+      exact Polynomial.card_rootSet_le_derivative f_d5
     refine le_trans h_real_roots_card ?_
     rw [Fintype.card_ofFinset]
-    · refine' Nat.succ_le_of_lt (lt_of_le_of_lt (Finset.card_le_card _) _)
-      exact { 1, -1 }
+    · refine Nat.succ_le_of_lt (lt_of_le_of_lt (Finset.card_le_card (t := {1, -1}) ?_) ?_)
       · norm_num [Finset.subset_iff, f_d5]
         exact fun x _ hx => eq_or_eq_neg_of_sq_eq_sq _ _ <| by nlinarith
       · norm_num

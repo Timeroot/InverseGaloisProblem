@@ -18,18 +18,18 @@ noncomputable section
 order of the Galois group. -/
 theorem natDegree_dvd_card {F : Type*} [Field F] [CharZero F] {p : Polynomial F}
     (p_irr : Irreducible p) : p.natDegree ∣ Nat.card p.Gal := by
-  rw [Polynomial.Gal.card_of_separable p_irr.separable]
+  rw [Gal.card_of_separable p_irr.separable]
   have hp : p.degree ≠ 0 := by
-    have := Irreducible.natDegree_pos p_irr
-    simp [Polynomial.degree_eq_natDegree p_irr.ne_zero]
+    have := p_irr.natDegree_pos
+    simp only [degree_eq_natDegree p_irr.ne_zero, ne_eq, Nat.cast_eq_zero]
     omega
   let α : p.SplittingField :=
     rootOfSplits (SplittingField.splits p) (by rwa [degree_map])
   have hα : IsIntegral F α := .of_finite F α
-  use finrank (IntermediateField.adjoin F {α}) p.SplittingField
+  use finrank (adjoin F {α}) p.SplittingField
   suffices (minpoly F α).natDegree = p.natDegree by
-    rw [← finrank_mul_finrank F (IntermediateField.adjoin F {α}) p.SplittingField,
-      IntermediateField.adjoin.finrank hα, this]
+    rw [← finrank_mul_finrank F (adjoin F {α}) p.SplittingField,
+      adjoin.finrank hα, this]
   suffices minpoly F α ∣ p by
     have key := (minpoly.irreducible hα).dvd_symm p_irr this
     apply le_antisymm
@@ -43,7 +43,7 @@ theorem card_rootSet_eq_natDegree (p : Polynomial ℚ) (hp : p.Separable) (hp0 :
     Fintype.card (p.rootSet ℂ) = p.natDegree := by
   have := hp0
   simp_rw [rootSet_def, Finset.coe_sort_coe, Fintype.card_coe]
-  rw [Multiset.toFinset_card_of_nodup, ← Polynomial.Splits.natDegree_eq_card_roots,
+  rw [Multiset.toFinset_card_of_nodup, ← Splits.natDegree_eq_card_roots,
     natDegree_map]
   · exact IsAlgClosed.splits _
   · exact nodup_roots ((separable_map (algebraMap ℚ ℂ)).mpr hp)
@@ -55,12 +55,12 @@ from the injective Galois action on roots (Lagrange's theorem).
 theorem card_gal_dvd_card_rootSet_factorial (p : Polynomial ℚ) :
     Nat.card p.Gal ∣ (Fintype.card (p.rootSet ℂ)).factorial := by
       by_contra! h_contra
-      -- By the properties of the Galois group, we know that $|Gal(p)|$ divides $|S_n| = n!$.
+      -- The Galois group embeds in the permutation group of the roots, so `|Gal(p)|` divides `|S_n| = n!`.
       have h_div : Nat.card p.Gal ∣ Fintype.card (Equiv.Perm (p.rootSet ℂ)) := by
-        convert Subgroup.card_subgroup_dvd_card (MonoidHom.range (Polynomial.Gal.galActionHom p ℂ)) using 1
-        convert Nat.card_congr (Equiv.ofInjective _ <| Polynomial.Gal.galActionHom_injective p ℂ) using 1
+        have : Fact (Polynomial.map (algebraMap ℚ ℂ) p).Splits := Gal.splits_ℚ_ℂ
+        convert Subgroup.card_subgroup_dvd_card (Gal.galActionHom p ℂ).range using 1
+        · exact Nat.card_congr (Equiv.ofInjective _ <| Gal.galActionHom_injective p ℂ)
         · rw [Nat.card_eq_fintype_card]
-        · exact Gal.splits_ℚ_ℂ
       simp_all [Fintype.card_perm]
 
 end

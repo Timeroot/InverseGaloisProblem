@@ -48,7 +48,7 @@ theorem centralBinom_le_pow_primeCounting (n : ℕ) (hn : 1 ≤ n) :
           p ^ (Nat.centralBinom n).factorization p ≤
         ∏ p ∈ (Finset.range (2 * n + 1)).filter Nat.Prime, 2 * n := by
     gcongr
-    exact Nat.pow_factorization_choose_le (by linarith) |> le_trans <| by linarith
+    exact (Nat.pow_factorization_choose_le (by linarith)).trans (by linarith)
   convert h_prod_le using 1
   · conv_lhs => rw [← Nat.factorization_prod_pow_eq_self (Nat.ne_of_gt (Nat.centralBinom_pos _))]
     rw [Finsupp.prod_of_support_subset]
@@ -66,7 +66,7 @@ Combining `centralBinom_le_pow_primeCounting` with the lower bound
 -/
 theorem four_pow_lt_mul_pow_primeCounting (n : ℕ) (hn : 4 ≤ n) :
     4 ^ n < n * (2 * n) ^ Nat.primeCounting (2 * n) := by
-  convert Nat.four_pow_lt_mul_centralBinom n hn |>LT.lt.trans_le <| ?_ using 1
+  apply (Nat.four_pow_lt_mul_centralBinom n hn).trans_le
   exact Nat.mul_le_mul_left _ (centralBinom_le_pow_primeCounting _ (by linarith))
 
 /-
@@ -90,7 +90,7 @@ theorem primeCounting_two_mul_ge (n : ℕ) (hn : 4 ≤ n) :
     norm_num at *
     linarith
   have h_log_n : Real.log n ≤ n := by
-    exact le_trans (Real.log_le_sub_one_of_pos (by positivity)) (by norm_num)
+    exact (Real.log_le_sub_one_of_pos (by positivity)).trans (by norm_num)
   have h_n4 : (n : ℝ) ≥ 4 := by norm_cast
   have h_2n1 : (2 * n : ℝ) > 1 := by
     norm_cast
@@ -105,7 +105,7 @@ For every `m ≥ 8`, the number of primes up to `m` satisfies
 -/
 theorem primeCounting_ge (m : ℕ) (hm : 8 ≤ m) :
     (m : ℝ) / (7 * Real.log m) ≤ Nat.primeCounting m := by
-  -- Set $n := m / 2$ (natural division). Since $m \geq 8$, $n \geq 4$.
+  -- Set `n := m / 2` (natural division). Since `m ≥ 8`, `n ≥ 4`.
   set n := m / 2 with hn_def
   have hn_ge_4 : 4 ≤ n := by
     omega
@@ -113,8 +113,8 @@ theorem primeCounting_ge (m : ℕ) (hm : 8 ≤ m) :
   have h_monotone : (Nat.primeCounting (2 * n) : ℝ) ≤ Nat.primeCounting m := by
     exact_mod_cast Nat.monotone_primeCounting <| by omega
   -- By `primeCounting_two_mul_ge n (by omega : 4 ≤ n)`, `(n:ℝ)/(3 * Real.log (2*n)) ≤ Nat.primeCounting (2*n)`.
-  have h_lower_bound : (n : ℝ) / (3 * Real.log (2 * n)) ≤ Nat.primeCounting (2 * n) := by
-    convert primeCounting_two_mul_ge n hn_ge_4 using 1
+  have h_lower_bound : (n : ℝ) / (3 * Real.log (2 * n)) ≤ Nat.primeCounting (2 * n) :=
+    primeCounting_two_mul_ge n hn_ge_4
   refine le_trans ?_ (h_lower_bound.trans h_monotone)
   rw [div_le_div_iff₀]
   · -- Using `Real.log (2*n) ≤ Real.log m` and `Real.log m > 0`, we get `3 * m * Real.log (2*n) ≤ 3 * m * Real.log m`.

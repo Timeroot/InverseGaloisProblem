@@ -47,23 +47,23 @@ lemma exists_int_multiple_of_rat_poly (a : Polynomial ℚ) :
       (D : ℚ) • a = b.map (Int.castRingHom ℚ) := by
   obtain ⟨D, hD⟩ : ∃ D : ℕ, 0 < D ∧ ∀ i ∈ a.support, D * a.coeff i ∈ Set.range (algebraMap ℤ ℚ) := by
     obtain ⟨D, hD⟩ : ∃ D : ℕ, 0 < D ∧ ∀ i ∈ a.support, (a.coeff i).den ∣ D := by
-      refine ⟨∏ i ∈ a.support, (a.coeff i |> Rat.den), ?_, ?_⟩
-      · exact Finset.prod_pos fun i hi => Nat.cast_pos.mpr (Rat.pos _)
-      · exact fun i hi => Finset.dvd_prod_of_mem _ hi
-    refine' ⟨D, hD.1, fun i hi => _⟩
+      refine ⟨∏ i ∈ a.support, (a.coeff i).den, ?_, ?_⟩
+      · exact Finset.prod_pos fun i hi ↦ Nat.cast_pos.mpr (Rat.pos _)
+      · exact fun i hi ↦ Finset.dvd_prod_of_mem _ hi
+    refine ⟨D, hD.1, fun i hi ↦ ?_⟩
     obtain ⟨k, hk⟩ := hD.2 i hi
-    use k * (a.coeff i |> Rat.num)
+    use k * (a.coeff i).num
     simp [*, mul_comm, mul_left_comm]
   choose! f hf using hD.2
-  use D, ∑ i ∈ a.support, f i • Polynomial.X ^ i
-  simp_all only [Polynomial.mem_support_iff, ne_eq, algebraMap_int_eq,
+  use D, ∑ i ∈ a.support, f i • X ^ i
+  simp_all only [mem_support_iff, ne_eq, algebraMap_int_eq,
     Int.coe_castRingHom, Set.mem_range, eq_intCast, zsmul_eq_mul, true_and]
   obtain ⟨left, right⟩ := hD
   ext n : 1
-  simp_all only [Polynomial.coeff_smul, smul_eq_mul, Polynomial.coeff_map,
-    Polynomial.finset_sum_coeff, Polynomial.coeff_intCast_mul, Int.cast_eq,
-    Polynomial.coeff_X_pow, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq,
-    Polynomial.mem_support_iff, ne_eq, ite_not, eq_intCast, Int.cast_ite,
+  simp_all only [coeff_smul, smul_eq_mul, coeff_map,
+    finset_sum_coeff, coeff_intCast_mul, Int.cast_eq,
+    coeff_X_pow, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq,
+    mem_support_iff, ne_eq, ite_not, eq_intCast, Int.cast_ite,
     Int.cast_zero, not_false_eq_true, right_eq_ite_iff, implies_true]
 
 /-- For a polynomial `f ∈ ℚ[T][X]`, there exists a common denominator `D > 0` such that
@@ -77,15 +77,17 @@ lemma exists_common_denominator (f : Polynomial (Polynomial ℚ)) :
     obtain ⟨D, b, hD, hb⟩ := exists_int_multiple_of_rat_poly (f.coeff i)
     exact ⟨D, hD, b, hb⟩
   choose D hD_pos b hb using hD_exists
-  refine' ⟨∏ i ∈ f.support, D i, Finset.prod_pos _, fun i => _⟩
+  refine ⟨∏ i ∈ f.support, D i, Finset.prod_pos ?_, fun i ↦ ?_⟩
   · intro i a
     simp_all only [mem_support_iff, ne_eq]
-  · by_cases hi : i ∈ f.support <;> simp_all
-    · use b i * ∏ j ∈ f.support \ {i}, (D j : ℤ[X])
-      simp_all [Finset.prod_eq_prod_diff_singleton_mul (Polynomial.mem_support_iff.mpr hi),
+  · by_cases hi : i ∈ f.support
+    · simp_all
+      use b i * ∏ j ∈ f.support \ {i}, (D j : ℤ[X])
+      simp_all [Finset.prod_eq_prod_diff_singleton_mul (mem_support_iff.mpr hi),
         mul_comm, mul_left_comm, Algebra.smul_def]
       simp [← mul_assoc, ← hb, Polynomial.map_prod]
-    · exact ⟨0, by norm_num⟩
+    · simp_all
+      exact ⟨0, by norm_num⟩
 
 /-!
 ## Gauss's Lemma for Monic Polynomials
@@ -102,33 +104,31 @@ theorem monic_int_factor_of_monic_int_dvd' {f : Polynomial ℤ} {g : Polynomial 
     (hg_dvd : g ∣ f.map (Int.castRingHom ℚ)) :
     ∃ g' : Polynomial ℤ, g'.Monic ∧ g'.map (Int.castRingHom ℚ) = g ∧
       g'.natDegree = g.natDegree := by
-  have h_int_coeffs : ∀ i, ∃ (ci : ℤ), Polynomial.coeff g i = (ci : ℚ) := by
+  have h_int_coeffs : ∀ i, ∃ (ci : ℤ), coeff g i = (ci : ℚ) := by
     intro i
     have := isIntegral_coeff_of_dvd f g hf_monic hg_monic hg_dvd i
-    simp_all [IsIntegrallyClosed.isIntegral_iff]
+    simp only [IsIntegrallyClosed.isIntegral_iff] at this
     tauto
   choose ci hci using h_int_coeffs
-  refine' ⟨∑ i ∈ g.support, Polynomial.C (ci i) * Polynomial.X ^ i, _, _, _⟩ <;> simp_all [Polynomial.ext_iff]
-  · rw [Polynomial.Monic, Polynomial.leadingCoeff, Polynomial.natDegree_eq_of_degree_eq_some]
+  refine ⟨∑ i ∈ g.support, C (ci i) * X ^ i, ?_, ?_, ?_⟩ <;> simp_all [Polynomial.ext_iff]
+  · rw [Monic, leadingCoeff, natDegree_eq_of_degree_eq_some]
     any_goals exact g.natDegree
     · have := hg_monic.coeff_natDegree
-      simp_all only [Rat.intCast_eq_one_iff, finset_sum_coeff, coeff_intCast_mul, Int.cast_eq,
-        coeff_X_pow, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq, mem_support_iff, Int.cast_one,
-        ne_eq, one_ne_zero, not_false_eq_true, ↓reduceIte]
-    · rw [Polynomial.degree_eq_of_le_of_coeff_ne_zero] <;>
-        norm_num [Polynomial.coeff_sum, Polynomial.coeff_X_pow, hci]
-      · exact le_trans (Polynomial.degree_sum_le _ _)
-          (Finset.sup_le fun i hi => Polynomial.degree_C_mul_X_pow_le _ _ |> le_trans <|
-            WithBot.coe_le_coe.mpr <| Polynomial.le_natDegree_of_mem_supp _ hi)
+      simp_all
+    · rw [degree_eq_of_le_of_coeff_ne_zero] <;>
+        norm_num [coeff_sum, coeff_X_pow, hci]
+      · exact le_trans (degree_sum_le _ _)
+          (Finset.sup_le fun i hi ↦ le_trans (degree_C_mul_X_pow_le _ _)
+            (WithBot.coe_le_coe.mpr (le_natDegree_of_mem_supp _ hi)))
       · have := hg_monic.coeff_natDegree
-        simp_all only [Rat.intCast_eq_one_iff, one_ne_zero, not_false_eq_true]
-  · rw [Polynomial.natDegree_eq_of_degree_eq_some]
-    rw [Polynomial.degree_eq_of_le_of_coeff_ne_zero] <;> norm_num [Polynomial.coeff_sum, hci]
-    · exact le_trans (Polynomial.degree_sum_le _ _)
-        (Finset.sup_le fun i hi => Polynomial.degree_C_mul_X_pow_le _ _ |> le_trans <|
-          WithBot.coe_le_coe.mpr <| Polynomial.le_natDegree_of_mem_supp _ hi)
+        simp_all
+  · rw [natDegree_eq_of_degree_eq_some]
+    rw [degree_eq_of_le_of_coeff_ne_zero] <;> norm_num [coeff_sum, hci]
+    · exact le_trans (degree_sum_le _ _)
+        (Finset.sup_le fun i hi ↦ le_trans (degree_C_mul_X_pow_le _ _)
+          (WithBot.coe_le_coe.mpr (le_natDegree_of_mem_supp _ hi)))
     · have := hg_monic.coeff_natDegree
-      simp_all only [Rat.intCast_eq_one_iff, one_ne_zero, not_false_eq_true]
+      simp_all
 
 /-!
 ## Tschirnhaus Substitution Properties
@@ -139,11 +139,9 @@ The rescaling `X ↦ D·X` applied to a polynomial preserves monicity and degree
 /-- Tschirnhaus preserves monicity: if g is monic, so is D^(deg g) · g(X/D). -/
 lemma tschirnhaus_monic (g : Polynomial ℚ) (D : ℚ) (hD : D ≠ 0) (hg_monic : g.Monic) :
     (g.comp (Polynomial.C D⁻¹ * Polynomial.X) * Polynomial.C (D ^ g.natDegree)).Monic := by
-  rw [Polynomial.Monic, Polynomial.leadingCoeff_mul, Polynomial.leadingCoeff_comp]
-  · simp_all only [ne_eq, Monic.leadingCoeff, leadingCoeff_mul, leadingCoeff_C, monic_X, mul_one,
-      inv_pow, one_mul, map_pow, leadingCoeff_pow, pow_eq_zero_iff', Monic.natDegree_eq_zero,
-      false_and, not_false_eq_true, inv_mul_cancel₀]
-  · rw [Polynomial.natDegree_C_mul_X]
+  rw [Monic, leadingCoeff_mul, leadingCoeff_comp]
+  · simp_all
+  · rw [natDegree_C_mul_X]
     · exact one_ne_zero
     · exact inv_ne_zero hD
 
@@ -151,15 +149,16 @@ lemma tschirnhaus_monic (g : Polynomial ℚ) (D : ℚ) (hD : D ≠ 0) (hg_monic 
 lemma tschirnhaus_natDegree (g : Polynomial ℚ) (D : ℚ) (hD : D ≠ 0) (hg_monic : g.Monic) :
     (g.comp (Polynomial.C D⁻¹ * Polynomial.X) * Polynomial.C (D ^ g.natDegree)).natDegree =
     g.natDegree := by
-  rw [Polynomial.natDegree_mul'] <;> simp_all [Polynomial.natDegree_comp, Polynomial.natDegree_mul']
-  rw [Polynomial.comp_eq_zero_iff]
-  simp_all only [Polynomial.mul_coeff_zero, Polynomial.coeff_C_zero,
-    Polynomial.coeff_X_zero, mul_zero, map_zero, mul_eq_zero, map_eq_zero,
-    inv_eq_zero, Polynomial.X_ne_zero, or_self, and_false, or_false]
-  apply Aesop.BuiltinRules.not_intro
-  intro a
-  subst a
-  simp_all only [Polynomial.not_monic_zero]
+  rw [natDegree_mul']
+  · simp_all [natDegree_comp, natDegree_mul']
+  · simp_all
+    rw [comp_eq_zero_iff]
+    simp_all only [mul_coeff_zero, coeff_C_zero,
+      coeff_X_zero, mul_zero, map_zero, mul_eq_zero, map_eq_zero,
+      inv_eq_zero, X_ne_zero, or_self, and_false, or_false]
+    intro a
+    subst a
+    simp_all [not_monic_zero]
 
 /-
 Tschirnhaus preserves divisibility: if g | f, then g_tsch | f_tsch.
@@ -169,8 +168,8 @@ lemma tschirnhaus_factor_dvd (f g : Polynomial ℚ) (D : ℚ) (_hD : D ≠ 0)
     (g.comp (Polynomial.C D⁻¹ * Polynomial.X) * Polynomial.C (D ^ g.natDegree)) ∣
     (f.comp (Polynomial.C D⁻¹ * Polynomial.X) * Polynomial.C (D ^ f.natDegree)) := by
   obtain ⟨q, rfl⟩ := hg_dvd
-  have h_deg : Polynomial.natDegree (g * q) = Polynomial.natDegree g + Polynomial.natDegree q := by
-    exact Polynomial.natDegree_mul (by aesop_cat) (by aesop_cat)
+  have h_deg : natDegree (g * q) = natDegree g + natDegree q :=
+    natDegree_mul (by aesop_cat) (by aesop_cat)
   simp_all
   exact ⟨q.comp (C D⁻¹ * X) * C D ^ q.natDegree, by ring⟩
 

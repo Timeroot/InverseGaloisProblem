@@ -48,7 +48,7 @@ lemma f_d5_eq : f_d5 = X ^ 5 + C (-5 : ℚ) * X + C 12 := by
 /-- The sextic resolvent of `X⁵ − 5X + 12` (`p = -5, q = 12`) has the rational root `25`.
 This is the algebraic input that forces `|Gal f| ∣ 20`. -/
 lemma sexticResolvent_d5_root : (sexticResolvent (-5 : ℚ) 12).IsRoot 25 := by
-  simp only [sexticResolvent, Polynomial.IsRoot.def, eval_add, eval_sub, eval_mul,
+  simp only [sexticResolvent, IsRoot.def, eval_add, eval_sub, eval_mul,
     eval_pow, eval_C, eval_X]
   norm_num
 
@@ -68,7 +68,7 @@ polynomial and root computations in `D5Helpers`. -/
 theorem card_gal_d5_ne_120 : Nat.card f_d5.Gal ≠ 120 := by
   obtain ⟨g, hg⟩ := exists_gal_d5_embeds_alternating
   exact ne_of_lt <| lt_of_le_of_lt (by simpa using Fintype.card_le_of_injective _ hg)
-    (by native_decide)
+    (by decide)
 
 /-- The Galois group of `X⁵ − 5X + 12` has order 10.
 
@@ -104,13 +104,13 @@ would send it to an order-10 permutation of five points, which is impossible. Th
 order-10 Galois group is non-cyclic and hence dihedral. -/
 lemma gal_iso_d5 : Nonempty (f_d5.Gal ≃* DihedralGroup 5) := by
   obtain ⟨g', hg'⟩ := exists_gal_d5_embeds_alternating
-  refine iso_dihedral_five_of_card_ten card_gal_d5 ?_
+  apply iso_dihedral_five_of_card_ten card_gal_d5
   intro hcyc
   obtain ⟨x, hx⟩ : ∃ x : f_d5.Gal, orderOf x = 10 := by
     obtain ⟨g, hg⟩ := hcyc.exists_generator
     exact ⟨g, by rw [orderOf_eq_card_of_forall_mem_zpowers hg, card_gal_d5]⟩
   have hord : orderOf (g' x) = 10 := by rw [orderOf_injective g' hg' x, hx]
-  refine perm_fin5_no_order_ten ((alternatingGroup (Fin 5)).subtype (g' x)) ?_
+  apply perm_fin5_no_order_ten ((alternatingGroup (Fin 5)).subtype (g' x))
   rw [orderOf_injective (alternatingGroup (Fin 5)).subtype Subtype.coe_injective (g' x), hord]
 
 end D5

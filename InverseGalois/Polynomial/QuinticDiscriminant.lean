@@ -56,16 +56,16 @@ private lemma f_poly_ne_zero : f_poly ≠ 0 :=
   ne_of_apply_ne (Polynomial.eval 0) (by norm_num [f_poly])
 
 private lemma f_poly_natDegree : f_poly.natDegree = 5 := by
-  erw [Polynomial.natDegree_add_C, Polynomial.natDegree_add_eq_left_of_natDegree_lt] <;> norm_num
+  rw [Polynomial.natDegree_add_C, Polynomial.natDegree_add_eq_left_of_natDegree_lt] <;> norm_num
 
 private lemma f_poly_separable : f_poly.Separable := by
-  -- Compute the derivative of $f_poly$.
+  -- Compute the derivative of `f_poly`.
   set f_poly' : ℚ[X] := Polynomial.derivative f_poly
   have h_deriv : f_poly' = 5 * Polynomial.X ^ 4 + 20 := by
     simp +zetaDelta at *
-    erw [show (C 4 + 1 : Polynomial ℚ) = 5 from Polynomial.funext fun x => by norm_num]
+    rw [show (C 4 + 1 : Polynomial ℚ) = 5 from Polynomial.funext fun x ↦ by norm_num]
     norm_cast
-  -- Since $f$ and $f'$ have no common roots, they are coprime.
+  -- Since `f` and `f'` have no common roots, they are coprime.
   have h_coprime : ∀ r : ℂ,
       Polynomial.eval r (Polynomial.map (algebraMap ℚ ℂ) f_poly) = 0 →
       Polynomial.eval r (Polynomial.map (algebraMap ℚ ℂ) f_poly') ≠ 0 := by
@@ -78,9 +78,9 @@ private lemma f_poly_separable : f_poly.Separable := by
   · intros z hz hz' hz'' hz'''
     contrapose! h_coprime
     have hdeg : Polynomial.degree (Polynomial.map (algebraMap ℚ ℂ) z) > 0 := by
-      erw [Polynomial.degree_map]
-      exact lt_of_not_ge fun h => hz <| Polynomial.isUnit_iff_degree_eq_zero.mpr <|
-        le_antisymm h <| le_of_not_gt fun h' => by
+      rw [Polynomial.degree_map]
+      exact lt_of_not_ge fun h ↦ hz <| Polynomial.isUnit_iff_degree_eq_zero.mpr <|
+        le_antisymm h <| le_of_not_gt fun h' ↦ by
           simp_all only [derivative_X_pow_succ, Nat.cast_ofNat, map_add, map_one, derivative_mul,
             derivative_C, zero_mul, derivative_X, mul_one, zero_add, add_zero, mem_nonunits_iff,
             ne_eq, Nat.WithBot.lt_zero_iff, degree_eq_bot, f_poly']
@@ -107,50 +107,49 @@ private lemma disc_value (v : Fin 5 ≃ (f_poly.rootSet f_poly.SplittingField)) 
     (∏ i : Fin 5, ∏ j ∈ Ioi i,
       ((v j : f_poly.SplittingField) - (v i : f_poly.SplittingField))) ^ 2 =
     algebraMap ℚ _ (32000 ^ 2) := by
-      -- By definition of $v$, we know that $v$ is an equivalence between $Fin 5$ and the roots of $f_poly$ in its splitting field.
+      -- `v` is an equivalence between `Fin 5` and the roots of `f_poly` in its splitting field.
       have hv : (f_poly.map (algebraMap ℚ (f_poly.SplittingField))).roots =
-          Multiset.map (fun i : Fin 5 => (v i : f_poly.SplittingField)) (Finset.univ.val) := by
+          Multiset.map (fun i : Fin 5 ↦ (v i : f_poly.SplittingField)) (Finset.univ.val) := by
         have hv : (f_poly.map (algebraMap ℚ (f_poly.SplittingField))).roots =
-            Multiset.map (fun x => x) (Multiset.map (fun x => (x : f_poly.SplittingField))
+            Multiset.map (fun x ↦ x) (Multiset.map (fun x ↦ (x : f_poly.SplittingField))
               (f_poly.rootSet f_poly.SplittingField).toFinset.val) := by
-          have h_distinct : Multiset.Nodup (Polynomial.map (algebraMap ℚ (f_poly.SplittingField)) f_poly).roots := by
-            convert Polynomial.nodup_roots _
-            exact Polynomial.Separable.map f_poly_separable
+          have h_distinct : Multiset.Nodup (Polynomial.map (algebraMap ℚ (f_poly.SplittingField)) f_poly).roots :=
+            Polynomial.nodup_roots (Polynomial.Separable.map f_poly_separable)
           norm_num +zetaDelta at *
           unfold Polynomial.rootSet
           norm_num
           rw [Polynomial.aroots_def]
           norm_num
           grind only [Multiset.dedup_eq_self]
-        have hv : Multiset.map (fun x => (x : f_poly.SplittingField))
+        have hv : Multiset.map (fun x ↦ (x : f_poly.SplittingField))
               (f_poly.rootSet f_poly.SplittingField).toFinset.val =
-            Multiset.map (fun x => (x : f_poly.SplittingField))
-              (Multiset.map (fun i : Fin 5 => (v i : f_poly.SplittingField)) (Finset.univ.val)) := by
-          refine' congr_arg _ _
-          refine' Eq.symm _
+            Multiset.map (fun x ↦ (x : f_poly.SplittingField))
+              (Multiset.map (fun i : Fin 5 ↦ (v i : f_poly.SplittingField)) (Finset.univ.val)) := by
+          apply congr_arg
+          apply Eq.symm
           convert Multiset.map_univ_val_equiv v using 1
           constructor <;> intro h
           · exact Multiset.map_univ_val_equiv v
-          · convert congr_arg (Multiset.map (fun x : f_poly.rootSet f_poly.SplittingField =>
-              (x : f_poly.SplittingField))) h using 1
+          · exact congr_arg (Multiset.map (fun x : f_poly.rootSet f_poly.SplittingField ↦
+              (x : f_poly.SplittingField))) h
         simp_all only [Polynomial.map_add, Polynomial.map_pow, map_X, Polynomial.map_mul, map_C,
           eq_ratCast, Rat.cast_ofNat, Fin.univ_val_map, List.ofFn_succ, Fin.isValue,
           Fin.succ_zero_eq_one, Fin.succ_one_eq_two, Fin.reduceSucc, List.ofFn_zero,
           Multiset.map_coe, List.map_cons, List.map_nil, Multiset.map_id']
-      -- By definition of $v$, we know that $v$ is an equivalence between $Fin 5$ and the roots of $f_poly$ in its splitting field. Therefore, we can write $f_poly$ as $\prod_{i=0}^{4} (X - v_i)$.
+      -- Since `v` enumerates the roots of `f_poly`, we can write `f_poly` as `∏ i, (X - v i)`.
       have h_factor : f_poly.map (algebraMap ℚ (f_poly.SplittingField)) =
           ∏ i : Fin 5, (Polynomial.X - Polynomial.C (v i : f_poly.SplittingField)) := by
         convert Polynomial.Splits.eq_prod_roots _ using 1
         all_goals try infer_instance
-        · erw [Polynomial.leadingCoeff_map, Polynomial.leadingCoeff, Polynomial.natDegree_add_C,
+        · rw [Polynomial.leadingCoeff_map, Polynomial.leadingCoeff, Polynomial.natDegree_add_C,
             Polynomial.natDegree_add_eq_left_of_natDegree_lt] <;>
             norm_num [Polynomial.coeff_X, Polynomial.coeff_C]
-          convert congr_arg (Multiset.prod ∘ Multiset.map (fun x => Polynomial.X - Polynomial.C x))
+          convert congr_arg (Multiset.prod ∘ Multiset.map (fun x ↦ Polynomial.X - Polynomial.C x))
             hv.symm using 1
           unfold f_poly
           norm_num
         · exact Polynomial.SplittingField.splits _
-      -- By Vieta's formulas, we know that the sum of the roots of $f_poly$ is zero.
+      -- By Vieta's formulas, the sum of the roots of `f_poly` is zero.
       have h_vieta_sum : ∑ i : Fin 5, (v i : f_poly.SplittingField) ^ 0 = 5 ∧
           ∑ i : Fin 5, (v i : f_poly.SplittingField) ^ 1 = 0 ∧
           ∑ i : Fin 5, (v i : f_poly.SplittingField) ^ 2 = 0 ∧
@@ -165,7 +164,7 @@ private lemma disc_value (v : Fin 5 ≃ (f_poly.rootSet f_poly.SplittingField)) 
         have h₅ := congr_arg (Polynomial.eval 2) h_factor
         norm_num at h₁ h₂ h₃ h₄ h₅
         grind +ring
-      -- By Vieta's formulas, we know that the sum of the products of the roots taken two at a time is zero.
+      -- By Vieta's formulas, the sum of the products of the roots taken two at a time is zero.
       have h_vieta_sum2 : ∑ i : Fin 5, (v i : f_poly.SplittingField) ^ 5 = -80 ∧
           ∑ i : Fin 5, (v i : f_poly.SplittingField) ^ 6 = 0 ∧
           ∑ i : Fin 5, (v i : f_poly.SplittingField) ^ 7 = 0 ∧
@@ -179,9 +178,9 @@ private lemma disc_value (v : Fin 5 ≃ (f_poly.rootSet f_poly.SplittingField)) 
           linear_combination' h_root
         simp_all [Fin.sum_univ_succ]
         grind
-      convert gram_det_value (fun i => (v i : f_poly.SplittingField)) _ _ _ _ _ _ _ _ _ using 1 <;>
+      convert gram_det_value (fun i ↦ (v i : f_poly.SplittingField)) _ _ _ _ _ _ _ _ _ using 1 <;>
         norm_num [h_vieta_sum, h_vieta_sum2]
-      · convert vandermonde_det_sq (fun i => (v i : f_poly.SplittingField)) using 1
+      · convert vandermonde_det_sq (fun i ↦ (v i : f_poly.SplittingField)) using 1
         rw [Matrix.det_vandermonde]
       · simpa using h_vieta_sum.2.1
 
@@ -192,7 +191,7 @@ private lemma disc_elem_ne_zero (v : Fin 5 ≃ (f_poly.rootSet f_poly.SplittingF
     (∏ i : Fin 5, ∏ j ∈ Ioi i,
       ((v j : f_poly.SplittingField) - (v i : f_poly.SplittingField))) ≠ 0 := by
         simp [Finset.prod_eq_zero_iff, sub_eq_zero]
-        exact fun i j hij => v.injective.ne hij.ne'
+        exact fun i j hij ↦ v.injective.ne hij.ne'
 
 /-!
 ## Part 4: Connecting Galois to the sign
@@ -254,19 +253,19 @@ theorem card_gal_f_poly_ne_120 :
       norm_num [f_poly]
       erw [σ.commutes, σ.commutes]
       norm_num
-      exact fun _ => ne_of_apply_ne (Polynomial.eval 0) (by norm_num)
-    exact ⟨Equiv.ofBijective (fun i => v.symm ⟨σ (v i), h_perm i⟩)
-      (Finite.injective_iff_bijective.mp (fun i j hij => by simpa [v.injective.eq_iff] using hij)),
-      fun i => by simp⟩
+      exact fun _ ↦ ne_of_apply_ne (Polynomial.eval 0) (by norm_num)
+    exact ⟨Equiv.ofBijective (fun i ↦ v.symm ⟨σ (v i), h_perm i⟩)
+      (Finite.injective_iff_bijective.mp (fun i j hij ↦ by simpa [v.injective.eq_iff] using hij)),
+      fun i ↦ by simp⟩
   choose π hπ using h_perm
-  -- Since $\sigma(\delta) = \delta$ for any $\sigma \in \text{Gal}$, we have $\text{sign}(\pi) = 1$.
+  -- Since `σ δ = δ` for any `σ ∈ Gal`, we have `sign π = 1`.
   have h_sign : ∀ σ : f_poly.Gal, Equiv.Perm.sign (π σ) = 1 := by
     intro σ
     have h_sigma_delta : σ δ = Equiv.Perm.sign (π σ) * δ := by
-      convert prod_sub_perm_eq_sign_mul (fun i => (v i : f_poly.SplittingField)) (π σ) using 1
-      erw [map_prod, Finset.prod_congr rfl]
+      convert prod_sub_perm_eq_sign_mul (fun i ↦ (v i : f_poly.SplittingField)) (π σ) using 1
+      rw [map_prod, Finset.prod_congr rfl]
       intros
-      erw [map_prod, Finset.prod_congr rfl]
+      rw [map_prod, Finset.prod_congr rfl]
       intros
       simp_all only [eq_ratCast, Rat.cast_pow, Rat.cast_ofNat, ne_eq, Rat.cast_neg, mem_univ,
         mem_Ioi, map_sub, K, δ, v]
@@ -277,7 +276,7 @@ theorem card_gal_f_poly_ne_120 :
     · erw [map_natCast] at h_sigma_delta
       norm_num at h_sigma_delta
       cases' Int.units_eq_one_or (Equiv.Perm.sign (π σ)) with h h <;> simp_all
-  -- Since $\pi$ is injective, the image of $\pi$ is a subgroup of $A_5$.
+  -- Since `π` is injective, the image of `π` is a subgroup of `A₅`.
   have h_image : Function.Injective π := by
     intros σ τ h_eq
     have h_eq_roots : ∀ i : Fin 5, σ (v i : f_poly.SplittingField) = τ (v i : f_poly.SplittingField) := by
@@ -285,12 +284,12 @@ theorem card_gal_f_poly_ne_120 :
     ext x
     convert h_eq_roots (v.symm ⟨x, by assumption⟩) using 1 <;> simp
   have h_image_card : Nat.card (Set.range π) ≤ Nat.card {σ : Equiv.Perm (Fin 5) | Equiv.Perm.sign σ = 1} := by
-    apply_rules [Nat.card_mono]
+    apply Nat.card_mono
     · exact Set.toFinite _
     · exact Set.range_subset_iff.mpr h_sign
   rw [Nat.card_range_of_injective h_image] at h_image_card
   exact ne_of_lt (lt_of_le_of_lt h_image_card (by
     rw [Nat.card_eq_fintype_card]
-    native_decide))
+    decide))
 
 end

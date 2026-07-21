@@ -48,7 +48,7 @@ lemma galPerm_pentagonalSum {K L : Type*} [Field K] [Field L] [Algebra K L]
     (σ : L ≃ₐ[K] L) (v : Fin 5 → L) (π : Equiv.Perm (Fin 5))
     (hπ : ∀ i, σ (v i) = v (π i)) :
     σ (pentagonalSum v) = pentagonalSum (v ∘ π) := by
-  simp only [pentagonalSum, map_add, map_mul, hπ, Function.comp]
+  simp [pentagonalSum, map_add, map_mul, hπ, Function.comp]
 
 /-- Galois compatibility for pentagonal sum squared. -/
 lemma galPerm_pentagonalSum_sq {K L : Type*} [Field K] [Field L] [Algebra K L]
@@ -100,7 +100,7 @@ lemma exists_A5_F20_factorization (σ : Equiv.Perm (Fin 5)) :
     ∃ α : Equiv.Perm (Fin 5), ∃ g : Equiv.Perm (Fin 5),
       Equiv.Perm.sign α = 1 ∧ IsAffineLinearMod5 g ∧ σ = α * g := by
   have h := A5_mul_F20_eq_univ
-  have hσ : σ ∈ (A5_finset.biUnion (fun a => F20_finset.image (fun g => a * g))) := by
+  have hσ : σ ∈ (A5_finset.biUnion (fun a ↦ F20_finset.image (fun g ↦ a * g))) := by
     rw [h]
     exact Finset.mem_univ _
   simp only [A5_finset, F20_finset, Finset.mem_biUnion, Finset.mem_filter,
@@ -123,9 +123,9 @@ lemma pentagonalSum_sq_F20_inv {L : Type*} [CommRing L] (v : Fin 5 → L)
     (he2 : elemSymm2 v = 0) (σ : Equiv.Perm (Fin 5)) (hσ : IsAffineLinearMod5 σ) :
     pentagonalSum (v ∘ σ) ^ 2 = pentagonalSum v ^ 2 := by
   obtain ⟨a, b, ha, hb⟩ := hσ
-  fin_cases a <;> simp +decide at ha hb ⊢
-  · fin_cases b <;> simp +decide [hb, pentagonalSum] <;> ring!
-  · fin_cases b <;> simp +decide [hb, pentagonalSum] at he2 ⊢
+  fin_cases a <;> simp at ha hb ⊢
+  · fin_cases b <;> simp [hb, pentagonalSum] <;> ring!
+  · fin_cases b <;> simp [hb, pentagonalSum] at he2 ⊢
     · unfold elemSymm2 at he2
       grind +ring
     · unfold elemSymm2 at he2
@@ -133,20 +133,20 @@ lemma pentagonalSum_sq_F20_inv {L : Type*} [CommRing L] (v : Fin 5 → L)
     · unfold elemSymm2 at he2
       grind +ring
     · unfold elemSymm2 at he2
-      simp_all +decide [Fin.forall_fin_succ]
+      simp_all [Fin.forall_fin_succ]
       grind +ring
     · unfold elemSymm2 at he2
       grind
   · -- For σ ∈ F₂₀ with a ∈ {2,3}: Ψ(v∘σ) + Ψ(v) = e₂(v) (free polynomial identity)
     have h_case3 : pentagonalSum (v ∘ σ) + pentagonalSum v = elemSymm2 v := by
-      fin_cases b <;> simp +decide [hb, pentagonalSum, elemSymm2] <;> ring!
+      fin_cases b <;> simp [hb, pentagonalSum, elemSymm2] <;> ring!
     grind
-  · fin_cases b <;> simp +decide [hb, pentagonalSum] at he2 ⊢
+  · fin_cases b <;> simp [hb, pentagonalSum] at he2 ⊢
     · ring
     · ring
     · grind +qlia
     · unfold elemSymm2 at he2
-      simp_all +decide [Fin.forall_fin_succ]
+      simp_all [Fin.forall_fin_succ]
       ring
     · grind
 
@@ -156,7 +156,7 @@ lemma elemSymm2_perm {L : Type*} [CommRing L] (v : Fin 5 → L)
   unfold elemSymm2
   induction' σ using Equiv.Perm.swap_induction_on' with τ hτ ih
   · rfl
-  · simp_all +decide [Equiv.swap_apply_def]
+  · simp_all [Equiv.swap_apply_def]
     grind
 
 /-- The multiset esymm 2 of the roots of the mapped polynomial equals 0
@@ -220,30 +220,27 @@ lemma map_eq_prod_linear {K : Type*} [Field K]
     (Polynomial.X - Polynomial.C (v 2 : f.SplittingField)) *
     (Polynomial.X - Polynomial.C (v 3 : f.SplittingField)) *
     (Polynomial.X - Polynomial.C (v 4 : f.SplittingField)) := by
-  -- Let $g = \text{map}(\text{algebraMap}(K, L)) f$ where $L = f.\text{SplittingField}$.
+  -- Let `g = map (algebraMap K L) f` where `L = f.SplittingField`.
   set g : Polynomial (f.SplittingField) := Polynomial.map (algebraMap K f.SplittingField) f
-  -- Since $g$ is monic and has degree 5, and $(X - C (v i))$ are distinct linear factors, their product divides $g$.
+  -- Since `g` is monic and has degree 5, and `(X - C (v i))` are distinct linear factors, their product divides `g`.
   have h_div : (∏ i : Fin 5, (Polynomial.X - Polynomial.C (v i : f.SplittingField))) ∣ g := by
-    refine' Finset.prod_dvd_of_coprime _ _
+    refine Finset.prod_dvd_of_coprime ?_ ?_
     · intros i hi j hj hij
-      have := Polynomial.irreducible_X_sub_C (v i : f.SplittingField)
-      have := Polynomial.irreducible_X_sub_C (v j : f.SplittingField)
-      simp_all +decide [Polynomial.irreducible_X_sub_C]
-      refine' (Polynomial.pairwise_coprime_X_sub_C _) hij
+      refine (Polynomial.pairwise_coprime_X_sub_C ?_) hij
       exact Subtype.coe_injective.comp v.injective
     · intro i _
-      erw [Polynomial.dvd_iff_isRoot]
-      simp +decide
-      have := v i |>.2
-      simp_all +decide [Polynomial.mem_rootSet]
+      rw [Polynomial.dvd_iff_isRoot]
+      simp
+      have := (v i).2
+      simp_all [Polynomial.mem_rootSet]
       aesop
   obtain ⟨q, hq⟩ := h_div
-  -- Since $g$ is monic and has degree 5, and $(X - C (v i))$ are distinct linear factors, their product must equal $g$.
+  -- Since `g` is monic and has degree 5, and `(X - C (v i))` are distinct linear factors, their product must equal `g`.
   have h_deg : g.degree = 5 := by
     rw [Polynomial.degree_map, hf, Polynomial.degree_add_C] <;>
-      erw [Polynomial.degree_add_eq_left_of_degree_lt] <;> by_cases h : p = 0 <;> simp +decide [h]
+      rw [Polynomial.degree_add_eq_left_of_degree_lt] <;> by_cases h : p = 0 <;> simp +decide [h]
   have h_deg_prod : (∏ i : Fin 5, (Polynomial.X - Polynomial.C (v i : f.SplittingField))).degree = 5 := by
-    simp +decide [Polynomial.degree_prod]
+    simp [Polynomial.degree_prod]
   have h_deg_q : q.degree = 0 := by
     rw [hq, Polynomial.degree_mul, h_deg_prod] at h_deg
     rw [Polynomial.degree_eq_natDegree] at * <;> norm_cast at * <;> aesop_cat
@@ -252,12 +249,12 @@ lemma map_eq_prod_linear {K : Type*} [Field K]
   obtain ⟨c, hc⟩ := h_q_const
   have h_c_one : c = 1 := by
     replace hq := congr_arg Polynomial.leadingCoeff hq
-    simp_all +decide [Polynomial.leadingCoeff_prod]
+    simp_all [Polynomial.leadingCoeff_prod]
     rw [← hq, Polynomial.leadingCoeff_map_of_leadingCoeff_ne_zero] <;> norm_num [hf]
     · rw [Polynomial.leadingCoeff, Polynomial.natDegree_add_C,
-        Polynomial.natDegree_add_eq_left_of_natDegree_lt] <;> by_cases hp : p = 0 <;> simp +decide [hp]
-    · exact ne_of_apply_ne (fun f => f.coeff 5) (by norm_num [Polynomial.coeff_eq_zero_of_natDegree_lt])
-  simp_all +decide [Fin.prod_univ_five]
+        Polynomial.natDegree_add_eq_left_of_natDegree_lt] <;> by_cases hp : p = 0 <;> simp [hp]
+    · exact ne_of_apply_ne (fun f ↦ f.coeff 5) (by norm_num [Polynomial.coeff_eq_zero_of_natDegree_lt])
+  simp_all [Fin.prod_univ_five]
 
 set_option maxHeartbeats 2000000 in
 /-- For roots of X⁵+pX+q, the second elementary symmetric polynomial vanishes. -/
@@ -267,7 +264,7 @@ lemma roots_e2_zero {K : Type*} [Field K]
     (v : Fin 5 ≃ f.rootSet f.SplittingField) :
     elemSymm2 (fun i => (v i : f.SplittingField)) = 0 := by
   have h1 := map_eq_prod_linear p q f hf v
-  have h2 := coeff3_prod5 (fun i => (v i : f.SplittingField))
+  have h2 := coeff3_prod5 (fun i ↦ (v i : f.SplittingField))
   rw [← h2, ← h1, Polynomial.coeff_map, hf]
   simp [Polynomial.coeff_add, Polynomial.coeff_mul, Polynomial.coeff_X,
         Polynomial.coeff_C, Polynomial.coeff_X_pow, Finset.antidiagonal]
@@ -338,7 +335,7 @@ lemma eval₂_sexticResolventLocal_eq {L : Type*} [CommRing L] [Algebra K L] (p 
         - 140 * (algebraMap K L p) ^ 3 * y ^ 3 + 175 * (algebraMap K L p) ^ 4 * y ^ 2
         - (106 * (algebraMap K L p) ^ 5 + 3125 * (algebraMap K L q) ^ 4) * y
         + 25 * (algebraMap K L p) ^ 6 := by
-  simp only [sexticResolventLocal, Polynomial.eval₂_add, Polynomial.eval₂_sub,
+  simp [sexticResolventLocal, Polynomial.eval₂_add, Polynomial.eval₂_sub,
     Polynomial.eval₂_mul, Polynomial.eval₂_pow, Polynomial.eval₂_C, Polynomial.eval₂_X,
     map_add, map_mul, map_pow, map_ofNat, Polynomial.eval₂_ofNat]
 
@@ -368,10 +365,10 @@ lemma vieta_pentagon (p q : K)
       = algebraMap K f.SplittingField q := by
     rw [hf]
     simp [Polynomial.coeff_add, Polynomial.coeff_X_pow]
-  rw [hmap, coeff4_prod5 (fun i => (v i : f.SplittingField))] at hc4
-  rw [hmap, coeff2_prod5 (fun i => (v i : f.SplittingField))] at hc2
-  rw [hmap, coeff1_prod5 (fun i => (v i : f.SplittingField))] at hc1
-  rw [hmap, coeff0_prod5 (fun i => (v i : f.SplittingField))] at hc0
+  rw [hmap, coeff4_prod5 (fun i ↦ (v i : f.SplittingField))] at hc4
+  rw [hmap, coeff2_prod5 (fun i ↦ (v i : f.SplittingField))] at hc2
+  rw [hmap, coeff1_prod5 (fun i ↦ (v i : f.SplittingField))] at hc1
+  rw [hmap, coeff0_prod5 (fun i ↦ (v i : f.SplittingField))] at hc0
   refine ⟨neg_eq_zero.mp hc4, ?_, neg_eq_zero.mp hc2, hc1, by linear_combination -hc0⟩
   have h2 := roots_e2_zero p q f hf v
   simpa [elemSymm2] using h2
@@ -459,15 +456,15 @@ lemma pentagonalSum_sq_eq_of_F20_coset
     pentagonalSum (fun i => v (σ₁ i)) ^ 2 =
     pentagonalSum (fun i => v (σ₂ i)) ^ 2 := by
   -- Rewrite v∘σ₂ as (v∘σ₁)∘(σ₁⁻¹*σ₂)
-  have hconv : (fun i => v (σ₂ i)) =
-    (fun i => v (σ₁ ((σ₁⁻¹ * σ₂) i))) := by
+  have hconv : (fun i ↦ v (σ₂ i)) =
+    (fun i ↦ v (σ₁ ((σ₁⁻¹ * σ₂) i))) := by
     ext i
     congr 1
     simp [Equiv.Perm.mul_apply]
   rw [hconv]
   -- Now apply pentagonalSum_sq_F20_inv
   exact (pentagonalSum_sq_F20_inv
-    (fun i => v (σ₁ i))
+    (fun i ↦ v (σ₁ i))
     (by rw [← Function.comp_def, elemSymm2_perm, he2])
     (σ₁⁻¹ * σ₂) hF20).symm
 
@@ -486,19 +483,19 @@ lemma sexticResolvent_pentagonalSum_root
       (pentagonalSum (fun i => (v (σ i) : f.SplittingField)) ^ 2)
       (sexticResolventLocal p q) = 0 := by
   rw [eval₂_sexticResolventLocal_eq]
-  set y := pentagonalSum (fun i => (v (σ i) : f.SplittingField)) ^ 2 with hydef
+  set y := pentagonalSum (fun i ↦ (v (σ i) : f.SplittingField)) ^ 2 with hydef
   obtain ⟨he1, he2, he3, he4, he5⟩ :=
     vieta_pentagon p q f hf v
   obtain ⟨E1, E2, E3, E4, E5, E6⟩ :=
-    pentSqVal_esymm_pure (fun i => (v i : f.SplittingField))
+    pentSqVal_esymm_pure (fun i ↦ (v i : f.SplittingField))
       (algebraMap K f.SplittingField p) (algebraMap K f.SplittingField q) he1 he2 he3 he4 he5
   rw [resolvent_eq_prod _ _ _ _ _ _ _ _ E1 E2 E3 E4 E5 E6]
   obtain ⟨j, hj⟩ := pentRep_cover σ
-  have hy : y = pentSqVal (fun i => (v i : f.SplittingField)) j := by
-    rw [hydef, ← pentRep_sq_eq (fun i => (v i : f.SplittingField)) j]
-    exact (pentagonalSum_sq_eq_of_F20_coset (fun i => (v i : f.SplittingField))
+  have hy : y = pentSqVal (fun i ↦ (v i : f.SplittingField)) j := by
+    rw [hydef, ← pentRep_sq_eq (fun i ↦ (v i : f.SplittingField)) j]
+    exact (pentagonalSum_sq_eq_of_F20_coset (fun i ↦ (v i : f.SplittingField))
       (roots_e2_zero p q f hf v) (pentRep j) σ hj).symm
-  rw [← Fin.prod_univ_six (fun k => y - pentSqVal (fun i => (v i : f.SplittingField)) k)]
+  rw [← Fin.prod_univ_six (fun k ↦ y - pentSqVal (fun i ↦ (v i : f.SplittingField)) k)]
   exact Finset.prod_eq_zero (Finset.mem_univ j) (sub_eq_zero.mpr hy)
 
 omit [CharZero K] in
@@ -516,29 +513,29 @@ lemma sexticResolvent_roots_are_pentagonalSums
   obtain ⟨he1, he2, he3, he4, he5⟩ :=
     vieta_pentagon p q f hf v
   obtain ⟨E1, E2, E3, E4, E5, E6⟩ :=
-    pentSqVal_esymm_pure (fun i => (v i : f.SplittingField))
+    pentSqVal_esymm_pure (fun i ↦ (v i : f.SplittingField))
       (algebraMap K f.SplittingField p) (algebraMap K f.SplittingField q) he1 he2 he3 he4 he5
   rw [resolvent_eq_prod _ _ _ _ _ _ _ _ E1 E2 E3 E4 E5 E6] at hy
   simp only [mul_eq_zero, sub_eq_zero] at hy
   rcases hy with ((((h|h)|h)|h)|h)|h
   · refine ⟨pentRep 0, ?_⟩
     rw [h]
-    exact (pentRep_sq_eq (fun i => (v i : f.SplittingField)) 0).symm
+    exact (pentRep_sq_eq (fun i ↦ (v i : f.SplittingField)) 0).symm
   · refine ⟨pentRep 1, ?_⟩
     rw [h]
-    exact (pentRep_sq_eq (fun i => (v i : f.SplittingField)) 1).symm
+    exact (pentRep_sq_eq (fun i ↦ (v i : f.SplittingField)) 1).symm
   · refine ⟨pentRep 2, ?_⟩
     rw [h]
-    exact (pentRep_sq_eq (fun i => (v i : f.SplittingField)) 2).symm
+    exact (pentRep_sq_eq (fun i ↦ (v i : f.SplittingField)) 2).symm
   · refine ⟨pentRep 3, ?_⟩
     rw [h]
-    exact (pentRep_sq_eq (fun i => (v i : f.SplittingField)) 3).symm
+    exact (pentRep_sq_eq (fun i ↦ (v i : f.SplittingField)) 3).symm
   · refine ⟨pentRep 4, ?_⟩
     rw [h]
-    exact (pentRep_sq_eq (fun i => (v i : f.SplittingField)) 4).symm
+    exact (pentRep_sq_eq (fun i ↦ (v i : f.SplittingField)) 4).symm
   · refine ⟨pentRep 5, ?_⟩
     rw [h]
-    exact (pentRep_sq_eq (fun i => (v i : f.SplittingField)) 5).symm
+    exact (pentRep_sq_eq (fun i ↦ (v i : f.SplittingField)) 5).symm
 
 
 omit [CharZero K] in
@@ -693,10 +690,10 @@ lemma sexticResolventLocal_map_eq_prod
   obtain ⟨he1, he2, he3, he4, he5⟩ :=
     vieta_pentagon p q f hf v
   obtain ⟨E1, E2, E3, E4, E5, E6⟩ :=
-    pentSqVal_esymm_pure (fun i => (v i : f.SplittingField))
+    pentSqVal_esymm_pure (fun i ↦ (v i : f.SplittingField))
       (algebraMap K f.SplittingField p) (algebraMap K f.SplittingField q) he1 he2 he3 he4 he5
   rw [resolvent_eq_prod _ _ _ _ _ _ _ _ E1 E2 E3 E4 E5 E6, Fin.prod_univ_six]
-  simp only [eval_sub, eval_X, eval_C]
+  simp [eval_sub, eval_X, eval_C]
 
 /-- **Distinctness of the six pentagonal-sum-squares.**
     For an irreducible quintic `f = X⁵ + pX + q`, the six values `pentSqVal w j`
@@ -718,7 +715,7 @@ lemma pentSqVal_injective
     (h : pentSqVal (fun i => (v i : f.SplittingField)) j
         = pentSqVal (fun i => (v i : f.SplittingField)) k) :
     j = k := by
-  set w : Fin 5 → f.SplittingField := fun i => (v i : f.SplittingField) with hw
+  set w : Fin 5 → f.SplittingField := fun i ↦ (v i : f.SplittingField) with hw
   have hq : q ≠ 0 := quintic_const_ne_zero p q f hf hf_irr
   have hdisc : (256:K) * p ^ 5 + 3125 * q ^ 4 ≠ 0 := quintic_disc_ne_zero p q f hf hf_irr
   have hsep : (sexticResolventLocal p q).Separable := sexticResolventLocal_separable p q hq hdisc
@@ -733,7 +730,7 @@ lemma pentSqVal_injective
       ∣ ∏ i : Fin 6, (Polynomial.X - Polynomial.C (pentSqVal w i)) := by
     have hsub : ({j, k} : Finset (Fin 6)) ⊆ Finset.univ := Finset.subset_univ _
     have hp := Finset.prod_dvd_prod_of_subset ({j, k} : Finset (Fin 6)) Finset.univ
-      (fun i => Polynomial.X - Polynomial.C (pentSqVal w i)) hsub
+      (fun i ↦ Polynomial.X - Polynomial.C (pentSqVal w i)) hsub
     rwa [Finset.prod_pair hjk, ← h] at hp
   have hunit := hsf _ hdvd
   exact (Polynomial.not_isUnit_X_sub_C (pentSqVal w j)) hunit
@@ -753,15 +750,15 @@ lemma pentagonalSum_sq_eq_iff_F20_coset
   · intro h
     obtain ⟨j1, hj1⟩ := pentRep_cover σ₁
     obtain ⟨j2, hj2⟩ := pentRep_cover σ₂
-    have e1 : pentagonalSum (fun i => (v (σ₁ i) : f.SplittingField)) ^ 2
-        = pentSqVal (fun i => (v i : f.SplittingField)) j1 := by
-      rw [← pentRep_sq_eq (fun i => (v i : f.SplittingField)) j1]
-      exact (pentagonalSum_sq_eq_of_F20_coset (fun i => (v i : f.SplittingField))
+    have e1 : pentagonalSum (fun i ↦ (v (σ₁ i) : f.SplittingField)) ^ 2
+        = pentSqVal (fun i ↦ (v i : f.SplittingField)) j1 := by
+      rw [← pentRep_sq_eq (fun i ↦ (v i : f.SplittingField)) j1]
+      exact (pentagonalSum_sq_eq_of_F20_coset (fun i ↦ (v i : f.SplittingField))
         (roots_e2_zero p q f hf v) (pentRep j1) σ₁ hj1).symm
-    have e2 : pentagonalSum (fun i => (v (σ₂ i) : f.SplittingField)) ^ 2
-        = pentSqVal (fun i => (v i : f.SplittingField)) j2 := by
-      rw [← pentRep_sq_eq (fun i => (v i : f.SplittingField)) j2]
-      exact (pentagonalSum_sq_eq_of_F20_coset (fun i => (v i : f.SplittingField))
+    have e2 : pentagonalSum (fun i ↦ (v (σ₂ i) : f.SplittingField)) ^ 2
+        = pentSqVal (fun i ↦ (v i : f.SplittingField)) j2 := by
+      rw [← pentRep_sq_eq (fun i ↦ (v i : f.SplittingField)) j2]
+      exact (pentagonalSum_sq_eq_of_F20_coset (fun i ↦ (v i : f.SplittingField))
         (roots_e2_zero p q f hf v) (pentRep j2) σ₂ hj2).symm
     have hjj : j1 = j2 := by
       apply pentSqVal_injective p q f hf hf_irr v j1 j2
@@ -771,7 +768,7 @@ lemma pentagonalSum_sq_eq_iff_F20_coset
     have hrw : σ₁⁻¹ * σ₂ = ((pentRep j1)⁻¹ * σ₁)⁻¹ * ((pentRep j1)⁻¹ * σ₂) := by group
     rw [hrw]
     exact (hj1.inv).mul hj2
-  · exact fun h => pentagonalSum_sq_eq_of_F20_coset (fun i => (v i : f.SplittingField))
+  · exact fun h ↦ pentagonalSum_sq_eq_of_F20_coset (fun i ↦ (v i : f.SplittingField))
       (roots_e2_zero p q f hf v) σ₁ σ₂ h
 
 end

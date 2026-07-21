@@ -43,19 +43,18 @@ lemma scaleRoots_integral_coeffs
         b.map (Int.castRingHom ℚ) := by
   intro i
   by_cases hi : i > f.natDegree
-  · rw [Polynomial.coeff_scaleRoots]
-    rw [Polynomial.coeff_eq_zero_of_natDegree_lt hi]
+  · rw [coeff_scaleRoots, coeff_eq_zero_of_natDegree_lt hi]
     exact ⟨0, by norm_num⟩
   · by_cases hi' : i < f.natDegree
     · obtain ⟨b, hb⟩ := hD_clears i
-      use Polynomial.C (D ^ (f.natDegree - i - 1) : ℤ) * b
-      simp_all [Polynomial.coeff_scaleRoots, Polynomial.map_mul, Polynomial.map_pow]
+      use C (D ^ (f.natDegree - i - 1) : ℤ) * b
+      simp_all [coeff_scaleRoots, Polynomial.map_mul, Polynomial.map_pow]
       rw [← hb]
       ring_nf
       rw [← Nat.sub_add_cancel (Nat.sub_pos_of_lt hi'), pow_succ, mul_comm]
       norm_num [mul_assoc, mul_comm, mul_left_comm]
       norm_num [Algebra.smul_def]
-    · simp_all [le_antisymm (le_of_not_gt hi) (le_of_not_gt hi'), Polynomial.coeff_scaleRoots]
+    · simp_all [le_antisymm (le_of_not_gt hi) (le_of_not_gt hi'), coeff_scaleRoots]
       exact ⟨1, by norm_num⟩
 
 /-!
@@ -70,8 +69,8 @@ lemma lift_integral_poly (g : Polynomial (Polynomial ℚ))
     (hg : ∀ i, ∃ b : Polynomial ℤ, g.coeff i = b.map (Int.castRingHom ℚ)) :
     ∃ F : Polynomial (Polynomial ℤ),
       F.map (mapRingHom (Int.castRingHom ℚ)) = g := by
-  refine' ⟨∑ i ∈ g.support, Polynomial.monomial i (Classical.choose (hg i)), Polynomial.ext fun i => _⟩
-  simp [Polynomial.coeff_monomial]
+  refine ⟨∑ i ∈ g.support, monomial i (Classical.choose (hg i)), ext fun i ↦ ?_⟩
+  simp [coeff_monomial]
   split_ifs with hi
   · simp [hi]
   · rw [← Classical.choose_spec (hg i)]
@@ -91,54 +90,47 @@ lemma scaleRoots_unit_irreducible
     obtain ⟨q, hq⟩ : ∃ q : R[X], p = q.scaleRoots c := by
       use p.scaleRoots (hc.unit.inv)
       ext
-      simp [Polynomial.coeff_scaleRoots]
-      simp [mul_assoc, ← mul_pow]
-    simp_all [Polynomial.scaleRoots_dvd_iff]
+      simp [coeff_scaleRoots, mul_assoc, ← mul_pow]
+    simp_all [scaleRoots_dvd_iff]
     exact ⟨q, hp, rfl⟩
   have h_scale_surjective : ∀ p q : R[X], f.scaleRoots c = p * q → (IsUnit p ∨ IsUnit q) := by
     intro p q hpq
     obtain ⟨r, hr⟩ := h_scale_surjective p (dvd_of_mul_right_eq _ hpq.symm)
     obtain ⟨s, hs⟩ := h_scale_surjective q (dvd_of_mul_left_eq _ hpq.symm)
     have h_div : r * s = f := by
-      have h_div : (r * s).scaleRoots c = f.scaleRoots c := by
+      have h_scale_eq : (r * s).scaleRoots c = f.scaleRoots c := by
         grind only [mul_scaleRoots_of_noZeroDivisors]
-      have h_div : ∀ p q : R[X], p.scaleRoots c = q.scaleRoots c → p = q := by
+      have h_inj : ∀ p q : R[X], p.scaleRoots c = q.scaleRoots c → p = q := by
         intro p q hpq
         have h_coeff : ∀ i, p.coeff i = q.coeff i := by
           intro i
           have h_coeff_eq : p.coeff i * c ^ (p.natDegree - i) = q.coeff i * c ^ (q.natDegree - i) := by
-            convert congr_arg (fun p => p.coeff i) hpq using 1 <;> simp [Polynomial.coeff_scaleRoots]
-          apply_fun Polynomial.natDegree at hpq
-          rw [Polynomial.natDegree_scaleRoots, Polynomial.natDegree_scaleRoots] at hpq
+            convert congr_arg (fun p ↦ p.coeff i) hpq using 1 <;> simp [coeff_scaleRoots]
+          apply_fun natDegree at hpq
+          rw [natDegree_scaleRoots, natDegree_scaleRoots] at hpq
           aesop
-        exact Polynomial.ext h_coeff
-      exact h_div _ _ ‹_›
-    rcases hf.2 h_div.symm with (⟨u, hu⟩ | ⟨u, hu⟩) <;> simp_all [Polynomial.isUnit_iff]
-    · rcases Polynomial.isUnit_iff.mp u.isUnit with ⟨k, hk⟩
-      exact Or.inl ⟨k, hk.1, by simpa [← hu] using congr_arg (fun p => p.scaleRoots c) hk.2⟩
-    · rcases Polynomial.isUnit_iff.mp u.isUnit with ⟨k, hk⟩
+        exact ext h_coeff
+      exact h_inj _ _ h_scale_eq
+    rcases hf.2 h_div.symm with (⟨u, hu⟩ | ⟨u, hu⟩) <;> simp_all [isUnit_iff]
+    · rcases isUnit_iff.mp u.isUnit with ⟨k, hk⟩
+      exact Or.inl ⟨k, hk.1, by simpa [← hu] using congr_arg (fun p ↦ p.scaleRoots c) hk.2⟩
+    · rcases isUnit_iff.mp u.isUnit with ⟨k, hk⟩
       aesop
   constructor
   · intro h_unit
-    obtain ⟨q, hq⟩ : ∃ q : R[X], f.scaleRoots c * q = 1 := by
-      exact h_unit.exists_right_inv
+    obtain ⟨q, hq⟩ : ∃ q : R[X], f.scaleRoots c * q = 1 := h_unit.exists_right_inv
     have h_deg : f.natDegree = 0 := by
-      have := congr_arg Polynomial.natDegree hq
-      rw [Polynomial.natDegree_mul'] at this <;> simp_all [Polynomial.natDegree_scaleRoots]
+      have := congr_arg natDegree hq
+      rw [natDegree_mul'] at this <;> simp_all [natDegree_scaleRoots]
       refine ⟨hf.ne_zero, ?_⟩
       rintro rfl
       simp at hq
-    have h_const : ∃ r : R, f = Polynomial.C r := by
-      exact ⟨f.coeff 0, Polynomial.eq_C_of_natDegree_eq_zero h_deg⟩
-    obtain ⟨r, hr⟩ := h_const
-    have h_irred : Irreducible (Polynomial.C r) := by
-      aesop
+    obtain ⟨r, hr⟩ : ∃ r : R, f = C r :=
+      ⟨f.coeff 0, eq_C_of_natDegree_eq_zero h_deg⟩
     have h_unit_r : IsUnit r := by
       replace hq := congr_arg (Polynomial.eval 0) hq
       simp_all [Polynomial.eval]
-    have h_unit_f : IsUnit f := by
-      exact hr.symm ▸ Polynomial.isUnit_C.mpr h_unit_r
-    exact absurd h_unit_f hf.not_isUnit
+    exact absurd (hr.symm ▸ isUnit_C.mpr h_unit_r) hf.not_isUnit
   · exact h_scale_surjective
 
 /-!
@@ -160,26 +152,26 @@ lemma gauss_lemma_bivariate (F : Polynomial (Polynomial ℤ)) (hF_monic : F.Moni
   · obtain ⟨a, b, ha, hb, h⟩ : ∃ a b : Polynomial ℤ[X], F = a * b ∧ ¬IsUnit a ∧ ¬IsUnit b := by
       rw [irreducible_iff] at hF_irr_frac
       by_cases h : IsUnit F <;> simp_all
-      rw [Polynomial.isUnit_iff] at h
+      rw [isUnit_iff] at h
       obtain ⟨r, hr, rfl⟩ := h
-      simp_all [Polynomial.Monic.def]
+      simp_all [Monic.def]
     simp_all [irreducible_mul_iff]
-    constructor <;> intro H <;> simp_all [Polynomial.Monic.def, Polynomial.leadingCoeff_mul]
+    constructor <;> intro H <;> simp_all [Monic.def, leadingCoeff_mul]
     · intro H'
-      have := Polynomial.degree_eq_zero_of_isUnit H'
-      rw [Polynomial.degree_map_eq_of_leadingCoeff_ne_zero] at this <;> simp_all [Polynomial.degree_eq_natDegree]
-      · rw [Polynomial.eq_C_of_natDegree_eq_zero this] at h hF_monic
-        simp_all [Polynomial.leadingCoeff_C]
+      have := degree_eq_zero_of_isUnit H'
+      rw [degree_map_eq_of_leadingCoeff_ne_zero] at this <;> simp_all [degree_eq_natDegree]
+      · rw [eq_C_of_natDegree_eq_zero this] at h hF_monic
+        simp_all [leadingCoeff_C]
         exact h (isUnit_of_dvd_one <| hF_monic ▸ dvd_mul_left _ _)
       · intro H
-        simp_all [Polynomial.ext_iff]
-        specialize H (Polynomial.natDegree (Polynomial.leadingCoeff b))
-        simp_all [Polynomial.coeff_natDegree]
+        simp_all [ext_iff]
+        specialize H (natDegree (leadingCoeff b))
+        simp_all [coeff_natDegree]
     · intro H'
-      have := Polynomial.natDegree_eq_zero_of_isUnit H'
-      rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] at this <;>
-        simp_all [Polynomial.natDegree_eq_zero_iff_degree_le_zero]
-      · rw [Polynomial.eq_C_of_degree_le_zero this] at hb hF_monic ha
+      have := natDegree_eq_zero_of_isUnit H'
+      rw [natDegree_map_of_leadingCoeff_ne_zero] at this <;>
+        simp_all [natDegree_eq_zero_iff_degree_le_zero]
+      · rw [eq_C_of_degree_le_zero this] at hb hF_monic ha
         simp_all
         exact hb (isUnit_of_dvd_one <| hF_monic ▸ dvd_mul_right _ _)
       · intro H''
@@ -201,7 +193,7 @@ lemma specialize_scaleRoots_comm
     (f.scaleRoots (Polynomial.C D)).map (evalRingHom (t : ℚ)) =
     (f.map (evalRingHom (t : ℚ))).scaleRoots D := by
   ext i
-  by_cases hi : i ≤ f.natDegree <;> simp_all [Polynomial.coeff_scaleRoots]
+  by_cases hi : i ≤ f.natDegree <;> simp_all [coeff_scaleRoots]
 
 /-!
 ## Helper 6: Monic lift has matching specializations

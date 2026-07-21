@@ -27,13 +27,13 @@ theorem Perm_Fin5_no_subgroup_order_15 :
   -- Assume H is a subgroup of S₅ with order 15. We need to show that this leads to a contradiction.
   intro H h_card
   obtain ⟨g, hg⟩ : ∃ g : H, orderOf g = 15 := by
-    -- Since the cardinality of $H$ is 15, which is $3 \times 5$, by Sylow's theorems, $H$ must have elements of order 3 and 5.
+    -- Since the cardinality of `H` is 15, which is `3 × 5`, by Sylow's theorems, `H` must have elements of order 3 and 5.
     obtain ⟨g3, hg3⟩ : ∃ g3 : H, orderOf g3 = 3 := by
-      apply_rules [exists_prime_orderOf_dvd_card]
-      swap
-      exacts [Fintype.ofFinite _,
-        by rw [Fintype.card_eq_nat_card]
-           exact h_card.symm ▸ by decide]
+      have : Fintype H := Fintype.ofFinite _
+      have : Fact (Nat.Prime 3) := ⟨Nat.prime_three⟩
+      apply exists_prime_orderOf_dvd_card 3
+      rw [Fintype.card_eq_nat_card]
+      exact h_card.symm ▸ by decide
     obtain ⟨g5, hg5⟩ : ∃ g5 : H, orderOf g5 = 5 := by
       have := Fact.mk (by decide : Nat.Prime 5)
       have h_sylow : ∃ P : Sylow 5 H, True := by
@@ -51,13 +51,13 @@ theorem Perm_Fin5_no_subgroup_order_15 :
         rw [orderOf_eq_card_of_forall_mem_zpowers hg]
         aesop
       exact ⟨g, by simpa [orderOf_units] using hP_order⟩
-    -- Since $g3$ and $g5$ commute and their orders are coprime, their product $g3 * g5$ has order $3 * 5 = 15$.
+    -- Since `g3` and `g5` commute and their orders are coprime, their product `g3 * g5` has order `3 * 5 = 15`.
     have h_comm : g3 * g5 = g5 * g3 := by
       have h_comm : Subgroup.Normal (Subgroup.zpowers g3) ∧ Subgroup.Normal (Subgroup.zpowers g5) := by
         have h_sylow : ∀ p : ℕ, Nat.Prime p → p ∣ Nat.card H → Nat.card (Sylow p H) = 1 := by
           intros p hp hp_div
           have h_sylow : Nat.card (Sylow p H) ≡ 1 [MOD p] ∧ Nat.card (Sylow p H) ∣ Nat.card H := by
-            haveI := Fact.mk hp
+            have := Fact.mk hp
             have h_sylow : Nat.card (Sylow p H) ≡ 1 [MOD p] := by
               exact card_sylow_modEq_one p ↥H
             have h_sylow_div : Nat.card (Sylow p H) ∣ Nat.card H := by
@@ -66,7 +66,7 @@ theorem Perm_Fin5_no_subgroup_order_15 :
                 exact Sylow.card_eq_card_quotient_normalizer (Classical.arbitrary (Sylow p ↥H))
               exact h_orbit.symm ▸ Subgroup.card_quotient_dvd_card _
             exact ⟨h_sylow, h_sylow_div⟩
-          rcases p with (_ | _ | _ | _ | _ | _ | p) <;> simp_all +arith +decide [Nat.ModEq]
+          rcases p with (_ | _ | _ | _ | _ | _ | p) <;> simp_all +decide [Nat.ModEq]
           · have := Nat.le_of_dvd (by decide) h_sylow.2
             interval_cases Fintype.card (Sylow 3 H) <;> trivial
           · have := Nat.le_of_dvd (by decide) h_sylow.2
@@ -79,7 +79,7 @@ theorem Perm_Fin5_no_subgroup_order_15 :
           have h_unique : ∀ Q : Sylow p H, Q = P := by
             have := h_sylow p hp hp_div
             rw [Nat.card_eq_one_iff_unique] at this
-            exact fun Q => this.1.elim Q P
+            exact fun Q ↦ this.1.elim Q P
           constructor
           intro n hn g
           have := h_unique (g • P)
@@ -118,7 +118,7 @@ theorem Perm_Fin5_no_subgroup_order_15 :
           have hP_eq : Subgroup.zpowers g5 = P.toSubgroup := by
             exact SetLike.ext' (Set.eq_of_subset_of_ncard_le hP hP_card.ge)
           use P
-        refine ⟨?_, ?_⟩
+        constructor
         · obtain ⟨P, hP⟩ := h_sylow_g3
           have h3 : (3 : ℕ) ∣ Nat.card H := by
             rw [h_card]
@@ -143,15 +143,15 @@ theorem Perm_Fin5_no_subgroup_order_15 :
         have h_comm : Nat.card (↥(Subgroup.zpowers g3 ⊓ Subgroup.zpowers g5)) ∣ Nat.gcd 3 5 := by
           have hle3 : Subgroup.zpowers g3 ⊓ Subgroup.zpowers g5 ≤ Subgroup.zpowers g3 := inf_le_left
           have hle5 : Subgroup.zpowers g3 ⊓ Subgroup.zpowers g5 ≤ Subgroup.zpowers g5 := inf_le_right
-          refine Nat.dvd_gcd ?_ ?_
+          apply Nat.dvd_gcd
           · simpa [h_comm] using Subgroup.card_dvd_of_le hle3
           · simpa [h_comm] using Subgroup.card_dvd_of_le hle5
         simp_all +decide [Subgroup.eq_bot_iff_card]
       simp_all +decide [mul_inv_eq_iff_eq_mul]
     use g3 * g5
     have h_order : ∀ {a b : H}, a * b = b * a →
-        Nat.gcd (orderOf a) (orderOf b) = 1 → orderOf (a * b) = orderOf a * orderOf b := by
-      exact fun {a b} a_1 a_2 => Commute.orderOf_mul_eq_mul_orderOf_of_coprime a_1 a_2
+        Nat.gcd (orderOf a) (orderOf b) = 1 → orderOf (a * b) = orderOf a * orderOf b :=
+      Commute.orderOf_mul_eq_mul_orderOf_of_coprime
     rw [h_order h_comm] <;> norm_num [hg3, hg5]
   exact no_order_15_in_S5 g (by simpa [orderOf_eq_iff] using hg)
 
@@ -166,21 +166,21 @@ Every normal subgroup of S₅ has order 1, 60, or 120.
 lemma normal_subgroup_Perm_Fin5_trichotomy
     (N : Subgroup (Equiv.Perm (Fin 5))) (hN : N.Normal) :
     Nat.card N = 1 ∨ Nat.card N = 60 ∨ Nat.card N = 120 := by
-  -- Consider the intersection of $N$ with $A_5$.
+  -- Consider the intersection of `N` with `A₅`.
   set M := N ⊓ alternatingGroup (Fin 5) with hM_def
   have hM_normal : M.Normal := by
     infer_instance
   have hM_simple : M = ⊥ ∨ M = alternatingGroup (Fin 5) := by
     have hM_simple : ∀ H : Subgroup (alternatingGroup (Fin 5)), H.Normal → H = ⊥ ∨ H = ⊤ := by
-      exact fun H a => Subgroup.Normal.eq_bot_or_eq_top a
+      exact fun H a ↦ Subgroup.Normal.eq_bot_or_eq_top a
     convert hM_simple (M.subgroupOf (alternatingGroup (Fin 5))) _ using 1
     · simp +decide [Subgroup.eq_bot_iff_forall]
-      exact ⟨fun h x hx hx' => h x hx', fun h x hx => h x hx.2 hx⟩
+      exact ⟨fun h x hx hx' ↦ h x hx', fun h x hx ↦ h x hx.2 hx⟩
     · simp +decide [Subgroup.eq_top_iff']
-      exact ⟨fun h a ha => h.symm ▸ ha, fun h => le_antisymm (inf_le_right) fun a ha => h a ha⟩
+      exact ⟨fun h a ha ↦ h.symm ▸ ha, fun h ↦ le_antisymm (inf_le_right) fun a ha ↦ h a ha⟩
     · infer_instance
   cases' hM_simple with h h
-  · -- If $M$ is trivial, then $N$ has at most two elements.
+  · -- If `M` is trivial, then `N` has at most two elements.
     have hN_le_two : N ≤ Subgroup.center (Equiv.Perm (Fin 5)) := by
       intro g hg
       have h_comm : ∀ h : Equiv.Perm (Fin 5), h * g * h⁻¹ * g⁻¹ ∈ M := by
@@ -202,18 +202,15 @@ lemma normal_subgroup_Perm_Fin5_trichotomy
       exact absurd (‹IsEmpty ↥N ∨ Infinite ↥N›.resolve_left (not_isEmpty_iff.mpr ⟨1, N.one_mem⟩))
         (not_infinite_iff_finite.mpr (Set.Finite.to_subtype (Set.toFinite _)))
     cases' hN_card_cases with h h
-    aesop
-    generalize_proofs at *
-    have hN_center : ∀ g : Equiv.Perm (Fin 5), g ∈ N → g = 1 := by
-      have hN_center : ∀ g : Equiv.Perm (Fin 5), g ∈ Subgroup.center (Equiv.Perm (Fin 5)) → g = 1 := by
-        native_decide +revert
-      generalize_proofs at *
-      exact fun g hg => hN_center g <| hN_le_two hg
-    generalize_proofs at *
-    exact absurd h (by
-      rw [show N = ⊥ from eq_bot_iff.mpr hN_center]
-      simp +decide)
-  · -- If $M = A_5$, then $N$ contains $A_5$ and thus has index 1 or 2 in $S_5$.
+    · aesop
+    · have hN_center : ∀ g : Equiv.Perm (Fin 5), g ∈ N → g = 1 := by
+        have hN_center : ∀ g : Equiv.Perm (Fin 5), g ∈ Subgroup.center (Equiv.Perm (Fin 5)) → g = 1 := by
+          native_decide +revert
+        exact fun g hg ↦ hN_center g <| hN_le_two hg
+      exact absurd h (by
+        rw [show N = ⊥ from eq_bot_iff.mpr hN_center]
+        simp +decide)
+  · -- If `M = A₅`, then `N` contains `A₅` and thus has index 1 or 2 in `S₅`.
     have hN_index : N.index = 1 ∨ N.index = 2 := by
       have hN_index : N.index ∣ 2 := by
         have hN_index : N.index ∣ (alternatingGroup (Fin 5)).index := by
@@ -243,20 +240,19 @@ theorem Perm_Fin5_no_subgroup_order_30 :
     have := Subgroup.index_mul_card H
     simp_all +decide [Fintype.card_perm]
     exact mul_right_cancel₀ (by decide) this
-  -- The action of $S_5$ on the left cosets of $H$ gives a homomorphism $\phi: S_5 \to S_4$.
+  -- The action of `S₅` on the left cosets of `H` gives a homomorphism `φ : S₅ → S₄`.
   obtain ⟨ϕ, hϕ⟩ : ∃ ϕ : Equiv.Perm (Fin 5) →* Equiv.Perm (Equiv.Perm (Fin 5) ⧸ H), ϕ.ker ≤ H := by
-    refine' ⟨_, _⟩
-    exact MulAction.toPermHom (Equiv.Perm (Fin 5)) (Equiv.Perm (Fin 5) ⧸ H)
+    refine ⟨MulAction.toPermHom (Equiv.Perm (Fin 5)) (Equiv.Perm (Fin 5) ⧸ H), ?_⟩
     intro x hx
     simp_all +decide [MonoidHom.mem_ker, Equiv.Perm.ext_iff]
     specialize hx (QuotientGroup.mk 1)
     simp_all +decide [QuotientGroup.eq]
-  -- Since $|S_5| = 120$ and $|S_4| = 24$, the kernel of $\phi$ must be non-trivial.
+  -- Since `|S₅| = 120` and `|S₄| = 24`, the kernel of `φ` must be non-trivial.
   have h_kernel_nontrivial : Nat.card (ϕ.ker) ≠ 1 := by
     intro h_card_ker_one
     have h_inj : Function.Injective ϕ := by
       rw [Nat.card_eq_one_iff_unique] at h_card_ker_one
-      exact (MonoidHom.ker_eq_bot_iff _).mp (eq_bot_iff.mpr fun x hx => by
+      exact (MonoidHom.ker_eq_bot_iff _).mp (eq_bot_iff.mpr fun x hx ↦ by
         have := h_card_ker_one.1.elim ⟨x, hx⟩ ⟨1, by simp +decide⟩
         aesop)
     have h_card : Nat.card (Equiv.Perm (Equiv.Perm (Fin 5) ⧸ H)) = 24 := by
@@ -266,7 +262,7 @@ theorem Perm_Fin5_no_subgroup_order_30 :
         exact Nat.card_perm
       exact h_card.trans (h_index.symm ▸ rfl)
     have h_card : Nat.card (Equiv.Perm (Fin 5)) ≤ Nat.card (Equiv.Perm (Equiv.Perm (Fin 5) ⧸ H)) := by
-      apply_rules [Nat.card_le_card_of_injective]
+      exact Nat.card_le_card_of_injective _ h_inj
     simp_all +decide [Fintype.card_perm]
   -- Since ϕ.ker is a normal subgroup of S₅ and is contained in H, and H has order 30, ϕ.ker must have order 1, 60, or 120.
   have h_kernel_order : Nat.card (ϕ.ker) = 1 ∨ Nat.card (ϕ.ker) = 60 ∨ Nat.card (ϕ.ker) = 120 := by
@@ -287,7 +283,7 @@ theorem Perm_Fin5_no_subgroup_order_40 :
         obtain ⟨g, hg⟩ : ∃ g : H, orderOf g = 5 := by
           have h_cauchy : ∀ {p : ℕ}, Nat.Prime p → p ∣ Nat.card H → ∃ g : H, orderOf g = p := by
             intro p pp dp
-            haveI := Fact.mk pp
+            have := Fact.mk pp
             exact exists_prime_orderOf_dvd_card' p dp
           exact h_cauchy (by decide) (hH_card.symm ▸ by decide)
         use Subgroup.zpowers (g : Equiv.Perm (Fin 5))
@@ -318,14 +314,13 @@ theorem Perm_Fin5_no_subgroup_order_40 :
         exact ⟨by norm_num⟩
       have h_card_sylow : (Nat.card (P.toSubgroup)) = 5 := by
         convert P.card_eq_multiplicity using 1
-        generalize_proofs at *
-        rw [Nat.card_eq_fintype_card]
-        native_decide
-        exact ⟨by norm_num⟩
+        · rw [Nat.card_eq_fintype_card]
+          native_decide
+        · exact ⟨by norm_num⟩
       have h_card_sylow : (Nat.card (Equiv.Perm (Fin 5) ⧸ Subgroup.normalizer (P.toSubgroup))) ∣
           (Nat.card (Equiv.Perm (Fin 5) ⧸ P.toSubgroup)) := by
         have hle : P.toSubgroup ≤ Subgroup.normalizer P.toSubgroup := Subgroup.le_normalizer
-        convert Subgroup.index_dvd_of_le hle using 1
+        exact Subgroup.index_dvd_of_le hle
       have := Subgroup.card_eq_card_quotient_mul_card_subgroup (P.toSubgroup)
       simp_all +decide [Nat.card_eq_fintype_card]
       have hq24 : Nat.card (Equiv.Perm (Fin 5) ⧸ (P : Subgroup (Equiv.Perm (Fin 5)))) = 24 := by
@@ -333,14 +328,14 @@ theorem Perm_Fin5_no_subgroup_order_40 :
         linarith
       exact h_card_sylow.trans (by rw [hq24])
     have h_card_sylow_mod : (Nat.card (Sylow 5 (Equiv.Perm (Fin 5)))) ≡ 1 [MOD 5] := by
-      haveI := Fact.mk (show Nat.Prime 5 by decide)
+      have := Fact.mk (show Nat.Prime 5 by decide)
       exact card_sylow_modEq_one 5 (Equiv.Perm (Fin 5))
     have h_card_sylow_ne_one : (Nat.card (Sylow 5 (Equiv.Perm (Fin 5)))) ≠ 1 := by
       intro h_card_sylow_one
       have h_normal : P.toSubgroup.Normal := by
         have h_unique : ∀ Q : Sylow 5 (Equiv.Perm (Fin 5)), Q = P := by
           rw [Nat.card_eq_one_iff_unique] at h_card_sylow_one
-          exact fun Q => h_card_sylow_one.1.elim Q P
+          exact fun Q ↦ h_card_sylow_one.1.elim Q P
         constructor
         intro n hn g
         specialize h_unique (g • P)
@@ -378,7 +373,7 @@ theorem Perm_Fin5_no_subgroup_order_40 :
           simp +decide only [orderOf_eq_iff]
           rw [Nat.card_eq_fintype_card]
           native_decide
-        exact h_card_P.trans (Set.ncard_le_ncard <| fun x hx => h_all_5cycles x hx)
+        exact h_card_P.trans (Set.ncard_le_ncard h_all_5cycles)
       have h_card_P : Nat.card P.toSubgroup = 5 := by
         convert P.card_eq_multiplicity
         · rw [Nat.card_eq_fintype_card]
@@ -404,7 +399,7 @@ theorem Perm_Fin5_no_subgroup_order_40 :
     have h_contradiction : H ≤ Subgroup.normalizer P.toSubgroup := by
       have h_normalizer : (Nat.card (Sylow 5 H)) = 1 := by
         have h_unique : Nat.card (Sylow 5 H) ≡ 1 [MOD 5] ∧ Nat.card (Sylow 5 H) ∣ 40 := by
-          haveI := Fact.mk (by decide : Nat.Prime 5)
+          have := Fact.mk (by decide : Nat.Prime 5)
           have := card_sylow_modEq_one 5 H
           simp_all +decide [← ZMod.natCast_eq_natCast_iff]
           rw [← hH_card]
@@ -419,8 +414,7 @@ theorem Perm_Fin5_no_subgroup_order_40 :
       have h_unique : ∀ Q : Sylow 5 H, Q = P.subtype (by
       assumption) := by
         rw [Nat.card_eq_one_iff_unique] at h_normalizer
-        exact fun Q => h_normalizer.1.elim Q _
-      generalize_proofs at *
+        exact fun Q ↦ h_normalizer.1.elim Q _
       intro h hh
       have h_conj : ∀ g : Equiv.Perm (Fin 5), g ∈ H → g • P = P := by
         intro g hg

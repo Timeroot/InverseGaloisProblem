@@ -46,9 +46,9 @@ lemma radical_monic_int {F : Polynomial (Polynomial ℤ)} (hF : F.Monic) :
     exact isUnit_of_dvd_one (h_leading_coeff_div.trans (by aesop))
   have h_radical_normalized : normalize (radical F) = radical F := by
     simp [radical]
-    refine' Finset.prod_congr rfl _
+    apply Finset.prod_congr rfl
     simp +contextual [primeFactors]
-    exact fun x a => normalize_normalized_factor x a
+    exact normalize_normalized_factor
   rw [Polynomial.Monic, ← h_radical_normalized, Polynomial.leadingCoeff_normalize]
   exact normalize_eq_one.mpr h_leading_coeff_unit
 
@@ -62,12 +62,12 @@ lemma dvd_radical_pow_int {F : Polynomial (Polynomial ℤ)} (hF0 : F ≠ 0) :
       simp_all [primeFactors]
     exact Finset.dvd_prod_of_mem _ h_prime_divisor
   have h_divides_product :
-      F ∣ Multiset.prod (Multiset.map (fun p => p) (UniqueFactorizationMonoid.normalizedFactors F)) := by
+      F ∣ Multiset.prod (Multiset.map (fun p ↦ p) (UniqueFactorizationMonoid.normalizedFactors F)) := by
     have := UniqueFactorizationMonoid.prod_normalizedFactors hF0
     simpa using this.symm.dvd
-  refine' h_contra ⟨Multiset.card (UniqueFactorizationMonoid.normalizedFactors F) + 1,
-    Nat.succ_pos _, dvd_trans h_divides_product _⟩
-  refine' dvd_trans (Multiset.prod_dvd_prod_of_dvd _ _ fun p hp => h_prime_divisors p hp) _
+  refine h_contra ⟨Multiset.card (UniqueFactorizationMonoid.normalizedFactors F) + 1,
+    Nat.succ_pos _, dvd_trans h_divides_product ?_⟩
+  refine dvd_trans (Multiset.prod_dvd_prod_of_dvd _ _ h_prime_divisors) ?_
   norm_num [pow_succ']
 
 /-- A squarefree primitive polynomial over `ℤ[x]` stays squarefree over the fraction field. -/
@@ -81,7 +81,7 @@ lemma squarefree_map_frac_int {s : Polynomial (Polynomial ℤ)}
     rw [Polynomial.map_eq_zero_iff] at hx <;> aesop_cat
   have hxm_assoc : Associated x xm := by
     by_cases hx : x = 0 <;> simp_all [Polynomial.Monic.def]
-    refine' associated_of_dvd_dvd _ _ <;> norm_num [hx]
+    refine associated_of_dvd_dvd ?_ ?_ <;> norm_num [hx]
   have hxm_dvd : xm ∣ Polynomial.map (algebraMap (Polynomial ℤ) (FractionRing (Polynomial ℤ))) s := by
     exact dvd_trans (hxm_assoc.symm.dvd) (dvd_of_mul_left_dvd hx)
   have hxm_sq_dvd : xm * xm ∣ Polynomial.map (algebraMap (Polynomial ℤ) (FractionRing (Polynomial ℤ))) s := by
@@ -93,28 +93,26 @@ lemma squarefree_map_frac_int {s : Polynomial (Polynomial ℤ)}
         x'.map (algebraMap (Polynomial ℤ) (FractionRing (Polynomial ℤ))) = xm ∧ x'.Monic := by
     obtain ⟨x', hx'⟩ :
         ∃ x' : Polynomial (Polynomial ℤ), x'.map (algebraMap (Polynomial ℤ) (FractionRing (Polynomial ℤ))) = xm := by
-      have := @IsIntegrallyClosed.eq_map_mul_C_of_dvd
-      specialize this (FractionRing (Polynomial ℤ)) hmon hxm_dvd
+      have := IsIntegrallyClosed.eq_map_mul_C_of_dvd (K := FractionRing (Polynomial ℤ)) hmon hxm_dvd
       aesop
-    refine' ⟨x', hx', _⟩
+    refine ⟨x', hx', ?_⟩
     convert hxm_monic using 1
     rw [← hx', Polynomial.Monic.def, Polynomial.Monic.def,
       Polynomial.leadingCoeff_map_of_leadingCoeff_ne_zero]
-    aesop
-    intro h
-    simp_all [Polynomial.Monic.def]
+    · aesop
+    · intro h
+      simp_all [Polynomial.Monic.def]
   have hx'_sq_dvd : x' * x' ∣ s := by
     rw [← Polynomial.map_dvd_map (algebraMap (Polynomial ℤ) (FractionRing (Polynomial ℤ)))]
     · aesop
     · exact IsFractionRing.injective _ _
     · exact hx'.2.mul hx'.2
-  have := hs x' ?_
-  · convert hxm_assoc.symm.isUnit
-    simp [← hx'.1]
-    exact Or.inl <| Polynomial.isUnit_iff_degree_eq_zero.mpr <| by
-      rw [Polynomial.degree_map_eq_of_injective <| IsFractionRing.injective _ _]
-      exact Polynomial.degree_eq_zero_of_isUnit this
-  · exact hx'_sq_dvd
+  have := hs x' hx'_sq_dvd
+  convert hxm_assoc.symm.isUnit
+  simp [← hx'.1]
+  exact Or.inl <| Polynomial.isUnit_iff_degree_eq_zero.mpr <| by
+    rw [Polynomial.degree_map_eq_of_injective <| IsFractionRing.injective _ _]
+    exact Polynomial.degree_eq_zero_of_isUnit this
 
 /-- Bezout with cleared denominators for a squarefree monic polynomial over `ℤ[x]`. -/
 lemma exists_bezout_of_squarefree_int {s : Polynomial (Polynomial ℤ)}
@@ -152,7 +150,7 @@ lemma exists_bezout_of_squarefree_int {s : Polynomial (Polynomial ℤ)}
           exact ⟨A * Polynomial.C w1 + B * Polynomial.C w0, by simp [*, add_mul, mul_comm, mul_left_comm]⟩
         · rename_i n a
           obtain ⟨w0, hw0⟩ := IsLocalization.surj (nonZeroDivisors (Polynomial ℤ)) a
-          refine' ⟨w0.2, _, _⟩ <;> simp_all [← Polynomial.C_mul_X_pow_eq_monomial]
+          refine ⟨w0.2, ?_, ?_⟩ <;> simp_all [← Polynomial.C_mul_X_pow_eq_monomial]
           exact ⟨Polynomial.C w0.1 * Polynomial.X ^ n, by simp [← hw0, mul_assoc]⟩
       obtain ⟨w0, hw0, A, hA⟩ := h_clear_denom U
       obtain ⟨w1, hw1, B, hB⟩ := h_clear_denom V
@@ -181,7 +179,7 @@ lemma roots_radical_iff (P : Polynomial (Polynomial ℤ)) (hP0 : P ≠ 0) (z w :
     rw [hk, Polynomial.map_mul, Polynomial.eval_mul, h, zero_mul]
   · intro h
     obtain ⟨m, hm1, k, hk⟩ := dvd_radical_pow_int hP0
-    have hh := congrArg (fun q => (q.map (evalIntPolyComplex z)).eval w) hk
+    have hh := congrArg (fun q ↦ (q.map (evalIntPolyComplex z)).eval w) hk
     simp only [Polynomial.map_pow, Polynomial.map_mul, Polynomial.eval_pow,
       Polynomial.eval_mul, h, zero_mul] at hh
     exact pow_eq_zero_iff (by omega : m ≠ 0) |>.mp hh
@@ -201,15 +199,15 @@ theorem exists_complex_separable_reduction
       (∀ z w : ℂ, (Q.map (evalIntPolyComplex z)).eval w = 0 ↔
         (P.map (evalIntPolyComplex z)).eval w = 0) := by
   obtain ⟨A, B, w0, hw0ne, hbez⟩ := exists_bezout_of_squarefree_int squarefree_radical (radical_monic_int hP_monic)
-  refine' ⟨radical P, 1 + ∑ r ∈ (w0.map (Int.castRingHom ℂ) |> Polynomial.roots |> Multiset.toFinset), ‖r‖,
-    _, _, _, _, _⟩
+  refine ⟨radical P, 1 + ∑ r ∈ (w0.map (Int.castRingHom ℂ) |> Polynomial.roots |> Multiset.toFinset), ‖r‖,
+    ?_, ?_, ?_, ?_, ?_⟩
   · exact radical_monic_int hP_monic
-  · grind only [radical_dvd_self]
-  · exact le_add_of_nonneg_right (Finset.sum_nonneg fun _ _ => norm_nonneg _)
+  · exact radical_dvd_self
+  · exact le_add_of_nonneg_right (Finset.sum_nonneg fun _ _ ↦ norm_nonneg _)
   · intro z hz
     have h_eval : Polynomial.eval z (Polynomial.map (Int.castRingHom ℂ) w0) ≠ 0 := by
       contrapose! hz
-      refine' le_add_of_nonneg_of_le zero_le_one (Finset.single_le_sum (fun x _ => norm_nonneg x) _)
+      refine le_add_of_nonneg_of_le zero_le_one (Finset.single_le_sum (fun x _ ↦ norm_nonneg x) ?_)
       simp_all [Polynomial.ext_iff]
     have h_bezout :
         (Polynomial.map (evalIntPolyComplex z) A) * (Polynomial.map (evalIntPolyComplex z) (radical P)) +
@@ -219,14 +217,14 @@ theorem exists_complex_separable_reduction
       convert congr_arg (Polynomial.map (evalIntPolyComplex z)) hbez using 1 <;> norm_num [Polynomial.derivative_map]
       unfold evalIntPolyComplex
       aesop
-    refine' ⟨Polynomial.C (Polynomial.eval z (Polynomial.map (Int.castRingHom ℂ) w0)) ⁻¹ *
+    refine ⟨Polynomial.C (Polynomial.eval z (Polynomial.map (Int.castRingHom ℂ) w0)) ⁻¹ *
         Polynomial.map (evalIntPolyComplex z) A,
       Polynomial.C (Polynomial.eval z (Polynomial.map (Int.castRingHom ℂ) w0)) ⁻¹ *
-        Polynomial.map (evalIntPolyComplex z) B, _⟩
+        Polynomial.map (evalIntPolyComplex z) B, ?_⟩
     convert congr_arg
-        (fun p => Polynomial.C (Polynomial.eval z (Polynomial.map (Int.castRingHom ℂ) w0)) ⁻¹ * p) h_bezout
+        (fun p ↦ Polynomial.C (Polynomial.eval z (Polynomial.map (Int.castRingHom ℂ) w0)) ⁻¹ * p) h_bezout
       using 1 <;> ring_nf
     rw [← Polynomial.C_mul, inv_mul_cancel₀ h_eval, Polynomial.C_1]
-  · exact fun z w => roots_radical_iff P (by aesop) z w
+  · exact roots_radical_iff P (by aesop)
 
 end ComplexSeparableReduction

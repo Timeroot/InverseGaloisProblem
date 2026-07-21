@@ -30,7 +30,7 @@ private lemma poly_zero_of_too_many_roots {R : Type*} [CommRing R] [IsDomain R] 
     (S : Finset R) (hS : n < S.card)
     (hroots : ∀ x ∈ S, f.IsRoot x) : False := by
   have h1 : S.card ≤ f.roots.toFinset.card :=
-    Finset.card_le_card fun x hx =>
+    Finset.card_le_card fun x hx ↦
       Multiset.mem_toFinset.mpr ((Polynomial.mem_roots hf).mpr (hroots x hx))
   have h2 : f.roots.toFinset.card ≤ f.roots.card := f.roots.toFinset_card_le
   have h3 : f.roots.card ≤ f.natDegree := Polynomial.card_roots' f
@@ -52,14 +52,14 @@ theorem cubic_mod7_irreducible :
             + Polynomial.C 5) → False := by
         intros p q hp hq h_eq
         have h_deg : p.degree + q.degree = 3 := by
-          haveI := Fact.mk (by decide : Nat.Prime 7)
+          have := Fact.mk (by decide : Nat.Prime 7)
           rw [← Polynomial.degree_mul, h_eq, Polynomial.degree_add_C]
-            <;> erw [Polynomial.degree_add_eq_left_of_degree_lt]
-            <;> erw [Polynomial.degree_add_eq_left_of_degree_lt]
+            <;> rw [Polynomial.degree_add_eq_left_of_degree_lt]
+            <;> rw [Polynomial.degree_add_eq_left_of_degree_lt]
             <;> simp +decide
-        -- Since the degrees of $p$ and $q$ add up to 3 and both are positive, one of them must have degree 1.
+        -- Since the degrees of `p` and `q` add up to 3 and both are positive, one of them must have degree 1.
         have h_deg_one : p.degree = 1 ∨ q.degree = 1 := by
-          erw [Polynomial.degree_eq_natDegree (Polynomial.ne_zero_of_degree_gt hp),
+          rw [Polynomial.degree_eq_natDegree (Polynomial.ne_zero_of_degree_gt hp),
             Polynomial.degree_eq_natDegree (Polynomial.ne_zero_of_degree_gt hq)] at *
           norm_cast at *
           omega
@@ -69,19 +69,17 @@ theorem cubic_mod7_irreducible :
           <;> simp_all +decide
         all_goals fin_cases x <;> contradiction
       constructor
-      · haveI := Fact.mk (by decide : Nat.Prime 7)
-        exact fun h => absurd (Polynomial.degree_eq_zero_of_isUnit h)
-          (by erw [Polynomial.degree_add_C]
-              <;> repeat (first | erw [Polynomial.degree_add_eq_left_of_degree_lt] | simp +decide))
+      · have := Fact.mk (by decide : Nat.Prime 7)
+        exact fun h ↦ absurd (Polynomial.degree_eq_zero_of_isUnit h)
+          (by rw [Polynomial.degree_add_C]
+              <;> repeat (first | rw [Polynomial.degree_add_eq_left_of_degree_lt] | simp +decide))
       · contrapose! h_irred
         obtain ⟨a, b, h₁, h₂, h₃⟩ := h_irred
         use a, b
         simp_all +decide [Polynomial.isUnit_iff_degree_eq_zero]
-        refine ⟨lt_of_le_of_ne (le_of_not_gt fun h => ?_) (Ne.symm h₂),
-          lt_of_le_of_ne (le_of_not_gt fun h => ?_) (Ne.symm h₃)⟩
-        · apply_fun Polynomial.eval 0 at h₁
-          simp_all +decide
-        · apply_fun Polynomial.eval 0 at h₁
+        apply_fun Polynomial.eval 0 at h₁
+        refine ⟨lt_of_le_of_ne (le_of_not_gt fun h ↦ ?_) (Ne.symm h₂),
+          lt_of_le_of_ne (le_of_not_gt fun h ↦ ?_) (Ne.symm h₃)⟩ <;>
           simp_all +decide
 
 /-
@@ -95,7 +93,7 @@ theorem f_a5_mod7_squarefree :
             (Polynomial.derivative
               (Polynomial.X ^ 5 + Polynomial.C 20 * Polynomial.X + Polynomial.C 16 : Polynomial (ZMod 7))) := by
           norm_num [Polynomial.derivative_add, Polynomial.derivative_mul, Polynomial.derivative_pow]
-          -- We can use the fact that if the polynomial $X^5 + 6X + 2$ has no common roots with its derivative $5X^4 + 6$, then it is coprime with its derivative.
+          -- We can use the fact that if the polynomial `X^5 + 6X + 2` has no common roots with its derivative `5X^4 + 6`, then it is coprime with its derivative.
           have h_coprime : ∀ x : AlgebraicClosure (ZMod 7),
               Polynomial.eval x (Polynomial.map (algebraMap (ZMod 7) (AlgebraicClosure (ZMod 7)))
                 (Polynomial.X ^ 5 + Polynomial.C 6 * Polynomial.X + Polynomial.C 2)) ≠ 0 ∨
@@ -126,18 +124,18 @@ theorem f_a5_mod7_squarefree :
             replace hz := congr_arg (Polynomial.eval x) hz
             aesop
         obtain ⟨a, b, h⟩ := h_gcd
-        refine' fun x hx => _
-        -- Since $x^2$ divides the polynomial, it follows that $x$ divides the polynomial and its derivative.
+        intro x hx
+        -- Since `x^2` divides the polynomial, it follows that `x` divides the polynomial and its derivative.
         have h_div : x ∣ (Polynomial.X ^ 5 + Polynomial.C 20 * Polynomial.X + Polynomial.C 16 : Polynomial (ZMod 7)) ∧
             x ∣ Polynomial.derivative
               (Polynomial.X ^ 5 + Polynomial.C 20 * Polynomial.X + Polynomial.C 16 : Polynomial (ZMod 7)) := by
           have h_div : x ^ 2 ∣
               (Polynomial.X ^ 5 + Polynomial.C 20 * Polynomial.X + Polynomial.C 16 : Polynomial (ZMod 7)) := by
             convert hx using 1
-            ring
-            norm_num [Polynomial.ext_iff]
-            intro n
-            erw [Polynomial.coeff_C]
+            · ring
+            · norm_num [Polynomial.ext_iff]
+              intro n
+              erw [Polynomial.coeff_C]
           obtain ⟨y, hy⟩ := h_div
           simp_all +decide [sq, mul_assoc]
           exact ⟨derivative x * y + derivative x * y + x * derivative y, by ring⟩
@@ -158,9 +156,8 @@ theorem f_a5_mod7_factorizationType :
           rename_i n
           rcases n with (_ | _ | _ | _ | _ | _ | n) <;>
             simp +decide [Polynomial.coeff_eq_zero_of_natDegree_lt]
-        erw [heq]
-        erw [normalizedFactors_mul, normalizedFactors_mul]
-        · erw [normalizedFactors_irreducible, normalizedFactors_irreducible,
+        rw [heq, normalizedFactors_mul, normalizedFactors_mul]
+        · rw [normalizedFactors_irreducible, normalizedFactors_irreducible,
             normalizedFactors_irreducible] <;> norm_num
           · erw [Polynomial.natDegree_mul'] <;> norm_num [Polynomial.natDegree_add_eq_left_of_natDegree_lt]
             · erw [Polynomial.natDegree_mul'] <;> norm_num [Polynomial.natDegree_add_eq_left_of_natDegree_lt]
@@ -178,9 +175,9 @@ theorem f_a5_mod7_factorizationType :
                 · exact ne_of_apply_ne (Polynomial.eval 0) (by simp +decide)
               · exact Polynomial.X_add_C_ne_zero _
             · exact Polynomial.X_add_C_ne_zero _
-          · convert cubic_mod7_irreducible using 1
+          · exact cubic_mod7_irreducible
           · exact Polynomial.irreducible_of_degree_eq_one (by erw [Polynomial.degree_add_C] <;> norm_num)
-          · haveI := Fact.mk (by decide : Nat.Prime 7)
+          · have := Fact.mk (by decide : Nat.Prime 7)
             exact Polynomial.irreducible_of_degree_eq_one (Polynomial.degree_X_add_C _)
         · exact Polynomial.X_add_C_ne_zero _
         · exact Polynomial.X_add_C_ne_zero _

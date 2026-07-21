@@ -80,13 +80,13 @@ lemma real_branch_holomorphic_puiseux_representation
       hHdc, hHag, hHb⟩ :=
     real_branch_full_holomorphic_continuation P hP_monic T₀ g hg hroot hnp
   refine ⟨poly, I, a, s, s', A, T,
-    (fun z => H z - (poly.map (algebraMap ℝ ℂ)).eval z - ∑ σ ∈ I, (a σ : ℂ) * z ^ (σ : ℂ)),
+    (fun z ↦ H z - (poly.map (algebraMap ℝ ℂ)).eval z - ∑ σ ∈ I, (a σ : ℂ) * z ^ (σ : ℂ)),
     hsI, hstop, hsnat, has, hss', hA, hT0, hT2, ?_, ?_, ?_⟩
   · -- Holomorphy of the remainder: `H` minus the (holomorphic) principal part.
     intro x hx
     have h1 := hHdc x hx
     have h2 := puiseux_principal_part_diffContOnCl x (le_trans hT2 hx)
-      (poly.map (algebraMap ℝ ℂ)) I (fun σ => (a σ : ℂ))
+      (poly.map (algebraMap ℝ ℂ)) I (fun σ ↦ (a σ : ℂ))
     simpa [sub_sub] using h1.sub h2
   · -- Agreement with the real remainder on the real axis (`cpow = rpow` for `y > 0`).
     intro y hy
@@ -103,7 +103,7 @@ lemma real_branch_holomorphic_puiseux_representation
     have hcpow : ∀ σ : ℝ, (a σ : ℂ) * (y : ℂ) ^ (σ : ℂ) = (((a σ) * y ^ σ : ℝ) : ℂ) := by
       intro σ
       rw [Complex.ofReal_mul, Complex.ofReal_cpow hypos]
-    rw [Finset.sum_congr rfl (fun σ _ => hcpow σ)]
+    rw [Finset.sum_congr rfl (fun σ _ ↦ hcpow σ)]
     push_cast
     ring
   · -- The sphere bound is exactly the deep input's bound.
@@ -120,7 +120,7 @@ lemma real_root_branch_puiseux_remainder_bound
     ∃ (poly : Polynomial ℝ) (I : Finset ℝ) (a : ℝ → ℝ) (s s' : ℝ),
       s ∈ I ∧ (∀ σ ∈ I, σ ≤ s) ∧ (∀ i : ℕ, s ≠ (i : ℝ)) ∧ a s ≠ 0 ∧ s' < s ∧
       ∃ T : ℝ, ∀ m : ℕ, ∃ C : ℝ, ∀ x : ℝ, T ≤ x →
-        |iteratedDeriv m (fun y => g y - poly.eval y - ∑ σ ∈ I, a σ * y ^ σ) x|
+        |iteratedDeriv m (fun y ↦ g y - poly.eval y - ∑ σ ∈ I, a σ * y ^ σ) x|
           ≤ C * x ^ (s' - (m : ℝ)) := by
   obtain ⟨poly, I, a, s, s', A, T, G, hsI, hstop, hsnat, has, hss', hA, hT1, hT2, hDC,
       hagree, hbound⟩ :=
@@ -130,23 +130,23 @@ lemma real_root_branch_puiseux_remainder_bound
   intro m
   use (m.factorial : ℝ) * A * 2 ^ m
   intro x hx
-  have h_cont_diff : ContDiffOn ℝ ⊤ (fun y => g y - poly.eval y - ∑ σ ∈ I, a σ * y ^ σ)
+  have h_cont_diff : ContDiffOn ℝ ⊤ (fun y ↦ g y - poly.eval y - ∑ σ ∈ I, a σ * y ^ σ)
       (Set.Ioo (x - x / 2) (x + x / 2)) := by
-    refine' ContDiffOn.sub (ContDiffOn.sub (hg.mono _) _) _
-    · exact fun y hy => show (T₀ : ℝ) ≤ y by
+    refine ContDiffOn.sub (ContDiffOn.sub (hg.mono ?_) ?_) ?_
+    · exact fun y hy ↦ show (T₀ : ℝ) ≤ y by
         linarith [hy.1, hy.2, show (T₀ : ℝ) ≤ T / 2 by linarith]
     · exact ContDiff.contDiffOn (by
         simpa only [Polynomial.eval_eq_sum_range] using
-          ContDiff.sum fun i hi => ContDiff.mul contDiff_const (contDiff_id.pow i))
-    · refine' ContDiffOn.sum fun σ hσ => ContDiffOn.mul _ _
+          ContDiff.sum fun i hi ↦ ContDiff.mul contDiff_const (contDiff_id.pow i))
+    · refine' ContDiffOn.sum fun σ hσ ↦ ContDiffOn.mul _ _
       · exact contDiffOn_const
       · exact ContDiffOn.rpow contDiffOn_id contDiffOn_const <| by
           intro y hy
           exact ne_of_gt <| by linarith [hy.1, hy.2]
   have := abs_iteratedDeriv_le_of_holo_extension
-    (fun y => g y - poly.eval y - ∑ σ ∈ I, a σ * y ^ σ) G x (x / 2) (A * x ^ s') m
-    (by linarith) (hDC x hx) h_cont_diff (fun y hy => hagree y (by linarith [hy.1, hy.2]))
-    (fun z hz => hbound x hx z hz)
+    (fun y ↦ g y - poly.eval y - ∑ σ ∈ I, a σ * y ^ σ) G x (x / 2) (A * x ^ s') m
+    (by linarith) (hDC x hx) h_cont_diff (fun y hy ↦ hagree y (by linarith [hy.1, hy.2]))
+    (fun z hz ↦ hbound x hx z hz)
   convert this using 1
   norm_num [Real.rpow_sub (by linarith : 0 < x)]
   ring_nf
@@ -168,29 +168,29 @@ lemma real_root_branch_puiseux_principal_part
     ∃ (poly : Polynomial ℝ) (I : Finset ℝ) (a : ℝ → ℝ) (s : ℝ),
       s ∈ I ∧ (∀ σ ∈ I, σ ≤ s) ∧ (∀ i : ℕ, s ≠ (i : ℝ)) ∧ a s ≠ 0 ∧
       ∀ m : ℕ, Filter.Tendsto
-        (fun x => iteratedDeriv m
-            (fun y => g y - poly.eval y - ∑ σ ∈ I, a σ * y ^ σ) x / x ^ (s - (m : ℝ)))
+        (fun x ↦ iteratedDeriv m
+            (fun y ↦ g y - poly.eval y - ∑ σ ∈ I, a σ * y ^ σ) x / x ^ (s - (m : ℝ)))
         Filter.atTop (nhds 0) := by
   -- Deep input in explicit-rate form: the remainder derivatives are bounded by `x^{s'-m}`
   -- with `s' < s`.  The `Tendsto … 0` conclusion is then an elementary squeeze.
   obtain ⟨poly, I, a, s, s', hsI, hstop, hsnat, has, hss', T, hbound⟩ :=
     real_root_branch_puiseux_remainder_bound P hP_monic T₀ g hg hroot hnp
-  refine ⟨poly, I, a, s, hsI, hstop, hsnat, has, fun m => ?_⟩
+  refine ⟨poly, I, a, s, hsI, hstop, hsnat, has, fun m ↦ ?_⟩
   obtain ⟨C, hC⟩ := hbound m
   -- Squeeze: `|R⁽ᵐ⁾(x) / x^{s-m}| ≤ C · x^{s'-s}` on the tail, and `C · x^{s'-s} → 0`.
-  apply squeeze_zero_norm' (a := fun x => C * x ^ (s' - s))
+  apply squeeze_zero_norm' (a := fun x ↦ C * x ^ (s' - s))
   · filter_upwards [eventually_ge_atTop (max T 1)] with x hxm
     have hx : T ≤ x := le_trans (le_max_left _ _) hxm
     have hx1 : (1 : ℝ) ≤ x := le_trans (le_max_right _ _) hxm
     have hx0 : (0 : ℝ) < x := lt_of_lt_of_le one_pos hx1
     have hxpow : (0 : ℝ) < x ^ (s - (m : ℝ)) := Real.rpow_pos_of_pos hx0 _
     rw [Real.norm_eq_abs, abs_div, abs_of_pos hxpow, div_le_iff₀ hxpow]
-    calc |iteratedDeriv m (fun y => g y - poly.eval y - ∑ σ ∈ I, a σ * y ^ σ) x|
+    calc |iteratedDeriv m (fun y ↦ g y - poly.eval y - ∑ σ ∈ I, a σ * y ^ σ) x|
           ≤ C * x ^ (s' - (m : ℝ)) := hC x hx
       _ = C * x ^ (s' - s) * x ^ (s - (m : ℝ)) := by
             rw [mul_assoc, ← Real.rpow_add hx0,
               show s' - s + (s - (m : ℝ)) = s' - (m : ℝ) from by ring]
-  · have h0 : Filter.Tendsto (fun x : ℝ => x ^ (s' - s)) Filter.atTop (nhds 0) := by
+  · have h0 : Filter.Tendsto (fun x : ℝ ↦ x ^ (s' - s)) Filter.atTop (nhds 0) := by
       have := tendsto_rpow_neg_atTop (y := s - s') (by linarith)
       simpa [neg_sub] using this
     simpa using h0.const_mul C
@@ -211,7 +211,7 @@ lemma real_root_branch_puiseux_data
     (hnp : ¬ ∃ q : Polynomial ℝ, ∀ x : ℝ, (T₀ : ℝ) ≤ x → g x = q.eval x) :
     ∃ (s c : ℝ) (m₀ : ℕ), c ≠ 0 ∧ (∀ i : ℕ, s ≠ (i : ℝ)) ∧
       ∀ m : ℕ, m₀ ≤ m →
-        Filter.Tendsto (fun x => iteratedDeriv m g x / x ^ (s - (m : ℝ)))
+        Filter.Tendsto (fun x ↦ iteratedDeriv m g x / x ^ (s - (m : ℝ)))
           Filter.atTop (nhds (c * Polynomial.eval s (descPochhammer ℝ m))) := by
   -- Deep input: the polynomial part `poly` and the finite non-integer Puiseux part
   -- `F = ∑ a σ x^σ` (top exponent `s`, non-natural, nonzero coefficient).
@@ -219,7 +219,7 @@ lemma real_root_branch_puiseux_data
     real_root_branch_puiseux_principal_part P hP_monic T₀ g hg hroot hnp
   -- Beyond the degree of the polynomial part, `poly` no longer contributes to the
   -- derivative, so the leading behaviour is governed by the non-integer part.
-  refine ⟨s, a s, poly.natDegree + 1, has, hsnat, fun m hm => ?_⟩
+  refine ⟨s, a s, poly.natDegree + 1, has, hsnat, fun m hm ↦ ?_⟩
   -- Combine the remainder decay with the leading-term computation.
   have hadd := (hrem m).add (finite_puiseux_deriv_asymptotic I a s hsI hstop m)
   rw [zero_add] at hadd
@@ -228,35 +228,35 @@ lemma real_root_branch_puiseux_data
   simp only [max_lt_iff] at hx
   obtain ⟨hxT, hx0⟩ := hx
   have hgat : ContDiffAt ℝ (m:ℕ) g x := (hg.contDiffAt (Ici_mem_nhds hxT)).of_le le_top
-  have hFat : ContDiffAt ℝ (m:ℕ) (fun y => ∑ σ ∈ I, a σ * y ^ σ) x := by
+  have hFat : ContDiffAt ℝ (m:ℕ) (fun y ↦ ∑ σ ∈ I, a σ * y ^ σ) x := by
     apply ContDiffAt.sum
     intro σ hσ
-    have : ContDiffAt ℝ (m:ℕ∞) (fun y : ℝ => y ^ σ) x :=
+    have : ContDiffAt ℝ (m:ℕ∞) (fun y : ℝ ↦ y ^ σ) x :=
       Real.contDiffAt_rpow_const_of_ne (ne_of_gt hx0)
     exact (contDiffAt_const).mul (by exact_mod_cast this)
-  have hPat : ContDiffAt ℝ (m:ℕ) (fun y => poly.eval y) x := by
-    have heq : (fun y : ℝ => (aeval y) poly) = (fun y => poly.eval y) := by
+  have hPat : ContDiffAt ℝ (m:ℕ) (fun y ↦ poly.eval y) x := by
+    have heq : (fun y : ℝ ↦ (aeval y) poly) = (fun y ↦ poly.eval y) := by
       funext y
       simp [Polynomial.aeval_def, Polynomial.eval₂_id]
     rw [← heq]
     exact (contDiff_aeval (𝕜 := ℝ) poly (n := (⊤ : WithTop ℕ∞))).contDiffAt.of_le le_top
   -- The polynomial part vanishes in the `m`-th derivative once `m > deg poly`.
-  have hqzero : iteratedDeriv m (fun y => poly.eval y) x = 0 :=
+  have hqzero : iteratedDeriv m (fun y ↦ poly.eval y) x = 0 :=
     iteratedDeriv_polynomial_eval_zero poly m (by omega) x
-  have hsub : ContDiffAt ℝ (m:ℕ) (fun y => g y - poly.eval y - ∑ σ ∈ I, a σ * y ^ σ) x :=
+  have hsub : ContDiffAt ℝ (m:ℕ) (fun y ↦ g y - poly.eval y - ∑ σ ∈ I, a σ * y ^ σ) x :=
     (hgat.sub hPat).sub hFat
-  have hfeq : ((fun y => g y - poly.eval y - ∑ σ ∈ I, a σ * y ^ σ)
-      + (fun y => poly.eval y) + fun y => ∑ σ ∈ I, a σ * y ^ σ) = g := by
+  have hfeq : ((fun y ↦ g y - poly.eval y - ∑ σ ∈ I, a σ * y ^ σ)
+      + (fun y ↦ poly.eval y) + fun y ↦ ∑ σ ∈ I, a σ * y ^ σ) = g := by
     funext y
     simp only [Pi.add_apply]
     ring
   have h12cd : ContDiffAt ℝ (m:ℕ)
-      ((fun y => g y - poly.eval y - ∑ σ ∈ I, a σ * y ^ σ) + fun y => poly.eval y) x :=
+      ((fun y ↦ g y - poly.eval y - ∑ σ ∈ I, a σ * y ^ σ) + fun y ↦ poly.eval y) x :=
     hsub.add hPat
   have key : iteratedDeriv m g x
-      = iteratedDeriv m (fun y => g y - poly.eval y - ∑ σ ∈ I, a σ * y ^ σ) x
-        + iteratedDeriv m (fun y => poly.eval y) x
-        + iteratedDeriv m (fun y => ∑ σ ∈ I, a σ * y ^ σ) x := by
+      = iteratedDeriv m (fun y ↦ g y - poly.eval y - ∑ σ ∈ I, a σ * y ^ σ) x
+        + iteratedDeriv m (fun y ↦ poly.eval y) x
+        + iteratedDeriv m (fun y ↦ ∑ σ ∈ I, a σ * y ^ σ) x := by
     conv_lhs => rw [← hfeq]
     rw [iteratedDeriv_add h12cd hFat, iteratedDeriv_add hsub hPat]
   rw [key, hqzero]
@@ -272,7 +272,7 @@ lemma real_root_branch_classify
     (∃ q : Polynomial ℝ, ∀ x : ℝ, (T₀ : ℝ) ≤ x → g x = q.eval x) ∨
     (∃ (s c : ℝ) (m₀ : ℕ), c ≠ 0 ∧ (∀ i : ℕ, s ≠ (i : ℝ)) ∧
       ∀ m : ℕ, m₀ ≤ m →
-        Filter.Tendsto (fun x => iteratedDeriv m g x / x ^ (s - (m : ℝ)))
+        Filter.Tendsto (fun x ↦ iteratedDeriv m g x / x ^ (s - (m : ℝ)))
           Filter.atTop (nhds (c * Polynomial.eval s (descPochhammer ℝ m)))) := by
   -- The dichotomy is a case split on whether `g` is eventually a polynomial; the
   -- non-polynomial case is exactly the deep Newton–Puiseux input
@@ -312,7 +312,7 @@ lemma real_branches_puiseux
       (∀ j, kind j → c j ≠ 0) ∧
       (∀ j, kind j → ∀ i : ℕ, s j ≠ (i : ℝ)) ∧
       (∀ j, kind j → ∀ m : ℕ, m₀ j ≤ m →
-          Filter.Tendsto (fun x => iteratedDeriv m (g j) x / x ^ (s j - (m : ℝ)))
+          Filter.Tendsto (fun x ↦ iteratedDeriv m (g j) x / x ^ (s j - (m : ℝ)))
             Filter.atTop (nhds (c j * Polynomial.eval (s j) (descPochhammer ℝ m)))) ∧
       (∀ j, ¬ kind j → ∃ q : Polynomial ℝ,
           (∀ x : ℝ, (T₀ : ℝ) ≤ x → g j x = q.eval x) ∧
@@ -324,11 +324,11 @@ lemma real_branches_puiseux
   obtain ⟨n, T₀, g, hT₀, hcd, hroot, hcov⟩ := real_root_branches_cover P hP_monic hP_deg
   -- A branch is `good` (`kind j`) exactly when it is NOT eventually a polynomial.
   set kind : Fin n → Prop :=
-    fun j => ¬ ∃ q : Polynomial ℝ, ∀ x : ℝ, (T₀ : ℝ) ≤ x → g j x = q.eval x with hkind
+    fun j ↦ ¬ ∃ q : Polynomial ℝ, ∀ x : ℝ, (T₀ : ℝ) ≤ x → g j x = q.eval x with hkind
   -- Classification kernel supplies the good-branch asymptotic data whenever `kind j`.
   have hgood : ∀ j, kind j → ∃ (s c : ℝ) (m₀ : ℕ), c ≠ 0 ∧ (∀ i : ℕ, s ≠ (i : ℝ)) ∧
       ∀ m : ℕ, m₀ ≤ m →
-        Filter.Tendsto (fun x => iteratedDeriv m (g j) x / x ^ (s - (m : ℝ)))
+        Filter.Tendsto (fun x ↦ iteratedDeriv m (g j) x / x ^ (s - (m : ℝ)))
           Filter.atTop (nhds (c * Polynomial.eval s (descPochhammer ℝ m))) := by
     intro j hj
     rcases real_root_branch_classify P hP_monic T₀ (g j) (hcd j) (hroot j) with hbad | hgood
@@ -336,13 +336,13 @@ lemma real_branches_puiseux
     · exact hgood
   choose! s c m₀ hgood' using hgood
   refine ⟨n, T₀, g, kind, s, c, m₀, hT₀, hcd, ?_, ?_, ?_, ?_, hcov⟩
-  · exact fun j hj => (hgood' j hj).1
-  · exact fun j hj => (hgood' j hj).2.1
-  · exact fun j hj => (hgood' j hj).2.2
+  · exact fun j hj ↦ (hgood' j hj).1
+  · exact fun j hj ↦ (hgood' j hj).2.1
+  · exact fun j hj ↦ (hgood' j hj).2.2
   · intro j hj
     have hq : ∃ q : Polynomial ℝ, ∀ x : ℝ, (T₀ : ℝ) ≤ x → g j x = q.eval x := not_not.mp hj
     obtain ⟨q, hq⟩ := hq
-    refine ⟨q, hq, fun x hx => ?_⟩
+    refine ⟨q, hq, fun x hx ↦ ?_⟩
     rw [← hq x hx]
     exact hroot j x hx
 
@@ -375,7 +375,7 @@ lemma real_algebraic_branches
       (∀ j, kind j → c j ≠ 0) ∧
       (∀ j, kind j → ∀ i : ℕ, s j ≠ (i : ℝ)) ∧
       (∀ j, kind j → ∀ m : ℕ, m₀ j ≤ m →
-          Filter.Tendsto (fun x => iteratedDeriv m (g j) x / x ^ (s j - (m : ℝ)))
+          Filter.Tendsto (fun x ↦ iteratedDeriv m (g j) x / x ^ (s j - (m : ℝ)))
             Filter.atTop (nhds (c j * Polynomial.eval (s j) (descPochhammer ℝ m)))) ∧
       (∀ j, ¬ kind j → ∀ t : ℤ, T₀ ≤ t → ¬ ∃ z : ℤ, g j (t : ℝ) = (z : ℝ)) ∧
       (∀ t : ℤ, T₀ ≤ t → ∀ y : ℤ, (P.map (Polynomial.evalRingHom t)).IsRoot y →
@@ -395,20 +395,20 @@ lemma real_algebraic_branches
         obtain ⟨a, ha⟩ := ratl_eventual_root_gives_ratFunc_root P (T₀ : ℝ) q' (by aesop)
         exact hP_no_root a ha
       obtain ⟨T₁, hT₁⟩ := hq_inf.bddAbove
-      refine ⟨Max.max T₀ (T₁ + 1), le_max_left _ _, fun t ht ⟨z, hz⟩ => ?_⟩
+      refine ⟨Max.max T₀ (T₁ + 1), le_max_left _ _, fun t ht ⟨z, hz⟩ ↦ ?_⟩
       have hz' : q.eval (t : ℝ) = (z : ℝ) := by
         rw [← hq.1 t (by exact_mod_cast le_trans (le_max_left _ _) ht)]
         exact hz
       linarith [hT₁ ⟨z, hz'⟩, le_max_right T₀ (T₁ + 1)]
     choose! T₁ hT₁₁ hT₁₂ using hT₁_exists
     use sSup (Set.range T₁) ⊔ T₀
-    refine ⟨le_max_right _ _, fun j hj t ht => ?_⟩
-    exact hT₁₂ j hj t <| le_trans (le_csSup (Set.finite_range T₁ |> Set.Finite.bddAbove) <|
+    refine ⟨le_max_right _ _, fun j hj t ht ↦ ?_⟩
+    exact hT₁₂ j hj t <| le_trans (le_csSup (Set.finite_range T₁).bddAbove <|
       Set.mem_range_self j) <| le_trans (le_max_left _ _) ht
   use n, T₁, g, kind, s, c, m₀
-  refine ⟨by linarith, fun j => ?_, hc, hs, hasymp, hT₁.2,
-    fun t ht y hy => hcov t (by linarith) y hy⟩
-  exact hcd j |> ContDiffOn.mono <| Set.Ici_subset_Ici.mpr <| mod_cast by linarith
+  refine ⟨by linarith, fun j ↦ ?_, hc, hs, hasymp, hT₁.2,
+    fun t ht y hy ↦ hcov t (by linarith) y hy⟩
+  exact (hcd j).mono <| Set.Ici_subset_Ici.mpr <| mod_cast by linarith
 
 /-- **Existence of the real Puiseux branches at infinity with leading derivative
 asymptotics.**
@@ -427,7 +427,7 @@ lemma branch_leading_asymptotics
       (∀ j, c j ≠ 0) ∧
       (∀ j, ∀ i : ℕ, s j ≠ (i : ℝ)) ∧
       (∀ j, ∀ m : ℕ, m₀ j ≤ m →
-          Filter.Tendsto (fun x => iteratedDeriv m (g j) x / x ^ (s j - (m : ℝ)))
+          Filter.Tendsto (fun x ↦ iteratedDeriv m (g j) x / x ^ (s j - (m : ℝ)))
             Filter.atTop (nhds (c j * Polynomial.eval (s j) (descPochhammer ℝ m)))) ∧
       (∀ t : ℤ, T₀ ≤ t → ∀ y : ℤ, (P.map (Polynomial.evalRingHom t)).IsRoot y →
           ∃ j, g j (t : ℝ) = (y : ℝ)) := by
@@ -435,10 +435,10 @@ lemma branch_leading_asymptotics
   obtain ⟨n, T₀, g, kind, s, c, m₀, hT₀, hcd, hc, hs, hasymp, hbad, hcov⟩ :=
     real_algebraic_branches P hP_monic hP_deg hP_no_root
   refine ⟨n, T₀,
-    fun j => if kind j then g j else dummyBranch,
-    fun j => if kind j then s j else (1 / 2 : ℝ),
-    fun j => if kind j then c j else 1,
-    fun j => if kind j then m₀ j else 0,
+    fun j ↦ if kind j then g j else dummyBranch,
+    fun j ↦ if kind j then s j else (1 / 2 : ℝ),
+    fun j ↦ if kind j then c j else 1,
+    fun j ↦ if kind j then m₀ j else 0,
     hT₀, ?_, ?_, ?_, ?_, ?_⟩
   · intro j
     by_cases hk : kind j
@@ -486,29 +486,29 @@ lemma real_branches_on_tail
             (∀ x ∈ Set.Ioi (T₀ : ℝ), iteratedDerivWithin (k + 1) (g j) (Set.Ici (T₀ : ℝ)) x < 0)) ∧
           Filter.Tendsto (iteratedDerivWithin k (g j) (Set.Ici (T₀ : ℝ))) Filter.atTop (nhds 0) ∧
           (∃ sj Lj : ℝ, sj < (k : ℝ) ∧
-            Filter.Tendsto (fun x => iteratedDeriv k (g j) x / x ^ (sj - (k : ℝ)))
+            Filter.Tendsto (fun x ↦ iteratedDeriv k (g j) x / x ^ (sj - (k : ℝ)))
               Filter.atTop (nhds Lj))) ∧
         (∀ t : ℤ, T₀ ≤ t → ∀ y : ℤ, (P.map (Polynomial.evalRingHom t)).IsRoot y →
             ∃ j, g j (t : ℝ) = (y : ℝ)) := by
   obtain ⟨n, T₀, g, s, c, m₀, hT₀, hcd, hc, hs, hasymp, hcov⟩ :=
     branch_leading_asymptotics P hP_monic hP_deg hP_no_root
-  choose k₀ hk₀ using fun j =>
+  choose k₀ hk₀ using fun j ↦
     asymptotic_deriv_analytic_package (g j) (s j) (c j) (hc j) (hs j) (m₀ j) (hasymp j)
-  refine' ⟨n, Finset.univ.sup k₀ ⊔ 2 ⊔ Finset.univ.sup (fun j => m₀ j + ⌈s j⌉₊ + 1),
-    _, _⟩
+  refine ⟨n, Finset.univ.sup k₀ ⊔ 2 ⊔ Finset.univ.sup (fun j ↦ m₀ j + ⌈s j⌉₊ + 1),
+    ?_, ?_⟩
   · exact le_trans (le_max_right _ _) (le_max_left _ _)
   · intro k hk
     have hT₀R : (T₀ : ℝ) ≥ 1 := by norm_cast
-    have hkk₀ : ∀ j, k₀ j ≤ k := fun j =>
+    have hkk₀ : ∀ j, k₀ j ≤ k := fun j ↦
       le_trans (Finset.le_sup (f := k₀) (Finset.mem_univ j))
         (le_trans (le_max_left _ 2) (le_trans (le_max_left _ _) hk))
-    have hkB : ∀ j, m₀ j + ⌈s j⌉₊ + 1 ≤ k := fun j =>
-      le_trans (Finset.le_sup (f := fun j => m₀ j + ⌈s j⌉₊ + 1) (Finset.mem_univ j))
+    have hkB : ∀ j, m₀ j + ⌈s j⌉₊ + 1 ≤ k := fun j ↦
+      le_trans (Finset.le_sup (f := fun j ↦ m₀ j + ⌈s j⌉₊ + 1) (Finset.mem_univ j))
         (le_trans (le_max_right _ _) hk)
-    have hkm₀ : ∀ j, m₀ j ≤ k := fun j => by
+    have hkm₀ : ∀ j, m₀ j ≤ k := fun j ↦ by
       have := hkB j
       omega
-    have hkss : ∀ j, (s j) < (k : ℝ) := fun j => by
+    have hkss : ∀ j, (s j) < (k : ℝ) := fun j ↦ by
       have h1 : (s j) ≤ (⌈s j⌉₊ : ℝ) := Nat.le_ceil _
       have h2 : ⌈s j⌉₊ + 1 ≤ k := by
         have := hkB j
@@ -519,16 +519,16 @@ lemma real_branches_on_tail
         ((∀ x, T₁ < x → 0 < iteratedDeriv (k + 1) (g j) x) ∨
           (∀ x, T₁ < x → iteratedDeriv (k + 1) (g j) x < 0)) ∧
         Filter.Tendsto (iteratedDeriv k (g j)) Filter.atTop (nhds 0) := by
-      choose! T₁ hT₁ using fun j => hk₀ j |>.2 k (hkk₀ j)
-      exact ⟨⨆ j, T₁ j, fun j => ⟨T₁ j, le_ciSup (Finite.bddAbove_range T₁) j, hT₁ j⟩⟩
-    refine' ⟨⌈M⌉₊ + T₀ ^ 2, g, _, _, _⟩ <;> norm_num
+      choose! T₁ hT₁ using fun j ↦ (hk₀ j).2 k (hkk₀ j)
+      exact ⟨⨆ j, T₁ j, fun j ↦ ⟨T₁ j, le_ciSup (Finite.bddAbove_range T₁) j, hT₁ j⟩⟩
+    refine ⟨⌈M⌉₊ + T₀ ^ 2, g, ?_, ?_, ?_⟩ <;> norm_num
     · exact le_add_of_nonneg_of_le (Nat.cast_nonneg _) (by nlinarith)
     · intro j
       obtain ⟨T₁, hT₁₁, hT₁₂, hT₁₃⟩ := hM j
-      refine' ⟨_, _, _, _⟩
+      refine ⟨?_, ?_, ?_, ?_⟩
       · exact (ContDiffOn.mono (hcd j)
           (Set.Ici_subset_Ici.mpr <| by nlinarith [Nat.le_ceil M, hT₀R])).of_le (by norm_num)
-      · refine' Or.imp (fun h => fun x hx => _) (fun h => fun x hx => _) hT₁₂
+      · refine' Or.imp (fun h ↦ fun x hx ↦ _) (fun h ↦ fun x hx ↦ _) hT₁₂
         · rw [iteratedDerivWithin_eq_iteratedDeriv]
           · exact h x (by nlinarith [Nat.le_ceil M, hT₀R])
           · exact uniqueDiffOn_Ici _
@@ -544,7 +544,7 @@ lemma real_branches_on_tail
                 (Ici_mem_nhds <| by nlinarith [Nat.le_ceil M, hT₀R])).of_le (by norm_num)
             · exact le_of_lt hx
           · nlinarith [Nat.le_ceil M, hT₀R]
-      · refine' hT₁₃.congr' _
+      · apply hT₁₃.congr'
         filter_upwards [Filter.eventually_gt_atTop (⌈M⌉₊ + T₀ ^ 2 : ℝ)] with x hx
         rw [iteratedDerivWithin_eq_iteratedDeriv]
         · exact uniqueDiffOn_Ici _
@@ -553,7 +553,7 @@ lemma real_branches_on_tail
         · exact le_of_lt hx
       · refine ⟨s j, hkss j, c j * Polynomial.eval (s j) (descPochhammer ℝ k), ?_⟩
         exact hasymp j k (hkm₀ j)
-    · exact fun t ht y hy => hcov t (by nlinarith [Nat.le_ceil M]) y hy
+    · exact fun t ht y hy ↦ hcov t (by nlinarith [Nat.le_ceil M]) y hy
 
 /-
 **Power-decay of a branch from its leading asymptotic ratio.**
@@ -571,7 +571,7 @@ lemma hasKDerivDecay_of_agree_ratio
     (hks : s < (k : ℝ))
     (hcd : ContDiffOn ℝ (k + 1) g (Set.Ici (1 : ℝ)))
     (hagree : ∀ x, T₁ ≤ x → g x = f x)
-    (hratio : Filter.Tendsto (fun x => iteratedDeriv k f x / x ^ (s - (k : ℝ)))
+    (hratio : Filter.Tendsto (fun x ↦ iteratedDeriv k f x / x ^ (s - (k : ℝ)))
       Filter.atTop (nhds L)) :
     HasKDerivDecay g k := by
   obtain ⟨Tstar, hTstar⟩ :
@@ -579,15 +579,14 @@ lemma hasKDerivDecay_of_agree_ratio
         ∀ x ≥ Tstar, |iteratedDerivWithin k g (Set.Ici 1) x| ≤ (|L| + 1) * x ^ (s - k : ℝ) := by
     have h_eventually : ∃ Tstar : ℝ, ∀ x ≥ Tstar, |iteratedDeriv k f x| ≤ (|L| + 1) * x ^ (s - k : ℝ) := by
       obtain ⟨Tstar, hTstar⟩ : ∃ Tstar : ℝ, ∀ x ≥ Tstar, |(iteratedDeriv k f x) / x ^ (s - k : ℝ)| ≤ |L| + 1 := by
-        exact Filter.eventually_atTop.mp (hratio.abs.eventually (ge_mem_nhds <| by linarith)) |>
-          fun ⟨Tstar, hTstar⟩ ↦ ⟨Tstar, fun x hx ↦ hTstar x hx⟩
-      refine ⟨Max.max Tstar 1, fun x hx => ?_⟩
+        exact Filter.eventually_atTop.mp (hratio.abs.eventually (ge_mem_nhds <| by linarith))
+      refine ⟨Max.max Tstar 1, fun x hx ↦ ?_⟩
       have := hTstar x (le_trans (le_max_left _ _) hx)
       rw [abs_div, abs_of_nonneg (Real.rpow_nonneg (by linarith [le_max_right Tstar 1]) _)] at this
       rwa [div_le_iff₀ (Real.rpow_pos_of_pos (by linarith [le_max_right Tstar 1]) _)] at this
     obtain ⟨Tstar, hTstar⟩ := h_eventually
     use max Tstar (max T₁ 1) + 1
-    simp
+    simp only [le_add_iff_nonneg_left, le_sup_iff, zero_le_one, or_true, ge_iff_le, true_and]
     intro x hx
     have hxgt1 : (1 : ℝ) < x := by
       linarith [le_max_left Tstar (max T₁ 1), le_max_right Tstar (max T₁ 1),
@@ -601,23 +600,23 @@ lemma hasKDerivDecay_of_agree_ratio
       · exact (hcd.contDiffAt (Ici_mem_nhds hxgt1)).of_le (by norm_num)
       · grind
     have h_eq_f : iteratedDeriv k g x = iteratedDeriv k f x := by
-      apply_rules [Filter.EventuallyEq.iteratedDeriv_eq]
+      apply Filter.EventuallyEq.iteratedDeriv_eq
       filter_upwards [lt_mem_nhds hxgtT₁] with y hy using hagree y hy.le
     rw [h_eq, h_eq_f]
     exact hTstar x (by linarith [le_max_left Tstar (max T₁ 1)])
   obtain ⟨M, hM⟩ :
       ∃ M : ℝ, ∀ x ∈ Set.Icc 1 Tstar, |iteratedDerivWithin k g (Set.Ici 1) x| ≤ M := by
-    have h_cont : ContinuousOn (fun x => iteratedDerivWithin k g (Set.Ici 1) x)
+    have h_cont : ContinuousOn (fun x ↦ iteratedDerivWithin k g (Set.Ici 1) x)
         (Set.Icc 1 Tstar) := by
-      refine' (hcd.continuousOn_iteratedDerivWithin _ _).mono Set.Icc_subset_Ici_self
+      refine (hcd.continuousOn_iteratedDerivWithin ?_ ?_).mono Set.Icc_subset_Ici_self
       · norm_num
       · exact uniqueDiffOn_Ici _
     exact IsCompact.exists_bound_of_continuousOn (CompactIccSpace.isCompact_Icc) h_cont
-  -- Choose $\beta = k - s > 0$.
+  -- Choose `β = k - s > 0`.
   use max (|L| + 1) (M * Tstar ^ ((k : ℝ) - s)), (k : ℝ) - s
-  refine' ⟨by linarith, fun x hx => _⟩
+  refine' ⟨by linarith, fun x hx ↦ _⟩
   by_cases hx' : x ≤ Tstar
-  · refine' le_trans (hM x ⟨hx, hx'⟩) _
+  · apply le_trans (hM x ⟨hx, hx'⟩)
     rw [Real.rpow_neg (by linarith)]
     rw [← div_eq_mul_inv, le_div_iff₀ (by positivity)]
     have hM0 : (0 : ℝ) ≤ M := le_trans (abs_nonneg _) (hM 1 ⟨by norm_num, by linarith⟩)
@@ -682,7 +681,7 @@ lemma real_branches_sign_deriv_pos
     obtain ⟨-, -, -, sj, Lj, hsj, hratio⟩ := hpack j
     exact hasKDerivDecay_of_agree_ratio (g j) (f j) k sj Lj (T₁ j) hsj (hcd j)
       (hagree j) hratio
-  refine ⟨N, g, le_trans hT₀ hT₀N, fun j => ⟨hcd j, hsign j, htend j, hbranch_rate j⟩, ?_⟩
+  refine ⟨N, g, le_trans hT₀ hT₀N, fun j ↦ ⟨hcd j, hsign j, htend j, hbranch_rate j⟩, ?_⟩
   intro t htN y hy
   obtain ⟨j, hj⟩ := hcov t (le_trans hT₀N htN) y hy
   refine ⟨j, ?_⟩
@@ -714,7 +713,7 @@ lemma branch_data_pos
   intro k hk
   obtain ⟨T₀, g, hT₀, hpack, hcov⟩ := hcore k hk
   have hk2 : 2 ≤ k := le_trans hk₀ hk
-  refine ⟨T₀, g, hT₀, fun j => ?_, fun j => ?_, fun j => ?_, hcov⟩
+  refine ⟨T₀, g, hT₀, fun j ↦ ?_, fun j ↦ ?_, fun j ↦ ?_, hcov⟩
   · obtain ⟨hcd, hsign, htend, _⟩ := hpack j
     exact (analytic_package_of_kSucc_deriv (g j) k hk2 hcd hsign htend).1
   · obtain ⟨hcd, hsign, htend, _⟩ := hpack j
@@ -754,47 +753,47 @@ lemma large_root_branch_data
   obtain ⟨T2, h0, hT2, hh_cd, hh_mono, hh_rate, hhcov⟩ := hhcore (max k1 k2) (le_max_right _ _)
   -- Common threshold, padded family size.
   refine ⟨n1 + n2, max k1 k2, max T1 T2,
-    Fin.append g (fun _ => dummyBranch),
-    Fin.append (fun _ : Fin n1 => dummyBranch) h0,
+    Fin.append g (fun _ ↦ dummyBranch),
+    Fin.append (fun _ : Fin n1 ↦ dummyBranch) h0,
     hkmax, le_trans hT1 (le_max_left _ _), ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · -- `g`-family: smoothness
     intro J
-    refine Fin.addCases (fun j => ?_) (fun j => ?_) J
+    refine Fin.addCases (fun j ↦ ?_) (fun j ↦ ?_) J
     · rw [Fin.append_left]
       exact hg_cd j
     · rw [Fin.append_right]
       exact (dummyBranch_package _ hkmax).1
   · -- `g`-family: monotone/antitone `k`-th derivative
     intro J
-    refine Fin.addCases (fun j => ?_) (fun j => ?_) J
+    refine Fin.addCases (fun j ↦ ?_) (fun j ↦ ?_) J
     · rw [Fin.append_left]
       exact hg_mono j
     · rw [Fin.append_right]
       exact (dummyBranch_package _ hkmax).2.1
   · -- `g`-family: `k`-th derivative decay rate
     intro J
-    refine Fin.addCases (fun j => ?_) (fun j => ?_) J
+    refine Fin.addCases (fun j ↦ ?_) (fun j ↦ ?_) J
     · rw [Fin.append_left]
       exact hg_rate j
     · rw [Fin.append_right]
       exact (dummyBranch_package _ hkmax).2.2.2
   · -- `h`-family: smoothness
     intro J
-    refine Fin.addCases (fun j => ?_) (fun j => ?_) J
+    refine Fin.addCases (fun j ↦ ?_) (fun j ↦ ?_) J
     · rw [Fin.append_left]
       exact (dummyBranch_package _ hkmax).1
     · rw [Fin.append_right]
       exact hh_cd j
   · -- `h`-family: monotone/antitone `k`-th derivative
     intro J
-    refine Fin.addCases (fun j => ?_) (fun j => ?_) J
+    refine Fin.addCases (fun j ↦ ?_) (fun j ↦ ?_) J
     · rw [Fin.append_left]
       exact (dummyBranch_package _ hkmax).2.1
     · rw [Fin.append_right]
       exact hh_mono j
   · -- `h`-family: `k`-th derivative decay rate
     intro J
-    refine Fin.addCases (fun j => ?_) (fun j => ?_) J
+    refine Fin.addCases (fun j ↦ ?_) (fun j ↦ ?_) J
     · rw [Fin.append_left]
       exact (dummyBranch_package _ hkmax).2.2.2
     · rw [Fin.append_right]
@@ -844,17 +843,17 @@ lemma int_root_locus_large_cover
       hcov_pos, hcov_neg⟩ := large_root_branch_data P hP_monic hP_deg hP_no_root
   obtain ⟨hAfin, hAsub⟩ := pos_branches_cover_sublinear n k hk g hg_cd hg_mono hg_rate
   obtain ⟨hBfin, hBsub⟩ := neg_branches_cover_sublinear n k hk h hh_cd hh_mono hh_rate
-  set S : ℕ → Set ℤ := fun N =>
+  set S : ℕ → Set ℤ := fun N ↦
     {t : ℤ | ∃ y : ℤ, (N : ℤ) < y ^ 2 ∧ (P.map (Polynomial.evalRingHom t)).IsRoot y} ∩
       Set.Icc (-(N : ℤ)) (N : ℤ)
-  set A : ℕ → Set ℤ := fun N => posBranchesUnion n g N
-  set B : ℕ → Set ℤ := fun N => negBranchesUnion n h N
-  set D : ℕ → Set ℤ := fun N => S N ∩ Set.Icc (-(T₀ - 1 : ℤ)) (T₀ - 1 : ℤ)
+  set A : ℕ → Set ℤ := fun N ↦ posBranchesUnion n g N
+  set B : ℕ → Set ℤ := fun N ↦ negBranchesUnion n h N
+  set D : ℕ → Set ℤ := fun N ↦ S N ∩ Set.Icc (-(T₀ - 1 : ℤ)) (T₀ - 1 : ℤ)
   have hDfin : ∀ N, (D N).Finite := by
-    exact fun N => Set.Finite.subset (Set.finite_Icc _ _) fun x hx => hx.2
+    exact fun N ↦ Set.Finite.subset (Set.finite_Icc _ _) fun x hx ↦ hx.2
   have hDsub : ∃ C α : ℝ, 0 < C ∧ 0 ≤ α ∧ α < 1 ∧ ∀ N : ℕ, 0 < N →
     (Set.ncard (D N) : ℝ) ≤ C * (N : ℝ) ^ α := by
-      apply ncard_inter_Icc_sublinear (-(T₀ - 1)) (T₀ - 1) D (fun N => Set.inter_subset_right)
+      apply ncard_inter_Icc_sublinear (-(T₀ - 1)) (T₀ - 1) D (fun N ↦ Set.inter_subset_right)
   have hcov : ∀ N, S N ⊆ A N ∪ B N ∪ D N := by
     intro N t ht
     rcases ht with ⟨⟨y, hy₁, hy₂⟩, ht₁, ht₂⟩
@@ -888,7 +887,7 @@ lemma int_root_locus_large_sublinear
   obtain ⟨n, T, hcover, hTfin, hsub⟩ :=
     int_root_locus_large_cover P hP_monic hP_deg hP_no_root
   exact sublinear_finite_cover
-    (fun N => {t : ℤ | ∃ y : ℤ, (N : ℤ) < y ^ 2 ∧
+    (fun N ↦ {t : ℤ | ∃ y : ℤ, (N : ℤ) < y ^ 2 ∧
         (P.map (Polynomial.evalRingHom t)).IsRoot y} ∩ Set.Icc (-(N : ℤ)) (N : ℤ))
     T hcover hTfin hsub
 
@@ -972,9 +971,9 @@ lemma FmapToRatFunc_irreducible
     (F : Polynomial (Polynomial ℤ))
     (hF_monic : F.Monic) (hF_irr : Irreducible F) :
     Irreducible (F.map toRatFunc) := by
-  -- Let $fQ := F.map (mapRingHom (Int.castRingHom ℚ)) : (Polynomial ℚ)[X]$.
+  -- Let `fQ := F.map (mapRingHom (Int.castRingHom ℚ)) : (Polynomial ℚ)[X]`.
   set fQ : Polynomial (Polynomial ℚ) := F.map (mapRingHom (Int.castRingHom ℚ))
-  -- By Gauss's lemma, $fQ$ is irreducible over $\mathbb{Q}[T]$.
+  -- By Gauss's lemma, `fQ` is irreducible over `ℚ[T]`.
   have hfQ_irr : Irreducible fQ := by
     -- By `Polynomial.Monic.irreducible_iff_irreducible_map_fraction_map` (ℤ[T] is integrally closed), F is irreducible iff F.map (algebraMap ℤ[T] (FractionRing ℤ[T])) is irreducible.
     have hF_irr_iff_fQ_irr : Irreducible F ↔
@@ -994,17 +993,17 @@ lemma FmapToRatFunc_irreducible
               algebraMap (Polynomial ℚ) (FractionRing (Polynomial ℚ))
                 (Polynomial.map (Int.castRingHom ℚ) x) := by
           exact ⟨RingHom.comp (algebraMap (Polynomial ℚ) (FractionRing (Polynomial ℚ)))
-            (Polynomial.mapRingHom (Int.castRingHom ℚ)), fun x => rfl⟩
+            (Polynomial.mapRingHom (Int.castRingHom ℚ)), fun x ↦ rfl⟩
         obtain ⟨φ, hφ⟩ := h_iso
         have h_iso : ∃ (φ' : FractionRing (Polynomial ℤ) →+* FractionRing (Polynomial ℚ)),
             ∀ x : Polynomial ℤ,
               φ' (algebraMap (Polynomial ℤ) (FractionRing (Polynomial ℤ)) x) = φ x := by
           have h_iso : ∀ x : Polynomial ℤ, x ≠ 0 → φ x ≠ 0 := by
             simp_all [Polynomial.ext_iff]
-          have hinj : Function.Injective φ := fun x y hxy =>
-            Classical.not_not.1 fun h =>
+          have hinj : Function.Injective φ := fun x y hxy ↦
+            Classical.not_not.1 fun h ↦
               h_iso (x - y) (sub_ne_zero_of_ne h) <| by simpa [sub_eq_zero] using hxy
-          exact ⟨IsFractionRing.lift hinj, fun x => by simp⟩
+          exact ⟨IsFractionRing.lift hinj, fun x ↦ by simp⟩
         aesop
       obtain ⟨φ, hφ⟩ := h_iso
       have h_iso_bijective : Function.Bijective φ := by
@@ -1012,11 +1011,11 @@ lemma FmapToRatFunc_irreducible
           intro x
           obtain ⟨p, q, hq, rfl⟩ :=
             IsLocalization.mk'_surjective (nonZeroDivisors (Polynomial ℚ)) x
-          -- Let $d$ be the least common multiple of the denominators of the coefficients of $p$ and $q$.
+          -- Let `d` be the least common multiple of the denominators of the coefficients of `p` and `q`.
           obtain ⟨d, hd⟩ : ∃ d : ℕ, d > 0 ∧ ∀ i ∈ p.1.support ∪ p.2.val.support,
               (d * p.1.coeff i : ℚ) ∈ Set.range (Int.cast : ℤ → ℚ) ∧
                 (d * p.2.val.coeff i : ℚ) ∈ Set.range (Int.cast : ℤ → ℚ) := by
-            -- Let $d$ be the least common multiple of the denominators of the coefficients of $p$ and $q$. Since $p$ and $q$ are polynomials with rational coefficients, such a $d$ exists.
+            -- Let `d` be the least common multiple of the denominators of the coefficients of `p` and `q`. Since `p` and `q` are polynomials with rational coefficients, such a `d` exists.
             have hd_exists : ∀ i ∈ p.1.support ∪ p.2.val.support, ∃ d : ℕ, d > 0 ∧
                 (d * p.1.coeff i : ℚ) ∈ Set.range (Int.cast : ℤ → ℚ) ∧
                   (d * p.2.val.coeff i : ℚ) ∈ Set.range (Int.cast : ℤ → ℚ) := by
@@ -1056,16 +1055,16 @@ lemma FmapToRatFunc_irreducible
               push_cast
               rw [hy]
               ring
-          -- Let $p'$ and $q'$ be the polynomials with integer coefficients obtained by multiplying $p$ and $q$ by $d$.
+          -- Let `p'` and `q'` be the polynomials with integer coefficients obtained by multiplying `p` and `q` by `d`.
           obtain ⟨p', hp'⟩ : ∃ p' : Polynomial ℤ,
               Polynomial.map (Int.castRingHom ℚ) p' = Polynomial.C (d : ℚ) * p.1 := by
-            choose! f hf using fun i hi => hd.2 i hi |>.1
+            choose! f hf using fun i hi ↦ hd.2 i hi |>.1
             use ∑ i ∈ p.1.support, f i • Polynomial.X ^ i
             ext i
             by_cases hi : i ∈ p.1.support <;> simp_all
           obtain ⟨q', hq'⟩ : ∃ q' : Polynomial ℤ,
               Polynomial.map (Int.castRingHom ℚ) q' = Polynomial.C (d : ℚ) * p.2.val := by
-            choose! f hf using fun i hi => hd.2 i hi |>.2
+            choose! f hf using fun i hi ↦ hd.2 i hi |>.2
             use ∑ i ∈ p.2.val.support, f i • Polynomial.X ^ i
             ext i
             simp
@@ -1097,8 +1096,8 @@ lemma FmapToRatFunc_irreducible
                   (b.map (φ.symm : FractionRing (Polynomial ℚ) →+* FractionRing (Polynomial ℤ))) := by
               convert congr_arg (Polynomial.map
                 (φ.symm : FractionRing (Polynomial ℚ) →+* FractionRing (Polynomial ℤ))) hab using 1
-              simp [Polynomial.map_map]
-              rw [Polynomial.map_mul]
+              · simp [Polynomial.map_map]
+              · rw [Polynomial.map_mul]
             have := hp.2 h_iso
             simp_all [Polynomial.isUnit_iff_degree_eq_zero]
         · intro hp
@@ -1121,7 +1120,7 @@ lemma FmapToRatFunc_irreducible
         (algebraMap (Polynomial ℚ) (FractionRing (Polynomial ℚ))) _ _ using 1
       exact hF_monic.map _
     grind
-  -- By `irreducible_over_ratFunc`, $fQ.map (algebraMap (Polynomial ℚ) (FractionRing (Polynomial ℚ)))$ is irreducible.
+  -- By `irreducible_over_ratFunc`, `fQ.map (algebraMap (Polynomial ℚ) (FractionRing (Polynomial ℚ)))` is irreducible.
   have hfQ_map_irr : Irreducible (fQ.map (algebraMap (Polynomial ℚ) (FractionRing (Polynomial ℚ)))) := by
     apply irreducible_over_ratFunc
     · exact hF_monic.map _
@@ -1157,7 +1156,7 @@ lemma resolvent_exists
     exact natDegree_map_eq_of_injective htr_inj F
   -- Splitting field `L` of `f` over `K`.
   set L := f.SplittingField with hL
-  haveI : CharZero L := charZero_of_injective_algebraMap (algebraMap K L).injective
+  have : CharZero L := charZero_of_injective_algebraMap (algebraMap K L).injective
   have hsplitsL : (f.map (algebraMap K L)).Splits := SplittingField.splits f
   have hcardL : (f.map (algebraMap K L)).roots.card = f.natDegree := by
     have hspl : (f.map (algebraMap K L)).Splits := SplittingField.splits f
@@ -1271,7 +1270,7 @@ lemma int_factor_locus_sublinear
   -- Its integer-root locus is sublinear by the elementary analytic core.
   obtain ⟨C, α, hC, hα, hα', hbound⟩ :=
     int_root_locus_sublinear P hP_monic hP_deg hP_no_root
-  refine ⟨C, α, hC, hα, hα', fun N hN => ?_⟩
+  refine ⟨C, α, hC, hα, hα', fun N hN ↦ ?_⟩
   -- The reducible locus of `F` embeds into the integer-root locus of `P`.
   have hsub :
       ({t : ℤ | ∃ g : Polynomial ℤ, g.natDegree = k ∧ g.Monic ∧
@@ -1305,7 +1304,7 @@ lemma dorge_density_estimate
   -- Apply the counting core to `F`.
   obtain ⟨C, α, hC, hα, hα', hbound⟩ :=
     int_factor_locus_sublinear F hF_monic hF_irr hF_abs_irr k hk (hF_deg ▸ hk')
-  refine ⟨C, α, hC, hα, hα', fun N hN => ?_⟩
+  refine ⟨C, α, hC, hα, hα', fun N hN ↦ ?_⟩
   -- The `ℚ`-reducible locus of `f` is contained in the `ℤ`-reducible locus of `F`.
   have hsub :
       ({t : ℤ | ∃ g : Polynomial ℚ, g.natDegree = k ∧ g.Monic ∧

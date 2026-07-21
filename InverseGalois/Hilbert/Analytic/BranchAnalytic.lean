@@ -49,76 +49,69 @@ lemma complex_branch_at_simple_root_unique
       ∃ φ : ℂ → ℂ, φ z₀ = w₀ ∧ ContDiffAt ℂ ⊤ φ z₀ ∧
         (∀ᶠ z in nhds z₀, (P.map (evalIntPolyComplex z)).eval (φ z) = 0) :=
     complex_branch_at_simple_root P z₀ w₀ hroot hsimple
-  refine' ⟨φ, hφ.1, hφ.2.1, hφ.2.2, _⟩
+  refine ⟨φ, hφ.1, hφ.2.1, hφ.2.2, ?_⟩
   have h_implicit :
-      IsContDiffImplicitAt ⊤ (fun p : ℂ × ℂ => (P.map (evalIntPolyComplex p.1)).eval p.2)
-        (fderiv ℂ (fun p : ℂ × ℂ => (P.map (evalIntPolyComplex p.1)).eval p.2) (z₀, w₀)) (z₀, w₀) := by
-    refine' ⟨_, _, _, _⟩
-    all_goals generalize_proofs at *
+      IsContDiffImplicitAt ⊤ (fun p : ℂ × ℂ ↦ (P.map (evalIntPolyComplex p.1)).eval p.2)
+        (fderiv ℂ (fun p : ℂ × ℂ ↦ (P.map (evalIntPolyComplex p.1)).eval p.2) (z₀, w₀)) (z₀, w₀) := by
+    refine ⟨?_, ?_, ?_, ?_⟩
     · apply_rules [DifferentiableAt.hasFDerivAt]
-      convert (evalIntPolyComplex_eval_contDiff P |> ContDiff.differentiable <| by norm_num) (z₀, w₀) using 1
-    · convert evalIntPolyComplex_eval_contDiff P |> ContDiff.contDiffAt using 1
+      exact (evalIntPolyComplex_eval_contDiff P |> ContDiff.differentiable <| by norm_num) (z₀, w₀)
+    · exact evalIntPolyComplex_eval_contDiff P |> ContDiff.contDiffAt
     · have h_deriv :
-        (fderiv ℂ (fun p : ℂ × ℂ => (P.map (evalIntPolyComplex p.1)).eval p.2) (z₀, w₀)) (0, 1) =
+        (fderiv ℂ (fun p : ℂ × ℂ ↦ (P.map (evalIntPolyComplex p.1)).eval p.2) (z₀, w₀)) (0, 1) =
           (P.map (evalIntPolyComplex z₀)).derivative.eval w₀ := by
         have h_deriv :
-          deriv (fun y => (P.map (evalIntPolyComplex z₀)).eval y) w₀ =
-            (fderiv ℂ (fun p : ℂ × ℂ => (P.map (evalIntPolyComplex p.1)).eval p.2) (z₀, w₀)) (0, 1) := by
+          deriv (fun y ↦ (P.map (evalIntPolyComplex z₀)).eval y) w₀ =
+            (fderiv ℂ (fun p : ℂ × ℂ ↦ (P.map (evalIntPolyComplex p.1)).eval p.2) (z₀, w₀)) (0, 1) := by
           convert HasDerivAt.deriv (HasFDerivAt.hasDerivAt (HasFDerivAt.comp w₀
             (show HasFDerivAt
-                (fun p : ℂ × ℂ => Polynomial.eval p.2 (Polynomial.map (evalIntPolyComplex p.1) P)) _ _ from ?_)
+                (fun p : ℂ × ℂ ↦ Polynomial.eval p.2 (Polynomial.map (evalIntPolyComplex p.1) P)) _ _ from ?_)
             (hasFDerivAt_const _ _ |> HasFDerivAt.prodMk <| hasFDerivAt_id _))) using 1
-          generalize_proofs at *
           apply_rules [DifferentiableAt.hasFDerivAt]
-          convert (evalIntPolyComplex_eval_contDiff P |> ContDiff.differentiable <| by norm_num) (z₀, w₀) using 1
-        generalize_proofs at *
+          exact (evalIntPolyComplex_eval_contDiff P |> ContDiff.differentiable <| by norm_num) (z₀, w₀)
         rw [← h_deriv, Polynomial.deriv]
-      generalize_proofs at *
-      refine' ⟨_, _⟩
-      all_goals generalize_proofs at *
+      refine ⟨?_, ?_⟩
       · intro x y hxy
         simp_all
         have h_deriv :
-          (fderiv ℂ (fun p : ℂ × ℂ => (P.map (evalIntPolyComplex p.1)).eval p.2) (z₀, w₀)) (0, x) =
+          (fderiv ℂ (fun p : ℂ × ℂ ↦ (P.map (evalIntPolyComplex p.1)).eval p.2) (z₀, w₀)) (0, x) =
               x * (P.map (evalIntPolyComplex z₀)).derivative.eval w₀ ∧
-            (fderiv ℂ (fun p : ℂ × ℂ => (P.map (evalIntPolyComplex p.1)).eval p.2) (z₀, w₀)) (0, y) =
+            (fderiv ℂ (fun p : ℂ × ℂ ↦ (P.map (evalIntPolyComplex p.1)).eval p.2) (z₀, w₀)) (0, y) =
               y * (P.map (evalIntPolyComplex z₀)).derivative.eval w₀ := by
           have h_deriv : ∀ x : ℂ,
-              (fderiv ℂ (fun p : ℂ × ℂ => (P.map (evalIntPolyComplex p.1)).eval p.2) (z₀, w₀)) (0, x) =
+              (fderiv ℂ (fun p : ℂ × ℂ ↦ (P.map (evalIntPolyComplex p.1)).eval p.2) (z₀, w₀)) (0, x) =
                 x * (P.map (evalIntPolyComplex z₀)).derivative.eval w₀ := by
             intro x
             exact (by
-            convert congr_arg (fun y => x * y) h_deriv using 1
-            ring_nf!
-            · rw [← smul_eq_mul, ← ContinuousLinearMap.map_smul]
+            convert congr_arg (fun y ↦ x * y) h_deriv using 1
+            · ring_nf!
+              rw [← smul_eq_mul, ← ContinuousLinearMap.map_smul]
               norm_num
             · simp [Polynomial.derivative_map])
-          generalize_proofs at *
           exact ⟨h_deriv x, h_deriv y⟩
-        generalize_proofs at *
         simp_all [Polynomial.derivative_map]
       · intro x
         use x / (Polynomial.eval w₀ (Polynomial.derivative (Polynomial.map (evalIntPolyComplex z₀) P)))
         simp
         convert congr_arg
-          (fun y => y * (x / Polynomial.eval w₀ (Polynomial.derivative (Polynomial.map (evalIntPolyComplex z₀) P))))
+          (fun y ↦ y * (x / Polynomial.eval w₀ (Polynomial.derivative (Polynomial.map (evalIntPolyComplex z₀) P))))
           h_deriv using 1 <;> ring_nf!
         · convert
-            (fderiv ℂ (fun p : ℂ × ℂ => Polynomial.eval p.2 (Polynomial.map (evalIntPolyComplex p.1) P))
+            (fderiv ℂ (fun p : ℂ × ℂ ↦ Polynomial.eval p.2 (Polynomial.map (evalIntPolyComplex p.1) P))
                 (z₀, w₀)).map_smul
             (x * (Polynomial.eval w₀ (Polynomial.map (evalIntPolyComplex z₀) (Polynomial.derivative P))) ⁻¹)
               (0, 1) using 1
-          ring_nf!
-          · norm_num [Prod.smul_def]
+          · ring_nf!
+            norm_num [Prod.smul_def]
           · simp [mul_assoc, mul_comm, mul_left_comm, Polynomial.derivative_map]
         · rw [mul_right_comm, mul_inv_cancel₀ hsimple, one_mul]
     · norm_num
   have := h_implicit.eventually_implicitFunction_apply_eq
   have h_eq : ∀ᶠ z in nhds z₀, h_implicit.implicitFunction z = φ z := by
-    have h_eq : Filter.Tendsto (fun z => (z, φ z)) (nhds z₀) (nhds (z₀, w₀)) := by
+    have h_eq : Filter.Tendsto (fun z ↦ (z, φ z)) (nhds z₀) (nhds (z₀, w₀)) := by
       exact Filter.Tendsto.prodMk_nhds (Filter.tendsto_id) (hφ.2.1.continuousAt.tendsto.trans (by aesop))
     filter_upwards [h_eq.eventually this, hφ.2.2] with z hz₁ hz₂ using by aesop
-  filter_upwards [this, h_eq.prod_nhds (Filter.eventually_of_mem (Metric.ball_mem_nhds _ zero_lt_one) fun x hx => hx)]
+  filter_upwards [this, h_eq.prod_nhds (Filter.eventually_of_mem (Metric.ball_mem_nhds _ zero_lt_one) fun x hx ↦ hx)]
     with p hp hp' using by aesop
 
 /-- **A continuous root of a separable holomorphic family is holomorphic.**
@@ -145,7 +138,7 @@ lemma continuous_root_holomorphic
     complex_branch_at_simple_root_unique P z₀ (H z₀) (hroot z₀ hz₀) hsimple
   -- `H = φ` near `z₀`: `H` is continuous with `H z₀ = w₀ = φ z₀`, so `(z, H z) → (z₀, w₀)`,
   -- and `H z` is a root, so local uniqueness forces `φ z = H z`.
-  have hHtendsto : Filter.Tendsto (fun z => (z, H z)) (nhds z₀) (nhds (z₀, H z₀)) :=
+  have hHtendsto : Filter.Tendsto (fun z ↦ (z, H z)) (nhds z₀) (nhds (z₀, H z₀)) :=
     (Filter.Tendsto.prodMk_nhds tendsto_id (hHc.continuousAt (hUopen.mem_nhds hz₀)))
   have hEq : H =ᶠ[nhds z₀] φ := by
     filter_upwards [hHtendsto.eventually hφuniq, hUopen.mem_nhds hz₀] with z hz hzU
@@ -166,7 +159,7 @@ def rootVariety (P : Polynomial (Polynomial ℤ)) : Set (ℂ × ℂ) :=
   {q | (P.map (evalIntPolyComplex q.1)).eval q.2 = 0}
 
 /-- Projection from the complex root variety to the base plane. -/
-def rootProj (P : Polynomial (Polynomial ℤ)) : rootVariety P → ℂ := fun q => (q : ℂ × ℂ).1
+def rootProj (P : Polynomial (Polynomial ℤ)) : rootVariety P → ℂ := fun q ↦ (q : ℂ × ℂ).1
 
 lemma continuous_rootProj (P : Polynomial (Polynomial ℤ)) : Continuous (rootProj P) :=
   (continuous_fst.comp continuous_subtype_val)
@@ -178,15 +171,13 @@ roots of the monic specialization, of which there are at most `P.natDegree`).
 lemma rootProj_finite_fiber
     (P : Polynomial (Polynomial ℤ)) (hP : P.Monic) (x : ℂ) :
     ((rootProj P) ⁻¹' {x}).Finite := by
-  -- Consider the polynomial $Q(y) = (P.map (evalIntPolyComplex x)).eval y$.
+  -- Consider the polynomial `Q(y) = (P.map (evalIntPolyComplex x)).eval y`.
   set Q : Polynomial ℂ := P.map (evalIntPolyComplex x)
-  -- Since $Q$ is a non-zero polynomial, its roots form a finite set.
+  -- Since `Q` is a non-zero polynomial, its roots form a finite set.
   have hQ_nonzero : Q ≠ 0 := by
     exact Polynomial.Monic.ne_zero (hP.map _)
-  refine' Set.Finite.of_finite_image _ _
-  exact ℂ
-  exact fun q => q.val.2
-  · refine' Set.Finite.subset (Q.roots.toFinset.finite_toSet) _
+  refine Set.Finite.of_finite_image (f := fun q ↦ q.val.2) ?_ ?_
+  · apply Set.Finite.subset (Q.roots.toFinset.finite_toSet)
     intro y hy
     aesop
   · intro q hq q' hq' h
@@ -201,17 +192,18 @@ preimages of compacts are compact.
 lemma rootProj_isClosedMap
     (P : Polynomial (Polynomial ℤ)) (hP : P.Monic) :
     IsClosedMap (rootProj P) := by
-  -- By definition of $rootProj$, we know that $rootProj P$ is a closed map.
+  -- Properness: preimages of compact sets are compact, hence the map is closed.
   have h_closed_map : ∀ K : Set ℂ, IsCompact K → IsCompact (rootProj P ⁻¹' K) := by
     intro K hK
     set T := {q : ℂ × ℂ | q.1 ∈ K ∧ (P.map (evalIntPolyComplex q.1)).eval q.2 = 0} with hT_def
     have hT_closed : IsClosed T := by
-      refine' IsClosed.inter (hK.isClosed.preimage continuous_fst) _
-      have h_cont : Continuous (fun q : ℂ × ℂ => (P.map (evalIntPolyComplex q.1)).eval q.2) := by
-        convert evalIntPolyComplex_eval_contDiff P |> ContDiff.continuous using 1
+      apply IsClosed.inter (hK.isClosed.preimage continuous_fst)
+      have h_cont : Continuous (fun q : ℂ × ℂ ↦ (P.map (evalIntPolyComplex q.1)).eval q.2) := by
+        exact evalIntPolyComplex_eval_contDiff P |> ContDiff.continuous
       exact isClosed_eq h_cont continuous_const
     have hT_bounded : ∃ M : ℝ, ∀ q ∈ T, ‖q.2‖ ≤ M := by
-      -- By the Cauchy root bound, for any root $w$ of $P.map (evalIntPolyComplex z)$, we have $|w| \leq 1 + \sum_{i=0}^{d-1} |c_i|$ where $c_i$ are the coefficients of $P.map (evalIntPolyComplex z)$.
+      -- By the Cauchy root bound, any root `w` of `P.map (evalIntPolyComplex z)` satisfies
+      -- `‖w‖ ≤ 1 + ∑ i, ‖cᵢ‖`, where the `cᵢ` are the coefficients.
       have h_cauchy_bound : ∀ z ∈ K, ∀ w : ℂ, (P.map (evalIntPolyComplex z)).eval w = 0 →
           ‖w‖ ≤ 1 + ∑ i ∈ Finset.range P.natDegree, ‖(P.map (evalIntPolyComplex z)).coeff i‖ := by
         intros z hz w hw_root
@@ -221,42 +213,41 @@ lemma rootProj_isClosedMap
           convert cauchy_root_bound _ hw_root using 1
           exact hP.map _
         rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] at h_cauchy_bound <;> aesop
-      -- Since $K$ is compact, the coefficients of $P.map (evalIntPolyComplex z)$ are bounded on $K$.
+      -- Since `K` is compact, the coefficients of `P.map (evalIntPolyComplex z)` are bounded on `K`.
       have h_coeff_bounded : ∃ M : ℝ, ∀ z ∈ K, ∀ i ∈ Finset.range P.natDegree,
           ‖(P.map (evalIntPolyComplex z)).coeff i‖ ≤ M := by
         have h_coeff_bounded : ∀ i ∈ Finset.range P.natDegree, ∃ M : ℝ, ∀ z ∈ K,
             ‖(P.map (evalIntPolyComplex z)).coeff i‖ ≤ M := by
           intro i hi
-          have h_coeff_cont : Continuous (fun z : ℂ => (P.map (evalIntPolyComplex z)).coeff i) := by
-            simp [Polynomial.coeff_map]
-            exact Polynomial.continuous _
+          have h_coeff_cont : Continuous (fun z : ℂ ↦ (P.map (evalIntPolyComplex z)).coeff i) := by
+            simpa [Polynomial.coeff_map] using Polynomial.continuous _
           exact IsCompact.exists_bound_of_continuousOn hK h_coeff_cont.continuousOn
         choose! M hM using h_coeff_bounded
         exact ⟨∑ i ∈ Finset.range P.natDegree, M i,
-          fun z hz i hi => le_trans (hM i hi z hz)
-            (Finset.single_le_sum (fun i _ => le_trans (by positivity) (hM i ‹_› z hz)) hi)⟩
+          fun z hz i hi ↦ le_trans (hM i hi z hz)
+            (Finset.single_le_sum (fun i _ ↦ le_trans (by positivity) (hM i ‹_› z hz)) hi)⟩
       obtain ⟨M, hM⟩ := h_coeff_bounded
       use 1 + P.natDegree * M
       intro q hq
       specialize h_cauchy_bound q.1 hq.1 q.2 hq.2
       refine le_trans h_cauchy_bound ?_
       simp_all
-      exact le_trans (Finset.sum_le_sum fun _ _ => hM _ hq.1 _ (Finset.mem_range.mp ‹_›)) (by norm_num)
+      exact le_trans (Finset.sum_le_sum fun _ _ ↦ hM _ hq.1 _ (Finset.mem_range.mp ‹_›)) (by norm_num)
     have hT_compact : IsCompact T := by
-      refine' IsCompact.of_isClosed_subset (hK.prod (ProperSpace.isCompact_closedBall 0 hT_bounded.choose)) hT_closed _
-      exact fun q hq => ⟨hq.1, mem_closedBall_zero_iff.mpr (hT_bounded.choose_spec q hq)⟩
+      apply IsCompact.of_isClosed_subset (hK.prod (ProperSpace.isCompact_closedBall 0 hT_bounded.choose)) hT_closed
+      exact fun q hq ↦ ⟨hq.1, mem_closedBall_zero_iff.mpr (hT_bounded.choose_spec q hq)⟩
     have h_preimage_compact : IsCompact ((rootProj P) ⁻¹' K) := by
       convert hT_compact using 1
       constructor <;> intro h <;> rw [isCompact_iff_compactSpace] at * <;> simp_all
-      refine' isCompact_iff_compactSpace.mp _
+      apply isCompact_iff_compactSpace.mp
       convert h.isCompact_univ.image
-        (show Continuous (fun q : T => ⟨q.val, by aesop⟩ : T → rootVariety P) from ?_) using 1
+        (show Continuous (fun q : T ↦ ⟨q.val, by aesop⟩ : T → rootVariety P) from ?_) using 1
       · ext
         aesop
       · fun_prop (disch := solve_by_elim)
     exact h_preimage_compact
-  apply_rules [IsProperMap.isClosedMap]
-  refine' isProperMap_iff_isCompact_preimage.mpr ⟨continuous_rootProj P, h_closed_map⟩
+  apply IsProperMap.isClosedMap
+  exact isProperMap_iff_isCompact_preimage.mpr ⟨continuous_rootProj P, h_closed_map⟩
 
 /-
 **Local open-embedding from a section.**  Given a holomorphic section `ψ` of the root
@@ -278,16 +269,15 @@ lemma rootProj_restrict_isOpenEmbedding
   · ext
     simp [isOpen_induced_iff]
     constructor <;> rintro ⟨t, ht, rfl⟩
-    · refine' ⟨_, _, _⟩
-      exact { z : ℂ | (z, ψ z) ∈ t } ∩ Vz
-      · have h_cont : ContinuousOn (fun z => (z, ψ z)) Vz := by
+    · refine ⟨{ z : ℂ | (z, ψ z) ∈ t } ∩ Vz, ?_, ?_⟩
+      · have h_cont : ContinuousOn (fun z ↦ (z, ψ z)) Vz := by
           exact ContinuousOn.prodMk continuousOn_id hψcont
-        exact isOpen_iff_mem_nhds.mpr fun x hx =>
-          Filter.inter_mem (h_cont.continuousAt (hVz.mem_nhds hx.2) |> fun h => h.eventually (ht.mem_nhds hx.1))
+        exact isOpen_iff_mem_nhds.mpr fun x hx ↦
+          Filter.inter_mem (h_cont.continuousAt (hVz.mem_nhds hx.2) |> fun h ↦ h.eventually (ht.mem_nhds hx.1))
             (hVz.mem_nhds hx.2)
       · grind only [rootVariety, = Set.mem_preimage, usr Set.mem_setOf_eq, = Set.mem_prod,
           = Set.restrict_apply, = Set.mem_inter_iff, rootProj, #82fc, #2a4b, #a4e0, #bd3b]
-    · refine' ⟨t ×ˢ Set.univ, ht.prod isOpen_univ, _⟩
+    · refine ⟨t ×ˢ Set.univ, ht.prod isOpen_univ, ?_⟩
       ext
       aesop
   · intro q1 q2 h_eq
@@ -295,7 +285,7 @@ lemma rootProj_restrict_isOpenEmbedding
   · convert hVz using 1
     ext
     simp [rootProj]
-    exact ⟨fun ⟨b, hb₁, hb₂⟩ => hb₁.1, fun hx => ⟨ψ _, ⟨hx, hψVw _ hx⟩, hψroot _ hx⟩⟩
+    exact ⟨fun ⟨b, hb₁, hb₂⟩ ↦ hb₁.1, fun hx ↦ ⟨ψ _, ⟨hx, hψVw _ hx⟩, hψroot _ hx⟩⟩
 
 /-
 **Local homeomorphism over a separable set.**  Over a set on which the family is
@@ -332,7 +322,7 @@ lemma rootProj_isLocalHomeomorphOn
       rcases mem_nhds_prod_iff.mp hψuniq with ⟨A, B, hA, hB, hAB⟩
       exact ⟨interior A, interior hA, isOpen_interior, isOpen_interior, mem_interior_iff_mem_nhds.mpr B,
         mem_interior_iff_mem_nhds.mpr hB,
-        fun z hz w hw h => hAB (Set.mk_mem_prod (interior_subset hz) (interior_subset hw)) h⟩
+        fun z hz w hw h ↦ hAB (Set.mk_mem_prod (interior_subset hz) (interior_subset hw)) h⟩
     obtain ⟨C, hC⟩ : ∃ C : Set ℂ, IsOpen C ∧ z₀ ∈ C ∧ ∀ z ∈ C, (P.map (evalIntPolyComplex z)).eval (ψ z) = 0 := by
       exact Exists.imp (by tauto) (mem_nhds_iff.mp hψroot)
     obtain ⟨E, hE⟩ : ∃ E : Set ℂ, IsOpen E ∧ z₀ ∈ E ∧ ContinuousOn ψ E := by
@@ -346,7 +336,7 @@ lemma rootProj_isLocalHomeomorphOn
     simp_all [Set.subset_def]
     exact ⟨IsOpen.inter (IsOpen.inter (IsOpen.inter (IsOpen.inter hA hC.1) hD.1) hE.1) hUopen,
       hE.2.2.mono (by aesop_cat),
-      fun z hz₁ hz₂ hz₃ hz₄ hz₅ w hw₁ hw₂ => hAB.2.2 z hz₁ w hw₁ hw₂ ▸ rfl⟩
+      fun z hz₁ hz₂ hz₃ hz₄ hz₅ w hw₁ hw₂ ↦ hAB.2.2 z hz₁ w hw₁ hw₂ ▸ rfl⟩
   obtain ⟨hVzU, hψcontVz, hψrootVz, hψVwVz, huniqVz⟩ := hbox
   refine ⟨{q : rootVariety P | (q : ℂ × ℂ) ∈ Vz ×ˢ Vw}, ?_,
     rootProj_restrict_isOpenEmbedding P Vz Vw hVz ψ hψcontVz hψrootVz hψVwVz huniqVz⟩
@@ -363,7 +353,7 @@ lemma rootProj_isCoveringMapOn
     (hsep : ∀ z ∈ U, (P.map (evalIntPolyComplex z)).Separable) :
     IsCoveringMapOn (rootProj P) U := by
   refine (rootProj_isClosedMap P hP).isCoveringMapOn_of_openPartialHomeomorph
-    (fun x _ => rootProj_finite_fiber P hP x) ?_
+    (fun x _ ↦ rootProj_finite_fiber P hP x) ?_
   intro e he
   obtain ⟨φ, hφsrc, hφeq⟩ := rootProj_isLocalHomeomorphOn P U hUopen hsep e he
   exact ⟨φ, hφsrc, hφeq.symm⟩
@@ -397,14 +387,13 @@ lemma complex_branch_holomorphic_on_convex
       apply_rules [cov.existsUnique_continuousMap_lifts]
       · have h_contractible : ContractibleSpace U := by
           convert hUconv.contractibleSpace ⟨z₀, hz₀⟩
-        generalize_proofs at *
         infer_instance
       · exact hUopen.locPathConnectedSpace
     exact ⟨h_unique_lift.exists.choose, h_unique_lift.exists.choose.2,
-      h_unique_lift.exists.choose_spec.1, fun a => congr_fun h_unique_lift.exists.choose_spec.2 a⟩
+      h_unique_lift.exists.choose_spec.1, fun a ↦ congr_fun h_unique_lift.exists.choose_spec.2 a⟩
   obtain ⟨H, hH⟩ : ∃ H : U → ℂ, Continuous H ∧ H ⟨z₀, hz₀⟩ = w₀ ∧ ∀ z : U,
       (P.map (evalIntPolyComplex z)).eval (H z) = 0 := by
-    refine' ⟨fun z => (F z |>.1 |>.1 |>.2), _, _, _⟩ <;> simp_all
+    refine ⟨fun z ↦ (F z |>.1 |>.1 |>.2), ?_, ?_, ?_⟩ <;> simp_all
     · exact continuous_subtype_val.comp (continuous_subtype_val.comp hF.1) |> Continuous.snd
     · intro a ha
       specialize hF
@@ -412,21 +401,21 @@ lemma complex_branch_holomorphic_on_convex
       simp_all [Subtype.ext_iff, rootProj]
       grind only [rootVariety, usr Set.mem_setOf_eq, #c92c]
   convert DorgeBauer.continuous_root_holomorphic P U hUopen
-    (fun z => if hz : z ∈ U then H ⟨z, hz⟩ else 0) ?_ ?_ ?_ using 1
+    (fun z ↦ if hz : z ∈ U then H ⟨z, hz⟩ else 0) ?_ ?_ ?_ using 1
   any_goals tauto
   any_goals
     intro z
     exact Classical.propDecidable (z ∈ U)
   · constructor <;> intro h
     · convert DorgeBauer.continuous_root_holomorphic P U hUopen
-        (fun z => if hz : z ∈ U then H ⟨z, hz⟩ else 0) ?_ ?_ ?_ using 1
+        (fun z ↦ if hz : z ∈ U then H ⟨z, hz⟩ else 0) ?_ ?_ ?_ using 1
       · rw [continuousOn_iff_continuous_restrict]
         convert hH.1 using 1
         ext ⟨z, hz⟩
         simp [hz]
       · grind
       · exact hsep
-    · exact ⟨_, h, by simpa [hz₀] using hH.2.1, fun z hz => by simpa [hz] using hH.2.2 ⟨z, hz⟩⟩
+    · exact ⟨_, h, by simpa [hz₀] using hH.2.1, fun z hz ↦ by simpa [hz] using hH.2.2 ⟨z, hz⟩⟩
   · rw [continuousOn_iff_continuous_restrict]
     convert hH.1 using 1
     ext ⟨z, hz⟩
@@ -459,9 +448,9 @@ lemma branch_agrees_on_real_ray
     (hsep : ∀ y : ℝ, a ≤ y → (P.map (evalIntPolyComplex (y : ℂ))).Separable)
     (hbase : H (a : ℂ) = (g a : ℂ)) :
     ∀ y : ℝ, a ≤ y → H (y : ℂ) = (g y : ℂ) := by
-  -- Let $A := \{ y : \mathbb{R} \mid H(y : \mathbb{C}) = g(y : \mathbb{C}) \}$.
+  -- Let `A := {y : ℝ | H y = g y}`.
   set A : Set ℝ := {y : ℝ | H y = g y}
-  -- We need to show that $A \cap [a, \infty)$ is both relatively open and relatively closed in $[a, \infty)$.
+  -- We show `A ∩ [a, ∞)` is both relatively open and relatively closed in `[a, ∞)`.
   have h_rel_open : ∀ y ∈ A ∩ Set.Ici a, ∃ ε > 0, ∀ z ∈ Set.Ici a, |z - y| < ε → z ∈ A := by
     intro y hy
     obtain ⟨w₀, hw₀⟩ : ∃ w₀ : ℂ, w₀ = H y ∧ (P.map (evalIntPolyComplex y)).eval w₀ = 0 ∧
@@ -469,10 +458,10 @@ lemma branch_agrees_on_real_ray
       have := hsep y hy.2
       exact ⟨_, rfl, hHroot y hy.2, by simpa using Polynomial.Separable.aeval_derivative_ne_zero this (hHroot y hy.2)⟩
     obtain ⟨φ, hφ⟩ := complex_branch_at_simple_root_unique P y w₀ hw₀.right.left hw₀.right.right
-    have h_cont : Filter.Tendsto (fun z : ℝ => (z : ℂ)) (nhdsWithin y (Set.Ici a)) (nhds y) ∧
-        Filter.Tendsto (fun z : ℝ => H z) (nhdsWithin y (Set.Ici a)) (nhds w₀) ∧
-        Filter.Tendsto (fun z : ℝ => (g z : ℂ)) (nhdsWithin y (Set.Ici a)) (nhds w₀) := by
-      refine' ⟨_, _, _⟩
+    have h_cont : Filter.Tendsto (fun z : ℝ ↦ (z : ℂ)) (nhdsWithin y (Set.Ici a)) (nhds y) ∧
+        Filter.Tendsto (fun z : ℝ ↦ H z) (nhdsWithin y (Set.Ici a)) (nhds w₀) ∧
+        Filter.Tendsto (fun z : ℝ ↦ (g z : ℂ)) (nhdsWithin y (Set.Ici a)) (nhds w₀) := by
+      refine ⟨?_, ?_, ?_⟩
       · exact Complex.continuous_ofReal.continuousWithinAt
       · exact tendsto_nhdsWithin_of_tendsto_nhds (by
           simpa [hw₀.1] using
@@ -493,9 +482,9 @@ lemma branch_agrees_on_real_ray
       have h_cont : ∀ᶠ z : ℝ in nhdsWithin y (Set.Ici a),
           dist (z : ℂ) y < ε ∧ dist (H z) (H y) < ε ∧ dist ((g z : ℂ)) (H y) < ε := by
         have hT :
-            Tendsto (fun z : ℝ => (z : ℂ)) (𝓝[Set.Ici a] y) (𝓝 (y : ℂ)) ∧
-              Tendsto (fun z : ℝ => H (z : ℂ)) (𝓝[Set.Ici a] y) (𝓝 (H (y : ℂ))) ∧
-              Tendsto (fun z : ℝ => (g z : ℂ)) (𝓝[Set.Ici a] y) (𝓝 (H (y : ℂ))) := ‹_›
+            Tendsto (fun z : ℝ ↦ (z : ℂ)) (𝓝[Set.Ici a] y) (𝓝 (y : ℂ)) ∧
+              Tendsto (fun z : ℝ ↦ H (z : ℂ)) (𝓝[Set.Ici a] y) (𝓝 (H (y : ℂ))) ∧
+              Tendsto (fun z : ℝ ↦ (g z : ℂ)) (𝓝[Set.Ici a] y) (𝓝 (H (y : ℂ))) := ‹_›
         exact Filter.eventually_and.mpr ⟨hT.1.eventually (Metric.ball_mem_nhds _ ε_pos),
           Filter.eventually_and.mpr ⟨hT.2.1.eventually (Metric.ball_mem_nhds _ ε_pos),
             hT.2.2.eventually (Metric.ball_mem_nhds _ ε_pos)⟩⟩
@@ -507,24 +496,24 @@ lemma branch_agrees_on_real_ray
     rw [eventually_nhdsWithin_iff] at h_cont
     rw [Metric.eventually_nhds_iff] at h_cont
     obtain ⟨ε, ε_pos, hε⟩ := h_cont
-    exact ⟨ε, ε_pos, fun z hz hz' => by
+    exact ⟨ε, ε_pos, fun z hz hz' ↦ by
       have := hε hz' hz
       aesop⟩
-  -- We need to show that $A \cap [a, \infty)$ is relatively closed in $[a, \infty)$.
+  -- We show `A ∩ [a, ∞)` is relatively closed in `[a, ∞)`.
   have h_rel_closed : IsClosed {y : ℝ | y ∈ Set.Ici a ∧ H y = g y} := by
-    have h_cont : ContinuousOn (fun y : ℝ => H y - g y) (Set.Ici a) := by
-      refine' ContinuousOn.sub _ _
-      · exact continuousOn_of_forall_continuousAt fun y hy =>
+    have h_cont : ContinuousOn (fun y : ℝ ↦ H y - g y) (Set.Ici a) := by
+      apply ContinuousOn.sub
+      · exact continuousOn_of_forall_continuousAt fun y hy ↦
           ContinuousAt.comp (hHc y hy) (Complex.continuous_ofReal.continuousAt)
       · exact Complex.continuous_ofReal.comp_continuousOn hgc
     have h_rel_closed : IsClosed {y : ℝ | y ∈ Set.Ici a ∧ (H y - g y) = 0} := by
       exact h_cont.preimage_isClosed_of_isClosed isClosed_Ici isClosed_singleton
     simpa only [sub_eq_zero] using h_rel_closed
-  -- Since $A \cap [a, \infty)$ is both relatively open and relatively closed in $[a, \infty)$, and $a \in A$, it follows that $A \cap [a, \infty) = [a, \infty)$.
+  -- Since `A ∩ [a, ∞)` is clopen in `[a, ∞)` and `a ∈ A`, it equals `[a, ∞)`.
   have h_eq : {y : ℝ | y ∈ Set.Ici a ∧ H y = g y} = Set.Ici a := by
     apply_rules [IsClopen.eq_univ]
     ext y
-    exact ⟨fun hy => hy.left, fun hy => ⟨hy, by
+    exact ⟨fun hy ↦ hy.left, fun hy ↦ ⟨hy, by
       contrapose! h_rel_open
       obtain ⟨z, hz⟩ : ∃ z ∈ Set.Icc a y, z ∈ A ∧ ∀ w ∈ Set.Icc a y, w ∈ A → w ≤ z := by
         have h_compact : IsCompact {z ∈ Set.Icc a y | z ∈ A} := by
@@ -533,13 +522,13 @@ lemma branch_agrees_on_real_ray
           grind +splitIndPred
         have := h_compact.exists_isGreatest
         exact Exists.elim (this ⟨a, ⟨by linarith, by linarith⟩, by aesop⟩)
-          fun x hx => ⟨x, hx.1.1, hx.1.2, fun w hw hw' => hx.2 ⟨hw, hw'⟩⟩
+          fun x hx ↦ ⟨x, hx.1.1, hx.1.2, fun w hw hw' ↦ hx.2 ⟨hw, hw'⟩⟩
       use z
       simp +zetaDelta at *
-      refine' ⟨⟨hz.2.1, hz.1.1⟩, fun ε ε_pos => _⟩
+      refine' ⟨⟨hz.2.1, hz.1.1⟩, fun ε ε_pos ↦ _⟩
       by_cases hz_eq_y : z = y
       · grind
-      · -- Since $z \neq y$, we can choose $z_1$ in the interval $(z, y)$ such that $|z_1 - z| < \epsilon$.
+      · -- Since `z ≠ y`, choose `z₁ ∈ (z, y)` with `|z₁ - z| < ε`.
         obtain ⟨z_1, hz_1⟩ : ∃ z_1 ∈ Set.Ioo z y, |z_1 - z| < ε := by
           by_cases hz_lt_y : z < y
           · by_cases hε : ε < y - z
@@ -547,7 +536,7 @@ lemma branch_agrees_on_real_ray
             · exact ⟨(z + y) / 2, ⟨by linarith, by linarith⟩, abs_lt.mpr ⟨by linarith, by linarith⟩⟩
           · exact False.elim <| hz_eq_y <| le_antisymm hz.1.2 <| not_lt.mp hz_lt_y
         grind +splitImp⟩⟩
-  exact fun y hy => h_eq.symm.subset hy |>.2
+  exact fun y hy ↦ h_eq.symm.subset hy |>.2
 
 /-
 **Holomorphic continuation of a real branch onto the right-half tail balls.** -/
@@ -567,7 +556,7 @@ lemma real_branch_holo_continuation_tail
     exact isOpen_lt continuous_const Complex.continuous_re
   have hUconvex : Convex ℝ U := convex_halfSpace_re_gt B
   have hUsep : ∀ z ∈ U, (P.map (evalIntPolyComplex z)).Separable := by
-    exact fun z hz => hsep z <| lt_of_lt_of_le hz <| Complex.re_le_norm z
+    exact fun z hz ↦ hsep z <| lt_of_lt_of_le hz <| Complex.re_le_norm z
   obtain ⟨H, hH⟩ : ∃ H : ℂ → ℂ, DifferentiableOn ℂ H U ∧
       H ((max (max (2*(T₀:ℝ)) 2) (2*B+1)) / 2 : ℂ) = (g ((max (max (2*(T₀:ℝ)) 2) (2*B+1)) / 2 : ℝ) : ℂ) ∧
       (∀ z ∈ U, (P.map (evalIntPolyComplex z)).eval (H z) = 0) := by
@@ -584,10 +573,10 @@ lemma real_branch_holo_continuation_tail
       · linarith [le_max_left (max (2 * T₀ : ℝ) 2) (2 * B + 1),
           le_max_right (max (2 * T₀ : ℝ) 2) (2 * B + 1), le_max_left (2 * T₀ : ℝ) 2,
           le_max_right (2 * T₀ : ℝ) 2]
-  refine' ⟨max (max (2 * T₀) 2) (2 * B + 1), H, _, _, _, _⟩ <;> norm_num at *
+  refine ⟨max (max (2 * T₀) 2) (2 * B + 1), H, ?_, ?_, ?_, ?_⟩ <;> norm_num at *
   · intro x hx₁ hx₂ hx₃
-    refine' ⟨_, _⟩
-    · refine' hH.1.mono _
+    refine ⟨?_, ?_⟩
+    · apply hH.1.mono
       intro z hz
       rw [Metric.mem_ball] at hz
       rw [dist_eq_norm] at hz
@@ -595,7 +584,7 @@ lemma real_branch_holo_continuation_tail
       exact show B < z.re from by
         rw [Real.sqrt_lt' (by linarith)] at hz
         nlinarith [sq_nonneg (z.re - x), sq_nonneg z.im]
-    · refine' hH.1.continuousOn.mono _
+    · apply hH.1.continuousOn.mono
       rw [closure_ball _ (by positivity)]
       intro z hz
       rw [Metric.mem_closedBall] at hz
@@ -603,14 +592,14 @@ lemma real_branch_holo_continuation_tail
       norm_num [Complex.normSq, Complex.norm_def] at hz ⊢
       exact show B < z.re from by nlinarith [Real.sqrt_le_iff.mp hz]
   · apply branch_agrees_on_real_ray P ((max (max (2*(T₀:ℝ)) 2) (2*B+1)) / 2) g H
-    exact hgc.mono (Set.Ici_subset_Ici.mpr <| by
-      cases max_cases (max (2 * (T₀ : ℝ)) 2) (2 * B + 1) <;> cases max_cases (2 * (T₀ : ℝ)) 2 <;> linarith)
+    · exact hgc.mono (Set.Ici_subset_Ici.mpr <| by
+        cases max_cases (max (2 * (T₀ : ℝ)) 2) (2 * B + 1) <;> cases max_cases (2 * (T₀ : ℝ)) 2 <;> linarith)
     · intro y hy
       exact hH.1.differentiableAt (hUopen.mem_nhds <| show B < (y : ℂ).re from by
         norm_num
         cases max_cases (max (2 * (T₀ : ℝ)) 2) (2 * B + 1) <;> cases max_cases (2 * (T₀ : ℝ)) 2 <;>
           linarith) |> DifferentiableAt.continuousAt
-    · exact fun y hy => hroot y <| by
+    · exact fun y hy ↦ hroot y <| by
         cases max_cases (max (2 * (T₀ : ℝ)) 2) (2 * B + 1) <;> cases max_cases (2 * (T₀ : ℝ)) 2 <;> linarith
     · intro y hy
       exact hH.2.2 _ <| show B < (y : ℂ).re from by

@@ -44,15 +44,15 @@ def wval {A : Type*} [CommRing A] (k : ℕ) (lam : Fin k → ℤ) (s : Multiset 
 /-- The `k`-subset resolvent product `∏_{S} (Y - w_S)` over a multiset `r` of roots. -/
 def resolventProduct {A : Type*} [CommRing A] (k : ℕ) (lam : Fin k → ℤ)
     (r : Multiset A) : Polynomial A :=
-  ((r.powersetCard k).map (fun s => Polynomial.X - Polynomial.C (wval k lam s))).prod
+  ((r.powersetCard k).map (fun s ↦ Polynomial.X - Polynomial.C (wval k lam s))).prod
 
 /-
 `resolventProduct` is monic (it is a product of monic linear factors).
 -/
 lemma resolventProduct_monic {A : Type*} [CommRing A] (k : ℕ) (lam : Fin k → ℤ)
     (r : Multiset A) : (resolventProduct k lam r).Monic := by
-  apply_rules [Polynomial.monic_multiset_prod_of_monic, Polynomial.monic_X_sub_C]
-  exact fun _ _ => Polynomial.monic_X_sub_C _
+  apply Polynomial.monic_multiset_prod_of_monic
+  exact fun _ _ ↦ Polynomial.monic_X_sub_C _
 
 /-
 The `Y`-degree of `resolventProduct` is the number of `k`-subsets of `r`.
@@ -70,7 +70,7 @@ lemma resolventProduct_natDegree {A : Type*} [CommRing A] [Nontrivial A] (k : �
 For `1 ≤ k < d` there are at least two `k`-subsets, so `2 ≤ d.choose k`.
 -/
 lemma two_le_natDegree_choose {d k : ℕ} (hk : 1 ≤ k) (hk' : k < d) : 2 ≤ d.choose k := by
-  induction hk' <;> simp_all +arith +decide
+  induction hk' <;> simp_all
   exact le_trans ‹_› (Nat.choose_le_succ _ _)
 
 /-!
@@ -101,7 +101,7 @@ lemma wval_map {A B : Type*} [CommRing A] [CommRing B] (φ : A →+* B) (k : ℕ
     (s : Multiset A) : φ (wval k lam s) = wval k lam (s.map φ) := by
   unfold wval
   simp [*]
-  exact Finset.sum_congr rfl fun _ _ => by rw [esymm_map_ringHom]
+  exact Finset.sum_congr rfl fun _ _ ↦ by rw [esymm_map_ringHom]
 
 /-
 The resolvent product commutes with ring homomorphisms (applied coefficientwise).
@@ -142,7 +142,7 @@ lemma resolventProduct_univ_isSymmetric (d k : ℕ) (lam : Fin k → ℤ) (i : �
     · simp [resolventProduct]
     · simp
       rw [List.ofFn_eq_map, List.ofFn_eq_map]
-      have h_perm : List.Perm (List.map (fun x => σ x) (List.finRange d)) (List.finRange d) := by
+      have h_perm : List.Perm (List.map (fun x ↦ σ x) (List.finRange d)) (List.finRange d) := by
         grind only [Equiv.Perm.map_finRange_perm]
       convert h_perm.map _ using 1
       simp [Function.comp]
@@ -156,10 +156,10 @@ lemma exists_esymm_lift (d : ℕ) (U : Polynomial (MvPolynomial (Fin d) ℤ))
     (hU : ∀ i, (U.coeff i).IsSymmetric) :
     ∃ Uhat : Polynomial (MvPolynomial (Fin d) ℤ),
       Uhat.map ((MvPolynomial.aeval
-        (fun i : Fin d => MvPolynomial.esymm (Fin d) ℤ (↑i + 1))).toRingHom) = U := by
-  -- By the fundamental theorem of symmetric polynomials, each coefficient of $U$ can be written as a polynomial in the elementary symmetric functions.
+        (fun i : Fin d ↦ MvPolynomial.esymm (Fin d) ℤ (↑i + 1))).toRingHom) = U := by
+  -- By the fundamental theorem of symmetric polynomials, each coefficient of `U` can be written as a polynomial in the elementary symmetric functions.
   have h_coeff : ∀ i, ∃ p : Polynomial (MvPolynomial (Fin d) ℤ),
-      Polynomial.map (MvPolynomial.aeval (fun i : Fin d => MvPolynomial.esymm (Fin d) ℤ (i.val + 1))).toRingHom p =
+      Polynomial.map (MvPolynomial.aeval (fun i : Fin d ↦ MvPolynomial.esymm (Fin d) ℤ (i.val + 1))).toRingHom p =
         Polynomial.C (U.coeff i) := by
     intro i
     have := hU i
@@ -180,7 +180,7 @@ lemma exists_fin_map_eq {A : Type*} (r : Multiset A) (n : ℕ) (h : r.card = n) 
     ∃ ρ : Fin n → A, Finset.univ.val.map ρ = r := by
   rcases r with ⟨l⟩
   simp_all
-  refine' ⟨fun i => l.get ⟨i, by linarith [Fin.is_lt i]⟩, _⟩
+  refine ⟨fun i ↦ l.get ⟨i, by linarith [Fin.is_lt i]⟩, ?_⟩
   rw [List.ofFn_eq_map]
   aesop
 
@@ -205,7 +205,7 @@ lemma resolvent_identity (F : Polynomial (Polynomial ℤ)) (hF : F.Monic)
     apply resolventProduct_univ_isSymmetric
   obtain ⟨Uhat, hUhat⟩ := exists_esymm_lift d U hU
   -- Let `eVals : Fin d → ℤ[T]`, `eVals i = (-1)^(↑i+1) * F.coeff (d - (↑i+1))`, and `cval := (MvPolynomial.aeval eVals).toRingHom`.
-  set eVals : Fin d → ℤ[X] := fun i => (-1 : ℤ[X]) ^ (i.val + 1) * (F.coeff (d - (i.val + 1)))
+  set eVals : Fin d → ℤ[X] := fun i ↦ (-1 : ℤ[X]) ^ (i.val + 1) * (F.coeff (d - (i.val + 1)))
   set cval : MvPolynomial (Fin d) ℤ →+* ℤ[X] := (MvPolynomial.aeval eVals).toRingHom
   set P : Polynomial ℤ[X] := Uhat.map cval
   have hP : ∀ {A : Type} [Field A] (ev : ℤ[X] →+* A), (F.map ev).natDegree = d →
@@ -216,28 +216,28 @@ lemma resolvent_identity (F : Polynomial (Polynomial ℤ)) (hF : F.Monic)
     obtain ⟨ρ, hρ⟩ := exists_fin_map_eq r d hcard
     set aρ : MvPolynomial (Fin d) ℤ →+* A := (MvPolynomial.aeval ρ).toRingHom
     have h_ring_hom : ev.comp cval =
-        aρ.comp ((MvPolynomial.aeval (fun i : Fin d => MvPolynomial.esymm (Fin d) ℤ (i.val + 1))).toRingHom) := by
+        aρ.comp ((MvPolynomial.aeval (fun i : Fin d ↦ MvPolynomial.esymm (Fin d) ℤ (i.val + 1))).toRingHom) := by
       ext i
-      simp [cval, aρ]
-      have h_vieta : p.coeff (d - (i.val + 1)) = 1 * (-1 : A) ^ (i.val + 1) * r.esymm (i.val + 1) := by
-        have h_vieta_i : p = Polynomial.C (p.leadingCoeff) *
-            Multiset.prod (Multiset.map (fun x => Polynomial.X - Polynomial.C x) r) := by
-          convert Polynomial.Splits.eq_prod_roots _
-          rw [Polynomial.splits_iff_card_roots]
-          grind
-        conv_lhs => rw [h_vieta_i]
-        rw [Polynomial.coeff_C_mul, Multiset.prod_X_sub_C_coeff]
-        · rw [hcard]
-          rw [Nat.sub_sub_self (by linarith [Fin.is_lt i])]
-          ring_nf
-          rw [Polynomial.leadingCoeff_map_of_leadingCoeff_ne_zero] <;> norm_num [hF]
-        · exact hcard.symm ▸ Nat.sub_le _ _
-      simp +zetaDelta at *
-      rw [h_vieta, mul_left_comm]
-      rw [← hρ]
-      norm_num [MvPolynomial.aeval_esymm_eq_multiset_esymm]
-      ring_nf
-      norm_num [pow_mul']
+      · simp [cval, aρ]
+      · have h_vieta : p.coeff (d - (i.val + 1)) = 1 * (-1 : A) ^ (i.val + 1) * r.esymm (i.val + 1) := by
+          have h_vieta_i : p = Polynomial.C (p.leadingCoeff) *
+              Multiset.prod (Multiset.map (fun x ↦ Polynomial.X - Polynomial.C x) r) := by
+            convert Polynomial.Splits.eq_prod_roots _
+            rw [Polynomial.splits_iff_card_roots]
+            grind
+          conv_lhs => rw [h_vieta_i]
+          rw [Polynomial.coeff_C_mul, Multiset.prod_X_sub_C_coeff]
+          · rw [hcard]
+            rw [Nat.sub_sub_self (by linarith [Fin.is_lt i])]
+            ring_nf
+            rw [Polynomial.leadingCoeff_map_of_leadingCoeff_ne_zero] <;> norm_num [hF]
+          · exact hcard.symm ▸ Nat.sub_le _ _
+        simp +zetaDelta at *
+        rw [h_vieta, mul_left_comm]
+        rw [← hρ]
+        norm_num [MvPolynomial.aeval_esymm_eq_multiset_esymm]
+        ring_nf
+        norm_num [pow_mul']
     convert congr_arg (Polynomial.map aρ) hUhat using 1
     · rw [Polynomial.map_map]
       rw [h_ring_hom, Polynomial.map_map]
@@ -262,17 +262,16 @@ lemma exists_resolvent_poly (F : Polynomial (Polynomial ℤ)) (hF : F.Monic)
         P.map ev = resolventProduct k lam (F.map ev).roots := by
   -- By `resolvent_identity`, there exists a polynomial `P` satisfying the given conditions.
   obtain ⟨P, hP⟩ := resolvent_identity F hF k lam
-  refine' ⟨P, _, _, hP⟩
-  · -- Let $A$ be an algebraically closed field of characteristic $0$, such as $\mathbb{C}$.
+  refine ⟨P, ?_, ?_, hP⟩
+  · -- Let `A` be an algebraically closed field of characteristic `0`, such as `ℂ`.
     set A := FractionRing (Polynomial ℤ)
     obtain ⟨ev,hev⟩ : ∃ ev : Polynomial ℤ →+* AlgebraicClosure A, Function.Injective ev := by
       exact ⟨(algebraMap A (AlgebraicClosure A)).comp (algebraMap (Polynomial ℤ) A),
         (algebraMap A (AlgebraicClosure A)).injective.comp (IsFractionRing.injective _ _)⟩
     have hP_monic : (P.map ev).Monic := by
-      have hP_monic : (resolventProduct k lam (map ev F).roots).Monic := by
-        convert resolventProduct_monic k lam (map ev F |> Polynomial.roots) using 1
-      have hP_monic : (map ev F).Splits := by
-        exact IsAlgClosed.splits _
+      have hP_monic : (resolventProduct k lam (map ev F).roots).Monic :=
+        resolventProduct_monic k lam (map ev F).roots
+      have hP_monic : (map ev F).Splits := IsAlgClosed.splits _
       rw [Polynomial.splits_iff_card_roots] at hP_monic
       aesop
     rw [Polynomial.Monic, Polynomial.leadingCoeff_map_of_injective hev] at hP_monic
@@ -283,11 +282,12 @@ lemma exists_resolvent_poly (F : Polynomial (Polynomial ℤ)) (hF : F.Monic)
       obtain ⟨A, hA⟩ : ∃ A : Type, ∃ (inst : Field A), ∃ (ev : Polynomial ℤ →+* A),
           Function.Injective ev ∧ (F.map ev).Splits := by
         use AlgebraicClosure (FractionRing (Polynomial ℤ))
-        refine' ⟨inferInstance, _, _, _⟩
-        exact (algebraMap (Polynomial ℤ) (FractionRing (Polynomial ℤ))).comp
-          (algebraMap (Polynomial ℤ) (Polynomial ℤ)) |> RingHom.comp
-          (algebraMap (FractionRing (Polynomial ℤ)) (AlgebraicClosure (FractionRing (Polynomial ℤ))))
-        · exact fun x y hxy => by simpa using hxy
+        refine ⟨inferInstance,
+          (algebraMap (Polynomial ℤ) (FractionRing (Polynomial ℤ))).comp
+            (algebraMap (Polynomial ℤ) (Polynomial ℤ)) |> RingHom.comp
+            (algebraMap (FractionRing (Polynomial ℤ)) (AlgebraicClosure (FractionRing (Polynomial ℤ)))),
+          ?_, ?_⟩
+        · exact fun x y hxy ↦ by simpa using hxy
         · exact IsAlgClosed.splits _
       obtain ⟨inst, ev, hev₁, hev₂⟩ := hA
       use A, inst, ev
@@ -322,15 +322,15 @@ lemma exists_esymm_notMem {K L : Type} [Field K] [Field L] [Algebra K L]
     ∃ j : Fin k, s.esymm (↑j + 1) ∉ Set.range (algebraMap K L) := by
   by_contra! h_contra
   obtain ⟨gK, hgK⟩ : ∃ gK : Polynomial K, gK.Monic ∧
-      gK.map (algebraMap K L) = Multiset.prod (s.map (fun β => Polynomial.X - Polynomial.C β)) ∧
+      gK.map (algebraMap K L) = Multiset.prod (s.map (fun β ↦ Polynomial.X - Polynomial.C β)) ∧
         gK.natDegree = k := by
     have h_lift : ∃ gK : Polynomial K,
-        gK.map (algebraMap K L) = Multiset.prod (s.map (fun β => Polynomial.X - Polynomial.C β)) ∧
+        gK.map (algebraMap K L) = Multiset.prod (s.map (fun β ↦ Polynomial.X - Polynomial.C β)) ∧
           gK.natDegree = k := by
       have h_lift : ∃ gK : Polynomial K,
-          gK.map (algebraMap K L) = Multiset.prod (s.map (fun β => Polynomial.X - Polynomial.C β)) := by
+          gK.map (algebraMap K L) = Multiset.prod (s.map (fun β ↦ Polynomial.X - Polynomial.C β)) := by
         have h_lift : ∀ j : ℕ, j ≤ k →
-            (Multiset.prod (s.map (fun β => Polynomial.X - Polynomial.C β))).coeff j ∈ Set.range (algebraMap K L) := by
+            (Multiset.prod (s.map (fun β ↦ Polynomial.X - Polynomial.C β))).coeff j ∈ Set.range (algebraMap K L) := by
           intro j hj
           by_cases hj' : j = k <;> simp_all [Multiset.prod_X_sub_C_coeff]
           · exact ⟨1, by simp [Multiset.esymm]⟩
@@ -347,22 +347,22 @@ lemma exists_esymm_notMem {K L : Type} [Field K] [Field L] [Algebra K L]
       use gK
       have := congr_arg Polynomial.natDegree hgK
       rw [Polynomial.natDegree_map, Polynomial.natDegree_multiset_prod] at this <;> simp_all
-      exact fun x hx => Polynomial.X_sub_C_ne_zero x
+      exact fun x hx ↦ Polynomial.X_sub_C_ne_zero x
     obtain ⟨gK, hgK₁, hgK₂⟩ := h_lift
     use gK
     simp_all [Polynomial.Monic.def]
     replace hgK₁ := congr_arg Polynomial.leadingCoeff hgK₁
     simp_all [Polynomial.leadingCoeff_multiset_prod]
   have h_div : gK ∣ f := by
-    have h_div : Multiset.prod (s.map (fun β => Polynomial.X - Polynomial.C β)) ∣
+    have h_div : Multiset.prod (s.map (fun β ↦ Polynomial.X - Polynomial.C β)) ∣
         Polynomial.map (algebraMap K L) f := by
       have h_div :
-          Multiset.map (fun β => Polynomial.X - Polynomial.C β) s ≤
-            Multiset.map (fun β => Polynomial.X - Polynomial.C β)
+          Multiset.map (fun β ↦ Polynomial.X - Polynomial.C β) s ≤
+            Multiset.map (fun β ↦ Polynomial.X - Polynomial.C β)
               (Polynomial.roots (Polynomial.map (algebraMap K L) f)) := by
         exact Multiset.map_le_map <| Multiset.mem_powersetCard.mp hs |>.1
-      refine' dvd_trans (Multiset.prod_dvd_prod_of_le h_div) _
-      convert Polynomial.prod_multiset_X_sub_C_dvd (Polynomial.map (algebraMap K L) f) using 1
+      apply dvd_trans (Multiset.prod_dvd_prod_of_le h_div)
+      exact Polynomial.prod_multiset_X_sub_C_dvd (Polynomial.map (algebraMap K L) f)
     rw [← Polynomial.map_dvd_map' (algebraMap K L)]
     aesop
   obtain ⟨q, rfl⟩ := h_div
@@ -389,15 +389,15 @@ lemma exists_generic_lam {K L : Type} [Field K] [Field L] [Algebra K L] [CharZer
   have h_linear_maps : ∀ s ∈ (f.map (algebraMap K L)).roots.powersetCard k, ∃ Φ_s : M →ₗ[ℚ] L,
       ∀ μ : M, Φ_s μ = ∑ j : Fin k, algebraMap ℚ L (μ j) * s.esymm (↑j + 1) := by
     intro s hs
-    refine' ⟨_, _⟩
-    refine' { toFun := fun μ => ∑ j : Fin k, algebraMap ℚ L (μ j) * s.esymm (j.val + 1), map_add' := _, map_smul' := _ }
+    refine ⟨{ toFun := fun μ ↦ ∑ j : Fin k, algebraMap ℚ L (μ j) * s.esymm (j.val + 1)
+              map_add' := ?_, map_smul' := ?_ }, ?_⟩
     all_goals norm_num [Finset.sum_add_distrib, Finset.mul_sum _ _ _, mul_assoc, mul_left_comm, Algebra.smul_def]
     · simp +zetaDelta at *
-      exact fun x y => by
+      exact fun x y ↦ by
         rw [← Finset.sum_add_distrib]
-        exact Finset.sum_congr rfl fun _ _ => by ring
+        exact Finset.sum_congr rfl fun _ _ ↦ by ring
     · simp +zetaDelta at *
-      exact fun m x => Finset.sum_congr rfl fun _ _ => by ring
+      exact fun m x ↦ Finset.sum_congr rfl fun _ _ ↦ by ring
   choose! Φ hΦ using h_linear_maps
   -- By `Submodule.exists_forall_notMem_of_forall_ne_top` get `μ : M = Fin k → ℚ` with `Φ_s μ ∉ R'` for every s (in the toFinset, equivalently every s in the powersetCard multiset).
   obtain ⟨μ, hμ⟩ : ∃ μ : M, ∀ s ∈ (f.map (algebraMap K L)).roots.powersetCard k,
@@ -407,22 +407,22 @@ lemma exists_generic_lam {K L : Type} [Field K] [Field L] [Algebra K L] [CharZer
       intro s hs
       obtain ⟨p, hp⟩ : ∃ p : Submodule ℚ M, ∀ μ : M, μ ∈ p ↔ Φ s μ ∈ Set.range (algebraMap K L) := by
         have h_submodule : ∃ p : Submodule ℚ L, ∀ x : L, x ∈ p ↔ x ∈ Set.range (algebraMap K L) := by
-          refine' ⟨Submodule.span ℚ (Set.range (algebraMap K L)), _⟩
+          refine ⟨Submodule.span ℚ (Set.range (algebraMap K L)), ?_⟩
           intro x
-          exact ⟨fun hx => by
+          exact ⟨fun hx ↦ by
             rw [Finsupp.mem_span_range_iff_exists_finsupp] at hx
             obtain ⟨c, rfl⟩ := hx
             simp [Finsupp.sum]
             use ∑ x ∈ c.support, c x • x
             simp [Algebra.smul_def]
-            simp [Rat.smul_def], fun hx => by
+            simp [Rat.smul_def], fun hx ↦ by
             exact Submodule.subset_span hx⟩
-        exact ⟨Submodule.comap (Φ s) h_submodule.choose, fun μ => by simpa using h_submodule.choose_spec (Φ s μ)⟩
+        exact ⟨Submodule.comap (Φ s) h_submodule.choose, fun μ ↦ by simpa using h_submodule.choose_spec (Φ s μ)⟩
       have := exists_esymm_notMem f hf_irr hf_monic hsplit k hk hk' s hs
       simp_all [Submodule.eq_top_iff']
-      refine' ⟨p, _, hp⟩
+      refine ⟨p, ?_, hp⟩
       obtain ⟨j, hj⟩ := this
-      use fun i => if i = j then 1 else 0
+      use fun i ↦ if i = j then 1 else 0
       simp_all
       simp_all [Finset.sum_eq_single j]
     choose! p hp₁ hp₂ using h_submodule
@@ -432,18 +432,18 @@ lemma exists_generic_lam {K L : Type} [Field K] [Field L] [Algebra K L] [CharZer
         convert Submodule.exists_forall_notMem_of_forall_ne_top (fun s : S => p s) (fun s => hS s s.2) using 1
         simp
       convert h_submodule (Multiset.toFinset (Multiset.powersetCard k (map (algebraMap K L) f |> Polynomial.roots))) _
-      grind +splitImp
-      exact Classical.decEq _
-      grind
-    exact ⟨h_submodule.choose, fun s hs => fun h => h_submodule.choose_spec s hs <| hp₂ s hs _ |>.2 h⟩
+      · grind +splitImp
+      · exact Classical.decEq _
+      · grind
+    exact ⟨h_submodule.choose, fun s hs ↦ fun h ↦ h_submodule.choose_spec s hs <| hp₂ s hs _ |>.2 h⟩
   -- Clear denominators: pick `n : ℤ`, `n ≠ 0`, and `lam : Fin k → ℤ` with `(lam j : ℚ) = n * μ j` for all j (product of denominators).
   obtain ⟨n, hn_ne_zero, lam, hlam⟩ : ∃ n : ℤ, n ≠ 0 ∧ ∃ lam : Fin k → ℤ, ∀ j : Fin k, (lam j : ℚ) = n * μ j := by
     -- Let `n` be the product of the denominators of the entries of `μ`.
     obtain ⟨n, hn⟩ : ∃ n : ℕ, n ≠ 0 ∧ ∀ j : Fin k, (μ j).den ∣ n := by
       exact ⟨∏ j, (μ j |> Rat.den),
-        Finset.prod_ne_zero_iff.mpr fun j _ => Nat.cast_ne_zero.mpr <| Rat.den_nz _,
-        fun j => Finset.dvd_prod_of_mem _ <| Finset.mem_univ _⟩
-    refine' ⟨n, mod_cast hn.1, fun j => (n * μ j |> Rat.num), fun j => _⟩
+        Finset.prod_ne_zero_iff.mpr fun j _ ↦ Nat.cast_ne_zero.mpr <| Rat.den_nz _,
+        fun j ↦ Finset.dvd_prod_of_mem _ <| Finset.mem_univ _⟩
+    refine ⟨n, mod_cast hn.1, fun j ↦ (n * μ j |> Rat.num), fun j ↦ ?_⟩
     simp
     obtain ⟨m, hm⟩ := hn.2 j
     simp [hm, mul_assoc, mul_left_comm, Rat.mul_num]
@@ -451,13 +451,13 @@ lemma exists_generic_lam {K L : Type} [Field K] [Field L] [Algebra K L] [CharZer
   have h_wval : ∀ s ∈ (f.map (algebraMap K L)).roots.powersetCard k, wval k lam s = (n : L) * Φ s μ := by
     intro s hs
     simp [hΦ s hs, wval, Finset.mul_sum _ _ _]
-    exact Finset.sum_congr rfl fun _ _ => by
+    exact Finset.sum_congr rfl fun _ _ ↦ by
       rw [show (lam _ : L) = n * μ _ from mod_cast hlam _]
       ring
-  refine' ⟨lam, fun s hs => _⟩
+  refine ⟨lam, fun s hs ↦ ?_⟩
   contrapose! hμ
   obtain ⟨x, hx⟩ := hμ
-  refine' ⟨s, hs, ⟨x / n, _⟩⟩
+  refine ⟨s, hs, ⟨x / n, ?_⟩⟩
   simp_all [mul_comm, div_eq_mul_inv]
 
 /-!
@@ -520,11 +520,9 @@ lemma wval_roots_map_mem_range {R A : Type*} [CommRing R] [CommRing A] [IsDomain
     (hcard : (g.map φ).roots.card = g.natDegree) (k : ℕ) (lam : Fin k → ℤ) :
     wval k lam (g.map φ).roots ∈ Set.range φ := by
   convert SetLike.mem_coe.mpr
-    (Subring.sum_mem _ fun j (hj : j ∈ (Finset.univ : Finset (Fin k))) => Subring.mul_mem _ ?_ ?_)
-  rotate_left
-  exact φ.range
+    (Subring.sum_mem φ.range fun j (hj : j ∈ (Finset.univ : Finset (Fin k))) ↦
+      Subring.mul_mem φ.range ?_ ?_)
   · exact ⟨lam j, by simp⟩
-  · convert esymm_roots_map_mem_range φ g hg hcard (j + 1) using 1
-  · aesop
+  · exact esymm_roots_map_mem_range φ g hg hcard (j + 1)
 
 end ResolventConstruction

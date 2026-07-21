@@ -52,16 +52,14 @@ def genericSplitPoly (n : ℕ) : Polynomial (MvPolynomial (Fin n) ℚ) :=
   ∏ i : Fin n, (Polynomial.X - Polynomial.C (MvPolynomial.X i))
 
 /-- The generic polynomial is monic. -/
-lemma genericSplitPoly_monic (n : ℕ) : (genericSplitPoly n).Monic := by
-  unfold genericSplitPoly
-  exact Polynomial.monic_prod_of_monic _ _ (fun i _ => Polynomial.monic_X_sub_C _)
+lemma genericSplitPoly_monic (n : ℕ) : (genericSplitPoly n).Monic :=
+  Polynomial.monic_prod_of_monic _ _ (fun _ _ ↦ Polynomial.monic_X_sub_C _)
 
 /-
 The generic polynomial has degree n.
 -/
 lemma genericSplitPoly_natDegree (n : ℕ) : (genericSplitPoly n).natDegree = n := by
-  unfold genericSplitPoly
-  simp [Polynomial.natDegree_sub_eq_left_of_natDegree_lt]
+  simp [genericSplitPoly]
 
 /-
 The coefficients of the generic polynomial are elementary symmetric polynomials.
@@ -70,13 +68,13 @@ Specifically, the coefficient of X^(n-k) in ∏(X - xᵢ) is (-1)^k · eₖ(x₁
 lemma genericSplitPoly_coeff (n k : ℕ) (hk : k ≤ n) :
     (genericSplitPoly n).coeff (n - k) =
       (-1) ^ k * MvPolynomial.esymm (Fin n) ℚ k := by
-        rw [esymm];
-        erw [genericSplitPoly, Finset.prod_congr rfl fun _ _ => sub_eq_add_neg _ _];
-        rw [Finset.prod_congr rfl fun _ _ => by rw [← Polynomial.C_neg]];
-        erw [Finset.prod_X_add_C_coeff];
-        · simp [Nat.sub_sub_self hk, Finset.mul_sum _ _ _];
-          exact Finset.sum_congr rfl fun x hx => by rw [Finset.prod_congr rfl fun _ _ => neg_eq_neg_one_mul _, Finset.prod_mul_distrib] ; simp_all only [Finset.mem_powersetCard, Finset.subset_univ, true_and, Finset.prod_const];
-        · simp +arith +decide
+        rw [esymm, genericSplitPoly, Finset.prod_congr rfl fun _ _ ↦ sub_eq_add_neg _ _]
+        rw [Finset.prod_congr rfl fun _ _ ↦ by rw [← Polynomial.C_neg], Finset.prod_X_add_C_coeff]
+        · simp only [Finset.card_univ, Fintype.card_fin, Nat.sub_sub_self hk, Finset.mul_sum]
+          refine Finset.sum_congr rfl fun x hx ↦ ?_
+          rw [Finset.prod_congr rfl fun _ _ ↦ neg_eq_neg_one_mul _, Finset.prod_mul_distrib]
+          simp_all
+        · simp
 
 /-!
 ## Part 2: Galois theory of the generic polynomial
@@ -94,14 +92,15 @@ We formalize this by working with:
 /-
 The Sₙ action on ℚ[x₁,...,xₙ] by permuting variables is faithful.
 -/
-lemma perm_action_faithful (n : ℕ) (hn : 2 ≤ n) :
+lemma perm_action_faithful (n : ℕ) :
     ∀ σ : Equiv.Perm (Fin n),
       σ ≠ 1 → ∃ p : MvPolynomial (Fin n) ℚ,
         MvPolynomial.rename σ p ≠ p := by
           intro σ hσ
-          obtain ⟨i, hi⟩ : ∃ i : Fin n, σ i ≠ i := by
-            exact not_forall.mp fun h => hσ <| Equiv.ext h;
-          refine' ⟨MvPolynomial.X i, _⟩ ; simp_all [MvPolynomial.rename_X]
+          obtain ⟨i, hi⟩ : ∃ i : Fin n, σ i ≠ i :=
+            not_forall.mp fun h ↦ hσ <| Equiv.ext h
+          refine ⟨MvPolynomial.X i, ?_⟩
+          simp_all [MvPolynomial.rename_X]
 
 /-
 The fixed field of the Sₙ action on ℚ(x₁,...,xₙ) is exactly ℚ(e₁,...,eₙ),
@@ -113,9 +112,10 @@ lemma symmetric_fixed_field (n : ℕ) :
     ∀ p : MvPolynomial (Fin n) ℚ,
       (∀ σ : Equiv.Perm (Fin n), MvPolynomial.rename σ p = p) →
         p ∈ symmetricSubalgebra (Fin n) ℚ := by
-          unfold symmetricSubalgebra; intro p a
-    simp_all only [Subalgebra.mem_mk, Subsemiring.mem_mk, Submonoid.mem_mk, Subsemigroup.mem_mk, Set.mem_setOf_eq]
-    exact a;
+          unfold symmetricSubalgebra
+          intro p a
+          simp only [Subalgebra.mem_mk, Subsemiring.mem_mk, Submonoid.mem_mk, Subsemigroup.mem_mk, Set.mem_setOf_eq]
+          exact a
 
 /-!
 ## Part 3: Connection to Inverse Galois
@@ -130,7 +130,7 @@ every Sₙ is an inverse Galois group over ℚ.
 The assumption `hit` says: there exists an irreducible polynomial over ℚ of
 degree n whose Galois group action on roots (via galActionHom) is bijective
 (i.e., the Galois group is the full symmetric group). -/
-theorem sn_inverse_galois_via_generic (n : ℕ) (hn : 1 ≤ n)
+theorem sn_inverse_galois_via_generic (n : ℕ)
     (hit : ∃ (f : ℚ[X]), Irreducible f ∧ f.natDegree = n ∧
       Function.Bijective (@Polynomial.Gal.galActionHom _ _ f ℂ _ _ ⟨IsAlgClosed.splits _⟩)) :
     IsInverseGalois (Equiv.Perm (Fin n)) := by

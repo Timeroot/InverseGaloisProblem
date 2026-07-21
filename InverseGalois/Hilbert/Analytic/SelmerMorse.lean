@@ -98,36 +98,36 @@ lemma selmer_ncard_roots_field {F : Type*} [CommRing F] [IsDomain F] [DecidableE
     (selmerPoly F n).roots.card ≤ (selmerPoly F n).roots.toFinset.card + 1 := by
   -- By `selmer_derivative_common_root_unique`, at most one root has multiplicity `≥ 2`.
   have h_at_most_one_repeated :
-      Finset.card (Finset.filter (fun a => 2 ≤ (selmerPoly F n).roots.count a)
+      Finset.card (Finset.filter (fun a ↦ 2 ≤ (selmerPoly F n).roots.count a)
         (selmerPoly F n).roots.toFinset) ≤ 1 := by
     rw [Finset.card_le_one_iff]
-    simp +zetaDelta at *
+    simp at *
     intro a b h₁ h₂ h₃ h₄ h₅ h₆
     have := Polynomial.isRoot_iterate_derivative_of_lt_rootMultiplicity
       (show 1 < rootMultiplicity a (selmerPoly F n) from h₃)
     have := Polynomial.isRoot_iterate_derivative_of_lt_rootMultiplicity
       (show 1 < rootMultiplicity b (selmerPoly F n) from h₆)
     simp_all
-    apply selmer_derivative_common_root_unique n h₂ ‹_› h₅ ‹_›
+    exact selmer_derivative_common_root_unique n h₂ ‹_› h₅ ‹_›
   have h_sum_le_one :
       ∑ a ∈ (selmerPoly F n).roots.toFinset, ((selmerPoly F n).roots.count a - 1) ≤
-        Finset.card (Finset.filter (fun a => 2 ≤ (selmerPoly F n).roots.count a)
+        Finset.card (Finset.filter (fun a ↦ 2 ≤ (selmerPoly F n).roots.count a)
           (selmerPoly F n).roots.toFinset) := by
     rw [Finset.card_filter]
     gcongr
     have := selmer_rootMultiplicity_le_two n ‹_›
     simp_all [Polynomial.count_roots]
     grind
-  have h_sum_eq_card :
+  have h_count_sum_eq_card :
       ∑ a ∈ (selmerPoly F n).roots.toFinset, (selmerPoly F n).roots.count a =
         (selmerPoly F n).roots.card := by
     rw [← Multiset.toFinset_sum_count_eq]
   have h_sum_eq_card :
       ∑ a ∈ (selmerPoly F n).roots.toFinset, ((selmerPoly F n).roots.count a - 1) +
           ∑ a ∈ (selmerPoly F n).roots.toFinset, 1 = (selmerPoly F n).roots.card := by
-    rw [← Finset.sum_add_distrib, Finset.sum_congr rfl fun x hx =>
+    rw [← Finset.sum_add_distrib, Finset.sum_congr rfl fun x hx ↦
       tsub_add_cancel_of_le <| Nat.succ_le_of_lt <| Multiset.count_pos.mpr <| Multiset.mem_toFinset.mp hx]
-    simp_all only [count_roots]
+    simp_all [count_roots]
   norm_num at *
   linarith
 
@@ -137,7 +137,7 @@ The image of `Xⁿ - X - 1` under a base-change map is again `Xⁿ - X - 1`.
 lemma selmerPoly_map {R S : Type*} [CommRing R] [CommRing S] [Algebra R S] (n : ℕ) :
     (selmerPoly R n).map (algebraMap R S) = selmerPoly S n := by
   unfold selmerPoly
-  simp_all only [Polynomial.map_sub, Polynomial.map_pow, map_X, Polynomial.map_one]
+  simp
 
 /-
 `Xⁿ - X - 1` is never the zero polynomial over a nontrivial commutative ring
@@ -147,7 +147,7 @@ lemma selmerPoly_ne_zero {F : Type*} [CommRing F] [Nontrivial F] (n : ℕ) :
     selmerPoly F n ≠ 0 := by
   by_contra h_zero_poly
   have h_contra : ∀ x : F, x^n - x - 1 = 0 :=
-    fun x => by simpa [selmerPoly] using congr_arg (Polynomial.eval x) h_zero_poly
+    fun x ↦ by simpa [selmerPoly] using congr_arg (Polynomial.eval x) h_zero_poly
   have := h_contra 0
   have := h_contra 1
   rcases n with (_ | _ | n) <;> simp_all
@@ -168,44 +168,45 @@ lemma ncard_rootSet_le_roots_card
     [Algebra R S] [Algebra S D] [Algebra R D] [IsScalarTower R S D]
     (q : R[X]) (hne : (q.map (algebraMap R D)) ≠ 0) :
     (q.rootSet S).ncard ≤ (q.map (algebraMap R D)).roots.card := by
-  -- Let $s$ be the set of distinct roots of $q$ in $S$.
+  -- Let `s` be the set of distinct roots of `q` in `S`.
   set s := (Polynomial.rootSet q S).toFinset with hs_def
-  -- By definition of $s$, we know that $\prod_{a \in s} (X - C a) \mid q_S$ in $S[X]$.
+  -- The product `∏ a ∈ s, (X - C a)` divides `q_S` in `S[X]`.
   have h_div : (∏ a ∈ s, (Polynomial.X - Polynomial.C a)) ∣ (Polynomial.map (algebraMap R S) q) := by
     have h_div : ∀ {m : Multiset S},
         (∀ a ∈ m, Polynomial.IsRoot (Polynomial.map (algebraMap R S) q) a) → Multiset.Nodup m →
-          (m.map (fun a => Polynomial.X - Polynomial.C a)).prod ∣ (Polynomial.map (algebraMap R S) q) := by
+          (m.map (fun a ↦ Polynomial.X - Polynomial.C a)).prod ∣ (Polynomial.map (algebraMap R S) q) := by
       intro m hm hm_nodup
       induction' m using Multiset.induction with a m ih
       · simp
-      · obtain ⟨p, hp⟩ := ih (fun x hx => hm x (Multiset.mem_cons_of_mem hx))
+      · obtain ⟨p, hp⟩ := ih (fun x hx ↦ hm x (Multiset.mem_cons_of_mem hx))
           (Multiset.nodup_cons.mp hm_nodup |>.2)
         simp_all
         rw [mul_comm]
-        refine' mul_dvd_mul_left _ _
-        refine' Polynomial.dvd_iff_isRoot.mpr _
+        refine mul_dvd_mul_left _ ?_
+        apply Polynomial.dvd_iff_isRoot.mpr
         replace hp := congr_arg (Polynomial.eval a) hp
         simp_all [Polynomial.eval_multiset_prod]
-        exact hm.1.resolve_left fun ⟨b, hb, h⟩ => hm_nodup.1 <| by simpa [sub_eq_zero.mp h] using hb
+        exact hm.1.resolve_left fun ⟨b, hb, h⟩ ↦ hm_nodup.1 <| by simpa [sub_eq_zero.mp h] using hb
     convert h_div _ _ <;> simp_all
     · grind only [aeval_eq_zero_of_mem_rootSet]
     · exact Finset.nodup _
-  -- Applying the algebra map $\phi: S \to D$ to the divisibility relation, we get $\prod_{a \in s} (X - C (\phi(a))) \mid q_D$ in $D[X]$.
+  -- Applying the algebra map `φ : S → D` to the divisibility relation gives
+  -- `∏ a ∈ s, (X - C (φ a))` divides `q_D` in `D[X]`.
   have h_div_D : (∏ a ∈ s, (Polynomial.X - Polynomial.C (algebraMap S D a))) ∣ (Polynomial.map (algebraMap R D) q) := by
     convert Polynomial.map_dvd (algebraMap S D) h_div using 1
     · simp [Polynomial.map_prod]
     · simp [Polynomial.map_map, IsScalarTower.algebraMap_eq R S D]
-  -- The roots of $\prod_{a \in s} (X - C (\phi(a)))$ are exactly $\{\phi(a) \mid a \in s\}$.
-  have h_roots : (Polynomial.map (algebraMap R D) q).roots ≥ Multiset.map (fun a => algebraMap S D a) s.val := by
+  -- The roots of `∏ a ∈ s, (X - C (φ a))` are exactly `{φ a | a ∈ s}`.
+  have h_roots : (Polynomial.map (algebraMap R D) q).roots ≥ Multiset.map (fun a ↦ algebraMap S D a) s.val := by
     have h_roots :
         Polynomial.roots (∏ a ∈ s, (Polynomial.X - Polynomial.C (algebraMap S D a))) =
-          Multiset.map (fun a => algebraMap S D a) s.val := by
+          Multiset.map (fun a ↦ algebraMap S D a) s.val := by
       rw [Polynomial.roots_prod]
-      · erw [Multiset.bind_congr fun x hx => by erw [Polynomial.roots_X_sub_C]]
+      · rw [Multiset.bind_congr fun x hx ↦ by rw [Polynomial.roots_X_sub_C]]
         simp_all only [ne_eq, Multiset.bind_singleton, s]
-      · exact Finset.prod_ne_zero_iff.mpr fun x hx => Polynomial.X_sub_C_ne_zero _
+      · exact Finset.prod_ne_zero_iff.mpr fun x hx ↦ Polynomial.X_sub_C_ne_zero _
     exact h_roots ▸ Polynomial.roots.le_of_dvd hne h_div_D
-  refine' le_trans _ (Multiset.card_le_card h_roots)
+  refine le_trans ?_ (Multiset.card_le_card h_roots)
   rw [Set.ncard_eq_toFinset_card _]
   simp_all only [ne_eq, ge_iff_le, Set.toFinite_toFinset, Set.toFinset_card, Multiset.card_map,
     Finset.card_val, le_refl, s]
@@ -232,15 +233,10 @@ theorem selmerPoly_isMorse
     apply ncard_rootSet_le_roots_card
     rw [selmerPoly_map]
     apply selmerPoly_ne_zero
-  convert h1.trans _ using 1
-  convert selmer_ncard_roots_field n using 1
-  rw [selmerPoly_map]
-  convert rfl
-  rw [← Set.ncard_coe_finset]
-  congr! 1
-  ext
-  simp [Polynomial.rootSet]
+  refine h1.trans ?_
+  convert selmer_ncard_roots_field (F := S ⧸ p) n using 1
   · rw [selmerPoly_map]
-  · exact Classical.decEq _
+  · classical
+    rw [Polynomial.rootSet_def, Set.ncard_coe_finset, Polynomial.aroots_def, selmerPoly_map]
 
 end SelmerMorse

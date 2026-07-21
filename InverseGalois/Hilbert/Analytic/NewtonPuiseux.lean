@@ -134,10 +134,10 @@ theorem gal_swaps_of_range_swaps
   have hinj := Gal.galActionHom_injective p E
   set φ := Gal.galActionHom p E
   obtain ⟨S, hP, hrange, hgen⟩ := hex
-  refine ⟨φ ⁻¹' S, fun σ hσ => hP _ hσ, ?_⟩
+  refine ⟨φ ⁻¹' S, fun σ hσ ↦ hP _ hσ, ?_⟩
   have himg : φ '' (φ ⁻¹' S) = S := by
     rw [Set.image_preimage_eq_inter_range]
-    exact Set.inter_eq_left.mpr (fun t ht => hrange t ht)
+    exact Set.inter_eq_left.mpr (fun t ht ↦ hrange t ht)
   have hmap : Subgroup.map φ (Subgroup.closure (φ ⁻¹' S)) = ⊤ := by
     rw [MonoidHom.map_closure, himg, hgen]
   have h2 := Subgroup.comap_map_eq_self_of_injective hinj (Subgroup.closure (φ ⁻¹' S))
@@ -218,7 +218,7 @@ core is proved below in `xnSubX_indecomposable`. -/
 theorem morseGeomPoly_block_ncard_dvd (n : ℕ) (hn : 2 ≤ n)
     {B : Set ((morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField)}
     (hB : MulAction.IsBlock (morseGeomPoly n).Gal B) (hBne : B.Nonempty) : B.ncard ∣ n := by
-  haveI htrans : MulAction.IsPretransitive (morseGeomPoly n).Gal
+  have htrans : MulAction.IsPretransitive (morseGeomPoly n).Gal
       ((morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField) :=
     Gal.galAction_isPretransitive _ _ (morseGeomPoly_irreducible n hn)
   have hdvd := @MulAction.IsBlock.ncard_dvd_card _ _ _
@@ -342,8 +342,7 @@ theorem xnSubX_comp_deriv_distinct_roots_le (n : ℕ) (hn : 2 ≤ n)
     · simp +zetaDelta at *
       norm_num [Polynomial.derivative_pow]
     · rw [Polynomial.derivative_comp]
-  refine' Finset.card_le_card_of_injOn _ _ _
-  use fun x => g.eval x
+  apply Finset.card_le_card_of_injOn (f := fun x ↦ g.eval x)
   · intro x hx
     simp_all [Polynomial.eval_comp]
     intro H
@@ -455,7 +454,7 @@ an order dual turns atoms into coatoms. -/
 theorem isCoatom_fixingSubgroup_iff_isAtom {F E : Type*} [Field F] [Field E] [Algebra F E]
     [FiniteDimensional F E] [IsGalois F E] (M : IntermediateField F E) :
     IsCoatom M.fixingSubgroup ↔ IsAtom M := by
-  convert OrderIso.isAtom_iff (IsGalois.intermediateFieldEquivSubgroup) M using 1
+  exact OrderIso.isAtom_iff (IsGalois.intermediateFieldEquivSubgroup) M
 
 /-- The restriction endomorphism `Gal.restrict p SF : p.Gal →* p.Gal` (to the splitting field
 itself) is bijective: it is surjective (`Gal.restrict_surjective`, `SF` normal) on a finite
@@ -485,9 +484,9 @@ theorem morseGeomPoly_stabilizer_eq_map_fixingSubgroup (n : ℕ) (hn : 2 ≤ n)
           (IntermediateField.fixingSubgroup
             (IntermediateField.adjoin GeomBase
               {(↑a : (morseGeomPoly n).SplittingField)})) := by
-  refine' le_antisymm _ _ <;> intro x hx <;> simp_all [Subgroup.mem_map]
+  refine le_antisymm ?_ ?_ <;> intro x hx <;> simp_all [Subgroup.mem_map]
   · obtain ⟨y, hy⟩ := (morseGeomPoly_restrict_bijective n hn).surjective x
-    refine' ⟨y, _, hy⟩
+    refine ⟨y, ?_, hy⟩
     intro x hx
     induction hx using IntermediateField.adjoin_induction
     · replace hx := congr_arg Subtype.val hx
@@ -512,7 +511,7 @@ theorem morseGeomPoly_adjoin_root_ne_bot (n : ℕ) (hn : 2 ≤ n)
     IntermediateField.adjoin GeomBase {(↑a : (morseGeomPoly n).SplittingField)} ≠ ⊥ := by
   -- Since $a$ is a root of $morseGeomPoly n$, which is irreducible over $GeomBase$, the minimal polynomial of $a$ over $GeomBase$ is $morseGeomPoly n$.
   have h_min_poly : minpoly GeomBase (a : (morseGeomPoly n).SplittingField) = morseGeomPoly n := by
-    refine' Eq.symm (minpoly.eq_of_irreducible_of_monic _ _ _) <;>
+    refine Eq.symm (minpoly.eq_of_irreducible_of_monic ?_ ?_ ?_) <;>
       norm_num [morseGeomPoly_irreducible n hn, morseGeomPoly_monic n hn]
     exact Polynomial.mem_rootSet.mp a.2 |>.2
   intro h
@@ -631,7 +630,7 @@ theorem morseLift_fieldRange (n : ℕ)
     (a : (morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField) :
     (morseLift n a).fieldRange
       = IntermediateField.adjoin (AlgebraicClosure ℚ) {(↑a : (morseGeomPoly n).SplittingField)} := by
-  refine' le_antisymm _ _
+  refine le_antisymm ?_ ?_
   · intro x hx
     obtain ⟨p, hp⟩ := hx
     simp at hp
@@ -670,7 +669,7 @@ theorem geomBase_image_mem_adjoin (n : ℕ)
         = aeval (↑a ^ n - ↑a : (morseGeomPoly n).SplittingField) p := by
     intro p
     induction p using Polynomial.induction_on <;> simp_all [Polynomial.aeval_def]
-    · convert rfl
+    · rfl
     · have := morse_aeval_gsub n a
       simp_all [pow_succ]
   simp_all [IntermediateField.mem_adjoin_simple_iff]
@@ -685,10 +684,10 @@ theorem geomBase_bot_restrict (n : ℕ)
         (AlgebraicClosure ℚ)
       = IntermediateField.adjoin (AlgebraicClosure ℚ)
           {(↑a : (morseGeomPoly n).SplittingField) ^ n - ↑a} := by
-  refine' le_antisymm _ _
+  refine le_antisymm ?_ ?_
   · intro z hz
     obtain ⟨y, rfl⟩ := hz
-    convert geomBase_image_mem_adjoin n a y using 1
+    exact geomBase_image_mem_adjoin n a y
   · simp [IntermediateField.mem_bot]
     use algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase (Polynomial.X)
     exact morse_aeval_gsub n a ▸ by simp [Polynomial.aeval_def]
@@ -701,7 +700,7 @@ theorem adjoin_geomBase_restrict (n : ℕ)
     (IntermediateField.adjoin GeomBase {(↑a : (morseGeomPoly n).SplittingField)}).restrictScalars
         (AlgebraicClosure ℚ)
       = IntermediateField.adjoin (AlgebraicClosure ℚ) {(↑a : (morseGeomPoly n).SplittingField)} := by
-  refine' le_antisymm _ _
+  refine le_antisymm ?_ ?_
   · intro x hx
     have := geomBase_bot_restrict n a
     have h_adjoin : IntermediateField.adjoin (AlgebraicClosure ℚ)
@@ -712,7 +711,7 @@ theorem adjoin_geomBase_restrict (n : ℕ)
     rw [← this] at *
     simp_all [IntermediateField.restrictScalars]
     rw [Subsemiring.mem_closure] at hx
-    refine hx _ fun y hy => ?_
+    refine hx _ fun y hy ↦ ?_
     rcases hy with (rfl | ⟨y, rfl⟩)
     · exact IntermediateField.subset_adjoin _ _ (Set.mem_singleton _)
     · exact h_adjoin (Set.mem_range_self _)
@@ -736,7 +735,7 @@ theorem morseGeomPoly_no_intermediate (n : ℕ) (hn : 2 ≤ n)
           (X ^ n - X : (AlgebraicClosure ℚ)[X]))}) := by
       apply RatFunc.isCoatom_adjoin_of_indecomposable
       · rw [Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num <;> linarith
-      · exact fun h g hh hg => xnSubX_indecomposable n hn hh hg
+      · exact fun h g hh hg ↦ xnSubX_indecomposable n hn hh hg
     have hM : IntermediateField.adjoin (AlgebraicClosure ℚ)
           {(algebraMap (AlgebraicClosure ℚ)[X] (RatFunc (AlgebraicClosure ℚ))
             (X ^ n - X : (AlgebraicClosure ℚ)[X]))} ≤ M := by
@@ -767,7 +766,7 @@ theorem morseGeomPoly_no_intermediate (n : ℕ) (hn : 2 ≤ n)
   · -- By `IntermediateField.map_comap_eq`, we have `map Ψ M = b.restrictScalars (AlgebraicClosure ℚ)`.
     have h_map : IntermediateField.map (morseLift n a) M = b.restrictScalars (AlgebraicClosure ℚ) := by
       rw [IntermediateField.map_comap_eq]
-      refine' inf_eq_left.mpr _
+      apply inf_eq_left.mpr
       rw [morseLift_fieldRange]
       exact le_trans (IntermediateField.restrictScalars_le_iff _ |>.2 hb.le)
         (by simp [adjoin_geomBase_restrict])
@@ -783,7 +782,7 @@ theorem morseGeomPoly_no_intermediate (n : ℕ) (hn : 2 ≤ n)
         = (⊥ : IntermediateField GeomBase (morseGeomPoly n).SplittingField).restrictScalars
             (AlgebraicClosure ℚ) := by
       rw [← h_map, h_map_adjoin, ← geomBase_bot_restrict n a]
-    exact h (by simpa using congr_arg (fun x => x) h_contra)
+    exact h (by simpa using congr_arg (fun x ↦ x) h_contra)
 
 theorem morseGeomPoly_adjoin_root_isAtom (n : ℕ) (hn : 2 ≤ n)
     (a : (morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField) :
@@ -796,7 +795,7 @@ theorem morseGeomPoly_stabilizer_isCoatom (n : ℕ) (hn : 2 ≤ n)
     IsCoatom (@MulAction.stabilizer (morseGeomPoly n).Gal
       (↑((morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField)) _
       (Gal.galAction (morseGeomPoly n) (morseGeomPoly n).SplittingField) a) := by
-  haveI : IsGalois GeomBase (morseGeomPoly n).SplittingField :=
+  have : IsGalois GeomBase (morseGeomPoly n).SplittingField :=
     IsGalois.of_separable_splitting_field (morseGeomPoly_separable n hn)
   rw [morseGeomPoly_stabilizer_eq_map_fixingSubgroup n hn a]
   -- `Gal.restrict` is a bijective group endomorphism, so `Subgroup.map` by it is an order
@@ -824,11 +823,11 @@ theorem morseGeomPoly_primitive (n : ℕ) (hn : 2 ≤ n) :
     ∀ B : Set ((morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField),
         MulAction.IsBlock (morseGeomPoly n).Gal B → MulAction.IsTrivialBlock B := by
   classical
-  haveI htrans : MulAction.IsPretransitive (morseGeomPoly n).Gal
+  have htrans : MulAction.IsPretransitive (morseGeomPoly n).Gal
       ((morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField) :=
     Gal.galAction_isPretransitive (morseGeomPoly n) (morseGeomPoly n).SplittingField
       (morseGeomPoly_irreducible n hn)
-  haveI hnt : Nontrivial ((morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField) := by
+  have hnt : Nontrivial ((morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField) := by
     rw [← Fintype.one_lt_card_iff_nontrivial, morseGeomPoly_card_rootSet n hn]
     omega
   obtain ⟨a⟩ := (inferInstance : Nonempty
