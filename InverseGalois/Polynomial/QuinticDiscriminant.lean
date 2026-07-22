@@ -76,7 +76,7 @@ private lemma f_poly_separable : f_poly.Separable := by
     intros r hr
     by_contra h_contra
     simp_all
-    grind +ring
+    grind
   apply isCoprime_of_dvd
   · exact not_and_of_not_left _ f_poly_ne_zero
   · intros z hz hz' hz'' hz'''
@@ -167,7 +167,7 @@ private lemma disc_value (v : Fin 5 ≃ (f_poly.rootSet f_poly.SplittingField)) 
         have h₄ := congr_arg (Polynomial.eval (-2)) h_factor
         have h₅ := congr_arg (Polynomial.eval 2) h_factor
         norm_num at h₁ h₂ h₃ h₄ h₅
-        grind +ring
+        grind
       -- By Vieta's formulas, the sum of the products of the roots taken two at a time is zero.
       have h_vieta_sum2 : ∑ i : Fin 5, (v i : f_poly.SplittingField) ^ 5 = -80 ∧
           ∑ i : Fin 5, (v i : f_poly.SplittingField) ^ 6 = 0 ∧

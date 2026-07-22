@@ -452,7 +452,7 @@ lemma block_card_le (f : ℝ → ℝ) (k : ℕ) (hk : 2 ≤ k)
     exact ⟨t, ht.2, fun x hx ↦ hs'.subset <| Finset.mem_coe.1 <| ht.1 hx⟩
   obtain ⟨p, hp_mono, hp_mem⟩ : ∃ p : Fin (k + 2) → ℤ, StrictMono p ∧ ∀ i, p i ∈ s := by
     refine ⟨fun i ↦ s.orderEmbOfFin hs.1 i, ?_, fun i ↦ ?_⟩
-    · aesop_cat
+    · first | rfl | aesop (config := {introsTransparency? := some .default})
     · aesop
   obtain ⟨Q, hQdeg, hQ⟩ : ∃ Q : Polynomial ℝ, Q.natDegree < k ∧ ∀ i, f ((p i : ℤ) : ℝ) = Q.eval ((p i : ℤ) : ℝ) := by
     apply block_common_poly f k hk hf a H ha hsmall p hp_mono (fun i ↦ ⟨hs.right (p i) (hp_mem i) |>.1,

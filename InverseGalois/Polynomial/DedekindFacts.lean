@@ -257,7 +257,7 @@ lemma factorizationType_eq_two_of_squarefree_card_roots
         use a
         simp_all
         refine ⟨?_, ?_⟩
-        · aesop_cat
+        · aesop
         · simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero
             (UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors hq) (by simp)
       · obtain ⟨a, ⟨hg, ha⟩, rfl⟩ := hq
@@ -277,7 +277,7 @@ lemma factorizationType_eq_two_of_squarefree_card_roots
       intro a t h
       have := hsq
       simp_all [Squarefree]
-      have := h ▸ UniqueFactorizationMonoid.prod_normalizedFactors (show g ≠ 0 by aesop_cat)
+      have := h ▸ UniqueFactorizationMonoid.prod_normalizedFactors (show g ≠ 0 by aesop)
       simp_all [Multiset.prod_cons]
       obtain ⟨u, hu⟩ := this.symm
       have := hsq a ?_
@@ -301,7 +301,7 @@ lemma factorizationType_eq_two_of_squarefree_card_roots
       simp_all
     rw [← h_sum_degrees_prod, ← Polynomial.natDegree_eq_of_degree_eq
       (Polynomial.degree_eq_degree_of_associated <|
-        UniqueFactorizationMonoid.prod_normalizedFactors <| show g ≠ 0 by aesop_cat)]
+        UniqueFactorizationMonoid.prod_normalizedFactors <| show g ≠ 0 by aesop)]
   have h_sum_degrees_ge_two :
       Multiset.sum (Multiset.filter (fun x ↦ x ≥ 2)
         (Multiset.map Polynomial.natDegree (normalizedFactors g))) = 2 := by

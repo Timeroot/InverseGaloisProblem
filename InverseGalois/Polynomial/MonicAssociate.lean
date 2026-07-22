@@ -130,10 +130,10 @@ lemma monicAssociate_irreducible (f : Polynomial (Polynomial ℚ))
         rw [Polynomial.natDegree_comp, Polynomial.natDegree_mul'] at this <;> norm_num at *
       · rw [Polynomial.eq_C_of_natDegree_eq_zero this] at h ⊢
         aesop
-      · aesop_cat
+      · aesop
       · rw [Polynomial.eq_C_of_natDegree_eq_zero this] at h ⊢
         aesop
-      · aesop_cat
+      · aesop
   exact (Polynomial.Monic.isPrimitive h_monic).irreducible_iff_irreducible_map_fraction_map.mpr
     h_irred_g
 

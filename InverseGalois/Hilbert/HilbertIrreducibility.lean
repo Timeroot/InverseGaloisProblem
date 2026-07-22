@@ -147,8 +147,8 @@ lemma irreducible_comp_C_mul_X {L : Type*} [Field L] (q : Polynomial L) {c : L} 
             le_antisymm hb' <| le_of_not_gt fun hb'' ↦ by aesop
     simp_all [Polynomial.isUnit_iff_degree_eq_zero]
     cases this rfl <;>
-      simp_all [Polynomial.degree_eq_natDegree (show a ≠ 0 from by aesop_cat),
-        Polynomial.degree_eq_natDegree (show b ≠ 0 from by aesop_cat)]
+      simp_all [Polynomial.degree_eq_natDegree (show a ≠ 0 from by aesop),
+        Polynomial.degree_eq_natDegree (show b ≠ 0 from by aesop)]
     all_goals
       rw [Polynomial.degree_eq_natDegree
         (ne_of_apply_ne Polynomial.natDegree
@@ -196,7 +196,7 @@ lemma monicAssociate_absIrr (f : Polynomial (Polynomial ℚ)) (hf_deg : 2 ≤ f.
     · simp +zetaDelta
       rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] <;> norm_num
       · rw [Polynomial.leadingCoeff_map_of_leadingCoeff_ne_zero] <;> aesop
-      · aesop_cat
+      · aesop
   have hM_comp : (M.map Ψ).comp (Polynomial.C (Ψ (fK.leadingCoeff)) * Polynomial.X) =
       Polynomial.C (Ψ (fK.leadingCoeff ^ (fK.natDegree - 1))) * (fK.map Ψ) := by
     convert congr_arg (Polynomial.map Ψ) hM_comp_base using 1 <;> norm_num [Polynomial.map_comp]
@@ -252,12 +252,12 @@ theorem hilbert_irreducibility_monic (f : Polynomial (Polynomial ℚ))
           rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] at this <;> norm_num at this ⊢
           · rw [this, Polynomial.natDegree_mul'] <;> aesop
           · aesop
-        · aesop_cat
+        · aesop
       · rw [Polynomial.Monic, Polynomial.leadingCoeff_mul, Polynomial.leadingCoeff_C, inv_mul_cancel₀]
         aesop
       · refine ⟨Polynomial.C a.leadingCoeff * b, ?_⟩
         ring_nf
-        rw [mul_assoc, ← Polynomial.C_mul, inv_mul_cancel₀ (by aesop_cat), Polynomial.C_1, mul_one]
+        rw [mul_assoc, ← Polynomial.C_mul, inv_mul_cancel₀ (by aesop), Polynomial.C_1, mul_one]
   · have h_union_sublinear : ∃ (C : ℝ) (α : ℝ), 0 < C ∧ 0 ≤ α ∧ α < 1 ∧ ∀ N : ℕ, 0 < N →
       (Set.ncard ((⋃ k ∈ Finset.Ico 1 f.natDegree, {t : ℤ | ∃ g : Polynomial ℚ,
           g.natDegree = k ∧ g.Monic ∧ g ∣ specialize f t}) ∩
@@ -478,6 +478,6 @@ lemma irreducible_iff_not_in_reducibleLocus (f : Polynomial (Polynomial ℚ))
             aesop
           · refine dvd_trans ?_ hg.1
             refine ⟨Polynomial.C g.leadingCoeff, ?_⟩
-            rw [mul_right_comm, ← Polynomial.C_mul, inv_mul_cancel₀ (by aesop_cat), Polynomial.C_1, one_mul]
+            rw [mul_right_comm, ← Polynomial.C_mul, inv_mul_cancel₀ (by aesop), Polynomial.C_1, one_mul]
 
 end

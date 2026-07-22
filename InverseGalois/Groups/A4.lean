@@ -98,10 +98,10 @@ private lemma a₄_irreducible : Irreducible a₄ := by
       norm_num at h₁ h₂ h₃ h₄ h₅
       refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> linarith
     use b / a, c / a, f' / d
-    grind +ring
+    grind
   obtain ⟨a, b, d, h₁, h₂, h₃⟩ := h_coeff
   have h₄ : a^6 - 48 * a^2 - 64 = 0 := by
-    grind +ring
+    grind
   -- Let `y = a^2`. Then we have the equation `y^3 - 48y - 64 = 0`.
   set y : ℚ := a^2
   have hy : y^3 - 48 * y - 64 = 0 := by
@@ -257,7 +257,7 @@ private lemma twelve_dvd_card_gal_a4 : 12 ∣ Nat.card a₄.Gal := by
       use (α + β)^2
       unfold a₄ at *
       norm_num at *
-      grind +ring
+      grind
     -- Since `y` is a root of the resolvent cubic, the minimal polynomial of `y` over `ℚ` has degree 3.
     have h_minpoly_y : (minpoly ℚ y).degree = 3 := by
       have h_minpoly_eq : minpoly ℚ y = Polynomial.X ^ 3 - 48 * Polynomial.X - 64 := by
@@ -303,7 +303,7 @@ private lemma resolvent_other_root_identity
     {R : Type*} [Field R] [CharZero R]
     (y : R) (hy : y ^ 3 - 48 * y - 64 = 0) :
     ((32 - y ^ 2) / 4) ^ 3 - 48 * ((32 - y ^ 2) / 4) - 64 = 0 := by
-      grind +ring
+      grind
 
 /-
 Helper: the other root (32 - y²)/4 is distinct from y.
@@ -463,7 +463,7 @@ private lemma card_gal_ne_24 : Nat.card a₄.Gal ≠ 24 := by
     have h_minpoly : minpoly ℚ ((α + β) ^ 2) = X ^ 3 - C 48 * X - C 64 := by
       refine Eq.symm (minpoly.eq_of_irreducible_of_monic resolvent_a4_irreducible ?_ ?_)
       · simp_all [a₄]
-        grind +ring
+        grind
       · erw [Polynomial.Monic, Polynomial.leadingCoeff, Polynomial.natDegree_sub_C,
           Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num
     have := minpoly.aeval ℚ ((α + β) ^ 2)
@@ -494,7 +494,7 @@ private lemma card_gal_ne_24 : Nat.card a₄.Gal ≠ 24 := by
           · exact a₄_irreducible.separable
           · apply ne_of_apply_ne (Polynomial.eval 0)
             norm_num [a₄]
-        exact ⟨{ Equiv.permCongr h_equiv.some with map_mul' := by aesop_cat }⟩
+        exact ⟨{ Equiv.permCongr h_equiv.some with map_mul' := by aesop }⟩
       exact ⟨e.toMonoidHom.comp f₀, e.injective.comp hf₀⟩
     -- Since the Galois group has order 24 and S₄ also has order 24, the injective homomorphism must be an isomorphism.
     obtain ⟨f, hf_inj⟩ := h_iso_subgroup
@@ -524,7 +524,7 @@ private lemma card_gal_ne_24 : Nat.card a₄.Gal ≠ 24 := by
       · apply ne_of_apply_ne (Polynomial.eval 0)
         norm_num [a₄]
     obtain ⟨g⟩ := h_iso_perm
-    exact ⟨g.trans { Equiv.permCongr (Fintype.equivOfCardEq h_card_rootSet) with map_mul' := by aesop_cat }⟩
+    exact ⟨g.trans { Equiv.permCongr (Fintype.equivOfCardEq h_card_rootSet) with map_mul' := by aesop }⟩
   -- Therefore, there exists a surjective homomorphism from Perm(Fin 4) to Gal(ℚ(y)/ℚ).
   obtain ⟨f, hf⟩ :
       ∃ f : Equiv.Perm (Fin 4) →* (↥(IntermediateField.adjoin ℚ ({y} : Set a₄.SplittingField)) ≃ₐ[ℚ]

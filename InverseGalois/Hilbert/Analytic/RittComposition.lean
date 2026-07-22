@@ -319,14 +319,14 @@ theorem denom_natDegree_eq_zero_of_poly_mem
     · rw [Polynomial.natDegree_mul'] at h_poly_eq <;> simp_all [Polynomial.natDegree_pow]
       · rw [natDegree_homog, natDegree_homog] at h_poly_eq <;> try assumption
         · nlinarith
-        · aesop_cat
-        · aesop_cat
+        · aesop
+        · aesop
       · refine RatFunc.homog_ne_zero A p q hA ?_ hdeg
         aesop
-    · aesop_cat
+    · aesop
     · refine ⟨?_, RatFunc.homog_ne_zero _ _ _ hB ?_ hdeg⟩
-      · aesop_cat
-      · aesop_cat
+      · aesop
+      · aesop
   -- From `q ^ A.natDegree ∣ homog A p q * q ^ B.natDegree`, we get `q ^ A.natDegree ∣ q ^ B.natDegree`.
   have h_div : q ^ A.natDegree ∣ q ^ B.natDegree := by
     refine IsCoprime.dvd_of_dvd_mul_left ?_

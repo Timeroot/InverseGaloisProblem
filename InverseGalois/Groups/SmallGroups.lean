@@ -98,8 +98,8 @@ private lemma p₂_irreducible : Irreducible p₂ := by
     by_cases ha : a.degree = 0 <;> by_cases hb : b.degree = 0 <;> simp_all [isUnit_iff_degree_eq_zero]
     -- Since `a` and `b` are non-constant polynomials with degrees adding up to 2, they must both be linear.
     have h_linear : a.degree = 1 ∧ b.degree = 1 := by
-      have ha0 : a ≠ 0 := by aesop_cat
-      have hb0 : b ≠ 0 := by aesop_cat
+      have ha0 : a ≠ 0 := by aesop
+      have hb0 : b ≠ 0 := by aesop
       rw [degree_eq_natDegree ha0, degree_eq_natDegree hb0] at *
       norm_cast at ha hb h_deg ⊢
       omega

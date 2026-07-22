@@ -126,11 +126,11 @@ lemma pentagonalSum_sq_F20_inv {L : Type*} [CommRing L] (v : Fin 5 → L)
   fin_cases a <;> simp at ha hb ⊢
   · fin_cases b <;> simp [hb, pentagonalSum] <;> ring
   · fin_cases b <;> simp [hb, pentagonalSum] at he2 ⊢ <;> unfold elemSymm2 at he2
-    · grind +ring
+    · grind
     · grobner
-    · grind +ring
+    · grind
     · simp_all [Fin.forall_fin_succ]
-      grind +ring
+      grind
     · grind
   · -- For σ ∈ F₂₀ with a ∈ {2,3}: Ψ(v∘σ) + Ψ(v) = e₂(v) (free polynomial identity)
     have h_case3 : pentagonalSum (v ∘ σ) + pentagonalSum v = elemSymm2 v := by
@@ -237,7 +237,7 @@ lemma map_eq_prod_linear {K : Type*} [Field K]
     simp [Polynomial.degree_prod]
   have h_deg_q : q.degree = 0 := by
     rw [hq, Polynomial.degree_mul, h_deg_prod] at h_deg
-    rw [Polynomial.degree_eq_natDegree] at * <;> norm_cast at * <;> aesop_cat
+    rw [Polynomial.degree_eq_natDegree] at * <;> norm_cast at * <;> aesop
   have h_q_const : ∃ c : f.SplittingField, q = Polynomial.C c := by
     exact ⟨q.coeff 0, Polynomial.eq_C_of_degree_eq_zero h_deg_q⟩
   obtain ⟨c, hc⟩ := h_q_const

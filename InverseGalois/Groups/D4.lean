@@ -287,7 +287,7 @@ private lemma eight_dvd_card_gal : 8 ∣ Nat.card d₄.Gal := by
             rw [Polynomial.eq_C_of_degree_le_zero h] at h₁ ⊢
             replace h₁ := congr_arg (fun p ↦ Polynomial.coeff p 2) h₁
             simp_all [Polynomial.coeff_eq_zero_of_natDegree_lt]
-            aesop_cat
+            aesop
       · simp_all [Polynomial.aeval_def]
       · rw [Polynomial.Monic, Polynomial.leadingCoeff_X_pow_add_C]
         norm_num

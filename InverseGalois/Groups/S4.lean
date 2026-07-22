@@ -440,7 +440,7 @@ private lemma three_dvd_card_gal : 3 ∣ Nat.card q₄.Gal := by
               have h_deg_f : f.degree = 1 ∨ g.degree = 1 := by
                 have := congr_arg Polynomial.degree hp_eq
                 norm_num [hp_deg] at this
-                rw [Polynomial.degree_eq_natDegree (by aesop_cat), Polynomial.degree_eq_natDegree (by aesop_cat)] at *
+                rw [Polynomial.degree_eq_natDegree (by aesop), Polynomial.degree_eq_natDegree (by aesop)] at *
                 norm_cast at *
                 omega
               rcases h_deg_f with (h | h) <;>

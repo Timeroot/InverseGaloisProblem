@@ -169,7 +169,7 @@ lemma tschirnhaus_factor_dvd (f g : Polynomial ℚ) (D : ℚ) (_hD : D ≠ 0)
     (f.comp (Polynomial.C D⁻¹ * Polynomial.X) * Polynomial.C (D ^ f.natDegree)) := by
   obtain ⟨q, rfl⟩ := hg_dvd
   have h_deg : natDegree (g * q) = natDegree g + natDegree q :=
-    natDegree_mul (by aesop_cat) (by aesop_cat)
+    natDegree_mul (by aesop) (by aesop)
   simp_all
   use q.comp (C D⁻¹ * X) * C D ^ q.natDegree
   ring

@@ -40,7 +40,7 @@ lemma gram_det_value_d5 (r : Fin 5 → K) [Field K]
       simp [Fin.sum_univ_succ, Fin.succAbove]
       simp_all [Fin.sum_univ_five]
       simp_all [← eq_sub_iff_add_eq']
-      grind +ring
+      grind
 
 /-!
 ## Discriminant of X⁵ - 5X + 12 is 8000²
@@ -148,7 +148,6 @@ lemma disc_value_d5 (v : Fin 5 ≃ (f_d5.rootSet f_d5.SplittingField)) :
       have h_factor : (Polynomial.map (algebraMap ℚ (f_d5.SplittingField)) f_d5) =
           Finset.prod Finset.univ fun i ↦ Polynomial.X - Polynomial.C (v i : f_d5.SplittingField) := by
         convert Polynomial.Splits.eq_prod_roots _
-        any_goals try infer_instance
         · rw [show (Polynomial.map (algebraMap ℚ f_d5.SplittingField) f_d5).roots =
                 Multiset.map (fun x : f_d5.rootSet f_d5.SplittingField ↦ (x : f_d5.SplittingField))
                   (Multiset.map (fun x : Fin 5 ↦ (v x : f_d5.rootSet f_d5.SplittingField))
@@ -183,7 +182,7 @@ lemma disc_value_d5 (v : Fin 5 ≃ (f_d5.rootSet f_d5.SplittingField)) :
         have h₄ := congr_arg (Polynomial.eval (-2)) h_factor
         have h₅ := congr_arg (Polynomial.eval 2) h_factor
         norm_num at h₁ h₂ h₃ h₄ h₅
-        grind +ring
+        grind
       have h_power_sums_5 : ∑ i : Fin 5, (v i : f_d5.SplittingField) ^ 5 = -60 := by
         have h_pow5_each : ∀ i : Fin 5, (v i : f_d5.SplittingField) ^ 5 = 5 * (v i : f_d5.SplittingField) - 12 := by
           intro i
@@ -210,7 +209,7 @@ lemma disc_value_d5 (v : Fin 5 ≃ (f_d5.rootSet f_d5.SplittingField)) :
         simp_all [← Finset.mul_sum]
       have h_power_sums_8 : ∑ i : Fin 5, (v i : f_d5.SplittingField) ^ 8 = 100 := by
         simp_all [Fin.sum_univ_five, pow_succ']
-        grind +ring
+        grind
       convert gram_det_value_d5 (fun i ↦ (v i : f_d5.SplittingField)) _ _ _ _ _ _ _ _ using 1 <;>
         norm_num [h_power_sums, h_power_sums_5, h_power_sums_6, h_power_sums_7, h_power_sums_8]
       · rw [← vandermonde_det_sq, Matrix.det_vandermonde]

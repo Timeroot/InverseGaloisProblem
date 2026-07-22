@@ -333,13 +333,13 @@ lemma rootProj_isLocalHomeomorphOn
       obtain ⟨p, hp₁, hp₂⟩ := h
       obtain ⟨E, hE₁, hE₂⟩ := mem_nhdsWithin.mp hu
       refine ⟨E, hE₁, hE₂.1, hp₁.continuousOn.mono ?_⟩
-      aesop_cat
+      aesop
     obtain ⟨D, hD⟩ : ∃ D : Set ℂ, IsOpen D ∧ z₀ ∈ D ∧ ∀ z ∈ D, ψ z ∈ B :=
       Exists.imp (by tauto) (mem_nhds_iff.mp (hψcont0 (hB.mem_nhds (by aesop))))
     use A ∩ C ∩ D ∩ E ∩ U, B
     simp_all [Set.subset_def]
     exact ⟨IsOpen.inter (IsOpen.inter (IsOpen.inter (IsOpen.inter hA hC.1) hD.1) hE.1) hUopen,
-      hE.2.2.mono (by aesop_cat),
+      hE.2.2.mono (by aesop (config := {introsTransparency? := some .default})),
       fun z hz₁ hz₂ hz₃ hz₄ hz₅ w hw₁ hw₂ ↦ hAB.2.2 z hz₁ w hw₁ hw₂ ▸ rfl⟩
   obtain ⟨hVzU, hψcontVz, hψrootVz, hψVwVz, huniqVz⟩ := hbox
   refine ⟨{q : rootVariety P | (q : ℂ × ℂ) ∈ Vz ×ˢ Vw}, ?_,

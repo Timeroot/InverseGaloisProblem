@@ -154,7 +154,7 @@ theorem subgroup_eq_top_of_swap_and_cycle {α : Type*} [DecidableEq α] [Fintype
     · by_cases hy : y = c
       · simpa [hy, Equiv.swap_comm] using h_star x hx
       · convert G.mul_mem (G.mul_mem (h_star x hx) (h_star y hy)) (h_star x hx) using 1
-        all_goals aesop
+        aesop
   refine eq_top_iff.mpr fun g _ ↦ ?_
   induction' g using Equiv.Perm.swap_induction_on' with x y hxy ih hmem
   · exact G.one_mem

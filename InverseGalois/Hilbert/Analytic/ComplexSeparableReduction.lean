@@ -75,7 +75,8 @@ lemma squarefree_map_frac_int {s : Polynomial (Polynomial ℤ)}
   set xm := x * Polynomial.C (Polynomial.leadingCoeff x)⁻¹ with hxm_def
   have hxm_monic : xm.Monic := by
     by_cases hx0 : x = 0 <;> simp_all [Polynomial.Monic]
-    rw [Polynomial.map_eq_zero_iff] at hx <;> aesop_cat
+    rw [Polynomial.map_eq_zero_iff] at hx <;>
+      aesop (config := {introsTransparency? := some .default})
   have hxm_assoc : Associated x xm := by
     by_cases hx : x = 0 <;> simp_all [Polynomial.Monic.def]
     refine associated_of_dvd_dvd ?_ ?_ <;> norm_num [hx]

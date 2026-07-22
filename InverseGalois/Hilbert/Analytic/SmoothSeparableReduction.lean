@@ -100,7 +100,8 @@ lemma squarefree_map_frac {s : Polynomial (Polynomial ℝ)}
   set xm := x * Polynomial.C (Polynomial.leadingCoeff x)⁻¹ with hxm_def
   have hxm_monic : xm.Monic := by
     by_cases hx0 : x = 0 <;> simp_all [Polynomial.Monic]
-    rw [Polynomial.map_eq_zero_iff] at hx <;> aesop_cat
+    rw [Polynomial.map_eq_zero_iff] at hx <;>
+      aesop (config := {introsTransparency? := some .default})
   have hxm_assoc : Associated x xm := by
     by_cases hx : x = 0 <;> simp_all [Polynomial.Monic.def]
     refine associated_of_dvd_dvd ?_ ?_ <;> norm_num [hx]
@@ -238,7 +239,7 @@ theorem exists_smooth_separable_reduction_real
         (∃ A B : Polynomial (Polynomial ℝ), ∃ w0 : Polynomial ℝ,
           w0 ≠ 0 ∧ A * s + B * Polynomial.derivative s = C w0) :=
     ⟨radical F, radical_monic hFmon, radical_dvd_self,
-      squarefree_radical, dvd_radical_pow (by aesop_cat),
+      squarefree_radical, dvd_radical_pow (by aesop),
       exists_bezout_of_squarefree squarefree_radical (radical_monic hFmon)⟩
   use s.natDegree, fun x ↦ s.map (evalRingHom x)
   obtain ⟨T₀, hT₀⟩ : ∃ T₀ : ℝ, 1 ≤ T₀ ∧ ∀ x ≥ T₀, w0.eval x ≠ 0 := by

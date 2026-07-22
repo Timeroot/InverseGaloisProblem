@@ -162,7 +162,7 @@ theorem gal_le_alternating_of_disc_sq
       exact eq_or_eq_neg_of_sq_eq_sq _ _ hd
   cases' Int.units_eq_one_or (Equiv.Perm.sign π) with h h <;> simp_all
   · exact ⟨π, fun i => rfl, h⟩
-  · grind +ring
+  · grind
 
 /-- Under the hypotheses of `gal_le_alternating_of_disc_sq`, the Galois group
 embeds (injectively) into the alternating group `Aₙ`. -/

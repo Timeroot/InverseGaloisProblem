@@ -568,7 +568,7 @@ instance : Module.Finite (Smid n) (Bring n) := by
   exact h_finite.of_restrictScalars_finite Abase (Smid n) (Bring n)
 
 instance : Algebra.IsIntegral (Smid n) (Bring n) := by
-  all_goals infer_instance
+  infer_instance
 
 omit hn2 in
 lemma algebraMap_Abase_Bring_injective : Function.Injective (algebraMap Abase (Bring n)) := by

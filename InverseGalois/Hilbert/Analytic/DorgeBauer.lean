@@ -292,8 +292,8 @@ lemma int_roots_bounded {p : Polynomial ℤ} (hp : p ≠ 0) :
   · refine Set.Finite.subset
       (p.map (Int.castRingHom ℚ) |> Polynomial.roots |> Multiset.toFinset |> Finset.finite_toSet) ?_
     norm_num [Set.subset_def]
-    exact fun a ha ↦ ⟨by rw [Polynomial.map_eq_zero_iff] <;> aesop_cat, ha⟩
-  · aesop_cat
+    exact fun a ha ↦ ⟨by rw [Polynomial.map_eq_zero_iff] <;> aesop (config := {introsTransparency? := some .default}), ha⟩
+  · aesop
 
 /-
 For a fixed monic polynomial `g ∈ ℤ[X]` of degree `k` and a polynomial
@@ -519,7 +519,7 @@ lemma specialization_at_int_nonzero
     · rw [Polynomial.natDegree_mul'] <;> norm_num [Polynomial.natDegree_sub_eq_left_of_natDegree_lt]
       · rw [Polynomial.natDegree_eq_zero_iff_degree_le_zero.mpr (le_of_eq this)]
         norm_num
-      · exact ⟨Polynomial.X_sub_C_ne_zero _, by aesop_cat⟩
+      · exact ⟨Polynomial.X_sub_C_ne_zero _, by aesop⟩
     · refine absurd this ?_
       erw [Polynomial.degree_X_sub_C]
       norm_num

@@ -561,7 +561,7 @@ lemma extend_to_Ici_one (f : ℝ → ℝ) (k : ℕ) (_hk : 2 ≤ k) (T₀ : ℝ)
             exact tendsto_nhds_unique hdn_tendsto
               (Filter.Tendsto.congr'
                 (Filter.eventuallyEq_of_mem self_mem_nhdsWithin fun x hx ↦ by aesop) tendsto_const_nhds)
-          grind +ring
+          grind
         · rw [iteratedDerivWithin_eq_iteratedDeriv]
           · have hdn_gt : ∀ x, c < x → iteratedDeriv (k + 1) g x = iteratedDeriv (k + 1) f x := by
               intro x hx
@@ -752,7 +752,7 @@ lemma realPoly_ratl_of_infinite_int_values (q : Polynomial ℝ)
     have := hinf.exists_subset_card_eq (d + 1)
     obtain ⟨t, ht₁, ht₂⟩ := this
     refine ⟨fun i ↦ t.orderEmbOfFin (by aesop) i, ?_, fun i ↦ ht₁ <| by aesop⟩
-    aesop_cat
+    aesop (config := {introsTransparency? := some .default})
   choose z hz using ht_mem
   -- By Lagrange interpolation, there is a unique polynomial `q'` of degree at most `d` with `q'(t i) = z i` for all `i`.
   obtain ⟨q', hq'⟩ : ∃ q' : Polynomial ℚ, q'.degree ≤ d ∧ ∀ i, q'.eval (t i : ℚ) = z i := by

@@ -821,7 +821,7 @@ theorem genForm_perm_injective {n : ℕ} {M : Type*} [CommRing M] [IsDomain M] [
       have h_sigma_eq_tau' : σ = τ := by
         simpa using congr_arg Equiv.symm h_sigma_eq_tau
       contradiction
-    · grind +ring
+    · grind
   obtain ⟨f, hf⟩ := hswap a b hab.left
   have h_eq : ∑ j : Fin n, ((σ.symm j : ℤ) - (τ.symm j : ℤ)) * (x j - f (x j)) = 0 := by
     have h_eq_x : ∑ j : Fin n, ((σ.symm j : ℤ) - (τ.symm j : ℤ)) * x j = 0 := by

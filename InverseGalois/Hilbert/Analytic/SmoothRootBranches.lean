@@ -549,7 +549,8 @@ theorem smooth_separable_family_root_branches
               Finset.card (Finset.image (fun i : Fin n ↦ φ (Fin.cast hm_eq_n.symm i) x₀) Finset.univ) = n := by
             rw [Finset.card_image_of_injective _ fun i j hij ↦ not_imp_not.mp (h_distinct i j) hij,
               Finset.card_fin]
-          exact ⟨fun i ↦ Finset.orderEmbOfFin _ (by aesop) i, by aesop_cat,
+          exact ⟨fun i ↦ Finset.orderEmbOfFin _ (by aesop) i,
+            by aesop (config := {introsTransparency? := some .default}),
             fun i ↦ Finset.orderEmbOfFin_mem _ (by aesop) _⟩
         obtain ⟨σ, hσ₁, hσ₂⟩ := h_sorted
         choose f hf using fun i ↦ Finset.mem_image.mp (hσ₂ i)
