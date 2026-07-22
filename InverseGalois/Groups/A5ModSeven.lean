@@ -52,7 +52,6 @@ theorem cubic_mod7_irreducible :
             + Polynomial.C 5) → False := by
         intros p q hp hq h_eq
         have h_deg : p.degree + q.degree = 3 := by
-          have := Fact.mk (by decide : Nat.Prime 7)
           rw [← Polynomial.degree_mul, h_eq, Polynomial.degree_add_C]
             <;> rw [Polynomial.degree_add_eq_left_of_degree_lt]
             <;> rw [Polynomial.degree_add_eq_left_of_degree_lt]
@@ -66,17 +65,17 @@ theorem cubic_mod7_irreducible :
         obtain h | h := h_deg_one
           <;> obtain ⟨x, hx⟩ := Polynomial.exists_root_of_degree_eq_one h
           <;> replace h_eq := congr_arg (Polynomial.eval x) h_eq
-          <;> simp_all +decide
+          <;> simp_all
         all_goals fin_cases x <;> contradiction
       constructor
-      · have := Fact.mk (by decide : Nat.Prime 7)
-        exact fun h ↦ absurd (Polynomial.degree_eq_zero_of_isUnit h)
-          (by rw [Polynomial.degree_add_C]
-              <;> repeat (first | rw [Polynomial.degree_add_eq_left_of_degree_lt] | simp +decide))
+      · intro h
+        apply absurd (Polynomial.degree_eq_zero_of_isUnit h)
+        rw [Polynomial.degree_add_C] <;>
+          repeat (first | rw [Polynomial.degree_add_eq_left_of_degree_lt] | simp +decide)
       · contrapose! h_irred
         obtain ⟨a, b, h₁, h₂, h₃⟩ := h_irred
         use a, b
-        simp_all +decide [Polynomial.isUnit_iff_degree_eq_zero]
+        simp_all [Polynomial.isUnit_iff_degree_eq_zero]
         apply_fun Polynomial.eval 0 at h₁
         refine ⟨lt_of_le_of_ne (le_of_not_gt fun h ↦ ?_) (Ne.symm h₂),
           lt_of_le_of_ne (le_of_not_gt fun h ↦ ?_) (Ne.symm h₃)⟩ <;>
@@ -106,14 +105,16 @@ theorem f_a5_mod7_squarefree :
               aesop
             grind
           apply isCoprime_of_dvd
-          · exact not_and_of_not_left _ <| ne_of_apply_ne (Polynomial.eval 0) <| by simp +decide
+          · apply not_and_of_not_left
+            apply ne_of_apply_ne (Polynomial.eval 0)
+            simp +decide
           · intro z hz hz' hz'' hz'''
             contrapose! h_coprime
-            simp_all +decide
+            simp_all
             have hdeg : (Polynomial.map (algebraMap (ZMod 7) (AlgebraicClosure (ZMod 7))) z).degree ≠ 0 := by
               rw [Polynomial.degree_map]
               intro H
-              simp_all +decide [Polynomial.isUnit_iff_degree_eq_zero]
+              simp_all [Polynomial.isUnit_iff_degree_eq_zero]
             obtain ⟨x, hx⟩ := @IsAlgClosed.exists_root (AlgebraicClosure (ZMod 7)) _ _
               (Polynomial.map (algebraMap (ZMod 7) (AlgebraicClosure (ZMod 7))) z) hdeg
             obtain ⟨y, hy⟩ := hz''
@@ -129,17 +130,20 @@ theorem f_a5_mod7_squarefree :
         have h_div : x ∣ (Polynomial.X ^ 5 + Polynomial.C 20 * Polynomial.X + Polynomial.C 16 : Polynomial (ZMod 7)) ∧
             x ∣ Polynomial.derivative
               (Polynomial.X ^ 5 + Polynomial.C 20 * Polynomial.X + Polynomial.C 16 : Polynomial (ZMod 7)) := by
-          have h_div : x ^ 2 ∣
+          have h_dvd_sq : x ^ 2 ∣
               (Polynomial.X ^ 5 + Polynomial.C 20 * Polynomial.X + Polynomial.C 16 : Polynomial (ZMod 7)) := by
             convert hx using 1
             · ring
             · norm_num [Polynomial.ext_iff]
               intro n
               erw [Polynomial.coeff_C]
-          obtain ⟨y, hy⟩ := h_div
-          simp_all +decide [sq, mul_assoc]
-          exact ⟨derivative x * y + derivative x * y + x * derivative y, by ring⟩
-        exact isUnit_of_dvd_one (h ▸ dvd_add (dvd_mul_of_dvd_right h_div.1 _) (dvd_mul_of_dvd_right h_div.2 _))
+          obtain ⟨y, hy⟩ := h_dvd_sq
+          simp_all [sq, mul_assoc]
+          refine ⟨derivative x * y + derivative x * y + x * derivative y, ?_⟩
+          ring
+        apply isUnit_of_dvd_one
+        rw [← h]
+        exact dvd_add (dvd_mul_of_dvd_right h_div.1 _) (dvd_mul_of_dvd_right h_div.2 _)
 
 /-
 The factorizationType of the mod-7 reduction contains 3.
@@ -176,9 +180,9 @@ theorem f_a5_mod7_factorizationType :
               · exact Polynomial.X_add_C_ne_zero _
             · exact Polynomial.X_add_C_ne_zero _
           · exact cubic_mod7_irreducible
-          · exact Polynomial.irreducible_of_degree_eq_one (by erw [Polynomial.degree_add_C] <;> norm_num)
-          · have := Fact.mk (by decide : Nat.Prime 7)
-            exact Polynomial.irreducible_of_degree_eq_one (Polynomial.degree_X_add_C _)
+          · apply Polynomial.irreducible_of_degree_eq_one
+            erw [Polynomial.degree_add_C] <;> norm_num
+          · exact Polynomial.irreducible_of_degree_eq_one (Polynomial.degree_X_add_C _)
         · exact Polynomial.X_add_C_ne_zero _
         · exact Polynomial.X_add_C_ne_zero _
         · exact ne_of_apply_ne (Polynomial.eval 0) (by simp +decide)

@@ -55,8 +55,9 @@ theorem galActionHom_bijective_of_card_eq_factorial (f : ℚ[X]) (hf_irr : Irred
     (hf_card : Nat.card f.Gal = f.natDegree.factorial) :
     Function.Bijective
       (@Polynomial.Gal.galActionHom _ _ f ℂ _ _ ⟨IsAlgClosed.splits _⟩) := by
+  have : Fact (Polynomial.map (algebraMap ℚ ℂ) f).Splits := ⟨IsAlgClosed.splits _⟩
   constructor
-  · convert Polynomial.Gal.galActionHom_injective f ℂ
+  · exact Polynomial.Gal.galActionHom_injective f ℂ
   · have h_card : Nat.card (Equiv.Perm (f.rootSet ℂ)) = Nat.factorial f.natDegree := by
       simp only [Nat.card_eq_fintype_card, Fintype.card_perm]
       rw [Polynomial.card_rootSet_eq_natDegree]
@@ -68,9 +69,10 @@ theorem galActionHom_bijective_of_card_eq_factorial (f : ℚ[X]) (hf_irr : Irred
       intros α β hα hβ h_card f hf_inj
       have := Fintype.ofFinite α
       have := Fintype.ofFinite β
-      exact ((Fintype.bijective_iff_injective_and_card f).mpr
-        ⟨hf_inj, by simpa [Nat.card_eq_fintype_card] using h_card⟩).2
-    grind only [Gal.galActionHom_injective, #fd6b]
+      have hcard' : Fintype.card α = Fintype.card β := by
+        simpa [Nat.card_eq_fintype_card] using h_card
+      exact ((Fintype.bijective_iff_injective_and_card f).mpr ⟨hf_inj, hcard'⟩).2
+    exact h_card_eq (hf_card.trans h_card.symm) (Gal.galActionHom_injective f ℂ)
 
 end IsInverseGalois
 
@@ -101,17 +103,18 @@ theorem subgroup_eq_top_of_swap_and_cycle {α : Type*} [DecidableEq α] [Fintype
   obtain ⟨τ, hτG, hτ_swap⟩ := h_swap
   obtain ⟨c, hc⟩ : ∃ c, c ∉ σ.support ∧ ∀ x, x ≠ c → x ∈ σ.support := by
     obtain ⟨c, hc⟩ : ∃ c, c ∉ σ.support := by
-      exact not_forall.mp fun h ↦ by
-        have := Finset.eq_univ_of_forall h
-        aesop
-    have := Finset.eq_of_subset_of_card_le
-      (show σ.support ⊆ Finset.univ \ {c} from fun x hx ↦
-        Finset.mem_sdiff.mpr ⟨Finset.mem_univ _, fun hx' ↦ by aesop⟩)
+      apply not_forall.mp
+      intro h
+      have := Finset.eq_univ_of_forall h
+      aesop
+    have hsub : σ.support ⊆ Finset.univ \ {c} := fun x hx ↦
+      Finset.mem_sdiff.mpr ⟨Finset.mem_univ _, fun hx' ↦ by aesop⟩
+    have := Finset.eq_of_subset_of_card_le hsub
     simp_all [Finset.card_sdiff]
   obtain ⟨d, hd⟩ : ∃ d, d ≠ c ∧ (Equiv.swap c d) ∈ G := by
     obtain ⟨a, b, hab, hτ_ab⟩ := hτ_swap
     obtain ⟨g, hgG, hg⟩ := h_trans a c
-    refine ⟨g b, ?_, ?_⟩ <;> simp_all
+    refine ⟨g b, ?_, ?_⟩
     · intro h
       have := g.injective (hg.trans h.symm)
       aesop
@@ -121,6 +124,9 @@ theorem subgroup_eq_top_of_swap_and_cycle {α : Type*} [DecidableEq α] [Fintype
       aesop
   have h_star : ∀ x, x ≠ c → (Equiv.swap c x) ∈ G := by
     intro x hx
+    have hσc : ∀ k : ℕ, (σ ^ k) c = c :=
+      fun k ↦ Equiv.Perm.pow_apply_eq_self_of_apply_eq_self
+        (Equiv.Perm.notMem_support.mp hc.1) k
     have h_conj : ∀ k : ℕ, (Equiv.swap c (σ^[k] d)) ∈ G := by
       intro k
       have : (σ ^ k * Equiv.swap c d * (σ ^ k)⁻¹) ∈ G :=
@@ -129,18 +135,11 @@ theorem subgroup_eq_top_of_swap_and_cycle {α : Type*} [DecidableEq α] [Fintype
       simp [Equiv.Perm.ext_iff, Equiv.swap_apply_def]
       intro x
       split_ifs <;> simp_all [Equiv.symm_apply_eq]
-      · exact False.elim (‹¬c = (σ ^ k) c› (by
-          rw [show (σ ^ k) c = c from by
-            exact Nat.recOn k (by simp) fun n ihn ↦ by simp [*, pow_succ']]))
-      · exact Eq.symm (by
-          exact Nat.recOn k (by simp) fun n ihn ↦ by simp [*, pow_succ'])
-      · exact ‹¬(σ ^ k) c = c›
-          (by rw [Equiv.Perm.pow_apply_eq_self_of_apply_eq_self hc.1])
     have h_orbit : ∀ x ∈ σ.support, ∃ k : ℕ, σ^[k] d = x := by
       intro x hx
-      simp_all [Equiv.Perm.IsCycle]
+      rw [Equiv.Perm.mem_support] at hx
       obtain ⟨k, hk⟩ := hσ_cycle.1.choose_spec.2 hx
-      obtain ⟨m, hm⟩ := hσ_cycle.1.choose_spec.2 (show ¬σ d = d from by aesop)
+      obtain ⟨m, hm⟩ := hσ_cycle.1.choose_spec.2 (Equiv.Perm.mem_support.mp (hc.2 d hd.1))
       use Int.toNat ((k - m) % (orderOf σ))
       simp [← hk, ← hm, ← zpow_natCast,
         Int.toNat_of_nonneg (Int.emod_nonneg _
@@ -157,9 +156,9 @@ theorem subgroup_eq_top_of_swap_and_cycle {α : Type*} [DecidableEq α] [Fintype
       · convert G.mul_mem (G.mul_mem (h_star x hx) (h_star y hy)) (h_star x hx) using 1
         all_goals aesop
   refine eq_top_iff.mpr fun g _ ↦ ?_
-  induction' g using Equiv.Perm.swap_induction_on' with x y hxy ih
+  induction' g using Equiv.Perm.swap_induction_on' with x y hxy ih hmem
   · exact G.one_mem
-  · exact G.mul_mem (by solve_by_elim) (h_all _ _ ih)
+  · exact G.mul_mem (hmem (Subgroup.mem_top x)) (h_all _ _ ih)
 
 end Equiv.Perm
 
@@ -205,7 +204,7 @@ theorem gal_xnSubXSubOne_card_two :
       · exact Set.Finite.fintype (Set.toFinite _)
       · exact ⟨IsAlgClosed.splits _⟩
     · rw [Fintype.card_ofFinset]
-      · rw [show (xnSubXSubOne 2 : ℚ[X]) = X ^ 2 - X - 1 by rfl, Polynomial.aroots_def]
+      · rw [show (xnSubXSubOne 2 : ℚ[X]) = X ^ 2 - X - 1 from rfl, Polynomial.aroots_def]
         norm_num
         have hfac : (X ^ 2 - X - 1 : Polynomial ℂ) =
             (X - Polynomial.C ((1 + Real.sqrt 5) / 2 : ℂ)) *
@@ -221,7 +220,8 @@ theorem gal_xnSubXSubOne_card_two :
           Polynomial.roots_X_sub_C, Polynomial.roots_X_sub_C]
         norm_num
         rw [Finset.card_insert_of_notMem, Finset.card_singleton] <;> norm_num [Complex.ext_iff]
-        nlinarith [Real.sq_sqrt (show 0 ≤ 5 by norm_num)]
+        have := Real.sq_sqrt (show (0 : ℝ) ≤ 5 by norm_num)
+        nlinarith
       · simp [Polynomial.rootSet_def]
   have h_galois_order : 2 ∣ Nat.card (xnSubXSubOne 2).Gal := by
     convert Polynomial.Gal.prime_degree_dvd_card (selmer_irreducible 2 (by decide)) _

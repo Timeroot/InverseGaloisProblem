@@ -133,12 +133,16 @@ lemma real_root_branch_puiseux_remainder_bound
   have h_cont_diff : ContDiffOn ℝ ⊤ (fun y ↦ g y - poly.eval y - ∑ σ ∈ I, a σ * y ^ σ)
       (Set.Ioo (x - x / 2) (x + x / 2)) := by
     refine ContDiffOn.sub (ContDiffOn.sub (hg.mono ?_) ?_) ?_
-    · exact fun y hy ↦ show (T₀ : ℝ) ≤ y by
-        linarith [hy.1, hy.2, show (T₀ : ℝ) ≤ T / 2 by linarith]
-    · exact ContDiff.contDiffOn (by
-        simpa only [Polynomial.eval_eq_sum_range] using
-          ContDiff.sum fun i hi ↦ ContDiff.mul contDiff_const (contDiff_id.pow i))
-    · refine' ContDiffOn.sum fun σ hσ ↦ ContDiffOn.mul _ _
+    · intro y hy
+      have hT2' : (T₀ : ℝ) ≤ T / 2 := by linarith
+      show (T₀ : ℝ) ≤ y
+      linarith [hy.1, hy.2, hT2']
+    · apply ContDiff.contDiffOn
+      simpa only [Polynomial.eval_eq_sum_range] using
+        ContDiff.sum fun i hi ↦ ContDiff.mul contDiff_const (contDiff_id.pow i)
+    · apply ContDiffOn.sum
+      intro σ hσ
+      apply ContDiffOn.mul
       · exact contDiffOn_const
       · exact ContDiffOn.rpow contDiffOn_id contDiffOn_const <| by
           intro y hy
@@ -189,7 +193,7 @@ lemma real_root_branch_puiseux_principal_part
           ≤ C * x ^ (s' - (m : ℝ)) := hC x hx
       _ = C * x ^ (s' - s) * x ^ (s - (m : ℝ)) := by
             rw [mul_assoc, ← Real.rpow_add hx0,
-              show s' - s + (s - (m : ℝ)) = s' - (m : ℝ) from by ring]
+              show s' - s + (s - (m : ℝ)) = s' - (m : ℝ) by ring]
   · have h0 : Filter.Tendsto (fun x : ℝ ↦ x ^ (s' - s)) Filter.atTop (nhds 0) := by
       have := tendsto_rpow_neg_atTop (y := s - s') (by linarith)
       simpa [neg_sub] using this
@@ -233,7 +237,8 @@ lemma real_root_branch_puiseux_data
     intro σ hσ
     have : ContDiffAt ℝ (m:ℕ∞) (fun y : ℝ ↦ y ^ σ) x :=
       Real.contDiffAt_rpow_const_of_ne (ne_of_gt hx0)
-    exact (contDiffAt_const).mul (by exact_mod_cast this)
+    refine contDiffAt_const.mul ?_
+    exact_mod_cast this
   have hPat : ContDiffAt ℝ (m:ℕ) (fun y ↦ poly.eval y) x := by
     have heq : (fun y : ℝ ↦ (aeval y) poly) = (fun y ↦ poly.eval y) := by
       funext y
@@ -396,8 +401,9 @@ lemma real_algebraic_branches
         exact hP_no_root a ha
       obtain ⟨T₁, hT₁⟩ := hq_inf.bddAbove
       refine ⟨Max.max T₀ (T₁ + 1), le_max_left _ _, fun t ht ⟨z, hz⟩ ↦ ?_⟩
+      have ht' : (T₀ : ℝ) ≤ t := by exact_mod_cast le_trans (le_max_left _ _) ht
       have hz' : q.eval (t : ℝ) = (z : ℝ) := by
-        rw [← hq.1 t (by exact_mod_cast le_trans (le_max_left _ _) ht)]
+        rw [← hq.1 t ht']
         exact hz
       linarith [hT₁ ⟨z, hz'⟩, le_max_right T₀ (T₁ + 1)]
     choose! T₁ hT₁₁ hT₁₂ using hT₁_exists
@@ -522,21 +528,26 @@ lemma real_branches_on_tail
       choose! T₁ hT₁ using fun j ↦ (hk₀ j).2 k (hkk₀ j)
       exact ⟨⨆ j, T₁ j, fun j ↦ ⟨T₁ j, le_ciSup (Finite.bddAbove_range T₁) j, hT₁ j⟩⟩
     refine ⟨⌈M⌉₊ + T₀ ^ 2, g, ?_, ?_, ?_⟩ <;> norm_num
-    · exact le_add_of_nonneg_of_le (Nat.cast_nonneg _) (by nlinarith)
+    · apply le_add_of_nonneg_of_le (Nat.cast_nonneg _)
+      nlinarith
     · intro j
       obtain ⟨T₁, hT₁₁, hT₁₂, hT₁₃⟩ := hM j
       refine ⟨?_, ?_, ?_, ?_⟩
       · exact (ContDiffOn.mono (hcd j)
           (Set.Ici_subset_Ici.mpr <| by nlinarith [Nat.le_ceil M, hT₀R])).of_le (by norm_num)
-      · refine' Or.imp (fun h ↦ fun x hx ↦ _) (fun h ↦ fun x hx ↦ _) hT₁₂
-        · rw [iteratedDerivWithin_eq_iteratedDeriv]
+      · rcases hT₁₂ with h | h
+        · left
+          intro x hx
+          rw [iteratedDerivWithin_eq_iteratedDeriv]
           · exact h x (by nlinarith [Nat.le_ceil M, hT₀R])
           · exact uniqueDiffOn_Ici _
           · have := hcd j
             exact (this.contDiffAt
               (Ici_mem_nhds <| by nlinarith [Nat.le_ceil M, hT₀R])).of_le (by norm_num)
           · exact le_of_lt hx
-        · convert h x _ using 1
+        · right
+          intro x hx
+          convert h x _ using 1
           · rw [iteratedDerivWithin_eq_iteratedDeriv]
             · exact uniqueDiffOn_Ici _
             · have := hcd j
@@ -578,8 +589,8 @@ lemma hasKDerivDecay_of_agree_ratio
       ∃ Tstar : ℝ, 1 ≤ Tstar ∧
         ∀ x ≥ Tstar, |iteratedDerivWithin k g (Set.Ici 1) x| ≤ (|L| + 1) * x ^ (s - k : ℝ) := by
     have h_eventually : ∃ Tstar : ℝ, ∀ x ≥ Tstar, |iteratedDeriv k f x| ≤ (|L| + 1) * x ^ (s - k : ℝ) := by
-      obtain ⟨Tstar, hTstar⟩ : ∃ Tstar : ℝ, ∀ x ≥ Tstar, |(iteratedDeriv k f x) / x ^ (s - k : ℝ)| ≤ |L| + 1 := by
-        exact Filter.eventually_atTop.mp (hratio.abs.eventually (ge_mem_nhds <| by linarith))
+      obtain ⟨Tstar, hTstar⟩ : ∃ Tstar : ℝ, ∀ x ≥ Tstar, |(iteratedDeriv k f x) / x ^ (s - k : ℝ)| ≤ |L| + 1 :=
+        Filter.eventually_atTop.mp (hratio.abs.eventually (ge_mem_nhds <| by linarith))
       refine ⟨Max.max Tstar 1, fun x hx ↦ ?_⟩
       have := hTstar x (le_trans (le_max_left _ _) hx)
       rw [abs_div, abs_of_nonneg (Real.rpow_nonneg (by linarith [le_max_right Tstar 1]) _)] at this
@@ -614,7 +625,8 @@ lemma hasKDerivDecay_of_agree_ratio
     exact IsCompact.exists_bound_of_continuousOn (CompactIccSpace.isCompact_Icc) h_cont
   -- Choose `β = k - s > 0`.
   use max (|L| + 1) (M * Tstar ^ ((k : ℝ) - s)), (k : ℝ) - s
-  refine' ⟨by linarith, fun x hx ↦ _⟩
+  refine ⟨by linarith, ?_⟩
+  intro x hx
   by_cases hx' : x ≤ Tstar
   · apply le_trans (hM x ⟨hx, hx'⟩)
     rw [Real.rpow_neg (by linarith)]
@@ -861,9 +873,13 @@ lemma int_root_locus_large_cover
     · linarith
     · refine Or.inl <| Or.inr <| Set.mem_iUnion.mpr ?_
       obtain ⟨j, hj⟩ := hcov_neg t h y hy₂
-      exact ⟨j, Set.mem_setOf.mpr
-        ⟨by linarith [show (1 : ℝ) ≤ -t by exact_mod_cast by linarith],
-          by linarith [show (-t : ℝ) ≤ N by exact_mod_cast by linarith], ⟨y, hj⟩⟩⟩
+      have hnt1 : (1 : ℝ) ≤ -t := by
+        have : (1 : ℤ) ≤ -t := by linarith
+        exact_mod_cast this
+      have hntN : (-t : ℝ) ≤ N := by
+        have : -t ≤ (N : ℤ) := by linarith
+        exact_mod_cast this
+      exact ⟨j, Set.mem_setOf.mpr ⟨by linarith, by linarith, ⟨y, hj⟩⟩⟩
     · obtain ⟨j, hj⟩ := hcov_pos t h' y hy₂
       refine Or.inl <| Or.inl <| Set.mem_iUnion.mpr ⟨j, ⟨?_, by norm_cast, ⟨y, hj⟩⟩⟩
       norm_cast
@@ -980,34 +996,34 @@ lemma FmapToRatFunc_irreducible
         Irreducible (F.map (algebraMap (Polynomial ℤ) (FractionRing (Polynomial ℤ)))) := by
       apply Polynomial.Monic.irreducible_iff_irreducible_map_fraction_map
       assumption
-    have h_iso : ∃ (φ : FractionRing (Polynomial ℤ) ≃+* FractionRing (Polynomial ℚ)),
+    have h_iso_equiv : ∃ (φ : FractionRing (Polynomial ℤ) ≃+* FractionRing (Polynomial ℚ)),
         ∀ x : Polynomial ℤ, φ (algebraMap (Polynomial ℤ) (FractionRing (Polynomial ℤ)) x) =
           algebraMap (Polynomial ℚ) (FractionRing (Polynomial ℚ))
             (Polynomial.map (Int.castRingHom ℚ) x) := by
-      have h_iso : ∃ (φ : FractionRing (Polynomial ℤ) →+* FractionRing (Polynomial ℚ)),
+      have h_iso_hom : ∃ (φ : FractionRing (Polynomial ℤ) →+* FractionRing (Polynomial ℚ)),
           ∀ x : Polynomial ℤ, φ (algebraMap (Polynomial ℤ) (FractionRing (Polynomial ℤ)) x) =
             algebraMap (Polynomial ℚ) (FractionRing (Polynomial ℚ))
               (Polynomial.map (Int.castRingHom ℚ) x) := by
-        have h_iso : ∃ (φ : Polynomial ℤ →+* FractionRing (Polynomial ℚ)),
+        have h_iso_base : ∃ (φ : Polynomial ℤ →+* FractionRing (Polynomial ℚ)),
             ∀ x : Polynomial ℤ, φ x =
               algebraMap (Polynomial ℚ) (FractionRing (Polynomial ℚ))
                 (Polynomial.map (Int.castRingHom ℚ) x) := by
           exact ⟨RingHom.comp (algebraMap (Polynomial ℚ) (FractionRing (Polynomial ℚ)))
             (Polynomial.mapRingHom (Int.castRingHom ℚ)), fun x ↦ rfl⟩
-        obtain ⟨φ, hφ⟩ := h_iso
-        have h_iso : ∃ (φ' : FractionRing (Polynomial ℤ) →+* FractionRing (Polynomial ℚ)),
+        obtain ⟨φ, hφ⟩ := h_iso_base
+        have h_iso_lift : ∃ (φ' : FractionRing (Polynomial ℤ) →+* FractionRing (Polynomial ℚ)),
             ∀ x : Polynomial ℤ,
               φ' (algebraMap (Polynomial ℤ) (FractionRing (Polynomial ℤ)) x) = φ x := by
-          have h_iso : ∀ x : Polynomial ℤ, x ≠ 0 → φ x ≠ 0 := by
+          have h_iso_nz : ∀ x : Polynomial ℤ, x ≠ 0 → φ x ≠ 0 := by
             simp_all [Polynomial.ext_iff]
           have hinj : Function.Injective φ := fun x y hxy ↦
             Classical.not_not.1 fun h ↦
-              h_iso (x - y) (sub_ne_zero_of_ne h) <| by simpa [sub_eq_zero] using hxy
+              h_iso_nz (x - y) (sub_ne_zero_of_ne h) <| by simpa [sub_eq_zero] using hxy
           exact ⟨IsFractionRing.lift hinj, fun x ↦ by simp⟩
         aesop
-      obtain ⟨φ, hφ⟩ := h_iso
+      obtain ⟨φ, hφ⟩ := h_iso_hom
       have h_iso_bijective : Function.Bijective φ := by
-        have h_iso_bijective : Function.Surjective φ := by
+        have h_iso_surj : Function.Surjective φ := by
           intro x
           obtain ⟨p, q, hq, rfl⟩ :=
             IsLocalization.mk'_surjective (nonZeroDivisors (Polynomial ℚ)) x
@@ -1020,11 +1036,11 @@ lemma FmapToRatFunc_irreducible
                 (d * p.1.coeff i : ℚ) ∈ Set.range (Int.cast : ℤ → ℚ) ∧
                   (d * p.2.val.coeff i : ℚ) ∈ Set.range (Int.cast : ℤ → ℚ) := by
               intro i hi
-              obtain ⟨d1, hd1⟩ : ∃ d1 : ℕ, d1 > 0 ∧ (d1 * p.1.coeff i : ℚ) ∈ Set.range (Int.cast : ℤ → ℚ) := by
-                exact ⟨p.1.coeff i |> Rat.den, Nat.cast_pos.mpr (Rat.pos _),
+              obtain ⟨d1, hd1⟩ : ∃ d1 : ℕ, d1 > 0 ∧ (d1 * p.1.coeff i : ℚ) ∈ Set.range (Int.cast : ℤ → ℚ) :=
+                ⟨p.1.coeff i |> Rat.den, Nat.cast_pos.mpr (Rat.pos _),
                   ⟨p.1.coeff i |> Rat.num, by simp [mul_comm]⟩⟩
-              obtain ⟨d2, hd2⟩ : ∃ d2 : ℕ, d2 > 0 ∧ (d2 * p.2.val.coeff i : ℚ) ∈ Set.range (Int.cast : ℤ → ℚ) := by
-                exact ⟨p.2.val.coeff i |> Rat.den, Nat.cast_pos.mpr (Rat.pos _),
+              obtain ⟨d2, hd2⟩ : ∃ d2 : ℕ, d2 > 0 ∧ (d2 * p.2.val.coeff i : ℚ) ∈ Set.range (Int.cast : ℤ → ℚ) :=
+                ⟨p.2.val.coeff i |> Rat.den, Nat.cast_pos.mpr (Rat.pos _),
                   ⟨p.2.val.coeff i |> Rat.num, by simp [mul_comm]⟩⟩
               use d1 * d2
               simp [hd1, hd2]
@@ -1043,7 +1059,7 @@ lemma FmapToRatFunc_irreducible
             intro i hi
             specialize hd i hi
             simp_all [Finset.prod_eq_prod_diff_singleton_mul
-              (show i ∈ p.1.support ∪ (p.2 : Polynomial ℚ).support from by aesop)]
+              (show i ∈ p.1.support ∪ (p.2 : Polynomial ℚ).support by aesop)]
             refine ⟨?_, ?_⟩
             · obtain ⟨y, hy⟩ := hd.2.1
               refine ⟨y * ∏ i ∈ (p.1.support ∪ (p.2 : Polynomial ℚ).support) \ { i }, d i, ?_⟩
@@ -1075,13 +1091,13 @@ lemma FmapToRatFunc_irreducible
           rw [← mul_assoc, mul_inv_cancel₀ (by
             norm_cast
             linarith), one_mul, div_eq_mul_inv]
-        exact ⟨RingHom.injective φ, h_iso_bijective⟩
+        exact ⟨RingHom.injective φ, h_iso_surj⟩
       exact ⟨RingEquiv.ofBijective φ h_iso_bijective, hφ⟩
-    obtain ⟨φ, hφ⟩ := h_iso
-    have h_iso_map : Irreducible (F.map (algebraMap (Polynomial ℤ) (FractionRing (Polynomial ℤ)))) ↔
+    obtain ⟨φ, hφ⟩ := h_iso_equiv
+    have h_iso_map_iff : Irreducible (F.map (algebraMap (Polynomial ℤ) (FractionRing (Polynomial ℤ)))) ↔
         Irreducible (F.map (mapRingHom (Int.castRingHom ℚ)) |>
           Polynomial.map (algebraMap (Polynomial ℚ) (FractionRing (Polynomial ℚ)))) := by
-      have h_iso_map : ∀ p : Polynomial (FractionRing (Polynomial ℤ)), Irreducible p ↔
+      have h_iso_map_gen : ∀ p : Polynomial (FractionRing (Polynomial ℤ)), Irreducible p ↔
           Irreducible (p.map (φ : FractionRing (Polynomial ℤ) →+* FractionRing (Polynomial ℚ))) := by
         intro p
         constructor
@@ -1091,14 +1107,14 @@ lemma FmapToRatFunc_irreducible
             have := hp.1
             simp_all [Polynomial.isUnit_iff_degree_eq_zero]
           · intro a b hab
-            have h_iso : p =
+            have h_iso_factor : p =
                 (a.map (φ.symm : FractionRing (Polynomial ℚ) →+* FractionRing (Polynomial ℤ))) *
                   (b.map (φ.symm : FractionRing (Polynomial ℚ) →+* FractionRing (Polynomial ℤ))) := by
               convert congr_arg (Polynomial.map
                 (φ.symm : FractionRing (Polynomial ℚ) →+* FractionRing (Polynomial ℤ))) hab using 1
               · simp [Polynomial.map_map]
               · rw [Polynomial.map_mul]
-            have := hp.2 h_iso
+            have := hp.2 h_iso_factor
             simp_all [Polynomial.isUnit_iff_degree_eq_zero]
         · intro hp
           rw [irreducible_iff] at *
@@ -1107,13 +1123,13 @@ lemma FmapToRatFunc_irreducible
           specialize hp
           have := hp.2 (show map (φ : FractionRing ℤ[X] →+* FractionRing ℚ[X]) p =
             map (φ : FractionRing ℤ[X] →+* FractionRing ℚ[X]) a *
-              map (φ : FractionRing ℤ[X] →+* FractionRing ℚ[X]) b from by
+              map (φ : FractionRing ℤ[X] →+* FractionRing ℚ[X]) b by
                 rw [← Polynomial.map_mul, ← hab])
           aesop
-      convert h_iso_map _ using 2
+      convert h_iso_map_gen _ using 2
       ext
       simp [hφ]
-    have h_iso_map : Irreducible (F.map (mapRingHom (Int.castRingHom ℚ)) |>
+    have h_iso_map_desc : Irreducible (F.map (mapRingHom (Int.castRingHom ℚ)) |>
         Polynomial.map (algebraMap (Polynomial ℚ) (FractionRing (Polynomial ℚ)))) →
           Irreducible (F.map (mapRingHom (Int.castRingHom ℚ))) := by
       convert Polynomial.Monic.irreducible_of_irreducible_map

@@ -85,7 +85,7 @@ lemma scaleRoots_unit_irreducible
     {R : Type*} [CommRing R] [IsDomain R]
     (f : Polynomial R) (c : R) (hc : IsUnit c)
     (hf : Irreducible f) : Irreducible (f.scaleRoots c) := by
-  have h_scale_surjective : ∀ p : R[X], p ∣ f.scaleRoots c → ∃ q : R[X], q ∣ f ∧ p = q.scaleRoots c := by
+  have h_scale_dvd : ∀ p : R[X], p ∣ f.scaleRoots c → ∃ q : R[X], q ∣ f ∧ p = q.scaleRoots c := by
     intro p hp
     obtain ⟨q, hq⟩ : ∃ q : R[X], p = q.scaleRoots c := by
       use p.scaleRoots (hc.unit.inv)
@@ -95,25 +95,23 @@ lemma scaleRoots_unit_irreducible
     exact ⟨q, hp, rfl⟩
   have h_scale_surjective : ∀ p q : R[X], f.scaleRoots c = p * q → (IsUnit p ∨ IsUnit q) := by
     intro p q hpq
-    obtain ⟨r, hr⟩ := h_scale_surjective p (dvd_of_mul_right_eq _ hpq.symm)
-    obtain ⟨s, hs⟩ := h_scale_surjective q (dvd_of_mul_left_eq _ hpq.symm)
+    obtain ⟨r, hr⟩ := h_scale_dvd p (dvd_of_mul_right_eq _ hpq.symm)
+    obtain ⟨s, hs⟩ := h_scale_dvd q (dvd_of_mul_left_eq _ hpq.symm)
+    have h_inj {p q : R[X]} (hpq : p.scaleRoots c = q.scaleRoots c) : p = q := by
+      refine ext fun i ↦ ?_
+      have h_coeff_eq : p.coeff i * c ^ (p.natDegree - i) = q.coeff i * c ^ (q.natDegree - i) := by
+        convert congr_arg (fun p ↦ p.coeff i) hpq using 1 <;> simp [coeff_scaleRoots]
+      apply_fun natDegree at hpq
+      rw [natDegree_scaleRoots, natDegree_scaleRoots] at hpq
+      aesop
     have h_div : r * s = f := by
-      have h_scale_eq : (r * s).scaleRoots c = f.scaleRoots c := by
-        grind only [mul_scaleRoots_of_noZeroDivisors]
-      have h_inj : ∀ p q : R[X], p.scaleRoots c = q.scaleRoots c → p = q := by
-        intro p q hpq
-        have h_coeff : ∀ i, p.coeff i = q.coeff i := by
-          intro i
-          have h_coeff_eq : p.coeff i * c ^ (p.natDegree - i) = q.coeff i * c ^ (q.natDegree - i) := by
-            convert congr_arg (fun p ↦ p.coeff i) hpq using 1 <;> simp [coeff_scaleRoots]
-          apply_fun natDegree at hpq
-          rw [natDegree_scaleRoots, natDegree_scaleRoots] at hpq
-          aesop
-        exact ext h_coeff
-      exact h_inj _ _ h_scale_eq
+      apply h_inj
+      grind only [mul_scaleRoots_of_noZeroDivisors]
+    clear h_inj
     rcases hf.2 h_div.symm with (⟨u, hu⟩ | ⟨u, hu⟩) <;> simp_all [isUnit_iff]
     · rcases isUnit_iff.mp u.isUnit with ⟨k, hk⟩
-      exact Or.inl ⟨k, hk.1, by simpa [← hu] using congr_arg (fun p ↦ p.scaleRoots c) hk.2⟩
+      refine Or.inl ⟨k, hk.1, ?_⟩
+      simpa [← hu] using congr_arg (fun p ↦ p.scaleRoots c) hk.2
     · rcases isUnit_iff.mp u.isUnit with ⟨k, hk⟩
       aesop
   constructor

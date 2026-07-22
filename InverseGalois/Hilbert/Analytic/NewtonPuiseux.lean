@@ -74,9 +74,11 @@ theorem genPolyC_monic (n : ℕ) (hn : 2 ≤ n) : (genPolyC n).Monic := by
   have hle : (X + C X : (Polynomial (AlgebraicClosure ℚ))[X]).degree ≤ 1 := by
     refine le_trans (degree_add_le _ _) ?_
     rw [degree_X]
-    exact max_le le_rfl (le_trans degree_C_le (by norm_num))
+    refine max_le le_rfl (le_trans degree_C_le ?_)
+    norm_num
   refine lt_of_le_of_lt hle ?_
-  exact_mod_cast (by omega : (1 : ℕ) < n)
+  have hlt : (1 : ℕ) < n := by omega
+  exact_mod_cast hlt
 
 /-- `morseGeomPoly n` is monic for `n ≥ 2`. -/
 theorem morseGeomPoly_monic (n : ℕ) (hn : 2 ≤ n) : (morseGeomPoly n).Monic :=
@@ -243,7 +245,8 @@ theorem morseGeomPoly_blocks_trivial_of_prime (n : ℕ) (hn : n.Prime)
       have hcu : (Set.univ : Set ((morseGeomPoly n).rootSet
           (morseGeomPoly n).SplittingField)).ncard = n := by
         rw [Set.ncard_univ, Nat.card_eq_fintype_card, morseGeomPoly_card_rootSet n hn.two_le]
-      exact Set.eq_of_subset_of_ncard_le (Set.subset_univ B) (by rw [hcu, hn']) hfin
+      refine Set.eq_of_subset_of_ncard_le (Set.subset_univ B) ?_ hfin
+      rw [hcu, hn']
 
 /-!
 ### The algebraic core of primitivity for **all** degrees `n`
@@ -596,7 +599,8 @@ theorem morse_root_transcendental (n : ℕ)
     constructor <;> intro h <;> rw [Transcendental] at * <;> simp_all [IsAlgebraic]
   contrapose! h_tL_transcendental
   simp_all [Transcendental]
-  exact h_tL ▸ IsAlgebraic.sub (h_tL_transcendental.pow _) h_tL_transcendental
+  rw [← h_tL]
+  exact IsAlgebraic.sub (h_tL_transcendental.pow _) h_tL_transcendental
 
 /-- The `ℚ̄`-algebra hom `Ψ : RatFunc ℚ̄ →ₐ[ℚ̄] L` sending `X ↦ ↑a`, well-defined and injective
 because `↑a` is transcendental over `ℚ̄`. -/
@@ -690,7 +694,8 @@ theorem geomBase_bot_restrict (n : ℕ)
     exact geomBase_image_mem_adjoin n a y
   · simp [IntermediateField.mem_bot]
     use algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase (Polynomial.X)
-    exact morse_aeval_gsub n a ▸ by simp [Polynomial.aeval_def]
+    rw [← morse_aeval_gsub n a]
+    simp [Polynomial.aeval_def]
 
 /-
 `ℚ̄(T)(↑a) = ℚ̄(↑a)`: the base-restriction of `adjoin GeomBase {↑a}` is `ℚ̄(↑a)`.
@@ -715,7 +720,7 @@ theorem adjoin_geomBase_restrict (n : ℕ)
     rcases hy with (rfl | ⟨y, rfl⟩)
     · exact IntermediateField.subset_adjoin _ _ (Set.mem_singleton _)
     · exact h_adjoin (Set.mem_range_self _)
-  · simp +zetaDelta at *
+  · simp
 
 /- -/
 theorem morseGeomPoly_no_intermediate (n : ℕ) (hn : 2 ≤ n)
@@ -730,23 +735,23 @@ theorem morseGeomPoly_no_intermediate (n : ℕ) (hn : 2 ≤ n)
   have hM : M = ⊤ ∨ M = IntermediateField.adjoin (AlgebraicClosure ℚ)
       {(algebraMap (AlgebraicClosure ℚ)[X] (RatFunc (AlgebraicClosure ℚ))
         (X ^ n - X : (AlgebraicClosure ℚ)[X]))} := by
-    have hM : IsCoatom (IntermediateField.adjoin (AlgebraicClosure ℚ)
+    have hCoatom : IsCoatom (IntermediateField.adjoin (AlgebraicClosure ℚ)
         {(algebraMap (AlgebraicClosure ℚ)[X] (RatFunc (AlgebraicClosure ℚ))
           (X ^ n - X : (AlgebraicClosure ℚ)[X]))}) := by
       apply RatFunc.isCoatom_adjoin_of_indecomposable
       · rw [Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num <;> linarith
       · exact fun h g hh hg ↦ xnSubX_indecomposable n hn hh hg
-    have hM : IntermediateField.adjoin (AlgebraicClosure ℚ)
+    have hle : IntermediateField.adjoin (AlgebraicClosure ℚ)
           {(algebraMap (AlgebraicClosure ℚ)[X] (RatFunc (AlgebraicClosure ℚ))
             (X ^ n - X : (AlgebraicClosure ℚ)[X]))} ≤ M := by
       rw [IntermediateField.adjoin_simple_le_iff]
-      have hM : (morseLift n a) (algebraMap (AlgebraicClosure ℚ)[X] (RatFunc (AlgebraicClosure ℚ))
+      have hmem : (morseLift n a) (algebraMap (AlgebraicClosure ℚ)[X] (RatFunc (AlgebraicClosure ℚ))
           (X ^ n - X : (AlgebraicClosure ℚ)[X])) ∈ b := by
         convert b.algebraMap_mem (algebraMap (AlgebraicClosure ℚ)[X] GeomBase X) using 1
         convert morse_aeval_gsub n a using 1
         exact morseLift_apply_poly n a _
-      exact hM
-    cases eq_or_lt_of_le hM <;> simp_all [IsCoatom]
+      exact hmem
+    cases eq_or_lt_of_le hle <;> simp_all [IsCoatom]
     grind
   cases' hM with hM hM
   · -- If `M = ⊤`, then `b.restrictScalars (AlgebraicClosure ℚ)` contains the image of `Ψ`,
@@ -754,22 +759,23 @@ theorem morseGeomPoly_no_intermediate (n : ℕ) (hn : 2 ≤ n)
     have h_image : IntermediateField.adjoin (AlgebraicClosure ℚ)
           {(↑a : (morseGeomPoly n).SplittingField)}
         ≤ b.restrictScalars (AlgebraicClosure ℚ) := by
-      have h_image : IntermediateField.map (morseLift n a) ⊤
+      have h_map_le : IntermediateField.map (morseLift n a) ⊤
           ≤ b.restrictScalars (AlgebraicClosure ℚ) := by
         rw [IntermediateField.map_le_iff_le_comap]
         aesop
-      convert h_image using 1
+      convert h_map_le using 1
       rw [← morseLift_fieldRange]
       ext
       simp [AlgHom.fieldRange_eq_map]
-    exact hb.not_ge (by simpa [adjoin_geomBase_restrict] using h_image)
+    apply hb.not_ge
+    simpa [adjoin_geomBase_restrict] using h_image
   · -- By `IntermediateField.map_comap_eq`, we have `map Ψ M = b.restrictScalars (AlgebraicClosure ℚ)`.
     have h_map : IntermediateField.map (morseLift n a) M = b.restrictScalars (AlgebraicClosure ℚ) := by
       rw [IntermediateField.map_comap_eq]
       apply inf_eq_left.mpr
       rw [morseLift_fieldRange]
-      exact le_trans (IntermediateField.restrictScalars_le_iff _ |>.2 hb.le)
-        (by simp [adjoin_geomBase_restrict])
+      refine le_trans (IntermediateField.restrictScalars_le_iff _ |>.2 hb.le) ?_
+      simp [adjoin_geomBase_restrict]
     -- By `IntermediateField.adjoin_map`, we have `map Ψ M = adjoin (AlgebraicClosure ℚ) {Ψ w₀}`.
     have h_map_adjoin : IntermediateField.map (morseLift n a) M
         = IntermediateField.adjoin (AlgebraicClosure ℚ)
@@ -782,7 +788,8 @@ theorem morseGeomPoly_no_intermediate (n : ℕ) (hn : 2 ≤ n)
         = (⊥ : IntermediateField GeomBase (morseGeomPoly n).SplittingField).restrictScalars
             (AlgebraicClosure ℚ) := by
       rw [← h_map, h_map_adjoin, ← geomBase_bot_restrict n a]
-    exact h (by simpa using congr_arg (fun x ↦ x) h_contra)
+    apply h
+    simpa using congr_arg (fun x ↦ x) h_contra
 
 theorem morseGeomPoly_adjoin_root_isAtom (n : ℕ) (hn : 2 ≤ n)
     (a : (morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField) :

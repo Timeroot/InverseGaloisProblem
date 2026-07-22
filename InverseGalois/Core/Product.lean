@@ -47,11 +47,11 @@ theorem galRestrictionProd_injective (K L : IntermediateField F E) [Normal F K] 
   intro σ τ h_eq
   have h_eq_K : ∀ x ∈ K, σ x = τ x := by
     intro x hx
-    have h_eq_K : (galRestrictionProd K L σ).1 ⟨x, hx⟩ = (galRestrictionProd K L τ).1 ⟨x, hx⟩ := by
+    have h_restrict : (galRestrictionProd K L σ).1 ⟨x, hx⟩ = (galRestrictionProd K L τ).1 ⟨x, hx⟩ := by
       grind
-    convert h_eq_K using 1
+    convert h_restrict using 1
     simp [galRestrictionProd]
-    grind only [AlgEquiv.restrictNormalHom_apply, #f843]
+    grind only [AlgEquiv.restrictNormalHom_apply]
   ext x
   have hx : x ∈ IntermediateField.adjoin F (K ∪ L) := by convert mem_top (x := x)
   induction hx using adjoin_induction with
@@ -79,10 +79,8 @@ def galProdEquiv [FiniteDimensional F E] [IsGalois F E]
     refine ⟨galRestrictionProd_injective K L h_sup, ?_⟩
     rw [Nat.card_prod, IsGalois.card_aut_eq_finrank, IsGalois.card_aut_eq_finrank,
       IsGalois.card_aut_eq_finrank]
-    have hld := IntermediateField.LinearDisjoint.of_inf_eq_bot h_inf
-    have := hld.finrank_sup
-    rw [h_sup, finrank_top'] at this
-    exact this
+    have := (IntermediateField.LinearDisjoint.of_inf_eq_bot h_inf).finrank_sup
+    rwa [h_sup, finrank_top'] at this
 
 /-
 Coprime intermediate Galois extensions have trivial intersection.
@@ -170,18 +168,16 @@ theorem galSupRestrictionProd_injective [Normal F' K₁'] [Normal F' K₂']
         ext
         simp [RingHom.algebraMap_toAlgebra, IntermediateField.inclusion, Subalgebra.inclusion]
       rw [key] at commσ commτ
-      have heq : σ.restrictNormal ↥K₁' ⟨x, hx⟩ = τ.restrictNormal ↥K₁' ⟨x, hx⟩ := by rw [hK₁]
-      exact congr_arg (fun a => (a : ↥(K₁' ⊔ K₂')).val)
-        (commσ.symm.trans (by rw [heq]) |>.trans commτ)
+      rw [hK₁] at commσ
+      exact congr_arg (fun a => (a : ↥(K₁' ⊔ K₂')).val) (commσ.symm.trans commτ)
     · have commσ := AlgEquiv.restrictNormal_commutes σ ↥K₂' (⟨x, hx⟩ : ↥K₂')
       have commτ := AlgEquiv.restrictNormal_commutes τ ↥K₂' (⟨x, hx⟩ : ↥K₂')
       have key : (algebraMap ↥K₂' ↥(K₁' ⊔ K₂') ⟨x, hx⟩ : ↥(K₁' ⊔ K₂')) = ⟨x, ha⟩ := by
         ext
         simp [RingHom.algebraMap_toAlgebra, IntermediateField.inclusion, Subalgebra.inclusion]
       rw [key] at commσ commτ
-      have heq : σ.restrictNormal ↥K₂' ⟨x, hx⟩ = τ.restrictNormal ↥K₂' ⟨x, hx⟩ := by rw [hK₂]
-      exact congr_arg (fun a => (a : ↥(K₁' ⊔ K₂')).val)
-        (commσ.symm.trans (by rw [heq]) |>.trans commτ)
+      rw [hK₂] at commσ
+      exact congr_arg (fun a => (a : ↥(K₁' ⊔ K₂')).val) (commσ.symm.trans commτ)
   | algebraMap r =>
     simp [AlgEquiv.commutes]
   | add x y hx hy ihx ihy =>
@@ -320,13 +316,12 @@ def galSupProdEquiv' [IsGalois F' K₁'] [IsGalois F' K₂']
   have : FiniteDimensional F' ↥K₂' := by
     have h := IntermediateField.inclusion (le_sup_right : K₂' ≤ K₁' ⊔ K₂')
     exact FiniteDimensional.of_injective h.toLinearMap h.injective
-  exact MulEquiv.ofBijective (galSupRestrictionProd K₁' K₂') <| by
-    rw [Nat.bijective_iff_injective_and_card]
-    refine ⟨galSupRestrictionProd_injective K₁' K₂', ?_⟩
-    rw [Nat.card_prod, IsGalois.card_aut_eq_finrank, IsGalois.card_aut_eq_finrank,
-      IsGalois.card_aut_eq_finrank]
-    have hld := IntermediateField.LinearDisjoint.of_inf_eq_bot h_inf
-    exact hld.finrank_sup
+  apply MulEquiv.ofBijective (galSupRestrictionProd K₁' K₂')
+  rw [Nat.bijective_iff_injective_and_card]
+  refine ⟨galSupRestrictionProd_injective K₁' K₂', ?_⟩
+  rw [Nat.card_prod, IsGalois.card_aut_eq_finrank, IsGalois.card_aut_eq_finrank,
+    IsGalois.card_aut_eq_finrank]
+  exact (IntermediateField.LinearDisjoint.of_inf_eq_bot h_inf).finrank_sup
 
 end DisjointProduct
 

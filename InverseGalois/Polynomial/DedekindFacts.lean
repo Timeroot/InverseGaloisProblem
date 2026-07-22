@@ -160,8 +160,8 @@ lemma cycleType_singleton_isCycle {α : Type*} [Fintype α] [DecidableEq α]
     {σ : Equiv.Perm α} {d : ℕ} (_hd : d ≥ 2) (h : σ.cycleType = {d}) :
     σ.IsCycle ∧ σ.support.card = d := by
   obtain ⟨c, hc⟩ : ∃ c : Equiv.Perm α, c.IsCycle ∧ c.cycleType = {d} ∧ σ = c := by
-    have := Equiv.Perm.card_cycleType_eq_one.mp (by
-      simp_all : σ.cycleType.card = 1)
+    have hcard : σ.cycleType.card = 1 := by simp_all
+    have := Equiv.Perm.card_cycleType_eq_one.mp hcard
     simp_all
   have := hc.1.cycleType
   simp_all
@@ -177,7 +177,8 @@ theorem dedekind_swap (f : ℤ[X]) (hf_monic : f.Monic)
       ⟨IsAlgClosed.splits _⟩).range,
       Equiv.Perm.IsSwap σ := by
   obtain ⟨σ, hσ⟩ := dedekind_theorem f hf_monic hf_irr p h_sep
-  exact ⟨_, MonoidHom.mem_range.mpr ⟨σ, rfl⟩, cycleType_eq_two_isSwap (by rw [hσ, h_type])⟩
+  refine ⟨_, MonoidHom.mem_range.mpr ⟨σ, rfl⟩, cycleType_eq_two_isSwap ?_⟩
+  rw [hσ, h_type]
 
 /-- If `f mod p` has factorization type `{d}` with `d ≥ 2`, then `Gal(f)` contains
 a cycle of support size `d`. -/
@@ -191,7 +192,8 @@ theorem dedekind_cycle (f : ℤ[X]) (hf_monic : f.Monic)
       ⟨IsAlgClosed.splits _⟩).range,
       Equiv.Perm.IsCycle σ ∧ σ.support.card = d := by
   obtain ⟨σ, hσ⟩ := dedekind_theorem f hf_monic hf_irr p h_sep
-  exact ⟨_, MonoidHom.mem_range.mpr ⟨σ, rfl⟩, cycleType_singleton_isCycle hd (by rw [hσ, h_type])⟩
+  refine ⟨_, MonoidHom.mem_range.mpr ⟨σ, rfl⟩, cycleType_singleton_isCycle hd ?_⟩
+  rw [hσ, h_type]
 
 /-!
 ## Section 3: Factorization Analysis of Xⁿ - X - 1
@@ -229,7 +231,7 @@ lemma factorizationType_eq_two_of_squarefree_card_roots
   unfold factorizationType
   have h_linear_factors : Multiset.card (Multiset.filter (fun x ↦ x = 1)
       (Multiset.map Polynomial.natDegree (normalizedFactors g))) = g.roots.toFinset.card := by
-    have h_linear_factors : Multiset.toFinset (Multiset.filter (fun q ↦ q.natDegree = 1)
+    have h_linear_toFinset : Multiset.toFinset (Multiset.filter (fun q ↦ q.natDegree = 1)
         (normalizedFactors g)) = g.roots.toFinset.image (fun a ↦ Polynomial.X - Polynomial.C a) := by
       ext q
       simp [Finset.mem_image]
@@ -248,15 +250,16 @@ lemma factorizationType_eq_two_of_squarefree_card_roots
               (Polynomial.degree_eq_natDegree <| by aesop)] at h_linear
           rw [Polynomial.eq_X_add_C_of_natDegree_le_one (le_of_eq hq.2)] at h_linear ⊢
           by_cases h : q.coeff 1 = 0 <;> simp_all [Polynomial.natDegree_add_eq_left_of_natDegree_lt]
-          · exact absurd h (by
-              rw [← hq.2, Polynomial.coeff_natDegree]
-              aesop)
+          · refine absurd h ?_
+            rw [← hq.2, Polynomial.coeff_natDegree]
+            aesop
           · exact ⟨-q.coeff 0, by simp⟩
         use a
         simp_all
-        refine ⟨by aesop_cat, ?_⟩
-        simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero
-          (UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors hq) (by simp)
+        refine ⟨?_, ?_⟩
+        · aesop_cat
+        · simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero
+            (UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors hq) (by simp)
       · obtain ⟨a, ⟨hg, ha⟩, rfl⟩ := hq
         have h_factor : X - C a ∣ g := Polynomial.dvd_iff_isRoot.mpr ha
         have h_irred : Irreducible (X - C a) := Polynomial.irreducible_X_sub_C a
@@ -268,7 +271,7 @@ lemma factorizationType_eq_two_of_squarefree_card_roots
     have h_linear_factors_card : Multiset.card (Multiset.filter (fun q ↦ q.natDegree = 1)
         (normalizedFactors g)) =
         Finset.card (g.roots.toFinset.image (fun a ↦ Polynomial.X - Polynomial.C a)) := by
-      rw [← h_linear_factors, Multiset.toFinset_card_of_nodup]
+      rw [← h_linear_toFinset, Multiset.toFinset_card_of_nodup]
       apply Multiset.Nodup.filter
       rw [Multiset.nodup_iff_ne_cons_cons]
       intro a t h
@@ -283,24 +286,26 @@ lemma factorizationType_eq_two_of_squarefree_card_roots
         simp_all [irreducible_iff]
       · refine ⟨t.prod * ↑u⁻¹, ?_⟩
         simpa [mul_assoc, mul_comm, mul_left_comm] using congr_arg (fun x : F[X] ↦ x * ↑u⁻¹) hu
-    rw [Finset.card_image_of_injective _
-      fun x y hxy ↦ by simpa using congr_arg (fun p ↦ p.coeff 0) hxy] at h_linear_factors_card
+    have hinj : Function.Injective (fun a : F ↦ Polynomial.X - Polynomial.C a) := by
+      intro x y hxy
+      simpa using congr_arg (fun p ↦ p.coeff 0) hxy
+    rw [Finset.card_image_of_injective _ hinj] at h_linear_factors_card
     simp_all [Multiset.filter_map]
   have h_sum_degrees :
       Multiset.sum (Multiset.map Polynomial.natDegree (normalizedFactors g)) = g.natDegree := by
-    have h_sum_degrees : Polynomial.natDegree (Multiset.prod (normalizedFactors g)) =
+    have h_sum_degrees_prod : Polynomial.natDegree (Multiset.prod (normalizedFactors g)) =
         Multiset.sum (Multiset.map Polynomial.natDegree (normalizedFactors g)) := by
       rw [Polynomial.natDegree_multiset_prod]
       intro h
       have := UniqueFactorizationMonoid.irreducible_of_normalized_factor 0 h
       simp_all
-    rw [← h_sum_degrees, ← Polynomial.natDegree_eq_of_degree_eq
+    rw [← h_sum_degrees_prod, ← Polynomial.natDegree_eq_of_degree_eq
       (Polynomial.degree_eq_degree_of_associated <|
         UniqueFactorizationMonoid.prod_normalizedFactors <| show g ≠ 0 by aesop_cat)]
   have h_sum_degrees_ge_two :
       Multiset.sum (Multiset.filter (fun x ↦ x ≥ 2)
         (Multiset.map Polynomial.natDegree (normalizedFactors g))) = 2 := by
-    have h_sum_degrees_ge_two :
+    have h_sum_split :
         Multiset.sum (Multiset.filter (fun x ↦ x ≥ 2)
             (Multiset.map Polynomial.natDegree (normalizedFactors g))) +
           Multiset.sum (Multiset.filter (fun x ↦ x = 1)
@@ -317,11 +322,25 @@ lemma factorizationType_eq_two_of_squarefree_card_roots
     simp_all [Multiset.filter_eq']
     omega
   have h_card_ge_two : ∀ {m : Multiset ℕ}, (∀ x ∈ m, x ≥ 2) → Multiset.sum m = 2 → m = {2} := by
-    intros m hm hm'
-    induction m using Multiset.induction <;> simp_all
-    induction ‹Multiset ℕ› using Multiset.induction <;> simp_all
-    omega
-  exact h_card_ge_two (fun x hx ↦ by simp_all) h_sum_degrees_ge_two
+    intro m hm hm'
+    induction m using Multiset.induction with
+    | empty => simp_all
+    | cons a s _ =>
+      simp only [Multiset.mem_cons, forall_eq_or_imp, Multiset.sum_cons] at hm hm'
+      obtain ⟨ha, hs⟩ := hm
+      have hs0 : s = 0 := by
+        induction s using Multiset.induction with
+        | empty => rfl
+        | cons b t _ =>
+          simp only [Multiset.mem_cons, forall_eq_or_imp, Multiset.sum_cons] at hs hm'
+          omega
+      subst hs0
+      have ha2 : a = 2 := by simpa using hm'
+      subst ha2
+      rfl
+  refine h_card_ge_two ?_ h_sum_degrees_ge_two
+  intro x hx
+  simp_all
 
 /-!
 ## Scope -/

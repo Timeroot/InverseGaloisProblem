@@ -31,7 +31,6 @@ theorem perm_fin_one : IsInverseGalois (Equiv.Perm (Fin 1)) :=
 
 /-- `S₂ = Equiv.Perm (Fin 2)` is cyclic of order 2, hence inverse Galois. -/
 theorem perm_fin_two : IsInverseGalois (Equiv.Perm (Fin 2)) := by
-  have : Fact (Nat.Prime 2) := ⟨by norm_num⟩
   have : IsCyclic (Equiv.Perm (Fin 2)) := by
     apply isCyclic_of_prime_card (p := 2)
     simp [Nat.card_eq_fintype_card, Fintype.card_perm]
@@ -54,7 +53,9 @@ private lemma q₅_irreducible : Irreducible q₅ := by
     any_goals exact Ideal.span { 2 }
     any_goals erw [Polynomial.degree_add_C] <;> erw [Polynomial.degree_sub_eq_left_of_degree_lt] <;> norm_num
     any_goals erw [Polynomial.degree_C] <;> norm_num
-    · simp +decide [Ideal.span_singleton_prime]
+    · have h2 : (2 : ℤ) ≠ 0 := by norm_num
+      rw [Ideal.span_singleton_prime h2]
+      norm_num
     · erw [Polynomial.leadingCoeff, Polynomial.natDegree_add_C,
         Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;>
         norm_num [Ideal.mem_span_singleton]
@@ -90,17 +91,17 @@ private lemma q₅_roots_card :
     Fintype.card (q₅.rootSet ℂ) = Fintype.card (q₅.rootSet ℝ) + 2 := by
       have h_real_roots : ∃ x ∈ Set.Ioo (-2 : ℝ) (-1), x^5 - 4 * x + 2 = 0 := by
         apply intermediate_value_Ioo <;> norm_num
-        exact Continuous.continuousOn (by continuity)
+        fun_prop
       have h_real_roots2 : ∃ y ∈ Set.Ioo (0 : ℝ) (1), y^5 - 4 * y + 2 = 0 := by
         apply intermediate_value_Ioo' <;> norm_num
-        exact Continuous.continuousOn (by continuity)
+        fun_prop
       have h_real_roots3 : ∃ z ∈ Set.Ioo (1 : ℝ) (2), z^5 - 4 * z + 2 = 0 := by
         apply intermediate_value_Ioo <;> norm_num
-        exact Continuous.continuousOn (by continuity)
+        fun_prop
       obtain ⟨x, hx⟩ := h_real_roots
       obtain ⟨y, hy⟩ := h_real_roots2
       obtain ⟨z, hz⟩ := h_real_roots3
-      have h_real_roots_count : (q₅.map (algebraMap ℚ ℝ)).roots.toFinset.card ≤ 3 := by
+      have h_real_roots_le : (q₅.map (algebraMap ℚ ℝ)).roots.toFinset.card ≤ 3 := by
         -- Since `q₅'` has exactly 2 real roots, `q₅` can have at most 3 real roots.
         have h_deriv_roots : (Polynomial.derivative (q₅.map (algebraMap ℚ ℝ))).roots.toFinset.card ≤ 2 := by
           unfold q₅
@@ -118,12 +119,10 @@ private lemma q₅_roots_card :
             have := inv_mul_cancel₀ (ne_of_gt (Real.sqrt_pos.mpr (show 0 < 5 by norm_num)))
             rw [← sq_eq_sq₀] <;> ring_nf <;> norm_num <;> nlinarith
           · exact Finset.card_insert_le _ _
-        have h_real_roots : ∀ p : Polynomial ℝ, p ≠ 0 →
-            (p.roots.toFinset.card ≤ (p.derivative.roots.toFinset.card + 1)) :=
-          fun p _ ↦ card_roots_toFinset_le_derivative p
-        exact le_trans (h_real_roots _ <| ne_of_apply_ne (Polynomial.eval 0) <| by norm_num [q₅]) (by linarith)
+        refine le_trans (card_roots_toFinset_le_derivative _) ?_
+        linarith
       have h_real_roots_count : (q₅.map (algebraMap ℚ ℝ)).roots.toFinset.card = 3 := by
-        refine le_antisymm h_real_roots_count (Finset.two_lt_card.mpr ?_)
+        refine le_antisymm h_real_roots_le (Finset.two_lt_card.mpr ?_)
         norm_num [q₅] at *
         refine ⟨x, ⟨?_, hx.2⟩, y, ⟨?_, hy.2⟩, z, ⟨?_, hz.2⟩, ?_, ?_, ?_⟩
         · exact ne_of_apply_ne (Polynomial.eval 0) (by norm_num)
@@ -134,10 +133,8 @@ private lemma q₅_roots_card :
         · linarith
       have h_complex_roots_count : (q₅.map (algebraMap ℚ ℂ)).roots.toFinset.card = 5 := by
         rw [Multiset.toFinset_card_of_nodup]
-        · have h_complex_roots_count : (q₅.map (algebraMap ℚ ℂ)).Splits :=
-            IsAlgClosed.splits (Polynomial.map (algebraMap ℚ ℂ) q₅)
-          have := Polynomial.Splits.natDegree_eq_card_roots h_complex_roots_count
-          exact this ▸ by rw [Polynomial.natDegree_map, q₅_natDegree]
+        · have h_splits : (q₅.map (algebraMap ℚ ℂ)).Splits := IsAlgClosed.splits _
+          rw [← h_splits.natDegree_eq_card_roots, Polynomial.natDegree_map, q₅_natDegree]
         · exact Polynomial.nodup_roots (Polynomial.Separable.map q₅_irreducible.separable)
       simp_all [Polynomial.rootSet_def]
 

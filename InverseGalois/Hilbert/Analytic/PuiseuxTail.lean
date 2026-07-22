@@ -60,9 +60,9 @@ lemma complex_root_branch_poly_growth
     (S : Set ℂ) (H : ℂ → ℂ)
     (hroot : ∀ z ∈ S, (P.map (evalIntPolyComplex z)).eval (H z) = 0) :
     ∃ (C : ℝ) (N : ℕ), 0 ≤ C ∧ ∀ z ∈ S, ‖H z‖ ≤ C * (1 + ‖z‖) ^ N := by
-  -- Let's choose $N$ to be the maximum degree of the coefficients of $P$.
+  -- Choose `N` as the maximum degree of the coefficients of `P`.
   set N := Finset.sup (Finset.range P.natDegree) (fun i ↦ ((P.coeff i).map (Int.castRingHom ℂ)).natDegree) with hN_def
-  -- By the properties of the polynomial $P$, we know that its coefficients are bounded by some constant $C$.
+  -- The coefficients of `P` are bounded by some constant `C`.
   obtain ⟨C, hC⟩ :
       ∃ C : ℝ, ∀ z ∈ S, ∀ i < P.natDegree,
         ‖((P.coeff i).map (Int.castRingHom ℂ)).eval z‖ ≤ C * (1 + ‖z‖) ^ N := by
@@ -72,13 +72,7 @@ lemma complex_root_branch_poly_growth
       use ∑ j ∈ Finset.range ((Polynomial.map (Int.castRingHom ℂ) (P.coeff i)).natDegree + 1),
         ‖((Polynomial.map (Int.castRingHom ℂ) (P.coeff i)).coeff j)‖
       intro z hz
-      have h_coeff_bound :
-          ‖((P.coeff i).map (Int.castRingHom ℂ)).eval z‖ ≤
-            (∑ j ∈ Finset.range ((Polynomial.map (Int.castRingHom ℂ) (P.coeff i)).natDegree + 1),
-              ‖((Polynomial.map (Int.castRingHom ℂ) (P.coeff i)).coeff j)‖) *
-              (1 + ‖z‖) ^ ((Polynomial.map (Int.castRingHom ℂ) (P.coeff i)).natDegree) := by
-        exact complex_poly_eval_norm_le _ _
-      exact h_coeff_bound.trans (mul_le_mul_of_nonneg_left
+      exact (complex_poly_eval_norm_le _ _).trans (mul_le_mul_of_nonneg_left
         (pow_le_pow_right₀ (by linarith [norm_nonneg z])
           (Finset.le_sup (f := fun i ↦ Polynomial.natDegree (Polynomial.map (Int.castRingHom ℂ) (P.coeff i)))
             (Finset.mem_range.mpr hi)))
@@ -89,24 +83,24 @@ lemma complex_root_branch_poly_growth
         (le_trans (le_abs_self _)
           (Finset.single_le_sum (fun i _ ↦ abs_nonneg (C i)) (Finset.mem_range.mpr hi)))
         (by positivity))⟩
-  -- Apply the Cauchy root bound to the polynomial $P(z, \cdot)$.
+  -- Apply the Cauchy root bound to the polynomial `P(z, ·)`.
   have h_cauchy : ∀ z ∈ S, ‖H z‖ ≤ 1 + P.natDegree * C * (1 + ‖z‖) ^ N := by
     intro z hz
-    have h_cauchy : ∀ i < P.natDegree, ‖((P.map (evalIntPolyComplex z)).coeff i)‖ ≤ C * (1 + ‖z‖) ^ N := by
+    have h_coeff_cauchy : ∀ i < P.natDegree, ‖((P.map (evalIntPolyComplex z)).coeff i)‖ ≤ C * (1 + ‖z‖) ^ N := by
       intro i hi
       specialize hC z hz i hi
       simp_all [Polynomial.coeff_map]
       exact hC
     have := @cauchy_root_bound_max (Polynomial.map (evalIntPolyComplex z) P)
     simp_all [mul_assoc]
-    exact this (by exact Polynomial.Monic.map (evalIntPolyComplex z) hP_monic) (hroot z hz) h_cauchy
+    exact this (Polynomial.Monic.map (evalIntPolyComplex z) hP_monic) (hroot z hz) h_coeff_cauchy
   refine ⟨1 + P.natDegree * |C|, N, ?_, ?_⟩
   · positivity
   · intro z hz
     specialize h_cauchy z hz
     cases abs_cases C <;>
       nlinarith [show 0 ≤ (P.natDegree : ℝ) * (1 + ‖z‖) ^ N by positivity,
-        show (1 + ‖z‖) ^ N ≥ 1 by exact one_le_pow₀ (by linarith [norm_nonneg z])]
+        show (1 + ‖z‖) ^ N ≥ 1 from one_le_pow₀ (by linarith [norm_nonneg z])]
 
 /-
 **The continuation `H` is a genuine root of the complex family on each tail ball.**
@@ -138,13 +132,9 @@ lemma H_root_on_ball
   have hF_zero : AnalyticOnNhd ℂ (fun z : ℂ ↦ (P.map (evalIntPolyComplex z)).eval (H z))
       (Metric.ball (x : ℂ) (x / 2)) := by
     refine DifferentiableOn.analyticOnNhd ?_ Metric.isOpen_ball
-    have hF_zero : DifferentiableOn ℂ (fun z : ℂ ↦ (P.map (evalIntPolyComplex z)).eval (H z))
-        (Metric.ball (x : ℂ) (x / 2)) := by
-      have hH_diff : DifferentiableOn ℂ H (Metric.ball (x : ℂ) (x / 2)) := by
-        exact hcont x hx |> fun h ↦ h.differentiableOn
-      exact (evalIntPolyComplex_eval_contDiff P |> ContDiff.differentiable <| by norm_num) |>
-        Differentiable.comp_differentiableOn <| differentiableOn_id.prodMk hH_diff
-    exact hF_zero
+    have hH_diff : DifferentiableOn ℂ H (Metric.ball (x : ℂ) (x / 2)) := (hcont x hx).differentiableOn
+    exact (evalIntPolyComplex_eval_contDiff P |> ContDiff.differentiable <| by norm_num) |>
+      Differentiable.comp_differentiableOn <| differentiableOn_id.prodMk hH_diff
   apply hF_zero.eqOn_zero_of_preconnected_of_frequently_eq_zero (z₀ := (x : ℂ))
   · exact convex_ball _ _ |> Convex.isPreconnected
   · exact Metric.mem_ball_self (by linarith)
@@ -152,9 +142,9 @@ lemma H_root_on_ball
     intro ε ε_pos
     refine ⟨↑ (x + Min.min ε (x / 2) / 2), ?_, ?_⟩ <;> norm_num
     · refine ⟨?_, ?_⟩
-      · rw [abs_of_nonneg (by linarith [show 0 ≤ min ε (x / 2) by exact le_min ε_pos.le (by linarith)])]
+      · rw [abs_of_nonneg (by linarith [show 0 ≤ min ε (x / 2) from le_min ε_pos.le (by linarith)])]
         linarith [min_le_left ε (x / 2), min_le_right ε (x / 2)]
-      · linarith [show 0 < min ε (x / 2) by exact lt_min ε_pos (by linarith)]
+      · linarith [show 0 < min ε (x / 2) from lt_min ε_pos (by linarith)]
     · have hmin_pos : 0 < Min.min ε (x / 2) := lt_min ε_pos (by linarith)
       convert hF_root_real (x + Min.min ε (x / 2) / 2)
         ⟨by linarith, by linarith [min_le_left ε (x / 2), min_le_right ε (x / 2)]⟩ using 1
@@ -183,35 +173,36 @@ lemma H_poly_growth_on_spheres
   have hH_root : ∀ x : ℝ, T₁ ≤ x → ∀ z ∈ Metric.closedBall (x : ℂ) (x / 2),
       (P.map (evalIntPolyComplex z)).eval (H z) = 0 := by
     intros x hx z hz
-    have hH_root : ∀ z ∈ Metric.ball (x : ℂ) (x / 2), (P.map (evalIntPolyComplex z)).eval (H z) = 0 := by
-      apply H_root_on_ball P T₀ g hroot T₁ H hT1a hT1b hcont hagree x hx
-    have h_cont : ContinuousOn (fun z ↦ (P.map (evalIntPolyComplex z)).eval (H z))
+    have hroot_ball : ∀ z ∈ Metric.ball (x : ℂ) (x / 2),
+        (P.map (evalIntPolyComplex z)).eval (H z) = 0 :=
+      H_root_on_ball P T₀ g hroot T₁ H hT1a hT1b hcont hagree x hx
+    have hcont_eval : ContinuousOn (fun z ↦ (P.map (evalIntPolyComplex z)).eval (H z))
         (Metric.closedBall (x : ℂ) (x / 2)) := by
-      have h_cont : ContinuousOn H (Metric.closedBall (x : ℂ) (x / 2)) := by
+      have hcont_H : ContinuousOn H (Metric.closedBall (x : ℂ) (x / 2)) := by
         convert hcont x hx |> DiffContOnCl.continuousOn using 1
         rw [closure_ball _ (by linarith)]
-      have h_cont : ContinuousOn (fun p : ℂ × ℂ ↦ (P.map (evalIntPolyComplex p.1)).eval p.2)
-          (Metric.closedBall (x : ℂ) (x / 2) ×ˢ Set.univ) := by
-        exact evalIntPolyComplex_eval_contDiff P |> ContDiff.continuous |> Continuous.continuousOn
-      exact h_cont.comp (continuousOn_id.prodMk ‹_›) fun z hz ↦ ⟨hz, Set.mem_univ _⟩
-    have h_cont : ∀ z ∈ Metric.closedBall (x : ℂ) (x / 2),
+      have hcont_pair : ContinuousOn (fun p : ℂ × ℂ ↦ (P.map (evalIntPolyComplex p.1)).eval p.2)
+          (Metric.closedBall (x : ℂ) (x / 2) ×ˢ Set.univ) :=
+        evalIntPolyComplex_eval_contDiff P |> ContDiff.continuous |> Continuous.continuousOn
+      exact hcont_pair.comp (continuousOn_id.prodMk hcont_H) fun z hz ↦ ⟨hz, Set.mem_univ _⟩
+    have heval_zero : ∀ z ∈ Metric.closedBall (x : ℂ) (x / 2),
         (P.map (evalIntPolyComplex z)).eval (H z) = 0 := by
       intro z hz
       have h_seq : ∃ seq : ℕ → ℂ, (∀ n, seq n ∈ Metric.ball (x : ℂ) (x / 2)) ∧
           Filter.Tendsto seq Filter.atTop (nhds z) := by
-        have h_seq : z ∈ closure (Metric.ball (x : ℂ) (x / 2)) := by
+        have hz_clos : z ∈ closure (Metric.ball (x : ℂ) (x / 2)) := by
           rw [closure_ball] <;> norm_num [show x ≠ 0 by linarith] at *
           simp_all
-        rwa [mem_closure_iff_seq_limit] at h_seq
+        rwa [mem_closure_iff_seq_limit] at hz_clos
       obtain ⟨seq, hseq₁, hseq₂⟩ := h_seq
-      refine tendsto_nhds_unique (h_cont.continuousWithinAt hz |> fun h ↦
+      refine tendsto_nhds_unique (hcont_eval.continuousWithinAt hz |> fun h ↦
           h.tendsto.comp <| Filter.tendsto_inf.mpr ⟨hseq₂, Filter.tendsto_principal.mpr <|
             Filter.Eventually.of_forall fun n ↦ by
               simpa using hseq₁ n |> fun h ↦ Metric.mem_closedBall.mpr <| le_of_lt h⟩)
         (tendsto_const_nhds.congr' ?_)
       filter_upwards [Filter.eventually_gt_atTop 0] with n hn
       simp_all
-    exact h_cont z hz
+    exact heval_zero z hz
   obtain ⟨C, N, hC, hCbound⟩ := DorgeBauer.complex_root_branch_poly_growth P hP_monic hP_deg
     { z : ℂ | ∃ x : ℝ, T₁ ≤ x ∧ z ∈ Metric.closedBall (x : ℂ) (x / 2) } H
     (fun z ⟨x, hx₁, hx₂⟩ ↦ hH_root x hx₁ z hx₂)
@@ -242,11 +233,11 @@ lemma removable_pole_factor
       exact fun x hx ↦ ⟨norm_pos_iff.mpr hx.2, by simpa using hx.1⟩
     · refine ⟨Cf, Set.forall_mem_image.2 fun w hw ↦ ?_⟩
       simp_all
-      exact le_trans (mul_le_mul_of_nonneg_left (hFgrow w hw.2 hw.1) (by positivity))
-        (by rw [mul_div_cancel₀ _ (pow_ne_zero _ (norm_ne_zero_iff.mpr hw.2))])
+      refine le_trans (mul_le_mul_of_nonneg_left (hFgrow w hw.2 hw.1) (by positivity)) ?_
+      rw [mul_div_cancel₀ _ (pow_ne_zero _ (norm_ne_zero_iff.mpr hw.2))]
   · intro w hw₁ hw₂
-    rw [Function.update_of_ne (by simp_all only [norm_pos_iff, ne_eq, not_false_eq_true])]
-    rw [mul_div_cancel_left₀ _ (pow_ne_zero _ (by simp_all only [norm_pos_iff, ne_eq, not_false_eq_true]))]
+    have hw0 : w ≠ 0 := norm_pos_iff.mp hw₁
+    rw [Function.update_of_ne hw0, mul_div_cancel_left₀ _ (pow_ne_zero _ hw0)]
 
 /-
 **`cpow` term identity for the Puiseux substitution.**
@@ -283,7 +274,7 @@ lemma laurent_sphere_identity (e Kf n : ℕ) (he : 1 ≤ e) (c : ℕ → ℂ) (R
       = (∑ m ∈ Finset.range n, c m * z ^ ((((Kf : ℝ) - m) / e : ℝ) : ℂ))
         + z ^ ((((Kf : ℝ) - n) / e : ℝ) : ℂ) * Rw := by
   rw [hG, add_div, Finset.sum_div]
-  grind only [laurent_cpow_term, #ad38, #c8bc]
+  grind only [laurent_cpow_term]
 
 /-
 **An analytic function whose high Taylor coefficients vanish is a polynomial.**
@@ -298,11 +289,11 @@ lemma laurent_G_poly_of_vanishing (ρ : ℝ) (_hρ : 0 < ρ) (G : ℂ → ℂ) (
       G w = ∑ m ∈ Finset.range (Kf + 1),
         (iteratedDeriv m G 0 / (m.factorial : ℂ)) * w ^ m := by
   intro w hw
-  have := @Complex.taylorSeries_eq_on_ball
-  specialize this (show DifferentiableOn ℂ G (Metric.ball 0 ρ) from hG.differentiableOn)
-    (show w ∈ Metric.ball 0 ρ from by simpa using hw)
+  have := Complex.taylorSeries_eq_on_ball hG.differentiableOn
+    (show w ∈ Metric.ball 0 ρ by simpa using hw)
   rw [← this, tsum_eq_sum]
-  · exact Finset.sum_congr rfl fun n hn ↦ by simp [div_eq_inv_mul, mul_comm, mul_left_comm]
+  · refine Finset.sum_congr rfl fun n hn ↦ ?_
+    simp [div_eq_inv_mul, mul_comm, mul_left_comm]
   · intro n hn
     rw [hvan n (by simpa using hn)]
     simp
@@ -359,41 +350,38 @@ lemma separable_ramified_root_section
   · linarith
   · linarith
   · -- Apply `root_comp_holomorphic` with the given conditions.
-    have h_analytic : AnalyticOnNhd ℂ (fun w ↦ g (-(e : ℂ) * Complex.log w))
-        {w : ℂ | 0 < ‖w‖ ∧ ‖w‖ < Real.exp (-(Real.log B) / e)} := by
-      have hφ : DifferentiableOn ℂ (fun w ↦ (w⁻¹) ^ e)
-          {w : ℂ | 0 < ‖w‖ ∧ ‖w‖ < Real.exp (-(Real.log B) / e)} := by
-        exact DifferentiableOn.pow (differentiableOn_id.inv fun w hw ↦ by
-          simp_all only [Metric.mem_ball, norm_pos_iff, ne_eq, Set.mem_setOf_eq, id_eq,
-            not_false_eq_true]) _
-      have hF : ContinuousOn (fun w ↦ g (-(e : ℂ) * Complex.log w))
-          {w : ℂ | 0 < ‖w‖ ∧ ‖w‖ < Real.exp (-(Real.log B) / e)} := by
-        exact DorgeBauer.periodic_log_comp_continuous g B hB e he hg.1 hg.2.2.2
-      have hroot : ∀ w : ℂ, 0 < ‖w‖ → ‖w‖ < Real.exp (-(Real.log B) / e) →
-          (Q.map (evalIntPolyComplex ((w⁻¹) ^ e))).eval (g (-(e : ℂ) * Complex.log w)) = 0 := by
-        intros w hw_pos hw_lt
-        have h_exp : Complex.exp (-(e : ℂ) * Complex.log w) = (w⁻¹) ^ e := by
-          have := Complex.exp_int_mul (-Complex.log w) e
-          simp_all [Complex.exp_neg, Complex.exp_log]
-        rw [← h_exp, hg.2.2.1]
-        have := Real.log_lt_log hw_pos hw_lt
-        norm_num [Complex.log_re] at *
-        rw [lt_div_iff₀] at this <;> first | positivity | linarith
-      have hopen : IsOpen { w : ℂ | 0 < ‖w‖ ∧ ‖w‖ < Real.exp (-Real.log B / e) } :=
-        isOpen_Ioi.preimage continuous_norm |> IsOpen.inter <| isOpen_Iio.preimage continuous_norm
-      have := DorgeBauer.root_comp_holomorphic Q
-        { w : ℂ | 0 < ‖w‖ ∧ ‖w‖ < Real.exp (-Real.log B / e) } hopen
-        (fun w ↦ w⁻¹ ^ e) (fun w ↦ g (-↑e * Complex.log w)) hφ hF
-        (fun w hw ↦ hroot w hw.1 hw.2) (fun w hw ↦ ?_)
-      · exact this.analyticOnNhd hopen
-      · convert hQsep (w⁻¹ ^ e) _ using 1
-        simp_all
-        rw [lt_inv_comm₀] <;> try positivity
-        · refine lt_of_lt_of_le (pow_lt_pow_left₀ hw.2 (norm_nonneg _) (by positivity)) ?_
-          rw [← Real.exp_nat_mul, mul_comm, div_mul_cancel₀ _ (by positivity), Real.exp_neg,
-            Real.exp_log (by positivity)]
-        · exact pow_pos (norm_pos_iff.mpr hw.1) _
-    exact h_analytic
+    have hφ : DifferentiableOn ℂ (fun w ↦ (w⁻¹) ^ e)
+        {w : ℂ | 0 < ‖w‖ ∧ ‖w‖ < Real.exp (-(Real.log B) / e)} :=
+      DifferentiableOn.pow (differentiableOn_id.inv fun w hw ↦ by
+        simp_all only [Metric.mem_ball, norm_pos_iff, ne_eq, Set.mem_setOf_eq, id_eq,
+          not_false_eq_true]) _
+    have hF : ContinuousOn (fun w ↦ g (-(e : ℂ) * Complex.log w))
+        {w : ℂ | 0 < ‖w‖ ∧ ‖w‖ < Real.exp (-(Real.log B) / e)} :=
+      DorgeBauer.periodic_log_comp_continuous g B hB e he hg.1 hg.2.2.2
+    have hroot : ∀ w : ℂ, 0 < ‖w‖ → ‖w‖ < Real.exp (-(Real.log B) / e) →
+        (Q.map (evalIntPolyComplex ((w⁻¹) ^ e))).eval (g (-(e : ℂ) * Complex.log w)) = 0 := by
+      intros w hw_pos hw_lt
+      have h_exp : Complex.exp (-(e : ℂ) * Complex.log w) = (w⁻¹) ^ e := by
+        have := Complex.exp_int_mul (-Complex.log w) e
+        simp_all [Complex.exp_neg, Complex.exp_log]
+      rw [← h_exp, hg.2.2.1]
+      have := Real.log_lt_log hw_pos hw_lt
+      norm_num [Complex.log_re] at *
+      rw [lt_div_iff₀] at this <;> first | positivity | linarith
+    have hopen : IsOpen { w : ℂ | 0 < ‖w‖ ∧ ‖w‖ < Real.exp (-Real.log B / e) } :=
+      isOpen_Ioi.preimage continuous_norm |> IsOpen.inter <| isOpen_Iio.preimage continuous_norm
+    have := DorgeBauer.root_comp_holomorphic Q
+      { w : ℂ | 0 < ‖w‖ ∧ ‖w‖ < Real.exp (-Real.log B / e) } hopen
+      (fun w ↦ w⁻¹ ^ e) (fun w ↦ g (-↑e * Complex.log w)) hφ hF
+      (fun w hw ↦ hroot w hw.1 hw.2) (fun w hw ↦ ?_)
+    · exact this.analyticOnNhd hopen
+    · convert hQsep (w⁻¹ ^ e) _ using 1
+      simp_all
+      rw [lt_inv_comm₀] <;> try positivity
+      · refine lt_of_lt_of_le (pow_lt_pow_left₀ hw.2 (norm_nonneg _) (by positivity)) ?_
+        rw [← Real.exp_nat_mul, mul_comm, div_mul_cancel₀ _ (by positivity), Real.exp_neg,
+          Real.exp_log (by positivity)]
+      · exact pow_pos (norm_pos_iff.mpr hw.1) _
   · constructor
     · intro w hw₁ hw₂
       convert hg.2.2.1 (- (e : ℂ) * Complex.log w) _ using 1 <;>
@@ -410,9 +398,9 @@ lemma separable_ramified_root_section
       have h_eq : H z = g (Complex.log z) := by
         apply DorgeBauer.branch_match_tail Q B hB hQsep T₁ hT1B H hcont hHroot g hg.1 hg.2.2.1 hg.2.1 x hx z hz
       have h_eq' : -(e : ℂ) * Complex.log (z⁻¹ ^ ((e : ℂ)⁻¹)) = Complex.log z := by
-        apply DorgeBauer.cpow_neg_e_log e he z (by
+        apply DorgeBauer.cpow_neg_e_log e he z
         norm_num [Complex.normSq, Complex.norm_def] at *
-        rw [Real.sqrt_eq_iff_mul_self_eq_of_pos] at hz <;> nlinarith [sq_nonneg (z.re - x), sq_nonneg z.im])
+        rw [Real.sqrt_eq_iff_mul_self_eq_of_pos] at hz <;> nlinarith [sq_nonneg (z.re - x), sq_nonneg z.im]
       rw [h_eq, ← h_eq']
 
 lemma ramified_root_section
@@ -488,7 +476,7 @@ lemma root_pole_bound
       ∃ C N, 0 ≤ C ∧ ∀ z : ℂ, (P.map (evalIntPolyComplex z)).natDegree = P.natDegree ∧
         ∀ i < (P.map (evalIntPolyComplex z)).natDegree,
           ‖(P.map (evalIntPolyComplex z)).coeff i‖ ≤ C * (1 + ‖z‖) ^ N := by
-    obtain ⟨C, N, hC_nonneg, hC_bound⟩ :
+    obtain ⟨C', N', hC'_nonneg, hC'_bound⟩ :
         ∃ C N, 0 ≤ C ∧ ∀ i < P.natDegree, ∀ z : ℂ,
           ‖((P.coeff i).map (Int.castRingHom ℂ)).eval z‖ ≤ C * (1 + ‖z‖) ^ N := by
       use ∑ i ∈ Finset.range P.natDegree,
@@ -510,42 +498,38 @@ lemma root_pole_bound
           (fun i _ ↦ Nat.zero_le (Polynomial.natDegree (Polynomial.map (Int.castRingHom ℂ) (P.coeff i))))
           (Finset.mem_range.mpr hi)))
         (Finset.sum_nonneg fun _ _ ↦ norm_nonneg _)
-    refine ⟨C, N, hC_nonneg, fun z ↦ ⟨?_, ?_⟩⟩
+    refine ⟨C', N', hC'_nonneg, fun z ↦ ⟨?_, ?_⟩⟩
     · rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero]
       simp_all
     · intro i hi
-      specialize hC_bound i
+      specialize hC'_bound i
       simp_all [Polynomial.coeff_map]
-      exact hC_bound z
+      exact hC'_bound z
   -- Step 2: Cauchy bound per w
   have h_cauchy_bound : ∀ w : ℂ, 0 < ‖w‖ → ‖w‖ < ρ → ‖F w‖ ≤ 1 + P.natDegree * (C * (1 + ‖w⁻¹ ^ e‖) ^ N) := by
     intros w hw_pos hw_lt_ρ
-    have hQz_monic : (P.map (evalIntPolyComplex (w⁻¹ ^ e))).Monic := by
-      exact hP_monic.map _
-    have hQz_deg : (P.map (evalIntPolyComplex (w⁻¹ ^ e))).natDegree = P.natDegree := by
-      exact hC_bound _ |>.1
-    have hQz_root : (P.map (evalIntPolyComplex (w⁻¹ ^ e))).IsRoot (F w) := by
-      exact hFroot w hw_pos hw_lt_ρ
+    have hQz_monic : (P.map (evalIntPolyComplex (w⁻¹ ^ e))).Monic := hP_monic.map _
+    have hQz_deg : (P.map (evalIntPolyComplex (w⁻¹ ^ e))).natDegree = P.natDegree := (hC_bound _).1
+    have hQz_root : (P.map (evalIntPolyComplex (w⁻¹ ^ e))).IsRoot (F w) := hFroot w hw_pos hw_lt_ρ
     have hQz_bound : ∀ i < (P.map (evalIntPolyComplex (w⁻¹ ^ e))).natDegree,
-        ‖(P.map (evalIntPolyComplex (w⁻¹ ^ e))).coeff i‖ ≤ C * (1 + ‖w⁻¹ ^ e‖) ^ N := by
-      exact hC_bound _ |>.2
+        ‖(P.map (evalIntPolyComplex (w⁻¹ ^ e))).coeff i‖ ≤ C * (1 + ‖w⁻¹ ^ e‖) ^ N := (hC_bound _).2
     grind only [ComplexSeparableReduction.exists_complex_separable_reduction,
-      cauchy_root_bound_max, #693d, #a720, #0d9f]
+      cauchy_root_bound_max]
   -- Step 3: Turn ‖z‖ into a pole in ‖w‖
   have h_pole_bound : ∀ w : ℂ, 0 < ‖w‖ → ‖w‖ < ρ →
       1 + P.natDegree * (C * (1 + ‖w⁻¹ ^ e‖) ^ N) ≤ (1 + P.natDegree * C * 2 ^ N) / ‖w‖ ^ (e * N) := by
     intros w hw_pos hw_lt_ρ
     have h_norm_bound : (1 + ‖w⁻¹ ^ e‖) ^ N ≤ 2 ^ N / ‖w‖ ^ (e * N) := by
-      have h_norm_bound : (1 + ‖w⁻¹ ^ e‖) ≤ 2 / ‖w‖ ^ e := by
+      have h_norm_base : (1 + ‖w⁻¹ ^ e‖) ≤ 2 / ‖w‖ ^ e := by
         norm_num at *
         rw [le_div_iff₀ (pow_pos (norm_pos_iff.mpr hw_pos) _)]
         nlinarith [pow_le_pow_of_le_one (norm_nonneg w) (by linarith) (show e ≥ 0 by positivity),
           inv_mul_cancel₀ (ne_of_gt (pow_pos (norm_pos_iff.mpr hw_pos) e))]
-      convert pow_le_pow_left₀ (by positivity) h_norm_bound N using 1
+      convert pow_le_pow_left₀ (by positivity) h_norm_base N using 1
       ring
     rw [le_div_iff₀ (by positivity)] at *
     nlinarith [show 0 ≤ (P.natDegree : ℝ) * C by positivity,
-      show ‖w‖ ^ (e * N) ≤ 1 by exact pow_le_one₀ (by positivity) (by linarith)]
+      show ‖w‖ ^ (e * N) ≤ 1 from pow_le_one₀ (by positivity) (by linarith)]
   exact ⟨1 + P.natDegree * C * 2 ^ N, e * N, by positivity,
     fun w hw hw' ↦ le_trans (h_cauchy_bound w hw hw') (h_pole_bound w hw hw')⟩
 
@@ -583,9 +567,7 @@ lemma monodromy_ramification_index
     have hz0 : (P.map (evalIntPolyComplex (T₁ : ℂ))).eval (H (T₁ : ℂ)) = 0 :=
       hHroot T₁ le_rfl (T₁ : ℂ) (Metric.mem_ball_self (by linarith))
     have hmoniceval : (P.map (evalIntPolyComplex (T₁ : ℂ))).eval (H (T₁ : ℂ)) = 1 := by
-      have hpeq : P = 1 := by
-        have := hP_monic.natDegree_eq_zero.mp (Nat.lt_one_iff.mp hdeg)
-        exact this
+      have hpeq : P = 1 := hP_monic.natDegree_eq_zero.mp (Nat.lt_one_iff.mp hdeg)
       simp [hpeq]
     rw [hmoniceval] at hz0
     exact one_ne_zero hz0
@@ -660,9 +642,9 @@ lemma laurent_coeff_real
         H z = F (z⁻¹ ^ ((e : ℂ)⁻¹))) (m : ℕ) :
     (iteratedDeriv m G 0).im = 0 := by
   have hr : (0:ℝ) < min ρ ((3 * Tr / 2) ^ (-(1 : ℝ) / e)) := lt_min hρ (by positivity)
-  apply DorgeBauer.iteratedDeriv_im_zero_of_real_on_pos G
+  refine DorgeBauer.iteratedDeriv_im_zero_of_real_on_pos G
       (min ρ ((3 * Tr / 2) ^ (-(1 : ℝ) / e))) hr
-      (hG.mono (Metric.ball_subset_ball (min_le_left _ _))) (by
+      (hG.mono (Metric.ball_subset_ball (min_le_left _ _))) ?_ m
   intro t ht ht'
   have := hrel ((2 / 3) * t ^ (- (e : ℝ))) ?_
       ((3 * ((2 / 3) * t ^ (- (e : ℝ))) / 2 : ℝ) : ℂ) ?_ <;> norm_num at *
@@ -712,7 +694,7 @@ lemma laurent_coeff_real
     rw [lt_div_iff₀] at h_exp <;> nlinarith [pow_pos ht e, mul_inv_cancel₀ (ne_of_gt (pow_pos ht e))]
   · ring_nf
     norm_num [ht.le]
-    rw [abs_of_pos ht]) m
+    rw [abs_of_pos ht]
 
 /-
 **On-sphere Puiseux expansion of `H` of a given order.** -/
@@ -734,7 +716,7 @@ lemma laurent_H_expansion_of_G
   obtain ⟨T, hT⟩ : ∃ T : ℝ, Tr ≤ T ∧ 2 ≤ T ∧ ∀ x : ℝ, T ≤ x → ∀ z : ℂ,
       z ∈ Metric.sphere (x : ℂ) (x / 2) → ‖z⁻¹ ^ ((e : ℂ)⁻¹)‖ < min δ ρ := by
 
-    obtain ⟨T, hT⟩ : ∃ T : ℝ, Tr ≤ T ∧ 2 ≤ T ∧ ∀ x : ℝ, T ≤ x → ∀ z : ℂ,
+    obtain ⟨T', hT'⟩ : ∃ T : ℝ, Tr ≤ T ∧ 2 ≤ T ∧ ∀ x : ℝ, T ≤ x → ∀ z : ℂ,
         z ∈ Metric.sphere (x : ℂ) (x / 2) → ‖z⁻¹‖ < (min δ ρ) ^ e := by
       refine ⟨Tr + 2 + (min δ ρ ^ e) ⁻¹ * 2, ?_, ?_, ?_⟩
       · linarith [inv_nonneg.2 (pow_nonneg (le_min hδ.le hρ.le) e)]
@@ -748,8 +730,8 @@ lemma laurent_H_expansion_of_G
         rw [inv_eq_one_div, div_lt_iff₀] <;>
           nlinarith [show 0 < min δ ρ ^ e by positivity,
             inv_mul_cancel₀ (show (min δ ρ ^ e) ≠ 0 by positivity)]
-    refine ⟨T, hT.1, hT.2.1, fun x hx z hz ↦ ?_⟩
-    convert Real.rpow_lt_rpow (by positivity) (hT.2.2 x hx z hz)
+    refine ⟨T', hT'.1, hT'.2.1, fun x hx z hz ↦ ?_⟩
+    convert Real.rpow_lt_rpow (by positivity) (hT'.2.2 x hx z hz)
       (inv_pos.mpr (by positivity : 0 < (e : ℝ))) using 1
     · rw [← Complex.norm_cpow_real]
       norm_num
@@ -758,30 +740,28 @@ lemma laurent_H_expansion_of_G
   intro x hx z hz
   have hz_pos : 0 < z.re := by
     have hz_re : Complex.re z ≥ x - x / 2 := by
-      have hz_re : ‖z - x‖ = x / 2 := by
-        exact hz
-      have hz_re : |Complex.re z - x| ≤ x / 2 := by
-        exact hz_re ▸ Complex.abs_re_le_norm (z - x) |> le_trans (by norm_num)
-      linarith [abs_le.mp hz_re]
+      have hznorm : ‖z - x‖ = x / 2 := hz
+      have hzre_abs : |Complex.re z - x| ≤ x / 2 :=
+        hznorm ▸ Complex.abs_re_le_norm (z - x) |> le_trans (by norm_num)
+      linarith [abs_le.mp hzre_abs]
     linarith
   have hw_pos : 0 < ‖z⁻¹ ^ ((e : ℂ)⁻¹)‖ := by
     by_cases hz_zero : z = 0 <;> simp_all [Complex.cpow_def]
-  have hw_δ : ‖z⁻¹ ^ ((e : ℂ)⁻¹)‖ < δ := by
-    exact lt_of_lt_of_le (hT.2.2 x hx z hz) (min_le_left _ _)
-  have hw_ρ : ‖z⁻¹ ^ ((e : ℂ)⁻¹)‖ < ρ := by
-    exact lt_of_lt_of_le (hT.2.2 x hx z hz) (min_le_right _ _)
+  have hw_δ : ‖z⁻¹ ^ ((e : ℂ)⁻¹)‖ < δ :=
+    lt_of_lt_of_le (hT.2.2 x hx z hz) (min_le_left _ _)
+  have hw_ρ : ‖z⁻¹ ^ ((e : ℂ)⁻¹)‖ < ρ :=
+    lt_of_lt_of_le (hT.2.2 x hx z hz) (min_le_right _ _)
   have hH_val : H z = G (z⁻¹ ^ ((e : ℂ)⁻¹)) / (z⁻¹ ^ ((e : ℂ)⁻¹)) ^ Kf := by
     rw [hrel x (by linarith) z hz, hFG _ hw_pos hw_ρ]
   have hG_val : G (z⁻¹ ^ ((e : ℂ)⁻¹)) =
       ∑ m ∈ Finset.range n, (iteratedDeriv m G 0 / (m.factorial : ℂ)) * (z⁻¹ ^ ((e : ℂ)⁻¹)) ^ m +
-        (z⁻¹ ^ ((e : ℂ)⁻¹)) ^ n * R (z⁻¹ ^ ((e : ℂ)⁻¹)) := by
-    exact htay _ hw_δ
-  have hR_bound : ‖R (z⁻¹ ^ ((e : ℂ)⁻¹))‖ ≤ M' := by
-    exact hRb _ hw_δ
-  exact ⟨by
-    convert laurent_sphere_identity e Kf n he
-      (fun m ↦ iteratedDeriv m G 0 / (m.factorial : ℂ)) (R (z⁻¹ ^ (e : ℂ) ⁻¹))
-      (G (z⁻¹ ^ (e : ℂ) ⁻¹)) z hz_pos (by rw [hG_val]) using 1, hR_bound⟩
+        (z⁻¹ ^ ((e : ℂ)⁻¹)) ^ n * R (z⁻¹ ^ ((e : ℂ)⁻¹)) :=
+    htay _ hw_δ
+  have hR_bound : ‖R (z⁻¹ ^ ((e : ℂ)⁻¹))‖ ≤ M' := hRb _ hw_δ
+  refine ⟨?_, hR_bound⟩
+  convert laurent_sphere_identity e Kf n he
+    (fun m ↦ iteratedDeriv m G 0 / (m.factorial : ℂ)) (R (z⁻¹ ^ (e : ℂ) ⁻¹))
+    (G (z⁻¹ ^ (e : ℂ) ⁻¹)) z hz_pos (by rw [hG_val]) using 1
 
 /-
 **A function analytic on `Ioi T₀` equal to a polynomial on a tail is that polynomial.**
@@ -795,19 +775,20 @@ lemma eq_poly_of_tail_of_analytic (T₀ : ℤ) (g : ℝ → ℝ) (q : Polynomial
     (hT : (T₀ : ℝ) < T)
     (htail : ∀ y : ℝ, T ≤ y → g y = q.eval y) :
     ∀ x : ℝ, (T₀ : ℝ) ≤ x → g x = q.eval x := by
-  -- By the identity theorem for analytic functions, if two analytic functions agree on a set with an accumulation point, they are equal everywhere. Here, $g$ and $q.eval$ agree on $[T, \infty)$, which has $T$ as an accumulation point.
+  -- Identity theorem: two analytic functions agreeing on a set with an accumulation point are
+  -- equal everywhere. Here `g` and `q.eval` agree on `[T, ∞)`, which has `T` as an accumulation point.
   have h_eq_on_Ioi : ∀ x : ℝ, x > T₀ → g x = q.eval x := by
-    have h_eq_on_Ioi : AnalyticOnNhd ℝ (fun x ↦ q.eval x) (Set.Ioi (T₀ : ℝ)) := by
+    have h_poly_ana : AnalyticOnNhd ℝ (fun x ↦ q.eval x) (Set.Ioi (T₀ : ℝ)) := by
       apply ContDiff.analyticOnNhd
       simpa only [Polynomial.eval_eq_sum_range] using
         ContDiff.sum fun i hi ↦ ContDiff.mul (contDiff_const) (contDiff_id.pow i)
-    apply hgana.eqOn_of_preconnected_of_eventuallyEq h_eq_on_Ioi (z₀ := (T + 1 : ℝ))
+    apply hgana.eqOn_of_preconnected_of_eventuallyEq h_poly_ana (z₀ := (T + 1 : ℝ))
     · exact isPreconnected_Ioi
     · exact Set.mem_Ioi.mpr (show (T₀ : ℝ) < T + 1 by linarith)
     · filter_upwards [lt_mem_nhds (show T + 1 > T by linarith)] with x hx using htail x hx.le
   intro x hx
   cases lt_or_eq_of_le hx <;> simp_all
-  -- By continuity of $g$ at $x$, we have $\lim_{y \to x^+} g(y) = g(x)$.
+  -- By right-continuity of `g` at `x`, the limit of `g y` as `y → x⁺` is `g x`.
   have h_cont_right : Filter.Tendsto g (nhdsWithin x (Set.Ioi x)) (nhds (g x)) := by
     have := hg.continuousOn x (by norm_num)
     exact this.mono_left (nhdsWithin_mono _ <| Set.Ioi_subset_Ici_self)
@@ -841,21 +822,21 @@ lemma laurent_nonnat_exp
   obtain ⟨T, hT⟩ : ∃ T : ℝ, T₀ < T ∧ ∀ y : ℝ, T ≤ y →
       g y = ∑ m ∈ Finset.range (Kf + 1),
         (iteratedDeriv m G 0 / (m.factorial : ℂ)).re * y ^ ((Kf - m) / e : ℕ) := by
-    -- Choose a threshold $T$ such that for all $y \geq T$, $y^{-1/e} < \rho$.
-    obtain ⟨T, hT⟩ : ∃ T : ℝ, T₀ < T ∧ ∀ y : ℝ, T ≤ y →
+    -- Choose a threshold `T` such that `y⁻¹ ^ (1/e) < ρ` for all `y ≥ T`.
+    obtain ⟨T', hT'⟩ : ∃ T : ℝ, T₀ < T ∧ ∀ y : ℝ, T ≤ y →
         (y : ℂ)⁻¹ ^ ((e : ℂ)⁻¹) ∈ Metric.ball 0 ρ ∧ 0 < ‖(y : ℂ)⁻¹ ^ ((e : ℂ)⁻¹)‖ := by
-      -- Choose $T$ such that for all $y \geq T$, $y^{-1/e} < \rho$.
-      obtain ⟨T, hT⟩ : ∃ T : ℝ, T₀ < T ∧ ∀ y : ℝ, T ≤ y → (y : ℝ)⁻¹ ^ (1 / e : ℝ) < ρ := by
-        have h_lim : Filter.Tendsto (fun y : ℝ ↦ y⁻¹ ^ (1 / e : ℝ)) Filter.atTop (nhds 0) := by
-          exact le_trans (Filter.Tendsto.rpow (tendsto_inv_atTop_zero) tendsto_const_nhds <|
+      -- Choose `T` such that `y⁻¹ ^ (1/e) < ρ` for all `y ≥ T`.
+      obtain ⟨T₂, hT₂⟩ : ∃ T : ℝ, T₀ < T ∧ ∀ y : ℝ, T ≤ y → (y : ℝ)⁻¹ ^ (1 / e : ℝ) < ρ := by
+        have h_lim : Filter.Tendsto (fun y : ℝ ↦ y⁻¹ ^ (1 / e : ℝ)) Filter.atTop (nhds 0) :=
+          le_trans (Filter.Tendsto.rpow (tendsto_inv_atTop_zero) tendsto_const_nhds <|
             Or.inr <| by positivity) <| by norm_num [show e ≠ 0 by positivity]
         exact Filter.eventually_atTop.mp (h_lim.eventually (gt_mem_nhds hρ)) |>
           fun ⟨T, hT⟩ ↦ ⟨Max.max (T₀ + 1) T, by norm_num,
             fun y hy ↦ hT y <| le_trans (le_max_right _ _) hy⟩
-      refine ⟨Max.max T 1, ?_, ?_⟩ <;> norm_num [hT]
-      exact fun y hy₁ hy₂ ↦ ⟨by simpa [abs_of_nonneg (by linarith : 0 ≤ y)] using hT.2 y hy₁, by positivity⟩
-    refine ⟨Max.max T (Max.max Tr ((3 * Tr) / 2 + 1)), ?_, ?_⟩ <;> norm_num at *
-    · exact Or.inl hT.1
+      refine ⟨Max.max T₂ 1, ?_, ?_⟩ <;> norm_num [hT₂]
+      exact fun y hy₁ hy₂ ↦ ⟨by simpa [abs_of_nonneg (by linarith : 0 ≤ y)] using hT₂.2 y hy₁, by positivity⟩
+    refine ⟨Max.max T' (Max.max Tr ((3 * Tr) / 2 + 1)), ?_, ?_⟩ <;> norm_num at *
+    · exact Or.inl hT'.1
     · intro y hy₁ hy₂ hy₃
       have hH : H (y : ℂ) = ∑ m ∈ Finset.range (Kf + 1),
           (iteratedDeriv m G 0 / (m.factorial : ℂ)) * y ^ (((Kf : ℝ) - m) / e : ℂ) := by
@@ -882,12 +863,12 @@ lemma laurent_nonnat_exp
               refine ⟨hnp, fun i hi ↦ ?_⟩
               rw [div_eq_iff (by positivity)] at hi
               nlinarith [show (Kf : ℝ) + 1 ≤ m by norm_cast, show (e : ℝ) ≥ 1 by norm_cast]
-            · convert hT.2 y hy₁ |>.1 using 1
+            · convert hT'.2 y hy₁ |>.1 using 1
               norm_num [Complex.norm_cpow_of_ne_zero, show y ≠ 0 by linarith]
           · norm_num [Complex.cpow_def]
             split_ifs <;> norm_num [Complex.exp_ne_zero]
             linarith
-          · convert hT.2 y hy₁ |>.1 using 1
+          · convert hT'.2 y hy₁ |>.1 using 1
             norm_num [Complex.norm_cpow_of_ne_zero, show y ≠ 0 by linarith]
         · norm_num [Complex.normSq, Complex.norm_def]
           ring_nf
@@ -918,8 +899,8 @@ lemma laurent_nonnat_exp
     use ∑ m ∈ Finset.range (Kf + 1),
       Polynomial.C ((iteratedDeriv m G 0 / (m.factorial : ℂ)).re) * Polynomial.X ^ ((Kf - m) / e)
     simp_all [Polynomial.eval_finset_sum]
-  exact ⟨q, fun x hx ↦ by
-    rw [eq_poly_of_tail_of_analytic T₀ g q T hg hgana hT.1 hq x hx, Polynomial.eval_eq_sum_range]⟩
+  refine ⟨q, fun x hx ↦ ?_⟩
+  rw [eq_poly_of_tail_of_analytic T₀ g q T hg hgana hT.1 hq x hx, Polynomial.eval_eq_sum_range]
 
 open Classical in
 /-- Polynomial (integer-exponent) part of the Puiseux expansion of `H`, of order `n`. -/
@@ -967,7 +948,7 @@ lemma laurent_principal_eq (G : ℂ → ℂ) (e Kf n : ℕ) (he : 1 ≤ e) (z : 
       norm_cast at *
       simp_all
       rw [Int.subNatNat_eq_coe] at hi
-      norm_num [show Kf - x = i * e by exact Nat.sub_eq_of_eq_add <| by linarith]
+      norm_num [show Kf - x = i * e from Nat.sub_eq_of_eq_add <| by linarith]
       norm_cast
       simp [Nat.mul_div_cancel _ he]
       norm_num [Rat.mkRat_eq_div, mul_div_cancel_right₀, show e ≠ 0 by linarith]
@@ -1035,8 +1016,7 @@ lemma convergent_laurent_tail_bound
         ∃ m' : ℕ, iteratedDeriv m' G 0 ≠ 0 ∧ ∀ i : ℕ, ((Kf : ℝ) - (m' : ℝ)) / (e : ℝ) ≠ (i : ℝ) ∧
           ∀ m < m', ¬(iteratedDeriv m G 0 ≠ 0 ∧
             ∀ i : ℕ, ((Kf : ℝ) - (m : ℝ)) / (e : ℝ) ≠ (i : ℝ)) := by
-      have h_well_founded : WellFounded (fun m n : ℕ ↦ m < n) := by
-        exact wellFounded_lt
+      have h_well_founded : WellFounded (fun m n : ℕ ↦ m < n) := wellFounded_lt
       have := h_well_founded.has_min
         { m | iteratedDeriv m G 0 ≠ 0 ∧ ∀ i : ℕ, (Kf - m : ℝ) / e ≠ i }
         ⟨h_exists_m'.choose, h_exists_m'.choose_spec⟩
@@ -1066,8 +1046,8 @@ lemma convergent_laurent_tail_bound
   · exact fun i ↦ hm'nn i |>.1
   · unfold laurentA
     rw [Finset.sum_eq_single m'] <;> simp +contextual [hm'ne, hm'nn]
-    · have hreal : ∀ m : ℕ, (iteratedDeriv m G 0).im = 0 := by
-        apply laurent_coeff_real ρ Kf F G hρ hGan hFG e he H g T₁ Tr hTrb hTrT1 hagree hrel
+    · have hreal : ∀ m : ℕ, (iteratedDeriv m G 0).im = 0 :=
+        laurent_coeff_real ρ Kf F G hρ hGan hFG e he H g T₁ Tr hTrb hTrT1 hagree hrel
       exact ⟨fun h ↦ hm'ne <| Complex.ext h <| hreal m', Nat.factorial_ne_zero _⟩
     · intro b hb₁ hb₂ hb₃ hb₄ hb₅
       specialize hm'nn b
@@ -1079,12 +1059,14 @@ lemma convergent_laurent_tail_bound
     any_goals linarith [show (e : ℝ) ≥ 1 by norm_cast, show (m' : ℝ) ≥ 0 by positivity, hss']
     · positivity
     · intro x hx z hz
-      rw [hexp x hx z hz |>.1, sub_sub]
-      rw [laurent_principal_eq G e Kf (Kf + m' + 1) he z (by
+      have hz_ne : z ≠ 0 := by
         rintro rfl
         norm_num at hz
-        linarith [abs_of_nonneg (by linarith : 0 ≤ x)]) (by
-        apply laurent_coeff_real ρ Kf F G hρ hGan hFG e he H g T₁ Tr hTrb hTrT1 hagree hrel)]
+        linarith [abs_of_nonneg (by linarith : 0 ≤ x)]
+      have hreal : ∀ m, (iteratedDeriv m G 0).im = 0 :=
+        laurent_coeff_real ρ Kf F G hρ hGan hFG e he H g T₁ Tr hTrb hTrT1 hagree hrel
+      rw [hexp x hx z hz |>.1, sub_sub]
+      rw [laurent_principal_eq G e Kf (Kf + m' + 1) he z hz_ne hreal]
       simp at *
       refine le_trans (mul_le_mul_of_nonneg_left (hexp x hx z hz |>.2) (by positivity)) ?_
       convert mul_le_mul_of_nonneg_right (laurent_tail_term_bound z x

@@ -126,14 +126,11 @@ lemma monic_int_factor_of_monic_int_dvd {f : Polynomial ℤ} {g : Polynomial ℚ
     ∃ g' : Polynomial ℤ, g'.Monic ∧ g'.map (Int.castRingHom ℚ) = g := by
   -- By Gauss's Lemma, since `g` is monic and divides `f` in `ℚ[X]`, there is a monic `g' ∈ ℤ[X]` with `g' = g`.
   obtain ⟨g', hg', hg'_monic⟩ : ∃ g' : Polynomial ℤ, g'.Monic ∧ g = g'.map (Int.castRingHom ℚ) := by
-    have h_alg_int : ∀ c ∈ g.support, IsIntegral ℤ (g.coeff c) := by
-      obtain ⟨q, hq⟩ : ∃ q : Polynomial ℚ, Polynomial.map (Int.castRingHom ℚ) f = g * q := by
-        exact hg_dvd
-      exact fun c a ↦ isIntegral_coeff_of_dvd f g hf_monic hg_monic hg_dvd c
+    have h_intg : ∀ c ∈ g.support, IsIntegral ℤ (g.coeff c) :=
+      fun c _ ↦ isIntegral_coeff_of_dvd f g hf_monic hg_monic hg_dvd c
     have h_alg_int : ∀ c ∈ g.support, ∃ z : ℤ, g.coeff c = z := by
       intro c hc
-      specialize h_alg_int c hc
-      obtain ⟨z, hz⟩ := IsIntegrallyClosed.isIntegral_iff.mp h_alg_int
+      obtain ⟨z, hz⟩ := IsIntegrallyClosed.isIntegral_iff.mp (h_intg c hc)
       use z
       aesop
     choose! z hz using h_alg_int
@@ -146,9 +143,9 @@ lemma monic_int_factor_of_monic_int_dvd {f : Polynomial ℤ} {g : Polynomial ℚ
         · exact le_trans (Polynomial.degree_sum_le _ _)
             (Finset.sup_le fun x hx ↦ Polynomial.degree_C_mul_X_pow_le _ _ |> le_trans
               <| WithBot.coe_le_coe.mpr <| Polynomial.le_natDegree_of_mem_supp _ hx)
-        · exact ⟨hg_monic.ne_zero, by
-            specialize hz (Polynomial.natDegree g)
-            aesop⟩
+        · refine ⟨hg_monic.ne_zero, ?_⟩
+          specialize hz (Polynomial.natDegree g)
+          aesop
     · ext
       aesop
   aesop
@@ -170,17 +167,17 @@ lemma cauchy_root_bound {p : Polynomial ℂ} (hp : p.Monic) {α : ℂ} (hα : p.
   · exact le_add_of_le_of_nonneg hα_le_one <| Finset.sum_nonneg fun _ _ ↦ norm_nonneg _
   · -- Since ‖α‖ > 1, we can divide both sides of the inequality by ‖α‖^{n-1} > 0: ‖α‖ ≤ ∑ᵢ ‖aᵢ‖ ≤ 1 + ∑ᵢ ‖aᵢ‖.
     have h_div : ‖α‖ ^ p.natDegree ≤ (∑ i ∈ Finset.range p.natDegree, ‖p.coeff i‖) * ‖α‖ ^ (p.natDegree - 1) := by
-      have h_div : ‖α‖ ^ p.natDegree = ‖∑ i ∈ Finset.range p.natDegree, p.coeff i * α ^ i‖ := by
+      have h_eq : ‖α‖ ^ p.natDegree = ‖∑ i ∈ Finset.range p.natDegree, p.coeff i * α ^ i‖ := by
         simp_all [Polynomial.eval_eq_sum_range]
         simp_all [Finset.sum_range_succ]
         rw [eq_neg_of_add_eq_zero_left hα, norm_neg, norm_pow]
-      exact h_div.symm ▸ le_trans (norm_sum_le _ _)
-        (by
-          rw [Finset.sum_mul]
-          exact Finset.sum_le_sum fun i hi ↦ by
-            simpa [abs_mul] using mul_le_mul_of_nonneg_left
-              (pow_le_pow_right₀ (by linarith) (Nat.le_sub_one_of_lt (Finset.mem_range.mp hi)))
-              (by positivity))
+      rw [h_eq]
+      refine le_trans (norm_sum_le _ _) ?_
+      rw [Finset.sum_mul]
+      refine Finset.sum_le_sum fun i hi ↦ ?_
+      simpa [abs_mul] using mul_le_mul_of_nonneg_left
+        (pow_le_pow_right₀ (by linarith) (Nat.le_sub_one_of_lt (Finset.mem_range.mp hi)))
+        (by positivity)
     rcases n : p.natDegree with (_ | n) <;> simp_all [pow_succ']
     nlinarith [pow_pos (zero_lt_one.trans hα_le_one) ‹_›]
 
@@ -223,25 +220,27 @@ lemma factor_coeff_bound {g : Polynomial ℂ} (hg : g.Monic) (k : ℕ) (hk : g.n
         ∃ l : Multiset ℂ, l.card = k ∧ g = Multiset.prod (Multiset.map (fun α ↦ Polynomial.X - Polynomial.C α) l) := by
       use g.roots
       have := Polynomial.Splits.natDegree_eq_card_roots (show g.Splits from ?_)
-      · exact ⟨this ▸ hk, by
-          nth_rw 1 [← Polynomial.prod_multiset_X_sub_C_of_monic_of_roots_card_eq hg]
-          aesop⟩
+      · refine ⟨this ▸ hk, ?_⟩
+        nth_rw 1 [← Polynomial.prod_multiset_X_sub_C_of_monic_of_roots_card_eq hg]
+        aesop
       · exact IsAlgClosed.splits g
     obtain ⟨l, hl₁, hl₂⟩ := h_factor
-    exact ⟨l.toList, by simpa using hl₁, by simpa using hl₂⟩
+    refine ⟨l.toList, ?_, ?_⟩
+    · simpa using hl₁
+    · simpa using hl₂
   -- By Vieta's formulas, the coefficient of `X^j` in `g` is `(-1)^(k-j) · σ_(k-j)(α₁, …, α_k)`, where `σ_(k-j)` is the `(k-j)`-th elementary symmetric polynomial.
   have h_vieta : g.coeff j = (-1) ^ (k - j) *
       Multiset.sum (Multiset.map (fun s ↦ Multiset.prod s)
         (Multiset.powersetCard (k - j) (Multiset.ofList l))) := by
-    have h_vieta : g.coeff j =
+    have h_coeff : g.coeff j =
         Polynomial.coeff
           (Multiset.prod (Multiset.map (fun α ↦ Polynomial.X - Polynomial.C α) (Multiset.ofList l))) j := by
       aesop
-    rw [h_vieta, Multiset.prod_X_sub_C_coeff]
+    rw [h_coeff, Multiset.prod_X_sub_C_coeff]
     · simp [hl.1, Multiset.esymm]
     · simpa [hl.1] using hj.le
   -- Since `|αᵢ| ≤ B` for all `i`, we have `|σ_(k-j)| ≤ (k choose (k-j)) · B^(k-j)`.
-  have h_sigma_bound : ∀ s : Multiset ℂ, (∀ α ∈ s, ‖α‖ ≤ B) → ‖Multiset.prod s‖ ≤ B ^ Multiset.card s := by
+  have h_prod_bound : ∀ s : Multiset ℂ, (∀ α ∈ s, ‖α‖ ≤ B) → ‖Multiset.prod s‖ ≤ B ^ Multiset.card s := by
     intros s hs
     induction s using Multiset.induction <;> norm_num at *
     simpa only [pow_succ'] using
@@ -249,16 +248,16 @@ lemma factor_coeff_bound {g : Polynomial ℂ} (hg : g.Monic) (k : ℕ) (hk : g.n
         (by
           apply_assumption
           tauto) (by positivity) (by positivity)
-  have h_sigma_bound : ∀ s ∈ Multiset.powersetCard (k - j) (Multiset.ofList l),
+  have h_subset_bound : ∀ s ∈ Multiset.powersetCard (k - j) (Multiset.ofList l),
       ‖Multiset.prod s‖ ≤ B ^ (k - j) := by
     intros s hs
-    specialize h_sigma_bound s
+    specialize h_prod_bound s
     simp_all [Multiset.mem_powersetCard]
-    refine h_sigma_bound fun α hα ↦ hroots α ?_
+    refine h_prod_bound fun α hα ↦ hroots α ?_
     rw [Polynomial.eval_list_prod]
     simp_all [List.prod_eq_zero_iff, sub_eq_zero]
     exact Multiset.mem_of_le hs.1 hα
-  have h_sigma_bound :
+  have h_sum_bound :
       ‖Multiset.sum (Multiset.map (fun s ↦ Multiset.prod s)
         (Multiset.powersetCard (k - j) (Multiset.ofList l)))‖ ≤ (Nat.choose k (k - j)) * B ^ (k - j) := by
     refine le_trans (norm_multiset_sum_le _) ?_
@@ -334,7 +333,7 @@ lemma finite_specializations_for_fixed_factor
     constructor
     · intro h_div
       have h_r_zero : (r.map (evalRingHom (t : ℚ))) = 0 := by
-        have h_r_zero : (g.map (Int.castRingHom ℚ)) ∣ (r.map (evalRingHom (t : ℚ))) := by
+        have h_r_dvd : (g.map (Int.castRingHom ℚ)) ∣ (r.map (evalRingHom (t : ℚ))) := by
           simp_all
           convert dvd_sub h_div
             (dvd_mul_right (map (Int.castRingHom ℚ) g) (map (evalRingHom (t : ℚ)) q)) using 1
@@ -344,7 +343,7 @@ lemma finite_specializations_for_fixed_factor
           congr
           ext
           aesop
-        refine Polynomial.eq_zero_of_dvd_of_degree_lt h_r_zero ?_
+        refine Polynomial.eq_zero_of_dvd_of_degree_lt h_r_dvd ?_
         refine lt_of_le_of_lt (b := ↑(Polynomial.natDegree r)) ?_ ?_
         · exact le_trans (Polynomial.degree_map_le) (Polynomial.degree_le_natDegree)
         · rw [Polynomial.degree_map_eq_of_leadingCoeff_ne_zero] <;> norm_num [hg_monic]
@@ -459,9 +458,10 @@ lemma infinite_complement_of_sublinear_ncard {S : Set ℤ} {C : ℝ} {α : ℝ}
         ring_nf
         norm_cast
       · exact Set.disjoint_left.mpr fun x hx₁ hx₂ ↦ hx₂.1 hx₁.1
-    simp +zetaDelta at *
-    have hsub : Set.ncard (Sᶜ ∩ Set.Icc (-N : ℤ) N) ≤ m :=
-      hm.symm ▸ Set.ncard_le_ncard (show Sᶜ ∩ Set.Icc (-N : ℤ) N ⊆ Sᶜ from fun x hx ↦ hx.1) h
+    simp at *
+    have hsub : Set.ncard (Sᶜ ∩ Set.Icc (-N : ℤ) N) ≤ m := by
+      rw [hm]
+      exact Set.ncard_le_ncard (fun x hx ↦ hx.1) h
     linarith
   -- Choose N large enough such that 2N + 1 - m > C * N^α.
   obtain ⟨N, hN⟩ :
@@ -469,22 +469,22 @@ lemma infinite_complement_of_sublinear_ncard {S : Set ℤ} {C : ℝ} {α : ℝ}
     -- Since `α < 1`, we have `C · N^α / N → 0` as `N → ∞`.
     have h_lim :
         Filter.Tendsto (fun N : ℕ ↦ C * (N : ℝ) ^ α / (N : ℝ)) Filter.atTop (nhds 0) := by
-      have h_lim : Filter.Tendsto (fun N : ℕ ↦ C * (N : ℝ) ^ (α - 1)) Filter.atTop (nhds 0) := by
+      have h_lim_sub : Filter.Tendsto (fun N : ℕ ↦ C * (N : ℝ) ^ (α - 1)) Filter.atTop (nhds 0) := by
         simpa using tendsto_const_nhds.mul
           (tendsto_rpow_neg_atTop (by linarith : 0 < - (α - 1)) |> Filter.Tendsto.comp
             <| tendsto_natCast_atTop_atTop)
-      refine h_lim.congr' ?_
+      refine h_lim_sub.congr' ?_
       filter_upwards [Filter.eventually_gt_atTop 0] with N hN
       rw [Real.rpow_sub_one (by positivity)]
       ring
     have := h_lim.eventually (gt_mem_nhds <| show 0 < 1 / 2 by norm_num)
     rw [Filter.eventually_atTop] at this
     rcases this with ⟨N, hN⟩
-    exact ⟨N + m + 1, by positivity, by
-      have := hN (N + m + 1) (by linarith)
-      rw [div_lt_iff₀ (by positivity)] at this
-      push_cast at *
-      linarith⟩
+    refine ⟨N + m + 1, by positivity, ?_⟩
+    have := hN (N + m + 1) (by linarith)
+    rw [div_lt_iff₀ (by positivity)] at this
+    push_cast at *
+    linarith
   specialize hm N hN.1
   rw [ge_iff_le, tsub_le_iff_right] at hm
   have hnc : (2 * N + 1 : ℝ) ≤ (S ∩ Set.Icc (-N : ℤ) N |> Set.ncard : ℝ) + m := by
@@ -520,9 +520,9 @@ lemma specialization_at_int_nonzero
       · rw [Polynomial.natDegree_eq_zero_iff_degree_le_zero.mpr (le_of_eq this)]
         norm_num
       · exact ⟨Polynomial.X_sub_C_ne_zero _, by aesop_cat⟩
-    · exact absurd this (by
-        erw [Polynomial.degree_X_sub_C]
-        norm_num)
+    · refine absurd this ?_
+      erw [Polynomial.degree_X_sub_C]
+      norm_num
   exact fun h ↦ h_not_div <| Polynomial.dvd_iff_isRoot.mpr h
 
 /-- The composite ring hom `ℤ[T] → ℚ(T)`, factoring through `ℤ[T] → ℚ[T] → Frac(ℚ[T])`.
@@ -580,7 +580,7 @@ lemma int_root_locus_small_sublinear
     have h_card :
         Set.ncard ({t : ℤ | ∃ y : ℤ, y^2 ≤ (N : ℤ) ∧
           (P.map (Polynomial.evalRingHom t)).IsRoot y} ∩ Set.Icc (-(N : ℤ)) (N : ℤ)) ≤ (2 * s + 1) * m := by
-      have h_card : ∀ y : ℤ, y^2 ≤ (N : ℤ) →
+      have h_card_y : ∀ y : ℤ, y^2 ≤ (N : ℤ) →
           Set.ncard ({t : ℤ | (P.map (Polynomial.evalRingHom t)).IsRoot y} ∩ Set.Icc (-(N : ℤ)) (N : ℤ)) ≤ m := by
         intro y hy
         have hQ_nonzero : P.eval (Polynomial.C y) ≠ 0 := by
@@ -597,7 +597,7 @@ lemma int_root_locus_small_sublinear
         have hQ_roots :
             Set.ncard ({t : ℤ | (P.eval (Polynomial.C y)).IsRoot t} ∩ Set.Icc (-(N : ℤ)) (N : ℤ)) ≤
               (P.eval (Polynomial.C y)).natDegree := by
-          have hQ_roots :
+          have hQ_finset :
               Set.ncard ({t : ℤ | (P.eval (Polynomial.C y)).IsRoot t} ∩ Set.Icc (-(N : ℤ)) (N : ℤ)) ≤
                 (P.eval (Polynomial.C y)).roots.toFinset.card := by
             rw [← Set.ncard_coe_finset]
@@ -605,20 +605,20 @@ lemma int_root_locus_small_sublinear
             · intro t ht
               aesop
             · exact Finset.finite_toSet _
-          exact hQ_roots.trans (le_trans (Multiset.toFinset_card_le _) (Polynomial.card_roots' _))
+          exact hQ_finset.trans (le_trans (Multiset.toFinset_card_le _) (Polynomial.card_roots' _))
         convert hQ_roots.trans hQ_natDegree using 2
         ext
         simp [eval_map_evalRingHom_eq]
       have h_card_union :
           Set.ncard (⋃ y ∈ Finset.Icc (-(s : ℤ)) (s : ℤ),
             {t : ℤ | (P.map (Polynomial.evalRingHom t)).IsRoot y} ∩ Set.Icc (-(N : ℤ)) (N : ℤ)) ≤ (2 * s + 1) * m := by
-        have h_card_union : ∀ {S : Finset ℤ}, (∀ y ∈ S, y^2 ≤ (N : ℤ)) →
+        have h_card_S : ∀ {S : Finset ℤ}, (∀ y ∈ S, y^2 ≤ (N : ℤ)) →
             Set.ncard (⋃ y ∈ S, {t : ℤ | (P.map (Polynomial.evalRingHom t)).IsRoot y} ∩
               Set.Icc (-(N : ℤ)) (N : ℤ)) ≤ S.card * m := by
           intros S hS
           induction' S using Finset.induction with y S hyS ih <;> simp_all
-          exact le_trans (Set.ncard_union_le _ _) (by linarith [h_card y hS.1])
-        refine le_trans (h_card_union ?_) ?_
+          exact le_trans (Set.ncard_union_le _ _) (by linarith [h_card_y y hS.1])
+        refine le_trans (h_card_S ?_) ?_
         · exact fun y hy ↦ by nlinarith [Finset.mem_Icc.mp hy, Nat.sqrt_le N]
         · norm_num [two_mul, add_assoc]
           norm_cast
@@ -628,8 +628,9 @@ lemma int_root_locus_small_sublinear
       fapply Set.ncard_le_ncard
       · intro t ht
         obtain ⟨y, hy₁, hy₂⟩ := ht.1
-        exact Set.mem_iUnion₂.mpr ⟨y, Finset.mem_Icc.mpr ⟨by nlinarith [Nat.lt_succ_sqrt N],
-          by nlinarith [Nat.lt_succ_sqrt N]⟩, hy₂, ht.2⟩
+        refine Set.mem_iUnion₂.mpr ⟨y, Finset.mem_Icc.mpr ⟨?_, ?_⟩, hy₂, ht.2⟩
+        · nlinarith [Nat.lt_succ_sqrt N]
+        · nlinarith [Nat.lt_succ_sqrt N]
       · exact Set.Finite.subset (Set.finite_Icc (-N : ℤ) N) fun x hx ↦ by aesop
     refine le_trans (Nat.cast_le.mpr h_card) ?_
     norm_num [← Real.sqrt_eq_rpow]
@@ -655,13 +656,9 @@ lemma int_root_specialization_abs_le
     (t y : ℤ) (hy : (P.map (Polynomial.evalRingHom t)).IsRoot y) :
     (|y| : ℝ) ≤ 1 + ∑ i ∈ Finset.range P.natDegree, ((|(P.coeff i).eval t| : ℤ) : ℝ) := by
   -- Apply the Cauchy bound to the polynomial `P(t, Y)`.
-  have h_cauchy_bound : ∀ (p : Polynomial ℂ), p.Monic → ∀ (y : ℂ), p.IsRoot y →
-      ‖y‖ ≤ 1 + ∑ i ∈ Finset.range p.natDegree, ‖p.coeff i‖ := by
-    -- Apply the Cauchy bound to the monic polynomial `P(t, Y)`.
-    intros p hp y hy
-    apply cauchy_root_bound hp hy
-  convert h_cauchy_bound
-    (Polynomial.map (algebraMap ℤ ℂ) (P.map (Polynomial.evalRingHom t))) _ (y : ℂ) _ using 1 <;>
+  convert cauchy_root_bound
+    (p := Polynomial.map (algebraMap ℤ ℂ) (P.map (Polynomial.evalRingHom t))) _
+    (α := (y : ℂ)) _ using 1 <;>
     norm_num [Polynomial.coeff_map]
   · rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] <;> norm_num [hP_monic]
     intro h
@@ -764,7 +761,6 @@ lemma int_root_large_magnitude_window
     ∑ i ∈ Finset.range P.natDegree, (P.coeff i |> Polynomial.natDegree), ?_, ?_⟩ <;> norm_num
   · exact add_pos_of_pos_of_nonneg zero_lt_one <| Finset.sum_nonneg fun _ _ ↦ Finset.sum_nonneg fun _ _ ↦ abs_nonneg _
   · intro N hN t ht₁ ht₂ y hy
-    specialize hK
     have := hK.2 N hN t ht₁ ht₂ y hy
     simp_all [add_mul, Finset.sum_mul]
     refine le_trans this (add_le_add ?_ ?_)
@@ -1056,9 +1052,13 @@ theorem graph_integer_points_sublinear_still_false :
     simp only [Set.mem_setOf_eq, Set.mem_Icc]
     constructor
     · rintro ⟨h1, h2, _⟩
-      exact ⟨by exact_mod_cast h1, by exact_mod_cast h2⟩
+      refine ⟨?_, ?_⟩
+      · exact_mod_cast h1
+      · exact_mod_cast h2
     · rintro ⟨h1, h2⟩
-      exact ⟨by exact_mod_cast h1, by exact_mod_cast h2, gipsCexF_int t⟩
+      refine ⟨?_, ?_, gipsCexF_int t⟩
+      · exact_mod_cast h1
+      · exact_mod_cast h2
   have hcard : ∀ N : ℕ, (Set.ncard {t : ℤ | (1 : ℝ) ≤ (t : ℝ) ∧ (t : ℝ) ≤ (N : ℝ) ∧
       ∃ m : ℤ, gipsCexF (t : ℝ) = (m : ℝ)} : ℝ) = (N:ℝ) := by
     intro N
@@ -1232,7 +1232,9 @@ lemma pos_branches_cover_sublinear (n k : ℕ) (hk : 2 ≤ k) (g : Fin n → ℝ
     apply Set.Finite.subset (Set.finite_Icc (1 : ℤ) (N : ℤ))
     intro x hx
     obtain ⟨j, hj⟩ := Set.mem_iUnion.mp hx
-    exact ⟨by exact_mod_cast hj.1, by exact_mod_cast hj.2.1⟩
+    refine ⟨?_, ?_⟩
+    · exact_mod_cast hj.1
+    · exact_mod_cast hj.2.1
   · convert sublinear_finite_cover (posBranchesUnion n g)
       (fun j N ↦ {t : ℤ | (1 : ℝ) ≤ (t : ℝ) ∧ (t : ℝ) ≤ N ∧ ∃ m : ℤ, g j (t : ℝ) = (m : ℝ)})
       ?_ ?_ ?_ using 1
@@ -1264,8 +1266,11 @@ lemma neg_branches_cover_sublinear (n k : ℕ) (hk : 2 ≤ k) (h : Fin n → ℝ
       intro t ht
       norm_num
       obtain ⟨ht₁, ht₂, m, hm⟩ := ht
-      exact ⟨by exact_mod_cast (by linarith : (-N : ℝ) ≤ t),
-        by exact_mod_cast (by linarith : (t : ℝ) ≤ -1)⟩
+      refine ⟨?_, ?_⟩
+      · have h1 : (-N : ℝ) ≤ t := by linarith
+        exact_mod_cast h1
+      · have h2 : (t : ℝ) ≤ -1 := by linarith
+        exact_mod_cast h2
     exact Set.finite_iUnion h_finite
   · convert sublinear_finite_cover (negBranchesUnion n h)
       (fun j N ↦ {t : ℤ | (1 : ℝ) ≤ (-(t : ℝ)) ∧ (-(t : ℝ)) ≤ N ∧ ∃ m : ℤ, h j (-(t : ℝ)) = (m : ℝ)})
@@ -1276,8 +1281,11 @@ lemma neg_branches_cover_sublinear (n k : ℕ) (hk : 2 ≤ k) (h : Fin n → ℝ
     · intro j N
       apply Set.Finite.subset (Set.finite_Icc (-N : ℤ) (-1 : ℤ))
       intro t ht
-      exact ⟨by exact_mod_cast (by linarith [ht.1, ht.2.1] : (-N : ℝ) ≤ t),
-        by exact_mod_cast (by linarith [ht.1, ht.2.1] : (t : ℝ) ≤ -1)⟩
+      refine ⟨?_, ?_⟩
+      · have h1 : (-N : ℝ) ≤ t := by linarith [ht.1, ht.2.1]
+        exact_mod_cast h1
+      · have h2 : (t : ℝ) ≤ -1 := by linarith [ht.1, ht.2.1]
+        exact_mod_cast h2
     · exact fun j ↦ graph_integer_points_sublinear_neg (h j) k hk (hh_cd j) (hh_mono j) (hh_rate j)
 
 /-

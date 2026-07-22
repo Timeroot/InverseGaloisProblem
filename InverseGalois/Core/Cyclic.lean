@@ -51,9 +51,9 @@ theorem ZMod.exists_units_surjection (n : ℕ) [NeZero n] :
   -- Since `p` is prime, `(ZMod p)ˣ` is cyclic and has cardinality `p-1`, hence `zmodCyclicMulEquiv` gives an equivalence with `Multiplicative (ZMod (p-1))`.
   let e : (ZMod p)ˣ ≃* Multiplicative (ZMod (p - 1)) := by
     have := Fact.mk hp.1
-    have h_card : Nat.card (ZMod p)ˣ = p - 1 := by
-      simp [Nat.totient_prime hp.1]
-    exact (zmodCyclicMulEquiv inferInstance).symm.trans (by rw [h_card])
+    have h_card : Nat.card (ZMod p)ˣ = p - 1 := by simp [Nat.totient_prime hp.1]
+    rw [← h_card]
+    exact (zmodCyclicMulEquiv inferInstance).symm
   -- Since `n ∣ p - 1`, reduction modulo `n` gives the required quotient map.
   have h_div : n ∣ p - 1 := by
     rw [← Int.natCast_dvd_natCast]

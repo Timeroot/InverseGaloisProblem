@@ -62,7 +62,7 @@ theorem card_gal_eq_factorial_of_root
     have := Classical.decEq (rootSet f f.SplittingField)
     simp only [Nat.card_eq_fintype_card, Fintype.card_perm, ge_iff_le]
     rw [card_rootSet_eq_natDegree hf (SplittingField.splits f)]
-  · have h_subfield : Module.finrank ℚ (↥(IntermediateField.adjoin ℚ {α})) =
+  · have h_finrank_adjoin : Module.finrank ℚ (↥(IntermediateField.adjoin ℚ {α})) =
         f.natDegree.factorial := by
       have h_minpoly : minpoly ℚ α = C (1 / g.leadingCoeff) * g := by
         refine Eq.symm (minpoly.eq_of_irreducible_of_monic ?_ ?_ ?_)
@@ -72,9 +72,11 @@ theorem card_gal_eq_factorial_of_root
         · rw [Monic, leadingCoeff_mul, leadingCoeff_C, div_mul_cancel₀]
           aesop
       rw [IntermediateField.adjoin.finrank]
-      · rw [h_minpoly, natDegree_C_mul] <;> aesop
+      · rw [h_minpoly, natDegree_C_mul]
+        · exact hgdeg
+        · aesop
       · exact IsIntegral.of_finite ℚ α
-    have h_subfield : Module.finrank ℚ f.SplittingField ≥ Module.finrank ℚ (↥(IntermediateField.adjoin ℚ {α})) := by
+    have h_finrank_ge : Module.finrank ℚ f.SplittingField ≥ Module.finrank ℚ (↥(IntermediateField.adjoin ℚ {α})) := by
       have := Module.finrank_mul_finrank ℚ (IntermediateField.adjoin ℚ { α }) f.SplittingField
       exact Nat.le_of_dvd (Module.finrank_pos) (dvd_of_mul_right_eq _ this)
     have h_card : Nat.card f.Gal = Module.finrank ℚ f.SplittingField := by
@@ -216,7 +218,8 @@ theorem perm_fin (n : ℕ) : IsInverseGalois (Equiv.Perm (Fin n)) := by
       obtain ⟨f, g, α, hf, hdeg, hg, hgdeg, hα⟩ :=
         exists_full_resolvent (n + 1) (Nat.succ_pos n)
       rw [← hdeg]
-      exact sn_realizable_of_root f hf g hg (by simpa [hdeg] using hgdeg) α hα
+      have hgdeg' : g.natDegree = f.natDegree.factorial := by simpa [hdeg] using hgdeg
+      exact sn_realizable_of_root f hf g hg hgdeg' α hα
 
 end IsInverseGalois
 

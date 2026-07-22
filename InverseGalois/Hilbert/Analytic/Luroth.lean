@@ -41,29 +41,30 @@ theorem transcendental_of_not_mem_bot (θ : RatFunc k)
     -- Since `k[X]` is integrally closed, any element of `k(X)` integral over `k` must lie in `k[X]`.
     have h_int_closed : ∀ {x : RatFunc k}, IsIntegral k x → ∃ p : Polynomial k, x = RatFunc.mk p 1 := by
       intro x hx_int
-      have h_int_closed : IsIntegral (Polynomial k) x := by
-        exact hx_int.tower_top
-      obtain ⟨p, hp⟩ := IsIntegrallyClosed.isIntegral_iff.mp h_int_closed
-      exact ⟨p, hp.symm.trans (by simp [RatFunc.mk_eq_div])⟩
+      have hx_int' : IsIntegral (Polynomial k) x := hx_int.tower_top
+      obtain ⟨p, hp⟩ := IsIntegrallyClosed.isIntegral_iff.mp hx_int'
+      refine ⟨p, hp.symm.trans ?_⟩
+      simp [RatFunc.mk_eq_div]
     obtain ⟨p, rfl⟩ := h_int_closed h_int
     -- Since `p` is a polynomial in `k[X]`, it is algebraic over `k`.
-    have h_alg_poly : IsAlgebraic k p := by
+    have h_p_alg : IsAlgebraic k p := by
       obtain ⟨q, hq⟩ := h_alg
       refine ⟨q, hq.1, ?_⟩
       convert hq.2 using 1
       simp [Polynomial.aeval_def, Polynomial.eval₂_eq_sum_range]
       rw [← (IsFractionRing.injective (Polynomial k) (RatFunc k)) |>.eq_iff]
       simp
-    have h_alg_poly : p.degree ≤ 0 := by
-      obtain ⟨q, hq⟩ := h_alg_poly
-      have h_alg_poly : q.comp p = 0 := by
+    have h_deg_le : p.degree ≤ 0 := by
+      obtain ⟨q, hq⟩ := h_p_alg
+      have h_comp : q.comp p = 0 := by
         simpa [Polynomial.aeval_def] using hq.2
-      rw [Polynomial.comp_eq_zero_iff] at h_alg_poly
-      exact h_alg_poly.resolve_left hq.1 |>.2.symm ▸ Polynomial.degree_C_le
-    rw [Polynomial.eq_C_of_degree_le_zero h_alg_poly] at h
-    exact h (by
-      rw [RatFunc.mk_one]
-      exact Subalgebra.algebraMap_mem _ _)
+      rw [Polynomial.comp_eq_zero_iff] at h_comp
+      rw [(h_comp.resolve_left hq.1).2]
+      exact Polynomial.degree_C_le
+    rw [Polynomial.eq_C_of_degree_le_zero h_deg_le] at h
+    apply h
+    rw [RatFunc.mk_one]
+    exact Subalgebra.algebraMap_mem _ _
 
 /-
 `RatFunc.X` generates the whole field `k(X)` over `k`.
@@ -73,7 +74,8 @@ theorem adjoin_X_top :
   -- We must show `k⟮RatFunc.X⟯ = ⊤` in `IntermediateField k (RatFunc k)`; equivalently the smallest subfield containing `k` and `RatFunc.X` is everything.
   ext z
   simp [IntermediateField.mem_adjoin_simple_iff]
-  exact ⟨z.num, z.denom, by simp [RatFunc.num_div_denom]⟩
+  refine ⟨z.num, z.denom, ?_⟩
+  simp [RatFunc.num_div_denom]
 
 /-- `RatFunc.X` generates the whole field `k(X)` over any intermediate field `K`. -/
 theorem adjoin_X_top' (K : IntermediateField k (RatFunc k)) :
@@ -84,7 +86,9 @@ theorem adjoin_X_top' (K : IntermediateField k (RatFunc k)) :
   intro x S hS
   specialize hk x S
   simp_all [Set.insert_subset_iff, Set.range_subset_iff]
-  exact hk fun y ↦ by simpa using S.mul_mem (hS.2 _ <| IntermediateField.algebraMap_mem _ y) (S.one_mem)
+  apply hk
+  intro y
+  simpa using S.mul_mem (hS.2 _ <| IntermediateField.algebraMap_mem _ y) (S.one_mem)
 
 /-
 A degree-one polynomial `C a * X + C b` over a GCD domain with coprime coefficients
@@ -103,8 +107,9 @@ theorem linear_irreducible {R : Type*} [CommRing R] [IsDomain R] [GCDMonoid R]
       rw [← Polynomial.degree_mul, ← hpq, Polynomial.degree_add_C] <;> simp [ha]
     -- Since the degree of `p` and `q` is 1, one of them must be a constant polynomial.
     have h_const : p.degree = 0 ∨ q.degree = 0 := by
-      rw [Polynomial.degree_eq_natDegree (show p ≠ 0 from fun h ↦ by simp [h] at h_deg),
-        Polynomial.degree_eq_natDegree (show q ≠ 0 from fun h ↦ by simp [h] at h_deg)] at *
+      have hp0 : p ≠ 0 := fun h ↦ by simp [h] at h_deg
+      have hq0 : q ≠ 0 := fun h ↦ by simp [h] at h_deg
+      rw [Polynomial.degree_eq_natDegree hp0, Polynomial.degree_eq_natDegree hq0] at *
       norm_cast at *
       omega
     rcases h_const with (h | h) <;>
@@ -112,13 +117,13 @@ theorem linear_irreducible {R : Type*} [CommRing R] [IsDomain R] [GCDMonoid R]
     · have := hpq 0
       have := hpq 1
       simp_all [Polynomial.coeff_C, Polynomial.coeff_X]
-      exact Or.inl (isUnit_of_dvd_one <| by exact ⟨u * q.coeff 1 + v * q.coeff 0,
-        by linear_combination' ‹u * (p.coeff 0 * q.coeff 1) + v * (p.coeff 0 * q.coeff 0) = 1›.symm⟩)
+      refine Or.inl (isUnit_of_dvd_one ⟨u * q.coeff 1 + v * q.coeff 0, ?_⟩)
+      linear_combination' ‹u * (p.coeff 0 * q.coeff 1) + v * (p.coeff 0 * q.coeff 0) = 1›.symm
     · have := hpq 0
       have := hpq 1
       simp_all [Polynomial.coeff_C, Polynomial.coeff_X]
-      exact Or.inr (isUnit_of_dvd_one <| by exact ⟨u * p.coeff 1 + v * p.coeff 0,
-        by linear_combination' ‹u * (p.coeff 1 * q.coeff 0) + v * (p.coeff 0 * q.coeff 0) = 1›.symm⟩)
+      refine Or.inr (isUnit_of_dvd_one ⟨u * p.coeff 1 + v * p.coeff 0, ?_⟩)
+      linear_combination' ‹u * (p.coeff 1 * q.coeff 0) + v * (p.coeff 0 * q.coeff 0) = 1›.symm
 
 /-
 The primitive trinomial `g(Y) - X*h(Y)` over the ring `k[X]` is irreducible. Here the
@@ -143,12 +148,14 @@ theorem auxPoly_R_irreducible (g h : k[X]) (hcop : IsCoprime g h)
     · simp [Polynomial.aeval_def]
       simp [Polynomial.eval₂_eq_sum_range, Polynomial.eval_eq_sum_range]
       simp [Polynomial.coeff_zero_eq_eval_zero, Polynomial.eval_pow, Polynomial.eval_C]
-      exact fun hj ↦ by rw [Polynomial.coeff_eq_zero_of_natDegree_lt hj] 
+      intro hj
+      rw [Polynomial.coeff_eq_zero_of_natDegree_lt hj]
     · simp [Polynomial.aeval_def, Polynomial.eval₂_eq_sum_range]
       simp [Polynomial.eval_finset_sum, Polynomial.coeff_C, pow_succ, Finset.sum_range_succ', ‹1 = i›.symm]
       rcases j with (_ | j) <;> simp [Polynomial.coeff_eq_zero_of_natDegree_lt]
       simp [Polynomial.coeff_zero_eq_eval_zero, Polynomial.eval_pow, Polynomial.eval_C]
-      exact fun hj ↦ by rw [Polynomial.coeff_eq_zero_of_natDegree_lt (by linarith)] 
+      intro hj
+      rw [Polynomial.coeff_eq_zero_of_natDegree_lt (by linarith)]
     · simp_all [Polynomial.aeval_def]
       simp_all [Polynomial.eval₂_eq_sum_range]
       simp_all [Polynomial.eval_finset_sum]
@@ -209,10 +216,15 @@ theorem auxPoly_irreducible (g h : k[X]) (hcop : IsCoprime g h)
           have := hq n 1
           simp_all
           split_ifs at * <;> simp_all [Polynomial.coeff_eq_zero_of_natDegree_lt]
-        have h_const : g = Polynomial.C (g.coeff 0) ∧ h = Polynomial.C (h.coeff 0) := by
-          exact ⟨Polynomial.ext fun n ↦ by rcases n with (_ | _ | n) <;> simp_all,
-            Polynomial.ext fun n ↦ by rcases n with (_ | _ | n) <;> simp_all⟩
-        rw [h_const.1, h_const.2] at hpos
+        have h_gh_const : g = Polynomial.C (g.coeff 0) ∧ h = Polynomial.C (h.coeff 0) := by
+          constructor
+          · apply Polynomial.ext
+            intro n
+            rcases n with (_ | _ | n) <;> simp_all
+          · apply Polynomial.ext
+            intro n
+            rcases n with (_ | _ | n) <;> simp_all
+        rw [h_gh_const.1, h_gh_const.2] at hpos
         simp_all +singlePass
   convert h_gauss using 1
   simp +zetaDelta at *
@@ -228,7 +240,7 @@ theorem exists_algEquiv_ratFunc (θ : RatFunc k)
     ∃ e : RatFunc k ≃ₐ[k] k⟮θ⟯,
       e RatFunc.X = ⟨θ, IntermediateField.subset_adjoin k {θ} rfl⟩ := by
   obtain ⟨τ, hτ⟩ : ∃ τ : (IntermediateField.adjoin k {θ})ˣ, τ.val = ⟨θ, IntermediateField.subset_adjoin k {θ} rfl⟩ := by
-    refine' ⟨Units.mk0 _ _, rfl⟩
+    refine ⟨Units.mk0 _ ?_, rfl⟩
     contrapose! h
     rw [Subtype.ext_iff] at h
     aesop
@@ -242,7 +254,10 @@ theorem exists_algEquiv_ratFunc (θ : RatFunc k)
     intro p q hpq
     have h_eval : Polynomial.aeval (R := k) θ p = Polynomial.aeval (R := k) θ q := by
       convert congr_arg Subtype.val hpq using 1 <;> simp [Polynomial.aeval_def, Polynomial.eval₂_eq_sum_range]
-    exact Classical.not_not.1 fun h ↦ h_transcendental ⟨p - q, sub_ne_zero.2 h, by simp [h_eval]⟩
+    apply Classical.not_not.1
+    intro h
+    refine h_transcendental ⟨p - q, sub_ne_zero.2 h, ?_⟩
+    simp [h_eval]
   -- By RatFunc.liftAlgHom, it extends to a k-algebra hom e₀ : RatFunc k →ₐ[k] k⟮θ⟯ with e₀ RatFunc.X = τ.
   obtain ⟨e₀', he₀'⟩ :
       ∃ e₀' : RatFunc k →ₐ[k] IntermediateField.adjoin k {θ},
@@ -253,8 +268,12 @@ theorem exists_algEquiv_ratFunc (θ : RatFunc k)
       refine ⟨RatFunc.liftAlgHom e₀ ?_, ?_⟩
       · intro x hx
         simp at *
-        exact fun h ↦ hx <| he₀.2 <| by simpa using h
-      · exact funext fun x ↦ by simp [liftAlgHom]
+        intro h
+        apply hx
+        apply he₀.2
+        simpa using h
+      · funext x
+        simp [liftAlgHom]
     obtain ⟨e₀', he₀'⟩ := h_lift
     refine ⟨e₀', ?_, ?_⟩
     · convert congr_fun he₀' Polynomial.X using 1
@@ -282,9 +301,9 @@ theorem exists_algEquiv_ratFunc (θ : RatFunc k)
     · ext
       simp [hpq]
       simp [div_eq_mul_inv]
-      exact Or.inl (by
-        erw [Subtype.coe_mk]
-        simp)
+      apply Or.inl
+      erw [Subtype.coe_mk]
+      simp
   refine ⟨AlgEquiv.ofBijective e₀' ⟨he₀'.2, h_surj⟩, ?_⟩
   aesop
 
@@ -307,7 +326,8 @@ theorem height_pos_of_not_mem_bot (θ : RatFunc k)
   obtain ⟨a, b, ha, hb⟩ : ∃ a b : k, θ.num = Polynomial.C a ∧ θ.denom = Polynomial.C b := by
     exact ⟨_, _, Polynomial.eq_C_of_natDegree_eq_zero h.1, Polynomial.eq_C_of_natDegree_eq_zero h.2⟩
   rw [← RatFunc.num_div_denom θ, ha, hb]
-  exact ⟨a / b, by simp [div_eq_mul_inv]⟩
+  refine ⟨a / b, ?_⟩
+  simp [div_eq_mul_inv]
 
 /-
 **Degree formula.** For a nonconstant rational function `θ`, the rational function
@@ -349,21 +369,27 @@ theorem finrank_adjoin_eq_height (θ : RatFunc k)
         aesop
       intro h_zero
       have h_const : θ = RatFunc.C (g.coeff θ.height / h.coeff θ.height) := by
-        have h_const : algebraMap k K (g.coeff θ.height) = τ * algebraMap k K (h.coeff θ.height) := by
-          exact eq_of_sub_eq_zero (h_coeff.symm.trans h_zero)
-        have h_const : θ = RatFunc.C (g.coeff θ.height / h.coeff θ.height) := by
-          have h_eq :
-              algebraMap k (RatFunc k) (g.coeff θ.height) = θ * algebraMap k (RatFunc k) (h.coeff θ.height) := by
-            convert congr_arg (algebraMap K (RatFunc k)) h_const using 1
-          by_cases h : h.coeff θ.height = 0 <;> simp_all [div_eq_mul_inv, mul_comm]
-          cases max_choice (Polynomial.natDegree θ.num) (Polynomial.natDegree θ.denom) <;>
-            simp_all [RatFunc.height]
-          · exact absurd h_const (by
-              rw [Polynomial.coeff_natDegree]
-              exact mt Polynomial.leadingCoeff_eq_zero.1 <| by aesop)
-          · exact absurd h (fun h ↦ absurd h (fun h ↦ absurd (RatFunc.denom_ne_zero θ) (by aesop)))
-        exact h_const
-      exact ‹θ ∉ ⊥› (h_const ▸ IntermediateField.mem_bot.mpr ⟨_, rfl⟩)
+        have h_ratio : algebraMap k K (g.coeff θ.height) = τ * algebraMap k K (h.coeff θ.height) :=
+          eq_of_sub_eq_zero (h_coeff.symm.trans h_zero)
+        have h_eq :
+            algebraMap k (RatFunc k) (g.coeff θ.height) = θ * algebraMap k (RatFunc k) (h.coeff θ.height) := by
+          convert congr_arg (algebraMap K (RatFunc k)) h_ratio using 1
+        by_cases h : h.coeff θ.height = 0 <;> simp_all [div_eq_mul_inv, mul_comm]
+        cases max_choice (Polynomial.natDegree θ.num) (Polynomial.natDegree θ.denom) <;>
+          simp_all [RatFunc.height]
+        · apply absurd h_ratio
+          rw [Polynomial.coeff_natDegree]
+          refine mt Polynomial.leadingCoeff_eq_zero.1 ?_
+          aesop
+        · apply absurd h
+          intro h
+          apply absurd h
+          intro h
+          refine absurd (RatFunc.denom_ne_zero θ) ?_
+          aesop
+      apply ‹θ ∉ ⊥›
+      rw [h_const]
+      exact IntermediateField.mem_bot.mpr ⟨_, rfl⟩
   -- Therefore, the minimal polynomial of `X` over `K` is `G`.
   have h_minpoly : minpoly K (RatFunc.X : RatFunc k) = G * Polynomial.C (G.leadingCoeff)⁻¹ := by
     refine Eq.symm (minpoly.eq_of_irreducible_of_monic ?_ ?_ ?_)
@@ -392,8 +418,10 @@ theorem finiteDimensional_of_ne_bot (M : IntermediateField k (RatFunc k)) (hM : 
     contrapose! hM
     exact le_bot_iff.mp hM
   have h_finrank : FiniteDimensional k⟮θ₀⟯ (RatFunc k) := by
-    have := finrank_adjoin_eq_height θ₀ hθ₀.2
-    exact FiniteDimensional.of_finrank_pos (this.symm ▸ height_pos_of_not_mem_bot θ₀ hθ₀.2)
+    have h_eq := finrank_adjoin_eq_height θ₀ hθ₀.2
+    apply FiniteDimensional.of_finrank_pos
+    rw [h_eq]
+    exact height_pos_of_not_mem_bot θ₀ hθ₀.2
   have h_subfield : k⟮θ₀⟯ ≤ M := by
     aesop
   obtain ⟨s, hs⟩ := h_finrank
@@ -402,7 +430,8 @@ theorem finiteDimensional_of_ne_bot (M : IntermediateField k (RatFunc k)) (hM : 
   intro x
   obtain ⟨y, hy⟩ := Submodule.mem_span_finset.mp (hs x)
   rw [← hy.2]
-  refine' Submodule.sum_mem _ fun a ha ↦ _
+  apply Submodule.sum_mem
+  intro a ha
   rw [Submodule.mem_span]
   intro p hp
   exact p.smul_mem (⟨y a, h_subfield (y a |>.2)⟩ : M) (hp ha)
@@ -472,7 +501,9 @@ theorem bivarR_natDegree (g h : k[X]) (hcop : IsCoprime g h)
       intro H
       -- Since `g` and `h` are coprime and `g ∣ h * leadingCoeff g`, it follows that `g ∣ leadingCoeff g`.
       have h_div : g ∣ Polynomial.C (g.leadingCoeff) := by
-        exact hcop.dvd_of_dvd_mul_left ⟨Polynomial.C (h.coeff g.natDegree), by linear_combination' H⟩
+        apply hcop.dvd_of_dvd_mul_left
+        refine ⟨Polynomial.C (h.coeff g.natDegree), ?_⟩
+        linear_combination' H
       have := Polynomial.natDegree_le_of_dvd h_div
       by_cases hg : g = 0 <;> simp_all +singlePass
     · unfold bivarR
@@ -498,11 +529,11 @@ theorem bivarR_isPrimitive (g h : k[X]) (hcop : IsCoprime g h)
     have h_coeff_i : Polynomial.coeff (bivarR g h) i = (g.coeff i) • h - (h.coeff i) • g := by
       simp [bivarR, Polynomial.coeff_sub, Polynomial.coeff_C_mul]
       simp [mul_comm, Polynomial.smul_eq_C_mul]
-    exact h_coeff_i ▸ by
-      rcases hd with ⟨q, hq⟩
-      exact ⟨Polynomial.coeff q i,
-        by simpa [Polynomial.coeff_C_mul] using
-          congr_arg (fun p : Polynomial (Polynomial k) ↦ Polynomial.coeff p i) hq⟩
+    rw [← h_coeff_i]
+    rcases hd with ⟨q, hq⟩
+    refine ⟨Polynomial.coeff q i, ?_⟩
+    simpa [Polynomial.coeff_C_mul] using
+      congr_arg (fun p : Polynomial (Polynomial k) ↦ Polynomial.coeff p i) hq
   -- Since `g` and `h` are coprime and not both constant, their coefficient vectors are linearly independent over `k`.
   have h_lin_indep : ∃ i j : ℕ, g.coeff i * h.coeff j ≠ g.coeff j * h.coeff i := by
     by_contra! h
@@ -514,17 +545,18 @@ theorem bivarR_isPrimitive (g h : k[X]) (hcop : IsCoprime g h)
         rw [Polynomial.isUnit_iff] at hcop
         aesop
       · obtain ⟨i, hi⟩ := h'
-        exact ⟨g.coeff i / h'.coeff i, fun n ↦ by
-          rw [div_mul_eq_mul_div, eq_div_iff hi]
-          linear_combination' h n i⟩
+        refine ⟨g.coeff i / h'.coeff i, ?_⟩
+        intro n
+        rw [div_mul_eq_mul_div, eq_div_iff hi]
+        linear_combination' h n i
     rcases h_lin_dep with ⟨c, rfl⟩
     simp_all [IsCoprime]
     -- Since `h'` is a unit, its degree must be zero.
     have h_deg_zero : h'.natDegree = 0 := by
-      have h_deg_zero : IsUnit h' := by
-        exact isUnit_of_dvd_one (hcop.choose_spec.choose_spec ▸ dvd_add
-          (dvd_mul_of_dvd_right (dvd_mul_left _ _) _) (dvd_mul_left _ _))
-      exact Polynomial.natDegree_eq_zero_of_isUnit h_deg_zero
+      apply Polynomial.natDegree_eq_zero_of_isUnit
+      apply isUnit_of_dvd_one
+      rw [← hcop.choose_spec.choose_spec]
+      exact dvd_add (dvd_mul_of_dvd_right (dvd_mul_left _ _) _) (dvd_mul_left _ _)
     rw [Polynomial.natDegree_mul'] at hpos <;> aesop
   obtain ⟨i, j, hij⟩ := h_lin_indep
   have h_div_g : d ∣ g := by
@@ -539,19 +571,16 @@ theorem bivarR_isPrimitive (g h : k[X]) (hcop : IsCoprime g h)
     ring_nf
     grind
   have h_div_h : d ∣ h := by
-    have h_div_h : ∀ i, d ∣ (g.coeff i) • h := by
+    have h_dvd_smul : ∀ i, d ∣ (g.coeff i) • h := by
       intro i
       specialize h_coeff i
-      have h_div_g_i : d ∣ (h.coeff i) • g := by
-        exact dvd_smul_of_dvd _ h_div_g
-      have h_div_g_i' : d ∣ (g.coeff i) • h := by
-        convert dvd_add h_coeff h_div_g_i using 1
-        simp [sub_add_cancel]
-      exact h_div_g_i'
-    have h_div_h : ∃ i, g.coeff i ≠ 0 := by
-      exact ⟨Polynomial.natDegree g, by aesop⟩
-    obtain ⟨i, hi⟩ := h_div_h
-    specialize ‹∀ i, d ∣ g.coeff i • h› i
+      have h_div_g_i : d ∣ (h.coeff i) • g := dvd_smul_of_dvd _ h_div_g
+      convert dvd_add h_coeff h_div_g_i using 1
+      simp [sub_add_cancel]
+    obtain ⟨i, hi⟩ : ∃ i, g.coeff i ≠ 0 := by
+      refine ⟨Polynomial.natDegree g, ?_⟩
+      aesop
+    specialize h_dvd_smul i
     simp_all [Polynomial.smul_eq_C_mul]
   exact hcop.isUnit_of_dvd' h_div_g h_div_h
 
@@ -610,7 +639,7 @@ theorem primitive_swap_degree_finish (P φ S : k[X][X]) (hP : P.IsPrimitive)
     P.natDegree ≤ φ.natDegree := by
   -- From `swap P = -P`, we see `-P = swap φ * swap S`, so `swap S` has `Y`-degree `≤ P.natDegree - (swap φ).natDegree ≤ 0`; hence `swap S = C s` for some `s ∈ k[X]`, and `C s ∣ P`; primitivity of `P` forces `s` to be a unit, so `S` is constant in `Y`.
   have h_swap_S : ∃ s : k[X], Polynomial.Bivariate.swap S = Polynomial.C s := by
-    refine' ⟨_, Polynomial.eq_C_of_natDegree_eq_zero _⟩
+    refine ⟨_, Polynomial.eq_C_of_natDegree_eq_zero ?_⟩
     have h_deg_swap_S : (Bivariate.swap P).natDegree = (Bivariate.swap φ).natDegree + (Bivariate.swap S).natDegree := by
       rw [hmul, map_mul, Polynomial.natDegree_mul']
       aesop
@@ -619,16 +648,18 @@ theorem primitive_swap_degree_finish (P φ S : k[X][X]) (hP : P.IsPrimitive)
   -- Since `swap S = C s` for some `s ∈ k[X]`, we have `C s ∣ P`. By `hP : P.IsPrimitive`, `IsUnit s`.
   obtain ⟨s, hs⟩ := h_swap_S
   have h_unit : IsUnit s := by
-    have h_unit : Polynomial.C s ∣ P := by
+    have h_dvd : Polynomial.C s ∣ P := by
       have h_div : Polynomial.Bivariate.swap P = Polynomial.Bivariate.swap φ * Polynomial.C s := by
         rw [← hs, hmul, map_mul]
       rw [hPswap] at h_div
-      exact ⟨-Bivariate.swap φ, by linear_combination' -h_div⟩
-    exact hP _ (by simpa using h_unit)
+      refine ⟨-Bivariate.swap φ, ?_⟩
+      linear_combination' -h_div
+    refine hP _ ?_
+    simpa using h_dvd
   have h_S_const : S.natDegree = 0 := by
-    have h_S_const : S = Polynomial.Bivariate.swap.symm (Polynomial.C s) := by
+    have h_S_eq : S = Polynomial.Bivariate.swap.symm (Polynomial.C s) := by
       rw [← hs, AlgEquiv.symm_apply_apply]
-    simp [h_S_const, Polynomial.Bivariate.swap]
+    simp [h_S_eq, Polynomial.Bivariate.swap]
     rw [Polynomial.isUnit_iff] at h_unit
     aesop
   rw [hmul, Polynomial.natDegree_mul'] <;> aesop
@@ -668,10 +699,10 @@ theorem exists_primitive_repr (F' : (RatFunc k)[X]) (hF' : F' ≠ 0) :
           * N.primPart.map (algebraMap (k[X]) (RatFunc k)) := by
     conv_lhs => rw [hcont]
     rw [Polynomial.map_mul, Polynomial.map_C]
-  refine ⟨N.primPart, Polynomial.isPrimitive_primPart N,
-    by rw [Polynomial.natDegree_primPart, hNdeg],
+  refine ⟨N.primPart, Polynomial.isPrimitive_primPart N, ?_,
     algebraMap (k[X]) (RatFunc k) (b : k[X]) * (algebraMap (k[X]) (RatFunc k) N.content)⁻¹,
     (Ne.isUnit hβb).mul (Ne.isUnit hβc).inv, ?_⟩
+  · rw [Polynomial.natDegree_primPart, hNdeg]
   have h1 : Polynomial.C (algebraMap (k[X]) (RatFunc k) N.content)
         * N.primPart.map (algebraMap (k[X]) (RatFunc k))
       = Polynomial.C (algebraMap (k[X]) (RatFunc k) (b : k[X])) * F' := by
@@ -698,38 +729,38 @@ theorem height_coeff_le (M : IntermediateField k (RatFunc k))
   set θ := ((F.coeff j) : RatFunc k)
   set g := θ.num
   set h := θ.denom
-  obtain ⟨φ, hφprim, hφdeg, w, hwu, hφmap⟩ := exists_primitive_repr (F.map (algebraMap M (RatFunc k))) (by
-  exact Polynomial.map_ne_zero (minpoly.ne_zero (IsIntegral.of_finite M t)))
+  obtain ⟨φ, hφprim, hφdeg, w, hwu, hφmap⟩ := exists_primitive_repr (F.map (algebraMap M (RatFunc k)))
+    (Polynomial.map_ne_zero (minpoly.ne_zero (IsIntegral.of_finite M t)))
   -- By the properties of the primitive polynomial and the swap, we have that `φ ∣ bivarR g h`.
   have h_div : φ ∣ bivarR g h := by
-    have h_div :
+    have h_divF :
         F.map (algebraMap M (RatFunc k)) ∣
           (g.map (algebraMap k (RatFunc k)) - Polynomial.C θ * h.map (algebraMap k (RatFunc k))) := by
-      have h_div :
+      have h_aeval0 :
           Polynomial.aeval t (g.map (algebraMap k M) - Polynomial.C (F.coeff j) * h.map (algebraMap k M)) = 0 := by
-        have h_div : algebraMap (k[X]) (RatFunc k) g = θ * algebraMap (k[X]) (RatFunc k) h := by
-          exact num_eq_mul_denom θ
+        have h_num : algebraMap (k[X]) (RatFunc k) g = θ * algebraMap (k[X]) (RatFunc k) h :=
+          num_eq_mul_denom θ
         simp +zetaDelta at *
-        rw [h_div, sub_self]
-      have h_div : F ∣ (g.map (algebraMap k M) - Polynomial.C (F.coeff j) * h.map (algebraMap k M)) := by
-        exact minpoly.dvd M t h_div
-      convert Polynomial.map_dvd (algebraMap M (RatFunc k)) h_div using 1
+        rw [h_num, sub_self]
+      have h_Fdvd : F ∣ (g.map (algebraMap k M) - Polynomial.C (F.coeff j) * h.map (algebraMap k M)) :=
+        minpoly.dvd M t h_aeval0
+      convert Polynomial.map_dvd (algebraMap M (RatFunc k)) h_Fdvd using 1
       simp [Polynomial.map_map]
       rfl
-    have h_div :
+    have h_divφ :
         φ.map (algebraMap k[X] (RatFunc k)) ∣
           (Polynomial.C (algebraMap (Polynomial k) (RatFunc k) h) * g.map (algebraMap k (RatFunc k))
             - Polynomial.C (algebraMap (Polynomial k) (RatFunc k) g) * h.map (algebraMap k (RatFunc k))) := by
-      have h_div :
+      have h_divφ_aux :
           Polynomial.map (algebraMap k[X] (RatFunc k)) φ ∣
             Polynomial.C (algebraMap (Polynomial k) (RatFunc k) h) *
               (Polynomial.map (algebraMap k (RatFunc k)) g
                 - Polynomial.C θ * Polynomial.map (algebraMap k (RatFunc k)) h) := by
         rw [hφmap]
-        refine mul_dvd_mul ?_ h_div
-        exact ⟨Polynomial.C ((algebraMap k[X] (RatFunc k)) h * w⁻¹), by
-          rw [← Polynomial.C_mul, mul_comm]
-          simp [hwu.ne_zero]⟩
+        refine mul_dvd_mul ?_ h_divF
+        refine ⟨Polynomial.C ((algebraMap k[X] (RatFunc k)) h * w⁻¹), ?_⟩
+        rw [← Polynomial.C_mul, mul_comm]
+        simp [hwu.ne_zero]
       rw [num_eq_mul_denom]
       ring_nf
       grind +splitIndPred
@@ -738,7 +769,7 @@ theorem height_coeff_le (M : IntermediateField k (RatFunc k))
     · apply bivarR_isPrimitive
       · exact RatFunc.isCoprime_num_denom _
       · exact height_pos_of_not_mem_bot θ hj
-    · convert h_div using 1
+    · convert h_divφ using 1
       simp [bivarR]
       simp [Polynomial.map_map]
   obtain ⟨S, hS⟩ : ∃ S : k[X][X], bivarR g h = φ * S := h_div
@@ -751,32 +782,33 @@ theorem height_coeff_le (M : IntermediateField k (RatFunc k))
     simp_all
     exact absurd this (ne_of_lt (height_pos_of_not_mem_bot θ hj))
   have hdx : (bivarR g h).natDegree ≤ (Polynomial.Bivariate.swap φ).natDegree := by
-    have h_div : h ∣ φ.coeff n ∧ g ∣ φ.coeff j := by
-      have h_div : algebraMap (k[X]) (RatFunc k) (φ.coeff j) = θ * algebraMap (k[X]) (RatFunc k) (φ.coeff n) := by
-        have h_div :
+    have h_dvd_coeff : h ∣ φ.coeff n ∧ g ∣ φ.coeff j := by
+      have h_eq1 : algebraMap (k[X]) (RatFunc k) (φ.coeff j) = θ * algebraMap (k[X]) (RatFunc k) (φ.coeff n) := by
+        have h_eq2 :
             algebraMap (k[X]) (RatFunc k) (φ.coeff j) = w * θ ∧
               algebraMap (k[X]) (RatFunc k) (φ.coeff n) = w := by
-          have h_div :
+          have h_eq3 :
               Polynomial.coeff (Polynomial.map (algebraMap (k[X]) (RatFunc k)) φ) j = w * θ ∧
                 Polynomial.coeff (Polynomial.map (algebraMap (k[X]) (RatFunc k)) φ) n = w := by
             simp_all [Polynomial.coeff_C_mul]
             exact ⟨rfl, minpoly.monic (IsIntegral.of_finite M t)⟩
-          simpa [Polynomial.coeff_map] using h_div
-        rw [h_div.1, h_div.2, mul_comm]
-      have h_div : algebraMap (k[X]) (RatFunc k) (φ.coeff j * h) = algebraMap (k[X]) (RatFunc k) (φ.coeff n * g) := by
-        simp [h_div, mul_comm, mul_left_comm]
+          simpa [Polynomial.coeff_map] using h_eq3
+        rw [h_eq2.1, h_eq2.2, mul_comm]
+      have h_eq4 : algebraMap (k[X]) (RatFunc k) (φ.coeff j * h) = algebraMap (k[X]) (RatFunc k) (φ.coeff n * g) := by
+        simp [h_eq1, mul_comm, mul_left_comm]
         rw [mul_left_comm, ← num_eq_mul_denom]
-      have h_div : φ.coeff j * h = φ.coeff n * g := by
-        exact IsFractionRing.injective (Polynomial k) (RatFunc k) h_div
-      have h_div : h ∣ φ.coeff n := by
-        have h_coprime : IsCoprime g h := by
-          exact RatFunc.isCoprime_num_denom _
-        exact h_coprime.symm.dvd_of_dvd_mul_right <| h_div ▸ dvd_mul_left _ _
-      have h_div' : g ∣ φ.coeff j := by
-        have h_div' : g ∣ φ.coeff j * h := by
+      have h_prod : φ.coeff j * h = φ.coeff n * g :=
+        IsFractionRing.injective (Polynomial k) (RatFunc k) h_eq4
+      have h_dvd_n : h ∣ φ.coeff n := by
+        have h_coprime : IsCoprime g h := RatFunc.isCoprime_num_denom _
+        apply h_coprime.symm.dvd_of_dvd_mul_right
+        rw [← h_prod]
+        exact dvd_mul_left _ _
+      have h_dvd_j : g ∣ φ.coeff j := by
+        have h_dvd_jh : g ∣ φ.coeff j * h := by
           aesop
-        exact IsCoprime.dvd_of_dvd_mul_right (RatFunc.isCoprime_num_denom θ) h_div'
-      exact ⟨h_div, h_div'⟩
+        exact IsCoprime.dvd_of_dvd_mul_right (RatFunc.isCoprime_num_denom θ) h_dvd_jh
+      exact ⟨h_dvd_n, h_dvd_j⟩
     have hdx :
         h.natDegree ≤ (Polynomial.Bivariate.swap φ).natDegree ∧
           g.natDegree ≤ (Polynomial.Bivariate.swap φ).natDegree := by
@@ -786,12 +818,16 @@ theorem height_coeff_le (M : IntermediateField k (RatFunc k))
           replace hφmap := congr_arg (fun p ↦ Polynomial.coeff p n) hφmap
           simp_all [Polynomial.coeff_map]
           have hmonic := minpoly.monic (IsIntegral.of_finite M t)
-          exact absurd hφmap (hmonic.coeff_natDegree ▸ by aesop)
-        exact le_trans (Polynomial.natDegree_le_of_dvd h_div.left hcoeff_n)
+          apply absurd hφmap
+          rw [hmonic.coeff_natDegree]
+          aesop
+        exact le_trans (Polynomial.natDegree_le_of_dvd h_dvd_coeff.left hcoeff_n)
           (natDegree_le_natDegree_swap φ n)
-      · apply le_trans (Polynomial.natDegree_le_of_dvd h_div.right (by
-        replace hφmap := congr_arg (fun p ↦ p.coeff j) hφmap
-        aesop)) (natDegree_le_natDegree_swap φ j)
+      · have hcoeff_j : φ.coeff j ≠ 0 := by
+          replace hφmap := congr_arg (fun p ↦ p.coeff j) hφmap
+          aesop
+        exact le_trans (Polynomial.natDegree_le_of_dvd h_dvd_coeff.right hcoeff_j)
+          (natDegree_le_natDegree_swap φ j)
     rw [bivarR_natDegree g h (RatFunc.isCoprime_num_denom θ) (height_pos_of_not_mem_bot θ hj)]
     aesop
   convert primitive_swap_degree_finish (bivarR g h) φ S _ _ hS _ hS0 hdx using 1
@@ -818,7 +854,9 @@ theorem finrank_eq_minpoly_natDegree (M : IntermediateField k (RatFunc k))
     intro x S hS
     specialize hk x S
     simp_all [Set.insert_subset_iff, Set.range_subset_iff]
-    exact hk fun y ↦ by simpa using S.mul_mem (hS.2 _ <| IntermediateField.algebraMap_mem _ y) (S.one_mem)
+    apply hk
+    intro y
+    simpa using S.mul_mem (hS.2 _ <| IntermediateField.algebraMap_mem _ y) (S.one_mem)
 
 /-
 **Lüroth's theorem.** Every intermediate field of `k(X) / k` other than `k` itself is
@@ -838,27 +876,22 @@ theorem luroth (M : IntermediateField k (RatFunc k)) (hM : M ≠ ⊥) :
       · ext
         aesop
       · convert RatFunc.finiteDimensional_of_ne_bot M hM_ne_bot
-    refine' ⟨_, hj.1, hj.2, le_antisymm _ _⟩
+    refine ⟨_, hj.1, hj.2, le_antisymm ?_ ?_⟩
     · convert height_coeff_le M j hj.2 using 1
       · convert finrank_adjoin_eq_height _ hj.2 using 1
       · convert finrank_eq_minpoly_natDegree M
         convert finiteDimensional_of_ne_bot M hM_ne_bot
       · convert RatFunc.finiteDimensional_of_ne_bot M hM_ne_bot
-    · have h_le :
-        Module.finrank (↥k⟮((minpoly M (RatFunc.X : RatFunc k)).coeff j : RatFunc k)⟯) (RatFunc k) ≥
-          Module.finrank (↥M) (RatFunc k) := by
-        have h_sub : k⟮((minpoly M (RatFunc.X : RatFunc k)).coeff j : RatFunc k)⟯ ≤ M := by
-          aesop
-        have h_sub : FiniteDimensional (↥k⟮((minpoly M (RatFunc.X : RatFunc k)).coeff j : RatFunc k)⟯) (RatFunc k) := by
-          apply finiteDimensional_of_ne_bot
-          simp_all
-        expose_names
-        exact finrank_le_of_le_left h_sub_1
-      exact h_le
-  have h_eq : k⟮w⟯ ≤ M := by
+    · have h_sub_le : k⟮((minpoly M (RatFunc.X : RatFunc k)).coeff j : RatFunc k)⟯ ≤ M := by
+        aesop
+      have h_fd : FiniteDimensional (↥k⟮((minpoly M (RatFunc.X : RatFunc k)).coeff j : RatFunc k)⟯) (RatFunc k) := by
+        apply finiteDimensional_of_ne_bot
+        simp_all
+      exact finrank_le_of_le_left h_sub_le
+  have h_le : k⟮w⟯ ≤ M := by
     aesop
   have h_eq : k⟮w⟯ = M := by
-    convert IntermediateField.eq_of_le_of_finrank_eq' h_eq hw.2.2
+    convert IntermediateField.eq_of_le_of_finrank_eq' h_le hw.2.2
     convert finiteDimensional_of_ne_bot _ _
     aesop
   exact ⟨w, h_eq.symm⟩

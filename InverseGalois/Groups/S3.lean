@@ -58,11 +58,12 @@ private lemma p_roots_card :
     simp [p, rootSet_def]
     rw [Finset.card_eq_one]
     use 2 ^ (1 / 3 : ℝ)
-    ext
+    ext a
     norm_num [ext_iff]
     refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
     · rw [sub_eq_zero] at h
-      rw [← h.2, ← Real.rpow_natCast, ← Real.rpow_mul (by nlinarith [sq_nonneg (‹_› : ℝ)])]
+      have ha : (0 : ℝ) ≤ a := by nlinarith [sq_nonneg a, h.2]
+      rw [← h.2, ← Real.rpow_natCast, ← Real.rpow_mul ha]
       norm_num
     · refine ⟨⟨0, by norm_num⟩, ?_⟩
       rw [h, ← Real.rpow_natCast, ← Real.rpow_mul] <;> norm_num
@@ -80,10 +81,9 @@ splitting field of `X³ - 2`.
 theorem IsInverseGalois.perm_fin_three : IsInverseGalois (Equiv.Perm (Fin 3)) := by
   -- The Galois group of `p` is isomorphic to `S₃`.
   have h_galois : Nonempty (Gal p ≃* Equiv.Perm (rootSet p ℂ)) := by
-    constructor
-    exact MulEquiv.ofBijective _
-      (Gal.galActionHom_bijective_of_prime_degree p_irreducible
-        (by norm_num [p_natDegree]) p_roots_card)
+    refine ⟨MulEquiv.ofBijective _
+      (Gal.galActionHom_bijective_of_prime_degree p_irreducible ?_ p_roots_card)⟩
+    norm_num [p_natDegree]
   -- Since `p` is a cubic polynomial, its root set has cardinality 3.
   have h_card : Fintype.card (rootSet p ℂ) = 3 := by
     convert card_rootSet_eq_natDegree _ _
@@ -96,14 +96,12 @@ theorem IsInverseGalois.perm_fin_three : IsInverseGalois (Equiv.Perm (Fin 3)) :=
     constructor
     refine' { Equiv.permCongr (Fintype.equivOfCardEq h_card) with .. }
     aesop_cat
-  -- Combining the isomorphisms, `Gal(p)` is isomorphic to `S₃`.
-  have h_final_iso : Nonempty (Gal p ≃* Equiv.Perm (Fin 3)) :=
-    ⟨h_galois.some.trans h_perm_iso.some⟩
   refine ⟨p.SplittingField, ?_, ?_, ?_, ?_, ?_⟩
   all_goals try infer_instance
   · exact
       { to_isSeparable := Algebra.IsAlgebraic.isSeparable_of_perfectField,
         to_normal := SplittingField.instNormal p }
-  · exact h_final_iso
+  -- Combining the isomorphisms, `Gal(p)` is isomorphic to `S₃`.
+  · exact ⟨h_galois.some.trans h_perm_iso.some⟩
 
 end

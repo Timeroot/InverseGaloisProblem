@@ -68,13 +68,14 @@ Specifically, the coefficient of X^(n-k) in ∏(X - xᵢ) is (-1)^k · eₖ(x₁
 lemma genericSplitPoly_coeff (n k : ℕ) (hk : k ≤ n) :
     (genericSplitPoly n).coeff (n - k) =
       (-1) ^ k * MvPolynomial.esymm (Fin n) ℚ k := by
-        rw [esymm, genericSplitPoly, Finset.prod_congr rfl fun _ _ ↦ sub_eq_add_neg _ _]
-        rw [Finset.prod_congr rfl fun _ _ ↦ by rw [← Polynomial.C_neg], Finset.prod_X_add_C_coeff]
-        · simp only [Finset.card_univ, Fintype.card_fin, Nat.sub_sub_self hk, Finset.mul_sum]
-          refine Finset.sum_congr rfl fun x hx ↦ ?_
-          rw [Finset.prod_congr rfl fun _ _ ↦ neg_eq_neg_one_mul _, Finset.prod_mul_distrib]
-          simp_all
-        · simp
+  rw [esymm, genericSplitPoly]
+  simp only [sub_eq_add_neg, ← Polynomial.C_neg]
+  rw [Finset.prod_X_add_C_coeff]
+  · simp only [Finset.card_univ, Fintype.card_fin, Nat.sub_sub_self hk, Finset.mul_sum]
+    refine Finset.sum_congr rfl fun x hx ↦ ?_
+    rw [Finset.prod_congr rfl fun _ _ ↦ neg_eq_neg_one_mul _, Finset.prod_mul_distrib]
+    simp [(Finset.mem_powersetCard.mp hx).2]
+  · simp
 
 /-!
 ## Part 2: Galois theory of the generic polynomial
@@ -96,11 +97,11 @@ lemma perm_action_faithful (n : ℕ) :
     ∀ σ : Equiv.Perm (Fin n),
       σ ≠ 1 → ∃ p : MvPolynomial (Fin n) ℚ,
         MvPolynomial.rename σ p ≠ p := by
-          intro σ hσ
-          obtain ⟨i, hi⟩ : ∃ i : Fin n, σ i ≠ i :=
-            not_forall.mp fun h ↦ hσ <| Equiv.ext h
-          refine ⟨MvPolynomial.X i, ?_⟩
-          simp_all [MvPolynomial.rename_X]
+  intro σ hσ
+  obtain ⟨i, hi⟩ : ∃ i : Fin n, σ i ≠ i :=
+    not_forall.mp fun h ↦ hσ <| Equiv.ext h
+  use MvPolynomial.X i
+  simp [MvPolynomial.rename_X, hi]
 
 /-
 The fixed field of the Sₙ action on ℚ(x₁,...,xₙ) is exactly ℚ(e₁,...,eₙ),
@@ -112,10 +113,9 @@ lemma symmetric_fixed_field (n : ℕ) :
     ∀ p : MvPolynomial (Fin n) ℚ,
       (∀ σ : Equiv.Perm (Fin n), MvPolynomial.rename σ p = p) →
         p ∈ symmetricSubalgebra (Fin n) ℚ := by
-          unfold symmetricSubalgebra
-          intro p a
-          simp only [Subalgebra.mem_mk, Subsemiring.mem_mk, Submonoid.mem_mk, Subsemigroup.mem_mk, Set.mem_setOf_eq]
-          exact a
+  intro p hp
+  rw [mem_symmetricSubalgebra]
+  exact hp
 
 /-!
 ## Part 3: Connection to Inverse Galois

@@ -49,7 +49,8 @@ lemma radical_monic {F : Polynomial (Polynomial ℝ)} (hF : F.Monic) :
   have h_leading_coeff_unit : IsUnit ((radical F).leadingCoeff : Polynomial ℝ) := by
     have h_leading_coeff_div : (radical F).leadingCoeff ∣ (F).leadingCoeff :=
       Polynomial.leadingCoeff_dvd_leadingCoeff radical_dvd_self
-    exact isUnit_of_dvd_one (h_leading_coeff_div.trans (by aesop))
+    rw [hF.leadingCoeff] at h_leading_coeff_div
+    exact isUnit_of_dvd_one h_leading_coeff_div
   -- Since `radical F` is a product of normalized prime factors, it is itself normalized.
   have h_radical_normalized : normalize (radical F) = radical F := by
     simp [radical]
@@ -103,25 +104,21 @@ lemma squarefree_map_frac {s : Polynomial (Polynomial ℝ)}
   have hxm_assoc : Associated x xm := by
     by_cases hx : x = 0 <;> simp_all [Polynomial.Monic.def]
     refine associated_of_dvd_dvd ?_ ?_ <;> norm_num [hx]
-  have hxm_dvd : xm ∣ Polynomial.map (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ))) s := by
-    exact dvd_trans (hxm_assoc.symm.dvd) (dvd_of_mul_left_dvd hx)
+  have hxm_dvd : xm ∣ Polynomial.map (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ))) s :=
+    dvd_trans hxm_assoc.symm.dvd (dvd_of_mul_left_dvd hx)
   have hxm_sq_dvd : xm * xm ∣ Polynomial.map (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ))) s := by
     convert dvd_trans _ hx using 1
     ring_nf
     exact pow_dvd_pow_of_dvd hxm_assoc.symm.dvd 2
   -- Descent to `R[Y]` via `IsIntegrallyClosed.eq_map_mul_C_of_dvd hmon (g := xm) (hg : xm ∣ s.map φ)`: it yields `x' : R[Y]` with `x'.map φ * C (xm.leadingCoeff) = xm`.
-  obtain ⟨x', hx'⟩ :
+  obtain ⟨x', hx'map⟩ :
       ∃ x' : Polynomial (Polynomial ℝ),
-        x'.map (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ))) = xm ∧ x'.Monic := by
-    obtain ⟨x', hx'⟩ :
-        ∃ x' : Polynomial (Polynomial ℝ),
-          x'.map (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ))) = xm := by
-      have := @IsIntegrallyClosed.eq_map_mul_C_of_dvd
-      specialize this (FractionRing (Polynomial ℝ)) hmon hxm_dvd
-      aesop
-    refine ⟨x', hx', ?_⟩
+        x'.map (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ))) = xm := by
+    have := IsIntegrallyClosed.eq_map_mul_C_of_dvd (FractionRing (Polynomial ℝ)) hmon hxm_dvd
+    aesop
+  have hx'mon : x'.Monic := by
     convert hxm_monic using 1
-    rw [← hx', Polynomial.Monic.def, Polynomial.Monic.def,
+    rw [← hx'map, Polynomial.Monic.def, Polynomial.Monic.def,
       Polynomial.leadingCoeff_map_of_leadingCoeff_ne_zero]
     · aesop
     · intro h
@@ -131,10 +128,10 @@ lemma squarefree_map_frac {s : Polynomial (Polynomial ℝ)}
     rw [← Polynomial.map_dvd_map (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ)))]
     · aesop
     · exact IsFractionRing.injective _ _
-    · exact hx'.2.mul hx'.2
+    · exact hx'mon.mul hx'mon
   have := hs x' ?_
   · convert hxm_assoc.symm.isUnit
-    simp [← hx'.1]
+    simp [← hx'map]
     refine Or.inl <| Polynomial.isUnit_iff_degree_eq_zero.mpr ?_
     rw [Polynomial.degree_map_eq_of_injective <| IsFractionRing.injective _ _]
     exact Polynomial.degree_eq_zero_of_isUnit this
@@ -155,13 +152,10 @@ lemma exists_bezout_of_squarefree {s : Polynomial (Polynomial ℝ)}
   obtain ⟨U, V, h_bezout⟩ :
       ∃ U V : Polynomial (FractionRing (Polynomial ℝ)),
         U * (s.map (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ)))) +
-          V * (Polynomial.derivative (s.map (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ))))) = 1 := by
-    have h_separable : Polynomial.Separable (s.map (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ)))) :=
-      PerfectField.separable_iff_squarefree.mpr (squarefree_map_frac hs hmon)
-    obtain ⟨U, V, hUV⟩ := h_separable
-    exact ⟨U, V, hUV⟩
+          V * (Polynomial.derivative (s.map (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ))))) = 1 :=
+    PerfectField.separable_iff_squarefree.mpr (squarefree_map_frac hs hmon)
   -- Clear denominators by multiplying both sides of the equation by a common denominator.
-  obtain ⟨w0, hw0⟩ :
+  obtain ⟨w0, hw0ne, A, B, hAB⟩ :
       ∃ w0 : Polynomial ℝ, w0 ≠ 0 ∧ ∃ A B : Polynomial (Polynomial ℝ),
         A * s + B * (derivative s) = Polynomial.C w0 := by
     -- Let `w0` be a common denominator of `U` and `V`.
@@ -176,36 +170,37 @@ lemma exists_bezout_of_squarefree {s : Polynomial (Polynomial ℝ)}
             Polynomial.map (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ))) A =
               p * Polynomial.C (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ)) w0) := by
         intro p
-        induction' p using Polynomial.induction_on' with p hp ih
-        · obtain ⟨w0, hw0, A, hA⟩ := ih
-          obtain ⟨w1, hw1, B, hB⟩ :=
-            ‹∃ w0 : Polynomial ℝ, w0 ≠ 0 ∧ ∃ A : Polynomial (Polynomial ℝ),
-              map (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ))) A =
-                hp * C (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ)) w0)›
+        induction' p using Polynomial.induction_on' with p q ihp ihq n a
+        · obtain ⟨w0, hw0, A, hA⟩ := ihp
+          obtain ⟨w1, hw1, B, hB⟩ := ihq
           use w0 * w1
           simp_all
-          exact ⟨A * Polynomial.C w1 + B * Polynomial.C w0,
-            by simp [*, add_mul, mul_comm, mul_left_comm]⟩
-        · rename_i n a
-          obtain ⟨w0, hw0⟩ := IsLocalization.surj (nonZeroDivisors (Polynomial ℝ)) a
-          refine ⟨w0.2, ?_, ?_⟩ <;> simp_all [← Polynomial.C_mul_X_pow_eq_monomial]
-          exact ⟨Polynomial.C w0.1 * Polynomial.X ^ n, by simp [← hw0, mul_assoc]⟩
+          use A * Polynomial.C w1 + B * Polynomial.C w0
+          simp [*, add_mul, mul_comm, mul_left_comm]
+        · obtain ⟨w0, hw0⟩ := IsLocalization.surj (nonZeroDivisors (Polynomial ℝ)) a
+          refine ⟨w0.2, ?_, ?_⟩
+          · simp_all
+          · simp_all [← Polynomial.C_mul_X_pow_eq_monomial]
+            use Polynomial.C w0.1 * Polynomial.X ^ n
+            simp [← hw0, mul_assoc]
       obtain ⟨w0, hw0, A, hA⟩ := h_clear_denom U
       obtain ⟨w1, hw1, B, hB⟩ := h_clear_denom V
       use w0 * w1
       simp_all
-      exact ⟨⟨A * Polynomial.C w1, by simp [hA, mul_assoc]⟩,
-        ⟨B * Polynomial.C w0, by simp [hB, mul_comm, mul_left_comm]⟩⟩
+      refine ⟨⟨A * Polynomial.C w1, ?_⟩, B * Polynomial.C w0, ?_⟩
+      · simp [hA, mul_assoc]
+      · simp [hB, mul_comm, mul_left_comm]
     obtain ⟨A, B, hA, hB⟩ := hw0.right
     have h_eq :
         Polynomial.map (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ))) (A * s + B * (derivative s)) =
           Polynomial.C (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ)) w0) := by
       simp_all [mul_comm, mul_left_comm]
       linear_combination h_bezout * C (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ)) w0)
-    exact ⟨w0, hw0.1, A, B,
-      Polynomial.map_injective (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ)))
-        (IsFractionRing.injective _ _) <| by aesop⟩
-  exact ⟨hw0.2.choose, hw0.2.choose_spec.choose, w0, hw0.1, hw0.2.choose_spec.choose_spec⟩
+    refine ⟨w0, hw0.1, A, B, ?_⟩
+    apply Polynomial.map_injective (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ)))
+      (IsFractionRing.injective _ _)
+    aesop
+  exact ⟨A, B, w0, hw0ne, hAB⟩
 
 /-
 The bivariate evaluation of a two-variable real polynomial is real-analytic.
@@ -237,16 +232,14 @@ theorem exists_smooth_separable_reduction_real
       (∀ x : ℝ, T₀ ≤ x → (R x).Separable) ∧
       (∀ x : ℝ, T₀ ≤ x → ∀ y : ℝ,
         (R x).eval y = 0 ↔ (F.map (evalRingHom x)).eval y = 0) := by
-  obtain ⟨s, hs⟩ :
+  obtain ⟨s, hmon_s, hdvd_s, _, ⟨m, hm⟩, A, B, w0, hw0_ne_zero, h_bezout⟩ :
       ∃ s : Polynomial (Polynomial ℝ), s.Monic ∧ s ∣ F ∧ Squarefree s ∧
         (∃ m : ℕ, 1 ≤ m ∧ F ∣ s ^ m) ∧
         (∃ A B : Polynomial (Polynomial ℝ), ∃ w0 : Polynomial ℝ,
-          w0 ≠ 0 ∧ A * s + B * Polynomial.derivative s = C w0) := by
-    exact ⟨radical F, radical_monic hFmon, radical_dvd_self,
+          w0 ≠ 0 ∧ A * s + B * Polynomial.derivative s = C w0) :=
+    ⟨radical F, radical_monic hFmon, radical_dvd_self,
       squarefree_radical, dvd_radical_pow (by aesop_cat),
       exists_bezout_of_squarefree squarefree_radical (radical_monic hFmon)⟩
-  obtain ⟨m, hm⟩ := hs.right.right.right.left
-  obtain ⟨A, B, w0, hw0_ne_zero, h_bezout⟩ := hs.right.right.right.right
   use s.natDegree, fun x ↦ s.map (evalRingHom x)
   obtain ⟨T₀, hT₀⟩ : ∃ T₀ : ℝ, 1 ≤ T₀ ∧ ∀ x ≥ T₀, w0.eval x ≠ 0 := by
     refine ⟨∑ x ∈ w0.roots.toFinset, |x| + 1, ?_, ?_⟩
@@ -259,11 +252,14 @@ theorem exists_smooth_separable_reduction_real
   refine ⟨T₀, hT₀.1, ?_, ?_, ?_, contDiff_bivar_eval s, ?_, ?_⟩
   · have := Polynomial.natDegree_le_of_dvd hm.2
     simp_all [Polynomial.natDegree_pow]
-    exact Nat.pos_of_ne_zero fun h ↦ by
-      have := this (by aesop)
-      nlinarith
-  · exact fun x ↦ hs.1.map _
-  · exact fun x ↦ Polynomial.natDegree_map_of_leadingCoeff_ne_zero _ (by aesop)
+    apply Nat.pos_of_ne_zero
+    intro h
+    have := this (by aesop)
+    nlinarith
+  · exact fun x ↦ hmon_s.map _
+  · intro x
+    apply Polynomial.natDegree_map_of_leadingCoeff_ne_zero
+    aesop
   · intro x hx
     have := hT₀.2 x hx
     simp_all [Polynomial.Separable]
@@ -271,14 +267,17 @@ theorem exists_smooth_separable_reduction_real
     simp_all [Polynomial.map_add, Polynomial.map_mul, Polynomial.map_C]
     refine ⟨Polynomial.C (eval x w0) ⁻¹ * map (evalRingHom x) A,
       Polynomial.C (eval x w0) ⁻¹ * map (evalRingHom x) B, Polynomial.funext fun y ↦ ?_⟩
-    simpa [hT₀.2 x hx, mul_assoc, mul_left_comm, mul_add, add_mul, Polynomial.eval_C,
-      Polynomial.eval_mul, Polynomial.eval_add, Polynomial.eval_X] using by
+    have key : (eval x w0)⁻¹ * (eval y (map (evalRingHom x) A) * eval y (map (evalRingHom x) s)) +
+        (eval x w0)⁻¹ * (eval y (map (evalRingHom x) B) *
+          eval y (map (evalRingHom x) (derivative s))) = 1 := by
       have := congr_arg (Polynomial.eval y) h_bezout
       norm_num at *
       cases lt_or_gt_of_ne (hT₀.2 x hx) <;> nlinarith [mul_inv_cancel₀ (hT₀.2 x hx)]
+    simpa [hT₀.2 x hx, mul_assoc, mul_left_comm, mul_add, add_mul, Polynomial.eval_C,
+      Polynomial.eval_mul, Polynomial.eval_add, Polynomial.eval_X] using key
   · intro x hx y
     constructor <;> intro hy <;> simp_all [Polynomial.eval_map]
-    · obtain ⟨k, hk⟩ := hs.2.1
+    · obtain ⟨k, hk⟩ := hdvd_s
       replace hk := congr_arg (Polynomial.eval₂ (evalRingHom x) y) hk
       aesop
     · obtain ⟨k, hk⟩ := hm.2

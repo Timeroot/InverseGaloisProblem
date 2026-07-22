@@ -182,35 +182,36 @@ lemma monicAssociate_absIrr (f : Polynomial (Polynomial ℚ)) (hf_deg : 2 ≤ f.
   set fK := f.map φ
   set M := (monicAssociate f).map φ
   set Ψ := algebraMap (Polynomial K) (FractionRing (Polynomial K))
+  have hf_deg1 : f.natDegree ≥ 1 := by linarith
   -- By `IsPrimitive.irreducible_iff_irreducible_map_fraction_map`, it suffices to show `Irreducible (M.map Ψ)`, where Ψ is the fraction field map.
   suffices hM_map : Irreducible (M.map Ψ) by
     convert Polynomial.IsPrimitive.irreducible_iff_irreducible_map_fraction_map _ |>.2 hM_map
-    exact Polynomial.Monic.isPrimitive (monicAssociate_monic f (by linarith) |> Polynomial.Monic.map φ)
+    exact ((monicAssociate_monic f hf_deg1).map φ).isPrimitive
+  have hM_comp_base : M.comp (Polynomial.C (fK.leadingCoeff) * Polynomial.X) =
+      Polynomial.C (fK.leadingCoeff ^ (fK.natDegree - 1)) * fK := by
+    convert congr_arg (Polynomial.map φ) (monicAssociate_comp_identity f hf_deg1) using 1
+    · rw [Polynomial.leadingCoeff_map_of_leadingCoeff_ne_zero]
+      · aesop
+      · aesop
+    · simp +zetaDelta
+      rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] <;> norm_num
+      · rw [Polynomial.leadingCoeff_map_of_leadingCoeff_ne_zero] <;> aesop
+      · aesop_cat
   have hM_comp : (M.map Ψ).comp (Polynomial.C (Ψ (fK.leadingCoeff)) * Polynomial.X) =
       Polynomial.C (Ψ (fK.leadingCoeff ^ (fK.natDegree - 1))) * (fK.map Ψ) := by
-    have hM_comp : M.comp (Polynomial.C (fK.leadingCoeff) * Polynomial.X) =
-        Polynomial.C (fK.leadingCoeff ^ (fK.natDegree - 1)) * fK := by
-      convert congr_arg (Polynomial.map φ) (monicAssociate_comp_identity f (by linarith)) using 1
-      · rw [Polynomial.leadingCoeff_map_of_leadingCoeff_ne_zero]
-        · aesop
-        · aesop
-      · simp +zetaDelta at *
-        rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] <;> norm_num
-        · rw [Polynomial.leadingCoeff_map_of_leadingCoeff_ne_zero] <;> aesop
-        · aesop_cat
-    convert congr_arg (Polynomial.map Ψ) hM_comp using 1 <;> norm_num [Polynomial.map_comp]
+    convert congr_arg (Polynomial.map Ψ) hM_comp_base using 1 <;> norm_num [Polynomial.map_comp]
+  have h_fK_nonconst : fK.natDegree > 0 := by
+    rw [Polynomial.natDegree_map_eq_of_injective]
+    · linarith
+    · exact Polynomial.map_injective _ (algebraMap ℚ K).injective
+  have h_fK_primitive : fK.IsPrimitive := by
+    grind only [Irreducible.isPrimitive]
+  have hM_irred_base : Irreducible (fK.map Ψ) := by
+    convert Polynomial.IsPrimitive.irreducible_iff_irreducible_map_fraction_map h_fK_primitive |>.1 hf_abs_irr using 1
+    infer_instance
   have hM_irred : Irreducible (Polynomial.C (Ψ (fK.leadingCoeff ^ (fK.natDegree - 1))) * (fK.map Ψ)) := by
-    have hM_irred : Irreducible (fK.map Ψ) := by
-      have h_fK_primitive : fK.IsPrimitive := by
-        have h_fK_nonconst : fK.natDegree > 0 := by
-          rw [Polynomial.natDegree_map_eq_of_injective]
-          · linarith
-          · exact Polynomial.map_injective _ (algebraMap ℚ K).injective
-        grind only [Irreducible.isPrimitive]
-      convert Polynomial.IsPrimitive.irreducible_iff_irreducible_map_fraction_map h_fK_primitive |>.1 hf_abs_irr using 1
-      infer_instance
     rw [irreducible_mul_iff]
-    refine Or.inr ⟨hM_irred, Polynomial.isUnit_C.mpr ?_⟩
+    refine Or.inr ⟨hM_irred_base, Polynomial.isUnit_C.mpr ?_⟩
     aesop
   convert irreducible_comp_C_mul_X (Polynomial.map (algebraMap K[X] (FractionRing K[X])) M)
     (show algebraMap K[X] (FractionRing K[X]) fK.leadingCoeff ≠ 0 from ?_) |>.1 ?_ using 1
@@ -224,7 +225,7 @@ theorem hilbert_irreducibility_monic (f : Polynomial (Polynomial ℚ))
   refine Set.Infinite.mono (s := Set.univ \ ⋃ k ∈ Finset.Ico 1 f.natDegree,
     { t : ℤ | ∃ g : Polynomial ℚ, g.natDegree = k ∧ g.Monic ∧ g ∣ specialize f t }) ?_ ?_
   · intro t ht
-    simp [specialize] at *
+    simp [specialize] at ht ⊢
     constructor
     · intro h
       have := Polynomial.natDegree_eq_zero_of_isUnit h
@@ -248,7 +249,7 @@ theorem hilbert_irreducibility_monic (f : Polynomial (Polynomial ℚ))
       · rw [Polynomial.natDegree_C_mul] <;> aesop
       · rw [Polynomial.natDegree_C_mul] <;> norm_num [ha_deg, hb_deg]
         · have := congr_arg Polynomial.natDegree hab
-          rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] at this <;> norm_num at *
+          rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] at this <;> norm_num at this ⊢
           · rw [this, Polynomial.natDegree_mul'] <;> aesop
           · aesop
         · aesop_cat
@@ -261,14 +262,14 @@ theorem hilbert_irreducibility_monic (f : Polynomial (Polynomial ℚ))
       (Set.ncard ((⋃ k ∈ Finset.Ico 1 f.natDegree, {t : ℤ | ∃ g : Polynomial ℚ,
           g.natDegree = k ∧ g.Monic ∧ g ∣ specialize f t}) ∩
         Set.Icc (-(N : ℤ)) (N : ℤ)) : ℝ) ≤ C * (N : ℝ) ^ α := by
-          have h_union_sublinear : ∀ k ∈ Finset.Ico 1 f.natDegree,
+          have h_per_k : ∀ k ∈ Finset.Ico 1 f.natDegree,
               ∃ (C : ℝ) (α : ℝ), 0 < C ∧ 0 ≤ α ∧ α < 1 ∧ ∀ N : ℕ, 0 < N →
               (Set.ncard ({t : ℤ | ∃ g : Polynomial ℚ, g.natDegree = k ∧ g.Monic ∧ g ∣ specialize f t} ∩
-                Set.Icc (-(N : ℤ)) (N : ℤ)) : ℝ) ≤ C * (N : ℝ) ^ α := by
-                  exact fun k hk ↦
-                    dorge_density_estimate f hf hf_monic hf_abs_irr k
-                      (Finset.mem_Ico.mp hk |>.1) (Finset.mem_Ico.mp hk |>.2)
-          choose! C α hC hα hα' h using h_union_sublinear
+                Set.Icc (-(N : ℤ)) (N : ℤ)) : ℝ) ≤ C * (N : ℝ) ^ α :=
+            fun k hk ↦
+              dorge_density_estimate f hf hf_monic hf_abs_irr k
+                (Finset.mem_Ico.mp hk |>.1) (Finset.mem_Ico.mp hk |>.2)
+          choose! C α hC hα hα' h using h_per_k
           refine ⟨∑ k ∈ Finset.Ico 1 f.natDegree, C k, sSup (Finset.image α (Finset.Ico 1 f.natDegree)), ?_, ?_, ?_, ?_⟩
           · exact Finset.sum_pos hC (Finset.nonempty_Ico.mpr hf_deg)
           · apply Real.sSup_nonneg
@@ -282,7 +283,7 @@ theorem hilbert_irreducibility_monic (f : Polynomial (Polynomial ℚ))
                 Set.forall_mem_image.mpr fun j hj ↦ hk.2 j <| Finset.mem_Ico.mpr hj) <|
               hα' k (Finset.mem_Ico.mp hk.1 |>.1) (Finset.mem_Ico.mp hk.1 |>.2)
           · intro N hN_pos
-            have h_union_sublinear : (Set.ncard ((⋃ k ∈ Finset.Ico 1 f.natDegree, {t : ℤ | ∃ g : Polynomial ℚ,
+            have h_ncard_le : (Set.ncard ((⋃ k ∈ Finset.Ico 1 f.natDegree, {t : ℤ | ∃ g : Polynomial ℚ,
               g.natDegree = k ∧ g.Monic ∧ g ∣ specialize f t}) ∩
               Set.Icc (-(N : ℤ)) (N : ℤ)) : ℝ) ≤
                 ∑ k ∈ Finset.Ico 1 f.natDegree, (Set.ncard ({t : ℤ | ∃ g : Polynomial ℚ,
@@ -290,13 +291,10 @@ theorem hilbert_irreducibility_monic (f : Polynomial (Polynomial ℚ))
               Set.Icc (-(N : ℤ)) (N : ℤ)) : ℝ) := by
                 rw [Set.inter_comm, Set.inter_iUnion₂]
                 norm_cast
-                have h_union_sublinear : ∀ (s : Finset ℕ) (f : ℕ → Set ℤ),
-                    (Set.ncard (⋃ k ∈ s, f k)) ≤ ∑ k ∈ s, (Set.ncard (f k)) := by
-                  exact fun s f ↦ Finset.set_ncard_biUnion_le s f
                 simpa only [Set.inter_comm] using
-                  h_union_sublinear (Finset.Ico 1 f.natDegree) fun k ↦
+                  Finset.set_ncard_biUnion_le (Finset.Ico 1 f.natDegree) fun k ↦
                     Set.Icc (-N : ℤ) N ∩ { t : ℤ | ∃ g : Polynomial ℚ, g.natDegree = k ∧ g.Monic ∧ g ∣ specialize f t }
-            refine le_trans h_union_sublinear ?_
+            refine le_trans h_ncard_le ?_
             rw [Finset.sum_mul]
             have hbdd : ∀ k ∈ Finset.Ico 1 f.natDegree,
                 α k ≤ sSup (Finset.image α (Finset.Ico 1 f.natDegree)) :=
@@ -322,8 +320,8 @@ lemma hit_degree_one (f : Polynomial (Polynomial ℚ))
     · rw [← hf_deg, Polynomial.coeff_natDegree]
       aesop
   -- The set {t : a(t) = 0} is finite (a is a nonzero polynomial, has finitely many roots).
-  have h_finite_roots : Set.Finite {t : ℤ | a.eval (t : ℚ) = 0} := by
-    exact Set.Finite.subset (a.roots.toFinset.finite_toSet.preimage Int.cast_injective.injOn) fun x hx ↦ by aesop
+  have h_finite_roots : Set.Finite {t : ℤ | a.eval (t : ℚ) = 0} :=
+    Set.Finite.subset (a.roots.toFinset.finite_toSet.preimage Int.cast_injective.injOn) fun x hx ↦ by aesop
   refine Set.Infinite.mono ?_ (h_finite_roots.infinite_compl)
   intro t ht
   simp_all [specialize]
@@ -368,6 +366,7 @@ theorem hilbert_irreducibility_theorem (f : Polynomial (Polynomial ℚ))
       -- Since {t : a(t) = 0} is finite and {t : Irreducible(specialize f̃ t)} is
       -- infinite (by hilbert_irreducibility_monic), the conclusion follows.
       -- By leadingCoeff_roots_finite, there are only finitely many $t$ such that $f(t)$ is not monic.
+      have hf_deg1 : f.natDegree ≥ 1 := by linarith
       have h_finite_monomial : Set.Finite {t : ℤ | Polynomial.eval (t : ℚ) f.leadingCoeff = 0} := by
         apply leadingCoeff_roots_finite
         aesop
@@ -376,11 +375,12 @@ theorem hilbert_irreducibility_theorem (f : Polynomial (Polynomial ℚ))
           {t : ℤ | Irreducible (specialize (monicAssociate f) t)} \
             {t : ℤ | Polynomial.eval (t : ℚ) f.leadingCoeff = 0} := by
         intro t ht
-        exact (monicAssociate_specialize_iff f (by linarith) t (by aesop)).mp ht.left
+        refine (monicAssociate_specialize_iff f hf_deg1 t ?_).mp ht.left
+        aesop
       have h_inf_monomial : Set.Infinite {t : ℤ | Irreducible (specialize (monicAssociate f) t)} := by
         apply hilbert_irreducibility_monic
         · exact monicAssociate_irreducible f hf h_lt
-        · exact monicAssociate_monic f (by linarith)
+        · exact monicAssociate_monic f hf_deg1
         · rw [monicAssociate_natDegree] <;> linarith
         · exact monicAssociate_absIrr f h_lt hf_abs_irr
       exact Set.Infinite.mono h_equiv (h_inf_monomial.diff h_finite_monomial)
@@ -455,10 +455,9 @@ lemma irreducible_iff_not_in_reducibleLocus (f : Polynomial (Polynomial ℚ))
                         ¬IsUnit g ∧ ¬IsUnit h := by
                     rw [irreducible_iff] at h
                     push_neg at h
-                    exact Exists.elim (h (by tauto)) fun a ha ↦
-                      Exists.elim ha fun b hb ↦
-                        ⟨a, b, hb.1.symm ▸ dvd_mul_right _ _, hb.1.symm ▸ dvd_mul_left _ _,
-                          hb.1.symm, hb.2.1, hb.2.2⟩
+                    obtain ⟨a, b, hb⟩ := h (by tauto)
+                    exact ⟨a, b, hb.1.symm ▸ dvd_mul_right _ _, hb.1.symm ▸ dvd_mul_left _ _,
+                      hb.1.symm, hb.2.1, hb.2.2⟩
                   refine ⟨g, h, hg, hh, ?_, ?_, ?_⟩
                   · rw [← hgh.1, Polynomial.natDegree_mul']
                     aesop
@@ -475,7 +474,8 @@ lemma irreducible_iff_not_in_reducibleLocus (f : Polynomial (Polynomial ℚ))
           · rw [Polynomial.natDegree_C_mul] <;> aesop
           · rw [Polynomial.Monic, Polynomial.leadingCoeff_mul,
               Polynomial.leadingCoeff_C, inv_mul_cancel₀]
-            exact Polynomial.leadingCoeff_ne_zero.mpr (by aesop)
+            refine Polynomial.leadingCoeff_ne_zero.mpr ?_
+            aesop
           · refine dvd_trans ?_ hg.1
             refine ⟨Polynomial.C g.leadingCoeff, ?_⟩
             rw [mul_right_comm, ← Polynomial.C_mul, inv_mul_cancel₀ (by aesop_cat), Polynomial.C_1, one_mul]

@@ -41,7 +41,7 @@ private lemma a₄_irreducible : Irreducible a₄ := by
         ∃ f g : Polynomial ℚ, f.degree = 1 ∧ g.degree = 3 ∧ f * g = a₄ ∨ f.degree = 2 ∧ g.degree = 2 ∧ f * g = a₄ := by
       obtain ⟨f, g, hf_deg, hg_deg, hfg⟩ : ∃ f g : Polynomial ℚ, f.degree > 0 ∧ g.degree > 0 ∧ f * g = a₄ := by
         contrapose! h_not_irreducible
-        constructor <;> contrapose! h_not_irreducible <;> simp_all +decide [a₄]
+        constructor <;> contrapose! h_not_irreducible <;> simp_all [a₄]
         · refine absurd (Polynomial.degree_eq_zero_of_isUnit h_not_irreducible) ?_
           erw [Polynomial.degree_add_C] <;> erw [Polynomial.degree_add_eq_left_of_degree_lt] <;> norm_num
         · obtain ⟨a, b, h₁, h₂, h₃⟩ := h_not_irreducible
@@ -68,10 +68,9 @@ private lemma a₄_irreducible : Irreducible a₄ := by
       · exact ⟨f, g, Or.inl ⟨hf, hg, hfg⟩⟩
       · exact ⟨g, f, Or.inl ⟨hg, hf, by rw [mul_comm, hfg]⟩⟩
       · exact ⟨f, g, Or.inr ⟨hf, hg, hfg⟩⟩
-    obtain ⟨f, g, h | h⟩ := h_factor <;> simp_all +decide
+    obtain ⟨f, g, h | h⟩ := h_factor <;> simp_all
     · -- If `f` is a linear polynomial, then `f` must have a rational root.
-      obtain ⟨r, hr⟩ : ∃ r : ℚ, f.eval r = 0 := by
-        exact Polynomial.exists_root_of_degree_eq_one h.1
+      obtain ⟨r, hr⟩ : ∃ r : ℚ, f.eval r = 0 := Polynomial.exists_root_of_degree_eq_one h.1
       replace h := congr_arg (Polynomial.eval r) h.2.2
       norm_num [hr, a₄] at h
       nlinarith [sq_nonneg (r^2 - 2), sq_nonneg (r + 2)]
@@ -85,19 +84,19 @@ private lemma a₄_irreducible : Irreducible a₄ := by
           g = Polynomial.C d * Polynomial.X ^ 2 + Polynomial.C e * Polynomial.X + Polynomial.C f' := by
       rw [@Polynomial.as_sum_range_C_mul_X_pow ℚ _ f, @Polynomial.as_sum_range_C_mul_X_pow ℚ _ g]
       refine ⟨f.coeff 2, f.coeff 1, f.coeff 0, g.coeff 2, g.coeff 1, g.coeff 0, ?_, ?_⟩
-      · simp +decide [Polynomial.natDegree_eq_of_degree_eq_some hf_deg, Finset.sum_range_succ']
-      · simp +decide [Polynomial.natDegree_eq_of_degree_eq_some hg_deg, Finset.sum_range_succ']
+      · simp [Polynomial.natDegree_eq_of_degree_eq_some hf_deg, Finset.sum_range_succ']
+      · simp [Polynomial.natDegree_eq_of_degree_eq_some hg_deg, Finset.sum_range_succ']
     -- By comparing coefficients, we get the following system of equations:
     -- `a * d = 1`, `a * e + b * d = 0`, `a * f' + b * e + c * d = 0`, `b * f' + c * e = 8`, `c * f' = 12`.
-    have h_coeff : a * d = 1 ∧ a * e + b * d = 0 ∧ a * f' + b * e + c * d = 0 ∧ b * f' + c * e = 8 ∧ c * f' = 12 := by
-      simp_all +decide [a₄]
+    have h_sys : a * d = 1 ∧ a * e + b * d = 0 ∧ a * f' + b * e + c * d = 0 ∧ b * f' + c * e = 8 ∧ c * f' = 12 := by
+      simp_all [a₄]
       have h₁ := congr_arg (Polynomial.eval (-2)) hfg
       have h₂ := congr_arg (Polynomial.eval (-1)) hfg
       have h₃ := congr_arg (Polynomial.eval 0) hfg
       have h₄ := congr_arg (Polynomial.eval 1) hfg
       have h₅ := congr_arg (Polynomial.eval 2) hfg
       norm_num at h₁ h₂ h₃ h₄ h₅
-      exact ⟨by linarith, by linarith, by linarith, by linarith, by linarith⟩
+      refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> linarith
     use b / a, c / a, f' / d
     grind +ring
   obtain ⟨a, b, d, h₁, h₂, h₃⟩ := h_coeff
@@ -114,22 +113,21 @@ private lemma a₄_irreducible : Irreducible a₄ := by
           y = 16 ∨ y = -16 ∨ y = 32 ∨ y = -32 ∨ y = 64 ∨ y = -64 := by
     intros y hy
     have h_div : y.den ∣ 1 := by
-      have h_div : y.num ^ 3 - 48 * y.num * y.den ^ 2 - 64 * y.den ^ 3 = 0 := by
+      have h_eq : y.num ^ 3 - 48 * y.num * y.den ^ 2 - 64 * y.den ^ 3 = 0 := by
         rw [← Rat.num_div_den y] at hy
-        simp_all +decide [pow_succ, mul_assoc, mul_comm, mul_left_comm, div_eq_mul_inv]
+        simp_all [pow_succ, mul_assoc, mul_comm, mul_left_comm, div_eq_mul_inv]
         field_simp at hy
         norm_cast at hy
-        simp_all +decide [sub_eq_iff_eq_add]
+        simp_all [sub_eq_iff_eq_add]
         linarith
-      have h_div : (y.den : ℤ) ∣ y.num ^ 3 := by
-        exact ⟨48 * y.num * y.den + 64 * y.den ^ 2, by linarith⟩
-      have := Int.dvd_coe_gcd h_div (dvd_refl _)
-      simp_all +decide [Int.gcd, Int.natAbs_pow]
-      simp_all +decide [Nat.Coprime, Nat.Coprime.gcd_eq_one, Rat.reduced]
+      have h_dvd : (y.den : ℤ) ∣ y.num ^ 3 := ⟨48 * y.num * y.den + 64 * y.den ^ 2, by linarith⟩
+      have := Int.dvd_coe_gcd h_dvd (dvd_refl _)
+      simp_all [Int.gcd, Int.natAbs_pow]
+      simp_all [Nat.Coprime, Nat.Coprime.gcd_eq_one, Rat.reduced]
       exact Nat.eq_one_of_dvd_one (Int.natCast_dvd_natCast.mp this)
     -- Since `y` is rational and `y.den ∣ 1`, `y` must be an integer.
-    have h_int : ∃ k : ℤ, y = k := by
-      exact ⟨y.num, by simpa [show y.den = 1 by simpa using Nat.eq_one_of_dvd_one h_div] using y.num_div_den.symm⟩
+    have h_int : ∃ k : ℤ, y = k :=
+      ⟨y.num, by simpa [show y.den = 1 by simpa using Nat.eq_one_of_dvd_one h_div] using y.num_div_den.symm⟩
     rcases h_int with ⟨k, rfl⟩
     norm_cast at hy ⊢
     have : k ≤ 8 := Int.le_of_lt_add_one (by nlinarith [sq_nonneg (k^2)])
@@ -157,20 +155,20 @@ private lemma resolvent_a4_irreducible :
           intro r hr
           obtain ⟨p, q, h_gcd, h_root⟩ :
               ∃ p q : ℤ, Int.gcd p q = 1 ∧ r = p / q ∧ p^3 - 48 * p * q^2 - 64 * q^3 = 0 := by
-            obtain ⟨p, q, h_gcd, h_root⟩ : ∃ p q : ℤ, Int.gcd p q = 1 ∧ r = p / q := by
-              exact ⟨r.num, r.den, r.reduced, r.num_div_den.symm⟩
-            by_cases hq : q = 0 <;> simp_all +decide [pow_succ', mul_assoc, mul_comm, mul_left_comm, div_eq_mul_inv]
+            obtain ⟨p, q, h_gcd, h_root⟩ : ∃ p q : ℤ, Int.gcd p q = 1 ∧ r = p / q :=
+              ⟨r.num, r.den, r.reduced, r.num_div_den.symm⟩
+            by_cases hq : q = 0 <;> simp_all [pow_succ', mul_assoc, mul_comm, mul_left_comm, div_eq_mul_inv]
             field_simp at hr
             refine ⟨p, q, h_gcd, rfl, ?_⟩
             norm_cast at hr
             linarith
           -- This implies that `p` divides `64` and `q` divides `1`, so `p = ±1, ±2, ±4, ±8, ±16, ±32, ±64` and `q = ±1`.
+          have hp64 : p ∣ 64 * q ^ 3 := ⟨p ^ 2 - 48 * q ^ 2, by linarith⟩
+          have hqp3 : q ∣ p ^ 3 := ⟨48 * p * q + 64 * q ^ 2, by linarith⟩
           have h_divisors : p ∣ 64 ∧ q ∣ 1 := by
-            have h_divisors : p ∣ 64 * q^3 ∧ q ∣ p^3 := by
-              exact ⟨⟨p ^ 2 - 48 * q ^ 2, by linarith⟩, ⟨48 * p * q + 64 * q ^ 2, by linarith⟩⟩
             refine ⟨?_, ?_⟩
-            · exact Int.dvd_of_dvd_mul_left_of_gcd_one h_divisors.1 <| by simpa [Int.gcd, Int.natAbs_pow] using h_gcd
-            · refine Int.dvd_of_dvd_mul_right_of_gcd_one (show q ∣ p ^ 3 * 1 by simpa using h_divisors.2) ?_
+            · exact Int.dvd_of_dvd_mul_left_of_gcd_one hp64 <| by simpa [Int.gcd, Int.natAbs_pow] using h_gcd
+            · refine Int.dvd_of_dvd_mul_right_of_gcd_one (show q ∣ p ^ 3 * 1 by simpa using hqp3) ?_
               simpa [Int.gcd, Int.natAbs_pow] using Nat.Coprime.symm h_gcd
           have : p ≤ 64 := Int.le_of_dvd (by decide) h_divisors.1
           have : p ≥ -64 := neg_le_of_abs_le (Int.le_of_dvd (by decide) (by simpa using h_divisors.1))
@@ -191,7 +189,7 @@ private lemma resolvent_a4_irreducible :
         rcases h_deg_p with (h | h) <;>
           obtain ⟨r, hr⟩ := Polynomial.exists_root_of_degree_eq_one h <;>
           replace hprod := congr_arg (Polynomial.eval r) hprod <;>
-          simp_all +decide
+          simp_all
         all_goals tauto
       constructor <;> contrapose! h_irred
       · refine absurd (Polynomial.degree_eq_zero_of_isUnit h_irred) ?_
@@ -215,43 +213,42 @@ private lemma resolvent_a4_irreducible :
 -/
 private lemma twelve_dvd_card_gal_a4 : 12 ∣ Nat.card a₄.Gal := by
   -- From 4 | |Gal| and 3 | |Gal|, we get 12 | |Gal|.
-  have h4 : 4 ∣ Nat.card (a₄.Gal) := by
-    exact a₄_natDegree ▸ natDegree_dvd_card a₄_irreducible
+  have h4 : 4 ∣ Nat.card (a₄.Gal) := a₄_natDegree ▸ natDegree_dvd_card a₄_irreducible
   have h3 : 3 ∣ Nat.card (a₄.Gal) := by
     -- The resolvent cubic `Y^3 - 48Y - 64` has a root in the splitting field of `a₄`.
     obtain ⟨y, hy⟩ : ∃ y : a₄.SplittingField, y^3 - 48 * y - 64 = 0 := by
       -- Let `α` be a root of `a₄` in its splitting field.
       obtain ⟨α, hα⟩ : ∃ α : a₄.SplittingField, a₄.eval₂ (algebraMap ℚ (a₄.SplittingField)) α = 0 := by
         simp only [Polynomial.eval₂_eq_eval_map]
-        exact Polynomial.Splits.exists_eval_eq_zero (Polynomial.SplittingField.splits _)
-          (by erw [Polynomial.degree_map, Polynomial.degree_add_C] <;>
-            erw [Polynomial.degree_add_eq_left_of_degree_lt] <;> norm_num)
+        refine Polynomial.Splits.exists_eval_eq_zero (Polynomial.SplittingField.splits _) ?_
+        erw [Polynomial.degree_map, Polynomial.degree_add_C] <;>
+          erw [Polynomial.degree_add_eq_left_of_degree_lt] <;> norm_num
       -- Let `β` be another root of `a₄` in its splitting field.
       obtain ⟨β, hβ⟩ : ∃ β : a₄.SplittingField, a₄.eval₂ (algebraMap ℚ (a₄.SplittingField)) β = 0 ∧ β ≠ α := by
-        by_contra h_contra
+        by_contra h_no_other
         -- If there are no other roots, then the polynomial `a₄` would be `(X - α)^4`, which contradicts the fact that `a₄` is irreducible.
         have h_contra : a₄.map (algebraMap ℚ a₄.SplittingField) = (Polynomial.X - Polynomial.C α) ^ 4 := by
-          have h_contra : a₄.map (algebraMap ℚ a₄.SplittingField) =
+          have h_prod : a₄.map (algebraMap ℚ a₄.SplittingField) =
               Polynomial.C 1 * Multiset.prod (Multiset.map (fun β ↦ Polynomial.X - Polynomial.C β)
                 (Polynomial.roots (a₄.map (algebraMap ℚ a₄.SplittingField)))) := by
             convert Polynomial.Splits.eq_prod_roots _
             · unfold a₄
               norm_num [Polynomial.leadingCoeff, Polynomial.natDegree_add_eq_left_of_natDegree_lt]
             · exact Polynomial.SplittingField.splits _
-          rw [h_contra]
+          rw [h_prod]
           rw [show Polynomial.roots (Polynomial.map (algebraMap ℚ a₄.SplittingField) a₄) =
             Multiset.replicate 4 α from ?_]
           · norm_num
             ring
           · refine Multiset.eq_replicate.mpr ⟨?_, ?_⟩
-            · replace h_contra := congr_arg Polynomial.natDegree h_contra
-              norm_num [Polynomial.natDegree_map] at h_contra ⊢
-              exact h_contra ▸ a₄_natDegree
+            · replace h_prod := congr_arg Polynomial.natDegree h_prod
+              norm_num [Polynomial.natDegree_map] at h_prod ⊢
+              exact h_prod ▸ a₄_natDegree
             · exact fun x hx ↦ Classical.not_not.1 fun hx' ↦
-                ‹¬∃ β, eval₂ (algebraMap ℚ a₄.SplittingField) β a₄ = 0 ∧ β ≠ α›
+                h_no_other
                   ⟨x, by simpa [Polynomial.eval₂_eq_eval_map] using Polynomial.isRoot_of_mem_roots hx, hx'⟩
         replace h_contra := congr_arg (fun p ↦ Polynomial.coeff p 3) h_contra
-        simp_all +decide
+        simp_all
         norm_num [a₄, Polynomial.coeff_X, Polynomial.coeff_C, sub_mul, pow_succ'] at h_contra
         norm_num [show α = 0 by linear_combination' h_contra / 4] at hα
         refine absurd hα ?_
@@ -263,14 +260,13 @@ private lemma twelve_dvd_card_gal_a4 : 12 ∣ Nat.card a₄.Gal := by
       grind +ring
     -- Since `y` is a root of the resolvent cubic, the minimal polynomial of `y` over `ℚ` has degree 3.
     have h_minpoly_y : (minpoly ℚ y).degree = 3 := by
-      have h_minpoly_y : minpoly ℚ y = Polynomial.X ^ 3 - 48 * Polynomial.X - 64 := by
-        refine Eq.symm (minpoly.eq_of_irreducible_of_monic ?_ ?_ ?_)
-        · exact resolvent_a4_irreducible
+      have h_minpoly_eq : minpoly ℚ y = Polynomial.X ^ 3 - 48 * Polynomial.X - 64 := by
+        refine Eq.symm (minpoly.eq_of_irreducible_of_monic resolvent_a4_irreducible ?_ ?_)
         · simpa [Polynomial.aeval_def] using hy
         · erw [Polynomial.Monic, Polynomial.leadingCoeff, Polynomial.natDegree_sub_C,
             Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num
           norm_num [Polynomial.coeff_X]
-      erw [h_minpoly_y, Polynomial.degree_sub_C] <;> erw [Polynomial.degree_sub_eq_left_of_degree_lt] <;> norm_num
+      erw [h_minpoly_eq, Polynomial.degree_sub_C] <;> erw [Polynomial.degree_sub_eq_left_of_degree_lt] <;> norm_num
       all_goals erw [Polynomial.degree_C] <;> norm_num
     -- Since `y` is a root of the resolvent cubic, the degree of the extension `ℚ(y)` over `ℚ` is 3.
     have h_deg_y : Module.finrank ℚ (↥(IntermediateField.adjoin ℚ {y})) = 3 := by
@@ -283,7 +279,7 @@ private lemma twelve_dvd_card_gal_a4 : 12 ∣ Nat.card a₄.Gal := by
         erw [Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num [Polynomial.coeff_X]
     -- Since `y` is a root of the resolvent cubic, the degree of the extension `ℚ(y)` over `ℚ` is 3, and thus `3 ∣ [L : ℚ]`.
     have h_deg_L : Module.finrank ℚ a₄.SplittingField = Nat.card a₄.Gal := by
-      convert (IsGalois.card_aut_eq_finrank ℚ a₄.SplittingField) |> Eq.symm
+      convert (IsGalois.card_aut_eq_finrank ℚ a₄.SplittingField).symm
       apply_rules [IsGalois.mk]
     have := Module.finrank_mul_finrank ℚ (IntermediateField.adjoin ℚ { y }) a₄.SplittingField
     exact h_deg_L ▸ h_deg_y ▸ dvd_of_mul_right_eq _ this
@@ -296,7 +292,8 @@ private lemma card_gal_a4_dvd_24 : Nat.card a₄.Gal ∣ 24 := by
   convert card_gal_dvd_card_rootSet_factorial a₄ using 1
   erw [card_rootSet_eq_natDegree] <;> norm_num [a₄_natDegree]
   · exact a₄_irreducible.separable
-  · exact ne_of_apply_ne (Polynomial.eval 0) (by norm_num [a₄])
+  · apply ne_of_apply_ne (Polynomial.eval 0)
+    norm_num [a₄]
 
 /-
 Helper: if y³ = 48y + 64, then z = (32 - y²)/4 also satisfies z³ - 48z - 64 = 0.
@@ -331,12 +328,12 @@ private lemma perm_fin_four_not_surj_odd
         intro i j hij
         have h_order : orderOf (f (Equiv.swap i j)) ∣ 2 := by
           rw [orderOf_dvd_iff_pow_eq_one]
-          simp +decide [sq, ← map_mul]
-        have h_order_div : orderOf (f (Equiv.swap i j)) ∣ Fintype.card G := by
-          exact orderOf_dvd_card
+          simp [sq, ← map_mul]
+        have h_order_div : orderOf (f (Equiv.swap i j)) ∣ Fintype.card G := orderOf_dvd_card
         have := Nat.le_of_dvd (by decide) h_order
-        interval_cases _ : orderOf (f (Equiv.swap i j)) <;> simp_all +decide
-        exact absurd (even_iff_two_dvd.mpr h_order_div) (by simpa using hG)
+        interval_cases _ : orderOf (f (Equiv.swap i j)) <;> simp_all
+        refine absurd (even_iff_two_dvd.mpr h_order_div) ?_
+        simpa using hG
       -- Since transpositions generate `S₄`, we have `f σ = 1` for all `σ ∈ S₄`.
       have h_all : ∀ (σ : Equiv.Perm (Fin 4)), f σ = 1 := by
         intro σ
@@ -376,7 +373,7 @@ private lemma adjoin_resolvent_isNormal
               (Subfield.sub_mem _ (Subfield.mem_carrier.mpr (by norm_num))
                 (Subfield.pow_mem _ (IntermediateField.mem_adjoin_simple_self ℚ y) 2))
               (Subfield.mem_carrier.mpr (by norm_num)))
-          refine' Polynomial.funext fun x ↦ _
+          refine Polynomial.funext fun x ↦ ?_
           erw [Polynomial.leadingCoeff, Polynomial.natDegree_sub_C,
             Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num
           ext
@@ -394,28 +391,30 @@ private lemma adjoin_resolvent_isNormal
         · refine le_antisymm ?_ ?_
           · exact le_top
           · intro x hx
-            refine' Algebra.adjoin_induction _ _ _ _
+            refine Algebra.adjoin_induction ?_ ?_ ?_ ?_
               (show x ∈ Algebra.adjoin ℚ
-                  { (⟨y, IntermediateField.mem_adjoin_simple_self ℚ y⟩ : ↥ (IntermediateField.adjoin ℚ { y })) } from _)
+                  { (⟨y, IntermediateField.mem_adjoin_simple_self ℚ y⟩ : ↥ (IntermediateField.adjoin ℚ { y })) } from ?_)
             · have h_gen : ∀ x : a₄.SplittingField, x ∈ IntermediateField.adjoin ℚ {y} → x ∈ Algebra.adjoin ℚ {y} := by
                 intro x hx
                 rw [IntermediateField.mem_adjoin_simple_iff] at hx
                 obtain ⟨r, s, rfl⟩ := hx
-                by_cases hs : (aeval y) s = 0 <;> simp_all +decide [div_eq_mul_inv]
+                by_cases hs : (aeval y) s = 0 <;> simp_all [div_eq_mul_inv]
                 have h_inv :
-                    ∀ x : a₄.SplittingField, x ∈ Algebra.adjoin ℚ {y} → x ≠ 0 → x⁻¹ ∈ Algebra.adjoin ℚ {y} := by
-                  exact fun x a a_1 ↦ Algebra.IsIntegral.inv_mem a
+                    ∀ x : a₄.SplittingField, x ∈ Algebra.adjoin ℚ {y} → x ≠ 0 → x⁻¹ ∈ Algebra.adjoin ℚ {y} :=
+                  fun x a a_1 ↦ Algebra.IsIntegral.inv_mem a
                 exact (Subalgebra.mul_mem _
-                  (by exact (Algebra.adjoin_singleton_eq_range_aeval ℚ y) ▸ Set.mem_range_self _)
-                  (h_inv _ (by exact (Algebra.adjoin_singleton_eq_range_aeval ℚ y) ▸ Set.mem_range_self _) hs))
+                  ((Algebra.adjoin_singleton_eq_range_aeval ℚ y) ▸ Set.mem_range_self _)
+                  (h_inv _ ((Algebra.adjoin_singleton_eq_range_aeval ℚ y) ▸ Set.mem_range_self _) hs))
               convert h_gen x x.2
-              simp +decide [Algebra.adjoin_singleton_eq_range_aeval]
-              simp +decide [aeval_def, Polynomial.eval₂_eq_sum_range]
-              simp +decide [← Subtype.coe_inj]
-            · simp +decide
+              simp [Algebra.adjoin_singleton_eq_range_aeval]
+              simp [aeval_def, Polynomial.eval₂_eq_sum_range]
+              simp [← Subtype.coe_inj]
+            · simp
               apply Algebra.subset_adjoin
-              simp +decide [Polynomial.mem_rootSet]
-              exact ⟨by exact ne_of_apply_ne (Polynomial.eval 0) (by norm_num), by simpa [Subtype.ext_iff] using hy⟩
+              simp [Polynomial.mem_rootSet]
+              refine ⟨ne_of_apply_ne (Polynomial.eval 0) ?_, ?_⟩
+              · norm_num
+              · simpa [Subtype.ext_iff] using hy
             · exact fun r ↦ Subalgebra.algebraMap_mem _ r
             · exact fun x y hx hy hx' hy' ↦ AddMemClass.add_mem hx' hy'
             · exact fun x y hx hy hx' hy' ↦ Subalgebra.mul_mem _ hx' hy'
@@ -429,8 +428,6 @@ set_option maxHeartbeats 800000 in
 private lemma card_gal_ne_24 : Nat.card a₄.Gal ≠ 24 := by
   -- Assume |Gal| = 24 for contradiction.
   by_contra h_contra
-  have h_card : Nat.card a₄.Gal = 24 := by
-    exact h_contra
   -- From the proof of twelve_dvd_card_gal_a4, there exists y in the splitting field with:
   -- - y³ - 48y - 64 = 0
   -- - minpoly ℚ y = X³ - 48X - 64
@@ -450,9 +447,9 @@ private lemma card_gal_ne_24 : Nat.card a₄.Gal ≠ 24 := by
             β ∈ Polynomial.roots (a₄.map (algebraMap ℚ a₄.SplittingField)) ∧ α ≠ β := by
         by_cases h_distinct : Multiset.Nodup (Polynomial.roots (a₄.map (algebraMap ℚ a₄.SplittingField)))
         · rcases x : Polynomial.roots _ with (_ | ⟨α, _ | ⟨β, _ | h⟩⟩)
-          simp_all +decide
+          simp_all
           rcases l₁ : (‹_› : List a₄.SplittingField) with (_ | ⟨α, _ | ⟨β, _ | ⟨γ, _ | ⟨δ, _ | l⟩⟩⟩⟩) <;>
-            simp_all +decide
+            simp_all
         · have h_distinct : Polynomial.Separable (a₄.map (algebraMap ℚ a₄.SplittingField)) := by
             apply Polynomial.Separable.map
             exact a₄_irreducible.separable
@@ -464,14 +461,13 @@ private lemma card_gal_ne_24 : Nat.card a₄.Gal ≠ 24 := by
       · simpa [Polynomial.eval₂_eq_eval_map] using Polynomial.isRoot_of_mem_roots hαβ.2.1
     use (α + β)^2
     have h_minpoly : minpoly ℚ ((α + β) ^ 2) = X ^ 3 - C 48 * X - C 64 := by
-      refine Eq.symm (minpoly.eq_of_irreducible_of_monic ?_ ?_ ?_)
-      · exact resolvent_a4_irreducible
-      · simp_all +decide [a₄]
+      refine Eq.symm (minpoly.eq_of_irreducible_of_monic resolvent_a4_irreducible ?_ ?_)
+      · simp_all [a₄]
         grind +ring
       · erw [Polynomial.Monic, Polynomial.leadingCoeff, Polynomial.natDegree_sub_C,
           Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num
     have := minpoly.aeval ℚ ((α + β) ^ 2)
-    simp_all +decide [Polynomial.eval₂_eq_eval_map]
+    simp_all [Polynomial.eval₂_eq_eval_map]
     rw [IntermediateField.adjoin.finrank]
     · erw [h_minpoly, Polynomial.natDegree_sub_C, Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num
     · refine ⟨Polynomial.X ^ 3 - Polynomial.C 48 * Polynomial.X - Polynomial.C 64, ?_, by aesop⟩
@@ -483,23 +479,23 @@ private lemma card_gal_ne_24 : Nat.card a₄.Gal ≠ 24 := by
   have h_iso_perm : Nonempty (a₄.Gal ≃* (Equiv.Perm (Fin 4))) := by
     -- The Galois group of a₄ is isomorphic to a subgroup of S₄.
     have h_iso_subgroup : ∃ (f : a₄.Gal →* Equiv.Perm (a₄.rootSet ℂ)), Function.Injective f := by
-      have h_iso_subgroup : ∃ (f : a₄.Gal →* Equiv.Perm (a₄.rootSet a₄.SplittingField)), Function.Injective f := by
+      obtain ⟨f₀, hf₀⟩ :
+          ∃ (f : a₄.Gal →* Equiv.Perm (a₄.rootSet a₄.SplittingField)), Function.Injective f := by
         have : Fact ((a₄.map (algebraMap ℚ a₄.SplittingField)).Splits) := ⟨SplittingField.splits a₄⟩
         exact ⟨Gal.galActionHom a₄ a₄.SplittingField, Gal.galActionHom_injective a₄ a₄.SplittingField⟩
-      have h_iso_subgroup : Nonempty (Equiv.Perm (a₄.rootSet a₄.SplittingField) ≃* Equiv.Perm (a₄.rootSet ℂ)) := by
-        have h_iso_subgroup : Nonempty (a₄.rootSet a₄.SplittingField ≃ a₄.rootSet ℂ) := by
+      obtain ⟨e⟩ :
+          Nonempty (Equiv.Perm (a₄.rootSet a₄.SplittingField) ≃* Equiv.Perm (a₄.rootSet ℂ)) := by
+        have h_equiv : Nonempty (a₄.rootSet a₄.SplittingField ≃ a₄.rootSet ℂ) := by
           refine ⟨Fintype.equivOfCardEq ?_⟩
           rw [card_rootSet_eq_natDegree]
           · convert Polynomial.card_rootSet_eq_natDegree _ _
             · exact a₄_irreducible.separable
             · exact Polynomial.SplittingField.splits _
           · exact a₄_irreducible.separable
-          · exact ne_of_apply_ne (Polynomial.eval 0) (by norm_num [a₄])
-        constructor
-        refine' { Equiv.permCongr h_iso_subgroup.some with .. }
-        aesop_cat
-      obtain ⟨f⟩ := h_iso_subgroup
-      exact ⟨f.toMonoidHom.comp h_iso_subgroup.choose, f.injective.comp h_iso_subgroup.choose_spec⟩
+          · apply ne_of_apply_ne (Polynomial.eval 0)
+            norm_num [a₄]
+        exact ⟨{ Equiv.permCongr h_equiv.some with map_mul' := by aesop_cat }⟩
+      exact ⟨e.toMonoidHom.comp f₀, e.injective.comp hf₀⟩
     -- Since the Galois group has order 24 and S₄ also has order 24, the injective homomorphism must be an isomorphism.
     obtain ⟨f, hf_inj⟩ := h_iso_subgroup
     have hf_surj : Function.Surjective f := by
@@ -508,28 +504,27 @@ private lemma card_gal_ne_24 : Nat.card a₄.Gal ≠ 24 := by
           convert card_rootSet_eq_natDegree a₄ _ _
           · exact a₄_natDegree.symm
           · exact a₄_irreducible.separable
-          · exact ne_of_apply_ne (Polynomial.eval 0) (by norm_num [a₄])
+          · apply ne_of_apply_ne (Polynomial.eval 0)
+            norm_num [a₄]
         simp_all +decide [Fintype.card_perm]
-      have hf_surj : Finite (a₄.Gal) ∧ Finite (Equiv.Perm (a₄.rootSet ℂ)) := by
-        refine ⟨Nat.finite_of_card_ne_zero (by positivity), Nat.finite_of_card_ne_zero ?_⟩
-        rw [← hf_card]
-        positivity
-      have hf_surj : Function.Bijective f := by
-        have := hf_surj.1
-        have := hf_surj.2
-        exact ⟨hf_inj, by exact (Fintype.bijective_iff_injective_and_card f).mpr ⟨hf_inj, by aesop⟩ |>.2⟩
-      exact hf_surj.2
-    have h_iso_perm : Nonempty (a₄.Gal ≃* Equiv.Perm (a₄.rootSet ℂ)) := by
-      exact ⟨{ Equiv.ofBijective f ⟨hf_inj, hf_surj⟩ with map_mul' := f.map_mul }⟩
+      have hf_finite : Finite (a₄.Gal) ∧ Finite (Equiv.Perm (a₄.rootSet ℂ)) := by
+        refine ⟨Nat.finite_of_card_ne_zero ?_, Nat.finite_of_card_ne_zero ?_⟩
+        · positivity
+        · rw [← hf_card]
+          positivity
+      have := hf_finite.1
+      have := hf_finite.2
+      exact ((Fintype.bijective_iff_injective_and_card f).mpr ⟨hf_inj, by aesop⟩).2
+    have h_iso_perm : Nonempty (a₄.Gal ≃* Equiv.Perm (a₄.rootSet ℂ)) :=
+      ⟨{ Equiv.ofBijective f ⟨hf_inj, hf_surj⟩ with map_mul' := f.map_mul }⟩
     have h_card_rootSet : Fintype.card (a₄.rootSet ℂ) = 4 := by
       convert card_rootSet_eq_natDegree a₄ _ _
       · erw [Polynomial.natDegree_add_C, Polynomial.natDegree_add_eq_left_of_natDegree_lt] <;> norm_num
       · exact a₄_irreducible.separable
-      · exact ne_of_apply_ne (Polynomial.eval 0) (by norm_num [a₄])
+      · apply ne_of_apply_ne (Polynomial.eval 0)
+        norm_num [a₄]
     obtain ⟨g⟩ := h_iso_perm
-    refine ⟨g.trans ?_⟩
-    refine' { Equiv.permCongr (Fintype.equivOfCardEq h_card_rootSet) with .. }
-    aesop_cat
+    exact ⟨g.trans { Equiv.permCongr (Fintype.equivOfCardEq h_card_rootSet) with map_mul' := by aesop_cat }⟩
   -- Therefore, there exists a surjective homomorphism from Perm(Fin 4) to Gal(ℚ(y)/ℚ).
   obtain ⟨f, hf⟩ :
       ∃ f : Equiv.Perm (Fin 4) →* (↥(IntermediateField.adjoin ℚ ({y} : Set a₄.SplittingField)) ≃ₐ[ℚ]
@@ -538,8 +533,8 @@ private lemma card_gal_ne_24 : Nat.card a₄.Gal ≠ 24 := by
         ∃ f : (a₄.SplittingField ≃ₐ[ℚ] a₄.SplittingField) →*
           (↥(IntermediateField.adjoin ℚ ({y} : Set a₄.SplittingField)) ≃ₐ[ℚ]
             ↥(IntermediateField.adjoin ℚ ({y} : Set a₄.SplittingField))), Function.Surjective f := by
-      have h_restrict : Normal ℚ (↥(IntermediateField.adjoin ℚ ({y} : Set a₄.SplittingField))) := by
-        apply adjoin_resolvent_isNormal y hy₁ hy₂ hy₃
+      have h_normal : Normal ℚ (↥(IntermediateField.adjoin ℚ ({y} : Set a₄.SplittingField))) :=
+        adjoin_resolvent_isNormal y hy₁ hy₂ hy₃
       exact ⟨_, AlgEquiv.restrictNormalHom_surjective _⟩
     obtain ⟨f, hf⟩ := h_restrict
     exact ⟨f.comp h_iso_perm.some.symm.toMonoidHom, hf.comp h_iso_perm.some.symm.surjective⟩
@@ -549,15 +544,15 @@ private lemma card_gal_ne_24 : Nat.card a₄.Gal ≠ 24 := by
         ↥(IntermediateField.adjoin ℚ ({y} : Set a₄.SplittingField)))) ∧
         1 < Nat.card (↥(IntermediateField.adjoin ℚ ({y} : Set a₄.SplittingField)) ≃ₐ[ℚ]
           ↥(IntermediateField.adjoin ℚ ({y} : Set a₄.SplittingField))) := by
-    have h_odd_order :
+    have h_card3 :
         Nat.card (↥(IntermediateField.adjoin ℚ ({y} : Set a₄.SplittingField)) ≃ₐ[ℚ]
           ↥(IntermediateField.adjoin ℚ ({y} : Set a₄.SplittingField))) = 3 := by
-      have h_iso_perm : IsGalois ℚ (↥(IntermediateField.adjoin ℚ ({y} : Set a₄.SplittingField))) := by
-        have h_normal : Normal ℚ (↥(IntermediateField.adjoin ℚ ({y} : Set a₄.SplittingField))) := by
-          exact adjoin_resolvent_isNormal y hy₁ hy₂ hy₃
-        exact { to_isSeparable := isSeparable_tower_bot ℚ ℚ⟮y⟯, to_normal := h_normal }
+      have h_iso : IsGalois ℚ (↥(IntermediateField.adjoin ℚ ({y} : Set a₄.SplittingField))) :=
+        { to_isSeparable := isSeparable_tower_bot ℚ ℚ⟮y⟯,
+          to_normal := adjoin_resolvent_isNormal y hy₁ hy₂ hy₃ }
       rw [← hy₃, IsGalois.card_aut_eq_finrank]
-    exact ⟨h_odd_order.symm ▸ by decide, h_odd_order.symm ▸ by decide⟩
+    rw [h_card3]
+    refine ⟨?_, ?_⟩ <;> decide
   convert perm_fin_four_not_surj_odd _ _ f hf
   all_goals aesop
 
@@ -578,19 +573,17 @@ private lemma gal_iso_alternating :
     Nonempty (a₄.Gal ≃* ↥(alternatingGroup (Fin 4))) := by
       -- The polynomial `a₄` is irreducible over `ℚ`, so its Galois group is isomorphic to a subgroup of `S₄`.
       have h_galois_subgroup : ∃ (f : a₄.Gal →* Equiv.Perm (Fin 4)), Function.Injective f := by
-        have h_galois_subgroup : ∃ (f : a₄.Gal →* Equiv.Perm (a₄.rootSet ℂ)), Function.Injective f := by
+        obtain ⟨f₀, hf₀⟩ : ∃ (f : a₄.Gal →* Equiv.Perm (a₄.rootSet ℂ)), Function.Injective f := by
           have : Fact ((a₄.map (algebraMap ℚ ℂ)).Splits) := ⟨IsAlgClosed.splits _⟩
           exact ⟨Gal.galActionHom a₄ ℂ, Gal.galActionHom_injective a₄ ℂ⟩
-        have h_galois_subgroup : Nonempty (Equiv.Perm (a₄.rootSet ℂ) ≃* Equiv.Perm (Fin 4)) := by
-          have h_galois_subgroup : Fintype.card (a₄.rootSet ℂ) = 4 := by
+        have h_perm : Nonempty (Equiv.Perm (a₄.rootSet ℂ) ≃* Equiv.Perm (Fin 4)) := by
+          have h_card4 : Fintype.card (a₄.rootSet ℂ) = 4 := by
             convert card_rootSet_eq_natDegree a₄ a₄_irreducible.separable _
             · erw [Polynomial.natDegree_add_C, Polynomial.natDegree_add_eq_left_of_natDegree_lt] <;> norm_num
-            · exact ne_of_apply_ne (Polynomial.eval 0) (by norm_num [a₄])
-          exact ⟨by exact { Equiv.permCongr (Fintype.equivOfCardEq <| by aesop) with map_mul' := by aesop }⟩
-        exact ⟨h_galois_subgroup.some.toMonoidHom.comp
-            ‹∃ f : a₄.Gal →* Equiv.Perm (a₄.rootSet ℂ), Function.Injective f›.choose,
-          h_galois_subgroup.some.injective.comp
-            ‹∃ f : a₄.Gal →* Equiv.Perm (a₄.rootSet ℂ), Function.Injective f›.choose_spec⟩
+            · apply ne_of_apply_ne (Polynomial.eval 0)
+              norm_num [a₄]
+          exact ⟨{ Equiv.permCongr (Fintype.equivOfCardEq <| by aesop) with map_mul' := by aesop }⟩
+        exact ⟨h_perm.some.toMonoidHom.comp f₀, h_perm.some.injective.comp hf₀⟩
       -- Since the Galois group has order 12 and is a subgroup of `S₄`, it must be isomorphic to `A₄`.
       obtain ⟨f, hf_inj⟩ := h_galois_subgroup
       have h_card : Nat.card (Set.range f) = 12 := by
@@ -600,8 +593,9 @@ private lemma gal_iso_alternating :
         intros H hH_card
         have h_index : H.index = 2 := by
           have := Subgroup.index_mul_card H
-          simp_all +decide
-          exact mul_right_cancel₀ (by decide) this
+          simp_all
+          refine mul_right_cancel₀ ?_ this
+          decide
         grind only [Equiv.Perm.eq_alternatingGroup_of_index_eq_two]
       rw [← h_subgroup (MonoidHom.range f)]
       · have hsurj : Function.Surjective

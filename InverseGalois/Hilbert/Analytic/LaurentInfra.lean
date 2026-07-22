@@ -41,10 +41,12 @@ theorem analytic_taylor_remainder_bound (G : ℂ → ℂ) (hG : AnalyticAt ℂ G
     have := Metric.continuousAt_iff.mp hF₁.continuousAt 1 zero_lt_one
     refine ⟨this.choose, this.choose_spec.1, fun w hw ↦ ?_⟩
     have := this.choose_spec.2 (show dist w 0 < this.choose by simpa using hw)
-    exact le_trans (norm_le_of_mem_closedBall <| by simpa [dist_eq_norm] using this.le) (by linarith)
+    have hmem : F w ∈ Metric.closedBall (F 0) 1 := by simpa [dist_eq_norm] using this.le
+    exact norm_le_of_mem_closedBall hmem
   obtain ⟨δ₂, hδ₂_pos, hδ₂⟩ := Metric.eventually_nhds_iff.mp hF₂
-  refine ⟨F, min δ₁ δ₂, ‖F 0‖ + 1, lt_min hδ₁_pos hδ₂_pos, by positivity, ?_, ?_⟩ <;>
-    simp_all [div_eq_inv_mul, mul_assoc, mul_comm]
+  refine ⟨F, min δ₁ δ₂, ‖F 0‖ + 1, lt_min hδ₁_pos hδ₂_pos, by positivity, ?_, ?_⟩
+  · simp_all [div_eq_inv_mul, mul_assoc, mul_comm]
+  · simp_all [div_eq_inv_mul, mul_assoc, mul_comm]
 
 /-
 **Real Taylor coefficients from reality on the positive real segment.**
@@ -64,9 +66,10 @@ theorem iteratedDeriv_im_zero_of_real_on_pos (G : ℂ → ℂ) (r : ℝ) (hr : 0
       map_eq_zero, not_false_eq_true, RCLike.norm_conj, true_and]
     exact ⟨ε, a, fun _ _ hx ↦ hx⟩
   have h_eq : ∀ m, iteratedDeriv m G 0 = starRingEnd ℂ (iteratedDeriv m G 0) := by
-    have h_eq : ∀ w ∈ Metric.ball 0 r, starRingEnd ℂ (G (starRingEnd ℂ w)) = G w := by
+    have h_conj_eq : ∀ w ∈ Metric.ball 0 r, starRingEnd ℂ (G (starRingEnd ℂ w)) = G w := by
       -- By the identity theorem for analytic functions, since G and its conjugate agree on the segment (0, r), they must be equal on the entire ball.
-      have h_eq : AnalyticOnNhd ℂ (fun w ↦ (starRingEnd ℂ) (G (starRingEnd ℂ w))) (Metric.ball 0 r) := by
+      have h_analytic : AnalyticOnNhd ℂ (fun w ↦ (starRingEnd ℂ) (G (starRingEnd ℂ w)))
+          (Metric.ball 0 r) := by
         apply DifferentiableOn.analyticOnNhd
         · intro w hw
           have := hG (starRingEnd ℂ w)
@@ -80,7 +83,7 @@ theorem iteratedDeriv_im_zero_of_real_on_pos (G : ℂ → ℂ) (r : ℝ) (hr : 0
             norm_num
           exact h_diff.differentiableAt.differentiableWithinAt
         · exact Metric.isOpen_ball
-      apply h_eq.eqOn_of_preconnected_of_frequently_eq
+      apply h_analytic.eqOn_of_preconnected_of_frequently_eq
       any_goals exact (r / 2 : ℂ)
       · assumption
       · exact (convex_ball _ _).isPreconnected
@@ -103,12 +106,12 @@ theorem iteratedDeriv_im_zero_of_real_on_pos (G : ℂ → ℂ) (r : ℝ) (hr : 0
     have h_deriv_comp : ∀ m, iteratedDeriv m (fun w ↦ starRingEnd ℂ (G (starRingEnd ℂ w))) 0
         = starRingEnd ℂ (iteratedDeriv m G 0) := by
       intro m
-      have h_deriv_comp : ∀ w ∈ Metric.ball 0 r,
+      have h_deriv_comp_ball : ∀ w ∈ Metric.ball 0 r,
           iteratedDeriv m (fun w ↦ starRingEnd ℂ (G (starRingEnd ℂ w))) w
             = starRingEnd ℂ (iteratedDeriv m G (starRingEnd ℂ w)) := by
         induction' m with m ih
         · intro w hw
-          simp_all only [Metric.mem_ball, dist_zero_right, iteratedDeriv_zero]
+          simp [iteratedDeriv_zero]
         · intro w hw
           rw [iteratedDeriv_succ, iteratedDeriv_succ]
           convert HasDerivAt.deriv (HasDerivAt.congr_of_eventuallyEq _ <|
@@ -116,20 +119,20 @@ theorem iteratedDeriv_im_zero_of_real_on_pos (G : ℂ → ℂ) (r : ℝ) (hr : 0
             using 1
           have h_deriv : HasDerivAt (iteratedDeriv m G) (deriv (iteratedDeriv m G) (starRingEnd ℂ w))
               (starRingEnd ℂ w) := by
-            have h_deriv : AnalyticOnNhd ℂ (iteratedDeriv m G) (Metric.ball 0 r) := by
+            have h_analytic_deriv : AnalyticOnNhd ℂ (iteratedDeriv m G) (Metric.ball 0 r) := by
               refine Nat.recOn m ?_ ?_ <;> simp_all [iteratedDeriv_succ]
               exact fun n hn ↦ hn.deriv
-            exact (h_deriv.differentiableOn.differentiableAt
+            exact (h_analytic_deriv.differentiableOn.differentiableAt
               (Metric.isOpen_ball.mem_nhds <| by simpa [Complex.norm_conj] using hw)).hasDerivAt
           rw [hasDerivAt_iff_tendsto_slope_zero] at *
           convert Complex.continuous_conj.continuousAt.tendsto.comp
             (h_deriv.comp h_conj_tendsto) using 2
           norm_num
-      simpa using h_deriv_comp 0 (Metric.mem_ball_self hr)
+      simpa using h_deriv_comp_ball 0 (Metric.mem_ball_self hr)
     intro m
     rw [← h_deriv_comp m, Filter.EventuallyEq.iteratedDeriv_eq]
     filter_upwards [Metric.ball_mem_nhds 0 hr] with w hw
-    simp_all only [Metric.mem_ball, dist_zero_right]
+    exact (h_conj_eq w hw).symm
   specialize h_eq m
   norm_num [Complex.ext_iff] at h_eq
   linarith

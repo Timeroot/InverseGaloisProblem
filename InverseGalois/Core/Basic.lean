@@ -47,10 +47,10 @@ theorem of_surjective_galHom (L : Type) [Field L] [Algebra ℚ L]
     [FiniteDimensional ℚ L] [IsGalois ℚ L] (ψ : Gal(L/ℚ) →* H)
     (hψ : Function.Surjective ψ) : IsInverseGalois H := by
   let N := ψ.ker
-  refine ⟨fixedField N, inferInstance, (fixedField N).algebra', inferInstance, ?_, ⟨?_⟩⟩
-  · exact IsGalois.of_fixedField_normal_subgroup N
-  · exact (IsGalois.normalAutEquivQuotient N).symm.trans
-      (QuotientGroup.quotientKerEquivOfSurjective ψ hψ)
+  refine ⟨fixedField N, inferInstance, (fixedField N).algebra', inferInstance,
+    IsGalois.of_fixedField_normal_subgroup N, ⟨?_⟩⟩
+  exact (IsGalois.normalAutEquivQuotient N).symm.trans
+    (QuotientGroup.quotientKerEquivOfSurjective ψ hψ)
 
 /-- The inverse Galois property is closed under quotients: if `G` is an inverse Galois group
 and `f : G →* H` is a surjective group homomorphism, then `H` is also an inverse Galois group. -/

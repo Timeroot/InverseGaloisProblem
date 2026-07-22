@@ -40,7 +40,7 @@ private lemma d₄_irreducible : Irreducible d₄ := by
     · erw [Polynomial.leadingCoeff_X_pow_sub_C] <;> norm_num [Ideal.mem_span_singleton]
     · intro n hn
       interval_cases n <;> norm_num [Polynomial.coeff_one, Polynomial.coeff_X, Ideal.mem_span_singleton]
-    · simp +decide [Ideal.span_singleton_pow, Ideal.mem_span_singleton]
+    · simp [Ideal.span_singleton_pow, Ideal.mem_span_singleton]
     · exact Polynomial.Monic.isPrimitive (Polynomial.monic_X_pow_sub_C _ (by norm_num))
   convert h_irred
   constructor <;> intro h
@@ -49,8 +49,8 @@ private lemma d₄_irreducible : Irreducible d₄ := by
     constructor <;> intro h
     · convert h_irred
     · have h_gauss : Irreducible (Polynomial.map (Int.castRingHom ℚ) (Polynomial.X ^ 4 - 2 : Polynomial ℤ)) := by
-        have h_primitive : Polynomial.IsPrimitive (Polynomial.X ^ 4 - 2 : Polynomial ℤ) := by
-          exact Polynomial.Monic.isPrimitive (Polynomial.monic_X_pow_sub_C _ (by norm_num))
+        have h_primitive : Polynomial.IsPrimitive (Polynomial.X ^ 4 - 2 : Polynomial ℤ) :=
+          Polynomial.Monic.isPrimitive (Polynomial.monic_X_pow_sub_C _ (by norm_num))
         exact (IsPrimitive.Int.irreducible_iff_irreducible_map_cast h_primitive).mp h_irred
       convert h_gauss using 1
       norm_num [d₄]
@@ -75,7 +75,7 @@ private lemma neg_alpha_sq_not_square (α : d₄.SplittingField)
           have h_basis : ∀ x : d₄.SplittingField, x ∈ IntermediateField.adjoin ℚ {α} →
               ∃ a b c d : ℚ, x = a + b * α + c * α^2 + d * α^3 := by
             intro x hx
-            have h_basis : ∀ x : d₄.SplittingField, x ∈ Algebra.adjoin ℚ {α} →
+            have h_basis_alg : ∀ x : d₄.SplittingField, x ∈ Algebra.adjoin ℚ {α} →
                 ∃ a b c d : ℚ, x = a + b * α + c * α^2 + d * α^3 := by
               intro x hx
               have h_deg : α^4 = 2 := by
@@ -101,10 +101,10 @@ private lemma neg_alpha_sq_not_square (α : d₄.SplittingField)
                 erw [Polynomial.degree_lt_iff_coeff_zero] at hr
                 refine ⟨r.coeff 0, r.coeff 1, r.coeff 2, r.coeff 3, Polynomial.ext fun n ↦ ?_⟩
                 rcases n with (_ | _ | _ | _ | _ | n) <;>
-                  simp +arith +decide [Polynomial.coeff_eq_zero_of_natDegree_lt, hr.2]
-              simp_all +decide [Polynomial.aeval_def]
+                  simp [Polynomial.coeff_eq_zero_of_natDegree_lt, hr.2]
+              simp_all [Polynomial.aeval_def]
               exact ⟨a, b, c, d, rfl⟩
-            apply h_basis
+            apply h_basis_alg
             rw [IntermediateField.mem_adjoin_simple_iff] at hx
             obtain ⟨r, s, rfl⟩ := hx
             refine Subalgebra.mul_mem _ ?_ ?_
@@ -122,44 +122,43 @@ private lemma neg_alpha_sq_not_square (α : d₄.SplittingField)
             (2 * a * b + 4 * c * d : d₄.SplittingField) = 0 ∧
             (2 * a * c + b^2 + 2 * d^2 : d₄.SplittingField) = -1 ∧
             (2 * a * d + 2 * b * c : d₄.SplittingField) = 0 := by
-          have h_coeff : (a^2 + 4 * b * d + 2 * c^2 : d₄.SplittingField) +
+          have h_coeff_expand : (a^2 + 4 * b * d + 2 * c^2 : d₄.SplittingField) +
               (2 * a * b + 4 * c * d) * α + (2 * a * c + b^2 + 2 * d^2) * α^2 +
               (2 * a * d + 2 * b * c) * α^3 = -α^2 := by
             convert hx using 1
             rw [hx_eq]
             norm_num
             ring_nf
-            simp +decide [Algebra.smul_def]
+            simp [Algebra.smul_def]
             ring_nf
             have hα4 : α ^ 4 = 2 := by
               unfold d₄ at hα
               norm_num [Polynomial.aeval_def] at hα
               linear_combination' hα
-            rw [show α ^ 6 = α ^ 4 * α ^ 2 by ring, show α ^ 5 = α ^ 4 * α by ring,
-              show α ^ 4 = 2 from hα4]
+            have e6 : α ^ 6 = α ^ 4 * α ^ 2 := by ring
+            have e5 : α ^ 5 = α ^ 4 * α := by ring
+            rw [e6, e5, hα4]
             ring_nf
           have h_lin_ind : LinearIndependent ℚ ![1, α, α^2, α^3] := by
-            have h_lin_ind : minpoly ℚ α = Polynomial.X^4 - 2 := by
+            have h_minpoly : minpoly ℚ α = Polynomial.X^4 - 2 := by
               refine Eq.symm (minpoly.eq_of_irreducible_of_monic ?_ ?_ ?_)
               · exact d₄_irreducible
               · exact hα
               · erw [Polynomial.Monic, Polynomial.leadingCoeff_X_pow_sub_C]
                 norm_num
-            have h_lin_ind : ∀ (p : Polynomial ℚ), p.degree < 4 →
+            have h_deg_zero : ∀ (p : Polynomial ℚ), p.degree < 4 →
                 p.eval₂ (algebraMap ℚ (d₄.SplittingField)) α = 0 → p = 0 := by
               intros p hp hp_zero
-              have h_div : minpoly ℚ α ∣ p := by
-                exact minpoly.dvd ℚ α hp_zero
+              have h_div : minpoly ℚ α ∣ p := minpoly.dvd ℚ α hp_zero
               exact Polynomial.eq_zero_of_dvd_of_degree_lt h_div
                 (lt_of_lt_of_le hp
-                  (by erw [h_lin_ind, Polynomial.degree_X_pow_sub_C] <;> norm_num))
+                  (by erw [h_minpoly, Polynomial.degree_X_pow_sub_C] <;> norm_num))
             refine Fintype.linearIndependent_iff.2 ?_
             intro g hg i
-            specialize h_lin_ind (∑ i, g i • Polynomial.X ^ i.val)
-            simp_all +decide [Polynomial.eval₂_finset_sum]
-            simp_all +decide [Fin.sum_univ_four, Algebra.smul_def]
-            have := h_lin_ind (by
-              exact lt_of_le_of_lt (Polynomial.degree_add_le _ _) (max_lt
+            specialize h_deg_zero (∑ i, g i • Polynomial.X ^ i.val)
+            simp_all [Polynomial.eval₂_finset_sum]
+            simp_all [Fin.sum_univ_four, Algebra.smul_def]
+            have := h_deg_zero (lt_of_le_of_lt (Polynomial.degree_add_le _ _) (max_lt
                 (lt_of_le_of_lt (Polynomial.degree_add_le _ _) (max_lt
                   (lt_of_le_of_lt (Polynomial.degree_add_le _ _) (max_lt
                     (Polynomial.degree_C_le.trans_lt <| by norm_num) <|
@@ -167,7 +166,7 @@ private lemma neg_alpha_sq_not_square (α : d₄.SplittingField)
                   <| lt_of_le_of_lt (Polynomial.degree_C_mul_X_pow_le _ _) <| by norm_num))
                 <| lt_of_le_of_lt (Polynomial.degree_C_mul_X_pow_le _ _) <| by norm_num))
             replace := congr_arg (fun p ↦ p.coeff i) this
-            fin_cases i <;> simp_all +decide [Polynomial.coeff_eq_zero_of_natDegree_lt]
+            fin_cases i <;> simp_all [Polynomial.coeff_eq_zero_of_natDegree_lt]
           have h_coeff_eq : ∀ (c₀ c₁ c₂ c₃ : ℚ),
               c₀ • (1 : d₄.SplittingField) + c₁ • α + c₂ • α^2 + c₃ • α^3 = 0 →
                 c₀ = 0 ∧ c₁ = 0 ∧ c₂ = 0 ∧ c₃ = 0 := by
@@ -183,13 +182,14 @@ private lemma neg_alpha_sq_not_square (α : d₄.SplittingField)
           convert h_coeff_eq _ using 1
           · norm_cast
           · norm_num [← @Rat.cast_inj (d₄.SplittingField)]
-            exact fun _ _ ↦ ⟨fun h ↦ by linear_combination' h, fun h ↦ by linear_combination' h⟩
-          · convert sub_eq_zero.mpr h_coeff using 1
+            intro _ _
+            constructor <;> intro h <;> linear_combination' h
+          · convert sub_eq_zero.mpr h_coeff_expand using 1
             norm_num [Algebra.smul_def]
             ring_nf
         norm_cast at h_coeff
         by_cases ha : a = 0 <;> by_cases hb : b = 0 <;> by_cases hc : c = 0 <;>
-          by_cases hd : d = 0 <;> simp_all +decide [sq, mul_assoc]
+          by_cases hd : d = 0 <;> simp_all [sq, mul_assoc]
         · nlinarith
         · nlinarith
         · nlinarith [mul_self_pos.2 ha, mul_self_pos.2 hc]
@@ -210,14 +210,14 @@ private lemma eight_dvd_card_gal : 8 ∣ Nat.card d₄.Gal := by
     have := Polynomial.SplittingField.splits d₄
     rw [Polynomial.splits_iff_exists_multiset] at this
     obtain ⟨m, hm⟩ := this
-    rcases m with ⟨⟨α, hα⟩⟩ <;> simp_all +decide
+    rcases m with ⟨⟨α, hα⟩⟩ <;> simp_all
     · replace hm := congr_arg Polynomial.natDegree hm
       erw [Polynomial.natDegree_map, Polynomial.natDegree_C] at hm
-      simp_all +decide [d₄]
+      simp_all [d₄]
     · replace hm := congr_arg (Polynomial.eval ‹_›) hm
-      simp_all +decide [Polynomial.eval_map]
+      simp_all [Polynomial.eval_map]
       unfold d₄ at *
-      simp_all +decide [Polynomial.eval₂_sub, Polynomial.eval₂_pow, Polynomial.eval₂_X, Polynomial.eval₂_C]
+      simp_all [Polynomial.eval₂_sub, Polynomial.eval₂_pow, Polynomial.eval₂_X, Polynomial.eval₂_C]
       exact ⟨_, Or.inr <| Or.inl <| sub_self _, eq_of_sub_eq_zero hm⟩
   obtain ⟨β, hβ⟩ : ∃ β : d₄.SplittingField,
       Polynomial.eval β (Polynomial.map (algebraMap ℚ d₄.SplittingField) d₄) = 0 ∧ β ^ 2 = -α ^ 2 := by
@@ -229,28 +229,29 @@ private lemma eight_dvd_card_gal : 8 ∣ Nat.card d₄.Gal := by
       ring_nf
       rw [← Polynomial.C_pow, hα.2]
     have := Polynomial.SplittingField.splits d₄
-    simp_all +decide [Polynomial.splits_iff_card_roots]
+    simp_all [Polynomial.splits_iff_card_roots]
     rw [Polynomial.roots_mul, Polynomial.roots_mul] at this <;> norm_num at *
     · rw [Polynomial.natDegree_mul', Polynomial.natDegree_mul'] at this <;> norm_num at *
       · have hpos : Polynomial.natDegree (Polynomial.X ^ 2 + Polynomial.C α ^ 2) > 0 := by
           erw [Polynomial.natDegree_add_eq_left_of_natDegree_lt] <;> norm_num
         obtain ⟨β, hβ⟩ := Multiset.card_pos_iff_exists_mem.mp (by linarith [hpos])
         use β
-        simp_all +decide [sub_eq_iff_eq_add, add_eq_zero_iff_eq_neg]
-      · exact ne_of_apply_ne (fun p ↦ p.coeff 2) (by norm_num [Polynomial.coeff_eq_zero_of_natDegree_lt])
+        simp_all [sub_eq_iff_eq_add, add_eq_zero_iff_eq_neg]
+      · apply ne_of_apply_ne (fun p ↦ p.coeff 2)
+        norm_num [Polynomial.coeff_eq_zero_of_natDegree_lt]
     · exact ⟨Polynomial.X_sub_C_ne_zero α, Polynomial.X_add_C_ne_zero α⟩
     · refine ⟨⟨Polynomial.X_sub_C_ne_zero α, Polynomial.X_add_C_ne_zero α⟩, ?_⟩
       refine ne_of_apply_ne (Polynomial.eval 0) ?_
       norm_num
       intro h
-      simp_all +decide [pow_succ]
+      simp_all [pow_succ]
   -- Since β is a root of X² + α², we have [ℚ(α, β) : ℚ(α)] = 2.
   have h_deg_beta : Module.finrank (↥(IntermediateField.adjoin ℚ {α}))
       (↥(IntermediateField.adjoin (IntermediateField.adjoin ℚ {α}) {β})) = 2 := by
-    have h_deg_beta : minpoly (↥(IntermediateField.adjoin ℚ {α})) β =
+    have h_minpoly_beta : minpoly (↥(IntermediateField.adjoin ℚ {α})) β =
         Polynomial.X ^ 2 + Polynomial.C (IntermediateField.AdjoinSimple.gen ℚ α ^ 2) := by
       refine Eq.symm (minpoly.eq_of_irreducible_of_monic ?_ ?_ ?_)
-      · have h_irred : ∀ x : IntermediateField.adjoin ℚ {α}, x.val ^ 2 ≠ -α ^ 2 := by
+      · have h_no_sqrt : ∀ x : IntermediateField.adjoin ℚ {α}, x.val ^ 2 ≠ -α ^ 2 := by
           apply neg_alpha_sq_not_square α
           simpa [Polynomial.eval_map] using hα.1
         have h_irred : ∀ p q : Polynomial (↥(IntermediateField.adjoin ℚ {α})),
@@ -258,45 +259,46 @@ private lemma eight_dvd_card_gal : 8 ∣ Nat.card d₄.Gal := by
               ¬(p * q = Polynomial.X ^ 2 + Polynomial.C (IntermediateField.AdjoinSimple.gen ℚ α ^ 2)) := by
           intros p q hp hq h_eq
           have h_deg : p.degree = 1 ∧ q.degree = 1 := by
-            have h_deg : p.degree + q.degree = 2 := by
+            have h_deg_sum : p.degree + q.degree = 2 := by
               rw [← Polynomial.degree_mul, h_eq, Polynomial.degree_add_C] <;> norm_num
             rw [Polynomial.degree_eq_natDegree (Polynomial.ne_zero_of_degree_gt hp),
               Polynomial.degree_eq_natDegree (Polynomial.ne_zero_of_degree_gt hq)] at *
             norm_cast at *
-            exact ⟨by linarith, by linarith⟩
-          obtain ⟨x, hx⟩ : ∃ x : ↥(IntermediateField.adjoin ℚ {α}), p.eval x = 0 := by
-            exact Polynomial.exists_root_of_degree_eq_one h_deg.1
+            constructor <;> linarith
+          obtain ⟨x, hx⟩ : ∃ x : ↥(IntermediateField.adjoin ℚ {α}), p.eval x = 0 :=
+            Polynomial.exists_root_of_degree_eq_one h_deg.1
           replace h_eq := congr_arg (Polynomial.eval x) h_eq
-          simp_all +decide [Polynomial.eval_add, Polynomial.eval_mul, Polynomial.eval_pow,
+          simp_all [Polynomial.eval_add, Polynomial.eval_mul, Polynomial.eval_pow,
             Polynomial.eval_X, Polynomial.eval_C]
-          exact h_irred (x : d₄.SplittingField) (by aesop)
-            (by simpa [← Subtype.coe_inj] using eq_neg_of_add_eq_zero_left h_eq.symm)
+          refine h_no_sqrt (x : d₄.SplittingField) ?_ ?_
+          · aesop
+          · simpa [← Subtype.coe_inj] using eq_neg_of_add_eq_zero_left h_eq.symm
         constructor <;> contrapose! h_irred
         · have := Polynomial.degree_eq_zero_of_isUnit h_irred
-          rw [Polynomial.degree_add_C] at this <;> simp_all +decide
+          rw [Polynomial.degree_add_C] at this <;> simp_all
         · obtain ⟨a, b, h₁, h₂, h₃⟩ := h_irred
           refine ⟨a, b, ?_, ?_, h₁.symm⟩
-          · refine' lt_of_not_ge fun h => h₂ _
+          · refine lt_of_not_ge fun h ↦ h₂ ?_
             rw [Polynomial.eq_C_of_degree_le_zero h] at h₁ ⊢
             replace h₁ := congr_arg (fun p ↦ Polynomial.coeff p 2) h₁
-            simp_all +decide [Polynomial.coeff_eq_zero_of_natDegree_lt]
+            simp_all [Polynomial.coeff_eq_zero_of_natDegree_lt]
             aesop
-          · refine' not_le.mp fun h => h₃ _
+          · refine not_le.mp fun h ↦ h₃ ?_
             rw [Polynomial.eq_C_of_degree_le_zero h] at h₁ ⊢
             replace h₁ := congr_arg (fun p ↦ Polynomial.coeff p 2) h₁
-            simp_all +decide [Polynomial.coeff_eq_zero_of_natDegree_lt]
+            simp_all [Polynomial.coeff_eq_zero_of_natDegree_lt]
             aesop_cat
-      · simp_all +decide [Polynomial.aeval_def]
+      · simp_all [Polynomial.aeval_def]
       · rw [Polynomial.Monic, Polynomial.leadingCoeff_X_pow_add_C]
         norm_num
     convert (IntermediateField.adjoin.finrank (show IsIntegral (IntermediateField.adjoin ℚ {α}) β from ?_)) using 1
-    · rw [h_deg_beta, Polynomial.natDegree_X_pow_add_C]
+    · rw [h_minpoly_beta, Polynomial.natDegree_X_pow_add_C]
     · refine ⟨Polynomial.X ^ 2 + Polynomial.C (IntermediateField.AdjoinSimple.gen ℚ α ^ 2), ?_, ?_⟩
       · rw [Polynomial.Monic, Polynomial.leadingCoeff_X_pow_add_C]
         norm_num
-      · simp_all +decide [Polynomial.eval₂_add, Polynomial.eval₂_pow, Polynomial.eval₂_X, Polynomial.eval₂_C]
+      · simp_all [Polynomial.eval₂_add, Polynomial.eval₂_pow, Polynomial.eval₂_X, Polynomial.eval₂_C]
   -- Since [ℚ(α) : ℚ] = 4, we have [ℚ(α, β) : ℚ] = 4 * 2 = 8.
-  have h_deg_alpha_beta : Module.finrank ℚ (↥(IntermediateField.adjoin (IntermediateField.adjoin ℚ {α}) {β})) = 8 := by
+  have h_finrank8 : Module.finrank ℚ (↥(IntermediateField.adjoin (IntermediateField.adjoin ℚ {α}) {β})) = 8 := by
     have h_deg_alpha : Module.finrank ℚ (↥(IntermediateField.adjoin ℚ {α})) = 4 := by
       rw [IntermediateField.adjoin.finrank]
       · have h_minpoly_alpha : minpoly ℚ α = d₄ := by
@@ -306,18 +308,19 @@ private lemma eight_dvd_card_gal : 8 ∣ Nat.card d₄.Gal := by
           · erw [Polynomial.Monic, Polynomial.leadingCoeff_X_pow_sub_C]
             norm_num
         erw [h_minpoly_alpha, Polynomial.natDegree_X_pow_sub_C]
-      · exact ⟨Polynomial.X ^ 4 - 2, Polynomial.monic_X_pow_sub_C _ (by norm_num), by aesop⟩
+      · refine ⟨Polynomial.X ^ 4 - 2, Polynomial.monic_X_pow_sub_C _ (by norm_num), ?_⟩
+        aesop
     have := Module.finrank_mul_finrank ℚ (IntermediateField.adjoin ℚ {α})
       (IntermediateField.adjoin (IntermediateField.adjoin ℚ {α}) {β})
     grind
-  have h_deg_alpha_beta : Module.finrank ℚ (↥(IntermediateField.adjoin (IntermediateField.adjoin ℚ {α}) {β})) ∣
+  have h_dvd_finrank : Module.finrank ℚ (↥(IntermediateField.adjoin (IntermediateField.adjoin ℚ {α}) {β})) ∣
       Module.finrank ℚ d₄.SplittingField := by
-    have h_deg_alpha_beta : ∀ (K : IntermediateField ℚ d₄.SplittingField),
+    have h_dvd_all : ∀ (K : IntermediateField ℚ d₄.SplittingField),
         Module.finrank ℚ K ∣ Module.finrank ℚ d₄.SplittingField := by
       intro K
       have := Module.finrank_mul_finrank ℚ K d₄.SplittingField
       exact dvd_of_mul_right_eq _ this
-    exact h_deg_alpha_beta (IntermediateField.adjoin (IntermediateField.adjoin ℚ {α}) {β} |>
+    exact h_dvd_all (IntermediateField.adjoin (IntermediateField.adjoin ℚ {α}) {β} |>
       IntermediateField.restrictScalars ℚ)
   aesop
 
@@ -328,132 +331,131 @@ by α and a root of the degree-2 polynomial X²+α² over ℚ(α)).
 set_option maxHeartbeats 800000 in
 private lemma card_gal_dvd_8 : Nat.card d₄.Gal ∣ 8 := by
   -- The polynomial `X^4 - 2` factors as `(X - α)(X + α)(X - iα)(X + iα)` in its splitting field.
-  have h_factor : Nat.card d₄.Gal ∣ 8 := by
-    have h_deg : IsGalois ℚ d₄.SplittingField := by
-      exact
-        { to_isSeparable := Algebra.IsAlgebraic.isSeparable_of_perfectField,
-          to_normal := SplittingField.instNormal d₄ }
-    have h_deg : ∃ α : d₄.SplittingField, Polynomial.aeval α d₄ = 0 ∧ α ^ 4 = 2 := by
-      obtain ⟨α, hα⟩ : ∃ α : d₄.SplittingField,
-          Polynomial.eval α (Polynomial.map (algebraMap ℚ d₄.SplittingField) d₄) = 0 := by
-        convert Polynomial.Splits.exists_eval_eq_zero _ _
-        · exact Polynomial.SplittingField.splits _
-        · erw [Polynomial.degree_map, Polynomial.degree_X_pow_sub_C] <;> norm_num
-      simp_all +decide [d₄]
-      exact ⟨α, hα, sub_eq_zero.mp hα⟩
-    obtain ⟨α, hα⟩ := h_deg
-    have h_deg : Nat.card d₄.Gal ∣ 8 := by
-      have h_deg : ∃ β : d₄.SplittingField, β ^ 2 = -α ^ 2 := by
-        have := Polynomial.SplittingField.splits d₄
-        simp_all +decide [Polynomial.splits_iff_card_roots]
-        have h_roots : Polynomial.map (algebraMap ℚ d₄.SplittingField) d₄ =
-            (Polynomial.X - Polynomial.C α) * (Polynomial.X - Polynomial.C (-α)) *
-              (Polynomial.X ^ 2 + Polynomial.C (α ^ 2)) := by
-          simp_all +decide [d₄]
-          ring_nf
-          rw [← Polynomial.C_pow, hα.2]
-        have h_roots : ∃ β : d₄.SplittingField, β ^ 2 + α ^ 2 = 0 := by
-          contrapose! this
-          simp_all +decide
-          rw [Polynomial.roots_mul, Polynomial.roots_mul] <;>
-            norm_num [Polynomial.X_sub_C_ne_zero, Polynomial.X_add_C_ne_zero]
-          · rw [Multiset.card_eq_zero.mpr] <;> norm_num [d₄_natDegree]
-            exact Multiset.eq_zero_of_forall_notMem fun x hx ↦
-              this x <| by simpa [add_eq_zero_iff_eq_neg] using Polynomial.isRoot_of_mem_roots hx
-          · exact ne_of_apply_ne (fun p ↦ p.coeff 2) (by norm_num [Polynomial.coeff_eq_zero_of_natDegree_lt])
-        obtain ⟨β, hβ⟩ := h_roots
-        use β
-        simp_all +decide [add_eq_zero_iff_eq_neg]
-      obtain ⟨β, hβ⟩ := h_deg
-      have h_deg : IntermediateField.adjoin ℚ ({α, β} : Set d₄.SplittingField) = ⊤ := by
-        have h_deg : Polynomial.IsSplittingField ℚ d₄.SplittingField d₄ := by
-          infer_instance
-        have := h_deg.2
-        have h_deg : Polynomial.rootSet d₄ d₄.SplittingField ⊆ {α, -α, β, -β} := by
-          intro x hx
-          simp_all +decide [Polynomial.mem_rootSet]
-          simp_all +decide [d₄]
-          refine Classical.or_iff_not_imp_left.2 fun hx' ↦
-            Classical.or_iff_not_imp_left.2 fun hx'' ↦
-              Classical.or_iff_not_imp_left.2 fun hx''' ↦ ?_
-          refine mul_left_cancel₀ (sub_ne_zero_of_ne hx') <|
-            mul_left_cancel₀ (sub_ne_zero_of_ne hx'') <|
-              mul_left_cancel₀ (sub_ne_zero_of_ne hx''') <| ?_
-          linear_combination hx.2 * 1 - hα.2 * 1 - hβ * (x ^ 2 - α ^ 2)
-        have h_deg : Algebra.adjoin ℚ ({α, -α, β, -β} : Set d₄.SplittingField) = ⊤ := by
-          exact le_antisymm (le_top) (this ▸ Algebra.adjoin_mono h_deg)
-        have h_deg : Algebra.adjoin ℚ ({α, β} : Set d₄.SplittingField) = ⊤ := by
-          convert h_deg using 1
-          refine le_antisymm ?_ ?_ <;> simp +decide [Algebra.adjoin_le_iff, Set.insert_subset_iff]
-          · exact ⟨Algebra.subset_adjoin <| by norm_num, Algebra.subset_adjoin <| by norm_num⟩
-          · refine ⟨Algebra.subset_adjoin <| Set.mem_insert _ _,
-              Algebra.subset_adjoin <| Set.mem_insert_of_mem _ <| Set.mem_singleton _⟩
-        rw [eq_top_iff] at *
+  have h_gal : IsGalois ℚ d₄.SplittingField :=
+    { to_isSeparable := Algebra.IsAlgebraic.isSeparable_of_perfectField,
+      to_normal := SplittingField.instNormal d₄ }
+  have hα_ex : ∃ α : d₄.SplittingField, Polynomial.aeval α d₄ = 0 ∧ α ^ 4 = 2 := by
+    obtain ⟨α, hα⟩ : ∃ α : d₄.SplittingField,
+        Polynomial.eval α (Polynomial.map (algebraMap ℚ d₄.SplittingField) d₄) = 0 := by
+      convert Polynomial.Splits.exists_eval_eq_zero _ _
+      · exact Polynomial.SplittingField.splits _
+      · erw [Polynomial.degree_map, Polynomial.degree_X_pow_sub_C] <;> norm_num
+    simp_all [d₄]
+    exact ⟨α, hα, sub_eq_zero.mp hα⟩
+  obtain ⟨α, hα⟩ := hα_ex
+  have hβ_ex : ∃ β : d₄.SplittingField, β ^ 2 = -α ^ 2 := by
+    have := Polynomial.SplittingField.splits d₄
+    simp_all [Polynomial.splits_iff_card_roots]
+    have h_factor : Polynomial.map (algebraMap ℚ d₄.SplittingField) d₄ =
+        (Polynomial.X - Polynomial.C α) * (Polynomial.X - Polynomial.C (-α)) *
+          (Polynomial.X ^ 2 + Polynomial.C (α ^ 2)) := by
+      simp_all [d₄]
+      ring_nf
+      rw [← Polynomial.C_pow, hα.2]
+    have h_beta_root : ∃ β : d₄.SplittingField, β ^ 2 + α ^ 2 = 0 := by
+      contrapose! this
+      simp_all
+      rw [Polynomial.roots_mul, Polynomial.roots_mul] <;>
+        norm_num [Polynomial.X_sub_C_ne_zero, Polynomial.X_add_C_ne_zero]
+      · rw [Multiset.card_eq_zero.mpr] <;> norm_num [d₄_natDegree]
+        apply Multiset.eq_zero_of_forall_notMem
         intro x hx
-        specialize h_deg hx
-        simp_all +decide [Algebra.adjoin, IntermediateField.adjoin]
-        exact Subfield.mem_closure.mpr fun x hx ↦ by
-          rw [Subsemiring.mem_closure] at h_deg
-          exact h_deg x.toSubsemiring hx
-      have h_deg : Module.finrank ℚ (IntermediateField.adjoin ℚ ({α} : Set d₄.SplittingField)) ≤ 4 := by
-        have h_deg : Polynomial.natDegree (minpoly ℚ α) ≤ 4 := by
-          have h_deg : minpoly ℚ α ∣ d₄ := by
-            exact minpoly.dvd ℚ α hα.1
-          refine le_trans (Polynomial.natDegree_le_of_dvd h_deg ?_)
-            (by erw [Polynomial.natDegree_X_pow_sub_C])
-          exact ne_of_apply_ne (Polynomial.eval 0) <| by norm_num [d₄]
-        rw [IntermediateField.adjoin.finrank]
-        · aesop
-        · grind only [IsGalois.integral]
-      have h_deg' : Module.finrank (IntermediateField.adjoin ℚ ({α} : Set d₄.SplittingField))
-          (IntermediateField.adjoin (IntermediateField.adjoin ℚ ({α} : Set d₄.SplittingField))
-            ({β} : Set d₄.SplittingField)) ≤ 2 := by
-        have h_deg : minpoly (IntermediateField.adjoin ℚ ({α} : Set d₄.SplittingField)) β ∣
-            Polynomial.X ^ 2 + Polynomial.C (⟨α ^ 2, by
-              exact Subalgebra.pow_mem _ (IntermediateField.mem_adjoin_simple_self ℚ α) 2⟩ :
-              IntermediateField.adjoin ℚ ({α} : Set d₄.SplittingField)) := by
-          refine minpoly.dvd (IntermediateField.adjoin ℚ {α}) β ?_
-          simp_all +decide [Polynomial.aeval_def]
-        have h_deg : Polynomial.natDegree
-            (minpoly (IntermediateField.adjoin ℚ ({α} : Set d₄.SplittingField)) β) ≤ 2 := by
-          refine le_trans (Polynomial.natDegree_le_of_dvd h_deg ?_)
-            (by erw [Polynomial.natDegree_X_pow_add_C])
-          refine ne_of_apply_ne Polynomial.natDegree ?_
-          erw [Polynomial.natDegree_X_pow_add_C]
-          norm_num
-        convert h_deg using 1
-        rw [IntermediateField.adjoin.finrank]
-        grind only [IsGalois.integral]
-      have h_deg'' : Module.finrank ℚ (IntermediateField.adjoin ℚ ({α, β} : Set d₄.SplittingField)) ≤ 8 := by
-        have h_deg'' : Module.finrank ℚ
+        apply this x
+        simpa [add_eq_zero_iff_eq_neg] using Polynomial.isRoot_of_mem_roots hx
+      · apply ne_of_apply_ne (fun p ↦ p.coeff 2)
+        norm_num [Polynomial.coeff_eq_zero_of_natDegree_lt]
+    obtain ⟨β, hβ⟩ := h_beta_root
+    use β
+    simp_all [add_eq_zero_iff_eq_neg]
+  obtain ⟨β, hβ⟩ := hβ_ex
+  have h_top : IntermediateField.adjoin ℚ ({α, β} : Set d₄.SplittingField) = ⊤ := by
+    have h_isspl : Polynomial.IsSplittingField ℚ d₄.SplittingField d₄ := by
+      infer_instance
+    have := h_isspl.2
+    have h_sub : Polynomial.rootSet d₄ d₄.SplittingField ⊆ {α, -α, β, -β} := by
+      intro x hx
+      simp_all [Polynomial.mem_rootSet]
+      simp_all [d₄]
+      refine Classical.or_iff_not_imp_left.2 fun hx' ↦
+        Classical.or_iff_not_imp_left.2 fun hx'' ↦
+          Classical.or_iff_not_imp_left.2 fun hx''' ↦ ?_
+      refine mul_left_cancel₀ (sub_ne_zero_of_ne hx') <|
+        mul_left_cancel₀ (sub_ne_zero_of_ne hx'') <|
+          mul_left_cancel₀ (sub_ne_zero_of_ne hx''') <| ?_
+      linear_combination hx.2 * 1 - hα.2 * 1 - hβ * (x ^ 2 - α ^ 2)
+    have h_adj4 : Algebra.adjoin ℚ ({α, -α, β, -β} : Set d₄.SplittingField) = ⊤ :=
+      le_antisymm (le_top) (this ▸ Algebra.adjoin_mono h_sub)
+    have h_adj2 : Algebra.adjoin ℚ ({α, β} : Set d₄.SplittingField) = ⊤ := by
+      convert h_adj4 using 1
+      refine le_antisymm ?_ ?_ <;> simp [Algebra.adjoin_le_iff, Set.insert_subset_iff]
+      · exact ⟨Algebra.subset_adjoin <| by norm_num, Algebra.subset_adjoin <| by norm_num⟩
+      · refine ⟨Algebra.subset_adjoin <| Set.mem_insert _ _,
+          Algebra.subset_adjoin <| Set.mem_insert_of_mem _ <| Set.mem_singleton _⟩
+    rw [eq_top_iff] at *
+    intro x hx
+    specialize h_adj2 hx
+    simp_all [Algebra.adjoin, IntermediateField.adjoin]
+    apply Subfield.mem_closure.mpr
+    intro x hx
+    rw [Subsemiring.mem_closure] at h_adj2
+    exact h_adj2 x.toSubsemiring hx
+  have h_fin_a : Module.finrank ℚ (IntermediateField.adjoin ℚ ({α} : Set d₄.SplittingField)) ≤ 4 := by
+    have h_natdeg : Polynomial.natDegree (minpoly ℚ α) ≤ 4 := by
+      have h_dvd : minpoly ℚ α ∣ d₄ := minpoly.dvd ℚ α hα.1
+      refine le_trans (Polynomial.natDegree_le_of_dvd h_dvd ?_)
+        (by erw [Polynomial.natDegree_X_pow_sub_C])
+      apply ne_of_apply_ne (Polynomial.eval 0)
+      norm_num [d₄]
+    rw [IntermediateField.adjoin.finrank]
+    · aesop
+    · grind only [IsGalois.integral]
+  have h_deg' : Module.finrank (IntermediateField.adjoin ℚ ({α} : Set d₄.SplittingField))
+      (IntermediateField.adjoin (IntermediateField.adjoin ℚ ({α} : Set d₄.SplittingField))
+        ({β} : Set d₄.SplittingField)) ≤ 2 := by
+    have h_dvd2 : minpoly (IntermediateField.adjoin ℚ ({α} : Set d₄.SplittingField)) β ∣
+        Polynomial.X ^ 2 + Polynomial.C (⟨α ^ 2,
+          Subalgebra.pow_mem _ (IntermediateField.mem_adjoin_simple_self ℚ α) 2⟩ :
+          IntermediateField.adjoin ℚ ({α} : Set d₄.SplittingField)) := by
+      refine minpoly.dvd (IntermediateField.adjoin ℚ {α}) β ?_
+      simp_all [Polynomial.aeval_def]
+    have h_natdeg2 : Polynomial.natDegree
+        (minpoly (IntermediateField.adjoin ℚ ({α} : Set d₄.SplittingField)) β) ≤ 2 := by
+      refine le_trans (Polynomial.natDegree_le_of_dvd h_dvd2 ?_)
+        (by erw [Polynomial.natDegree_X_pow_add_C])
+      refine ne_of_apply_ne Polynomial.natDegree ?_
+      erw [Polynomial.natDegree_X_pow_add_C]
+      norm_num
+    convert h_natdeg2 using 1
+    rw [IntermediateField.adjoin.finrank]
+    grind only [IsGalois.integral]
+  have h_deg'' : Module.finrank ℚ (IntermediateField.adjoin ℚ ({α, β} : Set d₄.SplittingField)) ≤ 8 := by
+    have h_mul : Module.finrank ℚ
+        (IntermediateField.adjoin (IntermediateField.adjoin ℚ ({α} : Set d₄.SplittingField))
+          ({β} : Set d₄.SplittingField)) =
+        Module.finrank (IntermediateField.adjoin ℚ ({α} : Set d₄.SplittingField))
             (IntermediateField.adjoin (IntermediateField.adjoin ℚ ({α} : Set d₄.SplittingField))
-              ({β} : Set d₄.SplittingField)) =
-            Module.finrank (IntermediateField.adjoin ℚ ({α} : Set d₄.SplittingField))
-                (IntermediateField.adjoin (IntermediateField.adjoin ℚ ({α} : Set d₄.SplittingField))
-                  ({β} : Set d₄.SplittingField)) *
-              Module.finrank ℚ (IntermediateField.adjoin ℚ ({α} : Set d₄.SplittingField)) := by
-          rw [mul_comm, Module.finrank_mul_finrank]
-        convert h_deg''.le.trans (Nat.mul_le_mul h_deg' h_deg) using 1
-        rw [← IntermediateField.adjoin_simple_adjoin_simple]
-        rfl
-      have h_deg''' : Module.finrank ℚ d₄.SplittingField ≤ 8 := by
-        convert h_deg'' using 1
-        rw [‹IntermediateField.adjoin ℚ {α, β} = ⊤›]
-        norm_num
-      have h_deg'''' : Nat.card d₄.Gal = Module.finrank ℚ d₄.SplittingField := by
-        convert IsGalois.card_aut_eq_finrank ℚ d₄.SplittingField using 1
-      interval_cases _ : Module.finrank ℚ d₄.SplittingField <;> simp_all +decide only
-      · exact absurd ‹Module.finrank ℚ d₄.SplittingField = 0› (Nat.ne_of_gt (Module.finrank_pos))
-      · have := eight_dvd_card_gal
-        simp_all +decide
-      · have := eight_dvd_card_gal
-        simp_all +decide
-      · have := eight_dvd_card_gal
-        simp_all +decide
-      · have := eight_dvd_card_gal
-        simp_all +decide
-    exact h_deg
-  exact h_factor
+              ({β} : Set d₄.SplittingField)) *
+          Module.finrank ℚ (IntermediateField.adjoin ℚ ({α} : Set d₄.SplittingField)) := by
+      rw [mul_comm, Module.finrank_mul_finrank]
+    convert h_mul.le.trans (Nat.mul_le_mul h_deg' h_fin_a) using 1
+    rw [← IntermediateField.adjoin_simple_adjoin_simple]
+    rfl
+  have h_deg''' : Module.finrank ℚ d₄.SplittingField ≤ 8 := by
+    convert h_deg'' using 1
+    rw [‹IntermediateField.adjoin ℚ {α, β} = ⊤›]
+    norm_num
+  have h_deg'''' : Nat.card d₄.Gal = Module.finrank ℚ d₄.SplittingField := by
+    convert IsGalois.card_aut_eq_finrank ℚ d₄.SplittingField using 1
+  interval_cases _ : Module.finrank ℚ d₄.SplittingField <;> simp_all +decide only
+  · exact absurd ‹Module.finrank ℚ d₄.SplittingField = 0› (Nat.ne_of_gt (Module.finrank_pos))
+  · have := eight_dvd_card_gal
+    simp_all
+  · have := eight_dvd_card_gal
+    simp_all
+  · have := eight_dvd_card_gal
+    simp_all
+  · have := eight_dvd_card_gal
+    simp_all
 
 /-- The Galois group of X⁴-2 has order 8. -/
 private lemma card_gal_d₄ : Nat.card d₄.Gal = 8 := by
@@ -471,44 +473,44 @@ private lemma gal_iso_dihedral :
         intro P Q
         exact ⟨Sylow.equiv _ _⟩
       have h_image : ∃ (f : d₄.Gal →* Equiv.Perm (Fin 4)), Function.Injective f := by
-        have h_image : ∃ (f : d₄.Gal →* Equiv.Perm (d₄.rootSet ℂ)), Function.Injective f := by
+        have h_image_roots : ∃ (f : d₄.Gal →* Equiv.Perm (d₄.rootSet ℂ)), Function.Injective f := by
           have : Fact (Polynomial.map (algebraMap ℚ ℂ) d₄).Splits := Gal.splits_ℚ_ℂ
           exact ⟨_, Gal.galActionHom_injective d₄ ℂ⟩
-        obtain ⟨f, hf⟩ := h_image
+        obtain ⟨f, hf⟩ := h_image_roots
         have h_card : Fintype.card (d₄.rootSet ℂ) = 4 := by
           convert card_rootSet_eq_natDegree d₄ _ _
           · erw [Polynomial.natDegree_X_pow_sub_C]
           · exact d₄_irreducible.separable
-          · exact ne_of_apply_ne (Polynomial.eval 0) (by norm_num [d₄])
+          · apply ne_of_apply_ne (Polynomial.eval 0)
+            norm_num [d₄]
         have h_iso : Nonempty (Equiv.Perm (d₄.rootSet ℂ) ≃* Equiv.Perm (Fin 4)) := by
           refine ⟨{ Equiv.permCongr (Fintype.equivOfCardEq h_card) with
             map_mul' := fun _ _ ↦ by
               ext
-              simp +decide [Equiv.permCongr_apply] }⟩
+              simp [Equiv.permCongr_apply] }⟩
         obtain ⟨g⟩ := h_iso
         use g.toMonoidHom.comp f
         simp [hf, g.injective]
       -- The image of the Galois group under the embedding into `S₄` is a Sylow 2-subgroup of `S₄`.
       obtain ⟨f, hf_inj⟩ := h_image
       have h_sylow_image : ∃ (P : Sylow 2 (Equiv.Perm (Fin 4))), f.range = P.toSubgroup := by
-        have h_sylow_image : IsPGroup 2 (f.range) := by
-          have h_sylow_image : Nat.card (f.range) = 8 := by
+        have h_pgroup : IsPGroup 2 (f.range) := by
+          have h_card8 : Nat.card (f.range) = 8 := by
             convert card_gal_d₄ using 1
             exact Nat.card_congr (Equiv.ofInjective _ hf_inj) |> Eq.symm
           rw [IsPGroup.iff_card]
-          exact ⟨3, h_sylow_image⟩
-        obtain ⟨P, hP⟩ := IsPGroup.exists_le_sylow h_sylow_image
+          exact ⟨3, h_card8⟩
+        obtain ⟨P, hP⟩ := IsPGroup.exists_le_sylow h_pgroup
         have h_card_eq : Nat.card (f.range) = Nat.card P.toSubgroup := by
-          have h_card_eq : Nat.card (f.range) = 8 := by
-            have h_card : Nat.card (f.range) = Nat.card d₄.Gal := by
+          have h_card8' : Nat.card (f.range) = 8 := by
+            have h_card_gal : Nat.card (f.range) = Nat.card d₄.Gal := by
               rw [Nat.card_congr (Equiv.ofInjective _ hf_inj)]
               rfl
-            exact h_card.trans (card_gal_d₄)
+            exact h_card_gal.trans (card_gal_d₄)
           have := P.card_eq_multiplicity
-          simp_all +decide [Fintype.card_perm]
+          simp_all [Fintype.card_perm]
           native_decide
-        have h_card_eq : f.range = P.toSubgroup := by
-          exact SetLike.ext' (Set.eq_of_subset_of_ncard_le hP h_card_eq.ge)
+        have h_card_eq : f.range = P.toSubgroup := SetLike.ext' (Set.eq_of_subset_of_ncard_le hP h_card_eq.ge)
         use P
       -- Define a specific injective homomorphism DihedralGroup 4 → Perm(Fin 4).
       obtain ⟨g, hg_inj⟩ : ∃ (g : DihedralGroup 4 →* Equiv.Perm (Fin 4)), Function.Injective g := by
@@ -532,45 +534,50 @@ private lemma gal_iso_dihedral :
             decide
           obtain ⟨y, hy⟩ := x
           obtain ⟨x, rfl⟩ := hy
-          simp +decide [-map_pow]
-          exact Subtype.ext (by simpa [← map_pow] using congr_arg g (h_order x))
+          simp [-map_pow]
+          apply Subtype.ext
+          simpa [← map_pow] using congr_arg g (h_order x)
         obtain ⟨Q, hQ⟩ := IsPGroup.exists_le_sylow h_sylow_image
-        have h_card_eq : Nat.card (g.range) = Nat.card Q.toSubgroup := by
+        have h_card_eq_num : Nat.card (g.range) = Nat.card Q.toSubgroup := by
           have := Q.card_eq_multiplicity
-          simp_all +decide [Nat.card_eq_fintype_card]
+          simp_all [Nat.card_eq_fintype_card]
           rw [Fintype.card_subtype]
           have hfilter : (Finset.univ.filter fun x ↦ ∃ y, g y = x) = Finset.image g Finset.univ := by
             ext
             aesop
           rw [hfilter, Finset.card_image_of_injective _ hg_inj]
           native_decide
-        have h_card_eq : g.range = Q.toSubgroup := by
-          exact SetLike.ext' (Set.eq_of_subset_of_ncard_le hQ h_card_eq.ge)
+        have h_card_eq : g.range = Q.toSubgroup := SetLike.ext' (Set.eq_of_subset_of_ncard_le hQ h_card_eq_num.ge)
         use Q
       obtain ⟨P, hP⟩ := h_sylow_image
-      have h_iso : Nonempty (↥P ≃* ↥Q) := by
-        exact h_sylow P Q
+      have h_iso : Nonempty (↥P ≃* ↥Q) := h_sylow P Q
       obtain ⟨iso⟩ := h_iso
       have h_iso_gal : Nonempty (d₄.Gal ≃* ↥P) := by
         have h_iso : Nonempty (d₄.Gal ≃* ↥f.range) := by
           have hbij : Function.Bijective
               (fun x ↦ (⟨f x, Set.mem_range_self x⟩ : ↥f.range)) := by
-            refine ⟨fun x y hxy ↦ hf_inj <| by simpa using hxy, fun x ↦ ?_⟩
-            obtain ⟨y, hy⟩ := x.2
-            aesop
-          exact ⟨{ Equiv.ofBijective _ hbij with map_mul' := fun x y ↦ by aesop }⟩
-        exact ⟨h_iso.some.trans (by
-          rw [hP]
-          exact MulEquiv.refl _)⟩
+            constructor
+            · intro x y hxy
+              apply hf_inj
+              simpa using hxy
+            · intro x
+              obtain ⟨y, hy⟩ := x.2
+              aesop
+          refine ⟨{ Equiv.ofBijective _ hbij with map_mul' := ?_ }⟩
+          intro x y
+          aesop
+        refine ⟨h_iso.some.trans ?_⟩
+        rw [hP]
+        exact MulEquiv.refl _
       obtain ⟨iso_gal⟩ := h_iso_gal
       have h_iso_dihedral : Nonempty (DihedralGroup 4 ≃* ↥Q) := by
         refine ⟨?_⟩
-        refine' { Equiv.ofBijective (fun x => ⟨g x, _⟩) ⟨fun x y hxy => _, fun x => _⟩ with .. } <;>
-          simp_all +decide [SetLike.ext_iff]
+        refine' { Equiv.ofBijective (fun x ↦ ⟨g x, _⟩) ⟨fun x y hxy ↦ _, fun x ↦ _⟩ with .. } <;>
+          simp_all [SetLike.ext_iff]
         any_goals exact hQ _ |>.1 ⟨x, rfl⟩
         · exact hg_inj <| Subtype.ext_iff.mp hxy
         · exact Exists.elim (hQ x |>.2 x.2) fun y hy ↦ ⟨y, Subtype.ext hy⟩
-        · simp +decide
+        · simp
       obtain ⟨iso_dihedral⟩ := h_iso_dihedral
       exact ⟨iso_gal.trans (iso.trans iso_dihedral.symm)⟩
 

@@ -48,7 +48,9 @@ theorem centralBinom_le_pow_primeCounting (n : ℕ) (hn : 1 ≤ n) :
           p ^ (Nat.centralBinom n).factorization p ≤
         ∏ p ∈ (Finset.range (2 * n + 1)).filter Nat.Prime, 2 * n := by
     gcongr
-    exact (Nat.pow_factorization_choose_le (by linarith)).trans (by linarith)
+    refine (Nat.pow_factorization_choose_le ?_).trans ?_
+    · linarith
+    · linarith
   convert h_prod_le using 1
   · conv_lhs => rw [← Nat.factorization_prod_pow_eq_self (Nat.ne_of_gt (Nat.centralBinom_pos _))]
     rw [Finsupp.prod_of_support_subset]
@@ -67,7 +69,8 @@ Combining `centralBinom_le_pow_primeCounting` with the lower bound
 theorem four_pow_lt_mul_pow_primeCounting (n : ℕ) (hn : 4 ≤ n) :
     4 ^ n < n * (2 * n) ^ Nat.primeCounting (2 * n) := by
   apply (Nat.four_pow_lt_mul_centralBinom n hn).trans_le
-  exact Nat.mul_le_mul_left _ (centralBinom_le_pow_primeCounting _ (by linarith))
+  refine Nat.mul_le_mul_left _ (centralBinom_le_pow_primeCounting _ ?_)
+  linarith
 
 /-
 **Chebyshev lower bound (analytic form).**
@@ -79,23 +82,30 @@ theorem primeCounting_two_mul_ge (n : ℕ) (hn : 4 ≤ n) :
     (n : ℝ) / (3 * Real.log (2 * n)) ≤ Nat.primeCounting (2 * n) := by
   -- By taking logarithms in `four_pow_lt_mul_pow_primeCounting n hn : 4^n < n * (2*n)^k`, we get `n * Real.log 4 < Real.log n + k * Real.log (2*n)`.
   have h_log : (n : ℝ) * Real.log 4 < Real.log n + (Nat.primeCounting (2 * n) : ℝ) * Real.log (2 * n) := by
-    have h_log : (4 : ℝ) ^ n < n * (2 * n) ^ (Nat.primeCounting (2 * n)) := by
+    have h_pow : (4 : ℝ) ^ n < n * (2 * n) ^ (Nat.primeCounting (2 * n)) := by
       exact_mod_cast four_pow_lt_mul_pow_primeCounting n hn
-    simpa [Real.log_mul, show n ≠ 0 by linarith] using Real.log_lt_log (by positivity) h_log
+    have hn0 : (n : ℝ) ≠ 0 := by positivity
+    have h4pos : (0 : ℝ) < 4 ^ n := by positivity
+    simpa [Real.log_mul, hn0] using Real.log_lt_log h4pos h_pow
   -- Now two elementary bounds:
   have h_log_4 : Real.log 4 ≥ 4 / 3 := by
-    rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.log_pow]
+    have h4 : (4 : ℝ) = 2 ^ 2 := by norm_num
+    rw [h4, Real.log_pow]
     norm_num
     have := Real.log_two_gt_d9
     norm_num at *
     linarith
   have h_log_n : Real.log n ≤ n := by
-    exact (Real.log_le_sub_one_of_pos (by positivity)).trans (by norm_num)
+    refine (Real.log_le_sub_one_of_pos ?_).trans ?_
+    · positivity
+    · norm_num
   have h_n4 : (n : ℝ) ≥ 4 := by norm_cast
   have h_2n1 : (2 * n : ℝ) > 1 := by
     norm_cast
     linarith
-  rw [div_le_iff₀] <;> nlinarith [h_n4, Real.log_pos h_2n1]
+  rw [div_le_iff₀]
+  · nlinarith [h_n4, Real.log_pos h_2n1]
+  · linarith [Real.log_pos h_2n1]
 
 /-
 **Chebyshev lower bound, general form.**
@@ -111,29 +121,32 @@ theorem primeCounting_ge (m : ℕ) (hm : 8 ≤ m) :
     omega
   -- By `Nat.monotone_primeCounting` applied to `2*n ≤ m`, we get `(Nat.primeCounting (2*n) : ℝ) ≤ Nat.primeCounting m`.
   have h_monotone : (Nat.primeCounting (2 * n) : ℝ) ≤ Nat.primeCounting m := by
-    exact_mod_cast Nat.monotone_primeCounting <| by omega
+    have h2nm : 2 * n ≤ m := by omega
+    exact_mod_cast Nat.monotone_primeCounting h2nm
   -- By `primeCounting_two_mul_ge n (by omega : 4 ≤ n)`, `(n:ℝ)/(3 * Real.log (2*n)) ≤ Nat.primeCounting (2*n)`.
   have h_lower_bound : (n : ℝ) / (3 * Real.log (2 * n)) ≤ Nat.primeCounting (2 * n) :=
     primeCounting_two_mul_ge n hn_ge_4
   refine le_trans ?_ (h_lower_bound.trans h_monotone)
+  have hm1 : (1 : ℝ) < m := by
+    norm_cast
+    linarith
+  have hlogm : 0 < Real.log m := Real.log_pos hm1
+  have hlog2n : 0 < Real.log (2 * n) := by
+    apply Real.log_pos
+    norm_cast
+    omega
   rw [div_le_div_iff₀]
   · -- Using `Real.log (2*n) ≤ Real.log m` and `Real.log m > 0`, we get `3 * m * Real.log (2*n) ≤ 3 * m * Real.log m`.
-    have h_log_ineq : Real.log (2 * n) ≤ Real.log m ∧ 0 < Real.log m := by
-      refine ⟨Real.log_le_log (by positivity) ?_, Real.log_pos ?_⟩
-      · norm_cast
-        linarith [Nat.div_mul_le_self m 2]
-      · norm_cast
-        linarith
+    have h_log_le : Real.log (2 * n) ≤ Real.log m := by
+      apply Real.log_le_log (by positivity)
+      norm_cast
+      linarith [Nat.div_mul_le_self m 2]
     have h_m_le : (m : ℝ) ≤ 2 * n + 1 := by
       norm_cast
       linarith [Nat.div_add_mod m 2, Nat.mod_lt m two_pos]
     have h_n4 : (n : ℝ) ≥ 4 := by norm_cast
     nlinarith [h_m_le, h_n4]
-  · refine mul_pos (by norm_num) (Real.log_pos ?_)
-    norm_cast
-    linarith
-  · refine mul_pos zero_lt_three (Real.log_pos ?_)
-    norm_cast
-    linarith
+  · exact mul_pos (by norm_num) hlogm
+  · exact mul_pos zero_lt_three hlog2n
 
 end HilbertPrimeLower

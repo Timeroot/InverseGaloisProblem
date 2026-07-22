@@ -54,13 +54,11 @@ from the injective Galois action on roots (Lagrange's theorem).
 -/
 theorem card_gal_dvd_card_rootSet_factorial (p : Polynomial ℚ) :
     Nat.card p.Gal ∣ (Fintype.card (p.rootSet ℂ)).factorial := by
-      by_contra! h_contra
-      -- The Galois group embeds in the permutation group of the roots, so `|Gal(p)|` divides `|S_n| = n!`.
-      have h_div : Nat.card p.Gal ∣ Fintype.card (Equiv.Perm (p.rootSet ℂ)) := by
-        have : Fact (Polynomial.map (algebraMap ℚ ℂ) p).Splits := Gal.splits_ℚ_ℂ
-        convert Subgroup.card_subgroup_dvd_card (Gal.galActionHom p ℂ).range using 1
-        · exact Nat.card_congr (Equiv.ofInjective _ <| Gal.galActionHom_injective p ℂ)
-        · rw [Nat.card_eq_fintype_card]
-      simp_all [Fintype.card_perm]
+  -- The Galois group embeds in the permutation group of the roots, so `|Gal(p)|` divides `|Sₙ| = n!`.
+  rw [← Fintype.card_perm]
+  have : Fact (Polynomial.map (algebraMap ℚ ℂ) p).Splits := Gal.splits_ℚ_ℂ
+  convert Subgroup.card_subgroup_dvd_card (Gal.galActionHom p ℂ).range using 1
+  · exact Nat.card_congr (Equiv.ofInjective _ <| Gal.galActionHom_injective p ℂ)
+  · rw [Nat.card_eq_fintype_card]
 
 end

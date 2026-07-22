@@ -24,7 +24,7 @@ Vandermonde det squared equals det of the Gram matrix.
 lemma vandermonde_det_sq (v : Fin 5 → K) :
     (Matrix.vandermonde v).det ^ 2 =
     (gramMatrixOfPowerSums (fun k => ∑ i : Fin 5, v i ^ k)).det := by
-      convert det_mul (transpose (vandermonde v)) (vandermonde v) using 1
+      convert det_mul (vandermonde v).transpose (vandermonde v) using 1
       · rw [det_mul, det_transpose, sq]
       · convert det_mul _ _ using 2
         ext i j

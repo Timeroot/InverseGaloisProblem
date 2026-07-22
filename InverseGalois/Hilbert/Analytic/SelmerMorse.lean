@@ -103,19 +103,19 @@ lemma selmer_ncard_roots_field {F : Type*} [CommRing F] [IsDomain F] [DecidableE
     rw [Finset.card_le_one_iff]
     simp at *
     intro a b h₁ h₂ h₃ h₄ h₅ h₆
-    have := Polynomial.isRoot_iterate_derivative_of_lt_rootMultiplicity
+    have hda := Polynomial.isRoot_iterate_derivative_of_lt_rootMultiplicity
       (show 1 < rootMultiplicity a (selmerPoly F n) from h₃)
-    have := Polynomial.isRoot_iterate_derivative_of_lt_rootMultiplicity
+    have hdb := Polynomial.isRoot_iterate_derivative_of_lt_rootMultiplicity
       (show 1 < rootMultiplicity b (selmerPoly F n) from h₆)
-    simp_all
-    exact selmer_derivative_common_root_unique n h₂ ‹_› h₅ ‹_›
+    simp only [Function.iterate_one] at hda hdb
+    exact selmer_derivative_common_root_unique n h₂ hda h₅ hdb
   have h_sum_le_one :
       ∑ a ∈ (selmerPoly F n).roots.toFinset, ((selmerPoly F n).roots.count a - 1) ≤
         Finset.card (Finset.filter (fun a ↦ 2 ≤ (selmerPoly F n).roots.count a)
           (selmerPoly F n).roots.toFinset) := by
     rw [Finset.card_filter]
-    gcongr
-    have := selmer_rootMultiplicity_le_two n ‹_›
+    gcongr with a ha
+    have := selmer_rootMultiplicity_le_two n a
     simp_all [Polynomial.count_roots]
     grind
   have h_count_sum_eq_card :
@@ -125,8 +125,11 @@ lemma selmer_ncard_roots_field {F : Type*} [CommRing F] [IsDomain F] [DecidableE
   have h_sum_eq_card :
       ∑ a ∈ (selmerPoly F n).roots.toFinset, ((selmerPoly F n).roots.count a - 1) +
           ∑ a ∈ (selmerPoly F n).roots.toFinset, 1 = (selmerPoly F n).roots.card := by
-    rw [← Finset.sum_add_distrib, Finset.sum_congr rfl fun x hx ↦
-      tsub_add_cancel_of_le <| Nat.succ_le_of_lt <| Multiset.count_pos.mpr <| Multiset.mem_toFinset.mp hx]
+    have hcongr : ∀ x ∈ (selmerPoly F n).roots.toFinset,
+        (selmerPoly F n).roots.count x - 1 + 1 = (selmerPoly F n).roots.count x :=
+      fun x hx ↦ tsub_add_cancel_of_le <| Nat.succ_le_of_lt <|
+        Multiset.count_pos.mpr <| Multiset.mem_toFinset.mp hx
+    rw [← Finset.sum_add_distrib, Finset.sum_congr rfl hcongr]
     simp_all [count_roots]
   norm_num at *
   linarith
@@ -172,7 +175,7 @@ lemma ncard_rootSet_le_roots_card
   set s := (Polynomial.rootSet q S).toFinset with hs_def
   -- The product `∏ a ∈ s, (X - C a)` divides `q_S` in `S[X]`.
   have h_div : (∏ a ∈ s, (Polynomial.X - Polynomial.C a)) ∣ (Polynomial.map (algebraMap R S) q) := by
-    have h_div : ∀ {m : Multiset S},
+    have h_div_prod : ∀ {m : Multiset S},
         (∀ a ∈ m, Polynomial.IsRoot (Polynomial.map (algebraMap R S) q) a) → Multiset.Nodup m →
           (m.map (fun a ↦ Polynomial.X - Polynomial.C a)).prod ∣ (Polynomial.map (algebraMap R S) q) := by
       intro m hm hm_nodup
@@ -186,8 +189,11 @@ lemma ncard_rootSet_le_roots_card
         apply Polynomial.dvd_iff_isRoot.mpr
         replace hp := congr_arg (Polynomial.eval a) hp
         simp_all [Polynomial.eval_multiset_prod]
-        exact hm.1.resolve_left fun ⟨b, hb, h⟩ ↦ hm_nodup.1 <| by simpa [sub_eq_zero.mp h] using hb
-    convert h_div _ _ <;> simp_all
+        refine hm.1.resolve_left ?_
+        rintro ⟨b, hb, h⟩
+        apply hm_nodup.1
+        simpa [sub_eq_zero.mp h] using hb
+    convert h_div_prod _ _ <;> simp_all
     · grind only [aeval_eq_zero_of_mem_rootSet]
     · exact Finset.nodup _
   -- Applying the algebra map `φ : S → D` to the divisibility relation gives
@@ -198,14 +204,15 @@ lemma ncard_rootSet_le_roots_card
     · simp [Polynomial.map_map, IsScalarTower.algebraMap_eq R S D]
   -- The roots of `∏ a ∈ s, (X - C (φ a))` are exactly `{φ a | a ∈ s}`.
   have h_roots : (Polynomial.map (algebraMap R D) q).roots ≥ Multiset.map (fun a ↦ algebraMap S D a) s.val := by
-    have h_roots :
+    have h_roots_eq :
         Polynomial.roots (∏ a ∈ s, (Polynomial.X - Polynomial.C (algebraMap S D a))) =
           Multiset.map (fun a ↦ algebraMap S D a) s.val := by
       rw [Polynomial.roots_prod]
       · rw [Multiset.bind_congr fun x hx ↦ by rw [Polynomial.roots_X_sub_C]]
         simp_all only [ne_eq, Multiset.bind_singleton, s]
       · exact Finset.prod_ne_zero_iff.mpr fun x hx ↦ Polynomial.X_sub_C_ne_zero _
-    exact h_roots ▸ Polynomial.roots.le_of_dvd hne h_div_D
+    rw [ge_iff_le, ← h_roots_eq]
+    exact Polynomial.roots.le_of_dvd hne h_div_D
   refine le_trans ?_ (Multiset.card_le_card h_roots)
   rw [Set.ncard_eq_toFinset_card _]
   simp_all only [ne_eq, ge_iff_le, Set.toFinite_toFinset, Set.toFinset_card, Multiset.card_map,

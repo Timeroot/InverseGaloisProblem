@@ -192,7 +192,8 @@ theorem evalNF_nfAdd (ρ : ℕ → R) (f g : NF) :
     split_ifs <;> simp_all [evalNF]
     · split_ifs <;> simp_all [add_assoc]
       · rw [ih _ (by linarith) _ _ rfl]
-        rw [show m.2 = -m'.2 by linarith]
+        have hmm : m.2 = -m'.2 := by linarith
+        rw [hmm]
         simp
         ring
       · rw [ih _ (by linarith) _ _ rfl]
@@ -211,14 +212,13 @@ theorem evalNF_nfMulMono (ρ : ℕ → R) (m : Mono) (c : ℤ) (g : NF) :
 
 theorem evalNF_nfMulL (ρ : ℕ → R) (f g : NF) :
     evalNF ρ (nfMulL f g) = evalNF ρ f * evalNF ρ g := by
-      -- We'll use induction on `f`.
       induction' f with m c f ih generalizing g
       · simp [nfMulL]
-      · have h_fold : evalNF ρ (nfMulL (m :: c) g) = ((m.2 : R) * evalMono ρ m.1 + evalNF ρ c) * evalNF ρ g := by
-          convert congr_arg₂ (· + ·) (evalNF_nfMulMono ρ m.1 m.2 g) (f g) using 1
-          · exact evalNF_nfAdd ρ (nfMulMono m.1 m.2 g) (nfMulL c g)
-          · ring
-        exact h_fold
+      · show evalNF ρ (nfMulL (m :: c) g)
+            = ((m.2 : R) * evalMono ρ m.1 + evalNF ρ c) * evalNF ρ g
+        convert congr_arg₂ (· + ·) (evalNF_nfMulMono ρ m.1 m.2 g) (f g) using 1
+        · exact evalNF_nfAdd ρ (nfMulMono m.1 m.2 g) (nfMulL c g)
+        · ring
 
 theorem evalNF_nfMul (ρ : ℕ → R) (f g : NF) :
     evalNF ρ (nfMul f g) = evalNF ρ f * evalNF ρ g := by

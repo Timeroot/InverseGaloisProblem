@@ -46,10 +46,9 @@ lemma root_mem_ringOfIntegers {K : Type*} [Field K] [Algebra ℚ K]
     (f : ℤ[X]) (hf : f.Monic) (α : K)
     (hα : α ∈ (f.map (Int.castRingHom ℚ)).rootSet K) :
     ∃ (β : 𝓞 K), (β : K) = α := by
-  obtain ⟨β, hβ⟩ := isIntegral_root_of_monic_intPoly f hf α
-    (by rw [mem_rootSet] at hα
-        exact hα.2)
-  exact ⟨⟨α, ⟨β, hβ.1, hβ.2⟩⟩, rfl⟩
+  rw [mem_rootSet] at hα
+  obtain ⟨β, hβ⟩ := isIntegral_root_of_monic_intPoly f hf α hα.2
+  exact ⟨⟨α, β, hβ.1, hβ.2⟩, rfl⟩
 
 /-!
 ## Part 2: Prime ideal above p and reduction map
@@ -153,11 +152,10 @@ variable {p : ℕ} [hp : Fact (Nat.Prime p)]
 (n : R)^p = (n : R) for all integers n. -/
 lemma intCast_pow_eq_intCast (R : Type*) [CommRing R] [CharP R p] (n : ℤ) :
     (Int.cast n : R) ^ p = (Int.cast n : R) := by
-  have h : (p : ℤ) ∣ (n ^ p - n) := by
+  obtain ⟨k, hk⟩ : (p : ℤ) ∣ (n ^ p - n) := by
     rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
     push_cast
     simp [ZMod.pow_card]
-  obtain ⟨k, hk⟩ := h
   have key : ((n ^ p : ℤ) : R) - ((n : ℤ) : R) = 0 := by
     rw [← Int.cast_sub, hk, Int.cast_mul, Int.cast_natCast, CharP.cast_eq_zero, zero_mul]
   simp only [Int.cast_pow] at key
@@ -172,11 +170,11 @@ lemma liesOver_of_map_le (L : Type*) [CommRing L] [Algebra ℤ L]
   have h1 : Ideal.span {(p : ℤ)} ≤ Ideal.comap (algebraMap ℤ L) Q :=
     Ideal.map_le_iff_le_comap.mp hQ
   have h2 : (Ideal.span {(p : ℤ)}).IsMaximal := by
-    apply (Ideal.span_singleton_prime (Int.natCast_ne_zero.mpr hp.out.ne_zero) |>.mpr
+    apply ((Ideal.span_singleton_prime (Int.natCast_ne_zero.mpr hp.out.ne_zero)).mpr
       (Nat.prime_iff_prime_int.mp hp.out)).isMaximal
     exact Ideal.span_singleton_eq_bot.not.mpr (Int.natCast_ne_zero.mpr hp.out.ne_zero)
   have h4 : Ideal.comap (algebraMap ℤ L) Q ≠ ⊤ :=
-    Ideal.comap_ne_top _ (Ideal.IsMaximal.ne_top ‹_›)
+    Ideal.comap_ne_top _ ‹Q.IsMaximal›.ne_top
   exact h2.eq_of_le h4 h1
 
 /-
@@ -202,8 +200,8 @@ private instance isInvariant_ringOfIntegers (L : Type*) [Field L] [NumberField L
   rw [IsGalois.fixedField_top, IntermediateField.mem_bot] at h_fixed
   obtain ⟨q, hq⟩ := h_fixed
   have hq_int : IsIntegral ℤ q := by
-    have : IsIntegral ℤ ((algebraMap ℚ L) q) := hq ▸ b.2
-    rwa [isIntegral_algebraMap_iff (algebraMap ℚ L).injective] at this
+    rw [← isIntegral_algebraMap_iff (algebraMap ℚ L).injective, hq]
+    exact b.2
   rw [IsIntegrallyClosed.isIntegral_iff] at hq_int
   obtain ⟨n, hn⟩ := hq_int
   refine ⟨n, ?_⟩
@@ -234,19 +232,19 @@ private def frobeniusResidueField
   have : ExpChar (𝓞 L ⧸ Q) p := ExpChar.prime hp.out
   have : Fintype (𝓞 L ⧸ Q) := Fintype.ofFinite _
   have : ExpChar (ℤ ⧸ Ideal.span {(p : ℤ)}) p := ExpChar.prime hp.out
-  exact AlgEquiv.ofRingEquiv
+  refine AlgEquiv.ofRingEquiv
     (f := RingEquiv.ofBijective (frobenius (𝓞 L ⧸ Q) p)
       ⟨frobenius_inj (𝓞 L ⧸ Q) p,
-       Finite.surjective_of_injective (frobenius_inj (𝓞 L ⧸ Q) p)⟩)
-    (fun a ↦ by
-      show (algebraMap _ (𝓞 L ⧸ Q) a) ^ p = algebraMap _ _ a
-      rw [← map_pow]
-      congr 1
-      obtain ⟨n, rfl⟩ := Ideal.Quotient.mk_surjective a
-      rw [← map_pow, Ideal.Quotient.eq, Ideal.mem_span_singleton,
-        ← ZMod.intCast_zmod_eq_zero_iff_dvd]
-      push_cast
-      simp [ZMod.pow_card])
+       Finite.surjective_of_injective (frobenius_inj (𝓞 L ⧸ Q) p)⟩) ?_
+  intro a
+  show (algebraMap _ (𝓞 L ⧸ Q) a) ^ p = algebraMap _ _ a
+  rw [← map_pow]
+  congr 1
+  obtain ⟨n, rfl⟩ := Ideal.Quotient.mk_surjective a
+  rw [← map_pow, Ideal.Quotient.eq, Ideal.mem_span_singleton,
+    ← ZMod.intCast_zmod_eq_zero_iff_dvd]
+  push_cast
+  simp [ZMod.pow_card]
 
 private lemma frobeniusResidueField_apply
     (L : Type*) [Field L] [NumberField L] [Algebra ℚ L]
@@ -309,8 +307,7 @@ lemma cycleType_eq_of_conjugate {α β : Type*} [Fintype α] [Fintype β]
     σ.cycleType = τ.cycleType := by
   have : τ = Equiv.permCongr e σ := by
     ext x
-    have := h (e.symm x)
-    simpa using this.symm
+    simpa using (h (e.symm x)).symm
   rw [this, permCongr_cycleType]
 
 /-- The auxiliary permutation from galActionAux. -/

@@ -85,17 +85,23 @@ private lemma p₂_irreducible : Irreducible p₂ := by
     rintro ⟨q, hq⟩
     apply_fun fun x ↦ x.num at hq
     norm_num [sq, Rat.mul_self_num] at hq
-    nlinarith [show q.num ≤ 1 by nlinarith, show q.num ≥ -1 by nlinarith]
+    have h1 : q.num ≤ 1 := by nlinarith
+    have h2 : q.num ≥ -1 := by nlinarith
+    nlinarith
   constructor
-  · exact fun h ↦ absurd (degree_eq_zero_of_isUnit h) (by erw [degree_X_pow_sub_C] <;> norm_num)
+  · intro h
+    refine absurd (degree_eq_zero_of_isUnit h) ?_
+    erw [degree_X_pow_sub_C] <;> norm_num
   · intros a b hab
     have h_deg : a.degree + b.degree = 2 := by
       erw [← degree_mul, ← hab, degree_X_pow_sub_C] <;> norm_num
     by_cases ha : a.degree = 0 <;> by_cases hb : b.degree = 0 <;> simp_all [isUnit_iff_degree_eq_zero]
     -- Since `a` and `b` are non-constant polynomials with degrees adding up to 2, they must both be linear.
     have h_linear : a.degree = 1 ∧ b.degree = 1 := by
-      rw [degree_eq_natDegree (by aesop_cat), degree_eq_natDegree (by aesop_cat)] at *
-      norm_cast at *
+      have ha0 : a ≠ 0 := by aesop_cat
+      have hb0 : b ≠ 0 := by aesop_cat
+      rw [degree_eq_natDegree ha0, degree_eq_natDegree hb0] at *
+      norm_cast at ha hb h_deg ⊢
       omega
     -- Let `r` be a root of `a`. Then `r ^ 2 = 2`, which contradicts `h_no_rational_roots`.
     obtain ⟨r, hr⟩ : ∃ r : ℚ, a.eval r = 0 :=
@@ -115,9 +121,13 @@ private lemma p₃_irreducible : Irreducible p₃ := by
     intro x hx
     apply_fun fun y ↦ y.num at hx
     norm_num [sq, Rat.mul_self_num] at hx
-    nlinarith [show x.num ≤ 1 by nlinarith, show x.num ≥ -1 by nlinarith]
+    have h1 : x.num ≤ 1 := by nlinarith
+    have h2 : x.num ≥ -1 := by nlinarith
+    nlinarith
   constructor
-  · exact fun h ↦ absurd (degree_eq_zero_of_isUnit h) (by erw [degree_X_pow_sub_C] <;> norm_num)
+  · intro h
+    refine absurd (degree_eq_zero_of_isUnit h) ?_
+    erw [degree_X_pow_sub_C] <;> norm_num
   · intros a b hab
     have h_deg : a.degree + b.degree = 2 := by
       erw [← degree_mul, ← hab, degree_X_pow_sub_C] <;> norm_num
@@ -127,7 +137,7 @@ private lemma p₃_irreducible : Irreducible p₃ := by
       have ha0 : a ≠ 0 := fun h ↦ by simpa [h] using h_no_rational_roots 0
       have hb0 : b ≠ 0 := fun h ↦ by simpa [h] using h_no_rational_roots 0
       rw [degree_eq_natDegree ha0, degree_eq_natDegree hb0] at *
-      norm_cast at *
+      norm_cast at ha hb h_deg ⊢
       omega
     have hroot := exists_root_of_degree_eq_one h_linear.1
     exact h_no_rational_roots (Classical.choose hroot) |>.1 (Classical.choose_spec hroot)
@@ -143,7 +153,8 @@ private lemma p₂_finrank : finrank ℚ (p₂.SplittingField) = 2 := by
       convert Splits.exists_eval_eq_zero _ _
       · exact SplittingField.splits _
       · erw [degree_map, degree_X_pow_sub_C] <;> norm_num
-    exact ⟨α, by simpa [sub_eq_zero] using hα⟩
+    refine ⟨α, ?_⟩
+    simpa [sub_eq_zero] using hα
   -- Since `p₂` is irreducible, the degree of the extension `ℚ(α)/ℚ` equals the degree of `p₂`, which is 2.
   have h_deg : finrank ℚ (↥(adjoin ℚ {α})) = 2 := by
     -- The minimal polynomial of α over `ℚ` is `p₂`, which has degree 2.
@@ -159,8 +170,7 @@ private lemma p₂_finrank : finrank ℚ (p₂.SplittingField) = 2 := by
       · exact monic_X_pow_sub_C _ two_ne_zero
       · simp_all only [eval₂_sub, eval₂_X_pow, eval₂_ofNat, sub_self]
   convert h_deg using 1
-  have h_split : IsSplittingField ℚ p₂.SplittingField p₂ := by infer_instance
-  have := h_split.adjoin_rootSet
+  have := (inferInstance : IsSplittingField ℚ p₂.SplittingField p₂).adjoin_rootSet
   rw [show p₂.rootSet p₂.SplittingField = { α, -α } from ?_] at this
   · rw [show (adjoin ℚ { α } : IntermediateField ℚ p₂.SplittingField) = ⊤ from ?_]
     · simp
@@ -173,9 +183,11 @@ private lemma p₂_finrank : finrank ℚ (p₂.SplittingField) = 2 := by
     rw [mem_rootSet]
     norm_num [hα]
     refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
-    · exact eq_or_eq_neg_of_sq_eq_sq _ _ <| by linear_combination' h.2 - hα
+    · apply eq_or_eq_neg_of_sq_eq_sq
+      linear_combination' h.2 - hα
     · rcases h with (rfl | rfl) <;>
-        exact ⟨ne_of_apply_ne (eval 0) <| by norm_num, by linear_combination' hα⟩
+        refine ⟨ne_of_apply_ne (eval 0) (by norm_num), ?_⟩ <;>
+        linear_combination' hα
 
 /-- The splitting field of `X² - 3` has degree 2 over `ℚ`. -/
 private lemma p₃_finrank : finrank ℚ (p₃.SplittingField) = 2 := by
@@ -185,7 +197,8 @@ private lemma p₃_finrank : finrank ℚ (p₃.SplittingField) = 2 := by
       convert Splits.exists_eval_eq_zero _ _
       · exact SplittingField.splits _
       · erw [degree_map, degree_X_pow_sub_C] <;> norm_num
-    exact ⟨α, by simpa [sub_eq_zero] using hα⟩
+    refine ⟨α, ?_⟩
+    simpa [sub_eq_zero] using hα
   have h_deg : finrank ℚ (↥(adjoin ℚ {α})) = 2 := by
     have h_minpoly : minpoly ℚ α = p₃ := by
       refine Eq.symm (minpoly.eq_of_irreducible_of_monic ?_ ?_ ?_) <;> norm_num [p₃_irreducible]
@@ -199,8 +212,7 @@ private lemma p₃_finrank : finrank ℚ (p₃.SplittingField) = 2 := by
       · exact monic_X_pow_sub_C _ two_ne_zero
       · simp_all only [eval₂_sub, eval₂_X_pow, eval₂_ofNat, sub_self]
   convert h_deg using 1
-  have h_split : IsSplittingField ℚ p₃.SplittingField p₃ := by infer_instance
-  have := h_split.adjoin_rootSet
+  have := (inferInstance : IsSplittingField ℚ p₃.SplittingField p₃).adjoin_rootSet
   rw [show p₃.rootSet p₃.SplittingField = { α, -α } from ?_] at this
   · rw [show (adjoin ℚ { α } : IntermediateField ℚ p₃.SplittingField) = ⊤ from ?_]
     · simp
@@ -213,9 +225,11 @@ private lemma p₃_finrank : finrank ℚ (p₃.SplittingField) = 2 := by
     rw [mem_rootSet]
     norm_num [hα]
     refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
-    · exact eq_or_eq_neg_of_sq_eq_sq _ _ <| by linear_combination' h.2 - hα
+    · apply eq_or_eq_neg_of_sq_eq_sq
+      linear_combination' h.2 - hα
     · rcases h with (rfl | rfl) <;>
-        exact ⟨ne_of_apply_ne (eval 0) <| by norm_num, by linear_combination' hα⟩
+        refine ⟨ne_of_apply_ne (eval 0) (by norm_num), ?_⟩ <;>
+        linear_combination' hα
 
 /-
 The finrank of the field range of an algebra embedding equals the finrank of the source.
@@ -246,26 +260,32 @@ private lemma no_sq_eq_three_in_p₂_sf :
           erw [natDegree_X_pow_sub_C]
           norm_num)
         norm_num at hx
-        exact ⟨x, by linear_combination hx.2⟩
+        refine ⟨x, ?_⟩
+        linear_combination hx.2
       -- Since `{1, α}` is linearly independent, α is not in `ℚ`.
       have h_lin_indep : ∀ (a b : ℚ), a • (1 : p₂.SplittingField) + b • α = 0 → a = 0 ∧ b = 0 := by
         -- Since α is a root of the irreducible polynomial `X ^ 2 - 2`, it is not in `ℚ`.
         have h_not_in_Q : α ∉ Set.range (algebraMap ℚ p₂.SplittingField) := by
           rintro ⟨q, hq⟩
           norm_num [← hq] at hα
-          exact absurd hα (by
-            norm_cast
-            intros h
-            apply_fun (fun x ↦ x.num) at h
-            norm_num [sq, Rat.mul_self_num] at h
-            nlinarith [show q.num ≤ 1 by nlinarith, show q.num ≥ -1 by nlinarith])
+          refine absurd hα ?_
+          norm_cast
+          intros h
+          apply_fun (fun x ↦ x.num) at h
+          norm_num [sq, Rat.mul_self_num] at h
+          have h1 : q.num ≤ 1 := by nlinarith
+          have h2 : q.num ≥ -1 := by nlinarith
+          nlinarith
         intro a b h
-        by_cases hb : b = 0 <;> simp_all [add_eq_zero_iff_eq_neg, Algebra.smul_def]
-        exact h_not_in_Q (-a / b) (by simp [*, mul_div_cancel_left₀])
+        by_cases hb : b = 0
+        · simp_all [Algebra.smul_def]
+        · simp_all [add_eq_zero_iff_eq_neg, Algebra.smul_def]
+          refine h_not_in_Q (-a / b) ?_
+          simp [*, mul_div_cancel_left₀]
       -- Since `{1, α}` is a basis for the splitting field over `ℚ`, any element `x` can be written as `a + bα` for some `a, b ∈ ℚ`.
       have h_basis : ∀ x : p₂.SplittingField, ∃ a b : ℚ, x = a • (1 : p₂.SplittingField) + b • α := by
         -- Since `{1, α}` is a basis for the splitting field over `ℚ`, any element `x` is a linear combination of `1` and α.
-        have h_basis : Submodule.span ℚ {1, α} = ⊤ := by
+        have h_span : Submodule.span ℚ {1, α} = ⊤ := by
           apply Submodule.eq_top_of_finrank_eq
           rw [p₂_finrank]
           convert finrank_span_eq_card
@@ -290,15 +310,17 @@ private lemma no_sq_eq_three_in_p₂_sf :
                 fin_cases i <;> simp
           · rw [Fintype.linearIndependent_iff]
             norm_num
-            exact fun g hg ↦ h_lin_indep _ _ <| by simpa [add_comm] using hg
+            intro g hg
+            refine h_lin_indep _ _ ?_
+            simpa [add_comm] using hg
         intro x
-        replace h_basis := SetLike.ext_iff.mp h_basis x
-        simp [Submodule.mem_span_pair] at h_basis ⊢
+        replace h_span := SetLike.ext_iff.mp h_span x
+        simp [Submodule.mem_span_pair] at h_span ⊢
         tauto
       intro x hx
       obtain ⟨a, b, hx_eq⟩ := h_basis x
       have h_eq : a^2 + 2 * b^2 = 3 ∧ 2 * a * b = 0 := by
-        have h_eq :
+        have h_smul_eq :
             (a^2 + 2 * b^2) • (1 : p₂.SplittingField) + (2 * a * b) • α = (algebraMap ℚ p₂.SplittingField) 3 := by
           convert hx using 1
           rw [hx_eq]
@@ -308,20 +330,25 @@ private lemma no_sq_eq_three_in_p₂_sf :
           norm_num
         specialize h_lin_indep (a^2 + 2 * b^2 - 3) (2 * a * b)
         simp_all [sub_eq_iff_eq_add]
-        exact h_lin_indep (by linear_combination' h_eq)
+        apply h_lin_indep
+        linear_combination' h_smul_eq
       by_cases ha : a = 0 <;> by_cases hb : b = 0 <;> simp [ha, hb] at h_eq ⊢
       · -- From `2 * b ^ 2 = 3`, we get `b ^ 2 = 3 / 2`, which is not rational, a contradiction.
         have h_not_rational : ¬ ∃ (q : ℚ), q^2 = 3 / 2 := by
           rintro ⟨q, hq⟩
           apply_fun (fun x ↦ x.num) at hq
           norm_num [sq, Rat.mul_self_num] at hq
-          nlinarith [show q.num ≤ 1 by nlinarith, show q.num ≥ -1 by nlinarith]
+          have h1 : q.num ≤ 1 := by nlinarith
+          have h2 : q.num ≥ -1 := by nlinarith
+          nlinarith
         grind +qlia
-      · exact absurd h_eq (by
-          apply_fun (fun x ↦ x.num)
-          norm_num [sq, Rat.mul_self_num]
-          intros h
-          nlinarith [show a.num ≤ 1 by nlinarith, show a.num ≥ -1 by nlinarith])
+      · refine absurd h_eq ?_
+        apply_fun (fun x ↦ x.num)
+        norm_num [sq, Rat.mul_self_num]
+        intros h
+        have h1 : a.num ≤ 1 := by nlinarith
+        have h2 : a.num ≥ -1 := by nlinarith
+        nlinarith
 
 /-
 The images of `ℚ(√2)` and `ℚ(√3)` in the algebraic closure have trivial intersection.
@@ -340,22 +367,22 @@ private lemma biquadratic_inf_eq_bot :
         rw [fieldRange_finrank, p₂_finrank]
       by_cases h : finrank ℚ (↥(i₁.fieldRange ⊓ i₂.fieldRange)) = 2
       · have h_eq : i₁.fieldRange = i₂.fieldRange := by
-          have h_eq : i₁.fieldRange ⊓ i₂.fieldRange = i₁.fieldRange := by
+          have h_inf_eq : i₁.fieldRange ⊓ i₂.fieldRange = i₁.fieldRange := by
             apply_rules [eq_of_le_of_finrank_eq]
             · exact inf_le_left
             · rw [h, fieldRange_finrank i₁, p₂_finrank]
-            · have h_finrank_i₁ : finrank ℚ (↥i₁.fieldRange) = 2 := by
-                convert p₂_finrank using 1
-                exact fieldRange_finrank i₁
-              exact FiniteDimensional.of_finrank_pos (by linarith)
-          have h_eq : i₁.fieldRange ≤ i₂.fieldRange := h_eq ▸ inf_le_right
-          have h_eq : finrank ℚ (↥i₁.fieldRange) = finrank ℚ (↥i₂.fieldRange) := by
+            · have h_finrank_i₁ : finrank ℚ (↥i₁.fieldRange) = 2 :=
+                (fieldRange_finrank i₁).trans p₂_finrank
+              apply FiniteDimensional.of_finrank_pos
+              linarith
+          have h_le : i₁.fieldRange ≤ i₂.fieldRange := h_inf_eq ▸ inf_le_right
+          have h_finrank_eq : finrank ℚ (↥i₁.fieldRange) = finrank ℚ (↥i₂.fieldRange) := by
             rw [fieldRange_finrank, fieldRange_finrank, p₂_finrank, p₃_finrank]
           apply_rules [eq_of_le_of_finrank_eq]
-          have h_finrank : finrank ℚ (↥i₂.fieldRange) = 2 := by
-            convert p₃_finrank using 1
-            exact fieldRange_finrank i₂
-          exact FiniteDimensional.of_finrank_pos (by linarith)
+          have h_finrank : finrank ℚ (↥i₂.fieldRange) = 2 :=
+            (fieldRange_finrank i₂).trans p₃_finrank
+          apply FiniteDimensional.of_finrank_pos
+          linarith
         obtain ⟨β, hβ⟩ : ∃ β : p₃.SplittingField, β ^ 2 = algebraMap ℚ _ 3 := by
           have := SplittingField.splits p₃
           unfold p₃ at this
@@ -364,15 +391,15 @@ private lemma biquadratic_inf_eq_bot :
           use β
           simp_all [sub_eq_iff_eq_add]
         have h_contradiction : ∃ γ : p₂.SplittingField, γ ^ 2 = algebraMap ℚ _ 3 := by
-          have h_contradiction : ∃ γ : p₂.SplittingField, i₁ γ = i₂ β := by
+          have h_exists : ∃ γ : p₂.SplittingField, i₁ γ = i₂ β := by
             replace h_eq := SetLike.ext_iff.mp h_eq (i₂ β)
             simp_all only [dvd_refl, eq_ratCast, Rat.cast_ofNat, AlgHom.mem_fieldRange,
               exists_apply_eq_apply, iff_true]
-          obtain ⟨γ, hγ⟩ := h_contradiction
-          have h_contradiction : i₁ (γ ^ 2) = i₁ (algebraMap ℚ _ 3) := by
+          obtain ⟨γ, hγ⟩ := h_exists
+          have h_eq_pow : i₁ (γ ^ 2) = i₁ (algebraMap ℚ _ 3) := by
             convert congr_arg (fun x ↦ i₂ x) hβ using 1 <;> simp [hγ]
             exact map_natCast i₁ 3 ▸ map_natCast i₂ 3 ▸ rfl
-          exact ⟨γ, i₁.injective h_contradiction⟩
+          exact ⟨γ, i₁.injective h_eq_pow⟩
         exact False.elim <| no_sq_eq_three_in_p₂_sf _ h_contradiction.choose_spec
       · have := Nat.le_of_dvd (by decide) h_finrank
         interval_cases _ : finrank ℚ (↥ (i₁.fieldRange ⊓ i₂.fieldRange)) <;> simp_all
@@ -383,15 +410,12 @@ The Galois group of `ℚ(√2)/ℚ` is isomorphic to `Multiplicative (ℤ/2ℤ)`
 private lemma gal_p₂_iso :
     Nonempty (Gal(p₂.SplittingField / ℚ) ≃* Multiplicative (ZMod 2)) := by
       -- Since the Galois group has order 2, it is isomorphic to the cyclic group of order 2.
+      have h_card : Nat.card Gal(p₂.SplittingField/ℚ) = 2 := by
+        rw [IsGalois.card_aut_eq_finrank]
+        norm_num [p₂_finrank]
       have h_iso :
-          Nonempty (Gal(p₂.SplittingField/ℚ) ≃* Multiplicative (ZMod (Nat.card Gal(p₂.SplittingField/ℚ)))) := by
-        constructor
-        have h_iso : IsCyclic Gal(p₂.SplittingField/ℚ) := by
-          have h_iso : Nat.card Gal(p₂.SplittingField/ℚ) = 2 := by
-            rw [IsGalois.card_aut_eq_finrank]
-            norm_num [p₂_finrank]
-          exact isCyclic_of_prime_card h_iso
-        exact (zmodCyclicMulEquiv h_iso).symm
+          Nonempty (Gal(p₂.SplittingField/ℚ) ≃* Multiplicative (ZMod (Nat.card Gal(p₂.SplittingField/ℚ)))) :=
+        ⟨(zmodCyclicMulEquiv (isCyclic_of_prime_card h_card)).symm⟩
       convert h_iso
       rw [IsGalois.card_aut_eq_finrank, p₂_finrank]
 
@@ -401,19 +425,14 @@ The Galois group of `ℚ(√3)/ℚ` is isomorphic to `Multiplicative (ℤ/2ℤ)`
 private lemma gal_p₃_iso :
     Nonempty (Gal(p₃.SplittingField / ℚ) ≃* Multiplicative (ZMod 2)) := by
       -- Since the Galois group is a finite group of order 2, it must be isomorphic to `ZMod 2`.
-      have h_iso :
-          Nonempty (Gal(p₃.SplittingField / ℚ) ≃* Multiplicative (ZMod (Nat.card Gal(p₃.SplittingField / ℚ)))) := by
-        constructor
-        have h_iso : IsCyclic Gal(p₃.SplittingField / ℚ) := by
-          have h_iso : Nat.card Gal(p₃.SplittingField / ℚ) = 2 := by
-            rw [IsGalois.card_aut_eq_finrank]
-            exact p₃_finrank
-          exact isCyclic_of_prime_card h_iso
-        exact (zmodCyclicMulEquiv h_iso).symm
       have h_card : Nat.card Gal(p₃.SplittingField / ℚ) = 2 := by
-        have := IsGalois.card_aut_eq_finrank ℚ (p₃.SplittingField)
-        exact this.trans (p₃_finrank)
-      grind
+        rw [IsGalois.card_aut_eq_finrank]
+        exact p₃_finrank
+      have h_iso :
+          Nonempty (Gal(p₃.SplittingField / ℚ) ≃* Multiplicative (ZMod (Nat.card Gal(p₃.SplittingField / ℚ)))) :=
+        ⟨(zmodCyclicMulEquiv (isCyclic_of_prime_card h_card)).symm⟩
+      convert h_iso
+      rw [IsGalois.card_aut_eq_finrank, p₃_finrank]
 
 /-- The Klein four group `V₄ ≅ Multiplicative (ℤ/2ℤ) × Multiplicative (ℤ/2ℤ)` is an inverse
 Galois group, realized by the biquadratic extension `ℚ(√2, √3)/ℚ`. -/

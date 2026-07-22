@@ -70,8 +70,6 @@ lemma local_branch_of_simple
     (hsimple : (Q x₀).derivative.eval y₀ ≠ 0) :
     ∃ φ : ℝ → ℝ, φ x₀ = y₀ ∧ ContDiffAt ℝ ⊤ φ x₀ ∧
       ∀ᶠ x : ℝ in nhds x₀, (Q x).eval (φ x) = 0 := by
-  revert hroot hsimple
-  intro hroot hsimple
   let F : ℝ × ℝ → ℝ := fun p ↦ (Q p.1).eval p.2
   have hF : HasFDerivAt F (fderiv ℝ F (x₀, y₀)) (x₀, y₀) :=
     DifferentiableAt.hasFDerivAt (hsmooth.contDiffAt.differentiableAt (by norm_num))
@@ -79,11 +77,11 @@ lemma local_branch_of_simple
   have hL : ∀ x, (fderiv ℝ F (x₀, y₀)).comp (ContinuousLinearMap.inr ℝ ℝ ℝ) x =
       (Polynomial.derivative (Q x₀)).eval y₀ * x := by
     intro x
-    have hL : deriv (fun y ↦ (Q x₀).eval y) y₀ = (fderiv ℝ F (x₀, y₀)).comp (ContinuousLinearMap.inr ℝ ℝ ℝ) 1 := by
+    have hderiv : deriv (fun y ↦ (Q x₀).eval y) y₀ = (fderiv ℝ F (x₀, y₀)).comp (ContinuousLinearMap.inr ℝ ℝ ℝ) 1 := by
       convert HasDerivAt.deriv _ using 1
       convert HasFDerivAt.hasDerivAt (hF.comp y₀
         (HasFDerivAt.prodMk (hasFDerivAt_const _ _) (hasFDerivAt_id _))) using 1
-    convert congr_arg (fun z ↦ z * x) hL.symm using 1
+    convert congr_arg (fun z ↦ z * x) hderiv.symm using 1
     · norm_num [Polynomial.derivative_eval]
       ring_nf!
       rw [mul_comm]
@@ -91,11 +89,11 @@ lemma local_branch_of_simple
       erw [← ContinuousLinearMap.map_smul]
       norm_num
     · norm_num [Polynomial.derivative_eval]
-  have hL_inv : ∃ L_inv : ℝ →L[ℝ] ℝ, ∀ x, L_inv ((Polynomial.derivative (Q x₀)).eval y₀ * x) = x := by
-    exact ⟨ContinuousLinearMap.smulRight (1 : ℝ →L[ℝ] ℝ)
+  obtain ⟨L_inv, hL_inv⟩ :
+      ∃ L_inv : ℝ →L[ℝ] ℝ, ∀ x, L_inv ((Polynomial.derivative (Q x₀)).eval y₀ * x) = x :=
+    ⟨ContinuousLinearMap.smulRight (1 : ℝ →L[ℝ] ℝ)
         ((Polynomial.eval y₀ (Polynomial.derivative (Q x₀))) ⁻¹),
       fun x ↦ by simp [hsimple, mul_comm]⟩
-  obtain ⟨L_inv, hL_inv⟩ := hL_inv
   have h_implicit : IsContDiffImplicitAt ⊤ F (fderiv ℝ F (x₀, y₀)) (x₀, y₀) := by
     constructor
     · exact hF
@@ -108,10 +106,10 @@ lemma local_branch_of_simple
       · intro x
         use x / (Polynomial.eval y₀ (Polynomial.derivative (Q x₀)))
         simp [hL, mul_div_cancel₀ _ hsimple]
-    · decide +revert
+    · decide
   refine ⟨h_implicit.implicitFunction, ?_, ?_, ?_⟩ <;> norm_num [h_implicit]
   · convert h_implicit.eventually_implicitFunction_apply_eq.self_of_nhds using 1
-    aesop (simp_config := { singlePass := true })
+    aesop
   · exact h_implicit.contDiffAt_implicitFunction
   · have := h_implicit.apply_implicitFunction
     aesop
@@ -129,36 +127,35 @@ lemma local_unique_of_simple
       ∀ x ∈ u, ∀ y₁ ∈ v, ∀ y₂ ∈ v, (Q x).eval y₁ = 0 → (Q x).eval y₂ = 0 → y₁ = y₂ := by
   -- By continuity of the partial derivative away from zero, there exists a δ > 0 such that for (x, y) with |x - x₀| < δ, |y - y₀| < δ, we have (Q x).derivative.eval y ≠ 0.
   obtain ⟨δ, hδ_pos, hδ⟩ : ∃ δ > 0, ∀ x y, abs (x - x₀) < δ → abs (y - y₀) < δ → (Q x).derivative.eval y ≠ 0 := by
-    have h_cont : ContinuousAt (fun p : ℝ × ℝ ↦ (Q p.1).derivative.eval p.2) (x₀, y₀) := by
-      have h_cont : ContDiff ℝ ⊤ (fun p : ℝ × ℝ ↦ (Q p.1).derivative.eval p.2) := by
-        have h_cont : ContDiff ℝ ⊤ (fun p : ℝ × ℝ ↦ deriv (fun y ↦ (Q p.1).eval y) p.2) := by
-          apply_rules [ContDiff.fderiv_apply]
-          any_goals exact le_top
-          · exact hsmooth.comp (contDiff_fst.fst.prodMk contDiff_snd)
-          · exact contDiff_snd
-          · exact contDiff_const
-        convert h_cont using 1
-        ext
-        simp [Polynomial.derivative_eval]
-      exact h_cont.continuous.continuousAt
+    have h_deriv_cont : ContDiff ℝ ⊤ (fun p : ℝ × ℝ ↦ deriv (fun y ↦ (Q p.1).eval y) p.2) := by
+      apply_rules [ContDiff.fderiv_apply]
+      any_goals exact le_top
+      · exact hsmooth.comp (contDiff_fst.fst.prodMk contDiff_snd)
+      · exact contDiff_snd
+      · exact contDiff_const
+    have h_cont_diff : ContDiff ℝ ⊤ (fun p : ℝ × ℝ ↦ (Q p.1).derivative.eval p.2) := by
+      convert h_deriv_cont using 1
+      ext
+      simp [Polynomial.derivative_eval]
+    have h_cont : ContinuousAt (fun p : ℝ × ℝ ↦ (Q p.1).derivative.eval p.2) (x₀, y₀) :=
+      h_cont_diff.continuous.continuousAt
     have := Metric.continuousAt_iff.mp h_cont
-    exact Exists.elim (this (|eval y₀ (derivative (Q x₀))|) (abs_pos.mpr hsimple))
-      fun δ hδ ↦ ⟨δ, hδ.1, fun x y hx hy ↦ by
-        cases abs_cases (eval y₀ (derivative (Q x₀))) <;>
-          linarith [abs_lt.mp (hδ.2 (show dist (x, y) (x₀, y₀) < δ from max_lt hx hy))]⟩
+    obtain ⟨δ, hδ⟩ := this (|eval y₀ (derivative (Q x₀))|) (abs_pos.mpr hsimple)
+    refine ⟨δ, hδ.1, fun x y hx hy ↦ ?_⟩
+    cases abs_cases (eval y₀ (derivative (Q x₀))) <;>
+      linarith [abs_lt.mp (hδ.2 (show dist (x, y) (x₀, y₀) < δ from max_lt hx hy))]
   refine ⟨Metric.ball x₀ δ, Metric.ball y₀ δ, Metric.ball_mem_nhds _ hδ_pos, Metric.ball_mem_nhds _ hδ_pos, ?_⟩
   intro x hx y₁ hy₁ y₂ hy₂ h₁ h₂
   contrapose! hδ
   -- By Rolle's theorem, since `Q(x, y₁) = 0` and `Q(x, y₂) = 0`, there exists some `c` between `y₁` and `y₂` such that `Q'(x, c) = 0`.
   obtain ⟨c, hc⟩ : ∃ c ∈ Set.Ioo (min y₁ y₂) (max y₁ y₂), deriv (fun y ↦ (Q x).eval y) c = 0 := by
     apply_mod_cast exists_deriv_eq_zero
-    · grind +splitImp
+    · grind
     · exact Continuous.continuousOn (Polynomial.continuous _)
     · cases le_total y₁ y₂ <;> aesop
   simp_all [Polynomial.derivative_eval]
-  exact ⟨x, hx, c, abs_lt.mpr
-    ⟨by cases hc.1.1 <;> cases hc.1.2 <;> linarith [abs_lt.mp hy₁, abs_lt.mp hy₂],
-      by cases hc.1.1 <;> cases hc.1.2 <;> linarith [abs_lt.mp hy₁, abs_lt.mp hy₂]⟩, hc.2⟩
+  refine ⟨x, hx, c, abs_lt.mpr ⟨?_, ?_⟩, hc.2⟩ <;>
+    cases hc.1.1 <;> cases hc.1.2 <;> linarith [abs_lt.mp hy₁, abs_lt.mp hy₂]
 
 /-
 Coefficients of a smooth family of polynomials are continuous functions of the
@@ -168,22 +165,24 @@ evaluation at `Y = 0`, which is continuous since the evaluation is `C^∞`.)
 lemma coeff_continuous
     (hsmooth : ContDiff ℝ ⊤ (fun p : ℝ × ℝ => (Q p.1).eval p.2)) (k : ℕ) :
     Continuous (fun x ↦ (Q x).coeff k) := by
-  have h_coeff_cont : ∀ p : ℕ, ContDiff ℝ ⊤ (fun x ↦ Polynomial.eval 0 (Polynomial.derivative^[p] (Q x))) := by
+  have h_two_var : ∀ p : ℕ,
+      ContDiff ℝ ⊤ (fun p' : ℝ × ℝ ↦ Polynomial.eval p'.2 (Polynomial.derivative^[p] (Q p'.1))) := by
     intro p
-    have h_coeff_cont : ContDiff ℝ ⊤ (fun p' : ℝ × ℝ ↦ Polynomial.eval p'.2 (Polynomial.derivative^[p] (Q p'.1))) := by
-      induction' p with p ih <;> simp_all [Function.iterate_succ_apply']
-      have h_eval_cont : ContDiff ℝ ⊤
-          (fun p' : ℝ × ℝ ↦ deriv (fun y ↦ Polynomial.eval y (Polynomial.derivative^[p] (Q p'.1))) p'.2) := by
-        apply_rules [ContDiff.fderiv_apply, ih]
-        · convert ih.comp (contDiff_fst.fst.prodMk contDiff_snd) using 1
-        · exact contDiff_snd
-        · fun_prop
-        · norm_num +zetaDelta at *
-      convert h_eval_cont using 1
-      ext
-      simp [Polynomial.derivative_eval]
-    exact h_coeff_cont.comp (contDiff_id.prodMk contDiff_const)
-  convert h_coeff_cont k |> ContDiff.continuous |> Continuous.div_const <| k.factorial using 1
+    induction' p with p ih <;> simp_all [Function.iterate_succ_apply']
+    have h_eval_cont : ContDiff ℝ ⊤
+        (fun p' : ℝ × ℝ ↦ deriv (fun y ↦ Polynomial.eval y (Polynomial.derivative^[p] (Q p'.1))) p'.2) := by
+      apply_rules [ContDiff.fderiv_apply, ih]
+      · convert ih.comp (contDiff_fst.fst.prodMk contDiff_snd) using 1
+      · exact contDiff_snd
+      · fun_prop
+      · norm_num at *
+    convert h_eval_cont using 1
+    ext
+    simp [Polynomial.derivative_eval]
+  have h_coeff_cont : ∀ p : ℕ,
+      ContDiff ℝ ⊤ (fun x ↦ Polynomial.eval 0 (Polynomial.derivative^[p] (Q x))) :=
+    fun p ↦ (h_two_var p).comp (contDiff_id.prodMk contDiff_const)
+  convert (h_coeff_cont k).continuous.div_const k.factorial using 1
   ext x
   rw [eq_div_iff (by positivity)]
   simp [Polynomial.eval, Polynomial.coeff_iterate_derivative]
@@ -214,11 +213,11 @@ lemma exists_uniform_root_bound (d : ℕ) (hd : 1 ≤ d)
   by_cases hy_abs : |y| > 1
   · -- The bound `|y|^d ≤ ∑ i ∈ Finset.range d, |(Q x).coeff i| * |y|^i` holds.
     have h_bound : |y|^d ≤ ∑ i ∈ Finset.range d, |(Q x).coeff i| * |y|^i := by
-      have h_bound : |y|^d ≤ |∑ i ∈ Finset.range d, (Q x).coeff i * y^i| := by
+      have h_abs_bound : |y|^d ≤ |∑ i ∈ Finset.range d, (Q x).coeff i * y^i| := by
         rw [Polynomial.eval_eq_sum_range] at hy
         simp_all [Finset.sum_range_succ]
         simp_all [add_eq_zero_iff_eq_neg, Polynomial.Monic.def, Polynomial.leadingCoeff]
-      exact h_bound.trans (le_trans (Finset.abs_sum_le_sum_abs _ _)
+      exact h_abs_bound.trans (le_trans (Finset.abs_sum_le_sum_abs _ _)
         (Finset.sum_le_sum fun i hi ↦ by rw [abs_mul, abs_pow]))
     -- Since `|y| > 1`, we can factor out `|y|^(d-1)` from the right-hand side of the inequality.
     have h_factor : |y|^d ≤ (∑ i ∈ Finset.range d, |(Q x).coeff i|) * |y|^(d-1) := by
@@ -229,7 +228,7 @@ lemma exists_uniform_root_bound (d : ℕ) (hd : 1 ≤ d)
           (pow_le_pow_right₀ hy_abs.le (Nat.le_sub_one_of_lt (Finset.mem_range.mp hi))) (abs_nonneg _)
     rcases d <;> simp_all [pow_succ']
     nlinarith [hu.2 x hx, pow_pos (zero_lt_one.trans hy_abs) ‹_›,
-      show ∑ i ∈ Finset.range (‹_› + 1), |(Q x).coeff i| ≤ M - 1 from by linarith [hu.2 x hx]]
+      show ∑ i ∈ Finset.range (‹_› + 1), |(Q x).coeff i| ≤ M - 1 by linarith [hu.2 x hx]]
   · linarith [hu.2 x hx,
       show 0 ≤ ∑ i ∈ Finset.range d, |(Q x).coeff i| from Finset.sum_nonneg fun _ _ ↦ abs_nonneg _]
 
@@ -247,25 +246,26 @@ lemma roots_near_roots (d : ℕ) (hd : 1 ≤ d)
     ∃ u ∈ nhds x₀, ∀ x ∈ u, ∀ y : ℝ, (Q x).eval y = 0 →
       ∃ y₀ : ℝ, (Q x₀).eval y₀ = 0 ∧ |y - y₀| < ε := by
   -- Let M and u₁ be from `exists_uniform_root_bound d hd hmonic hdeg hsmooth x₀`.
-  obtain ⟨M, u₁, hu₁⟩ : ∃ M u₁, u₁ ∈ nhds x₀ ∧ ∀ x ∈ u₁, ∀ y : ℝ, eval y (Q x) = 0 → abs y ≤ M := by
-    exact exists_uniform_root_bound d hd hmonic hdeg hsmooth x₀
+  obtain ⟨M, u₁, hu₁⟩ : ∃ M u₁, u₁ ∈ nhds x₀ ∧ ∀ x ∈ u₁, ∀ y : ℝ, eval y (Q x) = 0 → abs y ≤ M :=
+    exists_uniform_root_bound d hd hmonic hdeg hsmooth x₀
   -- Define the compact set K := {t : ℝ | t ∈ Set.Icc (-M) M ∧ ∀ y₀ ∈ realRootFinset Q x₀, ε ≤ |t - y₀|}.
   set K := {t : ℝ | t ∈ Set.Icc (-M) M ∧ ∀ y₀ ∈ realRootFinset Q x₀, ε ≤ |t - y₀|}
   have hK_compact : IsCompact K := by
     apply (CompactIccSpace.isCompact_Icc (a := -M) (b := M)).of_isClosed_subset
-    exacts [IsClosed.inter (isClosed_Icc) (isClosed_of_closure_subset fun x hx ↦ by
+    · refine isClosed_Icc.inter (isClosed_of_closure_subset fun x hx ↦ ?_)
       rw [mem_closure_iff_seq_limit] at hx
       exact fun y₀ hy₀ ↦
         le_of_tendsto_of_tendsto' tendsto_const_nhds (Filter.Tendsto.abs (hx.choose_spec.2.sub_const y₀))
-          fun n ↦ hx.choose_spec.1 n y₀ hy₀), fun x hx ↦ hx.1]
+          fun n ↦ hx.choose_spec.1 n y₀ hy₀
+    · exact fun x hx ↦ hx.1
   -- Apply the generalized tube lemma to get open `u₀, v` with `x₀ ∈ u₀`, `K ⊆ v`, and `u₀ ×ˢ v ⊆ O`.
   obtain ⟨u₀, v, hu₀, hv, huv⟩ :
       ∃ u₀ v : Set ℝ, IsOpen u₀ ∧ IsOpen v ∧ x₀ ∈ u₀ ∧ K ⊆ v ∧ u₀ ×ˢ v ⊆ {p : ℝ × ℝ | eval p.2 (Q p.1) ≠ 0} := by
     have h_generalized_tube : {x₀} ×ˢ K ⊆ {p : ℝ × ℝ | eval p.2 (Q p.1) ≠ 0} := by
       simp +zetaDelta at *
-      simp +contextual [Set.subset_def,
-        mem_realRootFinset (show Q x₀ ≠ 0 from Polynomial.Monic.ne_zero (hmonic x₀))]
-      exact fun a b ha hb₁ hb₂ hb₃ hb₄ ↦ not_lt_of_ge (hb₃ b hb₄) (by simpa [hb₄] using hε)
+      simp +contextual [Set.subset_def, mem_realRootFinset (hmonic x₀).ne_zero]
+      intro a b ha hb₁ hb₂ hb₃ hb₄
+      exact not_lt_of_ge (hb₃ b hb₄) (by simpa [hb₄] using hε)
     have := @generalized_tube_lemma
     specialize this (isCompact_singleton : IsCompact { x₀ }) hK_compact
       (show IsOpen { p : ℝ × ℝ | eval p.2 (Q p.1) ≠ 0 } from
@@ -301,25 +301,24 @@ lemma local_root_cover
       (∀ x ∈ s, ∀ y : ℝ, (Q x).eval y = 0 → ∃ i, φ i x = y) := by
   -- Set `S := realRootFinset Q x₀`, the finite set of real roots of `Q x₀`.
   set S := realRootFinset Q x₀ with hS_def
-  have S_card : S.card = (realRootFinset Q x₀).card := by
-    rfl
   obtain ⟨y, hy⟩ : ∃ y : Fin (S.card) → ℝ, StrictMono y ∧ S = Finset.image y Finset.univ := by
     use fun i ↦ S.orderEmbOfFin rfl i
     simp [StrictMono]
+  have hroots : ∀ i, (Q x₀).eval (y i) = 0 := by
+    intro i
+    have hmem : y i ∈ S := hy.2.symm ▸ Finset.mem_image_of_mem y (Finset.mem_univ i)
+    rw [hS_def] at hmem
+    exact (mem_realRootFinset (hmonic x₀).ne_zero).1 hmem
   -- For each `i`, apply `local_branch_of_simple` to get `φ i : ℝ → ℝ` with `φ i x₀ = y i`, `ContDiffAt ℝ ⊤ (φ i) x₀`, and `(Q x).eval (φ i x) = 0` for `x` near `x₀`.
   obtain ⟨φ, hφ⟩ : ∃ φ : Fin (S.card) → ℝ → ℝ,
       (∀ i, φ i x₀ = y i) ∧ (∀ i, ContDiffAt ℝ ⊤ (φ i) x₀) ∧ (∀ i, ∀ᶠ x in nhds x₀, (Q x).eval (φ i x) = 0) := by
     have h_local_branch : ∀ i, ∃ φ : ℝ → ℝ,
         φ x₀ = y i ∧ ContDiffAt ℝ ⊤ φ x₀ ∧ ∀ᶠ x in nhds x₀, (Q x).eval (φ x) = 0 := by
       intro i
-      have h_root : (Q x₀).eval (y i) = 0 := by
-        exact mem_realRootFinset (hmonic x₀).ne_zero |>.1
-          (hy.2.symm ▸ Finset.mem_image_of_mem _ (Finset.mem_univ _)) |> fun h ↦ by simpa using h
-      apply local_branch_of_simple hsmooth x₀ (y i) h_root (eval_derivative_ne_zero_of_separable (hsep x₀ hx₀) h_root)
-    exact ⟨fun i ↦ Classical.choose (h_local_branch i),
-      fun i ↦ Classical.choose_spec (h_local_branch i) |>.1,
-      fun i ↦ Classical.choose_spec (h_local_branch i) |>.2.1,
-      fun i ↦ Classical.choose_spec (h_local_branch i) |>.2.2⟩
+      apply local_branch_of_simple hsmooth x₀ (y i) (hroots i)
+        (eval_derivative_ne_zero_of_separable (hsep x₀ hx₀) (hroots i))
+    choose φ h1 h2 h3 using h_local_branch
+    exact ⟨φ, h1, h2, h3⟩
   -- Apply `local_unique_of_simple` to get `u i ∈ 𝓝 x₀`, `v i ∈ 𝓝 (y i)`.
   obtain ⟨u, v, hu, hv, huv⟩ : ∃ u : Fin (S.card) → Set ℝ, ∃ v : Fin (S.card) → Set ℝ,
       (∀ i, u i ∈ nhds x₀) ∧ (∀ i, v i ∈ nhds (y i)) ∧
@@ -327,14 +326,10 @@ lemma local_root_cover
     have h_unique : ∀ i, ∃ u v : Set ℝ, u ∈ nhds x₀ ∧ v ∈ nhds (y i) ∧
         ∀ x ∈ u, ∀ y₁ ∈ v, ∀ y₂ ∈ v, (Q x).eval y₁ = 0 → (Q x).eval y₂ = 0 → y₁ = y₂ := by
       intro i
-      apply local_unique_of_simple hsmooth x₀ (y i) (eval_derivative_ne_zero_of_separable (hsep x₀ hx₀) (by
-      exact mem_realRootFinset (hmonic x₀).ne_zero |>.1
-        (hy.2.symm ▸ Finset.mem_image_of_mem _ (Finset.mem_univ _)) |> fun h ↦ by simpa using h))
-    exact ⟨fun i ↦ Classical.choose (h_unique i),
-      fun i ↦ Classical.choose_spec (h_unique i) |> Classical.choose,
-      fun i ↦ Classical.choose_spec (h_unique i) |> Classical.choose_spec |> And.left,
-      fun i ↦ Classical.choose_spec (h_unique i) |> Classical.choose_spec |> And.right |> And.left,
-      fun i ↦ Classical.choose_spec (h_unique i) |> Classical.choose_spec |> And.right |> And.right⟩
+      apply local_unique_of_simple hsmooth x₀ (y i)
+        (eval_derivative_ne_zero_of_separable (hsep x₀ hx₀) (hroots i))
+    choose u v hu hv huv using h_unique
+    exact ⟨u, v, hu, hv, huv⟩
   -- Choose `ε > 0` small enough that: (i) for `i ≠ i'`, `2 * ε ≤ |y i - y i'|` (possible since `y` is injective and there are finitely many pairs, so the pairwise distances have a positive minimum; if `m ≤ 1` this is vacuous); and (ii) for every `i`, `Metric.ball (y i) ε ⊆ v i` (possible since each `v i ∈ 𝓝 (y i)`).
   obtain ⟨ε, hε_pos, hε⟩ : ∃ ε > 0, (∀ i j, i ≠ j → 2 * ε ≤ |y i - y j|) ∧ (∀ i, Metric.ball (y i) ε ⊆ v i) := by
     -- Choose `ε > 0` small enough that for `i ≠ i'`, `2 * ε ≤ |y i - y i'|`.
@@ -342,7 +337,7 @@ lemma local_root_cover
       by_cases h_empty : Finset.card (Finset.image
           (fun p : Fin S.card × Fin S.card ↦ |y p.1 - y p.2|)
           (Finset.filter (fun p ↦ p.1 ≠ p.2) (Finset.univ : Finset (Fin S.card × Fin S.card)))) = 0
-      · simp +zetaDelta at *
+      · simp at *
         exact ⟨1, zero_lt_one, fun i j hij ↦ False.elim <| hij <| h_empty i j⟩
       · obtain ⟨ε₁, hε₁⟩ :
             ∃ ε₁ ∈ Finset.image (fun p : Fin S.card × Fin S.card ↦ |y p.1 - y p.2|)
@@ -351,7 +346,7 @@ lemma local_root_cover
                 (Finset.filter (fun p ↦ p.1 ≠ p.2) (Finset.univ : Finset (Fin S.card × Fin S.card))), ε₁ ≤ ε := by
           exact ⟨Finset.min' _ <| Finset.card_pos.mp <| Nat.pos_of_ne_zero h_empty,
             Finset.min'_mem _ _, fun ε hε ↦ Finset.min'_le _ _ hε⟩
-        simp +zetaDelta at *
+        simp at *
         refine ⟨ε₁ / 2, half_pos ?_, fun i j hij ↦ by linarith [hε₁.2 _ i j hij rfl]⟩
         obtain ⟨a, b, hab, rfl⟩ := hε₁.1
         exact abs_pos.mpr (sub_ne_zero.mpr <| hy.1.injective.ne hab)
@@ -375,26 +370,26 @@ lemma local_root_cover
   obtain ⟨uε, huε⟩ :
       ∃ uε ∈ nhds x₀, ∀ x ∈ uε, ∀ y : ℝ, (Q x).eval y = 0 → ∃ y₀ : ℝ, (Q x₀).eval y₀ = 0 ∧ |y - y₀| < ε := by
     by_cases hd : 1 ≤ d <;> simp_all [realRootFinset]
-    · exact roots_near_roots (Q := Q) d hd hmonic hdeg hsmooth x₀ hε_pos |>
-        fun ⟨u, hu₁, hu₂⟩ ↦ ⟨u, hu₁, fun x hx y hy ↦ by simpa using hu₂ x hx y hy⟩
+    · obtain ⟨u, hu₁, hu₂⟩ := roots_near_roots (Q := Q) d hd hmonic hdeg hsmooth x₀ hε_pos
+      exact ⟨u, hu₁, fun x hx y hy ↦ by simpa using hu₂ x hx y hy⟩
     · exact ⟨Set.univ, Filter.univ_mem⟩
   -- Now pick `δ > 0` (a ball `Metric.ball x₀ δ`) inside the intersection of the following neighborhoods of `x₀`: each `u i`; `uε`; a ball on which each `φ i` is `ContDiffOn ℝ ⊤` (from `ContDiffAt`); a ball on which each `(Q x).eval (φ i x) = 0` (from the eventual root property); and a ball on which each `φ i x ∈ Metric.ball (y i) ε` (from continuity of `φ i` at `x₀`, since `φ i x₀ = y i` and the ball is a neighborhood of `y i`).
   obtain ⟨δ, hδ_pos, hδ⟩ : ∃ δ > 0, Metric.ball x₀ δ ⊆ uε ∧ (∀ i, Metric.ball x₀ δ ⊆ u i) ∧
       (∀ i, ∀ x ∈ Metric.ball x₀ δ, (Q x).eval (φ i x) = 0) ∧
       (∀ i, ∀ x ∈ Metric.ball x₀ δ, φ i x ∈ Metric.ball (y i) ε) ∧
       (∀ i, ContDiffOn ℝ ⊤ (φ i) (Metric.ball x₀ δ)) := by
-    have hδ : ∀ i, ∃ δi > 0, Metric.ball x₀ δi ⊆ u i ∧ (∀ x ∈ Metric.ball x₀ δi, (Q x).eval (φ i x) = 0) ∧
+    have hδ_all : ∀ i, ∃ δi > 0, Metric.ball x₀ δi ⊆ u i ∧ (∀ x ∈ Metric.ball x₀ δi, (Q x).eval (φ i x) = 0) ∧
         (∀ x ∈ Metric.ball x₀ δi, φ i x ∈ Metric.ball (y i) ε) ∧ ContDiffOn ℝ ⊤ (φ i) (Metric.ball x₀ δi) := by
       intro i
       obtain ⟨δi, hδi_pos, hδi⟩ : ∃ δi > 0, Metric.ball x₀ δi ⊆ u i ∧
           (∀ x ∈ Metric.ball x₀ δi, (Q x).eval (φ i x) = 0) ∧
           (∀ x ∈ Metric.ball x₀ δi, φ i x ∈ Metric.ball (y i) ε) := by
-        have hδi : ∀ᶠ x in nhds x₀, (Q x).eval (φ i x) = 0 ∧ φ i x ∈ Metric.ball (y i) ε := by
-          exact Filter.Eventually.and (hφ.2.2 i)
+        have hev : ∀ᶠ x in nhds x₀, (Q x).eval (φ i x) = 0 ∧ φ i x ∈ Metric.ball (y i) ε :=
+          Filter.Eventually.and (hφ.2.2 i)
             (by simpa [hφ.1 i] using
-                hφ.2.1 i |> ContDiffAt.continuousAt |> fun h ↦ h.eventually (Metric.ball_mem_nhds _ hε_pos))
+                (hφ.2.1 i).continuousAt.eventually (Metric.ball_mem_nhds _ hε_pos))
         rcases Metric.mem_nhds_iff.mp (hu i) with ⟨δ₁, hδ₁_pos, hδ₁⟩
-        rcases Metric.mem_nhds_iff.mp hδi with ⟨δ₂, hδ₂_pos, hδ₂⟩
+        rcases Metric.mem_nhds_iff.mp hev with ⟨δ₂, hδ₂_pos, hδ₂⟩
         exact ⟨Min.min δ₁ δ₂, lt_min hδ₁_pos hδ₂_pos,
           fun x hx ↦ hδ₁ <| Metric.mem_ball.mpr <| lt_of_lt_of_le hx <| min_le_left _ _,
           fun x hx ↦ hδ₂ (Metric.mem_ball.mpr <| lt_of_lt_of_le hx <| min_le_right _ _) |>.1,
@@ -403,13 +398,13 @@ lemma local_root_cover
         have := hφ.2.1 i
         have := this.eventually (by norm_num)
         simp_all [Metric.eventually_nhds_iff]
-        exact ⟨this.choose, this.choose_spec.1, fun x hx ↦ this.choose_spec.2 hx |> ContDiffAt.contDiffWithinAt⟩
+        exact ⟨this.choose, this.choose_spec.1, fun x hx ↦ (this.choose_spec.2 hx).contDiffWithinAt⟩
       exact ⟨Min.min δi δi', lt_min hδi_pos hδi'_pos,
         Set.Subset.trans (Metric.ball_subset_ball (min_le_left _ _)) hδi.1,
         fun x hx ↦ hδi.2.1 x (Metric.ball_subset_ball (min_le_left _ _) hx),
         fun x hx ↦ hδi.2.2 x (Metric.ball_subset_ball (min_le_left _ _) hx),
         hδi'.mono (Metric.ball_subset_ball (min_le_right _ _))⟩
-    choose δ hδ_pos hδ using hδ
+    choose δ hδ_pos hδ using hδ_all
     obtain ⟨δ', hδ'_pos, hδ'⟩ : ∃ δ' > 0, Metric.ball x₀ δ' ⊆ uε ∧ ∀ i, δ' ≤ δ i := by
       rcases Metric.mem_nhds_iff.mp huε.1 with ⟨δ', hδ'_pos, hδ'⟩
       by_cases hS_card : S.card = 0
@@ -439,12 +434,9 @@ lemma local_root_cover
       have := hε.1 i j
       contrapose! this
       simp_all [dist_eq_norm]
-      exact abs_lt.mpr
-        ⟨by linarith [abs_lt.mp (hδ.2.2.2.1 i x hx₂), abs_lt.mp (hδ.2.2.2.1 j x hx₂)],
-          by linarith [abs_lt.mp (hδ.2.2.2.1 i x hx₂), abs_lt.mp (hδ.2.2.2.1 j x hx₂)]⟩
+      refine abs_lt.mpr ⟨?_, ?_⟩ <;>
+        linarith [abs_lt.mp (hδ.2.2.2.1 i x hx₂), abs_lt.mp (hδ.2.2.2.1 j x hx₂)]
     · intro x hx₁ hx₂ y hy
-      specialize huε
-      specialize hδ
       have := huε.2 x (hδ.1 hx₂) y hy
       obtain ⟨y₀, hy₀₁, hy₀₂⟩ := this
       simp_all [Finset.ext_iff]
@@ -453,10 +445,9 @@ lemma local_root_cover
         exact hS_def y₀ |>.2
           (Multiset.mem_toFinset.mpr <| Polynomial.mem_roots (hmonic x₀).ne_zero |>.2 hy₀₁) |>
           fun ⟨i, hi⟩ ↦ ⟨i, hi.symm⟩
-      specialize huv i x (hδ.2.1 i hx₂) y (by
-        exact hε.2 i <| by simpa [hi] using hy₀₂) (φ i x) (by
-        exact hε.2 i (hδ.2.2.2.1 i x hx₂)) hy (hδ.2.2.1 i x hx₂)
-      aesop (simp_config := { singlePass := true })
+      specialize huv i x (hδ.2.1 i hx₂) y (hε.2 i <| by simpa [hi] using hy₀₂)
+        (φ i x) (hε.2 i (hδ.2.2.2.1 i x hx₂)) hy (hδ.2.2.1 i x hx₂)
+      aesop
 
 /-
 **The number of distinct real roots is locally constant on the separable tail.**
@@ -498,8 +489,8 @@ lemma nRealRoots_const
     exact tendsto_nhds_of_eventually_eq (nRealRoots_eventuallyConst T₀ d hmonic hdeg hsmooth hsep hx)
   intro x hx
   have h_const : IsPreconnected (Set.Ici T₀) := isPreconnected_Ici
-  exact h_const.image _ h_cont |>
-    fun h ↦ h.subsingleton (Set.mem_image_of_mem _ hx) (Set.mem_image_of_mem _ (Set.self_mem_Ici))
+  exact (h_const.image _ h_cont).subsingleton (Set.mem_image_of_mem _ hx)
+    (Set.mem_image_of_mem _ Set.self_mem_Ici)
 
 set_option maxHeartbeats 1000000 in
 /-- **Classical construction of the smooth real root branches.**
@@ -526,8 +517,8 @@ theorem smooth_separable_family_root_branches
       (∀ x, T₀ ≤ x → Function.Injective (fun j ↦ g j x)) := by
   -- Let `n := nRealRoots Q T₀`. For every `x ≥ T₀`, `(realRootFinset Q x).card = n` by `nRealRoots_const`.
   set n := nRealRoots Q T₀ with hn
-  have h_card : ∀ x, T₀ ≤ x → (realRootFinset Q x).card = n := by
-    exact nRealRoots_const T₀ d hmonic hdeg hsmooth hsep
+  have h_card : ∀ x, T₀ ≤ x → (realRootFinset Q x).card = n :=
+    nRealRoots_const T₀ d hmonic hdeg hsmooth hsep
   -- Define, for `j : Fin n`, `g j x := if h : (realRootFinset Q x).card = n then (realRootFinset Q x).orderEmbOfFin h j else 0`.
   let g := fun j : Fin n ↦ fun x ↦
     if h : (realRootFinset Q x).card = n then (realRootFinset Q x).orderEmbOfFin h j else 0
@@ -536,37 +527,37 @@ theorem smooth_separable_family_root_branches
     obtain ⟨m, φ, s, hs₁, hs₂, hs₃, hs₄, hs₅, hs₆, hs₇⟩ := local_root_cover T₀ d hmonic hdeg hsmooth hsep hx₀
     -- Since `m = n`, we can rewrite the goal in terms of `n`.
     have hm_eq_n : m = n := by
-      have hm_eq_n : ∀ x ∈ s, (realRootFinset Q x).card = m := by
+      have hcard_s : ∀ x ∈ s, (realRootFinset Q x).card = m := by
         intro x hx
         have h_card_eq : (realRootFinset Q x).card = Finset.card (Finset.image (fun i ↦ φ i x) Finset.univ) := by
           congr with y
           simp [mem_realRootFinset (hmonic x).ne_zero]
           exact ⟨fun hy ↦ hs₇ x hx y hy, fun ⟨i, hi⟩ ↦ hi ▸ hs₅ i x hx⟩
         rw [h_card_eq, Finset.card_image_of_injective _ (hs₆ x hx), Finset.card_fin]
-      rw [← hm_eq_n x₀ hs₂, h_card x₀ hx₀]
+      rw [← hcard_s x₀ hs₂, h_card x₀ hx₀]
     -- Choose a permutation `σ : Equiv.Perm (Fin n)` sorting the values at `x₀`.
     obtain ⟨σ, hσ⟩ : ∃ σ : Equiv.Perm (Fin n), StrictMono (fun j ↦ φ (Fin.cast hm_eq_n.symm (σ j)) x₀) := by
       have h_order : ∃ σ : Fin n → Fin n, StrictMono (fun j ↦ φ (Fin.cast hm_eq_n.symm (σ j)) x₀) := by
-        have h_distinct : ∀ i j : Fin n, i ≠ j → φ (Fin.cast hm_eq_n.symm i) x₀ ≠ φ (Fin.cast hm_eq_n.symm j) x₀ := by
-          exact fun i j hij ↦ fun h ↦ hij <| Fin.ext <| by
+        have h_distinct : ∀ i j : Fin n, i ≠ j → φ (Fin.cast hm_eq_n.symm i) x₀ ≠ φ (Fin.cast hm_eq_n.symm j) x₀ :=
+          fun i j hij ↦ fun h ↦ hij <| Fin.ext <| by
             have := hs₆ x₀ hs₂
             have := @this (Fin.cast hm_eq_n.symm i) (Fin.cast hm_eq_n.symm j)
             aesop
-        have h_order : ∃ σ : Fin n → ℝ, StrictMono σ ∧
+        have h_sorted : ∃ σ : Fin n → ℝ, StrictMono σ ∧
             ∀ i, σ i ∈ Finset.image (fun i : Fin n ↦ φ (Fin.cast hm_eq_n.symm i) x₀) Finset.univ := by
-          have h_order :
+          have h_card_n :
               Finset.card (Finset.image (fun i : Fin n ↦ φ (Fin.cast hm_eq_n.symm i) x₀) Finset.univ) = n := by
             rw [Finset.card_image_of_injective _ fun i j hij ↦ not_imp_not.mp (h_distinct i j) hij,
               Finset.card_fin]
           exact ⟨fun i ↦ Finset.orderEmbOfFin _ (by aesop) i, by aesop_cat,
             fun i ↦ Finset.orderEmbOfFin_mem _ (by aesop) _⟩
-        obtain ⟨σ, hσ₁, hσ₂⟩ := h_order
+        obtain ⟨σ, hσ₁, hσ₂⟩ := h_sorted
         choose f hf using fun i ↦ Finset.mem_image.mp (hσ₂ i)
         use f
         exact fun i j hij ↦ by simpa [hf i, hf j] using hσ₁ hij
       obtain ⟨σ, hσ⟩ := h_order
-      have h_inj : Function.Injective σ := by
-        exact fun i j hij ↦ hσ.injective <| by simp [hij] 
+      have h_inj : Function.Injective σ :=
+        fun i j hij ↦ hσ.injective <| by simp [hij]
       exact ⟨Equiv.ofBijective σ ⟨h_inj, Finite.injective_iff_surjective.mp h_inj⟩, hσ⟩
     -- For all `x ∈ s`, `fun j ↦ φ (σ j) x` is `StrictMono`.
     have h_strict_mono : ∀ x ∈ s, StrictMono (fun j ↦ φ (Fin.cast hm_eq_n.symm (σ j)) x) := by
@@ -577,15 +568,12 @@ theorem smooth_separable_family_root_branches
         intro y hy
         cases Set.mem_uIcc.mp hy <;> [exact hs₃.ordConnected.out hs₂ hx ‹_› ; exact hs₃.ordConnected.out hx hs₂ ‹_›]
       have h_ivt : ∃ c ∈ Set.uIcc x₀ x, φ (Fin.cast hm_eq_n.symm (σ j)) c - φ (Fin.cast hm_eq_n.symm (σ k)) c = 0 := by
-        have h_ivt : ContinuousOn
-            (fun x ↦ φ (Fin.cast hm_eq_n.symm (σ j)) x - φ (Fin.cast hm_eq_n.symm (σ k)) x) (Set.uIcc x₀ x) := by
-          exact ContinuousOn.sub ((hs₄ _).continuousOn.mono hsub) ((hs₄ _).continuousOn.mono hsub)
-        have := h_ivt.image_uIcc
-        refine this.symm.subset (Set.mem_Icc.mpr ⟨?_, ?_⟩)
-        · nlinarith [hσ hjk,
-            Set.mem_Icc.mp (this ▸ Set.mem_image_of_mem _ (Set.left_mem_uIcc)),
-            Set.mem_Icc.mp (this ▸ Set.mem_image_of_mem _ (Set.right_mem_uIcc))]
-        · nlinarith [hσ hjk,
+        have h_cont_ivt : ContinuousOn
+            (fun x ↦ φ (Fin.cast hm_eq_n.symm (σ j)) x - φ (Fin.cast hm_eq_n.symm (σ k)) x) (Set.uIcc x₀ x) :=
+          ContinuousOn.sub ((hs₄ _).continuousOn.mono hsub) ((hs₄ _).continuousOn.mono hsub)
+        have := h_cont_ivt.image_uIcc
+        refine this.symm.subset (Set.mem_Icc.mpr ⟨?_, ?_⟩) <;>
+          nlinarith [hσ hjk,
             Set.mem_Icc.mp (this ▸ Set.mem_image_of_mem _ (Set.left_mem_uIcc)),
             Set.mem_Icc.mp (this ▸ Set.mem_image_of_mem _ (Set.right_mem_uIcc))]
       obtain ⟨c, hc₁, hc₂⟩ := h_ivt
@@ -595,12 +583,12 @@ theorem smooth_separable_family_root_branches
     have h_eq : ∀ x ∈ s, T₀ ≤ x → g j x = φ (Fin.cast hm_eq_n.symm (σ j)) x := by
       intros x hx hxT₀
       simp [g, h_card x hxT₀]
-      have h_eq : ∀ j : Fin n, φ (Fin.cast hm_eq_n.symm (σ j)) x ∈ realRootFinset Q x := by
-        exact fun j ↦ mem_realRootFinset (hmonic x).ne_zero |>.2 (hs₅ _ _ hx)
-      have h_eq : ∀ j : Fin n,
+      have h_mem : ∀ j : Fin n, φ (Fin.cast hm_eq_n.symm (σ j)) x ∈ realRootFinset Q x :=
+        fun j ↦ mem_realRootFinset (hmonic x).ne_zero |>.2 (hs₅ _ _ hx)
+      have h_eq_emb : ∀ j : Fin n,
           φ (Fin.cast hm_eq_n.symm (σ j)) x = (realRootFinset Q x).orderEmbOfFin (h_card x hxT₀) j := by
         apply_rules [Finset.orderEmbOfFin_unique]
-      rw [h_eq]
+      rw [h_eq_emb]
     apply ContDiffWithinAt.congr_of_eventuallyEq (f := fun x ↦ φ (Fin.cast hm_eq_n.symm (σ j)) x)
     · exact ContDiffWithinAt.mono_of_mem_nhdsWithin ((hs₄ _).contDiffWithinAt (by aesop)) hs₁
     · filter_upwards [hs₁, self_mem_nhdsWithin] with x hx₁ hx₂ using h_eq x hx₁ hx₂

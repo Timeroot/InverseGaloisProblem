@@ -56,19 +56,20 @@ lemma sexticResolvent_d5_root : (sexticResolvent (-5 : ℚ) 12).IsRoot 25 := by
 This packages the discriminant data shared by the order and non-cyclicity arguments. -/
 private lemma exists_gal_d5_embeds_alternating :
     ∃ g : f_d5.Gal →* alternatingGroup (Fin 5), Function.Injective g := by
-  exact exists_gal_embeds_alternating f_d5 f_d5_ne_zero rootEnum_d5
-    ⟨8000, by
-      simp only [discSq, discElem]
-      rw [disc_value_d5 rootEnum_d5, map_pow]⟩
-    (disc_elem_ne_zero_d5 rootEnum_d5)
+  refine exists_gal_embeds_alternating f_d5 f_d5_ne_zero rootEnum_d5
+    ⟨8000, ?_⟩ (disc_elem_ne_zero_d5 rootEnum_d5)
+  simp only [discSq, discElem]
+  rw [disc_value_d5 rootEnum_d5, map_pow]
 
 /-- The Galois group of `X⁵ - 5X + 12` does not have order 120.
 This consequence belongs here with the alternating-group embedding rather than among the
 polynomial and root computations in `D5Helpers`. -/
 theorem card_gal_d5_ne_120 : Nat.card f_d5.Gal ≠ 120 := by
   obtain ⟨g, hg⟩ := exists_gal_d5_embeds_alternating
-  exact ne_of_lt <| lt_of_le_of_lt (by simpa using Fintype.card_le_of_injective _ hg)
-    (by decide)
+  have hle : Nat.card f_d5.Gal ≤ Fintype.card (alternatingGroup (Fin 5)) := by
+    simpa using Fintype.card_le_of_injective _ hg
+  have hlt : Fintype.card (alternatingGroup (Fin 5)) < 120 := by decide
+  exact ne_of_lt (lt_of_le_of_lt hle hlt)
 
 /-- The Galois group of `X⁵ − 5X + 12` has order 10.
 
@@ -94,7 +95,8 @@ lemma card_gal_d5 : Nat.card f_d5.Gal = 10 := by
   have hle : Nat.card f_d5.Gal ≤ 20 := Nat.le_of_dvd (by norm_num) hdvd20
   have hne20 : Nat.card f_d5.Gal ≠ 20 := by
     intro h20
-    exact A5_no_subgroup_order_20 g'.range (by rw [← hrange, h20])
+    apply A5_no_subgroup_order_20 g'.range
+    rw [← hrange, h20]
   omega
 
 /-- The Galois group of `X⁵ − 5X + 12` is isomorphic to `D₅`.
@@ -108,7 +110,8 @@ lemma gal_iso_d5 : Nonempty (f_d5.Gal ≃* DihedralGroup 5) := by
   intro hcyc
   obtain ⟨x, hx⟩ : ∃ x : f_d5.Gal, orderOf x = 10 := by
     obtain ⟨g, hg⟩ := hcyc.exists_generator
-    exact ⟨g, by rw [orderOf_eq_card_of_forall_mem_zpowers hg, card_gal_d5]⟩
+    use g
+    rw [orderOf_eq_card_of_forall_mem_zpowers hg, card_gal_d5]
   have hord : orderOf (g' x) = 10 := by rw [orderOf_injective g' hg' x, hx]
   apply perm_fin5_no_order_ten ((alternatingGroup (Fin 5)).subtype (g' x))
   rw [orderOf_injective (alternatingGroup (Fin 5)).subtype Subtype.coe_injective (g' x), hord]

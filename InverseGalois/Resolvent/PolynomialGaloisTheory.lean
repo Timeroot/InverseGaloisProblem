@@ -157,50 +157,12 @@ theorem gal_le_alternating_of_disc_sq
     obtain ⟨d, hd⟩ := h_sq
     have h_sign_eq := gal_map_discElem f v σ π hπ
     convert h_sign_eq.symm using 1
-    · exact discElem_perm (fun i => (v i : f.SplittingField)) π |> Eq.symm
+    · exact (discElem_perm (fun i => (v i : f.SplittingField)) π).symm
     · rw [gal_fixes_discElem f v σ d]
       exact eq_or_eq_neg_of_sq_eq_sq _ _ hd
   cases' Int.units_eq_one_or (Equiv.Perm.sign π) with h h <;> simp_all
   · exact ⟨π, fun i => rfl, h⟩
   · grind +ring
-
-/-
-**Corollary.** Under the hypotheses of `gal_le_alternating_of_disc_sq`,
-the order of the Galois group divides `n! / 2`.
--/
-theorem card_gal_dvd_half_factorial_of_disc_sq
-    {n : ℕ} (f : K[X])
-    (hf_ne : f ≠ 0)
-    (v : Fin n ≃ f.rootSet f.SplittingField)
-    (h_sq : ∃ d : K, discSq (fun i => (v i : f.SplittingField)) =
-      (algebraMap K f.SplittingField d) ^ 2)
-    (h_ne : discElem (fun i => (v i : f.SplittingField)) ≠ 0) :
-    Nat.card f.Gal ∣ n.factorial / 2 := by
-  revert n f hf_ne v h_sq h_ne
-  intro n f hf_ne v h_sq h_ne
-  have h_gal_le_alt : (Nat.card f.Gal) ∣ (Fintype.card (alternatingGroup (Fin n))) := by
-    obtain ⟨g, hg⟩ : ∃ g : f.Gal →* Equiv.Perm (Fin n),
-        Function.Injective g ∧ ∀ σ : f.Gal, Equiv.Perm.sign (g σ) = 1 := by
-      have := gal_le_alternating_of_disc_sq f hf_ne v h_sq h_ne
-      choose g hg₁ hg₂ using this
-      refine ⟨MonoidHom.mk' g ?_, ?_, hg₂⟩
-      all_goals norm_num [Function.Injective, Equiv.Perm.ext_iff]
-      · intro σ τ i
-        have h_eq : σ (τ (v i : f.SplittingField)) = v (g (σ * τ) i) := hg₁ (σ * τ) i
-        exact v.injective (Subtype.ext <| by aesop)
-      · intro σ τ h_eq
-        ext x
-        obtain ⟨i, hi⟩ := v.surjective ⟨x, by assumption⟩
-        grind
-    have h_gal_le_alt : ∃ g' : f.Gal →* alternatingGroup (Fin n), Function.Injective g' := by
-      exact ⟨MonoidHom.codRestrict g _ fun σ => hg.2 σ, fun σ τ h => hg.1 <| by simpa using h⟩
-    obtain ⟨g', hg'⟩ := h_gal_le_alt
-    have := Subgroup.card_dvd_of_injective g' hg'
-    aesop
-  rcases n with (_ | _ | n) <;> simp_all
-  have := Subgroup.card_mul_index (alternatingGroup (Fin (n + 2)))
-  simp_all [Fintype.card_perm]
-  exact h_gal_le_alt.trans (Nat.dvd_div_of_mul_dvd (by exact ⟨1, by linarith⟩))
 
 /-- Under the hypotheses of `gal_le_alternating_of_disc_sq`, the Galois group
 embeds (injectively) into the alternating group `Aₙ`. -/
@@ -227,6 +189,28 @@ theorem exists_gal_embeds_alternating
       grind
   exact ⟨MonoidHom.codRestrict g _ fun σ => hg.2 σ, fun σ τ h => hg.1 <| by simpa using h⟩
 
+/-
+**Corollary.** Under the hypotheses of `gal_le_alternating_of_disc_sq`,
+the order of the Galois group divides `n! / 2`.
+-/
+theorem card_gal_dvd_half_factorial_of_disc_sq
+    {n : ℕ} (f : K[X])
+    (hf_ne : f ≠ 0)
+    (v : Fin n ≃ f.rootSet f.SplittingField)
+    (h_sq : ∃ d : K, discSq (fun i => (v i : f.SplittingField)) =
+      (algebraMap K f.SplittingField d) ^ 2)
+    (h_ne : discElem (fun i => (v i : f.SplittingField)) ≠ 0) :
+    Nat.card f.Gal ∣ n.factorial / 2 := by
+  have h_gal_le_alt : (Nat.card f.Gal) ∣ (Fintype.card (alternatingGroup (Fin n))) := by
+    obtain ⟨g', hg'⟩ := exists_gal_embeds_alternating f hf_ne v h_sq h_ne
+    have := Subgroup.card_dvd_of_injective g' hg'
+    aesop
+  rcases n with (_ | _ | n) <;> simp_all
+  have := Subgroup.card_mul_index (alternatingGroup (Fin (n + 2)))
+  simp_all [Fintype.card_perm]
+  refine h_gal_le_alt.trans (Nat.dvd_div_of_mul_dvd ⟨1, ?_⟩)
+  linarith
+
 end DiscriminantAlternating
 
 /-!
@@ -248,79 +232,77 @@ theorem two_dvd_card_gal_of_nonreal_root
     (z : ℂ) (hz_root : Polynomial.aeval z f = 0) (hz_nonreal : z.im ≠ 0) :
     2 ∣ Nat.card f.Gal := by
   -- Embed SplittingField f ↪ₐ[ℚ] ℂ via algebra homomorphism ι.
-  obtain ⟨ι, hι⟩ : ∃ ι : f.SplittingField →ₐ[ℚ] ℂ, True := by
-    exact ⟨IsAlgClosed.lift, trivial⟩
-  -- Let σ be the Galois automorphism induced by complex conjugation.
-  obtain ⟨σ, hσ⟩ : ∃ σ : f.Gal, ∀ x : f.SplittingField, ι (σ x) = starRingEnd ℂ (ι x) := by
-    obtain ⟨σ, hσ⟩ : ∃ σ : f.SplittingField →ₐ[ℚ] f.SplittingField,
-        ∀ x : f.SplittingField, ι (σ x) = starRingEnd ℂ (ι x) := by
-      have h_conj : ∀ x : f.SplittingField, starRingEnd ℂ (ι x) ∈ ι.range := by
-        intro x
-        have h_conj : ∀ y ∈ f.rootSet f.SplittingField, starRingEnd ℂ (ι y) ∈ ι.range := by
-          intro y hy
-          have h_conj_root : f.eval₂ (algebraMap ℚ ℂ) (starRingEnd ℂ (ι y)) = 0 := by
-            have h_conj_root : f.eval₂ (algebraMap ℚ ℂ) (ι y) = 0 := by
-              rw [Polynomial.mem_rootSet] at hy
-              simpa [Polynomial.aeval_def, Polynomial.eval₂_eq_sum_range] using congr_arg (fun x => ι x) hy.2
-            simpa [Polynomial.eval₂_eq_sum_range, Complex.ext_iff] using congr_arg Star.star h_conj_root
-          have h_conj_root : ∀ z : ℂ, f.eval₂ (algebraMap ℚ ℂ) z = 0 → z ∈ ι.range := by
-            have := Polynomial.SplittingField.splits f
-            rw [Polynomial.splits_iff_exists_multiset] at this
-            obtain ⟨m, hm⟩ := this
-            replace hm := congr_arg (Polynomial.map (ι : f.SplittingField →+* ℂ)) hm
-            simp_all [Polynomial.map_multiset_prod]
-            intro z hz
-            replace hm := congr_arg (Polynomial.eval z) hm
-            simp_all [Polynomial.eval_multiset_prod]
-            simp_all [Polynomial.map_map, aeval_def]
-            exact hm.elim (fun h => absurd h hf.ne_zero) fun ⟨a, ha, h⟩ => ⟨a, by linear_combination -h⟩
-          exact h_conj_root _ ‹_›
-        have h_conj : ∀ y ∈ Algebra.adjoin ℚ (f.rootSet f.SplittingField), starRingEnd ℂ (ι y) ∈ ι.range := by
-          intro y hy
-          refine Algebra.adjoin_induction ?_ ?_ ?_ ?_ hy
-          · exact h_conj
-          · exact fun r => ⟨r, by simp⟩
-          · simp at *
-            exact fun x y hx hy z hz w hw => ⟨z + w, by simp [hz, hw]⟩
-          · simp at *
-            exact fun x y hx hy z hz w hw => ⟨z * w, by simp [hz, hw]⟩
-        have h_conj : Algebra.adjoin ℚ (f.rootSet f.SplittingField) = ⊤ := by
-          grind only [SplittingField.adjoin_rootSet]
-        aesop
-      choose σ hσ using h_conj
-      refine ⟨{ toFun := σ, map_zero' := ?_, map_one' := ?_, map_add' := ?_,
-                  map_mul' := ?_, commutes' := ?_ }, hσ⟩ <;> simp_all
-      · exact ι.injective (by aesop)
-      · intro x y
-        exact ι.injective (by aesop)
-      · exact ι.injective (by aesop)
-      · intro x y
-        exact ι.injective (by aesop)
-      · intro r
-        have := hσ r
-        simp_all [Complex.ext_iff]
-        exact ι.injective (by simpa [Complex.ext_iff] using hσ r)
-    have hσ_bijective : Function.Bijective σ := by
-      exact σ.bijective
-    exact ⟨AlgEquiv.ofBijective σ hσ_bijective, hσ⟩
+  have ι : f.SplittingField →ₐ[ℚ] ℂ := IsAlgClosed.lift
+  -- Every complex root of `f` lies in the image of `ι` (since `f` splits there).
+  have h_range : ∀ w : ℂ, f.eval₂ (algebraMap ℚ ℂ) w = 0 → w ∈ ι.range := by
+    have := Polynomial.SplittingField.splits f
+    rw [Polynomial.splits_iff_exists_multiset] at this
+    obtain ⟨m, hm⟩ := this
+    replace hm := congr_arg (Polynomial.map (ι : f.SplittingField →+* ℂ)) hm
+    simp_all [Polynomial.map_multiset_prod]
+    intro w hw
+    replace hm := congr_arg (Polynomial.eval w) hm
+    simp_all [Polynomial.eval_multiset_prod]
+    simp_all [Polynomial.map_map, aeval_def]
+    exact hm.elim (fun h => absurd h hf.ne_zero) fun ⟨a, ha, h⟩ => ⟨a, by linear_combination -h⟩
+  -- Build conjugation first as an algebra endomorphism of the splitting field, then promote
+  -- it to a Galois automorphism.
+  obtain ⟨σ₀, hσ₀⟩ : ∃ σ : f.SplittingField →ₐ[ℚ] f.SplittingField,
+      ∀ x : f.SplittingField, ι (σ x) = starRingEnd ℂ (ι x) := by
+    have h_conj : ∀ x : f.SplittingField, starRingEnd ℂ (ι x) ∈ ι.range := by
+      intro x
+      have h_roots : ∀ y ∈ f.rootSet f.SplittingField, starRingEnd ℂ (ι y) ∈ ι.range := by
+        intro y hy
+        have h_root : f.eval₂ (algebraMap ℚ ℂ) (ι y) = 0 := by
+          rw [Polynomial.mem_rootSet] at hy
+          simpa [Polynomial.aeval_def, Polynomial.eval₂_eq_sum_range] using congr_arg (fun x => ι x) hy.2
+        refine h_range _ ?_
+        simpa [Polynomial.eval₂_eq_sum_range, Complex.ext_iff] using congr_arg Star.star h_root
+      have h_adjoin : ∀ y ∈ Algebra.adjoin ℚ (f.rootSet f.SplittingField),
+          starRingEnd ℂ (ι y) ∈ ι.range := by
+        intro y hy
+        refine Algebra.adjoin_induction ?_ ?_ ?_ ?_ hy
+        · exact h_roots
+        · exact fun r => ⟨r, by simp⟩
+        · simp at *
+          exact fun x y hx hy z hz w hw => ⟨z + w, by simp [hz, hw]⟩
+        · simp at *
+          exact fun x y hx hy z hz w hw => ⟨z * w, by simp [hz, hw]⟩
+      have h_top : Algebra.adjoin ℚ (f.rootSet f.SplittingField) = ⊤ := by
+        grind only [SplittingField.adjoin_rootSet]
+      aesop
+    choose σ hσ using h_conj
+    refine ⟨{ toFun := σ, map_zero' := ?_, map_one' := ?_, map_add' := ?_,
+                map_mul' := ?_, commutes' := ?_ }, hσ⟩ <;> simp_all
+    · apply ι.injective
+      aesop
+    · intro x y
+      apply ι.injective
+      aesop
+    · apply ι.injective
+      aesop
+    · intro x y
+      apply ι.injective
+      aesop
+    · intro r
+      have := hσ r
+      simp_all [Complex.ext_iff]
+      apply ι.injective
+      simpa [Complex.ext_iff] using hσ r
+  obtain ⟨σ, hσ⟩ : ∃ σ : f.Gal, ∀ x : f.SplittingField, ι (σ x) = starRingEnd ℂ (ι x) :=
+    ⟨AlgEquiv.ofBijective σ₀ σ₀.bijective, hσ₀⟩
   -- Since `z` is a root of `f` and `z ∉ ℝ`, we have `σ z ≠ z`.
   have hσ_ne_id : σ ≠ 1 := by
     -- Since `z` is a root of `f` and `z ∉ ℝ`, there exists `x ∈ SplittingField f` with `ι x = z`.
     obtain ⟨x, hx⟩ : ∃ x : f.SplittingField, ι x = z := by
-      have := Polynomial.SplittingField.splits f
-      rw [Polynomial.splits_iff_exists_multiset] at this
-      obtain ⟨m, hm⟩ := this
-      replace hm := congr_arg (Polynomial.map (ι : f.SplittingField →+* ℂ)) hm
-      simp_all [Polynomial.map_multiset_prod]
-      replace hm := congr_arg (Polynomial.eval z) hm
-      simp_all [Polynomial.eval_multiset_prod]
-      simp_all [Polynomial.aeval_def, Polynomial.eval_map]
-      simp_all [Polynomial.eval₂_eq_sum_range]
-      exact hm.elim (fun h => absurd h hf.ne_zero) fun ⟨x, hx₁, hx₂⟩ => ⟨x, sub_eq_zero.mp hx₂ ▸ rfl⟩
+      have hz : f.eval₂ (algebraMap ℚ ℂ) z = 0 := by
+        simpa [Polynomial.aeval_def] using hz_root
+      exact h_range z hz
     intro h
     specialize hσ x
     simp_all [Complex.ext_iff]
-    exact hz_nonreal (by linarith!)
+    apply hz_nonreal
+    linarith!
   -- Since σ is not the identity, its order must be 2.
   have hσ_order : orderOf σ = 2 := by
     refine orderOf_eq_prime ?_ ?_
@@ -443,21 +425,18 @@ lemma card_gal_le_20_of_resolvent_root_core
     (y₀ : K) (hy₀ : (sexticResolvent p q).IsRoot y₀) :
     Nat.card f.Gal ≤ 20 := by
   -- Denote the roots of `f` by `v`.
-  obtain ⟨v, hv⟩ : ∃ v : Fin 5 ≃ f.rootSet f.SplittingField, True := by
-    refine ⟨Fintype.equivOfCardEq ?_, trivial⟩
+  have v : Fin 5 ≃ f.rootSet f.SplittingField := Fintype.equivOfCardEq (by
     have h_card_roots : Fintype.card (f.rootSet f.SplittingField) = f.natDegree := by
-      have h_sep : Polynomial.Separable f := by
-        exact hf_irr.separable
-      grind only [Polynomial.card_rootSet_eq_natDegree, SplittingField.splits]
-    rw [h_card_roots, hf, Polynomial.natDegree_add_C, Polynomial.natDegree_add_eq_left_of_natDegree_lt] <;> aesop
+      grind only [Polynomial.card_rootSet_eq_natDegree, SplittingField.splits, Irreducible.separable]
+    rw [h_card_roots, hf, Polynomial.natDegree_add_C,
+      Polynomial.natDegree_add_eq_left_of_natDegree_lt] <;> aesop)
   obtain ⟨σ₀, hσ₀⟩ : ∃ σ₀ : Equiv.Perm (Fin 5),
       algebraMap K f.SplittingField y₀ = pentagonalSum (fun i => (v (σ₀ i) : f.SplittingField)) ^ 2 := by
     have := sexticResolvent_roots_are_pentagonalSums p q f hf v (algebraMap K f.SplittingField y₀) ?_ <;> aesop
   have h_image : ∀ τ : f.Gal, ∃ π : Equiv.Perm (Fin 5),
       (∀ i, τ (v i : f.SplittingField) = v (π i)) ∧ IsAffineLinearMod5 (σ₀⁻¹ * π * σ₀) := by
     intro τ
-    obtain ⟨π, hπ⟩ := gal_perm_roots f (by
-    exact hf_irr.ne_zero) v τ
+    obtain ⟨π, hπ⟩ := gal_perm_roots f hf_irr.ne_zero v τ
     use π
     have h_eq : pentagonalSum (fun i => (v (π (σ₀ i)) : f.SplittingField)) ^ 2 =
         pentagonalSum (fun i => (v (σ₀ i) : f.SplittingField)) ^ 2 := by
@@ -525,35 +504,28 @@ theorem card_gal_dvd_20_of_resolvent_root
   -- Step 3: |Gal| ≠ 60 and |Gal| ≠ 120 (from resolvent root)
   have ⟨hne60, hne120⟩ := gal_ne_60_120_of_resolvent_root p q hp f hf hf_irr y₀ hy₀
   -- Step 4: |Gal| is the order of a subgroup of S₅, so it can't be 15, 30, or 40
+  -- The Galois group injects (via `galActionHom`) as a subgroup of `Perm(rootSet f L)`, and
+  -- the roots are in bijection with `Fin 5`, so `Perm(rootSet f L) ≃* Perm(Fin 5)`.
+  have h_sub : ∃ H : Subgroup (Equiv.Perm (f.rootSet f.SplittingField)),
+      Nat.card H = Nat.card f.Gal := by
+    obtain ⟨σ, hσ⟩ : ∃ σ : f.Gal →* Equiv.Perm (f.rootSet f.SplittingField),
+        Function.Injective σ := by
+      have : Fact (Polynomial.map (algebraMap K f.SplittingField) f).Splits :=
+        ⟨Polynomial.SplittingField.splits f⟩
+      exact ⟨Polynomial.Gal.galActionHom f f.SplittingField,
+        Polynomial.Gal.galActionHom_injective f f.SplittingField⟩
+    exact ⟨σ.range, (Nat.card_congr (Equiv.ofInjective _ hσ)).symm⟩
+  have h_iso : Nonempty (Equiv.Perm (f.rootSet f.SplittingField) ≃* Equiv.Perm (Fin 5)) := by
+    refine ⟨?_⟩
+    refine' { Equiv.permCongr (Fintype.equivOfCardEq _) with .. }
+    all_goals norm_num [Equiv.Perm.ext_iff]
+    rw [← hf_deg, Polynomial.card_rootSet_eq_natDegree]
+    · exact hf_irr.separable
+    · exact Polynomial.SplittingField.splits _
   have hne15 : Nat.card f.Gal ≠ 15 := by
     intro h15
-    -- The Galois group injects into Perm(rootSet f L) ≅ Perm(Fin 5)
-    -- So there exists a subgroup of Perm(Fin 5) of order 15
-    -- But this contradicts Perm_Fin5_no_subgroup_order_15
-    -- By the properties of the Galois group, we know that the image of the Galois action on the roots is a subgroup of the symmetric group on the roots.
-    have h_image : ∃ (H : Subgroup (Equiv.Perm (f.rootSet f.SplittingField))), Nat.card H = Nat.card f.Gal := by
-      have h_image : ∃ (H : Subgroup (Equiv.Perm (f.rootSet f.SplittingField))), Nat.card H = Nat.card f.Gal := by
-        have h_hom : ∃ (σ : f.Gal →* Equiv.Perm (f.rootSet f.SplittingField)), Function.Injective σ := by
-          have : Fact (Polynomial.map (algebraMap K f.SplittingField) f).Splits :=
-            ⟨Polynomial.SplittingField.splits f⟩
-          exact ⟨Polynomial.Gal.galActionHom f f.SplittingField,
-            Polynomial.Gal.galActionHom_injective f f.SplittingField⟩
-        obtain ⟨σ, hσ⟩ := h_hom
-        use σ.range
-        have h_card : Nat.card (σ.range) = Nat.card f.Gal := by
-          exact Nat.card_congr (Equiv.ofInjective _ hσ) |> Eq.symm
-        exact h_card.symm ▸ rfl
-      exact h_image
-    -- Since the roots of f are in bijection with Fin 5, the symmetric group on the roots is isomorphic to the symmetric group on Fin 5.
-    have h_symm_iso : Nonempty (Equiv.Perm (f.rootSet f.SplittingField) ≃* Equiv.Perm (Fin 5)) := by
-      refine ⟨?_⟩
-      refine' { Equiv.permCongr (Fintype.equivOfCardEq _) with .. }
-      all_goals norm_num [Equiv.Perm.ext_iff]
-      rw [← hf_deg, Polynomial.card_rootSet_eq_natDegree]
-      · exact hf_irr.separable
-      · exact Polynomial.SplittingField.splits _
-    obtain ⟨H, hH⟩ := h_image
-    obtain ⟨iso⟩ := h_symm_iso
+    obtain ⟨H, hH⟩ := h_sub
+    obtain ⟨iso⟩ := h_iso
     have h_card_iso : Nat.card (↥(H.map iso.toMonoidHom)) = Nat.card f.Gal := by
       rw [← hH, Nat.card_congr]
       symm
@@ -565,33 +537,10 @@ theorem card_gal_dvd_20_of_resolvent_root
     interval_cases Nat.card f.Gal <;> trivial
   have hne40 : Nat.card f.Gal ≠ 40 := by
     intro h
-    -- The Galois group injects into Perm(rootSet f L) ≅ Perm(Fin 5) via galActionHom.
-    obtain ⟨H, hH⟩ : ∃ H : Subgroup (Equiv.Perm (f.rootSet f.SplittingField)), Nat.card H = Nat.card f.Gal := by
-      have h_gal_subgroup : ∃ (H : f.Gal →* Equiv.Perm (f.rootSet f.SplittingField)), Function.Injective H := by
-        have : Fact (Polynomial.map (algebraMap K f.SplittingField) f).Splits :=
-          ⟨Polynomial.SplittingField.splits f⟩
-        exact ⟨Polynomial.Gal.galActionHom f f.SplittingField,
-          Polynomial.Gal.galActionHom_injective f f.SplittingField⟩
-      obtain ⟨H, hH⟩ := h_gal_subgroup
-      use H.range
-      rw [Nat.card_congr (Equiv.ofInjective _ hH)]
-      grind
-    have h_equiv : Nonempty (Equiv.Perm (f.rootSet f.SplittingField) ≃* Equiv.Perm (Fin 5)) := by
-      have h_equiv : Nonempty (f.rootSet f.SplittingField ≃ Fin 5) := by
-        refine ⟨Fintype.equivOfCardEq ?_⟩
-        have h_card : Fintype.card (f.rootSet f.SplittingField) = f.natDegree := by
-          have h_sep : f.Separable := by
-            exact Irreducible.separable hf_irr
-          grind only [Polynomial.card_rootSet_eq_natDegree, SplittingField.splits]
-        aesop
-      refine ⟨{ Equiv.permCongr h_equiv.some with map_mul' := ?_ }⟩
-      intro _ _
-      ext
-      simp
-    obtain ⟨e⟩ := h_equiv
+    obtain ⟨H, hH⟩ := h_sub
+    obtain ⟨e⟩ := h_iso
     refine Perm_Fin5_no_subgroup_order_40 (H.map e.toMonoidHom) ?_
-    rw [← h, ← hH]
-    rw [Nat.card_congr]
+    rw [← h, ← hH, Nat.card_congr]
     symm
     refine Equiv.ofBijective (fun x => ⟨e x, Subgroup.mem_map_of_mem _ x.2⟩)
       ⟨fun x y hxy => ?_, fun x => ?_⟩ <;> aesop

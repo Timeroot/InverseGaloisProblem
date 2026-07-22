@@ -49,10 +49,7 @@ lemma artinSchreier_root_shift {K : Type*} [Field K] [Algebra (ZMod p) K]
   have h_frobenius : ∀ (x y : K), (x + y) ^ p = x ^ p + y ^ p := by
     intro x y
     have h_char : ringChar K = p := by
-      have h_char : ringChar (ZMod p) = p := by
-        rw [ZMod.ringChar_zmod_n]
-      convert h_char using 1
-      exact Eq.symm (Algebra.ringChar_eq (ZMod p) K)
+      rw [← Algebra.ringChar_eq (ZMod p) K, ZMod.ringChar_zmod_n]
     have := ringChar.of_eq h_char
     simp [add_pow_char]
   simp_all
@@ -72,9 +69,7 @@ lemma frobenius_preserves_roots_of_zmod_poly
           (Polynomial.eval β (Polynomial.map (algebraMap (ZMod p) K) g)) ^ p := by
         have h_frobenius : ∀ x y : K, (x + y) ^ p = x ^ p + y ^ p := by
           have h_char : ringChar K = p := by
-            have h_char : ringChar K = ringChar (ZMod p) := by
-              grind only [Algebra.ringChar_eq]
-            rw [h_char, ZMod.ringChar_zmod_n]
+            rw [← Algebra.ringChar_eq (ZMod p) K, ZMod.ringChar_zmod_n]
           have := ringChar.of_eq h_char
           simp [add_pow_char]
         simp [Polynomial.eval_map, Polynomial.eval₂_eq_sum, Polynomial.sum_def]
@@ -159,16 +154,13 @@ lemma artinSchreier_factor_degree (a : ZMod p) (ha : a ≠ 0)
         set K := AdjoinRoot g
         -- Since `g` is irreducible, `K` is a finite field with `p ^ g.natDegree` elements.
         have hK_card : Fintype K := by
-          have hK_card : FiniteDimensional (ZMod p) K := by
-            exact Module.Basis.finiteDimensional_of_finite (PowerBasis.basis (AdjoinRoot.powerBasis hg_irr.ne_zero))
+          have : FiniteDimensional (ZMod p) K :=
+            Module.Basis.finiteDimensional_of_finite (PowerBasis.basis (AdjoinRoot.powerBasis hg_irr.ne_zero))
           convert (Fintype.ofEquiv (Fin (Module.finrank (ZMod p) K) → ZMod p) ?_)
           exact ((Module.finBasis (ZMod p) K).equivFun).toEquiv.symm
         have hK_card_eq : Fintype.card K = p ^ g.natDegree := by
-          have hK_card_eq : Fintype.card K = Fintype.card (Fin (g.natDegree) → ZMod p) := by
-            apply Fintype.card_congr
-            have hK_card_eq : K ≃ₗ[ZMod p] (Fin (g.natDegree) → ZMod p) := by
-              exact (AdjoinRoot.powerBasis hg_irr.ne_zero).basis.equivFun
-            exact hK_card_eq.toEquiv
+          have h_card_congr : Fintype.card K = Fintype.card (Fin (g.natDegree) → ZMod p) :=
+            Fintype.card_congr ((AdjoinRoot.powerBasis hg_irr.ne_zero).basis.equivFun).toEquiv
           simp_all
         -- Every element `x` of `K` satisfies `x ^ (p ^ g.natDegree) = x`.
         have hK_poly : ∀ x : K, x ^ (p ^ g.natDegree) = x := by
@@ -184,17 +176,17 @@ lemma artinSchreier_factor_degree (a : ZMod p) (ha : a ≠ 0)
         induction' k with k ih
         · simp_all
         simp_all
-        have h_div_shift : g ∣ ((X ^ (p ^ k)) ^ p - X ^ p - C (k * a) : Polynomial (ZMod p)) := by
+        have h_dvd_frob : g ∣ ((X ^ (p ^ k)) ^ p - X ^ p - C (k * a) : Polynomial (ZMod p)) := by
           convert ih.trans (show X ^ p ^ k - X - ↑k * C a ∣ (X ^ p ^ k) ^ p - X ^ p - C (↑k * a) from ?_) using 1
-          have h_div_shift : (X ^ (p ^ k) - X - C (k * a) : Polynomial (ZMod p)) ∣
+          have h_dvd_sub : (X ^ (p ^ k) - X - C (k * a) : Polynomial (ZMod p)) ∣
               ((X ^ (p ^ k)) ^ p - X ^ p - C (k * a) ^ p : Polynomial (ZMod p)) := by
             convert sub_dvd_pow_sub_pow (X ^ p ^ k) (X + C (k * a)) p using 1
             · ring
             · simp [add_pow_char, sub_sub]
-          convert h_div_shift using 1
+          convert h_dvd_sub using 1
           · norm_num [← Polynomial.C_pow, ← Polynomial.C_mul]
           · rw [← map_pow, ZMod.pow_card]
-        convert dvd_add h_div_shift hg_dvd using 1
+        convert dvd_add h_dvd_frob hg_dvd using 1
         ring_nf
         norm_num [sub_eq_add_neg, add_comm, add_left_comm, add_assoc]
       have := dvd_sub h_div h_div_shift
@@ -204,16 +196,21 @@ lemma artinSchreier_factor_degree (a : ZMod p) (ha : a ≠ 0)
         contrapose! this
         -- `C (g.natDegree : ZMod p)` is a unit, since `g.natDegree ≠ 0` in `ZMod p`.
         have h_unit : IsUnit (Polynomial.C (g.natDegree : ZMod p)) := by
-          exact Polynomial.isUnit_C.mpr (isUnit_iff_ne_zero.mpr <| by rwa [Ne.eq_def, ZMod.natCast_eq_zero_iff])
-        exact fun h ↦ hg_irr.not_isUnit <| isUnit_of_dvd_unit h <| by simpa using h_unit
+          apply Polynomial.isUnit_C.mpr
+          apply isUnit_iff_ne_zero.mpr
+          rwa [Ne.eq_def, ZMod.natCast_eq_zero_iff]
+        intro h
+        apply hg_irr.not_isUnit
+        apply isUnit_of_dvd_unit h
+        simpa using h_unit
       have := Polynomial.natDegree_le_of_dvd hg_dvd
       simp_all
       rw [Polynomial.natDegree_sub_eq_left_of_natDegree_lt] at this <;>
         simp_all [Polynomial.natDegree_sub_eq_left_of_natDegree_lt, hp.1.one_lt]
       refine le_antisymm (this ?_) (Nat.le_of_dvd ?_ h_natDegree_mul_p)
       · apply ne_of_apply_ne Polynomial.natDegree
-        erw [Polynomial.natDegree_sub_C]
-        erw [Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num <;> linarith [hp.1.one_lt]
+        rw [Polynomial.natDegree_sub_C]
+        rw [Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num <;> linarith [hp.1.one_lt]
       · exact Polynomial.natDegree_pos_iff_degree_pos.mpr <| Polynomial.degree_pos_of_irreducible hg_irr
 
 /-
@@ -234,7 +231,7 @@ lemma frobenius_iterate {K : Type*} [Field K] [Algebra (ZMod p) K]
       have h_frobenius : ∀ x y : K, (x + y) ^ p = x ^ p + y ^ p := by
         intro x y
         have h_char : ringChar K = p := by
-          grind only [ringChar.spec, Algebra.ringChar_eq, ringChar.eq]
+          rw [← Algebra.ringChar_eq (ZMod p) K, ZMod.ringChar_zmod_n]
         have := ringChar.of_eq h_char
         simp [add_pow_char]
       simp_all [pow_succ, pow_mul]
@@ -306,9 +303,8 @@ theorem artinSchreier_irreducible (a : ZMod p) (ha : a ≠ 0) :
           · exact hp.1.ne_zero
           · exact hp.1.pos
         simpa [Polynomial.eval_map] using h_root
-      have := minpoly.irreducible (show IsIntegral (ZMod p) α from ?_)
-      · simp_all
-      · exact Algebra.IsIntegral.isIntegral α
+      have := minpoly.irreducible (Algebra.IsIntegral.isIntegral (R := ZMod p) α)
+      simp_all
 
 /-- As a corollary, `X^p - X - 1` is irreducible over `𝔽_p` for any prime `p`. -/
 theorem artinSchreier_one_irreducible :

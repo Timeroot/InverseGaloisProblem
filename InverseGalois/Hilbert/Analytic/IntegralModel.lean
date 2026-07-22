@@ -45,20 +45,19 @@ noncomputable section
 lemma exists_int_multiple_of_rat_poly (a : Polynomial ℚ) :
     ∃ (D : ℕ) (b : Polynomial ℤ), 0 < D ∧
       (D : ℚ) • a = b.map (Int.castRingHom ℚ) := by
-  obtain ⟨D, hD⟩ : ∃ D : ℕ, 0 < D ∧ ∀ i ∈ a.support, D * a.coeff i ∈ Set.range (algebraMap ℤ ℚ) := by
-    obtain ⟨D, hD⟩ : ∃ D : ℕ, 0 < D ∧ ∀ i ∈ a.support, (a.coeff i).den ∣ D := by
-      refine ⟨∏ i ∈ a.support, (a.coeff i).den, ?_, ?_⟩
-      · exact Finset.prod_pos fun i hi ↦ Nat.cast_pos.mpr (Rat.pos _)
-      · exact fun i hi ↦ Finset.dvd_prod_of_mem _ hi
-    refine ⟨D, hD.1, fun i hi ↦ ?_⟩
-    obtain ⟨k, hk⟩ := hD.2 i hi
+  obtain ⟨D, hD_pos, hD_dvd⟩ : ∃ D : ℕ, 0 < D ∧ ∀ i ∈ a.support, (a.coeff i).den ∣ D := by
+    refine ⟨∏ i ∈ a.support, (a.coeff i).den, ?_, ?_⟩
+    · exact Finset.prod_pos fun i hi ↦ Nat.cast_pos.mpr (Rat.pos _)
+    · exact fun i hi ↦ Finset.dvd_prod_of_mem _ hi
+  have hD_range : ∀ i ∈ a.support, D * a.coeff i ∈ Set.range (algebraMap ℤ ℚ) := by
+    intro i hi
+    obtain ⟨k, hk⟩ := hD_dvd i hi
     use k * (a.coeff i).num
     simp [*, mul_comm, mul_left_comm]
-  choose! f hf using hD.2
+  choose! f hf using hD_range
   use D, ∑ i ∈ a.support, f i • X ^ i
   simp_all only [mem_support_iff, ne_eq, algebraMap_int_eq,
-    Int.coe_castRingHom, Set.mem_range, eq_intCast, zsmul_eq_mul, true_and]
-  obtain ⟨left, right⟩ := hD
+    eq_intCast, zsmul_eq_mul, true_and]
   ext n : 1
   simp_all only [coeff_smul, smul_eq_mul, coeff_map,
     finset_sum_coeff, coeff_intCast_mul, Int.cast_eq,
@@ -87,7 +86,8 @@ lemma exists_common_denominator (f : Polynomial (Polynomial ℚ)) :
         mul_comm, mul_left_comm, Algebra.smul_def]
       simp [← mul_assoc, ← hb, Polynomial.map_prod]
     · simp_all
-      exact ⟨0, by norm_num⟩
+      use 0
+      norm_num
 
 /-!
 ## Gauss's Lemma for Monic Polynomials
@@ -110,7 +110,7 @@ theorem monic_int_factor_of_monic_int_dvd' {f : Polynomial ℤ} {g : Polynomial 
     simp only [IsIntegrallyClosed.isIntegral_iff] at this
     tauto
   choose ci hci using h_int_coeffs
-  refine ⟨∑ i ∈ g.support, C (ci i) * X ^ i, ?_, ?_, ?_⟩ <;> simp_all [Polynomial.ext_iff]
+  refine ⟨∑ i ∈ g.support, C (ci i) * X ^ i, ?_, ?_, ?_⟩ <;> simp_all [ext_iff]
   · rw [Monic, leadingCoeff, natDegree_eq_of_degree_eq_some]
     any_goals exact g.natDegree
     · have := hg_monic.coeff_natDegree
@@ -171,6 +171,7 @@ lemma tschirnhaus_factor_dvd (f g : Polynomial ℚ) (D : ℚ) (_hD : D ≠ 0)
   have h_deg : natDegree (g * q) = natDegree g + natDegree q :=
     natDegree_mul (by aesop_cat) (by aesop_cat)
   simp_all
-  exact ⟨q.comp (C D⁻¹ * X) * C D ^ q.natDegree, by ring⟩
+  use q.comp (C D⁻¹ * X) * C D ^ q.natDegree
+  ring
 
 end
