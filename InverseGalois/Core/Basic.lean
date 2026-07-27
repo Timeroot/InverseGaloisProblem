@@ -59,6 +59,14 @@ theorem of_surjective (hG : IsInverseGalois G)
   obtain ⟨L, _, _, _, _, ⟨φ⟩⟩ := hG
   exact of_surjective_galHom L (f.comp φ.toMonoidHom) (hf.comp φ.surjective)
 
+/-- The inverse Galois property is closed under quotients: if `G` is an inverse Galois group
+and `N` is a normal subgroup, then the quotient `G ⧸ N` is also an inverse Galois group.
+
+This is the special case of `of_surjective` for the canonical projection `G →* G ⧸ N`. -/
+theorem quotient (hG : IsInverseGalois G) (N : Subgroup G) [N.Normal] :
+    IsInverseGalois (G ⧸ N) :=
+  hG.of_surjective (QuotientGroup.mk' N) (QuotientGroup.mk'_surjective N)
+
 /-- The trivial group is an inverse Galois group (realized by `ℚ` itself). -/
 theorem unit : IsInverseGalois Unit := by
   refine ⟨ℚ, inferInstance, inferInstance, inferInstance, inferInstance, ⟨?_⟩⟩
