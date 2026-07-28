@@ -3,6 +3,7 @@ import InverseGalois.Groups
 import InverseGalois.Hilbert
 import InverseGalois.NumberTheory
 import InverseGalois.Reflection
+import InverseGalois.Resolvent
 
 /-!
 # The inverse Galois problem over `ℚ`

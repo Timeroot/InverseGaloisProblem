@@ -16,14 +16,37 @@ finite Galois extension of `ℚ` whose Galois group is isomorphic to `G`.
   (`Core/Product.lean`)
 * Hilbert's theorem that every symmetric group `Sₙ` is an inverse Galois group, via
   Hilbert-irreducibility route.
+* If `G` is an inverse Galois group, then so is every quotient `G ⧸ N` (`Core/Basic.lean`,
+  `IsInverseGalois.quotient` — a corollary of closure under surjective homomorphic images).
+* Every finite **abelian** group is an inverse Galois group (`Core/Abelian.lean`,
+  `IsInverseGalois.of_finite_commGroup`): via the structure theorem it is a quotient of a
+  product `∏ᵢ (ℤ/pᵢℤ)ˣ ≅ (ℤ/mℤ)ˣ` for distinct primes `pᵢ ≡ 1 (mod nᵢ)` (Dirichlet), realized
+  inside the cyclotomic field `ℚ(ζₘ)`.
 
 ## Next Goals
 
 In no particular order:
 
 * Extend the Hilbert-irreducibility results to show that all alternating groups are inverse Galois.
-* If `G` is an inverse Galois group, then so are any quotients of `Q`.
-* All Abelian groups are inverse Galois groups
+  **(In progress — `Hilbert/Alternating.lean`.)** The Galois-theoretic reduction and
+  Hilbert-irreducibility plumbing are complete and verified: `an_realizable_of_root` realizes
+  `Aₙ` from a separable degree-`n` polynomial with square discriminant whose splitting field
+  contains a root of an irreducible degree-`n!/2` polynomial, and `alternating_inverse_galois`
+  is unconditional for `n ≤ 3`. The remaining input is the single geometric lemma
+  `exists_alternating_resolvent_family` — a regular `Aₙ`-extension of `ℚ(T)` (Mestre's
+  square-discriminant / 3-cycle-inertia family). This is fed into the **group-agnostic reusable
+  core** `Hilbert/RegularExtension.lean` (`IsInverseGalois.of_regular_family`: a regular
+  `H`-extension of `ℚ(T)` plus a per-specialization landing certificate `Gal(F(t)) ↪ H` yields
+  `IsInverseGalois H` via Hilbert irreducibility) — the same seam the `Sₙ` case and the eventual
+  rigidity method target. The group-theory half of the `Aₙ` monodromy (`preprimitive + a
+  3-cycle + ⊆ Aₙ ⟹ = Aₙ`, from Jordan's theorem) is `eq_alternatingGroup_of_isPreprimitive_of_isThreeCycle`.
+  The **algebraic backbone of the orbit-resolvent descent** is also complete and verified: the
+  fundamental theorem of `Aₙ`-invariants (`Resolvent/AlternatingInvariants.lean`,
+  `exists_symm_add_vander_mul_symm`: every `Aₙ`-invariant polynomial is `s + δ·t` with `s, t`
+  symmetric and `δ` the Vandermonde, the `Aₙ`-analogue of the fundamental theorem of symmetric
+  polynomials — not in Mathlib), together with `altResolventProduct_coeff_symm_add_vander_mul_symm`
+  showing every coefficient of the `Aₙ`-orbit resolvent descends to `ℚ[e₁,…,eₙ][δ]`. What remains is
+  the explicit family and its 3-cycle-inertia (analytic) monodromy computation.
 * All _solvable_ groups are inverse Galois groups (a theorem [of Shafarevich](https://arxiv.org/pdf/math/9809211)).
 * Formalize the _rigidity_ method, which is used for many sporadic simple groups.
 * Apply the rigidity method to show IGP for all sporadic simple groups it is known for
