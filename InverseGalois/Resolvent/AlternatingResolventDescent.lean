@@ -40,11 +40,11 @@ theorem altResolventProduct_coeff_alternating_invariant (n k : ℕ) (e : Equiv.P
     MvPolynomial.rename e
         ((altResolventProduct n (fun i ↦ (X i : MvPolynomial (Fin n) ℚ))).coeff k)
       = (altResolventProduct n (fun i ↦ (X i : MvPolynomial (Fin n) ℚ))).coeff k := by
-  convert congr_arg (fun p : Polynomial (MvPolynomial (Fin n) ℚ) ↦ Polynomial.coeff p k)
-    (show (altResolventProduct n fun i ↦ MvPolynomial.X i |> MvPolynomial.rename e)
-      = altResolventProduct n fun i ↦ MvPolynomial.X i from ?_) using 1
-  · convert congr_arg (fun p : Polynomial (MvPolynomial (Fin n) ℚ) ↦ Polynomial.coeff p k)
-      (altResolventProduct_map (MvPolynomial.rename e |> AlgHom.toRingHom) n fun i ↦ MvPolynomial.X i)
+  convert congr_arg (fun p ↦ Polynomial.coeff p k)
+    (show (altResolventProduct n fun i ↦ rename e (X i))
+      = altResolventProduct n fun i ↦ X i from ?_) using 1
+  · convert congr_arg (fun p : Polynomial (MvPolynomial (Fin n) ℚ) ↦ p.coeff k)
+      (altResolventProduct_map (rename e).toRingHom n fun i ↦ X i)
       using 1
     simp [Polynomial.coeff_map]
   · apply Finset.prod_bij (fun σ _ ↦ (⟨e, he⟩ : alternatingGroup (Fin n)) * σ)
@@ -52,8 +52,7 @@ theorem altResolventProduct_coeff_alternating_invariant (n k : ℕ) (e : Equiv.P
     · exact fun a _ b _ hab ↦ mul_left_cancel hab
     · exact fun b _ ↦ ⟨(⟨e, he⟩ : alternatingGroup (Fin n))⁻¹ * b, Finset.mem_univ _, by group⟩
     · intro σ _
-      unfold genForm
-      simp [MvPolynomial.rename_X, Subgroup.coe_mul, Equiv.Perm.mul_apply]
+      simp only [genForm, rename_X, Subgroup.coe_mul, Equiv.Perm.mul_apply]
 
 /-- **Descent of an orbit-resolvent coefficient to `ℚ[e][δ]`.**
 
@@ -66,8 +65,8 @@ theorem altResolventProduct_coeff_symm_add_vander_mul_symm (n k : ℕ) (hn : 2 �
     ∃ s t : MvPolynomial (Fin n) ℚ, s.IsSymmetric ∧ t.IsSymmetric ∧
       (altResolventProduct n (fun i ↦ (X i : MvPolynomial (Fin n) ℚ))).coeff k
         = s + AlternatingInvariants.vander n * t := by
-  refine AlternatingInvariants.exists_symm_add_vander_mul_symm hn (fun σ hσ ↦ ?_)
-  exact altResolventProduct_coeff_alternating_invariant n k σ hσ
+  exact AlternatingInvariants.exists_symm_add_vander_mul_symm hn
+    (altResolventProduct_coeff_alternating_invariant n k)
 
 end AlternatingResolvent
 

@@ -103,8 +103,7 @@ theorem stabilizer_eq_map_fixingSubgroup (p : K[X])
     · aesop
   · obtain ⟨y, hy, rfl⟩ := hx
     rw [← Subtype.coe_inj]
-    simp [Gal.restrict_smul]
-    exact hy _ <| IntermediateField.subset_adjoin K _ <| Set.mem_singleton _
+    simpa [Gal.restrict_smul] using hy _ <| IntermediateField.subset_adjoin K _ <| Set.mem_singleton _
 
 /-- **[general]** If the root `a` generates an atom `K(a)` in the intermediate-field lattice, then
 the stabilizer of `a` under the `p.Gal`-action is a coatom (maximal subgroup).  Requires `p`
@@ -114,18 +113,16 @@ theorem stabilizer_isCoatom_of_isAtom (p : K[X]) (hsep : p.Separable)
     (hatom : IsAtom (IntermediateField.adjoin K {(↑a : p.SplittingField)})) :
     IsCoatom (@MulAction.stabilizer p.Gal (↑(p.rootSet p.SplittingField)) _
       (Gal.galAction p p.SplittingField) a) := by
-  haveI : IsGalois K p.SplittingField := IsGalois.of_separable_splitting_field hsep
+  have : IsGalois K p.SplittingField := IsGalois.of_separable_splitting_field hsep
   rw [stabilizer_eq_map_fixingSubgroup p a]
   -- `Gal.restrict` is a bijective group endomorphism, so `Subgroup.map` by it is an order
   -- isomorphism of the subgroup lattice, preserving `IsCoatom`.
   let Re : p.Gal ≃* p.Gal := MulEquiv.ofBijective _ (restrict_bijective p)
-  have key : IsCoatom (Subgroup.map (Re : p.Gal →* p.Gal)
-        (IntermediateField.fixingSubgroup
-          (IntermediateField.adjoin K {(↑a : p.SplittingField)})))
-      ↔ IsAtom (IntermediateField.adjoin K {(↑a : p.SplittingField)}) := by
-    rw [← MulEquiv.mapSubgroup_apply, (Re.mapSubgroup).isCoatom_iff,
-        isCoatom_fixingSubgroup_iff_isAtom]
-  exact key.mpr hatom
+  show IsCoatom (Subgroup.map (Re : p.Gal →* p.Gal)
+    (IntermediateField.fixingSubgroup (IntermediateField.adjoin K {(↑a : p.SplittingField)})))
+  rw [← MulEquiv.mapSubgroup_apply, (Re.mapSubgroup).isCoatom_iff,
+      isCoatom_fixingSubgroup_iff_isAtom]
+  exact hatom
 
 /-- **[general — the reduction]** If `p` is separable and irreducible, the root set is nontrivial,
 and **every** root generates an atom `K(α)`, then the `p.Gal`-action on the root set is
@@ -143,10 +140,9 @@ theorem galAction_isPreprimitive_of_isAtom (p : K[X]) (hsep : p.Separable)
   -- Pin the ambient `MulAction p.Gal (rootSet)` to `Gal.galAction` (rather than the unconditional
   -- default `Gal.galActionAux`), so it matches the stabilizer computed by
   -- `stabilizer_isCoatom_of_isAtom` and the `galActionHom = toPermHom` identity used downstream.
-  letI : MulAction p.Gal (↑(p.rootSet p.SplittingField)) := Gal.galAction p p.SplittingField
-  haveI htrans : MulAction.IsPretransitive p.Gal (↑(p.rootSet p.SplittingField)) :=
+  let _ : MulAction p.Gal (↑(p.rootSet p.SplittingField)) := Gal.galAction p p.SplittingField
+  have htrans : MulAction.IsPretransitive p.Gal (↑(p.rootSet p.SplittingField)) :=
     Gal.galAction_isPretransitive p p.SplittingField hirr
-  haveI := hnt
   obtain ⟨a⟩ := (inferInstance : Nonempty (↑(p.rootSet p.SplittingField)))
   have hco := stabilizer_isCoatom_of_isAtom p hsep a (hatom a)
   rwa [MulAction.isCoatom_stabilizer_iff_preprimitive] at hco
@@ -165,17 +161,17 @@ theorem galActionHom_range_isPreprimitive_of_isAtom (p : K[X]) (hsep : p.Separab
         IsAtom (IntermediateField.adjoin K {(↑a : p.SplittingField)})) :
     MulAction.IsPreprimitive (Gal.galActionHom p p.SplittingField).range
       (p.rootSet p.SplittingField) := by
-  letI : MulAction p.Gal (↑(p.rootSet p.SplittingField)) := Gal.galAction p p.SplittingField
-  haveI : @MulAction.IsPreprimitive p.Gal (↑(p.rootSet p.SplittingField))
+  let _ : MulAction p.Gal (↑(p.rootSet p.SplittingField)) := Gal.galAction p p.SplittingField
+  have : @MulAction.IsPreprimitive p.Gal (↑(p.rootSet p.SplittingField))
       (Gal.galAction p p.SplittingField).toSMul :=
     galAction_isPreprimitive_of_isAtom p hsep hirr hnt hatom
   -- Transport preprimitivity along the surjection `p.Gal ↠ (galActionHom).range`.  The identity map
   -- on the root set is equivariant because `galActionHom = MulAction.toPermHom` for `Gal.galAction`,
   -- i.e. `(galActionHom g) • x = g • x`; with the ambient action pinned to `Gal.galAction` this is
   -- `rfl`.
-  refine MulAction.IsPreprimitive.of_surjective
+  apply MulAction.IsPreprimitive.of_surjective
     (φ := ⇑(Gal.galActionHom p p.SplittingField).rangeRestrict)
-    (f := ⟨id, fun g x => rfl⟩) ?_
+    (f := ⟨id, fun g x ↦ rfl⟩)
   intro y
   exact ⟨y, rfl⟩
 

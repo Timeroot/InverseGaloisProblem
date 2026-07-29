@@ -41,7 +41,9 @@ abbrev Lfield := (serreBaseGeomPoly n).SplittingField
 abbrev Bring := integralClosure Abase (Lfield n)
 
 instance : IsGalois GeomBase (Lfield n) :=
-  IsGalois.of_separable_splitting_field (serreBaseGeomPoly_separable n (by have := hn3.out; omega))
+  IsGalois.of_separable_splitting_field (serreBaseGeomPoly_separable n (by
+    have := hn3.out
+    omega))
 
 instance : IsFractionRing (Bring n) (Lfield n) :=
   IsIntegralClosure.isFractionRing_of_finite_extension Abase GeomBase (Lfield n) (Bring n)
@@ -91,48 +93,51 @@ Stated for a generic carrier `L` to avoid `motive is not type correct` when `L =
 lemma aeval_geom_eq_serreBaseC {L : Type*} [CommRing L] [Algebra GeomBase L] [Algebra Abase L]
     [IsScalarTower Abase GeomBase L] (z : L) :
     (aeval z) (serreBaseGeomPoly n) = (aeval z) (serreBaseC n) := by
-  rw [serreBaseGeomPoly_eq_map, Polynomial.aeval_map_algebraMap]
+  rw [serreBaseGeomPoly_eq_map, aeval_map_algebraMap]
 
 /-! ## The equivariant bijection between roots in `B` and roots in `L` -/
 
 lemma rootMap_mem (x : (serreBaseC n).rootSet (Bring n)) :
     ((x : Bring n) : Lfield n) ∈ (serreBaseGeomPoly n).rootSet (Lfield n) := by
-  have h2 : 2 ≤ n := by have := hn3.out; omega
+  have h2 : 2 ≤ n := by
+    have := hn3.out
+    omega
   have h_root : aeval (x.val : (Lfield n)) (serreBaseC n) = 0 := by
-    convert Polynomial.aeval_eq_zero_of_mem_rootSet x.2 using 1
-    erw [← Subtype.coe_inj]
+    convert aeval_eq_zero_of_mem_rootSet x.2 using 1
+    rw [← Subtype.coe_inj]
     aesop
-  rw [Polynomial.mem_rootSet']
+  rw [mem_rootSet']
   refine ⟨((serreBaseGeomPoly_monic n h2).map _).ne_zero, ?_⟩
-  rw [aeval_geom_eq_serreBaseC]
-  exact h_root
+  rwa [aeval_geom_eq_serreBaseC]
 
 /-- The inclusion `B ↪ L` on roots. -/
 def rootMap (x : (serreBaseC n).rootSet (Bring n)) : (serreBaseGeomPoly n).rootSet (Lfield n) :=
   ⟨((x : Bring n) : Lfield n), rootMap_mem n x⟩
 
 lemma rootMap_bijective : Function.Bijective (rootMap n) := by
-  have h2 : 2 ≤ n := by have := hn3.out; omega
+  have h2 : 2 ≤ n := by
+    have := hn3.out
+    omega
   constructor
   · intro x y hxy
     simpa [rootMap] using hxy
   · intro y
     have hy0 : aeval (y.val : Lfield n) (serreBaseC n) = 0 := by
-      have h := Polynomial.aeval_eq_zero_of_mem_rootSet y.2
-      rwa [aeval_geom_eq_serreBaseC] at h
+      rw [← aeval_geom_eq_serreBaseC]
+      exact aeval_eq_zero_of_mem_rootSet y.2
     have hy_integral : IsIntegral Abase (y.val : Lfield n) :=
       ⟨serreBaseC n, serreBaseC_monic n h2, hy0⟩
     set b : Bring n := ⟨y.val, hy_integral⟩ with hb
+    have key : (algebraMap (Bring n) (Lfield n)) (aeval b (serreBaseC n)) = 0 := by
+      rw [← IsScalarTower.coe_toAlgHom' Abase (Bring n) (Lfield n),
+        ← aeval_algHom_apply]
+      show aeval (y.val : Lfield n) (serreBaseC n) = 0
+      exact hy0
+    rw [← map_zero (algebraMap (Bring n) (Lfield n))] at key
     have hbmem : b ∈ (serreBaseC n).rootSet (Bring n) := by
-      rw [Polynomial.mem_rootSet']
-      refine ⟨((serreBaseC_monic n h2).map _).ne_zero, ?_⟩
-      have key : (algebraMap (Bring n) (Lfield n)) (aeval b (serreBaseC n)) = 0 := by
-        rw [← IsScalarTower.coe_toAlgHom' Abase (Bring n) (Lfield n),
-          ← Polynomial.aeval_algHom_apply]
-        show aeval (y.val : Lfield n) (serreBaseC n) = 0
-        exact hy0
-      rw [← map_zero (algebraMap (Bring n) (Lfield n))] at key
-      exact IsIntegralClosure.algebraMap_injective (Bring n) Abase (Lfield n) key
+      rw [mem_rootSet']
+      exact ⟨((serreBaseC_monic n h2).map _).ne_zero,
+        IsIntegralClosure.algebraMap_injective (Bring n) Abase (Lfield n) key⟩
     refine ⟨⟨b, hbmem⟩, ?_⟩
     apply Subtype.ext
     simp [rootMap, hb]
@@ -181,7 +186,9 @@ lemma galActionHom_eq_permCongr (g : (serreBaseGeomPoly n).Gal) :
 /-! ## The polynomial splits in `B` -/
 
 lemma serreBaseC_splits_B : ((serreBaseC n).map (algebraMap Abase (Bring n))).Splits := by
-  have h2 : 2 ≤ n := by have := hn3.out; omega
+  have h2 : 2 ≤ n := by
+    have := hn3.out
+    omega
   have hmapL : (serreBaseC n).map (algebraMap Abase (Lfield n))
       = (serreBaseGeomPoly n).map (algebraMap GeomBase (Lfield n)) := by
     show (serreBaseC n).map (algebraMap Abase (Lfield n))
@@ -189,40 +196,39 @@ lemma serreBaseC_splits_B : ((serreBaseC n).map (algebraMap Abase (Bring n))).Sp
     rw [Polynomial.map_map, ← IsScalarTower.algebraMap_eq]
   obtain ⟨s, hs⟩ : ∃ s : Multiset (↥(Bring n)),
       (serreBaseC n).map (algebraMap Abase (↥(Bring n)))
-        = Multiset.prod (Multiset.map (fun r : ↥(Bring n) ↦ Polynomial.X - Polynomial.C r) s) := by
+        = Multiset.prod (Multiset.map (fun r : ↥(Bring n) ↦ X - C r) s) := by
     have h_range : ∀ r ∈ (serreBaseC n).rootSet (Lfield n),
         r ∈ Set.range (algebraMap (Bring n) (Lfield n)) := by
       intro r hr
-      have h_int : IsIntegral Abase r := by
-        rw [Polynomial.mem_rootSet'] at hr
-        exact ⟨serreBaseC n, serreBaseC_monic n h2, hr.2⟩
-      exact ⟨⟨r, h_int⟩, rfl⟩
+      rw [mem_rootSet'] at hr
+      exact ⟨⟨r, ⟨serreBaseC n, serreBaseC_monic n h2, hr.2⟩⟩, rfl⟩
     have h_prod : (serreBaseC n).map (algebraMap Abase (Lfield n))
-        = Multiset.prod (Multiset.map (fun r : Lfield n ↦ Polynomial.X - Polynomial.C r)
+        = Multiset.prod (Multiset.map (fun r : Lfield n ↦ X - C r)
             (Polynomial.roots (serreBaseC n |> Polynomial.map (algebraMap Abase (Lfield n))))) := by
-      convert Polynomial.Splits.eq_prod_roots_of_monic _ _
-      · rw [hmapL]; exact Polynomial.IsSplittingField.splits (Lfield n) (serreBaseGeomPoly n)
-      · exact Polynomial.Monic.map _ (serreBaseC_monic n h2)
-    obtain ⟨s, hs⟩ : ∃ s : Multiset (↥(Bring n)),
-        Multiset.map (fun r : ↥(Bring n) ↦ algebraMap (Bring n) (Lfield n) r) s
+      convert Splits.eq_prod_roots_of_monic _ _
+      · rw [hmapL]
+        exact Polynomial.IsSplittingField.splits (Lfield n) (serreBaseGeomPoly n)
+      · exact Monic.map _ (serreBaseC_monic n h2)
+    have h_prod_range : ∀ r ∈ Polynomial.roots
+        (serreBaseC n |> Polynomial.map (algebraMap Abase (Lfield n))),
+        r ∈ Set.range (algebraMap (Bring n) (Lfield n)) := by
+      convert h_range using 1
+      simp [rootSet_def]
+    choose! f hf using h_prod_range
+    obtain ⟨t, ht⟩ : ∃ t : Multiset (↥(Bring n)),
+        Multiset.map (algebraMap (Bring n) (Lfield n)) t
           = Polynomial.roots (serreBaseC n |> Polynomial.map (algebraMap Abase (Lfield n))) := by
-      have h_prod_range : ∀ r ∈ Polynomial.roots
-          (serreBaseC n |> Polynomial.map (algebraMap Abase (Lfield n))),
-          r ∈ Set.range (algebraMap (Bring n) (Lfield n)) := by
-        convert h_range using 1
-        simp [Polynomial.rootSet_def]
-      choose! f hf using h_prod_range
       use Multiset.map f (Polynomial.roots
         (serreBaseC n |> Polynomial.map (algebraMap Abase (Lfield n))))
       rw [Multiset.map_map]
       rw [Multiset.map_congr rfl]
-      exacts [Multiset.map_id _, fun x hx ↦ hf x hx]
-    use s
+      exacts [Multiset.map_id _, hf]
+    use t
     refine Polynomial.map_injective (algebraMap (Bring n) (Lfield n))
       (IsIntegralClosure.algebraMap_injective (Bring n) (Abase) (Lfield n)) ?_
     convert h_prod using 1
     · rw [Polynomial.map_map, ← IsScalarTower.algebraMap_eq]
-    · simp [← hs, Polynomial.map_multiset_prod]
+    · simp [← ht, Polynomial.map_multiset_prod]
   rw [hs, Splits]
   apply Submonoid.multiset_prod_mem
   simp at *
@@ -237,7 +243,9 @@ instance pretransitive_B :
   refine ⟨fun x y ↦ ?_⟩
   set e := (rootEquiv n).trans (Gal.rootsEquivRoots (serreBaseGeomPoly n) (Lfield n))
   obtain ⟨g, hg⟩ := (Gal.galAction_isPretransitive (serreBaseGeomPoly n) (Lfield n)
-      (serreBaseGeomPoly_irreducible n (by have := hn3.out; omega))).exists_smul_eq (e x) (e y)
+      (serreBaseGeomPoly_irreducible n (by
+        have := hn3.out
+        omega))).exists_smul_eq (e x) (e y)
   refine ⟨g, ?_⟩
   have hgh : Gal.galActionHom (serreBaseGeomPoly n) (Lfield n) g (e x) = e y := hg
   rw [galActionHom_eq_permCongr n g, Equiv.permCongr_apply, Equiv.symm_apply_apply,
@@ -259,8 +267,7 @@ lemma toPermHom_B_injective :
     simp [rootMap]
   obtain ⟨r, rfl⟩ := h_root
   specialize hx _ _ r.2
-  simp_all [Subtype.ext_iff]
-  exact hx
+  simpa [Subtype.ext_iff] using hx
 
 /-! ## The Morse (at-most-one-collision) condition, fibre analysis -/
 
@@ -275,9 +282,7 @@ theorem critT_eval (_hn : 2 ≤ n) :
 theorem critT_ne_zero (hn : 2 ≤ n) : critT n ≠ 0 := by
   rw [critT_eval n hn, sub_ne_zero]
   have hd : (n : AlgebraicClosure ℚ) - 1 ≠ 0 := by
-    have hne : (n : AlgebraicClosure ℚ) ≠ 1 := by
-      have : (n : ℕ) ≠ 1 := by omega
-      exact_mod_cast this
+    have hne : (n : AlgebraicClosure ℚ) ≠ 1 := by exact_mod_cast (by omega : (n : ℕ) ≠ 1)
     exact sub_ne_zero.mpr hne
   intro h
   have h2 : (1 : AlgebraicClosure ℚ) * ((n : AlgebraicClosure ℚ) - 1) = (n : AlgebraicClosure ℚ) :=
@@ -293,30 +298,32 @@ theorem serreBaseP_derivative (hn : 2 ≤ n) :
     derivative_C, sub_zero, mul_one]
   have he1 : n - 1 - 1 = n - 2 := by omega
   have he2 : (X : (AlgebraicClosure ℚ)[X]) ^ (n - 1) = X ^ (n - 2) * X := by
-    rw [← pow_succ]; congr 1; omega
+    rw [← pow_succ]
+    congr 1
+    omega
   have hcast : (C ((n - 1 : ℕ) : AlgebraicClosure ℚ) : (AlgebraicClosure ℚ)[X])
       = C ((n : AlgebraicClosure ℚ) - 1) := by
     rw [Nat.cast_sub (by omega : 1 ≤ n), Nat.cast_one]
   rw [he1, he2, hcast]
+  have hd : (n : AlgebraicClosure ℚ) - 1 ≠ 0 := by
+    have hne : (n : AlgebraicClosure ℚ) ≠ 1 := by exact_mod_cast (by omega : (n : ℕ) ≠ 1)
+    exact sub_ne_zero.mpr hne
   have hkey : C ((n : AlgebraicClosure ℚ) - 1)
       * C ((n : AlgebraicClosure ℚ) / ((n : AlgebraicClosure ℚ) - 1))
       = C (n : AlgebraicClosure ℚ) := by
-    rw [← map_mul]; congr 1
-    have hd : (n : AlgebraicClosure ℚ) - 1 ≠ 0 := by
-      have hne : (n : AlgebraicClosure ℚ) ≠ 1 := by
-        have : (n : ℕ) ≠ 1 := by omega
-        exact_mod_cast this
-      exact sub_ne_zero.mpr hne
+    rw [← map_mul]
+    congr 1
     field_simp
   have hA : C ((n : AlgebraicClosure ℚ) - 1) + 1 = C (n : AlgebraicClosure ℚ) := by
     rw [show (1 : (AlgebraicClosure ℚ)[X]) = C 1 from (map_one C).symm, ← map_add]
-    congr 1; ring
+    congr 1
+    ring
   linear_combination (X ^ (n - 2) * X) * hA - X ^ (n - 2) * hkey
 
 theorem serreBaseP_derivative_eval (hn : 2 ≤ n) (a : AlgebraicClosure ℚ) :
     (derivative (serreBaseP n)).eval a = (n : AlgebraicClosure ℚ) * a ^ (n - 2) * (a - 1) := by
   rw [serreBaseP_derivative n hn]
-  simp [eval_mul, eval_pow, eval_X, eval_sub, eval_one]
+  simp only [eval_mul, eval_pow, eval_X, eval_sub, eval_one, eval_C]
 
 theorem serreBaseP_deriv_root (hn : 3 ≤ n) {a : AlgebraicClosure ℚ}
     (h : (derivative (serreBaseP n)).IsRoot a) : a = 0 ∨ a = 1 := by
@@ -326,8 +333,10 @@ theorem serreBaseP_deriv_root (hn : 3 ≤ n) {a : AlgebraicClosure ℚ}
   rcases mul_eq_zero.mp h with h' | h'
   · rcases mul_eq_zero.mp h' with h'' | h''
     · exact absurd h'' hn0
-    · left; exact (pow_eq_zero_iff (by omega : n - 2 ≠ 0)).mp h''
-  · right; rwa [sub_eq_zero] at h'
+    · left
+      exact (pow_eq_zero_iff (by omega : n - 2 ≠ 0)).mp h''
+  · right
+    rwa [sub_eq_zero] at h'
 
 theorem serreBaseP_deriv2_eval_one (hn : 3 ≤ n) :
     (derivative (derivative (serreBaseP n))).eval 1 = (n : AlgebraicClosure ℚ) := by
@@ -336,15 +345,21 @@ theorem serreBaseP_deriv2_eval_one (hn : 3 ≤ n) :
   have hf : C (n : AlgebraicClosure ℚ) * X ^ (n - 2) * (X - 1)
       = C (n : AlgebraicClosure ℚ) * X ^ (n - 1) - C (n : AlgebraicClosure ℚ) * X ^ (n - 2) := by
     have he2 : (X : (AlgebraicClosure ℚ)[X]) ^ (n - 1) = X ^ (n - 2) * X := by
-      rw [← pow_succ]; congr 1; omega
-    rw [he2]; ring
+      rw [← pow_succ]
+      congr 1
+      omega
+    rw [he2]
+    ring
   rw [hf, derivative_sub, derivative_C_mul, derivative_C_mul, derivative_X_pow, derivative_X_pow]
   simp only [eval_sub, eval_mul, eval_C, eval_pow, eval_X, one_pow, mul_one]
   have hc1 : ((n - 1 : ℕ) : AlgebraicClosure ℚ) = (n : AlgebraicClosure ℚ) - 1 := by
-    push_cast [Nat.cast_sub (by omega : 1 ≤ n)]; ring
+    push_cast [Nat.cast_sub (by omega : 1 ≤ n)]
+    ring
   have hc2 : ((n - 2 : ℕ) : AlgebraicClosure ℚ) = (n : AlgebraicClosure ℚ) - 2 := by
-    push_cast [Nat.cast_sub (by omega : 2 ≤ n)]; ring
-  rw [hc1, hc2]; ring
+    push_cast [Nat.cast_sub (by omega : 2 ≤ n)]
+    ring
+  rw [hc1, hc2]
+  ring
 
 theorem fiber_eval_zero_ne (hn : 2 ≤ n) :
     (serreBaseP n - C (critT n)).eval 0 ≠ 0 := by
@@ -366,11 +381,12 @@ theorem fiber_common_root_unique (hn : 3 ≤ n) {a b : AlgebraicClosure ℚ}
     (hb : (serreBaseP n - C (critT n)).IsRoot b)
     (hb' : (derivative (serreBaseP n - C (critT n))).IsRoot b) : a = b := by
   have h2 : 2 ≤ n := by omega
-  have haa : a = 1 := (fiber_deriv_root n hn ha').resolve_left
-    (by rintro rfl; exact fiber_eval_zero_ne n h2 ha)
-  have hbb : b = 1 := (fiber_deriv_root n hn hb').resolve_left
-    (by rintro rfl; exact fiber_eval_zero_ne n h2 hb)
-  rw [haa, hbb]
+  have hone : ∀ z, (serreBaseP n - C (critT n)).IsRoot z →
+      (derivative (serreBaseP n - C (critT n))).IsRoot z → z = 1 := fun z hz hz' ↦
+    (fiber_deriv_root n hn hz').resolve_left (by
+      rintro rfl
+      exact fiber_eval_zero_ne n h2 hz)
+  rw [hone a ha ha', hone b hb hb']
 
 theorem fiber_rootMultiplicity_le_two (hn : 3 ≤ n) (a : AlgebraicClosure ℚ) :
     (serreBaseP n - C (critT n)).rootMultiplicity a ≤ 2 := by
@@ -378,21 +394,24 @@ theorem fiber_rootMultiplicity_le_two (hn : 3 ≤ n) (a : AlgebraicClosure ℚ) 
   by_contra hc
   have hmul : 2 < (serreBaseP n - C (critT n)).rootMultiplicity a := not_le.mp hc
   have key0 : (serreBaseP n - C (critT n)).IsRoot a :=
-    Polynomial.isRoot_iterate_derivative_of_lt_rootMultiplicity
+    isRoot_iterate_derivative_of_lt_rootMultiplicity
       (by omega : 0 < (serreBaseP n - C (critT n)).rootMultiplicity a)
   have key1 : (derivative (serreBaseP n - C (critT n))).IsRoot a :=
-    Polynomial.isRoot_iterate_derivative_of_lt_rootMultiplicity
+    isRoot_iterate_derivative_of_lt_rootMultiplicity
       (by omega : 1 < (serreBaseP n - C (critT n)).rootMultiplicity a)
   have key2 : (derivative (derivative (serreBaseP n - C (critT n)))).IsRoot a :=
-    Polynomial.isRoot_iterate_derivative_of_lt_rootMultiplicity hmul
+    isRoot_iterate_derivative_of_lt_rootMultiplicity hmul
   have haa : a = 1 := (fiber_deriv_root n hn key1).resolve_left
-    (by rintro rfl; exact fiber_eval_zero_ne n h2 key0)
+    (by
+      rintro rfl
+      exact fiber_eval_zero_ne n h2 key0)
   rw [haa] at key2
   simp only [IsRoot.def] at key2
-  rw [show derivative (serreBaseP n - C (critT n)) = derivative (serreBaseP n) from by
-    rw [derivative_sub, derivative_C, sub_zero]] at key2
-  rw [serreBaseP_deriv2_eval_one n hn] at key2
-  exact absurd key2 (by exact_mod_cast (show n ≠ 0 by omega))
+  have hderiv : derivative (serreBaseP n - C (critT n)) = derivative (serreBaseP n) := by
+    rw [derivative_sub, derivative_C, sub_zero]
+  rw [hderiv, serreBaseP_deriv2_eval_one n hn] at key2
+  have hn0 : (n : AlgebraicClosure ℚ) ≠ 0 := by exact_mod_cast (show n ≠ 0 by omega)
+  exact absurd key2 hn0
 
 theorem fiber_ncard_qbar (hn : 3 ≤ n) :
     (serreBaseP n - C (critT n)).roots.card
@@ -404,10 +423,10 @@ theorem fiber_ncard_qbar (hn : 3 ≤ n) :
     refine Finset.card_le_one.2 fun a ha b hb ↦ ?_
     rw [Finset.mem_filter, Multiset.mem_toFinset] at ha hb
     apply fiber_common_root_unique n hn
-    · exact Polynomial.isRoot_of_mem_roots ha.1
-    · exact Polynomial.isRoot_iterate_derivative_of_lt_rootMultiplicity ha.2
-    · exact Polynomial.isRoot_of_mem_roots hb.1
-    · exact Polynomial.isRoot_iterate_derivative_of_lt_rootMultiplicity hb.2
+    · exact isRoot_of_mem_roots ha.1
+    · exact isRoot_iterate_derivative_of_lt_rootMultiplicity ha.2
+    · exact isRoot_of_mem_roots hb.1
+    · exact isRoot_iterate_derivative_of_lt_rootMultiplicity hb.2
   have h_sum_le_one :
       ∑ a ∈ p.roots.toFinset, (p.rootMultiplicity a - 1)
         ≤ (p.roots.toFinset.filter (fun a ↦ p.rootMultiplicity a ≥ 2)).card := by
@@ -420,7 +439,8 @@ theorem fiber_ncard_qbar (hn : 3 ≤ n) :
     · omega
   have h_sum_eq_card :
       ∑ a ∈ p.roots.toFinset, p.rootMultiplicity a = Multiset.card p.roots := by
-    rw [← Multiset.toFinset_sum_count_eq]; simp
+    rw [← Multiset.toFinset_sum_count_eq]
+    simp
   have h_sum_eq_card2 :
       ∑ a ∈ p.roots.toFinset, (p.rootMultiplicity a - 1)
           + ∑ a ∈ p.roots.toFinset, 1 = Multiset.card p.roots := by
@@ -443,17 +463,17 @@ theorem fiber_ncard_field (hn : 3 ≤ n) {F : Type*} [CommRing F] [IsDomain F]
   exact fiber_ncard_qbar n hn
 
 /-- The branch-point maximal ideal `(T − t₀)` of `A = ℚ̄[T]`. -/
-def branchIdeal : Ideal Abase := Ideal.span {Polynomial.X - Polynomial.C (critT n)}
+def branchIdeal : Ideal Abase := Ideal.span {X - C (critT n)}
 
 instance : (branchIdeal n).IsMaximal := by
   convert PrincipalIdealRing.isMaximal_of_irreducible _
   · infer_instance
-  · exact Polynomial.irreducible_X_sub_C _
+  · exact irreducible_X_sub_C _
 
 lemma branchIdeal_ne_bot : branchIdeal n ≠ ⊥ := by
   unfold branchIdeal
   rw [Ne.eq_def, Ideal.span_singleton_eq_bot]
-  exact Polynomial.X_sub_C_ne_zero _
+  exact X_sub_C_ne_zero _
 
 /-- Abstract collision bound.  For any `Abase`-algebra domain `S` and maximal ideal `P` of `S`
 whose residue field identifies `T` with the branch value `t₀` (`hψX`), the roots of `serreBaseC`
@@ -468,7 +488,6 @@ theorem serre_ncard_bound_abstract {S : Type*} [CommRing S] [IsDomain S] [Algebr
       ≤ ((serreBaseC n).rootSet (S ⧸ P)).ncard + 1 := by
   classical
   have h2 : 2 ≤ n := by omega
-  haveI : IsDomain (S ⧸ P) := inferInstance
   have hmapeq : (serreBaseC n).map (algebraMap Abase (S ⧸ P))
       = (serreBaseP n - C (critT n)).map ((algebraMap Abase (S ⧸ P)).comp C) := by
     simp only [serreBaseC, linearCoverC, Polynomial.map_sub, Polynomial.map_map, Polynomial.map_C,
@@ -477,11 +496,12 @@ theorem serre_ncard_bound_abstract {S : Type*} [CommRing S] [IsDomain S] [Algebr
     apply (serreBaseP_monic n h2).sub_of_left
     calc (C (critT n) : (AlgebraicClosure ℚ)[X]).degree ≤ 0 := degree_C_le
       _ < (serreBaseP n).degree := by
-          rw [Polynomial.degree_eq_natDegree (serreBaseP_monic n h2).ne_zero,
+          rw [degree_eq_natDegree (serreBaseP_monic n h2).ne_zero,
             serreBaseP_natDegree n h2]
           exact_mod_cast (by omega : (0 : ℕ) < n)
   have hne : (serreBaseC n).map (algebraMap Abase (S ⧸ P)) ≠ 0 := by
-    rw [hmapeq]; exact (hfibmonic.map _).ne_zero
+    rw [hmapeq]
+    exact (hfibmonic.map _).ne_zero
   calc ((serreBaseC n).rootSet S).ncard
       ≤ ((serreBaseC n).map (algebraMap Abase (S ⧸ P))).roots.card :=
         SelmerMorse.ncard_rootSet_le_roots_card (serreBaseC n) hne
@@ -491,7 +511,7 @@ theorem serre_ncard_bound_abstract {S : Type*} [CommRing S] [IsDomain S] [Algebr
           ((algebraMap Abase (S ⧸ P)).comp C)).roots.toFinset.card + 1 :=
         fiber_ncard_field (F := S ⧸ P) n hn ((algebraMap Abase (S ⧸ P)).comp C)
     _ = ((serreBaseC n).rootSet (S ⧸ P)).ncard + 1 := by
-        rw [Polynomial.rootSet_def, Set.ncard_coe_finset, Polynomial.aroots_def, hmapeq]
+        rw [rootSet_def, Set.ncard_coe_finset, aroots_def, hmapeq]
 
 /-- For any maximal ideal `P` of `B` lying over the branch ideal, the roots of `serreBaseC`
 collide at most once modulo `P`. -/
@@ -528,8 +548,6 @@ lemma inertia_of_ramified
     ∃ (P : Ideal (Bring n)), P.IsMaximal ∧ P.LiesOver p ∧
       ∃ g : (serreBaseGeomPoly n).Gal, g ∈ P.inertia (serreBaseGeomPoly n).Gal ∧ g ≠ 1 := by
   obtain ⟨⟨Q, hQprime, hQover⟩⟩ := PS.nonempty_primesOver (S := Bring n)
-  have : Q.IsPrime := hQprime
-  have : Q.LiesOver PS := hQover
   have hQlo_p : Q.LiesOver p := Ideal.LiesOver.trans Q PS p
   have hle : Ideal.map (algebraMap Smid (Bring n)) PS ≤ Q :=
     Ideal.map_le_iff_le_comap.mpr (le_of_eq (Ideal.LiesOver.over (P := Q) (p := PS)))
@@ -553,9 +571,10 @@ lemma inertia_of_ramified
   have := hsep Q
   have hcard := Ideal.card_inertia_eq_ramificationIdxIn (G := (serreBaseGeomPoly n).Gal) p hp Q
   have h2card : 2 ≤ Nat.card (Ideal.inertia (serreBaseGeomPoly n).Gal Q) := by
-    rw [hcard, hIn]; exact h2
+    rwa [hcard, hIn]
   have hNT : Nontrivial (Ideal.inertia (serreBaseGeomPoly n).Gal Q) := by
-    rw [← Finite.one_lt_card_iff_nontrivial]; omega
+    rw [← Finite.one_lt_card_iff_nontrivial]
+    omega
   obtain ⟨g, hg⟩ := exists_ne (1 : Ideal.inertia (serreBaseGeomPoly n).Gal Q)
   refine ⟨Q, inferInstance, hQlo_p, g, g.2, ?_⟩
   simpa using hg
@@ -563,13 +582,17 @@ lemma inertia_of_ramified
 /-! ### The concrete intermediate ring `A[x] = ℚ̄[x] ⊆ B` -/
 
 lemma exists_rootB : ∃ x : Bring n, (aeval x) (serreBaseC n) = 0 := by
-  have h2 : 2 ≤ n := by have := hn3.out; omega
+  have h2 : 2 ≤ n := by
+    have := hn3.out
+    omega
   have hcard := serreBaseGeomPoly_card_rootSet n h2
   have hne : Nonempty ((serreBaseGeomPoly n).rootSet (Lfield n)) :=
-    Fintype.card_pos_iff.mp (by rw [hcard]; omega)
+    Fintype.card_pos_iff.mp (by
+      rw [hcard]
+      omega)
   obtain ⟨r⟩ := hne
   obtain ⟨s, _⟩ := (rootMap_bijective n).2 r
-  exact ⟨s, Polynomial.aeval_eq_zero_of_mem_rootSet s.2⟩
+  exact ⟨s, aeval_eq_zero_of_mem_rootSet s.2⟩
 
 /-- A chosen root of `serreBaseC n` in `B`. -/
 def rootB : Bring n := (exists_rootB n).choose
@@ -603,9 +626,8 @@ instance : Module.IsTorsionFree (Smid n) (Bring n) := by
   intro y z h_eq
   simp_all
 
-instance : Module.Finite (Smid n) (Bring n) := by
-  have h_finite : Module.Finite Abase (Bring n) := by infer_instance
-  exact h_finite.of_restrictScalars_finite Abase (Smid n) (Bring n)
+instance : Module.Finite (Smid n) (Bring n) :=
+  (inferInstance : Module.Finite Abase (Bring n)).of_restrictScalars_finite Abase (Smid n) (Bring n)
 
 instance : Algebra.IsIntegral (Smid n) (Bring n) := by infer_instance
 
@@ -621,33 +643,33 @@ lemma xS_conductor_top : conductor Abase (xS n) = ⊤ := by
   rcases y with ⟨y, hy⟩
   refine Algebra.adjoin_induction ?_ ?_ ?_ ?_ hy
   · exact fun x hx ↦ Algebra.subset_adjoin <| by aesop
-  · exact fun r ↦ Subalgebra.algebraMap_mem _ r
+  · exact Subalgebra.algebraMap_mem _
   · exact fun x y hx hy hx' hy' ↦ Subalgebra.add_mem _ hx' hy'
   · exact fun x y hx hy hx' hy' ↦ Subalgebra.mul_mem _ hx' hy'
 
 lemma xS_minpoly : minpoly Abase (xS n) = serreBaseC n := by
-  have h2 : 2 ≤ n := by have := hn3.out; omega
+  have h2 : 2 ≤ n := by
+    have := hn3.out
+    omega
   have h_minpoly_div : minpoly Abase (xS n) ∣ serreBaseC n := by
     refine minpoly.isIntegrallyClosed_dvd ?_ ?_
     · refine ⟨serreBaseC n, serreBaseC_monic n h2, ?_⟩
       convert rootB_spec n using 1
       simp [aeval_def, Polynomial.eval₂_eq_sum_range]
-      erw [← Subtype.coe_inj]
+      rw [← Subtype.coe_inj]
       aesop
     · convert rootB_spec n using 1
-      erw [← Subtype.coe_inj]
+      rw [← Subtype.coe_inj]
       simp [xS]
   have h_irreducible : Irreducible (serreBaseC n) := serreBaseC_irreducible n
-  refine Polynomial.eq_of_monic_of_associated ?_ ?_ ?_
+  refine eq_of_monic_of_associated ?_ ?_ ?_
   · apply minpoly.monic
     refine ⟨serreBaseC n, serreBaseC_monic n h2, ?_⟩
     convert rootB_spec n using 1
-    simp [xS, aeval_def, Polynomial.eval₂_eq_sum_range]
-    simp [← Subtype.coe_inj]
+    simp [xS, aeval_def, Polynomial.eval₂_eq_sum_range, ← Subtype.coe_inj]
   · exact serreBaseC_monic n h2
   · obtain ⟨q, hq⟩ := h_minpoly_div
-    have := h_irreducible.2
-    specialize this hq
+    have := h_irreducible.2 hq
     exact this.elim (fun h ↦ False.elim <| minpoly.not_isUnit Abase (xS n) h)
       fun h ↦ associated_of_dvd_dvd (by aesop) (by aesop)
 
@@ -658,20 +680,21 @@ lemma algebraMap_Abase_Smid_X :
       = (xS n) ^ n
         - (algebraMap Abase (Smid n)
             (C ((n : AlgebraicClosure ℚ) / ((n : AlgebraicClosure ℚ) - 1)))) * (xS n) ^ (n - 1) := by
-  have hxS0 : (aeval (xS n)) (serreBaseC n) = 0 := by
-    have hφ := Polynomial.aeval_algHom_apply
-      (Subalgebra.val (Algebra.adjoin Abase ({rootB n} : Set (Bring n)))) (xS n) (serreBaseC n)
-    have hval : (Subalgebra.val (Algebra.adjoin Abase ({rootB n} : Set (Bring n)))) (xS n)
-        = rootB n := rfl
-    rw [hval] at hφ
-    have hz : (Subalgebra.val (Algebra.adjoin Abase ({rootB n} : Set (Bring n))))
-        ((aeval (xS n)) (serreBaseC n)) = 0 := by rw [← hφ]; exact rootB_spec n
-    exact Subtype.val_injective hz
+  have hφ := aeval_algHom_apply
+    (Subalgebra.val (Algebra.adjoin Abase ({rootB n} : Set (Bring n)))) (xS n) (serreBaseC n)
+  have hval : (Subalgebra.val (Algebra.adjoin Abase ({rootB n} : Set (Bring n)))) (xS n)
+      = rootB n := rfl
+  rw [hval] at hφ
+  have hz : (Subalgebra.val (Algebra.adjoin Abase ({rootB n} : Set (Bring n))))
+      ((aeval (xS n)) (serreBaseC n)) = 0 := by
+    rw [← hφ]
+    exact rootB_spec n
+  have hxS0 : (aeval (xS n)) (serreBaseC n) = 0 := Subtype.val_injective hz
   have hexpand : (aeval (xS n)) (serreBaseC n)
       = (xS n) ^ n
         - (algebraMap Abase (Smid n)
             (C ((n : AlgebraicClosure ℚ) / ((n : AlgebraicClosure ℚ) - 1)))) * (xS n) ^ (n - 1)
-        - algebraMap Abase (Smid n) Polynomial.X := by
+        - algebraMap Abase (Smid n) X := by
     rw [serreBaseC, linearCoverC, map_sub, aeval_C]
     rw [Polynomial.aeval_def, Polynomial.eval₂_map]
     simp only [serreBaseP, eval₂_sub, eval₂_mul, eval₂_C, eval₂_pow, eval₂_X, RingHom.comp_apply]
@@ -688,16 +711,16 @@ lemma Smid_eval_surjective :
     convert (conductor_eq_top_iff_adjoin_eq_top (R := Abase) (x := xS n)).mp
       (xS_conductor_top n) using 1) y
   refine Algebra.adjoin_induction ?_ ?_ ?_ ?_ (h_span y)
-  · exact fun x hx ↦ ⟨Polynomial.X, by aesop⟩
+  · exact fun x hx ↦ ⟨X, by aesop⟩
   · intro r
     use Polynomial.comp r (serreBaseP n)
-    have hkey : Polynomial.eval₂ ((algebraMap Abase (Smid n)).comp Polynomial.C) (xS n)
-        (serreBaseP n) = algebraMap Abase (Smid n) Polynomial.X := by
+    have hkey : Polynomial.eval₂ ((algebraMap Abase (Smid n)).comp C) (xS n)
+        (serreBaseP n) = algebraMap Abase (Smid n) X := by
       rw [algebraMap_Abase_Smid_X]
       simp only [serreBaseP, eval₂_sub, eval₂_mul, eval₂_C, eval₂_pow, eval₂_X, RingHom.comp_apply]
     simp only [Polynomial.coe_eval₂RingHom, Polynomial.eval₂_comp, hkey]
     rw [Polynomial.eval₂_eq_sum_range]
-    conv_rhs => rw [Polynomial.as_sum_range_C_mul_X_pow r]
+    conv_rhs => rw [as_sum_range_C_mul_X_pow r]
     simp [map_sum, map_mul, map_pow]
   · rintro x y hx hy ⟨a, rfl⟩ ⟨b, rfl⟩
     exact ⟨a + b, by simp⟩
@@ -718,7 +741,9 @@ theorem sq_dvd_fiber_serre (hn : 3 ≤ n) :
       (X - C (1 : AlgebraicClosure ℚ)) * q = serreBaseP n - C (critT n) := by
     refine ⟨(serreBaseP n - C (critT n)) /ₘ (X - C 1), ?_⟩
     have hroot : (serreBaseP n - C (critT n)).IsRoot 1 := by
-      rw [IsRoot.def, eval_sub, eval_C]; unfold critT; ring
+      rw [IsRoot.def, eval_sub, eval_C]
+      unfold critT
+      ring
     rw [mul_divByMonic_eq_iff_isRoot.mpr hroot]
   convert mul_dvd_mul_left (X - C (1 : AlgebraicClosure ℚ))
     (dvd_iff_isRoot.mpr (show q.eval 1 = 0 from ?_)) using 1
@@ -738,9 +763,9 @@ lemma branch_reduced_sq_dvd (hn : 3 ≤ n) :
     (X - C (Ideal.Quotient.mk (branchIdeal n) (Polynomial.C (1 : AlgebraicClosure ℚ)))) ^ 2 ∣
       (serreBaseC n).map (Ideal.Quotient.mk (branchIdeal n)) := by
   set ρ : (AlgebraicClosure ℚ) →+* (Abase ⧸ branchIdeal n) :=
-    (Ideal.Quotient.mk (branchIdeal n)).comp Polynomial.C with hρ
-  have hXeq : (Ideal.Quotient.mk (branchIdeal n)) (Polynomial.X) =
-      (Ideal.Quotient.mk (branchIdeal n)) (Polynomial.C (critT n)) := by
+    (Ideal.Quotient.mk (branchIdeal n)).comp C with hρ
+  have hXeq : (Ideal.Quotient.mk (branchIdeal n)) X =
+      (Ideal.Quotient.mk (branchIdeal n)) (C (critT n)) := by
     rw [← sub_eq_zero, ← map_sub, Ideal.Quotient.eq_zero_iff_mem]
     exact Ideal.mem_span_singleton_self _
   have hmapeq : (serreBaseC n).map (Ideal.Quotient.mk (branchIdeal n))
@@ -762,16 +787,16 @@ lemma branch_ramified (hn : 3 ≤ n) :
   have hsq := branch_reduced_sq_dvd n hn
   have hI' : branchIdeal n ≠ ⊥ := branchIdeal_ne_bot n
   have hxint : IsIntegral Abase (xS n) := ⟨serreBaseC n, serreBaseC_monic n h2, by
-    have := xS_minpoly n
-    have h2' := minpoly.aeval Abase (xS n)
-    rwa [this] at h2'⟩
+    rw [← xS_minpoly n]
+    exact minpoly.aeval Abase (xS n)⟩
   have hx : (conductor Abase (xS n)).comap (algebraMap Abase (Smid n)) ⊔ (branchIdeal n) = ⊤ := by
-    rw [xS_conductor_top]; simp
+    rw [xS_conductor_top]
+    simp
   set d : (Abase ⧸ branchIdeal n)[X] :=
-    X - C (Ideal.Quotient.mk (branchIdeal n) (Polynomial.C (1 : AlgebraicClosure ℚ))) with hd
+    X - C (Ideal.Quotient.mk (branchIdeal n) (C (1 : AlgebraicClosure ℚ))) with hd
   have hPne : (minpoly Abase (xS n)).map (Ideal.Quotient.mk (branchIdeal n)) ≠ 0 := by
     rw [xS_minpoly]
-    exact (Polynomial.Monic.map _ (serreBaseC_monic n h2)).ne_zero
+    exact (Monic.map _ (serreBaseC_monic n h2)).ne_zero
   have hd_irr : Irreducible d := irreducible_X_sub_C _
   have hd_norm : normalize d = d := (monic_X_sub_C _).normalize_eq_self
   have hcount2 : 2 ≤ Multiset.count d (UniqueFactorizationMonoid.normalizedFactors
@@ -847,12 +872,10 @@ lemma exists_nontrivial_inertia (hn : 3 ≤ n) :
     ∃ (P : Ideal (Bring n)), P.IsMaximal ∧ P.LiesOver (branchIdeal n) ∧
       ∃ g : (serreBaseGeomPoly n).Gal, g ∈ P.inertia (serreBaseGeomPoly n).Gal ∧ g ≠ 1 := by
   obtain ⟨PS, hPSprime, hPSover, hPSe, hPSmap⟩ := branch_ramified n hn
-  have := hPSprime
-  have := hPSover
   exact inertia_of_ramified n (Smid n) (branchIdeal n) (branchIdeal_ne_bot n)
     (algebraMap_Abase_Bring_injective n) PS hPSe hPSmap
     (Ideal.map_ne_bot_of_ne_bot (branchIdeal_ne_bot n))
-    (fun Q _ _ => branch_residue_separable n Q)
+    (fun Q _ _ ↦ branch_residue_separable n Q)
 
 /-! ## Assembling the transposition -/
 
@@ -861,7 +884,6 @@ theorem swap_input_final (hn : 3 ≤ n) :
       ((Gal.galActionHom (serreBaseGeomPoly n) (Lfield n)) g).IsSwap := by
   classical
   obtain ⟨P, hPmax, hPlo, g, hg_in, hg_ne⟩ := exists_nontrivial_inertia n hn
-  have : P.IsPrime := hPmax.isPrime
   have hmorse := Polynomial.Splits.toPermHom_apply_eq_one_or_isSwap_of_ncard_le_of_mem_inertia
     (R := Abase) (S := Bring n) (G := (serreBaseGeomPoly n).Gal) (f := serreBaseC n)
     (serreBaseC_splits_B n) P (serre_ncard_bound n hn P) g hg_in
@@ -891,7 +913,7 @@ contains an element acting on the roots as a transposition. -/
 theorem serreBaseGeomPoly_hasSwap (n : ℕ) (hn : 3 ≤ n) :
     ∃ g : (serreBaseGeomPoly n).Gal, Equiv.Perm.IsSwap
       ((Gal.galActionHom (serreBaseGeomPoly n) (serreBaseGeomPoly n).SplittingField) g) := by
-  haveI : Fact (3 ≤ n) := ⟨hn⟩
+  have : Fact (3 ≤ n) := ⟨hn⟩
   exact SerreBaseSwap.swap_input_final n hn
 
 open scoped Classical in

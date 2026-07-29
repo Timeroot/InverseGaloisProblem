@@ -47,14 +47,16 @@ def anBaseFamily (n : ℕ) : Polynomial (Polynomial ℚ) := X ^ n - X ^ (n - 1) 
 
 /-- **[algebraic leaf]** `f = Xⁿ − X^{n-1} − T` is monic for `n ≥ 2`. -/
 theorem anBaseFamily_monic (n : ℕ) (hn : 2 ≤ n) : (anBaseFamily n).Monic := by
-  have h : anBaseFamily n = X ^ n - (X ^ (n - 1) + C X) := by unfold anBaseFamily; ring
+  have h : anBaseFamily n = X ^ n - (X ^ (n - 1) + C X) := by
+    unfold anBaseFamily
+    ring
   rw [h]
   apply monic_X_pow_sub
   have hle : (X ^ (n - 1) + C X : Polynomial (Polynomial ℚ)).degree ≤ (↑(n - 1)) := by
-    refine le_trans (degree_add_le _ _) ?_
+    apply le_trans (degree_add_le _ _)
     rw [degree_X_pow]
     exact max_le le_rfl (le_trans degree_C_le (by exact_mod_cast Nat.zero_le (n - 1)))
-  refine lt_of_le_of_lt hle ?_
+  apply lt_of_le_of_lt hle
   exact_mod_cast (by omega : n - 1 < n)
 
 /-- **[algebraic leaf]** `f = Xⁿ − X^{n-1} − T` has `X`-degree `n` for `n ≥ 2`. -/
@@ -72,7 +74,7 @@ theorem anBaseFamily_derivative (n : ℕ) (hn : 2 ≤ n) :
     derivative (anBaseFamily n) = C (n : Polynomial ℚ) * X ^ (n - 1)
       - C ((n : Polynomial ℚ) - 1) * X ^ (n - 2) := by
   simp [anBaseFamily, derivative_pow]
-  simp (config := { decide := true }) only [show n - 1 - 1 = n - 2 by omega]
+  simp only [show n - 1 - 1 = n - 2 by omega]
   congr 1
   simp [Nat.cast_sub (by omega : 1 ≤ n)]
 
@@ -82,82 +84,86 @@ in `t`). -/
 theorem anBaseFamily_separable_cofinite (n : ℕ) (hn : 2 ≤ n) :
     {t : ℤ | ¬ (specialize (anBaseFamily n) t).Separable}.Finite := by
   -- The roots of the derivative `f' = n·X^{n-1} − (n−1)·X^{n-2}` are finite.
-  have hDisc_roots_finite : Set.Finite (SetLike.coe (Polynomial.roots
-      (Polynomial.C (n : ℚ) * Polynomial.X ^ (n - 1)
-        - Polynomial.C ((n : ℚ) - 1) * Polynomial.X ^ (n - 2) : Polynomial ℚ)).toFinset) :=
+  have hDisc_roots_finite : Set.Finite (SetLike.coe (roots
+      (C (n : ℚ) * X ^ (n - 1)
+        - C ((n : ℚ) - 1) * X ^ (n - 2) : Polynomial ℚ)).toFinset) :=
     Set.toFinite _
-  have hD_roots_finite : Set.Finite {t : ℚ | ∃ r : AlgebraicClosure ℚ,
-      Polynomial.eval r (Polynomial.map (algebraMap ℚ (AlgebraicClosure ℚ))
-        (Polynomial.C (n : ℚ) * Polynomial.X ^ (n - 1)
-          - Polynomial.C ((n : ℚ) - 1) * Polynomial.X ^ (n - 2))) = 0 ∧
-      Polynomial.eval r (Polynomial.map (algebraMap ℚ (AlgebraicClosure ℚ))
-        (Polynomial.X ^ n - Polynomial.X ^ (n - 1) - Polynomial.C (t : ℚ))) = 0} := by
-    refine Set.Finite.subset (hDisc_roots_finite.image (fun r : ℚ ↦ r ^ n - r ^ (n - 1))) ?_
-    intro t ht
-    obtain ⟨r, hr₁, hr₂⟩ := ht
-    -- `r` is a root of `f'`, hence `r = 0` or `r = (n-1)/n`; both are rational.
-    have h_rational : ∃ q : ℚ, r = algebraMap ℚ (AlgebraicClosure ℚ) q ∧
-        Polynomial.eval q (Polynomial.C (n : ℚ) * Polynomial.X ^ (n - 1)
-          - Polynomial.C ((n : ℚ) - 1) * Polynomial.X ^ (n - 2)) = 0 := by
-      -- Simplify the root condition `f'(r) = 0`.
-      have hr : (n : AlgebraicClosure ℚ) * r ^ (n - 1)
-          - ((n : AlgebraicClosure ℚ) - 1) * r ^ (n - 2) = 0 := by
-        have h := hr₁
-        simp only [Polynomial.map_sub, Polynomial.map_mul, Polynomial.map_pow, Polynomial.map_X,
-          Polynomial.map_C, Polynomial.eval_sub, Polynomial.eval_mul, Polynomial.eval_pow,
-          Polynomial.eval_X, Polynomial.eval_C] at h
-        rw [map_natCast, map_sub, map_natCast, map_one] at h
-        exact h
-      -- Factor `r^{n-2}·(n·r − (n−1)) = 0`.
-      have hm : n - 1 = (n - 2) + 1 := by omega
-      have hfact : r ^ (n - 2)
-          * ((n : AlgebraicClosure ℚ) * r - ((n : AlgebraicClosure ℚ) - 1)) = 0 := by
-        rw [hm, pow_succ] at hr
-        linear_combination hr
-      rcases mul_eq_zero.mp hfact with h0 | h0
-      · -- `r^{n-2} = 0`: forces `r = 0` (and `n ≥ 3`).
-        rcases eq_or_ne (n - 2) 0 with he | he
-        · rw [he, pow_zero] at h0; exact absurd h0 one_ne_zero
-        · have hr0 : r = 0 := (pow_eq_zero_iff he).mp h0
-          refine ⟨0, by rw [hr0]; simp, ?_⟩
-          simp only [Polynomial.eval_sub, Polynomial.eval_mul, Polynomial.eval_pow,
-            Polynomial.eval_X, Polynomial.eval_C]
+  -- `r` is a root of `f'`, hence `r = 0` or `r = (n-1)/n`; both are rational.
+  have h_rational {r : AlgebraicClosure ℚ}
+      (hr₁ : eval r (Polynomial.map (algebraMap ℚ (AlgebraicClosure ℚ))
+        (C (n : ℚ) * X ^ (n - 1)
+          - C ((n : ℚ) - 1) * X ^ (n - 2))) = 0) :
+      ∃ q : ℚ, r = algebraMap ℚ (AlgebraicClosure ℚ) q ∧
+        eval q (C (n : ℚ) * X ^ (n - 1)
+          - C ((n : ℚ) - 1) * X ^ (n - 2)) = 0 := by
+    -- Simplify the root condition `f'(r) = 0`.
+    have hr : (n : AlgebraicClosure ℚ) * r ^ (n - 1)
+        - ((n : AlgebraicClosure ℚ) - 1) * r ^ (n - 2) = 0 := by
+      simp only [Polynomial.map_sub, Polynomial.map_mul, Polynomial.map_pow, map_X,
+        Polynomial.map_C, eval_sub, eval_mul, eval_pow,
+        eval_X, eval_C] at hr₁
+      rwa [map_natCast, map_sub, map_natCast, map_one] at hr₁
+    -- Factor `r^{n-2}·(n·r − (n−1)) = 0`.
+    have hm : n - 1 = (n - 2) + 1 := by omega
+    have hfact : r ^ (n - 2)
+        * ((n : AlgebraicClosure ℚ) * r - ((n : AlgebraicClosure ℚ) - 1)) = 0 := by
+      rw [hm, pow_succ] at hr
+      linear_combination hr
+    rcases mul_eq_zero.mp hfact with h0 | h0
+    · -- `r^{n-2} = 0`: forces `r = 0` (and `n ≥ 3`).
+      rcases eq_or_ne (n - 2) 0 with he | he
+      · rw [he, pow_zero] at h0
+        exact absurd h0 one_ne_zero
+      · have hr0 : r = 0 := (pow_eq_zero_iff he).mp h0
+        refine ⟨0, ?_, ?_⟩
+        · rw [hr0]
+          simp
+        · simp only [eval_sub, eval_mul, eval_pow,
+            eval_X, eval_C]
           rw [zero_pow (by omega : n - 1 ≠ 0), zero_pow he]
           ring
-      · -- `n·r − (n−1) = 0`: forces `r = (n−1)/n`.
-        have hn0 : (n : AlgebraicClosure ℚ) ≠ 0 := by rw [Nat.cast_ne_zero]; omega
-        have hrval : r = ((n : AlgebraicClosure ℚ) - 1) / (n : AlgebraicClosure ℚ) := by
-          field_simp
-          linear_combination h0
-        refine ⟨((n : ℚ) - 1) / (n : ℚ), ?_, ?_⟩
-        · rw [hrval, map_div₀, map_sub, map_natCast, map_one]
-        · have hn0q : (n : ℚ) ≠ 0 := by rw [Nat.cast_ne_zero]; omega
-          simp only [Polynomial.eval_sub, Polynomial.eval_mul, Polynomial.eval_pow,
-            Polynomial.eval_X, Polynomial.eval_C]
-          rw [hm, pow_succ]
-          field_simp
-          ring
-    obtain ⟨q, rfl, hq⟩ := h_rational
-    have hpoly_ne : (Polynomial.C (n : ℚ) * Polynomial.X ^ (n - 1)
-        - Polynomial.C ((n : ℚ) - 1) * Polynomial.X ^ (n - 2) : Polynomial ℚ) ≠ 0 := by
-      intro h
-      have hc := congr_arg (fun p ↦ Polynomial.coeff p (n - 1)) h
-      simp only [Polynomial.coeff_sub, Polynomial.coeff_C_mul, Polynomial.coeff_X_pow,
-        Polynomial.coeff_zero] at hc
-      rw [if_neg (by omega : ¬ (n - 1 = n - 2))] at hc
-      simp only [if_true, mul_one, mul_zero, sub_zero] at hc
-      exact absurd (Nat.cast_eq_zero.mp hc) (by omega)
+    · -- `n·r − (n−1) = 0`: forces `r = (n−1)/n`.
+      have hn0 : (n : AlgebraicClosure ℚ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
+      have hrval : r = ((n : AlgebraicClosure ℚ) - 1) / (n : AlgebraicClosure ℚ) := by
+        field_simp
+        linear_combination h0
+      refine ⟨((n : ℚ) - 1) / (n : ℚ), ?_, ?_⟩
+      · rw [hrval, map_div₀, map_sub, map_natCast, map_one]
+      · have hn0q : (n : ℚ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
+        simp only [eval_sub, eval_mul, eval_pow,
+          eval_X, eval_C]
+        rw [hm, pow_succ]
+        field_simp
+        ring
+  have hpoly_ne : (C (n : ℚ) * X ^ (n - 1)
+      - C ((n : ℚ) - 1) * X ^ (n - 2) : Polynomial ℚ) ≠ 0 := by
+    intro h
+    have hc := congr_arg (fun p ↦ coeff p (n - 1)) h
+    simp only [coeff_sub, coeff_C_mul, coeff_X_pow,
+      coeff_zero] at hc
+    rw [if_neg (by omega : ¬ (n - 1 = n - 2))] at hc
+    simp only [if_true, mul_one, mul_zero, sub_zero] at hc
+    exact absurd (Nat.cast_eq_zero.mp hc) (by omega)
+  have hD_roots_finite : Set.Finite {t : ℚ | ∃ r : AlgebraicClosure ℚ,
+      eval r (Polynomial.map (algebraMap ℚ (AlgebraicClosure ℚ))
+        (C (n : ℚ) * X ^ (n - 1)
+          - C ((n : ℚ) - 1) * X ^ (n - 2))) = 0 ∧
+      eval r (Polynomial.map (algebraMap ℚ (AlgebraicClosure ℚ))
+        (X ^ n - X ^ (n - 1) - C (t : ℚ))) = 0} := by
+    apply Set.Finite.subset (hDisc_roots_finite.image (fun r : ℚ ↦ r ^ n - r ^ (n - 1)))
+    intro t ht
+    obtain ⟨r, hr₁, hr₂⟩ := ht
+    obtain ⟨q, rfl, hq⟩ := h_rational hr₁
     refine ⟨q, ?_, ?_⟩
-    · rw [Finset.mem_coe, Multiset.mem_toFinset, Polynomial.mem_roots']
+    · rw [Finset.mem_coe, Multiset.mem_toFinset, mem_roots']
       exact ⟨hpoly_ne, hq⟩
     · -- t = q^n - q^(n-1)
-      have h := hr₂
-      simp only [Polynomial.map_sub, Polynomial.map_pow, Polynomial.map_X, Polynomial.map_C,
-        Polynomial.eval_sub, Polynomial.eval_pow, Polynomial.eval_X, Polynomial.eval_C] at h
-      have hinj := (algebraMap ℚ (AlgebraicClosure ℚ)).injective
-      apply hinj
+      simp only [Polynomial.map_sub, Polynomial.map_pow, map_X, Polynomial.map_C,
+        eval_sub, eval_pow, eval_X, eval_C] at hr₂
+      apply (algebraMap ℚ (AlgebraicClosure ℚ)).injective
       simp only [map_sub, map_pow]
-      linear_combination h
+      linear_combination hr₂
+  clear h_rational hpoly_ne
   refine Set.Finite.subset (hD_roots_finite.preimage (f := fun t : ℤ ↦ (t : ℚ)) ?_) ?_
   · intro x hx y hy hxy
     simpa using hxy
@@ -166,48 +172,46 @@ theorem anBaseFamily_separable_cofinite (n : ℕ) (hn : 2 ≤ n) :
     rw [Set.mem_preimage, Set.mem_setOf_eq]
     contrapose! ht
     have h_separable : ∀ x : AlgebraicClosure ℚ,
-        Polynomial.eval x (Polynomial.map (algebraMap ℚ (AlgebraicClosure ℚ))
+        eval x (Polynomial.map (algebraMap ℚ (AlgebraicClosure ℚ))
           (specialize (anBaseFamily n) t)) = 0 →
-        Polynomial.eval x (Polynomial.map (algebraMap ℚ (AlgebraicClosure ℚ))
+        eval x (Polynomial.map (algebraMap ℚ (AlgebraicClosure ℚ))
           (derivative (specialize (anBaseFamily n) t))) ≠ 0 := by
       intro x hx hx'
       apply ht x
       · -- f'(x) = 0
         have hd : derivative (specialize (anBaseFamily n) t)
-            = Polynomial.C (n : ℚ) * Polynomial.X ^ (n - 1)
-              - Polynomial.C ((n : ℚ) - 1) * Polynomial.X ^ (n - 2) := by
-          rw [specialize, Polynomial.derivative_map, anBaseFamily_derivative n hn]
-          simp [Polynomial.map_sub, Polynomial.map_mul, Polynomial.map_pow, Polynomial.map_X]
-        rw [hd] at hx'
-        exact hx'
+            = C (n : ℚ) * X ^ (n - 1)
+              - C ((n : ℚ) - 1) * X ^ (n - 2) := by
+          rw [specialize, derivative_map, anBaseFamily_derivative n hn]
+          simp [Polynomial.map_sub, Polynomial.map_mul, Polynomial.map_pow, map_X]
+        rwa [hd] at hx'
       · -- f(t)(x) = 0
         have hf : specialize (anBaseFamily n) t
-            = Polynomial.X ^ n - Polynomial.X ^ (n - 1) - Polynomial.C (t : ℚ) := by
+            = X ^ n - X ^ (n - 1) - C (t : ℚ) := by
           simp [specialize, anBaseFamily]
-        rw [hf] at hx
-        exact hx
-    rw [Polynomial.Separable]
+        rwa [hf] at hx
+    rw [Separable]
     apply isCoprime_of_irreducible_dvd
     · unfold specialize anBaseFamily
-      simp only [Polynomial.map_sub, Polynomial.map_pow, Polynomial.map_X, Polynomial.map_C]
+      simp only [Polynomial.map_sub, Polynomial.map_pow, map_X, Polynomial.map_C]
       intro h
       obtain ⟨h1, _⟩ := h
-      replace h1 := congr_arg (fun p ↦ Polynomial.coeff p n) h1
-      rcases n with (_ | _ | n) <;> simp_all [Polynomial.coeff_eq_zero_of_natDegree_lt]
+      replace h1 := congr_arg (fun p ↦ coeff p n) h1
+      rcases n with (_ | _ | n) <;> simp_all [coeff_eq_zero_of_natDegree_lt]
     · intro z hz hz' hz''
       contrapose! h_separable
-      simp_all [Polynomial.eval_map]
+      simp_all [eval_map]
       have hdeg : (z.map (algebraMap ℚ (AlgebraicClosure ℚ))).degree ≠ 0 := by
-        rw [Polynomial.degree_map]
+        rw [degree_map]
         exact hz.degree_pos.ne'
       obtain ⟨x, hx⟩ := IsAlgClosed.exists_root _ hdeg
       use x
-      simp_all [Polynomial.eval₂_eq_eval_map]
+      simp_all [eval₂_eq_eval_map]
       refine ⟨?_, ?_⟩
       · simpa [hx] using
-          Polynomial.eval₂_eq_zero_of_dvd_of_eval₂_eq_zero (algebraMap ℚ (AlgebraicClosure ℚ)) x hz' hx
+          eval₂_eq_zero_of_dvd_of_eval₂_eq_zero (algebraMap ℚ (AlgebraicClosure ℚ)) x hz' hx
       · simpa [hx] using
-          Polynomial.eval₂_eq_zero_of_dvd_of_eval₂_eq_zero (algebraMap ℚ (AlgebraicClosure ℚ)) x hz'' hx
+          eval₂_eq_zero_of_dvd_of_eval₂_eq_zero (algebraMap ℚ (AlgebraicClosure ℚ)) x hz'' hx
 
 /-!
 The `Aₙ`-forcing square-discriminant certificate has moved to `Hilbert/AlternatingFamilyDisc.lean`,

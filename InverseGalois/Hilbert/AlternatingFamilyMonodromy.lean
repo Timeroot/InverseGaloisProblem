@@ -67,7 +67,7 @@ theorem serreAnOverFrac_monic (n : ℕ) (hn : 2 ≤ n) : (serreAnOverFrac n).Mon
 /-- `serreAnOverFrac n` has degree `n`.  Mirror of `morseOverFrac_natDegree`. -/
 theorem serreAnOverFrac_natDegree (n : ℕ) (hn : 2 ≤ n) :
     (serreAnOverFrac n).natDegree = n := by
-  rw [serreAnOverFrac, Polynomial.natDegree_map_eq_of_injective toClosureFrac_injective]
+  rw [serreAnOverFrac, natDegree_map_eq_of_injective toClosureFrac_injective]
   exact serreAnFamily_natDegree n hn
 
 /-- **[algebraic leaf]** The value of `serreAnFamily n` at `X = 0` (its constant-in-`X`
@@ -88,7 +88,8 @@ theorem serreAnFamily_eval_one (n : ℕ) (hn : 2 ≤ n) :
     have : (2 : ℚ) ≤ (n : ℚ) := by exact_mod_cast hn
     linarith
   have hzero : (1 : ℚ) - (n : ℚ) / ((n : ℚ) - 1) + 1 / ((n : ℚ) - 1) = 0 := by
-    field_simp; ring
+    field_simp
+    ring
   unfold serreAnFamily
   simp only [eval_add, eval_sub, eval_mul, eval_pow, eval_X, eval_C, one_pow, mul_one]
   rw [← C_1, ← C_sub, ← add_assoc, ← C_add, hzero, C_0, zero_add]
@@ -99,7 +100,7 @@ theorem serreAnFamily_eval_zero_ne (n : ℕ) (hn : 2 ≤ n) :
     (serreAnFamily n).eval 0 ≠ 0 := by
   rw [serreAnFamily_eval_zero n hn]
   intro h
-  have hc := congr_arg (fun p => Polynomial.coeff p 2) h
+  have hc := congr_arg (fun p ↦ Polynomial.coeff p 2) h
   simp only [coeff_add, coeff_C, coeff_C_mul, coeff_X_pow, coeff_zero] at hc
   norm_num at hc
 
@@ -118,7 +119,7 @@ by `serreAnFamily_derivative` (`f' = n·X^{n-2}·(X−1)`), satisfy `α ∈ {0, 
 but cleaner: the critical points here are exactly `{0,1}` rather than an algebraic locus. -/
 theorem serreAnOverFrac_separable (n : ℕ) (hn : 2 ≤ n) (_heven : Even n) :
     (serreAnOverFrac n).Separable := by
-  refine IsCoprime.symm ?_
+  apply IsCoprime.symm
   by_contra h_not_coprime
   set K := FractionRing (Polynomial (AlgebraicClosure ℚ)) with hK
   set L := AlgebraicClosure K with hL
@@ -135,12 +136,12 @@ theorem serreAnOverFrac_separable (n : ℕ) (hn : 2 ≤ n) (_heven : Even n) :
     · intro z hz hz' hz''
       obtain ⟨α, hα⟩ : ∃ α : L, eval α (z.map (algebraMap K L)) = 0 := by
         apply IsAlgClosed.exists_root
-        rw [Polynomial.degree_map]
-        exact ne_of_gt (Polynomial.degree_pos_of_irreducible hz)
+        rw [degree_map]
+        exact ne_of_gt (degree_pos_of_irreducible hz)
       refine h_not_coprime α ?_ ?_
-      · simpa [hα] using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero
+      · simpa [hα] using eval_eq_zero_of_dvd_of_eval_eq_zero
           (Polynomial.map_dvd (algebraMap K L) hz'') hα
-      · simpa [hα] using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero
+      · simpa [hα] using eval_eq_zero_of_dvd_of_eval_eq_zero
           (Polynomial.map_dvd (algebraMap K L) hz') hα
   obtain ⟨α, hf, hf'⟩ := h_common_root
   -- Rewrite both evaluations as evaluations of `serreAnFamily n` mapped by `χ`.
@@ -148,14 +149,16 @@ theorem serreAnOverFrac_separable (n : ℕ) (hn : 2 ≤ n) (_heven : Even n) :
     rw [serreAnOverFrac, Polynomial.map_map, ← hχ]
   have hmap_f' : (derivative (serreAnOverFrac n)).map (algebraMap K L)
       = (derivative (serreAnFamily n)).map χ := by
-    rw [serreAnOverFrac, Polynomial.derivative_map, Polynomial.map_map, ← hχ]
+    rw [serreAnOverFrac, derivative_map, Polynomial.map_map, ← hχ]
   rw [hmap_f] at hf
   rw [hmap_f', serreAnFamily_derivative n hn] at hf'
   -- From `f'(α) = 0`: `n·α^{n-2}·(α − 1) = 0`, hence `α = 0` or `α = 1`.
   simp only [Polynomial.map_sub, Polynomial.map_mul, Polynomial.map_pow, Polynomial.map_X,
     Polynomial.map_natCast, eval_sub, eval_mul, eval_pow, eval_X,
     Polynomial.eval_natCast, map_natCast] at hf'
-  have hn0 : (n : L) ≠ 0 := by rw [Nat.cast_ne_zero]; omega
+  have hn0 : (n : L) ≠ 0 := by
+    rw [Nat.cast_ne_zero]
+    omega
   have hr01 : α = 0 ∨ α = 1 := by
     have hfact : (n : L) * α ^ (n - 2) * (α - 1) = 0 := by
       have hm : n - 1 = (n - 2) + 1 := by omega
@@ -165,9 +168,11 @@ theorem serreAnOverFrac_separable (n : ℕ) (hn : 2 ≤ n) (_heven : Even n) :
     · rcases mul_eq_zero.mp h with h' | h'
       · exact absurd h' hn0
       · rcases eq_or_ne (n - 2) 0 with he | he
-        · rw [he, pow_zero] at h'; exact absurd h' one_ne_zero
+        · rw [he, pow_zero] at h'
+          exact absurd h' one_ne_zero
         · exact Or.inl ((pow_eq_zero_iff he).mp h')
-    · exact Or.inr (by linear_combination h)
+    · right
+      linear_combination h
   -- `χ` is injective (composite of two injective maps).
   have hχinj : Function.Injective χ := by
     rw [hχ, RingHom.coe_comp]
@@ -175,11 +180,11 @@ theorem serreAnOverFrac_separable (n : ℕ) (hn : 2 ≤ n) (_heven : Even n) :
   -- Plug `α ∈ {0,1}` into `f(α) = 0`; each forces a nonzero `ℚ[T]` element to vanish.
   rcases hr01 with h0 | h1
   · subst h0
-    rw [Polynomial.eval_map, show (0 : L) = χ 0 from (map_zero χ).symm,
+    rw [eval_map, show (0 : L) = χ 0 from (map_zero χ).symm,
       eval₂_at_apply] at hf
     exact serreAnFamily_eval_zero_ne n hn (hχinj hf)
   · subst h1
-    rw [Polynomial.eval_map, eval₂_at_one] at hf
+    rw [eval_map, eval₂_at_one] at hf
     exact serreAnFamily_eval_one_ne n hn (hχinj (hf.trans (map_zero χ).symm))
 
 /-! ## Step 5: the resolvent is irreducible over `ℚ̄(T)` given the geometric group is `Aₙ` -/
@@ -201,10 +206,12 @@ theorem orbit_genForm_eq_alternating_range {n : ℕ} {L M : Type*} [Field L] [Fi
   constructor
   · rintro ⟨γ, rfl⟩
     obtain ⟨σ, hσ⟩ := hgal γ
-    exact ⟨σ, by simp [genForm, hσ]⟩
+    refine ⟨σ, ?_⟩
+    simp [genForm, hσ]
   · rintro ⟨σ, rfl⟩
     obtain ⟨γ, hγ⟩ := hsurj2 σ
-    exact ⟨γ, by simp [genForm, hγ]⟩
+    refine ⟨γ, ?_⟩
+    simp [genForm, hγ]
 
 /-- **Crux (irreducibility of the standard `Aₙ`-representation over `ℚ`, `sorry`).**
 
@@ -227,7 +234,8 @@ lemma alternating_no_nontrivial_relation {n : ℕ} {M : Type*} [Field M] [CharZe
   by_cases hn1 : n ≤ 1
   · apply hc
     interval_cases n
-    · funext i; exact i.elim0
+    · funext i
+      exact i.elim0
     · funext i
       fin_cases i
       have h := hsum
@@ -238,16 +246,24 @@ lemma alternating_no_nontrivial_relation {n : ℕ} {M : Type*} [Field M] [CharZe
   by_cases hn2 : n = 2
   · subst hn2
     have h1 := hrel 1
-    simp only [OneMemClass.coe_one, inv_one, Equiv.Perm.one_apply] at h1
-    rw [Fin.sum_univ_two] at h1
-    have hs : c 0 + c 1 = 0 := by have := hsum; rwa [Fin.sum_univ_two] at this
+    simp only [OneMemClass.coe_one, inv_one, Equiv.Perm.one_apply, Fin.sum_univ_two] at h1
+    have hs : c 0 + c 1 = 0 := by
+      have := hsum
+      rwa [Fin.sum_univ_two] at this
     have hc1 : c 1 = -c 0 := by omega
     have hc0 : c 0 ≠ 0 := by
-      intro h; apply hc; funext i; fin_cases i <;> simp_all
-    have hc1M : (c 1 : M) = -(c 0 : M) := by rw [hc1]; push_cast; ring
+      intro h
+      apply hc
+      funext i
+      fin_cases i <;> simp_all
+    have hc1M : (c 1 : M) = -(c 0 : M) := by
+      rw [hc1]
+      push_cast
+      ring
+    have hz : (c 0 : M) * (x 0 - x 1) = 0 := by
+      rw [hc1M] at h1
+      linear_combination h1
     have hxeq : x 0 = x 1 := by
-      have hz : (c 0 : M) * (x 0 - x 1) = 0 := by
-        have h1' := h1; rw [hc1M] at h1'; linear_combination h1'
       rcases mul_eq_zero.mp hz with h | h
       · exact absurd h (Int.cast_ne_zero.mpr hc0)
       · exact sub_eq_zero.mp h
@@ -256,29 +272,29 @@ lemma alternating_no_nontrivial_relation {n : ℕ} {M : Type*} [Field M] [CharZe
   have hn3 : 3 ≤ n := by omega
   have hcard : Nat.card (Fin n) = n := by rw [Nat.card_eq_fintype_card, Fintype.card_fin]
   -- The integer Gram matrix `A a k = ∑_{π ∈ Aₙ} c(π⁻¹ a) · c(π⁻¹ k)`.
-  set A : Fin n → Fin n → ℤ := fun a k =>
+  set A : Fin n → Fin n → ℤ := fun a k ↦
     ∑ π : alternatingGroup (Fin n),
       c (((π : Equiv.Perm (Fin n))⁻¹) a) * c (((π : Equiv.Perm (Fin n))⁻¹) k) with hAdef
   -- The subgroup action on `Fin n` is by function application.
   have hsmul : ∀ (g : alternatingGroup (Fin n)) (y : Fin n),
-      g • y = (g : Equiv.Perm (Fin n)) y := fun _ _ => rfl
+      g • y = (g : Equiv.Perm (Fin n)) y := fun _ _ ↦ rfl
   -- Left-translation invariance: `A (τa) (τk) = A a k` for even `τ`.
   have hReindex : ∀ (τ : alternatingGroup (Fin n)) (a k : Fin n),
       A ((τ : Equiv.Perm (Fin n)) a) ((τ : Equiv.Perm (Fin n)) k) = A a k := by
     intro τ a k
     simp only [hAdef]
     rw [← Equiv.sum_comp (Equiv.mulLeft τ)
-      (fun π : alternatingGroup (Fin n) =>
+      (fun π ↦
         c (((π : Equiv.Perm (Fin n))⁻¹) ((τ : Equiv.Perm (Fin n)) a)) *
         c (((π : Equiv.Perm (Fin n))⁻¹) ((τ : Equiv.Perm (Fin n)) k)))]
-    refine Finset.sum_congr rfl (fun σ _ => ?_)
+    refine Finset.sum_congr rfl (fun σ _ ↦ ?_)
     simp only [Equiv.coe_mulLeft, Subgroup.coe_mul, mul_inv_rev, Equiv.Perm.mul_apply,
       Equiv.Perm.inv_def, Equiv.symm_apply_apply]
   -- `A` is symmetric.
   have hSym : ∀ a k : Fin n, A a k = A k a := by
     intro a k
     simp only [hAdef]
-    exact Finset.sum_congr rfl (fun π _ => mul_comm _ _)
+    exact Finset.sum_congr rfl (fun π _ ↦ mul_comm _ _)
   -- The relation `A · x = 0`: every row annihilates `x`.
   have hAx : ∀ a : Fin n, ∑ k : Fin n, ((A a k : ℤ) : M) * x k = 0 := by
     intro a
@@ -290,7 +306,7 @@ lemma alternating_no_nontrivial_relation {n : ℕ} {M : Type*} [Field M] [CharZe
       simp only [hAdef]
       push_cast
       rw [Finset.sum_mul]
-      exact Finset.sum_congr rfl (fun π _ => by ring)
+      exact Finset.sum_congr rfl (fun π _ ↦ by ring)
     simp_rw [step]
     rw [Finset.sum_comm]
     apply Finset.sum_eq_zero
@@ -306,7 +322,9 @@ lemma alternating_no_nontrivial_relation {n : ℕ} {M : Type*} [Field M] [CharZe
     rw [← Finset.mul_sum, Equiv.sum_comp ((π : Equiv.Perm (Fin n))⁻¹) c, hsum, mul_zero]
   -- `Aₙ` is (pre)transitive on `Fin n` for `n ≥ 3`.
   have htrans : MulAction.IsPretransitive (alternatingGroup (Fin n)) (Fin n) :=
-    alternatingGroup.isPretransitive_of_three_le_card (Fin n) (by rw [hcard]; omega)
+    alternatingGroup.isPretransitive_of_three_le_card (Fin n) (by
+      rw [hcard]
+      omega)
   -- The diagonal is constant.
   have hDiag : ∀ a b : Fin n, A a a = A b b := by
     intro a b
@@ -319,11 +337,16 @@ lemma alternating_no_nontrivial_relation {n : ℕ} {M : Type*} [Field M] [CharZe
   have hrest : ∀ a b : Fin n, a ≠ b → ∀ k : Fin n, k ≠ a → k ≠ b → A a k = A b k := by
     by_cases hn4 : 4 ≤ n
     · -- `n ≥ 4`: use 2-transitivity to fix `k` and move `a ↦ b`.
-      haveI hbase : MulAction.IsMultiplyPretransitive (alternatingGroup (Fin n)) (Fin n)
+      have hbase : MulAction.IsMultiplyPretransitive (alternatingGroup (Fin n)) (Fin n)
           (Nat.card (Fin n) - 2) := alternatingGroup.isMultiplyPretransitive (Fin n)
       have h2i : MulAction.IsMultiplyPretransitive (alternatingGroup (Fin n)) (Fin n) 2 :=
         MulAction.isMultiplyPretransitive_of_le (n := Nat.card (Fin n) - 2)
-          (by rw [hcard]; omega) (by rw [hcard]; omega)
+          (by
+            rw [hcard]
+            omega)
+          (by
+            rw [hcard]
+            omega)
       have h2 : ∀ {a b c d : Fin n}, a ≠ b → c ≠ d →
           ∃ g : alternatingGroup (Fin n), g • a = c ∧ g • b = d :=
         MulAction.is_two_pretransitive_iff.mp h2i
@@ -340,15 +363,18 @@ lemma alternating_no_nontrivial_relation {n : ℕ} {M : Type*} [Field M] [CharZe
       have hain : a ∉ ({b, k} : Finset (Fin n)) := by
         simp only [Finset.mem_insert, Finset.mem_singleton]
         push_neg
-        exact ⟨hab, fun h => hka h.symm⟩
+        exact ⟨hab, fun h ↦ hka h.symm⟩
       have hbin : b ∉ ({k} : Finset (Fin n)) := by
-        simp only [Finset.mem_singleton]; exact fun h => hkb h.symm
+        simp only [Finset.mem_singleton]
+        exact fun h ↦ hkb h.symm
       have hcard3 : ({a, b, k} : Finset (Fin n)).card = 3 := by
         rw [Finset.card_insert_of_notMem hain, Finset.card_insert_of_notMem hbin,
           Finset.card_singleton]
       have huniv : (Finset.univ : Finset (Fin n)) = {a, b, k} :=
         (Finset.eq_of_subset_of_card_le (Finset.subset_univ _)
-          (by rw [Finset.card_univ, Fintype.card_fin, hcard3]; omega)).symm
+          (by
+            rw [Finset.card_univ, Fintype.card_fin, hcard3]
+            omega)).symm
       have hra := hRow a
       have hrb := hRow b
       rw [huniv, Finset.sum_insert hain, Finset.sum_insert hbin, Finset.sum_singleton] at hra hrb
@@ -360,11 +386,13 @@ lemma alternating_no_nontrivial_relation {n : ℕ} {M : Type*} [Field M] [CharZe
     intro a b hab
     have hax := hAx a
     have hbx := hAx b
+    have hcombine : ∑ k : Fin n, ((A a k - A b k : ℤ) : M) * x k
+        = (∑ k, ((A a k : ℤ) : M) * x k) - (∑ k, ((A b k : ℤ) : M) * x k) := by
+      rw [← Finset.sum_sub_distrib]
+      exact Finset.sum_congr rfl (fun k _ ↦ by
+        push_cast
+        ring)
     have hdiff : ∑ k : Fin n, ((A a k - A b k : ℤ) : M) * x k = 0 := by
-      have hcombine : ∑ k : Fin n, ((A a k - A b k : ℤ) : M) * x k
-          = (∑ k, ((A a k : ℤ) : M) * x k) - (∑ k, ((A b k : ℤ) : M) * x k) := by
-        rw [← Finset.sum_sub_distrib]
-        exact Finset.sum_congr rfl (fun k _ => by push_cast; ring)
       rw [hcombine, hax, hbx, sub_zero]
     have hsupp : ∀ k ∈ (Finset.univ : Finset (Fin n)), k ∉ ({a, b} : Finset (Fin n)) →
         ((A a k - A b k : ℤ) : M) * x k = 0 := by
@@ -377,10 +405,12 @@ lemma alternating_no_nontrivial_relation {n : ℕ} {M : Type*} [Field M] [CharZe
     rw [Finset.sum_insert (by simp [hab]), Finset.sum_singleton] at hdiff
     have e1 : A b a = A a b := (hSym a b).symm
     have e2 : A b b = A a a := (hDiag a b).symm
-    have hcast : ((A a b - A a a : ℤ) : M) = -((A a a - A a b : ℤ) : M) := by push_cast; ring
+    have hcast : ((A a b - A a a : ℤ) : M) = -((A a a - A a b : ℤ) : M) := by
+      push_cast
+      ring
     rw [e1, e2, hcast] at hdiff
     have key : ((A a a - A a b : ℤ) : M) * (x a - x b) = 0 := by linear_combination hdiff
-    have hxne : x a - x b ≠ 0 := sub_ne_zero.mpr (fun h => hab (hxinj h))
+    have hxne : x a - x b ≠ 0 := sub_ne_zero.mpr (fun h ↦ hab (hxinj h))
     rcases mul_eq_zero.mp key with h | h
     · have : (A a a - A a b : ℤ) = 0 := by exact_mod_cast h
       omega
@@ -390,27 +420,28 @@ lemma alternating_no_nontrivial_relation {n : ℕ} {M : Type*} [Field M] [CharZe
     intro a
     simp only [hAdef]
     obtain ⟨j, hj⟩ : ∃ j, c j ≠ 0 := by
-      by_contra h; push_neg at h; exact hc (funext fun j => h j)
+      by_contra h
+      push_neg at h
+      exact hc (funext fun j ↦ h j)
     obtain ⟨g, hg⟩ := htrans.exists_smul_eq j a
     rw [hsmul] at hg
     have hga : ((g : Equiv.Perm (Fin n))⁻¹) a = j := by
       rw [← hg, Equiv.Perm.inv_def, Equiv.symm_apply_apply]
-    refine Finset.sum_pos' (fun π _ => mul_self_nonneg _) ⟨g, Finset.mem_univ g, ?_⟩
+    refine Finset.sum_pos' (fun π _ ↦ mul_self_nonneg _) ⟨g, Finset.mem_univ g, ?_⟩
     rw [hga]
     exact mul_self_pos.mpr hj
   -- Conclude: all entries equal the (positive) diagonal, contradicting zero row sums.
-  have hane : Nonempty (Fin n) := ⟨⟨0, by omega⟩⟩
-  obtain ⟨a⟩ := hane
+  have a : Fin n := ⟨0, by omega⟩
   have halleq : ∀ k : Fin n, A a k = A a a := by
     intro k
     rcases eq_or_ne k a with hk | hk
     · rw [hk]
     · exact (hEq a k (Ne.symm hk)).symm
   have hrowa := hRow a
-  rw [Finset.sum_congr rfl (fun k _ => halleq k), Finset.sum_const, Finset.card_univ,
+  rw [Finset.sum_congr rfl (fun k _ ↦ halleq k), Finset.sum_const, Finset.card_univ,
     Fintype.card_fin, nsmul_eq_mul] at hrowa
   have hApos := hpos a
-  have hn' : (0 : ℤ) < n := by exact_mod_cast (by omega : 0 < n)
+  have hn' : (0 : ℤ) < n := by omega
   nlinarith [hApos, hn', hrowa]
 
 /-- **[distinctness kernel — representation theory]** When every even permutation of the
@@ -445,40 +476,38 @@ theorem genForm_alternating_injective {n : ℕ} {K M : Type*} [Field K] [Field M
   have e1 : γ (genForm n x (σ : Equiv.Perm (Fin n))) = genForm n x ρ' := by
     unfold genForm
     rw [map_sum]
-    refine Finset.sum_congr rfl (fun i _ => ?_)
+    refine Finset.sum_congr rfl (fun i _ ↦ ?_)
     rw [map_mul, map_natCast, hγ ((σ : Equiv.Perm (Fin n)) i), hρ'def, Equiv.Perm.mul_apply]
   have e2 : γ (genForm n x (τ : Equiv.Perm (Fin n))) = genForm n x 1 := by
     unfold genForm
     rw [map_sum]
-    refine Finset.sum_congr rfl (fun i _ => ?_)
+    refine Finset.sum_congr rfl (fun i _ ↦ ?_)
     rw [map_mul, map_natCast, hγ ((τ : Equiv.Perm (Fin n)) i)]
     simp [Equiv.Perm.one_apply]
   have hρ : genForm n x ρ' = genForm n x 1 := by rw [← e1, hστ, e2]
   -- Arithmetic form of `w_ρ' = w_1`.
   have hρ0 : ∑ i : Fin n, ((i : ℕ) : M) * x (ρ' i) = ∑ i : Fin n, ((i : ℕ) : M) * x i := by
-    have h := hρ
-    unfold genForm at h
-    simpa [Equiv.Perm.one_apply] using h
+    simpa [genForm, Equiv.Perm.one_apply] using hρ
   -- Reindex the left sum to expose `ρ'⁻¹`.
   have hreindex : ∑ i : Fin n, ((i : ℕ) : M) * x (ρ' i) =
       ∑ i : Fin n, (((ρ'⁻¹ i : Fin n) : ℕ) : M) * x i := by
-    rw [← Equiv.sum_comp ρ'⁻¹ (fun i => ((i : ℕ) : M) * x (ρ' i))]
-    refine Finset.sum_congr rfl (fun i _ => ?_)
+    rw [← Equiv.sum_comp ρ'⁻¹ (fun i ↦ ((i : ℕ) : M) * x (ρ' i))]
+    refine Finset.sum_congr rfl (fun i _ ↦ ?_)
     simp
   -- The integer relation vector.
-  set c : Fin n → ℤ := fun k => ((ρ'⁻¹ k : Fin n).val : ℤ) - (k.val : ℤ) with hcdef
+  set c : Fin n → ℤ := fun k ↦ ((ρ'⁻¹ k : Fin n).val : ℤ) - (k.val : ℤ) with hcdef
   -- Base relation `∑ⱼ cⱼ · xⱼ = 0`.
+  have key : ∑ k : Fin n, (((ρ'⁻¹ k : Fin n) : ℕ) : M) * x k
+      = ∑ k : Fin n, ((k : ℕ) : M) * x k := by
+    rwa [← hreindex]
   have hbase : ∑ k : Fin n, ((c k : ℤ) : M) * x k = 0 := by
-    have key : ∑ k : Fin n, (((ρ'⁻¹ k : Fin n) : ℕ) : M) * x k
-        = ∑ k : Fin n, ((k : ℕ) : M) * x k := by
-      rw [← hreindex]; exact hρ0
     simp only [hcdef]
     push_cast
     simp only [sub_mul, Finset.sum_sub_distrib, key, sub_self]
   -- `c` is sum-zero.
   have hsum : ∑ j, c j = 0 := by
     simp only [hcdef, Finset.sum_sub_distrib]
-    rw [Equiv.sum_comp ρ'⁻¹ (fun k => (k.val : ℤ))]
+    rw [Equiv.sum_comp ρ'⁻¹ (fun k ↦ (k.val : ℤ))]
     exact sub_self _
   -- Prove `ρ' = 1` by contradiction using the crux lemma.
   by_contra hρne
@@ -491,8 +520,7 @@ theorem genForm_alternating_injective {n : ℕ} {K M : Type*} [Field K] [Field M
       have hk := congrFun h0 k
       simp only [hcdef, Pi.zero_apply, sub_eq_zero] at hk
       exact_mod_cast hk
-    have : ρ' = (ρ'⁻¹)⁻¹ := (inv_inv ρ').symm
-    rw [this, hinv, inv_one]
+    rw [← inv_inv ρ', hinv, inv_one]
   -- Every `Aₙ`-translate of the base relation vanishes.
   have hrel : ∀ π : alternatingGroup (Fin n),
       ∑ k, (c (((π : Equiv.Perm (Fin n))⁻¹) k) : M) * x k = 0 := by
@@ -503,16 +531,16 @@ theorem genForm_alternating_injective {n : ℕ} {K M : Type*} [Field K] [Field M
       have := congrArg γπ hbase
       rw [map_sum, map_zero] at this
       rw [← this]
-      refine Finset.sum_congr rfl (fun k _ => ?_)
+      refine Finset.sum_congr rfl (fun k _ ↦ ?_)
       rw [map_mul, map_intCast, hγπ k]
     calc ∑ k : Fin n, (c (((π : Equiv.Perm (Fin n))⁻¹) k) : M) * x k
         = ∑ k : Fin n, ((c ((π : Equiv.Perm (Fin n))⁻¹ k) : ℤ) : M)
             * x ((π : Equiv.Perm (Fin n)) ((π : Equiv.Perm (Fin n))⁻¹ k)) := by
-          refine Finset.sum_congr rfl (fun k _ => ?_)
+          refine Finset.sum_congr rfl (fun k _ ↦ ?_)
           rw [Equiv.Perm.inv_def, Equiv.apply_symm_apply]
       _ = ∑ k : Fin n, ((c k : ℤ) : M) * x ((π : Equiv.Perm (Fin n)) k) :=
           Equiv.sum_comp ((π : Equiv.Perm (Fin n))⁻¹)
-            (fun k => ((c k : ℤ) : M) * x ((π : Equiv.Perm (Fin n)) k))
+            (fun k ↦ ((c k : ℤ) : M) * x ((π : Equiv.Perm (Fin n)) k))
       _ = 0 := hg
   exact alternating_no_nontrivial_relation x hxinj c hc hsum hrel
 
@@ -551,64 +579,68 @@ theorem an_root_enum (n : ℕ) (hn : 2 ≤ n) (heven : Even n)
   -- `serreAnOverFrac n = (serreAnFamily n).map toClosureFrac` by definition, so mapping the
   -- integral family by `ev` agrees with mapping the base-changed family into `M`.
   have hmapev : (serreAnFamily n).map ev = (serreAnOverFrac n).map (algebraMap K M) := by
-    rw [hev_def, ← Polynomial.map_map]; rfl
+    rw [hev_def, ← Polynomial.map_map]
+    rfl
   -- Step 1: degree.
   have hdeg : ((serreAnFamily n).map ev).natDegree = n := by
-    rw [hmapev, Polynomial.natDegree_map_of_leadingCoeff_ne_zero]
+    rw [hmapev, natDegree_map_of_leadingCoeff_ne_zero]
     · exact serreAnOverFrac_natDegree n hn
-    · rw [(serreAnOverFrac_monic n hn).leadingCoeff, map_one]; exact one_ne_zero
+    · simp [(serreAnOverFrac_monic n hn).leadingCoeff]
   have hsplit_f : ((serreAnOverFrac n).map (algebraMap K M)).Splits :=
     SplittingField.splits (serreAnOverFrac n)
   -- Step 2: an initial root enumeration.
+  have hsp : ((serreAnFamily n).map ev).Splits := by rwa [hmapev]
+  have hcard : Multiset.card ((serreAnFamily n).map ev).roots = n := by
+    rw [splits_iff_card_roots.mp hsp, hdeg]
   obtain ⟨x0, hx0⟩ : ∃ x0 : Fin n → M,
       ((serreAnFamily n).map ev).roots = Finset.univ.val.map x0 := by
-    have hcard : Multiset.card ((serreAnFamily n).map ev).roots = n := by
-      have hsp : ((serreAnFamily n).map ev).Splits := by rw [hmapev]; exact hsplit_f
-      rw [Polynomial.splits_iff_card_roots.mp hsp, hdeg]
     obtain ⟨x0, hx0⟩ := ResolventConstruction.exists_fin_map_eq _ n hcard
     exact ⟨x0, hx0.symm⟩
   -- Step 3: couple with `IsAltResolvent` to re-orient into the alternating coset.
   obtain ⟨x, hxroots, hGx⟩ := hG ev x0 hdeg hx0
   -- Separability transported to `M`.
   have hsep : ((serreAnFamily n).map ev).Separable := by
-    rw [hmapev]; exact (serreAnOverFrac_separable n hn heven).map
+    rw [hmapev]
+    exact (serreAnOverFrac_separable n hn heven).map
   -- Step 4: injectivity of `x`.
   have hxinj : Function.Injective x := by
-    have hnd : ((serreAnFamily n).map ev).roots.Nodup := Polynomial.nodup_roots hsep
+    have hnd : ((serreAnFamily n).map ev).roots.Nodup := nodup_roots hsep
     rw [hxroots] at hnd
     intro i j hij
     exact Multiset.inj_on_of_nodup_map hnd i (by simp) j (by simp) hij
   -- Step 5: each `x i` lies in the root set of `serreAnOverFrac n` over `M`.
   have hxmem : ∀ i, x i ∈ (serreAnOverFrac n).rootSet M := by
     intro i
-    rw [Polynomial.mem_rootSet]
+    rw [mem_rootSet]
     refine ⟨(serreAnOverFrac_monic n hn).ne_zero, ?_⟩
     have hmemroots : x i ∈ ((serreAnFamily n).map ev).roots := by
-      rw [hxroots]; exact Multiset.mem_map.mpr ⟨i, by simp, rfl⟩
+      rw [hxroots]
+      exact Multiset.mem_map.mpr ⟨i, by simp, rfl⟩
     have hroot : eval (x i) ((serreAnFamily n).map ev) = 0 :=
-      (Polynomial.mem_roots'.mp hmemroots).2
-    rw [Polynomial.aeval_def, ← Polynomial.eval_map, ← hmapev]
+      (mem_roots'.mp hmemroots).2
+    rw [aeval_def, ← eval_map, ← hmapev]
     exact hroot
   -- Step 6: the bijection `v : Fin n ≃ rootSet` with `(v i : M) = x i`.
   have hcardrs : Fintype.card ((serreAnOverFrac n).rootSet M) = n := by
     rw [Polynomial.card_rootSet_eq_natDegree (serreAnOverFrac_separable n hn heven) hsplit_f,
       serreAnOverFrac_natDegree n hn]
-  have hbij : Function.Bijective (fun i : Fin n => (⟨x i, hxmem i⟩ : (serreAnOverFrac n).rootSet M)) := by
+  have hbij : Function.Bijective (fun i ↦ (⟨x i, hxmem i⟩ : (serreAnOverFrac n).rootSet M)) := by
     refine (Fintype.bijective_iff_injective_and_card _).mpr ⟨?_, ?_⟩
-    · intro i j hij; exact hxinj (Subtype.ext_iff.mp hij)
+    · intro i j hij
+      exact hxinj (Subtype.ext_iff.mp hij)
     · rw [Fintype.card_fin, hcardrs]
   set v := Equiv.ofBijective _ hbij with hv_def
-  have hvx : ∀ i, (v i : M) = x i := fun i => rfl
+  have hvx : ∀ i, (v i : M) = x i := fun i ↦ rfl
   -- Step 7: the half-discriminant is nonzero (Vandermonde).
-  have h_ne : discElem (fun i => (v i : M)) ≠ 0 := by
+  have h_ne : discElem (fun i ↦ (v i : M)) ≠ 0 := by
     unfold discElem
     rw [← Matrix.det_vandermonde, Ne, Matrix.det_vandermonde_eq_zero_iff]
     push_neg
-    exact fun i j h => (Subtype.val_injective.comp v.injective) h
+    exact fun i j h ↦ (Subtype.val_injective.comp v.injective) h
   -- Step 8: the discriminant is a square in `K`.
-  have h_sq : ∃ d : K, discSq (fun i => (v i : M)) = (algebraMap K M d) ^ 2 := by
+  have h_sq : ∃ d : K, discSq (fun i ↦ (v i : M)) = (algebraMap K M d) ^ 2 := by
     refine ⟨toClosureFrac (serreAnDeltaPoly n), ?_⟩
-    have hvx' : (fun i => (v i : M)) = x := funext hvx
+    have hvx' : (fun i ↦ (v i : M)) = x := funext hvx
     rw [discSq, hvx', serreAnFamily_discSq_general n hn ev x hdeg hxroots,
       ← serreAnDeltaPoly_sq n heven, map_pow, hev_def, RingHom.comp_apply]
   -- Step 9: parity clause — every automorphism acts by an even permutation.
@@ -617,7 +649,7 @@ theorem an_root_enum (n : ℕ) (hn : 2 ≤ n) (heven : Even n)
   refine ⟨x, hxinj, hGx, ?_, ?_⟩
   · intro γ
     obtain ⟨π, hπ, hsign⟩ := hgal_alt γ
-    refine ⟨⟨π, Equiv.Perm.mem_alternatingGroup.mpr hsign⟩, fun i => ?_⟩
+    refine ⟨⟨π, Equiv.Perm.mem_alternatingGroup.mpr hsign⟩, fun i ↦ ?_⟩
     show γ (x i) = x (π i)
     rw [← hvx i, ← hvx (π i)]
     exact hπ i
@@ -629,14 +661,15 @@ theorem an_root_enum (n : ℕ) (hn : 2 ≤ n) (heven : Even n)
       rw [hπrs, Equiv.Perm.sign_permCongr]
       exact Equiv.Perm.mem_alternatingGroup.mp σ.2
     have hmem : πrs ∈ (Gal.galActionHom (serreAnOverFrac n) M).range := by
-      rw [hAlt]; exact Equiv.Perm.mem_alternatingGroup.mpr hπrs_sign
+      rw [hAlt]
+      exact Equiv.Perm.mem_alternatingGroup.mpr hπrs_sign
     obtain ⟨φ, hφ⟩ := MonoidHom.mem_range.mp hmem
     obtain ⟨ϕ, hϕ⟩ := Gal.restrict_surjective (serreAnOverFrac n) M φ
     have key : ∀ i, (πrs (v i) : M) = x ((σ : Equiv.Perm (Fin n)) i) := by
       intro i
       rw [hπrs, Equiv.permCongr_apply, Equiv.symm_apply_apply]
       exact hvx _
-    refine ⟨ϕ, fun i => ?_⟩
+    refine ⟨ϕ, fun i ↦ ?_⟩
     have hr := Gal.galActionHom_restrict (p := serreAnOverFrac n) (E := M) ϕ (v i)
     rw [hϕ, hφ] at hr
     rw [hvx i, key i] at hr
@@ -667,26 +700,24 @@ theorem anResolventFrac_irreducible (n : ℕ) (hn : 2 ≤ n) (heven : Even n)
   obtain ⟨x, hxinj, hGx, hgal, hsurj2⟩ := an_root_enum n hn heven G hGmonic hG hAlt
   set ev := (algebraMap (FractionRing (Polynomial (AlgebraicClosure ℚ)))
     (serreAnOverFrac n).SplittingField).comp toClosureFrac with hev_def
-  haveI : IsGalois (FractionRing (Polynomial (AlgebraicClosure ℚ)))
+  have : IsGalois (FractionRing (Polynomial (AlgebraicClosure ℚ)))
       (serreAnOverFrac n).SplittingField :=
     IsGalois.of_separable_splitting_field (serreAnOverFrac_separable n hn heven)
   have hev_deg : (G.map ev).natDegree = G.natDegree :=
-    natDegree_map_of_leadingCoeff_ne_zero _
-      (by rw [hGmonic.leadingCoeff, map_one]; exact one_ne_zero)
+    natDegree_map_of_leadingCoeff_ne_zero _ (by simp [hGmonic.leadingCoeff])
   have hdegG : (G.map toClosureFrac).natDegree = n.factorial / 2 := by
     have e1 : (G.map toClosureFrac).natDegree = G.natDegree :=
-      natDegree_map_of_leadingCoeff_ne_zero _
-        (by rw [hGmonic.leadingCoeff, map_one]; exact one_ne_zero)
+      natDegree_map_of_leadingCoeff_ne_zero _ (by simp [hGmonic.leadingCoeff])
     rw [e1, ← hev_deg, hGx, altResolventProduct_natDegree n hn]
   have hw : (aeval (genForm n x 1)) (G.map toClosureFrac) = 0 := by
     have h1 : (G.map toClosureFrac).map
         (algebraMap (FractionRing (Polynomial (AlgebraicClosure ℚ)))
           (serreAnOverFrac n).SplittingField) = altResolventProduct n x := by
-      rw [Polynomial.map_map]; exact hGx
-    rw [Polynomial.aeval_def, ← Polynomial.eval_map, h1]
+      rwa [Polynomial.map_map]
+    rw [aeval_def, ← eval_map, h1]
     exact altResolventProduct_isRoot_genForm_one n x
-  haveI hNT : Nontrivial (Fin n) := ⟨⟨0, by omega⟩, ⟨1, by omega⟩, by simp [Fin.ext_iff]⟩
-  refine Monic.irreducible_of_galois_orbit_card (hGmonic.map toClosureFrac) hw ?_
+  have hNT : Nontrivial (Fin n) := ⟨⟨0, by omega⟩, ⟨1, by omega⟩, by simp [Fin.ext_iff]⟩
+  apply Monic.irreducible_of_galois_orbit_card (hGmonic.map toClosureFrac) hw
   rw [orbit_genForm_eq_alternating_range x hgal hsurj2,
       Nat.card_range_of_injective (genForm_alternating_injective x hxinj hsurj2),
       Nat.card_eq_fintype_card, card_alternatingGroup, Fintype.card_fin, hdegG]
@@ -736,56 +767,60 @@ theorem an_geometric_le_alternating (n : ℕ) (hn : 2 ≤ n) (heven : Even n) :
   set M := (serreAnOverFrac n).SplittingField with hM
   set ev := (algebraMap K M).comp toClosureFrac with hev_def
   have hmapev : (serreAnFamily n).map ev = (serreAnOverFrac n).map (algebraMap K M) := by
-    rw [hev_def, ← Polynomial.map_map]; rfl
+    rw [hev_def, ← Polynomial.map_map]
+    rfl
   have hdeg : ((serreAnFamily n).map ev).natDegree = n := by
-    rw [hmapev, Polynomial.natDegree_map_of_leadingCoeff_ne_zero]
+    rw [hmapev, natDegree_map_of_leadingCoeff_ne_zero]
     · exact serreAnOverFrac_natDegree n hn
-    · rw [(serreAnOverFrac_monic n hn).leadingCoeff, map_one]; exact one_ne_zero
+    · simp [(serreAnOverFrac_monic n hn).leadingCoeff]
   have hsplit_f : ((serreAnOverFrac n).map (algebraMap K M)).Splits :=
     SplittingField.splits (serreAnOverFrac n)
   -- Root enumeration of `f` over `M` (independent of the `IsAltResolvent` coupling).
+  have hsp : ((serreAnFamily n).map ev).Splits := by rwa [hmapev]
+  have hcard : Multiset.card ((serreAnFamily n).map ev).roots = n := by
+    rw [splits_iff_card_roots.mp hsp, hdeg]
   obtain ⟨x, hxroots⟩ : ∃ x : Fin n → M,
       ((serreAnFamily n).map ev).roots = Finset.univ.val.map x := by
-    have hcard : Multiset.card ((serreAnFamily n).map ev).roots = n := by
-      have hsp : ((serreAnFamily n).map ev).Splits := by rw [hmapev]; exact hsplit_f
-      rw [Polynomial.splits_iff_card_roots.mp hsp, hdeg]
     obtain ⟨x, hx⟩ := ResolventConstruction.exists_fin_map_eq _ n hcard
     exact ⟨x, hx.symm⟩
   have hsep : ((serreAnFamily n).map ev).Separable := by
-    rw [hmapev]; exact (serreAnOverFrac_separable n hn heven).map
+    rw [hmapev]
+    exact (serreAnOverFrac_separable n hn heven).map
   have hxinj : Function.Injective x := by
-    have hnd : ((serreAnFamily n).map ev).roots.Nodup := Polynomial.nodup_roots hsep
+    have hnd : ((serreAnFamily n).map ev).roots.Nodup := nodup_roots hsep
     rw [hxroots] at hnd
     intro i j hij
     exact Multiset.inj_on_of_nodup_map hnd i (by simp) j (by simp) hij
   have hxmem : ∀ i, x i ∈ (serreAnOverFrac n).rootSet M := by
     intro i
-    rw [Polynomial.mem_rootSet]
+    rw [mem_rootSet]
     refine ⟨(serreAnOverFrac_monic n hn).ne_zero, ?_⟩
     have hmemroots : x i ∈ ((serreAnFamily n).map ev).roots := by
-      rw [hxroots]; exact Multiset.mem_map.mpr ⟨i, by simp, rfl⟩
+      rw [hxroots]
+      exact Multiset.mem_map.mpr ⟨i, by simp, rfl⟩
     have hroot : eval (x i) ((serreAnFamily n).map ev) = 0 :=
-      (Polynomial.mem_roots'.mp hmemroots).2
-    rw [Polynomial.aeval_def, ← Polynomial.eval_map, ← hmapev]
+      (mem_roots'.mp hmemroots).2
+    rw [aeval_def, ← eval_map, ← hmapev]
     exact hroot
   have hcardrs : Fintype.card ((serreAnOverFrac n).rootSet M) = n := by
     rw [Polynomial.card_rootSet_eq_natDegree (serreAnOverFrac_separable n hn heven) hsplit_f,
       serreAnOverFrac_natDegree n hn]
   have hbij : Function.Bijective
-      (fun i : Fin n => (⟨x i, hxmem i⟩ : (serreAnOverFrac n).rootSet M)) := by
+      (fun i ↦ (⟨x i, hxmem i⟩ : (serreAnOverFrac n).rootSet M)) := by
     refine (Fintype.bijective_iff_injective_and_card _).mpr ⟨?_, ?_⟩
-    · intro i j hij; exact hxinj (Subtype.ext_iff.mp hij)
+    · intro i j hij
+      exact hxinj (Subtype.ext_iff.mp hij)
     · rw [Fintype.card_fin, hcardrs]
   set v := Equiv.ofBijective _ hbij with hv_def
-  have hvx : ∀ i, (v i : M) = x i := fun i => rfl
-  have h_ne : discElem (fun i => (v i : M)) ≠ 0 := by
+  have hvx : ∀ i, (v i : M) = x i := fun i ↦ rfl
+  have h_ne : discElem (fun i ↦ (v i : M)) ≠ 0 := by
     unfold discElem
     rw [← Matrix.det_vandermonde, Ne, Matrix.det_vandermonde_eq_zero_iff]
     push_neg
-    exact fun i j h => (Subtype.val_injective.comp v.injective) h
-  have h_sq : ∃ d : K, discSq (fun i => (v i : M)) = (algebraMap K M d) ^ 2 := by
+    exact fun i j h ↦ (Subtype.val_injective.comp v.injective) h
+  have h_sq : ∃ d : K, discSq (fun i ↦ (v i : M)) = (algebraMap K M d) ^ 2 := by
     refine ⟨toClosureFrac (serreAnDeltaPoly n), ?_⟩
-    have hvx' : (fun i => (v i : M)) = x := funext hvx
+    have hvx' : (fun i ↦ (v i : M)) = x := funext hvx
     rw [discSq, hvx', serreAnFamily_discSq_general n hn ev x hdeg hxroots,
       ← serreAnDeltaPoly_sq n heven, map_pow, hev_def, RingHom.comp_apply]
   have hpar := gal_le_alternating_of_disc_sq (serreAnOverFrac n)
@@ -797,7 +832,7 @@ theorem an_geometric_le_alternating (n : ℕ) (hn : 2 ≤ n) (heven : Even n) :
   obtain ⟨π, hπ, hsign⟩ := hpar ϕ
   rw [Equiv.Perm.mem_alternatingGroup]
   have hperm : Gal.galActionHom (serreAnOverFrac n) M ψ = v.permCongr π := by
-    refine Equiv.ext (fun r => ?_)
+    refine Equiv.ext (fun r ↦ ?_)
     obtain ⟨i, rfl⟩ := v.surjective r
     apply Subtype.ext
     have hr := Gal.galActionHom_restrict (p := serreAnOverFrac n) (E := M) ϕ (v i)
@@ -846,17 +881,25 @@ theorem serreAn_g_not_isSquare (n : ℕ) (hn : 3 ≤ n) :
     have hx : (1 : ℚ) / ((n : ℚ) - 1) ≠ 0 := div_ne_zero one_ne_zero hn1
     exact (map_ne_zero_iff (algebraMap ℚ R) (FaithfulSMul.algebraMap_injective ℚ R)).mpr hx
   have hmonic : g.Monic := by
-    rw [hg]; monicity!
-    rw [if_neg (show ¬ (n = n - 1) by omega), if_neg (show ¬ (n = 0) by omega)]; ring
+    rw [hg]
+    monicity!
+    rw [if_neg (show ¬ (n = n - 1) by omega), if_neg (show ¬ (n = 0) by omega)]
+    ring
   have hdeg : g.natDegree = n := by
-    rw [hg]; compute_degree!
-    rw [if_neg (show ¬ (n = n - 1) by omega), if_neg (show ¬ (n = 0) by omega)]; simp
+    rw [hg]
+    compute_degree!
+    rw [if_neg (show ¬ (n = n - 1) by omega), if_neg (show ¬ (n = 0) by omega)]
+    simp
   have hg_ne : g ≠ 0 := hmonic.ne_zero
   have hg0 : g.eval 0 = a₀ := by
-    rw [hg]; simp [zero_pow hn0, zero_pow hn10]
+    rw [hg]
+    simp [zero_pow hn0, zero_pow hn10]
   have hDerivRoot : ∀ r : R, (derivative g).eval r = (↑n : R) * r ^ (n - 2) * (r - 1) := by
     intro r
-    have hrpow : r ^ (n - 1) = r ^ (n - 2) * r := by rw [← pow_succ]; congr 1; omega
+    have hrpow : r ^ (n - 1) = r ^ (n - 2) * r := by
+      rw [← pow_succ]
+      congr 1
+      omega
     have e1 : n - 1 - 1 = n - 2 := by omega
     rw [hg]
     simp only [derivative_add, derivative_sub, derivative_C_mul, derivative_X_pow, derivative_C,
@@ -867,9 +910,10 @@ theorem serreAn_g_not_isSquare (n : ℕ) (hn : 3 ≤ n) :
   have hsplit : g.Splits := IsAlgClosed.splits g
   have hcard : g.roots.card = n := (splits_iff_card_roots.mp hsplit).trans hdeg
   have hne_n : (↑n : R) ≠ 0 := by
-    simp only [Ne, Nat.cast_eq_zero]; omega
+    simp only [Ne, Nat.cast_eq_zero]
+    omega
   rintro ⟨h, hh⟩
-  have hh_ne : h ≠ 0 := fun h0 => hg_ne (by rw [hh, h0, mul_zero])
+  have hh_ne : h ≠ 0 := fun h0 ↦ hg_ne (by rw [hh, h0, mul_zero])
   have hroots1 : ∀ r ∈ g.roots, r = 1 := by
     intro r hr
     have hIsRoot : g.IsRoot r := (mem_roots'.mp hr).2
@@ -877,14 +921,14 @@ theorem serreAn_g_not_isSquare (n : ℕ) (hn : 3 ≤ n) :
       intro h0
       rw [h0, IsRoot, hg0] at hIsRoot
       exact ha0ne hIsRoot
-    have hhr : h.IsRoot r := by
-      have hsq : h.eval r * h.eval r = 0 := by
-        have := hIsRoot; rw [IsRoot, hh, eval_mul] at this; exact this
-      exact mul_self_eq_zero.mp hsq
+    have hsq : h.eval r * h.eval r = 0 := by
+      rw [← eval_mul, ← hh]
+      exact hIsRoot
+    have hhr : h.IsRoot r := mul_self_eq_zero.mp hsq
     have hmh : 1 ≤ h.rootMultiplicity r := (rootMultiplicity_pos hh_ne).mpr hhr
     have hmg : g.rootMultiplicity r = h.rootMultiplicity r + h.rootMultiplicity r := by
       conv_lhs => rw [hh]
-      exact rootMultiplicity_mul (by rw [← hh]; exact hg_ne)
+      exact rootMultiplicity_mul (by rwa [← hh])
     have hderivmult : (derivative g).rootMultiplicity r = g.rootMultiplicity r - 1 :=
       derivative_rootMultiplicity_of_root hIsRoot
     have hderiv_pos : 0 < (derivative g).rootMultiplicity r := by omega
@@ -901,11 +945,11 @@ theorem serreAn_g_not_isSquare (n : ℕ) (hn : 3 ≤ n) :
     have := Multiset.eq_replicate_card.mpr hroots1
     rwa [hcard] at this
   have hgpow : g = (X - C (1 : R)) ^ n := by
-    have h1 := hsplit.eq_prod_roots_of_monic hmonic
-    rw [hroots_eq, Multiset.map_replicate, Multiset.prod_replicate] at h1
-    exact h1
+    simpa [hroots_eq, Multiset.map_replicate, Multiset.prod_replicate] using
+      hsplit.eq_prod_roots_of_monic hmonic
   have hd0 : (derivative g).eval 0 = 0 := by
-    rw [hDerivRoot]; simp [zero_pow (show n - 2 ≠ 0 by omega)]
+    rw [hDerivRoot]
+    simp [zero_pow (show n - 2 ≠ 0 by omega)]
   have hd0' : (derivative g).eval 0 ≠ 0 := by
     rw [hgpow, derivative_pow]
     simp only [derivative_sub, derivative_X, derivative_C, sub_zero]
@@ -932,8 +976,8 @@ theorem serreAnFamily_geom_irr (n : ℕ) (hn : 3 ≤ n) (heven : Even n) :
   set u : R := (φ (-1)) ^ (n / 2) with hu
   set g : Polynomial R := X ^ n - C c1 * X ^ (n - 1) + C c0 with hg
   set a : Polynomial R := -(C u * g) with ha
-  refine (MulEquiv.irreducible_iff Polynomial.Bivariate.swap
-    (x := (serreAnFamily n).map (mapRingHom φ))).mp ?_
+  apply (MulEquiv.irreducible_iff Polynomial.Bivariate.swap
+    (x := (serreAnFamily n).map (mapRingHom φ))).mp
   have hswap : Polynomial.Bivariate.swap ((serreAnFamily n).map (mapRingHom φ))
       = C (C u) * X ^ 2 + C g := by
     unfold serreAnFamily
@@ -947,22 +991,30 @@ theorem serreAnFamily_geom_irr (n : ℕ) (hn : 3 ≤ n) (heven : Even n) :
   set M : Polynomial (Polynomial R) := X ^ 2 - C a with hM
   have hu2 : u ^ 2 = 1 := by
     rw [hu, ← pow_mul]
-    have hnn : n / 2 * 2 = n := by obtain ⟨k, hk⟩ := heven; omega
+    have hnn : n / 2 * 2 = n := by
+      obtain ⟨k, hk⟩ := heven
+      omega
     rw [hnn, ← map_pow, Even.neg_one_pow heven, map_one]
   have hune : u ≠ 0 := by
-    intro h; rw [h, zero_pow (by norm_num)] at hu2; exact zero_ne_one hu2
+    intro h
+    rw [h, zero_pow (by norm_num)] at hu2
+    exact zero_ne_one hu2
   have hcancel : (C u : Polynomial R) * -(C u * g) = -g := by
     rw [mul_neg, ← mul_assoc, ← C_mul, ← pow_two, hu2, C_1, one_mul]
   have hQM : C (C u) * X ^ 2 + C g = C (C u) * M := by
     rw [hM, ha, mul_sub, ← C_mul, hcancel, map_neg, sub_neg_eq_add]
   have hunit : IsUnit (C (C u) : Polynomial (Polynomial R)) := by
-    apply isUnit_C.mpr; apply isUnit_C.mpr
-    exact IsUnit.of_mul_eq_one u (by rw [← sq]; exact hu2)
+    apply isUnit_C.mpr
+    apply isUnit_C.mpr
+    exact IsUnit.of_mul_eq_one u (by rwa [← sq])
   rw [hQM]
   have hassoc : Associated M (C (C u) * M) := by
-    rw [mul_comm]; exact (associated_mul_unit_left M _ hunit).symm
-  refine hassoc.irreducible_iff.mp ?_
-  have hMmonic : M.Monic := by rw [hM]; exact monic_X_pow_sub_C a (by norm_num)
+    rw [mul_comm]
+    exact (associated_mul_unit_left M _ hunit).symm
+  apply hassoc.irreducible_iff.mp
+  have hMmonic : M.Monic := by
+    rw [hM]
+    exact monic_X_pow_sub_C a (by norm_num)
   rw [hMmonic.irreducible_iff_irreducible_map_fraction_map
       (K := FractionRing (Polynomial R))]
   have hmapM : M.map (algebraMap (Polynomial R) (FractionRing (Polynomial R)))
@@ -972,16 +1024,19 @@ theorem serreAnFamily_geom_irr (n : ℕ) (hn : 3 ≤ n) (heven : Even n) :
   apply X_pow_sub_C_irreducible_of_prime Nat.prime_two
   intro b hb
   have hint : IsIntegral (Polynomial R) (b ^ 2) := by
-    rw [hb]; exact isIntegral_algebraMap
+    rw [hb]
+    exact isIntegral_algebraMap
   obtain ⟨s, hs⟩ := IsIntegrallyClosed.exists_algebraMap_eq_of_isIntegral_pow
     (n := 2) (by norm_num) hint
   have hinj := IsFractionRing.injective (Polynomial R) (FractionRing (Polynomial R))
   have hasq : a = s ^ 2 := by
-    apply hinj; rw [← hb, map_pow, hs]
-  obtain ⟨w, hw⟩ : ∃ w : R, w ^ 2 = -u := by
-    obtain ⟨w, hw⟩ := IsAlgClosed.exists_pow_nat_eq (-u) (n := 2) (by norm_num); exact ⟨w, hw⟩
+    apply hinj
+    rw [← hb, map_pow, hs]
+  obtain ⟨w, hw⟩ := IsAlgClosed.exists_pow_nat_eq (-u) (n := 2) (by norm_num)
   have hwne : w ≠ 0 := by
-    rintro rfl; rw [zero_pow (by norm_num)] at hw; exact hune (neg_eq_zero.mp hw.symm)
+    rintro rfl
+    rw [zero_pow (by norm_num)] at hw
+    exact hune (neg_eq_zero.mp hw.symm)
   have hcw : IsUnit (C w : Polynomial R) := isUnit_C.mpr (isUnit_iff_ne_zero.mpr hwne)
   have ha2 : (C w) ^ 2 * g = -(C u * g) := by rw [← C_pow, hw, map_neg, neg_mul]
   have hkey : (C w) ^ 2 * g = s ^ 2 := ha2.trans (ha.symm.trans hasq)
@@ -992,7 +1047,8 @@ theorem serreAnFamily_geom_irr (n : ℕ) (hn : 3 ≤ n) (heven : Even n) :
   rw [← hkey] at hthis
   rw [show (↑hcw.unit⁻¹ : Polynomial R) ^ 2 * ((C w) ^ 2 * g)
         = ((↑hcw.unit⁻¹) * C w) ^ 2 * g from by ring, hinv, one_pow, one_mul] at hthis
-  rw [← hthis]; ring
+  rw [← hthis]
+  ring
 
 /-- **[transitivity leaf — geometric irreducibility, proved]** The base-changed Serre family
 `serreAnOverFrac n` is **irreducible** over `ℚ̄(T)`.  This is the geometric irreducibility of the
@@ -1009,7 +1065,8 @@ theorem serreAnOverFrac_irreducible (n : ℕ) (hn : 3 ≤ n) (heven : Even n) :
       (mapRingHom (algebraMap ℚ (AlgebraicClosure ℚ)))).map
         (algebraMap (Polynomial (AlgebraicClosure ℚ))
           (FractionRing (Polynomial (AlgebraicClosure ℚ)))) := by
-    rw [serreAnOverFrac, Polynomial.map_map]; rfl
+    rw [serreAnOverFrac, Polynomial.map_map]
+    rfl
   rw [heq, ← hmonic.irreducible_iff_irreducible_map_fraction_map]
   exact serreAnFamily_geom_irr n hn heven
 
@@ -1021,11 +1078,11 @@ theorem an_geometric_isPretransitive (n : ℕ) (hn : 3 ≤ n) (heven : Even n) :
     MulAction.IsPretransitive
       (Gal.galActionHom (serreAnOverFrac n) (serreAnOverFrac n).SplittingField).range
       ((serreAnOverFrac n).rootSet (serreAnOverFrac n).SplittingField) := by
-  haveI htrans : MulAction.IsPretransitive (serreAnOverFrac n).Gal
+  have htrans : MulAction.IsPretransitive (serreAnOverFrac n).Gal
       ((serreAnOverFrac n).rootSet (serreAnOverFrac n).SplittingField) :=
     Gal.galAction_isPretransitive (p := serreAnOverFrac n)
       (E := (serreAnOverFrac n).SplittingField) (serreAnOverFrac_irreducible n hn heven)
-  refine ⟨fun x y => ?_⟩
+  refine ⟨fun x y ↦ ?_⟩
   obtain ⟨ϕ, hϕ⟩ := MulAction.exists_smul_eq (serreAnOverFrac n).Gal x y
   exact ⟨⟨Gal.galActionHom (serreAnOverFrac n) _ ϕ, MonoidHom.mem_range.mpr ⟨ϕ, rfl⟩⟩, hϕ⟩
 
@@ -1045,8 +1102,8 @@ even quadratic substitution `S ↦ -1/(n-1) - (-1)^{n/2}·T²` base-changes it t
 theorem an_geometric_galois_alternating (n : ℕ) (hn : 3 ≤ n) (heven : Even n) :
     (Gal.galActionHom (serreAnOverFrac n) (serreAnOverFrac n).SplittingField).range
       = alternatingGroup ((serreAnOverFrac n).rootSet (serreAnOverFrac n).SplittingField) := by
-  letI := EvenDescent.algBaseT n
-  haveI := EvenDescent.finiteDimensional_baseT_geomBase n hn
+  let _ := EvenDescent.algBaseT n
+  have := EvenDescent.finiteDimensional_baseT_geomBase n hn
   -- `f := serreBaseGeomPoly n`, viewed over `BaseT` (defeq to `GeomBase`).  Base change along
   -- `algebraMap BaseT GeomBase = substFieldHomEven n` yields exactly `serreAnOverFrac n`.
   have hgeq : (serreBaseGeomPoly n).map
@@ -1064,7 +1121,8 @@ theorem an_geometric_galois_alternating (n : ℕ) (hn : 3 ≤ n) (heven : Even n
       ≤ alternatingGroup (((serreBaseGeomPoly n).map
           (algebraMap EvenDescent.BaseT
             (FractionRing (Polynomial (AlgebraicClosure ℚ))))).rootSet _) := by
-    rw [hgeq]; exact an_geometric_le_alternating n (by omega) heven
+    rw [hgeq]
+    exact an_geometric_le_alternating n (by omega) heven
   have key := QuadraticDescent.galActionHom_range_eq_alternating_of_quadratic_disc
     (K := EvenDescent.BaseT) (K' := FractionRing (Polynomial (AlgebraicClosure ℚ)))
     (serreBaseGeomPoly n)

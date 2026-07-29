@@ -64,11 +64,11 @@ theorem an_realizable_of_root (n : ℕ) (hn : 2 ≤ n)
     IsInverseGalois (alternatingGroup (Fin n)) := by
   have hntriv : Nontrivial (Fin n) := ⟨⟨0, by omega⟩, ⟨1, by omega⟩, by simp [Fin.ext_iff]⟩
   -- The half-discriminant is nonzero because the roots are distinct (Vandermonde).
-  have h_ne : discElem (fun i => (v i : f.SplittingField)) ≠ 0 := by
+  have h_ne : discElem (fun i ↦ (v i : f.SplittingField)) ≠ 0 := by
     unfold discElem
     rw [← Matrix.det_vandermonde, Ne, Matrix.det_vandermonde_eq_zero_iff]
     push_neg
-    exact fun i j h => (Subtype.val_injective.comp v.injective) h
+    exact fun i j h ↦ (Subtype.val_injective.comp v.injective) h
   have h_alt_card : Nat.card (alternatingGroup (Fin n)) = n.factorial / 2 := by
     rw [nat_card_alternatingGroup, Nat.card_eq_fintype_card, Fintype.card_fin]
   obtain ⟨g', hg'inj⟩ := exists_gal_embeds_alternating f hf.ne_zero v h_sq h_ne
@@ -134,7 +134,7 @@ theorem exists_alternating_resolvent_family (n : ℕ) (hn : 3 ≤ n) :
       AlternatingFamily.anResolvent_irreducible n hn heven G hGmonic hGres,
       AlternatingFamily.anResolvent_abs_irreducible n hn heven G hGmonic hGres,
       AlternatingFamily.serreAnFamily_separable_cofinite n hn2,
-      (fun t ht => AlternatingFamily.serreAnFamily_disc_isSquare_of_separable n hn2 heven t ht),
+      AlternatingFamily.serreAnFamily_disc_isSquare_of_separable n hn2 heven,
       hGroot⟩
   · -- **Odd `n`:** the conic family `serreAnFamilyOdd` (Serre §4.5, quadratic-discriminant
     -- case: `∆ ∼ n·T(T−1)`, rationally parametrised by `T = c/(c−U²)`).  Assembled exactly as the
@@ -149,7 +149,7 @@ theorem exists_alternating_resolvent_family (n : ℕ) (hn : 3 ≤ n) :
       AlternatingFamily.anResolvent_irreducible_odd n hn2 hodd G hGmonic hGres,
       AlternatingFamily.anResolvent_abs_irreducible_odd n hn2 hodd G hGmonic hGres,
       AlternatingFamily.serreAnFamilyOdd_separable_cofinite n hn2,
-      (fun t ht => AlternatingFamily.serreAnFamilyOdd_disc_isSquare_of_separable n hn2 hodd t ht),
+      AlternatingFamily.serreAnFamilyOdd_disc_isSquare_of_separable n hn2 hodd,
       hGroot⟩
 
 /-- A subsingleton group is trivially an inverse Galois group (realized by `ℚ` itself). -/
@@ -171,22 +171,23 @@ theorem alternating_inverse_galois (n : ℕ) :
   · interval_cases n
     · -- `A₀` trivial
       have : Subsingleton (alternatingGroup (Fin 0)) :=
-        ⟨fun a b => Subtype.ext (Equiv.ext fun x => x.elim0)⟩
+        ⟨fun a b ↦ Subtype.ext (Equiv.ext fun x ↦ x.elim0)⟩
       exact isInverseGalois_of_subsingleton
     · -- `A₁` trivial
       have : Subsingleton (alternatingGroup (Fin 1)) :=
-        ⟨fun a b => Subtype.ext (Equiv.ext fun x => Subsingleton.elim _ _)⟩
+        ⟨fun a b ↦ Subtype.ext (Equiv.ext fun x ↦ Subsingleton.elim _ _)⟩
       exact isInverseGalois_of_subsingleton
     · -- `A₂` trivial (`|A₂| = 1`)
       have hcard : Nat.card (alternatingGroup (Fin 2)) = 1 := by
-        rw [nat_card_alternatingGroup, Nat.card_eq_fintype_card, Fintype.card_fin]; decide
+        rw [nat_card_alternatingGroup, Nat.card_eq_fintype_card, Fintype.card_fin]
+        decide
       have : Subsingleton (alternatingGroup (Fin 2)) :=
         (Nat.card_eq_one_iff_unique.mp hcard).1
       exact isInverseGalois_of_subsingleton
     · -- `A₃ ≅ ℤ/3` cyclic
       have hcard : Nat.card (alternatingGroup (Fin 3)) = 3 := by
-        rw [nat_card_alternatingGroup, Nat.card_eq_fintype_card, Fintype.card_fin]; decide
-      have : Fact (Nat.Prime 3) := ⟨by norm_num⟩
+        rw [nat_card_alternatingGroup, Nat.card_eq_fintype_card, Fintype.card_fin]
+        decide
       have : IsCyclic (alternatingGroup (Fin 3)) := isCyclic_of_prime_card hcard
       exact of_isCyclic _
   · -- `n ≥ 4`: feed the geometric family into the reusable `of_regular_family` core.
@@ -196,15 +197,14 @@ theorem alternating_inverse_galois (n : ℕ) :
     have h_alt_card : Nat.card (alternatingGroup (Fin n)) = n.factorial / 2 := by
       rw [nat_card_alternatingGroup, Nat.card_eq_fintype_card, Fintype.card_fin]
     -- The square-discriminant conjunct supplies the landing certificate `Gal(F(t)) ↪ Aₙ`.
-    have hland : ∀ t : ℤ, (specialize F t).Separable →
+    have hland (t : ℤ) (ht : (specialize F t).Separable) :
         ∃ g' : (specialize F t).Gal →* alternatingGroup (Fin n), Function.Injective g' := by
-      intro t ht
       obtain ⟨v, d, hd⟩ := hdisc t ht
-      have h_ne : discElem (fun i => (v i : (specialize F t).SplittingField)) ≠ 0 := by
+      have h_ne : discElem (fun i ↦ (v i : (specialize F t).SplittingField)) ≠ 0 := by
         unfold discElem
         rw [← Matrix.det_vandermonde, Ne, Matrix.det_vandermonde_eq_zero_iff]
         push_neg
-        exact fun i j h => (Subtype.val_injective.comp v.injective) h
+        exact fun i j h ↦ (Subtype.val_injective.comp v.injective) h
       exact exists_gal_embeds_alternating (specialize F t) ht.ne_zero v ⟨d, hd⟩ h_ne
     exact of_regular_family (alternatingGroup (Fin n)) F G hFmonic hFdeg hGmonic
       (hGdeg.trans h_alt_card.symm) hGirr hGabs hFsep hland hroot

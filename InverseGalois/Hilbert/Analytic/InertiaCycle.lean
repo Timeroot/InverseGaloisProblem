@@ -90,7 +90,7 @@ theorem support_toPermHom_inertia_subset (p : Ideal S) {g : G} (hg : g ∈ p.ine
     ((MulAction.toPermHom G (f.rootSet S) g).support : Set (f.rootSet S))
       ⊆ collisionLocus (f := f) p := by
   intro x hx
-  rw [Finset.mem_coe, Equiv.Perm.mem_support] at hx
+  rw [Finset.mem_coe, Perm.mem_support] at hx
   exact ⟨MulAction.toPermHom G (f.rootSet S) g x, hx, toPermHom_inertia_reduction_eq p hg x⟩
 
 /-- Cardinality bound: the support of an inertia generator has at most `#(collision locus)`
@@ -98,12 +98,11 @@ elements. -/
 theorem card_support_toPermHom_inertia_le (p : Ideal S) {g : G} (hg : g ∈ p.inertia G)
     {k : ℕ} (hk : (collisionLocus (f := f) p).ncard ≤ k) :
     (MulAction.toPermHom G (f.rootSet S) g).support.card ≤ k := by
-  have hfin : (collisionLocus (f := f) p).Finite := Set.toFinite _
   calc (MulAction.toPermHom G (f.rootSet S) g).support.card
-      = ((MulAction.toPermHom G (f.rootSet S) g).support : Set (f.rootSet S)).ncard := by
-        rw [Set.ncard_coe_finset]
+      = ((MulAction.toPermHom G (f.rootSet S) g).support : Set (f.rootSet S)).ncard :=
+        (Set.ncard_coe_finset _).symm
     _ ≤ (collisionLocus (f := f) p).ncard :=
-        Set.ncard_le_ncard (support_toPermHom_inertia_subset p hg) hfin
+        Set.ncard_le_ncard (support_toPermHom_inertia_subset p hg) (Set.toFinite _)
     _ ≤ k := hk
 
 /-- **The `Aₙ` analogue of the Morse swap lemma.**  A **nontrivial, even** inertia generator lying
@@ -124,17 +123,14 @@ theorem isThreeCycle_of_mem_alternating_of_ncard_le_three (p : Ideal S) {g : G}
     (hne : MulAction.toPermHom G (f.rootSet S) g ≠ 1)
     (heven : MulAction.toPermHom G (f.rootSet S) g ∈ alternatingGroup (f.rootSet S)) :
     (MulAction.toPermHom G (f.rootSet S) g).IsThreeCycle := by
-  set σ := MulAction.toPermHom G (f.rootSet S) g with hσ
+  set σ := MulAction.toPermHom G (f.rootSet S) g
   have hle3 : σ.support.card ≤ 3 := card_support_toPermHom_inertia_le p hg hloc
-  have hge2 : 2 ≤ σ.support.card := Equiv.Perm.two_le_card_support_of_ne_one hne
-  have hsign : Equiv.Perm.sign σ = 1 := Equiv.Perm.mem_alternatingGroup.mp heven
+  have hge2 : 2 ≤ σ.support.card := Perm.two_le_card_support_of_ne_one hne
+  have hsign : Perm.sign σ = 1 := Perm.mem_alternatingGroup.mp heven
   have hne2 : σ.support.card ≠ 2 := by
     intro h2
-    have hswap : σ.IsSwap := Equiv.Perm.card_support_eq_two.mp h2
-    rw [hswap.sign_eq] at hsign
-    exact absurd hsign (by decide)
-  have h3 : σ.support.card = 3 := by omega
-  exact card_support_eq_three_iff.mp h3
+    simp [(Perm.card_support_eq_two.mp h2).sign_eq] at hsign
+  exact card_support_eq_three_iff.mp (by omega)
 
 /-- **General totally-ramified tame case: an `e`-cycle on the ramified sheets.**  If an inertia
 generator acts as a *single cycle* on the collision locus — the analytic content of a **single place
@@ -150,15 +146,15 @@ theorem isCycle_of_isCycleOn_of_ne_one (p : Ideal S) {g : G} (hg : g ∈ p.inert
     (hcyc : (MulAction.toPermHom G (f.rootSet S) g).IsCycleOn (collisionLocus (f := f) p))
     (hne : MulAction.toPermHom G (f.rootSet S) g ≠ 1) :
     (MulAction.toPermHom G (f.rootSet S) g).IsCycle := by
-  set σ := MulAction.toPermHom G (f.rootSet S) g with hσ
+  set σ := MulAction.toPermHom G (f.rootSet S) g
   have hsub : (σ.support : Set (f.rootSet S)) ⊆ collisionLocus (f := f) p :=
     support_toPermHom_inertia_subset p hg
   obtain ⟨x, hx⟩ : σ.support.Nonempty :=
-    Finset.nonempty_iff_ne_empty.mpr (fun h => hne (Equiv.Perm.support_eq_empty_iff.mp h))
-  refine ⟨x, Equiv.Perm.mem_support.mp hx, fun y hy => ?_⟩
+    Finset.nonempty_iff_ne_empty.mpr (fun h ↦ hne (Perm.support_eq_empty_iff.mp h))
+  refine ⟨x, Perm.mem_support.mp hx, fun y hy ↦ ?_⟩
   have hxloc : x ∈ collisionLocus (f := f) p := hsub (Finset.mem_coe.mpr hx)
   have hyloc : y ∈ collisionLocus (f := f) p :=
-    hsub (Finset.mem_coe.mpr (Equiv.Perm.mem_support.mpr hy))
+    hsub (Finset.mem_coe.mpr (Perm.mem_support.mpr hy))
   exact hcyc.2 hxloc hyloc
 
 /-- **Reading off the cycle length in the totally-ramified tame case.**  Combining
@@ -171,21 +167,21 @@ theorem card_support_eq_of_isCycleOn (p : Ideal S) {g : G} (hg : g ∈ p.inertia
     (hne : MulAction.toPermHom G (f.rootSet S) g ≠ 1)
     {e : ℕ} (he : (collisionLocus (f := f) p).ncard = e) :
     (MulAction.toPermHom G (f.rootSet S) g).support.card = e := by
-  set σ := MulAction.toPermHom G (f.rootSet S) g with hσ
+  set σ := MulAction.toPermHom G (f.rootSet S) g
   have hsub : (σ.support : Set (f.rootSet S)) ⊆ collisionLocus (f := f) p :=
     support_toPermHom_inertia_subset p hg
   -- The locus is nontrivial: a moved root collides with a distinct partner, both in the locus.
-  have hnt : (collisionLocus (f := f) p).Nontrivial := by
-    obtain ⟨x, hx⟩ : σ.support.Nonempty :=
-      Finset.nonempty_iff_ne_empty.mpr (fun h => hne (Equiv.Perm.support_eq_empty_iff.mp h))
-    have hxloc : x ∈ collisionLocus (f := f) p := hsub (Finset.mem_coe.mpr hx)
-    obtain ⟨y, hyx, hmk⟩ := mem_collisionLocus.mp hxloc
-    exact ⟨x, hxloc, y, mem_collisionLocus.mpr ⟨x, hyx.symm, hmk.symm⟩, hyx.symm⟩
+  obtain ⟨x, hx⟩ : σ.support.Nonempty :=
+    Finset.nonempty_iff_ne_empty.mpr (fun h ↦ hne (Perm.support_eq_empty_iff.mp h))
+  have hxloc : x ∈ collisionLocus (f := f) p := hsub (Finset.mem_coe.mpr hx)
+  obtain ⟨y, hyx, hmk⟩ := mem_collisionLocus.mp hxloc
+  have hnt : (collisionLocus (f := f) p).Nontrivial :=
+    ⟨x, hxloc, y, mem_collisionLocus.mpr ⟨x, hyx.symm, hmk.symm⟩, hyx.symm⟩
   -- `IsCycleOn` (nontrivial) moves every point of the locus, so the locus is contained in the
   -- support; combined with `hsub` this makes support = locus.
   have hsupp : (σ.support : Set (f.rootSet S)) = collisionLocus (f := f) p :=
-    Set.Subset.antisymm hsub (fun a ha =>
-      Finset.mem_coe.mpr (Equiv.Perm.mem_support.mpr (hcyc.apply_ne hnt ha)))
+    Set.Subset.antisymm hsub (fun a ha ↦
+      Finset.mem_coe.mpr (Perm.mem_support.mpr (hcyc.apply_ne hnt ha)))
   rw [← Set.ncard_coe_finset, hsupp, he]
 
 end InertiaCycle

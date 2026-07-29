@@ -57,25 +57,24 @@ theorem card_gal_ge_of_root
     (g : ℚ[X]) (hg : Irreducible g)
     (α : f.SplittingField) (hα : (aeval α) g = 0) :
     g.natDegree ≤ Nat.card f.Gal := by
-  have hcard : Nat.card f.Gal = Module.finrank ℚ f.SplittingField :=
-    Polynomial.Gal.card_of_separable hf
-  rw [hcard]
+  rw [Gal.card_of_separable hf]
+  have h_minpoly : minpoly ℚ α = C (1 / g.leadingCoeff) * g := by
+    refine (minpoly.eq_of_irreducible_of_monic ?_ ?_ ?_).symm
+    · rw [irreducible_mul_iff]
+      aesop
+    · aesop
+    · rw [Monic, leadingCoeff_mul, leadingCoeff_C, div_mul_cancel₀]
+      aesop
   have h_finrank_adjoin :
       Module.finrank ℚ (↥(IntermediateField.adjoin ℚ {α})) = g.natDegree := by
-    have h_minpoly : minpoly ℚ α = C (1 / g.leadingCoeff) * g := by
-      refine Eq.symm (minpoly.eq_of_irreducible_of_monic ?_ ?_ ?_)
-      · rw [irreducible_mul_iff]
-        aesop
-      · aesop
-      · rw [Monic, leadingCoeff_mul, leadingCoeff_C, div_mul_cancel₀]
-        aesop
     rw [IntermediateField.adjoin.finrank (IsIntegral.of_finite ℚ α), h_minpoly, natDegree_C_mul]
     aesop
+  have h_finrank_mul :=
+    Module.finrank_mul_finrank ℚ (IntermediateField.adjoin ℚ {α}) f.SplittingField
   have h_finrank_ge :
       Module.finrank ℚ (↥(IntermediateField.adjoin ℚ {α})) ≤
-        Module.finrank ℚ f.SplittingField := by
-    have := Module.finrank_mul_finrank ℚ (IntermediateField.adjoin ℚ {α}) f.SplittingField
-    exact Nat.le_of_dvd Module.finrank_pos (dvd_of_mul_right_eq _ this)
+        Module.finrank ℚ f.SplittingField :=
+    Nat.le_of_dvd Module.finrank_pos (dvd_of_mul_right_eq _ h_finrank_mul)
   omega
 
 /-- **The per-specialization core.**
@@ -94,14 +93,14 @@ theorem realizable_of_embeds_and_root {n : ℕ}
     (g : ℚ[X]) (hg : Irreducible g) (hgdeg : g.natDegree = Nat.card H)
     (α : f.SplittingField) (hα : (aeval α) g = 0) :
     IsInverseGalois H := by
+  have hft := Fintype.ofFinite f.Gal
+  have hfh := Fintype.ofFinite H
   have hle1 : Nat.card f.Gal ≤ Nat.card H := Nat.card_le_card_of_injective g' hg'inj
   have hle2 : Nat.card H ≤ Nat.card f.Gal := hgdeg ▸ card_gal_ge_of_root f hf g hg α hα
   have heq : Nat.card f.Gal = Nat.card H := le_antisymm hle1 hle2
   have hbij : Function.Bijective g' := by
-    have hft := Fintype.ofFinite f.Gal
-    have hfh := Fintype.ofFinite H
-    exact (Fintype.bijective_iff_injective_and_card _).2
-      ⟨hg'inj, by simpa [Nat.card_eq_fintype_card] using heq⟩
+    refine (Fintype.bijective_iff_injective_and_card _).2 ⟨hg'inj, ?_⟩
+    simpa [Nat.card_eq_fintype_card] using heq
   exact ⟨f.SplittingField, inferInstance, inferInstance, inferInstance,
     { to_isSeparable := Algebra.IsAlgebraic.isSeparable_of_perfectField,
       to_normal := SplittingField.instNormal f },
@@ -135,7 +134,8 @@ theorem of_regular_family {n : ℕ}
     IsInverseGalois H := by
   have hinf : {t : ℤ | Irreducible (specialize G t)}.Infinite := by
     refine hilbert_irreducibility_theorem G hGirr ?_ hGabs
-    rw [hGdeg]; exact Nat.card_pos
+    rw [hGdeg]
+    exact Nat.card_pos
   obtain ⟨t₀, ht₀A, ht₀B⟩ := (hinf.diff hFsep).nonempty
   have hf_sep : (specialize F t₀).Separable := not_not.mp ht₀B
   obtain ⟨g', hg'inj⟩ := hland t₀ hf_sep

@@ -79,10 +79,8 @@ def substPolyEven (n : ℕ) :
 
 /-- The `X²`-coefficient `-(-1)^{n/2}` of the substitution is nonzero. -/
 theorem substPolyEven_c2_ne_zero (n : ℕ) :
-    -((-1 : AlgebraicClosure ℚ) ^ (n / 2)) ≠ 0 := by
-  have : ((-1 : AlgebraicClosure ℚ) ^ (n / 2)) ≠ 0 := pow_ne_zero _ (by norm_num)
-  simp only [ne_eq, neg_eq_zero]
-  exact this
+    -((-1 : AlgebraicClosure ℚ) ^ (n / 2)) ≠ 0 :=
+  neg_ne_zero.mpr (pow_ne_zero _ (by norm_num))
 
 /-- Substitution by the degree-`2` polynomial is injective (`Polynomial.comp_eq_zero_iff`). -/
 theorem substPolyEven_injective (n : ℕ) : Function.Injective (substPolyEven n) := by
@@ -92,12 +90,12 @@ theorem substPolyEven_injective (n : ℕ) : Function.Injective (substPolyEven n)
     C (-1 / ((n : AlgebraicClosure ℚ) - 1))
       + C (-((-1 : AlgebraicClosure ℚ) ^ (n / 2))) * X ^ 2 with hv
   have hconv : substPolyEven n p = p.comp v := by
-    rw [substPolyEven, comp_eq_aeval]; rfl
+    rw [substPolyEven, comp_eq_aeval]
+    rfl
   rw [hconv] at hp
-  rcases Polynomial.comp_eq_zero_iff.mp hp with h | ⟨_, hq2⟩
+  rcases comp_eq_zero_iff.mp hp with h | ⟨_, hq2⟩
   · exact h
-  · exfalso
-    have hnd : v.natDegree = 2 := by
+  · have hnd : v.natDegree = 2 := by
       rw [hv]
       compute_degree!
     rw [hq2, natDegree_C] at hnd
@@ -160,7 +158,7 @@ theorem serreBaseGeomPoly_map_substFieldHomEven (n : ℕ) (_hn : 3 ≤ n) :
   -- Reduce to a polynomial identity over `R = ℚ̄[X]`.
   have key : (linearCoverC (serreBaseP n)).map (substPolyEven n)
       = (serreAnFamily n).map
-          (Polynomial.mapRingHom (algebraMap ℚ (AlgebraicClosure ℚ))) := by
+          (mapRingHom (algebraMap ℚ (AlgebraicClosure ℚ))) := by
     rw [linearCoverC, serreBaseP, serreAnFamily]
     simp only [Polynomial.coe_mapRingHom, Polynomial.map_sub, Polynomial.map_add,
       Polynomial.map_mul, Polynomial.map_pow, Polynomial.map_X, Polynomial.map_C,
@@ -168,15 +166,14 @@ theorem serreBaseGeomPoly_map_substFieldHomEven (n : ℕ) (_hn : 3 ≤ n) :
     simp only [map_div₀, map_natCast, map_sub, map_one, map_pow, map_neg]
     simp only [Polynomial.C_add, Polynomial.C_neg, Polynomial.C_mul,
       Polynomial.C_pow, Polynomial.C_1]
-    rw [neg_div, Polynomial.C_neg, Polynomial.C_neg]
+    rw [neg_div, C_neg, C_neg]
     ring
   -- Assemble: both sides are `(·).map (algebraMap R GeomBase)`.
   have hcomp : (substFieldHomEven n).comp
         (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase)
       = (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase).comp (substPolyEven n) :=
-    RingHom.ext fun x => substFieldHomEven_algebraMap n x
-  rw [serreBaseGeomPoly, linearCoverGeom, Polynomial.map_map, hcomp, ← Polynomial.map_map, key,
-    Polynomial.map_map]
+    RingHom.ext (substFieldHomEven_algebraMap n)
+  rw [serreBaseGeomPoly, linearCoverGeom, map_map, hcomp, ← map_map, key, map_map]
   rfl
 
 /-! ## Deliverable 3 — the degree-`2` field extension -/
@@ -191,10 +188,6 @@ theorem gen_sq_mem_range (n : ℕ) :
     ∃ β : BaseT, algebraMap BaseT GeomBase β
       = (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase X) ^ 2 := by
   letI := algBaseT n
-  have hc2 : algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase
-      (C (-((-1 : AlgebraicClosure ℚ) ^ (n / 2)))) ≠ 0 := by
-    rw [Ne, map_eq_zero_iff _ (IsFractionRing.injective _ _), Polynomial.C_eq_zero]
-    exact substPolyEven_c2_ne_zero n
   refine ⟨(algebraMap (Polynomial (AlgebraicClosure ℚ)) BaseT X
         - algebraMap (Polynomial (AlgebraicClosure ℚ)) BaseT
             (C (-1 / ((n : AlgebraicClosure ℚ) - 1))))
@@ -238,12 +231,13 @@ private noncomputable def signPolyHom :
 
 private theorem signPolyHom_apply (p : Polynomial (AlgebraicClosure ℚ)) :
     signPolyHom p = p.comp (-X) := by
-  rw [signPolyHom, comp_eq_aeval]; rfl
+  rw [signPolyHom, comp_eq_aeval]
+  rfl
 
 private theorem signPolyHom_involutive : Function.Involutive signPolyHom := by
   intro p
   rw [signPolyHom_apply, signPolyHom_apply, comp_assoc]
-  simp [neg_comp, X_comp, comp_X]
+  simp only [neg_comp, X_comp, neg_neg, comp_X]
 
 /-- `signPolyHom` fixes the substitution polynomial `substPolyEven n x`, because the latter is a
 polynomial in `X²` (the substitution `C c₀ + C c₂·X²` is even). -/
@@ -253,7 +247,8 @@ private theorem signPolyHom_substPolyEven (n : ℕ) (x : Polynomial (AlgebraicCl
     C (-1 / ((n : AlgebraicClosure ℚ) - 1))
       + C (-((-1 : AlgebraicClosure ℚ) ^ (n / 2))) * X ^ 2 with hv
   have hconv : substPolyEven n x = x.comp v := by
-    rw [substPolyEven, comp_eq_aeval]; rfl
+    rw [substPolyEven, comp_eq_aeval]
+    rfl
   rw [hconv, signPolyHom_apply, comp_assoc]
   congr 1
   rw [hv]
@@ -274,7 +269,7 @@ private theorem signFieldHom_algebraMap (x : Polynomial (AlgebraicClosure ℚ)) 
 private theorem signFieldHom_comp_substFieldHomEven (n : ℕ) :
     signFieldHom.comp (substFieldHomEven n) = substFieldHomEven n := by
   apply IsLocalization.ringHom_ext (nonZeroDivisors (Polynomial (AlgebraicClosure ℚ)))
-  refine RingHom.ext fun x => ?_
+  refine RingHom.ext fun x ↦ ?_
   simp only [RingHom.comp_apply]
   rw [show substFieldHomEven n (algebraMap (Polynomial (AlgebraicClosure ℚ)) BaseT x)
         = algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase (substPolyEven n x)
@@ -288,8 +283,7 @@ private theorem isIntegral_t (n : ℕ) :
   letI := algBaseT n
   obtain ⟨β, hβ⟩ := gen_sq_mem_range n
   refine ⟨X ^ 2 - C β, monic_X_pow_sub_C β (by norm_num), ?_⟩
-  show Polynomial.eval₂ (algebraMap BaseT GeomBase) _ _ = 0
-  rw [← Polynomial.aeval_def]
+  rw [← aeval_def]
   simp only [map_sub, map_pow, aeval_X, aeval_C, hβ, sub_self]
 
 /-- The minimal polynomial of `t` over `BaseT` has degree `≤ 2` (divides the monic `X² - C β`). -/
@@ -299,13 +293,13 @@ private theorem minpoly_natDegree_le_two (n : ℕ) :
   letI := algBaseT n
   obtain ⟨β, hβ⟩ := gen_sq_mem_range n
   have hmonic : (X ^ 2 - C β : BaseT[X]).Monic := monic_X_pow_sub_C β (by norm_num)
-  have haeval : (Polynomial.aeval
+  have haeval : (aeval
       (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase X)) (X ^ 2 - C β : BaseT[X]) = 0 := by
     simp only [map_sub, map_pow, aeval_X, aeval_C, hβ, sub_self]
   have hdvd := minpoly.dvd BaseT _ haeval
   calc (minpoly BaseT (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase X)).natDegree
         ≤ (X ^ 2 - C β : BaseT[X]).natDegree :=
-          Polynomial.natDegree_le_of_dvd hdvd hmonic.ne_zero
+          natDegree_le_of_dvd hdvd hmonic.ne_zero
     _ = 2 := natDegree_X_pow_sub_C
 
 /-- `t` generates `GeomBase` over `BaseT`. -/
@@ -320,21 +314,17 @@ private theorem adjoin_t_eq_top (n : ℕ) :
   have hconst : ∀ c : AlgebraicClosure ℚ,
       algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase (C c) ∈ M := by
     intro c
-    have hc : algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase (C c)
-        = algebraMap BaseT GeomBase
-            (algebraMap (Polynomial (AlgebraicClosure ℚ)) BaseT (C c)) := by
-      rw [algebraMap_baseT_eq]
-      exact (substFieldHomEven_C n c).symm
-    rw [hc]
+    rw [← substFieldHomEven_C n c, ← algebraMap_baseT_eq n]
     exact M.algebraMap_mem _
   have hrange : ∀ q : Polynomial (AlgebraicClosure ℚ),
       algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase q ∈ M := by
     intro q
     refine Polynomial.induction_on' q ?_ ?_
     · intro p q hp hq
-      rw [map_add]; exact add_mem hp hq
+      rw [map_add]
+      exact add_mem hp hq
     · intro k c
-      rw [← Polynomial.C_mul_X_pow_eq_monomial, map_mul, map_pow]
+      rw [← C_mul_X_pow_eq_monomial, map_mul, map_pow]
       exact mul_mem (hconst c) (pow_mem htM k)
   rw [eq_top_iff]
   intro y _
@@ -386,7 +376,6 @@ theorem finiteDimensional_baseT_geomBase (n : ℕ) (hn : 3 ≤ n) :
         {algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase X}) :=
     IntermediateField.adjoin.finiteDimensional (isIntegral_t n)
   rw [adjoin_t_eq_top n] at hfd
-  haveI := hfd
   exact IntermediateField.topEquiv.toLinearEquiv.finiteDimensional
 
 set_option synthInstance.maxHeartbeats 800000 in
@@ -421,13 +410,10 @@ theorem finrank_baseT_geomBase (n : ℕ) (hn : 3 ≤ n) :
   have hne1 : (minpoly BaseT
       (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase X)).natDegree ≠ 1 := by
     intro h1
-    have hbot : Module.finrank BaseT
-        (IntermediateField.adjoin BaseT
-          {algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase X}) = 1 := by
-      rw [IntermediateField.adjoin.finrank hInt, h1]
-    rw [IntermediateField.finrank_eq_one_iff, IntermediateField.adjoin_simple_eq_bot_iff,
-      IntermediateField.mem_bot] at hbot
-    exact t_not_mem_range n hbot
+    apply t_not_mem_range n
+    rw [← IntermediateField.mem_bot, ← IntermediateField.adjoin_simple_eq_bot_iff,
+      ← IntermediateField.finrank_eq_one_iff, IntermediateField.adjoin.finrank hInt]
+    exact h1
   omega
 
 end EvenDescent

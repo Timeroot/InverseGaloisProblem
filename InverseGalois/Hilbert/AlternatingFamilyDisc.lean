@@ -52,7 +52,8 @@ theorem serreAnFamily_eq (n : ℕ) :
     serreAnFamily n = X ^ n
       - (C (C ((n : ℚ) / ((n : ℚ) - 1))) * X ^ (n - 1)
         - C (C (1 / ((n : ℚ) - 1)) + C ((-1 : ℚ) ^ (n / 2)) * X ^ 2)) := by
-  unfold serreAnFamily; ring
+  unfold serreAnFamily
+  ring
 
 /-- **[algebraic leaf]** `serreAnFamily n` is monic (in `X`) for `n ≥ 2`. -/
 theorem serreAnFamily_monic (n : ℕ) (hn : 2 ≤ n) : (serreAnFamily n).Monic := by
@@ -61,11 +62,11 @@ theorem serreAnFamily_monic (n : ℕ) (hn : 2 ≤ n) : (serreAnFamily n).Monic :
   have hle : (C (C ((n : ℚ) / ((n : ℚ) - 1))) * X ^ (n - 1)
       - C (C (1 / ((n : ℚ) - 1)) + C ((-1 : ℚ) ^ (n / 2)) * X ^ 2)
         : Polynomial (Polynomial ℚ)).degree ≤ (↑(n - 1)) := by
-    refine le_trans (degree_sub_le _ _) ?_
+    apply le_trans (degree_sub_le _ _)
     apply max_le
     · exact degree_C_mul_X_pow_le _ _
     · exact le_trans degree_C_le (by exact_mod_cast Nat.zero_le (n - 1))
-  refine lt_of_le_of_lt hle ?_
+  apply lt_of_le_of_lt hle
   exact_mod_cast (by omega : n - 1 < n)
 
 /-- **[algebraic leaf]** `serreAnFamily n` has `X`-degree `n` for `n ≥ 2`. -/
@@ -80,8 +81,10 @@ theorem serreAnFamily_natDegree (n : ℕ) (hn : 2 ≤ n) :
     apply lt_of_le_of_lt (natDegree_sub_le _ _)
     apply max_lt
     · apply lt_of_le_of_lt (natDegree_C_mul_le _ _)
-      rw [natDegree_X_pow]; omega
-    · rw [natDegree_C]; omega
+      rw [natDegree_X_pow]
+      omega
+    · rw [natDegree_C]
+      omega
 
 /-- **[algebraic leaf]** The `X`-derivative of `serreAnFamily` is `n·X^{n-1} − n·X^{n-2}`
 (the constant-in-`X` term contributes nothing, and `(n−1)·(n/(n−1)) = n`).  Its critical
@@ -115,8 +118,8 @@ theorem specialize_serreAnFamily (n : ℕ) (t : ℤ) :
         + C (1 / ((n : ℚ) - 1) + (-1 : ℚ) ^ (n / 2) * (t : ℚ) ^ 2) := by
   unfold specialize serreAnFamily
   simp only [Polynomial.map_add, Polynomial.map_sub, Polynomial.map_mul, Polynomial.map_pow,
-    Polynomial.map_X, Polynomial.map_C, Polynomial.coe_evalRingHom, Polynomial.eval_add,
-    Polynomial.eval_mul, Polynomial.eval_pow, Polynomial.eval_C, Polynomial.eval_X]
+    map_X, map_C, coe_evalRingHom, eval_add,
+    eval_mul, eval_pow, eval_C, eval_X]
 
 /-- **[algebraic leaf]** Every integer specialization of `serreAnFamily n` is monic. -/
 theorem specialize_serreAnFamily_monic (n : ℕ) (hn : 2 ≤ n) (t : ℤ) :
@@ -134,8 +137,8 @@ theorem specialize_serreAnFamily_natDegree (n : ℕ) (hn : 2 ≤ n) (t : ℤ) :
 theorem specialize_serreAnFamily_derivative (n : ℕ) (hn : 2 ≤ n) (t : ℤ) :
     derivative (specialize (serreAnFamily n) t)
       = C (n : ℚ) * X ^ (n - 1) - C (n : ℚ) * X ^ (n - 2) := by
-  rw [specialize, Polynomial.derivative_map, serreAnFamily_derivative n hn]
-  simp [Polynomial.map_sub, Polynomial.map_mul, Polynomial.map_pow, Polynomial.map_X]
+  rw [specialize, derivative_map, serreAnFamily_derivative n hn]
+  simp [Polynomial.map_sub, Polynomial.map_mul, Polynomial.map_pow, map_X]
 
 /-- **[algebraic leaf — separability]** `serreAnFamily n |_t` is separable for all but finitely
 many `t ∈ ℤ`.  The exceptions are the finitely many integer roots of the (nonzero) `X`-discriminant
@@ -145,34 +148,30 @@ root set is strictly smaller than `n`, so no such equivalence exists — exactly
 family `anBaseFamily_separable_cofinite`). -/
 theorem serreAnFamily_separable_cofinite (n : ℕ) (hn : 2 ≤ n) :
     {t : ℤ | ¬ (specialize (serreAnFamily n) t).Separable}.Finite := by
-  set φ := algebraMap ℚ (AlgebraicClosure ℚ) with hφ
+  set φ := algebraMap ℚ (AlgebraicClosure ℚ)
   have hφinj : Function.Injective φ := φ.injective
   set a : ℚ := (n : ℚ) / ((n : ℚ) - 1) with ha
   set b : ℚ := 1 / ((n : ℚ) - 1) with hb
   set s : ℚ := (-1 : ℚ) ^ (n / 2) with hs
   have hsne : s ≠ 0 := pow_ne_zero _ (by norm_num)
   -- Each collision `s·t² = k` has only finitely many integer solutions.
-  have hfin_quad : ∀ k : ℚ, {t : ℤ | s * (t : ℚ) ^ 2 = k}.Finite := by
-    intro k
+  have hfin_quad (k : ℚ) : {t : ℤ | s * (t : ℚ) ^ 2 = k}.Finite := by
     have hpoly_ne : (C s * X ^ 2 - C k : Polynomial ℚ) ≠ 0 := by
       intro h
-      have hc := congr_arg (fun p => Polynomial.coeff p 2) h
-      simp only [coeff_sub, coeff_C_mul, coeff_X_pow, if_true, mul_one, coeff_C,
-        coeff_zero] at hc
-      simp at hc
-      exact hsne hc
+      apply hsne
+      simpa [coeff_sub, coeff_C_mul, coeff_X_pow, coeff_zero] using
+        congr_arg (fun p ↦ coeff p 2) h
     have hqfin : {q : ℚ | s * q ^ 2 = k}.Finite := by
       apply Set.Finite.subset (C s * X ^ 2 - C k : Polynomial ℚ).roots.toFinset.finite_toSet
       intro q hq
       simp only [Set.mem_setOf_eq] at hq
       rw [Finset.mem_coe, Multiset.mem_toFinset, mem_roots hpoly_ne]
       simp only [IsRoot.def, eval_sub, eval_mul, eval_C, eval_pow, eval_X]
-      linarith [hq]
-    refine Set.Finite.subset (hqfin.preimage (f := fun t : ℤ => (t : ℚ))
-      (fun x _ y _ h => by simpa using h)) ?_
-    intro t ht; exact ht
+      linarith
+    exact Set.Finite.subset (hqfin.preimage (f := fun t : ℤ ↦ (t : ℚ))
+      (fun x _ y _ h ↦ by simpa using h)) (fun _ ht ↦ ht)
   -- The bad set is contained in the two collision loci `r = 0` and `r = 1`.
-  refine Set.Finite.subset ((hfin_quad (-b)).union (hfin_quad (a - 1 - b))) ?_
+  apply Set.Finite.subset ((hfin_quad (-b)).union (hfin_quad (a - 1 - b)))
   intro t ht
   simp only [Set.mem_setOf_eq] at ht
   have hne_ft : specialize (serreAnFamily n) t ≠ 0 :=
@@ -184,45 +183,45 @@ theorem serreAnFamily_separable_cofinite (n : ℕ) (hn : 2 ≤ n) :
     by_contra hc
     push_neg at hc
     apply ht
-    rw [Polynomial.Separable]
+    rw [Separable]
     apply isCoprime_of_irreducible_dvd
-    · exact fun h => hne_ft h.1
+    · exact fun h ↦ hne_ft h.1
     · intro z hz hz' hz''
       have hdeg : (z.map φ).degree ≠ 0 := by
-        rw [Polynomial.degree_map]; exact hz.degree_pos.ne'
+        rw [degree_map]
+        exact hz.degree_pos.ne'
       obtain ⟨x, hx⟩ := IsAlgClosed.exists_root _ hdeg
+      have hxz : eval₂ φ x z = 0 := by simpa [eval_map] using hx
       have hxf : eval x (map φ (specialize (serreAnFamily n) t)) = 0 := by
-        have := Polynomial.eval₂_eq_zero_of_dvd_of_eval₂_eq_zero φ x hz'
-          (by simpa [Polynomial.eval_map] using hx)
-        simpa [Polynomial.eval_map] using this
+        simpa [eval_map] using eval₂_eq_zero_of_dvd_of_eval₂_eq_zero φ x hz' hxz
       have hxf' : eval x (map φ (derivative (specialize (serreAnFamily n) t))) = 0 := by
-        have := Polynomial.eval₂_eq_zero_of_dvd_of_eval₂_eq_zero φ x hz''
-          (by simpa [Polynomial.eval_map] using hx)
-        simpa [Polynomial.eval_map] using this
+        simpa [eval_map] using eval₂_eq_zero_of_dvd_of_eval₂_eq_zero φ x hz'' hxz
       exact hc x hxf hxf'
   obtain ⟨r, hrf, hrf'⟩ := hcommon
   -- the common root of `f_t'` must be `0` or `1`
   rw [specialize_serreAnFamily_derivative n hn t] at hrf'
-  have hn0 : (n : AlgebraicClosure ℚ) ≠ 0 := by rw [Nat.cast_ne_zero]; omega
+  have hn0 : (n : AlgebraicClosure ℚ) ≠ 0 := by
+    rw [Nat.cast_ne_zero]
+    omega
   have hr01 : r = 0 ∨ r = 1 := by
-    simp only [Polynomial.map_sub, Polynomial.map_mul, Polynomial.map_pow, Polynomial.map_X,
+    simp only [Polynomial.map_sub, Polynomial.map_mul, Polynomial.map_pow, map_X,
       Polynomial.map_natCast, eval_sub, eval_mul, eval_pow, eval_X,
-      Polynomial.eval_natCast, map_natCast] at hrf'
+      eval_natCast, map_natCast] at hrf'
     have hfact : (n : AlgebraicClosure ℚ) * r ^ (n - 2) * (r - 1) = 0 := by
-      have hm : n - 1 = (n - 2) + 1 := by omega
-      rw [hm, pow_succ] at hrf'
+      rw [show n - 1 = (n - 2) + 1 by omega, pow_succ] at hrf'
       linear_combination hrf'
     rcases mul_eq_zero.mp hfact with h | h
     · rcases mul_eq_zero.mp h with h' | h'
       · exact absurd h' hn0
       · rcases eq_or_ne (n - 2) 0 with he | he
-        · rw [he, pow_zero] at h'; exact absurd h' one_ne_zero
+        · rw [he, pow_zero] at h'
+          exact absurd h' one_ne_zero
         · exact Or.inl ((pow_eq_zero_iff he).mp h')
     · exact Or.inr (by linear_combination h)
   -- plug `r ∈ {0,1}` into `f_t(r) = 0` to pin down `t`
   rw [specialize_serreAnFamily n t] at hrf
   simp only [Polynomial.map_add, Polynomial.map_sub, Polynomial.map_mul, Polynomial.map_pow,
-    Polynomial.map_X, Polynomial.map_C, eval_add, eval_sub, eval_mul, eval_pow, eval_X,
+    map_X, map_C, eval_add, eval_sub, eval_mul, eval_pow, eval_X,
     eval_C, ← ha, ← hb, ← hs] at hrf
   simp only [Set.mem_union, Set.mem_setOf_eq]
   rcases hr01 with h0 | h1
@@ -231,9 +230,9 @@ theorem serreAnFamily_separable_cofinite (n : ℕ) (hn : 2 ≤ n) :
     rw [zero_pow (by omega : n ≠ 0), zero_pow (by omega : n - 1 ≠ 0)] at hrf
     simp only [mul_zero, sub_zero, zero_add] at hrf
     have hq : b + s * (t : ℚ) ^ 2 = 0 := by
-      have := hrf; rw [show (0 : AlgebraicClosure ℚ) = φ 0 by rw [map_zero]] at this
-      exact hφinj this
-    linarith [hq]
+      rw [show (0 : AlgebraicClosure ℚ) = φ 0 by rw [map_zero]] at hrf
+      exact hφinj hrf
+    linarith
   · right
     subst h1
     simp only [one_pow, mul_one] at hrf
@@ -241,7 +240,7 @@ theorem serreAnFamily_separable_cofinite (n : ℕ) (hn : 2 ≤ n) :
       apply hφinj
       rw [map_add, map_sub, map_one, map_zero]
       linear_combination hrf
-    linarith [hq]
+    linarith
 
 /-- **[algebraic leaf]** For a separable specialization the `n` roots are distinct, so the root
 set in the splitting field has cardinality exactly `n`. -/
@@ -305,17 +304,18 @@ theorem discElem_sq_eq_sign_mul_prod_erase {L : Type*} [Field L] {n : ℕ} (w : 
   have herase : ∀ i : Fin n, ∏ j ∈ Finset.univ.erase i, (w i - w j)
       = (∏ j ∈ Ioi i, (w i - w j)) * ∏ j ∈ Iio i, (w i - w j) := by
     intro i
-    rw [show Finset.univ.erase i = (Ioi i).disjUnion (Iio i) (disjoint_Ioi_Iio i) by
+    have hunion : Finset.univ.erase i = (Ioi i).disjUnion (Iio i) (disjoint_Ioi_Iio i) := by
       ext j
       simp only [mem_erase, mem_univ, and_true, disjUnion_eq_union, mem_union, mem_Ioi, mem_Iio]
-      exact ⟨fun h => (lt_or_gt_of_ne h).symm, fun h => h.elim (·.ne') (·.ne)⟩,
-      prod_disjUnion]
+      exact ⟨fun h ↦ (lt_or_gt_of_ne h).symm, fun h ↦ h.elim (·.ne') (·.ne)⟩
+    rw [hunion, prod_disjUnion]
   have hlower : ∏ i, ∏ j ∈ Iio i, (w i - w j) = discElem w := by
     unfold discElem
-    exact prod_comm' (fun x y => by simp [mem_Iio, mem_Ioi])
+    refine prod_comm' fun x y ↦ ?_
+    simp [mem_Iio, mem_Ioi]
   have hsum : ∑ i : Fin n, (Ioi i).card = n * (n - 1) / 2 := by
     simp_rw [Fin.card_Ioi]
-    rw [Fin.sum_univ_eq_sum_range (fun i => n - 1 - i) n, sum_range_reflect (fun i => i) n,
+    rw [Fin.sum_univ_eq_sum_range (fun i ↦ n - 1 - i) n, sum_range_reflect (fun i ↦ i) n,
       sum_range_id]
   have hsign : (∏ i : Fin n, ∏ _j ∈ Ioi i, (-1 : L)) = (-1 : L) ^ (n * (n - 1) / 2) := by
     simp_rw [prod_const]
@@ -323,9 +323,11 @@ theorem discElem_sq_eq_sign_mul_prod_erase {L : Type*} [Field L] {n : ℕ} (w : 
   have hupper : ∏ i, ∏ j ∈ Ioi i, (w i - w j) = (-1 : L) ^ (n * (n - 1) / 2) * discElem w := by
     unfold discElem
     rw [← hsign, ← prod_mul_distrib]
-    apply prod_congr rfl; intro i _
+    apply prod_congr rfl
+    intro i _
     rw [← prod_mul_distrib]
-    apply prod_congr rfl; intro j _
+    apply prod_congr rfl
+    intro j _
     ring
   have hP : ∏ i, ∏ j ∈ Finset.univ.erase i, (w i - w j)
       = (-1 : L) ^ (n * (n - 1) / 2) * (discElem w) ^ 2 := by
@@ -352,46 +354,65 @@ theorem serreAnFamily_signed_prod_erase_val (n : ℕ) (hn : 2 ≤ n) (t : ℤ)
           ((v i : (specialize (serreAnFamily n) t).SplittingField) - (v j : _)) =
       algebraMap ℚ (specialize (serreAnFamily n) t).SplittingField (serreAnDiscVal n t) := by
   classical
-  set φ : ℚ →+* (specialize (serreAnFamily n) t).SplittingField := algebraMap ℚ (specialize (serreAnFamily n) t).SplittingField with hφdef
-  set w : Fin n → (specialize (serreAnFamily n) t).SplittingField := fun i => (v i : (specialize (serreAnFamily n) t).SplittingField) with hwdef
+  set φ : ℚ →+* (specialize (serreAnFamily n) t).SplittingField :=
+    algebraMap ℚ (specialize (serreAnFamily n) t).SplittingField
+  set w : Fin n → (specialize (serreAnFamily n) t).SplittingField :=
+    fun i ↦ (v i : (specialize (serreAnFamily n) t).SplittingField)
   have hne1 : (n : ℚ) - 1 ≠ 0 := by
     have : (2 : ℚ) ≤ (n : ℚ) := by exact_mod_cast hn
     linarith
   have hmonic : (specialize (serreAnFamily n) t).Monic := specialize_serreAnFamily_monic n hn t
-  have hwinj : Function.Injective w := fun i j h => v.injective (Subtype.ext h)
+  have hwinj : Function.Injective w := fun i j h ↦ v.injective (Subtype.ext h)
   -- Root bridge
   have hbridge : ((specialize (serreAnFamily n) t).map φ).roots = Multiset.map w Finset.univ.val := by
     have hnd : ((specialize (serreAnFamily n) t).map φ).roots.Nodup := nodup_roots (hsep.map)
-    have hsub : Multiset.map (Subtype.val) (Finset.univ : Finset ((specialize (serreAnFamily n) t).rootSet (specialize (serreAnFamily n) t).SplittingField)).val
+    have hmap : ((specialize (serreAnFamily n) t).rootSet
+          (specialize (serreAnFamily n) t).SplittingField).toFinset
+        = Finset.map (Function.Embedding.subtype _)
+          (Finset.univ : Finset ((specialize (serreAnFamily n) t).rootSet
+            (specialize (serreAnFamily n) t).SplittingField)) := by
+      ext x
+      simp
+    have hsub : Multiset.map (Subtype.val)
+        (Finset.univ : Finset ((specialize (serreAnFamily n) t).rootSet
+          (specialize (serreAnFamily n) t).SplittingField)).val
         = ((specialize (serreAnFamily n) t).rootSet (specialize (serreAnFamily n) t).SplittingField).toFinset.val := by
-      have hmap : ((specialize (serreAnFamily n) t).rootSet (specialize (serreAnFamily n) t).SplittingField).toFinset = Finset.map (Function.Embedding.subtype _)
-          (Finset.univ : Finset ((specialize (serreAnFamily n) t).rootSet (specialize (serreAnFamily n) t).SplittingField)) := by ext x; simp
-      rw [hmap, Finset.map_val]; rfl
-    have hrs : ((specialize (serreAnFamily n) t).rootSet (specialize (serreAnFamily n) t).SplittingField).toFinset.val = ((specialize (serreAnFamily n) t).map φ).roots := by
-      refine (Multiset.Nodup.ext ((specialize (serreAnFamily n) t).rootSet (specialize (serreAnFamily n) t).SplittingField).toFinset.nodup hnd).mpr (fun a => ?_)
+      rw [hmap, Finset.map_val]
+      rfl
+    have hrs : ((specialize (serreAnFamily n) t).rootSet
+          (specialize (serreAnFamily n) t).SplittingField).toFinset.val
+        = ((specialize (serreAnFamily n) t).map φ).roots := by
+      refine (Multiset.Nodup.ext ((specialize (serreAnFamily n) t).rootSet
+        (specialize (serreAnFamily n) t).SplittingField).toFinset.nodup hnd).mpr (fun a ↦ ?_)
       rw [← Finset.mem_def, Set.mem_toFinset]
-      simp only [Polynomial.mem_rootSet', Polynomial.mem_roots', Polynomial.IsRoot.def,
-        Polynomial.aeval_def, Polynomial.eval_map]
+      simp only [mem_rootSet', mem_roots', IsRoot.def,
+        aeval_def, eval_map]
       exact Iff.rfl
     rw [← hrs, ← hsub, ← Multiset.map_univ_val_equiv v, Multiset.map_map]
     rfl
   -- Splits over the splitting field
-  have hsplitK : ((specialize (serreAnFamily n) t).map φ).Splits := SplittingField.splits (specialize (serreAnFamily n) t)
-  have hwmem : ∀ i, w i ∈ ((specialize (serreAnFamily n) t).map φ).roots := fun i => by
-    rw [hbridge]; exact Multiset.mem_map_of_mem w (Finset.mem_univ i)
+  have hsplitK : ((specialize (serreAnFamily n) t).map φ).Splits :=
+    SplittingField.splits (specialize (serreAnFamily n) t)
+  have hwmem : ∀ i, w i ∈ ((specialize (serreAnFamily n) t).map φ).roots := fun i ↦ by
+    rw [hbridge]
+    exact Multiset.mem_map_of_mem w (Finset.mem_univ i)
   -- Per-root: ∏_{j≠i}(w i - w j) = eval (w i) (deriv (specialize (serreAnFamily n) t).map φ)
-  have hpe : ∀ i, ∏ j ∈ Finset.univ.erase i, (w i - w j) = eval (w i) (derivative ((specialize (serreAnFamily n) t).map φ)) := by
+  have hpe : ∀ i, ∏ j ∈ Finset.univ.erase i, (w i - w j)
+      = eval (w i) (derivative ((specialize (serreAnFamily n) t).map φ)) := by
     intro i
     rw [hsplitK.eval_root_derivative (hmonic.map φ) (hwmem i), hbridge,
       ← Multiset.map_erase w hwinj, ← Finset.erase_val, Multiset.map_map]
     rfl
   -- derivative of (specialize (serreAnFamily n) t).map φ
-  have hde : derivative ((specialize (serreAnFamily n) t).map φ) = C (n : (specialize (serreAnFamily n) t).SplittingField) * X ^ (n - 1) - C (n : (specialize (serreAnFamily n) t).SplittingField) * X ^ (n - 2) := by
-    rw [Polynomial.derivative_map, specialize_serreAnFamily_derivative n hn t]
-    simp [Polynomial.map_sub, Polynomial.map_mul, Polynomial.map_pow, Polynomial.map_X,
+  have hde : derivative ((specialize (serreAnFamily n) t).map φ)
+      = C (n : (specialize (serreAnFamily n) t).SplittingField) * X ^ (n - 1)
+        - C (n : (specialize (serreAnFamily n) t).SplittingField) * X ^ (n - 2) := by
+    rw [derivative_map, specialize_serreAnFamily_derivative n hn t]
+    simp [Polynomial.map_sub, Polynomial.map_mul, Polynomial.map_pow, map_X,
       Polynomial.map_natCast]
   -- eval of deriv at w i = (n:K) * w i^(n-2) * (w i - 1)
-  have hev : ∀ i, eval (w i) (derivative ((specialize (serreAnFamily n) t).map φ)) = (n : (specialize (serreAnFamily n) t).SplittingField) * w i ^ (n - 2) * (w i - 1) := by
+  have hev : ∀ i, eval (w i) (derivative ((specialize (serreAnFamily n) t).map φ))
+      = (n : (specialize (serreAnFamily n) t).SplittingField) * w i ^ (n - 2) * (w i - 1) := by
     intro i
     rw [hde]
     simp only [eval_sub, eval_mul, eval_C, eval_pow, eval_X]
@@ -401,24 +422,28 @@ theorem serreAnFamily_signed_prod_erase_val (n : ℕ) (hn : 2 ≤ n) (t : ℤ)
   have hK0 : ∏ i, ∏ j ∈ Finset.univ.erase i, (w i - w j)
       = (n : (specialize (serreAnFamily n) t).SplittingField) ^ n * (∏ i, w i) ^ (n - 2) * ∏ i, (w i - 1) := by
     have hterm : ∀ i, ∏ j ∈ Finset.univ.erase i, (w i - w j)
-        = (n : (specialize (serreAnFamily n) t).SplittingField) * w i ^ (n - 2) * (w i - 1) := fun i => (hpe i).trans (hev i)
+        = (n : (specialize (serreAnFamily n) t).SplittingField) * w i ^ (n - 2) * (w i - 1) :=
+          fun i ↦ (hpe i).trans (hev i)
     simp_rw [hterm]
     rw [Finset.prod_mul_distrib, Finset.prod_mul_distrib, Finset.prod_const, Finset.prod_pow,
       Finset.card_univ, Fintype.card_fin]
   -- Factorization of (specialize (serreAnFamily n) t) over its splitting field
   have hmdeg : ((specialize (serreAnFamily n) t).map φ).natDegree = n := by
     rw [hmonic.natDegree_map, specialize_serreAnFamily_natDegree n hn t]
-  have hcard : Multiset.card ((specialize (serreAnFamily n) t).map φ).roots = ((specialize (serreAnFamily n) t).map φ).natDegree := by
-    rw [hbridge, Multiset.card_map, hmdeg]; simp
+  have hcard : Multiset.card ((specialize (serreAnFamily n) t).map φ).roots
+      = ((specialize (serreAnFamily n) t).map φ).natDegree := by
+    rw [hbridge, Multiset.card_map, hmdeg]
+    simp
   have hfact : (specialize (serreAnFamily n) t).map φ = ∏ i, (X - C (w i)) := by
     have hh := prod_multiset_X_sub_C_of_monic_of_roots_card_eq (hmonic.map φ) hcard
     rw [hbridge, Multiset.map_map] at hh
-    rw [← hh]; rfl
+    rw [← hh]
+    rfl
   -- eval-at-point transport ℚ → K
   have heval0 : eval 0 ((specialize (serreAnFamily n) t).map φ) = φ (eval 0 (specialize (serreAnFamily n) t)) := by
-    rw [Polynomial.eval_map, Polynomial.eval₂_at_zero, Polynomial.coeff_zero_eq_eval_zero]
+    rw [eval_map, eval₂_at_zero, coeff_zero_eq_eval_zero]
   have heval1 : eval 1 ((specialize (serreAnFamily n) t).map φ) = φ (eval 1 (specialize (serreAnFamily n) t)) := by
-    rw [Polynomial.eval_map, ← map_one φ, Polynomial.eval₂_at_apply]
+    rw [eval_map, ← map_one φ, eval₂_at_apply]
   -- constant and 1-values of (specialize (serreAnFamily n) t)
   have hF0 : eval 0 (specialize (serreAnFamily n) t) = 1 / ((n:ℚ) - 1) + (-1:ℚ) ^ (n / 2) * (t:ℚ) ^ 2 := by
     rw [specialize_serreAnFamily n t]
@@ -430,16 +455,14 @@ theorem serreAnFamily_signed_prod_erase_val (n : ℕ) (hn : 2 ≤ n) (t : ℤ)
     ring
   -- Vieta: product of roots and of (root - 1)
   have hP : ∏ i, w i
-      = (-1:(specialize (serreAnFamily n) t).SplittingField) ^ n * φ (1 / ((n:ℚ) - 1) + (-1:ℚ) ^ (n / 2) * (t:ℚ) ^ 2) := by
+      = (-1:(specialize (serreAnFamily n) t).SplittingField) ^ n
+        * φ (1 / ((n:ℚ) - 1) + (-1:ℚ) ^ (n / 2) * (t:ℚ) ^ 2) := by
     have h0 := congrArg (eval 0) hfact
     rw [eval_prod] at h0
     simp only [eval_sub, eval_X, eval_C, zero_sub] at h0
     rw [heval0, hF0] at h0
     rw [Finset.prod_neg, Finset.card_univ, Fintype.card_fin] at h0
-    have : (-1:(specialize (serreAnFamily n) t).SplittingField) ^ n * φ (1 / ((n:ℚ) - 1) + (-1:ℚ) ^ (n / 2) * (t:ℚ) ^ 2)
-        = (-1) ^ n * ((-1) ^ n * ∏ i, w i) := by rw [h0]
-    rw [← mul_assoc, ← pow_add, Even.neg_one_pow ⟨n, rfl⟩, one_mul] at this
-    exact this.symm
+    rw [h0, ← mul_assoc, ← pow_add, Even.neg_one_pow ⟨n, rfl⟩, one_mul]
   have hQ : ∏ i, (w i - 1)
       = (-1:(specialize (serreAnFamily n) t).SplittingField) ^ n * φ ((-1:ℚ) ^ (n / 2) * (t:ℚ) ^ 2) := by
     have h1 := congrArg (eval 1) hfact
@@ -448,28 +471,28 @@ theorem serreAnFamily_signed_prod_erase_val (n : ℕ) (hn : 2 ≤ n) (t : ℤ)
     rw [heval1, hF1] at h1
     simp_rw [← neg_sub (w _) 1] at h1
     rw [Finset.prod_neg, Finset.card_univ, Fintype.card_fin] at h1
-    have : (-1:(specialize (serreAnFamily n) t).SplittingField) ^ n * φ ((-1:ℚ) ^ (n / 2) * (t:ℚ) ^ 2)
-        = (-1) ^ n * ((-1) ^ n * ∏ i, (w i - 1)) := by rw [h1]
-    rw [← mul_assoc, ← pow_add, Even.neg_one_pow ⟨n, rfl⟩, one_mul] at this
-    exact this.symm
+    rw [h1, ← mul_assoc, ← pow_add, Even.neg_one_pow ⟨n, rfl⟩, one_mul]
   -- sign bookkeeping
   have hE : Even (n * (n - 1) / 2 + n * (n - 2) + n + n / 2) := by
     obtain ⟨k, rfl⟩ : ∃ k, n = k + 2 := ⟨n - 2, by omega⟩
     rcases Nat.even_or_odd k with ⟨p, rfl⟩ | ⟨p, rfl⟩
     · simp only [show p + p + 2 - 1 = p + p + 1 by omega, show p + p + 2 - 2 = p + p by omega]
-      rw [show (p + p + 2) * (p + p + 1) / 2 = (p + 1) * (p + p + 1) by
-            rw [show (p + p + 2) * (p + p + 1) = 2 * ((p + 1) * (p + p + 1)) by ring]; omega,
-          show (p + p + 2) / 2 = p + 1 by omega]
+      have hdiv : (p + p + 2) * (p + p + 1) / 2 = (p + 1) * (p + p + 1) := by
+        rw [show (p + p + 2) * (p + p + 1) = 2 * ((p + 1) * (p + p + 1)) by ring]
+        omega
+      rw [hdiv, show (p + p + 2) / 2 = p + 1 by omega]
       exact ⟨3 * p * p + 5 * p + 2, by ring⟩
     · simp only [show 2 * p + 1 + 2 - 1 = 2 * p + 2 by omega,
         show 2 * p + 1 + 2 - 2 = 2 * p + 1 by omega]
-      rw [show (2 * p + 1 + 2) * (2 * p + 2) / 2 = (2 * p + 3) * (p + 1) by
-            rw [show (2 * p + 1 + 2) * (2 * p + 2) = 2 * ((2 * p + 3) * (p + 1)) by ring]; omega,
-          show (2 * p + 1 + 2) / 2 = p + 1 by omega]
+      have hdiv : (2 * p + 1 + 2) * (2 * p + 2) / 2 = (2 * p + 3) * (p + 1) := by
+        rw [show (2 * p + 1 + 2) * (2 * p + 2) = 2 * ((2 * p + 3) * (p + 1)) by ring]
+        omega
+      rw [hdiv, show (2 * p + 1 + 2) / 2 = p + 1 by omega]
       exact ⟨3 * p * p + 8 * p + 5, by ring⟩
   have hsign : (-1:(specialize (serreAnFamily n) t).SplittingField) ^ (n * (n - 1) / 2) * (-1) ^ (n * (n - 2)) *
       (-1) ^ n * (-1) ^ (n / 2) = 1 := by
-    rw [← pow_add, ← pow_add, ← pow_add]; exact hE.neg_one_pow
+    rw [← pow_add, ← pow_add, ← pow_add]
+    exact hE.neg_one_pow
   -- final assembly
   show (-1:(specialize (serreAnFamily n) t).SplittingField) ^ (n * (n - 1) / 2) *
       ∏ i, ∏ j ∈ Finset.univ.erase i, (w i - w j) = φ (serreAnDiscVal n t)
@@ -492,7 +515,7 @@ theorem serreAnFamily_discSq_val (n : ℕ) (hn : 2 ≤ n) (t : ℤ)
         (specialize (serreAnFamily n) t).SplittingField) :
     discSq (fun i => (v i : (specialize (serreAnFamily n) t).SplittingField)) =
       algebraMap ℚ (specialize (serreAnFamily n) t).SplittingField (serreAnDiscVal n t) := by
-  rw [discSq, discElem_sq_eq_sign_mul_prod_erase (fun i => (v i :
+  rw [discSq, discElem_sq_eq_sign_mul_prod_erase (fun i ↦ (v i :
     (specialize (serreAnFamily n) t).SplittingField))]
   exact serreAnFamily_signed_prod_erase_val n hn t hsep v
 

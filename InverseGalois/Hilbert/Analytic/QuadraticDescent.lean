@@ -86,14 +86,11 @@ theorem galActionHom_range_eq_alternating_of_card
   have hperm : Nat.card (Equiv.Perm (g.rootSet g.SplittingField)) = n.factorial := by
     rw [Nat.card_eq_fintype_card, Fintype.card_perm, hcardRoot]
   -- Hence the range has index 2.
-  have hindex : (Gal.galActionHom g g.SplittingField).range.index = 2 := by
-    have hmul := Subgroup.index_mul_card (Gal.galActionHom g g.SplittingField).range
-    rw [hcardRange, hperm] at hmul
-    -- `range.index * |g.Gal| = n! = 2 * |g.Gal|`, and `|g.Gal| > 0`.
-    have hpos : 0 < Nat.card g.Gal := Nat.card_pos
-    have hmul2 : (Gal.galActionHom g g.SplittingField).range.index * Nat.card g.Gal
-        = 2 * Nat.card g.Gal := by rw [hmul, hdesc]
-    exact Nat.eq_of_mul_eq_mul_right hpos hmul2
+  have hmul := Subgroup.index_mul_card (Gal.galActionHom g g.SplittingField).range
+  rw [hcardRange, hperm] at hmul
+  -- `range.index * |g.Gal| = n! = 2 * |g.Gal|`, and `|g.Gal| > 0`.
+  have hindex : (Gal.galActionHom g g.SplittingField).range.index = 2 :=
+    Nat.eq_of_mul_eq_mul_right Nat.card_pos (hmul.trans hdesc.symm)
   -- The unique index-2 subgroup of `Perm (rootSet)` is the alternating group.
   exact Equiv.Perm.eq_alternatingGroup_of_index_eq_two hindex
 
@@ -150,38 +147,40 @@ theorem card_gal_descent_of_quadratic
   -- `g` is separable of degree `n`, so its root set has `n` elements.
   have hg_sep : g.Separable := hf_sep.map
   have hg_deg : g.natDegree = n := by
-    rw [hg, Polynomial.natDegree_map_eq_of_injective φ.injective, hf_deg]
+    rw [hg, natDegree_map_eq_of_injective φ.injective, hf_deg]
   have hcardRoot : Fintype.card (g.rootSet g.SplittingField) = n := by
-    rw [Polynomial.card_rootSet_eq_natDegree hg_sep (SplittingField.splits g), hg_deg]
+    rw [card_rootSet_eq_natDegree hg_sep (SplittingField.splits g), hg_deg]
   -- Step 1 (fully proved): `|f.Gal| = n!` from surjectivity + injectivity of `galActionHom`.
-  have hfGal : Nat.card f.Gal = n.factorial := by
-    have hinj := Gal.galActionHom_injective f f.SplittingField
-    have hbij : Function.Bijective (Gal.galActionHom f f.SplittingField) := ⟨hinj, hSn⟩
-    have hcardRootf : Fintype.card (f.rootSet f.SplittingField) = n := by
-      rw [Polynomial.card_rootSet_eq_natDegree hf_sep (SplittingField.splits f), hf_deg]
+  have hbij : Function.Bijective (Gal.galActionHom f f.SplittingField) :=
+    ⟨Gal.galActionHom_injective f f.SplittingField, hSn⟩
+  have hcardRootf : Fintype.card (f.rootSet f.SplittingField) = n := by
+    rw [card_rootSet_eq_natDegree hf_sep (SplittingField.splits f), hf_deg]
+  have hfGal : Nat.card f.Gal = n.factorial :=
     calc Nat.card f.Gal
         = Nat.card (Equiv.Perm (f.rootSet f.SplittingField)) :=
           Nat.card_congr (Equiv.ofBijective _ hbij)
       _ = n.factorial := by rw [Nat.card_eq_fintype_card, Fintype.card_perm, hcardRootf]
   -- The tower `K → K' → L` on the splitting field of `g` is already available as instances
   -- (`SplittingField` derives `Algebra K` and `IsScalarTower K K'`).
-  haveI : FiniteDimensional K g.SplittingField := Module.Finite.trans K' g.SplittingField
+  have : FiniteDimensional K g.SplittingField := Module.Finite.trans K' g.SplittingField
   -- `f` splits in `L`, since its image `g` does and `g.map (K' → L) = f.map (K → L)`.
   have hmapeq : f.map (algebraMap K g.SplittingField)
       = g.map (algebraMap K' g.SplittingField) := by
-    rw [hg, Polynomial.map_map, hφ, ← IsScalarTower.algebraMap_eq K K' g.SplittingField]
+    rw [hg, map_map, hφ, ← IsScalarTower.algebraMap_eq K K' g.SplittingField]
   have hfsplit : (f.map (algebraMap K g.SplittingField)).Splits := by
-    rw [hmapeq]; exact SplittingField.splits g
+    rw [hmapeq]
+    exact SplittingField.splits g
   -- The root set is nontrivial (it has `n ≥ 3` elements).
-  haveI : Nontrivial (g.rootSet g.SplittingField) := by
-    rw [← Fintype.one_lt_card_iff_nontrivial, hcardRoot]; omega
+  have : Nontrivial (g.rootSet g.SplittingField) := by
+    rw [← Fintype.one_lt_card_iff_nontrivial, hcardRoot]
+    omega
   -- Prove `2 · |g.Gal| = n!` by antisymmetry.
-  refine le_antisymm ?_ ?_
+  apply le_antisymm
   · -- Upper bound: `range ≤ Aₙ`, and `2·|Aₙ| = |Sₙ| = n!`.
-    have hinjg := Gal.galActionHom_injective g g.SplittingField
     have hcardRange :
         Nat.card (Gal.galActionHom g g.SplittingField).range = Nat.card g.Gal :=
-      (Nat.card_congr (MonoidHom.ofInjective hinjg).toEquiv).symm
+      (Nat.card_congr
+        (MonoidHom.ofInjective (Gal.galActionHom_injective g g.SplittingField)).toEquiv).symm
     have hcardle : Nat.card (Gal.galActionHom g g.SplittingField).range
         ≤ Nat.card (alternatingGroup (g.rootSet g.SplittingField)) :=
       Subgroup.card_le_of_le hle
@@ -192,12 +191,12 @@ theorem card_gal_descent_of_quadratic
           two_mul_nat_card_alternatingGroup
       _ = n.factorial := by rw [Nat.card_eq_fintype_card, Fintype.card_perm, hcardRoot]
   · -- Lower bound: `SF_f ↪ L`, so `n! = [SF_f:K] ≤ [L:K] = 2·[L:K'] = 2·|g.Gal|`.
-    have hlift_inj : Function.Injective (Polynomial.SplittingField.lift f hfsplit) :=
-      (Polynomial.SplittingField.lift f hfsplit).toRingHom.injective
+    have hlift_inj : Function.Injective (SplittingField.lift f hfsplit) :=
+      (SplittingField.lift f hfsplit).toRingHom.injective
     have hfr_le :
         Module.finrank K f.SplittingField ≤ Module.finrank K g.SplittingField :=
       LinearMap.finrank_le_finrank_of_injective
-        (f := (Polynomial.SplittingField.lift f hfsplit).toLinearMap) hlift_inj
+        (f := (SplittingField.lift f hfsplit).toLinearMap) hlift_inj
     calc n.factorial
         = Nat.card f.Gal := hfGal.symm
       _ = Module.finrank K f.SplittingField := Gal.card_of_separable hf_sep
@@ -237,9 +236,9 @@ theorem galActionHom_range_eq_alternating_of_quadratic_disc
   -- `g` is separable of degree `n`, so its root set has `n` elements.
   have hg_sep : g.Separable := hf_sep.map
   have hg_deg : g.natDegree = n := by
-    rw [hg, Polynomial.natDegree_map_eq_of_injective (algebraMap K K').injective, hf_deg]
+    rw [hg, natDegree_map_eq_of_injective (algebraMap K K').injective, hf_deg]
   have hcardRoot : Fintype.card (g.rootSet g.SplittingField) = n := by
-    rw [Polynomial.card_rootSet_eq_natDegree hg_sep (SplittingField.splits g), hg_deg]
+    rw [card_rootSet_eq_natDegree hg_sep (SplittingField.splits g), hg_deg]
   -- Supply the cardinality hypothesis via the descent, then invoke the group-theoretic core.
   exact galActionHom_range_eq_alternating_of_card g hcardRoot
     (card_gal_descent_of_quadratic f hf_sep hf_deg hn hSn hK'_deg hle)

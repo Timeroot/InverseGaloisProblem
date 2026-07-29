@@ -70,19 +70,18 @@ noncomputable def linearCoverGeom (g₀ : (AlgebraicClosure ℚ)[X]) : GeomBase[
 variable, so `Bivariate.swap` sends it (up to a unit) to `X − C g₀`, which is irreducible. -/
 theorem linearCoverC_irreducible (g₀ : (AlgebraicClosure ℚ)[X]) :
     Irreducible (linearCoverC g₀) := by
-  have hswap : Polynomial.Bivariate.swap (linearCoverC g₀)
+  have hswap : Bivariate.swap (linearCoverC g₀)
       = -(X - C g₀) := by
     unfold linearCoverC
-    rw [map_sub, Polynomial.Bivariate.swap_map_C, Polynomial.Bivariate.swap_C, Polynomial.map_X]
+    rw [map_sub, Bivariate.swap_map_C, Bivariate.swap_C, map_X]
     ring
-  have hirr : Irreducible (Polynomial.Bivariate.swap (linearCoverC g₀)) := by
+  have hirr : Irreducible (Bivariate.swap (linearCoverC g₀)) := by
     rw [hswap]
-    have h := irreducible_X_sub_C (R := Polynomial (AlgebraicClosure ℚ)) g₀
     have hassoc : Associated (X - C g₀ : (Polynomial (AlgebraicClosure ℚ))[X])
         (-(X - C g₀)) := ⟨-1, by simp⟩
-    exact hassoc.irreducible h
+    exact hassoc.irreducible (irreducible_X_sub_C g₀)
   exact (MulEquiv.irreducible_iff
-    (Polynomial.Bivariate.swap (R := AlgebraicClosure ℚ)).toMulEquiv).mp hirr
+    (Bivariate.swap (R := AlgebraicClosure ℚ)).toMulEquiv).mp hirr
 
 /-- `linearCoverC g₀` is monic when `g₀` is monic of positive degree. -/
 theorem linearCoverC_monic (g₀ : (AlgebraicClosure ℚ)[X]) (hg : g₀.Monic)
@@ -92,17 +91,18 @@ theorem linearCoverC_monic (g₀ : (AlgebraicClosure ℚ)[X]) (hg : g₀.Monic)
   refine (hg.map C).add_of_left ?_
   rw [degree_neg]
   refine lt_of_le_of_lt degree_C_le ?_
-  rw [degree_eq_natDegree (hg.map C).ne_zero, natDegree_map_eq_of_injective Polynomial.C_injective]
+  rw [degree_eq_natDegree (hg.map C).ne_zero, natDegree_map_eq_of_injective C_injective]
   exact_mod_cast hd
 
 /-- The degree of `linearCoverC g₀` equals the degree of `g₀`. -/
 theorem linearCoverC_natDegree (g₀ : (AlgebraicClosure ℚ)[X]) (hd : 1 ≤ g₀.natDegree) :
     (linearCoverC g₀).natDegree = g₀.natDegree := by
   have hnd : (g₀.map C).natDegree = g₀.natDegree :=
-    natDegree_map_eq_of_injective Polynomial.C_injective g₀
+    natDegree_map_eq_of_injective C_injective g₀
   unfold linearCoverC
   have hlt : (C X : (Polynomial (AlgebraicClosure ℚ))[X]).natDegree < (g₀.map C).natDegree := by
-    rw [natDegree_C, hnd]; omega
+    rw [natDegree_C, hnd]
+    omega
   rw [natDegree_sub_eq_left_of_natDegree_lt hlt, hnd]
 
 /-- `linearCoverGeom g₀` is monic when `g₀` is monic of positive degree. -/
@@ -114,7 +114,7 @@ theorem linearCoverGeom_monic (g₀ : (AlgebraicClosure ℚ)[X]) (hg : g₀.Moni
 theorem linearCoverGeom_irreducible (g₀ : (AlgebraicClosure ℚ)[X]) (hg : g₀.Monic)
     (hd : 1 ≤ g₀.natDegree) : Irreducible (linearCoverGeom g₀) := by
   rw [linearCoverGeom]
-  exact (Polynomial.Monic.irreducible_iff_irreducible_map_fraction_map
+  exact (Monic.irreducible_iff_irreducible_map_fraction_map
     (linearCoverC_monic g₀ hg hd)).mp (linearCoverC_irreducible g₀)
 
 /-- The degree of `linearCoverGeom g₀` equals the degree of `g₀`. -/
@@ -133,7 +133,7 @@ theorem linearCoverGeom_card_rootSet (g₀ : (AlgebraicClosure ℚ)[X]) (hg : g�
     (hd : 1 ≤ g₀.natDegree) :
     Fintype.card ((linearCoverGeom g₀).rootSet (linearCoverGeom g₀).SplittingField)
       = g₀.natDegree := by
-  rw [Polynomial.card_rootSet_eq_natDegree (linearCoverGeom_separable g₀ hg hd)
+  rw [card_rootSet_eq_natDegree (linearCoverGeom_separable g₀ hg hd)
       (SplittingField.splits _), linearCoverGeom_natDegree g₀ hd]
 
 /-! ## The atom transport chain (generic in `g₀`) -/
@@ -146,7 +146,7 @@ theorem linearCover_aeval_g₀ (g₀ : (AlgebraicClosure ℚ)[X])
     aeval (↑a : (linearCoverGeom g₀).SplittingField) g₀
       = algebraMap GeomBase (linearCoverGeom g₀).SplittingField
           (algebraMap (AlgebraicClosure ℚ)[X] GeomBase X) := by
-  have ha2 := (Polynomial.mem_rootSet.mp a.2).2
+  have ha2 := (mem_rootSet.mp a.2).2
   have hcomp : ((algebraMap (AlgebraicClosure ℚ)[X] GeomBase).comp
       (C : (AlgebraicClosure ℚ) →+* (AlgebraicClosure ℚ)[X]))
       = algebraMap (AlgebraicClosure ℚ) GeomBase := by
@@ -164,12 +164,9 @@ theorem linearCover_aeval_g₀ (g₀ : (AlgebraicClosure ℚ)[X])
         - algebraMap GeomBase (linearCoverGeom g₀).SplittingField
             (algebraMap (AlgebraicClosure ℚ)[X] GeomBase X) := by
     rw [congrArg (aeval (↑a : (linearCoverGeom g₀).SplittingField)) hpoly, map_sub,
-      Polynomial.aeval_map_algebraMap, aeval_C]
-  have hkey : aeval (↑a : (linearCoverGeom g₀).SplittingField) g₀
-      - algebraMap GeomBase (linearCoverGeom g₀).SplittingField
-          (algebraMap (AlgebraicClosure ℚ)[X] GeomBase X) = 0 := by
-    rw [← haeval]; exact ha2
-  exact sub_eq_zero.mp hkey
+      aeval_map_algebraMap, aeval_C]
+  rw [← sub_eq_zero, ← haeval]
+  exact ha2
 
 /-- A root `↑a` of the linear cover is transcendental over `ℚ̄`.  (Because `aeval (↑a) g₀ = T` is
 transcendental, and `transcendental_aeval_iff` transfers this to `↑a`.)  Generalises
@@ -177,16 +174,13 @@ transcendental, and `transcendental_aeval_iff` transfers this to `↑a`.)  Gener
 theorem linearCover_root_transcendental (g₀ : (AlgebraicClosure ℚ)[X])
     (a : (linearCoverGeom g₀).rootSet (linearCoverGeom g₀).SplittingField) :
     Transcendental (AlgebraicClosure ℚ) (↑a : (linearCoverGeom g₀).SplittingField) := by
-  have h_tL : aeval (↑a : (linearCoverGeom g₀).SplittingField) g₀
-      = algebraMap GeomBase (linearCoverGeom g₀).SplittingField
-          (algebraMap (AlgebraicClosure ℚ)[X] GeomBase X) := linearCover_aeval_g₀ g₀ a
   have h_tL_transc : Transcendental (AlgebraicClosure ℚ)
       (algebraMap GeomBase (linearCoverGeom g₀).SplittingField
         (algebraMap (AlgebraicClosure ℚ)[X] GeomBase X)) := by
     intro h
     convert geomBase_gen_transcendental using 1
     constructor <;> intro h <;> rw [Transcendental] at * <;> simp_all [IsAlgebraic]
-  rw [← h_tL] at h_tL_transc
+  rw [← linearCover_aeval_g₀ g₀ a] at h_tL_transc
   exact (transcendental_aeval_iff.mp h_tL_transc).1
 
 /-- The `ℚ̄`-algebra hom `Ψ : RatFunc ℚ̄ →ₐ[ℚ̄] L` sending `X ↦ ↑a`, well-defined and injective
@@ -207,7 +201,7 @@ theorem linearCoverLift_apply_poly (g₀ : (AlgebraicClosure ℚ)[X])
   have h := @RatFunc.liftAlgHom_apply_div
   have hnz := nonZeroDivisors_le_comap_nonZeroDivisors_of_injective _
     (transcendental_iff_injective.mp (linearCover_root_transcendental g₀ a))
-  convert h (Polynomial.aeval (a : (linearCoverGeom g₀).SplittingField)) hnz p 1 using 1 <;>
+  convert h (aeval (a : (linearCoverGeom g₀).SplittingField)) hnz p 1 using 1 <;>
     simp [linearCoverLift]
 
 theorem linearCoverLift_injective (g₀ : (AlgebraicClosure ℚ)[X])
@@ -235,7 +229,7 @@ theorem linearCoverLift_fieldRange (g₀ : (AlgebraicClosure ℚ)[X])
     simp [linearCoverLift_apply_poly]
   · simp [IntermediateField.adjoin_le_iff, Set.singleton_subset_iff]
     use RatFunc.X
-    convert linearCoverLift_apply_poly g₀ a Polynomial.X using 1
+    convert linearCoverLift_apply_poly g₀ a X using 1
     norm_num
 
 /-- Every element of the base `GeomBase`, mapped into `L`, lies in `ℚ̄(aeval (↑a) g₀)`.
@@ -252,21 +246,20 @@ theorem linearCover_geomBase_image_mem_adjoin (g₀ : (AlgebraicClosure ℚ)[X])
             / (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase den) := by
     have := IsFractionRing.div_surjective (A := Polynomial (AlgebraicClosure ℚ)) y
     aesop
+  have key : (IsScalarTower.toAlgHom (AlgebraicClosure ℚ) GeomBase
+        (linearCoverGeom g₀).SplittingField).comp
+        (IsScalarTower.toAlgHom (AlgebraicClosure ℚ) (Polynomial (AlgebraicClosure ℚ)) GeomBase)
+      = (aeval (aeval (↑a : (linearCoverGeom g₀).SplittingField) g₀) :
+          (AlgebraicClosure ℚ)[X] →ₐ[AlgebraicClosure ℚ] (linearCoverGeom g₀).SplittingField) := by
+    apply algHom_ext
+    simp only [AlgHom.comp_apply, IsScalarTower.coe_toAlgHom', aeval_X]
+    exact (linearCover_aeval_g₀ g₀ a).symm
   have h_algebraMap : ∀ p : Polynomial (AlgebraicClosure ℚ),
       algebraMap GeomBase (linearCoverGeom g₀).SplittingField
           (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase p)
         = aeval (aeval (↑a : (linearCoverGeom g₀).SplittingField) g₀) p := by
-    have key : (IsScalarTower.toAlgHom (AlgebraicClosure ℚ) GeomBase
-          (linearCoverGeom g₀).SplittingField).comp
-          (IsScalarTower.toAlgHom (AlgebraicClosure ℚ) (Polynomial (AlgebraicClosure ℚ)) GeomBase)
-        = (aeval (aeval (↑a : (linearCoverGeom g₀).SplittingField) g₀) :
-            (AlgebraicClosure ℚ)[X] →ₐ[AlgebraicClosure ℚ] (linearCoverGeom g₀).SplittingField) := by
-      apply Polynomial.algHom_ext
-      simp only [AlgHom.comp_apply, IsScalarTower.coe_toAlgHom', aeval_X]
-      exact (linearCover_aeval_g₀ g₀ a).symm
     intro p
-    have hp := DFunLike.congr_fun key p
-    simpa only [AlgHom.comp_apply, IsScalarTower.coe_toAlgHom'] using hp
+    simpa only [AlgHom.comp_apply, IsScalarTower.coe_toAlgHom'] using DFunLike.congr_fun key p
   simp_all [IntermediateField.mem_adjoin_simple_iff]
   exact ⟨num, den, rfl⟩
 
@@ -283,7 +276,7 @@ theorem linearCover_geomBase_bot_restrict (g₀ : (AlgebraicClosure ℚ)[X])
     obtain ⟨y, rfl⟩ := hz
     exact linearCover_geomBase_image_mem_adjoin g₀ a y
   · simp [IntermediateField.mem_bot]
-    use algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase (Polynomial.X)
+    use algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase (X)
     rw [← linearCover_aeval_g₀ g₀ a]
 
 /-- `ℚ̄(T)(↑a) = ℚ̄(↑a)`: the base-restriction of `adjoin GeomBase {↑a}` is `ℚ̄(↑a)`.
@@ -296,15 +289,14 @@ theorem linearCover_adjoin_geomBase_restrict (g₀ : (AlgebraicClosure ℚ)[X])
           {(↑a : (linearCoverGeom g₀).SplittingField)} := by
   refine le_antisymm ?_ ?_
   · intro x hx
-    have hbot := linearCover_geomBase_bot_restrict g₀ a
     have h_adjoin : IntermediateField.adjoin (AlgebraicClosure ℚ)
           {aeval (↑a : (linearCoverGeom g₀).SplittingField) g₀}
         ≤ IntermediateField.adjoin (AlgebraicClosure ℚ)
             {(↑a : (linearCoverGeom g₀).SplittingField)} := by
       rw [IntermediateField.adjoin_simple_le_iff]
       exact IntermediateField.algebra_adjoin_le_adjoin _ _
-        (Polynomial.aeval_mem_adjoin_singleton _ _)
-    rw [← hbot] at *
+        (aeval_mem_adjoin_singleton _ _)
+    rw [← linearCover_geomBase_bot_restrict g₀ a] at *
     simp_all [IntermediateField.restrictScalars]
     rw [Subsemiring.mem_closure] at hx
     refine hx _ fun z hz ↦ ?_
@@ -324,16 +316,14 @@ theorem linearCover_adjoin_root_ne_bot (g₀ : (AlgebraicClosure ℚ)[X]) (hg : 
       = linearCoverGeom g₀ := by
     refine Eq.symm (minpoly.eq_of_irreducible_of_monic ?_ ?_ ?_) <;>
       norm_num [linearCoverGeom_irreducible g₀ hg (by omega), linearCoverGeom_monic g₀ hg (by omega)]
-    exact Polynomial.mem_rootSet.mp a.2 |>.2
+    exact mem_rootSet.mp a.2 |>.2
   intro h
   have h_deg : (minpoly GeomBase (a : (linearCoverGeom g₀).SplittingField)).natDegree ≤ 1 := by
     have h_deg : ∃ c : GeomBase,
         (algebraMap GeomBase (linearCoverGeom g₀).SplittingField) c = a :=
       IntermediateField.mem_bot.mp (h ▸ IntermediateField.mem_adjoin_simple_self GeomBase _)
     obtain ⟨c, hc⟩ := h_deg
-    have hac : (a : (linearCoverGeom g₀).SplittingField)
-        = (algebraMap GeomBase (linearCoverGeom g₀).SplittingField) c := hc.symm
-    rw [hac]
+    rw [← hc]
     simp [minpoly.eq_X_sub_C]
   refine absurd h_deg ?_
   rw [h_min_poly, linearCoverGeom_natDegree g₀ (by omega)]
@@ -353,32 +343,32 @@ theorem linearCover_no_intermediate (g₀ : (AlgebraicClosure ℚ)[X]) (_hg : g�
     b = ⊥ := by
   by_contra h
   set M := IntermediateField.comap (linearCoverLift g₀ a) (b.restrictScalars (AlgebraicClosure ℚ))
+  have hCoatom : IsCoatom (IntermediateField.adjoin (AlgebraicClosure ℚ)
+      {(algebraMap (AlgebraicClosure ℚ)[X] (RatFunc (AlgebraicClosure ℚ)) g₀)}) := by
+    apply RatFunc.isCoatom_adjoin_of_indecomposable
+    · exact hd
+    · exact fun h g hh hg' ↦ hind h g hh hg'
+  have hmem : (linearCoverLift g₀ a) (algebraMap (AlgebraicClosure ℚ)[X]
+      (RatFunc (AlgebraicClosure ℚ)) g₀) ∈ b := by
+    convert b.algebraMap_mem (algebraMap (AlgebraicClosure ℚ)[X] GeomBase X) using 1
+    convert linearCover_aeval_g₀ g₀ a using 1
+    exact linearCoverLift_apply_poly g₀ a _
+  have hle : IntermediateField.adjoin (AlgebraicClosure ℚ)
+        {(algebraMap (AlgebraicClosure ℚ)[X] (RatFunc (AlgebraicClosure ℚ)) g₀)} ≤ M := by
+    rw [IntermediateField.adjoin_simple_le_iff]
+    exact hmem
   have hM : M = ⊤ ∨ M = IntermediateField.adjoin (AlgebraicClosure ℚ)
       {(algebraMap (AlgebraicClosure ℚ)[X] (RatFunc (AlgebraicClosure ℚ)) g₀)} := by
-    have hCoatom : IsCoatom (IntermediateField.adjoin (AlgebraicClosure ℚ)
-        {(algebraMap (AlgebraicClosure ℚ)[X] (RatFunc (AlgebraicClosure ℚ)) g₀)}) := by
-      apply RatFunc.isCoatom_adjoin_of_indecomposable
-      · exact hd
-      · exact fun h g hh hg' ↦ hind h g hh hg'
-    have hle : IntermediateField.adjoin (AlgebraicClosure ℚ)
-          {(algebraMap (AlgebraicClosure ℚ)[X] (RatFunc (AlgebraicClosure ℚ)) g₀)} ≤ M := by
-      rw [IntermediateField.adjoin_simple_le_iff]
-      have hmem : (linearCoverLift g₀ a) (algebraMap (AlgebraicClosure ℚ)[X]
-          (RatFunc (AlgebraicClosure ℚ)) g₀) ∈ b := by
-        convert b.algebraMap_mem (algebraMap (AlgebraicClosure ℚ)[X] GeomBase X) using 1
-        convert linearCover_aeval_g₀ g₀ a using 1
-        exact linearCoverLift_apply_poly g₀ a _
-      exact hmem
     cases eq_or_lt_of_le hle <;> simp_all [IsCoatom]
     grind
   cases' hM with hM hM
-  · have h_image : IntermediateField.adjoin (AlgebraicClosure ℚ)
+  · have h_map_le : IntermediateField.map (linearCoverLift g₀ a) ⊤
+        ≤ b.restrictScalars (AlgebraicClosure ℚ) := by
+      rw [IntermediateField.map_le_iff_le_comap]
+      aesop
+    have h_image : IntermediateField.adjoin (AlgebraicClosure ℚ)
           {(↑a : (linearCoverGeom g₀).SplittingField)}
         ≤ b.restrictScalars (AlgebraicClosure ℚ) := by
-      have h_map_le : IntermediateField.map (linearCoverLift g₀ a) ⊤
-          ≤ b.restrictScalars (AlgebraicClosure ℚ) := by
-        rw [IntermediateField.map_le_iff_le_comap]
-        aesop
       convert h_map_le using 1
       rw [← linearCoverLift_fieldRange]
       ext
@@ -437,13 +427,9 @@ noncomputable def serreBaseGeomPoly (n : ℕ) : GeomBase[X] :=
 /-- The nonzero scalar `n/(n−1) ∈ ℚ̄` for `n ≥ 2`. -/
 theorem serreBaseP_coeff_ne_zero (n : ℕ) (hn : 2 ≤ n) :
     (n : AlgebraicClosure ℚ) / ((n : AlgebraicClosure ℚ) - 1) ≠ 0 := by
-  have hne : (n : AlgebraicClosure ℚ) ≠ 1 := by
-    have : (n : ℕ) ≠ 1 := by omega
-    exact_mod_cast this
+  have hne : (n : AlgebraicClosure ℚ) ≠ 1 := by exact_mod_cast (show (n : ℕ) ≠ 1 by omega)
   have hn1 : ((n : AlgebraicClosure ℚ) - 1) ≠ 0 := sub_ne_zero.mpr hne
-  have hn0 : (n : AlgebraicClosure ℚ) ≠ 0 := by
-    have : (n : ℕ) ≠ 0 := by omega
-    exact_mod_cast this
+  have hn0 : (n : AlgebraicClosure ℚ) ≠ 0 := by exact_mod_cast (show (n : ℕ) ≠ 0 by omega)
   exact div_ne_zero hn0 hn1
 
 /-- Factorisation `serreBaseP n = X^{n-1} · (X − C (n/(n−1)))`. -/
@@ -452,8 +438,11 @@ theorem serreBaseP_factor (n : ℕ) (hn : 2 ≤ n) :
       * (X - C ((n : AlgebraicClosure ℚ) / ((n : AlgebraicClosure ℚ) - 1))) := by
   unfold serreBaseP
   have hpow : (X : (AlgebraicClosure ℚ)[X]) ^ n = X ^ (n - 1) * X := by
-    rw [← pow_succ]; congr 1; omega
-  rw [hpow]; ring
+    rw [← pow_succ]
+    congr 1
+    omega
+  rw [hpow]
+  ring
 
 /-- `serreBaseP n` is monic for `n ≥ 2`. -/
 theorem serreBaseP_monic (n : ℕ) (hn : 2 ≤ n) : (serreBaseP n).Monic := by
@@ -468,7 +457,8 @@ theorem serreBaseP_natDegree (n : ℕ) (hn : 2 ≤ n) : (serreBaseP n).natDegree
   rw [natDegree_sub_eq_left_of_natDegree_lt, natDegree_X_pow]
   rw [natDegree_X_pow]
   refine lt_of_le_of_lt (natDegree_C_mul_le _ _) ?_
-  rw [natDegree_X_pow]; omega
+  rw [natDegree_X_pow]
+  omega
 
 /-! ### Indecomposability of the base cover (B1) -/
 
@@ -487,9 +477,8 @@ theorem natTrailingDegree_comp_of_coeff_zero
     rw [hm, rootMultiplicity_eq_natTrailingDegree']
   simp only [map_zero, sub_zero] at hHfac hHndvd
   -- `H₁ (0) ≠ 0` since `X ∤ H₁`.
-  have hH₁0 : H₁.coeff 0 ≠ 0 := fun hc => hHndvd (Polynomial.X_dvd_iff.mpr hc)
-  have hH₁ne : H₁ ≠ 0 := by
-    intro h; apply hH₁0; rw [h]; simp
+  have hH₁0 : H₁.coeff 0 ≠ 0 := fun hc ↦ hHndvd (X_dvd_iff.mpr hc)
+  have hH₁ne : H₁ ≠ 0 := fun h ↦ hH₁0 (by simp [h])
   -- `H.comp G = G ^ m * (H₁.comp G)`.
   have hcomp : H.comp G = G ^ m * (H₁.comp G) := by
     conv_lhs => rw [hHfac]
@@ -500,15 +489,16 @@ theorem natTrailingDegree_comp_of_coeff_zero
     induction k with
     | zero => simp
     | succ j ih =>
-      rw [pow_succ, natTrailingDegree_mul (pow_ne_zero j hG) hG, ih]; ring
+      rw [pow_succ, natTrailingDegree_mul (pow_ne_zero j hG) hG, ih]
+      ring
   -- `natTrailingDegree (H₁.comp G) = 0` since its constant coefficient is `H₁(0) ≠ 0`.
-  have hG0' : G.eval 0 = 0 := by rw [← coeff_zero_eq_eval_zero]; exact hG0
+  have hG0' : G.eval 0 = 0 := by rwa [← coeff_zero_eq_eval_zero]
   have hcompconst : (H₁.comp G).coeff 0 ≠ 0 := by
-    rw [coeff_zero_eq_eval_zero, eval_comp, hG0', ← coeff_zero_eq_eval_zero]; exact hH₁0
-  have hcompne : H₁.comp G ≠ 0 := by
-    intro h; apply hcompconst; rw [h]; simp
+    rwa [coeff_zero_eq_eval_zero, eval_comp, hG0', ← coeff_zero_eq_eval_zero]
+  have hcompne : H₁.comp G ≠ 0 := fun h ↦ hcompconst (by simp [h])
   have hzero : (H₁.comp G).natTrailingDegree = 0 := by
-    rw [natTrailingDegree_eq_zero]; exact Or.inr hcompconst
+    rw [natTrailingDegree_eq_zero]
+    exact Or.inr hcompconst
   rw [hcomp, natTrailingDegree_mul (pow_ne_zero m hG) hcompne, hpow, hzero, add_zero, hm_eq]
 
 /-- Arithmetic obstruction: there are no `u ∈ [1,a], v ∈ [1,b]` with `u·v = a·b − 1` when
@@ -532,19 +522,25 @@ theorem no_prod_eq_pred (a b u v : ℕ) (ha : 2 ≤ a) (hb : 2 ≤ b)
   have h2 : p + q + r = 1 := by omega
   rcases Nat.eq_zero_or_pos s with hs | hs
   · -- `s = 0`: then `q = r = 0`, so `p = u*t = 1`, giving `u = 1`, contradicting `a = u ≥ 2`.
-    have hq0 : q = 0 := by rw [hq, hs]; simp
-    have hr0 : r = 0 := by rw [hr, hs]; simp
-    have hp1 : u * t = 1 := by rw [← hp]; omega
+    have hq0 : q = 0 := by simp [hq, hs]
+    have hr0 : r = 0 := by simp [hr, hs]
+    have hp1 : u * t = 1 := by
+      rw [← hp]
+      omega
     obtain ⟨hu', ht'⟩ := mul_eq_one.mp hp1
     omega
   · -- `s ≥ 1`: then `q = s*v ≥ 1`, forcing `q = 1`, `p = r = 0`.
     have hqpos : 1 ≤ q := by
-      rw [hq]; exact Nat.one_le_iff_ne_zero.mpr (Nat.mul_ne_zero (by omega) (by omega))
-    have hq1 : s * v = 1 := by rw [← hq]; omega
-    have hr0 : s * t = 0 := by rw [← hr]; omega
+      rw [hq]
+      exact Nat.one_le_iff_ne_zero.mpr (Nat.mul_ne_zero (by omega) (by omega))
+    have hq1 : s * v = 1 := by
+      rw [← hq]
+      omega
+    have hr0 : s * t = 0 := by
+      rw [← hr]
+      omega
     obtain ⟨hs1, hv1'⟩ := mul_eq_one.mp hq1
-    rw [hs1] at hr0
-    simp at hr0
+    simp [hs1] at hr0
     omega
 
 /-- **[B1 — Indecomposability of the base cover]** The Serre base cover `p(X)` admits no
@@ -563,7 +559,7 @@ theorem serreBaseP_indecomposable (n : ℕ) (hn : 3 ≤ n)
   set b := g.natDegree with hb_def
   -- Degrees multiply: `a * b = n`.
   have hab : a * b = n := by
-    have h2 := congrArg Polynomial.natDegree h_eq
+    have h2 := congrArg natDegree h_eq
     rw [serreBaseP_natDegree n (by omega), natDegree_comp] at h2
     rw [← ha_def, ← hb_def] at h2
     exact h2.symm
@@ -579,23 +575,28 @@ theorem serreBaseP_indecomposable (n : ℕ) (hn : 3 ≤ n)
   -- `G(0) = 0` and `G ≠ 0`.
   have hGdeg : G.natDegree = b := by rw [hG_def, natDegree_sub_C]
   have hGne : G ≠ 0 := by
-    intro h0; rw [h0, natDegree_zero] at hGdeg; omega
+    intro h0
+    rw [h0, natDegree_zero] at hGdeg
+    omega
   have hG0 : G.coeff 0 = 0 := by
     rw [hG_def, coeff_sub, coeff_C_zero, coeff_zero_eq_eval_zero, ← hβ_def, sub_self]
   -- `hβ(0) = 0` (since `p(0) = 0`) and `hβ ≠ 0`.
   have hpeval0 : (serreBaseP n).eval 0 = 0 := by
-    rw [serreBaseP_factor n (by omega)]; simp; left; omega
+    rw [serreBaseP_factor n (by omega)]
+    simp
+    left
+    omega
   have hβdeg : hβ.natDegree = a := by
     rw [hhβ_def, natDegree_comp, natDegree_X_add_C, mul_one, ← ha_def]
   have hβne : hβ ≠ 0 := by
-    intro h0; rw [h0, natDegree_zero] at hβdeg; omega
+    intro h0
+    rw [h0, natDegree_zero] at hβdeg
+    omega
   have hβ0 : hβ.coeff 0 = 0 := by
-    have hev : hβ.eval (G.eval 0) = 0 := by
-      have hcompeval : (hβ.comp G).eval 0 = hβ.eval (G.eval 0) := by rw [eval_comp]
-      rw [← hcompeval, ← hpG, hpeval0]
-    have hGeval0 : G.eval 0 = 0 := by rw [← coeff_zero_eq_eval_zero]; exact hG0
+    have hev : hβ.eval (G.eval 0) = 0 := by rw [← eval_comp, ← hpG, hpeval0]
+    have hGeval0 : G.eval 0 = 0 := by rwa [← coeff_zero_eq_eval_zero]
     rw [hGeval0] at hev
-    rw [coeff_zero_eq_eval_zero]; exact hev
+    rwa [coeff_zero_eq_eval_zero]
   -- The multiplicities.
   set u := hβ.natTrailingDegree with hu_def
   set v := G.natTrailingDegree with hv_def
@@ -603,28 +604,34 @@ theorem serreBaseP_indecomposable (n : ℕ) (hn : 3 ≤ n)
   have hord : (serreBaseP n).natTrailingDegree = u * v := by
     rw [hpG, natTrailingDegree_comp_of_coeff_zero hβne hGne hG0]
   -- `ord₀(p) = n - 1`.
+  have hXsub_ne : (X - C ((n : AlgebraicClosure ℚ) / ((n : AlgebraicClosure ℚ) - 1))
+      : (AlgebraicClosure ℚ)[X]) ≠ 0 := by
+    intro h0
+    have hc : (X - C ((n : AlgebraicClosure ℚ) / ((n : AlgebraicClosure ℚ) - 1))
+        : (AlgebraicClosure ℚ)[X]).coeff 0 = 0 := by
+      rw [h0]
+      simp
+    rw [coeff_sub, coeff_X_zero, coeff_C_zero, zero_sub, neg_eq_zero] at hc
+    exact serreBaseP_coeff_ne_zero n (by omega) hc
+  have hlin : (X - C ((n : AlgebraicClosure ℚ) / ((n : AlgebraicClosure ℚ) - 1))
+      : (AlgebraicClosure ℚ)[X]).natTrailingDegree = 0 := by
+    rw [natTrailingDegree_eq_zero]
+    right
+    rw [coeff_sub, coeff_X_zero, coeff_C_zero, zero_sub, neg_ne_zero]
+    exact serreBaseP_coeff_ne_zero n (by omega)
   have hordP : (serreBaseP n).natTrailingDegree = n - 1 := by
     rw [serreBaseP_factor n (by omega),
-      natTrailingDegree_mul (pow_ne_zero _ (X_ne_zero (R := AlgebraicClosure ℚ)))
-        (by
-          intro h0
-          have : (X - C ((n : AlgebraicClosure ℚ) / ((n : AlgebraicClosure ℚ) - 1))
-              : (AlgebraicClosure ℚ)[X]).coeff 0 = 0 := by rw [h0]; simp
-          rw [coeff_sub, coeff_X_zero, coeff_C_zero, zero_sub, neg_eq_zero] at this
-          exact serreBaseP_coeff_ne_zero n (by omega) this)]
-    rw [natTrailingDegree_X_pow]
-    have : (X - C ((n : AlgebraicClosure ℚ) / ((n : AlgebraicClosure ℚ) - 1))
-        : (AlgebraicClosure ℚ)[X]).natTrailingDegree = 0 := by
-      rw [natTrailingDegree_eq_zero]
-      right
-      rw [coeff_sub, coeff_X_zero, coeff_C_zero, zero_sub, neg_ne_zero]
-      exact serreBaseP_coeff_ne_zero n (by omega)
-    rw [this, add_zero]
+      natTrailingDegree_mul (pow_ne_zero _ (X_ne_zero (R := AlgebraicClosure ℚ))) hXsub_ne,
+      natTrailingDegree_X_pow, hlin, add_zero]
   -- So `u * v = n - 1 = a * b - 1`.
   have huv : u * v = a * b - 1 := by rw [hab, ← hordP, hord]
   -- Bounds.
-  have hu_le : u ≤ a := by rw [hu_def, ← hβdeg]; exact natTrailingDegree_le_natDegree _
-  have hv_le : v ≤ b := by rw [hv_def, ← hGdeg]; exact natTrailingDegree_le_natDegree _
+  have hu_le : u ≤ a := by
+    rw [hu_def, ← hβdeg]
+    exact natTrailingDegree_le_natDegree _
+  have hv_le : v ≤ b := by
+    rw [hv_def, ← hGdeg]
+    exact natTrailingDegree_le_natDegree _
   have hu_ge : 1 ≤ u := by
     rw [hu_def]
     rcases Nat.eq_zero_or_pos hβ.natTrailingDegree with h0 | h0
@@ -648,7 +655,9 @@ theorem serreBaseP_indecomposable (n : ℕ) (hn : 3 ≤ n)
 /-- `serreBaseC n` is monic for `n ≥ 2`. -/
 theorem serreBaseC_monic (n : ℕ) (hn : 2 ≤ n) : (serreBaseC n).Monic :=
   linearCoverC_monic (serreBaseP n) (serreBaseP_monic n hn)
-    (by rw [serreBaseP_natDegree n hn]; omega)
+    (by
+      rw [serreBaseP_natDegree n hn]
+      omega)
 
 /-- `serreBaseC n` is irreducible over `ℚ̄[T]`. -/
 theorem serreBaseC_irreducible (n : ℕ) : Irreducible (serreBaseC n) :=
@@ -656,37 +665,50 @@ theorem serreBaseC_irreducible (n : ℕ) : Irreducible (serreBaseC n) :=
 
 /-- `serreBaseC n` has degree `n` for `n ≥ 2`. -/
 theorem serreBaseC_natDegree (n : ℕ) (hn : 2 ≤ n) : (serreBaseC n).natDegree = n := by
-  rw [serreBaseC, linearCoverC_natDegree (serreBaseP n) (by rw [serreBaseP_natDegree n hn]; omega),
+  rw [serreBaseC, linearCoverC_natDegree (serreBaseP n)
+      (by
+        rw [serreBaseP_natDegree n hn]
+        omega),
     serreBaseP_natDegree n hn]
 
 /-- `serreBaseGeomPoly n` is monic for `n ≥ 2`. -/
 theorem serreBaseGeomPoly_monic (n : ℕ) (hn : 2 ≤ n) : (serreBaseGeomPoly n).Monic :=
   linearCoverGeom_monic (serreBaseP n) (serreBaseP_monic n hn)
-    (by rw [serreBaseP_natDegree n hn]; omega)
+    (by
+      rw [serreBaseP_natDegree n hn]
+      omega)
 
 /-- `serreBaseGeomPoly n` is irreducible over `ℚ̄(T)` for `n ≥ 2`. -/
 theorem serreBaseGeomPoly_irreducible (n : ℕ) (hn : 2 ≤ n) :
     Irreducible (serreBaseGeomPoly n) :=
   linearCoverGeom_irreducible (serreBaseP n) (serreBaseP_monic n hn)
-    (by rw [serreBaseP_natDegree n hn]; omega)
+    (by
+      rw [serreBaseP_natDegree n hn]
+      omega)
 
 /-- `serreBaseGeomPoly n` has degree `n` for `n ≥ 2`. -/
 theorem serreBaseGeomPoly_natDegree (n : ℕ) (hn : 2 ≤ n) :
     (serreBaseGeomPoly n).natDegree = n := by
   rw [serreBaseGeomPoly, linearCoverGeom_natDegree (serreBaseP n)
-    (by rw [serreBaseP_natDegree n hn]; omega), serreBaseP_natDegree n hn]
+    (by
+      rw [serreBaseP_natDegree n hn]
+      omega), serreBaseP_natDegree n hn]
 
 /-- `serreBaseGeomPoly n` is separable over `ℚ̄(T)` for `n ≥ 2`. -/
 theorem serreBaseGeomPoly_separable (n : ℕ) (hn : 2 ≤ n) :
     (serreBaseGeomPoly n).Separable :=
   linearCoverGeom_separable (serreBaseP n) (serreBaseP_monic n hn)
-    (by rw [serreBaseP_natDegree n hn]; omega)
+    (by
+      rw [serreBaseP_natDegree n hn]
+      omega)
 
 /-- The root set of `serreBaseGeomPoly n` has exactly `n` elements for `n ≥ 2`. -/
 theorem serreBaseGeomPoly_card_rootSet (n : ℕ) (hn : 2 ≤ n) :
     Fintype.card ((serreBaseGeomPoly n).rootSet (serreBaseGeomPoly n).SplittingField) = n := by
   rw [serreBaseGeomPoly, linearCoverGeom_card_rootSet (serreBaseP n) (serreBaseP_monic n hn)
-    (by rw [serreBaseP_natDegree n hn]; omega), serreBaseP_natDegree n hn]
+    (by
+      rw [serreBaseP_natDegree n hn]
+      omega), serreBaseP_natDegree n hn]
 
 /-! ### Primitivity of the base cover (B2) -/
 
@@ -697,8 +719,10 @@ theorem serreBaseGeomPoly_adjoin_root_isAtom (n : ℕ) (hn : 3 ≤ n)
     IsAtom (IntermediateField.adjoin GeomBase
       {(↑a : (serreBaseGeomPoly n).SplittingField)}) :=
   linearCover_adjoin_root_isAtom (serreBaseP n) (serreBaseP_monic n (by omega))
-    (by rw [serreBaseP_natDegree n (by omega)]; omega)
-    (fun h g hh hg => serreBaseP_indecomposable n hn hh hg) a
+    (by
+      rw [serreBaseP_natDegree n (by omega)]
+      omega)
+    (fun h g hh hg ↦ serreBaseP_indecomposable n hn hh hg) a
 
 /-- **[B2 — primitivity]** The geometric Galois group of the Serre base cover acts
 **preprimitively** on the roots.  Assembled family-agnostically from
@@ -708,7 +732,7 @@ theorem serreBaseGeomPoly_isPreprimitive (n : ℕ) (hn : 3 ≤ n) :
     MulAction.IsPreprimitive
       (Gal.galActionHom (serreBaseGeomPoly n) (serreBaseGeomPoly n).SplittingField).range
       ((serreBaseGeomPoly n).rootSet (serreBaseGeomPoly n).SplittingField) := by
-  haveI hnt : Nontrivial
+  have hnt : Nontrivial
       ((serreBaseGeomPoly n).rootSet (serreBaseGeomPoly n).SplittingField) := by
     rw [← Fintype.one_lt_card_iff_nontrivial, serreBaseGeomPoly_card_rootSet n (by omega)]
     omega

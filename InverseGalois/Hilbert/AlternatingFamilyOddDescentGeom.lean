@@ -52,7 +52,7 @@ theorem serreAnOverFracOdd_monic (n : ℕ) (hn : 2 ≤ n) : (serreAnOverFracOdd 
 /-- `serreAnOverFracOdd n` has degree `n`.  Odd mirror of `serreAnOverFrac_natDegree`. -/
 theorem serreAnOverFracOdd_natDegree (n : ℕ) (hn : 2 ≤ n) :
     (serreAnOverFracOdd n).natDegree = n := by
-  rw [serreAnOverFracOdd, Polynomial.natDegree_map_eq_of_injective toClosureFrac_injective]
+  rw [serreAnOverFracOdd, natDegree_map_eq_of_injective toClosureFrac_injective]
   exact serreAnFamilyOdd_natDegree n hn
 
 /-! ## Critical-point values of `serreAnFamilyOdd` (for separability) -/
@@ -79,19 +79,25 @@ theorem serreAnFamilyOdd_eval_kappa (n : ℕ) (hn : 2 ≤ n) :
     linarith
   set kq : ℚ := (-1 : ℚ) ^ ((n - 1) / 2) * n with hkq
   set κ : Polynomial ℚ := C kq - X ^ 2 with hκ
-  have hpow : κ ^ n = κ * κ ^ (n - 1) := by rw [← pow_succ']; congr 1; omega
+  have hpow : κ ^ n = κ * κ ^ (n - 1) := by
+    rw [← pow_succ']
+    congr 1
+    omega
   -- Scalar identities lifted to `ℚ[U]`.
   have hkey : κ - C ((n : ℚ) / ((n : ℚ) - 1)) * κ + C (kq / ((n : ℚ) - 1))
       = C (1 / ((n : ℚ) - 1)) * X ^ 2 := by
     have hc : kq - (n : ℚ) / ((n : ℚ) - 1) * kq + kq / ((n : ℚ) - 1) = 0 := by
-      field_simp; ring
+      field_simp
+      ring
     have hx : (1 : ℚ) - (n : ℚ) / ((n : ℚ) - 1) = -(1 / ((n : ℚ) - 1)) := by
-      field_simp; ring
+      field_simp
+      ring
     rw [hκ]
     have : (C kq - X ^ 2) - C ((n : ℚ) / ((n : ℚ) - 1)) * (C kq - X ^ 2) + C (kq / ((n : ℚ) - 1))
         = C (kq - (n : ℚ) / ((n : ℚ) - 1) * kq + kq / ((n : ℚ) - 1))
           + C ((1 : ℚ) - (n : ℚ) / ((n : ℚ) - 1)) * (-(X ^ 2)) := by
-      simp only [map_add, map_sub, map_mul, map_one]; ring
+      simp only [map_add, map_sub, map_mul, map_one]
+      ring
     rw [this, hc, hx]
     simp only [map_zero, map_neg]
     ring
@@ -109,11 +115,11 @@ theorem serreAnFamilyOdd_eval_zero_ne (n : ℕ) (hn : 2 ≤ n) :
   rw [serreAnFamilyOdd_eval_zero n hn]
   apply mul_ne_zero
   · rw [Ne, C_eq_zero]
-    exact div_ne_zero (mul_ne_zero (pow_ne_zero _ (by norm_num))
-      (by exact_mod_cast (by omega : n ≠ 0))) hne
+    have hn0 : (n : ℚ) ≠ 0 := by exact_mod_cast (show n ≠ 0 by omega)
+    exact div_ne_zero (mul_ne_zero (pow_ne_zero _ (by norm_num)) hn0) hne
   · apply pow_ne_zero
     intro h
-    have hc := congr_arg (fun p => Polynomial.coeff p 2) h
+    have hc := congr_arg (fun p ↦ Polynomial.coeff p 2) h
     simp only [coeff_sub, coeff_C, coeff_X_pow, coeff_zero] at hc
     norm_num at hc
 
@@ -126,11 +132,12 @@ theorem serreAnFamilyOdd_eval_kappa_ne (n : ℕ) (hn : 2 ≤ n) :
   rw [serreAnFamilyOdd_eval_kappa n hn]
   apply mul_ne_zero
   · apply mul_ne_zero
-    · rw [Ne, C_eq_zero]; exact div_ne_zero one_ne_zero hne
+    · rw [Ne, C_eq_zero]
+      exact div_ne_zero one_ne_zero hne
     · exact pow_ne_zero 2 X_ne_zero
   · apply pow_ne_zero
     intro h
-    have hc := congr_arg (fun p => Polynomial.coeff p 2) h
+    have hc := congr_arg (fun p ↦ Polynomial.coeff p 2) h
     simp only [coeff_sub, coeff_C, coeff_X_pow, coeff_zero] at hc
     norm_num at hc
 
@@ -145,12 +152,12 @@ under the injective `χ = (ℚ[U] → ℚ̄(U) → L)` of the *nonzero* polynomi
 `serreAnFamilyOdd_eval_zero/kappa`, so `f(α) ≠ 0` — contradiction. -/
 theorem serreAnOverFracOdd_separable (n : ℕ) (hn : 2 ≤ n) (_hodd : Odd n) :
     (serreAnOverFracOdd n).Separable := by
-  refine IsCoprime.symm ?_
+  apply IsCoprime.symm
   by_contra h_not_coprime
   set K := FractionRing (Polynomial (AlgebraicClosure ℚ)) with hK
   set L := AlgebraicClosure K with hL
   set χ : Polynomial ℚ →+* L := (algebraMap K L).comp toClosureFrac with hχ
-  have h_common_root : ∃ α : L,
+  obtain ⟨α, hf, hf'⟩ : ∃ α : L,
       eval α ((serreAnOverFracOdd n).map (algebraMap K L)) = 0 ∧
       eval α ((derivative (serreAnOverFracOdd n)).map (algebraMap K L)) = 0 := by
     contrapose! h_not_coprime
@@ -161,19 +168,18 @@ theorem serreAnOverFracOdd_separable (n : ℕ) (hn : 2 ≤ n) (_hodd : Odd n) :
     · intro z hz hz' hz''
       obtain ⟨α, hα⟩ : ∃ α : L, eval α (z.map (algebraMap K L)) = 0 := by
         apply IsAlgClosed.exists_root
-        rw [Polynomial.degree_map]
-        exact ne_of_gt (Polynomial.degree_pos_of_irreducible hz)
-      refine h_not_coprime α ?_ ?_
-      · simpa [hα] using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero
+        rw [degree_map]
+        exact ne_of_gt (degree_pos_of_irreducible hz)
+      apply h_not_coprime α
+      · simpa [hα] using eval_eq_zero_of_dvd_of_eval_eq_zero
           (Polynomial.map_dvd (algebraMap K L) hz'') hα
-      · simpa [hα] using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero
+      · simpa [hα] using eval_eq_zero_of_dvd_of_eval_eq_zero
           (Polynomial.map_dvd (algebraMap K L) hz') hα
-  obtain ⟨α, hf, hf'⟩ := h_common_root
   have hmap_f : (serreAnOverFracOdd n).map (algebraMap K L) = (serreAnFamilyOdd n).map χ := by
     rw [serreAnOverFracOdd, Polynomial.map_map, ← hχ]
   have hmap_f' : (derivative (serreAnOverFracOdd n)).map (algebraMap K L)
       = (derivative (serreAnFamilyOdd n)).map χ := by
-    rw [serreAnOverFracOdd, Polynomial.derivative_map, Polynomial.map_map, ← hχ]
+    rw [serreAnOverFracOdd, derivative_map, Polynomial.map_map, ← hχ]
   rw [hmap_f] at hf
   rw [hmap_f', serreAnFamilyOdd_derivative n hn] at hf'
   -- `f'(α) = 0`: `n·α^{n-2}·(α − χ(k−U²)) = 0`, hence `α = 0` or `α = χ(k−U²)`.
@@ -182,17 +188,20 @@ theorem serreAnOverFracOdd_separable (n : ℕ) (hn : 2 ≤ n) (_hodd : Odd n) :
     Polynomial.map_X, Polynomial.map_natCast, eval_sub, eval_mul, eval_C, eval_pow, eval_X,
     Polynomial.eval_natCast, map_natCast, map_mul] at hf'
   -- Now `hf' : (n:L) * α^{n-1} - (n:L) * χ κ * α^{n-2} = 0`.
-  have hn0 : (n : L) ≠ 0 := by rw [Nat.cast_ne_zero]; omega
+  have hn0 : (n : L) ≠ 0 := by
+    rw [Nat.cast_ne_zero]
+    omega
+  have hfact : (n : L) * α ^ (n - 2) * (α - χ κ) = 0 := by
+    have hm : n - 1 = (n - 2) + 1 := by omega
+    rw [hm, pow_succ] at hf'
+    linear_combination hf'
   have hr0κ : α = 0 ∨ α = χ κ := by
-    have hfact : (n : L) * α ^ (n - 2) * (α - χ κ) = 0 := by
-      have hm : n - 1 = (n - 2) + 1 := by omega
-      rw [hm, pow_succ] at hf'
-      linear_combination hf'
     rcases mul_eq_zero.mp hfact with h | h
     · rcases mul_eq_zero.mp h with h' | h'
       · exact absurd h' hn0
       · rcases eq_or_ne (n - 2) 0 with he | he
-        · rw [he, pow_zero] at h'; exact absurd h' one_ne_zero
+        · rw [he, pow_zero] at h'
+          exact absurd h' one_ne_zero
         · exact Or.inl ((pow_eq_zero_iff he).mp h')
     · exact Or.inr (by linear_combination h)
   have hχinj : Function.Injective χ := by
@@ -200,11 +209,11 @@ theorem serreAnOverFracOdd_separable (n : ℕ) (hn : 2 ≤ n) (_hodd : Odd n) :
     exact (algebraMap K L).injective.comp toClosureFrac_injective
   rcases hr0κ with h0 | hκα
   · subst h0
-    rw [Polynomial.eval_map, show (0 : L) = χ 0 from (map_zero χ).symm,
+    rw [eval_map, show (0 : L) = χ 0 from (map_zero χ).symm,
       eval₂_at_apply] at hf
     exact serreAnFamilyOdd_eval_zero_ne n hn (hχinj hf)
   · subst hκα
-    rw [Polynomial.eval_map, eval₂_at_apply, hκ] at hf
+    rw [eval_map, eval₂_at_apply, hκ] at hf
     exact serreAnFamilyOdd_eval_kappa_ne n hn (hχinj (hf.trans (map_zero χ).symm))
 
 /-! ## The square-discriminant certificate: geometric group `≤ Aₙ` -/
@@ -222,55 +231,58 @@ theorem an_geometric_le_alternating_odd (n : ℕ) (hn : 2 ≤ n) (hodd : Odd n) 
   set M := (serreAnOverFracOdd n).SplittingField with hM
   set ev := (algebraMap K M).comp toClosureFrac with hev_def
   have hmapev : (serreAnFamilyOdd n).map ev = (serreAnOverFracOdd n).map (algebraMap K M) := by
-    rw [hev_def, ← Polynomial.map_map]; rfl
+    rw [hev_def, ← Polynomial.map_map]
+    rfl
   have hdeg : ((serreAnFamilyOdd n).map ev).natDegree = n := by
-    rw [hmapev, Polynomial.natDegree_map_of_leadingCoeff_ne_zero]
+    rw [hmapev, natDegree_map_of_leadingCoeff_ne_zero]
     · exact serreAnOverFracOdd_natDegree n hn
-    · rw [(serreAnOverFracOdd_monic n hn).leadingCoeff, map_one]; exact one_ne_zero
+    · rw [(serreAnOverFracOdd_monic n hn).leadingCoeff, map_one]
+      exact one_ne_zero
   have hsplit_f : ((serreAnOverFracOdd n).map (algebraMap K M)).Splits :=
     SplittingField.splits (serreAnOverFracOdd n)
+  have hsp_roots : ((serreAnFamilyOdd n).map ev).Splits := by rwa [hmapev]
+  have hcard : Multiset.card ((serreAnFamilyOdd n).map ev).roots = n := by
+    rw [splits_iff_card_roots.mp hsp_roots, hdeg]
   obtain ⟨x, hxroots⟩ : ∃ x : Fin n → M,
       ((serreAnFamilyOdd n).map ev).roots = Finset.univ.val.map x := by
-    have hcard : Multiset.card ((serreAnFamilyOdd n).map ev).roots = n := by
-      have hsp : ((serreAnFamilyOdd n).map ev).Splits := by rw [hmapev]; exact hsplit_f
-      rw [Polynomial.splits_iff_card_roots.mp hsp, hdeg]
     obtain ⟨x, hx⟩ := ResolventConstruction.exists_fin_map_eq _ n hcard
     exact ⟨x, hx.symm⟩
   have hsep : ((serreAnFamilyOdd n).map ev).Separable := by
-    rw [hmapev]; exact (serreAnOverFracOdd_separable n hn hodd).map
+    rw [hmapev]
+    exact (serreAnOverFracOdd_separable n hn hodd).map
   have hxinj : Function.Injective x := by
-    have hnd : ((serreAnFamilyOdd n).map ev).roots.Nodup := Polynomial.nodup_roots hsep
+    have hnd : ((serreAnFamilyOdd n).map ev).roots.Nodup := nodup_roots hsep
     rw [hxroots] at hnd
     intro i j hij
     exact Multiset.inj_on_of_nodup_map hnd i (by simp) j (by simp) hij
   have hxmem : ∀ i, x i ∈ (serreAnOverFracOdd n).rootSet M := by
     intro i
-    rw [Polynomial.mem_rootSet]
+    rw [mem_rootSet]
     refine ⟨(serreAnOverFracOdd_monic n hn).ne_zero, ?_⟩
     have hmemroots : x i ∈ ((serreAnFamilyOdd n).map ev).roots := by
-      rw [hxroots]; exact Multiset.mem_map.mpr ⟨i, by simp, rfl⟩
-    have hroot : eval (x i) ((serreAnFamilyOdd n).map ev) = 0 :=
-      (Polynomial.mem_roots'.mp hmemroots).2
-    rw [Polynomial.aeval_def, ← Polynomial.eval_map, ← hmapev]
-    exact hroot
+      rw [hxroots]
+      exact Multiset.mem_map.mpr ⟨i, by simp, rfl⟩
+    rw [aeval_def, ← eval_map, ← hmapev]
+    exact (mem_roots'.mp hmemroots).2
   have hcardrs : Fintype.card ((serreAnOverFracOdd n).rootSet M) = n := by
     rw [Polynomial.card_rootSet_eq_natDegree (serreAnOverFracOdd_separable n hn hodd) hsplit_f,
       serreAnOverFracOdd_natDegree n hn]
   have hbij : Function.Bijective
-      (fun i : Fin n => (⟨x i, hxmem i⟩ : (serreAnOverFracOdd n).rootSet M)) := by
+      (fun i ↦ (⟨x i, hxmem i⟩ : (serreAnOverFracOdd n).rootSet M)) := by
     refine (Fintype.bijective_iff_injective_and_card _).mpr ⟨?_, ?_⟩
-    · intro i j hij; exact hxinj (Subtype.ext_iff.mp hij)
+    · intro i j hij
+      exact hxinj (Subtype.ext_iff.mp hij)
     · rw [Fintype.card_fin, hcardrs]
   set v := Equiv.ofBijective _ hbij with hv_def
-  have hvx : ∀ i, (v i : M) = x i := fun i => rfl
-  have h_ne : discElem (fun i => (v i : M)) ≠ 0 := by
+  have hvx : ∀ i, (v i : M) = x i := fun i ↦ rfl
+  have h_ne : discElem (fun i ↦ (v i : M)) ≠ 0 := by
     unfold discElem
     rw [← Matrix.det_vandermonde, Ne, Matrix.det_vandermonde_eq_zero_iff]
     push_neg
-    exact fun i j h => (Subtype.val_injective.comp v.injective) h
-  have h_sq : ∃ d : K, discSq (fun i => (v i : M)) = (algebraMap K M d) ^ 2 := by
+    exact fun i j h ↦ (Subtype.val_injective.comp v.injective) h
+  have h_sq : ∃ d : K, discSq (fun i ↦ (v i : M)) = (algebraMap K M d) ^ 2 := by
     refine ⟨toClosureFrac (serreAnDeltaPolyOdd n), ?_⟩
-    have hvx' : (fun i => (v i : M)) = x := funext hvx
+    have hvx' : (fun i ↦ (v i : M)) = x := funext hvx
     rw [discSq, hvx', serreAnFamilyOdd_discSq_general n hn hodd ev x hdeg hxroots,
       ← serreAnDeltaPolyOdd_sq n hn hodd, map_pow, hev_def, RingHom.comp_apply]
   have hpar := gal_le_alternating_of_disc_sq (serreAnOverFracOdd n)
@@ -281,7 +293,7 @@ theorem an_geometric_le_alternating_odd (n : ℕ) (hn : 2 ≤ n) (hodd : Odd n) 
   obtain ⟨π, hπ, hsign⟩ := hpar ϕ
   rw [Equiv.Perm.mem_alternatingGroup]
   have hperm : Gal.galActionHom (serreAnOverFracOdd n) M ψ = v.permCongr π := by
-    refine Equiv.ext (fun r => ?_)
+    refine Equiv.ext (fun r ↦ ?_)
     obtain ⟨i, rfl⟩ := v.surjective r
     apply Subtype.ext
     have hr := Gal.galActionHom_restrict (p := serreAnOverFracOdd n) (E := M) ϕ (v i)
@@ -313,56 +325,59 @@ theorem an_root_enum_odd (n : ℕ) (hn : 2 ≤ n) (hodd : Odd n)
   set M := (serreAnOverFracOdd n).SplittingField with hM
   set ev := (algebraMap K M).comp toClosureFrac with hev_def
   have hmapev : (serreAnFamilyOdd n).map ev = (serreAnOverFracOdd n).map (algebraMap K M) := by
-    rw [hev_def, ← Polynomial.map_map]; rfl
+    rw [hev_def, ← Polynomial.map_map]
+    rfl
   have hdeg : ((serreAnFamilyOdd n).map ev).natDegree = n := by
-    rw [hmapev, Polynomial.natDegree_map_of_leadingCoeff_ne_zero]
+    rw [hmapev, natDegree_map_of_leadingCoeff_ne_zero]
     · exact serreAnOverFracOdd_natDegree n hn
-    · rw [(serreAnOverFracOdd_monic n hn).leadingCoeff, map_one]; exact one_ne_zero
+    · rw [(serreAnOverFracOdd_monic n hn).leadingCoeff, map_one]
+      exact one_ne_zero
   have hsplit_f : ((serreAnOverFracOdd n).map (algebraMap K M)).Splits :=
     SplittingField.splits (serreAnOverFracOdd n)
+  have hsp_roots : ((serreAnFamilyOdd n).map ev).Splits := by rwa [hmapev]
+  have hcard : Multiset.card ((serreAnFamilyOdd n).map ev).roots = n := by
+    rw [splits_iff_card_roots.mp hsp_roots, hdeg]
   obtain ⟨x0, hx0⟩ : ∃ x0 : Fin n → M,
       ((serreAnFamilyOdd n).map ev).roots = Finset.univ.val.map x0 := by
-    have hcard : Multiset.card ((serreAnFamilyOdd n).map ev).roots = n := by
-      have hsp : ((serreAnFamilyOdd n).map ev).Splits := by rw [hmapev]; exact hsplit_f
-      rw [Polynomial.splits_iff_card_roots.mp hsp, hdeg]
     obtain ⟨x0, hx0⟩ := ResolventConstruction.exists_fin_map_eq _ n hcard
     exact ⟨x0, hx0.symm⟩
   obtain ⟨x, hxroots, hGx⟩ := hG ev x0 hdeg hx0
   have hsep : ((serreAnFamilyOdd n).map ev).Separable := by
-    rw [hmapev]; exact (serreAnOverFracOdd_separable n hn hodd).map
+    rw [hmapev]
+    exact (serreAnOverFracOdd_separable n hn hodd).map
   have hxinj : Function.Injective x := by
-    have hnd : ((serreAnFamilyOdd n).map ev).roots.Nodup := Polynomial.nodup_roots hsep
+    have hnd : ((serreAnFamilyOdd n).map ev).roots.Nodup := nodup_roots hsep
     rw [hxroots] at hnd
     intro i j hij
     exact Multiset.inj_on_of_nodup_map hnd i (by simp) j (by simp) hij
   have hxmem : ∀ i, x i ∈ (serreAnOverFracOdd n).rootSet M := by
     intro i
-    rw [Polynomial.mem_rootSet]
+    rw [mem_rootSet]
     refine ⟨(serreAnOverFracOdd_monic n hn).ne_zero, ?_⟩
     have hmemroots : x i ∈ ((serreAnFamilyOdd n).map ev).roots := by
-      rw [hxroots]; exact Multiset.mem_map.mpr ⟨i, by simp, rfl⟩
-    have hroot : eval (x i) ((serreAnFamilyOdd n).map ev) = 0 :=
-      (Polynomial.mem_roots'.mp hmemroots).2
-    rw [Polynomial.aeval_def, ← Polynomial.eval_map, ← hmapev]
-    exact hroot
+      rw [hxroots]
+      exact Multiset.mem_map.mpr ⟨i, by simp, rfl⟩
+    rw [aeval_def, ← eval_map, ← hmapev]
+    exact (mem_roots'.mp hmemroots).2
   have hcardrs : Fintype.card ((serreAnOverFracOdd n).rootSet M) = n := by
     rw [Polynomial.card_rootSet_eq_natDegree (serreAnOverFracOdd_separable n hn hodd) hsplit_f,
       serreAnOverFracOdd_natDegree n hn]
   have hbij : Function.Bijective
-      (fun i : Fin n => (⟨x i, hxmem i⟩ : (serreAnOverFracOdd n).rootSet M)) := by
+      (fun i ↦ (⟨x i, hxmem i⟩ : (serreAnOverFracOdd n).rootSet M)) := by
     refine (Fintype.bijective_iff_injective_and_card _).mpr ⟨?_, ?_⟩
-    · intro i j hij; exact hxinj (Subtype.ext_iff.mp hij)
+    · intro i j hij
+      exact hxinj (Subtype.ext_iff.mp hij)
     · rw [Fintype.card_fin, hcardrs]
   set v := Equiv.ofBijective _ hbij with hv_def
-  have hvx : ∀ i, (v i : M) = x i := fun i => rfl
-  have h_ne : discElem (fun i => (v i : M)) ≠ 0 := by
+  have hvx : ∀ i, (v i : M) = x i := fun i ↦ rfl
+  have h_ne : discElem (fun i ↦ (v i : M)) ≠ 0 := by
     unfold discElem
     rw [← Matrix.det_vandermonde, Ne, Matrix.det_vandermonde_eq_zero_iff]
     push_neg
-    exact fun i j h => (Subtype.val_injective.comp v.injective) h
-  have h_sq : ∃ d : K, discSq (fun i => (v i : M)) = (algebraMap K M d) ^ 2 := by
+    exact fun i j h ↦ (Subtype.val_injective.comp v.injective) h
+  have h_sq : ∃ d : K, discSq (fun i ↦ (v i : M)) = (algebraMap K M d) ^ 2 := by
     refine ⟨toClosureFrac (serreAnDeltaPolyOdd n), ?_⟩
-    have hvx' : (fun i => (v i : M)) = x := funext hvx
+    have hvx' : (fun i ↦ (v i : M)) = x := funext hvx
     rw [discSq, hvx', serreAnFamilyOdd_discSq_general n hn hodd ev x hdeg hxroots,
       ← serreAnDeltaPolyOdd_sq n hn hodd, map_pow, hev_def, RingHom.comp_apply]
   have hgal_alt := gal_le_alternating_of_disc_sq (serreAnOverFracOdd n)
@@ -370,7 +385,7 @@ theorem an_root_enum_odd (n : ℕ) (hn : 2 ≤ n) (hodd : Odd n)
   refine ⟨x, hxinj, hGx, ?_, ?_⟩
   · intro γ
     obtain ⟨π, hπ, hsign⟩ := hgal_alt γ
-    refine ⟨⟨π, Equiv.Perm.mem_alternatingGroup.mpr hsign⟩, fun i => ?_⟩
+    refine ⟨⟨π, Equiv.Perm.mem_alternatingGroup.mpr hsign⟩, fun i ↦ ?_⟩
     show γ (x i) = x (π i)
     rw [← hvx i, ← hvx (π i)]
     exact hπ i
@@ -381,14 +396,15 @@ theorem an_root_enum_odd (n : ℕ) (hn : 2 ≤ n) (hodd : Odd n)
       rw [hπrs, Equiv.Perm.sign_permCongr]
       exact Equiv.Perm.mem_alternatingGroup.mp σ.2
     have hmem : πrs ∈ (Gal.galActionHom (serreAnOverFracOdd n) M).range := by
-      rw [hAlt]; exact Equiv.Perm.mem_alternatingGroup.mpr hπrs_sign
+      rw [hAlt]
+      exact Equiv.Perm.mem_alternatingGroup.mpr hπrs_sign
     obtain ⟨φ, hφ⟩ := MonoidHom.mem_range.mp hmem
     obtain ⟨ϕ, hϕ⟩ := Gal.restrict_surjective (serreAnOverFracOdd n) M φ
     have key : ∀ i, (πrs (v i) : M) = x ((σ : Equiv.Perm (Fin n)) i) := by
       intro i
       rw [hπrs, Equiv.permCongr_apply, Equiv.symm_apply_apply]
       exact hvx _
-    refine ⟨ϕ, fun i => ?_⟩
+    refine ⟨ϕ, fun i ↦ ?_⟩
     have hr := Gal.galActionHom_restrict (p := serreAnOverFracOdd n) (E := M) ϕ (v i)
     rw [hϕ, hφ] at hr
     rw [hvx i, key i] at hr
@@ -406,26 +422,31 @@ theorem anResolventFrac_irreducible_odd (n : ℕ) (hn : 2 ≤ n) (hodd : Odd n)
   obtain ⟨x, hxinj, hGx, hgal, hsurj2⟩ := an_root_enum_odd n hn hodd G hGmonic hG hAlt
   set ev := (algebraMap (FractionRing (Polynomial (AlgebraicClosure ℚ)))
     (serreAnOverFracOdd n).SplittingField).comp toClosureFrac with hev_def
-  haveI : IsGalois (FractionRing (Polynomial (AlgebraicClosure ℚ)))
+  have : IsGalois (FractionRing (Polynomial (AlgebraicClosure ℚ)))
       (serreAnOverFracOdd n).SplittingField :=
     IsGalois.of_separable_splitting_field (serreAnOverFracOdd_separable n hn hodd)
   have hev_deg : (G.map ev).natDegree = G.natDegree :=
     natDegree_map_of_leadingCoeff_ne_zero _
-      (by rw [hGmonic.leadingCoeff, map_one]; exact one_ne_zero)
+      (by
+        rw [hGmonic.leadingCoeff, map_one]
+        exact one_ne_zero)
   have hdegG : (G.map toClosureFrac).natDegree = n.factorial / 2 := by
     have e1 : (G.map toClosureFrac).natDegree = G.natDegree :=
       natDegree_map_of_leadingCoeff_ne_zero _
-        (by rw [hGmonic.leadingCoeff, map_one]; exact one_ne_zero)
+        (by
+          rw [hGmonic.leadingCoeff, map_one]
+          exact one_ne_zero)
     rw [e1, ← hev_deg, hGx, altResolventProduct_natDegree n hn]
   have hw : (aeval (genForm n x 1)) (G.map toClosureFrac) = 0 := by
     have h1 : (G.map toClosureFrac).map
         (algebraMap (FractionRing (Polynomial (AlgebraicClosure ℚ)))
           (serreAnOverFracOdd n).SplittingField) = altResolventProduct n x := by
-      rw [Polynomial.map_map]; exact hGx
-    rw [Polynomial.aeval_def, ← Polynomial.eval_map, h1]
+      rw [Polynomial.map_map]
+      exact hGx
+    rw [aeval_def, ← eval_map, h1]
     exact altResolventProduct_isRoot_genForm_one n x
-  haveI hNT : Nontrivial (Fin n) := ⟨⟨0, by omega⟩, ⟨1, by omega⟩, by simp [Fin.ext_iff]⟩
-  refine Monic.irreducible_of_galois_orbit_card (hGmonic.map toClosureFrac) hw ?_
+  have hNT : Nontrivial (Fin n) := ⟨⟨0, by omega⟩, ⟨1, by omega⟩, by simp [Fin.ext_iff]⟩
+  apply Monic.irreducible_of_galois_orbit_card (hGmonic.map toClosureFrac) hw
   rw [orbit_genForm_eq_alternating_range x hgal hsurj2,
       Nat.card_range_of_injective (genForm_alternating_injective x hxinj hsurj2),
       Nat.card_eq_fintype_card, card_alternatingGroup, Fintype.card_fin, hdegG]
@@ -478,16 +499,14 @@ theorem kbConst_ne_zero (n : ℕ) (hn : 1 ≤ n) : kbConst n ≠ 0 := by
   exact_mod_cast (by omega : n ≠ 0)
 
 theorem nm1_ne_zero (n : ℕ) (hn : 2 ≤ n) : (n : AlgebraicClosure ℚ) - 1 ≠ 0 := by
-  have : (n : AlgebraicClosure ℚ) ≠ 1 := by
-    have : (n : ℕ) ≠ 1 := by omega
-    exact_mod_cast this
-  exact sub_ne_zero.mpr this
+  have h : (n : AlgebraicClosure ℚ) ≠ 1 := by exact_mod_cast (show (n : ℕ) ≠ 1 by omega)
+  exact sub_ne_zero.mpr h
 
 theorem kappaOdd_ne_zero (n : ℕ) : kappaOdd n ≠ 0 := by
   rw [kappaOdd, Ne,
     map_eq_zero_iff _ (IsFractionRing.injective (Polynomial (AlgebraicClosure ℚ)) GeomBase)]
   intro h
-  have hc := congrArg (fun p => Polynomial.coeff p 2) h
+  have hc := congrArg (fun p ↦ Polynomial.coeff p 2) h
   norm_num [coeff_sub, coeff_C, coeff_X_pow] at hc
 
 theorem kbConstG_ne_zero (n : ℕ) (hn : 1 ≤ n) :
@@ -627,7 +646,7 @@ theorem gen_sq_mem_range (n : ℕ) (hn : 2 ≤ n) :
     letI := algBaseTOdd n hn
     ∃ β : BaseT, algebraMap BaseT GeomBase β
       = (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase X) ^ 2 := by
-  letI := algBaseTOdd n hn
+  let _ := algBaseTOdd n hn
   have hk := kappaOdd_ne_zero n
   have hnm := nm1G_ne_zero n hn
   have hkb := kbConstG_ne_zero n (by omega)
@@ -640,7 +659,8 @@ theorem gen_sq_mem_range (n : ℕ) (hn : 2 ≤ n) :
     substFieldHomOdd_X]
   have ht2 : (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase X) ^ 2
       = algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase (C (kbConst n)) - kappaOdd n := by
-    rw [kappaOdd_eq]; ring
+    rw [kappaOdd_eq]
+    ring
   rw [ht2, substValOdd]
   field_simp
   ring
@@ -652,7 +672,8 @@ noncomputable def signPolyHom :
 
 theorem signPolyHom_apply (p : Polynomial (AlgebraicClosure ℚ)) :
     signPolyHom p = p.comp (-X) := by
-  rw [signPolyHom, comp_eq_aeval]; rfl
+  rw [signPolyHom, comp_eq_aeval]
+  rfl
 
 theorem signPolyHom_involutive : Function.Involutive signPolyHom := by
   intro p
@@ -695,7 +716,7 @@ theorem signFieldHom_comp_substRingHomOdd (n : ℕ) :
 theorem signFieldHom_comp_substFieldHomOdd (n : ℕ) (hn : 2 ≤ n) :
     signFieldHom.comp (substFieldHomOdd n hn) = substFieldHomOdd n hn := by
   apply IsLocalization.ringHom_ext (nonZeroDivisors (Polynomial (AlgebraicClosure ℚ)))
-  refine RingHom.ext fun x => ?_
+  refine RingHom.ext fun x ↦ ?_
   simp only [RingHom.comp_apply]
   rw [substFieldHomOdd_algebraMap]
   exact RingHom.congr_fun (signFieldHom_comp_substRingHomOdd n) x
@@ -704,17 +725,17 @@ theorem signFieldHom_comp_substFieldHomOdd (n : ℕ) (hn : 2 ≤ n) :
 theorem isIntegral_t (n : ℕ) (hn : 2 ≤ n) :
     letI := algBaseTOdd n hn
     IsIntegral BaseT (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase X) := by
-  letI := algBaseTOdd n hn
+  let _ := algBaseTOdd n hn
   obtain ⟨β, hβ⟩ := gen_sq_mem_range n hn
   refine ⟨X ^ 2 - C β, monic_X_pow_sub_C β (by norm_num), ?_⟩
   show Polynomial.eval₂ (algebraMap BaseT GeomBase) _ _ = 0
-  rw [← Polynomial.aeval_def]
+  rw [← aeval_def]
   simp only [map_sub, map_pow, aeval_X, aeval_C, hβ, sub_self]
 
 theorem minpoly_natDegree_le_two (n : ℕ) (hn : 2 ≤ n) :
     letI := algBaseTOdd n hn
     (minpoly BaseT (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase X)).natDegree ≤ 2 := by
-  letI := algBaseTOdd n hn
+  let _ := algBaseTOdd n hn
   obtain ⟨β, hβ⟩ := gen_sq_mem_range n hn
   have hmonic : (X ^ 2 - C β : BaseT[X]).Monic := monic_X_pow_sub_C β (by norm_num)
   have haeval : (Polynomial.aeval
@@ -723,14 +744,14 @@ theorem minpoly_natDegree_le_two (n : ℕ) (hn : 2 ≤ n) :
   have hdvd := minpoly.dvd BaseT _ haeval
   calc (minpoly BaseT (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase X)).natDegree
         ≤ (X ^ 2 - C β : BaseT[X]).natDegree :=
-          Polynomial.natDegree_le_of_dvd hdvd hmonic.ne_zero
+          natDegree_le_of_dvd hdvd hmonic.ne_zero
     _ = 2 := natDegree_X_pow_sub_C
 
 theorem adjoin_t_eq_top (n : ℕ) (hn : 2 ≤ n) :
     letI := algBaseTOdd n hn
     IntermediateField.adjoin BaseT
       {algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase X} = ⊤ := by
-  letI := algBaseTOdd n hn
+  let _ := algBaseTOdd n hn
   set t := algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase X with ht
   set M := IntermediateField.adjoin BaseT {t} with hM
   have htM : t ∈ M := IntermediateField.mem_adjoin_simple_self BaseT t
@@ -749,9 +770,10 @@ theorem adjoin_t_eq_top (n : ℕ) (hn : 2 ≤ n) :
     intro q
     refine Polynomial.induction_on' q ?_ ?_
     · intro p q hp hq
-      rw [map_add]; exact add_mem hp hq
+      rw [map_add]
+      exact add_mem hp hq
     · intro k c
-      rw [← Polynomial.C_mul_X_pow_eq_monomial, map_mul, map_pow]
+      rw [← C_mul_X_pow_eq_monomial, map_mul, map_pow]
       exact mul_mem (hconst c) (pow_mem htM k)
   rw [eq_top_iff]
   intro y _
@@ -763,7 +785,7 @@ theorem t_not_mem_range (n : ℕ) (hn : 2 ≤ n) :
     letI := algBaseTOdd n hn
     algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase X
       ∉ Set.range (algebraMap BaseT GeomBase) := by
-  letI := algBaseTOdd n hn
+  let _ := algBaseTOdd n hn
   rintro ⟨b, hb⟩
   rw [algebraMap_baseTOdd_eq] at hb
   have h1 : signFieldHom (substFieldHomOdd n hn b) = substFieldHomOdd n hn b :=
@@ -786,13 +808,13 @@ set_option linter.unusedVariables false in
 theorem finiteDimensional_baseT_geomBaseOdd (n : ℕ) (hn : 2 ≤ n) :
     letI := algBaseTOdd n hn
     FiniteDimensional BaseT GeomBase := by
-  letI := algBaseTOdd n hn
+  let _ := algBaseTOdd n hn
   have hfd : FiniteDimensional BaseT
       (IntermediateField.adjoin BaseT
         {algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase X}) :=
     IntermediateField.adjoin.finiteDimensional (isIntegral_t n hn)
   rw [adjoin_t_eq_top n hn] at hfd
-  haveI := hfd
+  have := hfd
   exact IntermediateField.topEquiv.toLinearEquiv.finiteDimensional
 
 set_option synthInstance.maxHeartbeats 800000 in
@@ -800,7 +822,7 @@ set_option linter.unusedVariables false in
 theorem finrank_baseT_geomBaseOdd (n : ℕ) (hn : 2 ≤ n) :
     letI := algBaseTOdd n hn
     Module.finrank BaseT GeomBase = 2 := by
-  letI := algBaseTOdd n hn
+  let _ := algBaseTOdd n hn
   have hInt := isIntegral_t n hn
   have hfr : Module.finrank BaseT
       (IntermediateField.adjoin BaseT
@@ -836,7 +858,7 @@ theorem factorial_le_two_finrank {K K' E : Type*} [Field K] [Field K'] [Field E]
     [FiniteDimensional K' E]
     (hfsplitE : (f.map (algebraMap K E)).Splits) :
     n.factorial ≤ 2 * Module.finrank K' E := by
-  haveI : FiniteDimensional K E := Module.Finite.trans K' E
+  have : FiniteDimensional K E := Module.Finite.trans K' E
   have hfGal : Nat.card f.Gal = n.factorial := by
     have hinj := Gal.galActionHom_injective f f.SplittingField
     have hbij : Function.Bijective (Gal.galActionHom f f.SplittingField) := ⟨hinj, hSn⟩
@@ -883,7 +905,7 @@ Proof by `le_antisymm`:
 theorem an_geometric_card_gal_odd (n : ℕ) (hn : 3 ≤ n) (hodd : Odd n) :
     2 * Nat.card (serreAnOverFracOdd n).Gal = n.factorial := by
   have hn2 : 2 ≤ n := by omega
-  refine le_antisymm ?_ ?_
+  apply le_antisymm
   · -- **Upper bound** `2·|Gal| ≤ n!`: the geometric monodromy is even
     -- (`an_geometric_le_alternating_odd`), and `2·|Aₙ| = |Sₙ| = n!`.
     set M := (serreAnOverFracOdd n).SplittingField with hM
@@ -898,8 +920,9 @@ theorem an_geometric_card_gal_odd (n : ℕ) (hn : 3 ≤ n) (hodd : Odd n) :
     have hcardle : Nat.card (Gal.galActionHom (serreAnOverFracOdd n) M).range
         ≤ Nat.card (alternatingGroup ((serreAnOverFracOdd n).rootSet M)) :=
       Subgroup.card_le_of_le (an_geometric_le_alternating_odd n hn2 hodd)
-    haveI : Nontrivial ((serreAnOverFracOdd n).rootSet M) := by
-      rw [← Fintype.one_lt_card_iff_nontrivial, hcardRoot]; omega
+    have : Nontrivial ((serreAnOverFracOdd n).rootSet M) := by
+      rw [← Fintype.one_lt_card_iff_nontrivial, hcardRoot]
+      omega
     calc 2 * Nat.card (serreAnOverFracOdd n).Gal
         = 2 * Nat.card (Gal.galActionHom (serreAnOverFracOdd n) M).range := by rw [hcardRange]
       _ ≤ 2 * Nat.card (alternatingGroup ((serreAnOverFracOdd n).rootSet M)) := by gcongr
@@ -908,8 +931,8 @@ theorem an_geometric_card_gal_odd (n : ℕ) (hn : 3 ≤ n) (hodd : Odd n) :
       _ = n.factorial := by rw [Nat.card_eq_fintype_card, Fintype.card_perm, hcardRoot]
   · -- **Lower bound** `n! ≤ 2·|Gal|`: descend from the Serre base cover along the odd
     -- rational substitution and use `OddDescent.factorial_le_two_finrank`.
-    letI := OddDescent.algBaseTOdd n hn2
-    haveI := OddDescent.finiteDimensional_baseT_geomBaseOdd n hn2
+    let _ := OddDescent.algBaseTOdd n hn2
+    have := OddDescent.finiteDimensional_baseT_geomBaseOdd n hn2
     -- Abbreviations for the two constant coefficients (over `ℚ̄`).
     set c1 : GeomBase := algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase
         (C ((n : AlgebraicClosure ℚ) / ((n : AlgebraicClosure ℚ) - 1))) with hc1def
@@ -922,10 +945,10 @@ theorem an_geometric_card_gal_odd (n : ℕ) (hn : 3 ≤ n) (hodd : Odd n) :
         = algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase
             (C (algebraMap ℚ (AlgebraicClosure ℚ) q)) := by
       intro q
-      rw [toClosureFrac, RingHom.comp_apply, Polynomial.coe_mapRingHom, Polynomial.map_C]
+      rw [toClosureFrac, RingHom.comp_apply, coe_mapRingHom, Polynomial.map_C]
     have htcX : toClosureFrac X
         = algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase X := by
-      rw [toClosureFrac, RingHom.comp_apply, Polynomial.coe_mapRingHom, Polynomial.map_X]
+      rw [toClosureFrac, RingHom.comp_apply, coe_mapRingHom, Polynomial.map_X]
     have hφdiv : algebraMap ℚ (AlgebraicClosure ℚ) ((n : ℚ) / ((n : ℚ) - 1))
         = (n : AlgebraicClosure ℚ) / ((n : AlgebraicClosure ℚ) - 1) := by
       rw [map_div₀, map_sub, map_one, map_natCast]
@@ -960,7 +983,7 @@ theorem an_geometric_card_gal_odd (n : ℕ) (hn : 3 ≤ n) (hodd : Odd n) :
     have hcomp : (OddDescent.substFieldHomOdd n hn2).comp
           (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase)
         = OddDescent.substRingHomOdd n := by
-      refine RingHom.ext fun x => ?_
+      refine RingHom.ext fun x ↦ ?_
       exact OddDescent.substFieldHomOdd_algebraMap n hn2 x
     have hkey : (linearCoverC (serreBaseP n)).map (OddDescent.substRingHomOdd n)
         = X ^ n - C c1 * X ^ (n - 1) - C (OddDescent.substValOdd n) := by
@@ -980,12 +1003,17 @@ theorem an_geometric_card_gal_odd (n : ℕ) (hn : 3 ≤ n) (hodd : Odd n) :
       rw [OddDescent.kappaOdd_mul_substValOdd n hn2, hc0', neg_div]
     have hpow : OddDescent.kappaOdd n ^ n
         = OddDescent.kappaOdd n * OddDescent.kappaOdd n ^ (n - 1) := by
-      rw [← pow_succ']; congr 1; omega
+      rw [← pow_succ']
+      congr 1
+      omega
     have hconst : c0 * OddDescent.kappaOdd n ^ (n - 1)
         = -(OddDescent.kappaOdd n ^ n * OddDescent.substValOdd n) := by
-      rw [hpow]; linear_combination (OddDescent.kappaOdd n ^ (n - 1)) * hκsv
+      rw [hpow]
+      linear_combination (OddDescent.kappaOdd n ^ (n - 1)) * hκsv
     have hmid : c1 * OddDescent.kappaOdd n * OddDescent.kappaOdd n ^ (n - 1)
-        = OddDescent.kappaOdd n ^ n * c1 := by rw [hpow]; ring
+        = OddDescent.kappaOdd n ^ n * c1 := by
+      rw [hpow]
+      ring
     -- The scaling identity `serreAnOverFracOdd.comp (Cκ·X) = C(κⁿ)·g`.
     have hcompeq : (serreAnOverFracOdd n).comp (C (OddDescent.kappaOdd n) * X)
         = C (OddDescent.kappaOdd n ^ n) * g := by
@@ -999,24 +1027,25 @@ theorem an_geometric_card_gal_odd (n : ℕ) (hn : 3 ≤ n) (hodd : Odd n) :
     set φ := algebraMap GeomBase (serreAnOverFracOdd n).SplittingField with hφ
     have hinjφ : Function.Injective φ :=
       FaithfulSMul.algebraMap_injective GeomBase _
-    have hφκn : φ (OddDescent.kappaOdd n ^ n) ≠ 0 := by
-      rw [Ne, map_eq_zero_iff φ hinjφ]
-      exact pow_ne_zero _ (OddDescent.kappaOdd_ne_zero n)
+    have hφκn : φ (OddDescent.kappaOdd n ^ n) ≠ 0 :=
+      (map_ne_zero_iff φ hinjφ).mpr (pow_ne_zero _ (OddDescent.kappaOdd_ne_zero n))
     have key := congrArg (Polynomial.map φ) hcompeq
     simp only [Polynomial.map_comp, Polynomial.map_mul, Polynomial.map_C, Polynomial.map_X] at key
     have hRHSsplit : (((serreAnOverFracOdd n).map φ).comp
         (C (φ (OddDescent.kappaOdd n)) * X)).Splits := by
-      letI : Invertible (φ (OddDescent.kappaOdd n)) := invertibleOfNonzero (by
-        rw [Ne, map_eq_zero_iff φ hinjφ]; exact OddDescent.kappaOdd_ne_zero n)
+      let _ : Invertible (φ (OddDescent.kappaOdd n)) :=
+        invertibleOfNonzero ((map_ne_zero_iff φ hinjφ).mpr (OddDescent.kappaOdd_ne_zero n))
       exact (SplittingField.splits (serreAnOverFracOdd n)).comp_of_natDegree_le_one_of_invertible
-        ((Polynomial.natDegree_C_mul_le _ _).trans (le_of_eq Polynomial.natDegree_X))
-        (by rw [Polynomial.leadingCoeff_C_mul_X]; infer_instance)
+        ((natDegree_C_mul_le _ _).trans (le_of_eq natDegree_X))
+        (by
+          rw [leadingCoeff_C_mul_X]
+          infer_instance)
     have hg_split_scaled : (C (φ (OddDescent.kappaOdd n ^ n)) * (g.map φ)).Splits :=
       key ▸ hRHSsplit
+    have hunit : g.map φ = C ((φ (OddDescent.kappaOdd n ^ n))⁻¹)
+        * (C (φ (OddDescent.kappaOdd n ^ n)) * (g.map φ)) := by
+      rw [← mul_assoc, ← C_mul, inv_mul_cancel₀ hφκn, C_1, one_mul]
     have hsplit_g : (g.map φ).Splits := by
-      have hunit : g.map φ = C ((φ (OddDescent.kappaOdd n ^ n))⁻¹)
-          * (C (φ (OddDescent.kappaOdd n ^ n)) * (g.map φ)) := by
-        rw [← mul_assoc, ← C_mul, inv_mul_cancel₀ hφκn, C_1, one_mul]
       rw [hunit]
       exact hg_split_scaled.C_mul _
     have htower : (serreBaseGeomPoly n).map
@@ -1026,7 +1055,8 @@ theorem an_geometric_card_gal_odd (n : ℕ) (hn : 3 ≤ n) (hodd : Odd n) :
         ← IsScalarTower.algebraMap_eq EvenDescent.BaseT GeomBase]
     have hfsplitE : ((serreBaseGeomPoly n).map
         (algebraMap EvenDescent.BaseT (serreAnOverFracOdd n).SplittingField)).Splits := by
-      rw [htower]; exact hsplit_g
+      rw [htower]
+      exact hsplit_g
     -- Assemble via the abstract lower bound.
     have hlow := OddDescent.factorial_le_two_finrank
       (K := EvenDescent.BaseT) (K' := GeomBase)
@@ -1086,7 +1116,8 @@ theorem anResolvent_abs_irreducible_odd' (n : ℕ) (hn : 2 ≤ n) (hodd : Odd n)
     (hG : IsAltResolvent n (serreAnFamilyOdd n) G) :
     Irreducible (G.map (mapRingHom (algebraMap ℚ (AlgebraicClosure ℚ)))) := by
   have hn3 : 3 ≤ n := by
-    rcases hodd with ⟨m, rfl⟩; omega
+    rcases hodd with ⟨m, rfl⟩
+    omega
   exact abs_irreducible_of_geometric_galois_alternating_odd n hn hodd G hGmonic hG
     (an_geometric_galois_alternating_odd n hn3 hodd)
 

@@ -45,7 +45,7 @@ theorem altResolventProduct_monic {A : Type*} [CommRing A] (n : ℕ) (x : Fin n 
 theorem altResolventProduct_natDegree {A : Type*} [CommRing A] [Nontrivial A] (n : ℕ)
     (hn : 2 ≤ n) (x : Fin n → A) :
     (altResolventProduct n x).natDegree = n.factorial / 2 := by
-  have : Nontrivial (Fin n) := ⟨⟨0, by omega⟩, ⟨1, by omega⟩, by simp [Fin.ext_iff]⟩
+  have : Nontrivial (Fin n) := Fin.nontrivial_iff_two_le.mpr hn
   unfold altResolventProduct
   rw [natDegree_prod_of_monic _ _ (fun σ _ ↦ monic_X_sub_C _)]
   simp only [natDegree_X_sub_C, Finset.sum_const, Finset.card_univ, smul_eq_mul, mul_one]
@@ -59,7 +59,7 @@ theorem altResolventProduct_map {A B : Type*} [CommRing A] [CommRing B] (φ : A 
   rw [Polynomial.map_prod]
   apply Finset.prod_congr rfl
   intro σ _
-  rw [Polynomial.map_sub, Polynomial.map_X, Polynomial.map_C, genForm_map]
+  rw [Polynomial.map_sub, map_X, map_C, genForm_map]
 
 /-- The linear form `w₁ = ∑ᵢ i · xᵢ` (at the identity permutation, which lies in `Aₙ`) is a root
 of the `Aₙ`-orbit resolvent product — the root-containment witness. -/
@@ -67,8 +67,8 @@ theorem altResolventProduct_isRoot_genForm_one {A : Type*} [CommRing A] (n : ℕ
     (altResolventProduct n x).IsRoot (genForm n x 1) := by
   unfold altResolventProduct IsRoot
   rw [eval_prod]
-  refine Finset.prod_eq_zero (Finset.mem_univ (1 : alternatingGroup (Fin n))) ?_
-  simp
+  apply Finset.prod_eq_zero (Finset.mem_univ (1 : alternatingGroup (Fin n)))
+  simp only [OneMemClass.coe_one, eval_sub, eval_X, eval_C, sub_self]
 
 end AlternatingResolvent
 
