@@ -9,7 +9,7 @@ import Mathlib
 
 This file defines the **rigidity certificate** for a finite group `G`: the finite, checkable
 group-theoretic data that — via the Riemann Existence Theorem (isolated as an axiom in
-`InverseGalois.Rigidity.RiemannExistence`) — witnesses that `G` is realizable as a Galois group
+`InverseGalois.Rigidity.RET.Existence`) — witnesses that `G` is realizable as a Galois group
 over `ℚ`.
 
 A certificate packages a tuple of conjugacy classes `C₁,…,C_r` that are
@@ -82,7 +82,7 @@ def rigidTuples {r : ℕ} (C : Fin r → ConjClasses G) : Set (Fin r → G) :=
 /-- A **rigidity certificate** for a finite group `G`: rational conjugacy classes admitting a
 unique (up to simultaneous conjugation) generating product-one tuple, the group being centerless.
 
-Together with the Riemann Existence Theorem (`InverseGalois.Rigidity.RiemannExistence`) this data
+Together with the Riemann Existence Theorem (`InverseGalois.Rigidity.RET.Existence`) this data
 proves `IsInverseGalois G` — see `Rigidity.rigidity_realizable`. -/
 structure RigidityCertificate (G : Type*) [Group G] [Finite G] where
   /-- the number of prescribed classes (branch points). -/

@@ -10,10 +10,7 @@ import InverseGalois.Resolvent.PolynomialGaloisTheory
 # Quadratic discriminant descent (family-agnostic)
 
 This file develops the **group-theoretic heart** of the Serre alternating-group families in a
-*reusable*, family-agnostic form, plus a **prototype** of the base-change transport plumbing that
-the substitution step (`T ↦ rational function of U`) requires.
-
-## Part 1 — the generic descent lemma
+*reusable*, family-agnostic form.
 
 The mathematical statement is:
 
@@ -37,12 +34,11 @@ The key packaging insight is that **`Aₙ` is the unique index-2 subgroup of `S�
 `range = alternatingGroup` follows from the single *cardinality* statement
 `2 · |Gal_{K'}| = n!`.  This makes:
 
-* `galActionHom_range_eq_alternating_of_card` — the pure group-theoretic core — **fully proved,
-  no `sorry`**; and
+* `galActionHom_range_eq_alternating_of_card` — the pure group-theoretic core; and
 * `galActionHom_range_eq_alternating_of_quadratic_disc` — the natural-input interface that the
   even *and* odd Serre-family descent agents build against — which reduces, via
   `card_gal_descent_of_quadratic`, to the single field-theory fact `2 · |Gal_{K'}| = |Gal_K|`
-  (the degree halving), now **fully proved** by `le_antisymm`: the upper bound uses the
+  (the degree halving), established by `le_antisymm`: the upper bound uses the
   discriminant-square certificate `hle` (`range ≤ Aₙ`), and the lower bound uses the tower law
   `[SF : K] = [K':K]·[SF:K']` together with the embedding `SF_f ↪ SF_g`.
 -/
@@ -59,10 +55,10 @@ local instance splitsInSplittingField (F : Type*) [Field F] (p : F[X]) :
     Fact ((p.map (algebraMap F p.SplittingField)).Splits) := ⟨SplittingField.splits p⟩
 
 /-!
-## Part 1 — the generic descent lemma
+## The generic descent lemma
 -/
 
-/-- **The group-theoretic core (fully proved).**
+/-- **The group-theoretic core.**
 
 If the `K'`-Galois group of `g` has order exactly `n!/2` (phrased as `2 · |g.Gal| = n!`), where
 `n` is the number of roots, then the image of the permutation representation `galActionHom` is
@@ -108,7 +104,7 @@ subgroup — the index-2 argument subsumes the `≤` containment.
 -/
 
 set_option linter.unusedVariables false in
-/-- **The descent (field-theoretic core), fully proved.**
+/-- **The descent (field-theoretic core).**
 
 From the natural inputs
 

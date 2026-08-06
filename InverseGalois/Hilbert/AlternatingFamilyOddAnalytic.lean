@@ -31,9 +31,9 @@ already complete; this file supplies the odd-`n` analogues of the three analytic
 Each is the odd sibling of the correspondingly-named even lemma in `AlternatingFamilyAnalytic`; the
 δ-descent and monodromy machinery that discharges the even versions
 (`Hilbert/AlternatingFamilyDescent.lean`, `Resolvent/AlternatingResolventDescent.lean`,
-`Hilbert/AlternatingFamilyMonodromy.lean`) has odd analogues still to be built, so these three sit
-as `sorry` leaves — but the *assembly* of the odd branch of `exists_alternating_resolvent_family`
-from them plus the (proved) odd algebraic lemmas is exactly parallel to the even branch.
+`Hilbert/AlternatingFamilyMonodromy.lean`) has odd analogues that discharge these three inputs;
+the *assembly* of the odd branch of `exists_alternating_resolvent_family` from them plus the odd
+algebraic lemmas is exactly parallel to the even branch.
 -/
 
 open Polynomial
@@ -44,7 +44,7 @@ namespace AlternatingFamily
 
 open AlternatingResolvent ResolventFamily
 
-/-- **[odd resolvent core — descent, `sorry`]** For the odd-`n` conic family `serreAnFamilyOdd n`
+/-- **[odd resolvent core — descent]** For the odd-`n` conic family `serreAnFamilyOdd n`
 there is a descended `Aₙ`-orbit resolvent `G ∈ ℚ[U][Y]`, monic of `Y`-degree `n!/2`, coupled to
 `F = serreAnFamilyOdd n` via `IsAltResolvent`, with a root of `G(t)` inside the splitting field of
 `F(t)` for every `t`.
@@ -62,7 +62,7 @@ theorem exists_altResolvent_odd (n : ℕ) (hn : 2 ≤ n) (hodd : Odd n) :
   obtain ⟨G, hm, hd, hres⟩ := exists_descended_altResolvent_odd n hn hodd
   exact ⟨G, hm, hd, hres, altResolvent_root_property_odd n hn G hres⟩
 
-/-- **[odd monodromy core — geometric, `sorry`]** The descended resolvent `G` of
+/-- **[odd monodromy core — geometric]** The descended resolvent `G` of
 `serreAnFamilyOdd n` is **absolutely irreducible**: the geometric monodromy group over `ℚ̄(U)` is
 exactly `Aₙ`.  Odd sibling of `AlternatingFamily.anResolvent_abs_irreducible`; the odd analogue of
 the `AlternatingFamilyMonodromy` decomposition (geometric irreducibility + preprimitivity +

@@ -19,9 +19,8 @@ import InverseGalois.Hilbert.AlternatingFamilyEvenDescent
 # The explicit `Aₙ`-family (Serre §4.5) — monodromy decomposition
 
 This file **decomposes** the deep absolute-irreducibility input
-`AlternatingFamily.anResolvent_abs_irreducible` (a bare `sorry` in
-`Hilbert/AlternatingFamilyAnalytic.lean`) into a chain of precise intermediate lemmas, a direct
-mirror of the `Sₙ` reduction chain for the Morse family in `Resolvent/ResolventFamily.lean`
+`AlternatingFamily.anResolvent_abs_irreducible` into a chain of precise intermediate lemmas, a
+direct mirror of the `Sₙ` reduction chain for the Morse family in `Resolvent/ResolventFamily.lean`
 (`morseResolventFrac_irreducible` → `abs_irreducible_of_geometric_galois_surjective` →
 `fullResolvent_abs_irreducible`).
 
@@ -33,9 +32,8 @@ surjectivity onto `Sₙ`).
 
 This file sits *before* `AlternatingFamilyAnalytic` in the import graph: that file's
 `anResolvent_abs_irreducible` is discharged by delegating to the `anResolvent_abs_irreducible'`
-assembly below, so the single opaque monodromy `sorry` is replaced by the three tractable leaves
-here (`serreAnOverFrac_separable`, `anResolventFrac_irreducible`, `an_geometric_galois_alternating`),
-each a well-typed statement at which an automated prover can be aimed.
+assembly below, which builds the monodromy result from the three leaves here
+(`serreAnOverFrac_separable`, `anResolventFrac_irreducible`, `an_geometric_galois_alternating`).
 -/
 
 open Polynomial
@@ -213,7 +211,7 @@ theorem orbit_genForm_eq_alternating_range {n : ℕ} {L M : Type*} [Field L] [Fi
     refine ⟨γ, ?_⟩
     simp [genForm, hγ]
 
-/-- **Crux (irreducibility of the standard `Aₙ`-representation over `ℚ`, `sorry`).**
+/-- **Crux (irreducibility of the standard `Aₙ`-representation over `ℚ`).**
 
 If `x : Fin n → M` are *distinct* elements of a characteristic-zero field and `c : Fin n → ℤ` is
 a nonzero, sum-zero integer vector such that *every* even-permutation translate of the linear
@@ -223,8 +221,8 @@ Concretely, the `ℤ`-span of the `Aₙ`-translates of a nonzero sum-zero vector
 vector supported on exactly two coordinates, say `m·(eᵢ - eⱼ)` with `m ≠ 0` and `i ≠ j`; the
 corresponding relation reads `m·(xᵢ - xⱼ) = 0`, forcing `xᵢ = xⱼ`, against injectivity.  (For
 `n ≤ 3` this is a finite check; for `n ≥ 4` it is the irreducibility of the `Aₙ` standard
-representation over `ℚ`.)  This is the genuine remaining content of `genForm_alternating_injective`:
-the fiddly `Aₙ`-symmetry reduction below discharges everything else. -/
+representation over `ℚ`.)  This is the genuine mathematical content of
+`genForm_alternating_injective`: the `Aₙ`-symmetry reduction below discharges everything else. -/
 lemma alternating_no_nontrivial_relation {n : ℕ} {M : Type*} [Field M] [CharZero M]
     (x : Fin n → M) (hxinj : Function.Injective x) (c : Fin n → ℤ)
     (hc : c ≠ 0) (hsum : ∑ j, c j = 0)
@@ -448,7 +446,7 @@ lemma alternating_no_nontrivial_relation {n : ℕ} {M : Type*} [Field M] [CharZe
 roots is realised by a `K`-algebra automorphism of the splitting field (`hsurj2`), the `n!/2`
 linear forms `σ ↦ ∑ᵢ i·x_(σ i)` (`σ ∈ Aₙ`) are pairwise distinct.
 
-This is the genuine remaining content of `Aₙ`-irreducibility, and the point where the `Sₙ` proof
+This is the genuine mathematical content of `Aₙ`-irreducibility, and the point where the `Sₙ` proof
 (`ResolventFamily.genForm_perm_injective`) does **not** transfer: that proof realises an arbitrary
 transposition `(a b)` as a ring endomorphism, which is impossible here (a transposition is odd, so
 it flips the square-root of the discriminant `δ ∈ K` and is not a `K`-automorphism).  The
@@ -544,7 +542,7 @@ theorem genForm_alternating_injective {n : ℕ} {K M : Type*} [Field K] [Field M
       _ = 0 := hg
   exact alternating_no_nontrivial_relation x hxinj c hc hsum hrel
 
-/-- **[root enumeration with `Aₙ`-Galois transport, `sorry`]** The `Aₙ`-analogue of
+/-- **[root enumeration with `Aₙ`-Galois transport]** The `Aₙ`-analogue of
 `ResolventFamily.morse_root_enum` bundled with the `IsAltResolvent` coupling.  Over the splitting
 field `M` of `serreAnOverFrac n` there is an enumeration `x : Fin n → M` of the roots such that:
 * `x` is injective (`serreAnOverFrac n` is separable);
@@ -759,7 +757,7 @@ This is the "easy" (`≤`) half of `an_geometric_galois_alternating`: the square
 certificate (`serreAnDeltaPoly n` squares to the closed-form discriminant, `serreAnDeltaPoly_sq`,
 using `Even n`) makes `√disc ∈ K`, so every `K`-automorphism fixes it and hence permutes the roots
 evenly (`gal_le_alternating_of_disc_sq`).  The reverse inclusion (`≥`, the genuine
-3-cycle/transitivity content) is the remaining `sorry`. -/
+3-cycle/transitivity content) is supplied by `an_geometric_galois_alternating`. -/
 theorem an_geometric_le_alternating (n : ℕ) (hn : 2 ≤ n) (heven : Even n) :
     (Gal.galActionHom (serreAnOverFrac n) (serreAnOverFrac n).SplittingField).range
       ≤ alternatingGroup ((serreAnOverFrac n).rootSet (serreAnOverFrac n).SplittingField) := by
@@ -841,7 +839,7 @@ theorem an_geometric_le_alternating (n : ℕ) (hn : 2 ≤ n) (heven : Even n) :
   rw [hperm, Equiv.Perm.sign_permCongr]
   exact hsign
 
-/-- **[residual leaf — the sole remaining `sorry` of `serreAnOverFrac_irreducible`]**
+/-- **[helper leaf of `serreAnOverFrac_irreducible`]**
 `g := Xⁿ − (n/(n−1))X^{n-1} + 1/(n−1)` is **not** a perfect square in `ℚ̄[X]`.
 
 Math content: `g' = n·X^{n-2}(X − 1)`, so the only possible multiple root of `g` is `X = 1`
@@ -1137,7 +1135,7 @@ theorem an_geometric_galois_alternating (n : ℕ) (hn : 3 ≤ n) (heven : Even n
 
 /-- **[assembly, proved from Steps 6 + 7]** The descended resolvent `G` of `serreAnFamily n` is
 absolutely irreducible.  This has exactly the statement of
-`AlternatingFamily.anResolvent_abs_irreducible` (the target `sorry`), reconstructed here from the
+`AlternatingFamily.anResolvent_abs_irreducible`, reconstructed here from the
 decomposition: `abs_irreducible_of_geometric_galois_alternating` fed the deep geometric input
 `an_geometric_galois_alternating`.  Mirror of `ResolventFamily.fullResolvent_abs_irreducible`. -/
 theorem anResolvent_abs_irreducible' (n : ℕ) (hn : 3 ≤ n) (heven : Even n)

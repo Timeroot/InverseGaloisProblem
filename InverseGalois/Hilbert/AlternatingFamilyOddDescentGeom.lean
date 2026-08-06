@@ -11,8 +11,8 @@ import InverseGalois.Hilbert.AlternatingFamilyMonodromy
 # The explicit `Aₙ`-family (Serre §4.5) — **odd-`n`** geometric monodromy descent
 
 This file is the **odd mirror** of `Hilbert/AlternatingFamilyMonodromy.lean`.  It decomposes the
-odd-`n` absolute-irreducibility input `anResolvent_abs_irreducible_odd` (a bare `sorry` in
-`Hilbert/AlternatingFamilyOddAnalytic.lean`) into the same chain of precise intermediate lemmas
+odd-`n` absolute-irreducibility input `anResolvent_abs_irreducible_odd` into the same chain of
+precise intermediate lemmas
 used for even `n`, with `serreAnFamily ↦ serreAnFamilyOdd`, `Even n ↦ Odd n`, and the second
 critical point `1 ↦ (k − U²)` (`k = (−1)^{(n−1)/2}·n`).
 
@@ -1073,27 +1073,16 @@ representation of the
 geometric Galois group of `serreAnFamilyOdd n` over `ℚ̄(U)` is **exactly the alternating group** on
 the roots.
 
-Odd mirror of `an_geometric_galois_alternating`.  Intended proof (odd descent from the shared Serre
-base cover): the base cover `serreBaseGeomPoly n` over `BaseT ≅ ℚ̄(S)` has full symmetric geometric
-monodromy (`serreBaseGeomPoly_galActionHom_surjective`), and the **odd rational** substitution
-`S ↦ −k/((n−1)(k−U²))` base-changes it, *after clearing denominators and rescaling the root by
-`c = k − U²`*, to `serreAnOverFracOdd n`.  Concretely, with `g := (serreBaseGeomPoly n).map substOdd`
-one has the (hand-verified) scaling identity `serreAnOverFracOdd n = C(cⁿ) · g.comp (C c⁻¹ · X)`, so
-`g` and `serreAnOverFracOdd n` share a splitting field (roots differ by the base scalar `c`), hence
-`Nat.card (serreAnOverFracOdd n).Gal = Nat.card g.Gal`.  Feeding
-`QuadraticDescent.card_gal_descent_of_quadratic` (with `finrank BaseT GeomBase = 2`, the odd analogue
-of `EvenDescent.finrank_baseT_geomBase`, and the even-permutation certificate
-`an_geometric_le_alternating_odd` transported to `g`) yields `2 · |g.Gal| = n!`, and then
-`QuadraticDescent.galActionHom_range_eq_alternating_of_card (serreAnOverFracOdd n)` pins the group to
-`Aₙ`.
-
-BLOCKER: this requires the odd base-change/descent stack — `substOdd` via `IsFractionRing.lift`
-(rational target; needs transcendence of `−k/((n−1)(k−U²))` over `ℚ̄`), the scaling base-change
-identity, `finrank_baseT_geomBaseOdd = 2` (open, mirrors the still-`sorry`
-`EvenDescent.finrank_baseT_geomBase`), and the splitting-field-degree transfer along root scaling —
-none of which are yet available.  The statement is here reduced (via the *fully proved*
-group-theoretic core `QuadraticDescent.galActionHom_range_eq_alternating_of_card`) to the single
-cardinality fact `an_geometric_card_gal_odd`; the root-count half is discharged. -/
+Odd mirror of `an_geometric_galois_alternating`.  This follows from the group-theoretic core
+`QuadraticDescent.galActionHom_range_eq_alternating_of_card` once the root count (`n`) and the
+single cardinality fact `an_geometric_card_gal_odd` (`2 · |(serreAnOverFracOdd n).Gal| = n!`) are
+supplied.  The cardinality comes from odd descent along the shared Serre base cover: the base
+cover `serreBaseGeomPoly n` over `BaseT ≅ ℚ̄(S)` has full symmetric geometric monodromy
+(`serreBaseGeomPoly_galActionHom_surjective`), and the **odd rational** substitution
+`S ↦ −k/((n−1)(k−U²))` base-changes it, after clearing denominators and rescaling the root by
+`c = k − U²`, to `serreAnOverFracOdd n`; with the degree-`2` extension `GeomBase / BaseT`
+(`OddDescent.finrank_baseT_geomBaseOdd`) and the even-permutation certificate
+`an_geometric_le_alternating_odd`, the tower bound pins the group to `Aₙ`. -/
 theorem an_geometric_galois_alternating_odd (n : ℕ) (hn : 3 ≤ n) (hodd : Odd n) :
     (Gal.galActionHom (serreAnOverFracOdd n) (serreAnOverFracOdd n).SplittingField).range
       = alternatingGroup ((serreAnOverFracOdd n).rootSet (serreAnOverFracOdd n).SplittingField) := by
@@ -1106,7 +1095,7 @@ theorem an_geometric_galois_alternating_odd (n : ℕ) (hn : 3 ≤ n) (hodd : Odd
 
 /-- **[assembly, proved from the reduction + deep geometric input]** The descended resolvent `G` of
 `serreAnFamilyOdd n` is absolutely irreducible.  This has exactly the statement of
-`AlternatingFamily.anResolvent_abs_irreducible_odd` (the target `sorry`).  Odd mirror of
+`AlternatingFamily.anResolvent_abs_irreducible_odd`.  Odd mirror of
 `anResolvent_abs_irreducible'`.
 
 For odd `n`, `Odd n ∧ 2 ≤ n ⟹ 3 ≤ n` (via `omega`), supplying the `3 ≤ n` needed by the deep

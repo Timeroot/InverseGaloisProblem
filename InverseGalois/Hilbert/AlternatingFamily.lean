@@ -9,7 +9,7 @@ import InverseGalois.Resolvent.PolynomialGaloisTheory
 /-!
 # The explicit `Aₙ`-family (Serre §4.5) — algebraic half
 
-The `sorry` in `Hilbert/Alternating.lean` (`exists_alternating_resolvent_family`) needs a
+The theorem `exists_alternating_resolvent_family` in `Hilbert/Alternating.lean` needs a
 *regular `Aₙ`-extension of `ℚ(T)`*.  Rather than Mestre's genus-`0` construction, we use the
 **classical explicit family** described in Serre, *Topics in Galois Theory*, §4.5 (attributed
 there to Hilbert):
@@ -24,10 +24,11 @@ there to Hilbert):
 > trick", Lemma 4.5.1).
 
 This file develops the **algebraic half** of the decomposition: the family, its degree/monic
-bookkeeping, cofinite separability of the specialisations, and (as documented `sorry`s) the
-square-discriminant certificate that supplies the per-`t` `discSq` conjunct.  The **analytic
-half** (irreducibility and absolute irreducibility of the descended resolvent, i.e. the
-monodromy computation) lives in `Hilbert/AlternatingFamilyAnalytic.lean`.
+bookkeeping, and cofinite separability of the specialisations.  The square-discriminant
+certificate that supplies the per-`t` `discSq` conjunct lives in
+`Hilbert/AlternatingFamilyDisc.lean`; the **analytic half** (irreducibility and absolute
+irreducibility of the descended resolvent, i.e. the monodromy computation) lives in
+`Hilbert/AlternatingFamilyAnalytic.lean`.
 
 The `Aₙ`-orbit resolvent and its descent to `ℚ[e₁,…,eₙ][δ]` are already handled by
 `Resolvent/AlternatingInvariants.lean` and `Resolvent/AlternatingResolventDescent.lean`.
