@@ -126,6 +126,11 @@ theorem residue_isSeparable (t : k) (Q : Ideal (Bring Ω)) [Q.IsMaximal] [Q.Lies
   haveI : CharZero (Polynomial k ⧸ placeP t) := inferInstance
   infer_instance
 
+omit [FiniteDimensional (RatFunc k) Ω] in
+/-- The Galois action on the geometric integral model is the restriction of the action on `Ω`. -/
+theorem coe_smul_geom (σ : Ω ≃ₐ[RatFunc k] Ω) (x : Bring Ω) : ((σ • x : Bring Ω) : Ω) = σ x :=
+  algebraMap_galRestrict_apply (Polynomial k) σ x
+
 /-! ## The inertia subgroup as a real `Subgroup`, and the ramification lemmas applied. -/
 
 /-- `Q.inertia G` is a genuine `Subgroup` of the geometric Galois group `G = Ω ≃ₐ[k(T)] Ω`. -/

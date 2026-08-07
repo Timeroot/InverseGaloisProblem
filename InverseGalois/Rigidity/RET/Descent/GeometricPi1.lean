@@ -8,11 +8,11 @@ import InverseGalois.Rigidity.RET.Descent.Data
 /-!
 # The geometric fundamental group — presentation of `N` by the sphere group
 
-This module supplies the **algebraic layer** of the branch-cycle descent's deep geometric wall: the
+This module supplies the **algebraic layer** of the branch-cycle descent's geometric input: the
 `GeometricInertiaData` structure (the tame inertia generators of `N = Gal(Ω/k₀(T))`) and the
-*sorry-free* reduction of the geometric presentation to that data.  The genuine arithmetic-geometry
-— the *existence* of the data — lives in `Descent.Tower` (`geomInertiaModel_exists`), where the
-arithmetic model `N ⊴ E` is available.
+reduction of the geometric presentation to that data.  The arithmetic geometry — the *existence* of
+the data — lives in `Descent.Tower` (`geomInertiaModel_exists`), where the arithmetic model `N ⊴ E`
+is available.
 
 ## What this file is (and why the existence is NOT here)
 
@@ -23,8 +23,8 @@ Fried's branch-cycle formula.  This file factors the *algebra* of that goal into
 * a **structure** `GeometricInertiaData` — the tame inertia generators `gᵢ ∈ N` (one per branch
   point) with their defining properties: they generate `N`, satisfy the product-one sphere relation,
   realize `φ (gᵢ) = baseᵢ`, and obey the cyclotomic branch-cycle;
-* a **sorry-free reduction** `geomPresentation_of_inertiaData`: from that data the full presentation
-  conclusion follows by elementary group theory (the sphere-hom of the generators).
+* a **reduction** `geomPresentation_of_inertiaData`: from that data the full presentation conclusion
+  follows by elementary group theory (the sphere-hom of the generators).
 
 **Crucially, the existence of `GeometricInertiaData` cannot be stated over an abstract tower.**  For
 an *arbitrary* surjection `φ : N ↠ G` and rigid tuple `base`, the data need **not** exist:
@@ -39,11 +39,11 @@ Riemann Existence Theorem at the `N` level, not an abstract group-theory fact.
 ## Main results
 
 * `GeometricInertiaData` — the tame inertia generators and their defining properties.
-* `geomPresentation_of_inertiaData` — **sorry-free**: the presentation conclusion from the data.
+* `geomPresentation_of_inertiaData` — the presentation conclusion from the data.
 
-The existence of the data (the deep RET-at-`N`-level wall) is `geomInertiaModel_exists` in
+The existence of the data (Riemann existence at the `N` level) is `geomInertiaModel_exists` in
 `Descent.Tower`; see its docstring for the two mathematical inputs (tame `π₁` presentation +
-cyclotomic action on tame inertia) and the Mathlib footholds.
+cyclotomic action on tame inertia).
 -/
 
 open Polynomial
@@ -65,8 +65,8 @@ monodromy group of the branch cover:
   cyclotomic exponent `k = χ(σ)`, coprime to every base-generator order, with `φ (e · gᵢ · e⁻¹)`
   conjugate to `baseᵢ ^ k` — i.e. `E` acts on tame inertia through the cyclotomic character.
 
-Producing an inhabitant (bundled with its model) is `geomInertiaModel_exists` (`Descent.Tower`), the
-isolated Riemann-Existence wall. -/
+Producing an inhabitant (bundled with its model) is `geomInertiaModel_exists` (`Descent.Tower`),
+where the Riemann Existence Theorem enters. -/
 structure GeometricInertiaData {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
     {E : Type} [Group E] (N : Subgroup E) [N.Normal] (φ : N →* G)
     (base : Fin cert.r → G) (hbase : base ∈ rigidTuples cert.C) where
@@ -84,7 +84,7 @@ structure GeometricInertiaData {G : Type} [Group G] [Finite G] {cert : RigidityC
   branchCycle : ∀ e : E, ∃ k : ℕ, (∀ i, Nat.Coprime k (orderOf (base i))) ∧
     ∀ i, ConjClasses.mk (φ (Rigidity.RET.conjN N e (gen i))) = ConjClasses.mk (base i ^ k)
 
-/-- **The sorry-free reduction (B1+C algebra).**  From the tame inertia generators, the full
+/-- **The algebraic reduction (B1+C).**  From the tame inertia generators, the full
 geometric-presentation conclusion follows: the sphere hom of the generators is the required
 surjection `pres`, it realizes `φ` as the sphere hom of `base`, and its branch-cycle conjunct is the
 data's `branchCycle` field (`pres (of i) = gᵢ`).  No arithmetic-geometry input — this is exactly the

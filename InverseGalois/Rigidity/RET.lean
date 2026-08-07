@@ -36,8 +36,22 @@ import InverseGalois.Rigidity.RET.Pi1.AbsoluteGaloisQuotient
 import InverseGalois.Rigidity.RET.KummerCover
 import InverseGalois.Rigidity.RET.KummerAbelian
 import InverseGalois.Rigidity.RET.ArtinFixedField
+import InverseGalois.Rigidity.RET.RatFuncGen
 import InverseGalois.Rigidity.RET.RatFuncSubst
+import InverseGalois.Rigidity.RET.InertiaTransport
+import InverseGalois.Rigidity.RET.TamePi1
+import InverseGalois.Rigidity.RET.SubCover
+import InverseGalois.Rigidity.RET.InertiaGen
+import InverseGalois.Rigidity.RET.InertiaSub
+import InverseGalois.Rigidity.RET.Unramified
+import InverseGalois.Rigidity.RET.Twist
+import InverseGalois.Rigidity.RET.KummerInertia
+import InverseGalois.Rigidity.RET.Infinity
+import InverseGalois.Rigidity.RET.Semilinear
+import InverseGalois.Rigidity.RET.SemilinearSub
+import InverseGalois.Rigidity.RET.GeomRET
 import InverseGalois.Rigidity.RET.SerreCovers
+import InverseGalois.Rigidity.RET.DihedralCover
 import InverseGalois.Rigidity.RET.ExistenceLowRank
 import InverseGalois.Rigidity.RET.Descent
 import InverseGalois.Rigidity.RET.Specialization
@@ -132,7 +146,8 @@ Output: the `of_regular_family` bundle for `H = φ.range`.  In between:
   from the étale and topological fundamental-group theory under `RET.Pi1`.  For particular groups it
   is already established outright, with no geometry: for the finite abelian groups by Kummer theory
   (`RET.KummerCover`, `RET.KummerAbelian`), for `Aₙ` and `Sₙ` by Serre's explicit family
-  (`RET.SerreCovers`), and for *every* group when there are at most two branch points
+  (`RET.SerreCovers`), for the dihedral groups by the substitutions `u ↦ ζ^i·u` and `u ↦ u⁻¹`
+  (`RET.DihedralCover`), and for *every* group when there are at most two branch points
   (`RET.ExistenceLowRank`, where the sphere group is cyclic).  `RET.ArtinFixedField` is the general
   engine for such by-hand constructions: a faithful action on a field with invariants `ℚ̄(T)`.
 * **L4 — Model translation** to the `of_regular_family` bundle.  Algebra: primitive element +
@@ -157,20 +172,22 @@ ABSENT (must be built or axiomatized): concrete π₁ of any space; covers↔π�
 cover-existence; deck transformations, degree; ℂP¹ / Riemann sphere / punctured sphere as a
 space/manifold; Seifert–van Kampen; **GAGA / analytification**; algebraic curves, degree /
 ramification of morphisms, covers↔function-field-extensions; Riemann–Roch, genus.  The GAGA + curves
-gap is why L3 is still open — carried as an honest `sorry` on its own statement, never as an axiom;
-everything else above the cut is provable.
+gap is the whole mathematical content of L3, which is therefore stated on its own
+(`Rigidity.RET.geomRET`) and never as an axiom; everything else above the cut is elementary by
+comparison.
 
 ## Currently landed
 
 * **L1** — `InverseGalois.Rigidity.RET.Presentation`: the sphere presentation group `Γ_r`, the
   tuple ↔ surjection dictionary (`sphereHom`, `sphereHom_surjective_iff`), the
   conjugation ↔ inner-automorphism correspondence (`sphereHom_conj`), and the freeness
-  `sphereGroup_mulEquiv_free` (`Γ_r ≅ FreeGroup (Fin (r-1))`).  **Complete and sorry-free.**
+  `sphereGroup_mulEquiv_free` (`Γ_r ≅ FreeGroup (Fin (r-1))`).  **Complete.**
 * **Honest conclusion** — `InverseGalois.Rigidity.RET.Statement`: `IsRegularInverseGalois G`, the
   recognizable target of step (A) and source of step (B) above, with `of_mulEquiv`.
 * **Unconditional pieces of L3** — the finite abelian groups (`RET.KummerAbelian`), `Aₙ` and `Sₙ`
-  for `n ≥ 3` (`RET.SerreCovers`), and every branch datum with at most two points
+  for `n ≥ 3` (`RET.SerreCovers`), the dihedral groups (`RET.DihedralCover`), and every branch datum
+  with at most two points
   (`RET.ExistenceLowRank`), together with the closure of the predicate under quotients of the group
   and under isomorphism of the base field (`RET.Pi1.AbsoluteGaloisQuotient`) and Artin's theorem as
-  a supplier of covers from invariant theory (`RET.ArtinFixedField`).  All sorry-free.
+  a supplier of covers from invariant theory (`RET.ArtinFixedField`).
 -/

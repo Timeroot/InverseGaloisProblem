@@ -1,31 +1,30 @@
-# Roadmap: closing `branchCycleDescentData_nonempty`
+# Roadmap: closing `branchCycleDescentData_nonempty` — **done**
 
-*The last mathematical gap of the rigidity method (besides the RET covers axiom).*
+*This was the last mathematical gap of the rigidity method below the Riemann Existence Theorem
+itself.  It is now closed; the file is kept as the map of what was built and why.*
 
-## 0. Where we are
-
-The rigidity criterion is fully assembled **except** one `sorry`:
+## 0. Where we are (2026-08-06)
 
 ```
 branchCycleDescentData_nonempty
-    (cert : RigidityCertificate G) (cover : IsGeometricGaloisCover G) :
-    Nonempty (BranchCycleDescentData G cert)
+    (cert : RigidityCertificate G) : Nonempty (BranchCycleDescentData G cert)
 ```
 
-Everything *downstream* of it is proven, axiom-free:
+is a **theorem**, and so is everything downstream of it:
 
 * `ArithmeticDescentData.ofBranchCycle` derives the pre-digested descent datum (its `inner`
-  and `surjφ` are **theorems** via `sphereHom_inner_equiv_of_rigid` / `sphereHom_surjective_iff`);
+  and `surjφ` are theorems via `sphereHom_inner_equiv_of_rigid` / `sphereHom_surjective_iff`);
 * `branch_cycle_descent` runs the centerless extension lemma `extend_surjective_of_inner`;
 * `RigidityCertificate.isRegularInverseGalois` composes RET + descent.
 
-So the entire remaining mathematical content of the rigidity method is: **from a geometric Galois
-cover `L/ℚ̄(T)` with group `G` and a rigidity certificate, produce the branch-cycle descent datum**
-— the arithmetic fundamental-group tower, the geometric presentation, the Galois-twist data, and the
-field translation back to a regular `ℚ(T)`-extension.
+The whole chain rests on exactly one open statement, `Rigidity.RET.geomRET` (`RET/GeomRET.lean`) —
+the Riemann Existence Theorem **over `ℚ̄`**, which is transcendental (GAGA) and is carried as a
+`sorry` on its own statement, never as an axiom.  See `WALL.md`.
 
-This file lays out how to build it, split into four modules that can be attacked independently once
-the shared interface (`GeomTower`, `BranchTwist`) is frozen.
+The content that has been built is: **from a geometric Galois cover `L/ℚ̄(T)` with group `G` and a
+rigidity certificate, produce the branch-cycle descent datum** — the arithmetic fundamental-group
+tower, the geometric presentation, the Galois-twist data, and the field translation back to a
+regular `ℚ(T)`-extension.  The sections below record the mathematics and the module split.
 
 ## 1. The mathematics (Fried–Völklein branch-cycle descent)
 
@@ -105,10 +104,11 @@ producers. This is done in `Descent.Data` / `Descent.Tower`.
 Rigidity/RET/Descent/Data.lean            -- FROZEN INTERFACE (no sorry):
                                           --   ArithmeticDescentData, BranchCycleDescentData,
                                           --   ofBranchCycle, GeomTower, BranchTwist
-Rigidity/RET/Descent/Tower.lean           -- Module A+B: geomTower_nonempty (sorry) + targets
-Rigidity/RET/Descent/BranchCycle.lean     -- Module C:   branchCycleTwist   (sorry) + targets
-Rigidity/RET/Descent/FieldTranslation.lean-- Module D:   descentTranslation (sorry) + targets
-Rigidity/RET/Descent.lean                 -- assembly (no sorry of its own):
+Rigidity/RET/Descent/Tower.lean           -- Module A+B: geomTower_nonempty
+Rigidity/RET/Descent/BranchCycles.lean    -- geomRET ⇒ branch cycles of the arithmetic compositum
+Rigidity/RET/Descent/BranchCycle.lean     -- Module C:   branchCycleTwist
+Rigidity/RET/Descent/FieldTranslation.lean-- Module D:   descentTranslation
+Rigidity/RET/Descent.lean                 -- assembly:
                                           --   branchCycleDescentData_nonempty
                                           --     := geomTower_nonempty ▸ branchCycleTwist ▸ descentTranslation
                                           --   + arithmeticDescentData_nonempty, branch_cycle_descent,
@@ -120,24 +120,23 @@ surjPres, base, base_mem, φ_pres`. `BranchTwist tw` is Module C's output (`twis
 φ_conj_pres`). The assembly glues `GeomTower` (A+B) + `BranchTwist` (C) + `descentTranslation` (D)
 into `BranchCycleDescentData`.
 
-**Interface freeze rule for parallel work:** subagents may fill `sorry` bodies and add *private*
-helper lemmas in their own module file, but must NOT change the public signatures in `Data.lean`
-or the producer signatures (`geomTower_nonempty`, `branchCycleTwist`, `descentTranslation`). This
-keeps the four modules independently buildable.
+**Interface freeze rule:** the public signatures in `Data.lean` and the producer signatures
+(`geomTower_nonempty`, `branchCycleTwist`, `descentTranslation`) are stable; helper lemmas live in
+the module files.  This keeps the four modules independently buildable.
 
-## 4. Attack order
+## 4. How it was built (the order that worked)
 
-1. **Now:** freeze `Data.lean`, stub the three producers, wire the assembly, verify green build
-   (3 sorries: `geomTower_nonempty`, `branchCycleTwist`, `descentTranslation`, plus the pre-existing
-   RET dev-flip).
-2. **Module D** first (most self-contained genuine field theory): fixed field + regularity.
-3. **Module A** field tower + exact sequence + `Gal(k̄(T)/k(T)) ≃ Γ`.
-4. **Module C** rationality→invariance glue immediately; then build the tame-inertia + cyclotomic
-   input (ramification of `ℚ̄(T)/ℚ̄` at branch points, `Γ`-action on tame inertia via `χ`).
-5. **Module B** last and deepest: build the geometric `π₁` presentation `SphereGroup r ↠ N` — the
-   algebraic RET at the `N` level (same tower as `riemann_existence_cover`). To be *built*, not left
-   as an axiom, per the governing directive; expect this to bottom out in an étale/topological `π₁`
-   comparison for `ℙ¹ ∖ S` over `ℚ̄` that itself needs its own multi-file development.
+1. Freeze `Data.lean`, stub the three producers, wire the assembly.
+2. **Module D** first (most self-contained field theory): fixed field + regularity
+   (`FieldTranslation.lean`).
+3. **Module A** field tower + exact sequence + `Gal(k̄(T)/k(T)) ≃ Γ` (`Tower.lean`,
+   `ModelDescent.lean`, `RegularityInf.lean`).
+4. **Module C** rationality→class-invariance glue (`BranchCycle.lean`), the deep tame-inertia +
+   cyclotomic input being consolidated into the tower's `branchCycle` field.
+5. **Module B**, the deepest: the geometric presentation `SphereGroup r ↠ N`.  This bottomed out in
+   the tame-inertia development (`InertiaSub.lean`, `TameCharacter`, `AKLB`), the arithmetic
+   compositum (`CompositumBranch.lean`, `ModelEnlarge.lean`), and finally
+   `BranchCycles.lean` + `classInertiaPlaceData_of_branchCycles` (`Tower.lean`), which packages the
+   branch cycles produced by `geomRET` as the tame inertia model of an arithmetic `ℚ(T)`-model.
 
-Steps 2–4 are candidates for dedicated subagents in isolated worktrees once the enriched `GeomTower`
-interface is frozen (step 1 of the enrichment). Step 5 is its own project.
+What is left below all of this is the transcendental statement `geomRET` alone (`WALL.md`).

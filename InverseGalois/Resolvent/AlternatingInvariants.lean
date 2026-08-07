@@ -24,7 +24,7 @@ This is the `Aₙ`-analogue of the fundamental theorem of symmetric polynomials
 Both are now proved: `vander_dvd_of_isAlternating` (the `δ`-divisibility of an alternating
 polynomial) is established from pairwise-coprimality of the linear factors `Xⱼ − Xᵢ`
 (`isRelPrime_X_sub_X_of_ne`, `X_sub_X_dvd_of_isAlternating`) via
-`Finset.prod_dvd_of_isRelPrime`.  This file is `sorry`-free.
+`Finset.prod_dvd_of_isRelPrime`.
 -/
 
 open Polynomial MvPolynomial

@@ -10,6 +10,10 @@ import InverseGalois.Rigidity.RET.Descent.ModelDescent
 import InverseGalois.Rigidity.RET.Descent.GeometricPi1
 import InverseGalois.Rigidity.RET.Descent.TameRamification
 import InverseGalois.Rigidity.RET.Descent.ArithAKLB
+import InverseGalois.Rigidity.RET.Descent.Matching
+import InverseGalois.Rigidity.RET.Descent.ModelEnlarge
+import InverseGalois.Rigidity.RET.Descent.GeomArithBridge
+import InverseGalois.Rigidity.RET.Descent.BranchCycles
 
 /-!
 # The arithmetic fundamental-group tower and its geometric presentation
@@ -105,6 +109,28 @@ structure ArithmeticModel (G : Type) [Group G] [Finite G] where
 attribute [instance] ArithmeticModel.groupE ArithmeticModel.normalN ArithmeticModel.fieldΩ
   ArithmeticModel.algΩ ArithmeticModel.findimΩ ArithmeticModel.galΩ ArithmeticModel.charZeroΩ
   ArithmeticModel.towerΩ
+
+namespace ArithmeticModel
+
+/-- **The model with the monodromy conjugated.**  Nothing in the arithmetic tower other than `φ`
+mentions the identification of the deck group with `G` — the only property of `φ` the tower records
+is surjectivity — so composing `φ` with an inner automorphism of `G` again gives an arithmetic
+model, on the very same field tower. -/
+def conj {G : Type} [Group G] [Finite G] (m : ArithmeticModel G) (c : G) : ArithmeticModel G :=
+  { m with
+    φ := (MulAut.conj c).toMonoidHom.comp m.φ
+    surjφ := (MulAut.conj c).surjective.comp m.surjφ }
+
+@[simp] theorem conj_φ {G : Type} [Group G] [Finite G] (m : ArithmeticModel G) (c : G) (n : m.N) :
+    (m.conj c).φ n = c * m.φ n * c⁻¹ := rfl
+
+@[simp] theorem conj_N {G : Type} [Group G] [Finite G] (m : ArithmeticModel G) (c : G) :
+    (m.conj c).N = m.N := rfl
+
+@[simp] theorem conj_galE {G : Type} [Group G] [Finite G] (m : ArithmeticModel G) (c : G) :
+    (m.conj c).galE = m.galE := rfl
+
+end ArithmeticModel
 
 /-- The field-theoretic form of the geometric model, before the group-theoretic packaging into an
 `ArithmeticModel`: the descended finite Galois extension `Ω/ℚ(T)` together with
@@ -586,17 +612,174 @@ def InertiaPlaceData.toInertiaRootData {G : Type} [Group G] [Finite G]
     apply m.galE.injective
     simpa [map_mul, map_inv, map_pow] using hmain
 
+/-- **The branch-cycle data of a descended cover, before matching against a tuple.**
+
+`InertiaPlaceData` with the requirement `φ (gᵢ) = baseᵢ` — which names the certificate's chosen
+tuple — replaced by the requirement that `φ (gᵢ)` merely lie in the prescribed class `Cᵢ`, which
+names only the certificate's classes.  This is the form in which the geometry produces the data: a
+branch cycle is a generator of the tame inertia group at a place over the `i`-th branch point, and
+its class is the `i`-th prescribed class, but which of the conjugate tuples one lands on is not
+under the geometry's control.  Rigidity supplies the missing conjugation
+(`inertiaPlaceData_exists`). -/
+structure ClassInertiaPlaceData {G : Type} [Group G] [Finite G] (cert : RigidityCertificate G)
+    (m : ArithmeticModel G) where
+  /-- the tame inertia generators: one element of `N` per branch point. -/
+  gen : Fin cert.r → m.N
+  /-- the inertia generators generate `N` (the cover is connected). -/
+  gen_top : Subgroup.closure (Set.range gen) = ⊤
+  /-- the product-one sphere relation `g₀ ⋯ g_{r-1} = 1`. -/
+  gen_prod : (List.ofFn gen).prod = 1
+  /-- the image of the `i`-th branch cycle lies in the `i`-th prescribed class. -/
+  φ_class : ∀ i, ConjClasses.mk (m.φ (gen i)) = cert.C i
+  /-- the modulus through which the tame inertia is read. -/
+  rootOrder : ℕ
+  /-- the modulus is nonzero. -/
+  [rootOrder_neZero : NeZero rootOrder]
+  /-- each inertia generator's order (the ramification index at that branch point) divides the
+  modulus. -/
+  order_dvd : ∀ i, orderOf (gen i) ∣ rootOrder
+  /-- a primitive `rootOrder`-th root of unity in `Ω`. -/
+  root : m.Ω
+  /-- `root` is a primitive `rootOrder`-th root of unity. -/
+  isRoot : IsPrimitiveRoot root rootOrder
+  /-- the `i`-th branch point, a `ℚ`-rational point of the line. -/
+  branch : Fin cert.r → ℚ
+  /-- the place of the integral model above the `i`-th branch point. -/
+  place : Fin cert.r → Ideal (ArithAKLB.Aring m.Ω)
+  /-- the places are prime ideals. -/
+  place_prime : ∀ i, (place i).IsPrime
+  /-- `place i` lies over the rational place `X - branchᵢ` of the line. -/
+  place_liesOver : ∀ i, (place i).LiesOver (Ideal.span {X - C (branch i)})
+  /-- the branch cycle `gᵢ` is an inertia element at `place i`. -/
+  gen_inertia : ∀ i, m.galE (gen i : m.E) ∈ (place i).inertia (m.Ω ≃ₐ[RatFunc ℚ] m.Ω)
+
+attribute [instance] ClassInertiaPlaceData.rootOrder_neZero
+
+set_option maxHeartbeats 4000000 in
+/-- **The branch cycles of a compositum, packaged as the branch-cycle data of an arithmetic model.**
+
+Given branch cycles `g` of an arithmetic compositum `Ωbar = Ω · ℚ̄(T)` over rational branch points,
+whose images in the deck group lie in the certificate's prescribed classes, the arithmetic model is
+the enlarged `ℚ(T)`-form `Ω(ζ_N)` of the compositum, where `N = |Gal(Ωbar/ℚ̄(T))|`.  Adjoining the
+`N`-th roots of unity keeps `Ω(ζ_N)/ℚ(T)` Galois, keeps `Ωbar` its compositum with `ℚ̄(T)`, and
+supplies the primitive root of unity through which the tame inertia is read; `N` is divisible by
+every ramification index because each branch cycle lies in `Gal(Ωbar/ℚ̄(T))`.
+
+The geometric Galois group `N = Gal(Ω(ζ_N)/k₀(T))` is identified with `Gal(Ωbar/ℚ̄(T))` by the
+regularity comparison `compareOfEmbedding`; the branch cycles transport along that isomorphism, and
+the places of the integral model transport along the base-change `bridge` of integral models. -/
+theorem classInertiaPlaceData_of_branchCycles {G : Type} [Group G] [Finite G]
+    (cert : RigidityCertificate G) (branch : Fin cert.r → ℚ) (c : GeomCompositum G)
+    (g : Fin cert.r → c.cover.deck)
+    (hgcyc : c.cover.IsBranchCycleGenSystem (fun i => algebraMap ℚ GeomAKLB.k (branch i)) g)
+    (hclass : ∀ i, ConjClasses.mk (c.toG (g i)) = cert.C i) :
+    ∃ m : ArithmeticModel G, Nonempty (ClassInertiaPlaceData cert m) := by
+  classical
+  -- The modulus through which tame inertia will be read.
+  obtain ⟨N, hN⟩ : ∃ N : ℕ, N = Nat.card (c.Ωbar ≃ₐ[RatFunc GeomAKLB.k] c.Ωbar) := ⟨_, rfl⟩
+  haveI : NeZero N := ⟨by rw [hN]; exact Nat.card_pos.ne'⟩
+  -- The enlarged model `Ω(ζ_N)`, still a `ℚ(T)`-form of the compositum.
+  haveI : FiniteDimensional (RatFunc ℚ) ↥(c.enlarged N) := c.enlarged_finiteDimensional N
+  haveI : Normal (RatFunc ℚ) ↥(c.enlarged N) := c.enlarged_normal N
+  haveI : IsGalois (RatFunc ℚ) ↥(c.enlarged N) := ⟨⟩
+  haveI : CharZero ↥(c.enlarged N) := charZero_of_injective_algebraMap
+    (algebraMap (RatFunc ℚ) ↥(c.enlarged N)).injective
+  haveI : IsScalarTower ℚ (RatFunc ℚ) ↥(c.enlarged N) := c.enlarged_isScalarTower N
+  -- Pin the scalar tower `ℚ(T) → ℚ̄(T) → Ωbar`.
+  letI smulRS : SMul (RatFunc ℚ) (RatFunc (AlgebraicClosure ℚ)) :=
+    (instAlgRatFuncClosure).toSMul
+  haveI towerQbar : IsScalarTower (RatFunc ℚ) (RatFunc (AlgebraicClosure ℚ)) c.Ωbar :=
+    IsScalarTower.of_algebraMap_eq c.algebraMap_Q_eq
+  -- The regularity comparison for the enlarged model.
+  obtain ⟨cmp, hcmp⟩ := compareOfEmbedding (Ω := ↥(c.enlarged N)) (Ombar := c.Ωbar)
+    (IntermediateField.val (c.enlarged N))
+    (sup_eq_top_of_adjoin_eq_top _ (c.enlarged_adjoin_eq_top N))
+  -- The restriction homomorphism `Gal(Ωbar/ℚ̄(T)) → Gal(Ω(ζ_N)/ℚ(T))`.
+  let ρ0 : (↥(c.enlarged N) ≃ₐ[↥(constFieldBase ↥(c.enlarged N))] ↥(c.enlarged N)) →*
+      (↥(c.enlarged N) ≃ₐ[RatFunc ℚ] ↥(c.enlarged N)) :=
+    { toFun := fun σ => σ.restrictScalars (RatFunc ℚ)
+      map_one' := rfl
+      map_mul' := fun _ _ => rfl }
+  let ρ : (c.Ωbar ≃ₐ[RatFunc GeomAKLB.k] c.Ωbar) →*
+      (↥(c.enlarged N) ≃ₐ[RatFunc ℚ] ↥(c.enlarged N)) := ρ0.comp cmp.symm.toMonoidHom
+  have hres : ∀ (τ : c.Ωbar ≃ₐ[RatFunc GeomAKLB.k] c.Ωbar) (x : ↥(c.enlarged N)),
+      algebraMap ↥(c.enlarged N) c.Ωbar (ρ τ x) = τ (algebraMap ↥(c.enlarged N) c.Ωbar x) := by
+    intro τ x
+    have h := hcmp (cmp.symm τ) x
+    rw [cmp.apply_symm_apply] at h
+    exact h.symm
+  -- The tame inertia generators.
+  let Φ : (c.Ωbar ≃ₐ[RatFunc GeomAKLB.k] c.Ωbar) ≃*
+      ↥((constFieldBase ↥(c.enlarged N)).fixingSubgroup) :=
+    cmp.symm.trans (IntermediateField.fixingSubgroupEquiv (constFieldBase ↥(c.enlarged N))).symm
+  -- The compositum's integral model, and the bridge to the arithmetic one.
+  letI algPolyBar : Algebra (Polynomial GeomAKLB.k) c.Ωbar := c.cover.algPoly
+  haveI towerPolyBar : IsScalarTower (Polynomial GeomAKLB.k) (RatFunc GeomAKLB.k) c.Ωbar :=
+    c.cover.tower
+  have hc : IsCompositumOver ↥(c.enlarged N) c.Ωbar := fun q =>
+    (c.algebraMap_Q_eq q).symm.trans
+      (IsScalarTower.algebraMap_apply (RatFunc ℚ) ↥(c.enlarged N) c.Ωbar q)
+  -- The places over the branch points.
+  choose Q hQmax hQover hQin using fun i => hgcyc.inertia i
+  refine ⟨GeomModel.toArithmeticModel
+    { Ω := ↥(c.enlarged N)
+      geomBase := constFieldBase ↥(c.enlarged N)
+      normalGeomBase := constFieldBase_normal _
+      galGeom := c.toG.comp cmp.toMonoidHom
+      surjGalGeom := c.surjective_toG.comp cmp.surjective
+      const_le_geomBase := const_le_constFieldBase _
+      geomBase_le_constFieldBase := le_rfl }, ⟨{
+    gen := fun i => Φ (g i)
+    gen_top := ?_
+    gen_prod := ?_
+    φ_class := ?_
+    rootOrder := N
+    order_dvd := ?_
+    root := (c.exists_primitiveRoot_enlarged N).choose
+    isRoot := (c.exists_primitiveRoot_enlarged N).choose_spec
+    branch := branch
+    place := fun i => (Q i).comap (bridge hc)
+    place_prime := ?_
+    place_liesOver := ?_
+    gen_inertia := ?_ }⟩⟩
+  · exact closure_range_mulEquiv Φ g hgcyc.top
+  · exact prod_ofFn_mulEquiv Φ g hgcyc.prod
+  · -- the classes
+    intro i
+    show ConjClasses.mk (c.toG (cmp (cmp.symm (g i)))) = cert.C i
+    rw [cmp.apply_symm_apply]
+    exact hclass i
+  · intro i
+    refine orderOf_dvd_mulEquiv Φ (g i) N ?_
+    rw [hN]
+    exact orderOf_dvd_natCard _
+  · -- the places are prime
+    intro i
+    haveI := (hQmax i).isPrime
+    exact Ideal.IsPrime.comap _
+  · -- the places lie over the rational branch points
+    intro i
+    haveI := hQover i
+    exact liesOver_comap_bridge hc (branch i) (Q i)
+  · -- the inertia statement
+    intro i
+    show ρ (g i) ∈ _
+    refine mem_inertia_bridge hc ρ hres (Q i) ?_
+    rw [hQin i]
+    exact Subgroup.mem_zpowers _
+
 /-- **The Riemann Existence Theorem, at the branch-cycle interface.**
 
-For the certificate's rigid generating product-one tuple `base`, there is an arithmetic model `m`
-whose geometric fundamental group `N = Gal(Ω/k₀(T))` carries the branch cycles of a cover branched
-over `r` **rational** points: inertia generators at `r` places of the integral model lying over the
-rational places `X - branchᵢ`, generating `N` with the product-one relation and realizing
-`φ (gᵢ) = baseᵢ`, with a primitive `M`-th root of unity in `Ω` for `M` divisible by every
+For a certificate's classes, there is an arithmetic model `m` whose geometric fundamental group
+`N = Gal(Ω/k₀(T))` carries the branch cycles of a cover branched over `r` **rational** points:
+inertia generators at `r` places of the integral model lying over the rational places
+`X - branchᵢ`, generating `N` with the product-one relation and with `φ (gᵢ)` in the `i`-th
+prescribed class, together with a primitive `M`-th root of unity in `Ω` for `M` divisible by every
 ramification index.
 
 This is the Riemann Existence Theorem, stated at the interface the branch-cycle descent consumes.
-Its content is genuinely geometric, in two layers:
+Its content is genuinely geometric, in two layers, both supplied by `Rigidity.RET.geomRET` through
+`geomCompositum_branchCycles_exists`:
 
 * **Existence** — a generating product-one tuple `base` (equivalently a finite quotient of the tame
   fundamental group of `ℙ¹_{ℚ̄} ∖ {r points}`, which is the profinite completion of the sphere group
@@ -619,10 +802,41 @@ exist for an arbitrary surjection `N ↠ G` — is shown by the `ℤ/2` example 
 the right cover.  See Grothendieck, *SGA 1*, Exp. XIII (tame fundamental group of the punctured
 line); Völklein, *Groups as Galois Groups*, Thm 2.13 and §4; Fried–Völklein; Serre, *Topics in
 Galois Theory*, §6–8. -/
+theorem classInertiaPlaceData_exists {G : Type} [Group G] [Finite G]
+    (cert : RigidityCertificate G) :
+    ∃ m : ArithmeticModel G, Nonempty (ClassInertiaPlaceData cert m) := by
+  obtain ⟨branch, c, g, _, hgcyc, hclass⟩ := geomCompositum_branchCycles_exists cert
+  exact classInertiaPlaceData_of_branchCycles cert branch c g hgcyc hclass
+
+/-- **The branch cycles can be matched with the certificate's tuple on the nose.**
+
+Geometry produces branch cycles whose images lie in the prescribed classes
+(`classInertiaPlaceData_exists`); the certificate's tuple `base` is one particular rigid tuple.
+Both are rigid tuples, so rigidity relates them by a single simultaneous conjugation
+(`Rigidity.exists_conj_comp_eq`), and that conjugation is absorbed into the geometric monodromy
+(`ArithmeticModel.conj`) — the field tower, the places, the root of unity and the inertia statements
+are untouched.  Whichever tuple the certificate names is therefore reached, from the one model the
+geometry has to supply. -/
 theorem inertiaPlaceData_exists {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
     (base : Fin cert.r → G) (hbase : base ∈ rigidTuples cert.C) :
-    ∃ m : ArithmeticModel G, Nonempty (InertiaPlaceData m base hbase) :=
-  sorry
+    ∃ m : ArithmeticModel G, Nonempty (InertiaPlaceData m base hbase) := by
+  obtain ⟨m, ⟨d⟩⟩ := classInertiaPlaceData_exists cert
+  obtain ⟨c, hc⟩ :=
+    Rigidity.exists_conj_comp_eq hbase m.surjφ d.gen_top d.gen_prod d.φ_class
+  haveI := d.rootOrder_neZero
+  exact ⟨m.conj c, ⟨{ gen := d.gen
+                      gen_top := d.gen_top
+                      gen_prod := d.gen_prod
+                      φ_gen := hc
+                      rootOrder := d.rootOrder
+                      order_dvd := d.order_dvd
+                      root := d.root
+                      isRoot := d.isRoot
+                      branch := d.branch
+                      place := d.place
+                      place_prime := d.place_prime
+                      place_liesOver := d.place_liesOver
+                      gen_inertia := d.gen_inertia }⟩⟩
 
 end InertiaPlaces
 

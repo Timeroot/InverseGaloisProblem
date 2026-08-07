@@ -11,8 +11,8 @@ import InverseGalois.Rigidity.StructureConstant
 /-!
 # Descent data structures — the frozen interface of the branch-cycle descent
 
-This file holds the **data structures** of the branch-cycle rationality descent, with **no
-`sorry`**.  It is the frozen interface that the four descent modules (`Descent.Tower`,
+This file holds the **data structures** of the branch-cycle rationality descent, and nothing
+else.  It is the frozen interface that the four descent modules (`Descent.Tower`,
 `Descent.BranchCycle`, `Descent.FieldTranslation`, and the assembly in `Descent`) share.  Splitting
 these definitions out of `Descent.lean` breaks the import cycle: the modules that *produce*
 inhabitants import this file, and `Descent.lean` imports the modules.

@@ -39,7 +39,7 @@ Sub-targets to formalize here:
 
 ## Main result
 
-* `descentTranslation` — the `toRegular` field of the descent datum.  **Proven sorry-free.**
+* `descentTranslation` — the `toRegular` field of the descent datum.
 -/
 
 open Polynomial

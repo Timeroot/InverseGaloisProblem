@@ -56,6 +56,26 @@ theorem lift_sphereRel_eq_one (g : Fin r → G) (hg : (List.ofFn g).prod = 1) :
     funext i; simp only [Function.comp_apply, FreeGroup.lift_apply_of]
   rw [hfun]; exact hg
 
+/-- **The generators of `Γ_r` multiply to `1`** — the defining relation, read inside the presented
+group. -/
+theorem prod_sphereGroup_of (r : ℕ) :
+    (List.ofFn (fun i : Fin r => PresentedGroup.of i : Fin r → SphereGroup r)).prod = 1 := by
+  have hmem : (List.ofFn (fun i : Fin r => FreeGroup.of i)).prod ∈ sphereRel r := rfl
+  have h1 : (List.ofFn (fun i : Fin r => PresentedGroup.of i : Fin r → SphereGroup r)).prod
+      = PresentedGroup.mk (sphereRel r) (List.ofFn (fun i : Fin r => FreeGroup.of i)).prod := by
+    rw [map_list_prod, List.map_ofFn]
+    rfl
+  rw [h1]
+  exact PresentedGroup.one_of_mem hmem
+
+/-- The images of the generators of `Γ_r` under any hom form a product-one tuple. -/
+theorem prod_apply_sphereGroup_of (φ : SphereGroup r →* G) :
+    (List.ofFn fun i => φ (PresentedGroup.of i)).prod = 1 := by
+  rw [show (List.ofFn fun i => φ (PresentedGroup.of i))
+      = (List.ofFn (fun i : Fin r => PresentedGroup.of i : Fin r → SphereGroup r)).map φ by
+    rw [List.map_ofFn]; rfl]
+  rw [← map_list_prod, prod_sphereGroup_of, map_one]
+
 /-- The hom `Γ_r →* G` induced by a generating-agnostic product-one tuple `g`. -/
 def sphereHom (g : Fin r → G) (hg : (List.ofFn g).prod = 1) : SphereGroup r →* G :=
   PresentedGroup.toGroup (lift_sphereRel_eq_one g hg)
@@ -80,6 +100,15 @@ theorem sphereHom_surjective_iff (g : Fin r → G) (hg : (List.ofFn g).prod = 1)
     · rintro ⟨i, rfl⟩
       exact ⟨PresentedGroup.of i, ⟨i, rfl⟩, sphereHom_of g hg i⟩
   rw [← MonoidHom.range_eq_top, hrange]
+
+/-- **A surjection out of `Γ_r` is a generating product-one tuple.**  The images of the generators
+generate the target, and (`prod_apply_sphereGroup_of`) they multiply to `1`. -/
+theorem closure_range_apply_sphereGroup_of (φ : SphereGroup r →* G) (hφ : Function.Surjective φ) :
+    Subgroup.closure (Set.range fun i => φ (PresentedGroup.of i)) = ⊤ := by
+  have heq : sphereHom (fun i => φ (PresentedGroup.of i)) (prod_apply_sphereGroup_of φ) = φ :=
+    PresentedGroup.ext fun i => sphereHom_of _ _ i
+  rw [← sphereHom_surjective_iff _ (prod_apply_sphereGroup_of φ), heq]
+  exact hφ
 
 /-- Conjugating a product-one tuple coordinatewise keeps it product-one: the conjugate of the
 product is the product of the conjugates, and `c · 1 · c⁻¹ = 1`. -/

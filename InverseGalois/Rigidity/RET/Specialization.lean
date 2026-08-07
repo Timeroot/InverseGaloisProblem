@@ -34,7 +34,7 @@ This file makes that split explicit:
 
 * `IsRegularInverseGalois.isInverseGalois` — the headline theorem — is **fully proven** from the
   bundle `exists_regular_family` by feeding it to `of_regular_family` and transporting along the
-  group isomorphism.  No `sorry` of its own.
+  group isomorphism.
 * `exists_regular_family` — the **model translation** (task L4): from the abstract extension produce
   a monic `ℚ[T][X]` family with the full `of_regular_family` hypothesis bundle.  This is where the
   work lives; it is decomposed below.
@@ -73,7 +73,7 @@ development (`InverseGalois/Hilbert/AlternatingFamily*`,
 
 * `IsRegularInverseGalois.isInverseGalois` — **step (B)**: a regular `ℚ(T)` realization of `G`
   yields an inverse-Galois realization over `ℚ`.  Proven from `exists_regular_family`.
-* `exists_regular_family` — the model translation (currently `sorry`; decomposition above).
+* `exists_regular_family` — the model translation (decomposition above).
 -/
 
 open Polynomial

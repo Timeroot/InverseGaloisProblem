@@ -22,16 +22,16 @@ Transported through `φ`, the Galois twist of the monodromy tuple `base` therefo
 `(C₁^{χ(σ)}, …, C_r^{χ(σ)})` (up to the branch permutation `π`, which for a *single* rational class
 tuple is absorbed).
 
-## Genuine vs. geometric
+## Arithmetic vs. geometric
 
 * **Geometric** (tame inertia + the cyclotomic action): that the twist tuple lies in the classes
-  `Cᵢ^{χ(σ)}` at all.  This is *no longer a `sorry` here*: it is carried by the tower's `branchCycle`
-  field (`GeomTower.branchCycle`), which `geomInertiaModel_exists` (`Descent.Tower`) populates.  In
-  this file it is a **direct projection** (`branchTwistTuple_cyclo := tw.branchCycle e`).  The
-  arithmetic-geometry wall — Fried's branch-cycle argument (tame inertia `≅ Ẑ(1)` with `Γ` acting
-  through `χ`) — now lives *once*, inside `geomInertiaModel_exists`, consolidated with the N-level
-  Riemann Existence presentation; the two are faces of a single geometric object.
-* **Genuine** (the class-invariance): once the twist lands in `Cᵢ^{χ(σ)}`, **rationality**
+  `Cᵢ^{χ(σ)}` at all.  It is carried by the tower's `branchCycle` field (`GeomTower.branchCycle`),
+  which `geomInertiaModel_exists` (`Descent.Tower`) populates.  In this file it is a **direct
+  projection** (`branchTwistTuple_cyclo := tw.branchCycle e`).  Fried's branch-cycle argument (tame
+  inertia `≅ Ẑ(1)` with `Γ` acting through `χ`) lives *once*, inside `geomInertiaModel_exists`,
+  consolidated with the N-level Riemann Existence presentation; the two are faces of a single
+  geometric object.
+* **Arithmetic** (the class-invariance): once the twist lands in `Cᵢ^{χ(σ)}`, **rationality**
   (`cert.rational`, i.e. `IsRationalClass (cert.C i)`) forces `Cᵢ^{χ(σ)} = Cᵢ`, so the twist lands
   in `rigidTuples cert.C`.  This step is elementary group theory, proved here — it is exactly the
   reason rationality is in the certificate.
@@ -45,11 +45,11 @@ only job is to land the twist in the rational classes and match the sphere hom.
 The branch-cycle datum is packaged into `BranchCycleInput tw`: for each `e : E` a twist tuple that is
 product-one, lands in the *cyclotomically twisted* classes `Cᵢ^{χ(σ)}` (encoded per index, the branch
 permutation already absorbed into the tuple), and realizes `φ ∘ conjN e ∘ pres` as its sphere hom.
-This whole file is now **sorry-free**: the concrete inhabitant `branchCycleInput` is assembled from
-the explicit twist tuple `branchTwistTuple`, its elementary `prod_one`/`φ_conj_pres` proofs, and the
-branch-cycle formula `branchTwistTuple_cyclo`, which projects the tower's `branchCycle` field.
+The concrete inhabitant `branchCycleInput` is assembled from the explicit twist tuple
+`branchTwistTuple`, its elementary `prod_one`/`φ_conj_pres` proofs, and the branch-cycle formula
+`branchTwistTuple_cyclo`, which projects the tower's `branchCycle` field.
 
-Both `branchCycleInput` and `BranchCycleInput.toBranchTwist` are **proved sorry-free**:
+Both `branchCycleInput` and `BranchCycleInput.toBranchTwist` are proved outright:
 
 * **class-invariance** (`twist_mem`, first component): rationality (`cert.rational`) collapses each
   cyclotomic power `Cᵢ^{χ(σ)}` back to `Cᵢ`.  *This is the entire reason `rational` is a certificate
@@ -63,9 +63,9 @@ Both `branchCycleInput` and `BranchCycleInput.toBranchTwist` are **proved sorry-
 ## Main results
 
 * `BranchCycleInput` — the branch-cycle datum (twist tuple + its cyclotomic-class membership).
-* `BranchCycleInput.toBranchTwist` — the sorry-free class-invariance + generation glue.
-* `branchCycleTwist` — the branch-cycle twist data over a `GeomTower`.  Fully sorry-free: its
-  cyclotomic-class content is a projection of the tower's `branchCycle` field.
+* `BranchCycleInput.toBranchTwist` — the class-invariance + generation glue.
+* `branchCycleTwist` — the branch-cycle twist data over a `GeomTower`; its cyclotomic-class content
+  is a projection of the tower's `branchCycle` field.
 -/
 
 open Polynomial
@@ -113,7 +113,7 @@ tuple `twist e` that
 
 The `cyclo` field is the tame-inertia + cyclotomic-character content (`Γ` acts on tame inertia
 `≅ Ẑ(1)` through `χ`); over a `GeomTower` it is supplied by the tower's `branchCycle` field.  Given
-an inhabitant, `toBranchTwist` derives the full `BranchTwist` sorry-free. -/
+an inhabitant, `toBranchTwist` derives the full `BranchTwist`. -/
 structure BranchCycleInput {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
     (tw : GeomTower G cert) where
   /-- the Galois twist of the monodromy by `e : E`, as a tuple. -/
@@ -129,7 +129,7 @@ structure BranchCycleInput {G : Type} [Group G] [Finite G] {cert : RigidityCerti
     tw.φ (Rigidity.RET.conjN tw.N e (tw.pres x)) =
       Rigidity.RET.sphereHom (twist e) (prod_one e) x
 
-/-- **The genuine, sorry-free glue of Module C.**  From the abstracted branch-cycle datum, the twist
+/-- **The glue of Module C.**  From the abstracted branch-cycle datum, the twist
 tuples land in the certificate's *rational* classes and the full `BranchTwist` follows.  Three
 components:
 
@@ -252,7 +252,7 @@ theorem branchTwistTuple_cyclo {G : Type} [Group G] [Finite G] {cert : RigidityC
 fields (`twist`, `prod_one`, `φ_conj_pres`) are the elementary group theory proved above
 (`branchTwistTuple`, `branchTwistTuple_prod_one`, `branchTwistTuple_φ_conj_pres`); the fourth,
 `cyclo`, is the tame branch-cycle formula `branchTwistTuple_cyclo`, which projects the tower's
-`branchCycle` field.  Fully sorry-free.  See `DESCENT_ROADMAP.md` §1.3. -/
+`branchCycle` field.  See `DESCENT_ROADMAP.md` §1.3. -/
 noncomputable def branchCycleInput {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
     (tw : GeomTower G cert) : BranchCycleInput tw where
   twist := branchTwistTuple tw
@@ -266,8 +266,8 @@ monodromy `φ ∘ conj e` is its sphere hom.
 
 The tame branch-cycle content (the Galois twist landing in the classes `Cᵢ^{χ(σ)}`) is supplied by
 `branchCycleInput` via the tower's `branchCycle` field; the class-invariance `Cᵢ^{χ(σ)} = Cᵢ` and the
-derivation of generation are the genuine, sorry-free `BranchCycleInput.toBranchTwist` glue.  Fully
-sorry-free.  See `DESCENT_ROADMAP.md` §1.3 and the module docstring. -/
+derivation of generation are the `BranchCycleInput.toBranchTwist` glue.  See
+`DESCENT_ROADMAP.md` §1.3 and the module docstring. -/
 noncomputable def branchCycleTwist {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
     (tw : GeomTower G cert) : BranchTwist tw :=
   (branchCycleInput tw).toBranchTwist
