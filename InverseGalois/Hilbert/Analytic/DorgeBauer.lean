@@ -132,23 +132,33 @@ lemma monic_int_factor_of_monic_int_dvd {f : Polynomial ℤ} {g : Polynomial ℚ
       intro c hc
       obtain ⟨z, hz⟩ := IsIntegrallyClosed.isIntegral_iff.mp (h_intg c hc)
       use z
-      aesop
+      simp_all
     choose! z hz using h_alg_int
     refine ⟨∑ c ∈ g.support, z c • Polynomial.X ^ c, ?_, ?_⟩
     · rw [Polynomial.Monic, Polynomial.leadingCoeff, Polynomial.natDegree_eq_of_degree_eq_some]
       any_goals exact g.natDegree
       · simp_all [Polynomial.Monic.def, Polynomial.leadingCoeff, Polynomial.natDegree]
-        exact_mod_cast hz _ (by aesop) |>.symm.trans hg_monic
+        exact_mod_cast hz _ (by simp_all) |>.symm.trans hg_monic
       · rw [Polynomial.degree_eq_of_le_of_coeff_ne_zero] <;> norm_num
         · exact le_trans (Polynomial.degree_sum_le _ _)
             (Finset.sup_le fun x hx ↦ Polynomial.degree_C_mul_X_pow_le _ _ |> le_trans
               <| WithBot.coe_le_coe.mpr <| Polynomial.le_natDegree_of_mem_supp _ hx)
         · refine ⟨hg_monic.ne_zero, ?_⟩
           specialize hz (Polynomial.natDegree g)
-          aesop
+          simp_all only [mem_support_iff, ne_eq, coeff_natDegree, Monic.leadingCoeff, one_ne_zero, not_false_eq_true,
+            forall_const]
+          apply Aesop.BuiltinRules.not_intro
+          intro a
+          simp_all only [Int.cast_zero, one_ne_zero]
     · ext
-      aesop
-  aesop
+      simp_all only [mem_support_iff, ne_eq, zsmul_eq_mul, coeff_map, finset_sum_coeff, coeff_intCast_mul, Int.cast_eq,
+        coeff_X_pow, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq, ite_not, eq_intCast, Int.cast_ite, Int.cast_zero]
+      split
+      next h => simp_all only
+      next h =>
+        apply hz
+        simp_all only [not_false_eq_true]
+  tauto
 
 /-!
 ## Section 4: Root Bounds (Cauchy's Bound)
@@ -222,7 +232,7 @@ lemma factor_coeff_bound {g : Polynomial ℂ} (hg : g.Monic) (k : ℕ) (hk : g.n
       have := Polynomial.Splits.natDegree_eq_card_roots (show g.Splits from ?_)
       · refine ⟨this ▸ hk, ?_⟩
         nth_rw 1 [← Polynomial.prod_multiset_X_sub_C_of_monic_of_roots_card_eq hg]
-        aesop
+        omega
       · exact IsAlgClosed.splits g
     obtain ⟨l, hl₁, hl₂⟩ := h_factor
     refine ⟨l.toList, ?_, ?_⟩
@@ -235,7 +245,7 @@ lemma factor_coeff_bound {g : Polynomial ℂ} (hg : g.Monic) (k : ℕ) (hk : g.n
     have h_coeff : g.coeff j =
         Polynomial.coeff
           (Multiset.prod (Multiset.map (fun α ↦ Polynomial.X - Polynomial.C α) (Multiset.ofList l))) j := by
-      aesop
+      simp_all
     rw [h_coeff, Multiset.prod_X_sub_C_coeff]
     · simp [hl.1, Multiset.esymm]
     · simpa [hl.1] using hj.le
@@ -265,8 +275,8 @@ lemma factor_coeff_bound {g : Polynomial ℂ} (hg : g.Monic) (k : ℕ) (hk : g.n
     · ext
       simp [hl.1]
     · infer_instance
-    · aesop
-  aesop
+    · intro x x_1 a a_1 a_2; subst hk a_2; simp_all only [IsRoot.def, Multiset.mem_powersetCard, and_imp]
+  simp_all
 
 /-!
 ## Section 6: Finite Polynomial Root Counting
@@ -280,7 +290,7 @@ A nonzero polynomial over ℚ has finitely many rational roots.
 -/
 lemma Polynomial.finite_roots_rat {p : Polynomial ℚ} (hp : p ≠ 0) :
     Set.Finite {x : ℚ | p.IsRoot x} := by
-  exact p.roots.toFinset.finite_toSet.subset fun x hx ↦ by aesop
+  exact p.roots.toFinset.finite_toSet.subset fun x hx ↦ by simp_all
 
 /-
 A nonzero polynomial over ℤ (viewed as a polynomial in one variable) has at most
@@ -292,8 +302,8 @@ lemma int_roots_bounded {p : Polynomial ℤ} (hp : p ≠ 0) :
   · refine Set.Finite.subset
       (p.map (Int.castRingHom ℚ) |> Polynomial.roots |> Multiset.toFinset |> Finset.finite_toSet) ?_
     norm_num [Set.subset_def]
-    exact fun a ha ↦ ⟨by rw [Polynomial.map_eq_zero_iff] <;> aesop (config := {introsTransparency? := some .default}), ha⟩
-  · aesop
+    exact fun a ha ↦ ⟨by rw [Polynomial.map_eq_zero_iff] <;> (first | (intro a_1; subst a_1; simp_all only [ne_eq, not_true_eq_false]) | (intro a₁ a₂ a_1; simp_all only [ne_eq, eq_intCast, Int.cast_inj])), ha⟩
+  · simp
 
 /-
 For a fixed monic polynomial `g ∈ ℤ[X]` of degree `k` and a polynomial
@@ -316,7 +326,13 @@ lemma finite_specializations_for_fixed_factor
     refine ⟨f /ₘ (g.map (algebraMap ℤ ℚ[X])), f %ₘ (g.map (algebraMap ℤ ℚ[X])), ?_, ?_⟩
     · rw [add_comm, Polynomial.modByMonic_add_div f (Polynomial.Monic.map (algebraMap ℤ ℚ[X]) hg_monic)]
     · convert Polynomial.degree_modByMonic_lt f _
-      · rw [Polynomial.degree_map_eq_of_leadingCoeff_ne_zero, Polynomial.degree_eq_natDegree] <;> aesop
+      · rw [Polynomial.degree_map_eq_of_leadingCoeff_ne_zero, Polynomial.degree_eq_natDegree]
+        · simp_all only [ne_eq]
+          apply Aesop.BuiltinRules.not_intro
+          intro a
+          subst a
+          simp_all only [not_monic_zero]
+        · simp_all only [algebraMap_int_eq, Monic.leadingCoeff, eq_intCast, Int.cast_one, ne_eq, one_ne_zero, not_false_eq_true]
       · exact hg_monic.map _
   -- Since `g` does not divide `f` over `ℚ(T)`, the remainder `r` must be nonzero.
   have hr_nonzero : r ≠ 0 := by
@@ -325,7 +341,10 @@ lemma finite_specializations_for_fixed_factor
     rw [irreducible_mul_iff] at hf_irr
     rcases hf_irr with (⟨hg₁, hg₂⟩ | ⟨hg₁, hg₂⟩) <;>
       have := Polynomial.natDegree_eq_zero_of_isUnit hg₂ <;> simp_all
-    rw [Polynomial.natDegree_mul'] <;> aesop
+    rw [Polynomial.natDegree_mul']
+    · simp [hg_monic.natDegree_map, this]
+    · rw [← Polynomial.leadingCoeff_mul, hf_monic.leadingCoeff]
+      exact one_ne_zero
   -- The condition `g(X) ∣ f(t, X)` is equivalent to `r(t, X) = 0`.
   have h_equiv : ∀ t : ℤ, (g.map (Int.castRingHom ℚ)) ∣ (f.map (evalRingHom (t : ℚ))) ↔
       ∀ j < g.natDegree, Polynomial.eval (t : ℚ) (r.coeff j) = 0 := by
@@ -342,12 +361,12 @@ lemma finite_specializations_for_fixed_factor
           rw [sub_eq_zero, mul_comm]
           congr
           ext
-          aesop
+          simp
         refine Polynomial.eq_zero_of_dvd_of_degree_lt h_r_dvd ?_
         refine lt_of_le_of_lt (b := ↑(Polynomial.natDegree r)) ?_ ?_
         · exact le_trans (Polynomial.degree_map_le) (Polynomial.degree_le_natDegree)
         · rw [Polynomial.degree_map_eq_of_leadingCoeff_ne_zero] <;> norm_num [hg_monic]
-          exact_mod_cast Polynomial.natDegree_lt_iff_degree_lt (by aesop) |>.2 hr.2
+          exact_mod_cast Polynomial.natDegree_lt_iff_degree_lt (by trivial) |>.2 hr.2
       simp_all [Polynomial.ext_iff]
     · intro h
       have h_r_zero : (r.map (evalRingHom (t : ℚ))) = 0 := by
@@ -372,7 +391,9 @@ lemma finite_specializations_for_fixed_factor
       |> Set.Finite.image (fun x : ℚ ↦ ⌊x⌋)) ?_
   intro t ht
   specialize h_equiv t
-  aesop
+  refine ⟨(t : ℚ), ?_, Int.floor_intCast t⟩
+  simp only [Finset.mem_coe, Multiset.mem_toFinset, Polynomial.mem_roots', ne_eq]
+  exact ⟨hj_nonzero, h_equiv.mp ht j hj_lt⟩
 
 /-!
 ## Section 7: The Dörge Counting Estimate
@@ -409,7 +430,7 @@ lemma finite_boundedMonicPolys (k : ℕ) (B : ℤ) :
     obtain ⟨c, rfl, hc⟩ := hg
     refine Finset.mem_image.mpr ⟨c, ?_, rfl⟩
     simp [Pi.le_def, abs_le] at *
-    aesop
+    simp_all
   · intro g hg
     refine ⟨fun i ↦ g.coeff i, ?_, ?_⟩ <;> have := hg.2.1 <;> simp_all [← Polynomial.C_mul_X_pow_eq_monomial]
     · conv_lhs => rw [g.as_sum_range_C_mul_X_pow]
@@ -453,7 +474,7 @@ lemma infinite_complement_of_sublinear_ncard {S : Set ℤ} {C : ℝ} {α : ℝ}
       rw [← Set.ncard_union_eq]
       · rw [show S ∩ Set.Icc (-N : ℤ) N ∪ Sᶜ ∩ Set.Icc (-N : ℤ) N = Set.Icc (-N : ℤ) N by
           ext x
-          by_cases hx : x ∈ S <;> aesop]
+          by_cases hx : x ∈ S <;> simp_all]
         norm_num [Set.ncard_eq_toFinset_card']
         ring_nf
         norm_cast
@@ -519,7 +540,7 @@ lemma specialization_at_int_nonzero
     · rw [Polynomial.natDegree_mul'] <;> norm_num [Polynomial.natDegree_sub_eq_left_of_natDegree_lt]
       · rw [Polynomial.natDegree_eq_zero_iff_degree_le_zero.mpr (le_of_eq this)]
         norm_num
-      · exact ⟨Polynomial.X_sub_C_ne_zero _, by aesop⟩
+      · exact ⟨Polynomial.X_sub_C_ne_zero _, by rename_i h; subst h; apply Aesop.BuiltinRules.not_intro; intro a; subst a; simp_all only [isUnit_zero_iff, zero_ne_one]⟩
     · refine absurd this ?_
       erw [Polynomial.degree_X_sub_C]
       norm_num
@@ -603,7 +624,7 @@ lemma int_root_locus_small_sublinear
             rw [← Set.ncard_coe_finset]
             apply Set.ncard_le_ncard
             · intro t ht
-              aesop
+              simp_all
             · exact Finset.finite_toSet _
           exact hQ_finset.trans (le_trans (Multiset.toFinset_card_le _) (Polynomial.card_roots' _))
         convert hQ_roots.trans hQ_natDegree using 2
@@ -631,7 +652,13 @@ lemma int_root_locus_small_sublinear
         refine Set.mem_iUnion₂.mpr ⟨y, Finset.mem_Icc.mpr ⟨?_, ?_⟩, hy₂, ht.2⟩
         · nlinarith [Nat.lt_succ_sqrt N]
         · nlinarith [Nat.lt_succ_sqrt N]
-      · exact Set.Finite.subset (Set.finite_Icc (-N : ℤ) N) fun x hx ↦ by aesop
+      · exact Set.Finite.subset (Set.finite_Icc (-N : ℤ) N) fun x hx ↦ by simp_all only [IsRoot.def, Finset.mem_Icc, Set.mem_iUnion, Set.mem_inter_iff, Set.mem_setOf_eq, Set.mem_Icc, exists_and_left, exists_prop, m, s]
+                                                                          obtain ⟨w, h⟩ := hx
+                                                                          obtain ⟨left, right⟩ := h
+                                                                          obtain ⟨left_1, right⟩ := right
+                                                                          obtain ⟨left_2, right⟩ := right
+                                                                          obtain ⟨left_2, right_1⟩ := left_2
+                                                                          simp_all only [and_self]
     refine le_trans (Nat.cast_le.mpr h_card) ?_
     norm_num [← Real.sqrt_eq_rpow]
     nlinarith only [show (s : ℝ) ≤ Real.sqrt N by exact Real.le_sqrt_of_sq_le <| mod_cast Nat.sqrt_le' N,
@@ -664,7 +691,7 @@ lemma int_root_specialization_abs_le
     intro h
     simp_all [Polynomial.ext_iff]
     specialize h (Polynomial.natDegree P)
-    aesop
+    simp_all
   · exact Polynomial.Monic.map (Int.castRingHom ℂ) (Polynomial.Monic.map (Polynomial.evalRingHom t) hP_monic)
   · exact hy
 
@@ -700,7 +727,7 @@ lemma sublinear_finite_cover {n : ℕ} (S : ℕ → Set ℤ) (T : Fin n → ℕ 
   by_cases hn : n = 0
   · subst hn
     use 1, 0
-    aesop
+    simp_all
   · refine ⟨∑ j, C j,
       Finset.univ.sup' (Finset.univ_nonempty_iff.mpr ⟨⟨0, Nat.pos_of_ne_zero hn⟩⟩) fun j ↦ α j,
       ?_, ?_, ?_, ?_⟩ <;>
@@ -1165,7 +1192,7 @@ lemma graph_integer_points_sublinear_neg
   rw [← Set.ncard_image_of_injective _ neg_injective]
   congr
   ext
-  aesop
+  simp
 
 /-
 **A locus contained in a fixed integer interval is sublinear** (indeed bounded).

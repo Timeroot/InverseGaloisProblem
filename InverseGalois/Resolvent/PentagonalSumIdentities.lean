@@ -32,7 +32,6 @@ open PolyReflect RE
 
 namespace PentagonalSumIdentities
 
-set_option maxHeartbeats 1000000 in
 set_option maxRecDepth 8000 in
 /-- e1 identity: `Σ Pj^2 = 10 e4`  (degree 4). -/
 lemma psSq_esymm1 {L : Type*} [CommRing L] (v0 v1 v2 v3 v4 : L)
@@ -64,7 +63,6 @@ def cNF2 : NF :=
             (nfAdd (nfMul (parseNF cofC2_2) (toNF re_e2_2))
                    (nfMul (parseNF cofC3_2) (toNF re_e3_2)))))
 theorem cNF2_zero : cNF2 = ([] : NF) := by native_decide
-set_option maxHeartbeats 4000000 in
 set_option maxRecDepth 8000 in
 /-- e2 identity (degree 8). -/
 lemma psSq_esymm2 {L : Type*} [CommRing L] (v0 v1 v2 v3 v4 : L)

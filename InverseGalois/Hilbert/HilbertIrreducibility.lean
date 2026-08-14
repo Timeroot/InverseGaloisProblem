@@ -80,7 +80,7 @@ lemma specialize_monic_natDegree (f : Polynomial (Polynomial ℚ))
     (specialize f t).natDegree = f.natDegree := by
       unfold specialize
       rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero]
-      aesop
+      simp_all
 
 /-!
 ### Statement of Hilbert's Irreducibility Theorem
@@ -105,7 +105,13 @@ lemma union_sublinear_ncard {n : ℕ} (S : Fin n → Set ℤ)
     any_goals try infer_instance
     any_goals exact fun i ↦ (S i ∩ Set.Icc (-N : ℤ) N).toFinset
     · ext
-      aesop
+      simp_all only [Set.mem_toFinset, Set.mem_inter_iff, Set.mem_Icc, Set.mem_iUnion, Finset.mem_biUnion, Finset.mem_univ,
+        true_and, exists_and_right]
+      apply Iff.intro
+      · intro a_1
+        simp_all only [and_self]
+      · intro a_1
+        simp_all only [and_self]
     · rw [Set.ncard_eq_toFinset_card']
   · simpa [mul_assoc] using Finset.sum_le_sum fun i (hi : i ∈ Finset.univ) ↦ hS i N hN
 
@@ -138,21 +144,29 @@ lemma irreducible_comp_C_mul_X {L : Type*} [Field L] (q : Polynomial L) {c : L} 
     obtain ⟨a, b, ha, hb, hab⟩ : ∃ a b : L[X], a.degree > 0 ∧ b.degree > 0 ∧ q = a * b := by
       by_cases hq_unit : IsUnit q <;> by_cases hq_zero : q = 0 <;> simp_all [irreducible_iff]
       · rw [Polynomial.isUnit_iff] at hq_unit
-        aesop
+        simp_all only [isUnit_iff_ne_zero, ne_eq]
+        obtain ⟨w, h⟩ := hq_unit
+        obtain ⟨left, right⟩ := h
+        subst right
+        simp_all only [C_comp, isUnit_map_iff, isUnit_iff_ne_zero, ne_eq, not_false_eq_true, not_true_eq_false]
       · rcases hq_reducible with ⟨a, b, rfl, ha, hb⟩
         refine ⟨a, ?_, b, ?_, rfl⟩
         · exact not_le.mp fun ha' ↦ ha <| Polynomial.isUnit_iff_degree_eq_zero.mpr <|
-            le_antisymm ha' <| le_of_not_gt fun ha'' ↦ by aesop
+            le_antisymm ha' <| le_of_not_gt fun ha'' ↦ by simp_all
         · exact not_le.mp fun hb' ↦ hb <| Polynomial.isUnit_iff_degree_eq_zero.mpr <|
-            le_antisymm hb' <| le_of_not_gt fun hb'' ↦ by aesop
+            le_antisymm hb' <| le_of_not_gt fun hb'' ↦ by simp_all
     simp_all [Polynomial.isUnit_iff_degree_eq_zero]
     cases this rfl <;>
-      simp_all [Polynomial.degree_eq_natDegree (show a ≠ 0 from by aesop),
-        Polynomial.degree_eq_natDegree (show b ≠ 0 from by aesop)]
+      simp_all [Polynomial.degree_eq_natDegree (Polynomial.ne_zero_of_degree_gt ha),
+        Polynomial.degree_eq_natDegree (Polynomial.ne_zero_of_degree_gt hb)]
     all_goals
       rw [Polynomial.degree_eq_natDegree
         (ne_of_apply_ne Polynomial.natDegree
-          (by erw [Polynomial.natDegree_comp, Polynomial.natDegree_C_mul_X] <;> aesop))] at *
+          (by
+            erw [Polynomial.natDegree_comp, Polynomial.natDegree_C_mul_X]
+            · simp only [mul_one, Polynomial.natDegree_zero]
+              omega
+            · exact hc))] at *
       simp_all [Polynomial.natDegree_comp, Polynomial.natDegree_mul']
   · constructor
     · intro h
@@ -166,7 +180,7 @@ lemma irreducible_comp_C_mul_X {L : Type*} [Field L] (q : Polynomial L) {c : L} 
           simp_all [Polynomial.natDegree_comp, Polynomial.natDegree_mul']
         all_goals
           rw [Polynomial.eq_C_of_natDegree_eq_zero this] at h ⊢
-          aesop
+          simp_all
       · convert congr_arg (Polynomial.comp · (Polynomial.C c⁻¹ * Polynomial.X)) hab using 1 <;>
           simp [Polynomial.comp_assoc]
         simp [← mul_assoc, ← Polynomial.C_mul, hc]
@@ -191,12 +205,28 @@ lemma monicAssociate_absIrr (f : Polynomial (Polynomial ℚ)) (hf_deg : 2 ≤ f.
       Polynomial.C (fK.leadingCoeff ^ (fK.natDegree - 1)) * fK := by
     convert congr_arg (Polynomial.map φ) (monicAssociate_comp_identity f hf_deg1) using 1
     · rw [Polynomial.leadingCoeff_map_of_leadingCoeff_ne_zero]
-      · aesop
-      · aesop
+      · simp_all only [ge_iff_le, coe_mapRingHom, fK, K, φ, M]
+        ext n n_1 : 2
+        simp_all only [comp_C_mul_X_coeff, coeff_map, coe_mapRingHom, Polynomial.map_mul, Polynomial.map_pow]
+      · simp_all only [ge_iff_le, coe_mapRingHom, ne_eq, Polynomial.map_eq_zero, leadingCoeff_eq_zero, fK, K, φ]
+        apply Aesop.BuiltinRules.not_intro
+        intro a
+        subst a
+        simp_all only [natDegree_zero, nonpos_iff_eq_zero, OfNat.ofNat_ne_zero]
     · simp +zetaDelta
       rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] <;> norm_num
-      · rw [Polynomial.leadingCoeff_map_of_leadingCoeff_ne_zero] <;> aesop
-      · aesop
+      · rw [Polynomial.leadingCoeff_map_of_leadingCoeff_ne_zero]
+        · simp_all only [ge_iff_le, coe_mapRingHom, true_or, fK, K, φ]
+        · simp_all only [ge_iff_le, coe_mapRingHom, ne_eq, Polynomial.map_eq_zero, leadingCoeff_eq_zero, fK, K, φ]
+          apply Aesop.BuiltinRules.not_intro
+          intro a
+          subst a
+          simp_all only [natDegree_zero, nonpos_iff_eq_zero, OfNat.ofNat_ne_zero]
+      · simp_all only [ge_iff_le, fK, K, φ]
+        apply Aesop.BuiltinRules.not_intro
+        intro a
+        subst a
+        simp_all only [natDegree_zero, nonpos_iff_eq_zero, OfNat.ofNat_ne_zero]
   have hM_comp : (M.map Ψ).comp (Polynomial.C (Ψ (fK.leadingCoeff)) * Polynomial.X) =
       Polynomial.C (Ψ (fK.leadingCoeff ^ (fK.natDegree - 1))) * (fK.map Ψ) := by
     convert congr_arg (Polynomial.map Ψ) hM_comp_base using 1 <;> norm_num [Polynomial.map_comp]
@@ -212,10 +242,15 @@ lemma monicAssociate_absIrr (f : Polynomial (Polynomial ℚ)) (hf_deg : 2 ≤ f.
   have hM_irred : Irreducible (Polynomial.C (Ψ (fK.leadingCoeff ^ (fK.natDegree - 1))) * (fK.map Ψ)) := by
     rw [irreducible_mul_iff]
     refine Or.inr ⟨hM_irred_base, Polynomial.isUnit_C.mpr ?_⟩
-    aesop
+    simp_all only [ge_iff_le, map_pow, gt_iff_lt, isUnit_iff_ne_zero, ne_eq, pow_eq_zero_iff', FaithfulSMul.algebraMap_eq_zero_iff, leadingCoeff_eq_zero, not_and, natDegree_zero, zero_tsub, not_true_eq_false, not_false_eq_true, implies_true, fK, K, φ, M, Ψ]
   convert irreducible_comp_C_mul_X (Polynomial.map (algebraMap K[X] (FractionRing K[X])) M)
     (show algebraMap K[X] (FractionRing K[X]) fK.leadingCoeff ≠ 0 from ?_) |>.1 ?_ using 1
-  all_goals aesop
+
+  · simp_all only [ge_iff_le, map_pow, gt_iff_lt, ne_eq, FaithfulSMul.algebraMap_eq_zero_iff, leadingCoeff_eq_zero, fK, K, φ, M, Ψ]
+    apply Aesop.BuiltinRules.not_intro
+    intro a
+    simp_all only [not_irreducible_zero]
+  · simp_all only [ge_iff_le, map_pow, gt_iff_lt, fK, K, φ, M, Ψ]
 
 theorem hilbert_irreducibility_monic (f : Polynomial (Polynomial ℚ))
     (hf : Irreducible f) (hf_monic : f.Monic) (hf_deg : 2 ≤ f.natDegree)
@@ -229,7 +264,7 @@ theorem hilbert_irreducibility_monic (f : Polynomial (Polynomial ℚ))
     constructor
     · intro h
       have := Polynomial.natDegree_eq_zero_of_isUnit h
-      rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] at this <;> aesop
+      rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] at this <;> simp_all
     · intro a b hab
       contrapose! ht
       simp_all [Polynomial.isUnit_iff_degree_eq_zero]
@@ -246,18 +281,39 @@ theorem hilbert_irreducibility_monic (f : Polynomial (Polynomial ℚ))
           simp_all [Polynomial.coeff_map]
         · exact Nat.pos_of_ne_zero ht.2
       refine ⟨Polynomial.C (a.leadingCoeff) ⁻¹ * a, ?_, ?_, ?_, ?_⟩
-      · rw [Polynomial.natDegree_C_mul] <;> aesop
+      · rw [Polynomial.natDegree_C_mul]
+        · simp_all only
+        · simp_all only [ne_eq, inv_eq_zero, leadingCoeff_eq_zero]
+          obtain ⟨left, right⟩ := ht
+          apply Aesop.BuiltinRules.not_intro
+          intro a_1
+          subst a_1
+          simp_all only [zero_mul, natDegree_zero, nonpos_iff_eq_zero, one_ne_zero]
       · rw [Polynomial.natDegree_C_mul] <;> norm_num [ha_deg, hb_deg]
         · have := congr_arg Polynomial.natDegree hab
           rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] at this <;> norm_num at this ⊢
-          · rw [this, Polynomial.natDegree_mul'] <;> aesop
-          · aesop
-        · aesop
+          · rw [this, Polynomial.natDegree_mul']
+            · omega
+            · have ha0 : a ≠ 0 := fun h ↦ by simp [h] at ha_deg
+              have hb0 : b ≠ 0 := fun h ↦ by simp [h] at hb_deg
+              exact mul_ne_zero (Polynomial.leadingCoeff_ne_zero.mpr ha0)
+                (Polynomial.leadingCoeff_ne_zero.mpr hb0)
+          · simp_all
+        · obtain ⟨left, right⟩ := ht
+          apply Aesop.BuiltinRules.not_intro
+          intro a_1
+          subst a_1
+          simp_all only [zero_mul, natDegree_zero, nonpos_iff_eq_zero, one_ne_zero]
       · rw [Polynomial.Monic, Polynomial.leadingCoeff_mul, Polynomial.leadingCoeff_C, inv_mul_cancel₀]
-        aesop
+        simp_all only [ne_eq, leadingCoeff_eq_zero]
+        obtain ⟨left, right⟩ := ht
+        apply Aesop.BuiltinRules.not_intro
+        intro a_1
+        subst a_1
+        simp_all only [zero_mul, natDegree_zero, nonpos_iff_eq_zero, one_ne_zero]
       · refine ⟨Polynomial.C a.leadingCoeff * b, ?_⟩
         ring_nf
-        rw [mul_assoc, ← Polynomial.C_mul, inv_mul_cancel₀ (by aesop), Polynomial.C_1, mul_one]
+        rw [mul_assoc, ← Polynomial.C_mul, inv_mul_cancel₀ (by simp_all only [ne_eq, leadingCoeff_eq_zero]; obtain ⟨left, right⟩ := ht; apply Aesop.BuiltinRules.not_intro; intro a_1; subst a_1; simp_all only [zero_mul, natDegree_zero, nonpos_iff_eq_zero, one_ne_zero]), Polynomial.C_1, mul_one]
   · have h_union_sublinear : ∃ (C : ℝ) (α : ℝ), 0 < C ∧ 0 ≤ α ∧ α < 1 ∧ ∀ N : ℕ, 0 < N →
       (Set.ncard ((⋃ k ∈ Finset.Ico 1 f.natDegree, {t : ℤ | ∃ g : Polynomial ℚ,
           g.natDegree = k ∧ g.Monic ∧ g ∣ specialize f t}) ∩
@@ -273,7 +329,13 @@ theorem hilbert_irreducibility_monic (f : Polynomial (Polynomial ℚ))
           refine ⟨∑ k ∈ Finset.Ico 1 f.natDegree, C k, sSup (Finset.image α (Finset.Ico 1 f.natDegree)), ?_, ?_, ?_, ?_⟩
           · exact Finset.sum_pos hC (Finset.nonempty_Ico.mpr hf_deg)
           · apply Real.sSup_nonneg
-            aesop
+            intro x a
+            simp_all only [Finset.mem_Ico, and_imp, Finset.coe_image, Finset.coe_Ico, Set.mem_image, Set.mem_Ico]
+            obtain ⟨w, h_1⟩ := a
+            obtain ⟨left, right⟩ := h_1
+            obtain ⟨left, right_1⟩ := left
+            subst right
+            simp_all only
           · rcases Finset.eq_empty_or_nonempty (Finset.image α (Finset.Ico 1 f.natDegree)) with h | ⟨x, hx⟩ <;> simp_all
             -- Since the image of α over the finite set {1, ..., f.natDegree - 1} is finite, its supremum is attained.
             obtain ⟨k, hk⟩ : ∃ k ∈ Finset.Ico 1 f.natDegree, ∀ j ∈ Finset.Ico 1 f.natDegree, α j ≤ α k := by
@@ -318,15 +380,19 @@ lemma hit_degree_one (f : Polynomial (Polynomial ℚ))
     refine ⟨f.coeff 1, f.coeff 0, ?_, ?_⟩
     · nth_rw 1 [Polynomial.eq_X_add_C_of_natDegree_le_one (le_of_eq hf_deg)]
     · rw [← hf_deg, Polynomial.coeff_natDegree]
-      aesop
+      simp_all only [ne_eq, leadingCoeff_eq_zero]
+      apply Aesop.BuiltinRules.not_intro
+      intro a
+      subst a
+      simp_all only [not_irreducible_zero]
   -- The set {t : a(t) = 0} is finite (a is a nonzero polynomial, has finitely many roots).
   have h_finite_roots : Set.Finite {t : ℤ | a.eval (t : ℚ) = 0} :=
-    Set.Finite.subset (a.roots.toFinset.finite_toSet.preimage Int.cast_injective.injOn) fun x hx ↦ by aesop
+    Set.Finite.subset (a.roots.toFinset.finite_toSet.preimage Int.cast_injective.injOn) fun x hx ↦ by simp_all
   refine Set.Infinite.mono ?_ (h_finite_roots.infinite_compl)
   intro t ht
   simp_all [specialize]
   convert Polynomial.irreducible_of_degree_eq_one _
-  rw [Polynomial.degree_add_C] <;> rw [Polynomial.degree_C_mul_X] <;> aesop
+  rw [Polynomial.degree_add_C] <;> rw [Polynomial.degree_C_mul_X] <;> trivial
 
 /-- Multiplication by a constant unit in `ℚ[T]` preserves irreducibility after every
 integer specialization. -/
@@ -342,7 +408,11 @@ lemma irreducible_specialize_of_C_mul {f : Polynomial (Polynomial ℚ)}
   · rw [irreducible_mul_iff]
     refine Or.inr ⟨h, Polynomial.isUnit_C.mpr ?_⟩
     rw [Polynomial.isUnit_iff] at *
-    aesop
+    simp_all only [isUnit_iff_ne_zero, ne_eq]
+    obtain ⟨w, h_1⟩ := hc
+    obtain ⟨left, right⟩ := h_1
+    subst right
+    simp_all only [eval_C, not_false_eq_true]
 
 /-- **Hilbert's irreducibility theorem for integer specializations.**
 
@@ -369,14 +439,18 @@ theorem hilbert_irreducibility_theorem (f : Polynomial (Polynomial ℚ))
       have hf_deg1 : f.natDegree ≥ 1 := by linarith
       have h_finite_monomial : Set.Finite {t : ℤ | Polynomial.eval (t : ℚ) f.leadingCoeff = 0} := by
         apply leadingCoeff_roots_finite
-        aesop
+        simp_all only [ge_iff_le, ne_eq, leadingCoeff_eq_zero]
+        apply Aesop.BuiltinRules.not_intro
+        intro a
+        subst a
+        simp_all only [not_irreducible_zero]
       -- By monicAssociate_specialize_iff, for any $t$ not in the finite set, the specialize of $f$ at $t$ is irreducible if and only if the specialize of $monicAssociate f$ at $t$ is irreducible.
       have h_equiv : {t : ℤ | Irreducible (specialize f t)} ⊇
           {t : ℤ | Irreducible (specialize (monicAssociate f) t)} \
             {t : ℤ | Polynomial.eval (t : ℚ) f.leadingCoeff = 0} := by
         intro t ht
         refine (monicAssociate_specialize_iff f hf_deg1 t ?_).mp ht.left
-        aesop
+        simp_all
       have h_inf_monomial : Set.Infinite {t : ℤ | Irreducible (specialize (monicAssociate f) t)} := by
         apply hilbert_irreducibility_monic
         · exact monicAssociate_irreducible f hf h_lt
@@ -438,7 +512,10 @@ lemma irreducible_iff_not_in_reducibleLocus (f : Polynomial (Polynomial ℚ))
             fun h ↦ by
               have h1 := Polynomial.natDegree_eq_zero_of_isUnit h
               have h2 := congr_arg Polynomial.natDegree hq
-              rw [Polynomial.natDegree_mul'] at h2 <;> aesop⟩
+              rw [Polynomial.natDegree_mul'] at h2
+              · omega
+              · rw [hg₃, one_mul, Ne, Polynomial.leadingCoeff_eq_zero]
+                exact h.ne_zero⟩
         · obtain ⟨g, hg⟩ : ∃ g : Polynomial ℚ, g ∣ specialize f t ∧ 1 ≤ g.natDegree ∧ g.natDegree < f.natDegree := by
             by_cases h_unit : IsUnit (specialize f t) ∨ specialize f t = 0
             · cases h_unit <;> simp_all [Polynomial.natDegree_eq_zero_of_isUnit]
@@ -460,24 +537,56 @@ lemma irreducible_iff_not_in_reducibleLocus (f : Polynomial (Polynomial ℚ))
                       hb.1.symm, hb.2.1, hb.2.2⟩
                   refine ⟨g, h, hg, hh, ?_, ?_, ?_⟩
                   · rw [← hgh.1, Polynomial.natDegree_mul']
-                    aesop
+                    rw [← Polynomial.leadingCoeff_mul, hgh.1, Ne,
+                      Polynomial.leadingCoeff_eq_zero]
+                    exact fun hz ↦ h_unit (Or.inr hz)
                   · exact Nat.pos_of_ne_zero fun con ↦
                       hgh.2.1 <| Polynomial.isUnit_iff_degree_eq_zero.mpr <|
-                        by rw [Polynomial.degree_eq_natDegree] <;> aesop
+                        by
+                          rw [Polynomial.degree_eq_natDegree]
+                          · exact_mod_cast con
+                          · rintro rfl
+                            exact h_unit (Or.inr (by simpa using hgh.1.symm))
                   · exact Nat.pos_of_ne_zero fun con ↦
                       hgh.2.2 <| Polynomial.isUnit_iff_degree_eq_zero.mpr <|
-                        by rw [Polynomial.degree_eq_natDegree] <;> aesop
+                        by
+                          rw [Polynomial.degree_eq_natDegree]
+                          · exact_mod_cast con
+                          · rintro rfl
+                            exact h_unit (Or.inr (by simpa using hgh.1.symm))
                 grind
-              aesop
+              exact ⟨g, hg.1, hg.2.1, ht_deg ▸ hg.2.2⟩
           refine ⟨Polynomial.C g.leadingCoeff⁻¹ * g, ?_, ?_, ?_, ?_⟩
-          · rw [Polynomial.natDegree_C_mul] <;> aesop
-          · rw [Polynomial.natDegree_C_mul] <;> aesop
+          · rw [Polynomial.natDegree_C_mul]
+            · simp_all only
+            · simp_all only [ne_eq, inv_eq_zero, leadingCoeff_eq_zero]
+              obtain ⟨left, right⟩ := hg
+              obtain ⟨left_1, right⟩ := right
+              apply Aesop.BuiltinRules.not_intro
+              intro a
+              subst a
+              simp_all only [zero_dvd_iff, natDegree_zero, nonpos_iff_eq_zero, one_ne_zero]
+          · rw [Polynomial.natDegree_C_mul]
+            · simp_all only
+            · simp_all only [ne_eq, inv_eq_zero, leadingCoeff_eq_zero]
+              obtain ⟨left, right⟩ := hg
+              obtain ⟨left_1, right⟩ := right
+              apply Aesop.BuiltinRules.not_intro
+              intro a
+              subst a
+              simp_all only [zero_dvd_iff, natDegree_zero, nonpos_iff_eq_zero, one_ne_zero]
           · rw [Polynomial.Monic, Polynomial.leadingCoeff_mul,
               Polynomial.leadingCoeff_C, inv_mul_cancel₀]
             refine Polynomial.leadingCoeff_ne_zero.mpr ?_
-            aesop
+            simp_all only [ne_eq]
+            obtain ⟨left, right⟩ := hg
+            obtain ⟨left_1, right⟩ := right
+            apply Aesop.BuiltinRules.not_intro
+            intro a
+            subst a
+            simp_all only [zero_dvd_iff, natDegree_zero, nonpos_iff_eq_zero, one_ne_zero]
           · refine dvd_trans ?_ hg.1
             refine ⟨Polynomial.C g.leadingCoeff, ?_⟩
-            rw [mul_right_comm, ← Polynomial.C_mul, inv_mul_cancel₀ (by aesop), Polynomial.C_1, one_mul]
+            rw [mul_right_comm, ← Polynomial.C_mul, inv_mul_cancel₀ (by simp_all only [ne_eq, leadingCoeff_eq_zero]; obtain ⟨left, right⟩ := hg; obtain ⟨left_1, right⟩ := right; apply Aesop.BuiltinRules.not_intro; intro a; subst a; simp_all only [zero_dvd_iff, natDegree_zero, nonpos_iff_eq_zero, one_ne_zero]), Polynomial.C_1, one_mul]
 
 end

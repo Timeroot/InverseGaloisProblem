@@ -234,13 +234,13 @@ variable {k : Type*} [Field k]
 
 /-- **Distinct linear polynomials are independent modulo `N`-th powers in `k(T)`.**
 
-If a product `∏ (T - cᵢ)^{eᵢ}` over distinct points `cᵢ`, with all exponents below `N`, is an
-`N`-th power in the rational function field, then every exponent vanishes: comparing the
-multiplicity of the root `c_j` on both sides of the cleared-denominator identity shows `N ∣ e_j`. -/
-theorem eq_zero_of_prod_linear_isPow {ι : Type} [Fintype ι] {N : ℕ} [NeZero N] {c : ι → k}
-    (hc : Function.Injective c) (e : ι → ℕ) (heN : ∀ i, e i < N)
+If a product `∏ (T - cᵢ)^{eᵢ}` over distinct points `cᵢ` is an `N`-th power in the rational
+function field, then `N` divides every exponent: comparing the multiplicity of the root `c_j` on
+both sides of the cleared-denominator identity shows `N ∣ e_j`. -/
+theorem dvd_of_prod_linear_isPow {ι : Type} [Fintype ι] {N : ℕ} [NeZero N] {c : ι → k}
+    (hc : Function.Injective c) (e : ι → ℕ)
     (h : ∃ f : RatFunc k, ∏ i, (RatFunc.X - RatFunc.C (c i)) ^ e i = f ^ N) :
-    ∀ i, e i = 0 := by
+    ∀ i, N ∣ e i := by
   classical
   obtain ⟨f, hf⟩ := h
   intro j
@@ -279,9 +279,16 @@ theorem eq_zero_of_prod_linear_isPow {ι : Type} [Fintype ι] {N : ℕ} [NeZero 
   rw [rootMultiplicity_mul (mul_ne_zero hPne (pow_ne_zero N (RatFunc.denom_ne_zero f))), hPm,
     rootMultiplicity_pow (RatFunc.denom_ne_zero f), rootMultiplicity_pow
       (RatFunc.num_ne_zero hfne)] at hmain
-  refine Nat.eq_zero_of_dvd_of_lt ?_ (heN j)
   rw [Nat.eq_sub_of_add_eq hmain]
   exact Nat.dvd_sub (dvd_mul_right N _) (dvd_mul_right N _)
+
+/-- **Distinct linear polynomials are independent modulo `N`-th powers in `k(T)`**, in the form
+used by Kummer duality: exponents below `N` whose product is an `N`-th power all vanish. -/
+theorem eq_zero_of_prod_linear_isPow {ι : Type} [Fintype ι] {N : ℕ} [NeZero N] {c : ι → k}
+    (hc : Function.Injective c) (e : ι → ℕ) (heN : ∀ i, e i < N)
+    (h : ∃ f : RatFunc k, ∏ i, (RatFunc.X - RatFunc.C (c i)) ^ e i = f ^ N) :
+    ∀ i, e i = 0 :=
+  fun i => Nat.eq_zero_of_dvd_of_lt (dvd_of_prod_linear_isPow hc e h i) (heN i)
 
 end Independence
 

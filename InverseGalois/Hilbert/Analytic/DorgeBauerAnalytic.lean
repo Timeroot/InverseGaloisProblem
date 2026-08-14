@@ -343,7 +343,7 @@ lemma complex_branch_at_simple_root (P : Polynomial (Polynomial ℤ)) (z₀ w₀
           convert hmid using 1
           norm_num [Polynomial.derivative_eval]
         constructor
-        · exact fun z w hzw ↦ mul_left_cancel₀ hsimple <| by aesop
+        · exact fun z w hzw ↦ mul_left_cancel₀ hsimple <| by simp_all
         · refine fun z ↦ ⟨z / (Polynomial.eval w₀ (Polynomial.derivative
             (Polynomial.map (evalIntPolyComplex z₀) P))), ?_⟩
           rw [hL, mul_div_cancel₀ _ hsimple]
@@ -352,7 +352,7 @@ lemma complex_branch_at_simple_root (P : Polynomial (Polynomial ℤ)) (z₀ w₀
     · exact h_implicit.hasFDerivAt
     · exact h_implicit.contDiffAt_implicitFunction
     · convert h_implicit.eventually_implicitFunction_apply_eq.self_of_nhds using 1
-      aesop
+      simp
     · exact h_implicit.apply_implicitFunction
   grind
 
@@ -417,7 +417,7 @@ lemma complex_branch_root_of_holo_extension
       have hy' : (T₀ : ℝ) ≤ y := by linarith [abs_lt.mp hy]
       convert congr_arg ((↑) : ℝ → ℂ) (hroot y hy') using 1
       convert evalIntPolyComplex_ofReal P y (g y) using 1
-      aesop
+      simp_all only [Φ]
   have h_id : ∀ z ∈ Metric.ball (x : ℂ) (x / 2), Φ z = 0 := by
     intro z hz
     have h_acc : ∃ᶠ y in nhdsWithin (x : ℂ) { (x : ℂ) }ᶜ, Φ y = 0 := by
@@ -580,7 +580,7 @@ lemma real_branch_local_holomorphic_continuation_agrees
           rw [← smul_eq_mul, ← ContinuousLinearMap.map_smul]
           norm_num [hDfd]
         rw [hkey]
-        aesop
+        simp_all
     · decide +revert
   refine ⟨h_implicit.implicitFunction, ?_, ?_, ?_, ?_⟩
   · exact h_implicit.contDiffAt_implicitFunction
@@ -597,7 +597,7 @@ lemma real_branch_local_holomorphic_continuation_agrees
       simpa [evalIntPolyComplex_ofReal] using congr_arg ((↑) : ℝ → ℂ) hx
     have hTend : Filter.Tendsto (fun x : ℝ ↦ ((x : ℂ), (g x : ℂ))) (nhds x₀) (nhds (x₀, w₀)) :=
       Filter.Tendsto.prodMk_nhds (Complex.continuous_ofReal.continuousAt)
-        (Complex.continuous_ofReal.continuousAt.comp hg.continuousAt) |> fun h ↦ h.trans (by aesop)
+        (Complex.continuous_ofReal.continuousAt.comp hg.continuousAt) |> fun h ↦ h.trans (by simp_all)
     filter_upwards [hTend.eventually hEqImpl, hEqRoot] with x hx₁ hx₂ using hx₁ hx₂
   · convert h_implicit.apply_implicitFunction using 1
     ext

@@ -124,7 +124,7 @@ lemma gal_map_discElem {n : ℕ} (f : K[X])
     σ (discElem (fun i => (v i : f.SplittingField))) =
     discElem (fun i => (v (π i) : f.SplittingField)) := by
   unfold discElem
-  aesop
+  simp_all
 
 /-
 If discElem = ±d for d ∈ K, then σ fixes discElem.
@@ -182,7 +182,7 @@ theorem exists_gal_embeds_alternating
     all_goals norm_num [Function.Injective, Equiv.Perm.ext_iff]
     · intro σ τ i
       have h_eq : σ (τ (v i : f.SplittingField)) = v (g (σ * τ) i) := hg₁ (σ * τ) i
-      exact v.injective (Subtype.ext <| by aesop)
+      exact v.injective (Subtype.ext <| by simp_all)
     · intro σ τ h_eq
       ext x
       obtain ⟨i, hi⟩ := v.surjective ⟨x, by assumption⟩
@@ -204,7 +204,7 @@ theorem card_gal_dvd_half_factorial_of_disc_sq
   have h_gal_le_alt : (Nat.card f.Gal) ∣ (Fintype.card (alternatingGroup (Fin n))) := by
     obtain ⟨g', hg'⟩ := exists_gal_embeds_alternating f hf_ne v h_sq h_ne
     have := Subgroup.card_dvd_of_injective g' hg'
-    aesop
+    simp_all
   rcases n with (_ | _ | n) <;> simp_all
   have := Subgroup.card_mul_index (alternatingGroup (Fin (n + 2)))
   simp_all [Fintype.card_perm]
@@ -270,20 +270,20 @@ theorem two_dvd_card_gal_of_nonreal_root
           exact fun x y hx hy z hz w hw => ⟨z * w, by simp [hz, hw]⟩
       have h_top : Algebra.adjoin ℚ (f.rootSet f.SplittingField) = ⊤ := by
         grind only [SplittingField.adjoin_rootSet]
-      aesop
+      simp_all
     choose σ hσ using h_conj
     refine ⟨{ toFun := σ, map_zero' := ?_, map_one' := ?_, map_add' := ?_,
                 map_mul' := ?_, commutes' := ?_ }, hσ⟩ <;> simp_all
     · apply ι.injective
-      aesop
+      simp_all
     · intro x y
       apply ι.injective
-      aesop
+      simp_all
     · apply ι.injective
-      aesop
+      simp_all
     · intro x y
       apply ι.injective
-      aesop
+      simp_all
     · intro r
       have := hσ r
       simp_all [Complex.ext_iff]
@@ -429,10 +429,15 @@ lemma card_gal_le_20_of_resolvent_root_core
     have h_card_roots : Fintype.card (f.rootSet f.SplittingField) = f.natDegree := by
       grind only [Polynomial.card_rootSet_eq_natDegree, SplittingField.splits, Irreducible.separable]
     rw [h_card_roots, hf, Polynomial.natDegree_add_C,
-      Polynomial.natDegree_add_eq_left_of_natDegree_lt] <;> aesop)
+      Polynomial.natDegree_add_eq_left_of_natDegree_lt] <;> simp_all)
   obtain ⟨σ₀, hσ₀⟩ : ∃ σ₀ : Equiv.Perm (Fin 5),
       algebraMap K f.SplittingField y₀ = pentagonalSum (fun i => (v (σ₀ i) : f.SplittingField)) ^ 2 := by
-    have := sexticResolvent_roots_are_pentagonalSums p q f hf v (algebraMap K f.SplittingField y₀) ?_ <;> aesop
+    have := sexticResolvent_roots_are_pentagonalSums p q f hf v (algebraMap K f.SplittingField y₀) ?_
+    · subst hf
+      simp_all only [ne_eq, IsRoot.def]
+    · subst hf
+      simp_all only [ne_eq, IsRoot.def, eval₂_at_apply, map_eq_zero]
+      exact hy₀
   have h_image : ∀ τ : f.Gal, ∃ π : Equiv.Perm (Fin 5),
       (∀ i, τ (v i : f.SplittingField) = v (π i)) ∧ IsAffineLinearMod5 (σ₀⁻¹ * π * σ₀) := by
     intro τ
@@ -463,7 +468,9 @@ lemma card_gal_le_20_of_resolvent_root_core
     · exact Finset.finite_toSet _
     · exact Set.range_subset_iff.mpr fun τ => Finset.mem_filter.mpr ⟨Finset.mem_univ _, hπ₂ τ⟩
   rw [Nat.card_range_of_injective ‹_›] at h_image
-  aesop
+  subst hf
+  simp_all only [ne_eq, IsRoot.def, Nat.card_eq_fintype_card, Fintype.card_coe, ge_iff_le]
+  exact h_image
 
 /-- Key resolvent lemma: if R₆ has a root in K and f = X⁵+pX+q is irreducible,
     then |Gal(f)| ≠ 60 and |Gal(f)| ≠ 120.
@@ -485,7 +492,6 @@ lemma gal_ne_60_120_of_resolvent_root
 If `f = X⁵ + p·X + q ∈ K[X]` is irreducible with `p ≠ 0` and the sextic resolvent
 `R₆` has a root in `K`, then `|Gal(f)| ∣ 20`.
 -/
-set_option maxHeartbeats 800000 in
 theorem card_gal_dvd_20_of_resolvent_root
     (p q : K) (hp : p ≠ 0)
     (f : K[X]) (hf : f = Polynomial.X ^ 5 + Polynomial.C p * Polynomial.X + Polynomial.C q)
@@ -529,8 +535,11 @@ theorem card_gal_dvd_20_of_resolvent_root
     have h_card_iso : Nat.card (↥(H.map iso.toMonoidHom)) = Nat.card f.Gal := by
       rw [← hH, Nat.card_congr]
       symm
-      refine Equiv.ofBijective (fun x => ⟨iso x, Subgroup.mem_map_of_mem _ x.2⟩)
-        ⟨fun x y hxy => ?_, fun x => ?_⟩ <;> aesop
+      refine Equiv.ofBijective (fun x => ⟨iso x, Subgroup.mem_map_of_mem _ x.2⟩) ⟨?_, ?_⟩
+      · exact fun x y hxy ↦ Subtype.ext (iso.injective (Subtype.ext_iff.mp hxy))
+      · rintro ⟨z, hz⟩
+        obtain ⟨y, hy, hyz⟩ := Subgroup.mem_map.mp hz
+        exact ⟨⟨y, hy⟩, Subtype.ext hyz⟩
     exact Perm_Fin5_no_subgroup_order_15 _ (h_card_iso.trans h15)
   have hne30 : Nat.card f.Gal ≠ 30 := by
     have := card_gal_le_20_of_resolvent_root_core p q hp f hf hf_irr y₀ hy₀
@@ -542,8 +551,11 @@ theorem card_gal_dvd_20_of_resolvent_root
     refine Perm_Fin5_no_subgroup_order_40 (H.map e.toMonoidHom) ?_
     rw [← h, ← hH, Nat.card_congr]
     symm
-    refine Equiv.ofBijective (fun x => ⟨e x, Subgroup.mem_map_of_mem _ x.2⟩)
-      ⟨fun x y hxy => ?_, fun x => ?_⟩ <;> aesop
+    refine Equiv.ofBijective (fun x => ⟨e x, Subgroup.mem_map_of_mem _ x.2⟩) ⟨?_, ?_⟩
+    · exact fun x y hxy ↦ Subtype.ext (e.injective (Subtype.ext_iff.mp hxy))
+    · rintro ⟨z, hz⟩
+      obtain ⟨y, hy, hyz⟩ := Subgroup.mem_map.mp hz
+      exact ⟨⟨y, hy⟩, Subtype.ext hyz⟩
   -- Step 5: Conclude |Gal| | 20
   have hpos : 0 < Nat.card f.Gal := Nat.card_pos
   exact dvd_20_of_constraints _ hpos h5 h120 hne60 hne120 hne15 hne30 hne40

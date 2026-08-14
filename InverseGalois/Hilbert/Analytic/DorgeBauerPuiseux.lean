@@ -397,7 +397,7 @@ lemma real_algebraic_branches
       have hq_inf : Set.Finite {t : ℤ | ∃ z : ℤ, q.eval (t : ℝ) = (z : ℝ)} := by
         by_contra h_inf_int_roots
         obtain ⟨q', hq'⟩ := realPoly_ratl_of_infinite_int_values q h_inf_int_roots
-        obtain ⟨a, ha⟩ := ratl_eventual_root_gives_ratFunc_root P (T₀ : ℝ) q' (by aesop)
+        obtain ⟨a, ha⟩ := ratl_eventual_root_gives_ratFunc_root P (T₀ : ℝ) q' (by simp_all)
         exact hP_no_root a ha
       obtain ⟨T₁, hT₁⟩ := hq_inf.bddAbove
       refine ⟨Max.max T₀ (T₁ + 1), le_max_left _ _, fun t ht ⟨z, hz⟩ ↦ ?_⟩
@@ -964,7 +964,7 @@ lemma int_root_locus_sublinear
             (Real.rpow_le_rpow_of_exponent_le hN1 (le_max_right _ _)) hCl.le
     _ = (Cs + Cl) * (N:ℝ) ^ (max (1/2) αl) := by ring
 
-set_option maxHeartbeats 1600000 in
+set_option maxHeartbeats 400000 in
 /-- **Resolvent construction.**
 
 For `F ∈ ℤ[T][X]` monic in `X`, irreducible (hence irreducible over `ℚ(T)`) and absolutely
@@ -1020,7 +1020,7 @@ lemma FmapToRatFunc_irreducible
             Classical.not_not.1 fun h ↦
               h_iso_nz (x - y) (sub_ne_zero_of_ne h) <| by simpa [sub_eq_zero] using hxy
           exact ⟨IsFractionRing.lift hinj, fun x ↦ by simp⟩
-        aesop
+        simp_all
       obtain ⟨φ, hφ⟩ := h_iso_hom
       have h_iso_bijective : Function.Bijective φ := by
         have h_iso_surj : Function.Surjective φ := by
@@ -1059,7 +1059,7 @@ lemma FmapToRatFunc_irreducible
             intro i hi
             specialize hd i hi
             simp_all [Finset.prod_eq_prod_diff_singleton_mul
-              (show i ∈ p.1.support ∪ (p.2 : Polynomial ℚ).support by aesop)]
+              (show i ∈ p.1.support ∪ (p.2 : Polynomial ℚ).support by simp_all)]
             refine ⟨?_, ?_⟩
             · obtain ⟨y, hy⟩ := hd.2.1
               refine ⟨y * ∏ i ∈ (p.1.support ∪ (p.2 : Polynomial ℚ).support) \ { i }, d i, ?_⟩
@@ -1084,7 +1084,7 @@ lemma FmapToRatFunc_irreducible
             use ∑ i ∈ p.2.val.support, f i • Polynomial.X ^ i
             ext i
             simp
-            aesop
+            simp_all
           use algebraMap (Polynomial ℤ) (FractionRing (Polynomial ℤ)) p' *
             (algebraMap (Polynomial ℤ) (FractionRing (Polynomial ℤ)) q')⁻¹
           simp_all [mul_assoc, mul_comm, mul_left_comm]
@@ -1125,7 +1125,7 @@ lemma FmapToRatFunc_irreducible
             map (φ : FractionRing ℤ[X] →+* FractionRing ℚ[X]) a *
               map (φ : FractionRing ℤ[X] →+* FractionRing ℚ[X]) b by
                 rw [← Polynomial.map_mul, ← hab])
-          aesop
+          simp_all
       convert h_iso_map_gen _ using 2
       ext
       simp [hφ]
@@ -1143,7 +1143,7 @@ lemma FmapToRatFunc_irreducible
     · exact hfQ_irr
   convert hfQ_map_irr using 1
   rw [Polynomial.map_map]
-  aesop
+  trivial
 
 lemma resolvent_exists
     (F : Polynomial (Polynomial ℤ))

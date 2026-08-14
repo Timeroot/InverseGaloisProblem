@@ -24,13 +24,13 @@ open Polynomial
 
 namespace Rigidity.RET.Descent
 
-set_option synthInstance.maxHeartbeats 1000000
-set_option maxHeartbeats 1000000
 
 attribute [local instance] Polynomial.algebra
 
 open scoped TensorProduct
 
+set_option maxHeartbeats 1000000 in
+set_option synthInstance.maxHeartbeats 400000 in
 /-- **The genuine regularity content (the `⊆` inclusion).**  This is the number-field
 generalization of `RET.GeometricIrreducibility.isField_baseChange_of_regular`.
 

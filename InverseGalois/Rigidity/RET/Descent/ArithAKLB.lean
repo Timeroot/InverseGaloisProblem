@@ -46,8 +46,6 @@ noncomputable section
 
 namespace ArithAKLB
 
-set_option maxHeartbeats 1600000
-set_option synthInstance.maxHeartbeats 1000000
 
 attribute [local instance] Ideal.Quotient.field
 
@@ -241,6 +239,7 @@ A prime of `B` above a place of the line inherits both of the properties the bra
 — being nonzero and being maximal — from the place below it: `B` is a torsion-free `ℚ[X]`-module and
 is integral over `ℚ[X]`. -/
 
+set_option synthInstance.maxHeartbeats 200000 in
 omit [FiniteDimensional (RatFunc ℚ) Ω] [IsGalois (RatFunc ℚ) Ω] in
 /-- A prime of the integral model above a nonzero place of the line is nonzero. -/
 theorem ne_bot_of_liesOver {P : Ideal (Polynomial ℚ)} (hP : P ≠ ⊥) (Q : Ideal (Aring Ω))
@@ -306,6 +305,7 @@ theorem const_notMem_of_ne_zero {x : Ω} (hx : IsIntegral ℚ x) (hx0 : x ≠ 0)
     simp [mul_inv_cancel₀ hx0]
   exact hQ (Ideal.eq_top_of_isUnit_mem Q hmem ⟨⟨_, _, hone, by rw [mul_comm]; exact hone⟩, rfl⟩)
 
+set_option maxHeartbeats 400000 in
 omit [IsGalois (RatFunc ℚ) Ω] [IsScalarTower ℚ (RatFunc ℚ) Ω] in
 /-- A polynomial relation over `ℚ` satisfied by an element of the integral model in `Ω` already
 holds in the integral model (which embeds in `Ω`). -/
@@ -321,6 +321,8 @@ theorem aeval_arith_eq_zero {b : Aring Ω} {p : ℚ[X]} (hb : (Polynomial.aeval 
     exact hb
   exact (map_eq_zero_iff _ (IsFractionRing.injective (Aring Ω) Ω)).1 h0
 
+set_option synthInstance.maxHeartbeats 200000 in
+set_option maxHeartbeats 400000 in
 omit [IsScalarTower ℚ (RatFunc ℚ) Ω] in
 /-- **The decomposition group at a rational place realizes every conjugate of a constant.**
 

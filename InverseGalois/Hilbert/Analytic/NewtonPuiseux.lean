@@ -203,7 +203,6 @@ theorem morseGeomPoly_card_rootSet (n : ℕ) (hn : 2 ≤ n) :
   rw [Polynomial.card_rootSet_eq_natDegree (morseGeomPoly_separable n hn)
       (SplittingField.splits (morseGeomPoly n)), morseGeomPoly_natDegree n hn]
 
-set_option maxHeartbeats 1000000 in
 /--
 
 When the degree `n` is *prime*, primitivity — the first half of the deep monodromy input
@@ -227,7 +226,6 @@ theorem morseGeomPoly_block_ncard_dvd (n : ℕ) (hn : 2 ≤ n)
     (Gal.galAction (morseGeomPoly n) (morseGeomPoly n).SplittingField) htrans B hB hBne
   rwa [Nat.card_eq_fintype_card, morseGeomPoly_card_rootSet n hn] at hdvd
 
-set_option maxHeartbeats 1000000 in
 theorem morseGeomPoly_blocks_trivial_of_prime (n : ℕ) (hn : n.Prime)
     {B : Set ((morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField)}
     (hB : MulAction.IsBlock (morseGeomPoly n).Gal B) : MulAction.IsTrivialBlock B := by
@@ -365,7 +363,7 @@ theorem xnSubX_comp_deriv_distinct_roots_le (n : ℕ) (hn : 2 ≤ n)
         (derivative h).eval (g.eval x) = 0 → x ^ n - x = h.eval (g.eval x) := by
       intro x hx
       replace h_eq := congr_arg (Polynomial.eval x) h_eq
-      aesop
+      simp_all
     intro h
     refine xnSubX_crit_value_inj n hn (h_critical x hx.2) (h_critical y hy.2) ?_
     rw [h_critical_value x hx.2, h_critical_value y hy.2, h]
@@ -493,11 +491,12 @@ theorem morseGeomPoly_stabilizer_eq_map_fixingSubgroup (n : ℕ) (hn : 2 ≤ n)
     intro x hx
     induction hx using IntermediateField.adjoin_induction
     · replace hx := congr_arg Subtype.val hx
-      aesop
+      subst hy
+      simp_all only [Set.mem_singleton_iff, Gal.restrict_smul]
     · exact y.commutes _
-    · aesop
+    · simp_all
     · rw [map_inv₀, ‹y _ = _›]
-    · aesop
+    · simp_all
   · obtain ⟨y, hy, rfl⟩ := hx
     rw [← Subtype.coe_inj]
     simp [Gal.restrict_smul]
@@ -640,7 +639,7 @@ theorem morseLift_fieldRange (n : ℕ)
     simp at hp
     have h_image : p ∈ IntermediateField.adjoin (AlgebraicClosure ℚ) {RatFunc.X} := by
       rw [RatFunc.adjoin_X_top] at *
-      aesop
+      trivial
     rw [← hp, IntermediateField.mem_adjoin_simple_iff] at *
     obtain ⟨r, s, rfl⟩ := h_image
     use r, s
@@ -665,7 +664,7 @@ theorem geomBase_image_mem_adjoin (n : ℕ)
           y = (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase num)
             / (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase den) := by
     have := IsFractionRing.div_surjective (A := Polynomial (AlgebraicClosure ℚ)) y
-    aesop
+    tauto
   -- By `IsScalarTower.algebraMap_apply`, we have `algebraMap GeomBase L (algebraMap Qbar[X] GeomBase p) = algebraMap Qbar[X] L p`.
   have h_algebraMap : ∀ p : Polynomial (AlgebraicClosure ℚ),
       algebraMap GeomBase (morseGeomPoly n).SplittingField
@@ -712,7 +711,9 @@ theorem adjoin_geomBase_restrict (n : ℕ)
           {(↑a : (morseGeomPoly n).SplittingField) ^ n - ↑a}
         ≤ IntermediateField.adjoin (AlgebraicClosure ℚ)
             {(↑a : (morseGeomPoly n).SplittingField)} :=
-      IntermediateField.adjoin_simple_le_iff.mpr (by aesop)
+      IntermediateField.adjoin_simple_le_iff.mpr
+        (sub_mem (pow_mem (IntermediateField.mem_adjoin_simple_self _ _) n)
+          (IntermediateField.mem_adjoin_simple_self _ _))
     rw [← this] at *
     simp_all [IntermediateField.restrictScalars]
     rw [Subsemiring.mem_closure] at hx
@@ -762,7 +763,7 @@ theorem morseGeomPoly_no_intermediate (n : ℕ) (hn : 2 ≤ n)
       have h_map_le : IntermediateField.map (morseLift n a) ⊤
           ≤ b.restrictScalars (AlgebraicClosure ℚ) := by
         rw [IntermediateField.map_le_iff_le_comap]
-        aesop
+        simp_all only [le_refl, M]
       convert h_map_le using 1
       rw [← morseLift_fieldRange]
       ext

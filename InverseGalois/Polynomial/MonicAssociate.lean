@@ -61,7 +61,7 @@ lemma monicAssociate_natDegree (f : Polynomial (Polynomial ℚ)) (hf : f.natDegr
   rw [monicAssociate, Polynomial.natDegree_add_eq_right_of_natDegree_lt]
   · norm_num
   · refine lt_of_le_of_lt (Polynomial.natDegree_sum_le _ _) (Finset.sup_lt_iff ?_ |>.2 ?_)
-    · aesop
+    · simp_all only [ge_iff_le, Nat.bot_eq_zero, natDegree_pow, natDegree_X, mul_one]; exact hf
     · intro b hb
       by_cases h : f.coeff b = 0 <;> by_cases h' : f.leadingCoeff = 0 <;> simp_all [Polynomial.natDegree_mul']
       linarith
@@ -108,7 +108,11 @@ lemma monicAssociate_irreducible (f : Polynomial (Polynomial ℚ))
     apply Polynomial.isUnit_C.mpr
     apply isUnit_iff_ne_zero.mpr
     apply pow_ne_zero
-    aesop
+    simp_all only [ge_iff_le, ne_eq, FaithfulSMul.algebraMap_eq_zero_iff, leadingCoeff_eq_zero, φ]
+    apply Aesop.BuiltinRules.not_intro
+    intro a
+    subst a
+    simp_all only [not_irreducible_zero]
   have h_comp_irr : Irreducible (Polynomial.comp (Polynomial.map φ (monicAssociate f))
       (Polynomial.C (φ f.leadingCoeff) * Polynomial.X)) := by
     convert h_scaled_irr using 1
@@ -129,11 +133,11 @@ lemma monicAssociate_irreducible (f : Polynomial (Polynomial ℚ))
       rcases this with (h | h) <;> have := Polynomial.natDegree_eq_zero_of_isUnit h <;>
         rw [Polynomial.natDegree_comp, Polynomial.natDegree_mul'] at this <;> norm_num at *
       · rw [Polynomial.eq_C_of_natDegree_eq_zero this] at h ⊢
-        aesop
-      · aesop
+        simp_all
+      · simp_all only [mul_comp, FaithfulSMul.algebraMap_eq_zero_iff, leadingCoeff_eq_zero, φ]; apply Aesop.BuiltinRules.not_intro; intro a_1; subst a_1; simp_all only [not_irreducible_zero]
       · rw [Polynomial.eq_C_of_natDegree_eq_zero this] at h ⊢
-        aesop
-      · aesop
+        simp_all
+      · simp_all only [mul_comp, FaithfulSMul.algebraMap_eq_zero_iff, leadingCoeff_eq_zero, φ]; apply Aesop.BuiltinRules.not_intro; intro a_1; subst a_1; simp_all only [not_irreducible_zero]
   exact (Polynomial.Monic.isPrimitive h_monic).irreducible_iff_irreducible_map_fraction_map.mpr
     h_irred_g
 
@@ -162,7 +166,7 @@ lemma monicAssociate_specialize_iff (f : Polynomial (Polynomial ℚ))
         rw [Polynomial.natDegree_comp, Polynomial.natDegree_mul'] at this <;> simp_all
         rw [Polynomial.eq_C_of_natDegree_eq_zero this] at h
         have := h.1
-        aesop
+        simp_all
       · intro a b hab
         have h_factor : (map (evalRingHom (t : ℚ)) (monicAssociate f))
             = (a.comp (Polynomial.C c⁻¹ * Polynomial.X))
@@ -228,9 +232,9 @@ lemma leadingCoeff_roots_finite (f : Polynomial (Polynomial ℚ))
   have h_fTA : Set.Finite {t : ℚ | Polynomial.eval t f.leadingCoeff = 0} := by
     apply Set.Finite.subset f.leadingCoeff.roots.toFinset.finite_toSet
     intro x hx
-    aesop
+    simp_all
   apply Set.Finite.subset (h_fTA.preimage ?_) fun x hx ↦ hx
   intro t _ t' _ h
-  aesop
+  simp_all
 
 end

@@ -48,8 +48,6 @@ open scoped Polynomial
 
 attribute [local instance] Polynomial.algebra
 
-set_option maxHeartbeats 2000000
-set_option synthInstance.maxHeartbeats 1000000
 
 variable {k₀ : Type*} [Field k₀]
 
@@ -258,6 +256,7 @@ theorem geomPrim_gen [CharZero k₀] (S : Finset (AlgebraicClosure k₀)) :
   rw [hmap] at hsM
   exact hsM
 
+set_option maxHeartbeats 1000000 in
 /-- **Constant extraction** (port of `extract`).  Every finite family of elements of `k₀‾(T)` sits
 inside a single constant-adjoin `k₀(T)⟮γ⟯`, `γ ∈ k₀‾`. -/
 theorem extract_gen [CharZero k₀]
@@ -313,6 +312,8 @@ theorem extract_gen [CharZero k₀]
         exact Finset.mem_biUnion.mpr ⟨k, hk, hx⟩))
   exact hsub (hsubk hkmem)
 
+set_option maxHeartbeats 1000000 in
+set_option synthInstance.maxHeartbeats 400000 in
 /-- **The regularity core, general base field** (port of `isField_baseChange_of_regular`).  For a
 finite extension `L / k₀(T)` in which `k₀` is relatively algebraically closed
 (`algebraicClosure k₀ L = ⊥`, "regular"), the base change of `L` to the geometric base field

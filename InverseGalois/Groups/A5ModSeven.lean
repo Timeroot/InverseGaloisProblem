@@ -15,7 +15,7 @@ open Polynomial UniqueFactorizationMonoid
 
 noncomputable section
 
-set_option maxHeartbeats 800000
+
 set_option maxRecDepth 1000
 
 /-!
@@ -55,7 +55,9 @@ theorem cubic_mod7_irreducible :
           rw [← Polynomial.degree_mul, h_eq, Polynomial.degree_add_C]
             <;> rw [Polynomial.degree_add_eq_left_of_degree_lt]
             <;> rw [Polynomial.degree_add_eq_left_of_degree_lt]
-            <;> simp +decide
+            <;> simp [Polynomial.degree_C, show (2 : ZMod 7) ≠ 0 by decide,
+                  show (5 : ZMod 7) ≠ 0 by decide]
+            <;> decide
         -- Since the degrees of `p` and `q` add up to 3 and both are positive, one of them must have degree 1.
         have h_deg_one : p.degree = 1 ∨ q.degree = 1 := by
           rw [Polynomial.degree_eq_natDegree (Polynomial.ne_zero_of_degree_gt hp),
@@ -71,15 +73,24 @@ theorem cubic_mod7_irreducible :
       · intro h
         apply absurd (Polynomial.degree_eq_zero_of_isUnit h)
         rw [Polynomial.degree_add_C] <;>
-          repeat (first | rw [Polynomial.degree_add_eq_left_of_degree_lt] | simp +decide)
+          repeat (first
+            | rw [Polynomial.degree_add_eq_left_of_degree_lt]
+            | simp [Polynomial.degree_C, show (2 : ZMod 7) ≠ 0 by decide,
+                show (5 : ZMod 7) ≠ 0 by decide]
+            | decide)
       · contrapose! h_irred
         obtain ⟨a, b, h₁, h₂, h₃⟩ := h_irred
         use a, b
         simp_all [Polynomial.isUnit_iff_degree_eq_zero]
         apply_fun Polynomial.eval 0 at h₁
         refine ⟨lt_of_le_of_ne (le_of_not_gt fun h ↦ ?_) (Ne.symm h₂),
-          lt_of_le_of_ne (le_of_not_gt fun h ↦ ?_) (Ne.symm h₃)⟩ <;>
-          simp_all +decide
+          lt_of_le_of_ne (le_of_not_gt fun h ↦ ?_) (Ne.symm h₃)⟩
+        · rw [Polynomial.degree_eq_bot.mp (Nat.WithBot.lt_zero_iff.mp h)] at h₁
+          simp at h₁
+          exact absurd h₁ (by decide)
+        · rw [Polynomial.degree_eq_bot.mp (Nat.WithBot.lt_zero_iff.mp h)] at h₁
+          simp at h₁
+          exact absurd h₁ (by decide)
 
 /-
 The mod-7 reduction of X⁵+20X+16 is squarefree.
@@ -102,12 +113,18 @@ theorem f_a5_mod7_squarefree :
             by_contra h_contra
             push_neg at h_contra
             have h_root : x^5 + 6 * x + 2 = 0 ∧ 5 * x^4 + 6 = 0 := by
-              aesop
+              simp_all only [Polynomial.map_add, Polynomial.map_pow, map_X, Polynomial.map_mul, map_C, eval_add, eval_pow, eval_X,
+                eval_mul, eval_C]
+              obtain ⟨left, right⟩ := h_contra
+              apply And.intro
+              · exact left
+              · exact right
             grind
           apply isCoprime_of_dvd
           · apply not_and_of_not_left
             apply ne_of_apply_ne (Polynomial.eval 0)
-            simp +decide
+            simp
+            decide
           · intro z hz hz' hz'' hz'''
             contrapose! h_coprime
             simp_all
@@ -123,7 +140,12 @@ theorem f_a5_mod7_squarefree :
             replace hz := congr_arg (Polynomial.map (algebraMap (ZMod 7) (AlgebraicClosure (ZMod 7)))) hz
             replace hy := congr_arg (Polynomial.eval x) hy
             replace hz := congr_arg (Polynomial.eval x) hz
-            aesop
+            simp_all only [degree_map, ne_eq, IsRoot.def, eval_map_algebraMap, Polynomial.map_add, Polynomial.map_pow, map_X,
+              Polynomial.map_mul, map_C, eval_add, eval_pow, eval_X, eval_mul, eval_C, zero_mul]
+            apply Exists.intro
+            · apply And.intro
+              · exact hy
+              · exact hz
         obtain ⟨a, b, h⟩ := h_gcd
         intro x hx
         -- Since `x^2` divides the polynomial, it follows that `x` divides the polynomial and its derivative.
@@ -148,6 +170,7 @@ theorem f_a5_mod7_squarefree :
 /-
 The factorizationType of the mod-7 reduction contains 3.
 -/
+set_option maxHeartbeats 400000 in
 theorem f_a5_mod7_factorizationType :
     3 ∈ factorizationType (Polynomial.map (Int.castRingHom (ZMod 7))
       (X ^ 5 + C 20 * X + C 16 : ℤ[X])) := by
@@ -159,7 +182,7 @@ theorem f_a5_mod7_factorizationType :
           ring_nf
           rename_i n
           rcases n with (_ | _ | _ | _ | _ | _ | n) <;>
-            simp +decide [Polynomial.coeff_eq_zero_of_natDegree_lt]
+            simp [Polynomial.coeff_eq_zero_of_natDegree_lt] <;> decide
         rw [heq, normalizedFactors_mul, normalizedFactors_mul]
         · rw [normalizedFactors_irreducible, normalizedFactors_irreducible,
             normalizedFactors_irreducible] <;> norm_num
@@ -176,7 +199,7 @@ theorem f_a5_mod7_factorizationType :
                     decide +revert
                   · erw [Polynomial.natDegree_C_mul_X_pow] <;> norm_num
                     decide +revert
-                · exact ne_of_apply_ne (Polynomial.eval 0) (by simp +decide)
+                · exact ne_of_apply_ne (Polynomial.eval 0) (by simp; decide)
               · exact Polynomial.X_add_C_ne_zero _
             · exact Polynomial.X_add_C_ne_zero _
           · exact cubic_mod7_irreducible
@@ -185,8 +208,8 @@ theorem f_a5_mod7_factorizationType :
           · exact Polynomial.irreducible_of_degree_eq_one (Polynomial.degree_X_add_C _)
         · exact Polynomial.X_add_C_ne_zero _
         · exact Polynomial.X_add_C_ne_zero _
-        · exact ne_of_apply_ne (Polynomial.eval 0) (by simp +decide)
-        · exact ne_of_apply_ne (Polynomial.eval 0) (by simp +decide)
+        · exact ne_of_apply_ne (Polynomial.eval 0) (by simp; decide)
+        · exact ne_of_apply_ne (Polynomial.eval 0) (by simp; decide)
 
 /-!
 ## Galois group of X⁵+20X+16 has order dividing 60

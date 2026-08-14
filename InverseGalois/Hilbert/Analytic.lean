@@ -1,5 +1,5 @@
 import InverseGalois.Hilbert.Analytic.DorgeBauerPuiseux
-import InverseGalois.Hilbert.Analytic.MorseSwap
+import InverseGalois.Hilbert.Analytic.MorseSwapBranch
 import InverseGalois.Hilbert.Analytic.PuiseuxTail
 
 /-!

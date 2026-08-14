@@ -11,7 +11,7 @@ import InverseGalois.Hilbert.RegularExtension
 import InverseGalois.Hilbert.Analytic.Primitivity
 import InverseGalois.Hilbert.Analytic.InertiaCycle
 import InverseGalois.Hilbert.Analytic.SerreBaseCover
-import InverseGalois.Hilbert.Analytic.SerreBaseSwap
+import InverseGalois.Hilbert.Analytic.SerreBaseSwapBranch
 import InverseGalois.Hilbert.Analytic.QuadraticDescent
 import InverseGalois.Hilbert.AlternatingFamilyEvenDescent
 
@@ -130,7 +130,7 @@ theorem serreAnOverFrac_separable (n : ℕ) (hn : 2 ≤ n) (_heven : Even n) :
     apply isCoprime_of_irreducible_dvd
     · intro h
       have := serreAnOverFrac_natDegree n hn
-      aesop
+      simp_all
     · intro z hz hz' hz''
       obtain ⟨α, hα⟩ : ∃ α : L, eval α (z.map (algebraMap K L)) = 0 := by
         apply IsAlgClosed.exists_root

@@ -98,6 +98,17 @@ theorem ratFuncSubstEquiv_apply {g g' : RatFunc K} (hg : Transcendental K g)
     ratFuncSubstEquiv hg hg' h h' x = ratFuncSubst g hg x :=
   rfl
 
+/-- **A substitution acts on a polynomial by evaluating it at the substituted function.**  Both
+sides are `K`-algebra maps out of `K[u]`, and they agree at the parameter. -/
+@[simp]
+theorem ratFuncSubst_algebraMap (g : RatFunc K) (hg : Transcendental K g) (p : K[X]) :
+    ratFuncSubst g hg (algebraMap K[X] (RatFunc K) p) = Polynomial.aeval g p := by
+  have h : (ratFuncSubst g hg).comp (IsScalarTower.toAlgHom K K[X] (RatFunc K))
+      = Polynomial.aeval g := by
+    refine Polynomial.algHom_ext ?_
+    simp [RatFunc.algebraMap_X]
+  exact congrArg (fun φ => φ p) h
+
 /-! ## The scaling and inversion substitutions -/
 
 /-- **A nonzero constant multiple of the parameter is transcendental**, so `u ↦ c·u` is a
@@ -118,5 +129,25 @@ theorem transcendental_const_mul_X {c : K} (hc : c ≠ 0) :
 /-- **The inverse of the parameter is transcendental**, so `u ↦ u⁻¹` is a substitution. -/
 theorem transcendental_inv_X : Transcendental K (RatFunc.X : RatFunc K)⁻¹ := fun h =>
   RatFunc.transcendental_X (K := K) (IsAlgebraic.inv_iff.mp h)
+
+/-- Inversion is an involution of the parameter: substituting `u⁻¹` into `u⁻¹` gives `u`. -/
+theorem ratFuncSubst_inv_inv :
+    ratFuncSubst (RatFunc.X : RatFunc K)⁻¹ transcendental_inv_X (RatFunc.X)⁻¹ = RatFunc.X := by
+  rw [map_inv₀, ratFuncSubst_X, inv_inv]
+
+/-- **The inversion `u ↦ u⁻¹` of `K(u)`.**  It exchanges the point `0` of the line with the point
+at infinity. -/
+noncomputable def ratFuncInv : RatFunc K ≃ₐ[K] RatFunc K :=
+  ratFuncSubstEquiv transcendental_inv_X transcendental_inv_X
+    ratFuncSubst_inv_inv ratFuncSubst_inv_inv
+
+@[simp]
+theorem ratFuncInv_X : ratFuncInv (RatFunc.X : RatFunc K) = (RatFunc.X)⁻¹ := by
+  rw [ratFuncInv, ratFuncSubstEquiv_apply, ratFuncSubst_X]
+
+/-- Inversion sends a polynomial to its evaluation at `u⁻¹`. -/
+theorem ratFuncInv_algebraMap (p : K[X]) :
+    ratFuncInv (algebraMap K[X] (RatFunc K) p) = Polynomial.aeval (RatFunc.X : RatFunc K)⁻¹ p :=
+  ratFuncSubst_algebraMap _ transcendental_inv_X p
 
 end Rigidity.RET

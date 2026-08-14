@@ -111,12 +111,12 @@ lemma complex_branch_at_simple_root_unique
   have h_eq : ∀ᶠ z in nhds z₀, h_implicit.implicitFunction z = φ z := by
     have h_eq : Filter.Tendsto (fun z ↦ (z, φ z)) (nhds z₀) (nhds (z₀, w₀)) := by
       refine Filter.Tendsto.prodMk_nhds Filter.tendsto_id (hφ.2.1.continuousAt.tendsto.trans ?_)
-      aesop
+      simp_all
     filter_upwards [h_eq.eventually this, hφ.2.2] with z hz₁ hz₂
-    aesop
+    simp_all
   filter_upwards [this, h_eq.prod_nhds (Filter.eventually_of_mem (Metric.ball_mem_nhds _ zero_lt_one) fun x hx ↦ hx)]
     with p hp hp'
-  aesop
+  simp_all
 
 /-- **A continuous root of a separable holomorphic family is holomorphic.**
 
@@ -182,7 +182,13 @@ lemma rootProj_finite_fiber
   refine Set.Finite.of_finite_image (f := fun q ↦ q.val.2) ?_ ?_
   · apply Set.Finite.subset (Q.roots.toFinset.finite_toSet)
     intro y hy
-    aesop
+    simp_all only [ne_eq, Set.mem_image, Set.mem_preimage, Set.mem_singleton_iff, Subtype.exists, exists_and_right,
+      Prod.exists, exists_eq_right, SetLike.mem_coe, Multiset.mem_toFinset, Polynomial.mem_roots', not_false_eq_true,
+      Polynomial.IsRoot.def, true_and, Q]
+    obtain ⟨w, h⟩ := hy
+    obtain ⟨w_1, h⟩ := h
+    subst h
+    exact w_1
   · intro q hq q' hq' h
     simp only [Set.mem_preimage, Set.mem_singleton_iff, rootProj] at hq hq'
     exact Subtype.ext <| Prod.ext (hq.trans hq'.symm) h
@@ -215,7 +221,7 @@ lemma rootProj_isClosedMap
             ‖(P.map (evalIntPolyComplex z)).coeff i‖ := by
           convert cauchy_root_bound _ hw_root using 1
           exact hP.map _
-        rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] at h_cb <;> aesop
+        rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] at h_cb <;> simp_all
       -- Since `K` is compact, the coefficients of `P.map (evalIntPolyComplex z)` are bounded on `K`.
       have h_coeff_bounded : ∃ M : ℝ, ∀ z ∈ K, ∀ i ∈ Finset.range P.natDegree,
           ‖(P.map (evalIntPolyComplex z)).coeff i‖ ≤ M := by
@@ -244,9 +250,23 @@ lemma rootProj_isClosedMap
       constructor <;> intro h <;> rw [isCompact_iff_compactSpace] at * <;> simp_all
       apply isCompact_iff_compactSpace.mp
       convert h.isCompact_univ.image
-        (show Continuous (fun q : T ↦ ⟨q.val, by aesop⟩ : T → rootVariety P) from ?_) using 1
+        (show Continuous (fun q : T ↦ ⟨q.val, by simp_all only [Set.coe_setOf, Set.mem_setOf_eq, T]; obtain ⟨w, h_1⟩ := hT_bounded; obtain ⟨val, property⟩ := q; obtain ⟨fst, snd⟩ := val; simp_all only; simp_all only [Set.mem_setOf_eq, T]; obtain ⟨left, right⟩ := property; exact right⟩ : T → rootVariety P) from ?_) using 1
       · ext
-        aesop
+        rename_i x
+        simp_all only [Set.coe_setOf, Set.mem_setOf_eq, Set.mem_preimage, Set.image_univ, Set.mem_range, Subtype.exists,
+          Prod.exists, T]
+        obtain ⟨w, h_1⟩ := hT_bounded
+        obtain ⟨val, property⟩ := x
+        obtain ⟨fst, snd⟩ := val
+        simp_all only [Subtype.mk.injEq, Prod.mk.injEq, exists_and_left, exists_prop, ↓existsAndEq, and_true, exists_eq_left]
+        apply Iff.intro
+        · intro a
+          apply And.intro
+          · exact a
+          · exact property
+        · intro a
+          obtain ⟨left, right⟩ := a
+          exact left
       · fun_prop (disch := solve_by_elim)
     exact h_preimage_compact
   apply IsProperMap.isClosedMap
@@ -282,7 +302,15 @@ lemma rootProj_restrict_isOpenEmbedding
           = Set.restrict_apply, = Set.mem_inter_iff, rootProj]
     · refine ⟨t ×ˢ Set.univ, ht.prod isOpen_univ, ?_⟩
       ext
-      aesop
+      rename_i x
+      simp_all only [Set.mem_preimage, Set.mem_prod, Set.mem_univ, and_true, Set.restrict_apply, Set.mem_setOf_eq]
+      obtain ⟨val, property⟩ := x
+      obtain ⟨val, property⟩ := val
+      obtain ⟨fst, snd⟩ := val
+      simp_all only
+      simp_all only [Set.mem_prod]
+      obtain ⟨left, right⟩ := property
+      rfl
   · intro q1 q2 h_eq
     grind only [usr Set.mem_setOf_eq, = Set.restrict_apply, rootVariety, rootProj, = Set.mem_prod]
   · convert hVz using 1
@@ -333,13 +361,13 @@ lemma rootProj_isLocalHomeomorphOn
       obtain ⟨p, hp₁, hp₂⟩ := h
       obtain ⟨E, hE₁, hE₂⟩ := mem_nhdsWithin.mp hu
       refine ⟨E, hE₁, hE₂.1, hp₁.continuousOn.mono ?_⟩
-      aesop
+      simp_all
     obtain ⟨D, hD⟩ : ∃ D : Set ℂ, IsOpen D ∧ z₀ ∈ D ∧ ∀ z ∈ D, ψ z ∈ B :=
-      Exists.imp (by tauto) (mem_nhds_iff.mp (hψcont0 (hB.mem_nhds (by aesop))))
+      Exists.imp (by tauto) (mem_nhds_iff.mp (hψcont0 (hB.mem_nhds (by simp_all))))
     use A ∩ C ∩ D ∩ E ∩ U, B
     simp_all [Set.subset_def]
     exact ⟨IsOpen.inter (IsOpen.inter (IsOpen.inter (IsOpen.inter hA hC.1) hD.1) hE.1) hUopen,
-      hE.2.2.mono (by aesop (config := {introsTransparency? := some .default})),
+      hE.2.2.mono (by intro a a_1; simp_all only [Set.mem_inter_iff, z₀, w₀]),
       fun z hz₁ hz₂ hz₃ hz₄ hz₅ w hw₁ hw₂ ↦ hAB.2.2 z hz₁ w hw₁ hw₂ ▸ rfl⟩
   obtain ⟨hVzU, hψcontVz, hψrootVz, hψVwVz, huniqVz⟩ := hbox
   refine ⟨{q : rootVariety P | (q : ℂ × ℂ) ∈ Vz ×ˢ Vw}, ?_,
@@ -423,8 +451,8 @@ lemma complex_branch_holomorphic_on_convex
   · rw [continuousOn_iff_continuous_restrict]
     convert hH.1 using 1
     ext ⟨z, hz⟩
-    aesop
-  · aesop
+    simp_all
+  · simp_all
 
 /-!
 ### Packaging the continuation in tail-ball form
@@ -472,7 +500,7 @@ lemma branch_agrees_on_real_ray
         simpa [hw₀.1] using
           hHc y hy.2 |> ContinuousAt.tendsto |> Filter.Tendsto.comp <| Complex.continuous_ofReal.tendsto y
       · convert Complex.continuous_ofReal.continuousAt.tendsto.comp (hgc.continuousWithinAt hy.2) using 1
-        aesop
+        simp_all only [Set.mem_inter_iff, Set.mem_setOf_eq, Set.mem_Ici, Polynomial.derivative_map, ne_eq, A]
     have h_cont : ∀ᶠ z : ℝ in nhdsWithin y (Set.Ici a), φ (z : ℂ) = H z ∧ φ (z : ℂ) = (g z : ℂ) := by
       have h_cont : ∀ᶠ z : ℝ in nhdsWithin y (Set.Ici a),
           (P.map (evalIntPolyComplex (z : ℂ))).eval (H z) = 0 ∧
@@ -504,7 +532,18 @@ lemma branch_agrees_on_real_ray
     obtain ⟨ε, ε_pos, hε⟩ := h_cont
     refine ⟨ε, ε_pos, fun z hz hz' ↦ ?_⟩
     have := hε hz' hz
-    aesop
+    simp_all only [Set.mem_inter_iff, Set.mem_setOf_eq, Set.mem_Ici, Polynomial.derivative_map, ne_eq, dist_self,
+      true_and, gt_iff_lt, A]
+    obtain ⟨left, right⟩ := hy
+    obtain ⟨left_1, right_1⟩ := hw₀
+    obtain ⟨left_2, right_2⟩ := hφ
+    obtain ⟨left_3, right_3⟩ := h_cont
+    obtain ⟨left_4, right_4⟩ := this
+    obtain ⟨left_5, right_1⟩ := right_1
+    obtain ⟨left_6, right_2⟩ := right_2
+    obtain ⟨left_7, right_3⟩ := right_3
+    subst left_1
+    simp_all only
   -- We show `A ∩ [a, ∞)` is relatively closed in `[a, ∞)`.
   have h_rel_closed : IsClosed {y : ℝ | y ∈ Set.Ici a ∧ H y = g y} := by
     have h_cont : ContinuousOn (fun y : ℝ ↦ H y - g y) (Set.Ici a) := by
@@ -526,7 +565,7 @@ lemma branch_agrees_on_real_ray
         have h_compact : IsCompact {z ∈ Set.Icc a y | z ∈ Set.Ici a ∧ H z = g z} :=
           CompactIccSpace.isCompact_Icc.inter_right h_rel_closed
         grind +splitIndPred
-      obtain ⟨x, hx⟩ := h_compact.exists_isGreatest ⟨a, ⟨by linarith, by linarith⟩, by aesop⟩
+      obtain ⟨x, hx⟩ := h_compact.exists_isGreatest ⟨a, ⟨by linarith, by linarith⟩, by trivial⟩
       exact ⟨x, hx.1.1, hx.1.2, fun w hw hw' ↦ hx.2 ⟨hw, hw'⟩⟩
     use z
     simp at *
@@ -624,6 +663,6 @@ lemma real_branch_holo_continuation_tail
       have := le_max_right (2 * (T₀ : ℝ)) 2
       refine hsep ?_
       cases abs_cases y <;> linarith
-    · aesop
+    · simp_all
 
 end DorgeBauer

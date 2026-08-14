@@ -13,7 +13,6 @@ open Polynomial Finset Matrix
 
 noncomputable section
 
-set_option maxHeartbeats 800000
 
 /-!
 ## Gram matrix for X⁵ - 5X + 12
@@ -25,6 +24,7 @@ Gram determinant = 8000²
 /-
 The Gram matrix determinant for the power sums of X⁵ - 5X + 12 is 8000².
 -/
+set_option maxHeartbeats 400000 in
 lemma gram_det_value_d5 (r : Fin 5 → K) [Field K]
     (hp1 : ∑ i : Fin 5, r i ^ 1 = 0)
     (hp2 : ∑ i : Fin 5, r i ^ 2 = 0)
@@ -54,6 +54,7 @@ lemma f_d5_ne_zero : f_d5 ≠ 0 :=
 lemma f_d5_natDegree : f_d5.natDegree = 5 := by
   erw [Polynomial.natDegree_add_C, Polynomial.natDegree_add_eq_left_of_natDegree_lt] <;> norm_num
 
+set_option maxHeartbeats 400000 in
 lemma f_d5_irreducible : Irreducible f_d5 := by
   -- Eisenstein at p=5 after shift X → X-2 (same proof as in D5.lean)
   -- Apply Eisenstein's criterion with p=5 to the shifted polynomial.
@@ -141,6 +142,7 @@ def rootEnum_d5 : Fin 5 ≃ (f_d5.rootSet f_d5.SplittingField) :=
 /-
 The discriminant: ∏_{i<j}(r_j - r_i)² = 8000² in the splitting field
 -/
+set_option maxHeartbeats 400000 in
 lemma disc_value_d5 (v : Fin 5 ≃ (f_d5.rootSet f_d5.SplittingField)) :
     (∏ i : Fin 5, ∏ j ∈ Ioi i,
       ((v j : f_d5.SplittingField) - (v i : f_d5.SplittingField))) ^ 2 =

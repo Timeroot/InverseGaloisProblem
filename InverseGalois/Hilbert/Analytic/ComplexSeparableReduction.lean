@@ -29,7 +29,6 @@ covering map there, while root membership is unchanged.
 open Polynomial UniqueFactorizationMonoid
 open scoped Classical
 
-set_option maxHeartbeats 1000000
 
 noncomputable section
 
@@ -42,7 +41,7 @@ lemma radical_monic_int {F : Polynomial (Polynomial ℤ)} (hF : F.Monic) :
     Polynomial.leadingCoeff_dvd_leadingCoeff radical_dvd_self
   have h_leading_coeff_unit : IsUnit ((radical F).leadingCoeff : Polynomial ℤ) := by
     refine isUnit_of_dvd_one (h_leading_coeff_div.trans ?_)
-    aesop
+    simp_all
   have h_radical_normalized : normalize (radical F) = radical F := by
     simp [radical]
     apply Finset.prod_congr rfl
@@ -51,6 +50,7 @@ lemma radical_monic_int {F : Polynomial (Polynomial ℤ)} (hF : F.Monic) :
   rw [Polynomial.Monic, ← h_radical_normalized, Polynomial.leadingCoeff_normalize]
   exact normalize_eq_one.mpr h_leading_coeff_unit
 
+set_option maxHeartbeats 1000000 in
 /-- A nonzero element of `ℤ[x][Y]` divides some positive power of its radical. -/
 lemma dvd_radical_pow_int {F : Polynomial (Polynomial ℤ)} (hF0 : F ≠ 0) :
     ∃ m, 1 ≤ m ∧ F ∣ (radical F) ^ m := by
@@ -67,6 +67,7 @@ lemma dvd_radical_pow_int {F : Polynomial (Polynomial ℤ)} (hF0 : F ≠ 0) :
   refine dvd_trans (Multiset.prod_dvd_prod_of_dvd _ _ h_prime_divisors) ?_
   norm_num [pow_succ']
 
+set_option maxHeartbeats 1000000 in
 /-- A squarefree primitive polynomial over `ℤ[x]` stays squarefree over the fraction field. -/
 lemma squarefree_map_frac_int {s : Polynomial (Polynomial ℤ)}
     (hs : Squarefree s) (hmon : s.Monic) :
@@ -75,8 +76,10 @@ lemma squarefree_map_frac_int {s : Polynomial (Polynomial ℤ)}
   set xm := x * Polynomial.C (Polynomial.leadingCoeff x)⁻¹ with hxm_def
   have hxm_monic : xm.Monic := by
     by_cases hx0 : x = 0 <;> simp_all [Polynomial.Monic]
-    rw [Polynomial.map_eq_zero_iff] at hx <;>
-      aesop (config := {introsTransparency? := some .default})
+    rw [Polynomial.map_eq_zero_iff] at hx
+    · subst hx
+      exact not_squarefree_zero hs
+    · exact IsFractionRing.injective (Polynomial ℤ) (FractionRing (Polynomial ℤ))
   have hxm_assoc : Associated x xm := by
     by_cases hx : x = 0 <;> simp_all [Polynomial.Monic.def]
     refine associated_of_dvd_dvd ?_ ?_ <;> norm_num [hx]
@@ -90,17 +93,17 @@ lemma squarefree_map_frac_int {s : Polynomial (Polynomial ℤ)}
       ∃ x' : Polynomial (Polynomial ℤ),
         x'.map (algebraMap (Polynomial ℤ) (FractionRing (Polynomial ℤ))) = xm := by
     have := IsIntegrallyClosed.eq_map_mul_C_of_dvd (K := FractionRing (Polynomial ℤ)) hmon hxm_dvd
-    aesop
+    simp_all
   have hx'mon : x'.Monic := by
     convert hxm_monic using 1
     rw [← hx'eq, Polynomial.Monic.def, Polynomial.Monic.def,
       Polynomial.leadingCoeff_map_of_leadingCoeff_ne_zero]
-    · aesop
+    · simp
     · intro h
       simp_all [Polynomial.Monic.def]
   have hx'_sq_dvd : x' * x' ∣ s := by
     rw [← Polynomial.map_dvd_map (algebraMap (Polynomial ℤ) (FractionRing (Polynomial ℤ)))]
-    · aesop
+    · simp_all
     · exact IsFractionRing.injective _ _
     · exact hx'mon.mul hx'mon
   have := hs x' hx'_sq_dvd
@@ -163,7 +166,7 @@ lemma exists_bezout_of_squarefree_int {s : Polynomial (Polynomial ℤ)}
     refine ⟨w0, hw0.1, A, B,
       Polynomial.map_injective (algebraMap (Polynomial ℤ) (FractionRing (Polynomial ℤ)))
         (IsFractionRing.injective _ _) ?_⟩
-    aesop
+    simp_all
   exact ⟨A, B, w0, hw0ne, hAB⟩
 
 /-- The radical has the same roots as `P` under every complex specialisation. -/
@@ -214,7 +217,7 @@ theorem exists_complex_separable_reduction
           Polynomial.C (Polynomial.eval z (Polynomial.map (Int.castRingHom ℂ) w0)) := by
       convert congr_arg (Polynomial.map (evalIntPolyComplex z)) hbez using 1 <;> norm_num [Polynomial.derivative_map]
       unfold evalIntPolyComplex
-      aesop
+      trivial
     refine ⟨Polynomial.C (Polynomial.eval z (Polynomial.map (Int.castRingHom ℂ) w0)) ⁻¹ *
         Polynomial.map (evalIntPolyComplex z) A,
       Polynomial.C (Polynomial.eval z (Polynomial.map (Int.castRingHom ℂ) w0)) ⁻¹ *
@@ -223,7 +226,7 @@ theorem exists_complex_separable_reduction
         (fun p ↦ Polynomial.C (Polynomial.eval z (Polynomial.map (Int.castRingHom ℂ) w0)) ⁻¹ * p) h_bezout
       using 1 <;> ring_nf
     rw [← Polynomial.C_mul, inv_mul_cancel₀ h_eval, Polynomial.C_1]
-  · have hP0 : P ≠ 0 := by aesop
+  · have hP0 : P ≠ 0 := by simp_all only [ne_eq]; apply Aesop.BuiltinRules.not_intro; intro a; subst a; simp_all only [not_monic_zero]
     exact roots_radical_iff P hP0
 
 end ComplexSeparableReduction

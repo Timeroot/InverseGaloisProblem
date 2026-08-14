@@ -22,7 +22,6 @@ namespace PolyReflectDemo
 
 /- Warm-up: a binomial square is expanded. -/
 set_option maxRecDepth 1000000 in
-set_option maxHeartbeats 4000000 in
 theorem demo_sq {L : Type*} [CommRing L] (v0 v1 v2 v3 : L) :
     ((v0 + v1) ^ 2) =
       (((v0 ^ 2) + ((((2 : ℤ) : L) * v0) * v1)) + (v1 ^ 2)) := by
@@ -34,7 +33,6 @@ theorem demo_sq {L : Type*} [CommRing L] (v0 v1 v2 v3 : L) :
 
 /- Warm-up: commutativity of a product (both sides are products). -/
 set_option maxRecDepth 1000000 in
-set_option maxHeartbeats 4000000 in
 theorem demo_prod_comm {L : Type*} [CommRing L] (v0 v1 v2 v3 : L) :
     ((v0 + v1) * (v2 + v3)) =
       ((v2 + v3) * (v0 + v1)) := by
@@ -46,7 +44,6 @@ theorem demo_prod_comm {L : Type*} [CommRing L] (v0 v1 v2 v3 : L) :
 
 /- Warm-up: a trinomial square is expanded. -/
 set_option maxRecDepth 1000000 in
-set_option maxHeartbeats 4000000 in
 theorem demo_distrib {L : Type*} [CommRing L] (v0 v1 v2 v3 : L) :
     (((v0 + v1) + v2) * ((v0 + v1) + v2)) =
       ((((((v0 ^ 2) + (v1 ^ 2)) + (v2 ^ 2)) + ((((2 : ℤ) : L) * v0) * v1)) + ((((2 : ℤ) : L) * v0) * v2)) + ((((2 : ℤ) : L) * v1) * v2)) := by
@@ -61,7 +58,6 @@ theorem demo_distrib {L : Type*} [CommRing L] (v0 v1 v2 v3 : L) :
 /- A degree-8 product identity: the same four squared binomials in a different order.
    `native_decide` expands and compares both normal forms. -/
 set_option maxRecDepth 1000000 in
-set_option maxHeartbeats 4000000 in
 theorem demo_deg8 {L : Type*} [CommRing L] (v0 v1 v2 v3 : L) :
     (((((v0 + v1) ^ 2) * ((v0 + v2) ^ 2)) * ((v1 + v3) ^ 2)) * ((v2 + v3) ^ 2)) =
       (((((v0 + v2) ^ 2) * ((v2 + v3) ^ 2)) * ((v0 + v1) ^ 2)) * ((v1 + v3) ^ 2)) := by

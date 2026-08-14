@@ -38,8 +38,6 @@ open Polynomial
 
 namespace Rigidity.RET.Descent
 
-set_option synthInstance.maxHeartbeats 1000000
-set_option maxHeartbeats 1000000
 
 /-- **The descended model together with the geometric compositum it sits in.**
 
@@ -158,7 +156,7 @@ theorem GeomCompositum.surjective_monodromy {G : Type} [Group G] [Finite G]
     (c : GeomCompositum G) : Function.Surjective c.monodromy :=
   c.surjective_toG.comp c.compare.surjective
 
-set_option maxHeartbeats 2400000 in
+set_option maxHeartbeats 400000 in
 /-- **The arithmetic descent core (A2's irreducible leaf).**  From an abstract geometric Galois cover
 `L/ℚ̄(T)` with deck group `G`, there is a *finite* Galois extension `Ω/ℚ(T)` (char 0) whose geometric
 Galois group `Gal(Ω/k_Ω(T))` — over its own constant-field base `k_Ω(T) = constFieldBase Ω` —

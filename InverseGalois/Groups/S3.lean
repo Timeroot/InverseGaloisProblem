@@ -95,7 +95,7 @@ theorem IsInverseGalois.perm_fin_three : IsInverseGalois (Equiv.Perm (Fin 3)) :=
   have h_perm_iso : Nonempty (Equiv.Perm (rootSet p ℂ) ≃* Equiv.Perm (Fin 3)) := by
     constructor
     refine' { Equiv.permCongr (Fintype.equivOfCardEq h_card) with .. }
-    aesop
+    simp
   refine ⟨p.SplittingField, ?_, ?_, ?_, ?_, ?_⟩
   all_goals try infer_instance
   · exact

@@ -27,7 +27,7 @@ open Polynomial IntermediateField
 
 noncomputable section
 
-set_option maxHeartbeats 800000
+
 set_option maxRecDepth 1000
 
 namespace IsInverseGalois
@@ -71,6 +71,7 @@ private lemma f_a5_ne_zero : f_a5 ≠ 0 :=
 /-
 `f_a5_Z` is irreducible over `ℤ`.
 -/
+set_option maxHeartbeats 400000 in
 private lemma f_a5_Z_irreducible : Irreducible f_a5_Z := by
   have h_irred_mod3 : Irreducible (Polynomial.X^5 + 2 * Polynomial.X + 1 : Polynomial (ZMod 3)) := by
     have h_no_factorization : ∀ p q : Polynomial (ZMod 3),
@@ -105,7 +106,8 @@ private lemma f_a5_Z_irreducible : Irreducible f_a5_Z := by
         repeat (first
           | erw [Polynomial.degree_add_eq_left_of_degree_lt]
           | erw [Polynomial.degree_C]
-          | simp +decide)
+          | simp
+          | decide)
     · intro p q hpq
       by_contra h_contra
       push_neg at h_contra
@@ -209,9 +211,22 @@ private lemma card_gal_dvd_60 : Nat.card f_a5.Gal ∣ 60 := by
     convert card_gal_dvd_card_rootSet_factorial f_a5 using 1
     rw [card_rootSet_eq_natDegree] <;> norm_num [f_a5_natDegree, f_a5_irreducible.separable, f_a5_ne_zero]
   have h_15_dvd : 15 ∣ Nat.card f_a5.Gal := Nat.lcm_dvd three_dvd_card_gal five_dvd_card_gal
-  have := Nat.le_of_dvd (by decide) h_dvd_120
-  interval_cases _ : Nat.card f_a5.Gal <;> simp_all +decide only
-  exact card_gal_ne_120 ‹_›
+  have h_dvd_120' : Nat.card f_a5.Gal ∣ 120 := by
+    rwa [show Nat.factorial 5 = 120 from rfl] at h_dvd_120
+  clear h_dvd_120
+  have h_ne : Nat.card f_a5.Gal ≠ 120 := card_gal_ne_120
+  -- Write the order as `15 * k`; then `k ∣ 8` and `k ≠ 8`, hence `k ∣ 4`.
+  obtain ⟨k, hk⟩ := h_15_dvd
+  rw [hk] at h_dvd_120' h_ne ⊢
+  have hk8 : k ∣ 8 := (Nat.mul_dvd_mul_iff_left (show 0 < 15 by norm_num)).mp
+    (show (15 : ℕ) * k ∣ 15 * 8 from h_dvd_120')
+  have hkne : k ≠ 8 := fun h ↦ h_ne (by rw [h])
+  have hkle : k ≤ 8 := Nat.le_of_dvd (by norm_num) hk8
+  have hk4 : k ∣ 4 := by
+    interval_cases k <;> first
+      | decide
+      | omega
+  exact show (15 : ℕ) * k ∣ 15 * 4 from mul_dvd_mul_left 15 hk4
 
 /-!
 ## Step 3: Lower bound — 60 divides |Gal|
@@ -262,14 +277,19 @@ private lemma sixty_dvd_card_gal : 60 ∣ Nat.card f_a5.Gal := by
     · exact f_a5_ne_zero
   have h_iso_perm : ∃ H' : Subgroup (Equiv.Perm (Fin 5)), Nat.card H' = Nat.card f_a5.Gal := by
     obtain ⟨H, hH⟩ := h_inj
-    refine ⟨H.map (Equiv.permCongr e |> MonoidHom.mk' <| by aesop), ?_⟩
+    refine ⟨H.map (Equiv.permCongr e |> MonoidHom.mk' <| by simp), ?_⟩
     rw [← hH, Nat.card_congr]
     symm
-    refine' Equiv.ofBijective (fun x ↦ ⟨_, Subgroup.mem_map_of_mem _ x.2⟩) ⟨fun x y hxy ↦ _, fun x ↦ _⟩ <;> aesop
+    refine' Equiv.ofBijective (fun x ↦ ⟨_, Subgroup.mem_map_of_mem _ x.2⟩) ⟨fun x y hxy ↦ _, fun x ↦ _⟩
+    · simp_all only [Nat.card_eq_fintype_card, Set.mem_insert_iff, Set.mem_singleton_iff, MonoidHom.mk'_apply, Subtype.mk.injEq, EmbeddingLike.apply_eq_iff_eq, SetLike.coe_eq_coe]
+    · simp_all only [Nat.card_eq_fintype_card, Set.mem_insert_iff, Set.mem_singleton_iff, MonoidHom.mk'_apply, Subtype.exists]
+      obtain ⟨val, property⟩ := x
+      simp_all only [Subtype.mk.injEq, exists_prop]
+      simp_all only [Subgroup.mem_map, MonoidHom.mk'_apply]
   obtain ⟨H', hH'⟩ := h_iso_perm
   have := Perm_Fin5_no_subgroup_order_15 H'
   have := Perm_Fin5_no_subgroup_order_30 H'
-  aesop
+  simp_all
 
 /-!
 ## Assembly
@@ -301,14 +321,16 @@ private lemma gal_iso_alt5 :
             · exact IsAlgClosed.splits (Polynomial.map (algebraMap ℚ ℂ) f_a5)
             · exact f_a5_irreducible.separable
             · exact Polynomial.SplittingField.splits _
-          exact ⟨{ Equiv.permCongr (Fintype.equivOfCardEq hcard) with map_mul' := by aesop }⟩
+          exact ⟨{ Equiv.permCongr (Fintype.equivOfCardEq hcard) with map_mul' := by simp }⟩
         obtain ⟨g⟩ := h_permiso
         refine ⟨g.toMonoidHom.comp f, ?_, ?_⟩ <;> simp_all [Function.Injective]
         · assumption
         · convert h_rangecard using 1
           rw [← Nat.card_eq_fintype_card]
           rw [← Nat.card_congr]
-          exact ⟨fun x ↦ ⟨g x, by aesop⟩, fun x ↦ ⟨g.symm x, by aesop⟩, fun x ↦ by aesop, fun x ↦ by aesop⟩
+          exact ⟨fun x ↦ ⟨g x, x.2.imp fun y hy ↦ by rw [hy]⟩,
+            fun x ↦ ⟨g.symm x, x.2.imp fun y hy ↦ by simp [← hy]⟩,
+            fun x ↦ by simp, fun x ↦ by simp⟩
       obtain ⟨f, hf_inj, hf_card⟩ := h_subgroup
       have h_image : MonoidHom.range f = alternatingGroup (f_a5.rootSet ℂ) := by
         have h_unique : ∀ (H : Subgroup (Equiv.Perm (f_a5.rootSet ℂ))),
@@ -334,7 +356,7 @@ private lemma gal_iso_alt5 :
         any_goals rw [← h_image _ |>.1 ⟨x, rfl⟩]
         · exact hf_inj <| Subtype.ext_iff.mp hxy
         · exact Exists.elim (h_image x |>.2 x.2) fun y hy ↦ ⟨y, Subtype.ext hy⟩
-        · aesop
+        · simp
       have h_card : Nat.card (f_a5.rootSet ℂ) = 5 := by
         rw [Nat.card_eq_fintype_card]
         convert Polynomial.card_rootSet_eq_natDegree _ _

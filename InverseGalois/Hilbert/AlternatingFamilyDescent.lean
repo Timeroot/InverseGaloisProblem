@@ -130,9 +130,9 @@ theorem vieta_map {A : Type} [Field A] [Algebra ℚ A] (n : ℕ) (hn : 2 ≤ n)
                 (Finset.univ.val.map x)) := by
         convert Splits.eq_prod_roots_of_monic _ _
         all_goals try infer_instance
-        · aesop
+        · simp_all
         · rw [splits_iff_card_roots, hx',
-            natDegree_map_of_leadingCoeff_ne_zero] <;> aesop
+            natDegree_map_of_leadingCoeff_ne_zero] <;> simp_all
         · exact hF.map ev
       convert congr_arg (fun p ↦ p.coeff (n - (i.val + 1))) h_vieta_prod using 1
       · rw [coeff_map]
@@ -462,7 +462,9 @@ theorem altResolvent_root_property (n : ℕ) (hn : 2 ≤ n) (G : Polynomial (Pol
       convert splits_iff_card_roots.mp _
       convert SplittingField.splits (specialize (serreAnFamily n) t) using 1
       unfold specialize
-      aesop
+      simp_all only [Monic.natDegree_map, A, ev, ι]
+      ext n_1 : 1
+      simp_all only [coeff_map, RingHom.coe_comp, coe_evalRingHom, Function.comp_apply, eq_ratCast]
     rw [h_card_roots]
     exact hdeg'
   obtain ⟨x', -, hGmap⟩ := hG ev x hdeg' hx.symm

@@ -21,6 +21,17 @@ open scoped Classical
 -/
 
 /-
+`A₅` has sixty elements, in the unfolded `{x // sign x = 1}` shape that `simp` produces.
+-/
+private lemma card_even_perm_fin5 :
+    Fintype.card { x : Equiv.Perm (Fin 5) // Equiv.Perm.sign x = 1 } = 60 := by
+  have h := two_mul_card_alternatingGroup (α := Fin 5)
+  rw [Fintype.card_perm, Fintype.card_fin, show Nat.factorial 5 = 120 from rfl] at h
+  have h' : Fintype.card (alternatingGroup (Fin 5)) = 60 := by omega
+  rw [← h']
+  exact Fintype.card_congr (Equiv.subtypeEquivRight fun _ ↦ Equiv.Perm.mem_alternatingGroup)
+
+/-
 A₅ has no subgroup of order 20 (index 3 in A₅ would give a nontrivial
 homomorphism A₅ → S₃, impossible by simplicity since |S₃| < |A₅|).
 -/
@@ -41,7 +52,7 @@ theorem A5_no_subgroup_order_20 :
           specialize h_act g (QuotientGroup.mk 1)
           simp_all [QuotientGroup.eq]
         have := Subgroup.card_mul_index H
-        simp_all +decide
+        simp_all [card_even_perm_fin5]
       -- Since `A₅` is simple, the kernel of `f` must be trivial.
       obtain ⟨f, hf⟩ := h_hom
       have h_ker_trivial : f.ker = ⊥ :=
@@ -53,12 +64,12 @@ theorem A5_no_subgroup_order_20 :
         have h_quot : Nat.card (alternatingGroup (Fin 5) ⧸ H) = 3 := by
           have := Subgroup.card_eq_card_quotient_mul_card_subgroup H
           simp_all
-          rw [show Fintype.card { x : Equiv.Perm (Fin 5) // Equiv.Perm.sign x = 1 } = 60 by native_decide] at this
+          rw [card_even_perm_fin5] at this
           symm
           linarith
         rw [← h_quot]
         exact Nat.card_perm
-      simp_all +decide [Nat.factorial]
+      simp_all [Nat.factorial, card_even_perm_fin5]
 
 
 /-
@@ -232,5 +243,5 @@ lemma iso_dihedral_five_of_card_ten {G : Type*} [Group G] [Finite G]
   have h_bij : Function.Bijective ϕ := by
     rw [Fintype.bijective_iff_surjective_and_card]
     refine ⟨h_surj, ?_⟩
-    simp +decide [hcard]
+    simp [hcard, DihedralGroup.card]
   exact ⟨MulEquiv.symm (MulEquiv.ofBijective ϕ h_bij)⟩

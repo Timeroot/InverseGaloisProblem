@@ -1,4 +1,5 @@
 import Mathlib
+import InverseGalois.Core.InstanceShortcuts
 import InverseGalois.Hilbert.Analytic.NewtonPuiseux
 import InverseGalois.Polynomial.FrobeniusLift
 import InverseGalois.Hilbert.Analytic.SelmerMorse
@@ -30,8 +31,6 @@ open Polynomial
 open scoped Classical
 noncomputable section
 
-set_option maxHeartbeats 4000000
-set_option synthInstance.maxHeartbeats 800000
 
 namespace MorseSwap
 
@@ -59,6 +58,14 @@ instance : IsDedekindDomain (Bring n) :=
 
 instance : Algebra.IsIntegral Abase (Bring n) :=
   IsIntegralClosure.isIntegral_algebra Abase (Lfield n)
+
+/-- The coefficient ring acts faithfully on the splitting field: it embeds in the geometric base
+field, which embeds in the splitting field. -/
+instance (priority := high) : FaithfulSMul Abase (Lfield n) :=
+  (faithfulSMul_iff_algebraMap_injective Abase (Lfield n)).2 <| by
+    rw [IsScalarTower.algebraMap_eq Abase GeomBase (Lfield n), RingHom.coe_comp]
+    exact (algebraMap GeomBase (Lfield n)).injective.comp
+      (IsFractionRing.injective Abase GeomBase)
 
 instance sccGeom : SMulCommClass (morseGeomPoly n).Gal GeomBase (Lfield n) :=
   ⟨fun g a x ↦ by
@@ -97,7 +104,7 @@ lemma rootMap_mem (x : (genPolyC n).rootSet (Bring n)) :
   have h_root : aeval (x.val : (Lfield n)) (genPolyC n) = 0 := by
     convert Polynomial.aeval_eq_zero_of_mem_rootSet x.2 using 1
     erw [← Subtype.coe_inj]
-    aesop
+    simp
   rw [Polynomial.mem_rootSet']
   constructor
   · refine ne_of_apply_ne Polynomial.natDegree ?_
@@ -111,6 +118,7 @@ lemma rootMap_mem (x : (genPolyC n).rootSet (Bring n)) :
 def rootMap (x : (genPolyC n).rootSet (Bring n)) : (morseGeomPoly n).rootSet (Lfield n) :=
   ⟨((x : Bring n) : Lfield n), rootMap_mem n x⟩
 
+set_option synthInstance.maxHeartbeats 200000 in
 lemma rootMap_bijective : Function.Bijective (rootMap n) := by
   constructor
   · intro x y hxy
@@ -122,7 +130,10 @@ lemma rootMap_bijective : Function.Bijective (rootMap n) := by
       · exact genPolyC_monic n hn2.1
       · convert Polynomial.aeval_eq_zero_of_mem_rootSet y.2 using 1
         unfold morseGeomPoly
-        aesop
+        simp_all only [aeval_map_algebraMap]
+        obtain ⟨val, property⟩ := y
+        simp_all only
+        rfl
     refine ⟨⟨⟨y.val, hy_integral⟩, ?_⟩, ?_⟩
     all_goals norm_num [rootMap]
     rw [Polynomial.mem_rootSet']
@@ -134,7 +145,7 @@ lemma rootMap_bijective : Function.Bijective (rootMap n) := by
       unfold morseGeomPoly
       simp [genPolyC]
       erw [Subtype.ext_iff]
-      aesop
+      trivial
 
 /-- The inclusion `B ↪ L` restricts to a bijection on root sets. -/
 def rootEquiv : (genPolyC n).rootSet (Bring n) ≃ (morseGeomPoly n).rootSet (Lfield n) :=
@@ -167,6 +178,7 @@ lemma gal_smul_coe (g : (morseGeomPoly n).Gal) (y : (morseGeomPoly n).rootSet (L
       = g ((y : Lfield n)) :=
   galActionAux_perm_val (morseGeomPoly n) g y
 
+set_option synthInstance.maxHeartbeats 200000 in
 /-- `rootEquiv` intertwines the direct `B`-root action with the direct `L`-root action
 (`galActionAux_perm`). -/
 lemma rootEquiv_smul (g : (morseGeomPoly n).Gal) (x : (genPolyC n).rootSet (Bring n)) :
@@ -221,7 +233,10 @@ lemma genPolyC_splits_B : ((genPolyC n).map (algebraMap Abase (Bring n))).Splits
       convert Polynomial.Splits.eq_prod_roots_of_monic _ _
       · convert Polynomial.IsSplittingField.splits (Lfield n) (morseGeomPoly n) using 1
         unfold morseGeomPoly
-        aesop
+        simp_all only [Subalgebra.setRange_algebraMap, SetLike.mem_coe]
+        ext n_1 : 1
+        simp_all only [coeff_map]
+        rfl
       · exact Polynomial.Monic.map _ (genPolyC_monic n hn2.1)
     obtain ⟨s, hs⟩ : ∃ s : Multiset (↥(Bring n)),
         Multiset.map (fun r : ↥(Bring n) ↦ algebraMap (Bring n) (Lfield n) r) s
@@ -247,7 +262,20 @@ lemma genPolyC_splits_B : ((genPolyC n).map (algebraMap Abase (Bring n))).Splits
   simp at *
   rintro a x hx hx' rfl
   refine Submonoid.subset_closure (Or.inr ⟨-x, ?_⟩)
-  aesop
+  simp_all
+  ext n_1 : 2
+  simp_all only [coeff_add, coeff_X, coeff_C, AddMemClass.coe_add, coeff_sub, AddSubgroupClass.coe_sub]
+  split
+  next h =>
+    subst h
+    simp_all only [OneMemClass.coe_one, one_ne_zero, ↓reduceIte, ZeroMemClass.coe_zero, add_zero, sub_zero]
+  next h =>
+    simp_all only [ZeroMemClass.coe_zero, zero_add, zero_sub]
+    split
+    next h_1 =>
+      subst h_1
+      simp_all only [one_ne_zero, not_false_eq_true]
+    next h_1 => simp_all only [ZeroMemClass.coe_zero, neg_zero]
 
 /-! ## Pretransitivity and faithfulness on `B`-roots -/
 
@@ -312,7 +340,7 @@ lemma sq_dvd_fiber (c : AlgebraicClosure ℚ) (hc : (n : AlgebraicClosure ℚ) *
     refine ⟨(Polynomial.X ^ n - Polynomial.X - Polynomial.C (c ^ n - c)) /ₘ
       (Polynomial.X - Polynomial.C c), ?_⟩
     have hroot : (Polynomial.X ^ n - Polynomial.X - Polynomial.C (c ^ n - c) :
-        (AlgebraicClosure ℚ)[X]).IsRoot c := by aesop
+        (AlgebraicClosure ℚ)[X]).IsRoot c := by simp
     rw [Polynomial.mul_divByMonic_eq_iff_isRoot.mpr hroot]
   convert mul_dvd_mul_left (X - C c) (Polynomial.dvd_iff_isRoot.mpr (show q.eval c = 0 from ?_)) using 1
   · ring
@@ -373,7 +401,12 @@ theorem genC_rootMultiplicity_le_two {F : Type*} [CommRing F] [IsDomain F] {m : 
     obtain ⟨q, hq⟩ := h_div
     simp_all [pow_succ, mul_assoc]
   rcases m with (_ | _ | m) <;> simp_all [Polynomial.derivative_pow]
-  aesop
+  obtain ⟨left, right⟩ := h_eval
+  obtain ⟨left_1, right⟩ := right
+  obtain ⟨left_2, right⟩ := right
+  subst left_2
+  simp_all only [ne_eq, Nat.add_eq_zero_iff, one_ne_zero, and_self, not_false_eq_true, zero_pow, sub_self, zero_sub,
+    neg_eq_zero, mul_zero]
 
 /-
 **Field-level Morse count.**  Over a domain `F` with `(m:F) ≠ 0` and `(m:F) ≠ 1`, the number
@@ -391,9 +424,9 @@ theorem genC_ncard_roots_field {F : Type*} [CommRing F] [IsDomain F] [DecidableE
     refine Finset.card_le_one.2 fun a ha b hb ↦ ?_
     simp_all
     apply genC_common_root_unique hm c hnz hn1
-    · aesop
+    · simp_all
     · exact Polynomial.isRoot_iterate_derivative_of_lt_rootMultiplicity ha.2
-    · aesop
+    · simp_all
     · exact Polynomial.isRoot_iterate_derivative_of_lt_rootMultiplicity hb.2
   have h_sum_le_one :
       ∑ a ∈ p.roots.toFinset, (p.rootMultiplicity a - 1)
@@ -412,8 +445,8 @@ theorem genC_ncard_roots_field {F : Type*} [CommRing F] [IsDomain F] [DecidableE
           + ∑ a ∈ p.roots.toFinset, 1 = Multiset.card p.roots := by
     rw [← Finset.sum_add_distrib,
       Finset.sum_congr rfl fun x hx ↦
-        tsub_add_cancel_of_le <| Nat.succ_le_of_lt <| Nat.pos_of_ne_zero <| by aesop]
-    aesop
+        tsub_add_cancel_of_le <| Nat.succ_le_of_lt <| Nat.pos_of_ne_zero <| by simp_all]
+    trivial
   norm_num at *
   linarith
 
@@ -439,7 +472,7 @@ theorem morse_ncard_bound_abstract {R S : Type*} [CommRing R] [CommRing S] [IsDo
     rcases m with (_ | _ | m) <;> simp_all [Polynomial.coeff_eq_zero_of_natDegree_lt]
   convert h1.trans _
   convert genC_ncard_roots_field hm (algebraMap R (S ⧸ P) t) _ _ using 1
-  · aesop
+  · simp_all
   · rw [← Set.ncard_coe_finset]
     congr
     ext
@@ -448,6 +481,7 @@ theorem morse_ncard_bound_abstract {R S : Type*} [CommRing R] [CommRing S] [IsDo
   · exact Nat.cast_ne_zero.mpr (by linarith)
   · exact_mod_cast ne_of_gt hm
 
+set_option synthInstance.maxHeartbeats 200000 in
 /-- For any maximal ideal `P` of `B`, the roots of `genPolyC` collide at most once modulo `P`. -/
 lemma morse_ncard_bound (P : Ideal (Bring n)) [P.IsMaximal] :
     ((genPolyC n).rootSet (Bring n)).ncard ≤ ((genPolyC n).rootSet (Bring n ⧸ P)).ncard + 1 := by
@@ -517,437 +551,4 @@ lemma inertia_of_ramified
   refine ⟨Q, inferInstance, g, g.2, ?_⟩
   simpa using hg
 
-/-! ### The concrete intermediate ring `A[x] = ℚ̄[x] ⊆ B` -/
-
-/-
-There is a root of `genPolyC n` inside `B = Bring n`.
--/
-lemma exists_rootB : ∃ x : Bring n, (aeval x) (genPolyC n) = 0 := by
-  have hcard := morseGeomPoly_card_rootSet n hn2.out
-  have hne : Nonempty ((morseGeomPoly n).rootSet (Lfield n)) :=
-    Fintype.card_pos_iff.mp (hcard.symm ▸ hn2.1.trans_lt' (by decide))
-  obtain ⟨r⟩ := hne
-  obtain ⟨s, _⟩ := (rootMap_bijective n).2 r
-  exact ⟨s, Polynomial.aeval_eq_zero_of_mem_rootSet s.2⟩
-
-/-- A chosen root of `genPolyC n` in `B`. -/
-def rootB : Bring n := (exists_rootB n).choose
-
-lemma rootB_spec : (aeval (rootB n)) (genPolyC n) = 0 := (exists_rootB n).choose_spec
-
-/-- The intermediate ring `A[x] = ℚ̄[x] ⊆ B`. -/
-abbrev Smid : Type := ↑(Algebra.adjoin Abase ({rootB n} : Set (Bring n)))
-
-/-- The generator `x` viewed inside the intermediate ring. -/
-def xS : Smid n := ⟨rootB n, Algebra.subset_adjoin (Set.mem_singleton _)⟩
-
-instance : Module.IsTorsionFree Abase (Bring n) := by
-  constructor
-  intro r hr x hx h
-  replace h := congr_arg Subtype.val h
-  simp_all [Algebra.smul_def]
-  refine h.resolve_right ?_
-  simpa [IsScalarTower.algebraMap_apply Abase GeomBase (Lfield n)] using hr.left.ne_zero
-
-instance : Module.IsTorsionFree Abase (Smid n) := by
-  constructor
-  intro r hr x y hxy
-  replace hxy := congr_arg Subtype.val hxy
-  simp_all [Algebra.smul_def]
-  refine hxy.resolve_right ?_
-  simpa using hr.left.ne_zero
-
-instance : Module.IsTorsionFree (Smid n) (Bring n) := by
-  refine ⟨fun x hx ↦ ?_⟩
-  intro y z h_eq
-  simp_all
-
-instance : Module.Finite (Smid n) (Bring n) := by
-  have h_finite : Module.Finite Abase (Bring n) := by
-    infer_instance
-  exact h_finite.of_restrictScalars_finite Abase (Smid n) (Bring n)
-
-instance : Algebra.IsIntegral (Smid n) (Bring n) := by
-  infer_instance
-
-omit hn2 in
-lemma algebraMap_Abase_Bring_injective : Function.Injective (algebraMap Abase (Bring n)) := by
-  -- Assume `x : Abase` maps to `0 : Bring n`. Then `x = 0` because (by `integralClosure`/`IsIntegralClosure`) the algebra map `Abase ↪ Lfield n` is injective, and `Bring n ↪ Lfield n` is injective (`subtype quotation`).
-  intro x y hxy
-  simpa using hxy
-
-lemma xS_conductor_top : conductor Abase (xS n) = ⊤ := by
-  convert (conductor_eq_top_iff_adjoin_eq_top (R := Abase) (x := xS n)).mpr _ using 1
-  rw [Algebra.eq_top_iff]
-  intro y
-  simp [xS]
-  rcases y with ⟨y, hy⟩
-  refine Algebra.adjoin_induction ?_ ?_ ?_ ?_ hy
-  · exact fun x hx ↦ Algebra.subset_adjoin <| by aesop
-  · exact fun r ↦ Subalgebra.algebraMap_mem _ r
-  · exact fun x y hx hy hx' hy' ↦ Subalgebra.add_mem _ hx' hy'
-  · exact fun x y hx hy hx' hy' ↦ Subalgebra.mul_mem _ hx' hy'
-
-lemma xS_minpoly : minpoly Abase (xS n) = genPolyC n := by
-  -- Since `genPolyC n` is irreducible and monic, and `xS n` is a root, it must be the minimal polynomial.
-  have h_minpoly_div : minpoly Abase (xS n) ∣ genPolyC n := by
-    refine minpoly.isIntegrallyClosed_dvd ?_ ?_
-    · refine ⟨genPolyC n, ?_, ?_⟩
-      · exact genPolyC_monic n hn2.1
-      · convert rootB_spec n using 1
-        simp [aeval_def, Polynomial.eval₂_eq_sum_range]
-        erw [← Subtype.coe_inj]
-        aesop
-    · convert rootB_spec n using 1
-      erw [← Subtype.coe_inj]
-      simp [xS]
-  have h_irreducible : Irreducible (genPolyC n) := by
-    exact genPolyC_irreducible n
-  refine Polynomial.eq_of_monic_of_associated ?_ ?_ ?_
-  · apply minpoly.monic
-    refine ⟨genPolyC n, ?_, ?_⟩
-    · exact genPolyC_monic n hn2.1
-    · convert rootB_spec n using 1
-      simp [xS, aeval_def, Polynomial.eval₂_eq_sum_range]
-      simp [← Subtype.coe_inj]
-  · exact genPolyC_monic n hn2.1
-  · obtain ⟨q, hq⟩ := h_minpoly_div
-    have := h_irreducible.2
-    specialize this hq
-    exact this.elim (fun h ↦ False.elim <| minpoly.not_isUnit Abase (xS n) h)
-      fun h ↦ associated_of_dvd_dvd (by aesop) (by aesop)
-
-/-
-The image of the base variable `T` in `A[x]` is `xⁿ - x`.
--/
-lemma algebraMap_Abase_Smid_X :
-    algebraMap Abase (Smid n) (Polynomial.X) = (xS n) ^ n - xS n := by
-  convert rootB_spec n using 1
-  simp [← Subtype.coe_inj, genPolyC]
-  simp [sub_eq_zero, xS]
-  exact eq_comm
-
-/-
-`A[x]` is generated as a ring by `ℚ̄` and `x`: the `ℚ̄`-polynomial evaluation map at `x` is
-surjective onto `A[x]`.  Consequently `A[x]` is a quotient (in fact isomorphic image) of a
-principal ideal ring, hence itself a principal ideal ring.
--/
-lemma Smid_eval_surjective :
-    Function.Surjective
-      (Polynomial.eval₂RingHom ((algebraMap Abase (Smid n)).comp Polynomial.C) (xS n)) := by
-  intro y
-  have h_span : ∀ y : Smid n, y ∈ Subalgebra.toSubmodule (Algebra.adjoin (Abase) {xS n}) := by
-    intro y
-    apply Algebra.eq_top_iff.mp (by
-    convert (conductor_eq_top_iff_adjoin_eq_top (R := Abase) (x := xS n)).mp (xS_conductor_top n) using 1) y
-  refine Algebra.adjoin_induction ?_ ?_ ?_ ?_ (h_span y)
-  · exact fun x hx ↦ ⟨Polynomial.X, by aesop⟩
-  · intro r
-    use Polynomial.comp r (Polynomial.X ^ n - Polynomial.X)
-    simp [Polynomial.eval₂_comp]
-    rw [Polynomial.eval₂_eq_sum_range]
-    conv_rhs => rw [Polynomial.as_sum_range_C_mul_X_pow r]
-    simp [map_sum, map_mul, map_pow, algebraMap_Abase_Smid_X]
-  · rintro x y hx hy ⟨a, rfl⟩ ⟨b, rfl⟩
-    exact ⟨a + b, by simp⟩
-  · rintro x y hx hy ⟨a, rfl⟩ ⟨b, rfl⟩
-    exact ⟨a * b, by simp⟩
-
-instance : IsDedekindDomain (Smid n) := by
-  have : IsPrincipalIdealRing (Smid n) :=
-    IsPrincipalIdealRing.of_surjective _ (Smid_eval_surjective n)
-  infer_instance
-
-/-! ### The branch-point ideal and its ramification -/
-
-/-- The critical constant `c` (abscissa of a double root). -/
-def critC : AlgebraicClosure ℚ := (exists_critPoint n).choose
-
-lemma critC_spec : (n : AlgebraicClosure ℚ) * (critC n) ^ (n - 1) = 1 ∧ critC n ≠ 0 :=
-  (exists_critPoint n).choose_spec
-
-/-- The critical value `t₀ = cⁿ - c`. -/
-def critT : AlgebraicClosure ℚ := (critC n) ^ n - critC n
-
-/-- The branch-point maximal ideal `(T - t₀)` of `A = ℚ̄[T]`. -/
-def branchIdeal : Ideal Abase := Ideal.span {Polynomial.X - Polynomial.C (critT n)}
-
-instance : (branchIdeal n).IsMaximal := by
-  convert PrincipalIdealRing.isMaximal_of_irreducible _
-  · infer_instance
-  · exact Polynomial.irreducible_X_sub_C _
-
-lemma branchIdeal_ne_bot : branchIdeal n ≠ ⊥ := by
-  unfold branchIdeal
-  rw [Ne.eq_def, Ideal.span_singleton_eq_bot]
-  exact Polynomial.X_sub_C_ne_zero _
-
-attribute [local instance] Ideal.Quotient.field
-
-/-- Over the residue field `A/(T - t₀) ≅ ℚ̄`, the reduced polynomial `genPolyC mod` has the double
-root `c`: the square of the linear factor `X - c` divides it. -/
-lemma branch_reduced_sq_dvd :
-    (X - C (Ideal.Quotient.mk (branchIdeal n) (Polynomial.C (critC n))))^2 ∣
-      (genPolyC n).map (Ideal.Quotient.mk (branchIdeal n)) := by
-  set ρ : (AlgebraicClosure ℚ) →+* (Abase ⧸ branchIdeal n) :=
-    (Ideal.Quotient.mk (branchIdeal n)).comp Polynomial.C with hρ
-  have hXeq : (Ideal.Quotient.mk (branchIdeal n)) (Polynomial.X) =
-      (Ideal.Quotient.mk (branchIdeal n)) (Polynomial.C (critT n)) := by
-    rw [← sub_eq_zero, ← map_sub, Ideal.Quotient.eq_zero_iff_mem]
-    exact Ideal.mem_span_singleton_self _
-  have hmapeq : (genPolyC n).map (Ideal.Quotient.mk (branchIdeal n))
-      = (X ^ n - X - C (critC n ^ n - critC n)).map ρ := by
-    rw [genPolyC]
-    simp only [Polynomial.map_sub, Polynomial.map_pow, Polynomial.map_X, Polynomial.map_C]
-    rw [hXeq, hρ]
-    simp [critT, RingHom.comp_apply]
-  rw [hmapeq]
-  have hdvd := sq_dvd_fiber n (critC n) (critC_spec n).1
-  have := Polynomial.map_dvd ρ hdvd
-  simpa [Polynomial.map_pow, Polynomial.map_sub, Polynomial.map_X, Polynomial.map_C, hρ,
-    RingHom.comp_apply] using this
-
-/-- **The branch point ramifies in the intermediate ring.**  There is a prime `PS` of `A[x]`
-over the branch ideal whose ramification index is at least `2` — coming from the double root of
-the fibre `Xⁿ - X - t₀` via Kummer–Dedekind. -/
-lemma branch_ramified :
-    ∃ PS : Ideal (Smid n), PS.IsPrime ∧ PS.LiesOver (branchIdeal n) ∧
-      2 ≤ Ideal.ramificationIdx (algebraMap Abase (Smid n)) (branchIdeal n) PS ∧
-      Ideal.map (algebraMap (Smid n) (Bring n)) PS ≠ ⊥ := by
-  classical
-  have hsq := branch_reduced_sq_dvd n
-  have hI' : branchIdeal n ≠ ⊥ := branchIdeal_ne_bot n
-  have hxint : IsIntegral Abase (xS n) := ⟨genPolyC n, genPolyC_monic n hn2.out, by
-    have := xS_minpoly n
-    have h2 := minpoly.aeval Abase (xS n)
-    rwa [this] at h2⟩
-  have hx : (conductor Abase (xS n)).comap (algebraMap Abase (Smid n)) ⊔ (branchIdeal n) = ⊤ := by
-    rw [xS_conductor_top]
-    simp
-  set d : (Abase ⧸ branchIdeal n)[X] := X - C (Ideal.Quotient.mk (branchIdeal n) (Polynomial.C (critC n))) with hd
-  have hPne : (minpoly Abase (xS n)).map (Ideal.Quotient.mk (branchIdeal n)) ≠ 0 := by
-    rw [xS_minpoly]
-    exact (Polynomial.Monic.map _ (genPolyC_monic n hn2.out)).ne_zero
-  have hd_irr : Irreducible d := irreducible_X_sub_C _
-  have hd_norm : normalize d = d := (monic_X_sub_C _).normalize_eq_self
-  have hcount2 : 2 ≤ Multiset.count d (UniqueFactorizationMonoid.normalizedFactors
-      ((minpoly Abase (xS n)).map (Ideal.Quotient.mk (branchIdeal n)))) := by
-    have hemult : (2 : ℕ∞) ≤ emultiplicity d ((minpoly Abase (xS n)).map (Ideal.Quotient.mk (branchIdeal n))) := by
-      rw [xS_minpoly]
-      exact pow_dvd_iff_le_emultiplicity.mp hsq
-    rw [UniqueFactorizationMonoid.emultiplicity_eq_count_normalizedFactors hd_irr hPne, hd_norm] at hemult
-    exact_mod_cast hemult
-  have hd_mem : d ∈ UniqueFactorizationMonoid.normalizedFactors
-      ((minpoly Abase (xS n)).map (Ideal.Quotient.mk (branchIdeal n))) :=
-    Multiset.count_pos.mp (by omega)
-  set equiv := KummerDedekind.normalizedFactorsMapEquivNormalizedFactorsMinPolyMk
-    (inferInstance : (branchIdeal n).IsMaximal) hI' hx hxint with heq
-  set PS := (equiv.symm ⟨d, hd_mem⟩ :
-    {J // J ∈ UniqueFactorizationMonoid.normalizedFactors
-      (Ideal.map (algebraMap Abase (Smid n)) (branchIdeal n))}) with hPS
-  have hmem : PS.1 ∈ UniqueFactorizationMonoid.normalizedFactors
-      (Ideal.map (algebraMap Abase (Smid n)) (branchIdeal n)) := PS.2
-  have hmapI_ne : Ideal.map (algebraMap Abase (Smid n)) (branchIdeal n) ≠ ⊥ := Ideal.map_ne_bot_of_ne_bot hI'
-  have hPS_ne : PS.1 ≠ ⊥ := UniqueFactorizationMonoid.ne_zero_of_mem_normalizedFactors hmem
-  have hPS_prime : Prime PS.1 := UniqueFactorizationMonoid.prime_of_normalized_factor _ hmem
-  have hPS_isPrime : PS.1.IsPrime := Ideal.isPrime_of_prime hPS_prime
-  have hle : Ideal.map (algebraMap Abase (Smid n)) (branchIdeal n) ≤ PS.1 :=
-    (Ideal.dvd_iff_le).mp (UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors hmem)
-  have hcomap : Ideal.comap (algebraMap Abase (Smid n)) PS.1 = branchIdeal n := by
-    have hIle : branchIdeal n ≤ Ideal.comap (algebraMap Abase (Smid n)) PS.1 :=
-      Ideal.map_le_iff_le_comap.mp hle
-    rcases (inferInstance : (branchIdeal n).IsMaximal).eq_of_le (by
-      intro h
-      exact hPS_isPrime.ne_top (Ideal.comap_eq_top_iff.mp h)) hIle with h
-    exact h.symm
-  have hLiesOver : PS.1.LiesOver (branchIdeal n) := ⟨hcomap.symm⟩
-  refine ⟨PS.1, hPS_isPrime, hLiesOver, ?_, Ideal.map_ne_bot_of_ne_bot hPS_ne⟩
-  rw [Ideal.IsDedekindDomain.ramificationIdx_eq_normalizedFactors_count hmapI_ne hPS_isPrime hPS_ne]
-  have hkd := KummerDedekind.emultiplicity_factors_map_eq_emultiplicity
-    (inferInstance : (branchIdeal n).IsMaximal) hI' hx hxint hmem
-  have hequiv_eq : (↑(equiv ⟨PS.1, hmem⟩) : (Abase ⧸ branchIdeal n)[X]) = d := by
-    have h1 : (⟨PS.1, hmem⟩ :
-        {J // J ∈ UniqueFactorizationMonoid.normalizedFactors
-          (Ideal.map (algebraMap Abase (Smid n)) (branchIdeal n))}) = PS := Subtype.ext rfl
-    rw [h1, hPS, Equiv.apply_symm_apply]
-  rw [hequiv_eq] at hkd
-  have hPS_irr : Irreducible PS.1 := UniqueFactorizationMonoid.irreducible_of_normalized_factor _ hmem
-  have hPS_normeq : normalize PS.1 = PS.1 := UniqueFactorizationMonoid.normalize_normalized_factor _ hmem
-  have hcount_eq : emultiplicity PS.1 (Ideal.map (algebraMap Abase (Smid n)) (branchIdeal n))
-      = ((Multiset.count PS.1 (UniqueFactorizationMonoid.normalizedFactors
-          (Ideal.map (algebraMap Abase (Smid n)) (branchIdeal n)))) : ℕ∞) := by
-    rw [UniqueFactorizationMonoid.emultiplicity_eq_count_normalizedFactors hPS_irr hmapI_ne, hPS_normeq]
-  have hd_emult : (2 : ℕ∞) ≤ emultiplicity d ((minpoly Abase (xS n)).map (Ideal.Quotient.mk (branchIdeal n))) := by
-    rw [UniqueFactorizationMonoid.emultiplicity_eq_count_normalizedFactors hd_irr hPne, hd_norm]
-    exact_mod_cast hcount2
-  rw [← hkd, hcount_eq] at hd_emult
-  exact_mod_cast hd_emult
-
-/-
-The residue field of `A` at the branch ideal is `ℚ̄`, which is perfect, so every residue
-extension is separable.
--/
-lemma branch_residue_separable (Q : Ideal (Bring n)) [Q.LiesOver (branchIdeal n)] [Q.IsMaximal] :
-    Algebra.IsSeparable (Abase ⧸ branchIdeal n) ((Bring n) ⧸ Q) := by
-  have : CharZero (Abase ⧸ branchIdeal n) := algebraRat.charZero _
-  have : Algebra.IsIntegral (Abase ⧸ branchIdeal n) ((Bring n) ⧸ Q) :=
-    Ideal.Quotient.algebra_isIntegral_of_liesOver Q (branchIdeal n)
-  have : Algebra.IsAlgebraic (Abase ⧸ branchIdeal n) ((Bring n) ⧸ Q) :=
-    Algebra.IsIntegral.isAlgebraic
-  exact Algebra.IsAlgebraic.isSeparable_of_perfectField
-
-lemma exists_nontrivial_inertia :
-    ∃ (P : Ideal (Bring n)), P.IsMaximal ∧
-      ∃ g : (morseGeomPoly n).Gal, g ∈ P.inertia (morseGeomPoly n).Gal ∧ g ≠ 1 := by
-  obtain ⟨PS, hPSprime, hPSover, hPSe, hPSmap⟩ := branch_ramified n
-  have := hPSprime
-  have := hPSover
-  refine inertia_of_ramified n (Smid n) (branchIdeal n) (branchIdeal_ne_bot n)
-    (algebraMap_Abase_Bring_injective n) PS hPSe hPSmap ?_ ?_
-  · exact Ideal.map_ne_bot_of_ne_bot (branchIdeal_ne_bot n)
-  · intro Q _ _
-    exact branch_residue_separable n Q
-
-/-
-`permCongr` preserves being a transposition.
--/
-lemma isSwap_permCongr {α β : Type*} [DecidableEq α] [DecidableEq β] (e : α ≃ β)
-    {σ : Equiv.Perm α} (h : σ.IsSwap) : (e.permCongr σ).IsSwap := by
-  obtain ⟨a, b, hab, rfl⟩ := h
-  refine ⟨e a, e b, ?_, ?_⟩
-  · simp [hab]
-  · grind +qlia
-
-/-! ## Assembling the transposition -/
-
-theorem swap_input_final :
-    ∃ g : Equiv.Perm ((morseGeomPoly n).rootSet (Lfield n)),
-        g.IsSwap ∧
-          g ∈ (Gal.galActionHom (morseGeomPoly n) (Lfield n)).range := by
-  classical
-  obtain ⟨P, hPmax, g, hg_in, hg_ne⟩ := exists_nontrivial_inertia n
-  have : P.IsPrime := hPmax.isPrime
-  -- residue field is `ℚ̄`, hence separable over `A/(P ∩ A)`
-  -- Morse: `toPermHom g` is `1` or a swap
-  have hmorse := Polynomial.Splits.toPermHom_apply_eq_one_or_isSwap_of_ncard_le_of_mem_inertia
-    (R := Abase) (S := Bring n) (G := (morseGeomPoly n).Gal) (f := genPolyC n)
-    (genPolyC_splits_B n) P (morse_ncard_bound n P) g hg_in
-  -- it's not `1` because `g ≠ 1` and the action is faithful
-  have hne1 : MulAction.toPermHom (morseGeomPoly n).Gal ((genPolyC n).rootSet (Bring n)) g ≠ 1 := by
-    intro h
-    refine hg_ne (toPermHom_B_injective n ?_)
-    simpa using h
-  have hswapB : (MulAction.toPermHom (morseGeomPoly n).Gal
-      ((genPolyC n).rootSet (Bring n)) g).IsSwap := hmorse.resolve_left hne1
-  -- transport to `L`-roots
-  refine ⟨Gal.galActionHom (morseGeomPoly n) (Lfield n) g, ?_, ⟨g, rfl⟩⟩
-  rw [galActionHom_eq_permCongr n g]
-  exact isSwap_permCongr ((rootEquiv n).trans (Gal.rootsEquivRoots (morseGeomPoly n) (Lfield n)))
-    hswapB
-
 end MorseSwap
-
-/-- The polynomial always splits in its own splitting field (top-level `local Fact` instance so
-that `Gal.galActionHom` typechecks for the wired-in theorems below). -/
-local instance splitsInSplittingField'' (F : Type*) [Field F] (p : F[X]) :
-    Fact ((p.map (algebraMap F p.SplittingField)).Splits) := ⟨SplittingField.splits p⟩
-
-open scoped Classical in
-/-- **A transposition in the geometric monodromy group** (the second conjunct of the deep
-input `morseGeomPoly_monodromy_input`): the group contains an element acting on the roots as a
-transposition — the local monodromy / inertia generator at a simple finite branch point of the
-cover `X ↦ Xⁿ − X` of the affine `T`-line, where two sheets collide as a square-root branch. -/
-theorem morseGeomPoly_hasSwap (n : ℕ) (hn : 2 ≤ n) :
-    ∃ g : Equiv.Perm ((morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField),
-        g.IsSwap ∧
-          g ∈ (Gal.galActionHom (morseGeomPoly n) (morseGeomPoly n).SplittingField).range := by
-  have : Fact (2 ≤ n) := ⟨hn⟩
-  exact MorseSwap.swap_input_final n
-
-open scoped Classical in
-/-- **The single deep geometric-monodromy input for the Morse family.** -/
-theorem morseGeomPoly_monodromy_input (n : ℕ) (hn : 2 ≤ n) :
-    (∀ B : Set ((morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField),
-        MulAction.IsBlock (morseGeomPoly n).Gal B → MulAction.IsTrivialBlock B) ∧
-      (∃ g : Equiv.Perm ((morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField),
-        g.IsSwap ∧
-          g ∈ (Gal.galActionHom (morseGeomPoly n) (morseGeomPoly n).SplittingField).range) :=
-  ⟨morseGeomPoly_primitive n hn, morseGeomPoly_hasSwap n hn⟩
-
-/-- **Primitivity of the geometric monodromy action** (extracted from the deep input
-`morseGeomPoly_monodromy_input`): every block of the `p.Gal`-action on the roots is trivial. -/
-theorem morseGeomPoly_blocks_trivial (n : ℕ) (hn : 2 ≤ n)
-    {B : Set ((morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField)}
-    (hB : MulAction.IsBlock (morseGeomPoly n).Gal B) : MulAction.IsTrivialBlock B :=
-  (morseGeomPoly_monodromy_input n hn).1 B hB
-
-/-- **Preprimitivity of the geometric monodromy action.**
-
-The geometric Galois group of `Xⁿ − X − T` over `ℚ̄(T)`, acting on the roots, is
-*preprimitive*: the action is transitive (`Gal.galAction_isPretransitive` from
-`morseGeomPoly_irreducible`) and admits no nontrivial blocks
-(`morseGeomPoly_blocks_trivial`).  Together with a transposition (`morseGeomPoly_hasSwap`)
-this yields the full symmetric group by Jordan's theorem
-(`Equiv.Perm.subgroup_eq_top_of_isPreprimitive_of_isSwap_mem`). -/
-theorem morseGeomPoly_isPreprimitive (n : ℕ) (hn : 2 ≤ n) :
-    MulAction.IsPreprimitive
-      (Gal.galActionHom (morseGeomPoly n) (morseGeomPoly n).SplittingField).range
-      ((morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField) := by
-  apply isPreprimitive_range_of_isPreprimitive
-  have htrans : MulAction.IsPretransitive (morseGeomPoly n).Gal
-      ((morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField) :=
-    Gal.galAction_isPretransitive _ _ (morseGeomPoly_irreducible n hn)
-  exact { toIsPretransitive := htrans
-          isTrivialBlock_of_isBlock := fun {B} hB ↦ morseGeomPoly_blocks_trivial n hn hB }
-
-/-- **The geometric-monodromy surjectivity, via Jordan's theorem.**
-
-The permutation representation of the geometric Galois group of `Xⁿ − X − T` over `ℚ̄(T)` on
-the roots is *surjective* onto the full symmetric group (equivalently, the geometric Galois
-group is `Sₙ`).  This is the classical Morse-polynomial monodromy computation, here obtained
-by feeding the preprimitivity of the action (`morseGeomPoly_isPreprimitive`) and a
-transposition in the group (`morseGeomPoly_hasSwap`) into Jordan's theorem
-(`Equiv.Perm.subgroup_eq_top_of_isPreprimitive_of_isSwap_mem`). -/
-theorem morseGeomPoly_galActionHom_surjective (n : ℕ) (hn : 2 ≤ n) :
-    Function.Surjective
-      (Gal.galActionHom (morseGeomPoly n) (morseGeomPoly n).SplittingField) := by
-  classical
-  rw [← MonoidHom.range_eq_top]
-  obtain ⟨g, hg2, hgmem⟩ := morseGeomPoly_hasSwap n hn
-  exact Equiv.Perm.subgroup_eq_top_of_isPreprimitive_of_isSwap_mem
-    (morseGeomPoly_isPreprimitive n hn) g hg2 hgmem
-
-open scoped Classical in
-/-- **The range of `galActionHom` contains a generating set of transpositions (proved from the
-monodromy input).**
-
-Once the permutation representation is surjective
-(`morseGeomPoly_galActionHom_surjective`), its range is the whole symmetric group, so it
-contains *every* transposition of the roots; and the set of all transpositions generates the
-symmetric group by `Equiv.Perm.closure_isSwap`.  This is the exact hypothesis consumed by the
-general transfer lemma `gal_swaps_of_range_swaps`. -/
-theorem morseGeomPoly_range_contains_generating_swaps (n : ℕ) (hn : 2 ≤ n) :
-    ∃ S : Set (Equiv.Perm ((morseGeomPoly n).rootSet (morseGeomPoly n).SplittingField)),
-      (∀ t ∈ S, t.IsSwap) ∧
-      (∀ t ∈ S, t ∈ (Gal.galActionHom (morseGeomPoly n) (morseGeomPoly n).SplittingField).range) ∧
-      Subgroup.closure S = ⊤ := by
-  classical
-  refine ⟨{σ | σ.IsSwap}, fun t ht ↦ ht, ?_, Equiv.Perm.closure_isSwap⟩
-  intro t _
-  rw [MonoidHom.range_eq_top.mpr (morseGeomPoly_galActionHom_surjective n hn)]
-  exact Subgroup.mem_top t
-
-open scoped Classical in
-/-- **The geometric monodromy conclusion for `morseGeomPoly`.**
-
-The geometric Galois group of `Xⁿ − X − T` over `ℚ̄(T)` admits a generating set each of whose
-elements acts on the roots as a transposition.  Assembled from the isolated monodromy input
-`morseGeomPoly_range_contains_generating_swaps` via the general transfer lemma
-`gal_swaps_of_range_swaps`. -/
-theorem morseGeomPoly_gal_generated_by_swaps (n : ℕ) (hn : 2 ≤ n) :
-    ∃ S : Set (morseGeomPoly n).Gal,
-      (∀ σ ∈ S,
-        (Gal.galActionHom (morseGeomPoly n) (morseGeomPoly n).SplittingField σ).IsSwap) ∧
-      Subgroup.closure S = ⊤ :=
-  gal_swaps_of_range_swaps (morseGeomPoly n)
-    (morseGeomPoly_range_contains_generating_swaps n hn)

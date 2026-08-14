@@ -96,11 +96,12 @@ theorem stabilizer_eq_map_fixingSubgroup (p : K[X])
     intro x hx
     induction hx using IntermediateField.adjoin_induction
     · replace hx := congr_arg Subtype.val hx
-      aesop
+      subst hy
+      simp_all only [Set.mem_singleton_iff, Gal.restrict_smul]
     · exact y.commutes _
-    · aesop
+    · simp_all
     · rw [map_inv₀, ‹y _ = _›]
-    · aesop
+    · simp_all
   · obtain ⟨y, hy, rfl⟩ := hx
     rw [← Subtype.coe_inj]
     simpa [Gal.restrict_smul] using hy _ <| IntermediateField.subset_adjoin K _ <| Set.mem_singleton _

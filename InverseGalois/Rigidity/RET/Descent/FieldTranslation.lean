@@ -46,7 +46,7 @@ open Polynomial
 
 open scoped IntermediateField
 
-set_option synthInstance.maxHeartbeats 1000000 in
+set_option synthInstance.maxHeartbeats 400000 in
 set_option maxHeartbeats 1000000 in
 /-- **Module D.**  The field translation: given the arithmetic monodromy `ψ : E ↠ G` extending the
 geometric monodromy `φ : N ↠ G` over the tower `tw`, the fixed field `Ω^{ker ψ}` is a **regular**

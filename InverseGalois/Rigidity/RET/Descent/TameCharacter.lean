@@ -27,7 +27,6 @@ character** sends `g` to the residue of `u_g`:
 * `θHom` — `θ` is a monoid homomorphism `A.inertiaSubgroup K →* (ResidueField A)ˣ`.
 -/
 
-set_option maxHeartbeats 1000000
 
 open scoped Pointwise
 open IsLocalRing

@@ -45,7 +45,6 @@ def cNF3 : NF :=
 
 theorem cNF3_zero : cNF3 = ([] : NF) := by native_decide
 
-set_option maxHeartbeats 1000000 in
 set_option maxRecDepth 8000 in
 lemma psSq_esymm3 {L : Type*} [CommRing L] (v0 v1 v2 v3 v4 : L)
     (he1 : v0 + v1 + v2 + v3 + v4 = 0)
@@ -91,7 +90,6 @@ def cNFP : NF :=
 
 theorem cNFP_zero : cNFP = ([] : NF) := by native_decide
 
-set_option maxHeartbeats 1000000 in
 set_option maxRecDepth 8000 in
 /-- `∏ Pj = -5 e4^3` (degree 12), via a PolyReflect certificate. -/
 lemma ps_prod {L : Type*} [CommRing L] (v0 v1 v2 v3 v4 : L)
@@ -150,7 +148,6 @@ def cNF4 : NF :=
 /-- The fourth certificate has zero normal form. -/
 theorem cNF4_zero : cNF4 = ([] : NF) := by native_decide
 
-set_option maxHeartbeats 1000000 in
 set_option maxRecDepth 8000 in
 /-- The fourth elementary symmetric identity for squared pentagonal sums. -/
 lemma psSq_esymm4 {L : Type*} [CommRing L] (v0 v1 v2 v3 v4 : L)
@@ -201,7 +198,6 @@ def cNF5 : NF :=
 
 theorem cNF5_zero : cNF5 = ([] : NF) := by native_decide
 
-set_option maxHeartbeats 1000000 in
 set_option maxRecDepth 8000 in
 lemma psSq_esymm5 {L : Type*} [CommRing L] (v0 v1 v2 v3 v4 : L)
     (he1 : v0 + v1 + v2 + v3 + v4 = 0)

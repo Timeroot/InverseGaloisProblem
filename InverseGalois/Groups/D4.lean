@@ -110,12 +110,12 @@ private lemma neg_alpha_sq_not_square (α : d₄.SplittingField)
             refine Subalgebra.mul_mem _ ?_ ?_
             · rw [Polynomial.aeval_eq_sum_range]
               exact Subalgebra.sum_mem _ fun i hi ↦
-                Subalgebra.smul_mem _ (Subalgebra.pow_mem _ (Algebra.subset_adjoin <| by aesop) _) _
+                Subalgebra.smul_mem _ (Subalgebra.pow_mem _ (Algebra.subset_adjoin <| by trivial) _) _
             · refine IsIntegral.inv_mem ?_ ?_
               · exact Algebra.IsIntegral.isIntegral ((aeval α) s)
               · rw [Polynomial.aeval_eq_sum_range]
                 exact Subalgebra.sum_mem _ fun i hi ↦
-                  Subalgebra.smul_mem _ (Subalgebra.pow_mem _ (Algebra.subset_adjoin <| by aesop) _) _
+                  Subalgebra.smul_mem _ (Subalgebra.pow_mem _ (Algebra.subset_adjoin <| by trivial) _) _
           simpa [Algebra.smul_def] using h_basis x x.2
         -- Expanding `x^2` and comparing coefficients gives us a system of equations.
         have h_coeff : (a^2 + 4 * b * d + 2 * c^2 : d₄.SplittingField) = 0 ∧
@@ -199,7 +199,6 @@ private lemma neg_alpha_sq_not_square (α : d₄.SplittingField)
 /-
 8 divides the order of the Galois group of X⁴-2.
 -/
-set_option maxHeartbeats 800000 in
 private lemma eight_dvd_card_gal : 8 ∣ Nat.card d₄.Gal := by
   -- By Polynomial.Gal.card_of_separable (d₄ is separable since it's irreducible in char 0), Nat.card d₄.Gal = finrank ℚ d₄.SplittingField.
   have h_card : Nat.card d₄.Gal = Module.finrank ℚ d₄.SplittingField := by
@@ -271,7 +270,7 @@ private lemma eight_dvd_card_gal : 8 ∣ Nat.card d₄.Gal := by
           simp_all [Polynomial.eval_add, Polynomial.eval_mul, Polynomial.eval_pow,
             Polynomial.eval_X, Polynomial.eval_C]
           refine h_no_sqrt (x : d₄.SplittingField) ?_ ?_
-          · aesop
+          · simp
           · simpa [← Subtype.coe_inj] using eq_neg_of_add_eq_zero_left h_eq.symm
         constructor <;> contrapose! h_irred
         · have := Polynomial.degree_eq_zero_of_isUnit h_irred
@@ -282,12 +281,20 @@ private lemma eight_dvd_card_gal : 8 ∣ Nat.card d₄.Gal := by
             rw [Polynomial.eq_C_of_degree_le_zero h] at h₁ ⊢
             replace h₁ := congr_arg (fun p ↦ Polynomial.coeff p 2) h₁
             simp_all [Polynomial.coeff_eq_zero_of_natDegree_lt]
-            aesop
+            obtain ⟨left, right⟩ := hα
+            obtain ⟨left_1, right_1⟩ := hβ
+            apply Aesop.BuiltinRules.not_intro
+            intro a_1
+            simp_all only [zero_mul, one_ne_zero]
           · refine not_le.mp fun h ↦ h₃ ?_
             rw [Polynomial.eq_C_of_degree_le_zero h] at h₁ ⊢
             replace h₁ := congr_arg (fun p ↦ Polynomial.coeff p 2) h₁
             simp_all [Polynomial.coeff_eq_zero_of_natDegree_lt]
-            aesop
+            obtain ⟨left, right⟩ := hα
+            obtain ⟨left_1, right_1⟩ := hβ
+            apply Aesop.BuiltinRules.not_intro
+            intro a_1
+            simp_all only [mul_zero, one_ne_zero]
       · simp_all [Polynomial.aeval_def]
       · rw [Polynomial.Monic, Polynomial.leadingCoeff_X_pow_add_C]
         norm_num
@@ -304,12 +311,12 @@ private lemma eight_dvd_card_gal : 8 ∣ Nat.card d₄.Gal := by
       · have h_minpoly_alpha : minpoly ℚ α = d₄ := by
           refine Eq.symm (minpoly.eq_of_irreducible_of_monic ?_ ?_ ?_)
           · exact d₄_irreducible
-          · aesop
+          · simp_all
           · erw [Polynomial.Monic, Polynomial.leadingCoeff_X_pow_sub_C]
             norm_num
         erw [h_minpoly_alpha, Polynomial.natDegree_X_pow_sub_C]
       · refine ⟨Polynomial.X ^ 4 - 2, Polynomial.monic_X_pow_sub_C _ (by norm_num), ?_⟩
-        aesop
+        simp_all
     have := Module.finrank_mul_finrank ℚ (IntermediateField.adjoin ℚ {α})
       (IntermediateField.adjoin (IntermediateField.adjoin ℚ {α}) {β})
     grind
@@ -322,13 +329,12 @@ private lemma eight_dvd_card_gal : 8 ∣ Nat.card d₄.Gal := by
       exact dvd_of_mul_right_eq _ this
     exact h_dvd_all (IntermediateField.adjoin (IntermediateField.adjoin ℚ {α}) {β} |>
       IntermediateField.restrictScalars ℚ)
-  aesop
+  simp_all
 
 /-
 The Galois group order divides 8 (since the splitting field is generated
 by α and a root of the degree-2 polynomial X²+α² over ℚ(α)).
 -/
-set_option maxHeartbeats 800000 in
 private lemma card_gal_dvd_8 : Nat.card d₄.Gal ∣ 8 := by
   -- The polynomial `X^4 - 2` factors as `(X - α)(X + α)(X - iα)(X + iα)` in its splitting field.
   have h_gal : IsGalois ℚ d₄.SplittingField :=
@@ -407,7 +413,7 @@ private lemma card_gal_dvd_8 : Nat.card d₄.Gal ∣ 8 := by
       apply ne_of_apply_ne (Polynomial.eval 0)
       norm_num [d₄]
     rw [IntermediateField.adjoin.finrank]
-    · aesop
+    · trivial
     · grind only [IsGalois.integral]
   have h_deg' : Module.finrank (IntermediateField.adjoin ℚ ({α} : Set d₄.SplittingField))
       (IntermediateField.adjoin (IntermediateField.adjoin ℚ ({α} : Set d₄.SplittingField))
@@ -446,16 +452,10 @@ private lemma card_gal_dvd_8 : Nat.card d₄.Gal ∣ 8 := by
     norm_num
   have h_deg'''' : Nat.card d₄.Gal = Module.finrank ℚ d₄.SplittingField := by
     convert IsGalois.card_aut_eq_finrank ℚ d₄.SplittingField using 1
-  interval_cases _ : Module.finrank ℚ d₄.SplittingField <;> simp_all +decide only
-  · exact absurd ‹Module.finrank ℚ d₄.SplittingField = 0› (Nat.ne_of_gt (Module.finrank_pos))
-  · have := eight_dvd_card_gal
-    simp_all
-  · have := eight_dvd_card_gal
-    simp_all
-  · have := eight_dvd_card_gal
-    simp_all
-  · have := eight_dvd_card_gal
-    simp_all
+  have h_eight := eight_dvd_card_gal
+  have h_pos : 0 < Nat.card d₄.Gal := Nat.card_pos
+  have h_eq : Nat.card d₄.Gal = 8 := by omega
+  exact h_eq ▸ dvd_rfl
 
 /-- The Galois group of X⁴-2 has order 8. -/
 private lemma card_gal_d₄ : Nat.card d₄.Gal = 8 := by
@@ -544,7 +544,7 @@ private lemma gal_iso_dihedral :
           rw [Fintype.card_subtype]
           have hfilter : (Finset.univ.filter fun x ↦ ∃ y, g y = x) = Finset.image g Finset.univ := by
             ext
-            aesop
+            simp
           rw [hfilter, Finset.card_image_of_injective _ hg_inj]
           native_decide
         have h_card_eq : g.range = Q.toSubgroup := SetLike.ext' (Set.eq_of_subset_of_ncard_le hQ h_card_eq_num.ge)
@@ -562,10 +562,15 @@ private lemma gal_iso_dihedral :
               simpa using hxy
             · intro x
               obtain ⟨y, hy⟩ := x.2
-              aesop
+              simp_all only
+              obtain ⟨val, property⟩ := x
+              subst hy
+              simp_all only [Subtype.mk.injEq, exists_apply_eq_apply]
           refine ⟨{ Equiv.ofBijective _ hbij with map_mul' := ?_ }⟩
           intro x y
-          aesop
+          simp_all only [Equiv.toFun_as_coe, Equiv.ofBijective_apply, map_mul]
+          simp_all only [Multiset.bijective_iff_map_univ_eq_univ]
+          rfl
         refine ⟨h_iso.some.trans ?_⟩
         rw [hP]
         exact MulEquiv.refl _

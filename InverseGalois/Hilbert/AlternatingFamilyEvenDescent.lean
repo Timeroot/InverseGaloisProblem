@@ -178,7 +178,7 @@ theorem serreBaseGeomPoly_map_substFieldHomEven (n : ℕ) (_hn : 3 ≤ n) :
 
 /-! ## Deliverable 3 — the degree-`2` field extension -/
 
-set_option synthInstance.maxHeartbeats 800000 in
+set_option synthInstance.maxHeartbeats 200000 in
 /-- The square of the transcendental generator `t = algebraMap R GeomBase X` lies in the image of
 `BaseT` (equivalently, `t² ∈ ℚ̄(t²)`): explicitly `t² = algebraMap BaseT GeomBase β` for
 `β = (X - C c₀) / C c₂` (with `c₀ = -1/(n-1)`, `c₂ = -(-1)^{n/2} ≠ 0`), because
@@ -355,7 +355,7 @@ private theorem t_not_mem_range (n : ℕ) :
   · exact two_ne_zero h
   · exact htne h
 
-set_option synthInstance.maxHeartbeats 800000 in
+set_option synthInstance.maxHeartbeats 200000 in
 set_option linter.unusedVariables false in
 /-- **Finite-dimensionality of the even quadratic base change.**  `GeomBase = ℚ̄(t)` is a *finite*
 extension of `BaseT ≅ ℚ̄(t²)` under the even substitution `t ↦ c₀ + c₂·t²` (`c₂ ≠ 0`).
@@ -378,7 +378,7 @@ theorem finiteDimensional_baseT_geomBase (n : ℕ) (hn : 3 ≤ n) :
   rw [adjoin_t_eq_top n] at hfd
   exact IntermediateField.topEquiv.toLinearEquiv.finiteDimensional
 
-set_option synthInstance.maxHeartbeats 800000 in
+set_option synthInstance.maxHeartbeats 200000 in
 set_option linter.unusedVariables false in
 /-- **Degree of the even quadratic base change.**  `GeomBase = ℚ̄(t)` is a degree-`2` extension of
 `BaseT ≅ ℚ̄(t²)` under the even substitution `t ↦ c₀ + c₂·t²` (`c₂ ≠ 0`).

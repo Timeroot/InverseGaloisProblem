@@ -87,9 +87,9 @@ theorem vieta_map_odd {A : Type} [Field A] [Algebra ℚ A] (n : ℕ) (hn : 2 ≤
             (Finset.univ.val.map x)) := by
     convert Splits.eq_prod_roots_of_monic _ _
     all_goals try infer_instance
-    · aesop
+    · simp_all
     · rw [splits_iff_card_roots]
-      rw [hx', natDegree_map_of_leadingCoeff_ne_zero] <;> aesop
+      rw [hx', natDegree_map_of_leadingCoeff_ne_zero] <;> simp_all
     · exact hF.map ev
   convert congr_arg (map ((MvPolynomial.aeval x).toRingHom)) hVW using 1
   rw [map_map, map_map]
@@ -455,7 +455,9 @@ theorem altResolvent_root_property_odd (n : ℕ) (hn : 2 ≤ n) (G : Polynomial 
       convert splits_iff_card_roots.mp _
       convert SplittingField.splits (specialize (serreAnFamilyOdd n) t) using 1
       unfold specialize
-      aesop
+      simp_all only [A, ev, ι]
+      ext n_1 : 1
+      simp_all only [coeff_map, RingHom.coe_comp, coe_evalRingHom, Function.comp_apply, eq_ratCast]
     rw [h_card_roots, natDegree_map_of_leadingCoeff_ne_zero] <;>
       simp_all [serreAnFamilyOdd_natDegree n hn]
   obtain ⟨x', -, hGmap⟩ := hG ev x

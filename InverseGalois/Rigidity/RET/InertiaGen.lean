@@ -52,8 +52,6 @@ open scoped Pointwise
 
 noncomputable section
 
-set_option maxHeartbeats 1600000
-set_option synthInstance.maxHeartbeats 1000000
 
 namespace Rigidity.RET
 
@@ -92,6 +90,7 @@ theorem exists_poly_sub_mem (t : k) (Q : Ideal (Bring Ω)) [Q.IsMaximal]
   rw [← Ideal.Quotient.eq, ← hc]
   rfl
 
+set_option synthInstance.maxHeartbeats 200000 in
 /-- **Inertia is the whole decomposition group at a geometric place.**
 
 An element stabilizing the place acts trivially on the residue field, because every residue is a

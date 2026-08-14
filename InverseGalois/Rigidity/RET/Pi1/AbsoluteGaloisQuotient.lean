@@ -3,6 +3,7 @@ Copyright (c) 2025. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.Rigidity.RET.BaseTransport
 import InverseGalois.Rigidity.RET.Existence
 
 /-!
@@ -144,29 +145,6 @@ theorem isGaloisGroupOver_of_surjective [FiniteDimensional F E] [IsGalois F E]
   exact isGaloisGroupOver_of_continuousSurjective f continuous_of_discreteTopology hsurj
 
 end Finite
-
-/-! ## Changing the base field along an isomorphism -/
-
-section BaseTransport
-
-variable {F K L : Type} [Field F] [Field K] [Field L] [Algebra F K] [Algebra F L] [Algebra K L]
-  [IsScalarTower F K L]
-
-/-- **Automorphisms do not see a base field replaced by an isomorphic one.**  If `K` is the
-image of `F` in the tower `F → K → L`, then a ring automorphism of `L` fixes `K` pointwise exactly
-when it fixes `F` pointwise, so the two automorphism groups agree. -/
-def autCongrOfSurjective (hsurj : Function.Surjective (algebraMap F K)) :
-    (L ≃ₐ[K] L) ≃* (L ≃ₐ[F] L) where
-  toFun σ := σ.restrictScalars F
-  invFun σ := AlgEquiv.ofRingEquiv (f := σ.toRingEquiv) fun x => by
-    obtain ⟨y, rfl⟩ := hsurj x
-    rw [← IsScalarTower.algebraMap_apply]
-    exact σ.commutes y
-  left_inv _ := AlgEquiv.ext fun _ => rfl
-  right_inv _ := AlgEquiv.ext fun _ => rfl
-  map_mul' _ _ := rfl
-
-end BaseTransport
 
 /-- **Being a Galois group over `K` depends on `K` only up to isomorphism.**
 

@@ -38,8 +38,6 @@ Riemann Existence Theorem.  Together with the cyclic and Kummer covers and the c
 
 open Polynomial
 
-set_option maxHeartbeats 1600000
-set_option synthInstance.maxHeartbeats 1000000
 
 namespace Rigidity.RET
 
@@ -349,6 +347,7 @@ theorem adjoin_X_eq_top (S : Subfield (RatFunc K))
     (fun c => (IntermediateField.adjoin ↥S {(RatFunc.X : RatFunc K)}).algebraMap_mem ⟨_, hC c⟩)
     (IntermediateField.mem_adjoin_simple_self _ _)
 
+set_option synthInstance.maxHeartbeats 200000 in
 /-- If the parameter is integral over a subfield containing the constants, `K(u)` is finite over
 that subfield. -/
 theorem finiteDimensional_of_isIntegral_X {S : Subfield (RatFunc K)}
@@ -358,6 +357,7 @@ theorem finiteDimensional_of_isIntegral_X {S : Subfield (RatFunc K)}
   rw [adjoin_X_eq_top S hC] at hfd
   exact (IntermediateField.topEquiv (F := ↥S) (E := RatFunc K)).toLinearEquiv.finiteDimensional
 
+set_option synthInstance.maxHeartbeats 200000 in
 /-- **The degree of `K(u)` over a subfield containing the constants is bounded by the degree of any
 monic equation satisfied by the parameter.** -/
 theorem finrank_le_of_monic_root {S : Subfield (RatFunc K)}
@@ -389,6 +389,7 @@ theorem exists_isPrimitiveRoot_algebraicClosure (n : ℕ) (hn : 0 < n) :
   obtain ⟨ζ, hζ⟩ := IsAlgClosed.exists_root _ hdeg
   exact ⟨ζ, (Polynomial.isRoot_cyclotomic_iff_charZero hn).mp hζ⟩
 
+set_option synthInstance.maxHeartbeats 200000 in
 /-- **Every dihedral group is a geometric Galois cover of the line.**
 
 The group of order `2n` acts on `ℚ̄(u)` by `u ↦ ζ^i·u` and `u ↦ ζ^i·u⁻¹`; the invariant `w` of the

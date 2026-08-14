@@ -190,7 +190,7 @@ lemma roots_esymm2_zero {K : Type*} [Field K]
   simp [Polynomial.coeff_add, Polynomial.coeff_mul, Polynomial.coeff_X,
         Polynomial.coeff_C, Polynomial.coeff_X_pow, Finset.antidiagonal]
 
-set_option maxHeartbeats 2000000 in
+set_option maxHeartbeats 400000 in
 /-- The coefficient of X³ in a product of 5 linear factors is the second
     elementary symmetric polynomial of the roots. -/
 lemma coeff3_prod5 {R : Type*} [CommRing R] (a : Fin 5 → R) :
@@ -227,17 +227,38 @@ lemma map_eq_prod_linear {K : Type*} [Field K]
       simp
       have := (v i).2
       simp_all [Polynomial.mem_rootSet]
-      aesop
+      subst hf
+      simp_all only [Polynomial.map_add, Polynomial.map_pow, map_X, Polynomial.map_mul, map_C, eval_add, eval_pow, eval_X, eval_mul, eval_C, g]
   obtain ⟨q, hq⟩ := h_div
   -- Since `g` is monic and has degree 5, and `(X - C (v i))` are distinct linear factors, their product must equal `g`.
   have h_deg : g.degree = 5 := by
     rw [Polynomial.degree_map, hf, Polynomial.degree_add_C] <;>
-      rw [Polynomial.degree_add_eq_left_of_degree_lt] <;> by_cases h : p = 0 <;> simp +decide [h]
+      rw [Polynomial.degree_add_eq_left_of_degree_lt] <;> by_cases h : p = 0 <;>
+        (simp [h] <;> decide)
   have h_deg_prod : (∏ i : Fin 5, (Polynomial.X - Polynomial.C (v i : f.SplittingField))).degree = 5 := by
     simp [Polynomial.degree_prod]
   have h_deg_q : q.degree = 0 := by
     rw [hq, Polynomial.degree_mul, h_deg_prod] at h_deg
-    rw [Polynomial.degree_eq_natDegree] at * <;> norm_cast at * <;> aesop
+    rw [Polynomial.degree_eq_natDegree] at * <;> norm_cast at *
+    · subst hf
+      simp_all only [Polynomial.map_add, Polynomial.map_pow, map_X, Polynomial.map_mul, map_C, Nat.add_eq_left, natDegree_finset_prod_X_sub_C_eq_card, card_univ, Fintype.card_fin, g]
+    · subst hf
+      simp_all only [Polynomial.map_add, Polynomial.map_pow, map_X, Polynomial.map_mul, map_C, natDegree_finset_prod_X_sub_C_eq_card, card_univ, Fintype.card_fin, g]
+      apply Aesop.BuiltinRules.not_intro
+      intro a
+      subst a
+      simp_all only [mul_zero, degree_zero, WithBot.add_bot, WithBot.bot_ne_ofNat]
+    · subst hf
+      simp_all only [Polynomial.map_add, Polynomial.map_pow, map_X, Polynomial.map_mul, map_C, g]
+      apply Aesop.BuiltinRules.not_intro
+      intro a
+      simp_all only [zero_mul, degree_zero, WithBot.bot_ne_ofNat]
+    · subst hf
+      simp_all only [Polynomial.map_add, Polynomial.map_pow, map_X, Polynomial.map_mul, map_C, g]
+      apply Aesop.BuiltinRules.not_intro
+      intro a
+      subst a
+      simp_all only [mul_zero, degree_zero, WithBot.add_bot, WithBot.bot_ne_ofNat]
   have h_q_const : ∃ c : f.SplittingField, q = Polynomial.C c := by
     exact ⟨q.coeff 0, Polynomial.eq_C_of_degree_eq_zero h_deg_q⟩
   obtain ⟨c, hc⟩ := h_q_const
@@ -251,7 +272,7 @@ lemma map_eq_prod_linear {K : Type*} [Field K]
       norm_num [Polynomial.coeff_eq_zero_of_natDegree_lt]
   simp_all [Fin.prod_univ_five]
 
-set_option maxHeartbeats 2000000 in
+set_option maxHeartbeats 400000 in
 /-- For roots of X⁵+pX+q, the second elementary symmetric polynomial vanishes. -/
 lemma roots_e2_zero {K : Type*} [Field K]
     (p q : K) (f : K[X])
@@ -571,7 +592,7 @@ lemma sexticResolventLocal_derivative (p q : K) :
   simp only [map_ofNat, map_mul, map_add, map_pow]
   ring
 
-set_option maxHeartbeats 1000000 in
+set_option maxHeartbeats 400000 in
 omit [CharZero K] in
 /-- **Bézout certificate** for `R₆` and its derivative:
     `A·R₆ + B·R₆' = 5⁶ q⁴ (256 p⁵ + 3125 q⁴)`.  Verified by `ring` after expanding

@@ -6,7 +6,7 @@ import Mathlib
 import InverseGalois.Hilbert.HilbertIrreducibility
 import InverseGalois.Resolvent.ResolventConstruction
 import InverseGalois.Hilbert.Analytic.NewtonPuiseux
-import InverseGalois.Hilbert.Analytic.MorseSwap
+import InverseGalois.Hilbert.Analytic.MorseSwapBranch
 
 /-!
 # The generic resolvent family (backwards decomposition of `exists_resolvent_family`)
@@ -171,14 +171,23 @@ theorem genPoly_separable_cofinite (n : ℕ) (hn : 2 ≤ n) :
       simp_all
       refine ⟨t / ((n : ℚ) ⁻¹ - 1), ?_⟩
       push_cast
-      rw [eq_div_iff (sub_ne_zero_of_ne <| by aesop)]
+      rw [eq_div_iff (sub_ne_zero_of_ne <| by simp_all only [ne_eq, inv_eq_one, Nat.cast_eq_one]; apply Aesop.BuiltinRules.not_intro; intro a; subst a; simp_all only [Nat.not_ofNat_le_one])]
       linear_combination' hr₂
     obtain ⟨q, rfl⟩ := h_rational
     use q
     simp_all
     norm_cast at *
     refine ⟨⟨ne_of_apply_ne Polynomial.natDegree ?_, hr₁⟩, hr₂⟩
-    erw [Polynomial.natDegree_C_mul_X_pow] <;> aesop
+    erw [Polynomial.natDegree_C_mul_X_pow]
+    · simp_all only [natDegree_one, ne_eq]
+      apply Aesop.BuiltinRules.not_intro
+      intro a
+      simp_all only [pow_zero, mul_one, Rat.natCast_eq_one_iff, pow_one, right_eq_add, tsub_self, Nat.not_ofNat_le_one]
+    · simp_all only [ne_eq, Nat.cast_eq_zero]
+      apply Aesop.BuiltinRules.not_intro
+      intro a
+      subst a
+      simp_all only [nonpos_iff_eq_zero, OfNat.ofNat_ne_zero]
   refine Set.Finite.subset (hD_roots_finite.preimage (f := fun t : ℤ ↦ (t : ℚ)) ?_) ?_
   · intro x hx y hy hxy
     simpa using hxy
@@ -235,10 +244,10 @@ theorem fullResolventProduct_isSymmetric (n : ℕ) (k : ℕ) :
     simp [Polynomial.coeff_map]
   · apply Finset.prod_bij (fun σ _ ↦ e * σ)
     · exact fun _ _ ↦ Finset.mem_univ _
-    · aesop
+    · simp
     · exact fun b _ ↦ ⟨e⁻¹ * b, Finset.mem_univ _, by simp⟩
     · unfold genForm
-      aesop
+      simp
 
 /-- The ℚ-analogue of `ResolventConstruction.exists_esymm_lift`: a polynomial whose
 coefficients are symmetric functions lifts along the elementary-symmetric substitution
@@ -305,9 +314,9 @@ theorem fullResolvent_identity (F : Polynomial (Polynomial ℚ)) (hF : F.Monic)
             * Multiset.prod (Multiset.map (fun β ↦ Polynomial.X - Polynomial.C β) (Finset.univ.val.map x)) := by
           convert Polynomial.Splits.eq_prod_roots_of_monic _ _
           all_goals try infer_instance
-          · aesop
+          · simp_all
           · rw [Polynomial.splits_iff_card_roots]
-            rw [hx', Polynomial.natDegree_map_of_leadingCoeff_ne_zero] <;> aesop
+            rw [hx', Polynomial.natDegree_map_of_leadingCoeff_ne_zero] <;> simp_all
           · exact hF.map ev
         convert congr_arg (fun p ↦ p.coeff (n - (i.val + 1))) h_vieta_prod using 1
         · rw [Polynomial.coeff_map]
@@ -383,8 +392,11 @@ theorem resolvent_root_property (F G : Polynomial (Polynomial ℚ)) (hF : F.Moni
       convert Polynomial.splits_iff_card_roots.mp _
       convert Polynomial.SplittingField.splits (specialize F t) using 1
       unfold specialize
-      aesop
-    rw [h_card_roots, Polynomial.natDegree_map_of_leadingCoeff_ne_zero] <;> aesop
+      subst hFdeg
+      simp_all only [A, ev, ι]
+      ext n : 1
+      simp_all only [coeff_map, RingHom.coe_comp, coe_evalRingHom, Function.comp_apply, eq_ratCast]
+    rw [h_card_roots, Polynomial.natDegree_map_of_leadingCoeff_ne_zero] <;> simp_all
   -- By `hG`, we have `G.map ev = fullResolventProduct n x`.
   have hG_map : G.map ev = fullResolventProduct n x := by
     convert hG ev x _ _
@@ -488,7 +500,7 @@ theorem morseOverFrac_separable (n : ℕ) (hn : 2 ≤ n) : (morseOverFrac n).Sep
       apply isCoprime_of_irreducible_dvd
       · intro h
         have := morseOverFrac_natDegree n hn
-        aesop
+        simp_all
       · intro z hz hz' hz''
         obtain ⟨α, hα⟩ : ∃ α : L,
           Polynomial.eval α (Polynomial.map (algebraMap (FractionRing (Polynomial (AlgebraicClosure ℚ))) L) z) = 0 := by
@@ -504,7 +516,7 @@ theorem morseOverFrac_separable (n : ℕ) (hn : 2 ≤ n) : (morseOverFrac n).Sep
     · unfold morseOverFrac
       simp [genPoly]
       unfold toClosureFrac
-      aesop
+      simp
     · unfold morseOverFrac
       norm_num [Polynomial.derivative_pow]
       unfold genPoly
@@ -517,7 +529,7 @@ theorem morseOverFrac_separable (n : ℕ) (hn : 2 ≤ n) : (morseOverFrac n).Sep
       rw [eq_div_iff]
       · cases n <;> simp_all [pow_succ, mul_comm, mul_assoc]
         linear_combination' hα.2 * α
-      · aesop
+      · simp_all only [ne_eq, Nat.cast_eq_zero, L]; obtain ⟨left, right⟩ := hα; apply Aesop.BuiltinRules.not_intro; intro a; subst a; simp_all only [nonpos_iff_eq_zero, OfNat.ofNat_ne_zero]
     rw [eq_div_iff] at * <;> norm_num at *
     · grind +revert
     · linarith
@@ -781,8 +793,15 @@ theorem Monic.irreducible_of_galois_orbit_card
   · rw [irreducible_mul_iff]
     refine Or.inl ⟨minpoly.irreducible (IsIntegral.of_finite L w),
       Polynomial.isUnit_iff_degree_eq_zero.mpr ?_⟩
-    rw [Polynomial.degree_eq_natDegree] <;> aesop
-  · aesop
+    rw [Polynomial.degree_eq_natDegree]
+    · simp_all only [Nat.left_eq_add, map_mul, minpoly.aeval, zero_mul, Nat.card_coe_set_eq, add_zero, CharP.cast_eq_zero]
+    · simp_all only [Nat.left_eq_add, map_mul, minpoly.aeval, zero_mul, Nat.card_coe_set_eq, add_zero, ne_eq]
+      apply Aesop.BuiltinRules.not_intro
+      intro a
+      subst a
+      simp_all only [natDegree_zero, mul_zero, not_monic_zero]
+  · rw [← Polynomial.leadingCoeff_mul, hq.leadingCoeff]
+    exact one_ne_zero
 
 /-
 **Distinctness of the linear forms.**  If the roots `x` are distinct (in a characteristic
@@ -817,7 +836,7 @@ theorem genForm_perm_injective {n : ℕ} {M : Type*} [CommRing M] [IsDomain M] [
       have h_sigma_eq_tau : σ.symm = τ.symm := by
         ext a
         specialize hk a
-        aesop
+        omega
       have h_sigma_eq_tau' : σ = τ := by
         simpa using congr_arg Equiv.symm h_sigma_eq_tau
       contradiction
@@ -896,7 +915,7 @@ over `M` that is injective, realises the descent identity's root hypotheses, and
 the Galois group acts by permutations, surjectively (every permutation of the roots is realised
 by an automorphism).
 -/
-set_option maxHeartbeats 4000000 in
+set_option maxHeartbeats 1000000 in
 theorem morse_root_enum (n : ℕ) (hn : 2 ≤ n)
     (hsurj : Function.Surjective
       (Gal.galActionHom (morseOverFrac n) (morseOverFrac n).SplittingField)) :
@@ -929,12 +948,29 @@ theorem morse_root_enum (n : ℕ) (hn : 2 ≤ n)
             · rw [Polynomial.leadingCoeff, Polynomial.natDegree_sub_C,
                 Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num [Polynomial.coeff_X,
                 Polynomial.coeff_C, show n > 1 by linarith]
-              aesop
+              apply Aesop.BuiltinRules.not_intro
+              intro a
+              split at a
+              next h =>
+                split at a
+                next h_1 =>
+                  subst h
+                  simp_all only [sub_self, zero_sub, neg_eq_zero, nonpos_iff_eq_zero, OfNat.ofNat_ne_zero]
+                next h_1 =>
+                  subst h
+                  simp_all only [sub_self, map_zero, Nat.not_ofNat_le_one]
+              next h =>
+                split at a
+                next h_1 =>
+                  subst h_1
+                  simp_all only [sub_zero, nonpos_iff_eq_zero, OfNat.ofNat_ne_zero]
+                next h_1 => simp_all only [sub_zero, map_zero, one_ne_zero]
           convert Polynomial.splits_iff_card_roots.mp _
           · exact h_natDeg.symm
           · convert Polynomial.SplittingField.splits (morseOverFrac n) using 1
             unfold morseOverFrac
-            aesop
+            ext n_1 : 1
+            simp_all only [coeff_map, RingHom.coe_comp, Function.comp_apply]
         have := @ResolventConstruction.exists_fin_map_eq
         exact Exists.elim (this _ _ h_card) fun x hx ↦ ⟨x, hx.symm⟩
   have hxinj : Function.Injective x := by
@@ -946,7 +982,7 @@ theorem morse_root_enum (n : ℕ) (hn : 2 ≤ n)
       exact (morseOverFrac_separable n hn).map
     simp_all [Function.Injective]
     rw [List.nodup_ofFn] at h_distinct_roots
-    aesop
+    trivial
   refine ⟨x, hxinj, ?_, hx, ?_, ?_⟩
   · convert morseOverFrac_natDegree n hn using 1
     unfold morseOverFrac
@@ -960,7 +996,7 @@ theorem morse_root_enum (n : ℕ) (hn : 2 ≤ n)
       have h_root_xi : x i ∈ (map
         ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac)
         (genPoly n)).roots := by
-        aesop
+        simp_all
       simp at *
       rw [Polynomial.eval_map] at *
       rw [Polynomial.eval₂_eq_sum_range] at *
@@ -973,7 +1009,7 @@ theorem morse_root_enum (n : ℕ) (hn : 2 ≤ n)
       rw [Multiset.mem_map] at h_root
       obtain ⟨j, hj, hj'⟩ := h_root
       use j
-      aesop
+      simp_all
     choose σ hσ using h_unique
     have h_inj : Function.Injective σ := by
       intro i j hij
@@ -988,7 +1024,9 @@ theorem morse_root_enum (n : ℕ) (hn : 2 ≤ n)
         exact hx ▸ Polynomial.nodup_roots h_sep
       simp_all [List.nodup_ofFn]
       have := @this (x i) (x j)
-      aesop
+      simp_all only [forall_const]
+      apply hxinj
+      simp_all only
     exact ⟨Equiv.ofBijective σ ⟨h_inj, Finite.injective_iff_surjective.mp h_inj⟩, hσ⟩
   · intro σ
     obtain ⟨γ, hγ⟩ : ∃ γ : (morseOverFrac n).SplittingField
@@ -999,7 +1037,7 @@ theorem morse_root_enum (n : ℕ) (hn : 2 ≤ n)
         have h_root : x i ∈ (map
           ((algebraMap (FractionRing (AlgebraicClosure ℚ)[X]) (morseOverFrac n).SplittingField).comp toClosureFrac)
           (genPoly n)).roots := by
-          aesop
+          simp_all
         convert h_root using 1
         ext
         simp [morseOverFrac]
@@ -1025,7 +1063,7 @@ theorem morse_root_enum (n : ℕ) (hn : 2 ≤ n)
             (fun i : Fin n ↦ ⟨x i, h_root_set i⟩ :
               Fin n → Polynomial.rootSet (morseOverFrac n) (morseOverFrac n).SplittingField) :=
           (Fintype.bijective_iff_injective_and_card _).mpr ⟨fun i j hij ↦ hxinj <| by simpa using hij,
-            by aesop⟩ |>.2
+            by simp_all⟩ |>.2
         exact ⟨fun i j hij ↦ hxinj <| by simpa using congr_arg Subtype.val hij, h_surj⟩
       obtain ⟨γ, hγ⟩ : ∃ γ : Polynomial.rootSet (morseOverFrac n) (morseOverFrac n).SplittingField
           ≃ Polynomial.rootSet (morseOverFrac n) (morseOverFrac n).SplittingField,
@@ -1071,7 +1109,7 @@ theorem morseResolventFrac_irreducible (n : ℕ) (hn : 2 ≤ n)
       simp [Polynomial.eval₂_map]
     · simp [fullResolventProduct]
       rw [Polynomial.eval_prod, Finset.prod_eq_zero (Finset.mem_univ 1)]
-      aesop
+      simp_all only [Fin.univ_val_map, eval_sub, eval_X, eval_C, sub_self, w]
   convert Monic.irreducible_of_galois_orbit_card _ hw _
   · convert IsGalois.of_separable_splitting_field (morseOverFrac_separable n hn)
     infer_instance

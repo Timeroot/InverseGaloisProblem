@@ -31,8 +31,6 @@ open Polynomial
 
 noncomputable section
 
-set_option maxHeartbeats 1600000
-set_option synthInstance.maxHeartbeats 1000000
 
 namespace Rigidity.RET
 

@@ -106,9 +106,9 @@ theorem subgroup_eq_top_of_swap_and_cycle {α : Type*} [DecidableEq α] [Fintype
       apply not_forall.mp
       intro h
       have := Finset.eq_univ_of_forall h
-      aesop
+      simp_all
     have hsub : σ.support ⊆ Finset.univ \ {c} := fun x hx ↦
-      Finset.mem_sdiff.mpr ⟨Finset.mem_univ _, fun hx' ↦ by aesop⟩
+      Finset.mem_sdiff.mpr ⟨Finset.mem_univ _, fun hx' ↦ by simp_all⟩
     have := Finset.eq_of_subset_of_card_le hsub
     simp_all [Finset.card_sdiff]
   obtain ⟨d, hd⟩ : ∃ d, d ≠ c ∧ (Equiv.swap c d) ∈ G := by
@@ -117,11 +117,34 @@ theorem subgroup_eq_top_of_swap_and_cycle {α : Type*} [DecidableEq α] [Fintype
     refine ⟨g b, ?_, ?_⟩
     · intro h
       have := g.injective (hg.trans h.symm)
-      aesop
+      trivial
     · convert G.mul_mem (G.mul_mem hgG hτG) (G.inv_mem hgG) using 1
       ext x
       simp [Equiv.swap_apply_def]
-      aesop
+      subst hτ_ab hg
+      simp_all only [ne_eq, mem_support, Decidable.not_not, swap_apply_def]
+      obtain ⟨left, right⟩ := hσ_cycle
+      obtain ⟨left_1, right_1⟩ := hc
+      split
+      next h =>
+        subst h
+        simp_all only [symm_apply_apply, ↓reduceIte]
+      next h =>
+        split
+        next h_1 =>
+          subst h_1
+          simp_all only [EmbeddingLike.apply_eq_iff_eq, symm_apply_apply, ↓reduceIte]
+        next h_1 =>
+          split
+          next h_2 =>
+            subst h_2
+            simp_all only [apply_symm_apply, not_true_eq_false]
+          next h_2 =>
+            split
+            next h_3 =>
+              subst h_3
+              simp_all only [apply_symm_apply, not_true_eq_false]
+            next h_3 => simp_all only [apply_symm_apply]
   have h_star : ∀ x, x ≠ c → (Equiv.swap c x) ∈ G := by
     intro x hx
     have hσc : ∀ k : ℕ, (σ ^ k) c = c :=
@@ -154,7 +177,32 @@ theorem subgroup_eq_top_of_swap_and_cycle {α : Type*} [DecidableEq α] [Fintype
     · by_cases hy : y = c
       · simpa [hy, Equiv.swap_comm] using h_star x hx
       · convert G.mul_mem (G.mul_mem (h_star x hx) (h_star y hy)) (h_star x hx) using 1
-        aesop
+        simp_all only [mem_support, ne_eq, Decidable.not_not]
+        obtain ⟨left, right⟩ := hσ_cycle
+        obtain ⟨left_1, right_1⟩ := hc
+        obtain ⟨left_2, right_2⟩ := hd
+        simp_all only [not_false_eq_true]
+        ext x_1 : 1
+        simp_all only [swap_apply_def, coe_mul, Function.comp_apply]
+        split
+        next h =>
+          subst h
+          simp_all only [↓reduceIte, right_eq_ite_iff, imp_false]
+          apply Aesop.BuiltinRules.not_intro
+          intro a
+          subst a
+          simp_all only [not_false_eq_true, not_true_eq_false]
+        next h =>
+          split
+          next h_1 =>
+            subst h_1
+            simp_all only [↓reduceIte]
+          next h_1 =>
+            split
+            next h_2 =>
+              subst h_2
+              simp_all only [↓reduceIte]
+            next h_2 => simp_all only
   refine eq_top_iff.mpr fun g _ ↦ ?_
   induction' g using Equiv.Perm.swap_induction_on' with x y hxy ih hmem
   · exact G.one_mem

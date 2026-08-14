@@ -21,8 +21,6 @@ Extracted from `Descent.Tower` so that both `Descent.Tower` (the model packaging
 
 open Polynomial
 
-set_option synthInstance.maxHeartbeats 1000000
-set_option maxHeartbeats 1000000
 
 /-- The **constant-field base** of a finite extension `Ω/ℚ(T)`: the intermediate field `k_Ω(T)`
 generated over `ℚ(T)` by the field of constants `k_Ω = algebraicClosure ℚ Ω` (the elements of `Ω`
@@ -119,6 +117,7 @@ theorem minpoly_ratFunc_const (Ω : Type) [Field Ω] [Algebra (RatFunc ℚ) Ω] 
     rw [aeval_map_algebraMap]; exact minpoly.aeval ℚ z
   exact (minpoly.eq_of_irreducible_of_monic hpmap_irr hpmap_aeval (hpmonic.map _)).symm
 
+set_option synthInstance.maxHeartbeats 200000 in
 /-- **The `ℚ`-degree of a constant is bounded by `[Ω : ℚ(T)]`.**  Its `ℚ`-minimal polynomial is its
 `ℚ(T)`-minimal polynomial after base change (`minpoly_ratFunc_const`), and the degree of the latter
 is the degree of the simple extension `ℚ(T)(z) ⊆ Ω`. -/
@@ -190,6 +189,7 @@ theorem exists_primitive_const (Ω : Type) [Field Ω] [Algebra (RatFunc ℚ) Ω]
   · rw [IntermediateField.adjoin_simple_le_iff]
     exact mem_algebraicClosure_iff'.2 hα
 
+set_option synthInstance.maxHeartbeats 200000 in
 /-- **The constant-field base is normal over `ℚ(T)`.**  `k_Ω(T)/ℚ(T)` is normal because `k_Ω/ℚ` is
 normal (`constFieldBase_constNormal`) and normality is preserved under the base change to `ℚ(T)`
 (a `ℚ(T)`-embedding of `k_Ω(T)` restricts to a `ℚ`-embedding of `k_Ω`, whose image is again `k_Ω`,

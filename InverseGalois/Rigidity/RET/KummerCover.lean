@@ -26,6 +26,7 @@ are
 
 ## Main results
 
+* `Rigidity.RET.irreducible_X_pow_sub_C_X_polynomial` — `Xⁿ - T` is irreducible over `k[T]`.
 * `Rigidity.RET.irreducible_X_pow_sub_C_X` — `Xⁿ - T` is irreducible over `k(T)` for `n ≠ 0`.
 * `Rigidity.RET.isGeometricGaloisCover_of_isCyclic` — every finite cyclic group is realized by a
   geometric Galois cover of `ℙ¹_ℚ̄`.
@@ -51,8 +52,11 @@ variable {k : Type*} [Field k]
 private theorem isPrime_span_X : (Ideal.span {(Polynomial.X : k[X])}).IsPrime :=
   (Ideal.span_singleton_prime Polynomial.X_ne_zero).mpr prime_X
 
-/-- **`Xⁿ - T` is irreducible over `k[T]`**, by Eisenstein at the prime `T`. -/
-private theorem irreducible_X_pow_sub_C_X_polynomial {n : ℕ} (hn : n ≠ 0) :
+/-- **`Xⁿ - T` is irreducible over `k[T]`**, by Eisenstein at the prime `T`.
+
+Stated over the polynomial ring rather than the function field, so that it can be pushed into any
+fraction field of `k[T]` (Gauss's lemma), not only into `RatFunc k`. -/
+theorem irreducible_X_pow_sub_C_X_polynomial {n : ℕ} (hn : n ≠ 0) :
     Irreducible ((X : k[X][X]) ^ n - C (Polynomial.X : k[X])) := by
   have hn0 : 0 < n := Nat.pos_of_ne_zero hn
   have hmonic : ((X : k[X][X]) ^ n - C (Polynomial.X : k[X])).Monic := monic_X_pow_sub_C _ hn

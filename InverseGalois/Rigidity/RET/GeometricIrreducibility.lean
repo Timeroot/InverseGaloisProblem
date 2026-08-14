@@ -503,8 +503,8 @@ theorem extract (t : Finset (FractionRing (Polynomial (AlgebraicClosure ℚ)))) 
         exact Finset.mem_biUnion.mpr ⟨k, hk, hx⟩))
   exact hsub (hsubk hkmem)
 
-set_option maxHeartbeats 2000000 in
-set_option synthInstance.maxHeartbeats 800000 in
+set_option maxHeartbeats 1000000 in
+set_option synthInstance.maxHeartbeats 400000 in
 /-- **The regularity core.**  For a finite extension `L / ℚ(T)` in which `ℚ` is relatively
 algebraically closed (`algebraicClosure ℚ L = ⊥`, "regular"), the base change of `L` to the
 geometric base field `ℚ̄(T) = FractionRing ℚ̄[T]` is a **field**.

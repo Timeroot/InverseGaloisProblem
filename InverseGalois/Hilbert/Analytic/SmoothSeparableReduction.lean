@@ -100,8 +100,10 @@ lemma squarefree_map_frac {s : Polynomial (Polynomial ℝ)}
   set xm := x * Polynomial.C (Polynomial.leadingCoeff x)⁻¹ with hxm_def
   have hxm_monic : xm.Monic := by
     by_cases hx0 : x = 0 <;> simp_all [Polynomial.Monic]
-    rw [Polynomial.map_eq_zero_iff] at hx <;>
-      aesop (config := {introsTransparency? := some .default})
+    rw [Polynomial.map_eq_zero_iff] at hx
+    · subst hx
+      exact not_squarefree_zero hs
+    · exact IsFractionRing.injective (Polynomial ℝ) (FractionRing (Polynomial ℝ))
   have hxm_assoc : Associated x xm := by
     by_cases hx : x = 0 <;> simp_all [Polynomial.Monic.def]
     refine associated_of_dvd_dvd ?_ ?_ <;> norm_num [hx]
@@ -116,18 +118,18 @@ lemma squarefree_map_frac {s : Polynomial (Polynomial ℝ)}
       ∃ x' : Polynomial (Polynomial ℝ),
         x'.map (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ))) = xm := by
     have := IsIntegrallyClosed.eq_map_mul_C_of_dvd (FractionRing (Polynomial ℝ)) hmon hxm_dvd
-    aesop
+    simp_all
   have hx'mon : x'.Monic := by
     convert hxm_monic using 1
     rw [← hx'map, Polynomial.Monic.def, Polynomial.Monic.def,
       Polynomial.leadingCoeff_map_of_leadingCoeff_ne_zero]
-    · aesop
+    · simp
     · intro h
       simp_all [Polynomial.Monic.def]
   -- By `Monic.dvd_iff_fraction_map_dvd_fraction_map` (`R` integrally closed, `x'` and `s` monic) we get `x' * x' ∣ s`.
   have hx'_sq_dvd : x' * x' ∣ s := by
     rw [← Polynomial.map_dvd_map (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ)))]
-    · aesop
+    · simp_all
     · exact IsFractionRing.injective _ _
     · exact hx'mon.mul hx'mon
   have := hs x' ?_
@@ -200,7 +202,7 @@ lemma exists_bezout_of_squarefree {s : Polynomial (Polynomial ℝ)}
     refine ⟨w0, hw0.1, A, B, ?_⟩
     apply Polynomial.map_injective (algebraMap (Polynomial ℝ) (FractionRing (Polynomial ℝ)))
       (IsFractionRing.injective _ _)
-    aesop
+    simp_all
   exact ⟨A, B, w0, hw0ne, hAB⟩
 
 /-
@@ -239,7 +241,7 @@ theorem exists_smooth_separable_reduction_real
         (∃ A B : Polynomial (Polynomial ℝ), ∃ w0 : Polynomial ℝ,
           w0 ≠ 0 ∧ A * s + B * Polynomial.derivative s = C w0) :=
     ⟨radical F, radical_monic hFmon, radical_dvd_self,
-      squarefree_radical, dvd_radical_pow (by aesop),
+      squarefree_radical, dvd_radical_pow (by simp_all only [ne_eq]; apply Aesop.BuiltinRules.not_intro; intro a; subst a; simp_all only [not_monic_zero]),
       exists_bezout_of_squarefree squarefree_radical (radical_monic hFmon)⟩
   use s.natDegree, fun x ↦ s.map (evalRingHom x)
   obtain ⟨T₀, hT₀⟩ : ∃ T₀ : ℝ, 1 ≤ T₀ ∧ ∀ x ≥ T₀, w0.eval x ≠ 0 := by
@@ -249,18 +251,18 @@ theorem exists_smooth_separable_reduction_real
     · intro x hx hx'
       cases abs_cases x <;>
         linarith [Finset.single_le_sum (fun x _ ↦ abs_nonneg x)
-          (show x ∈ w0.roots.toFinset from by aesop)]
+          (show x ∈ w0.roots.toFinset from by simp_all)]
   refine ⟨T₀, hT₀.1, ?_, ?_, ?_, contDiff_bivar_eval s, ?_, ?_⟩
   · have := Polynomial.natDegree_le_of_dvd hm.2
     simp_all [Polynomial.natDegree_pow]
     apply Nat.pos_of_ne_zero
     intro h
-    have := this (by aesop)
+    have := this (by simp_all)
     nlinarith
   · exact fun x ↦ hmon_s.map _
   · intro x
     apply Polynomial.natDegree_map_of_leadingCoeff_ne_zero
-    aesop
+    simp_all
   · intro x hx
     have := hT₀.2 x hx
     simp_all [Polynomial.Separable]
@@ -280,7 +282,7 @@ theorem exists_smooth_separable_reduction_real
     constructor <;> intro hy <;> simp_all [Polynomial.eval_map]
     · obtain ⟨k, hk⟩ := hdvd_s
       replace hk := congr_arg (Polynomial.eval₂ (evalRingHom x) y) hk
-      aesop
+      simp_all
     · obtain ⟨k, hk⟩ := hm.2
       replace hk := congr_arg (Polynomial.eval₂ (evalRingHom x) y) hk
       simp_all [Polynomial.eval₂_pow, Polynomial.eval₂_mul]

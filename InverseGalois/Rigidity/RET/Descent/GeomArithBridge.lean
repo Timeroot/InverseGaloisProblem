@@ -57,8 +57,6 @@ noncomputable section
 
 namespace Rigidity.RET.Descent
 
-set_option maxHeartbeats 1600000
-set_option synthInstance.maxHeartbeats 1000000
 
 attribute [local instance] GeomAKLB.instMSA ArithAKLB.instMSA
 

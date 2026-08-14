@@ -85,12 +85,123 @@ are far out of reach of a from-scratch build.
   (`RET/KummerAbelian.lean`), `Aₙ` and `Sₙ` for every `n` (`RET/SerreCovers.lean`), every dihedral
   group `Dₙ` (`RET/DihedralCover.lean`, by Artin's fixed-field theorem applied to the substitutions
   `u ↦ ζⁱ·u` and `u ↦ ζⁱ·u⁻¹`), every group with a branch datum of rank `r ≤ 2`
-  (`RET/ExistenceLowRank.lean`), and anything obtained from these by
-  quotients.  These are the classical explicit-polynomial cases; W1 is what covers the rest.
+  (`RET/ExistenceLowRank.lean`), every *abelian* group with a branch datum of *any* rank
+  (`RET/FreeAbelianCover.lean`, `RET/ExistenceAbelian.lean`) — the last two including the full
+  `exists_cover` clause of `GeomRET`, branch points and distinguished inertia and all, see below —
+  and anything obtained from these by quotients.  These are the classical explicit-polynomial cases; W1 is what covers
+  the rest;
+* and W1 itself — *both* clauses, not just `exists_cover` — is a theorem in two regimes: over at
+  most two branch points, for every finite group (`geomRET_of_le_two`), and over any number of
+  branch points, for abelian deck groups (`geomRETComm`).  So what W1 still assumes is the
+  correspondence for a non-abelian group over three or more points, which is exactly the regime the
+  rigidity method uses.
 
-**Reachable sharpenings (partly done).**  The `r ≤ 2` case of `exists_cover` *with* the inertia
-clause should follow from the two-point Kummer cover `wⁿ = (T - t₀)(T - t₁)^{n-1}`, and its local
-theory is now in place, unconditionally and sorry-free, in `RET/KummerInertia.lean`:
+**The abelian case of `exists_cover` is a theorem, in every rank (done).**  Unconditionally and
+sorry-free, in `RET/FreeAbelianCover.lean` (the free cover and its local theory) and
+`RET/ExistenceAbelian.lean` (the descent and assembly):
+
+```lean
+theorem exists_cover_of_commGroup {r : ℕ} (t : Fin r → k) (ht : Function.Injective t)
+    {H : Type} [CommGroup H] [Finite H] (h : Fin r → H)
+    (hprod : (List.ofFn h).prod = 1) (htop : Subgroup.closure (Set.range h) = ⊤) :
+    ∃ (L : LineCover) (e : L.deck ≃* H),
+      L.IsUnramifiedOutside (Set.range t) ∧ L.IsUnramifiedAtInfinity ∧
+      ∀ i, L.IsInertiaGenAt (t i) (e.symm (h i))
+```
+
+— verbatim the `exists_cover` clause of `GeomRET t`, restricted to abelian `H`, with no bound on
+the number of branch points.  The proof is *free cover, then quotient*:
+
+* over `r = s + 1` points `t₀, …, t_s` and for `n = |H|`, `RET/FreeAbelianCover.lean` builds the
+  **free** cover of exponent `n` — the splitting field of `∏_{l<s} (Xⁿ - bₗ)` where
+  `bₗ = (T - tₗ) · (∏_{i<s}(T - tᵢ))^{n-1}` is the one-point Kummer datum of `MultiKummer`
+  normalized to total degree `n` (`freeExp`, `freeB`, `freePoly`).  Adjoining the `s` radicals
+  `yₗ = bₗ^{1/n}` independently gives deck group exactly `μₙ^s ≅ (ℤ/n)^s`
+  (`freeTheta_injective`, `freeTheta_surjective`: injectivity because the radicals generate,
+  surjectivity because no product `∏ yₗ^{cₗ}` other than the trivial one is a scalar — the
+  exponent vectors are independent since each `bₗ` has a pole/zero pattern at `tₗ` that the others
+  do not);
+* the two inertia computations reuse the cyclic machinery of `MultiKummerInertia`, applied to each
+  monomial `∏ yₗ^{cₗ}` at once: `inertia_fix_monomial` says an inertia element at `tᵢ` fixes every
+  monomial whose exponent `freeExp n c i` is divisible by `n`, and this pins the inertia group at
+  `t_{j}` (`j < s`) to the `j`-th coordinate `zpowers` (`geomInertia_free_castSucc`), and the
+  inertia at the last point `t_s` to the anti-diagonal `(ζ, …, ζ)⁻¹`
+  (`geomInertia_free_last`) — the algebraic shadow of the product-one relation again;
+* unramifiedness outside the `tᵢ` and at infinity are the multi-point Kummer arguments, applied
+  coordinatewise (`free_inertia_eq_one_outside`, `free_isUnramifiedAtInfinity`);
+* finally, a product-one generating tuple `h : Fin (s+2) → H` is exactly a surjection
+  `π : (ℤ/n)^{s+1} ↠ H` sending the coordinate vectors to `h₀, …, h_s` and the anti-diagonal to
+  `h_{s+1}`, and the corresponding **subcover** — the fixed field of `ker(π ∘ e)` — has deck group
+  `H` by the Galois correspondence (`descentEquiv`, built from
+  `IsGalois.normalAutEquivQuotient`), with the distinguished inertia generators restricting
+  correctly (`LineCover.IsInertiaGenAt.restrict`) and unramifiedness inherited
+  (`IsUnramifiedOutside.sub`, `IsUnramifiedAtInfinity.sub`).  Ranks `r ≤ 1` force `H` trivial and
+  are handed to the cyclic case.
+
+**The cyclic case of `exists_cover` is a theorem, in every rank (done).**  Unconditionally and
+sorry-free, in `RET/MultiKummer.lean` and `RET/MultiKummerInertia.lean` (local theory) and
+`RET/ExistenceCyclic.lean` (assembly):
+
+```lean
+theorem exists_cover_of_isCyclic {r : ℕ} (t : Fin r → k) (ht : Function.Injective t)
+    {H : Type} [Group H] [Finite H] [IsCyclic H] (h : Fin r → H)
+    (hprod : (List.ofFn h).prod = 1) (htop : Subgroup.closure (Set.range h) = ⊤) :
+    ∃ (L : LineCover) (e : L.deck ≃* H),
+      L.IsUnramifiedOutside (Set.range t) ∧ L.IsUnramifiedAtInfinity ∧
+      ∀ i, L.IsInertiaGenAt (t i) (e.symm (h i))
+```
+
+— verbatim the `exists_cover` clause of `GeomRET t`, restricted to cyclic `H`, with no bound on the
+number of branch points.  The cover is the multi-point Kummer cover `wⁿ = ∏ᵢ (T - tᵢ)^{aᵢ}`, where
+`n = |H|` and `aᵢ` is the exponent of `hᵢ` read through an isomorphism `H ≅ ℤ/n`.  The three
+hypotheses of the correspondence become the three hypotheses of the construction, exactly:
+
+* *the `hᵢ` generate* ⟹ no proper divisor of `n` kills all the `aᵢ`, which by Kummer duality
+  (`irreducible_X_pow_sub_C_of_forall_isPow`, `irreducible_multiA`) makes `Xⁿ - ∏ᵢ (T - tᵢ)^{aᵢ}`
+  irreducible over `ℚ̄(T)` — Eisenstein is unavailable here, and Mathlib's criteria for `Xⁿ - a`
+  need odd `n`, so irreducibility is proven by bounding the degree above by the single generator
+  `w` and below by the surjectivity of the Kummer monodromy onto `μₙ`;
+* *`∏ᵢ hᵢ = 1`* ⟹ `n ∣ ∑ᵢ aᵢ`, so with `∑ᵢ aᵢ = ns` the element `u = w·T⁻ˢ` satisfies
+  `uⁿ = ∏ᵢ (1 - tᵢS)^{aᵢ}` in the coordinate `S = T⁻¹` (`revMultiA`, `twistRootS`,
+  `invSubst_revMultiA`), whose right-hand side is `1` at `S = 0`; hence
+  `isUnramifiedAtInfinity_multiCover`.  This is the algebraic shadow of the product-one relation:
+  the branch cycles of a cover of the line multiply to the inverse of the branch cycle at infinity;
+* *the `tᵢ` are distinct* ⟹ `geomInertia_eq_zpowers_multi`: the inertia group at any place over
+  `tⱼ` is generated by the deck transformation `w ↦ ζ^{aⱼ}w`, i.e. by the image of `hⱼ`.
+
+The inertia computation is the substance, and it is an equality of two bounds with `d = gcd(n, aⱼ)`,
+`m = n/d`, `A = aⱼ/d`:
+
+* *above* — the element `Y = w^m/(T - tⱼ)^A` satisfies `Y^d = ∏_{i≠j} (T - tᵢ)^{aᵢ}`, so `Y` is
+  integral and a unit at `tⱼ`; an inertia element scales it by a *constant* root of unity, which
+  must therefore be `1` (`const_eq_one_of_mem_inertia`), and that forces `d ∣ c` for the exponent
+  `c` by which the element scales `w` (`gcd_dvd_of_mem_inertia_multi`);
+* *below* — Bézout `A·x = m·p + 1` makes `z = w^x/(T - tⱼ)^p` integral with
+  `z^m = Y^x·(T - tⱼ)`; since `Q ∤ (Y)` this gives `Q^m ∣ (T - tⱼ)` as ideals
+  (`multi_pow_dvd_map_placeP`), so `e(Q) ≥ m` and `|I(Q)| ≥ m`
+  (`le_card_geomInertia_of_pow_dvd`).
+
+Both bounds are `m = n/gcd(n,aⱼ)`, which is the order of `hⱼ`, so the containment
+`I(Q) ≤ ⟨hⱼ⟩` of the first is an equality by cardinality.  Note that the cover is *not* totally
+ramified at `tⱼ` in general — the `r ≤ 2` argument below, which only ever needs
+`I(Q) = ⊤`, does not generalize; the exact inertia group has to be computed.
+
+**The `r ≤ 2` case of `exists_cover` is a theorem (done).**  Unconditionally and sorry-free, in
+`RET/KummerInertia.lean` (local theory) and `RET/ExistenceLowRank.lean` (assembly):
+
+```lean
+theorem exists_cover_of_le_two {r : ℕ} (hr : r ≤ 2) (t : Fin r → k) (ht : Function.Injective t)
+    {H : Type} [Group H] [Finite H] (h : Fin r → H)
+    (hprod : (List.ofFn h).prod = 1) (htop : Subgroup.closure (Set.range h) = ⊤) :
+    ∃ (L : LineCover) (e : L.deck ≃* H),
+      L.IsUnramifiedOutside (Set.range t) ∧ L.IsUnramifiedAtInfinity ∧
+      ∀ i, L.IsInertiaGenAt (t i) (e.symm (h i))
+```
+
+— that is, verbatim the `exists_cover` clause of `GeomRET t`, restricted to `r ≤ 2`.  For `r ≤ 1`
+the tuple forces `H` trivial and the cover is the line itself (`trivialCover`); for `r = 2` the
+tuple is `(h₀, h₀⁻¹)` with `H = ⟨h₀⟩` cyclic of some order `n`, and the cover is the two-point
+Kummer cover `wⁿ = (T - t₀)(T - t₁)^{n-1}`.  Its local theory:
 
 * `irreducible_kummerA` — the Kummer equation is irreducible over `ℚ̄(T)` (Eisenstein at `X - t₀`
   plus Gauss), so the cover is connected of degree `n` with cyclic deck group;
@@ -103,23 +214,881 @@ theory is now in place, unconditionally and sorry-free, in `RET/KummerInertia.le
   `w₁ⁿ = (X - t₁)(X - t₀)^{n-1}`, does the same at `t₁`; `Ideal.card_inertia_eq_ramificationIdxIn`
   then makes the inertia group the whole deck group;
 * `isInertiaGenAt_kummerCover`, `isInertiaGenAt_kummerCover'` — hence any generator of the deck
-  group is a *distinguished* inertia element at either point, and
-  `exists_zpowers_eq_top_kummerCover` produces one.
+  group is a *distinguished* inertia element at either point, and both `h₀` and `h₀⁻¹` are
+  generators;
+* `isUnramifiedAtInfinity_kummerCover` — the datum has degree `n`, so in the coordinate `S = T⁻¹`
+  the element `u = w·S` satisfies `uⁿ = (1 - t₀S)(1 - t₁S)^{n-1}` (`revKummerA`, `twistRoot`,
+  `invSubst_revKummerA`, `twistRoot_pow`), whose right-hand side is `1` at `S = 0`.  An
+  automorphism of a cover over the base multiplies an `n`-th root of a scalar by an `n`-th root of
+  unity, which over `ℚ̄` is a *constant* (`exists_const_smul_of_pow_mem`); at a place over `S = 0`
+  the root `u` is a unit, so an inertia element scales it by `1`
+  (`kummer_fix_of_mem_inertia_zero`), hence fixes `w`, hence is the identity.  This route needs no
+  splitting-field structure on the twist at all.
 
-The pieces for the point at infinity are half-built in the same file.  The datum has degree `n`,
-so in the coordinate `S = T⁻¹` the element `u = w·S` satisfies `uⁿ = (1 - t₀S)(1 - t₁S)^{n-1}`,
-which is a unit at `S = 0`; `revKummerA` is that polynomial, `revKummerA_eval_zero` says it is `1`
-at the origin, and `invSubst_revKummerA` is the identity
-`revKummerA(T⁻¹) · Tⁿ = kummerA(T)` in `ℚ̄(T)`; `twistRoot` is the element `u = w·T⁻¹` of
-`Twist invSubst Ω` and `twistRoot_pow` is its equation `uⁿ = revKummerA`.  What remains is to run
-the constant-scaling argument inside the inversion twist: show that `u` generates
-`Twist invSubst Ω` over `ℚ̄(S)` (whose degree is `n` by `twist_finrank`), conclude
-`IsSplittingField (RatFunc k) (Twist invSubst Ω) (Xⁿ - C revKummerA)` by
-`isSplittingField_of_root_of_adjoin_eq_top`, and apply `kummer_inertia_eq_one` at a place over
-`S = 0`.  After that, the `r ≤ 2` clause needs only the assembly of a `LineCover` carrying the
-splitting-field instance together with `deck ≃* H` for a two-element product-one generating tuple
-(such an `H` is cyclic, generated by `h₀`, with `h₁ = h₀⁻¹`, and both generators are distinguished
-inertia elements by the two theorems above).  Nothing similar is in reach for `exists_cycles`.
+**The cyclic case of `exists_cycles` is a theorem too, in every rank (done).**  Unconditionally and
+sorry-free, in `RET/KummerNormalForm.lean`, `RET/CyclicKummerModel.lean`,
+`RET/CyclicBranchLocus.lean`, `RET/LocalKummer.lean`, `RET/CyclicAtInfinity.lean` (theory) and
+`RET/CyclicCycles.lean` (assembly):
+
+```lean
+theorem exists_branchCycleGenSystem_of_isCyclic (L : LineCover) [IsCyclic L.deck] {r : ℕ}
+    (t : Fin r → k) (ht : Function.Injective t) (hS : L.IsUnramifiedOutside (Set.range t))
+    (hinf : L.IsUnramifiedAtInfinity) :
+    ∃ g : Fin r → L.deck, L.IsBranchCycleGenSystem t g
+```
+
+— verbatim the `exists_cycles` clause of `GeomRET t`, restricted to covers with cyclic deck group.
+The route runs the cyclic `exists_cover` argument backwards, and each of the three clauses of
+`IsBranchCycleGenSystem` comes out of one of the three inputs:
+
+* *the cover is a multi-point Kummer cover.*  Kummer theory gives a radical generator
+  `M = ℚ̄(T)(w)`, `wⁿ = a`, and `a` matters only modulo `n`-th powers; over an algebraically closed
+  constant field every rational function is, modulo `n`-th powers, a product `∏ᵢ (T - tᵢ)^{eᵢ}` of
+  linear polynomials with `0 ≤ eᵢ < n` (`isLinPow_of_ne_zero`, `exists_count_lt`,
+  `exists_multiA_mul_pow`).  Since `w` generates, `Xⁿ - a` is its minimal polynomial, hence
+  irreducible, and `M` is its splitting field (`exists_multiKummer_model`);
+* *`IsUnramifiedOutside (range t)` ⟹ the exponents live on `t`.*  A point `p` carrying a nonzero
+  exponent is a branch point: `isInertiaGenAt_multiCover` produces an inertia element there whose
+  parameter is `eₚ mod n ≠ 0`, so unramifiedness forces `n ∣ eₚ`, hence `eₚ = 0`.  The exponents
+  can then be re-indexed onto the prescribed tuple `t` (`exists_reindex_multiA`,
+  `exists_multiKummer_model_on`);
+* *connectedness ⟹ the branch cycles generate.*  If a prime `p ∣ n` divided every `eᵢ` then
+  `∏ᵢ (T - tᵢ)^{eᵢ}` would be a `p`-th power, contradicting irreducibility of `Xⁿ - a`
+  (`pow_ne_of_irreducible_X_pow_sub_C`, `multiA_pow_of_dvd`); so the residues `eᵢ` generate `ℤ/n`
+  (`closure_range_ofAdd_eq_top`), and so do the corresponding deck transformations;
+* *`IsUnramifiedAtInfinity` ⟹ the branch cycles multiply to one.*  This is the converse of
+  `isUnramifiedAtInfinity_multiCover`.  Choose `s` with `∑ᵢ eᵢ + c = n·s` and `0 ≤ c < n`; then in
+  the coordinate `S = T⁻¹` the element `u = w·T⁻ˢ` satisfies `uⁿ = ∏ᵢ (1 - tᵢS)^{eᵢ}·S^c`
+  (`twistRootS_pow_gen`).  If `c > 0` the origin of the twist occurs in the radicand to the
+  multiplicity `c`, and the local ramification bound gives inertia of order at least
+  `n/gcd(n, c) ≥ 2` there — ramification at infinity.  So `c = 0`, i.e. `n ∣ ∑ᵢ eᵢ`
+  (`dvd_sum_of_isUnramifiedAtInfinity`), which is exactly `∏ᵢ gᵢ = 1`.
+
+The local ramification bound used at infinity is the `exists_cover` bound with the shape of the
+radicand away from the point forgotten: for `A = (T - p)^c · U` with `U(p) ≠ 0`, the place above
+`p` occurs to the power `n/gcd(n, c)` in the extended place (`local_pow_dvd_map_placeP`,
+`RET/LocalKummer.lean`).  `multi_pow_dvd_map_placeP` is now a one-line corollary of it.
+
+Two corollaries fall out of the degenerate ranks (`RET/CyclicCycles.lean`): a cyclic cover of the
+line unramified everywhere is trivial (`subsingleton_deck_of_unramified`, rank `0`: no branch point
+means no generator), and so is one branched over a single point
+(`subsingleton_deck_of_unramified_outside_singleton`, rank `1`: a lone branch cycle equals the
+inverse of the empty product).  These are the algebraic shadow of `π₁(ℙ¹) = π₁(𝔸¹) = 1`.
+
+### The generation clause of `exists_cycles` holds for every abelian deck group
+
+`RET/AbelianGeneration.lean` bootstraps the rank-`0` corollary from cyclic to abelian deck groups:
+
+```lean
+theorem closure_isInertiaAt_eq_top_of_comm (L : LineCover) (hab : ∀ a b : L.deck, a * b = b * a)
+    (hinf : L.IsUnramifiedAtInfinity) :
+    Subgroup.closure {σ : L.deck | ∃ t : k, L.IsInertiaAt t σ} = ⊤
+```
+
+— the inertia elements of an abelian cover generate its deck group; equivalently, an abelian cover
+of the line unramified everywhere and at infinity is trivial
+(`subsingleton_deck_of_comm_of_unramified`).  The argument is a descent to the cyclic case: if the
+subgroup `B` generated by all inertia elements were proper, it would lie inside a maximal subgroup
+`B'` of the (finite) deck group, which in an abelian group is normal with cyclic quotient — for any
+`x ∉ B'`, maximality gives `⟨x⟩ ⊔ B' = ⊤`, so the quotient is generated by the image of `x`.  The
+Galois subcover cut out by `B'` (`descentEquiv`) then has cyclic deck group, is unramified at
+infinity (`IsUnramifiedAtInfinity.sub`) and unramified *everywhere*, because every inertia element
+of the big cover restricts trivially to it (`isUnramifiedOutside_sub`, the variant of
+`IsUnramifiedOutside.sub` that replaces "inertia upstairs is trivial" by "inertia upstairs dies
+downstairs").  The rank-`0` corollary then makes that subcover trivial, contradicting `x ∉ B'`.
+
+### An abelian cover branched over at most two points is cyclic
+
+Both halves of that descent are stated over an arbitrary allowed branch set — a subcover in which
+the inertia away from `S` dies is unramified outside `S` (`isUnramifiedOutside_sub`), so a cyclic
+quotient of the deck group killing all inertia away from a *single* point `t₀` is trivial
+(`eq_one_of_cyclic_quotient_singleton`, by the rank-`1` corollary instead of the rank-`0` one).
+That upgrade plus one extra observation,
+
+```lean
+theorem isInertiaAt_iff_mem_of_comm (L : LineCover) (hab : ∀ a b : L.deck, a * b = b * a) (t : k)
+    (Q : Ideal (Bring L.M)) [Q.IsMaximal] [Q.LiesOver (placeP t)] {σ : L.deck} :
+    L.IsInertiaAt t σ ↔ σ ∈ geomInertia L.M Q
+```
+
+— for an abelian deck group *all* the inertia groups above a point coincide, since the deck group
+permutes the places above `t` transitively (`exists_smul_eq_of_liesOver`) and moves inertia groups
+by conjugation (`geomInertia_smul`) — gives
+
+```lean
+theorem isCyclic_deck_of_comm_of_unramified_outside_pair (L : LineCover)
+    (hab : ∀ a b : L.deck, a * b = b * a) (t₀ t₁ : k) (hS : L.IsUnramifiedOutside {t₀, t₁})
+    (hinf : L.IsUnramifiedAtInfinity) : IsCyclic L.deck
+```
+
+If the inertia group `I₀` above `t₀` were proper it would sit inside a maximal `B'`, and the cyclic
+quotient by `B'` would kill every inertia element except those above `t₁` — trivial by the
+singleton lemma, contradicting `IsCoatom B'`.  So `I₀ = ⊤`, and a geometric inertia group is cyclic
+(`GeomAKLB.isCyclic_geomInertia`).  This is the algebraic shadow of `π₁(𝔾_m)^ab = Ẑ`: it pins down
+the *isomorphism type* of the deck group, not merely a generating set, in the first rank where the
+group is allowed to be nontrivial.  Feeding it back into the cyclic converse closes the whole
+`exists_cycles` clause — branch cycles, generation *and* product-one — for abelian deck groups in
+rank two (`exists_branchCycleGenSystem_of_comm_of_two`).  In every rank the coincidence of the
+inertia groups above a point also sharpens generation to its localized form: one place `Qᵢ` above
+each branch point `tᵢ` already gives `⨆ᵢ geomInertia L.M Qᵢ = ⊤`
+(`exists_places_iSup_geomInertia_eq_top_of_comm`), so what the product-one clause has to supply is
+exactly a coherent *generator* of each `geomInertia L.M Qᵢ`.  Picking those generators arbitrarily
+already gives everything else:
+
+```lean
+theorem exists_inertiaGens_of_comm (L : LineCover) (hab : ∀ a b : L.deck, a * b = b * a) {r : ℕ}
+    (t : Fin r → k) (hS : L.IsUnramifiedOutside (Set.range t))
+    (hinf : L.IsUnramifiedAtInfinity) :
+    ∃ g : Fin r → L.deck,
+      (∀ i, L.IsInertiaGenAt (t i) (g i)) ∧ Subgroup.closure (Set.range g) = ⊤
+```
+
+— the abelian analogue of the cyclic `exists_inertiaGens_of_isCyclic`, in every rank and with no
+injectivity hypothesis on `t`: it is `IsBranchCycleGenSystem` minus the field `prod`.
+
+Applied to the subcover cut out by the commutator subgroup, whose deck group is the abelianization
+and whose branch locus is no larger, the low-rank theorems shed the commutativity hypothesis
+altogether: the abelianized deck group of a cover branched over at most two points is cyclic
+(`isCyclic_abelianization_of_unramified_outside_pair`), and a cover branched over at most one point
+has *perfect* deck group (`subsingleton_abelianization_of_unramified_outside_singleton`).  That is
+as much of `π₁(𝔸¹) = 1` as is available without the correspondence: these methods see only abelian
+quotients, and a perfect group has none.  In arbitrary rank the same subcover gives the generator
+bound `exists_gens_abelianization_of_unramifiedOutside`: the abelianized deck group of a cover
+unramified outside `r` points and infinity is generated by `r` elements (the sharp bound `r - 1`
+is again the product-one clause).
+
+For a *solvable* deck group the perfectness statement is already the whole theorem, since a
+solvable group with trivial abelianization is trivial:
+
+```lean
+theorem subsingleton_deck_of_isSolvable_of_unramified_outside_singleton (L : LineCover)
+    [IsSolvable L.deck] (t₀ : k) (hS : L.IsUnramifiedOutside {t₀})
+    (hinf : L.IsUnramifiedAtInfinity) : Subsingleton L.deck
+```
+
+— i.e. `π₁(𝔸¹) = 1` holds unconditionally for the prosolvable (in particular pronilpotent, and
+`p`-group) quotient.  The two-point statement does *not* similarly upgrade from abelian to
+solvable: every quotient of `S₃` has cyclic abelianization, so the abelian shadow alone cannot
+force a solvable cover branched over two points to be cyclic; that needs product-one.  It does
+upgrade to *nilpotent*, where cyclicity of the abelianization propagates to the group
+(`isCyclic_of_isNilpotent_of_isCyclic_abelianization`: a generator of the abelianization would
+otherwise sit inside a maximal subgroup, normal by the normalizer condition, whose quotient is
+cyclic and hence swallows the commutator subgroup too):
+
+```lean
+theorem isCyclic_deck_of_isNilpotent_of_unramified_outside_pair (L : LineCover)
+    [Group.IsNilpotent L.deck] (t₀ t₁ : k) (hS : L.IsUnramifiedOutside {t₀, t₁})
+    (hinf : L.IsUnramifiedAtInfinity) : IsCyclic L.deck
+```
+
+so `exists_cycles` holds in full over two points for nilpotent deck groups
+(`exists_branchCycleGenSystem_of_isNilpotent_of_two`), in particular for `p`-groups
+(`isCyclic_deck_of_isPGroup_of_unramified_outside_pair`).
+
+Generation by inertia likewise survives dropping commutativity, in the two forms the abelian
+shadow can see:
+
+```lean
+theorem normalClosure_isInertiaAt_sup_commutator_eq_top (L : LineCover)
+    (hinf : L.IsUnramifiedAtInfinity) :
+    Subgroup.normalClosure {σ : L.deck | ∃ t : k, L.IsInertiaAt t σ} ⊔ commutator L.deck = ⊤
+
+theorem normalClosure_isInertiaAt_eq_top_of_isSolvable (L : LineCover) [IsSolvable L.deck]
+    (hinf : L.IsUnramifiedAtInfinity) :
+    Subgroup.normalClosure {σ : L.deck | ∃ t : k, L.IsInertiaAt t σ} = ⊤
+```
+
+and in localized form, one chosen place above each branch point already suffices
+(`exists_places_normalClosure_iSup_geomInertia_sup_commutator_eq_top`), since the places above a
+point are a single deck orbit.
+
+Both go through the quotient of the deck group by the normal closure of the inertia (joined with
+the commutator subgroup in the first case): it is the deck group of a cover of the line unramified
+everywhere, abelian in the first case and solvable in the second, hence trivial.  For a general
+deck group the quotient is only known to be perfect.
+
+### `π₁(𝔸¹) = 1` unconditionally, and the whole correspondence in rank ≤ 2 (done)
+
+The perfectness ceiling above is not the end: for *one* branch point the correspondence itself is a
+theorem, with no hypothesis on the deck group at all (`RET/TranslateInfinity.lean`):
+
+```lean
+theorem subsingleton_deck_of_unramifiedOutside_singleton (L : LineCover) (t₀ : k)
+    (h₁ : L.IsUnramifiedOutside {t₀}) (h₂ : L.IsUnramifiedAtInfinity) : Subsingleton L.deck
+```
+
+— the once-punctured sphere is simply connected, algebraically.  Inverting the coordinate turns a
+cover branched only over `t₀` and infinity into one branched nowhere on the affine line
+(`isUnramifiedOutside_empty_twist_inv`), and a cover unramified over the whole affine line *and* on
+the chart at infinity is trivial by `NoUnbranchedCover.subsingleton_deck_of_unramified`; a
+translation moves an arbitrary `t₀` to the origin.  The one-term branch-cycle system follows
+(`exists_branchCycleGenSystem_singleton`), and with the two-point case
+(`RET/TwoPointCyclic.lean`, `exists_branchCycleGenSystem_pair`, from
+`isCyclic_deck_of_unramifiedOutside_pair` — an arbitrary cover branched over two points is cyclic:
+move the points to `0` and `∞`, enlarge the cover by the Kummer line `uᵐ = T` with `m` the order of
+the deck group, which changes neither the branch locus nor the exponent, and the enlargement is
+cyclic by the cyclic case, hence so is its quotient) the whole of W1 is a theorem in low rank
+(`RET/LowRankRET.lean`):
+
+```lean
+theorem geomRET_of_le_two {r : ℕ} (hr : r ≤ 2) (t : Fin r → k) (ht : Function.Injective t) :
+    GeomRET t
+```
+
+— both clauses, every finite group, no hypotheses beyond `r ≤ 2`.  `r = 3` is where the wall
+actually begins, and that is exactly where the rigidity method lives.
+
+### The abelian case of `exists_cycles`, hence of all of W1, is a theorem (done)
+
+The product-one clause missing above — the inertia generators `gᵢ` of the cyclic groups `Iᵢ` have
+to be chosen coherently before their ordered product can be trivial — is now proven for every
+abelian deck group and every rank (`RET/AbelianEmbed.lean`, `RET/AbelianCycles.lean`):
+
+```lean
+theorem exists_branchCycleGenSystem_of_comm (L : LineCover) (hab : ∀ a b : L.deck, a * b = b * a)
+    {r : ℕ} (t : Fin r → k) (ht : Function.Injective t)
+    (hS : L.IsUnramifiedOutside (Set.range t)) (hinf : L.IsUnramifiedAtInfinity) :
+    ∃ g : Fin r → L.deck, L.IsBranchCycleGenSystem t g
+```
+
+The coherent choice is not made by hand: the cover is *embedded* into the free abelian cover of
+`RET/FreeAbelianCover.lean` over the same points (`exists_algHom_of_comm` — an abelian cover of
+exponent dividing `n` branched inside `{t₀,…,t_{r-1}}` is a subcover of the free one, because the
+free cover is the compositum of all of them), and the branch cycles are the *restrictions* of the
+free cover's, whose product-one relation is the one computed in the construction.  Together with
+the abelian `exists_cover` this closes the correspondence for abelian deck groups in every rank
+(`RET/AbelianRET.lean`):
+
+```lean
+structure GeomRETComm {r : ℕ} (t : Fin r → k) : Prop     -- `GeomRET` with `Finite` → `CommGroup`
+theorem geomRETComm {r : ℕ} (t : Fin r → k) (ht : Function.Injective t) : GeomRETComm t
+```
+
+**RET is proven, unconditionally, for abelian deck groups.**  Beyond abelian, `exists_cycles` needs
+the correspondence itself: reading branch cycles off an arbitrary cover is the direction that sees
+the topology.  What survives the drop of commutativity is the abelianized shadow
+(`RET/AbelianizedCycles.lean`, `RET/InertiaLift.lean`): for *any* deck group there are
+distinguished inertia generators over the prescribed points whose images generate the
+abelianization and multiply to one there (`exists_branchCycles_mod_commutator`,
+`exists_generating_abelianization`), and for a *nilpotent* deck group the generation clause is
+honest, not merely abelianized (`RET/NilpotentCycles.lean`,
+`exists_branchCycles_generating_of_isNilpotent`, by the nilpotent Frattini argument
+`eq_top_of_sup_commutator_eq_top`).  Product-one for a non-abelian group is the wall.
+
+### The counting theorems, with no prescribed branch locus and no hypothesis at infinity
+
+Two hypotheses that look structural turn out to be free.
+
+*The branch locus need not be prescribed* (`RET/BranchSet.lean`, `RET/BranchLocus.lean`).  A deck
+transformation `σ ≠ 1` moves some polynomial, and only the finitely many places dividing the
+relevant numerators can ramify, so `LineCover.branchLocus` — the set of points of the affine line
+carrying nontrivial inertia — is finite (`LineCover.finite_branchLocus`,
+`exists_unramifiedOutside_range`).  Every branch-cycle
+theorem above therefore has a primed form taking no tuple of points at all
+(`exists_branchCycleGenSystem_of_isCyclic'`, `…_of_comm'`, `exists_branchCycles_of_isNilpotent'`,
+`exists_branchCycles_mod_commutator'`).
+
+*Unramifiedness at infinity need not be assumed* (`RET/MoveInfinity.lean`).  A coordinate change
+`T ↦ (T - a)⁻¹` with `a` outside the branch locus moves infinity to an unramified point, at the
+cost of at most one new affine branch point
+(`exists_twist_isUnramifiedAtInfinity_ncard`).  So every counting statement holds for a *bare*
+cover, and the natural classes to state them for are
+
+```lean
+def IsDeckGroupOver (S : Set k) (G : Type) [Group G] [Finite G] : Prop   -- RET/DeckGroups.lean
+def IsAffineDeckGroup (n : ℕ) (G : Type) [Group G] [Finite G] : Prop     -- RET/MoveInfinity.lean
+```
+
+— groups occurring over a prescribed locus, resp. with at most `n` affine branch points.  Both are
+closed under quotients (`IsDeckGroupOver.quotient`, `IsAffineDeckGroup.quotient`), the first feeds
+the second (`IsDeckGroupOver.isAffineDeckGroup`), and the resulting count is *sharp* for abelian
+groups: an abelian group needs exactly one more branch point than it needs generators
+(`exists_cover_card_branchLocus_of_commGroup` against `two_add_le_card_branchLocus_of_comm`), a
+cover with at most one affine branch point has cyclic deck group and conversely
+(`isCyclic_iff_exists_cover_ncard_branchLocus_le_one`), and read backwards the abelianized count is
+an obstruction valid for every group (`not_isAffineDeckGroup_of_abelianization`,
+`le_ncard_branchLocus_of_abelianization`).
+
+### Where the branch points are does not matter: Möbius transport of W1
+
+Three distinct points of the projective line carry no invariant, so W1 over three points should not
+depend on *which* three.  It does not, and that is now a theorem, proven by moving covers along
+coordinate changes rather than by re-running any construction.
+
+The moves are the generators of `PGL₂`.  Twisting a cover along a ring automorphism of `ℚ̄(T)`
+(`RET/Twist.lean`) carries `LineCover`s to `LineCover`s; what has to be checked is that the branch
+data comes along.  `RET/AffineTransport.lean` does the affine substitutions `T ↦ cT` and
+`T ↦ T + a`, `RET/Inversion.lean` the one remaining generator `T ↦ T⁻¹`:
+
+```lean
+theorem IsMonodromyOver.affine (hc : c ≠ 0) (a : k) (H : IsMonodromyOver h t) :
+    IsMonodromyOver h fun i => c * t i + a
+theorem IsMonodromyOver.twist_inv (ht : ∀ i, t i ≠ 0) (H : IsMonodromyOver h t) :
+    IsMonodromyOver h fun i => (t i)⁻¹
+```
+
+`IsMonodromyOver h t` (`RET/GeomRET.lean`) is the `exists_cover` clause of `GeomRET t` for *one*
+tuple `h` — the cover, the isomorphism of its deck group with the group carrying `h`, the two
+unramifiedness clauses, and the distinguished inertia generators.  Stating the transports at that
+granularity is what makes them usable: `GeomRETExistence` quantifies over every finite group at
+once, so a cover built for a single group could not be moved through it.  Each transport therefore
+comes in four forms — for a tuple, for `GeomRETExistence`, for `GeomRETCompleteness`, and for
+`GeomRET`.
+
+The inversion is the substantive one, because `T ↦ T⁻¹` does not preserve the polynomial ring and so
+does not act on places by pulling back maximal ideals of `ℚ̄[X]`.  `RET/Inversion.lean` replaces the
+ideal-theoretic notion of a place by a valuation-theoretic one — `IsInertiaGenAtPlace`, "σ generates
+the inertia group of a valuation subring of `M` lying over the `(T - t)`-adic valuation" — proves it
+agrees with `IsInertiaGenAt` (`isInertiaGenAtPlace_iff`, via `exists_place_of_valuation`), and then
+transports *that*, where the substitution is visibly an isomorphism of valued fields
+(`valuation_inv_sub_inv_lt_one`: `|s⁻¹ - t⁻¹| < 1` when `|s - t| < 1` and `t ≠ 0`).
+
+With all three generators in hand, `RET/ProjectiveTransport.lean` closes the group up.  A predicate
+on triples that survives translation, scaling and inversion survives every coordinate change:
+
+```lean
+structure IsTripleInvariant (P : (Fin 3 → k) → Prop) : Prop where
+  translate : ∀ {t} (a), P t → P fun i => t i + a
+  scale     : ∀ {t} {c} (hc : c ≠ 0), P t → P fun i => c * t i
+  inv       : ∀ {t} (ht : ∀ i, t i ≠ 0), P t → P fun i => (t i)⁻¹
+
+theorem IsTripleInvariant.transport (hP : IsTripleInvariant P)
+    (ht : Function.Injective t) (hs : Function.Injective s) : P t → P s
+```
+
+The proof normalizes both triples to `(0, 1, λ)` by an affine map and then moves `λ` to `μ`: reading
+in the coordinate `T ↦ (T - c)⁻¹` with `c = λ(1 - μ)/(λ - μ)` and renormalizing does it in one step
+(`IsTripleInvariant.inv_step`, `IsTripleInvariant.normalized`).  Applied to the four predicates:
+
+```lean
+theorem isMonodromyOver_transport (ht : Function.Injective t) (hs : Function.Injective s)
+    (H : IsMonodromyOver h t) : IsMonodromyOver h s
+theorem geomRET_transport (ht : Function.Injective t) (hs : Function.Injective s)
+    (H : GeomRET t) : GeomRET s
+```
+
+**So W1 over three branch points is a single statement**, not a family of them: proving `GeomRET t`
+for one injective triple `t` proves it for all of them.  That is the regime the rigidity method
+lives in, and it is now one theorem instead of a moduli of theorems.
+
+### The first non-abelian three-point covers, over every triple
+
+`RET/DihedralCover.lean` and `RET/DihedralInertia.lean` build the dihedral covers explicitly and
+compute their inertia — the first branch-cycle computation in this development for a non-abelian
+group — and `RET/DihedralExistence.lean` assembles them into the full `exists_cover` clause for
+`Dₙ`, over the harmonic triple `{0, 1/2, -1/2}` where the Kummer pullback is cleanest
+(`exists_cover_dihedral`).  Möbius transport then removes the harmonic triple from the statement
+(`RET/DihedralTriple.lean`):
+
+```lean
+theorem exists_cover_dihedral_triple (n : ℕ) [NeZero n] (hn : 3 ≤ n) {t : Fin 3 → k}
+    (ht : Function.Injective t) {h : Fin 3 → DihedralGroup n}
+    (hprod : (List.ofFn h).prod = 1) (htop : Subgroup.closure (Set.range h) = ⊤) :
+    ∃ (L : LineCover) (e : L.deck ≃* DihedralGroup n),
+      L.IsUnramifiedOutside (Set.range t) ∧ L.IsUnramifiedAtInfinity ∧
+      ∀ i, L.IsInertiaGenAt (t i) (e.symm (h i))
+```
+
+— verbatim the `exists_cover` clause of `GeomRET t` at `r = 3`, for a non-abelian group, over an
+arbitrary ordered triple of distinct points, with the ordering of the branch cycles prescribed too.
+
+### A branch point carrying the trivial branch cycle is not a branch point
+
+`RET/TrivialCycle.lean` settles the degenerate entries of a branch datum.  The inertia groups above
+a point are conjugate, so one of them being trivial makes all of them trivial, and every point of
+the line carries a place; hence
+
+```lean
+theorem LineCover.isInertiaGenAt_one_iff (L : LineCover) {t : k} :
+    L.IsInertiaGenAt t 1 ↔ ∀ σ : L.deck, L.IsInertiaAt t σ → σ = 1
+```
+
+— the trivial deck transformation is a distinguished inertia generator at `t` exactly when the cover
+is unramified at `t`.  Consequently a realization may be padded with trivial branch cycles and
+stripped of them again (`IsMonodromyOver.snoc`, `IsMonodromyOver.of_snoc`), and the branch points and
+branch cycles may be permuted together (`IsMonodromyOver.reindex`).  A branch datum is therefore an
+*unordered family of nontrivial cycles attached to points*, and nothing else.  (This buys no new
+groups at `r = 3`: a generating product-one triple with a trivial entry is a generating pair
+`(h, h⁻¹)`, so the group is cyclic and already covered by `geomRETComm`.  What it buys is that the
+counting statements are about the honest branch locus.)
+
+### Coordinate changes as a relation on tuples, in every rank
+
+Transport is stated above one predicate at a time and one triple at a time.  `RET/MobiusRelated.lean`
+turns it into a relation between tuples of *any* length: `MobiusStep` is one translation, one scaling
+or the inversion `T ↦ T⁻¹` (the last only at a tuple avoiding the origin), `MobiusRelated` is its
+reflexive-transitive closure, and each elementary step can be undone
+(`MobiusStep.related_symm`), so `MobiusRelated` is an equivalence relation (`MobiusRelated.symm`).
+Along it every clause of the correspondence is invariant:
+
+```lean
+theorem IsMonodromyOver.mobius (hrel : MobiusRelated t s) (H : IsMonodromyOver h t) :
+    IsMonodromyOver h s
+theorem GeomRET.mobius (hrel : MobiusRelated t s) (H : GeomRET t) : GeomRET s
+```
+
+with `r` arbitrary, so the branch locus of W1 matters only through its `MobiusRelated`-class.  At
+`r = 3` that class is everything, and the reason is the transport theorem itself applied to the
+relation: `MobiusRelated t ·` is triple-invariant by construction
+(`isTripleInvariant_mobiusRelated`), hence
+
+```lean
+theorem mobiusRelated_of_injective (ht : Function.Injective t) (hs : Function.Injective s) :
+    MobiusRelated t s
+```
+
+— sharp three-transitivity, from which `isMonodromyOver_transport` and `geomRET_transport` are the
+one-line corollaries they ought to be.  At `r ≥ 4` the class is a proper subset and the quotient is
+the moduli of `r` points, so this is exactly where the point-independence of W1 stops.
+
+### Branch-cycle data of coprime order multiply, over one and the same branch locus
+
+`RET/Product.lean` composes two covers when their branch loci are *disjoint*: the intersection of
+the two function fields is then unramified everywhere, hence trivial.  That hypothesis is fatal for
+W1, where the whole point is to keep the branch locus fixed — the tuple `t` is prescribed, and two
+covers branched over the same `t` are never disjointly branched.  `RET/CoprimeProduct.lean` replaces
+disjointness of the loci by coprimality of the degrees, which leaves the branch locus free:
+
+```lean
+theorem LineCover.inf_eq_bot_of_coprime (L : LineCover) (A B : IntermediateField (RatFunc k) L.M)
+    (hcop : Nat.Coprime (Module.finrank (RatFunc k) A) (Module.finrank (RatFunc k) B)) :
+    A ⊓ B = ⊥
+```
+
+— a subcover of both has degree dividing two coprime numbers.  With that, restriction to the two
+subcovers is not merely injective (`SubcoverProduct.lean`) but bijective, and the deck group of the
+compositum *is* the product, `LineCover.deckProdEquiv : L.deck ≃* (L.sub A).deck × (L.sub B).deck`.
+
+The branch cycles survive too, and this is the part that is special to coprimality.  Inertia above a
+point is cyclic, so the inertia group of the compositum is generated by a single pair; its two
+coordinates generate the inertia groups downstairs, but only up to conjugacy, and only after
+independent conjugation in each factor — which is available precisely because the deck group is a
+product.  What coprimality then buys is that the prescribed pair is itself a generator: in
+`G₁ × G₂` with `Nat.Coprime (orderOf a) (orderOf b)`, raising `(a, b)` to `orderOf b` kills the
+second coordinate without moving the cyclic group generated by the first, so
+
+```lean
+theorem zpowers_mk_eq_of_zpowers_eq (hcop : Nat.Coprime (orderOf a) (orderOf b))
+    (hx : Subgroup.zpowers x = Subgroup.zpowers a)
+    (hy : Subgroup.zpowers y = Subgroup.zpowers b) :
+    Subgroup.zpowers ((x, y) : G₁ × G₂) = Subgroup.zpowers ((a, b) : G₁ × G₂)
+```
+
+and a pair of distinguished inertia generators is a distinguished inertia generator
+(`LineCover.isInertiaGenAt_deckProdEquiv_symm`).  Assembling over the compositum:
+
+```lean
+theorem IsMonodromyOver.prod_coprime (hcop : Nat.Coprime (Nat.card G₁) (Nat.card G₂))
+    (H₁ : IsMonodromyOver h₁ t) (H₂ : IsMonodromyOver h₂ t) :
+    IsMonodromyOver (fun i => (h₁ i, h₂ i)) t
+
+theorem IsThreePointMonodromy.prod_coprime (hcop : Nat.Coprime (Nat.card G₁) (Nat.card G₂))
+    (H₁ : IsThreePointMonodromy h₁) (H₂ : IsThreePointMonodromy h₂) :
+    IsThreePointMonodromy fun i => (h₁ i, h₂ i)
+```
+
+Note what is *not* assumed: nothing about the product-one relation, nothing about generation, and no
+relation between the two branch loci beyond their being the same tuple.  The realizable branch data
+over a fixed tuple is therefore closed under coprime direct products, so the three-point data
+already proven (cyclic, and the dihedral triples) generate all their coprime products — for instance
+every `Dih(n) × A` with `A` abelian two-generated of order coprime to `2n`.  Coprimality is not
+removable by this argument: for two covers of equal degree the intersection can be anything, and
+without it the inertia pair is only known up to the Goursat correspondence between the two factors,
+which is exactly the ambiguity the coprime power trick removes.
+
+### The groups realized over a fixed locus, as a class closed under coprime products
+
+Splitting the group quantifier off `GeomRETExistence` turns the existence half into a property of
+one group at a time (`RET/MonodromyGroup.lean`):
+
+```lean
+def IsMonodromyGroupOver (G : Type) [Group G] [Finite G] {r : ℕ} (t : Fin r → k) : Prop :=
+  ∀ h : Fin r → G, (List.ofFn h).prod = 1 → Subgroup.closure (Set.range h) = ⊤ →
+    IsMonodromyOver h t
+
+theorem geomRETExistence_iff_forall_isMonodromyGroupOver (t : Fin r → k) :
+    GeomRETExistence t ↔ ∀ (G : Type) [Group G] [Finite G], IsMonodromyGroupOver G t
+```
+
+The class is invariant under isomorphism and under coordinate changes
+(`IsMonodromyGroupOver.congr`, `IsMonodromyGroupOver.mobius`), and — this is what the preceding
+subsection buys — closed under direct products of coprime order:
+
+```lean
+theorem IsMonodromyGroupOver.prod_coprime (hcop : Nat.Coprime (Nat.card G₁) (Nat.card G₂))
+    (H₁ : IsMonodromyGroupOver G₁ t) (H₂ : IsMonodromyGroupOver G₂ t) :
+    IsMonodromyGroupOver (G₁ × G₂) t
+```
+
+The hypotheses on a tuple are what makes this work: a product-one generating tuple in `G₁ × G₂`
+projects to a product-one generating tuple in each factor (generation because a surjection carries
+generators to generators, product-one because it is a homomorphism), so the two factors deliver
+covers over the same locus that the coprime compositum reassembles.  No closure property in the
+other direction is available — a generating product-one tuple in a quotient need not lift to one
+upstairs, which is precisely why the existence half is not a formal consequence of itself.
+
+Two families are in the class unconditionally: every finite abelian group over every tuple of
+distinct points, and every dihedral group over every triple.  Their coprime products are therefore
+in it too, and
+
+```lean
+theorem isThreePointMonodromy_dihedral_prod (n : ℕ) [NeZero n] (hn : 3 ≤ n)
+    (hcop : Nat.Coprime (2 * n) (Nat.card A)) (hprod : (List.ofFn h).prod = 1)
+    (htop : Subgroup.closure (Set.range h) = ⊤) : IsThreePointMonodromy h
+```
+
+gives three-point branch data in groups that are neither abelian nor dihedral, e.g. `Dih(n) × A`
+for any abelian `A` of order prime to `2n`.
+
+### Moving the branch points apart: products with no hypothesis on the groups
+
+Coprimality is the price of keeping the branch locus fixed.  If the two loci may be moved apart it
+is not needed at all, and any two groups multiply (`RET/DisjointProduct.lean`).  The mechanism is
+the localized form of the inertia theorem above: what it really needs is that the two *orders* be
+coprime, and above a point of the first locus the second cover is unramified, so its distinguished
+inertia element is `1` (`LineCover.isInertiaGenAt_one_of_unramified`) and the hypothesis holds for
+free.  The branch cycles of the compositum are then the two given systems, each padded by the
+identity of the other factor:
+
+```lean
+def padAppend (h₁ : Fin r → G₁) (h₂ : Fin s → G₂) : Fin (r + s) → G₁ × G₂ :=
+  Fin.append (fun i => (h₁ i, 1)) (fun j => (1, h₂ j))
+
+theorem IsMonodromyOver.prod_disjoint (hdisj : Disjoint (Set.range t) (Set.range u))
+    (H₁ : IsMonodromyOver h₁ t) (H₂ : IsMonodromyOver h₂ u) :
+    IsMonodromyOver (padAppend h₁ h₂) (Fin.append t u)
+```
+
+The padded tuple is again product-one and again generating (`prod_ofFn_padAppend`,
+`closure_range_padAppend_eq_top` — the second because the two padded blocks generate the two factors
+separately and `(a, b) = (a, 1)(1, b)`), so this is a genuine branch-cycle system:
+
+```lean
+theorem exists_isMonodromyOver_prod (hdisj : Disjoint (Set.range t) (Set.range u)) … :
+    ∃ h : Fin (r + s) → G₁ × G₂, (List.ofFn h).prod = 1 ∧
+      Subgroup.closure (Set.range h) = ⊤ ∧ IsMonodromyOver h (Fin.append t u)
+```
+
+`RET/Product.lean` already had the deck group of such a compositum; what is new is that the branch
+cycles come along.  The cost is the branch-point count: `r + s` points rather than
+`max r s`, which is why this does not enlarge the *three-point* class and coprimality remains the
+only way to multiply groups without paying for it.
+
+### The Hurwitz action moves inside the realized class
+
+`RET/BraidMonodromy.lean`.  A cover sees its branch cycle at a point only up to conjugacy — the
+inertia groups at the places over a fixed point are permuted transitively by the deck group — so a
+branch datum depends on its tuple of cycles only through the tuple of *conjugacy classes*, and only
+up to permuting cycles and points together:
+
+```lean
+theorem IsMonodromyOver.of_isConj (H₀ : IsMonodromyOver h t) (hc : ∀ i, IsConj (h i) (h' i)) :
+    IsMonodromyOver h' t
+
+theorem IsMonodromyOver.of_conjClasses (H₀ : IsMonodromyOver h t) (σ : Equiv.Perm (Fin r))
+    (hcl : ∀ i, ConjClasses.mk (h' i) = ConjClasses.mk (h (σ i))) : IsMonodromyOver h' (t ∘ σ)
+```
+
+The Hurwitz move `braidTuple n` of `Rigidity/Braid.lean` transposes the `n`-th and `(n+1)`-st
+conjugacy classes and leaves the rest alone (`mk_braidTuple_apply`), so it is exactly absorbed by
+transposing the two branch points it moves:
+
+```lean
+theorem IsMonodromyOver.braidTuple (hn : n + 1 < r) (H₀ : IsMonodromyOver h t) :
+    IsMonodromyOver (braidTuple n h) (t ∘ Equiv.swap ⟨n, _⟩ ⟨n + 1, hn⟩)
+```
+
+When the branch points are *not* prescribed — the situation at three points, where any triple of
+distinct points is as good as any other — that transposition costs nothing.  Writing
+`IsGenericMonodromy h` for realizability over an arbitrary prescribed tuple of distinct points
+(at `r = 3` this is `IsThreePointMonodromy`, definitionally), the whole braid-and-conjugation class
+of a realized tuple is realized:
+
+```lean
+theorem IsGenericMonodromy.braidConj (H₀ : IsGenericMonodromy h) (hb : BraidConj h h') :
+    IsGenericMonodromy h'
+
+theorem isMonodromyGroupOver_of_braidConj_reps (ht : Function.Injective t)
+    (hrep : ∀ g : Fin r → G, (List.ofFn g).prod = 1 → Subgroup.closure (Set.range g) = ⊤ →
+      ∃ g₀, BraidConj g₀ g ∧ IsGenericMonodromy g₀) : IsMonodromyGroupOver G t
+```
+
+This is the algebraic shadow of the topological fact that dragging the branch points around one
+another carries a cover to a cover; here it is a theorem about inertia and conjugacy alone, with no
+topology.  Its use is as a *reduction*: the existence half over a tuple of points need only be
+checked on one representative of each braid-and-conjugation class.
+
+Specialized to a rigid class tuple the reduction is total.  Rigidity of `C` says exactly that the
+generating product-one tuples in the classes `C` form a single orbit under simultaneous conjugation
+(`Rigidity.rigid_card_iff_single_orbit`), and simultaneous conjugation is one of the moves, so a
+single realized tuple realizes the whole class:
+
+```lean
+theorem isGenericMonodromy_of_rigid (hZ : Subgroup.center G = ⊥)
+    (hrigid : Nat.card (rigidTuples C) = Nat.card G) (hg₀ : g₀ ∈ rigidTuples C)
+    (H : IsGenericMonodromy g₀) (hg : g ∈ rigidTuples C) : IsGenericMonodromy g
+```
+
+with `isGenericMonodromy_of_certificate` the same statement read off a `RigidityCertificate`.  This
+is the point where the rigidity-certificate half of the repository and the branch-cycle half meet:
+what a certificate buys, over and above the group theory, is that the analytic input is needed for
+*one* tuple rather than for all of them.
+
+### Explicit non-abelian branch cycles: Morse and totally ramified fibres
+
+Two families of *computed* branch cycles now exist, both non-abelian, and both obtained by reading
+the local ramification off a fibre rather than by any topology.
+
+At a **simple critical value** — a point of the base above which exactly one point of the cover is
+a double root and the rest are simple — the inertia group is generated by a transposition of the
+roots (`RET/MorseInertia.lean`, `isInertiaGen_and_orderOf`, `isSwap_of_mem_geomInertia`).  Applied
+to the equation covers this gives `Sₙ` covers with all branch cycles of order two
+(`RET/MorseSymmetric.lean`, `RET/SymmetricBranch.lean`), and the bound `n − 1` on the number of
+branch points of a simply-branched `Sₙ` cover (`RET/MorseBranchCycles.lean`).  The general local
+statement behind it is a bound on the inertia exponent by the root multiplicities in the fibre
+(`RET/RamificationBound.lean`).
+
+At the other extreme, a **totally ramified** fibre — one point of the cover above the point of the
+base — carries an inertia group equal to the whole deck group, acting as an `n`-cycle on the roots
+(`RET/TrinomialTotal.lean`, `RET/TrinomialCycle.lean` for the trinomial models).  The counting
+identity behind both extremes is the geometric fundamental identity
+
+```lean
+theorem ncard_primesOver_mul_card_geomInertia (L : LineCover) (t : k) (Q : Ideal (Bring L.M)) :
+    ((placeP t).primesOver (Bring L.M)).ncard * Nat.card (geomInertia L.M Q) = Nat.card L.deck
+```
+
+(`RET/GeomFundamental.lean`: the residue degree is one over an algebraically closed constant field,
+so `efg = n` collapses to `#places × e = n`).  Read as a statement about subgroups it says the fibre
+is the coset space of an inertia group (`RET/TotallyRamified.lean`,
+`ncard_primesOver_eq_index`), with the two extremes `geomInertia = ⊤ ↔ #places = 1` and
+`geomInertia = ⊥ ↔ #places = deg` — the latter being exactly unbranchedness
+(`ncard_primesOver_eq_card_deck_iff_isUnramifiedAt`).  A cover with a single point over some point
+of the base therefore has a *cyclic* deck group, so a non-cyclic cover has at least two points over
+every point of the base.
+
+Passing to a Galois subcover, a branch point survives exactly when its branch cycle does
+(`RET/SubBranchPoint.lean`):
+
+```lean
+theorem isUnramifiedAt_sub_iff (h : L.IsInertiaGenAt t σ) :
+    (∀ τ : (L.sub E).deck, (L.sub E).IsInertiaAt t τ → τ = 1) ↔ L.subHom E σ = 1
+```
+
+so the branch locus of a quotient cover is the set of points whose branch cycle has nontrivial
+image.
+
+### The analytic side: the root variety of a complex family is a covering space
+
+`RET/Analytic/RootCover.lean`.  The half of W1 that is *not* GAGA is `exists_cycles`: to read branch
+cycles off a cover one only has to analytify it — pass from the algebraic cover to the topological
+covering space of the punctured plane — and then feed the monodromy representation to the already
+proven computation of `π₁(ℂ ∖ S)` as a free group.  (GAGA proper, the construction of an algebraic
+cover from a topological one, is what `exists_cover` needs, and remains the wall.)
+
+The first brick of that analytification is now in place, for an arbitrary monic two-variable complex
+polynomial rather than the integer families the Hilbert tree used:
+
+```lean
+def rootVariety (P : Polynomial (Polynomial ℂ)) : Set (ℂ × ℂ) := {p | biEval P p = 0}
+def rootProj (P : Polynomial (Polynomial ℂ)) : rootVariety P → ℂ := fun q ↦ (q : ℂ × ℂ).1
+
+theorem isCoveringMapOn_rootProj (hP : P.Monic) (hsep : ∀ z ∈ U, (spec P z).Separable) :
+    IsCoveringMapOn (rootProj P) U
+```
+
+Three ingredients, each of independent use:
+
+* `isClosedMap_rootProj` — over a compact set of the base, Cauchy's root bound applied to the monic
+  specializations keeps the roots in a fixed disc, so the projection is proper, hence closed.
+* `finite_fiber` — a fibre injects into the root set of a nonzero polynomial.
+* `exists_graphChart` / `isLocalHomeomorphOn_rootProj` — at a simple root the `Y`-derivative of the
+  family is nonzero, so the derivative of `(z, w) ↦ (z, P(z, w))` is invertible and the inverse
+  function theorem straightens the variety onto a horizontal slice; the projection is the resulting
+  chart of the variety.
+
+Closed, with finite fibres, and a local homeomorphism is exactly Mathlib's criterion for a covering
+map.  The separability hypothesis is the analytic form of unbranchedness: `U` is the complement of
+the branch locus.
+
+### The analytic tower, and the branch cycles of an abstract extension of `ℂ(T)`
+
+That first brick has grown into a tower of about two dozen modules under `RET/Analytic/`, and the
+comparison it was missing — an identification of the algebraic deck action with the topological
+monodromy — is now proven.  The tower, by role:
+
+* the covering space: `RootCover`, `RootFiber`, `RootMonodromy`, `Clopen`, `Connected`,
+  `PathConnected`, `Regular`;
+* holomorphic root branches and the recognition of a factor from them: `RootSection`, `Growth`,
+  `RootBound`, `Extension`, `Coeff`, `Factor`, `Sheet`, `LocalBranches`;
+* the deck action written as formulas in the roots: `DeckMonodromy`, `DeckPoly`, `DeckPolyMul`,
+  `RationalDeck`, `DeckCycles`;
+* presenting an abstract extension by a polynomial family: `ScaledComp`, `IntegralDeck`,
+  `ClearDenom`, `DeckClear`, `GaloisCycles`;
+* discarding the parameters that were an artefact of that presentation: `Shrink`.
+
+The capstone is a statement about an arbitrary finite Galois extension of `ℂ(T)`, with no polynomial
+family in sight:
+
+```lean
+theorem exists_branchCycles_of_isGalois (M : Type) [Field M] [Algebra (RatFunc ℂ) M]
+    [FiniteDimensional (RatFunc ℂ) M] [IsGalois (RatFunc ℂ) M] :
+    ∃ (S : Finset ℂ) (g : Fin (S.card + 1) → (M ≃ₐ[RatFunc ℂ] M)),
+      (List.ofFn g).prod = 1 ∧ Subgroup.closure (Set.range g) = ⊤
+```
+
+The exceptional set is not an artefact either.  `Shrink.lean` proves that the monodromy group is
+unchanged when parameters at which nothing happens are put back into the plane — the induced map
+`π₁(ℂ ∖ S) ↠ π₁(ℂ ∖ S')` is surjective for `S' ⊆ S` (`PuncturedSurjective`) and monodromy is
+natural in maps of coverings (`Pi1/Topological/MonodromyNat`), so the two monodromy groups agree up
+to relabelling the fibre.  Consequently the set can be shrunk to the degeneration locus
+
+```lean
+def degenLocus (P : Polynomial (Polynomial ℂ)) : Set ℂ := {z : ℂ | ¬ (spec P z).Separable}
+```
+
+and `exists_branchCycles_eq_degenLocus_of_isGalois` delivers the tuple over exactly that set: the
+count of branch cycles is an invariant of the family, not of how it was written down.
+
+### What still separates this from `exists_cycles`
+
+`GeomRETCompleteness t` asks for more than a product-one generating tuple.  For a prescribed tuple
+of points `t : Fin r → ℚ̄` it asks for `g : Fin r → L.deck` with `IsInertiaGenAt (t i) (g i)`,
+generating, and with product one **in the prescribed order**.  Four things were missing:
+
+1. **`ℚ̄` versus `ℂ`.**  The tower lives over `ℂ`; a `LineCover` lives over `ℚ̄`.  Transporting a
+   cover between the two is a Lefschetz-principle statement.  *Open.*
+2. **Matching the index sets.**  The tuple produced by the free-group presentation is indexed by
+   nothing in particular.  **Closed** — see the spider below.
+3. **Localizing the group elements.**  Nothing says that the element attached to a point is an
+   inertia generator *at that point*: that is a local comparison between the analytic monodromy of
+   a small loop and the algebraic inertia group of a place.  *Open — this is the wall.*
+4. **The order of the product.**  Product-one holds for the tuple that the free-group presentation
+   happens to produce, not for a prescribed ordering of the points.  *Open, and reduced to item 3
+   plus one purely topological statement — see below.*
+
+#### Item 2 is closed: the spider
+
+`Pi1/Topological/Spider.lean` rebuilds the van Kampen induction so that it **does** track which
+puncture each generator surrounds:
+
+```lean
+theorem exists_punctureLoops_compl {S : Set ℂ} (hS : S.Finite) {z₀ : ℂ} (hz₀ : z₀ ∈ Sᶜ) :
+    ∃ γ : ℂ → FundamentalGroup ↥(Sᶜ) ⟨z₀, hz₀⟩,
+      (∀ s ∈ S, IsPunctureLoop Sᶜ s hz₀ (γ s)) ∧ Subgroup.closure (γ '' S) = ⊤
+```
+
+One loop per puncture, each winding once around its own puncture, and together they generate.
+`eq_top_of_isPunctureLoop_mem` is the form used in practice: a subgroup containing every puncture
+loop is everything.
+
+Feeding that into the analytic tower gives the *localized* branch-cycle theorem, which is the
+tuple of §2 with each entry attached to the puncture it belongs to
+(`Analytic/GaloisLocalCycles.lean`):
+
+```lean
+theorem exists_localizedBranchCycles_of_isGalois (M : Type) [Field M] [Algebra (RatFunc ℂ) M]
+    [FiniteDimensional (RatFunc ℂ) M] [IsGalois (RatFunc ℂ) M] :
+    ∃ (P : Polynomial (Polynomial ℂ)) (S : Finset ℂ) (z₀ : ℂ) (hz₀ : z₀ ∉ (S : Set ℂ)),
+      P.Monic ∧ (∀ z ∉ (S : Set ℂ), (spec P z).Separable) ∧
+        ∃ (Φ : FundamentalGroup ↥((S : Set ℂ)ᶜ) ⟨z₀, hz₀⟩ →* (M ≃ₐ[RatFunc ℂ] M))
+          (γ : ℂ → FundamentalGroup ↥((S : Set ℂ)ᶜ) ⟨z₀, hz₀⟩),
+          Function.Surjective Φ ∧
+            (∀ s ∈ degenLocus P, IsPunctureLoop ((S : Set ℂ)ᶜ) s hz₀ (γ s)) ∧
+              Subgroup.closure ((fun s => Φ (γ s)) '' degenLocus P) = ⊤
+```
+
+The whole Galois group of an arbitrary finite Galois extension of `ℂ(T)` is a quotient of the
+fundamental group of a punctured plane, generated by the images of loops around the *individual*
+punctures.  `Analytic/Presentation.lean` isolates the input (every such extension is presented by a
+monic family over `ℂ[T]`), so the statement mentions no polynomial.
+
+What the local model alone cannot give is recorded here because it looks tempting:
+`eq_zero_of_prod_zpow_eq_one` (`PunctureLocal.lean`) says loops around distinct punctures are
+independent in the abelianization, i.e. they are a basis of `H₁`.  That is strictly weaker than
+being a *free basis*: in `F₂` the pair `a, b[a,b]` is a basis of the abelianization and still
+generates a proper subgroup.  Generation is genuinely geometric, and is what the spider induction
+supplies.
+
+#### Item 4 reduces to item 3 plus one topological statement
+
+The prescribed-order product-one relation is the *sphere* relation, and `ℂ ∖ S` is the sphere minus
+`S ∪ {∞}`.  Writing `γ₁, …, γ_r` for the spider loops and `c` for a large circle, the two halves are
+
+* **(4a, topological)** `γ₁ ⋯ γ_r = c` in `π₁(ℂ ∖ S)` for a suitable ordering of the spider.  The
+  spider induction currently proves generation but produces no relation; equivalently, one wants the
+  spider loops to be a *free basis*, which for a generating family of the right cardinality in a
+  free group of finite rank is the Hopf property — not available, and not the intended proof.  The
+  intended proof strengthens the van Kampen induction of `Spider.lean` to carry the boundary circle
+  of each stage.
+* **(4b, analytic)** `Φ c = 1`, because the cover is unramified at infinity.  This is item 3 at the
+  point `∞`: it compares the monodromy of a loop around a puncture with the inertia of the place
+  above it.
+
+So the analytic content of items 3 and 4 is a *single* statement, applied at the finite branch
+points and at infinity.
+
+#### Item 3: the exact shape of the wall
+
+Let `M/ℂ(T)` be finite Galois with group `G`, let `s ∈ ℂ`, and let `σ = Φ (γ s)` be the monodromy of
+a small loop around `s`.  Wanted: a place `Q` of the integral model over `T = s` with
+`geomInertia M Q = Subgroup.zpowers σ`.
+
+The two sides are counted by the same number:
+
+* the deck group acts transitively on the places over `s` with stabilizer the inertia group (the
+  residue fields are algebraically closed, so decomposition = inertia — `InertiaGen.lean`), so
+  `#places = |G| / e_Q` by the fundamental identity (`RamificationBound.lean`, `#205`);
+* the fibre of the analytic cover is a `G`-torsor, so the orbits of `⟨σ⟩` on it are the cosets of
+  `⟨σ⟩`, and `#orbits = |G| / orderOf σ`.
+
+An equivariant map {orbits} → {places} is cheap in the analytic direction (a `⟨σ⟩`-orbit over a
+punctured disc has single-valued, bounded root sections after a Kummer pullback, so
+`Analytic/Extension.lean` extends them across the puncture and produces a place).  Equivariance
+gives surjectivity, hence `e_Q ≥ orderOf σ` **or** `e_Q ≤ orderOf σ` only in the presence of
+injectivity; and the counting argument for injectivity is circular, because it assumes the very
+equality of the two counts it is meant to produce.  Injectivity of {orbits} → {places} says exactly
+that two distinct analytic branches at `s` are separated by the integral closure — that is, that
+the analytic normalization agrees with the algebraic one.  That is the GAGA content, and there is
+no way around it: polynomials in the roots over `ℂ[T]` cannot separate two branches at a singular
+point of the plane model, so the separating elements are genuinely new members of the integral
+closure.
+
+An equivalent phrasing, useful because it plugs into an existing criterion: item 3 is equivalent to
+"trivial local monodromy at `s` ⟹ unramified at `s`", and
+`LineCover.isUnramifiedOutside_of_forall_separable` would discharge it given a presentation of the
+integral closure whose defining polynomials specialize separably at `s` — which is again the
+normalization.  The honest route is to build the local dictionary: components of the cover over a
+punctured disc ↔ places, each component being the `e`-fold power cover (`TameCover.npowCover`) and
+so supplying a Puiseux parametrization of the corresponding place.
+
+#### What was built towards it
+
+* `Pi1/Topological/GroupLoop.lean` — in a topological monoid the pointwise product of two loops at
+  the unit is homotopic to their concatenation (`homotopic_loopMul`, by the explicit
+  reparametrisation `H(s,t) = α(min((1+s)t, 1)) · β(max((1+s)t − s, 0))`), hence the pointwise
+  `n`-th power of a loop is the `n`-th power of its class (`fromPath_loopPow`) and the `n`-th power
+  map of the monoid acts as the `n`-th power map on `π₁` at the unit (`mapOfEq_npowMap`).
+* `Pi1/Topological/UnitsDegree.lean` — the instance at `ℂˣ`: `π₁(ℂˣ, 1) ≅ ℤ`
+  (`fundamentalGroupUnitsOne`) and `z ↦ zⁿ` multiplies the winding number by `n`
+  (`windingNumber_npowMap`).  This is the local degree computation every Kummer comparison needs.
+* `Analytic/Pullback.lean` — the Kummer substitution `T = s + wᵉ` as a morphism of root covers.
+  `pullFam P s e := P.map (eval₂RingHom C (C s + X ^ e))` has `spec (pullFam P s e) w = spec P
+  (s + wᵉ)`, its degeneration locus is the preimage of that of `P`, and the substitution lifts to a
+  map of the punctured root covers (`pullBase`, `pullTotal`, `puncturedProj_pullTotal`) with a
+  bijection on fibres (`pullFibre`).  Naturality of monodromy (`Pi1/Topological/MonodromyNat.lean`)
+  then gives the square
+
+  ```lean
+  theorem monodromyHom_comp_map_pullBase … :
+      (monodromyHom hP hS _).comp (FundamentalGroup.map (pullBase s e hbase) _)
+        = (Equiv.permCongrHom (pullFibre P s e hbase hw₀)).toMonoidHom.comp
+            (monodromyHom (monic_pullFam hP s e) (separable_spec_pullFam hS hbase) hw₀)
+  ```
+
+  and the containment of monodromy groups `range_monodromyHom_pullFam_le`.  Combined with the degree
+  engine this is the statement that the local monodromy of the pullback at `w = 0` is `σᵉ`, the
+  first step of the Abhyankar argument.
 
 ---
 
@@ -270,6 +1239,23 @@ The transcendental content of the whole development is one sentence: *finite cov
 minus `r` points are the finite quotients of its fundamental group, algebraically, with tame inertia
 at the punctures matching the loops.*  W1 is that sentence, stated in exactly those terms and in
 both directions.  It is the only thing the rigidity tree still assumes.
+
+And it is assumed only where it has to be.  The sentence is *proven*, both directions and with no
+hypothesis on the group, for `r ≤ 2` (`geomRET_of_le_two`) — the once-punctured sphere is simply
+connected and the twice-punctured one has cyclic fundamental group, algebraically — and it is
+proven for every `r` when the deck group is abelian (`geomRETComm`).  Everything the abelian shadow
+of a general cover can see is proven too: inertia generates modulo commutators in every rank, and
+honestly for nilpotent deck groups; the branch locus is finite without being prescribed; and
+unramifiedness at infinity costs at most one branch point rather than being a hypothesis.  The
+branch data has been stripped of everything inessential: trivial branch cycles may be added and
+removed, the points may be permuted along with their cycles, and — by Möbius transport — *where* the
+three points of a three-point datum sit does not matter at all, so W1 in the rigidity regime is one
+statement rather than a moduli of them.  Over such a triple the first non-abelian instance of
+`exists_cover` is proven outright, for every dihedral group.  What is
+left is one regime — a non-abelian deck group over three or more branch points — and one clause in
+it, product-one for `exists_cycles` together with the existence of the cover.  That is the regime
+the rigidity method lives in, and it is the regime in which the correspondence genuinely sees the
+topology.
 
 Everything else is a theorem.  The arithmetic half — the branch-cycle rationality descent from
 `ℚ̄(T)` to `ℚ(T)`, the whole of §3 — is proven from W1, rung by rung: the branch locus of the

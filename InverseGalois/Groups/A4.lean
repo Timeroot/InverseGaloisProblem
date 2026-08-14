@@ -53,9 +53,9 @@ private lemma a₄_irreducible : Irreducible a₄ := by
               Polynomial.isUnit_iff_degree_eq_zero.mpr <| le_antisymm h <| le_of_not_gt fun h' ↦ ?_,
             h₁.symm⟩
           · apply_fun Polynomial.eval 0 at h₁
-            aesop
+            simp_all
           · apply_fun Polynomial.eval 0 at h₁
-            aesop
+            simp_all
       have h_deg_sum : f.degree + g.degree = 4 := by
         erw [← Polynomial.degree_mul, hfg, Polynomial.degree_add_C] <;>
           erw [Polynomial.degree_add_eq_left_of_degree_lt] <;> norm_num
@@ -175,7 +175,7 @@ private lemma resolvent_a4_irreducible :
           have : q ≤ 1 := Int.le_of_dvd (by decide) h_divisors.2
           have : q ≥ -1 := neg_le_of_abs_le (Int.le_of_dvd (by decide) (by simpa using h_divisors.2))
           interval_cases p <;> norm_num at h_divisors <;> interval_cases q <;> norm_num at h_root
-        aesop
+        simp_all
       -- Since `X^3 - 48X - 64` has no rational roots, it is irreducible over `ℚ`.
       have h_irred : ∀ p q : Polynomial ℚ, p.degree > 0 → q.degree > 0 →
           Polynomial.degree p + Polynomial.degree q = 3 →
@@ -202,9 +202,9 @@ private lemma resolvent_a4_irreducible :
             Polynomial.isUnit_iff_degree_eq_zero.mpr <| le_antisymm h <| le_of_not_gt fun h' ↦ ?_,
           ?_, h₁.symm, trivial⟩
         · apply_fun Polynomial.eval 0 at h₁
-          aesop
+          simp_all
         · apply_fun Polynomial.eval 0 at h₁
-          aesop
+          simp_all
         · erw [← Polynomial.degree_mul, ← h₁]
           erw [Polynomial.degree_sub_C] <;> erw [Polynomial.degree_sub_eq_left_of_degree_lt] <;> norm_num
 
@@ -272,7 +272,7 @@ private lemma twelve_dvd_card_gal_a4 : 12 ∣ Nat.card a₄.Gal := by
     have h_deg_y : Module.finrank ℚ (↥(IntermediateField.adjoin ℚ {y})) = 3 := by
       rw [IntermediateField.adjoin.finrank]
       · exact Polynomial.natDegree_eq_of_degree_eq_some h_minpoly_y
-      · refine ⟨Polynomial.X ^ 3 - 48 * Polynomial.X - 64, ?_, by aesop⟩
+      · refine ⟨Polynomial.X ^ 3 - 48 * Polynomial.X - 64, ?_, by simp_all⟩
         refine Polynomial.Monic.def.2 ?_
         erw [Polynomial.leadingCoeff]
         erw [Polynomial.natDegree_sub_C]
@@ -342,13 +342,12 @@ private lemma perm_fin_four_not_surj_odd
         · rw [map_mul, h_transpositions i j hij, ih, mul_one]
       exact fun h ↦ hG1.ne' (Fintype.card_eq_one_iff.mpr ⟨1, fun x ↦ by
         obtain ⟨σ, hσ⟩ := h x
-        aesop⟩)
+        simp_all⟩)
 
 /-
 Helper: The resolvent cubic X³-48X-64 is normal over ℚ when restricted to
 the adjoin of one of its roots. This follows from all roots being in ℚ(y).
 -/
-set_option maxHeartbeats 800000 in
 private lemma adjoin_resolvent_isNormal
     (y : a₄.SplittingField) (hy : y ^ 3 - 48 * y - 64 = 0)
     (_h_minpoly : minpoly ℚ y = X ^ 3 - C 48 * X - C 64)
@@ -424,7 +423,6 @@ private lemma adjoin_resolvent_isNormal
 /-
 Helper: The Galois group does not have order 24.
 -/
-set_option maxHeartbeats 800000 in
 private lemma card_gal_ne_24 : Nat.card a₄.Gal ≠ 24 := by
   -- Assume |Gal| = 24 for contradiction.
   by_contra h_contra
@@ -470,7 +468,7 @@ private lemma card_gal_ne_24 : Nat.card a₄.Gal ≠ 24 := by
     simp_all [Polynomial.eval₂_eq_eval_map]
     rw [IntermediateField.adjoin.finrank]
     · erw [h_minpoly, Polynomial.natDegree_sub_C, Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num
-    · refine ⟨Polynomial.X ^ 3 - Polynomial.C 48 * Polynomial.X - Polynomial.C 64, ?_, by aesop⟩
+    · refine ⟨Polynomial.X ^ 3 - Polynomial.C 48 * Polynomial.X - Polynomial.C 64, ?_, by simp_all⟩
       refine Polynomial.Monic.def.2 ?_
       erw [Polynomial.leadingCoeff]
       erw [Polynomial.natDegree_sub_C]
@@ -494,7 +492,7 @@ private lemma card_gal_ne_24 : Nat.card a₄.Gal ≠ 24 := by
           · exact a₄_irreducible.separable
           · apply ne_of_apply_ne (Polynomial.eval 0)
             norm_num [a₄]
-        exact ⟨{ Equiv.permCongr h_equiv.some with map_mul' := by aesop }⟩
+        exact ⟨{ Equiv.permCongr h_equiv.some with map_mul' := by simp }⟩
       exact ⟨e.toMonoidHom.comp f₀, e.injective.comp hf₀⟩
     -- Since the Galois group has order 24 and S₄ also has order 24, the injective homomorphism must be an isomorphism.
     obtain ⟨f, hf_inj⟩ := h_iso_subgroup
@@ -506,7 +504,7 @@ private lemma card_gal_ne_24 : Nat.card a₄.Gal ≠ 24 := by
           · exact a₄_irreducible.separable
           · apply ne_of_apply_ne (Polynomial.eval 0)
             norm_num [a₄]
-        simp_all +decide [Fintype.card_perm]
+        simp_all [Fintype.card_perm, Nat.factorial]
       have hf_finite : Finite (a₄.Gal) ∧ Finite (Equiv.Perm (a₄.rootSet ℂ)) := by
         refine ⟨Nat.finite_of_card_ne_zero ?_, Nat.finite_of_card_ne_zero ?_⟩
         · positivity
@@ -514,7 +512,7 @@ private lemma card_gal_ne_24 : Nat.card a₄.Gal ≠ 24 := by
           positivity
       have := hf_finite.1
       have := hf_finite.2
-      exact ((Fintype.bijective_iff_injective_and_card f).mpr ⟨hf_inj, by aesop⟩).2
+      exact ((Fintype.bijective_iff_injective_and_card f).mpr ⟨hf_inj, by simp_all⟩).2
     have h_iso_perm : Nonempty (a₄.Gal ≃* Equiv.Perm (a₄.rootSet ℂ)) :=
       ⟨{ Equiv.ofBijective f ⟨hf_inj, hf_surj⟩ with map_mul' := f.map_mul }⟩
     have h_card_rootSet : Fintype.card (a₄.rootSet ℂ) = 4 := by
@@ -524,7 +522,7 @@ private lemma card_gal_ne_24 : Nat.card a₄.Gal ≠ 24 := by
       · apply ne_of_apply_ne (Polynomial.eval 0)
         norm_num [a₄]
     obtain ⟨g⟩ := h_iso_perm
-    exact ⟨g.trans { Equiv.permCongr (Fintype.equivOfCardEq h_card_rootSet) with map_mul' := by aesop }⟩
+    exact ⟨g.trans { Equiv.permCongr (Fintype.equivOfCardEq h_card_rootSet) with map_mul' := by simp }⟩
   -- Therefore, there exists a surjective homomorphism from Perm(Fin 4) to Gal(ℚ(y)/ℚ).
   obtain ⟨f, hf⟩ :
       ∃ f : Equiv.Perm (Fin 4) →* (↥(IntermediateField.adjoin ℚ ({y} : Set a₄.SplittingField)) ≃ₐ[ℚ]
@@ -554,7 +552,7 @@ private lemma card_gal_ne_24 : Nat.card a₄.Gal ≠ 24 := by
     rw [h_card3]
     refine ⟨?_, ?_⟩ <;> decide
   convert perm_fin_four_not_surj_odd _ _ f hf
-  all_goals aesop
+  all_goals simp_all
 
 /-- The Galois group has order exactly 12. -/
 private lemma card_gal_a4 : Nat.card a₄.Gal = 12 := by
@@ -582,7 +580,7 @@ private lemma gal_iso_alternating :
             · erw [Polynomial.natDegree_add_C, Polynomial.natDegree_add_eq_left_of_natDegree_lt] <;> norm_num
             · apply ne_of_apply_ne (Polynomial.eval 0)
               norm_num [a₄]
-          exact ⟨{ Equiv.permCongr (Fintype.equivOfCardEq <| by aesop) with map_mul' := by aesop }⟩
+          exact ⟨{ Equiv.permCongr (Fintype.equivOfCardEq <| by trivial) with map_mul' := by simp }⟩
         exact ⟨h_perm.some.toMonoidHom.comp f₀, h_perm.some.injective.comp hf₀⟩
       -- Since the Galois group has order 12 and is a subgroup of `S₄`, it must be isomorphic to `A₄`.
       obtain ⟨f, hf_inj⟩ := h_galois_subgroup
@@ -602,10 +600,13 @@ private lemma gal_iso_alternating :
             (fun x ↦ (⟨f x, Set.mem_range_self x⟩ : ↥(MonoidHom.range f))) := by
           intro x
           obtain ⟨y, hy⟩ := x.2
-          aesop
+          simp_all only [Nat.card_eq_fintype_card, Fintype.card_ofFinset]
+          obtain ⟨val, property⟩ := x
+          subst hy
+          simp_all only [Subtype.mk.injEq, exists_apply_eq_apply]
         exact ⟨{ Equiv.ofBijective (fun x ↦ ⟨f x, Set.mem_range_self x⟩)
             ⟨fun x y hxy ↦ hf_inj <| by simpa using hxy, hsurj⟩ with
-            map_mul' := fun x y ↦ by aesop }⟩
+            map_mul' := fun x y ↦ by simp_all only [Nat.card_eq_fintype_card, Fintype.card_ofFinset, Equiv.toFun_as_coe, Equiv.ofBijective_apply, map_mul]; rfl }⟩
       · exact h_card
 
 /-- The alternating group `A₄` is an inverse Galois group,

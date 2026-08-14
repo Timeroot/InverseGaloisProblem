@@ -3,6 +3,7 @@ Copyright (c) 2025. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.Core.InstanceShortcuts
 import InverseGalois.Rigidity.RET.Descent.TameRamification
 import InverseGalois.Rigidity.RET.Descent.WildInertia
 
@@ -41,8 +42,6 @@ namespace GeomAKLB
 /-- The algebraically closed constant field. -/
 abbrev k : Type := AlgebraicClosure ℚ
 
-set_option maxHeartbeats 1600000
-set_option synthInstance.maxHeartbeats 1000000
 
 attribute [local instance] Ideal.Quotient.field
 
@@ -86,7 +85,9 @@ local instance instFaithful : FaithfulSMul (Polynomial k) (Bring Ω) := by
 local instance instDedekindB : IsDedekindDomain (Bring Ω) :=
   integralClosure.isDedekindDomain (Polynomial k) (RatFunc k) Ω
 
-local instance instTorsionFree : Module.IsTorsionFree (Polynomial k) (Bring Ω) := inferInstance
+set_option synthInstance.maxHeartbeats 200000 in
+local instance (priority := high) instTorsionFree :
+    Module.IsTorsionFree (Polynomial k) (Bring Ω) := inferInstance
 
 local instance instFiniteGal : Finite (Ω ≃ₐ[RatFunc k] Ω) := inferInstance
 
@@ -170,6 +171,7 @@ theorem geom_inertia_package (t : k) :
 
 section Cyclic
 
+set_option synthInstance.maxHeartbeats 200000 in
 omit [FiniteDimensional (RatFunc k) Ω] [IsGalois (RatFunc k) Ω] in
 /-- A prime over the geometric place is nonzero. -/
 theorem Q_ne_bot (t : k) (Q : Ideal (Bring Ω)) [Q.LiesOver (placeP t)] : Q ≠ ⊥ :=

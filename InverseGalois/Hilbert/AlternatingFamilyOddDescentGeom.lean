@@ -164,7 +164,7 @@ theorem serreAnOverFracOdd_separable (n : ℕ) (hn : 2 ≤ n) (_hodd : Odd n) :
     apply isCoprime_of_irreducible_dvd
     · intro h
       have := serreAnOverFracOdd_natDegree n hn
-      aesop
+      simp_all
     · intro z hz hz' hz''
       obtain ⟨α, hα⟩ : ∃ α : L, eval α (z.map (algebraMap K L)) = 0 := by
         apply IsAlgClosed.exists_root
@@ -639,7 +639,7 @@ theorem kappaOdd_eq (n : ℕ) :
       - (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase X) ^ 2 := by
   rw [kappaOdd, map_sub, map_pow]
 
-set_option synthInstance.maxHeartbeats 800000 in
+set_option synthInstance.maxHeartbeats 200000 in
 /-- The square of the transcendental generator `t` lies in the image of `BaseT`, explicitly
 `t² = k̄ − κ` and `κ = −k̄/((n−1)·substValOdd)` is in the base. -/
 theorem gen_sq_mem_range (n : ℕ) (hn : 2 ≤ n) :
@@ -803,7 +803,7 @@ theorem t_not_mem_range (n : ℕ) (hn : 2 ≤ n) :
   · exact two_ne_zero h
   · exact htne h
 
-set_option synthInstance.maxHeartbeats 800000 in
+set_option synthInstance.maxHeartbeats 200000 in
 set_option linter.unusedVariables false in
 theorem finiteDimensional_baseT_geomBaseOdd (n : ℕ) (hn : 2 ≤ n) :
     letI := algBaseTOdd n hn
@@ -817,7 +817,7 @@ theorem finiteDimensional_baseT_geomBaseOdd (n : ℕ) (hn : 2 ≤ n) :
   have := hfd
   exact IntermediateField.topEquiv.toLinearEquiv.finiteDimensional
 
-set_option synthInstance.maxHeartbeats 800000 in
+set_option synthInstance.maxHeartbeats 200000 in
 set_option linter.unusedVariables false in
 theorem finrank_baseT_geomBaseOdd (n : ℕ) (hn : 2 ≤ n) :
     letI := algBaseTOdd n hn

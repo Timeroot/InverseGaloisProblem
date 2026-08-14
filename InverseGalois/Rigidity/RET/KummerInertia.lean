@@ -52,6 +52,9 @@ which divides `a` exactly once because `t₀ ≠ t₁`, followed by Gauss's lemm
 * `Rigidity.RET.geomInertia_eq_top_kummerCover`, `Rigidity.RET.isInertiaGenAt_kummerCover` — the
   two-point Kummer cover is totally ramified at `t₀`, so a generator of its (cyclic) deck group is
   a distinguished inertia element there.
+* `Rigidity.RET.exists_const_smul_of_pow_mem`, `Rigidity.RET.kummer_fix_of_mem_inertia_zero`,
+  `Rigidity.RET.isUnramifiedAtInfinity_kummerCover` — the two-point Kummer cover is unramified at
+  the point at infinity.
 -/
 
 open Polynomial
@@ -59,8 +62,6 @@ open scoped Pointwise
 
 noncomputable section
 
-set_option maxHeartbeats 1600000
-set_option synthInstance.maxHeartbeats 1000000
 
 namespace Rigidity.RET
 
@@ -431,6 +432,7 @@ theorem le_ramificationIdx_of_pow_dvd (t : k) (Q : Ideal (Bring Ω)) [hQm : Q.Is
   rw [Ideal.IsDedekindDomain.ramificationIdx_eq_multiplicity hI0 hQm.isPrime]
   exact hfin.le_multiplicity_of_pow_dvd hdvd
 
+set_option synthInstance.maxHeartbeats 200000 in
 /-- **A totally ramified place has full inertia.** -/
 theorem geomInertia_eq_top_of_finrank_le (t : k) (Q : Ideal (Bring Ω)) [hQm : Q.IsMaximal]
     [Q.LiesOver (placeP t)]
@@ -629,5 +631,155 @@ theorem exists_zpowers_eq_top_kummerCover (n : ℕ) [NeZero n] {t₀ t₁ : k} (
   exact ⟨σ, by ext x; simpa using hσ x⟩
 
 end TwoPoint
+
+/-! ### Unramifiedness at infinity -/
+
+section Infinity
+
+variable {N : Type} [Field N] [Algebra (RatFunc k) N]
+
+/-- **An `n`-th root of a scalar is scaled by a constant.**  An automorphism over the base
+multiplies such a root by an `n`-th root of unity, and every root of unity of the cover is a
+constant, the constant field being algebraically closed. -/
+theorem exists_const_smul_of_pow_mem (n : ℕ) [NeZero n] {u : N} (hu : u ≠ 0) {b : RatFunc k}
+    (hb : u ^ n = algebraMap (RatFunc k) N b) (σ : N ≃ₐ[RatFunc k] N) :
+    ∃ c : k, σ u = algebraMap (RatFunc k) N (algebraMap k (RatFunc k) c) * u := by
+  obtain ⟨ζ₀, hζ₀⟩ := exists_primitiveRoot_k n
+  have hinj : Function.Injective
+      ((algebraMap (RatFunc k) N).comp (algebraMap k (RatFunc k))) :=
+    (algebraMap (RatFunc k) N).injective.comp (algebraMap k (RatFunc k)).injective
+  have hζ : IsPrimitiveRoot
+      ((algebraMap (RatFunc k) N) (algebraMap k (RatFunc k) ζ₀)) n :=
+    hζ₀.map_of_injective (f := (algebraMap (RatFunc k) N).comp (algebraMap k (RatFunc k))) hinj
+  have hξ : (σ u / u) ^ n = 1 := by
+    rw [div_pow, ← map_pow, hb, σ.commutes, div_self]
+    exact fun h => hu (by simpa [hb] using pow_eq_zero_iff (NeZero.ne n) |>.mp (by rw [hb, h]))
+  obtain ⟨i, -, hi⟩ := hζ.eq_pow_of_pow_eq_one hξ
+  refine ⟨ζ₀ ^ i, ?_⟩
+  rw [map_pow, map_pow, hi, div_mul_cancel₀ _ hu]
+
+variable [FiniteDimensional (RatFunc k) N] [IsGalois (RatFunc k) N] [Algebra (Polynomial k) N]
+  [IsScalarTower (Polynomial k) (RatFunc k) N]
+
+omit [FiniteDimensional (RatFunc k) N] in
+/-- **An inertia element at the origin fixes a root of a datum that is a unit there.**  The datum
+does not vanish at the origin, so the root is a unit at every place over the origin, and the
+constant by which an inertia element scales it must be `1`. -/
+theorem kummer_fix_of_mem_inertia_zero_unit (n : ℕ) [NeZero n] {b : Polynomial k}
+    (hb : b.eval 0 ≠ 0) {u : N} (hu : u ≠ 0)
+    (hupow : u ^ n = algebraMap (RatFunc k) N (algebraMap (Polynomial k) (RatFunc k) b))
+    (Q : Ideal (Bring N)) [hQ : Q.IsMaximal] [Q.LiesOver (placeP (0 : k))]
+    {τ : N ≃ₐ[RatFunc k] N} (hτ : τ ∈ geomInertia N Q) : τ u = u := by
+  have htower : algebraMap (Polynomial k) N b
+      = algebraMap (RatFunc k) N (algebraMap (Polynomial k) (RatFunc k) b) :=
+    IsScalarTower.algebraMap_apply (Polynomial k) (RatFunc k) N _
+  have hint : IsIntegral (Polynomial k) u :=
+    ⟨X ^ n - C b, monic_X_pow_sub_C _ (NeZero.ne n), by
+      simp only [eval₂_sub, eval₂_pow, eval₂_X, eval₂_C, hupow, ← htower, sub_self]⟩
+  set uB : Bring N := ⟨u, hint⟩ with huB
+  have hpowB : uB ^ n = algebraMap (Polynomial k) (Bring N) b := by
+    apply Subtype.ext
+    rw [Subalgebra.coe_pow, Subalgebra.coe_algebraMap]
+    show u ^ n = algebraMap (Polynomial k) N b
+    rw [htower, hupow]
+  have hnot : uB ∉ Q := by
+    intro hmem
+    refine notMem_of_eval_ne_zero (Ω := N) (t := 0) (b := b) hb Q ?_
+    rw [← hpowB]; exact Ideal.pow_mem_of_mem Q hmem n (NeZero.pos n)
+  obtain ⟨c, hc⟩ := exists_const_smul_of_pow_mem n hu hupow τ
+  have hsmul : τ • uB = algebraMap (Polynomial k) (Bring N) (C c) * uB := by
+    apply Subtype.ext
+    rw [coe_smul_geom, Submonoid.coe_mul, Subalgebra.coe_algebraMap]
+    show τ u = algebraMap (Polynomial k) N (C c) * u
+    rw [IsScalarTower.algebraMap_apply (Polynomial k) (RatFunc k) N, hc]
+    congr 2
+  have hc1 : c = 1 := const_eq_one_of_mem_inertia (Ω := N) Q hτ hnot hsmul
+  rw [hc, hc1, map_one, map_one, one_mul]
+
+omit [FiniteDimensional (RatFunc k) N] in
+/-- **An inertia element at the origin fixes a root of the two-point datum at infinity.**  That
+datum takes the value `1` there. -/
+theorem kummer_fix_of_mem_inertia_zero (n : ℕ) [NeZero n] {t₀ t₁ : k}
+    {u : N} (hu : u ≠ 0)
+    (hupow : u ^ n = algebraMap (RatFunc k) N
+      (algebraMap (Polynomial k) (RatFunc k) (revKummerA n t₀ t₁)))
+    (Q : Ideal (Bring N)) [hQ : Q.IsMaximal] [Q.LiesOver (placeP (0 : k))]
+    {τ : N ≃ₐ[RatFunc k] N} (hτ : τ ∈ geomInertia N Q) : τ u = u :=
+  kummer_fix_of_mem_inertia_zero_unit n
+    (by rw [revKummerA_eval_zero]; exact one_ne_zero) hu hupow Q hτ
+
+end Infinity
+
+/-- The two-point Kummer datum at infinity is a nonzero polynomial. -/
+theorem revKummerA_ne_zero (n : ℕ) (t₀ t₁ : k) : revKummerA n t₀ t₁ ≠ 0 := by
+  intro h
+  have hev := revKummerA_eval_zero n t₀ t₁
+  rw [h] at hev
+  simp at hev
+
+/-- **The two-point Kummer cover is unramified at the point at infinity.**  In the coordinate
+`S = T⁻¹` the cover is cut out by `uⁿ = (1 - t₀S)(1 - t₁S)^{n-1}`, whose right-hand side is a unit
+at `S = 0`; so an inertia element there fixes `u`, hence the Kummer root, hence everything. -/
+theorem isUnramifiedAtInfinity_kummerCover (n : ℕ) [NeZero n] {t₀ t₁ : k} (h01 : t₀ ≠ t₁)
+    (L : LineCover) [IsSplittingField (RatFunc k) L.M
+      ((X : (RatFunc k)[X]) ^ n -
+        C (algebraMap (Polynomial k) (RatFunc k) (kummerA n t₀ t₁)))] :
+    L.IsUnramifiedAtInfinity := by
+  obtain ⟨ζ₀, hζ₀⟩ := exists_primitiveRoot_k n
+  have hζ : IsPrimitiveRoot (algebraMap k (RatFunc k) ζ₀) n :=
+    hζ₀.map_of_injective (algebraMap k (RatFunc k)).injective
+  have H := irreducible_kummerA (NeZero.ne n) h01
+  set w : L.M :=
+    kummerRoot n (algebraMap (Polynomial k) (RatFunc k) (kummerA n t₀ t₁)) L.M with hwdef
+  have hwpow : w ^ n = algebraMap (RatFunc k) L.M
+      (algebraMap (Polynomial k) (RatFunc k) (kummerA n t₀ t₁)) := kummerRoot_pow _
+  have hpolyinj : Function.Injective
+      ((algebraMap (RatFunc k) L.M).comp (algebraMap (Polynomial k) (RatFunc k))) :=
+    (algebraMap (RatFunc k) L.M).injective.comp (IsFractionRing.injective (Polynomial k) (RatFunc k))
+  have hw0 : w ≠ 0 := by
+    intro h
+    rw [h, zero_pow (NeZero.ne n)] at hwpow
+    have hz : ((algebraMap (RatFunc k) L.M).comp
+        (algebraMap (Polynomial k) (RatFunc k))) (kummerA n t₀ t₁)
+        = ((algebraMap (RatFunc k) L.M).comp (algebraMap (Polynomial k) (RatFunc k))) 0 := by
+      rw [map_zero]; exact hwpow.symm
+    exact kummerA_ne_zero (n := n) t₀ t₁ (hpolyinj hz)
+  have hupow := twistRoot_pow n (NeZero.ne n) t₀ t₁ w hwpow
+  have hpolyinj' : Function.Injective
+      ((algebraMap (RatFunc k) (Twist (↑invSubst) L.M)).comp
+        (algebraMap (Polynomial k) (RatFunc k))) :=
+    (algebraMap (RatFunc k) (Twist (↑invSubst) L.M)).injective.comp
+      (IsFractionRing.injective (Polynomial k) (RatFunc k))
+  have hu0 : twistRoot w ≠ 0 := by
+    intro h
+    rw [h, zero_pow (NeZero.ne n)] at hupow
+    have hz : ((algebraMap (RatFunc k) (Twist (↑invSubst) L.M)).comp
+        (algebraMap (Polynomial k) (RatFunc k))) (revKummerA n t₀ t₁)
+        = ((algebraMap (RatFunc k) (Twist (↑invSubst) L.M)).comp
+          (algebraMap (Polynomial k) (RatFunc k))) 0 := by
+      rw [map_zero]; exact hupow.symm
+    exact revKummerA_ne_zero n t₀ t₁ (hpolyinj' hz)
+  rintro τ ⟨Q, hQmax, hQover, hτ⟩
+  haveI := hQmax
+  haveI := hQover
+  have hfix : τ (@twistRoot L.M L.field L.alg w) = @twistRoot L.M L.field L.alg w :=
+    kummer_fix_of_mem_inertia_zero n hu0 hupow Q hτ
+  set σ : L.M ≃ₐ[RatFunc k] L.M := Twist.unaut τ with hσdef
+  have hσu : σ (w * algebraMap (RatFunc k) L.M (RatFunc.X)⁻¹)
+      = w * algebraMap (RatFunc k) L.M (RatFunc.X)⁻¹ := hfix
+  have hXinv : algebraMap (RatFunc k) L.M (RatFunc.X)⁻¹ ≠ 0 := by
+    simpa using (map_ne_zero_iff _ (algebraMap (RatFunc k) L.M).injective).mpr
+      (inv_ne_zero (RatFunc.X_ne_zero (K := k)))
+  rw [map_mul, σ.commutes] at hσu
+  have hσw : σ w = w := mul_right_cancel₀ hXinv hσu
+  obtain ⟨m, hm, hone⟩ := kummer_smul_root H L.M hζ σ
+  have hprod : algebraMap (RatFunc k) L.M ((algebraMap k (RatFunc k) ζ₀) ^ m) * w = 1 * w := by
+    rw [one_mul, ← hm, hσw]
+  have hz : (algebraMap k (RatFunc k) ζ₀) ^ m = 1 :=
+    (map_eq_one_iff _ (algebraMap (RatFunc k) L.M).injective).mp (mul_right_cancel₀ hw0 hprod)
+  have hσ1 : σ = 1 := hone hz
+  have hτaut : τ = Twist.aut σ := AlgEquiv.ext fun _ => rfl
+  rw [hτaut, hσ1]
+  exact AlgEquiv.ext fun _ => rfl
 
 end Rigidity.RET

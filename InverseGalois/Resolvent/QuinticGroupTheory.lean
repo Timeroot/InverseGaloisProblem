@@ -5,7 +5,6 @@ This file provides group-theoretic lemmas needed for `card_gal_dvd_20_of_resolve
 -/
 import Mathlib
 
-set_option maxHeartbeats 1600000
 
 local instance : Fact (Nat.Prime 5) := ⟨by decide⟩
 
@@ -25,6 +24,7 @@ private lemma no_order_15_in_S5 : ∀ g : Equiv.Perm (Fin 5), orderOf g ≠ 15 :
 S₅ has no subgroup of order 15. A group of order 15 is cyclic (by Sylow theory),
     so it has an element of order 15, but no such element exists in S₅.
 -/
+set_option maxHeartbeats 400000 in
 theorem Perm_Fin5_no_subgroup_order_15 :
     ∀ H : Subgroup (Equiv.Perm (Fin 5)), Nat.card H ≠ 15 := by
   -- Assume H is a subgroup of S₅ with order 15. We need to show that this leads to a contradiction.
@@ -55,13 +55,18 @@ theorem Perm_Fin5_no_subgroup_order_15 :
           have h_sylow_div : Nat.card (Sylow p H) ∣ Nat.card H := by
             rw [(Classical.arbitrary (Sylow p ↥H)).card_eq_card_quotient_normalizer]
             exact Subgroup.card_quotient_dvd_card _
-          rcases p with (_ | _ | _ | _ | _ | _ | p) <;> simp_all +decide [Nat.ModEq]
+          rcases p with (_ | _ | _ | _ | _ | _ | p) <;>
+            simp_all [Nat.ModEq, Nat.not_prime_zero, Nat.not_prime_one,
+              show ¬ Nat.Prime 4 by decide, show ¬ (2 ∣ 15) by decide]
           · have := Nat.le_of_dvd (by decide) h_sylow_div
             interval_cases Fintype.card (Sylow 3 H) <;> trivial
           · have := Nat.le_of_dvd (by decide) h_sylow_div
             interval_cases Fintype.card (Sylow 5 H) <;> trivial
           · have := Nat.le_of_dvd (by decide) hp_div
-            interval_cases _ : p + 6 <;> simp_all +decide
+            interval_cases _ : p + 6 <;> simp_all
+            first
+              | omega
+              | exact absurd ‹Nat.Prime 15› (by decide)
         have h_sylow_normal : ∀ p : ℕ, Nat.Prime p → p ∣ Nat.card H →
             ∀ P : Sylow p H, Subgroup.Normal (P.toSubgroup) := by
           intros p hp hp_div P
@@ -184,11 +189,12 @@ lemma normal_subgroup_Perm_Fin5_trichotomy
       rw [Nat.card_eq_fintype_card]
       native_decide
     have hN_card_cases : Nat.card N = 1 ∨ Nat.card N = 2 := by
-      interval_cases _ : Nat.card N <;> simp_all +decide only [Nat.card_eq_zero]
+      interval_cases _ : Nat.card N <;>
+        simp_all only [Nat.card_eq_zero, true_or, or_true]
       exact absurd (‹IsEmpty ↥N ∨ Infinite ↥N›.resolve_left (not_isEmpty_iff.mpr ⟨1, N.one_mem⟩))
         (not_infinite_iff_finite.mpr (Set.Finite.to_subtype (Set.toFinite _)))
     cases' hN_card_cases with h h
-    · aesop
+    · omega
     · have hN_center : ∀ g : Equiv.Perm (Fin 5), g ∈ N → g = 1 := by
         have hN_center : ∀ g : Equiv.Perm (Fin 5), g ∈ Subgroup.center (Equiv.Perm (Fin 5)) → g = 1 := by
           native_decide +revert
@@ -204,12 +210,11 @@ lemma normal_subgroup_Perm_Fin5_trichotomy
         convert hN_index using 1
         simp
       rwa [Nat.dvd_prime Nat.prime_two] at hN_index
-    have := Subgroup.index_mul_card N
-    simp_all +decide
-    cases hN_index <;> simp_all +decide [Fintype.card_perm]
-    exact Or.inr <| Or.inl <| by
-      norm_num [Nat.factorial] at this
-      linarith
+    have hmul := Subgroup.index_mul_card N
+    have hS5 : Nat.card (Equiv.Perm (Fin 5)) = 120 := by
+      simp [Nat.card_eq_fintype_card, Fintype.card_perm, Nat.factorial]
+    rw [hS5] at hmul
+    rcases hN_index with h1 | h1 <;> rw [h1] at hmul <;> omega
 
 /-
 S₅ has no subgroup of order 30.
@@ -240,7 +245,7 @@ theorem Perm_Fin5_no_subgroup_order_30 :
       rw [Nat.card_eq_one_iff_unique] at h_card_ker_one
       exact (MonoidHom.ker_eq_bot_iff _).mp (eq_bot_iff.mpr fun x hx ↦ by
         have := h_card_ker_one.1.elim ⟨x, hx⟩ ⟨1, by simp⟩
-        aesop)
+        simp_all)
     have h_card : Nat.card (Equiv.Perm (Equiv.Perm (Fin 5) ⧸ H)) = 24 := by
       simp_all [Subgroup.index]
       have h_card : Nat.card (Equiv.Perm (Equiv.Perm (Fin 5) ⧸ H)) =
@@ -248,7 +253,7 @@ theorem Perm_Fin5_no_subgroup_order_30 :
       exact h_card.trans (h_index.symm ▸ rfl)
     have h_card : Nat.card (Equiv.Perm (Fin 5)) ≤ Nat.card (Equiv.Perm (Equiv.Perm (Fin 5) ⧸ H)) :=
       Nat.card_le_card_of_injective _ h_inj
-    simp_all +decide [Fintype.card_perm]
+    simp_all [Fintype.card_perm, Nat.factorial]
   -- Since ϕ.ker is a normal subgroup of S₅ and is contained in H, and H has order 30, ϕ.ker must have order 1, 60, or 120.
   have h_kernel_order : Nat.card (ϕ.ker) = 1 ∨ Nat.card (ϕ.ker) = 60 ∨ Nat.card (ϕ.ker) = 120 := by
     apply normal_subgroup_Perm_Fin5_trichotomy
@@ -259,6 +264,7 @@ theorem Perm_Fin5_no_subgroup_order_30 :
 S₅ has no subgroup of order 40. By Sylow, the Sylow 5-subgroup is normal (n₅ = 1),
     so H ≤ N_{S₅}(P₅) which has order 20 < 40. Contradiction.
 -/
+set_option maxHeartbeats 400000 in
 theorem Perm_Fin5_no_subgroup_order_40 :
     ∀ H : Subgroup (Equiv.Perm (Fin 5)), Nat.card H ≠ 40 := by
   intro H hH_card
@@ -276,7 +282,7 @@ theorem Perm_Fin5_no_subgroup_order_40 :
         use Subgroup.zpowers (g : Equiv.Perm (Fin 5))
         simp_all
         rw [Fintype.card_zpowers]
-        aesop
+        simp_all
       obtain ⟨P, hP₁, hP₂⟩ := h_sylow
       use P
       simp_all [IsPGroup.iff_card]
@@ -290,7 +296,10 @@ theorem Perm_Fin5_no_subgroup_order_40 :
         rw [Nat.card_eq_fintype_card]
         native_decide
       exact SetLike.ext' (Set.eq_of_subset_of_ncard_le hQ hcard.ge)
-    aesop
+    subst hP_eq_Q
+    simp_all only [le_refl]
+    apply Exists.intro
+    · exact hP₁
   obtain ⟨P, hP⟩ := h_p
   have h_n5_bound : (Nat.card (Sylow 5 (Equiv.Perm (Fin 5)))) = 6 := by
     have h_card_sylow : (Nat.card (Sylow 5 (Equiv.Perm (Fin 5)))) ∣ 24 := by
@@ -346,13 +355,21 @@ theorem Perm_Fin5_no_subgroup_order_40 :
           have := Subgroup.card_mul_index Q.toSubgroup
           simp_all
           rw [Fintype.card_eq_one_iff] at h_card_sylow_one
-          aesop
+          obtain ⟨w, h⟩ := h_card_sylow_one
+          simp_all only [exists_const]
+          apply Exists.intro
+          · apply MulMemClass.mul_mem
+            on_goal 2 => {
+              simp_all only [inv_mem_iff]
+              apply OneMemClass.one_mem
+            }
+            · simp_all only [one_mul]
         obtain ⟨h, hh⟩ := h_conj
         have := h_normal.conj_mem _ hh h⁻¹
         simp_all [mul_assoc]
       have h_card_P_ge : Nat.card P.toSubgroup ≥ 24 := by
         have h_5cyc : Nat.card {g : Equiv.Perm (Fin 5) | orderOf g = 5} ≥ 24 := by
-          simp +decide only [orderOf_eq_iff]
+          simp only [orderOf_eq_iff (show 0 < 5 by norm_num)]
           rw [Nat.card_eq_fintype_card]
           native_decide
         exact h_5cyc.trans (Set.ncard_le_ncard h_all_5cycles)
@@ -386,7 +403,7 @@ theorem Perm_Fin5_no_subgroup_order_40 :
           rw [← hH_card]
           have := Subgroup.index_dvd_card
             (Subgroup.normalizer (Classical.arbitrary (Sylow 5 H) |> Sylow.toSubgroup))
-          aesop
+          trivial
         have := Nat.le_of_dvd (by decide) h_unique.2
         interval_cases Nat.card (Sylow 5 H) <;> trivial
       have h_unique : ∀ Q : Sylow 5 H, Q = P.subtype (by

@@ -61,14 +61,27 @@ theorem card_gal_ge_of_root
   have h_minpoly : minpoly ℚ α = C (1 / g.leadingCoeff) * g := by
     refine (minpoly.eq_of_irreducible_of_monic ?_ ?_ ?_).symm
     · rw [irreducible_mul_iff]
-      aesop
-    · aesop
+      simp_all only [one_div, isUnit_map_iff, isUnit_iff_ne_zero, ne_eq, inv_eq_zero, leadingCoeff_eq_zero, true_and]
+      apply Or.inr
+      apply Aesop.BuiltinRules.not_intro
+      intro a
+      subst a
+      simp_all only [not_irreducible_zero]
+    · simp_all
     · rw [Monic, leadingCoeff_mul, leadingCoeff_C, div_mul_cancel₀]
-      aesop
+      simp_all only [ne_eq, leadingCoeff_eq_zero]
+      apply Aesop.BuiltinRules.not_intro
+      intro a
+      subst a
+      simp_all only [not_irreducible_zero]
   have h_finrank_adjoin :
       Module.finrank ℚ (↥(IntermediateField.adjoin ℚ {α})) = g.natDegree := by
     rw [IntermediateField.adjoin.finrank (IsIntegral.of_finite ℚ α), h_minpoly, natDegree_C_mul]
-    aesop
+    simp_all only [one_div, ne_eq, inv_eq_zero, leadingCoeff_eq_zero]
+    apply Aesop.BuiltinRules.not_intro
+    intro a
+    subst a
+    simp_all only [not_irreducible_zero]
   have h_finrank_mul :=
     Module.finrank_mul_finrank ℚ (IntermediateField.adjoin ℚ {α}) f.SplittingField
   have h_finrank_ge :

@@ -222,7 +222,7 @@ theorem linearCoverLift_fieldRange (g₀ : (AlgebraicClosure ℚ)[X])
     simp at hp
     have h_image : p ∈ IntermediateField.adjoin (AlgebraicClosure ℚ) {RatFunc.X} := by
       rw [RatFunc.adjoin_X_top] at *
-      aesop
+      trivial
     rw [← hp, IntermediateField.mem_adjoin_simple_iff] at *
     obtain ⟨r, s, rfl⟩ := h_image
     use r, s
@@ -245,7 +245,7 @@ theorem linearCover_geomBase_image_mem_adjoin (g₀ : (AlgebraicClosure ℚ)[X])
           y = (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase num)
             / (algebraMap (Polynomial (AlgebraicClosure ℚ)) GeomBase den) := by
     have := IsFractionRing.div_surjective (A := Polynomial (AlgebraicClosure ℚ)) y
-    aesop
+    tauto
   have key : (IsScalarTower.toAlgHom (AlgebraicClosure ℚ) GeomBase
         (linearCoverGeom g₀).SplittingField).comp
         (IsScalarTower.toAlgHom (AlgebraicClosure ℚ) (Polynomial (AlgebraicClosure ℚ)) GeomBase)
@@ -365,7 +365,7 @@ theorem linearCover_no_intermediate (g₀ : (AlgebraicClosure ℚ)[X]) (_hg : g�
   · have h_map_le : IntermediateField.map (linearCoverLift g₀ a) ⊤
         ≤ b.restrictScalars (AlgebraicClosure ℚ) := by
       rw [IntermediateField.map_le_iff_le_comap]
-      aesop
+      simp_all only [ne_eq, IntermediateField.adjoin_le_iff, Set.singleton_subset_iff, SetLike.mem_coe, le_refl, M]
     have h_image : IntermediateField.adjoin (AlgebraicClosure ℚ)
           {(↑a : (linearCoverGeom g₀).SplittingField)}
         ≤ b.restrictScalars (AlgebraicClosure ℚ) := by

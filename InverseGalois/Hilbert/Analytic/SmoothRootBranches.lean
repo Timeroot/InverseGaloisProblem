@@ -102,17 +102,18 @@ lemma local_branch_of_simple
       · intro x y hxy
         have := hL_inv x
         have := hL_inv y
-        aesop
+        simp_all
       · intro x
         use x / (Polynomial.eval y₀ (Polynomial.derivative (Q x₀)))
         simp [hL, mul_div_cancel₀ _ hsimple]
     · decide
   refine ⟨h_implicit.implicitFunction, ?_, ?_, ?_⟩ <;> norm_num [h_implicit]
   · convert h_implicit.eventually_implicitFunction_apply_eq.self_of_nhds using 1
-    aesop
+    simp
   · exact h_implicit.contDiffAt_implicitFunction
   · have := h_implicit.apply_implicitFunction
-    aesop
+    simp_all only [ne_eq, ContinuousLinearMap.coe_comp', Function.comp_apply, ContinuousLinearMap.inr_apply,
+    IsContDiffImplicitAt.implicitFunction_apply, F]
 
 /-
 **Local uniqueness of a simple real root.**  Near a simple real root `y₀` of `Q x₀`,
@@ -152,7 +153,7 @@ lemma local_unique_of_simple
     apply_mod_cast exists_deriv_eq_zero
     · grind
     · exact Continuous.continuousOn (Polynomial.continuous _)
-    · cases le_total y₁ y₂ <;> aesop
+    · cases le_total y₁ y₂ <;> simp_all
   simp_all [Polynomial.derivative_eval]
   refine ⟨x, hx, c, abs_lt.mpr ⟨?_, ?_⟩, hc.2⟩ <;>
     cases hc.1.1 <;> cases hc.1.2 <;> linarith [abs_lt.mp hy₁, abs_lt.mp hy₂]
@@ -286,7 +287,7 @@ heart of the local theory: it packages the implicit-function branches (existence
 uniqueness) with the Cauchy/compactness argument that no extra roots appear.  From it the
 count is immediately locally constant.
 -/
-set_option maxHeartbeats 1000000 in
+set_option maxHeartbeats 400000 in
 lemma local_root_cover
     (T₀ : ℝ) (d : ℕ)
     (hmonic : ∀ x, (Q x).Monic) (hdeg : ∀ x, (Q x).natDegree = d)
@@ -357,7 +358,7 @@ lemma local_root_cover
       · refine ⟨Finset.min' (Finset.univ.image ε₂) ⟨_, Finset.mem_image_of_mem _ (Finset.mem_univ h.some)⟩,
           ?_, ?_⟩
         · have := Finset.min'_mem (Finset.univ.image ε₂) ⟨_, Finset.mem_image_of_mem _ (Finset.mem_univ h.some)⟩
-          aesop
+          simp_all
         · exact fun i ↦
             Set.Subset.trans
               (Metric.ball_subset_ball (Finset.min'_le _ _ <| Finset.mem_image_of_mem _ <| Finset.mem_univ i))
@@ -447,7 +448,7 @@ lemma local_root_cover
           fun ⟨i, hi⟩ ↦ ⟨i, hi.symm⟩
       specialize huv i x (hδ.2.1 i hx₂) y (hε.2 i <| by simpa [hi] using hy₀₂)
         (φ i x) (hε.2 i (hδ.2.2.2.1 i x hx₂)) hy (hδ.2.2.1 i x hx₂)
-      aesop
+      simp_all
 
 /-
 **The number of distinct real roots is locally constant on the separable tail.**
@@ -492,7 +493,7 @@ lemma nRealRoots_const
   exact (h_const.image _ h_cont).subsingleton (Set.mem_image_of_mem _ hx)
     (Set.mem_image_of_mem _ Set.self_mem_Ici)
 
-set_option maxHeartbeats 1000000 in
+set_option maxHeartbeats 400000 in
 /-- **Classical construction of the smooth real root branches.**
 
 For a `C^∞` family `Q x` of monic real polynomials of fixed degree `d ≥ 1` that is
@@ -542,16 +543,16 @@ theorem smooth_separable_family_root_branches
           fun i j hij ↦ fun h ↦ hij <| Fin.ext <| by
             have := hs₆ x₀ hs₂
             have := @this (Fin.cast hm_eq_n.symm i) (Fin.cast hm_eq_n.symm j)
-            aesop
+            simp_all
         have h_sorted : ∃ σ : Fin n → ℝ, StrictMono σ ∧
             ∀ i, σ i ∈ Finset.image (fun i : Fin n ↦ φ (Fin.cast hm_eq_n.symm i) x₀) Finset.univ := by
           have h_card_n :
               Finset.card (Finset.image (fun i : Fin n ↦ φ (Fin.cast hm_eq_n.symm i) x₀) Finset.univ) = n := by
             rw [Finset.card_image_of_injective _ fun i j hij ↦ not_imp_not.mp (h_distinct i j) hij,
               Finset.card_fin]
-          exact ⟨fun i ↦ Finset.orderEmbOfFin _ (by aesop) i,
-            by aesop (config := {introsTransparency? := some .default}),
-            fun i ↦ Finset.orderEmbOfFin_mem _ (by aesop) _⟩
+          exact ⟨fun i ↦ Finset.orderEmbOfFin _ (by trivial) i,
+            by intro a b a_1; subst hm_eq_n; simp_all only [mem_Ici, ne_eq, Fin.cast_eq_self, OrderEmbedding.lt_iff_lt, n],
+            fun i ↦ Finset.orderEmbOfFin_mem _ (by trivial) _⟩
         obtain ⟨σ, hσ₁, hσ₂⟩ := h_sorted
         choose f hf using fun i ↦ Finset.mem_image.mp (hσ₂ i)
         use f
@@ -591,7 +592,7 @@ theorem smooth_separable_family_root_branches
         apply_rules [Finset.orderEmbOfFin_unique]
       rw [h_eq_emb]
     apply ContDiffWithinAt.congr_of_eventuallyEq (f := fun x ↦ φ (Fin.cast hm_eq_n.symm (σ j)) x)
-    · exact ContDiffWithinAt.mono_of_mem_nhdsWithin ((hs₄ _).contDiffWithinAt (by aesop)) hs₁
+    · exact ContDiffWithinAt.mono_of_mem_nhdsWithin ((hs₄ _).contDiffWithinAt (by trivial)) hs₁
     · filter_upwards [hs₁, self_mem_nhdsWithin] with x hx₁ hx₂ using h_eq x hx₁ hx₂
     · exact h_eq x₀ hs₂ hx₀
   · intro j x hx
@@ -603,7 +604,7 @@ theorem smooth_separable_family_root_branches
     have := Finset.mem_image.mp
       (show y ∈ Finset.image
           (fun j : Fin n ↦ (realRootFinset Q x).orderEmbOfFin h_card j) Finset.univ from ?_)
-    · aesop
+    · simp_all only [Finset.mem_univ, true_and, ↓reduceDIte, n, g]
     · simp_all
       exact Multiset.mem_toFinset.mpr (Polynomial.mem_roots ((hmonic x).ne_zero) |>.2 hy)
   · intro x hx i i' hii

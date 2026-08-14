@@ -35,8 +35,6 @@ open Polynomial
 
 namespace Rigidity.RET.Descent
 
-set_option synthInstance.maxHeartbeats 1000000
-set_option maxHeartbeats 2400000
 
 /-- **The regularity comparison for a model of the compositum.**
 

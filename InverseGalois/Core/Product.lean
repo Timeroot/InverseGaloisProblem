@@ -126,6 +126,15 @@ variable (K₁' K₂' : IntermediateField F' E')
 instance algSupLeft : Algebra ↥K₁' ↥(K₁' ⊔ K₂') :=
   (IntermediateField.inclusion (le_sup_left : K₁' ≤ K₁' ⊔ K₂')).toAlgebra
 
+/-- The action of `K₁` on the compositum, named to short-circuit the generic search: an
+intermediate field is a subtype, so without this the search first tries every way of making the
+compositum a module over a base of `E`. -/
+instance (priority := high) smulSupLeft : SMul ↥K₁' ↥(K₁' ⊔ K₂') := Algebra.toSMul
+
+/-- The module structure of the compositum over `K₁`, named for the same reason as
+`smulSupLeft`. -/
+instance (priority := high) moduleSupLeft : Module ↥K₁' ↥(K₁' ⊔ K₂') := Algebra.toModule
+
 /-- Scalar tower F → K₁ → ↥(K₁ ⊔ K₂). -/
 instance towerSupLeft : IsScalarTower F' ↥K₁' ↥(K₁' ⊔ K₂') :=
   IsScalarTower.of_algebraMap_eq fun x => by
@@ -135,6 +144,13 @@ instance towerSupLeft : IsScalarTower F' ↥K₁' ↥(K₁' ⊔ K₂') :=
 /-- Algebra structure on K₂ → ↥(K₁ ⊔ K₂) via inclusion. -/
 instance algSupRight : Algebra ↥K₂' ↥(K₁' ⊔ K₂') :=
   (IntermediateField.inclusion (le_sup_right : K₂' ≤ K₁' ⊔ K₂')).toAlgebra
+
+/-- The action of `K₂` on the compositum, named to short-circuit the generic search. -/
+instance (priority := high) smulSupRight : SMul ↥K₂' ↥(K₁' ⊔ K₂') := Algebra.toSMul
+
+/-- The module structure of the compositum over `K₂`, named for the same reason as
+`smulSupRight`. -/
+instance (priority := high) moduleSupRight : Module ↥K₂' ↥(K₁' ⊔ K₂') := Algebra.toModule
 
 /-- Scalar tower F → K₂ → ↥(K₁ ⊔ K₂). -/
 instance towerSupRight : IsScalarTower F' ↥K₂' ↥(K₁' ⊔ K₂') :=
@@ -147,7 +163,6 @@ def galSupRestrictionProd [Normal F' K₁'] [Normal F' K₂'] :
     Gal(↥(K₁' ⊔ K₂')/F') →* Gal(↥K₁'/F') × Gal(↥K₂'/F') :=
   MonoidHom.prod (AlgEquiv.restrictNormalHom ↥K₁') (AlgEquiv.restrictNormalHom ↥K₂')
 
-set_option maxHeartbeats 800000 in
 /-- The restriction map from `Gal(↥(K₁ ⊔ K₂)/F)` to `Gal(K₁/F) × Gal(K₂/F)` is injective. -/
 theorem galSupRestrictionProd_injective [Normal F' K₁'] [Normal F' K₂']
     [FiniteDimensional F' ↥(K₁' ⊔ K₂')] :

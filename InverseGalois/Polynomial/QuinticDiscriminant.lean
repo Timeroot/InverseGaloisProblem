@@ -11,7 +11,6 @@ open Polynomial Matrix Finset
 
 noncomputable section
 
-set_option maxHeartbeats 800000
 
 /-!
 ## Part 1: Pure algebra — Vandermonde and permutation signs
@@ -107,6 +106,7 @@ private lemma f_poly_separable : f_poly.Separable := by
 /-
 The discriminant value: ∏_{i<j}(r_j - r_i)² = 32000² in the splitting field
 -/
+set_option maxHeartbeats 400000 in
 private lemma disc_value (v : Fin 5 ≃ (f_poly.rootSet f_poly.SplittingField)) :
     (∏ i : Fin 5, ∏ j ∈ Ioi i,
       ((v j : f_poly.SplittingField) - (v i : f_poly.SplittingField))) ^ 2 =

@@ -113,7 +113,7 @@ lemma exists_iteratedDeriv_eq_zero (n : ℕ) (hn : 1 ≤ n) (g : ℝ → ℝ) (a
     · interval_cases n
       simp_all [iteratedDeriv_succ']
       obtain ⟨c, hc_mem, hc⟩ := exists_deriv_eq_zero (show z 0 < z 1 from hz_mono (by decide))
-        (hg.continuousOn.mono (Set.Icc_subset_Icc (by linarith) (by linarith))) (by aesop)
+        (hg.continuousOn.mono (Set.Icc_subset_Icc (by linarith) (by linarith))) (by simp_all)
       refine ⟨c, ⟨?_, ?_⟩, hc⟩
       · linarith [hc_mem.1]
       · linarith [hc_mem.2]
@@ -165,13 +165,40 @@ lemma ddiff_mul_prod_isInt (t : Fin (k + 1) → ℤ) (ht : Function.Injective t)
   have h_prod : ∏ p ∈ Finset.univ.filter (fun p : Fin (k + 1) × Fin (k + 1) ↦ p.1 ≠ p.2), ((t p.1 : ℝ) - (t p.2 : ℝ)) =
       ∏ i : Fin (k + 1), ∏ j ∈ Finset.univ.erase i, ((t i : ℝ) - (t j : ℝ)) := by
     rw [Finset.prod_sigma']
-    refine Finset.prod_bij (fun p hp ↦ ⟨p.1, p.2⟩) ?_ ?_ ?_ ?_ <;> aesop
+    refine Finset.prod_bij (fun p hp ↦ ⟨p.1, p.2⟩) ?_ ?_ ?_ ?_
+    · intro a ha
+      simp_all only [one_div, Finset.mem_sigma, Finset.mem_univ, Finset.mem_erase, ne_eq, and_true, true_and]
+      simp_all only [ne_eq, Finset.mem_filter, Finset.mem_univ, true_and]
+      obtain ⟨fst, snd⟩ := a
+      simp_all only
+      apply Aesop.BuiltinRules.not_intro
+      intro a
+      subst a
+      simp_all only [not_true_eq_false]
+    · intro a₁ ha₁ a₂ ha₂ a
+      simp_all only [one_div, Sigma.mk.injEq, heq_eq_eq]
+      simp_all only [ne_eq, Finset.mem_filter, Finset.mem_univ, true_and, not_false_eq_true, and_self]
+      obtain ⟨fst, snd⟩ := a₁
+      obtain ⟨fst_1, snd_1⟩ := a₂
+      obtain ⟨left, right⟩ := a
+      subst left right
+      simp_all only
+    · intro b a
+      simp_all only [one_div, Finset.mem_sigma, Finset.mem_univ, Finset.mem_erase, ne_eq, and_true, true_and, Finset.mem_filter, exists_prop, Prod.exists]
+      obtain ⟨fst, snd⟩ := b
+      simp_all only [Sigma.mk.injEq, heq_eq_eq, exists_eq_right_right, exists_eq_right]
+      apply Aesop.BuiltinRules.not_intro
+      intro a_1
+      subst a_1
+      simp_all only [not_true_eq_false]
+    · intro a ha
+      simp_all only [one_div]
   use ∑ i : Fin (k + 1), m i * ∏ j ∈ Finset.univ.erase i, ∏ k ∈ Finset.univ.erase j, (t j - t k)
   simp_all [Finset.sum_mul]
   refine Finset.sum_congr rfl fun i hi ↦ ?_
   rw [mul_assoc, inv_mul_eq_div, div_eq_mul_inv]
   rw [← Finset.prod_erase_mul _ _ hi, mul_assoc,
-    mul_inv_cancel₀ (Finset.prod_ne_zero_iff.mpr fun j hj ↦ sub_ne_zero_of_ne <| mod_cast ht.ne <| by aesop), mul_one]
+    mul_inv_cancel₀ (Finset.prod_ne_zero_iff.mpr fun j hj ↦ sub_ne_zero_of_ne <| mod_cast ht.ne <| by simp_all only [Finset.mem_univ, Finset.mem_erase, ne_eq, and_true]; apply Aesop.BuiltinRules.not_intro; intro a; subst a; simp_all only [not_true_eq_false]), mul_one]
 
 /-
 **Mean value theorem for divided differences.**  For `f` that is `Cᵏ` on `[a,b]` and
@@ -192,7 +219,7 @@ lemma exists_ddiff_eq (k : ℕ) (hk : 1 ≤ k) (f : ℝ → ℝ) (a b : ℝ) (ha
       have hL_card : (Finset.image t Finset.univ).card = k + 1 := by
         rw [Finset.card_image_of_injective _ ht_mono.injective, Finset.card_fin]
       convert Polynomial.natDegree_le_of_degree_le (Lagrange.degree_interpolate_le _ _) using 1
-      · aesop
+      · omega
       · exact fun x hx y hy hxy ↦ hxy
     exact hL_deg
   -- By iterated Rolle, there is a point `ξ ∈ (a, b)` with `g⁽ᵏ⁾(ξ) = 0`.
@@ -212,7 +239,7 @@ lemma exists_ddiff_eq (k : ℕ) (hk : 1 ≤ k) (f : ℝ → ℝ) (a b : ℝ) (ha
         refine sub_ne_zero_of_ne ?_
         intro h
         have := Finset.mem_erase.mp hx
-        aesop]
+        simp_all]
       ring
     · intro j hj
       rw [Polynomial.eval_prod]
@@ -336,7 +363,7 @@ lemma block_ddiff_zero (f : ℝ → ℝ) (k : ℕ) (hk : 2 ≤ k)
     have hfilter : (Finset.univ.filter fun a : Fin (k + 1) × Fin (k + 1) ↦ a.1 = a.2) =
         Finset.image (fun i : Fin (k + 1) ↦ (i, i)) Finset.univ := by
       ext ⟨i, j⟩
-      aesop
+      simp
     rw [hfilter]
     rw [Finset.card_image_of_injective _ fun i j hij ↦ by simpa using hij]
     norm_num [Nat.succ_mul]
@@ -362,7 +389,6 @@ has vanishing `k`-th divided difference (`block_ddiff_zero`), so the Lagrange in
 `Q` of the first `k+1` points has degree `< k`, and each remaining point lies on `Q` by
 uniqueness of low-degree interpolation.
 -/
-set_option maxHeartbeats 1000000 in
 lemma block_common_poly (f : ℝ → ℝ) (k : ℕ) (hk : 2 ≤ k)
     (hf : ContDiffOn ℝ k f (Set.Ici (1 : ℝ)))
     (a H : ℝ) (ha : 1 ≤ a)
@@ -391,7 +417,10 @@ lemma block_common_poly (f : ℝ → ℝ) (k : ℕ) (hk : 2 ≤ k)
         · exact fun x hx y hy hxy ↦ hxy
       refine lt_of_le_of_ne (Polynomial.natDegree_le_of_degree_le hQ_degle) fun h ↦ ?_
       rw [← h, Polynomial.coeff_natDegree] at hQ_coeff
-      aesop
+      simp_all only [mem_Icc, and_imp, Lagrange.interpolate_apply, leadingCoeff_eq_zero, degree_zero, bot_le,
+        natDegree_zero, Q]
+      subst h
+      simp_all only [nonpos_iff_eq_zero, OfNat.ofNat_ne_zero]
     use Q
     simp_all
     intro i
@@ -399,13 +428,13 @@ lemma block_common_poly (f : ℝ → ℝ) (k : ℕ) (hk : 2 ≤ k)
     · simp [Polynomial.eval_prod, Lagrange.basisDivisor]
       rw [Finset.prod_eq_one fun x hx ↦ by
         rw [inv_mul_cancel₀]
-        exact sub_ne_zero_of_ne (by aesop)]
+        exact sub_ne_zero_of_ne (by simp_all only [Lagrange.interpolate_apply, Finset.mem_erase, ne_eq, Finset.mem_image, Finset.mem_univ, true_and, Q]; obtain ⟨left, right⟩ := hx; obtain ⟨w, h⟩ := right; subst h; simp_all only [Int.cast_inj]; apply Aesop.BuiltinRules.not_intro; intro a_1; simp_all only [not_true_eq_false])]
       ring
     · intro j hj
       right
       rw [Polynomial.eval_prod]
-      exact Finset.prod_eq_zero (Finset.mem_erase_of_ne_of_mem (by aesop)
-        (Finset.mem_image_of_mem _ (Finset.mem_univ i))) (by aesop)
+      exact Finset.prod_eq_zero (Finset.mem_erase_of_ne_of_mem (by simp_all only [Lagrange.interpolate_apply, ne_eq, Int.cast_inj, Q]; apply Aesop.BuiltinRules.not_intro; intro a_1; simp_all only [not_true_eq_false])
+        (Finset.mem_image_of_mem _ (Finset.mem_univ i))) (by simp)
   obtain ⟨Q1, hQ1⟩ := hQ (fun i ↦ p (Fin.castSucc i)) (hp_mono.comp Fin.strictMono_castSucc)
     (fun i ↦ hp_mem _) (fun i ↦ hp_int _)
   obtain ⟨Q2, hQ2⟩ := hQ (fun i ↦ p (Fin.succ i)) (fun i j hij ↦ hp_mono (Nat.succ_lt_succ hij))
@@ -452,8 +481,8 @@ lemma block_card_le (f : ℝ → ℝ) (k : ℕ) (hk : 2 ≤ k)
     exact ⟨t, ht.2, fun x hx ↦ hs'.subset <| Finset.mem_coe.1 <| ht.1 hx⟩
   obtain ⟨p, hp_mono, hp_mem⟩ : ∃ p : Fin (k + 2) → ℤ, StrictMono p ∧ ∀ i, p i ∈ s := by
     refine ⟨fun i ↦ s.orderEmbOfFin hs.1 i, ?_, fun i ↦ ?_⟩
-    · first | rfl | aesop (config := {introsTransparency? := some .default})
-    · aesop
+    · first | rfl | intro a_1 b a_2; simp_all only [mem_Icc, and_imp, OrderEmbedding.lt_iff_lt]
+    · simp
   obtain ⟨Q, hQdeg, hQ⟩ : ∃ Q : Polynomial ℝ, Q.natDegree < k ∧ ∀ i, f ((p i : ℤ) : ℝ) = Q.eval ((p i : ℤ) : ℝ) := by
     apply block_common_poly f k hk hf a H ha hsmall p hp_mono (fun i ↦ ⟨hs.right (p i) (hp_mem i) |>.1,
       hs.right (p i) (hp_mem i) |>.2.1⟩) (fun i ↦ hs.right (p i) (hp_mem i) |>.2.2)
@@ -472,7 +501,7 @@ lemma block_card_le (f : ℝ → ℝ) (k : ℕ) (hk : 2 ≤ k)
           ContDiff.sum fun i hi ↦ ContDiff.mul contDiff_const (contDiff_id.pow i)
     · exact fun i j hij ↦ Int.cast_lt.mpr (hp_mono hij)
     · exact fun i ↦ ⟨mod_cast hp_mono.monotone (Nat.zero_le _), mod_cast hp_mono.monotone (Fin.le_last _)⟩
-    · aesop
+    · simp_all
   have hξ₁_sub : iteratedDeriv k (fun x ↦ f x - Q.eval x) ξ₁ =
       iteratedDeriv k f ξ₁ - iteratedDeriv k (fun x ↦ Q.eval x) ξ₁ := by
     apply iteratedDeriv_sub
@@ -512,7 +541,6 @@ lemma block_card_le (f : ℝ → ℝ) (k : ℕ) (hk : 2 ≤ k)
 If `S ⊆ ℤ` has at most `B` elements in every block `[a, a + c · a^e]` (`a ≥ 1`, with
 `0 < e ≤ 1`, `0 < c`), then `S ∩ [1,N]` has `O(N^{max (1-e) (1/2)})` elements.
 -/
-set_option maxHeartbeats 1600000 in
 lemma count_of_block_bound (S : Set ℤ) (B : ℕ) (c e : ℝ) (hc : 0 < c) (he0 : 0 < e)
     (he1 : e ≤ 1)
     (hblock : ∀ a : ℝ, 1 ≤ a →
@@ -550,7 +578,17 @@ lemma count_of_block_bound (S : Set ℤ) (B : ℕ) (c e : ℝ) (hc : 0 < c) (he0
           · nlinarith [Nat.lt_floor_add_one ((t - 2 ^ m : ℝ) / (c * (2 ^ m) ^ e)),
               show 0 < c * (2 ^ m : ℝ) ^ e by positivity,
               mul_div_cancel₀ (t - 2 ^ m : ℝ) (show (c * (2 ^ m : ℝ) ^ e) ≠ 0 by positivity)]
-        aesop
+        simp_all only [Finset.mem_range, Order.lt_add_one_iff, mem_iUnion, mem_setOf_eq, exists_and_left, exists_prop]
+        obtain ⟨w, h⟩ := h_block
+        obtain ⟨left, right⟩ := h
+        obtain ⟨left_1, right⟩ := right
+        apply Exists.intro
+        · apply And.intro
+          on_goal 2 => apply And.intro
+          on_goal 3 => { exact right
+          }
+          · simp_all only
+          · simp_all only
       -- Apply the block bound to each block in the cover.
       have h_block_bound : ∀ i ∈ Finset.range (Nat.ceil ((2 ^ m : ℝ) / (c * (2 ^ m) ^ e)) + 1),
           (S ∩ {t : ℤ | (2 ^ m + i * c * (2 ^ m) ^ e : ℝ) ≤ (t : ℝ) ∧
@@ -574,7 +612,9 @@ lemma count_of_block_bound (S : Set ℤ) (B : ℕ) (c e : ℝ) (hc : 0 < c) (he0
             (S ∩ {t : ℤ | (2 ^ m + i * c * (2 ^ m) ^ e : ℝ) ≤ (t : ℝ) ∧
               (t : ℝ) ≤ (2 ^ m + (i + 1) * c * (2 ^ m) ^ e : ℝ)}).ncard := by
         convert Finset.set_ncard_biUnion_le _ _ using 2
-        aesop
+        simp_all only [Finset.mem_range, Order.lt_add_one_iff]
+        ext x : 1
+        simp_all only [mem_inter_iff, mem_iUnion, mem_setOf_eq, exists_and_left, exists_prop]
       refine le_trans ?_ (h_union_bound.trans ?_)
       · apply Set.ncard_le_ncard
         · exact fun x hx ↦ ⟨hx.1, h_cover_sub hx.2⟩

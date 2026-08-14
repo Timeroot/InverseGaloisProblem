@@ -18,8 +18,6 @@ open scoped nonZeroDivisors
 
 namespace Rigidity.RET.Descent
 
-set_option maxHeartbeats 800000
-set_option synthInstance.maxHeartbeats 800000
 
 attribute [local instance] Polynomial.algebra
 
@@ -56,6 +54,7 @@ theorem algebraMap_ratFunc_closure_comp (p : ℚ[X]) :
   rw [RatFunc.coe_mapRingHom_eq_coe_map, RatFunc.map_apply_div]
   simp [Polynomial.coe_mapRingHom]
 
+set_option synthInstance.maxHeartbeats 200000 in
 /-- `ℚ[T] → ℚ(T) → ℚ̄(T)` is a scalar tower. -/
 instance instTowerRatFuncClosure :
     IsScalarTower ℚ[X] (RatFunc ℚ) (RatFunc (AlgebraicClosure ℚ)) := by
@@ -66,6 +65,7 @@ instance instTowerRatFuncClosure :
       (RatFunc (AlgebraicClosure ℚ))]
   rfl
 
+set_option synthInstance.maxHeartbeats 200000 in
 /-- `ℚ → ℚ(T) → ℚ̄(T)` is a scalar tower.
 
 The `letI`s pin `Algebra ℚ (RatFunc _)` to the `RatFunc`-model instance

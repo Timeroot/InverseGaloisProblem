@@ -80,7 +80,6 @@ lemma lift_integral_poly (g : Polynomial (Polynomial ℚ))
 -/
 
 /- -/
-set_option maxHeartbeats 400000 in
 lemma scaleRoots_unit_irreducible
     {R : Type*} [CommRing R] [IsDomain R]
     (f : Polynomial R) (c : R) (hc : IsUnit c)
@@ -103,7 +102,13 @@ lemma scaleRoots_unit_irreducible
         convert congr_arg (fun p ↦ p.coeff i) hpq using 1 <;> simp [coeff_scaleRoots]
       apply_fun natDegree at hpq
       rw [natDegree_scaleRoots, natDegree_scaleRoots] at hpq
-      aesop
+      simp_all only [mul_eq_mul_right_iff, pow_eq_zero_iff', ne_eq]
+      obtain ⟨left, right⟩ := hr
+      obtain ⟨left_1, right_1⟩ := hs
+      subst right right_1
+      cases h_coeff_eq with
+      | inl h => simp_all only
+      | inr h_1 => simp_all only [isUnit_zero_iff, zero_ne_one]
     have h_div : r * s = f := by
       apply h_inj
       grind only [mul_scaleRoots_of_noZeroDivisors]
@@ -113,7 +118,8 @@ lemma scaleRoots_unit_irreducible
       refine Or.inl ⟨k, hk.1, ?_⟩
       simpa [← hu] using congr_arg (fun p ↦ p.scaleRoots c) hk.2
     · rcases isUnit_iff.mp u.isUnit with ⟨k, hk⟩
-      aesop
+      refine Or.inr ⟨k, hk.1, ?_⟩
+      simpa [← hu] using congr_arg (fun p ↦ p.scaleRoots c) hk.2
   constructor
   · intro h_unit
     obtain ⟨q, hq⟩ : ∃ q : R[X], f.scaleRoots c * q = 1 := h_unit.exists_right_inv
@@ -144,9 +150,9 @@ lemma gauss_lemma_bivariate (F : Polynomial (Polynomial ℤ)) (hF_monic : F.Moni
     Irreducible F := by
   contrapose! hF_irr_frac
   by_cases hF : F = 0 <;> by_cases hF' : F = 1
-  · aesop
-  · aesop
-  · aesop
+  · simp_all
+  · simp_all
+  · simp_all
   · obtain ⟨a, b, ha, hb, h⟩ : ∃ a b : Polynomial ℤ[X], F = a * b ∧ ¬IsUnit a ∧ ¬IsUnit b := by
       rw [irreducible_iff] at hF_irr_frac
       by_cases h : IsUnit F <;> simp_all
@@ -205,6 +211,12 @@ lemma lift_specialize_comm
     (hFg : F.map (mapRingHom (Int.castRingHom ℚ)) = g) (t : ℤ) :
     (F.map (evalRingHom t)).map (Int.castRingHom ℚ) =
     g.map (evalRingHom (t : ℚ)) := by
-  induction F using Polynomial.induction_on' <;> aesop
+  induction F using Polynomial.induction_on'
+  · subst hFg
+    simp_all only [Polynomial.map_add, left_eq_add, add_zero, right_eq_add, zero_add]
+    ext n : 1
+    simp_all only [coeff_add, coeff_map, coe_evalRingHom, eq_intCast, coe_mapRingHom, eval_intCast_map, Int.cast_eq]
+  · subst hFg
+    simp_all only [map_monomial, coe_evalRingHom, eq_intCast, coe_mapRingHom, eval_intCast_map, Int.cast_eq]
 
 end

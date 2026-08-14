@@ -120,7 +120,7 @@ private lemma q₄_irreducible : Irreducible q₄ := by
         replace h₁ := congr_arg (fun p ↦ Polynomial.coeff p 4) h₁
         norm_num [Polynomial.coeff_one, Polynomial.coeff_X, pow_succ'] at h₁
         refine h₂ (a.coeff 0) (isUnit_of_dvd_one <| h₁.symm ▸ dvd_mul_right _ _) ?_
-        aesop
+        trivial
       · rw [Polynomial.eq_C_of_degree_le_zero h] at h₃ h₁
         replace h₁ := congr_arg (fun p ↦ p.coeff 4) h₁
         norm_num [Polynomial.coeff_one, Polynomial.coeff_X, Polynomial.coeff_C] at h₁
@@ -132,7 +132,8 @@ private lemma q₄_irreducible : Irreducible q₄ := by
       erw [Polynomial.natDegree_sub_C]
       erw [Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num [Polynomial.coeff_one, Polynomial.coeff_X]
     grind only [IsPrimitive.Int.irreducible_iff_irreducible_map_cast]
-  aesop
+  simp_all only [Polynomial.map_sub, Polynomial.map_pow, map_X, Polynomial.map_one]
+  exact h_gauss
 
 private lemma q₄_natDegree : q₄.natDegree = 4 := by
   erw [Polynomial.natDegree_sub_C, Polynomial.natDegree_sub_eq_left_of_natDegree_lt] <;> norm_num
@@ -217,10 +218,10 @@ private lemma resolvent_irreducible :
           omega
         · exact h_no_rational_roots <| by
             obtain ⟨r, hr⟩ := Polynomial.exists_root_of_degree_eq_one h_deg_p
-            exact ⟨r, by aesop⟩
+            exact ⟨r, by simp_all⟩
         · exact h_no_rational_roots <| by
             obtain ⟨r, hr⟩ := Polynomial.exists_root_of_degree_eq_one h_deg_q
-            exact ⟨r, by aesop⟩
+            exact ⟨r, by simp_all⟩
       constructor
       · intro h
         refine absurd (Polynomial.degree_eq_zero_of_isUnit h) ?_
@@ -233,9 +234,9 @@ private lemma resolvent_irreducible :
           Polynomial.isUnit_iff_degree_eq_zero.mpr <| le_antisymm h <| le_of_not_gt fun h' ↦ ?_,
           h₁, trivial⟩
         · apply_fun Polynomial.eval 0 at h₁
-          aesop
+          simp_all
         · apply_fun Polynomial.eval 0 at h₁
-          aesop
+          simp_all
 
 /-
 The discriminant of `X⁴ - X - 1` equals -283, which is not a perfect square.
@@ -324,7 +325,7 @@ private lemma cubic_factor_irreducible :
                 Polynomial.X ^ 3 + Polynomial.C 4 * Polynomial.X - Polynomial.C 1 := by
               refine Eq.symm (minpoly.eq_of_irreducible_of_monic ?_ ?_ ?_)
               · exact resolvent_irreducible
-              · aesop
+              · simp_all
               · erw [Polynomial.Monic, Polynomial.leadingCoeff, Polynomial.natDegree_sub_C,
                   Polynomial.natDegree_add_eq_left_of_natDegree_lt] <;> norm_num
                 norm_num [Polynomial.coeff_one]
@@ -346,17 +347,17 @@ private lemma cubic_factor_irreducible :
           have h_finrank : Module.finrank ℚ (↥(IntermediateField.adjoin ℚ {α})) =
               Polynomial.natDegree (minpoly ℚ α) := by
             rw [IntermediateField.adjoin.finrank]
-            aesop
+            trivial
           rw [h_finrank, h_minpoly, q₄_natDegree]
         have h_div : Module.finrank ℚ (↥(IntermediateField.adjoin ℚ {((α + γ.val) ^ 2)})) ∣
             Module.finrank ℚ (↥(IntermediateField.adjoin ℚ {α})) := by
           exact finrank_dvd_of_le_right h_sub
-        simp_all +decide only []
+        simp_all only []
+        omega
 
 /-
 3 divides the order of the Galois group of q₄.
 -/
-set_option maxHeartbeats 800000 in
 private lemma three_dvd_card_gal : 3 ∣ Nat.card q₄.Gal := by
   -- Let α be a root of q₄ in the splitting field. Then [ℚ(α):ℚ] = 4 since q₄ is irreducible of degree 4.
   obtain ⟨α, hα⟩ : ∃ α : q₄.SplittingField, Polynomial.aeval α q₄ = 0 := by
@@ -438,25 +439,29 @@ private lemma three_dvd_card_gal : 3 ∣ Nat.card q₄.Gal := by
             have h_factor (f g : Polynomial (IntermediateField.adjoin ℚ {α})) (hf : f.degree > 0)
                 (hg : g.degree > 0) (hp_eq : p = f * g) : False := by
               have h_deg_f : f.degree = 1 ∨ g.degree = 1 := by
+                have hf0 : f ≠ 0 := fun h ↦ by simp [h] at hf
+                have hg0 : g ≠ 0 := fun h ↦ by simp [h] at hg
                 have := congr_arg Polynomial.degree hp_eq
                 norm_num [hp_deg] at this
-                rw [Polynomial.degree_eq_natDegree (by aesop), Polynomial.degree_eq_natDegree (by aesop)] at *
+                rw [Polynomial.degree_eq_natDegree hf0, Polynomial.degree_eq_natDegree hg0] at *
                 norm_cast at *
                 omega
               rcases h_deg_f with (h | h) <;>
                 obtain ⟨x, hx⟩ := Polynomial.exists_root_of_degree_eq_one h <;> simp_all
             constructor <;> contrapose! h_factor
             · refine absurd (Polynomial.degree_eq_zero_of_isUnit h_factor) ?_
-              aesop
+              simp_all
             · obtain ⟨a, b, rfl, ha, hb⟩ := h_factor
               exact ⟨a, b, not_le.mp fun ha' ↦ ha <| Polynomial.isUnit_iff_degree_eq_zero.mpr <|
-                le_antisymm ha' <| le_of_not_gt fun ha'' ↦ by aesop, not_le.mp fun hb' ↦ hb <|
-                Polynomial.isUnit_iff_degree_eq_zero.mpr <| le_antisymm hb' <| le_of_not_gt fun hb'' ↦ by aesop,
+                le_antisymm ha' <| le_of_not_gt fun ha'' ↦ by simp_all, not_le.mp fun hb' ↦ hb <|
+                Polynomial.isUnit_iff_degree_eq_zero.mpr <| le_antisymm hb' <| le_of_not_gt fun hb'' ↦ by simp_all,
                 rfl, trivial⟩
           apply h_irred_cubic
           · refine Polynomial.degree_eq_of_le_of_coeff_ne_zero ?_ ?_
             · rw [Polynomial.degree_le_iff_coeff_zero]
-              rintro (_ | _ | _ | _ | m) <;> simp +decide [Polynomial.coeff_eq_zero_of_natDegree_lt]
+              rintro (_ | _ | _ | _ | m) <;>
+                simp [Polynomial.coeff_eq_zero_of_natDegree_lt]
+              exact fun h ↦ absurd h (by decide)
             · norm_num [Polynomial.coeff_eq_zero_of_natDegree_lt]
           · intro γ hγ
             have h_contra : γ.val ^ 3 + α * γ.val ^ 2 + α ^ 2 * γ.val + (α ^ 3 - 1) = 0 := by
@@ -515,6 +520,20 @@ private lemma twelve_dvd_card_gal : 12 ∣ Nat.card q₄.Gal := by
   refine Nat.Coprime.mul_dvd_of_dvd_of_dvd ?_ h3 h4
   norm_num
 
+/-- The even permutations of `Fin 4`, i.e. the underlying set of A₄. -/
+private def evens : Finset (Equiv.Perm (Fin 4)) := {x | Equiv.Perm.sign x = 1}
+
+/-- The six-element sets of even permutations that contain `1` and are closed under
+multiplication — that is, the subgroups of A₄ of order `6`. Naming this as a definition keeps
+the enumeration below a computation on a 4096-element powerset rather than a search through
+every set of permutations. -/
+private def closedSix : Finset (Finset (Equiv.Perm (Fin 4))) :=
+  evens.powerset.filter fun S =>
+    S.card = 6 ∧ (1 : Equiv.Perm (Fin 4)) ∈ S ∧ ∀ a ∈ S, ∀ b ∈ S, a * b ∈ S
+
+private lemma closedSix_eq_empty : closedSix = ∅ :=
+  Finset.card_eq_zero.1 (by native_decide)
+
 /-- A₄ (on Fin 4) has no subgroup of order 6. -/
 private lemma no_order_six_subgroup_A4 :
     ∀ S : Finset (Equiv.Perm (Fin 4)),
@@ -522,7 +541,12 @@ private lemma no_order_six_subgroup_A4 :
     (∀ x ∈ S, Equiv.Perm.sign x = 1) →
     (1 ∈ S) →
     (∀ a ∈ S, ∀ b ∈ S, a * b ∈ S) →
-    False := by native_decide
+    False := by
+  intro S hcard hsign hone hmul
+  have hmem : S ∈ closedSix :=
+    Finset.mem_filter.2 ⟨Finset.mem_powerset.2 fun x hx => by simpa [evens] using hsign x hx,
+      hcard, hone, hmul⟩
+  simp [closedSix_eq_empty] at hmem
 
 private instance : Fact ((q₄.map (algebraMap ℚ ℂ)).Splits) := ⟨IsAlgClosed.splits _⟩
 
@@ -545,7 +569,7 @@ The Galois group order is not 12 (because complex conjugation gives an odd permu
 in the Galois group, but any subgroup of S₄ of order 12 is A₄ which has only even
 permutations; this latter fact is equivalent to A₄ having no subgroup of order 6).
 -/
-set_option maxHeartbeats 800000 in
+set_option maxHeartbeats 400000 in
 private lemma card_gal_ne_12 : Nat.card q₄.Gal ≠ 12 := by
   intro h_card
   have h_ker : (Nat.card (MonoidHom.ker (Equiv.Perm.sign.comp (Gal.galActionHom q₄ ℂ))) = 6) := by
@@ -561,9 +585,9 @@ private lemma card_gal_ne_12 : Nat.card q₄.Gal ≠ 12 := by
         cases' Int.units_eq_one_or (Equiv.Perm.sign (Gal.galActionHom q₄ ℂ a)) with h h <;>
           cases' Int.units_eq_one_or (Equiv.Perm.sign (Gal.galActionHom q₄ ℂ
             (Gal.restrict q₄ ℂ (Complex.conjAe.restrictScalars ℚ)))) with h' h' <;>
-          simp +decide only [h, h']
+          (simp only [h, h']; try decide)
         have := conj_support_card_eq_two
-        simp_all +decide [Equiv.Perm.card_support_eq_two]
+        simp_all [Equiv.Perm.card_support_eq_two]
         obtain ⟨x, y, hxy, h⟩ := this
         simp_all
     have := Subgroup.card_mul_index (MonoidHom.ker (Equiv.Perm.sign.comp (Gal.galActionHom q₄ ℂ)))
@@ -577,7 +601,7 @@ private lemma card_gal_ne_12 : Nat.card q₄.Gal ≠ 12 := by
       (Gal.galActionHom q₄ ℂ) x) (Finset.univ), ?_, ?_, ?_, ?_⟩ <;> simp_all
     · rw [Finset.card_image_of_injective _ fun x y hxy ↦ by simpa using Gal.galActionHom_injective q₄ ℂ hxy,
         Finset.card_univ]
-      aesop
+      simp_all
     · exact ⟨1, by simp⟩
     · exact fun a ha b hb ↦ ⟨a * b, by simp [ha, hb], by simp⟩
   have h_card : Fintype.card (q₄.rootSet ℂ) = 4 := by
@@ -589,7 +613,7 @@ private lemma card_gal_ne_12 : Nat.card q₄.Gal ≠ 12 := by
   have e : q₄.rootSet ℂ ≃ Fin 4 := Fintype.equivOfCardEq (by simp [h_card])
   refine no_order_six_subgroup_A4 (Finset.image (fun x : Equiv.Perm (q₄.rootSet ℂ) ↦ Equiv.permCongr e x) S)
     ?_ ?_ ?_ ?_ <;> simp_all [Finset.card_image_of_injective, Function.Injective]
-  · exact ⟨1, hS.2.2.1, by aesop⟩
+  · exact ⟨1, hS.2.2.1, by obtain ⟨left, right⟩ := hS; obtain ⟨left_1, right⟩ := right; obtain ⟨left_2, right⟩ := right; ext x : 2; simp_all only [Equiv.permCongr_apply, Equiv.Perm.coe_one, id_eq, Equiv.apply_symm_apply]⟩
   · exact fun a ha b hb ↦ ⟨a * b, hS.2.2.2 a ha b hb, by simp⟩
 
 private lemma card_gal_eq_24 : Nat.card q₄.Gal = 24 := by
@@ -618,7 +642,7 @@ theorem IsInverseGalois.perm_fin_four : IsInverseGalois (Equiv.Perm (Fin 4)) := 
         norm_num [q₄]
     have h_inj : ∃ (f : Gal(q₄.SplittingField/ℚ) →* Equiv.Perm (Fin 4)), Function.Injective f := by
       have h_equiv : Nonempty (Equiv.Perm (q₄.rootSet ℂ) ≃* Equiv.Perm (Fin 4)) :=
-        ⟨{ Equiv.permCongr (Fintype.equivOfCardEq h_card) with map_mul' := fun _ _ ↦ by aesop }⟩
+        ⟨{ Equiv.permCongr (Fintype.equivOfCardEq h_card) with map_mul' := fun _ _ ↦ by simp }⟩
       exact ⟨h_equiv.some.toMonoidHom.comp h_subgroup.choose,
         h_equiv.some.injective.comp h_subgroup.choose_spec⟩
     have h_bij : Function.Bijective (h_inj.choose : Gal(q₄.SplittingField/ℚ) → Equiv.Perm (Fin 4)) := by

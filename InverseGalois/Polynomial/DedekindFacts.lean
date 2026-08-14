@@ -247,17 +247,22 @@ lemma factorizationType_eq_two_of_squarefree_card_roots
             split_ifs <;> simp_all
           rw [Polynomial.Monic.def, Polynomial.leadingCoeff,
             Polynomial.natDegree_eq_of_degree_eq_some
-              (Polynomial.degree_eq_natDegree <| by aesop)] at h_linear
+              (Polynomial.degree_eq_natDegree <| by simp_all only [ne_eq]; obtain ⟨left, right⟩ := hq; apply Aesop.BuiltinRules.not_intro; intro a; subst a; simp_all only [coeff_zero, zero_ne_one])] at h_linear
           rw [Polynomial.eq_X_add_C_of_natDegree_le_one (le_of_eq hq.2)] at h_linear ⊢
           by_cases h : q.coeff 1 = 0 <;> simp_all [Polynomial.natDegree_add_eq_left_of_natDegree_lt]
           · refine absurd h ?_
             rw [← hq.2, Polynomial.coeff_natDegree]
-            aesop
+            simp_all only [leadingCoeff_eq_zero]
+            obtain ⟨left, right⟩ := hq
+            apply Aesop.BuiltinRules.not_intro
+            intro a
+            subst a
+            simp_all only [coeff_zero, zero_ne_one]
           · exact ⟨-q.coeff 0, by simp⟩
         use a
         simp_all
         refine ⟨?_, ?_⟩
-        · aesop
+        · subst ha; apply Aesop.BuiltinRules.not_intro; intro a_1; subst a_1; simp_all only [not_squarefree_zero]
         · simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero
             (UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors hq) (by simp)
       · obtain ⟨a, ⟨hg, ha⟩, rfl⟩ := hq
@@ -277,7 +282,7 @@ lemma factorizationType_eq_two_of_squarefree_card_roots
       intro a t h
       have := hsq
       simp_all [Squarefree]
-      have := h ▸ UniqueFactorizationMonoid.prod_normalizedFactors (show g ≠ 0 by aesop)
+      have := h ▸ UniqueFactorizationMonoid.prod_normalizedFactors (show g ≠ 0 by simp_all only [ne_eq]; apply Aesop.BuiltinRules.not_intro; intro a_1; subst a_1; simp_all only [dvd_zero, forall_const, natDegree_zero, nonpos_iff_eq_zero, OfNat.ofNat_ne_zero])
       simp_all [Multiset.prod_cons]
       obtain ⟨u, hu⟩ := this.symm
       have := hsq a ?_
@@ -301,7 +306,7 @@ lemma factorizationType_eq_two_of_squarefree_card_roots
       simp_all
     rw [← h_sum_degrees_prod, ← Polynomial.natDegree_eq_of_degree_eq
       (Polynomial.degree_eq_degree_of_associated <|
-        UniqueFactorizationMonoid.prod_normalizedFactors <| show g ≠ 0 by aesop)]
+        UniqueFactorizationMonoid.prod_normalizedFactors <| show g ≠ 0 by simp_all only [ne_eq]; apply Aesop.BuiltinRules.not_intro; intro a; subst a; simp_all only [not_squarefree_zero])]
   have h_sum_degrees_ge_two :
       Multiset.sum (Multiset.filter (fun x ↦ x ≥ 2)
         (Multiset.map Polynomial.natDegree (normalizedFactors g))) = 2 := by

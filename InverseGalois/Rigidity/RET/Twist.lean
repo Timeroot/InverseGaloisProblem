@@ -34,8 +34,6 @@ open Polynomial
 
 noncomputable section
 
-set_option maxHeartbeats 1600000
-set_option synthInstance.maxHeartbeats 1000000
 
 namespace Rigidity.RET
 
@@ -43,19 +41,11 @@ open GeomAKLB
 
 /-! ## The inversion of the parameter -/
 
-/-- Inversion is an involution of the parameter: substituting `T⁻¹` into `T⁻¹` gives `T`. -/
-theorem ratFuncSubst_inv_inv {K : Type*} [Field K] :
-    ratFuncSubst (RatFunc.X : RatFunc K)⁻¹ transcendental_inv_X (RatFunc.X)⁻¹ = RatFunc.X := by
-  rw [map_inv₀, ratFuncSubst_X, inv_inv]
-
 /-- **The inversion `T ↦ T⁻¹` of `ℚ̄(T)`.**  It exchanges the point `0` of the line with the point
 at infinity. -/
-def invSubst : RatFunc k ≃ₐ[k] RatFunc k :=
-  ratFuncSubstEquiv transcendental_inv_X transcendental_inv_X ratFuncSubst_inv_inv
-    ratFuncSubst_inv_inv
+def invSubst : RatFunc k ≃ₐ[k] RatFunc k := ratFuncInv
 
-@[simp] theorem invSubst_X : invSubst (RatFunc.X : RatFunc k) = (RatFunc.X)⁻¹ := by
-  rw [invSubst, ratFuncSubstEquiv_apply, ratFuncSubst_X]
+@[simp] theorem invSubst_X : invSubst (RatFunc.X : RatFunc k) = (RatFunc.X)⁻¹ := ratFuncInv_X
 
 /-! ## The twist of a field over `ℚ̄(T)` by an automorphism of the base -/
 

@@ -136,7 +136,7 @@ lemma resolventProduct_univ_isSymmetric (d k : ℕ) (lam : Fin k → ℤ) (i : �
     rw [Polynomial.coeff_map]
   convert h_symm using 1
   · unfold resolventProduct
-    aesop
+    simp
   · rw [resolventProduct_map]
     rw [show (Multiset.map (⇑ (MvPolynomial.rename ⇑σ).toRingHom)
         (Multiset.map MvPolynomial.X Finset.univ.val)) =
@@ -184,7 +184,8 @@ lemma exists_fin_map_eq {A : Type*} (r : Multiset A) (n : ℕ) (h : r.card = n) 
   simp_all
   refine ⟨fun i ↦ l.get ⟨i, by linarith [Fin.is_lt i]⟩, ?_⟩
   rw [List.ofFn_eq_map]
-  aesop
+  subst h
+  simp_all only [Fin.eta, List.get_eq_getElem, List.map_getElem_finRange, List.Perm.refl]
 
 /-
 **Symmetric-function descent (universal resolvent).**  There is an integer polynomial `P`
@@ -277,9 +278,11 @@ lemma exists_resolvent_poly (F : Polynomial (Polynomial ℤ)) (hF : F.Monic)
         resolventProduct_monic k lam (map ev F).roots
       have hcard : (map ev F).Splits := IsAlgClosed.splits _
       rw [Polynomial.splits_iff_card_roots] at hcard
-      aesop
+      simp_all
     rw [Polynomial.Monic, Polynomial.leadingCoeff_map_of_injective hev] at hP_monic
-    aesop
+    simp_all only [Monic.natDegree_map, forall_const, A]
+    apply hev
+    simp_all only [map_one]
   · obtain ⟨A, hA⟩ : ∃ A : Type, ∃ (inst : Field A), ∃ (ev : Polynomial ℤ →+* A),
         Function.Injective ev ∧ (F.map ev).natDegree = F.natDegree ∧
           (F.map ev).roots.card = F.natDegree := by
@@ -303,7 +306,7 @@ lemma exists_resolvent_poly (F : Polynomial (Polynomial ℤ)) (hF : F.Monic)
     simp_all
     rw [← hF₂, resolventProduct_natDegree] at *
     rw [← Polynomial.natDegree_map_eq_of_injective hev]
-    aesop
+    simp_all
 
 /-!
 ## Genericity: choosing `lam` so that no `w_S` is rational
@@ -365,12 +368,21 @@ lemma exists_esymm_notMem {K L : Type} [Field K] [Field L] [Algebra K L]
       apply dvd_trans (Multiset.prod_dvd_prod_of_le (Multiset.map_le_map <| Multiset.mem_powersetCard.mp hs |>.1))
       exact Polynomial.prod_multiset_X_sub_C_dvd (Polynomial.map (algebraMap K L) f)
     rw [← Polynomial.map_dvd_map' (algebraMap K L)]
-    aesop
+    simp_all
   obtain ⟨q, rfl⟩ := h_div
   simp_all [irreducible_mul_iff]
   cases hf_irr <;> simp_all [Polynomial.natDegree_mul', Polynomial.Monic.def]
   · rw [Polynomial.isUnit_iff] at *
-    aesop
+    rename_i h
+    simp_all only [isUnit_iff_ne_zero, ne_eq]
+    obtain ⟨left, right⟩ := hgK
+    obtain ⟨left_1, right_1⟩ := hs
+    obtain ⟨left_2, right_2⟩ := h
+    obtain ⟨left_3, right⟩ := right
+    obtain ⟨w, h⟩ := right_2
+    obtain ⟨left_4, right_2⟩ := h
+    subst right_1 right_2
+    simp_all only [leadingCoeff_C, map_one, natDegree_one, lt_self_iff_false]
   · exact absurd (Polynomial.natDegree_eq_zero_of_isUnit (by tauto)) (by linarith)
 
 /-
@@ -514,10 +526,10 @@ lemma esymm_roots_map_mem_range {R A : Type*} [CommRing R] [CommRing A] [IsDomai
         (show Multiset.card (Polynomial.roots (Polynomial.map φ g)) =
           Polynomial.natDegree (Polynomial.map φ g) from ?_) ?_ using 1
       · rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] <;> simp_all [Polynomial.Monic.def]
-        rw [Nat.sub_sub_self hm, Polynomial.leadingCoeff_map_of_leadingCoeff_ne_zero] <;> aesop
+        rw [Nat.sub_sub_self hm, Polynomial.leadingCoeff_map_of_leadingCoeff_ne_zero] <;> simp_all
       · rw [hcard, Polynomial.natDegree_map_of_leadingCoeff_ne_zero]
-        aesop
-      · rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] <;> aesop
+        simp_all
+      · rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] <;> simp_all
     use (-1 : R) ^ m * g.coeff (Polynomial.natDegree g - m)
     by_cases h : Even m <;> simp_all
   · have hm' : m > Multiset.card (Polynomial.roots (g.map φ)) := hcard.symm ▸ not_le.mp hm

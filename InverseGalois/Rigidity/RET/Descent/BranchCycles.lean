@@ -38,8 +38,6 @@ open Polynomial
 
 namespace Rigidity.RET.Descent
 
-set_option synthInstance.maxHeartbeats 1000000
-set_option maxHeartbeats 1000000
 
 /-- A group isomorphism carries a generating family to a generating family. -/
 theorem closure_range_mulEquiv {A B : Type*} [Group A] [Group B] (Φ : A ≃* B) {ι : Type*}

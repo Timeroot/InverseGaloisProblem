@@ -65,8 +65,6 @@ open Polynomial
 
 open Rigidity.RET.Descent
 
-set_option synthInstance.maxHeartbeats 1000000
-set_option maxHeartbeats 1000000
 
 /-- The arithmetic field tower, without the geometric presentation.
 
@@ -655,7 +653,6 @@ structure ClassInertiaPlaceData {G : Type} [Group G] [Finite G] (cert : Rigidity
 
 attribute [instance] ClassInertiaPlaceData.rootOrder_neZero
 
-set_option maxHeartbeats 4000000 in
 /-- **The branch cycles of a compositum, packaged as the branch-cycle data of an arithmetic model.**
 
 Given branch cycles `g` of an arithmetic compositum `Ωbar = Ω · ℚ̄(T)` over rational branch points,

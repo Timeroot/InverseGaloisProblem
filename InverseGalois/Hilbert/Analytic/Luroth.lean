@@ -168,7 +168,11 @@ theorem auxPoly_R_irreducible (g h : k[X]) (hcop : IsCoprime g h)
       simp_all [IsCoprime]
       obtain ⟨a, ha⟩ := hcop
       have := congr_arg Polynomial.natDegree ha
-      rw [Polynomial.natDegree_mul'] at this <;> aesop
+      rw [Polynomial.natDegree_mul'] at this
+      · simp only [Polynomial.natDegree_one] at this
+        omega
+      · rw [← Polynomial.leadingCoeff_mul, ha, Polynomial.leadingCoeff_one]
+        exact one_ne_zero
     · exact hcop.symm.neg_left
   -- Since swap is an AlgEquiv (a ring isomorphism), irreducibility transports: `(AlgEquiv.irreducible_iff _).mp` / `(MulEquiv.irreducible_iff swap.toMulEquiv)`.
   have h_swap_irreducible : Irreducible (Polynomial.Bivariate.swap P) ↔ Irreducible P := by
@@ -243,7 +247,7 @@ theorem exists_algEquiv_ratFunc (θ : RatFunc k)
     refine ⟨Units.mk0 _ ?_, rfl⟩
     contrapose! h
     rw [Subtype.ext_iff] at h
-    aesop
+    simp_all
   obtain ⟨e₀, he₀⟩ :
       ∃ e₀ : Polynomial k →ₐ[k] IntermediateField.adjoin k {θ},
         e₀ Polynomial.X = τ.val ∧ Function.Injective e₀ := by
@@ -305,7 +309,7 @@ theorem exists_algEquiv_ratFunc (θ : RatFunc k)
       erw [Subtype.coe_mk]
       simp
   refine ⟨AlgEquiv.ofBijective e₀' ⟨he₀'.2, h_surj⟩, ?_⟩
-  aesop
+  simp_all
 
 /-
 The defining relation `num = θ * denom` in `RatFunc k`.
@@ -351,7 +355,7 @@ theorem finrank_adjoin_eq_height (θ : RatFunc k)
     simp [he, Polynomial.map_map]
     simp +zetaDelta at *
     erw [e.commutes, e.commutes]
-    aesop
+    trivial
   -- Fact 2 (root): G has X as a root.
   have hG_root : Polynomial.aeval (RatFunc.X : RatFunc k) G = 0 := by
     convert sub_eq_zero.mpr (num_eq_mul_denom θ) using 1
@@ -366,7 +370,7 @@ theorem finrank_adjoin_eq_height (θ : RatFunc k)
         exact le_max_right _ _
     · -- The coefficient of `X ^ height θ` in `G` is `g.coeff (height θ) - τ * h.coeff (height θ)`.
       have h_coeff : G.coeff θ.height = algebraMap k K (g.coeff θ.height) - τ * algebraMap k K (h.coeff θ.height) := by
-        aesop
+        simp_all only [aeval_sub, aeval_map_algebraMap, aeval_X_left_eq_algebraMap, map_mul, aeval_C, IntermediateField.algebraMap_apply, coeff_sub, coeff_map, coeff_C_mul, K, G, g, τ, h]
       intro h_zero
       have h_const : θ = RatFunc.C (g.coeff θ.height / h.coeff θ.height) := by
         have h_ratio : algebraMap k K (g.coeff θ.height) = τ * algebraMap k K (h.coeff θ.height) :=
@@ -380,13 +384,14 @@ theorem finrank_adjoin_eq_height (θ : RatFunc k)
         · apply absurd h_ratio
           rw [Polynomial.coeff_natDegree]
           refine mt Polynomial.leadingCoeff_eq_zero.1 ?_
-          aesop
+          rename_i h_2 h_3
+          simp_all only [aeval_sub, aeval_map_algebraMap, aeval_X_left_eq_algebraMap, map_mul, aeval_C, IntermediateField.algebraMap_apply, coeff_sub, coeff_map, coeff_natDegree, coeff_C_mul, leadingCoeff_eq_zero, num_eq_zero_iff, denom_zero, num_zero, natDegree_zero, coeff_one_zero, one_ne_zero, K, G, g, τ, h_2]
         · apply absurd h
           intro h
           apply absurd h
           intro h
           refine absurd (RatFunc.denom_ne_zero θ) ?_
-          aesop
+          exact fun hne ↦ hne (Polynomial.leadingCoeff_eq_zero.mp h)
       apply ‹θ ∉ ⊥›
       rw [h_const]
       exact IntermediateField.mem_bot.mpr ⟨_, rfl⟩
@@ -394,8 +399,13 @@ theorem finrank_adjoin_eq_height (θ : RatFunc k)
   have h_minpoly : minpoly K (RatFunc.X : RatFunc k) = G * Polynomial.C (G.leadingCoeff)⁻¹ := by
     refine Eq.symm (minpoly.eq_of_irreducible_of_monic ?_ ?_ ?_)
     · rw [irreducible_mul_iff]
-      aesop
-    · aesop
+      simp_all only [aeval_sub, aeval_map_algebraMap, aeval_X_left_eq_algebraMap, map_mul, aeval_C, IntermediateField.algebraMap_apply, isUnit_map_iff, isUnit_iff_ne_zero, ne_eq, inv_eq_zero, leadingCoeff_eq_zero, true_and, K, G, g, τ, h]
+      obtain ⟨val, property⟩ := τ
+      apply Or.inl
+      apply Aesop.BuiltinRules.not_intro
+      intro a
+      simp_all only [not_irreducible_zero]
+    · simp_all
     · rw [Polynomial.Monic, Polynomial.leadingCoeff_mul, Polynomial.leadingCoeff_C]
       exact mul_inv_cancel₀ (Polynomial.leadingCoeff_ne_zero.mpr hG_irreducible.ne_zero)
   -- Therefore, the degree of the extension `K(X)` over `K` equals the degree of `G`, which is `θ.height`.
@@ -407,7 +417,13 @@ theorem finrank_adjoin_eq_height (θ : RatFunc k)
     convert IntermediateField.adjoin.finrank h_finrank
     rw [adjoin_X_top' K]
     simp [Module.finrank]
-  rw [h_finrank, h_minpoly, Polynomial.natDegree_mul'] <;> aesop
+  rw [h_finrank, h_minpoly, Polynomial.natDegree_mul']
+  · simp_all only [aeval_sub, aeval_map_algebraMap, aeval_X_left_eq_algebraMap, map_mul, aeval_C, IntermediateField.algebraMap_apply, natDegree_C, add_zero, K, G, g, τ, h]
+  · simp_all only [aeval_sub, aeval_map_algebraMap, aeval_X_left_eq_algebraMap, map_mul, aeval_C, IntermediateField.algebraMap_apply, leadingCoeff_C, ne_eq, mul_eq_zero, leadingCoeff_eq_zero, inv_eq_zero, or_self, K, G, g, τ, h]
+    obtain ⟨val, property⟩ := τ
+    apply Aesop.BuiltinRules.not_intro
+    intro a
+    simp_all only [not_irreducible_zero]
 
 /-
 `RatFunc k` is finite over any intermediate field `M ≠ ⊥`.
@@ -423,7 +439,7 @@ theorem finiteDimensional_of_ne_bot (M : IntermediateField k (RatFunc k)) (hM : 
     rw [h_eq]
     exact height_pos_of_not_mem_bot θ₀ hθ₀.2
   have h_subfield : k⟮θ₀⟯ ≤ M := by
-    aesop
+    simp_all
   obtain ⟨s, hs⟩ := h_finrank
   refine ⟨s, ?_⟩
   rw [Submodule.eq_top_iff'] at hs ⊢
@@ -452,7 +468,11 @@ theorem exists_coeff_not_mem_bot (M : IntermediateField k (RatFunc k))
       choose f hf using fun j ↦ mem_bot_iff _ |>.1 (hM j)
       use ∑ j ∈ (minpoly M (RatFunc.X : RatFunc k)).support, f j • Polynomial.X ^ j
       ext j
-      aesop
+      simp_all only [coeff_map, finset_sum_coeff, coeff_smul, coeff_X_pow, smul_eq_mul, mul_ite, mul_one, mul_zero,
+        Finset.sum_ite_eq, mem_support_iff, ne_eq, SubalgebraClass.coe_algebraMap, algebraMap_eq_C]
+      split
+      next h => simp_all only [mem_support_iff, ne_eq]
+      next h => simp_all only [mem_support_iff, ne_eq, not_not, ZeroMemClass.coe_zero, map_zero]
     refine ⟨g, ?_, ?_⟩
     · intro h
       simp_all
@@ -543,7 +563,12 @@ theorem bivarR_isPrimitive (g h : k[X]) (hcop : IsCoprime g h)
       by_cases h' : h' = 0 <;> simp_all [Polynomial.ext_iff]
       · simp_all [isCoprime_zero_right]
         rw [Polynomial.isUnit_iff] at hcop
-        aesop
+        intro n
+        simp_all only [isUnit_iff_ne_zero, ne_eq]
+        obtain ⟨w, h⟩ := hcop
+        obtain ⟨left, right⟩ := h
+        subst right
+        simp_all only [natDegree_C, lt_self_iff_false]
       · obtain ⟨i, hi⟩ := h'
         refine ⟨g.coeff i / h'.coeff i, ?_⟩
         intro n
@@ -557,7 +582,15 @@ theorem bivarR_isPrimitive (g h : k[X]) (hcop : IsCoprime g h)
       apply isUnit_of_dvd_one
       rw [← hcop.choose_spec.choose_spec]
       exact dvd_add (dvd_mul_of_dvd_right (dvd_mul_left _ _) _) (dvd_mul_left _ _)
-    rw [Polynomial.natDegree_mul'] at hpos <;> aesop
+    rw [Polynomial.natDegree_mul'] at hpos
+    · simp [Polynomial.natDegree_C, h_deg_zero] at hpos
+    · have hc : c ≠ 0 := by
+        rintro rfl
+        simp [h_deg_zero] at hpos
+      have hh' : h' ≠ 0 := by
+        rintro rfl
+        simp at hpos
+      simp [Polynomial.leadingCoeff_C, hc, hh']
   obtain ⟨i, j, hij⟩ := h_lin_indep
   have h_div_g : d ∣ g := by
     have h_div_g :
@@ -579,7 +612,11 @@ theorem bivarR_isPrimitive (g h : k[X]) (hcop : IsCoprime g h)
       simp [sub_add_cancel]
     obtain ⟨i, hi⟩ : ∃ i, g.coeff i ≠ 0 := by
       refine ⟨Polynomial.natDegree g, ?_⟩
-      aesop
+      simp_all only [lt_sup_iff, ne_eq, coeff_natDegree, leadingCoeff_eq_zero]
+      apply Aesop.BuiltinRules.not_intro
+      intro a
+      subst a
+      simp_all only [natDegree_zero, lt_self_iff_false, false_or, coeff_zero, zero_smul, smul_zero, sub_self, implies_true, zero_mul, not_true_eq_false]
     specialize h_dvd_smul i
     simp_all [Polynomial.smul_eq_C_mul]
   exact hcop.isUnit_of_dvd' h_div_g h_div_h
@@ -642,7 +679,15 @@ theorem primitive_swap_degree_finish (P φ S : k[X][X]) (hP : P.IsPrimitive)
     refine ⟨_, Polynomial.eq_C_of_natDegree_eq_zero ?_⟩
     have h_deg_swap_S : (Bivariate.swap P).natDegree = (Bivariate.swap φ).natDegree + (Bivariate.swap S).natDegree := by
       rw [hmul, map_mul, Polynomial.natDegree_mul']
-      aesop
+      subst hmul
+      simp_all
+      apply And.intro
+      · apply Aesop.BuiltinRules.not_intro
+        intro a
+        simp_all only [zero_mul, zero_eq_neg, mul_eq_zero, or_self]
+      · apply Aesop.BuiltinRules.not_intro
+        intro a
+        simp_all only [mul_zero, zero_eq_neg, mul_eq_zero, or_self]
     rw [hPswap, Polynomial.natDegree_neg] at h_deg_swap_S
     linarith
   -- Since `swap S = C s` for some `s ∈ k[X]`, we have `C s ∣ P`. By `hP : P.IsPrimitive`, `IsUnit s`.
@@ -661,8 +706,13 @@ theorem primitive_swap_degree_finish (P φ S : k[X][X]) (hP : P.IsPrimitive)
       rw [← hs, AlgEquiv.symm_apply_apply]
     simp [h_S_eq, Polynomial.Bivariate.swap]
     rw [Polynomial.isUnit_iff] at h_unit
-    aesop
-  rw [hmul, Polynomial.natDegree_mul'] <;> aesop
+    subst hmul h_S_eq
+    simp_all
+    obtain ⟨w, h⟩ := h_unit
+    obtain ⟨left, right⟩ := h
+    subst right
+    simp_all only [map_eq_zero, not_false_eq_true, aeval_C, Polynomial.algebraMap_apply, algebraMap_eq, natDegree_C]
+  rw [hmul, Polynomial.natDegree_mul'] <;> simp_all
 
 /-- Every nonzero polynomial over `k(X) = Frac(k[X])` has a *primitive integer* representative:
 a primitive `φ ∈ k[X][X]` of the same degree whose image over `k(X)` is a unit multiple of it.
@@ -806,7 +856,7 @@ theorem height_coeff_le (M : IntermediateField k (RatFunc k))
         exact dvd_mul_left _ _
       have h_dvd_j : g ∣ φ.coeff j := by
         have h_dvd_jh : g ∣ φ.coeff j * h := by
-          aesop
+          simp_all
         exact IsCoprime.dvd_of_dvd_mul_right (RatFunc.isCoprime_num_denom θ) h_dvd_jh
       exact ⟨h_dvd_n, h_dvd_j⟩
     have hdx :
@@ -820,21 +870,32 @@ theorem height_coeff_le (M : IntermediateField k (RatFunc k))
           have hmonic := minpoly.monic (IsIntegral.of_finite M t)
           apply absurd hφmap
           rw [hmonic.coeff_natDegree]
-          aesop
+          simp
         exact le_trans (Polynomial.natDegree_le_of_dvd h_dvd_coeff.left hcoeff_n)
           (natDegree_le_natDegree_swap φ n)
       · have hcoeff_j : φ.coeff j ≠ 0 := by
           replace hφmap := congr_arg (fun p ↦ p.coeff j) hφmap
-          aesop
+          simp_all only [natDegree_map, isUnit_iff_ne_zero, ne_eq, coeff_map, coeff_C_mul, IntermediateField.algebraMap_apply,
+            θ, F, t, g, h, n]
+          obtain ⟨left, right⟩ := h_dvd_coeff
+          apply Aesop.BuiltinRules.not_intro
+          intro a
+          simp_all only [map_zero, zero_eq_mul, ZeroMemClass.coe_eq_zero, false_or, ZeroMemClass.coe_zero, denom_zero,
+            isUnit_one, IsUnit.dvd, num_zero, dvd_refl, zero_mem, not_true_eq_false]
         exact le_trans (Polynomial.natDegree_le_of_dvd h_dvd_coeff.right hcoeff_j)
           (natDegree_le_natDegree_swap φ j)
     rw [bivarR_natDegree g h (RatFunc.isCoprime_num_denom θ) (height_pos_of_not_mem_bot θ hj)]
-    aesop
+    omega
   convert primitive_swap_degree_finish (bivarR g h) φ S _ _ hS _ hS0 hdx using 1
   · rw [bivarR_natDegree g h (RatFunc.isCoprime_num_denom θ) (height_pos_of_not_mem_bot θ hj)]
     rfl
   · rw [hφdeg, Polynomial.natDegree_map_of_leadingCoeff_ne_zero]
-    aesop
+    simp_all only [natDegree_map, isUnit_iff_ne_zero, ne_eq, Bivariate.swap_apply, AlgHom.coe_comp,
+      AlgHom.coe_restrictScalars', coe_aeval_eq_eval, Function.comp_apply, IntermediateField.algebraMap_apply,
+      ZeroMemClass.coe_eq_zero, leadingCoeff_eq_zero, θ, F, t, g, h]
+    apply Aesop.BuiltinRules.not_intro
+    intro a
+    simp_all only [coeff_zero, ZeroMemClass.coe_zero, zero_mem, not_true_eq_false]
   · apply bivarR_isPrimitive g h (RatFunc.isCoprime_num_denom θ) (height_pos_of_not_mem_bot θ hj)
   · exact bivarR_swap g h
   · exact hφprim.ne_zero
@@ -874,7 +935,7 @@ theorem luroth (M : IntermediateField k (RatFunc k)) (hM : M ≠ ⊥) :
           ((minpoly M (RatFunc.X : RatFunc k)).coeff j : RatFunc k) ∉ (⊥ : IntermediateField k (RatFunc k)) := by
       convert exists_coeff_not_mem_bot M hM_ne_bot using 1
       · ext
-        aesop
+        simp
       · convert RatFunc.finiteDimensional_of_ne_bot M hM_ne_bot
     refine ⟨_, hj.1, hj.2, le_antisymm ?_ ?_⟩
     · convert height_coeff_le M j hj.2 using 1
@@ -883,17 +944,17 @@ theorem luroth (M : IntermediateField k (RatFunc k)) (hM : M ≠ ⊥) :
         convert finiteDimensional_of_ne_bot M hM_ne_bot
       · convert RatFunc.finiteDimensional_of_ne_bot M hM_ne_bot
     · have h_sub_le : k⟮((minpoly M (RatFunc.X : RatFunc k)).coeff j : RatFunc k)⟯ ≤ M := by
-        aesop
+        simp
       have h_fd : FiniteDimensional (↥k⟮((minpoly M (RatFunc.X : RatFunc k)).coeff j : RatFunc k)⟯) (RatFunc k) := by
         apply finiteDimensional_of_ne_bot
         simp_all
       exact finrank_le_of_le_left h_sub_le
   have h_le : k⟮w⟯ ≤ M := by
-    aesop
+    simp_all
   have h_eq : k⟮w⟯ = M := by
     convert IntermediateField.eq_of_le_of_finrank_eq' h_le hw.2.2
     convert finiteDimensional_of_ne_bot _ _
-    aesop
+    simp_all
   exact ⟨w, h_eq.symm⟩
 
 end RatFunc

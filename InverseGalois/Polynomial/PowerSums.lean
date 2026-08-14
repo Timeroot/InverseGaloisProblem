@@ -10,7 +10,6 @@ open Finset Matrix
 
 noncomputable section
 
-set_option maxHeartbeats 3200000
 
 variable {K : Type*} [Field K]
 

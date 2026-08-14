@@ -36,6 +36,8 @@ stays where it is.  That is why the branch points of the rigidity method must be
 
 * `Rigidity.RET.LineCover.SemiIso.liesOver_map` — places go to places, over the moved point.
 * `Rigidity.RET.LineCover.IsInertiaAt.semiIso` — inertia at `t` goes to inertia at the moved point.
+* `Rigidity.RET.LineCover.IsUnramifiedOutside.semiIso'` — unramifiedness outside a set of points,
+  with the set moved along.
 * `Rigidity.RET.LineCover.IsUnramifiedOutside.semiIso` — unramifiedness outside a set of points
   stable under the move.
 * `Rigidity.RET.constSubst_polyPreserving`, `Rigidity.RET.map_placeP_constSubst` — an automorphism
@@ -50,8 +52,6 @@ open Polynomial
 
 noncomputable section
 
-set_option maxHeartbeats 1600000
-set_option synthInstance.maxHeartbeats 1000000
 
 namespace Rigidity.RET
 
@@ -284,13 +284,13 @@ theorem IsInertiaAt.semiIso {L L' : LineCover} (e : SemiIso L L' φ) (h : PolyPr
   have := e.liesOver_map h Q (placeP t)
   rwa [hmove] at this
 
-/-- **Unramifiedness travels along a semilinear isomorphism**, over a set of points stable under
-the move. -/
-theorem IsUnramifiedOutside.semiIso {L L' : LineCover} (e : SemiIso L L' φ)
+/-- **Unramifiedness travels along a semilinear isomorphism**, with the branch locus moved along:
+a point outside the new locus comes from a point outside the old one. -/
+theorem IsUnramifiedOutside.semiIso' {L L' : LineCover} (e : SemiIso L L' φ)
     (h : PolyPreserving φ ψ) {move : k ≃ k}
     (hmove : ∀ t : k, Ideal.map ψ (placeP t) = placeP (move t))
-    {S : Set k} (hS : ∀ t ∉ S, move.symm t ∉ S) (hL : L.IsUnramifiedOutside S) :
-    L'.IsUnramifiedOutside S := by
+    {S S' : Set k} (hS : ∀ t ∉ S', move.symm t ∉ S) (hL : L.IsUnramifiedOutside S) :
+    L'.IsUnramifiedOutside S' := by
   intro t ht τ hτ
   have hmove' : Ideal.map ψ.symm (placeP t) = placeP (move.symm t) := by
     refine map_placeP_symm ?_
@@ -303,6 +303,15 @@ theorem IsUnramifiedOutside.semiIso {L L' : LineCover} (e : SemiIso L L' φ)
   rw [SemiIso.conj_conj_symm] at h4
   rw [h4]
   exact e.deckEquiv.map_one
+
+/-- **Unramifiedness travels along a semilinear isomorphism**, over a set of points stable under
+the move. -/
+theorem IsUnramifiedOutside.semiIso {L L' : LineCover} (e : SemiIso L L' φ)
+    (h : PolyPreserving φ ψ) {move : k ≃ k}
+    (hmove : ∀ t : k, Ideal.map ψ (placeP t) = placeP (move t))
+    {S : Set k} (hS : ∀ t ∉ S, move.symm t ∉ S) (hL : L.IsUnramifiedOutside S) :
+    L'.IsUnramifiedOutside S :=
+  IsUnramifiedOutside.semiIso' e h hmove hS hL
 
 /-! ### Changing the coordinate, and the point at infinity -/
 

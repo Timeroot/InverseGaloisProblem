@@ -39,8 +39,6 @@ open scoped Pointwise
 
 noncomputable section
 
-set_option maxHeartbeats 1600000
-set_option synthInstance.maxHeartbeats 1000000
 
 namespace Rigidity.RET
 
@@ -103,6 +101,7 @@ theorem smul_subInclusion (σ : M ≃ₐ[E] M) (x : Bring E) :
   rw [smul_bring_sub, coe_smul_geom, coe_subInclusion]
   exact σ.commutes x
 
+set_option synthInstance.maxHeartbeats 200000 in
 local instance smulCommClassSub : SMulCommClass (M ≃ₐ[E] M) (Bring E) (Bring M) where
   smul_comm σ a b := by
     rw [Algebra.smul_def, Algebra.smul_def, smul_mul', algebraMap_bringSub, smul_subInclusion]
@@ -127,6 +126,7 @@ local instance isInvariantSub : Algebra.IsInvariant (Bring E) (Bring M) (M ≃�
 
 omit [FiniteDimensional (RatFunc k) E] [IsGalois (RatFunc k) E]
   [IsScalarTower (Polynomial k) (RatFunc k) E] in
+set_option synthInstance.maxHeartbeats 200000 in
 /-- **`Gal(M/E)` is transitive on the places of the big integral model above a place of the small
 one.** -/
 theorem exists_relative_smul_eq (Q Q' : Ideal (Bring M)) [Q.IsPrime] [Q'.IsPrime]
@@ -174,6 +174,8 @@ theorem comap_subInclusion_smul (σ : M ≃ₐ[RatFunc k] M) (Q : Ideal (Bring M
     show subInclusion (E := E) ((ρ σ)⁻¹ • x) = σ⁻¹ • subInclusion x from
       subInclusion_smul ρ hres σ⁻¹ x ▸ by rw [map_inv]]
 
+set_option maxHeartbeats 400000 in
+set_option synthInstance.maxHeartbeats 200000 in
 /-- **Inertia at the contracted place is the image of the inertia group.**
 
 The inclusion of the image is `mem_inertia_of_subInclusion`; the reverse inclusion is the classical

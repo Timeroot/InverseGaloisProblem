@@ -71,7 +71,7 @@ lemma branch_unique_on_connected
         grind
       · have := hsep z hz.1
         have := Polynomial.Separable.aeval_derivative_ne_zero this (hr₂ z hz.1)
-        aesop
+        simp_all
     apply isOpen_iff_mem_nhds.mpr
     intro x hx
     rcases hA_ball x hx with ⟨ε, εpos, hε⟩
@@ -96,9 +96,9 @@ lemma branch_unique_on_connected
     ⟨z₀, hz₀, hz₀, hbase⟩,
     ⟨hUconn.choose, hUconn.choose_spec.1, hUconn.choose_spec.1, hUconn.choose_spec.2⟩, ?_⟩
   · intro x hx
-    by_cases h : g₁ x = g₂ x <;> aesop
+    by_cases h : g₁ x = g₂ x <;> simp_all
   · rintro ⟨x, hx₁, hx₂⟩
-    aesop
+    simp_all
 
 /-
 **Uniqueness of a continuous root branch pulled back through a continuous substitution.**
@@ -132,13 +132,13 @@ lemma branch_unique_on_connected_comp
       refine ⟨Filter.Tendsto.prodMk_nhds (hφ.continuousAt (hUopen.mem_nhds hζ.1))
           (hg₁.continuousAt (hUopen.mem_nhds hζ.1)), ?_⟩
       exact Filter.Tendsto.prodMk_nhds (hφ.continuousAt (hUopen.mem_nhds hζ.1))
-        (hg₂.continuousAt (hUopen.mem_nhds hζ.1) |> fun h ↦ h.trans (by aesop))
+        (hg₂.continuousAt (hUopen.mem_nhds hζ.1) |> fun h ↦ h.trans (by simp_all))
     filter_upwards [h_cont.1.eventually hb.2.2.2, h_cont.2.eventually hb.2.2.2,
       hUopen.mem_nhds hζ.1] with ζ hζ₁ hζ₂ hζ₃
     refine ⟨hζ₃, ?_⟩
     have := hζ₁ (hr₁ ζ hζ₃)
     have := hζ₂ (hr₂ ζ hζ₃)
-    aesop
+    simp_all
   · have h_open : ∀ ζ ∈ U, g₁ ζ ≠ g₂ ζ → ∃ ε > 0, ∀ z ∈ Metric.ball ζ ε, z ∈ U → g₁ z ≠ g₂ z := by
       intro ζ hζ hneq
       have h_cont : ContinuousAt (fun z ↦ g₁ z - g₂ z) ζ :=
@@ -230,7 +230,7 @@ lemma exists_exp_lift
   · rw [continuousOn_iff_continuous_restrict]
     convert continuous_snd.comp (continuous_subtype_val.comp hF.1) using 1
     grind
-  · aesop
+  · simp_all
   · intro ζ hζ
     have := hF.2.2 ⟨ζ, hζ⟩
     simp_all [rootProj]
@@ -336,7 +336,7 @@ lemma periodic_log_comp_continuous
     obtain ⟨k, hk⟩ :
         ∃ k : ℤ, Complex.log (-w) + Real.pi * Complex.I - Complex.log w = k * (2 * Real.pi * Complex.I) := by
       have h_exp : Complex.exp (Complex.log (-w) + Real.pi * Complex.I - Complex.log w) = 1 := by
-        have hw0 : w ≠ 0 := by aesop
+        have hw0 : w ≠ 0 := by simp_all
         rw [Complex.exp_sub, Complex.exp_add, Complex.exp_log, Complex.exp_log] <;> norm_num [hw0]
       rw [Complex.exp_eq_one_iff] at h_exp
       obtain ⟨k, hk⟩ := h_exp
@@ -346,7 +346,7 @@ lemma periodic_log_comp_continuous
         g (ζ + (j : ℂ) * (2 * Real.pi * Complex.I * e)) = g ζ := by
       intro j ζ hζ
       induction j using Int.induction_on <;> simp_all [← add_assoc, add_mul]
-      have := hper (ζ + (-↑‹ℕ› - 1) * (2 * Real.pi * Complex.I * e)) ?_ <;> ring_nf at * <;> aesop
+      have := hper (ζ + (-↑‹ℕ› - 1) * (2 * Real.pi * Complex.I * e)) ?_ <;> ring_nf at * <;> simp_all
     convert h_int_periodic (-k) (-e * Complex.log w) _ using 1 <;> norm_num [mul_assoc, mul_comm, mul_left_comm]
     · grind
     · rw [Complex.log_re]
@@ -385,7 +385,7 @@ lemma periodic_log_comp_continuous
           mul_div_cancel₀ (-Real.log B) (by positivity : (e : ℝ) ≠ 0)]
     · refine Classical.or_iff_not_imp_left.2 fun h ↦ ?_
       contrapose! hw'
-      aesop
+      simp_all
 
 /-
 **The substitution identity** `-(e)·log (z⁻¹ ^ (1/e)) = log z` for `z` in the right
@@ -398,7 +398,7 @@ lemma cpow_neg_e_log (e : ℕ) (he : 1 ≤ e) (z : ℂ) (hz : 0 < z.re) :
     ring_nf
     have harg2 : z.arg < Real.pi / 2 := by
       rw [Complex.arg_lt_pi_div_two_iff]
-      aesop
+      simp_all
     rw [if_neg (by linarith [Real.pi_pos, Complex.neg_pi_lt_arg z, Complex.arg_le_pi z, harg2])]
   rw [Complex.cpow_def_of_ne_zero] <;> norm_num [h_arg, Complex.exp_ne_zero]
   · rw [Complex.log_exp] <;> norm_num [Complex.log, h_arg]
@@ -411,7 +411,7 @@ lemma cpow_neg_e_log (e : ℕ) (he : 1 ≤ e) (z : ℂ) (hz : 0 < z.re) :
     · nlinarith [Real.pi_pos, show (e : ℝ) ⁻¹ ≥ 0 by positivity,
         show (e : ℝ) ⁻¹ ≤ 1 from inv_le_one_of_one_le₀ <| mod_cast he,
         Complex.neg_pi_lt_arg z, Complex.arg_le_pi z]
-  · aesop
+  · apply Aesop.BuiltinRules.not_intro; intro a; subst a; simp_all only [Complex.zero_re, lt_self_iff_false]
 
 /-
 **Matching the branch on the positive real ray (at the ball centres).**
@@ -468,7 +468,7 @@ lemma branch_match_real_ray
           exact Filter.mem_of_superset (Metric.ball_mem_nhds _ <| half_pos <| by linarith)
             fun y hy ↦ subset_closure hy
         filter_upwards [hH_mem, hφ₄.filter_mono htend] with y hy₁ hy₂
-        aesop
+        simp_all
       have hg_log_eq_phi : ∀ᶠ y in nhds (x : ℂ), g (Complex.log y) = φ y := by
         have hroot_ev : ∀ᶠ y in nhds (x : ℂ), (Q.map (evalIntPolyComplex y)).eval (g (Complex.log y)) = 0 := by
           have h_log_tend :
@@ -502,9 +502,9 @@ lemma branch_match_real_ray
                 norm_num
                 linarith
             apply hcont_glog.tendsto.trans
-            aesop
+            simp_all
         filter_upwards [hroot_ev, hφ₄.filter_mono htend] with y hy₁ hy₂
-        aesop
+        simp_all
       exact Metric.mem_nhds_iff.mp (hH_eq_phi.and hg_log_eq_phi) |> fun ⟨ε, hε₁, hε₂⟩ ↦ ⟨ε, hε₁, fun y hy ↦ hε₂ hy⟩
     use ε, hε_pos
     intro y hy₁ hy₂
@@ -643,7 +643,7 @@ lemma branch_match_tail
         rw [abs_of_nonneg] at this <;> linarith [dist_eq_norm z x]
       simpa only [hz_log] using hgroot (Complex.log z) hz_log_re
     · have := branch_match_real_ray Q B hB hQsep T₁ hT1B H hcont hHroot g hgc hgroot hbase x hx
-      aesop
+      trivial
   have h_eq_closure : ∀ z' ∈ Metric.closedBall (x : ℂ) (x / 2), H z' = g (Complex.log z') := by
     intro z' hz'
     have hz'cl : z' ∈ closure (Metric.ball (x : ℂ) (x / 2)) := by

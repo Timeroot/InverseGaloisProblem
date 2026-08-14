@@ -45,7 +45,7 @@ lemma integral_model_absIrr
   · ext
     simp [coeff_scaleRoots]
     rw [natDegree_map_of_leadingCoeff_ne_zero]
-    aesop
+    simp_all
 
 set_option maxHeartbeats 800000 in
 theorem integral_model_exists
@@ -67,7 +67,7 @@ theorem integral_model_exists
   set g := f.scaleRoots (C (D : ℚ)) with hg_def
   have hg_monic : g.Monic := by
     rw [Monic, leadingCoeff, natDegree_scaleRoots]
-    aesop
+    simp_all
   have hg_integral : ∀ i, ∃ b : Polynomial ℤ, g.coeff i = b.map (Int.castRingHom ℚ) :=
     scaleRoots_integral_coeffs f hf_monic D hD_pos hD_clears
   have hg_irreducible : Irreducible g :=
@@ -80,7 +80,7 @@ theorem integral_model_exists
     · have hF_leading_coeff : (F.coeff F.natDegree).map (Int.castRingHom ℚ) = 1 := by
         convert hg_monic.leadingCoeff using 1
         rw [← hF_map, leadingCoeff_map_of_leadingCoeff_ne_zero]
-        · aesop
+        · trivial
         · intro h
           simp_all [ext_iff]
           have hF_lead_zero : F.leadingCoeff = 0 := ext h
@@ -90,14 +90,18 @@ theorem integral_model_exists
       simpa using hF_leading_coeff
     · rw [degree_eq_natDegree]
       rw [eq_comm] at hF_map
-      aesop
+      simp_all [↓existsAndEq, g]
+      apply Aesop.BuiltinRules.not_intro
+      intro a
+      subst a
+      simp_all only [Polynomial.map_zero, not_monic_zero]
   have hF_irreducible : Irreducible F :=
     hF_monic.irreducible_of_irreducible_map (mapRingHom (Int.castRingHom ℚ)) F
       (by rwa [hF_map])
   have hF_deg : F.natDegree = f.natDegree := by
     have hF_deg_g : F.natDegree = g.natDegree := by
       rw [← hF_map, natDegree_map_of_leadingCoeff_ne_zero]
-      aesop
+      simp_all
     rw [hF_deg_g, natDegree_scaleRoots]
   have hF_factor : ∀ t : ℤ, ∀ k : ℕ, 1 ≤ k →
       (∃ g : Polynomial ℚ, g.natDegree = k ∧ g.Monic ∧ g ∣ (f.map (evalRingHom (t : ℚ)))) →
@@ -116,13 +120,13 @@ theorem integral_model_exists
     have hFt_monic : (F.map (evalRingHom t)).Monic := hF_monic.map _
     have hgs_monic : (g_factor.scaleRoots (D : ℚ)).Monic := by
       rw [Monic, leadingCoeff_scaleRoots]
-      aesop
+      trivial
     obtain ⟨g', hg'_monic, hg'_map, hg'_deg⟩ :=
       monic_int_factor_of_monic_int_dvd' hFt_monic hgs_monic hg_factor_scale
     refine ⟨g', ?_, hg'_monic, ?_⟩
     · rw [hg'_deg, natDegree_scaleRoots, hg_factor_deg]
     · rw [← map_dvd_map (Int.castRingHom ℚ)]
-      · aesop
+      · simp_all
       · exact Int.cast_injective
       · exact hg'_monic
   have hF_abs_irr_out :

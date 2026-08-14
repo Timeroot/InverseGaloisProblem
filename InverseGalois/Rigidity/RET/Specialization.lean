@@ -85,8 +85,6 @@ section SpecCore
 open UniqueFactorizationMonoid
 open scoped Pointwise
 
-set_option maxHeartbeats 1600000
-set_option synthInstance.maxHeartbeats 1000000
 
 attribute [local instance] Ideal.Quotient.field
 
@@ -135,6 +133,7 @@ instance placeP_max (t : ℤ) : (placeP t).IsMaximal :=
 local instance instDedekindB : IsDedekindDomain (Bring L) :=
   integralClosure.isDedekindDomain (Polynomial ℚ) (RatFunc ℚ) L
 
+set_option synthInstance.maxHeartbeats 400000 in
 local instance instTorsionFree : Module.IsTorsionFree (Polynomial ℚ) (Bring L) := inferInstance
 
 local instance instFiniteGal : Finite (L ≃ₐ[RatFunc ℚ] L) := inferInstance
@@ -329,6 +328,8 @@ theorem conductor_coprime_of_separable
   rw [placeP, Ideal.mem_span_singleton, Polynomial.dvd_iff_isRoot] at hdt
   exact hBne hdt
 
+set_option maxHeartbeats 800000 in
+set_option synthInstance.maxHeartbeats 400000 in
 omit [Algebra ℚ L] [IsScalarTower ℚ (RatFunc ℚ) L] in
 theorem inertia_trivial_of_separable
     (β : L) (hβint : IsIntegral (Polynomial ℚ) β)
@@ -440,6 +441,8 @@ theorem inertia_trivial_of_separable
     Ideal.IsDedekindDomain.ramificationIdx_eq_normalizedFactors_count hmapne inferInstance hQne]
   exact hcount
 
+set_option maxHeartbeats 800000 in
+set_option synthInstance.maxHeartbeats 400000 in
 omit [IsScalarTower ℚ (RatFunc ℚ) L] in
 /-- **GAP (B), genuine content: the residue field is a splitting field.**
 The residue field `B/Q`, regarded as a `ℚ`-algebra (equivalently a `κ(P)`-algebra, since
@@ -609,6 +612,7 @@ theorem bQuot_isSplittingField_specialize
     rw [← hadjβ]
     exact Algebra.adjoin_mono (Set.singleton_subset_iff.mpr hβroot)
 
+set_option synthInstance.maxHeartbeats 400000 in
 omit [IsScalarTower ℚ (RatFunc ℚ) L] in
 /-- **GAP (B) — residue identification.**
 The Galois group of the specialized polynomial `specialize F t` embeds into the residue-field Galois
@@ -657,6 +661,7 @@ theorem residue_gal_embedding
 
 /-! ## The genuine mathematical core, assembled from the two gaps. -/
 
+set_option synthInstance.maxHeartbeats 400000 in
 omit [IsScalarTower ℚ (RatFunc ℚ) L] in
 /-- **The heart of Hilbert-irreducibility specialization.**
 For a separable specialization `t`, the Galois group of `specialize F t` over `ℚ` embeds into the
@@ -701,7 +706,7 @@ theorem specialization_gal_embeds
 
 end SpecCore
 
-set_option maxHeartbeats 1600000 in
+set_option maxHeartbeats 800000 in
 /-- **Model translation** (task L4): from an abstract regular Galois realization of `G` over `ℚ(T)`,
 produce the explicit `of_regular_family` hypothesis bundle — a permutation degree `n`, a subgroup
 `H ≤ Sₙ` isomorphic to `G`, and a monic `ℚ[T][X]` family `F` with resolvent `Gp` satisfying all the

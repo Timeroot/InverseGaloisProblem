@@ -35,8 +35,14 @@ assumed here is the comparison between that topological picture and the algebra 
 field: the analytic passage from a topological cover to an algebraic one (Grauert–Remmert / GAGA)
 and the passage between `ℂ` and `ℚ̄` (Lefschetz).
 
+The two directions are named separately as well as bundled, because they behave differently: each
+travels on its own along a coordinate change, and each is known unconditionally for its own class
+of deck groups.
+
 ## Main definitions
 
+* `Rigidity.RET.GeomRETExistence`, `Rigidity.RET.GeomRETCompleteness` — the two directions of the
+  correspondence over a fixed branch locus, separately.
 * `Rigidity.RET.GeomRET` — the two directions of the correspondence over a fixed branch locus.
 
 ## Main results
@@ -53,39 +59,50 @@ open Polynomial
 
 noncomputable section
 
-set_option maxHeartbeats 1600000
-set_option synthInstance.maxHeartbeats 1000000
 
 namespace Rigidity.RET
 
 open GeomAKLB
 
-/-- **Covers of the line with branch locus in `{t₀,…,t_{r-1}}` are the finite quotients of the
-sphere group**, in the two directions in which the correspondence is used.
+/-- **The tuple `h` is the monodromy of a cover of the line branched over `t`**: there is a finite
+Galois cover of the line, unramified outside the `tᵢ` and infinity, and an identification of its
+deck group with `H` under which `hᵢ` generates an inertia group at `tᵢ`.
 
-* `exists_cover`: a tuple `h` in a finite group `H` which generates `H` and has product `1` — the
-  same thing as a surjection `Γ_r ↠ H` — is the monodromy of a cover of the line with deck group
-  `H`, unramified outside the `tᵢ` and infinity, in which `hᵢ` generates an inertia group at `tᵢ`.
-* `exists_cycles`: conversely, a cover of the line unramified outside the `tᵢ` and infinity carries
-  a system of branch cycles over those points: inertia generators, one at each `tᵢ`, generating the
-  deck group, with product `1` in the given order.
-
-The inertia clauses are the *distinguished* ones (`LineCover.IsInertiaGenAt`): the monodromy of a
+The inertia clause is the *distinguished* one (`LineCover.IsInertiaGenAt`): the monodromy of a
 small loop around a puncture does not merely lie in the local inertia group, it generates it.  That
 is what makes the local data comparable with a prescribed conjugacy class, since two generators of
 the same cyclic group differ by a power with exponent coprime to the order. -/
+def IsMonodromyOver {H : Type} [Group H] [Finite H] {r : ℕ} (h : Fin r → H)
+    (t : Fin r → k) : Prop :=
+  ∃ (L : LineCover) (e : L.deck ≃* H),
+    L.IsUnramifiedOutside (Set.range t) ∧ L.IsUnramifiedAtInfinity ∧
+    ∀ i, L.IsInertiaGenAt (t i) (e.symm (h i))
+
+/-- **The existence direction of the correspondence over `{t₀,…,t_{r-1}}`**: a tuple `h` in a
+finite group `H` which generates `H` and has product `1` — the same thing as a surjection
+`Γ_r ↠ H` — is the monodromy of a cover of the line with deck group `H`, unramified outside the
+`tᵢ` and infinity. -/
+def GeomRETExistence {r : ℕ} (t : Fin r → k) : Prop :=
+  ∀ ⦃H : Type⦄ [Group H] [Finite H] (h : Fin r → H),
+    (List.ofFn h).prod = 1 → Subgroup.closure (Set.range h) = ⊤ → IsMonodromyOver h t
+
+/-- **The completeness direction of the correspondence over `{t₀,…,t_{r-1}}`**: a cover of the line
+unramified outside the `tᵢ` and infinity carries a system of branch cycles over those points —
+inertia generators, one at each `tᵢ`, generating the deck group, with product `1` in the given
+order. -/
+def GeomRETCompleteness {r : ℕ} (t : Fin r → k) : Prop :=
+  ∀ L : LineCover, L.IsUnramifiedOutside (Set.range t) →
+    L.IsUnramifiedAtInfinity → ∃ g : Fin r → L.deck, L.IsBranchCycleGenSystem t g
+
+/-- **Covers of the line with branch locus in `{t₀,…,t_{r-1}}` are the finite quotients of the
+sphere group**, in the two directions in which the correspondence is used. -/
 structure GeomRET {r : ℕ} (t : Fin r → k) : Prop where
   /-- a generating product-one tuple in a finite group is the monodromy of a cover branched over
   the given points. -/
-  exists_cover : ∀ {H : Type} [Group H] [Finite H] (h : Fin r → H),
-      (List.ofFn h).prod = 1 → Subgroup.closure (Set.range h) = ⊤ →
-      ∃ (L : LineCover) (e : L.deck ≃* H),
-        L.IsUnramifiedOutside (Set.range t) ∧ L.IsUnramifiedAtInfinity ∧
-        ∀ i, L.IsInertiaGenAt (t i) (e.symm (h i))
+  exists_cover : GeomRETExistence t
   /-- a cover branched only over the given points and infinity has a system of branch cycles over
   those points. -/
-  exists_cycles : ∀ L : LineCover, L.IsUnramifiedOutside (Set.range t) →
-      L.IsUnramifiedAtInfinity → ∃ g : Fin r → L.deck, L.IsBranchCycleGenSystem t g
+  exists_cycles : GeomRETCompleteness t
 
 /-- **The Riemann Existence Theorem for the line over `ℚ̄`.**
 
