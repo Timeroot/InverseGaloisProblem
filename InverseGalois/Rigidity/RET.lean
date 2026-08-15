@@ -50,6 +50,8 @@ import InverseGalois.Rigidity.RET.Pi1.Topological.PunctureProd
 import InverseGalois.Rigidity.RET.Pi1.Topological.Rectangle
 import InverseGalois.Rigidity.RET.Pi1.Topological.BoxCut
 import InverseGalois.Rigidity.RET.Pi1.Topological.RectCut
+import InverseGalois.Rigidity.RET.Pi1.Topological.RectSpider
+import InverseGalois.Rigidity.RET.Pi1.Topological.RectInduction
 import InverseGalois.Rigidity.RET.Pi1.Topological.RegionVanKampen
 import InverseGalois.Rigidity.RET.Pi1.Topological.Spider
 import InverseGalois.Rigidity.RET.Pi1.Topological.GroupLoop
