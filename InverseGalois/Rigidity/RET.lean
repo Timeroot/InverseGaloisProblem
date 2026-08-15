@@ -22,6 +22,7 @@ import InverseGalois.Rigidity.RET.Pi1.Etale.Connected
 import InverseGalois.Rigidity.RET.Pi1.Etale.AbsoluteGalois
 import InverseGalois.Rigidity.RET.Pi1.Etale.Equivalence
 import InverseGalois.Rigidity.RET.Pi1.Topological.Monodromy
+import InverseGalois.Rigidity.RET.Pi1.Topological.MonodromyPath
 import InverseGalois.Rigidity.RET.Pi1.Topological.QuotientPi1
 import InverseGalois.Rigidity.RET.Pi1.Topological.Transport
 import InverseGalois.Rigidity.RET.Pi1.Topological.CircleGroup
@@ -229,7 +230,19 @@ import InverseGalois.Rigidity.RET.Analytic.GaloisCycles
 import InverseGalois.Rigidity.RET.Analytic.LocalCycles
 import InverseGalois.Rigidity.RET.Analytic.Presentation
 import InverseGalois.Rigidity.RET.Analytic.GaloisLocalCycles
+import InverseGalois.Rigidity.RET.Local.PowerSeriesPlace
+import InverseGalois.Rigidity.RET.Local.PuiseuxRoot
+import InverseGalois.Rigidity.RET.Local.TaylorSeries
+import InverseGalois.Rigidity.RET.Local.PuiseuxAnalytic
 import InverseGalois.Rigidity.RET.Analytic.Pullback
+import InverseGalois.Rigidity.RET.Pi1.Topological.PowerBase
+import InverseGalois.Rigidity.RET.Pi1.Topological.PowerDisc
+import InverseGalois.Rigidity.RET.Pi1.Topological.Lifting
+import InverseGalois.Rigidity.RET.Analytic.KummerSection
+import InverseGalois.Rigidity.RET.Local.KummerGerm
+import InverseGalois.Rigidity.RET.Local.PuiseuxAssembly
+import InverseGalois.Rigidity.RET.Local.KummerBranch
+import InverseGalois.Rigidity.RET.Local.DiscMonodromy
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
