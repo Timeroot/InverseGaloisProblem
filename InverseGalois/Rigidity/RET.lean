@@ -257,6 +257,7 @@ import InverseGalois.Rigidity.RET.Local.BranchGeneration
 import InverseGalois.Rigidity.RET.Local.BranchElement
 import InverseGalois.Rigidity.RET.GeometricBaseChange
 import InverseGalois.Rigidity.RET.Local.InertiaGeneration
+import InverseGalois.Rigidity.RET.BranchCycleReduce
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
