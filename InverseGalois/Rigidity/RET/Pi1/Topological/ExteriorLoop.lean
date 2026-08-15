@@ -25,15 +25,15 @@ reparametrisation.  Since the latter generates, so does the former.
   punctured disc.
 * `Rigidity.RET.extLoop` — the loop of an exterior region running once around the point at infinity
   through a given point.
-* `Rigidity.RET.IsInfinityLoop` — a loop of a region of the plane winds once around the point at
-  infinity.
+* `Rigidity.RET.IsSupportedAtInfinity` — a loop of a region of the plane comes from a loop of an
+  exterior region.
 
 ## Main results
 
 * `Rigidity.RET.zpowers_extLoop_eq_top` — the loop at infinity generates the fundamental group of an
   exterior region.
-* `Rigidity.RET.exists_isInfinityLoop` — a region of the plane containing an exterior region carries
-  a loop around the point at infinity, at any basepoint.
+* `Rigidity.RET.isSupportedAtInfinity_extLoop` — the loop at infinity is supported at the point at
+  infinity, at any basepoint.
 -/
 
 open Topology unitInterval
@@ -152,30 +152,39 @@ def extIncl {X : Set ℂ} {R : ℝ} (h : extRegion R ⊆ X) : C(↥(extRegion R)
 @[simp] theorem coe_extIncl {X : Set ℂ} {R : ℝ} (h : extRegion R ⊆ X) (z : ↥(extRegion R)) :
     ((extIncl h z : ↥X) : ℂ) = (z : ℂ) := rfl
 
-/-- A loop of a region `X` of the plane **winds once around the point at infinity** when it is
-obtained, by transport along a path back to the basepoint, from a generator of the fundamental group
-of an exterior region contained in `X`. -/
-def IsInfinityLoop (X : Set ℂ) {z₀ : ℂ} (hz₀ : z₀ ∈ X)
+/-- A loop of a region `X` of the plane is **supported at the point at infinity** when it is
+obtained, by transport along a path back to the basepoint, from a loop of an exterior region
+contained in `X`. -/
+def IsSupportedAtInfinity (X : Set ℂ) {z₀ : ℂ} (hz₀ : z₀ ∈ X)
     (γ : FundamentalGroup ↥X ⟨z₀, hz₀⟩) : Prop :=
   ∃ (R : ℝ) (h : extRegion R ⊆ X) (b : ↥(extRegion R))
     (g : FundamentalGroup ↥(extRegion R) b)
     (δ : Path (extIncl h b) (⟨z₀, hz₀⟩ : ↥X)),
-    0 < R ∧ Subgroup.zpowers g = ⊤ ∧
+    0 < R ∧
       γ = FundamentalGroup.fundamentalGroupMulEquivOfPath δ (FundamentalGroup.map (extIncl h) b g)
+
+/-- The inverse of a loop supported at the point at infinity is supported there too. -/
+theorem IsSupportedAtInfinity.inv {X : Set ℂ} {z₀ : ℂ} {hz₀ : z₀ ∈ X}
+    {γ : FundamentalGroup ↥X ⟨z₀, hz₀⟩} (h : IsSupportedAtInfinity X hz₀ γ) :
+    IsSupportedAtInfinity X hz₀ γ⁻¹ := by
+  obtain ⟨R, hsub, b, g, δ, hR, rfl⟩ := h
+  exact ⟨R, hsub, b, g⁻¹, δ, hR, by rw [map_inv, map_inv]⟩
 
 /-- An exterior region has a distinguished basepoint. -/
 theorem two_mul_mem_extRegion {R : ℝ} (hR : 0 < R) : ((2 * R : ℝ) : ℂ) ∈ extRegion R := by
   rw [mem_extRegion, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by linarith)]
   linarith
 
-/-- **The point at infinity carries a loop.**  An exterior region inside a path connected region `X`
-gives a loop of `X` at any basepoint winding once around the point at infinity. -/
-theorem exists_isInfinityLoop {X : Set ℂ} [PathConnectedSpace ↥X] {R : ℝ} (hR : 0 < R)
-    (hsub : extRegion R ⊆ X) {z₀ : ℂ} (hz₀ : z₀ ∈ X) :
-    ∃ γ : FundamentalGroup ↥X ⟨z₀, hz₀⟩, IsInfinityLoop X hz₀ γ := by
-  set b : ↥(extRegion R) := ⟨((2 * R : ℝ) : ℂ), two_mul_mem_extRegion hR⟩ with hbdef
-  exact ⟨_, R, hsub, b, FundamentalGroup.fromPath (Path.Homotopic.Quotient.mk (extLoop b)),
-    PathConnectedSpace.somePath (extIncl hsub b) ⟨z₀, hz₀⟩, hR, zpowers_extLoop_eq_top hR b, rfl⟩
+/-- **The loop at infinity is supported at the point at infinity**, at any basepoint of a region
+containing an exterior region and joined to it by a path. -/
+theorem isSupportedAtInfinity_extLoop {X : Set ℂ} {R : ℝ} (hR : 0 < R)
+    (hsub : extRegion R ⊆ X) (b : ↥(extRegion R)) {z₀ : ℂ} (hz₀ : z₀ ∈ X)
+    (δ : Path (extIncl hsub b) (⟨z₀, hz₀⟩ : ↥X)) :
+    IsSupportedAtInfinity X hz₀
+      (FundamentalGroup.fundamentalGroupMulEquivOfPath δ
+        (FundamentalGroup.map (extIncl hsub) b
+          (FundamentalGroup.fromPath (Path.Homotopic.Quotient.mk (extLoop b))))) :=
+  ⟨R, hsub, b, _, δ, hR, rfl⟩
 
 end Rigidity.RET
 

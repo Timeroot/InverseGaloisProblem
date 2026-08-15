@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Mathlib
 import InverseGalois.Rigidity.RET.BranchCycleReduce
 import InverseGalois.Rigidity.RET.Local.InertiaGeneration
+import InverseGalois.Rigidity.RET.Local.InfinityElement
 import InverseGalois.Rigidity.RET.Pi1.Topological.PlaneSpider
 
 /-!
@@ -18,18 +19,22 @@ plane — records both: the names come in the order of the punctures, and their 
 extended by the name of the last loop, is the identity.
 
 The last name is the one attached to the point at infinity.  It is the only entry of the list
-which is not localized at a point of the line, and the only obstruction between what is proved
-here and a system of branch cycles over a prescribed tuple of points: once that entry is known to
-be trivial, the list may be reordered and cut down to the prescribed tuple by the Hurwitz moves of
-`RET/BranchCycleReduce.lean`.
+which is not localized at a point of the line, and on a cover unramified at infinity it is
+trivial: the last loop of the spider is supported at the point at infinity, and a loop supported
+there names the identity.  The list may then be reordered and cut down to the prescribed tuple by
+the Hurwitz moves of `RET/BranchCycleReduce.lean`, which is exactly the completeness direction of
+the Riemann Existence Theorem for the line.
 
 ## Main results
 
 * `Rigidity.RET.LineCover.exists_isInertiaGenAt_prodOne` — over a finite set of points containing
   the prescribed ones there is a list of distinguished inertia elements, one above each point and
-  one further entry, generating the deck group and with ordered product the identity.
+  one further entry, generating the deck group, with ordered product the identity, and with the
+  last entry trivial.
 * `Rigidity.RET.LineCover.exists_isBranchCycleGenSystem_of_last_eq_one` — such a list whose last
   entry is trivial cuts down to a system of branch cycles over the prescribed points.
+* `Rigidity.RET.geomRETCompleteness_of_injective` — every cover of the line branched only over a
+  prescribed tuple of distinct points and infinity carries a system of branch cycles there.
 -/
 
 open Polynomial GeomAKLB
@@ -49,12 +54,15 @@ The set of points is the set of exceptional parameters of an equation of the cov
 the prescribed points; each of them carries a distinguished inertia element above it, namely the
 name of the loop of the spider winding around it.  The names generate the deck group, and the
 ordered list of them, with the name of the last loop of the spider appended, has product the
-identity. -/
-theorem exists_isInertiaGenAt_prodOne (L : LineCover) [Algebra k ℂ] {r : ℕ} (t : Fin r → k) :
+identity.  That last name is the identity, because the last loop of the spider is supported at the
+point at infinity, where the cover is unramified. -/
+theorem exists_isInertiaGenAt_prodOne (L : LineCover) [Algebra k ℂ]
+    (hinf : L.IsUnramifiedAtInfinity) {r : ℕ} (t : Fin r → k) :
     ∃ (m : ℕ) (v : Fin m → k) (g : Fin (m + 1) → L.deck),
       Function.Injective v ∧ Set.range t ⊆ Set.range v ∧
         (∀ i : Fin m, L.IsInertiaGenAt (v i) (g i.castSucc)) ∧
-          (List.ofFn g).prod = 1 ∧ Subgroup.closure (Set.range g) = ⊤ := by
+          (List.ofFn g).prod = 1 ∧ Subgroup.closure (Set.range g) = ⊤ ∧
+            g (Fin.last m) = 1 := by
   classical
   obtain ⟨α, hα, hgen, ⟨D⟩⟩ := L.exists_deckData
   set S : Finset ℂ := D.badSetC ∪ Finset.image (fun i => algebraMap k ℂ (t i)) Finset.univ
@@ -82,7 +90,7 @@ theorem exists_isInertiaGenAt_prodOne (L : LineCover) [Algebra k ℂ] {r : ℕ} 
     (D.toIntegralDeck.toRationalDeck).mono hbadS with hRDdef
   set Φ := RD.deckCycle (monic_complexEquation hα) hS hz₀' hcard e₀ with hΦdef
   -- the spider
-  obtain ⟨m, pt, γ, hinj, hrange, hloop, hprod, htop⟩ :=
+  obtain ⟨m, pt, γ, hinj, hrange, hloop, hprod, htop, hinfγ⟩ :=
     exists_punctureLoops_prodOne_compl S.finite_toSet (z₀ := z₀) hz₀'
   -- every exceptional parameter comes from the constant field
   have hfromk : ∀ z ∈ (S : Set ℂ), ∃ s₀ : k, algebraMap k ℂ s₀ = z := by
@@ -102,7 +110,8 @@ theorem exists_isInertiaGenAt_prodOne (L : LineCover) [Algebra k ℂ] {r : ℕ} 
   have hchoice : ∀ i : Fin m, ∃ s₀ : k, algebraMap k ℂ s₀ = pt i := fun i =>
     hfromk (pt i) (hrange ▸ Set.mem_range_self i)
   choose v hv using hchoice
-  refine ⟨m, v, fun i => Φ (γ i), fun i j hij => hinj (by rw [← hv i, ← hv j, hij]), ?_, ?_, ?_, ?_⟩
+  refine ⟨m, v, fun i => Φ (γ i), fun i j hij => hinj (by rw [← hv i, ← hv j, hij]),
+    ?_, ?_, ?_, ?_, ?_⟩
   · -- the prescribed points are among the punctures
     rintro x ⟨i, rfl⟩
     have hmem : algebraMap k ℂ (t i) ∈ Set.range pt := by rw [hrange]; exact htS i
@@ -121,6 +130,8 @@ theorem exists_isInertiaGenAt_prodOne (L : LineCover) [Algebra k ℂ] {r : ℕ} 
     rw [Set.range_comp' Φ γ, ← MonoidHom.map_closure, htop, ← MonoidHom.range_eq_map,
       MonoidHom.range_eq_top]
     exact RD.surjective_deckCycle (monic_complexEquation hα) hdeg hirr hS hz₀' hcard e₀
+  · -- the last name is that of a loop supported at the point at infinity
+    exact L.deckCycle_eq_one_of_isSupportedAtInfinity D hα hgen hbadS hS hinf hz₀' e₀ hinfγ
 
 /-! ### Cutting the list down to the prescribed points -/
 
@@ -150,6 +161,23 @@ theorem exists_isBranchCycleGenSystem_of_last_eq_one (L : LineCover) {r m : ℕ}
     exact hp
 
 end LineCover
+
+/-! ### The completeness direction of the Riemann Existence Theorem -/
+
+/-- **A cover of the line branched only over a prescribed tuple of distinct points and infinity
+carries a system of branch cycles over that tuple.**
+
+The names of the loops of a spider drawn around a finite set of points containing the prescribed
+ones are distinguished inertia elements which generate the deck group and whose ordered product,
+extended by the name of the loop at infinity, is trivial; unramifiedness at infinity makes that
+last name trivial, and the Hurwitz moves then reorder the list and cut it down to the prescribed
+points. -/
+theorem geomRETCompleteness_of_injective {r : ℕ} {t : Fin r → k} (ht : Function.Injective t) :
+    GeomRETCompleteness t := by
+  letI : Algebra k ℂ := (IsAlgClosed.lift (R := ℚ) (S := k) (M := ℂ)).toRingHom.toAlgebra
+  intro L hunr hinf
+  obtain ⟨m, v, g, hv, hsub, hin, hprod, htop, hlast⟩ := L.exists_isInertiaGenAt_prodOne hinf t
+  exact L.exists_isBranchCycleGenSystem_of_last_eq_one hv ht hsub hunr hin hprod htop hlast
 
 end Rigidity.RET
 

@@ -47,12 +47,10 @@ of deck groups.
 
 ## Main results
 
-* `Rigidity.RET.geomRET` — the correspondence holds for any injective tuple of points.
+* `Rigidity.RET.geomRETExistence_of_injective` — the existence direction holds for any injective
+  tuple of points.
 * `Rigidity.RET.lineCover_exists_of_branchCycles` — the existence direction, packaged as a system
   of branch cycles.
-* `Rigidity.RET.exists_branchCycleSystem` — the completeness direction.
-* `Rigidity.RET.exists_branchCycleGenSystem` — the completeness direction with the branch cycles
-  generating the local inertia groups.
 -/
 
 open Polynomial
@@ -104,13 +102,12 @@ structure GeomRET {r : ℕ} (t : Fin r → k) : Prop where
   those points. -/
   exists_cycles : GeomRETCompleteness t
 
-/-- **The Riemann Existence Theorem for the line over `ℚ̄`.**
+/-- **The existence direction of the Riemann Existence Theorem for the line over `ℚ̄`.**
 
-For `r` distinct points of the line, covers of the line unramified outside those points and
-infinity correspond to finite quotients of the fundamental group of the `r`-punctured sphere, the
-sphere group `Γ_r = ⟨x₀,…,x_{r-1} | x₀⋯x_{r-1} = 1⟩`: a generating product-one tuple in a finite
-group `H` is the tuple of branch cycles of a cover with deck group `H`, and every cover with that
-branch locus has such a tuple of branch cycles.
+For `r` distinct points of the line, a generating product-one tuple in a finite group `H` — the
+same thing as a surjection of the fundamental group of the `r`-punctured sphere, the sphere group
+`Γ_r = ⟨x₀,…,x_{r-1} | x₀⋯x_{r-1} = 1⟩`, onto `H` — is the tuple of branch cycles of a cover of
+the line with deck group `H`, unramified outside the given points and infinity.
 
 The two hypotheses on the tuple are not decoration: they are exactly the two relations that hold
 among the loops on the punctured sphere — the loops generate, because the cover is connected, and
@@ -122,7 +119,8 @@ topological cover of a punctured Riemann surface, tame at the punctures, is the 
 an algebraic one; the constant field `ℚ̄` is reached from `ℂ` by the Lefschetz principle.  See
 Grothendieck, *SGA 1*, Exp. XIII; Völklein, *Groups as Galois Groups*, Thm 2.13 and §4; Serre,
 *Topics in Galois Theory*, §6. -/
-theorem geomRET {r : ℕ} (t : Fin r → k) (ht : Function.Injective t) : GeomRET t :=
+theorem geomRETExistence_of_injective {r : ℕ} (t : Fin r → k) (ht : Function.Injective t) :
+    GeomRETExistence t :=
   sorry
 
 /-- **Prescribed branch cycles are realized by a cover of the line.**
@@ -135,21 +133,8 @@ theorem lineCover_exists_of_branchCycles {r : ℕ} (t : Fin r → k) (ht : Funct
     {H : Type} [Group H] [Finite H] (h : Fin r → H)
     (hprod : (List.ofFn h).prod = 1) (htop : Subgroup.closure (Set.range h) = ⊤) :
     ∃ (L : LineCover) (e : L.deck ≃* H), ∀ i, L.IsInertiaAt (t i) (e.symm (h i)) := by
-  obtain ⟨L, e, -, -, hin⟩ := (geomRET t ht).exists_cover h hprod htop
+  obtain ⟨L, e, -, -, hin⟩ := geomRETExistence_of_injective t ht h hprod htop
   exact ⟨L, e, fun i => (hin i).isInertiaAt⟩
-
-/-- **A cover branched only over the given points has branch cycles there.** -/
-theorem exists_branchCycleSystem {r : ℕ} (t : Fin r → k) (ht : Function.Injective t)
-    (L : LineCover) (hS : L.IsUnramifiedOutside (Set.range t)) (hinf : L.IsUnramifiedAtInfinity) :
-    ∃ g : Fin r → L.deck, L.IsBranchCycleSystem t g :=
-  ((geomRET t ht).exists_cycles L hS hinf).imp fun _ h => h.toIsBranchCycleSystem
-
-/-- **A cover branched only over the given points has distinguished branch cycles there**: the
-branch cycles can be taken to *generate* the local inertia groups, not merely to lie in them. -/
-theorem exists_branchCycleGenSystem {r : ℕ} (t : Fin r → k) (ht : Function.Injective t)
-    (L : LineCover) (hS : L.IsUnramifiedOutside (Set.range t)) (hinf : L.IsUnramifiedAtInfinity) :
-    ∃ g : Fin r → L.deck, L.IsBranchCycleGenSystem t g :=
-  (geomRET t ht).exists_cycles L hS hinf
 
 /-! ## Two transport lemmas for tuples along a group isomorphism -/
 
@@ -183,7 +168,7 @@ theorem exists_lineCover_isBranchCycleSystem {r : ℕ} (t : Fin r → k) (ht : F
     {H : Type} [Group H] [Finite H] (h : Fin r → H)
     (hprod : (List.ofFn h).prod = 1) (htop : Subgroup.closure (Set.range h) = ⊤) :
     ∃ (L : LineCover) (e : L.deck ≃* H), L.IsBranchCycleGenSystem t (fun i => e.symm (h i)) := by
-  obtain ⟨L, e, -, -, hin⟩ := (geomRET t ht).exists_cover h hprod htop
+  obtain ⟨L, e, -, -, hin⟩ := geomRETExistence_of_injective t ht h hprod htop
   exact ⟨L, e, ⟨hin, closure_range_symm_eq_top e htop, prod_ofFn_symm_eq_one e hprod⟩⟩
 
 end Rigidity.RET

@@ -295,6 +295,7 @@ import InverseGalois.Rigidity.RET.Analytic.InfinityPuiseux
 import InverseGalois.Rigidity.RET.Pi1.Topological.ExteriorLoop
 import InverseGalois.Rigidity.RET.Analytic.InfinityBranch
 import InverseGalois.Rigidity.RET.Local.InfinityElement
+import InverseGalois.Rigidity.RET.Completeness
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut

@@ -3,6 +3,7 @@ Copyright (c) 2025. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.Rigidity.RET.Pi1.Topological.Exterior
 import InverseGalois.Rigidity.RET.Pi1.Topological.RectSpider
 
 /-!
@@ -31,10 +32,11 @@ without any general-position argument about lines through two punctures.
 * `Rigidity.RET.rectSpider_of_ncard_le` — the induction on the number of punctures.
 * `Rigidity.RET.rectSpider_of_finite` — its unconditional form.
 * `Rigidity.RET.exists_rect_interior` — a finite set of punctures sits in the interior of some
-  rectangle.
+  rectangle, whose sides run outside a disc containing the punctures.
 * `Rigidity.RET.exists_rectSpider_compl` — for a finite set of punctures there is a rectangle whose
   boundary loop, read in the complement of the punctures, is an ordered product of loops winding
-  once around each of them which together generate every loop of the complement.
+  once around each of them which together generate every loop of the complement, and which runs
+  entirely in the exterior of a disc containing the punctures.
 -/
 
 open scoped unitInterval
@@ -44,24 +46,50 @@ noncomputable section
 
 namespace Rigidity.RET
 
-/-- A finite set of points lies in the interior of some axis-parallel rectangle. -/
+/-! ### Sides of a rectangle far from the origin -/
+
+/-- A horizontal segment at a height of large absolute value lies outside a disc. -/
+theorem seg_horiz_subset_extRegion {R y : ℝ} {a b : ℂ} (ha : a.im = y) (hb : b.im = y)
+    (hy : R < |y|) : seg a b ⊆ extRegion R := by
+  intro z hz
+  rw [mem_extRegion]
+  refine hy.trans_le ?_
+  rw [← im_of_mem_seg ha hb hz]
+  exact Complex.abs_im_le_norm z
+
+/-- A vertical segment at an abscissa of large absolute value lies outside a disc. -/
+theorem seg_vert_subset_extRegion {R x : ℝ} {a b : ℂ} (ha : a.re = x) (hb : b.re = x)
+    (hx : R < |x|) : seg a b ⊆ extRegion R := by
+  intro z hz
+  rw [mem_extRegion]
+  refine hx.trans_le ?_
+  rw [← re_of_mem_seg ha hb hz]
+  exact Complex.abs_re_le_norm z
+
+/-- A finite set of points lies in the interior of some axis-parallel rectangle whose four sides
+run outside a disc that already contains the whole set. -/
 theorem exists_rect_interior {S : Set ℂ} (hSfin : S.Finite) :
-    ∃ x₀ x₁ y₀ y₁ : ℝ, x₀ ≤ x₁ ∧ y₀ ≤ y₁ ∧
+    ∃ x₀ x₁ y₀ y₁ R : ℝ, x₀ ≤ x₁ ∧ y₀ ≤ y₁ ∧ 0 < R ∧
+      R < -x₀ ∧ R < x₁ ∧ R < -y₀ ∧ R < y₁ ∧ (∀ t ∈ S, ‖t‖ < R) ∧
       ∀ t ∈ S, x₀ < t.re ∧ t.re < x₁ ∧ y₀ < t.im ∧ t.im < y₁ := by
   obtain ⟨M, hM⟩ := (hSfin.image (fun t : ℂ => ‖t‖)).bddAbove
   set N : ℝ := max M 0 + 1 with hN
-  have hN0 : (0 : ℝ) < N := by
-    have : (0 : ℝ) ≤ max M 0 := le_max_right _ _
-    linarith
-  refine ⟨-N, N, -N, N, by linarith, by linarith, fun t ht => ?_⟩
-  have h1 : ‖t‖ ≤ M := hM ⟨t, ht, rfl⟩
-  have h2 : ‖t‖ < N := by
+  have hMN : M ≤ N - 1 := by
     have : M ≤ max M 0 := le_max_left _ _
     linarith
-  have h3 : |t.re| < N := lt_of_le_of_lt (Complex.abs_re_le_norm t) h2
-  have h4 : |t.im| < N := lt_of_le_of_lt (Complex.abs_im_le_norm t) h2
-  rw [abs_lt] at h3 h4
-  exact ⟨h3.1, h3.2, h4.1, h4.2⟩
+  have hN1 : (1 : ℝ) ≤ N := by
+    have : (0 : ℝ) ≤ max M 0 := le_max_right _ _
+    linarith
+  refine ⟨-N, N, -N, N, N - 1 / 2, by linarith, by linarith, by linarith, by linarith, by linarith,
+    by linarith, by linarith, fun t ht => ?_, fun t ht => ?_⟩
+  · have h1 : ‖t‖ ≤ M := hM ⟨t, ht, rfl⟩
+    linarith
+  · have h1 : ‖t‖ ≤ M := hM ⟨t, ht, rfl⟩
+    have h2 : ‖t‖ < N := by linarith
+    have h3 : |t.re| < N := lt_of_le_of_lt (Complex.abs_re_le_norm t) h2
+    have h4 : |t.im| < N := lt_of_le_of_lt (Complex.abs_im_le_norm t) h2
+    rw [abs_lt] at h3 h4
+    exact ⟨h3.1, h3.2, h4.1, h4.2⟩
 
 /-- **The boundary loop of a rectangle is an ordered product of loops around the punctures it
 contains, generating the loops of its frame**, by induction on their number. -/
@@ -354,12 +382,32 @@ theorem rectSpider_of_finite {X S V : Set ℂ} (hSfin : S.Finite) {x₀ x₁ y�
 of loops winding once around each puncture, and those loops generate the whole fundamental group
 of the complement of the punctures.** -/
 theorem exists_rectSpider_compl {S : Set ℂ} (hSfin : S.Finite) :
-    ∃ (x₀ x₁ y₀ y₁ : ℝ) (hab : seg (cpt x₀ y₀) (cpt x₁ y₀) ⊆ Sᶜ)
+    ∃ (x₀ x₁ y₀ y₁ R : ℝ) (hab : seg (cpt x₀ y₀) (cpt x₁ y₀) ⊆ Sᶜ)
       (hbc : seg (cpt x₁ y₀) (cpt x₁ y₁) ⊆ Sᶜ) (hcd : seg (cpt x₁ y₁) (cpt x₀ y₁) ⊆ Sᶜ)
       (hda : seg (cpt x₀ y₁) (cpt x₀ y₀) ⊆ Sᶜ),
-      IsPunctureProd Sᶜ S (hab (left_mem_seg _ _))
-        (FundamentalGroup.fromPath (boxLoop hab hbc hcd hda)) ⊤ := by
-  obtain ⟨x₀, x₁, y₀, y₁, hx, hy, hint⟩ := exists_rect_interior hSfin
+      0 < R ∧ extRegion R ⊆ Sᶜ ∧
+        seg (cpt x₀ y₀) (cpt x₁ y₀) ⊆ extRegion R ∧
+        seg (cpt x₁ y₀) (cpt x₁ y₁) ⊆ extRegion R ∧
+        seg (cpt x₁ y₁) (cpt x₀ y₁) ⊆ extRegion R ∧
+        seg (cpt x₀ y₁) (cpt x₀ y₀) ⊆ extRegion R ∧
+        IsPunctureProd Sᶜ S (hab (left_mem_seg _ _))
+          (FundamentalGroup.fromPath (boxLoop hab hbc hcd hda)) ⊤ := by
+  obtain ⟨x₀, x₁, y₀, y₁, R, hx, hy, hR0, hRx0, hRx1, hRy0, hRy1, hRnorm, hint⟩ :=
+    exists_rect_interior hSfin
+  have hext : extRegion R ⊆ Sᶜ := fun z hz hzS =>
+    absurd (mem_extRegion.mp hz) (not_lt.2 (hRnorm z hzS).le)
+  have hax0 : R < |x₀| := hRx0.trans_le (neg_le_abs x₀)
+  have hax1 : R < |x₁| := hRx1.trans_le (le_abs_self x₁)
+  have hay0 : R < |y₀| := hRy0.trans_le (neg_le_abs y₀)
+  have hay1 : R < |y₁| := hRy1.trans_le (le_abs_self y₁)
+  have eab : seg (cpt x₀ y₀) (cpt x₁ y₀) ⊆ extRegion R :=
+    seg_horiz_subset_extRegion (cpt_im x₀ y₀) (cpt_im x₁ y₀) hay0
+  have ebc : seg (cpt x₁ y₀) (cpt x₁ y₁) ⊆ extRegion R :=
+    seg_vert_subset_extRegion (cpt_re x₁ y₀) (cpt_re x₁ y₁) hax1
+  have ecd : seg (cpt x₁ y₁) (cpt x₀ y₁) ⊆ extRegion R :=
+    seg_horiz_subset_extRegion (cpt_im x₁ y₁) (cpt_im x₀ y₁) hay1
+  have eda : seg (cpt x₀ y₁) (cpt x₀ y₀) ⊆ extRegion R :=
+    seg_vert_subset_extRegion (cpt_re x₀ y₁) (cpt_re x₀ y₀) hax0
   have hSsub : S ⊆ rect x₀ x₁ y₀ y₁ := fun t ht =>
     ⟨(hint t ht).1.le, (hint t ht).2.1.le, (hint t ht).2.2.1.le, (hint t ht).2.2.2.le⟩
   have hgen : ∀ t ∈ S, t ∈ rect x₀ x₁ y₀ y₁ →
@@ -384,7 +432,8 @@ theorem exists_rectSpider_compl {S : Set ℂ} (hSfin : S.Finite) :
     (seg_horiz_subset_diff ⟨hx, le_rfl⟩ ⟨le_rfl, hx⟩ ⟨hy, le_rfl⟩ avy1).trans hdc
   have sda : seg (cpt x₀ y₁) (cpt x₀ y₀) ⊆ Set.univ \ S :=
     (seg_vert_subset_diff ⟨hy, le_rfl⟩ ⟨le_rfl, hy⟩ ⟨le_rfl, hx⟩ avx0).trans hdc
-  refine ⟨x₀, x₁, y₀, y₁, sab.trans hVX, sbc.trans hVX, scd.trans hVX, sda.trans hVX, ?_⟩
+  refine ⟨x₀, x₁, y₀, y₁, R, sab.trans hVX, sbc.trans hVX, scd.trans hVX, sda.trans hVX,
+    hR0, hext, eab, ebc, ecd, eda, ?_⟩
   have key := rectSpider_of_finite (X := Sᶜ) hSfin hx hy hfr hgen hVX sab sbc scd sda
   rw [Set.inter_eq_left.mpr hSsub] at key
   exact key.mono (pi1Image_eq_top_of_eq hVX hXU (sab (left_mem_seg _ _))).ge

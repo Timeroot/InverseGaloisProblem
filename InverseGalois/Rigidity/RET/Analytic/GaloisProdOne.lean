@@ -54,7 +54,7 @@ theorem exists_prodOneBranchCycles_of_isGalois (M : Type) [Field M] [Algebra (Ra
                 Subgroup.closure (Set.range fun i => Φ (γ i)) = ⊤ := by
   obtain ⟨P, S, z₀, hz₀, hP, hS, Φ, -, hsurj, -, -⟩ :=
     exists_localizedBranchCycles_of_isGalois M
-  obtain ⟨r, pt, γ, hinj, hrange, hloop, hprod, hgen⟩ :=
+  obtain ⟨r, pt, γ, hinj, hrange, hloop, hprod, hgen, -⟩ :=
     exists_punctureLoops_prodOne_of_surjective S.finite_toSet hz₀ hsurj
   exact ⟨P, S, z₀, hz₀, hP, hS, Φ, r, pt, γ, hsurj, hinj, hrange, hloop, hprod, hgen⟩
 

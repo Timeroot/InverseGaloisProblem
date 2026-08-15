@@ -32,8 +32,8 @@ point of the fibre by right multiplication with the inverse of its name.
 
 * `Rigidity.RET.LineCover.exists_fixed_extCycle` — over a cover unramified at infinity the
   monodromy of the circle at infinity fixes a point of the fibre.
-* `Rigidity.RET.LineCover.deckCycle_eq_one_of_isInfinityLoop` — a loop winding around the point at
-  infinity has trivial name.
+* `Rigidity.RET.LineCover.deckCycle_eq_one_of_isSupportedAtInfinity` — a loop supported at the point
+  at infinity has trivial name.
 -/
 
 open Polynomial Filter Topology GeomAKLB Rigidity.RET.Analytic
@@ -242,10 +242,10 @@ theorem exists_fixed_extLoopMap (L : LineCover) [Algebra k ℂ] {α : L.M}
 
 /-! ### The name of a loop at infinity -/
 
-/-- **A loop winding around the point at infinity of a cover unramified there has trivial name.**
+/-- **A loop supported at the point at infinity of a cover unramified there has trivial name.**
 The monodromy of such a loop fixes a point of the fibre, and the monodromy of a loop moves every
 point of the fibre by right multiplication with the inverse of its name, so the name is trivial. -/
-theorem deckCycle_eq_one_of_isInfinityLoop (L : LineCover) [Algebra k ℂ] {α : L.M}
+theorem deckCycle_eq_one_of_isSupportedAtInfinity (L : LineCover) [Algebra k ℂ] {α : L.M}
     (D : DeckData α) (hα : IsIntegral (Polynomial k) α)
     (hgen : IntermediateField.adjoin (RatFunc k) {α} = ⊤)
     {S : Finset ℂ} (hbadS : (D.badSetC : Set ℂ) ⊆ (S : Set ℂ))
@@ -254,11 +254,11 @@ theorem deckCycle_eq_one_of_isInfinityLoop (L : LineCover) [Algebra k ℂ] {α :
     {z₀ : ℂ} (hz₀ : z₀ ∉ (S : Set ℂ))
     (e₀ : Analytic.puncturedProj (complexEquation α) S ⁻¹' {(⟨z₀, hz₀⟩ : ↥((S : Set ℂ)ᶜ))})
     {γ : FundamentalGroup ↥((S : Set ℂ)ᶜ) ⟨z₀, hz₀⟩}
-    (hγ : IsInfinityLoop ((S : Set ℂ)ᶜ) hz₀ γ) :
+    (hγ : IsSupportedAtInfinity ((S : Set ℂ)ᶜ) hz₀ γ) :
     ((D.toIntegralDeck.toRationalDeck).mono hbadS).deckCycle (monic_complexEquation hα) hS hz₀
       (L.card_deck_eq_natDegree_complexEquation hα hgen) e₀ γ = 1 := by
   classical
-  obtain ⟨R, hincl, b, g, δ, hR, -, hγeq⟩ := hγ
+  obtain ⟨R, hincl, b, g, δ, hR, hγeq⟩ := hγ
   set cov := Analytic.isCoveringMap_puncturedProj (monic_complexEquation hα) hS with hcovdef
   set RD : Analytic.RationalDeck (complexEquation α) S L.deck :=
     (D.toIntegralDeck.toRationalDeck).mono hbadS with hRDdef

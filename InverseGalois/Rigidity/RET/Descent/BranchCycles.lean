@@ -3,6 +3,7 @@ Copyright (c) 2025. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.Rigidity.RET.Completeness
 import InverseGalois.Rigidity.RET.Descent.CompositumBranch
 import InverseGalois.Rigidity.RET.Descent.Matching
 import InverseGalois.Rigidity.RET.GeomRET
