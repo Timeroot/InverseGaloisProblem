@@ -223,6 +223,7 @@ import InverseGalois.Rigidity.RET.Analytic.RootFiber
 import InverseGalois.Rigidity.RET.Analytic.RootMonodromy
 import InverseGalois.Rigidity.RET.Analytic.RootSection
 import InverseGalois.Rigidity.RET.Analytic.RootBound
+import InverseGalois.Rigidity.RET.Analytic.RootComp
 import InverseGalois.Rigidity.RET.Analytic.Growth
 import InverseGalois.Rigidity.RET.Analytic.Extension
 import InverseGalois.Rigidity.RET.Analytic.Coeff
@@ -284,6 +285,8 @@ import InverseGalois.Rigidity.RET.Analytic.GermPlace
 import InverseGalois.Rigidity.RET.Analytic.GermRamification
 import InverseGalois.Rigidity.RET.Analytic.GermRoot
 import InverseGalois.Rigidity.RET.Analytic.GermScale
+import InverseGalois.Rigidity.RET.Analytic.InfinityGerm
+import InverseGalois.Rigidity.RET.Analytic.InfinityRoot
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
