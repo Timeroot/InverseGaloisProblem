@@ -19,6 +19,8 @@ branch of an algebraic equation and a place of the algebraic model.
 
 * `Rigidity.RET.Analytic.exists_ringHom_of_root` — a germ satisfying the equation of a generator
   extends the Kummer substitution to the whole extension.
+* `Rigidity.RET.Analytic.ringHom_ext_of_gen` — the extension is unique: a ring map out of a simple
+  extension is determined by the base and the generator.
 -/
 
 open Filter Topology Polynomial
@@ -69,6 +71,18 @@ theorem exists_ringHom_of_root {α : M} {p : Polynomial (RatFunc ℂ)} (hirr : I
       rw [he, AdjoinRoot.liftAlgHom_root]
     rw [← hroot, AlgEquiv.symm_apply_apply]
     exact AdjoinRoot.lift_root hγ
+
+/-- **The extension is unique.**  Two ring maps out of a simple extension that agree on the base
+field and at the generator agree everywhere. -/
+theorem ringHom_ext_of_gen {N : Type*} [CommRing N] {α : M}
+    (hgen : ∀ β : M, ∃ q : Polynomial (RatFunc ℂ), aeval α q = β) {Φ Ψ : M →+* N}
+    (hbase : ∀ c : RatFunc ℂ, Φ (algebraMap (RatFunc ℂ) M c) = Ψ (algebraMap (RatFunc ℂ) M c))
+    (hα : Φ α = Ψ α) : Φ = Ψ := by
+  refine RingHom.ext fun β => ?_
+  obtain ⟨q, rfl⟩ := hgen β
+  rw [aeval_def, Polynomial.hom_eval₂, Polynomial.hom_eval₂, hα,
+    show Φ.comp (algebraMap (RatFunc ℂ) M) = Ψ.comp (algebraMap (RatFunc ℂ) M) from
+      RingHom.ext hbase]
 
 end Rigidity.RET.Analytic
 

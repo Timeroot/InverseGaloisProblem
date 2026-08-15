@@ -278,6 +278,7 @@ import InverseGalois.Rigidity.RET.Analytic.GermKummer
 import InverseGalois.Rigidity.RET.Analytic.GermLift
 import InverseGalois.Rigidity.RET.Analytic.GermPlace
 import InverseGalois.Rigidity.RET.Analytic.GermRoot
+import InverseGalois.Rigidity.RET.Analytic.GermScale
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
