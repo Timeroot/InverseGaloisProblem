@@ -43,6 +43,7 @@ import InverseGalois.Rigidity.RET.Pi1.Topological.CircleLoop
 import InverseGalois.Rigidity.RET.Pi1.Topological.ConvexPunctured
 import InverseGalois.Rigidity.RET.Pi1.Topological.ConvexHomotopy
 import InverseGalois.Rigidity.RET.Pi1.Topological.BoxLoop
+import InverseGalois.Rigidity.RET.Pi1.Topological.SquareLoop
 import InverseGalois.Rigidity.RET.Pi1.Topological.RegionVanKampen
 import InverseGalois.Rigidity.RET.Pi1.Topological.Spider
 import InverseGalois.Rigidity.RET.Pi1.Topological.GroupLoop
