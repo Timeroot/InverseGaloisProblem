@@ -53,6 +53,7 @@ import InverseGalois.Rigidity.RET.Pi1.Topological.RectCut
 import InverseGalois.Rigidity.RET.Pi1.Topological.RectFrame
 import InverseGalois.Rigidity.RET.Pi1.Topological.RectSpider
 import InverseGalois.Rigidity.RET.Pi1.Topological.RectInduction
+import InverseGalois.Rigidity.RET.Pi1.Topological.PlaneSpider
 import InverseGalois.Rigidity.RET.Pi1.Topological.RegionVanKampen
 import InverseGalois.Rigidity.RET.Pi1.Topological.Pi1Image
 import InverseGalois.Rigidity.RET.Pi1.Topological.Spider
@@ -245,6 +246,7 @@ import InverseGalois.Rigidity.RET.Analytic.GaloisCycles
 import InverseGalois.Rigidity.RET.Analytic.LocalCycles
 import InverseGalois.Rigidity.RET.Analytic.Presentation
 import InverseGalois.Rigidity.RET.Analytic.GaloisLocalCycles
+import InverseGalois.Rigidity.RET.Analytic.GaloisProdOne
 import InverseGalois.Rigidity.RET.Local.PowerSeriesPlace
 import InverseGalois.Rigidity.RET.Local.PuiseuxRoot
 import InverseGalois.Rigidity.RET.Local.TaylorSeries
