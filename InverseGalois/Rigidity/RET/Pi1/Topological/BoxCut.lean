@@ -61,8 +61,10 @@ theorem transport_fromPath {x y : Y} (q : Path.Homotopic.Quotient x y)
 /-- A product of puncture loops survives transport along a homotopy class of paths. -/
 theorem IsPunctureProd.transportQ {X T : Set ℂ} {z₀ z₁ : ℂ} {hz₀ : z₀ ∈ X} {hz₁ : z₁ ∈ X}
     (q : Path.Homotopic.Quotient (⟨z₀, hz₀⟩ : ↥X) ⟨z₁, hz₁⟩)
-    {g : FundamentalGroup ↥X ⟨z₀, hz₀⟩} (h : IsPunctureProd X T hz₀ g) :
-    IsPunctureProd X T hz₁ (FundamentalGroup.transport q g) := by
+    {g : FundamentalGroup ↥X ⟨z₀, hz₀⟩} {N : Subgroup (FundamentalGroup ↥X ⟨z₀, hz₀⟩)}
+    (h : IsPunctureProd X T hz₀ g N) :
+    IsPunctureProd X T hz₁ (FundamentalGroup.transport q g)
+      (N.map (FundamentalGroup.transport q).toMonoidHom) := by
   refine Quotient.inductionOn q fun r => ?_
   exact h.transport r
 
@@ -70,11 +72,17 @@ theorem IsPunctureProd.transportQ {X T : Set ℂ} {z₀ z₁ : ℂ} {hz₀ : z�
 theorem IsPunctureProd.conjSeg {X T : Set ℂ} {a p : ℂ} (hap : seg a p ⊆ X)
     (V : Path.Homotopic.Quotient (⟨p, hap (right_mem_seg _ _)⟩ : ↥X)
       ⟨p, hap (right_mem_seg _ _)⟩)
-    (h : IsPunctureProd X T (hap (right_mem_seg _ _)) (FundamentalGroup.fromPath V)) :
+    {N : Subgroup (FundamentalGroup ↥X ⟨p, hap (right_mem_seg _ _)⟩)}
+    (h : IsPunctureProd X T (hap (right_mem_seg _ _)) (FundamentalGroup.fromPath V) N) :
     IsPunctureProd X T (hap (left_mem_seg _ _))
-      (FundamentalGroup.fromPath ((segArrow hap).trans (V.trans (segArrow hap).symm))) := by
+      (FundamentalGroup.fromPath ((segArrow hap).trans (V.trans (segArrow hap).symm)))
+      (N.map (FundamentalGroup.transport (segArrow (seg_subset_symm hap))).toMonoidHom) := by
   have key := h.transportQ (segArrow (seg_subset_symm hap))
-  rw [transport_fromPath, segArrow_symm hap, quotient_symm_symm] at key
+  have hloop : FundamentalGroup.transport (segArrow (seg_subset_symm hap))
+      (FundamentalGroup.fromPath V)
+      = FundamentalGroup.fromPath ((segArrow hap).trans (V.trans (segArrow hap).symm)) := by
+    rw [transport_fromPath, segArrow_symm hap, quotient_symm_symm]
+  rw [hloop] at key
   exact key
 
 /-! ### Rotating and cutting -/
@@ -83,10 +91,12 @@ theorem IsPunctureProd.conjSeg {X T : Set ℂ} {a p : ℂ} (hap : seg a p ⊆ X)
 puncture loops. -/
 theorem isPunctureProd_boxLoop_rotate {X T : Set ℂ} {a b c d : ℂ}
     (hab : seg a b ⊆ X) (hbc : seg b c ⊆ X) (hcd : seg c d ⊆ X) (hda : seg d a ⊆ X)
+    {N : Subgroup (FundamentalGroup ↥X ⟨b, hbc (left_mem_seg _ _)⟩)}
     (h : IsPunctureProd X T (hbc (left_mem_seg _ _))
-      (FundamentalGroup.fromPath (boxLoop hbc hcd hda hab))) :
+      (FundamentalGroup.fromPath (boxLoop hbc hcd hda hab)) N) :
     IsPunctureProd X T (hab (left_mem_seg _ _))
-      (FundamentalGroup.fromPath (boxLoop hab hbc hcd hda)) := by
+      (FundamentalGroup.fromPath (boxLoop hab hbc hcd hda))
+      (N.map (FundamentalGroup.transport (segArrow (seg_subset_symm hab))).toMonoidHom) := by
   rw [boxLoop_rotate]
   exact IsPunctureProd.conjSeg hab _ h
 
@@ -94,10 +104,14 @@ theorem isPunctureProd_boxLoop_rotate {X T : Set ℂ} {a b c d : ℂ}
 of puncture loops. -/
 theorem isPunctureProd_boxLoop_rotate' {X T : Set ℂ} {a b c d : ℂ}
     (hab : seg a b ⊆ X) (hbc : seg b c ⊆ X) (hcd : seg c d ⊆ X) (hda : seg d a ⊆ X)
+    {N : Subgroup (FundamentalGroup ↥X ⟨a, hab (left_mem_seg _ _)⟩)}
     (h : IsPunctureProd X T (hab (left_mem_seg _ _))
-      (FundamentalGroup.fromPath (boxLoop hab hbc hcd hda))) :
+      (FundamentalGroup.fromPath (boxLoop hab hbc hcd hda)) N) :
     IsPunctureProd X T (hbc (left_mem_seg _ _))
-      (FundamentalGroup.fromPath (boxLoop hbc hcd hda hab)) :=
+      (FundamentalGroup.fromPath (boxLoop hbc hcd hda hab))
+      (((N.map (FundamentalGroup.transport (segArrow (seg_subset_symm hda))).toMonoidHom).map
+          (FundamentalGroup.transport (segArrow (seg_subset_symm hcd))).toMonoidHom).map
+        (FundamentalGroup.transport (segArrow (seg_subset_symm hbc))).toMonoidHom) :=
   isPunctureProd_boxLoop_rotate hbc hcd hda hab
     (isPunctureProd_boxLoop_rotate hcd hda hab hbc
       (isPunctureProd_boxLoop_rotate hda hab hbc hcd h))
@@ -107,15 +121,20 @@ halves**, as products of puncture loops around the punctures of each half. -/
 theorem isPunctureProd_boxLoop_cut {X T₁ T₂ : Set ℂ} {a b c d p q : ℂ}
     (hab : seg a b ⊆ X) (hbc : seg b c ⊆ X) (hcd : seg c d ⊆ X) (hda : seg d a ⊆ X)
     (hp : p ∈ seg a b) (hq : q ∈ seg c d) (hpq : seg p q ⊆ X)
+    {N₁ : Subgroup (FundamentalGroup ↥X ⟨a, hab (left_mem_seg _ _)⟩)}
+    {N₂ : Subgroup (FundamentalGroup ↥X ⟨p, ((seg_subset_left hp).trans hab)
+      (right_mem_seg _ _)⟩)}
     (hL : IsPunctureProd X T₁ (((seg_subset_left hp).trans hab) (left_mem_seg _ _))
       (FundamentalGroup.fromPath (boxLoop ((seg_subset_left hp).trans hab) hpq
-          ((seg_subset_right hq).trans hcd) hda)))
+          ((seg_subset_right hq).trans hcd) hda)) N₁)
     (hR : IsPunctureProd X T₂ (((seg_subset_right hp).trans hab) (left_mem_seg _ _))
       (FundamentalGroup.fromPath (boxLoop ((seg_subset_right hp).trans hab) hbc
-          ((seg_subset_left hq).trans hcd) (seg_subset_symm hpq))))
+          ((seg_subset_left hq).trans hcd) (seg_subset_symm hpq))) N₂)
     (hdisj : Disjoint T₁ T₂) :
     IsPunctureProd X (T₁ ∪ T₂) (hab (left_mem_seg _ _))
-      (FundamentalGroup.fromPath (boxLoop hab hbc hcd hda)) := by
+      (FundamentalGroup.fromPath (boxLoop hab hbc hcd hda))
+      (N₁ ⊔ N₂.map (FundamentalGroup.transport
+        (segArrow (seg_subset_symm ((seg_subset_left hp).trans hab)))).toMonoidHom) := by
   have hap : seg a p ⊆ X := (seg_subset_left hp).trans hab
   have hRc := IsPunctureProd.conjSeg hap _ hR
   rw [boxLoop_cut hab hbc hcd hda hp hq hpq, fromPath_trans]
