@@ -29,7 +29,8 @@ trivial forces the same power of the monodromy to be trivial everywhere.
 
 * `Rigidity.RET.LineCover.exists_isInertiaAt_orderOf_discCycle_dvd` — a Kummer coordinate on a
   punctured disc whose exponent annihilates the monodromy of the circle produces an inertia element
-  whose order is a multiple of that monodromy's order.
+  whose order is a multiple of that monodromy's order, and which the monodromy of the circle
+  realizes at a point of the fibre.
 * `Rigidity.RET.LineCover.exists_isInertiaGenAt_of_isLocalMonodromy` — a generator of the inertia
   group at any parameter carrying a local monodromy element.
 -/
@@ -120,7 +121,11 @@ theorem exists_isInertiaAt_orderOf_discCycle_dvd (D : DeckData α)
         (kummerRegionMap (algebraMap k ℂ s) e hmap w) ^ e = 1) :
     ∃ τ : L.deck, L.IsInertiaAt s τ ∧
       orderOf (Analytic.discCycle (monic_complexEquation hα) hS hincl
-        (kummerRegionMap (algebraMap k ℂ s) e hmap w)) ∣ orderOf τ := by
+          (kummerRegionMap (algebraMap k ℂ s) e hmap w)) ∣ orderOf τ ∧
+        ∃ E, Analytic.discCycle (monic_complexEquation hα) hS hincl
+              (kummerRegionMap (algebraMap k ℂ s) e hmap w) E
+            = ((D.toIntegralDeck.toRationalDeck).mono hbadS).orbitFibre
+                (hincl (kummerRegionMap (algebraMap k ℂ s) e hmap w).2) E τ := by
   classical
   set σc : ℂ := algebraMap k ℂ s with hσdef
   set P : Polynomial (Polynomial ℂ) := complexEquation α with hPdef
@@ -149,7 +154,6 @@ theorem exists_isInertiaAt_orderOf_discCycle_dvd (D : DeckData α)
   obtain ⟨τ, hinert, hact⟩ :=
     L.exists_isInertiaAt_of_branch D hα hgen he (norm_kummerRot e) (kummerRot_pow he) hρ' hbad
       hgcont hgroot
-  refine ⟨τ, hinert, ?_⟩
   -- the group of formulas, read away from the coarser exceptional set
   set RD : Analytic.RationalDeck P S L.deck := (D.toIntegralDeck.toRationalDeck).mono hbadS
     with hRDdef
@@ -270,7 +274,7 @@ theorem exists_isInertiaAt_orderOf_discCycle_dvd (D : DeckData α)
     | succ n ih =>
       rw [pow_succ', Equiv.Perm.mul_apply, ih, hcomm, hxe₀, horb, ← pow_succ]
   -- conclude
-  refine orderOf_dvd_of_pow_eq_one ?_
+  refine ⟨τ, hinert, orderOf_dvd_of_pow_eq_one ?_, e₀, hxe₀⟩
   have hfix0 : (x ^ orderOf τ) e₀ = e₀ := by
     rw [hpowe, pow_orderOf_eq_one]
     refine Subtype.ext ?_
@@ -328,7 +332,7 @@ theorem exists_isInertiaGenAt_of_isLocalMonodromy (D : DeckData α)
     have hp := pow_orderOf_eq_one (Analytic.discCycle (monic_complexEquation hα) hS hincl
       (kummerRegionMap (algebraMap k ℂ s) n hmap w))
     rwa [hordeq] at hp
-  obtain ⟨τ, hinert, hdvd⟩ :=
+  obtain ⟨τ, hinert, hdvd, -⟩ :=
     L.exists_isInertiaAt_orderOf_discCycle_dvd D hα hgen hbadS hS hρ hρ' hincl hn hmap w hfix
   rw [hordeq] at hdvd
   refine ⟨τ, L.isInertiaGenAt_of_localMonodromy hα hgen hS hz₀ hx' hinert ?_⟩

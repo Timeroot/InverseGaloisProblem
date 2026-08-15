@@ -24,8 +24,8 @@ generator, because the reduction map between unit groups of `ZMod` is surjective
   any prescribed generator of its image.
 * `Rigidity.RET.LineCover.exists_isInertiaGenAt` — every point of the line carries a distinguished
   inertia element.
-* `Rigidity.RET.LineCover.IsInertiaGenAt.conj` — distinguished inertia elements are stable under
-  conjugation.
+* `Rigidity.RET.LineCover.IsInertiaGenAt.inv` and `Rigidity.RET.LineCover.IsInertiaGenAt.conj` —
+  distinguished inertia elements are stable under inversion and under conjugation.
 * `Rigidity.RET.LineCover.IsInertiaGenAt.exists_lift` — a distinguished inertia element of a Galois
   subcover is the restriction of a distinguished inertia element of the cover.
 -/
@@ -129,6 +129,10 @@ theorem IsInertiaGenAt.of_zpowers_eq (h : L.IsInertiaGenAt t σ) {σ' : L.deck}
     (hz : Subgroup.zpowers σ' = Subgroup.zpowers σ) : L.IsInertiaGenAt t σ' := by
   obtain ⟨Q, hmax, hover, hI⟩ := h
   exact ⟨Q, hmax, hover, hI.trans hz.symm⟩
+
+/-- **Distinguished inertia elements are stable under inversion.** -/
+theorem IsInertiaGenAt.inv (h : L.IsInertiaGenAt t σ) : L.IsInertiaGenAt t σ⁻¹ :=
+  h.of_zpowers_eq Subgroup.zpowers_inv
 
 /-- **Distinguished inertia elements are stable under conjugation.** -/
 theorem IsInertiaGenAt.conj (h : L.IsInertiaGenAt t σ) (c : L.deck) :
