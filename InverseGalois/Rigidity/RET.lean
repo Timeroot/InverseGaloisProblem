@@ -274,6 +274,7 @@ import InverseGalois.Rigidity.RET.Local.BranchElement
 import InverseGalois.Rigidity.RET.GeometricBaseChange
 import InverseGalois.Rigidity.RET.Local.InertiaGeneration
 import InverseGalois.Rigidity.RET.BranchCycleReduce
+import InverseGalois.Rigidity.RET.Local.ProdOneGeneration
 import InverseGalois.Rigidity.RET.Analytic.GermField
 import InverseGalois.Rigidity.RET.Analytic.GermInertia
 import InverseGalois.Rigidity.RET.Analytic.GermInvariant
