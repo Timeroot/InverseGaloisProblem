@@ -44,6 +44,12 @@ import InverseGalois.Rigidity.RET.Pi1.Topological.ConvexPunctured
 import InverseGalois.Rigidity.RET.Pi1.Topological.ConvexHomotopy
 import InverseGalois.Rigidity.RET.Pi1.Topological.BoxLoop
 import InverseGalois.Rigidity.RET.Pi1.Topological.SquareLoop
+import InverseGalois.Rigidity.RET.Pi1.Topological.PushLoop
+import InverseGalois.Rigidity.RET.Pi1.Topological.SquarePuncture
+import InverseGalois.Rigidity.RET.Pi1.Topological.PunctureProd
+import InverseGalois.Rigidity.RET.Pi1.Topological.Rectangle
+import InverseGalois.Rigidity.RET.Pi1.Topological.BoxCut
+import InverseGalois.Rigidity.RET.Pi1.Topological.RectCut
 import InverseGalois.Rigidity.RET.Pi1.Topological.RegionVanKampen
 import InverseGalois.Rigidity.RET.Pi1.Topological.Spider
 import InverseGalois.Rigidity.RET.Pi1.Topological.GroupLoop
