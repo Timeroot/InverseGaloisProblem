@@ -27,6 +27,8 @@ monodromy of the small loop at `s` rotates the Kummer coordinate.
 ## Main results
 
 * `Rigidity.RET.Analytic.ord_scaleGerm` — scaling does not change the order of vanishing.
+* `Rigidity.RET.Analytic.scaleGerm_one`, `Rigidity.RET.Analytic.scaleGerm_scaleGerm` — the
+  scalings compose, and the trivial one is the identity.
 * `Rigidity.RET.Analytic.scaleGerm_kummerRatHom` — scaling by a `d`-th root of unity fixes the
   Kummer substitution.
 * `Rigidity.RET.Analytic.germPlace_comap_eq_self_of_scale` — an automorphism acting on the germ by
@@ -115,6 +117,29 @@ def scaleGerm {c : ℂ} (hc : c ≠ 0) : MeroGerm (0 : ℂ) →+* MeroGerm (0 : 
 theorem scaleGerm_eq_zero_iff {c : ℂ} (hc : c ≠ 0) {a : MeroGerm (0 : ℂ)} :
     scaleGerm hc a = 0 ↔ a = 0 := by
   rw [← ord_eq_top_iff, ← ord_eq_top_iff, ord_scaleGerm]
+
+theorem scaleGerm_congr {c c' : ℂ} (hc : c ≠ 0) (hc' : c' ≠ 0) (h : c = c')
+    (a : MeroGerm (0 : ℂ)) : scaleGerm hc a = scaleGerm hc' a := by
+  subst h; rfl
+
+/-- The trivial scaling is the identity. -/
+@[simp] theorem scaleGerm_one (a : MeroGerm (0 : ℂ)) :
+    scaleGerm (one_ne_zero : (1 : ℂ) ≠ 0) a = a := by
+  obtain ⟨f, hf, rfl⟩ := exists_of a
+  rw [scaleGerm_of]
+  refine of_congr _ _ ?_
+  filter_upwards with u
+  simp [scaleFun]
+
+/-- Scalings compose: the scalings of the coordinate form a group. -/
+theorem scaleGerm_scaleGerm {c c' : ℂ} (hc : c ≠ 0) (hc' : c' ≠ 0) (a : MeroGerm (0 : ℂ)) :
+    scaleGerm hc (scaleGerm hc' a) = scaleGerm (mul_ne_zero hc' hc) a := by
+  obtain ⟨f, hf, rfl⟩ := exists_of a
+  rw [scaleGerm_of, scaleGerm_of, scaleGerm_of]
+  refine of_congr _ _ ?_
+  filter_upwards with u
+  show f (c' * (c * u)) = f (c' * c * u)
+  rw [mul_assoc]
 
 /-! ### Scaling by a root of unity fixes the Kummer substitution -/
 

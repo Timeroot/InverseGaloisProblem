@@ -96,6 +96,7 @@ import InverseGalois.Rigidity.RET.CyclicAtInfinity
 import InverseGalois.Rigidity.RET.CyclicCycles
 import InverseGalois.Rigidity.RET.AbelianGeneration
 import InverseGalois.Rigidity.RET.Descent
+import InverseGalois.Rigidity.RET.Descent.AKLBGen
 import InverseGalois.Rigidity.RET.Specialization
 import InverseGalois.Rigidity.RET.Genus.Ord
 import InverseGalois.Rigidity.RET.Genus.LineOrd
@@ -274,9 +275,11 @@ import InverseGalois.Rigidity.RET.GeometricBaseChange
 import InverseGalois.Rigidity.RET.Local.InertiaGeneration
 import InverseGalois.Rigidity.RET.BranchCycleReduce
 import InverseGalois.Rigidity.RET.Analytic.GermField
+import InverseGalois.Rigidity.RET.Analytic.GermInertia
 import InverseGalois.Rigidity.RET.Analytic.GermKummer
 import InverseGalois.Rigidity.RET.Analytic.GermLift
 import InverseGalois.Rigidity.RET.Analytic.GermPlace
+import InverseGalois.Rigidity.RET.Analytic.GermRamification
 import InverseGalois.Rigidity.RET.Analytic.GermRoot
 import InverseGalois.Rigidity.RET.Analytic.GermScale
 
