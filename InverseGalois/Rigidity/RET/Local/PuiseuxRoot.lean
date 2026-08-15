@@ -29,6 +29,9 @@ polynomial of a primitive element.
 * `Rigidity.RET.kummerSubst_injective` — the Kummer substitution is injective.
 * `Rigidity.RET.PuiseuxEmbedding.ofRingHom` — a homomorphism into Laurent series lying over the
   Kummer substitution is a Puiseux embedding.
+* `Rigidity.RET.exists_puiseuxEmbedding_hom_eq_of_eval₂_eq_zero` — a Laurent series root of the
+  minimal polynomial of a primitive element is the image of that primitive element under a Puiseux
+  parametrisation of the cover.
 * `Rigidity.RET.exists_puiseuxEmbedding_of_eval₂_eq_zero` — a Laurent series root of the minimal
   polynomial of a primitive element is a Puiseux parametrisation of the cover.
 -/
@@ -107,23 +110,39 @@ def PuiseuxEmbedding.ofRingHom (s : k) {e : ℕ} (he : 0 < e) (φ : Ω →+* Lau
     rw [IsScalarTower.algebraMap_apply (Polynomial k) (RatFunc k) Ω, hφ, kummerLift_algebraMap]
 
 /-- **A Laurent series root of the minimal polynomial of a primitive element is a Puiseux
+parametrisation of the cover sending that primitive element to the given root.** -/
+theorem exists_puiseuxEmbedding_hom_eq_of_eval₂_eq_zero (s : k) {e : ℕ} (he : 0 < e) (α : Ω)
+    (hα : IsIntegral (RatFunc k) α) (hgen : IntermediateField.adjoin (RatFunc k) {α} = ⊤)
+    (y : LaurentSeries K)
+    (hy : Polynomial.eval₂ (kummerLift K s he) y (minpoly (RatFunc k) α) = 0) :
+    ∃ ψ : PuiseuxEmbedding Ω K s e, ψ.hom α = y := by
+  set g : Ω ≃ₐ[RatFunc k] AdjoinRoot (minpoly (RatFunc k) α) :=
+    (IntermediateField.topEquiv.symm.trans
+      ((IntermediateField.equivOfEq hgen).symm.trans
+        (IntermediateField.adjoinRootEquivAdjoin (RatFunc k) hα).symm)) with hg
+  have hgα : g α = AdjoinRoot.root (minpoly (RatFunc k) α) := by
+    have h1 : g.symm (AdjoinRoot.root (minpoly (RatFunc k) α)) = α := by
+      simp [hg, IntermediateField.adjoinRootEquivAdjoin_apply_root]
+    exact (AlgEquiv.symm_apply_eq g).mp h1 |>.symm
+  refine ⟨PuiseuxEmbedding.ofRingHom K s he
+    ((AdjoinRoot.lift (kummerLift K s he) y hy).comp (g : Ω →+* AdjoinRoot _)) (fun x => ?_), ?_⟩
+  · have hx : g (algebraMap (RatFunc k) Ω x) = algebraMap (RatFunc k) _ x :=
+      g.commutes x
+    show AdjoinRoot.lift (kummerLift K s he) y hy (g (algebraMap (RatFunc k) Ω x)) = _
+    rw [hx, AdjoinRoot.algebraMap_eq]
+    exact AdjoinRoot.lift_of hy
+  · show AdjoinRoot.lift (kummerLift K s he) y hy (g α) = y
+    rw [hgα, AdjoinRoot.lift_root]
+
+/-- **A Laurent series root of the minimal polynomial of a primitive element is a Puiseux
 parametrisation of the cover.** -/
 theorem exists_puiseuxEmbedding_of_eval₂_eq_zero (s : k) {e : ℕ} (he : 0 < e) (α : Ω)
     (hα : IsIntegral (RatFunc k) α) (hgen : IntermediateField.adjoin (RatFunc k) {α} = ⊤)
     (y : LaurentSeries K)
     (hy : Polynomial.eval₂ (kummerLift K s he) y (minpoly (RatFunc k) α) = 0) :
-    Nonempty (PuiseuxEmbedding Ω K s e) := by
-  set g : Ω ≃ₐ[RatFunc k] AdjoinRoot (minpoly (RatFunc k) α) :=
-    (IntermediateField.topEquiv.symm.trans
-      ((IntermediateField.equivOfEq hgen).symm.trans
-        (IntermediateField.adjoinRootEquivAdjoin (RatFunc k) hα).symm)) with hg
-  refine ⟨PuiseuxEmbedding.ofRingHom K s he
-    ((AdjoinRoot.lift (kummerLift K s he) y hy).comp (g : Ω →+* AdjoinRoot _)) fun x => ?_⟩
-  have hx : g (algebraMap (RatFunc k) Ω x) = algebraMap (RatFunc k) _ x :=
-    g.commutes x
-  show AdjoinRoot.lift (kummerLift K s he) y hy (g (algebraMap (RatFunc k) Ω x)) = _
-  rw [hx, AdjoinRoot.algebraMap_eq]
-  exact AdjoinRoot.lift_of hy
+    Nonempty (PuiseuxEmbedding Ω K s e) :=
+  let ⟨ψ, _⟩ := exists_puiseuxEmbedding_hom_eq_of_eval₂_eq_zero K s he α hα hgen y hy
+  ⟨ψ⟩
 
 end OfRoot
 

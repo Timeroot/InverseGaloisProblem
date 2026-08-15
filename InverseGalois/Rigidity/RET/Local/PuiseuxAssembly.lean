@@ -27,6 +27,9 @@ polynomial over the rational function field, which is exactly a Puiseux embeddin
 
 * `Rigidity.RET.exists_puiseuxEmbedding_of_powerSeries_root` — a formal power series root of the
   complexified equation of the cover is a Puiseux parametrisation.
+* `Rigidity.RET.exists_germ_puiseuxEmbedding_of_branch` — a holomorphic branch of the roots on a
+  punctured disc in the Kummer coordinate extends to a germ, and the Taylor series of that germ is
+  the image of the primitive element under a Puiseux parametrisation.
 * `Rigidity.RET.exists_puiseuxEmbedding_of_branch` — a holomorphic branch of the roots on a
   punctured disc in the Kummer coordinate is a Puiseux parametrisation.
 -/
@@ -61,13 +64,15 @@ theorem natDegree_complexEquation_pos {α : Ω} (hα : IsIntegral (Polynomial k)
 
 /-! ### The formal bridge -/
 
-/-- **A formal power series root of the complexified equation is a Puiseux parametrisation.** -/
-theorem exists_puiseuxEmbedding_of_powerSeries_root (s : k) {e : ℕ} (he : 0 < e) (α : Ω)
+/-- **A formal power series root of the complexified equation is a Puiseux parametrisation sending
+the primitive element to that root.** -/
+theorem exists_puiseuxEmbedding_hom_eq_of_powerSeries_root (s : k) {e : ℕ} (he : 0 < e) (α : Ω)
     (hα : IsIntegral (Polynomial k) α) (hgen : IntermediateField.adjoin (RatFunc k) {α} = ⊤)
     (Y : PowerSeries ℂ)
     (hY : Polynomial.eval₂ (kummerSubstC (algebraMap k ℂ s) e) Y (complexEquation α) = 0) :
-    Nonempty (PuiseuxEmbedding Ω ℂ s e) := by
-  refine exists_puiseuxEmbedding_of_eval₂_eq_zero ℂ s he α hα.tower_top hgen
+    ∃ ψ : PuiseuxEmbedding Ω ℂ s e,
+      ψ.hom α = algebraMap (PowerSeries ℂ) (LaurentSeries ℂ) Y := by
+  refine exists_puiseuxEmbedding_hom_eq_of_eval₂_eq_zero ℂ s he α hα.tower_top hgen
     (algebraMap (PowerSeries ℂ) (LaurentSeries ℂ) Y) ?_
   have hcomp : (kummerLift ℂ s he).comp (algebraMap (Polynomial k) (RatFunc k))
       = (algebraMap (PowerSeries ℂ) (LaurentSeries ℂ)).comp (kummerSubst ℂ s e) :=
@@ -77,7 +82,37 @@ theorem exists_puiseuxEmbedding_of_powerSeries_root (s : k) {e : ℕ} (he : 0 < 
   rw [show (minpoly (Polynomial k) α).map (Polynomial.mapRingHom (algebraMap k ℂ))
       = complexEquation α from rfl, hY, map_zero]
 
+/-- **A formal power series root of the complexified equation is a Puiseux parametrisation.** -/
+theorem exists_puiseuxEmbedding_of_powerSeries_root (s : k) {e : ℕ} (he : 0 < e) (α : Ω)
+    (hα : IsIntegral (Polynomial k) α) (hgen : IntermediateField.adjoin (RatFunc k) {α} = ⊤)
+    (Y : PowerSeries ℂ)
+    (hY : Polynomial.eval₂ (kummerSubstC (algebraMap k ℂ s) e) Y (complexEquation α) = 0) :
+    Nonempty (PuiseuxEmbedding Ω ℂ s e) :=
+  let ⟨ψ, _⟩ := exists_puiseuxEmbedding_hom_eq_of_powerSeries_root s he α hα hgen Y hY
+  ⟨ψ⟩
+
 /-! ### The analytic bridge -/
+
+/-- **A holomorphic branch of the roots in the Kummer coordinate extends to a germ whose Taylor
+series is the image of a primitive element under a Puiseux parametrisation.**  The branch extends
+across the puncture because it is bounded, its Taylor series solves the complexified equation of
+the cover formally, and a formal solution is a Puiseux embedding. -/
+theorem exists_germ_puiseuxEmbedding_of_branch (s : k) {e : ℕ} (he : 0 < e) (α : Ω)
+    (hα : IsIntegral (Polynomial k) α) (hgen : IntermediateField.adjoin (RatFunc k) {α} = ⊤)
+    {ρ : ℝ} (hρ : 0 < ρ)
+    (hsep : ∀ u ∈ puncturedDisc (0 : ℂ) ρ,
+      (Analytic.spec (complexEquation α) (algebraMap k ℂ s + u ^ e)).Separable)
+    {g : ℂ → ℂ} (hcont : ContinuousOn g (puncturedDisc (0 : ℂ) ρ))
+    (hroot : ∀ u ∈ puncturedDisc (0 : ℂ) ρ,
+      (Analytic.spec (complexEquation α) (algebraMap k ℂ s + u ^ e)).eval (g u) = 0) :
+    ∃ (G : smoothAt (0 : ℂ)) (ψ : PuiseuxEmbedding Ω ℂ s e),
+      (∀ u ∈ puncturedDisc (0 : ℂ) ρ, (G : ℂ → ℂ) u = g u) ∧
+        ψ.hom α = algebraMap (PowerSeries ℂ) (LaurentSeries ℂ) (taylorHom 0 G) := by
+  obtain ⟨G, hGeq, hGroot⟩ := exists_smoothAt_root (monic_complexEquation hα)
+    (natDegree_complexEquation_pos hα) hρ hsep hcont hroot
+  obtain ⟨ψ, hψ⟩ := exists_puiseuxEmbedding_hom_eq_of_powerSeries_root s he α hα hgen (taylorHom 0 G)
+    (eval₂_kummerSubstC_eq_zero _ _ e G hGroot)
+  exact ⟨G, ψ, hGeq, hψ⟩
 
 /-- **A holomorphic branch of the roots in the Kummer coordinate is a Puiseux parametrisation.**
 The branch extends across the puncture because it is bounded, its Taylor series solves the
@@ -90,11 +125,9 @@ theorem exists_puiseuxEmbedding_of_branch (s : k) {e : ℕ} (he : 0 < e) (α : �
     {g : ℂ → ℂ} (hcont : ContinuousOn g (puncturedDisc (0 : ℂ) ρ))
     (hroot : ∀ u ∈ puncturedDisc (0 : ℂ) ρ,
       (Analytic.spec (complexEquation α) (algebraMap k ℂ s + u ^ e)).eval (g u) = 0) :
-    Nonempty (PuiseuxEmbedding Ω ℂ s e) := by
-  obtain ⟨G, -, hGroot⟩ := exists_smoothAt_root (monic_complexEquation hα)
-    (natDegree_complexEquation_pos hα) hρ hsep hcont hroot
-  exact exists_puiseuxEmbedding_of_powerSeries_root s he α hα hgen (taylorHom 0 G)
-    (eval₂_kummerSubstC_eq_zero _ _ e G hGroot)
+    Nonempty (PuiseuxEmbedding Ω ℂ s e) :=
+  let ⟨_, ψ, _, _⟩ := exists_germ_puiseuxEmbedding_of_branch s he α hα hgen hρ hsep hcont hroot
+  ⟨ψ⟩
 
 end Rigidity.RET
 

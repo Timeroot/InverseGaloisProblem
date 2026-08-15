@@ -46,7 +46,9 @@ variable {R K : Type*} [CommRing R] [IsDomain R] [Field K] [Algebra R K] [IsFrac
 
 /-- **The automorphisms of a simple extension of a field of fractions, written as formulas over
 the base ring.**  The numerators `num g`, the common denominator `den`, and the single exceptional
-element `bad` carry the whole group structure: the formulas permute the roots of `P`, the identity
+element `bad` carry the whole group structure: the formula of a group element evaluates at the
+generator to that group element applied to the generator, the formulas permute the roots of `P`, the
+identity
 element acts trivially, composing formulas multiplies group elements, different group elements are
 separated, and `P` is separated from its derivative — all by identities in the base ring, so all
 of them survive every evaluation at which `bad` does not vanish. -/
@@ -58,6 +60,8 @@ theorem exists_deck_formulas {P : Polynomial R} (hP : P.Monic)
     (hgen : ∀ β : L, ∃ q : Polynomial K, aeval α q = β) :
     ∃ (num : (L ≃ₐ[K] L) → Polynomial R) (den bad : R),
       bad ≠ 0 ∧ den ∣ bad ∧
+      (∀ g, aeval α ((num g).map (algebraMap R K))
+        = algebraMap K L ((algebraMap R K) den) * g⁻¹ α) ∧
       (∀ g, P ∣ scaledComp P (num g) den) ∧
       P ∣ num 1 - C den * X ∧
       (∀ g h, P ∣ scaledComp (num g) (num h) den
@@ -76,6 +80,11 @@ theorem exists_deck_formulas {P : Polynomial R} (hP : P.Monic)
         = autPoly (P.map (algebraMap R K)) hgen g⁻¹ := by
     intro g
     rw [hN g, ← mul_assoc, ← C_mul, inv_mul_cancel₀ hdK, C_1, one_mul]
+  -- the formulas compute the automorphisms
+  have hform : ∀ g : L ≃ₐ[K] L, aeval α ((N g).map (algebraMap R K))
+      = algebraMap K L ((algebraMap R K) d) * g⁻¹ α := by
+    intro g
+    rw [hN g, map_mul, aeval_C, aeval_autPoly hgen hPk hα]
   -- the formulas carry roots to roots
   have hroot : ∀ g : L ≃ₐ[K] L, P ∣ scaledComp P (N g) d := by
     intro g
@@ -134,7 +143,7 @@ theorem exists_deck_formulas {P : Polynomial R} (hP : P.Monic)
   choose A B c hc hid using hpair
   refine ⟨N, d, d * cs * ∏ p : (L ≃ₐ[K] L) × (L ≃ₐ[K] L), c p.1 p.2,
     mul_ne_zero (mul_ne_zero hd hcs) (Finset.prod_ne_zero_iff.mpr fun p _ => hc p.1 p.2),
-    dvd_mul_of_dvd_left (dvd_mul_right d cs) _, hroot, hone, hmul, ?_, ?_⟩
+    dvd_mul_of_dvd_left (dvd_mul_right d cs) _, hform, hroot, hone, hmul, ?_, ?_⟩
   · intro g h hgh
     obtain ⟨m, hm⟩ : c g h ∣ d * cs * ∏ p : (L ≃ₐ[K] L) × (L ≃ₐ[K] L), c p.1 p.2 :=
       Dvd.dvd.mul_left (Finset.dvd_prod_of_mem (fun p => c p.1 p.2) (Finset.mem_univ (g, h))) _
@@ -191,7 +200,7 @@ theorem exists_integralDeck {P : Polynomial (Polynomial ℂ)} (hP : P.Monic)
     (hgen : ∀ β : L, ∃ q : Polynomial (RatFunc ℂ), aeval α q = β) :
     ∃ S : Finset ℂ, (∀ z ∉ (S : Set ℂ), (spec P z).Separable) ∧
       Nonempty (IntegralDeck P S (L ≃ₐ[RatFunc ℂ] L)) := by
-  obtain ⟨num, den, bad, hbad, hdvdden, hroot, hone, hmul, hsepp, As, Bs, hids⟩ :=
+  obtain ⟨num, den, bad, hbad, hdvdden, -, hroot, hone, hmul, hsepp, As, Bs, hids⟩ :=
     exists_deck_formulas hP hirr hirr.separable hα hgen
   refine ⟨badSet bad, fun z hz => separable_spec_of_bezout hids
     (eval_ne_zero_of_notMem_badSet hbad dvd_rfl hz), ⟨?_⟩⟩
