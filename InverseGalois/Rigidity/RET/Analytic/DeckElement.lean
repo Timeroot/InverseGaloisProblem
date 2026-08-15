@@ -226,6 +226,20 @@ theorem deckCycle_eq_one (hP : P.Monic) (hS : ∀ z ∉ (S : Set ℂ), (spec P z
     D.injective_orbitFibre hz₀ e₀ h2
   rw [deckCycle_apply, ← inv_inv (D.deckCycleFun hP hS hz₀ hcard e₀ γ), ← hone, inv_one]
 
+/-- **A loop whose monodromy fixes one point of the fibre has trivial name.**  The monodromy of a
+loop moves every point of the fibre by right multiplication with the inverse of its name, so a
+single fixed point already pins the name down. -/
+theorem deckCycle_eq_one_of_fixed (hP : P.Monic)
+    (hS : ∀ z ∉ (S : Set ℂ), (spec P z).Separable) {z₀ : ℂ} (hz₀ : z₀ ∉ (S : Set ℂ))
+    (hcard : Nat.card G = P.natDegree)
+    (e₀ : puncturedProj P S ⁻¹' {(⟨z₀, hz₀⟩ : ↥((S : Set ℂ)ᶜ))})
+    (γ : FundamentalGroup ↥((S : Set ℂ)ᶜ) ⟨z₀, hz₀⟩)
+    {Y : puncturedProj P S ⁻¹' {(⟨z₀, hz₀⟩ : ↥((S : Set ℂ)ᶜ))}}
+    (hY : monodromyHom hP hS hz₀ γ Y = Y) : D.deckCycle hP hS hz₀ hcard e₀ γ = 1 := by
+  obtain ⟨c, hc⟩ := D.deckCycle_conj hP hS hz₀ hcard e₀ γ (τ := 1) (Y := Y)
+    (by rw [hY, D.orbitFibre_one])
+  rw [hc, inv_one, mul_one, inv_mul_cancel]
+
 /-- **A loop around a parameter at which the family stays separable has trivial name.** -/
 theorem deckCycle_eq_one_of_isPunctureLoop (hP : P.Monic)
     (hS : ∀ z ∉ (S : Set ℂ), (spec P z).Separable) {z₀ : ℂ} (hz₀ : z₀ ∉ (S : Set ℂ))
