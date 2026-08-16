@@ -7,6 +7,7 @@ import InverseGalois.Rigidity.RET.Analytic.RootMonodromy
 import InverseGalois.Rigidity.RET.Analytic.RootSection
 import InverseGalois.Rigidity.RET.Pi1.Topological.Lifting
 import InverseGalois.Rigidity.RET.Pi1.Topological.PowerDisc
+import InverseGalois.Rigidity.RET.Pi1.Topological.KummerLift
 
 /-!
 # A single-valued root of a family in the Kummer coordinate
@@ -78,27 +79,10 @@ theorem exists_root_on_puncturedDisc (hP : P.Monic)
     ∃ g : ℂ → ℂ, ContinuousOn g (puncturedDisc (0 : ℂ) ρ') ∧ g (b : ℂ) = y₀ ∧
       ∀ u ∈ puncturedDisc (0 : ℂ) ρ', (spec P (s + u ^ e)).eval (g u) = 0 := by
   classical
-  haveI : PathConnectedSpace ↥(puncturedDisc (0 : ℂ) ρ') :=
-    pathConnectedSpace_puncturedDisc 0 hρ'
-  haveI : LocPathConnectedSpace ↥(puncturedDisc (0 : ℂ) ρ') :=
-    (isOpen_puncturedDisc (0 : ℂ) ρ').locPathConnectedSpace
-  set cov := isCoveringMap_puncturedProj hP hS with hcov
   set κ : C(↥(puncturedDisc (0 : ℂ) ρ'), ↥(puncturedDisc s ρ)) := kummerRegionMap s e hmap with hκ
-  set f : C(↥(puncturedDisc (0 : ℂ) ρ'), ↥((S : Set ℂ)ᶜ)) := (subsetIncl hsub).comp κ with hf
   set q := fibrePoint (subsetIncl hsub (κ b)) hy₀ with hq
-  have hfix : ∀ γ : FundamentalGroup ↥(puncturedDisc (0 : ℂ) ρ') b,
-      cov.monodromyHom (f b) (FundamentalGroup.map f b γ) ⟨q.1, q.2⟩ = ⟨q.1, q.2⟩ := by
-    intro γ
-    obtain ⟨t, ht⟩ := exists_eq_pow_map_kummerRegionMap hρ s e hmap b γ
-    have hcomp : FundamentalGroup.map f b γ
-        = FundamentalGroup.map (subsetIncl hsub) (κ b) (FundamentalGroup.map κ b γ) :=
-      fundamentalGroup_map_comp _ _ b γ
-    rw [hcomp, ht, map_pow, map_pow]
-    exact hexp t
-  obtain ⟨F, hF0, hFlift⟩ := cov.exists_lift_of_monodromy_fixed f b q.1 q.2 hfix
-  have hfst : ∀ u : ↥(puncturedDisc (0 : ℂ) ρ'),
-      ((F u).1.1 : ℂ × ℂ).1 = s + (u : ℂ) ^ e := fun u =>
-    congrArg Subtype.val (congrFun hFlift u)
+  obtain ⟨F, hF0, hfst⟩ := exists_lift_kummerRegionMap (isCoveringMap_puncturedProj hP hS)
+    hρ hρ' hsub hmap b q.2 hexp
   have hroot : ∀ u : ↥(puncturedDisc (0 : ℂ) ρ'),
       (spec P (s + (u : ℂ) ^ e)).eval (((F u).1.1 : ℂ × ℂ)).2 = 0 := by
     intro u

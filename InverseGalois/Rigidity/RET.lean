@@ -258,6 +258,7 @@ import InverseGalois.Rigidity.RET.Analytic.Pullback
 import InverseGalois.Rigidity.RET.Pi1.Topological.PowerBase
 import InverseGalois.Rigidity.RET.Pi1.Topological.PowerDisc
 import InverseGalois.Rigidity.RET.Pi1.Topological.Lifting
+import InverseGalois.Rigidity.RET.Pi1.Topological.KummerLift
 import InverseGalois.Rigidity.RET.Analytic.KummerSection
 import InverseGalois.Rigidity.RET.Local.KummerGerm
 import InverseGalois.Rigidity.RET.Local.PuiseuxAssembly
@@ -335,6 +336,7 @@ import InverseGalois.Rigidity.RET.Analytic.Combine
 import InverseGalois.Rigidity.RET.Analytic.RootBranch
 import InverseGalois.Rigidity.RET.Analytic.Kummer
 import InverseGalois.Rigidity.RET.Analytic.Wall
+import InverseGalois.Rigidity.RET.Analytic.WallSharp
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -680,7 +682,12 @@ everything else above the cut is elementary by comparison.
   between the chosen functions and their translates are nonzero elements of a domain, so one point
   of the total space avoids the zeros of all of them along a whole fibre
   (`RET.exists_forall_smul_ne`), and a generic linear combination of the chosen functions separates
-  that fibre (`RET.hasSeparatingFunction_of_forall_ne`).
+  that fibre (`RET.hasSeparatingFunction_of_forall_ne`).  Both are statements about coverings with
+  a faithful deck group, and both hypotheses are needed: a group acting trivially on a covering has
+  nontrivial elements that no function moves, so the requirement is false without faithfulness
+  (`RET.not_hasEnoughFunctionsUnfaithful`), and a local homeomorphism onto the punctured plane can
+  have a faithful transitive finite deck group without being a covering — the plane with one point
+  doubled — where the identity theorem forbids the functions.
 * **The completeness direction for abelian deck groups, at every number of branch points** —
   `RET.exists_branchCycleGenSystem_of_comm`: such a cover embeds in the free abelian cover over the
   same points (`RET.AbelianEmbed`, `RET.FreeAbelianUniversal`), whose standard system of branch
