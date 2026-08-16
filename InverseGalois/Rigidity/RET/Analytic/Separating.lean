@@ -27,7 +27,8 @@ rational expression in the base coordinate and in it.
 
 * `Rigidity.RET.separating_of_hasSeparatingFunction` — such a function moves every nontrivial deck
   transformation.
-* `Rigidity.RET.exists_isGalois_ratFunc_of_hasSeparatingFunction` — a connected covering with such
+* `Rigidity.RET.exists_isGalois_ratFunc_of_forall_ne`,
+  `Rigidity.RET.exists_isGalois_ratFunc_of_hasSeparatingFunction` — a connected covering with such
   a function has a function field which is a Galois extension of the rational functions of the base
   coordinate, of degree the order of the deck group and with the deck group as Galois group.
 -/
@@ -72,28 +73,42 @@ variable {H : Type*} [Group H] [Finite H] [MulAction H Y] [ContinuousConstSMul H
 attribute [local instance] FractionRing.liftAlgebra ratFuncAlgebra
 
 set_option synthInstance.maxHeartbeats 1000000 in
+/-- **A connected covering whose functions of moderate growth see its deck group has a function
+field which is a Galois extension of the rational functions of the base coordinate, with the deck
+group as Galois group and degree the order of that group.**
+
+This is the Galois correspondence for a covering in the form the Riemann existence theorem wants,
+and with the least it asks of the analysis: not one function separating a whole fibre, but, for
+each nontrivial deck transformation separately, one function it moves somewhere. -/
+theorem exists_isGalois_ratFunc_of_forall_ne (hf : IsLocalHomeomorph f)
+    (hrange : Set.range f = (↑S : Set ℂ)ᶜ) [IsOverBase H f]
+    (htrans : ∀ y y' : Y, f y = f y' → ∃ b : H, y' = b • y)
+    (hsep' : ∀ a : H, a ≠ 1 → ∃ F ∈ coverRing hf S, ∃ y : Y, F (a • y) ≠ F y) :
+    ∃ (L : Type u) (_ : Field L) (_ : Algebra (RatFunc ℂ) L),
+      IsGalois (RatFunc ℂ) L ∧ Nonempty (H ≃* (L ≃ₐ[RatFunc ℂ] L)) ∧
+        Module.finrank (RatFunc ℂ) L = Nat.card H := by
+  letI := coverRatFuncAlgebra hf hrange
+  exact ⟨FractionRing ↥(coverRing hf S), inferInstance, inferInstance,
+    isGalois_ratFunc_coverRing hf hrange htrans hsep',
+    ⟨mulEquivAlgEquiv_ratFunc_coverRing hf hrange htrans hsep'⟩,
+    finrank_ratFunc_coverRing hf hrange htrans hsep'⟩
+
+set_option synthInstance.maxHeartbeats 1000000 in
 /-- **A connected covering with a separating function has a function field which is a Galois
 extension of the rational functions of the base coordinate, with the deck group as Galois group
 and degree the order of that group.**
 
-This is the Galois correspondence for a covering in the form the Riemann existence theorem wants:
-a topological covering of a punctured plane, together with one holomorphic function of moderate
-growth separating the points of a fibre, produces a finite Galois extension of `ℂ(T)` realizing
-the deck group. -/
+One holomorphic function of moderate growth separating the points of a fibre is enough: it moves
+every nontrivial deck transformation at that fibre. -/
 theorem exists_isGalois_ratFunc_of_hasSeparatingFunction (hf : IsLocalHomeomorph f)
     (hrange : Set.range f = (↑S : Set ℂ)ᶜ) [IsOverBase H f]
     (htrans : ∀ y y' : Y, f y = f y' → ∃ b : H, y' = b • y)
     (hsep : HasSeparatingFunction hf S H) :
     ∃ (L : Type u) (_ : Field L) (_ : Algebra (RatFunc ℂ) L),
       IsGalois (RatFunc ℂ) L ∧ Nonempty (H ≃* (L ≃ₐ[RatFunc ℂ] L)) ∧
-        Module.finrank (RatFunc ℂ) L = Nat.card H := by
-  have hsep' : ∀ a : H, a ≠ 1 → ∃ F ∈ coverRing hf S, ∃ y : Y, F (a • y) ≠ F y :=
+        Module.finrank (RatFunc ℂ) L = Nat.card H :=
+  exists_isGalois_ratFunc_of_forall_ne hf hrange htrans
     fun a ha => separating_of_hasSeparatingFunction hsep a ha
-  letI := coverRatFuncAlgebra hf hrange
-  exact ⟨FractionRing ↥(coverRing hf S), inferInstance, inferInstance,
-    isGalois_ratFunc_coverRing hf hrange htrans hsep',
-    ⟨mulEquivAlgEquiv_ratFunc_coverRing hf hrange htrans hsep'⟩,
-    finrank_ratFunc_coverRing hf hrange htrans hsep'⟩
 
 end Field
 

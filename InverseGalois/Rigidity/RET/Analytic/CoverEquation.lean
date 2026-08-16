@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.Rigidity.RET.Analytic.CoverSymm
-import InverseGalois.Rigidity.RET.Pi1.Topological.CoverDeck
+import InverseGalois.Rigidity.RET.Pi1.Topological.CoverLift
 
 /-!
 # The equation satisfied by a function on the cover attached to a monodromy homomorphism
@@ -26,6 +26,8 @@ turns *analytic* coefficients into *rational* ones.
 
 * `Rigidity.RET.MonodromyData.isLocalHomeomorph_projC` — the cover lies locally homeomorphically
   over the plane.
+* `Rigidity.RET.MonodromyData.surjective_proj` — the cover of a path-connected region lies over
+  all of it.
 * `Rigidity.RET.MonodromyData.isHolo_projC` — the projection is a holomorphic function on the
   cover.
 * `Rigidity.RET.MonodromyData.exists_monic_analytic_of_isHolo` — a holomorphic function on the
@@ -50,6 +52,14 @@ projection is a covering map. -/
 theorem isLocalHomeomorph_projC (hX : IsOpen X) (hcov : IsCoveringMap D.proj) :
     IsLocalHomeomorph D.projC :=
   (hX.isOpenEmbedding_subtypeVal.isLocalHomeomorph).comp hcov.isLocalHomeomorph
+
+/-- **The projection of a cover of a path-connected region is onto**: every point of the region is
+joined to the base point by a path, and a path reaching a point labels the fibre over it. -/
+theorem surjective_proj [PathConnectedSpace ↥X] : Function.Surjective D.proj := by
+  intro x
+  obtain ⟨s⟩ := MonodromyData.Fib.nonempty D
+    (Classical.choice (MonodromyData.nonempty_quotient_of_pathConnected (x₀ := x₀) x))
+  exact ⟨⟨x, s⟩, rfl⟩
 
 /-- **The projection is a holomorphic function on the cover** — it is the local coordinate. -/
 theorem isHolo_projC (hX : IsOpen X) (hcov : IsCoveringMap D.proj) : IsHolo D.projC D.projC :=

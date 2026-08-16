@@ -333,6 +333,7 @@ import InverseGalois.Rigidity.RET.Analytic.BaseField
 import InverseGalois.Rigidity.RET.Analytic.Separating
 import InverseGalois.Rigidity.RET.Analytic.RootBranch
 import InverseGalois.Rigidity.RET.Analytic.Kummer
+import InverseGalois.Rigidity.RET.Analytic.Wall
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -665,7 +666,14 @@ everything else above the cut is elementary by comparison.
   base coordinate, hence holomorphic (`RET.analyticAt_of_pow_eq`, `RET.isHolo_kummer_val`), of
   moderate growth (`RET.isModerate_kummer_val`) and injective on each fibre
   (`RET.hasSeparatingFunction_kummer`).  The correspondence then produces the Kummer extension out
-  of the topology alone (`RET.exists_isGalois_ratFunc_rootsOfUnity`).
+  of the topology alone (`RET.exists_isGalois_ratFunc_rootsOfUnity`).  Naming the same requirement
+  for every covering at once (`RET.HasSeparatingFunctions`) closes the existence direction over
+  `ℂ(T)`: a generating product-one tuple in a finite group is the monodromy of a covering of the
+  plane punctured at prescribed points, and the covering then has a function field which is a
+  Galois extension of `ℂ(T)` with the group as Galois group
+  (`RET.exists_isGalois_ratFunc_of_prodOne`), so — every finite group carrying such a tuple
+  (`RET.exists_prodOne_generating`) — every finite group is a Galois group over `ℂ(T)` of degree
+  its order (`RET.exists_isGalois_ratFunc`).
 * **The completeness direction for abelian deck groups, at every number of branch points** —
   `RET.exists_branchCycleGenSystem_of_comm`: such a cover embeds in the free abelian cover over the
   same points (`RET.AbelianEmbed`, `RET.FreeAbelianUniversal`), whose standard system of branch
