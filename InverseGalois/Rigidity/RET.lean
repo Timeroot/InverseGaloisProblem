@@ -328,6 +328,7 @@ import InverseGalois.Rigidity.RET.Analytic.Moderate
 import InverseGalois.Rigidity.RET.Analytic.Identity
 import InverseGalois.Rigidity.RET.Analytic.FixedSubring
 import InverseGalois.Rigidity.RET.Analytic.CoverRing
+import InverseGalois.Rigidity.RET.Analytic.BaseAlgebra
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -628,9 +629,22 @@ everything else above the cut is elementary by comparison.
   moves some function of moderate growth.  Granted that, the function field of the covering is a
   Galois extension of the field of invariant functions whose Galois group is the deck group and
   whose degree is its order (`RET.isGalois_coverRing`, `RET.mulEquivAlgEquiv_coverRing`,
-  `RET.finrank_coverRing`).  What a proof of the existence direction still needs beyond this is
-  that separating function, the growth estimates that feed these criteria, and the identification
-  of the field of invariants with the rational functions of the base coordinate.
+  `RET.finrank_coverRing`).  The invariants are not merely named: they are the regular functions on
+  the punctured plane.  The product of the distances to the punctures is a polynomial of the base
+  coordinate (`RET.punctPoly`) whose reciprocal has moderate growth — it blows up like the first
+  power of the distance to a puncture and is bounded at infinity (`RET.isModerate_inv_punctPoly`) —
+  so that product is invertible in the ring of the covering (`RET.isUnit_punctPoly_coverRing`) and
+  the localization of the polynomials away from it maps to that ring (`RET.baseAwayHom`,
+  `RET.baseAlgebra`).  The deck group fixes the image (`RET.smul_baseAwayHom`), and every fixed
+  function is in it, which is exactly the criterion above (`RET.isInvariant_coverRing`); the map is
+  injective because a polynomial vanishing on the whole total space has infinitely many roots
+  (`RET.baseAwayHom_injective`).  So the deck group is a Galois group already at the level of rings
+  (`RET.isGaloisGroup_coverRing`) and remains one for the fraction fields
+  (`RET.isGaloisGroup_fractionRing_coverRing`, `RET.isGalois_fractionRing_coverRing`,
+  `RET.finrank_fractionRing_coverRing`), whose base is the field of rational functions of the base
+  coordinate (`RET.isFractionRing_ratFunc`, `RET.fractionRingAwayAlgEquivRatFunc`).  What a proof of
+  the existence direction still needs beyond this is that separating function and the growth
+  estimates that feed these criteria.
 * **The completeness direction for abelian deck groups, at every number of branch points** —
   `RET.exists_branchCycleGenSystem_of_comm`: such a cover embeds in the free abelian cover over the
   same points (`RET.AbelianEmbed`, `RET.FreeAbelianUniversal`), whose standard system of branch
