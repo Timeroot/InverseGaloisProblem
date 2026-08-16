@@ -24,7 +24,11 @@ of a tuple) and a completeness half (read branch cycles off a cover).  The compl
 theorem — `geomRETCompleteness_of_injective`, `RET/Local/ProdOneGeneration.lean`, unconditional,
 for every finite group and every number of branch points — proven by the analytic tower of
 `RET/Analytic/` and the spider of `RET/Pi1/Topological/`; §2.4 records how.  What is open is only
-the existence half, which is the half that genuinely needs Grauert–Remmert.
+the existence half, which is the half that genuinely needs Grauert–Remmert.  Over `ℂ` even that
+half has been reduced to a single named property of coverings of the punctured plane —
+`HasEnoughFunctions`, that each nontrivial deck transformation moves one holomorphic function of
+moderate growth — everything else about it being proven; the subsection "The algebraization of a
+covering, and the wall named once" records the reduction and what still separates it from W1.
 
 The second wall, **W2** (`classInertiaPlaceData_exists`, the branch cycles of the *descended*
 `ℚ(T)`-model, as inertia at places over rational points), was the arithmetic half of the climb.  It
@@ -1035,6 +1039,73 @@ of `ℚ̄(T)` — a complex structure on the total space, the local normal form 
 punctures in, and the existence of enough meromorphic functions on the compactification to separate
 the sheets (Grauert–Remmert), followed by the descent of the resulting cover from `ℂ` to `ℚ̄`.
 
+### The algebraization of a covering, and the wall named once
+
+The rest of that step — everything except the meromorphic functions themselves — is proven.  For an
+arbitrary covering `f : Y → ℂ` with range the complement of a finite set `S`, connected total space,
+and a finite group `H` acting on `Y` over the base (`IsOverBase`) and transitively on each fibre,
+the modules `Analytic/CoverHolo.lean`, `Moderate.lean`, `Identity.lean`, `CoverRing.lean`,
+`FixedSubring.lean`, `CoverAlgebraic.lean`, `PunctureEquation.lean`, `BaseAlgebra.lean`,
+`BaseField.lean` and `Separating.lean` build:
+
+* `coverRing hf S`, the holomorphic functions of moderate growth on `Y`, a subring of the functions
+  on the total space; it is a domain when `Y` is connected (`coverRing_isDomain`, by the identity
+  theorem), and `H` acts on it by ring automorphisms (`coverRingAction`);
+* the invariants: a function of moderate growth fixed by `H` descends to the punctured plane, is
+  holomorphic there, and its growth conditions at the punctures and at infinity make it meromorphic
+  on the sphere, hence rational — so the fixed field is exactly `ℂ(T)`;
+* the correspondence: as soon as every nontrivial deck transformation moves some function of the
+  ring (`faithfulSMul_coverRing`), the fraction field of `coverRing hf S` is a Galois extension of
+  `ℂ(T)` with `H` as Galois group and degree `|H|` (`isGalois_ratFunc_coverRing`,
+  `mulEquivAlgEquiv_ratFunc_coverRing`, `finrank_ratFunc_coverRing`, assembled in
+  `exists_isGalois_ratFunc_of_forall_ne`).
+
+That leaves one requirement, and `Analytic/Wall.lean` names it once and for all coverings:
+
+```lean
+def HasEnoughFunctions : Prop :=
+  ∀ (S : Finset ℂ) (Y : Type) [TopologicalSpace Y] [Nonempty Y] [PreconnectedSpace Y]
+    (f : Y → ℂ) (hf : IsLocalHomeomorph f), Set.range f = (↑S : Set ℂ)ᶜ →
+      ∀ (H : Type) [Group H] [Finite H] [MulAction H Y] [ContinuousConstSMul H Y]
+        [IsOverBase H f], (∀ y y' : Y, f y = f y' → ∃ b : H, y' = b • y) →
+        ∀ a : H, a ≠ 1 → ∃ F ∈ coverRing hf S, ∃ y : Y, F (a • y) ≠ F y
+```
+
+The stronger-looking form `HasSeparatingFunctions` — one function of moderate growth taking distinct
+values at *all* the points of one fibre — is the same statement
+(`hasSeparatingFunctions_iff_hasEnoughFunctions`, `Analytic/Combine.lean`).  Choosing for each
+nontrivial `c` a function `F_c` that it moves, the differences `F_c − c⁻¹ · F_c` are nonzero
+elements of a domain, so are all of their translates, so is their product, and any point where the
+product does not vanish sees every `F_c` moved by its own `c` along the whole fibre through it
+(`exists_forall_smul_ne`).  A linear combination `∑_c t^{e(c)} F_c` then separates that fibre for
+all but finitely many `t`: the failures are the roots of a nonzero polynomial, whose coefficient at
+`X^{e(ab⁻¹)}` records that `F_{ab⁻¹}` distinguishes `a` from `b`
+(`hasSeparatingFunction_of_forall_ne`).
+
+The statement is not vacuous: the power covering `w ↦ wⁿ` of the plane punctured at the origin
+carries it, with the coordinate of the total space — a continuous, hence holomorphic, branch of the
+`n`-th root (`analyticAt_of_pow_eq`, `isHolo_kummer_val`, `isModerate_kummer_val`,
+`hasSeparatingFunction_kummer`) — as the separating function, and the correspondence then produces
+the Kummer extension out of the topology alone (`exists_isGalois_ratFunc_rootsOfUnity`).
+
+Granting it, the existence direction over `ℂ(T)` follows in full: a generating product-one tuple in
+a finite group is the monodromy of a covering (`exists_cover_of_prodOne_ordered`), the covering has
+a function field Galois over `ℂ(T)` with that group (`exists_isGalois_ratFunc_of_prodOne`), and
+every finite group carries such a tuple (`exists_prodOne_generating`), so
+
+```lean
+theorem exists_isGalois_ratFunc (hwall : HasEnoughFunctions) (H : Type) [Group H] [Finite H] :
+    ∃ (L : Type) (_ : Field L) (_ : Algebra (RatFunc ℂ) L),
+      IsGalois (RatFunc ℂ) L ∧ Nonempty (H ≃* (L ≃ₐ[RatFunc ℂ] L)) ∧
+        Module.finrank (RatFunc ℂ) L = Nat.card H
+```
+
+— every finite group is a Galois group over `ℂ(T)`, of degree its order, branched over prescribed
+points.  What separates this from the repository's remaining `sorry` is not the analysis but the
+arithmetic: `geomRETExistence_of_injective` asks for the cover over `ℚ̄`, packaged as a `LineCover`
+and carrying the prescribed inertia generators, so Lefschetz descent from `ℂ` to `ℚ̄` and the
+inertia clause still stand between the two.
+
 ### 2.4 How `exists_cycles` was closed
 
 `GeomRETCompleteness t` asks for more than a product-one generating tuple.  For a prescribed tuple
@@ -1377,3 +1448,14 @@ Theorem over `ℚ̄` implies the rigidity criterion for the Inverse Galois Probl
 the implication itself carrying no assumption, and with the completeness direction supplied rather
 than assumed.  Closing what is left needs analytification and coherent-sheaf GAGA (§2); that is the
 remaining work, and it is of a different kind from everything above.
+
+Over `ℂ` the shape of that remaining work is now visible in one line.  The covering space is built,
+the ring of functions of moderate growth on it is a domain with the deck group acting by ring
+automorphisms, the invariants are the rational functions of the base coordinate, and faithfulness
+turns the fraction field into a Galois extension of `ℂ(T)` with the deck group as Galois group.  The
+only thing not proven is that the ring is big enough to be faithful — `HasEnoughFunctions`,
+equivalently `HasSeparatingFunctions` — and granting it, every finite group is a Galois group over
+`ℂ(T)` of degree its order, branched over prescribed points (`exists_isGalois_ratFunc`).  Producing
+a single nonconstant function of moderate growth on an abstract covering is where the transcendence
+sits: it is a `∂̄`-problem, and Mathlib has neither the Cauchy–Pompeiu formula nor any other means
+of solving one.
