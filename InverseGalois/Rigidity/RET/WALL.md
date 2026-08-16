@@ -974,6 +974,67 @@ def degenLocus (P : Polynomial (Polynomial ℂ)) : Set ℂ := {z : ℂ | ¬ (spe
 and `exists_branchCycles_eq_degenLocus_of_isGalois` delivers the tuple over exactly that set: the
 count of branch cycles is an invariant of the family, not of how it was written down.
 
+### The existence direction, topologically: covers of the punctured plane are built
+
+The *topological* half of `exists_cover` is now a theorem, for every finite group, every number of
+branch points, and every prescribed enumeration of them.  What is left of `exists_cover` after it
+is the algebraization alone.
+
+```lean
+theorem exists_cover_of_prodOne_ordered (S : Finset ℂ) {z₀ : ℂ} (hz₀ : z₀ ∈ ((S : Set ℂ))ᶜ)
+    (pt : Fin S.card → ℂ) (hrange : Set.range pt = (S : Set ℂ))
+    {H : Type} [Group H] [Finite H] (h : Fin S.card → H)
+    (hprod : (List.ofFn h).prod = 1) (hgen : Subgroup.closure (Set.range h) = ⊤) :
+    ∃ (δ : Fin S.card → FundamentalGroup ↥((S : Set ℂ))ᶜ ⟨z₀, hz₀⟩) (loopInf : …) (D : MonodromyData …),
+      (∀ i, IsPunctureLoop ((S : Set ℂ))ᶜ (pt i) hz₀ (δ i)) ∧
+        IsSupportedAtInfinity ((S : Set ℂ))ᶜ hz₀ loopInf ∧
+        IsCoveringMap D.proj ∧ PathConnectedSpace D.Total ∧ Function.Injective D.deckHom ∧
+        (∀ y z, D.proj y = D.proj z → ∃ a : H, D.deck a y = z) ∧
+        (∀ i s, monodromy along (δ i) = translation by (h i)) ∧
+        (∀ s, monodromy along loopInf = id)
+```
+
+Everything in the conclusion is an honest covering space: a covering map with path-connected total
+space on which `H` acts freely and transitively over each point of the region, with monodromy `h i`
+around the `i`-th prescribed puncture and trivial monodromy at infinity.
+
+Three ingredients, in the order they were built.
+
+* **Prescribing a homomorphism on the puncture loops** (`Pi1/FreeQuotient.lean`,
+  `Pi1/Topological/PunctureHom.lean`).  `π₁(ℂ ∖ S)` is free of rank `|S|` and the puncture loops
+  generate it, so they are as many generators as the rank — but a generating family of that size
+  need not be a *basis*, and the Hopf property of free groups, which would supply that, is not in
+  Mathlib.  It is not needed: the target `H` is finite, so `(G →* H)` and `(FreeGroup (Fin r) →* H)`
+  both have `|H| ^ r` elements, and precomposition with the surjection `FreeGroup.lift γ` is
+  injective, hence surjective (`exists_monoidHom_apply_eq`).  Every prescription of the values on
+  the loops is therefore realized.  Product-one makes the remaining generator — the loop at
+  infinity — go to the identity, and generation makes the homomorphism surjective, which is what
+  makes the cover connected.
+* **The cover from a homomorphism** (`Pi1/Topological/CoverExistence.lean`).  `MonodromyData.ofHom`
+  builds the cover of a region attached to a surjection of its fundamental group; the ingredients
+  proved earlier — covering map, path-connectedness of the total space, freeness and transitivity
+  of the deck action, and the identification of the monodromy with the homomorphism — assemble into
+  `exists_cover_of_prodOne`.
+* **Naming the punctures in advance** (`Pi1/Topological/PunctureConj.lean`, `PunctureOrder.lean`,
+  `CoverOrdered.lean`).  A system of loops carries its own enumeration of the punctures, the order
+  in which their product is read, and the ordered product is not order-blind in a non-abelian
+  group.  The prescribed tuple is therefore first moved, inside its braid class, into the order the
+  loops provide (`Rigidity.exists_braidConj_perm`, already proven for the Hurwitz action); the
+  values on the loops are then conjugates of the prescribed ones, and conjugating a loop — which
+  leaves it a loop around the same puncture, since transport along a loop is conjugation by it
+  (`IsPunctureLoop.conj`) — makes them equal.
+
+The inertia clause comes for free: `π₁` of a punctured disc is infinite cyclic and the puncture loop
+generates it, so the image of the local fundamental group under the monodromy is exactly
+`Subgroup.zpowers (h i)` (`Pi1/Topological/PunctureInertia.lean`, `range_localHom`,
+`exists_hom_punctureLoops_ordered_inertia`) — the topological form of `IsInertiaGenAt`, the
+distinguished inertia clause that `GeomRETExistence` asks for.
+
+So the wall is now exactly one step wide: the passage from this covering space to a finite extension
+of `ℚ̄(T)` — a complex structure on the total space, the local normal form `w ↦ wᵉ` filling the
+punctures in, and the existence of enough meromorphic functions on the compactification to separate
+the sheets (Grauert–Remmert), followed by the descent of the resulting cover from `ℂ` to `ℚ̄`.
+
 ### 2.4 How `exists_cycles` was closed
 
 `GeomRETCompleteness t` asks for more than a product-one generating tuple.  For a prescribed tuple
@@ -1286,7 +1347,9 @@ algebraic cover with a prescribed branch locus is named by loops, with its branc
 and multiplying to one in the prescribed order — is now a **theorem**, for every finite group and
 every number of branch points (`geomRETCompleteness_of_injective`).  What the rigidity tree still
 assumes is the other half alone: **existence**, the passage from a topological cover to an algebraic
-one.
+one — and only that passage, because the topological cover itself is now built, for every finite
+group and every prescribed set of branch points, with the prescribed monodromy at them and trivial
+monodromy at infinity (`exists_cover_of_prodOne_ordered`).
 
 And it is assumed only where it has to be.  The whole sentence, existence included, is *proven*
 with no hypothesis on the group for `r ≤ 2` (`geomRET_of_le_two`) — the once-punctured sphere is

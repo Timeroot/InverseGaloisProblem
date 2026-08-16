@@ -305,6 +305,7 @@ import InverseGalois.Rigidity.RET.Pi1.Topological.CoverMonodromy
 import InverseGalois.Rigidity.RET.Pi1.Topological.PunctureHom
 import InverseGalois.Rigidity.RET.Pi1.Topological.CoverExistence
 import InverseGalois.Rigidity.RET.Pi1.Topological.PunctureConj
+import InverseGalois.Rigidity.RET.Pi1.Topological.PunctureInertia
 import InverseGalois.Rigidity.RET.Pi1.Topological.PunctureOrder
 import InverseGalois.Rigidity.RET.Pi1.Topological.CoverOrdered
 
@@ -511,8 +512,12 @@ everything else above the cut is elementary by comparison.
   `RET.exists_cover_of_prodOne_ordered` names the branch points in advance and gives the monodromy
   at them in the prescribed order, by reordering the tuple within its braid class
   (`Rigidity.exists_braidConj_perm`) and conjugating each loop, which leaves it a loop around its
-  puncture (`RET.IsPunctureLoop.conj`, `RET.exists_hom_punctureLoops_ordered`).  The passage from a
-  topological cover to an algebraic one is what remains.
+  puncture (`RET.IsPunctureLoop.conj`, `RET.exists_hom_punctureLoops_ordered`).  Each prescribed
+  element generates the *whole* local monodromy at its puncture, not merely a part of it
+  (`RET.exists_hom_punctureLoops_ordered_inertia`), because the fundamental group of a punctured
+  disc is infinite cyclic and the loop generates it (`RET.range_localHom`) — this is the
+  topological form of the distinguished inertia clause `LineCover.IsInertiaGenAt`.  The passage
+  from a topological cover to an algebraic one is what remains.
 * **The completeness direction for abelian deck groups, at every number of branch points** —
   `RET.exists_branchCycleGenSystem_of_comm`: such a cover embeds in the free abelian cover over the
   same points (`RET.AbelianEmbed`, `RET.FreeAbelianUniversal`), whose standard system of branch
