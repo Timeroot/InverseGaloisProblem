@@ -22,13 +22,15 @@ cover is algebraic: what remains is the behaviour at infinity.
 ## Main results
 
 * `Rigidity.RET.norm_esymm_le` — an elementary symmetric function of bounded numbers is bounded.
+* `Rigidity.RET.norm_coeff_multiset_prod_X_sub_C_le`, `Rigidity.RET.norm_coeff_prod_X_sub_C_le` —
+  the coefficients of a monic product of linear factors with bounded roots are bounded.
 * `Rigidity.RET.exists_analyticAt_of_bddAbove` — Riemann's removable singularity theorem, in the
   form used here.
 * `Rigidity.RET.exists_analyticAt_coeff_of_bounded` — the coefficients of the equation satisfied by
   a function bounded near a puncture extend analytically across it.
 -/
 
-open Topology
+open Topology Polynomial
 
 noncomputable section
 
@@ -64,6 +66,53 @@ theorem norm_esymm_le {M : ℝ} (hM : 0 ≤ M) {s : Multiset ℂ} (h : ∀ r ∈
     exact hle
   · rw [Multiset.card_map, Multiset.card_powersetCard, nsmul_eq_mul]
 
+/-- **The coefficients of a monic product of linear factors with bounded roots are bounded**, by a
+bound depending only on the number of factors and on the bound on the roots. -/
+theorem norm_coeff_multiset_prod_X_sub_C_le {t : Multiset ℂ} {M : ℝ} (hM : 0 ≤ M)
+    (h : ∀ r ∈ t, ‖r‖ ≤ M) (k : ℕ) :
+    ‖((t.map fun r => X - C r).prod).coeff k‖
+      ≤ 2 ^ Multiset.card t * max M 1 ^ Multiset.card t := by
+  have hM1 : (1 : ℝ) ≤ max M 1 := le_max_right _ _
+  have hbound : ∀ j ≤ Multiset.card t,
+      ‖t.esymm j‖ ≤ 2 ^ Multiset.card t * max M 1 ^ Multiset.card t := by
+    intro j hj
+    refine (norm_esymm_le hM h j).trans ?_
+    have h1 : ((Multiset.card t).choose j : ℝ) ≤ 2 ^ Multiset.card t := by
+      exact_mod_cast Nat.choose_le_two_pow (Multiset.card t) j
+    have hone : (1 : ℝ) ≤ max M 1 ^ (Multiset.card t - j) := by
+      simpa using pow_le_pow_left₀ zero_le_one hM1 (Multiset.card t - j)
+    have hsplit : max M 1 ^ Multiset.card t
+        = max M 1 ^ j * max M 1 ^ (Multiset.card t - j) := by
+      rw [← pow_add]
+      congr 1
+      omega
+    have h2 : M ^ j ≤ max M 1 ^ Multiset.card t :=
+      (pow_le_pow_left₀ hM (le_max_left M 1) j).trans
+        (hsplit ▸ le_mul_of_one_le_right (pow_nonneg (le_trans zero_le_one hM1) j) hone)
+    exact mul_le_mul h1 h2 (pow_nonneg hM j) (by positivity)
+  by_cases hk : k ≤ Multiset.card t
+  · rw [Multiset.prod_X_sub_C_coeff _ hk, norm_mul, norm_pow, norm_neg, norm_one, one_pow, one_mul]
+    exact hbound _ (by omega)
+  · have hdeg : ((t.map fun r => X - C r).prod).natDegree = Multiset.card t :=
+      natDegree_multiset_prod_X_sub_C_eq_card t
+    rw [Polynomial.coeff_eq_zero_of_natDegree_lt (by rw [hdeg]; omega), norm_zero]
+    positivity
+
+/-- **The coefficients of a monic product of linear factors indexed by a finite set with bounded
+roots are bounded.** -/
+theorem norm_coeff_prod_X_sub_C_le {ι : Type*} (e : Finset ι) (r : ι → ℂ) {M : ℝ} (hM : 0 ≤ M)
+    (h : ∀ i ∈ e, ‖r i‖ ≤ M) (k : ℕ) :
+    ‖(∏ i ∈ e, (X - C (r i))).coeff k‖ ≤ 2 ^ e.card * max M 1 ^ e.card := by
+  have hrw : (∏ i ∈ e, (X - C (r i))) = ((e.val.map r).map fun w => X - C w).prod := by
+    rw [Finset.prod_eq_multiset_prod, Multiset.map_map]
+    rfl
+  have hmem : ∀ w ∈ e.val.map r, ‖w‖ ≤ M := by
+    intro w hw
+    obtain ⟨i, hi, rfl⟩ := Multiset.mem_map.1 hw
+    exact h i hi
+  rw [hrw]
+  simpa using norm_coeff_multiset_prod_X_sub_C_le hM hmem k
+
 section Coeff
 
 variable {Y : Type*} {g : Y → ℂ} {H : Type*} [Group H] [Fintype H] [MulAction H Y]
@@ -77,31 +126,8 @@ theorem norm_coeff_orbitPoly_le {y : Y} {M : ℝ} (hM : 0 ≤ M) (hb : ∀ a : H
     intro r hr
     obtain ⟨a, -, rfl⟩ := Multiset.mem_map.1 hr
     exact hb a
-  have hM1 : (1 : ℝ) ≤ max M 1 := le_max_right _ _
-  have hbound : ∀ j ≤ Fintype.card H,
-      ‖(orbitValues H g y).esymm j‖ ≤ 2 ^ Fintype.card H * max M 1 ^ Fintype.card H := by
-    intro j hj
-    refine (norm_esymm_le hM hval j).trans ?_
-    have h1 : ((Multiset.card (orbitValues H g y)).choose j : ℝ) ≤ 2 ^ Fintype.card H := by
-      rw [card_orbitValues]
-      exact_mod_cast Nat.choose_le_two_pow (Fintype.card H) j
-    have hone : (1 : ℝ) ≤ max M 1 ^ (Fintype.card H - j) := by
-      simpa using pow_le_pow_left₀ zero_le_one hM1 (Fintype.card H - j)
-    have hsplit : max M 1 ^ Fintype.card H
-        = max M 1 ^ j * max M 1 ^ (Fintype.card H - j) := by
-      rw [← pow_add]
-      congr 1
-      omega
-    have h2 : M ^ j ≤ max M 1 ^ Fintype.card H :=
-      (pow_le_pow_left₀ hM (le_max_left M 1) j).trans
-        (hsplit ▸ le_mul_of_one_le_right (pow_nonneg (le_trans zero_le_one hM1) j) hone)
-    exact mul_le_mul h1 h2 (pow_nonneg hM j) (by positivity)
-  by_cases hk : k ≤ Fintype.card H
-  · rw [orbitPoly, Multiset.prod_X_sub_C_coeff _ (by rw [card_orbitValues]; omega),
-      card_orbitValues, norm_mul, norm_pow, norm_neg, norm_one, one_pow, one_mul]
-    exact hbound _ (by omega)
-  · rw [Polynomial.coeff_eq_zero_of_natDegree_lt (by rw [natDegree_orbitPoly]; omega), norm_zero]
-    positivity
+  rw [orbitPoly]
+  simpa [card_orbitValues] using norm_coeff_multiset_prod_X_sub_C_le hM hval k
 
 end Coeff
 
