@@ -304,6 +304,9 @@ import InverseGalois.Rigidity.RET.Pi1.Topological.CoverGalois
 import InverseGalois.Rigidity.RET.Pi1.Topological.CoverMonodromy
 import InverseGalois.Rigidity.RET.Pi1.Topological.PunctureHom
 import InverseGalois.Rigidity.RET.Pi1.Topological.CoverExistence
+import InverseGalois.Rigidity.RET.Pi1.Topological.PunctureConj
+import InverseGalois.Rigidity.RET.Pi1.Topological.PunctureOrder
+import InverseGalois.Rigidity.RET.Pi1.Topological.CoverOrdered
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -504,8 +507,12 @@ everything else above the cut is elementary by comparison.
   puncture loops is an injection between those two sets, hence a bijection
   (`RET.exists_monoidHom_apply_eq`, `RET.exists_hom_punctureLoops`).  The product-one hypothesis is
   what makes the loop at infinity act trivially, and generation is what makes the cover connected.
-  The enumeration of the punctures is the one carried by the loops rather than one chosen in
-  advance; the passage from a topological cover to an algebraic one is what remains.
+  The enumeration of the punctures need not be the one carried by the loops:
+  `RET.exists_cover_of_prodOne_ordered` names the branch points in advance and gives the monodromy
+  at them in the prescribed order, by reordering the tuple within its braid class
+  (`Rigidity.exists_braidConj_perm`) and conjugating each loop, which leaves it a loop around its
+  puncture (`RET.IsPunctureLoop.conj`, `RET.exists_hom_punctureLoops_ordered`).  The passage from a
+  topological cover to an algebraic one is what remains.
 * **The completeness direction for abelian deck groups, at every number of branch points** —
   `RET.exists_branchCycleGenSystem_of_comm`: such a cover embeds in the free abelian cover over the
   same points (`RET.AbelianEmbed`, `RET.FreeAbelianUniversal`), whose standard system of branch

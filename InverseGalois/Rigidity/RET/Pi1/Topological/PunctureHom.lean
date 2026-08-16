@@ -30,6 +30,8 @@ the order in which their product is read.
 
 ## Main results
 
+* `Rigidity.RET.exists_hom_of_generating_loops` — prescribing the values of a homomorphism to a
+  finite group on a generating system of loops with trivial ordered product.
 * `Rigidity.RET.exists_hom_punctureLoops` — a surjection from the fundamental group of the
   punctured plane to a finite group, taking prescribed values on one loop around each puncture and
   trivial on the loop at infinity.
@@ -48,6 +50,51 @@ theorem card_eq_of_range_eq_coe {S : Finset ℂ} {r : ℕ} {pt : Fin r → ℂ}
   rw [← hrange, Set.ncard_range_of_injective hinj] at h1
   simpa using h1
 
+/-- **The values of a homomorphism to a finite group may be prescribed on a system of loops of the
+punctured plane which generates and whose ordered product is trivial**, provided the values, in the
+same order, generate and multiply to the identity: there are as many loops as the rank of the free
+fundamental group, so their values are unconstrained, and the extra loop is then carried to the
+identity. -/
+theorem exists_hom_of_generating_loops (S : Finset ℂ) {z₀ : ℂ} (hz₀ : z₀ ∈ ((S : Set ℂ))ᶜ)
+    {H : Type} [Group H] [Finite H]
+    (γ : Fin (S.card + 1) → FundamentalGroup ↥((S : Set ℂ))ᶜ ⟨z₀, hz₀⟩)
+    (hprodγ : (List.ofFn γ).prod = 1) (hgenγ : Subgroup.closure (Set.range γ) = ⊤)
+    (h : Fin S.card → H) (hprod : (List.ofFn h).prod = 1)
+    (hgen : Subgroup.closure (Set.range h) = ⊤) :
+    ∃ φ : FundamentalGroup ↥((S : Set ℂ))ᶜ ⟨z₀, hz₀⟩ →* H,
+      Function.Surjective φ ∧ (∀ i : Fin S.card, φ (γ i.castSucc) = h i) ∧
+        φ (γ (Fin.last S.card)) = 1 := by
+  classical
+  -- the last loop is the inverse of the product of the others
+  have hsplit : (List.ofFn fun i : Fin S.card => γ i.castSucc).prod * γ (Fin.last S.card) = 1 := by
+    rw [← List.prod_concat, ← List.ofFn_succ']
+    exact hprodγ
+  have hlast : γ (Fin.last S.card) = ((List.ofFn fun i : Fin S.card => γ i.castSucc).prod)⁻¹ :=
+    eq_inv_of_mul_eq_one_right hsplit
+  -- so the first `|S|` loops generate on their own
+  have hgen' : Subgroup.closure (Set.range fun i : Fin S.card => γ i.castSucc) = ⊤ := by
+    refine eq_top_iff.2 (hgenγ.ge.trans (Subgroup.closure_le _ |>.2 ?_))
+    rintro _ ⟨j, rfl⟩
+    refine Fin.lastCases ?_ (fun i => Subgroup.subset_closure ⟨i, rfl⟩) j
+    rw [hlast]
+    refine Subgroup.inv_mem _ (Subgroup.list_prod_mem _ ?_)
+    intro x hx
+    obtain ⟨i, rfl⟩ := List.mem_ofFn.1 hx
+    exact Subgroup.subset_closure ⟨i, rfl⟩
+  -- the fundamental group is free of rank the number of punctures, so the values may be prescribed
+  obtain ⟨ψ⟩ := pi1_compl_finset S z₀ hz₀
+  obtain ⟨φ, hφ⟩ := exists_monoidHom_apply_eq ψ hgen' h
+  refine ⟨φ, ?_, hφ, ?_⟩
+  · rw [← MonoidHom.range_eq_top, eq_top_iff, ← hgen, Subgroup.closure_le]
+    rintro _ ⟨i, rfl⟩
+    exact ⟨γ i.castSucc, hφ i⟩
+  · rw [hlast, map_inv, map_list_prod, List.map_ofFn]
+    have h1 : (List.ofFn fun i : Fin S.card => φ (γ i.castSucc)) = List.ofFn h :=
+      congrArg List.ofFn (funext hφ)
+    have hlist : (List.ofFn fun i : Fin S.card => φ (γ i.castSucc)).prod = 1 := by
+      rw [h1]; exact hprod
+    exact inv_eq_one.2 hlist
+
 /-- **A tuple in a finite group whose ordered product is trivial and which generates is the
 monodromy of the punctured plane at its punctures.**
 
@@ -65,39 +112,12 @@ theorem exists_hom_punctureLoops (S : Finset ℂ) {z₀ : ℂ} (hz₀ : z₀ ∈
         IsSupportedAtInfinity ((S : Set ℂ))ᶜ hz₀ (γ (Fin.last S.card)) ∧
         Function.Surjective φ ∧
         (∀ i : Fin S.card, φ (γ i.castSucc) = h i) ∧ φ (γ (Fin.last S.card)) = 1 := by
-  classical
   obtain ⟨r, pt, γ, hinj, hrange, hloop, hprodγ, hgenγ, hinf⟩ :=
     exists_punctureLoops_prodOne_compl S.finite_toSet hz₀
   obtain rfl : r = S.card := card_eq_of_range_eq_coe hinj hrange
-  -- the last generator is the inverse of the product of the puncture loops
-  have hsplit : (List.ofFn fun i : Fin S.card => γ i.castSucc).prod * γ (Fin.last S.card) = 1 := by
-    rw [← List.prod_concat, ← List.ofFn_succ']
-    exact hprodγ
-  have hlast : γ (Fin.last S.card) = ((List.ofFn fun i : Fin S.card => γ i.castSucc).prod)⁻¹ :=
-    eq_inv_of_mul_eq_one_right hsplit
-  -- so the puncture loops generate on their own
-  have hgen' : Subgroup.closure (Set.range fun i : Fin S.card => γ i.castSucc) = ⊤ := by
-    refine eq_top_iff.2 (hgenγ.ge.trans (Subgroup.closure_le _ |>.2 ?_))
-    rintro _ ⟨j, rfl⟩
-    refine Fin.lastCases ?_ (fun i => Subgroup.subset_closure ⟨i, rfl⟩) j
-    rw [hlast]
-    refine Subgroup.inv_mem _ (Subgroup.list_prod_mem _ ?_)
-    intro x hx
-    obtain ⟨i, rfl⟩ := List.mem_ofFn.1 hx
-    exact Subgroup.subset_closure ⟨i, rfl⟩
-  -- the fundamental group is free of rank the number of punctures, so the values may be prescribed
-  obtain ⟨ψ⟩ := pi1_compl_finset S z₀ hz₀
-  obtain ⟨φ, hφ⟩ := exists_monoidHom_apply_eq ψ hgen' h
-  refine ⟨pt, γ, φ, hinj, hrange, hloop, hinf, ?_, hφ, ?_⟩
-  · rw [← MonoidHom.range_eq_top, eq_top_iff, ← hgen, Subgroup.closure_le]
-    rintro _ ⟨i, rfl⟩
-    exact ⟨γ i.castSucc, hφ i⟩
-  · rw [hlast, map_inv, map_list_prod, List.map_ofFn]
-    have h1 : (List.ofFn fun i : Fin S.card => φ (γ i.castSucc)) = List.ofFn h :=
-      congrArg List.ofFn (funext hφ)
-    have hlist : (List.ofFn fun i : Fin S.card => φ (γ i.castSucc)).prod = 1 := by
-      rw [h1]; exact hprod
-    exact inv_eq_one.2 hlist
+  obtain ⟨φ, hsurj, hval, hlast⟩ :=
+    exists_hom_of_generating_loops S hz₀ γ hprodγ hgenγ h hprod hgen
+  exact ⟨pt, γ, φ, hinj, hrange, hloop, hinf, hsurj, hval, hlast⟩
 
 end Rigidity.RET
 
