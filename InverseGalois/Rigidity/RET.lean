@@ -338,6 +338,8 @@ import InverseGalois.Rigidity.RET.Analytic.Kummer
 import InverseGalois.Rigidity.RET.Analytic.Wall
 import InverseGalois.Rigidity.RET.Analytic.WallSharp
 import InverseGalois.Rigidity.RET.Analytic.DoublePoint
+import InverseGalois.Rigidity.RET.Analytic.RootRing
+import InverseGalois.Rigidity.RET.Analytic.Transport
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -690,7 +692,17 @@ everything else above the cut is elementary by comparison.
   have a faithful transitive finite deck group without being a covering — the plane with one point
   doubled (`RET.Doubled`), where the two sheets agree off a single point and continuity alone forces
   every function to take the same value at the two copies, so the requirement is false without the
-  covering hypothesis too (`RET.not_hasEnoughFunctionsNonCovering`).
+  covering hypothesis too (`RET.not_hasEnoughFunctionsNonCovering`).  With those hypotheses in
+  place the requirement holds on every covering that comes from an equation, and for the cheapest
+  of reasons: the second coordinate of the root variety is holomorphic (`RET.isHolo_rootCoord`),
+  of moderate growth by the Cauchy bound (`RET.isModerate_rootCoord`), and takes distinct values at
+  distinct points of a fibre because a point of the root variety *is* its parameter together with
+  its coordinate, so a deck transformation no function of moderate growth moves fixes every point
+  (`RET.exists_ne_rootCoord`).  Functions of moderate growth transport along a homeomorphism over
+  the plane (`RET.mem_coverRing_comp_homeo`), so the same holds of any covering merely homeomorphic
+  over the plane to an algebraic one (`RET.exists_ne_of_homeo_rootTotal`).  What the requirement
+  asks in general is therefore exactly that an arbitrary topological covering of a punctured plane
+  is homeomorphic over the plane to one cut out by an equation.
 * **The completeness direction for abelian deck groups, at every number of branch points** —
   `RET.exists_branchCycleGenSystem_of_comm`: such a cover embeds in the free abelian cover over the
   same points (`RET.AbelianEmbed`, `RET.FreeAbelianUniversal`), whose standard system of branch
