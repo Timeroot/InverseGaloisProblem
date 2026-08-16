@@ -337,6 +337,7 @@ import InverseGalois.Rigidity.RET.Analytic.RootBranch
 import InverseGalois.Rigidity.RET.Analytic.Kummer
 import InverseGalois.Rigidity.RET.Analytic.Wall
 import InverseGalois.Rigidity.RET.Analytic.WallSharp
+import InverseGalois.Rigidity.RET.Analytic.DoublePoint
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -687,7 +688,9 @@ everything else above the cut is elementary by comparison.
   nontrivial elements that no function moves, so the requirement is false without faithfulness
   (`RET.not_hasEnoughFunctionsUnfaithful`), and a local homeomorphism onto the punctured plane can
   have a faithful transitive finite deck group without being a covering — the plane with one point
-  doubled — where the identity theorem forbids the functions.
+  doubled (`RET.Doubled`), where the two sheets agree off a single point and continuity alone forces
+  every function to take the same value at the two copies, so the requirement is false without the
+  covering hypothesis too (`RET.not_hasEnoughFunctionsNonCovering`).
 * **The completeness direction for abelian deck groups, at every number of branch points** —
   `RET.exists_branchCycleGenSystem_of_comm`: such a cover embeds in the free abelian cover over the
   same points (`RET.AbelianEmbed`, `RET.FreeAbelianUniversal`), whose standard system of branch

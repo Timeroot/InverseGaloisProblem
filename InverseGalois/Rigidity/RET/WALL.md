@@ -1065,11 +1065,29 @@ That leaves one requirement, and `Analytic/Wall.lean` names it once and for all 
 ```lean
 def HasEnoughFunctions : Prop :=
   ∀ (S : Finset ℂ) (Y : Type) [TopologicalSpace Y] [Nonempty Y] [PreconnectedSpace Y]
-    (f : Y → ℂ) (hf : IsLocalHomeomorph f), Set.range f = (↑S : Set ℂ)ᶜ →
-      ∀ (H : Type) [Group H] [Finite H] [MulAction H Y] [ContinuousConstSMul H Y]
-        [IsOverBase H f], (∀ y y' : Y, f y = f y' → ∃ b : H, y' = b • y) →
+    (q : Y → ↥((S : Set ℂ)ᶜ)), IsCoveringMap q →
+      ∀ hf : IsLocalHomeomorph fun y => ((q y : ℂ)),
+        Set.range (fun y => ((q y : ℂ))) = (↑S : Set ℂ)ᶜ →
+      ∀ (H : Type) [Group H] [Finite H] [MulAction H Y] [ContinuousConstSMul H Y] [FaithfulSMul H Y]
+        [IsOverBase H fun y => ((q y : ℂ))],
+        (∀ y y' : Y, (q y : ℂ) = (q y' : ℂ) → ∃ b : H, y' = b • y) →
         ∀ a : H, a ≠ 1 → ∃ F ∈ coverRing hf S, ∃ y : Y, F (a • y) ≠ F y
 ```
+
+Two of those hypotheses were absent when the requirement was first written down, and without either
+of them it is not merely unproven but **false** — which would have made the theorems below vacuous.
+The action must be faithful: any group at all acts on the plane by doing nothing, transitively on
+the fibres of the identity covering, and its nontrivial elements move no function whatever
+(`Analytic/WallSharp.lean`, `not_hasEnoughFunctionsUnfaithful`, which needs `isCoveringMap_id` —
+absent from Mathlib — as a lemma).  And the projection must be a covering, not merely a local
+homeomorphism onto the punctured plane: take the plane punctured at `S`, double one further point
+`z₁` (the non-Hausdorff quotient of `↥X × Bool` that glues `(z, false)` to `(z, true)` for `z ≠ z₁`)
+and let `ℤ/2` swap the two copies (`Analytic/DoublePoint.lean`, `not_hasEnoughFunctionsNonCovering`).
+That is a connected local homeomorphism onto `Sᶜ` with a faithful transitive `ℤ/2`-action, and every
+function of the ring — indeed every continuous function — takes equal values at the two copies of
+`z₁`, since the two sheets agree on the complement of a point, which is dense.  Both hypotheses come
+for free at the use site: `exists_cover_of_prodOne_ordered` delivers the covering itself and the
+injectivity of `deckHom`.
 
 The stronger-looking form `HasSeparatingFunctions` — one function of moderate growth taking distinct
 values at *all* the points of one fibre — is the same statement
