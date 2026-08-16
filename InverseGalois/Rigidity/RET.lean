@@ -340,6 +340,9 @@ import InverseGalois.Rigidity.RET.Analytic.WallSharp
 import InverseGalois.Rigidity.RET.Analytic.DoublePoint
 import InverseGalois.Rigidity.RET.Analytic.RootRing
 import InverseGalois.Rigidity.RET.Analytic.Transport
+import InverseGalois.Rigidity.RET.Analytic.GenericSeparation
+import InverseGalois.Rigidity.RET.Analytic.AlgebraicModel
+import InverseGalois.Rigidity.RET.Analytic.Algebraize
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -702,7 +705,25 @@ everything else above the cut is elementary by comparison.
   the plane (`RET.mem_coverRing_comp_homeo`), so the same holds of any covering merely homeomorphic
   over the plane to an algebraic one (`RET.exists_ne_of_homeo_rootTotal`).  What the requirement
   asks in general is therefore exactly that an arbitrary topological covering of a punctured plane
-  is homeomorphic over the plane to one cut out by an equation.
+  is homeomorphic over the plane to one cut out by an equation — and that reading is not a
+  rephrasing but a theorem, since the requirement *produces* the equation
+  (`RET.exists_algebraic_model_of_hasEnoughFunctions`).  Three steps do it.  Functions moving the
+  deck transformations one at a time combine into a single function separating one fibre
+  (`RET.hasSeparatingFunction_of_forall_ne`).  Such a function separates every fibre over the
+  complement of a finite set (`RET.exists_finset_separating`): the product of the differences of
+  its values along a fibre is invariant under the deck group and of moderate growth
+  (`RET.sepProd_smul`, `RET.sepProd_mem_coverRing`), hence a rational function of the base
+  coordinate, and it is not identically zero because the ring of functions of a connected covering
+  is a domain (`RET.exists_sepProd_ne_zero`), so it vanishes only over the roots of a numerator.
+  Finally a separating function of moderate growth, multiplied by the leading coefficient of the
+  monic equation it satisfies, has for its values along a fibre exactly as many points as the deck
+  group has elements — all of them roots of a monic polynomial of that degree, so all of its roots
+  (`RET.roots_spec_eq_of_separating`), the specialization is separable
+  (`RET.separable_spec_of_separating`), and the base coordinate together with the function is a
+  continuous bijection onto the root variety, hence a homeomorphism over the plane
+  (`RET.exists_algebraic_model`).  The two directions stop just short of an equivalence: the
+  algebraization discards the roots of that leading coefficient, finitely many further points of
+  the base at which the equation found may degenerate although the covering does not.
 * **The completeness direction for abelian deck groups, at every number of branch points** —
   `RET.exists_branchCycleGenSystem_of_comm`: such a cover embeds in the free abelian cover over the
   same points (`RET.AbelianEmbed`, `RET.FreeAbelianUniversal`), whose standard system of branch
