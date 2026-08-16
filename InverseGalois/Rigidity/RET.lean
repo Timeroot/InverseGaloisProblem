@@ -310,6 +310,8 @@ import InverseGalois.Rigidity.RET.Pi1.Topological.PunctureOrder
 import InverseGalois.Rigidity.RET.Pi1.Topological.CoverOrdered
 import InverseGalois.Rigidity.RET.Analytic.CoverHolo
 import InverseGalois.Rigidity.RET.Analytic.CoverSymm
+import InverseGalois.Rigidity.RET.Analytic.CoverEquation
+import InverseGalois.Rigidity.RET.Analytic.PunctureEquation
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -535,7 +537,15 @@ everything else above the cut is elementary by comparison.
   (`RET.orbitPoly`) whose coefficients, being symmetric, are constant on fibres and hence analytic
   functions of the base point (`RET.exists_analytic_orbitPoly_coeff`), so the function satisfies a
   monic equation of degree the order of the group with analytic coefficients
-  (`RET.exists_monic_analytic_of_isHolo`).
+  (`RET.exists_monic_analytic_of_isHolo`).  The covers built above meet those hypotheses: their
+  projection to the plane is a local homeomorphism and the deck group acts simply transitively on
+  each fibre, so every holomorphic function on the cover realizing a prescribed branch-cycle system
+  is algebraic of degree `|H|` over the analytic functions of the punctured plane
+  (`RET.MonodromyData.exists_monic_analytic_of_isHolo`,
+  `RET.exists_cover_monic_analytic_of_prodOne_ordered`).  What a proof of the existence direction
+  still needs beyond this is a holomorphic function separating the sheets, and the meromorphy of
+  the coefficients at the punctures and at infinity, which is what turns analytic coefficients into
+  rational ones.
 * **The completeness direction for abelian deck groups, at every number of branch points** —
   `RET.exists_branchCycleGenSystem_of_comm`: such a cover embeds in the free abelian cover over the
   same points (`RET.AbelianEmbed`, `RET.FreeAbelianUniversal`), whose standard system of branch
