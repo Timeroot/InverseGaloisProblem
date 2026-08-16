@@ -302,6 +302,8 @@ import InverseGalois.Rigidity.RET.Pi1.Topological.CoverDeck
 import InverseGalois.Rigidity.RET.Pi1.Topological.CoverLift
 import InverseGalois.Rigidity.RET.Pi1.Topological.CoverGalois
 import InverseGalois.Rigidity.RET.Pi1.Topological.CoverMonodromy
+import InverseGalois.Rigidity.RET.Pi1.Topological.PunctureHom
+import InverseGalois.Rigidity.RET.Pi1.Topological.CoverExistence
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -488,6 +490,22 @@ everything else above the cut is elementary by comparison.
   inverses of the values (`RET.MonodromyData.ofHom`): the left action of the fundamental group on a
   fibre and the right action of the deck group on it commute, and are the two translations of the
   group on itself.
+* **The existence direction of the Riemann Existence Theorem, topologically** —
+  `RET.exists_cover_of_prodOne`: a tuple in a finite group whose ordered product is trivial and
+  which generates the group is the system of branch cycles of a connected covering of the plane
+  punctured at as many points, unramified at infinity.  What names the cover is a surjection from
+  the fundamental group of the punctured plane carrying one loop around each puncture to the
+  corresponding member of the tuple; it exists because the fundamental group is free of rank the
+  number of punctures (`RET.pi1_compl_finset`) and the puncture loops generate it
+  (`RET.exists_punctureLoops_prodOne_compl`), so they are as many generators as the rank and the
+  values on them may be prescribed at will in a finite group: homomorphisms out of a free group of
+  that rank into a finite group `H` number `|H|` to the power of the rank whether they are read on
+  the punctured plane or on the free group, and precomposition with the surjection naming the
+  puncture loops is an injection between those two sets, hence a bijection
+  (`RET.exists_monoidHom_apply_eq`, `RET.exists_hom_punctureLoops`).  The product-one hypothesis is
+  what makes the loop at infinity act trivially, and generation is what makes the cover connected.
+  The enumeration of the punctures is the one carried by the loops rather than one chosen in
+  advance; the passage from a topological cover to an algebraic one is what remains.
 * **The completeness direction for abelian deck groups, at every number of branch points** —
   `RET.exists_branchCycleGenSystem_of_comm`: such a cover embeds in the free abelian cover over the
   same points (`RET.AbelianEmbed`, `RET.FreeAbelianUniversal`), whose standard system of branch
