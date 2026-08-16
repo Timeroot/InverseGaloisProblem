@@ -331,6 +331,8 @@ import InverseGalois.Rigidity.RET.Analytic.CoverRing
 import InverseGalois.Rigidity.RET.Analytic.BaseAlgebra
 import InverseGalois.Rigidity.RET.Analytic.BaseField
 import InverseGalois.Rigidity.RET.Analytic.Separating
+import InverseGalois.Rigidity.RET.Analytic.RootBranch
+import InverseGalois.Rigidity.RET.Analytic.Kummer
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -656,7 +658,14 @@ everything else above the cut is elementary by comparison.
   (`RET.HasSeparatingFunction`, `RET.separating_of_hasSeparatingFunction`), so a topological
   covering carrying such a function already produces a finite Galois extension of `ℂ(T)` realizing
   its deck group (`RET.exists_isGalois_ratFunc_of_hasSeparatingFunction`).  That single function is
-  what a proof of the existence direction still needs.
+  what a proof of the existence direction still needs.  The power covering of the plane punctured
+  at the origin carries it: the covering is the power map (`RET.kummerProj`,
+  `RET.isLocalHomeomorph_kummerProj`, `RET.range_kummerProj`) with the `n`-th roots of unity as
+  deck group, and the coordinate of the total space is a continuous branch of an `n`-th root of the
+  base coordinate, hence holomorphic (`RET.analyticAt_of_pow_eq`, `RET.isHolo_kummer_val`), of
+  moderate growth (`RET.isModerate_kummer_val`) and injective on each fibre
+  (`RET.hasSeparatingFunction_kummer`).  The correspondence then produces the Kummer extension out
+  of the topology alone (`RET.exists_isGalois_ratFunc_rootsOfUnity`).
 * **The completeness direction for abelian deck groups, at every number of branch points** —
   `RET.exists_branchCycleGenSystem_of_comm`: such a cover embeds in the free abelian cover over the
   same points (`RET.AbelianEmbed`, `RET.FreeAbelianUniversal`), whose standard system of branch
