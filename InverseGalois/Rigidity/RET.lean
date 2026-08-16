@@ -313,6 +313,9 @@ import InverseGalois.Rigidity.RET.Analytic.CoverSymm
 import InverseGalois.Rigidity.RET.Analytic.CoverEquation
 import InverseGalois.Rigidity.RET.Analytic.PunctureEquation
 import InverseGalois.Rigidity.RET.Analytic.PunctureExtend
+import InverseGalois.Rigidity.RET.Analytic.PunctureMeromorphic
+import InverseGalois.Rigidity.RET.Analytic.EntireGrowth
+import InverseGalois.Rigidity.RET.Analytic.Rational
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -549,9 +552,18 @@ everything else above the cut is elementary by comparison.
   (`RET.norm_esymm_le`, `RET.norm_coeff_orbitPoly_le`), so a function bounded near a puncture has an
   equation whose coefficients, bounded and analytic on the punctured disc, extend analytically
   across it by Riemann's theorem on removable singularities
-  (`RET.exists_analyticAt_of_bddAbove`, `RET.exists_analyticAt_coeff_of_bounded`).  What a proof of
+  (`RET.exists_analyticAt_of_bddAbove`, `RET.exists_analyticAt_coeff_of_bounded`).  Boundedness is
+  more than is needed: growth no faster than a power of the distance to the puncture already makes
+  a fixed power of that distance times a coefficient bounded, so the coefficients are *meromorphic*
+  at the puncture (`RET.exists_analyticAt_pow_mul_coeff_of_growth`,
+  `RET.exists_meromorphicAt_coeff_of_growth`).  That is exactly the hypothesis under which analytic
+  becomes rational: clearing the poles with a polynomial turns such a function into an entire one,
+  which is a polynomial as soon as it grows no faster than a power of `‖z‖` — Cauchy's estimate
+  kills the high derivatives and the Taylor series breaks off (`RET.exists_polynomial_of_growth`) —
+  so a function analytic off a finite set, meromorphic on it and of moderate growth at infinity is
+  a quotient of two polynomials (`RET.exists_rational_of_meromorphic_of_growth`).  What a proof of
   the existence direction still needs beyond this is a holomorphic function separating the sheets,
-  and its behaviour at infinity, which is what turns analytic coefficients into rational ones.
+  and the growth estimates that feed these criteria.
 * **The completeness direction for abelian deck groups, at every number of branch points** —
   `RET.exists_branchCycleGenSystem_of_comm`: such a cover embeds in the free abelian cover over the
   same points (`RET.AbelianEmbed`, `RET.FreeAbelianUniversal`), whose standard system of branch
