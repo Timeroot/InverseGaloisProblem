@@ -308,6 +308,8 @@ import InverseGalois.Rigidity.RET.Pi1.Topological.PunctureConj
 import InverseGalois.Rigidity.RET.Pi1.Topological.PunctureInertia
 import InverseGalois.Rigidity.RET.Pi1.Topological.PunctureOrder
 import InverseGalois.Rigidity.RET.Pi1.Topological.CoverOrdered
+import InverseGalois.Rigidity.RET.Analytic.CoverHolo
+import InverseGalois.Rigidity.RET.Analytic.CoverSymm
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -518,6 +520,22 @@ everything else above the cut is elementary by comparison.
   disc is infinite cyclic and the loop generates it (`RET.range_localHom`) — this is the
   topological form of the distinguished inertia clause `LineCover.IsInertiaGenAt`.  The passage
   from a topological cover to an algebraic one is what remains.
+* **Functions on a covering, and the equation they satisfy** — the total space of a covering of a
+  region of the plane carries no complex structure of its own and needs none: the covering map is a
+  local homeomorphism, so it *is* a local coordinate near each point, and a function upstairs is
+  holomorphic when it is analytic in that coordinate (`RET.IsHoloAt`, `RET.IsHolo`).  Two local
+  coordinates at a point agree near it, so the notion does not depend on the choice
+  (`RET.IsHoloAt.analyticAt_of_chart`), a function pulled back from the base is holomorphic exactly
+  where it is analytic (`RET.isHoloAt_comp_iff`), holomorphy survives a symmetry of the total space
+  over the base — a deck transformation, say (`RET.IsHoloAt.comp_homeomorph`) — and a holomorphic
+  function constant on the fibres descends to an analytic function on the base
+  (`RET.exists_analytic_of_isHolo_of_invariant`).  From this the passage from a covering to an
+  equation follows: when a finite group acts over the base with each fibre a single orbit, the
+  values a holomorphic function takes on a fibre are the roots of a monic polynomial
+  (`RET.orbitPoly`) whose coefficients, being symmetric, are constant on fibres and hence analytic
+  functions of the base point (`RET.exists_analytic_orbitPoly_coeff`), so the function satisfies a
+  monic equation of degree the order of the group with analytic coefficients
+  (`RET.exists_monic_analytic_of_isHolo`).
 * **The completeness direction for abelian deck groups, at every number of branch points** —
   `RET.exists_branchCycleGenSystem_of_comm`: such a cover embeds in the free abelian cover over the
   same points (`RET.AbelianEmbed`, `RET.FreeAbelianUniversal`), whose standard system of branch
