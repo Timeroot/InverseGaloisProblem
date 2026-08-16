@@ -296,6 +296,10 @@ import InverseGalois.Rigidity.RET.Pi1.Topological.ExteriorLoop
 import InverseGalois.Rigidity.RET.Analytic.InfinityBranch
 import InverseGalois.Rigidity.RET.Local.InfinityElement
 import InverseGalois.Rigidity.RET.Completeness
+import InverseGalois.Rigidity.RET.Pi1.Topological.CoverFibre
+import InverseGalois.Rigidity.RET.Pi1.Topological.CoverTopology
+import InverseGalois.Rigidity.RET.Pi1.Topological.CoverDeck
+import InverseGalois.Rigidity.RET.Pi1.Topological.CoverLift
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -454,6 +458,25 @@ everything else above the cut is elementary by comparison.
   point (`RET/Local/BranchElement.lean`), the same analysis at infinity makes the last name trivial
   (`RET/Local/InfinityElement.lean`), and Hurwitz moves cut the list down to the prescribed tuple
   (`RET/Local/BranchCycleReduce.lean`).
+* **The topological cover attached to a monodromy homomorphism** — `RET/Pi1/Topological/Cover*`:
+  the first half of the existence direction, the half that needs no algebraic geometry.  Given a
+  homomorphism from the fundamental group of a region of the plane to a finite group, the point of
+  the cover over `x` is a function from the homotopy classes of paths from the base point to `x`
+  into the group, equivariant for the homomorphism (`RET.MonodromyData.Fib`); no path has to be
+  chosen, and transport along a path is composition, functorial on the nose
+  (`RET.MonodromyData.restrict`).  Over a convex open piece of the region transport is along
+  straight segments (`RET.segClass`), so the labels there are constant along sheets
+  (`RET.MonodromyData.sheet`); the sheets are a basis of a topology on the total space
+  (`RET.MonodromyData.isTopologicalBasis_sheets`) making the projection a covering map
+  (`RET.MonodromyData.isCoveringMap_proj`).  Right multiplication of the group on the labels
+  commutes with transport, hence is a homeomorphism over the region
+  (`RET.MonodromyData.deckHomeo`), and on a fibre over a point joined to the base point it is
+  simply transitive (`RET.MonodromyData.deckHom_injective`, `RET.MonodromyData.exists_deck_eq`).
+  A path lifts by transporting the label at its endpoint along the part still to come
+  (`RET.MonodromyData.lift`), which is continuous because a short piece stays in one sheet
+  (`RET.MonodromyData.continuous_lift`); so when the homomorphism is surjective the total space is
+  path-connected (`RET.MonodromyData.pathConnectedSpace_total`) — the cover is the connected Galois
+  cover with the prescribed monodromy.
 * **The completeness direction for abelian deck groups, at every number of branch points** —
   `RET.exists_branchCycleGenSystem_of_comm`: such a cover embeds in the free abelian cover over the
   same points (`RET.AbelianEmbed`, `RET.FreeAbelianUniversal`), whose standard system of branch
