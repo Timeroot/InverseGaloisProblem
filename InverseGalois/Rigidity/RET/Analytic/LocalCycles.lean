@@ -21,9 +21,11 @@ each of them winding around its own puncture and no other.  Pushing that system 
 monodromy representation produces branch cycles indexed by the punctures themselves, each of them
 the monodromy of a small loop around its own branch point.
 
-What is lost in the exchange is the product-one relation, which belongs to the sphere presentation
-and to a specific ordering of the loops; what is gained is locality, which is what makes a branch
-cycle comparable with the inertia group at the corresponding place.
+What this presentation does not record is the product-one relation, which belongs to the sphere
+presentation and to a specific ordering of the loops; what it supplies is locality, which is what
+makes a branch cycle comparable with the inertia group at the corresponding place.  The two are
+carried together in `RET/Analytic/GaloisProdOne.lean`, on top of the ordered spider of
+`RET/Pi1/Topological/PlaneSpider.lean`.
 
 ## Main definitions
 

@@ -334,7 +334,10 @@ There are three reasonable places to state RET:
 * **Topological** — π₁(ℙ¹(ℂ) ∖ S) and covers ↔ π₁-sets.  *Rejected for now*: Mathlib has covering
   spaces and `FundamentalGroup` but **no concrete π₁ is computed for any space**, no
   covers↔π₁-sets equivalence, no ℂP¹/punctured sphere, no van Kampen; and GAGA / algebraic curves /
-  analytification are entirely absent.  This route is a multi-year prerequisite stack.
+  analytification are entirely absent.  This route is a multi-year prerequisite stack.  (Much of
+  that stack has since been built here anyway — `RET/Pi1/Topological/` computes `π₁(ℂ ∖ S)` and
+  proves Seifert–van Kampen, `RET/Analytic/` analytifies a plane family — which is what closed the
+  completeness direction below.  GAGA proper is still absent.)
 * **Grothendieck / Galois-category** — the profinite π₁ of the punctured line via
   `CategoryTheory.Galois`.  That framework *does* exist in Mathlib (`GaloisCategory`,
   `IsFundamentalGroup`, `ContAction`), but linking it to actual finite extensions of `ℚ̄(t)` needs
@@ -409,13 +412,15 @@ READY to consume: `FreeGroup`, `IsFreeGroup`, `PresentedGroup` (+ `toGroup` univ
 (over `Fq`), `Scheme.functionField`, `IsDominant`; the repo's `ℚ[T][X]`/`specialize`/`Polynomial.Gal`
 backbone and the complete `Aₙ` template.
 
-ABSENT (must be built or axiomatized): concrete π₁ of any space; covers↔π₁-sets equivalence /
-cover-existence; deck transformations, degree; ℂP¹ / Riemann sphere / punctured sphere as a
-space/manifold; Seifert–van Kampen; **GAGA / analytification**; algebraic curves, degree /
-ramification of morphisms, covers↔function-field-extensions; Riemann–Roch, genus.  The GAGA + curves
-gap is the whole mathematical content of L3, which is therefore stated on its own
-(`Rigidity.RET.geomRET`) and never as an axiom; everything else above the cut is elementary by
-comparison.
+ABSENT from Mathlib (and so built here, or still missing): concrete π₁ of any space, covers↔π₁-sets,
+deck transformations, Seifert–van Kampen — all *built*, under `RET/Pi1/Topological/`; the
+analytification of a plane family as a covering space and its monodromy — *built*, under
+`RET/Analytic/`; **cover-existence, i.e. GAGA proper** (an algebraic cover from a topological one),
+together with algebraic curves, ramification of morphisms, covers↔function-field-extensions,
+Riemann–Roch and genus — still absent.  That last gap is the whole remaining mathematical content
+of L3, which is therefore stated on its own (`Rigidity.RET.geomRETExistence_of_injective`) and never
+as an axiom; the converse direction (`Rigidity.RET.geomRETCompleteness_of_injective`) is proven, and
+everything else above the cut is elementary by comparison.
 
 ## Currently landed
 
@@ -437,7 +442,18 @@ comparison.
   (`RET.LineCover.isCyclic_deck_of_unramifiedOutside_pair`), proved by adjoining a root of the
   coordinate of order the degree of the cover (`RET.KummerPullback`) and moving the two points to
   the origin and infinity by a coordinate change (`RET.TwoPointCyclic`).  For three or more points
-  the completeness direction is the GAGA wall itself.
+  the existence direction is the GAGA wall itself.
+* **The completeness direction in full** — `RET.geomRETCompleteness_of_injective`
+  (`RET/Local/ProdOneGeneration.lean`, packaged in `RET/Completeness.lean`): *every* finite Galois
+  cover of the line over `ℚ̄`, unramified outside a prescribed tuple of distinct points and
+  infinity, carries a system of distinguished branch cycles over that tuple, generating the deck
+  group and with product the identity in the prescribed order.  The cover is complexified and
+  analytified into a covering space of a punctured plane (`RET/Analytic/`), the ordered spider of
+  `RET/Pi1/Topological/PlaneSpider.lean` names one deck transformation per puncture with product
+  one, Puiseux germs identify each of those names with a generator of the inertia group at its
+  point (`RET/Local/BranchElement.lean`), the same analysis at infinity makes the last name trivial
+  (`RET/Local/InfinityElement.lean`), and Hurwitz moves cut the list down to the prescribed tuple
+  (`RET/Local/BranchCycleReduce.lean`).
 * **The completeness direction for abelian deck groups, at every number of branch points** —
   `RET.exists_branchCycleGenSystem_of_comm`: such a cover embeds in the free abelian cover over the
   same points (`RET.AbelianEmbed`, `RET.FreeAbelianUniversal`), whose standard system of branch

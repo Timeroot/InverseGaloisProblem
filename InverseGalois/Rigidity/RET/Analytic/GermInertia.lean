@@ -17,7 +17,8 @@ theory — restriction of an automorphism of an overfield to a normal subextensi
 with the equivariance `Ψ ∘ σ = ρ ∘ Ψ` relating the algebraic and the analytic side.  Iterating it
 iterates the rotation, so the order of `σ` is the order of the rotation, provided no nontrivial
 rotation fixes the branch: that proviso is the primitivity of the branch, the one place where the
-Kummer exponent has to be the right one and not a multiple of it.
+Kummer exponent has to be the right one and not a multiple of it.  It is supplied, for the exponent
+read off the analytic cover, in `RET/Local/BranchInertia.lean`.
 
 ## Main results
 

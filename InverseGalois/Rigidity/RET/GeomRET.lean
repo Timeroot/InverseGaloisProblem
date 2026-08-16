@@ -30,10 +30,13 @@ Both directions are needed, and neither follows from the other by algebra:
 
 The topological half of the correspondence is not assumed: `π₁` of the punctured plane is free on
 the loops around the punctures and the sphere relation is the product of those loops
-(`Rigidity.RET.pi1_compl_mulEquiv_sphereGroup`, `RET/Pi1/Topological/PuncturedPlane.lean`).  What is
-assumed here is the comparison between that topological picture and the algebra of the function
-field: the analytic passage from a topological cover to an algebraic one (Grauert–Remmert / GAGA)
-and the passage between `ℂ` and `ℚ̄` (Lefschetz).
+(`Rigidity.RET.pi1_compl_mulEquiv_sphereGroup`, `RET/Pi1/Topological/PuncturedPlane.lean`).  Nor is
+the completeness direction: reading branch cycles off a cover only asks that the cover be
+analytified, and `RET/Analytic/` does that from the equation itself, so
+`Rigidity.RET.geomRETCompleteness_of_injective` is a theorem for every group and every branch locus
+(`RET/Local/ProdOneGeneration.lean`).  What the existence direction needs, and what is stated on its
+own here, is the converse comparison — the analytic passage from a topological cover to an algebraic
+one (Grauert–Remmert / GAGA).
 
 The two directions are named separately as well as bundled, because they behave differently: each
 travels on its own along a coordinate change, and each is known unconditionally for its own class

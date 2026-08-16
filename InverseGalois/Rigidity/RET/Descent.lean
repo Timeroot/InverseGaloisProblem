@@ -48,8 +48,10 @@ interface (`Descent.Data`):
 * **Module D** (`Descent.FieldTranslation`, `descentTranslation`): the fixed field of `ker ψ` is a
   regular `ℚ(T)`-extension realizing `G`.
 
-Every module is proven from a single geometric statement, `Rigidity.RET.geomRET` — the Riemann
-Existence Theorem over `ℚ̄` — which enters through `Descent.BranchCycles`; the arithmetic packaging
+Every module is proven from a single geometric statement, the existence direction
+`Rigidity.RET.geomRETExistence_of_injective` of the Riemann Existence Theorem over `ℚ̄`, which
+enters through `Descent.BranchCycles`; the completeness direction that module also uses,
+`Rigidity.RET.geomRETCompleteness_of_injective`, is proven.  The arithmetic packaging
 of its output as a tame inertia model is `Descent.Tower`.  The structures and the assembly here are
 *assembled* from the three module producers, and the group-theoretic core (`ofBranchCycle` +
 `extend_surjective_of_inner`) is proven outright.
@@ -96,7 +98,7 @@ presentation as the certificate's rigid tuple; the branch-cycle formula (Module 
 field translation (Module D, `descentTranslation`) supplies `toRegular`.
 
 The arithmetic-geometry content of those three producers rests on the geometric existence theorem
-`Rigidity.RET.geomRET`; see `DESCENT_ROADMAP.md`. -/
+`Rigidity.RET.geomRETExistence_of_injective`; see `DESCENT_ROADMAP.md`. -/
 theorem branchCycleDescentData_nonempty {G : Type} [Group G] [Finite G]
     (cert : RigidityCertificate G) :
     Nonempty (BranchCycleDescentData G cert) := by

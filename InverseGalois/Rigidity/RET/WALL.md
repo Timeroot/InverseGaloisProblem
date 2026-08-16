@@ -13,16 +13,23 @@ never will be: a `sorry` announces "not done"; an axiom would announce "done" wh
 
 | # | statement | file | shape |
 |---|-----------|------|-------|
-| **W1** | `Rigidity.RET.geomRET` | `RET/GeomRET.lean` | covers of the line over `ℚ̄` with branch locus in a prescribed set of points *are* the finite quotients of the sphere group, in both directions |
+| **W1** | `Rigidity.RET.geomRETExistence_of_injective` | `RET/GeomRET.lean` | a generating product-one tuple in a finite group is the tuple of branch cycles of a cover of the line over `ℚ̄`, branched over prescribed points |
 
 `#print axioms Rigidity.rigidity_realizable` is `[propext, sorryAx, Classical.choice, Quot.sound]`;
 `sorryAx` enters through **W1** and nowhere else.  Every other result in the tree — several hundred
 lemmas — is `[propext, Classical.choice, Quot.sound]`.
 
+**W1 is now one direction, not two.**  The correspondence has an existence half (build a cover out
+of a tuple) and a completeness half (read branch cycles off a cover).  The completeness half is a
+theorem — `geomRETCompleteness_of_injective`, `RET/Local/ProdOneGeneration.lean`, unconditional,
+for every finite group and every number of branch points — proven by the analytic tower of
+`RET/Analytic/` and the spider of `RET/Pi1/Topological/`; §2.4 records how.  What is open is only
+the existence half, which is the half that genuinely needs Grauert–Remmert.
+
 The second wall, **W2** (`classInertiaPlaceData_exists`, the branch cycles of the *descended*
 `ℚ(T)`-model, as inertia at places over rational points), was the arithmetic half of the climb.  It
-is now a theorem, derived from W1 by the ladder of §3.3; §3 records how.  What remains is purely
-transcendental.
+is now a theorem, derived from the correspondence by the ladder of §3.3; §3 records how.  What
+remains is purely transcendental.
 
 ---
 
@@ -38,6 +45,15 @@ structure GeomRET {r : ℕ} (t : Fin r → k) : Prop where
   exists_cycles : ∀ L : LineCover, L.IsUnramifiedOutside (Set.range t) →
       L.IsUnramifiedAtInfinity → ∃ g : Fin r → L.deck, L.IsBranchCycleGenSystem t g
 
+-- open (this is W1):
+theorem geomRETExistence_of_injective {r : ℕ} (t : Fin r → k) (ht : Function.Injective t) :
+    GeomRETExistence t
+
+-- a theorem (RET/Local/ProdOneGeneration.lean):
+theorem geomRETCompleteness_of_injective {r : ℕ} {t : Fin r → k} (ht : Function.Injective t) :
+    GeomRETCompleteness t
+
+-- the two of them (RET/Completeness.lean):
 theorem geomRET {r : ℕ} (t : Fin r → k) (ht : Function.Injective t) : GeomRET t
 ```
 
@@ -61,8 +77,9 @@ not the branch-cycle system of any cover.
 **Why both clauses.**  `exists_cover` is what realizes a group as a Galois group over `ℚ̄(T)`;
 `exists_cycles` is what the *descent* needs, because the `ℚ(T)`-Galois closure of a cover built by
 `exists_cover` is a strictly bigger cover whose branch cycles nobody has yet named (§3.2).  Neither
-clause implies the other — they are the two directions of one equivalence of categories, and
-splitting them would only hide that they are one theorem.  The unramifiedness clauses in
+clause implies the other — they are the two directions of one equivalence of categories.  They are
+now of different status: `exists_cycles` is proven outright, `exists_cover` is W1.  The
+unramifiedness clauses in
 `exists_cover` are what makes `exists_cycles` applicable to the covers `exists_cover` produces, and
 they are exactly what is true: a cover with monodromy `Γ_r ↠ H` is branched only over the `r`
 punctures.  Without the clause at infinity `exists_cycles` would be *false* — the Kummer cover
@@ -70,17 +87,23 @@ punctures.  Without the clause at infinity `exists_cycles` would be *false* — 
 single point `0`, because it is ramified at infinity.
 
 **Why it is irreducible here.**  The passage "topological cover ⇝ algebraic cover" is
-Grauert–Remmert / GAGA (link **B** of `Pi1/GAGA_DREAM.md`); the passage `ℂ ⇝ ℚ̄` is the Lefschetz
-principle (link **L**).  Neither analytification nor coherent-sheaf GAGA exists in Mathlib, and both
-are far out of reach of a from-scratch build.
+Grauert–Remmert / GAGA (link **B** of `Pi1/GAGA_DREAM.md`).  It is needed in the existence
+direction only: there one is *handed* a topological object and must produce a field.  In the
+completeness direction the field is given, and the analytic tower of `RET/Analytic/` builds its
+covering space out of the equation itself, which is why that direction could be closed from scratch
+(§2.4).  Neither analytification nor coherent-sheaf GAGA exists in Mathlib, and both are far out of
+reach of a from-scratch build.
 
 **What *is* proven, above and around W1:**
 
 * the topological half — `π₁(ℂ ∖ S) ≅ FreeGroup (Fin |S|) ≅ Γ_{|S|+1}` — is proven from scratch
   (`RET/Pi1/Topological/`, Seifert–van Kampen included), sorry-free, for *all* `r`;
-* `lineCover_exists_of_branchCycles`, `exists_branchCycleSystem`,
-  `exists_lineCover_isBranchCycleSystem` (the packaged forms, generation and product-one included)
-  and `riemann_existence_cover_mpr` are all *derived* from W1;
+* the whole completeness direction, `exists_cycles`, for every finite group and every number of
+  branch points (`geomRETCompleteness_of_injective`, and its packaged forms
+  `exists_branchCycleSystem`, `exists_branchCycleGenSystem` in `RET/Completeness.lean`) — see §2.4;
+* `lineCover_exists_of_branchCycles`, `exists_lineCover_isBranchCycleSystem` (the packaged forms of
+  the existence direction, generation and product-one included) and `riemann_existence_cover_mpr`
+  are *derived* from W1;
 * whole families of covers are built **without** W1 at all — every finite abelian group
   (`RET/KummerAbelian.lean`), `Aₙ` and `Sₙ` for every `n` (`RET/SerreCovers.lean`), every dihedral
   group `Dₙ` (`RET/DihedralCover.lean`, by Artin's fixed-field theorem applied to the substitutions
@@ -90,11 +113,11 @@ are far out of reach of a from-scratch build.
   `exists_cover` clause of `GeomRET`, branch points and distinguished inertia and all, see below —
   and anything obtained from these by quotients.  These are the classical explicit-polynomial cases; W1 is what covers
   the rest;
-* and W1 itself — *both* clauses, not just `exists_cover` — is a theorem in two regimes: over at
-  most two branch points, for every finite group (`geomRET_of_le_two`), and over any number of
-  branch points, for abelian deck groups (`geomRETComm`).  So what W1 still assumes is the
-  correspondence for a non-abelian group over three or more points, which is exactly the regime the
-  rigidity method uses.
+* and W1 itself is a theorem in two regimes: over at most two branch points, for every finite group
+  (`geomRET_of_le_two`), and over any number of branch points, for abelian deck groups
+  (`geomRETComm`).  So what W1 still assumes is the *construction* of a cover with a prescribed
+  non-abelian monodromy over three or more points, which is exactly the regime the rigidity method
+  uses.
 
 **The abelian case of `exists_cover` is a theorem, in every rank (done).**  Unconditionally and
 sorry-free, in `RET/FreeAbelianCover.lean` (the free cover and its local theory) and
@@ -880,14 +903,15 @@ image.
 
 ### The analytic side: the root variety of a complex family is a covering space
 
-`RET/Analytic/RootCover.lean`.  The half of W1 that is *not* GAGA is `exists_cycles`: to read branch
-cycles off a cover one only has to analytify it — pass from the algebraic cover to the topological
-covering space of the punctured plane — and then feed the monodromy representation to the already
-proven computation of `π₁(ℂ ∖ S)` as a free group.  (GAGA proper, the construction of an algebraic
-cover from a topological one, is what `exists_cover` needs, and remains the wall.)
+`RET/Analytic/RootCover.lean`.  The half of W1 that is *not* GAGA is `exists_cycles`, and that is
+why it could be closed: to read branch cycles off a cover one only has to analytify it — pass from
+the algebraic cover to the topological covering space of the punctured plane — and then feed the
+monodromy representation to the already proven computation of `π₁(ℂ ∖ S)` as a free group.  (GAGA
+proper, the construction of an algebraic cover from a topological one, is what `exists_cover` needs,
+and is the wall that remains.)
 
-The first brick of that analytification is now in place, for an arbitrary monic two-variable complex
-polynomial rather than the integer families the Hilbert tree used:
+The first brick of that analytification, for an arbitrary monic two-variable complex polynomial
+rather than the integer families the Hilbert tree used:
 
 ```lean
 def rootVariety (P : Polynomial (Polynomial ℂ)) : Set (ℂ × ℂ) := {p | biEval P p = 0}
@@ -950,24 +974,37 @@ def degenLocus (P : Polynomial (Polynomial ℂ)) : Set ℂ := {z : ℂ | ¬ (spe
 and `exists_branchCycles_eq_degenLocus_of_isGalois` delivers the tuple over exactly that set: the
 count of branch cycles is an invariant of the family, not of how it was written down.
 
-### What still separates this from `exists_cycles`
+### 2.4 How `exists_cycles` was closed
 
 `GeomRETCompleteness t` asks for more than a product-one generating tuple.  For a prescribed tuple
 of points `t : Fin r → ℚ̄` it asks for `g : Fin r → L.deck` with `IsInertiaGenAt (t i) (g i)`,
-generating, and with product one **in the prescribed order**.  Four things were missing:
+generating, and with product one **in the prescribed order**.  Four things were missing, and all
+four are now theorems:
 
-1. **`ℚ̄` versus `ℂ`.**  The tower lives over `ℂ`; a `LineCover` lives over `ℚ̄`.  Transporting a
-   cover between the two is a Lefschetz-principle statement.  *Open.*
+1. **`ℚ̄` versus `ℂ`.**  The tower lives over `ℂ`; a `LineCover` lives over `ℚ̄`.  **Closed**, and
+   without any Lefschetz statement: the comparison is only ever needed in the *easy* direction.  An
+   embedding `ℚ̄ ↪ ℂ` exists by `IsAlgClosed.lift` and is all that is used — the equation of the
+   cover is complexified (`complexEquation`, `RET/Analytic/DeckData.lean`), the analytic tower is
+   run on the complexified equation, and the resulting automorphisms are pulled back along the
+   deck-group isomorphism `RationalDeck`.  No cover has to be descended from `ℂ` to `ℚ̄`; that is
+   the operation the *existence* direction needs, and the reason it is still open.
 2. **Matching the index sets.**  The tuple produced by the free-group presentation is indexed by
-   nothing in particular.  **Closed** — see the spider below.
+   nothing in particular.  **Closed** — the spider, below.
 3. **Localizing the group elements.**  Nothing says that the element attached to a point is an
    inertia generator *at that point*: that is a local comparison between the analytic monodromy of
-   a small loop and the algebraic inertia group of a place.  *Open — this is the wall.*
+   a small loop and the algebraic inertia group of a place.  **Closed** — Puiseux, below.
 4. **The order of the product.**  Product-one holds for the tuple that the free-group presentation
-   happens to produce, not for a prescribed ordering of the points.  *Open, and reduced to item 3
-   plus one purely topological statement — see below.*
+   happens to produce, not for a prescribed ordering of the points.  **Closed** — the rectangle
+   spider, plus item 3 applied at infinity, below.
 
-#### Item 2 is closed: the spider
+The assembly is `RET/Local/ProdOneGeneration.lean`:
+`LineCover.exists_isInertiaGenAt_prodOne` produces, over any finite set of points containing the
+prescribed ones, a list of distinguished inertia elements — one above each point, plus a last entry
+for the loop at infinity — generating the deck group, with ordered product the identity and with
+that last entry trivial; `exists_isBranchCycleGenSystem_of_last_eq_one` then reorders and cuts the
+list down to the prescribed points by the Hurwitz moves of `RET/BranchCycleReduce.lean`.
+
+#### Item 2: the spider
 
 `Pi1/Topological/Spider.lean` rebuilds the van Kampen induction so that it **does** track which
 puncture each generator surrounds:
@@ -1010,59 +1047,66 @@ being a *free basis*: in `F₂` the pair `a, b[a,b]` is a basis of the abelianiz
 generates a proper subgroup.  Generation is genuinely geometric, and is what the spider induction
 supplies.
 
-#### Item 4 reduces to item 3 plus one topological statement
+#### Item 4: the rectangle spider, and the loop at infinity
 
 The prescribed-order product-one relation is the *sphere* relation, and `ℂ ∖ S` is the sphere minus
-`S ∪ {∞}`.  Writing `γ₁, …, γ_r` for the spider loops and `c` for a large circle, the two halves are
+`S ∪ {∞}`.  Writing `γ₁, …, γ_r` for the spider loops and `c` for a large loop, the two halves are
 
-* **(4a, topological)** `γ₁ ⋯ γ_r = c` in `π₁(ℂ ∖ S)` for a suitable ordering of the spider.  The
-  spider induction currently proves generation but produces no relation; equivalently, one wants the
-  spider loops to be a *free basis*, which for a generating family of the right cardinality in a
-  free group of finite rank is the Hopf property — not available, and not the intended proof.  The
-  intended proof strengthens the van Kampen induction of `Spider.lean` to carry the boundary circle
-  of each stage.
-* **(4b, analytic)** `Φ c = 1`, because the cover is unramified at infinity.  This is item 3 at the
-  point `∞`: it compares the monodromy of a loop around a puncture with the inertia of the place
-  above it.
+* **(4a, topological)** `γ₁ ⋯ γ_r = c` in `π₁(ℂ ∖ S)` for a suitable ordering of the spider.  This
+  is `RET/Pi1/Topological/RectInduction.lean`: the van Kampen induction is run on *rectangles*, and
+  each stage carries its boundary loop, so the boundary of a rectangle containing every puncture is
+  exhibited as the ordered product of one loop per puncture (`exists_rectSpider_compl`).  Appending
+  the inverse of the boundary loop as a last generator turns the product into the identity without
+  disturbing generation (`exists_punctureLoops_prodOne_compl`, `PlaneSpider.lean`).  No Hopf
+  property and no free-basis statement is needed.
+* **(4b, analytic)** `Φ c = 1`, because the cover is unramified at infinity.  The rectangle is
+  chosen with all four of its sides outside a disc containing every puncture, so its boundary loop
+  is *supported at the point at infinity* (`IsSupportedAtInfinity`, `ExteriorLoop.lean`): it is
+  transported from a loop of an exterior region `‖z‖ > R`.  On such a region the loop at infinity
+  generates, and item 3 applied to the twisted cover at `0` names it as the identity
+  (`deckCycle_eq_one_of_isSupportedAtInfinity`, `RET/Local/InfinityElement.lean`).
 
 So the analytic content of items 3 and 4 is a *single* statement, applied at the finite branch
-points and at infinity.
+points and at infinity — exactly as it was predicted to be, and now proven at both.
 
-#### Item 3: the exact shape of the wall
+#### Item 3: how the local comparison was made
 
 Let `M/ℂ(T)` be finite Galois with group `G`, let `s ∈ ℂ`, and let `σ = Φ (γ s)` be the monodromy of
 a small loop around `s`.  Wanted: a place `Q` of the integral model over `T = s` with
 `geomInertia M Q = Subgroup.zpowers σ`.
 
-The two sides are counted by the same number:
+The route that fails is counting.  The deck group acts transitively on the places over `s` with
+stabilizer the inertia group (residue fields algebraically closed, so decomposition = inertia —
+`InertiaGen.lean`), so `#places = |G| / e_Q`; the fibre of the analytic cover is a `G`-torsor, so
+the `⟨σ⟩`-orbits on it are the cosets of `⟨σ⟩` and `#orbits = |G| / orderOf σ`.  An equivariant map
+{orbits} → {places} is cheap, but the counting argument for its injectivity is circular: it assumes
+the equality of the two counts it is meant to produce.  Injectivity says that two distinct analytic
+branches at `s` are separated by the integral closure — the analytic normalization agrees with the
+algebraic one — and no amount of counting supplies it.
 
-* the deck group acts transitively on the places over `s` with stabilizer the inertia group (the
-  residue fields are algebraically closed, so decomposition = inertia — `InertiaGen.lean`), so
-  `#places = |G| / e_Q` by the fundamental identity (`RamificationBound.lean`, `#205`);
-* the fibre of the analytic cover is a `G`-torsor, so the orbits of `⟨σ⟩` on it are the cosets of
-  `⟨σ⟩`, and `#orbits = |G| / orderOf σ`.
+The route that works produces the place *from the branch*, so that no injectivity is ever needed.
+A holomorphic branch of the roots on a punctured disc in the Kummer coordinate `T = s + wᵉ` is
+bounded (`Analytic/RootBound.lean`), hence extends smoothly across the puncture
+(`Local/KummerGerm.lean`), and its Taylor series is a formal root of the family in the Kummer
+coordinate.  `Local/PuiseuxAssembly.lean` recognises that datum for what it is: a **Puiseux
+parametrisation** of the cover, i.e. an embedding of `M` into a field of Puiseux series over `s`,
+which *is* a place of the integral model — `exists_puiseuxEmbedding_of_branch`.  Rotating the
+Kummer coordinate `w ↦ ζw` is realized by an automorphism of the extension, of exactly the order of
+the rotation (`Analytic/GermInertia.lean`), and that automorphism is an inertia element at `s`
+(`LineCover.exists_isInertiaAt_of_branch`, `Local/BranchInertia.lean`).  Matching its order against
+the order of the monodromy of the circle (`Local/BranchGeneration.lean`) upgrades it from *an*
+inertia element to a *generator*, and `Local/BranchElement.lean` assembles the statement wanted:
 
-An equivariant map {orbits} → {places} is cheap in the analytic direction (a `⟨σ⟩`-orbit over a
-punctured disc has single-valued, bounded root sections after a Kummer pullback, so
-`Analytic/Extension.lean` extends them across the puncture and produces a place).  Equivariance
-gives surjectivity, hence `e_Q ≥ orderOf σ` **or** `e_Q ≤ orderOf σ` only in the presence of
-injectivity; and the counting argument for injectivity is circular, because it assumes the very
-equality of the two counts it is meant to produce.  Injectivity of {orbits} → {places} says exactly
-that two distinct analytic branches at `s` are separated by the integral closure — that is, that
-the analytic normalization agrees with the algebraic one.  That is the GAGA content, and there is
-no way around it: polynomials in the roots over `ℂ[T]` cannot separate two branches at a singular
-point of the plane model, so the separating elements are genuinely new members of the integral
-closure.
+```lean
+theorem LineCover.isInertiaGenAt_deckCycle …
+    (hloop : IsPunctureLoop ((S : Set ℂ)ᶜ) (algebraMap k ℂ s) hz₀ γ) :
+    L.IsInertiaGenAt s (RD.deckCycle … e₀ γ)
+```
 
-An equivalent phrasing, useful because it plugs into an existing criterion: item 3 is equivalent to
-"trivial local monodromy at `s` ⟹ unramified at `s`", and
-`LineCover.isUnramifiedOutside_of_forall_separable` would discharge it given a presentation of the
-integral closure whose defining polynomials specialize separably at `s` — which is again the
-normalization.  The honest route is to build the local dictionary: components of the cover over a
-punctured disc ↔ places, each component being the `e`-fold power cover (`TameCover.npowCover`) and
-so supplying a Puiseux parametrization of the corresponding place.
+— the name of a loop encircling a single parameter generates the inertia group above that
+parameter.  This is the local analytic-algebraic dictionary, and it was built rather than assumed.
 
-#### What was built towards it
+#### Also built along the way
 
 * `Pi1/Topological/GroupLoop.lean` — in a topological monoid the pointwise product of two loops at
   the unit is homotopic to their concatenation (`homotopic_loopMul`, by the explicit
@@ -1237,35 +1281,36 @@ of 2026-08-06: **all rungs done**.
 
 The transcendental content of the whole development is one sentence: *finite covers of the sphere
 minus `r` points are the finite quotients of its fundamental group, algebraically, with tame inertia
-at the punctures matching the loops.*  W1 is that sentence, stated in exactly those terms and in
-both directions.  It is the only thing the rigidity tree still assumes.
+at the punctures matching the loops.*  Half of that sentence — the **completeness** half, that every
+algebraic cover with a prescribed branch locus is named by loops, with its branch cycles generating
+and multiplying to one in the prescribed order — is now a **theorem**, for every finite group and
+every number of branch points (`geomRETCompleteness_of_injective`).  What the rigidity tree still
+assumes is the other half alone: **existence**, the passage from a topological cover to an algebraic
+one.
 
-And it is assumed only where it has to be.  The sentence is *proven*, both directions and with no
-hypothesis on the group, for `r ≤ 2` (`geomRET_of_le_two`) — the once-punctured sphere is simply
-connected and the twice-punctured one has cyclic fundamental group, algebraically — and it is
-proven for every `r` when the deck group is abelian (`geomRETComm`).  Everything the abelian shadow
-of a general cover can see is proven too: inertia generates modulo commutators in every rank, and
-honestly for nilpotent deck groups; the branch locus is finite without being prescribed; and
-unramifiedness at infinity costs at most one branch point rather than being a hypothesis.  The
-branch data has been stripped of everything inessential: trivial branch cycles may be added and
-removed, the points may be permuted along with their cycles, and — by Möbius transport — *where* the
-three points of a three-point datum sit does not matter at all, so W1 in the rigidity regime is one
-statement rather than a moduli of them.  Over such a triple the first non-abelian instance of
-`exists_cover` is proven outright, for every dihedral group.  What is
-left is one regime — a non-abelian deck group over three or more branch points — and one clause in
-it, product-one for `exists_cycles` together with the existence of the cover.  That is the regime
-the rigidity method lives in, and it is the regime in which the correspondence genuinely sees the
-topology.
+And it is assumed only where it has to be.  The whole sentence, existence included, is *proven*
+with no hypothesis on the group for `r ≤ 2` (`geomRET_of_le_two`) — the once-punctured sphere is
+simply connected and the twice-punctured one has cyclic fundamental group, algebraically — and it is
+proven for every `r` when the deck group is abelian (`geomRETComm`).  The branch data has been
+stripped of everything inessential: trivial branch cycles may be added and removed, the points may
+be permuted along with their cycles, and — by Möbius transport — *where* the three points of a
+three-point datum sit does not matter at all, so W1 in the rigidity regime is one statement rather
+than a moduli of them.  Over such a triple the first non-abelian instance of `exists_cover` is
+proven outright, for every dihedral group.  What is left is one regime and one clause in it: the
+existence of a cover with prescribed non-abelian monodromy over three or more branch points.  That
+is the regime the rigidity method lives in, and it is the regime in which the correspondence
+genuinely sees the topology.
 
 Everything else is a theorem.  The arithmetic half — the branch-cycle rationality descent from
 `ℚ̄(T)` to `ℚ(T)`, the whole of §3 — is proven from W1, rung by rung: the branch locus of the
 arithmetic Galois closure is bounded (rungs 3, 4), its branch cycles are read off by `exists_cycles`
-(rung 1), pushed down to arithmetic inertia (rung 5), given a model carrying the right roots of
-unity (rung 6b), and matched against the certificate by rigidity (rung 6a).  From there Fried's
-branch-cycle formula, the centerless extension lemma and Hilbert irreducibility — all already
-proven — give `rigidity_realizable`.
+(rung 1, now unconditional), pushed down to arithmetic inertia (rung 5), given a model carrying the
+right roots of unity (rung 6b), and matched against the certificate by rigidity (rung 6a).  From
+there Fried's branch-cycle formula, the centerless extension lemma and Hilbert irreducibility — all
+already proven — give `rigidity_realizable`.
 
-So the statement of the whole development is now: *the Riemann Existence Theorem over `ℚ̄` implies
-the rigidity criterion for the Inverse Galois Problem*, formalized, with the implication itself
-carrying no assumption.  Closing W1 needs analytification and coherent-sheaf GAGA (§2); that is the
+So the statement of the whole development is now: *the existence direction of the Riemann Existence
+Theorem over `ℚ̄` implies the rigidity criterion for the Inverse Galois Problem*, formalized, with
+the implication itself carrying no assumption, and with the completeness direction supplied rather
+than assumed.  Closing what is left needs analytification and coherent-sheaf GAGA (§2); that is the
 remaining work, and it is of a different kind from everything above.
