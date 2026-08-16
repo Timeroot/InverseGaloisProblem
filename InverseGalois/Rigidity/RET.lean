@@ -322,6 +322,8 @@ import InverseGalois.Rigidity.RET.Analytic.HoloCoeffs
 import InverseGalois.Rigidity.RET.Analytic.Interpolation
 import InverseGalois.Rigidity.RET.Analytic.RationalGrowth
 import InverseGalois.Rigidity.RET.Analytic.InterpRational
+import InverseGalois.Rigidity.RET.Analytic.CoverInvariant
+import InverseGalois.Rigidity.RET.Analytic.IntegralPackage
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -586,9 +588,21 @@ everything else above the cut is elementary by comparison.
   therefore rational functions of the base coordinate
   (`RET.exists_rational_interpPoly_coeff_of_growth`), and clearing their denominators writes that
   product as a polynomial expression in `g` of degree less than the order of the deck group
-  (`RET.exists_interp_of_growth`) — the analytic form of the primitive element theorem.  What a
-  proof of the existence direction still needs beyond this is a holomorphic function separating
-  the sheets, and the growth estimates that feed these criteria.
+  (`RET.exists_interp_of_growth`) — the analytic form of the primitive element theorem.  Where the
+  values of `g` on a fibre are distinct that derivative is nonzero
+  (`RET.eval_derivative_orbitPoly_ne_zero`), and the identity divides out: every holomorphic
+  function of moderate growth is a rational expression in the base coordinate and in a function
+  separating the sheets (`RET.exists_eq_div_of_separating_of_growth`).  The other half of the
+  Galois correspondence costs nothing: a function of moderate growth *invariant* under the deck
+  group is a rational function of the base coordinate alone
+  (`RET.exists_rational_of_invariant_of_growth`,
+  `RET.exists_eq_div_of_invariant_of_growth`).  All of this is stated for the ring homomorphism
+  which reads a polynomial of the base coordinate as a function on the total space
+  (`RET.baseEvalHom`): in its language the equation is a single monic polynomial and the
+  conclusion is integrality (`RET.exists_monic_eval₂_of_growth`,
+  `RET.isIntegralElem_of_growth`).  What a proof of the existence direction still
+  needs beyond this is a holomorphic function separating the sheets, and the growth estimates that
+  feed these criteria.
 * **The completeness direction for abelian deck groups, at every number of branch points** —
   `RET.exists_branchCycleGenSystem_of_comm`: such a cover embeds in the free abelian cover over the
   same points (`RET.AbelianEmbed`, `RET.FreeAbelianUniversal`), whose standard system of branch

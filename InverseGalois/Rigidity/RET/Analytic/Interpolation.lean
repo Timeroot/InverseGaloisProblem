@@ -38,6 +38,8 @@ base coordinate, the analytic form of the primitive element theorem.
 * `Rigidity.RET.eval_interpPoly_eq_mul` — the interpolation identity `T(g y) = F y · P'(g y)`.
 * `Rigidity.RET.natDegree_interpPoly_lt` — the interpolant has degree less than the order of the
   group.
+* `Rigidity.RET.eval_derivative_orbitPoly_ne_zero` — the factor appearing there is nonzero when the
+  function separates the points of the orbit.
 * `Rigidity.RET.exists_analytic_interpPoly_coeff` — its coefficients are analytic functions of the
   base point.
 -/
@@ -126,6 +128,14 @@ theorem eval_derivative_orbitPoly (y : Y) :
     simp
   · intro h
     exact absurd (Finset.mem_univ (1 : H)) h
+
+/-- **Where the function takes distinct values on the orbit, the derivative of its orbit polynomial
+does not vanish there**: that derivative is a product of the differences of those values. -/
+theorem eval_derivative_orbitPoly_ne_zero {y : Y} (hsep : ∀ b : H, b ≠ 1 → g (b • y) ≠ g y) :
+    (derivative (orbitPoly H g y)).eval (g y) ≠ 0 := by
+  rw [eval_derivative_orbitPoly]
+  refine Finset.prod_ne_zero_iff.2 fun b hb => sub_ne_zero.2 ?_
+  exact Ne.symm (hsep b (Finset.mem_erase.1 hb).1)
 
 /-- **The interpolation identity, in terms of the orbit polynomial**: the interpolant at the value
 of `g` is the value of `F` times the derivative of the orbit polynomial there. -/

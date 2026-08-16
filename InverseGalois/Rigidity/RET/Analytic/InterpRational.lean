@@ -32,6 +32,8 @@ nonzero, and the identity exhibits `F` as a rational expression in the base coor
   is a quotient of two polynomials in the base coordinate.
 * `Rigidity.RET.exists_interp_of_growth` — the interpolation identity with polynomial
   coefficients and a denominator that does not vanish over the base region.
+* `Rigidity.RET.exists_eq_div_of_separating_of_growth` — a function of moderate growth is a
+  rational expression in the base coordinate and in a function separating the sheets.
 -/
 
 open Polynomial
@@ -256,6 +258,37 @@ theorem exists_interp_of_growth (hf : IsLocalHomeomorph f)
       (Finset.mul_prod_erase _ _ hk).symm
     rw [hd, eval_mul, eval_mul, ← hpq k y]
     ring
+
+/-- **A holomorphic function of moderate growth is a rational expression in the base coordinate and
+in a function of moderate growth separating the sheets.**
+
+This is the analytic primitive element theorem: once the interpolation identity has polynomial
+coefficients, the two factors it is divided by — the common denominator and the derivative of the
+orbit polynomial — are nonzero everywhere over the base region, the second one precisely because
+the values of `g` on a fibre are distinct. -/
+theorem exists_eq_div_of_separating_of_growth (hf : IsLocalHomeomorph f)
+    (hover : ∀ (a : H) (y : Y), f (a • y) = f y)
+    (htrans : ∀ y y' : Y, f y = f y' → ∃ b : H, y' = b • y)
+    (hg : IsHolo f g) (hF : IsHolo f F) (S : Finset ℂ) (hrange : Set.range f = (↑S)ᶜ)
+    (hsep : ∀ (y : Y) (b : H), b ≠ 1 → g (b • y) ≠ g y)
+    (hpunctg : ∀ s ∈ S, ∃ ρ > (0 : ℝ), ∃ C ≥ (0 : ℝ), ∃ N : ℕ,
+      ∀ y : Y, f y ∈ Metric.ball s ρ \ {s} → ‖g y‖ * ‖f y - s‖ ^ N ≤ C)
+    (hpunctF : ∀ s ∈ S, ∃ ρ > (0 : ℝ), ∃ C ≥ (0 : ℝ), ∃ N : ℕ,
+      ∀ y : Y, f y ∈ Metric.ball s ρ \ {s} → ‖F y‖ * ‖f y - s‖ ^ N ≤ C)
+    {A A' R₀ : ℝ} (hA : 0 ≤ A) (hA' : 0 ≤ A') {m m' : ℕ}
+    (hinfg : ∀ y : Y, R₀ ≤ ‖f y‖ → ‖g y‖ ≤ A * ‖f y‖ ^ m)
+    (hinfF : ∀ y : Y, R₀ ≤ ‖f y‖ → ‖F y‖ ≤ A' * ‖f y‖ ^ m') :
+    ∃ (t : ℕ → ℂ[X]) (q : ℂ[X]), q.Monic ∧
+      (∀ y : Y, q.eval (f y) * (derivative (orbitPoly H g y)).eval (g y) ≠ 0) ∧
+      ∀ y : Y, F y = (∑ k ∈ Finset.range (Fintype.card H), (t k).eval (f y) * g y ^ k)
+        / (q.eval (f y) * (derivative (orbitPoly H g y)).eval (g y)) := by
+  obtain ⟨t, q, hqm, hqne, hid⟩ :=
+    exists_interp_of_growth hf hover htrans hg hF S hrange hpunctg hpunctF hA hA' hinfg hinfF
+  have hne : ∀ y : Y, q.eval (f y) * (derivative (orbitPoly H g y)).eval (g y) ≠ 0 := fun y =>
+    mul_ne_zero (hqne y) (eval_derivative_orbitPoly_ne_zero (hsep y))
+  refine ⟨t, q, hqm, hne, fun y => ?_⟩
+  rw [eq_div_iff (hne y), ← hid y]
+  ring
 
 end Rational
 
