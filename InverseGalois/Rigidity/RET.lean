@@ -330,6 +330,7 @@ import InverseGalois.Rigidity.RET.Analytic.FixedSubring
 import InverseGalois.Rigidity.RET.Analytic.CoverRing
 import InverseGalois.Rigidity.RET.Analytic.BaseAlgebra
 import InverseGalois.Rigidity.RET.Analytic.BaseField
+import InverseGalois.Rigidity.RET.Analytic.Separating
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -649,9 +650,13 @@ everything else above the cut is elementary by comparison.
   form: the function field of a connected covering whose nontrivial deck transformations each move
   some function of moderate growth is a Galois extension of `ℂ(T)` of degree the order of the deck
   group, with the deck group as Galois group (`RET.isGalois_ratFunc_coverRing`,
-  `RET.mulEquivAlgEquiv_ratFunc_coverRing`, `RET.finrank_ratFunc_coverRing`).  What a proof of the
-  existence direction still needs beyond this is that separating function and the growth estimates
-  that feed these criteria.
+  `RET.mulEquivAlgEquiv_ratFunc_coverRing`, `RET.finrank_ratFunc_coverRing`).  One function
+  suffices to start it: a holomorphic function of moderate growth taking distinct values at the
+  points of one fibre separates every nontrivial deck transformation from the identity there
+  (`RET.HasSeparatingFunction`, `RET.separating_of_hasSeparatingFunction`), so a topological
+  covering carrying such a function already produces a finite Galois extension of `ℂ(T)` realizing
+  its deck group (`RET.exists_isGalois_ratFunc_of_hasSeparatingFunction`).  That single function is
+  what a proof of the existence direction still needs.
 * **The completeness direction for abelian deck groups, at every number of branch points** —
   `RET.exists_branchCycleGenSystem_of_comm`: such a cover embeds in the free abelian cover over the
   same points (`RET.AbelianEmbed`, `RET.FreeAbelianUniversal`), whose standard system of branch
