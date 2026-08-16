@@ -316,6 +316,8 @@ import InverseGalois.Rigidity.RET.Analytic.PunctureExtend
 import InverseGalois.Rigidity.RET.Analytic.PunctureMeromorphic
 import InverseGalois.Rigidity.RET.Analytic.EntireGrowth
 import InverseGalois.Rigidity.RET.Analytic.Rational
+import InverseGalois.Rigidity.RET.Analytic.CoverRational
+import InverseGalois.Rigidity.RET.Analytic.CoverAlgebraic
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -561,9 +563,18 @@ everything else above the cut is elementary by comparison.
   which is a polynomial as soon as it grows no faster than a power of `‖z‖` — Cauchy's estimate
   kills the high derivatives and the Taylor series breaks off (`RET.exists_polynomial_of_growth`) —
   so a function analytic off a finite set, meromorphic on it and of moderate growth at infinity is
-  a quotient of two polynomials (`RET.exists_rational_of_meromorphic_of_growth`).  What a proof of
-  the existence direction still needs beyond this is a holomorphic function separating the sheets,
-  and the growth estimates that feed these criteria.
+  a quotient of two polynomials (`RET.exists_rational_of_meromorphic_of_growth`).  Applied to every
+  coefficient of the equation at once this says that a holomorphic function on a covering of a
+  finitely punctured plane, of moderate growth at each puncture and at infinity, is *algebraic over
+  the base*: it satisfies an equation of degree the order of the deck group whose coefficients are
+  polynomials in the base coordinate (`RET.exists_rational_orbitPoly_coeff_of_growth`,
+  `RET.exists_algebraic_of_growth`), and multiplying the function by the leading coefficient makes
+  that equation monic, so the product is integral over the polynomials of the base
+  (`RET.exists_integral_of_growth`).  The covering attached to a monodromy homomorphism meets those
+  hypotheses (`RET.MonodromyData.range_projC`,
+  `RET.MonodromyData.exists_algebraic_of_growth`).  What a proof of the existence direction still
+  needs beyond this is a holomorphic function separating the sheets, and the growth estimates that
+  feed these criteria.
 * **The completeness direction for abelian deck groups, at every number of branch points** —
   `RET.exists_branchCycleGenSystem_of_comm`: such a cover embeds in the free abelian cover over the
   same points (`RET.AbelianEmbed`, `RET.FreeAbelianUniversal`), whose standard system of branch
