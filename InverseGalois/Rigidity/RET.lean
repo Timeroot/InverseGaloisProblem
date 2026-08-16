@@ -331,6 +331,7 @@ import InverseGalois.Rigidity.RET.Analytic.CoverRing
 import InverseGalois.Rigidity.RET.Analytic.BaseAlgebra
 import InverseGalois.Rigidity.RET.Analytic.BaseField
 import InverseGalois.Rigidity.RET.Analytic.Separating
+import InverseGalois.Rigidity.RET.Analytic.Combine
 import InverseGalois.Rigidity.RET.Analytic.RootBranch
 import InverseGalois.Rigidity.RET.Analytic.Kummer
 import InverseGalois.Rigidity.RET.Analytic.Wall
@@ -673,7 +674,13 @@ everything else above the cut is elementary by comparison.
   Galois extension of `ℂ(T)` with the group as Galois group
   (`RET.exists_isGalois_ratFunc_of_prodOne`), so — every finite group carrying such a tuple
   (`RET.exists_prodOne_generating`) — every finite group is a Galois group over `ℂ(T)` of degree
-  its order (`RET.exists_isGalois_ratFunc`).
+  its order (`RET.exists_isGalois_ratFunc`).  Asking only that each nontrivial deck transformation
+  move some function of moderate growth (`RET.HasEnoughFunctions`) is the same requirement
+  (`RET.hasSeparatingFunctions_iff_hasEnoughFunctions`): on a connected covering the differences
+  between the chosen functions and their translates are nonzero elements of a domain, so one point
+  of the total space avoids the zeros of all of them along a whole fibre
+  (`RET.exists_forall_smul_ne`), and a generic linear combination of the chosen functions separates
+  that fibre (`RET.hasSeparatingFunction_of_forall_ne`).
 * **The completeness direction for abelian deck groups, at every number of branch points** —
   `RET.exists_branchCycleGenSystem_of_comm`: such a cover embeds in the free abelian cover over the
   same points (`RET.AbelianEmbed`, `RET.FreeAbelianUniversal`), whose standard system of branch

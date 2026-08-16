@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.Rigidity.RET.Analytic.Separating
+import InverseGalois.Rigidity.RET.Analytic.Combine
 import InverseGalois.Rigidity.RET.Analytic.PunctureEquation
 import InverseGalois.Rigidity.RET.Analytic.CoverAlgebraic
 
@@ -18,12 +19,14 @@ deck group as Galois group.  Between them stands exactly one statement — that 
 punctured plane carries such a function.
 
 `Rigidity.RET.HasSeparatingFunctions` is that statement, named once, and
-`Rigidity.RET.HasEnoughFunctions` is the weaker form of it that the passage to a Galois extension
-really consumes: not one function separating a whole fibre, but one function moved by each
-nontrivial deck transformation.  Granting the weaker one, every finite group is the Galois group of
-an extension of `ℂ(T)` of the expected degree, branched over any prescribed points: the covering
-comes from the topology and the extension from the covering.  The power covering shows the
-statements are not vacuous (`RET/Analytic/Kummer.lean`).
+`Rigidity.RET.HasEnoughFunctions` is the apparently weaker form of it that the passage to a Galois
+extension really consumes: not one function separating a whole fibre, but one function moved by
+each nontrivial deck transformation.  The two are the same statement — a generic linear combination
+of the individual functions separates a fibre — so there is exactly one requirement here, in two
+shapes.  Granting it, every finite group is the Galois group of an extension of `ℂ(T)` of the
+expected degree, branched over any prescribed points: the covering comes from the topology and the
+extension from the covering.  The power covering shows the statements are not vacuous
+(`RET/Analytic/Kummer.lean`).
 
 ## Main definitions
 
@@ -34,8 +37,7 @@ statements are not vacuous (`RET/Analytic/Kummer.lean`).
 
 ## Main results
 
-* `Rigidity.RET.hasEnoughFunctions_of_hasSeparatingFunctions` — a separating function on every
-  covering is more than is needed.
+* `Rigidity.RET.hasSeparatingFunctions_iff_hasEnoughFunctions` — the two are the same statement.
 * `Rigidity.RET.exists_isGalois_ratFunc_of_prodOne` — granting it, a generating product-one tuple
   in a finite group is the Galois group of an extension of the rational functions of the plane.
 * `Rigidity.RET.exists_prodOne_generating` — every finite group carries a generating product-one
@@ -79,6 +81,18 @@ theorem hasEnoughFunctions_of_hasSeparatingFunctions (hwall : HasSeparatingFunct
     HasEnoughFunctions := by
   intro S Y _ _ _ f hf hrange H _ _ _ _ _ htrans a ha
   exact separating_of_hasSeparatingFunction (hwall S Y f hf hrange H htrans) a ha
+
+/-- **It is also no more**: functions of moderate growth seeing the deck group of every covering
+already produce, on each of them, one function separating a whole fibre. -/
+theorem hasSeparatingFunctions_of_hasEnoughFunctions (hwall : HasEnoughFunctions) :
+    HasSeparatingFunctions := by
+  intro S Y _ _ _ f hf hrange H _ _ _ _ _ htrans
+  exact hasSeparatingFunction_of_forall_ne hf (hwall S Y f hf hrange H htrans)
+
+/-- **The two forms of the statement are the same statement.** -/
+theorem hasSeparatingFunctions_iff_hasEnoughFunctions :
+    HasSeparatingFunctions ↔ HasEnoughFunctions :=
+  ⟨hasEnoughFunctions_of_hasSeparatingFunctions, hasSeparatingFunctions_of_hasEnoughFunctions⟩
 
 /-- **A generating product-one tuple in a finite group is the Galois group of an extension of the
 rational functions of the plane**, granting that coverings carry separating functions.
