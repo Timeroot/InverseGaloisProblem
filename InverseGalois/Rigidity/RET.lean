@@ -300,6 +300,8 @@ import InverseGalois.Rigidity.RET.Pi1.Topological.CoverFibre
 import InverseGalois.Rigidity.RET.Pi1.Topological.CoverTopology
 import InverseGalois.Rigidity.RET.Pi1.Topological.CoverDeck
 import InverseGalois.Rigidity.RET.Pi1.Topological.CoverLift
+import InverseGalois.Rigidity.RET.Pi1.Topological.CoverGalois
+import InverseGalois.Rigidity.RET.Pi1.Topological.CoverMonodromy
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -476,7 +478,16 @@ everything else above the cut is elementary by comparison.
   (`RET.MonodromyData.lift`), which is continuous because a short piece stays in one sheet
   (`RET.MonodromyData.continuous_lift`); so when the homomorphism is surjective the total space is
   path-connected (`RET.MonodromyData.pathConnectedSpace_total`) — the cover is the connected Galois
-  cover with the prescribed monodromy.
+  cover with the prescribed monodromy.  That last word is a theorem and not a name: the explicit
+  lift is *the* lift of the covering space, lifts being unique, so the monodromy of the cover in
+  the sense of `IsCoveringMap.monodromy` is transport of labels
+  (`RET.MonodromyData.monodromy_restrict`), which on the fibre over the base point — a copy of the
+  group — is left translation by the value of the homomorphism the cover was built from
+  (`RET.MonodromyData.fibEquiv_monodromy_ofHom`).  Multiplication in the fundamental group
+  composes arrows and so concatenates paths in the reverse order, which is why the labels are the
+  inverses of the values (`RET.MonodromyData.ofHom`): the left action of the fundamental group on a
+  fibre and the right action of the deck group on it commute, and are the two translations of the
+  group on itself.
 * **The completeness direction for abelian deck groups, at every number of branch points** —
   `RET.exists_branchCycleGenSystem_of_comm`: such a cover embeds in the free abelian cover over the
   same points (`RET.AbelianEmbed`, `RET.FreeAbelianUniversal`), whose standard system of branch
