@@ -324,6 +324,7 @@ import InverseGalois.Rigidity.RET.Analytic.RationalGrowth
 import InverseGalois.Rigidity.RET.Analytic.InterpRational
 import InverseGalois.Rigidity.RET.Analytic.CoverInvariant
 import InverseGalois.Rigidity.RET.Analytic.IntegralPackage
+import InverseGalois.Rigidity.RET.Analytic.Moderate
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -596,11 +597,19 @@ everything else above the cut is elementary by comparison.
   Galois correspondence costs nothing: a function of moderate growth *invariant* under the deck
   group is a rational function of the base coordinate alone
   (`RET.exists_rational_of_invariant_of_growth`,
-  `RET.exists_eq_div_of_invariant_of_growth`).  All of this is stated for the ring homomorphism
-  which reads a polynomial of the base coordinate as a function on the total space
-  (`RET.baseEvalHom`): in its language the equation is a single monic polynomial and the
+  `RET.exists_eq_div_of_invariant_of_growth`).  Its denominator vanishes only at the punctures, so
+  it divides a power of the product of the distances to them
+  (`RET.monic_dvd_prod_pow_of_roots_subset`) and the invariant function is a regular function on
+  the punctured plane (`RET.exists_eq_div_prod_of_invariant_of_growth`).  All of this is stated for
+  the ring homomorphism which reads a polynomial of the base coordinate as a function on the total
+  space (`RET.baseEvalHom`): in its language the equation is a single monic polynomial and the
   conclusion is integrality (`RET.exists_monic_eval₂_of_growth`,
-  `RET.isIntegralElem_of_growth`).  What a proof of the existence direction still
+  `RET.isIntegralElem_of_growth`).  The growth conditions these criteria share are collected into
+  one predicate (`RET.IsModerate`), which is stable under the ring operations and holds for every
+  polynomial of the base coordinate (`RET.IsModerate.add`, `RET.IsModerate.mul`,
+  `RET.isModerate_polynomial`), so the criteria read as statements about a subring of the
+  holomorphic functions (`RET.isIntegralElem_of_moderate`,
+  `RET.exists_eq_div_of_separating_of_moderate`).  What a proof of the existence direction still
   needs beyond this is a holomorphic function separating the sheets, and the growth estimates that
   feed these criteria.
 * **The completeness direction for abelian deck groups, at every number of branch points** —
