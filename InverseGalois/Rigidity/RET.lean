@@ -352,6 +352,13 @@ import InverseGalois.Rigidity.RET.Analytic.QuotientCover
 import InverseGalois.Rigidity.RET.RatFuncConstants
 import InverseGalois.Rigidity.RET.RegularCyclicPrime
 import InverseGalois.Rigidity.RET.RegularCyclic
+import InverseGalois.Rigidity.RET.RadicalIndep
+import InverseGalois.Rigidity.RET.KummerBlocks
+import InverseGalois.Rigidity.RET.KummerIndep
+import InverseGalois.Rigidity.RET.KummerBase
+import InverseGalois.Rigidity.RET.AbelKummer
+import InverseGalois.Rigidity.RET.AbelRegular
+import InverseGalois.Rigidity.RET.AbelFinale
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -519,6 +526,20 @@ everything else above the cut is elementary by comparison.
   insensitive to the parity of `n`.  Regularity is likewise recovered from the character rather
   than from a degree count: a constant of the layer is fixed by every `σ_c`, hence by all of
   `Gal(K/ℚ)`, hence rational.
+* **Every finite abelian group, regularly** — `RET.AbelFinale`
+  (`IsRegularInverseGalois.of_commGroup`), the cyclic construction run with `k` radicands at once.
+  Over `K = ℚ(ζₙ)` the single radicand `g` is replaced by `k` radicands `g₁, …, g_k`, each a
+  weighted product `Φ eᵢ` over its own block of `(ℤ/n)ˣ`-orbits (`RET.KummerBlocks`); disjointness
+  of the blocks makes them independent modulo `n`-th powers (`RET.RadicalIndep`), which by Kummer
+  theory over an arbitrary base (`RET.KummerIndep`) gives a Galois extension of `K(T)` of degree
+  exactly `nᵏ` with group `(μₙ)ᵏ`.  The cyclotomic character lifts blockwise exactly as before, so
+  its fixed field is a regular `ℚ(T)`-extension with group `(ℤ/n)ᵏ` (`RET.AbelRegular`).
+  Regularity again comes from the geometric base change: the radicands stay independent over
+  `ℚ̄(T)`, so the base change of the multi-radical extension is a field
+  (`RET.KummerBase.isField_tensor`, a degree count against a second Kummer setup) and the
+  constants are no more than `K`.  A finite abelian group is a product of cyclic groups `ℤ/mᵢ`;
+  taking `n = ∏ mᵢ` and `k` the number of factors, the projections `ℤ/n ↠ ℤ/mᵢ` exhibit it as a
+  quotient of `(ℤ/n)ᵏ`.
 * **Unconditional pieces of L3** — the finite abelian groups (`RET.KummerAbelian`), `Aₙ` and `Sₙ`
   for `n ≥ 3` (`RET.SerreCovers`), the dihedral groups (`RET.DihedralCover`), and every branch datum
   with at most two points
