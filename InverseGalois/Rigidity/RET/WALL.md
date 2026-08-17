@@ -1126,8 +1126,8 @@ inertia clause still stand between the two.
 
 ### What the requirement asks is that coverings are cut out by equations
 
-The requirement is stated as a property of *functions*, but it is equivalent to a property of the
-covering, and the equivalence is close to being a theorem in both directions.
+The requirement is stated as a property of *functions*, but it is a property of the covering, and
+the equivalence is a theorem in both directions.
 
 **A covering that comes from an equation satisfies it, for the cheapest of reasons.**  On the root
 variety `RootTotal P S` of a monic `P ∈ ℂ[T][X]`, the second coordinate `rootCoord` is holomorphic
@@ -1159,11 +1159,53 @@ homeomorphic over the plane to an algebraic one (`exists_ne_of_homeo_rootTotal`)
    `exists_algebraic_model`; capstone `Analytic/Algebraize.lean`,
    `exists_algebraic_model_of_hasEnoughFunctions`).
 
-The two directions stop just short of an equivalence, and the gap is worth naming: the
-algebraization discards `d.roots`, finitely many further points of the base at which the equation
-found may degenerate although the covering does not, whereas the converse needs a model over the
-whole punctured plane.  Closing it means re-choosing the equation to remove those apparent
-singularities — the normalization of the model — which is real work and is not done.
+**The two directions do meet.**  What stood between them was that the algebraization discards
+`d.roots`, finitely many further points of the base at which the equation found may degenerate
+although the covering does not, whereas the transport of functions needs a model over the whole
+punctured plane.  `Analytic/CoverExtend.lean` closes the gap without re-choosing the equation.
+Damp the coordinate of the model by `dampPoly S S' = ∏_{s ∈ S' \ S} (X − s)`, a polynomial in the
+base coordinate vanishing exactly at the discarded parameters, and extend the product by zero over
+the fibres the model does not see (`dampedCoord`).  Three things then hold, and together they say
+the damped coordinate is a function of moderate growth on the *whole* covering:
+
+* over a parameter the model keeps it is a product of two holomorphic functions
+  (`isHoloAt_dampedCoord_of_mem`);
+* over a discarded parameter it is holomorphic by **Riemann's theorem on removable
+  singularities** (`isHoloAt_dampedCoord_of_notMem`): in the chart the projection supplies it is
+  bounded on a punctured disc, by the Cauchy bound for the roots of a monic family
+  (`norm_dampedCoord_le`), so it extends analytically, and the extension takes the value `0`
+  prescribed there because the damping factor tends to `0` — the prescribed value is the right one,
+  which is why no choice enters the definition;
+* the growth conditions are conditions in the base coordinate, and the extension only adds points
+  over finitely many parameters (`IsModerate.of_subtype_of_zero`, `isModerate_dampedCoord`).
+
+The damping does not spoil what the function was for: at a parameter outside `S'` the damping
+factor is nonzero, so the damped coordinate still distinguishes the points of that fibre, and a
+deck transformation of a *connected* covering which is not the identity moves **every** point
+(`smul_ne_self_of_ne_one`, from `IsSeparatedMap.eq_of_comp_eq`), in particular one over such a
+parameter.  Hence `exists_ne_of_homeo_rootTotal_of_subset`, and with it the equivalence
+(`Analytic/Algebraicity.lean`):
+
+```lean
+theorem forall_ne_iff_exists_algebraic_model (hf : IsLocalHomeomorph f)
+    (hsepmap : IsSeparatedMap f) (htrans : ∀ y y', f y = f y' → ∃ c : H, y' = c • y)
+    (hrange : Set.range f = ((S : Set ℂ))ᶜ) :
+    (∀ a : H, a ≠ 1 → ∃ F ∈ coverRing hf S, ∃ y : Y, F (a • y) ≠ F y) ↔
+      ∃ (P : Polynomial ℂ[X]) (S' : Finset ℂ), S ⊆ S' ∧ P.Monic ∧ P.natDegree = Nat.card H ∧
+        (∀ z ∉ (S' : Set ℂ), (spec P z).Separable) ∧
+        ∃ Φ : ↥(f ⁻¹' ((S' : Set ℂ)ᶜ)) ≃ₜ RootTotal P S', ∀ y, rootBase P S' (Φ y) = f (y : Y)
+
+theorem hasEnoughFunctions_iff_allCoveringsAlgebraic :
+    HasEnoughFunctions ↔ AllCoveringsAlgebraic
+```
+
+Two hypotheses appear in the converse that the forward direction does not need — the projection is
+separated, and the total space is connected — and both are properties of a covering of a punctured
+plane, so neither costs anything at the level of `HasEnoughFunctions`.  Separatedness is not
+decoration: the plane with one point doubled (`Analytic/DoublePoint.lean`) is a local homeomorphism
+with a faithful transitive deck group and no separating function whatever, and separatedness is
+exactly what it fails.  So the wall is not a statement about functions at all.  It is the single
+statement that **every topological covering of a punctured plane is algebraic**, which is GAGA.
 
 **The equation is the minimal polynomial.**  `Analytic/PrimitiveElement.lean` upgrades the model to
 a presentation of the function field.  Write `α` for the image of `W` in
