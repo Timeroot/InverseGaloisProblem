@@ -363,6 +363,8 @@ import InverseGalois.Rigidity.RET.Analytic.Dbar.Basic
 import InverseGalois.Rigidity.RET.Analytic.Dbar.Pompeiu
 import InverseGalois.Rigidity.RET.Analytic.Dbar.Kernel
 import InverseGalois.Rigidity.RET.Analytic.Dbar.Solve
+import InverseGalois.Rigidity.RET.Analytic.Dbar.Parts
+import InverseGalois.Rigidity.RET.Analytic.Dbar.Adjoint
 import InverseGalois.Rigidity.RET.Analytic.Dbar.Cover
 import InverseGalois.Rigidity.RET.Analytic.Dbar.Enough
 
