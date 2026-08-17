@@ -17,7 +17,9 @@ Mathlib in the exact shape needed downstream.
   `k(T)`, then every root multiplicity of `q` is divisible by `n`.  Since `k[X]` is integrally
   closed, an `n`-th root in the fraction field is already a polynomial, and multiplicities then
   multiply.  This is the standard criterion certifying that a Kummer extension `X ^ n - q` is a
-  field.
+  field.  Its Eisenstein counterpart `irreducible_X_pow_sub_C_ratFunc` reads the same conclusion
+  off a single *simple* root of `q`, in every degree; `rootMultiplicity_prod_pow` produces such a
+  root from a weighted product of distinct linear factors.
 
 * **Coefficient automorphisms.** `ratFuncMapAlg`: an automorphism `σ` of `K` over `k` acts on
   `K(T)` coefficientwise, fixing `k(T)`, and this action is a group homomorphism which is
@@ -96,6 +98,77 @@ theorem rootMultiplicity_dvd_of_pow_eq {k : Type*} [Field k] {q : k[X]} {n : ℕ
       rintro rfl
       exact hq (by simpa [zero_pow hn.ne'] using hpq.symm)
     exact ⟨p.rootMultiplicity a, by rw [← hpq, rootMultiplicity_pow hp0]⟩
+
+/-! ### Weighted products of distinct linear factors -/
+
+section Weighted
+
+variable {L ι : Type*} [Field L] [Fintype ι] [DecidableEq ι]
+
+/-- **The multiplicity of a root of a weighted product of distinct linear factors is its
+weight.** -/
+theorem rootMultiplicity_prod_pow (α : ι → L) (hinj : Function.Injective α) (A : ι → ℕ) (i : ι) :
+    (∏ j, (X - C (α j)) ^ A j).rootMultiplicity (α i) = A i := by
+  have htail : (∏ j ∈ Finset.univ.erase i, (X - C (α j)) ^ A j).eval (α i) ≠ 0 := by
+    rw [Polynomial.eval_prod]
+    refine Finset.prod_ne_zero_iff.mpr fun j hj => ?_
+    rw [eval_pow, eval_sub, eval_X, eval_C]
+    exact pow_ne_zero _ (sub_ne_zero.mpr fun h => (Finset.mem_erase.mp hj).1 (hinj h.symm))
+  have htail0 : (∏ j ∈ Finset.univ.erase i, (X - C (α j)) ^ A j) ≠ 0 := fun h => htail (by
+    rw [h, eval_zero])
+  have hsplit : ∏ j, (X - C (α j)) ^ A j
+      = (X - C (α i)) ^ A i * ∏ j ∈ Finset.univ.erase i, (X - C (α j)) ^ A j :=
+    (Finset.mul_prod_erase _ _ (Finset.mem_univ i)).symm
+  rw [hsplit, rootMultiplicity_mul (mul_ne_zero (pow_ne_zero _ (X_sub_C_ne_zero (α i))) htail0),
+    rootMultiplicity_X_sub_C_pow, rootMultiplicity_eq_zero htail, add_zero]
+
+omit [DecidableEq ι] in
+/-- A weighted product of linear factors is nonzero. -/
+theorem prod_pow_ne_zero (α : ι → L) (A : ι → ℕ) : (∏ j, (X - C (α j)) ^ A j) ≠ 0 :=
+  Finset.prod_ne_zero_iff.mpr fun j _ => pow_ne_zero _ (X_sub_C_ne_zero (α j))
+
+end Weighted
+
+/-! ### Kummer polynomials over a rational function field -/
+
+/-- **A polynomial with a simple root generates a Kummer extension of every degree.**
+Over `k[X]` the polynomial `Y ^ m - q` is Eisenstein at the prime `X - z`, because `q` vanishes to
+order exactly one at `z`; Gauss' lemma then transports irreducibility to `k(T)`.  Unlike the
+criteria phrased through `m`-th powers, this covers even `m` as well. -/
+theorem irreducible_X_pow_sub_C_ratFunc {k : Type*} [Field k] {q : k[X]} {z : k}
+    (hz : q.rootMultiplicity z = 1) {m : ℕ} (hm : 0 < m) :
+    Irreducible ((X : (RatFunc k)[X]) ^ m - C (algebraMap k[X] (RatFunc k) q)) := by
+  have hq : q ≠ 0 := by rintro rfl; simp at hz
+  set f : k[X][X] := X ^ m - C q with hf
+  have hmonic : f.Monic := monic_X_pow_sub_C q hm.ne'
+  have hdeg : f.natDegree = m := natDegree_X_pow_sub_C
+  have hc0 : f.coeff 0 = -q := by
+    rw [hf, coeff_sub, coeff_X_pow, coeff_C, if_neg (Ne.symm hm.ne'), if_pos rfl, zero_sub]
+  have hprime : (Ideal.span {(X - C z : k[X])}).IsPrime :=
+    (Ideal.span_singleton_prime (X_sub_C_ne_zero z)).2 (prime_X_sub_C z)
+  have hdvd : (X - C z : k[X]) ∣ q := by
+    have h := pow_rootMultiplicity_dvd q z
+    rwa [hz, pow_one] at h
+  have heis : f.IsEisensteinAt (Ideal.span {(X - C z : k[X])}) := by
+    constructor
+    · rw [hmonic.leadingCoeff]
+      exact fun h => hprime.ne_top (Ideal.eq_top_of_isUnit_mem _ h isUnit_one)
+    · intro i hi
+      rw [hdeg] at hi
+      rcases Nat.eq_zero_or_pos i with rfl | hipos
+      · rw [hc0]
+        exact neg_mem (Ideal.mem_span_singleton.2 hdvd)
+      · rw [hf, coeff_sub, coeff_X_pow, coeff_C, if_neg hi.ne, if_neg hipos.ne', sub_zero]
+        exact Ideal.zero_mem _
+    · rw [hc0, Ideal.span_singleton_pow, Ideal.mem_span_singleton]
+      intro h
+      have h2 : ((X - C z : k[X]) ^ 2) ∣ q := dvd_neg.mp h
+      rw [← le_rootMultiplicity_iff hq, hz] at h2
+      omega
+  have hirr : Irreducible f :=
+    heis.irreducible hprime hmonic.isPrimitive (by rw [hdeg]; exact hm)
+  have h := (hmonic.irreducible_iff_irreducible_map_fraction_map (K := RatFunc k)).1 hirr
+  rwa [hf, Polynomial.map_sub, Polynomial.map_pow, map_X, map_C] at h
 
 /-! ### Coefficient automorphisms -/
 

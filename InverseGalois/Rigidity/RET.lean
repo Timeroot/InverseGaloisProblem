@@ -351,6 +351,7 @@ import InverseGalois.Rigidity.RET.Analytic.DeckKernel
 import InverseGalois.Rigidity.RET.Analytic.QuotientCover
 import InverseGalois.Rigidity.RET.RatFuncConstants
 import InverseGalois.Rigidity.RET.RegularCyclicPrime
+import InverseGalois.Rigidity.RET.RegularCyclic
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -502,6 +503,22 @@ everything else above the cut is elementary by comparison.
   root-multiplicity criterion) and, through `RET.RegularityConverse` over the geometric base `ℚ̄(T)`,
   makes its constants no more than `K`; a constant of the degree-`p` layer then has degree at most
   `p − 1` over `ℚ` and degree dividing `p` over `ℚ(T)`, hence lies in `ℚ`.
+* **Every finite cyclic group, regularly** — `RET.RegularCyclic`
+  (`IsRegularInverseGalois.of_isCyclic`), the same construction carried out for an arbitrary
+  modulus `n` in place of a prime.  Two things have to be replaced.  First, the exponent
+  bookkeeping: rather than juggling powers of a primitive root modulo `p`, the weighted products
+  are packaged into a single homomorphism `Φ e = ∏ (T − ζ^v) ^ e v` from the additive group of
+  exponent vectors `e : (ℤ/n)ˣ → ℤ` to `K(T)ˣ`, injective because root multiplicities read the
+  exponents back off (`Cyclic.exponent_eq_zero_of_phi_eq_one`) and equivariant for the cyclotomic
+  character, `c · Φ e = Φ (e ∘ (c⁻¹ · −))`.  Injectivity turns the two identities the construction
+  needs — the twist `c · g = g^c · h_c^n` and the cocycle relation among the `h_c` — into exact
+  integer arithmetic, so that `c ↦ (w ↦ w^c · h_c)` is a genuine homomorphism from `(ℤ/n)ˣ` and
+  the whole cyclotomic character, not just one generator, lifts to a complement of the Kummer
+  group.  Second, irreducibility: the `n`-th power criteria fail for even `n`, and are replaced by
+  the Eisenstein reading of the simple root, `RET.irreducible_X_pow_sub_C_ratFunc`, which is
+  insensitive to the parity of `n`.  Regularity is likewise recovered from the character rather
+  than from a degree count: a constant of the layer is fixed by every `σ_c`, hence by all of
+  `Gal(K/ℚ)`, hence rational.
 * **Unconditional pieces of L3** — the finite abelian groups (`RET.KummerAbelian`), `Aₙ` and `Sₙ`
   for `n ≥ 3` (`RET.SerreCovers`), the dihedral groups (`RET.DihedralCover`), and every branch datum
   with at most two points

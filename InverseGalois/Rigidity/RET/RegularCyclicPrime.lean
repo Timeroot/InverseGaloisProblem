@@ -44,35 +44,7 @@ attribute [local instance] Polynomial.algebra
 
 open scoped RatFunc IntermediateField
 
-/-! ### A weighted product of distinct linear factors -/
-
-section Aux
-
-variable {L ι : Type*} [Field L] [Fintype ι] [DecidableEq ι]
-
-/-- **The multiplicity of a root of a weighted product of distinct linear factors is its
-weight.** -/
-theorem rootMultiplicity_prod_pow (α : ι → L) (hinj : Function.Injective α) (A : ι → ℕ) (i : ι) :
-    (∏ j, (X - C (α j)) ^ A j).rootMultiplicity (α i) = A i := by
-  have htail : (∏ j ∈ Finset.univ.erase i, (X - C (α j)) ^ A j).eval (α i) ≠ 0 := by
-    rw [Polynomial.eval_prod]
-    refine Finset.prod_ne_zero_iff.mpr fun j hj => ?_
-    rw [eval_pow, eval_sub, eval_X, eval_C]
-    exact pow_ne_zero _ (sub_ne_zero.mpr fun h => (Finset.mem_erase.mp hj).1 (hinj h.symm))
-  have htail0 : (∏ j ∈ Finset.univ.erase i, (X - C (α j)) ^ A j) ≠ 0 := fun h => htail (by
-    rw [h, eval_zero])
-  have hsplit : ∏ j, (X - C (α j)) ^ A j
-      = (X - C (α i)) ^ A i * ∏ j ∈ Finset.univ.erase i, (X - C (α j)) ^ A j :=
-    (Finset.mul_prod_erase _ _ (Finset.mem_univ i)).symm
-  rw [hsplit, rootMultiplicity_mul (mul_ne_zero (pow_ne_zero _ (X_sub_C_ne_zero (α i))) htail0),
-    rootMultiplicity_X_sub_C_pow, rootMultiplicity_eq_zero htail, add_zero]
-
-omit [DecidableEq ι] in
-/-- A weighted product of linear factors is nonzero. -/
-theorem prod_pow_ne_zero (α : ι → L) (A : ι → ℕ) : (∏ j, (X - C (α j)) ^ A j) ≠ 0 :=
-  Finset.prod_ne_zero_iff.mpr fun j _ => pow_ne_zero _ (X_sub_C_ne_zero (α j))
-
-end Aux
+open Rigidity.RET (rootMultiplicity_prod_pow prod_pow_ne_zero)
 
 variable (p : ℕ) [hp : Fact p.Prime]
 
