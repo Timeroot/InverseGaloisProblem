@@ -381,6 +381,7 @@ import InverseGalois.Rigidity.RET.Analytic.Dbar.CoverBK
 import InverseGalois.Rigidity.RET.Analytic.Dbar.CoverEstimate
 import InverseGalois.Rigidity.RET.Analytic.Dbar.CoverL2
 import InverseGalois.Rigidity.RET.Analytic.Dbar.CoverWeak
+import InverseGalois.Rigidity.RET.Analytic.Dbar.AreaMean
 import InverseGalois.Rigidity.RET.Analytic.Dbar.Enough
 
 /-!
