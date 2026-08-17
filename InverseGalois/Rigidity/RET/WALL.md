@@ -1124,6 +1124,83 @@ arithmetic: `geomRETExistence_of_injective` asks for the cover over `ℚ̄`, pac
 and carrying the prescribed inertia generators, so Lefschetz descent from `ℂ` to `ℚ̄` and the
 inertia clause still stand between the two.
 
+### What the requirement asks is that coverings are cut out by equations
+
+The requirement is stated as a property of *functions*, but it is equivalent to a property of the
+covering, and the equivalence is close to being a theorem in both directions.
+
+**A covering that comes from an equation satisfies it, for the cheapest of reasons.**  On the root
+variety `RootTotal P S` of a monic `P ∈ ℂ[T][X]`, the second coordinate `rootCoord` is holomorphic
+(`isHolo_rootCoord`) and of moderate growth by the Cauchy bound on the roots of a monic polynomial
+(`isModerate_rootCoord`), and it separates the fibres *tautologically*: a point of the root variety
+**is** its parameter together with its coordinate, so a deck transformation moving no function of
+moderate growth fixes every point (`Analytic/RootRing.lean`, `exists_ne_rootCoord`).  Functions of
+moderate growth transport along a homeomorphism over the plane
+(`Analytic/Transport.lean`, `mem_coverRing_comp_homeo`), so the same holds of any covering merely
+homeomorphic over the plane to an algebraic one (`exists_ne_of_homeo_rootTotal`).
+
+**Conversely the requirement produces the equation.**  Three steps, all unconditional:
+
+1. Functions moving the deck transformations one at a time combine into a single function `G`
+   separating one fibre (`hasSeparatingFunction_of_forall_ne`, above).
+2. `G` then separates *every* fibre over the complement of a finite set
+   (`Analytic/GenericSeparation.lean`, `exists_finset_separating`).  The product of the differences
+   of its values along a fibre, `sepProd H G y = ∏_{a ≠ b} (G(a·y) − G(b·y))`, is invariant under
+   the deck group and of moderate growth (`sepProd_smul`, `sepProd_mem_coverRing`), hence a
+   rational function of the base coordinate, and it is not identically zero because the ring of
+   functions of a connected covering is a domain (`exists_sepProd_ne_zero`); so it vanishes over
+   only the roots of a numerator.
+3. Multiplying `G` by the leading coefficient `d` of the equation it satisfies over `ℂ[T]` makes it
+   integral; the product `W = d(f y)·G(y)` still separates, away from the roots of `d`, and its
+   values along a fibre are then exactly as many roots of a monic polynomial `P` of that degree as
+   the polynomial can have — so all of them (`roots_spec_eq_of_separating`), the specialization is
+   separable (`separable_spec_of_separating`), and `(f, W)` is a continuous bijection onto the root
+   variety, hence a homeomorphism over the plane (`Analytic/AlgebraicModel.lean`,
+   `exists_algebraic_model`; capstone `Analytic/Algebraize.lean`,
+   `exists_algebraic_model_of_hasEnoughFunctions`).
+
+The two directions stop just short of an equivalence, and the gap is worth naming: the
+algebraization discards `d.roots`, finitely many further points of the base at which the equation
+found may degenerate although the covering does not, whereas the converse needs a model over the
+whole punctured plane.  Closing it means re-choosing the equation to remove those apparent
+singularities — the normalization of the model — which is real work and is not done.
+
+**The equation is the minimal polynomial.**  `Analytic/PrimitiveElement.lean` upgrades the model to
+a presentation of the function field.  Write `α` for the image of `W` in
+`FractionRing (coverRing hf S)` and `Q` for `P` read over `ℂ(T)`.  Then `minpoly ℂ(T) α ∣ Q`, so
+its degree is at most `n = |H|`; and the `n` translates `a · α` are *distinct* elements of the
+function field (`smul_algebraMap_coverRing` plus injectivity of `algebraMap` into the fraction
+field) and all of them roots of that minimal polynomial, so its degree is at least `n`.  The bounds
+meet: `minpoly ℂ(T) α = Q`, which is therefore irreducible, and `ℂ(T)⟮α⟯ = ⊤` because the degree of
+the function field over `ℂ(T)` is also `|H|` (`finrank_ratFunc_coverRing`).  So
+
+```lean
+theorem exists_algebraic_model_primitive … :
+    ∃ (P : Polynomial ℂ[X]) (S' : Finset ℂ), S ⊆ S' ∧ P.Monic ∧ P.natDegree = Nat.card H ∧
+      (∀ z ∉ (S' : Set ℂ), (spec P z).Separable) ∧
+      (∃ Φ : ↥(f ⁻¹' ((S' : Set ℂ)ᶜ)) ≃ₜ RootTotal P S', ∀ y, rootBase P S' (Φ y) = f (y : Y)) ∧
+      Irreducible (P.map (algebraMap ℂ[X] (RatFunc ℂ))) ∧ …
+```
+
+— one and the same `P` gives the homeomorphism and presents the Galois extension.  Granting the
+requirement for every covering at once, `Analytic/PrimitiveGroup.lean` sharpens
+`exists_isGalois_ratFunc` from an abstract field to an explicit polynomial:
+
+```lean
+theorem exists_polynomial_isGalois_ratFunc (hwall : HasEnoughFunctions) (H : Type) [Group H]
+    [Finite H] :
+    ∃ P : Polynomial ℂ[X], P.Monic ∧ P.natDegree = Nat.card H ∧
+      Irreducible (P.map (algebraMap ℂ[X] (RatFunc ℂ))) ∧
+      ∃ (L : Type) (_ : Field L) (_ : Algebra (RatFunc ℂ) L), IsGalois (RatFunc ℂ) L ∧
+        Nonempty (H ≃* (L ≃ₐ[RatFunc ℂ] L)) ∧
+        ∃ α : L, aeval α (P.map (algebraMap ℂ[X] (RatFunc ℂ))) = 0 ∧
+          IntermediateField.adjoin (RatFunc ℂ) {α} = ⊤
+```
+
+What is still missing between this and `geomRETExistence_of_injective` is unchanged: the
+coefficients are complex numbers and the statement says nothing about the branch cycles, so the
+Lefschetz descent from `ℂ` to `ℚ̄` and the inertia clause both remain.
+
 ### 2.4 How `exists_cycles` was closed
 
 `GeomRETCompleteness t` asks for more than a product-one generating tuple.  For a prescribed tuple

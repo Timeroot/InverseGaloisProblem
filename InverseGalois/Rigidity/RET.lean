@@ -344,6 +344,7 @@ import InverseGalois.Rigidity.RET.Analytic.GenericSeparation
 import InverseGalois.Rigidity.RET.Analytic.AlgebraicModel
 import InverseGalois.Rigidity.RET.Analytic.Algebraize
 import InverseGalois.Rigidity.RET.Analytic.PrimitiveElement
+import InverseGalois.Rigidity.RET.Analytic.PrimitiveGroup
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -731,7 +732,11 @@ everything else above the cut is elementary by comparison.
   function field (`RET.smul_algebraMap_coverRing`) and all of them roots of that minimal
   polynomial; the two bounds meet, so the equation *is* the minimal polynomial, is irreducible over
   `ℂ(T)`, and its root generates the whole function field
-  (`RET.exists_primitive_polynomial`).  Granting the requirement for every covering at once, every
+  (`RET.exists_primitive_polynomial`).  It is the same equation that gives the model, so a covering
+  whose functions see its deck group is, away from finitely many points of the base, the root
+  variety of a monic polynomial of degree the order of that group which is irreducible over `ℂ(T)`
+  and generates the function field (`RET.exists_algebraic_model_primitive`).  Granting the
+  requirement for every covering at once, every
   finite group is therefore the Galois group of a single monic irreducible polynomial in `ℂ[T][X]`
   of degree its order, one root of which generates the extension
   (`RET.exists_polynomial_isGalois_ratFunc`).
