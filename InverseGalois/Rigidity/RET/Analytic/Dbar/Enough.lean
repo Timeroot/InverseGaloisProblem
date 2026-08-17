@@ -35,6 +35,8 @@ coordinate does.  The difference `χ - (z - x₀) u` is then holomorphic, of mod
 
 * `Rigidity.RET.exists_cutoff` — a smooth cut-off of the plane whose Cauchy–Riemann derivative is
   divisible by the coordinate centred at its centre.
+* `Rigidity.RET.finite_fibre_of_transitive` — a covering whose deck group is finite and transitive
+  on the fibres has finite fibres.
 * `Rigidity.RET.hasEnoughFunctions_of_dbarSolvable` — solving the equation is enough.
 -/
 
@@ -135,16 +137,32 @@ theorem exists_cutoff (c : ℂ) {ρ : ℝ} (hρ : 0 < ρ) :
 
 /-! ### The reduction -/
 
-/-- **The Cauchy–Riemann equation is solvable on every covering of a punctured plane**: for data
-that is continuously differentiable and of compact support there is a solution of moderate
-growth. -/
+/-- **The Cauchy–Riemann equation is solvable on every covering of a punctured plane with finite
+fibres**: for data that is continuously differentiable and of compact support there is a solution
+of moderate growth.
+
+The fibres of the coverings that the existence direction produces are orbits of a finite deck
+group, so restricting the statement to coverings with finite fibres costs nothing. -/
 def DbarSolvable : Prop :=
   ∀ (S : Finset ℂ) (Y : Type) [TopologicalSpace Y] [Nonempty Y] [PreconnectedSpace Y]
-    (q : Y → ↥((S : Set ℂ)ᶜ)), IsCoveringMap q →
+    (q : Y → ↥((S : Set ℂ)ᶜ)), IsCoveringMap q → (∀ z, (q ⁻¹' {z}).Finite) →
       ∀ g : Y → ℂ, (∀ y, IsC1At (fun y => ((q y : ℂ))) g y) →
         (∃ K : Set Y, IsCompact K ∧ ∀ y ∉ K, g y = 0) →
         ∃ u : Y → ℂ, (∀ y, IsDbarAt (fun y => ((q y : ℂ))) u (g y) y) ∧
           IsModerate (fun y => ((q y : ℂ))) S u
+
+/-- **A covering whose deck group is finite and transitive on the fibres has finite fibres.** -/
+theorem finite_fibre_of_transitive {S : Finset ℂ} {Y : Type} [TopologicalSpace Y]
+    {q : Y → ↥((S : Set ℂ)ᶜ)} (H : Type) [Group H] [Finite H] [MulAction H Y]
+    (htrans : ∀ y y' : Y, (q y : ℂ) = (q y' : ℂ) → ∃ b : H, y' = b • y)
+    (z : ↥((S : Set ℂ)ᶜ)) : (q ⁻¹' {z}).Finite := by
+  rcases Set.eq_empty_or_nonempty (q ⁻¹' {z}) with h | ⟨y₀, hy₀⟩
+  · rw [h]
+    exact Set.finite_empty
+  · refine Set.Finite.subset (Set.finite_range fun b : H => b • y₀) fun y hy => ?_
+    rw [Set.mem_preimage, Set.mem_singleton_iff] at hy hy₀
+    obtain ⟨b, hb⟩ := htrans y₀ y (by rw [hy, hy₀])
+    exact ⟨b, hb.symm⟩
 
 /-- **Solving the Cauchy–Riemann equation on coverings is enough** for the functions of moderate
 growth to see the deck group, and so for the existence direction of the Riemann existence
@@ -232,7 +250,7 @@ theorem hasEnoughFunctions_of_dbarSolvable (hsolve : DbarSolvable) : HasEnoughFu
       exact (isDbarAt_comp_zero (y := y) hf (differentiableAt_const (0 : ℂ))).congr
         ((hout y hy).mono fun y' h => h.1)
   -- solve, and correct
-  obtain ⟨u, hu, hmodu⟩ := hsolve S Y q hq g hgC1 hgsupp
+  obtain ⟨u, hu, hmodu⟩ := hsolve S Y q hq (finite_fibre_of_transitive H htrans) g hgC1 hgsupp
   refine ⟨fun y => χ y - (π y - π y₀) * u y, mem_coverRing.2 ⟨?_, ?_⟩, y₀, ?_⟩
   · refine isHolo_of_isDbarAt_zero hf fun y => ?_
     have h1 : IsDbarAt π (fun y' => π y' - π y₀) 0 y :=

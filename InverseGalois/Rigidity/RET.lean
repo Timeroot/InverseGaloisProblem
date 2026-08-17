@@ -370,6 +370,7 @@ import InverseGalois.Rigidity.RET.Analytic.Dbar.Commutator
 import InverseGalois.Rigidity.RET.Analytic.Dbar.BochnerKodaira
 import InverseGalois.Rigidity.RET.Analytic.Dbar.Estimate
 import InverseGalois.Rigidity.RET.Analytic.Dbar.Cover
+import InverseGalois.Rigidity.RET.Analytic.Dbar.FibreSum
 import InverseGalois.Rigidity.RET.Analytic.Dbar.Enough
 
 /-!
