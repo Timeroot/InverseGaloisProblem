@@ -350,7 +350,7 @@ import InverseGalois.Rigidity.RET.Analytic.Algebraicity
 import InverseGalois.Rigidity.RET.Analytic.DeckKernel
 import InverseGalois.Rigidity.RET.Analytic.QuotientCover
 import InverseGalois.Rigidity.RET.RatFuncConstants
-import InverseGalois.Rigidity.RET.RegularQuintic
+import InverseGalois.Rigidity.RET.RegularCyclicPrime
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -485,19 +485,23 @@ everything else above the cut is elementary by comparison.
   `sphereGroup_mulEquiv_free` (`Γ_r ≅ FreeGroup (Fin (r-1))`).  **Complete.**
 * **Honest conclusion** — `InverseGalois.Rigidity.RET.Statement`: `IsRegularInverseGalois G`, the
   recognizable target of step (A) and source of step (B) above, with `of_mulEquiv`.
-* **The cyclic group of order five, regularly** — `RET.RegularQuintic`
-  (`Quintic.isRegularInverseGalois_of_card_eq_five`), the first group beyond the Möbius list, the
-  symmetric and the alternating groups to be realized regularly over `ℚ` by hand.  Over `ℚ(ζ)(T)`
-  the Kummer extension of the weighted product `g = (T − ζ)(T − ζ²)³(T − ζ⁴)⁴(T − ζ³)²` — whose
-  exponents are the inverses of the exponents of `ζ` modulo five, so that `σ g` and `g²` differ by a
-  fifth power — carries both the Kummer automorphism `w ↦ ζw` and a lift `w ↦ w²/h` of the
-  generator of `Gal(ℚ(ζ)/ℚ)`; the exponent two matching the cyclotomic character is exactly what
-  makes the two commute, so the extension of `ℚ(T)` they generate is abelian of degree twenty and
-  the fixed field of the order-four part is cyclic of degree five.  The simple root of `g` at `ζ`
-  makes it a field (`RET.RatFuncConstants`, the root-multiplicity criterion for a Kummer extension)
-  and, through `RET.RegularityConverse` over the geometric base `ℚ̄(T)`, makes the constants of that
-  field no more than `ℚ(ζ)`; a constant of the quintic layer then has degree at most four over `ℚ`
-  and degree dividing five over `ℚ(T)`, hence lies in `ℚ`.
+* **The groups of prime order, regularly** — `RET.RegularCyclicPrime`
+  (`isRegularInverseGalois_of_card_prime`), the first groups beyond the Möbius list, the symmetric
+  and the alternating groups to be realized regularly over `ℚ` by hand.  Fix a prime `p`, write `K`
+  for the cyclotomic field of the `p`-th roots of unity and `c` for a primitive root modulo `p`, so
+  that the generator `σ` of `Gal(K/ℚ)` sends `ζ` to `ζ^c`.  Over `K(T)` take the Kummer extension of
+  the weighted product `g = ∏ (T − ζ^v) ^ a v` over the units `v` modulo `p`, the weight `a v` being
+  the representative of `v⁻¹`.  The weights are the inverses precisely so that `σ`, which permutes
+  the linear factors by multiplication by `c`, reproduces `g^c` up to a `p`-th power: `σ g = g^c h^p`
+  (`CyclicPrime.sigmaE_gE`, by reindexing the product along multiplication by `c` in the units).
+  That identity lifts `σ` to the Kummer extension by `w ↦ w^c h`, and the exponent `c` matching the
+  cyclotomic character is exactly what makes the lift commute with the Kummer automorphism `w ↦ ζw`;
+  so the extension of `ℚ(T)` the two generate is abelian of degree `p (p − 1)` and the fixed field
+  of the order-`(p−1)` part is cyclic of degree `p`.  The simple root of `g` at `ζ` — the weight of
+  the factor `T − ζ` is one — makes the Kummer extension a field (`RET.RatFuncConstants`, the
+  root-multiplicity criterion) and, through `RET.RegularityConverse` over the geometric base `ℚ̄(T)`,
+  makes its constants no more than `K`; a constant of the degree-`p` layer then has degree at most
+  `p − 1` over `ℚ` and degree dividing `p` over `ℚ(T)`, hence lies in `ℚ`.
 * **Unconditional pieces of L3** — the finite abelian groups (`RET.KummerAbelian`), `Aₙ` and `Sₙ`
   for `n ≥ 3` (`RET.SerreCovers`), the dihedral groups (`RET.DihedralCover`), and every branch datum
   with at most two points
