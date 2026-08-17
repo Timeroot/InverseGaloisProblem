@@ -371,6 +371,8 @@ import InverseGalois.Rigidity.RET.Analytic.Dbar.BochnerKodaira
 import InverseGalois.Rigidity.RET.Analytic.Dbar.Estimate
 import InverseGalois.Rigidity.RET.Analytic.Dbar.Cover
 import InverseGalois.Rigidity.RET.Analytic.Dbar.FibreSum
+import InverseGalois.Rigidity.RET.Analytic.Dbar.CoverMeasure
+import InverseGalois.Rigidity.RET.Analytic.Dbar.CoverParts
 import InverseGalois.Rigidity.RET.Analytic.Dbar.Enough
 
 /-!

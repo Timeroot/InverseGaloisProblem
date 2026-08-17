@@ -25,7 +25,13 @@ is then a substitute for integrating the function over the total space.
   sections whose values at each point exhaust the fibre exactly once.
 * `Rigidity.RET.fibreSum_eq_finsum` — over such a neighbourhood the fibre sum is the finite sum
   along the sections.
-* `Rigidity.RET.continuousOn_fibreSum` — the fibre sum of a continuous function is continuous.
+* `Rigidity.RET.fibreSum_add`, `Rigidity.RET.map_fibreSum`, `Rigidity.RET.fibreSum_mul_comp` — the
+  fibre sum is additive, commutes with an additive map, and absorbs a factor pulled back from the
+  base.
+* `Rigidity.RET.continuous_fibreSum`, `Rigidity.RET.hasCompactSupport_fibreSum` — the fibre sum of
+  a continuous compactly supported function is continuous and compactly supported.
+* `Rigidity.RET.fibreSum_mono` — the fibre sum is monotone.
+* `Rigidity.RET.dbar_fibreSum` — the Cauchy–Riemann operator commutes with the fibre sum.
 -/
 
 open Topology
@@ -34,7 +40,7 @@ noncomputable section
 
 namespace Rigidity.RET
 
-variable {Y : Type*} [TopologicalSpace Y] {f F : Y → ℂ} {z₀ : ℂ}
+variable {Y : Type*} [TopologicalSpace Y] {f : Y → ℂ} {z₀ : ℂ}
 
 /-! ### Local sections -/
 
@@ -82,25 +88,65 @@ theorem exists_sections (h : IsEvenlyCovered f z₀ (f ⁻¹' {z₀})) :
 
 /-! ### The fibre sum -/
 
+section Algebra
+
+variable {M : Type*} [AddCommMonoid M] {F : Y → M}
+
 /-- **The fibre sum** of a function on the total space: its sum over the fibre of the projection. -/
-def fibreSum (f F : Y → ℂ) (z : ℂ) : ℂ := ∑ᶠ y ∈ f ⁻¹' {z}, F y
+def fibreSum (f : Y → ℂ) (F : Y → M) (z : ℂ) : M := ∑ᶠ y ∈ f ⁻¹' {z}, F y
+
+omit [TopologicalSpace Y] in
+/-- A function vanishing along a fibre has fibre sum zero there. -/
+theorem fibreSum_eq_zero (h : ∀ y, f y = z₀ → F y = 0) : fibreSum f F z₀ = 0 :=
+  finsum_mem_of_eqOn_zero fun y hy => h y (Set.mem_singleton_iff.mp hy)
 
 omit [TopologicalSpace Y] in
 /-- The fibre sum vanishes off the range of the projection. -/
-theorem fibreSum_of_notMem_range (hz : z₀ ∉ Set.range f) : fibreSum f F z₀ = 0 := by
-  have hempty : f ⁻¹' {z₀} = (∅ : Set Y) := by
-    ext y
-    simp only [Set.mem_preimage, Set.mem_singleton_iff, Set.mem_empty_iff_false, iff_false]
-    exact fun hy => hz ⟨y, hy⟩
-  rw [fibreSum, hempty]
-  simp
+theorem fibreSum_of_notMem_range (hz : z₀ ∉ Set.range f) : fibreSum f F z₀ = 0 :=
+  fibreSum_eq_zero fun y hy => absurd ⟨y, hy⟩ hz
+
+omit [TopologicalSpace Y] in
+/-- **The fibre sum is additive.** -/
+theorem fibreSum_add (hfin : (f ⁻¹' {z₀}).Finite) (F G : Y → M) :
+    fibreSum f (fun y => F y + G y) z₀ = fibreSum f F z₀ + fibreSum f G z₀ :=
+  finsum_mem_add_distrib hfin
+
+omit [TopologicalSpace Y] in
+/-- **The fibre sum commutes with an additive map.** -/
+theorem map_fibreSum {N : Type*} [AddCommMonoid N] (φ : M →+ N) (F : Y → M)
+    (hfin : (f ⁻¹' {z₀}).Finite) :
+    φ (fibreSum f F z₀) = fibreSum f (fun y => φ (F y)) z₀ :=
+  φ.map_finsum_mem F hfin
+
+omit [TopologicalSpace Y] in
+/-- **A constant factor comes out of the fibre sum.** -/
+theorem fibreSum_const_mul {R : Type*} [NonUnitalNonAssocSemiring R] [NoZeroDivisors R] (c : R)
+    (F : Y → R) : fibreSum f (fun y => c * F y) z₀ = c * fibreSum f F z₀ :=
+  (mul_finsum_mem F c).symm
+
+omit [TopologicalSpace Y] in
+/-- The fibre sum is supported over the image of the support. -/
+theorem support_fibreSum_subset (f : Y → ℂ) (F : Y → M) :
+    Function.support (fibreSum f F) ⊆ f '' Function.support F := by
+  intro z hz
+  by_contra hno
+  exact hz (fibreSum_eq_zero fun y hy => by
+    by_contra hFy
+    exact hno ⟨y, hFy, hy⟩)
+
+/-- **The fibre sum of a compactly supported function is compactly supported.** -/
+theorem hasCompactSupport_fibreSum (hf : Continuous f) (hF : HasCompactSupport F) :
+    HasCompactSupport (fibreSum f F) := by
+  have hK : IsCompact (f '' tsupport F) := hF.image hf
+  refine hK.of_isClosed_subset isClosed_closure (closure_minimal ?_ hK.isClosed)
+  exact (support_fibreSum_subset f F).trans (Set.image_mono subset_closure)
 
 omit [TopologicalSpace Y] in
 /-- **Over an evenly covered neighbourhood the fibre sum is the finite sum along the sections.** -/
 theorem fibreSum_eq_finsum {U : Set ℂ} {s : ↥(f ⁻¹' {z₀}) → ℂ → Y}
     (hproj : ∀ i, ∀ z ∈ U, f (s i z) = z)
     (hsurj : ∀ z ∈ U, ∀ y, f y = z → ∃ i, s i z = y)
-    (hinj : ∀ z ∈ U, Function.Injective fun i => s i z) (F : Y → ℂ) {z : ℂ} (hz : z ∈ U) :
+    (hinj : ∀ z ∈ U, Function.Injective fun i => s i z) (F : Y → M) {z : ℂ} (hz : z ∈ U) :
     fibreSum f F z = ∑ᶠ i : ↥(f ⁻¹' {z₀}), F (s i z) := by
   have hrange : f ⁻¹' {z} = Set.range fun i => s i z := by
     ext y
@@ -111,7 +157,31 @@ theorem fibreSum_eq_finsum {U : Set ℂ} {s : ↥(f ⁻¹' {z₀}) → ℂ → Y
       exact hproj i z hz
   rw [fibreSum, hrange, finsum_mem_range (hinj z hz)]
 
+end Algebra
+
+/-! ### Order -/
+
+omit [TopologicalSpace Y] in
+/-- The fibre sum of a nonnegative function is nonnegative. -/
+theorem fibreSum_nonneg {F : Y → ℝ} (hF : ∀ y, 0 ≤ F y) (z : ℂ) : 0 ≤ fibreSum f F z :=
+  finsum_nonneg fun y => finsum_nonneg fun _ => hF y
+
+omit [TopologicalSpace Y] in
+/-- **The fibre sum is monotone.** -/
+theorem fibreSum_mono (hfin : (f ⁻¹' {z₀}).Finite) {F G : Y → ℝ} (h : ∀ y, F y ≤ G y) :
+    fibreSum f F z₀ ≤ fibreSum f G z₀ := by
+  have h1 : fibreSum f G z₀ = fibreSum f F z₀ + fibreSum f (fun y => G y - F y) z₀ := by
+    rw [← fibreSum_add hfin]
+    simp
+  have h2 : 0 ≤ fibreSum f (fun y => G y - F y) z₀ :=
+    fibreSum_nonneg (fun y => sub_nonneg.2 (h y)) z₀
+  linarith
+
 /-! ### Continuity -/
+
+section Continuity
+
+variable {M : Type*} [AddCommMonoid M] [TopologicalSpace M] [ContinuousAdd M] {F : Y → M}
 
 /-- **The fibre sum of a continuous function is continuous** over an evenly covered
 neighbourhood. -/
@@ -127,9 +197,33 @@ theorem continuousOn_fibreSum [Finite ↥(f ⁻¹' {z₀})] {U : Set ℂ} {s : �
   · intro z hz
     rw [fibreSum_eq_finsum hproj hsurj hinj F hz, finsum_eq_sum_of_fintype]
 
+omit [TopologicalSpace M] [ContinuousAdd M] in
+/-- Away from the image of the support the fibre sum vanishes on a whole neighbourhood. -/
+theorem eventuallyEq_zero_fibreSum (hf : Continuous f) (hF : HasCompactSupport F) {z : ℂ}
+    (hz : z ∉ f '' tsupport F) : (fun _ : ℂ => (0 : M)) =ᶠ[𝓝 z] fibreSum f F := by
+  have hcl : IsClosed (f '' tsupport F) := (hF.image hf).isClosed
+  filter_upwards [hcl.isOpen_compl.mem_nhds hz] with w hw
+  refine (fibreSum_eq_zero fun y hy => ?_).symm
+  exact image_eq_zero_of_notMem_tsupport fun hmem => hw ⟨y, hmem, hy⟩
+
+/-- **The fibre sum of a continuous compactly supported function is continuous.** -/
+theorem continuous_fibreSum (hfin : ∀ z, (f ⁻¹' {z}).Finite)
+    (hcov : ∀ z ∈ Set.range f, IsEvenlyCovered f z (f ⁻¹' {z})) (hf : Continuous f)
+    (hFc : Continuous F) (hFs : HasCompactSupport F) : Continuous (fibreSum f F) := by
+  rw [continuous_iff_continuousAt]
+  intro z
+  by_cases hz : z ∈ f '' tsupport F
+  · obtain ⟨y, -, rfl⟩ := hz
+    haveI := (hfin (f y)).to_subtype
+    obtain ⟨U, hU, hmem, s, hcont, hproj, hsurj, hinj⟩ := exists_sections (hcov (f y) ⟨y, rfl⟩)
+    exact (continuousOn_fibreSum hcont hproj hsurj hinj hFc).continuousAt (hU.mem_nhds hmem)
+  · exact continuousAt_const.congr (eventuallyEq_zero_fibreSum hf hFs hz)
+
+end Continuity
+
 /-! ### A section is a local coordinate -/
 
-variable {σ : ℂ → Y} {U : Set ℂ} {z₁ : ℂ}
+variable {F : Y → ℂ} {σ : ℂ → Y} {U : Set ℂ} {z₁ : ℂ}
 
 /-- **A continuous section of the projection is the inverse of a local coordinate.**  Both invert
 the projection near the point, so they agree there. -/
@@ -238,6 +332,13 @@ theorem dbar_fibreSum [Finite ↥(f ⁻¹' {z₀})] {s : ↥(f ⁻¹' {z₀}) �
   rw [dbar_congr hev, dbar_finset_sum _ fun i _ => (hterm i).1,
     fibreSum_eq_finsum hproj hsurj hinj G (mem_of_mem_nhds hU), finsum_eq_sum_of_fintype]
   exact Finset.sum_congr rfl fun i _ => (hterm i).2
+
+omit [TopologicalSpace Y] in
+/-- **A factor pulled back from the base comes out of the fibre sum.** -/
+theorem fibreSum_mul_comp (F : Y → ℂ) (h : ℂ → ℂ) :
+    fibreSum f (fun y => F y * h (f y)) z₀ = fibreSum f F z₀ * h z₀ := by
+  rw [fibreSum, fibreSum, finsum_mem_mul]
+  exact finsum_mem_congr rfl fun y hy => by rw [Set.mem_singleton_iff.mp hy]
 
 end Rigidity.RET
 
