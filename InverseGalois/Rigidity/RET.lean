@@ -349,6 +349,8 @@ import InverseGalois.Rigidity.RET.Analytic.CoverExtend
 import InverseGalois.Rigidity.RET.Analytic.Algebraicity
 import InverseGalois.Rigidity.RET.Analytic.DeckKernel
 import InverseGalois.Rigidity.RET.Analytic.QuotientCover
+import InverseGalois.Rigidity.RET.RatFuncConstants
+import InverseGalois.Rigidity.RET.RegularQuintic
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -483,6 +485,19 @@ everything else above the cut is elementary by comparison.
   `sphereGroup_mulEquiv_free` (`Γ_r ≅ FreeGroup (Fin (r-1))`).  **Complete.**
 * **Honest conclusion** — `InverseGalois.Rigidity.RET.Statement`: `IsRegularInverseGalois G`, the
   recognizable target of step (A) and source of step (B) above, with `of_mulEquiv`.
+* **The cyclic group of order five, regularly** — `RET.RegularQuintic`
+  (`Quintic.isRegularInverseGalois_of_card_eq_five`), the first group beyond the Möbius list, the
+  symmetric and the alternating groups to be realized regularly over `ℚ` by hand.  Over `ℚ(ζ)(T)`
+  the Kummer extension of the weighted product `g = (T − ζ)(T − ζ²)³(T − ζ⁴)⁴(T − ζ³)²` — whose
+  exponents are the inverses of the exponents of `ζ` modulo five, so that `σ g` and `g²` differ by a
+  fifth power — carries both the Kummer automorphism `w ↦ ζw` and a lift `w ↦ w²/h` of the
+  generator of `Gal(ℚ(ζ)/ℚ)`; the exponent two matching the cyclotomic character is exactly what
+  makes the two commute, so the extension of `ℚ(T)` they generate is abelian of degree twenty and
+  the fixed field of the order-four part is cyclic of degree five.  The simple root of `g` at `ζ`
+  makes it a field (`RET.RatFuncConstants`, the root-multiplicity criterion for a Kummer extension)
+  and, through `RET.RegularityConverse` over the geometric base `ℚ̄(T)`, makes the constants of that
+  field no more than `ℚ(ζ)`; a constant of the quintic layer then has degree at most four over `ℚ`
+  and degree dividing five over `ℚ(T)`, hence lies in `ℚ`.
 * **Unconditional pieces of L3** — the finite abelian groups (`RET.KummerAbelian`), `Aₙ` and `Sₙ`
   for `n ≥ 3` (`RET.SerreCovers`), the dihedral groups (`RET.DihedralCover`), and every branch datum
   with at most two points
