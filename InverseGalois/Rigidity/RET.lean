@@ -343,6 +343,7 @@ import InverseGalois.Rigidity.RET.Analytic.Transport
 import InverseGalois.Rigidity.RET.Analytic.GenericSeparation
 import InverseGalois.Rigidity.RET.Analytic.AlgebraicModel
 import InverseGalois.Rigidity.RET.Analytic.Algebraize
+import InverseGalois.Rigidity.RET.Analytic.PrimitiveElement
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -723,7 +724,17 @@ everything else above the cut is elementary by comparison.
   continuous bijection onto the root variety, hence a homeomorphism over the plane
   (`RET.exists_algebraic_model`).  The two directions stop just short of an equivalence: the
   algebraization discards the roots of that leading coefficient, finitely many further points of
-  the base at which the equation found may degenerate although the covering does not.
+  the base at which the equation found may degenerate although the covering does not.  A separating
+  function does more than exhibit a model, however: it generates.  Over the rational functions of
+  the base its minimal polynomial divides the monic equation of degree the order of the deck group,
+  while the translates of the function under the deck group are that many distinct elements of the
+  function field (`RET.smul_algebraMap_coverRing`) and all of them roots of that minimal
+  polynomial; the two bounds meet, so the equation *is* the minimal polynomial, is irreducible over
+  `ℂ(T)`, and its root generates the whole function field
+  (`RET.exists_primitive_polynomial`).  Granting the requirement for every covering at once, every
+  finite group is therefore the Galois group of a single monic irreducible polynomial in `ℂ[T][X]`
+  of degree its order, one root of which generates the extension
+  (`RET.exists_polynomial_isGalois_ratFunc`).
 * **The completeness direction for abelian deck groups, at every number of branch points** —
   `RET.exists_branchCycleGenSystem_of_comm`: such a cover embeds in the free abelian cover over the
   same points (`RET.AbelianEmbed`, `RET.FreeAbelianUniversal`), whose standard system of branch
