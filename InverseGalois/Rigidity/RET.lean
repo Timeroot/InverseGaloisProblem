@@ -359,6 +359,10 @@ import InverseGalois.Rigidity.RET.KummerBase
 import InverseGalois.Rigidity.RET.AbelKummer
 import InverseGalois.Rigidity.RET.AbelRegular
 import InverseGalois.Rigidity.RET.AbelFinale
+import InverseGalois.Rigidity.RET.Analytic.Dbar.Basic
+import InverseGalois.Rigidity.RET.Analytic.Dbar.Pompeiu
+import InverseGalois.Rigidity.RET.Analytic.Dbar.Kernel
+import InverseGalois.Rigidity.RET.Analytic.Dbar.Solve
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
