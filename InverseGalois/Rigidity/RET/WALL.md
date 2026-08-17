@@ -1297,6 +1297,64 @@ element of prime order, so the requirement need only be tested on deck transform
 order (`forall_ne_iff_forall_prime_ne`) — a nontrivial finite subgroup contains an element of prime
 order by Cauchy.
 
+### Every covering has an algebraic quotient, namely by the deck transformations nothing sees
+
+The degree statement above says the wall is the equality `|H/K| = |H|`.  The geometric companion of
+that statement is that the *quotient* covering, the one whose deck group is `H/K`, is algebraic —
+unconditionally (`Analytic/QuotientCover.lean`).  Write `CoverQuot Y N` for `Quotient (orbitRel ↥N Y)`,
+the total space divided by a normal subgroup `N ◁ H` of the deck group, and `quotBase f N` for the
+projection it inherits.  The point of the file is that a chart of the covering *is* a chart of the
+quotient:
+
+```lean
+def quotChart (N) (hf : IsLocalHomeomorph f) (d : OpenPartialHomeomorph Y ℂ) (hd : f = ⇑d) :
+    OpenPartialHomeomorph (CoverQuot Y N) ℂ where
+  toFun := quotBase f N                        -- the projection itself, so this is a chart on the nose
+  invFun w := Quotient.mk _ (d.symm w)         -- the old coordinate, read in the quotient
+  source := (Quotient.mk _) '' d.source        -- open, because the quotient map is open
+  target := d.target
+```
+
+No injectivity of `Y → CoverQuot Y N` on `d.source` is needed for `left_inv'` — the two sides are
+compared *after* projecting — so the construction asks nothing of the action, and
+
+```lean
+theorem isLocalHomeomorph_quotBase (hf : IsLocalHomeomorph f) (N : Subgroup H) :
+    IsLocalHomeomorph (quotBase f N)
+```
+
+holds for every `N`.  In this chart a descended function is the original function in the original
+chart, *syntactically*, so holomorphy and moderate growth transfer in both directions with no
+estimate to redo (`isHolo_quotFun`, `isModerate_quotFun`, `isHolo_comp_mk`, `isModerate_comp_mk`).
+With `N = deckKernel H hf S` that gives the two halves of "dividing costs nothing":
+
+```lean
+theorem image_comp_mk_coverRing (hf : IsLocalHomeomorph f) :
+    (fun G => fun y => G (Quotient.mk _ y)) '' (coverRing (isLocalHomeomorph_quotBase hf _) S) =
+      (coverRing hf S : Set (Y → ℂ))          -- the same functions, upstairs and downstairs
+
+theorem forall_ne_quotBase (hf : IsLocalHomeomorph f) :
+    ∀ x : H ⧸ deckKernel H hf S, x ≠ 1 → ∃ G ∈ coverRing … S, ∃ z, G (x • z) ≠ G z
+```
+
+and the second is exactly the hypothesis `exists_algebraic_model_of_forall_ne` consumes — which,
+note, needs neither `IsSeparatedMap` nor `FaithfulSMul`, only the local homeomorphism, transitivity
+and the range.  Hence, for an arbitrary connected covering of a punctured plane with finite
+transitive deck group, with no requirement whatever:
+
+```lean
+theorem exists_algebraic_model_quotient (hf) (htrans) (hrange) :
+    ∃ (P : Polynomial (Polynomial ℂ)) (S' : Finset ℂ), S ⊆ S' ∧ P.Monic ∧
+      P.natDegree = Nat.card (H ⧸ deckKernel H hf S) ∧ (∀ z ∉ (S' : Set ℂ), (spec P z).Separable) ∧
+      ∃ Φ : ↥(quotBase f (deckKernel H hf S) ⁻¹' ((S' : Set ℂ)ᶜ)) ≃ₜ RootTotal P S',
+        ∀ z, rootBase P S' (Φ z) = quotBase f (deckKernel H hf S) z
+```
+
+So the wall is *not* "some covering fails to be algebraic in any sense".  Every covering algebraizes
+after dividing by the part of its deck group its functions cannot tell apart, the algebraic model
+has degree `|H/K|` — the degree of the field extension of the previous section — and the requirement
+is the single assertion that this division was unnecessary.
+
 ### 2.4 How `exists_cycles` was closed
 
 `GeomRETCompleteness t` asks for more than a product-one generating tuple.  For a prescribed tuple
