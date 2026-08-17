@@ -1243,6 +1243,60 @@ What is still missing between this and `geomRETExistence_of_injective` is unchan
 coefficients are complex numbers and the statement says nothing about the branch cycles, so the
 Lefschetz descent from `ℂ` to `ℚ̄` and the inertia clause both remain.
 
+### The extension a covering always defines, and the wall as a degree
+
+Every Galois statement of `Analytic/BaseField.lean` carries the same hypothesis — every nontrivial
+deck transformation moves some function of moderate growth — and uses it for one purpose only: to
+make the action of the deck group on `coverRing hf S` faithful.  An action can always be made
+faithful by dividing out what it does not see, so the whole chain runs with **no hypothesis at
+all** for the quotient (`Analytic/DeckKernel.lean`).  Write
+
+```lean
+abbrev deckKernel (H) (hf : IsLocalHomeomorph f) (S : Finset ℂ) [IsOverBase H f] : Subgroup H :=
+  actionKernel ↥(coverRing hf S) H         -- the deck transformations no function sees
+
+theorem mem_deckKernel_iff :
+    a ∈ deckKernel H hf S ↔ ∀ F ∈ coverRing hf S, ∀ y : Y, F (a • y) = F y
+```
+
+`deckKernel H hf S` is the kernel of `H → RingAut (coverRing hf S)`, hence normal, the quotient acts
+faithfully (`faithfulSMul_quotient`) and has the *same* invariants (`forall_quotient_smul_eq_iff`),
+which is all that `isGaloisGroup_coverRing` ever needed.  So, for any connected covering of a
+punctured plane with a finite transitive deck group `H`, with no requirement whatever:
+
+```lean
+theorem isGalois_ratFunc_quotient_coverRing … :
+    IsGalois (RatFunc ℂ) (FractionRing ↥(coverRing hf S))
+
+def mulEquivAlgEquiv_ratFunc_quotient_coverRing … :
+    (H ⧸ deckKernel H hf S) ≃*
+      (FractionRing ↥(coverRing hf S) ≃ₐ[RatFunc ℂ] FractionRing ↥(coverRing hf S))
+
+theorem finrank_ratFunc_quotient_coverRing … :
+    Module.finrank (RatFunc ℂ) (FractionRing ↥(coverRing hf S)) = Nat.card (H ⧸ deckKernel H hf S)
+```
+
+The function field of a covering is *always* a Galois extension of `ℂ(T)`; the only thing in doubt
+is its degree.  Since `deckKernel H hf S = ⊥` is exactly the requirement for that covering
+(`deckKernel_eq_bot_iff`), and `Nat.card (H ⧸ K) = Nat.card H` only for `K = ⊥`, the wall is a
+statement about a single number:
+
+```lean
+theorem finrank_ratFunc_coverRing_eq_card_iff … :
+    Module.finrank (RatFunc ℂ) (FractionRing ↥(coverRing hf S)) = Nat.card H ↔
+      ∀ a : H, a ≠ 1 → ∃ F ∈ coverRing hf S, ∃ y : Y, F (a • y) ≠ F y
+
+theorem hasEnoughFunctions_iff_forall_finrank_eq_card :
+    HasEnoughFunctions ↔ ∀ … (covering, deck group H), Module.finrank (RatFunc ℂ) … = Nat.card H
+```
+
+Two consequences worth recording.  The unconditional half is not vacuous: whatever the analysis
+does, the deck group always acts on `ℂ(T)`-Galois extension of degree `|H/K|`, and the wall only
+raises `|H/K|` to `|H|`.  And because `K` is a *subgroup*, it is trivial as soon as it contains no
+element of prime order, so the requirement need only be tested on deck transformations of prime
+order (`forall_ne_iff_forall_prime_ne`) — a nontrivial finite subgroup contains an element of prime
+order by Cauchy.
+
 ### 2.4 How `exists_cycles` was closed
 
 `GeomRETCompleteness t` asks for more than a product-one generating tuple.  For a prescribed tuple

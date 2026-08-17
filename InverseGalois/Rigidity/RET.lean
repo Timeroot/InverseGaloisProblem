@@ -347,6 +347,7 @@ import InverseGalois.Rigidity.RET.Analytic.PrimitiveElement
 import InverseGalois.Rigidity.RET.Analytic.PrimitiveGroup
 import InverseGalois.Rigidity.RET.Analytic.CoverExtend
 import InverseGalois.Rigidity.RET.Analytic.Algebraicity
+import InverseGalois.Rigidity.RET.Analytic.DeckKernel
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
