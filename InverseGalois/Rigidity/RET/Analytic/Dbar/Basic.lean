@@ -21,10 +21,11 @@ radial and angular derivatives that the change to polar coordinates produces.
 ## Main results
 
 * `Rigidity.RET.dbar_eq_zero` — the operator kills complex-differentiable functions.
+* `Rigidity.RET.differentiableAt_of_dbar_eq_zero` — and it kills nothing else.
 * `Rigidity.RET.polar_dbar` — the polar form of the operator.
 -/
 
-open scoped Real
+open scoped Real ContDiff
 
 noncomputable section
 
@@ -55,6 +56,49 @@ theorem circPt_mul_conj (θ : ℝ) : Complex.exp (-(θ : ℂ) * Complex.I) * cir
   rw [circPt_eq_exp, ← Complex.exp_add]
   simp
 
+/-! ### The rules of the operator -/
+
+section Rules
+
+variable {u v : ℂ → ℂ} {z : ℂ}
+
+/-- The operator only sees a function near the point. -/
+theorem dbar_congr (h : u =ᶠ[nhds z] v) : dbar u z = dbar v z := by
+  simp only [dbar, h.fderiv_eq]
+
+/-- The operator is additive. -/
+theorem dbar_add (hu : DifferentiableAt ℝ u z) (hv : DifferentiableAt ℝ v z) :
+    dbar (fun w => u w + v w) z = dbar u z + dbar v z := by
+  have h : fderiv ℝ (fun w => u w + v w) z = fderiv ℝ u z + fderiv ℝ v z :=
+    (hu.hasFDerivAt.add hv.hasFDerivAt).fderiv
+  simp only [dbar, h, ContinuousLinearMap.add_apply]
+  ring
+
+/-- The operator is compatible with negation. -/
+theorem dbar_neg (hu : DifferentiableAt ℝ u z) :
+    dbar (fun w => -u w) z = -dbar u z := by
+  have h : fderiv ℝ (fun w => -u w) z = -fderiv ℝ u z := hu.hasFDerivAt.neg.fderiv
+  simp only [dbar, h, ContinuousLinearMap.neg_apply]
+  ring
+
+/-- **The product rule for the operator.** -/
+theorem dbar_mul (hu : DifferentiableAt ℝ u z) (hv : DifferentiableAt ℝ v z) :
+    dbar (fun w => u w * v w) z = u z * dbar v z + v z * dbar u z := by
+  have h : fderiv ℝ (fun w => u w * v w) z = u z • fderiv ℝ v z + v z • fderiv ℝ u z :=
+    (hu.hasFDerivAt.mul hv.hasFDerivAt).fderiv
+  simp only [dbar, h, ContinuousLinearMap.add_apply, ContinuousLinearMap.coe_smul',
+    Pi.smul_apply, smul_eq_mul]
+  ring
+
+/-- The operator preserves smoothness. -/
+theorem contDiff_dbar (hu : ContDiff ℝ ∞ u) : ContDiff ℝ ∞ (dbar u) := by
+  have h : ContDiff ℝ ∞ (fun z => fderiv ℝ u z) := hu.fderiv_right (by simp)
+  have h1 : ContDiff ℝ ∞ (fun z => fderiv ℝ u z 1) := h.clm_apply contDiff_const
+  have h2 : ContDiff ℝ ∞ (fun z => fderiv ℝ u z Complex.I) := h.clm_apply contDiff_const
+  exact contDiff_const.mul (h1.add (contDiff_const.mul h2))
+
+end Rules
+
 /-! ### The operator kills the holomorphic functions -/
 
 /-- A complex-differentiable function is killed by `∂/∂z̄`. -/
@@ -69,6 +113,28 @@ theorem dbar_eq_zero {f : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℂ f z)
   rw [dbar, h1, h2]
   ring_nf
   simp [Complex.I_sq]
+
+/-- **A real-differentiable function killed by `∂/∂z̄` is complex-differentiable.**  The vanishing
+of the operator says exactly that the real derivative commutes with multiplication by `i`, which is
+complex linearity. -/
+theorem differentiableAt_of_dbar_eq_zero {f : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℝ f z)
+    (h : dbar f z = 0) : DifferentiableAt ℂ f z := by
+  set L := fderiv ℝ f z with hL
+  have h2 : (2 : ℂ)⁻¹ * (L 1 + Complex.I * L Complex.I) = 0 := h
+  have hzero : L 1 + Complex.I * L Complex.I = 0 := by linear_combination 2 * h2
+  have hI : L Complex.I = Complex.I * L 1 := by
+    linear_combination (-Complex.I) * hzero + (L Complex.I) * Complex.I_sq
+  rw [differentiableAt_iff_restrictScalars ℝ hf]
+  refine ⟨(L 1) • ContinuousLinearMap.id ℂ ℂ, ContinuousLinearMap.ext fun v => ?_⟩
+  show L 1 * v = L v
+  have hv : v = v.re • (1 : ℂ) + v.im • Complex.I := by
+    simp [Complex.real_smul, Complex.re_add_im]
+  have key : L v = v.re • L 1 + v.im • L Complex.I := by
+    conv_lhs => rw [hv]
+    rw [map_add, map_smul, map_smul]
+  have hvv : (v.re : ℂ) + (v.im : ℂ) * Complex.I = v := Complex.re_add_im v
+  rw [key, hI, Complex.real_smul, Complex.real_smul]
+  linear_combination (-(L 1)) * hvv
 
 /-! ### The polar form -/
 

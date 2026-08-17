@@ -1708,3 +1708,82 @@ equivalently `HasSeparatingFunctions` — and granting it, every finite group is
 a single nonconstant function of moderate growth on an abstract covering is where the transcendence
 sits: it is a `∂̄`-problem, and Mathlib has neither the Cauchy–Pompeiu formula nor any other means
 of solving one.
+
+---
+
+## 5. The `∂̄` reduction (2026-08-17)
+
+The last sentence of §4 is now out of date in its second half: the Cauchy–Pompeiu formula and the
+solution of `∂u/∂z̄ = g` in the plane are both in the tree, and the wall has been pushed from an
+amorphous "produce a function" to a single equation.
+
+**What is proven in the plane** (`RET/Analytic/Dbar/`):
+
+* `Basic.lean` — the operator `dbar f z = ½(∂ₓf + i ∂_y f)`, its rules (`dbar_add`, `dbar_neg`,
+  `dbar_mul`, `dbar_congr`, `contDiff_dbar`), the fact that it kills exactly the holomorphic
+  functions (`dbar_eq_zero`, `differentiableAt_of_dbar_eq_zero`), and its polar form.
+* `Pompeiu.lean`, `Kernel.lean` — the Cauchy–Pompeiu inversion `cauchyTransform_dbar` and the local
+  integrability of the Cauchy kernel.
+* `Solve.lean` — **Dolbeault–Grothendieck in the plane**: for `g` continuously differentiable of
+  compact support, `cauchyTransform g` solves `∂u/∂z̄ = g` and is as smooth as `g`
+  (`dbar_cauchyTransform`, `contDiff_cauchyTransform`, `exists_dbar_eq`).
+
+**The operator on a covering** (`Cover.lean`).  The repo's charts on the total space *are*
+restrictions of the projection, so the operator can be read there in the relational form
+`IsDbarAt f u c y` ("`c` is the value of `∂u/∂z̄` at `y`").  The reading does not depend on the chart
+(`IsDbarAt.eq`), it is additive and satisfies the product rule, a function pulled back from the base
+pulls back its derivative (`isDbarAt_comp`, `isDbarAt_comp_zero`), and — the point —
+`isHolo_of_isDbarAt_zero`: a function killed everywhere by the operator is holomorphic in the sense
+`coverRing` uses.  `IsC1At` is the matching smoothness predicate.
+
+**The reduction** (`Enough.lean`).  Define
+
+```
+DbarSolvable : Prop :=
+  on every covering q : Y → ℂ∖S, for every g : Y → ℂ that is C¹ in the charts and of compact
+  support, there is u : Y → ℂ with ∂u/∂z̄ = g everywhere and u of moderate growth.
+```
+
+Then `hasEnoughFunctions_of_dbarSolvable : DbarSolvable → HasEnoughFunctions`.  The construction is
+the classical one and is now formal:
+
+1. A nontrivial deck transformation `a` moves some point `y₀` (faithfulness).  The projection is
+   injective on the chart `e` at `y₀`, and `a • y₀` lies over the same base point, so
+   `a • y₀ ∉ e.source` — no even-covering argument is needed, only injectivity on a chart.
+2. `t2Space_of_isCoveringMap` (the projection is a separated map, the base is Hausdorff) makes `Y`
+   Hausdorff, so the compact patch `K = e.symm '' closedBall x₀ r` is closed.
+3. `exists_cutoff` gives a smooth bump `β` of the plane, `β x₀ = 1`, vanishing off a disc, together
+   with `γ` continuously differentiable with `∂β/∂z̄ = (z - x₀) γ` — the divisibility holds because
+   `β` is *constant* near `x₀`, so the numerator vanishes on a neighbourhood of the only zero of the
+   denominator.
+4. Transplant: `χ = β ∘ π` on the chart and `0` off it, `g = γ ∘ π` on the chart and `0` off it.
+   Both vanish off `K`, so `g` has compact support, and `∂χ/∂z̄ = (π - x₀) g` everywhere.
+5. Solve `∂u/∂z̄ = g` with `u` of moderate growth, and set `W = χ - (π - x₀) u`.  Then `∂W/∂z̄ = 0`
+   (product rule, `z - x₀` being holomorphic), so `W` is holomorphic; `W` is of moderate growth
+   (`χ` is bounded by one, `π - x₀` is a polynomial in the base coordinate); and `W y₀ = 1`,
+   `W (a • y₀) = 0`, because `π (a • y₀) - x₀ = 0` kills the correction at both points and `χ`
+   already separates them.
+
+**What is left.**  Exactly `DbarSolvable`.  This is the Dolbeault lemma on the total space, i.e.
+`H¹(Y, 𝒪) = 0` for the open Riemann surface `Y`, with the extra demand that the solution have
+moderate growth.  The candidate routes, in order of apparent feasibility here:
+
+* **Hörmander `L²`.**  In one variable the a priori estimate is a plain integration by parts:
+  for `v` smooth of compact support, `∫ Δφ |v|² e^{-φ} ≤ ‖∂̄*_φ v‖²_φ`.  The weight
+  `φ = m log(1+|z|²) − N Σ_{s∈S} log|z−s|`, pulled back through the projection, is strictly
+  subharmonic and — this is the happy accident — its `L²` conclusion
+  `∫ |u|² (1+|z|²)^{-m-2} ∏|z−s|^N < ∞` is *exactly* moderate growth, once the mean-value
+  inequality is applied where `u` is holomorphic.  Integration on `Y` is integration on the base of
+  the fibre sum, and in flat local frames the operator is componentwise, so the plane proof
+  transports.  The technical heart is the density of the compactly supported functions in the domain
+  of the adjoint, which is where completeness of the exhaustion is used.
+* **Riemann–Hilbert / Birkhoff.**  Functions on `Y` are sections of the rank-`|H|` local system on
+  `ℂ∖S` attached to the monodromy; slitting the plane makes it trivial and turns the problem into a
+  jump problem across disjoint slits with permutation-matrix coefficients.  Solvable classically by
+  Cauchy integrals, but the twisted jump condition couples the sheets and needs Fredholm theory.
+* **Compactify and use Riemann–Roch.**  `Y` is topologically a compact surface minus finitely many
+  points and the complex structure extends across them (`w = (z−s)^{1/k}` on a cycle of length `k`),
+  so a meromorphic function on the compactification would do; but that existence theorem is Hodge
+  theory.
+
+The first is the one the plane bricks already point at.
