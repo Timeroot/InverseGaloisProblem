@@ -28,6 +28,9 @@ such ideals specializes, by the Nullstellensatz, to a point over `k` avoiding th
 ## Main results
 
 * `Rigidity.RET.Transfer.exists_specialization_no_monic_factor` — the descent.
+* `Rigidity.RET.Transfer.irreducible_map_ratFunc_iff` — having no monic factor of positive degree
+  is irreducibility over the function field of the line.
+* `Rigidity.RET.Transfer.exists_specialization_irreducible` — the descent, in that language.
 -/
 
 open Polynomial
@@ -128,5 +131,58 @@ theorem exists_specialization_no_monic_factor {D : ℕ}
   dsimp only
   rw [if_pos ⟨hGpos, hHpos⟩]
   exact hzero
+
+/-! ## From monic factors to irreducibility over the function field
+
+A monic polynomial in two variables is irreducible over the function field of the line exactly when
+it admits no factorization into two monic factors of positive degree — Gauss's lemma, plus the
+observation that a factorization of a monic polynomial can always be normalized to a monic one. -/
+
+/-- **A monic two-variable polynomial is irreducible over the function field of the line exactly
+when it has no monic factor of positive degree.** -/
+theorem irreducible_map_ratFunc_iff {F : Type*} [Field F] {f : F[X][Y]} (hf : f.Monic)
+    (hdeg : 0 < f.natDegree) :
+    Irreducible (f.map (algebraMap (F[X]) (RatFunc F))) ↔
+      ∀ G H : F[X][Y], G.Monic → H.Monic → 0 < G.natDegree → 0 < H.natDegree → f ≠ G * H := by
+  rw [← hf.irreducible_iff_irreducible_map_fraction_map (K := RatFunc F),
+    hf.irreducible_iff_natDegree]
+  constructor
+  · rintro ⟨-, h⟩ G H hG hH hGpos hHpos hGH
+    rcases h G H hG hH hGH.symm with h0 | h0 <;> omega
+  · refine fun h => ⟨fun h1 => ?_, fun G H hG hH hGH => ?_⟩
+    · rw [h1, natDegree_one] at hdeg
+      exact absurd hdeg (lt_irrefl 0)
+    · by_contra hcon
+      push_neg at hcon
+      exact h G H hG hH (Nat.pos_of_ne_zero hcon.1) (Nat.pos_of_ne_zero hcon.2) hGH.symm
+
+/-- **Irreducibility over the function field of the line descends to the algebraically closed
+base**, together with every polynomial identity satisfied by the parameters. -/
+theorem exists_specialization_irreducible {D : ℕ}
+    (F : (MvPolynomial σ k)[X][Y]) (hFm : F.Monic) (hFpos : 0 < F.natDegree)
+    (hFd : ∀ i, F.coeff i ≠ 0 → (F.coeff i).natDegree + D * i ≤ D * F.natDegree)
+    (x : σ → K)
+    (hirr : Irreducible (((F.map (mapRingHom
+      (MvPolynomial.aeval x : MvPolynomial σ k →ₐ[k] K).toRingHom))).map
+        (algebraMap (K[X]) (RatFunc K)))) :
+    ∃ y : σ → k,
+      (∀ p : MvPolynomial σ k, MvPolynomial.aeval x p = 0 → MvPolynomial.aeval y p = 0) ∧
+      Irreducible (((F.map (mapRingHom
+        (MvPolynomial.aeval y : MvPolynomial σ k →ₐ[k] k).toRingHom))).map
+          (algebraMap (k[X]) (RatFunc k))) := by
+  have hmx : (F.map (mapRingHom
+      (MvPolynomial.aeval x : MvPolynomial σ k →ₐ[k] K).toRingHom)).Monic := hFm.map _
+  have hdx : (F.map (mapRingHom
+      (MvPolynomial.aeval x : MvPolynomial σ k →ₐ[k] K).toRingHom)).natDegree = F.natDegree :=
+    hFm.natDegree_map _
+  obtain ⟨y, hy, hfac⟩ :=
+    exists_specialization_no_monic_factor (D := D) F hFm hFd x
+      ((irreducible_map_ratFunc_iff hmx (by omega)).1 hirr)
+  have hmy : (F.map (mapRingHom
+      (MvPolynomial.aeval y : MvPolynomial σ k →ₐ[k] k).toRingHom)).Monic := hFm.map _
+  have hdy : (F.map (mapRingHom
+      (MvPolynomial.aeval y : MvPolynomial σ k →ₐ[k] k).toRingHom)).natDegree = F.natDegree :=
+    hFm.natDegree_map _
+  exact ⟨y, hy, (irreducible_map_ratFunc_iff hmy (by omega)).2 hfac⟩
 
 end Rigidity.RET.Transfer
