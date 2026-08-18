@@ -400,6 +400,10 @@ import InverseGalois.Rigidity.RET.Analytic.Dbar.CoverModerate
 import InverseGalois.Rigidity.RET.Analytic.Dbar.Enough
 import InverseGalois.Rigidity.RET.Analytic.Dbar.CoverSolvable
 import InverseGalois.Rigidity.RET.Transfer.Nullstellensatz
+import InverseGalois.Rigidity.RET.Transfer.WeightedDegree
+import InverseGalois.Rigidity.RET.Transfer.IntegralLift
+import InverseGalois.Rigidity.RET.Transfer.FactorScheme
+import InverseGalois.Rigidity.RET.Transfer.Descent
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
