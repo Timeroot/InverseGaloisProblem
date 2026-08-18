@@ -30,8 +30,8 @@ In full, RET is the statement: *let `X` be a compact connected Riemann surface, 
 The analytic teeth are the passage `(1) ↔ (2)`: a topological cover of the punctured curve is
 automatically holomorphic/algebraic (Grauert–Remmert / GAGA).  That passage involves Riemann
 surfaces and analytification, which Mathlib cannot express; it is isolated, for the line, in
-`Rigidity.RET.lineCover_exists_of_branchCycles` (`RET.GeomRET`).  The algebraic passage `(2) ↔ (3)`
-is what the rigidity method consumes, and what we state here — *without categories* (Mathlib has no category of field extensions), as an
+`Rigidity.RET.exists_lineCover_of_prodOne` (`RET.CoverExistence`).  The algebraic passage
+`(2) ↔ (3)` is what the rigidity method consumes, and what we state here — *without categories* (Mathlib has no category of field extensions), as an
 equivalence phrased through explicit maps.
 
 ## Specialising to `X = ℙ¹`
@@ -69,8 +69,8 @@ extension of `ℚ̄`, hence `ℚ̄` itself); regularity is the *arithmetic* cont
 
 * `riemann_existence_cover_mpr` — the covers correspondence's **existence** direction (`←`): a
   surjection `SphereGroup r ↠ G` is realized by a geometric Galois cover.  It is the shadow, with
-  the branch points and the inertia forgotten, of `Rigidity.RET.lineCover_exists_of_branchCycles`
-  (`RET.TamePi1`), where the analytic teeth of the correspondence live.
+  the branch points forgotten, of `Rigidity.RET.exists_lineCover_of_prodOne`
+  (`RET.CoverExistence`), where the analytic teeth of the correspondence live.
 * `riemann_existence_cover_mp` — the **finiteness-of-monodromy** direction (`→`), proven
   unconditionally: it is pure group theory, since `Γ_r` is free of rank `r - 1`.
 * `riemann_existence_cover` — the two directions assembled into the biconditional.
@@ -111,12 +111,12 @@ A surjection out of `Γ_r` is the same thing as a generating product-one tuple i
 (`Rigidity.RET.prod_apply_sphereGroup_of`, `Rigidity.RET.closure_range_apply_sphereGroup_of`), and
 such a tuple is realized as the branch cycles of a cover of the line over any prescribed `r`
 distinct points — here the rational points `0, 1, …, r-1` — by
-`Rigidity.RET.lineCover_exists_of_branchCycles`.  Forgetting the branch points and the inertia
-leaves exactly this statement.
+`Rigidity.RET.exists_lineCover_of_prodOne`.  Forgetting the branch points leaves exactly this
+statement.
 
 The images `φ (xᵢ)` are the branch-cycle / inertia generators over the `r` branch points; that they
-are inertia at prescribed points is what the sharper `lineCover_exists_of_branchCycles` records and
-what the branch-cycle descent (`Descent.Tower`) consumes.  See Völklein, *Groups as Galois Groups*,
+are inertia at prescribed points is what the sharper `lineCover_exists_of_branchCycles`
+(`RET.UniversalTuple`) records and what the branch-cycle descent (`Descent.Tower`) consumes.  See Völklein, *Groups as Galois Groups*,
 Thm 2.13 and §4; Serre, *Topics in Galois Theory*, §6. -/
 theorem riemann_existence_cover_mpr {G : Type} [Group G] [Finite G]
     (h : ∃ (r : ℕ) (φ : Rigidity.RET.SphereGroup r →* G), Function.Surjective φ) :
@@ -127,7 +127,7 @@ theorem riemann_existence_cover_mpr {G : Type} [Group G] [Finite G]
     intro i j hij
     have h1 : ((i.val : ℚ)) = ((j.val : ℚ)) := (algebraMap ℚ GeomAKLB.k).injective hij
     exact Fin.val_injective (Nat.cast_injective h1)
-  obtain ⟨L, e, -⟩ := Rigidity.RET.lineCover_exists_of_branchCycles _ hinj
+  obtain ⟨L, ⟨e⟩, -, -⟩ := Rigidity.RET.exists_lineCover_of_prodOne hinj
     (fun i => φ (PresentedGroup.of i)) (Rigidity.RET.prod_apply_sphereGroup_of φ)
     (Rigidity.RET.closure_range_apply_sphereGroup_of φ hφ)
   exact ⟨L.M, L.field, L.alg, L.findim, L.isGalois, ⟨e⟩⟩

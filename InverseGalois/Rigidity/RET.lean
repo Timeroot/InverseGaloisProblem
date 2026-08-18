@@ -81,6 +81,7 @@ import InverseGalois.Rigidity.RET.Infinity
 import InverseGalois.Rigidity.RET.Semilinear
 import InverseGalois.Rigidity.RET.SemilinearSub
 import InverseGalois.Rigidity.RET.Translate
+import InverseGalois.Rigidity.RET.CoverExistence
 import InverseGalois.Rigidity.RET.GeomRET
 import InverseGalois.Rigidity.RET.SerreCovers
 import InverseGalois.Rigidity.RET.DihedralCover
@@ -296,6 +297,7 @@ import InverseGalois.Rigidity.RET.Analytic.InfinityPuiseux
 import InverseGalois.Rigidity.RET.Pi1.Topological.ExteriorLoop
 import InverseGalois.Rigidity.RET.Analytic.InfinityBranch
 import InverseGalois.Rigidity.RET.Local.InfinityElement
+import InverseGalois.Rigidity.RET.UniversalTuple
 import InverseGalois.Rigidity.RET.Completeness
 import InverseGalois.Rigidity.RET.Pi1.Topological.CoverFibre
 import InverseGalois.Rigidity.RET.Pi1.Topological.CoverTopology
@@ -519,7 +521,7 @@ analytification of a plane family as a covering space and its monodromy — *bui
 `RET/Analytic/`; **cover-existence, i.e. GAGA proper** (an algebraic cover from a topological one),
 together with algebraic curves, ramification of morphisms, covers↔function-field-extensions,
 Riemann–Roch and genus — still absent.  That last gap is the whole remaining mathematical content
-of L3, which is therefore stated on its own (`Rigidity.RET.geomRETExistence_of_injective`) and never
+of L3, which is therefore stated on its own (`Rigidity.RET.exists_lineCover_of_prodOne`) and never
 as an axiom; the converse direction (`Rigidity.RET.geomRETCompleteness_of_injective`) is proven, and
 everything else above the cut is elementary by comparison.
 

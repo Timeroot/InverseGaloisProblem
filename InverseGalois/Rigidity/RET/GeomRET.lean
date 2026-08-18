@@ -3,6 +3,7 @@ Copyright (c) 2025. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.Rigidity.RET.CoverExistence
 import InverseGalois.Rigidity.RET.InertiaGen
 import InverseGalois.Rigidity.RET.Twist
 
@@ -34,9 +35,10 @@ the loops around the punctures and the sphere relation is the product of those l
 the completeness direction: reading branch cycles off a cover only asks that the cover be
 analytified, and `RET/Analytic/` does that from the equation itself, so
 `Rigidity.RET.geomRETCompleteness_of_injective` is a theorem for every group and every branch locus
-(`RET/Local/ProdOneGeneration.lean`).  What the existence direction needs, and what is stated on its
-own here, is the converse comparison — the analytic passage from a topological cover to an algebraic
-one (Grauert–Remmert / GAGA).
+(`RET/Local/ProdOneGeneration.lean`).  What the existence direction needs is the converse
+comparison — the analytic passage from a topological cover to an algebraic one (Grauert–Remmert /
+GAGA) — and that is isolated, free of all branch-cycle bookkeeping, as
+`Rigidity.RET.exists_lineCover_of_prodOne` (`RET/CoverExistence.lean`).
 
 The two directions are named separately as well as bundled, because they behave differently: each
 travels on its own along a coordinate change, and each is known unconditionally for its own class
@@ -50,10 +52,8 @@ of deck groups.
 
 ## Main results
 
-* `Rigidity.RET.geomRETExistence_of_injective` — the existence direction holds for any injective
-  tuple of points.
-* `Rigidity.RET.lineCover_exists_of_branchCycles` — the existence direction, packaged as a system
-  of branch cycles.
+* `Rigidity.RET.closure_range_symm_eq_top`, `Rigidity.RET.prod_ofFn_symm_eq_one` — the two
+  hypotheses on a tuple travel along an isomorphism of groups.
 -/
 
 open Polynomial
@@ -105,40 +105,6 @@ structure GeomRET {r : ℕ} (t : Fin r → k) : Prop where
   those points. -/
   exists_cycles : GeomRETCompleteness t
 
-/-- **The existence direction of the Riemann Existence Theorem for the line over `ℚ̄`.**
-
-For `r` distinct points of the line, a generating product-one tuple in a finite group `H` — the
-same thing as a surjection of the fundamental group of the `r`-punctured sphere, the sphere group
-`Γ_r = ⟨x₀,…,x_{r-1} | x₀⋯x_{r-1} = 1⟩`, onto `H` — is the tuple of branch cycles of a cover of
-the line with deck group `H`, unramified outside the given points and infinity.
-
-The two hypotheses on the tuple are not decoration: they are exactly the two relations that hold
-among the loops on the punctured sphere — the loops generate, because the cover is connected, and
-their ordered product is contractible.  A tuple violating either is the branch-cycle system of no
-cover.
-
-Over `ℂ` this is covering-space theory plus the theorem of Grauert–Remmert that a finite
-topological cover of a punctured Riemann surface, tame at the punctures, is the analytification of
-an algebraic one; the constant field `ℚ̄` is reached from `ℂ` by the Lefschetz principle.  See
-Grothendieck, *SGA 1*, Exp. XIII; Völklein, *Groups as Galois Groups*, Thm 2.13 and §4; Serre,
-*Topics in Galois Theory*, §6. -/
-theorem geomRETExistence_of_injective {r : ℕ} (t : Fin r → k) (ht : Function.Injective t) :
-    GeomRETExistence t :=
-  sorry
-
-/-- **Prescribed branch cycles are realized by a cover of the line.**
-
-Given `r` distinct points `t₀, …, t_{r-1}` of the line over `ℚ̄` and a tuple `h₀, …, h_{r-1}` of
-elements of a finite group `H` which generate `H` and multiply to `1`, there is a finite Galois
-cover of the line with deck group `H`, unramified outside the given points and infinity, in which
-`hᵢ` is an inertia element at `tᵢ`. -/
-theorem lineCover_exists_of_branchCycles {r : ℕ} (t : Fin r → k) (ht : Function.Injective t)
-    {H : Type} [Group H] [Finite H] (h : Fin r → H)
-    (hprod : (List.ofFn h).prod = 1) (htop : Subgroup.closure (Set.range h) = ⊤) :
-    ∃ (L : LineCover) (e : L.deck ≃* H), ∀ i, L.IsInertiaAt (t i) (e.symm (h i)) := by
-  obtain ⟨L, e, -, -, hin⟩ := geomRETExistence_of_injective t ht h hprod htop
-  exact ⟨L, e, fun i => (hin i).isInertiaAt⟩
-
 /-! ## Two transport lemmas for tuples along a group isomorphism -/
 
 section Transport
@@ -163,15 +129,5 @@ theorem prod_ofFn_symm_eq_one (hprod : (List.ofFn h).prod = 1) :
   rw [← map_list_prod, hprod, map_one]
 
 end Transport
-
-/-- The cover produced by the existence direction carries the prescribed tuple as a genuine system
-of distinguished branch cycles: the tuple generates the deck group and has product one, and those
-two properties travel along the identification of the deck group with `H`. -/
-theorem exists_lineCover_isBranchCycleSystem {r : ℕ} (t : Fin r → k) (ht : Function.Injective t)
-    {H : Type} [Group H] [Finite H] (h : Fin r → H)
-    (hprod : (List.ofFn h).prod = 1) (htop : Subgroup.closure (Set.range h) = ⊤) :
-    ∃ (L : LineCover) (e : L.deck ≃* H), L.IsBranchCycleGenSystem t (fun i => e.symm (h i)) := by
-  obtain ⟨L, e, -, -, hin⟩ := geomRETExistence_of_injective t ht h hprod htop
-  exact ⟨L, e, ⟨hin, closure_range_symm_eq_top e htop, prod_ofFn_symm_eq_one e hprod⟩⟩
 
 end Rigidity.RET

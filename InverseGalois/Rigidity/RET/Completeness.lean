@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.Rigidity.RET.Local.ProdOneGeneration
+import InverseGalois.Rigidity.RET.UniversalTuple
 
 /-!
 # The Riemann Existence Theorem for the line, assembled
