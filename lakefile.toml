@@ -10,3 +10,14 @@ rev = "v4.28.0"
 name = "InverseGalois"
 roots = ["InverseGalois"]
 leanOptions = { linter.style.multiGoal = true }
+
+# The leanprover/comparator challenge for the Riemann Existence Theorem; see
+# extras/comparator/README.md.  Deliberately not a default target: `Challenge` carries the
+# `sorry` that `Solution` discharges.
+[[lean_lib]]
+name = "Challenge"
+srcDir = "extras/comparator"
+
+[[lean_lib]]
+name = "Solution"
+srcDir = "extras/comparator"
