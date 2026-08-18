@@ -407,6 +407,7 @@ import InverseGalois.Rigidity.RET.Transfer.FactorScheme
 import InverseGalois.Rigidity.RET.Transfer.Descent
 import InverseGalois.Rigidity.RET.Transfer.Datum
 import InverseGalois.Rigidity.RET.Transfer.Present
+import InverseGalois.Rigidity.RET.Transfer.Complex
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut

@@ -66,6 +66,10 @@ structure CoverDatum (F : Type*) [Field F] (G : Type*) [Group G] {r : ℕ} (t : 
   den_ne : den ≠ 0
   /-- the numerator of the image of the root under the deck transformation `g`. -/
   num : G → Polynomial (Polynomial F)
+  /-- those numerators are monic, so that their degrees are visible in their shape. -/
+  num_monic : ∀ g, (num g).Monic
+  /-- those numerators have the degree of the equation. -/
+  num_natDegree : ∀ g, (num g).natDegree = Nat.card G
   /-- each image of the root is again a root of the equation. -/
   num_root : ∀ g, ((f.scaleRoots den).comp (num g)) %ₘ f = 0
   /-- the images compose according to the group law. -/
@@ -84,6 +88,8 @@ structure CoverDatum (F : Type*) [Field F] (G : Type*) [Group G] {r : ℕ} (t : 
   f₂ : Polynomial (Polynomial F)
   /-- the second equation is monic. -/
   monic₂ : f₂.Monic
+  /-- the second equation has the order of the deck group for its degree. -/
+  natDegree₂_eq : f₂.natDegree = Nat.card G
   /-- the denominator of the second generator. -/
   den₂ : Polynomial F
   /-- that denominator is nonzero. -/
@@ -94,6 +100,10 @@ structure CoverDatum (F : Type*) [Field F] (G : Type*) [Group G] {r : ℕ} (t : 
   num₂_root : ((f₂.scaleRoots den₂).comp num₂) %ₘ f = 0
   /-- the numerator writing the root of `f` back in terms of the second generator. -/
   back : Polynomial (Polynomial F)
+  /-- that numerator is monic, so that its degree is visible in its shape. -/
+  back_monic : back.Monic
+  /-- that numerator has the degree of the second equation. -/
+  back_natDegree : back.natDegree = Nat.card G
   /-- the corresponding denominator. -/
   backDen : Polynomial F
   /-- that denominator is nonzero. -/

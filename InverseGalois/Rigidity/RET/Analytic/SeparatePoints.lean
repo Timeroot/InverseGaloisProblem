@@ -23,6 +23,8 @@ over a prescribed finite set of points of the base.
 
 * `Rigidity.RET.exists_forall_ne_of_pairs` — finitely many pairs of points, each separated by some
   function of moderate growth, are all separated by a single one.
+* `Rigidity.RET.smul_eq_self_forall` — a deck transformation of a connected covering fixing one
+  point fixes every point.
 * `Rigidity.RET.smul_ne_self` — a nontrivial deck transformation of a connected covering moves
   every point, so the pairs of distinct points of a fibre are the pairs of distinct deck
   transformations.
@@ -106,23 +108,30 @@ end SeparatePoints
 section Free
 
 variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [PreconnectedSpace Y] {f : Y → ℂ}
-variable {H : Type*} [Group H] [MulAction H Y] [ContinuousConstSMul H Y] [FaithfulSMul H Y]
-  [IsOverBase H f]
+variable {H : Type*} [Group H] [MulAction H Y] [ContinuousConstSMul H Y] [IsOverBase H f]
 
-/-- **A nontrivial deck transformation of a connected covering moves every point.**
+/-- **A deck transformation of a connected covering fixing one point fixes every point.**
 
 A deck transformation and the identity are two lifts of the projection to the plane along a
 locally injective separated map; on a connected total space two such lifts agreeing at one point
-agree everywhere, so a deck transformation fixing a point is the identity on the whole covering,
-and a faithful action makes it the identity of the group. -/
-theorem smul_ne_self (hf : IsLocalHomeomorph f) {a : H} (ha : a ≠ 1) (y : Y) : a • y ≠ y := by
-  intro h
-  refine ha (eq_of_smul_eq_smul (α := Y) fun z => ?_)
+agree everywhere. -/
+theorem smul_eq_self_forall (hf : IsLocalHomeomorph f) {a : H} {y₀ : Y} (h : a • y₀ = y₀)
+    (y : Y) : a • y = y := by
   have hlift : (fun z : Y => a • z) = (id : Y → Y) :=
     (T2Space.isSeparatedMap f).eq_of_comp_eq hf.isLocallyInjective (continuous_const_smul a)
-      continuous_id (funext fun z => IsOverBase.smul_eq a z) y h
+      continuous_id (funext fun z => IsOverBase.smul_eq a z) y₀ h
+  exact congrFun hlift y
+
+/-- **A nontrivial deck transformation of a connected covering moves every point.**
+
+A deck transformation fixing a point is the identity on the whole covering, and a faithful action
+makes it the identity of the group. -/
+theorem smul_ne_self [FaithfulSMul H Y] (hf : IsLocalHomeomorph f) {a : H} (ha : a ≠ 1) (y : Y) :
+    a • y ≠ y := by
+  intro h
+  refine ha (eq_of_smul_eq_smul (α := Y) fun z => ?_)
   rw [one_smul]
-  exact congrFun hlift z
+  exact smul_eq_self_forall hf h z
 
 end Free
 

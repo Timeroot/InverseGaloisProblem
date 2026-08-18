@@ -107,6 +107,29 @@ theorem exists_num_den_family {L : Type*} [CommRing L] [Algebra (RatFunc F) L] {
     _ = algebraMap (RatFunc F) L
           (algebraMap (Polynomial F) (RatFunc F) (∏ j, D₀ j)) * β i := by rw [hprod]
 
+/-- **A numerator can be taken monic of the degree of the equation.**
+
+Reducing modulo the monic equation lowers the degree below that of the equation without changing
+the value at the root, and adding the equation back makes the result monic of exactly the degree
+of the equation, again without changing the value. -/
+theorem monic_modByMonic_add {L : Type*} [CommRing L] [Algebra (RatFunc F) L]
+    {P : Polynomial (Polynomial F)} (hP : P.Monic) {x : L}
+    (hx : aeval x (P.map (algebraMap (Polynomial F) (RatFunc F))) = 0)
+    (q : Polynomial (Polynomial F)) :
+    (q %ₘ P + P).Monic ∧
+      aeval x ((q %ₘ P + P).map (algebraMap (Polynomial F) (RatFunc F)))
+        = aeval x (q.map (algebraMap (Polynomial F) (RatFunc F))) := by
+  refine ⟨hP.add_of_right (Polynomial.degree_modByMonic_lt q hP), ?_⟩
+  rw [Polynomial.modByMonic_eq_sub_mul_div q hP, Polynomial.map_add, Polynomial.map_sub,
+    Polynomial.map_mul, map_add, map_sub, map_mul, hx]
+  ring
+
+/-- **Reducing modulo a monic polynomial and adding it back gives its degree.** -/
+theorem natDegree_modByMonic_add {P : Polynomial (Polynomial F)} (hP : P.Monic)
+    (q : Polynomial (Polynomial F)) : (q %ₘ P + P).natDegree = P.natDegree :=
+  Polynomial.natDegree_eq_of_degree_eq
+    (Polynomial.degree_add_eq_right_of_degree_lt (Polynomial.degree_modByMonic_lt q hP))
+
 /-- **A constant power factors out of a polynomial expression in the generator.** -/
 theorem aeval_C_pow_mul {L : Type*} [CommRing L] [Algebra (RatFunc F) L] (c : Polynomial F) (n : ℕ)
     (P : Polynomial (Polynomial F)) (x : L) :
@@ -222,7 +245,14 @@ theorem exists_coverDatum {F : Type*} [Field F] [CharZero F] [IsAlgClosed F]
       subst hz
       simpa using hgh
     exact AlgEquiv.ext fun z => AlgHom.congr_fun hh z
-  obtain ⟨nm, dn, hdn, hnm⟩ := exists_num_den_family hadj₁ (fun g : G => σ g α₁)
+  obtain ⟨nm0, dn, hdn, hnm0⟩ := exists_num_den_family hadj₁ (fun g : G => σ g α₁)
+  obtain ⟨nm, hnmmonic, hnmdeg, hnm⟩ : ∃ nm : G → Polynomial (Polynomial F), (∀ g, (nm g).Monic) ∧
+      (∀ g, (nm g).natDegree = Nat.card G) ∧
+      ∀ g : G, aeval α₁ ((nm g).map (algebraMap (Polynomial F) (RatFunc F)))
+        = algebraMap (RatFunc F) L (algebraMap (Polynomial F) (RatFunc F) dn) * σ g α₁ :=
+    ⟨fun g => nm0 g %ₘ P₁ + P₁, fun g => (monic_modByMonic_add hm₁ hr₁ (nm0 g)).1,
+      fun g => (natDegree_modByMonic_add hm₁ (nm0 g)).trans hn₁,
+      fun g => ((monic_modByMonic_add hm₁ hr₁ (nm0 g)).2).trans (hnm0 g)⟩
   have hdn0 : algebraMap (RatFunc F) L (algebraMap (Polynomial F) (RatFunc F) dn) ≠ 0 := by
     simp only [ne_eq, map_eq_zero_iff _ hΛinj, map_eq_zero_iff _ hψinj]
     exact hdn
@@ -263,7 +293,14 @@ theorem exists_coverDatum {F : Type*} [Field F] [CharZero F] [IsAlgClosed F]
     exact sep_cancel _ _ _ _ hw
   -- the second generator, and the first one written back in terms of it
   obtain ⟨nm2, dn2, hdn2, hnm2⟩ := exists_num_den hadj₁ α₂
-  obtain ⟨bk, bkd, hbkd, hbk⟩ := exists_num_den hadj₂ α₁
+  obtain ⟨bk0, bkd, hbkd, hbk0⟩ := exists_num_den hadj₂ α₁
+  obtain ⟨bk, hbkmonic, hbkdeg, hbk⟩ : ∃ bk : Polynomial (Polynomial F), bk.Monic ∧
+      bk.natDegree = Nat.card G ∧
+      aeval α₂ (bk.map (algebraMap (Polynomial F) (RatFunc F)))
+        = algebraMap (RatFunc F) L (algebraMap (Polynomial F) (RatFunc F) bkd) * α₁ :=
+    ⟨bk0 %ₘ P₂ + P₂, (monic_modByMonic_add hm₂ hr₂ bk0).1,
+      (natDegree_modByMonic_add hm₂ bk0).trans hn₂,
+      ((monic_modByMonic_add hm₂ hr₂ bk0).2).trans hbk0⟩
   have hnm2_root : ((P₂.scaleRoots dn2).comp nm2) %ₘ P₁ = 0 := by
     refine key _ ?_
     rw [CoverDatum.aeval_scaleRoots_comp P₂ nm2 dn2 α₁ α₂ hnm2, hr₂, mul_zero]
@@ -331,6 +368,8 @@ theorem exists_coverDatum {F : Type*} [Field F] [CharZero F] [IsAlgClosed F]
            den := dn
            den_ne := hdn
            num := nm
+           num_monic := hnmmonic
+           num_natDegree := hnmdeg
            num_root := hnm_root
            num_mul := hnm_mul
            sepNum := fun g h => snm (g, h)
@@ -339,11 +378,14 @@ theorem exists_coverDatum {F : Type*} [Field F] [CharZero F] [IsAlgClosed F]
            sepNum_spec := hsnm_spec
            f₂ := P₂
            monic₂ := hm₂
+           natDegree₂_eq := hn₂
            den₂ := dn2
            den₂_ne := hdn2
            num₂ := nm2
            num₂_root := hnm2_root
            back := bk
+           back_monic := hbkmonic
+           back_natDegree := hbkdeg
            backDen := bkd
            backDen_ne := hbkd
            back_spec := hbk_spec
