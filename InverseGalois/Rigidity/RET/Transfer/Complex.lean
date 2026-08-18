@@ -8,6 +8,7 @@ import InverseGalois.Rigidity.RET.Analytic.SeparatePoints
 import InverseGalois.Rigidity.RET.Analytic.Dbar.CoverSolvable
 import InverseGalois.Rigidity.RET.Analytic.Wall
 import InverseGalois.Rigidity.RET.Pi1.Topological.CoverOrdered
+import InverseGalois.Rigidity.RET.Pi1.Topological.PuncturedPlane
 import InverseGalois.Rigidity.RET.Transfer.Present
 
 /-!
@@ -141,6 +142,54 @@ theorem exists_coverDatum_of_prodOne (S : Finset ℂ) (pt : Fin S.card → ℂ)
     exists_cover_of_prodOne_ordered S hz₀' pt hpt h hprod hgen
   haveI := hconn
   have hX : IsOpen ((S : Set ℂ))ᶜ := (S.finite_toSet.isClosed).isOpen_compl
+  have hf : IsLocalHomeomorph fun y => ((D.proj y : ℂ)) := D.isLocalHomeomorph_projC hX hcov
+  have hrange : Set.range (fun y => ((D.proj y : ℂ))) = (↑S : Set ℂ)ᶜ :=
+    D.range_projC D.surjective_proj
+  letI : MulAction H D.Total := MulAction.compHom D.Total D.deckHom
+  haveI : ContinuousConstSMul H D.Total := ⟨fun a => D.continuous_deck a⁻¹⟩
+  haveI : FaithfulSMul H D.Total := ⟨fun {a b} hab => hinj (Equiv.ext hab)⟩
+  haveI : IsOverBase H fun y => ((D.proj y : ℂ)) := ⟨fun _ _ => rfl⟩
+  have htrans' : ∀ y y' : D.Total, (D.proj y : ℂ) = (D.proj y' : ℂ) → ∃ b : H, y' = b • y := by
+    intro y y' hyy
+    obtain ⟨a, ha⟩ := htrans y y' (Subtype.coe_injective hyy)
+    refine ⟨a⁻¹, ?_⟩
+    show y' = D.deck a⁻¹⁻¹ y
+    rw [inv_inv, ha]
+  exact exists_coverDatum_complex S D.Total D.proj hcov hf hrange H htrans' pt hpt
+
+/-- **A generating tuple in a finite group presents a cover of the plane branched at prescribed
+points, one for each entry of the tuple.**
+
+The fundamental group of the plane punctured at those points is free on as many generators as there
+are punctures, so the tuple names a connected covering; nothing is asked of the behaviour of the
+covering at infinity, and correspondingly no relation is asked of the tuple. -/
+theorem exists_coverDatum_of_generating (S : Finset ℂ) (pt : Fin S.card → ℂ)
+    (hpt : Set.range pt = (S : Set ℂ)) {H : Type} [Group H] [Finite H] (h : Fin S.card → H)
+    (hgen : Subgroup.closure (Set.range h) = ⊤) :
+    Nonempty (CoverDatum ℂ H pt) := by
+  classical
+  obtain ⟨z₀, hz₀⟩ := Infinite.exists_notMem_finset S
+  have hz₀' : z₀ ∈ ((S : Set ℂ))ᶜ := hz₀
+  haveI : PathConnectedSpace ↥((S : Set ℂ))ᶜ :=
+    pathConnectedSpace_punctured S.finite_toSet.countable
+  -- the fundamental group is free on the punctures, so the tuple names a surjection onto the group
+  obtain ⟨e⟩ := pi1_compl_finset S z₀ hz₀
+  have hsurj0 : Function.Surjective (FreeGroup.lift h) :=
+    MonoidHom.range_eq_top.1 (by rw [FreeGroup.range_lift_eq_closure, hgen])
+  set φ : FundamentalGroup ↥((S : Set ℂ))ᶜ ⟨z₀, hz₀'⟩ →* H :=
+    (FreeGroup.lift h).comp e.toMonoidHom with hφdef
+  have hsurj : Function.Surjective φ := hsurj0.comp e.surjective
+  have hX : IsOpen ((S : Set ℂ))ᶜ := (S.finite_toSet.isClosed).isOpen_compl
+  set D : MonodromyData (X := ((S : Set ℂ))ᶜ) ⟨z₀, hz₀'⟩ H := MonodromyData.ofHom hX φ with hDdef
+  have hcov : IsCoveringMap D.proj := MonodromyData.isCoveringMap_proj_ofHom hX φ
+  haveI hconn : PathConnectedSpace D.Total :=
+    MonodromyData.pathConnectedSpace_total_ofHom hX φ hsurj
+  have hinj : Function.Injective D.deckHom := MonodromyData.deckHom_injective_ofHom hX φ
+  have htrans : ∀ y z : D.Total, D.proj y = D.proj z → ∃ a : H, D.deck a y = z := by
+    intro y z hyz
+    exact D.exists_deck_eq_of_proj_eq y z hyz
+      (Classical.choice (MonodromyData.nonempty_quotient_of_pathConnected
+        (x₀ := (⟨z₀, hz₀'⟩ : ↥((S : Set ℂ))ᶜ)) _))
   have hf : IsLocalHomeomorph fun y => ((D.proj y : ℂ)) := D.isLocalHomeomorph_projC hX hcov
   have hrange : Set.range (fun y => ((D.proj y : ℂ))) = (↑S : Set ℂ)ᶜ :=
     D.range_projC D.surjective_proj

@@ -4,6 +4,7 @@ import InverseGalois.Rigidity.RET.Pi1.SphereCompletion
 import InverseGalois.Rigidity.RET.Statement
 import InverseGalois.Rigidity.RET.Cayley
 import InverseGalois.Rigidity.RET.Existence
+import InverseGalois.Rigidity.RET.ExistenceCovers
 import InverseGalois.Rigidity.RET.Pi1.CoverCompletion
 import InverseGalois.Rigidity.RET.Pi1.FundamentalGroup
 import InverseGalois.Rigidity.RET.Pi1.FundamentalGroupCover
@@ -151,6 +152,7 @@ import InverseGalois.Rigidity.RET.BranchLocus
 import InverseGalois.Rigidity.RET.BranchSet
 import InverseGalois.Rigidity.RET.AbelianRET
 import InverseGalois.Rigidity.RET.DeckGroups
+import InverseGalois.Rigidity.RET.DeckGroupsExistence
 import InverseGalois.Rigidity.RET.MoveInfinity
 import InverseGalois.Rigidity.RET.SubcoverProduct
 import InverseGalois.Rigidity.RET.Compositum
@@ -408,6 +410,8 @@ import InverseGalois.Rigidity.RET.Transfer.Descent
 import InverseGalois.Rigidity.RET.Transfer.Datum
 import InverseGalois.Rigidity.RET.Transfer.Present
 import InverseGalois.Rigidity.RET.Transfer.Complex
+import InverseGalois.Rigidity.RET.Transfer.BiGeneric
+import InverseGalois.Rigidity.RET.Transfer.DatumDescent
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut

@@ -16,8 +16,9 @@ given values `x` in an algebraically closed extension field `K`, and that the re
 over `K` admits no factorization into two monic factors of positive degree.
 
 Then the parameters can be given values `y` in `k` itself, in such a way that every polynomial
-identity satisfied by `x` is still satisfied by `y`, and the resulting polynomial over `k` still
-admits no factorization into two monic factors of positive degree.
+identity satisfied by `x` is still satisfied by `y`, finitely many prescribed polynomial
+expressions which are nonzero at `x` stay nonzero at `y`, and the resulting polynomial over `k`
+still admits no factorization into two monic factors of positive degree.
 
 The proof combines three ingredients.  The degree bound turns the factorizations of prescribed
 degrees into a *finite* system of polynomial equations; the coordinate ring of that system is
@@ -48,14 +49,15 @@ base.**
 
 The specialized point retains every polynomial identity of the original one, so any further
 property of the original expressed by identities is retained as well. -/
-theorem exists_specialization_no_monic_factor {D : ℕ}
+theorem exists_specialization_no_monic_factor {D : ℕ} {κ : Type*} [Finite κ]
     (F : (MvPolynomial σ k)[X][Y]) (hFm : F.Monic)
     (hFd : ∀ i, F.coeff i ≠ 0 → (F.coeff i).natDegree + D * i ≤ D * F.natDegree)
-    (x : σ → K)
+    (x : σ → K) (Q : κ → MvPolynomial σ k) (hQ : ∀ j, MvPolynomial.aeval x (Q j) ≠ 0)
     (hirr : ∀ G H : K[X][Y], G.Monic → H.Monic → 0 < G.natDegree → 0 < H.natDegree →
       F.map (mapRingHom (MvPolynomial.aeval x).toRingHom) ≠ G * H) :
     ∃ y : σ → k,
       (∀ p : MvPolynomial σ k, MvPolynomial.aeval x p = 0 → MvPolynomial.aeval y p = 0) ∧
+      (∀ j, MvPolynomial.aeval y (Q j) ≠ 0) ∧
       ∀ G H : k[X][Y], G.Monic → H.Monic → 0 < G.natDegree → 0 < H.natDegree →
         F.map (mapRingHom (MvPolynomial.aeval y).toRingHom) ≠ G * H := by
   classical
@@ -75,15 +77,17 @@ theorem exists_specialization_no_monic_factor {D : ℕ}
   choose! q hqmem hqne using key
   -- the finitely many inequations to be preserved by the specialization
   obtain ⟨y, hy, hyQ⟩ := exists_specialization (K := K) x
-    (fun p : Fin (F.natDegree + 1) × Fin (F.natDegree + 1) =>
-      if 0 < (p.1 : ℕ) ∧ 0 < (p.2 : ℕ) then q p.1 p.2 else 1)
+    (Sum.elim
+      (fun p : Fin (F.natDegree + 1) × Fin (F.natDegree + 1) =>
+        if 0 < (p.1 : ℕ) ∧ 0 < (p.2 : ℕ) then q p.1 p.2 else 1) Q)
     (by
-      intro p
-      dsimp only
-      split_ifs with h
-      · exact hqne _ _ h.1 h.2
-      · simp)
-  refine ⟨y, hy, ?_⟩
+      rintro (p | j)
+      · dsimp only [Sum.elim_inl]
+        split_ifs with h
+        · exact hqne _ _ h.1 h.2
+        · simp
+      · exact hQ j)
+  refine ⟨y, hy, fun j => hyQ (Sum.inr j), ?_⟩
   rintro G H hG hH hGpos hHpos hGH
   -- the two factors have complementary degrees
   have hmapdeg : (F.map (mapRingHom
@@ -127,8 +131,8 @@ theorem exists_specialization_no_monic_factor {D : ℕ}
   have hzero : MvPolynomial.aeval y (q G.natDegree H.natDegree) = 0 := by
     have := hker (hqmem G.natDegree H.natDegree hGpos hHpos)
     simpa only [RingHom.mem_ker, AlgHom.toRingHom_eq_coe, RingHom.coe_coe] using this
-  refine hyQ (⟨G.natDegree, hGlt⟩, ⟨H.natDegree, hHlt⟩) ?_
-  dsimp only
+  refine hyQ (Sum.inl (⟨G.natDegree, hGlt⟩, ⟨H.natDegree, hHlt⟩)) ?_
+  dsimp only [Sum.elim_inl]
   rw [if_pos ⟨hGpos, hHpos⟩]
   exact hzero
 
@@ -158,15 +162,16 @@ theorem irreducible_map_ratFunc_iff {F : Type*} [Field F] {f : F[X][Y]} (hf : f.
 
 /-- **Irreducibility over the function field of the line descends to the algebraically closed
 base**, together with every polynomial identity satisfied by the parameters. -/
-theorem exists_specialization_irreducible {D : ℕ}
+theorem exists_specialization_irreducible {D : ℕ} {κ : Type*} [Finite κ]
     (F : (MvPolynomial σ k)[X][Y]) (hFm : F.Monic) (hFpos : 0 < F.natDegree)
     (hFd : ∀ i, F.coeff i ≠ 0 → (F.coeff i).natDegree + D * i ≤ D * F.natDegree)
-    (x : σ → K)
+    (x : σ → K) (Q : κ → MvPolynomial σ k) (hQ : ∀ j, MvPolynomial.aeval x (Q j) ≠ 0)
     (hirr : Irreducible (((F.map (mapRingHom
       (MvPolynomial.aeval x : MvPolynomial σ k →ₐ[k] K).toRingHom))).map
         (algebraMap (K[X]) (RatFunc K)))) :
     ∃ y : σ → k,
       (∀ p : MvPolynomial σ k, MvPolynomial.aeval x p = 0 → MvPolynomial.aeval y p = 0) ∧
+      (∀ j, MvPolynomial.aeval y (Q j) ≠ 0) ∧
       Irreducible (((F.map (mapRingHom
         (MvPolynomial.aeval y : MvPolynomial σ k →ₐ[k] k).toRingHom))).map
           (algebraMap (k[X]) (RatFunc k))) := by
@@ -175,14 +180,14 @@ theorem exists_specialization_irreducible {D : ℕ}
   have hdx : (F.map (mapRingHom
       (MvPolynomial.aeval x : MvPolynomial σ k →ₐ[k] K).toRingHom)).natDegree = F.natDegree :=
     hFm.natDegree_map _
-  obtain ⟨y, hy, hfac⟩ :=
-    exists_specialization_no_monic_factor (D := D) F hFm hFd x
+  obtain ⟨y, hy, hyQ, hfac⟩ :=
+    exists_specialization_no_monic_factor (D := D) F hFm hFd x Q hQ
       ((irreducible_map_ratFunc_iff hmx (by omega)).1 hirr)
   have hmy : (F.map (mapRingHom
       (MvPolynomial.aeval y : MvPolynomial σ k →ₐ[k] k).toRingHom)).Monic := hFm.map _
   have hdy : (F.map (mapRingHom
       (MvPolynomial.aeval y : MvPolynomial σ k →ₐ[k] k).toRingHom)).natDegree = F.natDegree :=
     hFm.natDegree_map _
-  exact ⟨y, hy, (irreducible_map_ratFunc_iff hmy (by omega)).2 hfac⟩
+  exact ⟨y, hy, hyQ, (irreducible_map_ratFunc_iff hmy (by omega)).2 hfac⟩
 
 end Rigidity.RET.Transfer

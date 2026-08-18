@@ -28,7 +28,6 @@ cyclic groups, and over `r + 1` points it contains every abelian group with `r` 
 * `Rigidity.RET.IsDeckGroupOver.quotient` — the class is closed under quotients.
 * `Rigidity.RET.isDeckGroupOver_of_commGroup` — every finite abelian group with a product-one
   generating `r`-tuple occurs over `r` prescribed points.
-* `Rigidity.RET.isDeckGroupOver_of_prodOne` — the same for an arbitrary finite group.
 * `Rigidity.RET.isCyclic_of_isDeckGroupOver` — over at most two points only cyclic groups occur.
 -/
 
@@ -96,13 +95,6 @@ theorem isDeckGroupOver_of_commGroup {H : Type} [CommGroup H] [Finite H] {r : �
     (htop : Subgroup.closure (Set.range h) = ⊤) : IsDeckGroupOver (Set.range t) H := by
   obtain ⟨L, e, hout, hinf, -⟩ := exists_cover_of_commGroup t ht h hprod htop
   exact ⟨L, ⟨e⟩, hout, hinf⟩
-
-/-- **Every finite group with a product-one generating `r`-tuple occurs over `r` prescribed
-points.** -/
-theorem isDeckGroupOver_of_prodOne {G : Type} [Group G] [Finite G] {r : ℕ} {t : Fin r → k}
-    (ht : Function.Injective t) (g : Fin r → G) (hprod : (List.ofFn g).prod = 1)
-    (htop : Subgroup.closure (Set.range g) = ⊤) : IsDeckGroupOver (Set.range t) G :=
-  exists_lineCover_of_prodOne ht g hprod htop
 
 /-- **Over at most two points only cyclic groups occur.** -/
 theorem isCyclic_of_isDeckGroupOver {S : Set k} (hS : S.Finite) (hcard : hS.toFinset.card ≤ 2)

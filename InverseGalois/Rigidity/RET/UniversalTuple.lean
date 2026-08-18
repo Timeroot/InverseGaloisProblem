@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.Rigidity.RET.DeckGroups
+import InverseGalois.Rigidity.RET.DeckGroupsExistence
 import InverseGalois.Rigidity.RET.MonodromyQuotient
 import InverseGalois.Rigidity.RET.Local.ProdOneGeneration
 
