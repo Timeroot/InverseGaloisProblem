@@ -13,7 +13,7 @@ never will be: a `sorry` announces "not done"; an axiom would announce "done" wh
 
 | # | statement | file | shape |
 |---|-----------|------|-------|
-| **W1** | `Rigidity.RET.geomRETExistence_of_injective` | `RET/GeomRET.lean` | a generating product-one tuple in a finite group is the tuple of branch cycles of a cover of the line over `ℚ̄`, branched over prescribed points |
+| **W1** | `Rigidity.RET.exists_lineCover_of_prodOne` | `RET/CoverExistence.lean` | a finite group with a generating product-one `r`-tuple is the deck group of a cover of the line over `ℚ̄`, unramified outside `r` prescribed points and infinity |
 
 `#print axioms Rigidity.rigidity_realizable` is `[propext, sorryAx, Classical.choice, Quot.sound]`;
 `sorryAx` enters through **W1** and nowhere else.  Every other result in the tree — several hundred
@@ -29,6 +29,15 @@ half has been reduced to a single named property of coverings of the punctured p
 `HasEnoughFunctions`, that each nontrivial deck transformation moves one holomorphic function of
 moderate growth — everything else about it being proven; the subsection "The algebraization of a
 covering, and the wall named once" records the reduction and what still separates it from W1.
+
+**W1 carries no branch cycles.**  The existence half used to demand not just a cover with the right
+deck group but a cover whose inertia generator at `tᵢ` is the prescribed `gᵢ`.  That extra clause is
+now free: run the bare existence statement on the *universal* group of product-one `r`-tuples
+(`RET/UniversalTuple.lean`), read that cover's branch cycles off the proven completeness half, and
+observe that any two generating product-one tuples of the universal group differ by an
+automorphism; pushing forward along the evaluation surjection lands the prescribed tuple as
+inertia.  So the open statement is the inertia-free `exists_lineCover_of_prodOne`: a group, a
+branch locus, and nothing else.
 
 The second wall, **W2** (`classInertiaPlaceData_exists`, the branch cycles of the *descended*
 `ℚ(T)`-model, as inertia at places over rational points), was the arithmetic half of the climb.  It
@@ -49,7 +58,14 @@ structure GeomRET {r : ℕ} (t : Fin r → k) : Prop where
   exists_cycles : ∀ L : LineCover, L.IsUnramifiedOutside (Set.range t) →
       L.IsUnramifiedAtInfinity → ∃ g : Fin r → L.deck, L.IsBranchCycleGenSystem t g
 
--- open (this is W1):
+-- open (this is W1; `RET/CoverExistence.lean`):
+theorem exists_lineCover_of_prodOne {r : ℕ} {t : Fin r → k} (ht : Function.Injective t)
+    {G : Type} [Group G] [Finite G] (g : Fin r → G) (hprod : (List.ofFn g).prod = 1)
+    (htop : Subgroup.closure (Set.range g) = ⊤) :
+    ∃ L : LineCover, Nonempty (L.deck ≃* G) ∧ L.IsUnramifiedOutside (Set.range t) ∧
+      L.IsUnramifiedAtInfinity
+
+-- a theorem, from W1 and completeness (RET/UniversalTuple.lean):
 theorem geomRETExistence_of_injective {r : ℕ} (t : Fin r → k) (ht : Function.Injective t) :
     GeomRETExistence t
 
@@ -1787,3 +1803,84 @@ moderate growth.  The candidate routes, in order of apparent feasibility here:
   theory.
 
 The first is the one the plane bricks already point at.
+
+---
+
+## 6. The passage from `ℂ` to `ℚ̄` (2026-08-18)
+
+Everything the analytic tower produces lives over `ℂ`; W1 asks for a cover over `ℚ̄`.  Between the
+two there are exactly two gaps, and they are of very different natures.
+
+**(a) Branch-locus control over `ℂ`.**  `Analytic/Wall.lean` produces a Galois extension of `ℂ(T)`
+with prescribed group, but its conclusion carries no clause about *where* that extension ramifies —
+there is no `LineCover` language over `ℂ`.  What the construction should produce instead is an
+*equation*: a monic `f ∈ ℂ[T][X]` whose degeneracy locus (`RET/Degeneracy.lean`) is contained in
+the prescribed points.  The material for it is already proven: a separating function of moderate
+growth exists, its elementary symmetric functions along the fibres are holomorphic of moderate
+growth off `S`, hence rational, and away from `S` the fibre values stay distinct — which is exactly
+non-vanishing of the degeneracy there.  `RET/EquationCover.lean` is the interface on the far side:
+`eqCover f hsep : LineCover`, with
+`isUnramifiedOutside_degeneracy_of_isSplittingField : L.IsUnramifiedOutside {t | (degeneracy f).eval t = 0}`.
+
+**(b) The descent itself.**  Given a monic `f ∈ ℂ[T][X]` with the right group and branch locus,
+produce one over `ℚ̄`.  The engine for this is now in the repo:
+
+```
+RET/Transfer/Nullstellensatz.lean
+  nonempty_zeroLocus_of_nonempty  -- a zero over an extension field ⇒ a zero over `k`
+  exists_forall_aeval_eq_zero     -- for a family of equations
+  exists_solution                 -- equations together with inequations (Rabinowitsch)
+  exists_specialization           -- a `K`-point specializes to a `k`-point, keeping all its
+                                  --   identities over `k` and prescribed non-degeneracies
+  exists_forall_map_eq_zero, exists_forall_map_map_eq_zero
+                                  -- the unknowns entering identities in one or two further
+                                  --   indeterminates (coefficients of unknown polynomials)
+```
+
+These are proven (`k` algebraically closed, `K` any field extension) from Mathlib's Nullstellensatz:
+a `K`-point certifies the ideal is proper, a maximal ideal above it is the vanishing ideal of a
+`k`-point.  Geometrically: **the `k`-points of an affine `k`-variety are dense in it, so a `ℂ`-point
+can always be replaced by a `ℚ̄`-point of the same variety inside any prescribed basic open set.**
+
+Everything in the cover datum that is a *polynomial identity or non-degeneracy in finitely many
+unknowns of bounded degree* therefore descends unchanged: monicity and degrees, the deck
+transformations written as polynomials `P_σ` modulo `f` with the group law `P_σ ∘ P_τ ≡ P_{στ}`,
+the distinctness of the `P_σ` (expressed as invertibility, `(P_σ − P_τ)·Q ≡ 1`), the shape of the
+degeneracy divisor `c·∏(T − tᵢ)^{mᵢ}` with the `tᵢ` already in `ℚ̄`, and unramifiedness at infinity.
+
+**What does not descend by this route: connectedness.**  "`f` is irreducible over `ℚ̄(T)`", i.e.
+"the `G`-Galois algebra is a field", is not a polynomial identity, not the negation of one, and —
+this is the sharp statement — *cannot be certified by any system of equations and inequations at
+all*: every `G`-Galois algebra over `F(T)` becomes isomorphic to `F̄(T)[G]` after base change to a
+separable closure, so no `F`-rational linear or polynomial invariant separates the connected one
+from an induced one `Ind_H^G L`.  Concretely, the completely split algebra `Maps(G, F(T))` satisfies
+every existential condition the connected cover satisfies: it is monogenic with separable minimal
+polynomial of the right degree, the `G`-action is free (`σ(a) − a` invertible for `σ ≠ 1`), the
+invariants are `F(T)`, and its degeneracy can be made to match.  The familiar shadow of this is
+`X² − a` over `ℚ̄(a)`: irreducible generically, reducible at every `ℚ̄`-point.
+
+Two rescue attempts were checked and both fail in general:
+
+* *Inertia data.*  For `Ind_H^G L` every inertia group lies in a conjugate of `H`, so pinning the
+  ramification indices, or even the conjugacy classes of the inertia generators, only forces each
+  `gᵢ` to be conjugate into `H` — which does not force `H = G` (already `G = A₅`, `H = A₄`, with
+  branch cycles of orders `2, 3` escapes).  Algebraically only the *classes* of the inertia
+  generators are visible, never the tuple itself, since the tuple is defined by paths to a base
+  point.
+* *Riemann–Hurwitz.*  With the degeneracy divisor pinned exactly, a `c`-component algebra has
+  isomorphic components of genus `g' = (c − 1 + g)/c`, so `c ∣ (g − 1)`; that kills `c > 1` when
+  `g = 0`, and nothing when `g = 1`.
+* *The universal-group trick* (which removed the inertia clause from W1) does not remove this one:
+  the component group `H'` of the descended algebra is generated by *conjugates* of the universal
+  generators, and conjugates of a generating tuple need not generate — the image of `H'` in the
+  target group can be proper.
+
+**What closes it, classically.**  Noether's irreducibility theorem: for monic polynomials of
+bounded degrees the *reducible* locus is Zariski closed (the coefficients of a monic factor are
+integral over the coefficients of the product, so the multiplication map is finite and its image is
+closed).  Hence irreducibility *is* certified by an inequation — not by a canonical one, but by some
+`q` in the ideal of the reducible locus with `q ≠ 0` at the `ℂ`-datum — and `exists_specialization`
+then hands over a `ℚ̄`-point of the same variety with `q ≠ 0`, i.e. a genuinely connected cover with
+the same group and the same branch locus.  Nothing else is missing on this side.  This is the
+formalizable content of the invariance of `π₁` under extension of algebraically closed base fields,
+and it is the next brick to build.

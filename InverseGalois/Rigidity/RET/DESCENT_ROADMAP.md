@@ -17,11 +17,14 @@ is a **theorem**, and so is everything downstream of it:
 * `branch_cycle_descent` runs the centerless extension lemma `extend_surjective_of_inner`;
 * `RigidityCertificate.isRegularInverseGalois` composes RET + descent.
 
-The whole chain rests on exactly one open statement, `Rigidity.RET.geomRETExistence_of_injective`
-(`RET/GeomRET.lean`) — the **existence** direction of the Riemann Existence Theorem **over `ℚ̄`**,
-which is transcendental (GAGA) and is carried as a `sorry` on its own statement, never as an axiom.
-The completeness direction, `geomRETCompleteness_of_injective`, is a theorem, and `geomRET`
-(`RET/Completeness.lean`) is the two of them together.  See `WALL.md`.
+The whole chain rests on exactly one open statement, `Rigidity.RET.exists_lineCover_of_prodOne`
+(`RET/CoverExistence.lean`) — the **existence** direction of the Riemann Existence Theorem **over
+`ℚ̄`**, which is transcendental (GAGA) and is carried as a `sorry` on its own statement, never as an
+axiom.  It asks only for a cover with a prescribed deck group and branch locus; the branch cycles
+come back for free from the universal product-one tuple (`RET/UniversalTuple.lean`), which is how
+`geomRETExistence_of_injective` is derived from it.  The completeness direction,
+`geomRETCompleteness_of_injective`, is a theorem, and `geomRET` (`RET/Completeness.lean`) is the two
+of them together.  See `WALL.md`.
 
 The content that has been built is: **from a geometric Galois cover `L/ℚ̄(T)` with group `G` and a
 rigidity certificate, produce the branch-cycle descent datum** — the arithmetic fundamental-group
@@ -141,5 +144,5 @@ the module files.  This keeps the four modules independently buildable.
    `BranchCycles.lean` + `classInertiaPlaceData_of_branchCycles` (`Tower.lean`), which packages the
    branch cycles produced by `geomRET` as the tame inertia model of an arithmetic `ℚ(T)`-model.
 
-What is left below all of this is the transcendental statement `geomRETExistence_of_injective`
+What is left below all of this is the transcendental statement `exists_lineCover_of_prodOne`
 alone (`WALL.md`).
