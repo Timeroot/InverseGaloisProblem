@@ -329,7 +329,7 @@ theorem exists_algebraic_model_primitive (hf : IsLocalHomeomorph f)
   obtain ⟨F, hF, y₁, hinj₁⟩ := hasSeparatingFunction_of_forall_ne (H := H) hf hne
   have hne' : ∀ c : H, c ≠ 1 → ∃ y : Y, F (c • y) ≠ F y := fun c hc =>
     ⟨y₁, fun h => hc (hinj₁ c 1 (by simpa using h))⟩
-  obtain ⟨S₁, hS₁, hsepF⟩ := exists_finset_separating (H := H) hf htrans hrange hF hne'
+  obtain ⟨S₁, hS₁, hsepF, -⟩ := exists_finset_separating (H := H) hf htrans hrange hF hne'
   letI := coverRatFuncAlgebra hf hrange
   obtain ⟨P, hP, hdeg, hsepz, hmodel, hirr, α, hα, hgen⟩ :=
     exists_primitive_of_separating (H := H) hf hrange htrans hne hS₁ hF hsepF

@@ -179,13 +179,16 @@ values at the points of every fibre over the complement of a finite set.**
 
 The product of the differences of its values along a fibre is invariant and of moderate growth, so
 it is a rational function of the base coordinate; being not identically zero, it vanishes only over
-the roots of the numerator, and those are the fibres to discard. -/
+the roots of the numerator, and those are the fibres to discard.  Only those: a fibre on which the
+function is already injective is not discarded, so the points of the base that are added are
+genuinely points at which the function fails. -/
 theorem exists_finset_separating (hf : IsLocalHomeomorph f)
     (htrans : ∀ y y' : Y, f y = f y' → ∃ c : H, y' = c • y)
     (hrange : Set.range f = ((S : Set ℂ))ᶜ) {G : Y → ℂ} (hG : G ∈ coverRing hf S)
     (hne : ∀ c : H, c ≠ 1 → ∃ y : Y, G (c • y) ≠ G y) :
     ∃ S' : Finset ℂ, S ⊆ S' ∧
-      ∀ y : Y, f y ∉ (S' : Set ℂ) → ∀ c : H, c ≠ 1 → G (c • y) ≠ G y := by
+      (∀ y : Y, f y ∉ (S' : Set ℂ) → ∀ c : H, c ≠ 1 → G (c • y) ≠ G y) ∧
+      ∀ y : Y, (∀ a b : H, a ≠ b → G (a • y) ≠ G (b • y)) → f y ∉ (S' : Set ℂ) := by
   classical
   have hDmem : sepProd H G ∈ coverRing hf S := sepProd_mem_coverRing hf hG
   obtain ⟨p, q, -, hqne, hpq⟩ := exists_eq_div_of_invariant_of_moderate (H := H) hf htrans
@@ -194,12 +197,25 @@ theorem exists_finset_separating (hf : IsLocalHomeomorph f)
   have hp : p ≠ 0 := by
     intro h0
     exact hy₁ (by rw [hpq y₁, h0, eval_zero, zero_div])
-  refine ⟨S ∪ p.roots.toFinset, Finset.subset_union_left, fun y hy c hc => ?_⟩
-  refine ne_of_sepProd_ne_zero (H := H) ?_ c hc
-  rw [hpq y]
-  refine div_ne_zero (fun h0 => hy ?_) (hqne y)
-  simp only [Finset.coe_union, Set.mem_union, Finset.mem_coe, Multiset.mem_toFinset]
-  exact Or.inr ((mem_roots hp).2 h0)
+  refine ⟨S ∪ p.roots.toFinset, Finset.subset_union_left, fun y hy c hc => ?_, fun y hy => ?_⟩
+  · refine ne_of_sepProd_ne_zero (H := H) ?_ c hc
+    rw [hpq y]
+    refine div_ne_zero (fun h0 => hy ?_) (hqne y)
+    simp only [Finset.coe_union, Set.mem_union, Finset.mem_coe, Multiset.mem_toFinset]
+    exact Or.inr ((mem_roots hp).2 h0)
+  · have hsp : sepProd H G y ≠ 0 := by
+      show (∏ r ∈ sepPairs H, (G (r.1 • y) - G (r.2 • y))) ≠ 0
+      exact Finset.prod_ne_zero_iff.2 fun r hr => sub_ne_zero.2 (hy r.1 r.2 (mem_sepPairs.1 hr))
+    have hpy : p.eval (f y) ≠ 0 := fun h0 => hsp (by rw [hpq y, h0, zero_div])
+    have hyS : f y ∉ ((S : Set ℂ)) := by
+      have hmem : f y ∈ Set.range f := ⟨y, rfl⟩
+      rw [hrange] at hmem
+      exact hmem
+    intro hmem
+    rw [Finset.coe_union, Set.mem_union] at hmem
+    rcases hmem with h | h
+    · exact hyS h
+    · exact hpy ((mem_roots hp).1 (Multiset.mem_toFinset.1 (Finset.mem_coe.1 h)))
 
 end Finite
 

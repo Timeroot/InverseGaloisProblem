@@ -335,6 +335,7 @@ import InverseGalois.Rigidity.RET.Analytic.BaseAlgebra
 import InverseGalois.Rigidity.RET.Analytic.BaseField
 import InverseGalois.Rigidity.RET.Analytic.Separating
 import InverseGalois.Rigidity.RET.Analytic.Combine
+import InverseGalois.Rigidity.RET.Analytic.SeparatePoints
 import InverseGalois.Rigidity.RET.Analytic.RootBranch
 import InverseGalois.Rigidity.RET.Analytic.Kummer
 import InverseGalois.Rigidity.RET.Analytic.Wall
@@ -405,6 +406,7 @@ import InverseGalois.Rigidity.RET.Transfer.IntegralLift
 import InverseGalois.Rigidity.RET.Transfer.FactorScheme
 import InverseGalois.Rigidity.RET.Transfer.Descent
 import InverseGalois.Rigidity.RET.Transfer.Datum
+import InverseGalois.Rigidity.RET.Transfer.Present
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut

@@ -74,7 +74,7 @@ theorem exists_algebraic_model_of_forall_ne (hf : IsLocalHomeomorph f)
   obtain ⟨F, hF, y₀, hinj⟩ := hasSeparatingFunction_of_forall_ne (H := H) hf hne
   have hne' : ∀ c : H, c ≠ 1 → ∃ y : Y, F (c • y) ≠ F y := fun c hc =>
     ⟨y₀, fun h => hc (hinj c 1 (by simpa using h))⟩
-  obtain ⟨S₁, hS₁, hsep⟩ := exists_finset_separating (H := H) hf htrans hrange hF hne'
+  obtain ⟨S₁, hS₁, hsep, -⟩ := exists_finset_separating (H := H) hf htrans hrange hF hne'
   obtain ⟨P, hP, hdeg, hsepz, Φ, hcomm⟩ :=
     exists_algebraic_model (H := H) hf htrans hrange hS₁ hF hsep
   exact ⟨P, S₁, hS₁, hP, by rw [hdeg, Nat.card_eq_fintype_card], hsepz, Φ, hcomm⟩

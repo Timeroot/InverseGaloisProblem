@@ -157,6 +157,24 @@ theorem map_scaleRoots_of_injective {R S : Type*} [CommRing R] [CommRing S]
   · refine Polynomial.map_scaleRoots p s φ ?_
     simpa [map_eq_zero_iff φ hφ, Polynomial.leadingCoeff_eq_zero] using hp
 
+/-- **Substituting a fraction into a polynomial with its roots scaled**: if the value of `u` at a
+point is the denominator times `y`, then the value of the composite of `u` with the polynomial
+whose roots are scaled by that denominator is a power of the denominator times the value of the
+polynomial at `y`.  This is how a polynomial identity between numerators expresses an identity
+between the fractions they present. -/
+theorem aeval_scaleRoots_comp {L : Type*} [CommRing L] [Algebra (RatFunc F) L]
+    (p u : Polynomial (Polynomial F)) (s : Polynomial F) (x y : L)
+    (hy : aeval x (u.map (algebraMap (Polynomial F) (RatFunc F)))
+      = algebraMap (RatFunc F) L (algebraMap (Polynomial F) (RatFunc F) s) * y) :
+    aeval x (((p.scaleRoots s).comp u).map (algebraMap (Polynomial F) (RatFunc F)))
+      = algebraMap (RatFunc F) L (algebraMap (Polynomial F) (RatFunc F) s) ^ p.natDegree
+        * aeval y (p.map (algebraMap (Polynomial F) (RatFunc F))) := by
+  have hψinj : Function.Injective (algebraMap (Polynomial F) (RatFunc F)) :=
+    IsFractionRing.injective (Polynomial F) (RatFunc F)
+  rw [Polynomial.map_comp, map_scaleRoots_of_injective p s _ hψinj, Polynomial.aeval_comp, hy,
+    Polynomial.aeval_def, Polynomial.aeval_def, Polynomial.scaleRoots_eval₂_mul,
+    Polynomial.natDegree_map_eq_of_injective hψinj]
+
 end CoverDatum
 
 /-! ### From a presentation to a cover -/
@@ -209,10 +227,7 @@ theorem exists_lineCover_of_coverDatum (D : CoverDatum k G t) :
       (aeval x) (u.map ψ) = dd * y →
       (aeval x) (((p.scaleRoots s).comp u).map ψ) = dd ^ p.natDegree * (aeval y) (p.map ψ) := by
     rintro p u s dd y rfl hy
-    rw [Polynomial.map_comp, CoverDatum.map_scaleRoots_of_injective p s ψ hψinj,
-      Polynomial.aeval_comp, hy,
-      Polynomial.aeval_def, Polynomial.aeval_def, Polynomial.scaleRoots_eval₂_mul,
-      Polynomial.natDegree_map_eq_of_injective hψinj]
+    exact CoverDatum.aeval_scaleRoots_comp p u s x y hy
   -- the images of the root under the deck transformations
   have hdL0 : algebraMap (RatFunc k) (AdjoinRoot gf) (ψ D.den) ≠ 0 := by
     simp only [Ne, map_eq_zero_iff _ (algebraMap (RatFunc k) (AdjoinRoot gf)).injective,
