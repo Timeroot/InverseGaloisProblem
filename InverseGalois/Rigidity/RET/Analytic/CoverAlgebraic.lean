@@ -43,7 +43,8 @@ theorem range_projC (hsurj : Function.Surjective D.proj) : Set.range D.projC = U
 
 /-- **A holomorphic function of moderate growth on the cover of a punctured plane is algebraic over
 the base**: it satisfies an equation of degree the order of the deck group whose coefficients are
-polynomials in the base coordinate and whose leading coefficient is a monic polynomial in it. -/
+polynomials in the base coordinate and whose leading coefficient is a monic polynomial in it,
+vanishing only at the punctures. -/
 theorem exists_algebraic_of_growth [Fintype H] (hU : IsOpen U) (hcov : IsCoveringMap D.proj)
     (htr : ∀ y z : D.Total, D.proj y = D.proj z → ∃ h : H, D.deck h y = z)
     (hsurj : Function.Surjective D.proj) (S : Finset ℂ) (hUS : U = (↑S)ᶜ)
@@ -52,7 +53,7 @@ theorem exists_algebraic_of_growth [Fintype H] (hU : IsOpen U) (hcov : IsCoverin
       D.projC y ∈ Metric.ball s ρ \ {s} → ‖g y‖ * ‖D.projC y - s‖ ^ N ≤ C)
     {A R₀ : ℝ} (hA : 0 ≤ A) {m : ℕ}
     (hinf : ∀ y : D.Total, R₀ ≤ ‖D.projC y‖ → ‖g y‖ ≤ A * ‖D.projC y‖ ^ m) :
-    ∃ (a : ℕ → ℂ[X]) (d : ℂ[X]), d.Monic ∧
+    ∃ (a : ℕ → ℂ[X]) (d : ℂ[X]), d.Monic ∧ (∀ z ∉ S, d.eval z ≠ 0) ∧
       ∀ y : D.Total, d.eval (D.projC y) * g y ^ Fintype.card H
         + ∑ k ∈ Finset.range (Fintype.card H), (a k).eval (D.projC y) * g y ^ k = 0 := by
   letI : MulAction H D.Total := MulAction.compHom D.Total D.deckHom

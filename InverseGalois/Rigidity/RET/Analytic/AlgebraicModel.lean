@@ -24,9 +24,9 @@ degree has at most that many roots, so the values of the function *are* all of t
 specialization of the equation is separable, and every root of it is attained.  A continuous
 bijection over the plane between two local homeomorphisms onto it is a homeomorphism.
 
-Finitely many points of the base have to be discarded: the leading coefficient of the equation is a
-polynomial in the base coordinate, and where it vanishes the multiplied function is identically
-zero on a fibre.  Its roots are the only obstruction.
+No points of the base beyond the punctures and the fibres the function fails to separate have to be
+discarded: the leading coefficient of the equation is a polynomial in the base coordinate whose
+zeros all lie over the punctures.
 
 ## Main results
 
@@ -36,8 +36,8 @@ zero on a fibre.  Its roots are the only obstruction.
 * `Rigidity.RET.exists_homeo_rootTotal_of_separating` — the covering is homeomorphic over the plane
   to the root variety of the equation.
 * `Rigidity.RET.exists_algebraic_model` — a covering with a function of moderate growth separating
-  the fibres over the complement of a finite set is, away from finitely many further points of the
-  base, the root variety of a monic equation.
+  the fibres over the complement of a finite set is, over that complement, the root variety of a
+  monic equation.
 -/
 
 open Polynomial Topology
@@ -247,57 +247,44 @@ variable {H : Type*} [Group H] [Fintype H] [MulAction H Y] [ContinuousConstSMul 
   [IsOverBase H f]
 
 /-- **A covering of a punctured plane carrying a function of moderate growth that separates the
-fibres over the complement of a finite set is the root variety of a monic equation, away from
-finitely many further points of the base.**
+fibres over the complement of a finite set is the root variety of a monic equation over that same
+complement.**
 
 The function satisfies a monic equation over the polynomials of the base coordinate once it is
-multiplied by the leading coefficient of the equation it satisfies; the points to be discarded are
-the roots of that leading coefficient, where the multiplied function is identically zero along a
-fibre and separates nothing. -/
+multiplied by the leading coefficient of the equation it satisfies; that leading coefficient
+vanishes only over the punctures, where there was nothing to separate anyway. -/
 theorem exists_algebraic_model (hf : IsLocalHomeomorph f)
     (htrans : ∀ y y' : Y, f y = f y' → ∃ c : H, y' = c • y)
     (hrange : Set.range f = ((S : Set ℂ))ᶜ) (hS₁ : S ⊆ S₁) {G : Y → ℂ} (hG : G ∈ coverRing hf S)
     (hsepG : ∀ y : Y, f y ∉ (S₁ : Set ℂ) → ∀ c : H, c ≠ 1 → G (c • y) ≠ G y) :
-    ∃ (P : Polynomial (Polynomial ℂ)) (S' : Finset ℂ), S₁ ⊆ S' ∧ P.Monic ∧
-      P.natDegree = Fintype.card H ∧ (∀ z ∉ (S' : Set ℂ), (spec P z).Separable) ∧
-      ∃ Φ : ↥(f ⁻¹' ((S' : Set ℂ)ᶜ)) ≃ₜ RootTotal P S',
-        ∀ y, rootBase P S' (Φ y) = f (y : Y) := by
+    ∃ P : Polynomial (Polynomial ℂ), P.Monic ∧
+      P.natDegree = Fintype.card H ∧ (∀ z ∉ (S₁ : Set ℂ), (spec P z).Separable) ∧
+      ∃ Φ : ↥(f ⁻¹' ((S₁ : Set ℂ)ᶜ)) ≃ₜ RootTotal P S₁,
+        ∀ y, rootBase P S₁ (Φ y) = f (y : Y) := by
   classical
   obtain ⟨A, R₀, m, hA, hinf⟩ := hG.2.infty
-  obtain ⟨b, d, hd, heq⟩ := exists_integral_of_growth (H := H) hf
+  obtain ⟨b, d, hd, hdS, heq⟩ := exists_integral_of_growth (H := H) hf
     (fun a y => IsOverBase.smul_eq (f := f) a y) htrans hG.1 S hrange hG.2.punct hA hinf
-  refine ⟨monicPoly b (Fintype.card H), S₁ ∪ d.roots.toFinset, Finset.subset_union_left,
-    monicPoly_monic _ _, natDegree_monicPoly _ _, ?_⟩
+  refine ⟨monicPoly b (Fintype.card H), monicPoly_monic _ _, natDegree_monicPoly _ _, ?_⟩
   set W : Y → ℂ := fun y => d.eval (f y) * G y with hW
   have hroot : ∀ y : Y, (spec (monicPoly b (Fintype.card H)) (f y)).eval (W y) = 0 := by
     intro y
     rw [eval_spec_monicPoly, hW]
     exact heq y
-  have hdne : ∀ z ∉ ((S₁ ∪ d.roots.toFinset : Finset ℂ) : Set ℂ), d.eval z ≠ 0 := by
-    intro z hz hzero
-    refine hz ?_
-    simp only [Finset.coe_union, Set.mem_union, Finset.mem_coe, Multiset.mem_toFinset]
-    exact Or.inr ((mem_roots hd.ne_zero).2 hzero)
-  have hmem₁ : ∀ z ∉ ((S₁ ∪ d.roots.toFinset : Finset ℂ) : Set ℂ), z ∉ (S₁ : Set ℂ) := by
-    intro z hz hmem
-    refine hz ?_
-    simp only [Finset.coe_union, Set.mem_union]
-    exact Or.inl hmem
-  have hsep : ∀ y : Y, f y ∉ ((S₁ ∪ d.roots.toFinset : Finset ℂ) : Set ℂ) →
-      ∀ c : H, c ≠ 1 → W (c • y) ≠ W y := by
+  have hdne : ∀ z ∉ (S₁ : Set ℂ), d.eval z ≠ 0 := fun z hz => hdS z fun hmem => hz (hS₁ hmem)
+  have hsep : ∀ y : Y, f y ∉ (S₁ : Set ℂ) → ∀ c : H, c ≠ 1 → W (c • y) ≠ W y := by
     intro y hy c hc
     simp only [hW, IsOverBase.smul_eq (f := f)]
-    exact fun h => hsepG y (hmem₁ _ hy) c hc (mul_left_cancel₀ (hdne _ hy) h)
-  have hsurj : ∀ z ∉ ((S₁ ∪ d.roots.toFinset : Finset ℂ) : Set ℂ), ∃ y : Y, f y = z := by
+    exact fun h => hsepG y hy c hc (mul_left_cancel₀ (hdne _ hy) h)
+  have hsurj : ∀ z ∉ (S₁ : Set ℂ), ∃ y : Y, f y = z := by
     intro z hz
-    have hzS : z ∈ ((S : Set ℂ))ᶜ := fun hmem => hmem₁ z hz (hS₁ hmem)
+    have hzS : z ∈ ((S : Set ℂ))ᶜ := fun hmem => hz (hS₁ hmem)
     rw [← hrange] at hzS
     exact hzS
   have hWc : Continuous W := by
     rw [hW]
     exact (d.continuous.comp hf.continuous).mul (hG.1.continuous hf)
-  have hsepz : ∀ z ∉ ((S₁ ∪ d.roots.toFinset : Finset ℂ) : Set ℂ),
-      (spec (monicPoly b (Fintype.card H)) z).Separable := by
+  have hsepz : ∀ z ∉ (S₁ : Set ℂ), (spec (monicPoly b (Fintype.card H)) z).Separable := by
     intro z hz
     obtain ⟨y₀, rfl⟩ := hsurj z hz
     exact separable_spec_of_separating (H := H) (W := W) (monicPoly_monic _ _)

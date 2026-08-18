@@ -21,6 +21,8 @@ positive and whose size is polynomial, the bound on discs becomes the growth con
 
 * `Rigidity.RET.dbarSolvable` — **the Cauchy–Riemann equation with data of compact support is
   solvable, with a solution of moderate growth, on every covering of a punctured plane.**
+* `Rigidity.RET.exists_ne_at` — a prescribed pair of distinct points of a fibre is separated by a
+  function of moderate growth.
 * `Rigidity.RET.hasEnoughFunctions` — the functions of moderate growth on a covering of a punctured
   plane see its deck group.
 -/
@@ -69,6 +71,18 @@ theorem dbarSolvable : DbarSolvable := by
   obtain ⟨u, B, hB, hdbar, hbd⟩ := exists_isDbarAt_bound hfin hcov hf hlh contDiff_logWeight
     conj_logWeight curv_logWeight_pos hg1 hgs
   exact ⟨u, hdbar, isModerate_of_hasDiscBound hf hlh hcovOn hrange hdbar hKc hgvan hB hbd⟩
+
+/-- **A prescribed pair of distinct points of a fibre of a covering of a punctured plane is
+separated by a function of moderate growth.** -/
+theorem exists_ne_at (S : Finset ℂ) (Y : Type) [TopologicalSpace Y] [Nonempty Y]
+    [PreconnectedSpace Y] (q : Y → ↥((S : Set ℂ)ᶜ)) (hq : IsCoveringMap q)
+    (hf : IsLocalHomeomorph fun y => ((q y : ℂ)))
+    (H : Type) [Group H] [Finite H] [MulAction H Y] [ContinuousConstSMul H Y]
+    [IsOverBase H fun y => ((q y : ℂ))]
+    (htrans : ∀ y y' : Y, (q y : ℂ) = (q y' : ℂ) → ∃ b : H, y' = b • y)
+    (a : H) (y₀ : Y) (hy₀ : a • y₀ ≠ y₀) :
+    ∃ F ∈ coverRing hf S, F (a • y₀) ≠ F y₀ :=
+  exists_ne_at_of_dbarSolvable dbarSolvable S Y q hq hf H htrans a y₀ hy₀
 
 /-- **The functions of moderate growth on a covering of a punctured plane see its deck group.** -/
 theorem hasEnoughFunctions : HasEnoughFunctions :=

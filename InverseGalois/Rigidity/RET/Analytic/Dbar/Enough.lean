@@ -37,6 +37,8 @@ coordinate does.  The difference `χ - (z - x₀) u` is then holomorphic, of mod
   divisible by the coordinate centred at its centre.
 * `Rigidity.RET.finite_fibre_of_transitive` — a covering whose deck group is finite and transitive
   on the fibres has finite fibres.
+* `Rigidity.RET.exists_ne_at_of_dbarSolvable` — the function separating a prescribed pair of points
+  of a fibre.
 * `Rigidity.RET.hasEnoughFunctions_of_dbarSolvable` — solving the equation is enough.
 -/
 
@@ -164,19 +166,24 @@ theorem finite_fibre_of_transitive {S : Finset ℂ} {Y : Type} [TopologicalSpace
     obtain ⟨b, hb⟩ := htrans y₀ y (by rw [hy, hy₀])
     exact ⟨b, hb.symm⟩
 
-/-- **Solving the Cauchy–Riemann equation on coverings is enough** for the functions of moderate
-growth to see the deck group, and so for the existence direction of the Riemann existence
-theorem. -/
-theorem hasEnoughFunctions_of_dbarSolvable (hsolve : DbarSolvable) : HasEnoughFunctions := by
-  intro S Y _ _ _ q hq hf hrange H _ _ _ _ _ _ htrans a ha
+/-- **Solving the Cauchy–Riemann equation on coverings produces a function of moderate growth
+separating a prescribed pair of points of a fibre.**
+
+A cut-off supported near one of the two points, equal to one at it and to zero at the other, is not
+holomorphic; but its Cauchy–Riemann derivative is divisible by the coordinate centred at the point,
+and subtracting the coordinate times a solution of the equation with that quotient as datum repairs
+the cut-off without disturbing its two values. -/
+theorem exists_ne_at_of_dbarSolvable (hsolve : DbarSolvable) (S : Finset ℂ) (Y : Type)
+    [TopologicalSpace Y] [Nonempty Y] [PreconnectedSpace Y] (q : Y → ↥((S : Set ℂ)ᶜ))
+    (hq : IsCoveringMap q) (hf : IsLocalHomeomorph fun y => ((q y : ℂ)))
+    (H : Type) [Group H] [Finite H] [MulAction H Y] [ContinuousConstSMul H Y]
+    [IsOverBase H fun y => ((q y : ℂ))]
+    (htrans : ∀ y y' : Y, (q y : ℂ) = (q y' : ℂ) → ∃ b : H, y' = b • y)
+    (a : H) (y₀ : Y) (hy₀ : a • y₀ ≠ y₀) :
+    ∃ F ∈ coverRing hf S, F (a • y₀) ≠ F y₀ := by
   classical
   set π : Y → ℂ := fun y => ((q y : ℂ)) with hπdef
   haveI : T2Space Y := t2Space_of_isCoveringMap hq
-  -- a nontrivial deck transformation moves a point
-  obtain ⟨y₀, hy₀⟩ : ∃ y₀ : Y, a • y₀ ≠ y₀ := by
-    by_contra hcon
-    push_neg at hcon
-    exact ha (eq_of_smul_eq_smul (α := Y) fun m => by rw [hcon m, one_smul])
   have hπeq : π (a • y₀) = π y₀ := IsOverBase.smul_eq a y₀
   -- a coordinate at the moved point, which the image of the point misses
   obtain ⟨e, hy₀e, hfe⟩ := hf y₀
@@ -251,7 +258,7 @@ theorem hasEnoughFunctions_of_dbarSolvable (hsolve : DbarSolvable) : HasEnoughFu
         ((hout y hy).mono fun y' h => h.1)
   -- solve, and correct
   obtain ⟨u, hu, hmodu⟩ := hsolve S Y q hq (finite_fibre_of_transitive H htrans) g hgC1 hgsupp
-  refine ⟨fun y => χ y - (π y - π y₀) * u y, mem_coverRing.2 ⟨?_, ?_⟩, y₀, ?_⟩
+  refine ⟨fun y => χ y - (π y - π y₀) * u y, mem_coverRing.2 ⟨?_, ?_⟩, ?_⟩
   · refine isHolo_of_isDbarAt_zero hf fun y => ?_
     have h1 : IsDbarAt π (fun y' => π y' - π y₀) 0 y :=
       isDbarAt_comp_zero (y := y) hf (β := fun z => z - π y₀)
@@ -282,6 +289,19 @@ theorem hasEnoughFunctions_of_dbarSolvable (hsolve : DbarSolvable) : HasEnoughFu
     show χ (a • y₀) - (π (a • y₀) - π y₀) * u (a • y₀) ≠ χ y₀ - (π y₀ - π y₀) * u y₀
     rw [h₀, h₁, hπeq]
     simp
+
+/-- **Solving the Cauchy–Riemann equation on coverings is enough** for the functions of moderate
+growth to see the deck group, and so for the existence direction of the Riemann existence
+theorem. -/
+theorem hasEnoughFunctions_of_dbarSolvable (hsolve : DbarSolvable) : HasEnoughFunctions := by
+  intro S Y _ _ _ q hq hf hrange H _ _ _ _ _ _ htrans a ha
+  -- a nontrivial deck transformation moves a point
+  obtain ⟨y₀, hy₀⟩ : ∃ y₀ : Y, a • y₀ ≠ y₀ := by
+    by_contra hcon
+    push_neg at hcon
+    exact ha (eq_of_smul_eq_smul (α := Y) fun m => by rw [hcon m, one_smul])
+  obtain ⟨F, hF, hFne⟩ := exists_ne_at_of_dbarSolvable hsolve S Y q hq hf H htrans a y₀ hy₀
+  exact ⟨F, hF, y₀, hFne⟩
 
 end Rigidity.RET
 

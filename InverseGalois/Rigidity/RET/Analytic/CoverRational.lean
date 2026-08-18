@@ -41,7 +41,8 @@ variable {H : Type*} [Group H] [Fintype H] [MulAction H Y] [ContinuousConstSMul 
 
 Away from the punctures the coefficient is analytic, at a puncture it is meromorphic because the
 function grows no faster than a power of the distance to it, and at infinity it grows no faster
-than a power of `‖z‖`; so it is a quotient of two polynomials. -/
+than a power of `‖z‖`; so it is a quotient of two polynomials, the denominator vanishing only at
+the punctures. -/
 theorem exists_rational_orbitPoly_coeff_of_growth (hf : IsLocalHomeomorph f)
     (hover : ∀ (a : H) (y : Y), f (a • y) = f y)
     (htrans : ∀ y y' : Y, f y = f y' → ∃ b : H, y' = b • y)
@@ -50,7 +51,8 @@ theorem exists_rational_orbitPoly_coeff_of_growth (hf : IsLocalHomeomorph f)
       ∀ y : Y, f y ∈ Metric.ball s ρ \ {s} → ‖g y‖ * ‖f y - s‖ ^ N ≤ C)
     {A R₀ : ℝ} (hA : 0 ≤ A) {m : ℕ} (hinf : ∀ y : Y, R₀ ≤ ‖f y‖ → ‖g y‖ ≤ A * ‖f y‖ ^ m)
     (k : ℕ) :
-    ∃ p q : ℂ[X], q.Monic ∧ ∀ y : Y, q.eval (f y) * (orbitPoly H g y).coeff k = p.eval (f y) := by
+    ∃ p q : ℂ[X], q.Monic ∧ (∀ z ∉ S, q.eval z ≠ 0) ∧
+      ∀ y : Y, q.eval (f y) * (orbitPoly H g y).coeff k = p.eval (f y) := by
   obtain ⟨c₀, hc₀, hac₀⟩ := exists_analytic_orbitPoly_coeff hf hover htrans hg k
   -- Off the punctures the coefficient is analytic.
   have hmemrange : ∀ z : ℂ, z ∉ S → ∃ y : Y, f y = z := by
@@ -127,15 +129,16 @@ theorem exists_rational_orbitPoly_coeff_of_growth (hf : IsLocalHomeomorph f)
       _ = 2 ^ Fintype.card H * max A 1 ^ Fintype.card H * ‖f y‖ ^ (m * Fintype.card H) := by
           rw [mul_pow, pow_mul]
           ring
-  obtain ⟨p, q, hqm, -, hpq⟩ :=
+  obtain ⟨p, q, hqm, hqne, hpq⟩ :=
     exists_rational_of_meromorphic_of_growth S hana hmero hgrowth
-  exact ⟨p, q, hqm, fun y => by rw [hc₀ y]; exact hpq (f y)⟩
+  exact ⟨p, q, hqm, hqne, fun y => by rw [hc₀ y]; exact hpq (f y)⟩
 
 /-- **A holomorphic function of moderate growth on a covering of a punctured plane is algebraic
 over the base.**
 
 It satisfies an equation of degree the order of the deck group whose coefficients are polynomials
-in the base coordinate and whose leading coefficient is a monic polynomial in it. -/
+in the base coordinate and whose leading coefficient is a monic polynomial in it, vanishing only at
+the punctures. -/
 theorem exists_algebraic_of_growth (hf : IsLocalHomeomorph f)
     (hover : ∀ (a : H) (y : Y), f (a • y) = f y)
     (htrans : ∀ y y' : Y, f y = f y' → ∃ b : H, y' = b • y)
@@ -143,13 +146,16 @@ theorem exists_algebraic_of_growth (hf : IsLocalHomeomorph f)
     (hpunct : ∀ s ∈ S, ∃ ρ > (0 : ℝ), ∃ C ≥ (0 : ℝ), ∃ N : ℕ,
       ∀ y : Y, f y ∈ Metric.ball s ρ \ {s} → ‖g y‖ * ‖f y - s‖ ^ N ≤ C)
     {A R₀ : ℝ} (hA : 0 ≤ A) {m : ℕ} (hinf : ∀ y : Y, R₀ ≤ ‖f y‖ → ‖g y‖ ≤ A * ‖f y‖ ^ m) :
-    ∃ (a : ℕ → ℂ[X]) (d : ℂ[X]), d.Monic ∧
+    ∃ (a : ℕ → ℂ[X]) (d : ℂ[X]), d.Monic ∧ (∀ z ∉ S, d.eval z ≠ 0) ∧
       ∀ y : Y, d.eval (f y) * g y ^ Fintype.card H
         + ∑ k ∈ Finset.range (Fintype.card H), (a k).eval (f y) * g y ^ k = 0 := by
-  choose p q hqm hpq using fun k =>
+  choose p q hqm hqne hpq using fun k =>
     exists_rational_orbitPoly_coeff_of_growth hf hover htrans hg S hrange hpunct hA hinf k
   refine ⟨fun k => (∏ j ∈ (Finset.range (Fintype.card H)).erase k, q j) * p k,
-    ∏ k ∈ Finset.range (Fintype.card H), q k, monic_prod_of_monic _ _ fun k _ => hqm k, fun y => ?_⟩
+    ∏ k ∈ Finset.range (Fintype.card H), q k, monic_prod_of_monic _ _ fun k _ => hqm k,
+    fun z hz => by
+      rw [eval_prod]
+      exact Finset.prod_ne_zero_iff.2 fun k _ => hqne k z hz, fun y => ?_⟩
   have hzero : g y ^ Fintype.card H
       + ∑ k ∈ Finset.range (Fintype.card H), (orbitPoly H g y).coeff k * g y ^ k = 0 := by
     have h := eval_orbitPoly_self (H := H) (g := g) y
@@ -181,7 +187,8 @@ theorem exists_algebraic_of_growth (hf : IsLocalHomeomorph f)
 denominator.**
 
 Multiplying the equation of `g` by the `(|H| - 1)`-st power of its leading coefficient turns it
-into a *monic* equation for `d · g`, with coefficients polynomials in the base coordinate. -/
+into a *monic* equation for `d · g`, with coefficients polynomials in the base coordinate; the
+clearing factor `d` vanishes only at the punctures. -/
 theorem exists_integral_of_growth (hf : IsLocalHomeomorph f)
     (hover : ∀ (a : H) (y : Y), f (a • y) = f y)
     (htrans : ∀ y y' : Y, f y = f y' → ∃ b : H, y' = b • y)
@@ -189,14 +196,14 @@ theorem exists_integral_of_growth (hf : IsLocalHomeomorph f)
     (hpunct : ∀ s ∈ S, ∃ ρ > (0 : ℝ), ∃ C ≥ (0 : ℝ), ∃ N : ℕ,
       ∀ y : Y, f y ∈ Metric.ball s ρ \ {s} → ‖g y‖ * ‖f y - s‖ ^ N ≤ C)
     {A R₀ : ℝ} (hA : 0 ≤ A) {m : ℕ} (hinf : ∀ y : Y, R₀ ≤ ‖f y‖ → ‖g y‖ ≤ A * ‖f y‖ ^ m) :
-    ∃ (b : ℕ → ℂ[X]) (d : ℂ[X]), d.Monic ∧
+    ∃ (b : ℕ → ℂ[X]) (d : ℂ[X]), d.Monic ∧ (∀ z ∉ S, d.eval z ≠ 0) ∧
       ∀ y : Y, (d.eval (f y) * g y) ^ Fintype.card H
         + ∑ k ∈ Finset.range (Fintype.card H),
             (b k).eval (f y) * (d.eval (f y) * g y) ^ k = 0 := by
-  obtain ⟨a, d, hd, heq⟩ :=
+  obtain ⟨a, d, hd, hdne, heq⟩ :=
     exists_algebraic_of_growth hf hover htrans hg S hrange hpunct hA hinf
   have hn : 1 ≤ Fintype.card H := Fintype.card_pos
-  refine ⟨fun k => a k * d ^ (Fintype.card H - 1 - k), d, hd, fun y => ?_⟩
+  refine ⟨fun k => a k * d ^ (Fintype.card H - 1 - k), d, hd, hdne, fun y => ?_⟩
   have hpow1 : d.eval (f y) ^ (Fintype.card H - 1) * d.eval (f y)
       = d.eval (f y) ^ Fintype.card H := by
     rw [← pow_succ]

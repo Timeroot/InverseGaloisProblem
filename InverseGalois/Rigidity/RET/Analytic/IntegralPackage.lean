@@ -87,7 +87,7 @@ theorem exists_monic_eval₂_of_growth (hf : IsLocalHomeomorph f)
     {A R₀ : ℝ} (hA : 0 ≤ A) {m : ℕ} (hinf : ∀ y : Y, R₀ ≤ ‖f y‖ → ‖g y‖ ≤ A * ‖f y‖ ^ m) :
     ∃ (P : ℂ[X][X]) (d : ℂ[X]), P.Monic ∧ P.natDegree = Fintype.card H ∧ d.Monic ∧
       ∀ y : Y, P.eval₂ (evalRingHom (f y)) (d.eval (f y) * g y) = 0 := by
-  obtain ⟨b, d, hd, heq⟩ :=
+  obtain ⟨b, d, hd, -, heq⟩ :=
     exists_integral_of_growth hf hover htrans hg S hrange hpunct hA hinf
   set n := Fintype.card H with hn
   set r : ℂ[X][X] := ∑ k ∈ Finset.range n, C (b k) * X ^ k with hr
