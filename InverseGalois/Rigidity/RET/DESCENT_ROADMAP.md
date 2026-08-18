@@ -17,10 +17,10 @@ is a **theorem**, and so is everything downstream of it:
 * `branch_cycle_descent` runs the centerless extension lemma `extend_surjective_of_inner`;
 * `RigidityCertificate.isRegularInverseGalois` composes RET + descent.
 
-The whole chain rests on exactly one open statement, `Rigidity.RET.exists_lineCover_of_prodOne`
+The whole chain rested on exactly one open statement, `Rigidity.RET.exists_lineCover_of_prodOne`
 (`RET/CoverExistence.lean`) — the **existence** direction of the Riemann Existence Theorem **over
-`ℚ̄`**, which is transcendental (GAGA) and is carried as a `sorry` on its own statement, never as an
-axiom.  It asks only for a cover with a prescribed deck group and branch locus; the branch cycles
+`ℚ̄`**.  It is a theorem as of 2026-08-18 (`WALL.md` §7), so nothing in the chain is open any
+longer.  It asks only for a cover with a prescribed deck group and branch locus; the branch cycles
 come back for free from the universal product-one tuple (`RET/UniversalTuple.lean`), which is how
 `geomRETExistence_of_injective` is derived from it.  The completeness direction,
 `geomRETCompleteness_of_injective`, is a theorem, and `geomRET` (`RET/Completeness.lean`) is the two

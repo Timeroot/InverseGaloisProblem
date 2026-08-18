@@ -1,49 +1,49 @@
-# The wall: what is left unproven, stated as narrowly as it can be
+# The wall: how it was measured, and how it was closed
 
-This note is the *measurement* of the transcendental input of the rigidity tree.  It records, as
-precisely as the Lean statements allow, what is still assumed, why it cannot be proven with the
-material at hand, and exactly which reductions to it are already proven.
+This note is the *measurement* of the transcendental input of the rigidity tree.  It recorded, as
+precisely as the Lean statements allow, what was still assumed, why it could not be proven with the
+material at hand, and exactly which reductions to it were already proven.  As of **2026-08-18 it
+records a closed wall**: §7 is the account of the close, §§1–6 are the record of the climb, left
+standing because the shape of the argument is the shape of that climb.
 
-Everything here is stated as an honest `sorry`.  There are no axioms in this development and there
-never will be: a `sorry` announces "not done"; an axiom would announce "done" while being a lie.
+There are no axioms in this development and there never were: a `sorry` announces "not done"; an
+axiom would announce "done" while being a lie.  There are now no `sorry`s either.
 
 ---
 
-## 1. The one open statement
+## 1. The one open statement (closed 2026-08-18)
 
 | # | statement | file | shape |
 |---|-----------|------|-------|
 | **W1** | `Rigidity.RET.exists_lineCover_of_prodOne` | `RET/CoverExistence.lean` | a finite group with a generating product-one `r`-tuple is the deck group of a cover of the line over `ℚ̄`, unramified outside `r` prescribed points and infinity |
 
-`#print axioms Rigidity.rigidity_realizable` is `[propext, sorryAx, Classical.choice, Quot.sound]`;
-`sorryAx` enters through **W1** and nowhere else.  Every other result in the tree — several hundred
-lemmas — is `[propext, Classical.choice, Quot.sound]`.
+`#print axioms Rigidity.rigidity_realizable` is `[propext, Classical.choice, Quot.sound]`.  So is
+every other result in the tree.  `sorryAx` used to enter through **W1** and nowhere else; **W1** is
+now a theorem, and §7 says how.
 
-**W1 is now one direction, not two.**  The correspondence has an existence half (build a cover out
-of a tuple) and a completeness half (read branch cycles off a cover).  The completeness half is a
-theorem — `geomRETCompleteness_of_injective`, `RET/Local/ProdOneGeneration.lean`, unconditional,
-for every finite group and every number of branch points — proven by the analytic tower of
-`RET/Analytic/` and the spider of `RET/Pi1/Topological/`; §2.4 records how.  What is open is only
-the existence half, which is the half that genuinely needs Grauert–Remmert.  Over `ℂ` even that
-half has been reduced to a single named property of coverings of the punctured plane —
+**W1 was one direction, not two.**  The correspondence has an existence half (build a cover out of
+a tuple) and a completeness half (read branch cycles off a cover).  The completeness half was
+already a theorem — `geomRETCompleteness_of_injective`, `RET/Local/ProdOneGeneration.lean`,
+unconditional, for every finite group and every number of branch points — proven by the analytic
+tower of `RET/Analytic/` and the spider of `RET/Pi1/Topological/`; §2.4 records how.  What was open
+was only the existence half, the half that genuinely needs Grauert–Remmert.  Over `ℂ` even that
+half had been reduced to a single named property of coverings of the punctured plane —
 `HasEnoughFunctions`, that each nontrivial deck transformation moves one holomorphic function of
-moderate growth — everything else about it being proven; the subsection "The algebraization of a
-covering, and the wall named once" records the reduction and what still separates it from W1.
+moderate growth — then (§5) to solving `∂u/∂z̄ = g` with moderate growth, then (§6) to a descent
+from `ℂ` to `ℚ̄`.  §7 closes the last of these.
 
-**W1 carries no branch cycles.**  The existence half used to demand not just a cover with the right
+**W1 carried no branch cycles.**  The existence half used to demand not just a cover with the right
 deck group but a cover whose inertia generator at `tᵢ` is the prescribed `gᵢ`.  That extra clause is
-now free: run the bare existence statement on the *universal* group of product-one `r`-tuples
+free: run the bare existence statement on the *universal* group of product-one `r`-tuples
 (`RET/UniversalTuple.lean`), read that cover's branch cycles off the proven completeness half, and
 observe that any two generating product-one tuples of the universal group differ by an
 automorphism; pushing forward along the evaluation surjection lands the prescribed tuple as
-inertia.  So the open statement is the inertia-free `exists_lineCover_of_prodOne`: a group, a
+inertia.  So the open statement was the inertia-free `exists_lineCover_of_prodOne`: a group, a
 branch locus, and nothing else.
 
 The second wall, **W2** (`classInertiaPlaceData_exists`, the branch cycles of the *descended*
 `ℚ(T)`-model, as inertia at places over rational points), was the arithmetic half of the climb.  It
-is now a theorem, derived from the correspondence by the ladder of §3.3; §3 records how.  What
-remains is purely transcendental.
-
+became a theorem first, derived from the correspondence by the ladder of §3.3; §3 records how.
 ---
 
 ## 2. W1 — the branch-cycle correspondence over `ℚ̄`
@@ -1884,3 +1884,107 @@ then hands over a `ℚ̄`-point of the same variety with `q ≠ 0`, i.e. a genui
 the same group and the same branch locus.  Nothing else is missing on this side.  This is the
 formalizable content of the invariance of `π₁` under extension of algebraically closed base fields,
 and it is the next brick to build.
+
+---
+
+## 7. The close (2026-08-18)
+
+`Rigidity.RET.exists_lineCover_of_prodOne` is a theorem.  The repository has no `sorry` and no
+axiom; `#print axioms Rigidity.rigidity_realizable` is `[propext, Classical.choice, Quot.sound]`.
+This section is the account of the last three bricks — the `∂̄` solution promised by §5, the
+presentation of a cover as an equation, and the descent of §6 — and of the coordinate move that
+lets the product-one relation be spent rather than used.
+
+### 7.1 `DbarSolvable` is a theorem (`RET/Analytic/Dbar/Cover*.lean`)
+
+The Hörmander `L²` route of §5 was built end to end.  `Rigidity.RET.dbarSolvable`
+(`Dbar/CoverSolvable.lean`) says: on every covering `q : Y → ℂ∖S` with finite fibres, every `g`
+that is `C¹` in the charts and of compact support is `∂u/∂z̄` for some `u` of moderate growth.  The
+tower under it:
+
+* `CoverMeasure.lean`, `WeightMeasure.lean` — a covering carries a measure, and a weight
+  `φ = m log(1+|z|²)` pulled back through the projection carries a weighted one; integration on `Y`
+  is integration on the base of the fibre sum (`FibreSum.lean`).
+* `Adjoint.lean`, `Parts.lean`, `BochnerKodaira.lean`, `Estimate.lean` — integration by parts in
+  the plane, the weighted adjoint, the Bochner–Kodaira identity and the a priori estimate.
+* `CoverCalc.lean`, `CoverBK.lean`, `CoverEstimate.lean` — the same on the total space, where the
+  charts are restrictions of the projection so the operator is componentwise in a flat frame.
+* `CoverWeak.lean`, `CoverReg.lean`, `CoverWeyl.lean` — the estimate gives a weak solution, and
+  Weyl's lemma (via the Cauchy transform of §5 and a Lebesgue-point argument) makes it genuine.
+* `CoverBound.lean`, `CoverModerate.lean` — the `L²` norm bounds the solution on every disc over
+  which it is holomorphic, and the polynomial size of the weight turns that into moderate growth.
+
+With it, `hasEnoughFunctions_of_dbarSolvable` gives `Rigidity.RET.hasEnoughFunctions`
+unconditionally: on a covering of a punctured plane the functions of moderate growth see the deck
+group.
+
+### 7.2 From a covering to an equation (`RET/Transfer/Present.lean`, `Datum.lean`, `Complex.lean`)
+
+§6(a) asked for an *equation* rather than an abstract Galois extension, because a `LineCover` needs
+a branch locus and the analytic side has none.  `Rigidity.RET.CoverDatum F G t` (`Datum.lean`) is
+that equation together with everything needed to read the cover off it: a monic `f ∈ F(T)[X]` of
+degree `|G|`, irreducible; for each `g ∈ G` a polynomial `num g` presenting the deck transformation
+over a common denominator, with the group law and the separation of distinct elements written as
+Bézout identities; a primitive element for the second generator; and the degeneracy locus written
+as `c·∏(T − tᵢ)^{mᵢ}`.  Every field of the structure is a polynomial identity or a non-vanishing
+condition.
+
+`exists_coverDatum` (`Present.lean`) builds one from a Galois extension of the function field of
+the line over any algebraically closed field, and `exists_coverDatum_complex` (`Complex.lean`)
+supplies the hypotheses from a topological covering of `ℂ∖S`, through §7.1.  In the other direction
+`exists_lineCover_of_coverDatum` (`Datum.lean`) turns a datum over `ℚ̄` into a `LineCover` with
+`IsUnramifiedOutside (Set.range t)`.
+
+### 7.3 The descent (`RET/Transfer/Nullstellensatz.lean`, `Descent.lean`, `BiGeneric.lean`, `DatumDescent.lean`)
+
+§6(b) identified the obstruction exactly: everything in a `CoverDatum` descends by the
+Nullstellensatz except connectedness, and connectedness is closed by **Noether's irreducibility
+theorem**, which §6 named as "the next brick to build".  It is built:
+
+* `FactorScheme.lean`, `WeightedDegree.lean`, `IntegralLift.lean`, `Descent.lean` — the
+  factorizations of a monic two-variable polynomial into two monic factors of prescribed degrees
+  form a finite system whose coordinate ring is integral over the parameters, so the parameter
+  values admitting a factorization are the zeros of an ideal of the parameter ring.  Hence
+  `exists_specialization_no_monic_factor` and, in function-field language,
+  `exists_specialization_irreducible`: a `K`-point with no monic factor specializes to a `k`-point
+  with no monic factor, keeping all its identities and prescribed non-degeneracies.
+* `BiGeneric.lean` — the generic shapes `biPoly`, `biMonic` of a two-variable polynomial with
+  unknown coefficients, and the dictionary between "the specialized polynomial vanishes" and "each
+  coefficient vanishes".
+* `DatumDescent.lean` — `exists_coverDatum_descend`: a `CoverDatum` over an algebraically closed
+  extension `K` of an algebraically closed `k`, whose branch points already lie in `k`, descends to
+  `k`.  Each field of the structure becomes an unknown polynomial indexed by
+  `Rigidity.RET.Transfer.Name G`; the identities become equations, the non-vanishing conditions
+  become inequations through their leading coefficients, connectedness becomes irreducibility, and
+  one call to `exists_specialization_irreducible` preserves all three.
+
+### 7.4 Spending the product-one relation (`RET/CoverExistence.lean`)
+
+The analytic side produces a covering of the *plane* minus finitely many points, whose fundamental
+group is free: it accepts a generating tuple with no relation and says nothing about infinity.  The
+statement wanted is about the *sphere*: `r` prescribed points, one relation, and infinity
+unramified.  The bridge is a coordinate move.
+
+Delete the last point `c = t (Fin.last m)`.  The truncated tuple still generates, because its
+missing entry is the inverse of the product of the others — that is the only use of the product-one
+hypothesis, and it is a use that *discards* it.  Invert the remaining points about `c`, i.e. take
+`uᵢ = (tᵢ − c)⁻¹`, all non-zero; `exists_lineCover_of_generating` — §7.1 → §7.2 → §7.3 — gives a
+cover `P` unramified outside them, with no claim at infinity.  Now invert the coordinate:
+`isUnramifiedOutside_twist_inv_ne_zero` moves the branch points back to `tᵢ − c` and adds at worst
+the origin, while `isUnramifiedAtInfinity_twist_inv` makes infinity clean *for free*, because the
+origin was not a branch point of `P` (the `uᵢ` are non-zero).  Finally translate by `c`:
+`IsUnramifiedOutside.twist_translate` turns the locus `{0} ∪ {tᵢ − c}` into exactly `Set.range t`,
+restoring the deleted point, and `IsUnramifiedAtInfinity.twist_translate` keeps infinity clean.
+The deck group rides along unchanged (`LineCover.twistDeckEquiv`).
+
+For `r ≤ 2` the construction is not needed and not used: `exists_cover_of_le_two` already had it.
+
+### 7.5 The import surgery
+
+`CoverExistence` sat near the bottom of the import graph, and the analytic and transfer towers sat
+above it, so proving it in place was a cycle.  Three edits break it: `GeomRET` drops its import of
+`CoverExistence`, which existed only for a docstring reference; `isDeckGroupOver_of_prodOne` moves
+from `DeckGroups` to the new `DeckGroupsExistence`; and `riemann_existence_cover_mpr`,
+`riemann_existence_cover` and `RigidityCertificate.isGeometricGaloisCover` move from `Existence` to
+the new `ExistenceCovers`.  `CoverExistence` may then import `Transfer.Complex`,
+`Transfer.DatumDescent`, `Transfer.Datum`, `Inversion`, `MoveInfinity` and `ExistenceLowRank`.

@@ -416,6 +416,12 @@ import InverseGalois.Rigidity.RET.Transfer.DatumDescent
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
 
+**Status.**  Nothing here is assumed.  The Riemann Existence Theorem is a theorem of this
+development in both of its directions, and `#print axioms Rigidity.rigidity_realizable` is
+`[propext, Classical.choice, Quot.sound]`.  The narrative below is written as the record of the
+climb, and reads in places as though the geometric input were still open; `RET/WALL.md` measures
+what the input was and §7 there is the account of how it was closed.
+
 This directory **replaced** the single, over-specified axiom `riemann_existence_ax` (formerly in
 `InverseGalois/Rigidity/RiemannExistence.lean`, now deleted) — which handed over the *entire*
 `of_regular_family` polynomial bundle in one gulp — with a decomposition that isolates a single,
@@ -427,8 +433,8 @@ form consumed by `Rigidity.rigidity_realizable` — the tame-inertia realization
 (`inertiaRootData_exists`, `RET.Descent.Tower`), which additionally supplies the branch-cycle inertia
 generators and their cyclotomic conjugation, at exactly the interface the branch-cycle descent
 consumes.  Everything from that datum down to `IsInverseGalois G` — the descent to `ℚ(T)` and the
-Hilbert specialization to `ℚ` — is genuine, complete Lean; the geometric input itself is being built
-from the étale/tame fundamental-group theory under `RET.Pi1`.
+Hilbert specialization to `ℚ` — is genuine, complete Lean, as is the geometric input itself, built
+from the analytic tower of `RET.Analytic` and the fundamental-group theory under `RET.Pi1`.
 
 ## Why the old axiom was dishonest
 
@@ -452,8 +458,8 @@ There are three reasonable places to state RET:
   covers↔π₁-sets equivalence, no ℂP¹/punctured sphere, no van Kampen; and GAGA / algebraic curves /
   analytification are entirely absent.  This route is a multi-year prerequisite stack.  (Much of
   that stack has since been built here anyway — `RET/Pi1/Topological/` computes `π₁(ℂ ∖ S)` and
-  proves Seifert–van Kampen, `RET/Analytic/` analytifies a plane family — which is what closed the
-  completeness direction below.  GAGA proper is still absent.)
+  proves Seifert–van Kampen, `RET/Analytic/` analytifies a plane family, and `RET/Analytic/Dbar/`
+  solves the Cauchy–Riemann equation on a covering — which is what closed both directions below.)
 * **Grothendieck / Galois-category** — the profinite π₁ of the punctured line via
   `CategoryTheory.Galois`.  That framework *does* exist in Mathlib (`GaloisCategory`,
   `IsFundamentalGroup`, `ContAction`), but linking it to actual finite extensions of `ℚ̄(t)` needs
@@ -502,9 +508,11 @@ Output: the `of_regular_family` bundle for `H = φ.range`.  In between:
   and centerless kills the `H¹(·, Z G)` obstruction — giving descent to a *regular* `ℚ(t)`-extension.
 * **L3 — RET existence** (the irreducible GAGA content).  A surjection `Γ_r ↠ G` with
   prescribed branch points yields a regular Galois extension of `ℚ̄(t)` with deck group `G` and
-  inertia generators in the classes `Cᵢ`.  This is the sole geometric input, and it is being built
-  from the étale and topological fundamental-group theory under `RET.Pi1`.  For particular groups it
-  is already established outright, with no geometry: for the finite abelian groups by Kummer theory
+  inertia generators in the classes `Cᵢ`.  This is the geometric input, and it is a theorem
+  (`Rigidity.RET.exists_lineCover_of_prodOne`, `RET/CoverExistence.lean`), built from the analytic
+  tower of `RET/Analytic/` and the topological fundamental-group theory under `RET.Pi1`.  For
+  particular groups it is also established outright, with no geometry: for the finite abelian groups
+  by Kummer theory
   (`RET.KummerCover`, `RET.KummerAbelian`), for `Aₙ` and `Sₙ` by Serre's explicit family
   (`RET.SerreCovers`), for the dihedral groups by the substitutions `u ↦ ζ^i·u` and `u ↦ u⁻¹`
   (`RET.DihedralCover`), and for *every* group when there are at most two branch points
@@ -514,11 +522,12 @@ Output: the `of_regular_family` bundle for `H = φ.range`.  In between:
   resolvent (orbit of a generic linear form) + specialization/reduction-of-inertia.  The `Aₙ`
   development is the worked template.
 
-Assembly (`L5`, **done**): `Rigidity.rigidity_realizable` now composes L1+L2+L3+L4 through the honest
-chain `RigidityCertificate G → IsRegularInverseGalois G → IsInverseGalois G`, resting on the single
-L3 Riemann Existence Theorem (`inertiaRootData_exists`, in its tame-inertia form) with the L2 descent
-and the L4 arithmetic-geometry bridges all genuine Lean.  The over-specified `riemann_existence_ax`
-and its file `RiemannExistence.lean` have been deleted.
+Assembly (`L5`, **done**): `Rigidity.rigidity_realizable` composes L1+L2+L3+L4 through the honest
+chain `RigidityCertificate G → IsRegularInverseGalois G → IsInverseGalois G`, with the L3 Riemann
+Existence Theorem (`inertiaRootData_exists`, in its tame-inertia form), the L2 descent and the L4
+arithmetic-geometry bridges all genuine Lean; `#print axioms` on it is
+`[propext, Classical.choice, Quot.sound]`.  The over-specified `riemann_existence_ax` and its file
+`RiemannExistence.lean` have been deleted.
 
 ## Mathlib grounding (survey, 2026-07-29)
 
@@ -531,12 +540,13 @@ backbone and the complete `Aₙ` template.
 ABSENT from Mathlib (and so built here, or still missing): concrete π₁ of any space, covers↔π₁-sets,
 deck transformations, Seifert–van Kampen — all *built*, under `RET/Pi1/Topological/`; the
 analytification of a plane family as a covering space and its monodromy — *built*, under
-`RET/Analytic/`; **cover-existence, i.e. GAGA proper** (an algebraic cover from a topological one),
-together with algebraic curves, ramification of morphisms, covers↔function-field-extensions,
-Riemann–Roch and genus — still absent.  That last gap is the whole remaining mathematical content
-of L3, which is therefore stated on its own (`Rigidity.RET.exists_lineCover_of_prodOne`) and never
-as an axiom; the converse direction (`Rigidity.RET.geomRETCompleteness_of_injective`) is proven, and
-everything else above the cut is elementary by comparison.
+`RET/Analytic/`; **cover-existence** (an algebraic cover from a topological one) — *built*, under
+`RET/Analytic/Dbar/` and `RET/Transfer/`, by the Hörmander `L²` solution of `∂u/∂z̄ = g` on the
+covering and a Nullstellensatz descent from `ℂ` to `ℚ̄`; algebraic curves, ramification of
+morphisms, covers↔function-field-extensions, Riemann–Roch and genus — still absent, and not needed,
+the construction going through equations rather than curves.  L3 is therefore a theorem stated on
+its own (`Rigidity.RET.exists_lineCover_of_prodOne`) and never an axiom, as is the converse
+direction (`Rigidity.RET.geomRETCompleteness_of_injective`).
 
 ## Currently landed
 
@@ -604,8 +614,8 @@ everything else above the cut is elementary by comparison.
   one: a cover of the line branched over at most two points of the sphere has cyclic deck group
   (`RET.LineCover.isCyclic_deck_of_unramifiedOutside_pair`), proved by adjoining a root of the
   coordinate of order the degree of the cover (`RET.KummerPullback`) and moving the two points to
-  the origin and infinity by a coordinate change (`RET.TwoPointCyclic`).  For three or more points
-  the existence direction is the GAGA wall itself.
+  the origin and infinity by a coordinate change (`RET.TwoPointCyclic`).  For three or more points the existence
+  direction is the analytic construction of `RET/CoverExistence.lean`.
 * **The completeness direction in full** — `RET.geomRETCompleteness_of_injective`
   (`RET/Local/ProdOneGeneration.lean`, packaged in `RET/Completeness.lean`): *every* finite Galois
   cover of the line over `ℚ̄`, unramified outside a prescribed tuple of distinct points and

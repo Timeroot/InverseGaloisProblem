@@ -61,5 +61,5 @@ wedge/deformation-retraction model; staged after the theorem itself.
 
 Stub statements first, get the file compiling with honest `sorry`s at the analytic leaves, then
 fill leaves one at a time, full-building after each. Never let a `sorry` touch
-`rigidity_realizable` (verify `#print axioms` = `[propext, sorryAx, Classical.choice, Quot.sound]`
+`rigidity_realizable` (verify `#print axioms` = `[propext, Classical.choice, Quot.sound]`
 after every full build). Docstrings never mention sorry / proof-status.

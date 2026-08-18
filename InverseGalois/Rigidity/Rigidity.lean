@@ -44,8 +44,8 @@ inverse Galois group over `ℚ`.
 
 This composes the honest three-step chain: the Riemann Existence Theorem at the tame-inertia
 interface (`inertiaRootData_exists`), the branch-cycle descent to `ℚ(T)`, and Hilbert specialization
-to `ℚ` — the latter two fully proven.  Modulo that single geometric input, realizability of `G`
-reduces to a finite, checkable certificate. -/
+to `ℚ` — all three proven.  Realizability of `G` therefore reduces, unconditionally, to a finite
+checkable certificate. -/
 theorem rigidity_realizable {G : Type} [Group G] [Finite G]
     (cert : RigidityCertificate G) : IsInverseGalois G :=
   cert.isRegularInverseGalois.isInverseGalois
