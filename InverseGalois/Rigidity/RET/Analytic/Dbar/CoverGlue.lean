@@ -138,6 +138,34 @@ theorem glueSol_eq (h : ∀ y, Nonempty (LocalSolData f g U y)) (hsol : IsLocalS
   · have := (solData h (e.symm z)).symm_apply
     rwa [hfy] at this
 
+/-- **In every coordinate the glued solution represents the weak solution.** -/
+theorem ae_eq_glueSol (h : ∀ y, Nonempty (LocalSolData f g U y)) (hfe : f = ⇑e) :
+    ∀ᵐ z : ℂ, z ∈ e.target → U (e.symm z) = glueSol U h (e.symm z) := by
+  rw [ae_iff]
+  refine measure_null_of_locally_null _ fun z hz => ?_
+  have hzt : z ∈ e.target := (Classical.not_imp.mp hz).1
+  have hfz : f (e.symm z) = z := apply_symm_of_isChartAt hfe hzt
+  obtain ⟨v, e', s, hsol, hmem, hsymm⟩ := solData h (e.symm z)
+  rw [hfz] at hmem hsymm
+  have hc : IsChartAt f e (e.symm z) := isChartAt_symm hfe hzt
+  have hc' : IsChartAt f e' (e.symm z) := by
+    have := hsol.isChartAt hmem
+    rwa [hsymm] at this
+  have hev : ∀ᶠ w in 𝓝 z, e.symm w = e'.symm w := by
+    have := hc.eventuallyEq_symm hc'
+    rwa [hfz] at this
+  set W : Set ℂ := {w | w ∈ e.target ∧ w ∈ s ∧ e.symm w = e'.symm w} with hWdef
+  have hWnhds : W ∈ 𝓝 z := by
+    filter_upwards [e.open_target.mem_nhds hzt, hsol.isOpen.mem_nhds hmem, hev] with w h1 h2 h3
+    exact ⟨h1, h2, h3⟩
+  refine ⟨{w | ¬ (w ∈ e.target → U (e.symm w) = glueSol U h (e.symm w))} ∩ W,
+    inter_mem_nhdsWithin _ hWnhds, ?_⟩
+  refine measure_mono_null (fun w hw => ?_) (ae_iff.mp hsol.aeEq)
+  obtain ⟨hwn, hwt, hws, hwe⟩ := hw
+  intro hcon
+  refine (Classical.not_imp.mp hwn).2 ?_
+  rw [hwe, hcon hws, ← glueSol_eq h hsol hws]
+
 /-- **The glued solution solves the Cauchy–Riemann equation** at every point. -/
 theorem isDbarAt_glueSol (h : ∀ y, Nonempty (LocalSolData f g U y)) (y : Y) :
     IsDbarAt f (glueSol U h) (g y) y := by

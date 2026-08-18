@@ -390,7 +390,13 @@ import InverseGalois.Rigidity.RET.Analytic.Dbar.LebesguePoint
 import InverseGalois.Rigidity.RET.Analytic.Dbar.Weyl
 import InverseGalois.Rigidity.RET.Analytic.Dbar.CoverWeyl
 import InverseGalois.Rigidity.RET.Analytic.Dbar.CoverGlue
+import InverseGalois.Rigidity.RET.Analytic.Dbar.DiscChart
+import InverseGalois.Rigidity.RET.Analytic.Dbar.LogWeight
+import InverseGalois.Rigidity.RET.Analytic.Dbar.Pointwise
+import InverseGalois.Rigidity.RET.Analytic.Dbar.CoverBound
+import InverseGalois.Rigidity.RET.Analytic.Dbar.CoverModerate
 import InverseGalois.Rigidity.RET.Analytic.Dbar.Enough
+import InverseGalois.Rigidity.RET.Analytic.Dbar.CoverSolvable
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
