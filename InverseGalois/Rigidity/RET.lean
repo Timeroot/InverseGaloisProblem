@@ -384,6 +384,8 @@ import InverseGalois.Rigidity.RET.Analytic.Dbar.CoverWeak
 import InverseGalois.Rigidity.RET.Analytic.Dbar.AreaMean
 import InverseGalois.Rigidity.RET.Analytic.Dbar.CauchyType
 import InverseGalois.Rigidity.RET.Analytic.Dbar.Puncture
+import InverseGalois.Rigidity.RET.Analytic.Dbar.LebesguePoint
+import InverseGalois.Rigidity.RET.Analytic.Dbar.Weyl
 import InverseGalois.Rigidity.RET.Analytic.Dbar.Enough
 
 /-!
