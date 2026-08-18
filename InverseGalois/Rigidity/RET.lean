@@ -404,6 +404,7 @@ import InverseGalois.Rigidity.RET.Transfer.WeightedDegree
 import InverseGalois.Rigidity.RET.Transfer.IntegralLift
 import InverseGalois.Rigidity.RET.Transfer.FactorScheme
 import InverseGalois.Rigidity.RET.Transfer.Descent
+import InverseGalois.Rigidity.RET.Transfer.Datum
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
