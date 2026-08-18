@@ -22,6 +22,8 @@ constructs a cover, and it is the existence half of the Riemann Existence Theore
 * `riemann_existence_cover` — the covers correspondence, as a biconditional.
 * `RigidityCertificate.isGeometricGaloisCover` — a rigidity certificate realizes its group as a
   geometric Galois cover.
+* `isGeometricGaloisCover_of_finite` — every finite group is realized by a geometric Galois cover:
+  the inverse Galois problem over `ℚ̄(T)`.
 -/
 
 open Polynomial
@@ -79,3 +81,18 @@ theorem RigidityCertificate.isGeometricGaloisCover {G : Type} [Group G] [Finite 
   exact riemann_existence_cover_mpr
     ⟨cert.r, Rigidity.RET.sphereHom g hprod,
       (Rigidity.RET.sphereHom_surjective_iff g hprod).2 hgen⟩
+
+/-- **The geometric inverse Galois problem over `ℚ̄(T)`: every finite group is the Galois group of
+a finite Galois extension of `ℚ̄(T)`.**
+
+The two sides of the covers correspondence pull in opposite directions here, and the correspondence
+being a theorem is what makes the statement one.  Its right-hand side asks for a surjection onto `G`
+from some sphere group, and that costs nothing — `Γ_r` is free of rank `r - 1`, so a large enough
+`r` works for any finite group.  Its left-hand side is the cover, and producing one is the whole
+analytic content of the Riemann Existence Theorem.  Over the algebraically closed constant field
+there is no arithmetic left to obstruct anything, which is why the geometric problem is settled
+while the problem over `ℚ` is not: `IsRegularInverseGalois`, the same statement with `ℚ̄` replaced
+by `ℚ`, is open in general and is what a rigidity certificate buys. -/
+theorem isGeometricGaloisCover_of_finite {G : Type} [Group G] [Finite G] :
+    IsGeometricGaloisCover G :=
+  riemann_existence_cover_mpr Rigidity.RET.exists_sphereGroup_surjective
