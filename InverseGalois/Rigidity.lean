@@ -10,16 +10,17 @@ import InverseGalois.Rigidity.Examples.S3Rigid
 # The rigidity method for the inverse Galois problem
 
 This module collects the rigidity criterion: a cheap, checkable **rigidity certificate**
-(rational conjugacy-class data for a centerless finite group) proves that the group is an inverse
-Galois group over `ℚ`.  The single analytic ingredient — the Riemann Existence Theorem — is
-isolated as one recognizable statement (`inertiaRootData_exists`, `RET.Descent.Tower`, in its
-tame-inertia form; `riemann_existence_cover`, `RET.Existence`, in its covers form); everything else
-is complete Lean.
+(rational conjugacy-class data for a centerless finite group) proves that the group is a *regular*
+Galois group over `ℚ(T)`, and hence an inverse Galois group over `ℚ`.  Its analytic ingredient is
+the Riemann Existence Theorem, stated in two recognizable forms — `inertiaRootData_exists`
+(`RET.Descent.Tower`) in its tame-inertia form and `riemann_existence_cover` (`RET.ExistenceCovers`)
+in its covers form — and established in `RET.Completeness` as `geomRET`.
 
-* `Rigidity.rigidity_realizable` — the criterion.
+* `Rigidity.RigidityCertificate.isRegularInverseGalois` — the criterion, in its regular form.
+* `Rigidity.rigidity_realizable` — the criterion over `ℚ`.
 * `Rigidity.rigid_card_iff_single_orbit` — soundness: the certificate's cheap cardinality
   condition equals classical rigidity (a single simultaneous-conjugation orbit).
-* `Rigidity.permCert`, `Rigidity.sn_isInverseGalois` — the rigid triple of a symmetric group
+* `Rigidity.permCert`, `Rigidity.sn_isRegularInverseGalois` — the rigid triple of a symmetric group
   (a transposition, an `(n-1)`-cycle and an `n`-cycle) assembled into a certificate, for every
   `n ≥ 3`.
 * `Rigidity.braidTuple`, `Rigidity.braidConj_of_rigidityCertificate` — the Hurwitz braid moves on

@@ -50,7 +50,8 @@ the same support.
   symmetric group is rational, i.e. a symmetric group is a rational group.
 * `Rigidity.exists_eq_stdTriple` — classification of the rigid triples.
 * `Rigidity.single_orbit`, `Rigidity.card_rigidTuples` — the structure constant is `1`.
-* `Rigidity.sn_isInverseGalois` — `Sₙ` is an inverse Galois group over `ℚ` for every `n ≥ 3`.
+* `Rigidity.sn_isRegularInverseGalois` — `Sₙ` is a regular Galois group over `ℚ(T)` for every
+  `n ≥ 3`, and `Rigidity.sn_isInverseGalois` — hence an inverse Galois group over `ℚ`.
 -/
 
 open Equiv Equiv.Perm Finset
@@ -357,9 +358,15 @@ theorem isFullCycle_finRotate {n : ℕ} (h : 2 ≤ n) : IsFullCycle (finRotate n
 def snCert (n : ℕ) (h3 : 3 ≤ n) : RigidityCertificate (Perm (Fin n)) :=
   permCert (isFullCycle_finRotate (by omega)) (by simpa using h3) ⟨0, by omega⟩
 
-/-- **The symmetric group on `n ≥ 3` letters is an inverse Galois group over `ℚ`**, by the rigidity
-criterion applied to the certificate `snCert`. -/
+/-- **The symmetric group on `n ≥ 3` letters is a regular Galois group over `ℚ(T)`**, by the
+rigidity criterion applied to the certificate `snCert`. -/
+theorem sn_isRegularInverseGalois (n : ℕ) (h3 : 3 ≤ n) :
+    IsRegularInverseGalois (Perm (Fin n)) :=
+  (snCert n h3).isRegularInverseGalois
+
+/-- **The symmetric group on `n ≥ 3` letters is an inverse Galois group over `ℚ`**, by Hilbert
+specialization of the regular extension `sn_isRegularInverseGalois`. -/
 theorem sn_isInverseGalois (n : ℕ) (h3 : 3 ≤ n) : IsInverseGalois (Perm (Fin n)) :=
-  rigidity_realizable (snCert n h3)
+  (sn_isRegularInverseGalois n h3).isInverseGalois
 
 end Rigidity

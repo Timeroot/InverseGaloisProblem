@@ -11,8 +11,8 @@ This file assembles the rigidity method's headline theorem: a **rigidity certifi
 (`RigidityCertificate G`, purely group-theoretic and cheap to check) proves that `G` is an inverse
 Galois group over `ℚ`.
 
-The proof is the honest three-step chain resting on a single deep geometric input, the Riemann
-Existence Theorem at the tame-inertia interface (`inertiaRootData_exists`, `RET.Descent.Tower`):
+The proof is the three-step chain resting on the Riemann Existence Theorem at the tame-inertia
+interface (`inertiaRootData_exists`, `RET.Descent.Tower`):
 
 1. **Riemann Existence Theorem** — for the certificate's rigid generating product-one tuple, the
    geometric cover branched over the `r` points exists, carrying its tame inertia generators (which
@@ -26,14 +26,14 @@ Existence Theorem at the tame-inertia interface (`inertiaRootData_exists`, `RET.
    extension with the same group (`IsRegularInverseGalois.isInverseGalois`, via the model translation
    `exists_regular_family` and the repository's Hilbert-irreducibility descent).  Fully proven.
 
-Steps 2 and 3 are genuine, complete Lean proofs; the whole reduction pivots on step 1 — the
-recognizable Riemann Existence Theorem, refined by Fried's branch-cycle formula and stated at exactly
-the tame-inertia interface the descent consumes — which is the one genuinely geometric ingredient,
-being built from the étale/tame fundamental-group theory under `RET.Pi1`.
+Step 1 is the geometric one, built from the étale and tame fundamental-group theory under `RET.Pi1`
+and the analytic construction of coverings under `RET.Analytic`; steps 2 and 3 are algebra.
 
 ## Main results
 
-* `Rigidity.rigidity_realizable` — a rigidity certificate yields `IsInverseGalois G`.
+* `Rigidity.RigidityCertificate.isRegularInverseGalois` — a rigidity certificate yields
+  `IsRegularInverseGalois G` (in `RET.Descent`).
+* `Rigidity.rigidity_realizable` — hence `IsInverseGalois G`.
 -/
 
 namespace Rigidity
@@ -42,10 +42,10 @@ namespace Rigidity
 conjugacy classes with a unique generating product-one tuple, the group being centerless — is an
 inverse Galois group over `ℚ`.
 
-This composes the honest three-step chain: the Riemann Existence Theorem at the tame-inertia
-interface (`inertiaRootData_exists`), the branch-cycle descent to `ℚ(T)`, and Hilbert specialization
-to `ℚ` — all three proven.  Realizability of `G` therefore reduces, unconditionally, to a finite
-checkable certificate. -/
+This composes the three-step chain: the Riemann Existence Theorem at the tame-inertia interface
+(`inertiaRootData_exists`), the branch-cycle descent to `ℚ(T)`, and Hilbert specialization to `ℚ`.
+Realizability of `G` therefore follows, unconditionally, from a finite checkable certificate.  The
+intermediate `RigidityCertificate.isRegularInverseGalois` is the stronger statement, over `ℚ(T)`. -/
 theorem rigidity_realizable {G : Type} [Group G] [Finite G]
     (cert : RigidityCertificate G) : IsInverseGalois G :=
   cert.isRegularInverseGalois.isInverseGalois

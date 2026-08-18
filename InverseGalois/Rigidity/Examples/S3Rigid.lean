@@ -10,7 +10,8 @@ import InverseGalois.Rigidity.Symmetric
 This file fires the rigidity criterion end-to-end on the smallest example:
 
 ```
-theorem s3_isInverseGalois : IsInverseGalois (Equiv.Perm (Fin 3)) := rigidity_realizable s3Cert
+theorem s3_isRegularInverseGalois : IsRegularInverseGalois (Equiv.Perm (Fin 3)) :=
+  s3Cert.isRegularInverseGalois
 ```
 
 The certificate is the `n = 3` case of the rigid triple of `Sₙ`
@@ -22,6 +23,7 @@ one `3`-cycle class, with exactly `6 = |S₃|` product-one generating tuples.
 ## Main results
 
 * `Rigidity.S3Example.s3Cert` — the rigidity certificate for `S₃`.
+* `Rigidity.S3Example.s3_isRegularInverseGalois` — `IsRegularInverseGalois (Equiv.Perm (Fin 3))`.
 * `Rigidity.S3Example.s3_isInverseGalois` — `IsInverseGalois (Equiv.Perm (Fin 3))`.
 -/
 
@@ -45,10 +47,15 @@ theorem isSwap_stdTriple_one : (stdTriple (finRotate 3) (0 : Fin 3) 1).IsSwap :=
   rw [cycleType_cut (isFullCycle_finRotate (by norm_num)) (by simp) 0]
   simp
 
-/-- **`S₃` is an inverse Galois group over `ℚ`**, via the rigidity criterion applied to the
+/-- **`S₃` is a regular Galois group over `ℚ(T)`**, via the rigidity criterion applied to the
 concrete certificate `s3Cert`. -/
+theorem s3_isRegularInverseGalois : IsRegularInverseGalois (Equiv.Perm (Fin 3)) :=
+  s3Cert.isRegularInverseGalois
+
+/-- **`S₃` is an inverse Galois group over `ℚ`**, by Hilbert specialization of the regular
+extension `s3_isRegularInverseGalois`. -/
 theorem s3_isInverseGalois : IsInverseGalois (Equiv.Perm (Fin 3)) :=
-  rigidity_realizable s3Cert
+  s3_isRegularInverseGalois.isInverseGalois
 
 end S3Example
 

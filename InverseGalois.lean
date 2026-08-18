@@ -5,6 +5,7 @@ import InverseGalois.NumberTheory
 import InverseGalois.Reflection
 import InverseGalois.Resolvent
 import InverseGalois.Rigidity
+import InverseGalois.Catalogue
 
 /-!
 # The inverse Galois problem over `ℚ`
@@ -12,4 +13,7 @@ import InverseGalois.Rigidity
 This is the public entry point for the project.  The source tree is divided into core
 notions, general polynomial tools, resolvents, concrete groups, Hilbert irreducibility,
 reflection, the rigidity method, and auxiliary number theory.
+
+`InverseGalois.Catalogue` indexes the groups the project realizes, in the strongest form each
+construction gives — regularly over `ℚ(T)` in all but one case.
 -/
