@@ -399,6 +399,7 @@ import InverseGalois.Rigidity.RET.Analytic.Dbar.CoverBound
 import InverseGalois.Rigidity.RET.Analytic.Dbar.CoverModerate
 import InverseGalois.Rigidity.RET.Analytic.Dbar.Enough
 import InverseGalois.Rigidity.RET.Analytic.Dbar.CoverSolvable
+import InverseGalois.Rigidity.RET.Transfer.Nullstellensatz
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
