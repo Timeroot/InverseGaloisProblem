@@ -31,10 +31,11 @@ tuple is absorbed).
   inertia `≅ Ẑ(1)` with `Γ` acting through `χ`) lives *once*, inside `geomInertiaModel_exists`,
   consolidated with the N-level Riemann Existence presentation; the two are faces of a single
   geometric object.
-* **Arithmetic** (the class-invariance): once the twist lands in `Cᵢ^{χ(σ)}`, **rationality**
-  (`cert.rational`, i.e. `IsRationalClass (cert.C i)`) forces `Cᵢ^{χ(σ)} = Cᵢ`, so the twist lands
-  in `rigidTuples cert.C`.  This step is elementary group theory, proved here — it is exactly the
-  reason rationality is in the certificate.
+* **Arithmetic** (the class-invariance): once the twist lands in `Cᵢ^{χ(σ)}`, **class stability**
+  under the coprime power `χ(σ)` — the hypothesis `hstab` — forces `Cᵢ^{χ(σ)} = Cᵢ`, so the twist
+  lands in `rigidTuples cert.C`.  Rationality of the classes is one way to supply `hstab`, and it is
+  exactly why rationality is a field of `RigidityCertificate`; stability under a subgroup of the
+  cyclotomic action supplies it over a number field instead.
 
 Once `twist e ∈ rigidTuples cert.C`, the *downstream* `ArithmeticDescentData.ofBranchCycle` uses
 `sphereHom_inner_equiv_of_rigid` to turn rigidity into the inner-automorphism payoff — so Module C's
@@ -51,9 +52,9 @@ The concrete inhabitant `branchCycleInput` is assembled from the explicit twist 
 
 Both `branchCycleInput` and `BranchCycleInput.toBranchTwist` are proved outright:
 
-* **class-invariance** (`twist_mem`, first component): rationality (`cert.rational`) collapses each
-  cyclotomic power `Cᵢ^{χ(σ)}` back to `Cᵢ`.  *This is the entire reason `rational` is a certificate
-  field.*
+* **class-invariance** (`twist_mem`, first component): the stability hypothesis `hstab` collapses
+  each cyclotomic power `Cᵢ^{χ(σ)}` back to `Cᵢ`.  *This is the entire reason `rational` is a
+  certificate field.*
 * **generation** (`twist_mem`, third component): **derived**, not assumed — `sphereHom (twist e)`
   equals `φ ∘ conjN e ∘ pres`, a composite of three surjections (`φ` onto `G` because `base`
   generates, `conjN e` a bijection of `N`, `pres` onto `N`), so it is surjective, whence the twist
@@ -114,7 +115,7 @@ tuple `twist e` that
 The `cyclo` field is the tame-inertia + cyclotomic-character content (`Γ` acts on tame inertia
 `≅ Ẑ(1)` through `χ`); over a `GeomTower` it is supplied by the tower's `branchCycle` field.  Given
 an inhabitant, `toBranchTwist` derives the full `BranchTwist`. -/
-structure BranchCycleInput {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
+structure BranchCycleInput {G : Type} [Group G] [Finite G] {cert : RigidData G}
     (tw : GeomTower G cert) where
   /-- the Galois twist of the monodromy by `e : E`, as a tuple. -/
   twist : tw.E → (Fin cert.r → G)
@@ -133,14 +134,16 @@ structure BranchCycleInput {G : Type} [Group G] [Finite G] {cert : RigidityCerti
 tuples land in the certificate's *rational* classes and the full `BranchTwist` follows.  Three
 components:
 
-* **class-invariance** — rationality (`cert.rational`) collapses `Cᵢ^{χ(σ)}` to `Cᵢ`;
+* **class-invariance** — the stability hypothesis `hstab` collapses `Cᵢ^{χ(σ)}` to `Cᵢ`;
 * **generation** — *derived* from surjectivity of `φ ∘ conjN e ∘ pres = sphereHom (twist e)`
   (a composite of three surjections), via `sphereHom_surjective_iff`;
 * **product-one** — inherited.
 
-No arithmetic-geometry input; this is exactly the elementary content rationality supplies. -/
+No arithmetic-geometry input; this is exactly the elementary content class stability supplies. -/
 noncomputable def BranchCycleInput.toBranchTwist {G : Type} [Group G] [Finite G]
-    {cert : RigidityCertificate G} {tw : GeomTower G cert} (input : BranchCycleInput tw) :
+    {cert : RigidData G} {tw : GeomTower G cert} (input : BranchCycleInput tw)
+    (hstab : ∀ (i : Fin cert.r) (k : ℕ), Nat.Coprime k (orderOf (tw.base i)) →
+      ConjClasses.mk (tw.base i ^ k) = cert.C i) :
     BranchTwist tw := by
   classical
   -- `φ : N ↠ G` is surjective: `base` generates, so its sphere hom is onto and `φ` factors it.
@@ -165,7 +168,7 @@ noncomputable def BranchCycleInput.toBranchTwist {G : Type} [Group G] [Finite G]
       obtain ⟨k, hcop, heq⟩ := input.cyclo e
       intro i
       rw [heq i]
-      exact cert.rational i (tw.base i) (tw.base_mem.1 i) k (hcop i)
+      exact hstab i k (hcop i)
     · -- generation: `sphereHom (twist e)` is `φ ∘ conjN e ∘ pres`, a composite of surjections.
       rw [← Rigidity.RET.sphereHom_surjective_iff (input.twist e) (input.prod_one e)]
       have hcomp : Function.Surjective
@@ -191,24 +194,24 @@ under `φ` of the `e`-conjugate of the `i`-th geometric generator `pres (xᵢ)`.
 whose *class membership* is the branch-cycle formula (`branchTwistTuple_cyclo`); its product-one and
 sphere-hom properties (`branchTwistTuple_prod_one`, `branchTwistTuple_φ_conj_pres`) are elementary
 group theory, proved below. -/
-noncomputable def branchTwistTuple {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
+noncomputable def branchTwistTuple {G : Type} [Group G] [Finite G] {cert : RigidData G}
     (tw : GeomTower G cert) (e : tw.E) : Fin cert.r → G :=
   fun i => tw.φ (Rigidity.RET.conjN tw.N e (tw.pres (PresentedGroup.of i)))
 
 /-- The twisted monodromy `φ ∘ conjN e ∘ pres : SphereGroup r →* G`, bundled as a hom.  Its value on
 the `i`-th generator is `branchTwistTuple tw e i` by definition (`branchTwistHom_of`). -/
-noncomputable def branchTwistHom {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
+noncomputable def branchTwistHom {G : Type} [Group G] [Finite G] {cert : RigidData G}
     (tw : GeomTower G cert) (e : tw.E) : Rigidity.RET.SphereGroup cert.r →* G :=
   tw.φ.comp ((Rigidity.RET.conjNHom tw.N e).comp tw.pres)
 
-@[simp] theorem branchTwistHom_of {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
+@[simp] theorem branchTwistHom_of {G : Type} [Group G] [Finite G] {cert : RigidData G}
     (tw : GeomTower G cert) (e : tw.E) (i : Fin cert.r) :
     branchTwistHom tw e (PresentedGroup.of i) = branchTwistTuple tw e i := rfl
 
 /-- **Product-one (elementary).**  The twist tuple is the image of the sphere group's generators
 under the hom `branchTwistHom`; the product of all generators is trivial by the sphere relation
 (`sphereGroup_genProd_one`), so the product of the tuple is `1`. -/
-theorem branchTwistTuple_prod_one {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
+theorem branchTwistTuple_prod_one {G : Type} [Group G] [Finite G] {cert : RigidData G}
     (tw : GeomTower G cert) (e : tw.E) :
     (List.ofFn (branchTwistTuple tw e)).prod = 1 := by
   have hprod : (List.ofFn (branchTwistTuple tw e)).prod
@@ -221,7 +224,7 @@ theorem branchTwistTuple_prod_one {G : Type} [Group G] [Finite G] {cert : Rigidi
 `sphereHom (branchTwistTuple tw e)` are two homs `SphereGroup r →* G` agreeing on every generator,
 hence equal. -/
 theorem branchTwistTuple_φ_conj_pres {G : Type} [Group G] [Finite G]
-    {cert : RigidityCertificate G} (tw : GeomTower G cert) (e : tw.E)
+    {cert : RigidData G} (tw : GeomTower G cert) (e : tw.E)
     (x : Rigidity.RET.SphereGroup cert.r) :
     tw.φ (Rigidity.RET.conjN tw.N e (tw.pres x)) =
       Rigidity.RET.sphereHom (branchTwistTuple tw e) (branchTwistTuple_prod_one tw e) x := by
@@ -242,7 +245,7 @@ definitionally `φ (conjN e (pres (xᵢ)))`).  The arithmetic-geometry content �
 argument (tame inertia `≅ Ẑ(1)` with `Γ` acting through `χ`) — has been consolidated into
 `geomInertiaModel_exists` that populates `branchCycle`; see `Descent.Tower` and the geometric `π₁`
 development.  See `DESCENT_ROADMAP.md` §1.3. -/
-theorem branchTwistTuple_cyclo {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
+theorem branchTwistTuple_cyclo {G : Type} [Group G] [Finite G] {cert : RigidData G}
     (tw : GeomTower G cert) (e : tw.E) :
     ∃ k : ℕ, (∀ i, Nat.Coprime k (orderOf (tw.base i))) ∧
       ∀ i, ConjClasses.mk (branchTwistTuple tw e i) = ConjClasses.mk (tw.base i ^ k) :=
@@ -253,7 +256,7 @@ fields (`twist`, `prod_one`, `φ_conj_pres`) are the elementary group theory pro
 (`branchTwistTuple`, `branchTwistTuple_prod_one`, `branchTwistTuple_φ_conj_pres`); the fourth,
 `cyclo`, is the tame branch-cycle formula `branchTwistTuple_cyclo`, which projects the tower's
 `branchCycle` field.  See `DESCENT_ROADMAP.md` §1.3. -/
-noncomputable def branchCycleInput {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
+noncomputable def branchCycleInput {G : Type} [Group G] [Finite G] {cert : RigidData G}
     (tw : GeomTower G cert) : BranchCycleInput tw where
   twist := branchTwistTuple tw
   prod_one := branchTwistTuple_prod_one tw
@@ -265,9 +268,11 @@ data: for each `e : E` a tuple `twist e` in the prescribed rational classes such
 monodromy `φ ∘ conj e` is its sphere hom.
 
 The tame branch-cycle content (the Galois twist landing in the classes `Cᵢ^{χ(σ)}`) is supplied by
-`branchCycleInput` via the tower's `branchCycle` field; the class-invariance `Cᵢ^{χ(σ)} = Cᵢ` and the
-derivation of generation are the `BranchCycleInput.toBranchTwist` glue.  See
+`branchCycleInput` via the tower's `branchCycle` field; the class-invariance `Cᵢ^{χ(σ)} = Cᵢ`
+(hypothesis `hstab`) and the derivation of generation are the `BranchCycleInput.toBranchTwist` glue.  See
 `DESCENT_ROADMAP.md` §1.3 and the module docstring. -/
-noncomputable def branchCycleTwist {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
-    (tw : GeomTower G cert) : BranchTwist tw :=
-  (branchCycleInput tw).toBranchTwist
+noncomputable def branchCycleTwist {G : Type} [Group G] [Finite G] {cert : RigidData G}
+    (tw : GeomTower G cert)
+    (hstab : ∀ (i : Fin cert.r) (k : ℕ), Nat.Coprime k (orderOf (tw.base i)) →
+      ConjClasses.mk (tw.base i ^ k) = cert.C i) : BranchTwist tw :=
+  (branchCycleInput tw).toBranchTwist hstab

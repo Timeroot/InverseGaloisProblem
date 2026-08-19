@@ -3,6 +3,7 @@ Copyright (c) 2025. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.Rigidity.RigidData
 import InverseGalois.Rigidity.StructureConstant
 
 /-!
@@ -65,15 +66,14 @@ end Rigidity
 
 /-! ## Rationality and the choice of a generator of the inertia group -/
 
-/-- **A rational class contains every generator of the cyclic group it generates.**
+/-- **Two generators of the same cyclic group differ by a coprime power.**
 
-If `g` lies in the rational class `c` and `g'` generates the same cyclic subgroup as `g`, then `g'`
-lies in `c` as well: `g'` is a power `g ^ k` with `k` coprime to the order of `g`, and a rational
-class is by definition closed under those powers.  This is what makes the class of a branch cycle
-independent of which generator of the (cyclic) inertia group is chosen. -/
-theorem IsRationalClass.mk_eq_of_zpowers_eq {G : Type*} [Group G] [Finite G] {c : ConjClasses G}
-    (hc : IsRationalClass c) {g g' : G} (hg : ConjClasses.mk g = c)
-    (h : Subgroup.zpowers g' = Subgroup.zpowers g) : ConjClasses.mk g' = c := by
+If `g'` generates the same cyclic subgroup as `g`, then `g' = g ^ k` for some `k` coprime to the
+order of `g`.  This is the precise ambiguity in the choice of a generator of a (cyclic, tame)
+inertia group: a branch cycle is determined only up to such a power. -/
+theorem exists_coprime_pow_of_zpowers_eq {G : Type*} [Group G] [Finite G] {g g' : G}
+    (h : Subgroup.zpowers g' = Subgroup.zpowers g) :
+    ∃ k : ℕ, Nat.Coprime k (orderOf g) ∧ g ^ k = g' := by
   have hmem : g' ∈ Subgroup.zpowers g := h ▸ Subgroup.mem_zpowers g'
   obtain ⟨k, hk⟩ : ∃ k : ℕ, g ^ k = g' := by
     rw [← mem_powers_iff_mem_zpowers] at hmem
@@ -89,10 +89,32 @@ theorem IsRationalClass.mk_eq_of_zpowers_eq {G : Type*} [Group G] [Finite G] {c 
       Nat.div_mul_cancel (Nat.gcd_dvd_left _ _)
     rw [← h1] at h2
     exact Nat.eq_of_mul_eq_mul_left hpos (by rw [h2, mul_one])
-  have hcop : Nat.Coprime k (orderOf g) := by
-    show Nat.gcd k (orderOf g) = 1
-    rw [Nat.gcd_comm]
-    exact hgcd
+  refine ⟨k, ?_, hk⟩
+  show Nat.gcd k (orderOf g) = 1
+  rw [Nat.gcd_comm]
+  exact hgcd
+
+/-- **Another generator of the same cyclic group lies in the cyclotomic twist of the class.**
+
+If `g` lies in the class `c` and `g'` generates the same cyclic subgroup, then `g'` lies in
+`c ^ k` for some `k` coprime to the order of the elements of `c`.  Without a rationality
+assumption this is all one can say — and it is exactly the ambiguity `IsStableClass` controls. -/
+theorem exists_powClass_eq_of_zpowers_eq {G : Type*} [Group G] [Finite G] {c : ConjClasses G}
+    {g g' : G} (hg : ConjClasses.mk g = c) (h : Subgroup.zpowers g' = Subgroup.zpowers g) :
+    ∃ k : ℕ, Nat.Coprime k (orderOf g) ∧ ConjClasses.mk g' = ConjClasses.powClass k c := by
+  obtain ⟨k, hcop, hk⟩ := exists_coprime_pow_of_zpowers_eq h
+  exact ⟨k, hcop, by rw [← hk, ← hg, ConjClasses.powClass_mk]⟩
+
+/-- **A rational class contains every generator of the cyclic group it generates.**
+
+If `g` lies in the rational class `c` and `g'` generates the same cyclic subgroup as `g`, then `g'`
+lies in `c` as well: `g'` is a power `g ^ k` with `k` coprime to the order of `g`, and a rational
+class is by definition closed under those powers.  This is what makes the class of a branch cycle
+independent of which generator of the (cyclic) inertia group is chosen. -/
+theorem IsRationalClass.mk_eq_of_zpowers_eq {G : Type*} [Group G] [Finite G] {c : ConjClasses G}
+    (hc : IsRationalClass c) {g g' : G} (hg : ConjClasses.mk g = c)
+    (h : Subgroup.zpowers g' = Subgroup.zpowers g) : ConjClasses.mk g' = c := by
+  obtain ⟨k, hcop, hk⟩ := exists_coprime_pow_of_zpowers_eq h
   rw [← hk]
   exact hc g hg k hcop
 
@@ -100,7 +122,7 @@ theorem IsRationalClass.mk_eq_of_zpowers_eq {G : Type*} [Group G] [Finite G] {c 
 
 namespace Rigidity
 
-variable {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G} {N : Type*} [Group N]
+variable {G : Type} [Group G] [Finite G] {cert : RigidData G} {N : Type*} [Group N]
 
 /-- The image of a system of branch cycles under the monodromy is a rigid tuple, as soon as its
 entries lie in the prescribed classes: generation and the product-one relation travel along the

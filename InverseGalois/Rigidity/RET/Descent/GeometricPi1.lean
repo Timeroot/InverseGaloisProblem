@@ -67,7 +67,7 @@ monodromy group of the branch cover:
 
 Producing an inhabitant (bundled with its model) is `geomInertiaModel_exists` (`Descent.Tower`),
 where the Riemann Existence Theorem enters. -/
-structure GeometricInertiaData {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
+structure GeometricInertiaData {G : Type} [Group G] [Finite G] {cert : RigidData G}
     {E : Type} [Group E] (N : Subgroup E) [N.Normal] (φ : N →* G)
     (base : Fin cert.r → G) (hbase : base ∈ rigidTuples cert.C) where
   /-- the tame inertia generators: one element of `N` per branch point. -/
@@ -90,7 +90,7 @@ surjection `pres`, it realizes `φ` as the sphere hom of `base`, and its branch-
 data's `branchCycle` field (`pres (of i) = gᵢ`).  No arithmetic-geometry input — this is exactly the
 elementary group theory the presentation packages.  Consumed by `geomTower_nonempty`. -/
 theorem geomPresentation_of_inertiaData {G : Type} [Group G] [Finite G]
-    {cert : RigidityCertificate G} {E : Type} [Group E] (N : Subgroup E) [N.Normal] (φ : N →* G)
+    {cert : RigidData G} {E : Type} [Group E] (N : Subgroup E) [N.Normal] (φ : N →* G)
     (base : Fin cert.r → G) (hbase : base ∈ rigidTuples cert.C)
     (d : GeometricInertiaData N φ base hbase) :
     ∃ pres : Rigidity.RET.SphereGroup cert.r →* N, Function.Surjective pres ∧
@@ -131,7 +131,7 @@ character, so a lift `e` of `σ` conjugates a topological generator to its `χ(�
 choice of generator, i.e. up to `N`-conjugacy).  Separating this from the class-level formula is the
 honest cut: the conjugacy lives in `N` and is genuinely geometric, whereas pushing it through `φ`
 to conjugacy classes in `G` is elementary. -/
-structure TameInertiaData {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
+structure TameInertiaData {G : Type} [Group G] [Finite G] {cert : RigidData G}
     {E : Type} [Group E] (N : Subgroup E) [N.Normal] (φ : N →* G)
     (base : Fin cert.r → G) (hbase : base ∈ rigidTuples cert.C) where
   /-- the tame inertia generators: one element of `N` per branch point. -/
@@ -161,7 +161,7 @@ the class-level `branchCycle` field of `GeometricInertiaData` follows by element
 
 This isolates the genuinely geometric input (`cyclo_conj`) from its group-theoretic consequence. -/
 def TameInertiaData.toGeometricInertiaData {G : Type} [Group G] [Finite G]
-    {cert : RigidityCertificate G} {E : Type} [Group E] {N : Subgroup E} [N.Normal] {φ : N →* G}
+    {cert : RigidData G} {E : Type} [Group E] {N : Subgroup E} [N.Normal] {φ : N →* G}
     {base : Fin cert.r → G} {hbase : base ∈ rigidTuples cert.C}
     (t : TameInertiaData N φ base hbase) : GeometricInertiaData N φ base hbase where
   gen := t.gen

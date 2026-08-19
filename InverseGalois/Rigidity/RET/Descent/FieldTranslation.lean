@@ -56,7 +56,7 @@ This is genuine field theory (fixed fields + a regularity computation): the surj
 forces the field of constants to be `ℚ`, giving `algebraicClosure ℚ L' = ⊥`.  There is no
 irreducible arithmetic-geometry input — only the tower's field realization.  See
 `DESCENT_ROADMAP.md` §1.4 and the module docstring. -/
-theorem descentTranslation {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
+theorem descentTranslation {G : Type} [Group G] [Finite G] {cert : RigidData G}
     (tw : GeomTower G cert) :
     (∃ ψ : tw.E →* G, Function.Surjective ψ ∧ ∀ n : tw.N, ψ (n : tw.E) = tw.φ n) →
       IsRegularInverseGalois G := by

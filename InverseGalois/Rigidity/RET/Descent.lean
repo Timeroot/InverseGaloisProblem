@@ -92,18 +92,30 @@ and let `φ : N ↠ G` be the geometric monodromy of the cover.
 open Polynomial
 
 /-- **The branch-cycle descent datum exists** — *assembled* from the three descent modules.  The
-geometric tower (Modules A+B, `geomTower_nonempty`) supplies `N ⊴ E`, the monodromy `φ`, and its
-presentation as the certificate's rigid tuple; the branch-cycle formula (Module C,
-`branchCycleTwist`) supplies the Galois-twist tuples in the prescribed rational classes; and the
-field translation (Module D, `descentTranslation`) supplies `toRegular`.
+geometric tower (Modules A+B, `geomTower_nonempty_twist`) supplies `N ⊴ E`, the monodromy `φ`, and
+its presentation as the certificate's rigid tuple — over a cyclotomic twist of the prescribed
+classes, which rationality identifies with the classes themselves; the branch-cycle formula
+(Module C, `branchCycleTwist`) supplies the Galois-twist tuples in the prescribed rational classes;
+and the field translation (Module D, `descentTranslation`) supplies `toRegular`.
 
 The arithmetic-geometry content of those three producers rests on the geometric existence theorem
 `Rigidity.RET.geomRETExistence_of_injective`; see `DESCENT_ROADMAP.md`. -/
 theorem branchCycleDescentData_nonempty {G : Type} [Group G] [Finite G]
     (cert : RigidityCertificate G) :
-    Nonempty (BranchCycleDescentData G cert) := by
-  obtain ⟨tw⟩ := geomTower_nonempty cert
+    Nonempty (BranchCycleDescentData G cert.toRigidData) := by
+  -- Geometry realizes the classes only up to a coordinatewise cyclotomic twist; rationality
+  -- absorbs the twist, so the tower is available over the certificate's own classes.
+  obtain ⟨u, hcop, htw⟩ := geomTower_nonempty_twist cert.toRigidData
+  have hpow : ∀ i, ConjClasses.powClass (u i) (cert.C i) = cert.C i :=
+    fun i => (cert.rational i).powClass_eq (hcop i)
+  have hrig : Nat.card (rigidTuples fun i => ConjClasses.powClass (u i) (cert.toRigidData.C i))
+      = Nat.card G := by
+    rw [show (fun i => ConjClasses.powClass (u i) (cert.toRigidData.C i)) = cert.C from
+      funext hpow]
+    exact cert.rigid
+  obtain ⟨tw⟩ := RigidData.twistBy_eq_self cert.toRigidData u hrig hpow ▸ htw hrig
   obtain ⟨twist, twist_mem, φ_conj_pres⟩ := branchCycleTwist tw
+    (fun i k hk => cert.rational i (tw.base i) (tw.base_mem.1 i) k hk)
   exact ⟨{
     E := tw.E
     N := tw.N

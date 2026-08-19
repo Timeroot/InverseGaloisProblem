@@ -245,7 +245,7 @@ bundles the geometric inertia generators `gᵢ ∈ N` (one per branch point) wit
 `orderOf gᵢ` is the ramification index at branch point `i`; that `E` acts on the tame inertia through
 `χ` is Fried's branch-cycle formula, here recorded through the explicit cyclotomic character
 `cycloChar` valued in the units of `ZMod M`. -/
-structure CycloBranchData {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
+structure CycloBranchData {G : Type} [Group G] [Finite G] {cert : RigidData G}
     (m : ArithmeticModel G) (base : Fin cert.r → G) (hbase : base ∈ rigidTuples cert.C) where
   /-- the tame inertia generators: one element of `N` per branch point. -/
   gen : Fin cert.r → m.N
@@ -280,7 +280,7 @@ The `TameInertiaData` fields `gen`, `gen_top`, `gen_prod`, `φ_gen` are carried 
   `rootOrder` (`order_dvd`), so coprimality is inherited by the divisor.
 * **The conjugation formula** is the `conj_pow` field verbatim. -/
 def CycloBranchData.toTameInertiaData {G : Type} [Group G] [Finite G]
-    {cert : RigidityCertificate G} {m : ArithmeticModel G} {base : Fin cert.r → G}
+    {cert : RigidData G} {m : ArithmeticModel G} {base : Fin cert.r → G}
     {hbase : base ∈ rigidTuples cert.C} (d : CycloBranchData m base hbase) :
     Rigidity.RET.TameInertiaData m.N m.φ base hbase where
   gen := d.gen
@@ -310,7 +310,7 @@ bundles the geometric inertia generators `gᵢ ∈ N` (one per branch point) wit
 `orderOf gᵢ` is the ramification index at branch point `i`; that `E` acts on the tame inertia by
 raising the inertia generators to the cyclotomic power is Fried's branch-cycle formula, recorded here
 directly through the action of `E` on the primitive root of unity `root`. -/
-structure InertiaRootData {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
+structure InertiaRootData {G : Type} [Group G] [Finite G] {cert : RigidData G}
     (m : ArithmeticModel G) (base : Fin cert.r → G) (hbase : base ∈ rigidTuples cert.C) where
   /-- the tame inertia generators: one element of `N` per branch point. -/
   gen : Fin cert.r → m.N
@@ -348,7 +348,7 @@ root of unity `root`: `cycloChar = (autToPow ∘ galE)`, `e ↦ (the power to wh
 (`IsPrimitiveRoot.autToPow`).  The conjugation formula is `conj_pow_root`, whose exponent is exactly
 `(cycloChar e).val` by construction. -/
 noncomputable def InertiaRootData.toCycloBranchData {G : Type} [Group G] [Finite G]
-    {cert : RigidityCertificate G} {m : ArithmeticModel G} {base : Fin cert.r → G}
+    {cert : RigidData G} {m : ArithmeticModel G} {base : Fin cert.r → G}
     {hbase : base ∈ rigidTuples cert.C} (d : InertiaRootData m base hbase) :
     CycloBranchData m base hbase where
   gen := d.gen
@@ -482,7 +482,7 @@ places are maximal (`InertiaPlaceData.place_max`) and nonzero (`InertiaPlaceData
 the model being integral and torsion-free over `ℚ[X]`; and the geometric group `N` acts transitively
 on the places above a branch point (`InertiaPlaceData.place_trans`), the branch points being
 rational. -/
-structure InertiaPlaceData {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
+structure InertiaPlaceData {G : Type} [Group G] [Finite G] {cert : RigidData G}
     (m : ArithmeticModel G) (base : Fin cert.r → G) (hbase : base ∈ rigidTuples cert.C) where
   /-- the tame inertia generators: one element of `N` per branch point. -/
   gen : Fin cert.r → m.N
@@ -518,7 +518,7 @@ attribute [instance] InertiaPlaceData.rootOrder_neZero
 
 section PlaceProperties
 
-variable {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G} {m : ArithmeticModel G}
+variable {G : Type} [Group G] [Finite G] {cert : RigidData G} {m : ArithmeticModel G}
   {base : Fin cert.r → G} {hbase : base ∈ rigidTuples cert.C}
 
 /-- **The places are maximal ideals.**  A prime of the integral model above the maximal ideal
@@ -543,7 +543,7 @@ end PlaceProperties
 `ℚ`-rational, so this is `exists_geom_stabilizer` at the place `X - branchᵢ`, whose residue field is
 `ℚ` (`surjective_algebraMap_quotient_X_sub_C`). -/
 theorem InertiaPlaceData.place_trans {G : Type} [Group G] [Finite G]
-    {cert : RigidityCertificate G} {m : ArithmeticModel G} {base : Fin cert.r → G}
+    {cert : RigidData G} {m : ArithmeticModel G} {base : Fin cert.r → G}
     {hbase : base ∈ rigidTuples cert.C} (d : InertiaPlaceData m base hbase)
     (i : Fin cert.r) (e : m.E) :
     ∃ n : m.N, (m.galE ((n : m.E)⁻¹ * e)) • d.place i = d.place i := by
@@ -565,7 +565,7 @@ residue characteristic zero (`ArithAKLB.conj_eq_pow_of_apply_root`) then gives
 `σ gᵢ σ⁻¹ = gᵢ ^ χ(e)` on the nose, and conjugating back by `n` turns this into the required
 `N`-conjugacy. -/
 def InertiaPlaceData.toInertiaRootData {G : Type} [Group G] [Finite G]
-    {cert : RigidityCertificate G} {m : ArithmeticModel G} {base : Fin cert.r → G}
+    {cert : RigidData G} {m : ArithmeticModel G} {base : Fin cert.r → G}
     {hbase : base ∈ rigidTuples cert.C} (d : InertiaPlaceData m base hbase) :
     InertiaRootData m base hbase where
   gen := d.gen
@@ -619,7 +619,7 @@ branch cycle is a generator of the tame inertia group at a place over the `i`-th
 its class is the `i`-th prescribed class, but which of the conjugate tuples one lands on is not
 under the geometry's control.  Rigidity supplies the missing conjugation
 (`inertiaPlaceData_exists`). -/
-structure ClassInertiaPlaceData {G : Type} [Group G] [Finite G] (cert : RigidityCertificate G)
+structure ClassInertiaPlaceData {G : Type} [Group G] [Finite G] (cert : RigidData G)
     (m : ArithmeticModel G) where
   /-- the tame inertia generators: one element of `N` per branch point. -/
   gen : Fin cert.r → m.N
@@ -666,7 +666,7 @@ The geometric Galois group `N = Gal(Ω(ζ_N)/k₀(T))` is identified with `Gal(�
 regularity comparison `compareOfEmbedding`; the branch cycles transport along that isomorphism, and
 the places of the integral model transport along the base-change `bridge` of integral models. -/
 theorem classInertiaPlaceData_of_branchCycles {G : Type} [Group G] [Finite G]
-    (cert : RigidityCertificate G) (branch : Fin cert.r → ℚ) (c : GeomCompositum G)
+    (cert : RigidData G) (branch : Fin cert.r → ℚ) (c : GeomCompositum G)
     (g : Fin cert.r → c.cover.deck)
     (hgcyc : c.cover.IsBranchCycleGenSystem (fun i => algebraMap ℚ GeomAKLB.k (branch i)) g)
     (hclass : ∀ i, ConjClasses.mk (c.toG (g i)) = cert.C i) :
@@ -774,6 +774,10 @@ inertia generators at `r` places of the integral model lying over the rational p
 prescribed class, together with a primitive `M`-th root of unity in `Ω` for `M` divisible by every
 ramification index.
 
+An inertia generator is only pinned up to a coprime power, so the classes that are realized are a
+coordinatewise cyclotomic twist `(C₁^{u₁}, …, C_r^{u_r})` of the prescribed ones; the exponents are
+produced by the geometry, and rigidity of the twisted tuple is the caller's to supply.
+
 This is the Riemann Existence Theorem, stated at the interface the branch-cycle descent consumes.
 Its content is genuinely geometric, in two layers, both supplied by `Rigidity.RET.geomRET` through
 `geomCompositum_branchCycles_exists`:
@@ -800,10 +804,14 @@ the right cover.  See Grothendieck, *SGA 1*, Exp. XIII (tame fundamental group o
 line); Völklein, *Groups as Galois Groups*, Thm 2.13 and §4; Fried–Völklein; Serre, *Topics in
 Galois Theory*, §6–8. -/
 theorem classInertiaPlaceData_exists {G : Type} [Group G] [Finite G]
-    (cert : RigidityCertificate G) :
-    ∃ m : ArithmeticModel G, Nonempty (ClassInertiaPlaceData cert m) := by
-  obtain ⟨branch, c, g, _, hgcyc, hclass⟩ := geomCompositum_branchCycles_exists cert
-  exact classInertiaPlaceData_of_branchCycles cert branch c g hgcyc hclass
+    (cert : RigidData G) :
+    ∃ u : Fin cert.r → ℕ,
+      (∀ (i : Fin cert.r) (x : G), ConjClasses.mk x = cert.C i → Nat.Coprime (u i) (orderOf x)) ∧
+      ∀ hrig : Nat.card (rigidTuples fun i => ConjClasses.powClass (u i) (cert.C i)) = Nat.card G,
+        ∃ m : ArithmeticModel G, Nonempty (ClassInertiaPlaceData (cert.twistBy u hrig) m) := by
+  obtain ⟨branch, c, g, u, _, hgcyc, hcop, hclass⟩ := geomCompositum_branchCycles_exists cert
+  exact ⟨u, hcop, fun hrig =>
+    classInertiaPlaceData_of_branchCycles (cert.twistBy u hrig) branch c g hgcyc hclass⟩
 
 /-- **The branch cycles can be matched with the certificate's tuple on the nose.**
 
@@ -814,10 +822,11 @@ Both are rigid tuples, so rigidity relates them by a single simultaneous conjuga
 (`ArithmeticModel.conj`) — the field tower, the places, the root of unity and the inertia statements
 are untouched.  Whichever tuple the certificate names is therefore reached, from the one model the
 geometry has to supply. -/
-theorem inertiaPlaceData_exists {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
+theorem inertiaPlaceData_exists {G : Type} [Group G] [Finite G] {cert : RigidData G}
+    (hcls : ∃ m : ArithmeticModel G, Nonempty (ClassInertiaPlaceData cert m))
     (base : Fin cert.r → G) (hbase : base ∈ rigidTuples cert.C) :
     ∃ m : ArithmeticModel G, Nonempty (InertiaPlaceData m base hbase) := by
-  obtain ⟨m, ⟨d⟩⟩ := classInertiaPlaceData_exists cert
+  obtain ⟨m, ⟨d⟩⟩ := hcls
   obtain ⟨c, hc⟩ :=
     Rigidity.exists_conj_comp_eq hbase m.surjφ d.gen_top d.gen_prod d.φ_class
   haveI := d.rootOrder_neZero
@@ -849,10 +858,11 @@ to which `e` raises the root of unity.
 The branch cycles come from the Riemann Existence Theorem in the form `inertiaPlaceData_exists`,
 which realizes them as tame inertia at places of the integral model; the conjugation formula is then
 Fried's branch-cycle formula for those places (`InertiaPlaceData.toInertiaRootData`). -/
-theorem inertiaRootData_exists {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
+theorem inertiaRootData_exists {G : Type} [Group G] [Finite G] {cert : RigidData G}
+    (hcls : ∃ m : ArithmeticModel G, Nonempty (ClassInertiaPlaceData cert m))
     (base : Fin cert.r → G) (hbase : base ∈ rigidTuples cert.C) :
     ∃ m : ArithmeticModel G, Nonempty (InertiaRootData m base hbase) := by
-  obtain ⟨m, ⟨d⟩⟩ := inertiaPlaceData_exists base hbase
+  obtain ⟨m, ⟨d⟩⟩ := inertiaPlaceData_exists hcls base hbase
   exact ⟨m, ⟨d.toInertiaRootData⟩⟩
 
 /-- **The cyclotomic branch data exists.**
@@ -867,10 +877,11 @@ The generators are the tame inertia of the cover branched over the `r` points wi
 their generation of `N` and the product-one relation are the geometric fundamental group of the
 punctured line, and the conjugation formula is the action of the arithmetic Galois group on tame
 inertia through the cyclotomic character. -/
-theorem cycloBranchData_exists {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
+theorem cycloBranchData_exists {G : Type} [Group G] [Finite G] {cert : RigidData G}
+    (hcls : ∃ m : ArithmeticModel G, Nonempty (ClassInertiaPlaceData cert m))
     (base : Fin cert.r → G) (hbase : base ∈ rigidTuples cert.C) :
     ∃ m : ArithmeticModel G, Nonempty (CycloBranchData m base hbase) := by
-  obtain ⟨m, ⟨d⟩⟩ := inertiaRootData_exists base hbase
+  obtain ⟨m, ⟨d⟩⟩ := inertiaRootData_exists hcls base hbase
   exact ⟨m, ⟨d.toCycloBranchData⟩⟩
 
 /-- For a rigidity certificate and its rigid generating product-one tuple `base`, there is an
@@ -878,19 +889,21 @@ arithmetic model `m` whose geometric fundamental group `N = Gal(Ω/k₀(T))` car
 data for `base` (`TameInertiaData`): inertia generators `gᵢ ∈ N` generating `N`, satisfying the
 product-one sphere relation, realizing `φ (gᵢ) = baseᵢ`, and transforming under the arithmetic
 Galois action through the cyclotomic conjugacy `e · gᵢ · e⁻¹ ∼_N gᵢ ^ χ(σ)`. -/
-theorem tameInertiaModel_exists {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
+theorem tameInertiaModel_exists {G : Type} [Group G] [Finite G] {cert : RigidData G}
+    (hcls : ∃ m : ArithmeticModel G, Nonempty (ClassInertiaPlaceData cert m))
     (base : Fin cert.r → G) (hbase : base ∈ rigidTuples cert.C) :
     ∃ m : ArithmeticModel G, Nonempty (Rigidity.RET.TameInertiaData m.N m.φ base hbase) := by
-  obtain ⟨m, ⟨d⟩⟩ := cycloBranchData_exists base hbase
+  obtain ⟨m, ⟨d⟩⟩ := cycloBranchData_exists hcls base hbase
   exact ⟨m, ⟨d.toTameInertiaData⟩⟩
 
 /-- The class-level geometric inertia data exists, obtained from `tameInertiaModel_exists` by pushing
 the tame inertia data through `φ` (`TameInertiaData.toGeometricInertiaData`): the branch cycle in
 `ConjClasses G` from the `N`-conjugacy on tame inertia. -/
-theorem geomInertiaModel_exists {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
+theorem geomInertiaModel_exists {G : Type} [Group G] [Finite G] {cert : RigidData G}
+    (hcls : ∃ m : ArithmeticModel G, Nonempty (ClassInertiaPlaceData cert m))
     (base : Fin cert.r → G) (hbase : base ∈ rigidTuples cert.C) :
     ∃ m : ArithmeticModel G, Nonempty (Rigidity.RET.GeometricInertiaData m.N m.φ base hbase) := by
-  obtain ⟨m, ⟨t⟩⟩ := tameInertiaModel_exists base hbase
+  obtain ⟨m, ⟨t⟩⟩ := tameInertiaModel_exists hcls base hbase
   exact ⟨m, ⟨t.toGeometricInertiaData⟩⟩
 
 /-- From a rigidity certificate, the geometric side of the descent datum exists — the arithmetic
@@ -903,10 +916,11 @@ presentation `SphereGroup r ↠ N`: the rigid tuple is extracted from `cert.gen`
 is read off the geometric inertia data (`geomInertiaModel_exists`) via
 `geomPresentation_of_inertiaData`.  See `DESCENT_ROADMAP.md` §1–2. -/
 theorem geomTower_nonempty {G : Type} [Group G] [Finite G]
-    (cert : RigidityCertificate G) :
+    (cert : RigidData G)
+    (hcls : ∃ m : ArithmeticModel G, Nonempty (ClassInertiaPlaceData cert m)) :
     Nonempty (GeomTower G cert) := by
   obtain ⟨base, hbase⟩ := cert.gen
-  obtain ⟨m, ⟨d⟩⟩ := geomInertiaModel_exists base hbase
+  obtain ⟨m, ⟨d⟩⟩ := geomInertiaModel_exists hcls base hbase
   obtain ⟨pres, surjPres, φ_pres, branchCycle⟩ :=
     @Rigidity.RET.geomPresentation_of_inertiaData _ _ _ _ m.E m.groupE m.N m.normalN
       m.φ base hbase d
@@ -933,3 +947,20 @@ theorem geomTower_nonempty {G : Type} [Group G] [Finite G]
     geomBase := m.geomBase
     galN_iff := m.galN_iff
     const_le_geomBase := m.const_le_geomBase }⟩
+
+/-- **The geometric tower exists over some cyclotomic twist of the prescribed classes.**
+
+The branch cycles of the cover are inertia generators, and an inertia generator is only determined
+up to a coprime power, so the class tuple the geometry realizes is a coordinatewise twist
+`(C₁^{u₁}, …, C_r^{u_r})` of the prescribed one, with exponents coprime to the orders.  Rigidity of
+that twisted tuple is the remaining input; given it, the whole tower is available over the twist.
+
+For a rational class tuple the twist is the tuple itself and this specializes to
+`geomTower_nonempty`. -/
+theorem geomTower_nonempty_twist {G : Type} [Group G] [Finite G] (cert : RigidData G) :
+    ∃ u : Fin cert.r → ℕ,
+      (∀ (i : Fin cert.r) (x : G), ConjClasses.mk x = cert.C i → Nat.Coprime (u i) (orderOf x)) ∧
+      ∀ hrig : Nat.card (rigidTuples fun i => ConjClasses.powClass (u i) (cert.C i)) = Nat.card G,
+        Nonempty (GeomTower G (cert.twistBy u hrig)) := by
+  obtain ⟨u, hcop, h⟩ := classInertiaPlaceData_exists cert
+  exact ⟨u, hcop, fun hrig => geomTower_nonempty _ (h hrig)⟩

@@ -7,6 +7,7 @@ import InverseGalois.Rigidity.RET.Statement
 import InverseGalois.Rigidity.RET.CenterlessExtension
 import InverseGalois.Rigidity.RET.BranchCycleBridge
 import InverseGalois.Rigidity.StructureConstant
+import InverseGalois.Rigidity.RigidData
 
 /-!
 # Descent data structures — the frozen interface of the branch-cycle descent
@@ -89,7 +90,7 @@ machinery is load-bearing, and the residual arithmetic assumption is strictly th
 geometry (the presentation, the branch-cycle class-invariance, and the field translation), not the
 group-theoretic conclusion. -/
 structure BranchCycleDescentData (G : Type) [Group G] [Finite G]
-    (cert : RigidityCertificate G) where
+    (cert : RigidData G) where
   /-- the arithmetic fundamental group `E = Gal(Ω/ℚ(T))`. -/
   E : Type
   [groupE : Group E]
@@ -128,7 +129,7 @@ forces the branch-cycle twist to be simultaneously conjugate to the base tuple),
 `φ` by `Rigidity.RET.sphereHom_surjective_iff` (the base tuple generates).  This is exactly the point
 where the proven structure-constant machinery does the work the old `inner` field merely assumed. -/
 noncomputable def ArithmeticDescentData.ofBranchCycle {G : Type} [Group G] [Finite G]
-    {cert : RigidityCertificate G} (bcd : BranchCycleDescentData G cert) :
+    {cert : RigidData G} (bcd : BranchCycleDescentData G cert) :
     ArithmeticDescentData G where
   E := bcd.E
   groupE := bcd.groupE
@@ -184,7 +185,7 @@ facts D consumes are:
   (`ℚ` is relatively algebraically closed in `ℚ(T)`) this is what makes the descended field regular.
 
 Constructing this field data is the genuine content of **Module A**. -/
-structure GeomTower (G : Type) [Group G] [Finite G] (cert : RigidityCertificate G) where
+structure GeomTower (G : Type) [Group G] [Finite G] (cert : RigidData G) where
   /-- the arithmetic fundamental group `E = Gal(Ω/ℚ(T))`. -/
   E : Type
   [groupE : Group E]
@@ -245,7 +246,7 @@ attribute [instance] GeomTower.groupE GeomTower.normalN GeomTower.fieldΩ GeomTo
 each `e : E`, a tuple `twist e` in the prescribed rational classes (`twist_mem` — the branch-cycle +
 rationality class-invariance) such that the twisted monodromy `φ ∘ conj e` is its sphere hom
 (`φ_conj_pres`).  Producing a `BranchTwist` is the content of `Descent.BranchCycle`. -/
-structure BranchTwist {G : Type} [Group G] [Finite G] {cert : RigidityCertificate G}
+structure BranchTwist {G : Type} [Group G] [Finite G] {cert : RigidData G}
     (tw : GeomTower G cert) where
   /-- the Galois twist of the monodromy by `e : E`, as a tuple. -/
   twist : tw.E → (Fin cert.r → G)

@@ -76,6 +76,15 @@ theorem powClass_powClass (u v : ℕ) (c : ConjClasses G) :
   show powClass u (powClass v (ConjClasses.mk g)) = powClass (v * u) (ConjClasses.mk g)
   rw [powClass_mk, powClass_mk, powClass_mk, pow_mul]
 
+/-- Conjugate elements have the same order. -/
+theorem orderOf_eq_of_mk_eq {g h : G} (hgh : ConjClasses.mk g = ConjClasses.mk h) :
+    orderOf g = orderOf h := by
+  obtain ⟨d, hd⟩ := isConj_iff.mp (ConjClasses.mk_eq_mk_iff_isConj.mp hgh)
+  have hord : orderOf ((MulAut.conj d).toMonoidHom g) = orderOf g :=
+    orderOf_injective _ (MulAut.conj d).injective _
+  rw [show (MulAut.conj d).toMonoidHom g = h from hd] at hord
+  exact hord.symm
+
 /-- Elements of a twisted class have order dividing the order of elements of the original class. -/
 theorem orderOf_dvd_of_mk_eq_powClass {u : ℕ} {c : ConjClasses G} {g h : G}
     (hg : ConjClasses.mk g = powClass u c) (hh : ConjClasses.mk h = c) :
@@ -122,6 +131,17 @@ theorem isStableClass_top_of_isRationalClass {n : ℕ} [NeZero n] {c : ConjClass
   rw [ConjClasses.powClass_mk]
   exact hc g rfl k (hcn.coprime_dvd_right (hord g rfl))
 
+/-- **A rational class absorbs every admissible twist.**  If the exponent `u` is coprime to the
+order of every element of `c`, then `c ^ u = c`.  This is the form in which rationality collapses
+the inertia-generator ambiguity of a branch cycle. -/
+theorem IsRationalClass.powClass_eq {c : ConjClasses G} (hc : IsRationalClass c) {u : ℕ}
+    (hu : ∀ x : G, ConjClasses.mk x = c → Nat.Coprime u (orderOf x)) :
+    ConjClasses.powClass u c = c := by
+  obtain ⟨g, rfl⟩ := Quotient.exists_rep c
+  show ConjClasses.powClass u (ConjClasses.mk g) = ConjClasses.mk g
+  rw [ConjClasses.powClass_mk]
+  exact hc g rfl u (hu g rfl)
+
 /-- **The rigidity half of a certificate**, with no invariance condition on the classes: a
 centerless group together with a class tuple whose generating product-one tuples form a single
 simultaneous-conjugacy orbit.
@@ -155,6 +175,42 @@ def RigidityCertificate.toRigidData {G : Type*} [Group G] [Finite G]
 
 @[simp] theorem RigidityCertificate.toRigidData_C {G : Type*} [Group G] [Finite G]
     (cert : RigidityCertificate G) : cert.toRigidData.C = cert.C := rfl
+
+/-- **The coordinatewise cyclotomic twist of rigid class data.**  The class tuple is replaced by
+`(C₁^{u₁}, …, C_r^{u_r})`; rigidity of the twisted tuple is the hypothesis, and nonemptiness follows
+from it because `|G| ≠ 0`.
+
+This is the shape in which the geometry delivers its class tuple: a branch cycle is only determined
+up to the choice of a generator of its inertia group, so the realized tuple is a twist of the
+prescribed one.  For a rational tuple the twist is the tuple itself (`twistBy_eq_self`). -/
+def RigidData.twistBy {G : Type*} [Group G] [Finite G] (rd : RigidData G) (u : Fin rd.r → ℕ)
+    (hrig : Nat.card (rigidTuples fun i => ConjClasses.powClass (u i) (rd.C i)) = Nat.card G) :
+    RigidData G where
+  r := rd.r
+  C := fun i => ConjClasses.powClass (u i) (rd.C i)
+  center_triv := rd.center_triv
+  gen := by
+    have hpos : Nat.card G ≠ 0 := Nat.card_pos.ne'
+    rw [← hrig, Nat.card_ne_zero] at hpos
+    exact Set.nonempty_coe_sort.mp hpos.1
+  rigid := hrig
+
+@[simp] theorem RigidData.twistBy_r {G : Type*} [Group G] [Finite G] (rd : RigidData G)
+    (u : Fin rd.r → ℕ) (hrig) : (rd.twistBy u hrig).r = rd.r := rfl
+
+@[simp] theorem RigidData.twistBy_C {G : Type*} [Group G] [Finite G] (rd : RigidData G)
+    (u : Fin rd.r → ℕ) (hrig) (i : Fin rd.r) :
+    (rd.twistBy u hrig).C i = ConjClasses.powClass (u i) (rd.C i) := rfl
+
+/-- **A twist that fixes every class changes nothing.**  This is what makes the twist ambiguity
+invisible for a rational class tuple. -/
+theorem RigidData.twistBy_eq_self {G : Type*} [Group G] [Finite G] (rd : RigidData G)
+    (u : Fin rd.r → ℕ) (hrig) (h : ∀ i, ConjClasses.powClass (u i) (rd.C i) = rd.C i) :
+    rd.twistBy u hrig = rd := by
+  obtain ⟨r, C, ct, gen, rigid⟩ := rd
+  have hC : (fun i => ConjClasses.powClass (u i) (C i)) = C := funext h
+  show RigidData.mk r (fun i => ConjClasses.powClass (u i) (C i)) _ _ _ = RigidData.mk r C _ _ _
+  congr 1
 
 /-- **Rigid class data whose classes are stable under `H ≤ (ZMod n)ˣ`.**  This is the input of the
 descent that lands over the subfield of `ℚ(ζ_n)` fixed by `H`, in place of `ℚ` itself. -/
