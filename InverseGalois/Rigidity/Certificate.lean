@@ -8,8 +8,8 @@ import Mathlib
 # Rigidity certificates (group-theoretic data)
 
 This file defines the **rigidity certificate** for a finite group `G`: the finite, checkable
-group-theoretic data that — via the Riemann Existence Theorem (isolated as an axiom in
-`InverseGalois.Rigidity.RET.Existence`) — witnesses that `G` is realizable as a Galois group
+group-theoretic data that — via the Riemann Existence Theorem
+(`InverseGalois.Rigidity.RET.Existence`) — witnesses that `G` is realizable as a Galois group
 over `ℚ`.
 
 A certificate packages a tuple of conjugacy classes `C₁,…,C_r` that are
