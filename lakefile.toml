@@ -1,5 +1,5 @@
 name = "RequestProject"
-defaultTargets = ["InverseGalois"]
+defaultTargets = ["InverseGalois", "Mathieu", "MathieuRigidity"]
 
 [[require]]
 name = "mathlib"
@@ -10,6 +10,25 @@ rev = "v4.28.0"
 name = "InverseGalois"
 roots = ["InverseGalois"]
 leanOptions = { linter.style.multiGoal = true }
+
+# The Mathieu groups: a self-contained library, developed independently of the inverse Galois
+# material and depending only on Mathlib.  Kept as its own `lean_lib` so that its own style
+# conventions (in particular `import Mathlib`) stay out of `InverseGalois`.
+#
+# The target is the root module alone, so the library consists of exactly what `Mathieu.lean`
+# imports.  `Mathieu/M11CosetAction.lean` sits outside that closure: its twelve-point coset
+# action needs a kernel search over all of `SL(2, ZMod 11)` that costs more memory than the
+# build machine has, and nothing in this repository uses it.
+[[lean_lib]]
+name = "Mathieu"
+globs = ["Mathieu"]
+
+# The rigidity certificates for `M₁₁` and `M₁₂`.  They are the only place where the inverse
+# Galois material meets the `Mathieu` library, so they get their own target rather than being
+# pulled into the `InverseGalois` root.
+[[lean_lib]]
+name = "MathieuRigidity"
+roots = ["InverseGalois.Rigidity.Examples.MathieuM11", "InverseGalois.Rigidity.Examples.MathieuM12"]
 
 # The leanprover/comparator challenge for the Riemann Existence Theorem; see
 # extras/comparator/README.md.  Deliberately not a default target: `Challenge` carries the
