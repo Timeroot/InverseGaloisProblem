@@ -19,6 +19,7 @@ import InverseGalois.Rigidity.RET.Descent.ConstantNormal
 import InverseGalois.Rigidity.RET.Descent.CompositumBranch
 import InverseGalois.Rigidity.RET.Descent.ModelEnlarge
 import InverseGalois.Rigidity.RET.Descent.BranchCycles
+import InverseGalois.Rigidity.RET.Descent.StableDescent
 
 /-!
 # L2 — Branch-cycle rationality descent `ℚ̄(T) → ℚ(T)`
@@ -87,6 +88,13 @@ and let `φ : N ↠ G` be the geometric monodromy of the cover.
 * `branch_cycle_descent` — the descent, proved from the datum with the group-theoretic core.
 * `RigidityCertificate.isRegularInverseGalois` — the rigidity criterion, assembled from RET and the
   descent.
+
+When the prescribed classes are stable only under a *subgroup* of the cyclotomic action rather than
+under all of it, the same argument runs over the corresponding subgroup of the arithmetic
+fundamental group and realizes `G` regularly over a number field; that is
+`Rigidity.RET.Descent.exists_regular_numberField_of_orbitRigid`, with
+`RigidityCertificateH.exists_regular_numberField` its certificate form, in
+`Descent.StableDescent`.
 -/
 
 open Polynomial

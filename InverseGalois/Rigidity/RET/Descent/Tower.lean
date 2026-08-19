@@ -229,6 +229,29 @@ noncomputable def arithmeticModel_exists {G : Type} [Group G] [Finite G]
     (cover : IsGeometricGaloisCover G) : Nonempty (ArithmeticModel G) :=
   (geomModel_exists cover).map GeomModel.toArithmeticModel
 
+/-- The geometric group `N` of an arithmetic model fixes every element of `Ω` algebraic over `ℚ`:
+such an element is a constant, and the geometric base `k₀(T)` contains all constants. -/
+theorem galE_fix_of_isAlgebraic {G : Type} [Group G] [Finite G] (m : ArithmeticModel G) {x : m.Ω}
+    (hx : IsAlgebraic ℚ x) (n : m.N) : m.galE (n : m.E) x = x := by
+  have hmem : x ∈ m.geomBase := by
+    have := m.const_le_geomBase (mem_algebraicClosure_iff.mpr hx)
+    simpa using this
+  have hfix := (m.galN_iff (n : m.E)).mp n.2
+  simp only [IntermediateField.mem_fixingSubgroup_iff] at hfix
+  exact hfix x hmem
+
+/-- The geometric group `N` fixes every root of unity of `Ω`. -/
+theorem galE_fix_of_pow_eq_one {G : Type} [Group G] [Finite G] (m : ArithmeticModel G) {x : m.Ω}
+    {M : ℕ} (hM : M ≠ 0) (hx : x ^ M = 1) (n : m.N) : m.galE (n : m.E) x = x := by
+  refine galE_fix_of_isAlgebraic m ⟨X ^ M - 1, ?_, ?_⟩ n
+  · intro h
+    have h0 : (X ^ M - 1 : ℚ[X]).coeff 0 = 0 := by rw [h]; simp
+    rcases Nat.eq_zero_or_pos M with hM0 | hM0
+    · exact hM hM0
+    · rw [coeff_sub, coeff_one_zero, coeff_X_pow, if_neg (by omega)] at h0
+      simp at h0
+  · simp [hx]
+
 /-- **The tame inertia generators of `N` with the cyclotomic character action.**
 
 For an arithmetic model `m` and the certificate's rigid generating product-one tuple `base`, this
@@ -264,6 +287,9 @@ structure CycloBranchData {G : Type} [Group G] [Finite G] {cert : RigidData G}
   order_dvd : ∀ i, orderOf (gen i) ∣ rootOrder
   /-- the cyclotomic character of the arithmetic Galois group `E`, valued in the units of `ZMod M`. -/
   cycloChar : m.E →* (ZMod rootOrder)ˣ
+  /-- the geometric group is trivial on the cyclotomic character: roots of unity are constants, and
+  the geometric base contains all constants. -/
+  cycloChar_N : ∀ n : m.N, cycloChar (n : m.E) = 1
   /-- **Fried's branch cycle, at its geometric source.**  For each `e : E` and branch point `i`,
   conjugation by `e` carries `gᵢ` to an `N`-conjugate of `gᵢ ^ χ(e)`, the exponent being
   `(cycloChar e).val`. -/
@@ -359,6 +385,26 @@ noncomputable def InertiaRootData.toCycloBranchData {G : Type} [Group G] [Finite
   rootOrder_pos := Nat.pos_of_ne_zero d.rootOrder_neZero.out
   order_dvd := d.order_dvd
   cycloChar := (d.isRoot.autToPow (RatFunc ℚ)).comp m.galE.toMonoidHom
+  cycloChar_N := by
+    intro n
+    -- `n` fixes the root of unity, so it raises it to the first power.
+    have hfix : m.galE (n : m.E) d.root = d.root :=
+      galE_fix_of_pow_eq_one m d.rootOrder_neZero.out d.isRoot.pow_eq_one n
+    have hspec := d.isRoot.autToPow_spec (RatFunc ℚ) (m.galE (n : m.E))
+    rw [hfix] at hspec
+    have hmod : (d.isRoot.autToPow (RatFunc ℚ) (m.galE (n : m.E)) : ZMod d.rootOrder).val
+        ≡ 1 [MOD d.rootOrder] := by
+      have hfin : IsOfFinOrder d.root :=
+        isOfFinOrder_iff_pow_eq_one.mpr
+          ⟨d.rootOrder, Nat.pos_of_ne_zero d.rootOrder_neZero.out, d.isRoot.pow_eq_one⟩
+      have := hspec.trans (pow_one d.root).symm
+      rwa [hfin.pow_eq_pow_iff_modEq, ← d.isRoot.eq_orderOf] at this
+    refine Units.ext ?_
+    show ((d.isRoot.autToPow (RatFunc ℚ)) (m.galE (n : m.E)) : ZMod d.rootOrder) = 1
+    have hcast : (((d.isRoot.autToPow (RatFunc ℚ) (m.galE (n : m.E)) : ZMod d.rootOrder).val : ℕ) :
+        ZMod d.rootOrder) = ((1 : ℕ) : ZMod d.rootOrder) :=
+      (ZMod.natCast_eq_natCast_iff _ _ _).mpr hmod
+    simpa using hcast
   conj_pow := d.conj_pow_root
 
 /-! ## The branch cycles as inertia at the places of the arithmetic integral model
@@ -391,29 +437,6 @@ theorem polyAlgebra_tower (Ω : Type) [Field Ω] [Algebra (RatFunc ℚ) Ω] :
 attribute [local instance] polyAlgebra_tower ArithAKLB.instMSA ArithAKLB.instIsFrac
   ArithAKLB.instIGG ArithAKLB.instFinite ArithAKLB.instIntegral ArithAKLB.instFaithfulBase
   ArithAKLB.instDedekind ArithAKLB.instFiniteGal ArithAKLB.instFaithfulGal ArithAKLB.instAlgRat
-
-/-- The geometric group `N` of an arithmetic model fixes every element of `Ω` algebraic over `ℚ`:
-such an element is a constant, and the geometric base `k₀(T)` contains all constants. -/
-theorem galE_fix_of_isAlgebraic {G : Type} [Group G] [Finite G] (m : ArithmeticModel G) {x : m.Ω}
-    (hx : IsAlgebraic ℚ x) (n : m.N) : m.galE (n : m.E) x = x := by
-  have hmem : x ∈ m.geomBase := by
-    have := m.const_le_geomBase (mem_algebraicClosure_iff.mpr hx)
-    simpa using this
-  have hfix := (m.galN_iff (n : m.E)).mp n.2
-  simp only [IntermediateField.mem_fixingSubgroup_iff] at hfix
-  exact hfix x hmem
-
-/-- The geometric group `N` fixes every root of unity of `Ω`. -/
-theorem galE_fix_of_pow_eq_one {G : Type} [Group G] [Finite G] (m : ArithmeticModel G) {x : m.Ω}
-    {M : ℕ} (hM : M ≠ 0) (hx : x ^ M = 1) (n : m.N) : m.galE (n : m.E) x = x := by
-  refine galE_fix_of_isAlgebraic m ⟨X ^ M - 1, ?_, ?_⟩ n
-  · intro h
-    have h0 : (X ^ M - 1 : ℚ[X]).coeff 0 = 0 := by rw [h]; simp
-    rcases Nat.eq_zero_or_pos M with hM0 | hM0
-    · exact hM hM0
-    · rw [coeff_sub, coeff_one_zero, coeff_X_pow, if_neg (by omega)] at h0
-      simp at h0
-  · simp [hx]
 
 /-! ### Rational places of the line
 
@@ -913,29 +936,51 @@ as the certificate's rigid tuple.
 This packages the finite field tower `ℚ(T) ⊂ k₀(T) ⊂ Ω` (`k₀ = algebraicClosure ℚ Ω`, a number
 field) with its fundamental exact sequence `1 → N → E → Gal(k₀/ℚ) → 1` and the geometric `π₁`
 presentation `SphereGroup r ↠ N`: the rigid tuple is extracted from `cert.gen`, and the presentation
-is read off the geometric inertia data (`geomInertiaModel_exists`) via
-`geomPresentation_of_inertiaData`.  See `DESCENT_ROADMAP.md` §1–2. -/
+is the sphere hom of the tame inertia generators supplied by `cycloBranchData_exists`, whose
+cyclotomic character and conjugation formula become the tower's branch-cycle formula.  See
+`DESCENT_ROADMAP.md` §1–2. -/
 theorem geomTower_nonempty {G : Type} [Group G] [Finite G]
     (cert : RigidData G)
     (hcls : ∃ m : ArithmeticModel G, Nonempty (ClassInertiaPlaceData cert m)) :
     Nonempty (GeomTower G cert) := by
   obtain ⟨base, hbase⟩ := cert.gen
-  obtain ⟨m, ⟨d⟩⟩ := geomInertiaModel_exists hcls base hbase
-  obtain ⟨pres, surjPres, φ_pres, branchCycle⟩ :=
-    @Rigidity.RET.geomPresentation_of_inertiaData _ _ _ _ m.E m.groupE m.N m.normalN
-      m.φ base hbase d
+  obtain ⟨m, ⟨d⟩⟩ := cycloBranchData_exists hcls base hbase
+  letI : NeZero d.rootOrder := ⟨d.rootOrder_pos.ne'⟩
+  -- the presentation: the sphere hom of the inertia generators.
+  have hφ_pres : ∀ x : Rigidity.RET.SphereGroup cert.r,
+      m.φ (Rigidity.RET.sphereHom d.gen d.gen_prod x)
+        = Rigidity.RET.sphereHom base hbase.2.1 x := by
+    have hhom : m.φ.comp (Rigidity.RET.sphereHom d.gen d.gen_prod)
+        = Rigidity.RET.sphereHom base hbase.2.1 := by
+      ext i
+      rw [MonoidHom.comp_apply, Rigidity.RET.sphereHom_of, Rigidity.RET.sphereHom_of, d.φ_gen]
+    exact fun x => DFunLike.congr_fun hhom x
   exact ⟨{
     E := m.E
     groupE := m.groupE
     N := m.N
     normalN := m.normalN
     φ := m.φ
-    pres := pres
-    surjPres := surjPres
+    pres := Rigidity.RET.sphereHom d.gen d.gen_prod
+    surjPres := (Rigidity.RET.sphereHom_surjective_iff d.gen d.gen_prod).2 d.gen_top
     base := base
     base_mem := hbase
-    φ_pres := φ_pres
-    branchCycle := branchCycle
+    φ_pres := hφ_pres
+    rootOrder := d.rootOrder
+    order_dvd := fun i => dvd_trans
+      (by rw [← d.φ_gen i]
+          exact orderOf_dvd_of_pow_eq_one (by rw [← map_pow, pow_orderOf_eq_one, map_one]))
+      (d.order_dvd i)
+    cycloChar := d.cycloChar
+    cycloChar_N := d.cycloChar_N
+    branchCycleχ := by
+      intro e i
+      have hconj : IsConj (m.φ (Rigidity.RET.conjN m.N e (d.gen i)))
+          (m.φ ((d.gen i) ^ ((d.cycloChar e : ZMod d.rootOrder).val))) :=
+        m.φ.map_isConj (d.conj_pow e i)
+      rw [map_pow, d.φ_gen i] at hconj
+      rw [Rigidity.RET.sphereHom_of, ← hbase.1 i, ConjClasses.powClass_mk]
+      exact ConjClasses.mk_eq_mk_iff_isConj.mpr hconj
     Ω := m.Ω
     fieldΩ := m.fieldΩ
     algΩ := m.algΩ
@@ -946,7 +991,8 @@ theorem geomTower_nonempty {G : Type} [Group G] [Finite G]
     galE := m.galE
     geomBase := m.geomBase
     galN_iff := m.galN_iff
-    const_le_geomBase := m.const_le_geomBase }⟩
+    const_le_geomBase := m.const_le_geomBase
+    geomBase_le_constFieldBase := m.geomBase_le_constFieldBase }⟩
 
 /-- **The geometric tower exists over some cyclotomic twist of the prescribed classes.**
 
