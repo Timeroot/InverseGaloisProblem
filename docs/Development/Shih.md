@@ -149,26 +149,49 @@ cycles `b₀, b₁, b₂` satisfying `b₀b₁b₂ = 1`. Let `H ⊴ A` have inde
 
 1. `b₀b₁b₂ = 1` forces **exactly two** of the `bᵢ` to lie outside `H`
    (`exists_two_notMem_of_index_two`, **already proved** in `Index2.lean`).
-2. `F := L^H` is a regular quadratic extension of `ℚ(T)`, so `F = ℚ(T)(√f)`.
+2. `F := L^H` is a regular quadratic extension of `ℚ(T)` (`finrank_sub`, **already proved**), so
+   `F = ℚ(T)(√f)`.
 3. `F/ℚ(T)` ramifies at `tᵢ` exactly when `bᵢ ∉ H`, and nowhere else. So exactly two finite places
    ramify and `f = c(T - tᵢ)(T - tⱼ)` up to squares.
 4. The conic `y² = c(x - tᵢ)(x - tⱼ)` has the rational point `(tᵢ, 0)`, so `F ≅ ℚ(u)`
-   (explicitly `u = y/(x - tᵢ)`, `x = (u²tᵢ - ctⱼ)/(u² - c)`).
+   (explicitly `u = y/(x - tᵢ)`, `x = (u²tᵢ - ctⱼ)/(u² - c)`) —
+   `nonempty_algEquiv_ratFunc_of_conic`, **already proved**.
 5. `L/F` is then a regular `H`-extension of a rational function field:
    `IsRegularInverseGalois H` (`isRegularInverseGalois_of_index_two`, **already proved**).
 
 ### Current state of `InverseGalois/Rigidity/RET/Descent/Index2.lean`
 
-Unimported leaf, 245 lines, **2 open `sorry`s**.
+Unimported leaf, ~400 lines, **2 open `sorry`s**.
 
-**Proved:** `algebraicClosure_eq_bot_of_algHom`, `exists_two_notMem_of_index_two`,
-`BranchedRegularCover.isRegularGaloisGroupOverBase_sub`, and the assembly
-`isRegularInverseGalois_of_index_two`.
+**Proved:**
+
+* `algebraicClosure_eq_bot_of_algHom` — regularity passes to subfields.
+* `exists_two_notMem_of_index_two` — the parity count on a product-one generating triple.
+* `nonempty_algEquiv_ratFunc_of_transcendental` — a field generated over `k` by one transcendental
+  element is `RatFunc k`. Reusable; no such lemma exists in Mathlib (the repo's
+  `RatFunc.exists_algEquiv_ratFunc` in `Hilbert/Analytic/Luroth.lean` only handles a generator
+  that already lives inside `RatFunc k`).
+* `transcendental_algebraMap_X` — the coordinate stays transcendental in any extension of `k(T)`.
+* `nonempty_algEquiv_ratFunc_of_conic` / `nonempty_ringEquiv_ratFunc_of_conic` — **step 4 of the
+  index-two argument, in full**: if `F = k(T)(y)` with `y² = c(T-a)(T-b)`, `a ≠ b`, `c ≠ 0`, then
+  `F ≅ RatFunc k` over `k`, via `u = y/(T-a)`.
+* `nonempty_algEquiv_rat_of_ringEquiv` — a ring isomorphism of characteristic-zero fields is a
+  `ℚ`-algebra isomorphism. Needed to cross the `Algebra ℚ (RatFunc ℚ)` instance diamond
+  (`DivisionRing.toRatAlgebra` vs `RatFunc.instAlgebraOfPolynomial`), which bites whenever an
+  `AlgEquiv` over a general base field `k` is instantiated at `k = ℚ`.
+* `BranchedRegularCover.finrank_sub` — `[L^H : ℚ(T)] = H.index`, by the Galois correspondence.
+* `BranchedRegularCover.sub_algEquiv_ratFunc` — now **derived** from `exists_conic_generator`.
+* `BranchedRegularCover.isRegularGaloisGroupOverBase_sub` and the assembly
+  `isRegularInverseGalois_of_index_two`.
 
 **Open:**
 
 * `branchedRegularCover_of_certificate : RigidityCertificate A → Nonempty (BranchedRegularCover A cert.r)`
-* `sub_algEquiv_ratFunc : (c : BranchedRegularCover A 3) → H.index = 2 → Nonempty (c.sub H ≃ₐ[ℚ] RatFunc ℚ)`
+* `exists_conic_generator : (c : BranchedRegularCover A 3) → H.index = 2 → ∃ i j d y, i ≠ j ∧ d ≠ 0 ∧ y² = d(T - tᵢ)(T - tⱼ) ∧ ℚ(T)⟮y⟯ = ⊤`
+
+The second sorry is what `sub_algEquiv_ratFunc` used to be, minus the conic step, which is now
+proved. It is exactly the *ramification* content of the argument: Kummer theory plus the
+identification of the ramified places.
 
 ### Why `branchedRegularCover_of_certificate` is not a one-liner
 
@@ -209,18 +232,18 @@ Branch points are freely choosable (`geomRET` takes any injective `t : Fin r →
 `classInertiaPlaceData_of_branchCycles` takes `branch` as an explicit argument), so
 `branch i = i` is fine.
 
-### Why `sub_algEquiv_ratFunc` is not a one-liner
+### Why `exists_conic_generator` is not a one-liner
 
-Steps 2–4 above each need building:
+Of steps 2–4 above, step 4 is now done. What remains:
 
 * **Kummer**: a degree-`2` Galois extension in characteristic `0` is `ℚ(T)(√f)`. Standard (take
-  `β = α - σα`), maybe 100 lines.
+  `β = α - σα`), maybe 100 lines. `finrank_sub` supplies the degree.
 * **Ramification ↔ odd valuation of `f`**: this is the substantial part. It has to connect the
   structure's `inertia_eq`/`inertia_bot` (stated for `ArithAKLB.arithInertia` of `L`) with the
   divisor of `f` in `ℚ[X]`, through the intermediate field `F`. There is no "inertia of a
   subextension" API on the arithmetic side.
-* **The conic**: building `F ≃ₐ[ℚ] RatFunc ℚ` from the rational point. Explicit and elementary,
-  but writing down the isomorphism and proving bijectivity over `RatFunc` is a few hundred lines.
+* **The conic** — **done**: `nonempty_algEquiv_ratFunc_of_conic`, about 80 lines, resting on the
+  new general `nonempty_algEquiv_ratFunc_of_transcendental`.
 
 Alternatives considered and rejected: pulling back along a degree-`2` map (the same identification
 problem reappears); genus / Riemann–Hurwitz (the repo's `Genus/` modules do not reach function
@@ -230,7 +253,9 @@ rational).
 
 ### Effort estimate for Route 2
 
-* `sub_algEquiv_ratFunc`: **2–4 weeks**.
+* `exists_conic_generator`: **1.5–3 weeks** (down from 2–4: the conic step is now proved, and
+  `finrank_sub` is in place; what is left is Kummer plus the ramification bookkeeping, and the
+  ramification bookkeeping was always the bulk of it).
 * `branchedRegularCover_of_certificate`: **2–5 weeks**, most of it in the "geometric inertia
   surjects onto arithmetic inertia" lemma and in re-running the compositum construction while
   keeping the unramifiedness hypothesis.
@@ -240,7 +265,7 @@ rational).
   so the identification is an explicit-generator computation in the style of
   `Mathieu/PSL211Simple.lean`: **3–7 days**.
 
-Total: **3–8 focused weeks** for `PSL₂(𝔽₇)` (plus `M₂₂` essentially for free), against
+Total: **2.5–7 focused weeks** for `PSL₂(𝔽₇)` (plus `M₂₂` essentially for free), against
 "not this decade" for the Shih family.
 
 ---
@@ -249,8 +274,9 @@ Total: **3–8 focused weeks** for `PSL₂(𝔽₇)` (plus `M₂₂` essentially
 
 1. Do Route 2. It is the only realistic path to any `PSL₂(𝔽ₚ)` in this repo, and it pays for
    `M₂₂` at the same time.
-2. Attack `sub_algEquiv_ratFunc` first: it needs no new tower plumbing, only field theory, and it
-   is the half that generalizes (any `r = 3` certificate with an index-two subgroup).
+2. Attack `exists_conic_generator` first: it needs no new tower plumbing, only field theory, and it
+   is the half that generalizes (any `r = 3` certificate with an index-two subgroup). Its conic
+   step and its degree computation are already done.
 3. Keep `Examples/Shih.lean` as the standing statement of what the modular route would give, and
    revisit it only if Mathlib acquires curves and Riemann–Roch.
 4. Both files must stay out of `InverseGalois.lean` and out of every `defaultTargets` root until
