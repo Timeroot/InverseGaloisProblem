@@ -3,6 +3,7 @@ Copyright (c) 2025. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import InverseGalois.Rigidity.StructureCount
+import InverseGalois.Rigidity.RET.Descent
 import Mathieu.EnumM11
 import Mathieu.M11Simple
 
@@ -456,6 +457,348 @@ in these three classes form a single orbit under simultaneous conjugation, of fu
 theorem rigid_triple : Nat.card ↥(rigidTuples classTriple) = Nat.card ↥M11 :=
   rigid_of_card_prodOneFibre center_eq_bot gen_top xEl_mem_prodOneFibre classTriple_two
     (le_trans card_prodOneFibre_le eleven_le_centralizer)
+
+/-! ### The mirror triple `(2A, 4A, 11A)`
+
+Inversion does not preserve the class of the `11`-cycle: `z` and `z⁻¹` lie in the two distinct
+classes `11B` and `11A`, which the cyclotomic action interchanges.  Everything above therefore has
+a mirror image, obtained by replacing `z` by `z⁻¹`; both triples are needed below, because the
+cyclotomic orbit of `(2A, 4A, 11B)` consists of exactly these two triples. -/
+
+/-- The remaining entry of the mirror triple, forced by the product-one relation. -/
+def yEl' : ↥M11 := xEl⁻¹ * zEl
+
+/-- The triple of conjugacy classes `(2A, 4A, 11A)` of `M₁₁`. -/
+def classTriple' : Fin 3 → ConjClasses ↥M11 :=
+  ![ConjClasses.mk xEl, ConjClasses.mk yEl', ConjClasses.mk zEl⁻¹]
+
+lemma classTriple'_zero : classTriple' 0 = ConjClasses.mk xEl := rfl
+lemma classTriple'_one : classTriple' 1 = ConjClasses.mk yEl' := rfl
+lemma classTriple'_two : classTriple' 2 = ConjClasses.mk zEl⁻¹ := rfl
+
+theorem gen_top' : Subgroup.closure ({xEl, zEl⁻¹} : Set ↥M11) = ⊤ := by
+  have hxK : xEl ∈ Subgroup.closure ({xEl, zEl⁻¹} : Set ↥M11) :=
+    Subgroup.subset_closure (Set.mem_insert _ _)
+  have hiK : zEl⁻¹ ∈ Subgroup.closure ({xEl, zEl⁻¹} : Set ↥M11) :=
+    Subgroup.subset_closure (Set.mem_insert_of_mem _ rfl)
+  have hzK : zEl ∈ Subgroup.closure ({xEl, zEl⁻¹} : Set ↥M11) := by
+    simpa using inv_mem hiK
+  refine eq_top_of_gens_mem _ hzK ?_
+  have hval : (⟨m11b, m11b_mem⟩ : ↥M11) =
+      zEl⁻¹ * zEl⁻¹ * xEl * zEl * zEl * xEl * zEl * zEl * zEl * xEl * zEl * zEl * xEl := by
+    apply Subtype.ext
+    show m11b = m11a⁻¹ * m11a⁻¹ * x0 * m11a * m11a * x0 * m11a * m11a * m11a * x0 * m11a *
+      m11a * x0
+    decide
+  rw [hval]
+  exact mul_mem (mul_mem (mul_mem (mul_mem (mul_mem (mul_mem (mul_mem (mul_mem (mul_mem
+    (mul_mem (mul_mem (mul_mem hiK hiK) hxK) hzK) hzK) hxK) hzK) hzK) hzK) hxK) hzK) hzK) hxK
+
+/-- The keys of the involution tree whose product with `z` has order four: an over-approximation
+of the mirror structure-constant fibre. -/
+noncomputable def fibreList' : List ℕ := TX.toList.filter (fun k => ord4 (mulC k cA))
+
+lemma fibreList'_length : fibreList'.length = 11 := by decide +kernel
+
+/-- The square of the mirror entry is not the identity. -/
+lemma y0'_sq_ne_one : (x0⁻¹ * m11a) * (x0⁻¹ * m11a) ≠ 1 := by decide
+
+/-- The fourth power of the mirror entry is the identity. -/
+lemma y0'_pow_four :
+    ((x0⁻¹ * m11a) * (x0⁻¹ * m11a)) * ((x0⁻¹ * m11a) * (x0⁻¹ * m11a)) = 1 := by decide
+
+/-- Every element of the class of the mirror entry passes the order-four test on codes. -/
+lemma ord4_of_conj' {u : ↥M11} (hu : ConjClasses.mk u = ConjClasses.mk yEl') :
+    ord4 (φ ((u : Perm (Fin 11)))) = true := by
+  obtain ⟨c, hc⟩ := isConj_iff.mp (ConjClasses.mk_eq_mk_iff_isConj.mp hu)
+  set p : Perm (Fin 11) := (u : Perm (Fin 11)) with hp
+  set d : Perm (Fin 11) := (c : Perm (Fin 11)) with hd
+  have hcp : d * p * d⁻¹ = x0⁻¹ * m11a := congrArg Subtype.val hc
+  have h2 : d * (p * p) * d⁻¹ = (x0⁻¹ * m11a) * (x0⁻¹ * m11a) := sq_conj hcp
+  have h4 : d * ((p * p) * (p * p)) * d⁻¹ = 1 := by
+    rw [sq_conj h2, y0'_pow_four]
+  have hp4 : (p * p) * (p * p) = 1 := by
+    calc (p * p) * (p * p) = d⁻¹ * (d * ((p * p) * (p * p)) * d⁻¹) * d := by group
+      _ = 1 := by rw [h4]; group
+  have hp2 : p * p ≠ 1 := fun h => y0'_sq_ne_one (by rw [← h2, h]; group)
+  have hne : φ (p * p) ≠ idCode := fun h => hp2 (φ_injective (h.trans φ_one.symm))
+  have hmul : mulC (φ p) (φ p) = φ (p * p) := mulC_φ p p
+  have hmul2 : mulC (φ (p * p)) (φ (p * p)) = φ ((p * p) * (p * p)) := mulC_φ _ _
+  unfold ord4
+  rw [hmul, hmul2, hp4, φ_one]
+  simp only [beq_self_eq_true, Bool.and_true, bne_iff_ne, ne_eq]
+  exact hne
+
+theorem card_prodOneFibre_le' :
+    Nat.card (prodOneFibre (classTriple' 0) (classTriple' 1) zEl⁻¹) ≤ 11 := by
+  classical
+  have hmap : ∀ w : ↥(prodOneFibre (classTriple' 0) (classTriple' 1) zEl⁻¹),
+      φ (((w : ↥M11) : Perm (Fin 11))) ∈ fibreList' := by
+    rintro ⟨w, hw0, hw1⟩
+    rw [classTriple'_zero] at hw0
+    rw [classTriple'_one] at hw1
+    have hinv : w⁻¹ = w := sq_eq_one_of_conj hw0
+    have hX : TX.mem (φ ((w : Perm (Fin 11)))) = true :=
+      key_of_conjClass TX_closed TX_mem_x0 (u := xEl) rfl hw0
+    have hY : ord4 (φ (((w⁻¹ * zEl⁻¹⁻¹ : ↥M11) : Perm (Fin 11)))) = true := ord4_of_conj' hw1
+    have hcoe : (((w⁻¹ * zEl⁻¹⁻¹ : ↥M11) : Perm (Fin 11)))
+        = ((w : Perm (Fin 11)))⁻¹ * m11a⁻¹⁻¹ := rfl
+    rw [hcoe, show ((w : Perm (Fin 11)))⁻¹ = (w : Perm (Fin 11)) from congrArg Subtype.val hinv,
+      inv_inv] at hY
+    have hmul : mulC (φ ((w : Perm (Fin 11)))) cA = φ ((w : Perm (Fin 11)) * m11a) := by
+      rw [← cA_eq, mulC_φ]
+    refine List.mem_filter.mpr ⟨Btree.mem_toList hX, ?_⟩
+    rw [hmul]
+    exact hY
+  let f : ↥(prodOneFibre (classTriple' 0) (classTriple' 1) zEl⁻¹) → ↥fibreList'.toFinset :=
+    fun w => ⟨φ (((w : ↥M11) : Perm (Fin 11))), List.mem_toFinset.mpr (hmap w)⟩
+  have hf : Function.Injective f := by
+    intro u v huv
+    have h1 : φ (((u : ↥M11) : Perm (Fin 11))) = φ (((v : ↥M11) : Perm (Fin 11))) :=
+      congrArg Subtype.val huv
+    exact Subtype.ext (Subtype.ext (φ_injective h1))
+  calc Nat.card ↥(prodOneFibre (classTriple' 0) (classTriple' 1) zEl⁻¹)
+      ≤ Nat.card ↥fibreList'.toFinset := Nat.card_le_card_of_injective f hf
+    _ = fibreList'.toFinset.card := by rw [Nat.card_eq_fintype_card, Fintype.card_coe]
+    _ ≤ fibreList'.length := List.toFinset_card_le _
+    _ = 11 := fibreList'_length
+
+/-- The `11`-cycle has order dividing eleven. -/
+lemma zEl_pow_eleven : zEl ^ 11 = 1 := by
+  apply Subtype.ext
+  show m11a ^ 11 = 1
+  exact m11a_pow_eq_one
+
+theorem eleven_le_centralizer' :
+    11 ≤ Nat.card ↥(Subgroup.centralizer ({zEl⁻¹} : Set ↥M11)) := by
+  have hz11 : zEl⁻¹ ^ 11 = 1 := by rw [inv_pow, zEl_pow_eleven, inv_one]
+  have hzne : zEl⁻¹ ≠ 1 := fun h =>
+    m11a_ne_one (congrArg Subtype.val (inv_eq_one.mp h))
+  haveI : Fact (Nat.Prime 11) := ⟨by norm_num⟩
+  have horder : orderOf zEl⁻¹ = 11 := orderOf_eq_prime hz11 hzne
+  have hle : Subgroup.zpowers zEl⁻¹ ≤ Subgroup.centralizer ({zEl⁻¹} : Set ↥M11) := by
+    rw [Subgroup.zpowers_le]
+    exact Subgroup.mem_centralizer_iff.mpr (by rintro m rfl; rfl)
+  have hcard : Nat.card ↥(Subgroup.zpowers zEl⁻¹)
+      ≤ Nat.card ↥(Subgroup.centralizer ({zEl⁻¹} : Set ↥M11)) :=
+    Nat.card_le_card_of_injective _ (Subgroup.inclusion_injective hle)
+  rwa [Nat.card_zpowers, horder] at hcard
+
+theorem xEl_mem_prodOneFibre' :
+    xEl ∈ prodOneFibre (classTriple' 0) (classTriple' 1) zEl⁻¹ := ⟨rfl, by rw [inv_inv]; rfl⟩
+
+/-- **The class triple `(2A, 4A, 11A)` is rigid in `M₁₁`.** -/
+theorem rigid_triple' : Nat.card ↥(rigidTuples classTriple') = Nat.card ↥M11 :=
+  rigid_of_card_prodOneFibre center_eq_bot gen_top' xEl_mem_prodOneFibre' classTriple'_two
+    (le_trans card_prodOneFibre_le' eleven_le_centralizer')
+
+/-! ### The cyclotomic orbit of the triple
+
+The exponents coprime to `44 = 4 · 11` act on the triple by raising each entry to that power.  The
+involution and the order-four entry are unmoved — `4A` is a rational class of `M₁₁` — while the
+`11`-cycle is carried to `z` or to `z⁻¹` according as the exponent is a quadratic residue mod `11`
+or not.  Both possibilities are rigid, by `rigid_triple` and `rigid_triple'`. -/
+
+/-- A word in the standard generators conjugating the `11`-cycle to its cube. -/
+def g0 : Perm (Fin 11) := m11b * m11a⁻¹ * m11a⁻¹ * m11a⁻¹ * m11b * m11a⁻¹ * m11b
+
+lemma g0_mem : g0 ∈ M11 :=
+  mul_mem (mul_mem (mul_mem (mul_mem (mul_mem (mul_mem m11b_mem (inv_mem m11a_mem))
+    (inv_mem m11a_mem)) (inv_mem m11a_mem)) m11b_mem) (inv_mem m11a_mem)) m11b_mem
+
+/-- The conjugator cubing the `11`-cycle, as an element of `M₁₁`. -/
+def gEl : ↥M11 := ⟨g0, g0_mem⟩
+
+/-- A word in the standard generators conjugating the order-four entry to its inverse. -/
+def gy0 : Perm (Fin 11) := m11a * m11a * m11a * m11a * m11b * m11a
+
+lemma gy0_mem : gy0 ∈ M11 :=
+  mul_mem (mul_mem (mul_mem (mul_mem (mul_mem m11a_mem m11a_mem) m11a_mem) m11a_mem)
+    m11b_mem) m11a_mem
+
+/-- The conjugator inverting the order-four entry, as an element of `M₁₁`. -/
+def gyEl : ↥M11 := ⟨gy0, gy0_mem⟩
+
+/-- A word in the standard generators conjugating the mirror entry to the original one. -/
+def gp0 : Perm (Fin 11) := m11a⁻¹ * m11b⁻¹ * m11a⁻¹ * m11a⁻¹ * m11a⁻¹
+
+lemma gp0_mem : gp0 ∈ M11 :=
+  mul_mem (mul_mem (mul_mem (mul_mem (inv_mem m11a_mem) (inv_mem m11b_mem))
+    (inv_mem m11a_mem)) (inv_mem m11a_mem)) (inv_mem m11a_mem)
+
+/-- The conjugator matching the two order-four entries, as an element of `M₁₁`. -/
+def gpEl : ↥M11 := ⟨gp0, gp0_mem⟩
+
+lemma conj_zEl_cube : gEl * zEl * gEl⁻¹ = zEl ^ 3 := by
+  apply Subtype.ext
+  show g0 * m11a * g0⁻¹ = m11a ^ 3
+  decide
+
+lemma conj_yEl_inv : gyEl * yEl * gyEl⁻¹ = yEl⁻¹ := by
+  apply Subtype.ext
+  show gy0 * (x0⁻¹ * m11a⁻¹) * gy0⁻¹ = (x0⁻¹ * m11a⁻¹)⁻¹
+  decide
+
+lemma conj_yEl' : gpEl * yEl' * gpEl⁻¹ = yEl := by
+  apply Subtype.ext
+  show gp0 * (x0⁻¹ * m11a) * gp0⁻¹ = x0⁻¹ * m11a⁻¹
+  decide
+
+/-- The two order-four entries are conjugate: `M₁₁` has a single class of elements of order
+four. -/
+lemma mk_yEl'_eq : ConjClasses.mk yEl' = ConjClasses.mk yEl :=
+  ConjClasses.mk_eq_mk_iff_isConj.mpr (isConj_iff.mpr ⟨gpEl, conj_yEl'⟩)
+
+/-- An exponent may be reduced modulo any exponent of the element. -/
+lemma pow_mod_of_pow_eq_one {g : ↥M11} {m : ℕ} (hm : g ^ m = 1) (u : ℕ) : g ^ u = g ^ (u % m) := by
+  conv_lhs => rw [← Nat.div_add_mod u m]
+  rw [pow_add, pow_mul, hm, one_pow, one_mul]
+
+/-- The involution has order dividing two. -/
+lemma xEl_pow_two : xEl ^ 2 = 1 := by rw [pow_two]; exact xEl_sq
+
+/-- The order-four entry has order dividing four. -/
+lemma yEl_pow_four : yEl ^ 4 = 1 := by
+  have h : yEl * yEl * (yEl * yEl) = 1 := Subtype.ext y0_pow_four
+  calc yEl ^ 4 = yEl * yEl * (yEl * yEl) := by
+        rw [show (4 : ℕ) = 2 + 2 from rfl, pow_add, pow_two]
+    _ = 1 := h
+
+/-- The cube of the order-four entry is its inverse, hence in its own class. -/
+lemma mk_yEl_cube : ConjClasses.mk (yEl ^ 3) = ConjClasses.mk yEl := by
+  have h3 : yEl ^ 3 = yEl⁻¹ := by
+    refine eq_inv_of_mul_eq_one_left ?_
+    calc yEl ^ 3 * yEl = yEl ^ 4 := by group
+      _ = 1 := yEl_pow_four
+  rw [h3]
+  exact (ConjClasses.mk_eq_mk_iff_isConj.mpr (isConj_iff.mpr ⟨gyEl, conj_yEl_inv⟩)).symm
+
+/-- Conjugating by `g` triples the exponent of the `11`-cycle. -/
+lemma mk_zEl_conj (k : ℕ) : ConjClasses.mk (zEl ^ (3 * k)) = ConjClasses.mk (zEl ^ k) := by
+  refine (ConjClasses.mk_eq_mk_iff_isConj.mpr (isConj_iff.mpr ⟨gEl, ?_⟩)).symm
+  have h : ∀ n : ℕ, gEl * zEl ^ n * gEl⁻¹ = (gEl * zEl * gEl⁻¹) ^ n := by
+    intro n
+    induction n with
+    | zero => simp
+    | succ m ih => rw [pow_succ, pow_succ, ← ih]; group
+  rw [h k, conj_zEl_cube, ← pow_mul]
+
+/-- The `11`-cycle may be reduced modulo eleven. -/
+lemma zEl_pow_mod (u : ℕ) : zEl ^ u = zEl ^ (u % 11) := pow_mod_of_pow_eq_one zEl_pow_eleven u
+
+/-- Tripling the exponent modulo eleven does not change the class of the power. -/
+lemma mk_zEl_step {j k : ℕ} (h : j % 11 = (3 * k) % 11) :
+    ConjClasses.mk (zEl ^ j) = ConjClasses.mk (zEl ^ k) := by
+  rw [zEl_pow_mod j, h, ← zEl_pow_mod (3 * k)]
+  exact mk_zEl_conj k
+
+/-- The tenth power of the `11`-cycle is its inverse. -/
+lemma zEl_pow_ten : zEl ^ 10 = zEl⁻¹ := by
+  refine eq_inv_of_mul_eq_one_left ?_
+  calc zEl ^ 10 * zEl = zEl ^ 11 := by group
+    _ = 1 := zEl_pow_eleven
+
+/-- **Every power of the `11`-cycle by an exponent prime to eleven lies in one of the two
+classes `11A`, `11B`.**  The residues fall into the five squares `1, 3, 9, 5, 4`, which conjugation
+by `g` cycles, and the five non-squares `10, 8, 2, 6, 7`, which it cycles as well. -/
+lemma mk_zEl_pow_cases {k : ℕ} (hk : ¬ (11 ∣ k)) :
+    ConjClasses.mk (zEl ^ k) = ConjClasses.mk zEl ∨
+      ConjClasses.mk (zEl ^ k) = ConjClasses.mk zEl⁻¹ := by
+  have e1 : ConjClasses.mk (zEl ^ 1) = ConjClasses.mk zEl := by rw [pow_one]
+  have e10 : ConjClasses.mk (zEl ^ 10) = ConjClasses.mk zEl⁻¹ := by rw [zEl_pow_ten]
+  have e3 : ConjClasses.mk (zEl ^ 3) = ConjClasses.mk zEl :=
+    (mk_zEl_step (j := 3) (k := 1) (by norm_num)).trans e1
+  have e9 : ConjClasses.mk (zEl ^ 9) = ConjClasses.mk zEl :=
+    (mk_zEl_step (j := 9) (k := 3) (by norm_num)).trans e3
+  have e5 : ConjClasses.mk (zEl ^ 5) = ConjClasses.mk zEl :=
+    (mk_zEl_step (j := 5) (k := 9) (by norm_num)).trans e9
+  have e4 : ConjClasses.mk (zEl ^ 4) = ConjClasses.mk zEl :=
+    (mk_zEl_step (j := 4) (k := 5) (by norm_num)).trans e5
+  have e8 : ConjClasses.mk (zEl ^ 8) = ConjClasses.mk zEl⁻¹ :=
+    (mk_zEl_step (j := 8) (k := 10) (by norm_num)).trans e10
+  have e2 : ConjClasses.mk (zEl ^ 2) = ConjClasses.mk zEl⁻¹ :=
+    (mk_zEl_step (j := 2) (k := 8) (by norm_num)).trans e8
+  have e6 : ConjClasses.mk (zEl ^ 6) = ConjClasses.mk zEl⁻¹ :=
+    (mk_zEl_step (j := 6) (k := 2) (by norm_num)).trans e2
+  have e7 : ConjClasses.mk (zEl ^ 7) = ConjClasses.mk zEl⁻¹ :=
+    (mk_zEl_step (j := 7) (k := 6) (by norm_num)).trans e6
+  obtain ⟨j, hj1, hj2, hjk⟩ : ∃ j, 1 ≤ j ∧ j < 11 ∧ k % 11 = j :=
+    ⟨k % 11, by omega, Nat.mod_lt _ (by norm_num), rfl⟩
+  rw [zEl_pow_mod k, hjk]
+  interval_cases j
+  exacts [Or.inl e1, Or.inr e2, Or.inl e3, Or.inl e4, Or.inl e5, Or.inr e6, Or.inr e7,
+    Or.inr e8, Or.inl e9, Or.inr e10]
+
+/-- No prime dividing `44` divides an exponent prime to `44`. -/
+lemma not_dvd_of_coprime {u p : ℕ} (hp : p.Prime) (hpd : p ∣ 44) (h : Nat.Coprime u 44) :
+    ¬ p ∣ u :=
+  hp.coprime_iff_not_dvd.mp (Nat.Coprime.coprime_dvd_right hpd h).symm
+
+/-- **Every cyclotomic twist of the triple `(2A, 4A, 11B)` is rigid.**  The twist by an exponent
+prime to `44` is either the triple itself or its mirror image. -/
+theorem orbit_rigid (u : Fin 3 → ℕ) (hu : ∀ i, Nat.Coprime (u i) 44) :
+    Nat.card ↥(rigidTuples fun i => ConjClasses.powClass (u i) (classTriple i))
+      = Nat.card ↥M11 := by
+  have hx : ConjClasses.powClass (u 0) (classTriple 0) = ConjClasses.mk xEl := by
+    rw [classTriple_zero, ConjClasses.powClass_mk, pow_mod_of_pow_eq_one xEl_pow_two (u 0)]
+    have h2 : ¬ (2 ∣ u 0) := not_dvd_of_coprime Nat.prime_two (by norm_num) (hu 0)
+    rw [show u 0 % 2 = 1 by omega, pow_one]
+  have hy : ConjClasses.powClass (u 1) (classTriple 1) = ConjClasses.mk yEl := by
+    rw [classTriple_one, ConjClasses.powClass_mk, pow_mod_of_pow_eq_one yEl_pow_four (u 1)]
+    have h2 : ¬ (2 ∣ u 1) := not_dvd_of_coprime Nat.prime_two (by norm_num) (hu 1)
+    rcases (by omega : u 1 % 4 = 1 ∨ u 1 % 4 = 3) with h | h
+    · rw [h, pow_one]
+    · rw [h]; exact mk_yEl_cube
+  have hz : ConjClasses.powClass (u 2) (classTriple 2) = ConjClasses.mk zEl ∨
+      ConjClasses.powClass (u 2) (classTriple 2) = ConjClasses.mk zEl⁻¹ := by
+    rw [classTriple_two, ConjClasses.powClass_mk]
+    exact mk_zEl_pow_cases
+      (not_dvd_of_coprime (by norm_num) (by norm_num) (hu 2))
+  rcases hz with hz | hz
+  · rw [show (fun i => ConjClasses.powClass (u i) (classTriple i)) = classTriple from ?_]
+    · exact rigid_triple
+    · funext i; fin_cases i
+      exacts [hx, hy, hz]
+  · rw [show (fun i => ConjClasses.powClass (u i) (classTriple i)) = classTriple' from ?_]
+    · exact rigid_triple'
+    · funext i; fin_cases i
+      exacts [hx, hy.trans mk_yEl'_eq.symm, hz]
+
+/-! ### `M₁₁` is a regular Galois group over a number field -/
+
+/-- The prescribed classes are made of elements of order dividing `44`. -/
+theorem order_dvd_fortyFour (i : Fin 3) (g : ↥M11) (hg : ConjClasses.mk g = classTriple i) :
+    orderOf g ∣ 44 := by
+  fin_cases i
+  · rw [ConjClasses.orderOf_eq_of_mk_eq (h := xEl) hg]
+    exact dvd_trans (orderOf_dvd_of_pow_eq_one xEl_pow_two) (by norm_num)
+  · rw [ConjClasses.orderOf_eq_of_mk_eq (h := yEl) hg]
+    exact dvd_trans (orderOf_dvd_of_pow_eq_one yEl_pow_four) (by norm_num)
+  · rw [ConjClasses.orderOf_eq_of_mk_eq (h := zEl) hg]
+    exact dvd_trans (orderOf_dvd_of_pow_eq_one zEl_pow_eleven) (by norm_num)
+
+/-- The prescribed classes carry a generating product-one triple. -/
+theorem rigidTuples_nonempty : (rigidTuples classTriple).Nonempty := by
+  rcases Set.eq_empty_or_nonempty (rigidTuples classTriple) with h | h
+  · exfalso
+    have hcard := rigid_triple
+    haveI : IsEmpty ↥(rigidTuples classTriple) := by rw [h]; infer_instance
+    rw [Nat.card_of_isEmpty, M11_card] at hcard
+    exact absurd hcard.symm (by norm_num)
+  · exact h
+
+/-- **`M₁₁` is a regular Galois group over a number field.**
+
+The triple `(2A, 4A, 11B)` is rigid and generating and `M₁₁` is centerless, but the two classes of
+`11`-cycles are irrational: the exponents prime to `11` interchange them.  The classes are
+therefore stable only under an index-two subgroup of the cyclotomic action, and the rigidity method
+descends the geometric cover not to `ℚ(T)` but to `K(T)` for the number field `K` that subgroup
+cuts out. -/
+theorem exists_regular_numberField :
+    ∃ (K : Type) (_ : Field K) (_ : NumberField K), IsRegularGaloisGroupOver K ↥M11 :=
+  Rigidity.RET.Descent.exists_regular_numberField_of_orbitRigid (n := 44) classTriple
+    (center_triv_iff_center_eq_bot.mpr center_eq_bot) order_dvd_fortyFour rigidTuples_nonempty
+    orbit_rigid
 
 end MathieuM11
 

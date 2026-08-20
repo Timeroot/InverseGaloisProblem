@@ -202,9 +202,26 @@ above.
 Because `11A`/`11B` are not rational in `M₁₁` or `M₁₂`, neither triple assembles into a
 `RigidityCertificate` — that structure demands each class be fixed by the whole cyclotomic
 action, which is exactly the `ℚ`-rationality the survey above rules out for every Mathieu group.
-Turning either `rigid_triple` into a realization would require generalising the certificate and
-the descent tower in `InverseGalois/Rigidity/RET/Descent/` from `ℚ` to a number-field base; the
-result would be regular realizations of `M₁₁` and `M₁₂` over `ℚ(√−11)(T)`.
+The descent has therefore been generalised from `ℚ` to a number-field base:
+`Rigidity.RET.Descent.exists_regular_numberField_of_orbitRigid`
+(`InverseGalois/Rigidity/RET/Descent/StableDescent.lean`) runs the branch-cycle argument over the
+subgroup `S ≤ Gal(Ω/ℚ(T))` whose cyclotomic twist fixes the prescribed classes, and returns a
+number field `K` with `IsRegularGaloisGroupOver K G`. Its hypothesis is *orbit rigidity*: every
+cyclotomic twist of the class tuple must again be rigid, not just the tuple itself.
+
+Both Mathieu certificates now meet it, so both groups are realized:
+
+* `Rigidity.MathieuM11.exists_regular_numberField` — the cyclotomic orbit of `(2A, 4A, 11B)`
+  under the exponents prime to `44` consists of that triple and its mirror `(2A, 4A, 11A)`
+  (`rigid_triple` and `rigid_triple'`); `2A` and `4A` are rational, and the residues mod `11`
+  split into the five squares and the five non-squares, which conjugation by an explicit
+  order-five element of `M₁₁` cycles separately.
+* `Rigidity.MathieuM12.exists_regular_numberField` — the same for `(2A, 3A, 11A)` and its mirror
+  `(2A, 3A, 11B)` under the exponents prime to `66`.
+
+What the theorems produce is *some* number field `K`. Identifying it as `ℚ(√−11)` — the fixed
+field of the squares mod `11`, which is what the branch-cycle formula predicts — needs in
+addition that the cyclotomic character of the tower is surjective; that is not yet formalized.
 
 `M₂₄` is out of reach for the same style of certificate: its class `2A` has 11385 elements and
 base-24 codes are integers of about 33 digits.
