@@ -59,6 +59,17 @@ classes, whereas the two classes of rotations of order `5`, namely `{r, r⁴}` a
 interchanged by `Gal(ℚ(ζ₅)/ℚ)`.  A rigid triple of `D₅` is rational only over `ℚ(ζ₅ + ζ₅⁻¹) = ℚ(√5)`
 and so descends to a regular extension of `ℚ(√5)(T)`.
 
+## Beyond `ℚ`
+
+Irrational classes are not the end of the rigidity method, only of its `ℚ`-form.  If every
+cyclotomic twist of the class tuple is again rigid, the branch-cycle argument runs over the
+subgroup of the arithmetic fundamental group that fixes the tuple and realizes the group regularly
+over the number field that subgroup cuts out:
+`Rigidity.RET.Descent.exists_regular_numberField_of_orbitRigid`.  The Mathieu groups `M₁₁` and
+`M₁₂` are realized that way — their classes of `11`-cycles are interchanged by the exponents prime
+to `11` — in the separate `MathieuRigidity` target, which is kept out of this catalogue so that
+`InverseGalois` does not depend on the vendored `Mathieu` library.
+
 ## Main results
 
 * `Rigidity.RET.isRegularInverseGalois_units_zmod` — `(ZMod n)ˣ`.
