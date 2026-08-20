@@ -131,8 +131,9 @@ different method.
 
 ## What is formalized
 
-Two of the twelve rigid triples above are certified in the Lean kernel, on top of the `Mathieu`
-library in this repository: `(2A, 4A, 11B)` of `M₁₁` and `(2A, 3A, 11A)` of `M₁₂`.
+Three of the twenty rigid triples above are certified in the Lean kernel, on top of the `Mathieu`
+library in this repository: `(2A, 4A, 11B)` of `M₁₁`, `(2A, 3A, 11A)` of `M₁₂` and
+`(2A, 3B, 23A)` of `M₂₄`.
 
 ### `M₁₁`
 
@@ -197,11 +198,50 @@ is one `List.range 12` scan on the code and is manifestly conjugation-invariant.
 direction is needed: every conjugate of the chosen `y` passes, which bounds the fibre from
 above.
 
+### `M₂₄`
+
+`InverseGalois/Rigidity/Examples/MathieuM24.lean`, together with the computational layer
+`InverseGalois/Rigidity/Examples/MathieuM24Class.lean`, certifies `(2A, 3B, 23A)`:
+
+```lean
+theorem rigid_triple : Nat.card ↥(rigidTuples classTriple) = Nat.card ↥M24
+```
+
+again with axioms exactly `[propext, Classical.choice, Quot.sound]`. Here `z = m24a` is the
+standard `23`-cycle, `x` is the involution
+
+```
+x = m24a⁻³ · m24c · m24b⁻² · m24a⁻¹ · m24b · m24a⁻¹ · m24b⁻¹ · m24a · m24c · m24b⁻²
+```
+
+of cycle type `1⁸2⁸`, and `y = x⁻¹ z⁻¹` has order `3` and cycle type `3⁸`. The pair `x, z`
+generates `M₂₄` — the other two standard generators are exhibited as words of length `35` and `39`
+in `x` and `z` — and the fibre `{ w ∈ 2A : w z⁻¹ ∈ 3B }` has exactly `23 = |C_{M₂₄}(z)|` elements.
+
+The shape of the argument is the `M₁₂` one at base `24`: codes `enc24`/`dec24`/`φ24`/`mulC24`, a
+search-tree literal `TX` for `2A` — now `11385` keys — checked closed under conjugation by the
+generators with `decide +kernel`, and a fixed-point test to separate the two classes of order-three
+elements. The polarity of that test is the opposite of `M₁₂`'s: in `M₂₄` it is `3A = 3⁶1⁶` that has
+fixed points and `3B = 3⁸` that does not, so the second class is cut out by
+`q³ = 1 ∧ ¬ hasFix q`.
+
+Two things about this file are specific to its size.
+
+* The module is its own `lean_lib` (`MathieuRigidityM24` in `lakefile.toml`) purely to pass
+  `--tstack=262144`. Expressing `m24b` and `m24c` as words in `x` and `z` makes the kernel
+  evaluate products of more than two hundred permutations of `Fin 24`, which nests more deeply
+  than the default elaboration-thread stack allows.
+* Every step that could put a concrete `11385`-node term in front of `whnf` is routed through a
+  lemma stated for a *variable* tree or list — `card_le_length_of_key`, `mem_fibreList` — and the
+  coercion `↥M24 → Perm (Fin 24)` is never unfolded by `congrArg Subtype.val` but always by
+  `Subtype.ext_iff`. Without those two precautions the elaborator does not terminate.
+
 ### Fields of definition
 
-Because `11A`/`11B` are not rational in `M₁₁` or `M₁₂`, neither triple assembles into a
-`RigidityCertificate` — that structure demands each class be fixed by the whole cyclotomic
-action, which is exactly the `ℚ`-rationality the survey above rules out for every Mathieu group.
+Because `11A`/`11B` are not rational in `M₁₁` or `M₁₂`, and `23A`/`23B` are not rational in `M₂₄`,
+none of the three triples assembles into a `RigidityCertificate` — that structure demands each
+class be fixed by the whole cyclotomic action, which is exactly the `ℚ`-rationality the survey
+above rules out for every Mathieu group.
 The descent has therefore been generalised from `ℚ` to a number-field base:
 `Rigidity.RET.Descent.exists_regular_numberField_of_orbitRigid`
 (`InverseGalois/Rigidity/RET/Descent/StableDescent.lean`) runs the branch-cycle argument over the
@@ -209,7 +249,7 @@ subgroup `S ≤ Gal(Ω/ℚ(T))` whose cyclotomic twist fixes the prescribed clas
 number field `K` with `IsRegularGaloisGroupOver K G`. Its hypothesis is *orbit rigidity*: every
 cyclotomic twist of the class tuple must again be rigid, not just the tuple itself.
 
-Both Mathieu certificates now meet it, so both groups are realized:
+All three Mathieu certificates now meet it, so all three groups are realized:
 
 * `Rigidity.MathieuM11.exists_regular_numberField` — the cyclotomic orbit of `(2A, 4A, 11B)`
   under the exponents prime to `44` consists of that triple and its mirror `(2A, 4A, 11A)`
@@ -218,13 +258,17 @@ Both Mathieu certificates now meet it, so both groups are realized:
   order-five element of `M₁₁` cycles separately.
 * `Rigidity.MathieuM12.exists_regular_numberField` — the same for `(2A, 3A, 11A)` and its mirror
   `(2A, 3A, 11B)` under the exponents prime to `66`.
+* `Rigidity.MathieuM24.exists_regular_numberField` — the cyclotomic orbit of `(2A, 3B, 23A)` under
+  the exponents prime to `138 = lcm(2, 3, 23)` consists of that triple and its mirror
+  `(2A, 3B, 23B)` (`rigid_triple` and `rigid_triple'`); `2A` and `3B` are rational, and the
+  residues mod `23` split into the eleven squares and the eleven non-squares, which the doubling
+  map `k ↦ 2k` — realized by conjugation with an explicit word in the standard generators —
+  cycles separately, since `2` generates the squares mod `23`.
 
-What the theorems produce is *some* number field `K`. Identifying it as `ℚ(√−11)` — the fixed
-field of the squares mod `11`, which is what the branch-cycle formula predicts — needs in
-addition that the cyclotomic character of the tower is surjective; that is not yet formalized.
-
-`M₂₄` is out of reach for the same style of certificate: its class `2A` has 11385 elements and
-base-24 codes are integers of about 33 digits.
+What the theorems produce is *some* number field `K`. Identifying it as `ℚ(√−11)`, resp.
+`ℚ(√−23)` — the fixed field of the squares mod `11`, resp. mod `23`, which is what the branch-cycle
+formula predicts — needs in addition that the cyclotomic character of the tower is surjective; that
+is not yet formalized.
 
 ## Reproducing the survey
 

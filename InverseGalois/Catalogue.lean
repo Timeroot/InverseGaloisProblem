@@ -65,10 +65,13 @@ Irrational classes are not the end of the rigidity method, only of its `ℚ`-for
 cyclotomic twist of the class tuple is again rigid, the branch-cycle argument runs over the
 subgroup of the arithmetic fundamental group that fixes the tuple and realizes the group regularly
 over the number field that subgroup cuts out:
-`Rigidity.RET.Descent.exists_regular_numberField_of_orbitRigid`.  The Mathieu groups `M₁₁` and
-`M₁₂` are realized that way — their classes of `11`-cycles are interchanged by the exponents prime
-to `11` — in the separate `MathieuRigidity` target, which is kept out of this catalogue so that
-`InverseGalois` does not depend on the vendored `Mathieu` library.
+`Rigidity.RET.Descent.exists_regular_numberField_of_orbitRigid`.  The Mathieu groups `M₁₁`, `M₁₂`
+and `M₂₄` are realized that way — the classes of `11`-cycles in the first two, and of `23`-cycles
+in the third, are interchanged by the exponents prime to `11`, resp. `23` — in the separate
+`MathieuRigidity` and `MathieuRigidityM24` targets, which are kept out of this catalogue so that
+`InverseGalois` does not depend on the vendored `Mathieu` library.  No Mathieu group has a
+rationally rigid triple, and `M₂₂` and `M₂₃` have no rigid triple at all, so the method stops
+there; see `docs/Development/MathieuRigidity.md`.
 
 ## Main results
 

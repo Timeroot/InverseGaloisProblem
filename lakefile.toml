@@ -1,5 +1,5 @@
 name = "RequestProject"
-defaultTargets = ["InverseGalois", "Mathieu", "MathieuRigidity"]
+defaultTargets = ["InverseGalois", "Mathieu", "MathieuRigidity", "MathieuRigidityM24"]
 
 [[require]]
 name = "mathlib"
@@ -23,12 +23,25 @@ leanOptions = { linter.style.multiGoal = true }
 name = "Mathieu"
 globs = ["Mathieu"]
 
-# The rigidity certificates for `M₁₁` and `M₁₂`.  They are the only place where the inverse
-# Galois material meets the `Mathieu` library, so they get their own target rather than being
-# pulled into the `InverseGalois` root.
+# The rigidity certificates for `M₁₁`, `M₁₂` and `M₂₄`.  They are the only place where the
+# inverse Galois material meets the `Mathieu` library, so they get their own target rather than
+# being pulled into the `InverseGalois` root.
 [[lean_lib]]
 name = "MathieuRigidity"
-roots = ["InverseGalois.Rigidity.Examples.MathieuM11", "InverseGalois.Rigidity.Examples.MathieuM12"]
+roots = [
+  "InverseGalois.Rigidity.Examples.MathieuM11",
+  "InverseGalois.Rigidity.Examples.MathieuM12",
+  "InverseGalois.Rigidity.Examples.MathieuM24Class",
+]
+
+# The `M₂₄` certificate proper.  It gets a target of its own only to raise the elaboration-thread
+# stack: expressing the two standard generators as words in the rigid pair makes the kernel
+# evaluate products of more than two hundred permutations of `Fin 24`, which nests more deeply
+# than the default stack allows.
+[[lean_lib]]
+name = "MathieuRigidityM24"
+roots = ["InverseGalois.Rigidity.Examples.MathieuM24"]
+moreLeanArgs = ["--tstack=262144"]
 
 # The leanprover/comparator challenge for the Riemann Existence Theorem; see
 # extras/comparator/README.md.  Deliberately not a default target: `Challenge` carries the
