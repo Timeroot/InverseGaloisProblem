@@ -45,7 +45,10 @@ roots = [
 # the kernel evaluate long products of permutations of `Fin 23`.
 [[lean_lib]]
 name = "MathieuRigidityM22"
-roots = ["InverseGalois.Rigidity.Examples.MathieuM22"]
+roots = [
+  "InverseGalois.Rigidity.Examples.MathieuM22",
+  "InverseGalois.Rigidity.Examples.MathieuM22Index",
+]
 moreLeanArgs = ["--tstack=262144"]
 
 # The `M₂₄` certificate proper.  It gets a target of its own only to raise the elaboration-thread
