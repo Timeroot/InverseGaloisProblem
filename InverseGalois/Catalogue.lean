@@ -43,6 +43,8 @@ Families:
   orders (`MobiusFinite`).
 * `Rigidity.RigidityCertificate.isRegularInverseGalois` — every finite group carrying a rigidity
   certificate; `Rigidity.sn_isRegularInverseGalois` is the certificate for `Sₙ`, `n ≥ 3`.
+* `Rigidity.PGL27.isRegularInverseGalois` — the group of Lie type `PGL₂(𝔽₇)`, of order `336`, from
+  the rational rigid triple `(2B, 6A, 7A)` on the projective line `ℙ¹(𝔽₇)`.
 
 The realizations proved by exhibiting a single polynomial over `ℚ` — `X³ - 2` for `S₃`
 (`Groups.S3`), `X⁴ + 8X + 12` for `A₄` (`Groups.A4`), `X⁵ + 20X + 16` for `A₅` (`Groups.A5`),
@@ -71,7 +73,19 @@ in the third, are interchanged by the exponents prime to `11`, resp. `23` — in
 `MathieuRigidity` and `MathieuRigidityM24` targets, which are kept out of this catalogue so that
 `InverseGalois` does not depend on the vendored `Mathieu` library.  No Mathieu group has a
 rationally rigid triple, and `M₂₂` and `M₂₃` have no rigid triple at all, so the method stops
-there; see `docs/Development/MathieuRigidity.md`.
+there; `Aut(M₂₂) = M₂₂ : 2` does have one, and its certificate lives in the
+`MathieuRigidityM22` target.  See `docs/Development/MathieuRigidity.md`.
+
+## Groups of Lie type
+
+The same split between a simple group and the group of its algebraic automorphisms governs the
+rank-one groups of Lie type.  `PSL₂(𝔽_q)` has very few rational classes — for `q` prime only those
+of orders `2`, `3` and `6`, never enough to generate — and its two classes of elements of order `q`
+are interchanged by the exponents prime to `q`.  Passing to `PGL₂(𝔽_q)` fuses those two classes and
+adds outer rational classes of order `2` and, when the tori allow it, of order `4` or `6`; that is
+exactly what a rational rigid triple needs.  `PGL₂(𝔽₇)` is the smallest case where the fibre count
+is as sharp as it can be — seven product-one triples, matching the centraliser of a `7`-cycle — and
+it is the case formalized here.
 
 ## Main results
 

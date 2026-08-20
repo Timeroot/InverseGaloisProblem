@@ -5,6 +5,7 @@ import InverseGalois.Rigidity.Symmetric
 import InverseGalois.Rigidity.Braid
 import InverseGalois.Rigidity.RET
 import InverseGalois.Rigidity.Examples.S3Rigid
+import InverseGalois.Rigidity.Examples.PGL27
 
 /-!
 # The rigidity method for the inverse Galois problem
@@ -27,4 +28,6 @@ in its covers form — and established in `RET.Completeness` as `geomRET`.
   generating product-one tuples, and the Nielsen class of a certificate as a single orbit of the
   braid moves together with simultaneous conjugation.
 * `Rigidity.S3Example.s3_isInverseGalois` — the `S₃` sanity example firing it end-to-end.
+* `Rigidity.PGL27.isRegularInverseGalois` — the group of Lie type `PGL₂(𝔽₇)`, from the rational
+  rigid triple `(2B, 6A, 7A)` on the projective line.
 -/
