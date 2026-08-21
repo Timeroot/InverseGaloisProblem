@@ -1,5 +1,6 @@
 import InverseGalois.CFT.Brauer.BaseChange
 import InverseGalois.CFT.Brauer.CrossedProduct
+import InverseGalois.CFT.Brauer.CrossedProductSimple
 import InverseGalois.CFT.Brauer.Group
 import InverseGalois.CFT.Brauer.Opposite
 import InverseGalois.CFT.Brauer.SkolemNoether
@@ -87,4 +88,6 @@ it that are available here.
   simple algebra into a central simple algebra differ by conjugation by a unit.
 * `InverseGalois.CFT.Brauer.CrossedProduct` builds the crossed product algebra of a Galois
   extension and a multiplicative `2`-cocycle, a central `K`-algebra of dimension `[L : K] ^ 2`.
+* `InverseGalois.CFT.Brauer.CrossedProductSimple` proves that the crossed product is a simple
+  ring, so that it is a central simple algebra over `K`.
 -/
