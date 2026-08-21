@@ -4,6 +4,7 @@ import InverseGalois.CFT.Brauer.CrossedProductCohomologous
 import InverseGalois.CFT.Brauer.CrossedProductSimple
 import InverseGalois.CFT.Brauer.CrossedProductSplit
 import InverseGalois.CFT.Brauer.CrossedProductSplitting
+import InverseGalois.CFT.Brauer.CyclicAlgebra
 import InverseGalois.CFT.Brauer.Division
 import InverseGalois.CFT.Brauer.Group
 import InverseGalois.CFT.Brauer.Opposite
@@ -105,6 +106,9 @@ it that are available here.
 * `InverseGalois.CFT.GroupCohomology.Cyclic` writes down the explicit `2`-cocycle attached to a
   cyclic group and an invariant element, and identifies its coboundaries with norms; over a cyclic
   Galois extension this is the cocycle of a cyclic algebra.
+* `InverseGalois.CFT.Brauer.CyclicAlgebra` computes the cyclic case: the cyclic algebra of a
+  generator of a cyclic Galois group and a unit of the base field is a matrix algebra exactly when
+  that unit is a norm.
 * `InverseGalois.CFT.Brauer.Division` gives every central simple algebra its Wedderburn division
   representative, and deduces that the Brauer group of an algebraically closed field and of a
   finite field is trivial.
