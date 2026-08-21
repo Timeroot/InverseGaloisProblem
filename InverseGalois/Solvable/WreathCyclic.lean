@@ -30,6 +30,9 @@ under quotients, so it is carried out once for an abstract predicate and instant
 * `RegularWreathProduct.mulEquivRightOfSubsingleton` — wreathing by the trivial group does nothing.
 * `WreathReduction.wreath_commGroup` — the abstract reduction from finite abelian to cyclic bottom
   groups.
+* `WreathReduction.semiabelian` — every semiabelian group satisfies a realization predicate that
+  holds for the trivial group and is closed under isomorphism, quotients and wreathing by a finite
+  cyclic group.
 * `IsInverseGalois.wreath_of_isCyclic` and `IsRegularInverseGalois.wreath_of_isCyclic` — the two
   instances of that reduction.
 * `IsSemiabelian.isInverseGalois_of_isCyclic` and
@@ -106,6 +109,27 @@ theorem wreath_commGroup
   exact (e.trans (SylowReduction.mulEquivPiCongrLeft'
     (fun i ↦ Multiplicative (ZMod (m i))) eι)).symm
 
+/-- **Every semiabelian group satisfies any realization predicate that survives the four basic
+operations.**  The predicate has to hold for the trivial group, be invariant under isomorphism, be
+inherited by quotients, and be preserved by wreathing with a finite cyclic group; a semidirect
+product `A ⋊[φ] H` is then reached as a quotient of `A ≀ᵣ H`, which `wreath_commGroup` builds out
+of the cyclic case. -/
+theorem semiabelian
+    (htriv : ∀ (G : Type) [Group G] [Subsingleton G], IG G)
+    (hequiv : ∀ {G H : Type} [Group G] [Group H], IG G → (G ≃* H) → IG H)
+    (hsurj : ∀ {G H : Type} [Group G] [Group H], IG G → ∀ f : G →* H, Function.Surjective f → IG H)
+    (hcyc : ∀ (C H : Type) [CommGroup C] [Finite C] [IsCyclic C] [Group H] [Finite H],
+      IG H → IG (C ≀ᵣ H))
+    {G : Type} [Group G] [Finite G] (hG : IsSemiabelian G) : IG G := by
+  induction hG with
+  | of_subsingleton G => exact htriv G
+  | @semidirect A H _ _ _ _ φ _ ih =>
+    letI := Fintype.ofFinite H
+    exact hsurj (wreath_commGroup hequiv hsurj hcyc A H ih)
+      (RegularWreathProduct.toSemidirectProduct φ)
+      (RegularWreathProduct.toSemidirectProduct_surjective φ)
+  | of_surjective f hf _ ih => exact hsurj ih f hf
+
 end WreathReduction
 
 /-! ## The two instances, and the semiabelian consequence -/
@@ -137,7 +161,11 @@ theorem IsSemiabelian.isInverseGalois_of_isCyclic
     (hcyc : ∀ (C H : Type) [CommGroup C] [Finite C] [IsCyclic C] [Group H] [Finite H],
       IsInverseGalois H → IsInverseGalois (C ≀ᵣ H))
     {G : Type} [Group G] [Finite G] (hG : IsSemiabelian G) : IsInverseGalois G :=
-  hG.isInverseGalois fun A H _ _ _ _ hH ↦ IsInverseGalois.wreath_of_isCyclic hcyc A H hH
+  WreathReduction.semiabelian (IG := fun G _ ↦ IsInverseGalois G)
+    (fun G _ _ ↦ by
+      haveI : Unique G := uniqueOfSubsingleton 1
+      exact IsInverseGalois.unit.of_mulEquiv MulEquiv.ofUnique)
+    (fun h e ↦ h.of_mulEquiv e) (fun h f hf ↦ h.of_surjective f hf) hcyc hG
 
 /-- **Every semiabelian group is a regular inverse Galois group over `ℚ(T)`**, given only that a
 wreath product by a finite *cyclic* group preserves regular realizability. -/
@@ -145,5 +173,6 @@ theorem IsSemiabelian.isRegularInverseGalois_of_isCyclic
     (hcyc : ∀ (C H : Type) [CommGroup C] [Finite C] [IsCyclic C] [Group H] [Finite H],
       IsRegularInverseGalois H → IsRegularInverseGalois (C ≀ᵣ H))
     {G : Type} [Group G] [Finite G] (hG : IsSemiabelian G) : IsRegularInverseGalois G :=
-  hG.isRegularInverseGalois fun A H _ _ _ _ hH ↦
-    IsRegularInverseGalois.wreath_of_isCyclic hcyc A H hH
+  WreathReduction.semiabelian (IG := fun G _ ↦ IsRegularInverseGalois G)
+    (fun _ _ _ ↦ IsRegularInverseGalois.of_subsingleton)
+    (fun h e ↦ h.of_mulEquiv e) (fun h f hf ↦ h.of_surjective f hf) hcyc hG

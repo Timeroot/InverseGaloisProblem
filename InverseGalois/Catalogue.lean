@@ -186,6 +186,13 @@ presentation of every semidirect product `A ⋊[φ] H` with abelian `A` as a quo
 wreath product `A ≀ᵣ H`.  Each of those reductions is unconditional; what they reduce *to* is not
 proved here.
 
+For Dentzer's class of semiabelian groups — the smallest class containing the finite abelian groups
+and closed under quotients and under semidirect products by a finite abelian group — the reduction
+is complete: `IsSemiabelian.isInverseGalois_of_isCyclic` and its regular counterpart derive a
+realization of every semiabelian group from the single statement that wreathing a realizable group
+by a finite *cyclic* group again gives a realizable group.  That last statement is the input the
+catalogue does not yet have.
+
 ## Main results
 
 * `Rigidity.RET.isRegularInverseGalois_units_zmod` — `(ZMod n)ˣ`.
