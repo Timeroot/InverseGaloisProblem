@@ -12,6 +12,7 @@ import InverseGalois.CFT.Brauer.Opposite
 import InverseGalois.CFT.Brauer.SkolemNoether
 import InverseGalois.CFT.Brauer.Split
 import InverseGalois.CFT.Brauer.TensorSimple
+import InverseGalois.CFT.Brauer.Tower
 import InverseGalois.CFT.Compositum
 import InverseGalois.CFT.Cyclotomic.BuildingBlock
 import InverseGalois.CFT.Cyclotomic.Chebotarev
@@ -98,6 +99,8 @@ it that are available here.
 * `InverseGalois.CFT.Brauer.BaseChange` extends scalars along `K → L`, giving the homomorphism
   `BrauerGroup K →* BrauerGroup L` and the relative Brauer group `BrauerGroup.relative K L` of
   classes split by `L`.
+* `InverseGalois.CFT.Brauer.Tower` records that the relative Brauer group grows with the splitting
+  field: a class split by `L` is split by every extension of `L`.
 * `InverseGalois.CFT.Brauer.SkolemNoether` proves the Skolem–Noether theorem: two maps of a
   simple algebra into a central simple algebra differ by conjugation by a unit.
 * `InverseGalois.CFT.Brauer.CrossedProduct` builds the crossed product algebra of a Galois
