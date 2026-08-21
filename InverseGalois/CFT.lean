@@ -4,19 +4,24 @@ import InverseGalois.CFT.Brauer.CentralizerProduct
 import InverseGalois.CFT.Brauer.CrossedProduct
 import InverseGalois.CFT.Brauer.CrossedProductCohomologous
 import InverseGalois.CFT.Brauer.CrossedProductMul
+import InverseGalois.CFT.Brauer.CrossedProductRecognition
 import InverseGalois.CFT.Brauer.CrossedProductSimple
 import InverseGalois.CFT.Brauer.CrossedProductSplit
 import InverseGalois.CFT.Brauer.CrossedProductSplitting
 import InverseGalois.CFT.Brauer.CyclicAlgebra
+import InverseGalois.CFT.Brauer.CyclicBrauer
 import InverseGalois.CFT.Brauer.Division
+import InverseGalois.CFT.Brauer.Exponent
 import InverseGalois.CFT.Brauer.Group
 import InverseGalois.CFT.Brauer.H2Brauer
+import InverseGalois.CFT.Brauer.H2Surjective
 import InverseGalois.CFT.Brauer.Kernel
 import InverseGalois.CFT.Brauer.Opposite
 import InverseGalois.CFT.Brauer.Quaternion
 import InverseGalois.CFT.Brauer.Semilinear
 import InverseGalois.CFT.Brauer.SkolemNoether
 import InverseGalois.CFT.Brauer.Split
+import InverseGalois.CFT.Brauer.SplittingSubfield
 import InverseGalois.CFT.Brauer.TensorSimple
 import InverseGalois.CFT.Brauer.Tower
 import InverseGalois.CFT.Compositum
@@ -153,6 +158,21 @@ it that are available here.
 * `InverseGalois.CFT.Brauer.H2Brauer` assembles this into the crossed product homomorphism from
   the second cohomology group of `Gal(L/K)` with coefficients in `Lˣ` to the Brauer group of `K`,
   and shows it is injective with image inside the relative Brauer group `Br(L / K)`.
+* `InverseGalois.CFT.Brauer.Exponent` bounds the order of those classes: the cohomology of a finite
+  group is killed by its order, so the Brauer class of a crossed product of `L / K` is killed by
+  the degree `[L : K]`.
+* `InverseGalois.CFT.Brauer.SplittingSubfield` produces, for every class split by `L`, a
+  representing central simple algebra of dimension `[L : K] ^ 2` containing a copy of `L`.
+* `InverseGalois.CFT.Brauer.CrossedProductRecognition` is the converse construction: a central
+  simple algebra of dimension `[L : K] ^ 2` containing a copy of `L` is a crossed product of
+  `L / K`.
+* `InverseGalois.CFT.Brauer.H2Surjective` combines the two to invert the crossed product
+  homomorphism: the relative Brauer group `Br(L / K)` of a finite Galois extension is isomorphic
+  to the second cohomology group of `Gal(L/K)` with coefficients in `Lˣ`, and is killed by
+  `[L : K]`.
+* `InverseGalois.CFT.Brauer.CyclicBrauer` specialises to a cyclic extension: the cyclic algebra
+  construction is a homomorphism from `Kˣ` to the Brauer group of `K` whose image is `Br(L / K)`
+  and whose kernel is the group of norms from `L`.
 * `InverseGalois.CFT.Brauer.Split` proves the uniqueness half of Wedderburn's theorem in the split
   case, and deduces that a central simple algebra has trivial Brauer class exactly when it is a
   matrix algebra over the base field.
