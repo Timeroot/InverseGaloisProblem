@@ -357,6 +357,7 @@ import InverseGalois.Rigidity.RET.Analytic.QuotientCover
 import InverseGalois.Rigidity.RET.RatFuncConstants
 import InverseGalois.Rigidity.RET.RegularCyclicPrime
 import InverseGalois.Rigidity.RET.RegularCyclic
+import InverseGalois.Rigidity.RET.RegularDihedral
 import InverseGalois.Rigidity.RET.RadicalIndep
 import InverseGalois.Rigidity.RET.KummerBlocks
 import InverseGalois.Rigidity.RET.KummerIndep
@@ -589,6 +590,16 @@ direction (`Rigidity.RET.geomRETCompleteness_of_injective`).
   insensitive to the parity of `n`.  Regularity is likewise recovered from the character rather
   than from a degree count: a constant of the layer is fixed by every `σ_c`, hence by all of
   `Gal(K/ℚ)`, hence rational.
+* **The dihedral groups of odd degree, regularly** — `RET.RegularDihedral`
+  (`isRegularInverseGalois_dihedral_of_odd`), the cyclic construction with an involution added.
+  The linear factors are indexed by pairs `(ε, x)` with `ε ∈ ℤ/2` and `x` a unit modulo `n`, the
+  pair naming the root `(−1)^ε ζ^x`; for odd `n` those `2 φ(n)` roots are distinct.  Weighting
+  `(ε, x)` by the representative of `± x⁻¹` keeps the cyclotomic character lifting exactly as in
+  the cyclic case, while the flip of `ε` — the substitution `u ↦ −u` — sends the weight `a` to
+  `n − a` and hence the radicand `g` to `m^n / g`, for `m` the unweighted product.  So `u ↦ −u`
+  lifts to `w ↦ m / w`, an involution inverting the Kummer automorphism, and the degree-`n` layer
+  is dihedral over the invariants `ℚ(u²)` of the substitution.  Artin's theorem gives the
+  invariants degree two inside `ℚ(u)` and Lüroth recognizes them as a rational function field.
 * **Every finite abelian group, regularly** — `RET.AbelFinale`
   (`IsRegularInverseGalois.of_commGroup`), the cyclic construction run with `k` radicands at once.
   Over `K = ℚ(ζₙ)` the single radicand `g` is replaced by `k` radicands `g₁, …, g_k`, each a
