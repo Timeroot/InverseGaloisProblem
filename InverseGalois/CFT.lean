@@ -52,7 +52,9 @@ import InverseGalois.CFT.GroupCohomology.CyclicH2
 import InverseGalois.CFT.GroupCohomology.CyclicSurjective
 import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.ToCocycle
+import InverseGalois.CFT.Herbrand
 import InverseGalois.CFT.Level
+import InverseGalois.CFT.Local.HilbertMul
 import InverseGalois.CFT.Local.HilbertSymbol
 import InverseGalois.CFT.Local.PadicHilbert
 import InverseGalois.CFT.Local.PadicSquares
@@ -220,6 +222,13 @@ it that are available here.
 * `InverseGalois.CFT.Local.PadicSquares` describes the squares of a `p`-adic field for odd `p`: a
   unit of the ring of integers is a square exactly when its residue is, and a nonzero `p`-adic
   number is a square exactly when its valuation is even and its unit part is a square residue.
+* `InverseGalois.CFT.Local.HilbertMul` identifies the elements of Hilbert symbol one with the
+  values of a norm form, so that they form a subgroup; when that subgroup has index two the symbol
+  is multiplicative in each argument, and its triviality is exactly the triviality of the relative
+  Brauer group of the quadratic extension.
+* `InverseGalois.CFT.Herbrand` proves the counting theorem behind the Herbrand quotient: for a
+  finite commutative group with an automorphism of finite order, the fixed points modulo the norms
+  and the norm kernel modulo the differences have the same index.
 * `InverseGalois.CFT.Local.PadicSquaresTwo` supplies the excluded prime: a dyadic unit is a square
   exactly when it is congruent to one modulo eight, and every nonzero dyadic number is a square
   times one of eight explicit representatives.
