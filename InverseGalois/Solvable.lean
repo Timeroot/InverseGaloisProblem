@@ -3,6 +3,7 @@ import InverseGalois.Solvable.Nilpotent
 import InverseGalois.Solvable.Wreath
 import InverseGalois.Solvable.WreathFunctor
 import InverseGalois.Solvable.Semiabelian
+import InverseGalois.Solvable.WreathCyclic
 
 /-!
 # Solvable groups as Galois groups
@@ -27,4 +28,7 @@ free of arithmetic input and applicable to both realization predicates of the de
 * `InverseGalois.Solvable.Semiabelian` defines Dentzer's class of semiabelian groups — the class
   the wreath-product approach reaches — and derives a realization of every one of its members from
   a realization of the wreath products alone.
+* `InverseGalois.Solvable.WreathCyclic` splits the bottom group of a wreath product into cyclic
+  factors, so that the realization of wreath products only has to be established when the bottom
+  group is finite cyclic.
 -/
