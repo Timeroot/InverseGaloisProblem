@@ -4,6 +4,7 @@ import InverseGalois.Solvable.Shafarevich.Reduction
 import InverseGalois.Solvable.Shafarevich.Main
 import InverseGalois.Solvable.Shafarevich.PrimePower
 import InverseGalois.Solvable.Shafarevich.SplitAbelian
+import InverseGalois.Solvable.Shafarevich.AbelianKernel
 
 /-!
 # Shafarevich's theorem
@@ -36,4 +37,7 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
 * `InverseGalois.Solvable.Shafarevich.PrimePower` reduces nilpotent kernels to kernels of prime
   power order.
 * `InverseGalois.Solvable.Shafarevich.SplitAbelian` records the unconditional abelian case.
+* `InverseGalois.Solvable.Shafarevich.AbelianKernel` peels the centre off a `p`-group kernel one
+  layer at a time, reducing the arithmetic hypothesis further to embedding problems whose kernel
+  is abelian.
 -/
