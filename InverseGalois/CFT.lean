@@ -54,6 +54,7 @@ import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.ToCocycle
 import InverseGalois.CFT.Level
 import InverseGalois.CFT.Local.HilbertSymbol
+import InverseGalois.CFT.Local.PadicHilbert
 import InverseGalois.CFT.Local.PadicSquares
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
@@ -222,6 +223,9 @@ it that are available here.
   the isotropy of the form `z² - a x² - b y²`, establishes its symmetry, its invariance under
   squares and its interpretation as a norm from a quadratic extension, and computes it completely
   at the real place.
+* `InverseGalois.CFT.Local.PadicHilbert` computes the Hilbert symbol of a `p`-adic field for odd
+  `p`: two units are always isotropic, so the symbol is trivial whenever both valuations are even,
+  and the symbol of `p` against a unit detects whether that unit is a square residue.
 * `InverseGalois.CFT.Brauer.QuadraticExt` builds the quadratic extension obtained by adjoining a
   square root of a nonsquare, computes its norm form as `u² - b v²`, and identifies the relative
   Brauer group of that extension with the units modulo the values of the norm form.
