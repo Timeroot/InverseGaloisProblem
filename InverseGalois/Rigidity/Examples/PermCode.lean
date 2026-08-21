@@ -219,6 +219,22 @@ theorem gen_top : Subgroup.closure ({xE x z, zE x z} : Set ↥(gen2 x z)) = ⊤ 
   rw [h]
   exact Subgroup.closure_closure_coe_preimage
 
+/-- **The first generator and the inverse of the second also generate.** -/
+theorem gen_top_inv : Subgroup.closure ({xE x z, (zE x z)⁻¹} : Set ↥(gen2 x z)) = ⊤ := by
+  have hx : xE x z ∈ Subgroup.closure ({xE x z, (zE x z)⁻¹} : Set ↥(gen2 x z)) :=
+    Subgroup.subset_closure (Set.mem_insert _ _)
+  have hzi : (zE x z)⁻¹ ∈ Subgroup.closure ({xE x z, (zE x z)⁻¹} : Set ↥(gen2 x z)) :=
+    Subgroup.subset_closure (Set.mem_insert_of_mem _ rfl)
+  have hz : zE x z ∈ Subgroup.closure ({xE x z, (zE x z)⁻¹} : Set ↥(gen2 x z)) := by
+    simpa using inv_mem hzi
+  refine top_le_iff.mp ?_
+  rw [← gen_top x z]
+  refine (Subgroup.closure_le _).mpr ?_
+  intro g hg
+  simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hg
+  rcases hg with rfl | rfl
+  exacts [hx, hz]
+
 /-! ### Closure of a list of codes under conjugation -/
 
 /-- Conjugation-closure of a list of codes by the two generators and their inverses. -/
@@ -344,43 +360,54 @@ lemma inv_eq_self_of_conj {G : Type*} [Group G] {v w : G} (hv : v * v = 1)
   simp only [mul_one, inv_mul_cancel] at h2
   exact inv_eq_of_mul_eq_one_right h2
 
+/-- **The structure constant above an arbitrary third entry is bounded by the length of the
+filtered class list.**
+
+The first prescribed class is that of the involution `x`, the second is an arbitrary class `C₁`
+recognized by a decidable test on codes, and the third entry is an arbitrary element `w` of the
+group — not necessarily the generator `z`. -/
+theorem card_prodOneFibre_le_of [NeZero n] {T : List ℕ} (hcl : ConjClosed x z T)
+    (hxT : φ x ∈ T) (hxinv : x * x = 1) {test : ℕ → Bool} {C₁ : ConjClasses ↥(gen2 x z)}
+    (htest : ∀ u : ↥(gen2 x z), ConjClasses.mk u = C₁ → test (φ (u : Perm (Fin n))) = true)
+    (v : ↥(gen2 x z)) :
+    Nat.card (prodOneFibre (ConjClasses.mk (xE x z)) C₁ v)
+      ≤ (fibreList (v : Perm (Fin n)) T test).length := by
+  classical
+  have hxinv' : (xE x z) * (xE x z) = 1 := Subtype.ext hxinv
+  have hmap : ∀ w ∈ prodOneFibre (ConjClasses.mk (xE x z)) C₁ v,
+      φ (w : Perm (Fin n)) ∈ fibreList (v : Perm (Fin n)) T test := by
+    rintro w ⟨hw0, hw1⟩
+    have hinv : w⁻¹ = w := inv_eq_self_of_conj hxinv' hw0
+    have hX : φ (w : Perm (Fin n)) ∈ T := key_of_conjClass hcl hxT (u := xE x z) rfl hw0
+    have hY : test (φ (((w⁻¹ * v⁻¹ : ↥(gen2 x z)) : Perm (Fin n)))) = true := htest _ hw1
+    have hcoe : (((w⁻¹ * v⁻¹ : ↥(gen2 x z)) : Perm (Fin n)))
+        = ((w : Perm (Fin n)))⁻¹ * ((v : Perm (Fin n)))⁻¹ := rfl
+    rw [hcoe, show ((w : Perm (Fin n)))⁻¹ = (w : Perm (Fin n)) from congrArg Subtype.val hinv]
+      at hY
+    refine List.mem_filter.mpr ⟨hX, ?_⟩
+    rwa [mulC_φ]
+  have hinj : Set.InjOn (fun w : ↥(gen2 x z) => φ (w : Perm (Fin n)))
+      (prodOneFibre (ConjClasses.mk (xE x z)) C₁ v) :=
+    fun u _ w _ huw => Subtype.ext (φ_injective huw)
+  have hcard : (prodOneFibre (ConjClasses.mk (xE x z)) C₁ v).ncard
+      ≤ (((fibreList (v : Perm (Fin n)) T test).toFinset : Finset ℕ) : Set ℕ).ncard :=
+    Set.ncard_le_ncard_of_injOn _
+      (fun w hw => Finset.mem_coe.mpr (List.mem_toFinset.mpr (hmap w hw))) hinj
+      (Finset.finite_toSet _)
+  rw [Set.ncard_coe_finset] at hcard
+  calc Nat.card ↥(prodOneFibre (ConjClasses.mk (xE x z)) C₁ v)
+      = (prodOneFibre (ConjClasses.mk (xE x z)) C₁ v).ncard := Nat.card_coe_set_eq _
+    _ ≤ (fibreList (v : Perm (Fin n)) T test).toFinset.card := hcard
+    _ ≤ (fibreList (v : Perm (Fin n)) T test).length := List.toFinset_card_le _
+
 /-- **The structure constant is bounded by the length of the filtered class list.** -/
 theorem card_prodOneFibre_le [NeZero n] {T : List ℕ} (hcl : ConjClosed x z T)
     (hxT : φ x ∈ T) (hxinv : x * x = 1) {test : ℕ → Bool}
     (htest : ∀ u : ↥(gen2 x z), ConjClasses.mk u = ConjClasses.mk (yE x z) →
       test (φ (u : Perm (Fin n))) = true) :
     Nat.card (prodOneFibre (classTriple x z 0) (classTriple x z 1) (zE x z))
-      ≤ (fibreList z T test).length := by
-  classical
-  have hxinv' : (xE x z) * (xE x z) = 1 := Subtype.ext hxinv
-  have hmap : ∀ w ∈ prodOneFibre (classTriple x z 0) (classTriple x z 1) (zE x z),
-      φ (w : Perm (Fin n)) ∈ fibreList z T test := by
-    rintro w ⟨hw0, hw1⟩
-    rw [classTriple_zero] at hw0
-    rw [classTriple_one] at hw1
-    have hinv : w⁻¹ = w := inv_eq_self_of_conj hxinv' hw0
-    have hX : φ (w : Perm (Fin n)) ∈ T := key_of_conjClass hcl hxT (u := xE x z) rfl hw0
-    have hY : test (φ (((w⁻¹ * (zE x z)⁻¹ : ↥(gen2 x z)) : Perm (Fin n)))) = true := htest _ hw1
-    have hcoe : (((w⁻¹ * (zE x z)⁻¹ : ↥(gen2 x z)) : Perm (Fin n)))
-        = ((w : Perm (Fin n)))⁻¹ * z⁻¹ := rfl
-    rw [hcoe, show ((w : Perm (Fin n)))⁻¹ = (w : Perm (Fin n)) from congrArg Subtype.val hinv]
-      at hY
-    refine List.mem_filter.mpr ⟨hX, ?_⟩
-    rwa [mulC_φ]
-  have hinj : Set.InjOn (fun w : ↥(gen2 x z) => φ (w : Perm (Fin n)))
-      (prodOneFibre (classTriple x z 0) (classTriple x z 1) (zE x z)) :=
-    fun u _ v _ huv => Subtype.ext (φ_injective huv)
-  have hcard : (prodOneFibre (classTriple x z 0) (classTriple x z 1) (zE x z)).ncard
-      ≤ (((fibreList z T test).toFinset : Finset ℕ) : Set ℕ).ncard :=
-    Set.ncard_le_ncard_of_injOn _
-      (fun w hw => Finset.mem_coe.mpr (List.mem_toFinset.mpr (hmap w hw))) hinj
-      (Finset.finite_toSet _)
-  rw [Set.ncard_coe_finset] at hcard
-  calc Nat.card ↥(prodOneFibre (classTriple x z 0) (classTriple x z 1) (zE x z))
-      = (prodOneFibre (classTriple x z 0) (classTriple x z 1) (zE x z)).ncard :=
-        Nat.card_coe_set_eq _
-    _ ≤ (fibreList z T test).toFinset.card := hcard
-    _ ≤ (fibreList z T test).length := List.toFinset_card_le _
+      ≤ (fibreList z T test).length :=
+  card_prodOneFibre_le_of hcl hxT hxinv htest (zE x z)
 
 /-! ### Transporting conjugacy from the underlying permutations -/
 
@@ -439,16 +466,22 @@ theorem testOrd_of_class [NeZero n] {m : ℕ} {divs : List ℕ} {v : ↥(gen2 x 
     rw [← hou]
     exact orderOf_dvd_of_pow_eq_one (Subtype.ext (by simpa using hcon))
 
-/-- The cyclic group generated by the third entry bounds its centraliser from below. -/
-theorem le_card_centralizer {m : ℕ} (hz : orderOf (zE x z) = m) :
-    m ≤ Nat.card ↥(Subgroup.centralizer ({zE x z} : Set ↥(gen2 x z))) := by
-  have hle : Subgroup.zpowers (zE x z) ≤ Subgroup.centralizer ({zE x z} : Set ↥(gen2 x z)) := by
+/-- The cyclic group generated by an element bounds its centraliser from below. -/
+theorem le_card_centralizer_of {H : Type*} [Group H] [Finite H] {w : H} {m : ℕ}
+    (hw : orderOf w = m) :
+    m ≤ Nat.card ↥(Subgroup.centralizer ({w} : Set H)) := by
+  have hle : Subgroup.zpowers w ≤ Subgroup.centralizer ({w} : Set H) := by
     rw [Subgroup.zpowers_le]
     exact Subgroup.mem_centralizer_iff.mpr (by rintro m rfl; rfl)
-  have hcard : Nat.card ↥(Subgroup.zpowers (zE x z))
-      ≤ Nat.card ↥(Subgroup.centralizer ({zE x z} : Set ↥(gen2 x z))) :=
+  have hcard : Nat.card ↥(Subgroup.zpowers w)
+      ≤ Nat.card ↥(Subgroup.centralizer ({w} : Set H)) :=
     Nat.card_le_card_of_injective _ (Subgroup.inclusion_injective hle)
-  rwa [Nat.card_zpowers, hz] at hcard
+  rwa [Nat.card_zpowers, hw] at hcard
+
+/-- The cyclic group generated by the third entry bounds its centraliser from below. -/
+theorem le_card_centralizer {m : ℕ} (hz : orderOf (zE x z) = m) :
+    m ≤ Nat.card ↥(Subgroup.centralizer ({zE x z} : Set ↥(gen2 x z))) :=
+  le_card_centralizer_of hz
 
 /-! ### Rationality criteria -/
 

@@ -11,7 +11,7 @@ still weeks of work, and it only reaches a finite list of primes. Route 1 (Shih)
 formalizable with today's Mathlib; the gap is a multi-year algebraic-geometry programme.**
 
 **Status as of 2026-08-21.** Neither route has been completed, and `PSL₂(𝔽ₚ)` is *not* realized
-for any `p`. What has been done instead:
+over `ℚ(T)` for any `p`. What has been done instead:
 
 * the whole branch is `sorry`-free and axiom-free again, by turning the two unproved leaves of
   Route 2 into **explicit hypotheses** and by **deleting** the two unproved leaves of Route 1
@@ -19,7 +19,13 @@ for any `p`. What has been done instead:
 * the overgroups `PGL₂(𝔽ₚ)` are now realized regularly over `ℚ(T)` for `p = 7, 11, 13, 17, 19`,
   from explicit kernel-checked rigidity certificates, and the machinery to add more primes exists;
 * the prime list for Route 2 has been recomputed and corrected: `p = 29` **does** admit a rational
-  rigid triple, and among the primes at most `37` only `p = 23` does not.
+  rigid triple, and among the primes at most `37` only `p = 23` does not;
+* a **third route** turned out to be open and cheap, and it is now done for `p = 7`: `PSL₂(𝔽₇)`
+  itself has a rigid — though irrational — triple, so the orbit-rigidity descent realizes it
+  regularly over `K(T)` for a number field `K`. See "Route 3" below. This is weaker than the goal
+  — the field cut out by the index-two stabilizer is the quadratic subfield `ℚ(√-7)` of `ℚ(ζ₇)`,
+  not `ℚ`, and the Lean statement asserts only that *some* number field works — but it is a
+  genuine regular realization of the simple group.
 
 ---
 
@@ -376,6 +382,53 @@ checks on lists of numerals (`certOf`). Adding a new prime is mechanical.
 The last three files (`p = 29, 31, 37`) sit in their own `PGL2Large` lean_lib because they need
 `--tstack=262144`, exactly as the `M₂₂` and `M₂₄` certificates do.
 
+## Route 3: orbit rigidity — `PSL₂(𝔽₇)` over a number field (done)
+
+Rigidity over `ℚ` needs the class tuple to be *rational*. `PSL₂(𝔽ₚ)` never has a rational rigid
+triple, which is why Routes 1 and 2 exist. But the repo already contains the weaker descent that
+the Mathieu groups need: if every cyclotomic twist of the tuple is again rigid, the branch-cycle
+argument runs over the subgroup of the arithmetic fundamental group that stabilizes the tuple and
+realizes the group regularly over the number field that subgroup cuts out
+(`Rigidity.RET.Descent.exists_regular_numberField_of_orbitRigid`). Nobody had checked whether
+`PSL₂(𝔽₇)` satisfies that weaker hypothesis. It does.
+
+Take `ℙ¹(𝔽₇)` as `Fin 8`, `z : t ↦ t + 1` (a `7`-cycle) and `x : t ↦ -1/t` (a product of four
+transpositions, since `-1` is a non-residue mod `7`). Both are even, and they generate the
+index-two subgroup `PSL₂(𝔽₇) ≤ PGL₂(𝔽₇)`, of order `168`. With `y = x⁻¹z⁻¹`, of order `3`:
+
+| class | order | size |
+|---|---|---|
+| `2A` = class of `x` | 2 | 21 |
+| `3A` = class of `y` | 3 | 56 |
+| `7A` = class of `z` | 7 | 24 |
+| `7B` = class of `z⁻¹` | 7 | 24 |
+
+The product-one fibre `#{w ∈ 2A : w⁻¹z⁻¹ ∈ 3A}` has exactly `7` elements, all of them generating,
+and `|C(z)| = 7`; so `(2A, 3A, 7A)` is rigid. The same count above `z⁻¹` gives `7`, so the mirror
+triple `(2A, 3A, 7B)` is rigid too. Since `2A` and `3A` are rational (`x⁻¹ = x`, and `y` is
+conjugate to `y²` inside the group) and the exponent action on `7A` is through the squares mod `7`
+— `1, 2, 4` fix it, `3, 5, 6` send it to `7B` — the cyclotomic orbit of the triple modulo `42`
+consists of exactly those two triples, both rigid. That is the `horbit` hypothesis.
+
+`InverseGalois/Rigidity/Examples/PSL27.lean` carries this out with the same base-`8` numeral kernel
+computations as the `PGL₂` certificates, and ends in
+
+```lean
+theorem Rigidity.PSL27.exists_regular_numberField :
+    ∃ (K : Type) (_ : Field K) (_ : NumberField K), IsRegularGaloisGroupOver K ↥PSL
+```
+
+The file compiles in about 40 seconds and needs no stack bump. Two small generalizations of the
+`PermCode` toolkit were required and are now part of it: `card_prodOneFibre_le_of`, the fibre bound
+above an *arbitrary* third entry (not only the generator `z`) and with an arbitrary middle class,
+and `gen_top_inv`, that `x` and `z⁻¹` generate whatever `x` and `z` generate.
+
+What this does **not** give: a realization over `ℚ(T)`, nor `IsInverseGalois PSL₂(𝔽₇)` over `ℚ`.
+Hilbert irreducibility applied to the conclusion realizes the group over `K`, not over `ℚ`. The
+same recipe should work for other primes wherever `(2A, 3A, pA)` is rigid in `PSL₂(𝔽ₚ)` — the
+`(2,3,7)` triple is special to `p = 7` (it is the Hurwitz triple; `PSL₂(𝔽₇)` is the Klein quartic's
+automorphism group), so each further prime needs its own triple and its own search.
+
 ## Other routes surveyed (2026-08-21)
 
 * **Belyi (1979)**, *On Galois extensions of a maximal cyclotomic field*, Izv. Akad. Nauk SSSR
@@ -409,11 +462,16 @@ The last three files (`p = 29, 31, 37`) sit in their own `PGL2Large` lean_lib be
   `PSL(2,7)` as a quotient other than `PSL(2,7)` itself. `PSL(2,7) ≤ A₇` is a *subgroup*, index 15,
   which is the same index-descent problem as Route 2 but harder (no conic).
 
-Conclusion: **Route 2 remains the cheapest**, and the estimate below stands.
+Conclusion: **Route 2 remains the cheapest** path to `PSL₂(𝔽ₚ)` over `ℚ(T)`, and the estimate below
+stands. Route 3 is already done and gives the weaker number-field statement for `p = 7`.
 
 ## Recommendation
 
-1. Do Route 2. It is the only realistic path to any `PSL₂(𝔽ₚ)` in this repo, and it pays for
+0. Route 3 is done for `p = 7`; the cheapest *next* increment is to search for rigid (not
+   necessarily rational) triples in `PSL₂(𝔽ₚ)` for the next few primes and repeat it. The search is
+   a few lines of GAP or Python, and the Lean file is mechanical once the triple and the
+   conjugators are known.
+1. For the `ℚ(T)` statement, do Route 2. It is the only realistic path, and it pays for
    `M₂₂` at the same time.
 2. Attack the `HasConicSubfield` hypothesis first: it needs no new tower plumbing, only field
    theory, and it is the half that generalizes (any `r = 3` certificate with an index-two

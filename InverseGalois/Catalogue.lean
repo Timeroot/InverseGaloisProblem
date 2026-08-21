@@ -94,7 +94,10 @@ in the third, are interchanged by the exponents prime to `11`, resp. `23` — in
 `InverseGalois` does not depend on the vendored `Mathieu` library.  No Mathieu group has a
 rationally rigid triple, and `M₂₂` and `M₂₃` have no rigid triple at all, so the method stops
 there; `Aut(M₂₂) = M₂₂ : 2` does have one, and its certificate lives in the
-`MathieuRigidityM22` target.  See `docs/Development/MathieuRigidity.md`.
+`MathieuRigidityM22` target.  See `docs/Development/MathieuRigidity.md`.  The same descent applies
+to `PSL₂(𝔽₇)` (`Rigidity.PSL27.exists_regular_numberField`), whose rigid triple `(2A, 3A, 7A)` is
+irrational for the same reason: the exponents prime to `7` interchange its two classes of elements
+of order `7`.
 
 ## Groups of Lie type
 
@@ -120,14 +123,22 @@ The certificates for `p = 7, 11, 13, 17, 19` are formalized here; the computatio
 by the kernel on base-`(p+1)` numerals encoding permutations of `ℙ¹(𝔽ₚ)`, through
 `Rigidity.PermCode`.
 
-The simple group `PSL₂(𝔽ₚ)` itself stays out of reach of rigidity: it is the index-two subgroup of
-`PGL₂(𝔽ₚ)` rather than a quotient, so a realization of the overgroup does not descend to it
-directly.  What the rigidity data does give is a cover of the line branched over three rational
-points whose deck group is `PGL₂(𝔽ₚ)`, and the intermediate field cut out by `PSL₂(𝔽ₚ)` is then a
-conic through two of the three branch points, hence a rational function field
+The simple group `PSL₂(𝔽ₚ)` itself stays out of reach of rigidity **over `ℚ`**: it is the
+index-two subgroup of `PGL₂(𝔽ₚ)` rather than a quotient, so a realization of the overgroup does not
+descend to it directly.  What the rigidity data does give is a cover of the line branched over
+three rational points whose deck group is `PGL₂(𝔽ₚ)`, and the intermediate field cut out by
+`PSL₂(𝔽ₚ)` is then a conic through two of the three branch points, hence a rational function field
 (`RET.Descent.Index2`).  The classical route to `PSL₂(𝔽ₚ)` is different again — Shih's modular
 construction, whose arithmetic half is `Rigidity.Shih.shihPrime_iff`; see
 `docs/Development/Shih.md`.
+
+Over a number field the simple group is nevertheless reachable, by the same orbit-rigidity descent
+that realizes the Mathieu groups.  `PSL₂(𝔽₇)`, of order `168`, has the rigid triple `(2A, 3A, 7A)`
+— an involution, an element of order `3` and a `7`-cycle — whose product-one fibre has exactly
+`7 = |C(z)|` elements.  The triple is not rational, the two classes of elements of order `7` being
+interchanged by the exponents prime to `7`, but both members of its cyclotomic orbit are rigid, so
+`Rigidity.PSL27.exists_regular_numberField` realizes `PSL₂(𝔽₇)` regularly over `K(T)` for the
+number field `K` that the index-two stabilizer cuts out.
 
 ## Main results
 
