@@ -1,6 +1,9 @@
 import InverseGalois.CFT.Brauer.BaseChange
 import InverseGalois.CFT.Brauer.CrossedProduct
+import InverseGalois.CFT.Brauer.CrossedProductCohomologous
 import InverseGalois.CFT.Brauer.CrossedProductSimple
+import InverseGalois.CFT.Brauer.CrossedProductSplit
+import InverseGalois.CFT.Brauer.Division
 import InverseGalois.CFT.Brauer.Group
 import InverseGalois.CFT.Brauer.Opposite
 import InverseGalois.CFT.Brauer.SkolemNoether
@@ -90,4 +93,12 @@ it that are available here.
   extension and a multiplicative `2`-cocycle, a central `K`-algebra of dimension `[L : K] ^ 2`.
 * `InverseGalois.CFT.Brauer.CrossedProductSimple` proves that the crossed product is a simple
   ring, so that it is a central simple algebra over `K`.
+* `InverseGalois.CFT.Brauer.CrossedProductCohomologous` shows that cohomologous cocycles have
+  isomorphic crossed products, and that the crossed product of the trivial cocycle is the matrix
+  algebra.
+* `InverseGalois.CFT.Brauer.CrossedProductSplit` is the converse: a crossed product isomorphic to
+  a matrix algebra comes from a cocycle that is a coboundary.
+* `InverseGalois.CFT.Brauer.Division` gives every central simple algebra its Wedderburn division
+  representative, and deduces that the Brauer group of an algebraically closed field and of a
+  finite field is trivial.
 -/
