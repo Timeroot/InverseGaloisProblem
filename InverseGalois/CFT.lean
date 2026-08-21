@@ -59,7 +59,9 @@ import InverseGalois.CFT.Local.HilbertIdentities
 import InverseGalois.CFT.Local.HilbertMap
 import InverseGalois.CFT.Local.HilbertMul
 import InverseGalois.CFT.Local.HilbertSymbol
+import InverseGalois.CFT.Local.LegendreHilbert
 import InverseGalois.CFT.Local.PadicHilbert
+import InverseGalois.CFT.Local.PadicHilbertMul
 import InverseGalois.CFT.Local.PadicSquares
 import InverseGalois.CFT.Local.PadicSquaresTwo
 import InverseGalois.CFT.Local.RamifiedNormForm
@@ -244,6 +246,14 @@ it that are available here.
 * `InverseGalois.CFT.SquareClasses` supplies the two induction principles that reduce a
   multiplicative identity in the square classes of the rationals to the cases where both
   arguments are minus one or a prime.
+* `InverseGalois.CFT.Local.PadicHilbertMul` completes the odd local theory: every square class
+  is a unit or a uniformiser times a unit, so the two norm form computations between them make
+  the symbol multiplicative in each argument, give it an explicit expression as a product of
+  quadratic characters, and show that the norm subgroup of a quadratic extension has index two,
+  so the relative Brauer group of a quadratic extension of a `p`-adic field has order two.
+* `InverseGalois.CFT.Local.LegendreHilbert` is the resulting dictionary for integer arguments:
+  the symbol of two integers prime to `p` is one, and the symbol of a power of `p` times a unit
+  against another is a product of Legendre symbols.
 * `InverseGalois.CFT.Local.RamifiedNormForm` does the same for the ramified quadratic extensions:
   a `p`-adic number is a value of the norm form exactly when the parity of its valuation matches
   the quadratic character of its unit part, twisted by the unit part of the discriminant, which
