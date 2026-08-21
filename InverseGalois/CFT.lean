@@ -3,6 +3,7 @@ import InverseGalois.CFT.Brauer.CrossedProduct
 import InverseGalois.CFT.Brauer.CrossedProductCohomologous
 import InverseGalois.CFT.Brauer.CrossedProductSimple
 import InverseGalois.CFT.Brauer.CrossedProductSplit
+import InverseGalois.CFT.Brauer.CrossedProductSplitting
 import InverseGalois.CFT.Brauer.Division
 import InverseGalois.CFT.Brauer.Group
 import InverseGalois.CFT.Brauer.Opposite
@@ -20,6 +21,7 @@ import InverseGalois.CFT.Cyclotomic.Splitting
 import InverseGalois.CFT.Decomposition
 import InverseGalois.CFT.Disjoint
 import InverseGalois.CFT.GroupCohomology.Classification
+import InverseGalois.CFT.GroupCohomology.Cyclic
 import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.ToCocycle
 import InverseGalois.CFT.Level
@@ -98,6 +100,11 @@ it that are available here.
   algebra.
 * `InverseGalois.CFT.Brauer.CrossedProductSplit` is the converse: a crossed product isomorphic to
   a matrix algebra comes from a cocycle that is a coboundary.
+* `InverseGalois.CFT.Brauer.CrossedProductSplitting` proves that the extension `L` splits its own
+  crossed products: the class of a crossed product lies in the relative Brauer group `Br(L / K)`.
+* `InverseGalois.CFT.GroupCohomology.Cyclic` writes down the explicit `2`-cocycle attached to a
+  cyclic group and an invariant element, and identifies its coboundaries with norms; over a cyclic
+  Galois extension this is the cocycle of a cyclic algebra.
 * `InverseGalois.CFT.Brauer.Division` gives every central simple algebra its Wedderburn division
   representative, and deduces that the Brauer group of an algebraically closed field and of a
   finite field is trivial.
