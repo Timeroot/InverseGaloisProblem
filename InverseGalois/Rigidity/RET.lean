@@ -99,6 +99,7 @@ import InverseGalois.Rigidity.RET.CyclicCycles
 import InverseGalois.Rigidity.RET.AbelianGeneration
 import InverseGalois.Rigidity.RET.Descent
 import InverseGalois.Rigidity.RET.Descent.AKLBGen
+import InverseGalois.Rigidity.RET.Descent.Index2
 import InverseGalois.Rigidity.RET.Specialization
 import InverseGalois.Rigidity.RET.Genus.Ord
 import InverseGalois.Rigidity.RET.Genus.LineOrd
@@ -1170,4 +1171,15 @@ direction (`Rigidity.RET.geomRETCompleteness_of_injective`).
   (`RET.natDegree_minpoly_dvd_finrank`), so a constant of the compositum has one degree over `ℚ`
   which divides both steps of the tower, and those two steps are the degrees of the two factors
   (`RET.algebraicClosure_sup_eq_bot`).
+
+  A cover of the line can also be used to realize a *subgroup* of its deck group, provided the
+  intermediate field the subgroup cuts out is itself a rational function field.  For a cover
+  branched over three rational points and a subgroup of index two this is a conic: the product-one
+  relation forces exactly two of the three branch cycles outside the subgroup
+  (`exists_two_notMem_of_index_two`), so the quadratic intermediate field is ramified over exactly
+  two rational points of the line, and a conic with a rational point is rational
+  (`nonempty_algEquiv_ratFunc_of_conic`).  `BranchedRegularCover` packages a cover together with
+  its branch points, its branch cycles and its ramification, and
+  `isRegularInverseGalois_of_conicSubfield` turns such a conic intermediate field into a regular
+  realization of the subgroup (`RET.Descent.Index2`).
 -/

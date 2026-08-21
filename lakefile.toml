@@ -5,6 +5,8 @@ defaultTargets = [
   "MathieuRigidity",
   "MathieuRigidityM22",
   "MathieuRigidityM24",
+  "PGL2Large",
+  "PSL2Large",
 ]
 
 [[require]]
@@ -58,6 +60,37 @@ moreLeanArgs = ["--tstack=262144"]
 [[lean_lib]]
 name = "MathieuRigidityM24"
 roots = ["InverseGalois.Rigidity.Examples.MathieuM24"]
+moreLeanArgs = ["--tstack=262144"]
+
+# The `PGL₂(𝔽ₚ)` certificates for the three largest primes reached, `p = 29, 31, 37`.  Like the
+# two Mathieu targets above they get a target of their own only to raise the elaboration-thread
+# stack: the kernel checks rationality and the rigidity fibre by multiplying base-`(p+1)` numerals
+# encoding permutations of `ℙ¹(𝔽ₚ)`, and at these class sizes the recursion nests more deeply than
+# the default stack allows.  They are also the slowest files in the repository.
+[[lean_lib]]
+name = "PGL2Large"
+roots = [
+  "InverseGalois.Rigidity.Examples.PGL2F29",
+  "InverseGalois.Rigidity.Examples.PGL2F31",
+  "InverseGalois.Rigidity.Examples.PGL2F37",
+]
+moreLeanArgs = ["--tstack=262144"]
+
+# The `PSL₂(𝔽ₚ)` orbit-rigidity certificates for `p ≥ 13`.  They need the same raised
+# elaboration-thread stack as the targets above: the mirror triple makes the kernel evaluate
+# powers of the translation and words in the two generators as permutations of `ℙ¹(𝔽ₚ)`, which
+# nests more deeply than the default stack allows.
+[[lean_lib]]
+name = "PSL2Large"
+roots = [
+  "InverseGalois.Rigidity.Examples.PSL2F13",
+  "InverseGalois.Rigidity.Examples.PSL2F17",
+  "InverseGalois.Rigidity.Examples.PSL2F19",
+  "InverseGalois.Rigidity.Examples.PSL2F23",
+  "InverseGalois.Rigidity.Examples.PSL2F29",
+  "InverseGalois.Rigidity.Examples.PSL2F31",
+  "InverseGalois.Rigidity.Examples.PSL2F37",
+]
 moreLeanArgs = ["--tstack=262144"]
 
 # The leanprover/comparator challenge for the Riemann Existence Theorem; see

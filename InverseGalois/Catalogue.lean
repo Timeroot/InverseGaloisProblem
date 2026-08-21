@@ -52,6 +52,9 @@ Families:
   certificate; `Rigidity.sn_isRegularInverseGalois` is the certificate for `Sₙ`, `n ≥ 3`.
 * `Rigidity.PGL27.isRegularInverseGalois` — the group of Lie type `PGL₂(𝔽₇)`, of order `336`, from
   the rational rigid triple `(2B, 6A, 7A)` on the projective line `ℙ¹(𝔽₇)`.
+* `Rigidity.PGL2F11.isRegularInverseGalois`, `Rigidity.PGL2F13.isRegularInverseGalois`,
+  `Rigidity.PGL2F17.isRegularInverseGalois`, `Rigidity.PGL2F19.isRegularInverseGalois` — the same
+  for `PGL₂(𝔽ₚ)` at `p = 11, 13, 17, 19`, of orders `1320`, `2184`, `4896` and `6840`.
 
 The realizations proved by exhibiting a single polynomial over `ℚ` — `X³ - 2` for `S₃`
 (`Groups.S3`), `X⁴ + 8X + 12` for `A₄` (`Groups.A4`), `X⁵ + 20X + 16` for `A₅` (`Groups.A5`),
@@ -103,7 +106,11 @@ in the third, are interchanged by the exponents prime to `11`, resp. `23` — in
 `InverseGalois` does not depend on the vendored `Mathieu` library.  No Mathieu group has a
 rationally rigid triple, and `M₂₂` and `M₂₃` have no rigid triple at all, so the method stops
 there; `Aut(M₂₂) = M₂₂ : 2` does have one, and its certificate lives in the
-`MathieuRigidityM22` target.  See `docs/Development/MathieuRigidity.md`.
+`MathieuRigidityM22` target.  See `docs/Development/MathieuRigidity.md`.  The same descent applies
+to the simple groups `PSL₂(𝔽ₚ)` (`Rigidity.PSL27.exists_regular_numberField`,
+`Rigidity.PSL2F11.exists_regular_numberField`, and the `PSL2Large` target for
+`p = 13, 17, 19, 23, 29, 31, 37`), whose rigid triple `(2A, 3A, pA)` is irrational for the same
+reason: the exponents prime to `p` interchange its two classes of elements of order `p`.
 
 ## Groups of Lie type
 
@@ -113,8 +120,42 @@ of orders `2`, `3` and `6`, never enough to generate — and its two classes of 
 are interchanged by the exponents prime to `q`.  Passing to `PGL₂(𝔽_q)` fuses those two classes and
 adds outer rational classes of order `2` and, when the tori allow it, of order `4` or `6`; that is
 exactly what a rational rigid triple needs.  `PGL₂(𝔽₇)` is the smallest case where the fibre count
-is as sharp as it can be — seven product-one triples, matching the centraliser of a `7`-cycle — and
-it is the case formalized here.
+is as sharp as it can be — seven product-one triples, matching the centraliser of a `7`-cycle.
+
+Which primes this reaches is decided by the two cyclic tori, of orders `p - 1` and `p + 1`.  An
+element of order `4` in a cyclic torus of order `m` lies outside `PSL₂(𝔽ₚ)` exactly when `4 ∣ m`
+and `8 ∤ m`, and one of order `6` exactly when `6 ∣ m` and `12 ∤ m`; a triple
+`(2, m, p)` consisting of the outer involution, an outer element of order `m ∈ {4, 6}` and a
+`p`-cycle is then rational, generating and — for the primes below — rigid, its product-one fibre
+having exactly `p` elements, the order of the centraliser of the `p`-cycle.  Among the primes at
+most `37` this succeeds for `5, 7, 11, 13, 17, 19, 29, 31, 37` and fails only for `23`, where
+`p - 1 = 22` and `p + 1 = 24` admit neither an outer element of order `4` (as `8 ∣ 24`) nor one of
+order `6` (as `12 ∣ 24`).
+
+The certificates for `p = 7, 11, 13, 17, 19` are formalized here; the computations are carried out
+by the kernel on base-`(p+1)` numerals encoding permutations of `ℙ¹(𝔽ₚ)`, through
+`Rigidity.PermCode`.
+
+The simple group `PSL₂(𝔽ₚ)` itself stays out of reach of rigidity **over `ℚ`**: it is the
+index-two subgroup of `PGL₂(𝔽ₚ)` rather than a quotient, so a realization of the overgroup does not
+descend to it directly.  What the rigidity data does give is a cover of the line branched over
+three rational points whose deck group is `PGL₂(𝔽ₚ)`, and the intermediate field cut out by
+`PSL₂(𝔽ₚ)` is then a conic through two of the three branch points, hence a rational function field
+(`RET.Descent.Index2`).  The classical route to `PSL₂(𝔽ₚ)` is different again — Shih's modular
+construction, whose arithmetic half is `Rigidity.Shih.shihPrime_iff`; see
+`docs/Development/Shih.md`.
+
+Over a number field the simple group is nevertheless reachable, by the same orbit-rigidity descent
+that realizes the Mathieu groups, and for every prime rather than for a sporadic list.  `PSL₂(𝔽ₚ)`
+has the triple `(2A, 3A, pA)` — an involution, an element of order `3` and a `p`-cycle — whose
+product-one fibre has exactly `p = |C(z)|` elements, so it is rigid; it is not rational, the two
+classes of elements of order `p` being interchanged by the exponents prime to `p`, but both members
+of its cyclotomic orbit are rigid, and that is what the descent needs.  It realizes `PSL₂(𝔽ₚ)`
+regularly over `K(T)` for the number field `K` that the index-two stabilizer cuts out, the
+quadratic subfield of `ℚ(ζₚ)`.  The certificates are `Rigidity.PSL27.exists_regular_numberField`
+and `Rigidity.PSL2F11.exists_regular_numberField` here, and `p = 13, 17, 19, 23, 29, 31, 37` in
+the `PSL2Large` target, which raises the elaboration-thread stack.  Note that `p = 23`, the one
+prime below `37` out of reach of the rational triples above, is reached this way.
 
 ## The general linear groups
 
