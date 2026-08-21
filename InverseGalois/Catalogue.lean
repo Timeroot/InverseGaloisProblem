@@ -41,9 +41,10 @@ Families:
 * `Rigidity.RET.isRegularInverseGalois_of_isMobius` — every finite subgroup of `PGL₂(ℚ)`, hence
   `DihedralGroup n` for `n ∈ {1, 2, 3, 4, 6}` (`MobiusDihedral`) and the cyclic groups of those
   orders (`MobiusFinite`).
-* `Rigidity.RET.isRegularInverseGalois_dihedral_of_odd` — `DihedralGroup n` for every odd `n > 1`,
-  by the twisted Kummer descent of `RegularDihedral`; in particular
-  `Rigidity.RET.isRegularInverseGalois_dihedral_five` for `DihedralGroup 5`.
+* `Rigidity.RET.isRegularInverseGalois_dihedral` — `DihedralGroup n` for every `n ≠ 0`, by the
+  twisted Kummer descent of `RegularDihedral`; in particular
+  `Rigidity.RET.isRegularInverseGalois_dihedral_five` for `DihedralGroup 5` and
+  `Rigidity.RET.isRegularInverseGalois_dihedral_eight` for `DihedralGroup 8`.
 * `Rigidity.RigidityCertificate.isRegularInverseGalois` — every finite group carrying a rigidity
   certificate; `Rigidity.sn_isRegularInverseGalois` is the certificate for `Sₙ`, `n ≥ 3`.
 * `Rigidity.PGL27.isRegularInverseGalois` — the group of Lie type `PGL₂(𝔽₇)`, of order `336`, from
@@ -67,16 +68,24 @@ works with three.
 
 The construction that reaches it is instead an explicit one, `RET.RegularDihedral`: the twisted
 Kummer tower of `RegularCyclic` over `ℚ(ζₙ)(u)`, with the radicand's linear factors indexed by the
-`2 φ(n)` points `(-1)^ε ζ^x` rather than the `φ(n)` points `ζ^x`.  Those points are distinct
-exactly when `n` is odd, and the substitution `u ↦ -u` permutes them; weighting the point `(ε, x)`
-by the representative of `± x⁻¹` makes the substitution send the radicand `g` to `m^n / g`, so it
-lifts to an involution `w ↦ m / w` of the Kummer extension inverting the Kummer automorphism.  The
-degree-`n` layer is then dihedral of order `2n` over the invariants `ℚ(u²)`, which Artin's theorem
-gives degree two inside `ℚ(u)` and Lüroth recognizes as a rational function field.  Six points are
-branched — the four fifth roots of unity for `n = 5`, together with `0` and `∞` — as the lower
-bound requires.
+`2 φ(n)` points `(-1)^ε (ζ^x + 1/4)` rather than the `φ(n)` points `ζ^x`.  The substitution
+`u ↦ -u` permutes them; weighting the point `(ε, x)` by the representative of `± x⁻¹` makes the
+substitution send the radicand `g` to `m^n / g`, so it lifts to an involution `w ↦ m / w` of the
+Kummer extension inverting the Kummer automorphism.  The degree-`n` layer is then dihedral of
+order `2n` over the invariants `ℚ(u²)`, which Artin's theorem gives degree two inside `ℚ(u)` and
+Lüroth recognizes as a rational function field.  Six points are branched — the four fifth roots of
+unity for `n = 5`, together with `0` and `∞` — as the lower bound requires.
 
-Odd `n` and the Möbius list `n ∈ {1, 2, 3, 4, 6}` together leave the even `n ≥ 8` open.
+The rational shift `1/4` is what makes the construction work in every degree.  The unshifted
+points `± ζ^x` are distinct only when `4 ∤ n`: for `4 ∣ n` one has `-ζ^x = ζ^(x + n/2)` with
+`x + n/2` again a unit, so the two halves of the index set collide.  Shifting first turns a
+collision into the equation `ζ^x + ζ^y = -1/2`, in which the left side is a sum of two roots of
+unity — an algebraic integer — and the right side is a rational number that is not one.  Nothing
+else in the tower sees the shift: all it asks of the points is that they be distinct, that the
+sign flip negate them, and that the cyclotomic character permute them.
+
+Together with the Möbius list, which supplies `n ∈ {1, 2}`, this realizes every finite dihedral
+group regularly (`Rigidity.RET.isRegularInverseGalois_dihedral`).
 
 ## Beyond `ℚ`
 

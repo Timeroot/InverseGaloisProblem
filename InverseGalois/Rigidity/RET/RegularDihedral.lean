@@ -6,21 +6,26 @@ import Mathlib
 import InverseGalois.Rigidity.RET.Descent.BaseTransfer
 import InverseGalois.Rigidity.RET.DihedralLift
 import InverseGalois.Rigidity.RET.FixedField
+import InverseGalois.Rigidity.RET.MobiusFinite
 import InverseGalois.Rigidity.RET.RatFuncSubst
 import InverseGalois.Rigidity.RET.RegularCyclic
 
 /-!
-# Regular dihedral extensions of `ℚ(T)` of odd degree
+# Regular dihedral extensions of `ℚ(T)`
 
-The dihedral group of order `2n` is a **regular** inverse Galois group over `ℚ` for every odd
-`n > 1`.
+Every finite dihedral group is a **regular** inverse Galois group over `ℚ`.
 
 The construction adds an involution to the twisted Kummer tower of `RegularCyclic`.  Write
 `K = ℚ(ζ)` for the `n`-th cyclotomic field and index the linear factors by pairs `(ε, x)` with
-`ε ∈ ℤ/2` and `x` a unit of `ℤ/n`, the pair naming the root `(-1) ^ ε · ζ ^ x`.  These `2 φ(n)`
-roots are distinct exactly because `n` is odd, and the two involutions in play act on the index
-set separately: the coefficient action of the unit `c` multiplies `x` by `c`, and the substitution
-`u ↦ -u` adds `1` to `ε`.
+`ε ∈ ℤ/2` and `x` a unit of `ℤ/n`, the pair naming the root `(-1) ^ ε · (ζ ^ x + 1/4)`.  The two
+involutions in play act on the index set separately: the coefficient action of the unit `c`
+multiplies `x` by `c`, and the substitution `u ↦ -u` adds `1` to `ε`.
+
+The rational shift `1/4` is what makes these `2 φ(n)` roots distinct for **every** `n`.  Without
+it the roots are the `2n`-th roots of unity `± ζ ^ x`, and `-ζ ^ x = ζ ^ (x + n/2)` collides with
+another root of the family as soon as `4 ∣ n`.  With it a collision would read
+`ζ ^ x + ζ ^ y = -1/2`, a sum of two roots of unity — an algebraic integer — equal to a rational
+number that is not one.
 
 The Kummer datum is again a weighted product, with the weight of `(ε, x)` the representative of
 `± x⁻¹`, the sign being `+` for `ε = 1` and `-` for `ε = 0`.  Weighting by inverses makes the
@@ -35,6 +40,9 @@ inverts a generator of `Gal(L / ℚ(u))`.  The fixed field of `u ↦ -u` inside 
 function field by Lüroth, and `L` is a degree-`2n` Galois extension of it with dihedral group.
 Regularity is inherited from the cyclic layer: a constant of `L` is fixed by the whole cyclotomic
 character, hence rational.
+
+This covers `n > 2`.  The two smaller dihedral groups, of order two and four, are groups of
+fractional linear substitutions, so `MobiusFinite` supplies them.
 -/
 
 open Polynomial
@@ -53,12 +61,9 @@ open Rigidity.RET (rootMultiplicity_prod_pow prod_pow_ne_zero irreducible_X_pow_
 
 open Rigidity.RET.Cyclic
 
-variable (n : ℕ) [hn : Fact (1 < n)] [hodd : Fact (Odd n)]
+variable (n : ℕ) [hn : Fact (1 < n)] [hgt : Fact (2 < n)]
 
-theorem two_lt : 2 < n := by
-  rcases hodd.out with ⟨k, hk⟩
-  have := hn.out
-  omega
+theorem two_lt : 2 < n := hgt.out
 
 /-! ### The index set -/
 
@@ -81,8 +86,10 @@ theorem sgn_flip (ε : ZMod 2) : sgn n (ε + 1) = -sgn n ε := by
   · rw [zero_add, sgn_one, sgn_zero]
   · rw [show (1 : ZMod 2) + 1 = 0 by decide, sgn_zero, sgn_one, neg_neg]
 
-theorem sgn_pow_n (ε : ZMod 2) : sgn n ε ^ n = sgn n ε := by
-  rw [sgn, ← pow_mul, Nat.mul_comm, pow_mul, hodd.out.neg_one_pow]
+theorem sgn_ne_zero (ε : ZMod 2) : sgn n ε ≠ 0 := by
+  rcases zmod_two_cases ε with rfl | rfl
+  · rw [sgn_zero]; exact one_ne_zero
+  · rw [sgn_one]; exact neg_ne_zero.mpr one_ne_zero
 
 /-- Flipping the sign of an index. -/
 def jflip (j : JJ n) : JJ n := (j.1 + 1, j.2)
@@ -113,41 +120,68 @@ theorem card_JJ : Fintype.card (JJ n) = 2 * n.totient := by
 
 /-! ### The roots -/
 
-/-- The root attached to an index: a `2n`-th root of unity, of order divisible by the odd part. -/
-def rt (j : JJ n) : KK n := sgn n j.1 * zetaPow n (j.2 : ZMod n)
+/-- The rational shift built into the roots.  Twice it is `1 / 2`, which is not an algebraic
+integer, and that is what keeps the shifted roots of unity away from the negatives of one
+another. -/
+def shift : KK n := algebraMap ℚ (KK n) (1 / 4)
 
-theorem zetaPow_pow_n (x : ZMod n) : zetaPow n x ^ n = 1 := by
-  rw [zetaPow, ← pow_mul, Nat.mul_comm, pow_mul, (zeta_spec n).pow_eq_one, one_pow]
+theorem neg_two_shift : algebraMap ℚ (KK n) (-1 / 2) = -(shift n + shift n) := by
+  rw [shift, ← map_add, ← map_neg]
+  norm_num
 
-theorem rt_pow_n (j : JJ n) : rt n j ^ n = sgn n j.1 := by
-  rw [rt, mul_pow, zetaPow_pow_n, mul_one, sgn_pow_n]
+/-- The root attached to an index: a shifted root of unity, together with a sign. -/
+def rt (j : JJ n) : KK n := sgn n j.1 * (zetaPow n (j.2 : ZMod n) + shift n)
 
 theorem rt_flip (j : JJ n) : rt n (jflip n j) = -rt n j := by
   rw [rt, rt, jflip, sgn_flip, neg_mul]
 
+theorem isIntegral_zetaPow (x : ZMod n) : IsIntegral ℤ (zetaPow n x) := by
+  rw [zetaPow]
+  exact ((zeta_spec n).isIntegral (by have := hn.out; omega)).pow _
+
+/-- **A sum of two roots of unity is never `-1 / 2`**: the left side is an algebraic integer and
+the right side is not.  This is the one place where the shift earns its keep, and it is why the
+`2 φ(n)` roots stay distinct for every `n`, not just the odd ones. -/
+theorem zetaPow_add_zetaPow_ne (x y : ZMod n) :
+    zetaPow n x + zetaPow n y ≠ algebraMap ℚ (KK n) (-1 / 2) := by
+  intro h
+  have hint : IsIntegral ℤ (algebraMap ℚ (KK n) (-1 / 2 : ℚ)) := by
+    rw [← h]
+    exact (isIntegral_zetaPow n x).add (isIntegral_zetaPow n y)
+  obtain ⟨m, hm⟩ := IsIntegrallyClosed.isIntegral_iff.mp hint.tower_bot_of_field
+  simp only [eq_intCast] at hm
+  have h2 : ((2 * m : ℤ) : ℚ) = -1 := by push_cast [hm]; norm_num
+  have h3 : (2 * m : ℤ) = -1 := by exact_mod_cast h2
+  omega
+
 theorem rt_injective : Function.Injective (rt n) := by
+  have key : ∀ a b : ZMod n, zetaPow n a + shift n ≠ -(zetaPow n b + shift n) := by
+    intro a b hab
+    refine zetaPow_add_zetaPow_ne n a b ?_
+    rw [neg_two_shift]
+    linear_combination hab
   rintro ⟨ε, x⟩ ⟨δ, y⟩ h
-  have hpow : sgn n ε = sgn n δ := by
-    have h2 : rt n (ε, x) ^ n = rt n (δ, y) ^ n := by rw [h]
-    rwa [rt_pow_n, rt_pow_n] at h2
+  simp only [rt] at h
   have hεδ : ε = δ := by
+    by_contra hne
     rcases zmod_two_cases ε with rfl | rfl <;> rcases zmod_two_cases δ with rfl | rfl
-    · rfl
-    · rw [sgn_zero, sgn_one] at hpow
-      exact absurd hpow.symm (by norm_num)
-    · rw [sgn_zero, sgn_one] at hpow
-      exact absurd hpow (by norm_num)
-    · rfl
+    · exact hne rfl
+    · rw [sgn_zero, sgn_one, one_mul, neg_one_mul] at h
+      exact key _ _ h
+    · rw [sgn_zero, sgn_one, one_mul, neg_one_mul] at h
+      exact key _ _ h.symm
+    · exact hne rfl
   subst hεδ
-  have hz : zetaPow n (x : ZMod n) = zetaPow n (y : ZMod n) := by
-    have hs : sgn n ε ≠ 0 := by
-      rcases zmod_two_cases ε with rfl | rfl <;> simp
-    refine mul_left_cancel₀ hs ?_
-    simpa [rt] using h
+  have hz : zetaPow n (x : ZMod n) = zetaPow n (y : ZMod n) :=
+    add_right_cancel (mul_left_cancel₀ (sgn_ne_zero n ε) h)
   exact Prod.ext rfl (Units.ext (zetaPow_injective n hz))
 
+theorem sigmaK_shift (c : (ZMod n)ˣ) : sigmaK n c (shift n) = shift n := by
+  rw [shift]
+  exact (sigmaK n c).commutes _
+
 theorem sigmaK_rt (c : (ZMod n)ˣ) (j : JJ n) : sigmaK n c (rt n j) = rt n (jmul n c j) := by
-  rw [rt, rt, jmul, map_mul, sigmaK_zetaPow, Units.val_mul]
+  rw [rt, rt, jmul, map_mul, map_add, sigmaK_zetaPow, sigmaK_shift, Units.val_mul]
   congr 1
   simp only [sgn, map_pow, map_neg, map_one]
 
@@ -416,7 +450,7 @@ theorem anat_one : anat n ((1 : ZMod 2), (1 : (ZMod n)ˣ)) = 1 := by
   rw [anat, aunit, sgu, if_neg (by decide : ¬((1 : ZMod 2) = 0)), inv_one, mul_one, Units.val_one,
     ZMod.val_one]
 
-theorem rt_one_one : rt n ((1 : ZMod 2), (1 : (ZMod n)ˣ)) = -zeta n := by
+theorem rt_one_one : rt n ((1 : ZMod 2), (1 : (ZMod n)ˣ)) = -(zeta n + shift n) := by
   rw [rt, sgn_one, Units.val_one, zetaPow_one, neg_one_mul]
 
 /-- The weighted product `g = ∏ (u - r j) ^ a j`. -/
@@ -424,9 +458,9 @@ def gpoly : (KK n)[X] := ∏ j : JJ n, (X - C (rt n j)) ^ anat n j
 
 theorem gpoly_ne_zero : gpoly n ≠ 0 := prod_pow_ne_zero _ _
 
-/-- `g` has a **simple** root at `-ζ`: this single fact drives both the irreducibility of the
-Kummer extension and its regularity. -/
-theorem rootMultiplicity_gpoly : (gpoly n).rootMultiplicity (-zeta n) = 1 := by
+/-- `g` has a **simple** root at `-(ζ + 1/4)`: this single fact drives both the irreducibility of
+the Kummer extension and its regularity. -/
+theorem rootMultiplicity_gpoly : (gpoly n).rootMultiplicity (-(zeta n + shift n)) = 1 := by
   rw [gpoly, ← rt_one_one n, rootMultiplicity_prod_pow _ (rt_injective n), anat_one]
 
 /-- The twisted Kummer datum `g`, as an element of `K(u)`. -/
@@ -562,7 +596,7 @@ theorem rhoE_hE (c : (ZMod n)ˣ) :
 /-! ### The Kummer extension -/
 
 /-- The Kummer polynomial `X ^ n - g` is irreducible over `K(u)`: `g` has a simple root, so the
-polynomial is Eisenstein at `u + ζ`. -/
+polynomial is Eisenstein at `u + ζ + 1/4`. -/
 theorem kummer_irreducible : Irreducible ((X : (EE n)[X]) ^ n - C (gE n)) :=
   irreducible_X_pow_sub_C_ratFunc (rootMultiplicity_gpoly n) (by have := hn.out; omega)
 
@@ -1125,7 +1159,7 @@ theorem gbar_eq : gbar n
 
 /-- The simple root of `g` survives the passage to the algebraic closure. -/
 theorem rootMultiplicity_gbar :
-    (gbar n).rootMultiplicity (algebraMap (KK n) (Kbar n) (-zeta n)) = 1 := by
+    (gbar n).rootMultiplicity (algebraMap (KK n) (Kbar n) (-(zeta n + shift n))) = 1 := by
   have hinj : Function.Injective (fun j => algebraMap (KK n) (Kbar n) (rt n j)) :=
     fun _ _ h => rt_injective n ((algebraMap (KK n) (Kbar n)).injective h)
   rw [gbar_eq, ← rt_one_one n]
@@ -1397,8 +1431,8 @@ theorem isRegularGaloisGroupOverBase_B0 :
     IsScalarTower.of_algebraMap_eq' (Subsingleton.elim _ _), regular_LL n,
     ⟨(dihedralEquiv n).symm⟩⟩
 
-/-- **The dihedral group of order `2n` is a regular inverse Galois group** for every odd `n > 1`. -/
-theorem isRegularInverseGalois_dihedral_odd : IsRegularInverseGalois (DihedralGroup n) := by
+/-- **The dihedral group of order `2n` is a regular inverse Galois group** for every `n > 2`. -/
+theorem isRegularInverseGalois_dihedral_gt_two : IsRegularInverseGalois (DihedralGroup n) := by
   obtain ⟨e⟩ := Rigidity.RET.exists_ringEquiv_fixedField rhoSub_fix
   have ealg : ↥B0 ≃ₐ[ℚ] FF :=
     AlgEquiv.ofRingEquiv (f := e.symm) fun q =>
@@ -1413,18 +1447,40 @@ end Rigidity.RET.Dihedral
 
 namespace Rigidity.RET
 
-/-- **The dihedral group of order `2n` is a regular inverse Galois group for every odd `n > 1`.**
+/-- **The dihedral group of order `2n` is a regular inverse Galois group for every `n > 2`.**
 
 In particular `DihedralGroup 5`, the symmetry group of the regular pentagon, is the Galois group
 of a regular extension of `ℚ(T)`. -/
-theorem isRegularInverseGalois_dihedral_of_odd {n : ℕ} (h1 : 1 < n) (hodd : Odd n) :
+theorem isRegularInverseGalois_dihedral_of_two_lt {n : ℕ} (h2 : 2 < n) :
     IsRegularInverseGalois (DihedralGroup n) :=
-  haveI : Fact (1 < n) := ⟨h1⟩
-  haveI : Fact (Odd n) := ⟨hodd⟩
-  Rigidity.RET.Dihedral.isRegularInverseGalois_dihedral_odd n
+  haveI : Fact (1 < n) := ⟨by omega⟩
+  haveI : Fact (2 < n) := ⟨h2⟩
+  Rigidity.RET.Dihedral.isRegularInverseGalois_dihedral_gt_two n
+
+/-- **Every finite dihedral group is a regular inverse Galois group.**
+
+Mathlib's `DihedralGroup 0` is the infinite dihedral group, so the order `2n` is required to be
+finite.  Everything from `n = 3` on is the twisted Kummer tower of this file; the two remaining
+degrees, the group of order two and the Klein four group, are groups of fractional linear
+substitutions. -/
+theorem isRegularInverseGalois_dihedral {n : ℕ} (hn : n ≠ 0) :
+    IsRegularInverseGalois (DihedralGroup n) := by
+  rcases Nat.lt_or_ge 2 n with h | h
+  · exact isRegularInverseGalois_dihedral_of_two_lt h
+  · exact isRegularInverseGalois_dihedralGroup_mem (by omega)
+
+/-- **The dihedral group of order `2n` is a regular inverse Galois group for every odd `n > 1`.** -/
+theorem isRegularInverseGalois_dihedral_of_odd {n : ℕ} (h1 : 1 < n) (_hodd : Odd n) :
+    IsRegularInverseGalois (DihedralGroup n) :=
+  isRegularInverseGalois_dihedral (by omega)
 
 /-- **The symmetry group of the regular pentagon is a regular inverse Galois group.** -/
 theorem isRegularInverseGalois_dihedral_five : IsRegularInverseGalois (DihedralGroup 5) :=
-  isRegularInverseGalois_dihedral_of_odd (by norm_num) (by decide)
+  isRegularInverseGalois_dihedral (by norm_num)
+
+/-- **The symmetry group of the regular octagon is a regular inverse Galois group.**  It is the
+smallest dihedral group that neither the Möbius list nor the odd construction reaches. -/
+theorem isRegularInverseGalois_dihedral_eight : IsRegularInverseGalois (DihedralGroup 8) :=
+  isRegularInverseGalois_dihedral (by norm_num)
 
 end Rigidity.RET
