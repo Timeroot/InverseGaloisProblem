@@ -16,8 +16,9 @@ over `ℚ(T)` for any `p`. What has been done instead:
 * the whole branch is `sorry`-free and axiom-free again, by turning the two unproved leaves of
   Route 2 into **explicit hypotheses** and by **deleting** the two unproved leaves of Route 1
   (one of which, `AtkinLehner`, was an inconsistent statement — see below);
-* the overgroups `PGL₂(𝔽ₚ)` are now realized regularly over `ℚ(T)` for `p = 7, 11, 13, 17, 19`,
-  from explicit kernel-checked rigidity certificates, and the machinery to add more primes exists;
+* the overgroups `PGL₂(𝔽ₚ)` are now realized regularly over `ℚ(T)` for every prime `7 ≤ p ≤ 37`
+  that admits a rational rigid triple, i.e. for `p = 7, 11, 13, 17, 19, 29, 31, 37`, from explicit
+  kernel-checked rigidity certificates;
 * the prime list for Route 2 has been recomputed and corrected: `p = 29` **does** admit a rational
   rigid triple, and among the primes at most `37` only `p = 23` does not;
 * a **third route** turned out to be open and cheap, and it is now done for
