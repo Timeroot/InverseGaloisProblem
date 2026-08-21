@@ -17,9 +17,9 @@ holds: some finite Galois extension `L / ℚ(T)` with group `G` has `ℚ` algebr
 (`IsRegularInverseGalois.isInverseGalois`), it is stable under base change, and it is what a
 geometric construction actually produces.
 
-Every group family this development realizes is realized *regularly*, with the single exception
-recorded at the end.  This module is the index, and it fills in the regular form of the three
-abelian realizations whose elementary proofs in `InverseGalois.Core` predate the regular machinery.
+Every group family this development realizes is realized *regularly*.  This module is the index,
+and it fills in the regular form of the three abelian realizations whose elementary proofs in
+`InverseGalois.Core` predate the regular machinery.
 
 ## The catalogue
 
@@ -41,6 +41,9 @@ Families:
 * `Rigidity.RET.isRegularInverseGalois_of_isMobius` — every finite subgroup of `PGL₂(ℚ)`, hence
   `DihedralGroup n` for `n ∈ {1, 2, 3, 4, 6}` (`MobiusDihedral`) and the cyclic groups of those
   orders (`MobiusFinite`).
+* `Rigidity.RET.isRegularInverseGalois_dihedral_of_odd` — `DihedralGroup n` for every odd `n > 1`,
+  by the twisted Kummer descent of `RegularDihedral`; in particular
+  `Rigidity.RET.isRegularInverseGalois_dihedral_five` for `DihedralGroup 5`.
 * `Rigidity.RigidityCertificate.isRegularInverseGalois` — every finite group carrying a rigidity
   certificate; `Rigidity.sn_isRegularInverseGalois` is the certificate for `Sₙ`, `n ≥ 3`.
 * `Rigidity.PGL27.isRegularInverseGalois` — the group of Lie type `PGL₂(𝔽₇)`, of order `336`, from
@@ -51,15 +54,29 @@ The realizations proved by exhibiting a single polynomial over `ℚ` — `X³ - 
 `ℚ(√2, √3)` for the Klein four group (`Groups.SmallGroups`), and the `Hilbert` specializations —
 are all instances of the families above, so each is also realized regularly.
 
-## The exception
+## The dihedral groups
 
-`DihedralGroup 5` is realized over `ℚ`, as the Galois group of `X⁵ - 5X + 12`
-(`IsInverseGalois.dihedral_five`, `InverseGalois.Groups.D5`), and this is the one group in the
-development with no regular realization.  It is not a subgroup of `PGL₂(ℚ)` — that would put
-`ζ₅ + ζ₅⁻¹` in `ℚ` — and a rigidity certificate cannot reach it either: rigidity needs rational
-classes, whereas the two classes of rotations of order `5`, namely `{r, r⁴}` and `{r², r³}`, are
-interchanged by `Gal(ℚ(ζ₅)/ℚ)`.  A rigid triple of `D₅` is rational only over `ℚ(ζ₅ + ζ₅⁻¹) = ℚ(√5)`
-and so descends to a regular extension of `ℚ(√5)(T)`.
+`DihedralGroup 5` is realized over `ℚ` as the Galois group of `X⁵ - 5X + 12`
+(`IsInverseGalois.dihedral_five`, `InverseGalois.Groups.D5`), and it was for a long time the one
+group in the development without a regular realization: it is not a subgroup of `PGL₂(ℚ)` — that
+would put `ζ₅ + ζ₅⁻¹` in `ℚ` — and no rigidity certificate reaches it either, since rigidity needs
+rational classes whereas the two classes of rotations of order `5`, namely `{r, r⁴}` and
+`{r², r³}`, are interchanged by `Gal(ℚ(ζ₅)/ℚ)`.  Dèbes and Fried moreover bound below by six the
+number of branch points of a regular dihedral cover of the line, whereas the rigidity engine here
+works with three.
+
+The construction that reaches it is instead an explicit one, `RET.RegularDihedral`: the twisted
+Kummer tower of `RegularCyclic` over `ℚ(ζₙ)(u)`, with the radicand's linear factors indexed by the
+`2 φ(n)` points `(-1)^ε ζ^x` rather than the `φ(n)` points `ζ^x`.  Those points are distinct
+exactly when `n` is odd, and the substitution `u ↦ -u` permutes them; weighting the point `(ε, x)`
+by the representative of `± x⁻¹` makes the substitution send the radicand `g` to `m^n / g`, so it
+lifts to an involution `w ↦ m / w` of the Kummer extension inverting the Kummer automorphism.  The
+degree-`n` layer is then dihedral of order `2n` over the invariants `ℚ(u²)`, which Artin's theorem
+gives degree two inside `ℚ(u)` and Lüroth recognizes as a rational function field.  Six points are
+branched — the four fifth roots of unity for `n = 5`, together with `0` and `∞` — as the lower
+bound requires.
+
+Odd `n` and the Möbius list `n ∈ {1, 2, 3, 4, 6}` together leave the even `n ≥ 8` open.
 
 ## Beyond `ℚ`
 
