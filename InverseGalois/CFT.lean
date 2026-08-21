@@ -20,7 +20,9 @@ import InverseGalois.CFT.Brauer.H2Surjective
 import InverseGalois.CFT.Brauer.Kernel
 import InverseGalois.CFT.Brauer.MaximalSubfield
 import InverseGalois.CFT.Brauer.Opposite
+import InverseGalois.CFT.Brauer.Primary
 import InverseGalois.CFT.Brauer.Quaternion
+import InverseGalois.CFT.Brauer.RationalBrauer
 import InverseGalois.CFT.Brauer.RealBrauer
 import InverseGalois.CFT.Brauer.RealPlace
 import InverseGalois.CFT.Brauer.Semilinear
@@ -50,6 +52,8 @@ import InverseGalois.CFT.GroupCohomology.CyclicSurjective
 import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.ToCocycle
 import InverseGalois.CFT.Level
+import InverseGalois.CFT.Local.HilbertSymbol
+import InverseGalois.CFT.Local.PadicSquares
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
 
@@ -204,6 +208,19 @@ it that are available here.
 * `InverseGalois.CFT.Brauer.RealBrauer` promotes that computation to the whole Brauer group of the
   reals, which is therefore cyclic of order two, and deduces that the Brauer group of the
   rationals is nontrivial.
+* `InverseGalois.CFT.Brauer.Primary` decomposes a torsion commutative group into its primary
+  components, and applies this to the Brauer group of a perfect field; a class split by an
+  extension whose degree is prime to `p` has trivial `p`-primary part.
+* `InverseGalois.CFT.Brauer.RationalBrauer` computes enough of the Brauer group of the rationals to
+  see that it is infinite: the primes congruent to three modulo four are pairwise inequivalent
+  modulo the norms of `ℚ(i)`, because a norm has even valuation at every such prime.
+* `InverseGalois.CFT.Local.PadicSquares` describes the squares of a `p`-adic field for odd `p`: a
+  unit of the ring of integers is a square exactly when its residue is, and a nonzero `p`-adic
+  number is a square exactly when its valuation is even and its unit part is a square residue.
+* `InverseGalois.CFT.Local.HilbertSymbol` defines the Hilbert symbol of two elements of a field as
+  the isotropy of the form `z² - a x² - b y²`, establishes its symmetry, its invariance under
+  squares and its interpretation as a norm from a quadratic extension, and computes it completely
+  at the real place.
 * `InverseGalois.CFT.Brauer.Division` gives every central simple algebra its Wedderburn division
   representative, and deduces that the Brauer group of an algebraically closed field and of a
   finite field is trivial.
