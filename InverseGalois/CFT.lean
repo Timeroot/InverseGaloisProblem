@@ -1,4 +1,5 @@
 import InverseGalois.CFT.Brauer.BaseChange
+import InverseGalois.CFT.Brauer.Centralizer
 import InverseGalois.CFT.Brauer.CrossedProduct
 import InverseGalois.CFT.Brauer.CrossedProductCohomologous
 import InverseGalois.CFT.Brauer.CrossedProductSimple
@@ -9,6 +10,8 @@ import InverseGalois.CFT.Brauer.Division
 import InverseGalois.CFT.Brauer.Group
 import InverseGalois.CFT.Brauer.Kernel
 import InverseGalois.CFT.Brauer.Opposite
+import InverseGalois.CFT.Brauer.Quaternion
+import InverseGalois.CFT.Brauer.Semilinear
 import InverseGalois.CFT.Brauer.SkolemNoether
 import InverseGalois.CFT.Brauer.Split
 import InverseGalois.CFT.Brauer.TensorSimple
@@ -28,6 +31,7 @@ import InverseGalois.CFT.GroupCohomology.Classification
 import InverseGalois.CFT.GroupCohomology.Cohomologous
 import InverseGalois.CFT.GroupCohomology.Corestriction
 import InverseGalois.CFT.GroupCohomology.Cyclic
+import InverseGalois.CFT.GroupCohomology.CyclicSurjective
 import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.ToCocycle
 import InverseGalois.CFT.Level
@@ -103,6 +107,13 @@ it that are available here.
   field: a class split by `L` is split by every extension of `L`.
 * `InverseGalois.CFT.Brauer.SkolemNoether` proves the Skolem–Noether theorem: two maps of a
   simple algebra into a central simple algebra differ by conjugation by a unit.
+* `InverseGalois.CFT.Brauer.Semilinear` is the semilinear refinement: a ring endomorphism of a
+  matrix algebra over `L` which is `σ`-semilinear for `σ ∈ Gal(L/K)` is conjugation by a unit
+  composed with `σ` on entries, and the conjugating unit is determined up to a scalar.
+* `InverseGalois.CFT.Brauer.Centralizer` develops centralizer theory: the centralizer of a simple
+  subalgebra of a central simple algebra is simple, the two dimensions multiply to the dimension
+  of the whole, the double centralizer is the subalgebra itself, and a self-centralizing subfield
+  splits the algebra.
 * `InverseGalois.CFT.Brauer.CrossedProduct` builds the crossed product algebra of a Galois
   extension and a multiplicative `2`-cocycle, a central `K`-algebra of dimension `[L : K] ^ 2`.
 * `InverseGalois.CFT.Brauer.CrossedProductSimple` proves that the crossed product is a simple
@@ -134,7 +145,13 @@ it that are available here.
   subgroup in every degree, through Shapiro's lemma and the trace morphism out of a coinduced
   representation, and proves the relation `res ≫ cor = [G : S] • id`; from it, the cohomology of a
   finite group in positive degrees is killed by the order of the group.
+* `InverseGalois.CFT.GroupCohomology.CyclicSurjective` puts every `2`-cocycle of a finite cyclic
+  group into normal form: it is cohomologous to the explicit cocycle of an invariant element, so
+  the cyclic cocycles already exhaust the second cohomology group.
 * `InverseGalois.CFT.Brauer.Division` gives every central simple algebra its Wedderburn division
   representative, and deduces that the Brauer group of an algebraically closed field and of a
   finite field is trivial.
+* `InverseGalois.CFT.Brauer.Quaternion` exhibits the first nontrivial Brauer classes: since `-1`
+  is not a norm from `ℂ` to `ℝ`, nor from `ℚ(i)` to `ℚ`, the corresponding quaternion algebras are
+  central simple algebras of dimension four that are not matrix algebras over the base field.
 -/
