@@ -416,6 +416,7 @@ import InverseGalois.Rigidity.RET.Transfer.Present
 import InverseGalois.Rigidity.RET.Transfer.Complex
 import InverseGalois.Rigidity.RET.Transfer.BiGeneric
 import InverseGalois.Rigidity.RET.Transfer.DatumDescent
+import InverseGalois.Rigidity.RET.Wreath
 
 /-!
 # Decomposing the Riemann Existence Theorem: an honest axiom cut
@@ -1183,4 +1184,13 @@ direction (`Rigidity.RET.geomRETCompleteness_of_injective`).
   its branch points, its branch cycles and its ramification, and
   `isRegularInverseGalois_of_conicSubfield` turns such a conic intermediate field into a regular
   realization of the subgroup (`RET.Descent.Index2`).
+
+  Finally, the class of regular Galois groups over `ℚ(T)` is closed under wreath products by finite
+  abelian groups (`RET.Wreath`), by the Dentzer–Stoll construction: a regular realization of `H`
+  with primitive element `θ` supplies `|H|` coordinates `h(θ) + c` on one curve, and pulling a
+  regular cyclic realization back along all of them at once produces a compositum whose Galois group
+  is the full wreath product, because for all but finitely many intercepts `c` the radicands of the
+  pullbacks are independent modulo `n`-th powers.  Since every finite semiabelian group is built
+  from the trivial group by wreath products and quotients (`InverseGalois/Solvable/`), every finite
+  semiabelian group is a regular Galois group over `ℚ(T)`.
 -/

@@ -39,6 +39,9 @@ Families:
 * `Rigidity.RET.IsRegularInverseGalois.of_isCyclic` — every finite cyclic group, by the twisted
   Kummer descent of `RegularCyclic`.
 * `Rigidity.RET.IsRegularInverseGalois.of_commGroup` — every finite abelian group.
+* `isRegularInverseGalois_of_isSemiabelian` — every finite semiabelian group, by the Dentzer–Stoll
+  wreath construction (`RET.Wreath`); `IsRegularInverseGalois.wreath` is the closure of the
+  catalogue under wreath products by finite abelian groups.
 * `Rigidity.RET.isRegularInverseGalois_perm_fin` — `Sₙ` for every `n`.
 * `Rigidity.RET.isRegularInverseGalois_alternatingGroup` — `Aₙ` for every `n`.
 * `Rigidity.RET.isRegularInverseGalois_of_isMobius` — every finite subgroup of `PGL₂(ℚ)`, hence
@@ -177,21 +180,34 @@ spaces rather than rigidity.
 ## Solvable groups
 
 Shafarevich's theorem — every finite solvable group is a Galois group over `ℚ` — is not in the
-catalogue, and neither is any of the classes it subsumes beyond the abelian one.  Its proof is
-arithmetic, running through class field theory and the Grunwald–Wang theorem, and it produces
-extensions of `ℚ` rather than of `ℚ(T)`: the regular version is open even for `p`-groups.  What
-`InverseGalois.Solvable` contributes is the group theory that organizes the approach — the
-elementary abelian chief-series induction, the Sylow decomposition of a nilpotent group, and the
-presentation of every semidirect product `A ⋊[φ] H` with abelian `A` as a quotient of the regular
-wreath product `A ≀ᵣ H`.  Each of those reductions is unconditional; what they reduce *to* is not
-proved here.
+catalogue.  Its proof is arithmetic, running through class field theory and the Grunwald–Wang
+theorem, and it produces extensions of `ℚ` rather than of `ℚ(T)`: the regular version is open even
+for `p`-groups.  What `InverseGalois.Solvable` contributes is the group theory that organizes the
+approach — the elementary abelian chief-series induction, the Sylow decomposition of a nilpotent
+group, and the presentation of every semidirect product `A ⋊[φ] H` with abelian `A` as a quotient of
+the regular wreath product `A ≀ᵣ H`.
 
-For Dentzer's class of semiabelian groups — the smallest class containing the finite abelian groups
-and closed under quotients and under semidirect products by a finite abelian group — the reduction
-is complete: `IsSemiabelian.isInverseGalois_of_isCyclic` and its regular counterpart derive a
-realization of every semiabelian group from the single statement that wreathing a realizable group
-by a finite *cyclic* group again gives a realizable group.  That last statement is the input the
-catalogue does not yet have.
+Dentzer's class of semiabelian groups — the smallest class containing the finite abelian groups and
+closed under quotients and under semidirect products by a finite abelian group — *is* in the
+catalogue, regularly.  The group theory of `InverseGalois.Solvable` reduces the whole class to the
+single statement that wreathing a regularly realizable group by a finite *cyclic* group again gives
+one, and `RET.Wreath` proves that statement by the construction of Dentzer and Stoll: a regular
+realization of `H` with primitive element `θ` supplies `|H|` coordinates `h(θ) + c` on one curve,
+and pulling a regular cyclic realization back along all of them at once produces a compositum whose
+Galois group is the full wreath product, because for all but finitely many intercepts `c` the
+radicands of the pullbacks are independent modulo `n`-th powers.  So
+
+* `isRegularInverseGalois_of_isSemiabelian` — every finite semiabelian group is a regular Galois
+  group over `ℚ(T)`, and
+* `IsRegularInverseGalois.wreath` — the catalogue is closed under wreath products by finite abelian
+  groups.
+
+The class is generated from the trivial group by iterated semidirect products by finite abelian
+groups, with arbitrary actions, together with quotients; so it contains every finite group that can
+be written as an iterated split extension of abelian groups, and in particular every finite abelian
+group and every quotient of such an iterated product.  It does not contain every finite solvable
+group: a solvable group whose chief factors are not complemented need not be semiabelian, and
+Shafarevich's theorem remains outside the catalogue.
 
 ## Main results
 
