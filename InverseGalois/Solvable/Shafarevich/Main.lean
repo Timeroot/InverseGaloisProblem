@@ -36,8 +36,9 @@ of `ℚ(T)` — to the regular form of the same embedding problem.
   Galois group over `ℚ`, given `SplitNilpotentEP`.
 * `Shafarevich.isSolvable_isInverseGalois_of_splitPrimePowerEP` — the same, given only the case of
   a kernel of prime power order.
-* `Shafarevich.isSolvable_isRegularInverseGalois_of_splitNilpotentEP` — the regular analogue over
-  `ℚ(T)`, given `SplitNilpotentEPRegular`.
+* `Shafarevich.isSolvable_isRegularInverseGalois_of_splitNilpotentEP` and
+  `Shafarevich.isSolvable_isRegularInverseGalois_of_splitPrimePowerEP` — the regular analogues over
+  `ℚ(T)`.
 -/
 
 namespace Shafarevich
@@ -71,6 +72,11 @@ theorem isSolvable_isInverseGalois_of_splitPrimePowerEP (hEP : SplitPrimePowerEP
     (G : Type) [Group G] [Finite G] [IsSolvable G] : IsInverseGalois G :=
   isSolvable_isInverseGalois_of_splitNilpotentEP (splitNilpotentEP_of_splitPrimePowerEP hEP) G
 
+/-- **Regular realizability over `ℚ(T)` passes to quotients.** -/
+theorem isQuotientClosed_isRegularInverseGalois :
+    IsQuotientClosed (fun G _ => IsRegularInverseGalois G) :=
+  fun _ _ _ _ f hf hG => hG.of_surjective f hf
+
 /-- **Every split embedding problem with nilpotent kernel is solvable regularly over `ℚ(T)`.**
 
 The regular analogue of `SplitNilpotentEP`. -/
@@ -84,34 +90,27 @@ kernel.**
 If every split embedding problem with finite nilpotent kernel is solvable regularly over `ℚ(T)`,
 then every finite solvable group is the Galois group of a regular extension of `ℚ(T)`. -/
 theorem isSolvable_isRegularInverseGalois_of_splitNilpotentEP (hEP : SplitNilpotentEPRegular)
-    (G : Type) [Group G] [Finite G] [IsSolvable G] : IsRegularInverseGalois G := by
-  suffices H : ∀ (n : ℕ) (G : Type) [Group G] [Finite G] [IsSolvable G],
-      Nat.card G ≤ n → IsRegularInverseGalois G from H (Nat.card G) G le_rfl
-  intro n
-  induction n with
-  | zero => exact fun G _ _ _ h => absurd h (not_le.mpr Nat.card_pos)
-  | succ n ih =>
-    intro G _ _ _ hcard
-    rcases subsingleton_or_nontrivial G with hs | hs
-    · haveI := hs
-      exact IsRegularInverseGalois.of_subsingleton
-    · obtain ⟨N, hN, U, hnil, hUne, hsup⟩ := hasNilpotentSupplement G
-      haveI := hN
-      haveI := hnil
-      have hUcard : Nat.card U ≤ n := by
-        have := card_lt_card_of_ne_top hUne
-        omega
-      have hle : U ≤ N.normalizer := by
-        rw [N.normalizer_eq_top]
-        exact le_top
-      have hsurj : Function.Surjective (monoidHomSubgroup hle) := by
-        intro g
-        have hg : g ∈ (↑(N ⊔ U) : Set G) := by
-          rw [hsup]
-          trivial
-        rw [Subgroup.normal_mul] at hg
-        obtain ⟨a, ha, b, hb, rfl⟩ := hg
-        exact ⟨⟨⟨a, ha⟩, ⟨b, hb⟩⟩, rfl⟩
-      exact (hEP N U _ (ih U hUcard)).of_surjective _ hsurj
+    (G : Type) [Group G] [Finite G] [IsSolvable G] : IsRegularInverseGalois G :=
+  oreInduction isQuotientClosed_isRegularInverseGalois
+    (fun _ _ _ => IsRegularInverseGalois.of_subsingleton) hasNilpotentSupplement hEP G
+
+/-- **Every split embedding problem with kernel of prime power order is solvable regularly over
+`ℚ(T)`.**
+
+The regular analogue of `SplitPrimePowerEP`. -/
+def SplitPrimePowerEPRegular : Prop :=
+  ∀ (H U : Type) [Group H] [Finite H] [Group U] [Finite U] (p : ℕ) [Fact p.Prime],
+    IsPGroup p H → ∀ φ : U →* MulAut H, IsRegularInverseGalois U →
+      IsRegularInverseGalois (H ⋊[φ] U)
+
+/-- **The regular form of Shafarevich's theorem, reduced to split embedding problems with kernel of
+prime power order.** -/
+theorem isSolvable_isRegularInverseGalois_of_splitPrimePowerEP (hEP : SplitPrimePowerEPRegular)
+    (G : Type) [Group G] [Finite G] [IsSolvable G] : IsRegularInverseGalois G :=
+  isSolvable_isRegularInverseGalois_of_splitNilpotentEP
+    (fun H U _ _ _ _ _ φ hU =>
+      splitNilpotent_of_splitPrimePower isQuotientClosed_isRegularInverseGalois
+        (fun H U _ _ _ _ p _ hp φ hU => hEP H U p hp φ hU) H U φ hU)
+    G
 
 end Shafarevich

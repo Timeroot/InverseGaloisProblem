@@ -28,8 +28,11 @@ follows from its special case for kernels of prime power order.
   a product of two coprime numbers, the elements annihilated by either factor form a subgroup.
 * `Shafarevich.semidirectProductEquivOfProd` — the two stage decomposition of a semidirect
   product whose kernel is the internal direct product of two characteristic subgroups.
-* `Shafarevich.splitNilpotentEP_of_splitPrimePowerEP` — split embedding problems with nilpotent
-  kernel reduce to split embedding problems with kernel of prime power order.
+* `Shafarevich.splitNilpotent_of_splitPrimePower` — split embedding problems with nilpotent
+  kernel reduce to split embedding problems with kernel of prime power order, for an arbitrary
+  quotient-closed realization predicate.
+* `Shafarevich.splitNilpotentEP_of_splitPrimePowerEP` — its specialization to realizability
+  over `ℚ`.
 -/
 
 namespace Shafarevich
@@ -194,12 +197,16 @@ A finite nilpotent kernel splits as the direct product of a characteristic Sylow
 characteristic complement, both invariant under the given action; adjoining the two factors one
 after the other expresses the semidirect product as a tower whose bottom step has a kernel of
 prime power order and whose top step has a strictly smaller nilpotent kernel. -/
-theorem splitNilpotentEP_of_splitPrimePowerEP (h : SplitPrimePowerEP) : SplitNilpotentEP := by
+theorem splitNilpotent_of_splitPrimePower {P : ∀ (G : Type) [Group G], Prop}
+    (hquot : IsQuotientClosed P)
+    (h : ∀ (H U : Type) [Group H] [Finite H] [Group U] [Finite U] (p : ℕ) [Fact p.Prime],
+      IsPGroup p H → ∀ φ : U →* MulAut H, P U → P (H ⋊[φ] U))
+    (H U : Type) [Group H] [Finite H] [Group.IsNilpotent H] [Group U] [Finite U]
+    (φ : U →* MulAut H) (hU : P U) : P (H ⋊[φ] U) := by
   suffices key : ∀ (n : ℕ) (H U : Type) [Group H] [Finite H] [Group.IsNilpotent H] [Group U]
-      [Finite U] (φ : U →* MulAut H), Nat.card H ≤ n → IsInverseGalois U →
-      IsInverseGalois (H ⋊[φ] U) by
-    intro H U _ _ _ _ _ φ hU
-    exact key (Nat.card H) H U φ le_rfl hU
+      [Finite U] (φ : U →* MulAut H), Nat.card H ≤ n → P U → P (H ⋊[φ] U) from
+    key (Nat.card H) H U φ le_rfl hU
+  clear! H U
   intro n
   induction n with
   | zero =>
@@ -209,7 +216,7 @@ theorem splitNilpotentEP_of_splitPrimePowerEP (h : SplitPrimePowerEP) : SplitNil
     intro H U _ _ _ _ _ φ hcard hU
     rcases subsingleton_or_nontrivial H with hs | hs
     · haveI := hs
-      exact hU.of_mulEquiv (rightEquivOfSubsingleton φ).symm
+      exact hquot.of_mulEquiv (rightEquivOfSubsingleton φ).symm hU
     · -- Choose a prime dividing the order of the kernel and split off its Sylow subgroup.
       have hN : Nat.card H ≠ 0 := Nat.card_pos.ne'
       obtain ⟨p, hp, hpdvd⟩ := (Nat.card H).exists_prime_and_dvd Finite.one_lt_card.ne'
@@ -300,9 +307,16 @@ theorem splitNilpotentEP_of_splitPrimePowerEP (h : SplitPrimePowerEP) : SplitNil
       -- Assemble the tower.
       haveI : Finite (↥B ⋊[(MulAut.restrictChar B).comp φ] U) :=
         Finite.of_equiv _ SemidirectProduct.equivProd.symm
-      have hBU : IsInverseGalois (↥B ⋊[(MulAut.restrictChar B).comp φ] U) :=
+      have hBU : P (↥B ⋊[(MulAut.restrictChar B).comp φ] U) :=
         ih ↥B U ((MulAut.restrictChar B).comp φ) hBle hU
-      exact (h ↥A (↥B ⋊[(MulAut.restrictChar B).comp φ] U) p hpA _ hBU).of_mulEquiv
-        (semidirectProductEquivOfProd A B φ θ hθ).symm
+      exact hquot.of_mulEquiv (semidirectProductEquivOfProd A B φ θ hθ).symm
+        (h ↥A (↥B ⋊[(MulAut.restrictChar B).comp φ] U) p hpA _ hBU)
+
+/-- **Split embedding problems over `ℚ` with nilpotent kernel reduce to kernels of prime power
+order.** -/
+theorem splitNilpotentEP_of_splitPrimePowerEP (h : SplitPrimePowerEP) : SplitNilpotentEP :=
+  fun H U _ _ _ _ _ φ hU =>
+    splitNilpotent_of_splitPrimePower isQuotientClosed_isInverseGalois
+      (fun H U _ _ _ _ p _ hp φ hU => h H U p hp φ hU) H U φ hU
 
 end Shafarevich

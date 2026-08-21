@@ -52,6 +52,15 @@ theorem Shafarevich.isSolvable_isInverseGalois_of_splitPrimePowerEP
 `U` is a Galois group over `ℚ` and `H` is a finite `p`-group with a `U`-action, then `H ⋊[φ] U` is
 a Galois group over `ℚ`.* No group theory is left.
 
+The whole reduction is carried out for an **abstract realization predicate** `P : ∀ (G : Type)
+[Group G], Prop`, the only structural input being `Shafarevich.IsQuotientClosed P` (transport along
+a surjection) together with the trivial group. So it specializes for free to the regular predicate
+over `ℚ(T)`: `isSolvable_isRegularInverseGalois_of_splitPrimePowerEP` is the same theorem with
+`IsRegularInverseGalois` throughout. That statement is of course still conditional, and on a
+hypothesis that is *not* known — see "A warning about the regular route" below: regular
+realizability of an arbitrary ℓ-group over `ℚ(T)` is an open problem, so there is no theorem there
+to discharge it with. It is recorded because the reduction genuinely is predicate-independent.
+
 Two remarks on how this differs from the plan in §5:
 
 * **The Fitting subgroup is not needed, and is absent from Mathlib for groups.** Ore's theorem is

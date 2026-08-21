@@ -19,6 +19,19 @@ order reduces the realizability of `G` to the realizability of semidirect produc
 This is a genuine gain over the naive induction along a chief series, which leaves one facing an
 arbitrary — not necessarily split — embedding problem at each step.  The arithmetic input is thereby
 concentrated in the single statement `SplitNilpotentEP`.
+
+Nothing in the argument is specific to realizability over `ℚ`.  It uses only that the property under
+consideration holds for the trivial group and passes to quotients, so it is carried out here for an
+arbitrary such property `P` and specialized afterwards.
+
+## Main results
+
+* `Shafarevich.SplitNilpotentEP` — the arithmetic hypothesis.
+* `Shafarevich.IsQuotientClosed` — the two structural properties an abstract realization predicate
+  must have for the reduction to run.
+* `Shafarevich.oreInduction` — Ore's induction on the order, for an arbitrary such predicate.
+* `Shafarevich.isInverseGalois_of_isSolvable_of_splitNilpotentEP` — its specialization to
+  realizability over `ℚ`.
 -/
 
 namespace Shafarevich
@@ -54,16 +67,39 @@ theorem card_lt_card_of_ne_top {G : Type*} [Group G] [Finite G] {U : Subgroup G}
   have hpos : 0 < Nat.card U := Nat.card_pos
   nlinarith [hcard, hindex, hpos]
 
+/-! ## The reduction, for an arbitrary realization predicate -/
+
+variable (P : ∀ (G : Type) [Group G], Prop)
+
+/-- **A property of finite groups that passes to quotients.**
+
+The only structural input Ore's induction makes on a notion of realizability. -/
+def IsQuotientClosed : Prop :=
+  ∀ (G H : Type) [Group G] [Group H] (f : G →* H), Function.Surjective f → P G → P H
+
+variable {P}
+
+/-- **A quotient-closed property is invariant under isomorphism.** -/
+theorem IsQuotientClosed.of_mulEquiv (hP : IsQuotientClosed P) {G H : Type} [Group G] [Group H]
+    (e : G ≃* H) (hG : P G) : P H :=
+  hP G H e.toMonoidHom e.surjective hG
+
 /-- **Ore's reduction of solvable groups to split embedding problems with nilpotent kernel.**
 
 Granted that a nontrivial finite solvable group always admits a nilpotent normal subgroup with a
-proper supplement, and that split embedding problems over `ℚ` with nilpotent kernel are solvable,
-every finite solvable group is a Galois group over `ℚ`. -/
-theorem isInverseGalois_of_isSolvable_of_splitNilpotentEP
-    (hSupp : HasNilpotentSupplement) (hEP : SplitNilpotentEP)
-    (G : Type) [Group G] [Finite G] [IsSolvable G] : IsInverseGalois G := by
+proper supplement, and that split embedding problems with nilpotent kernel can be solved for the
+property `P`, every finite solvable group has the property `P`.
+
+The induction is on the order: the supplement `U` is a proper subgroup, hence smaller, and `G` is a
+quotient of `N ⋊ U`. -/
+theorem oreInduction (hquot : IsQuotientClosed P)
+    (hsub : ∀ (G : Type) [Group G] [Subsingleton G], P G)
+    (hSupp : HasNilpotentSupplement)
+    (hEP : ∀ (H U : Type) [Group H] [Finite H] [Group.IsNilpotent H] [Group U] [Finite U]
+      (φ : U →* MulAut H), P U → P (H ⋊[φ] U))
+    (G : Type) [Group G] [Finite G] [IsSolvable G] : P G := by
   suffices H : ∀ (n : ℕ) (G : Type) [Group G] [Finite G] [IsSolvable G],
-      Nat.card G ≤ n → IsInverseGalois G from H (Nat.card G) G le_rfl
+      Nat.card G ≤ n → P G from H (Nat.card G) G le_rfl
   intro n
   induction n with
   | zero => exact fun G _ _ _ h => absurd h (not_le.mpr Nat.card_pos)
@@ -71,8 +107,7 @@ theorem isInverseGalois_of_isSolvable_of_splitNilpotentEP
     intro G _ _ _ hcard
     rcases subsingleton_or_nontrivial G with hs | hs
     · haveI := hs
-      haveI : Unique G := uniqueOfSubsingleton 1
-      exact IsInverseGalois.unit.of_mulEquiv MulEquiv.ofUnique
+      exact hsub G
     · obtain ⟨N, hN, U, hnil, hUne, hsup⟩ := hSupp G
       haveI := hN
       haveI := hnil
@@ -90,6 +125,28 @@ theorem isInverseGalois_of_isSolvable_of_splitNilpotentEP
         rw [Subgroup.normal_mul] at hg
         obtain ⟨a, ha, b, hb, rfl⟩ := hg
         exact ⟨⟨⟨a, ha⟩, ⟨b, hb⟩⟩, rfl⟩
-      exact (hEP N U _ (ih U hUcard)).of_surjective _ hsurj
+      exact hquot _ _ _ hsurj (hEP N U _ (ih U hUcard))
+
+/-! ## Realizability over `ℚ` -/
+
+/-- **Realizability over `ℚ` passes to quotients.** -/
+theorem isQuotientClosed_isInverseGalois :
+    IsQuotientClosed (fun G _ => IsInverseGalois G) :=
+  fun _ _ _ _ f hf hG => hG.of_surjective f hf
+
+/-- **Ore's reduction of solvable groups to split embedding problems with nilpotent kernel.**
+
+Granted that a nontrivial finite solvable group always admits a nilpotent normal subgroup with a
+proper supplement, and that split embedding problems over `ℚ` with nilpotent kernel are solvable,
+every finite solvable group is a Galois group over `ℚ`. -/
+theorem isInverseGalois_of_isSolvable_of_splitNilpotentEP
+    (hSupp : HasNilpotentSupplement) (hEP : SplitNilpotentEP)
+    (G : Type) [Group G] [Finite G] [IsSolvable G] : IsInverseGalois G :=
+  oreInduction isQuotientClosed_isInverseGalois
+    (by
+      intro G _ _
+      haveI : Unique G := uniqueOfSubsingleton 1
+      exact IsInverseGalois.unit.of_mulEquiv MulEquiv.ofUnique)
+    hSupp hEP G
 
 end Shafarevich
