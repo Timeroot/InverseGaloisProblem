@@ -22,6 +22,7 @@ import InverseGalois.CFT.Cyclotomic.Splitting
 import InverseGalois.CFT.Decomposition
 import InverseGalois.CFT.Disjoint
 import InverseGalois.CFT.GroupCohomology.Classification
+import InverseGalois.CFT.GroupCohomology.Corestriction
 import InverseGalois.CFT.GroupCohomology.Cyclic
 import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.ToCocycle
@@ -109,6 +110,10 @@ it that are available here.
 * `InverseGalois.CFT.Brauer.CyclicAlgebra` computes the cyclic case: the cyclic algebra of a
   generator of a cyclic Galois group and a unit of the base field is a matrix algebra exactly when
   that unit is a norm.
+* `InverseGalois.CFT.GroupCohomology.Corestriction` builds the corestriction map of a finite-index
+  subgroup in every degree, through Shapiro's lemma and the trace morphism out of a coinduced
+  representation, and proves the relation `res ≫ cor = [G : S] • id`; from it, the cohomology of a
+  finite group in positive degrees is killed by the order of the group.
 * `InverseGalois.CFT.Brauer.Division` gives every central simple algebra its Wedderburn division
   representative, and deduces that the Brauer group of an algebraically closed field and of a
   finite field is trivial.
