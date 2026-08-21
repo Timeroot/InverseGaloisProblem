@@ -54,6 +54,8 @@ import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.ToCocycle
 import InverseGalois.CFT.Herbrand
 import InverseGalois.CFT.Level
+import InverseGalois.CFT.Local.DyadicHilbert
+import InverseGalois.CFT.Local.HilbertIdentities
 import InverseGalois.CFT.Local.HilbertMap
 import InverseGalois.CFT.Local.HilbertMul
 import InverseGalois.CFT.Local.HilbertSymbol
@@ -62,6 +64,7 @@ import InverseGalois.CFT.Local.PadicSquares
 import InverseGalois.CFT.Local.PadicSquaresTwo
 import InverseGalois.CFT.Local.RamifiedNormForm
 import InverseGalois.CFT.Local.UnramifiedNormForm
+import InverseGalois.CFT.SquareClasses
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
 
@@ -231,6 +234,16 @@ it that are available here.
   extension of a `p`-adic field for odd `p`: its values are exactly the elements of even
   valuation, so the Hilbert symbol against a nonsquare unit is multiplicative and reads off the
   parity of the valuation.
+* `InverseGalois.CFT.Local.DyadicHilbert` settles the excluded prime for unit arguments: a
+  dyadic isotropy question has an integral solution one of whose coordinates is a unit, so it is
+  decided modulo eight, and the symbol of two dyadic units is one exactly when one of them is
+  congruent to one modulo four.
+* `InverseGalois.CFT.Local.HilbertIdentities` records that the second argument of the symbol may
+  be multiplied by the negative of the first, so that the symbol of an element against itself is
+  its symbol against minus one.
+* `InverseGalois.CFT.SquareClasses` supplies the two induction principles that reduce a
+  multiplicative identity in the square classes of the rationals to the cases where both
+  arguments are minus one or a prime.
 * `InverseGalois.CFT.Local.RamifiedNormForm` does the same for the ramified quadratic extensions:
   a `p`-adic number is a value of the norm form exactly when the parity of its valuation matches
   the quadratic character of its unit part, twisted by the unit part of the discriminant, which
