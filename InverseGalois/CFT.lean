@@ -28,6 +28,7 @@ import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.ToCocycle
 import InverseGalois.CFT.Level
 import InverseGalois.CFT.Unramified
+import InverseGalois.CFT.UnramifiedCompositum
 
 /-!
 # Towards class field theory
@@ -51,6 +52,9 @@ it that are available here.
 * `InverseGalois.CFT.Disjoint` shows that number fields with disjoint ramification meet in `ℚ`.
 * `InverseGalois.CFT.Compositum` computes the Galois group of a compositum of two Galois
   extensions meeting in the base as the product of their Galois groups.
+* `InverseGalois.CFT.UnramifiedCompositum` computes the ramification of a compositum: a prime
+  ramifies in `A ⊔ B` exactly when it ramifies in `A` or in `B`, with no disjointness hypothesis,
+  so the level condition passes to a compositum.
 
 ## Reciprocity for the rational field
 
