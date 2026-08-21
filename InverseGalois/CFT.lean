@@ -60,6 +60,7 @@ import InverseGalois.CFT.Local.HilbertSymbol
 import InverseGalois.CFT.Local.PadicHilbert
 import InverseGalois.CFT.Local.PadicSquares
 import InverseGalois.CFT.Local.PadicSquaresTwo
+import InverseGalois.CFT.Local.RamifiedNormForm
 import InverseGalois.CFT.Local.UnramifiedNormForm
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
@@ -230,6 +231,10 @@ it that are available here.
   extension of a `p`-adic field for odd `p`: its values are exactly the elements of even
   valuation, so the Hilbert symbol against a nonsquare unit is multiplicative and reads off the
   parity of the valuation.
+* `InverseGalois.CFT.Local.RamifiedNormForm` does the same for the ramified quadratic extensions:
+  a `p`-adic number is a value of the norm form exactly when the parity of its valuation matches
+  the quadratic character of its unit part, twisted by the unit part of the discriminant, which
+  makes the Hilbert symbol against a ramified argument multiplicative as well.
 * `InverseGalois.CFT.Local.HilbertMul` identifies the elements of Hilbert symbol one with the
   values of a norm form, so that they form a subgroup; when that subgroup has index two the symbol
   is multiplicative in each argument, and its triviality is exactly the triviality of the relative
