@@ -7,6 +7,7 @@ import InverseGalois.CFT.Brauer.CrossedProductSplitting
 import InverseGalois.CFT.Brauer.CyclicAlgebra
 import InverseGalois.CFT.Brauer.Division
 import InverseGalois.CFT.Brauer.Group
+import InverseGalois.CFT.Brauer.Kernel
 import InverseGalois.CFT.Brauer.Opposite
 import InverseGalois.CFT.Brauer.SkolemNoether
 import InverseGalois.CFT.Brauer.Split
@@ -119,6 +120,10 @@ it that are available here.
 * `InverseGalois.CFT.GroupCohomology.Cohomologous` identifies equality of classes in `H²` with
   being cohomologous as multiplicative `2`-cocycles, in the explicit cochain form the crossed
   product construction consumes.
+* `InverseGalois.CFT.Brauer.Kernel` computes the kernel of the crossed product construction: the
+  Brauer class of a crossed product is trivial exactly when the cocycle is a coboundary, that is,
+  exactly when its class in the second cohomology group vanishes; over a cyclic extension this
+  identifies the trivial classes with the norms.
 * `InverseGalois.CFT.Brauer.Split` proves the uniqueness half of Wedderburn's theorem in the split
   case, and deduces that a central simple algebra has trivial Brauer class exactly when it is a
   matrix algebra over the base field.
