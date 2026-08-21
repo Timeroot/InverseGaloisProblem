@@ -183,6 +183,7 @@ import InverseGalois.Rigidity.RET.RegularCriterion
 import InverseGalois.Rigidity.RET.RegularQuadratic
 import InverseGalois.Rigidity.RET.RegularCubic
 import InverseGalois.Rigidity.RET.RegularQuotient
+import InverseGalois.Rigidity.RET.RegularBaseGen
 import InverseGalois.Rigidity.RET.BaseTransport
 import InverseGalois.Rigidity.RET.FixedField
 import InverseGalois.Rigidity.RET.MobiusAut
