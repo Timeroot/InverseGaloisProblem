@@ -83,11 +83,34 @@ Two remarks on how this differs from the plan in §5:
   primes split completely in `K`. Elementary — no density theory, no L-functions, no Chebotarev.
   Note that Mathlib has **no** "splits completely" predicate, so `SplitsCompletely` is defined here
   as "every prime above `p` has ramification index and inertia degree one".
-* **Milestone 6(a) is done.** `InverseGalois/NumberTheory/IdealNormCount.lean` proves that
-  `n ↦ #{I ⊴ 𝒪_K : absNorm I = n}` is multiplicative and derives the **Euler product for
-  `NumberField.dedekindZeta`**, which Mathlib does not have. The proof uses no unique factorization
-  of ideals — only `absNorm I ∈ I` together with Bézout comaximality. Milestones 6(b) and 6(c)
-  (re-indexing over prime ideals, then the density statement (★) of §1.5) are not done.
+* **Milestone 6 is done, in full and unconditionally.** Three files:
+  * `IdealNormCount.lean` proves `n ↦ #{I ⊴ 𝒪_K : absNorm I = n}` multiplicative and derives the
+    **Euler product for `NumberField.dedekindZeta`** indexed by the rational primes — which Mathlib
+    does not have. The proof uses no unique factorization of ideals, only `absNorm I ∈ I` together
+    with Bézout comaximality.
+  * `IdealEulerProduct.lean` gives the Euler product in its intrinsic form,
+    `dedekindZeta_eulerProduct_primeIdeal : ∏' 𝔭, (1 - N𝔭^{-s})⁻¹ = ζ_K(s)` for `re s > 1`. There is
+    no Euler product for a Dedekind domain anywhere in Mathlib — everything under
+    `Mathlib/NumberTheory/EulerProduct/` is ℕ-indexed — so this is built from scratch, mirroring
+    the structure of `EulerProduct/Basic.lean`.
+  * `SplitDensity.lean` defines `HasDirichletDensity` (Mathlib has no notion of prime density at
+    all) and proves `hasDirichletDensity_splitSet`: **the primes splitting completely in a Galois
+    number field of degree `n` have Dirichlet density `1/n`.** Hence the payoff, **statement (★) of
+    §1.5**, unconditionally:
+
+    ```lean
+    theorem infinite_setOf_splitsCompletely_not_splitsCompletely
+        (A B : Type*) [Field A] [NumberField A] [IsGalois ℚ A]
+        [Field B] [NumberField B] [IsGalois ℚ B]
+        (hlt : Module.finrank ℚ A < Module.finrank ℚ B) :
+        {p : ℕ | p.Prime ∧ SplitsCompletely A p ∧ ¬ SplitsCompletely B p}.Infinite
+    ```
+
+    This is the **only** consequence of Chebotarev's theorem that Scholz–Reichardt actually needs,
+    and it needs no containment `A ⊆ B` — a degree inequality suffices. Two side-products worth
+    noting: `finite_ramifiedSet` (only finitely many rational primes ramify) had to be proved here,
+    since Mathlib has no "ramified ⇒ divides discriminant"; and `log ζ_K` is built as
+    `∑' 𝔭, -log(1 - N𝔭^{-s})` directly rather than by taking a logarithm of the product.
 
 **Unchanged verdict.** Milestones 8–11 — Kronecker–Weber, the Brauer group with its group law,
 Scholz–Reichardt, Shafarevich's arithmetic core — remain out of reach, for exactly the reasons
@@ -756,7 +779,7 @@ Assemble: Milestone 2 gives A ≀ᵣ H regularly over k(t_h); Milestone 3 specia
 *Value:* this is the deliverable. It is the largest new family of solvable groups over ℚ that is
 reachable at all with current Mathlib.
 
-### Milestone 6 (optional, high value elsewhere) — Split-density of primes. **[M–L]** — **(a) DONE**, see §0
+### Milestone 6 (optional, high value elsewhere) — Split-density of primes. **[M–L]** — **DONE**, see §0
 
 Prove: *for K/ℚ Galois of degree n, the set of rational primes splitting completely in K has
 Dirichlet density 1/n; in particular, for A ⊊ B with B/ℚ Galois, infinitely many primes split
