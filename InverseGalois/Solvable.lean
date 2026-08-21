@@ -2,6 +2,7 @@ import InverseGalois.Solvable.ChiefSeries
 import InverseGalois.Solvable.Nilpotent
 import InverseGalois.Solvable.Wreath
 import InverseGalois.Solvable.WreathFunctor
+import InverseGalois.Solvable.WreathRecognition
 import InverseGalois.Solvable.Semiabelian
 import InverseGalois.Solvable.WreathCyclic
 
@@ -25,6 +26,9 @@ free of arithmetic input and applicable to both realization predicates of the de
 * `InverseGalois.Solvable.WreathFunctor` makes `A ≀ᵣ H` functorial in both arguments and exhibits
   `(A₁ × A₂) ≀ᵣ H` as a quotient of the iterated wreath product `A₁ ≀ᵣ (A₂ ≀ᵣ H)`, which lets a
   realization of wreath products propagate along quotients of either factor.
+* `InverseGalois.Solvable.WreathRecognition` recognizes a group as a regular wreath product from a
+  cocycle of coordinates together with a count, which is how a Galois group acting on conjugate
+  layers of a field extension is identified.
 * `InverseGalois.Solvable.Semiabelian` defines Dentzer's class of semiabelian groups — the class
   the wreath-product approach reaches — and derives a realization of every one of its members from
   a realization of the wreath products alone.
