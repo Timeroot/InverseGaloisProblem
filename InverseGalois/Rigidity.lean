@@ -11,6 +11,7 @@ import InverseGalois.Rigidity.Examples.PGL2F13
 import InverseGalois.Rigidity.Examples.PGL2F17
 import InverseGalois.Rigidity.Examples.PGL2F19
 import InverseGalois.Rigidity.Examples.PSL27
+import InverseGalois.Rigidity.Examples.PSL2F11
 import InverseGalois.Rigidity.Examples.Shih
 
 /-!
@@ -45,6 +46,10 @@ in its covers form — and established in `RET.Completeness` as `geomRET`.
   the rigid but irrational triple `(2A, 3A, 7A)` on the projective line: rigidity realizes it
   regularly over `K(T)` for a number field `K`, the two classes of elements of order `7` being
   interchanged by the exponents prime to `7`.
+* `Rigidity.PSL2F11.exists_regular_numberField` — the same for `PSL₂(𝔽₁₁)`, of order `660`, from
+  the triple `(2A, 3A, 11A)`.  The certificates for `p = 13, 17, 19, 23, 29, 31, 37` are the same
+  construction and live in the separate `PSL2Large` target, which raises the elaboration-thread
+  stack.
 * `Rigidity.Shih.shihPrime_iff` — the congruence condition on `p` under which one of `2`, `3`, `7`
   is a quadratic non-residue, which is the arithmetic half of Shih's modular construction of
   `PSL₂(𝔽ₚ)`.

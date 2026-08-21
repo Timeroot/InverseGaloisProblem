@@ -6,6 +6,7 @@ defaultTargets = [
   "MathieuRigidityM22",
   "MathieuRigidityM24",
   "PGL2Large",
+  "PSL2Large",
 ]
 
 [[require]]
@@ -72,6 +73,23 @@ roots = [
   "InverseGalois.Rigidity.Examples.PGL2F29",
   "InverseGalois.Rigidity.Examples.PGL2F31",
   "InverseGalois.Rigidity.Examples.PGL2F37",
+]
+moreLeanArgs = ["--tstack=262144"]
+
+# The `PSL₂(𝔽ₚ)` orbit-rigidity certificates for `p ≥ 13`.  They need the same raised
+# elaboration-thread stack as the targets above: the mirror triple makes the kernel evaluate
+# powers of the translation and words in the two generators as permutations of `ℙ¹(𝔽ₚ)`, which
+# nests more deeply than the default stack allows.
+[[lean_lib]]
+name = "PSL2Large"
+roots = [
+  "InverseGalois.Rigidity.Examples.PSL2F13",
+  "InverseGalois.Rigidity.Examples.PSL2F17",
+  "InverseGalois.Rigidity.Examples.PSL2F19",
+  "InverseGalois.Rigidity.Examples.PSL2F23",
+  "InverseGalois.Rigidity.Examples.PSL2F29",
+  "InverseGalois.Rigidity.Examples.PSL2F31",
+  "InverseGalois.Rigidity.Examples.PSL2F37",
 ]
 moreLeanArgs = ["--tstack=262144"]
 

@@ -95,9 +95,10 @@ in the third, are interchanged by the exponents prime to `11`, resp. `23` — in
 rationally rigid triple, and `M₂₂` and `M₂₃` have no rigid triple at all, so the method stops
 there; `Aut(M₂₂) = M₂₂ : 2` does have one, and its certificate lives in the
 `MathieuRigidityM22` target.  See `docs/Development/MathieuRigidity.md`.  The same descent applies
-to `PSL₂(𝔽₇)` (`Rigidity.PSL27.exists_regular_numberField`), whose rigid triple `(2A, 3A, 7A)` is
-irrational for the same reason: the exponents prime to `7` interchange its two classes of elements
-of order `7`.
+to the simple groups `PSL₂(𝔽ₚ)` (`Rigidity.PSL27.exists_regular_numberField`,
+`Rigidity.PSL2F11.exists_regular_numberField`, and the `PSL2Large` target for
+`p = 13, 17, 19, 23, 29, 31, 37`), whose rigid triple `(2A, 3A, pA)` is irrational for the same
+reason: the exponents prime to `p` interchange its two classes of elements of order `p`.
 
 ## Groups of Lie type
 
@@ -133,12 +134,16 @@ construction, whose arithmetic half is `Rigidity.Shih.shihPrime_iff`; see
 `docs/Development/Shih.md`.
 
 Over a number field the simple group is nevertheless reachable, by the same orbit-rigidity descent
-that realizes the Mathieu groups.  `PSL₂(𝔽₇)`, of order `168`, has the rigid triple `(2A, 3A, 7A)`
-— an involution, an element of order `3` and a `7`-cycle — whose product-one fibre has exactly
-`7 = |C(z)|` elements.  The triple is not rational, the two classes of elements of order `7` being
-interchanged by the exponents prime to `7`, but both members of its cyclotomic orbit are rigid, so
-`Rigidity.PSL27.exists_regular_numberField` realizes `PSL₂(𝔽₇)` regularly over `K(T)` for the
-number field `K` that the index-two stabilizer cuts out.
+that realizes the Mathieu groups, and for every prime rather than for a sporadic list.  `PSL₂(𝔽ₚ)`
+has the triple `(2A, 3A, pA)` — an involution, an element of order `3` and a `p`-cycle — whose
+product-one fibre has exactly `p = |C(z)|` elements, so it is rigid; it is not rational, the two
+classes of elements of order `p` being interchanged by the exponents prime to `p`, but both members
+of its cyclotomic orbit are rigid, and that is what the descent needs.  It realizes `PSL₂(𝔽ₚ)`
+regularly over `K(T)` for the number field `K` that the index-two stabilizer cuts out, the
+quadratic subfield of `ℚ(ζₚ)`.  The certificates are `Rigidity.PSL27.exists_regular_numberField`
+and `Rigidity.PSL2F11.exists_regular_numberField` here, and `p = 13, 17, 19, 23, 29, 31, 37` in
+the `PSL2Large` target, which raises the elaboration-thread stack.  Note that `p = 23`, the one
+prime below `37` out of reach of the rational triples above, is reached this way.
 
 ## Main results
 

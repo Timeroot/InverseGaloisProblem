@@ -219,6 +219,16 @@ theorem gen_top : Subgroup.closure ({xE x z, zE x z} : Set ↥(gen2 x z)) = ⊤ 
   rw [h]
   exact Subgroup.closure_closure_coe_preimage
 
+/-- **A subgroup containing the two generators is everything.** -/
+theorem top_of_mem {H : Subgroup ↥(gen2 x z)} (hx : xE x z ∈ H) (hz : zE x z ∈ H) : H = ⊤ := by
+  refine top_le_iff.mp ?_
+  rw [← gen_top x z]
+  refine (Subgroup.closure_le _).mpr ?_
+  intro g hg
+  simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hg
+  rcases hg with rfl | rfl
+  exacts [hx, hz]
+
 /-- **The first generator and the inverse of the second also generate.** -/
 theorem gen_top_inv : Subgroup.closure ({xE x z, (zE x z)⁻¹} : Set ↥(gen2 x z)) = ⊤ := by
   have hx : xE x z ∈ Subgroup.closure ({xE x z, (zE x z)⁻¹} : Set ↥(gen2 x z)) :=
@@ -227,13 +237,7 @@ theorem gen_top_inv : Subgroup.closure ({xE x z, (zE x z)⁻¹} : Set ↥(gen2 x
     Subgroup.subset_closure (Set.mem_insert_of_mem _ rfl)
   have hz : zE x z ∈ Subgroup.closure ({xE x z, (zE x z)⁻¹} : Set ↥(gen2 x z)) := by
     simpa using inv_mem hzi
-  refine top_le_iff.mp ?_
-  rw [← gen_top x z]
-  refine (Subgroup.closure_le _).mpr ?_
-  intro g hg
-  simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hg
-  rcases hg with rfl | rfl
-  exacts [hx, hz]
+  exact top_of_mem x z hx hz
 
 /-! ### Closure of a list of codes under conjugation -/
 

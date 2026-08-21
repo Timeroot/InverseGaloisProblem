@@ -20,12 +20,13 @@ over `ℚ(T)` for any `p`. What has been done instead:
   from explicit kernel-checked rigidity certificates, and the machinery to add more primes exists;
 * the prime list for Route 2 has been recomputed and corrected: `p = 29` **does** admit a rational
   rigid triple, and among the primes at most `37` only `p = 23` does not;
-* a **third route** turned out to be open and cheap, and it is now done for `p = 7`: `PSL₂(𝔽₇)`
-  itself has a rigid — though irrational — triple, so the orbit-rigidity descent realizes it
-  regularly over `K(T)` for a number field `K`. See "Route 3" below. This is weaker than the goal
-  — the field cut out by the index-two stabilizer is the quadratic subfield `ℚ(√-7)` of `ℚ(ζ₇)`,
-  not `ℚ`, and the Lean statement asserts only that *some* number field works — but it is a
-  genuine regular realization of the simple group.
+* a **third route** turned out to be open and cheap, and it is now done for
+  every prime `7 ≤ p ≤ 37`: `PSL₂(𝔽ₚ)` itself has a rigid — though irrational — triple
+  `(2A, 3A, pA)`, so the orbit-rigidity descent realizes it regularly over `K(T)` for a number
+  field `K`. See "Route 3" below. This is weaker than the goal — the field cut out by the
+  index-two stabilizer is the quadratic subfield of `ℚ(ζₚ)`, not `ℚ`, and the Lean statement
+  asserts only that *some* number field works — but it is a genuine regular realization of the
+  simple group, and it reaches `p = 23`, which Route 2 provably cannot.
 
 ---
 
@@ -382,7 +383,7 @@ checks on lists of numerals (`certOf`). Adding a new prime is mechanical.
 The last three files (`p = 29, 31, 37`) sit in their own `PGL2Large` lean_lib because they need
 `--tstack=262144`, exactly as the `M₂₂` and `M₂₄` certificates do.
 
-## Route 3: orbit rigidity — `PSL₂(𝔽₇)` over a number field (done)
+## Route 3: orbit rigidity — `PSL₂(𝔽ₚ)` over a number field (done)
 
 Rigidity over `ℚ` needs the class tuple to be *rational*. `PSL₂(𝔽ₚ)` never has a rational rigid
 triple, which is why Routes 1 and 2 exist. But the repo already contains the weaker descent that
@@ -423,11 +424,63 @@ The file compiles in about 40 seconds and needs no stack bump. Two small general
 above an *arbitrary* third entry (not only the generator `z`) and with an arbitrary middle class,
 and `gen_top_inv`, that `x` and `z⁻¹` generate whatever `x` and `z` generate.
 
-What this does **not** give: a realization over `ℚ(T)`, nor `IsInverseGalois PSL₂(𝔽₇)` over `ℚ`.
+### The same for every prime up to 37
+
+The `(2, 3, 7)` triple is *not* special to `p = 7`. A brute-force count over `PSL₂(𝔽ₚ)` (script
+kept out of the repo; it enumerates the involutions as the trace-zero matrices and filters by the
+order of `w⁻¹z⁻¹`) shows that for **every** prime `5 ≤ p ≤ 37` the fibre
+
+```
+#{ w ∈ 2A : w⁻¹z⁻¹ has order 3 },    z : t ↦ t + 1,
+```
+
+has exactly `p` elements, every one of them generating together with `z`. Since `|C(z)| = p`, the
+triple `(2A, 3A, pA)` is rigid for all of them. `PSL₂(𝔽ₚ)` has a single class of involutions and a
+single class of elements of order `3`, so both of those classes are rational, and the whole
+cyclotomic orbit of the triple modulo `6p` again consists of exactly two triples,
+`(2A, 3A, pA)` and `(2A, 3A, pB)`, interchanged by the non-residues mod `p`.
+
+The Lean files are therefore all instances of one template, and were produced by a generator:
+
+| file | group | order | class `2A` | build |
+|---|---|---|---|---|
+| `Examples/PSL27.lean` | `PSL₂(𝔽₇)` | 168 | 21 | 36 s |
+| `Examples/PSL2F11.lean` | `PSL₂(𝔽₁₁)` | 660 | 55 | 59 s |
+| `Examples/PSL2F13.lean` | `PSL₂(𝔽₁₃)` | 1092 | 91 | 124 s |
+| `Examples/PSL2F17.lean` | `PSL₂(𝔽₁₇)` | 2448 | 153 | 273 s |
+| `Examples/PSL2F19.lean` | `PSL₂(𝔽₁₉)` | 3420 | 171 | 342 s |
+| `Examples/PSL2F23.lean` | `PSL₂(𝔽₂₃)` | 6072 | 253 | 1535 s |
+| `Examples/PSL2F29.lean` | `PSL₂(𝔽₂₉)` | 12180 | 435 | 1538 s |
+| `Examples/PSL2F31.lean` | `PSL₂(𝔽₃₁)` | 14880 | 465 | 2172 s |
+| `Examples/PSL2F37.lean` | `PSL₂(𝔽₃₇)` | 25308 | 703 | 3140 s |
+
+`p = 7` and `p = 11` are part of the `InverseGalois` library; from `p = 13` on the kernel
+recursion outgrows the default elaboration-thread stack, so those files sit in their own
+`PSL2Large` lean_lib with `--tstack=262144`, exactly like `PGL2Large`.  From `p = 29` on the
+generator also emits `decide +kernel` rather than `decide` everywhere, which is what keeps the
+larger files inside the same time envelope; `p = 37` is where this stops being cheap, and nothing
+but kernel time prevents the next primes.
+
+Two points where the template is more than a copy of the `p = 7` file:
+
+* The mirror third entry is `z^t` for `t` the least non-residue mod `p`, not `z⁻¹`: for
+  `p ≡ 1 (mod 4)` inversion *preserves* the class of `z`. Its product-one fibre is a single free
+  orbit of `⟨z⟩`, so it need not contain `x` itself; the file picks a witness `x₀ = c x c⁻¹` from
+  it and proves that `x₀` and `z^t` generate by writing `x` as a word in them (`top_of_mem`, a new
+  `PermCode` lemma: a subgroup containing both distinguished generators is everything).
+* The exponents are handled by one conjugator `g` with `g z g⁻¹ = z^s`, `s` a generator of the
+  squares mod `p`; doubling chains from `1` and from `t` then cover all `p - 1` residues, which is
+  what `mk_zE_pow_cases` case-splits on.
+
+What this does **not** give: a realization over `ℚ(T)`, nor `IsInverseGalois PSL₂(𝔽ₚ)` over `ℚ`.
 Hilbert irreducibility applied to the conclusion realizes the group over `K`, not over `ℚ`. The
-same recipe should work for other primes wherever `(2A, 3A, pA)` is rigid in `PSL₂(𝔽ₚ)` — the
-`(2,3,7)` triple is special to `p = 7` (it is the Hurwitz triple; `PSL₂(𝔽₇)` is the Klein quartic's
-automorphism group), so each further prime needs its own triple and its own search.
+number field `K` is the fixed field of the index-two stabilizer, i.e. the quadratic subfield of
+`ℚ(ζₚ)` — `ℚ(√-p)` for `p ≡ 3 (mod 4)`, `ℚ(√p)` for `p ≡ 1 (mod 4)` — but the Lean statement is
+only `∃ K, NumberField K ∧ …`, which is all `exists_regular_numberField_of_orbitRigid` provides.
+
+Note the contrast with Route 2: `p = 23` is precisely the prime where `PGL₂(𝔽₂₃)` has *no*
+rational rigid triple, yet `PSL₂(𝔽₂₃)` is reached here without difficulty. The two methods have
+different ranges.
 
 ## Other routes surveyed (2026-08-21)
 
@@ -463,14 +516,14 @@ automorphism group), so each further prime needs its own triple and its own sear
   which is the same index-descent problem as Route 2 but harder (no conic).
 
 Conclusion: **Route 2 remains the cheapest** path to `PSL₂(𝔽ₚ)` over `ℚ(T)`, and the estimate below
-stands. Route 3 is already done and gives the weaker number-field statement for `p = 7`.
+stands. Route 3 is already done and gives the weaker number-field statement for every prime
+`7 ≤ p ≤ 37`.
 
 ## Recommendation
 
-0. Route 3 is done for `p = 7`; the cheapest *next* increment is to search for rigid (not
-   necessarily rational) triples in `PSL₂(𝔽ₚ)` for the next few primes and repeat it. The search is
-   a few lines of GAP or Python, and the Lean file is mechanical once the triple and the
-   conjugators are known.
+0. Route 3 is done for every prime `7 ≤ p ≤ 37`, by a generator that emits the whole file from
+   the triple and the conjugators. Extending it to further primes costs only kernel time (the
+   `p = 37` file already takes about fifty minutes), not new mathematics.
 1. For the `ℚ(T)` statement, do Route 2. It is the only realistic path, and it pays for
    `M₂₂` at the same time.
 2. Attack the `HasConicSubfield` hypothesis first: it needs no new tower plumbing, only field
