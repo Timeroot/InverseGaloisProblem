@@ -48,6 +48,9 @@ Families:
   certificate; `Rigidity.sn_isRegularInverseGalois` is the certificate for `Sₙ`, `n ≥ 3`.
 * `Rigidity.PGL27.isRegularInverseGalois` — the group of Lie type `PGL₂(𝔽₇)`, of order `336`, from
   the rational rigid triple `(2B, 6A, 7A)` on the projective line `ℙ¹(𝔽₇)`.
+* `Rigidity.PGL2F11.isRegularInverseGalois`, `Rigidity.PGL2F13.isRegularInverseGalois`,
+  `Rigidity.PGL2F17.isRegularInverseGalois`, `Rigidity.PGL2F19.isRegularInverseGalois` — the same
+  for `PGL₂(𝔽ₚ)` at `p = 11, 13, 17, 19`, of orders `1320`, `2184`, `4896` and `6840`.
 
 The realizations proved by exhibiting a single polynomial over `ℚ` — `X³ - 2` for `S₃`
 (`Groups.S3`), `X⁴ + 8X + 12` for `A₄` (`Groups.A4`), `X⁵ + 20X + 16` for `A₅` (`Groups.A5`),
@@ -101,8 +104,30 @@ of orders `2`, `3` and `6`, never enough to generate — and its two classes of 
 are interchanged by the exponents prime to `q`.  Passing to `PGL₂(𝔽_q)` fuses those two classes and
 adds outer rational classes of order `2` and, when the tori allow it, of order `4` or `6`; that is
 exactly what a rational rigid triple needs.  `PGL₂(𝔽₇)` is the smallest case where the fibre count
-is as sharp as it can be — seven product-one triples, matching the centraliser of a `7`-cycle — and
-it is the case formalized here.
+is as sharp as it can be — seven product-one triples, matching the centraliser of a `7`-cycle.
+
+Which primes this reaches is decided by the two cyclic tori, of orders `p - 1` and `p + 1`.  An
+element of order `4` in a cyclic torus of order `m` lies outside `PSL₂(𝔽ₚ)` exactly when `4 ∣ m`
+and `8 ∤ m`, and one of order `6` exactly when `6 ∣ m` and `12 ∤ m`; a triple
+`(2, m, p)` consisting of the outer involution, an outer element of order `m ∈ {4, 6}` and a
+`p`-cycle is then rational, generating and — for the primes below — rigid, its product-one fibre
+having exactly `p` elements, the order of the centraliser of the `p`-cycle.  Among the primes at
+most `37` this succeeds for `5, 7, 11, 13, 17, 19, 29, 31, 37` and fails only for `23`, where
+`p - 1 = 22` and `p + 1 = 24` admit neither an outer element of order `4` (as `8 ∣ 24`) nor one of
+order `6` (as `12 ∣ 24`).
+
+The certificates for `p = 7, 11, 13, 17, 19` are formalized here; the computations are carried out
+by the kernel on base-`(p+1)` numerals encoding permutations of `ℙ¹(𝔽ₚ)`, through
+`Rigidity.PermCode`.
+
+The simple group `PSL₂(𝔽ₚ)` itself stays out of reach of rigidity: it is the index-two subgroup of
+`PGL₂(𝔽ₚ)` rather than a quotient, so a realization of the overgroup does not descend to it
+directly.  What the rigidity data does give is a cover of the line branched over three rational
+points whose deck group is `PGL₂(𝔽ₚ)`, and the intermediate field cut out by `PSL₂(𝔽ₚ)` is then a
+conic through two of the three branch points, hence a rational function field
+(`RET.Descent.Index2`).  The classical route to `PSL₂(𝔽ₚ)` is different again — Shih's modular
+construction, whose arithmetic half is `Rigidity.Shih.shihPrime_iff`; see
+`docs/Development/Shih.md`.
 
 ## Main results
 

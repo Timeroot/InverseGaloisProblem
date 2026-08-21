@@ -1,6 +1,6 @@
 # `PSL₂(𝔽ₚ)` over `ℚ(T)`: Shih's theorem vs. index-two descent
 
-*Assessment written 2026-08-20, on the `shih` branch.*
+*Assessment written 2026-08-20, revised 2026-08-21, on the `shih` branch.*
 
 The goal is to realize the simple groups `PSL₂(𝔽ₚ)` as **regular** Galois groups over `ℚ(T)`.
 There are two candidate routes. This document compares them, ranks the specific obstructions to
@@ -10,25 +10,59 @@ each, and records what has been formalized so far.
 still weeks of work, and it only reaches a finite list of primes. Route 1 (Shih) is not
 formalizable with today's Mathlib; the gap is a multi-year algebraic-geometry programme.**
 
+**Status as of 2026-08-21.** Neither route has been completed, and `PSL₂(𝔽ₚ)` is *not* realized
+for any `p`. What has been done instead:
+
+* the whole branch is `sorry`-free and axiom-free again, by turning the two unproved leaves of
+  Route 2 into **explicit hypotheses** and by **deleting** the two unproved leaves of Route 1
+  (one of which, `AtkinLehner`, was an inconsistent statement — see below);
+* the overgroups `PGL₂(𝔽ₚ)` are now realized regularly over `ℚ(T)` for `p = 7, 11, 13, 17, 19`,
+  from explicit kernel-checked rigidity certificates, and the machinery to add more primes exists;
+* the prime list for Route 2 has been recomputed and corrected: `p = 29` **does** admit a rational
+  rigid triple, and among the primes at most `37` only `p = 23` does not.
+
 ---
 
 ## The two routes at a glance
 
 | | Route 1 — Shih, modular curves | Route 2 — index-two descent from `PGL₂(𝔽ₚ)` |
 |---|---|---|
-| Primes reached | all `p` with `(2/p) = -1` or `(3/p) = -1` or `(7/p) = -1`, i.e. density `7/8` | only `p` for which `PGL₂(𝔽ₚ)` has a *rational rigid triple*: `p ∈ {5, 7, 11, 13, 17, 19, 31, 37}` (a finite list) |
+| Primes reached | all `p` with `(2/p) = -1` or `(3/p) = -1` or `(7/p) = -1`, i.e. density `7/8` | only `p` for which `PGL₂(𝔽ₚ)` has a *rational rigid triple*: among `p ≤ 37` that is `5, 7, 11, 13, 17, 19, 29, 31, 37` (a finite list) |
 | Mathematical input | moduli of elliptic curves, Weil pairing, Atkin–Lehner, Shimura reciprocity | the rigidity method (already in this repo) plus ramification bookkeeping |
 | Mathlib prerequisites | essentially all absent (see below) | all present |
 | Repo prerequisites | none | `RigidityCertificate`, the full RET descent tower, the `PGL₂(𝔽₇)` certificate |
-| Open `sorry`s today | 2 (both are the whole construction) | 2 (both are bridging lemmas over existing machinery) |
+| Open `sorry`s today | 0 — the unproved statements were deleted | 0 — the unproved statements are now explicit hypotheses |
 | Honest effort estimate | multi-year, and gated on a large Mathlib programme | 3–8 focused weeks |
 
 Two remarks that matter for choosing:
 
 * Route 2 does **not** subsume Route 1. `PGL₂(𝔽ₚ)` has a rational rigid triple only for finitely
-  many `p` (see `docs/` note *Lie-type rigidity survey*: `q = 5, 7, 11, 13, 17, 19, 31, 37`, and
-  *not* `23` or `29`). Shih covers seven eighths of all primes. So Route 2 is a shortcut to a few
-  named groups, not to the family.
+  many `p`. Shih covers seven eighths of all primes. So Route 2 is a shortcut to a few named
+  groups, not to the family.
+
+  The criterion is a torus computation. `PGL₂(𝔽ₚ)` acts on `ℙ¹(𝔽ₚ)` with two cyclic tori, of
+  orders `p - 1` and `p + 1`; an element of order `4` in a torus of order `m` is *outer* (lies
+  outside `PSL₂(𝔽ₚ)`) exactly when `4 ∣ m` and `8 ∤ m`, and one of order `6` exactly when `6 ∣ m`
+  and `12 ∤ m`. A rational rigid triple needs an outer class of order `4` or `6` to pair with the
+  outer involution and a `p`-cycle. Running this over the primes `p ≤ 37`:
+
+  | `p` | `p-1` | `p+1` | outer order `4` or `6`? |
+  |---|---|---|---|
+  | 5 | 4 | 6 | yes (4 ∣ 4, 8 ∤ 4) |
+  | 7 | 6 | 8 | yes (6 ∣ 6, 12 ∤ 6) |
+  | 11 | 10 | 12 | yes (4 ∣ 12, 8 ∤ 12) |
+  | 13 | 12 | 14 | yes (4 ∣ 12) |
+  | 17 | 16 | 18 | yes (6 ∣ 18, 12 ∤ 18) |
+  | 19 | 18 | 20 | yes (4 ∣ 20, 8 ∤ 20) |
+  | 23 | 22 | 24 | **no** (8 ∣ 24 and 12 ∣ 24) |
+  | 29 | 28 | 30 | yes (4 ∣ 28, 8 ∤ 28) |
+  | 31 | 30 | 32 | yes (6 ∣ 30, 12 ∤ 30) |
+  | 37 | 36 | 38 | yes (4 ∣ 36, 8 ∤ 36) |
+
+  This corrects the earlier note in *Lie-type rigidity survey*, which listed `29` as failing. A
+  direct search over `PGL₂(𝔽₂₉)` confirms both halves: an explicit rational rigid triple
+  `(2A, 4A, 29A)` with class sizes `406, 870, 840` exists, and no triple of the shape
+  `(involution, order 4 or 6, 23-cycle)` exists in `PGL₂(𝔽₂₃)`.
 * Route 2 is genuinely worth doing anyway: the same index-two theorem also unlocks `M₂₂` from the
   landed `Aut(M₂₂) = M₂₂ : 2` certificate, which rigidity provably cannot reach directly (`M₂₂`
   has no rigid triple at all).
@@ -103,33 +137,65 @@ geometry moves them.
 
 ### What of Route 1 *is* formalized here
 
-`InverseGalois/Rigidity/Examples/Shih.lean` (unimported leaf; **2 open `sorry`s**) contains:
+`InverseGalois/Rigidity/Examples/Shih.lean` is now imported from `InverseGalois/Rigidity.lean` and
+is `sorry`-free. It contains:
 
-* **proved** — `ShihPrime`, `isSquare_mod_three`, `isSquare_mod_seven`,
-  `isSquare_of_mod_four_eq_three`, `isSquare_two_iff`, `isSquare_three_iff`, `isSquare_seven_iff`,
-  `shihPrime_iff` (the `mod 168` characterization), `exists_level`;
-* **proved** — `atkinLehner`, `atkinLehner_mul_self`, `atkinLehner_sq`, and
-  `exists_ringEquiv_atkinLehnerFixedField`: *the Atkin–Lehner quotient of a rational curve is
-  rational*. This is step 3 above, and it is real content: it uses the repo's Möbius-substitution
-  calculus (`RET/MobiusAut.lean`), Artin's theorem and Lüroth's theorem
+* `ShihPrime`, `isSquare_mod_three`, `isSquare_mod_seven`, `isSquare_of_mod_four_eq_three`,
+  `isSquare_two_iff`, `isSquare_three_iff`, `isSquare_seven_iff`, `shihPrime_iff` (the `mod 168`
+  characterization), `exists_level`;
+* `atkinLehner`, `atkinLehner_mul_self`, `atkinLehner_sq`, and
+  `exists_ringEquiv_atkinLehnerFixedField`: *the Atkin-Lehner quotient of a rational curve is
+  rational*. This is step 3 above, and it is real content: it uses the repo's Mobius-substitution
+  calculus (`RET/MobiusAut.lean`), Artin's theorem and Luroth's theorem
   (`RET/FixedField.lean`, `Hilbert/Analytic/Luroth.lean`);
-* **stated, not proved** — `LevelTower` (the level-`p` tower packaged as exactly the two facts the
-  descent consumes: the determinant character is surjective with kernel `PSL₂(𝔽ₚ)`, and it is the
-  character of the action on the constants), `AtkinLehner` (a lift of `w_N` with multiplier `N` on
-  `μₚ`), and the two `sorry`s:
-  * `levelTower_atkinLehner_exists` — the modular input (items 1–6 above);
-  * `isRegularInverseGalois_of_atkinLehner` — the twist. This one is *pure group theory plus field
-    theory* once the tower exists, and is the smaller of the two by far;
-* **proved** — `shih`, the assembly of the two into the theorem statement.
+* `LevelTower`, the level-`p` tower packaged as exactly the two facts the descent would consume
+  (the determinant character is surjective with kernel `PSL2(Fp)`, and it is the character of the
+  action on the constants), together with `LevelTower.index_ker_det`, which records that the
+  geometric group has index `p - 1`: that is the obstruction the twist has to remove.
 
-So the deliverable "a precise Lean statement of Shih's theorem with a decomposition into named
-intermediate lemmas, every provable leaf proved" is met; the two unproved leaves are exactly the
-modular geometry and the twist.
+### What was deleted, and why: the `AtkinLehner` structure was inconsistent
+
+The previous version of this file carried a structure `AtkinLehner p N tower` bundling
+
+```
+  omega        : tower.M ~=[Q] tower.M
+  omega_sq     : omega.trans omega = AlgEquiv.refl
+  omega_root   : forall z : tower.M, z ^ p = 1 -> omega z = z ^ N
+```
+
+together with two `sorry`s (`levelTower_atkinLehner_exists`, `isRegularInverseGalois_of_atkinLehner`)
+and the assembly `shih`. **Those two fields contradict each other.** Applying `omega_root` twice,
+
+```
+  z = omega (omega z) = omega (z ^ N) = (omega z) ^ N = z ^ (N * N)
+```
+
+for every `p`-th root of unity `z` in `M`. But `M` contains a *primitive* `p`-th root of unity —
+that is precisely what the `LevelTower.constants` field says, and it is the whole point of the
+construction — so `N^2 = 1 (mod p)`. For `N in {2, 3, 7}` that forces `p` to divide `3`, `8` or
+`48`, impossible for `p >= 5`. So `AtkinLehner p N tower` is an **empty** structure for every prime
+the construction is about, and `levelTower_atkinLehner_exists` is a **false** statement, not merely
+an unproved one. Anything proved from it would have been vacuous.
+
+The mathematical error is the normalisation of the lift. The Atkin-Lehner involution `w_N` of
+`X_0(N)` is an involution *on the base*, but its lifts to the level-`p` tower are only well defined
+up to the geometric monodromy group, and no lift is an involution: `omega^2` lies in the geometric
+group and is nontrivial. In Shih's argument what matters is the class of `omega` modulo the
+geometric group and the fact that the induced action on the constants `Q(zeta_p)` is `zeta -> zeta^N`,
+i.e. the image of `N` in `(Z/p)^x / ((Z/p)^x)^2`; the twist is by that class. A correct Lean
+statement therefore has to replace `omega_sq` by something like `omega^2 in image of Gal(M/Q(t))`,
+and cannot state the multiplier as an identity on all of `M`'s `p`-th roots of unity while also
+demanding an involution.
+
+Rather than ship a structure that is provably empty, the structure and the three declarations
+depending on it were deleted. What survives is exactly what is proved. Restating Shih's input
+correctly is a prerequisite for any future attempt on Route 1, and is *not* the hard part — items
+1-6 of the gap list above still are.
 
 ### Effort estimate for Route 1
 
-* `isRegularInverseGalois_of_atkinLehner` alone (assuming `LevelTower` and `AtkinLehner` as
-  hypotheses): **2–4 weeks**. It is a `RegularFixedField`-style argument: identify the geometric
+* The twist alone (assuming a *correctly stated* `LevelTower` and Atkin-Lehner lift as
+  hypotheses): **2-4 weeks**. It is a `RegularFixedField`-style argument: identify the geometric
   subgroup, show `ω` normalizes it, show the multiplier being a non-square forces the extension to
   split off the constants, then apply `Rigidity.RET.isRegularGaloisGroupOverBase_fixedField` over
   the Atkin–Lehner line (which is already known to be rational).
@@ -161,7 +227,8 @@ cycles `b₀, b₁, b₂` satisfying `b₀b₁b₂ = 1`. Let `H ⊴ A` have inde
 
 ### Current state of `InverseGalois/Rigidity/RET/Descent/Index2.lean`
 
-Unimported leaf, ~400 lines, **2 open `sorry`s**.
+Imported from `InverseGalois/Rigidity/RET.lean`, ~430 lines, **`sorry`-free**. The two former
+`sorry`s are now explicit hypotheses rather than claimed theorems.
 
 **Proved:**
 
@@ -180,18 +247,28 @@ Unimported leaf, ~400 lines, **2 open `sorry`s**.
   (`DivisionRing.toRatAlgebra` vs `RatFunc.instAlgebraOfPolynomial`), which bites whenever an
   `AlgEquiv` over a general base field `k` is instantiated at `k = ℚ`.
 * `BranchedRegularCover.finrank_sub` — `[L^H : ℚ(T)] = H.index`, by the Galois correspondence.
-* `BranchedRegularCover.sub_algEquiv_ratFunc` — now **derived** from `exists_conic_generator`.
+* `BranchedRegularCover.sub_algEquiv_ratFunc` — derived from `HasConicSubfield`.
 * `BranchedRegularCover.isRegularGaloisGroupOverBase_sub` and the assembly
-  `isRegularInverseGalois_of_index_two`.
+  `isRegularInverseGalois_of_conicSubfield`: given a three-point branched regular cover `c` and a
+  subgroup `H` with `c.HasConicSubfield H`, the group `H` is a regular Galois group over `ℚ`.
 
-**Open:**
+**Taken as hypotheses, not proved:**
 
-* `branchedRegularCover_of_certificate : RigidityCertificate A → Nonempty (BranchedRegularCover A cert.r)`
-* `exists_conic_generator : (c : BranchedRegularCover A 3) → H.index = 2 → ∃ i j d y, i ≠ j ∧ d ≠ 0 ∧ y² = d(T - tᵢ)(T - tⱼ) ∧ ℚ(T)⟮y⟯ = ⊤`
+* the existence of the cover itself, `c : BranchedRegularCover A 3`, from a rigidity certificate
+  with `cert.r = 3`;
+* `BranchedRegularCover.HasConicSubfield c H`, the statement (now a `def : Prop`, formerly a
+  claimed theorem `exists_conic_generator`) that `c.sub H = ℚ(T)(√(d (T - tᵢ)(T - tⱼ)))` for two
+  of the three branch points and some `d ≠ 0`.
 
-The second sorry is what `sub_algEquiv_ratFunc` used to be, minus the conic step, which is now
-proved. It is exactly the *ramification* content of the argument: Kummer theory plus the
-identification of the ramified places.
+The second is exactly the *ramification* content of the argument: Kummer theory plus the
+identification of the ramified places. The parity count that tells you *which* two branch points,
+`exists_two_notMem_of_index_two`, is proved; what is missing is the passage from the structure's
+`inertia_eq` / `inertia_bot` fields to the divisor of the radicand.
+
+Because these are hypotheses of the theorem rather than axioms, nothing unproved is asserted, and
+`#print axioms` on everything in the tree is still `[propext, Classical.choice, Quot.sound]`. The
+price is that `isRegularInverseGalois_of_conicSubfield` cannot yet be *applied* to `PGL₂(𝔽₇)`: no
+`BranchedRegularCover` has ever been constructed.
 
 ### Why `branchedRegularCover_of_certificate` is not a one-liner
 
@@ -270,14 +347,79 @@ Total: **2.5–7 focused weeks** for `PSL₂(𝔽₇)` (plus `M₂₂` essential
 
 ---
 
+## The overgroups that *are* realized: `PGL₂(𝔽ₚ)`
+
+While `PSL₂(𝔽ₚ)` remains out of reach, the overgroup is not. `InverseGalois/Rigidity/Examples/`
+now contains kernel-checked rational rigidity certificates for
+
+| file | group | order | rigid triple | class sizes | check time |
+|---|---|---|---|---|---|
+| `PGL27.lean` | `PGL₂(𝔽₇)` | 336 | (2B, 6A, 7A) | 21, 56, 48 | fast |
+| `PGL2F11.lean` | `PGL₂(𝔽₁₁)` | 1320 | (2A, 4A, 11A) | 66, 110, 120 | 36 s |
+| `PGL2F13.lean` | `PGL₂(𝔽₁₃)` | 2184 | (2A, 4A, 13A) | 78, 182, 168 | 47 s |
+| `PGL2F17.lean` | `PGL₂(𝔽₁₇)` | 4896 | (2B, 6A, 17A) | 136, 272, 288 | 89 s |
+| `PGL2F19.lean` | `PGL₂(𝔽₁₉)` | 6840 | (2A, 4A, 19A) | 190, 342, 360 | 110 s |
+| `PGL2F29.lean` | `PGL₂(𝔽₂₉)` | 24360 | (2A, 4A, 29A) | 406, 870, 840 | 375 s |
+| `PGL2F31.lean` | `PGL₂(𝔽₃₁)` | 29760 | (2B, 6A, 31A) | 496, 992, 960 | 543 s |
+| `PGL2F37.lean` | `PGL₂(𝔽₃₇)` | 50616 | (2A, 4A, 37A) | 666, 1406, 1368 | 1096 s |
+
+Each gives `IsRegularInverseGalois ↥PGL` and `IsInverseGalois ↥PGL`, where `PGL` is the subgroup of
+`Equiv.Perm (Fin (p+1))` generated by a Möbius involution and the translation `t ↦ t + 1`.
+
+The shared toolkit is `InverseGalois/Rigidity/Examples/PermCode.lean`: permutations of
+`Fin n` are encoded as base-`n` numerals (`enc`, `φ`), composition becomes a structurally recursive
+digit computation (`step`, `mulC`) that the kernel evaluates on GMP-backed `Nat` arithmetic rather
+than on `Finset.sum`, and the four certificate obligations — centerlessness, rationality of the
+three classes, generation, and the product-one fibre bound — are reduced to `decide +kernel`
+checks on lists of numerals (`certOf`). Adding a new prime is mechanical.
+
+The last three files (`p = 29, 31, 37`) sit in their own `PGL2Large` lean_lib because they need
+`--tstack=262144`, exactly as the `M₂₂` and `M₂₄` certificates do.
+
+## Other routes surveyed (2026-08-21)
+
+* **Belyi (1979)**, *On Galois extensions of a maximal cyclotomic field*, Izv. Akad. Nauk SSSR
+  43:2, 267–276. Realizes Chevalley groups over the maximal cyclotomic field `ℚ^ab`, not over `ℚ`
+  and not regularly over `ℚ(T)`. Does not help.
+* **Malle–Matzat**, *Inverse Galois Theory*, 2nd ed. 2018. Chapter I is the rigidity method (which
+  this repo already has in full); Chapter II is GAR realizations and embedding problems. Their
+  `PSLₙ(p)` results need `n` odd with `gcd(n, p-1) = 1`, so they say nothing about `n = 2`. All 13
+  non-abelian simple groups of order below `|PSL(2,25)|` are known over `ℚ`, but the constructions
+  are case-by-case and mostly non-regular.
+* **Malle–Saxl–Weigel**, *Generation of classical groups*, Geom. Dedicata 49 (1994), 85–116. Their
+  rigidity results are about generation and rigidity, not *rational* rigidity; they do not supply a
+  rational rigid triple for `PSL₂(q)`, and none exists: the two classes of elements of order `p`
+  are interchanged by the exponents prime to `p`.
+* **Mestre / Feit**: `PSL₂(p²)` is regular over `ℚ(T)` for `p ≢ ±1 (mod 5)`, via `p`-division
+  points on the Jacobian of a genus-two curve. Even further out of formalization reach than Shih.
+* **Explicit polynomial families.** Lamacchia (*Polynomials with Galois group PSL(2,7)*, Comm.
+  Algebra 8 (1980)) gives a two-parameter degree-`7` family over `ℚ(a, A)` with group `PSL(2,7)`;
+  the repo does have a criterion that consumes exactly this shape,
+  `IsRegularInverseGalois.of_embeds_and_root`. But that criterion needs an *absolutely irreducible
+  resolvent of degree `|G| = 168`* over the parameter field, together with an explicit root of it
+  and an injection of the Galois group into `PSL(2,7)`. For `Sₙ` and `Aₙ` the repo gets those from
+  a generic linear resolvent whose factorization is known in closed form; for `PSL(2,7)` there is
+  no such closed form, and producing a degree-168 resolvent and proving it absolutely irreducible
+  is not cheaper than the ramification work of Route 2. Isolated polynomials over `ℚ`
+  (`x⁷ - 7x + 3`, Trinks–Matzat; `x⁷ - 154x + 99`, Erbach–Fischer–McKay) give `PSL(2,7)` over `ℚ`
+  but say nothing about regularity over `ℚ(T)`.
+* **`PSL(2,7) ≅ GL(3,2)` as a quotient of something already realized.** It is simple, so a quotient
+  presentation would need it to be a quotient of a realized group, and the realized catalogue
+  (`Sₙ`, `Aₙ`, abelian, dihedral, Möbius, coprime products, `PGL₂(𝔽ₚ)`) contains no group with
+  `PSL(2,7)` as a quotient other than `PSL(2,7)` itself. `PSL(2,7) ≤ A₇` is a *subgroup*, index 15,
+  which is the same index-descent problem as Route 2 but harder (no conic).
+
+Conclusion: **Route 2 remains the cheapest**, and the estimate below stands.
+
 ## Recommendation
 
 1. Do Route 2. It is the only realistic path to any `PSL₂(𝔽ₚ)` in this repo, and it pays for
    `M₂₂` at the same time.
-2. Attack `exists_conic_generator` first: it needs no new tower plumbing, only field theory, and it
-   is the half that generalizes (any `r = 3` certificate with an index-two subgroup). Its conic
-   step and its degree computation are already done.
-3. Keep `Examples/Shih.lean` as the standing statement of what the modular route would give, and
-   revisit it only if Mathlib acquires curves and Riemann–Roch.
-4. Both files must stay out of `InverseGalois.lean` and out of every `defaultTargets` root until
-   they are `sorry`-free.
+2. Attack the `HasConicSubfield` hypothesis first: it needs no new tower plumbing, only field
+   theory, and it is the half that generalizes (any `r = 3` certificate with an index-two
+   subgroup). Its conic step and its degree computation are already done.
+3. Then construct a `BranchedRegularCover` from a certificate, and only then is `PSL₂(𝔽₇)` in
+   reach — with one further concrete step, an explicit isomorphism between the index-two subgroup
+   of `Rigidity.PGL27.PGL ≤ Equiv.Perm (Fin 8)` and Mathlib's `PSL(2, ZMod 7)`.
+4. Restate Shih's modular input correctly (see the inconsistency above) before any further work on
+   Route 1, and revisit it only if Mathlib acquires curves and Riemann–Roch.
