@@ -44,6 +44,8 @@ group over a finite field is centerless.
 * `Rigidity.isRegularInverseGalois_generalLinearGroup_one` — `GL₁` over any finite field.
 * `Rigidity.isRegularInverseGalois_generalLinearGroup_of_specialLinearGroup_two` — over `𝔽₂` the
   general and special linear groups coincide.
+* `Rigidity.permMulEquivGLTwo` — `GL₂(𝔽₂)` is the symmetric group on the three nonzero vectors.
+* `Rigidity.isRegularInverseGalois_generalLinearGroup_two_two` — `GL₂(𝔽₂)` over `ℚ(T)`.
 -/
 
 open Matrix
@@ -218,5 +220,47 @@ theorem isRegularInverseGalois_generalLinearGroup_of_specialLinearGroup_two [Sub
     (h : IsRegularInverseGalois (SpecialLinearGroup ι F)) :
     IsRegularInverseGalois (GL ι F) :=
   h.of_mulEquiv mulEquivSpecialLinearGroup
+
+/-! ### `GL₂(𝔽₂)` -/
+
+/-- The three nonzero vectors of `𝔽₂²`, indexed so that the last is the sum of the first two. -/
+def nonzeroVecTwo : Fin 3 → (Fin 2 → ZMod 2) := ![![1, 0], ![0, 1], ![1, 1]]
+
+/-- The `𝔽₂`-linear map sending the `j`-th standard basis vector to the `σ j`-th nonzero vector.
+Because the third nonzero vector is the sum of the other two, this map permutes all three of them
+according to `σ`, which is what makes `σ ↦ permMatrixTwo σ` multiplicative. -/
+def permMatrixTwo (σ : Equiv.Perm (Fin 3)) : Matrix (Fin 2) (Fin 2) (ZMod 2) :=
+  Matrix.of fun i j => nonzeroVecTwo (σ j.castSucc) i
+
+/-- **The symmetric group on the three nonzero vectors of `𝔽₂²`, as invertible matrices.** -/
+def permToGLTwo : Equiv.Perm (Fin 3) →* GL (Fin 2) (ZMod 2) where
+  toFun σ := ⟨permMatrixTwo σ, permMatrixTwo σ⁻¹, by revert σ; decide, by revert σ; decide⟩
+  map_one' := Units.ext (by decide)
+  map_mul' σ τ := Units.ext (by revert σ τ; decide)
+
+/-- A matrix is determined by where it sends the two standard basis vectors, and there are `6`
+invertible `2 × 2` matrices over `𝔽₂`. -/
+theorem permToGLTwo_bijective : Function.Bijective permToGLTwo := by
+  rw [Nat.bijective_iff_injective_and_card]
+  constructor
+  · intro σ τ h
+    have h' : permMatrixTwo σ = permMatrixTwo τ := congrArg Units.val h
+    revert h'
+    revert σ τ
+    decide
+  · have hGL : Nat.card (GL (Fin 2) (ZMod 2)) = 6 := by
+      rw [Matrix.card_GL_field]
+      simp [Fin.prod_univ_two, ZMod.card]
+    rw [hGL, Nat.card_eq_fintype_card]
+    decide
+
+/-- **`GL₂(𝔽₂)` is the symmetric group on three letters.** -/
+def permMulEquivGLTwo : Equiv.Perm (Fin 3) ≃* GL (Fin 2) (ZMod 2) :=
+  MulEquiv.ofBijective permToGLTwo permToGLTwo_bijective
+
+/-- **`GL₂(𝔽₂)` is a regular Galois group over `ℚ(T)`.** -/
+theorem isRegularInverseGalois_generalLinearGroup_two_two :
+    IsRegularInverseGalois (GL (Fin 2) (ZMod 2)) :=
+  (RET.isRegularInverseGalois_perm_fin 3).of_mulEquiv permMulEquivGLTwo
 
 end Rigidity

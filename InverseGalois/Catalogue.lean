@@ -6,6 +6,7 @@ import InverseGalois.Core
 import InverseGalois.Groups
 import InverseGalois.Hilbert
 import InverseGalois.Rigidity
+import InverseGalois.GeneralLinear
 
 /-!
 # Catalogue of the realized groups
@@ -30,6 +31,8 @@ Structural closure properties (`InverseGalois.Rigidity.RET.Statement`, `RegularC
 * `IsRegularInverseGalois.of_subsingleton` — the trivial group.
 * `IsRegularInverseGalois.of_surjective`, `IsRegularInverseGalois.quotient` — quotients.
 * `Rigidity.RET.IsRegularInverseGalois.prod_of_coprime` — products of coprime order.
+* `IsRegularInverseGalois.prod_of_noCommonQuotient` — products of two groups sharing no nontrivial
+  quotient, and `IsRegularInverseGalois.prod_of_perfect` for a perfect group times an abelian one.
 
 Families:
 
@@ -112,6 +115,23 @@ adds outer rational classes of order `2` and, when the tori allow it, of order `
 exactly what a rational rigid triple needs.  `PGL₂(𝔽₇)` is the smallest case where the fibre count
 is as sharp as it can be — seven product-one triples, matching the centraliser of a `7`-cycle — and
 it is the case formalized here.
+
+## The general linear groups
+
+`GL n 𝔽q` is never centerless — the scalars are central — so no rigidity certificate can name it.
+What can be used is the splitting `GL n 𝔽q ≅ SL n 𝔽q × 𝔽qˣ`, valid exactly when `gcd (n, q - 1) = 1`
+(`Matrix.GeneralLinearGroup.mulEquivProdUnits`).  The order of `𝔽qˣ` divides that of `SL n 𝔽q` for
+`n ≥ 2`, so the coprime-order product theorem is useless here; the Goursat product theorem is not,
+because `SL n 𝔽q` is perfect and `𝔽qˣ` is abelian.  That reduces `GL n 𝔽q` to `SL n 𝔽q`
+(`Rigidity.isRegularInverseGalois_generalLinearGroup_of_specialLinearGroup`), and for `q = 2` the
+two groups coincide (`Rigidity.isRegularInverseGalois_generalLinearGroup_of_specialLinearGroup_two`).
+
+Two members of the family are realized outright:
+`Rigidity.isRegularInverseGalois_generalLinearGroup_one` for `GL₁(𝔽q) ≅ 𝔽qˣ`, which is abelian, and
+`Rigidity.isRegularInverseGalois_generalLinearGroup_two_two` for `GL₂(𝔽₂)`, which is the symmetric
+group on the three nonzero vectors of `𝔽₂²`.  Beyond those the special linear groups are simple —
+`SL n 𝔽₂ = PSL n 𝔽₂` for every `n ≥ 3` — and reaching them needs braid-orbit methods on Hurwitz
+spaces rather than rigidity.
 
 ## Main results
 
