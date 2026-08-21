@@ -116,12 +116,73 @@ Two remarks on how this differs from the plan in §5:
     since Mathlib has no "ramified ⇒ divides discriminant"; and `log ζ_K` is built as
     `∑' 𝔭, -log(1 - N𝔭^{-s})` directly rather than by taking a logarithm of the product.
 
-**Unchanged verdict.** Milestones 8–11 — Kronecker–Weber, the Brauer group with its group law,
+---
+
+## 0.1 Status (2026-08-21, later the same day) — the class field theory layer
+
+Milestone 9 has since been done. **Mathlib contains no class field theory at all** — no Chebotarev
+in general, no Grunwald–Wang, no Kronecker–Weber, no Hasse norm theorem, no Artin map, no ray class
+groups, no ideles, no local class field theory, no Tate cohomology, no cup products, no Herbrand
+quotients, no Hochschild–Serre, no `K^ur`, no Krasner's lemma, no crossed products, no relative
+Brauer group, no local invariant `inv_v : Br(K_v) → ℚ/ℤ`. `Mathlib/Algebra/BrauerGroup/Defs.lean`
+carries the Brauer *monoid* of central simple algebras; the group law, Galois descent, and the
+uniqueness half of Wedderburn's theorem were all absent (Wedderburn uniqueness is still an explicit
+Mathlib TODO, and `L ⊗[K] L ≃ (Gal(L/K) → L)` does not exist there either). The class
+`IsNonarchimedeanLocalField` (`Mathlib/NumberTheory/LocalField/Basic.lean`) exists but has **zero
+instances**: not even `ℚ_[p]` is one.
+
+So the whole layer had to be built. It lives in `InverseGalois/CFT/`, is indexed by
+`InverseGalois/CFT.lean`, and is sorry-free and axiom-free throughout (`#print axioms` gives
+`[propext, Classical.choice, Quot.sound]` on every capstone).
+
+| group | content |
+|---|---|
+| `CFT/GaloisDescent.lean` | Galois descent for modules, absent from Mathlib |
+| `CFT/GroupCohomology/*` | cocycle ↔ `H²` dictionary, corestriction and the `[G : S] • id` relation, killing by the order of the group, normal form for cocycles of a cyclic group, `H²(cyclic) = invariants / norms` |
+| `CFT/Brauer/CrossedProduct*.lean` | the crossed product `⨁_σ L·u_σ`: central simple, split by `L`, multiplicative in the cocycle, trivial exactly for a coboundary |
+| `CFT/Brauer/Centralizer.lean`, `Split.lean`, `SkolemNoether.lean`, `Division.lean` | the double centralizer theorem, Skolem–Noether, Wedderburn's theorem in the split case, the division representative |
+| `CFT/Brauer/SplittingSubfield.lean`, `CrossedProductRecognition.lean`, `H2Surjective.lean` | **`Br(L/K) ≅ H²(Gal(L/K), Lˣ)`** for every finite Galois `L/K`, and hence `Br(L/K)` is killed by `[L : K]` |
+| `CFT/Brauer/CyclicBrauer.lean`, `CyclicNorm.lean` | for `L/K` cyclic, **`Br(L/K) ≅ Kˣ / N_{L/K}(Lˣ)`** |
+| `CFT/Brauer/MaximalSubfield.lean` | maximal commutative subalgebras; every Brauer class is split by a finite subextension of the algebraic closure |
+| `CFT/Brauer/Quaternion.lean`, `RealPlace.lean` | `-1` is not a norm from `ℂ` or from `ℚ(i)`, so `Br(ℂ/ℝ)` and `Br(ℚ(i)/ℚ)` are nontrivial; **`Br(ℂ/ℝ) ≅ ℤ/2`** |
+
+This is the classical Brauer-group half of local class field theory, over an arbitrary field. What
+it does **not** contain, and what item 2 of the §1.4 table needs, is the *arithmetic* input:
+the local invariant maps and the exactness of
+`0 → Br(K) → ⊕_v Br(K_v) → ℚ/ℤ → 0` (Albert–Brauer–Hasse–Noether). Those need the local theory —
+unramified extensions of a local field, the valuation-theoretic computation
+`Br(K^ur/K) ≅ ℚ/ℤ`, and then global reciprocity — none of which is reachable from here, and the
+first of which cannot even be stated until `ℚ_[p]` is made an instance of the local-field class.
+
+## 0.2 Status (2026-08-21) — the reduction, sharpened twice more
+
+`SplitPrimePowerEP` is no longer the frontier. Two further purely group-theoretic reductions have
+landed:
+
+* `Shafarevich/AbelianKernel.lean` peels the centre off a `p`-group kernel one layer at a time. The
+  centre is characteristic, so the quotient carries an induced action and the projection
+  `H ⋊[φ] U → (H/Z) ⋊[φ'] U` has commutative kernel; induction on the order gives
+  `splitPrimePowerEP_of_abelianKernelEP`. The hypothesis is now about embedding problems that are
+  no longer split, but whose kernel is **abelian**:
+  ```lean
+  def AbelianKernelEP : Prop :=
+    ∀ (E W : Type) [Group E] [Finite E] [Group W] [Finite W] (π : E →* W),
+      Function.Surjective π → IsMulCommutative π.ker → IsInverseGalois W → IsInverseGalois E
+  ```
+* `Shafarevich/MinimalKernel.lean` filters that abelian kernel further, down to a **minimal
+  elementary abelian** one.
+
+Both reductions are again carried out for an abstract quotient-closed predicate, so the regular
+analogues over `ℚ(T)` come for free.
+
+**Revised verdict.** Milestone 9 is done. Milestones 8, 10 and 11 — Kronecker–Weber,
 Scholz–Reichardt, Shafarevich's arithmetic core — remain out of reach, for exactly the reasons
-given in §4.1. `Algebra/BrauerGroup/Defs.lean` is still a 98-line stub with no group law, and
-H² ↔ group extensions is still an explicit Mathlib TODO. What has changed is only that the
-non-arithmetic scaffolding is no longer a cost, and that the target is now a single, precisely
-stated, self-contained proposition.
+given in §4.1, and the two blockers are precisely rows 2 and 5 of the §1.4 table:
+Albert–Brauer–Hasse–Noether, and the gluing of local abelian characters (which over `ℚ` *is*
+Kronecker–Weber). Everything else on the route is now either done or elementary. What has changed
+is that the non-arithmetic scaffolding is no longer a cost, that the crossed-product side of the
+Brauer group is available in full, and that the target is a single, precisely stated,
+self-contained proposition about embedding problems with minimal elementary abelian kernel.
 
 ---
 
@@ -823,6 +884,14 @@ Needed for Serre's Lemma 2.1.5 (item 2 of §1.4). Mathlib's `BrauerGroup` is a b
 with **no multiplication**. To get to ABHN one needs: the group law, `Br(K) ≅ H²(Gal, K̄ˣ)`
 (which needs the H²-↔-crossed-product dictionary, itself absent), `Br(ℚ_p) ≅ ℚ/ℤ` (local CFT), and
 the global exact sequence (global CFT). **Multi-year.**
+
+**Update (2026-08-21): the first two are done**, see §0.1 — the group law, Skolem–Noether, the
+double centralizer theorem, Wedderburn in the split case, Galois descent, the crossed product, and
+`Br(L/K) ≅ H²(Gal(L/K), Lˣ)` for every finite Galois `L/K`, together with the cyclic case
+`Br(L/K) ≅ Kˣ/N(Lˣ)` and `Br(ℂ/ℝ) ≅ ℤ/2`. What remains of this milestone is exactly the arithmetic:
+`Br(ℚ_p) ≅ ℚ/ℤ` and the global exact sequence. Note that Mathlib cannot yet even state the first —
+`IsNonarchimedeanLocalField` has no instances, so `ℚ_[p]` must first be equipped with
+`ValuativeRel`, `IsValuativeTopology` and `LocallyCompactSpace`.
 
 ### Milestone 10 — Scholz–Reichardt. **[XXL, gated on 8 and 9]**
 
