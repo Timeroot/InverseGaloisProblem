@@ -5,6 +5,7 @@ import InverseGalois.NumberTheory
 import InverseGalois.Reflection
 import InverseGalois.Resolvent
 import InverseGalois.Rigidity
+import InverseGalois.GeneralLinear
 import InverseGalois.Catalogue
 
 /-!
