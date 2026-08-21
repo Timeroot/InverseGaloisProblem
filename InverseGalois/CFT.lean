@@ -21,6 +21,7 @@ import InverseGalois.CFT.Brauer.Kernel
 import InverseGalois.CFT.Brauer.MaximalSubfield
 import InverseGalois.CFT.Brauer.Opposite
 import InverseGalois.CFT.Brauer.Primary
+import InverseGalois.CFT.Brauer.QuadraticExt
 import InverseGalois.CFT.Brauer.Quaternion
 import InverseGalois.CFT.Brauer.RationalBrauer
 import InverseGalois.CFT.Brauer.RealBrauer
@@ -221,6 +222,9 @@ it that are available here.
   the isotropy of the form `z² - a x² - b y²`, establishes its symmetry, its invariance under
   squares and its interpretation as a norm from a quadratic extension, and computes it completely
   at the real place.
+* `InverseGalois.CFT.Brauer.QuadraticExt` builds the quadratic extension obtained by adjoining a
+  square root of a nonsquare, computes its norm form as `u² - b v²`, and identifies the relative
+  Brauer group of that extension with the units modulo the values of the norm form.
 * `InverseGalois.CFT.Brauer.Division` gives every central simple algebra its Wedderburn division
   representative, and deduces that the Brauer group of an algebraically closed field and of a
   finite field is trivial.
