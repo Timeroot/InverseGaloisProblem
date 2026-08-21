@@ -174,6 +174,18 @@ group on the three nonzero vectors of `𝔽₂²`.  Beyond those the special lin
 `SL n 𝔽₂ = PSL n 𝔽₂` for every `n ≥ 3` — and reaching them needs braid-orbit methods on Hurwitz
 spaces rather than rigidity.
 
+## Solvable groups
+
+Shafarevich's theorem — every finite solvable group is a Galois group over `ℚ` — is not in the
+catalogue, and neither is any of the classes it subsumes beyond the abelian one.  Its proof is
+arithmetic, running through class field theory and the Grunwald–Wang theorem, and it produces
+extensions of `ℚ` rather than of `ℚ(T)`: the regular version is open even for `p`-groups.  What
+`InverseGalois.Solvable` contributes is the group theory that organizes the approach — the
+elementary abelian chief-series induction, the Sylow decomposition of a nilpotent group, and the
+presentation of every semidirect product `A ⋊[φ] H` with abelian `A` as a quotient of the regular
+wreath product `A ≀ᵣ H`.  Each of those reductions is unconditional; what they reduce *to* is not
+proved here.
+
 ## Main results
 
 * `Rigidity.RET.isRegularInverseGalois_units_zmod` — `(ZMod n)ˣ`.
