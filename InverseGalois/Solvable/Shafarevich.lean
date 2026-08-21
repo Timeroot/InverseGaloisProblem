@@ -5,6 +5,8 @@ import InverseGalois.Solvable.Shafarevich.Main
 import InverseGalois.Solvable.Shafarevich.PrimePower
 import InverseGalois.Solvable.Shafarevich.SplitAbelian
 import InverseGalois.Solvable.Shafarevich.AbelianKernel
+import InverseGalois.Solvable.Shafarevich.MinimalKernel
+import InverseGalois.Solvable.Shafarevich.ProductAbelian
 
 /-!
 # Shafarevich's theorem
@@ -40,4 +42,10 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
 * `InverseGalois.Solvable.Shafarevich.AbelianKernel` peels the centre off a `p`-group kernel one
   layer at a time, reducing the arithmetic hypothesis further to embedding problems whose kernel
   is abelian.
+* `InverseGalois.Solvable.Shafarevich.MinimalKernel` continues that filtration through minimal
+  normal subgroups, so that the kernel may be taken elementary abelian and minimal.
+* `InverseGalois.Solvable.Shafarevich.ProductAbelian` settles the split embedding problems with
+  abelian kernel and trivial action: a realizable group stays realizable after multiplying by an
+  arbitrary finite abelian group, by adjoining cyclic subfields of cyclotomic fields ramified at
+  pairwise distinct primes.
 -/
