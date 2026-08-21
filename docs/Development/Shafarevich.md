@@ -107,7 +107,11 @@ Two remarks on how this differs from the plan in §5:
     ```
 
     This is the **only** consequence of Chebotarev's theorem that Scholz–Reichardt actually needs,
-    and it needs no containment `A ⊆ B` — a degree inequality suffices. Two side-products worth
+    so the whole of class **(c)** in the §1.4 classification is now discharged. Note the hypotheses
+    differ slightly from (★) as stated in §1.5: no containment `A ⊆ B` and no index condition are
+    required, a degree inequality suffices, but **both** fields must be Galois over `ℚ`, not just
+    `B`. In the Scholz–Reichardt application that is free — the field `A` there is a compositum of
+    Galois extensions of `ℚ`. Two side-products worth
     noting: `finite_ramifiedSet` (only finitely many rational primes ramify) had to be proved here,
     since Mathlib has no "ramified ⇒ divides discriminant"; and `log ζ_K` is built as
     `∑' 𝔭, -log(1 - N𝔭^{-s})` directly rather than by taking a logarithm of the product.
