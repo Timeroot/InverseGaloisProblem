@@ -54,11 +54,13 @@ import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.ToCocycle
 import InverseGalois.CFT.Herbrand
 import InverseGalois.CFT.Level
+import InverseGalois.CFT.Local.HilbertMap
 import InverseGalois.CFT.Local.HilbertMul
 import InverseGalois.CFT.Local.HilbertSymbol
 import InverseGalois.CFT.Local.PadicHilbert
 import InverseGalois.CFT.Local.PadicSquares
 import InverseGalois.CFT.Local.PadicSquaresTwo
+import InverseGalois.CFT.Local.UnramifiedNormForm
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
 
@@ -222,6 +224,12 @@ it that are available here.
 * `InverseGalois.CFT.Local.PadicSquares` describes the squares of a `p`-adic field for odd `p`: a
   unit of the ring of integers is a square exactly when its residue is, and a nonzero `p`-adic
   number is a square exactly when its valuation is even and its unit part is a square residue.
+* `InverseGalois.CFT.Local.HilbertMap` transports isotropy along a field homomorphism, so that
+  an anisotropic form over a larger field is already anisotropic over the base.
+* `InverseGalois.CFT.Local.UnramifiedNormForm` computes the norm form of the unramified quadratic
+  extension of a `p`-adic field for odd `p`: its values are exactly the elements of even
+  valuation, so the Hilbert symbol against a nonsquare unit is multiplicative and reads off the
+  parity of the valuation.
 * `InverseGalois.CFT.Local.HilbertMul` identifies the elements of Hilbert symbol one with the
   values of a norm form, so that they form a subgroup; when that subgroup has index two the symbol
   is multiplicative in each argument, and its triviality is exactly the triviality of the relative
