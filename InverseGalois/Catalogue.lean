@@ -187,6 +187,17 @@ approach — the elementary abelian chief-series induction, the Sylow decomposit
 group, and the presentation of every semidirect product `A ⋊[φ] H` with abelian `A` as a quotient of
 the regular wreath product `A ≀ᵣ H`.
 
+That group theory is carried far enough to isolate the arithmetic completely.  Ore's supplement
+theorem, `exists_nilpotent_normal_supplement`, exhibits a nontrivial finite solvable group as a
+quotient of `N ⋊ U` with `N` nilpotent and `U` a proper — hence smaller — subgroup, and the Sylow
+splitting turns a nilpotent kernel into a tower of kernels of prime power order.  The outcome is
+`Shafarevich.isSolvable_isInverseGalois_of_splitPrimePowerEP`: Shafarevich's theorem in full
+follows from the single statement that a split embedding problem over `ℚ` whose kernel is a finite
+`p`-group is solvable.  Nothing of the group theory remains.  The neighbouring case of an
+**abelian** kernel is unconditional here — `Shafarevich.splitAbelianEP_regular`, a repackaging of
+the wreath product construction — but the two do not meet: filtering a `p`-group kernel leaves a
+residual lifting that is no longer split, and that lifting is where class field theory enters.
+
 Dentzer's class of semiabelian groups — the smallest class containing the finite abelian groups and
 closed under quotients and under semidirect products by a finite abelian group — *is* in the
 catalogue, regularly.  The group theory of `InverseGalois.Solvable` reduces the whole class to the

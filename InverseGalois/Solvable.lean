@@ -5,6 +5,7 @@ import InverseGalois.Solvable.WreathFunctor
 import InverseGalois.Solvable.WreathRecognition
 import InverseGalois.Solvable.Semiabelian
 import InverseGalois.Solvable.WreathCyclic
+import InverseGalois.Solvable.Shafarevich
 
 /-!
 # Solvable groups as Galois groups
@@ -35,4 +36,7 @@ free of arithmetic input and applicable to both realization predicates of the de
 * `InverseGalois.Solvable.WreathCyclic` splits the bottom group of a wreath product into cyclic
   factors, so that the realization of wreath products only has to be established when the bottom
   group is finite cyclic.
+* `InverseGalois.Solvable.Shafarevich` carries out Ore's reduction of the whole theorem to split
+  embedding problems with kernel of prime power order, which is where the arithmetic input is
+  concentrated.
 -/

@@ -18,5 +18,5 @@ reflection, the rigidity method, the group-theoretic reductions for solvable gro
 auxiliary number theory.
 
 `InverseGalois.Catalogue` indexes the groups the project realizes, in the strongest form each
-construction gives — regularly over `ℚ(T)` in all but one case.
+construction gives — regularly over `ℚ(T)` in every case.
 -/

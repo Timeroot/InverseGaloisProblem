@@ -22,6 +22,73 @@ because it rests on class field theory.
 
 ---
 
+## 0. Status (2026-08-21) — what has since been formalized
+
+This section is later than the rest of the document and supersedes it where they disagree. The
+study below rated Shafarevich "do not start"; that verdict was about the *arithmetic*, and it
+still stands. But the split was drawn in the wrong place. The **group-theoretic half is not
+expensive at all**, and it is now done — sorry-free and axiom-free.
+
+**Landed in `InverseGalois/Solvable/Shafarevich/`:**
+
+| file | content |
+|---|---|
+| `Frattini.lean` | `exists_nilpotent_normal_supplement` — Ore's supplement theorem |
+| `SemidirectAssoc.lean` | `SemidirectProduct.prodAssoc : (A × B) ⋊ U ≃* A ⋊ (B ⋊ U)` |
+| `Reduction.lean` | `SplitNilpotentEP`, and Ore's induction on the order |
+| `PrimePower.lean` | `splitNilpotentEP_of_splitPrimePowerEP` — Sylow splitting of the kernel |
+| `Main.lean` | the capstones |
+| `SplitAbelian.lean` | the unconditional abelian case |
+
+The headline is
+
+```lean
+theorem Shafarevich.isSolvable_isInverseGalois_of_splitPrimePowerEP
+    (hEP : SplitPrimePowerEP) (G : Type) [Group G] [Finite G] [IsSolvable G] :
+    IsInverseGalois G
+```
+
+**Shafarevich's theorem now follows from one statement**, `SplitPrimePowerEP`: *if a finite group
+`U` is a Galois group over `ℚ` and `H` is a finite `p`-group with a `U`-action, then `H ⋊[φ] U` is
+a Galois group over `ℚ`.* No group theory is left.
+
+Two remarks on how this differs from the plan in §5:
+
+* **The Fitting subgroup is not needed, and is absent from Mathlib for groups.** Ore's theorem is
+  proved instead through `frattini` plus a Gaschütz argument (two Frattini arguments via
+  `Sylow.normalizer_sup_eq_top`, then `frattini_nongenerating`). The Gaschütz step is stated
+  quotient-free as `⁅N,N⁆ ≤ frattini G ∧ frattini G ≤ N ⇒ Group.IsNilpotent N`, which avoids
+  `↥N ⧸ …` entirely.
+* **The abelian and nilpotent cases do not meet.** `SplitAbelian.lean` records that a split
+  embedding problem with *abelian* kernel is already unconditional here, via the Dentzer–Stoll
+  wreath construction. It does not bootstrap: filtering a `p`-group kernel by its centre turns one
+  split problem into a split problem with abelian kernel **plus a residual lifting that is no
+  longer split**, and that lifting is exactly where class field theory is unavoidable. This is the
+  structural reason Ikeda/wreath reaches precisely the semiabelian groups and stops.
+
+**Arithmetic bricks landed alongside:**
+
+* **Milestone 7 is done.** `InverseGalois/NumberTheory/SplitCompletely.lean` proves Schur's theorem
+  on prime divisors of polynomial values (`infinite_setOf_prime_dvd_eval`) and deduces Serre's
+  Lemma 2.1.4, `infinite_setOf_prime_splitsCompletely`: for `K/ℚ` Galois, infinitely many rational
+  primes split completely in `K`. Elementary — no density theory, no L-functions, no Chebotarev.
+  Note that Mathlib has **no** "splits completely" predicate, so `SplitsCompletely` is defined here
+  as "every prime above `p` has ramification index and inertia degree one".
+* **Milestone 6(a) is done.** `InverseGalois/NumberTheory/IdealNormCount.lean` proves that
+  `n ↦ #{I ⊴ 𝒪_K : absNorm I = n}` is multiplicative and derives the **Euler product for
+  `NumberField.dedekindZeta`**, which Mathlib does not have. The proof uses no unique factorization
+  of ideals — only `absNorm I ∈ I` together with Bézout comaximality. Milestones 6(b) and 6(c)
+  (re-indexing over prime ideals, then the density statement (★) of §1.5) are not done.
+
+**Unchanged verdict.** Milestones 8–11 — Kronecker–Weber, the Brauer group with its group law,
+Scholz–Reichardt, Shafarevich's arithmetic core — remain out of reach, for exactly the reasons
+given in §4.1. `Algebra/BrauerGroup/Defs.lean` is still a 98-line stub with no group law, and
+H² ↔ group extensions is still an explicit Mathlib TODO. What has changed is only that the
+non-arithmetic scaffolding is no longer a cost, and that the target is now a single, precisely
+stated, self-contained proposition.
+
+---
+
 ## 1. Scholz–Reichardt
 
 ### 1.1 Statement
@@ -579,6 +646,9 @@ Roots: Mathlib at `/home/alex_harmonic_fun/InverseGaloisProblem/.lake/packages/m
 
 ### 5.0 The strategic conclusion first
 
+*(Read §0 first: the group-theoretic scaffolding this section prices as expensive turned out to be
+cheap and is now formalized. The verdicts below concern the arithmetic, and they stand.)*
+
 There are two candidate routes and they are **not** equally good.
 
 **Route A (classical / arithmetic): Scholz–Reichardt, then Shafarevich.** Requires
@@ -677,7 +747,7 @@ Assemble: Milestone 2 gives A ≀ᵣ H regularly over k(t_h); Milestone 3 specia
 *Value:* this is the deliverable. It is the largest new family of solvable groups over ℚ that is
 reachable at all with current Mathlib.
 
-### Milestone 6 (optional, high value elsewhere) — Split-density of primes. **[M–L]**
+### Milestone 6 (optional, high value elsewhere) — Split-density of primes. **[M–L]** — **(a) DONE**, see §0
 
 Prove: *for K/ℚ Galois of degree n, the set of rational primes splitting completely in K has
 Dirichlet density 1/n; in particular, for A ⊊ B with B/ℚ Galois, infinitely many primes split
@@ -695,7 +765,7 @@ contribution independent of this project. It also subsumes Serre's Lemma 2.1.4 (
 completely split primes) as a corollary.
 *Risk:* low-to-medium; the analytic scaffolding is all present.
 
-### Milestone 7 — Serre's Lemma 2.1.4, elementary version. **[S–M]**
+### Milestone 7 — Serre's Lemma 2.1.4, elementary version. **[S–M]** — **DONE**, see §0
 
 *"For a finite extension E/ℚ there are infinitely many primes splitting completely in E,"* by
 Serre's counting argument (values of f, smooth-number counting). Independent of Milestone 6 and
