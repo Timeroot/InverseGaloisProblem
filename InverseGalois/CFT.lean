@@ -1,13 +1,16 @@
 import InverseGalois.CFT.Brauer.BaseChange
 import InverseGalois.CFT.Brauer.Centralizer
+import InverseGalois.CFT.Brauer.CentralizerProduct
 import InverseGalois.CFT.Brauer.CrossedProduct
 import InverseGalois.CFT.Brauer.CrossedProductCohomologous
+import InverseGalois.CFT.Brauer.CrossedProductMul
 import InverseGalois.CFT.Brauer.CrossedProductSimple
 import InverseGalois.CFT.Brauer.CrossedProductSplit
 import InverseGalois.CFT.Brauer.CrossedProductSplitting
 import InverseGalois.CFT.Brauer.CyclicAlgebra
 import InverseGalois.CFT.Brauer.Division
 import InverseGalois.CFT.Brauer.Group
+import InverseGalois.CFT.Brauer.H2Brauer
 import InverseGalois.CFT.Brauer.Kernel
 import InverseGalois.CFT.Brauer.Opposite
 import InverseGalois.CFT.Brauer.Quaternion
@@ -27,6 +30,7 @@ import InverseGalois.CFT.Cyclotomic.Ramified
 import InverseGalois.CFT.Cyclotomic.Splitting
 import InverseGalois.CFT.Decomposition
 import InverseGalois.CFT.Disjoint
+import InverseGalois.CFT.GaloisDescent
 import InverseGalois.CFT.GroupCohomology.Classification
 import InverseGalois.CFT.GroupCohomology.Cohomologous
 import InverseGalois.CFT.GroupCohomology.Corestriction
@@ -114,6 +118,11 @@ it that are available here.
   subalgebra of a central simple algebra is simple, the two dimensions multiply to the dimension
   of the whole, the double centralizer is the subalgebra itself, and a self-centralizing subfield
   splits the algebra.
+* `InverseGalois.CFT.Brauer.CentralizerProduct` completes that picture: a central simple
+  subalgebra and its centralizer multiply, `B ⊗[K] C_E(B) ≃ₐ[K] E`, and the centralizer is again
+  central over `K`.
+* `InverseGalois.CFT.GaloisDescent` proves Speiser's theorem: an `L`-vector space carrying a
+  semilinear action of `Gal(L/K)` is the base change of its `K`-subspace of invariants.
 * `InverseGalois.CFT.Brauer.CrossedProduct` builds the crossed product algebra of a Galois
   extension and a multiplicative `2`-cocycle, a central `K`-algebra of dimension `[L : K] ^ 2`.
 * `InverseGalois.CFT.Brauer.CrossedProductSimple` proves that the crossed product is a simple
@@ -138,6 +147,12 @@ it that are available here.
   Brauer class of a crossed product is trivial exactly when the cocycle is a coboundary, that is,
   exactly when its class in the second cohomology group vanishes; over a cyclic extension this
   identifies the trivial classes with the norms.
+* `InverseGalois.CFT.Brauer.CrossedProductMul` multiplies cocycles: the crossed product of a
+  product of two cocycles is a matrix algebra over the tensor product of the two crossed products,
+  so Brauer classes of crossed products multiply.
+* `InverseGalois.CFT.Brauer.H2Brauer` assembles this into the crossed product homomorphism from
+  the second cohomology group of `Gal(L/K)` with coefficients in `Lˣ` to the Brauer group of `K`,
+  and shows it is injective with image inside the relative Brauer group `Br(L / K)`.
 * `InverseGalois.CFT.Brauer.Split` proves the uniqueness half of Wedderburn's theorem in the split
   case, and deduces that a central simple algebra has trivial Brauer class exactly when it is a
   matrix algebra over the base field.
