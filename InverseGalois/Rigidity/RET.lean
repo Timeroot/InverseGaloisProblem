@@ -193,6 +193,7 @@ import InverseGalois.Rigidity.RET.RegularResolvent
 import InverseGalois.Rigidity.RET.RegularSymmetric
 import InverseGalois.Rigidity.RET.RegularAlternating
 import InverseGalois.Rigidity.RET.RegularProduct
+import InverseGalois.Rigidity.RET.GeneralProduct
 import InverseGalois.Rigidity.RET.SemiIsoInertia
 import InverseGalois.Rigidity.RET.Scale
 import InverseGalois.Rigidity.RET.AffineTransport

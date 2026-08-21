@@ -39,6 +39,8 @@ group over a finite field is centerless.
   units is bijective exactly when `n` is coprime to `q - 1`.
 * `Rigidity.isRegularInverseGalois_generalLinearGroup_of_prod` — the coprime reduction: a regular
   realization of `SL ι F × Fˣ` is one of `GL ι F`.
+* `Rigidity.isRegularInverseGalois_generalLinearGroup_of_specialLinearGroup` — the same reduction
+  carried out: for perfect `SL ι F`, a regular realization of `SL ι F` alone suffices.
 * `Rigidity.isRegularInverseGalois_generalLinearGroup_one` — `GL₁` over any finite field.
 * `Rigidity.isRegularInverseGalois_generalLinearGroup_of_specialLinearGroup_two` — over `𝔽₂` the
   general and special linear groups coincide.
@@ -160,6 +162,19 @@ theorem isRegularInverseGalois_generalLinearGroup_of_prod
     (h : IsRegularInverseGalois (SpecialLinearGroup ι F × Fˣ)) :
     IsRegularInverseGalois (GL ι F) :=
   h.of_mulEquiv (mulEquivProdUnits (bijective_pow_units hcop))
+
+/-- **The general linear group over a finite field, in the coprime case.**  When `card ι` is
+coprime to `q - 1` the group is `SL ι F × Fˣ`, and a perfect group and an abelian group have no
+common quotient, so `IsRegularInverseGalois.prod_of_perfect` assembles a regular realization of
+the product out of one of `SL ι F` — the order of `Fˣ` divides that of `SL ι F` for `card ι ≥ 2`,
+so the coprime-order product theorem is of no use here. -/
+theorem isRegularInverseGalois_generalLinearGroup_of_specialLinearGroup
+    (hcop : (Nat.card Fˣ).Coprime (Fintype.card ι))
+    (hperf : commutator (SpecialLinearGroup ι F) = ⊤)
+    (h : IsRegularInverseGalois (SpecialLinearGroup ι F)) :
+    IsRegularInverseGalois (GL ι F) :=
+  isRegularInverseGalois_generalLinearGroup_of_prod hcop
+    (h.prod_of_perfect (RET.IsRegularInverseGalois.of_commGroup Fˣ) hperf)
 
 /-! ### The two families that need nothing further -/
 
