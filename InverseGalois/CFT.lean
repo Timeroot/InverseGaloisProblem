@@ -56,6 +56,7 @@ import InverseGalois.CFT.Level
 import InverseGalois.CFT.Local.HilbertSymbol
 import InverseGalois.CFT.Local.PadicHilbert
 import InverseGalois.CFT.Local.PadicSquares
+import InverseGalois.CFT.Local.PadicSquaresTwo
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
 
@@ -219,6 +220,9 @@ it that are available here.
 * `InverseGalois.CFT.Local.PadicSquares` describes the squares of a `p`-adic field for odd `p`: a
   unit of the ring of integers is a square exactly when its residue is, and a nonzero `p`-adic
   number is a square exactly when its valuation is even and its unit part is a square residue.
+* `InverseGalois.CFT.Local.PadicSquaresTwo` supplies the excluded prime: a dyadic unit is a square
+  exactly when it is congruent to one modulo eight, and every nonzero dyadic number is a square
+  times one of eight explicit representatives.
 * `InverseGalois.CFT.Local.HilbertSymbol` defines the Hilbert symbol of two elements of a field as
   the isotropy of the form `z² - a x² - b y²`, establishes its symmetry, its invariance under
   squares and its interpretation as a norm from a quadratic extension, and computes it completely
