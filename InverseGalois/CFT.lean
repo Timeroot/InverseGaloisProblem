@@ -9,6 +9,7 @@ import InverseGalois.CFT.Brauer.Division
 import InverseGalois.CFT.Brauer.Group
 import InverseGalois.CFT.Brauer.Opposite
 import InverseGalois.CFT.Brauer.SkolemNoether
+import InverseGalois.CFT.Brauer.Split
 import InverseGalois.CFT.Brauer.TensorSimple
 import InverseGalois.CFT.Compositum
 import InverseGalois.CFT.Cyclotomic.BuildingBlock
@@ -22,6 +23,7 @@ import InverseGalois.CFT.Cyclotomic.Splitting
 import InverseGalois.CFT.Decomposition
 import InverseGalois.CFT.Disjoint
 import InverseGalois.CFT.GroupCohomology.Classification
+import InverseGalois.CFT.GroupCohomology.Cohomologous
 import InverseGalois.CFT.GroupCohomology.Corestriction
 import InverseGalois.CFT.GroupCohomology.Cyclic
 import InverseGalois.CFT.GroupCohomology.OfCocycle
@@ -114,6 +116,12 @@ it that are available here.
 * `InverseGalois.CFT.Brauer.CyclicAlgebra` computes the cyclic case: the cyclic algebra of a
   generator of a cyclic Galois group and a unit of the base field is a matrix algebra exactly when
   that unit is a norm.
+* `InverseGalois.CFT.GroupCohomology.Cohomologous` identifies equality of classes in `H²` with
+  being cohomologous as multiplicative `2`-cocycles, in the explicit cochain form the crossed
+  product construction consumes.
+* `InverseGalois.CFT.Brauer.Split` proves the uniqueness half of Wedderburn's theorem in the split
+  case, and deduces that a central simple algebra has trivial Brauer class exactly when it is a
+  matrix algebra over the base field.
 * `InverseGalois.CFT.GroupCohomology.Corestriction` builds the corestriction map of a finite-index
   subgroup in every degree, through Shapiro's lemma and the trace morphism out of a coinduced
   representation, and proves the relation `res ≫ cor = [G : S] • id`; from it, the cohomology of a
