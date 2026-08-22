@@ -162,11 +162,11 @@ every finite symbol is `1` then so is the real one.
 
 ## 3. The degree-two frontier
 
-The natural completion of what is here is **Serre's existence theorem** (*A Course in Arithmetic*,
-Ch. III, Thm 4): given finitely many `aᵢ ∈ ℚ^×` and signs `ε_{i,v} = ±1` which are almost all `1`,
-satisfy `∏_v ε_{i,v} = 1`, and are locally realizable, there is `x ∈ ℚ^×` with `(aᵢ, x)_v = ε_{i,v}`
-for all `i` and `v`. This is exponent-two Grunwald–Wang, and it is the surjectivity half of the
-exact sequence above in degree two.
+The natural completion of the degree-two theory is **Serre's existence theorem** (*A Course in
+Arithmetic*, Ch. III, Thm 4): given finitely many `aᵢ ∈ ℚ^×` and signs `ε_{i,v} = ±1` which are
+almost all `1`, satisfy `∏_v ε_{i,v} = 1`, and are locally realizable, there is `x ∈ ℚ^×` with
+`(aᵢ, x)_v = ε_{i,v}` for all `i` and `v`. This is exponent-two Grunwald–Wang, and it is the
+surjectivity half of the exact sequence above in degree two.
 
 Its two ingredients are
 
@@ -176,10 +176,24 @@ Its two ingredients are
 2. **surjectivity of `ℚ^× → ℚ_p^×/(ℚ_p^×)²`**, i.e. every local square class contains a rational,
    plus the simultaneous (weak approximation) version over a finite set of places.
 
-Given the existence theorem, **Hasse–Minkowski in four and then in arbitrarily many variables**
-follows by Serre's induction, and with the Davenport–Cassels lemma so does the three-squares
-theorem. None of that touches the two blockers of §2; it is a self-contained extension of the
-degree-two theory.
+The existence theorem is now in the tree, in `Global/Existence.lean` (disjoint supports) and
+`Global/ExistenceGeneral.lean` (the general form, obtained by a twist). Downstream of it:
+
+* the **three-square theorem**, `Global/ThreeSquares.lean`, via the local three-squares statements
+  and the Davenport–Cassels descent;
+* the **Hasse principle for diagonal quaternary forms**, `Global/QuaternaryForms.lean`: the two
+  binary halves share a value exactly when a pair of Hilbert-symbol families is prescribable, and
+  the product formula for those families is reciprocity;
+* the **Hasse principle for diagonal quinary forms**, `Global/QuinaryForms.lean`: here the shared
+  value cannot be prescribed by Hilbert symbols alone, and the argument instead approximates the
+  local values by a single integral pair of coordinates (`Global/IntApprox.lean`), which lands the
+  resulting rational value in the correct square class at every relevant place; away from those
+  places the ternary half has unit coefficients and is isotropic outright
+  (`Global/OddUnitIsotropy.lean`), so the quaternary principle finishes the job.
+
+What remains of Serre's chapter is the Hasse principle for a diagonal form in an arbitrary number
+of variables, which is the same induction with the five-variable argument as its step. None of
+this touches the two blockers of §2; it is a self-contained extension of the degree-two theory.
 
 ---
 

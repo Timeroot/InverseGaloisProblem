@@ -67,7 +67,10 @@ import InverseGalois.CFT.Global.LocalSquare
 import InverseGalois.CFT.Global.LocalSquares
 import InverseGalois.CFT.Global.OddGenerators
 import InverseGalois.CFT.Global.OddValuation
+import InverseGalois.CFT.Global.IntApprox
+import InverseGalois.CFT.Global.OddUnitIsotropy
 import InverseGalois.CFT.Global.QuaternaryForms
+import InverseGalois.CFT.Global.QuinaryForms
 import InverseGalois.CFT.Global.RationalSquareClasses
 import InverseGalois.CFT.Global.Reciprocity
 import InverseGalois.CFT.Global.SevenModEight
@@ -382,4 +385,13 @@ it that are available here.
   principle for diagonal forms in four variables**: such a form is isotropic exactly when its two
   halves share a nonzero value, and a common value at every place, the real place included, is
   the prescription of two families of Hilbert symbols whose product formula is reciprocity.
+* `InverseGalois.CFT.Global.IntApprox` approximates a finite family of `p`-adic integers by a
+  single rational integer, which may moreover be taken larger than any prescribed bound.
+* `InverseGalois.CFT.Global.OddUnitIsotropy` records that a diagonal ternary form with unit
+  coefficients over an odd `p`-adic field is isotropic, and that a nonzero rational is a unit at
+  all but finitely many places.
+* `InverseGalois.CFT.Global.QuinaryForms` proves the **Hasse principle for diagonal forms in five
+  variables**: the binary and the ternary half share a value at every place, and the integer
+  approximation produces a single rational value of the binary half lying in the right square
+  class at each place where it matters, at which point the four-variable principle applies.
 -/
