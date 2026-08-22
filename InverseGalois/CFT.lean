@@ -67,6 +67,7 @@ import InverseGalois.CFT.Global.LocalSquare
 import InverseGalois.CFT.Global.LocalSquares
 import InverseGalois.CFT.Global.OddGenerators
 import InverseGalois.CFT.Global.OddValuation
+import InverseGalois.CFT.Global.QuaternaryForms
 import InverseGalois.CFT.Global.RationalSquareClasses
 import InverseGalois.CFT.Global.Reciprocity
 import InverseGalois.CFT.Global.SevenModEight
@@ -377,4 +378,8 @@ it that are available here.
 * `InverseGalois.CFT.Global.ThreeSquares` combines these into **the three-square theorem**: a
   natural number is a sum of three integer squares exactly when it is not of the shape
   `4 ^ a * (8 * b + 7)`.
+* `InverseGalois.CFT.Global.QuaternaryForms` applies Serre's existence theorem to the **Hasse
+  principle for diagonal forms in four variables**: such a form is isotropic exactly when its two
+  halves share a nonzero value, and a common value at every place, the real place included, is
+  the prescription of two families of Hilbert symbols whose product formula is reciprocity.
 -/

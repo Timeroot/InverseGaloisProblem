@@ -2,6 +2,7 @@ import Mathlib
 import InverseGalois.CFT.Global.Existence
 import InverseGalois.CFT.Global.HilbertBimul
 import InverseGalois.CFT.Global.SquareClassApprox
+import InverseGalois.CFT.Global.SquarefreeCRT
 
 /-!
 # Serre's existence theorem
@@ -232,5 +233,51 @@ theorem exists_rat_hilbert_prescribed_two {a b : ℤ} (ha : a ≠ 0) (hb : b ≠
         obtain ⟨w, hw0, hwa, hwb⟩ := hlocr
         exact ⟨w, hw0, Fin.forall_fin_two.2 ⟨hwa, hwb⟩⟩)
   exact ⟨x, hx0, fun p => hxp 0 p, fun p => hxp 1 p, hxr 0, hxr 1⟩
+
+/-- **Serre's existence theorem for a pair of rational numbers.**  Every Hilbert symbol occurring
+in the statement depends only on the square class of the left argument, so the integral form of
+the theorem already covers rational left arguments. -/
+theorem exists_rat_hilbert_prescribed_two' {a b : ℚ} (ha : a ≠ 0) (hb : b ≠ 0)
+    (α β : Nat.Primes → ℤ) (ea eb : ℤ) (T : Finset Nat.Primes)
+    (hTa : ∀ p ∉ T, α p = 1) (hTb : ∀ p ∉ T, β p = 1)
+    (hproda : ea * ∏ p ∈ T, α p = 1) (hprodb : eb * ∏ p ∈ T, β p = 1)
+    (hlocp : ∀ p : Nat.Primes, ∃ w : ℚ, w ≠ 0 ∧
+      hilbertSymbolAt p a w = α p ∧ hilbertSymbolAt p b w = β p)
+    (hlocr : ∃ w : ℚ, w ≠ 0 ∧ hilbertSymbol ((a : ℝ)) ((w : ℝ)) = ea ∧
+      hilbertSymbol ((b : ℝ)) ((w : ℝ)) = eb) :
+    ∃ x : ℚ, x ≠ 0 ∧ (∀ p : Nat.Primes, hilbertSymbolAt p a x = α p) ∧
+      (∀ p : Nat.Primes, hilbertSymbolAt p b x = β p) ∧
+      hilbertSymbol ((a : ℝ)) ((x : ℝ)) = ea ∧ hilbertSymbol ((b : ℝ)) ((x : ℝ)) = eb := by
+  obtain ⟨m, u, hm0, -, hu0, hamu⟩ := exists_squarefree_intCast_mul_sq ha
+  obtain ⟨n, v, hn0, -, hv0, hbnv⟩ := exists_squarefree_intCast_mul_sq hb
+  have keyap : ∀ (p : Nat.Primes) (y : ℚ),
+      hilbertSymbolAt p a y = hilbertSymbolAt p ((m : ℚ)) y := by
+    intro p y
+    rw [hamu, hilbertSymbolAt_mul_sq_left _ _ _ _ hu0]
+  have keybp : ∀ (p : Nat.Primes) (y : ℚ),
+      hilbertSymbolAt p b y = hilbertSymbolAt p ((n : ℚ)) y := by
+    intro p y
+    rw [hbnv, hilbertSymbolAt_mul_sq_left _ _ _ _ hv0]
+  have keyar : ∀ y : ℚ,
+      hilbertSymbol ((a : ℝ)) ((y : ℝ)) = hilbertSymbol (((((m : ℚ)) : ℝ))) ((y : ℝ)) := by
+    intro y
+    rw [show ((a : ℝ)) = (((((m : ℚ)) : ℝ))) * ((u : ℝ)) ^ 2 by rw [hamu]; push_cast; ring,
+      hilbertSymbol_mul_sq_left _ _ _ (show ((u : ℝ)) ≠ 0 by exact_mod_cast hu0)]
+  have keybr : ∀ y : ℚ,
+      hilbertSymbol ((b : ℝ)) ((y : ℝ)) = hilbertSymbol (((((n : ℚ)) : ℝ))) ((y : ℝ)) := by
+    intro y
+    rw [show ((b : ℝ)) = (((((n : ℚ)) : ℝ))) * ((v : ℝ)) ^ 2 by rw [hbnv]; push_cast; ring,
+      hilbertSymbol_mul_sq_left _ _ _ (show ((v : ℝ)) ≠ 0 by exact_mod_cast hv0)]
+  obtain ⟨x, hx0, hxa, hxb, hxra, hxrb⟩ :=
+    exists_rat_hilbert_prescribed_two hm0 hn0 α β ea eb T hTa hTb hproda hprodb
+      (fun p => by
+        obtain ⟨w, hw0, hwa, hwb⟩ := hlocp p
+        exact ⟨w, hw0, by rw [← keyap p w]; exact hwa, by rw [← keybp p w]; exact hwb⟩)
+      (by
+        obtain ⟨w, hw0, hwa, hwb⟩ := hlocr
+        exact ⟨w, hw0, by rw [← keyar w]; exact hwa, by rw [← keybr w]; exact hwb⟩)
+  exact ⟨x, hx0, fun p => by rw [keyap p x]; exact hxa p,
+    fun p => by rw [keybp p x]; exact hxb p, by rw [keyar x]; exact hxra,
+    by rw [keybr x]; exact hxrb⟩
 
 end InverseGalois.CFT
