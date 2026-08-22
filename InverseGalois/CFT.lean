@@ -52,6 +52,8 @@ import InverseGalois.CFT.GroupCohomology.CyclicH2
 import InverseGalois.CFT.GroupCohomology.CyclicSurjective
 import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.ToCocycle
+import InverseGalois.CFT.Global.HilbertPlaces
+import InverseGalois.CFT.Global.HilbertProduct
 import InverseGalois.CFT.Herbrand
 import InverseGalois.CFT.Level
 import InverseGalois.CFT.Local.DyadicHilbert
@@ -254,6 +256,11 @@ it that are available here.
 * `InverseGalois.CFT.Local.LegendreHilbert` is the resulting dictionary for integer arguments:
   the symbol of two integers prime to `p` is one, and the symbol of a power of `p` times a unit
   against another is a product of Legendre symbols.
+* `InverseGalois.CFT.Global.HilbertPlaces` assembles the local Hilbert symbols of a pair of
+  rationals into a family indexed by the primes, and shows that the family is trivial at all but
+  finitely many places, so that the product over all places makes sense.
+* `InverseGalois.CFT.Global.HilbertProduct` forms that product, over the real place together with
+  every finite one, and records the formal properties it inherits place by place.
 * `InverseGalois.CFT.Local.RamifiedNormForm` does the same for the ramified quadratic extensions:
   a `p`-adic number is a value of the norm form exactly when the parity of its valuation matches
   the quadratic character of its unit part, twisted by the unit part of the discriminant, which
