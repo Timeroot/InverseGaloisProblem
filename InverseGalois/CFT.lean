@@ -59,10 +59,14 @@ import InverseGalois.CFT.Global.HilbertBimul
 import InverseGalois.CFT.Global.HilbertMulPlaces
 import InverseGalois.CFT.Global.HilbertPlaces
 import InverseGalois.CFT.Global.HilbertProduct
+import InverseGalois.CFT.Global.JacobiNonresidue
 import InverseGalois.CFT.Global.LocalSquare
+import InverseGalois.CFT.Global.LocalSquares
 import InverseGalois.CFT.Global.OddGenerators
+import InverseGalois.CFT.Global.RationalSquareClasses
 import InverseGalois.CFT.Global.Reciprocity
 import InverseGalois.CFT.Global.SquarefreeCRT
+import InverseGalois.CFT.Global.TernaryForms
 import InverseGalois.CFT.Global.TwoGenerators
 import InverseGalois.CFT.Herbrand
 import InverseGalois.CFT.Level
@@ -327,4 +331,16 @@ it that are available here.
 * `InverseGalois.CFT.Brauer.Quaternion` exhibits the first nontrivial Brauer classes: since `-1`
   is not a norm from `ℂ` to `ℝ`, nor from `ℚ(i)` to `ℚ`, the corresponding quaternion algebras are
   central simple algebras of dimension four that are not matrix algebras over the base field.
+* `InverseGalois.CFT.Global.TernaryForms` restates the Hasse principle for an arbitrary diagonal
+  ternary form over the rational field, and deduces the Hasse principle for the representation of
+  a rational number by a diagonal binary form, in particular as a sum of two squares.
+* `InverseGalois.CFT.Global.JacobiNonresidue` produces, for a squarefree integer other than one,
+  arbitrarily large primes at which its Jacobi symbol is `-1`, by combining quadratic reciprocity
+  with Dirichlet's theorem on primes in an arithmetic progression.
+* `InverseGalois.CFT.Global.LocalSquares` deduces the Hasse principle for squares: a rational
+  number that is a square in every field of `p`-adic numbers is a square, so the square classes of
+  the rational field inject into the product of the local ones.
+* `InverseGalois.CFT.Global.RationalSquareClasses` goes the other way, showing every square class
+  of a `p`-adic field to contain a rational number, by approximating a `p`-adic number closely
+  enough that the ratio is a square.
 -/
