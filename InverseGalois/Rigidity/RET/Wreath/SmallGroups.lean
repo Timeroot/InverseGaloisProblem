@@ -14,6 +14,7 @@ import InverseGalois.Solvable.SemiabelianP2Q2
 import InverseGalois.Solvable.SemiabelianSylowCount
 import InverseGalois.Solvable.SemiabelianAGroup
 import InverseGalois.Solvable.SemiabelianWreath
+import InverseGalois.Solvable.SemiabelianFortyEight
 
 /-!
 # Z-groups and groups of small order, regularly over `ℚ(T)`
@@ -48,6 +49,11 @@ the smallest prime factor of the order.
   than `24` is a regular Galois group over `ℚ(T)`.**
 * `InverseGalois.isRegularInverseGalois_of_card_lt_thirtytwo`: **every finite group of order less
   than `32` other than `24` is a regular Galois group over `ℚ(T)`.**
+* `InverseGalois.isRegularInverseGalois_of_card_lt_fortyeight`: **every finite group of order less
+  than `48` other than `24` and `32` is a regular Galois group over `ℚ(T)`.**
+* `InverseGalois.isRegularInverseGalois_of_card_eq_mul_prime_of_divisors_lt_fortyeight`,
+  `InverseGalois.isRegularInverseGalois_of_card_eq_mul_prime_sq_of_divisors_lt_fortyeight`: the
+  unbounded families `m * q` and `m * q ^ 2` with `m` below `48`.
 * `InverseGalois.isRegularInverseGalois_of_forall_sylow_comm`: **every finite solvable group all of
   whose Sylow subgroups are abelian is a regular Galois group over `ℚ(T)`.**
 * `InverseGalois.isRegularInverseGalois_of_isSolvable_of_cubefree`: **every finite solvable group of
@@ -152,6 +158,31 @@ cover, the single order `24` excepted. -/
 theorem isRegularInverseGalois_of_card_lt_thirtytwo {G : Type} [Group G] [Finite G]
     (h : Nat.card G < 32) (h24 : Nat.card G ≠ 24) : IsRegularInverseGalois G :=
   isRegularInverseGalois_of_isSemiabelian (IsSemiabelian.of_card_lt_thirtytwo h h24)
+
+/-- **Every finite group of order less than `48` other than `24` and `32` is a regular Galois group
+over `ℚ(T)`.**  The orders from `33` to `47` are again of shapes the semiabelian criteria cover. -/
+theorem isRegularInverseGalois_of_card_lt_fortyeight {G : Type} [Group G] [Finite G]
+    (h : Nat.card G < 48) (h24 : Nat.card G ≠ 24) (h32 : Nat.card G ≠ 32) :
+    IsRegularInverseGalois G :=
+  isRegularInverseGalois_of_isSemiabelian (IsSemiabelian.of_card_lt_fortyeight h h24 h32)
+
+/-- **A group of order `m * q` with `m < 48` other than `24` and `32`, in which `1` is the only
+divisor of `m` congruent to `1` modulo the prime `q`, is a regular Galois group over `ℚ(T)`.** -/
+theorem isRegularInverseGalois_of_card_eq_mul_prime_of_divisors_lt_fortyeight {G : Type} [Group G]
+    [Finite G] {m q : ℕ} (hq : q.Prime) (hm : ¬ q ∣ m) (hmlt : m < 48) (hm24 : m ≠ 24)
+    (hm32 : m ≠ 32) (h : Nat.card G = m * q) (hdiv : ∀ d ∈ m.divisors, d % q = 1 → d = 1) :
+    IsRegularInverseGalois G :=
+  isRegularInverseGalois_of_isSemiabelian
+    (IsSemiabelian.of_card_eq_mul_prime_of_divisors_lt_fortyeight hq hm hmlt hm24 hm32 h hdiv)
+
+/-- **A group of order `m * q ^ 2` with `m < 48` other than `24` and `32`, in which `1` is the only
+divisor of `m` congruent to `1` modulo the prime `q`, is a regular Galois group over `ℚ(T)`.** -/
+theorem isRegularInverseGalois_of_card_eq_mul_prime_sq_of_divisors_lt_fortyeight {G : Type}
+    [Group G] [Finite G] {m q : ℕ} (hq : q.Prime) (hm : ¬ q ∣ m) (hmlt : m < 48) (hm24 : m ≠ 24)
+    (hm32 : m ≠ 32) (h : Nat.card G = m * q ^ 2) (hdiv : ∀ d ∈ m.divisors, d % q = 1 → d = 1) :
+    IsRegularInverseGalois G :=
+  isRegularInverseGalois_of_isSemiabelian
+    (IsSemiabelian.of_card_eq_mul_prime_sq_of_divisors_lt_fortyeight hq hm hmlt hm24 hm32 h hdiv)
 
 /-- **Every finite solvable group all of whose Sylow subgroups are abelian is a regular Galois
 group over `ℚ(T)`.**  Such a group is semiabelian by Thompson's criterion. -/

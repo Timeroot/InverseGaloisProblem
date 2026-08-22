@@ -617,10 +617,17 @@ abelian subgroup of index `2`; so `|A| = 8` and, `G` being non-cyclic, `A = Φ(G
 `A ≅ C2³` (where `G / A` is one of the Klein subgroups of `GL(3,2)`) are the remaining work, and
 they are what stands between `not_dvd_thirtytwo` and the sharp `not_dvd_sixtyfour` of §0.8.
 
-Past `32`, the orders `33` to `47` are all covered already — `40 = 2³ · 5` by the divisor count that
-makes the Sylow `5`-subgroup unique, `36 = 2² · 3²` by the `p² q²` file, the rest by shape — so
-proving the order-`32` case would immediately give "every finite group of order less than `48`
-other than `24`", and `48` is sharp: `(48,28)` is non-semiabelian.
+Past `32`, the orders `33` to `47` are all covered already — `40 = 2³ · 5` and `45 = 3² · 5` by the
+divisor count that makes the largest Sylow subgroup unique, `36 = 2² · 3²` by the `p² q²` file, the
+rest by shape — so `InverseGalois/Solvable/SemiabelianFortyEight.lean` records
+
+```lean
+IsSemiabelian.of_card_lt_fortyeight {G : Type} [Group G] [Finite G] :
+  Nat.card G < 48 → Nat.card G ≠ 24 → Nat.card G ≠ 32 → IsSemiabelian G
+```
+
+and settling the order `32` would remove the second exception at once. The bound `48` is sharp:
+`(48,28) = C2 . S4` is not semiabelian.
 
 ---
 

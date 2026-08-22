@@ -56,8 +56,10 @@ Families:
   on `p ^ n` letters, and more generally
   `InverseGalois.isRegularInverseGalois_iteratedWreathProduct` — every iterated regular wreath
   product of a semiabelian group.
-* `InverseGalois.isRegularInverseGalois_of_card_lt_thirtytwo` — every finite group of order less
-  than `32` other than `24`, refining
+* `InverseGalois.isRegularInverseGalois_of_card_lt_fortyeight` — every finite group of order less
+  than `48` other than `24` and `32`, and
+  `InverseGalois.isRegularInverseGalois_of_card_lt_thirtytwo` — every finite group of order less
+  than `32` other than `24`, both refining
   `InverseGalois.isRegularInverseGalois_of_card_lt_twentyfour`; the order `24` is where the run of
   orders stops, `SL(2, 3)` being the smallest group with no abelian normal subgroup outside its
   Frattini subgroup.
@@ -67,7 +69,10 @@ Families:
   `p ^ 2 * q ^ 2`.
 * `InverseGalois.isRegularInverseGalois_of_card_eq_mul_prime_of_lt_twentyfour`,
   `InverseGalois.isRegularInverseGalois_of_card_eq_mul_prime_sq_of_lt_twentyfour` — the orders
-  `m * q` and `m * q ^ 2` for a prime `q` exceeding `m < 24`, two families unbounded in the order.
+  `m * q` and `m * q ^ 2` for a prime `q` exceeding `m < 24`, two families unbounded in the order,
+  and `InverseGalois.isRegularInverseGalois_of_card_eq_mul_prime_of_divisors_lt_fortyeight` and
+  `..._sq_of_divisors_lt_fortyeight` — the same two families with `m` below `48` and the size
+  comparison replaced by the divisor count.
 * `Rigidity.RET.isRegularInverseGalois_perm_fin` — `Sₙ` for every `n`.
 * `Rigidity.RET.isRegularInverseGalois_alternatingGroup` — `Aₙ` for every `n`.
 * `Rigidity.RET.isRegularInverseGalois_of_isMobius` — every finite subgroup of `PGL₂(ℚ)`, hence
@@ -285,7 +290,12 @@ that has to be set aside below `32`: the orders from `25` to `31` are again a pr
 product of two primes, a prime cube, a shape `p ^ 2 * q`, two primes and a squarefree order, so
 
 * `InverseGalois.isRegularInverseGalois_of_card_lt_thirtytwo` — **every finite group of order less
-  than `32` other than `24`**.
+  than `32` other than `24`**, and, since the orders from `33` to `47` are covered too — `40` and
+  `45` by the divisor count that makes the largest Sylow subgroup unique, `36` by the `p² q²` file,
+  the rest by shape —
+* `InverseGalois.isRegularInverseGalois_of_card_lt_fortyeight` — **every finite group of order less
+  than `48` other than `24` and `32`**.  The bound `48` is again sharp: `C2 . S4` of order `48` is
+  not semiabelian.
 
 Two criteria of a different kind carry the list past the enumeration of orders altogether.
 Thompson's argument runs the Frattini induction for a finite solvable group all of whose Sylow

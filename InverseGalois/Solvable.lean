@@ -19,6 +19,7 @@ import InverseGalois.Solvable.SemiabelianSmallOrders
 import InverseGalois.Solvable.SemiabelianLargePrime
 import InverseGalois.Solvable.SemiabelianSylowCount
 import InverseGalois.Solvable.SemiabelianAGroup
+import InverseGalois.Solvable.SemiabelianFortyEight
 import InverseGalois.Solvable.SemiabelianWreath
 import InverseGalois.Solvable.WreathCyclic
 import InverseGalois.Solvable.Shafarevich
@@ -94,6 +95,8 @@ free of arithmetic input and applicable to both realization predicates of the de
   preimage of a minimal normal subgroup of the Frattini quotient normal in the whole group, and it
   escapes the Frattini subgroup, so Thompson's criterion holds and in particular every finite
   solvable group of cubefree order is semiabelian.
+* `InverseGalois.Solvable.SemiabelianFortyEight` carries the enumeration of the orders from `32` to
+  `48`, the two orders `24` and `32` excepted, and `48` is where it genuinely halts.
 * `InverseGalois.Solvable.SemiabelianWreath` shows that the semiabelian class is closed under the
   regular wreath product, hence under its iterates, so that a Sylow `p`-subgroup of a symmetric
   group on `p ^ n` letters is semiabelian.
