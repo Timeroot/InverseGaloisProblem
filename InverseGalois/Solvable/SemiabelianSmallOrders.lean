@@ -6,6 +6,7 @@ import Mathlib
 import InverseGalois.Solvable.SemiabelianP2Q
 import InverseGalois.Solvable.SemiabelianP4
 import InverseGalois.Solvable.SemiabelianSmall
+import InverseGalois.Solvable.SemiabelianZGroup
 
 /-!
 # Every finite group of order less than `24` is semiabelian
@@ -26,12 +27,18 @@ covering criterion of `InverseGalois.Solvable.SemiabelianCriterion` applies thro
 `24` is the first one this list leaves out, and the first at which the shapes above are exhausted:
 it is `p ^ 3 * q`, a shape none of the criteria reach.
 
+Past `24` the shapes resume: `25 = 5 ^ 2`, `26 = 2 * 13`, `27 = 3 ^ 3`, `28 = 2 ^ 2 * 7`, the
+primes `29` and `31`, and the squarefree order `30`.  So the single order `24` is all that has to
+be set aside to reach `32`.
+
 ## Main results
 
 * `IsSemiabelian.of_card_eq_prime_pow_four_two`, `IsSemiabelian.of_card_eq_sixteen`: every group of
   order `16` is semiabelian.
 * `IsSemiabelian.of_card_lt_twentyfour`: **every finite group of order less than `24` is
   semiabelian.**
+* `IsSemiabelian.of_card_lt_thirtytwo`: **every finite group of order less than `32` other than
+  `24` is semiabelian.**
 -/
 
 namespace IsSemiabelian
@@ -87,5 +94,27 @@ theorem of_card_lt_twentyfour {G : Type} [Group G] [Finite G] (h : Nat.card G < 
   · exact of_card_eq_prime_mul_prime Nat.prime_two (q := 11) (by norm_num)
       (hn.trans (by norm_num))
   · exact of_card_eq_prime (by norm_num) hn
+
+/-- **Every finite group of order less than `32` other than `24` is semiabelian.**  The orders
+between `24` and `32` are a prime square, a product of two primes, a prime cube, a shape
+`p ^ 2 * q`, two primes and a squarefree order, so each of them is covered by a criterion of its
+own; the order `24` is the one that has to be left out. -/
+theorem of_card_lt_thirtytwo {G : Type} [Group G] [Finite G] (h : Nat.card G < 32)
+    (h24 : Nat.card G ≠ 24) : IsSemiabelian G := by
+  obtain ⟨n, hn⟩ : ∃ n, Nat.card G = n := ⟨_, rfl⟩
+  rw [hn] at h h24
+  rcases lt_or_ge n 24 with hlt | hge
+  · exact of_card_lt_twentyfour (hn ▸ hlt)
+  · interval_cases n
+    · exact absurd rfl h24
+    · exact of_card_eq_prime_sq (p := 5) (by norm_num) (hn.trans (by norm_num))
+    · exact of_card_eq_prime_mul_prime Nat.prime_two (q := 13) (by norm_num)
+        (hn.trans (by norm_num))
+    · exact of_card_eq_prime_cube Nat.prime_three (hn.trans (by norm_num))
+    · exact of_card_eq_sq_mul_prime Nat.prime_two (q := 7) (by norm_num) (by norm_num)
+        (hn.trans (by norm_num))
+    · exact of_card_eq_prime (by norm_num) hn
+    · exact of_squarefree_card G (by rw [hn]; decide +kernel)
+    · exact of_card_eq_prime (by norm_num) hn
 
 end IsSemiabelian

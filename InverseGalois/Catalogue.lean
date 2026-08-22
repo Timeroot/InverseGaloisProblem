@@ -48,9 +48,19 @@ Families:
 * `InverseGalois.isRegularInverseGalois_of_commutator_le_center`,
   `InverseGalois.isRegularInverseGalois_of_nilpotencyClass_le_two` — every finite group of
   nilpotency class at most `2`, in particular every extraspecial group.
-* `InverseGalois.isRegularInverseGalois_of_card_lt_twentyfour` — every finite group of order less
-  than `24`; the order `24` is where this stops, `SL(2, 3)` being the smallest group with no
-  abelian normal subgroup outside its Frattini subgroup.
+* `InverseGalois.isRegularInverseGalois_of_forall_sylow_comm` — every finite solvable group all of
+  whose Sylow subgroups are abelian, and
+  `InverseGalois.isRegularInverseGalois_of_isSolvable_of_cubefree` — every finite solvable group of
+  cubefree order.
+* `InverseGalois.isRegularInverseGalois_sylow_perm` — a Sylow `p`-subgroup of the symmetric group
+  on `p ^ n` letters, and more generally
+  `InverseGalois.isRegularInverseGalois_iteratedWreathProduct` — every iterated regular wreath
+  product of a semiabelian group.
+* `InverseGalois.isRegularInverseGalois_of_card_lt_thirtytwo` — every finite group of order less
+  than `32` other than `24`, refining
+  `InverseGalois.isRegularInverseGalois_of_card_lt_twentyfour`; the order `24` is where the run of
+  orders stops, `SL(2, 3)` being the smallest group with no abelian normal subgroup outside its
+  Frattini subgroup.
 * `InverseGalois.isRegularInverseGalois_of_card_eq_sq_mul_prime`,
   `InverseGalois.isRegularInverseGalois_of_card_eq_prime_pow_four`,
   `InverseGalois.isRegularInverseGalois_of_card_eq_sq_mul_sq` — the orders `p ^ 2 * q`, `p ^ 4` and
@@ -270,7 +280,31 @@ order is smaller than `q`, or whenever the order is `p ^ 2 * q`.  Between them t
 
 The bound `24` is sharp for the method rather than an accident of the enumeration: `SL(2, 3)` has
 order `24`, and its only abelian normal subgroup is its centre, which is also its Frattini
-subgroup, so no abelian normal subgroup of it admits a proper supplement.
+subgroup, so no abelian normal subgroup of it admits a proper supplement.  It is the only order
+that has to be set aside below `32`: the orders from `25` to `31` are again a prime square, a
+product of two primes, a prime cube, a shape `p ^ 2 * q`, two primes and a squarefree order, so
+
+* `InverseGalois.isRegularInverseGalois_of_card_lt_thirtytwo` — **every finite group of order less
+  than `32` other than `24`**.
+
+Two criteria of a different kind carry the list past the enumeration of orders altogether.
+Thompson's argument runs the Frattini induction for a finite solvable group all of whose Sylow
+subgroups are abelian: passing to the Frattini quotient and taking a Sylow subgroup of the preimage
+of a minimal normal subgroup, Frattini's argument makes that Sylow subgroup normal in the whole
+group, and it escapes the Frattini subgroup.  Since a group of cubefree order has all its Sylow
+subgroups of order `1`, `p` or `p ^ 2`, this gives
+
+* `InverseGalois.isRegularInverseGalois_of_forall_sylow_comm` — **every finite solvable group with
+  abelian Sylow subgroups**, and
+* `InverseGalois.isRegularInverseGalois_of_isSolvable_of_cubefree` — **every finite solvable group
+  of cubefree order**.
+
+And the class is closed under the regular wreath product, hence under its iterates, which by the
+description of a Sylow subgroup of a symmetric group as an iterated wreath product of cyclic groups
+of order `p` gives
+
+* `InverseGalois.isRegularInverseGalois_sylow_perm` — **a Sylow `p`-subgroup of the symmetric group
+  on `p ^ n` letters**, for every prime `p` and every `n`.
 
 ## Main results
 

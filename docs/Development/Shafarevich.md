@@ -499,6 +499,131 @@ odd-`ℓ` injectivity of `H²(ℚ, C_ℓ) → ∏_p H²(ℚ_p, C_ℓ)` is not cl
 
 ---
 
+## 0.8 How far the geometric route can go at all — the semiabelian literature
+
+The conditional nilpotent theorem needs the Sylow `2`-subgroup to be semiabelian, so it is worth
+knowing where that hypothesis stops being satisfiable. The reference is
+
+> M. Kida, *On semiabelian groups*, J. Group Theory **27** (2024), 697–712,
+> DOI [10.1515/jgth-2024-0010](https://doi.org/10.1515/jgth-2024-0010) (open access),
+
+which is the first systematic study of which groups are semiabelian since Dentzer introduced the
+class. Its facts, in the order they matter here.
+
+**Not every finite `2`-group is semiabelian.** Wilkens' classification splits the non-modular
+quaternion-free `2`-groups into types A, B, C; types A and B are semiabelian (Kida, Prop. 3.10) but
+type C is not (Kida, Thm 4.6). So the geometric route can never, by itself, finish the nilpotent
+case of Shafarevich: there is a genuine obstruction at the prime `2`, not merely a gap in the
+criteria available here.
+
+**Where the obstruction starts.** Kida's Magma computation (Example 5.5) lists every non-semiabelian
+*stem* group of order at most `100`:
+
+  `(24,3) = SL(2,3)`, `(48,28) = C2 . S4`, `(64,8) = C2² . SD16`, `(64,41) = D8 ⋊ C4`,
+  `(96,3)`, `(96,190)`, `(96,201)`, `(96,203)`.
+
+Since being semiabelian is invariant under isoclinism (Kida, Thm 1.1) and every group is isoclinic
+to a stem group, this says: the smallest non-semiabelian group is `SL(2,3)` of order `24`, and the
+smallest non-semiabelian **`2`-group** has order `64`. Every group of order `32` is semiabelian.
+So `isInverseGalois_of_isNilpotent_of_not_dvd_thirtytwo` could in principle be improved to
+"not divisible by `64`" and no further — but that would mean checking all `51` groups of order `32`,
+whereas the criteria formalized here are structural.
+
+**The criteria Kida proves.** Nilpotent of class `2` (Thompson; formalized here in §0.7); solvable
+with all Sylow subgroups abelian (Thompson); modular `p`-groups and Hamiltonian `2`-groups
+(Prop. 3.6); Wilkens types A and B (Prop. 3.10); the isoclinism invariance (Thm 1.1); and, for
+non-nilpotent solvable groups, a criterion through Carter subgroups (Prop. 5.4). The class is closed
+under quotients, direct products and wreath products, but **not** under subgroups — `(96,204)` is
+semiabelian and contains `SL(2,3)`, which is not. That failure of subgroup-closure is exactly what
+makes the Frattini induction of §0.7 have to carry its hypothesis along by hand.
+
+**Consequences worth formalizing, in order of value.** Thompson's abelian-Sylow criterion is the
+widest of them and subsumes a great deal: a group of cubefree order has all its Sylow subgroups of
+order `1`, `p` or `p²`, hence abelian, so *every finite solvable group of cubefree order is
+semiabelian*, which contains the whole `p^a q^b` small-order zoo already treated one shape at a
+time. Wreath-product closure is the next: iterated wreath products of `C_p` are exactly the Sylow
+`p`-subgroups of the symmetric groups, an unbounded family of `p`-groups.
+
+---
+
+## 0.9 Status (2026-08-22, late evening) — Thompson's criterion, wreath closure, order below 32
+
+Both of the "consequences worth formalizing" of §0.8 are now in the repository, sorry- and
+axiom-free, together with one more step of the enumeration of small orders.
+
+**Thompson's abelian-Sylow criterion.** `InverseGalois/Solvable/SemiabelianAGroup.lean`:
+
+```lean
+IsSemiabelian.of_forall_sylow_comm {G : Type} [Group G] [Finite G] [IsSolvable G] :
+  (∀ p : ℕ, p.Prime → ∀ (P : Sylow p G) (x y : ↥(P : Subgroup G)), x * y = y * x) →
+    IsSemiabelian G
+
+IsSemiabelian.of_isSolvable_of_cubefree {G : Type} [Group G] [Finite G] [IsSolvable G] :
+  (∀ p : ℕ, p.Prime → ¬ p ^ 3 ∣ Nat.card G) → IsSemiabelian G
+```
+
+The proof is the Frattini induction of §0.7 with a new supply of abelian normal subgroups escaping
+the Frattini subgroup. Write `Q = frattini G`, which is proper and normal. The quotient `G ⧸ Q` is
+nontrivial and solvable, so it has a minimal normal subgroup `K` that is elementary abelian of some
+exponent `p`; let `N` be its preimage in `G` and `P` a Sylow `p`-subgroup of `N`. Then `P ⊔ Q = N`,
+because the index of the join divides both the `p`-free index of `P` in `N` and the `p`-power
+`Q.relIndex N`. Frattini's argument (`Sylow.normalizer_sup_eq_top`) gives
+`(P : Subgroup G).normalizer ⊔ N = ⊤`, hence `normalizer ⊔ Q = ⊤`, and since the Frattini subgroup
+is non-generating this forces `normalizer = ⊤`: `P` is normal in `G`. It is abelian because it is a
+`p`-subgroup and therefore sits inside a Sylow `p`-subgroup of `G`, which is abelian by hypothesis;
+and it is not contained in `Q`, since otherwise `N = P ⊔ Q = Q`. The hypothesis passes to subgroups
+(a Sylow subgroup of a subgroup is contained in a Sylow subgroup of the whole group), which is what
+lets the induction on `Nat.card G` run in spite of the failure of subgroup-closure for
+semiabelianness itself.
+
+**Wreath closure.** `InverseGalois/Solvable/SemiabelianWreath.lean`:
+
+```lean
+IsSemiabelian.regularWreathProduct : IsSemiabelian D → IsSemiabelian Q → IsSemiabelian (D ≀ᵣ Q)
+IsSemiabelian.iteratedWreathProduct : IsSemiabelian G → ∀ n, IsSemiabelian (IteratedWreathProduct G n)
+IsSemiabelian.sylow_perm {p n : ℕ} [Fact p.Prime] {α : Type} [Finite α] :
+  Nat.card α = p ^ n → ∀ P : Sylow p (Equiv.Perm α), IsSemiabelian ↥(P : Subgroup (Equiv.Perm α))
+```
+
+The induction is on the derivation of `IsSemiabelian D`, using the functoriality of `D ≀ᵣ Q` in its
+bottom argument: an injection `D₁ →* D₂` induces an injection of wreath products and a surjection
+induces a surjection, so the `of_surjective` case is immediate, and the semidirect-product case
+identifies the kernel of `mapLeft SemidirectProduct.rightHom` as an abelian normal subgroup with a
+semiabelian quotient. The Sylow statement is Mathlib's
+`Sylow.mulEquivIteratedWreathProduct`, which presents a Sylow `p`-subgroup of `Equiv.Perm α` for
+`Nat.card α = p ^ n` as the `n`-fold iterated wreath product of a group of order `p`.
+
+**One more order.** `IsSemiabelian.of_card_lt_thirtytwo` covers every finite group of order less
+than `32` other than `24`: the orders `25` to `31` are `5²`, `2 · 13`, `3³`, `2² · 7`, the primes
+`29` and `31`, and the squarefree order `30`, each already covered by a shape criterion. `24` is
+`SL(2,3)`'s order and is genuinely excluded. `Squarefree 30` needs `decide +kernel` — plain `decide`
+gets stuck on the well-founded recursion in `Nat.minSqFac`, and `norm_num` has no extension for it.
+
+**Regular corollaries.** Each of these appears in `RET/Wreath/SmallGroups.lean` as an entry of the
+catalogue of regular Galois groups over `ℚ(T)`: `isRegularInverseGalois_of_forall_sylow_comm`,
+`isRegularInverseGalois_of_isSolvable_of_cubefree`, `isRegularInverseGalois_sylow_perm`,
+`isRegularInverseGalois_iteratedWreathProduct`, `isRegularInverseGalois_of_card_lt_thirtytwo`.
+
+**What blocks the next order.** The conditional nilpotent theorem is still
+`isInverseGalois_of_isNilpotent_of_not_dvd_thirtytwo`, because the criteria above say nothing about
+a `2`-group of order `32` in which *every* abelian normal subgroup lies inside the Frattini
+subgroup. The situation is completely pinned down: for such a `G`, a maximal abelian normal
+subgroup `A` is self-centralizing, `|A| = 4` is impossible (`Aut C4` and `Aut (C2 × C2)` have no
+subgroup of order `8`), `|A| ≤ 2` forces `C_G(A) = G`, and `|A| ≥ 16` makes `G` abelian or gives an
+abelian subgroup of index `2`; so `|A| = 8` and, `G` being non-cyclic, `A = Φ(G)` with
+`G / A ≅ C2 × C2` acting faithfully. For `A ≅ C8` this is contradictory: `x² ∈ A` cannot generate
+`A` (that would put `x` in `C_G(A)`), so the commutator `[x, y]` is a square in `A`, and then
+`⟨a², y⟩` is an abelian normal subgroup of order `8` outside `A`. The cases `A ≅ C4 × C2` and
+`A ≅ C2³` (where `G / A` is one of the Klein subgroups of `GL(3,2)`) are the remaining work, and
+they are what stands between `not_dvd_thirtytwo` and the sharp `not_dvd_sixtyfour` of §0.8.
+
+Past `32`, the orders `33` to `47` are all covered already — `40 = 2³ · 5` by the divisor count that
+makes the Sylow `5`-subgroup unique, `36 = 2² · 3²` by the `p² q²` file, the rest by shape — so
+proving the order-`32` case would immediately give "every finite group of order less than `48`
+other than `24`", and `48` is sharp: `(48,28)` is non-semiabelian.
+
+---
+
 ## 1. Scholz–Reichardt
 
 ### 1.1 Statement

@@ -12,6 +12,8 @@ import InverseGalois.Solvable.SemiabelianLargePrime
 import InverseGalois.Solvable.SemiabelianClassTwo
 import InverseGalois.Solvable.SemiabelianP2Q2
 import InverseGalois.Solvable.SemiabelianSylowCount
+import InverseGalois.Solvable.SemiabelianAGroup
+import InverseGalois.Solvable.SemiabelianWreath
 
 /-!
 # Z-groups and groups of small order, regularly over `ℚ(T)`
@@ -44,6 +46,16 @@ the smallest prime factor of the order.
   `p ^ 2`, `p ^ 3`, `p * q`, `p ^ 2 * q` and `p ^ 4`.
 * `InverseGalois.isRegularInverseGalois_of_card_lt_twentyfour`: **every finite group of order less
   than `24` is a regular Galois group over `ℚ(T)`.**
+* `InverseGalois.isRegularInverseGalois_of_card_lt_thirtytwo`: **every finite group of order less
+  than `32` other than `24` is a regular Galois group over `ℚ(T)`.**
+* `InverseGalois.isRegularInverseGalois_of_forall_sylow_comm`: **every finite solvable group all of
+  whose Sylow subgroups are abelian is a regular Galois group over `ℚ(T)`.**
+* `InverseGalois.isRegularInverseGalois_of_isSolvable_of_cubefree`: **every finite solvable group of
+  cubefree order is a regular Galois group over `ℚ(T)`.**
+* `InverseGalois.isRegularInverseGalois_regularWreathProduct`,
+  `InverseGalois.isRegularInverseGalois_iteratedWreathProduct`,
+  `InverseGalois.isRegularInverseGalois_sylow_perm`: the regular wreath product of two semiabelian
+  groups, its iterates, and **a Sylow `p`-subgroup of a symmetric group on `p ^ n` letters.**
 * `InverseGalois.isRegularInverseGalois_of_card_eq_mul_prime_of_lt_twentyfour`,
   `InverseGalois.isRegularInverseGalois_of_card_eq_mul_prime_sq_of_lt_twentyfour`: the same for a
   group whose order is a prime, or the square of a prime, times a cofactor smaller than both that
@@ -133,6 +145,48 @@ shape `p ^ 2 * q` for distinct primes, and each of those shapes is semiabelian. 
 theorem isRegularInverseGalois_of_card_lt_twentyfour {G : Type} [Group G] [Finite G]
     (h : Nat.card G < 24) : IsRegularInverseGalois G :=
   isRegularInverseGalois_of_isSemiabelian (IsSemiabelian.of_card_lt_twentyfour h)
+
+/-- **Every finite group of order less than `32` other than `24` is a regular Galois group over
+`ℚ(T)`.**  The orders between `24` and `32` are again of the shapes the semiabelian criteria
+cover, the single order `24` excepted. -/
+theorem isRegularInverseGalois_of_card_lt_thirtytwo {G : Type} [Group G] [Finite G]
+    (h : Nat.card G < 32) (h24 : Nat.card G ≠ 24) : IsRegularInverseGalois G :=
+  isRegularInverseGalois_of_isSemiabelian (IsSemiabelian.of_card_lt_thirtytwo h h24)
+
+/-- **Every finite solvable group all of whose Sylow subgroups are abelian is a regular Galois
+group over `ℚ(T)`.**  Such a group is semiabelian by Thompson's criterion. -/
+theorem isRegularInverseGalois_of_forall_sylow_comm {G : Type} [Group G] [Finite G] [IsSolvable G]
+    (h : ∀ p : ℕ, p.Prime → ∀ (P : Sylow p G) (x y : ↥(P : Subgroup G)), x * y = y * x) :
+    IsRegularInverseGalois G :=
+  isRegularInverseGalois_of_isSemiabelian (IsSemiabelian.of_forall_sylow_comm h)
+
+/-- **Every finite solvable group of cubefree order is a regular Galois group over `ℚ(T)`.**  A
+Sylow subgroup of such a group has order `1`, `p` or `p ^ 2`, hence is abelian. -/
+theorem isRegularInverseGalois_of_isSolvable_of_cubefree {G : Type} [Group G] [Finite G]
+    [IsSolvable G] (h : ∀ p : ℕ, p.Prime → ¬ p ^ 3 ∣ Nat.card G) : IsRegularInverseGalois G :=
+  isRegularInverseGalois_of_isSemiabelian (IsSemiabelian.of_isSolvable_of_cubefree h)
+
+/-! ### Wreath products -/
+
+/-- **The regular wreath product of two finite semiabelian groups is a regular Galois group over
+`ℚ(T)`.** -/
+theorem isRegularInverseGalois_regularWreathProduct {D Q : Type} [Group D] [Finite D] [Group Q]
+    [Finite Q] (hD : IsSemiabelian D) (hQ : IsSemiabelian Q) :
+    IsRegularInverseGalois (D ≀ᵣ Q) :=
+  isRegularInverseGalois_of_isSemiabelian (hD.regularWreathProduct hQ)
+
+/-- **Every iterated regular wreath product of a finite semiabelian group with itself is a regular
+Galois group over `ℚ(T)`.** -/
+theorem isRegularInverseGalois_iteratedWreathProduct {G : Type} [Group G] [Finite G]
+    (hG : IsSemiabelian G) (n : ℕ) : IsRegularInverseGalois (IteratedWreathProduct G n) :=
+  isRegularInverseGalois_of_isSemiabelian (hG.iteratedWreathProduct n)
+
+/-- **A Sylow `p`-subgroup of the symmetric group on `p ^ n` letters is a regular Galois group over
+`ℚ(T)`.**  Such a subgroup is an `n`-fold iterated wreath product of cyclic groups of order `p`. -/
+theorem isRegularInverseGalois_sylow_perm {p n : ℕ} [Fact p.Prime] {α : Type} [Finite α]
+    (hα : Nat.card α = p ^ n) (P : Sylow p (Equiv.Perm α)) :
+    IsRegularInverseGalois ↥(P : Subgroup (Equiv.Perm α)) :=
+  isRegularInverseGalois_of_isSemiabelian (IsSemiabelian.sylow_perm hα P)
 
 /-- **A finite group whose order is a prime `q` times a cofactor smaller than both `q` and `24` is
 a regular Galois group over `ℚ(T)`.**  The Sylow `q`-subgroup is unique, hence normal and abelian,
