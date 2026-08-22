@@ -77,6 +77,7 @@ import InverseGalois.CFT.Global.OddQuinary
 import InverseGalois.CFT.Global.OddUnitIsotropy
 import InverseGalois.CFT.Global.QuaternaryForms
 import InverseGalois.CFT.Global.QuinaryForms
+import InverseGalois.CFT.Global.RealSigns
 import InverseGalois.CFT.Global.RationalSquareClasses
 import InverseGalois.CFT.Global.Reciprocity
 import InverseGalois.CFT.Global.SevenModEight
@@ -417,4 +418,7 @@ it that are available here.
   isotropic at every odd finite place** — among five valuations three share a parity, and the
   corresponding ternary subform is a unit form — so that the Hasse principle in five or more
   variables involves only the real and the dyadic place.
+* `InverseGalois.CFT.Global.RealSigns` settles the real place: a diagonal real form is isotropic
+  exactly when its coefficients are not all of one sign.  In at least five variables the Hasse
+  principle therefore reads: **not all coefficients of one sign, and isotropic over `ℚ₂`**.
 -/

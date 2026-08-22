@@ -211,6 +211,11 @@ The existence theorem is now in the tree, in `Global/Existence.lean` (disjoint s
   involves only `ℝ` and `ℚ₂`, and the representation principle does so from four variables on.
   This is one half of the statement that the `u`-invariant of a `p`-adic field is four; the other
   half, the dyadic place, needs the classification of `2`-adic forms and is not proved here.
+* `Global/RealSigns.lean` settles the real place by inspection: a diagonal real form is isotropic
+  exactly when its coefficients are not all of one sign. Putting the two together, isotropy of a
+  diagonal rational form in at least five variables is equivalent to the conjunction of a sign
+  condition on the coefficients and isotropy over `ℚ₂` — a criterion in which only one place is
+  left to examine.
 
 Serre's chapter on the Hasse–Minkowski theorem is therefore complete, for diagonal forms; since
 every quadratic form over a field of characteristic other than two is diagonalisable, this is the
