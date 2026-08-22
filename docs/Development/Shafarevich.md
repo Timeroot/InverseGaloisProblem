@@ -184,6 +184,33 @@ is that the non-arithmetic scaffolding is no longer a cost, that the crossed-pro
 Brauer group is available in full, and that the target is a single, precisely stated,
 self-contained proposition about embedding problems with minimal elementary abelian kernel.
 
+## 0.3 Status (2026-08-22) — the degree-two slice of the arithmetic is done
+
+§0.1 named the missing arithmetic input as "the local invariant maps and the exactness of
+`0 → Br(K) → ⊕_v Br(K_v) → ℚ/ℤ → 0`". **In degree two, over `ℚ`, that is now proved**, by an
+argument that goes around the invariant maps entirely rather than through them: in exponent two the
+whole sequence degenerates into a statement about ternary quadratic forms, and Legendre's descent
+proves it directly.
+
+| statement | file |
+|---|---|
+| the local Hilbert symbol at every place of `ℚ`, bimultiplicative, computed explicitly | `CFT/Local/*` |
+| **Hilbert reciprocity** `∏_v (a, b)_v = 1` | `CFT/Global/Reciprocity.lean` |
+| **Hasse–Minkowski for ternary forms over `ℚ`** | `CFT/Global/HasseMinkowski.lean` |
+| **the Hasse norm theorem for `ℚ(√b)/ℚ`** = ABHN for quaternion algebras over `ℚ` | `CFT/Global/HasseNorm.lean` |
+
+All sorry-free and axiom-free. See `docs/Development/ClassFieldTheory.md` for the full map of the
+layer, the proof architecture of the descent, and why it is not circular with reciprocity.
+
+**This does not move the Shafarevich frontier.** Scholz–Reichardt needs ABHN for **odd** `ℓ`, and
+nothing in the ternary-forms argument survives the passage from exponent `2` to exponent `ℓ`: the
+whole point of the degree-two case is that a Brauer class of order two is a conic, which has no
+analogue. Rows 2 and 5 of the §1.4 table — ABHN in general, and the gluing of local abelian
+characters — remain exactly as stated in §0.2. What has changed is that the *degree-two* theory is
+complete and usable, and that the natural next target inside it (Serre's existence theorem for
+Hilbert symbols, i.e. exponent-two Grunwald–Wang, and thence Hasse–Minkowski in `n` variables) is
+now a short distance away and is CFT-blocker-free.
+
 ---
 
 ## 1. Scholz–Reichardt
