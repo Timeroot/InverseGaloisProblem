@@ -42,6 +42,7 @@ import InverseGalois.CFT.Cyclotomic.OnePrimeRamified
 import InverseGalois.CFT.Cyclotomic.PrimeSelection
 import InverseGalois.CFT.Cyclotomic.Ramified
 import InverseGalois.CFT.Cyclotomic.Splitting
+import InverseGalois.CFT.CyclotomicCompositum
 import InverseGalois.CFT.Decomposition
 import InverseGalois.CFT.Disjoint
 import InverseGalois.CFT.GaloisDescent
@@ -120,6 +121,7 @@ import InverseGalois.CFT.Local.UnramifiedNormForm
 import InverseGalois.CFT.ScalarSemidirect
 import InverseGalois.CFT.SquareClasses
 import InverseGalois.CFT.SubgroupCounting
+import InverseGalois.CFT.TameRamification
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
 
@@ -165,6 +167,12 @@ it that are available here.
 * `InverseGalois.CFT.ScalarSemidirect` proves Serre's disjointness lemma in group-theoretic form:
   the semidirect product of `(ℤ/ℓ)ˢ` by the scalar action of `(ℤ/ℓ)ˣ` has abelianization of order
   `ℓ - 1`, hence no quotient of order `ℓ` when `ℓ` is odd.
+* `InverseGalois.CFT.TameRamification` isolates the tamely ramified extensions, those in which no
+  residue characteristic divides a ramification index, and shows that the class is closed under
+  compositum and contains the cyclotomic fields of squarefree conductor.
+* `InverseGalois.CFT.CyclotomicCompositum` places a number field and a cyclotomic field side by
+  side inside an algebraic closure of `ℚ` and compares the degree of their compositum with
+  `φ n`, which is what turns a degree bound into an embedding into a cyclotomic field.
 * `InverseGalois.CFT.Cyclotomic.InertiaOrder` computes the order of inertia at a rational prime
   `p` in `ℚ(ζₙ)` as `φ (p ^ k)`, `p ^ k` the exact power of `p` dividing `n`, and multiplies these
   local orders back up to the global degree `φ n`.
