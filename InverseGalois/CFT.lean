@@ -52,11 +52,16 @@ import InverseGalois.CFT.GroupCohomology.CyclicH2
 import InverseGalois.CFT.GroupCohomology.CyclicSurjective
 import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.ToCocycle
+import InverseGalois.CFT.Global.DescentTools
+import InverseGalois.CFT.Global.HasseMinkowski
+import InverseGalois.CFT.Global.HilbertBimul
 import InverseGalois.CFT.Global.HilbertMulPlaces
 import InverseGalois.CFT.Global.HilbertPlaces
 import InverseGalois.CFT.Global.HilbertProduct
+import InverseGalois.CFT.Global.LocalSquare
 import InverseGalois.CFT.Global.OddGenerators
 import InverseGalois.CFT.Global.Reciprocity
+import InverseGalois.CFT.Global.SquarefreeCRT
 import InverseGalois.CFT.Global.TwoGenerators
 import InverseGalois.CFT.Herbrand
 import InverseGalois.CFT.Level
@@ -282,8 +287,20 @@ it that are available here.
 * `InverseGalois.CFT.Global.OddGenerators` and `InverseGalois.CFT.Global.TwoGenerators` evaluate
   the product over all places on the pairs drawn from `-1` and the rational primes: the two
   supplementary laws and quadratic reciprocity itself.
+* `InverseGalois.CFT.Global.HilbertBimul` makes the product over all places bimultiplicative, by
+  collecting the multiplicativity statements proved place by place.
 * `InverseGalois.CFT.Global.Reciprocity` deduces Hilbert reciprocity over the rational field, that
   the product of the local symbols of a pair of nonzero rationals over all places is one.
+* `InverseGalois.CFT.Global.LocalSquare` reads the local hypothesis at a ramified odd place as a
+  congruence: a trivial symbol there makes the first argument a square residue.
+* `InverseGalois.CFT.Global.SquarefreeCRT` supplies the integer input for the descent: a nonzero
+  integer is squarefree times a square, and a residue that is a square modulo every prime factor
+  of a squarefree modulus is a square modulo the whole of it, with a small representative.
+* `InverseGalois.CFT.Global.DescentTools` records that a trivial symbol may be cancelled from a
+  product, the values of a binary form being a group, and that `t ^ 2 - a` is such a value.
+* `InverseGalois.CFT.Global.HasseMinkowski` runs Legendre's descent on these to prove the Hasse
+  principle for ternary quadratic forms over the rationals: a conic with a point at every place
+  has a rational point, and the real place is already implied by the finite ones.
 * `InverseGalois.CFT.Herbrand` proves the counting theorem behind the Herbrand quotient: for a
   finite commutative group with an automorphism of finite order, the fixed points modulo the norms
   and the norm kernel modulo the differences have the same index.
