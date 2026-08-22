@@ -262,6 +262,16 @@ The existence theorem is now in the tree, in `Global/Existence.lean` (disjoint s
   place, and — combining with the diagonalisation of `MatHasse.lean` — Meyer's theorem for a form
   presented by an arbitrary symmetric rational matrix: in at least five variables it has a
   nontrivial rational zero exactly when it has a nontrivial real one.
+  Over `ℚ_p` itself there is no residual condition at all, so a symmetric `p`-adic form in at
+  least five variables is always isotropic and a diagonal one with nonvanishing coefficients is
+  universal.
+* `Local/DyadicAnisotropic.lean` shows the bound is attained, so **`u(ℚ₂) = 4` exactly**. The sum
+  of four squares — the norm form of the Hamilton quaternions — has no nontrivial dyadic zero:
+  divide a hypothetical one by a coordinate of largest absolute value to get dyadic integer
+  coordinates one of which is `1`, and reduce modulo eight. The squares modulo eight are `0`, `1`
+  and `4`, so four of them with at least one `1` sum to `k + 4m` with `1 ≤ k ≤ 4` and `k + m ≤ 4`,
+  which is never divisible by eight. This is also why the quaternary count of
+  `Local/DyadicQuaternary.lean` genuinely needs its ramified coefficient.
 
 Serre's chapter on the Hasse–Minkowski theorem is therefore complete, in full generality: the
 diagonalisation step is supplied rather than assumed, and so is the dyadic count. None of this touches the two blockers of

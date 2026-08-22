@@ -31,6 +31,10 @@ isotropic exactly when it is indefinite.
 * `InverseGalois.CFT.isMatIsotropic_rat_iff_real`: Meyer's theorem for a form presented by an
   arbitrary symmetric rational matrix — such a form in at least five variables has a rational
   zero exactly when it has a real one.
+* `InverseGalois.CFT.exists_repr_padic`: a `p`-adic diagonal form in at least five variables with
+  nonvanishing coefficients represents every `p`-adic number.
+* `InverseGalois.CFT.isMatIsotropic_padic`: the same isotropy statement for a form presented by an
+  arbitrary symmetric `p`-adic matrix.
 -/
 
 namespace InverseGalois.CFT.Local
@@ -167,5 +171,20 @@ theorem isMatIsotropic_rat_iff_real {n : ℕ} (hn : 5 ≤ n) {M : Matrix (Fin n)
       IsDiagIsotropic fun i => ((d i : ℚ) : ℚ_[q]) := by
     simpa [Rat.coe_castHom] using isMatIsotropic_map_iff (Rat.castHom ℚ_[q]) hP hPd
   exact key.mpr (isDiagIsotropic_padic hn _)
+
+/-- **A `p`-adic diagonal form in at least five variables is universal.**  If none of its
+coefficients vanishes it represents every `p`-adic number. -/
+theorem exists_repr_padic {p : ℕ} [Fact p.Prime] {n : ℕ} (hn : 5 ≤ n) {a : Fin n → ℚ_[p]}
+    (ha : ∀ i, a i ≠ 0) (c : ℚ_[p]) : ∃ x : Fin n → ℚ_[p], c = ∑ i, a i * x i ^ 2 :=
+  exists_repr_of_isDiagIsotropic (by norm_num) ha (isDiagIsotropic_padic hn a) c
+
+/-- **A symmetric `p`-adic form in at least five variables is isotropic**, whether or not it is
+presented diagonally. -/
+theorem isMatIsotropic_padic {p : ℕ} [Fact p.Prime] {n : ℕ} (hn : 5 ≤ n)
+    {M : Matrix (Fin n) (Fin n) ℚ_[p]} (hM : M.IsSymm) : IsMatIsotropic M := by
+  haveI : Invertible (2 : ℚ_[p]) := invertibleOfNonzero (by norm_num)
+  obtain ⟨P, d, hP, hPd⟩ := exists_transpose_mul_mul_eq_diagonal hM
+  rw [← isMatIsotropic_transpose_mul_mul_iff (M := M) hP, hPd, isMatIsotropic_diagonal_iff]
+  exact isDiagIsotropic_padic hn d
 
 end InverseGalois.CFT

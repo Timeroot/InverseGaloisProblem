@@ -93,6 +93,7 @@ import InverseGalois.CFT.Global.ThreeSquaresTwo
 import InverseGalois.CFT.Global.TwoGenerators
 import InverseGalois.CFT.Herbrand
 import InverseGalois.CFT.Level
+import InverseGalois.CFT.Local.DyadicAnisotropic
 import InverseGalois.CFT.Local.DyadicHilbert
 import InverseGalois.CFT.Local.DyadicHilbertMul
 import InverseGalois.CFT.Local.DyadicNondegenerate
@@ -458,6 +459,11 @@ it that are available here.
   have obstructed it.  With the real and the odd places this is **Meyer's theorem**: a diagonal
   rational form in at least five variables is isotropic exactly when it is indefinite, and it then
   represents every rational number the real place allows.
+* `InverseGalois.CFT.Local.DyadicAnisotropic` shows that five variables are genuinely needed: the
+  sum of four squares, the norm form of the Hamilton quaternions, has no nontrivial dyadic zero,
+  because scaling by a coordinate of largest absolute value and reducing modulo eight leaves four
+  residues, one of them one, whose squares would have to sum to zero.  **The `u`-invariant of the
+  dyadic numbers is exactly four.**
 * `InverseGalois.CFT.Local.PadicLocalField` records that a field of `p`-adic numbers is a
   nonarchimedean local field in the sense of the valuative formalism: its norm is compatible with
   its valuative relation, its topology is the valuative one, and its ring of integers is the ring
