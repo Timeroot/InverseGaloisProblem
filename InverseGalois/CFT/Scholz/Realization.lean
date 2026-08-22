@@ -1,5 +1,6 @@
 import Mathlib
 import InverseGalois.CFT.Scholz.SplitStep
+import InverseGalois.Core.PiMulEquiv
 
 /-!
 # Realizations normalised by Serre's condition
@@ -34,23 +35,6 @@ the structure theorem for finite abelian groups then covers every finite abelian
 open Module NumberField InverseGalois.NumberTheory
 
 namespace InverseGalois.CFT
-
-/-! ### Auxiliary group isomorphisms -/
-
-/-- Splitting off the first coordinate of a dependent product indexed by `Fin (n + 1)`. -/
-def piFinSuccMulEquiv {n : ℕ} (A : Fin (n + 1) → Type*) [∀ i, Group (A i)] :
-    (∀ i, A i) ≃* A 0 × ∀ i : Fin n, A i.succ where
-  toFun f := (f 0, fun i => f i.succ)
-  invFun p := Fin.cons p.1 p.2
-  left_inv := Fin.cons_self_tail
-  right_inv p := Prod.ext (by simp) (by simp)
-  map_mul' _ _ := rfl
-
-/-- Reindexing a dependent product of groups along an equivalence of index types. -/
-def piCongrLeftMulEquiv {ι ι' : Type*} (A : ι → Type*) [∀ i, Group (A i)] (φ : ι ≃ ι') :
-    (∀ i, A i) ≃* ∀ j, A (φ.symm j) where
-  __ := Equiv.piCongrLeft' A φ
-  map_mul' _ _ := rfl
 
 /-! ### Fields of degree one -/
 

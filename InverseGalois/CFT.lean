@@ -101,6 +101,7 @@ import InverseGalois.CFT.Herbrand
 import InverseGalois.CFT.InertiaAbelian
 import InverseGalois.CFT.InertiaGeneration
 import InverseGalois.CFT.InertiaRestrict
+import InverseGalois.CFT.InertiaSubgroup
 import InverseGalois.CFT.KroneckerWeber
 import InverseGalois.CFT.Level
 import InverseGalois.CFT.Local.DyadicAnisotropic
@@ -127,9 +128,11 @@ import InverseGalois.CFT.ScalarSemidirect
 import InverseGalois.CFT.Scholz.Condition
 import InverseGalois.CFT.Scholz.Induction
 import InverseGalois.CFT.Scholz.PrimeChoice
+import InverseGalois.CFT.Scholz.RadicalDisjoint
 import InverseGalois.CFT.Scholz.Realization
 import InverseGalois.CFT.Scholz.Selector
 import InverseGalois.CFT.Scholz.SplitCase
+import InverseGalois.CFT.Scholz.SplitReduction
 import InverseGalois.CFT.Scholz.SplitStep
 import InverseGalois.CFT.Scholz.Tame
 import InverseGalois.CFT.SplitCompositum

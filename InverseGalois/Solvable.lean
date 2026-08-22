@@ -4,6 +4,8 @@ import InverseGalois.Solvable.Wreath
 import InverseGalois.Solvable.WreathFunctor
 import InverseGalois.Solvable.WreathRecognition
 import InverseGalois.Solvable.Semiabelian
+import InverseGalois.Solvable.SemiabelianProduct
+import InverseGalois.Solvable.Metacyclic
 import InverseGalois.Solvable.WreathCyclic
 import InverseGalois.Solvable.Shafarevich
 
@@ -33,6 +35,11 @@ free of arithmetic input and applicable to both realization predicates of the de
 * `InverseGalois.Solvable.Semiabelian` defines Dentzer's class of semiabelian groups — the class
   the wreath-product approach reaches — and derives a realization of every one of its members from
   a realization of the wreath products alone.
+* `InverseGalois.Solvable.SemiabelianProduct` shows that the semiabelian class is closed under
+  finite direct products, and deduces that a finite nilpotent group is semiabelian as soon as each
+  of its Sylow subgroups is.
+* `InverseGalois.Solvable.Metacyclic` shows that a finite group with a cyclic normal subgroup of
+  cyclic quotient is semiabelian, and applies it to the generalized quaternion groups.
 * `InverseGalois.Solvable.WreathCyclic` splits the bottom group of a wreath product into cyclic
   factors, so that the realization of wreath products only has to be established when the bottom
   group is finite cyclic.

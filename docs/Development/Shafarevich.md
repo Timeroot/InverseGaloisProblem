@@ -256,6 +256,69 @@ to state them is not being able to prove them: ABHN itself is untouched.
 
 ---
 
+## 0.4 Status (2026-08-22, later) — auditing the seven inputs against the code
+
+§1.4 below classifies the arithmetic that Scholz–Reichardt consumes into seven inputs. That table
+was written before the class field theory layer existed. Re-reading it against what is now in the
+repository changes the picture substantially: **five of the seven are done or elementary, and only
+one is genuinely out of reach.**
+
+| § 1.4 input | rating there | actual status |
+|---|---|---|
+| 1. choice of `q` in the split case | (a) | **done** — `CFT/Scholz/PrimeChoice.lean` |
+| 2. `H²(ℚ, C_ℓ) → ∏_p H²(ℚ_p, C_ℓ)` injective (ABHN) | (d) | **the one real blocker** |
+| 3. local liftability at unramified `p` | (a) | **elementary**, and the statement is available |
+| 4. local liftability at tame ramified `p` | (d) | **(d)-lite**; every Scholz prime is tame (below) |
+| 5. gluing local characters into a global one | (d) | **elementary in this setting** (below) |
+| 6. linear disjointness of `ℚ(μ_ℓ, p^{1/ℓ})` | (a) | group-theoretic half **done** — `CFT/ScalarSemidirect.lean` |
+| 7. a prime with prescribed Frobenius | (c) | **done unconditionally** — `NumberTheory/SplitDensity.lean` |
+
+Three of these deserve comment.
+
+**Input 7 is exactly the theorem (★) of §1.5, and it is proved.**
+`InverseGalois.NumberTheory.infinite_setOf_splitsCompletely_not_splitsCompletely` states that for
+number fields `A ⊂ B` with `finrank ℚ A < finrank ℚ B` there are infinitely many rational primes
+splitting completely in `A` and not in `B`; it is deduced from
+`hasDirichletDensity_splitSet`, which gives the split set of a Galois number field Dirichlet
+density `1 / n`, with the Euler-product input discharged by
+`InverseGalois.NumberTheory.eulerProductHypothesis`. No Chebotarev, no `L`-functions of nontrivial
+characters — the analytic content is the pole of the Dedekind zeta function alone. So the input
+that §1.4 rated hardest after ABHN costs nothing.
+
+**Input 6's group theory is done.** `CFT/ScalarSemidirect.lean` builds
+`ScalarSemidirect ℓ s = (Fin s → ZMod ℓ) ⋊ (ZMod ℓ)ˣ` with the scalar action and proves
+`scalarSemidirect_not_exists_quotient_card`: for `ℓ` odd it has no quotient of order `ℓ`, because
+conjugation by `-1` inverts the module, so the module lies in the commutator subgroup, and the
+complement has order `ℓ - 1`, which `ℓ` does not divide. This is the only place in the whole
+argument where `ℓ ≠ 2` is used. What remains of input 6 is the *field-theoretic* half: identifying
+`Gal(ℚ(μ_ℓ, p₁^{1/ℓ}, …, p_s^{1/ℓ})/ℚ)` with that semidirect product.
+
+**Kronecker–Weber is not a Scholz–Reichardt blocker.** Milestone 8 below lists it as a gate. It is
+not one, for the following reason: in the Scholz condition `(S_N)` every ramified prime `p`
+satisfies `p ≡ 1 mod ℓ^N`, hence `p ≠ ℓ`, hence the ramification is **tame** and the inertia group
+at `p` is cyclic of order dividing `ℓ^N`, with the local extension contained in the tame abelian
+part of `ℚ_p^ab`, which is `ℚ_p(μ_{p^k})`-by-unramified and completely explicit. Input 4 is
+therefore a statement about `(ℤ/ℓ^N)²` = (unramified) × (tame), and input 5 — Serre's Lemma
+2.1.6, gluing prescribed local abelian characters into one global Dirichlet character — reduces
+to choosing a Dirichlet character of the right conductor, because the local conditions live on
+cyclotomic fields to begin with. Neither needs the *converse* statement that every abelian
+extension of `ℚ` is cyclotomic.
+
+A caution recorded here so it is not rediscovered: **`(S_N)` is not closed under compositum**
+without the splitting hypotheses of `CFT/Scholz/SplitCase.lean`. Take `ℓ = 2`, `N = 1`: `ℚ(√3)`
+and `ℚ(√−3)` are each ramified only at `3` (and, for the first, `2`), but their compositum
+`ℚ(√3, i)` acquires a ramified prime whose inertia is not of split type. The compositum theorem
+`IsScholz.of_sup_eq_top` genuinely needs the two-way splitting hypotheses it carries.
+
+**Conclusion.** The single irreducible obstruction is the central embedding step, isolated in the
+code as the hypothesis `InverseGalois.CFT.IsCentralStepSolvable ℓ` of
+`CFT/Scholz/Induction.lean`, and its arithmetic content is ABHN for cyclic algebras of odd degree
+over `ℚ`. Everything the induction needs *around* that step is now either proved or elementary.
+`isScholzRealizable_of_isPGroup` is stated with that hypothesis and is otherwise complete: supply
+ABHN and every finite `ℓ`-group, `ℓ` odd, is realised over `ℚ`.
+
+---
+
 ## 1. Scholz–Reichardt
 
 ### 1.1 Statement
