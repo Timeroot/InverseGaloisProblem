@@ -67,6 +67,11 @@ import InverseGalois.CFT.Global.LocalSquare
 import InverseGalois.CFT.Global.LocalSquares
 import InverseGalois.CFT.Global.OddGenerators
 import InverseGalois.CFT.Global.OddValuation
+import InverseGalois.CFT.Global.DiagBase
+import InverseGalois.CFT.Global.DiagForm
+import InverseGalois.CFT.Global.DiagHasse
+import InverseGalois.CFT.Global.DiagRepr
+import InverseGalois.CFT.Global.DiagSplit
 import InverseGalois.CFT.Global.IntApprox
 import InverseGalois.CFT.Global.OddUnitIsotropy
 import InverseGalois.CFT.Global.QuaternaryForms
@@ -394,4 +399,17 @@ it that are available here.
   variables**: the binary and the ternary half share a value at every place, and the integer
   approximation produces a single rational value of the binary half lying in the right square
   class at each place where it matters, at which point the four-variable principle applies.
+* `InverseGalois.CFT.Global.DiagForm` and `InverseGalois.CFT.Global.DiagSplit` set up a diagonal
+  form in an arbitrary number of variables, indexed by a family of coefficients: an isotropic form
+  with invertible coefficients is universal, its values are a union of square classes, and a form
+  in at least three variables is isotropic exactly when its binary head and its tail represent a
+  common nonzero value.
+* `InverseGalois.CFT.Global.DiagBase` reads the principles in at most four variables in that
+  language.
+* `InverseGalois.CFT.Global.DiagHasse` proves the **Hasse principle for a diagonal form in an
+  arbitrary number of variables** by induction on their number, the five-variable argument
+  serving as the inductive step.
+* `InverseGalois.CFT.Global.DiagRepr` frees that principle of its hypothesis on the coefficients
+  and recasts it as a **Hasse principle for the representation of a prescribed rational number**
+  by a diagonal form.
 -/

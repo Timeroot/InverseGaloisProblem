@@ -191,9 +191,23 @@ The existence theorem is now in the tree, in `Global/Existence.lean` (disjoint s
   places the ternary half has unit coefficients and is isotropic outright
   (`Global/OddUnitIsotropy.lean`), so the quaternary principle finishes the job.
 
-What remains of Serre's chapter is the Hasse principle for a diagonal form in an arbitrary number
-of variables, which is the same induction with the five-variable argument as its step. None of
-this touches the two blockers of §2; it is a self-contained extension of the degree-two theory.
+* the **Hasse–Minkowski theorem for a diagonal form in an arbitrary number of variables**,
+  `Global/DiagHasse.lean`. A form is recorded by a family of coefficients `a : Fin n → ℚ`, and
+  `Global/DiagForm.lean` / `Global/DiagSplit.lean` supply the two structural facts the induction
+  needs: an isotropic form with invertible coefficients is universal, and a form in at least three
+  variables is isotropic exactly when its binary head and its tail represent a common nonzero
+  value. `Global/DiagBase.lean` reads the principles in `n ≤ 4` variables in that language, and
+  the induction step for `n ≥ 5` is the five-variable argument verbatim: the tail, enlarged by the
+  shared rational value, has `n - 1` variables and the induction hypothesis applies to it.
+* `Global/DiagRepr.lean` drops the hypothesis that the coefficients be invertible (a form with a
+  vanishing coefficient is isotropic outright) and recasts the theorem as the Hasse principle for
+  the **representation of a prescribed rational number** by a diagonal form, which is the shape in
+  which it is normally used.
+
+Serre's chapter on the Hasse–Minkowski theorem is therefore complete, for diagonal forms; since
+every quadratic form over a field of characteristic other than two is diagonalisable, this is the
+theorem itself, modulo a diagonalisation step that is pure linear algebra. None of this touches
+the two blockers of §2; it is a self-contained extension of the degree-two theory.
 
 ---
 
