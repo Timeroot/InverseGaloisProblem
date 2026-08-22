@@ -71,9 +71,11 @@ import InverseGalois.CFT.Global.DiagBase
 import InverseGalois.CFT.Global.DiagForm
 import InverseGalois.CFT.Global.DiagHasse
 import InverseGalois.CFT.Global.DiagRepr
+import InverseGalois.CFT.Global.DiagScale
 import InverseGalois.CFT.Global.DiagSplit
 import InverseGalois.CFT.Global.IntApprox
 import InverseGalois.CFT.Global.MatHasse
+import InverseGalois.CFT.Global.Meyer
 import InverseGalois.CFT.Global.OddQuinary
 import InverseGalois.CFT.Global.OddUnitIsotropy
 import InverseGalois.CFT.Global.QuaternaryForms
@@ -94,6 +96,7 @@ import InverseGalois.CFT.Level
 import InverseGalois.CFT.Local.DyadicHilbert
 import InverseGalois.CFT.Local.DyadicHilbertMul
 import InverseGalois.CFT.Local.DyadicNondegenerate
+import InverseGalois.CFT.Local.DyadicQuaternary
 import InverseGalois.CFT.Local.DyadicQuinary
 import InverseGalois.CFT.Local.HilbertIdentities
 import InverseGalois.CFT.Local.HilbertMap
@@ -441,6 +444,20 @@ it that are available here.
   `-1`, so it is a surjection onto the units of the integers, the norm subgroup of a quadratic
   extension of the dyadic numbers has index two, and the relative Brauer group of such an
   extension has order two.
+* `InverseGalois.CFT.Local.DyadicQuaternary` supplies the companion count in four variables: a
+  diagonal dyadic form with three unit coefficients and one coefficient of valuation one is
+  isotropic, again by a search modulo eight.
+* `InverseGalois.CFT.Global.DiagScale` records that isotropy of a diagonal form is unchanged when
+  the coefficients are multiplied by nonzero squares or by a common nonzero scalar, and that every
+  nonzero dyadic number becomes, after multiplication by a square, a unit or twice a unit.
+* `InverseGalois.CFT.Global.Meyer` removes the hypothesis on the coefficients altogether.  Among
+  five coefficients, normalised to be units or twice units, either all five are of one kind — the
+  quinary unit form, after dividing the whole form by two in the second case — or three are of one
+  kind and a fourth of the other, which is the quaternary form; so **a diagonal form over the
+  dyadic numbers in at least five variables is isotropic**, the last place at which anything could
+  have obstructed it.  With the real and the odd places this is **Meyer's theorem**: a diagonal
+  rational form in at least five variables is isotropic exactly when it is indefinite, and it then
+  represents every rational number the real place allows.
 * `InverseGalois.CFT.Local.PadicLocalField` records that a field of `p`-adic numbers is a
   nonarchimedean local field in the sense of the valuative formalism: its norm is compatible with
   its valuative relation, its topology is the valuative one, and its ring of integers is the ring

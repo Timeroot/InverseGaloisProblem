@@ -206,6 +206,10 @@ proves it directly.
 | a diagonal form in five dyadic **units** is isotropic, hence the ≥ 5-variable criterion for **odd integer** coefficients is the sign condition alone | `CFT/Local/DyadicQuinary.lean` |
 | nondegeneracy of the **dyadic** Hilbert symbol: `[ℚ_2^× : N(L^×)] = 2` and `Br(L/ℚ_2) ≅ ℤ/2` | `CFT/Local/DyadicNondegenerate.lean` |
 | **`IsNonarchimedeanLocalField ℚ_[p]`**, with `𝒪[ℚ_[p]] ≃+* ℤ_[p]` compact, complete, discrete, finite residue field | `CFT/Local/PadicLocalField.lean` |
+| a diagonal dyadic form with three unit coefficients and one of valuation one is isotropic | `CFT/Local/DyadicQuaternary.lean` |
+| isotropy is invariant under rescaling coefficients by squares or by a common scalar; dyadic square-class normalisation | `CFT/Global/DiagScale.lean` |
+| **`u(ℚ₂) ≤ 4`**: every diagonal form over `ℚ₂` in ≥ 5 variables is isotropic | `CFT/Global/Meyer.lean` |
+| **Meyer's theorem**: a diagonal rational form in ≥ 5 variables is isotropic iff it is indefinite, and then represents everything the real place allows | `CFT/Global/Meyer.lean` |
 
 All sorry-free and axiom-free. See `docs/Development/ClassFieldTheory.md` for the full map of the
 layer, the proof architecture of the descent, and why it is not circular with reciprocity.
@@ -225,10 +229,15 @@ to a diagonal one, and congruence preserves isotropy and commutes with base chan
 chapter on Hasse–Minkowski is complete for an arbitrary rational quadratic form, not only for a
 diagonal one. What is *not* reachable from any of this is the `u`
 -invariant of `ℚ₂`, whose proof runs through the classification of `2`-adic forms by their Hasse
-invariant; without it there is no Meyer's theorem. The dyadic gap has since been narrowed rather
-than closed: for *unit* coefficients the quinary statement is proved by a modulo-eight search, so
-a diagonal rational form in at least five variables with **odd** integer coefficients is isotropic
-exactly when its coefficients are not all of one sign.
+invariant. **That gap has since been closed, by a different route.** Rather than classify `2`-adic
+forms, normalise the five coefficients to units or twice units by square classes: if all five are
+of one kind the quinary unit form settles it, after dividing the whole form by two in the second
+case; otherwise, among five booleans not all equal, three agree and a fourth differs, so a
+four-variable subform has three coefficients of one kind and one of the other, and that quaternary
+form is isotropic by a second modulo-eight search. Hence `u(ℚ₂) ≤ 4`, and with the odd places and
+the real place, **Meyer's theorem**: a diagonal rational form in at least five variables is
+isotropic exactly when it is indefinite. So the `u`-invariant statement and Meyer's theorem, both
+named unreachable a few hours earlier, are proved.
 
 One remark of §0.1 is now obsolete. It said that the local invariant maps "cannot even be stated
 until `ℚ_[p]` is made an instance of the local-field class"; `CFT/Local/PadicLocalField.lean`

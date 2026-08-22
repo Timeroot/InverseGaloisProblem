@@ -24,7 +24,8 @@ no crossed products, no relative Brauer group, and no local invariant map
 central simple algebras and nothing more: the group law, Galois descent and the uniqueness half of
 Wedderburn's theorem are all absent, and `L ⊗[K] L ≃ (Gal(L/K) → L)` does not exist either. The
 class `IsNonarchimedeanLocalField` (`Mathlib/NumberTheory/LocalField/Basic.lean`) exists with
-**zero instances** — not even `ℚ_[p]` is one.
+**zero instances** upstream — not even `ℚ_[p]` was one; `CFT/Local/PadicLocalField.lean` supplies
+that instance here.
 
 What Mathlib *does* supply, and what this layer leans on heavily:
 
@@ -217,8 +218,8 @@ The existence theorem is now in the tree, in `Global/Existence.lean` (disjoint s
   even part of those three powers leaves a common power of `p` times a ternary form with unit
   coefficients, which is isotropic. Consequently the Hasse principle in at least five variables
   involves only `ℝ` and `ℚ₂`, and the representation principle does so from four variables on.
-  This is one half of the statement that the `u`-invariant of a `p`-adic field is four; the other
-  half, the dyadic place, needs the classification of `2`-adic forms and is not proved here.
+  This is one half of the statement that the `u`-invariant of a `p`-adic field is four; the dyadic
+  half is `Local/DyadicQuinary.lean` and `Global/Meyer.lean` below.
 * `Global/RealSigns.lean` settles the real place by inspection: a diagonal real form is isotropic
   exactly when its coefficients are not all of one sign. Putting the two together, isotropy of a
   diagonal rational form in at least five variables is equivalent to the conjunction of a sign
@@ -240,11 +241,26 @@ The existence theorem is now in the tree, in `Global/Existence.lean` (disjoint s
   modulo eight; the residual coefficient is then `≡ 1 mod 8`, hence a square, and solving for the
   remaining variable finishes. Combined with `OddQuinary` and `RealSigns`: a diagonal rational form
   in at least five variables with **odd integer coefficients** is isotropic exactly when its
-  coefficients are not all of one sign. The general dyadic statement `u(ℚ₂) = 4` still needs the
-  classification of `2`-adic forms by their Hasse invariant.
+  coefficients are not all of one sign. `Global/Meyer.lean` below lifts the restriction on the
+  coefficients.
+
+* `Local/DyadicQuaternary.lean` does the same count in four variables, for three unit coefficients
+  and one of valuation one; `Global/DiagScale.lean` records that isotropy is unaffected by
+  rescaling the coefficients by squares or by a common scalar, and that every nonzero dyadic
+  number is a square times a unit or a square times twice a unit.
+* `Global/Meyer.lean` puts these together and removes the hypothesis on the coefficients. Normalise
+  the five coefficients to units or twice units. If all five are of one kind, the quinary unit form
+  settles it — after dividing the whole form by two in the second case. Otherwise, among five
+  booleans that are not all equal three agree and a fourth differs, so a four-variable subform has
+  three coefficients of one kind and one of the other, and that is the quaternary form (the case
+  with the kinds exchanged follows by dividing by two and rescaling one coordinate by a square).
+  Hence **`u(ℚ₂) ≤ 4`: a diagonal form over `ℚ₂` in at least five variables is isotropic**, which
+  is the statement declared out of reach above. With the odd places and the real place this is
+  **Meyer's theorem**: a diagonal rational form in at least five variables is isotropic exactly
+  when it is indefinite, and such a form represents every rational number the real place allows.
 
 Serre's chapter on the Hasse–Minkowski theorem is therefore complete, in full generality: the
-diagonalisation step is supplied rather than assumed. None of this touches the two blockers of
+diagonalisation step is supplied rather than assumed, and so is the dyadic count. None of this touches the two blockers of
 §2; it is a self-contained extension of the degree-two theory.
 
 ---
