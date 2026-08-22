@@ -97,6 +97,7 @@ import InverseGalois.CFT.Herbrand
 import InverseGalois.CFT.InertiaAbelian
 import InverseGalois.CFT.InertiaGeneration
 import InverseGalois.CFT.InertiaRestrict
+import InverseGalois.CFT.KroneckerWeber
 import InverseGalois.CFT.Level
 import InverseGalois.CFT.Local.DyadicAnisotropic
 import InverseGalois.CFT.Local.DyadicHilbert
@@ -121,6 +122,7 @@ import InverseGalois.CFT.Local.UnramifiedNormForm
 import InverseGalois.CFT.ScalarSemidirect
 import InverseGalois.CFT.SquareClasses
 import InverseGalois.CFT.SubgroupCounting
+import InverseGalois.CFT.TameCharacter
 import InverseGalois.CFT.TameRamification
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
@@ -176,6 +178,14 @@ it that are available here.
 * `InverseGalois.CFT.Cyclotomic.InertiaOrder` computes the order of inertia at a rational prime
   `p` in `ℚ(ζₙ)` as `φ (p ^ k)`, `p ^ k` the exact power of `p` dividing `n`, and multiplies these
   local orders back up to the global degree `φ n`.
+* `InverseGalois.CFT.TameCharacter` builds the tame character of an inertia subgroup, the
+  homomorphism to the units of the residue field sending an element to the class of `σ π / π` for
+  a uniformizer `π`.  It is injective once the residue characteristic does not divide the order of
+  inertia, and equivariant for the Frobenius, so in an abelian extension the order of inertia
+  divides `p - 1`.
+* `InverseGalois.CFT.KroneckerWeber` assembles all of this into the **Kronecker–Weber theorem for
+  tamely ramified abelian number fields**: such a field embeds into the cyclotomic field whose
+  conductor is the product of the ramified primes.
 
 ## Reciprocity for the rational field
 
