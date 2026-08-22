@@ -1,5 +1,7 @@
 import Mathlib
+import InverseGalois.CFT.Local.DyadicAnisotropic
 import InverseGalois.CFT.Local.DyadicQuaternary
+import InverseGalois.CFT.Local.OddAnisotropic
 import InverseGalois.CFT.Global.DiagScale
 import InverseGalois.CFT.Global.DiagRepr
 import InverseGalois.CFT.Global.MatHasse
@@ -28,6 +30,8 @@ isotropic exactly when it is indefinite.
 * `InverseGalois.CFT.exists_repr_rat_of_signs`: the representation form of the same statement.
 * `InverseGalois.CFT.Local.isDiagIsotropic_padic`: the same at every finite place, so the
   `u`-invariant of a field of `p`-adic numbers is at most four.
+* `InverseGalois.CFT.Local.exists_not_isDiagIsotropic_four_padic`: the bound is attained at every
+  finite place, so that `u`-invariant is exactly four.
 * `InverseGalois.CFT.isMatIsotropic_rat_iff_real`: Meyer's theorem for a form presented by an
   arbitrary symmetric rational matrix — such a form in at least five variables has a rational
   zero exactly when it has a real one.
@@ -130,6 +134,15 @@ theorem isDiagIsotropic_padic {p : ℕ} [Fact p.Prime] {n : ℕ} (hn : 5 ≤ n) 
   rcases eq_or_ne p 2 with rfl | hne
   · exact isDiagIsotropic_two hn a
   · exact isDiagIsotropic_padic_of_odd hne hn a
+
+/-- **The `u`-invariant of a field of `p`-adic numbers is exactly four.**  At the dyadic place the
+sum of four squares is anisotropic, and at an odd place the norm form of the unramified quadratic
+extension, summed with its multiple by the uniformiser, is. -/
+theorem exists_not_isDiagIsotropic_four_padic {p : ℕ} [Fact p.Prime] :
+    ∃ a : Fin 4 → ℚ_[p], (∀ i, a i ≠ 0) ∧ ¬ IsDiagIsotropic a := by
+  rcases eq_or_ne p 2 with rfl | hne
+  · exact exists_not_isDiagIsotropic_four
+  · exact exists_not_isDiagIsotropic_four_odd hne
 
 end InverseGalois.CFT.Local
 

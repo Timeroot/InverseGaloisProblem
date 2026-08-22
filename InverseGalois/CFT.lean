@@ -104,6 +104,7 @@ import InverseGalois.CFT.Local.HilbertMap
 import InverseGalois.CFT.Local.HilbertMul
 import InverseGalois.CFT.Local.HilbertSymbol
 import InverseGalois.CFT.Local.LegendreHilbert
+import InverseGalois.CFT.Local.OddAnisotropic
 import InverseGalois.CFT.Local.PadicHilbert
 import InverseGalois.CFT.Local.PadicHilbertMul
 import InverseGalois.CFT.Local.PadicLocalField
@@ -464,6 +465,11 @@ it that are available here.
   because scaling by a coordinate of largest absolute value and reducing modulo eight leaves four
   residues, one of them one, whose squares would have to sum to zero.  **The `u`-invariant of the
   dyadic numbers is exactly four.**
+* `InverseGalois.CFT.Local.OddAnisotropic` does the same at an odd place, where the obstruction is
+  a valuation rather than a congruence: the quaternary form built from the norm form of the
+  unramified quadratic extension and its multiple by the uniformiser would equate a value of that
+  norm form with the uniformiser times another such value, and the values of the norm form all
+  have even valuation.  **The `u`-invariant of a field of `p`-adic numbers is exactly four.**
 * `InverseGalois.CFT.Local.PadicLocalField` records that a field of `p`-adic numbers is a
   nonarchimedean local field in the sense of the valuative formalism: its norm is compatible with
   its valuative relation, its topology is the valuative one, and its ring of integers is the ring

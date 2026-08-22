@@ -272,6 +272,13 @@ The existence theorem is now in the tree, in `Global/Existence.lean` (disjoint s
   and `4`, so four of them with at least one `1` sum to `k + 4m` with `1 ≤ k ≤ 4` and `k + m ≤ 4`,
   which is never divisible by eight. This is also why the quaternary count of
   `Local/DyadicQuaternary.lean` genuinely needs its ramified coefficient.
+* `Local/OddAnisotropic.lean` does the same at an odd place, so `u(ℚ_p) = 4` at every finite
+  place. Here the obstruction is a valuation rather than a congruence. Let `w` be a unit whose
+  residue is not a square, so that `x ^ 2 - w y ^ 2` is the norm form of the unramified quadratic
+  extension; a zero of `⟨1, -w, -p, w p⟩` equates a value `A` of that norm form with `p` times
+  another value `B`. If `B = 0` then the whole vector is zero, since a nonsquare is not a ratio of
+  squares; and otherwise `A` and `B` both have even valuation by
+  `Local/UnramifiedNormForm.lean`, while `A = p B` forces the parities to differ.
 
 Serre's chapter on the Hasse–Minkowski theorem is therefore complete, in full generality: the
 diagonalisation step is supplied rather than assumed, and so is the dyadic count. None of this touches the two blockers of

@@ -213,6 +213,7 @@ proves it directly.
 | `u(ℚ_p) ≤ 4` at **every** finite place, and Meyer's theorem for an arbitrary symmetric rational matrix: rational zero iff real zero | `CFT/Global/Meyer.lean` |
 | every `p`-adic form in ≥ 5 variables, diagonal or not, is isotropic, and a diagonal one with nonvanishing coefficients is **universal** | `CFT/Global/Meyer.lean` |
 | **`u(ℚ₂) = 4` exactly**: the sum of four squares is anisotropic over `ℚ₂`, so five variables are genuinely needed | `CFT/Local/DyadicAnisotropic.lean` |
+| **`u(ℚ_p) = 4` exactly, at every finite place**: at an odd place the unramified norm form plus its multiple by the uniformiser is anisotropic | `CFT/Local/OddAnisotropic.lean` |
 
 All sorry-free and axiom-free. See `docs/Development/ClassFieldTheory.md` for the full map of the
 layer, the proof architecture of the descent, and why it is not circular with reciprocity.
@@ -241,7 +242,10 @@ form is isotropic by a second modulo-eight search. Hence `u(ℚ₂) ≤ 4`, and 
 the real place, **Meyer's theorem**: a diagonal rational form in at least five variables is
 isotropic exactly when it is indefinite. So the `u`-invariant statement and Meyer's theorem, both
 named unreachable a few hours earlier, are proved. The bound is sharp: the sum of four squares is
-anisotropic over `ℚ₂` by the same modulo-eight congruence, so `u(ℚ₂) = 4` exactly.
+anisotropic over `ℚ₂` by the same modulo-eight congruence, so `u(ℚ₂) = 4` exactly. At an odd place the
+obstruction is a valuation instead of a congruence — the norm form of the unramified quadratic
+extension takes only values of even valuation, so adjoining its multiple by the uniformiser gives
+an anisotropic quaternary form — and hence `u(ℚ_p) = 4` at **every** finite place.
 
 One remark of §0.1 is now obsolete. It said that the local invariant maps "cannot even be stated
 until `ℚ_[p]` is made an instance of the local-field class"; `CFT/Local/PadicLocalField.lean`
