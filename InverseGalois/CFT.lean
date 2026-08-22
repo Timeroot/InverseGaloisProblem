@@ -52,11 +52,13 @@ import InverseGalois.CFT.GroupCohomology.CyclicH2
 import InverseGalois.CFT.GroupCohomology.CyclicSurjective
 import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.ToCocycle
+import InverseGalois.CFT.Global.HilbertMulPlaces
 import InverseGalois.CFT.Global.HilbertPlaces
 import InverseGalois.CFT.Global.HilbertProduct
 import InverseGalois.CFT.Herbrand
 import InverseGalois.CFT.Level
 import InverseGalois.CFT.Local.DyadicHilbert
+import InverseGalois.CFT.Local.DyadicHilbertMul
 import InverseGalois.CFT.Local.HilbertIdentities
 import InverseGalois.CFT.Local.HilbertMap
 import InverseGalois.CFT.Local.HilbertMul
@@ -242,6 +244,9 @@ it that are available here.
   dyadic isotropy question has an integral solution one of whose coordinates is a unit, so it is
   decided modulo eight, and the symbol of two dyadic units is one exactly when one of them is
   congruent to one modulo four.
+* `InverseGalois.CFT.Local.DyadicHilbertMul` computes the symbol of an arbitrary pair of dyadic
+  numbers from the residues modulo eight of their unit parts, and deduces that the symbol is
+  bimultiplicative at the dyadic place as well.
 * `InverseGalois.CFT.Local.HilbertIdentities` records that the second argument of the symbol may
   be multiplied by the negative of the first, so that the symbol of an element against itself is
   its symbol against minus one.
@@ -259,6 +264,8 @@ it that are available here.
 * `InverseGalois.CFT.Global.HilbertPlaces` assembles the local Hilbert symbols of a pair of
   rationals into a family indexed by the primes, and shows that the family is trivial at all but
   finitely many places, so that the product over all places makes sense.
+* `InverseGalois.CFT.Global.HilbertMulPlaces` transports multiplicativity of the local symbol at
+  an odd residue characteristic to the symbol of a pair of rationals at an odd finite place.
 * `InverseGalois.CFT.Global.HilbertProduct` forms that product, over the real place together with
   every finite one, and records the formal properties it inherits place by place.
 * `InverseGalois.CFT.Local.RamifiedNormForm` does the same for the ramified quadratic extensions:
