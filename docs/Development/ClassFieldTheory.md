@@ -281,6 +281,14 @@ The existence theorem is now in the tree, in `Global/Existence.lean` (disjoint s
   `Local/UnramifiedNormForm.lean`, while `A = p B` forces the parities to differ.
   Over `ℚ` itself no such bound exists — a sum of squares in any number of variables is
   anisotropic — so the contrast between the global and the local `u`-invariant is recorded too.
+* `Local/DyadicNormFive.lean` shows that the five-variable hypothesis in Meyer's theorem is sharp.
+  The form `⟨1, -5, -2, 10⟩` is the norm form of `ℚ₂(√5)`, the unramified quadratic extension,
+  together with its multiple by the uniformiser; a hypothetical dyadic zero, scaled to have
+  integral coordinates one of which is `1`, contradicts a congruence modulo sixteen. So the form is
+  anisotropic over `ℚ`. Its coefficient signs are `+, -, -, +`, so it is isotropic over `ℝ`: in
+  four variables the real place alone does not decide isotropy of a rational form. Sixteen is the
+  smallest modulus that detects this — modulo eight the residues `2, 2, 1, 1` satisfy the
+  congruence.
 
 Serre's chapter on the Hasse–Minkowski theorem is therefore complete, in full generality: the
 diagonalisation step is supplied rather than assumed, and so is the dyadic count. None of this touches the two blockers of

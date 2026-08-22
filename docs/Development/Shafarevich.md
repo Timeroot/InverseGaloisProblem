@@ -214,6 +214,7 @@ proves it directly.
 | every `p`-adic form in ≥ 5 variables, diagonal or not, is isotropic, and a diagonal one with nonvanishing coefficients is **universal** | `CFT/Global/Meyer.lean` |
 | **`u(ℚ₂) = 4` exactly**: the sum of four squares is anisotropic over `ℚ₂`, so five variables are genuinely needed | `CFT/Local/DyadicAnisotropic.lean` |
 | **`u(ℚ_p) = 4` exactly, at every finite place**: at an odd place the unramified norm form plus its multiple by the uniformiser is anisotropic | `CFT/Local/OddAnisotropic.lean` |
+| the five-variable hypothesis in Meyer's theorem is **sharp**: `⟨1, -5, -2, 10⟩` is isotropic over `ℝ` but anisotropic over `ℚ` | `CFT/Local/DyadicNormFive.lean` |
 
 All sorry-free and axiom-free. See `docs/Development/ClassFieldTheory.md` for the full map of the
 layer, the proof architecture of the descent, and why it is not circular with reciprocity.

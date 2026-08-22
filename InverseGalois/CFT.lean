@@ -98,6 +98,7 @@ import InverseGalois.CFT.Local.DyadicHilbert
 import InverseGalois.CFT.Local.DyadicHilbertMul
 import InverseGalois.CFT.Local.DyadicNondegenerate
 import InverseGalois.CFT.Local.DyadicQuaternary
+import InverseGalois.CFT.Local.DyadicNormFive
 import InverseGalois.CFT.Local.DyadicQuinary
 import InverseGalois.CFT.Local.HilbertIdentities
 import InverseGalois.CFT.Local.HilbertMap
@@ -470,6 +471,12 @@ it that are available here.
   unramified quadratic extension and its multiple by the uniformiser would equate a value of that
   norm form with the uniformiser times another such value, and the values of the norm form all
   have even valuation.  **The `u`-invariant of a field of `p`-adic numbers is exactly four.**
+* `InverseGalois.CFT.Local.DyadicNormFive` records what this costs the Hasse principle in four
+  variables.  The form `⟨1, -5, -2, 10⟩` is the norm form of the unramified quadratic extension of
+  the dyadic numbers together with its multiple by the uniformiser, so it is anisotropic there and
+  hence over the rational numbers; but its coefficients have both signs, so it is isotropic over
+  the real numbers.  **In four variables the real place alone does not decide isotropy**, and
+  Meyer's five-variable hypothesis cannot be weakened.
 * `InverseGalois.CFT.Local.PadicLocalField` records that a field of `p`-adic numbers is a
   nonarchimedean local field in the sense of the valuative formalism: its norm is compatible with
   its valuative relation, its topology is the valuative one, and its ring of integers is the ring
