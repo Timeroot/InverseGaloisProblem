@@ -216,11 +216,19 @@ The existence theorem is now in the tree, in `Global/Existence.lean` (disjoint s
   diagonal rational form in at least five variables is equivalent to the conjunction of a sign
   condition on the coefficients and isotropy over `ℚ₂` — a criterion in which only one place is
   left to examine.
+* `Global/MatHasse.lean` removes the restriction to diagonal forms. A quadratic form is presented
+  by a symmetric matrix `M`, and isotropy means `x ⬝ᵥ M *ᵥ x = 0` for some `x ≠ 0`. Congruence
+  `M ↦ Pᵀ * M * P` by an invertible `P` preserves isotropy — the substitution `x ↦ P *ᵥ x` is a
+  bijection of the nonzero vectors — and commutes with base change along a ring homomorphism,
+  since `det` and matrix multiplication do. Over a field in which `2` is invertible an orthogonal
+  basis for the associated bilinear form diagonalises `M`, so a single congruence carries the
+  general case to the diagonal one simultaneously at `ℚ` and at every completion. The result is
+  the **Hasse principle for an arbitrary rational quadratic form**, with no hypothesis beyond
+  symmetry of the matrix.
 
-Serre's chapter on the Hasse–Minkowski theorem is therefore complete, for diagonal forms; since
-every quadratic form over a field of characteristic other than two is diagonalisable, this is the
-theorem itself, modulo a diagonalisation step that is pure linear algebra. None of this touches
-the two blockers of §2; it is a self-contained extension of the degree-two theory.
+Serre's chapter on the Hasse–Minkowski theorem is therefore complete, in full generality: the
+diagonalisation step is supplied rather than assumed. None of this touches the two blockers of
+§2; it is a self-contained extension of the degree-two theory.
 
 ---
 

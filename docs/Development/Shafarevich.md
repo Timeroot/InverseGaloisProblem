@@ -201,6 +201,8 @@ proves it directly.
 | **Hasse–Minkowski for diagonal forms in any number of variables** | `CFT/Global/DiagHasse.lean` |
 | the same, freed of the invertibility hypothesis, and as a principle for **representing** a rational number | `CFT/Global/DiagRepr.lean` |
 | a diagonal form in ≥ 5 variables is isotropic at every **odd** place, so only `ℝ` and `ℚ₂` matter | `CFT/Global/OddQuinary.lean` |
+| the real place by inspection, and the resulting two-condition criterion in ≥ 5 variables | `CFT/Global/RealSigns.lean` |
+| **Hasse–Minkowski for an arbitrary (non-diagonal) rational form**, via congruence to a diagonal one | `CFT/Global/MatHasse.lean` |
 
 All sorry-free and axiom-free. See `docs/Development/ClassFieldTheory.md` for the full map of the
 layer, the proof architecture of the descent, and why it is not circular with reciprocity.
@@ -214,9 +216,11 @@ complete and usable. The target named here a day earlier — Serre's existence t
 symbols, i.e. exponent-two Grunwald–Wang, and thence Hasse–Minkowski in `n` variables — has since
 been reached: the general-`n` Hasse principle is proved by induction on the number of variables
 with the quinary argument as the inductive step, and the odd-place computation then shows that
-from five variables on only the real and the dyadic place carry information. Serre's chapter on
-Hasse–Minkowski is thereby complete for diagonal forms, which by diagonalisation is the theorem
-itself in characteristic other than two. What is *not* reachable from any of this is the `u`
+from five variables on only the real and the dyadic place carry information. The diagonalisation
+step is supplied too — every symmetric matrix over a field in which `2` is invertible is congruent
+to a diagonal one, and congruence preserves isotropy and commutes with base change — so Serre's
+chapter on Hasse–Minkowski is complete for an arbitrary rational quadratic form, not only for a
+diagonal one. What is *not* reachable from any of this is the `u`
 -invariant of `ℚ₂`, whose proof runs through the classification of `2`-adic forms by their Hasse
 invariant; without it there is no Meyer's theorem.
 

@@ -73,6 +73,7 @@ import InverseGalois.CFT.Global.DiagHasse
 import InverseGalois.CFT.Global.DiagRepr
 import InverseGalois.CFT.Global.DiagSplit
 import InverseGalois.CFT.Global.IntApprox
+import InverseGalois.CFT.Global.MatHasse
 import InverseGalois.CFT.Global.OddQuinary
 import InverseGalois.CFT.Global.OddUnitIsotropy
 import InverseGalois.CFT.Global.QuaternaryForms
@@ -421,4 +422,8 @@ it that are available here.
 * `InverseGalois.CFT.Global.RealSigns` settles the real place: a diagonal real form is isotropic
   exactly when its coefficients are not all of one sign.  In at least five variables the Hasse
   principle therefore reads: **not all coefficients of one sign, and isotropic over `ℚ₂`**.
+* `InverseGalois.CFT.Global.MatHasse` removes the restriction to diagonal forms: congruence of
+  symmetric matrices preserves isotropy and commutes with base change, and every symmetric matrix
+  over a field in which `2` is invertible is congruent to a diagonal one, whence the
+  **Hasse principle for an arbitrary rational quadratic form** presented by a symmetric matrix.
 -/
