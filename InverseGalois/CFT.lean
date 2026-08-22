@@ -122,6 +122,10 @@ import InverseGalois.CFT.Local.PadicSquaresTwo
 import InverseGalois.CFT.Local.RamifiedNormForm
 import InverseGalois.CFT.Local.UnramifiedNormForm
 import InverseGalois.CFT.ScalarSemidirect
+import InverseGalois.CFT.Scholz.Condition
+import InverseGalois.CFT.Scholz.Selector
+import InverseGalois.CFT.Scholz.SplitCase
+import InverseGalois.CFT.Scholz.Tame
 import InverseGalois.CFT.SplitCompositum
 import InverseGalois.CFT.SquareClasses
 import InverseGalois.CFT.SubgroupCounting
@@ -222,6 +226,18 @@ it that are available here.
 * `InverseGalois.CFT.Cyclotomic.BuildingBlock` assembles the three into the auxiliary extension the
   Scholz–Reichardt induction consumes: a cyclic extension of degree `ℓ ^ N` and level `N`, ramified
   only at a large prime that splits completely in a field fixed in advance.
+* `InverseGalois.CFT.Scholz.Condition` states Serre's condition `(S_N)` — every ramified prime is
+  congruent to one modulo `ℓ ^ N` and has residue degree one — and proves that it passes to a
+  compositum whose factors split completely in one another.
+* `InverseGalois.CFT.Scholz.Tame` shows that every field satisfying the level condition with
+  `ℓ`-power degree is tamely ramified, so that the tame Kronecker–Weber theorem applies to all of
+  them.
+* `InverseGalois.CFT.Scholz.Selector` builds a single Galois number field containing a prescribed
+  number field, a prescribed root of unity and prescribed radicals, the field whose completely
+  split primes the induction selects.
+* `InverseGalois.CFT.Scholz.SplitCase` treats the split case of the induction: the compositum of
+  the field already realising `G` with a degree-`ℓ` field ramified at one well-chosen prime
+  realises `G × C_ℓ` and again satisfies `(S_N)`.
 
 ## Group extensions and the Brauer group
 

@@ -5,6 +5,7 @@ import InverseGalois.NumberTheory.PrimeLowerBound
 import InverseGalois.NumberTheory.SplitCompletely
 import InverseGalois.NumberTheory.SplitDensity
 import InverseGalois.NumberTheory.SplitReduction
+import InverseGalois.NumberTheory.SplitSubfield
 
 /-!
 # Number-theoretic estimates
@@ -27,4 +28,7 @@ import InverseGalois.NumberTheory.SplitReduction
 * `InverseGalois.NumberTheory.SplitReduction` turns a completely split prime `q` into a ring
   homomorphism from the ring of integers onto `ZMod q` fixing the rational integers, so that
   radicals and roots of unity in the field descend to `ZMod q`.
+* `InverseGalois.NumberTheory.SplitSubfield` transports complete splitting along an embedding of
+  number fields: a prime that splits completely in the larger field splits completely in the
+  smaller one, in particular in any intermediate field.
 -/
