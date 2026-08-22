@@ -109,7 +109,7 @@ variable {ℓ : ℕ}
 `InverseGalois.CFT.IsCentralStepSolvable` with its scope cut down to the surjections whose kernel
 is contained in the Frattini subgroup of the source. -/
 def IsFrattiniCentralStepSolvable (ℓ : ℕ) : Prop :=
-  ∀ (N : ℕ) {G H : Type} [Group G] [Group H] [Finite G] (f : G →* H),
+  ∀ (N : ℕ) {G H : Type} [Group G] [Group H] [Finite G] (f : G →* H), IsPGroup ℓ G →
     Function.Surjective f → f.ker ≤ Subgroup.center G → Nat.card f.ker = ℓ →
     f.ker ≤ frattini G →
     IsScholzRealizable H ℓ (N + 1) → IsScholzRealizable G ℓ N
@@ -120,8 +120,8 @@ and the complement splits the extension; so an extension outside the reach of th
 splits, and the non-split step never has to face it. -/
 theorem IsNonsplitCentralStepSolvable.of_frattini (hℓ : ℓ.Prime)
     (h : IsFrattiniCentralStepSolvable ℓ) : IsNonsplitCentralStepSolvable ℓ := by
-  intro N G H _ _ _ f hsurj hker hcard hsplit hH
-  exact h N f hsurj hker hcard (le_frattini_of_not_exists_section f hsurj hℓ hcard hsplit) hH
+  intro N G H _ _ _ f hpg hsurj hker hcard hsplit hH
+  exact h N f hpg hsurj hker hcard (le_frattini_of_not_exists_section f hsurj hℓ hcard hsplit) hH
 
 /-- **The central step follows from its restriction to Frattini kernels.**  The split extensions
 are handled by the compositum construction and the remaining ones have their kernel inside the

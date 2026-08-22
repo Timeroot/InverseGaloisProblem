@@ -7,6 +7,9 @@ import InverseGalois.Solvable.Semiabelian
 import InverseGalois.Solvable.SemiabelianProduct
 import InverseGalois.Solvable.Metacyclic
 import InverseGalois.Solvable.SemiabelianCriterion
+import InverseGalois.Solvable.SemiabelianHall
+import InverseGalois.Solvable.SemiabelianSmall
+import InverseGalois.Solvable.SemiabelianZGroup
 import InverseGalois.Solvable.WreathCyclic
 import InverseGalois.Solvable.Shafarevich
 
@@ -44,6 +47,14 @@ free of arithmetic input and applicable to both realization predicates of the de
 * `InverseGalois.Solvable.SemiabelianCriterion` shows that a group covered by a semidirect
   product of an abelian group by a semiabelian one is semiabelian, and deduces that a finite group
   with a normal abelian subgroup of cyclic quotient is semiabelian.
+* `InverseGalois.Solvable.SemiabelianHall` supplements a normal abelian subgroup by a complement
+  instead of by a cyclic group: a group with a normal abelian subgroup of coprime index, or with a
+  normal abelian Sylow subgroup, is semiabelian as soon as the quotient is.
+* `InverseGalois.Solvable.SemiabelianSmall` applies the criterion to the small orders: a group with
+  an abelian subgroup whose index is the smallest prime factor of the order is semiabelian, and so
+  is every group of order `p`, `p ^ 2`, `p ^ 3` or `p * q`.
+* `InverseGalois.Solvable.SemiabelianZGroup` shows that a finite group all of whose Sylow subgroups
+  are cyclic is metacyclic, hence semiabelian; in particular every group of squarefree order is.
 * `InverseGalois.Solvable.WreathCyclic` splits the bottom group of a wreath product into cyclic
   factors, so that the realization of wreath products only has to be established when the bottom
   group is finite cyclic.

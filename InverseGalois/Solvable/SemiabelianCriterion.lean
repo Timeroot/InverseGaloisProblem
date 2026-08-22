@@ -29,6 +29,8 @@ quotient is semiabelian** — no splitting hypothesis, the covering does the wor
 * `IsSemiabelian.of_normal_abelian_of_isCyclic_quotient`: **a finite group with a normal abelian
   subgroup of cyclic quotient is semiabelian.**
 * `IsSemiabelian.of_normal_abelian_of_prime_index`: the same when the subgroup has prime index.
+* `IsSemiabelian.of_mul_comm`: an abelian finite group is semiabelian, with commutativity supplied
+  as a hypothesis rather than as an instance.
 -/
 
 namespace IsSemiabelian
@@ -96,5 +98,14 @@ theorem of_normal_abelian_of_prime_index {G : Type} [Group G] [Finite G] (N : Su
   haveI : IsCyclic (G ⧸ N) :=
     isCyclic_of_prime_card (p := p) (by rwa [← Subgroup.index_eq_card])
   exact of_normal_abelian_of_isCyclic_quotient N hcomm
+
+/-- **An abelian finite group is semiabelian**, with commutativity supplied as a hypothesis rather
+than as an instance.  The group is a normal abelian subgroup of itself, and the quotient by it is
+trivial, hence cyclic. -/
+theorem of_mul_comm {G : Type} [Group G] [Finite G] (hcomm : ∀ x y : G, x * y = y * x) :
+    IsSemiabelian G := by
+  haveI : Subsingleton (G ⧸ (⊤ : Subgroup G)) := QuotientGroup.subsingleton_quotient_top
+  haveI : IsCyclic (G ⧸ (⊤ : Subgroup G)) := isCyclic_of_subsingleton
+  exact of_normal_abelian_of_isCyclic_quotient ⊤ fun x y => Subtype.ext (hcomm (x : G) (y : G))
 
 end IsSemiabelian

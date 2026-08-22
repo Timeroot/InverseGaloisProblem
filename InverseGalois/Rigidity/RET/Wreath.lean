@@ -24,6 +24,7 @@ import InverseGalois.Rigidity.RET.Wreath.PlaceLocal
 import InverseGalois.Rigidity.RET.Wreath.PrivatePlace
 import InverseGalois.Rigidity.RET.Wreath.RadicandIndep
 import InverseGalois.Rigidity.RET.Wreath.RadicandOrd
+import InverseGalois.Rigidity.RET.Wreath.SmallGroups
 import InverseGalois.Rigidity.RET.Wreath.SubstHom
 import InverseGalois.Rigidity.RET.Wreath.ThetaSimple
 
@@ -94,4 +95,7 @@ extending its constants to `ℚ̄` does not drop its degree.
 * `IsRegularInverseGalois.wreath` — the same for a wreath product by any finite abelian group.
 * `isRegularInverseGalois_of_isSemiabelian` — every finite semiabelian group is a regular Galois
   group over `ℚ(T)`.
+* `RET.Wreath.SmallGroups` — the entries of the catalogue that the group-theoretic criteria for
+  semiabelianness supply: every finite group all of whose Sylow subgroups are cyclic, every group
+  of squarefree order, and every group of order `p`, `p ^ 2`, `p ^ 3` or `p * q`.
 -/

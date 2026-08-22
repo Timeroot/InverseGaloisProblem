@@ -44,11 +44,12 @@ theorem IsScholzRealizable.isInverseGalois {G : Type*} [Group G] {ℓ N : ℕ}
 
 /-! ### The central step -/
 
-/-- **The central embedding step of the Scholz–Reichardt induction.**  Whenever a finite group `G`
-surjects onto `H` with central kernel of order `ℓ`, a realization of `H` satisfying Serre's
-condition at level `N + 1` can be enlarged to a realization of `G` satisfying it at level `N`. -/
+/-- **The central embedding step of the Scholz–Reichardt induction.**  Whenever a finite `ℓ`-group
+`G` surjects onto `H` with central kernel of order `ℓ`, a realization of `H` satisfying Serre's
+condition at level `N + 1` can be enlarged to a realization of `G` satisfying it at level `N`.
+The induction only ever meets `ℓ`-groups, so nothing beyond them is demanded. -/
 def IsCentralStepSolvable (ℓ : ℕ) : Prop :=
-  ∀ (N : ℕ) {G H : Type} [Group G] [Group H] [Finite G] (f : G →* H),
+  ∀ (N : ℕ) {G H : Type} [Group G] [Group H] [Finite G] (f : G →* H), IsPGroup ℓ G →
     Function.Surjective f → f.ker ≤ Subgroup.center G → Nat.card f.ker = ℓ →
     IsScholzRealizable H ℓ (N + 1) → IsScholzRealizable G ℓ N
 
@@ -111,7 +112,7 @@ theorem isScholzRealizable_of_card_eq_pow {ℓ : ℕ} (hℓ : ℓ.Prime)
       have hsplit := Subgroup.card_eq_card_quotient_mul_card_subgroup Z
       rw [hcard, hZcard, pow_succ] at hsplit
       exact Nat.eq_of_mul_eq_mul_right hℓ.pos hsplit.symm
-    refine hstep N (QuotientGroup.mk' Z) (QuotientGroup.mk'_surjective Z) ?_ ?_
+    refine hstep N (QuotientGroup.mk' Z) hpg (QuotientGroup.mk'_surjective Z) ?_ ?_
       (ih (N + 1) (G ⧸ Z) hquot)
     · rw [QuotientGroup.ker_mk']
       exact hZle

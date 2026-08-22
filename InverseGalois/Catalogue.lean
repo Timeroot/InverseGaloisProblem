@@ -42,6 +42,9 @@ Families:
 * `isRegularInverseGalois_of_isSemiabelian` — every finite semiabelian group, by the Dentzer–Stoll
   wreath construction (`RET.Wreath`); `IsRegularInverseGalois.wreath` is the closure of the
   catalogue under wreath products by finite abelian groups.
+* `InverseGalois.isRegularInverseGalois_of_isZGroup` — every finite group all of whose Sylow
+  subgroups are cyclic, and `InverseGalois.isRegularInverseGalois_of_squarefree_card` — every
+  finite group of squarefree order (`RET.Wreath.SmallGroups`).
 * `Rigidity.RET.isRegularInverseGalois_perm_fin` — `Sₙ` for every `n`.
 * `Rigidity.RET.isRegularInverseGalois_alternatingGroup` — `Aₙ` for every `n`.
 * `Rigidity.RET.isRegularInverseGalois_of_isMobius` — every finite subgroup of `PGL₂(ℚ)`, hence
@@ -219,6 +222,20 @@ be written as an iterated split extension of abelian groups, and in particular e
 group and every quotient of such an iterated product.  It does not contain every finite solvable
 group: a solvable group whose chief factors are not complemented need not be semiabelian, and
 Shafarevich's theorem remains outside the catalogue.
+
+Recognizing a group as semiabelian is therefore what widens the catalogue, and several criteria do
+it.  A normal abelian subgroup of cyclic quotient suffices, with no splitting hypothesis; so does a
+normal abelian subgroup with a complement, whether the complement comes from Schur–Zassenhaus, from
+a normal abelian Sylow subgroup or from a homomorphic section; so does an abelian subgroup whose
+index is the smallest prime factor of the order, which is automatically normal.  The widest of them
+is the theorem of Hölder, Burnside and Zassenhaus: a finite group all of whose Sylow subgroups are
+cyclic is metacyclic.  Together these give, unconditionally and regularly over `ℚ(T)`,
+
+* `InverseGalois.isRegularInverseGalois_of_isZGroup` — every finite group all of whose Sylow
+  subgroups are cyclic, and hence
+* `InverseGalois.isRegularInverseGalois_of_squarefree_card` — every finite group of squarefree
+  order, and
+* the groups of order `p`, `p ^ 2`, `p ^ 3` and `p * q`.
 
 ## Main results
 

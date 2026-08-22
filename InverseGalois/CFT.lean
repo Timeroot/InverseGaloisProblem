@@ -129,6 +129,7 @@ import InverseGalois.CFT.Scholz.Condition
 import InverseGalois.CFT.Scholz.FrattiniStep
 import InverseGalois.CFT.Scholz.Induction
 import InverseGalois.CFT.Scholz.NilpotentOdd
+import InverseGalois.CFT.Scholz.NilpotentSylowTwo
 import InverseGalois.CFT.Scholz.PrimeChoice
 import InverseGalois.CFT.Scholz.RadicalDisjoint
 import InverseGalois.CFT.Scholz.RadicalTower
@@ -276,6 +277,9 @@ it that are available here.
 * `InverseGalois.CFT.Scholz.NilpotentOdd` raises the conclusion of the induction from `ℓ`-groups to
   all finite nilpotent groups of odd order, whose Sylow subgroups are `ℓ`-groups for odd `ℓ` and
   pairwise coprime.
+* `InverseGalois.CFT.Scholz.NilpotentSylowTwo` drops the parity restriction on the group in favour
+  of one on a single Sylow subgroup: a finite nilpotent group is realised as soon as its Sylow
+  `2`-subgroups are, the odd Sylow subgroups being supplied by the induction.
 * `InverseGalois.CFT.Scholz.RadicalDisjoint` proves the linear disjointness statement the induction
   needs: for odd `ℓ`, a field generated over `ℚ` by a primitive `ℓ`-th root of unity and by
   elements with rational `ℓ`-th powers has no quotient of order `ℓ`, hence no Galois subextension
