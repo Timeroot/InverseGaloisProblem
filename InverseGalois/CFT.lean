@@ -52,7 +52,10 @@ import InverseGalois.CFT.GroupCohomology.CyclicH2
 import InverseGalois.CFT.GroupCohomology.CyclicSurjective
 import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.ToCocycle
+import InverseGalois.CFT.Global.DavenportCassels
 import InverseGalois.CFT.Global.DescentTools
+import InverseGalois.CFT.Global.Existence
+import InverseGalois.CFT.Global.ExistenceGeneral
 import InverseGalois.CFT.Global.HasseMinkowski
 import InverseGalois.CFT.Global.HasseNorm
 import InverseGalois.CFT.Global.HilbertBimul
@@ -63,10 +66,16 @@ import InverseGalois.CFT.Global.JacobiNonresidue
 import InverseGalois.CFT.Global.LocalSquare
 import InverseGalois.CFT.Global.LocalSquares
 import InverseGalois.CFT.Global.OddGenerators
+import InverseGalois.CFT.Global.OddValuation
 import InverseGalois.CFT.Global.RationalSquareClasses
 import InverseGalois.CFT.Global.Reciprocity
+import InverseGalois.CFT.Global.SevenModEight
+import InverseGalois.CFT.Global.SquareClassApprox
 import InverseGalois.CFT.Global.SquarefreeCRT
 import InverseGalois.CFT.Global.TernaryForms
+import InverseGalois.CFT.Global.ThreeSquares
+import InverseGalois.CFT.Global.ThreeSquaresOdd
+import InverseGalois.CFT.Global.ThreeSquaresTwo
 import InverseGalois.CFT.Global.TwoGenerators
 import InverseGalois.CFT.Herbrand
 import InverseGalois.CFT.Level
@@ -343,4 +352,29 @@ it that are available here.
 * `InverseGalois.CFT.Global.RationalSquareClasses` goes the other way, showing every square class
   of a `p`-adic field to contain a rational number, by approximating a `p`-adic number closely
   enough that the ratio is a square.
+* `InverseGalois.CFT.Global.SquareClassApprox` upgrades that to weak approximation for square
+  classes: a single rational number can be prescribed, up to squares, in finitely many `p`-adic
+  fields at once, and its sign chosen freely.
+* `InverseGalois.CFT.Global.OddValuation` computes the Hilbert symbol at an odd place of an
+  integer prime to that place against an arbitrary argument, the answer depending only on the
+  parity of the valuation and, when that parity is odd, on a Legendre symbol.
+* `InverseGalois.CFT.Global.Existence` proves the first case of Serre's existence theorem: a
+  family of prescribed local Hilbert symbols, trivial outside a set of places disjoint from the
+  bad ones and satisfying the product formula, is realised by a single positive integer, produced
+  by Dirichlet's theorem in an arithmetic progression.
+* `InverseGalois.CFT.Global.ExistenceGeneral` removes the disjointness hypothesis by a twist,
+  giving **Serre's existence theorem** in full: prescribed local Hilbert symbols subject only to
+  the product formula are realised by a rational number.
+* `InverseGalois.CFT.Global.ThreeSquaresOdd` shows that for an odd prime every `p`-adic number is
+  a sum of three squares, the form `X² + Y² + Z²` being isotropic and therefore universal.
+* `InverseGalois.CFT.Global.ThreeSquaresTwo` settles the dyadic case: a nonzero dyadic number is a
+  sum of three squares exactly when its negative is not a square.
+* `InverseGalois.CFT.Global.SevenModEight` translates that dyadic condition into arithmetic: the
+  negative of a positive natural number is a dyadic square exactly when the number has the shape
+  `4 ^ a * (8 * b + 7)`.
+* `InverseGalois.CFT.Global.DavenportCassels` carries out the Davenport–Cassels descent for the
+  sums of two and of three squares, so that a rational representation yields an integral one.
+* `InverseGalois.CFT.Global.ThreeSquares` combines these into **the three-square theorem**: a
+  natural number is a sum of three integer squares exactly when it is not of the shape
+  `4 ^ a * (8 * b + 7)`.
 -/
