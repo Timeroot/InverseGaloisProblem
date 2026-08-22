@@ -27,6 +27,7 @@ compositum whose second factor the prime splits completely in; that is the conte
 ## Main results
 
 * `InverseGalois.CFT.IsScholz.mono`: the condition weakens as the exponent decreases.
+* `InverseGalois.CFT.IsScholz.of_ringEquiv`: the condition is an isomorphism invariant.
 * `InverseGalois.CFT.isSplitInertia_of_finrank_prime`: a Galois extension of `ℚ` of prime degree
   has residue degree one at every ramified prime.
 * `InverseGalois.CFT.isSplitInertia_of_sup`: **residue degree one passes to a compositum** in
@@ -84,6 +85,16 @@ theorem isSplitInertia_of_ringEquiv {F : Type*} [Field F] [NumberField F] (e : E
   have hdeg := Ideal.inertiaDeg_comap_eq (Ideal.span {(p : ℤ)}) f P
   rw [← hdeg]
   exact h p hp' Q hQp hQo
+
+/-- The level condition is an isomorphism invariant. -/
+theorem IsLevel.of_ringEquiv {F : Type*} [Field F] [NumberField F] {ℓ N : ℕ} (e : E ≃+* F)
+    (h : IsLevel ℓ N E) : IsLevel ℓ N F :=
+  fun q hq => h q (by rwa [ramifiedSet_eq_of_ringEquiv e])
+
+/-- Serre's condition `(S_N)` is an isomorphism invariant. -/
+theorem IsScholz.of_ringEquiv {F : Type*} [Field F] [NumberField F] {ℓ N : ℕ} (e : E ≃+* F)
+    (h : IsScholz ℓ N E) : IsScholz ℓ N F :=
+  ⟨h.1.of_ringEquiv e, isSplitInertia_of_ringEquiv e h.2⟩
 
 /-- **A Galois extension of `ℚ` of prime degree has split inertia.**  A ramified prime has
 ramification index different from one at some prime above it, hence at every prime above it, and

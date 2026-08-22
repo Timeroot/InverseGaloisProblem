@@ -123,8 +123,11 @@ import InverseGalois.CFT.Local.RamifiedNormForm
 import InverseGalois.CFT.Local.UnramifiedNormForm
 import InverseGalois.CFT.ScalarSemidirect
 import InverseGalois.CFT.Scholz.Condition
+import InverseGalois.CFT.Scholz.PrimeChoice
+import InverseGalois.CFT.Scholz.Realization
 import InverseGalois.CFT.Scholz.Selector
 import InverseGalois.CFT.Scholz.SplitCase
+import InverseGalois.CFT.Scholz.SplitStep
 import InverseGalois.CFT.Scholz.Tame
 import InverseGalois.CFT.SplitCompositum
 import InverseGalois.CFT.SquareClasses
@@ -238,6 +241,12 @@ it that are available here.
 * `InverseGalois.CFT.Scholz.SplitCase` treats the split case of the induction: the compositum of
   the field already realising `G` with a degree-`ℓ` field ramified at one well-chosen prime
   realises `G × C_ℓ` and again satisfies `(S_N)`.
+* `InverseGalois.CFT.Scholz.PrimeChoice` shows that the primes at which the induction may branch
+  are infinite in number: they are the primes splitting completely in the selector field.
+* `InverseGalois.CFT.Scholz.SplitStep` performs one split step concretely, producing the field, its
+  Galois group as a product, its degree and its ramified primes.
+* `InverseGalois.CFT.Scholz.Realization` bundles a field realising a group and satisfying `(S_N)`,
+  and iterates the split step to realise every elementary abelian `ℓ`-group at every level.
 
 ## Group extensions and the Brauer group
 
