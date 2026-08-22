@@ -55,6 +55,9 @@ import InverseGalois.CFT.GroupCohomology.ToCocycle
 import InverseGalois.CFT.Global.HilbertMulPlaces
 import InverseGalois.CFT.Global.HilbertPlaces
 import InverseGalois.CFT.Global.HilbertProduct
+import InverseGalois.CFT.Global.OddGenerators
+import InverseGalois.CFT.Global.Reciprocity
+import InverseGalois.CFT.Global.TwoGenerators
 import InverseGalois.CFT.Herbrand
 import InverseGalois.CFT.Level
 import InverseGalois.CFT.Local.DyadicHilbert
@@ -276,6 +279,11 @@ it that are available here.
   values of a norm form, so that they form a subgroup; when that subgroup has index two the symbol
   is multiplicative in each argument, and its triviality is exactly the triviality of the relative
   Brauer group of the quadratic extension.
+* `InverseGalois.CFT.Global.OddGenerators` and `InverseGalois.CFT.Global.TwoGenerators` evaluate
+  the product over all places on the pairs drawn from `-1` and the rational primes: the two
+  supplementary laws and quadratic reciprocity itself.
+* `InverseGalois.CFT.Global.Reciprocity` deduces Hilbert reciprocity over the rational field, that
+  the product of the local symbols of a pair of nonzero rationals over all places is one.
 * `InverseGalois.CFT.Herbrand` proves the counting theorem behind the Herbrand quotient: for a
   finite commutative group with an automorphism of finite order, the fixed points modulo the norms
   and the norm kernel modulo the differences have the same index.
