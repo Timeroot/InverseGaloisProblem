@@ -54,6 +54,7 @@ import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.ToCocycle
 import InverseGalois.CFT.Global.DescentTools
 import InverseGalois.CFT.Global.HasseMinkowski
+import InverseGalois.CFT.Global.HasseNorm
 import InverseGalois.CFT.Global.HilbertBimul
 import InverseGalois.CFT.Global.HilbertMulPlaces
 import InverseGalois.CFT.Global.HilbertPlaces
@@ -301,6 +302,9 @@ it that are available here.
 * `InverseGalois.CFT.Global.HasseMinkowski` runs Legendre's descent on these to prove the Hasse
   principle for ternary quadratic forms over the rationals: a conic with a point at every place
   has a rational point, and the real place is already implied by the finite ones.
+* `InverseGalois.CFT.Global.HasseNorm` reads that off as the Hasse norm theorem for a quadratic
+  extension of the rationals, equivalently the theorem of Albert, Brauer, Hasse and Noether for
+  quaternion algebras over the rational field.
 * `InverseGalois.CFT.Herbrand` proves the counting theorem behind the Herbrand quotient: for a
   finite commutative group with an automorphism of finite order, the fixed points modulo the norms
   and the norm kernel modulo the differences have the same index.
