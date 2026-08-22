@@ -78,8 +78,16 @@ computation of norm forms:
 * **`p = 2`.** A dyadic unit is a square iff it is `≡ 1 mod 8`, and there are exactly eight square
   classes (`PadicSquaresTwo.lean`). Isotropy over `ℚ_2` is decided modulo eight, and the symbol of
   two dyadic units is `1` iff one of them is `≡ 1 mod 4` (`DyadicHilbert.lean`); the general dyadic
-  symbol and its bimultiplicativity follow (`DyadicHilbertMul.lean`).
+  symbol and its bimultiplicativity follow (`DyadicHilbertMul.lean`). Nondegeneracy is the same
+  statement as at the odd places, and is proved by exhibiting a partner for each of the eight
+  square classes: against a fixed dyadic nonsquare `b` some `a` has `(a, b)_{ℚ_2} = −1`, so
+  `[ℚ_2^× : N(L^×)] = 2` and `Br(L/ℚ_2) ≅ ℤ/2` for quadratic `L` (`DyadicNondegenerate.lean`).
 * **the real place.** `(a, b)_ℝ = −1` iff `a < 0` and `b < 0` (`HilbertSymbol.lean`).
+* **`ℚ_p` as a local field.** `IsNonarchimedeanLocalField ℚ_[p]` holds
+  (`CFT/Local/PadicLocalField.lean`): the `p`-adic norm is compatible with the valuative relation,
+  the topology is the valuative one, and `𝒪[ℚ_[p]] ≃+* ℤ_[p]` is a compact complete discrete
+  valuation ring with finite residue field. This is the first instance of that class anywhere, and
+  it is what makes the statements of local class field theory expressible over `ℚ_[p]` at all.
 * the resulting integer dictionary, symbols as Legendre symbols, is `Local/LegendreHilbert.lean`.
 
 ### 1.3 The global theory in degree two
@@ -225,6 +233,15 @@ The existence theorem is now in the tree, in `Global/Existence.lean` (disjoint s
   general case to the diagonal one simultaneously at `ℚ` and at every completion. The result is
   the **Hasse principle for an arbitrary rational quadratic form**, with no hypothesis beyond
   symmetry of the matrix.
+* `Local/DyadicQuinary.lean` supplies the missing dyadic half for *unit* coefficients: a diagonal
+  form in five dyadic units is isotropic. Modulo eight a unit is one of `1, 3, 5, 7` and the
+  available squares are `0, 1, 4`, so a finite check over `(Fin 4)^5 × (Fin 3)^4` — kept small
+  enough for the kernel to `decide` — produces values making the last four terms cancel the first
+  modulo eight; the residual coefficient is then `≡ 1 mod 8`, hence a square, and solving for the
+  remaining variable finishes. Combined with `OddQuinary` and `RealSigns`: a diagonal rational form
+  in at least five variables with **odd integer coefficients** is isotropic exactly when its
+  coefficients are not all of one sign. The general dyadic statement `u(ℚ₂) = 4` still needs the
+  classification of `2`-adic forms by their Hasse invariant.
 
 Serre's chapter on the Hasse–Minkowski theorem is therefore complete, in full generality: the
 diagonalisation step is supplied rather than assumed. None of this touches the two blockers of

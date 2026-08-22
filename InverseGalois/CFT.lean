@@ -93,6 +93,8 @@ import InverseGalois.CFT.Herbrand
 import InverseGalois.CFT.Level
 import InverseGalois.CFT.Local.DyadicHilbert
 import InverseGalois.CFT.Local.DyadicHilbertMul
+import InverseGalois.CFT.Local.DyadicNondegenerate
+import InverseGalois.CFT.Local.DyadicQuinary
 import InverseGalois.CFT.Local.HilbertIdentities
 import InverseGalois.CFT.Local.HilbertMap
 import InverseGalois.CFT.Local.HilbertMul
@@ -100,6 +102,7 @@ import InverseGalois.CFT.Local.HilbertSymbol
 import InverseGalois.CFT.Local.LegendreHilbert
 import InverseGalois.CFT.Local.PadicHilbert
 import InverseGalois.CFT.Local.PadicHilbertMul
+import InverseGalois.CFT.Local.PadicLocalField
 import InverseGalois.CFT.Local.PadicSquares
 import InverseGalois.CFT.Local.PadicSquaresTwo
 import InverseGalois.CFT.Local.RamifiedNormForm
@@ -426,4 +429,20 @@ it that are available here.
   symmetric matrices preserves isotropy and commutes with base change, and every symmetric matrix
   over a field in which `2` is invertible is congruent to a diagonal one, whence the
   **Hasse principle for an arbitrary rational quadratic form** presented by a symmetric matrix.
+* `InverseGalois.CFT.Local.DyadicQuinary` supplies the dyadic half of the count for unit
+  coefficients: five dyadic units always admit a nontrivial zero of the diagonal form they define,
+  because among five odd residues one can choose a subfamily whose sum, with the small square
+  values `0`, `1` and `4`, is divisible by eight, leaving a coefficient congruent to one modulo
+  eight and hence a square.  Together with the two preceding entries, **a diagonal rational form
+  in at least five variables with odd integer coefficients is isotropic exactly when its
+  coefficients are not all of one sign**.
+* `InverseGalois.CFT.Local.DyadicNondegenerate` completes the dyadic Hilbert symbol in the way the
+  odd places were already completed: against a fixed dyadic nonsquare the symbol takes the value
+  `-1`, so it is a surjection onto the units of the integers, the norm subgroup of a quadratic
+  extension of the dyadic numbers has index two, and the relative Brauer group of such an
+  extension has order two.
+* `InverseGalois.CFT.Local.PadicLocalField` records that a field of `p`-adic numbers is a
+  nonarchimedean local field in the sense of the valuative formalism: its norm is compatible with
+  its valuative relation, its topology is the valuative one, and its ring of integers is the ring
+  of `p`-adic integers, a compact complete discrete valuation ring with finite residue field.
 -/
