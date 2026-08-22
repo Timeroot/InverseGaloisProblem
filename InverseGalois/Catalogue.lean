@@ -45,6 +45,19 @@ Families:
 * `InverseGalois.isRegularInverseGalois_of_isZGroup` — every finite group all of whose Sylow
   subgroups are cyclic, and `InverseGalois.isRegularInverseGalois_of_squarefree_card` — every
   finite group of squarefree order (`RET.Wreath.SmallGroups`).
+* `InverseGalois.isRegularInverseGalois_of_commutator_le_center`,
+  `InverseGalois.isRegularInverseGalois_of_nilpotencyClass_le_two` — every finite group of
+  nilpotency class at most `2`, in particular every extraspecial group.
+* `InverseGalois.isRegularInverseGalois_of_card_lt_twentyfour` — every finite group of order less
+  than `24`; the order `24` is where this stops, `SL(2, 3)` being the smallest group with no
+  abelian normal subgroup outside its Frattini subgroup.
+* `InverseGalois.isRegularInverseGalois_of_card_eq_sq_mul_prime`,
+  `InverseGalois.isRegularInverseGalois_of_card_eq_prime_pow_four`,
+  `InverseGalois.isRegularInverseGalois_of_card_eq_sq_mul_sq` — the orders `p ^ 2 * q`, `p ^ 4` and
+  `p ^ 2 * q ^ 2`.
+* `InverseGalois.isRegularInverseGalois_of_card_eq_mul_prime_of_lt_twentyfour`,
+  `InverseGalois.isRegularInverseGalois_of_card_eq_mul_prime_sq_of_lt_twentyfour` — the orders
+  `m * q` and `m * q ^ 2` for a prime `q` exceeding `m < 24`, two families unbounded in the order.
 * `Rigidity.RET.isRegularInverseGalois_perm_fin` — `Sₙ` for every `n`.
 * `Rigidity.RET.isRegularInverseGalois_alternatingGroup` — `Aₙ` for every `n`.
 * `Rigidity.RET.isRegularInverseGalois_of_isMobius` — every finite subgroup of `PGL₂(ℚ)`, hence
@@ -236,6 +249,28 @@ cyclic is metacyclic.  Together these give, unconditionally and regularly over `
 * `InverseGalois.isRegularInverseGalois_of_squarefree_card` — every finite group of squarefree
   order, and
 * the groups of order `p`, `p ^ 2`, `p ^ 3` and `p * q`.
+
+The widest structural criterion is nilpotency class: if `G' ≤ Z(G)` and `x` lies outside the
+Frattini subgroup, then `⟨x⟩ · Z(G)` is an abelian normal subgroup that a maximal subgroup
+supplements, and the supplement again has class at most `2`, so the induction on the order runs.
+Hence `InverseGalois.isRegularInverseGalois_of_nilpotencyClass_le_two` — **every finite group of
+nilpotency class at most `2` is a regular Galois group over `ℚ(T)`**, with no bound on its order.
+
+Two further criteria push the list past the individual small orders.  A maximal abelian normal
+subgroup of a `p`-group is self-centralizing, which in order `p ^ 4` forces its index to be at most
+`p`; and Sylow counting makes the Sylow subgroup at a prime `q` unique whenever the rest of the
+order is smaller than `q`, or whenever the order is `p ^ 2 * q`.  Between them the shapes `p`,
+`p ^ 2`, `p ^ 3`, `p ^ 4`, `p * q` and `p ^ 2 * q` exhaust every order below `24`, so
+
+* `InverseGalois.isRegularInverseGalois_of_card_lt_twentyfour` — **every finite group of order less
+  than `24` is a regular Galois group over `ℚ(T)`**, and
+* `InverseGalois.isRegularInverseGalois_of_card_eq_mul_prime_of_lt_twentyfour` and
+  `..._of_card_eq_mul_prime_sq_of_lt_twentyfour` — the unbounded families `m * q` and `m * q ^ 2`
+  with `m < 24 < q`.
+
+The bound `24` is sharp for the method rather than an accident of the enumeration: `SL(2, 3)` has
+order `24`, and its only abelian normal subgroup is its centre, which is also its Frattini
+subgroup, so no abelian normal subgroup of it admits a proper supplement.
 
 ## Main results
 

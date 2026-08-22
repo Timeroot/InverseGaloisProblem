@@ -415,6 +415,90 @@ arithmetic debt.
 
 ---
 
+## 0.7 Status (2026-08-22, late) — class two, every order below 24, and the Frattini induction
+
+The semiabelian class was pushed again — once structurally, by nilpotency class, and once by
+*order* — and the conditional nilpotent theorem moved one power of two.
+
+**Every finite group of nilpotency class at most `2` is semiabelian**
+(`Solvable/SemiabelianClassTwo.lean`, `IsSemiabelian.of_commutator_le_center`). This is the
+structural high point of the batch and it is proved by the Frattini induction below in three lines
+of mathematics: if `G' ≤ Z(G)` and `x ∉ Φ(G)`, then `A = ⟨x⟩ · Z(G)` is abelian, and it is normal
+because `[A, G] ≤ G' ≤ Z(G) ≤ A`; a maximal subgroup supplementing `A` is proper and again of class
+at most `2`, so the induction closes. Every subgroup of a class-`2` group has class at most `2`,
+which is exactly what the induction needs and what fails for class `3`. In particular every
+extraspecial group, every group of order `p ^ 3`, and every `2`-group of class `2` — of any order —
+is regular over `ℚ(T)`, so the hypothesis on the prime `2` in the conditional Shafarevich theorem is
+now met by an unbounded family of `2`-groups.
+
+**Every finite group of order less than `24` is semiabelian**
+(`Solvable/SemiabelianSmallOrders.lean`, `IsSemiabelian.of_card_lt_twentyfour`), hence regular over
+`ℚ(T)`. Two new shape criteria were needed to close the gaps in the enumeration:
+
+* `Solvable/SemiabelianP2Q.lean` — **order `p ^ 2 * q`** (`IsSemiabelian.of_card_eq_sq_mul_prime`).
+  Sylow counting produces a normal Sylow subgroup in every case; the one order at which the counts
+  admit no immediate normal subgroup, `12` with `n₂ = 3`, is settled separately by showing the
+  Sylow `2`-subgroup is unique there.
+* `Solvable/SemiabelianP2Q2.lean` — **order `p ^ 2 * q ^ 2`**
+  (`IsSemiabelian.of_card_eq_sq_mul_sq`), whence the orders `36` and `100`. The one shape the
+  counts leave open is `36` with four Sylow `3`-subgroups; there the kernel of the conjugation
+  action on those four subgroups has order `3`, is central, and its quotient of order `12` hands
+  back a normal Sylow `2`-subgroup.
+* `Solvable/SemiabelianP4.lean` — **order `p ^ 4` for every prime `p`**
+  (`IsSemiabelian.of_card_eq_prime_pow_four`). A maximal abelian normal subgroup of a `p`-group is
+  self-centralizing, and in a group of order `p ^ 4` self-centralizing forces index at most `p`,
+  so the quotient is cyclic and the criterion of §0.6 applies. In particular every group of order
+  `16` is semiabelian.
+
+`24` is exactly the right place for the enumeration to stop. **`SL(2,3)`, of order `24`, is the
+smallest non-semiabelian group**: its only abelian normal subgroup is its centre `C₂`, which is
+also its Frattini subgroup, so no abelian normal subgroup escapes the Frattini subgroup and no
+supplement argument can start. The milestone is sharp, not an artefact of the criteria available.
+
+**The supplement argument was isolated as an induction** (`Solvable/SemiabelianFrattini.lean`).
+Call a finite group *Frattini-supplemented* when, unless trivial, it has an abelian normal subgroup
+not contained in its Frattini subgroup. Such a subgroup is supplemented by a maximal subgroup —
+a *proper*, hence smaller, subgroup — so `IsSemiabelian.of_isFrattiniSupplemented` turns the
+covering criterion into a genuine induction on the order. This is the general form of every
+order-by-order argument above, and it is also precisely what `SL(2,3)` defeats.
+
+**Two criteria for a dominant prime** (`Solvable/SemiabelianLargePrime.lean`). If `|G| = m * q`
+with `q` prime and `m < q`, the number of Sylow `q`-subgroups divides `m` and is `≡ 1 mod q`, so it
+is `1`: the Sylow subgroup is normal, cyclic of prime order, and `G` is semiabelian as soon as the
+quotient of order `m` is (`IsSemiabelian.of_card_eq_mul_prime_of_lt`). The same argument with
+`|G| = m * q ^ 2` gives a normal Sylow subgroup of order `q ^ 2`, which is abelian
+(`of_card_eq_mul_prime_sq_of_lt`). Combined with the order-`<24` theorem this yields two infinite
+families with no bound on `|G|`: `of_card_eq_mul_prime_of_lt_twentyfour` and
+`of_card_eq_mul_prime_sq_of_lt_twentyfour`, for `m < 24 < q`.
+
+`Solvable/SemiabelianSylowCount.lean` replaces the size comparison `m < q` by the exact condition
+the counting argument needs: no divisor of `m` other than `1` is congruent to `1` modulo `q`. That
+is a statement about the finite set `m.divisors`, hence decidable, so at a concrete order it is
+discharged by evaluation — the orders `40`, `45`, `75` and `99` are recorded that way.
+
+**The hypothesis on the prime `2` is now met structurally as well as numerically.**
+`isInverseGalois_of_isNilpotent_of_classTwo_sylow_two`: granted the odd central step, a finite
+nilpotent group whose Sylow `2`-subgroup has nilpotency class at most `2` is a Galois group over
+`ℚ`, with no bound at all on the order.
+
+**The conditional headline moved from `16` to `32`.** With order `16` now semiabelian,
+`isInverseGalois_of_isNilpotent_of_not_dvd_thirtytwo` says: granted the odd central step, every
+finite nilpotent group of order not divisible by `32` is a Galois group over `ℚ`. The Sylow
+`2`-subgroup then has order at most `16`, and every group of order `1, 2, 4, 8, 16` is semiabelian.
+
+**The arithmetic hypothesis was narrowed.** `isInverseGalois_of_..._of_frattini` variants assume
+only `IsFrattiniCentralStepSolvable q` — the central step for surjections whose kernel lies inside
+the Frattini subgroup of the source. A central kernel of prime order escaping the Frattini subgroup
+is complemented by a maximal subgroup, so that extension splits and is realised by a compositum
+with no arithmetic at all. This is the narrowest form the induction actually calls for, and hence
+the smallest statement ABHN would have to supply.
+
+ABHN itself is untouched. `CFT/Global/` is, on inspection, entirely the `ℓ = 2` world —
+Davenport–Cassels, Hilbert symbols, the Hasse principle for diagonal quadratic forms — so the
+odd-`ℓ` injectivity of `H²(ℚ, C_ℓ) → ∏_p H²(ℚ_p, C_ℓ)` is not close. It remains the single debt.
+
+---
+
 ## 1. Scholz–Reichardt
 
 ### 1.1 Statement

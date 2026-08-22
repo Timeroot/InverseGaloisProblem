@@ -3,9 +3,12 @@ Copyright (c) 2025. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Scholz.FrattiniStep
 import InverseGalois.CFT.Scholz.NilpotentSylowTwo
 import InverseGalois.Rigidity.RET.Specialization
 import InverseGalois.Rigidity.RET.Wreath.SmallGroups
+import InverseGalois.Solvable.SemiabelianClassTwo
+import InverseGalois.Solvable.SemiabelianSmallOrders
 
 /-!
 # The nilpotent case of Shafarevich's theorem
@@ -24,7 +27,8 @@ prime.  The arithmetic route covers every odd prime; the prime `2`, which the Sc
 argument excludes, is left to the geometric route.  The result is that a finite nilpotent group is
 a Galois group over `ℚ` — granted the odd central step — as soon as its Sylow `2`-subgroup is
 semiabelian.  That is a mild condition on a `2`-group: it holds for the abelian ones, for the
-cyclic ones, for the metacyclic ones, and for all of them of order at most `8`.
+cyclic ones, for the metacyclic ones, for those of nilpotency class at most `2`, and for all of
+them of order at most `16`.
 
 ## Main results
 
@@ -34,9 +38,16 @@ cyclic ones, for the metacyclic ones, and for all of them of order at most `8`.
 * `InverseGalois.isInverseGalois_of_isNilpotent_of_abelian_sylow_two`,
   `InverseGalois.isInverseGalois_of_isNilpotent_of_cyclic_sylow_two`: the abelian and cyclic cases
   of the hypothesis on the prime `2`.
-* `InverseGalois.isInverseGalois_of_isNilpotent_of_not_dvd_sixteen`: **granted the central step for
-  the odd primes, every finite nilpotent group of order not divisible by `16` is a Galois group
+* `InverseGalois.isInverseGalois_of_isNilpotent_of_classTwo_sylow_two`: the hypothesis on the prime
+  `2` is met by a Sylow `2`-subgroup of nilpotency class at most `2`.
+* `InverseGalois.isInverseGalois_of_isNilpotent_of_not_dvd_thirtytwo`,
+  `InverseGalois.isInverseGalois_of_isNilpotent_of_not_dvd_sixteen`: **granted the central step for
+  the odd primes, every finite nilpotent group of order not divisible by `32` is a Galois group
   over `ℚ`.**
+* `InverseGalois.isInverseGalois_of_isNilpotent_of_semiabelian_sylow_two_of_frattini`,
+  `InverseGalois.isInverseGalois_of_isNilpotent_of_not_dvd_thirtytwo_of_frattini`: the same two
+  statements with the central step assumed only for the surjections whose kernel lies inside the
+  Frattini subgroup of the source, which is the narrowest form the induction calls for.
 -/
 
 namespace InverseGalois
@@ -76,22 +87,34 @@ theorem isInverseGalois_of_isNilpotent_of_cyclic_sylow_two
   haveI := h2 P
   exact (IsCyclic.commutative (α := ↥(P : Subgroup G))).comm x y
 
-/-- **Granted the central step for the odd primes, every finite nilpotent group of order not
-divisible by `16` is a Galois group over `ℚ`.**  The order of a Sylow `2`-subgroup is a power of
-`2` dividing the order of the group, so it is at most `8`, and a group of order `1`, `2`, `4` or
-`8` is semiabelian. -/
-theorem isInverseGalois_of_isNilpotent_of_not_dvd_sixteen
+/-- **Granted the central step for the odd primes, a finite nilpotent group whose Sylow
+`2`-subgroups have nilpotency class at most `2` is a Galois group over `ℚ`.**  A group whose
+commutator subgroup is central is semiabelian, by adjoining to the centre a generator outside the
+Frattini subgroup. -/
+theorem isInverseGalois_of_isNilpotent_of_classTwo_sylow_two
     (hstep : ∀ q : ℕ, q.Prime → Odd q → IsCentralStepSolvable q) (G : Type) [Group G] [Finite G]
-    [Group.IsNilpotent G] (h16 : ¬ (16 ∣ Nat.card G)) : IsInverseGalois G := by
+    [Group.IsNilpotent G]
+    (h2 : ∀ P : Sylow 2 G, commutator ↥(P : Subgroup G) ≤ Subgroup.center ↥(P : Subgroup G)) :
+    IsInverseGalois G :=
+  isInverseGalois_of_isNilpotent_of_semiabelian_sylow_two hstep G fun P =>
+    IsSemiabelian.of_commutator_le_center (h2 P)
+
+/-- **Granted the central step for the odd primes, every finite nilpotent group of order not
+divisible by `32` is a Galois group over `ℚ`.**  The order of a Sylow `2`-subgroup is a power of
+`2` dividing the order of the group, so it is at most `16`, and a group of order `1`, `2`, `4`,
+`8` or `16` is semiabelian. -/
+theorem isInverseGalois_of_isNilpotent_of_not_dvd_thirtytwo
+    (hstep : ∀ q : ℕ, q.Prime → Odd q → IsCentralStepSolvable q) (G : Type) [Group G] [Finite G]
+    [Group.IsNilpotent G] (h32 : ¬ (32 ∣ Nat.card G)) : IsInverseGalois G := by
   refine isInverseGalois_of_isNilpotent_of_semiabelian_sylow_two hstep G fun P => ?_
   obtain ⟨n, hn⟩ := IsPGroup.iff_card.mp P.isPGroup'
   have hdvd : (2 : ℕ) ^ n ∣ Nat.card G := by
     rw [← hn]
     exact Subgroup.card_subgroup_dvd_card _
-  have hle : n ≤ 3 := by
+  have hle : n ≤ 4 := by
     by_contra hc
     push_neg at hc
-    exact h16 (dvd_trans (by rw [show (16 : ℕ) = 2 ^ 4 by norm_num]; exact pow_dvd_pow 2 hc) hdvd)
+    exact h32 (dvd_trans (by rw [show (32 : ℕ) = 2 ^ 5 by norm_num]; exact pow_dvd_pow 2 hc) hdvd)
   interval_cases n
   · haveI : Subsingleton ↥(P : Subgroup G) :=
       (Nat.card_eq_one_iff_unique.mp (by simpa using hn)).1
@@ -99,5 +122,36 @@ theorem isInverseGalois_of_isNilpotent_of_not_dvd_sixteen
   · exact IsSemiabelian.of_card_eq_prime Nat.prime_two (by simpa using hn)
   · exact IsSemiabelian.of_card_eq_prime_sq Nat.prime_two hn
   · exact IsSemiabelian.of_card_eq_prime_cube Nat.prime_two hn
+  · exact IsSemiabelian.of_card_eq_prime_pow_four Nat.prime_two hn
+
+/-- **Granted the central step for the odd primes, every finite nilpotent group of order not
+divisible by `16` is a Galois group over `ℚ`.** -/
+theorem isInverseGalois_of_isNilpotent_of_not_dvd_sixteen
+    (hstep : ∀ q : ℕ, q.Prime → Odd q → IsCentralStepSolvable q) (G : Type) [Group G] [Finite G]
+    [Group.IsNilpotent G] (h16 : ¬ (16 ∣ Nat.card G)) : IsInverseGalois G :=
+  isInverseGalois_of_isNilpotent_of_not_dvd_thirtytwo hstep G fun hd =>
+    h16 (dvd_trans (by norm_num) hd)
+
+/-! ### The narrowest form of the arithmetic hypothesis -/
+
+/-- **Granted the central step for the odd primes in its Frattini form, a finite nilpotent group
+whose Sylow `2`-subgroups are semiabelian is a Galois group over `ℚ`.**  A central kernel of prime
+order that escapes the Frattini subgroup is complemented by a maximal subgroup, so the extension
+splits and is realised by a compositum; only the kernels inside the Frattini subgroup need the
+arithmetic input. -/
+theorem isInverseGalois_of_isNilpotent_of_semiabelian_sylow_two_of_frattini
+    (hstep : ∀ q : ℕ, q.Prime → Odd q → IsFrattiniCentralStepSolvable q) (G : Type) [Group G]
+    [Finite G] [Group.IsNilpotent G]
+    (h2 : ∀ P : Sylow 2 G, IsSemiabelian ↥(P : Subgroup G)) : IsInverseGalois G :=
+  isInverseGalois_of_isNilpotent_of_semiabelian_sylow_two
+    (fun q hq hodd => IsCentralStepSolvable.of_frattini hq (hstep q hq hodd)) G h2
+
+/-- **Granted the central step for the odd primes in its Frattini form, every finite nilpotent
+group of order not divisible by `32` is a Galois group over `ℚ`.** -/
+theorem isInverseGalois_of_isNilpotent_of_not_dvd_thirtytwo_of_frattini
+    (hstep : ∀ q : ℕ, q.Prime → Odd q → IsFrattiniCentralStepSolvable q) (G : Type) [Group G]
+    [Finite G] [Group.IsNilpotent G] (h32 : ¬ (32 ∣ Nat.card G)) : IsInverseGalois G :=
+  isInverseGalois_of_isNilpotent_of_not_dvd_thirtytwo
+    (fun q hq hodd => IsCentralStepSolvable.of_frattini hq (hstep q hq hodd)) G h32
 
 end InverseGalois

@@ -7,6 +7,11 @@ import InverseGalois.Rigidity.RET.Wreath.Main
 import InverseGalois.Solvable.SemiabelianHall
 import InverseGalois.Solvable.SemiabelianSmall
 import InverseGalois.Solvable.SemiabelianZGroup
+import InverseGalois.Solvable.SemiabelianSmallOrders
+import InverseGalois.Solvable.SemiabelianLargePrime
+import InverseGalois.Solvable.SemiabelianClassTwo
+import InverseGalois.Solvable.SemiabelianP2Q2
+import InverseGalois.Solvable.SemiabelianSylowCount
 
 /-!
 # Z-groups and groups of small order, regularly over `ℚ(T)`
@@ -33,8 +38,23 @@ the smallest prime factor of the order.
 * `InverseGalois.isRegularInverseGalois_of_card_eq_prime`,
   `InverseGalois.isRegularInverseGalois_of_card_eq_prime_sq`,
   `InverseGalois.isRegularInverseGalois_of_card_eq_prime_cube`,
-  `InverseGalois.isRegularInverseGalois_of_card_eq_prime_mul_prime`: the groups of order `p`,
-  `p ^ 2`, `p ^ 3` and `p * q`.
+  `InverseGalois.isRegularInverseGalois_of_card_eq_prime_mul_prime`,
+  `InverseGalois.isRegularInverseGalois_of_card_eq_sq_mul_prime`,
+  `InverseGalois.isRegularInverseGalois_of_card_eq_prime_pow_four`: the groups of order `p`,
+  `p ^ 2`, `p ^ 3`, `p * q`, `p ^ 2 * q` and `p ^ 4`.
+* `InverseGalois.isRegularInverseGalois_of_card_lt_twentyfour`: **every finite group of order less
+  than `24` is a regular Galois group over `ℚ(T)`.**
+* `InverseGalois.isRegularInverseGalois_of_card_eq_mul_prime_of_lt_twentyfour`,
+  `InverseGalois.isRegularInverseGalois_of_card_eq_mul_prime_sq_of_lt_twentyfour`: the same for a
+  group whose order is a prime, or the square of a prime, times a cofactor smaller than both that
+  prime and `24`.
+* `InverseGalois.isRegularInverseGalois_of_commutator_le_center`,
+  `InverseGalois.isRegularInverseGalois_of_nilpotencyClass_le_two`: **every finite group of
+  nilpotency class at most `2` is a regular Galois group over `ℚ(T)`.**
+* `InverseGalois.isRegularInverseGalois_of_card_eq_sq_mul_sq`: the groups of order `p ^ 2 * q ^ 2`.
+* `InverseGalois.isRegularInverseGalois_of_card_eq_mul_prime_of_divisors`,
+  `InverseGalois.isRegularInverseGalois_of_card_eq_mul_prime_sq_of_divisors`: the size comparison
+  replaced by the divisor count that makes the Sylow subgroup unique.
 * `InverseGalois.isRegularInverseGalois_of_normal_abelian_of_coprime_index`,
   `InverseGalois.isRegularInverseGalois_of_normal_abelian_sylow`,
   `InverseGalois.isRegularInverseGalois_of_normal_abelian_of_section`: the Schur–Zassenhaus and
@@ -94,6 +114,78 @@ theorem isRegularInverseGalois_of_card_eq_prime_mul_prime {G : Type} [Group G] [
     {p q : ℕ} (hp : p.Prime) (hq : q.Prime) (h : Nat.card G = p * q) :
     IsRegularInverseGalois G :=
   isRegularInverseGalois_of_isSemiabelian (IsSemiabelian.of_card_eq_prime_mul_prime hp hq h)
+
+/-- **Every group whose order is `p ^ 2 * q` for distinct primes `p` and `q` is a regular Galois
+group over `ℚ(T)`.** -/
+theorem isRegularInverseGalois_of_card_eq_sq_mul_prime {G : Type} [Group G] [Finite G]
+    {p q : ℕ} (hp : p.Prime) (hq : q.Prime) (hpq : p ≠ q) (h : Nat.card G = p ^ 2 * q) :
+    IsRegularInverseGalois G :=
+  isRegularInverseGalois_of_isSemiabelian (IsSemiabelian.of_card_eq_sq_mul_prime hp hq hpq h)
+
+/-- **Every group of order `p ^ 4` is a regular Galois group over `ℚ(T)`.** -/
+theorem isRegularInverseGalois_of_card_eq_prime_pow_four {G : Type} [Group G] [Finite G] {p : ℕ}
+    (hp : p.Prime) (h : Nat.card G = p ^ 4) : IsRegularInverseGalois G :=
+  isRegularInverseGalois_of_isSemiabelian (IsSemiabelian.of_card_eq_prime_pow_four hp h)
+
+/-- **Every finite group of order less than `24` is a regular Galois group over `ℚ(T)`.**  Every
+order below `24` is a prime, a product of two primes, a prime cube, a prime fourth power, or of the
+shape `p ^ 2 * q` for distinct primes, and each of those shapes is semiabelian. -/
+theorem isRegularInverseGalois_of_card_lt_twentyfour {G : Type} [Group G] [Finite G]
+    (h : Nat.card G < 24) : IsRegularInverseGalois G :=
+  isRegularInverseGalois_of_isSemiabelian (IsSemiabelian.of_card_lt_twentyfour h)
+
+/-- **A finite group whose order is a prime `q` times a cofactor smaller than both `q` and `24` is
+a regular Galois group over `ℚ(T)`.**  The Sylow `q`-subgroup is unique, hence normal and abelian,
+and the quotient by it is semiabelian. -/
+theorem isRegularInverseGalois_of_card_eq_mul_prime_of_lt_twentyfour {G : Type} [Group G]
+    [Finite G] {m q : ℕ} (hq : q.Prime) (hm : m < 24) (hlt : m < q) (h : Nat.card G = m * q) :
+    IsRegularInverseGalois G :=
+  isRegularInverseGalois_of_isSemiabelian
+    (IsSemiabelian.of_card_eq_mul_prime_of_lt_twentyfour hq hm hlt h)
+
+/-- **A finite group whose order is the square of a prime `q` times a cofactor smaller than both
+`q` and `24` is a regular Galois group over `ℚ(T)`.** -/
+theorem isRegularInverseGalois_of_card_eq_mul_prime_sq_of_lt_twentyfour {G : Type} [Group G]
+    [Finite G] {m q : ℕ} (hq : q.Prime) (hm : m < 24) (hlt : m < q)
+    (h : Nat.card G = m * q ^ 2) : IsRegularInverseGalois G :=
+  isRegularInverseGalois_of_isSemiabelian
+    (IsSemiabelian.of_card_eq_mul_prime_sq_of_lt_twentyfour hq hm hlt h)
+
+/-- **A finite group whose commutator subgroup is central is a regular Galois group over `ℚ(T)`.**
+Adjoining to the centre a generator outside the Frattini subgroup produces an abelian normal
+subgroup with a proper supplement, and the induction on the order makes the group semiabelian. -/
+theorem isRegularInverseGalois_of_commutator_le_center {G : Type} [Group G] [Finite G]
+    (h : commutator G ≤ Subgroup.center G) : IsRegularInverseGalois G :=
+  isRegularInverseGalois_of_isSemiabelian (IsSemiabelian.of_commutator_le_center h)
+
+/-- **A finite group of nilpotency class at most `2` is a regular Galois group over `ℚ(T)`.** -/
+theorem isRegularInverseGalois_of_nilpotencyClass_le_two {G : Type} [Group G] [Finite G]
+    [Group.IsNilpotent G] (h : Group.nilpotencyClass G ≤ 2) : IsRegularInverseGalois G :=
+  isRegularInverseGalois_of_isSemiabelian (IsSemiabelian.of_nilpotencyClass_le_two h)
+
+/-- **Every group whose order is `p ^ 2 * q ^ 2` for distinct primes `p` and `q` is a regular
+Galois group over `ℚ(T)`.** -/
+theorem isRegularInverseGalois_of_card_eq_sq_mul_sq {G : Type} [Group G] [Finite G]
+    {p q : ℕ} (hp : p.Prime) (hq : q.Prime) (hpq : p ≠ q) (h : Nat.card G = p ^ 2 * q ^ 2) :
+    IsRegularInverseGalois G :=
+  isRegularInverseGalois_of_isSemiabelian (IsSemiabelian.of_card_eq_sq_mul_sq hp hq hpq h)
+
+/-- **A finite group whose order is a prime `q` times a cofactor `m < 24` no divisor of which,
+other than `1`, is congruent to `1` modulo `q` is a regular Galois group over `ℚ(T)`.**  The
+divisor condition makes the Sylow `q`-subgroup unique, hence normal and of prime order. -/
+theorem isRegularInverseGalois_of_card_eq_mul_prime_of_divisors {G : Type} [Group G] [Finite G]
+    {m q : ℕ} (hq : q.Prime) (hm : ¬ q ∣ m) (hmlt : m < 24) (h : Nat.card G = m * q)
+    (hdiv : ∀ d ∈ m.divisors, d % q = 1 → d = 1) : IsRegularInverseGalois G :=
+  isRegularInverseGalois_of_isSemiabelian
+    (IsSemiabelian.of_card_eq_mul_prime_of_divisors_lt_twentyfour hq hm hmlt h hdiv)
+
+/-- **A finite group whose order is the square of a prime `q` times a cofactor `m < 24` no divisor
+of which, other than `1`, is congruent to `1` modulo `q` is a regular Galois group over `ℚ(T)`.** -/
+theorem isRegularInverseGalois_of_card_eq_mul_prime_sq_of_divisors {G : Type} [Group G] [Finite G]
+    {m q : ℕ} (hq : q.Prime) (hm : ¬ q ∣ m) (hmlt : m < 24) (h : Nat.card G = m * q ^ 2)
+    (hdiv : ∀ d ∈ m.divisors, d % q = 1 → d = 1) : IsRegularInverseGalois G :=
+  isRegularInverseGalois_of_isSemiabelian
+    (IsSemiabelian.of_card_eq_mul_prime_sq_of_divisors_lt_twentyfour hq hm hmlt h hdiv)
 
 /-! ### Splitting criteria -/
 

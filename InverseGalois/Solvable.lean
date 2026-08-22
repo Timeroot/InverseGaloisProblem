@@ -10,6 +10,14 @@ import InverseGalois.Solvable.SemiabelianCriterion
 import InverseGalois.Solvable.SemiabelianHall
 import InverseGalois.Solvable.SemiabelianSmall
 import InverseGalois.Solvable.SemiabelianZGroup
+import InverseGalois.Solvable.SemiabelianP2Q
+import InverseGalois.Solvable.SemiabelianP2Q2
+import InverseGalois.Solvable.SemiabelianP4
+import InverseGalois.Solvable.SemiabelianFrattini
+import InverseGalois.Solvable.SemiabelianClassTwo
+import InverseGalois.Solvable.SemiabelianSmallOrders
+import InverseGalois.Solvable.SemiabelianLargePrime
+import InverseGalois.Solvable.SemiabelianSylowCount
 import InverseGalois.Solvable.WreathCyclic
 import InverseGalois.Solvable.Shafarevich
 
@@ -55,6 +63,29 @@ free of arithmetic input and applicable to both realization predicates of the de
   is every group of order `p`, `p ^ 2`, `p ^ 3` or `p * q`.
 * `InverseGalois.Solvable.SemiabelianZGroup` shows that a finite group all of whose Sylow subgroups
   are cyclic is metacyclic, hence semiabelian; in particular every group of squarefree order is.
+* `InverseGalois.Solvable.SemiabelianP2Q` counts Sylow subgroups to produce a normal one in a group
+  of order `p ^ 2 * q`, and concludes that every such group is semiabelian.
+* `InverseGalois.Solvable.SemiabelianP2Q2` produces a normal Sylow subgroup in a group of order
+  `p ^ 2 * q ^ 2`, the one order at which the counts leave a gap — `36`, with four Sylow
+  `3`-subgroups — being settled through the kernel of the conjugation action on them.
+* `InverseGalois.Solvable.SemiabelianP4` exhibits a maximal abelian normal subgroup of a group of
+  order `p ^ 4` as one of index at most `p`, and concludes that every such group is semiabelian.
+* `InverseGalois.Solvable.SemiabelianFrattini` supplements an abelian normal subgroup by a maximal
+  subgroup whenever it escapes the Frattini subgroup, turning the covering criterion into an
+  induction on the order.
+* `InverseGalois.Solvable.SemiabelianClassTwo` runs that induction for a group whose commutator
+  subgroup is central: adjoining a generator outside the Frattini subgroup to the centre produces
+  the required abelian normal subgroup, so every finite group of nilpotency class at most two is
+  semiabelian.
+* `InverseGalois.Solvable.SemiabelianSmallOrders` puts the criteria for the individual shapes of
+  order together and concludes that every finite group of order less than `24` is semiabelian.
+* `InverseGalois.Solvable.SemiabelianLargePrime` makes the Sylow subgroup at a prime larger than
+  the rest of the order unique, hence normal and abelian, so that such a group is semiabelian as
+  soon as the quotient by it is.
+* `InverseGalois.Solvable.SemiabelianSylowCount` replaces that size comparison by a divisor count:
+  when no divisor of the complementary factor other than `1` is congruent to `1` modulo the prime,
+  the Sylow subgroup is again unique, a condition that can be checked by evaluation at a concrete
+  order.
 * `InverseGalois.Solvable.WreathCyclic` splits the bottom group of a wreath product into cyclic
   factors, so that the realization of wreath products only has to be established when the bottom
   group is finite cyclic.
