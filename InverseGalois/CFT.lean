@@ -73,6 +73,7 @@ import InverseGalois.CFT.Global.DiagHasse
 import InverseGalois.CFT.Global.DiagRepr
 import InverseGalois.CFT.Global.DiagSplit
 import InverseGalois.CFT.Global.IntApprox
+import InverseGalois.CFT.Global.OddQuinary
 import InverseGalois.CFT.Global.OddUnitIsotropy
 import InverseGalois.CFT.Global.QuaternaryForms
 import InverseGalois.CFT.Global.QuinaryForms
@@ -412,4 +413,8 @@ it that are available here.
 * `InverseGalois.CFT.Global.DiagRepr` frees that principle of its hypothesis on the coefficients
   and recasts it as a **Hasse principle for the representation of a prescribed rational number**
   by a diagonal form.
+* `InverseGalois.CFT.Global.OddQuinary` shows that **a diagonal form in at least five variables is
+  isotropic at every odd finite place** — among five valuations three share a parity, and the
+  corresponding ternary subform is a unit form — so that the Hasse principle in five or more
+  variables involves only the real and the dyadic place.
 -/

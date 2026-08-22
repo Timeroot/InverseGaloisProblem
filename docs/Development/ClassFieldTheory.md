@@ -203,6 +203,14 @@ The existence theorem is now in the tree, in `Global/Existence.lean` (disjoint s
   vanishing coefficient is isotropic outright) and recasts the theorem as the Hasse principle for
   the **representation of a prescribed rational number** by a diagonal form, which is the shape in
   which it is normally used.
+* `Global/OddQuinary.lean` computes away all the odd places at once: at an odd finite place a
+  diagonal form in five or more variables is *always* isotropic. Each coefficient is a power of `p`
+  times a number of absolute value one, and of five exponents three share a parity; discarding the
+  even part of those three powers leaves a common power of `p` times a ternary form with unit
+  coefficients, which is isotropic. Consequently the Hasse principle in at least five variables
+  involves only `ℝ` and `ℚ₂`, and the representation principle does so from four variables on.
+  This is one half of the statement that the `u`-invariant of a `p`-adic field is four; the other
+  half, the dyadic place, needs the classification of `2`-adic forms and is not proved here.
 
 Serre's chapter on the Hasse–Minkowski theorem is therefore complete, for diagonal forms; since
 every quadratic form over a field of characteristic other than two is diagonalisable, this is the

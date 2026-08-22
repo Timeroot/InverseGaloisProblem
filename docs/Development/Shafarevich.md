@@ -198,6 +198,9 @@ proves it directly.
 | **Hilbert reciprocity** `∏_v (a, b)_v = 1` | `CFT/Global/Reciprocity.lean` |
 | **Hasse–Minkowski for ternary forms over `ℚ`** | `CFT/Global/HasseMinkowski.lean` |
 | **the Hasse norm theorem for `ℚ(√b)/ℚ`** = ABHN for quaternion algebras over `ℚ` | `CFT/Global/HasseNorm.lean` |
+| **Hasse–Minkowski for diagonal forms in any number of variables** | `CFT/Global/DiagHasse.lean` |
+| the same, freed of the invertibility hypothesis, and as a principle for **representing** a rational number | `CFT/Global/DiagRepr.lean` |
+| a diagonal form in ≥ 5 variables is isotropic at every **odd** place, so only `ℝ` and `ℚ₂` matter | `CFT/Global/OddQuinary.lean` |
 
 All sorry-free and axiom-free. See `docs/Development/ClassFieldTheory.md` for the full map of the
 layer, the proof architecture of the descent, and why it is not circular with reciprocity.
@@ -207,9 +210,15 @@ nothing in the ternary-forms argument survives the passage from exponent `2` to 
 whole point of the degree-two case is that a Brauer class of order two is a conic, which has no
 analogue. Rows 2 and 5 of the §1.4 table — ABHN in general, and the gluing of local abelian
 characters — remain exactly as stated in §0.2. What has changed is that the *degree-two* theory is
-complete and usable, and that the natural next target inside it (Serre's existence theorem for
-Hilbert symbols, i.e. exponent-two Grunwald–Wang, and thence Hasse–Minkowski in `n` variables) is
-now a short distance away and is CFT-blocker-free.
+complete and usable. The target named here a day earlier — Serre's existence theorem for Hilbert
+symbols, i.e. exponent-two Grunwald–Wang, and thence Hasse–Minkowski in `n` variables — has since
+been reached: the general-`n` Hasse principle is proved by induction on the number of variables
+with the quinary argument as the inductive step, and the odd-place computation then shows that
+from five variables on only the real and the dyadic place carry information. Serre's chapter on
+Hasse–Minkowski is thereby complete for diagonal forms, which by diagonalisation is the theorem
+itself in characteristic other than two. What is *not* reachable from any of this is the `u`
+-invariant of `ℚ₂`, whose proof runs through the classification of `2`-adic forms by their Hasse
+invariant; without it there is no Meyer's theorem.
 
 ---
 
