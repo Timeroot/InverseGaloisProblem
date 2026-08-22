@@ -37,11 +37,13 @@ import InverseGalois.CFT.Cyclotomic.BuildingBlock
 import InverseGalois.CFT.Cyclotomic.Chebotarev
 import InverseGalois.CFT.Cyclotomic.CyclicSubfield
 import InverseGalois.CFT.Cyclotomic.Frobenius
+import InverseGalois.CFT.Cyclotomic.FrobeniusSplitting
 import InverseGalois.CFT.Cyclotomic.InertiaOrder
 import InverseGalois.CFT.Cyclotomic.OnePrimeRamified
 import InverseGalois.CFT.Cyclotomic.PrimeSelection
 import InverseGalois.CFT.Cyclotomic.Ramified
 import InverseGalois.CFT.Cyclotomic.Splitting
+import InverseGalois.CFT.Cyclotomic.SquareRoots
 import InverseGalois.CFT.CyclotomicCompositum
 import InverseGalois.CFT.Decomposition
 import InverseGalois.CFT.Disjoint
@@ -120,6 +122,7 @@ import InverseGalois.CFT.Local.PadicSquaresTwo
 import InverseGalois.CFT.Local.RamifiedNormForm
 import InverseGalois.CFT.Local.UnramifiedNormForm
 import InverseGalois.CFT.ScalarSemidirect
+import InverseGalois.CFT.SplitCompositum
 import InverseGalois.CFT.SquareClasses
 import InverseGalois.CFT.SubgroupCounting
 import InverseGalois.CFT.TameCharacter
@@ -152,6 +155,10 @@ it that are available here.
 * `InverseGalois.CFT.UnramifiedCompositum` computes the ramification of a compositum: a prime
   ramifies in `A ⊔ B` exactly when it ramifies in `A` or in `B`, with no disjointness hypothesis,
   so the level condition passes to a compositum.
+* `InverseGalois.CFT.SplitCompositum` does the same for residue degrees, which do not behave so
+  simply: the order of a decomposition group is the ramification index times the residue degree,
+  and restriction embeds the decomposition group of a compositum into that of one factor as soon
+  as the prime splits completely in the other, so residue degree one is inherited.
 
 ## Towards Kronecker–Weber
 
@@ -186,6 +193,10 @@ it that are available here.
 * `InverseGalois.CFT.KroneckerWeber` assembles all of this into the **Kronecker–Weber theorem for
   tamely ramified abelian number fields**: such a field embeds into the cyclotomic field whose
   conductor is the product of the ramified primes.
+* `InverseGalois.CFT.Cyclotomic.SquareRoots` covers the wildly ramified quadratic case by hand:
+  a primitive eighth root of unity supplies square roots of `-1` and of `2`, a quadratic Gauss sum
+  supplies a square root of every odd prime, so every rational is a square in a cyclotomic field
+  and **every quadratic number field embeds into one**.
 
 ## Reciprocity for the rational field
 
@@ -193,6 +204,9 @@ it that are available here.
   with the class of `p` in `(ℤ/nℤ)ˣ`: the reciprocity law for the rational field.
 * `InverseGalois.CFT.Cyclotomic.Splitting` reads off from it that `p` splits completely in `ℚ(ζₙ)`
   exactly when `p ≡ 1 mod n`.
+* `InverseGalois.CFT.Cyclotomic.FrobeniusSplitting` characterises complete splitting in a subfield
+  by the vanishing of the Frobenius there, and produces the degree `ℓ` subfield of `ℚ(ζ_q)` for
+  `ℓ ∣ q - 1` together with the power-residue description of the primes that split in it.
 * `InverseGalois.CFT.Cyclotomic.Chebotarev` deduces the Chebotarev density theorem for abelian
   extensions of `ℚ`: every element of the Galois group of a subfield of a cyclotomic field is the
   Frobenius of infinitely many primes.

@@ -4,6 +4,7 @@ import InverseGalois.NumberTheory.IntegerPointsSublinear
 import InverseGalois.NumberTheory.PrimeLowerBound
 import InverseGalois.NumberTheory.SplitCompletely
 import InverseGalois.NumberTheory.SplitDensity
+import InverseGalois.NumberTheory.SplitReduction
 
 /-!
 # Number-theoretic estimates
@@ -23,4 +24,7 @@ import InverseGalois.NumberTheory.SplitDensity
   split completely in a Galois number field of degree `n` have Dirichlet density `1/n`, so that of
   two Galois number fields of different degrees, infinitely many primes split completely in the
   smaller but not in the larger.
+* `InverseGalois.NumberTheory.SplitReduction` turns a completely split prime `q` into a ring
+  homomorphism from the ring of integers onto `ZMod q` fixing the rational integers, so that
+  radicals and roots of unity in the field descend to `ZMod q`.
 -/
