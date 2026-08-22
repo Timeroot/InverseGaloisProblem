@@ -26,6 +26,8 @@ compositum `A ⊔ B = ⊤` of two normal subextensions.
 
 * `InverseGalois.CFT.inf_eq_bot_of_scholzSplit`: the two factors are linearly disjoint.
 * `InverseGalois.CFT.isScholz_of_scholzSplit`: **the compositum satisfies `(S_M)`.**
+* `InverseGalois.CFT.isScholz_of_scholzSplit_of_isSplitInertia`: the same conclusion when the
+  residue-degree half of the new factor is supplied directly.
 * `InverseGalois.CFT.ramifiedSet_subset_of_scholzSplit`: the compositum is ramified at the primes
   of `A` and at `q`, and nowhere else.
 * `InverseGalois.CFT.galEquivProdTop`: the Galois group of the compositum is the product of the
@@ -81,6 +83,33 @@ theorem isScholz_of_scholzSplit [IsGalois ℚ ↥B] {ℓ M q : ℕ} (hℓ : ℓ.
   haveI : NumberField ↥B := ⟨⟩
   refine IsScholz.of_sup_eq_top A B hAB hA
     (isScholz_of_finrank_prime hℓ hBdeg hBram hqlevel) hsplit fun p hp => ?_
+  rw [Set.mem_singleton_iff.mp (hBram hp)]
+  exact hqA
+
+omit [IsGalois ℚ N] [Normal ℚ ↥B] in
+/-- **A field ramified at a single prime of level `M` and with split inertia satisfies `(S_M)`.**
+This is the form of the previous statement in which the residue-degree half is supplied directly
+rather than deduced from the degree being prime. -/
+theorem isScholz_of_isSplitInertia {ℓ M q : ℕ} (hBsplit : IsSplitInertia ↥B)
+    (hBram : ramifiedSet ↥B ⊆ {q}) (hqlevel : q ≡ 1 [MOD ℓ ^ M]) :
+    IsScholz ℓ M ↥B := by
+  haveI : NumberField ↥B := ⟨⟩
+  refine ⟨fun p hp => ?_, hBsplit⟩
+  rw [Set.mem_singleton_iff.mp (hBram hp)]
+  exact hqlevel
+
+/-- **The compositum satisfies Serre's condition `(S_M)`**, with the residue-degree half of the
+new factor supplied directly.  This is the form of `InverseGalois.CFT.isScholz_of_scholzSplit`
+that applies when the new factor is cyclic of prime-power degree rather than of prime degree. -/
+theorem isScholz_of_scholzSplit_of_isSplitInertia {ℓ M q : ℕ} (hAB : A ⊔ B = ⊤)
+    (hA : IsScholz ℓ M ↥A) (hBsplit : IsSplitInertia ↥B) (hBram : ramifiedSet ↥B ⊆ {q})
+    (hqlevel : q ≡ 1 [MOD ℓ ^ M]) (hqA : SplitsCompletely ↥A q)
+    (hsplit : ∀ p ∈ ramifiedSet ↥A, SplitsCompletely ↥B p) :
+    IsScholz ℓ M N := by
+  haveI : NumberField ↥A := ⟨⟩
+  haveI : NumberField ↥B := ⟨⟩
+  refine IsScholz.of_sup_eq_top A B hAB hA
+    (isScholz_of_isSplitInertia hBsplit hBram hqlevel) hsplit fun p hp => ?_
   rw [Set.mem_singleton_iff.mp (hBram hp)]
   exact hqA
 

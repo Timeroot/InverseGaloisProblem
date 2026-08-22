@@ -9,11 +9,11 @@ A group is realised in the Scholz–Reichardt sense when it is the Galois group 
 property and the isomorphism into a single structure makes the induction of the Scholz–Reichardt
 construction expressible: each step consumes a realization and returns another one.
 
-This file records the two steps that the split case supplies.  The trivial group is realised by
-`ℚ` itself, which is unramified everywhere; and a realised group may be multiplied by a cyclic
-group of order `ℓ`, by the compositum construction of
-`InverseGalois.CFT.Scholz.SplitStep`.  Iterating the second step from the first realises every
-elementary abelian `ℓ`-group.
+This file records the steps that the split case supplies.  The trivial group is realised by `ℚ`
+itself, which is unramified everywhere; and a realised group may be multiplied by a cyclic group
+of order `ℓ ^ e`, by the compositum construction of `InverseGalois.CFT.Scholz.SplitStep`.
+Iterating the second step from the first realises every finite product of cyclic `ℓ`-groups, and
+the structure theorem for finite abelian groups then covers every finite abelian `ℓ`-group.
 
 ## Main definitions
 
@@ -24,24 +24,32 @@ elementary abelian `ℓ`-group.
 ## Main results
 
 * `InverseGalois.CFT.isScholzRealizable_of_subsingleton`: the trivial group is realised by `ℚ`.
-* `InverseGalois.CFT.IsScholzRealizable.prod_cyclic`: **a realised group stays realised after
-  multiplication by a cyclic group of order `ℓ`.**
-* `InverseGalois.CFT.isScholzRealizable_pi`: **every elementary abelian `ℓ`-group is realised**,
-  for every level `N`.
+* `InverseGalois.CFT.IsScholzRealizable.prod_cyclic_pow`: **a realised group stays realised after
+  multiplication by a cyclic group of order `ℓ ^ e`.**
+* `InverseGalois.CFT.isScholzRealizable_pi`: a finite product of cyclic `ℓ`-groups is realised.
+* `InverseGalois.CFT.isScholzRealizable_of_isPGroup_of_commGroup`: **every finite abelian
+  `ℓ`-group is realised**, for every level `N`.
 -/
 
 open Module NumberField InverseGalois.NumberTheory
 
 namespace InverseGalois.CFT
 
-/-! ### An auxiliary group isomorphism -/
+/-! ### Auxiliary group isomorphisms -/
 
-/-- Splitting off the first coordinate of a finite power of a group. -/
-def piFinSuccMulEquiv (A : Type*) [Group A] (n : ℕ) : (Fin (n + 1) → A) ≃* A × (Fin n → A) where
-  toFun f := (f 0, Fin.tail f)
+/-- Splitting off the first coordinate of a dependent product indexed by `Fin (n + 1)`. -/
+def piFinSuccMulEquiv {n : ℕ} (A : Fin (n + 1) → Type*) [∀ i, Group (A i)] :
+    (∀ i, A i) ≃* A 0 × ∀ i : Fin n, A i.succ where
+  toFun f := (f 0, fun i => f i.succ)
   invFun p := Fin.cons p.1 p.2
   left_inv := Fin.cons_self_tail
   right_inv p := Prod.ext (by simp) (by simp)
+  map_mul' _ _ := rfl
+
+/-- Reindexing a dependent product of groups along an equivalence of index types. -/
+def piCongrLeftMulEquiv {ι ι' : Type*} (A : ι → Type*) [∀ i, Group (A i)] (φ : ι ≃ ι') :
+    (∀ i, A i) ≃* ∀ j, A (φ.symm j) where
+  __ := Equiv.piCongrLeft' A φ
   map_mul' _ _ := rfl
 
 /-! ### Fields of degree one -/
@@ -121,27 +129,67 @@ theorem isScholzRealizable_of_subsingleton [Subsingleton G] : IsScholzRealizable
   haveI : Unique G := uniqueOfSubsingleton 1
   exact ⟨⟨E, isScholz_of_finrank_eq_one ↥E hrank ℓ N, MulEquiv.ofUnique⟩⟩
 
-/-- **A realised group stays realised after multiplication by a cyclic group of order `ℓ`.**  The
-compositum of the realising field with the degree-`ℓ` subfield of the cyclotomic field of a
-well-chosen prime realises the product, and again satisfies Serre's condition. -/
+/-- **A realised group stays realised after multiplication by a cyclic group of order `ℓ ^ e`.**
+The compositum of the realising field with the degree-`ℓ ^ e` subfield of the cyclotomic field of
+a well-chosen prime realises the product, and again satisfies Serre's condition. -/
+theorem IsScholzRealizable.prod_cyclic_pow (hℓ : ℓ.Prime) (e : ℕ) (h : IsScholzRealizable G ℓ N) :
+    IsScholzRealizable (G × Multiplicative (ZMod (ℓ ^ e))) ℓ N := by
+  haveI : NeZero (ℓ ^ e) := ⟨pow_ne_zero e hℓ.ne_zero⟩
+  obtain ⟨R⟩ := h
+  have hcard : Nat.card (Multiplicative (ZMod (ℓ ^ e))) = ℓ ^ e := by simp
+  refine ⟨⟨stepField ↥R.carrier hℓ N e, isScholz_stepField ↥R.carrier hℓ N e R.isScholz,
+    (galEquivStepField ↥R.carrier hℓ N e).trans (MulEquiv.prodCongr R.galEquiv ?_)⟩⟩
+  exact mulEquivOfCyclicCardEq ((card_gal_stepAux ↥R.carrier hℓ N e).trans hcard.symm)
+
+/-- **A realised group stays realised after multiplication by a cyclic group of order `ℓ`.** -/
 theorem IsScholzRealizable.prod_cyclic (hℓ : ℓ.Prime) (h : IsScholzRealizable G ℓ N) :
     IsScholzRealizable (G × Multiplicative (ZMod ℓ)) ℓ N := by
-  haveI : Fact ℓ.Prime := ⟨hℓ⟩
-  haveI : NeZero ℓ := ⟨hℓ.ne_zero⟩
-  obtain ⟨R⟩ := h
-  have hcard : Nat.card (Multiplicative (ZMod ℓ)) = ℓ := by simp
-  refine ⟨⟨stepField ↥R.carrier hℓ N, isScholz_stepField ↥R.carrier hℓ N R.isScholz,
-    (galEquivStepField ↥R.carrier hℓ N).trans (MulEquiv.prodCongr R.galEquiv ?_)⟩⟩
-  exact mulEquivOfPrimeCardEq (card_gal_stepAux ↥R.carrier hℓ N) hcard
+  have h1 := h.prod_cyclic_pow hℓ 1
+  rwa [pow_one] at h1
 
-/-- **Every elementary abelian `ℓ`-group is realised**, at every level `N`: start from `ℚ` and
-adjoin one cyclic factor of order `ℓ` at a time. -/
-theorem isScholzRealizable_pi (hℓ : ℓ.Prime) (N n : ℕ) :
-    IsScholzRealizable (Fin n → Multiplicative (ZMod ℓ)) ℓ N := by
+/-- **A product of cyclic `ℓ`-groups indexed by `Fin n` is realised**, at every level `N`: start
+from `ℚ` and adjoin one cyclic factor at a time. -/
+theorem isScholzRealizable_piFin (hℓ : ℓ.Prime) (N : ℕ) :
+    ∀ (n : ℕ) (d : Fin n → ℕ),
+      IsScholzRealizable (∀ i, Multiplicative (ZMod (ℓ ^ d i))) ℓ N := by
+  intro n
   induction n with
-  | zero => exact isScholzRealizable_of_subsingleton
+  | zero => exact fun _ => isScholzRealizable_of_subsingleton
   | succ n ih =>
-    refine IsScholzRealizable.of_mulEquiv ?_ (ih.prod_cyclic hℓ)
-    exact ((piFinSuccMulEquiv (Multiplicative (ZMod ℓ)) n).trans MulEquiv.prodComm).symm
+    intro d
+    refine IsScholzRealizable.of_mulEquiv ?_
+      ((ih fun i => d i.succ).prod_cyclic_pow hℓ (d 0))
+    exact ((piFinSuccMulEquiv fun i => Multiplicative (ZMod (ℓ ^ d i))).trans
+      MulEquiv.prodComm).symm
+
+/-- **A product of cyclic `ℓ`-groups indexed by any finite type is realised**, at every level. -/
+theorem isScholzRealizable_pi (hℓ : ℓ.Prime) (N : ℕ) {ι : Type*} [Finite ι] (d : ι → ℕ) :
+    IsScholzRealizable (∀ i, Multiplicative (ZMod (ℓ ^ d i))) ℓ N := by
+  obtain ⟨n, ⟨φ⟩⟩ := Finite.exists_equiv_fin ι
+  exact (isScholzRealizable_piFin hℓ N n fun j => d (φ.symm j)).of_mulEquiv
+    (piCongrLeftMulEquiv (fun i => Multiplicative (ZMod (ℓ ^ d i))) φ).symm
+
+/-- **Every finite abelian `ℓ`-group is realised**, at every level `N`.  By the structure theorem
+it is a product of cyclic groups, each of order dividing the order of the group and hence a power
+of `ℓ`, and each such product is realised by iterating the split step. -/
+theorem isScholzRealizable_of_isPGroup_of_commGroup (hℓ : ℓ.Prime) (N : ℕ) (G : Type*)
+    [CommGroup G] [Finite G] (hG : IsPGroup ℓ G) : IsScholzRealizable G ℓ N := by
+  haveI : Fact ℓ.Prime := ⟨hℓ⟩
+  obtain ⟨k, hk⟩ := IsPGroup.iff_card.mp hG
+  obtain ⟨ι, hι, n, hn, ⟨eG⟩⟩ := CommGroup.equiv_prod_multiplicative_zmod_of_finite G
+  -- each cyclic factor has order dividing the order of the group, hence a power of `ℓ`
+  have hprod : ∏ i, n i = ℓ ^ k := by
+    rw [← hk, Nat.card_congr eG.toEquiv, Nat.card_pi]
+    exact Finset.prod_congr rfl fun i _ => by
+      haveI : NeZero (n i) := ⟨by have := hn i; omega⟩
+      simp
+  have hdvd : ∀ i, ∃ j, n i = ℓ ^ j := by
+    intro i
+    obtain ⟨j, -, hj⟩ := (Nat.dvd_prime_pow hℓ).mp
+      (hprod ▸ Finset.dvd_prod_of_mem n (Finset.mem_univ i))
+    exact ⟨j, hj⟩
+  choose j hj using hdvd
+  obtain rfl : n = fun i => ℓ ^ j i := funext hj
+  exact (isScholzRealizable_pi hℓ N j).of_mulEquiv eG.symm
 
 end InverseGalois.CFT

@@ -36,6 +36,8 @@ import InverseGalois.CFT.Compositum
 import InverseGalois.CFT.Cyclotomic.BuildingBlock
 import InverseGalois.CFT.Cyclotomic.Chebotarev
 import InverseGalois.CFT.Cyclotomic.CyclicSubfield
+import InverseGalois.CFT.Cyclotomic.CyclotomicInertiaDeg
+import InverseGalois.CFT.Cyclotomic.DivisorSubfield
 import InverseGalois.CFT.Cyclotomic.Frobenius
 import InverseGalois.CFT.Cyclotomic.FrobeniusSplitting
 import InverseGalois.CFT.Cyclotomic.InertiaOrder
@@ -123,6 +125,7 @@ import InverseGalois.CFT.Local.RamifiedNormForm
 import InverseGalois.CFT.Local.UnramifiedNormForm
 import InverseGalois.CFT.ScalarSemidirect
 import InverseGalois.CFT.Scholz.Condition
+import InverseGalois.CFT.Scholz.Induction
 import InverseGalois.CFT.Scholz.PrimeChoice
 import InverseGalois.CFT.Scholz.Realization
 import InverseGalois.CFT.Scholz.Selector
@@ -243,10 +246,18 @@ it that are available here.
   realises `G × C_ℓ` and again satisfies `(S_N)`.
 * `InverseGalois.CFT.Scholz.PrimeChoice` shows that the primes at which the induction may branch
   are infinite in number: they are the primes splitting completely in the selector field.
+* `InverseGalois.CFT.Cyclotomic.DivisorSubfield` produces, for each divisor `d` of `q - 1`, the
+  cyclic subfield of degree `d` of the cyclotomic field of prime conductor `q`, together with its
+  splitting law and its unramifiedness away from `q`.
+* `InverseGalois.CFT.Cyclotomic.CyclotomicInertiaDeg` records that the conductor has residue degree
+  one in every subfield of a cyclotomic field of prime conductor.
 * `InverseGalois.CFT.Scholz.SplitStep` performs one split step concretely, producing the field, its
   Galois group as a product, its degree and its ramified primes.
 * `InverseGalois.CFT.Scholz.Realization` bundles a field realising a group and satisfying `(S_N)`,
-  and iterates the split step to realise every elementary abelian `ℓ`-group at every level.
+  and iterates the split step to realise every finite abelian `ℓ`-group at every level.
+* `InverseGalois.CFT.Scholz.Induction` isolates the central embedding step of the induction as a
+  single named property, and carries out the rest of the induction from it: granted that step,
+  every finite `ℓ`-group is a Galois group over `ℚ`.
 
 ## Group extensions and the Brauer group
 

@@ -8,19 +8,19 @@ import InverseGalois.NumberTheory.SplitSubfield
 # The primes at which the Scholz–Reichardt induction branches
 
 Each step of the Scholz–Reichardt induction enlarges the field realising a group by a cyclic
-extension of degree `ℓ` ramified at a single new prime `q`, and the whole construction hinges on
-choosing that prime well.  Three conditions are required of it: `q` must split completely in the
-field already built, so that the two fields are linearly disjoint and the old ramified primes stay
-unramified; `ℓ ^ N` must divide `q - 1`, so that the new field has level `N`; and every prime
-ramified in the old field must be an `ℓ`-th power modulo `q`, so that those primes split
+extension of degree `ℓ ^ e` ramified at a single new prime `q`, and the whole construction hinges
+on choosing that prime well.  Three conditions are required of it: `q` must split completely in
+the field already built, so that the two fields are linearly disjoint and the old ramified primes
+stay unramified; `ℓ ^ N` must divide `q - 1`, so that the new field has level `N`; and every prime
+ramified in the old field must be an `ℓ ^ e`-th power modulo `q`, so that those primes split
 completely in the new field.
 
 All three are conditions on the splitting of `q` in one auxiliary Galois number field, the
 selector field of `InverseGalois.CFT.Scholz.Selector`: it contains the old field, a primitive
-`ℓ ^ N`-th root of unity, and an `ℓ`-th root of each old ramified prime.  A prime splitting
+`ℓ ^ N`-th root of unity, and an `ℓ ^ e`-th root of each old ramified prime.  A prime splitting
 completely in the selector field splits completely in the old field; reduction modulo it carries
 the root of unity to an element of order `ℓ ^ N` in a group of order `q - 1`; and it carries the
-radicals to `ℓ`-th roots modulo `q`.  Since infinitely many primes split completely in a Galois
+radicals to `ℓ ^ e`-th roots modulo `q`.  Since infinitely many primes split completely in a Galois
 number field, infinitely many primes have all three properties.
 
 ## Main results
@@ -31,7 +31,7 @@ number field, infinitely many primes have all three properties.
   exponent `(q - 1) / ℓ`.
 * `InverseGalois.CFT.infinite_setOf_scholzPrime`: **infinitely many primes split completely in a
   prescribed number field, are congruent to one modulo `ℓ ^ N`, and have a prescribed finite set
-  of primes among their `ℓ`-th power residues.**
+  of primes among their `ℓ ^ e`-th power residues.**
 -/
 
 open NumberField InverseGalois.NumberTheory
@@ -74,18 +74,18 @@ theorem pow_div_eq_one_of_exists_pow_eq {q ℓ : ℕ} (hq : q.Prime) (hdvd : ℓ
 /-! ### The choice of the branching prime -/
 
 /-- **The primes the Scholz–Reichardt induction may branch at are infinite in number.**  Given a
-number field `L`, a prime `ℓ`, an exponent `N` and a finite set `S` of primes, infinitely many
-primes `q` split completely in `L`, satisfy `ℓ ^ N ∣ q - 1`, and have every element of `S` among
-their `ℓ`-th power residues.  All three properties are read off from the splitting of `q` in the
-selector field of `L`, `ℓ ^ N`, `ℓ` and `S`. -/
+number field `L`, a prime `ℓ`, exponents `N` and `e` and a finite set `S` of primes, infinitely
+many primes `q` split completely in `L`, satisfy `ℓ ^ N ∣ q - 1`, and have every element of `S`
+among their `ℓ ^ e`-th power residues.  All three properties are read off from the splitting of
+`q` in the selector field of `L`, `ℓ ^ N`, `ℓ ^ e` and `S`. -/
 theorem infinite_setOf_scholzPrime (L : Type*) [Field L] [NumberField L] {ℓ : ℕ} (hℓ : ℓ.Prime)
-    (N : ℕ) (S : Finset ℕ) :
+    (N e : ℕ) (S : Finset ℕ) :
     {q : ℕ | q.Prime ∧ SplitsCompletely L q ∧ ℓ ^ N ∣ q - 1 ∧
-      ∀ p ∈ S, ∃ y : ZMod q, y ^ ℓ = (p : ZMod q)}.Infinite := by
+      ∀ p ∈ S, ∃ y : ZMod q, y ^ ℓ ^ e = (p : ZMod q)}.Infinite := by
   have hm : ℓ ^ N ≠ 0 := pow_ne_zero _ hℓ.ne_zero
-  have hk : ℓ ≠ 0 := hℓ.ne_zero
+  have hk : ℓ ^ e ≠ 0 := pow_ne_zero _ hℓ.ne_zero
   refine Set.Infinite.mono ?_
-    ((infinite_setOf_prime_splitsCompletely (K := ↥(selectorField L (ℓ ^ N) ℓ S))).diff
+    ((infinite_setOf_prime_splitsCompletely (K := ↥(selectorField L (ℓ ^ N) (ℓ ^ e) S))).diff
       (Set.finite_singleton ℓ))
   rintro q ⟨⟨hq, hsplit⟩, hqℓ⟩
   haveI : Fact q.Prime := ⟨hq⟩
@@ -94,32 +94,32 @@ theorem infinite_setOf_scholzPrime (L : Type*) [Field L] [NumberField L] {ℓ : 
     hqne ((Nat.prime_dvd_prime_iff_eq hq hℓ).mp (hq.dvd_of_dvd_pow h))
   refine ⟨hq, ?_, ?_, ?_⟩
   · exact splitsCompletely_of_algHom
-      (nonempty_algHom_selectorField L (ℓ ^ N) ℓ S hm hk).some hq hsplit
-  · obtain ⟨ζ, hζ⟩ := exists_isPrimitiveRoot_selectorField L (ℓ ^ N) ℓ S hm hk
+      (nonempty_algHom_selectorField L (ℓ ^ N) (ℓ ^ e) S hm hk).some hq hsplit
+  · obtain ⟨ζ, hζ⟩ := exists_isPrimitiveRoot_selectorField L (ℓ ^ N) (ℓ ^ e) S hm hk
     obtain ⟨ξ, hξ⟩ := exists_isPrimitiveRoot_ringOfIntegers hm hζ
     exact dvd_sub_one_of_isPrimitiveRoot_of_splitsCompletely _ q hsplit hξ hnd
   · intro p hp
-    obtain ⟨x, hx⟩ := exists_pow_eq_natCast_selectorField L (ℓ ^ N) ℓ S hm hk hp
-    obtain ⟨y, hy⟩ := exists_pow_eq_of_splitsCompletely_of_mem_field _ q hsplit ℓ (p : ℤ)
+    obtain ⟨x, hx⟩ := exists_pow_eq_natCast_selectorField L (ℓ ^ N) (ℓ ^ e) S hm hk hp
+    obtain ⟨y, hy⟩ := exists_pow_eq_of_splitsCompletely_of_mem_field _ q hsplit (ℓ ^ e) (p : ℤ)
       ⟨x, by push_cast; exact hx⟩
     exact ⟨y, by push_cast at hy; exact hy⟩
 
 /-- **A branching prime for the field itself.**  Specialising the previous theorem to the finite
 set of primes ramified in `L`, and discarding the finitely many primes that ramify in `L`, gives a
-prime `q` unramified in `L`, split completely there, congruent to one modulo both `ℓ` and `ℓ ^ N`,
-and having every prime ramified in `L` among its `ℓ`-th power residues. -/
+prime `q` unramified in `L`, split completely there, congruent to one modulo both `ℓ ^ e` and
+`ℓ ^ N`, and having every prime ramified in `L` among its `ℓ ^ e`-th power residues. -/
 theorem exists_scholzPrime_notMem (L : Type*) [Field L] [NumberField L] {ℓ : ℕ} (hℓ : ℓ.Prime)
-    (N : ℕ) :
-    ∃ q : ℕ, q.Prime ∧ q ∉ ramifiedSet L ∧ SplitsCompletely L q ∧ ℓ ∣ q - 1 ∧ ℓ ^ N ∣ q - 1 ∧
-      ∀ p ∈ ramifiedSet L, ∃ y : ZMod q, y ^ ℓ = (p : ZMod q) := by
+    (N e : ℕ) :
+    ∃ q : ℕ, q.Prime ∧ q ∉ ramifiedSet L ∧ SplitsCompletely L q ∧ ℓ ^ e ∣ q - 1 ∧
+      ℓ ^ N ∣ q - 1 ∧ ∀ p ∈ ramifiedSet L, ∃ y : ZMod q, y ^ ℓ ^ e = (p : ZMod q) := by
   set S := (finite_ramifiedSet L).toFinset with hS
   obtain ⟨q, ⟨hqp, hqsplit, hqdvd, hqres⟩, hqS⟩ :=
-    ((infinite_setOf_scholzPrime L hℓ (max N 1) S).diff S.finite_toSet).nonempty
+    ((infinite_setOf_scholzPrime L hℓ (max N e) e S).diff S.finite_toSet).nonempty
   have hnot : q ∉ ramifiedSet L := by
     intro hc
     exact hqS (by rw [hS, Set.Finite.coe_toFinset]; exact hc)
-  refine ⟨q, hqp, hnot, hqsplit, ?_, (pow_dvd_pow ℓ (le_max_left N 1)).trans hqdvd, ?_⟩
-  · exact ((pow_one ℓ) ▸ pow_dvd_pow ℓ (le_max_right N 1)).trans hqdvd
-  · exact fun p hp => hqres p (by rw [hS, Set.Finite.mem_toFinset]; exact hp)
+  refine ⟨q, hqp, hnot, hqsplit, (pow_dvd_pow ℓ (le_max_right N e)).trans hqdvd,
+    (pow_dvd_pow ℓ (le_max_left N e)).trans hqdvd, ?_⟩
+  exact fun p hp => hqres p (by rw [hS, Set.Finite.mem_toFinset]; exact hp)
 
 end InverseGalois.CFT
