@@ -93,6 +93,7 @@ import InverseGalois.CFT.Global.ThreeSquaresOdd
 import InverseGalois.CFT.Global.ThreeSquaresTwo
 import InverseGalois.CFT.Global.TwoGenerators
 import InverseGalois.CFT.Herbrand
+import InverseGalois.CFT.InertiaAbelian
 import InverseGalois.CFT.InertiaGeneration
 import InverseGalois.CFT.InertiaRestrict
 import InverseGalois.CFT.Level
@@ -116,6 +117,7 @@ import InverseGalois.CFT.Local.PadicSquares
 import InverseGalois.CFT.Local.PadicSquaresTwo
 import InverseGalois.CFT.Local.RamifiedNormForm
 import InverseGalois.CFT.Local.UnramifiedNormForm
+import InverseGalois.CFT.ScalarSemidirect
 import InverseGalois.CFT.SquareClasses
 import InverseGalois.CFT.SubgroupCounting
 import InverseGalois.CFT.Unramified
@@ -155,8 +157,14 @@ it that are available here.
   a Galois number field generate its whole Galois group, the group-theoretic form of Minkowski's
   theorem, and records how inertia transforms under the Galois action and under passage to a
   subgroup.
+* `InverseGalois.CFT.InertiaAbelian` combines the two: in an abelian extension all the primes above
+  a rational prime share an inertia subgroup, so the degree of the field is bounded by the product
+  of the ramification indices of the ramified rational primes.
 * `InverseGalois.CFT.InertiaRestrict` restricts inertia to a subfield, and deduces that a prime
   dividing the order of inertia in a compositum already divides it in one of the two factors.
+* `InverseGalois.CFT.ScalarSemidirect` proves Serre's disjointness lemma in group-theoretic form:
+  the semidirect product of `(ℤ/ℓ)ˢ` by the scalar action of `(ℤ/ℓ)ˣ` has abelianization of order
+  `ℓ - 1`, hence no quotient of order `ℓ` when `ℓ` is odd.
 * `InverseGalois.CFT.Cyclotomic.InertiaOrder` computes the order of inertia at a rational prime
   `p` in `ℚ(ζₙ)` as `φ (p ^ k)`, `p ^ k` the exact power of `p` dividing `n`, and multiplies these
   local orders back up to the global degree `φ n`.
