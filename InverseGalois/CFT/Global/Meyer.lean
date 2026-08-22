@@ -39,6 +39,8 @@ isotropic exactly when it is indefinite.
   nonvanishing coefficients represents every `p`-adic number.
 * `InverseGalois.CFT.isMatIsotropic_padic`: the same isotropy statement for a form presented by an
   arbitrary symmetric `p`-adic matrix.
+* `InverseGalois.CFT.not_isDiagIsotropic_one_rat`: over the rational field itself there is no such
+  bound, a sum of squares in any number of variables being anisotropic.
 -/
 
 namespace InverseGalois.CFT.Local
@@ -184,6 +186,17 @@ theorem isMatIsotropic_rat_iff_real {n : ℕ} (hn : 5 ≤ n) {M : Matrix (Fin n)
       IsDiagIsotropic fun i => ((d i : ℚ) : ℚ_[q]) := by
     simpa [Rat.coe_castHom] using isMatIsotropic_map_iff (Rat.castHom ℚ_[q]) hP hPd
   exact key.mpr (isDiagIsotropic_padic hn _)
+
+/-- **There is no bound on the number of variables of an anisotropic rational form.**  A sum of
+squares vanishes only at the origin, so the `u`-invariant of the rational field is infinite, in
+contrast with the value four at every finite place. -/
+theorem not_isDiagIsotropic_one_rat {n : ℕ} : ¬ IsDiagIsotropic (fun _ : Fin n => (1 : ℚ)) := by
+  rintro ⟨x, hx, hsum⟩
+  simp only [one_mul] at hsum
+  refine hx (funext fun i => ?_)
+  have hnn : ∀ i ∈ Finset.univ, (0 : ℚ) ≤ x i ^ 2 := fun i _ => sq_nonneg (x i)
+  have hzero := (Finset.sum_eq_zero_iff_of_nonneg hnn).mp hsum i (Finset.mem_univ i)
+  exact pow_eq_zero_iff (n := 2) (by norm_num) |>.mp hzero
 
 /-- **A `p`-adic diagonal form in at least five variables is universal.**  If none of its
 coefficients vanishes it represents every `p`-adic number. -/

@@ -279,6 +279,8 @@ The existence theorem is now in the tree, in `Global/Existence.lean` (disjoint s
   another value `B`. If `B = 0` then the whole vector is zero, since a nonsquare is not a ratio of
   squares; and otherwise `A` and `B` both have even valuation by
   `Local/UnramifiedNormForm.lean`, while `A = p B` forces the parities to differ.
+  Over `ℚ` itself no such bound exists — a sum of squares in any number of variables is
+  anisotropic — so the contrast between the global and the local `u`-invariant is recorded too.
 
 Serre's chapter on the Hasse–Minkowski theorem is therefore complete, in full generality: the
 diagonalisation step is supplied rather than assumed, and so is the dyadic count. None of this touches the two blockers of
