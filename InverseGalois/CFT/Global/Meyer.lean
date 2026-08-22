@@ -2,6 +2,8 @@ import Mathlib
 import InverseGalois.CFT.Local.DyadicQuaternary
 import InverseGalois.CFT.Global.DiagScale
 import InverseGalois.CFT.Global.DiagRepr
+import InverseGalois.CFT.Global.MatHasse
+import InverseGalois.CFT.Global.OddQuinary
 import InverseGalois.CFT.Global.RealSigns
 
 /-!
@@ -24,6 +26,11 @@ isotropic exactly when it is indefinite.
 * `InverseGalois.CFT.isDiagIsotropic_rat_iff_indefinite`: **Meyer's theorem**, a diagonal rational form in at
   least five variables is isotropic exactly when its coefficients are not all of one sign.
 * `InverseGalois.CFT.exists_repr_rat_of_signs`: the representation form of the same statement.
+* `InverseGalois.CFT.Local.isDiagIsotropic_padic`: the same at every finite place, so the
+  `u`-invariant of a field of `p`-adic numbers is at most four.
+* `InverseGalois.CFT.isMatIsotropic_rat_iff_real`: Meyer's theorem for a form presented by an
+  arbitrary symmetric rational matrix — such a form in at least five variables has a rational
+  zero exactly when it has a real one.
 -/
 
 namespace InverseGalois.CFT.Local
@@ -112,6 +119,14 @@ theorem isDiagIsotropic_two {n : ℕ} (hn : 5 ≤ n) (a : Fin n → ℚ_[2]) : I
     have hval := congrArg Fin.val hij
     exact Fin.val_injective hval
 
+/-- **The `u`-invariant of a field of `p`-adic numbers is at most four.**  A diagonal form in at
+least five variables is isotropic at every finite place. -/
+theorem isDiagIsotropic_padic {p : ℕ} [Fact p.Prime] {n : ℕ} (hn : 5 ≤ n) (a : Fin n → ℚ_[p]) :
+    IsDiagIsotropic a := by
+  rcases eq_or_ne p 2 with rfl | hne
+  · exact isDiagIsotropic_two hn a
+  · exact isDiagIsotropic_padic_of_odd hne hn a
+
 end InverseGalois.CFT.Local
 
 namespace InverseGalois.CFT
@@ -135,5 +150,22 @@ theorem exists_repr_rat_of_signs {n : ℕ} (hn : 5 ≤ n) {a : Fin n → ℚ} (h
   have h2 : (2 : ℚ_[2]) ≠ 0 := by norm_num
   have haq : ∀ i, ((a i : ℚ_[2])) ≠ 0 := fun i => by exact_mod_cast ha i
   exact exists_repr_of_isDiagIsotropic h2 haq (isDiagIsotropic_two hn _) _
+
+/-- **Meyer's theorem for an arbitrary rational quadratic form.**  A form presented by a symmetric
+rational matrix in at least five variables has a nontrivial rational zero exactly when it has a
+nontrivial real one. -/
+theorem isMatIsotropic_rat_iff_real {n : ℕ} (hn : 5 ≤ n) {M : Matrix (Fin n) (Fin n) ℚ}
+    (hM : M.IsSymm) :
+    IsMatIsotropic M ↔ IsMatIsotropic (M.map fun q : ℚ => (q : ℝ)) := by
+  haveI : Invertible (2 : ℚ) := invertibleOfNonzero (by norm_num)
+  obtain ⟨P, d, hP, hPd⟩ := exists_transpose_mul_mul_eq_diagonal hM
+  rw [isMatIsotropic_rat_iff hM]
+  refine and_iff_right fun p => ?_
+  obtain ⟨q, hq⟩ := p
+  haveI : Fact q.Prime := ⟨hq⟩
+  have key : IsMatIsotropic (M.map fun r : ℚ => (r : ℚ_[q])) ↔
+      IsDiagIsotropic fun i => ((d i : ℚ) : ℚ_[q]) := by
+    simpa [Rat.coe_castHom] using isMatIsotropic_map_iff (Rat.castHom ℚ_[q]) hP hPd
+  exact key.mpr (isDiagIsotropic_padic hn _)
 
 end InverseGalois.CFT

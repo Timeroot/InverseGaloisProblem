@@ -210,6 +210,7 @@ proves it directly.
 | isotropy is invariant under rescaling coefficients by squares or by a common scalar; dyadic square-class normalisation | `CFT/Global/DiagScale.lean` |
 | **`u(ℚ₂) ≤ 4`**: every diagonal form over `ℚ₂` in ≥ 5 variables is isotropic | `CFT/Global/Meyer.lean` |
 | **Meyer's theorem**: a diagonal rational form in ≥ 5 variables is isotropic iff it is indefinite, and then represents everything the real place allows | `CFT/Global/Meyer.lean` |
+| `u(ℚ_p) ≤ 4` at **every** finite place, and Meyer's theorem for an arbitrary symmetric rational matrix: rational zero iff real zero | `CFT/Global/Meyer.lean` |
 
 All sorry-free and axiom-free. See `docs/Development/ClassFieldTheory.md` for the full map of the
 layer, the proof architecture of the descent, and why it is not circular with reciprocity.

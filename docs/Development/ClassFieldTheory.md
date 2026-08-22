@@ -258,6 +258,10 @@ The existence theorem is now in the tree, in `Global/Existence.lean` (disjoint s
   is the statement declared out of reach above. With the odd places and the real place this is
   **Meyer's theorem**: a diagonal rational form in at least five variables is isotropic exactly
   when it is indefinite, and such a form represents every rational number the real place allows.
+  Since the odd places were already known, the same file records `u(ℚ_p) ≤ 4` at *every* finite
+  place, and — combining with the diagonalisation of `MatHasse.lean` — Meyer's theorem for a form
+  presented by an arbitrary symmetric rational matrix: in at least five variables it has a
+  nontrivial rational zero exactly when it has a nontrivial real one.
 
 Serre's chapter on the Hasse–Minkowski theorem is therefore complete, in full generality: the
 diagonalisation step is supplied rather than assumed, and so is the dyadic count. None of this touches the two blockers of
