@@ -6,6 +6,7 @@ import InverseGalois.Solvable.WreathRecognition
 import InverseGalois.Solvable.Semiabelian
 import InverseGalois.Solvable.SemiabelianProduct
 import InverseGalois.Solvable.Metacyclic
+import InverseGalois.Solvable.SemiabelianCriterion
 import InverseGalois.Solvable.WreathCyclic
 import InverseGalois.Solvable.Shafarevich
 
@@ -40,6 +41,9 @@ free of arithmetic input and applicable to both realization predicates of the de
   of its Sylow subgroups is.
 * `InverseGalois.Solvable.Metacyclic` shows that a finite group with a cyclic normal subgroup of
   cyclic quotient is semiabelian, and applies it to the generalized quaternion groups.
+* `InverseGalois.Solvable.SemiabelianCriterion` shows that a group covered by a semidirect
+  product of an abelian group by a semiabelian one is semiabelian, and deduces that a finite group
+  with a normal abelian subgroup of cyclic quotient is semiabelian.
 * `InverseGalois.Solvable.WreathCyclic` splits the bottom group of a wreath product into cyclic
   factors, so that the realization of wreath products only has to be established when the bottom
   group is finite cyclic.

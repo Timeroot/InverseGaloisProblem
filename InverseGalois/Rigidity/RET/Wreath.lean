@@ -2,6 +2,7 @@
 Copyright (c) 2025. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
+import InverseGalois.Rigidity.RET.Wreath.AbelianByCyclic
 import InverseGalois.Rigidity.RET.Wreath.CompositumDegree
 import InverseGalois.Rigidity.RET.Wreath.ConjPrimitive
 import InverseGalois.Rigidity.RET.Wreath.ConjSep
