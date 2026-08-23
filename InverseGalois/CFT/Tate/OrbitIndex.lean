@@ -53,6 +53,13 @@ noncomputable def orbitOut (ω : orbitRel.Quotient G X) : ω.orbit :=
 @[simp]
 theorem coe_orbitOut (ω : orbitRel.Quotient G X) : (orbitOut ω : X) = ω.out := rfl
 
+/-- An orbit of a finite group is finite. -/
+instance finite_orbitRel_quotient_orbit [Finite G] (ω : orbitRel.Quotient G X) :
+    Finite ω.orbit := by
+  have h : ω.orbit = orbit G ω.out := orbitRel.Quotient.orbit_eq_orbit_out ω Quotient.out_eq'
+  rw [h]
+  exact (Finite.finite_mulAction_orbit ω.out).to_subtype
+
 end OrbitOut
 
 section OrbitIndex

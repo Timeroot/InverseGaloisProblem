@@ -186,6 +186,7 @@ import InverseGalois.CFT.Tate.FamilyOrbit
 import InverseGalois.CFT.Tate.FamilyOrbits
 import InverseGalois.CFT.Tate.FamilyReindex
 import InverseGalois.CFT.Tate.FamilyRestrict
+import InverseGalois.CFT.Tate.FamilyRestrictOrbit
 import InverseGalois.CFT.Tate.FamilyRing
 import InverseGalois.CFT.Tate.FamilySigma
 import InverseGalois.CFT.Tate.Fibers
@@ -205,6 +206,7 @@ import InverseGalois.CFT.Tate.Orbit
 import InverseGalois.CFT.Tate.OrbitCocycle
 import InverseGalois.CFT.Tate.OrbitIndex
 import InverseGalois.CFT.Tate.OrbitInduced
+import InverseGalois.CFT.Tate.OrbitRange
 import InverseGalois.CFT.Tate.OrbitTwist
 import InverseGalois.CFT.Tate.PermLattice
 import InverseGalois.CFT.Tate.Permutation
@@ -219,7 +221,9 @@ import InverseGalois.CFT.Tate.Restrict
 import InverseGalois.CFT.Tate.Shapiro
 import InverseGalois.CFT.Tate.Surjection
 import InverseGalois.CFT.Tate.Trivial
+import InverseGalois.CFT.Units.AdicIdeleHerbrand
 import InverseGalois.CFT.Units.AdicOrbit
+import InverseGalois.CFT.Units.AdicSIdeles
 import InverseGalois.CFT.Units.ArchimedeanIdeles
 import InverseGalois.CFT.Units.EquivariantLabel
 import InverseGalois.CFT.Units.GaloisAction
@@ -692,6 +696,11 @@ it that are available here.
   carried onto one another by the transports.  The ideles that are units outside a finite set of
   places are the sections of such a restriction, the subgroup at a place being the whole local
   factor inside the set and the units of the valuation ring outside it.
+* `InverseGalois.CFT.Tate.FamilyRestrictOrbit` computes the contribution of one orbit to such a
+  restriction.  The stabiliser of a point of the orbit acts on the subgroup there by the restriction
+  of its action on the ambient module, so an orbit where the subgroup is everything contributes what
+  it contributes to the ambient family, and an orbit where the action on the subgroup is a known one
+  with vanishing Tate groups contributes nothing.
 * `InverseGalois.CFT.Tate.FamilySigma` splits the sections of a family whose index set is a
   disjoint union of pieces each carried into itself by the group: they are the product over the
   pieces of the sections over each piece.  Over finitely many pieces the Herbrand quotients
@@ -723,6 +732,11 @@ it that are available here.
   quotient by the orbit relation with the target of the map, and any invariant quantity — the order
   of a stabiliser, for instance — has the same product over either index set.  So a product over the
   orbits of the places of an extension is a product over the places of the base field.
+* `InverseGalois.CFT.Tate.OrbitRange` reconciles them the other way round, when the orbits that
+  matter are named by an abstract set mapped equivariantly and injectively into the index set.  Such
+  a map induces an injection on orbits whose image is the orbits meeting the range, and it preserves
+  stabilisers, so the two ways of naming the chosen places give the same product of the orders of
+  the decomposition groups.
 * `InverseGalois.CFT.Tate.InfinitePlaces` applies that to the infinite places of a Galois extension
   of number fields, which the Galois group permutes with the places of the base field as the set of
   orbits: the Herbrand quotient of the free lattice they span is the product of the orders of the
@@ -838,6 +852,17 @@ it that are available here.
   archimedean part of the group of ideles has Herbrand quotient the product of the orders of the
   decomposition groups: the same as the free lattice on the infinite places, which is the shape of
   the unit lattice.  The two will cancel in the idele class group.
+* `InverseGalois.CFT.Units.AdicSIdeles` cuts the finite part of the ideles down to those that are
+  units outside a set of places.  The local subgroup is the whole group of units of the completion
+  at a place of the set and the units of the valuation ring elsewhere; the Galois transports are
+  isometries, so those subgroups form an invariant family, and an orbit above a place of the set
+  contributes the order of the decomposition group while an unramified orbit outside it contributes
+  nothing.
+* `InverseGalois.CFT.Units.AdicIdeleHerbrand` multiplies the finite local factors together.  When
+  the chosen places are the range of an equivariant injection from a finite index set and every
+  other place is unramified, the ideles that are units outside them have Herbrand quotient the
+  product over the orbits of the index set of the orders of the decomposition groups: the same
+  factor that appears in the Herbrand quotient of the `S`-units.
 * `InverseGalois.CFT.Local.UnitFiltration` sets up the two filtrations of a valued field: the
   additive one by the elements of small valuation, and the multiplicative one by the units
   congruent to one.  Subtracting one identifies a step of the unit filtration with the
