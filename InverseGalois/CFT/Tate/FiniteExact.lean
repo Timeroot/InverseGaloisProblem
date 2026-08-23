@@ -37,6 +37,8 @@ on both sides.
   `InverseGalois.CFT.TateSES.finite_tateH0_sub`, `InverseGalois.CFT.TateSES.finite_tateHm1_sub`:
   **finiteness of the Tate groups transports across a short exact sequence with finite quotient
   term**, in both directions.
+* `InverseGalois.CFT.TateSES.finite_tateH0_mid'` and its three companions: the same transport
+  assuming only that the Tate groups of the quotient term are finite.
 * `InverseGalois.CFT.finite_tateH0_of_injective` and its three companions: the same statements for
   an equivariant injection with finite cokernel.
 * `InverseGalois.CFT.herbrand_eq_of_injective_of_finite_quotient_of_finite_source` and its three
@@ -95,6 +97,30 @@ theorem finite_tateH0_sub [Finite C] [Finite (tateH0 S.σB n)] : Finite (tateH0 
 /-- **Finiteness of `Ĥ⁻¹` passes from the total object to the subobject** across a short exact
 sequence whose quotient term is finite. -/
 theorem finite_tateHm1_sub [Finite C] [Finite (tateHm1 S.σB n)] : Finite (tateHm1 S.σA n) :=
+  finite_of_exact S.delta0 S.alpha1 S.range_delta0_eq_ker_alpha1
+
+/-- **Finiteness of `Ĥ⁰` passes from the subobject to the total object** across a short exact
+sequence whose quotient term has finite Tate groups. -/
+theorem finite_tateH0_mid' [Finite (tateH0 S.σC n)] [Finite (tateH0 S.σA n)] :
+    Finite (tateH0 S.σB n) :=
+  finite_of_exact S.alpha0 S.beta0 S.range_alpha0_eq_ker_beta0
+
+/-- **Finiteness of `Ĥ⁻¹` passes from the subobject to the total object** across a short exact
+sequence whose quotient term has finite Tate groups. -/
+theorem finite_tateHm1_mid' [Finite (tateHm1 S.σC n)] [Finite (tateHm1 S.σA n)] :
+    Finite (tateHm1 S.σB n) :=
+  finite_of_exact S.alpha1 S.beta1 S.range_alpha1_eq_ker_beta1
+
+/-- **Finiteness of `Ĥ⁰` passes from the total object to the subobject** across a short exact
+sequence whose quotient term has finite Tate groups. -/
+theorem finite_tateH0_sub' [Finite (tateHm1 S.σC n)] [Finite (tateH0 S.σB n)] :
+    Finite (tateH0 S.σA n) :=
+  finite_of_exact S.delta1 S.alpha0 S.range_delta1_eq_ker_alpha0
+
+/-- **Finiteness of `Ĥ⁻¹` passes from the total object to the subobject** across a short exact
+sequence whose quotient term has finite Tate groups. -/
+theorem finite_tateHm1_sub' [Finite (tateH0 S.σC n)] [Finite (tateHm1 S.σB n)] :
+    Finite (tateHm1 S.σA n) :=
   finite_of_exact S.delta0 S.alpha1 S.range_delta0_eq_ker_alpha1
 
 end TateSES

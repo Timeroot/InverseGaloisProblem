@@ -105,6 +105,7 @@ import InverseGalois.CFT.InertiaSubgroup
 import InverseGalois.CFT.KroneckerWeber
 import InverseGalois.CFT.Level
 import InverseGalois.CFT.Local.AdicAction
+import InverseGalois.CFT.Local.AdicResidue
 import InverseGalois.CFT.Local.AdicUnits
 import InverseGalois.CFT.Local.DyadicAnisotropic
 import InverseGalois.CFT.Local.DyadicHilbert
@@ -119,11 +120,14 @@ import InverseGalois.CFT.Local.ExpEquiv
 import InverseGalois.CFT.Local.ExpSurjective
 import InverseGalois.CFT.Local.FiltrationAction
 import InverseGalois.CFT.Local.FiltrationFinite
+import InverseGalois.CFT.Local.FiltrationHerbrand
+import InverseGalois.CFT.Local.GradedFinite
 import InverseGalois.CFT.Local.HilbertIdentities
 import InverseGalois.CFT.Local.HilbertMap
 import InverseGalois.CFT.Local.HilbertMul
 import InverseGalois.CFT.Local.HilbertSymbol
 import InverseGalois.CFT.Local.LegendreHilbert
+import InverseGalois.CFT.Local.NormalLattice
 import InverseGalois.CFT.Local.OddAnisotropic
 import InverseGalois.CFT.Local.PadicHilbert
 import InverseGalois.CFT.Local.PadicHilbertMul
@@ -132,7 +136,10 @@ import InverseGalois.CFT.Local.PadicSquares
 import InverseGalois.CFT.Local.NatValuation
 import InverseGalois.CFT.Local.PadicSquaresTwo
 import InverseGalois.CFT.Local.RamifiedNormForm
+import InverseGalois.CFT.Local.TraceIntegral
 import InverseGalois.CFT.Local.UnitFiltration
+import InverseGalois.CFT.Local.UnitHerbrandChain
+import InverseGalois.CFT.Local.UnitIndex
 import InverseGalois.CFT.Local.UnitValuation
 import InverseGalois.CFT.Local.UnramifiedNormForm
 import InverseGalois.CFT.Local.ValuedTopology
@@ -164,6 +171,7 @@ import InverseGalois.CFT.Tate.BrauerRelative
 import InverseGalois.CFT.Tate.Commensurable
 import InverseGalois.CFT.Tate.Congr
 import InverseGalois.CFT.Tate.CyclicAction
+import InverseGalois.CFT.Tate.CyclicInduced
 import InverseGalois.CFT.Tate.Exact
 import InverseGalois.CFT.Tate.Fibers
 import InverseGalois.CFT.Tate.Finite
@@ -579,6 +587,10 @@ it that are available here.
   the trivial action, where the norm is the identity and both Tate groups vanish, and concludes
   that a module containing an equivariant copy of such a module with finite cokernel has finite
   Tate groups and Herbrand quotient one.
+* `InverseGalois.CFT.Tate.CyclicInduced` restates that conclusion for an abstract cyclic group:
+  choosing a generator identifies the functions on the group with the functions on the integers
+  modulo its order, and translating by the generator becomes the shift, so a module containing a
+  lattice of finite index on which the generator acts by translation has Herbrand quotient one.
 * `InverseGalois.CFT.Tate.Commensurable` reads that comparison for two lattices inside one abelian
   group, each carried into the other by multiplication by a nonzero integer: multiplication is then
   an equivariant injection of lattices of equal rank, so the two Herbrand quotients agree.
@@ -683,6 +695,10 @@ it that are available here.
   group to give the Herbrand quotient of the units of the field.
 * `InverseGalois.CFT.Local.AdicUnits` applies this to the completion of a number field at a prime,
   where the group is the decomposition group of the prime.
+* `InverseGalois.CFT.Local.AdicResidue` supplies the two finiteness inputs for such a completion:
+  the valuation of a uniformizer is already the value just below one, and the integers of the base
+  are dense enough in the valuation ring that the graded piece at zero is a quotient of the residue
+  field of the prime, hence finite.
 * `InverseGalois.CFT.Local.UnitFiltration` sets up the two filtrations of a valued field: the
   additive one by the elements of small valuation, and the multiplicative one by the units
   congruent to one.  Subtracting one identifies a step of the unit filtration with the
@@ -694,6 +710,27 @@ it that are available here.
 * `InverseGalois.CFT.Local.FiltrationFinite` deduces from the finiteness of every graded piece of
   the additive filtration that any two steps of either filtration are of finite relative index, the
   relative indices multiplying along a tower.
+* `InverseGalois.CFT.Local.GradedFinite` reduces that hypothesis to a single graded piece: once the
+  valuation takes the value just below one, multiplication by an element of that valuation shifts
+  the additive filtration by one step, so all the graded pieces are isomorphic and finiteness of
+  one of them gives finiteness of all.
+* `InverseGalois.CFT.Local.UnitIndex` compares the two filtrations at their tops: reducing a unit
+  of valuation one modulo the units congruent to one embeds the quotient of the unit group by a
+  step of the unit filtration into a graded piece, so that step is of finite index in the unit
+  group.
+* `InverseGalois.CFT.Local.FiltrationHerbrand` shows that the Herbrand quotient of a step of the
+  additive filtration does not depend on the step: consecutive steps are of finite index in one
+  another, so the inclusion is an equivariant injection with finite cokernel.
+* `InverseGalois.CFT.Local.TraceIntegral` records that a finite group acting faithfully by
+  isometries makes the field a Galois extension of the subfield it fixes, every automorphism over
+  which is again an isometry, so the trace of an element of the valuation ring lies in the
+  valuation ring of the fixed field.
+* `InverseGalois.CFT.Local.NormalLattice` uses the normal basis theorem to produce an element whose
+  orbit is a basis over the fixed field.  The integral combinations of the orbit form a lattice
+  inside a step of the additive filtration on which the group acts by translating the coefficients,
+  and expanding an element in the dual basis for the trace form expresses its coefficients as
+  traces, which are integral for a small enough element.  So the lattice contains a step of the
+  filtration, and a cyclic group gives every step Herbrand quotient one.
 * `InverseGalois.CFT.Local.ValuedTopology` records that a valued ring is nonarchimedean: every
   neighbourhood of zero contains an open, hence closed, subgroup.  So a step of the additive
   filtration contains every sum of its elements, and the valuation of an infinite sum is at most
@@ -714,6 +751,11 @@ it that are available here.
 * `InverseGalois.CFT.Local.ExpAction` makes that isomorphism equivariant: an isometric ring
   automorphism is continuous, hence commutes with infinite sums and with the exponential, so the
   two steps have the same Herbrand quotient.
+* `InverseGalois.CFT.Local.UnitHerbrandChain` assembles the chain for a complete field with finite
+  graded pieces: a deep enough step of the unit filtration inherits Herbrand quotient one from the
+  additive filtration through the exponential, it is of finite index in the units of the valuation
+  ring, and the valuation of a unit then gives the units of the field Herbrand quotient the order
+  of the group.
 * `InverseGalois.CFT.Local.PadicSquaresTwo` supplies the excluded prime: a dyadic unit is a square
   exactly when it is congruent to one modulo eight, and every nonzero dyadic number is a square
   times one of eight explicit representatives.
