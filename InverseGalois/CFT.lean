@@ -146,8 +146,11 @@ import InverseGalois.CFT.TameCharacter
 import InverseGalois.CFT.TameRamification
 import InverseGalois.CFT.Tate.Basic
 import InverseGalois.CFT.Tate.Exact
+import InverseGalois.CFT.Tate.Galois
+import InverseGalois.CFT.Tate.GaloisH0
 import InverseGalois.CFT.Tate.Herbrand
 import InverseGalois.CFT.Tate.Hexagon
+import InverseGalois.CFT.Tate.Mul
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
 
@@ -479,6 +482,16 @@ it that are available here.
 * `InverseGalois.CFT.Tate.Herbrand` defines the Herbrand quotient as the ratio of the orders of the
   two Tate groups, and shows it multiplicative in short exact sequences and trivial on finite
   modules, so that finite submodules and finite quotients may be discarded when computing it.
+* `InverseGalois.CFT.Tate.Mul` translates the formalism to a multiplicatively written module, where
+  the two operators are `x ↦ σ x / x` and the product of the conjugates, so that the unit group of
+  a field and the other arithmetic modules can be fed to it.
+* `InverseGalois.CFT.Tate.Galois` computes the two Tate groups of the unit group of a finite cyclic
+  Galois extension: the product of the conjugates is the field norm, so Hilbert's theorem 90 says
+  that the lower group is trivial, and the fixed points are the units of the base field, so the
+  upper one is the base units modulo the norms.
+* `InverseGalois.CFT.Tate.GaloisH0` turns that description of the upper group into an isomorphism
+  with the units of the base field modulo the norms, so that its order is the norm index and the
+  Herbrand quotient of the unit group is that index.
 * `InverseGalois.CFT.Local.PadicSquaresTwo` supplies the excluded prime: a dyadic unit is a square
   exactly when it is congruent to one modulo eight, and every nonzero dyadic number is a square
   times one of eight explicit representatives.
