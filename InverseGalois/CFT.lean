@@ -113,6 +113,10 @@ import InverseGalois.CFT.Local.DyadicNondegenerate
 import InverseGalois.CFT.Local.DyadicQuaternary
 import InverseGalois.CFT.Local.DyadicNormFive
 import InverseGalois.CFT.Local.DyadicQuinary
+import InverseGalois.CFT.Local.Exp
+import InverseGalois.CFT.Local.ExpAction
+import InverseGalois.CFT.Local.ExpEquiv
+import InverseGalois.CFT.Local.ExpSurjective
 import InverseGalois.CFT.Local.FiltrationAction
 import InverseGalois.CFT.Local.HilbertIdentities
 import InverseGalois.CFT.Local.HilbertMap
@@ -124,11 +128,13 @@ import InverseGalois.CFT.Local.PadicHilbert
 import InverseGalois.CFT.Local.PadicHilbertMul
 import InverseGalois.CFT.Local.PadicLocalField
 import InverseGalois.CFT.Local.PadicSquares
+import InverseGalois.CFT.Local.NatValuation
 import InverseGalois.CFT.Local.PadicSquaresTwo
 import InverseGalois.CFT.Local.RamifiedNormForm
 import InverseGalois.CFT.Local.UnitFiltration
 import InverseGalois.CFT.Local.UnitValuation
 import InverseGalois.CFT.Local.UnramifiedNormForm
+import InverseGalois.CFT.Local.ValuedTopology
 import InverseGalois.CFT.NormSubgroup
 import InverseGalois.CFT.ScalarSemidirect
 import InverseGalois.CFT.Scholz.Condition
@@ -674,6 +680,26 @@ it that are available here.
   preserves both filtrations, so that subtracting one is a homomorphism of modules over the group
   and consecutive steps of the unit filtration sit in a short exact sequence with a graded piece of
   the additive filtration.
+* `InverseGalois.CFT.Local.ValuedTopology` records that a valued ring is nonarchimedean: every
+  neighbourhood of zero contains an open, hence closed, subgroup.  So a step of the additive
+  filtration contains every sum of its elements, and the valuation of an infinite sum is at most
+  the largest valuation of a term.
+* `InverseGalois.CFT.Local.NatValuation` computes the valuation of an integer in a valued field.
+  An integer prime to the residue characteristic has valuation one, so the valuation of an
+  arbitrary integer is that of the residue characteristic raised to its `p`-adic valuation, and
+  Legendre's theorem bounds the valuation of a factorial.
+* `InverseGalois.CFT.Local.Exp` constructs the exponential.  Legendre's bound makes the series
+  converge on a small enough step of the additive filtration, the binomial theorem turns the Cauchy
+  product into the addition formula, and the exponential of an element differs from one plus that
+  element by one further step, so it changes no valuation and is injective.
+* `InverseGalois.CFT.Local.ExpSurjective` shows that the exponential exhausts the corresponding
+  step of the unit filtration: dividing a unit by the exponential of its difference from one gains
+  a digit, and the exponential of the sum of the successive increments is the original unit.
+* `InverseGalois.CFT.Local.ExpEquiv` packages this as an isomorphism between a deep enough step of
+  the additive filtration and the corresponding step of the unit filtration.
+* `InverseGalois.CFT.Local.ExpAction` makes that isomorphism equivariant: an isometric ring
+  automorphism is continuous, hence commutes with infinite sums and with the exponential, so the
+  two steps have the same Herbrand quotient.
 * `InverseGalois.CFT.Local.PadicSquaresTwo` supplies the excluded prime: a dyadic unit is a square
   exactly when it is congruent to one modulo eight, and every nonzero dyadic number is a square
   times one of eight explicit representatives.
