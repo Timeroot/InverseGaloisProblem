@@ -160,6 +160,7 @@ import InverseGalois.CFT.Tate.Orbit
 import InverseGalois.CFT.Tate.PermLattice
 import InverseGalois.CFT.Tate.Permutation
 import InverseGalois.CFT.Tate.Pi
+import InverseGalois.CFT.Tate.Primes
 import InverseGalois.CFT.Tate.Prod
 import InverseGalois.CFT.Tate.Shapiro
 import InverseGalois.CFT.Tate.Trivial
@@ -543,6 +544,10 @@ it that are available here.
   transitively on a finite set, where the orbit–stabiliser theorem reads the Herbrand quotient of
   the free lattice as the order of the stabiliser of a point: the form in which the places of a
   Galois extension above a fixed place of the base contribute.
+* `InverseGalois.CFT.Tate.Primes` applies it to the primes of an extension of Dedekind domains
+  lying over a fixed prime of the base, where the decomposition group of one of them has order the
+  ramification index times the residue degree, and that product is the Herbrand quotient of the
+  free lattice they span.
 * `InverseGalois.CFT.Local.PadicSquaresTwo` supplies the excluded prime: a dyadic unit is a square
   exactly when it is congruent to one modulo eight, and every nonzero dyadic number is a square
   times one of eight explicit representatives.
