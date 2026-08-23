@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Tate.Galois
+import InverseGalois.CFT.NormSubgroup
 
 /-!
 # The zeroth Tate group of the units of a cyclic extension
@@ -23,7 +24,6 @@ Counting, the order of `Ĥ⁰(Lˣ)` is the norm index `[Kˣ : N Lˣ]`.  Together
 
 ## Main definitions
 
-* `InverseGalois.CFT.normUnits`: the units of the base field that are norms from the extension.
 * `InverseGalois.CFT.tateH0Units`: the map from the units of the base field to `Ĥ⁰(Lˣ)`.
 * `InverseGalois.CFT.tateH0UnitsEquiv`: the resulting isomorphism `Kˣ / N Lˣ ≃+ Ĥ⁰(Lˣ)`.
 
@@ -43,20 +43,6 @@ Tate cohomology, norm index, cyclic extension, Herbrand quotient
 namespace InverseGalois.CFT
 
 variable {K L : Type} [Field K] [Field L] [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-
-/-- **The units of the base field that are norms from the extension.** -/
-noncomputable def normUnits (K L : Type) [Field K] [Field L] [Algebra K L] [FiniteDimensional K L] :
-    Subgroup Kˣ :=
-  (Units.map (Algebra.norm K : L →* K)).range
-
-omit [IsGalois K L] in
-theorem mem_normUnits_iff (k : Kˣ) :
-    k ∈ normUnits K L ↔ ∃ y : Lˣ, Algebra.norm K (y : L) = (k : K) := by
-  constructor
-  · rintro ⟨y, rfl⟩
-    exact ⟨y, rfl⟩
-  · rintro ⟨y, hy⟩
-    exact ⟨y, Units.ext hy⟩
 
 /-- **A unit of the base field, viewed in the extension.** -/
 def unitsAlgebraMap (K L : Type) [Field K] [Field L] [Algebra K L] : Kˣ →* Lˣ :=
@@ -110,8 +96,8 @@ theorem tateH0Units_surjective (g : L ≃ₐ[K] L)
 /-- **The class of a base unit vanishes in `Ĥ⁰` exactly when it is a norm.** -/
 theorem tateH0Units_eq_zero_iff (g : L ≃ₐ[K] L)
     (hg : ∀ φ : L ≃ₐ[K] L, φ ∈ Subgroup.zpowers g) (k : Kˣ) :
-    tateH0Units g (Additive.ofMul k) = 0 ↔ k ∈ normUnits K L := by
-  rw [tateH0Units_apply, tateH0_unitsAut_mk_eq_zero_iff, mem_normUnits_iff]
+    tateH0Units g (Additive.ofMul k) = 0 ↔ k ∈ normSubgroup K L := by
+  rw [tateH0Units_apply, tateH0_unitsAut_mk_eq_zero_iff, mem_normSubgroup_iff]
   constructor
   · rintro ⟨y, hy⟩
     refine ⟨y, FaithfulSMul.algebraMap_injective K L ?_⟩
@@ -125,7 +111,7 @@ theorem tateH0Units_eq_zero_iff (g : L ≃ₐ[K] L)
 
 /-- The kernel of the map onto `Ĥ⁰` is the group of norms. -/
 theorem ker_tateH0Units (g : L ≃ₐ[K] L) (hg : ∀ φ : L ≃ₐ[K] L, φ ∈ Subgroup.zpowers g) :
-    (tateH0Units g).ker = Subgroup.toAddSubgroup (normUnits K L) := by
+    (tateH0Units g).ker = Subgroup.toAddSubgroup (normSubgroup K L) := by
   ext u
   rw [AddMonoidHom.mem_ker]
   exact tateH0Units_eq_zero_iff g hg (Additive.toMul u)
@@ -133,7 +119,7 @@ theorem ker_tateH0Units (g : L ≃ₐ[K] L) (hg : ∀ φ : L ≃ₐ[K] L, φ ∈
 /-- **`Ĥ⁰` of the unit group is the units of the base field modulo the norms.** -/
 noncomputable def tateH0UnitsEquiv (g : L ≃ₐ[K] L)
     (hg : ∀ φ : L ≃ₐ[K] L, φ ∈ Subgroup.zpowers g) :
-    Additive Kˣ ⧸ Subgroup.toAddSubgroup (normUnits K L)
+    Additive Kˣ ⧸ Subgroup.toAddSubgroup (normSubgroup K L)
       ≃+ tateH0 (addAut (unitsAut g)) (Nat.card (L ≃ₐ[K] L)) :=
   (QuotientAddGroup.quotientAddEquivOfEq (ker_tateH0Units g hg).symm).trans
     (QuotientAddGroup.quotientKerEquivOfSurjective _ (tateH0Units_surjective g hg))
@@ -141,7 +127,7 @@ noncomputable def tateH0UnitsEquiv (g : L ≃ₐ[K] L)
 /-- **The order of `Ĥ⁰` of the unit group is the norm index.** -/
 theorem card_tateH0_units (g : L ≃ₐ[K] L) (hg : ∀ φ : L ≃ₐ[K] L, φ ∈ Subgroup.zpowers g) :
     Nat.card (tateH0 (addAut (unitsAut g)) (Nat.card (L ≃ₐ[K] L)))
-      = (normUnits K L).index := by
+      = (normSubgroup K L).index := by
   rw [← Nat.card_congr (tateH0UnitsEquiv g hg).toEquiv, ← Subgroup.index_toAddSubgroup,
     AddSubgroup.index_eq_card]
 
@@ -155,7 +141,7 @@ theorem card_tateHm1_units (g : L ≃ₐ[K] L) (hg : ∀ φ : L ≃ₐ[K] L, φ 
 /-- **The Herbrand quotient of the unit group is the norm index.**  The lower Tate group vanishes
 by Hilbert's theorem 90, and the upper one is the units of the base field modulo the norms. -/
 theorem herbrand_units (g : L ≃ₐ[K] L) (hg : ∀ φ : L ≃ₐ[K] L, φ ∈ Subgroup.zpowers g) :
-    herbrand (addAut (unitsAut g)) (Nat.card (L ≃ₐ[K] L)) = (normUnits K L).index := by
+    herbrand (addAut (unitsAut g)) (Nat.card (L ≃ₐ[K] L)) = (normSubgroup K L).index := by
   rw [herbrand, card_tateH0_units g hg, card_tateHm1_units g hg, Nat.cast_one, div_one]
 
 end InverseGalois.CFT

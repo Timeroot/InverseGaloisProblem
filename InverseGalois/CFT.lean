@@ -124,6 +124,7 @@ import InverseGalois.CFT.Local.PadicSquares
 import InverseGalois.CFT.Local.PadicSquaresTwo
 import InverseGalois.CFT.Local.RamifiedNormForm
 import InverseGalois.CFT.Local.UnramifiedNormForm
+import InverseGalois.CFT.NormSubgroup
 import InverseGalois.CFT.ScalarSemidirect
 import InverseGalois.CFT.Scholz.Condition
 import InverseGalois.CFT.Scholz.FrattiniStep
@@ -145,6 +146,7 @@ import InverseGalois.CFT.SubgroupCounting
 import InverseGalois.CFT.TameCharacter
 import InverseGalois.CFT.TameRamification
 import InverseGalois.CFT.Tate.Basic
+import InverseGalois.CFT.Tate.BrauerRelative
 import InverseGalois.CFT.Tate.Exact
 import InverseGalois.CFT.Tate.Galois
 import InverseGalois.CFT.Tate.GaloisH0
@@ -375,6 +377,9 @@ it that are available here.
 * `InverseGalois.CFT.Brauer.CyclicBrauer` specialises to a cyclic extension: the cyclic algebra
   construction is a homomorphism from `Kˣ` to the Brauer group of `K` whose image is `Br(L / K)`
   and whose kernel is the group of norms from `L`.
+* `InverseGalois.CFT.NormSubgroup` names the image of the unit group of a finite extension under
+  the field norm, the subgroup of `Kˣ` that both the Brauer-theoretic and the cohomological
+  descriptions of a cyclic extension quotient by.
 * `InverseGalois.CFT.Brauer.CyclicNorm` reads that off as an isomorphism: for a cyclic extension
   the relative Brauer group `Br(L / K)` is `Kˣ` modulo the norms from `Lˣ`.
 * `InverseGalois.CFT.Brauer.Split` proves the uniqueness half of Wedderburn's theorem in the split
@@ -494,6 +499,11 @@ it that are available here.
 * `InverseGalois.CFT.Tate.GaloisH0` turns that description of the upper group into an isomorphism
   with the units of the base field modulo the norms, so that its order is the norm index and the
   Herbrand quotient of the unit group is that index.
+* `InverseGalois.CFT.Tate.BrauerRelative` identifies that group with the relative Brauer group of
+  a cyclic extension: every class split by `L` is a crossed product and every crossed product of a
+  cyclic extension is a cyclic algebra, so the cyclic algebra construction presents `Br(L / K)` as
+  the units of the base field modulo the norms, and the Herbrand quotient of the unit group is the
+  order of the relative Brauer group.
 * `InverseGalois.CFT.Tate.Prod` computes the Tate groups of a product of two modules, where both
   operators act coordinatewise, so that the orders and hence the Herbrand quotients multiply.
 * `InverseGalois.CFT.Tate.Trivial` computes the two Tate groups when the automorphism is the

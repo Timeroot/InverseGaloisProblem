@@ -1,6 +1,7 @@
 import Mathlib
 import InverseGalois.CFT.Brauer.CyclicBrauer
 import InverseGalois.CFT.Brauer.H2Surjective
+import InverseGalois.CFT.NormSubgroup
 
 /-!
 # The relative Brauer group of a cyclic extension
@@ -14,8 +15,6 @@ relative Brauer group `Br(L / K)` and whose kernel is the group of norms from `L
 
 * `InverseGalois.CFT.exists_cyclicBrauerHom_eq`: the cyclic algebra homomorphism surjects onto the
   relative Brauer group.
-* `InverseGalois.CFT.normSubgroup` and `InverseGalois.CFT.mem_normSubgroup_iff`: the group of
-  norms from `Lˣ` inside `Kˣ`.
 * `InverseGalois.CFT.ker_cyclicBrauerHom`: the kernel of the cyclic algebra homomorphism is the
   group of norms.
 * `InverseGalois.CFT.cyclicBrauerEquiv`: **the main result**, the isomorphism
@@ -50,17 +49,6 @@ theorem exists_cyclicBrauerHom_eq (x : BrauerGroup K) (hx : x ∈ BrauerGroup.re
   rw [hb, ha]
 
 /-! ### The group of norms -/
-
-/-- **The norm subgroup.**  The image of `Lˣ` in `Kˣ` under the field norm of `L / K`. -/
-noncomputable def normSubgroup (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] : Subgroup Kˣ :=
-  (Units.map (Algebra.norm K : L →* K)).range
-
-omit [IsGalois K L] in
-/-- A unit of `K` lies in the norm subgroup exactly when it is the norm of a unit of `L`. -/
-theorem mem_normSubgroup_iff (a : Kˣ) :
-    a ∈ normSubgroup K L ↔ ∃ b : Lˣ, Algebra.norm K (b : L) = (a : K) := by
-  simp only [normSubgroup, MonoidHom.mem_range, Units.ext_iff, Units.coe_map]
 
 /-- **The kernel of the cyclic algebra homomorphism is the group of norms.** -/
 theorem ker_cyclicBrauerHom : (cyclicBrauerHom hσ₀).ker = normSubgroup K L := by
