@@ -105,6 +105,7 @@ import InverseGalois.CFT.InertiaSubgroup
 import InverseGalois.CFT.KroneckerWeber
 import InverseGalois.CFT.Level
 import InverseGalois.CFT.Local.AdicAction
+import InverseGalois.CFT.Local.AdicHerbrand
 import InverseGalois.CFT.Local.AdicResidue
 import InverseGalois.CFT.Local.AdicUnits
 import InverseGalois.CFT.Local.DyadicAnisotropic
@@ -711,6 +712,15 @@ it that are available here.
   the valuation of a uniformizer is already the value just below one, and the integers of the base
   are dense enough in the valuation ring that the graded piece at zero is a quotient of the residue
   field of the prime, hence finite.
+* `InverseGalois.CFT.Local.AdicHerbrand` discharges the remaining hypotheses of the general
+  computation for such a completion.  The characteristic of the residue field is a prime lying in
+  the place, so its valuation is less than one and it is a residue characteristic in the sense the
+  exponential needs; every graded piece is finite because the one at zero is; and an automorphism
+  acting trivially on the completion already acts trivially on the dense subfield, so the
+  decomposition group acts faithfully.  The units of the valuation ring therefore have Herbrand
+  quotient one, the units of the completion have Herbrand quotient the order of the decomposition
+  group, and both Tate groups of the units of the valuation ring vanish when the decomposition
+  group fixes a uniformizer.
 * `InverseGalois.CFT.Local.UnitFiltration` sets up the two filtrations of a valued field: the
   additive one by the elements of small valuation, and the multiplicative one by the units
   congruent to one.  Subtracting one identifies a step of the unit filtration with the
