@@ -154,6 +154,7 @@ import InverseGalois.CFT.Tate.Herbrand
 import InverseGalois.CFT.Tate.Hexagon
 import InverseGalois.CFT.Tate.Mul
 import InverseGalois.CFT.Tate.Prod
+import InverseGalois.CFT.Tate.Shapiro
 import InverseGalois.CFT.Tate.Trivial
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
@@ -506,6 +507,10 @@ it that are available here.
   order of the relative Brauer group.
 * `InverseGalois.CFT.Tate.Prod` computes the Tate groups of a product of two modules, where both
   operators act coordinatewise, so that the orders and hence the Herbrand quotients multiply.
+* `InverseGalois.CFT.Tate.Shapiro` computes the Tate groups of a module induced from a subgroup of
+  a cyclic group, where the tuples are permuted cyclically and the last step applies the given
+  automorphism: evaluation at one coordinate and the sum of the coordinates identify the two Tate
+  groups with those of the module induced from, so the Herbrand quotients agree.
 * `InverseGalois.CFT.Tate.Trivial` computes the two Tate groups when the automorphism is the
   identity, where the difference operator vanishes and the norm is multiplication by the order, and
   reads off the Herbrand quotient of the integers with trivial action, which is that order.
