@@ -15,8 +15,10 @@ family is the family of norms.  Consequently the fixed points, the norm kernels,
 and the difference images are all products, and so are the two Tate groups.
 
 Counting, the orders of the Tate groups multiply over the index, and hence so do the Herbrand
-quotients.  Together with the description of a module induced from a subgroup, this is the shape of
-the decomposition of the group of ideles of a Galois extension: the places above a fixed place of
+quotients.  The description of the Tate groups as products needs no finiteness at all, so a product
+of arbitrarily many factors with vanishing Tate groups has vanishing Tate groups and Herbrand
+quotient one.  Together with the description of a module induced from a subgroup, this is the shape
+of the decomposition of the group of ideles of a Galois extension: the places above a fixed place of
 the base form a single orbit and contribute an induced module, and the finitely many places of the
 base that are allowed to contribute at all are combined by the product formula proved here.
 
@@ -33,6 +35,10 @@ base that are allowed to contribute at all are combined by the product formula p
   multiply over the index.
 * `InverseGalois.CFT.herbrand_piAut`: **the Herbrand quotient of a finite product is the product of
   the Herbrand quotients.**
+* `InverseGalois.CFT.subsingleton_tateH0_piAut`,
+  `InverseGalois.CFT.subsingleton_tateHm1_piAut`: the Tate groups of a product of arbitrarily many
+  factors vanish as soon as they vanish in every factor.
+* `InverseGalois.CFT.herbrand_piAut_eq_one`: such a product has Herbrand quotient one.
 
 ## Tags
 
@@ -127,6 +133,12 @@ theorem tateH0PiHom_injective : Function.Injective (tateH0PiHom σ n) := by
 noncomputable def tateH0PiEquiv : tateH0 (piAut σ) n ≃+ ∀ i, tateH0 (σ i) n :=
   AddEquiv.ofBijective _ ⟨tateH0PiHom_injective σ n, tateH0PiHom_surjective σ n⟩
 
+/-- **The upper Tate group of a product vanishes as soon as it vanishes in every factor**, the
+index being arbitrary. -/
+theorem subsingleton_tateH0_piAut (h : ∀ i, Subsingleton (tateH0 (σ i) n)) :
+    Subsingleton (tateH0 (piAut σ) n) :=
+  ⟨fun _ _ => (tateH0PiEquiv σ n).injective (funext fun i => (h i).elim _ _)⟩
+
 /-- The order of the upper Tate group of a product is the product of the orders. -/
 theorem card_tateH0_piAut [Fintype ι] :
     Nat.card (tateH0 (piAut σ) n) = ∏ i, Nat.card (tateH0 (σ i) n) := by
@@ -164,6 +176,12 @@ theorem tateHm1PiHom_injective : Function.Injective (tateHm1PiHom σ n) := by
 noncomputable def tateHm1PiEquiv : tateHm1 (piAut σ) n ≃+ ∀ i, tateHm1 (σ i) n :=
   AddEquiv.ofBijective _ ⟨tateHm1PiHom_injective σ n, tateHm1PiHom_surjective σ n⟩
 
+/-- **The lower Tate group of a product vanishes as soon as it vanishes in every factor**, the
+index being arbitrary. -/
+theorem subsingleton_tateHm1_piAut (h : ∀ i, Subsingleton (tateHm1 (σ i) n)) :
+    Subsingleton (tateHm1 (piAut σ) n) :=
+  ⟨fun _ _ => (tateHm1PiEquiv σ n).injective (funext fun i => (h i).elim _ _)⟩
+
 /-- The order of the lower Tate group of a product is the product of the orders. -/
 theorem card_tateHm1_piAut [Fintype ι] :
     Nat.card (tateHm1 (piAut σ) n) = ∏ i, Nat.card (tateHm1 (σ i) n) := by
@@ -176,5 +194,16 @@ theorem herbrand_piAut [Fintype ι] : herbrand (piAut σ) n = ∏ i, herbrand (�
   simp only [herbrand]
   rw [card_tateH0_piAut, card_tateHm1_piAut, Nat.cast_prod, Nat.cast_prod,
     Finset.prod_div_distrib]
+
+/-- **A product of arbitrarily many modules with vanishing Tate groups has Herbrand quotient
+one.**  This is what the places outside a finite set contribute to the Herbrand quotient of the
+group of ideles. -/
+theorem herbrand_piAut_eq_one (h0 : ∀ i, Subsingleton (tateH0 (σ i) n))
+    (hm1 : ∀ i, Subsingleton (tateHm1 (σ i) n)) : herbrand (piAut σ) n = 1 := by
+  haveI := subsingleton_tateH0_piAut σ n h0
+  haveI := subsingleton_tateHm1_piAut σ n hm1
+  rw [herbrand, Nat.card_eq_one_iff_unique.mpr ⟨inferInstance, ⟨0⟩⟩,
+    Nat.card_eq_one_iff_unique.mpr ⟨inferInstance, ⟨0⟩⟩]
+  norm_num
 
 end InverseGalois.CFT

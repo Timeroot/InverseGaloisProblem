@@ -12,12 +12,20 @@ attached to that place, so it is an isometry of the field for the metric of the 
 isometry it is uniformly continuous, and it therefore extends to an automorphism of the completion
 at that place.  The decomposition group of the place acts on the completion by ring automorphisms.
 
+An automorphism that moves the place is no less useful: it carries the absolute value of a place to
+the absolute value of its image, so it is an isometry from the field with the metric of one place to
+the field with the metric of the other, and extends to an isomorphism between the two completions.
+
 This is the archimedean counterpart of the action on the adic completions, and the two are built in
 the same way: an isometry of a dense subfield extends to the completion, and the extension inherits
 the multiplicativity from the dense subfield.
 
 ## Main definitions
 
+* `InverseGalois.CFT.withAbsGalEquiv`: a Galois automorphism, read as a map from the field with the
+  metric of one place to the field with the metric of its image.
+* `InverseGalois.CFT.infiniteCompletionGalEquiv`: **the induced isomorphism between the completion
+  at a place and the completion at its image.**
 * `InverseGalois.CFT.withAbsAut`: a Galois automorphism fixing a place, read as a map of the field
   with the metric of that place.
 * `InverseGalois.CFT.infiniteCompletionAut`: **the induced automorphism of the completion.**
@@ -73,6 +81,74 @@ theorem apply_of_smul_eq {σ : Gal(K/k)} (hσ : σ • w = w) (x : K) : w (σ x)
 theorem apply_symm_of_smul_eq {σ : Gal(K/k)} (hσ : σ • w = w) (x : K) : w (σ.symm x) = w x := by
   conv_rhs => rw [← hσ]
   rw [InfinitePlace.smul_apply]
+
+/-! ### The completions at a place and at its image -/
+
+/-- **An automorphism carries the absolute value of a place to the absolute value of its image.** -/
+theorem smul_apply_smul (σ : Gal(K/k)) (x : K) : (σ • w) (σ x) = w x := by
+  rw [InfinitePlace.smul_apply, σ.symm_apply_apply]
+
+/-- **A Galois automorphism, read as a map from the field with the metric of one place to the field
+with the metric of its image.** -/
+def withAbsGalEquiv (σ : Gal(K/k)) : WithAbs w.1 ≃+* WithAbs (σ • w).1 :=
+  ((WithAbs.equiv w.1).trans σ.toRingEquiv).trans (WithAbs.equiv (σ • w).1).symm
+
+@[simp]
+theorem norm_withAbsGalEquiv (σ : Gal(K/k)) (x : WithAbs w.1) :
+    ‖withAbsGalEquiv w σ x‖ = ‖x‖ := by
+  rw [WithAbs.norm_eq_abv, WithAbs.norm_eq_abv]
+  exact smul_apply_smul w σ _
+
+@[simp]
+theorem norm_withAbsGalEquiv_symm (σ : Gal(K/k)) (y : WithAbs (σ • w).1) :
+    ‖(withAbsGalEquiv w σ).symm y‖ = ‖y‖ := by
+  have h := norm_withAbsGalEquiv w σ ((withAbsGalEquiv w σ).symm y)
+  rw [(withAbsGalEquiv w σ).apply_symm_apply] at h
+  exact h.symm
+
+theorem isometry_withAbsGalEquiv (σ : Gal(K/k)) : Isometry (withAbsGalEquiv w σ) := by
+  refine Isometry.of_dist_eq fun x y => ?_
+  rw [dist_eq_norm, dist_eq_norm]
+  show (σ • w).1 (σ (WithAbs.equiv w.1 x) - σ (WithAbs.equiv w.1 y))
+    = w.1 (WithAbs.equiv w.1 x - WithAbs.equiv w.1 y)
+  rw [← map_sub]
+  exact smul_apply_smul w σ _
+
+theorem isometry_withAbsGalEquiv_symm (σ : Gal(K/k)) :
+    Isometry (withAbsGalEquiv w σ).symm := by
+  refine Isometry.of_dist_eq fun x y => ?_
+  rw [dist_eq_norm, dist_eq_norm, ← norm_withAbsGalEquiv w σ, map_sub,
+    (withAbsGalEquiv w σ).apply_symm_apply, (withAbsGalEquiv w σ).apply_symm_apply]
+
+/-- **The isomorphism between the completion at an infinite place and the completion at its
+image** under a Galois automorphism. -/
+noncomputable def infiniteCompletionGalEquiv (σ : Gal(K/k)) :
+    w.Completion ≃+* (σ • w).Completion :=
+  UniformSpace.Completion.mapRingEquiv (withAbsGalEquiv w σ)
+    (isometry_withAbsGalEquiv w σ).continuous (isometry_withAbsGalEquiv_symm w σ).continuous
+
+theorem continuous_infiniteCompletionGalEquiv (σ : Gal(K/k)) :
+    Continuous (infiniteCompletionGalEquiv w σ) :=
+  UniformSpace.Completion.continuous_map
+
+@[simp]
+theorem infiniteCompletionGalEquiv_coe (σ : Gal(K/k)) (x : WithAbs w.1) :
+    infiniteCompletionGalEquiv w σ (x : w.Completion)
+      = ((withAbsGalEquiv w σ x : WithAbs (σ • w).1) : (σ • w).Completion) :=
+  UniformSpace.Completion.mapRingHom_coe (isometry_withAbsGalEquiv w σ).continuous x
+
+/-- **The isomorphism of completions is an isometry.** -/
+@[simp]
+theorem norm_infiniteCompletionGalEquiv (σ : Gal(K/k)) (z : w.Completion) :
+    ‖infiniteCompletionGalEquiv w σ z‖ = ‖z‖ := by
+  refine UniformSpace.Completion.induction_on z ?_ ?_
+  · exact isClosed_eq (continuous_norm.comp (continuous_infiniteCompletionGalEquiv w σ))
+      continuous_norm
+  · intro x
+    rw [infiniteCompletionGalEquiv_coe, UniformSpace.Completion.norm_coe,
+      UniformSpace.Completion.norm_coe, norm_withAbsGalEquiv]
+
+/-! ### An automorphism fixing a place -/
 
 /-- **A Galois automorphism fixing an infinite place, read as a map of the field with the metric of
 that place.** -/
