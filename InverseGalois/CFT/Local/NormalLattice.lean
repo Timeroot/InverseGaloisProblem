@@ -6,6 +6,7 @@ import Mathlib
 import InverseGalois.CFT.Local.FiltrationHerbrand
 import InverseGalois.CFT.Local.TraceIntegral
 import InverseGalois.CFT.Tate.CyclicInduced
+import InverseGalois.CFT.Tate.NormalBasis
 
 /-!
 # The valuation ring contains a normal lattice of finite index
@@ -21,9 +22,6 @@ induced lattice of finite index, whence its Herbrand quotient is one.
 
 ## Main definitions
 
-* `InverseGalois.CFT.normalElt`: an element whose orbit is a basis of the field over the fixed
-  field.
-* `InverseGalois.CFT.normalBasisOfGroup`: that orbit, indexed by the group.
 * `InverseGalois.CFT.normalLatticeHom`: the integral combinations of the orbit, as a map from the
   functions on the group with integral values in the fixed field.
 
@@ -52,26 +50,6 @@ open scoped WithZero
 variable {G A : Type*} [Group G] [Fintype G] [Field A] [Valued A ℤᵐ⁰] [MulSemiringAction G A]
   [FaithfulSMul G A]
 
-/-! ### The orbit of a normal basis element -/
-
-variable (G A) in
-/-- **An element whose orbit is a basis of the field over the fixed field.** -/
-noncomputable def normalElt : A :=
-  IsGalois.normalBasis ↥(FixedPoints.subfield G A) A 1
-
-variable (G A) in
-/-- **The orbit of a normal basis element, indexed by the group.** -/
-noncomputable def normalBasisOfGroup :
-    Module.Basis G ↥(FixedPoints.subfield G A) A :=
-  (IsGalois.normalBasis ↥(FixedPoints.subfield G A) A).reindex
-    (FixedPoints.toAlgAutMulEquiv G A).symm.toEquiv
-
-omit [Valued A ℤᵐ⁰] in
-@[simp]
-theorem normalBasisOfGroup_apply (g : G) : normalBasisOfGroup G A g = g • normalElt G A := by
-  rw [normalBasisOfGroup, Module.Basis.reindex_apply, IsGalois.normalBasis_apply]
-  rfl
-
 /-! ### Integral combinations of the orbit -/
 
 omit [Fintype G] [FaithfulSMul G A] in
@@ -82,14 +60,6 @@ theorem smul_mem_valAddSubgroup_of_fixedInt {c : ↥(FixedPoints.subfield G A)}
   rw [Algebra.smul_def]
   have h := mul_mem_valAddSubgroup (algebraMap_mem_valAddSubgroup hc) hx
   rwa [zero_add] at h
-
-omit [Fintype G] [Valued A ℤᵐ⁰] [FaithfulSMul G A] in
-/-- An automorphism moves an element of the fixed field past a scalar multiplication. -/
-theorem smul_smul_fixed (σ : G) (c : ↥(FixedPoints.subfield G A)) (x : A) :
-    σ • (c • x) = c • (σ • x) := by
-  rw [Algebra.smul_def, Algebra.smul_def, smul_mul']
-  congr 1
-  exact c.2 σ
 
 variable (hv : ∀ (σ : G) (x : A), Valued.v (σ • x) = Valued.v x)
 

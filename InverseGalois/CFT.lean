@@ -142,6 +142,7 @@ import InverseGalois.CFT.Local.UnitHerbrandChain
 import InverseGalois.CFT.Local.UnitIndex
 import InverseGalois.CFT.Local.UnitValuation
 import InverseGalois.CFT.Local.UnramifiedNormForm
+import InverseGalois.CFT.Local.UnramifiedUnits
 import InverseGalois.CFT.Local.ValuedTopology
 import InverseGalois.CFT.NormSubgroup
 import InverseGalois.CFT.ScalarSemidirect
@@ -171,6 +172,7 @@ import InverseGalois.CFT.Tate.BrauerRelative
 import InverseGalois.CFT.Tate.Commensurable
 import InverseGalois.CFT.Tate.Congr
 import InverseGalois.CFT.Tate.CyclicAction
+import InverseGalois.CFT.Tate.CyclicHilbert90
 import InverseGalois.CFT.Tate.CyclicInduced
 import InverseGalois.CFT.Tate.Exact
 import InverseGalois.CFT.Tate.Fibers
@@ -185,6 +187,7 @@ import InverseGalois.CFT.Tate.InfinitePlaces
 import InverseGalois.CFT.Tate.Isogeny
 import InverseGalois.CFT.Tate.Lattice
 import InverseGalois.CFT.Tate.Mul
+import InverseGalois.CFT.Tate.NormalBasis
 import InverseGalois.CFT.Tate.Orbit
 import InverseGalois.CFT.Tate.OrbitInduced
 import InverseGalois.CFT.Tate.PermLattice
@@ -542,6 +545,15 @@ it that are available here.
 * `InverseGalois.CFT.Tate.Mul` translates the formalism to a multiplicatively written module, where
   the two operators are `x ↦ σ x / x` and the product of the conjugates, so that the unit group of
   a field and the other arithmetic modules can be fed to it.
+* `InverseGalois.CFT.Tate.NormalBasis` reads an element of a field in the orbit of a normal basis
+  element, which identifies the additive group of a Galois extension with the functions on the
+  group and the action with translation of the argument.  For a cyclic group that is the induced
+  module, so both Tate groups of the additive group vanish and its Herbrand quotient is one.
+* `InverseGalois.CFT.Tate.CyclicHilbert90` proves Hilbert's theorem 90 for a finite cyclic group
+  acting faithfully on a field, in any universe and without choosing a base field: the partial
+  products of the conjugates of an element whose conjugates multiply to one weight the conjugates
+  of a test element into a Lagrange resolvent that the element scales, and Dedekind's linear
+  independence of characters supplies a test element with nonvanishing resolvent.
 * `InverseGalois.CFT.Tate.Galois` computes the two Tate groups of the unit group of a finite cyclic
   Galois extension: the product of the conjugates is the field norm, so Hilbert's theorem 90 says
   that the lower group is trivial, and the fixed points are the units of the base field, so the
@@ -756,6 +768,11 @@ it that are available here.
   additive filtration through the exponential, it is of finite index in the units of the valuation
   ring, and the valuation of a unit then gives the units of the field Herbrand quotient the order
   of the group.
+* `InverseGalois.CFT.Local.UnramifiedUnits` sharpens that computation when the fixed field already
+  contains a uniformizer: Hilbert's theorem 90 writes a unit whose conjugates multiply to one as a
+  quotient, the uniformizer corrects the valuation of the representative, and the lower Tate group
+  of the units of the valuation ring vanishes.  Their Herbrand quotient is one and both groups are
+  finite, so the upper group vanishes as well.
 * `InverseGalois.CFT.Local.PadicSquaresTwo` supplies the excluded prime: a dyadic unit is a square
   exactly when it is congruent to one modulo eight, and every nonzero dyadic number is a square
   times one of eight explicit representatives.
