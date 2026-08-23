@@ -89,4 +89,26 @@ theorem herbrand_of_orbitInd [NeZero d] {m n : ℕ} (hn : d * m = n) (hτ : τ ^
   rw [herbrand_congr (orbitIndEquiv φ) (orbitIndEquiv_equivariant τ φ hs) (d * m),
     herbrand_indAut τ m hτ]
 
+/-- The upper Tate group of a family indexed by an orbit vanishes as soon as it vanishes for the
+module at one point. -/
+theorem subsingleton_tateH0_of_orbitInd [NeZero d] {m n : ℕ} (hn : d * m = n) (hτ : τ ^ m = 1)
+    {s : (X → B) ≃+ (X → B)} (φ : ZMod d ≃ X)
+    (hs : ∀ (f : X → B) (j : ZMod d), s f (φ j) = indTwist τ j (f (φ (j + 1))))
+    (h : Subsingleton (tateH0 τ m)) : Subsingleton (tateH0 s n) := by
+  subst hn
+  haveI := subsingleton_tateH0_indAut (d := d) τ m hτ h
+  exact ⟨fun _ _ => (tateH0Congr (orbitIndEquiv φ) (orbitIndEquiv_equivariant τ φ hs)
+    (d * m)).injective (Subsingleton.elim _ _)⟩
+
+/-- The lower Tate group of a family indexed by an orbit vanishes as soon as it vanishes for the
+module at one point. -/
+theorem subsingleton_tateHm1_of_orbitInd [NeZero d] {m n : ℕ} (hn : d * m = n) (hτ : τ ^ m = 1)
+    {s : (X → B) ≃+ (X → B)} (φ : ZMod d ≃ X)
+    (hs : ∀ (f : X → B) (j : ZMod d), s f (φ j) = indTwist τ j (f (φ (j + 1))))
+    (h : Subsingleton (tateHm1 τ m)) : Subsingleton (tateHm1 s n) := by
+  subst hn
+  haveI := subsingleton_tateHm1_indAut (d := d) τ m hτ h
+  exact ⟨fun _ _ => (tateHm1Congr (orbitIndEquiv φ) (orbitIndEquiv_equivariant τ φ hs)
+    (d * m)).injective (Subsingleton.elim _ _)⟩
+
 end InverseGalois.CFT

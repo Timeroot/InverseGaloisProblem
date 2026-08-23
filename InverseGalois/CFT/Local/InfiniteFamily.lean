@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Local.InfiniteAction
+import InverseGalois.CFT.Local.UnitValuation
 import InverseGalois.CFT.Tate.FamilyRing
 
 /-!
@@ -30,6 +31,8 @@ which is dense in each completion, and extends by continuity.
 
 * `InverseGalois.CFT.infiniteCompletionGalEquiv_infiniteCoe`: the transport carries the section
   determined by an element of the field to the section determined by its image.
+* `InverseGalois.CFT.transport_infiniteUnitsFamily`: **the transport of the unit group of a
+  completion by an automorphism fixing the place is the action of the decomposition group.**
 
 ## Tags
 
@@ -95,6 +98,36 @@ noncomputable def infiniteRingFamily :
 @[simp]
 theorem infiniteRingFamily_map (σ : Gal(K/k)) (w : InfinitePlace K) :
     (infiniteRingFamily (k := k) (K := K)).map σ w = infiniteCompletionGalEquiv w σ := rfl
+
+/-! ### The transport by an automorphism fixing the place -/
+
+/-- **A Galois automorphism fixing an infinite place transports the completion there by the action
+of the decomposition group.** -/
+theorem ringCast_infiniteCompletionGalEquiv (w : InfinitePlace K) (σ : Gal(K/k))
+    (hσ : σ • w = w) (z : w.Completion) :
+    ringCast (fun u : InfinitePlace K => u.Completion) hσ (infiniteCompletionGalEquiv w σ z)
+      = infiniteCompletionAut w σ hσ z := by
+  refine UniformSpace.Completion.induction_on z
+    (isClosed_eq ((continuous_ringCast _ hσ).comp (continuous_infiniteCompletionGalEquiv w σ))
+      (continuous_infiniteCompletionAut w σ hσ)) fun x => ?_
+  show ringCast _ hσ (infiniteCompletionGalEquiv w σ (infiniteCoe (WithAbs.equiv w.1 x) w))
+    = infiniteCompletionAut w σ hσ (infiniteCoe (WithAbs.equiv w.1 x) w)
+  rw [infiniteCompletionGalEquiv_infiniteCoe, ringCast_infiniteCoe]
+  simp only [infiniteCoe]
+  rw [infiniteCompletionAut_coe]
+  rfl
+
+/-- **The transport of the unit group of a completion at an infinite place by a Galois automorphism
+fixing the place is the action of the decomposition group.** -/
+theorem transport_infiniteUnitsFamily (w : InfinitePlace K) (σ : Gal(K/k)) (hσ : σ • w = w)
+    (a : Additive w.Completionˣ) :
+    (infiniteRingFamily (k := k) (K := K)).unitsFamily.transport hσ a
+      = smulUnitsAut (G := ↥(stabilizer Gal(K/k) w)) (R := w.Completion)
+          ⟨σ, mem_stabilizer_iff.mpr hσ⟩ a := by
+  refine Additive.toMul.injective (Units.ext ?_)
+  rw [FamilyAction.transport_apply, famCast_units, coe_smulUnitsAut_apply,
+    stabilizer_smul_infiniteCompletion_def]
+  exact ringCast_infiniteCompletionGalEquiv w σ hσ _
 
 end InfiniteFamily
 

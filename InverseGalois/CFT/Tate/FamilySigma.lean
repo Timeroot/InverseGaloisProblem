@@ -6,6 +6,7 @@ import Mathlib
 import InverseGalois.CFT.Tate.Congr
 import InverseGalois.CFT.Tate.Family
 import InverseGalois.CFT.Tate.Pi
+import InverseGalois.CFT.Tate.PiSplit
 
 /-!
 # A family of modules over a disjoint union of invariant pieces
@@ -38,6 +39,9 @@ they vanish for every piece.
   of the sections is the product of the Herbrand quotients of the pieces.**
 * `InverseGalois.CFT.herbrand_familyAut_sigma_eq_one`: over arbitrarily many pieces with vanishing
   Tate groups the Herbrand quotient of the sections is one.
+* `InverseGalois.CFT.herbrand_familyAut_sigma_split`: **the Herbrand quotient of the sections is the
+  product over the finitely many named pieces**, as soon as the other pieces have vanishing Tate
+  groups.
 
 ## Tags
 
@@ -146,5 +150,17 @@ theorem herbrand_familyAut_sigma_eq_one
     herbrand (F.familyAut σ) n = 1 := by
   rw [herbrand_congr (sigmaFamilyEquiv (M := M)) (sigmaFamilyEquiv_familyAut F σ) n]
   exact herbrand_piAut_eq_one _ n h0 hm1
+
+/-- **The Herbrand quotient of the sections of a family over a disjoint union is the product over
+the finitely many named pieces**, as soon as the sections over the other pieces have vanishing Tate
+groups.  This is the shape of the Herbrand quotient of the group of ideles: only the places in a
+chosen finite set of the base field contribute. -/
+theorem herbrand_familyAut_sigma_split (p : Y → Prop) [DecidablePred p] [Fintype {y // p y}]
+    (h0 : ∀ y : {y // ¬ p y}, Subsingleton (tateH0 ((F.sigmaFiber (y : Y)).familyAut σ) n))
+    (hm1 : ∀ y : {y // ¬ p y}, Subsingleton (tateHm1 ((F.sigmaFiber (y : Y)).familyAut σ) n)) :
+    herbrand (F.familyAut σ) n
+      = ∏ y : {y // p y}, herbrand ((F.sigmaFiber (y : Y)).familyAut σ) n := by
+  rw [herbrand_congr (sigmaFamilyEquiv (M := M)) (sigmaFamilyEquiv_familyAut F σ) n]
+  exact herbrand_piAut_split p _ n h0 hm1
 
 end InverseGalois.CFT

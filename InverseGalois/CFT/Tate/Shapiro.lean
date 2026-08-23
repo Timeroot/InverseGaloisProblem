@@ -457,6 +457,12 @@ theorem card_tateH0_indAut (hτ : τ ^ m = 1) :
     Nat.card (tateH0 (indAut τ d) (d * m)) = Nat.card (tateH0 τ m) :=
   Nat.card_congr (tateH0IndEquiv τ m hτ).toEquiv
 
+/-- The upper Tate group of an induced module vanishes as soon as it vanishes for the module it is
+induced from. -/
+theorem subsingleton_tateH0_indAut (hτ : τ ^ m = 1) (h : Subsingleton (tateH0 τ m)) :
+    Subsingleton (tateH0 (indAut τ d) (d * m)) :=
+  ⟨fun _ _ => (tateH0IndEquiv τ m hτ).injective (@Subsingleton.elim _ h _ _)⟩
+
 /-! ### Shapiro's lemma for the lower Tate group -/
 
 /-- The sum of the coordinates, restricted to the tuples of norm zero. -/
@@ -523,6 +529,12 @@ noncomputable def tateHm1IndEquiv (hτ : τ ^ m = 1) :
 theorem card_tateHm1_indAut (hτ : τ ^ m = 1) :
     Nat.card (tateHm1 (indAut τ d) (d * m)) = Nat.card (tateHm1 τ m) :=
   Nat.card_congr (tateHm1IndEquiv τ m hτ).toEquiv
+
+/-- The lower Tate group of an induced module vanishes as soon as it vanishes for the module it is
+induced from. -/
+theorem subsingleton_tateHm1_indAut (hτ : τ ^ m = 1) (h : Subsingleton (tateHm1 τ m)) :
+    Subsingleton (tateHm1 (indAut τ d) (d * m)) :=
+  ⟨fun _ _ => (tateHm1IndEquiv τ m hτ).injective (@Subsingleton.elim _ h _ _)⟩
 
 /-! ### The Herbrand quotient -/
 

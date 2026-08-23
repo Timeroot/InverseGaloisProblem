@@ -29,10 +29,15 @@ contribution is cohomologically trivial may be present in any number without aff
 
 ## Main results
 
+* `InverseGalois.CFT.stabAut_orbitFamily`: the action of the stabiliser of a point of an orbit on
+  the module there is its action as a subgroup of the whole group.
 * `InverseGalois.CFT.herbrand_familyAut_orbits`: **the Herbrand quotient of the sections of a family
   is the product over the orbits of the Herbrand quotient of the sections over one orbit.**
 * `InverseGalois.CFT.herbrand_familyAut_orbits_eq_one`: the sections have Herbrand quotient one as
   soon as the sections over every orbit have vanishing Tate groups.
+* `InverseGalois.CFT.herbrand_familyAut_orbits_split`: **the Herbrand quotient of the sections is
+  the product over the finitely many named orbits**, as soon as the sections over the other orbits
+  have vanishing Tate groups.
 * `InverseGalois.CFT.herbrand_orbitFamily`: **the contribution of one orbit is the Herbrand quotient
   of the module at a point of it under a full turn of the orbit.**
 
@@ -53,6 +58,21 @@ variable {G X : Type*} [Group G] [MulAction G X] {σ : G}
 /-- **The restriction of a family of modules to one orbit of the index set.** -/
 def orbitFamily (ω : orbitRel.Quotient G X) : FamilyAction (fun z : ω.orbit => M (z : X)) G :=
   (F.reindex (selfEquivSigmaOrbits' G X).symm equivariant_selfEquivSigmaOrbits).sigmaFiber ω
+
+/-- **A transport for the restriction to an orbit is a transport for the whole family.** -/
+theorem orbitFamily_transport {ω : orbitRel.Quotient G X} {g : G} {x y : ω.orbit} (h : g • x = y)
+    (h' : g • (x : X) = (y : X)) (a : M (x : X)) :
+    (orbitFamily F ω).transport h a = F.transport h' a := by
+  subst h
+  rfl
+
+/-- **The action of the stabiliser of a point of an orbit on the module there is its action as a
+subgroup of the whole group.** -/
+theorem stabAut_orbitFamily {ω : orbitRel.Quotient G X} (x₀ : ω.orbit)
+    {H : Subgroup G} (hH' : ∀ g : ↥H, (g : G) • x₀ = x₀)
+    (hH'' : ∀ g : ↥H, (g : G) • (x₀ : X) = (x₀ : X)) (g : ↥H) (a : M (x₀ : X)) :
+    stabAut x₀ hH' (orbitFamily F ω) g a = F.transport (hH'' g) a :=
+  orbitFamily_transport F (hH' g) (hH'' g) a
 
 /-! ### The product over the orbits -/
 
@@ -89,6 +109,22 @@ theorem herbrand_familyAut_orbits_eq_one (n : ℕ)
   rw [herbrand_familyAut_reindex F (selfEquivSigmaOrbits' G X).symm
     equivariant_selfEquivSigmaOrbits σ n]
   exact herbrand_familyAut_sigma_eq_one _ σ n h0 hm1
+
+/-- **The Herbrand quotient of the sections of a family is the product over the finitely many named
+orbits**, as soon as the sections over the other orbits have vanishing Tate groups.  This is the
+Herbrand quotient of the group of ideles of a Galois extension of number fields that are units
+outside a finite set of places of the base field: only the places in that set contribute. -/
+theorem herbrand_familyAut_orbits_split (n : ℕ) (p : orbitRel.Quotient G X → Prop)
+    [DecidablePred p] [Fintype {ω // p ω}]
+    (h0 : ∀ ω : {ω // ¬ p ω},
+      Subsingleton (tateH0 ((orbitFamily F (ω : orbitRel.Quotient G X)).familyAut σ) n))
+    (hm1 : ∀ ω : {ω // ¬ p ω},
+      Subsingleton (tateHm1 ((orbitFamily F (ω : orbitRel.Quotient G X)).familyAut σ) n)) :
+    herbrand (F.familyAut σ) n
+      = ∏ ω : {ω // p ω}, herbrand ((orbitFamily F (ω : orbitRel.Quotient G X)).familyAut σ) n := by
+  rw [herbrand_familyAut_reindex F (selfEquivSigmaOrbits' G X).symm
+    equivariant_selfEquivSigmaOrbits σ n]
+  exact herbrand_familyAut_sigma_split _ σ n p h0 hm1
 
 /-! ### The contribution of one orbit -/
 

@@ -84,6 +84,20 @@ theorem twistShiftAut_apply (c : X → Γ) (p : Equiv.Perm X) (f : X → B) (x :
 
 variable [Fintype X] (p : Equiv.Perm X) (x₀ : X)
 
+/-- The presentation of a twisted shift over a transitive orbit as an induced module. -/
+theorem twistShiftAut_orbitEquiv {c : X → Γ} {z : Γ}
+    (htrans : ∀ y : X, ∃ k : ℕ, (p ^ k) x₀ = y)
+    (hc : ∀ j : ZMod (period p x₀), j ≠ -1 → c (orbitPoint p x₀ j) = 1)
+    (hlast : c (orbitPoint p x₀ (-1)) = z) (f : X → B) (j : ZMod (period p x₀)) :
+    twistShiftAut ρ c p f (orbitEquiv p x₀ htrans j)
+      = indTwist (ρ z) j (f (orbitEquiv p x₀ htrans (j + 1))) := by
+  have hφ : ∀ i : ZMod (period p x₀), orbitEquiv p x₀ htrans i = orbitPoint p x₀ i := fun _ => rfl
+  rw [hφ, hφ, twistShiftAut_apply, apply_orbitPoint]
+  by_cases h : j = -1
+  · subst h
+    rw [hlast, indTwist_neg_one]
+  · rw [hc j h, indTwist_of_ne _ h, map_one]
+
 /-- **The Herbrand quotient of a twisted shift over a transitive orbit** is the Herbrand quotient
 of the module for the twisting element.  The rescaling factors are trivial except where the index
 wraps around, so the family is the module induced from the factor at the chosen point. -/
@@ -92,14 +106,30 @@ theorem herbrand_twistShiftAut {c : X → Γ} {z : Γ}
     (hc : ∀ j : ZMod (period p x₀), j ≠ -1 → c (orbitPoint p x₀ j) = 1)
     (hlast : c (orbitPoint p x₀ (-1)) = z) {m n : ℕ} (hz : z ^ m = 1)
     (hn : period p x₀ * m = n) :
-    herbrand (twistShiftAut ρ c p) n = herbrand (ρ z) m := by
-  have hρz : (ρ z) ^ m = 1 := by rw [← map_pow, hz, map_one]
-  refine herbrand_of_orbitInd _ hn hρz (orbitEquiv p x₀ htrans) fun f j => ?_
-  have hφ : ∀ i : ZMod (period p x₀), orbitEquiv p x₀ htrans i = orbitPoint p x₀ i := fun _ => rfl
-  rw [hφ, hφ, twistShiftAut_apply, apply_orbitPoint]
-  by_cases h : j = -1
-  · subst h
-    rw [hlast, indTwist_neg_one]
-  · rw [hc j h, indTwist_of_ne _ h, map_one]
+    herbrand (twistShiftAut ρ c p) n = herbrand (ρ z) m :=
+  herbrand_of_orbitInd _ hn (by rw [← map_pow, hz, map_one]) (orbitEquiv p x₀ htrans)
+    (twistShiftAut_orbitEquiv ρ p x₀ htrans hc hlast)
+
+/-- The upper Tate group of a twisted shift over a transitive orbit vanishes as soon as it vanishes
+for the twisting element. -/
+theorem subsingleton_tateH0_twistShiftAut {c : X → Γ} {z : Γ}
+    (htrans : ∀ y : X, ∃ k : ℕ, (p ^ k) x₀ = y)
+    (hc : ∀ j : ZMod (period p x₀), j ≠ -1 → c (orbitPoint p x₀ j) = 1)
+    (hlast : c (orbitPoint p x₀ (-1)) = z) {m n : ℕ} (hz : z ^ m = 1)
+    (hn : period p x₀ * m = n) (h : Subsingleton (tateH0 (ρ z) m)) :
+    Subsingleton (tateH0 (twistShiftAut ρ c p) n) :=
+  subsingleton_tateH0_of_orbitInd _ hn (by rw [← map_pow, hz, map_one])
+    (orbitEquiv p x₀ htrans) (twistShiftAut_orbitEquiv ρ p x₀ htrans hc hlast) h
+
+/-- The lower Tate group of a twisted shift over a transitive orbit vanishes as soon as it vanishes
+for the twisting element. -/
+theorem subsingleton_tateHm1_twistShiftAut {c : X → Γ} {z : Γ}
+    (htrans : ∀ y : X, ∃ k : ℕ, (p ^ k) x₀ = y)
+    (hc : ∀ j : ZMod (period p x₀), j ≠ -1 → c (orbitPoint p x₀ j) = 1)
+    (hlast : c (orbitPoint p x₀ (-1)) = z) {m n : ℕ} (hz : z ^ m = 1)
+    (hn : period p x₀ * m = n) (h : Subsingleton (tateHm1 (ρ z) m)) :
+    Subsingleton (tateHm1 (twistShiftAut ρ c p) n) :=
+  subsingleton_tateHm1_of_orbitInd _ hn (by rw [← map_pow, hz, map_one])
+    (orbitEquiv p x₀ htrans) (twistShiftAut_orbitEquiv ρ p x₀ htrans hc hlast) h
 
 end InverseGalois.CFT

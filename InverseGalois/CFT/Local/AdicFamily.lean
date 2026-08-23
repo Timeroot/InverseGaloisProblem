@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Local.AdicAction
+import InverseGalois.CFT.Local.UnitValuation
 import InverseGalois.CFT.Tate.FamilyRing
 
 /-!
@@ -32,6 +33,8 @@ continuity.
 
 * `InverseGalois.CFT.adicCompletionGalEquiv_adicCoe`: the transport carries the section determined
   by an element of the field to the section determined by its image.
+* `InverseGalois.CFT.transport_adicUnitsFamily`: **the transport of the unit group of a completion
+  by an automorphism fixing the place is the action of the decomposition group.**
 
 ## Tags
 
@@ -93,6 +96,37 @@ noncomputable def adicRingFamily :
 @[simp]
 theorem adicRingFamily_map (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)) :
     (adicRingFamily (k := k) (K := K)).map σ v = adicCompletionGalEquiv v σ := rfl
+
+/-! ### The transport by an automorphism fixing the place -/
+
+/-- **A Galois automorphism fixing a place transports the completion there by the action of the
+decomposition group.** -/
+theorem ringCast_adicCompletionGalEquiv (v : HeightOneSpectrum (𝓞 K)) (σ : Gal(K/k))
+    (hσ : σ • v = v) (z : v.adicCompletion K) :
+    ringCast (fun u : HeightOneSpectrum (𝓞 K) => u.adicCompletion K) hσ
+        (adicCompletionGalEquiv v σ z)
+      = adicCompletionAut v σ hσ z := by
+  refine UniformSpace.Completion.induction_on z
+    (isClosed_eq ((continuous_ringCast _ hσ).comp (continuous_adicCompletionGalEquiv v σ))
+      (continuous_adicCompletionAut v σ hσ)) fun x => ?_
+  show ringCast _ hσ (adicCompletionGalEquiv v σ (adicCoe (WithVal.equiv (v.valuation K) x) v))
+    = adicCompletionAut v σ hσ (adicCoe (WithVal.equiv (v.valuation K) x) v)
+  rw [adicCompletionGalEquiv_adicCoe, ringCast_adicCoe]
+  simp only [adicCoe]
+  rw [adicCompletionAut_coe]
+  rfl
+
+/-- **The transport of the unit group of a completion by a Galois automorphism fixing the place is
+the action of the decomposition group.** -/
+theorem transport_adicUnitsFamily (v : HeightOneSpectrum (𝓞 K)) (σ : Gal(K/k)) (hσ : σ • v = v)
+    (a : Additive (v.adicCompletion K)ˣ) :
+    (adicRingFamily (k := k) (K := K)).unitsFamily.transport hσ a
+      = smulUnitsAut (G := ↥(stabilizer Gal(K/k) v)) (R := v.adicCompletion K)
+          ⟨σ, mem_stabilizer_iff.mpr hσ⟩ a := by
+  refine Additive.toMul.injective (Units.ext ?_)
+  rw [FamilyAction.transport_apply, famCast_units, coe_smulUnitsAut_apply,
+    stabilizer_smul_adicCompletion_def]
+  exact ringCast_adicCompletionGalEquiv v σ hσ _
 
 end AdicFamily
 

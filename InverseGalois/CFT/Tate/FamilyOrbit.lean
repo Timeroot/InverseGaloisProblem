@@ -135,4 +135,26 @@ theorem herbrand_familyAut_orbit {m n : ℕ} (hz : (orbitTurn σ x₀ hH) ^ m = 
     (orbitFamilyEquiv_familyAut x₀ htrans hH hH' F) n]
   exact herbrand_twistShiftAut_orbitCocycle x₀ htrans hH (stabAut x₀ hH' F) hz hn
 
+include htrans hH hH' in
+/-- The upper Tate group of the sections of a family over a transitive orbit vanishes as soon as it
+vanishes for the module at the base point under a full turn. -/
+theorem subsingleton_tateH0_familyAut_orbit {m n : ℕ} (hz : (orbitTurn σ x₀ hH) ^ m = 1)
+    (hn : period (orbitShift X σ) x₀ * m = n)
+    (h : Subsingleton (tateH0 (stabAut x₀ hH' F (orbitTurn σ x₀ hH)) m)) :
+    Subsingleton (tateH0 (F.familyAut σ) n) := by
+  haveI := subsingleton_tateH0_twistShiftAut_orbitCocycle x₀ htrans hH (stabAut x₀ hH' F) hz hn h
+  exact ⟨fun _ _ => (tateH0Congr (orbitFamilyEquiv x₀ htrans F)
+    (orbitFamilyEquiv_familyAut x₀ htrans hH hH' F) n).injective (Subsingleton.elim _ _)⟩
+
+include htrans hH hH' in
+/-- The lower Tate group of the sections of a family over a transitive orbit vanishes as soon as it
+vanishes for the module at the base point under a full turn. -/
+theorem subsingleton_tateHm1_familyAut_orbit {m n : ℕ} (hz : (orbitTurn σ x₀ hH) ^ m = 1)
+    (hn : period (orbitShift X σ) x₀ * m = n)
+    (h : Subsingleton (tateHm1 (stabAut x₀ hH' F (orbitTurn σ x₀ hH)) m)) :
+    Subsingleton (tateHm1 (F.familyAut σ) n) := by
+  haveI := subsingleton_tateHm1_twistShiftAut_orbitCocycle x₀ htrans hH (stabAut x₀ hH' F) hz hn h
+  exact ⟨fun _ _ => (tateHm1Congr (orbitFamilyEquiv x₀ htrans F)
+    (orbitFamilyEquiv_familyAut x₀ htrans hH hH' F) n).injective (Subsingleton.elim _ _)⟩
+
 end InverseGalois.CFT

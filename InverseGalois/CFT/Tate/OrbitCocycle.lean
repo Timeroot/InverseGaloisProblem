@@ -211,6 +211,26 @@ theorem herbrand_twistShiftAut_orbitCocycle (ρ : ↥H →* (B ≃+ B)) {m n : �
     (fun _ hj => Subtype.ext (orbitCocycle_of_ne x₀ htrans hj))
     (Subtype.ext (orbitCocycle_neg_one x₀ htrans)) hz hn
 
+/-- The upper Tate group of a family of copies of a module indexed by a transitive orbit vanishes
+as soon as it vanishes for the module at the base point under a full turn. -/
+theorem subsingleton_tateH0_twistShiftAut_orbitCocycle (ρ : ↥H →* (B ≃+ B)) {m n : ℕ}
+    (hz : (orbitTurn σ x₀ hH) ^ m = 1) (hn : period (orbitShift X σ) x₀ * m = n)
+    (h : Subsingleton (tateH0 (ρ (orbitTurn σ x₀ hH)) m)) :
+    Subsingleton (tateH0 (twistShiftAut ρ (orbitCocycleSub x₀ htrans hH) (orbitShift X σ)) n) :=
+  subsingleton_tateH0_twistShiftAut ρ (orbitShift X σ) x₀ htrans
+    (fun _ hj => Subtype.ext (orbitCocycle_of_ne x₀ htrans hj))
+    (Subtype.ext (orbitCocycle_neg_one x₀ htrans)) hz hn h
+
+/-- The lower Tate group of a family of copies of a module indexed by a transitive orbit vanishes
+as soon as it vanishes for the module at the base point under a full turn. -/
+theorem subsingleton_tateHm1_twistShiftAut_orbitCocycle (ρ : ↥H →* (B ≃+ B)) {m n : ℕ}
+    (hz : (orbitTurn σ x₀ hH) ^ m = 1) (hn : period (orbitShift X σ) x₀ * m = n)
+    (h : Subsingleton (tateHm1 (ρ (orbitTurn σ x₀ hH)) m)) :
+    Subsingleton (tateHm1 (twistShiftAut ρ (orbitCocycleSub x₀ htrans hH) (orbitShift X σ)) n) :=
+  subsingleton_tateHm1_twistShiftAut ρ (orbitShift X σ) x₀ htrans
+    (fun _ hj => Subtype.ext (orbitCocycle_of_ne x₀ htrans hj))
+    (Subtype.ext (orbitCocycle_neg_one x₀ htrans)) hz hn h
+
 end Herbrand
 
 end InverseGalois.CFT
