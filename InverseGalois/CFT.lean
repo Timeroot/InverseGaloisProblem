@@ -104,6 +104,8 @@ import InverseGalois.CFT.InertiaRestrict
 import InverseGalois.CFT.InertiaSubgroup
 import InverseGalois.CFT.KroneckerWeber
 import InverseGalois.CFT.Level
+import InverseGalois.CFT.Local.AdicAction
+import InverseGalois.CFT.Local.AdicUnits
 import InverseGalois.CFT.Local.DyadicAnisotropic
 import InverseGalois.CFT.Local.DyadicHilbert
 import InverseGalois.CFT.Local.DyadicHilbertMul
@@ -123,6 +125,7 @@ import InverseGalois.CFT.Local.PadicLocalField
 import InverseGalois.CFT.Local.PadicSquares
 import InverseGalois.CFT.Local.PadicSquaresTwo
 import InverseGalois.CFT.Local.RamifiedNormForm
+import InverseGalois.CFT.Local.UnitValuation
 import InverseGalois.CFT.Local.UnramifiedNormForm
 import InverseGalois.CFT.NormSubgroup
 import InverseGalois.CFT.ScalarSemidirect
@@ -649,6 +652,18 @@ it that are available here.
   product over the orbits of the order of a decomposition group; the short exact sequence of the
   units, the `S`-units and that lattice then multiplies this by the contribution of the infinite
   places.
+* `InverseGalois.CFT.Local.AdicAction` carries a field automorphism to the adic completions: it
+  preserves the valuation of an element up to moving the prime, so it is an isometry of the valued
+  field at a prime onto the valued field at the image prime, and extends by continuity to a ring
+  isomorphism of the completions.  The automorphisms fixing the prime therefore act on the
+  completion by isometric ring automorphisms, and preserve its ring of integers.
+* `InverseGalois.CFT.Local.UnitValuation` reads the valuation of a unit of a discretely valued
+  field as a homomorphism onto the integers, whose kernel is the unit group of the valuation ring.
+  A group acting by isometries acts trivially on the quotient, so the resulting short exact
+  sequence multiplies the Herbrand quotient of the units of the valuation ring by the order of the
+  group to give the Herbrand quotient of the units of the field.
+* `InverseGalois.CFT.Local.AdicUnits` applies this to the completion of a number field at a prime,
+  where the group is the decomposition group of the prime.
 * `InverseGalois.CFT.Local.PadicSquaresTwo` supplies the excluded prime: a dyadic unit is a square
   exactly when it is congruent to one modulo eight, and every nonzero dyadic number is a square
   times one of eight explicit representatives.
