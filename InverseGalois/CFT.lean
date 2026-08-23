@@ -157,6 +157,7 @@ import InverseGalois.CFT.Tate.Hexagon
 import InverseGalois.CFT.Tate.Isogeny
 import InverseGalois.CFT.Tate.Mul
 import InverseGalois.CFT.Tate.Orbit
+import InverseGalois.CFT.Tate.OrbitInduced
 import InverseGalois.CFT.Tate.PermLattice
 import InverseGalois.CFT.Tate.Permutation
 import InverseGalois.CFT.Tate.Pi
@@ -540,6 +541,10 @@ it that are available here.
 * `InverseGalois.CFT.Tate.Orbit` supplies that presentation for a single orbit: a permutation
   acting transitively on a finite set identifies it with the residues modulo its cardinality, so
   the free lattice on one orbit has the Herbrand quotient of the stabiliser of a point.
+* `InverseGalois.CFT.Tate.OrbitInduced` does the same for coefficients in an arbitrary module: a
+  family of copies of a module indexed by an orbit, permuted with a twist on passing the last
+  position, is the induced module of Shapiro's lemma, so its Herbrand quotient is that of the
+  module at one point under a full turn.
 * `InverseGalois.CFT.Tate.CyclicAction` states that computation for a cyclic group acting
   transitively on a finite set, where the orbit–stabiliser theorem reads the Herbrand quotient of
   the free lattice as the order of the stabiliser of a point: the form in which the places of a
