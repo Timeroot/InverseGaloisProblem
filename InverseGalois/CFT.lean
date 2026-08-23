@@ -232,6 +232,7 @@ import InverseGalois.CFT.Units.InfiniteIdele
 import InverseGalois.CFT.Units.InfiniteOrbit
 import InverseGalois.CFT.Units.LocalIdele
 import InverseGalois.CFT.Units.Places
+import InverseGalois.CFT.Units.SIdeleHerbrand
 import InverseGalois.CFT.Units.SUnit
 import InverseGalois.CFT.Units.SUnitHerbrand
 import InverseGalois.CFT.Units.UnitLattice
@@ -863,6 +864,12 @@ it that are available here.
   other place is unramified, the ideles that are units outside them have Herbrand quotient the
   product over the orbits of the index set of the orders of the decomposition groups: the same
   factor that appears in the Herbrand quotient of the `S`-units.
+* `InverseGalois.CFT.Units.SIdeleHerbrand` puts the archimedean and the finite factors together.
+  The ideles that are units outside the chosen places have Herbrand quotient the product of the
+  orders of the decomposition groups at the infinite places of the base field and at the orbits of
+  the chosen finite places, which is exactly the Herbrand quotient of the group of `S`-units times
+  the degree of the extension.  Dividing the one by the other will leave a group of Herbrand
+  quotient the degree, which is the first inequality of class field theory.
 * `InverseGalois.CFT.Local.UnitFiltration` sets up the two filtrations of a valued field: the
   additive one by the elements of small valuation, and the multiplicative one by the units
   congruent to one.  Subtracting one identifies a step of the unit filtration with the
