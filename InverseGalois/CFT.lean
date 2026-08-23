@@ -203,6 +203,7 @@ import InverseGalois.CFT.Tate.Mul
 import InverseGalois.CFT.Tate.NormalBasis
 import InverseGalois.CFT.Tate.Orbit
 import InverseGalois.CFT.Tate.OrbitCocycle
+import InverseGalois.CFT.Tate.OrbitIndex
 import InverseGalois.CFT.Tate.OrbitInduced
 import InverseGalois.CFT.Tate.OrbitTwist
 import InverseGalois.CFT.Tate.PermLattice
@@ -218,10 +219,13 @@ import InverseGalois.CFT.Tate.Restrict
 import InverseGalois.CFT.Tate.Shapiro
 import InverseGalois.CFT.Tate.Surjection
 import InverseGalois.CFT.Tate.Trivial
+import InverseGalois.CFT.Units.AdicOrbit
+import InverseGalois.CFT.Units.ArchimedeanIdeles
 import InverseGalois.CFT.Units.EquivariantLabel
 import InverseGalois.CFT.Units.GaloisAction
 import InverseGalois.CFT.Units.Herbrand
 import InverseGalois.CFT.Units.InfiniteIdele
+import InverseGalois.CFT.Units.InfiniteOrbit
 import InverseGalois.CFT.Units.LocalIdele
 import InverseGalois.CFT.Units.Places
 import InverseGalois.CFT.Units.SUnit
@@ -714,6 +718,11 @@ it that are available here.
   shifted block per index, so that for a finite cyclic group the Herbrand quotient of the free
   lattice on any finite set it acts on is the product over the orbits of the order of the
   stabiliser of a point.
+* `InverseGalois.CFT.Tate.OrbitIndex` reconciles the two ways of naming the orbits.  A map out of
+  the set that is invariant under the group and admits a section meeting every orbit identifies the
+  quotient by the orbit relation with the target of the map, and any invariant quantity — the order
+  of a stabiliser, for instance — has the same product over either index set.  So a product over the
+  orbits of the places of an extension is a product over the places of the base field.
 * `InverseGalois.CFT.Tate.InfinitePlaces` applies that to the infinite places of a Galois extension
   of number fields, which the Galois group permutes with the places of the base field as the set of
   orbits: the Herbrand quotient of the free lattice they span is the product of the orders of the
@@ -798,6 +807,10 @@ it that are available here.
   into the local factor of the group of ideles there.  Those places form a single orbit, so
   transporting all of the factors to a chosen one presents the factor as the module induced from
   the decomposition group, and its Herbrand quotient is the order of that group.
+* `InverseGalois.CFT.Units.AdicOrbit` says the same thing in the language of families of modules,
+  where no labelling of the orbit is needed: restricting the family of all completions to one orbit
+  and reading the action of the stabiliser of a point off the transports gives the local factor
+  Herbrand quotient the order of the decomposition group.
 * `InverseGalois.CFT.Local.InfiniteAction` builds the same picture at an infinite place.  An
   automorphism fixing such a place preserves its absolute value, so it is an isometry of the field
   for the metric of the place and extends to the completion there; the decomposition group of the
@@ -818,6 +831,13 @@ it that are available here.
 * `InverseGalois.CFT.Units.InfiniteIdele` assembles the infinite places above one infinite place of
   the base field into the local factor of the ideles there, by the same induction from the
   decomposition group as at a finite place.
+* `InverseGalois.CFT.Units.InfiniteOrbit` is the same computation in the language of families of
+  modules, restricting the family of completions at all the infinite places to one orbit.
+* `InverseGalois.CFT.Units.ArchimedeanIdeles` multiplies those local factors together.  The infinite
+  places of the extension break into one orbit above each infinite place of the base field, so the
+  archimedean part of the group of ideles has Herbrand quotient the product of the orders of the
+  decomposition groups: the same as the free lattice on the infinite places, which is the shape of
+  the unit lattice.  The two will cancel in the idele class group.
 * `InverseGalois.CFT.Local.UnitFiltration` sets up the two filtrations of a valued field: the
   additive one by the elements of small valuation, and the multiplicative one by the units
   congruent to one.  Subtracting one identifies a step of the unit filtration with the
