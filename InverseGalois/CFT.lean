@@ -151,6 +151,8 @@ import InverseGalois.CFT.Tate.GaloisH0
 import InverseGalois.CFT.Tate.Herbrand
 import InverseGalois.CFT.Tate.Hexagon
 import InverseGalois.CFT.Tate.Mul
+import InverseGalois.CFT.Tate.Prod
+import InverseGalois.CFT.Tate.Trivial
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
 
@@ -492,6 +494,11 @@ it that are available here.
 * `InverseGalois.CFT.Tate.GaloisH0` turns that description of the upper group into an isomorphism
   with the units of the base field modulo the norms, so that its order is the norm index and the
   Herbrand quotient of the unit group is that index.
+* `InverseGalois.CFT.Tate.Prod` computes the Tate groups of a product of two modules, where both
+  operators act coordinatewise, so that the orders and hence the Herbrand quotients multiply.
+* `InverseGalois.CFT.Tate.Trivial` computes the two Tate groups when the automorphism is the
+  identity, where the difference operator vanishes and the norm is multiplication by the order, and
+  reads off the Herbrand quotient of the integers with trivial action, which is that order.
 * `InverseGalois.CFT.Local.PadicSquaresTwo` supplies the excluded prime: a dyadic unit is a square
   exactly when it is congruent to one modulo eight, and every nonzero dyadic number is a square
   times one of eight explicit representatives.
