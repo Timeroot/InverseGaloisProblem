@@ -226,6 +226,7 @@ import InverseGalois.CFT.Units.AdicIdeleHerbrand
 import InverseGalois.CFT.Units.AdicOrbit
 import InverseGalois.CFT.Units.AdicSIdeles
 import InverseGalois.CFT.Units.ArchimedeanIdeles
+import InverseGalois.CFT.Units.ClassSet
 import InverseGalois.CFT.Units.EquivariantLabel
 import InverseGalois.CFT.Units.GaloisAction
 import InverseGalois.CFT.Units.Herbrand
@@ -877,6 +878,12 @@ it that are available here.
   the prime and not in its square, so it has valuation exactly one; its inverse is a unit of the
   completion of valuation one, fixed by the whole Galois group because it comes from the base field.
   The places where this fails divide the different ideal, so there are only finitely many of them.
+* `InverseGalois.CFT.Units.ClassSet` supplies the other input the comparison needs, the finiteness
+  of the class number.  Choosing one fractional ideal in each ideal class and collecting the primes
+  where those finitely many representatives are nontrivial gives a finite set of primes away from
+  which every system of orders vanishing at all but finitely many primes is realised by a single
+  element of the field; enlarging the set to the union of its translates makes it stable under the
+  Galois group without disturbing that property.
 * `InverseGalois.CFT.Local.UnitFiltration` sets up the two filtrations of a valued field: the
   additive one by the elements of small valuation, and the multiplicative one by the units
   congruent to one.  Subtracting one identifies a step of the unit filtration with the
