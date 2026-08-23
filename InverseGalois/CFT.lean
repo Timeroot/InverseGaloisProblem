@@ -148,6 +148,7 @@ import InverseGalois.CFT.TameRamification
 import InverseGalois.CFT.Tate.Basic
 import InverseGalois.CFT.Tate.BrauerRelative
 import InverseGalois.CFT.Tate.Congr
+import InverseGalois.CFT.Tate.CyclicAction
 import InverseGalois.CFT.Tate.Exact
 import InverseGalois.CFT.Tate.Galois
 import InverseGalois.CFT.Tate.GaloisH0
@@ -538,6 +539,10 @@ it that are available here.
 * `InverseGalois.CFT.Tate.Orbit` supplies that presentation for a single orbit: a permutation
   acting transitively on a finite set identifies it with the residues modulo its cardinality, so
   the free lattice on one orbit has the Herbrand quotient of the stabiliser of a point.
+* `InverseGalois.CFT.Tate.CyclicAction` states that computation for a cyclic group acting
+  transitively on a finite set, where the orbit–stabiliser theorem reads the Herbrand quotient of
+  the free lattice as the order of the stabiliser of a point: the form in which the places of a
+  Galois extension above a fixed place of the base contribute.
 * `InverseGalois.CFT.Local.PadicSquaresTwo` supplies the excluded prime: a dyadic unit is a square
   exactly when it is congruent to one modulo eight, and every nonzero dyadic number is a square
   times one of eight explicit representatives.
