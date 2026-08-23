@@ -155,6 +155,7 @@ import InverseGalois.CFT.Tate.Herbrand
 import InverseGalois.CFT.Tate.Hexagon
 import InverseGalois.CFT.Tate.Isogeny
 import InverseGalois.CFT.Tate.Mul
+import InverseGalois.CFT.Tate.Orbit
 import InverseGalois.CFT.Tate.PermLattice
 import InverseGalois.CFT.Tate.Permutation
 import InverseGalois.CFT.Tate.Pi
@@ -534,6 +535,9 @@ it that are available here.
   to every lattice commensurable with one.
 * `InverseGalois.CFT.Tate.PermLattice` reads that computation back on the free lattice of a
   permuted basis, once the basis is presented as a disjoint union of cyclically shifted blocks.
+* `InverseGalois.CFT.Tate.Orbit` supplies that presentation for a single orbit: a permutation
+  acting transitively on a finite set identifies it with the residues modulo its cardinality, so
+  the free lattice on one orbit has the Herbrand quotient of the stabiliser of a point.
 * `InverseGalois.CFT.Local.PadicSquaresTwo` supplies the excluded prime: a dyadic unit is a square
   exactly when it is congruent to one modulo eight, and every nonzero dyadic number is a square
   times one of eight explicit representatives.
