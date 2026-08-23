@@ -170,10 +170,15 @@ import InverseGalois.CFT.Tate.Permutation
 import InverseGalois.CFT.Tate.Pi
 import InverseGalois.CFT.Tate.Primes
 import InverseGalois.CFT.Tate.Prod
+import InverseGalois.CFT.Tate.RealBasis
 import InverseGalois.CFT.Tate.RealForm
 import InverseGalois.CFT.Tate.RealHerbrand
 import InverseGalois.CFT.Tate.Shapiro
+import InverseGalois.CFT.Tate.Surjection
 import InverseGalois.CFT.Tate.Trivial
+import InverseGalois.CFT.Units.GaloisAction
+import InverseGalois.CFT.Units.Herbrand
+import InverseGalois.CFT.Units.UnitLattice
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
 
@@ -568,6 +573,10 @@ it that are available here.
   lattice into another of the same rank, so that two lattices with isomorphic real representations
   have the same Herbrand quotient and the quotient may be computed in any convenient model of the
   representation.
+* `InverseGalois.CFT.Tate.RealBasis` puts that comparison in the form it is met in: two lattices
+  sitting inside one real vector space, each with a basis that is a basis of the space, and the two
+  actions induced by one and the same real endomorphism.  The change of basis matrix is then the
+  intertwiner, and the two Herbrand quotients agree.
 * `InverseGalois.CFT.Tate.PermLattice` reads that computation back on the free lattice of a
   permuted basis, once the basis is presented as a disjoint union of cyclically shifted blocks.
 * `InverseGalois.CFT.Tate.Orbit` supplies that presentation for a single orbit: a permutation
@@ -600,6 +609,23 @@ it that are available here.
   of the kernel is that of the lattice divided by the order of the group.  This is the shape of the
   unit lattice, whose real representation is the trace-zero part of the permutation representation
   on the infinite places.
+* `InverseGalois.CFT.Tate.Surjection` records the other elementary reduction: an equivariant
+  surjection has an invariant kernel, and when that kernel is finite the source and the target have
+  the same Herbrand quotient, so a finite torsion subgroup may be discarded.
+* `InverseGalois.CFT.Units.GaloisAction` lets a field automorphism act on the units of the ring of
+  integers, and recognises the roots of unity by the infinite places, so that they form an
+  invariant subgroup.
+* `InverseGalois.CFT.Units.UnitLattice` embeds the units logarithmically at all the infinite places
+  at once.  The kernel is the group of roots of unity, and forgetting one place identifies the
+  image with the unit lattice of Dirichlet's theorem, so it is a lattice of rank one less than the
+  number of places; the Galois group acts on it by permuting the places, and the units and the
+  lattice have the same Herbrand quotient.
+* `InverseGalois.CFT.Units.Herbrand` computes that quotient.  Adjoining the vector of the
+  multiplicities to the unit lattice gives a lattice of the full rank whose real span is that of
+  the free lattice on the infinite places, with the two actions induced by the same permutation of
+  coordinates: the Herbrand quotient of the units, times the degree of the extension, is therefore
+  the product of the orders of the decomposition groups at the infinite places, one factor of two
+  for each ramified real place of the base field.
 * `InverseGalois.CFT.Local.PadicSquaresTwo` supplies the excluded prime: a dyadic unit is a square
   exactly when it is congruent to one modulo eight, and every nonzero dyadic number is a square
   times one of eight explicit representatives.
