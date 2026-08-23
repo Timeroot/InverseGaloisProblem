@@ -35,6 +35,8 @@ a finite set of primes likewise.
 * `InverseGalois.CFT.herbrand_permLatticeAut_toPerm_of_fibers`: **the Herbrand quotient of the free
   lattice on a finite set acted on by a finite cyclic group is the product over the orbits of the
   order of the stabiliser of a point.**
+* `InverseGalois.CFT.herbrand_permLatticeAut_toPerm_orbits`: the same computation indexed by the
+  quotient of the set by the orbit relation.
 
 ## Tags
 
@@ -176,5 +178,20 @@ theorem herbrand_permLatticeAut_toPerm_of_fibers [Finite G] [Fintype I] {f : X �
     have hk' : σ ^ k = g := hk
     exact ⟨k, by rw [pow_toPerm_apply, hk', hg]⟩
   · rw [period_eq_card_orbit hσ, card_orbit_mul_card_stabilizer, hn]
+
+/-- **The Herbrand quotient of the free lattice on a finite set acted on by a finite cyclic group**
+is the product over the set of orbits of the order of the stabiliser of a chosen point of each.
+This is the previous computation with the canonical choice of index set, the quotient by the orbit
+relation. -/
+theorem herbrand_permLatticeAut_toPerm_orbits [Finite G] [Fintype (orbitRel.Quotient G X)]
+    (hσ : ∀ g : G, g ∈ Subgroup.zpowers σ) {n : ℕ} (hn : Nat.card G = n) :
+    herbrand (permLatticeAut (toPerm σ : Equiv.Perm X)) n
+      = ∏ o : orbitRel.Quotient G X, (Nat.card (stabilizer G o.out) : ℚ) := by
+  refine herbrand_permLatticeAut_toPerm_of_fibers (f := Quotient.mk'') (x₀ := Quotient.out)
+    (fun g x => Quotient.sound' (mem_orbit x g)) (fun i => i.out_eq') (fun y => ?_) hσ hn
+  have hy : y ∈ orbitRel.Quotient.orbit (Quotient.mk'' y : orbitRel.Quotient G X) :=
+    orbitRel.Quotient.mem_orbit.mpr rfl
+  rw [orbitRel.Quotient.orbit_eq_orbit_out _ Quotient.out_eq'] at hy
+  exact hy
 
 end InverseGalois.CFT
