@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Mathlib
 import InverseGalois.CFT.Local.AdicHerbrand
 import InverseGalois.CFT.Tate.OrbitCocycle
+import InverseGalois.CFT.Units.EquivariantLabel
 
 /-!
 # The local factor of the ideles at a place of the base field
@@ -22,8 +23,6 @@ above the chosen place of the base.
 
 ## Main results
 
-* `InverseGalois.CFT.stabilizer_eq_of_equivariant`: an injective equivariant labelling of a set by
-  places identifies the stabilisers.
 * `InverseGalois.CFT.herbrand_twistShiftAut_adicUnits`: **the local factor of the ideles at a place
   of the base field has Herbrand quotient the order of the decomposition group.**
 
@@ -41,27 +40,6 @@ variable {X : Type*} [Fintype X] [MulAction Gal(K/k) X] {ι : X → HeightOneSpe
   (hι : ∀ (g : Gal(K/k)) (x : X), ι (g • x) = g • ι x) (hinj : Function.Injective ι) (x₀ : X)
 
 include hι hinj
-
-omit [NumberField K] [Fintype X] in
-/-- **An injective equivariant labelling of a set by places identifies the stabilisers.** -/
-theorem stabilizer_eq_of_equivariant :
-    stabilizer Gal(K/k) (ι x₀) = stabilizer Gal(K/k) x₀ := by
-  ext g
-  rw [mem_stabilizer_iff, mem_stabilizer_iff, ← hι g x₀]
-  exact ⟨fun h => hinj h, fun h => congrArg ι h⟩
-
-omit [NumberField K] [Fintype X] in
-/-- The stabiliser of a point contains every automorphism fixing its label. -/
-theorem mem_stabilizer_of_smul_eq (g : Gal(K/k)) (hg : g • x₀ = x₀) :
-    g ∈ stabilizer Gal(K/k) (ι x₀) := by
-  rw [stabilizer_eq_of_equivariant hι hinj x₀]
-  exact hg
-
-omit [NumberField K] [Fintype X] in
-/-- Every automorphism fixing the label of a point fixes the point. -/
-theorem smul_eq_of_mem_stabilizer (g : ↥(stabilizer Gal(K/k) (ι x₀))) :
-    (g : Gal(K/k)) • x₀ = x₀ :=
-  hinj (by rw [hι]; exact g.2)
 
 /-- **The local factor of the ideles at a place of the base field has Herbrand quotient the order of
 the decomposition group.**  Transporting the factors of the product to the completion at a chosen

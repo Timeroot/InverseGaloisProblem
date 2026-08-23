@@ -108,6 +108,7 @@ import InverseGalois.CFT.Local.AdicAction
 import InverseGalois.CFT.Local.AdicHerbrand
 import InverseGalois.CFT.Local.AdicResidue
 import InverseGalois.CFT.Local.AdicUnits
+import InverseGalois.CFT.Local.ComplexHerbrand
 import InverseGalois.CFT.Local.DyadicAnisotropic
 import InverseGalois.CFT.Local.DyadicHilbert
 import InverseGalois.CFT.Local.DyadicHilbertMul
@@ -127,6 +128,8 @@ import InverseGalois.CFT.Local.HilbertIdentities
 import InverseGalois.CFT.Local.HilbertMap
 import InverseGalois.CFT.Local.HilbertMul
 import InverseGalois.CFT.Local.HilbertSymbol
+import InverseGalois.CFT.Local.InfiniteAction
+import InverseGalois.CFT.Local.InfiniteHerbrand
 import InverseGalois.CFT.Local.LegendreHilbert
 import InverseGalois.CFT.Local.NormalLattice
 import InverseGalois.CFT.Local.OddAnisotropic
@@ -205,8 +208,10 @@ import InverseGalois.CFT.Tate.Restrict
 import InverseGalois.CFT.Tate.Shapiro
 import InverseGalois.CFT.Tate.Surjection
 import InverseGalois.CFT.Tate.Trivial
+import InverseGalois.CFT.Units.EquivariantLabel
 import InverseGalois.CFT.Units.GaloisAction
 import InverseGalois.CFT.Units.Herbrand
+import InverseGalois.CFT.Units.InfiniteIdele
 import InverseGalois.CFT.Units.LocalIdele
 import InverseGalois.CFT.Units.Places
 import InverseGalois.CFT.Units.SUnit
@@ -732,10 +737,31 @@ it that are available here.
   quotient one, the units of the completion have Herbrand quotient the order of the decomposition
   group, and both Tate groups of the units of the valuation ring vanish when the decomposition
   group fixes a uniformizer.
+* `InverseGalois.CFT.Units.EquivariantLabel` records the one fact that a labelling of a set acted
+  on by a group by the points of another such set needs to satisfy for the two to have the same
+  decomposition groups: an injective equivariant map identifies the stabiliser of a point with the
+  stabiliser of its label.
 * `InverseGalois.CFT.Units.LocalIdele` assembles the completions above one place of the base field
   into the local factor of the group of ideles there.  Those places form a single orbit, so
   transporting all of the factors to a chosen one presents the factor as the module induced from
   the decomposition group, and its Herbrand quotient is the order of that group.
+* `InverseGalois.CFT.Local.InfiniteAction` builds the same picture at an infinite place.  An
+  automorphism fixing such a place preserves its absolute value, so it is an isometry of the field
+  for the metric of the place and extends to the completion there; the decomposition group of the
+  place therefore acts on the completion by ring automorphisms, faithfully because it already acts
+  faithfully on the dense subfield.
+* `InverseGalois.CFT.Local.ComplexHerbrand` computes the local Herbrand quotient at a ramified real
+  place.  The completion is the complex numbers, complex conjugation generates the Galois group of
+  `ℂ / ℝ`, and the norms from `ℂˣ` are the positive reals, so the Herbrand quotient of `ℂˣ` is the
+  index two of the norms.
+* `InverseGalois.CFT.Local.InfiniteHerbrand` combines the two cases.  A decomposition group at an
+  infinite place has order one or two, and it has order two exactly when the place is complex above
+  a real place, where the nontrivial element acts by complex conjugation.  So the units of the
+  completion have Herbrand quotient the order of the decomposition group, exactly as at a finite
+  place.
+* `InverseGalois.CFT.Units.InfiniteIdele` assembles the infinite places above one infinite place of
+  the base field into the local factor of the ideles there, by the same induction from the
+  decomposition group as at a finite place.
 * `InverseGalois.CFT.Local.UnitFiltration` sets up the two filtrations of a valued field: the
   additive one by the elements of small valuation, and the multiplicative one by the units
   congruent to one.  Subtracting one identifies a step of the unit filtration with the
