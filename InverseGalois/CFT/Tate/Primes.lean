@@ -23,6 +23,10 @@ contribution to the Herbrand quotient of the idele group.
   primes over the base is its stabiliser as an ideal.
 * `InverseGalois.CFT.herbrand_permLatticeAut_primesOver`: **the Herbrand quotient of the free
   lattice on the primes above a prime is the ramification index times the residue degree.**
+* `InverseGalois.CFT.herbrand_piAut_permLatticeAut`: the Herbrand quotient of a finite product of
+  permuted lattices is the product of their Herbrand quotients.
+* `InverseGalois.CFT.herbrand_permLatticeAut_primesOver_pi`: the same computation for the primes
+  above a finite family of primes of the base.
 
 ## Tags
 
@@ -64,5 +68,33 @@ theorem herbrand_permLatticeAut_primesOver (p : Ideal R) (hp : p ≠ ⊥) [p.IsM
       = (p.ramificationIdxIn S : ℚ) * (p.inertiaDegIn S : ℚ) := by
   rw [herbrand_permLatticeAut_toPerm hσ (primesOver.mk p P) hn, stabilizer_primesOver_mk,
     Ideal.card_stabilizer_eq p hp P, Nat.cast_mul]
+
+/-! ### Several primes at once -/
+
+/-- **The Herbrand quotient of a finite product of permuted lattices is the product of their
+Herbrand quotients.** -/
+theorem herbrand_piAut_permLatticeAut {ι : Type*} [Fintype ι] {X : ι → Type*}
+    {q : ∀ i, Equiv.Perm (X i)} {c : ι → ℚ} {n : ℕ}
+    (h : ∀ i, herbrand (permLatticeAut (q i)) n = c i) :
+    herbrand (piAut fun i => permLatticeAut (q i)) n = ∏ i, c i := by
+  rw [herbrand_piAut]
+  exact Finset.prod_congr rfl fun i _ => h i
+
+/-- **The Herbrand quotient of the free lattice on the primes above a finite set of primes** is the
+product of the ramification indices times the residue degrees. -/
+theorem herbrand_permLatticeAut_primesOver_pi {ι : Type*} [Fintype ι] (p : ι → Ideal R)
+    (hp : ∀ i, p i ≠ ⊥) (hmax : ∀ i, (p i).IsMaximal) (P : ι → Ideal S)
+    (hPmax : ∀ i, (P i).IsMaximal) (hover : ∀ i, (P i).LiesOver (p i))
+    (hsep : ∀ i, Algebra.IsSeparable (R ⧸ p i) (S ⧸ P i)) {σ : G}
+    (hσ : ∀ g : G, g ∈ Subgroup.zpowers σ) {n : ℕ} (hn : Nat.card G = n) :
+    herbrand (piAut fun i =>
+        permLatticeAut (toPerm σ : Equiv.Perm ((p i).primesOver S))) n
+      = ∏ i, ((p i).ramificationIdxIn S : ℚ) * ((p i).inertiaDegIn S : ℚ) := by
+  refine herbrand_piAut_permLatticeAut fun i => ?_
+  haveI := hmax i
+  haveI := hPmax i
+  haveI := hover i
+  haveI := hsep i
+  exact herbrand_permLatticeAut_primesOver (p i) (hp i) (P i) hσ hn
 
 end InverseGalois.CFT
