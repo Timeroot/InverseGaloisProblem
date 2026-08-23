@@ -22,6 +22,615 @@ because it rests on class field theory.
 
 ---
 
+## 0. Status (2026-08-21) — what has since been formalized
+
+This section is later than the rest of the document and supersedes it where they disagree. The
+study below rated Shafarevich "do not start"; that verdict was about the *arithmetic*, and it
+still stands. But the split was drawn in the wrong place. The **group-theoretic half is not
+expensive at all**, and it is now done — sorry-free and axiom-free.
+
+**Landed in `InverseGalois/Solvable/Shafarevich/`:**
+
+| file | content |
+|---|---|
+| `Frattini.lean` | `exists_nilpotent_normal_supplement` — Ore's supplement theorem |
+| `SemidirectAssoc.lean` | `SemidirectProduct.prodAssoc : (A × B) ⋊ U ≃* A ⋊ (B ⋊ U)` |
+| `Reduction.lean` | `SplitNilpotentEP`, and Ore's induction on the order |
+| `PrimePower.lean` | `splitNilpotentEP_of_splitPrimePowerEP` — Sylow splitting of the kernel |
+| `Main.lean` | the capstones |
+| `SplitAbelian.lean` | the unconditional abelian case |
+
+The headline is
+
+```lean
+theorem Shafarevich.isSolvable_isInverseGalois_of_splitPrimePowerEP
+    (hEP : SplitPrimePowerEP) (G : Type) [Group G] [Finite G] [IsSolvable G] :
+    IsInverseGalois G
+```
+
+**Shafarevich's theorem now follows from one statement**, `SplitPrimePowerEP`: *if a finite group
+`U` is a Galois group over `ℚ` and `H` is a finite `p`-group with a `U`-action, then `H ⋊[φ] U` is
+a Galois group over `ℚ`.* No group theory is left.
+
+The whole reduction is carried out for an **abstract realization predicate** `P : ∀ (G : Type)
+[Group G], Prop`, the only structural input being `Shafarevich.IsQuotientClosed P` (transport along
+a surjection) together with the trivial group. So it specializes for free to the regular predicate
+over `ℚ(T)`: `isSolvable_isRegularInverseGalois_of_splitPrimePowerEP` is the same theorem with
+`IsRegularInverseGalois` throughout. That statement is of course still conditional, and on a
+hypothesis that is *not* known — see "A warning about the regular route" below: regular
+realizability of an arbitrary ℓ-group over `ℚ(T)` is an open problem, so there is no theorem there
+to discharge it with. It is recorded because the reduction genuinely is predicate-independent.
+
+Two remarks on how this differs from the plan in §5:
+
+* **The Fitting subgroup is not needed, and is absent from Mathlib for groups.** Ore's theorem is
+  proved instead through `frattini` plus a Gaschütz argument (two Frattini arguments via
+  `Sylow.normalizer_sup_eq_top`, then `frattini_nongenerating`). The Gaschütz step is stated
+  quotient-free as `⁅N,N⁆ ≤ frattini G ∧ frattini G ≤ N ⇒ Group.IsNilpotent N`, which avoids
+  `↥N ⧸ …` entirely.
+* **The abelian and nilpotent cases do not meet.** `SplitAbelian.lean` records that a split
+  embedding problem with *abelian* kernel is already unconditional here, via the Dentzer–Stoll
+  wreath construction. It does not bootstrap: filtering a `p`-group kernel by its centre turns one
+  split problem into a split problem with abelian kernel **plus a residual lifting that is no
+  longer split**, and that lifting is exactly where class field theory is unavoidable. This is the
+  structural reason Ikeda/wreath reaches precisely the semiabelian groups and stops.
+
+**Arithmetic bricks landed alongside:**
+
+* **Milestone 7 is done.** `InverseGalois/NumberTheory/SplitCompletely.lean` proves Schur's theorem
+  on prime divisors of polynomial values (`infinite_setOf_prime_dvd_eval`) and deduces Serre's
+  Lemma 2.1.4, `infinite_setOf_prime_splitsCompletely`: for `K/ℚ` Galois, infinitely many rational
+  primes split completely in `K`. Elementary — no density theory, no L-functions, no Chebotarev.
+  Note that Mathlib has **no** "splits completely" predicate, so `SplitsCompletely` is defined here
+  as "every prime above `p` has ramification index and inertia degree one".
+* **Milestone 6 is done, in full and unconditionally.** Three files:
+  * `IdealNormCount.lean` proves `n ↦ #{I ⊴ 𝒪_K : absNorm I = n}` multiplicative and derives the
+    **Euler product for `NumberField.dedekindZeta`** indexed by the rational primes — which Mathlib
+    does not have. The proof uses no unique factorization of ideals, only `absNorm I ∈ I` together
+    with Bézout comaximality.
+  * `IdealEulerProduct.lean` gives the Euler product in its intrinsic form,
+    `dedekindZeta_eulerProduct_primeIdeal : ∏' 𝔭, (1 - N𝔭^{-s})⁻¹ = ζ_K(s)` for `re s > 1`. There is
+    no Euler product for a Dedekind domain anywhere in Mathlib — everything under
+    `Mathlib/NumberTheory/EulerProduct/` is ℕ-indexed — so this is built from scratch, mirroring
+    the structure of `EulerProduct/Basic.lean`.
+  * `SplitDensity.lean` defines `HasDirichletDensity` (Mathlib has no notion of prime density at
+    all) and proves `hasDirichletDensity_splitSet`: **the primes splitting completely in a Galois
+    number field of degree `n` have Dirichlet density `1/n`.** Hence the payoff, **statement (★) of
+    §1.5**, unconditionally:
+
+    ```lean
+    theorem infinite_setOf_splitsCompletely_not_splitsCompletely
+        (A B : Type*) [Field A] [NumberField A] [IsGalois ℚ A]
+        [Field B] [NumberField B] [IsGalois ℚ B]
+        (hlt : Module.finrank ℚ A < Module.finrank ℚ B) :
+        {p : ℕ | p.Prime ∧ SplitsCompletely A p ∧ ¬ SplitsCompletely B p}.Infinite
+    ```
+
+    This is the **only** consequence of Chebotarev's theorem that Scholz–Reichardt actually needs,
+    so the whole of class **(c)** in the §1.4 classification is now discharged. Note the hypotheses
+    differ slightly from (★) as stated in §1.5: no containment `A ⊆ B` and no index condition are
+    required, a degree inequality suffices, but **both** fields must be Galois over `ℚ`, not just
+    `B`. In the Scholz–Reichardt application that is free — the field `A` there is a compositum of
+    Galois extensions of `ℚ`. Two side-products worth
+    noting: `finite_ramifiedSet` (only finitely many rational primes ramify) had to be proved here,
+    since Mathlib has no "ramified ⇒ divides discriminant"; and `log ζ_K` is built as
+    `∑' 𝔭, -log(1 - N𝔭^{-s})` directly rather than by taking a logarithm of the product.
+
+---
+
+## 0.1 Status (2026-08-21, later the same day) — the class field theory layer
+
+Milestone 9 has since been done. **Mathlib contains no class field theory at all** — no Chebotarev
+in general, no Grunwald–Wang, no Kronecker–Weber, no Hasse norm theorem, no Artin map, no ray class
+groups, no ideles, no local class field theory, no Tate cohomology, no cup products, no Herbrand
+quotients, no Hochschild–Serre, no `K^ur`, no Krasner's lemma, no crossed products, no relative
+Brauer group, no local invariant `inv_v : Br(K_v) → ℚ/ℤ`. `Mathlib/Algebra/BrauerGroup/Defs.lean`
+carries the Brauer *monoid* of central simple algebras; the group law, Galois descent, and the
+uniqueness half of Wedderburn's theorem were all absent (Wedderburn uniqueness is still an explicit
+Mathlib TODO, and `L ⊗[K] L ≃ (Gal(L/K) → L)` does not exist there either). The class
+`IsNonarchimedeanLocalField` (`Mathlib/NumberTheory/LocalField/Basic.lean`) exists but has **zero
+instances**: not even `ℚ_[p]` is one.
+
+So the whole layer had to be built. It lives in `InverseGalois/CFT/`, is indexed by
+`InverseGalois/CFT.lean`, and is sorry-free and axiom-free throughout (`#print axioms` gives
+`[propext, Classical.choice, Quot.sound]` on every capstone).
+
+| group | content |
+|---|---|
+| `CFT/GaloisDescent.lean` | Galois descent for modules, absent from Mathlib |
+| `CFT/GroupCohomology/*` | cocycle ↔ `H²` dictionary, corestriction and the `[G : S] • id` relation, killing by the order of the group, normal form for cocycles of a cyclic group, `H²(cyclic) = invariants / norms` |
+| `CFT/Brauer/CrossedProduct*.lean` | the crossed product `⨁_σ L·u_σ`: central simple, split by `L`, multiplicative in the cocycle, trivial exactly for a coboundary |
+| `CFT/Brauer/Centralizer.lean`, `Split.lean`, `SkolemNoether.lean`, `Division.lean` | the double centralizer theorem, Skolem–Noether, Wedderburn's theorem in the split case, the division representative |
+| `CFT/Brauer/SplittingSubfield.lean`, `CrossedProductRecognition.lean`, `H2Surjective.lean` | **`Br(L/K) ≅ H²(Gal(L/K), Lˣ)`** for every finite Galois `L/K`, and hence `Br(L/K)` is killed by `[L : K]` |
+| `CFT/Brauer/CyclicBrauer.lean`, `CyclicNorm.lean` | for `L/K` cyclic, **`Br(L/K) ≅ Kˣ / N_{L/K}(Lˣ)`** |
+| `CFT/Brauer/MaximalSubfield.lean` | maximal commutative subalgebras; every Brauer class is split by a finite subextension of the algebraic closure |
+| `CFT/Brauer/Quaternion.lean`, `RealPlace.lean` | `-1` is not a norm from `ℂ` or from `ℚ(i)`, so `Br(ℂ/ℝ)` and `Br(ℚ(i)/ℚ)` are nontrivial; **`Br(ℂ/ℝ) ≅ ℤ/2`** |
+
+This is the classical Brauer-group half of local class field theory, over an arbitrary field. What
+it does **not** contain, and what item 2 of the §1.4 table needs, is the *arithmetic* input:
+the local invariant maps and the exactness of
+`0 → Br(K) → ⊕_v Br(K_v) → ℚ/ℤ → 0` (Albert–Brauer–Hasse–Noether). Those need the local theory —
+unramified extensions of a local field, the valuation-theoretic computation
+`Br(K^ur/K) ≅ ℚ/ℤ`, and then global reciprocity — none of which is reachable from here, and the
+first of which cannot even be stated until `ℚ_[p]` is made an instance of the local-field class.
+
+## 0.2 Status (2026-08-21) — the reduction, sharpened twice more
+
+`SplitPrimePowerEP` is no longer the frontier. Two further purely group-theoretic reductions have
+landed:
+
+* `Shafarevich/AbelianKernel.lean` peels the centre off a `p`-group kernel one layer at a time. The
+  centre is characteristic, so the quotient carries an induced action and the projection
+  `H ⋊[φ] U → (H/Z) ⋊[φ'] U` has commutative kernel; induction on the order gives
+  `splitPrimePowerEP_of_abelianKernelEP`. The hypothesis is now about embedding problems that are
+  no longer split, but whose kernel is **abelian**:
+  ```lean
+  def AbelianKernelEP : Prop :=
+    ∀ (E W : Type) [Group E] [Finite E] [Group W] [Finite W] (π : E →* W),
+      Function.Surjective π → IsMulCommutative π.ker → IsInverseGalois W → IsInverseGalois E
+  ```
+* `Shafarevich/MinimalKernel.lean` filters that abelian kernel further, down to a **minimal
+  elementary abelian** one.
+
+Both reductions are again carried out for an abstract quotient-closed predicate, so the regular
+analogues over `ℚ(T)` come for free.
+
+**Revised verdict.** Milestone 9 is done. Milestones 8, 10 and 11 — Kronecker–Weber,
+Scholz–Reichardt, Shafarevich's arithmetic core — remain out of reach, for exactly the reasons
+given in §4.1, and the two blockers are precisely rows 2 and 5 of the §1.4 table:
+Albert–Brauer–Hasse–Noether, and the gluing of local abelian characters (which over `ℚ` *is*
+Kronecker–Weber). Everything else on the route is now either done or elementary. What has changed
+is that the non-arithmetic scaffolding is no longer a cost, that the crossed-product side of the
+Brauer group is available in full, and that the target is a single, precisely stated,
+self-contained proposition about embedding problems with minimal elementary abelian kernel.
+
+## 0.3 Status (2026-08-22) — the degree-two slice of the arithmetic is done
+
+§0.1 named the missing arithmetic input as "the local invariant maps and the exactness of
+`0 → Br(K) → ⊕_v Br(K_v) → ℚ/ℤ → 0`". **In degree two, over `ℚ`, that is now proved**, by an
+argument that goes around the invariant maps entirely rather than through them: in exponent two the
+whole sequence degenerates into a statement about ternary quadratic forms, and Legendre's descent
+proves it directly.
+
+| statement | file |
+|---|---|
+| the local Hilbert symbol at every place of `ℚ`, bimultiplicative, computed explicitly | `CFT/Local/*` |
+| **Hilbert reciprocity** `∏_v (a, b)_v = 1` | `CFT/Global/Reciprocity.lean` |
+| **Hasse–Minkowski for ternary forms over `ℚ`** | `CFT/Global/HasseMinkowski.lean` |
+| **the Hasse norm theorem for `ℚ(√b)/ℚ`** = ABHN for quaternion algebras over `ℚ` | `CFT/Global/HasseNorm.lean` |
+| **Hasse–Minkowski for diagonal forms in any number of variables** | `CFT/Global/DiagHasse.lean` |
+| the same, freed of the invertibility hypothesis, and as a principle for **representing** a rational number | `CFT/Global/DiagRepr.lean` |
+| a diagonal form in ≥ 5 variables is isotropic at every **odd** place, so only `ℝ` and `ℚ₂` matter | `CFT/Global/OddQuinary.lean` |
+| the real place by inspection, and the resulting two-condition criterion in ≥ 5 variables | `CFT/Global/RealSigns.lean` |
+| **Hasse–Minkowski for an arbitrary (non-diagonal) rational form**, via congruence to a diagonal one | `CFT/Global/MatHasse.lean` |
+| a diagonal form in five dyadic **units** is isotropic, hence the ≥ 5-variable criterion for **odd integer** coefficients is the sign condition alone | `CFT/Local/DyadicQuinary.lean` |
+| nondegeneracy of the **dyadic** Hilbert symbol: `[ℚ_2^× : N(L^×)] = 2` and `Br(L/ℚ_2) ≅ ℤ/2` | `CFT/Local/DyadicNondegenerate.lean` |
+| **`IsNonarchimedeanLocalField ℚ_[p]`**, with `𝒪[ℚ_[p]] ≃+* ℤ_[p]` compact, complete, discrete, finite residue field | `CFT/Local/PadicLocalField.lean` |
+| a diagonal dyadic form with three unit coefficients and one of valuation one is isotropic | `CFT/Local/DyadicQuaternary.lean` |
+| isotropy is invariant under rescaling coefficients by squares or by a common scalar; dyadic square-class normalisation | `CFT/Global/DiagScale.lean` |
+| **`u(ℚ₂) ≤ 4`**: every diagonal form over `ℚ₂` in ≥ 5 variables is isotropic | `CFT/Global/Meyer.lean` |
+| **Meyer's theorem**: a diagonal rational form in ≥ 5 variables is isotropic iff it is indefinite, and then represents everything the real place allows | `CFT/Global/Meyer.lean` |
+| `u(ℚ_p) ≤ 4` at **every** finite place, and Meyer's theorem for an arbitrary symmetric rational matrix: rational zero iff real zero | `CFT/Global/Meyer.lean` |
+| every `p`-adic form in ≥ 5 variables, diagonal or not, is isotropic, and a diagonal one with nonvanishing coefficients is **universal** | `CFT/Global/Meyer.lean` |
+| **`u(ℚ₂) = 4` exactly**: the sum of four squares is anisotropic over `ℚ₂`, so five variables are genuinely needed | `CFT/Local/DyadicAnisotropic.lean` |
+| **`u(ℚ_p) = 4` exactly, at every finite place**: at an odd place the unramified norm form plus its multiple by the uniformiser is anisotropic | `CFT/Local/OddAnisotropic.lean` |
+| the five-variable hypothesis in Meyer's theorem is **sharp**: `⟨1, -5, -2, 10⟩` is isotropic over `ℝ` but anisotropic over `ℚ` | `CFT/Local/DyadicNormFive.lean` |
+
+All sorry-free and axiom-free. See `docs/Development/ClassFieldTheory.md` for the full map of the
+layer, the proof architecture of the descent, and why it is not circular with reciprocity.
+
+**This does not move the Shafarevich frontier.** Scholz–Reichardt needs ABHN for **odd** `ℓ`, and
+nothing in the ternary-forms argument survives the passage from exponent `2` to exponent `ℓ`: the
+whole point of the degree-two case is that a Brauer class of order two is a conic, which has no
+analogue. Rows 2 and 5 of the §1.4 table — ABHN in general, and the gluing of local abelian
+characters — remain exactly as stated in §0.2. What has changed is that the *degree-two* theory is
+complete and usable. The target named here a day earlier — Serre's existence theorem for Hilbert
+symbols, i.e. exponent-two Grunwald–Wang, and thence Hasse–Minkowski in `n` variables — has since
+been reached: the general-`n` Hasse principle is proved by induction on the number of variables
+with the quinary argument as the inductive step, and the odd-place computation then shows that
+from five variables on only the real and the dyadic place carry information. The diagonalisation
+step is supplied too — every symmetric matrix over a field in which `2` is invertible is congruent
+to a diagonal one, and congruence preserves isotropy and commutes with base change — so Serre's
+chapter on Hasse–Minkowski is complete for an arbitrary rational quadratic form, not only for a
+diagonal one. What is *not* reachable from any of this is the `u`
+-invariant of `ℚ₂`, whose proof runs through the classification of `2`-adic forms by their Hasse
+invariant. **That gap has since been closed, by a different route.** Rather than classify `2`-adic
+forms, normalise the five coefficients to units or twice units by square classes: if all five are
+of one kind the quinary unit form settles it, after dividing the whole form by two in the second
+case; otherwise, among five booleans not all equal, three agree and a fourth differs, so a
+four-variable subform has three coefficients of one kind and one of the other, and that quaternary
+form is isotropic by a second modulo-eight search. Hence `u(ℚ₂) ≤ 4`, and with the odd places and
+the real place, **Meyer's theorem**: a diagonal rational form in at least five variables is
+isotropic exactly when it is indefinite. So the `u`-invariant statement and Meyer's theorem, both
+named unreachable a few hours earlier, are proved. The bound is sharp: the sum of four squares is
+anisotropic over `ℚ₂` by the same modulo-eight congruence, so `u(ℚ₂) = 4` exactly. At an odd place the
+obstruction is a valuation instead of a congruence — the norm form of the unramified quadratic
+extension takes only values of even valuation, so adjoining its multiple by the uniformiser gives
+an anisotropic quaternary form — and hence `u(ℚ_p) = 4` at **every** finite place.
+
+One remark of §0.1 is now obsolete. It said that the local invariant maps "cannot even be stated
+until `ℚ_[p]` is made an instance of the local-field class"; `CFT/Local/PadicLocalField.lean`
+supplies that instance — the first anywhere, Mathlib's `IsNonarchimedeanLocalField` having had
+none — so the statements of local class field theory are now expressible over `ℚ_[p]`. Being able
+to state them is not being able to prove them: ABHN itself is untouched.
+
+---
+
+## 0.4 Status (2026-08-22, later) — auditing the seven inputs against the code
+
+§1.4 below classifies the arithmetic that Scholz–Reichardt consumes into seven inputs. That table
+was written before the class field theory layer existed. Re-reading it against what is now in the
+repository changes the picture substantially: **five of the seven are done or elementary, and only
+one is genuinely out of reach.**
+
+| § 1.4 input | rating there | actual status |
+|---|---|---|
+| 1. choice of `q` in the split case | (a) | **done** — `CFT/Scholz/PrimeChoice.lean` |
+| 2. `H²(ℚ, C_ℓ) → ∏_p H²(ℚ_p, C_ℓ)` injective (ABHN) | (d) | **the one real blocker** |
+| 3. local liftability at unramified `p` | (a) | **elementary**, and the statement is available |
+| 4. local liftability at tame ramified `p` | (d) | **(d)-lite**; every Scholz prime is tame (below) |
+| 5. gluing local characters into a global one | (d) | **elementary in this setting** (below) |
+| 6. linear disjointness of `ℚ(μ_ℓ, p^{1/ℓ})` | (a) | group-theoretic half **done** — `CFT/ScalarSemidirect.lean` |
+| 7. a prime with prescribed Frobenius | (c) | **done unconditionally** — `NumberTheory/SplitDensity.lean` |
+
+Three of these deserve comment.
+
+**Input 7 is exactly the theorem (★) of §1.5, and it is proved.**
+`InverseGalois.NumberTheory.infinite_setOf_splitsCompletely_not_splitsCompletely` states that for
+number fields `A ⊂ B` with `finrank ℚ A < finrank ℚ B` there are infinitely many rational primes
+splitting completely in `A` and not in `B`; it is deduced from
+`hasDirichletDensity_splitSet`, which gives the split set of a Galois number field Dirichlet
+density `1 / n`, with the Euler-product input discharged by
+`InverseGalois.NumberTheory.eulerProductHypothesis`. No Chebotarev, no `L`-functions of nontrivial
+characters — the analytic content is the pole of the Dedekind zeta function alone. So the input
+that §1.4 rated hardest after ABHN costs nothing.
+
+**Input 6's group theory is done.** `CFT/ScalarSemidirect.lean` builds
+`ScalarSemidirect ℓ s = (Fin s → ZMod ℓ) ⋊ (ZMod ℓ)ˣ` with the scalar action and proves
+`scalarSemidirect_not_exists_quotient_card`: for `ℓ` odd it has no quotient of order `ℓ`, because
+conjugation by `-1` inverts the module, so the module lies in the commutator subgroup, and the
+complement has order `ℓ - 1`, which `ℓ` does not divide. This is the only place in the whole
+argument where `ℓ ≠ 2` is used. What remains of input 6 is the *field-theoretic* half: identifying
+`Gal(ℚ(μ_ℓ, p₁^{1/ℓ}, …, p_s^{1/ℓ})/ℚ)` with that semidirect product.
+
+**Kronecker–Weber is not a Scholz–Reichardt blocker.** Milestone 8 below lists it as a gate. It is
+not one, for the following reason: in the Scholz condition `(S_N)` every ramified prime `p`
+satisfies `p ≡ 1 mod ℓ^N`, hence `p ≠ ℓ`, hence the ramification is **tame** and the inertia group
+at `p` is cyclic of order dividing `ℓ^N`, with the local extension contained in the tame abelian
+part of `ℚ_p^ab`, which is `ℚ_p(μ_{p^k})`-by-unramified and completely explicit. Input 4 is
+therefore a statement about `(ℤ/ℓ^N)²` = (unramified) × (tame), and input 5 — Serre's Lemma
+2.1.6, gluing prescribed local abelian characters into one global Dirichlet character — reduces
+to choosing a Dirichlet character of the right conductor, because the local conditions live on
+cyclotomic fields to begin with. Neither needs the *converse* statement that every abelian
+extension of `ℚ` is cyclotomic.
+
+A caution recorded here so it is not rediscovered: **`(S_N)` is not closed under compositum**
+without the splitting hypotheses of `CFT/Scholz/SplitCase.lean`. Take `ℓ = 2`, `N = 1`: `ℚ(√3)`
+and `ℚ(√−3)` are each ramified only at `3` (and, for the first, `2`), but their compositum
+`ℚ(√3, i)` acquires a ramified prime whose inertia is not of split type. The compositum theorem
+`IsScholz.of_sup_eq_top` genuinely needs the two-way splitting hypotheses it carries.
+
+**Conclusion.** The single irreducible obstruction is the central embedding step, isolated in the
+code as the hypothesis `InverseGalois.CFT.IsCentralStepSolvable ℓ` of
+`CFT/Scholz/Induction.lean`, and its arithmetic content is ABHN for cyclic algebras of odd degree
+over `ℚ`. Everything the induction needs *around* that step is now either proved or elementary.
+`isScholzRealizable_of_isPGroup` is stated with that hypothesis and is otherwise complete: supply
+ABHN and every finite `ℓ`-group, `ℓ` odd, is realised over `ℚ`.
+
+---
+
+## 0.5 Status (2026-08-22, evening) — the hypothesis narrowed three times
+
+ABHN did not fall. What did happen is that the *statement* of the remaining hypothesis was cut
+down three times, so that the arithmetic still owed is as small as the argument allows, and input 6
+was finished on both halves.
+
+**The step is only needed for `ℓ`-groups.** The induction of `CFT/Scholz/Induction.lean` peels a
+central subgroup of order `ℓ` off a group of order `ℓ ^ k`, so the source of the surjection it
+feeds to the step is always an `ℓ`-group. `IsCentralStepSolvable ℓ` now carries `IsPGroup ℓ G` as a
+hypothesis; the old statement quantified over all finite `G`, which is strictly more than
+Scholz–Reichardt proves.
+
+**The step is only needed for non-split extensions.** `CFT/Scholz/SplitReduction.lean` proves
+`IsCentralStepSolvable.of_nonsplit`: a surjection with central kernel admitting a homomorphic
+section presents its source as `H × C_ℓ` (`mulEquivProdOfSection`), and the compositum construction
+of the split case already realises such a product — without even spending a level, since
+`IsScholzRealizable.mono` lowers the level for free.
+
+**The step is only needed for kernels inside the Frattini subgroup.**
+`CFT/Scholz/FrattiniStep.lean` proves `IsCentralStepSolvable.of_frattini`: a kernel of prime order
+escaping some maximal subgroup `M` meets `M` trivially and generates the group with it, so `M` is a
+complement and the surjection restricts to an isomorphism `M ≅ H` whose inverse is a section. Only
+Frattini kernels are left, and those are exactly the extensions with a nonzero obstruction.
+
+So the hypothesis that stands between the repository and Scholz–Reichardt is now
+
+> `IsFrattiniCentralStepSolvable ℓ`: for a finite **`ℓ`-group** `G` surjecting onto `H` with
+> **central** kernel of order `ℓ` contained in the **Frattini subgroup** of `G`, a realization of
+> `H` satisfying `(S_{N+1})` extends to one of `G` satisfying `(S_N)`.
+
+**The conclusion was raised from `ℓ`-groups to odd nilpotent groups.**
+`CFT/Scholz/NilpotentOdd.lean`: a finite nilpotent group is the product of its Sylow subgroups,
+which are `q`-groups for the odd primes `q` dividing its order and pairwise coprime, so granted the
+step for every odd prime, **every finite nilpotent group of odd order is a Galois group over `ℚ`.**
+
+**Input 6 is complete.** `CFT/Scholz/RadicalDisjoint.lean` proves the field-theoretic half
+abstractly — a number field Galois over `ℚ` and generated by a primitive `ℓ`-th root of unity `ζ`
+together with elements whose `ℓ`-th powers are rational has no quotient of order `ℓ`, because the
+automorphism squaring `ζ` conjugates every automorphism fixing `ζ` into its square and hence forces
+the whole `ζ`-fixing subgroup into the commutator subgroup — and `CFT/Scholz/RadicalTower.lean`
+builds the field itself, as the splitting field of `∏_{c ∈ {1} ∪ S} (X ^ ℓ − c)` inside
+`AlgebraicClosure ℚ`, so `inf_radicalField_eq_bot` is available in the form the induction wants.
+
+**Unconditional by-product.** The same session's group theory gave a new class of *regular*
+realizations, which owe nothing to any hypothesis: a finite group with a normal abelian subgroup of
+cyclic quotient is semiabelian (`Solvable/SemiabelianCriterion.lean`), hence regular over `ℚ(T)`
+(`Rigidity/RET/Wreath/AbelianByCyclic.lean`). The covering argument replaces a section: the cyclic
+group generated by a lift of a generator of the quotient, together with the abelian subgroup,
+surjects the semidirect product onto the group. Metacyclic groups and generalized quaternion
+groups are the visible cases.
+
+---
+
+## 0.6 Status (2026-08-22, night) — the prime 2 handed to geometry, and a wider semiabelian class
+
+Two things happened. The conditional theorem stopped being about odd groups, and the
+unconditional class of regular realizations grew.
+
+**The prime `2` is no longer an exception; it is a hypothesis on one Sylow subgroup.**
+`CFT/Scholz/NilpotentSylowTwo.lean` splits the nilpotent assembly by prime: the odd Sylow
+subgroups go through the Scholz–Reichardt induction, and the Sylow `2`-subgroup is left as an
+assumption. `InverseGalois/Shafarevich.lean`, a new top-level module, discharges that assumption
+with the *geometric* route — the Dentzer–Stoll wreath product construction, which is
+unconditional — and so proves
+
+> granted `IsCentralStepSolvable q` for every odd prime `q`, **a finite nilpotent group whose
+> Sylow `2`-subgroup is semiabelian is a Galois group over `ℚ`**,
+
+together with the corollaries for a Sylow `2`-subgroup that is abelian, cyclic, or of order at
+most `8` — the last in the form *every finite nilpotent group of order not divisible by `16`*.
+The two routes are genuinely independent: one is arithmetic and conditional, the other geometric
+and unconditional, and they are joined only by the coprime-product closure of the realization
+predicate.
+
+**The semiabelian class was widened.** All of the following are new, sorry- and axiom-free, and
+each one is immediately a *regular* realization over `ℚ(T)` through
+`isRegularInverseGalois_of_isSemiabelian`; the corollaries are collected in
+`Rigidity/RET/Wreath/SmallGroups.lean`.
+
+* `Solvable/SemiabelianZGroup.lean` — **every finite Z-group is semiabelian**: Mathlib's
+  `IsZGroup.isCyclic_commutator` and `IsZGroup.isCyclic_abelianization` exhibit a group all of
+  whose Sylow subgroups are cyclic as metacyclic, which the metacyclic criterion already covers.
+  In particular **every finite group of squarefree order is regular over `ℚ(T)`.**
+* `Solvable/SemiabelianHall.lean` — the splitting criteria: a normal abelian subgroup with a
+  complement (Schur–Zassenhaus, or a normal abelian Sylow subgroup, or any homomorphic section)
+  and a semiabelian quotient gives a semiabelian group.
+* `Solvable/SemiabelianSmall.lean` — a group with an abelian subgroup whose index is the smallest
+  prime factor of the order is semiabelian, whence the orders `p`, `p ^ 2`, `p ^ 3` and `p * q`.
+* `Solvable/SemiabelianCriterion.lean` gained `IsSemiabelian.of_mul_comm`, the abelian case with
+  commutativity as a hypothesis rather than an instance.
+
+What this does *not* do is move ABHN. The hypothesis of §0.5 is unchanged and remains the single
+arithmetic debt.
+
+---
+
+## 0.7 Status (2026-08-22, late) — class two, every order below 24, and the Frattini induction
+
+The semiabelian class was pushed again — once structurally, by nilpotency class, and once by
+*order* — and the conditional nilpotent theorem moved one power of two.
+
+**Every finite group of nilpotency class at most `2` is semiabelian**
+(`Solvable/SemiabelianClassTwo.lean`, `IsSemiabelian.of_commutator_le_center`). This is the
+structural high point of the batch and it is proved by the Frattini induction below in three lines
+of mathematics: if `G' ≤ Z(G)` and `x ∉ Φ(G)`, then `A = ⟨x⟩ · Z(G)` is abelian, and it is normal
+because `[A, G] ≤ G' ≤ Z(G) ≤ A`; a maximal subgroup supplementing `A` is proper and again of class
+at most `2`, so the induction closes. Every subgroup of a class-`2` group has class at most `2`,
+which is exactly what the induction needs and what fails for class `3`. In particular every
+extraspecial group, every group of order `p ^ 3`, and every `2`-group of class `2` — of any order —
+is regular over `ℚ(T)`, so the hypothesis on the prime `2` in the conditional Shafarevich theorem is
+now met by an unbounded family of `2`-groups.
+
+**Every finite group of order less than `24` is semiabelian**
+(`Solvable/SemiabelianSmallOrders.lean`, `IsSemiabelian.of_card_lt_twentyfour`), hence regular over
+`ℚ(T)`. Two new shape criteria were needed to close the gaps in the enumeration:
+
+* `Solvable/SemiabelianP2Q.lean` — **order `p ^ 2 * q`** (`IsSemiabelian.of_card_eq_sq_mul_prime`).
+  Sylow counting produces a normal Sylow subgroup in every case; the one order at which the counts
+  admit no immediate normal subgroup, `12` with `n₂ = 3`, is settled separately by showing the
+  Sylow `2`-subgroup is unique there.
+* `Solvable/SemiabelianP2Q2.lean` — **order `p ^ 2 * q ^ 2`**
+  (`IsSemiabelian.of_card_eq_sq_mul_sq`), whence the orders `36` and `100`. The one shape the
+  counts leave open is `36` with four Sylow `3`-subgroups; there the kernel of the conjugation
+  action on those four subgroups has order `3`, is central, and its quotient of order `12` hands
+  back a normal Sylow `2`-subgroup.
+* `Solvable/SemiabelianP4.lean` — **order `p ^ 4` for every prime `p`**
+  (`IsSemiabelian.of_card_eq_prime_pow_four`). A maximal abelian normal subgroup of a `p`-group is
+  self-centralizing, and in a group of order `p ^ 4` self-centralizing forces index at most `p`,
+  so the quotient is cyclic and the criterion of §0.6 applies. In particular every group of order
+  `16` is semiabelian.
+
+`24` is exactly the right place for the enumeration to stop. **`SL(2,3)`, of order `24`, is the
+smallest non-semiabelian group**: its only abelian normal subgroup is its centre `C₂`, which is
+also its Frattini subgroup, so no abelian normal subgroup escapes the Frattini subgroup and no
+supplement argument can start. The milestone is sharp, not an artefact of the criteria available.
+
+**The supplement argument was isolated as an induction** (`Solvable/SemiabelianFrattini.lean`).
+Call a finite group *Frattini-supplemented* when, unless trivial, it has an abelian normal subgroup
+not contained in its Frattini subgroup. Such a subgroup is supplemented by a maximal subgroup —
+a *proper*, hence smaller, subgroup — so `IsSemiabelian.of_isFrattiniSupplemented` turns the
+covering criterion into a genuine induction on the order. This is the general form of every
+order-by-order argument above, and it is also precisely what `SL(2,3)` defeats.
+
+**Two criteria for a dominant prime** (`Solvable/SemiabelianLargePrime.lean`). If `|G| = m * q`
+with `q` prime and `m < q`, the number of Sylow `q`-subgroups divides `m` and is `≡ 1 mod q`, so it
+is `1`: the Sylow subgroup is normal, cyclic of prime order, and `G` is semiabelian as soon as the
+quotient of order `m` is (`IsSemiabelian.of_card_eq_mul_prime_of_lt`). The same argument with
+`|G| = m * q ^ 2` gives a normal Sylow subgroup of order `q ^ 2`, which is abelian
+(`of_card_eq_mul_prime_sq_of_lt`). Combined with the order-`<24` theorem this yields two infinite
+families with no bound on `|G|`: `of_card_eq_mul_prime_of_lt_twentyfour` and
+`of_card_eq_mul_prime_sq_of_lt_twentyfour`, for `m < 24 < q`.
+
+`Solvable/SemiabelianSylowCount.lean` replaces the size comparison `m < q` by the exact condition
+the counting argument needs: no divisor of `m` other than `1` is congruent to `1` modulo `q`. That
+is a statement about the finite set `m.divisors`, hence decidable, so at a concrete order it is
+discharged by evaluation — the orders `40`, `45`, `75` and `99` are recorded that way.
+
+**The hypothesis on the prime `2` is now met structurally as well as numerically.**
+`isInverseGalois_of_isNilpotent_of_classTwo_sylow_two`: granted the odd central step, a finite
+nilpotent group whose Sylow `2`-subgroup has nilpotency class at most `2` is a Galois group over
+`ℚ`, with no bound at all on the order.
+
+**The conditional headline moved from `16` to `32`.** With order `16` now semiabelian,
+`isInverseGalois_of_isNilpotent_of_not_dvd_thirtytwo` says: granted the odd central step, every
+finite nilpotent group of order not divisible by `32` is a Galois group over `ℚ`. The Sylow
+`2`-subgroup then has order at most `16`, and every group of order `1, 2, 4, 8, 16` is semiabelian.
+
+**The arithmetic hypothesis was narrowed.** `isInverseGalois_of_..._of_frattini` variants assume
+only `IsFrattiniCentralStepSolvable q` — the central step for surjections whose kernel lies inside
+the Frattini subgroup of the source. A central kernel of prime order escaping the Frattini subgroup
+is complemented by a maximal subgroup, so that extension splits and is realised by a compositum
+with no arithmetic at all. This is the narrowest form the induction actually calls for, and hence
+the smallest statement ABHN would have to supply.
+
+ABHN itself is untouched. `CFT/Global/` is, on inspection, entirely the `ℓ = 2` world —
+Davenport–Cassels, Hilbert symbols, the Hasse principle for diagonal quadratic forms — so the
+odd-`ℓ` injectivity of `H²(ℚ, C_ℓ) → ∏_p H²(ℚ_p, C_ℓ)` is not close. It remains the single debt.
+
+---
+
+## 0.8 How far the geometric route can go at all — the semiabelian literature
+
+The conditional nilpotent theorem needs the Sylow `2`-subgroup to be semiabelian, so it is worth
+knowing where that hypothesis stops being satisfiable. The reference is
+
+> M. Kida, *On semiabelian groups*, J. Group Theory **27** (2024), 697–712,
+> DOI [10.1515/jgth-2024-0010](https://doi.org/10.1515/jgth-2024-0010) (open access),
+
+which is the first systematic study of which groups are semiabelian since Dentzer introduced the
+class. Its facts, in the order they matter here.
+
+**Not every finite `2`-group is semiabelian.** Wilkens' classification splits the non-modular
+quaternion-free `2`-groups into types A, B, C; types A and B are semiabelian (Kida, Prop. 3.10) but
+type C is not (Kida, Thm 4.6). So the geometric route can never, by itself, finish the nilpotent
+case of Shafarevich: there is a genuine obstruction at the prime `2`, not merely a gap in the
+criteria available here.
+
+**Where the obstruction starts.** Kida's Magma computation (Example 5.5) lists every non-semiabelian
+*stem* group of order at most `100`:
+
+  `(24,3) = SL(2,3)`, `(48,28) = C2 . S4`, `(64,8) = C2² . SD16`, `(64,41) = D8 ⋊ C4`,
+  `(96,3)`, `(96,190)`, `(96,201)`, `(96,203)`.
+
+Since being semiabelian is invariant under isoclinism (Kida, Thm 1.1) and every group is isoclinic
+to a stem group, this says: the smallest non-semiabelian group is `SL(2,3)` of order `24`, and the
+smallest non-semiabelian **`2`-group** has order `64`. Every group of order `32` is semiabelian.
+So `isInverseGalois_of_isNilpotent_of_not_dvd_thirtytwo` could in principle be improved to
+"not divisible by `64`" and no further — but that would mean checking all `51` groups of order `32`,
+whereas the criteria formalized here are structural.
+
+**The criteria Kida proves.** Nilpotent of class `2` (Thompson; formalized here in §0.7); solvable
+with all Sylow subgroups abelian (Thompson); modular `p`-groups and Hamiltonian `2`-groups
+(Prop. 3.6); Wilkens types A and B (Prop. 3.10); the isoclinism invariance (Thm 1.1); and, for
+non-nilpotent solvable groups, a criterion through Carter subgroups (Prop. 5.4). The class is closed
+under quotients, direct products and wreath products, but **not** under subgroups — `(96,204)` is
+semiabelian and contains `SL(2,3)`, which is not. That failure of subgroup-closure is exactly what
+makes the Frattini induction of §0.7 have to carry its hypothesis along by hand.
+
+**Consequences worth formalizing, in order of value.** Thompson's abelian-Sylow criterion is the
+widest of them and subsumes a great deal: a group of cubefree order has all its Sylow subgroups of
+order `1`, `p` or `p²`, hence abelian, so *every finite solvable group of cubefree order is
+semiabelian*, which contains the whole `p^a q^b` small-order zoo already treated one shape at a
+time. Wreath-product closure is the next: iterated wreath products of `C_p` are exactly the Sylow
+`p`-subgroups of the symmetric groups, an unbounded family of `p`-groups.
+
+---
+
+## 0.9 Status (2026-08-22, late evening) — Thompson's criterion, wreath closure, order below 32
+
+Both of the "consequences worth formalizing" of §0.8 are now in the repository, sorry- and
+axiom-free, together with one more step of the enumeration of small orders.
+
+**Thompson's abelian-Sylow criterion.** `InverseGalois/Solvable/SemiabelianAGroup.lean`:
+
+```lean
+IsSemiabelian.of_forall_sylow_comm {G : Type} [Group G] [Finite G] [IsSolvable G] :
+  (∀ p : ℕ, p.Prime → ∀ (P : Sylow p G) (x y : ↥(P : Subgroup G)), x * y = y * x) →
+    IsSemiabelian G
+
+IsSemiabelian.of_isSolvable_of_cubefree {G : Type} [Group G] [Finite G] [IsSolvable G] :
+  (∀ p : ℕ, p.Prime → ¬ p ^ 3 ∣ Nat.card G) → IsSemiabelian G
+```
+
+The proof is the Frattini induction of §0.7 with a new supply of abelian normal subgroups escaping
+the Frattini subgroup. Write `Q = frattini G`, which is proper and normal. The quotient `G ⧸ Q` is
+nontrivial and solvable, so it has a minimal normal subgroup `K` that is elementary abelian of some
+exponent `p`; let `N` be its preimage in `G` and `P` a Sylow `p`-subgroup of `N`. Then `P ⊔ Q = N`,
+because the index of the join divides both the `p`-free index of `P` in `N` and the `p`-power
+`Q.relIndex N`. Frattini's argument (`Sylow.normalizer_sup_eq_top`) gives
+`(P : Subgroup G).normalizer ⊔ N = ⊤`, hence `normalizer ⊔ Q = ⊤`, and since the Frattini subgroup
+is non-generating this forces `normalizer = ⊤`: `P` is normal in `G`. It is abelian because it is a
+`p`-subgroup and therefore sits inside a Sylow `p`-subgroup of `G`, which is abelian by hypothesis;
+and it is not contained in `Q`, since otherwise `N = P ⊔ Q = Q`. The hypothesis passes to subgroups
+(a Sylow subgroup of a subgroup is contained in a Sylow subgroup of the whole group), which is what
+lets the induction on `Nat.card G` run in spite of the failure of subgroup-closure for
+semiabelianness itself.
+
+**Wreath closure.** `InverseGalois/Solvable/SemiabelianWreath.lean`:
+
+```lean
+IsSemiabelian.regularWreathProduct : IsSemiabelian D → IsSemiabelian Q → IsSemiabelian (D ≀ᵣ Q)
+IsSemiabelian.iteratedWreathProduct : IsSemiabelian G → ∀ n, IsSemiabelian (IteratedWreathProduct G n)
+IsSemiabelian.sylow_perm {p n : ℕ} [Fact p.Prime] {α : Type} [Finite α] :
+  Nat.card α = p ^ n → ∀ P : Sylow p (Equiv.Perm α), IsSemiabelian ↥(P : Subgroup (Equiv.Perm α))
+```
+
+The induction is on the derivation of `IsSemiabelian D`, using the functoriality of `D ≀ᵣ Q` in its
+bottom argument: an injection `D₁ →* D₂` induces an injection of wreath products and a surjection
+induces a surjection, so the `of_surjective` case is immediate, and the semidirect-product case
+identifies the kernel of `mapLeft SemidirectProduct.rightHom` as an abelian normal subgroup with a
+semiabelian quotient. The Sylow statement is Mathlib's
+`Sylow.mulEquivIteratedWreathProduct`, which presents a Sylow `p`-subgroup of `Equiv.Perm α` for
+`Nat.card α = p ^ n` as the `n`-fold iterated wreath product of a group of order `p`.
+
+**One more order.** `IsSemiabelian.of_card_lt_thirtytwo` covers every finite group of order less
+than `32` other than `24`: the orders `25` to `31` are `5²`, `2 · 13`, `3³`, `2² · 7`, the primes
+`29` and `31`, and the squarefree order `30`, each already covered by a shape criterion. `24` is
+`SL(2,3)`'s order and is genuinely excluded. `Squarefree 30` needs `decide +kernel` — plain `decide`
+gets stuck on the well-founded recursion in `Nat.minSqFac`, and `norm_num` has no extension for it.
+
+**Regular corollaries.** Each of these appears in `RET/Wreath/SmallGroups.lean` as an entry of the
+catalogue of regular Galois groups over `ℚ(T)`: `isRegularInverseGalois_of_forall_sylow_comm`,
+`isRegularInverseGalois_of_isSolvable_of_cubefree`, `isRegularInverseGalois_sylow_perm`,
+`isRegularInverseGalois_iteratedWreathProduct`, `isRegularInverseGalois_of_card_lt_thirtytwo`.
+
+**What blocks the next order.** The conditional nilpotent theorem is still
+`isInverseGalois_of_isNilpotent_of_not_dvd_thirtytwo`, because the criteria above say nothing about
+a `2`-group of order `32` in which *every* abelian normal subgroup lies inside the Frattini
+subgroup. The situation is completely pinned down: for such a `G`, a maximal abelian normal
+subgroup `A` is self-centralizing, `|A| = 4` is impossible (`Aut C4` and `Aut (C2 × C2)` have no
+subgroup of order `8`), `|A| ≤ 2` forces `C_G(A) = G`, and `|A| ≥ 16` makes `G` abelian or gives an
+abelian subgroup of index `2`; so `|A| = 8` and, `G` being non-cyclic, `A = Φ(G)` with
+`G / A ≅ C2 × C2` acting faithfully. For `A ≅ C8` this is contradictory: `x² ∈ A` cannot generate
+`A` (that would put `x` in `C_G(A)`), so the commutator `[x, y]` is a square in `A`, and then
+`⟨a², y⟩` is an abelian normal subgroup of order `8` outside `A`. The cases `A ≅ C4 × C2` and
+`A ≅ C2³` (where `G / A` is one of the Klein subgroups of `GL(3,2)`) are the remaining work, and
+they are what stands between `not_dvd_thirtytwo` and the sharp `not_dvd_sixtyfour` of §0.8.
+
+Past `32`, the orders `33` to `47` are all covered already — `40 = 2³ · 5` and `45 = 3² · 5` by the
+divisor count that makes the largest Sylow subgroup unique, `36 = 2² · 3²` by the `p² q²` file, the
+rest by shape — so `InverseGalois/Solvable/SemiabelianFortyEight.lean` records
+
+```lean
+IsSemiabelian.of_card_lt_fortyeight {G : Type} [Group G] [Finite G] :
+  Nat.card G < 48 → Nat.card G ≠ 24 → Nat.card G ≠ 32 → IsSemiabelian G
+```
+
+and settling the order `32` would remove the second exception at once. The bound `48` is sharp:
+`(48,28) = C2 . S4` is not semiabelian.
+
+---
+
 ## 1. Scholz–Reichardt
 
 ### 1.1 Statement
@@ -579,6 +1188,9 @@ Roots: Mathlib at `/home/alex_harmonic_fun/InverseGaloisProblem/.lake/packages/m
 
 ### 5.0 The strategic conclusion first
 
+*(Read §0 first: the group-theoretic scaffolding this section prices as expensive turned out to be
+cheap and is now formalized. The verdicts below concern the arithmetic, and they stand.)*
+
 There are two candidate routes and they are **not** equally good.
 
 **Route A (classical / arithmetic): Scholz–Reichardt, then Shafarevich.** Requires
@@ -677,7 +1289,7 @@ Assemble: Milestone 2 gives A ≀ᵣ H regularly over k(t_h); Milestone 3 specia
 *Value:* this is the deliverable. It is the largest new family of solvable groups over ℚ that is
 reachable at all with current Mathlib.
 
-### Milestone 6 (optional, high value elsewhere) — Split-density of primes. **[M–L]**
+### Milestone 6 (optional, high value elsewhere) — Split-density of primes. **[M–L]** — **DONE**, see §0
 
 Prove: *for K/ℚ Galois of degree n, the set of rational primes splitting completely in K has
 Dirichlet density 1/n; in particular, for A ⊊ B with B/ℚ Galois, infinitely many primes split
@@ -695,7 +1307,7 @@ contribution independent of this project. It also subsumes Serre's Lemma 2.1.4 (
 completely split primes) as a corollary.
 *Risk:* low-to-medium; the analytic scaffolding is all present.
 
-### Milestone 7 — Serre's Lemma 2.1.4, elementary version. **[S–M]**
+### Milestone 7 — Serre's Lemma 2.1.4, elementary version. **[S–M]** — **DONE**, see §0
 
 *"For a finite extension E/ℚ there are infinitely many primes splitting completely in E,"* by
 Serre's counting argument (values of f, smooth-number counting). Independent of Milestone 6 and
@@ -717,6 +1329,14 @@ Needed for Serre's Lemma 2.1.5 (item 2 of §1.4). Mathlib's `BrauerGroup` is a b
 with **no multiplication**. To get to ABHN one needs: the group law, `Br(K) ≅ H²(Gal, K̄ˣ)`
 (which needs the H²-↔-crossed-product dictionary, itself absent), `Br(ℚ_p) ≅ ℚ/ℤ` (local CFT), and
 the global exact sequence (global CFT). **Multi-year.**
+
+**Update (2026-08-21): the first two are done**, see §0.1 — the group law, Skolem–Noether, the
+double centralizer theorem, Wedderburn in the split case, Galois descent, the crossed product, and
+`Br(L/K) ≅ H²(Gal(L/K), Lˣ)` for every finite Galois `L/K`, together with the cyclic case
+`Br(L/K) ≅ Kˣ/N(Lˣ)` and `Br(ℂ/ℝ) ≅ ℤ/2`. What remains of this milestone is exactly the arithmetic:
+`Br(ℚ_p) ≅ ℚ/ℤ` and the global exact sequence. Note that Mathlib cannot yet even state the first —
+`IsNonarchimedeanLocalField` has no instances, so `ℚ_[p]` must first be equipped with
+`ValuativeRel`, `IsValuativeTopology` and `LocallyCompactSpace`.
 
 ### Milestone 10 — Scholz–Reichardt. **[XXL, gated on 8 and 9]**
 

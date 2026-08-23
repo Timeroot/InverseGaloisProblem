@@ -42,6 +42,37 @@ Families:
 * `isRegularInverseGalois_of_isSemiabelian` — every finite semiabelian group, by the Dentzer–Stoll
   wreath construction (`RET.Wreath`); `IsRegularInverseGalois.wreath` is the closure of the
   catalogue under wreath products by finite abelian groups.
+* `InverseGalois.isRegularInverseGalois_of_isZGroup` — every finite group all of whose Sylow
+  subgroups are cyclic, and `InverseGalois.isRegularInverseGalois_of_squarefree_card` — every
+  finite group of squarefree order (`RET.Wreath.SmallGroups`).
+* `InverseGalois.isRegularInverseGalois_of_commutator_le_center`,
+  `InverseGalois.isRegularInverseGalois_of_nilpotencyClass_le_two` — every finite group of
+  nilpotency class at most `2`, in particular every extraspecial group.
+* `InverseGalois.isRegularInverseGalois_of_forall_sylow_comm` — every finite solvable group all of
+  whose Sylow subgroups are abelian, and
+  `InverseGalois.isRegularInverseGalois_of_isSolvable_of_cubefree` — every finite solvable group of
+  cubefree order.
+* `InverseGalois.isRegularInverseGalois_sylow_perm` — a Sylow `p`-subgroup of the symmetric group
+  on `p ^ n` letters, and more generally
+  `InverseGalois.isRegularInverseGalois_iteratedWreathProduct` — every iterated regular wreath
+  product of a semiabelian group.
+* `InverseGalois.isRegularInverseGalois_of_card_lt_fortyeight` — every finite group of order less
+  than `48` other than `24` and `32`, and
+  `InverseGalois.isRegularInverseGalois_of_card_lt_thirtytwo` — every finite group of order less
+  than `32` other than `24`, both refining
+  `InverseGalois.isRegularInverseGalois_of_card_lt_twentyfour`; the order `24` is where the run of
+  orders stops, `SL(2, 3)` being the smallest group with no abelian normal subgroup outside its
+  Frattini subgroup.
+* `InverseGalois.isRegularInverseGalois_of_card_eq_sq_mul_prime`,
+  `InverseGalois.isRegularInverseGalois_of_card_eq_prime_pow_four`,
+  `InverseGalois.isRegularInverseGalois_of_card_eq_sq_mul_sq` — the orders `p ^ 2 * q`, `p ^ 4` and
+  `p ^ 2 * q ^ 2`.
+* `InverseGalois.isRegularInverseGalois_of_card_eq_mul_prime_of_lt_twentyfour`,
+  `InverseGalois.isRegularInverseGalois_of_card_eq_mul_prime_sq_of_lt_twentyfour` — the orders
+  `m * q` and `m * q ^ 2` for a prime `q` exceeding `m < 24`, two families unbounded in the order,
+  and `InverseGalois.isRegularInverseGalois_of_card_eq_mul_prime_of_divisors_lt_fortyeight` and
+  `..._sq_of_divisors_lt_fortyeight` — the same two families with `m` below `48` and the size
+  comparison replaced by the divisor count.
 * `Rigidity.RET.isRegularInverseGalois_perm_fin` — `Sₙ` for every `n`.
 * `Rigidity.RET.isRegularInverseGalois_alternatingGroup` — `Aₙ` for every `n`.
 * `Rigidity.RET.isRegularInverseGalois_of_isMobius` — every finite subgroup of `PGL₂(ℚ)`, hence
@@ -187,6 +218,17 @@ approach — the elementary abelian chief-series induction, the Sylow decomposit
 group, and the presentation of every semidirect product `A ⋊[φ] H` with abelian `A` as a quotient of
 the regular wreath product `A ≀ᵣ H`.
 
+That group theory is carried far enough to isolate the arithmetic completely.  Ore's supplement
+theorem, `exists_nilpotent_normal_supplement`, exhibits a nontrivial finite solvable group as a
+quotient of `N ⋊ U` with `N` nilpotent and `U` a proper — hence smaller — subgroup, and the Sylow
+splitting turns a nilpotent kernel into a tower of kernels of prime power order.  The outcome is
+`Shafarevich.isSolvable_isInverseGalois_of_splitPrimePowerEP`: Shafarevich's theorem in full
+follows from the single statement that a split embedding problem over `ℚ` whose kernel is a finite
+`p`-group is solvable.  Nothing of the group theory remains.  The neighbouring case of an
+**abelian** kernel is unconditional here — `Shafarevich.splitAbelianEP_regular`, a repackaging of
+the wreath product construction — but the two do not meet: filtering a `p`-group kernel leaves a
+residual lifting that is no longer split, and that lifting is where class field theory enters.
+
 Dentzer's class of semiabelian groups — the smallest class containing the finite abelian groups and
 closed under quotients and under semidirect products by a finite abelian group — *is* in the
 catalogue, regularly.  The group theory of `InverseGalois.Solvable` reduces the whole class to the
@@ -208,6 +250,71 @@ be written as an iterated split extension of abelian groups, and in particular e
 group and every quotient of such an iterated product.  It does not contain every finite solvable
 group: a solvable group whose chief factors are not complemented need not be semiabelian, and
 Shafarevich's theorem remains outside the catalogue.
+
+Recognizing a group as semiabelian is therefore what widens the catalogue, and several criteria do
+it.  A normal abelian subgroup of cyclic quotient suffices, with no splitting hypothesis; so does a
+normal abelian subgroup with a complement, whether the complement comes from Schur–Zassenhaus, from
+a normal abelian Sylow subgroup or from a homomorphic section; so does an abelian subgroup whose
+index is the smallest prime factor of the order, which is automatically normal.  The widest of them
+is the theorem of Hölder, Burnside and Zassenhaus: a finite group all of whose Sylow subgroups are
+cyclic is metacyclic.  Together these give, unconditionally and regularly over `ℚ(T)`,
+
+* `InverseGalois.isRegularInverseGalois_of_isZGroup` — every finite group all of whose Sylow
+  subgroups are cyclic, and hence
+* `InverseGalois.isRegularInverseGalois_of_squarefree_card` — every finite group of squarefree
+  order, and
+* the groups of order `p`, `p ^ 2`, `p ^ 3` and `p * q`.
+
+The widest structural criterion is nilpotency class: if `G' ≤ Z(G)` and `x` lies outside the
+Frattini subgroup, then `⟨x⟩ · Z(G)` is an abelian normal subgroup that a maximal subgroup
+supplements, and the supplement again has class at most `2`, so the induction on the order runs.
+Hence `InverseGalois.isRegularInverseGalois_of_nilpotencyClass_le_two` — **every finite group of
+nilpotency class at most `2` is a regular Galois group over `ℚ(T)`**, with no bound on its order.
+
+Two further criteria push the list past the individual small orders.  A maximal abelian normal
+subgroup of a `p`-group is self-centralizing, which in order `p ^ 4` forces its index to be at most
+`p`; and Sylow counting makes the Sylow subgroup at a prime `q` unique whenever the rest of the
+order is smaller than `q`, or whenever the order is `p ^ 2 * q`.  Between them the shapes `p`,
+`p ^ 2`, `p ^ 3`, `p ^ 4`, `p * q` and `p ^ 2 * q` exhaust every order below `24`, so
+
+* `InverseGalois.isRegularInverseGalois_of_card_lt_twentyfour` — **every finite group of order less
+  than `24` is a regular Galois group over `ℚ(T)`**, and
+* `InverseGalois.isRegularInverseGalois_of_card_eq_mul_prime_of_lt_twentyfour` and
+  `..._of_card_eq_mul_prime_sq_of_lt_twentyfour` — the unbounded families `m * q` and `m * q ^ 2`
+  with `m < 24 < q`.
+
+The bound `24` is sharp for the method rather than an accident of the enumeration: `SL(2, 3)` has
+order `24`, and its only abelian normal subgroup is its centre, which is also its Frattini
+subgroup, so no abelian normal subgroup of it admits a proper supplement.  It is the only order
+that has to be set aside below `32`: the orders from `25` to `31` are again a prime square, a
+product of two primes, a prime cube, a shape `p ^ 2 * q`, two primes and a squarefree order, so
+
+* `InverseGalois.isRegularInverseGalois_of_card_lt_thirtytwo` — **every finite group of order less
+  than `32` other than `24`**, and, since the orders from `33` to `47` are covered too — `40` and
+  `45` by the divisor count that makes the largest Sylow subgroup unique, `36` by the `p² q²` file,
+  the rest by shape —
+* `InverseGalois.isRegularInverseGalois_of_card_lt_fortyeight` — **every finite group of order less
+  than `48` other than `24` and `32`**.  The bound `48` is again sharp: `C2 . S4` of order `48` is
+  not semiabelian.
+
+Two criteria of a different kind carry the list past the enumeration of orders altogether.
+Thompson's argument runs the Frattini induction for a finite solvable group all of whose Sylow
+subgroups are abelian: passing to the Frattini quotient and taking a Sylow subgroup of the preimage
+of a minimal normal subgroup, Frattini's argument makes that Sylow subgroup normal in the whole
+group, and it escapes the Frattini subgroup.  Since a group of cubefree order has all its Sylow
+subgroups of order `1`, `p` or `p ^ 2`, this gives
+
+* `InverseGalois.isRegularInverseGalois_of_forall_sylow_comm` — **every finite solvable group with
+  abelian Sylow subgroups**, and
+* `InverseGalois.isRegularInverseGalois_of_isSolvable_of_cubefree` — **every finite solvable group
+  of cubefree order**.
+
+And the class is closed under the regular wreath product, hence under its iterates, which by the
+description of a Sylow subgroup of a symmetric group as an iterated wreath product of cyclic groups
+of order `p` gives
+
+* `InverseGalois.isRegularInverseGalois_sylow_perm` — **a Sylow `p`-subgroup of the symmetric group
+  on `p ^ n` letters**, for every prime `p` and every `n`.
 
 ## Main results
 
