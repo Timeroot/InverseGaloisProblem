@@ -118,6 +118,7 @@ import InverseGalois.CFT.Local.ExpAction
 import InverseGalois.CFT.Local.ExpEquiv
 import InverseGalois.CFT.Local.ExpSurjective
 import InverseGalois.CFT.Local.FiltrationAction
+import InverseGalois.CFT.Local.FiltrationFinite
 import InverseGalois.CFT.Local.HilbertIdentities
 import InverseGalois.CFT.Local.HilbertMap
 import InverseGalois.CFT.Local.HilbertMul
@@ -166,10 +167,12 @@ import InverseGalois.CFT.Tate.CyclicAction
 import InverseGalois.CFT.Tate.Exact
 import InverseGalois.CFT.Tate.Fibers
 import InverseGalois.CFT.Tate.Finite
+import InverseGalois.CFT.Tate.FiniteExact
 import InverseGalois.CFT.Tate.Galois
 import InverseGalois.CFT.Tate.GaloisH0
 import InverseGalois.CFT.Tate.Herbrand
 import InverseGalois.CFT.Tate.Hexagon
+import InverseGalois.CFT.Tate.InducedLattice
 import InverseGalois.CFT.Tate.InfinitePlaces
 import InverseGalois.CFT.Tate.Isogeny
 import InverseGalois.CFT.Tate.Lattice
@@ -568,6 +571,14 @@ it that are available here.
 * `InverseGalois.CFT.Tate.Isogeny` shows that an equivariant injection whose cokernel is finite
   leaves the Herbrand quotient unchanged, so that the computation for a permutation lattice applies
   to every lattice commensurable with one.
+* `InverseGalois.CFT.Tate.FiniteExact` transports finiteness of the Tate groups along the exactness
+  hexagon: a three term exact sequence with finite ends has a finite middle, so an equivariant
+  injection with finite cokernel carries finiteness of the Tate groups in either direction and the
+  comparison of Herbrand quotients needs it on one side only.
+* `InverseGalois.CFT.Tate.InducedLattice` computes the Herbrand quotient of a module induced from
+  the trivial action, where the norm is the identity and both Tate groups vanish, and concludes
+  that a module containing an equivariant copy of such a module with finite cokernel has finite
+  Tate groups and Herbrand quotient one.
 * `InverseGalois.CFT.Tate.Commensurable` reads that comparison for two lattices inside one abelian
   group, each carried into the other by multiplication by a nonzero integer: multiplication is then
   an equivariant injection of lattices of equal rank, so the two Herbrand quotients agree.
@@ -680,6 +691,9 @@ it that are available here.
   preserves both filtrations, so that subtracting one is a homomorphism of modules over the group
   and consecutive steps of the unit filtration sit in a short exact sequence with a graded piece of
   the additive filtration.
+* `InverseGalois.CFT.Local.FiltrationFinite` deduces from the finiteness of every graded piece of
+  the additive filtration that any two steps of either filtration are of finite relative index, the
+  relative indices multiplying along a tower.
 * `InverseGalois.CFT.Local.ValuedTopology` records that a valued ring is nonarchimedean: every
   neighbourhood of zero contains an open, hence closed, subgroup.  So a step of the additive
   filtration contains every sum of its elements, and the valuation of an infinite sum is at most
