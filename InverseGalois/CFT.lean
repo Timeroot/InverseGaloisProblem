@@ -190,7 +190,9 @@ import InverseGalois.CFT.Tate.Lattice
 import InverseGalois.CFT.Tate.Mul
 import InverseGalois.CFT.Tate.NormalBasis
 import InverseGalois.CFT.Tate.Orbit
+import InverseGalois.CFT.Tate.OrbitCocycle
 import InverseGalois.CFT.Tate.OrbitInduced
+import InverseGalois.CFT.Tate.OrbitTwist
 import InverseGalois.CFT.Tate.PermLattice
 import InverseGalois.CFT.Tate.Permutation
 import InverseGalois.CFT.Tate.Pi
@@ -205,6 +207,7 @@ import InverseGalois.CFT.Tate.Surjection
 import InverseGalois.CFT.Tate.Trivial
 import InverseGalois.CFT.Units.GaloisAction
 import InverseGalois.CFT.Units.Herbrand
+import InverseGalois.CFT.Units.LocalIdele
 import InverseGalois.CFT.Units.Places
 import InverseGalois.CFT.Units.SUnit
 import InverseGalois.CFT.Units.SUnitHerbrand
@@ -637,6 +640,14 @@ it that are available here.
   family of copies of a module indexed by an orbit, permuted with a twist on passing the last
   position, is the induced module of Shapiro's lemma, so its Herbrand quotient is that of the
   module at one point under a full turn.
+* `InverseGalois.CFT.Tate.OrbitTwist` writes that twisted family as it arises in practice, as a
+  family of copies of a module whose index is shifted along a permutation and whose components are
+  rescaled by a group element depending on the index: the local factor of the group of ideles at a
+  place of the base field, before any identification of the completions above it is chosen.
+* `InverseGalois.CFT.Tate.OrbitCocycle` supplies the rescaling: choosing for every point of a
+  transitive orbit the power of a generator that reaches it from a fixed base point identifies all
+  the components with the component at the base point, and what is left of the generator is a shift
+  of the index which is trivial except where it wraps around, where it is a full turn of the orbit.
 * `InverseGalois.CFT.Tate.CyclicAction` states that computation for a cyclic group acting
   transitively on a finite set, where the orbit–stabiliser theorem reads the Herbrand quotient of
   the free lattice as the order of the stabiliser of a point: the form in which the places of a
@@ -721,6 +732,10 @@ it that are available here.
   quotient one, the units of the completion have Herbrand quotient the order of the decomposition
   group, and both Tate groups of the units of the valuation ring vanish when the decomposition
   group fixes a uniformizer.
+* `InverseGalois.CFT.Units.LocalIdele` assembles the completions above one place of the base field
+  into the local factor of the group of ideles there.  Those places form a single orbit, so
+  transporting all of the factors to a chosen one presents the factor as the module induced from
+  the decomposition group, and its Herbrand quotient is the order of that group.
 * `InverseGalois.CFT.Local.UnitFiltration` sets up the two filtrations of a valued field: the
   additive one by the elements of small valuation, and the multiplicative one by the units
   congruent to one.  Subtracting one identifies a step of the unit filtration with the
