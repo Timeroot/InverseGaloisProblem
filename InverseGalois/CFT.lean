@@ -113,6 +113,7 @@ import InverseGalois.CFT.Local.DyadicNondegenerate
 import InverseGalois.CFT.Local.DyadicQuaternary
 import InverseGalois.CFT.Local.DyadicNormFive
 import InverseGalois.CFT.Local.DyadicQuinary
+import InverseGalois.CFT.Local.FiltrationAction
 import InverseGalois.CFT.Local.HilbertIdentities
 import InverseGalois.CFT.Local.HilbertMap
 import InverseGalois.CFT.Local.HilbertMul
@@ -125,6 +126,7 @@ import InverseGalois.CFT.Local.PadicLocalField
 import InverseGalois.CFT.Local.PadicSquares
 import InverseGalois.CFT.Local.PadicSquaresTwo
 import InverseGalois.CFT.Local.RamifiedNormForm
+import InverseGalois.CFT.Local.UnitFiltration
 import InverseGalois.CFT.Local.UnitValuation
 import InverseGalois.CFT.Local.UnramifiedNormForm
 import InverseGalois.CFT.NormSubgroup
@@ -664,6 +666,14 @@ it that are available here.
   group to give the Herbrand quotient of the units of the field.
 * `InverseGalois.CFT.Local.AdicUnits` applies this to the completion of a number field at a prime,
   where the group is the decomposition group of the prime.
+* `InverseGalois.CFT.Local.UnitFiltration` sets up the two filtrations of a valued field: the
+  additive one by the elements of small valuation, and the multiplicative one by the units
+  congruent to one.  Subtracting one identifies a step of the unit filtration with the
+  corresponding graded piece of the additive filtration.
+* `InverseGalois.CFT.Local.FiltrationAction` records that a group acting on the field by isometries
+  preserves both filtrations, so that subtracting one is a homomorphism of modules over the group
+  and consecutive steps of the unit filtration sit in a short exact sequence with a graded piece of
+  the additive filtration.
 * `InverseGalois.CFT.Local.PadicSquaresTwo` supplies the excluded prime: a dyadic unit is a square
   exactly when it is congruent to one modulo eight, and every nonzero dyadic number is a square
   times one of eight explicit representatives.
