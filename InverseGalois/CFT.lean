@@ -145,6 +145,7 @@ import InverseGalois.CFT.SquareClasses
 import InverseGalois.CFT.SubgroupCounting
 import InverseGalois.CFT.TameCharacter
 import InverseGalois.CFT.TameRamification
+import InverseGalois.CFT.Tate.Augmentation
 import InverseGalois.CFT.Tate.Averaging
 import InverseGalois.CFT.Tate.Basic
 import InverseGalois.CFT.Tate.BrauerRelative
@@ -582,6 +583,12 @@ it that are available here.
   lying over a fixed prime of the base, where the decomposition group of one of them has order the
   ramification index times the residue degree, and that product is the Herbrand quotient of the
   free lattice they span.
+* `InverseGalois.CFT.Tate.Augmentation` cuts a lattice down by an invariant surjection onto the
+  integers with trivial action, the sum of the coordinates in the case of a permuted basis: the
+  kernel is again stable, and since the quotient contributes the factor `n`, the Herbrand quotient
+  of the kernel is that of the lattice divided by the order of the group.  This is the shape of the
+  unit lattice, whose real representation is the trace-zero part of the permutation representation
+  on the infinite places.
 * `InverseGalois.CFT.Local.PadicSquaresTwo` supplies the excluded prime: a dyadic unit is a square
   exactly when it is congruent to one modulo eight, and every nonzero dyadic number is a square
   times one of eight explicit representatives.
