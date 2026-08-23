@@ -109,6 +109,7 @@ import InverseGalois.CFT.Local.AdicFamily
 import InverseGalois.CFT.Local.AdicHerbrand
 import InverseGalois.CFT.Local.AdicResidue
 import InverseGalois.CFT.Local.AdicUnits
+import InverseGalois.CFT.Local.AdicUnramified
 import InverseGalois.CFT.Local.ComplexHerbrand
 import InverseGalois.CFT.Local.DyadicAnisotropic
 import InverseGalois.CFT.Local.DyadicHilbert
@@ -870,6 +871,12 @@ it that are available here.
   the chosen finite places, which is exactly the Herbrand quotient of the group of `S`-units times
   the degree of the extension.  Dividing the one by the other will leave a group of Herbrand
   quotient the degree, which is the first inequality of class field theory.
+* `InverseGalois.CFT.Local.AdicUnramified` supplies the unramifiedness hypothesis that the last two
+  computations run on.  A prime is unramified over the base exactly when the ideal generated there
+  by the prime below is not contained in its square, and then some element of the base ring lies in
+  the prime and not in its square, so it has valuation exactly one; its inverse is a unit of the
+  completion of valuation one, fixed by the whole Galois group because it comes from the base field.
+  The places where this fails divide the different ideal, so there are only finitely many of them.
 * `InverseGalois.CFT.Local.UnitFiltration` sets up the two filtrations of a valued field: the
   additive one by the elements of small valuation, and the multiplicative one by the units
   congruent to one.  Subtracting one identifies a step of the unit filtration with the
