@@ -153,11 +153,13 @@ import InverseGalois.CFT.Tate.Commensurable
 import InverseGalois.CFT.Tate.Congr
 import InverseGalois.CFT.Tate.CyclicAction
 import InverseGalois.CFT.Tate.Exact
+import InverseGalois.CFT.Tate.Fibers
 import InverseGalois.CFT.Tate.Finite
 import InverseGalois.CFT.Tate.Galois
 import InverseGalois.CFT.Tate.GaloisH0
 import InverseGalois.CFT.Tate.Herbrand
 import InverseGalois.CFT.Tate.Hexagon
+import InverseGalois.CFT.Tate.InfinitePlaces
 import InverseGalois.CFT.Tate.Isogeny
 import InverseGalois.CFT.Tate.Lattice
 import InverseGalois.CFT.Tate.Mul
@@ -583,6 +585,15 @@ it that are available here.
   lying over a fixed prime of the base, where the decomposition group of one of them has order the
   ramification index times the residue degree, and that product is the Herbrand quotient of the
   free lattice they span.
+* `InverseGalois.CFT.Tate.Fibers` removes the transitivity hypothesis: a permutation whose orbits
+  are the fibres of a map to an index set presents the set as a disjoint union of one cyclically
+  shifted block per index, so that for a finite cyclic group the Herbrand quotient of the free
+  lattice on any finite set it acts on is the product over the orbits of the order of the
+  stabiliser of a point.
+* `InverseGalois.CFT.Tate.InfinitePlaces` applies that to the infinite places of a Galois extension
+  of number fields, which the Galois group permutes with the places of the base field as the set of
+  orbits: the Herbrand quotient of the free lattice they span is the product of the orders of the
+  decomposition groups, and each of those is two at a ramified place of the base and one elsewhere.
 * `InverseGalois.CFT.Tate.Augmentation` cuts a lattice down by an invariant surjection onto the
   integers with trivial action, the sum of the coordinates in the case of a permuted basis: the
   kernel is again stable, and since the quotient contributes the factor `n`, the Herbrand quotient
