@@ -144,6 +144,10 @@ import InverseGalois.CFT.SquareClasses
 import InverseGalois.CFT.SubgroupCounting
 import InverseGalois.CFT.TameCharacter
 import InverseGalois.CFT.TameRamification
+import InverseGalois.CFT.Tate.Basic
+import InverseGalois.CFT.Tate.Exact
+import InverseGalois.CFT.Tate.Herbrand
+import InverseGalois.CFT.Tate.Hexagon
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
 
@@ -465,6 +469,16 @@ it that are available here.
 * `InverseGalois.CFT.Herbrand` proves the counting theorem behind the Herbrand quotient: for a
   finite commutative group with an automorphism of finite order, the fixed points modulo the norms
   and the norm kernel modulo the differences have the same index.
+* `InverseGalois.CFT.Tate.Basic` names those two subquotients the Tate groups of the module, and
+  makes them functorial in equivariant homomorphisms.
+* `InverseGalois.CFT.Tate.Exact` records the counting principle behind the hexagon: in a cyclic
+  exact sequence of six finite commutative groups the orders in odd and in even position have the
+  same product.
+* `InverseGalois.CFT.Tate.Hexagon` builds the two connecting maps of a short exact sequence of
+  modules over a cyclic group and proves the resulting six-term sequence exact at each corner.
+* `InverseGalois.CFT.Tate.Herbrand` defines the Herbrand quotient as the ratio of the orders of the
+  two Tate groups, and shows it multiplicative in short exact sequences and trivial on finite
+  modules, so that finite submodules and finite quotients may be discarded when computing it.
 * `InverseGalois.CFT.Local.PadicSquaresTwo` supplies the excluded prime: a dyadic unit is a square
   exactly when it is congruent to one modulo eight, and every nonzero dyadic number is a square
   times one of eight explicit representatives.
