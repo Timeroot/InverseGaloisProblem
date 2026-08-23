@@ -183,7 +183,10 @@ import InverseGalois.CFT.Tate.CyclicInduced
 import InverseGalois.CFT.Tate.Exact
 import InverseGalois.CFT.Tate.Family
 import InverseGalois.CFT.Tate.FamilyOrbit
+import InverseGalois.CFT.Tate.FamilyOrbits
+import InverseGalois.CFT.Tate.FamilyReindex
 import InverseGalois.CFT.Tate.FamilyRing
+import InverseGalois.CFT.Tate.FamilySigma
 import InverseGalois.CFT.Tate.Fibers
 import InverseGalois.CFT.Tate.Finite
 import InverseGalois.CFT.Tate.FiniteExact
@@ -674,6 +677,17 @@ it that are available here.
   a ring and not just a group, and a compatible system of ring isomorphisms along the action on the
   places induces one on the family of unit groups, written additively: the local factors of the
   group of ideles.
+* `InverseGalois.CFT.Tate.FamilySigma` splits the sections of a family whose index set is a
+  disjoint union of pieces each carried into itself by the group: they are the product over the
+  pieces of the sections over each piece.  Over finitely many pieces the Herbrand quotients
+  multiply, and over arbitrarily many pieces with vanishing Tate groups the answer is one.
+* `InverseGalois.CFT.Tate.FamilyReindex` pulls a family back along an equivalence of index sets
+  respecting the actions, which does not change the group of sections; the decomposition of a set
+  into its orbits is the case that matters.
+* `InverseGalois.CFT.Tate.FamilyOrbits` puts the two together.  The Herbrand quotient of the
+  sections of any family is the product over the orbits of the index set of the contribution of one
+  orbit, and that contribution is the Herbrand quotient of the module at a point of the orbit under
+  a full turn: exactly the local factor of the group of ideles at a place of the base field.
 * `InverseGalois.CFT.Tate.CyclicAction` states that computation for a cyclic group acting
   transitively on a finite set, where the orbit–stabiliser theorem reads the Herbrand quotient of
   the free lattice as the order of the stabiliser of a point: the form in which the places of a
