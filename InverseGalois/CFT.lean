@@ -155,6 +155,7 @@ import InverseGalois.CFT.Tate.Herbrand
 import InverseGalois.CFT.Tate.Hexagon
 import InverseGalois.CFT.Tate.Isogeny
 import InverseGalois.CFT.Tate.Mul
+import InverseGalois.CFT.Tate.PermLattice
 import InverseGalois.CFT.Tate.Permutation
 import InverseGalois.CFT.Tate.Pi
 import InverseGalois.CFT.Tate.Prod
@@ -531,6 +532,8 @@ it that are available here.
 * `InverseGalois.CFT.Tate.Isogeny` shows that an equivariant injection whose cokernel is finite
   leaves the Herbrand quotient unchanged, so that the computation for a permutation lattice applies
   to every lattice commensurable with one.
+* `InverseGalois.CFT.Tate.PermLattice` reads that computation back on the free lattice of a
+  permuted basis, once the basis is presented as a disjoint union of cyclically shifted blocks.
 * `InverseGalois.CFT.Local.PadicSquaresTwo` supplies the excluded prime: a dyadic unit is a square
   exactly when it is congruent to one modulo eight, and every nonzero dyadic number is a square
   times one of eight explicit representatives.
