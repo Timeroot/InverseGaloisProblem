@@ -147,6 +147,7 @@ import InverseGalois.CFT.TameCharacter
 import InverseGalois.CFT.TameRamification
 import InverseGalois.CFT.Tate.Basic
 import InverseGalois.CFT.Tate.BrauerRelative
+import InverseGalois.CFT.Tate.Commensurable
 import InverseGalois.CFT.Tate.Congr
 import InverseGalois.CFT.Tate.CyclicAction
 import InverseGalois.CFT.Tate.Exact
@@ -541,6 +542,9 @@ it that are available here.
 * `InverseGalois.CFT.Tate.Isogeny` shows that an equivariant injection whose cokernel is finite
   leaves the Herbrand quotient unchanged, so that the computation for a permutation lattice applies
   to every lattice commensurable with one.
+* `InverseGalois.CFT.Tate.Commensurable` reads that comparison for two lattices inside one abelian
+  group, each carried into the other by multiplication by a nonzero integer: multiplication is then
+  an equivariant injection of lattices of equal rank, so the two Herbrand quotients agree.
 * `InverseGalois.CFT.Tate.Lattice` removes the hypothesis on the cokernel: between lattices of the
   same rank an equivariant injection already has finite cokernel, so two lattices related by a pair
   of maps whose composites are multiplication by a nonzero integer -- the shape a rational
