@@ -179,6 +179,8 @@ import InverseGalois.CFT.Tate.CyclicAction
 import InverseGalois.CFT.Tate.CyclicHilbert90
 import InverseGalois.CFT.Tate.CyclicInduced
 import InverseGalois.CFT.Tate.Exact
+import InverseGalois.CFT.Tate.Family
+import InverseGalois.CFT.Tate.FamilyOrbit
 import InverseGalois.CFT.Tate.Fibers
 import InverseGalois.CFT.Tate.Finite
 import InverseGalois.CFT.Tate.FiniteExact
@@ -653,6 +655,17 @@ it that are available here.
   transitive orbit the power of a generator that reaches it from a fixed base point identifies all
   the components with the component at the base point, and what is left of the generator is a shift
   of the index which is trivial except where it wraps around, where it is a full turn of the orbit.
+* `InverseGalois.CFT.Tate.Family` removes the choice of an identification altogether.  A family of
+  modules indexed by a set carrying a group action, together with isomorphisms between the module
+  at an index and the module at its image, is acted upon not in any one of its members but in its
+  group of sections; the file assembles that action out of the transport isomorphisms, the whole
+  bookkeeping of equal-but-not-identical indices being absorbed into a calculus of transports
+  attached to a group element and a proof that it carries one index to another.
+* `InverseGalois.CFT.Tate.FamilyOrbit` compares the two descriptions over a single orbit: choosing
+  for every point the group element that reaches it from a base point identifies the sections of
+  the family with copies of the module at the base point and the action of a generator with a
+  twisted shift, so the Herbrand quotient of the sections is the Herbrand quotient of the module at
+  the base point for a full turn of the orbit.
 * `InverseGalois.CFT.Tate.CyclicAction` states that computation for a cyclic group acting
   transitively on a finite set, where the orbit–stabiliser theorem reads the Herbrand quotient of
   the free lattice as the order of the stabiliser of a point: the form in which the places of a
