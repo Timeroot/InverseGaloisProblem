@@ -105,6 +105,7 @@ import InverseGalois.CFT.InertiaSubgroup
 import InverseGalois.CFT.KroneckerWeber
 import InverseGalois.CFT.Level
 import InverseGalois.CFT.Local.AdicAction
+import InverseGalois.CFT.Local.AdicFamily
 import InverseGalois.CFT.Local.AdicHerbrand
 import InverseGalois.CFT.Local.AdicResidue
 import InverseGalois.CFT.Local.AdicUnits
@@ -129,6 +130,7 @@ import InverseGalois.CFT.Local.HilbertMap
 import InverseGalois.CFT.Local.HilbertMul
 import InverseGalois.CFT.Local.HilbertSymbol
 import InverseGalois.CFT.Local.InfiniteAction
+import InverseGalois.CFT.Local.InfiniteFamily
 import InverseGalois.CFT.Local.InfiniteHerbrand
 import InverseGalois.CFT.Local.LegendreHilbert
 import InverseGalois.CFT.Local.NormalLattice
@@ -181,6 +183,7 @@ import InverseGalois.CFT.Tate.CyclicInduced
 import InverseGalois.CFT.Tate.Exact
 import InverseGalois.CFT.Tate.Family
 import InverseGalois.CFT.Tate.FamilyOrbit
+import InverseGalois.CFT.Tate.FamilyRing
 import InverseGalois.CFT.Tate.Fibers
 import InverseGalois.CFT.Tate.Finite
 import InverseGalois.CFT.Tate.FiniteExact
@@ -666,6 +669,11 @@ it that are available here.
   the family with copies of the module at the base point and the action of a generator with a
   twisted shift, so the Herbrand quotient of the sections is the Herbrand quotient of the module at
   the base point for a full turn of the orbit.
+* `InverseGalois.CFT.Tate.FamilyRing` supplies the transport data in the form in which arithmetic
+  produces it.  What a Galois automorphism carries from one place to another is a whole completion,
+  a ring and not just a group, and a compatible system of ring isomorphisms along the action on the
+  places induces one on the family of unit groups, written additively: the local factors of the
+  group of ideles.
 * `InverseGalois.CFT.Tate.CyclicAction` states that computation for a cyclic group acting
   transitively on a finite set, where the orbit–stabiliser theorem reads the Herbrand quotient of
   the free lattice as the order of the stabiliser of a point: the form in which the places of a
@@ -730,6 +738,11 @@ it that are available here.
   field at a prime onto the valued field at the image prime, and extends by continuity to a ring
   isomorphism of the completions.  The automorphisms fixing the prime therefore act on the
   completion by isometric ring automorphisms, and preserve its ring of integers.
+* `InverseGalois.CFT.Local.AdicFamily` does this for every prime at once.  The transports satisfy
+  the two compatibilities on the image of the field, which is dense in each completion, so the
+  completions at the finite places are a family of rings carrying an action of the Galois group,
+  and the group acts on the sections of the family and on the sections of the family of unit
+  groups.
 * `InverseGalois.CFT.Local.UnitValuation` reads the valuation of a unit of a discretely valued
   field as a homomorphism onto the integers, whose kernel is the unit group of the valuation ring.
   A group acting by isometries acts trivially on the quotient, so the resulting short exact
@@ -763,6 +776,9 @@ it that are available here.
   for the metric of the place and extends to the completion there; the decomposition group of the
   place therefore acts on the completion by ring automorphisms, faithfully because it already acts
   faithfully on the dense subfield.
+* `InverseGalois.CFT.Local.InfiniteFamily` is the archimedean counterpart of the family of adic
+  completions: the completions at the infinite places carry an action of the Galois group as a
+  family of rings, checked on the image of the field and extended by continuity.
 * `InverseGalois.CFT.Local.ComplexHerbrand` computes the local Herbrand quotient at a ramified real
   place.  The completion is the complex numbers, complex conjugation generates the Galois group of
   `ℂ / ℝ`, and the norms from `ℂˣ` are the positive reals, so the Herbrand quotient of `ℂˣ` is the
