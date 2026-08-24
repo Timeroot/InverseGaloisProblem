@@ -305,6 +305,7 @@ import InverseGalois.CFT.Units.SplitNorm
 import InverseGalois.CFT.Units.SplitOutside
 import InverseGalois.CFT.Units.SplitPlaces
 import InverseGalois.CFT.Units.SplitPowIdele
+import InverseGalois.CFT.Units.SplitPowNorm
 import InverseGalois.CFT.Units.UnitLattice
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
@@ -1311,7 +1312,18 @@ it that are available here.
   places of the second, and a unit of the valuation ring everywhere else.  The first set carries the
   ideal classes and the ramification, so its places split completely and every local element there
   is a norm; at the places of the second set the local degree divides `n`; and outside the two sets
-  the extension is unramified, so a local unit is a norm.
+  the extension is unramified, so a local unit is a norm.  Those ideles together with the principal
+  ones are everything: the first set carrying the ideal classes corrects a given idele into one that
+  is a unit outside that set, and the `S`-units surjecting onto the local units modulo `n`-th powers
+  at the places of the second set correct it further without disturbing anything outside the first.
+* `InverseGalois.CFT.Units.SplitPowNorm` proves that those ideles really are norms from a cyclic
+  extension with the expected local behaviour.  Only finitely many places lie above the two sets of
+  places, so they form a finite invariant set of chosen places making the idele, read upstairs, an
+  `S`-idele; at an infinite place and at a place above the first set the decomposition group is
+  trivial, at a place above the second set the local component is an `n`-th power of a unit coming
+  from the base field and the order of the decomposition group divides `n`, and outside the two sets
+  the place is unramified and carries a uniformizer fixed by its decomposition group, so the
+  local-to-global criterion applies.
 * `InverseGalois.CFT.Local.UnitFiltration` sets up the two filtrations of a valued field: the
   additive one by the elements of small valuation, and the multiplicative one by the units
   congruent to one.  Subtracting one identifies a step of the unit filtration with the
