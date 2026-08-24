@@ -230,6 +230,8 @@ import InverseGalois.CFT.Units.ClassSet
 import InverseGalois.CFT.Units.EquivariantLabel
 import InverseGalois.CFT.Units.GaloisAction
 import InverseGalois.CFT.Units.Herbrand
+import InverseGalois.CFT.Units.Idele
+import InverseGalois.CFT.Units.IdeleClass
 import InverseGalois.CFT.Units.InfiniteIdele
 import InverseGalois.CFT.Units.InfiniteOrbit
 import InverseGalois.CFT.Units.LocalEmbedding
@@ -899,6 +901,22 @@ it that are available here.
   but read off from the computation: an infinite group has cardinality zero, so a Herbrand quotient
   that is a positive product of orders already certifies finiteness for the two outer terms, and
   exactness carries it to the quotient term.
+* `InverseGalois.CFT.Units.Idele` introduces the full group of ideles, without reference to a
+  chosen finite set of places: the elements of the product of all the local unit groups whose
+  component is a unit of the valuation ring at all but finitely many finite places.  The
+  finiteness condition survives the Galois action because the transports between completions are
+  isometries and the action merely permutes the places, and it holds for the diagonal image of an
+  element of the field because such an element has nonzero order at only finitely many primes.
+* `InverseGalois.CFT.Units.IdeleClass` divides the ideles by the diagonal image of the
+  multiplicative group of the field and identifies the result with the quotient already computed.
+  The ideles that are units outside the chosen places include into the ideles, and the comparison
+  rests on two facts about a set of places large enough to carry the ideal classes: every idele
+  differs from one of the smaller group by a principal idele, because the system of local
+  valuations of an idele vanishes at all but finitely many places and is therefore realised away
+  from the chosen ones by a single element of the field; and an element of the field whose diagonal
+  image lies in the smaller group has order zero away from the chosen places, so it is an `S`-unit.
+  The induced isomorphism of quotients commutes with the Galois action, so the idele class group
+  has the Herbrand quotient already computed, namely the degree of the extension.
 * `InverseGalois.CFT.Local.UnitFiltration` sets up the two filtrations of a valued field: the
   additive one by the elements of small valuation, and the multiplicative one by the units
   congruent to one.  Subtracting one identifies a step of the unit filtration with the

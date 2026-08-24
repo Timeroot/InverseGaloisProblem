@@ -214,6 +214,12 @@ theorem familyAut_apply_eq_transport {g : G} {x y : X} (h : g • y = x) (f : �
     F.familyAut g f x = F.transport h (f y) :=
   F.toFun_eq_transport h f
 
+/-- **The transported section at an image index is the transport of the section at the index**, for
+the assembled action. -/
+theorem familyAut_apply_smul (g : G) (f : ∀ x, M x) (x : X) :
+    F.familyAut g f (g • x) = F.map g x (f x) :=
+  F.familyAut_apply_eq_transport (rfl : g • x = g • x) f
+
 /-- **A section is the image of another one when the transport isomorphisms carry the value at each
 index to the value at the translated index.**  This is the convenient criterion for recognising the
 action on sections: it is stated forwards, at the index itself, rather than backwards at the

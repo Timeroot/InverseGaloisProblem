@@ -32,6 +32,8 @@ makes the permutation lattice on the target available with no further choices.
 * `InverseGalois.CFT.sUnitsVal`: the vector of orders of an `X`-unit at the primes of `X`.
 * `InverseGalois.CFT.sUnitsMulEquiv`, `InverseGalois.CFT.sUnitsAut`: the action of the Galois group
   on the `X`-units, written multiplicatively and additively.
+* `InverseGalois.CFT.globalUnitsAut`: the action of the Galois group on all the units, written
+  additively.
 
 ## Main results
 
@@ -187,6 +189,23 @@ def galUnits (σ : Gal(K/k)) : Kˣ ≃* Kˣ := Units.mapEquiv σ.toRingEquiv.toM
 omit [NumberField K] in
 @[simp]
 theorem coe_galUnits_apply (σ : Gal(K/k)) (u : Kˣ) : ((galUnits σ u : Kˣ) : K) = σ (u : K) := rfl
+
+omit [NumberField K] in
+/-- **The action of the Galois group on the units of a number field**, written additively. -/
+def globalUnitsAut : Gal(K/k) →* (Additive Kˣ ≃+ Additive Kˣ) where
+  toFun σ := MulEquiv.toAdditive (galUnits σ)
+  map_one' := AddEquiv.ext fun _ => Additive.toMul.injective (Units.ext rfl)
+  map_mul' _ _ := AddEquiv.ext fun _ => Additive.toMul.injective (Units.ext rfl)
+
+omit [NumberField K] in
+@[simp]
+theorem coe_globalUnitsAut_apply (σ : Gal(K/k)) (u : Additive Kˣ) :
+    (((globalUnitsAut σ u).toMul : Kˣ) : K) = σ ((u.toMul : Kˣ) : K) := rfl
+
+omit [NumberField K] in
+/-- **The action on the units inherits the order of the automorphism.** -/
+theorem globalUnitsAut_pow_eq_one {σ : Gal(K/k)} {n : ℕ} (hσ : σ ^ n = 1) :
+    (globalUnitsAut (k := k) (K := K) σ) ^ n = 1 := by rw [← map_pow, hσ, map_one]
 
 variable {Y : Type*} [MulAction Gal(K/k) Y] {ι : Y → HeightOneSpectrum (𝓞 K)}
   (hι : ∀ (σ : Gal(K/k)) (y : Y), ι (σ • y) = σ • ι y)
