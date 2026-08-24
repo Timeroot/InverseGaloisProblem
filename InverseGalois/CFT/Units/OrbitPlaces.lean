@@ -24,6 +24,8 @@ height one primes of the extension onto the height one primes of the base.
 * `InverseGalois.CFT.exists_primeUnder_eq`: every prime of the base has a prime above it.
 * `InverseGalois.CFT.orbitPrimeUnder_injective`: two primes with the same prime below lie in the
   same orbit.
+* `InverseGalois.CFT.finite_preimage_primeUnder_iff`: a set of primes of the base is finite exactly
+  when the set of primes of the extension above it is.
 
 ## Tags
 
@@ -107,6 +109,18 @@ theorem finite_preimage_primeUnder [Finite G] [IsGaloisGroup G A B]
     (primeUnder A (B := B) ⁻¹' s).Finite :=
   (hs.biUnion fun p _ => finite_setOf_primeUnder_eq A B (G := G) p).subset fun _ hw =>
     Set.mem_biUnion hw rfl
+
+variable (A B) in
+omit [SMulCommClass G A B] in
+/-- **A set of primes of the base is finite exactly when the set of primes above it is**: the
+primes above a finite set form finitely many orbits of a finite group, and every prime of the base
+is lain over. -/
+theorem finite_preimage_primeUnder_iff [Finite G] [IsGaloisGroup G A B]
+    {s : Set (HeightOneSpectrum A)} :
+    (primeUnder A (B := B) ⁻¹' s).Finite ↔ s.Finite := by
+  refine ⟨fun h => ?_, finite_preimage_primeUnder A B (G := G)⟩
+  rw [← Set.image_preimage_eq s fun p => exists_primeUnder_eq A B p]
+  exact h.image _
 
 variable (A B) in
 /-- **The orbits of the Galois group on the height one primes of the extension are the height one

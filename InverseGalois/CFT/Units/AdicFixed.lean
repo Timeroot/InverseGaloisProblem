@@ -35,6 +35,9 @@ base are the transports of that one, so they are the images of the same element.
   families of the extension.
 * `InverseGalois.CFT.mem_range_adicUnitsComapSections_iff`: **the families of local units fixed by
   the Galois group are exactly those coming from the base field.**
+* `InverseGalois.CFT.eventually_unitVal_adicUnitsComapSections_eq_zero_iff`: a family coming from
+  the base field satisfies the finiteness condition of the ideles exactly when the family below
+  does.
 
 ## Tags
 
@@ -209,6 +212,38 @@ theorem mem_range_adicUnitsComapSections_iff
       (primeUnder_primeAbove k K v) (c v), funext fun w => ?_⟩
     exact adicUnitsComap_famCast_eq_of_familyAut_eq k hx (primeAbove k K (primeUnder (𝓞 k) w)) w
       (primeUnder_primeAbove k K (primeUnder (𝓞 k) w)) _ (hcx _)
+
+/-! ### The finiteness condition -/
+
+variable (k) in
+omit [IsGalois k K] in
+/-- **A family coming from the base field is a unit of the valuation ring at a prime exactly when
+the family below is one at the prime underneath.** -/
+theorem unitVal_adicUnitsComapSections_eq_zero_iff
+    (y : ∀ v : HeightOneSpectrum (𝓞 k), Additive (v.adicCompletion k)ˣ)
+    (w : HeightOneSpectrum (𝓞 K)) :
+    unitVal (adicUnitsComapSections k (K := K) y w) = 0 ↔
+      unitVal (y (primeUnder (𝓞 k) w)) = 0 :=
+  unitVal_adicUnitsComap_eq_zero_iff k w _
+
+variable (k) in
+/-- **A family coming from the base field satisfies the finiteness condition of the ideles exactly
+when the family below does**: the two sets of bad primes correspond under passing to the prime
+below, and the primes above a finite set of primes are finite in number. -/
+theorem eventually_unitVal_adicUnitsComapSections_eq_zero_iff
+    (y : ∀ v : HeightOneSpectrum (𝓞 k), Additive (v.adicCompletion k)ˣ) :
+    (∀ᶠ w : HeightOneSpectrum (𝓞 K) in Filter.cofinite,
+        unitVal (adicUnitsComapSections k (K := K) y w) = 0) ↔
+      ∀ᶠ v : HeightOneSpectrum (𝓞 k) in Filter.cofinite, unitVal (y v) = 0 := by
+  haveI : IsGaloisGroup Gal(K/k) (𝓞 k) (𝓞 K) :=
+    IsGaloisGroup.of_isFractionRing Gal(K/k) (𝓞 k) (𝓞 K) k K
+  rw [Filter.eventually_cofinite, Filter.eventually_cofinite]
+  have hset : {w : HeightOneSpectrum (𝓞 K) |
+        ¬ unitVal (adicUnitsComapSections k (K := K) y w) = 0}
+      = primeUnder (𝓞 k) ⁻¹' {v : HeightOneSpectrum (𝓞 k) | ¬ unitVal (y v) = 0} :=
+    Set.ext fun w => not_congr (unitVal_adicUnitsComapSections_eq_zero_iff k y w)
+  rw [hset]
+  exact finite_preimage_primeUnder_iff (𝓞 k) (𝓞 K) (G := Gal(K/k))
 
 end AdicFixed
 
