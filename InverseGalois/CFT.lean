@@ -198,6 +198,7 @@ import InverseGalois.CFT.Tate.CyclicHilbert90
 import InverseGalois.CFT.Tate.CyclicInduced
 import InverseGalois.CFT.Tate.Exact
 import InverseGalois.CFT.Tate.Family
+import InverseGalois.CFT.Tate.FamilyFree
 import InverseGalois.CFT.Tate.FamilyNorm
 import InverseGalois.CFT.Tate.FamilyOrbit
 import InverseGalois.CFT.Tate.FamilyOrbits
@@ -252,6 +253,7 @@ import InverseGalois.CFT.Units.CompletionFinite
 import InverseGalois.CFT.Units.CompletionGalois
 import InverseGalois.CFT.Units.CompletionUnits
 import InverseGalois.CFT.Units.CyclicTrivial
+import InverseGalois.CFT.Units.Decomposition
 import InverseGalois.CFT.Units.EquivariantLabel
 import InverseGalois.CFT.Units.FirstInequality
 import InverseGalois.CFT.Units.GaloisAction
@@ -286,6 +288,7 @@ import InverseGalois.CFT.Units.SUnit
 import InverseGalois.CFT.Units.SUnitHerbrand
 import InverseGalois.CFT.Units.SUnitIndex
 import InverseGalois.CFT.Units.SolvableNorm
+import InverseGalois.CFT.Units.SplitNorm
 import InverseGalois.CFT.Units.UnitLattice
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
@@ -744,6 +747,10 @@ it that are available here.
   group of sections; the file assembles that action out of the transport isomorphisms, the whole
   bookkeeping of equal-but-not-identical indices being absorbed into a calculus of transports
   attached to a group element and a proof that it carries one index to another.
+* `InverseGalois.CFT.Tate.FamilyFree` treats the case in which the action on the index set is free.
+  A section fixed by the whole group is then the sum of the conjugates of a section supported on one
+  chosen point of each orbit, taking there the value of the fixed section, because for every index
+  exactly one group element carries the chosen point of its orbit to it.
 * `InverseGalois.CFT.Tate.FamilyOrbit` compares the two descriptions over a single orbit: choosing
   for every point the group element that reaches it from a base point identifies the sections of
   the family with copies of the module at the base point and the action of a generator with a
@@ -1133,6 +1140,17 @@ it that are available here.
   quotient by the kernel of a character is a finite subgroup of the complex units, hence cyclic; the
   fixed field of the kernel is therefore a nontrivial cyclic subextension, and it inherits the
   hypothesis because the norms of a tower compose.
+* `InverseGalois.CFT.Units.SplitNorm` produces the norms when the Galois group permutes the places
+  freely, which is what happens when every place of the base field splits completely.  An idele of
+  the base field, read in the extension, is fixed, and the free action lets it be written as the sum
+  of the conjugates of a section supported on one place above each place of the base field, so it is
+  a norm; a solvable extension in which every place splits completely is therefore trivial.
+* `InverseGalois.CFT.Units.Decomposition` shows that the decomposition groups generate a solvable
+  Galois group.  The subgroup they generate is normal, and in its fixed field every place of the
+  base field splits completely: an automorphism of that subextension fixing a place is the restriction of
+  an automorphism of the top field fixing a place above it, obtained by correcting an arbitrary lift
+  with an automorphism over the subextension, and such an automorphism lies in the subgroup and so
+  restricts to the identity.
 * `InverseGalois.CFT.Units.PowIdele` bounds the index of the `n`-th powers inside the ideles that
   are units outside a finite set of places.  The two subgroups involved are products of local
   subgroups differing only where `n`-th powers were imposed, so their relative index is the product
