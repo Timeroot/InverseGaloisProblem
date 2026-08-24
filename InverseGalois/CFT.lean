@@ -108,6 +108,7 @@ import InverseGalois.CFT.InertiaRestrict
 import InverseGalois.CFT.InertiaSubgroup
 import InverseGalois.CFT.KroneckerWeber
 import InverseGalois.CFT.Kummer.LocalPower
+import InverseGalois.CFT.Kummer.Pairing
 import InverseGalois.CFT.Kummer.PowBasis
 import InverseGalois.CFT.Kummer.PowIndex
 import InverseGalois.CFT.Kummer.SUnitExt
@@ -906,6 +907,14 @@ it that are available here.
   differ by a root of unity, which is already in the base.  So an element fixed by every
   decomposition group in a family generating the Galois group is fixed by the whole group, which
   is what turns a local condition at finitely many places into a global one.
+* `InverseGalois.CFT.Kummer.Pairing` compares two radicals through their exponent vectors.  Writing
+  an element of the subgroup as a product of powers of the power basis times a `p`-th power, the
+  automorphism which multiplies the `i`-th radical by the `cᵢ`-th power of the root of unity fixes
+  the radical of an exponent vector `m` exactly when `p` divides `∑ cᵢ mᵢ`.  So if every
+  automorphism fixing the radical of one element fixes the radical of another, every vector
+  orthogonal modulo `p` to the first exponent vector is orthogonal to the second, and over the
+  field with `p` elements that forces the two vectors to be proportional: the second element is,
+  modulo `p`-th powers, a power of the first.
 * `InverseGalois.CFT.Local.AdicAction` carries a field automorphism to the adic completions: it
   preserves the valuation of an element up to moving the prime, so it is an isometry of the valued
   field at a prime onto the valued field at the image prime, and extends by continuity to a ring
