@@ -232,8 +232,10 @@ import InverseGalois.CFT.Units.GaloisAction
 import InverseGalois.CFT.Units.Herbrand
 import InverseGalois.CFT.Units.InfiniteIdele
 import InverseGalois.CFT.Units.InfiniteOrbit
+import InverseGalois.CFT.Units.LocalEmbedding
 import InverseGalois.CFT.Units.LocalIdele
 import InverseGalois.CFT.Units.Places
+import InverseGalois.CFT.Units.SIdeleClass
 import InverseGalois.CFT.Units.SIdeleHerbrand
 import InverseGalois.CFT.Units.SUnit
 import InverseGalois.CFT.Units.SUnitHerbrand
@@ -884,6 +886,19 @@ it that are available here.
   which every system of orders vanishing at all but finitely many primes is realised by a single
   element of the field; enlarging the set to the union of its translates makes it stable under the
   Galois group without disturbing that property.
+* `InverseGalois.CFT.Units.LocalEmbedding` and `InverseGalois.CFT.Units.SIdeleClass` carry out the
+  division.  A nonzero element of the field is a unit of every completion, and at a finite place its
+  local valuation is minus its order there, so an `S`-unit lands in the units of the valuation ring
+  away from the chosen places and the field embeds diagonally in the ideles that are units outside
+  them; the embedding is injective because a number field embeds in the completion at an infinite
+  place, and it commutes with the Galois action because the transports at all places are induced by
+  the automorphism itself.  Multiplicativity of the Herbrand quotient along the resulting short exact
+  sequence then cancels the two products of orders of decomposition groups and leaves the degree of
+  the extension as the Herbrand quotient of the quotient group.  The finiteness that
+  multiplicativity requires is not proved by generation, which is unavailable for groups this large,
+  but read off from the computation: an infinite group has cardinality zero, so a Herbrand quotient
+  that is a positive product of orders already certifies finiteness for the two outer terms, and
+  exactness carries it to the quotient term.
 * `InverseGalois.CFT.Local.UnitFiltration` sets up the two filtrations of a valued field: the
   additive one by the elements of small valuation, and the multiplicative one by the units
   congruent to one.  Subtracting one identifies a step of the unit filtration with the

@@ -42,6 +42,8 @@ absorbed into those three statements.
 * `InverseGalois.CFT.FamilyAction.toFun_smul`: the transported section at an image index is the
   transport of the section at the index.
 * `InverseGalois.CFT.FamilyAction.familyAut_apply_smul`: the same, for the assembled action.
+* `InverseGalois.CFT.FamilyAction.familyAut_eq_of_map`: **a criterion for recognising the image of a
+  section**, checked index by index using the transport isomorphisms directly.
 
 ## Tags
 
@@ -211,6 +213,16 @@ theorem familyAut_apply (g : G) (f : ∀ x, M x) : F.familyAut g f = F.toFun g f
 theorem familyAut_apply_eq_transport {g : G} {x y : X} (h : g • y = x) (f : ∀ z, M z) :
     F.familyAut g f x = F.transport h (f y) :=
   F.toFun_eq_transport h f
+
+/-- **A section is the image of another one when the transport isomorphisms carry the value at each
+index to the value at the translated index.**  This is the convenient criterion for recognising the
+action on sections: it is stated forwards, at the index itself, rather than backwards at the
+translate, so no inverse ever appears. -/
+theorem familyAut_eq_of_map (g : G) (s s' : ∀ x, M x) (h : ∀ x, F.map g x (s x) = s' (g • x)) :
+    F.familyAut g s = s' := by
+  funext x
+  rw [F.familyAut_apply_eq_transport (smul_inv_smul g x) s, FamilyAction.transport_apply, h,
+    famCast_apply_section]
 
 end FamilyAction
 

@@ -39,6 +39,9 @@ on both sides.
   term**, in both directions.
 * `InverseGalois.CFT.TateSES.finite_tateH0_mid'` and its three companions: the same transport
   assuming only that the Tate groups of the quotient term are finite.
+* `InverseGalois.CFT.TateSES.finite_tateH0_quot'` and
+  `InverseGalois.CFT.TateSES.finite_tateHm1_quot'`: **finiteness of the Tate groups of the quotient
+  term**, deduced from finiteness for the other two terms.
 * `InverseGalois.CFT.finite_tateH0_of_injective` and its three companions: the same statements for
   an equivariant injection with finite cokernel.
 * `InverseGalois.CFT.herbrand_eq_of_injective_of_finite_quotient_of_finite_source` and its three
@@ -122,6 +125,20 @@ sequence whose quotient term has finite Tate groups. -/
 theorem finite_tateHm1_sub' [Finite (tateH0 S.σC n)] [Finite (tateHm1 S.σB n)] :
     Finite (tateHm1 S.σA n) :=
   finite_of_exact S.delta0 S.alpha1 S.range_delta0_eq_ker_alpha1
+
+/-- **Finiteness of `Ĥ⁰` passes to the quotient object** across a short exact sequence whose two
+other terms have finite Tate groups.  The relevant three-term stretch of the hexagon runs from the
+total object through the quotient object and on to `Ĥ⁻¹` of the subobject. -/
+theorem finite_tateH0_quot' [Finite (tateH0 S.σB n)] [Finite (tateHm1 S.σA n)] :
+    Finite (tateH0 S.σC n) :=
+  finite_of_exact S.beta0 S.delta0 S.range_beta0_eq_ker_delta0
+
+/-- **Finiteness of `Ĥ⁻¹` passes to the quotient object** across a short exact sequence whose two
+other terms have finite Tate groups.  The relevant three-term stretch of the hexagon runs from the
+total object through the quotient object and on to `Ĥ⁰` of the subobject. -/
+theorem finite_tateHm1_quot' [Finite (tateHm1 S.σB n)] [Finite (tateH0 S.σA n)] :
+    Finite (tateHm1 S.σC n) :=
+  finite_of_exact S.beta1 S.delta1 S.range_beta1_eq_ker_delta1
 
 end TateSES
 
