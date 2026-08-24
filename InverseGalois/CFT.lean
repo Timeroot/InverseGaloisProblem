@@ -262,6 +262,9 @@ import InverseGalois.CFT.Units.IdeleClassFixed
 import InverseGalois.CFT.Units.IdeleClassIndex
 import InverseGalois.CFT.Units.IdeleFixed
 import InverseGalois.CFT.Units.IdeleNorm
+import InverseGalois.CFT.Units.IdeleNormTower
+import InverseGalois.CFT.Units.IdeleRestrict
+import InverseGalois.CFT.Units.IdeleTower
 import InverseGalois.CFT.Units.InfiniteComap
 import InverseGalois.CFT.Units.InfiniteFixed
 import InverseGalois.CFT.Units.InfiniteGalois
@@ -272,6 +275,8 @@ import InverseGalois.CFT.Units.LocalIdele
 import InverseGalois.CFT.Units.NormIndex
 import InverseGalois.CFT.Units.OrbitPlaces
 import InverseGalois.CFT.Units.PlaceComap
+import InverseGalois.CFT.Units.PlaceRestrict
+import InverseGalois.CFT.Units.PlaceTower
 import InverseGalois.CFT.Units.Places
 import InverseGalois.CFT.Units.PowIdele
 import InverseGalois.CFT.Units.SIdeleClass
@@ -1089,6 +1094,28 @@ it that are available here.
   diagonal is compatible with the passage between the two fields, because at every place the
   structure map of the completion above over the completion below carries the image of an element of
   the base field to its image in the extension.
+* `InverseGalois.CFT.Units.PlaceTower` compares the places and the completions of a tower of number
+  fields.  A place of the top field lies over a place of the middle field, which lies over a place
+  of the bottom field, and that is the place of the bottom field the place of the top field lies
+  over directly; the two ways of getting from the completion of the bottom field into the completion
+  of the top field both extend the dense inclusion of the bottom field, so they agree.
+* `InverseGalois.CFT.Units.IdeleTower` puts those comparisons together: the inclusions of the ideles
+  of a tower compose to the inclusion at the bottom.
+* `InverseGalois.CFT.Units.PlaceRestrict` moves a place of a tower by an automorphism of the top
+  field.  Such an automorphism restricts to the middle field, the place of the middle field below
+  the moved place is the moved place below, and the isomorphisms of completions attached to the two
+  automorphisms agree on the completion of the middle field, both being continuous and agreeing on
+  the dense image of that field.
+* `InverseGalois.CFT.Units.IdeleRestrict` assembles that place by place: the inclusion of the ideles
+  of the middle field intertwines the action of an automorphism of the top field with the action of
+  its restriction.
+* `InverseGalois.CFT.Units.IdeleNormTower` deduces that the norm on the ideles of a tower is the
+  norm to the middle field followed by the norm from the middle field.  Lifting an automorphism of
+  the middle field and multiplying by an automorphism fixing it is a bijection from the product of
+  the two Galois groups onto the Galois group of the whole extension, so the two sums of conjugates
+  have the same terms, and the inclusion of the ideles of the bottom field is injective.  This is
+  what lets a statement about the norms of a cyclic extension be applied inside a solvable tower,
+  one step at a time.
 * `InverseGalois.CFT.Units.IdeleClassIndex` identifies the zeroth Tate group of the idele class
   group with the quotient of the ideles of the base field by the principal ideles together with the
   norms, which is the classical shape of the first inequality.  An idele of the base field gives an
