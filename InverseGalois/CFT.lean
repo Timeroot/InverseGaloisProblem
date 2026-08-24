@@ -293,6 +293,7 @@ import InverseGalois.CFT.Units.InfiniteIdele
 import InverseGalois.CFT.Units.InfiniteOrbit
 import InverseGalois.CFT.Units.LocalEmbedding
 import InverseGalois.CFT.Units.LocalIdele
+import InverseGalois.CFT.Units.LocalNorm
 import InverseGalois.CFT.Units.LocalPowIdele
 import InverseGalois.CFT.Units.NormIndex
 import InverseGalois.CFT.Units.OrbitPlaces
@@ -1016,6 +1017,16 @@ it that are available here.
   ideles injective.  Reading the Tate norm operator of a generator as the product of the conjugates
   identifies it with the field norm, so a unit of the base field whose principal idele is the norm
   of an idele is the norm of a unit of the extension.
+* `InverseGalois.CFT.Units.LocalNorm` states that theorem one place at a time.  The decomposition
+  group at a place acts faithfully on the completion there and commutes with the scalars of the
+  completion of the base, and every automorphism of the completion over the completion of the base
+  is the action of one of its elements, so the field norm of the local extension is the product of
+  the conjugates under the decomposition group, which is the norm operator of the Tate formalism for
+  a full turn of the orbit of the place.  Enlarging the support of an idele of the base field
+  together with the places lacking a fixed uniformizer to a finite invariant set of places, the
+  local-to-global criterion then exhibits an idele that is a local norm at every place as the norm
+  of an idele, and the norm theorem turns a unit of the base field that is a local norm everywhere
+  into the norm of a unit of the extension.
 * `InverseGalois.CFT.Local.AdicAction` carries a field automorphism to the adic completions: it
   preserves the valuation of an element up to moving the prime, so it is an isometry of the valued
   field at a prime onto the valued field at the image prime, and extends by continuity to a ring
