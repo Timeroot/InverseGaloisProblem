@@ -259,6 +259,7 @@ import InverseGalois.CFT.Units.Decomposition
 import InverseGalois.CFT.Units.DecompositionOutside
 import InverseGalois.CFT.Units.EquivariantLabel
 import InverseGalois.CFT.Units.FirstInequality
+import InverseGalois.CFT.Units.FrobeniusPlace
 import InverseGalois.CFT.Units.GaloisAction
 import InverseGalois.CFT.Units.Herbrand
 import InverseGalois.CFT.Units.Idele
@@ -1225,6 +1226,13 @@ it that are available here.
   places whose place below avoids a prescribed finite set already generate a solvable Galois group,
   because in the fixed field of the subgroup they generate every place of the base field outside the
   prescribed set splits completely.
+* `InverseGalois.CFT.Units.FrobeniusPlace` identifies the decomposition group at a place of a Galois
+  extension of number fields with the Galois group of the residue extension, over an arbitrary
+  number field base.  The ring of integers upstairs is the ring of invariants of the ring of
+  integers downstairs, the residue fields are finite and the residue extension separable, and the
+  reduction map has the inertia group as its kernel.  At an unramified place the inertia group is
+  trivial, so the decomposition group embeds in the Galois group of an extension of finite fields
+  and is cyclic.
 * `InverseGalois.CFT.Local.UnitFiltration` sets up the two filtrations of a valued field: the
   additive one by the elements of small valuation, and the multiplicative one by the units
   congruent to one.  Subtracting one identifies a step of the unit filtration with the
