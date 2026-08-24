@@ -260,6 +260,7 @@ import InverseGalois.CFT.Units.Idele
 import InverseGalois.CFT.Units.IdeleClass
 import InverseGalois.CFT.Units.IdeleClassFixed
 import InverseGalois.CFT.Units.IdeleFixed
+import InverseGalois.CFT.Units.IdeleNorm
 import InverseGalois.CFT.Units.InfiniteComap
 import InverseGalois.CFT.Units.InfiniteFixed
 import InverseGalois.CFT.Units.InfiniteGalois
@@ -267,6 +268,7 @@ import InverseGalois.CFT.Units.InfiniteIdele
 import InverseGalois.CFT.Units.InfiniteOrbit
 import InverseGalois.CFT.Units.LocalEmbedding
 import InverseGalois.CFT.Units.LocalIdele
+import InverseGalois.CFT.Units.NormIndex
 import InverseGalois.CFT.Units.OrbitPlaces
 import InverseGalois.CFT.Units.PlaceComap
 import InverseGalois.CFT.Units.Places
@@ -1078,6 +1080,18 @@ it that are available here.
   the places where the result fails to be a unit of the valuation ring lie above the finitely many
   places where the given idele does.  The ideles fixed by the Galois group are exactly the ideles of
   the base field.
+* `InverseGalois.CFT.Units.IdeleNorm` is the norm map on the ideles of a cyclic extension.  The sum
+  of the conjugates of an idele is fixed by the generator, hence by the whole group, hence is the
+  image of a unique idele of the base field, and that idele is the norm.  The diagonal is compatible
+  with the passage between the two fields, because at every place the structure map of the
+  completion above over the completion below carries the image of an element of the base field to
+  its image in the extension.
+* `InverseGalois.CFT.Units.NormIndex` turns the first inequality into a triviality criterion in
+  terms of norms.  If the principal ideles together with the norms exhaust the ideles of the base
+  field then every fixed idele class is a norm, because a fixed class is the class of a fixed idele,
+  a fixed idele is an idele of the base field, and passing to classes kills the principal part; so
+  the extension is trivial.  The hypothesis is an exact equality of subgroups, so no topology on the
+  ideles is needed.
 * `InverseGalois.CFT.Units.PowIdele` bounds the index of the `n`-th powers inside the ideles that
   are units outside a finite set of places.  The two subgroups involved are products of local
   subgroups differing only where `n`-th powers were imposed, so their relative index is the product
