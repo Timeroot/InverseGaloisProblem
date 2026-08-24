@@ -134,6 +134,7 @@ import InverseGalois.CFT.Local.InfiniteAction
 import InverseGalois.CFT.Local.InfiniteFamily
 import InverseGalois.CFT.Local.InfiniteHerbrand
 import InverseGalois.CFT.Local.LegendreHilbert
+import InverseGalois.CFT.Local.NormIndex
 import InverseGalois.CFT.Local.NormalLattice
 import InverseGalois.CFT.Local.OddAnisotropic
 import InverseGalois.CFT.Local.PadicHilbert
@@ -821,6 +822,11 @@ it that are available here.
   quotient one, the units of the completion have Herbrand quotient the order of the decomposition
   group, and both Tate groups of the units of the valuation ring vanish when the decomposition
   group fixes a uniformizer.
+* `InverseGalois.CFT.Local.NormIndex` divides that quotient.  The decomposition group acts
+  faithfully on the completion, which is a field, so Hilbert's theorem 90 applies verbatim and the
+  lower Tate group of the units of the completion vanishes.  The upper one therefore has order the
+  order of the decomposition group: the norms from the completion form a subgroup of the units of
+  index the local degree.
 * `InverseGalois.CFT.Units.EquivariantLabel` records the one fact that a labelling of a set acted
   on by a group by the points of another such set needs to satisfy for the two to have the same
   decomposition groups: an injective equivariant map identifies the stabiliser of a point with the
