@@ -192,6 +192,7 @@ import InverseGalois.CFT.Tate.CyclicHilbert90
 import InverseGalois.CFT.Tate.CyclicInduced
 import InverseGalois.CFT.Tate.Exact
 import InverseGalois.CFT.Tate.Family
+import InverseGalois.CFT.Tate.FamilyNorm
 import InverseGalois.CFT.Tate.FamilyOrbit
 import InverseGalois.CFT.Tate.FamilyOrbits
 import InverseGalois.CFT.Tate.FamilyReindex
@@ -212,6 +213,7 @@ import InverseGalois.CFT.Tate.InfinitePlaces
 import InverseGalois.CFT.Tate.Isogeny
 import InverseGalois.CFT.Tate.Lattice
 import InverseGalois.CFT.Tate.Mul
+import InverseGalois.CFT.Tate.NormSurjective
 import InverseGalois.CFT.Tate.NormalBasis
 import InverseGalois.CFT.Tate.Orbit
 import InverseGalois.CFT.Tate.OrbitCocycle
@@ -744,6 +746,16 @@ it that are available here.
   sections of any family is the product over the orbits of the index set of the contribution of one
   orbit, and that contribution is the Herbrand quotient of the module at a point of the orbit under
   a full turn: exactly the local factor of the group of ideles at a place of the base field.
+* `InverseGalois.CFT.Tate.NormSurjective` reads the vanishing of the upper Tate group as a statement
+  about individual elements: that group is the fixed points modulo the norms, so it vanishes exactly
+  when every fixed point is a norm.  Being a norm is transported by an equivariant isomorphism, and
+  in a product, of two factors or of a whole family, an element is a norm as soon as each of its
+  components is.
+* `InverseGalois.CFT.Tate.FamilyNorm` carries that through the two identifications of the sections
+  of a family, so a section is a norm as soon as its restriction to every orbit of the index set is
+  one.  This is the passage from local to global that the vanishing of a Tate group is too crude to
+  supply: at the places in a finite exceptional set only some of the local elements are norms, and
+  the assembly has to keep track of which.
 * `InverseGalois.CFT.Tate.CyclicAction` states that computation for a cyclic group acting
   transitively on a finite set, where the orbit–stabiliser theorem reads the Herbrand quotient of
   the free lattice as the order of the stabiliser of a point: the form in which the places of a
