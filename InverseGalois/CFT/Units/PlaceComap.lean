@@ -49,7 +49,7 @@ open IsDedekindDomain UniqueFactorizationMonoid WithZero
 section RamificationIdx
 
 variable {A B : Type*} [CommRing A] [IsDedekindDomain A] [CommRing B] [IsDedekindDomain B]
-  [Algebra A B] [Algebra.IsIntegral A B] [NoZeroSMulDivisors A B]
+  [Algebra A B] [Algebra.IsIntegral A B] [Module.IsTorsionFree A B]
 
 variable (A) in
 /-- **The ramification index of a height one prime of the extension** over the prime of the base
@@ -62,7 +62,7 @@ theorem map_primeUnder_ne_bot (w : HeightOneSpectrum B) :
     Ideal.map (algebraMap A B) (primeUnder A w).asIdeal ≠ ⊥ :=
   Ideal.map_ne_bot_of_ne_bot (primeUnder A w).ne_bot
 
-omit [NoZeroSMulDivisors A B] in
+omit [Module.IsTorsionFree A B] in
 /-- The prime below extends into the prime above. -/
 theorem map_primeUnder_le (w : HeightOneSpectrum B) :
     Ideal.map (algebraMap A B) (primeUnder A w).asIdeal ≤ w.asIdeal := by
@@ -73,7 +73,7 @@ theorem ramIdx_ne_zero (w : HeightOneSpectrum B) : ramIdx A w ≠ 0 :=
   Ideal.IsDedekindDomain.ramificationIdx_ne_zero (map_primeUnder_ne_bot w) w.isPrime
     (map_primeUnder_le w)
 
-omit [NoZeroSMulDivisors A B] in
+omit [Module.IsTorsionFree A B] in
 /-- The prime above divides the extended prime below to the power of the ramification index. -/
 theorem pow_ramIdx_dvd_map (w : HeightOneSpectrum B) :
     w.asIdeal ^ ramIdx A w ∣ Ideal.map (algebraMap A B) (primeUnder A w).asIdeal :=
@@ -148,7 +148,7 @@ end IntValuation
 section Comparison
 
 variable {A B : Type*} [CommRing A] [IsDedekindDomain A] [CommRing B] [IsDedekindDomain B]
-  [Algebra A B] [Algebra.IsIntegral A B] [NoZeroSMulDivisors A B]
+  [Algebra A B] [Algebra.IsIntegral A B] [Module.IsTorsionFree A B]
 
 /-- **The adic valuation of an element of the base at a prime of the extension** is its valuation
 at the prime below, raised to the ramification index. -/
@@ -197,11 +197,11 @@ end Comparison
 section Fraction
 
 variable {A B k K : Type*} [CommRing A] [IsDedekindDomain A] [CommRing B] [IsDedekindDomain B]
-  [Algebra A B] [Algebra.IsIntegral A B] [NoZeroSMulDivisors A B]
+  [Algebra A B] [Algebra.IsIntegral A B] [Module.IsTorsionFree A B]
   [Field k] [Field K] [Algebra A k] [IsFractionRing A k] [Algebra B K] [IsFractionRing B K]
   [Algebra k K] [Algebra A K] [IsScalarTower A B K] [IsScalarTower A k K]
 
-omit [IsDedekindDomain A] [IsDedekindDomain B] [Algebra.IsIntegral A B] [NoZeroSMulDivisors A B]
+omit [IsDedekindDomain A] [IsDedekindDomain B] [Algebra.IsIntegral A B] [Module.IsTorsionFree A B]
   [IsFractionRing A k] [IsFractionRing B K] in
 /-- The two ways of getting from the base domain into the extension field agree. -/
 theorem algebraMap_comm (a : A) :
@@ -226,7 +226,7 @@ end Fraction
 section Completion
 
 variable {A B k K : Type*} [CommRing A] [IsDedekindDomain A] [CommRing B] [IsDedekindDomain B]
-  [Algebra A B] [Algebra.IsIntegral A B] [NoZeroSMulDivisors A B]
+  [Algebra A B] [Algebra.IsIntegral A B] [Module.IsTorsionFree A B]
   [Field k] [Field K] [Algebra A k] [IsFractionRing A k] [Algebra B K] [IsFractionRing B K]
   [Algebra k K] [Algebra A K] [IsScalarTower A B K] [IsScalarTower A k K]
 
@@ -251,7 +251,7 @@ def withValComap (w : HeightOneSpectrum B) :
     WithVal ((primeUnder A w).valuation k) →+* WithVal (w.valuation K) :=
   algebraMap k K
 
-omit [NoZeroSMulDivisors A B] [Algebra A K] [IsScalarTower A B K] [IsScalarTower A k K] in
+omit [Module.IsTorsionFree A B] [Algebra A K] [IsScalarTower A B K] [IsScalarTower A k K] in
 @[simp]
 theorem withValComap_apply (w : HeightOneSpectrum B) (x : k) :
     withValComap A w (K := K) x = algebraMap k K x := rfl
@@ -287,6 +287,13 @@ theorem adicCompletionComap_coe (w : HeightOneSpectrum B) (x : k) :
     adicCompletionComap A w ((x : (primeUnder A w).adicCompletion k))
       = ((algebraMap k K x : WithVal (w.valuation K)) : w.adicCompletion K) :=
   UniformSpace.Completion.mapRingHom_coe (continuous_withValComap A w) x
+
+variable (A) in
+/-- **The map induced on the completions is continuous**, being the extension by continuity of a
+continuous map. -/
+theorem continuous_adicCompletionComap (w : HeightOneSpectrum B) :
+    Continuous (adicCompletionComap A w (k := k) (K := K)) :=
+  UniformSpace.Completion.continuous_map
 
 variable (A) in
 /-- The map induced on the completions is injective, the completion of the base being a field. -/

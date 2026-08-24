@@ -132,7 +132,7 @@ end NumberField
 section Extension
 
 variable {A B : Type*} [CommRing A] [IsDedekindDomain A] [CommRing B] [IsDedekindDomain B]
-  [Algebra A B] [Algebra.IsIntegral A B] [NoZeroSMulDivisors A B] [Nontrivial A]
+  [Algebra A B] [Algebra.IsIntegral A B] [Module.IsTorsionFree A B] [Nontrivial A]
   {G : Type*} [Group G] [MulSemiringAction G B] [SMulCommClass G A B]
 
 variable (A) in
@@ -142,12 +142,12 @@ def primeUnder (v : HeightOneSpectrum B) : HeightOneSpectrum A where
   isPrime := Ideal.IsPrime.under A v.asIdeal
   ne_bot := Ideal.under_ne_bot A v.ne_bot
 
-omit [IsDedekindDomain A] [NoZeroSMulDivisors A B] in
+omit [IsDedekindDomain A] [Module.IsTorsionFree A B] in
 @[simp]
 theorem primeUnder_asIdeal (v : HeightOneSpectrum B) :
     (primeUnder A v).asIdeal = Ideal.under A v.asIdeal := rfl
 
-omit [IsDedekindDomain A] [NoZeroSMulDivisors A B] in
+omit [IsDedekindDomain A] [Module.IsTorsionFree A B] in
 /-- **The prime of the base below a prime of the extension is invariant under the group.** -/
 theorem primeUnder_smul_eq (σ : G) (v : HeightOneSpectrum B) :
     primeUnder A (σ • v) = primeUnder A v := by
@@ -158,7 +158,7 @@ theorem primeUnder_smul_eq (σ : G) (v : HeightOneSpectrum B) :
   simp only [primeUnder_asIdeal, Ideal.mem_comap, asIdeal_smul,
     Ideal.mem_pointwise_smul_iff_inv_smul_mem, hfix]
 
-omit [IsDedekindDomain A] [IsDedekindDomain B] [Algebra.IsIntegral A B] [NoZeroSMulDivisors A B]
+omit [IsDedekindDomain A] [IsDedekindDomain B] [Algebra.IsIntegral A B] [Module.IsTorsionFree A B]
   [Nontrivial A] [SMulCommClass G A B] in
 /-- **The group acts transitively on the primes above a prime of the base.** -/
 theorem exists_smul_primeAbove_eq [Finite G] [IsGaloisGroup G A B] {v w : HeightOneSpectrum B}
@@ -171,7 +171,7 @@ theorem exists_smul_primeAbove_eq [Finite G] [IsGaloisGroup G A B] {v w : Height
     Ideal.exists_smul_eq_of_isGaloisGroup (Ideal.under A v.asIdeal) v.asIdeal w.asIdeal G
   exact ⟨σ, HeightOneSpectrum.ext hσ⟩
 
-omit [IsDedekindDomain A] [NoZeroSMulDivisors A B] [SMulCommClass G A B] in
+omit [IsDedekindDomain A] [Module.IsTorsionFree A B] [SMulCommClass G A B] in
 /-- **The group acts transitively on the primes above a prime of the base**, in terms of the prime
 below. -/
 theorem exists_smul_eq_of_primeUnder_eq [Finite G] [IsGaloisGroup G A B]

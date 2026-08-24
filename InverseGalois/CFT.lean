@@ -246,6 +246,7 @@ import InverseGalois.CFT.Units.AdicOrbit
 import InverseGalois.CFT.Units.AdicSIdeles
 import InverseGalois.CFT.Units.ArchimedeanIdeles
 import InverseGalois.CFT.Units.ClassSet
+import InverseGalois.CFT.Units.CompletionFinite
 import InverseGalois.CFT.Units.EquivariantLabel
 import InverseGalois.CFT.Units.FirstInequality
 import InverseGalois.CFT.Units.GaloisAction
