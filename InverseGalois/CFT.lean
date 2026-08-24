@@ -1,6 +1,7 @@
 import InverseGalois.CFT.Approximation.Basic
 import InverseGalois.CFT.Approximation.Completion
 import InverseGalois.CFT.Approximation.Places
+import InverseGalois.CFT.Approximation.PowClass
 import InverseGalois.CFT.Brauer.BaseChange
 import InverseGalois.CFT.Brauer.Centralizer
 import InverseGalois.CFT.Brauer.CentralizerProduct
@@ -152,6 +153,7 @@ import InverseGalois.CFT.Local.PadicLocalField
 import InverseGalois.CFT.Local.PadicSquares
 import InverseGalois.CFT.Local.NatValuation
 import InverseGalois.CFT.Local.PadicSquaresTwo
+import InverseGalois.CFT.Local.PowClose
 import InverseGalois.CFT.Local.PowNeighbourhood
 import InverseGalois.CFT.Local.RamifiedNormForm
 import InverseGalois.CFT.Local.TraceIntegral
@@ -254,6 +256,7 @@ import InverseGalois.CFT.Units.CompletionGalois
 import InverseGalois.CFT.Units.CompletionUnits
 import InverseGalois.CFT.Units.CyclicTrivial
 import InverseGalois.CFT.Units.Decomposition
+import InverseGalois.CFT.Units.DecompositionOutside
 import InverseGalois.CFT.Units.EquivariantLabel
 import InverseGalois.CFT.Units.FirstInequality
 import InverseGalois.CFT.Units.GaloisAction
@@ -274,6 +277,7 @@ import InverseGalois.CFT.Units.InfiniteIdele
 import InverseGalois.CFT.Units.InfiniteOrbit
 import InverseGalois.CFT.Units.LocalEmbedding
 import InverseGalois.CFT.Units.LocalIdele
+import InverseGalois.CFT.Units.LocalPowIdele
 import InverseGalois.CFT.Units.NormIndex
 import InverseGalois.CFT.Units.OrbitPlaces
 import InverseGalois.CFT.Units.PlaceComap
@@ -289,6 +293,7 @@ import InverseGalois.CFT.Units.SUnitHerbrand
 import InverseGalois.CFT.Units.SUnitIndex
 import InverseGalois.CFT.Units.SolvableNorm
 import InverseGalois.CFT.Units.SplitNorm
+import InverseGalois.CFT.Units.SplitOutside
 import InverseGalois.CFT.Units.UnitLattice
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
@@ -1147,8 +1152,9 @@ it that are available here.
   a norm; a solvable extension in which every place splits completely is therefore trivial.
 * `InverseGalois.CFT.Units.Decomposition` shows that the decomposition groups generate a solvable
   Galois group.  The subgroup they generate is normal, and in its fixed field every place of the
-  base field splits completely: an automorphism of that subextension fixing a place is the restriction of
-  an automorphism of the top field fixing a place above it, obtained by correcting an arbitrary lift
+  base field splits completely: an automorphism of that subextension fixing a place is the
+  restriction of an automorphism of the top field fixing a place above it, obtained by correcting
+  an arbitrary lift
   with an automorphism over the subextension, and such an automorphism lies in the subgroup and so
   restricts to the identity.
 * `InverseGalois.CFT.Units.PowIdele` bounds the index of the `n`-th powers inside the ideles that
@@ -1181,6 +1187,44 @@ it that are available here.
   them separately: a prescribed element of a completion is first replaced by an element of the field
   within half the required accuracy, the approximation is then carried out inside the field, and a
   triangle inequality combines the two.
+* `InverseGalois.CFT.Local.PowClose` measures in the norm of a completion how close to a prescribed
+  nonzero element another element has to be for the two to differ by an `n`-th power.  At a finite
+  place the exponential turns a unit congruent to one to sufficient accuracy into an `n`-th power,
+  and reading the valuation through the rank one homomorphism converts that accuracy into a bound
+  on the norm; at an infinite place the completion is the reals or the complexes, and an element
+  within distance one of one is a positive real or an arbitrary complex number.  The accuracy
+  depends on the place and on the prescribed element but not on the element approximating it, so
+  finitely many such conditions can be met at once.
+* `InverseGalois.CFT.Approximation.PowClass` combines the two: every place supplies an accuracy
+  within which an element of its completion differs from a prescribed nonzero one by an `n`-th
+  power, and the smallest of the finitely many accuracies, cut down so as to keep the approximating
+  element away from zero, is an accuracy at which weak approximation produces a single element of
+  the field agreeing at every one of the places with the prescribed element up to an `n`-th power.
+  In other words the field surjects onto the product over the chosen places of the quotients of the
+  multiplicative groups of the completions by their `n`-th powers.
+* `InverseGalois.CFT.Units.LocalPowIdele` reads that as a statement about the ideles.  The ideles
+  whose component is an `n`-th power at every infinite place and at each of finitely many chosen
+  finite places form a subgroup, and dividing an arbitrary idele by the element of the field that
+  approximates it there lands in that subgroup, so the subgroup together with the principal ideles
+  is everything.  This is the replacement, exact rather than merely dense, for the statement that
+  the principal ideles together with the ideles trivial at the chosen places lie densely.
+* `InverseGalois.CFT.Units.SplitOutside` puts the two halves together.  An idele of the base field
+  that is a local power of exponent a multiple of the degree, at the infinite places and at the
+  exceptional ones, is a local norm everywhere in a cyclic extension whose every other place splits
+  completely: where the decomposition group is not already trivial its order divides the exponent,
+  and a multiple of that order is a local norm.  Enlarging the support of the idele to a finite
+  invariant set makes it an idele of a set of places, and the local-to-global criterion exhibits it
+  as a norm.  So the norms and the principal ideles are everything, which the cyclic case of the
+  first inequality forbids unless the extension is trivial; passing to a cyclic subextension gives
+  the same conclusion for a solvable one.  This is the statement that an extension of number fields
+  in which almost every place splits completely is trivial, in the form that leaves a finite set of
+  places entirely unconstrained.
+* `InverseGalois.CFT.Units.DecompositionOutside` runs the argument that the decomposition groups
+  generate the Galois group against that sharper input.  Throwing away finitely many places of the
+  base field, and all the infinite places, costs nothing: the decomposition groups at the finite
+  places whose place below avoids a prescribed finite set already generate a solvable Galois group,
+  because in the fixed field of the subgroup they generate every place of the base field outside the
+  prescribed set splits completely.
 * `InverseGalois.CFT.Local.UnitFiltration` sets up the two filtrations of a valued field: the
   additive one by the elements of small valuation, and the multiplicative one by the units
   congruent to one.  Subtracting one identifies a step of the unit filtration with the

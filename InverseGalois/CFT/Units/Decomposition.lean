@@ -28,7 +28,8 @@ field is the base field.
 
 ## Main results
 
-* `InverseGalois.CFT.exists_restrictNormalHom_eq_of_prime`,
+* `InverseGalois.CFT.exists_restrictNormalHom_eq_of_prime_above`,
+  `InverseGalois.CFT.exists_restrictNormalHom_eq_of_prime`,
   `InverseGalois.CFT.exists_restrictNormalHom_eq_of_infinitePlace`: **an automorphism of a
   subextension fixing a place is the restriction of an automorphism fixing a place above it.**
 * `InverseGalois.CFT.decompositionSubgroup_eq_top`: **the decomposition groups generate a solvable
@@ -52,12 +53,12 @@ variable {k F K : Type*} [Field k] [NumberField k] [Field F] [NumberField F] [Fi
 variable (K) in
 omit [NumberField k] in
 /-- **An automorphism of the middle field fixing a finite place is the restriction of an
-automorphism of the top field fixing a finite place above it.**  Any lift moves a chosen place above
-to another place above, and the automorphisms over the middle field permute those transitively, so
-correcting the lift by one of them gives a lift that fixes the chosen place. -/
-theorem exists_restrictNormalHom_eq_of_prime (τ : Gal(F/k)) {u : HeightOneSpectrum (𝓞 F)}
+automorphism of the top field fixing a finite place above that very place.**  Any lift moves a
+chosen place above to another place above, and the automorphisms over the middle field permute those
+transitively, so correcting the lift by one of them gives a lift that fixes the chosen place. -/
+theorem exists_restrictNormalHom_eq_of_prime_above (τ : Gal(F/k)) {u : HeightOneSpectrum (𝓞 F)}
     (hu : τ • u = u) :
-    ∃ σ : Gal(K/k), (∃ v : HeightOneSpectrum (𝓞 K), σ • v = v) ∧
+    ∃ σ : Gal(K/k), (∃ v : HeightOneSpectrum (𝓞 K), primeUnder (𝓞 F) v = u ∧ σ • v = v) ∧
       AlgEquiv.restrictNormalHom F σ = τ := by
   haveI : IsGalois F K := IsGalois.tower_top_of_isGalois (F := k) (K := F) (E := K)
   obtain ⟨σ₀, hσ₀⟩ := AlgEquiv.restrictNormalHom_surjective (F := k) (K₁ := F) (E := K) τ
@@ -65,10 +66,21 @@ theorem exists_restrictNormalHom_eq_of_prime (τ : Gal(F/k)) {u : HeightOneSpect
   have h1 : primeUnder (𝓞 F) (σ₀ • v) = primeUnder (𝓞 F) v := by
     rw [primeUnder_smul F, hv, hσ₀, hu]
   obtain ⟨ρ, hρ⟩ := exists_smul_eq_of_primeUnder_eq (A := 𝓞 F) (G := K ≃ₐ[F] K) h1
-  refine ⟨ρ.restrictScalars k * σ₀, ⟨v, ?_⟩, ?_⟩
+  refine ⟨ρ.restrictScalars k * σ₀, ⟨v, hv, ?_⟩, ?_⟩
   · rw [mul_smul]
     exact hρ
   · rw [map_mul, restrictNormalHom_restrictScalars k F ρ, one_mul, hσ₀]
+
+variable (K) in
+omit [NumberField k] in
+/-- **An automorphism of the middle field fixing a finite place is the restriction of an
+automorphism of the top field fixing a finite place above it.** -/
+theorem exists_restrictNormalHom_eq_of_prime (τ : Gal(F/k)) {u : HeightOneSpectrum (𝓞 F)}
+    (hu : τ • u = u) :
+    ∃ σ : Gal(K/k), (∃ v : HeightOneSpectrum (𝓞 K), σ • v = v) ∧
+      AlgEquiv.restrictNormalHom F σ = τ := by
+  obtain ⟨σ, ⟨v, -, hv⟩, hres⟩ := exists_restrictNormalHom_eq_of_prime_above K τ hu
+  exact ⟨σ, ⟨v, hv⟩, hres⟩
 
 variable (K) in
 omit [NumberField k] [NumberField F] [NumberField K] in
