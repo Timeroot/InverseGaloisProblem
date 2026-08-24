@@ -107,6 +107,7 @@ import InverseGalois.CFT.InertiaGeneration
 import InverseGalois.CFT.InertiaRestrict
 import InverseGalois.CFT.InertiaSubgroup
 import InverseGalois.CFT.KroneckerWeber
+import InverseGalois.CFT.Kummer.CyclotomicDescent
 import InverseGalois.CFT.Kummer.Denominator
 import InverseGalois.CFT.Kummer.GlobalPower
 import InverseGalois.CFT.Kummer.LocalPower
@@ -988,6 +989,15 @@ it that are available here.
   there, and it is unramified outside the two sets, so the ideles carrying the local powers are
   norms.  Their index together with the principal ideles is `p ^ (2 * s)` divided by `p ^ (2 * s
   - 1)`, which is the degree; the first inequality gives the reverse bound.
+* `InverseGalois.CFT.Kummer.CyclotomicDescent` removes the root of unity from the base field.
+  Adjoining a primitive `p`-th root of unity to the base field is an extension of degree dividing
+  `p - 1`, and doing the same to an extension of degree `p` produces the compositum of the two,
+  which is normal over the base field and again of degree `p` over the new base field: its degree
+  is divisible by `p` because the degree of the new base field is prime to `p`, and it is at most
+  `p` because the degree of the root of unity can only drop when the base field grows.  Enlarging
+  the base field by an extension of degree prime to the degree can only increase the norm index, so
+  the count for the new pair bounds the count for the old one, and the first inequality bounds the
+  latter from below by the degree.
 * `InverseGalois.CFT.Local.AdicAction` carries a field automorphism to the adic completions: it
   preserves the valuation of an element up to moving the prime, so it is an isometry of the valued
   field at a prime onto the valued field at the image prime, and extends by continuity to a ring
