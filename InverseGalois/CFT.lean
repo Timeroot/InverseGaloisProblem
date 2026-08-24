@@ -228,6 +228,7 @@ import InverseGalois.CFT.Units.AdicSIdeles
 import InverseGalois.CFT.Units.ArchimedeanIdeles
 import InverseGalois.CFT.Units.ClassSet
 import InverseGalois.CFT.Units.EquivariantLabel
+import InverseGalois.CFT.Units.FirstInequality
 import InverseGalois.CFT.Units.GaloisAction
 import InverseGalois.CFT.Units.Herbrand
 import InverseGalois.CFT.Units.Idele
@@ -917,6 +918,15 @@ it that are available here.
   image lies in the smaller group has order zero away from the chosen places, so it is an `S`-unit.
   The induced isomorphism of quotients commutes with the Galois action, so the idele class group
   has the Herbrand quotient already computed, namely the degree of the extension.
+* `InverseGalois.CFT.Units.FirstInequality` removes the hypotheses on the chosen set of places and
+  draws the conclusion.  A finite set of places can always be enlarged to a finite one invariant
+  under the Galois group by taking the union of its translates, and the two demands made of the
+  chosen set are each satisfied by some finite set: finitely many places suffice to represent every
+  system of orders, and only finitely many places fail to carry a uniformizer fixed by the
+  decomposition group.  The union of the two therefore works, so for a cyclic extension the idele
+  class group has Herbrand quotient the degree unconditionally.  Since the quotient is a positive
+  rational, both Tate groups are finite, and the order of the zeroth one is the degree times the
+  order of the other and hence at least the degree.
 * `InverseGalois.CFT.Local.UnitFiltration` sets up the two filtrations of a valued field: the
   additive one by the elements of small valuation, and the multiplicative one by the units
   congruent to one.  Subtracting one identifies a step of the unit filtration with the
