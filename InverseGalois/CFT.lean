@@ -114,6 +114,7 @@ import InverseGalois.CFT.Kummer.LocalSurjective
 import InverseGalois.CFT.Kummer.Pairing
 import InverseGalois.CFT.Kummer.PowBasis
 import InverseGalois.CFT.Kummer.PowIndex
+import InverseGalois.CFT.Kummer.PowerCriterion
 import InverseGalois.CFT.Kummer.RootIndex
 import InverseGalois.CFT.Kummer.SUnitExt
 import InverseGalois.CFT.Kummer.Unramified
@@ -915,7 +916,9 @@ it that are available here.
   decomposition group comes from the completion below, and two `p`-th roots of the same element
   differ by a root of unity, which is already in the base.  So an element fixed by every
   decomposition group in a family generating the Galois group is fixed by the whole group, which
-  is what turns a local condition at finitely many places into a global one.
+  is what turns a local condition at finitely many places into a global one.  The same holds at an
+  infinite place, the completion of the base below being the fixed field of the decomposition group
+  there too.
 * `InverseGalois.CFT.Kummer.Pairing` compares two radicals through their exponent vectors.  Writing
   an element of the subgroup as a product of powers of the power basis times a `p`-th power, the
   automorphism which multiplies the `i`-th radical by the `cᵢ`-th power of the root of unity fixes
@@ -956,6 +959,15 @@ it that are available here.
   divides `p`, which the place avoids, so the element fixes every radical and the radicals generate:
   the extension is unramified at every place away from the exponent at which the radicands are
   units.
+* `InverseGalois.CFT.Kummer.PowerCriterion` turns the local conditions into a global power.  An
+  element of a number field with the `p`-th roots of unity which is not a `p`-th power there cuts
+  out, through the polynomial `X ^ p - b`, a cyclic extension of degree `p`; the criterion above
+  makes that extension split completely at the infinite places and at the places of a first set
+  where the element is a local `p`-th power, and the ramification bound makes it unramified outside
+  that set and a second, auxiliary one.  Every idele which is a local `p`-th power at the auxiliary
+  places and a unit outside the two sets is then a norm from the extension, and those ideles
+  together with the principal ones exhaust the ideles, so the first inequality bounds the degree by
+  one: the element was a `p`-th power after all.
 * `InverseGalois.CFT.Local.AdicAction` carries a field automorphism to the adic completions: it
   preserves the valuation of an element up to moving the prime, so it is an isometry of the valued
   field at a prime onto the valued field at the image prime, and extends by continuity to a ring
