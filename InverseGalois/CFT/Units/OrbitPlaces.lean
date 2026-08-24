@@ -90,6 +90,25 @@ theorem orbitPrimeUnder_surjective :
   exact ⟨Quotient.mk'' P, hP⟩
 
 variable (A B) in
+omit [SMulCommClass G A B] in
+/-- **Only finitely many primes of the extension lie above a given prime of the base**, since they
+form a single orbit of a finite group. -/
+theorem finite_setOf_primeUnder_eq [Finite G] [IsGaloisGroup G A B] (p : HeightOneSpectrum A) :
+    {w : HeightOneSpectrum B | primeUnder A w = p}.Finite := by
+  obtain ⟨W, hW⟩ := exists_primeUnder_eq A B p
+  refine Set.Finite.subset (Set.finite_range (fun σ : G => σ • W)) fun w hw => ?_
+  exact exists_smul_eq_of_primeUnder_eq (A := A) (hW.trans (Set.mem_setOf_eq ▸ hw).symm)
+
+variable (A B) in
+omit [SMulCommClass G A B] in
+/-- **Only finitely many primes of the extension lie above a finite set of primes of the base.** -/
+theorem finite_preimage_primeUnder [Finite G] [IsGaloisGroup G A B]
+    {s : Set (HeightOneSpectrum A)} (hs : s.Finite) :
+    (primeUnder A (B := B) ⁻¹' s).Finite :=
+  (hs.biUnion fun p _ => finite_setOf_primeUnder_eq A B (G := G) p).subset fun _ hw =>
+    Set.mem_biUnion hw rfl
+
+variable (A B) in
 /-- **The orbits of the Galois group on the height one primes of the extension are the height one
 primes of the base.** -/
 noncomputable def orbitPrimeUnderEquiv [Finite G] [IsGaloisGroup G A B] :

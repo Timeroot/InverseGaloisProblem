@@ -284,7 +284,7 @@ noncomputable def adicCompletionComap (w : HeightOneSpectrum B) :
 variable (A) in
 /-- The map induced on the completions extends the inclusion of the base field. -/
 theorem adicCompletionComap_coe (w : HeightOneSpectrum B) (x : k) :
-    adicCompletionComap A w ((x : (primeUnder A w).adicCompletion k))
+    adicCompletionComap A w (UniformSpace.Completion.coe' x)
       = ((algebraMap k K x : WithVal (w.valuation K)) : w.adicCompletion K) :=
   UniformSpace.Completion.mapRingHom_coe (continuous_withValComap A w) x
 
@@ -300,6 +300,29 @@ variable (A) in
 theorem adicCompletionComap_injective (w : HeightOneSpectrum B) :
     Function.Injective (adicCompletionComap A w (k := k) (K := K)) :=
   (adicCompletionComap A w (k := k) (K := K)).injective
+
+open scoped WithZeroTopology in
+variable (A) in
+/-- **The valuation of an element of the completion of the base at a prime of the extension** is
+its valuation at the prime below, raised to the ramification index: the two sides are continuous
+and agree on the dense image of the base field. -/
+theorem valued_adicCompletionComap (w : HeightOneSpectrum B)
+    (z : (primeUnder A w).adicCompletion k) :
+    Valued.v (adicCompletionComap A w (K := K) z) = Valued.v z ^ ramIdx A w := by
+  refine UniformSpace.Completion.induction_on z ?_ ?_
+  · exact isClosed_eq
+      (Valued.continuous_valuation.comp (continuous_adicCompletionComap A w))
+      ((continuous_pow _).comp Valued.continuous_valuation)
+  · intro x
+    have h1 : Valued.v (adicCompletionComap A w (K := K)
+          (UniformSpace.Completion.coe' x))
+        = w.valuation K (algebraMap k K (x : k)) := by
+      rw [← HeightOneSpectrum.valuedAdicCompletion_eq_valuation' w (algebraMap k K (x : k))]
+      exact congrArg Valued.v (adicCompletionComap_coe A w (x : k))
+    have h2 : Valued.v (UniformSpace.Completion.coe' x)
+        = (primeUnder A w).valuation k (x : k) :=
+      HeightOneSpectrum.valuedAdicCompletion_eq_valuation' (primeUnder A w) (x : k)
+    rw [h1, h2, valuation_algebraMap (A := A)]
 
 end Completion
 

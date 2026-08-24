@@ -69,6 +69,28 @@ theorem adicUnitsComap_injective : Function.Injective (adicUnitsComap k w) := by
   rw [← coe_adicUnitsComap k w u, ← coe_adicUnitsComap k w u', h]
 
 variable (k) in
+/-- **The valuation of a local unit of the base field, read at a prime above**, is its valuation
+below scaled by the ramification index. -/
+theorem unitVal_adicUnitsComap (u : Additive ((primeUnder (𝓞 k) w).adicCompletion k)ˣ) :
+    unitVal (adicUnitsComap k w u) = ramIdx (𝓞 k) w • unitVal u := by
+  show WithZero.log (Valued.v
+      ((Additive.toMul (adicUnitsComap k w u) : (w.adicCompletion K)ˣ) : w.adicCompletion K))
+    = ramIdx (𝓞 k) w • WithZero.log (Valued.v
+      ((Additive.toMul u : ((primeUnder (𝓞 k) w).adicCompletion k)ˣ) :
+        (primeUnder (𝓞 k) w).adicCompletion k))
+  rw [coe_adicUnitsComap, algebraMap_adicCompletion, valued_adicCompletionComap,
+    WithZero.log_pow]
+
+variable (k) in
+/-- **A local unit of the base field is a unit of the valuation ring exactly when its image at a
+prime above is.** -/
+theorem unitVal_adicUnitsComap_eq_zero_iff
+    (u : Additive ((primeUnder (𝓞 k) w).adicCompletion k)ˣ) :
+    unitVal (adicUnitsComap k w u) = 0 ↔ unitVal u = 0 := by
+  rw [unitVal_adicUnitsComap, smul_eq_zero]
+  exact or_iff_right (ramIdx_ne_zero (A := 𝓞 k) w)
+
+variable (k) in
 /-- The decomposition group fixes the local units of the base field. -/
 theorem smulUnitsAut_adicUnitsComap (σ : ↥(stabilizer Gal(K/k) w))
     (u : Additive ((primeUnder (𝓞 k) w).adicCompletion k)ˣ) :
