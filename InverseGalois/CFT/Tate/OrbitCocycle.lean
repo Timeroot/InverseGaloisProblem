@@ -35,6 +35,8 @@ group of the chosen place.
   transported family is the Herbrand quotient of the module at the base point under a full turn.**
 * `InverseGalois.CFT.mem_zpowers_orbitTurn`: **a full turn generates the stabiliser** of the base
   point.
+* `InverseGalois.CFT.exists_normHom_twistShiftAut_orbitCocycle`: **a fixed transported family is a
+  norm as soon as its value at the base point is a norm for a full turn.**
 
 ## Tags
 
@@ -220,6 +222,17 @@ theorem subsingleton_tateH0_twistShiftAut_orbitCocycle (ρ : ↥H →* (B ≃+ B
   subsingleton_tateH0_twistShiftAut ρ (orbitShift X σ) x₀ htrans
     (fun _ hj => Subtype.ext (orbitCocycle_of_ne x₀ htrans hj))
     (Subtype.ext (orbitCocycle_neg_one x₀ htrans)) hz hn h
+
+/-- **A fixed family of copies of a module indexed by a transitive orbit is a norm as soon as its
+value at the base point is a norm for a full turn.** -/
+theorem exists_normHom_twistShiftAut_orbitCocycle (ρ : ↥H →* (B ≃+ B)) {m n : ℕ}
+    (hz : (orbitTurn σ x₀ hH) ^ m = 1) (hn : period (orbitShift X σ) x₀ * m = n)
+    {f : X → B} (hf : twistShiftAut ρ (orbitCocycleSub x₀ htrans hH) (orbitShift X σ) f = f)
+    (h : ∃ b, normHom (ρ (orbitTurn σ x₀ hH)) m b = f x₀) :
+    ∃ u, normHom (twistShiftAut ρ (orbitCocycleSub x₀ htrans hH) (orbitShift X σ)) n u = f :=
+  exists_normHom_twistShiftAut ρ (orbitShift X σ) x₀ htrans
+    (fun _ hj => Subtype.ext (orbitCocycle_of_ne x₀ htrans hj))
+    (Subtype.ext (orbitCocycle_neg_one x₀ htrans)) hz hn hf h
 
 /-- The lower Tate group of a family of copies of a module indexed by a transitive orbit vanishes
 as soon as it vanishes for the module at the base point under a full turn. -/

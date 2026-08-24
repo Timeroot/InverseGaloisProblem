@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Tate.Congr
+import InverseGalois.CFT.Tate.NormSurjective
 import InverseGalois.CFT.Tate.Shapiro
 
 /-!
@@ -32,6 +33,8 @@ there.
   the last position is the presentation the comparison needs.
 * `InverseGalois.CFT.herbrand_of_orbitInd`: **the Herbrand quotient of a family indexed by an
   orbit is that of the module at one point, for the automorphism of a full turn.**
+* `InverseGalois.CFT.exists_normHom_of_orbitInd`: **a fixed family indexed by an orbit is a norm as
+  soon as its value at the base point is one**, for the automorphism of a full turn.
 
 ## Tags
 
@@ -99,6 +102,19 @@ theorem subsingleton_tateH0_of_orbitInd [NeZero d] {m n : ℕ} (hn : d * m = n) 
   haveI := subsingleton_tateH0_indAut (d := d) τ m hτ h
   exact ⟨fun _ _ => (tateH0Congr (orbitIndEquiv φ) (orbitIndEquiv_equivariant τ φ hs)
     (d * m)).injective (Subsingleton.elim _ _)⟩
+
+/-- **A fixed family indexed by an orbit is a norm as soon as its value at the base point is one**,
+for the automorphism of a full turn.  This is Shapiro's lemma for the upper Tate group, read on
+individual sections. -/
+theorem exists_normHom_of_orbitInd [NeZero d] {m n : ℕ} (hn : d * m = n) (hτ : τ ^ m = 1)
+    {s : (X → B) ≃+ (X → B)} (φ : ZMod d ≃ X)
+    (hs : ∀ (f : X → B) (j : ZMod d), s f (φ j) = indTwist τ j (f (φ (j + 1))))
+    {f : X → B} (hf : s f = f) (h : ∃ b, normHom τ m b = f (φ 0)) :
+    ∃ u, normHom s n u = f := by
+  subst hn
+  refine exists_normHom_of_addEquiv (orbitIndEquiv (B := B) φ)
+    (orbitIndEquiv_equivariant τ φ hs) (d * m) (exists_normHom_indAut τ m hτ ?_ h)
+  rw [← orbitIndEquiv_equivariant τ φ hs, hf]
 
 /-- The lower Tate group of a family indexed by an orbit vanishes as soon as it vanishes for the
 module at one point. -/

@@ -33,6 +33,9 @@ becomes the action of the decomposition group.
 
 * `InverseGalois.CFT.herbrand_twistShiftAut`: **the Herbrand quotient of a twisted shift over a
   transitive orbit is that of the module for the twisting element.**
+* `InverseGalois.CFT.exists_normHom_twistShiftAut`: **a fixed family is a norm for a twisted shift
+  over a transitive orbit as soon as its value at the base point is a norm for the twisting
+  element.**
 
 ## Tags
 
@@ -120,6 +123,19 @@ theorem subsingleton_tateH0_twistShiftAut {c : X → Γ} {z : Γ}
     Subsingleton (tateH0 (twistShiftAut ρ c p) n) :=
   subsingleton_tateH0_of_orbitInd _ hn (by rw [← map_pow, hz, map_one])
     (orbitEquiv p x₀ htrans) (twistShiftAut_orbitEquiv ρ p x₀ htrans hc hlast) h
+
+/-- **A fixed family is a norm for a twisted shift over a transitive orbit as soon as its value at
+the base point is a norm for the twisting element.**  The family is the module induced from the
+factor at the base point, and Shapiro's lemma reads a norm there as a norm here. -/
+theorem exists_normHom_twistShiftAut {c : X → Γ} {z : Γ}
+    (htrans : ∀ y : X, ∃ k : ℕ, (p ^ k) x₀ = y)
+    (hc : ∀ j : ZMod (period p x₀), j ≠ -1 → c (orbitPoint p x₀ j) = 1)
+    (hlast : c (orbitPoint p x₀ (-1)) = z) {m n : ℕ} (hz : z ^ m = 1)
+    (hn : period p x₀ * m = n) {f : X → B} (hf : twistShiftAut ρ c p f = f)
+    (h : ∃ b, normHom (ρ z) m b = f x₀) :
+    ∃ u, normHom (twistShiftAut ρ c p) n u = f :=
+  exists_normHom_of_orbitInd _ hn (by rw [← map_pow, hz, map_one]) (orbitEquiv p x₀ htrans)
+    (twistShiftAut_orbitEquiv ρ p x₀ htrans hc hlast) hf (by rwa [orbitEquiv_zero])
 
 /-- The lower Tate group of a twisted shift over a transitive orbit vanishes as soon as it vanishes
 for the twisting element. -/

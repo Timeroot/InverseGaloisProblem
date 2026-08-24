@@ -6,6 +6,7 @@ import Mathlib
 import InverseGalois.CFT.Local.AdicFamily
 import InverseGalois.CFT.Local.AdicHerbrand
 import InverseGalois.CFT.Tate.FamilyOrbits
+import InverseGalois.CFT.Tate.FamilyRestrictOrbit
 
 /-!
 # The local factor of the ideles at a finite place of the base field
@@ -26,6 +27,9 @@ decomposition group, and that is the order of the decomposition group.
   place on the units of the completion there, read off from the family of all completions.
 * `InverseGalois.CFT.herbrand_orbitFamily_adicUnits`: **the local factor of the ideles at a finite
   place of the base field has Herbrand quotient the order of the decomposition group.**
+* `InverseGalois.CFT.exists_normHom_orbitFamily_adicUnits`: **a fixed section of the local factor at
+  a finite place of the base field is a norm as soon as its value at one place above it is a local
+  norm.**
 
 ## Tags
 
@@ -101,6 +105,41 @@ theorem herbrand_orbitFamily_adicUnits [Finite Gal(K/k)] [Fintype ω.orbit] {σ 
     (smul_orbit_of_mem_stabilizer v₀) _ hturn hdm, key]
   exact herbrand_adicUnits_eq_card (v₀ : HeightOneSpectrum (𝓞 K))
     (mem_zpowers_orbitTurn v₀ hH hgen (smul_orbit_of_mem_stabilizer v₀)) hturn rfl
+
+/-- **A fixed section of the units of the completions above a finite place of the base field is a
+norm as soon as its value at one of those places is a local norm** for the decomposition group
+there.  The places above the given one form a single orbit, and the sections over it are the module
+induced from the decomposition group of any one of them. -/
+theorem exists_normHom_orbitFamily_adicUnits [Finite Gal(K/k)] [Fintype ω.orbit] {σ : Gal(K/k)}
+    (hgen : ∀ g : Gal(K/k), g ∈ Subgroup.zpowers σ) {n : ℕ} (hn : Nat.card Gal(K/k) = n)
+    (hH : ∀ g : Gal(K/k), g • v₀ = v₀ → g ∈ stabilizer Gal(K/k) (v₀ : HeightOneSpectrum (𝓞 K)))
+    {f : ∀ z : ω.orbit, Additive ((z : HeightOneSpectrum (𝓞 K)).adicCompletion K)ˣ}
+    (hf : (orbitFamily (adicRingFamily (k := k) (K := K)).unitsFamily ω).familyAut σ f = f)
+    (h : ∃ b, normHom (smulUnitsAut (G := ↥(stabilizer Gal(K/k) (v₀ : HeightOneSpectrum (𝓞 K))))
+        (R := (v₀ : HeightOneSpectrum (𝓞 K)).adicCompletion K) (orbitTurn σ v₀ hH))
+        (Nat.card ↥(stabilizer Gal(K/k) (v₀ : HeightOneSpectrum (𝓞 K)))) b = f v₀) :
+    ∃ u,
+      normHom ((orbitFamily (adicRingFamily (k := k) (K := K)).unitsFamily ω).familyAut σ) n u
+        = f := by
+  haveI : Fintype ↥(stabilizer Gal(K/k) (v₀ : HeightOneSpectrum (𝓞 K))) := Fintype.ofFinite _
+  have hstabcard : Nat.card ↥(stabilizer Gal(K/k) v₀)
+      = Nat.card ↥(stabilizer Gal(K/k) (v₀ : HeightOneSpectrum (𝓞 K))) :=
+    congrArg (fun H : Subgroup Gal(K/k) => Nat.card ↥H) (stabilizer_orbit_coe v₀)
+  have hdm : period (orbitShift ↥ω.orbit σ) v₀
+      * Nat.card ↥(stabilizer Gal(K/k) (v₀ : HeightOneSpectrum (𝓞 K))) = n :=
+    period_orbitShift_mul_card v₀ hgen hn hstabcard
+  have hturn : (orbitTurn σ v₀ hH)
+      ^ Nat.card ↥(stabilizer Gal(K/k) (v₀ : HeightOneSpectrum (𝓞 K))) = 1 :=
+    orbitTurn_pow_card v₀ hH rfl
+  have key : stabAut v₀ (smul_orbit_of_mem_stabilizer v₀)
+        (orbitFamily (adicRingFamily (k := k) (K := K)).unitsFamily ω) (orbitTurn σ v₀ hH)
+      = smulUnitsAut (G := ↥(stabilizer Gal(K/k) (v₀ : HeightOneSpectrum (𝓞 K))))
+          (R := (v₀ : HeightOneSpectrum (𝓞 K)).adicCompletion K) (orbitTurn σ v₀ hH) :=
+    AddEquiv.ext (stabAut_orbitFamily_adicUnits v₀ (orbitTurn σ v₀ hH))
+  refine exists_normHom_familyAut_orbit v₀ (exists_pow_orbitShift_apply_eq v₀ hgen) hH
+    (smul_orbit_of_mem_stabilizer v₀) _ hturn hdm hf ?_
+  rw [key]
+  exact h
 
 end AdicOrbit
 

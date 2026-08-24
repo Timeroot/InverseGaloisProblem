@@ -27,6 +27,8 @@ local Tate groups vanish.
   soon as its restriction to every piece is one.**
 * `InverseGalois.CFT.exists_normHom_familyAut_orbits`: **a section is a norm as soon as its
   restriction to every orbit is one.**
+* `InverseGalois.CFT.exists_normHom_familyAut_of_base`: **a fixed section is a norm as soon as at
+  one chosen point of each orbit its value is a norm for the decomposition group there.**
 
 ## Tags
 
@@ -87,6 +89,22 @@ theorem exists_normHom_familyAut_orbits (σ : G) (n : ℕ) {f : ∀ x : X, M x}
   exists_normHom_familyAut_reindex F (selfEquivSigmaOrbits' G X).symm
     equivariant_selfEquivSigmaOrbits σ n
     (exists_normHom_familyAut_sigma _ σ n h)
+
+/-- **A fixed section is a norm as soon as at one chosen point of each orbit its value is a norm for
+the decomposition group there.**  For the ideles of a cyclic extension of number fields this is the
+statement that an idele of the base field is a norm as soon as it is a local norm at one place above
+each place, which is what the local computations supply. -/
+theorem exists_normHom_familyAut_of_base [Finite G]
+    [∀ ω : orbitRel.Quotient G X, Fintype ω.orbit] {σ : G}
+    (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ) (x₀ : ∀ ω : orbitRel.Quotient G X, ω.orbit) {n : ℕ}
+    (hn : Nat.card G = n) {f : ∀ x, M x} (hf : F.familyAut σ f = f)
+    (h : ∀ ω : orbitRel.Quotient G X, ∃ b,
+      normHom (stabAut (x₀ ω) (fun g => mem_stabilizer_iff.mp g.2) (orbitFamily F ω)
+          (orbitTurn σ (x₀ ω) fun _ hg => mem_stabilizer_iff.mpr hg))
+        (Nat.card ↥(stabilizer G (x₀ ω))) b = f ((x₀ ω : ω.orbit) : X)) :
+    ∃ u, normHom (F.familyAut σ) n u = f :=
+  exists_normHom_familyAut_orbits F σ n fun ω =>
+    exists_normHom_orbitFamily F hgen (x₀ ω) hn rfl (familyAut_orbitFamily_restrict F hf) (h ω)
 
 end Orbits
 
