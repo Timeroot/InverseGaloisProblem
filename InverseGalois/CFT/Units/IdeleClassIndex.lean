@@ -127,46 +127,43 @@ theorem mk_normHom_ideleAut (d : ↥(idele K)) :
 
 /-! ### The kernel and the image -/
 
-variable (hgen : ∀ g : Gal(K/k), g ∈ Subgroup.zpowers σ) (hσ : σ ^ n = 1)
+variable (hgen : ∀ g : Gal(K/k), g ∈ Subgroup.zpowers σ) (hn : Nat.card Gal(K/k) = n)
 
-include hgen hσ
+include hgen hn
 
 /-- **The ideles of the base field killed by the map to the Tate group are exactly the principal
 ideles together with the norms.** -/
 theorem mem_ker_toTateH0_iff (b : ↥(idele k)) :
     b ∈ (toTateH0 (k := k) (K := K) σ n).ker ↔
-      b ∈ (ideleDiag k).range ⊔ (ideleNorm k K hgen hσ).range := by
+      b ∈ (ideleDiag k).range ⊔ (ideleNorm k K).range := by
   rw [AddMonoidHom.mem_ker, toTateH0_apply, tateH0.mk_eq_zero_iff, AddSubgroup.mem_sup]
   refine ⟨?_, ?_⟩
   · rintro ⟨y, hy⟩
     obtain ⟨d, rfl⟩ := QuotientAddGroup.mk_surjective y
-    have hd : ((ideleComap k K (ideleNorm k K hgen hσ d) : ↥(idele K)) :
+    have hd : ((ideleComap k K (ideleNorm k K d) : ↥(idele K)) :
           ↥(idele K) ⧸ (ideleDiag K).range)
         = ((ideleComap k K b : ↥(idele K)) : ↥(idele K) ⧸ (ideleDiag K).range) := by
-      rw [ideleComap_ideleNorm, mk_normHom_ideleAut, hy]
+      rw [ideleComap_ideleNorm_eq_normHom k K hgen hn, mk_normHom_ideleAut, hy]
     obtain ⟨u, hu⟩ := AddMonoidHom.mem_range.mp
       (QuotientAddGroup.eq_iff_sub_mem.mp hd.symm)
-    have hcomap : ideleComap k K (b - ideleNorm k K hgen hσ d) = ideleDiag K u := by
+    have hcomap : ideleComap k K (b - ideleNorm k K d) = ideleDiag K u := by
       rw [map_sub, hu]
     obtain ⟨c, rfl⟩ := (mem_range_ideleComap_ideleDiag_iff u).mp ⟨_, hcomap⟩
-    have hb : b - ideleNorm k K hgen hσ d = ideleDiag k c :=
+    have hb : b - ideleNorm k K d = ideleDiag k c :=
       ideleComap_injective k K (by rw [hcomap, ideleComap_ideleDiag])
-    exact ⟨ideleDiag k c, ⟨c, rfl⟩, ideleNorm k K hgen hσ d, ⟨d, rfl⟩, by rw [← hb]; abel⟩
+    exact ⟨ideleDiag k c, ⟨c, rfl⟩, ideleNorm k K d, ⟨d, rfl⟩, by rw [← hb]; abel⟩
   · rintro ⟨-, ⟨c, rfl⟩, -, ⟨d, rfl⟩, rfl⟩
     refine ⟨((d : ↥(idele K)) : ↥(idele K) ⧸ (ideleDiag K).range), ?_⟩
-    rw [← mk_normHom_ideleAut, map_add, ideleComap_ideleDiag, ideleComap_ideleNorm,
-      QuotientAddGroup.mk_add, (QuotientAddGroup.eq_zero_iff _).mpr
+    rw [← mk_normHom_ideleAut, map_add, ideleComap_ideleDiag,
+      ideleComap_ideleNorm_eq_normHom k K hgen hn, QuotientAddGroup.mk_add, (QuotientAddGroup.eq_zero_iff _).mpr
         (AddMonoidHom.mem_range.mpr ⟨globalUnitsComap k K c, rfl⟩)]
     exact (zero_add ((normHom (ideleAut (k := k) σ) n d : ↥(idele K)) :
       ↥(idele K) ⧸ (ideleDiag K).range)).symm
 
-variable (hn : Nat.card Gal(K/k) = n)
-
-include hn
-
 /-- **Every class in the zeroth Tate group of the idele class group comes from an idele of the base
 field**, a fixed class being the class of a fixed idele. -/
 theorem toTateH0_surjective : Function.Surjective (toTateH0 (k := k) (K := K) σ n) := by
+  have hσ : σ ^ n = 1 := by rw [← hn]; exact pow_card_eq_one'
   intro c
   obtain ⟨x, hx, rfl⟩ := tateH0.mk_surjective c
   obtain ⟨a, ha, rfl⟩ := exists_fixed_ideleClass hgen hn hσ hx
@@ -176,27 +173,27 @@ theorem toTateH0_surjective : Function.Surjective (toTateH0 (k := k) (K := K) σ
 /-- **The zeroth Tate group of the idele class group of a cyclic extension is the quotient of the
 ideles of the base field by the principal ideles together with the norms.** -/
 noncomputable def ideleQuotEquivTateH0 :
-    (↥(idele k) ⧸ ((ideleDiag k).range ⊔ (ideleNorm k K hgen hσ).range))
+    (↥(idele k) ⧸ ((ideleDiag k).range ⊔ (ideleNorm k K).range))
       ≃+ tateH0 (ideleClassAut (k := k) σ) n :=
   (QuotientAddGroup.quotientAddEquivOfEq
-    (AddSubgroup.ext fun b => (mem_ker_toTateH0_iff hgen hσ b).symm)).trans
-      (QuotientAddGroup.quotientKerEquivOfSurjective _ (toTateH0_surjective hgen hσ hn))
+    (AddSubgroup.ext fun b => (mem_ker_toTateH0_iff hgen hn b).symm)).trans
+      (QuotientAddGroup.quotientKerEquivOfSurjective _ (toTateH0_surjective hgen hn))
 
 /-- **The order of the zeroth Tate group of the idele class group is the index of the principal
 ideles together with the norms.** -/
 theorem card_tateH0_ideleClassAut :
     Nat.card (tateH0 (ideleClassAut (k := k) σ) n)
-      = ((ideleDiag k).range ⊔ (ideleNorm k K hgen hσ).range).index :=
+      = ((ideleDiag k).range ⊔ (ideleNorm k K).range).index :=
   ((AddSubgroup.index_eq_card _).trans
-    (Nat.card_congr (ideleQuotEquivTateH0 hgen hσ hn).toEquiv)).symm
+    (Nat.card_congr (ideleQuotEquivTateH0 hgen hn).toEquiv)).symm
 
 variable [NeZero n]
 
 /-- **The first inequality**: the index of the principal ideles together with the norms of a cyclic
 extension is at least the degree. -/
 theorem first_inequality_index :
-    n ≤ ((ideleDiag k).range ⊔ (ideleNorm k K hgen hσ).range).index :=
-  (card_tateH0_ideleClassAut hgen hσ hn) ▸ first_inequality σ hn hgen
+    n ≤ ((ideleDiag k).range ⊔ (ideleNorm k K).range).index :=
+  (card_tateH0_ideleClassAut hgen hn) ▸ first_inequality σ hn hgen
 
 end IdeleClassIndex
 

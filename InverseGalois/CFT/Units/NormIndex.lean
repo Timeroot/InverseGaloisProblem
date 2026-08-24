@@ -41,9 +41,9 @@ section NormIndex
 
 variable {k K : Type*} [Field k] [NumberField k] [Field K] [NumberField K] [Algebra k K]
   [IsGalois k K] {σ : Gal(K/k)} {n : ℕ} (hn : Nat.card Gal(K/k) = n) [NeZero n]
-  (hgen : ∀ g : Gal(K/k), g ∈ Subgroup.zpowers σ) (hσ : σ ^ n = 1)
+  (hgen : ∀ g : Gal(K/k), g ∈ Subgroup.zpowers σ)
 
-include hn hgen hσ
+include hn hgen
 
 set_option synthInstance.maxHeartbeats 400000
 set_option maxHeartbeats 1000000
@@ -53,19 +53,19 @@ ideles of the base field has degree at most one.**  A fixed idele class is the c
 the base field, and writing that idele as a principal idele plus a norm exhibits the class as a
 norm; the first inequality then bounds the degree. -/
 theorem card_le_one_of_ideleDiag_sup_ideleNorm_eq_top
-    (htop : (ideleDiag k).range ⊔ (ideleNorm k K hgen hσ).range = ⊤) : n ≤ 1 := by
-  have h := first_inequality_index hgen hσ hn
+    (htop : (ideleDiag k).range ⊔ (ideleNorm k K).range = ⊤) : n ≤ 1 := by
+  have h := first_inequality_index hgen hn
   rwa [htop, AddSubgroup.index_top] at h
 
 /-- **A cyclic extension of number fields whose norms together with the principal ideles exhaust the
 ideles of the base field is trivial.** -/
 theorem subsingleton_gal_of_ideleDiag_sup_ideleNorm_eq_top
-    (htop : (ideleDiag k).range ⊔ (ideleNorm k K hgen hσ).range = ⊤) :
+    (htop : (ideleDiag k).range ⊔ (ideleNorm k K).range = ⊤) :
     Subsingleton Gal(K/k) := by
   haveI : Finite Gal(K/k) := inferInstance
   refine Finite.card_le_one_iff_subsingleton.mp ?_
   rw [hn]
-  exact card_le_one_of_ideleDiag_sup_ideleNorm_eq_top hn hgen hσ htop
+  exact card_le_one_of_ideleDiag_sup_ideleNorm_eq_top hn hgen htop
 
 end NormIndex
 

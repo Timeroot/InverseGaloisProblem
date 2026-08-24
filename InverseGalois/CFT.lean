@@ -1081,12 +1081,14 @@ it that are available here.
   the places where the result fails to be a unit of the valuation ring lie above the finitely many
   places where the given idele does.  The ideles fixed by the Galois group are exactly the ideles of
   the base field.
-* `InverseGalois.CFT.Units.IdeleNorm` is the norm map on the ideles of a cyclic extension.  The sum
-  of the conjugates of an idele is fixed by the generator, hence by the whole group, hence is the
-  image of a unique idele of the base field, and that idele is the norm.  The diagonal is compatible
-  with the passage between the two fields, because at every place the structure map of the
-  completion above over the completion below carries the image of an element of the base field to
-  its image in the extension.
+* `InverseGalois.CFT.Units.IdeleNorm` is the norm map on the ideles of a Galois extension.  The sum
+  of the conjugates of an idele is fixed by every automorphism, an automorphism merely permuting the
+  group, hence is the image of a unique idele of the base field, and that idele is the norm.  For a
+  cyclic group the sum of the conjugates is the norm of the Tate formalism taken for a generator,
+  because the powers of a generator below its order run through the group exactly once.  The
+  diagonal is compatible with the passage between the two fields, because at every place the
+  structure map of the completion above over the completion below carries the image of an element of
+  the base field to its image in the extension.
 * `InverseGalois.CFT.Units.IdeleClassIndex` identifies the zeroth Tate group of the idele class
   group with the quotient of the ideles of the base field by the principal ideles together with the
   norms, which is the classical shape of the first inequality.  An idele of the base field gives an
