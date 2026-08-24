@@ -251,6 +251,7 @@ import InverseGalois.CFT.Units.ClassSet
 import InverseGalois.CFT.Units.CompletionFinite
 import InverseGalois.CFT.Units.CompletionGalois
 import InverseGalois.CFT.Units.CompletionUnits
+import InverseGalois.CFT.Units.CyclicTrivial
 import InverseGalois.CFT.Units.EquivariantLabel
 import InverseGalois.CFT.Units.FirstInequality
 import InverseGalois.CFT.Units.GaloisAction
@@ -1022,6 +1023,11 @@ it that are available here.
   class group has Herbrand quotient the degree unconditionally.  Since the quotient is a positive
   rational, both Tate groups are finite, and the order of the zeroth one is the degree times the
   order of the other and hence at least the degree.
+* `InverseGalois.CFT.Units.CyclicTrivial` reads the first inequality as a triviality criterion.  If
+  every idele class fixed by the Galois group of a cyclic extension is a norm then the zeroth Tate
+  group of the idele class group has a single element, so the degree, which the first inequality
+  bounds by its order, is at most one; contrapositively a nontrivial cyclic extension always has a
+  fixed idele class outside the norms.
 * `InverseGalois.CFT.Approximation.Basic` proves weak approximation for an arbitrary finite family
   of nontrivial pairwise inequivalent absolute values on a field: the field, embedded diagonally in
   the product of its copies carrying the topologies of the members of the family, is dense.  The
