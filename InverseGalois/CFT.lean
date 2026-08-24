@@ -253,6 +253,7 @@ import InverseGalois.CFT.Units.LocalIdele
 import InverseGalois.CFT.Units.Places
 import InverseGalois.CFT.Units.SIdeleClass
 import InverseGalois.CFT.Units.SIdeleHerbrand
+import InverseGalois.CFT.Units.SIdeleNorm
 import InverseGalois.CFT.Units.SUnit
 import InverseGalois.CFT.Units.SUnitHerbrand
 import InverseGalois.CFT.Units.SUnitIndex

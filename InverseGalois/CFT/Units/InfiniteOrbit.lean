@@ -6,6 +6,7 @@ import Mathlib
 import InverseGalois.CFT.Local.InfiniteFamily
 import InverseGalois.CFT.Local.InfiniteHerbrand
 import InverseGalois.CFT.Tate.FamilyOrbits
+import InverseGalois.CFT.Tate.FamilyRestrictOrbit
 
 /-!
 # The local factor of the ideles at an infinite place of the base field
@@ -25,6 +26,9 @@ so the local factor does too: word for word the statement at a finite place.
   infinite place on the units of the completion there, read off from the family of all completions.
 * `InverseGalois.CFT.herbrand_orbitFamily_infiniteUnits`: **the local factor of the ideles at an
   infinite place of the base field has Herbrand quotient the order of the decomposition group.**
+* `InverseGalois.CFT.exists_normHom_orbitFamily_infiniteUnits`: **a fixed section of the local factor
+  at an infinite place of the base field is a norm as soon as its value at one place above it is a
+  local norm.**
 
 ## Tags
 
@@ -45,6 +49,12 @@ of the orbit. -/
 theorem smul_orbit_of_mem_stabilizer_infinite
     (g : ↥(stabilizer Gal(K/k) (w₀ : InfinitePlace K))) : (g : Gal(K/k)) • w₀ = w₀ :=
   Subtype.ext (mem_stabilizer_iff.mp g.2)
+
+/-- A Galois automorphism fixing a point of an orbit of infinite places fixes the underlying
+place. -/
+theorem mem_stabilizer_of_smul_orbit_infinite (g : Gal(K/k)) (h : g • w₀ = w₀) :
+    g ∈ stabilizer Gal(K/k) (w₀ : InfinitePlace K) :=
+  congrArg Subtype.val h
 
 /-- **The action of the decomposition group of an infinite place on the units of the completion
 there**, read off from the family of all completions. -/
@@ -97,6 +107,37 @@ theorem herbrand_orbitFamily_infiniteUnits [IsGalois k K] [Finite Gal(K/k)] [Fin
     (smul_orbit_of_mem_stabilizer_infinite w₀) _ hturn hdm, key]
   exact herbrand_infiniteUnits_eq_card (w₀ : InfinitePlace K)
     (mem_zpowers_orbitTurn w₀ hH hgen (smul_orbit_of_mem_stabilizer_infinite w₀)) rfl
+
+/-- **A fixed section of the units of the completions above an infinite place of the base field is a
+norm as soon as its value at one of those places is a local norm** for the decomposition group
+there.  The places above the given one form a single orbit, and the sections over it are the module
+induced from the decomposition group of any one of them. -/
+theorem exists_normHom_orbitFamily_infiniteUnits [Finite Gal(K/k)] [Fintype ω.orbit]
+    {σ : Gal(K/k)} (hgen : ∀ g : Gal(K/k), g ∈ Subgroup.zpowers σ) {n : ℕ}
+    (hn : Nat.card Gal(K/k) = n)
+    (hH : ∀ g : Gal(K/k), g • w₀ = w₀ → g ∈ stabilizer Gal(K/k) (w₀ : InfinitePlace K))
+    {f : ∀ z : ω.orbit, Additive (z : InfinitePlace K).Completionˣ}
+    (hf : (orbitFamily (infiniteRingFamily (k := k) (K := K)).unitsFamily ω).familyAut σ f = f)
+    (h : ∃ b, normHom (smulUnitsAut (G := ↥(stabilizer Gal(K/k) (w₀ : InfinitePlace K)))
+        (R := (w₀ : InfinitePlace K).Completion) (orbitTurn σ w₀ hH))
+        (Nat.card ↥(stabilizer Gal(K/k) (w₀ : InfinitePlace K))) b = f w₀) :
+    ∃ u,
+      normHom ((orbitFamily (infiniteRingFamily (k := k) (K := K)).unitsFamily ω).familyAut σ) n u
+        = f := by
+  haveI : Fintype ↥(stabilizer Gal(K/k) (w₀ : InfinitePlace K)) := Fintype.ofFinite _
+  have hstabcard : Nat.card ↥(stabilizer Gal(K/k) w₀)
+      = Nat.card ↥(stabilizer Gal(K/k) (w₀ : InfinitePlace K)) :=
+    congrArg (fun H : Subgroup Gal(K/k) => Nat.card ↥H) (stabilizer_orbit_coe w₀)
+  have key : stabAut w₀ (smul_orbit_of_mem_stabilizer_infinite w₀)
+        (orbitFamily (infiniteRingFamily (k := k) (K := K)).unitsFamily ω) (orbitTurn σ w₀ hH)
+      = smulUnitsAut (G := ↥(stabilizer Gal(K/k) (w₀ : InfinitePlace K)))
+          (R := (w₀ : InfinitePlace K).Completion) (orbitTurn σ w₀ hH) :=
+    AddEquiv.ext (stabAut_orbitFamily_infiniteUnits w₀ (orbitTurn σ w₀ hH))
+  refine exists_normHom_familyAut_orbit w₀ (exists_pow_orbitShift_apply_eq w₀ hgen) hH
+    (smul_orbit_of_mem_stabilizer_infinite w₀) _ (orbitTurn_pow_card w₀ hH rfl)
+    (period_orbitShift_mul_card w₀ hgen hn hstabcard) hf ?_
+  rw [key]
+  exact h
 
 end InfiniteOrbit
 
