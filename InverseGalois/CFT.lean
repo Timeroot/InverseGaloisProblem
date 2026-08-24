@@ -107,11 +107,13 @@ import InverseGalois.CFT.InertiaRestrict
 import InverseGalois.CFT.InertiaSubgroup
 import InverseGalois.CFT.KroneckerWeber
 import InverseGalois.CFT.Kummer.PowBasis
+import InverseGalois.CFT.Kummer.PowIndex
 import InverseGalois.CFT.Kummer.SUnitExt
 import InverseGalois.CFT.Level
 import InverseGalois.CFT.Local.AdicAction
 import InverseGalois.CFT.Local.AdicFamily
 import InverseGalois.CFT.Local.AdicHerbrand
+import InverseGalois.CFT.Local.AdicPowIndex
 import InverseGalois.CFT.Local.AdicResidue
 import InverseGalois.CFT.Local.AdicUnits
 import InverseGalois.CFT.Local.AdicUnramified
@@ -139,6 +141,7 @@ import InverseGalois.CFT.Local.InfiniteAction
 import InverseGalois.CFT.Local.InfiniteFamily
 import InverseGalois.CFT.Local.InfiniteHerbrand
 import InverseGalois.CFT.Local.InfiniteNormIndex
+import InverseGalois.CFT.Local.InfinitePowIndex
 import InverseGalois.CFT.Local.LegendreHilbert
 import InverseGalois.CFT.Local.NormIndex
 import InverseGalois.CFT.Local.NormalLattice
