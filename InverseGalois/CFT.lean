@@ -259,6 +259,8 @@ import InverseGalois.CFT.Units.Herbrand
 import InverseGalois.CFT.Units.Idele
 import InverseGalois.CFT.Units.IdeleClass
 import InverseGalois.CFT.Units.IdeleClassFixed
+import InverseGalois.CFT.Units.InfiniteComap
+import InverseGalois.CFT.Units.InfiniteGalois
 import InverseGalois.CFT.Units.InfiniteIdele
 import InverseGalois.CFT.Units.InfiniteOrbit
 import InverseGalois.CFT.Units.LocalEmbedding
@@ -986,8 +988,8 @@ it that are available here.
   away from the chosen places and the field embeds diagonally in the ideles that are units outside
   them; the embedding is injective because a number field embeds in the completion at an infinite
   place, and it commutes with the Galois action because the transports at all places are induced by
-  the automorphism itself.  Multiplicativity of the Herbrand quotient along the resulting short exact
-  sequence then cancels the two products of orders of decomposition groups and leaves the degree of
+  the automorphism itself.  Multiplicativity of the Herbrand quotient along the resulting short
+  exact sequence then cancels the two products of orders of decomposition groups and leaves the degree of
   the extension as the Herbrand quotient of the quotient group.  The finiteness that
   multiplicativity requires is not proved by generation, which is unavailable for groups this large,
   but read off from the computation: an infinite group has cardinality zero, so a Herbrand quotient
@@ -1028,6 +1030,53 @@ it that are available here.
   group of the idele class group has a single element, so the degree, which the first inequality
   bounds by its order, is at most one; contrapositively a nontrivial cyclic extension always has a
   fixed idele class outside the norms.
+* `InverseGalois.CFT.Units.PlaceComap` relates the two adic valuations attached to a prime and the
+  prime below it: they differ by the ramification index, which is at least one, so the inclusion of
+  the base field is uniformly continuous for the two adic topologies and extends to a map of the
+  completion of the base at a prime into the completion of the extension at any prime above it.
+* `InverseGalois.CFT.Units.CompletionFinite` shows that map makes the completion above a finite
+  extension of the completion below, of degree at most the degree of the global extension.  A
+  finite spanning set of the extension over the base spans, over the completion of the base, a
+  finite dimensional and therefore closed subspace which contains the dense image of the extension.
+* `InverseGalois.CFT.Units.CompletionGalois` shows the extension of completions is Galois with
+  Galois group the decomposition group.  The extension is a splitting field, because the separable
+  polynomial split by the global extension still splits in the completion and the subalgebra its
+  roots generate is closed and dense; and the decomposition group exhausts the Galois group because
+  an automorphism over the completion of the base is continuous, hence preserves the unit ball and
+  restricts to the extension.  So the elements fixed by the decomposition group are exactly those
+  coming from the completion of the base.
+* `InverseGalois.CFT.Units.CompletionUnits` passes that description to the unit groups: a fixed
+  unit comes from the completion of the base and is nonzero there, hence is a unit below.
+* `InverseGalois.CFT.Units.OrbitPlaces` identifies the orbits of the Galois group on the height one
+  primes of the extension with the height one primes of the base, transitivity giving injectivity
+  and the existence of a prime above giving surjectivity.
+* `InverseGalois.CFT.Units.AdicFixed` combines the two to describe the finite part of the ideles
+  fixed by the Galois group.  A family of local units of the base determines one of the extension by
+  taking, at each prime, the image of the unit at the prime below, and the families so obtained are
+  exactly the fixed ones: a fixed family has its value at a prime fixed by the decomposition group
+  there, hence coming from below, and its values at the other primes of the same orbit are the
+  transports of that one.
+* `InverseGalois.CFT.Units.InfiniteComap` builds the same tower at an infinite place.  An infinite
+  place of the extension restricts to one of the base and the inclusion of the base is then an exact
+  isometry, with no ramification index to correct for, so it extends to the completions and makes
+  the completion above a finite dimensional normed algebra over the completion below.
+* `InverseGalois.CFT.Units.InfiniteGalois` runs the Galois theory of that tower.  Since the
+  structure map is an isometry, an automorphism over the completion below is bounded on the powers
+  of an element and therefore norm preserving, hence restricts to the extension; the completion
+  above is a splitting field over the completion below, and the elements, and so also the units,
+  fixed by the decomposition group are exactly those coming from below.
+* `InverseGalois.CFT.Units.PowIdele` bounds the index of the `n`-th powers inside the ideles that
+  are units outside a finite set of places.  The two subgroups involved are products of local
+  subgroups differing only where `n`-th powers were imposed, so their relative index is the product
+  of the local indices there, and when the imposed places carry every place at which `n` is not a
+  unit and the base contains a primitive `n`-th root of unity the product formula evaluates it as
+  `n` raised to twice the number of places involved.
+* `InverseGalois.CFT.Units.SIdeleNorm` assembles the local-to-global criterion for an idele that is
+  a unit outside a finite invariant set of places to be a norm.  Over each orbit the sections form
+  the module induced from the decomposition group of any one place, so a section is a norm as soon
+  as its value at one place of each orbit is a local norm; and at a finite place outside the set
+  nothing has to be assumed, because there the local subgroup is the units of the valuation ring and
+  the decomposition group fixes a uniformizer.
 * `InverseGalois.CFT.Approximation.Basic` proves weak approximation for an arbitrary finite family
   of nontrivial pairwise inequivalent absolute values on a field: the field, embedded diagonally in
   the product of its copies carrying the topologies of the members of the family, is dense.  The
