@@ -170,6 +170,14 @@ theorem fullDiag_mem_idele (u : Additive Kˣ) : fullDiag K u ∈ idele K := by
   filter_upwards [ord_finite (R := 𝓞 K) (K := K) ((u.toMul : Kˣ) : K)] with v hv
   rw [fullDiag_snd, unitVal_adicUnitHom, hv, neg_zero]
 
+/-- The diagonal image in the full product is injective, since a number field has an infinite place
+and embeds in the completion there. -/
+theorem fullDiag_injective : Function.Injective (fullDiag K) := by
+  intro u u' h
+  obtain ⟨w⟩ := (inferInstance : Nonempty (InfinitePlace K))
+  have h1 := congrFun (congrArg Prod.fst h) w
+  exact Additive.toMul.injective (infiniteUnitHom_injective w (Additive.toMul.injective h1))
+
 /-- **The diagonal embedding of the units of the field into the ideles.** -/
 noncomputable def ideleDiag : Additive Kˣ →+ ↥(idele K) where
   toFun u := ⟨fullDiag K u, fullDiag_mem_idele K u⟩
@@ -182,11 +190,8 @@ theorem coe_ideleDiag (u : Additive Kˣ) :
 
 /-- The diagonal is injective, since a number field has an infinite place and embeds in the
 completion there. -/
-theorem ideleDiag_injective : Function.Injective (ideleDiag K) := by
-  intro u u' h
-  obtain ⟨w⟩ := (inferInstance : Nonempty (InfinitePlace K))
-  have h1 := congrFun (congrArg Prod.fst (congrArg Subtype.val h)) w
-  exact Additive.toMul.injective (infiniteUnitHom_injective w (Additive.toMul.injective h1))
+theorem ideleDiag_injective : Function.Injective (ideleDiag K) := fun _ _ h =>
+  fullDiag_injective K (congrArg Subtype.val h)
 
 end Diagonal
 

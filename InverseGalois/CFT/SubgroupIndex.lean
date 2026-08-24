@@ -31,13 +31,13 @@ subgroup, index, modular law, second isomorphism theorem
 
 namespace InverseGalois.CFT
 
-variable {G : Type*} [CommGroup G] {A B C : Subgroup G}
+variable {G : Type*} [AddCommGroup G] {A B C : AddSubgroup G}
 
 /-- The index in `A` of the subgroup it cuts out of `B ⊔ C` is the index of `B ⊔ C` in `A ⊔ C`. -/
 theorem relIndex_inf_sup (h : B ≤ A) :
     (A ⊓ (B ⊔ C)).relIndex A = (B ⊔ C).relIndex (A ⊔ C) := by
   have hsup : A ⊔ (B ⊔ C) = A ⊔ C := by rw [← sup_assoc, sup_eq_left.mpr h]
-  rw [inf_comm, Subgroup.inf_relIndex_right, ← Subgroup.relIndex_sup_right A (B ⊔ C), hsup]
+  rw [inf_comm, AddSubgroup.inf_relIndex_right, ← AddSubgroup.relIndex_sup_right A (B ⊔ C), hsup]
 
 /-- The index over `B` of the subgroup `A` cuts out of `B ⊔ C` is the index of `B ⊓ C` in
 `A ⊓ C`. -/
@@ -45,7 +45,7 @@ theorem relIndex_sup_inf (h : B ≤ A) :
     B.relIndex (A ⊓ (B ⊔ C)) = (B ⊓ C).relIndex (A ⊓ C) := by
   have hmod : A ⊓ (B ⊔ C) = B ⊔ (C ⊓ A) := by rw [inf_comm]; exact sup_inf_assoc_of_le C h
   have hinf : B ⊓ (A ⊓ C) = B ⊓ C := by rw [← inf_assoc, inf_eq_left.mpr h]
-  rw [hmod, Subgroup.relIndex_sup_left, inf_comm C A, ← Subgroup.inf_relIndex_right B (A ⊓ C),
+  rw [hmod, AddSubgroup.relIndex_sup_left, inf_comm C A, ← AddSubgroup.inf_relIndex_right B (A ⊓ C),
     hinf]
 
 /-- **The index of `B` in `A` splits along a third subgroup `C`**: it is the product of the index
@@ -53,7 +53,7 @@ of `B ⊔ C` in `A ⊔ C` and the index of `B ⊓ C` in `A ⊓ C`. -/
 theorem relIndex_sup_mul_relIndex_inf (h : B ≤ A) :
     (B ⊔ C).relIndex (A ⊔ C) * (B ⊓ C).relIndex (A ⊓ C) = B.relIndex A := by
   rw [← relIndex_inf_sup (C := C) h, ← relIndex_sup_inf (C := C) h, mul_comm]
-  exact Subgroup.relIndex_mul_relIndex B (A ⊓ (B ⊔ C)) A (le_inf h le_sup_left) inf_le_left
+  exact AddSubgroup.relIndex_mul_relIndex B (A ⊓ (B ⊔ C)) A (le_inf h le_sup_left) inf_le_left
 
 /-- Each of the two factors divides the index of `B` in `A`. -/
 theorem relIndex_sup_dvd (h : B ≤ A) : (B ⊔ C).relIndex (A ⊔ C) ∣ B.relIndex A :=

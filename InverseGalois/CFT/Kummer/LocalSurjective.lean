@@ -43,7 +43,10 @@ and a unit outside `S ∪ T` is a global `p`-th power.
   valuation ring modulo their `n`-th powers form a group of order `n`, the base field containing
   the `n`-th roots of unity.
 * `InverseGalois.CFT.exists_finset_primes_sUnitSurj`: **the `S`-units surject onto the product of
-  the local unit groups modulo `p`-th powers at a suitable finite set of auxiliary places.**
+  the local unit groups modulo `p`-th powers at a suitable finite set of auxiliary places**, which
+  moreover split completely in the field the radical generates, so that the radicand is a local
+  `p`-th power there, and which are independent enough that the subgroup fixing that field has
+  order `p` raised to their number.
 
 ## Tags
 
@@ -146,6 +149,9 @@ theorem exists_finset_primes_sUnitSurj (hp : p.Prime) (hζ : IsPrimitiveRoot ζ 
       (∀ v ∈ T, ∃ w : HeightOneSpectrum (𝓞 P.ext),
         w ∈ splitPlaces (fixedField (stabilizer Gal(P.ext/K) wa)) (Set.range ι) ∧
           primeUnder (𝓞 K) w = v) ∧
+      Nat.card ↥(stabilizer Gal(P.ext/K) wa) = p ^ T.card ∧
+      (∀ v ∈ T, ∃ c : v.adicCompletion K,
+        c ^ p = algebraMap K (v.adicCompletion K) (a : K)) ∧
       ∀ c : (v : HeightOneSpectrum (𝓞 K)) → (v.adicCompletion K)ˣ,
         (∀ v ∈ T, Valued.v ((c v : v.adicCompletion K)) = 1) →
         ∃ u : Kˣ, u ∈ sUnits K (Set.range ι) ∧ ∀ v ∈ T, ∃ z : (v.adicCompletion K)ˣ,
@@ -161,7 +167,6 @@ theorem exists_finset_primes_sUnitSurj (hp : p.Prime) (hζ : IsPrimitiveRoot ζ 
     IntermediateField.fixingSubgroup_fixedField _
   obtain ⟨T, hT1, hT2, hT3, hT4⟩ := exists_finset_primes_splitPlaces (L := L) hp
     (P.mul_comm_gal hζ) (P.pow_eq_one_gal hζ) (Set.finite_range ι) hunr
-  refine ⟨T, hT1, hT2, ?_⟩
   -- the local `p`-th power of `a` at a place of `T`
   have hloc : ∀ v ∈ T, ∃ c : (v.adicCompletion K), c ^ p = algebraMap K (v.adicCompletion K) a := by
     intro v hv
@@ -174,6 +179,7 @@ theorem exists_finset_primes_sUnitSurj (hp : p.Prime) (hζ : IsPrimitiveRoot ζ 
     have := (forall_stabilizer_smul_eq_iff_exists_pow w hζ hp.ne_zero hwa.symm).mp hfixw
     rw [hwv] at this
     exact this
+  refine ⟨T, hT1, hT2, by rw [← hfix]; exact hT3, hloc, ?_⟩
   intro c hc
   -- the places of `T` do not divide `p`
   have hpv : ∀ v ∈ T, Valued.v ((p : ℕ) : v.adicCompletion K) = 1 := by
