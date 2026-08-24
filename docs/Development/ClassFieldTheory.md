@@ -1,6 +1,6 @@
 # The class field theory layer
 
-**Status: 2026-08-22.** Everything described here is sorry-free and axiom-free
+**Status: 2026-08-24.** Everything described here is sorry-free and axiom-free
 (`#print axioms` gives `[propext, Classical.choice, Quot.sound]` on every capstone).
 The layer lives in `InverseGalois/CFT/` and is indexed, declaration by declaration, in the module
 docstring of `InverseGalois/CFT.lean`. **This document is the strategic companion to that index**:
@@ -164,8 +164,20 @@ every finite symbol is `1` then so is the real one.
 * **Kronecker–Weber**, and more generally the gluing of prescribed local abelian characters into a
   global one (Grunwald–Wang). This is the second of the two blockers in
   `docs/Development/Shafarevich.md` §0.2.
-* Ideles, ray class groups, the Artin map, Tate cohomology, the two inequalities. None of these is
-  needed for anything currently in the tree.
+* **Ray class groups, the Artin map, reciprocity, and the second inequality.** Tate cohomology of
+  a cyclic group (`CFT/Tate/`), the ideles and the idele class group (`CFT/Units/`), the local
+  norm and power indices (`CFT/Local/`) and **the first inequality** are all here now — that
+  workstream is described in `docs/Development/Shafarevich.md` §0.10, which also lists what is
+  left of Milne VII §6. What is still absent is everything downstream of the second inequality:
+  reciprocity, the vanishing of `Ĥ⁻¹(L/K, C_L)`, the Artin map and ray class groups.
+* **An idele norm map** `Nm_{L/K} : I_L → I_K`, and Milne VII 4.1 (`I_L^G = I_K`, `C_L^G ≅ C_K`).
+  Without them the Tate group `Ĥ⁰` computed in `CFT/Units/` is not yet identified with the
+  index `(I_K : K^× Nm I_L)` that the classical inequalities speak about. These are the two next
+  bricks.
+* **The topology of the ideles.** They are built here as an abstract restricted product with no
+  topology, which is enough for every index and Herbrand computation. Milne's arguments that
+  genuinely use density can be replaced by exact-equality variants (Shafarevich.md §0.10), so this
+  is a deliberate omission rather than a gap.
 
 ---
 
@@ -303,15 +315,28 @@ InverseGalois/CFT.lean                 the index; read its docstring first
 InverseGalois/CFT/
   GroupCohomology/                     cocycles, H², corestriction, the cyclic case
   Brauer/                              central simple algebras, crossed products, Br(L/K) ≅ H²
-  Local/                               p-adic squares, norm forms, the local Hilbert symbol
+  Local/                               p-adic squares, norm forms, the local Hilbert symbol;
+                                       the unit filtration and the exponential, local Herbrand
+                                       quotients, local norm and n-th-power indices
   Global/                              the product formula, reciprocity, Hasse–Minkowski, Hasse norm
   Cyclotomic/                          reciprocity for ℚ, Chebotarev for abelian extensions,
                                        the Scholz–Reichardt building block
+  Tate/                                Tate cohomology of a cyclic group: the hexagon, Shapiro,
+                                       commensurability, Hilbert 90, lattices, Herbrand quotients
+  Units/                               ideles, S-ideles, S-units, the idele class group and its
+                                       Galois action; the first inequality
+  Kummer/                              the Kummer pairing and the index computations of Milne VII §6
+  Approximation/                       weak approximation at a finite set of places
+  Scholz/                              the Scholz–Reichardt embedding step, and the tame half of
+                                       Kronecker–Weber
   {Unramified,Level,Decomposition,     ramification bookkeeping over ℚ
    Disjoint,Compositum,
-   UnramifiedCompositum}.lean
+   UnramifiedCompositum,
+   TameRamification,TameCharacter,
+   Inertia*}.lean
   {Herbrand,SquareClasses,             standalone tools
-   GaloisDescent}.lean
+   GaloisDescent,PiIndex,
+   SubgroupIndex,NormSubgroup}.lean
 ```
 
 ## Sources

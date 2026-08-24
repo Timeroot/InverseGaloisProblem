@@ -631,6 +631,144 @@ and settling the order `32` would remove the second exception at once. The bound
 
 ---
 
+## 0.10 Status (2026-08-24) — class field theory, and the second inequality
+
+Of the two blockers named in §0.2, Albert–Brauer–Hasse–Noether is the one that cannot be dodged:
+the embedding problem of Scholz–Reichardt is solvable exactly because a Brauer class that is
+locally trivial everywhere is trivial, and there is no elementary substitute for that in exponent
+`ℓ > 2`. The degree-two slice of ABHN is already in the tree (`docs/Development/ClassFieldTheory.md`
+§1.3), by an argument about ternary quadratic forms that generalises to nothing. So the real
+class field theory has to be built, and the route being followed is Milne, *Class Field Theory*,
+chapter VII: the two inequalities for the idele class group, then reciprocity, then the exact
+sequence of Brauer groups. This section records how far that has got; the file-level map is in
+`docs/Development/ClassFieldTheory.md` §4.
+
+**Tate cohomology of a cyclic group.** `InverseGalois/CFT/Tate/` is a self-contained development
+of `Ĥ⁰` and `Ĥ⁻¹` for an automorphism `σ` of an abelian group of order dividing `n`, together with
+the Herbrand quotient
+
+```lean
+InverseGalois.CFT.herbrand (σ : A ≃+ A) (n : ℕ) : ℚ :=
+  (Nat.card (tateH0 σ n) : ℚ) / (Nat.card (tateHm1 σ n) : ℚ)
+```
+
+and everything the quotient is normally used with: the six-term hexagon of a short exact sequence
+(`Exact.lean`, `Hexagon.lean`) and hence multiplicativity, invariance under a commensurable
+subgroup (`Commensurable.lean`, `Isogeny.lean`), Shapiro's lemma for an induced module
+(`Shapiro.lean`, `InducedLattice.lean`, `PermLattice.lean`), Hilbert 90 for a cyclic action
+(`CyclicHilbert90.lean`), and transport along an equivariant isomorphism (`Congr.lean`). For a
+trivial action the two groups are the cokernel and the kernel of multiplication by `n`
+(`Trivial.lean`, `TrivialLattice.lean`), which is what turns every Herbrand computation below into
+an index computation.
+
+**The local layer.** `InverseGalois/CFT/Local/` computes the local invariants a place at a time.
+The units of a complete discretely valued field have Herbrand quotient the degree of the extension
+(`UnitFiltration.lean`, `FiltrationHerbrand.lean`, `UnitHerbrandChain.lean`), by filtering the unit
+group and matching each graded piece against the additive filtration through the exponential
+(`Exp.lean`, `ExpEquiv.lean`, `ExpSurjective.lean`). The same exponential, run in the other
+direction, shows that a unit congruent to one to sufficient accuracy is an `n`-th power
+(`PowNeighbourhood.lean`), the accuracy needed being governed by the valuation of the residue
+characteristic and the valuation of `n`. Reading the Herbrand quotient of the units through its
+definition then gives the local index of the `n`-th powers:
+
+```lean
+InverseGalois.CFT.index_range_powMonoidHom_localUnitGroup
+    (hsurj : Function.Surjective (Valued.v : A → ℤᵐ⁰)) [∀ k : ℤ, Finite (gradedAdd A k)]
+    (h : HasResidueChar A p e) (hnz : n ≠ 0)
+    (hn : Valued.v ((n : ℕ) : A) = WithZero.exp (-(m : ℤ))) :
+  (powMonoidHom n : ↥(localUnitGroup A) →* ↥(localUnitGroup A)).range.index
+    = Nat.card (gradedAdd A 0) ^ m * Nat.card ↥(rootsOfUnity n A)
+```
+
+with the corresponding statements for the whole multiplicative group at a finite place
+(`AdicPowIndex.lean`) and at an infinite one (`InfinitePowIndex.lean`) — this is Milne 6.8. The
+local norm index `(K_v^× : Nm L_w^×) = [L_w : K_v]` for a cyclic local extension is
+`NormIndex.lean`, on top of the unramified and ramified norm forms.
+
+**The idele layer.** `InverseGalois/CFT/Units/` assembles the local factors into the ideles.
+`Idele.lean` defines them as a restricted product, written additively, of the unit groups of the
+completions; `AdicSIdeles.lean` and `SUnit.lean` cut out the `S`-ideles and the `S`-units;
+`IdeleClass.lean` forms the idele class group with its Galois action and identifies its Tate
+cohomology with that of the `S`-idele classes for a large enough `S`. Combining the local Herbrand
+quotients through Shapiro's lemma over the orbits of the Galois group on the places
+(`AdicIdeleHerbrand.lean`, `SIdeleHerbrand.lean`, `SUnitHerbrand.lean`) gives
+
+```lean
+InverseGalois.CFT.herbrand_ideleClassAut_eq_degree :
+  herbrand (ideleClassAut (k := k) (K := K) σ) n = n
+```
+
+for a cyclic extension of degree `n`, and hence **the first inequality**:
+
+```lean
+InverseGalois.CFT.first_inequality : n ≤ Nat.card (tateH0 (ideleClassAut (k := k) (K := K) σ) n)
+```
+
+**The second inequality.** This is Milne VII §6, the algebraic proof, and it is where the work
+currently is. The strategy is Kummer-theoretic: adjoin an `ℓ`-th root of unity, choose a set of
+places `S` containing the infinite places, the places above `ℓ` and enough places to make the
+class group trivial, and count the index of a large group of `n`-th powers inside the `S`-ideles
+in two ways. The counting ingredients are now in place.
+
+* The global index of the `n`-th powers in the `S`-units — Milne 6.7's first half — is
+  `Units/SUnitIndex.lean`, `index_range_powMonoidHom_sUnits`, `= n ^ (r₁ + r₂ + |S|)` in the usual
+  notation; the proof is the Dirichlet unit lattice plus the Herbrand quotient of a trivial action
+  on a finitely generated group.
+* The product of the local indices over the relevant places — Milne 6.6 — is
+  `Kummer/PowIndex.lean`, `prod_index_range_powMonoidHom_units_of_isPrimitiveRoot`, `= n ^ (2 |S|)`
+  when the base field contains a primitive `n`-th root of unity and `S` contains every place at
+  which `n` is not a unit. Milne's product runs over `S` alone, which is exactly what this counts.
+* Its idele formulation is `Units/PowIdele.lean`: the subgroup of the `S`-ideles carrying the
+  `n`-th powers has relative index the product of those local indices,
+
+  ```lean
+  InverseGalois.CFT.relIndex_powSIdele_of_isPrimitiveRoot (hζ : IsPrimitiveRoot ζ n)
+      (F : Finset (HeightOneSpectrum (𝓞 K))) (hF : ∀ v, v ∈ F ↔ v ∈ S)
+      (hn : ∀ v, FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → v ∈ F) :
+    (powSIdele S T n).relIndex (sIdele S T) = n ^ (2 * (Fintype.card (InfinitePlace K) + F.card))
+  ```
+
+  resting on the general fact (`PiIndex.lean`) that two subgroups of a product which are given
+  place by place and agree outside a finite set have relative index the product of the local
+  relative indices.
+* Milne 6.4, that the group `E` of Kummer generators consists of norms, is the element-level
+  Shapiro chain of `Units/SIdeleNorm.lean`; Milne 6.5 is the index identity
+  `relIndex_sup_mul_relIndex_inf`.
+
+What is left of §6 is the Kummer-theoretic half rather than the counting half: 6.3 (an `S`-unit
+that is an `n`-th power in every completion at a place of `T` is one in the Kummer extension), 6.9
+(surjectivity of `U(S) → ∏_{v ∈ T} U_v/U_v^p`, which needs 6.3 and the order count `[M : L] = p^t`),
+the remaining inclusion in 6.7, and then 6.1–6.2, which reduce the general case to one containing
+the `p`-th roots of unity and need Milne 4.7 (Frobenius elements generate).
+
+**A topology-free route to the end of §6.** Milne's Proposition 4.5 — a finite solvable extension
+with `K^× · D` dense in `I_K` for some `D ⊆ Nm(I_L)` is trivial — is stated with the idele
+topology, which the repo does not have. It is not needed. The variant
+
+> if `L/K` is finite solvable and `D ≤ I_K` satisfies `D ⊆ Nm_{L/K}(I_L)` and `K^× · D = I_K`
+> **exactly**, then `L = K`
+
+has a two-line proof from the first inequality: pick `K ⊊ K' ⊆ L` with `K'/K` cyclic, then
+`I_K = K^× · D ⊆ K^× · Nm(I_{K'}) ⊆ I_K`, so `(I_K : K^× Nm I_{K'}) = 1`, contradicting
+`(I_K : K^× Nm I_{K'}) ≥ [K' : K] > 1`. Milne 6.10(b) delivers the *equality* `I_K = D · K^×`,
+not merely density, so the whole of §6 can be run without ever topologising the ideles.
+
+Two things block that route, and they are the next bricks to lay:
+
+1. **There is no idele norm map** `Nm_{L/K} : I_L → I_K` in the tree. The local norms are all
+   there; what is missing is the assembly over the places of `K`, which is the same orbit
+   bookkeeping that `AdicIdeleHerbrand.lean` already does for the Herbrand quotient.
+2. **Milne Lemma 4.1**, `I_L^G = I_K` and `C_L^G ≅ C_K` (Hilbert 90 for the completions plus the
+   snake lemma), is not present, so `Nat.card (tateH0 (ideleClassAut σ) n)` is not yet identified
+   with the index `(I_K : K^× Nm I_L)` that the inequalities are about.
+
+With those two, `first_inequality` becomes the first inequality in its usual form, the second
+inequality follows from the §6 count, and reciprocity and the Brauer-group sequence of Milne §7
+are the next targets — after which ABHN, and with it Scholz–Reichardt's
+`IsFrattiniCentralStepSolvable ℓ`, is reachable.
+
+---
+
 ## 1. Scholz–Reichardt
 
 ### 1.1 Statement
