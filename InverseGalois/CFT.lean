@@ -223,6 +223,7 @@ import InverseGalois.CFT.Tate.Restrict
 import InverseGalois.CFT.Tate.Shapiro
 import InverseGalois.CFT.Tate.Surjection
 import InverseGalois.CFT.Tate.Trivial
+import InverseGalois.CFT.Tate.TrivialLattice
 import InverseGalois.CFT.Units.AdicIdeleHerbrand
 import InverseGalois.CFT.Units.AdicOrbit
 import InverseGalois.CFT.Units.AdicSIdeles
@@ -243,6 +244,7 @@ import InverseGalois.CFT.Units.SIdeleClass
 import InverseGalois.CFT.Units.SIdeleHerbrand
 import InverseGalois.CFT.Units.SUnit
 import InverseGalois.CFT.Units.SUnitHerbrand
+import InverseGalois.CFT.Units.SUnitIndex
 import InverseGalois.CFT.Units.UnitLattice
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
@@ -615,6 +617,13 @@ it that are available here.
 * `InverseGalois.CFT.Tate.Trivial` computes the two Tate groups when the automorphism is the
   identity, where the difference operator vanishes and the norm is multiplication by the order, and
   reads off the Herbrand quotient of the integers with trivial action, which is that order.
+* `InverseGalois.CFT.Tate.TrivialLattice` extends that computation from the integers to a lattice.
+  A finite product of copies of the integers has Herbrand quotient the order raised to the number
+  of factors, hence so does any module with a finite basis, and hence so does any subgroup of a
+  free lattice of finite rank containing a multiple of everything, the two being commensurable.
+  For a group written multiplicatively the two Tate groups of the trivial action are the quotient
+  by the powers and the torsion, so this is the classical index computation for a finitely
+  generated abelian group.
 * `InverseGalois.CFT.Tate.Congr` transports the Tate groups along an isomorphism commuting with the
   two automorphisms, so that a module presented in any other way may be compared with the shapes
   those computations handle.
@@ -792,6 +801,13 @@ it that are available here.
   product over the orbits of the order of a decomposition group; the short exact sequence of the
   units, the `S`-units and that lattice then multiplies this by the contribution of the infinite
   places.
+* `InverseGalois.CFT.Units.SUnitIndex` runs the same short exact sequence with no action at all.
+  The units of the ring of integers then contribute the rank of the unit lattice and the lattice of
+  order vectors the number of chosen primes, so the Herbrand quotient of the `S`-units is the given
+  order raised to their sum.  The torsion of the `S`-units is the group of roots of unity, because
+  a root of unity has order zero at every prime, so when the field contains enough of them the
+  index of the powers in the group of `S`-units is that order raised to the number of places of
+  `S`, the infinite places together with the chosen finite primes.
 * `InverseGalois.CFT.Local.AdicAction` carries a field automorphism to the adic completions: it
   preserves the valuation of an element up to moving the prime, so it is an isometry of the valued
   field at a prime onto the valued field at the image prime, and extends by continuity to a ring
