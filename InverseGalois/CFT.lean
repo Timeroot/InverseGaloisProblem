@@ -1,3 +1,6 @@
+import InverseGalois.CFT.Approximation.Basic
+import InverseGalois.CFT.Approximation.Completion
+import InverseGalois.CFT.Approximation.Places
 import InverseGalois.CFT.Brauer.BaseChange
 import InverseGalois.CFT.Brauer.Centralizer
 import InverseGalois.CFT.Brauer.CentralizerProduct
@@ -975,6 +978,24 @@ it that are available here.
   class group has Herbrand quotient the degree unconditionally.  Since the quotient is a positive
   rational, both Tate groups are finite, and the order of the zeroth one is the degree times the
   order of the other and hence at least the degree.
+* `InverseGalois.CFT.Approximation.Basic` proves weak approximation for an arbitrary finite family
+  of nontrivial pairwise inequivalent absolute values on a field: the field, embedded diagonally in
+  the product of its copies carrying the topologies of the members of the family, is dense.  The
+  separation lemma of Artin and Whaples supplies, for each index, an element which the corresponding
+  absolute value makes large and every other one makes small; the powers of that element weight a
+  prescribed target so that the weight tends to one at its own index and to zero elsewhere, and the
+  weighted sum of the targets converges to the target in every member of the family at once.
+* `InverseGalois.CFT.Approximation.Places` checks the hypotheses for the places of a number field.
+  Neither of two distinct primes contains the other, so an element of the first avoiding the second
+  is small at the first and of absolute value one at the second; and a finite place makes every
+  integer at most one whereas an infinite place makes two equal to two.  Weak approximation
+  therefore applies to the family consisting of all the infinite places together with finitely many
+  finite ones.
+* `InverseGalois.CFT.Approximation.Completion` carries the statement over to the completions that
+  the ideles are built from.  The completions add nothing, because the field is dense in each of
+  them separately: a prescribed element of a completion is first replaced by an element of the field
+  within half the required accuracy, the approximation is then carried out inside the field, and a
+  triangle inequality combines the two.
 * `InverseGalois.CFT.Local.UnitFiltration` sets up the two filtrations of a valued field: the
   additive one by the elements of small valuation, and the multiplicative one by the units
   congruent to one.  Subtracting one identifies a step of the unit filtration with the
