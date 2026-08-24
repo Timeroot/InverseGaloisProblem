@@ -166,14 +166,17 @@ every finite symbol is `1` then so is the real one.
   `docs/Development/Shafarevich.md` §0.2.
 * **Ray class groups, the Artin map, reciprocity, and the second inequality.** Tate cohomology of
   a cyclic group (`CFT/Tate/`), the ideles and the idele class group (`CFT/Units/`), the local
-  norm and power indices (`CFT/Local/`) and **the first inequality** are all here now — that
+  norm and power indices (`CFT/Local/`) and **the first inequality**, in its classical form as a
+  lower bound for `(I_k : k^× Nm I_K)`, are all here now — that
   workstream is described in `docs/Development/Shafarevich.md` §0.10, which also lists what is
   left of Milne VII §6. What is still absent is everything downstream of the second inequality:
   reciprocity, the vanishing of `Ĥ⁻¹(L/K, C_L)`, the Artin map and ray class groups.
-* **An idele norm map** `Nm_{L/K} : I_L → I_K`, and Milne VII 4.1 (`I_L^G = I_K`, `C_L^G ≅ C_K`).
-  Without them the Tate group `Ĥ⁰` computed in `CFT/Units/` is not yet identified with the
-  index `(I_K : K^× Nm I_L)` that the classical inequalities speak about. These are the two next
-  bricks.
+* **Norm transitivity for the ideles.** The idele norm map `Nm_{L/K} : I_L → I_K` and Milne VII 4.1
+  (`I_L^G = I_K`, `C_L^G ≅ C_K`) *are* here for a cyclic extension — `Units/IdeleNorm.lean`,
+  `Units/IdeleFixed.lean` and `Units/IdeleClassIndex.lean` — so `Ĥ⁰` of the idele class group is
+  identified with the index `(I_k : k^× Nm I_K)` and the first inequality reads in its classical
+  form. What is missing is `Nm_{L/K} = Nm_{K'/K} ∘ Nm_{L/K'}`, which is what lets the cyclic step be
+  taken inside a solvable tower.
 * **The topology of the ideles.** They are built here as an abstract restricted product with no
   topology, which is enough for every index and Herbrand computation. Milne's arguments that
   genuinely use density can be replaced by exact-equality variants (Shafarevich.md §0.10), so this
@@ -324,7 +327,8 @@ InverseGalois/CFT/
   Tate/                                Tate cohomology of a cyclic group: the hexagon, Shapiro,
                                        commensurability, Hilbert 90, lattices, Herbrand quotients
   Units/                               ideles, S-ideles, S-units, the idele class group and its
-                                       Galois action; the first inequality
+                                       Galois action; the idele norm map and the fixed points of
+                                       the Galois action; the first inequality as a norm index
   Kummer/                              the Kummer pairing and the index computations of Milne VII §6
   Approximation/                       weak approximation at a finite set of places
   Scholz/                              the Scholz–Reichardt embedding step, and the tame half of

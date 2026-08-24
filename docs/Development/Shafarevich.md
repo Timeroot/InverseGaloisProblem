@@ -753,18 +753,48 @@ has a two-line proof from the first inequality: pick `K ⊊ K' ⊆ L` with `K'/K
 `(I_K : K^× Nm I_{K'}) ≥ [K' : K] > 1`. Milne 6.10(b) delivers the *equality* `I_K = D · K^×`,
 not merely density, so the whole of §6 can be run without ever topologising the ideles.
 
-Two things block that route, and they are the next bricks to lay:
+Both of the bricks that route needs are now laid, for the cyclic extensions that are all it uses.
 
-1. **There is no idele norm map** `Nm_{L/K} : I_L → I_K` in the tree. The local norms are all
-   there; what is missing is the assembly over the places of `K`, which is the same orbit
-   bookkeeping that `AdicIdeleHerbrand.lean` already does for the Herbrand quotient.
-2. **Milne Lemma 4.1**, `I_L^G = I_K` and `C_L^G ≅ C_K` (Hilbert 90 for the completions plus the
-   snake lemma), is not present, so `Nat.card (tateH0 (ideleClassAut σ) n)` is not yet identified
-   with the index `(I_K : K^× Nm I_L)` that the inequalities are about.
+1. **The idele norm map.** `Units/IdeleNorm.lean` defines `ideleNorm k K hgen hσ : I_K → I_k` for a
+   cyclic extension. The assembly over the places is avoided entirely: the sum of the conjugates of
+   an idele is fixed by the generator, hence by the whole group, hence — by the fixed-point theorem
+   below — is the image of a unique idele of the base field, and that idele is the norm. The
+   defining property is `ideleComap_ideleNorm`, that the norm read in the extension is the Tate norm
+   of the Galois action.
+2. **Milne Lemma 4.1.** `Units/IdeleFixed.lean` proves `mem_range_ideleComap_iff`, that an idele of
+   the extension is fixed by the Galois group exactly when it comes from the base field, and
+   `Units/IdeleClassIndex.lean` proves the idele-class half in the form the inequalities want:
 
-With those two, `first_inequality` becomes the first inequality in its usual form, the second
-inequality follows from the §6 count, and reciprocity and the Brauer-group sequence of Milne §7
-are the next targets — after which ABHN, and with it Scholz–Reichardt's
+   ```lean
+   InverseGalois.CFT.ideleQuotEquivTateH0 :
+     (↥(idele k) ⧸ ((ideleDiag k).range ⊔ (ideleNorm k K hgen hσ).range))
+       ≃+ tateH0 (ideleClassAut (k := k) σ) n
+   ```
+
+   The map sends an idele of the base field to the class of its image, which is fixed; it is
+   surjective because a fixed class is the class of a fixed idele and a fixed idele comes from the
+   base field; and it kills exactly the principal ideles and the norms, because a principal idele of
+   the extension fixed by the Galois group is the principal idele of a unit of the base field.
+
+So `first_inequality` now reads in its classical form,
+
+```lean
+InverseGalois.CFT.first_inequality_index :
+  n ≤ ((ideleDiag k).range ⊔ (ideleNorm k K hgen hσ).range).index
+```
+
+that is `(I_k : k^× · Nm I_K) ≥ [K : k]`, and the topology-free 4.5′ is its immediate corollary for
+a cyclic extension, `Units/NormIndex.lean`:
+
+```lean
+InverseGalois.CFT.subsingleton_gal_of_ideleDiag_sup_ideleNorm_eq_top
+    (htop : (ideleDiag k).range ⊔ (ideleNorm k K hgen hσ).range = ⊤) : Subsingleton Gal(K/k)
+```
+
+What remains before 4.5′ can be applied to a solvable extension is norm transitivity,
+`Nm_{L/K} = Nm_{K'/K} ∘ Nm_{L/K'}`, which is what lets the cyclic step be taken inside a tower; and
+then the second inequality follows from the §6 count, and reciprocity and the Brauer-group sequence
+of Milne §7 are the next targets — after which ABHN, and with it Scholz–Reichardt's
 `IsFrattiniCentralStepSolvable ℓ`, is reachable.
 
 ---
