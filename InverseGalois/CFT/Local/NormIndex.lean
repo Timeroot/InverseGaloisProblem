@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Mathlib
 import InverseGalois.CFT.Local.AdicHerbrand
 import InverseGalois.CFT.Tate.CyclicHilbert90
+import InverseGalois.CFT.Tate.H0Norm
 
 /-!
 # The norm index of a cyclic extension of local fields
@@ -23,6 +24,8 @@ the base which are norms from the completion form a subgroup of index the local 
 * `InverseGalois.CFT.card_tateHm1_adicUnitsField`: the same, read as an order.
 * `InverseGalois.CFT.card_tateH0_adicUnitsField`: **the norm index of a cyclic extension of local
   fields is the local degree.**
+* `InverseGalois.CFT.exists_normHom_adicUnits_eq_nsmul`: **every multiple of the local degree of a
+  local unit fixed by the decomposition group is a local norm.**
 
 ## Tags
 
@@ -70,6 +73,14 @@ theorem card_tateH0_adicUnitsField :
   push_cast at hq
   rw [div_one] at hq
   exact_mod_cast hq
+
+/-- **Every multiple of the local degree of a local unit fixed by the decomposition group is a
+local norm.**  The norm index is the local degree, and the order of the zeroth Tate group
+annihilates it. -/
+theorem exists_normHom_adicUnits_eq_nsmul (x : Additive (v.adicCompletion K)ˣ)
+    (hx : smulUnitsAut (R := v.adicCompletion K) σ x = x) {m : ℕ} (hm : d ∣ m) :
+    ∃ y, normHom (smulUnitsAut (R := v.adicCompletion K) σ) d y = m • x :=
+  exists_normHom_eq_nsmul x hx (by rwa [card_tateH0_adicUnitsField v hgen hσ hcard])
 
 end Adic
 

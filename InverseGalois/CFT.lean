@@ -200,6 +200,7 @@ import InverseGalois.CFT.Tate.Finite
 import InverseGalois.CFT.Tate.FiniteExact
 import InverseGalois.CFT.Tate.Galois
 import InverseGalois.CFT.Tate.GaloisH0
+import InverseGalois.CFT.Tate.H0Norm
 import InverseGalois.CFT.Tate.Herbrand
 import InverseGalois.CFT.Tate.Hexagon
 import InverseGalois.CFT.Tate.InducedLattice
@@ -576,6 +577,8 @@ it that are available here.
   and the norm kernel modulo the differences have the same index.
 * `InverseGalois.CFT.Tate.Basic` names those two subquotients the Tate groups of the module, and
   makes them functorial in equivariant homomorphisms.
+* `InverseGalois.CFT.Tate.H0Norm` annihilates the upper Tate group by its own order: a fixed point
+  multiplied by that order, or by any multiple of it, lies in the image of the norm.
 * `InverseGalois.CFT.Tate.Exact` records the counting principle behind the hexagon: in a cyclic
   exact sequence of six finite commutative groups the orders in odd and in even position have the
   same product.
@@ -864,7 +867,8 @@ it that are available here.
   faithfully on the completion, which is a field, so Hilbert's theorem 90 applies verbatim and the
   lower Tate group of the units of the completion vanishes.  The upper one therefore has order the
   order of the decomposition group: the norms from the completion form a subgroup of the units of
-  index the local degree.
+  index the local degree.  Annihilating that group by its order, every multiple of the local degree
+  of a unit fixed by the decomposition group is a local norm.
 * `InverseGalois.CFT.Units.EquivariantLabel` records the one fact that a labelling of a set acted
   on by a group by the points of another such set needs to satisfy for the two to have the same
   decomposition groups: an injective equivariant map identifies the stabiliser of a point with the
