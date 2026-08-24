@@ -28,6 +28,10 @@ times the product of the local numbers of `n`-th roots of unity.
   natural number, multiply to one over such a set.
 * `InverseGalois.CFT.prod_index_range_powMonoidHom_units`: **the product of the local indices of the
   `n`-th powers** over the infinite places together with such a finite set of finite places.
+* `InverseGalois.CFT.prod_index_range_powMonoidHom_units_of_isPrimitiveRoot`: **the same product
+  when the base field contains a primitive `n`-th root of unity**, where every completion has
+  exactly `n` roots of unity of order dividing `n`, so that the answer is `n` raised to twice the
+  number of places.
 
 ## Tags
 
@@ -153,5 +157,45 @@ theorem prod_index_range_powMonoidHom_units (hn : n ≠ 0)
   exact_mod_cast key
 
 end ProductIndex
+
+/-! ### The product when the base field has enough roots of unity -/
+
+section PrimitiveRoot
+
+variable {K : Type*} [Field K] [NumberField K] {n : ℕ}
+
+omit [NumberField K] in
+/-- A field extension of one containing a primitive `n`-th root of unity has exactly `n` roots of
+unity of order dividing `n`. -/
+theorem card_rootsOfUnity_of_isPrimitiveRoot {L : Type*} [Field L] [Algebra K L] [NeZero n]
+    {ζ : K} (hζ : IsPrimitiveRoot ζ n) : Nat.card ↥(rootsOfUnity n L) = n := by
+  rw [Nat.card_eq_fintype_card,
+    (hζ.map_of_injective (algebraMap K L).injective).card_rootsOfUnity]
+
+set_option synthInstance.maxHeartbeats 400000 in
+set_option maxHeartbeats 1000000 in
+/-- **The product of the local indices of the `n`-th powers when the base field contains a primitive
+`n`-th root of unity.**  Every completion then has exactly `n` roots of unity of order dividing `n`,
+so the product is `n` raised to twice the number of places. -/
+theorem prod_index_range_powMonoidHom_units_of_isPrimitiveRoot [NeZero n] {ζ : K}
+    (hζ : IsPrimitiveRoot ζ n) (T : Finset (HeightOneSpectrum (𝓞 K)))
+    (hT : ∀ v, FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → v ∈ T) :
+    (∏ w : InfinitePlace K,
+        (powMonoidHom n : w.Completionˣ →* w.Completionˣ).range.index)
+        * ∏ v ∈ T, (powMonoidHom n :
+          (v.adicCompletion K)ˣ →* (v.adicCompletion K)ˣ).range.index
+      = n ^ (2 * (Fintype.card (InfinitePlace K) + T.card)) := by
+  have h₁ : (∏ w : InfinitePlace K, Nat.card ↥(rootsOfUnity n w.Completion))
+      = n ^ Fintype.card (InfinitePlace K) := by
+    rw [Finset.prod_congr rfl fun w _ =>
+      card_rootsOfUnity_of_isPrimitiveRoot (L := w.Completion) hζ, Finset.prod_const,
+      Finset.card_univ]
+  have h₂ : (∏ v ∈ T, Nat.card ↥(rootsOfUnity n (v.adicCompletion K))) = n ^ T.card := by
+    rw [Finset.prod_congr rfl fun v _ =>
+      card_rootsOfUnity_of_isPrimitiveRoot (L := v.adicCompletion K) hζ, Finset.prod_const]
+  rw [prod_index_range_powMonoidHom_units (NeZero.ne n) T hT, h₁, h₂, ← pow_add, ← pow_add,
+    two_mul]
+
+end PrimitiveRoot
 
 end InverseGalois.CFT
