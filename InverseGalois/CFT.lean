@@ -241,6 +241,7 @@ import InverseGalois.CFT.Tate.Shapiro
 import InverseGalois.CFT.Tate.Surjection
 import InverseGalois.CFT.Tate.Trivial
 import InverseGalois.CFT.Tate.TrivialLattice
+import InverseGalois.CFT.Units.AdicFixed
 import InverseGalois.CFT.Units.AdicIdeleHerbrand
 import InverseGalois.CFT.Units.AdicOrbit
 import InverseGalois.CFT.Units.AdicSIdeles
