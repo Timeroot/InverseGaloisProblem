@@ -791,10 +791,36 @@ InverseGalois.CFT.subsingleton_gal_of_ideleDiag_sup_ideleNorm_eq_top
     (htop : (ideleDiag k).range ⊔ (ideleNorm k K hgen hσ).range = ⊤) : Subsingleton Gal(K/k)
 ```
 
-What remains before 4.5′ can be applied to a solvable extension is norm transitivity,
-`Nm_{L/K} = Nm_{K'/K} ∘ Nm_{L/K'}`, which is what lets the cyclic step be taken inside a tower; and
-then the second inequality follows from the §6 count, and reciprocity and the Brauer-group sequence
-of Milne §7 are the next targets — after which ABHN, and with it Scholz–Reichardt's
+Norm transitivity, `Nm_{L/K} = Nm_{K'/K} ∘ Nm_{L/K'}` — what lets the cyclic step be taken inside a
+tower — is `Units/IdeleNormTower.lean`:
+
+```lean
+InverseGalois.CFT.ideleNorm_trans (x : ↥(idele K)) :
+  ideleNorm k F (ideleNorm F K x) = ideleNorm k K x
+```
+
+Both the tower compatibility of the inclusions (`ideleComap_trans`, `Units/IdeleTower.lean`, resting
+on the place-by-place compatibilities of `Units/PlaceTower.lean`) and the equivariance of the
+inclusion under restriction of automorphisms (`ideleAut_ideleComap_restrict`,
+`Units/IdeleRestrict.lean`, resting on `Units/PlaceRestrict.lean`) feed into it; the sum over the
+Galois group of the whole extension splits because lifting an automorphism of the middle field and
+multiplying by one fixing it is a bijection from the product of the two Galois groups.
+
+With that, **4.5′ holds for a solvable extension**, `Units/SolvableNorm.lean`:
+
+```lean
+InverseGalois.CFT.subsingleton_gal_of_isSolvable_of_ideleDiag_sup_le [IsSolvable Gal(K/k)]
+    (hD : D ≤ (ideleNorm k K).range) (htop : (ideleDiag k).range ⊔ D = ⊤) :
+  Subsingleton Gal(K/k)
+```
+
+The cyclic subextension is produced group-theoretically: a nontrivial finite solvable group has a
+nontrivial complex character (its abelianization is a nontrivial finite commutative group and
+characters separate the elements of such a group), and the quotient by the kernel of a character is
+a finite subgroup of `ℂ^×`, hence cyclic; the fixed field of the kernel is the `K'` above.
+
+What remains is the second inequality from the §6 count, and then reciprocity and the Brauer-group
+sequence of Milne §7 — after which ABHN, and with it Scholz–Reichardt's
 `IsFrattiniCentralStepSolvable ℓ`, is reachable.
 
 ---

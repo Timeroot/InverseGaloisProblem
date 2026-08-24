@@ -285,6 +285,7 @@ import InverseGalois.CFT.Units.SIdeleNorm
 import InverseGalois.CFT.Units.SUnit
 import InverseGalois.CFT.Units.SUnitHerbrand
 import InverseGalois.CFT.Units.SUnitIndex
+import InverseGalois.CFT.Units.SolvableNorm
 import InverseGalois.CFT.Units.UnitLattice
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
@@ -1127,6 +1128,11 @@ it that are available here.
   terms of norms.  If the principal ideles together with the norms exhaust the ideles of the base
   field then the index they bound is one, so the degree is one and the extension is trivial.  The
   hypothesis is an exact equality of subgroups, so no topology on the ideles is needed.
+* `InverseGalois.CFT.Units.SolvableNorm` upgrades that criterion from a cyclic extension to a
+  solvable one.  A nontrivial finite solvable group has a nontrivial complex character, and the
+  quotient by the kernel of a character is a finite subgroup of the complex units, hence cyclic; the
+  fixed field of the kernel is therefore a nontrivial cyclic subextension, and it inherits the
+  hypothesis because the norms of a tower compose.
 * `InverseGalois.CFT.Units.PowIdele` bounds the index of the `n`-th powers inside the ideles that
   are units outside a finite set of places.  The two subgroups involved are products of local
   subgroups differing only where `n`-th powers were imposed, so their relative index is the product
