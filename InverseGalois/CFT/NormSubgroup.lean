@@ -29,10 +29,10 @@ norm, norm subgroup, field extension
 
 namespace InverseGalois.CFT
 
-variable {K L : Type} [Field K] [Field L] [Algebra K L] [FiniteDimensional K L]
+variable {K L : Type*} [Field K] [Field L] [Algebra K L] [FiniteDimensional K L]
 
 /-- **The norm subgroup.**  The image of `Lˣ` in `Kˣ` under the field norm of `L / K`. -/
-noncomputable def normSubgroup (K L : Type) [Field K] [Field L] [Algebra K L]
+noncomputable def normSubgroup (K L : Type*) [Field K] [Field L] [Algebra K L]
     [FiniteDimensional K L] : Subgroup Kˣ :=
   (Units.map (Algebra.norm K : L →* K)).range
 

@@ -275,6 +275,7 @@ import InverseGalois.CFT.Units.FirstInequality
 import InverseGalois.CFT.Units.FrobeniusPlace
 import InverseGalois.CFT.Units.GaloisAction
 import InverseGalois.CFT.Units.GeneratingPrimes
+import InverseGalois.CFT.Units.HasseNorm
 import InverseGalois.CFT.Units.Herbrand
 import InverseGalois.CFT.Units.Idele
 import InverseGalois.CFT.Units.IdeleClass
@@ -1006,6 +1007,15 @@ it that are available here.
   cyclic group of composite order has a subgroup of prime index, whose fixed field is a step of
   prime degree with the whole extension again cyclic above it, so induction on the degree reduces
   the count to the prime case, and the first inequality matches the resulting bound.
+* `InverseGalois.CFT.Units.HasseNorm` deduces the norm theorem for a cyclic extension.  The units
+  of the top field, its ideles and its idele classes form a short exact sequence of modules over the
+  cyclic Galois group, since the diagonal embedding is injective and equivariant.  The idele class
+  group has Herbrand quotient the degree and its zeroth Tate group has order the norm index, which
+  is the degree as well, so the other Tate group of the idele class group is trivial; exactness of
+  the Tate hexagon at the zeroth group of the units then makes the map to the zeroth group of the
+  ideles injective.  Reading the Tate norm operator of a generator as the product of the conjugates
+  identifies it with the field norm, so a unit of the base field whose principal idele is the norm
+  of an idele is the norm of a unit of the extension.
 * `InverseGalois.CFT.Local.AdicAction` carries a field automorphism to the adic completions: it
   preserves the valuation of an element up to moving the prime, so it is an isometry of the valued
   field at a prime onto the valued field at the image prime, and extends by continuity to a ring
