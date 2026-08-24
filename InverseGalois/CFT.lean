@@ -248,6 +248,7 @@ import InverseGalois.CFT.Units.ArchimedeanIdeles
 import InverseGalois.CFT.Units.ClassSet
 import InverseGalois.CFT.Units.CompletionFinite
 import InverseGalois.CFT.Units.CompletionGalois
+import InverseGalois.CFT.Units.CompletionUnits
 import InverseGalois.CFT.Units.EquivariantLabel
 import InverseGalois.CFT.Units.FirstInequality
 import InverseGalois.CFT.Units.GaloisAction
@@ -258,6 +259,7 @@ import InverseGalois.CFT.Units.InfiniteIdele
 import InverseGalois.CFT.Units.InfiniteOrbit
 import InverseGalois.CFT.Units.LocalEmbedding
 import InverseGalois.CFT.Units.LocalIdele
+import InverseGalois.CFT.Units.OrbitPlaces
 import InverseGalois.CFT.Units.PlaceComap
 import InverseGalois.CFT.Units.Places
 import InverseGalois.CFT.Units.PowIdele
