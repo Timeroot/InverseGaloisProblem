@@ -145,6 +145,7 @@ import InverseGalois.CFT.Local.NatValuation
 import InverseGalois.CFT.Local.PadicSquaresTwo
 import InverseGalois.CFT.Local.RamifiedNormForm
 import InverseGalois.CFT.Local.TraceIntegral
+import InverseGalois.CFT.Local.TrivialIndex
 import InverseGalois.CFT.Local.UnitFiltration
 import InverseGalois.CFT.Local.UnitHerbrandChain
 import InverseGalois.CFT.Local.UnitIndex
@@ -1006,6 +1007,13 @@ it that are available here.
   additive filtration through the exponential, it is of finite index in the units of the valuation
   ring, and the valuation of a unit then gives the units of the field Herbrand quotient the order
   of the group.
+* `InverseGalois.CFT.Local.TrivialIndex` runs the same chain with no action at all.  Multiplication
+  by `n` moves a step of the additive filtration down by the valuation of `n`, so a step has
+  Herbrand quotient the order of a graded piece raised to that valuation; the exponential, the
+  finite index of a deep step, and the valuation sequence carry this to the units of the field,
+  where an extra factor of `n` appears.  The index of the `n`-th powers in the units of the field
+  is therefore `n`, times the order of the residue field raised to the valuation of `n`, times the
+  number of `n`-th roots of unity.
 * `InverseGalois.CFT.Local.UnramifiedUnits` sharpens that computation when the fixed field already
   contains a uniformizer: Hilbert's theorem 90 writes a unit whose conjugates multiply to one as a
   quotient, the uniformizer corrects the valuation of the representative, and the lower Tate group
