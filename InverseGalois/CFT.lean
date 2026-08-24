@@ -259,6 +259,7 @@ import InverseGalois.CFT.Units.Herbrand
 import InverseGalois.CFT.Units.Idele
 import InverseGalois.CFT.Units.IdeleClass
 import InverseGalois.CFT.Units.IdeleClassFixed
+import InverseGalois.CFT.Units.IdeleClassIndex
 import InverseGalois.CFT.Units.IdeleFixed
 import InverseGalois.CFT.Units.IdeleNorm
 import InverseGalois.CFT.Units.InfiniteComap
@@ -1086,12 +1087,17 @@ it that are available here.
   with the passage between the two fields, because at every place the structure map of the
   completion above over the completion below carries the image of an element of the base field to
   its image in the extension.
+* `InverseGalois.CFT.Units.IdeleClassIndex` identifies the zeroth Tate group of the idele class
+  group with the quotient of the ideles of the base field by the principal ideles together with the
+  norms, which is the classical shape of the first inequality.  An idele of the base field gives an
+  idele class of the extension which is fixed, and every fixed class arises that way because a fixed
+  class is the class of a fixed idele.  A class dies exactly when the idele differs from a norm by a
+  principal idele of the extension fixed by the Galois group, and such a principal idele comes from
+  a unit of the base field, the fixed field of the whole group being the base field.
 * `InverseGalois.CFT.Units.NormIndex` turns the first inequality into a triviality criterion in
   terms of norms.  If the principal ideles together with the norms exhaust the ideles of the base
-  field then every fixed idele class is a norm, because a fixed class is the class of a fixed idele,
-  a fixed idele is an idele of the base field, and passing to classes kills the principal part; so
-  the extension is trivial.  The hypothesis is an exact equality of subgroups, so no topology on the
-  ideles is needed.
+  field then the index they bound is one, so the degree is one and the extension is trivial.  The
+  hypothesis is an exact equality of subgroups, so no topology on the ideles is needed.
 * `InverseGalois.CFT.Units.PowIdele` bounds the index of the `n`-th powers inside the ideles that
   are units outside a finite set of places.  The two subgroups involved are products of local
   subgroups differing only where `n`-th powers were imposed, so their relative index is the product
