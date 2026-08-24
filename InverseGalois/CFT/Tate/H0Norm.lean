@@ -23,6 +23,8 @@ norm.
   zeroth Tate group is a norm.**
 * `InverseGalois.CFT.exists_normHom_eq_nsmul`: **more generally a fixed point multiplied by any
   multiple of that order is a norm.**
+* `InverseGalois.CFT.exists_normHom_of_subsingleton`: **a fixed point is itself a norm when the
+  zeroth Tate group vanishes.**
 
 ## Tags
 
@@ -53,5 +55,11 @@ theorem exists_normHom_eq_nsmul (x : A) (hx : σ x = x) {m : ℕ}
   obtain ⟨c, rfl⟩ := hm
   obtain ⟨y, hy⟩ := exists_normHom_eq_card_nsmul x hx
   exact ⟨c • y, by rw [map_nsmul, hy, smul_smul, mul_comm]⟩
+
+/-- **A fixed point is itself a norm when the zeroth Tate group vanishes**, that group being the
+fixed points modulo the norms. -/
+theorem exists_normHom_of_subsingleton [Subsingleton (tateH0 σ n)] (x : A) (hx : σ x = x) :
+    ∃ y, normHom σ n y = x :=
+  (tateH0.mk_eq_zero_iff (σ := σ) (n := n) x hx).mp (Subsingleton.elim _ _)
 
 end InverseGalois.CFT

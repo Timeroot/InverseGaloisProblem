@@ -138,6 +138,7 @@ import InverseGalois.CFT.Local.HilbertSymbol
 import InverseGalois.CFT.Local.InfiniteAction
 import InverseGalois.CFT.Local.InfiniteFamily
 import InverseGalois.CFT.Local.InfiniteHerbrand
+import InverseGalois.CFT.Local.InfiniteNormIndex
 import InverseGalois.CFT.Local.LegendreHilbert
 import InverseGalois.CFT.Local.NormIndex
 import InverseGalois.CFT.Local.NormalLattice
@@ -581,7 +582,8 @@ it that are available here.
 * `InverseGalois.CFT.Tate.Basic` names those two subquotients the Tate groups of the module, and
   makes them functorial in equivariant homomorphisms.
 * `InverseGalois.CFT.Tate.H0Norm` annihilates the upper Tate group by its own order: a fixed point
-  multiplied by that order, or by any multiple of it, lies in the image of the norm.
+  multiplied by that order, or by any multiple of it, lies in the image of the norm; when the group
+  vanishes altogether every fixed point is itself a norm.
 * `InverseGalois.CFT.Tate.Exact` records the counting principle behind the hexagon: in a cyclic
   exact sequence of six finite commutative groups the orders in odd and in even position have the
   same product.
@@ -901,6 +903,11 @@ it that are available here.
   a real place, where the nontrivial element acts by complex conjugation.  So the units of the
   completion have Herbrand quotient the order of the decomposition group, exactly as at a finite
   place.
+* `InverseGalois.CFT.Local.InfiniteNormIndex` divides that quotient by its denominator.  The
+  decomposition group acts faithfully on the completion, which is a field, so Hilbert's theorem 90
+  makes the lower Tate group of the units vanish and the upper one has order the local degree.
+  Annihilating that group by its order, every multiple of the local degree of an element of the
+  completion fixed by the decomposition group is a local norm.
 * `InverseGalois.CFT.Units.InfiniteIdele` assembles the infinite places above one infinite place of
   the base field into the local factor of the ideles there, by the same induction from the
   decomposition group as at a finite place.
@@ -1064,7 +1071,8 @@ it that are available here.
   contains a uniformizer: Hilbert's theorem 90 writes a unit whose conjugates multiply to one as a
   quotient, the uniformizer corrects the valuation of the representative, and the lower Tate group
   of the units of the valuation ring vanishes.  Their Herbrand quotient is one and both groups are
-  finite, so the upper group vanishes as well.
+  finite, so the upper group vanishes as well.  Read through the definition of that group, the norm
+  map on the units of the valuation ring is surjective onto the fixed ones.
 * `InverseGalois.CFT.Local.PadicSquaresTwo` supplies the excluded prime: a dyadic unit is a square
   exactly when it is congruent to one modulo eight, and every nonzero dyadic number is a square
   times one of eight explicit representatives.

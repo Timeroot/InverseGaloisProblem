@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Mathlib
 import InverseGalois.CFT.Local.UnitHerbrandChain
 import InverseGalois.CFT.Tate.CyclicHilbert90
+import InverseGalois.CFT.Tate.H0Norm
 
 /-!
 # The units of the valuation ring of an unramified extension
@@ -27,6 +28,8 @@ as well.
   vanishes** when the fixed field contains a uniformizer.
 * `InverseGalois.CFT.subsingleton_tateH0_kerUnitValAut`: **`Ĥ⁰` of the units of the valuation ring
   vanishes** under the same hypothesis.
+* `InverseGalois.CFT.exists_normHom_kerUnitVal`: **the norm map on the units of the valuation ring
+  of an unramified extension is surjective onto the fixed ones.**
 
 ## Tags
 
@@ -139,5 +142,16 @@ theorem subsingleton_tateH0_kerUnitValAut [∀ k : ℤ, Finite (gradedAdd A k)]
   have hc0 : Nat.card (tateH0 (kerUnitValAut hv σ) d) = 1 := by
     exact_mod_cast hq
   exact (Nat.card_eq_one_iff_unique.mp hc0).1
+
+/-- **The norm map on the units of the valuation ring of an unramified extension is surjective onto
+the fixed ones.**  The zeroth Tate group is the fixed units modulo the norms, and it vanishes. -/
+theorem exists_normHom_kerUnitVal [∀ k : ℤ, Finite (gradedAdd A k)] (h : HasResidueChar A p e)
+    {σ : G} (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ) {d : ℕ} [NeZero d] (hσ : σ ^ d = 1)
+    (hcard : Nat.card G = d) (π : Aˣ) (hπfix : ∀ g : G, g • (π : A) = (π : A))
+    (hπval : unitVal (Additive.ofMul π) = 1) (x : ↥(unitVal (A := A)).ker)
+    (hx : kerUnitValAut hv σ x = x) :
+    ∃ y, normHom (kerUnitValAut hv σ) d y = x :=
+  haveI := subsingleton_tateH0_kerUnitValAut hv h hgen hσ hcard π hπfix hπval
+  exists_normHom_of_subsingleton x hx
 
 end InverseGalois.CFT
