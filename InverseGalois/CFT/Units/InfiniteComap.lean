@@ -182,6 +182,13 @@ instance instContinuousSMulInfiniteCompletion :
       ((continuous_infiniteCompletionComap k w).comp continuous_fst).mul continuous_snd
     simpa only [Algebra.smul_def, algebraMap_infiniteCompletion] using h
 
+/-- **The completion at an infinite place is a normed algebra over the completion at the place
+below**, the structure map being an isometry. -/
+noncomputable instance instNormedAlgebraInfiniteCompletion :
+    NormedAlgebra (w.comap (algebraMap k K)).Completion w.Completion where
+  norm_smul_le c x := by
+    rw [Algebra.smul_def, norm_mul, algebraMap_infiniteCompletion, norm_infiniteCompletionComap]
+
 /-- The tower of the base field, the completion of the base and the completion of the
 extension. -/
 instance instIsScalarTowerBaseInfiniteCompletion :
