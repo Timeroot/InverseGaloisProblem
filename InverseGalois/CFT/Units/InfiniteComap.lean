@@ -3,6 +3,7 @@ Copyright (c) 2025. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Approximation.Completion
 import InverseGalois.CFT.Local.InfiniteAction
 
 /-!
@@ -198,11 +199,6 @@ instance instIsScalarTowerBaseInfiniteCompletion :
 /-- The tower of the base field, the extension and the completion of the extension. -/
 instance instIsScalarTowerFieldInfiniteCompletion : IsScalarTower k K w.Completion :=
   IsScalarTower.of_algebraMap_eq fun _ => rfl
-
-/-- The image of the extension is dense in its completion at an infinite place. -/
-theorem denseRange_algebraMap_infiniteCompletion :
-    DenseRange (algebraMap K w.Completion) :=
-  UniformSpace.Completion.denseRange_coe (α := WithAbs w.1)
 
 variable (k) in
 /-- Scaling by the base field before completing is scaling by the completion of the base

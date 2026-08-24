@@ -256,6 +256,8 @@ import InverseGalois.CFT.Units.GaloisAction
 import InverseGalois.CFT.Units.Herbrand
 import InverseGalois.CFT.Units.Idele
 import InverseGalois.CFT.Units.IdeleClass
+import InverseGalois.CFT.Units.InfiniteComap
+import InverseGalois.CFT.Units.InfiniteGalois
 import InverseGalois.CFT.Units.InfiniteIdele
 import InverseGalois.CFT.Units.InfiniteOrbit
 import InverseGalois.CFT.Units.LocalEmbedding
