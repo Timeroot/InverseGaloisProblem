@@ -259,7 +259,9 @@ import InverseGalois.CFT.Units.Herbrand
 import InverseGalois.CFT.Units.Idele
 import InverseGalois.CFT.Units.IdeleClass
 import InverseGalois.CFT.Units.IdeleClassFixed
+import InverseGalois.CFT.Units.IdeleFixed
 import InverseGalois.CFT.Units.InfiniteComap
+import InverseGalois.CFT.Units.InfiniteFixed
 import InverseGalois.CFT.Units.InfiniteGalois
 import InverseGalois.CFT.Units.InfiniteIdele
 import InverseGalois.CFT.Units.InfiniteOrbit
@@ -989,8 +991,8 @@ it that are available here.
   them; the embedding is injective because a number field embeds in the completion at an infinite
   place, and it commutes with the Galois action because the transports at all places are induced by
   the automorphism itself.  Multiplicativity of the Herbrand quotient along the resulting short
-  exact sequence then cancels the two products of orders of decomposition groups and leaves the degree of
-  the extension as the Herbrand quotient of the quotient group.  The finiteness that
+  exact sequence then cancels the two products of orders of decomposition groups and leaves the
+  degree of the extension as the Herbrand quotient of the quotient group.  The finiteness that
   multiplicativity requires is not proved by generation, which is unavailable for groups this large,
   but read off from the computation: an infinite group has cardinality zero, so a Herbrand quotient
   that is a positive product of orders already certifies finiteness for the two outer terms, and
@@ -1065,6 +1067,17 @@ it that are available here.
   of an element and therefore norm preserving, hence restricts to the extension; the completion
   above is a splitting field over the completion below, and the elements, and so also the units,
   fixed by the decomposition group are exactly those coming from below.
+* `InverseGalois.CFT.Units.InfiniteFixed` runs the argument of `AdicFixed` at the infinite places.
+  A family of local units of the base field gives one of the extension by taking, at each place, the
+  image of the unit at the place below, and again the families so obtained are exactly the fixed
+  ones, the Galois group permuting the places above a place of the base transitively.
+* `InverseGalois.CFT.Units.IdeleFixed` puts the two halves together.  The Galois action on the
+  ideles is a homomorphism into the automorphism group, so the automorphisms fixing a given idele
+  form a subgroup and being fixed by a generator of a cyclic group is being fixed by the group; and
+  an idele of the base field gives one of the extension, the finiteness condition surviving because
+  the places where the result fails to be a unit of the valuation ring lie above the finitely many
+  places where the given idele does.  The ideles fixed by the Galois group are exactly the ideles of
+  the base field.
 * `InverseGalois.CFT.Units.PowIdele` bounds the index of the `n`-th powers inside the ideles that
   are units outside a finite set of places.  The two subgroups involved are products of local
   subgroups differing only where `n`-th powers were imposed, so their relative index is the product
