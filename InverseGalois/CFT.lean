@@ -256,6 +256,7 @@ import InverseGalois.CFT.Units.InfiniteIdele
 import InverseGalois.CFT.Units.InfiniteOrbit
 import InverseGalois.CFT.Units.LocalEmbedding
 import InverseGalois.CFT.Units.LocalIdele
+import InverseGalois.CFT.Units.PlaceComap
 import InverseGalois.CFT.Units.Places
 import InverseGalois.CFT.Units.PowIdele
 import InverseGalois.CFT.Units.SIdeleClass
