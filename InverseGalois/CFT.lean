@@ -260,6 +260,7 @@ import InverseGalois.CFT.Units.AdicIdeleHerbrand
 import InverseGalois.CFT.Units.AdicOrbit
 import InverseGalois.CFT.Units.AdicSIdeles
 import InverseGalois.CFT.Units.ArchimedeanIdeles
+import InverseGalois.CFT.Units.BaseChangeIndex
 import InverseGalois.CFT.Units.ClassSet
 import InverseGalois.CFT.Units.CompletionFinite
 import InverseGalois.CFT.Units.CompletionGalois
@@ -1096,6 +1097,13 @@ it that are available here.
   which every system of orders vanishing at all but finitely many primes is realised by a single
   element of the field; enlarging the set to the union of its translates makes it stable under the
   Galois group without disturbing that property.
+* `InverseGalois.CFT.Units.BaseChangeIndex` compares the norm index over two base fields.  The norm
+  of an idele of the base field is the degree times that idele, because its conjugates are all
+  itself, and the norm of a principal idele is principal, because the sum of the conjugates of a
+  unit is fixed by the Galois group.  Hence the norm from a larger base field descends to the
+  quotients, and if the degree of the enlargement is prime to the degree of the extension then that
+  descended map is surjective, so the index over the smaller base field divides the index over the
+  larger one.
 * `InverseGalois.CFT.Units.LocalEmbedding` and `InverseGalois.CFT.Units.SIdeleClass` carry out the
   division.  A nonzero element of the field is a unit of every completion, and at a finite place its
   local valuation is minus its order there, so an `S`-unit lands in the units of the valuation ring
