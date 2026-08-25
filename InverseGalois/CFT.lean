@@ -125,6 +125,7 @@ import InverseGalois.CFT.Kummer.Pairing
 import InverseGalois.CFT.Kummer.PowBasis
 import InverseGalois.CFT.Kummer.PowIndex
 import InverseGalois.CFT.Kummer.PowerCriterion
+import InverseGalois.CFT.Kummer.RadicalClosure
 import InverseGalois.CFT.Kummer.RootIndex
 import InverseGalois.CFT.Kummer.SUnitExt
 import InverseGalois.CFT.Kummer.SUnitUnramified
@@ -1748,4 +1749,9 @@ it that are available here.
   two-cocycle of the units killed by an odd integer which is a coboundary at every ramified finite
   place is a coboundary**, which is the form in which the theorem meets a central embedding problem
   with kernel of odd prime order.
+* `InverseGalois.CFT.Kummer.RadicalClosure` provides the field over which the descent from the units
+  to the roots of unity takes place.  A finite extension inside an algebraic closure is contained in
+  a finite normal extension containing an `n`-th root of each of finitely many prescribed elements:
+  the roots exist in the algebraic closure and are algebraic over the base, so adjoining them and
+  passing to the normal closure keeps the extension finite.
 -/
