@@ -115,6 +115,7 @@ import InverseGalois.CFT.Global.ThreeSquaresTwo
 import InverseGalois.CFT.Global.TwoGenerators
 import InverseGalois.CFT.Herbrand
 import InverseGalois.CFT.InertiaAbelian
+import InverseGalois.CFT.InertiaFixedField
 import InverseGalois.CFT.InertiaGeneration
 import InverseGalois.CFT.InertiaRestrict
 import InverseGalois.CFT.InertiaSubgroup
@@ -415,6 +416,9 @@ it that are available here.
   of the ramification indices of the ramified rational primes.
 * `InverseGalois.CFT.InertiaRestrict` restricts inertia to a subfield, and deduces that a prime
   dividing the order of inertia in a compositum already divides it in one of the two factors.
+* `InverseGalois.CFT.InertiaFixedField` reads off the ramified primes of the fixed field of a
+  subgroup of the Galois group: they are the primes some of whose inertia subgroups escape the
+  subgroup.
 * `InverseGalois.CFT.ScalarSemidirect` proves Serre's disjointness lemma in group-theoretic form:
   the semidirect product of `(ℤ/ℓ)ˢ` by the scalar action of `(ℤ/ℓ)ˣ` has abelianization of order
   `ℓ - 1`, hence no quotient of order `ℓ` when `ℓ` is odd.
