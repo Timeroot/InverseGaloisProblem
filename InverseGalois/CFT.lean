@@ -51,6 +51,7 @@ import InverseGalois.CFT.Cyclotomic.PrimeSelection
 import InverseGalois.CFT.Cyclotomic.Ramified
 import InverseGalois.CFT.Cyclotomic.Splitting
 import InverseGalois.CFT.Cyclotomic.SquareRoots
+import InverseGalois.CFT.Cyclotomic.TotallyRamified
 import InverseGalois.CFT.CyclotomicCompositum
 import InverseGalois.CFT.Decomposition
 import InverseGalois.CFT.Disjoint
@@ -120,6 +121,7 @@ import InverseGalois.CFT.InertiaGeneration
 import InverseGalois.CFT.InertiaRestrict
 import InverseGalois.CFT.InertiaSubgroup
 import InverseGalois.CFT.InertiaSurjective
+import InverseGalois.CFT.InertiaTransport
 import InverseGalois.CFT.KroneckerWeber
 import InverseGalois.CFT.Kummer.CentralEmbedding
 import InverseGalois.CFT.Kummer.CocycleDescent
@@ -425,6 +427,9 @@ it that are available here.
 * `InverseGalois.CFT.InertiaSurjective` shows that restriction to a normal subextension maps an
   inertia subgroup onto the inertia subgroup of the prime below it, by comparing the orders of the
   two through the multiplicativity of the ramification index in a tower.
+* `InverseGalois.CFT.InertiaTransport` records that total ramification at a prime is an
+  isomorphism invariant of a number field, so that a field built inside one algebraic closure can
+  be moved into another without losing its ramification.
 * `InverseGalois.CFT.ScalarSemidirect` proves Serre's disjointness lemma in group-theoretic form:
   the semidirect product of `(ℤ/ℓ)ˢ` by the scalar action of `(ℤ/ℓ)ˣ` has abelianization of order
   `ℓ - 1`, hence no quotient of order `ℓ` when `ℓ` is odd.
@@ -437,6 +442,10 @@ it that are available here.
 * `InverseGalois.CFT.Cyclotomic.InertiaOrder` computes the order of inertia at a rational prime
   `p` in `ℚ(ζₙ)` as `φ (p ^ k)`, `p ^ k` the exact power of `p` dividing `n`, and multiplies these
   local orders back up to the global degree `φ n`.
+* `InverseGalois.CFT.Cyclotomic.TotallyRamified` cuts out of the cyclotomic field of prime-power
+  conductor `p ^ k` the cyclic extension of `ℚ` of a prescribed degree dividing `φ (p ^ k)`,
+  unramified away from `p` and totally ramified at `p`, which is the character used to correct the
+  ramification of a solution of an embedding problem at one prime.
 * `InverseGalois.CFT.TameCharacter` builds the tame character of an inertia subgroup, the
   homomorphism to the units of the residue field sending an element to the class of `σ π / π` for
   a uniformizer `π`.  It is injective once the residue characteristic does not divide the order of

@@ -27,6 +27,8 @@ subgroup downstairs, everything that is wanted.
   order of its intersection with the kernel is the order of the subgroup.
 * `InverseGalois.CFT.map_inertia_eq_inertia`: **restriction to a normal subextension maps the
   inertia subgroup of a prime onto the inertia subgroup of the prime below it.**
+* `InverseGalois.CFT.inertia_eq_top_of_inertia_eq_top`: a normal subextension of an extension
+  totally ramified at a prime is itself totally ramified there.
 
 ## Tags
 
@@ -83,6 +85,17 @@ theorem map_inertia_eq_inertia (F : IntermediateField ℚ N) [Normal ℚ ↥F] (
     ← card_inertia_eq_ramificationIdx_span (K := ↥F) hp (P.under (𝓞 ↥F))] at hgt
   exact eq_of_le_of_card_eq (map_inertia_le_inertia F P)
     (Nat.eq_of_mul_eq_mul_right Nat.card_pos hgt)
+
+/-- **A subextension of a totally ramified extension is totally ramified.**  Restriction is
+surjective onto the Galois group of a normal subextension and maps inertia onto inertia, so the
+whole group is reached. -/
+theorem inertia_eq_top_of_inertia_eq_top (F : IntermediateField ℚ N) [Normal ℚ ↥F] (hp : p.Prime)
+    (P : Ideal (𝓞 N)) [P.IsPrime] [P.LiesOver (Ideal.span {(p : ℤ)})]
+    (h : Ideal.inertia Gal(N/ℚ) P = ⊤) :
+    Ideal.inertia Gal(↥F/ℚ) (P.under (𝓞 ↥F)) = ⊤ := by
+  haveI : Normal ℚ N := IsGalois.to_normal
+  rw [← map_inertia_eq_inertia F hp P, h]
+  exact Subgroup.map_top_of_surjective _ (AlgEquiv.restrictNormalHom_surjective N)
 
 end Restrict
 
