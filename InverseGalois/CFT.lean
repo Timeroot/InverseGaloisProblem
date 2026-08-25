@@ -180,6 +180,7 @@ import InverseGalois.CFT.Local.PadicSquares
 import InverseGalois.CFT.Local.NatValuation
 import InverseGalois.CFT.Local.PadicSquaresTwo
 import InverseGalois.CFT.Local.PowClose
+import InverseGalois.CFT.Local.PrimeResidue
 import InverseGalois.CFT.Local.PowNeighbourhood
 import InverseGalois.CFT.Local.RamifiedNormForm
 import InverseGalois.CFT.Local.TraceIntegral
@@ -188,6 +189,7 @@ import InverseGalois.CFT.Local.UnitFiltration
 import InverseGalois.CFT.Local.UnitHerbrandChain
 import InverseGalois.CFT.Local.UnitIndex
 import InverseGalois.CFT.Local.UnitPowIndex
+import InverseGalois.CFT.Local.UnitRootPower
 import InverseGalois.CFT.Local.UnitValuation
 import InverseGalois.CFT.Local.UnramifiedCoboundary
 import InverseGalois.CFT.Local.UnramifiedNormForm
@@ -276,6 +278,7 @@ import InverseGalois.CFT.Tate.TrivialLattice
 import InverseGalois.CFT.Units.ABHN
 import InverseGalois.CFT.Units.ABHNCoboundary
 import InverseGalois.CFT.Units.ABHNLocalPower
+import InverseGalois.CFT.Units.ABHNRamified
 import InverseGalois.CFT.Units.ABHNTorsion
 import InverseGalois.CFT.Units.AdicFixed
 import InverseGalois.CFT.Units.AdicIdeleHerbrand
@@ -1386,6 +1389,16 @@ it that are available here.
   within distance one of one is a positive real or an arbitrary complex number.  The accuracy
   depends on the place and on the prescribed element but not on the element approximating it, so
   finitely many such conditions can be met at once.
+* `InverseGalois.CFT.Local.UnitRootPower` sharpens this at a finite place for an exponent prime to
+  the residue characteristic, where no accuracy at all is needed beyond a congruence modulo the
+  maximal ideal.  The units congruent to one form a pro-`p` group, because raising to the residue
+  characteristic moves such a unit one step up the filtration; so a unit congruent to one becomes,
+  after enough such raisings, a power with the prescribed exponent, and a Bezout relation between
+  the exponent and a power of the residue characteristic turns that into a root of the unit itself.
+  The same pro-`p` property shows that a unit congruent to one whose order is prime to the residue
+  characteristic is trivial, which makes the roots rigid: over a prime residue field every element
+  of the valuation ring is congruent to a rational integer, so a valuation preserving automorphism
+  moves a root of unity of order prime to the residue characteristic by a unit congruent to one.
 * `InverseGalois.CFT.Approximation.PowClass` combines the two: every place supplies an accuracy
   within which an element of its completion differs from a prescribed nonzero one by an `n`-th
   power, and the smallest of the finitely many accuracies, cut down so as to keep the approximating
@@ -1796,6 +1809,19 @@ it that are available here.
   fixes them; when that group is cyclic its norm is therefore the power with exponent its order, and
   **the local condition holds as soon as each value of the cocycle is, in the completion, a power
   with that exponent of a unit fixed by the decomposition group**.
+* `InverseGalois.CFT.Local.PrimeResidue` supplies that arithmetic when the residue field at the
+  place is the prime field.  Every element of the valuation ring is then congruent to a rational
+  integer, so a root of unity of order `n` reduces to an element of the multiplicative group of the
+  prime field killed by `n`; that group is cyclic of order `p - 1`, so the reduction is a `d`-th
+  power there as soon as `n * d` divides `p - 1`, and lifting the congruence back turns it into an
+  equation.  The `d`-th root obtained is again a root of unity of order prime to the residue
+  characteristic, hence fixed by every valuation preserving automorphism.
+* `InverseGalois.CFT.Units.ABHNRamified` reads this at a place of a number field, where the
+  decomposition group acts by valuation preserving automorphisms of the completion: **a two-cocycle
+  with values in the roots of unity of the base field and killed by an odd integer is a coboundary,
+  as soon as every ramified place has cyclic decomposition group, prime residue field, and residue
+  characteristic congruent to one modulo the product of the order of the cocycle and the order of
+  that group**.
 * `InverseGalois.CFT.Kummer.CentralEmbedding` puts those pieces together.  The factor set of a
   section of a central extension with kernel of order `n`, transported into the units of a base
   field containing a primitive `n`-th root of unity, is a two-cocycle killed by `n`; if it is a
