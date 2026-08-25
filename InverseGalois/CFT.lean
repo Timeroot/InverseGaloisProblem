@@ -56,6 +56,7 @@ import InverseGalois.CFT.Disjoint
 import InverseGalois.CFT.GaloisDescent
 import InverseGalois.CFT.GroupCohomology.Classification
 import InverseGalois.CFT.GroupCohomology.Cohomologous
+import InverseGalois.CFT.GroupCohomology.CoprimeCoboundary
 import InverseGalois.CFT.GroupCohomology.CoprimeSplit
 import InverseGalois.CFT.GroupCohomology.Corestriction
 import InverseGalois.CFT.GroupCohomology.Cyclic
@@ -267,6 +268,7 @@ import InverseGalois.CFT.Tate.Surjection
 import InverseGalois.CFT.Tate.Trivial
 import InverseGalois.CFT.Tate.TrivialLattice
 import InverseGalois.CFT.Units.ABHN
+import InverseGalois.CFT.Units.ABHNTorsion
 import InverseGalois.CFT.Units.AdicFixed
 import InverseGalois.CFT.Units.AdicIdeleHerbrand
 import InverseGalois.CFT.Units.AdicOrbit
@@ -1732,4 +1734,18 @@ it that are available here.
   section homomorphism over a subgroup whose index is coprime to the order of the kernel admits a
   section homomorphism outright: the transfer of the difference between the identity and the given
   section is the power map on the kernel, and inverting that power map turns it into a retraction.
+* `InverseGalois.CFT.GroupCohomology.CoprimeCoboundary` supplies the local hypotheses of the
+  Albert-Brauer-Hasse-Noether theorem at the places where they are free of arithmetic.  Summing the
+  cocycle identity over the third variable exhibits the order of the group times a two-cocycle as a
+  coboundary, so **a two-cocycle killed by an integer coprime to the order of the group is a
+  coboundary**; at an archimedean place of a `p`-extension with `p` odd the decomposition group has
+  order at most two and the hypothesis is automatic.
+* `InverseGalois.CFT.Units.ABHNTorsion` spends that observation, together with the vanishing at an
+  unramified finite place, on the local hypotheses of the Albert-Brauer-Hasse-Noether theorem.  A
+  unit killed by a nonzero integer has valuation zero, so at an unramified place the local component
+  of the cocycle is a two-cocycle of the cyclic decomposition group with values in the units of the
+  valuation ring; at an archimedean place the decomposition group has order one or two.  Hence **a
+  two-cocycle of the units killed by an odd integer which is a coboundary at every ramified finite
+  place is a coboundary**, which is the form in which the theorem meets a central embedding problem
+  with kernel of odd prime order.
 -/

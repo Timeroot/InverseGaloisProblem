@@ -819,9 +819,116 @@ nontrivial complex character (its abelianization is a nontrivial finite commutat
 characters separate the elements of such a group), and the quotient by the kernel of a character is
 a finite subgroup of `ℂ^×`, hence cyclic; the fixed field of the kernel is the `K'` above.
 
-What remains is the second inequality from the §6 count, and then reciprocity and the Brauer-group
-sequence of Milne §7 — after which ABHN, and with it Scholz–Reichardt's
-`IsFrattiniCentralStepSolvable ℓ`, is reachable.
+What remains of the §6 count is recorded above; ABHN itself, however, does not wait for it — see
+§0.11.
+
+---
+
+## 0.11 Status (2026-08-25) — Albert–Brauer–Hasse–Noether, and the shape it takes for Scholz
+
+ABHN is in the tree. It did **not** need the second inequality, reciprocity, or the Brauer-group
+exact sequence of Milne §7: the cohomological form of the theorem is exactly the injectivity of
+`H²(G, K^×) → H²(G, I_K)` together with the vanishing of `H²` of the ideles place by place, and
+the injectivity is the long exact sequence of
+
+```text
+1 → K^× → I_K → C_K → 1
+```
+
+fed by `H¹(G, C_K) = 0`, which the first inequality already gives — `Units/IdeleClassH1.lean` for a
+cyclic group and `Units/IdeleClassH1Full.lean` in general, via dévissage along a solvable series.
+So the statement is
+
+```lean
+InverseGalois.CFT.injective_map_H2_globalUnits (k K) :          -- Units/IdeleClassSES.lean
+  Function.Injective ((map … (globalUnitsToIdele k K) …).hom)
+```
+
+and, combined with the place-by-place statement `exists_coboundary_idele`
+(`Units/IdeleCoboundary.lean`, a two-cocycle of the ideles which is a coboundary at every place is
+a coboundary — the restricted-product bookkeeping is `Units/IdeleClass.lean`):
+
+```lean
+InverseGalois.CFT.exists_sub_add_eq_globalUnits                 -- Units/ABHN.lean
+    {a : Gal(K/k) → Gal(K/k) → Additive Kˣ}
+    (ha  : ∀ x y z, globalUnitsAut x (a y z) + a x (y * z) = a (x * y) z + a x y)
+    (hinf : ∀ w : InfinitePlace K, … the image of `a` in `w.Completionˣ` is a coboundary …)
+    (hfin : ∀ v : HeightOneSpectrum (𝓞 K), … the image of `a` in `(v.adicCompletion K)ˣ` is … ) :
+  ∃ b, ∀ x y, a x y = globalUnitsAut x (b y) - b (x * y) + b x
+```
+
+**The local hypotheses, and how many of them are real.** For the Scholz–Reichardt step the cocycle
+is killed by an odd prime `ℓ`, and then almost all of `hinf`/`hfin` is free.
+
+* *Archimedean places.* `GroupCohomology/CoprimeCoboundary.lean` proves that summing the cocycle
+  identity over its third variable exhibits `|G| • f` as the coboundary of `y ↦ ∑ z, f y z`
+  (`nsmul_card_eq_of_isCocycle₂`), so a Bézout combination gives
+
+  ```lean
+  InverseGalois.CFT.exists_sub_add_eq_of_coprime (φ : G →* AddAut M)
+      (hcop : Nat.Coprime (Nat.card G) n) (hf : … cocycle …) (hn : ∀ x y, n • f x y = 0) :
+    ∃ c, ∀ x y, f x y = φ x (c y) - c (x * y) + c x
+  ```
+
+  Mathlib's `NumberField.InfinitePlace.nat_card_stabilizer_eq_one_or_two` says the decomposition
+  group at an archimedean place has order one or two, which is coprime to an odd `n`.
+* *Unramified finite places.* A unit killed by a nonzero integer has valuation zero, because the
+  valuation lands in the torsion-free group `ℤ` (`mem_ker_unitVal_of_nsmul_eq_zero`). So the local
+  component is a two-cocycle of the decomposition group with values in the units of the valuation
+  ring, and there `Local/UnramifiedCoboundary.lean` already had the vanishing: the decomposition
+  group is cyclic and the norm on the units of the valuation ring is surjective.
+* *Ramified finite places.* These are the only ones left, and they are precisely where Serre's
+  condition `(S_{N+1})` — `p ≡ 1 mod ℓ^{N+1}`, residue degree one, tame — is spent.
+
+The assembly of those three observations is the new module `Units/ABHNTorsion.lean`, whose main
+statement is the form of ABHN that a central embedding problem with kernel of odd prime order meets:
+
+```lean
+InverseGalois.CFT.exists_sub_add_eq_globalUnits_of_odd {n : ℕ} (hn : Odd n)
+    {a : Gal(K/k) → Gal(K/k) → Additive Kˣ}
+    (hpow : ∀ x y, n • a x y = 0)
+    (ha   : ∀ x y z, globalUnitsAut x (a y z) + a x (y * z) = a (x * y) z + a x y)
+    (hram : ∀ v, ¬ Algebra.IsUnramifiedAt (𝓞 k) v.asIdeal → … local coboundary at `v` …) :
+  ∃ b, ∀ x y, a x y = globalUnitsAut x (b y) - b (x * y) + b x
+```
+
+It rests on the equivariance of the local embeddings for the decomposition group,
+`smulUnitsAut_adicUnitHom` and `smulUnitsAut_infiniteUnitHom`, also in that module.
+
+**Getting back down to `μ_ℓ`.** ABHN is a statement about `K^×`, and the obstruction of the
+embedding problem lives in `H²(G, ℤ/ℓ)`. The two are matched by the Kummer sequence, which is
+`Kummer/InflationRootsOfUnity.lean`: Hilbert 90 turns a coboundary in `K^×` into an element `β`
+with `g • β / β = b g ^ n` (`exists_pow_eq_of_isMulCoboundary₂`), and over an extension containing
+an `n`-th root of `β` the inflated cocycle is cobounded by a cochain of `n`-th roots of unity
+(`exists_cochain_pow_eq_one`). Since `H²(D, μ_ℓ) → H²(D, K_w^×)` is injective for the local
+decomposition groups, nothing is lost in the passage.
+
+**Getting back down from `ℚ(μ_ℓ)`.** The Kummer argument wants the `ℓ`-th roots of unity in the
+base, and the degree of that adjunction divides `ℓ - 1`, hence is coprime to `ℓ`. The descent is
+group-theoretic, `GroupCohomology/CoprimeSplit.lean`:
+
+```lean
+InverseGalois.CFT.exists_splitting_of_coprime_index
+    (π : E →* G) (hπ : Function.Surjective π) (hc : π.ker ≤ Subgroup.center E)
+    (hcop : Nat.Coprime U.index (Nat.card π.ker)) (s : U →* E) (hs : ∀ u, π (s u) = u) :
+  ∃ σ : G →* E, ∀ g, π (σ g) = g
+```
+
+by the transfer: the transfer of the difference between the identity of `E` and the given section
+is the `U.index`-th power map on the kernel, which is bijective there, so inverting it turns the
+transfer into a retraction and dividing the identity by that retraction kills the kernel.
+
+**What is still missing for `IsFrattiniCentralStepSolvable ℓ`.** The remaining inputs are all on
+the ramified side and all local:
+
+1. local liftability at a ramified tame `p` satisfying `(S_{N+1})`, where `Gal(E/ℚ_p) ≅ (ℤ/ℓ^N)²`;
+2. the gluing of the local characters into one global condition;
+3. the radical closure — given `β ∈ K^×` and `n`, a finite normal extension `M/k` containing an
+   `n`-th root of `β`, which is `IntermediateField.normalClosure` applied to `K(α)` with
+   `Polynomial.monic_X_pow_sub_C` supplying integrality;
+4. the conversion of the resulting `μ_ℓ`-valued cochain into a solution of the embedding problem,
+   the improper-to-proper upgrade through the Frattini kernel (`Scholz/FrattiniStep.lean` already
+   has `exists_section_of_not_le_frattini`), and the preservation of `(S_N)`.
 
 ---
 
