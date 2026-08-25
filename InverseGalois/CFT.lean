@@ -61,7 +61,9 @@ import InverseGalois.CFT.GroupCohomology.Cyclic
 import InverseGalois.CFT.GroupCohomology.CyclicH1
 import InverseGalois.CFT.GroupCohomology.CyclicH2
 import InverseGalois.CFT.GroupCohomology.CyclicSurjective
+import InverseGalois.CFT.GroupCohomology.H1Transport
 import InverseGalois.CFT.GroupCohomology.OfCocycle
+import InverseGalois.CFT.GroupCohomology.SylowRes
 import InverseGalois.CFT.GroupCohomology.ToCocycle
 import InverseGalois.CFT.Global.DavenportCassels
 import InverseGalois.CFT.Global.DescentTools
@@ -280,9 +282,12 @@ import InverseGalois.CFT.Units.HasseNorm
 import InverseGalois.CFT.Units.Herbrand
 import InverseGalois.CFT.Units.Idele
 import InverseGalois.CFT.Units.IdeleClass
+import InverseGalois.CFT.Units.IdeleClassComap
 import InverseGalois.CFT.Units.IdeleClassFixed
 import InverseGalois.CFT.Units.IdeleClassH1
+import InverseGalois.CFT.Units.IdeleClassH1Full
 import InverseGalois.CFT.Units.IdeleClassIndex
+import InverseGalois.CFT.Units.IdeleClassTower
 import InverseGalois.CFT.Units.IdeleFixed
 import InverseGalois.CFT.Units.IdeleNorm
 import InverseGalois.CFT.Units.IdeleNormTower
@@ -1633,4 +1638,43 @@ it that are available here.
   nonarchimedean local field in the sense of the valuative formalism: its norm is compatible with
   its valuative relation, its topology is the valuative one, and its ring of integers is the ring
   of `p`-adic integers, a compact complete discrete valuation ring with finite residue field.
+* `InverseGalois.CFT.GroupCohomology.CyclicH1` is the cohomological form of Hilbert's theorem 90 for
+  an abstract finite cyclic group.  A `1`-cocycle is determined by its value at a generator, because
+  the cocycle relation propagates that value along the powers of the generator; the value therefore
+  lies in the kernel of the norm operator, and the cocycle is a coboundary as soon as that value is
+  in the image of the generator minus one.  So the first cohomology vanishes whenever the kernel of
+  the norm operator is the image of the generator minus one.
+* `InverseGalois.CFT.Units.IdeleRep` assembles the Galois actions on the units, on the ideles and on
+  the idele classes into `ℤ`-linear representations of the whole Galois group, which is the shape
+  the machinery of group cohomology wants; an action by additive automorphisms is a representation
+  because an additive map is automatically `ℤ`-linear.  Enlarging the base field leaves the action
+  untouched, because an automorphism acts through its underlying map of fields.
+* `InverseGalois.CFT.Units.IdeleClassH1` reads the first inequality and the Herbrand quotient of the
+  idele classes as the vanishing of the first cohomology of a cyclic extension.  The group `Ĥ⁻¹` of
+  the idele classes is trivial because the Herbrand quotient and the order of `Ĥ⁰` are both the
+  degree, and the norm operator of the representation is the Tate norm operator of a generator, so
+  the two statements match up.
+* `InverseGalois.CFT.GroupCohomology.H1Transport` provides the two dévissage tools for the first
+  cohomology at the level of cocycles: an isomorphism of groups compatible with an isomorphism of
+  modules carries vanishing across, and a surjection of groups whose kernel acts trivially on a
+  submodule that is exactly the invariants of the kernel lets the vanishing be assembled from the
+  quotient and the kernel.
+* `InverseGalois.CFT.Units.IdeleClassComap` puts the idele classes of a subfield inside the idele
+  classes of a Galois extension.  The map is injective because a unit fixed by the whole Galois
+  group is a unit of the subfield, and its image is exactly the part fixed by the Galois group over
+  the subfield, because a fixed class is the class of a fixed idele and a fixed idele comes from the
+  subfield.  Fixing a class rather than an idele needs Hilbert's theorem 90 for the whole group,
+  which is proved alongside it in `InverseGalois.CFT.Units.IdeleClassFixed`.
+* `InverseGalois.CFT.Units.IdeleClassTower` is the dévissage of the first cohomology of the idele
+  class group along a tower: the vanishing over the middle field and the vanishing of the top over
+  the middle give the vanishing of the top over the base.
+* `InverseGalois.CFT.GroupCohomology.SylowRes` reduces the vanishing of a positive-degree cohomology
+  class of a finite group to its vanishing on subgroups of index prime to each prime dividing the
+  order, by playing the annihilation by the order against the annihilation by the index that
+  restriction and corestriction provide.
+* `InverseGalois.CFT.Units.IdeleClassH1Full` removes the cyclicity hypothesis altogether.  A group
+  of prime-power order has a normal subgroup of prime index, so the tower dévissage and induction on
+  the exponent settle every extension of prime-power degree; and restriction to a Sylow subgroup is
+  the cohomology over its fixed field, whose degree is a prime power.  **The first cohomology of the
+  idele class group of an arbitrary Galois extension of number fields vanishes.**
 -/
