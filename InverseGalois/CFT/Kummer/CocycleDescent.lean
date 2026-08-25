@@ -26,7 +26,8 @@ extension.
 
 * `InverseGalois.CFT.exists_intermediateField_cochain_of_isMulCoboundary`: **a cocycle of `n`-th
   roots of unity that is a coboundary in the big field becomes, after a radical extension, the
-  coboundary of a cochain of `n`-th roots of unity of the base field.**
+  coboundary of a cochain of `n`-th roots of unity of the base field.**  The radical extension
+  contains the given one, and the map of Galois groups is the restriction of automorphisms.
 
 ## Tags
 
@@ -37,7 +38,7 @@ namespace InverseGalois.CFT
 
 open IntermediateField
 
-variable {k : Type} [Field k] [NumberField k]
+variable {k Ω : Type} [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosure k Ω]
 
 set_option synthInstance.maxHeartbeats 1000000 in
 set_option maxHeartbeats 1000000 in
@@ -48,16 +49,19 @@ cochain valued in the `n`-th roots of unity of `k` itself.**
 Hilbert 90 converts the coboundary datum `b` into an element `β` of `Kˣ` with `σ β / β = (b σ) ^ n`;
 adjoining an `n`-th root of `β` and taking the Galois closure gives `M`, over which `b` may be
 rescaled to take values in `μ_n`.  As `k` contains a primitive `n`-th root of unity, `μ_n` already
-lies in `k`, giving the `kˣ`-valued cochain `c`. -/
+lies in `k`, giving the `kˣ`-valued cochain `c`.  The extension `M` contains `K`, and the
+homomorphism relating their Galois groups is the restriction of automorphisms. -/
 theorem exists_intermediateField_cochain_of_isMulCoboundary
     {n : ℕ} [NeZero n] {ζ : k} (hζ : IsPrimitiveRoot ζ n)
-    {K : IntermediateField k (AlgebraicClosure k)} [NumberField ↥K] [IsGalois k ↥K]
+    {K : IntermediateField k Ω} [NumberField ↥K] [IsGalois k ↥K]
     {a : Gal(↥K/k) → Gal(↥K/k) → kˣ} (hpow : ∀ x y, a x y ^ n = 1)
     {b : Gal(↥K/k) → (↥K)ˣ}
     (hb : ∀ g h : Gal(↥K/k), g • b h / b (g * h) * b g =
       Units.map (algebraMap k ↥K : k →* ↥K) (a g h)) :
-    ∃ M : IntermediateField k (AlgebraicClosure k), NumberField ↥M ∧ IsGalois k ↥M ∧
+    ∃ M : IntermediateField k Ω, K ≤ M ∧ NumberField ↥M ∧ IsGalois k ↥M ∧
       ∃ ρ : Gal(↥M/k) →* Gal(↥K/k), Function.Surjective ρ ∧
+        (∀ (g : Gal(↥M/k)) (x : Ω) (hx : x ∈ K) (hx' : x ∈ M),
+          ((ρ g ⟨x, hx⟩ : ↥K) : Ω) = ((g ⟨x, hx'⟩ : ↥M) : Ω)) ∧
         ∃ c : Gal(↥M/k) → kˣ, (∀ g, c g ^ n = 1) ∧
           ∀ g h, a (ρ g) (ρ h) = c g * c h * (c (g * h))⁻¹ := by
   classical
@@ -65,8 +69,8 @@ theorem exists_intermediateField_cochain_of_isMulCoboundary
     (a := fun p => Units.map (algebraMap k ↥K : k →* ↥K) (a p.1 p.2))
     (fun p => by rw [← map_pow, hpow, map_one]) hb
   obtain ⟨M, hKM, hMfin, hMgal, hroot⟩ :=
-    exists_isGalois_intermediateField_forall_pow_eq (k := k) (Ω := AlgebraicClosure k) K
-      (fun _ : Unit => ((β : ↥K) : AlgebraicClosure k)) (NeZero.ne n)
+    exists_isGalois_intermediateField_forall_pow_eq (k := k) (Ω := Ω) K
+      (fun _ : Unit => ((β : ↥K) : Ω)) (NeZero.ne n)
   haveI : Module.Finite k ↥M := hMfin
   haveI : NumberField ↥M := NumberField.of_module_finite k ↥M
   haveI := hMgal
@@ -83,14 +87,18 @@ theorem exists_intermediateField_cochain_of_isMulCoboundary
   set αU : (↥M)ˣ := Units.mk0 αM hαne with hαU
   have hαUpow : αU ^ n = Units.map (algebraMap ↥K ↥M : ↥K →* ↥M) β := by
     refine Units.ext (Subtype.ext ?_)
-    show (αM : AlgebraicClosure k) ^ n = ((β : ↥K) : AlgebraicClosure k)
+    show (αM : Ω) ^ n = ((β : ↥K) : Ω)
     exact hαpow
   obtain ⟨b', hb'pow, hb'⟩ := exists_cochain_pow_eq_one (k := k) (K := ↥K) (M := ↥M) (n := n)
     (a := fun p => Units.map (algebraMap k ↥K : k →* ↥K) (a p.1 p.2)) hb hβ αU hαUpow
   choose c hcpow hcmap using fun g : Gal(↥M/k) =>
     exists_units_algebraMap_eq_of_pow_eq_one (k := k) (M := ↥M) hζ (hb'pow g)
-  refine ⟨M, inferInstance, inferInstance, AlgEquiv.restrictNormalHom ↥K,
-    AlgEquiv.restrictNormalHom_surjective ↥M, c, hcpow, fun g h => ?_⟩
+  have hres : ∀ (g : Gal(↥M/k)) (x : Ω) (hx : x ∈ K) (hx' : x ∈ M),
+      ((AlgEquiv.restrictNormalHom ↥K g ⟨x, hx⟩ : ↥K) : Ω) = ((g ⟨x, hx'⟩ : ↥M) : Ω) := by
+    intro g x hx hx'
+    exact congrArg Subtype.val (AlgEquiv.restrictNormal_commutes (E := ↥K) g (⟨x, hx⟩ : ↥K))
+  refine ⟨M, hKM, inferInstance, inferInstance, AlgEquiv.restrictNormalHom ↥K,
+    AlgEquiv.restrictNormalHom_surjective ↥M, hres, c, hcpow, fun g h => ?_⟩
   have hinj : Function.Injective (Units.map (algebraMap k ↥M : k →* ↥M)) :=
     Units.map_injective (algebraMap k ↥M).injective
   refine hinj ?_

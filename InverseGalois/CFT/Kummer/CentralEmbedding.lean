@@ -24,6 +24,11 @@ the ramified finite places; Kummer theory then descends the trivialising cochain
 roots of unity over a larger field `M`; and correcting the section by that cochain produces the
 homomorphism, which is surjective because the kernel lies in the Frattini subgroup.
 
+## Main definitions
+
+* `InverseGalois.CFT.HasProperSolution`: the embedding problem has a solution which is a Galois
+  extension of the given one and whose surjection lifts the given one.
+
 ## Main results
 
 * `InverseGalois.CFT.exists_surjective_hom_of_isMulCoboundary`: **a central Frattini embedding
@@ -51,7 +56,18 @@ open IsDedekindDomain MulAction NumberField IntermediateField
 
 namespace InverseGalois.CFT
 
-variable {k : Type} [Field k] [NumberField k]
+variable {k Ω : Type} [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosure k Ω]
+
+/-- **A proper solution of the embedding problem** posed by a surjection `π : Gal(K/k) → H` and a
+surjection `f : G → H` of finite groups: a finite Galois extension `M/k` containing `K`, together
+with a surjection of `Gal(M/k)` onto `G` lifting `π` along the restriction of automorphisms. -/
+def HasProperSolution (K : IntermediateField k Ω) {G H : Type} [Group G] [Group H]
+    (f : G →* H) (π : Gal(↥K/k) →* H) : Prop :=
+  ∃ M : IntermediateField k Ω, K ≤ M ∧ NumberField ↥M ∧ IsGalois k ↥M ∧
+    ∃ ρ : Gal(↥M/k) →* Gal(↥K/k), Function.Surjective ρ ∧
+      (∀ (g : Gal(↥M/k)) (x : Ω) (hx : x ∈ K) (hx' : x ∈ M),
+        ((ρ g ⟨x, hx⟩ : ↥K) : Ω) = ((g ⟨x, hx'⟩ : ↥M) : Ω)) ∧
+      ∃ φ : Gal(↥M/k) →* G, Function.Surjective φ ∧ ∀ g, f (φ g) = π (ρ g)
 
 set_option synthInstance.maxHeartbeats 1000000 in
 set_option maxHeartbeats 1000000 in
@@ -66,7 +82,7 @@ theorem exists_surjective_hom_of_isMulCoboundary
     {G H : Type} [Group G] [Group H] [Finite G] {f : G →* H}
     (hZ : f.ker ≤ Subgroup.center G) (hfr : f.ker ≤ frattini G)
     (hcard : Nat.card ↥f.ker = n)
-    {K : IntermediateField k (AlgebraicClosure k)} [NumberField ↥K] [IsGalois k ↥K]
+    {K : IntermediateField k Ω} [NumberField ↥K] [IsGalois k ↥K]
     {π : Gal(↥K/k) →* H} (hπ : Function.Surjective π)
     {χ : ↥f.ker →* kˣ} (hχinj : Function.Injective χ)
     (hχsurj : ∀ y : kˣ, y ^ n = 1 → ∃ z : ↥f.ker, χ z = y)
@@ -75,13 +91,12 @@ theorem exists_surjective_hom_of_isMulCoboundary
     (hb : ∀ g h : Gal(↥K/k), g • b h / b (g * h) * b g =
       Units.map (algebraMap k ↥K : k →* ↥K)
         (χ ⟨sectionFactorSet t (π g) (π h), sectionFactorSet_mem_ker f ht _ _⟩)) :
-    ∃ M : IntermediateField k (AlgebraicClosure k), NumberField ↥M ∧ IsGalois k ↥M ∧
-      ∃ φ : Gal(↥M/k) →* G, Function.Surjective φ := by
+    HasProperSolution K f π := by
   classical
   have hapow : ∀ x y : Gal(↥K/k),
       χ ⟨sectionFactorSet t (π x) (π y), sectionFactorSet_mem_ker f ht _ _⟩ ^ n = 1 :=
     fun x y => charFactorSet_pow_eq_one f hcard ht χ π x y
-  obtain ⟨M, hMnf, hMgal, ρ, hρ, c, hcpow, hc⟩ :=
+  obtain ⟨M, hKM, hMnf, hMgal, ρ, hρ, hρres, c, hcpow, hc⟩ :=
     exists_intermediateField_cochain_of_isMulCoboundary hζ hapow hb
   haveI := hMnf
   haveI := hMgal
@@ -96,9 +111,9 @@ theorem exists_surjective_hom_of_isMulCoboundary
       rw [map_mul, map_mul, map_inv, hcZ, hcZ, hcZ]
       exact hc x y
     exact congrArg Subtype.val hker
-  obtain ⟨φ, hφsurj, -⟩ := exists_surjective_hom_comp_eq_of_sectionFactorSet_eq f hZ hfr
+  obtain ⟨φ, hφsurj, hφcomp⟩ := exists_surjective_hom_comp_eq_of_sectionFactorSet_eq f hZ hfr
     (π.comp ρ) (hπ.comp hρ) ht (c := fun x => (cZ x : G)) (fun x => (cZ x).2) hcob
-  exact ⟨M, hMnf, hMgal, φ, hφsurj⟩
+  exact ⟨M, hKM, hMnf, hMgal, ρ, hρ, hρres, φ, hφsurj, hφcomp⟩
 
 set_option synthInstance.maxHeartbeats 1000000 in
 set_option maxHeartbeats 1000000 in
@@ -112,7 +127,7 @@ theorem exists_surjective_hom_of_forall_ramified
     {G H : Type} [Group G] [Group H] [Finite G] {f : G →* H}
     (hZ : f.ker ≤ Subgroup.center G) (hfr : f.ker ≤ frattini G)
     (hcard : Nat.card ↥f.ker = n)
-    {K : IntermediateField k (AlgebraicClosure k)} [NumberField ↥K] [IsGalois k ↥K]
+    {K : IntermediateField k Ω} [NumberField ↥K] [IsGalois k ↥K]
     {π : Gal(↥K/k) →* H} (hπ : Function.Surjective π)
     {χ : ↥f.ker →* kˣ} (hχinj : Function.Injective χ)
     (hχsurj : ∀ y : kˣ, y ^ n = 1 → ∃ z : ↥f.ker, χ z = y)
@@ -123,8 +138,7 @@ theorem exists_surjective_hom_of_forall_ramified
         Additive.ofMul (adicUnitHom v (Units.map (algebraMap k ↥K : k →* ↥K)
           (χ ⟨sectionFactorSet t (π s.1) (π u.1), sectionFactorSet_mem_ker f ht _ _⟩)))
           = smulUnitsAut s (c u) - c (s * u) + c s) :
-    ∃ M : IntermediateField k (AlgebraicClosure k), NumberField ↥M ∧ IsGalois k ↥M ∧
-      ∃ φ : Gal(↥M/k) →* G, Function.Surjective φ := by
+    HasProperSolution K f π := by
   classical
   set a : Gal(↥K/k) → Gal(↥K/k) → kˣ := fun x y =>
     χ ⟨sectionFactorSet t (π x) (π y), sectionFactorSet_mem_ker f ht _ _⟩ with hadef
@@ -191,15 +205,14 @@ theorem exists_surjective_hom_of_forall_ramified_lift
     {G H : Type} [Group G] [Group H] [Finite G] {f : G →* H}
     (hZ : f.ker ≤ Subgroup.center G) (hfr : f.ker ≤ frattini G)
     (hcard : Nat.card ↥f.ker = n)
-    {K : IntermediateField k (AlgebraicClosure k)} [NumberField ↥K] [IsGalois k ↥K]
+    {K : IntermediateField k Ω} [NumberField ↥K] [IsGalois k ↥K]
     {π : Gal(↥K/k) →* H} (hπ : Function.Surjective π)
     {χ : ↥f.ker →* kˣ} (hχinj : Function.Injective χ)
     (hχsurj : ∀ y : kˣ, y ^ n = 1 → ∃ z : ↥f.ker, χ z = y)
     {t : H → G} (ht : ∀ h, f (t h) = h)
     (hlift : ∀ v : HeightOneSpectrum (𝓞 ↥K), ¬ Algebra.IsUnramifiedAt (𝓞 k) v.asIdeal →
       ∃ σ : ↥(stabilizer Gal(↥K/k) v) →* G, ∀ s, f (σ s) = π s.1) :
-    ∃ M : IntermediateField k (AlgebraicClosure k), NumberField ↥M ∧ IsGalois k ↥M ∧
-      ∃ φ : Gal(↥M/k) →* G, Function.Surjective φ := by
+    HasProperSolution K f π := by
   refine exists_surjective_hom_of_forall_ramified hn hζ hZ hfr hcard hπ hχinj hχsurj ht
     (fun v hv => ?_)
   obtain ⟨σ, hσ⟩ := hlift v hv
@@ -218,7 +231,7 @@ theorem exists_surjective_hom_of_forall_ramified_pow
     {G H : Type} [Group G] [Group H] [Finite G] {f : G →* H}
     (hZ : f.ker ≤ Subgroup.center G) (hfr : f.ker ≤ frattini G)
     (hcard : Nat.card ↥f.ker = n)
-    {K : IntermediateField k (AlgebraicClosure k)} [NumberField ↥K] [IsGalois k ↥K]
+    {K : IntermediateField k Ω} [NumberField ↥K] [IsGalois k ↥K]
     {π : Gal(↥K/k) →* H} (hπ : Function.Surjective π)
     {χ : ↥f.ker →* kˣ} (hχinj : Function.Injective χ)
     (hχsurj : ∀ y : kˣ, y ^ n = 1 → ∃ z : ↥f.ker, χ z = y)
@@ -230,8 +243,7 @@ theorem exists_surjective_hom_of_forall_ramified_pow
           (∀ σ : ↥(stabilizer Gal(↥K/k) v), σ • (y : v.adicCompletion ↥K) = y) ∧
             y ^ Nat.card ↥(stabilizer Gal(↥K/k) v)
               = adicUnitHom v (Units.map (algebraMap k ↥K : k →* ↥K) z)) :
-    ∃ M : IntermediateField k (AlgebraicClosure k), NumberField ↥M ∧ IsGalois k ↥M ∧
-      ∃ φ : Gal(↥M/k) →* G, Function.Surjective φ := by
+    HasProperSolution K f π := by
   refine exists_surjective_hom_of_forall_ramified hn hζ hZ hfr hcard hπ hχinj hχsurj ht
     (fun v hv => ?_)
   obtain ⟨g, hg, hroot⟩ := hram v hv

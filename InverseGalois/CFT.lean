@@ -58,6 +58,7 @@ import InverseGalois.CFT.GroupCohomology.Classification
 import InverseGalois.CFT.GroupCohomology.CentralLift
 import InverseGalois.CFT.GroupCohomology.Cohomologous
 import InverseGalois.CFT.GroupCohomology.CoprimeCoboundary
+import InverseGalois.CFT.GroupCohomology.CoprimeDescent
 import InverseGalois.CFT.GroupCohomology.CoprimeSplit
 import InverseGalois.CFT.GroupCohomology.Corestriction
 import InverseGalois.CFT.GroupCohomology.Cyclic
@@ -1836,4 +1837,11 @@ it that are available here.
   coboundary is the factor set.  It is also discharged from the arithmetic hypothesis of the
   previous file, which asks only that the decomposition group at each ramified place be cyclic and
   that the roots of unity of the base field be locally powers with exponent its order.
+* `InverseGalois.CFT.GroupCohomology.CoprimeDescent` carries the solution back down from the
+  cyclotomic field to the base.  The pullback of the two surjections defining an embedding problem is
+  a central extension of the source of the given homomorphism by the kernel, a solution of the
+  problem restricted to a subgroup is exactly a section of that extension over the subgroup, and the
+  transfer extends such a section whenever the index of the subgroup is coprime to the order of the
+  kernel; hence **an embedding problem with central kernel which is solved over a subgroup of
+  coprime index is solved**, properly so when the kernel lies in the Frattini subgroup.
 -/
