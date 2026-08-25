@@ -215,6 +215,7 @@ import InverseGalois.CFT.Tate.CyclicHilbert90
 import InverseGalois.CFT.Tate.CyclicInduced
 import InverseGalois.CFT.Tate.Exact
 import InverseGalois.CFT.Tate.Family
+import InverseGalois.CFT.Tate.FamilyCoboundary
 import InverseGalois.CFT.Tate.FamilyFree
 import InverseGalois.CFT.Tate.FamilyNorm
 import InverseGalois.CFT.Tate.FamilyOrbit
@@ -831,6 +832,13 @@ it that are available here.
   one.  This is the passage from local to global that the vanishing of a Tate group is too crude to
   supply: at the places in a finite exceptional set only some of the local elements are norms, and
   the assembly has to keep track of which.
+* `InverseGalois.CFT.Tate.FamilyCoboundary` is the same passage from local to global one degree
+  higher, and for an arbitrary group.  A two-cocycle with values in the sections of a family is only
+  acted on, at a single index, by the stabiliser of that index; if at every index its restriction to
+  the stabiliser is a coboundary there, then **the cocycle is a coboundary**, by a one-cochain
+  produced explicitly from the local ones and a transversal for the cosets of a stabiliser.  The
+  construction keeps the values inside an invariant family of subgroups wherever the cocycle's own
+  values lie there, which is what a restricted product such as the ideles requires.
 * `InverseGalois.CFT.Tate.CyclicAction` states that computation for a cyclic group acting
   transitively on a finite set, where the orbit–stabiliser theorem reads the Herbrand quotient of
   the free lattice as the order of the stabiliser of a point: the form in which the places of a
