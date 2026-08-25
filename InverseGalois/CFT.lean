@@ -213,6 +213,7 @@ import InverseGalois.CFT.Scholz.BaseDescent
 import InverseGalois.CFT.Scholz.CentralStep
 import InverseGalois.CFT.Scholz.CompositumTransport
 import InverseGalois.CFT.Scholz.Condition
+import InverseGalois.CFT.Scholz.CorrectingCharacter
 import InverseGalois.CFT.Scholz.FrattiniStep
 import InverseGalois.CFT.Scholz.Induction
 import InverseGalois.CFT.Scholz.InertiaTwist
@@ -230,6 +231,7 @@ import InverseGalois.CFT.Scholz.SplitReduction
 import InverseGalois.CFT.Scholz.SplitStep
 import InverseGalois.CFT.Scholz.Tame
 import InverseGalois.CFT.Scholz.Twist
+import InverseGalois.CFT.Scholz.TwistStep
 import InverseGalois.CFT.SplitCompositum
 import InverseGalois.CFT.SquareClasses
 import InverseGalois.CFT.SubgroupCounting
@@ -516,6 +518,13 @@ it that are available here.
   ramification, one prime at a time: at a prime with cyclic inertia a suitable power of the
   character cancels the solution there, and at a prime where both are already unramified nothing is
   lost.
+* `InverseGalois.CFT.Scholz.CorrectingCharacter` produces the character used for that correction:
+  for a prime equal to the residue characteristic or congruent to one modulo it, a cyclic extension
+  of the rationals of degree the residue characteristic, ramified only at that prime and totally
+  ramified there, together with the induced character with values in the kernel.
+* `InverseGalois.CFT.Scholz.TwistStep` assembles the correction at one prime: the twisted solution
+  solves the same embedding problem and its field loses that prime from its ramified set without
+  gaining any other.
 * `InverseGalois.CFT.Scholz.Selector` builds a single Galois number field containing a prescribed
   number field, a prescribed root of unity and prescribed radicals, the field whose completely
   split primes the induction selects.
