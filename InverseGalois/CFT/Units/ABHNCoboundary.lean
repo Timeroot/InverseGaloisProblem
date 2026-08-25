@@ -23,6 +23,8 @@ cocycle identity for the inflated cocycle is exactly the multiplicative cocycle 
   the Galois action on the units.
 * `InverseGalois.CFT.smul_algebraMap_units`: the Galois group fixes the units coming from the base
   field.
+* `InverseGalois.CFT.smulUnitsAut_adicUnitHom_algebraMap`: the decomposition group at a finite
+  place fixes the local units coming from the base field.
 * `InverseGalois.CFT.exists_isMulCoboundary_of_odd`: **a two-cocycle with values in the units of the
   base field, killed by an odd integer and a coboundary at every ramified finite place, is the
   coboundary of a one-cochain with values in the units of the extension.**
@@ -50,6 +52,19 @@ omit [NumberField k] [NumberField K] [IsGalois k K] in
 theorem smul_algebraMap_units (σ : Gal(K/k)) (c : kˣ) :
     σ • Units.map (algebraMap k K : k →* K) c = Units.map (algebraMap k K : k →* K) c :=
   Units.ext (σ.commutes _)
+
+omit [NumberField k] [IsGalois k K] in
+/-- **The decomposition group at a finite place fixes the local units coming from the base
+field.**  The embedding of the units into the units of the completion is equivariant, and the
+Galois group fixes the units of the base field. -/
+theorem smulUnitsAut_adicUnitHom_algebraMap (v : HeightOneSpectrum (𝓞 K))
+    (σ : ↥(stabilizer Gal(K/k) v)) (c : kˣ) :
+    smulUnitsAut σ (Additive.ofMul (adicUnitHom v (Units.map (algebraMap k K : k →* K) c)))
+      = Additive.ofMul (adicUnitHom v (Units.map (algebraMap k K : k →* K) c)) := by
+  have h := smulUnitsAut_adicUnitHom (k := k) v σ
+    (Additive.ofMul (Units.map (algebraMap k K : k →* K) c))
+  rw [toMul_ofMul] at h
+  rw [h, toMul_globalUnitsAut, toMul_ofMul, smul_algebraMap_units]
 
 /-- **A two-cocycle with values in the units of the base field, killed by an odd integer and a
 coboundary at every ramified finite place, is the coboundary of a one-cochain with values in the

@@ -40,6 +40,8 @@ into a proper solution.
   kernel lies in the Frattini subgroup is itself surjective.
 * `InverseGalois.CFT.exists_surjective_hom_comp_eq_of_sectionFactorSet_eq`: **the two combined: a
   surjection whose pulled-back factor set is a coboundary lifts to a surjection.**
+* `InverseGalois.CFT.sectionFactorSet_eq_of_hom_comp_eq`: the converse, **the pulled-back factor
+  set of a homomorphism that does lift is a coboundary.**
 
 ## Tags
 
@@ -125,6 +127,31 @@ theorem exists_hom_comp_eq_of_sectionFactorSet_eq (f : G →* H) (hZ : f.ker ≤
   refine ⟨MonoidHom.mk' (fun x => t (π x) * (c x)⁻¹) (fun x y => (hmul x y).symm), fun x => ?_⟩
   show f (t (π x) * (c x)⁻¹) = π x
   rw [map_mul, map_inv, ht, MonoidHom.mem_ker.1 (hc x), inv_one, mul_one]
+
+/-- The difference between a section and a lift lies in the kernel. -/
+theorem mem_ker_mul_inv (f : G →* H) {t : H → G} (ht : ∀ h, f (t h) = h) (π : Γ →* H)
+    {φ : Γ →* G} (hφ : ∀ x, f (φ x) = π x) (x : Γ) : t (π x) * (φ x)⁻¹ ∈ f.ker := by
+  rw [MonoidHom.mem_ker, map_mul, map_inv, ht, hφ, mul_inv_cancel]
+
+/-- **The pulled-back factor set of a homomorphism that lifts through a central extension is a
+coboundary.**  The cochain is the difference between the section and the lift, which lies in the
+kernel and is therefore central; the lift being a homomorphism is exactly what makes the
+correction terms cancel. -/
+theorem sectionFactorSet_eq_of_hom_comp_eq (f : G →* H) (hZ : f.ker ≤ Subgroup.center G)
+    (π : Γ →* H) {t : H → G} (ht : ∀ h, f (t h) = h)
+    {φ : Γ →* G} (hφ : ∀ x, f (φ x) = π x) (x y : Γ) :
+    sectionFactorSet t (π x) (π y)
+      = (t (π x) * (φ x)⁻¹) * (t (π y) * (φ y)⁻¹) * (t (π (x * y)) * (φ (x * y))⁻¹)⁻¹ := by
+  have hcom : ∀ (z : Γ) (g : G), Commute (t (π z) * (φ z)⁻¹) g := fun z g =>
+    (Subgroup.mem_center_iff.1 (hZ (mem_ker_mul_inv f ht π hφ z)) g).symm
+  set c : Γ → G := fun z => t (π z) * (φ z)⁻¹ with hcdef
+  have ht' : ∀ z : Γ, t (π z) = c z * φ z := fun z => (inv_mul_cancel_right _ _).symm
+  have hL : sectionFactorSet t (π x) (π y) * t (π x * π y) = t (π x) * t (π y) :=
+    (mul_eq_sectionFactorSet_mul t (π x) (π y)).symm
+  have hR : (c x * c y * (c (x * y))⁻¹) * t (π x * π y) = t (π x) * t (π y) := by
+    rw [← map_mul, ht' (x * y), mul_assoc, inv_mul_cancel_left, map_mul, ht' x, ht' y,
+      mul_assoc (c x), ← mul_assoc (c y), (hcom y (φ x)).eq, mul_assoc (φ x), ← mul_assoc (c x)]
+  exact mul_right_cancel (hL.trans hR.symm)
 
 /-- **A lift of a surjection through a surjection whose kernel lies in the Frattini subgroup is
 itself surjective.**  Every element of the source differs from a value of the lift by an element of

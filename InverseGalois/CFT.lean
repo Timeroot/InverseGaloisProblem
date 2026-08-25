@@ -1790,5 +1790,9 @@ it that are available here.
   units of the extension, the radical descent brings the trivialising cochain back to the roots of
   unity of the base, and correcting the section by it solves the embedding problem: **a central
   embedding problem of odd prime-power kernel inside the Frattini subgroup, locally solvable at the
-  ramified primes, has a proper solution over a larger extension**.
+  ramified primes, has a proper solution over a larger extension**.  The local hypothesis is
+  discharged from the statement one actually verifies in practice: a homomorphic lift of the
+  restriction of the given surjection to the decomposition group at each ramified place, because the
+  difference between the section and such a lift is a kernel-valued, hence central, cochain whose
+  coboundary is the factor set.
 -/

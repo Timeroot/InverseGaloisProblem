@@ -31,6 +31,11 @@ homomorphism, which is surjective because the kernel lies in the Frattini subgro
 * `InverseGalois.CFT.exists_surjective_hom_of_forall_ramified`: **a central Frattini embedding
   problem with kernel of odd order whose obstruction is a coboundary at every ramified finite place
   is solvable over a larger extension.**
+* `InverseGalois.CFT.exists_local_coboundary_of_exists_lift`: a homomorphic lift over the
+  decomposition group at a finite place makes the obstruction a coboundary there.
+* `InverseGalois.CFT.exists_surjective_hom_of_forall_ramified_lift`: **a central Frattini embedding
+  problem with kernel of odd order that is solvable over the decomposition group at every ramified
+  finite place is solvable over a larger extension.**
 
 ## Tags
 
@@ -144,5 +149,71 @@ theorem exists_surjective_hom_of_forall_ramified
     rw [← map_mul, ← map_mul, hker]
   obtain ⟨b, hb⟩ := exists_isMulCoboundary_of_odd (k := k) (K := ↥K) hn hapow hacoc hram
   exact exists_surjective_hom_of_isMulCoboundary hζ hZ hfr hcard hπ hχinj hχsurj ht hb
+
+section LocalLift
+
+variable {K : Type} [Field K] [NumberField K] [Algebra k K] [IsGalois k K]
+
+omit [NumberField k] [IsGalois k K] in
+/-- **A homomorphic lift over the decomposition group at a finite place makes the obstruction a
+coboundary there.**  The difference between the section of `f` and the lift takes its values in the
+kernel, hence in the centre, and the factor set of the section is exactly its coboundary; applying
+the character of the kernel and embedding into the completion turns that identity into the local
+coboundary condition. -/
+theorem exists_local_coboundary_of_exists_lift
+    {G H : Type*} [Group G] [Group H] {f : G →* H} (hZ : f.ker ≤ Subgroup.center G)
+    {π : Gal(K/k) →* H} {t : H → G} (ht : ∀ h, f (t h) = h) (χ : ↥f.ker →* kˣ)
+    (v : HeightOneSpectrum (𝓞 K))
+    {σ : ↥(stabilizer Gal(K/k) v) →* G} (hσ : ∀ s, f (σ s) = π s.1) :
+    ∃ c : ↥(stabilizer Gal(K/k) v) → Additive (v.adicCompletion K)ˣ,
+      ∀ s u : ↥(stabilizer Gal(K/k) v),
+        Additive.ofMul (adicUnitHom v (Units.map (algebraMap k K : k →* K)
+          (χ ⟨sectionFactorSet t (π s.1) (π u.1), sectionFactorSet_mem_ker f ht _ _⟩)))
+          = smulUnitsAut s (c u) - c (s * u) + c s := by
+  classical
+  have hd : ∀ w : ↥(stabilizer Gal(K/k) v), t (π w.1) * (σ w)⁻¹ ∈ f.ker := fun w =>
+    mem_ker_mul_inv f ht (π.comp (Subgroup.subtype _)) hσ w
+  refine ⟨fun w => Additive.ofMul (adicUnitHom v (Units.map (algebraMap k K : k →* K)
+    (χ ⟨t (π w.1) * (σ w)⁻¹, hd w⟩))), fun s u => ?_⟩
+  rw [smulUnitsAut_adicUnitHom_algebraMap]
+  have hsub : (⟨sectionFactorSet t (π s.1) (π u.1), sectionFactorSet_mem_ker f ht _ _⟩ : ↥f.ker)
+      = ⟨t (π s.1) * (σ s)⁻¹, hd s⟩ * ⟨t (π u.1) * (σ u)⁻¹, hd u⟩
+        * (⟨t (π (s * u).1) * (σ (s * u))⁻¹, hd (s * u)⟩)⁻¹ :=
+    Subtype.ext (sectionFactorSet_eq_of_hom_comp_eq f hZ (π.comp (Subgroup.subtype _)) ht hσ s u)
+  have hk : χ ⟨sectionFactorSet t (π s.1) (π u.1), sectionFactorSet_mem_ker f ht _ _⟩
+      = χ ⟨t (π u.1) * (σ u)⁻¹, hd u⟩ / χ ⟨t (π (s * u).1) * (σ (s * u))⁻¹, hd (s * u)⟩
+        * χ ⟨t (π s.1) * (σ s)⁻¹, hd s⟩ := by
+    rw [hsub, map_mul, map_mul, map_inv]
+    refine Additive.ofMul.injective ?_
+    simp only [ofMul_mul, ofMul_div, ofMul_inv]
+    abel
+  rw [hk, map_mul, map_div, map_mul, map_div, ofMul_mul, ofMul_div]
+
+end LocalLift
+
+set_option synthInstance.maxHeartbeats 1000000 in
+set_option maxHeartbeats 1000000 in
+/-- **A central Frattini embedding problem with kernel of odd order that is solvable over the
+decomposition group at every ramified finite place is solvable over a larger extension.**  This is
+the local-global principle in its final form: the only arithmetic input is a homomorphic lift of the
+restriction of `π` to each decomposition group at a ramified place. -/
+theorem exists_surjective_hom_of_forall_ramified_lift
+    {n : ℕ} [NeZero n] (hn : Odd n) {ζ : k} (hζ : IsPrimitiveRoot ζ n)
+    {G H : Type} [Group G] [Group H] [Finite G] {f : G →* H}
+    (hZ : f.ker ≤ Subgroup.center G) (hfr : f.ker ≤ frattini G)
+    (hcard : Nat.card ↥f.ker = n)
+    {K : IntermediateField k (AlgebraicClosure k)} [NumberField ↥K] [IsGalois k ↥K]
+    {π : Gal(↥K/k) →* H} (hπ : Function.Surjective π)
+    {χ : ↥f.ker →* kˣ} (hχinj : Function.Injective χ)
+    (hχsurj : ∀ y : kˣ, y ^ n = 1 → ∃ z : ↥f.ker, χ z = y)
+    {t : H → G} (ht : ∀ h, f (t h) = h)
+    (hlift : ∀ v : HeightOneSpectrum (𝓞 ↥K), ¬ Algebra.IsUnramifiedAt (𝓞 k) v.asIdeal →
+      ∃ σ : ↥(stabilizer Gal(↥K/k) v) →* G, ∀ s, f (σ s) = π s.1) :
+    ∃ M : IntermediateField k (AlgebraicClosure k), NumberField ↥M ∧ IsGalois k ↥M ∧
+      ∃ φ : Gal(↥M/k) →* G, Function.Surjective φ := by
+  refine exists_surjective_hom_of_forall_ramified hn hζ hZ hfr hcard hπ hχinj hχsurj ht
+    (fun v hv => ?_)
+  obtain ⟨σ, hσ⟩ := hlift v hv
+  exact exists_local_coboundary_of_exists_lift (k := k) (K := ↥K) hZ ht χ v hσ
 
 end InverseGalois.CFT
