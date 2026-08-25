@@ -206,6 +206,7 @@ import InverseGalois.CFT.Scholz.BaseChange
 import InverseGalois.CFT.Scholz.Condition
 import InverseGalois.CFT.Scholz.FrattiniStep
 import InverseGalois.CFT.Scholz.Induction
+import InverseGalois.CFT.Scholz.LocalTransport
 import InverseGalois.CFT.Scholz.NilpotentOdd
 import InverseGalois.CFT.Scholz.NilpotentSylowTwo
 import InverseGalois.CFT.Scholz.PrimeChoice
@@ -463,6 +464,9 @@ it that are available here.
 * `InverseGalois.CFT.Scholz.BaseChange` adjoins the `ℓ`-th roots of unity to a field of `ℓ`-power
   degree, which the local criterion for the central embedding step needs in its base field, and
   shows that the Galois group is unchanged because the two degrees are coprime.
+* `InverseGalois.CFT.Scholz.LocalTransport` reads the local hypotheses of the central embedding
+  criterion over the enlarged base field off the arithmetic of the original field, using that
+  restriction to that field is injective on the Galois group over the enlarged base.
 * `InverseGalois.CFT.Scholz.Tame` shows that every field satisfying the level condition with
   `ℓ`-power degree is tamely ramified, so that the tame Kronecker–Weber theorem applies to all of
   them.
