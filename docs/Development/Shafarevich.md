@@ -1060,6 +1060,40 @@ identification of the residue field of the completion with `𝓞 K / P`;
 the cyclotomic twisting characters of `Cyclotomic/OnePrimeRamified.lean` together with the local
 count `(L_ℓ)` of §0.12.
 
+### 0.14 Status (2026-08-25, later) — the local clauses are all discharged at the ℚ level
+
+Step (B) is finished, in the sense that each of the three clauses of `hram` is now a theorem about
+the rational prime below the place.
+
+* **(iii) the congruence.** `mul_card_stabilizer_dvd_sub_one` in `Scholz/Condition.lean`: from
+  `IsLevel ℓ (N + 1) E` and `Nat.card Gal(E/ℚ) ∣ ℓ ^ N` one gets
+  `ℓ * Nat.card ↥(stabilizer Gal(E/ℚ) P) ∣ p - 1` at every ramified `p`.  The decomposition group
+  is a subgroup, so its order divides `ℓ ^ N`, and the level condition supplies one more power.
+* **(i) cyclic decomposition group.** `IsScholz.isCyclic_stabilizer` in `Scholz/Tame.lean`.
+* **(ii) prime residue field and residue characteristic.** The new module
+  `Local/PrimeResidueField.lean`.  Residue degree one makes the residue field an extension of the
+  prime field of rank one, so `Int.cast : ℤ → 𝓞 K ⧸ P` is surjective
+  (`surjective_intCast_quotient_of_inertiaDeg_eq_one`); composing with the approximation lemma
+  `exists_algebraMap_sub_le_exp_neg_one` of `Local/AdicResidue.lean` — which already packages the
+  density of `K` in `v.adicCompletion K` — gives the predicate the criterion asks for
+  (`exists_intCast_sub_lt_one_of_inertiaDeg_eq_one`).  A companion lemma
+  `exists_hasResidueChar_of_liesOver` pins the residue characteristic to the *given* rational prime,
+  which the existing `exists_hasResidueChar_adicCompletion` of `Local/AdicHerbrand.lean` leaves
+  existentially quantified, and `exists_hasResidueChar_and_primeResidue` packages all three in the
+  exact `∃ q e, HasResidueChar ∧ prime residue ∧ m ∣ q - 1` shape of
+  `exists_surjective_hom_of_forall_ramified_primeResidue`.
+
+**(A) is now the gating item.**  A ℚ-base assembly is impossible in principle: the criterion needs
+a primitive `n`-th root of unity in the base, and `n = ℓ`.  So the local clauses have to be
+transported from `ℚ` to `k = ℚ(μ_ℓ)`.  The transport should be cheap — clause (ii) is already a
+statement about the residue degree of `v` over the rational prime, and clauses (i) and (iii) follow
+from `stabilizer Gal(K/k) v ≤ stabilizer Gal(K/ℚ) P`, since a subgroup of a cyclic group is cyclic
+and its order divides.  What is not cheap is the base change itself: `Gal(↥(A ⊔ B)/↥B) ≃* Gal(A/ℚ)`
+for `A ⊓ B = ⊥` needs an `Algebra ↥B ↥(A ⊔ B)` structure, hence `IntermediateField.extendScalars`
+and the attendant `IsScalarTower` pinning.  The group-theoretic content is already available:
+`galEquivProd` identifies `Gal(↥(A ⊔ B)/ℚ)` with `Gal(A/ℚ) × Gal(B/ℚ)`, under which the fixing
+subgroup of `B` is the first factor.
+
 ---
 
 ## 1. Scholz–Reichardt
