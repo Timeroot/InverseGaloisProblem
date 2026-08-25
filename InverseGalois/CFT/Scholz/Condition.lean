@@ -30,6 +30,8 @@ compositum whose second factor the prime splits completely in; that is the conte
 * `InverseGalois.CFT.IsScholz.of_ringEquiv`: the condition is an isomorphism invariant.
 * `InverseGalois.CFT.isSplitInertia_of_tower`: residue degree one is inherited by subfields.
 * `InverseGalois.CFT.IsScholz.of_tower`: **the condition `(S_N)` is inherited by subfields.**
+* `InverseGalois.CFT.mul_card_stabilizer_dvd_sub_one`: **at level `N + 1`, one more power of `ℓ`
+  than the order of a decomposition group divides `p - 1`** at every ramified prime `p`.
 * `InverseGalois.CFT.isSplitInertia_of_finrank_prime`: a Galois extension of `ℚ` of prime degree
   has residue degree one at every ramified prime.
 * `InverseGalois.CFT.isSplitInertia_of_sup`: **residue degree one passes to a compositum** in
@@ -38,6 +40,8 @@ compositum whose second factor the prime splits completely in; that is the conte
 -/
 
 open NumberField InverseGalois.NumberTheory
+
+open scoped Pointwise
 
 set_option synthInstance.maxHeartbeats 400000
 
@@ -135,6 +139,22 @@ theorem IsScholz.of_tower {ℓ N : ℕ} (h : IsScholz ℓ N M) : IsScholz ℓ N 
   ⟨h.1.of_tower, isSplitInertia_of_tower h.2⟩
 
 end Tower
+
+/-- **One more power of `ℓ` than the order of the Galois group divides `p - 1`.**  The level
+condition at `N + 1` makes every ramified prime congruent to one modulo `ℓ ^ (N + 1)`, and the
+decomposition group at a prime above it is a subgroup of a group whose order divides `ℓ ^ N`.  This
+is the arithmetic hypothesis that the local solvability criterion for a central embedding problem
+with kernel of order `ℓ` asks for at every ramified place. -/
+theorem mul_card_stabilizer_dvd_sub_one [IsGalois ℚ E] {ℓ N : ℕ} (h : IsLevel ℓ (N + 1) E)
+    (hdvd : Nat.card Gal(E/ℚ) ∣ ℓ ^ N) {p : ℕ} (hmem : p ∈ ramifiedSet E) (P : Ideal (𝓞 E))
+    [P.IsPrime] [P.LiesOver (Ideal.span {(p : ℤ)})] :
+    ℓ * Nat.card ↥(MulAction.stabilizer Gal(E/ℚ) P) ∣ p - 1 := by
+  have hD : Nat.card ↥(MulAction.stabilizer Gal(E/ℚ) P) ∣ ℓ ^ N :=
+    (Subgroup.card_subgroup_dvd_card _).trans hdvd
+  have hpow : ℓ ^ (N + 1) ∣ p - 1 := (Nat.modEq_iff_dvd' hmem.1.one_le).mp (h p hmem).symm
+  refine dvd_trans ?_ hpow
+  calc ℓ * Nat.card ↥(MulAction.stabilizer Gal(E/ℚ) P) ∣ ℓ * ℓ ^ N := mul_dvd_mul_left ℓ hD
+    _ = ℓ ^ (N + 1) := by ring
 
 /-- **A Galois extension of `ℚ` of prime degree has split inertia.**  A ramified prime has
 ramification index different from one at some prime above it, hence at every prime above it, and
