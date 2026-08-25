@@ -59,6 +59,7 @@ import InverseGalois.CFT.GroupCohomology.Cohomologous
 import InverseGalois.CFT.GroupCohomology.Corestriction
 import InverseGalois.CFT.GroupCohomology.Cyclic
 import InverseGalois.CFT.GroupCohomology.CyclicH1
+import InverseGalois.CFT.GroupCohomology.CyclicCoboundary
 import InverseGalois.CFT.GroupCohomology.CyclicH2
 import InverseGalois.CFT.GroupCohomology.CyclicSurjective
 import InverseGalois.CFT.GroupCohomology.H1Transport
@@ -178,6 +179,7 @@ import InverseGalois.CFT.Local.UnitHerbrandChain
 import InverseGalois.CFT.Local.UnitIndex
 import InverseGalois.CFT.Local.UnitPowIndex
 import InverseGalois.CFT.Local.UnitValuation
+import InverseGalois.CFT.Local.UnramifiedCoboundary
 import InverseGalois.CFT.Local.UnramifiedNormForm
 import InverseGalois.CFT.Local.UnramifiedUnits
 import InverseGalois.CFT.Local.ValuedTopology
@@ -1691,4 +1693,14 @@ it that are available here.
   starts at the first cohomology of the idele classes, which has just been shown to vanish, so **the
   second cohomology of the units injects into the second cohomology of the ideles** — the global
   half of the Albert-Brauer-Hasse-Noether theorem.
+* `InverseGalois.CFT.GroupCohomology.CyclicCoboundary` turns the Herbrand description of the second
+  cohomology of a finite cyclic group into the concrete statement the local half needs: if every
+  invariant element is a norm then every two-cocycle is a coboundary, with an explicit one-cochain.
+  The statement is given for an action by group automorphisms and, through the multiplicative copy
+  of an additive group, for an action by additive automorphisms, where the sum over the group may
+  be replaced by the geometric sum of the powers of a generator.
+* `InverseGalois.CFT.Local.UnramifiedCoboundary` runs that criterion at an unramified place.  The
+  decomposition group there is cyclic and the completion has a uniformizer it fixes, so the norms of
+  the units of the valuation ring exhaust the fixed ones, and **every two-cocycle of the
+  decomposition group with values in those units is a coboundary**.
 -/
