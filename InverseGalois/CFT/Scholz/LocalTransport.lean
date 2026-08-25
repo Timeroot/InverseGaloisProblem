@@ -22,7 +22,8 @@ Under that injectivity every local invariant over `k` is bounded by the correspo
 `A` over `ℚ`.  A place of `N` unramified over `ℚ` in `A` is unramified over `k`; the decomposition
 group over `k` embeds into the decomposition group of `A` over `ℚ`, so it is cyclic whenever the
 latter is, and its order divides.  Combining this with Serre's condition `(S_N)` on `A` gives the
-two group-theoretic hypotheses the criterion asks of every ramified place.
+two group-theoretic hypotheses the criterion asks of every ramified place; the residue field of
+the completion is prime because the prime below splits completely in the base field.
 
 ## Main definitions
 
@@ -45,6 +46,8 @@ two group-theoretic hypotheses the criterion asks of every ramified place.
   `InverseGalois.CFT.isCyclic_and_mul_card_stabilizer_dvd_base_place`: **the two group-theoretic
   hypotheses of the local criterion hold at every place ramified over `k`**, for a field `A`
   satisfying Serre's condition at level one more than the order of its Galois group.
+* `InverseGalois.CFT.isCyclic_and_exists_hasResidueChar_base`: **the complete local hypothesis of
+  the criterion for solving a central embedding problem**, at a place ramified over `k`.
 
 ## Tags
 
@@ -243,5 +246,42 @@ theorem isCyclic_and_mul_card_stabilizer_dvd_base_place
   haveI := hv
   rw [stabilizer_eq_stabilizer_asIdeal]
   exact isCyclic_and_mul_card_stabilizer_dvd_base hinj hℓ hG hs hdvd v.asIdeal v.ne_bot hp hnr
+
+/-! ### The full local hypothesis -/
+
+/-- **The complete local hypothesis of the criterion for solving a central embedding problem**, at
+a place of `N` ramified over the base field.  Such a place lies over a rational prime that ramifies
+in `A`, so Serre's condition makes its decomposition group in `A` cyclic, of order dividing
+`ℓ ^ M`, and its residue degree one; the prime splits completely in the base field, so the residue
+degree stays one in the compositum and the residue field of the completion is prime. -/
+theorem isCyclic_and_exists_hasResidueChar_base [Normal ℚ ↥(baseSubfield k N)]
+    (hAB : A ⊔ baseSubfield k N = ⊤) {ℓ M : ℕ} (hℓ : ℓ.Prime) (hG : IsPGroup ℓ Gal(↥A/ℚ))
+    (hs : IsScholz ℓ (M + 1) ↥A) (hdvd : Nat.card Gal(↥A/ℚ) ∣ ℓ ^ M)
+    (hsplit : ∀ p ∈ ramifiedSet ↥A, SplitsCompletely ↥(baseSubfield k N) p)
+    (v : HeightOneSpectrum (𝓞 N)) (hnr : ¬ Algebra.IsUnramifiedAt (𝓞 k) v.asIdeal) :
+    IsCyclic ↥(stabilizer Gal(N/k) v) ∧ ∃ p e : ℕ,
+      HasResidueChar (v.adicCompletion N) p e ∧
+        (∀ x : v.adicCompletion N, Valued.v x ≤ 1 →
+          ∃ b : ℤ, Valued.v (x - (b : v.adicCompletion N)) < 1) ∧
+        ℓ * Nat.card ↥(stabilizer Gal(N/k) v) ∣ p - 1 := by
+  haveI : NumberField ↥A := ⟨⟩
+  haveI : IsGalois ℚ ↥A := ⟨⟩
+  haveI := v.isPrime
+  obtain ⟨p, hp, hlo⟩ := exists_prime_liesOver v
+  haveI := hlo
+  have hinj := galRestrictOver_injective hAB
+  obtain ⟨hcyc, hdvd'⟩ :=
+    isCyclic_and_mul_card_stabilizer_dvd_base_place hinj hℓ hG hs hdvd v hp hlo hnr
+  refine ⟨hcyc, ?_⟩
+  have hmem : p ∈ ramifiedSet ↥A :=
+    mem_ramifiedSet_of_not_isUnramifiedAt_base hinj v.asIdeal v.ne_bot hp hnr
+  haveI : (v.asIdeal.under (𝓞 ↥A)).LiesOver (Ideal.span {(p : ℤ)}) := by
+    refine ⟨?_⟩
+    rw [Ideal.under_under]
+    exact Ideal.LiesOver.over
+  have hdeg : (Ideal.span {(p : ℤ)}).inertiaDeg v.asIdeal = 1 :=
+    inertiaDeg_eq_one_of_sup A (baseSubfield k N) hAB hp v.asIdeal (hsplit p hmem)
+      (hs.2 p hmem (v.asIdeal.under (𝓞 ↥A)) inferInstance inferInstance)
+  exact exists_hasResidueChar_and_primeResidue hp v hdeg hdvd'
 
 end InverseGalois.CFT
