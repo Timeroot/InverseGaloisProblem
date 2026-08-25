@@ -116,6 +116,7 @@ import InverseGalois.CFT.Kummer.CyclicIndex
 import InverseGalois.CFT.Kummer.CyclotomicDescent
 import InverseGalois.CFT.Kummer.Denominator
 import InverseGalois.CFT.Kummer.GlobalPower
+import InverseGalois.CFT.Kummer.InflationRootsOfUnity
 import InverseGalois.CFT.Kummer.LocalPower
 import InverseGalois.CFT.Kummer.LocalSurjective
 import InverseGalois.CFT.Kummer.Pairing
@@ -1719,4 +1720,10 @@ it that are available here.
   a coboundary is a coboundary, so **a two-cocycle with values in the units of the top field which
   is a coboundary at every place is a coboundary** — the Albert-Brauer-Hasse-Noether theorem in the
   shape of the vanishing of the second Tate-Shafarevich group of the units.
+* `InverseGalois.CFT.Kummer.InflationRootsOfUnity` turns a statement about the units back into one
+  about the roots of unity.  If a two-cocycle whose values are `n`-th roots of unity is a coboundary
+  in the units, then the `n`-th powers of the cochain witnessing that form a one-cocycle, so
+  Hilbert's theorem 90 writes them as the coboundary of a single element; over an extension
+  containing an `n`-th root of that element the inflated cocycle is cobounded by a cochain whose
+  values are again `n`-th roots of unity.
 -/
