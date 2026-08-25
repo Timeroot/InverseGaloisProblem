@@ -204,6 +204,7 @@ import InverseGalois.CFT.Local.UnramifiedNormForm
 import InverseGalois.CFT.Local.UnramifiedUnits
 import InverseGalois.CFT.Local.ValuedTopology
 import InverseGalois.CFT.NormSubgroup
+import InverseGalois.CFT.PGroupCompositum
 import InverseGalois.CFT.PiIndex
 import InverseGalois.CFT.RestrictLE
 import InverseGalois.CFT.ScalarSemidirect
@@ -404,6 +405,9 @@ it that are available here.
 * `InverseGalois.CFT.CompositumBase` views the compositum as an extension of one of its two
   factors, and identifies its Galois group over that factor with the Galois group of the other
   factor over the base, when the two meet in the base field.
+* `InverseGalois.CFT.PGroupCompositum` bounds the Galois group of a compositum by the product of
+  the Galois groups of its factors, so that a compositum of finitely many extensions of `ℓ`-power
+  degree again has `ℓ`-power degree.
 * `InverseGalois.CFT.UnramifiedCompositum` computes the ramification of a compositum: a prime
   ramifies in `A ⊔ B` exactly when it ramifies in `A` or in `B`, with no disjointness hypothesis,
   so the level condition passes to a compositum.

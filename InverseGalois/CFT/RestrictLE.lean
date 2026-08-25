@@ -68,4 +68,19 @@ theorem galRestrictLE_surjective (h : E ≤ E') [Normal F ↥E] [Normal F ↥E']
     (AlgEquiv.restrictNormalHom_surjective (F := F) (K₁ := ↥(IntermediateField.restrict h))
       (E := ↥E'))
 
+/-- **An automorphism restricts to the identity exactly when it fixes the copy of the smaller
+field.** -/
+theorem ker_galRestrictLE (h : E ≤ E') [Normal F ↥E] :
+    (galRestrictLE h).ker = (IntermediateField.restrict h).fixingSubgroup := by
+  rw [← IntermediateField.restrictNormalHom_ker (IntermediateField.restrict h)]
+  ext σ
+  simp only [galRestrictLE, MonoidHom.mem_ker, MonoidHom.coe_comp, Function.comp_apply,
+    MulEquiv.coe_toMonoidHom, EmbeddingLike.map_eq_one_iff]
+
+/-- **The fixed field of the kernel of the restriction is the copy of the smaller field.** -/
+theorem fixedField_ker_galRestrictLE (h : E ≤ E') [Normal F ↥E] [FiniteDimensional F ↥E']
+    [IsGalois F ↥E'] :
+    IntermediateField.fixedField (galRestrictLE h).ker = IntermediateField.restrict h := by
+  rw [ker_galRestrictLE, IsGalois.fixedField_fixingSubgroup]
+
 end InverseGalois.CFT
