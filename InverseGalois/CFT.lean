@@ -292,6 +292,7 @@ import InverseGalois.CFT.Units.IdeleClassH1Full
 import InverseGalois.CFT.Units.IdeleClassIndex
 import InverseGalois.CFT.Units.IdeleClassSES
 import InverseGalois.CFT.Units.IdeleClassTower
+import InverseGalois.CFT.Units.IdeleCoboundary
 import InverseGalois.CFT.Units.IdeleFixed
 import InverseGalois.CFT.Units.IdeleNorm
 import InverseGalois.CFT.Units.IdeleNormTower
@@ -1703,4 +1704,9 @@ it that are available here.
   decomposition group there is cyclic and the completion has a uniformizer it fixes, so the norms of
   the units of the valuation ring exhaust the fixed ones, and **every two-cocycle of the
   decomposition group with values in those units is a coboundary**.
+* `InverseGalois.CFT.Units.IdeleCoboundary` globalises that: a two-cocycle with values in the ideles
+  which is a coboundary at every place is a coboundary.  The coordinates in a Galois orbit determine
+  one another, so a local one-cochain at each place assembles into a global one; at all but the
+  finitely many places which are ramified or where the cocycle is not a unit, the local cochain may
+  be chosen with values in the units of the valuation ring, and the assembled family is an idele.
 -/

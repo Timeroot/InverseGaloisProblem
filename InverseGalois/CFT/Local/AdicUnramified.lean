@@ -29,6 +29,8 @@ many prime divisors.
   uniformizer fixed by its decomposition group.**
 * `InverseGalois.CFT.exists_fixedUniformizer_of_isUnramifiedAt`: **a place unramified over the base
   carries a uniformizer fixed by its decomposition group.**
+* `InverseGalois.CFT.finite_setOf_not_isUnramifiedAt`: **only finitely many places are ramified
+  over the base field.**
 * `InverseGalois.CFT.finite_setOf_not_exists_fixedUniformizer`: **only finitely many places fail to
   carry a uniformizer fixed by the decomposition group.**
 
@@ -187,6 +189,13 @@ theorem finite_setOf_map_le_sq :
       Ideal.map (algebraMap (𝓞 k) (𝓞 K)) (v.asIdeal.under (𝓞 k)) ≤ v.asIdeal ^ 2}.Finite :=
   Set.Finite.subset (Ideal.finite_factors (differentIdeal_ne_bot (A := 𝓞 k) (B := 𝓞 K)))
     fun _ hv => dvd_differentIdeal_of_map_le_sq k hv
+
+/-- **Only finitely many places are ramified over the base field**: a ramified place divides the
+different ideal, and a nonzero ideal has only finitely many prime divisors. -/
+theorem finite_setOf_not_isUnramifiedAt :
+    {v : HeightOneSpectrum (𝓞 K) | ¬Algebra.IsUnramifiedAt (𝓞 k) v.asIdeal}.Finite :=
+  Set.Finite.subset (Ideal.finite_factors (differentIdeal_ne_bot (A := 𝓞 k) (B := 𝓞 K)))
+    fun _ hv => dvd_differentIdeal_iff.mpr hv
 
 /-- **Only finitely many places fail to carry a uniformizer fixed by the decomposition group.** -/
 theorem finite_setOf_not_exists_fixedUniformizer :
