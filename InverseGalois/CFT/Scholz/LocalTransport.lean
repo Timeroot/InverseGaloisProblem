@@ -75,7 +75,7 @@ omit [IsGalois ℚ N] [IsGalois k N] in
 theorem restrictScalars_smul_ideal (σ : Gal(N/k)) (P : Ideal (𝓞 N)) :
     (σ.restrictScalars ℚ : Gal(N/ℚ)) • P = σ • P := rfl
 
-variable (A : IntermediateField ℚ N) [Normal ℚ ↥A]
+variable (A : IntermediateField ℚ N) [hAnormal : Normal ℚ ↥A]
 
 /-- **Restriction to a normal subextension of an automorphism over a larger base.**  An
 automorphism of `N` over `k` is in particular one over `ℚ`, and `A` is normal over `ℚ`. -/
@@ -254,7 +254,7 @@ a place of `N` ramified over the base field.  Such a place lies over a rational 
 in `A`, so Serre's condition makes its decomposition group in `A` cyclic, of order dividing
 `ℓ ^ M`, and its residue degree one; the prime splits completely in the base field, so the residue
 degree stays one in the compositum and the residue field of the completion is prime. -/
-theorem isCyclic_and_exists_hasResidueChar_base [Normal ℚ ↥(baseSubfield k N)]
+theorem isCyclic_and_exists_hasResidueChar_base [hBnormal : Normal ℚ ↥(baseSubfield k N)]
     (hAB : A ⊔ baseSubfield k N = ⊤) {ℓ M : ℕ} (hℓ : ℓ.Prime) (hG : IsPGroup ℓ Gal(↥A/ℚ))
     (hs : IsScholz ℓ (M + 1) ↥A) (hdvd : Nat.card Gal(↥A/ℚ) ∣ ℓ ^ M)
     (hsplit : ∀ p ∈ ramifiedSet ↥A, SplitsCompletely ↥(baseSubfield k N) p)

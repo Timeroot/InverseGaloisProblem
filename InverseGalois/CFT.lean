@@ -203,6 +203,7 @@ import InverseGalois.CFT.NormSubgroup
 import InverseGalois.CFT.PiIndex
 import InverseGalois.CFT.ScalarSemidirect
 import InverseGalois.CFT.Scholz.BaseChange
+import InverseGalois.CFT.Scholz.CompositumTransport
 import InverseGalois.CFT.Scholz.Condition
 import InverseGalois.CFT.Scholz.FrattiniStep
 import InverseGalois.CFT.Scholz.Induction
@@ -467,6 +468,8 @@ it that are available here.
 * `InverseGalois.CFT.Scholz.LocalTransport` reads the local hypotheses of the central embedding
   criterion over the enlarged base field off the arithmetic of the original field, using that
   restriction to that field is injective on the Galois group over the enlarged base.
+* `InverseGalois.CFT.Scholz.CompositumTransport` specialises that reading to the compositum of the
+  original field with the cyclotomic field, where both factors reappear as copies of themselves.
 * `InverseGalois.CFT.Scholz.Tame` shows that every field satisfying the level condition with
   `ℓ`-power degree is tamely ramified, so that the tame Kronecker–Weber theorem applies to all of
   them.
