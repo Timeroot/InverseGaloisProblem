@@ -115,6 +115,7 @@ import InverseGalois.CFT.InertiaGeneration
 import InverseGalois.CFT.InertiaRestrict
 import InverseGalois.CFT.InertiaSubgroup
 import InverseGalois.CFT.KroneckerWeber
+import InverseGalois.CFT.Kummer.CocycleDescent
 import InverseGalois.CFT.Kummer.CyclicIndex
 import InverseGalois.CFT.Kummer.CyclotomicDescent
 import InverseGalois.CFT.Kummer.Denominator
@@ -1769,4 +1770,9 @@ it that are available here.
   on them, and **a cyclic group of order `n` embeds onto them**, which is how a cochain of roots of
   unity produced by Kummer theory is read as a cochain with values in the kernel of a central
   extension of order `n`.
+* `InverseGalois.CFT.Kummer.CocycleDescent` assembles those three into the field-theoretic half of
+  the embedding problem.  A cocycle of `n`-th roots of unity of the base field which is a coboundary
+  in the units of a finite Galois extension `K/k` is, after adjoining an `n`-th root of the element
+  supplied by Hilbert 90 and taking the Galois closure, **the coboundary of a cochain valued in the
+  `n`-th roots of unity of the base field itself**.
 -/
