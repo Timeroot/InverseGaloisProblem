@@ -1873,5 +1873,7 @@ it that are available here.
   rank one, so the rational integers already surject onto it; combined with the density of a number
   field in its completion this gives that **at a place of residue degree one every element of the
   valuation ring of the completion differs from a rational integer by an element of valuation less
-  than one**, which is what a prime residue field means for the criterion.
+  than one**, which is what a prime residue field means for the criterion.  The same module records
+  that a rational prime lying in a place has valuation the exponential of a negative integer there,
+  so **the completion at a place over `p` has residue characteristic `p`**.
 -/

@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Local.AdicResidue
+import InverseGalois.CFT.Local.Exp
 import InverseGalois.CFT.SplitCompositum
 
 /-!
@@ -25,6 +26,10 @@ rational integer by an element of valuation strictly less than one.
   the rational integers surject onto the residue field.**
 * `InverseGalois.CFT.exists_intCast_sub_lt_one_of_inertiaDeg_eq_one`: **at a place of residue
   degree one every integer of the completion is congruent to a rational integer.**
+* `InverseGalois.CFT.exists_hasResidueChar_of_liesOver`: **the completion at a place over `p`
+  has residue characteristic `p`.**
+* `InverseGalois.CFT.exists_hasResidueChar_and_primeResidue`: the three together, in the shape the
+  local solvability criterion asks for.
 
 ## Tags
 
@@ -90,5 +95,47 @@ theorem exists_intCast_sub_lt_one_of_inertiaDeg_eq_one {p : ℕ} (hp : p.Prime)
     simpa using WithZero.exp_lt_exp.mpr (by omega : (-1 : ℤ) < 0)
   rw [hsplit]
   exact lt_of_le_of_lt (Valuation.map_add _ _ _) (max_lt (lt_of_le_of_lt hr hexp) hlt)
+
+/-! ### The residue characteristic of the completion -/
+
+/-- **The completion at a place over `p` has residue characteristic `p`.**  The rational prime lies
+in the place, so it has valuation less than one there, and it is nonzero, so its valuation is the
+exponential of a negative integer. -/
+theorem exists_hasResidueChar_of_liesOver {p : ℕ} (hp : p.Prime)
+    (v : HeightOneSpectrum (𝓞 K)) [v.asIdeal.LiesOver (Ideal.span {(p : ℤ)})] :
+    ∃ e : ℕ, HasResidueChar (v.adicCompletion K) p e := by
+  -- the rational prime lies in the place
+  have hmem : ((p : ℕ) : 𝓞 K) ∈ v.asIdeal := by
+    have hz : (p : ℤ) ∈ Ideal.span {(p : ℤ)} := Ideal.subset_span rfl
+    rw [Ideal.LiesOver.over (p := Ideal.span {(p : ℤ)}) (P := v.asIdeal)] at hz
+    simpa using hz
+  have hval : Valued.v ((p : ℕ) : v.adicCompletion K)
+      = v.valuation K (algebraMap (𝓞 K) K ((p : ℕ) : 𝓞 K)) := by
+    rw [← map_natCast (algebraMap (𝓞 K) (v.adicCompletion K)) p,
+      HeightOneSpectrum.valuedAdicCompletion_eq_valuation]
+  have hlt : Valued.v ((p : ℕ) : v.adicCompletion K) < 1 := by
+    rw [hval]
+    exact (HeightOneSpectrum.valuation_lt_one_iff_mem v _).mpr hmem
+  have hne : Valued.v ((p : ℕ) : v.adicCompletion K) ≠ 0 := by
+    rw [hval]
+    refine (Valuation.ne_zero_iff _).mpr ?_
+    simpa using hp.ne_zero
+  -- so its valuation is the exponential of a negative integer
+  have hlog : WithZero.log (Valued.v ((p : ℕ) : v.adicCompletion K)) < 0 :=
+    (WithZero.log_lt_iff_lt_exp hne).mpr (by simpa using hlt)
+  refine ⟨(-WithZero.log (Valued.v ((p : ℕ) : v.adicCompletion K))).toNat, hp, by omega, ?_⟩
+  rw [Int.toNat_of_nonneg (by omega), neg_neg, WithZero.exp_log hne]
+
+/-- **The local data at a place of residue degree one.**  This is the exact shape in which the
+local solvability criterion for a central embedding problem asks for its arithmetic input at a
+ramified place: a residue characteristic, a prime residue field, and a congruence. -/
+theorem exists_hasResidueChar_and_primeResidue {p : ℕ} (hp : p.Prime)
+    (v : HeightOneSpectrum (𝓞 K)) [v.asIdeal.LiesOver (Ideal.span {(p : ℤ)})]
+    (hdeg : (Ideal.span {(p : ℤ)}).inertiaDeg v.asIdeal = 1) {m : ℕ} (hm : m ∣ p - 1) :
+    ∃ q e : ℕ, HasResidueChar (v.adicCompletion K) q e ∧
+      (∀ x : v.adicCompletion K, Valued.v x ≤ 1 →
+        ∃ b : ℤ, Valued.v (x - (b : v.adicCompletion K)) < 1) ∧ m ∣ q - 1 :=
+  let ⟨e, he⟩ := exists_hasResidueChar_of_liesOver hp v
+  ⟨p, e, he, fun _ hx => exists_intCast_sub_lt_one_of_inertiaDeg_eq_one hp v hdeg hx, hm⟩
 
 end InverseGalois.CFT
