@@ -1,6 +1,7 @@
 import Mathlib
 import InverseGalois.CFT.KroneckerWeber
 import InverseGalois.CFT.Scholz.Condition
+import InverseGalois.CFT.Local.PrimeResidueField
 import InverseGalois.CFT.TameCyclic
 
 /-!
@@ -24,6 +25,8 @@ applies.
   condition `(S_N)`.
 * `InverseGalois.CFT.IsScholz.isCyclic_stabilizer`: **the decomposition group of such a field at a
   ramified prime is cyclic.**
+* `InverseGalois.CFT.IsSplitInertia.exists_intCast_sub_lt_one`: **the completion at a ramified
+  place has prime residue field.**
 * `InverseGalois.CFT.exists_algHom_cyclotomicField_of_isLevel`: **Kronecker–Weber for these
   fields** — an abelian one of `ℓ`-power degree and level `N ≥ 1` embeds into a cyclotomic field.
 -/
@@ -87,6 +90,17 @@ theorem IsScholz.isCyclic_stabilizer {ℓ N : ℕ} (hℓ : ℓ.Prime) (hN : N �
   refine isCyclic_stabilizer_of_isSplitInertia h.2 hmem P ?_
   rw [card_inertia_eq_ramificationIdx_span hmem.1 P]
   exact h.isTamelyRamified hℓ hN hG p hmem.1 P inferInstance inferInstance
+
+omit [IsGalois ℚ K] in
+/-- **Under Serre's residue-degree condition the completion at a ramified place has prime residue
+field.**  Every element of the completion of valuation at most one differs from a rational integer
+by an element of valuation strictly less than one. -/
+theorem IsSplitInertia.exists_intCast_sub_lt_one (h : IsSplitInertia K) {p : ℕ}
+    (hmem : p ∈ ramifiedSet K) (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K))
+    [v.asIdeal.LiesOver (Ideal.span {(p : ℤ)})] {x : v.adicCompletion K} (hx : Valued.v x ≤ 1) :
+    ∃ b : ℤ, Valued.v (x - (b : v.adicCompletion K)) < 1 :=
+  exists_intCast_sub_lt_one_of_inertiaDeg_eq_one hmem.1 v
+    (h p hmem v.asIdeal v.isPrime inferInstance) hx
 
 /-- **Kronecker–Weber for the fields of the Scholz–Reichardt induction.**  An abelian number field
 of `ℓ`-power degree whose ramified primes are congruent to one modulo `ℓ ^ N`, with `N ≥ 1`,

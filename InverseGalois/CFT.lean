@@ -183,6 +183,7 @@ import InverseGalois.CFT.Local.NatValuation
 import InverseGalois.CFT.Local.PadicSquaresTwo
 import InverseGalois.CFT.Local.PowClose
 import InverseGalois.CFT.Local.PrimeResidue
+import InverseGalois.CFT.Local.PrimeResidueField
 import InverseGalois.CFT.Local.PowNeighbourhood
 import InverseGalois.CFT.Local.RamifiedNormForm
 import InverseGalois.CFT.Local.TraceIntegral
@@ -1867,4 +1868,10 @@ it that are available here.
   group there, so **the decomposition group at a tamely ramified prime of a field satisfying that
   condition is cyclic** — exactly the hypothesis the central embedding criterion places on every
   ramified place.
+* `InverseGalois.CFT.Local.PrimeResidueField` supplies the companion hypothesis on the residue
+  field.  A residue degree equal to one makes the residue field an extension of the prime field of
+  rank one, so the rational integers already surject onto it; combined with the density of a number
+  field in its completion this gives that **at a place of residue degree one every element of the
+  valuation ring of the completion differs from a rational integer by an element of valuation less
+  than one**, which is what a prime residue field means for the criterion.
 -/
