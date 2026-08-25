@@ -25,6 +25,8 @@ of a level at each step costs nothing.
 
 * `InverseGalois.CFT.IsScholzRealizable.isInverseGalois`: a group realised by a field satisfying
   Serre's condition is a Galois group over `ℚ`.
+* `InverseGalois.CFT.isScholzRealizable_of_card_eq_pow_of_le`: granted the central step, a group of
+  order `ℓ ^ k` is realised at every level at least `k - 1`.
 * `InverseGalois.CFT.isScholzRealizable_of_isPGroup`: **granted the central step, every finite
   `ℓ`-group is realised at every level.**
 * `InverseGalois.CFT.isInverseGalois_of_isCentralStepSolvable`: **granted the central step, every
@@ -47,10 +49,12 @@ theorem IsScholzRealizable.isInverseGalois {G : Type*} [Group G] {ℓ N : ℕ}
 /-- **The central embedding step of the Scholz–Reichardt induction.**  Whenever a finite `ℓ`-group
 `G` surjects onto `H` with central kernel of order `ℓ`, a realization of `H` satisfying Serre's
 condition at level `N + 1` can be enlarged to a realization of `G` satisfying it at level `N`.
-The induction only ever meets `ℓ`-groups, so nothing beyond them is demanded. -/
+The induction only ever meets `ℓ`-groups, so nothing beyond them is demanded, and it can always be
+arranged that the order of `H` divides `ℓ ^ N`, which is therefore also assumed. -/
 def IsCentralStepSolvable (ℓ : ℕ) : Prop :=
   ∀ (N : ℕ) {G H : Type} [Group G] [Group H] [Finite G] (f : G →* H), IsPGroup ℓ G →
     Function.Surjective f → f.ker ≤ Subgroup.center G → Nat.card f.ker = ℓ →
+    Nat.card H ∣ ℓ ^ N →
     IsScholzRealizable H ℓ (N + 1) → IsScholzRealizable G ℓ N
 
 /-- **The central step holds for a split extension.**  When `G` is the direct product of `H` with
@@ -63,23 +67,24 @@ theorem isScholzRealizable_of_prod_cyclic {ℓ : ℕ} (hℓ : ℓ.Prime) {G H : 
 
 /-! ### The induction -/
 
-/-- **Granted the central step, a finite group of order `ℓ ^ k` is realised at every level.**  The
-induction is on the exponent `k`: the trivial group is realised by `ℚ`, and a nontrivial
-`ℓ`-group has a central subgroup of order `ℓ`, whose quotient is realised one level higher by the
-induction hypothesis. -/
-theorem isScholzRealizable_of_card_eq_pow {ℓ : ℕ} (hℓ : ℓ.Prime)
+/-- **Granted the central step, a finite group of order `ℓ ^ k` is realised at every level at
+least `k - 1`.**  The induction is on the exponent `k`: the trivial group is realised by `ℚ`, and a
+nontrivial `ℓ`-group has a central subgroup of order `ℓ`, whose quotient is realised one level
+higher by the induction hypothesis.  The bound on the level is what makes the order of the quotient
+divide `ℓ` to the power of the level, as the central step demands. -/
+theorem isScholzRealizable_of_card_eq_pow_of_le {ℓ : ℕ} (hℓ : ℓ.Prime)
     (hstep : IsCentralStepSolvable ℓ) (k : ℕ) :
-    ∀ (N : ℕ) (G : Type) [Group G] [Finite G], Nat.card G = ℓ ^ k →
+    ∀ (N : ℕ), k ≤ N + 1 → ∀ (G : Type) [Group G] [Finite G], Nat.card G = ℓ ^ k →
       IsScholzRealizable G ℓ N := by
   haveI : Fact ℓ.Prime := ⟨hℓ⟩
   induction k with
   | zero =>
-    intro N G _ _ hcard
+    intro N _ G _ _ hcard
     rw [pow_zero] at hcard
     haveI : Subsingleton G := (Nat.card_eq_one_iff_unique.mp hcard).1
     exact isScholzRealizable_of_subsingleton
   | succ k ih =>
-    intro N G _ _ hcard
+    intro N hkN G _ _ hcard
     have hone : 1 < Nat.card G := by
       rw [hcard]
       exact Nat.one_lt_pow (Nat.succ_ne_zero k) hℓ.one_lt
@@ -112,12 +117,25 @@ theorem isScholzRealizable_of_card_eq_pow {ℓ : ℕ} (hℓ : ℓ.Prime)
       have hsplit := Subgroup.card_eq_card_quotient_mul_card_subgroup Z
       rw [hcard, hZcard, pow_succ] at hsplit
       exact Nat.eq_of_mul_eq_mul_right hℓ.pos hsplit.symm
-    refine hstep N (QuotientGroup.mk' Z) hpg (QuotientGroup.mk'_surjective Z) ?_ ?_
-      (ih (N + 1) (G ⧸ Z) hquot)
+    refine hstep N (QuotientGroup.mk' Z) hpg (QuotientGroup.mk'_surjective Z) ?_ ?_ ?_
+      (ih (N + 1) (by omega) (G ⧸ Z) hquot)
     · rw [QuotientGroup.ker_mk']
       exact hZle
     · rw [QuotientGroup.ker_mk']
       exact hZcard
+    · rw [hquot]
+      exact pow_dvd_pow ℓ (by omega)
+
+/-- **Granted the central step, a finite group of order `ℓ ^ k` is realised at every level.**  A
+realization at a level high enough for the induction to run is a realization at every smaller
+level. -/
+theorem isScholzRealizable_of_card_eq_pow {ℓ : ℕ} (hℓ : ℓ.Prime)
+    (hstep : IsCentralStepSolvable ℓ) (k : ℕ) :
+    ∀ (N : ℕ) (G : Type) [Group G] [Finite G], Nat.card G = ℓ ^ k →
+      IsScholzRealizable G ℓ N := by
+  intro N G _ _ hcard
+  exact (isScholzRealizable_of_card_eq_pow_of_le hℓ hstep k (max N k) (by omega) G
+    hcard).mono (le_max_left N k)
 
 /-- **Granted the central step, every finite `ℓ`-group is realised at every level** by a field
 satisfying Serre's condition. -/

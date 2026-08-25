@@ -25,6 +25,8 @@ the structure theorem for finite abelian groups then covers every finite abelian
 ## Main results
 
 * `InverseGalois.CFT.isScholzRealizable_of_subsingleton`: the trivial group is realised by `ℚ`.
+* `InverseGalois.CFT.IsScholzRealizable.mono`: a realization at one level is a realization at every
+  smaller level.
 * `InverseGalois.CFT.IsScholzRealizable.prod_cyclic_pow`: **a realised group stays realised after
   multiplication by a cyclic group of order `ℓ ^ e`.**
 * `InverseGalois.CFT.isScholzRealizable_pi`: a finite product of cyclic `ℓ`-groups is realised.
@@ -95,6 +97,13 @@ def ScholzRealization.congr (e : G ≃* H) (R : ScholzRealization G ℓ N) :
 theorem IsScholzRealizable.of_mulEquiv (e : G ≃* H) (h : IsScholzRealizable G ℓ N) :
     IsScholzRealizable H ℓ N :=
   h.elim fun R => ⟨R.congr e⟩
+
+/-- **A realization at one level is a realization at every smaller level.**  Serre's condition
+becomes weaker as the level drops, since a prime congruent to one modulo `ℓ ^ N` is congruent to
+one modulo every smaller power. -/
+theorem IsScholzRealizable.mono {M : ℕ} (h : IsScholzRealizable G ℓ N) (hMN : M ≤ N) :
+    IsScholzRealizable G ℓ M :=
+  h.elim fun R => ⟨{ R with isScholz := R.isScholz.mono hMN }⟩
 
 /-- **The trivial group is realised by `ℚ` itself.** -/
 theorem isScholzRealizable_of_subsingleton [Subsingleton G] : IsScholzRealizable G ℓ N := by
