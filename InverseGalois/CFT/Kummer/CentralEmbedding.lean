@@ -6,6 +6,7 @@ import Mathlib
 import InverseGalois.CFT.GroupCohomology.CentralLift
 import InverseGalois.CFT.Kummer.CocycleDescent
 import InverseGalois.CFT.Units.ABHNCoboundary
+import InverseGalois.CFT.Units.ABHNLocalPower
 
 /-!
 # Solving a central embedding problem over a field containing the roots of unity
@@ -36,6 +37,9 @@ homomorphism, which is surjective because the kernel lies in the Frattini subgro
 * `InverseGalois.CFT.exists_surjective_hom_of_forall_ramified_lift`: **a central Frattini embedding
   problem with kernel of odd order that is solvable over the decomposition group at every ramified
   finite place is solvable over a larger extension.**
+* `InverseGalois.CFT.exists_surjective_hom_of_forall_ramified_pow`: **the same conclusion from the
+  arithmetic hypothesis that at every ramified finite place the decomposition group is cyclic and
+  the roots of unity of the base field are locally powers with exponent its order.**
 
 ## Tags
 
@@ -75,9 +79,8 @@ theorem exists_surjective_hom_of_isMulCoboundary
       ∃ φ : Gal(↥M/k) →* G, Function.Surjective φ := by
   classical
   have hapow : ∀ x y : Gal(↥K/k),
-      χ ⟨sectionFactorSet t (π x) (π y), sectionFactorSet_mem_ker f ht _ _⟩ ^ n = 1 := by
-    intro x y
-    rw [← map_pow, ← hcard, pow_card_eq_one', map_one]
+      χ ⟨sectionFactorSet t (π x) (π y), sectionFactorSet_mem_ker f ht _ _⟩ ^ n = 1 :=
+    fun x y => charFactorSet_pow_eq_one f hcard ht χ π x y
   obtain ⟨M, hMnf, hMgal, ρ, hρ, c, hcpow, hc⟩ :=
     exists_intermediateField_cochain_of_isMulCoboundary hζ hapow hb
   haveI := hMnf
@@ -128,25 +131,11 @@ theorem exists_surjective_hom_of_forall_ramified
   have hapow : ∀ x y, a x y ^ n = 1 := by
     intro x y
     rw [hadef]
-    show χ _ ^ n = 1
-    rw [← map_pow, ← hcard, pow_card_eq_one', map_one]
+    exact charFactorSet_pow_eq_one f hcard ht χ π x y
   have hacoc : ∀ x y z : Gal(↥K/k), a y z * a x (y * z) = a (x * y) z * a x y := by
     intro x y z
-    have hcom : Commute (sectionFactorSet t (π x) (π y))
-        (sectionFactorSet t (π x * π y) (π z)) :=
-      (Subgroup.mem_center_iff.1 (hZ (sectionFactorSet_mem_ker f ht (π x) (π y))) _).symm
-    have hker : (⟨sectionFactorSet t (π y) (π z), sectionFactorSet_mem_ker f ht _ _⟩ : ↥f.ker)
-          * ⟨sectionFactorSet t (π x) (π (y * z)), sectionFactorSet_mem_ker f ht _ _⟩
-        = ⟨sectionFactorSet t (π (x * y)) (π z), sectionFactorSet_mem_ker f ht _ _⟩
-          * ⟨sectionFactorSet t (π x) (π y), sectionFactorSet_mem_ker f ht _ _⟩ := by
-      refine Subtype.ext ?_
-      show sectionFactorSet t (π y) (π z) * sectionFactorSet t (π x) (π (y * z))
-        = sectionFactorSet t (π (x * y)) (π z) * sectionFactorSet t (π x) (π y)
-      rw [map_mul π x y, map_mul π y z,
-        ← sectionFactorSet_cocycle f hZ ht (π x) (π y) (π z), hcom.eq]
     rw [hadef]
-    show χ _ * χ _ = χ _ * χ _
-    rw [← map_mul, ← map_mul, hker]
+    exact charFactorSet_cocycle f hZ ht χ π x y z
   obtain ⟨b, hb⟩ := exists_isMulCoboundary_of_odd (k := k) (K := ↥K) hn hapow hacoc hram
   exact exists_surjective_hom_of_isMulCoboundary hζ hZ hfr hcard hπ hχinj hχsurj ht hb
 
@@ -215,5 +204,41 @@ theorem exists_surjective_hom_of_forall_ramified_lift
     (fun v hv => ?_)
   obtain ⟨σ, hσ⟩ := hlift v hv
   exact exists_local_coboundary_of_exists_lift (k := k) (K := ↥K) hZ ht χ v hσ
+
+set_option synthInstance.maxHeartbeats 1000000 in
+set_option maxHeartbeats 1000000 in
+/-- **A central Frattini embedding problem with kernel of odd order is solvable over a larger
+extension as soon as, at every ramified finite place with cyclic decomposition group, the roots of
+unity of the base field are locally powers with exponent the order of that group.**  This is the
+local-global principle in the form the Scholz-Reichardt construction verifies: the arithmetic input
+is a congruence on the residue characteristic of each ramified place, not a splitting of the
+extension over the decomposition group. -/
+theorem exists_surjective_hom_of_forall_ramified_pow
+    {n : ℕ} [NeZero n] (hn : Odd n) {ζ : k} (hζ : IsPrimitiveRoot ζ n)
+    {G H : Type} [Group G] [Group H] [Finite G] {f : G →* H}
+    (hZ : f.ker ≤ Subgroup.center G) (hfr : f.ker ≤ frattini G)
+    (hcard : Nat.card ↥f.ker = n)
+    {K : IntermediateField k (AlgebraicClosure k)} [NumberField ↥K] [IsGalois k ↥K]
+    {π : Gal(↥K/k) →* H} (hπ : Function.Surjective π)
+    {χ : ↥f.ker →* kˣ} (hχinj : Function.Injective χ)
+    (hχsurj : ∀ y : kˣ, y ^ n = 1 → ∃ z : ↥f.ker, χ z = y)
+    {t : H → G} (ht : ∀ h, f (t h) = h)
+    (hram : ∀ v : HeightOneSpectrum (𝓞 ↥K), ¬ Algebra.IsUnramifiedAt (𝓞 k) v.asIdeal →
+      ∃ g : ↥(stabilizer Gal(↥K/k) v),
+        (∀ x : ↥(stabilizer Gal(↥K/k) v), x ∈ Subgroup.zpowers g) ∧
+        ∀ z : kˣ, z ^ n = 1 → ∃ y : (v.adicCompletion ↥K)ˣ,
+          (∀ σ : ↥(stabilizer Gal(↥K/k) v), σ • (y : v.adicCompletion ↥K) = y) ∧
+            y ^ Nat.card ↥(stabilizer Gal(↥K/k) v)
+              = adicUnitHom v (Units.map (algebraMap k ↥K : k →* ↥K) z)) :
+    ∃ M : IntermediateField k (AlgebraicClosure k), NumberField ↥M ∧ IsGalois k ↥M ∧
+      ∃ φ : Gal(↥M/k) →* G, Function.Surjective φ := by
+  refine exists_surjective_hom_of_forall_ramified hn hζ hZ hfr hcard hπ hχinj hχsurj ht
+    (fun v hv => ?_)
+  obtain ⟨g, hg, hroot⟩ := hram v hv
+  refine exists_sub_add_eq_adicUnits_of_exists_pow (k := k) (K := ↥K) (n := n)
+    (a := fun x y => χ ⟨sectionFactorSet t (π x) (π y), sectionFactorSet_mem_ker f ht _ _⟩)
+    v hg ?_ ?_ hroot
+  · exact fun x y => charFactorSet_pow_eq_one f hcard ht χ π x y
+  · exact fun x y z => charFactorSet_cocycle f hZ ht χ π x y z
 
 end InverseGalois.CFT

@@ -64,6 +64,7 @@ import InverseGalois.CFT.GroupCohomology.Cyclic
 import InverseGalois.CFT.GroupCohomology.CyclicH1
 import InverseGalois.CFT.GroupCohomology.CyclicCoboundary
 import InverseGalois.CFT.GroupCohomology.CyclicH2
+import InverseGalois.CFT.GroupCohomology.CyclicSubgroup
 import InverseGalois.CFT.GroupCohomology.CyclicSurjective
 import InverseGalois.CFT.GroupCohomology.H1Transport
 import InverseGalois.CFT.GroupCohomology.MapCoboundary
@@ -274,6 +275,7 @@ import InverseGalois.CFT.Tate.Trivial
 import InverseGalois.CFT.Tate.TrivialLattice
 import InverseGalois.CFT.Units.ABHN
 import InverseGalois.CFT.Units.ABHNCoboundary
+import InverseGalois.CFT.Units.ABHNLocalPower
 import InverseGalois.CFT.Units.ABHNTorsion
 import InverseGalois.CFT.Units.AdicFixed
 import InverseGalois.CFT.Units.AdicIdeleHerbrand
@@ -1712,6 +1714,12 @@ it that are available here.
   The statement is given for an action by group automorphisms and, through the multiplicative copy
   of an additive group, for an action by additive automorphisms, where the sum over the group may
   be replaced by the geometric sum of the powers of a generator.
+* `InverseGalois.CFT.GroupCohomology.CyclicSubgroup` refines that criterion to a two-cocycle whose
+  values lie in a prescribed subgroup: only the elements of that subgroup need be norms, since the
+  product of the values of the normalised cocycle along a generator carries the cohomology class and
+  again lies in the subgroup.  When the subgroup consists of invariant elements the norm is a power,
+  so the criterion becomes the concrete demand that each value be a power of an invariant element
+  with exponent the order of the group.
 * `InverseGalois.CFT.Local.UnramifiedCoboundary` runs that criterion at an unramified place.  The
   decomposition group there is cyclic and the completion has a uniformizer it fixes, so the norms of
   the units of the valuation ring exhaust the fixed ones, and **every two-cocycle of the
@@ -1783,6 +1791,11 @@ it that are available here.
   `K` satisfies the additive cocycle identity exactly when it satisfies the multiplicative one, and
   **a two-cocycle of units of the base field killed by an odd integer and locally trivial at the
   ramified finite places is the coboundary of a one-cochain of units of the extension**.
+* `InverseGalois.CFT.Units.ABHNLocalPower` discharges that local condition without any local
+  reciprocity law.  The values of the cocycle come from the base field, so the decomposition group
+  fixes them; when that group is cyclic its norm is therefore the power with exponent its order, and
+  **the local condition holds as soon as each value of the cocycle is, in the completion, a power
+  with that exponent of a unit fixed by the decomposition group**.
 * `InverseGalois.CFT.Kummer.CentralEmbedding` puts those pieces together.  The factor set of a
   section of a central extension with kernel of order `n`, transported into the units of a base
   field containing a primitive `n`-th root of unity, is a two-cocycle killed by `n`; if it is a
@@ -1794,5 +1807,7 @@ it that are available here.
   discharged from the statement one actually verifies in practice: a homomorphic lift of the
   restriction of the given surjection to the decomposition group at each ramified place, because the
   difference between the section and such a lift is a kernel-valued, hence central, cochain whose
-  coboundary is the factor set.
+  coboundary is the factor set.  It is also discharged from the arithmetic hypothesis of the
+  previous file, which asks only that the decomposition group at each ramified place be cyclic and
+  that the roots of unity of the base field be locally powers with exponent its order.
 -/

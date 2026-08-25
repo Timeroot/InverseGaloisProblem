@@ -40,6 +40,10 @@ into a proper solution.
   kernel lies in the Frattini subgroup is itself surjective.
 * `InverseGalois.CFT.exists_surjective_hom_comp_eq_of_sectionFactorSet_eq`: **the two combined: a
   surjection whose pulled-back factor set is a coboundary lifts to a surjection.**
+* `InverseGalois.CFT.charFactorSet_pow_eq_one`: a character of the kernel, evaluated on the
+  pulled-back factor set, is killed by the order of the kernel.
+* `InverseGalois.CFT.charFactorSet_cocycle`: a character of a central kernel, evaluated on the
+  pulled-back factor set, is a two-cocycle for the trivial action.
 * `InverseGalois.CFT.sectionFactorSet_eq_of_hom_comp_eq`: the converse, **the pulled-back factor
   set of a homomorphism that does lift is a coboundary.**
 
@@ -152,6 +156,38 @@ theorem sectionFactorSet_eq_of_hom_comp_eq (f : G →* H) (hZ : f.ker ≤ Subgro
     rw [← map_mul, ht' (x * y), mul_assoc, inv_mul_cancel_left, map_mul, ht' x, ht' y,
       mul_assoc (c x), ← mul_assoc (c y), (hcom y (φ x)).eq, mul_assoc (φ x), ← mul_assoc (c x)]
   exact mul_right_cancel (hL.trans hR.symm)
+
+/-- **A character of the kernel, evaluated on the pulled-back factor set, is killed by the order of
+the kernel.** -/
+theorem charFactorSet_pow_eq_one {A : Type*} [Group A] (f : G →* H) [Finite ↥f.ker] {n : ℕ}
+    (hcard : Nat.card ↥f.ker = n) {t : H → G} (ht : ∀ h, f (t h) = h) (χ : ↥f.ker →* A)
+    (π : Γ →* H) (x y : Γ) :
+    χ ⟨sectionFactorSet t (π x) (π y), sectionFactorSet_mem_ker f ht _ _⟩ ^ n = 1 := by
+  rw [← map_pow, ← hcard, pow_card_eq_one', map_one]
+
+/-- **A character of a central kernel, evaluated on the pulled-back factor set, is a two-cocycle for
+the trivial action.**  The factor set already satisfies the cocycle identity inside the kernel, and
+a character carries it over. -/
+theorem charFactorSet_cocycle {A : Type*} [Group A] (f : G →* H)
+    (hZ : f.ker ≤ Subgroup.center G) {t : H → G} (ht : ∀ h, f (t h) = h) (χ : ↥f.ker →* A)
+    (π : Γ →* H) (x y z : Γ) :
+    χ ⟨sectionFactorSet t (π y) (π z), sectionFactorSet_mem_ker f ht _ _⟩
+        * χ ⟨sectionFactorSet t (π x) (π (y * z)), sectionFactorSet_mem_ker f ht _ _⟩
+      = χ ⟨sectionFactorSet t (π (x * y)) (π z), sectionFactorSet_mem_ker f ht _ _⟩
+        * χ ⟨sectionFactorSet t (π x) (π y), sectionFactorSet_mem_ker f ht _ _⟩ := by
+  have hcom : Commute (sectionFactorSet t (π x) (π y))
+      (sectionFactorSet t (π x * π y) (π z)) :=
+    (Subgroup.mem_center_iff.1 (hZ (sectionFactorSet_mem_ker f ht (π x) (π y))) _).symm
+  have hker : (⟨sectionFactorSet t (π y) (π z), sectionFactorSet_mem_ker f ht _ _⟩ : ↥f.ker)
+        * ⟨sectionFactorSet t (π x) (π (y * z)), sectionFactorSet_mem_ker f ht _ _⟩
+      = ⟨sectionFactorSet t (π (x * y)) (π z), sectionFactorSet_mem_ker f ht _ _⟩
+        * ⟨sectionFactorSet t (π x) (π y), sectionFactorSet_mem_ker f ht _ _⟩ := by
+    refine Subtype.ext ?_
+    show sectionFactorSet t (π y) (π z) * sectionFactorSet t (π x) (π (y * z))
+      = sectionFactorSet t (π (x * y)) (π z) * sectionFactorSet t (π x) (π y)
+    rw [map_mul π x y, map_mul π y z,
+      ← sectionFactorSet_cocycle f hZ ht (π x) (π y) (π z), hcom.eq]
+  rw [← map_mul, ← map_mul, hker]
 
 /-- **A lift of a surjection through a surjection whose kernel lies in the Frattini subgroup is
 itself surjective.**  Every element of the source differs from a value of the lift by an element of

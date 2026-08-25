@@ -31,8 +31,10 @@ Together with `InverseGalois.CFT.isMulCoboundary₂_cyclicCocycle_iff` this is t
 
 * `InverseGalois.CFT.cocyclePartial_mul_smul`: the key multiplicativity property of the partial
   products, expressing that they compute the powers of the symbol attached to `g`.
-* `InverseGalois.CFT.exists_isMulCoboundary₂_div_cyclicCocycle_of_map_one`: the main computation,
-  for a normalised multiplicative two-cocycle.
+* `InverseGalois.CFT.isMulCoboundary₂_div_cyclicCocycle_of_map_one`: the main computation, for a
+  normalised multiplicative two-cocycle, with the invariant named.
+* `InverseGalois.CFT.exists_isMulCoboundary₂_div_cyclicCocycle_of_map_one`: the same statement in
+  existential form.
 * `InverseGalois.CFT.exists_isMulCoboundary₂_div_cyclicCocycle`: every multiplicative two-cocycle
   on a finite cyclic group is cohomologous to `cyclicCocycle g a` for some `G`-invariant `a`.
 * `InverseGalois.CFT.exists_H2π_cyclicCocycle_eq`: every class in `H²(G, M)` is the class of some
@@ -162,14 +164,13 @@ theorem cocyclePartial_card_add (hg : ∀ x : G, x ∈ Subgroup.zpowers g) {f : 
 /-- A multiplicative two-cocycle on a finite cyclic group which is normalised at `(1, 1)` is
 cohomologous to the explicit cocycle attached to the `G`-invariant element
 `∏_{j < n} f (g ^ j, g)`. -/
-theorem exists_isMulCoboundary₂_div_cyclicCocycle_of_map_one
+theorem isMulCoboundary₂_div_cyclicCocycle_of_map_one
     (hg : ∀ x : G, x ∈ Subgroup.zpowers g) {f : G × G → M} (hf : IsMulCocycle₂ f)
     (hf1 : f (1, 1) = 1) :
-    ∃ a : M, (∀ σ : G, σ • a = a) ∧
-      IsMulCoboundary₂ (fun p : G × G => f p / cyclicCocycle g a p) := by
+    IsMulCoboundary₂
+      (fun p : G × G => f p / cyclicCocycle g (cocyclePartial g f (Nat.card G)) p) := by
   letI := neZero_card G
-  refine ⟨cocyclePartial g f (Nat.card G), smul_cocyclePartial_card hg hf hf1,
-    fun σ => (cocyclePartial g f (dlog g σ).val)⁻¹, fun σ τ => ?_⟩
+  refine ⟨fun σ => (cocyclePartial g f (dlog g σ).val)⁻¹, fun σ τ => ?_⟩
   show σ • (cocyclePartial g f (dlog g τ).val)⁻¹ /
       (cocyclePartial g f (dlog g (σ * τ)).val)⁻¹ * (cocyclePartial g f (dlog g σ).val)⁻¹
       = f (σ, τ) / cyclicCocycle g (cocyclePartial g f (Nat.card G)) (σ, τ)
@@ -200,6 +201,16 @@ theorem exists_isMulCoboundary₂_div_cyclicCocycle_of_map_one
     apply Additive.ofMul.injective
     simp only [ofMul_mul, ofMul_div, ofMul_inv]
     abel
+
+/-- A multiplicative two-cocycle on a finite cyclic group which is normalised at `(1, 1)` is
+cohomologous to the explicit cocycle attached to a `G`-invariant element. -/
+theorem exists_isMulCoboundary₂_div_cyclicCocycle_of_map_one
+    (hg : ∀ x : G, x ∈ Subgroup.zpowers g) {f : G × G → M} (hf : IsMulCocycle₂ f)
+    (hf1 : f (1, 1) = 1) :
+    ∃ a : M, (∀ σ : G, σ • a = a) ∧
+      IsMulCoboundary₂ (fun p : G × G => f p / cyclicCocycle g a p) :=
+  ⟨cocyclePartial g f (Nat.card G), smul_cocyclePartial_card hg hf hf1,
+    isMulCoboundary₂_div_cyclicCocycle_of_map_one hg hf hf1⟩
 
 omit [Fintype G] in
 /-- Dividing a multiplicative two-cocycle by the coboundary `σ ↦ σ • b` of a constant `1`-cochain
