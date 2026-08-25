@@ -287,6 +287,7 @@ import InverseGalois.CFT.Units.IdeleClassFixed
 import InverseGalois.CFT.Units.IdeleClassH1
 import InverseGalois.CFT.Units.IdeleClassH1Full
 import InverseGalois.CFT.Units.IdeleClassIndex
+import InverseGalois.CFT.Units.IdeleClassSES
 import InverseGalois.CFT.Units.IdeleClassTower
 import InverseGalois.CFT.Units.IdeleFixed
 import InverseGalois.CFT.Units.IdeleNorm
@@ -1677,4 +1678,9 @@ it that are available here.
   the exponent settle every extension of prime-power degree; and restriction to a Sylow subgroup is
   the cohomology over its fixed field, whose degree is a prime power.  **The first cohomology of the
   idele class group of an arbitrary Galois extension of number fields vanishes.**
+* `InverseGalois.CFT.Units.IdeleClassSES` assembles the units, the ideles and the idele classes into
+  a short exact sequence of representations of the Galois group.  Its long exact cohomology sequence
+  starts at the first cohomology of the idele classes, which has just been shown to vanish, so **the
+  second cohomology of the units injects into the second cohomology of the ideles** — the global
+  half of the Albert-Brauer-Hasse-Noether theorem.
 -/
