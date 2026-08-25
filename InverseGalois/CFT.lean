@@ -211,6 +211,7 @@ import InverseGalois.CFT.Scholz.LocalTransport
 import InverseGalois.CFT.Scholz.NilpotentOdd
 import InverseGalois.CFT.Scholz.NilpotentSylowTwo
 import InverseGalois.CFT.Scholz.PrimeChoice
+import InverseGalois.CFT.Scholz.ProperSolution
 import InverseGalois.CFT.Scholz.RadicalDisjoint
 import InverseGalois.CFT.Scholz.RadicalTower
 import InverseGalois.CFT.Scholz.Realization
@@ -470,6 +471,9 @@ it that are available here.
   restriction to that field is injective on the Galois group over the enlarged base.
 * `InverseGalois.CFT.Scholz.CompositumTransport` specialises that reading to the compositum of the
   original field with the cyclotomic field, where both factors reappear as copies of themselves.
+* `InverseGalois.CFT.Scholz.ProperSolution` solves a central Frattini embedding problem with kernel
+  of odd prime order over that compositum, which is where the roots of unity the criterion needs are
+  available.
 * `InverseGalois.CFT.Scholz.Tame` shows that every field satisfying the level condition with
   `ℓ`-power degree is tamely ramified, so that the tame Kronecker–Weber theorem applies to all of
   them.
