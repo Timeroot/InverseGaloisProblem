@@ -219,6 +219,7 @@ import InverseGalois.CFT.SquareClasses
 import InverseGalois.CFT.SubgroupCounting
 import InverseGalois.CFT.SubgroupIndex
 import InverseGalois.CFT.TameCharacter
+import InverseGalois.CFT.TameCyclic
 import InverseGalois.CFT.TameFrobenius
 import InverseGalois.CFT.TameRamification
 import InverseGalois.CFT.Tate.Augmentation
@@ -1859,4 +1860,11 @@ it that are available here.
   homomorphism whose value at `τ` is central therefore fixes that value under the `p`-th power map,
   so **a central value killed by an integer coprime to `p - 1` is trivial**.  This is why a
   homomorphism to an `ℓ`-group can be tamely ramified only at primes congruent to one modulo `ℓ`.
+* `InverseGalois.CFT.TameCyclic` records the shape of the local groups the criterion asks about.
+  The tame character embeds the inertia group at a prime into the units of its residue field, a
+  finite subgroup of the units of a domain, so **tame inertia is cyclic**; and Serre's
+  residue-degree condition identifies the decomposition group at a ramified prime with the inertia
+  group there, so **the decomposition group at a tamely ramified prime of a field satisfying that
+  condition is cyclic** — exactly the hypothesis the central embedding criterion places on every
+  ramified place.
 -/
