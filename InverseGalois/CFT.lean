@@ -223,6 +223,7 @@ import InverseGalois.CFT.Scholz.SplitCase
 import InverseGalois.CFT.Scholz.SplitReduction
 import InverseGalois.CFT.Scholz.SplitStep
 import InverseGalois.CFT.Scholz.Tame
+import InverseGalois.CFT.Scholz.Twist
 import InverseGalois.CFT.SplitCompositum
 import InverseGalois.CFT.SquareClasses
 import InverseGalois.CFT.SubgroupCounting
@@ -486,6 +487,9 @@ it that are available here.
 * `InverseGalois.CFT.Scholz.Tame` shows that every field satisfying the level condition with
   `ℓ`-power degree is tamely ramified, so that the tame Kronecker–Weber theorem applies to all of
   them.
+* `InverseGalois.CFT.Scholz.Twist` corrects a solution of a central Frattini embedding problem by a
+  character of an auxiliary Galois extension with values in the kernel, over a Galois extension
+  containing both fields.
 * `InverseGalois.CFT.Scholz.Selector` builds a single Galois number field containing a prescribed
   number field, a prescribed root of unity and prescribed radicals, the field whose completely
   split primes the induction selects.

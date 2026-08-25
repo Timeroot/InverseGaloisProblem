@@ -23,6 +23,7 @@ apply the automorphism, read inside the ambient field.
 
 * `InverseGalois.CFT.coe_galRestrictLE`: **the restriction acts as the original automorphism**,
   read inside the ambient field.
+* `InverseGalois.CFT.galRestrictLE_galRestrictLE`: **restricting twice is restricting once.**
 
 ## Tags
 
@@ -51,6 +52,13 @@ noncomputable def galRestrictLE (h : E ≤ E') [Normal F ↥E] : Gal(↥E'/F) �
 theorem coe_galRestrictLE (h : E ≤ E') [Normal F ↥E] (σ : Gal(↥E'/F)) (x : ↥E) :
     ((galRestrictLE h σ x : ↥E) : L) = ((σ ⟨(x : L), h x.2⟩ : ↥E') : L) :=
   coe_autCongr_symm_restrictNormalHom h σ x
+
+/-- **Restricting twice is restricting once.** -/
+theorem galRestrictLE_galRestrictLE {E'' : IntermediateField F L} (h : E ≤ E') (h' : E' ≤ E'')
+    [Normal F ↥E] [Normal F ↥E'] (σ : Gal(↥E''/F)) :
+    galRestrictLE h (galRestrictLE h' σ) = galRestrictLE (h.trans h') σ := by
+  refine AlgEquiv.ext fun x => Subtype.ext ?_
+  rw [coe_galRestrictLE h, coe_galRestrictLE h', coe_galRestrictLE (h.trans h')]
 
 /-- **Every automorphism of a normal subextension extends to the larger intermediate field**, when
 that too is normal over the base. -/
