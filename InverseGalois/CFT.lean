@@ -63,6 +63,7 @@ import InverseGalois.CFT.GroupCohomology.CyclicCoboundary
 import InverseGalois.CFT.GroupCohomology.CyclicH2
 import InverseGalois.CFT.GroupCohomology.CyclicSurjective
 import InverseGalois.CFT.GroupCohomology.H1Transport
+import InverseGalois.CFT.GroupCohomology.MapCoboundary
 import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.SylowRes
 import InverseGalois.CFT.GroupCohomology.ToCocycle
@@ -263,6 +264,7 @@ import InverseGalois.CFT.Tate.Shapiro
 import InverseGalois.CFT.Tate.Surjection
 import InverseGalois.CFT.Tate.Trivial
 import InverseGalois.CFT.Tate.TrivialLattice
+import InverseGalois.CFT.Units.ABHN
 import InverseGalois.CFT.Units.AdicFixed
 import InverseGalois.CFT.Units.AdicIdeleHerbrand
 import InverseGalois.CFT.Units.AdicOrbit
@@ -1709,4 +1711,12 @@ it that are available here.
   one another, so a local one-cochain at each place assembles into a global one; at all but the
   finitely many places which are ramified or where the cocycle is not a unit, the local cochain may
   be chosen with values in the units of the valuation ring, and the assembled family is an idele.
+* `InverseGalois.CFT.GroupCohomology.MapCoboundary` records the elementary fact that a map of
+  representations which is injective on second cohomology reflects coboundaries, which is how an
+  injectivity statement coming from a long exact sequence gets applied to an explicit cocycle.
+* `InverseGalois.CFT.Units.ABHN` combines the two halves.  The second cohomology of the units
+  injects into the second cohomology of the ideles, and a two-cocycle of the ideles which is locally
+  a coboundary is a coboundary, so **a two-cocycle with values in the units of the top field which
+  is a coboundary at every place is a coboundary** — the Albert-Brauer-Hasse-Noether theorem in the
+  shape of the vanishing of the second Tate-Shafarevich group of the units.
 -/
