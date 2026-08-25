@@ -932,6 +932,81 @@ the ramified side and all local:
 
 ---
 
+## 0.12 Status (2026-08-25) — item 5 is *not* Kronecker–Weber; it is one local count at `ℓ`
+
+Items 1, 3 and 4 of the list closing §0.11 are done (`Kummer/RadicalClosure.lean`,
+`Kummer/CocycleDescent.lean`, `Kummer/CentralEmbedding.lean`, `Local/PrimeResidue.lean`,
+`Units/ABHNRamified.lean`, `GroupCohomology/CoprimeDescent.lean`). What the Kummer tower now
+delivers is packaged as
+
+```lean
+InverseGalois.CFT.HasProperSolution (K : IntermediateField k Ω) (f : G →* H) (π : Gal(↥K/k) →* H) :=
+  ∃ M, K ≤ M ∧ NumberField ↥M ∧ IsGalois k ↥M ∧
+    ∃ ρ : Gal(↥M/k) →* Gal(↥K/k), Surjective ρ ∧ (ρ is restriction of automorphisms) ∧
+      ∃ φ : Gal(↥M/k) →* G, Surjective φ ∧ ∀ g, f (φ g) = π (ρ g)
+```
+
+— a *proper* solution of the embedding problem in a field containing the given one, with the
+compatibility retained. **It carries no ramification control at all**, and that is now the whole of
+what is left.
+
+### The reduction of Serre's Lemma 2.1.6 over ℚ
+
+Serre glues local characters using local *and* global class field theory. Over ℚ, and for a kernel
+`C = C_ℓ` of prime order, the gluing needs strictly less. Write `ε_p := φ̃|_{I_p}`, a character
+`I_p → C_ℓ` (it lands in `C_ℓ` because `φ = π ∘ φ̃` is unramified at every `p ∉ ram(L)`, and `L`
+satisfies `(S_{N+1})` so `ℓ ∉ ram(L)`). Two elementary observations collapse the problem:
+
+* `ε_p` is invariant under conjugation by the decomposition group `D_p`, because `C_ℓ` is central
+  in `G` and `ε_p` is the restriction of the homomorphism `φ̃` defined on all of `D_p`.
+* The group `Hom(I_p, C_ℓ)^{D_p}` is therefore the only receptacle, and it is *small*:
+
+| `p` | `Hom(I_p, C_ℓ)^{D_p}` | why |
+|---|---|---|
+| `p ≠ ℓ`, `ℓ ∤ p − 1` | trivial | Frobenius acts on tame inertia by `τ ↦ τ^p`, so `ε(τ)^{p−1} = 1` |
+| `p ≠ ℓ`, `ℓ ∣ p − 1` | cyclic of order `ℓ` | tame quotient of `I_p` is `∏_{q≠p} ℤ_q`, so `Hom(I_p, C_ℓ) ≅ C_ℓ` |
+| `p = ℓ` | cyclic of order `ℓ` | inflation–restriction: `H¹(D_ℓ, 𝔽_ℓ)` has order `ℓ²`, `H¹(D_ℓ/I_ℓ, 𝔽_ℓ)` order `ℓ`, `H²(Ẑ, 𝔽_ℓ) = 0` |
+
+and in each of the two nontrivial rows the restriction of an explicit **cyclotomic** character is a
+generator: the degree-`ℓ` subfield of `ℚ(μ_p)` for `p ≡ 1 mod ℓ` (totally ramified at `p`,
+unramified elsewhere), and the degree-`ℓ` subfield of `ℚ(μ_{ℓ²})` for `p = ℓ`. Hence
+
+> **Lemma 2.1.6 over ℚ for `C = C_ℓ` is: `ε := ∏_p χ_p^{a_p}`**, a finite product of cyclotomic
+> characters, with the exponents `a_p` read off one prime at a time. **No Kronecker–Weber, no
+> reciprocity law, no global idele class group.**
+
+`InverseGalois/CFT/Cyclotomic/OnePrimeRamified.lean` already supplies the characters of the second
+row (`exists_cyclic_ramified_exactly_at_one_prime`), and `Cyclotomic/CyclicSubfield.lean` the cyclic
+subfields of `ℚ(μ_q)`; the tame row is `TameCharacter.lean` (`tameChar_conj_arithFrobAt`,
+`card_inertia_dvd_sub_one`); `Scholz/Tame.lean` already has tame Kronecker–Weber
+(`exists_algHom_cyclotomicField_of_isLevel`).
+
+### What genuinely remains
+
+The single irreducible input is the last row of the table, i.e. the **local count at `ℓ`**:
+
+> **(L_ℓ)** `ℚ_ℓ` has exactly `ℓ + 1` cyclic extensions of degree `ℓ`; equivalently
+> `|H¹(G_{ℚ_ℓ}, ℤ/ℓ)| = ℓ²`; equivalently every cyclic degree-`ℓ` extension of `ℚ_ℓ` lies in
+> `ℚ_ℓ(μ_{ℓ²}) · ℚ_ℓ^{ur}` — **local Kronecker–Weber in exponent `ℓ` at the residue characteristic**.
+
+An elementary route avoiding local class field theory: descend to `E = ℚ_ℓ(μ_ℓ)`, whose degree
+`ℓ − 1` over `ℚ_ℓ` is prime to `ℓ`, so `H¹(G_{ℚ_ℓ}, ℤ/ℓ)` is the `ω`-eigenspace of
+`E^×/(E^×)^ℓ` for `Δ = Gal(E/ℚ_ℓ)` (Kummer theory plus inflation–restriction). As a `Δ`-module
+`E^×/(E^×)^ℓ ≅ 𝔽_ℓ ⊕ μ_ℓ ⊕ 𝔽_ℓ[Δ]` — valuation, roots of unity, and the principal units, the last
+by the `ℓ`-adic logarithm on `U¹` — so the `ω`-eigenspace is two-dimensional. The local unit
+filtration machinery this needs is already present (`Local/UnitFiltration.lean`, `Local/Exp.lean`,
+`Local/ExpEquiv.lean`, `Local/FiltrationHerbrand.lean`).
+
+*Why the wild place cannot be dodged.* `(S_N)` forbids ramification at `ℓ`, and the tame part of
+`I_ℓ` has order prime to `ℓ` so maps trivially into the `ℓ`-group `G`; the obstruction is exactly
+`φ̃` on **wild** inertia at `ℓ`. The Kummer freedom in the solution (replacing `β` by `βγ`,
+`γ ∈ k^×`) only moves the local class at `λ ∣ ℓ` inside the image of `k_λ^×`, which is a proper
+subgroup of `(K_λ^×/(K_λ^×)^ℓ)^{D_λ}` in general; and `(S_N)` does *not* require the solution to be
+unramified outside `ram(L)` — extra ramification at good primes `q ≡ 1 mod ℓ^N` splitting completely
+in `L` is harmless — but no amount of good extra ramification removes a bad one at `ℓ`.
+
+---
+
 ## 1. Scholz–Reichardt
 
 ### 1.1 Statement

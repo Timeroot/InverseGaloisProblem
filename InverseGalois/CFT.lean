@@ -56,6 +56,7 @@ import InverseGalois.CFT.Disjoint
 import InverseGalois.CFT.GaloisDescent
 import InverseGalois.CFT.GroupCohomology.Classification
 import InverseGalois.CFT.GroupCohomology.CentralLift
+import InverseGalois.CFT.GroupCohomology.CentralTwist
 import InverseGalois.CFT.GroupCohomology.Cohomologous
 import InverseGalois.CFT.GroupCohomology.CoprimeCoboundary
 import InverseGalois.CFT.GroupCohomology.CoprimeDescent
@@ -218,6 +219,7 @@ import InverseGalois.CFT.SquareClasses
 import InverseGalois.CFT.SubgroupCounting
 import InverseGalois.CFT.SubgroupIndex
 import InverseGalois.CFT.TameCharacter
+import InverseGalois.CFT.TameFrobenius
 import InverseGalois.CFT.TameRamification
 import InverseGalois.CFT.Tate.Augmentation
 import InverseGalois.CFT.Tate.Averaging
@@ -1838,10 +1840,23 @@ it that are available here.
   previous file, which asks only that the decomposition group at each ramified place be cyclic and
   that the roots of unity of the base field be locally powers with exponent its order.
 * `InverseGalois.CFT.GroupCohomology.CoprimeDescent` carries the solution back down from the
-  cyclotomic field to the base.  The pullback of the two surjections defining an embedding problem is
-  a central extension of the source of the given homomorphism by the kernel, a solution of the
+  cyclotomic field to the base.  The pullback of the two surjections defining an embedding problem
+  is a central extension of the source of the given homomorphism by the kernel, a solution of the
   problem restricted to a subgroup is exactly a section of that extension over the subgroup, and the
   transfer extends such a section whenever the index of the subgroup is coprime to the order of the
   kernel; hence **an embedding problem with central kernel which is solved over a subgroup of
   coprime index is solved**, properly so when the kernel lies in the Frattini subgroup.
+* `InverseGalois.CFT.GroupCohomology.CentralTwist` records the freedom left in a solution.  A
+  homomorphism whose values are central may be multiplied pointwise into any homomorphism and the
+  product is again a homomorphism; if in addition the values lie in the kernel of the surjection
+  being lifted then **the twisted homomorphism lifts the same map**, and it is again surjective
+  whenever the kernel lies in the Frattini subgroup.  Correcting a solution prime by prime by a
+  character of order `ℓ` is the mechanism that turns an arbitrary solution into one whose
+  ramification is controlled.
+* `InverseGalois.CFT.TameFrobenius` supplies the arithmetic constraint that such a correction has to
+  satisfy.  Injectivity of the tame character turns the equivariance of the tame character under
+  the arithmetic Frobenius into the relation `F τ F⁻¹ = τ ^ p` inside the decomposition group; a
+  homomorphism whose value at `τ` is central therefore fixes that value under the `p`-th power map,
+  so **a central value killed by an integer coprime to `p - 1` is trivial**.  This is why a
+  homomorphism to an `ℓ`-group can be tamely ramified only at primes congruent to one modulo `ℓ`.
 -/
