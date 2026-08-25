@@ -28,6 +28,9 @@ subgroup at the prime, which is what allows a power of it to cancel the unwanted
 * `InverseGalois.CFT.exists_hom_inertia_map_eq`: **the same extension, together with a character
   with values in a prescribed group of order `ℓ` which maps the inertia subgroup at `p` onto that
   whole group.**
+* `InverseGalois.CFT.exists_totallyRamified_hom_range_eq`: the same extension and character, with
+  the total ramification recorded instead, which is the form in which they travel into a larger
+  field.
 
 ## Tags
 
@@ -89,5 +92,28 @@ theorem exists_hom_inertia_map_eq (hℓ : ℓ.Prime) (hℓ2 : ℓ ≠ 2) (hp : p
       Subgroup.range_subtype]
   refine ⟨E, hNF, hgal, hram, χ, hrange, fun Q hQp hQo => ?_⟩
   rw [hinert Q hQp hQo, ← MonoidHom.range_eq_map, hrange]
+
+/-- **The correcting field together with its character.**  The same cyclic extension of degree `ℓ`,
+recorded with the total ramification at the prime and the character with image the prescribed group
+of order `ℓ`, which is the shape in which it is used to correct the ramification of a solution of
+an embedding problem posed over a larger field. -/
+theorem exists_totallyRamified_hom_range_eq (hℓ : ℓ.Prime) (hℓ2 : ℓ ≠ 2) (hp : p.Prime)
+    (hcond : p = ℓ ∨ ℓ ∣ p - 1) {G : Type*} [Group G] (C : Subgroup G) (hC : Nat.card ↥C = ℓ) :
+    ∃ E : IntermediateField ℚ (AlgebraicClosure ℚ), ∃ _ : NumberField ↥E, IsGalois ℚ ↥E ∧
+      IsPGroup ℓ Gal(↥E/ℚ) ∧ ramifiedSet ↥E ⊆ {p} ∧
+      (∀ (Q : Ideal (𝓞 ↥E)) (_ : Q.IsPrime) (_ : Q.LiesOver (Ideal.span {(p : ℤ)})),
+        Ideal.inertia Gal(↥E/ℚ) Q = ⊤) ∧ ∃ χ : Gal(↥E/ℚ) →* G, χ.range = C := by
+  haveI : Fact ℓ.Prime := ⟨hℓ⟩
+  obtain ⟨E, hNF, hgal, hcyc, hrank, hram, hinert⟩ :=
+    exists_cyclic_totallyRamified_of_prime hℓ hℓ2 hp hcond
+  haveI := hNF
+  haveI := hgal
+  have hcard : Nat.card Gal(↥E/ℚ) = ℓ := by
+    rw [IsGalois.card_aut_eq_finrank ℚ ↥E, hrank]
+  refine ⟨E, hNF, hgal, IsPGroup.of_card (n := 1) (by rw [pow_one, hcard]), hram, hinert,
+    C.subtype.comp (mulEquivOfPrimeCardEq hcard hC).toMonoidHom, ?_⟩
+  rw [MonoidHom.range_comp, MonoidHom.range_eq_top.mpr
+    (mulEquivOfPrimeCardEq hcard hC).surjective, ← MonoidHom.range_eq_map,
+    Subgroup.range_subtype]
 
 end InverseGalois.CFT

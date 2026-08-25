@@ -22,6 +22,8 @@ degree, so its inertia subgroups away from `ℓ` are still tame and cyclic.
 * `InverseGalois.CFT.isPGroup_sup`: **the compositum of two normal subextensions whose Galois
   groups are `ℓ`-groups has an `ℓ`-group as Galois group.**
 * `InverseGalois.CFT.isPGroup_finsetSup`: the same for the compositum of a finite family.
+* `InverseGalois.CFT.finiteDimensional_finsetSup`: the compositum of a finite family of finite
+  subextensions is finite.
 
 ## Tags
 
@@ -61,6 +63,19 @@ theorem normal_bot : Normal F ↥(⊥ : IntermediateField F L) :=
   Normal.of_algEquiv (IntermediateField.botEquiv F L).symm
 
 variable {ι : Type*} (A : ι → IntermediateField F L)
+
+/-- The compositum of a finite family of finite subextensions is finite. -/
+theorem finiteDimensional_finsetSup [∀ i, FiniteDimensional F ↥(A i)] (s : Finset ι) :
+    FiniteDimensional F ↥(s.sup A) := by
+  classical
+  induction s using Finset.cons_induction with
+  | empty =>
+    rw [Finset.sup_empty]
+    exact (IntermediateField.botEquiv F L).symm.toLinearEquiv.finiteDimensional
+  | cons a s _ ih =>
+    haveI := ih
+    rw [Finset.sup_cons]
+    infer_instance
 
 /-- The compositum of a finite family of normal subextensions is normal. -/
 theorem normal_finsetSup [∀ i, Normal F ↥(A i)] (s : Finset ι) : Normal F ↥(s.sup A) := by

@@ -216,8 +216,10 @@ import InverseGalois.CFT.Scholz.CentralStep
 import InverseGalois.CFT.Scholz.CompositumTransport
 import InverseGalois.CFT.Scholz.Condition
 import InverseGalois.CFT.Scholz.CorrectingCharacter
+import InverseGalois.CFT.Scholz.CorrectingSubfield
 import InverseGalois.CFT.Scholz.FrattiniStep
 import InverseGalois.CFT.Scholz.Induction
+import InverseGalois.CFT.Scholz.InertiaRankOne
 import InverseGalois.CFT.Scholz.InertiaTwist
 import InverseGalois.CFT.Scholz.LocalTransport
 import InverseGalois.CFT.Scholz.NilpotentOdd
@@ -237,6 +239,7 @@ import InverseGalois.CFT.Scholz.SplitStep
 import InverseGalois.CFT.Scholz.Tame
 import InverseGalois.CFT.Scholz.Twist
 import InverseGalois.CFT.Scholz.TwistStep
+import InverseGalois.CFT.Scholz.UnramifiedSolution
 import InverseGalois.CFT.SplitCompositum
 import InverseGalois.CFT.SquareClasses
 import InverseGalois.CFT.SubgroupCounting
@@ -547,6 +550,15 @@ it that are available here.
   unwanted primes, so that a solution of a central Frattini embedding problem can be taken to
   ramify only inside a prescribed set of primes; the characters are supplied by normal
   subextensions ramified at one prime each.
+* `InverseGalois.CFT.Scholz.InertiaRankOne` isolates the one local fact the correction needs at a
+  prime, namely that the solution is already a power of the character on the inertia subgroup
+  there; away from the residue characteristic it follows from cyclicity of inertia.
+* `InverseGalois.CFT.Scholz.CorrectingSubfield` carries a correcting character built inside an
+  algebraic closure into any larger field containing the subfield it was built on.
+* `InverseGalois.CFT.Scholz.UnramifiedSolution` assembles the whole correction: adjoining the
+  cyclic extensions attached to the finitely many unwanted primes keeps the degree a power of the
+  residue characteristic, and the twisted solution cut down to its own field ramifies nowhere
+  outside the field the embedding problem was posed over.
 * `InverseGalois.CFT.Scholz.Selector` builds a single Galois number field containing a prescribed
   number field, a prescribed root of unity and prescribed radicals, the field whose completely
   split primes the induction selects.
