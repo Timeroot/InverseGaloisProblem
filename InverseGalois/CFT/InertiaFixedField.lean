@@ -35,6 +35,9 @@ no more of a decomposition group than of its inertia subgroup.
   that subgroup.**
 * `InverseGalois.CFT.notMem_ramifiedSet_fixedField_ker`: **a rational prime at which a homomorphism
   kills every inertia subgroup is unramified in the fixed field of its kernel.**
+* `InverseGalois.CFT.forall_inertia_le_of_inertia_le` and
+  `InverseGalois.CFT.notMem_ramifiedSet_fixedField_ker_of_inertia`: for a normal subgroup **one
+  prime above `p` suffices**, since the Galois group permutes them transitively.
 * `InverseGalois.CFT.inertiaDeg_under_fixedField_eq_one_of_stabilizer_le`: **a prime of the fixed
   field of a normal subgroup absorbing the decomposition group modulo inertia has residue degree
   one.**
@@ -114,6 +117,43 @@ theorem notMem_ramifiedSet_fixedField_ker {G : Type*} [Group G] (ψ : Gal(N/ℚ)
       ∀ σ ∈ Ideal.inertia Gal(N/ℚ) P, ψ σ = 1) :
     p ∉ ramifiedSet ↥(IntermediateField.fixedField ψ.ker) :=
   notMem_ramifiedSet_fixedField ψ.ker hp fun P h1 h2 σ hσ => MonoidHom.mem_ker.mpr (h P h1 h2 σ hσ)
+
+section Conjugate
+
+/-- **A normal subgroup containing the inertia subgroup of one prime above `p` contains them all.**
+The Galois group permutes the primes above `p` transitively, and conjugation carries the inertia
+subgroup of a prime to that of its image. -/
+theorem forall_inertia_le_of_inertia_le (H : Subgroup Gal(N/ℚ)) [hH : H.Normal]
+    (P : Ideal (𝓞 N)) [P.IsPrime] (hP : P.LiesOver (Ideal.span {(p : ℤ)}))
+    (hle : Ideal.inertia Gal(N/ℚ) P ≤ H) (Q : Ideal (𝓞 N)) [Q.IsPrime]
+    (hQ : Q.LiesOver (Ideal.span {(p : ℤ)})) :
+    Ideal.inertia Gal(N/ℚ) Q ≤ H := by
+  haveI := hP
+  haveI := hQ
+  obtain ⟨σ, hσ⟩ := Ideal.exists_smul_eq_of_isGaloisGroup (Ideal.span {(p : ℤ)}) P Q Gal(N/ℚ)
+  rw [← hσ, inertia_smul]
+  rintro - ⟨ρ, hρ, rfl⟩
+  exact hH.conj_mem ρ (hle hρ) σ
+
+/-- **A rational prime one of whose inertia subgroups lies in a normal subgroup is unramified in the
+fixed field of that subgroup.** -/
+theorem notMem_ramifiedSet_fixedField_of_inertia_le (H : Subgroup Gal(N/ℚ)) [H.Normal]
+    (hp : p.Prime) (P : Ideal (𝓞 N)) [P.IsPrime] [P.LiesOver (Ideal.span {(p : ℤ)})]
+    (hle : Ideal.inertia Gal(N/ℚ) P ≤ H) :
+    p ∉ ramifiedSet ↥(IntermediateField.fixedField H) := by
+  refine notMem_ramifiedSet_fixedField H hp fun Q h1 h2 => ?_
+  haveI := h1
+  exact forall_inertia_le_of_inertia_le H P inferInstance hle Q h2
+
+/-- **A rational prime at which a homomorphism kills the inertia subgroup of one prime above it is
+unramified in the fixed field of the kernel.** -/
+theorem notMem_ramifiedSet_fixedField_ker_of_inertia {G : Type*} [Group G] (ψ : Gal(N/ℚ) →* G)
+    (hp : p.Prime) (P : Ideal (𝓞 N)) [P.IsPrime] [P.LiesOver (Ideal.span {(p : ℤ)})]
+    (h : ∀ σ ∈ Ideal.inertia Gal(N/ℚ) P, ψ σ = 1) :
+    p ∉ ramifiedSet ↥(IntermediateField.fixedField ψ.ker) :=
+  notMem_ramifiedSet_fixedField_of_inertia_le ψ.ker hp P fun σ hσ => MonoidHom.mem_ker.mpr (h σ hσ)
+
+end Conjugate
 
 section GroupTheory
 

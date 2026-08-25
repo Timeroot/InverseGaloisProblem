@@ -21,6 +21,8 @@ compositum is the intersection of the two fixing subgroups.
 * `InverseGalois.CFT.ramifiedSet_sup`: the ramified primes of a compositum are the union of the
   ramified primes of the two factors.
 * `InverseGalois.CFT.IsLevel.sup`: the level condition passes to a compositum.
+* `InverseGalois.CFT.card_inertia_eq_mul`: the order of an inertia subgroup is the ramification
+  index in an intermediate field times the order of the inertia subgroup over that field.
 -/
 
 open NumberField InverseGalois.NumberTheory
@@ -89,7 +91,7 @@ private theorem card_inertia_fixingSubgroup_eq_ramificationIdx (F : Intermediate
 
 /-- The order of the inertia subgroup over `ℚ` is the ramification index in an intermediate field
 times the order of the inertia subgroup inside the subgroup fixing that field. -/
-private theorem card_inertia_eq_mul (F : IntermediateField ℚ N) {p : ℕ} (hp : p.Prime)
+theorem card_inertia_eq_mul (F : IntermediateField ℚ N) {p : ℕ} (hp : p.Prime)
     (P : Ideal (𝓞 N)) [P.IsMaximal] [hover : P.LiesOver (Ideal.span {(p : ℤ)})] :
     Nat.card (P.inertia (N ≃ₐ[ℚ] N)) =
       Ideal.ramificationIdx (algebraMap ℤ (𝓞 ↥F)) (Ideal.span {(p : ℤ)}) (P.under (𝓞 ↥F)) *

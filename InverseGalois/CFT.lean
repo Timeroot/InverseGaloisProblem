@@ -119,6 +119,7 @@ import InverseGalois.CFT.InertiaFixedField
 import InverseGalois.CFT.InertiaGeneration
 import InverseGalois.CFT.InertiaRestrict
 import InverseGalois.CFT.InertiaSubgroup
+import InverseGalois.CFT.InertiaSurjective
 import InverseGalois.CFT.KroneckerWeber
 import InverseGalois.CFT.Kummer.CentralEmbedding
 import InverseGalois.CFT.Kummer.CocycleDescent
@@ -204,6 +205,7 @@ import InverseGalois.CFT.NormSubgroup
 import InverseGalois.CFT.PiIndex
 import InverseGalois.CFT.RestrictLE
 import InverseGalois.CFT.ScalarSemidirect
+import InverseGalois.CFT.Scholz.BadPrimes
 import InverseGalois.CFT.Scholz.BaseChange
 import InverseGalois.CFT.Scholz.BaseDescent
 import InverseGalois.CFT.Scholz.CentralStep
@@ -211,6 +213,7 @@ import InverseGalois.CFT.Scholz.CompositumTransport
 import InverseGalois.CFT.Scholz.Condition
 import InverseGalois.CFT.Scholz.FrattiniStep
 import InverseGalois.CFT.Scholz.Induction
+import InverseGalois.CFT.Scholz.InertiaTwist
 import InverseGalois.CFT.Scholz.LocalTransport
 import InverseGalois.CFT.Scholz.NilpotentOdd
 import InverseGalois.CFT.Scholz.NilpotentSylowTwo
@@ -419,6 +422,9 @@ it that are available here.
 * `InverseGalois.CFT.InertiaFixedField` reads off the ramified primes of the fixed field of a
   subgroup of the Galois group: they are the primes some of whose inertia subgroups escape the
   subgroup.
+* `InverseGalois.CFT.InertiaSurjective` shows that restriction to a normal subextension maps an
+  inertia subgroup onto the inertia subgroup of the prime below it, by comparing the orders of the
+  two through the multiplicativity of the ramification index in a tower.
 * `InverseGalois.CFT.ScalarSemidirect` proves Serre's disjointness lemma in group-theoretic form:
   the semidirect product of `(ℤ/ℓ)ˢ` by the scalar action of `(ℤ/ℓ)ˣ` has abelianization of order
   `ℓ - 1`, hence no quotient of order `ℓ` when `ℓ` is odd.
@@ -491,9 +497,16 @@ it that are available here.
 * `InverseGalois.CFT.Scholz.Tame` shows that every field satisfying the level condition with
   `ℓ`-power degree is tamely ramified, so that the tame Kronecker–Weber theorem applies to all of
   them.
+* `InverseGalois.CFT.Scholz.BadPrimes` confines the ramification of a Galois number field whose
+  inertia subgroups are central and killed by `ℓ` to the prime `ℓ` and the primes congruent to one
+  modulo `ℓ`, which is where the correcting cyclotomic characters live.
 * `InverseGalois.CFT.Scholz.Twist` corrects a solution of a central Frattini embedding problem by a
   character of an auxiliary Galois extension with values in the kernel, over a Galois extension
   containing both fields.
+* `InverseGalois.CFT.Scholz.InertiaTwist` records the effect of such a correction on the
+  ramification, one prime at a time: at a prime with cyclic inertia a suitable power of the
+  character cancels the solution there, and at a prime where both are already unramified nothing is
+  lost.
 * `InverseGalois.CFT.Scholz.Selector` builds a single Galois number field containing a prescribed
   number field, a prescribed root of unity and prescribed radicals, the field whose completely
   split primes the induction selects.

@@ -21,6 +21,7 @@ solution with uncontrolled ramification is corrected, prime by prime, by a chara
 
 * `InverseGalois.CFT.mulCentral`: the pointwise product of a homomorphism with a homomorphism
   taking central values.
+* `InverseGalois.CFT.zpowCentral`: the power of a homomorphism taking central values.
 
 ## Main results
 
@@ -28,6 +29,10 @@ solution with uncontrolled ramification is corrected, prime by prime, by a chara
   same homomorphism.**
 * `InverseGalois.CFT.surjective_mulCentral`: **a twist of a solution of an embedding problem with
   kernel inside the Frattini subgroup is again a solution.**
+* `InverseGalois.CFT.exists_zpow_mul_eq_one_of_isCyclic_subgroup`: **on a cyclic subgroup a
+  homomorphism is cancelled by a power of a second one whose image on that subgroup contains its
+  own** — the choice of exponent made, one prime at a time, when the ramification of a solution is
+  corrected.
 
 ## Tags
 
@@ -71,5 +76,65 @@ theorem surjective_mulCentral [Finite G] {f : G →* H} (hf : Function.Surjectiv
     Function.Surjective (mulCentral φ χ hχ) :=
   surjective_of_le_frattini hfr (π := f.comp φ) (hf.comp hφ)
     (fun x => congrArg (fun ψ => ψ x) (comp_mulCentral hχ hker))
+
+/-! ### Choosing the power of the character -/
+
+/-- **The power of a homomorphism taking central values.**  Its values commute with one another, so
+raising them all to a fixed power is again a homomorphism. -/
+def zpowCentral (χ : Γ →* G) (hχ : ∀ x, χ x ∈ Subgroup.center G) (a : ℤ) : Γ →* G where
+  toFun x := χ x ^ a
+  map_one' := by simp
+  map_mul' x y := by
+    have hc : Commute (χ x) (χ y) := ((Subgroup.mem_center_iff.mp (hχ x)) (χ y)).symm
+    rw [map_mul, hc.mul_zpow]
+
+@[simp]
+theorem zpowCentral_apply (χ : Γ →* G) (hχ : ∀ x, χ x ∈ Subgroup.center G) (a : ℤ) (x : Γ) :
+    zpowCentral χ hχ a x = χ x ^ a :=
+  rfl
+
+/-- A power of a character with values in a subgroup again has values in that subgroup. -/
+theorem zpowCentral_mem (χ : Γ →* G) (hχ : ∀ x, χ x ∈ Subgroup.center G) (a : ℤ) {K : Subgroup G}
+    (hK : ∀ x, χ x ∈ K) (x : Γ) :
+    zpowCentral χ hχ a x ∈ K :=
+  zpow_mem (hK x) a
+
+/-- A power of a character with central values again has central values. -/
+theorem zpowCentral_mem_center (χ : Γ →* G) (hχ : ∀ x, χ x ∈ Subgroup.center G) (a : ℤ) (x : Γ) :
+    zpowCentral χ hχ a x ∈ Subgroup.center G :=
+  zpow_mem (hχ x) a
+
+/-- **On a cyclic group a homomorphism is cancelled by a power of a central-valued homomorphism
+whose image contains its own.**  Everything is determined by the value at a generator, where the
+hypothesis exhibits the first value as a power of the second. -/
+theorem exists_zpow_mul_eq_one_of_isCyclic {I : Type*} [Group I] [IsCyclic I] (φ χ : I →* G)
+    (h : φ.range ≤ χ.range) :
+    ∃ a : ℤ, ∀ x : I, φ x * χ x ^ a = 1 := by
+  obtain ⟨g, hg⟩ := IsCyclic.exists_generator (α := I)
+  obtain ⟨y, hy⟩ := h ⟨g, rfl⟩
+  obtain ⟨k, hk⟩ := Subgroup.mem_zpowers_iff.mp (hg y)
+  have hgk : φ g = χ g ^ k := by rw [← hy, ← hk, map_zpow]
+  refine ⟨-k, fun x => ?_⟩
+  obtain ⟨m, rfl⟩ := Subgroup.mem_zpowers_iff.mp (hg x)
+  have hx : φ (g ^ m) * χ (g ^ m) ^ (-k) = χ g ^ (k * m) * χ g ^ (m * (-k)) := by
+    rw [map_zpow, map_zpow, hgk, ← zpow_mul, ← zpow_mul]
+  have hzero : k * m + m * (-k) = 0 := by ring
+  rw [hx, ← zpow_add, hzero, zpow_zero]
+
+/-- The image of a subgroup is the range of the restriction of the homomorphism to it. -/
+theorem range_comp_subtype (θ : Γ →* G) (I : Subgroup Γ) :
+    (θ.comp I.subtype).range = I.map θ := by
+  ext y
+  simp [MonoidHom.mem_range, Subgroup.mem_map]
+
+/-- **On a cyclic subgroup a homomorphism is cancelled by a power of a central-valued homomorphism
+whose image on that subgroup contains its own.**  This is the choice of exponent made, one prime at
+a time, when the ramification of a solution of an embedding problem is corrected. -/
+theorem exists_zpow_mul_eq_one_of_isCyclic_subgroup {I : Subgroup Γ} [IsCyclic ↥I] (φ χ : Γ →* G)
+    (h : I.map φ ≤ I.map χ) :
+    ∃ a : ℤ, ∀ x ∈ I, φ x * χ x ^ a = 1 := by
+  obtain ⟨a, ha⟩ := exists_zpow_mul_eq_one_of_isCyclic (φ.comp I.subtype) (χ.comp I.subtype)
+    (by rw [range_comp_subtype, range_comp_subtype]; exact h)
+  exact ⟨a, fun x hx => ha ⟨x, hx⟩⟩
 
 end InverseGalois.CFT
