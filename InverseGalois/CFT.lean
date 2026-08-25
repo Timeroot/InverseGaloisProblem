@@ -224,6 +224,7 @@ import InverseGalois.CFT.Scholz.PrimeChoice
 import InverseGalois.CFT.Scholz.ProperSolution
 import InverseGalois.CFT.Scholz.RadicalDisjoint
 import InverseGalois.CFT.Scholz.RadicalTower
+import InverseGalois.CFT.Scholz.RamificationControl
 import InverseGalois.CFT.Scholz.Realization
 import InverseGalois.CFT.Scholz.Selector
 import InverseGalois.CFT.Scholz.SplitCase
@@ -525,6 +526,10 @@ it that are available here.
 * `InverseGalois.CFT.Scholz.TwistStep` assembles the correction at one prime: the twisted solution
   solves the same embedding problem and its field loses that prime from its ramified set without
   gaining any other.
+* `InverseGalois.CFT.Scholz.RamificationControl` iterates that correction over the finitely many
+  unwanted primes, so that a solution of a central Frattini embedding problem can be taken to
+  ramify only inside a prescribed set of primes; the characters are supplied by normal
+  subextensions ramified at one prime each.
 * `InverseGalois.CFT.Scholz.Selector` builds a single Galois number field containing a prescribed
   number field, a prescribed root of unity and prescribed radicals, the field whose completely
   split primes the induction selects.

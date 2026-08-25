@@ -54,7 +54,8 @@ in the Frattini subgroup, and the lifted map is unchanged because the kernel is 
 theorem exists_twist_ramifiedSet_sdiff {f : G →* H} (hf : Function.Surjective f)
     (hfr : f.ker ≤ frattini G) (hZ : f.ker ≤ Subgroup.center G) (ψ χ : Gal(M/ℚ) →* G)
     (hψ : Function.Surjective ψ) (hχ : χ.range ≤ f.ker) (hp : p.Prime)
-    (hχram : ramifiedSet ↥(IntermediateField.fixedField χ.ker) ⊆ {p})
+    (hχunr : ∀ q : ℕ, q.Prime → q ≠ p → ∀ Q : Ideal (𝓞 M), Q.IsPrime →
+      Q.LiesOver (Ideal.span {(q : ℤ)}) → ∀ σ ∈ Ideal.inertia Gal(M/ℚ) Q, χ σ = 1)
     (P : Ideal (𝓞 M)) [P.IsPrime] [P.LiesOver (Ideal.span {(p : ℤ)})]
     [IsCyclic ↥(Ideal.inertia Gal(M/ℚ) P)]
     (hχP : (Ideal.inertia Gal(M/ℚ) P).map χ = f.ker)
@@ -80,13 +81,10 @@ theorem exists_twist_ramifiedSet_sdiff {f : G →* H} (hf : Function.Surjective 
     obtain ⟨⟨Q, hQp, hQo⟩⟩ := (Ideal.span {(q : ℤ)}).nonempty_primesOver (S := 𝓞 M)
     haveI := hQp
     haveI := hQo
-    have hqχ : q ∉ ramifiedSet ↥(IntermediateField.fixedField χ.ker) := fun h => hqp (hχram h)
     exact notMem_ramifiedSet_fixedField_ker_mulCentral hq ψ (zpowCentral χ hχcen a)
       (zpowCentral_mem_center χ hχcen a) Q
       (fun σ hσ => eq_one_of_notMem_ramifiedSet_fixedField_ker ψ hq hqψ Q hσ)
-      (fun σ hσ => by
-        rw [zpowCentral_apply, eq_one_of_notMem_ramifiedSet_fixedField_ker χ hq hqχ Q hσ,
-          one_zpow])
+      (fun σ hσ => by rw [zpowCentral_apply, hχunr q hq hqp Q hQp hQo σ hσ, one_zpow])
   intro q hq
   have hqp : q ≠ p := by
     rintro rfl
