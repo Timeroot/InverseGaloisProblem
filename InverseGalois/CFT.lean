@@ -220,6 +220,7 @@ import InverseGalois.CFT.Scholz.InertiaTwist
 import InverseGalois.CFT.Scholz.LocalTransport
 import InverseGalois.CFT.Scholz.NilpotentOdd
 import InverseGalois.CFT.Scholz.NilpotentSylowTwo
+import InverseGalois.CFT.Scholz.PGroupInertia
 import InverseGalois.CFT.Scholz.PrimeChoice
 import InverseGalois.CFT.Scholz.ProperSolution
 import InverseGalois.CFT.Scholz.RadicalDisjoint
@@ -512,6 +513,10 @@ it that are available here.
 * `InverseGalois.CFT.Scholz.BadPrimes` confines the ramification of a Galois number field whose
   inertia subgroups are central and killed by `ℓ` to the prime `ℓ` and the primes congruent to one
   modulo `ℓ`, which is where the correcting cyclotomic characters live.
+* `InverseGalois.CFT.Scholz.PGroupInertia` reads the same confinement off a solution of the
+  embedding problem rather than off the field: inertia away from `ℓ` in an extension of
+  `ℓ`-power degree is cyclic, and a solution whose values on it lie in the kernel kills it unless
+  the prime is `ℓ` or congruent to one modulo `ℓ`.
 * `InverseGalois.CFT.Scholz.Twist` corrects a solution of a central Frattini embedding problem by a
   character of an auxiliary Galois extension with values in the kernel, over a Galois extension
   containing both fields.
