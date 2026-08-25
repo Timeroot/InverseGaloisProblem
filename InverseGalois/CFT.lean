@@ -56,6 +56,7 @@ import InverseGalois.CFT.Disjoint
 import InverseGalois.CFT.GaloisDescent
 import InverseGalois.CFT.GroupCohomology.Classification
 import InverseGalois.CFT.GroupCohomology.Cohomologous
+import InverseGalois.CFT.GroupCohomology.CoprimeSplit
 import InverseGalois.CFT.GroupCohomology.Corestriction
 import InverseGalois.CFT.GroupCohomology.Cyclic
 import InverseGalois.CFT.GroupCohomology.CyclicH1
@@ -1726,4 +1727,9 @@ it that are available here.
   Hilbert's theorem 90 writes them as the coboundary of a single element; over an extension
   containing an `n`-th root of that element the inflated cocycle is cobounded by a cochain whose
   values are again `n`-th roots of unity.
+* `InverseGalois.CFT.GroupCohomology.CoprimeSplit` descends the resulting statement from the
+  cyclotomic field back to the base field.  A central extension of finite groups which admits a
+  section homomorphism over a subgroup whose index is coprime to the order of the kernel admits a
+  section homomorphism outright: the transfer of the difference between the identity and the given
+  section is the power map on the kernel, and inverting that power map turns it into a retraction.
 -/
