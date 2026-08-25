@@ -128,6 +128,7 @@ import InverseGalois.CFT.Kummer.PowIndex
 import InverseGalois.CFT.Kummer.PowerCriterion
 import InverseGalois.CFT.Kummer.RadicalClosure
 import InverseGalois.CFT.Kummer.RootIndex
+import InverseGalois.CFT.Kummer.RootsInBase
 import InverseGalois.CFT.Kummer.SUnitExt
 import InverseGalois.CFT.Kummer.SUnitUnramified
 import InverseGalois.CFT.Kummer.SecondInequality
@@ -1762,4 +1763,10 @@ it that are available here.
   coboundary, then correcting the section by the cochain produces **a homomorphic lift of that
   homomorphism**, and when the kernel lies inside the Frattini subgroup the lift is automatically
   surjective, so it solves the embedding problem properly.
+* `InverseGalois.CFT.Kummer.RootsInBase` matches the two sides of that exchange.  A field containing
+  a primitive `n`-th root of unity already contains every `n`-th root of unity of every extension,
+  because the image of the primitive root is still primitive; hence the Galois group acts trivially
+  on them, and **a cyclic group of order `n` embeds onto them**, which is how a cochain of roots of
+  unity produced by Kummer theory is read as a cochain with values in the kernel of a central
+  extension of order `n`.
 -/
