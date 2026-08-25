@@ -202,6 +202,7 @@ import InverseGalois.CFT.Local.ValuedTopology
 import InverseGalois.CFT.NormSubgroup
 import InverseGalois.CFT.PiIndex
 import InverseGalois.CFT.ScalarSemidirect
+import InverseGalois.CFT.Scholz.BaseChange
 import InverseGalois.CFT.Scholz.Condition
 import InverseGalois.CFT.Scholz.FrattiniStep
 import InverseGalois.CFT.Scholz.Induction
@@ -459,6 +460,9 @@ it that are available here.
 * `InverseGalois.CFT.Scholz.Condition` states Serre's condition `(S_N)` — every ramified prime is
   congruent to one modulo `ℓ ^ N` and has residue degree one — and proves that it passes to a
   compositum whose factors split completely in one another.
+* `InverseGalois.CFT.Scholz.BaseChange` adjoins the `ℓ`-th roots of unity to a field of `ℓ`-power
+  degree, which the local criterion for the central embedding step needs in its base field, and
+  shows that the Galois group is unchanged because the two degrees are coprime.
 * `InverseGalois.CFT.Scholz.Tame` shows that every field satisfying the level condition with
   `ℓ`-power degree is tamely ramified, so that the tame Kronecker–Weber theorem applies to all of
   them.

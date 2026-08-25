@@ -34,6 +34,8 @@ resulting tower are supplied here.
   over `F`**, when the two subextensions meet in the base field.
 * `InverseGalois.CFT.galRestrictBase_bijective`, `InverseGalois.CFT.galEquivBase`: **restriction
   identifies the Galois group of the compositum over `B` with the Galois group of `A` over `F`.**
+* `InverseGalois.CFT.inf_eq_bot_of_coprime_finrank`: **two subextensions of coprime degree meet in
+  the base field**, so `InverseGalois.CFT.galEquivBaseOfCoprime` applies to them.
 
 ## Tags
 
@@ -154,5 +156,22 @@ theorem galEquivBase_apply (h : A ⊓ B = ⊥) (σ : Gal(↥(supOver A B)/↥B))
   rfl
 
 end Galois
+
+/-! ### Coprime degrees -/
+
+/-- **Two subextensions of coprime degree meet in the base field.**  The degree of their
+intersection divides both degrees, hence divides one. -/
+theorem inf_eq_bot_of_coprime_finrank (hcop : Nat.Coprime (finrank F A) (finrank F B)) :
+    A ⊓ B = ⊥ := by
+  have hA : finrank F ↥(A ⊓ B) ∣ finrank F A := finrank_dvd_of_le_right inf_le_left
+  have hB : finrank F ↥(A ⊓ B) ∣ finrank F B := finrank_dvd_of_le_right inf_le_right
+  exact finrank_eq_one_iff.mp (Nat.dvd_one.mp (hcop ▸ Nat.dvd_gcd hA hB))
+
+/-- **The Galois group of the compositum over `B` is the Galois group of `A` over `F`**, when the
+two subextensions have coprime degree. -/
+noncomputable def galEquivBaseOfCoprime [IsGalois F A] [FiniteDimensional F A] [IsGalois F B]
+    [FiniteDimensional F B] (hcop : Nat.Coprime (finrank F A) (finrank F B)) :
+    Gal(↥(supOver A B)/↥B) ≃* Gal(A/F) :=
+  galEquivBase A B (inf_eq_bot_of_coprime_finrank A B hcop)
 
 end InverseGalois.CFT
