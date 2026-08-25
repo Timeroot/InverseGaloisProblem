@@ -115,6 +115,7 @@ import InverseGalois.CFT.InertiaGeneration
 import InverseGalois.CFT.InertiaRestrict
 import InverseGalois.CFT.InertiaSubgroup
 import InverseGalois.CFT.KroneckerWeber
+import InverseGalois.CFT.Kummer.CentralEmbedding
 import InverseGalois.CFT.Kummer.CocycleDescent
 import InverseGalois.CFT.Kummer.CyclicIndex
 import InverseGalois.CFT.Kummer.CyclotomicDescent
@@ -272,6 +273,7 @@ import InverseGalois.CFT.Tate.Surjection
 import InverseGalois.CFT.Tate.Trivial
 import InverseGalois.CFT.Tate.TrivialLattice
 import InverseGalois.CFT.Units.ABHN
+import InverseGalois.CFT.Units.ABHNCoboundary
 import InverseGalois.CFT.Units.ABHNTorsion
 import InverseGalois.CFT.Units.AdicFixed
 import InverseGalois.CFT.Units.AdicIdeleHerbrand
@@ -1775,4 +1777,18 @@ it that are available here.
   in the units of a finite Galois extension `K/k` is, after adjoining an `n`-th root of the element
   supplied by Hilbert 90 and taking the Galois closure, **the coboundary of a cochain valued in the
   `n`-th roots of unity of the base field itself**.
+* `InverseGalois.CFT.Units.ABHNCoboundary` rewrites the Albert-Brauer-Hasse-Noether theorem
+  multiplicatively.  The Galois action on the additive group of units is the Galois action on the
+  units and fixes those coming from the base field, so a two-cocycle with values in `k` inflated to
+  `K` satisfies the additive cocycle identity exactly when it satisfies the multiplicative one, and
+  **a two-cocycle of units of the base field killed by an odd integer and locally trivial at the
+  ramified finite places is the coboundary of a one-cochain of units of the extension**.
+* `InverseGalois.CFT.Kummer.CentralEmbedding` puts those pieces together.  The factor set of a
+  section of a central extension with kernel of order `n`, transported into the units of a base
+  field containing a primitive `n`-th root of unity, is a two-cocycle killed by `n`; if it is a
+  coboundary at every ramified finite place then Albert-Brauer-Hasse-Noether trivialises it in the
+  units of the extension, the radical descent brings the trivialising cochain back to the roots of
+  unity of the base, and correcting the section by it solves the embedding problem: **a central
+  embedding problem of odd prime-power kernel inside the Frattini subgroup, locally solvable at the
+  ramified primes, has a proper solution over a larger extension**.
 -/
