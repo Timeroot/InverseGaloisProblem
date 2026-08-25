@@ -37,6 +37,7 @@ import InverseGalois.CFT.Brauer.SplittingSubfield
 import InverseGalois.CFT.Brauer.TensorSimple
 import InverseGalois.CFT.Brauer.Tower
 import InverseGalois.CFT.Compositum
+import InverseGalois.CFT.CompositumBase
 import InverseGalois.CFT.Cyclotomic.BuildingBlock
 import InverseGalois.CFT.Cyclotomic.Chebotarev
 import InverseGalois.CFT.Cyclotomic.CyclicSubfield
@@ -382,6 +383,9 @@ it that are available here.
   once the ramification index is the degree, and follows inertia along the Galois action.
 * `InverseGalois.CFT.Compositum` computes the Galois group of a compositum of two Galois
   extensions meeting in the base as the product of their Galois groups.
+* `InverseGalois.CFT.CompositumBase` views the compositum as an extension of one of its two
+  factors, and identifies its Galois group over that factor with the Galois group of the other
+  factor over the base, when the two meet in the base field.
 * `InverseGalois.CFT.UnramifiedCompositum` computes the ramification of a compositum: a prime
   ramifies in `A ⊔ B` exactly when it ramifies in `A` or in `B`, with no disjointness hypothesis,
   so the level condition passes to a compositum.
