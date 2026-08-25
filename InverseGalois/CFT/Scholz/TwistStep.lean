@@ -15,10 +15,9 @@ correcting an arbitrary solution one prime at a time.
 
 The correction at a prime is a pointwise twist by a character with values in the kernel of the
 embedding problem, which is central, so that the twist is again a homomorphism, and which is
-ramified only at the prime being corrected, so that nothing is disturbed elsewhere.  If the
-character is surjective on the inertia subgroup at that prime — for instance because it is totally
-ramified there — and the inertia subgroup is cyclic, then a suitable power of the character cancels
-the solution on inertia and the twisted solution is unramified at the prime.  Because the kernel
+ramified only at the prime being corrected, so that nothing is disturbed elsewhere.  Once a power
+of the character cancels the solution on the inertia subgroup at that prime, the twisted solution
+is unramified at the prime.  Because the kernel
 lies in the Frattini subgroup the twist is still surjective, and because the kernel is killed by the
 surjection the twist still lifts the same map.
 
@@ -46,8 +45,8 @@ namespace InverseGalois.CFT
 variable {M : Type*} [Field M] [NumberField M] [IsGalois ℚ M] {p : ℕ}
 variable {G H : Type*} [Group G] [Finite G] [Group H]
 
-/-- **One step of the ramification correction.**  A power of the character cancels the solution on
-the inertia subgroup at the prime, which the character reaches in full, so the twisted solution is
+/-- **One step of the ramification correction.**  The given power of the character cancels the
+solution on the inertia subgroup at the prime, so the twisted solution is
 unramified there; at every other prime the character is trivial on inertia, so the twisted solution
 is trivial on inertia wherever the original one is.  Surjectivity survives because the kernel lies
 in the Frattini subgroup, and the lifted map is unchanged because the kernel is killed. -/
@@ -56,17 +55,16 @@ theorem exists_twist_ramifiedSet_sdiff {f : G →* H} (hf : Function.Surjective 
     (hψ : Function.Surjective ψ) (hχ : χ.range ≤ f.ker) (hp : p.Prime)
     (hχunr : ∀ q : ℕ, q.Prime → q ≠ p → ∀ Q : Ideal (𝓞 M), Q.IsPrime →
       Q.LiesOver (Ideal.span {(q : ℤ)}) → ∀ σ ∈ Ideal.inertia Gal(M/ℚ) Q, χ σ = 1)
-    (P : Ideal (𝓞 M)) [P.IsPrime] [P.LiesOver (Ideal.span {(p : ℤ)})]
-    [IsCyclic ↥(Ideal.inertia Gal(M/ℚ) P)]
-    (hχP : (Ideal.inertia Gal(M/ℚ) P).map χ = f.ker)
-    (hψP : (Ideal.inertia Gal(M/ℚ) P).map ψ ≤ f.ker) :
+    (P : Ideal (𝓞 M)) [P.IsPrime] [P.LiesOver (Ideal.span {(p : ℤ)})] (a : ℤ)
+    (hcanc : ∀ σ ∈ Ideal.inertia Gal(M/ℚ) P, ψ σ * χ σ ^ a = 1) :
     ∃ ψ' : Gal(M/ℚ) →* G, Function.Surjective ψ' ∧ f.comp ψ' = f.comp ψ ∧
       ramifiedSet ↥(IntermediateField.fixedField ψ'.ker) ⊆
         ramifiedSet ↥(IntermediateField.fixedField ψ.ker) \ {p} := by
   have hχker : ∀ x, χ x ∈ f.ker := fun x => hχ ⟨x, rfl⟩
   have hχcen : ∀ x, χ x ∈ Subgroup.center G := fun x => hZ (hχker x)
-  obtain ⟨a, ha⟩ := exists_zpow_notMem_ramifiedSet_fixedField_ker hp ψ χ hχcen P
-    (hψP.trans hχP.ge)
+  have ha : p ∉ ramifiedSet ↥(IntermediateField.fixedField
+      (mulCentral ψ (zpowCentral χ hχcen a) (zpowCentral_mem_center χ hχcen a)).ker) :=
+    notMem_ramifiedSet_fixedField_ker_of_inertia _ hp P fun σ hσ => hcanc σ hσ
   set ψ' := mulCentral ψ (zpowCentral χ hχcen a) (zpowCentral_mem_center χ hχcen a) with hψ'def
   refine ⟨ψ', surjective_mulCentral hf hfr hψ (zpowCentral_mem_center χ hχcen a)
       (fun x => zpowCentral_mem χ hχcen a hχker x),

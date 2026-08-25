@@ -38,6 +38,7 @@ import InverseGalois.CFT.Brauer.TensorSimple
 import InverseGalois.CFT.Brauer.Tower
 import InverseGalois.CFT.Compositum
 import InverseGalois.CFT.CompositumBase
+import InverseGalois.CFT.CutField
 import InverseGalois.CFT.Cyclotomic.BuildingBlock
 import InverseGalois.CFT.Cyclotomic.Chebotarev
 import InverseGalois.CFT.Cyclotomic.CyclicSubfield
@@ -222,6 +223,7 @@ import InverseGalois.CFT.Scholz.LocalTransport
 import InverseGalois.CFT.Scholz.NilpotentOdd
 import InverseGalois.CFT.Scholz.NilpotentSylowTwo
 import InverseGalois.CFT.Scholz.PGroupInertia
+import InverseGalois.CFT.Scholz.PGroupSolution
 import InverseGalois.CFT.Scholz.PrimeChoice
 import InverseGalois.CFT.Scholz.ProperSolution
 import InverseGalois.CFT.Scholz.RadicalDisjoint
@@ -511,6 +513,12 @@ it that are available here.
   an enlarged base field of degree prime to the order of the kernel back to the original base.
 * `InverseGalois.CFT.Scholz.CentralStep` combines the two: the solution obtained over the cyclotomic
   compositum is carried to the normal closure over the rationals and descended there.
+* `InverseGalois.CFT.CutField` cuts a Galois extension down to the fixed field of the kernel of a
+  homomorphism of its Galois group, read inside the ambient field, and identifies the Galois group
+  of the result with the target of the homomorphism.
+* `InverseGalois.CFT.Scholz.PGroupSolution` applies that cut to the solution produced by the central
+  step, so that the solution field has Galois group exactly the group being realised, hence of
+  `ℓ`-power degree.
 * `InverseGalois.CFT.Scholz.Tame` shows that every field satisfying the level condition with
   `ℓ`-power degree is tamely ramified, so that the tame Kronecker–Weber theorem applies to all of
   them.

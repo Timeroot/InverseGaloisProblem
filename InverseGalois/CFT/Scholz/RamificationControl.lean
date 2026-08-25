@@ -27,10 +27,14 @@ because a twist does not change that composite.
 
 ## Main definitions
 
+* `InverseGalois.CFT.HasInertiaCancellation`: cancellation on an inertia subgroup, the local input
+  the twist needs.
 * `InverseGalois.CFT.HasCorrectingChar`: the character data available at a prime for the twist.
 
 ## Main results
 
+* `InverseGalois.CFT.hasInertiaCancellation_of_isCyclic`: a cyclic inertia subgroup admits
+  cancellation.
 * `InverseGalois.CFT.hasCorrectingChar_of_normal`: a character of a normal subextension ramified
   only at the prime and totally ramified there, with image the whole kernel, inflates to a
   correcting character upstairs.
@@ -52,18 +56,33 @@ open IntermediateField
 variable {M : Type*} [Field M] [NumberField M] [IsGalois ℚ M]
 variable {G H : Type*} [Group G] [Group H]
 
+/-- **Cancellation on an inertia subgroup.**  A homomorphism whose values on the inertia subgroup
+lie in a prescribed subgroup is cancelled there by a power of any homomorphism reaching that whole
+subgroup.  This holds whenever the inertia subgroup is cyclic, and is the only local input the
+twist needs. -/
+def HasInertiaCancellation (M : Type*) [Field M] [NumberField M] [IsGalois ℚ M] {G : Type*}
+    [Group G] (P : Ideal (𝓞 M)) (C : Subgroup G) : Prop :=
+  ∀ θ χ : Gal(M/ℚ) →* G, (Ideal.inertia Gal(M/ℚ) P).map θ ≤ C →
+    (Ideal.inertia Gal(M/ℚ) P).map χ = C →
+      ∃ a : ℤ, ∀ σ ∈ Ideal.inertia Gal(M/ℚ) P, θ σ * χ σ ^ a = 1
+
+/-- **A cyclic inertia subgroup admits cancellation.**  The exponent is read off at a generator. -/
+theorem hasInertiaCancellation_of_isCyclic (P : Ideal (𝓞 M))
+    [IsCyclic ↥(Ideal.inertia Gal(M/ℚ) P)] (C : Subgroup G) : HasInertiaCancellation M P C :=
+  fun θ χ hθ hχ => exists_zpow_mul_eq_one_of_isCyclic_subgroup θ χ (hθ.trans hχ.ge)
+
 /-- **The character data available at a prime for the twist.**  A character of the Galois group
 with values in the kernel of the embedding problem, trivial on the inertia subgroup at every other
-prime, and mapping the cyclic inertia subgroup at some prime above this one onto the whole
-kernel. -/
+prime, mapping the inertia subgroup at some prime above this one onto the whole kernel, and
+admitting cancellation there. -/
 def HasCorrectingChar (M : Type*) [Field M] [NumberField M] [IsGalois ℚ M] {G H : Type*}
     [Group G] [Group H] (f : G →* H) (p : ℕ) : Prop :=
   ∃ (χ : Gal(M/ℚ) →* G) (P : Ideal (𝓞 M)) (_ : P.IsPrime)
-    (_ : P.LiesOver (Ideal.span {(p : ℤ)})) (_ : IsCyclic ↥(Ideal.inertia Gal(M/ℚ) P)),
+    (_ : P.LiesOver (Ideal.span {(p : ℤ)})),
       χ.range ≤ f.ker ∧
         (∀ q : ℕ, q.Prime → q ≠ p → ∀ Q : Ideal (𝓞 M), Q.IsPrime →
           Q.LiesOver (Ideal.span {(q : ℤ)}) → ∀ σ ∈ Ideal.inertia Gal(M/ℚ) Q, χ σ = 1) ∧
-        (Ideal.inertia Gal(M/ℚ) P).map χ = f.ker
+        (Ideal.inertia Gal(M/ℚ) P).map χ = f.ker ∧ HasInertiaCancellation M P f.ker
 
 /-- **A character of a normal subextension inflates to a correcting character.**  Restriction to a
 normal subextension carries inertia onto inertia, so the inflated character is trivial on inertia at
@@ -74,12 +93,12 @@ theorem hasCorrectingChar_of_normal {f : G →* H} {p : ℕ} (hp : p.Prime) (F :
     (hFtot : ∀ (Q : Ideal (𝓞 ↥F)) (_ : Q.IsPrime) (_ : Q.LiesOver (Ideal.span {(p : ℤ)})),
       Ideal.inertia Gal(↥F/ℚ) Q = ⊤)
     (χ : Gal(↥F/ℚ) →* G) (hrange : χ.range = f.ker) (P : Ideal (𝓞 M)) [P.IsPrime]
-    [P.LiesOver (Ideal.span {(p : ℤ)})] [IsCyclic ↥(Ideal.inertia Gal(M/ℚ) P)] :
+    [P.LiesOver (Ideal.span {(p : ℤ)})] (hcanc : HasInertiaCancellation M P f.ker) :
     HasCorrectingChar M f p := by
   haveI : NumberField ↥F := ⟨⟩
   haveI : IsGalois ℚ ↥F := ⟨⟩
-  refine ⟨χ.comp (AlgEquiv.restrictNormalHom ↥F), P, inferInstance, inferInstance, inferInstance,
-    ?_, ?_, ?_⟩
+  refine ⟨χ.comp (AlgEquiv.restrictNormalHom ↥F), P, inferInstance, inferInstance,
+    ?_, ?_, ?_, hcanc⟩
   · rintro _ ⟨σ, rfl⟩
     exact hrange.le ⟨AlgEquiv.restrictNormalHom ↥F σ, rfl⟩
   · intro q hq hqp Q hQp hQo σ hσ
@@ -119,17 +138,17 @@ theorem exists_twist_ramifiedSet_inter {f : G →* H} (hf : Function.Surjective 
     obtain ⟨p, hpram, hpS⟩ := Set.nonempty_iff_ne_empty.mpr hemp
     have hpT : p ∈ T := hsub ⟨hpram, hpS⟩
     have hp : p.Prime := hpram.1
-    obtain ⟨χ, P, hPp, hPo, hcyc, hχrange, hχram, hχmap⟩ := hchar p hpT hpS
+    obtain ⟨χ, P, hPp, hPo, hχrange, hχram, hχmap, hcanc⟩ := hchar p hpT hpS
     haveI := hPp
     haveI := hPo
-    haveI := hcyc
     have hψP : (Ideal.inertia Gal(M/ℚ) P).map ψ ≤ f.ker := by
       intro x hx
       obtain ⟨σ, hσ, rfl⟩ := hx
       exact MonoidHom.mem_ker.mpr
         (eq_one_of_notMem_ramifiedSet_fixedField_ker (f.comp ψ) hp (hπ p hpT hpS) P hσ)
+    obtain ⟨a, ha⟩ := hcanc ψ χ hψP hχmap
     obtain ⟨ψ₁, hψ₁, hcomp, hram₁⟩ :=
-      exists_twist_ramifiedSet_sdiff hf hfr hZ ψ χ hψ hχrange hp hχram P hχmap hψP
+      exists_twist_ramifiedSet_sdiff hf hfr hZ ψ χ hψ hχrange hp hχram P a ha
     have hπ₁ : ∀ q ∈ T.erase p, q ∉ S → q ∉ ramifiedSet ↥(fixedField (f.comp ψ₁).ker) := by
       intro q hq hqS
       rw [hcomp]
