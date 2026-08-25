@@ -201,8 +201,11 @@ import InverseGalois.CFT.Local.UnramifiedUnits
 import InverseGalois.CFT.Local.ValuedTopology
 import InverseGalois.CFT.NormSubgroup
 import InverseGalois.CFT.PiIndex
+import InverseGalois.CFT.RestrictLE
 import InverseGalois.CFT.ScalarSemidirect
 import InverseGalois.CFT.Scholz.BaseChange
+import InverseGalois.CFT.Scholz.BaseDescent
+import InverseGalois.CFT.Scholz.CentralStep
 import InverseGalois.CFT.Scholz.CompositumTransport
 import InverseGalois.CFT.Scholz.Condition
 import InverseGalois.CFT.Scholz.FrattiniStep
@@ -474,6 +477,12 @@ it that are available here.
 * `InverseGalois.CFT.Scholz.ProperSolution` solves a central Frattini embedding problem with kernel
   of odd prime order over that compositum, which is where the roots of unity the criterion needs are
   available.
+* `InverseGalois.CFT.RestrictLE` restricts an automorphism of an intermediate field to a smaller
+  intermediate field that is normal over the base.
+* `InverseGalois.CFT.Scholz.BaseDescent` descends a solved central Frattini embedding problem from
+  an enlarged base field of degree prime to the order of the kernel back to the original base.
+* `InverseGalois.CFT.Scholz.CentralStep` combines the two: the solution obtained over the cyclotomic
+  compositum is carried to the normal closure over the rationals and descended there.
 * `InverseGalois.CFT.Scholz.Tame` shows that every field satisfying the level condition with
   `ℓ`-power degree is tamely ramified, so that the tame Kronecker–Weber theorem applies to all of
   them.
