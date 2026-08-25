@@ -1,6 +1,7 @@
 import Mathlib
 import InverseGalois.CFT.KroneckerWeber
 import InverseGalois.CFT.Scholz.Condition
+import InverseGalois.CFT.TameCyclic
 
 /-!
 # Fields of prime-power degree and level `N` are tamely ramified
@@ -21,11 +22,15 @@ applies.
   is tamely ramified.**
 * `InverseGalois.CFT.IsScholz.isTamelyRamified`: the same for a field satisfying Serre's
   condition `(S_N)`.
+* `InverseGalois.CFT.IsScholz.isCyclic_stabilizer`: **the decomposition group of such a field at a
+  ramified prime is cyclic.**
 * `InverseGalois.CFT.exists_algHom_cyclotomicField_of_isLevel`: **Kronecker–Weber for these
   fields** — an abelian one of `ℓ`-power degree and level `N ≥ 1` embeds into a cyclotomic field.
 -/
 
 open NumberField InverseGalois.NumberTheory
+
+open scoped Pointwise
 
 namespace InverseGalois.CFT
 
@@ -70,6 +75,18 @@ theorem isTamelyRamified_of_isLevel {ℓ N : ℕ} (hℓ : ℓ.Prime) (hN : N ≠
 theorem IsScholz.isTamelyRamified {ℓ N : ℕ} (hℓ : ℓ.Prime) (hN : N ≠ 0)
     (hG : IsPGroup ℓ Gal(K/ℚ)) (h : IsScholz ℓ N K) : IsTamelyRamified K :=
   isTamelyRamified_of_isLevel hℓ hN hG h.1
+
+/-- **The decomposition group of a field of `ℓ`-power degree satisfying Serre's condition `(S_N)`
+is cyclic at every ramified prime.**  Such a field is tamely ramified, so the inertia group at a
+ramified prime is cyclic, and the residue-degree half of the condition makes the decomposition
+group equal to it. -/
+theorem IsScholz.isCyclic_stabilizer {ℓ N : ℕ} (hℓ : ℓ.Prime) (hN : N ≠ 0)
+    (hG : IsPGroup ℓ Gal(K/ℚ)) (h : IsScholz ℓ N K) {p : ℕ} (hmem : p ∈ ramifiedSet K)
+    (P : Ideal (𝓞 K)) [P.IsPrime] [P.LiesOver (Ideal.span {(p : ℤ)})] :
+    IsCyclic ↥(MulAction.stabilizer Gal(K/ℚ) P) := by
+  refine isCyclic_stabilizer_of_isSplitInertia h.2 hmem P ?_
+  rw [card_inertia_eq_ramificationIdx_span hmem.1 P]
+  exact h.isTamelyRamified hℓ hN hG p hmem.1 P inferInstance inferInstance
 
 /-- **Kronecker–Weber for the fields of the Scholz–Reichardt induction.**  An abelian number field
 of `ℓ`-power degree whose ramified primes are congruent to one modulo `ℓ ^ N`, with `N ≥ 1`,

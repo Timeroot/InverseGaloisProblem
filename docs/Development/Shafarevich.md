@@ -1005,6 +1005,61 @@ subgroup of `(K_λ^×/(K_λ^×)^ℓ)^{D_λ}` in general; and `(S_N)` does *not* 
 unramified outside `ram(L)` — extra ramification at good primes `q ≡ 1 mod ℓ^N` splitting completely
 in `L` is harmless — but no amount of good extra ramification removes a bad one at `ℓ`.
 
+
+## 0.13 Status (2026-08-25) — the Scholz-side plumbing
+
+Four bricks, all sorry- and axiom-free, all pushed; full build green at 9106 jobs.
+
+**1. The induction contract now carries the order of the quotient.** All three central-step
+predicates — `IsCentralStepSolvable`, `IsNonsplitCentralStepSolvable`,
+`IsFrattiniCentralStepSolvable` — gained the hypothesis `Nat.card H ∣ ℓ ^ N`.  It is not
+cosmetic.  `exists_surjective_hom_of_forall_ramified_primeResidue` demands `ℓ · |D_v| ∣ p − 1` at
+every ramified place; `|D_v|` divides `|H|`, and Serre's condition at level `N + 1` supplies only
+`ℓ^{N+1} ∣ p − 1`, so without `|H| ∣ ℓ^N` the arithmetic hypothesis of the local–global engine
+cannot be met.  The induction is restructured accordingly: with `level(j) = N + (m − j)` along a
+central chain of length `m`, step `j → j+1` needs `2j+1 ≤ N+m`, so `m ≤ N+1`;
+`isScholzRealizable_of_card_eq_pow_of_le` carries `k ≤ N + 1` and the general
+`isScholzRealizable_of_card_eq_pow` realizes at `max N k` and drops back down with
+`IsScholzRealizable.mono` (moved into `Scholz/Realization.lean`, since `Scholz/SplitReduction.lean`
+imports `Scholz/Induction.lean` and not conversely).  Every externally visible statement, including
+all of `InverseGalois/Shafarevich.lean`, is unchanged.
+
+**2. Serre's condition is inherited by subfields** (`Scholz/Condition.lean`):
+`isSplitInertia_of_tower`, `IsScholz.of_tower`.  Both halves of `(S_N)` constrain only the ramified
+primes; `ramifiedSet_subset` moves the level condition down, and `Ideal.inertiaDeg_algebra_tower`
+factors the residue degree through the intermediate field.
+
+**3. Realizations from an abstract field, and from a quotient** (`Scholz/Realization.lean`):
+`isScholzRealizable_of_isGalois` embeds any number field satisfying `(S_N)` into
+`AlgebraicClosure ℚ` (via `embSubfield`/`embEquiv`) and transports the condition and the group;
+`isScholzRealizable_of_surjective` then realizes **every quotient** of the Galois group, by passing
+to the fixed field of the kernel.  This is the adapter the central step will finish with: an
+embedding-problem solution hands back a big field plus a surjection, not a `ScholzRealization`.
+
+**4. The local groups are cyclic** (`CFT/TameCyclic.lean`, `Scholz/Tame.lean`):
+`isCyclic_inertia_of_tame` — the tame character embeds inertia into the units of a finite field, so
+tame inertia is cyclic; `isCyclic_stabilizer_of_isSplitInertia` — the residue-degree half of `(S_N)`
+identifies the decomposition group with inertia; and the capstone `IsScholz.isCyclic_stabilizer`:
+for a field of `ℓ`-power degree satisfying `(S_N)` with `N ≥ 1`, the decomposition group at every
+ramified prime is cyclic.  That discharges the first of the three clauses of `hram` in
+`exists_surjective_hom_of_forall_ramified_primeResidue`.
+
+**What `hram` still wants**, per place `v` of `K` ramified over the base `k = ℚ(μ_ℓ)`:
+(i) `IsCyclic ↥(stabilizer Gal(K/k) v)` — the analogue over `k` of the capstone above;
+(ii) the residue field of `K_v` is prime, i.e. every integral element of the completion is
+congruent to a rational integer — this follows from residue degree one over `ℚ` but needs the
+identification of the residue field of the completion with `𝓞 K / P`;
+(iii) `ℓ · |D_v| ∣ p − 1`, which is now available from the level condition plus the new
+`Nat.card H ∣ ℓ ^ N` hypothesis.
+
+**Remaining assembly** (Serre's plan): (A) base-change to `k = ℚ(μ_ℓ)` with
+`Gal(K₀·k/k) ≅ Gal(K₀/ℚ)` — coprime degrees, so `CFT/Compositum.lean`'s
+`galEquivProd (h : A ⊓ B = ⊥)` is the tool; (B) the three clauses above; (C) the character
+`χ : ker f → k^×`; (D) `HasProperSolution`; (E) descent to `ℚ` by
+`exists_surjective_hom_comp_eq_of_coprime_index`; (F) ramification control by twisting, which needs
+the cyclotomic twisting characters of `Cyclotomic/OnePrimeRamified.lean` together with the local
+count `(L_ℓ)` of §0.12.
+
 ---
 
 ## 1. Scholz–Reichardt
