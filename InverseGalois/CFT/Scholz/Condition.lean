@@ -28,6 +28,8 @@ compositum whose second factor the prime splits completely in; that is the conte
 
 * `InverseGalois.CFT.IsScholz.mono`: the condition weakens as the exponent decreases.
 * `InverseGalois.CFT.IsScholz.of_ringEquiv`: the condition is an isomorphism invariant.
+* `InverseGalois.CFT.isSplitInertia_of_tower`: residue degree one is inherited by subfields.
+* `InverseGalois.CFT.IsScholz.of_tower`: **the condition `(S_N)` is inherited by subfields.**
 * `InverseGalois.CFT.isSplitInertia_of_finrank_prime`: a Galois extension of `ℚ` of prime degree
   has residue degree one at every ramified prime.
 * `InverseGalois.CFT.isSplitInertia_of_sup`: **residue degree one passes to a compositum** in
@@ -95,6 +97,44 @@ theorem IsLevel.of_ringEquiv {F : Type*} [Field F] [NumberField F] {ℓ N : ℕ}
 theorem IsScholz.of_ringEquiv {F : Type*} [Field F] [NumberField F] {ℓ N : ℕ} (e : E ≃+* F)
     (h : IsScholz ℓ N E) : IsScholz ℓ N F :=
   ⟨h.1.of_ringEquiv e, isSplitInertia_of_ringEquiv e h.2⟩
+
+section Tower
+
+variable {M : Type*} [Field M] [NumberField M] [Algebra E M]
+
+/-- **Split inertia is inherited by subfields.**  A prime ramified below is ramified above, and the
+residue degree above it factors through the intermediate field, so a residue degree equal to one at
+the top forces one at every stage. -/
+theorem isSplitInertia_of_tower (h : IsSplitInertia M) : IsSplitInertia E := by
+  intro p hp P hPprime hPover
+  haveI := hPprime
+  haveI := hPover
+  have hprime : p.Prime := hp.1
+  haveI := isMaximal_span_prime hprime
+  have hspan : (Ideal.span {(p : ℤ)} : Ideal ℤ) ≠ ⊥ := by
+    simpa [Ideal.span_singleton_eq_bot] using hprime.ne_zero
+  have hP0 : P ≠ ⊥ := by
+    intro hb
+    refine hspan ?_
+    rw [hPover.over, hb, Ideal.under,
+      Ideal.comap_bot_of_injective _ (FaithfulSMul.algebraMap_injective ℤ (𝓞 E))]
+  haveI : P.IsMaximal := Ring.DimensionLEOne.maximalOfPrime hP0 hPprime
+  obtain ⟨Q, hQmax, hQover⟩ := Ideal.exists_maximal_ideal_liesOver_of_isIntegral (S := 𝓞 M) P
+  haveI := hQmax
+  haveI := hQover
+  haveI : Q.IsPrime := hQmax.isPrime
+  haveI : Q.LiesOver (Ideal.span {(p : ℤ)}) := Ideal.LiesOver.trans Q P (Ideal.span {(p : ℤ)})
+  have hone := h p (ramifiedSet_subset E M hp) Q inferInstance inferInstance
+  rw [Ideal.inertiaDeg_algebra_tower (R := ℤ) (S := 𝓞 E) (T := 𝓞 M)
+    (Ideal.span {(p : ℤ)}) P Q] at hone
+  exact Nat.eq_one_of_mul_eq_one_right hone
+
+/-- **Serre's condition `(S_N)` is inherited by subfields.**  Both halves of the condition only
+constrain the ramified primes, and a subfield has fewer of them. -/
+theorem IsScholz.of_tower {ℓ N : ℕ} (h : IsScholz ℓ N M) : IsScholz ℓ N E :=
+  ⟨h.1.of_tower, isSplitInertia_of_tower h.2⟩
+
+end Tower
 
 /-- **A Galois extension of `ℚ` of prime degree has split inertia.**  A ramified prime has
 ramification index different from one at some prime above it, hence at every prime above it, and
