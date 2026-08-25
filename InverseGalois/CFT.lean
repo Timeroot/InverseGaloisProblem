@@ -55,6 +55,7 @@ import InverseGalois.CFT.Decomposition
 import InverseGalois.CFT.Disjoint
 import InverseGalois.CFT.GaloisDescent
 import InverseGalois.CFT.GroupCohomology.Classification
+import InverseGalois.CFT.GroupCohomology.CentralLift
 import InverseGalois.CFT.GroupCohomology.Cohomologous
 import InverseGalois.CFT.GroupCohomology.CoprimeCoboundary
 import InverseGalois.CFT.GroupCohomology.CoprimeSplit
@@ -1754,4 +1755,11 @@ it that are available here.
   a finite normal extension containing an `n`-th root of each of finitely many prescribed elements:
   the roots exist in the algebraic closure and are algebraic over the base, so adjoining them and
   passing to the normal closure keeps the extension finite.
+* `InverseGalois.CFT.GroupCohomology.CentralLift` is the group-theoretic engine which spends a
+  coboundary statement on an embedding problem.  A set-theoretic section of a surjection with
+  central kernel has a factor set measuring its failure to be a homomorphism, and that factor set is
+  a two-cocycle for the trivial action; if the cocycle pulled back along a homomorphism is a
+  coboundary, then correcting the section by the cochain produces **a homomorphic lift of that
+  homomorphism**, and when the kernel lies inside the Frattini subgroup the lift is automatically
+  surjective, so it solves the embedding problem properly.
 -/
