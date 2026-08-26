@@ -22,8 +22,9 @@ character of conductor `ℓ ^ 2`.  That is the content of the condition recorded
 
 ## Main definitions
 
-* `InverseGalois.CFT.IsInertiaRankOneAt`: at the prime itself, cancellation on the inertia subgroup
-  against any character reaching a prescribed group of order `ℓ`.
+* `InverseGalois.CFT.IsInertiaRankOneAt`: at the prime itself, in an extension of `ℓ`-power degree,
+  cancellation on the inertia subgroup against any character reaching a prescribed group of order
+  `ℓ`.
 
 ## Main results
 
@@ -41,12 +42,12 @@ open NumberField InverseGalois.NumberTheory
 namespace InverseGalois.CFT
 
 /-- **Cancellation on the inertia subgroup at the residue characteristic.**  At a prime of a Galois
-number field lying over `ℓ`, a homomorphism with values in a group of order `ℓ` is, on the inertia
-subgroup, a power of any homomorphism which reaches that whole group there. -/
+number field of `ℓ`-power degree lying over `ℓ`, a homomorphism with values in a group of order `ℓ`
+is, on the inertia subgroup, a power of any homomorphism which reaches that whole group there. -/
 def IsInertiaRankOneAt (ℓ : ℕ) : Prop :=
-  ∀ (M : Type) [Field M] [NumberField M] [IsGalois ℚ M] (P : Ideal (𝓞 M)) [P.IsPrime]
-    [P.LiesOver (Ideal.span {(ℓ : ℤ)})] (G : Type) [Group G] (C : Subgroup G),
-      Nat.card ↥C = ℓ → HasInertiaCancellation M P C
+  ∀ (M : Type) [Field M] [NumberField M] [IsGalois ℚ M], IsPGroup ℓ Gal(M/ℚ) →
+    ∀ (P : Ideal (𝓞 M)) [P.IsPrime] [P.LiesOver (Ideal.span {(ℓ : ℤ)})] (G : Type) [Group G]
+      (C : Subgroup G), Nat.card ↥C = ℓ → HasInertiaCancellation M P C
 
 variable {M : Type} [Field M] [NumberField M] [IsGalois ℚ M] {G : Type} [Group G] {ℓ p : ℕ}
 
@@ -59,7 +60,7 @@ theorem hasInertiaCancellation_of_isPGroup (hℓ : ℓ.Prime) (hrank : IsInertia
     HasInertiaCancellation M P C := by
   by_cases hne : p = ℓ
   · subst hne
-    exact hrank M P G C hC
+    exact hrank M hG P G C hC
   · haveI := isCyclic_inertia_of_isPGroup hℓ hp hne hG P
     exact hasInertiaCancellation_of_isCyclic P C
 

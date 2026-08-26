@@ -212,6 +212,7 @@ import InverseGalois.CFT.PGroupCompositum
 import InverseGalois.CFT.PiIndex
 import InverseGalois.CFT.RestrictLE
 import InverseGalois.CFT.ScalarSemidirect
+import InverseGalois.CFT.Scholz.AbelianInertia
 import InverseGalois.CFT.Scholz.AuxPrimeChoice
 import InverseGalois.CFT.Scholz.AuxPrimeField
 import InverseGalois.CFT.Scholz.BadPrimes
@@ -581,6 +582,9 @@ it that are available here.
 * `InverseGalois.CFT.Scholz.InertiaRankOne` isolates the one local fact the correction needs at a
   prime, namely that the solution is already a power of the character on the inertia subgroup
   there; away from the residue characteristic it follows from cyclicity of inertia.
+* `InverseGalois.CFT.Scholz.AbelianInertia` reads that local fact inside the decomposition group:
+  the values of such a solution on inertia are central, so the solution factors through the
+  abelianized decomposition group, where cyclicity of the image of inertia is all that is needed.
 * `InverseGalois.CFT.Scholz.CorrectingSubfield` carries a correcting character built inside an
   algebraic closure into any larger field containing the subfield it was built on.
 * `InverseGalois.CFT.Scholz.UnramifiedSolution` assembles the whole correction: adjoining the
