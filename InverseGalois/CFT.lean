@@ -28,6 +28,7 @@ import InverseGalois.CFT.Brauer.Primary
 import InverseGalois.CFT.Brauer.QuadraticExt
 import InverseGalois.CFT.Brauer.Quaternion
 import InverseGalois.CFT.Brauer.RationalBrauer
+import InverseGalois.CFT.Brauer.RelativeIndex
 import InverseGalois.CFT.Brauer.RealBrauer
 import InverseGalois.CFT.Brauer.RealPlace
 import InverseGalois.CFT.Brauer.Semilinear
@@ -753,6 +754,9 @@ it that are available here.
   classes split by `L`.
 * `InverseGalois.CFT.Brauer.Tower` records that the relative Brauer group grows with the splitting
   field: a class split by `L` is split by every extension of `L`.
+* `InverseGalois.CFT.Brauer.RelativeIndex` cuts a relative Brauer group along a tower
+  `K ⊆ L ⊆ M`: restriction `Br(M / K) → Br(M / L)` has kernel `Br(L / K)`, so the order of
+  `Br(M / K)` is at most the product of the orders of the two steps.
 * `InverseGalois.CFT.Brauer.SkolemNoether` proves the Skolem–Noether theorem: two maps of a
   simple algebra into a central simple algebra differ by conjugation by a unit.
 * `InverseGalois.CFT.Brauer.Semilinear` is the semilinear refinement: a ring endomorphism of a
