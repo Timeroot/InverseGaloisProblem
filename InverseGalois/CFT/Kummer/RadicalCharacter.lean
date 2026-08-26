@@ -15,11 +15,11 @@ so Hilbert's theorem 90 produces a radical: an element `α` of `M` which every a
 multiplies by the corresponding root of unity.  Its `ℓ`-th power is fixed by the whole group and so
 comes from the base.
 
-If moreover `K` is normal over a smaller field `k` and the character is unchanged by the
-conjugation action of the Galois group over `k`, the radicand transforms under an automorphism `δ`
-of `K / k` by the exponent through which `δ` acts on the roots of unity, up to an `ℓ`-th power: it
-is an eigenvector of `δ` in the group of radicands modulo `ℓ`-th powers.  This is the input to the
-local analysis of the level of a radicand.
+If moreover an automorphism `τ` of `M` restricts to an automorphism `δ` of `K` and the character is
+unchanged by the conjugation action of `τ`, the radicand transforms under `δ` by the exponent
+through which `δ` acts on the roots of unity, up to an `ℓ`-th power: it is an eigenvector of `δ` in
+the group of radicands modulo `ℓ`-th powers.  This is the input to the local analysis of the level
+of a radicand.
 
 ## Main results
 
@@ -118,36 +118,28 @@ end Radical
 
 section Eigen
 
-variable {k K M : Type*} [Field k] [Field K] [Field M]
-  [Algebra k K] [Algebra K M] [Algebra k M] [IsScalarTower k K M]
-  [FiniteDimensional k M] [IsGalois k M] [Normal k K]
+variable {K M : Type*} [Field K] [Field M] [Algebra K M] [FiniteDimensional K M] [IsGalois K M]
 variable {ℓ g : ℕ} {ζ : K}
 
 /-- **The radicand of a character invariant under conjugation is an eigenvector.**  An automorphism
-of the base lifts to the whole extension, where conjugation permutes the Galois group of the
-extension over the base without changing the character; so the lift moves the radical by an element
-of the base times the power of the radical through which it acts on the roots of unity. -/
-theorem exists_pow_mul_pow_eq (δ : K ≃ₐ[k] K) (hζ0 : ζ ≠ 0) (hδζ : δ ζ = ζ ^ g) {α : M}
-    (hα0 : α ≠ 0) (n : Gal(M/K) → ℕ)
+of the extension restricting to a given automorphism of the base permutes by conjugation the Galois
+group of the extension over the base without changing the character; so it moves the radical by an
+element of the base times the power of the radical through which it acts on the roots of unity. -/
+theorem exists_pow_mul_pow_eq (τ : M ≃+* M) (δ : K →+* K)
+    (hτcom : ∀ x : K, τ (algebraMap K M x) = algebraMap K M (δ x)) (hζ0 : ζ ≠ 0)
+    (hδζ : δ ζ = ζ ^ g) {α : M} (hα0 : α ≠ 0) (n : Gal(M/K) → ℕ)
     (hroot : ∀ σ : Gal(M/K), σ α = (algebraMap K M ζ) ^ n σ * α)
-    (hconj : ∀ (τ : Gal(M/k)) (σ : Gal(M/K)), ∃ σ' : Gal(M/K), (∀ x : M, σ (τ x) = τ (σ' x)) ∧
+    (hconj : ∀ σ : Gal(M/K), ∃ σ' : Gal(M/K), (∀ x : M, σ (τ x) = τ (σ' x)) ∧
       (algebraMap K M ζ) ^ n σ' = (algebraMap K M ζ) ^ n σ)
     {w : K} (hw : algebraMap K M w = α ^ ℓ) :
     ∃ y : K, y ≠ 0 ∧ δ w = w ^ g * y ^ ℓ := by
-  haveI : FiniteDimensional K M := FiniteDimensional.right k K M
-  haveI : IsGalois K M := IsGalois.tower_top_of_isGalois k K M
-  obtain ⟨τ, hτ⟩ := AlgEquiv.restrictNormalHom_surjective (F := k) (K₁ := K) (E := M) δ
-  have hτcom : ∀ x : K, τ (algebraMap K M x) = algebraMap K M (δ x) := by
-    intro x
-    rw [← hτ]
-    exact (AlgEquiv.restrictNormal_commutes τ K x).symm
   have hβ0 : τ α ≠ 0 := fun h => hα0 (by simpa using congrArg τ.symm h)
   have hαg0 : α ^ g ≠ 0 := pow_ne_zero _ hα0
   have hξ0 : (algebraMap K M ζ) ≠ 0 := (map_ne_zero (algebraMap K M)).mpr hζ0
   -- the quotient of the conjugate radical by the `g`-th power of the radical is fixed
   have hfix : ∀ σ : Gal(M/K), σ (τ α / α ^ g) = τ α / α ^ g := by
     intro σ
-    obtain ⟨σ', hσ', hζeq⟩ := hconj τ σ
+    obtain ⟨σ', hσ', hζeq⟩ := hconj σ
     have h1 : σ (τ α) = (algebraMap K M ζ) ^ (g * n σ) * τ α := by
       rw [hσ', hroot σ', map_mul, map_pow, hτcom, hδζ, map_pow, ← pow_mul, mul_comm g (n σ'),
         pow_mul, hζeq, ← pow_mul, mul_comm (n σ) g]

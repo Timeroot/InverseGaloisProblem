@@ -10,11 +10,12 @@ import InverseGalois.CFT.Units.PlaceComap
 /-!
 # Characters of the inertia group at a place over `ℓ`
 
-Let `k` be a number field with a place over a prime `ℓ` of ramification index and residue degree
-one, let `K` be obtained from `k` by adjoining the `ℓ`-th roots of unity, and let `M / K` be a
-Galois extension.  Any two characters of `Gal(M / K)` with values in `ZMod ℓ` which are unchanged
-by the conjugation action of `Gal(M / k)` are then dependent on the inertia group at a place over
-`ℓ`.  The inertia group therefore contributes at most a line to the space of such characters.
+Let `K` be a number field containing the `ℓ`-th roots of unity, with a place over `ℓ` carrying an
+automorphism `δ` acting on those roots of unity through a primitive root modulo `ℓ`, and let
+`M / K` be a Galois extension to which `δ` lifts.  Any two characters of `Gal(M / K)` with values
+in `ZMod ℓ` which are unchanged by the conjugation action of that lift are then dependent on the
+inertia group at a place over `ℓ`.  The inertia group therefore contributes at most a line to the
+space of such characters.
 
 The proof is Kummer theory.  A character of the Galois group with values in `ZMod ℓ` has a radical,
 whose radicand is an eigenvector for the action on the roots of unity because the character is
@@ -224,9 +225,8 @@ end Frattini
 
 section Main
 
-variable {k K M : Type*} [Field k] [NumberField k] [Field K] [NumberField K] [Field M]
-  [NumberField M] [Algebra k K] [Algebra K M] [Algebra k M] [IsScalarTower k K M]
-  [IsGalois k M] [Normal k K]
+variable {K M : Type*} [Field K] [NumberField K] [Field M] [NumberField M] [Algebra K M]
+  [FiniteDimensional K M] [IsGalois K M]
 variable {ℓ g : ℕ} {ζ : K}
 
 set_option synthInstance.maxHeartbeats 400000
@@ -237,21 +237,19 @@ over the exponent: either the first vanishes there, or the second is a multiple 
 Each character has a radical whose radicand is an eigenvector for the action on the roots of unity;
 but two eigen radicands are dependent modulo the radicands congruent to one, and a radicand
 congruent to one has an unramified radical. -/
-theorem inertia_character_dependent (hζ : IsPrimitiveRoot ζ ℓ) (δ : K ≃ₐ[k] K)
+theorem inertia_character_dependent (hζ : IsPrimitiveRoot ζ ℓ) (τ : M ≃+* M) (δ : K →+* K)
+    (hτcom : ∀ x : K, τ (algebraMap K M x) = algebraMap K M (δ x))
     (hδζ : δ ζ = ζ ^ g) (W : HeightOneSpectrum (𝓞 M))
-    (hcyc : IsCyclotomicPlace ℓ g ((primeUnder (𝓞 K) W).valuation K) (ζ - 1)
-      (δ.toRingEquiv : K →+* K) (RingHom.id K))
+    (hcyc : IsCyclotomicPlace ℓ g ((primeUnder (𝓞 K) W).valuation K) (ζ - 1) δ (RingHom.id K))
     (χ₁ χ₂ : Gal(M/K) → ZMod ℓ) (hχ₁ : ∀ x y : Gal(M/K), χ₁ (x * y) = χ₁ x + χ₁ y)
     (hχ₂ : ∀ x y : Gal(M/K), χ₂ (x * y) = χ₂ x + χ₂ y)
-    (hconj : ∀ (τ : Gal(M/k)) (σ : Gal(M/K)), ∃ σ' : Gal(M/K),
+    (hconj : ∀ σ : Gal(M/K), ∃ σ' : Gal(M/K),
       (∀ x : M, σ (τ x) = τ (σ' x)) ∧ χ₁ σ' = χ₁ σ ∧ χ₂ σ' = χ₂ σ) :
     (∀ σ ∈ Ideal.inertia Gal(M/K) W.asIdeal, χ₁ σ = 0) ∨
       ∃ j : ZMod ℓ, ∀ σ ∈ Ideal.inertia Gal(M/K) W.asIdeal, χ₂ σ = j * χ₁ σ := by
   have hℓ : ℓ.Prime := hcyc.prime
   haveI : Fact ℓ.Prime := ⟨hℓ⟩
   haveI : NeZero ℓ := ⟨hℓ.ne_zero⟩
-  haveI : FiniteDimensional K M := FiniteDimensional.right k K M
-  haveI : IsGalois K M := IsGalois.tower_top_of_isGalois k K M
   have hζ0 : ζ ≠ 0 := hζ.ne_zero hℓ.ne_zero
   set ξ : M := algebraMap K M ζ with hξdef
   have hξ : IsPrimitiveRoot ξ ℓ := hζ.map_of_injective (algebraMap K M).injective
@@ -261,11 +259,10 @@ theorem inertia_character_dependent (hζ : IsPrimitiveRoot ζ ℓ) (δ : K ≃�
   have hξu : ξu ^ ℓ = 1 := Units.ext (by simpa [hξudef] using hξ.pow_eq_one)
   -- every conjugation invariant character has a radical whose radicand is an eigenvector
   have key : ∀ χ : Gal(M/K) → ZMod ℓ, (∀ x y : Gal(M/K), χ (x * y) = χ x + χ y) →
-      (∀ (τ : Gal(M/k)) (σ : Gal(M/K)), ∃ σ' : Gal(M/K),
-        (∀ x : M, σ (τ x) = τ (σ' x)) ∧ χ σ' = χ σ) →
+      (∀ σ : Gal(M/K), ∃ σ' : Gal(M/K), (∀ x : M, σ (τ x) = τ (σ' x)) ∧ χ σ' = χ σ) →
       ∃ (α : M) (w : K), α ≠ 0 ∧ w ≠ 0 ∧ algebraMap K M w = α ^ ℓ ∧
         (∀ σ : Gal(M/K), σ α = ξ ^ (χ σ).val * α) ∧
-        IsEigenRadicand ℓ g (δ.toRingEquiv : K →+* K) (RingHom.id K) w := by
+        IsEigenRadicand ℓ g δ (RingHom.id K) w := by
     intro χ hχ hχconj
     set f : Gal(M/K) →* Mˣ := rootHom ξu hξu χ hχ with hfdef
     have hfval : ∀ σ : Gal(M/K), (f σ : M) = ξ ^ (χ σ).val := fun σ => by
@@ -285,15 +282,15 @@ theorem inertia_character_dependent (hζ : IsPrimitiveRoot ζ ℓ) (δ : K ≃�
       rw [h, map_zero] at hw
       exact (pow_ne_zero ℓ hα0) hw.symm
     obtain ⟨y, hy0, hy⟩ :=
-      exists_pow_mul_pow_eq (k := k) δ hζ0 hδζ hα0 (fun σ => (χ σ).val) hroot
-        (fun τ σ => by
-          obtain ⟨σ', hσ', hval⟩ := hχconj τ σ
+      exists_pow_mul_pow_eq τ δ hτcom hζ0 hδζ hα0 (fun σ => (χ σ).val) hroot
+        (fun σ => by
+          obtain ⟨σ', hσ', hval⟩ := hχconj σ
           exact ⟨σ', hσ', by simp only [hval]⟩) hw
     exact ⟨α, w, hα0, hw0, hw, hroot, ⟨y, hy0, hy⟩, ⟨1, one_ne_zero, by simp⟩⟩
   obtain ⟨α₁, w₁, hα₁0, hw₁0, hw₁, hroot₁, he₁⟩ :=
-    key χ₁ hχ₁ (fun τ σ => by obtain ⟨σ', hσ', h₁, -⟩ := hconj τ σ; exact ⟨σ', hσ', h₁⟩)
+    key χ₁ hχ₁ (fun σ => by obtain ⟨σ', hσ', h₁, -⟩ := hconj σ; exact ⟨σ', hσ', h₁⟩)
   obtain ⟨α₂, w₂, hα₂0, hw₂0, hw₂, hroot₂, he₂⟩ :=
-    key χ₂ hχ₂ (fun τ σ => by obtain ⟨σ', hσ', -, h₂⟩ := hconj τ σ; exact ⟨σ', hσ', h₂⟩)
+    key χ₂ hχ₂ (fun σ => by obtain ⟨σ', hσ', -, h₂⟩ := hconj σ; exact ⟨σ', hσ', h₂⟩)
   -- an element of the inertia group acting trivially on a radical kills the character
   have hkill : ∀ (χ : Gal(M/K) → ZMod ℓ) (α : M), α ≠ 0 → (∀ σ : Gal(M/K),
       σ α = ξ ^ (χ σ).val * α) → ∀ σ : Gal(M/K), σ α = α → χ σ = 0 := by

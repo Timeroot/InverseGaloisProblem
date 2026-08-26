@@ -231,6 +231,7 @@ import InverseGalois.CFT.Scholz.Condition
 import InverseGalois.CFT.Scholz.CorrectingCharacter
 import InverseGalois.CFT.Scholz.CorrectingSubfield
 import InverseGalois.CFT.Scholz.CyclicSupplement
+import InverseGalois.CFT.Scholz.FixedFieldRamification
 import InverseGalois.CFT.Scholz.FrattiniInertia
 import InverseGalois.CFT.Scholz.FrattiniSolution
 import InverseGalois.CFT.Scholz.FrattiniStep
