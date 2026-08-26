@@ -74,6 +74,7 @@ import InverseGalois.CFT.GroupCohomology.CyclicSubgroup
 import InverseGalois.CFT.GroupCohomology.CyclicSurjective
 import InverseGalois.CFT.GroupCohomology.H1Transport
 import InverseGalois.CFT.GroupCohomology.IndexTwo
+import InverseGalois.CFT.GroupCohomology.Inflation
 import InverseGalois.CFT.GroupCohomology.MapCoboundary
 import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.SylowRes
@@ -277,8 +278,10 @@ import InverseGalois.CFT.Scholz.UnramifiedSolution
 import InverseGalois.CFT.SplitCompositum
 import InverseGalois.CFT.SplitInertiaPrime
 import InverseGalois.CFT.SplitSup
+import InverseGalois.CFT.SqrtNegOne
 import InverseGalois.CFT.SquareClasses
 import InverseGalois.CFT.SubgroupCounting
+import InverseGalois.CFT.SubgroupHilbert90
 import InverseGalois.CFT.SubgroupIndex
 import InverseGalois.CFT.TameCharacter
 import InverseGalois.CFT.TameCyclic
@@ -342,15 +345,18 @@ import InverseGalois.CFT.Tate.Surjection
 import InverseGalois.CFT.Tate.Trivial
 import InverseGalois.CFT.Tate.TrivialLattice
 import InverseGalois.CFT.Units.ABHN
+import InverseGalois.CFT.Units.ABHNArchimedean
 import InverseGalois.CFT.Units.ABHNCoboundary
 import InverseGalois.CFT.Units.ABHNLocalPower
 import InverseGalois.CFT.Units.ABHNRamified
+import InverseGalois.CFT.Units.ABHNSqrtNegOne
 import InverseGalois.CFT.Units.ABHNTorsion
 import InverseGalois.CFT.Units.AdicFixed
 import InverseGalois.CFT.Units.AdicIdeleHerbrand
 import InverseGalois.CFT.Units.AdicOrbit
 import InverseGalois.CFT.Units.AdicSIdeles
 import InverseGalois.CFT.Units.ArchimedeanIdeles
+import InverseGalois.CFT.Units.BaseChangeCocycle
 import InverseGalois.CFT.Units.BaseChangeIndex
 import InverseGalois.CFT.Units.ClassSet
 import InverseGalois.CFT.Units.CompletionFinite
@@ -387,10 +393,12 @@ import InverseGalois.CFT.Units.InfiniteFixed
 import InverseGalois.CFT.Units.InfiniteGalois
 import InverseGalois.CFT.Units.InfiniteIdele
 import InverseGalois.CFT.Units.InfiniteOrbit
+import InverseGalois.CFT.Units.LocalCoboundaryTwist
 import InverseGalois.CFT.Units.LocalEmbedding
 import InverseGalois.CFT.Units.LocalIdele
 import InverseGalois.CFT.Units.LocalNorm
 import InverseGalois.CFT.Units.LocalPowIdele
+import InverseGalois.CFT.Units.LocalSqrtNegOne
 import InverseGalois.CFT.Units.NormIndex
 import InverseGalois.CFT.Units.OrbitPlaces
 import InverseGalois.CFT.Units.PlaceComap
@@ -401,6 +409,7 @@ import InverseGalois.CFT.Units.PowIdele
 import InverseGalois.CFT.Units.PowSIdeleClass
 import InverseGalois.CFT.Units.PowSIdeleNorm
 import InverseGalois.CFT.Units.PrimeAbove
+import InverseGalois.CFT.Units.RatSumSquares
 import InverseGalois.CFT.Units.SIdeleClass
 import InverseGalois.CFT.Units.SIdeleHerbrand
 import InverseGalois.CFT.Units.SIdeleNorm
@@ -1994,6 +2003,12 @@ it that are available here.
   coset representatives, which the cocycle relation forces to be invariant.  That inflated cocycle
   is itself a coboundary exactly when its value is a norm from the invariants of the subgroup, so
   the quotient of the invariants by those norms measures the whole obstruction.
+* `InverseGalois.CFT.GroupCohomology.Inflation` is the injectivity of inflation in degree two for an
+  arbitrary normal subgroup whose first cohomology vanishes.  A cochain trivialising an inflated
+  cocycle need not itself be inflated, but the inflation identity makes its failure to be constant
+  on a coset a one-cocycle of the subgroup, and dividing by the coboundary which trivialises that
+  one-cocycle leaves the differential unchanged, so **a cochain trivialising an inflated cocycle can
+  be chosen constant on cosets and invariant under the subgroup**.
 * `InverseGalois.CFT.Units.IdeleClassComap` puts the idele classes of a subfield inside the idele
   classes of a Galois extension.  The map is injective because a unit fixed by the whole Galois
   group is a unit of the subfield, and its image is exactly the part fixed by the Galois group over
@@ -2118,6 +2133,54 @@ it that are available here.
   as soon as every ramified place has cyclic decomposition group, prime residue field, and residue
   characteristic congruent to one modulo the product of the order of the cocycle and the order of
   that group**.
+* `InverseGalois.CFT.Units.ABHNArchimedean` removes the archimedean conditions when nothing ramifies
+  there.  The decomposition group of an unramified archimedean place is trivial and a two-cochain of
+  the trivial group is the differential of its only value, while a totally complex base is
+  unramified at the archimedean places of every extension, so **over a totally complex base a
+  two-cocycle of the units which is a coboundary at every finite place is a coboundary**.
+* `InverseGalois.CFT.SqrtNegOne` is the group theory of a square root of minus one.  A field has at
+  most two of them, so every automorphism either fixes a given square root `j` of minus one or
+  negates it, and the subgroup fixing it is normal with two cosets; if `f` is fixed by that subgroup
+  and `σ` is outside it, then `σ • f * f` is the sum of the squares of the invariant elements
+  `(f + σ • f) / 2` and `(f - σ • f) / (2 * j)`.  A number field containing a square root of minus
+  one is totally complex, no embedding into the real numbers being able to accommodate one, so **the
+  fixed field of the subgroup is totally complex**.
+* `InverseGalois.CFT.SubgroupHilbert90` transports Hilbert's theorem ninety to a subgroup.  By
+  Artin's theorem a subgroup of the Galois group is the whole group of automorphisms over its own
+  fixed field, over which the extension is still finite, so **a one-cocycle defined only on the
+  subgroup is already the coboundary of a single unit there**.
+* `InverseGalois.CFT.Units.BaseChangeCocycle` changes the base field of a two-cocycle of the units.
+  The action of an automorphism on the primes of the ring of integers, on the units of the field,
+  and on the units of a completion does not depend on which subfield the automorphism is taken to
+  fix, so the local data cost nothing to transport, and **a torsion two-cocycle which is a
+  coboundary at every ramified finite place restricts to a coboundary on any subgroup of the Galois
+  group whose fixed field is totally complex**.
+* `InverseGalois.CFT.Units.LocalSqrtNegOne` reads the inflated cocycle inside a completion.  The
+  argument runs in the Galois group of the completion over the completion of the base rather than in
+  the decomposition group, every automorphism of the completion restricting to an element of the
+  latter: an invariant whose inflated cochain is a local coboundary is a norm from the invariants of
+  the subgroup fixing the square root of minus one, and **such a norm is a sum of two squares in the
+  completion of the base**.
+* `InverseGalois.CFT.Units.LocalCoboundaryTwist` checks that correcting a cocycle by a coboundary
+  disturbs nothing locally: the embedding of the units of a number field into the units of a
+  completion is equivariant for the decomposition group, so **a two-cochain which is locally a
+  coboundary at a finite place stays one after a twist**.
+* `InverseGalois.CFT.Units.RatSumSquares` is the global counterpart.  The completion of the rational
+  numbers at the prime below a prime of a number field is a field of `p`-adic numbers, and the norm
+  form of the extension obtained by adjoining a square root of minus one is the sum of two squares,
+  so the Hasse norm theorem gives that **a rational number which is a sum of two squares in every
+  completion at a finite place is a sum of two squares**.  The real place has nothing to say, a sum
+  of two squares in a single completion being already enough to make the number positive.
+* `InverseGalois.CFT.Units.ABHNSqrtNegOne` spends all of this at the prime two, where over the
+  rational numbers the archimedean hypothesis of the Albert-Brauer-Hasse-Noether theorem cannot be
+  met, the real place ramifying in every totally complex extension.  The subgroup fixing a square
+  root of minus one has a totally complex fixed field, so the theorem applies over that fixed field
+  and trivialises the restriction of the cocycle; the inflation-restriction sequence in degree two
+  reduces what is left to a single rational invariant; the local conditions say that this invariant
+  is everywhere locally a sum of two squares, hence globally one, hence a norm from the quadratic
+  subextension.  So **a two-cocycle of units of the rational numbers killed by any nonzero integer
+  and locally trivial at the ramified finite places is a coboundary, as soon as the extension
+  contains a square root of minus one**.
 * `InverseGalois.CFT.Kummer.CentralEmbedding` puts those pieces together.  The factor set of a
   section of a central extension with kernel of order `n`, transported into the units of a base
   field containing a primitive `n`-th root of unity, is a two-cocycle killed by `n`; if it is a
