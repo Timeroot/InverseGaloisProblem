@@ -84,22 +84,27 @@ theorem exists_prime_splitsCompletely_pow_ne_one [Fact ℓ.Prime] (hodd : Odd �
     {A : IntermediateField ℚ (AlgebraicClosure ℚ)} [NumberField ↥A] [IsGalois ℚ ↥A]
     (hnil : Group.IsNilpotent Gal(↥A/ℚ)) {ζ : AlgebraicClosure ℚ} (hζ : IsPrimitiveRoot ζ ℓ)
     (hζA : ζ ∈ A) {v : ℤ} (hv : ∀ y : ℚ, y ^ ℓ ≠ (v : ℚ)) (T : Finset ℕ)
-    (hdvd : ∀ q : ℕ, q.Prime → SplitsCompletely ↥A q → ℓ ∣ q - 1) :
-    ∃ q : ℕ, q.Prime ∧ q ∉ T ∧ SplitsCompletely ↥A q ∧ (v : ZMod q) ^ ((q - 1) / ℓ) ≠ 1 := by
+    (hdvd : ∀ q : ℕ, q.Prime → q ≠ ℓ → SplitsCompletely ↥A q → ℓ ∣ q - 1) :
+    ∃ q : ℕ, q.Prime ∧ q ∉ T ∧ q ≠ ℓ ∧ SplitsCompletely ↥A q ∧
+      (v : ZMod q) ^ ((q - 1) / ℓ) ≠ 1 := by
   have hℓ : ℓ.Prime := Fact.out
   classical
   obtain ⟨q, hqp, hqT, hqA, hqR⟩ :=
     exists_prime_splitsCompletely_not_splitsCompletely_radicalField hodd hnil hζ hζA hv
-      (T ∪ v.natAbs.primeFactors)
+      (insert ℓ (T ∪ v.natAbs.primeFactors))
+  have hqne : q ≠ ℓ := by
+    rintro rfl
+    exact hqT (Finset.mem_insert_self _ _)
   have hqv : ¬ (q : ℤ) ∣ v := by
     intro h
-    refine hqT (Finset.mem_union_right T ?_)
+    refine hqT (Finset.mem_insert_of_mem (Finset.mem_union_right T ?_))
     have hv0 : v ≠ 0 := by
       rintro rfl
       exact hv 0 (by simp [zero_pow hℓ.ne_zero])
     exact Nat.mem_primeFactors.mpr ⟨hqp, by simpa using Int.natAbs_dvd_natAbs.mpr h,
       Int.natAbs_ne_zero.mpr hv0⟩
-  refine ⟨q, hqp, fun h => hqT (Finset.mem_union_left _ h), hqA, fun h => hqR ?_⟩
-  exact splitsCompletely_radicalField hℓ hqp (hdvd q hqp hqA) hqv h
+  refine ⟨q, hqp, fun h => hqT (Finset.mem_insert_of_mem (Finset.mem_union_left _ h)), hqne, hqA,
+    fun h => hqR ?_⟩
+  exact splitsCompletely_radicalField hℓ hqp (hdvd q hqp hqne hqA) hqv h
 
 end InverseGalois.CFT

@@ -204,6 +204,7 @@ import InverseGalois.CFT.Local.UnramifiedCoboundary
 import InverseGalois.CFT.Local.UnramifiedNormForm
 import InverseGalois.CFT.Local.UnramifiedUnits
 import InverseGalois.CFT.Local.ValuedTopology
+import InverseGalois.CFT.NilpotentCompositum
 import InverseGalois.CFT.NilpotentQuotient
 import InverseGalois.CFT.NormSubgroup
 import InverseGalois.CFT.PGroupCompositum
@@ -211,6 +212,7 @@ import InverseGalois.CFT.PiIndex
 import InverseGalois.CFT.RestrictLE
 import InverseGalois.CFT.ScalarSemidirect
 import InverseGalois.CFT.Scholz.AuxPrimeChoice
+import InverseGalois.CFT.Scholz.AuxPrimeField
 import InverseGalois.CFT.Scholz.BadPrimes
 import InverseGalois.CFT.Scholz.BaseChange
 import InverseGalois.CFT.Scholz.BaseDescent
@@ -630,6 +632,14 @@ it that are available here.
   algebra: their symbol vectors span the whole space of `𝔽_ℓ`-valued functions on a finite set of
   primes, so every prescribed vector of symbols is realised by a single character of the units
   modulo a product of auxiliary primes.
+* `InverseGalois.CFT.NilpotentCompositum` supplies the group-theoretic ingredient the constraint
+  field needs: the compositum of two normal subextensions with nilpotent Galois groups again has a
+  nilpotent Galois group, restriction embedding it into the product of the two.
+* `InverseGalois.CFT.Scholz.AuxPrimeField` names the constraint field the auxiliary primes are
+  required to split completely in — the field being corrected enlarged by the roots of unity of
+  order `ℓ ^ k` — and reads off the resulting shape of the modulus: its prime factors avoid the
+  prescribed set and `ℓ`, are congruent to one modulo `ℓ ^ k`, and split completely in the field
+  being corrected.
 
 ## Group extensions and the Brauer group
 

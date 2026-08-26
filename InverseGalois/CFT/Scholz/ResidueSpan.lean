@@ -66,9 +66,9 @@ prime fails to have it as a power residue, contradicting the vanishing of the fo
 theorem residueVectors_span_eq_top [Fact ℓ.Prime] (hodd : Odd ℓ) [NumberField ↥A] [IsGalois ℚ ↥A]
     (hnil : Group.IsNilpotent Gal(↥A/ℚ)) {ζ : AlgebraicClosure ℚ} (hζ : IsPrimitiveRoot ζ ℓ)
     (hζA : ζ ∈ A) (hSprime : ∀ p ∈ S, p.Prime)
-    (hdvd : ∀ q : ℕ, q.Prime → SplitsCompletely ↥A q → ℓ ∣ q - 1)
+    (hdvd : ∀ q : ℕ, q.Prime → q ≠ ℓ → SplitsCompletely ↥A q → ℓ ∣ q - 1)
     (V : Submodule (ZMod ℓ) ({p // p ∈ S} → ZMod ℓ))
-    (hV : ∀ (q : ℕ) (κ : (ZMod q)ˣ →* Multiplicative (ZMod ℓ)), q.Prime → q ∉ S →
+    (hV : ∀ (q : ℕ) (κ : (ZMod q)ˣ →* Multiplicative (ZMod ℓ)), q.Prime → q ∉ S → q ≠ ℓ →
       SplitsCompletely ↥A q → (∀ x : (ZMod q)ˣ, κ x = 1 ↔ (x : ZMod q) ^ ((q - 1) / ℓ) = 1) →
       residueVector S κ ∈ V) :
     V = ⊤ := by
@@ -109,9 +109,9 @@ theorem residueVectors_span_eq_top [Fact ℓ.Prime] (hodd : Odd ℓ) [NumberFiel
     push_cast at h ⊢
     exact h
   -- an auxiliary prime for which it is not a power residue
-  obtain ⟨q, hqp, hqS, hqA, hqres⟩ :=
+  obtain ⟨q, hqp, hqS, hqne, hqA, hqres⟩ :=
     exists_prime_splitsCompletely_pow_ne_one hodd hnil hζ hζA hnp S hdvd
-  obtain ⟨κ, -, hκ⟩ := exists_powerResidueHom hℓ hqp (hdvd q hqp hqA)
+  obtain ⟨κ, -, hκ⟩ := exists_powerResidueHom hℓ hqp (hdvd q hqp hqne hqA)
   have hunit : ∀ p ∈ S, IsUnit ((p : ZMod q)) := fun p hp =>
     isUnit_natCast_of_mem hqp hqS hSprime hp
   have hvunit : IsUnit ((v : ZMod q)) := by
@@ -134,7 +134,7 @@ theorem residueVectors_span_eq_top [Fact ℓ.Prime] (hodd : Odd ℓ) [NumberFiel
     simp only [hedef, dif_pos i.2, Subtype.coe_eta, residueVector, ZMod.natCast_val, ZMod.cast_id]
     exact mul_comm _ _
   rw [Finset.sum_congr rfl hterm, ← Finset.univ_eq_attach, ← hfa]
-  exact hfker _ (hV q κ hqp hqS hqA hκ)
+  exact hfker _ (hV q κ hqp hqS hqne hqA hκ)
 
 /-- **Every prescribed vector of power residue symbols is realised by a character of the units
 modulo a product of auxiliary primes.**  Writing the vector as a combination of the vectors of
@@ -145,9 +145,10 @@ the combination is reproduced exactly. -/
 theorem exists_modulus_powerResidueSymbol [Fact ℓ.Prime] (hodd : Odd ℓ) [NumberField ↥A]
     [IsGalois ℚ ↥A] (hnil : Group.IsNilpotent Gal(↥A/ℚ)) {ζ : AlgebraicClosure ℚ}
     (hζ : IsPrimitiveRoot ζ ℓ) (hζA : ζ ∈ A) (hSprime : ∀ p ∈ S, p.Prime)
-    (hdvd : ∀ q : ℕ, q.Prime → SplitsCompletely ↥A q → ℓ ∣ q - 1) (t : {p // p ∈ S} → ZMod ℓ) :
+    (hdvd : ∀ q : ℕ, q.Prime → q ≠ ℓ → SplitsCompletely ↥A q → ℓ ∣ q - 1)
+    (t : {p // p ∈ S} → ZMod ℓ) :
     ∃ (Q : ℕ) (κ : (ZMod Q)ˣ →* Multiplicative (ZMod ℓ)), Q ≠ 0 ∧
-      (∀ r : ℕ, r.Prime → r ∣ Q → r ∉ S ∧ SplitsCompletely ↥A r) ∧
+      (∀ r : ℕ, r.Prime → r ∣ Q → r ∉ S ∧ r ≠ ℓ ∧ SplitsCompletely ↥A r) ∧
       ∀ (p : ℕ) (hp : p ∈ S), powerResidueSymbol κ p = t ⟨p, hp⟩ := by
   classical
   have hℓ : ℓ.Prime := Fact.out
@@ -155,23 +156,23 @@ theorem exists_modulus_powerResidueSymbol [Fact ℓ.Prime] (hodd : Odd ℓ) [Num
   -- the vectors of the auxiliary primes span, so the target is a combination of finitely many
   have hspan : Submodule.span (ZMod ℓ)
       {w : {p // p ∈ S} → ZMod ℓ | ∃ (q : ℕ) (κ : (ZMod q)ˣ →* Multiplicative (ZMod ℓ)),
-        q.Prime ∧ q ∉ S ∧ SplitsCompletely ↥A q ∧
+        q.Prime ∧ q ∉ S ∧ q ≠ ℓ ∧ SplitsCompletely ↥A q ∧
         (∀ x : (ZMod q)ˣ, κ x = 1 ↔ (x : ZMod q) ^ ((q - 1) / ℓ) = 1) ∧
         w = residueVector S κ} = ⊤ :=
     residueVectors_span_eq_top hodd hnil hζ hζA hSprime hdvd _
-      fun q κ hq hqS hqA hκ => Submodule.subset_span ⟨q, κ, hq, hqS, hqA, hκ, rfl⟩
+      fun q κ hq hqS hqne hqA hκ => Submodule.subset_span ⟨q, κ, hq, hqS, hqne, hqA, hκ, rfl⟩
   have ht : t ∈ Submodule.span (ZMod ℓ)
       {w : {p // p ∈ S} → ZMod ℓ | ∃ (q : ℕ) (κ : (ZMod q)ˣ →* Multiplicative (ZMod ℓ)),
-        q.Prime ∧ q ∉ S ∧ SplitsCompletely ↥A q ∧
+        q.Prime ∧ q ∉ S ∧ q ≠ ℓ ∧ SplitsCompletely ↥A q ∧
         (∀ x : (ZMod q)ˣ, κ x = 1 ↔ (x : ZMod q) ^ ((q - 1) / ℓ) = 1) ∧
         w = residueVector S κ} := by
     rw [hspan]; trivial
   obtain ⟨n, c, g, hg⟩ := Submodule.mem_span_set'.mp ht
   have hmem : ∀ i : Fin n, ∃ (q : ℕ) (κ : (ZMod q)ˣ →* Multiplicative (ZMod ℓ)),
-      q.Prime ∧ q ∉ S ∧ SplitsCompletely ↥A q ∧
+      q.Prime ∧ q ∉ S ∧ q ≠ ℓ ∧ SplitsCompletely ↥A q ∧
       (∀ x : (ZMod q)ˣ, κ x = 1 ↔ (x : ZMod q) ^ ((q - 1) / ℓ) = 1) ∧
       (g i : {p // p ∈ S} → ZMod ℓ) = residueVector S κ := fun i => (g i).2
-  choose qq κκ hqqp hqqS hqqA hqqκ hqqvec using hmem
+  choose qq κκ hqqp hqqS hqqne hqqA hqqκ hqqvec using hmem
   -- the modulus and the character
   set Q : ℕ := ∏ i, qq i with hQdef
   have hQ0 : Q ≠ 0 := Finset.prod_ne_zero_iff.mpr fun i _ => (hqqp i).ne_zero
@@ -181,7 +182,7 @@ theorem exists_modulus_powerResidueSymbol [Fact ℓ.Prime] (hodd : Odd ℓ) [Num
   · intro r hr hrQ
     obtain ⟨i, -, hri⟩ := (Nat.Prime.prime hr).exists_mem_finset_dvd hrQ
     obtain rfl : r = qq i := (Nat.prime_dvd_prime_iff_eq hr (hqqp i)).mp hri
-    exact ⟨hqqS i, hqqA i⟩
+    exact ⟨hqqS i, hqqne i, hqqA i⟩
   · intro p hp
     -- a prime of `S` is a unit modulo the product of the auxiliary primes
     have hpQ : IsUnit ((p : ZMod Q)) := by
