@@ -204,6 +204,7 @@ import InverseGalois.CFT.Local.UnramifiedCoboundary
 import InverseGalois.CFT.Local.UnramifiedNormForm
 import InverseGalois.CFT.Local.UnramifiedUnits
 import InverseGalois.CFT.Local.ValuedTopology
+import InverseGalois.CFT.NilpotentQuotient
 import InverseGalois.CFT.NormSubgroup
 import InverseGalois.CFT.PGroupCompositum
 import InverseGalois.CFT.PiIndex
@@ -223,6 +224,7 @@ import InverseGalois.CFT.Scholz.InertiaRankOne
 import InverseGalois.CFT.Scholz.InertiaTwist
 import InverseGalois.CFT.Scholz.LocalTransport
 import InverseGalois.CFT.Scholz.NilpotentOdd
+import InverseGalois.CFT.Scholz.NilpotentRadical
 import InverseGalois.CFT.Scholz.NilpotentSylowTwo
 import InverseGalois.CFT.Scholz.PGroupInertia
 import InverseGalois.CFT.Scholz.PGroupSolution

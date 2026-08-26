@@ -286,7 +286,8 @@ theorem inertiaDeg_under_fixedField_eq_one_of_stabilizer_le (H : Subgroup Gal(N/
 split inertia.**  Every prime of the fixed field is the prime below a prime of `𝓞 N`, so the
 residue-degree computation applies to all of them. -/
 theorem isSplitInertia_fixedField (H : Subgroup Gal(N/ℚ)) [H.Normal]
-    (h : ∀ q : ℕ, q.Prime → ∀ P : Ideal (𝓞 N), P.IsPrime → P.LiesOver (Ideal.span {(q : ℤ)}) →
+    (h : ∀ q ∈ ramifiedSet ↥(IntermediateField.fixedField H),
+      ∀ P : Ideal (𝓞 N), P.IsPrime → P.LiesOver (Ideal.span {(q : ℤ)}) →
       MulAction.stabilizer Gal(N/ℚ) P ≤ Ideal.inertia Gal(N/ℚ) P ⊔ H) :
     IsSplitInertia ↥(IntermediateField.fixedField H) := by
   set E : IntermediateField ℚ N := IntermediateField.fixedField H with hE
@@ -304,12 +305,13 @@ theorem isSplitInertia_fixedField (H : Subgroup Gal(N/ℚ)) [H.Normal]
   haveI : P.LiesOver (Ideal.span {(q : ℤ)}) := ⟨by rw [← hunder, Ideal.under_under]⟩
   rw [hQeq]
   exact inertiaDeg_under_fixedField_eq_one_of_stabilizer_le H hq.1 P
-    (h q hq.1 P hPp inferInstance)
+    (h q hq P hPp inferInstance)
 
 /-- **The fixed field of the kernel of a homomorphism which sees no more of any decomposition group
 than of the corresponding inertia subgroup has split inertia.** -/
 theorem isSplitInertia_fixedField_ker {G : Type*} [Group G] (ψ : Gal(N/ℚ) →* G)
-    (h : ∀ q : ℕ, q.Prime → ∀ P : Ideal (𝓞 N), P.IsPrime → P.LiesOver (Ideal.span {(q : ℤ)}) →
+    (h : ∀ q ∈ ramifiedSet ↥(IntermediateField.fixedField ψ.ker),
+      ∀ P : Ideal (𝓞 N), P.IsPrime → P.LiesOver (Ideal.span {(q : ℤ)}) →
       (MulAction.stabilizer Gal(N/ℚ) P).map ψ ≤ (Ideal.inertia Gal(N/ℚ) P).map ψ) :
     IsSplitInertia ↥(IntermediateField.fixedField ψ.ker) :=
   isSplitInertia_fixedField ψ.ker fun q hq P h1 h2 => le_sup_ker_of_map_le (h q hq P h1 h2)
