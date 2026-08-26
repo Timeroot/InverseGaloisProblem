@@ -224,6 +224,7 @@ import InverseGalois.CFT.Scholz.CorrectingCharacter
 import InverseGalois.CFT.Scholz.CorrectingSubfield
 import InverseGalois.CFT.Scholz.FrattiniStep
 import InverseGalois.CFT.Scholz.FrobeniusDefect
+import InverseGalois.CFT.Scholz.FrobeniusSymbol
 import InverseGalois.CFT.Scholz.Induction
 import InverseGalois.CFT.Scholz.InertiaRankOne
 import InverseGalois.CFT.Scholz.InertiaTwist
@@ -236,12 +237,14 @@ import InverseGalois.CFT.Scholz.PGroupSolution
 import InverseGalois.CFT.Scholz.PowerResidue
 import InverseGalois.CFT.Scholz.PrimeChoice
 import InverseGalois.CFT.Scholz.PrimeIndependence
+import InverseGalois.CFT.Scholz.PrimeOrderInertia
 import InverseGalois.CFT.Scholz.ProperSolution
 import InverseGalois.CFT.Scholz.RadicalDisjoint
 import InverseGalois.CFT.Scholz.RadicalSplitting
 import InverseGalois.CFT.Scholz.RadicalTower
 import InverseGalois.CFT.Scholz.RamificationControl
 import InverseGalois.CFT.Scholz.Realization
+import InverseGalois.CFT.Scholz.ResidueCorrection
 import InverseGalois.CFT.Scholz.ResidueSpan
 import InverseGalois.CFT.Scholz.ResidueSymbol
 import InverseGalois.CFT.Scholz.Selector
@@ -655,6 +658,18 @@ it that are available here.
   ramified in a subextension with split inertia, the image of an arithmetic Frobenius lies in the
   image of the inertia group up to one element of the kernel, the same element for every arithmetic
   Frobenius at the prime.
+* `InverseGalois.CFT.Scholz.FrobeniusSymbol` supplies the character that cancels it: a character of
+  the units modulo the modulus, read through the cyclotomic subfield, takes the value recorded by
+  the power residue symbol on an arithmetic Frobenius at a prime not dividing the modulus, and
+  kills the inertia group there.
+* `InverseGalois.CFT.Scholz.PrimeOrderInertia` disposes of the auxiliary primes themselves: where
+  the image of a decomposition group lies in a subgroup of prime order, ramification alone forces
+  the image of the inertia group to be the whole of it, so the split inertia condition holds for
+  free.
+* `InverseGalois.CFT.Scholz.ResidueCorrection` puts the correction together: the solution ramifying
+  no more than the field below is enlarged by the roots of unity of the auxiliary modulus and
+  twisted by the character whose power residue symbols are the Frobenius defects, and the field cut
+  out by the twisted solution realises the group of the central step at the required level.
 
 ## Group extensions and the Brauer group
 
