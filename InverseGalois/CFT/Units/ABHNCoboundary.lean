@@ -25,9 +25,11 @@ cocycle identity for the inflated cocycle is exactly the multiplicative cocycle 
   field.
 * `InverseGalois.CFT.smulUnitsAut_adicUnitHom_algebraMap`: the decomposition group at a finite
   place fixes the local units coming from the base field.
-* `InverseGalois.CFT.exists_isMulCoboundary_of_odd`: **a two-cocycle with values in the units of the
-  base field, killed by an odd integer and a coboundary at every ramified finite place, is the
-  coboundary of a one-cochain with values in the units of the extension.**
+* `InverseGalois.CFT.exists_isMulCoboundary_of_coprime`: **a two-cocycle with values in the units of
+  the base field, killed by an integer the archimedean places cost nothing for and a coboundary at
+  every ramified finite place, is the coboundary of a one-cochain with values in the units of the
+  extension.**
+* `InverseGalois.CFT.exists_isMulCoboundary_of_odd`: its form for an odd integer.
 
 ## Tags
 
@@ -66,12 +68,13 @@ theorem smulUnitsAut_adicUnitHom_algebraMap (v : HeightOneSpectrum (𝓞 K))
   rw [toMul_ofMul] at h
   rw [h, toMul_globalUnitsAut, toMul_ofMul, smul_algebraMap_units]
 
-/-- **A two-cocycle with values in the units of the base field, killed by an odd integer and a
-coboundary at every ramified finite place, is the coboundary of a one-cochain with values in the
-units of the extension.**  This is the Albert-Brauer-Hasse-Noether theorem for cocycles of odd
-order, written multiplicatively: the values lie in the base field, so the Galois group fixes them
-and the inflated additive cocycle identity is the multiplicative one. -/
-theorem exists_isMulCoboundary_of_odd {n : ℕ} (hn : Odd n)
+/-- **A two-cocycle with values in the units of the base field, killed by an integer the archimedean
+places cost nothing for and a coboundary at every ramified finite place, is the coboundary of a
+one-cochain with values in the units of the extension.**  This is the Albert-Brauer-Hasse-Noether
+theorem for torsion cocycles, written multiplicatively: the values lie in the base field, so the
+Galois group fixes them and the inflated additive cocycle identity is the multiplicative one. -/
+theorem exists_isMulCoboundary_of_coprime {n : ℕ} (hn : n ≠ 0)
+    (hcop : IsCoprimeAtInfinitePlaces k K n)
     {a : Gal(K/k) → Gal(K/k) → kˣ} (hpow : ∀ x y, a x y ^ n = 1)
     (ha : ∀ x y z : Gal(K/k), a y z * a x (y * z) = a (x * y) z * a x y)
     (hram : ∀ v : HeightOneSpectrum (𝓞 K), ¬ Algebra.IsUnramifiedAt (𝓞 k) v.asIdeal →
@@ -101,10 +104,26 @@ theorem exists_isMulCoboundary_of_odd {n : ℕ} (hn : Odd n)
     show Additive.ofMul (ι (a y z)) + Additive.ofMul (ι (a x (y * z)))
       = Additive.ofMul (ι (a (x * y) z)) + Additive.ofMul (ι (a x y))
     rw [← ofMul_mul, ← ofMul_mul, ← map_mul, ← map_mul, ha]
-  obtain ⟨b, hb⟩ := exists_sub_add_eq_globalUnits_of_odd hn hApow hAcocycle hram
+  obtain ⟨b, hb⟩ := exists_sub_add_eq_globalUnits_of_coprime hn hcop hApow hAcocycle hram
   refine ⟨fun g => (b g).toMul, fun g h => ?_⟩
   have h2 := congrArg Additive.toMul (hb g h)
   rw [toMul_add, toMul_sub, toMul_globalUnitsAut] at h2
   exact h2.symm
+
+/-- **A two-cocycle with values in the units of the base field, killed by an odd integer and a
+coboundary at every ramified finite place, is the coboundary of a one-cochain with values in the
+units of the extension.**  At an archimedean place the decomposition group has order one or two,
+hence order coprime to an odd integer. -/
+theorem exists_isMulCoboundary_of_odd {n : ℕ} (hn : Odd n)
+    {a : Gal(K/k) → Gal(K/k) → kˣ} (hpow : ∀ x y, a x y ^ n = 1)
+    (ha : ∀ x y z : Gal(K/k), a y z * a x (y * z) = a (x * y) z * a x y)
+    (hram : ∀ v : HeightOneSpectrum (𝓞 K), ¬ Algebra.IsUnramifiedAt (𝓞 k) v.asIdeal →
+      ∃ c : ↥(stabilizer Gal(K/k) v) → Additive (v.adicCompletion K)ˣ,
+      ∀ s t : ↥(stabilizer Gal(K/k) v),
+        Additive.ofMul (adicUnitHom v (Units.map (algebraMap k K : k →* K) (a s.1 t.1)))
+          = smulUnitsAut s (c t) - c (s * t) + c s) :
+    ∃ b : Gal(K/k) → Kˣ, ∀ g h : Gal(K/k),
+      g • b h / b (g * h) * b g = Units.map (algebraMap k K : k →* K) (a g h) :=
+  exists_isMulCoboundary_of_coprime hn.pos.ne' (IsCoprimeAtInfinitePlaces.of_odd hn) hpow ha hram
 
 end InverseGalois.CFT

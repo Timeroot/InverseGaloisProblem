@@ -27,10 +27,13 @@ and they split completely in the base, so their residue fields are prime fields.
   field, a root of unity of the base field is, in the completion, a power with exponent the order
   of the decomposition group of a unit that group fixes**, as soon as the residue characteristic is
   congruent to one modulo the product of the two orders.
-* `InverseGalois.CFT.exists_isMulCoboundary_of_odd_of_forall_ramified_primeResidue`: **a two-cocycle
-  with values in the roots of unity of the base field and killed by an odd integer is a coboundary,
-  as soon as every ramified place has cyclic decomposition group, prime residue field and residue
-  characteristic congruent to one modulo the product of the two orders.**
+* `InverseGalois.CFT.exists_isMulCoboundary_of_coprime_of_forall_ramified_primeResidue`: **a
+  two-cocycle with values in the roots of unity of the base field and killed by an integer the
+  archimedean places cost nothing for is a coboundary, as soon as every ramified place has cyclic
+  decomposition group, prime residue field and residue characteristic congruent to one modulo the
+  product of the two orders.**
+* `InverseGalois.CFT.exists_isMulCoboundary_of_odd_of_forall_ramified_primeResidue`: its form for an
+  odd integer.
 
 ## Tags
 
@@ -69,6 +72,27 @@ theorem exists_pow_eq_adicUnitHom_of_mul_dvd (v : HeightOneSpectrum (𝓞 K)) {p
 
 variable [IsGalois k K]
 
+/-- **A two-cocycle with values in the roots of unity of the base field and killed by an integer the
+archimedean places cost nothing for is a coboundary, as soon as every ramified place has cyclic
+decomposition group, prime residue field and residue characteristic congruent to one modulo the
+product of the order of the cocycle and the order of that group.** -/
+theorem exists_isMulCoboundary_of_coprime_of_forall_ramified_primeResidue {n : ℕ} (hn : n ≠ 0)
+    (hcop : IsCoprimeAtInfinitePlaces k K n)
+    {a : Gal(K/k) → Gal(K/k) → kˣ} (hpow : ∀ x y, a x y ^ n = 1)
+    (ha : ∀ x y z : Gal(K/k), a y z * a x (y * z) = a (x * y) z * a x y)
+    (hram : ∀ v : HeightOneSpectrum (𝓞 K), ¬ Algebra.IsUnramifiedAt (𝓞 k) v.asIdeal →
+      IsCyclic ↥(stabilizer Gal(K/k) v) ∧ ∃ p e : ℕ,
+        HasResidueChar (v.adicCompletion K) p e ∧
+          (∀ x : v.adicCompletion K, Valued.v x ≤ 1 →
+            ∃ b : ℤ, Valued.v (x - (b : v.adicCompletion K)) < 1) ∧
+          n * Nat.card ↥(stabilizer Gal(K/k) v) ∣ p - 1) :
+    ∃ b : Gal(K/k) → Kˣ, ∀ x y : Gal(K/k),
+      x • b y / b (x * y) * b x = Units.map (algebraMap k K : k →* K) (a x y) := by
+  refine exists_isMulCoboundary_of_coprime_of_forall_exists_pow hn hcop hpow ha fun v hv => ?_
+  obtain ⟨hcyc, p, e, h, hres, hnd⟩ := hram v hv
+  obtain ⟨g, hg⟩ := IsCyclic.exists_generator (α := ↥(stabilizer Gal(K/k) v))
+  exact ⟨g, hg, fun z hz => exists_pow_eq_adicUnitHom_of_mul_dvd v h hres hnd z hz⟩
+
 /-- **A two-cocycle with values in the roots of unity of the base field and killed by an odd
 integer is a coboundary, as soon as every ramified place has cyclic decomposition group, prime
 residue field and residue characteristic congruent to one modulo the product of the order of the
@@ -83,10 +107,8 @@ theorem exists_isMulCoboundary_of_odd_of_forall_ramified_primeResidue {n : ℕ} 
             ∃ b : ℤ, Valued.v (x - (b : v.adicCompletion K)) < 1) ∧
           n * Nat.card ↥(stabilizer Gal(K/k) v) ∣ p - 1) :
     ∃ b : Gal(K/k) → Kˣ, ∀ x y : Gal(K/k),
-      x • b y / b (x * y) * b x = Units.map (algebraMap k K : k →* K) (a x y) := by
-  refine exists_isMulCoboundary_of_odd_of_forall_exists_pow hn hpow ha fun v hv => ?_
-  obtain ⟨hcyc, p, e, h, hres, hnd⟩ := hram v hv
-  obtain ⟨g, hg⟩ := IsCyclic.exists_generator (α := ↥(stabilizer Gal(K/k) v))
-  exact ⟨g, hg, fun z hz => exists_pow_eq_adicUnitHom_of_mul_dvd v h hres hnd z hz⟩
+      x • b y / b (x * y) * b x = Units.map (algebraMap k K : k →* K) (a x y) :=
+  exists_isMulCoboundary_of_coprime_of_forall_ramified_primeResidue hn.pos.ne'
+    (IsCoprimeAtInfinitePlaces.of_odd hn) hpow ha hram
 
 end InverseGalois.CFT

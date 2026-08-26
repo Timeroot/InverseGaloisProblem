@@ -32,7 +32,8 @@ exponent even though it is not one globally.
   decomposition group, a two-cocycle with values in the units of the base field is a coboundary as
   soon as each of its values is locally a power, with exponent the order of the decomposition
   group, of a unit fixed by that group.**
-* `InverseGalois.CFT.exists_isMulCoboundary_of_odd_of_forall_exists_pow`: the resulting form of the
+* `InverseGalois.CFT.exists_isMulCoboundary_of_coprime_of_forall_exists_pow`,
+  `InverseGalois.CFT.exists_isMulCoboundary_of_odd_of_forall_exists_pow`: the resulting form of the
   Albert-Brauer-Hasse-Noether theorem, whose only remaining hypothesis is that local one.
 
 ## Tags
@@ -104,6 +105,26 @@ theorem exists_sub_add_eq_adicUnits_of_exists_pow (v : HeightOneSpectrum (𝓞 K
   exact exists_sub_add_eq_of_forall_exists_nsmul
     (smulUnitsAut (G := ↥(stabilizer Gal(K/k) v)) (R := v.adicCompletion K)) hg hAroot hfA hfcoc
 
+/-- **A two-cocycle with values in the units of the base field and killed by an integer the
+archimedean places cost nothing for is the coboundary of a one-cochain with values in the units of
+the extension, as soon as at every ramified finite place its values are local powers with exponent
+the order of a cyclic decomposition group.** -/
+theorem exists_isMulCoboundary_of_coprime_of_forall_exists_pow {n : ℕ} (hn : n ≠ 0)
+    (hcop : IsCoprimeAtInfinitePlaces k K n)
+    {a : Gal(K/k) → Gal(K/k) → kˣ} (hpow : ∀ x y, a x y ^ n = 1)
+    (ha : ∀ x y z : Gal(K/k), a y z * a x (y * z) = a (x * y) z * a x y)
+    (hram : ∀ v : HeightOneSpectrum (𝓞 K), ¬ Algebra.IsUnramifiedAt (𝓞 k) v.asIdeal →
+      ∃ g : ↥(stabilizer Gal(K/k) v), (∀ x : ↥(stabilizer Gal(K/k) v), x ∈ Subgroup.zpowers g) ∧
+        ∀ z : kˣ, z ^ n = 1 → ∃ y : (v.adicCompletion K)ˣ,
+          (∀ σ : ↥(stabilizer Gal(K/k) v), σ • (y : v.adicCompletion K) = y) ∧
+            y ^ Nat.card ↥(stabilizer Gal(K/k) v)
+              = adicUnitHom v (Units.map (algebraMap k K : k →* K) z)) :
+    ∃ b : Gal(K/k) → Kˣ, ∀ x y : Gal(K/k),
+      x • b y / b (x * y) * b x = Units.map (algebraMap k K : k →* K) (a x y) := by
+  refine exists_isMulCoboundary_of_coprime hn hcop hpow ha fun v hv => ?_
+  obtain ⟨g, hg, hroot⟩ := hram v hv
+  exact exists_sub_add_eq_adicUnits_of_exists_pow v hg hpow ha hroot
+
 /-- **A two-cocycle with values in the units of the base field and killed by an odd integer is the
 coboundary of a one-cochain with values in the units of the extension, as soon as at every ramified
 finite place its values are local powers with exponent the order of a cyclic decomposition
@@ -118,9 +139,8 @@ theorem exists_isMulCoboundary_of_odd_of_forall_exists_pow {n : ℕ} (hn : Odd n
             y ^ Nat.card ↥(stabilizer Gal(K/k) v)
               = adicUnitHom v (Units.map (algebraMap k K : k →* K) z)) :
     ∃ b : Gal(K/k) → Kˣ, ∀ x y : Gal(K/k),
-      x • b y / b (x * y) * b x = Units.map (algebraMap k K : k →* K) (a x y) := by
-  refine exists_isMulCoboundary_of_odd hn hpow ha fun v hv => ?_
-  obtain ⟨g, hg, hroot⟩ := hram v hv
-  exact exists_sub_add_eq_adicUnits_of_exists_pow v hg hpow ha hroot
+      x • b y / b (x * y) * b x = Units.map (algebraMap k K : k →* K) (a x y) :=
+  exists_isMulCoboundary_of_coprime_of_forall_exists_pow hn.pos.ne'
+    (IsCoprimeAtInfinitePlaces.of_odd hn) hpow ha hram
 
 end InverseGalois.CFT

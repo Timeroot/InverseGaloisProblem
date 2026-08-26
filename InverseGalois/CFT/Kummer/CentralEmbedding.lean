@@ -46,7 +46,8 @@ homomorphism, which is surjective because the kernel lies in the Frattini subgro
 * `InverseGalois.CFT.exists_surjective_hom_of_forall_ramified_pow`: **the same conclusion from the
   arithmetic hypothesis that at every ramified finite place the decomposition group is cyclic and
   the roots of unity of the base field are locally powers with exponent its order.**
-* `InverseGalois.CFT.exists_surjective_hom_of_forall_ramified_primeResidue`: **the same conclusion
+* `InverseGalois.CFT.exists_surjective_hom_of_coprime_of_forall_ramified_primeResidue`,
+  `InverseGalois.CFT.exists_surjective_hom_of_forall_ramified_primeResidue`: **the same conclusion
   from a congruence on the residue characteristic at every ramified finite place with prime residue
   field.**
 
@@ -259,18 +260,19 @@ theorem exists_surjective_hom_of_forall_ramified_pow
 
 set_option synthInstance.maxHeartbeats 1000000 in
 set_option maxHeartbeats 1000000 in
-/-- **A central Frattini embedding problem with kernel of odd order is solvable over a larger
-extension as soon as every ramified finite place has cyclic decomposition group, prime residue
-field, and residue characteristic congruent to one modulo the product of the order of the kernel
-with the order of that group.**  This is the shape in which the Scholz-Reichardt construction
-supplies the arithmetic: the ramified places are chosen with a prescribed congruence on their
-residue characteristic and split completely in the base field. -/
-theorem exists_surjective_hom_of_forall_ramified_primeResidue
-    {n : ℕ} [NeZero n] (hn : Odd n) {ζ : k} (hζ : IsPrimitiveRoot ζ n)
+/-- **A central Frattini embedding problem is solvable over a larger extension as soon as the
+archimedean places cost nothing for its kernel and every ramified finite place has cyclic
+decomposition group, prime residue field, and residue characteristic congruent to one modulo the
+product of the order of the kernel with the order of that group.**  This is the shape in which the
+Scholz-Reichardt construction supplies the arithmetic: the ramified places are chosen with a
+prescribed congruence on their residue characteristic and split completely in the base field. -/
+theorem exists_surjective_hom_of_coprime_of_forall_ramified_primeResidue
+    {n : ℕ} [NeZero n] {ζ : k} (hζ : IsPrimitiveRoot ζ n)
     {G H : Type} [Group G] [Group H] [Finite G] {f : G →* H}
     (hZ : f.ker ≤ Subgroup.center G) (hfr : f.ker ≤ frattini G)
     (hcard : Nat.card ↥f.ker = n)
     {K : IntermediateField k Ω} [NumberField ↥K] [IsGalois k ↥K]
+    (hcop : IsCoprimeAtInfinitePlaces k ↥K n)
     {π : Gal(↥K/k) →* H} (hπ : Function.Surjective π)
     {χ : ↥f.ker →* kˣ} (hχinj : Function.Injective χ)
     (hχsurj : ∀ y : kˣ, y ^ n = 1 → ∃ z : ↥f.ker, χ z = y)
@@ -294,8 +296,35 @@ theorem exists_surjective_hom_of_forall_ramified_primeResidue
     rw [hadef]
     exact charFactorSet_cocycle f hZ ht χ π x y z
   obtain ⟨b, hb⟩ :=
-    exists_isMulCoboundary_of_odd_of_forall_ramified_primeResidue (k := k) (K := ↥K)
-      hn hapow hacoc hram
+    exists_isMulCoboundary_of_coprime_of_forall_ramified_primeResidue (k := k) (K := ↥K)
+      (NeZero.ne n) hcop hapow hacoc hram
   exact exists_surjective_hom_of_isMulCoboundary hζ hZ hfr hcard hπ hχinj hχsurj ht hb
+
+set_option synthInstance.maxHeartbeats 1000000 in
+set_option maxHeartbeats 1000000 in
+/-- **A central Frattini embedding problem with kernel of odd order is solvable over a larger
+extension as soon as every ramified finite place has cyclic decomposition group, prime residue
+field, and residue characteristic congruent to one modulo the product of the order of the kernel
+with the order of that group.**  At an archimedean place the decomposition group has order one or
+two, hence order coprime to the order of the kernel. -/
+theorem exists_surjective_hom_of_forall_ramified_primeResidue
+    {n : ℕ} [NeZero n] (hn : Odd n) {ζ : k} (hζ : IsPrimitiveRoot ζ n)
+    {G H : Type} [Group G] [Group H] [Finite G] {f : G →* H}
+    (hZ : f.ker ≤ Subgroup.center G) (hfr : f.ker ≤ frattini G)
+    (hcard : Nat.card ↥f.ker = n)
+    {K : IntermediateField k Ω} [NumberField ↥K] [IsGalois k ↥K]
+    {π : Gal(↥K/k) →* H} (hπ : Function.Surjective π)
+    {χ : ↥f.ker →* kˣ} (hχinj : Function.Injective χ)
+    (hχsurj : ∀ y : kˣ, y ^ n = 1 → ∃ z : ↥f.ker, χ z = y)
+    {t : H → G} (ht : ∀ h, f (t h) = h)
+    (hram : ∀ v : HeightOneSpectrum (𝓞 ↥K), ¬ Algebra.IsUnramifiedAt (𝓞 k) v.asIdeal →
+      IsCyclic ↥(stabilizer Gal(↥K/k) v) ∧ ∃ p e : ℕ,
+        HasResidueChar (v.adicCompletion ↥K) p e ∧
+          (∀ x : v.adicCompletion ↥K, Valued.v x ≤ 1 →
+            ∃ b : ℤ, Valued.v (x - (b : v.adicCompletion ↥K)) < 1) ∧
+          n * Nat.card ↥(stabilizer Gal(↥K/k) v) ∣ p - 1) :
+    HasProperSolution K f π :=
+  exists_surjective_hom_of_coprime_of_forall_ramified_primeResidue hζ hZ hfr hcard
+    (IsCoprimeAtInfinitePlaces.of_odd hn) hπ hχinj hχsurj ht hram
 
 end InverseGalois.CFT
