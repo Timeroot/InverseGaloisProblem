@@ -348,6 +348,7 @@ import InverseGalois.CFT.Tate.TrivialLattice
 import InverseGalois.CFT.Units.ABHN
 import InverseGalois.CFT.Units.ABHNArchimedean
 import InverseGalois.CFT.Units.ABHNCoboundary
+import InverseGalois.CFT.Units.ABHNLocalNorm
 import InverseGalois.CFT.Units.ABHNLocalPower
 import InverseGalois.CFT.Units.ABHNRamified
 import InverseGalois.CFT.Units.ABHNSqrtNegOne
@@ -2122,6 +2123,13 @@ it that are available here.
   fixes them; when that group is cyclic its norm is therefore the power with exponent its order, and
   **the local condition holds as soon as each value of the cocycle is, in the completion, a power
   with that exponent of a unit fixed by the decomposition group**.
+* `InverseGalois.CFT.Units.ABHNLocalNorm` sharpens that to what the cyclic case really asks.  The
+  second cohomology of a cyclic group is its invariants modulo its norms, and the values of the
+  cocycle are invariant, so **the local condition holds as soon as each value of the cocycle is a
+  norm from the completion of the extension**, the product of its conjugates under the
+  decomposition group.  A unit the group fixes has itself for every conjugate, so its norm is its
+  power with exponent the order of the group and the previous condition implies this one; the
+  converse fails, a ramified extension having norms that are not powers.
 * `InverseGalois.CFT.Local.PrimeResidue` supplies that arithmetic when the residue field at the
   place is the prime field.  Every element of the valuation ring is then congruent to a rational
   integer, so a root of unity of order `n` reduces to an element of the multiplicative group of the

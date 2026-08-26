@@ -1388,9 +1388,9 @@ dyadic defect to the real one — is supplied and proved.
 §0.16 located the whole of `Odd ℓ` in one line, at the archimedean places, and gave it a name:
 `IsCoprimeAtInfinitePlaces k K n`.  At `n = 2` that predicate says every archimedean place of `K` is
 unramified over `k`, i.e. over `ℚ` that `K` is totally real.  §0.17 then showed that the totally
-real invariant **cannot** be carried through the correction step: any corrector that moves the
-dyadic defect ramifies at `2`, and the corrector that supplies the missing dimension is `ℚ(√q)`
-with `q ≡ 3 mod 4`, which is complex.
+real-and-unramified-at-`2` invariant **cannot** be carried through the correction step: any
+corrector that moves the dyadic defect ramifies at `2`, and the corrector that supplies the missing
+dimension is `ℚ(√q)` with `q ≡ 3 mod 4`, which ramifies at `2` and breaks the level congruence.
 
 The way out is not to preserve the invariant but to make the theorem not need it.  That is now
 done.
@@ -1499,8 +1499,107 @@ formulation is a condition on the dyadic behaviour of `K` that the induction can
 that `K_v/ℚ₂` be *cyclic*, which makes `G̃_v` abelian and the lift a matter of choosing an
 unramified or split extension, as in the second bullet of §0.16).
 
-That is the whole remaining `ℓ = 2` arithmetic on the local–global side.  Items 1 and 2 of §0.16
-(the choice of corrector) are separate and unchanged.
+§0.19 works that condition out, finds that it **fails** in the base case, and concludes that
+`ι ∈ K` is not the `ℓ = 2` route after all.  The theorem stands; the route does not.
+
+---
+
+## 0.19 Status (2026-08-26, night, later) — the place `2` is silent when it is unramified, and that is the whole trade
+
+§0.18 built a real theorem and then drew the wrong strategic conclusion from it.  This section
+corrects the conclusion, computes the condition §0.18 left open (it is **false** in the smallest
+case), and states the one trade that the `ℓ = 2` induction actually faces.
+
+### Three corrections to §0.18
+
+1. **`ℚ(√q)` with `q ≡ 3 mod 4` is real.**  `q > 0`, so that corrector is a real quadratic field and
+   does not break total reality.  The two costs §0.17 records are the correct ones: it ramifies at
+   `2`, and it violates the level congruence at `q`.
+2. **The criterion asks nothing at an unramified place.**  In this repository the local hypothesis
+   of Albert–Brauer–Hasse–Noether ranges over the *ramified* finite places only, because
+   `exists_sub_add_eq_adicUnits_of_nsmul_eq_zero` (`Units/ABHNTorsion.lean`) discharges every
+   unramified finite place for a torsion cocycle, and `exists_sub_add_eq_infiniteUnits_of_coprime`
+   discharges the archimedean ones.  So under §0.16's invariant — `K/ℚ` totally real and unramified
+   at `2` — the prime `2` costs **nothing at all**.  That is the mechanism behind §0.16's first
+   bullet, and it is already a theorem here.
+3. **`ι ∈ K` therefore does not remove an obstruction; it creates one.**  Requiring `ι ∈ K` makes
+   the place above `2` ramified, and that is the only reason the criterion asks anything there.
+
+### The condition at `2` under `ι ∈ K`, computed
+
+Base case `K = ℚ(i)`, `v | 2`, `D_v = Gal(ℚ₂(i)/ℚ₂)` cyclic of order two, `n = 2`, values in
+`{±1}`.  For a cyclic decomposition group the second cohomology of the local units is the invariants
+modulo the norms, so the local condition is that `−1` be a norm from `ℚ₂(i)^×`, i.e. a sum of two
+squares in `ℚ₂`, i.e. that the Hilbert symbol `(−1, −1)₂` be trivial.  It is not, and the
+repository already proves it: `hilbertSymbolAt_two_neg_one_intCast` at `d = −1` (no odd prime
+divides `−1`, so the hypothesis is vacuous) gives `hilbertSymbolAt primeTwo (-1) (-1) = -1`.
+
+So at `v | 2` neither the power form, nor the sharper norm form of `Units/ABHNLocalNorm.lean`, nor a
+homomorphic lift `D_v →* G` can discharge a cocycle whose value `−1` occurs.  The condition §0.18
+posted as "the whole remaining `ℓ = 2` arithmetic" is not merely unproven — it is **false** for the
+smallest instance, and it has to be, because the embedding problem `ℤ/4 ↠ ℤ/2 = Gal(ℚ(i)/ℚ)` is
+genuinely unsolvable: `ℚ(√d)` lies in a cyclic quartic field exactly when `d` is a sum of two
+squares, and `−1` is not.  Its obstruction is the class `(−1, −1)`, ramified at exactly `{2, ∞}`.
+Dropping the archimedean condition without adding one at `2` would prove that false statement.
+
+### Why the place `2` cannot simply be omitted
+
+The sum of the local invariants of a class of `Br(K/ℚ)` is zero, so a place may be omitted from the
+hypotheses exactly when at most one invariant is left unknown.
+
+| invariant at | `K` totally real | `ι ∈ K` |
+|---|---|---|
+| `∞` | `0`, the decomposition group being trivial | unknown |
+| unramified finite | `0` | `0` |
+| Scholz primes | `0`, by the congruence | `0`, by the congruence |
+| `2` | ? | ? |
+
+Totally real leaves one unknown and reciprocity determines it.  `ι ∈ K` leaves two unknowns and one
+relation, and nothing follows.  This is §0.16's rank count again, read off the Brauer group instead
+of off the square classes.
+
+### The trade, stated once
+
+At `ℓ = 2` the induction has exactly two shapes, differing in one bit: whether `2` may ramify.
+
+**(a) `2` unramified** — the §0.16 invariant.  The local–global step needs nothing at `2`.  The
+price is the corrector count: the defect has rank three (the dyadic class modulo the unramified one,
+rank two; the sign, rank one) and the admissible correctors reach only an index-two subgroup of it
+(§0.17, and its local avatar is that `IsInertiaRankOneAt 2` is false).  Deficiency one.  Closing it
+needs either a corrector ramified at `2` — which contradicts the invariant — or a relation on the
+*defect* matching the one §0.17 proves for the *correctors*.  This is the classical difficulty; its
+shape is the special case of Grunwald–Wang at `2`, and it is where Šafarevič's 1954 argument went
+wrong.
+
+**(b) `2` allowed to ramify** — invariant: `K/ℚ` Galois, totally real, ramified only at `2` and at
+Scholz primes.  Now nothing needs correcting at `2`: `IsInertiaRankOneAt 2` is never invoked, the
+rank-three target collapses to the sign alone, and `ℚ(i)`, `ℚ(√2)`, `ℚ(√−2)` become admissible
+correctors, so the sign is freely correctable.  Correction at the *odd* ramified primes is the tame
+case and is unchanged.  The price is a single missing theorem, and it is a clean one.
+
+> **(T5)**  Let `K/ℚ` be a totally real Galois number field and `a` a two-cocycle of `Gal(K/ℚ)` with
+> values in `ℚˣ`, killed by `n`.  If `a` is a coboundary over the decomposition group at every
+> ramified finite place **except those above one fixed prime**, then `a` is a coboundary.
+
+Its proof is the reciprocity law for the Brauer group — the sum of the local invariants of a class
+split by `K` is zero — together with injectivity of the local invariant on `Br(K_v/ℚ_v)`.  The
+repository has the degree-two case over `ℚ`, the Hilbert product formula in
+`Global/Reciprocity.lean`, but not the invariant map; that is the next step of the class-field-theory
+tower already under construction (§0.10, the second inequality).
+
+**(b) is the better trade.**  (a) asks for exactly the input the classical argument got wrong.  (b)
+asks for a standard piece of class field theory which is on the critical path for gap 2 anyway —
+Grunwald–Wang, for the nilpotent-to-solvable reduction, needs the same layer.  The recommendation is
+to stop trying to move the archimedean place and to build the invariant map.
+
+### What this changes in the repository
+
+Nothing is retracted.  The theorem of §0.18 is true, sorry-free and axiom-free, and it is the right
+statement of Albert–Brauer–Hasse–Noether over a base containing `i`; it is simply not the `ℓ = 2`
+route.  The sharpening in `Units/ABHNLocalNorm.lean` — at a ramified place with cyclic decomposition
+group the local condition is that the values be **norms**, not powers, since the second cohomology
+of a cyclic group is its invariants modulo its norms — is the form (T5) will be phrased against, and
+it is what makes the computation above a one-line consequence of the Hilbert symbol.
 
 ---
 
