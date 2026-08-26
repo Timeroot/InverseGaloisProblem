@@ -41,7 +41,7 @@ open IsDedekindDomain MulAction NumberField groupCohomology
 
 namespace InverseGalois.CFT
 
-variable {K : Type} [Field K] [NumberField K] [IsGalois ℚ K]
+variable {K : Type} [Field K] [NumberField K] [Algebra ℚ K] [IsGalois ℚ K]
 
 /-- **A two-cocycle with values in the units of the rational numbers, killed by a nonzero integer
 and a coboundary at every ramified finite place, is a coboundary as soon as the extension contains

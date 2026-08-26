@@ -1383,6 +1383,127 @@ dyadic defect to the real one — is supplied and proved.
 
 ---
 
+## 0.18 Status (2026-08-26, night) — Albert–Brauer–Hasse–Noether with **no** condition at infinity
+
+§0.16 located the whole of `Odd ℓ` in one line, at the archimedean places, and gave it a name:
+`IsCoprimeAtInfinitePlaces k K n`.  At `n = 2` that predicate says every archimedean place of `K` is
+unramified over `k`, i.e. over `ℚ` that `K` is totally real.  §0.17 then showed that the totally
+real invariant **cannot** be carried through the correction step: any corrector that moves the
+dyadic defect ramifies at `2`, and the corrector that supplies the missing dimension is `ℚ(√q)`
+with `q ≡ 3 mod 4`, which is complex.
+
+The way out is not to preserve the invariant but to make the theorem not need it.  That is now
+done.
+
+### The theorem
+
+```lean
+InverseGalois.CFT.exists_isMulCoboundary_of_sq_eq_neg_one
+    {K : Type} [Field K] [NumberField K] [Algebra ℚ K] [IsGalois ℚ K]
+    {ι : K} (hι : ι ^ 2 = -1) {n : ℕ} (hn : n ≠ 0)
+    {a : Gal(K/ℚ) → Gal(K/ℚ) → ℚˣ} (hpow : ∀ x y, a x y ^ n = 1)
+    (ha  : ∀ x y z, a y z * a x (y * z) = a (x * y) z * a x y)
+    (hram : ∀ v : HeightOneSpectrum (𝓞 K), ¬ Algebra.IsUnramifiedAt (𝓞 ℚ) v.asIdeal →
+              «a is a coboundary in (v.adicCompletion K)ˣ over the decomposition group at v») :
+  ∃ b : Gal(K/ℚ) → Kˣ, ∀ g h, g • b h / b (g * h) * b g = Units.map (algebraMap ℚ K) (a g h)
+```
+
+No hypothesis at the archimedean places, and **no parity condition on `n`**.  The single price is
+`ι ∈ K` with `ι² = −1`.
+
+### How it is proved
+
+Let `Γ = Gal(K/ℚ)` and `N = stabilizer Γ ι`.  Because `σ ι ∈ {ι, −ι}` for every `σ`, `N` is normal
+of index two (index exactly two, `ι ∉ ℚ`), and its fixed field `F` contains `ι`, hence is **totally
+complex**, hence `IsUnramifiedAtInfinitePlaces F K` holds vacuously — there is no real place of `F`
+left to ramify.
+
+1. **Restriction.**  Base change along `AlgEquiv.restrictScalars` from `ℚ` to `F` is definitionally
+   free: the action on `HeightOneSpectrum (𝓞 K)`, `adicCompletionAut`, `globalUnitsAut` and
+   `smulUnitsAut` all transport by `rfl` (`Units/BaseChangeCocycle.lean`).  So the existing
+   Albert–Brauer–Hasse–Noether theorem, applied over `F`, trivialises `a|_{N×N}`.
+2. **Inflation.**  A two-cocycle whose restriction to an index-two subgroup is a coboundary equals,
+   after twisting by the coboundary of a one-cochain, the *inflation* of a single invariant element
+   `c ∈ Kˣ` (`GroupCohomology/IndexTwo.lean`, `exists_twist_eq_indexTwoInflation`; the
+   `H¹(N, Kˣ) = 1` input is Hilbert 90 for the subgroup, `SubgroupHilbert90.lean`).  Twisting does
+   not disturb the local hypotheses (`Units/LocalCoboundaryTwist.lean`), so the local data descends
+   to the inflated cocycle.
+3. **Locally a sum of two squares.**  The inflation of `c` is a coboundary over the decomposition
+   group at `v` exactly when `c` is a norm from `K_v` for the quadratic subextension cut out by
+   `ι`, i.e. when `c` is a **sum of two squares** in the completion of `ℚ` under `v`
+   (`Units/LocalSqrtNegOne.lean`).  Being `Γ`-invariant, `c` is a rational number.
+4. **Globally a sum of two squares.**  A rational number which is a sum of two squares in every
+   `ℚ_p` is a sum of two squares (`Units/RatSumSquares.lean`), by the Hasse norm theorem for
+   `ℚ(i)/ℚ` — and the real place costs nothing, a sum of two squares in a single completion being
+   already positive.  So `c = x² + y² = N(x + y ι)`, and the inflation of `c` is a coboundary
+   globally (`SqrtNegOne.lean`, `isMulCoboundary₂_indexTwoInflation`).
+5. Undo the twist.
+
+### Modules
+
+| file | content |
+|---|---|
+| `CFT/SqrtNegOne.lean` | the stabiliser of a square root of `−1` is normal of index two; its fixed field is totally complex; `σ f · f = x² + y²` |
+| `CFT/SubgroupHilbert90.lean` | Hilbert 90 for a subgroup acting on `Kˣ` |
+| `CFT/GroupCohomology/Inflation.lean` | inflation of a two-cocycle along a quotient |
+| `CFT/GroupCohomology/IndexTwo.lean` | twist, `indexTwoInflation`, and the reduction of an index-two-split cocycle to it |
+| `CFT/Units/BaseChangeCocycle.lean` | `restrictScalars` transports every ingredient by `rfl` |
+| `CFT/Units/ABHNArchimedean.lean` | the archimedean clause is vacuous over a totally complex base |
+| `CFT/Units/LocalSqrtNegOne.lean` | the local coboundary condition ⇔ locally a sum of two squares |
+| `CFT/Units/LocalCoboundaryTwist.lean` | twisting preserves local triviality |
+| `CFT/Units/RatSumSquares.lean` | everywhere-locally a sum of two squares ⇒ a sum of two squares |
+| `CFT/Units/ABHNSqrtNegOne.lean` | the assembly |
+| `CFT/Units/ABHNSqrtNegOneRamified.lean` | the same with the ramified places in the form the construction verifies |
+| `CFT/Kummer/CentralEmbeddingSqrtNegOne.lean` | the four embedding-problem criteria over such a base, plus a mixed one |
+
+All sorry-free and axiom-free; full build green.
+
+### What this buys, and what it does not
+
+**Buys.**  The induction invariant at `ℓ = 2` no longer has to be *totally real*.  It can be
+`ι ∈ K` — an invariant which is preserved by *every* enlargement of `K`, in particular by every
+corrector, including `ℚ(√q)` with `q ≡ 3 mod 4`.  The obstruction §0.17 identified as a change of
+shape in the argument is removed at the source: the archimedean places are simply no longer part of
+the criterion.  Concretely,
+
+```lean
+InverseGalois.CFT.exists_surjective_hom_of_sq_eq_neg_one_of_forall_ramified_primeResidue
+```
+
+is the exact analogue of `exists_surjective_hom_of_forall_ramified_primeResidue` with `Odd n`
+deleted and `ι² = −1` in its place.
+
+**Does not buy.**  Requiring `ι ∈ K` makes the place above `2` **ramified**, and at a ramified place
+the criterion asks for something.  The residue-characteristic congruence `n · |D_v| ∣ p − 1` is
+unsatisfiable at `p = 2`, so the place above `2` has to be discharged the other way — by a
+homomorphic lift of `π|_{D_v}` into `G`.  Hence the mixed criterion
+
+```lean
+InverseGalois.CFT.exists_surjective_hom_of_sq_eq_neg_one_of_forall_ramified_lift_or_primeResidue
+```
+
+which asks, at each ramified place, for *either* a lift *or* the congruence.  The Scholz primes
+supply the congruence; the place above `2` must supply a lift.
+
+### What the `ℓ = 2` argument now needs
+
+Exactly one arithmetic statement, and it is purely local:
+
+> Let `K/ℚ` be a `2`-extension containing `i`, `v` the place above `2`, `D = D_v ⊆ Gal(K/ℚ)` its
+> decomposition group, and `1 → ℤ/2 → G̃ → D → 1` the pullback of the central extension along the
+> inclusion.  Then the surjection `G_{ℚ₂} ↠ D` lifts to `G̃`.
+
+Equivalently: the local obstruction in `H²(G_{ℚ₂}, ℤ/2) ≅ Br(ℚ₂)[2] ≅ ℤ/2` vanishes.  It is **not**
+automatic — that group is not zero — so this is a genuine condition on the tower, and the right
+formulation is a condition on the dyadic behaviour of `K` that the induction can carry (for instance
+that `K_v/ℚ₂` be *cyclic*, which makes `G̃_v` abelian and the lift a matter of choosing an
+unramified or split extension, as in the second bullet of §0.16).
+
+That is the whole remaining `ℓ = 2` arithmetic on the local–global side.  Items 1 and 2 of §0.16
+(the choice of corrector) are separate and unchanged.
+
+---
+
 ## 1. Scholz–Reichardt
 
 ### 1.1 Statement

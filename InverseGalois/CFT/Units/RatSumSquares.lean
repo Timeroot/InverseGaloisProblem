@@ -58,7 +58,7 @@ theorem exists_sq_add_sq_of_adicCompletion (p : Nat.Primes) (v : HeightOneSpectr
 
 /-! ### The global statement -/
 
-variable {K : Type} [Field K] [NumberField K]
+variable {K : Type} [Field K] [NumberField K] [Algebra ℚ K]
 
 /-- **A rational number which is a sum of two squares in the completion at the prime below every
 prime of a number field is a sum of two squares.**  Adjoining a square root of minus one to the

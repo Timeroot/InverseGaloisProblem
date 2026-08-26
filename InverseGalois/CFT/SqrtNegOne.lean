@@ -222,8 +222,8 @@ theorem rat_sq_ne_neg_one (x : ℚ) : x ^ 2 ≠ -1 := by
 
 /-- **The fixed field of the subgroup fixing a square root of minus one is totally complex**, since
 the square root lies in it. -/
-theorem isTotallyComplex_fixedField_stabilizer {K : Type*} [Field K] [NumberField K] {j : K}
-    (hj : j ^ 2 = -1) :
+theorem isTotallyComplex_fixedField_stabilizer {K : Type*} [Field K] [NumberField K]
+    [Algebra ℚ K] {j : K} (hj : j ^ 2 = -1) :
     IsTotallyComplex ↥(IntermediateField.fixedField (stabilizer (K ≃ₐ[ℚ] K) j)) :=
   isTotallyComplex_of_sq_eq_neg_one (x := ⟨j, mem_fixedField_stabilizer j⟩)
     (Subtype.ext (by push_cast; exact hj))

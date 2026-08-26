@@ -129,6 +129,7 @@ import InverseGalois.CFT.InertiaSurjective
 import InverseGalois.CFT.InertiaTransport
 import InverseGalois.CFT.KroneckerWeber
 import InverseGalois.CFT.Kummer.CentralEmbedding
+import InverseGalois.CFT.Kummer.CentralEmbeddingSqrtNegOne
 import InverseGalois.CFT.Kummer.CocycleDescent
 import InverseGalois.CFT.Kummer.CongruentRadical
 import InverseGalois.CFT.Kummer.CyclicIndex
@@ -350,6 +351,7 @@ import InverseGalois.CFT.Units.ABHNCoboundary
 import InverseGalois.CFT.Units.ABHNLocalPower
 import InverseGalois.CFT.Units.ABHNRamified
 import InverseGalois.CFT.Units.ABHNSqrtNegOne
+import InverseGalois.CFT.Units.ABHNSqrtNegOneRamified
 import InverseGalois.CFT.Units.ABHNTorsion
 import InverseGalois.CFT.Units.AdicFixed
 import InverseGalois.CFT.Units.AdicIdeleHerbrand
@@ -2181,6 +2183,9 @@ it that are available here.
   subextension.  So **a two-cocycle of units of the rational numbers killed by any nonzero integer
   and locally trivial at the ramified finite places is a coboundary, as soon as the extension
   contains a square root of minus one**.
+* `InverseGalois.CFT.Units.ABHNSqrtNegOneRamified` restates that with the ramified places
+  discharged the way the construction verifies them, so that the presence of a square root of minus
+  one replaces both the oddness of the exponent and the coprimality at the archimedean places.
 * `InverseGalois.CFT.Kummer.CentralEmbedding` puts those pieces together.  The factor set of a
   section of a central extension with kernel of order `n`, transported into the units of a base
   field containing a primitive `n`-th root of unity, is a two-cocycle killed by `n`; if it is a
@@ -2195,6 +2200,13 @@ it that are available here.
   coboundary is the factor set.  It is also discharged from the arithmetic hypothesis of the
   previous file, which asks only that the decomposition group at each ramified place be cyclic and
   that the roots of unity of the base field be locally powers with exponent its order.
+* `InverseGalois.CFT.Kummer.CentralEmbeddingSqrtNegOne` is the same list of criteria over an
+  extension of the rational numbers containing a square root of minus one, where nothing is asked at
+  the archimedean places and nothing about the parity of the order of the kernel.  Adjoining a
+  square root of minus one ramifies the place above two, and there the congruence on the residue
+  characteristic can never hold, so the criteria are also given in a mixed form in which each
+  ramified place is discharged either by a homomorphic lift over its decomposition group or by the
+  congruence.
 * `InverseGalois.CFT.GroupCohomology.CoprimeDescent` carries the solution back down from the
   cyclotomic field to the base.  The pullback of the two surjections defining an embedding problem
   is a central extension of the source of the given homomorphism by the kernel, a solution of the
