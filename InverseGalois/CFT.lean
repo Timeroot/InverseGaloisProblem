@@ -73,6 +73,7 @@ import InverseGalois.CFT.GroupCohomology.CyclicH2
 import InverseGalois.CFT.GroupCohomology.CyclicSubgroup
 import InverseGalois.CFT.GroupCohomology.CyclicSurjective
 import InverseGalois.CFT.GroupCohomology.H1Transport
+import InverseGalois.CFT.GroupCohomology.IndexTwo
 import InverseGalois.CFT.GroupCohomology.MapCoboundary
 import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.SylowRes
@@ -1986,6 +1987,13 @@ it that are available here.
   modules carries vanishing across, and a surjection of groups whose kernel acts trivially on a
   submodule that is exactly the invariants of the kernel lets the vanishing be assembled from the
   quotient and the kernel.
+* `InverseGalois.CFT.GroupCohomology.IndexTwo` is the inflation-restriction sequence in degree two
+  for a normal subgroup with two cosets, written out on cochains.  Three explicit corrections by
+  coboundaries make a two-cocycle whose restriction to the subgroup is a coboundary trivial at
+  every pair with an entry in the subgroup, and what is left is the single value at the pair of
+  coset representatives, which the cocycle relation forces to be invariant.  That inflated cocycle
+  is itself a coboundary exactly when its value is a norm from the invariants of the subgroup, so
+  the quotient of the invariants by those norms measures the whole obstruction.
 * `InverseGalois.CFT.Units.IdeleClassComap` puts the idele classes of a subfield inside the idele
   classes of a Galois extension.  The map is injective because a unit fixed by the whole Galois
   group is a unit of the subfield, and its image is exactly the part fixed by the Galois group over
