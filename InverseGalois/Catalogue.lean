@@ -211,12 +211,13 @@ spaces rather than rigidity.
 ## Solvable groups
 
 Shafarevich's theorem — every finite solvable group is a Galois group over `ℚ` — is not in the
-catalogue.  Its proof is arithmetic, running through class field theory and the Grunwald–Wang
-theorem, and it produces extensions of `ℚ` rather than of `ℚ(T)`: the regular version is open even
-for `p`-groups.  What `InverseGalois.Solvable` contributes is the group theory that organizes the
-approach — the elementary abelian chief-series induction, the Sylow decomposition of a nilpotent
-group, and the presentation of every semidirect product `A ⋊[φ] H` with abelian `A` as a quotient of
-the regular wreath product `A ≀ᵣ H`.
+catalogue, whose entries are all regular.  Its proof is arithmetic, running through class field
+theory and the Grunwald–Wang theorem, and it produces extensions of `ℚ` rather than of `ℚ(T)`: the
+regular version is open even for `p`-groups.  Its nilpotent case is nevertheless available here
+over `ℚ`, as recorded at the end of this section.  What `InverseGalois.Solvable` contributes is the
+group theory that organizes the approach — the elementary abelian chief-series induction, the Sylow
+decomposition of a nilpotent group, and the presentation of every semidirect product `A ⋊[φ] H` with
+abelian `A` as a quotient of the regular wreath product `A ≀ᵣ H`.
 
 That group theory is carried far enough to isolate the arithmetic completely.  Ore's supplement
 theorem, `exists_nilpotent_normal_supplement`, exhibits a nontrivial finite solvable group as a
@@ -315,6 +316,25 @@ of order `p` gives
 
 * `InverseGalois.isRegularInverseGalois_sylow_perm` — **a Sylow `p`-subgroup of the symmetric group
   on `p ^ n` letters**, for every prime `p` and every `n`.
+
+### The nilpotent groups, over `ℚ` but not regularly
+
+Everything above is regular, and regularity is what the semiabelian ceiling costs: the smallest
+`2`-group outside Dentzer's class has order `64`, so no amount of wreathing reaches all nilpotent
+groups.  The arithmetic route does reach them, at the price of leaving `ℚ(T)` behind.  The
+Scholz–Reichardt induction of `InverseGalois.CFT.Scholz` realizes every finite `ℓ`-group over `ℚ`
+for odd `ℓ`, building the extension one central step at a time inside a tightly controlled
+ramification pattern, and its last arithmetic input — that inertia at the residue characteristic
+has rank one — is a theorem, proved from the behaviour of the mod `ℓ` cyclotomic character at a
+place where `ζ - 1` is a uniformizer.  Combining it with the semiabelian route at the prime `2`,
+`InverseGalois.Shafarevich` gives, unconditionally but over `ℚ` only,
+
+* `InverseGalois.isInverseGalois_of_isPGroup_odd` — **every finite `ℓ`-group for odd `ℓ`**,
+* `InverseGalois.isInverseGalois_of_isNilpotent_of_odd` — **every finite nilpotent group of odd
+  order**, and
+* `InverseGalois.isInverseGalois_of_isNilpotent_of_semiabelian_sylow_two` — **every finite nilpotent
+  group whose Sylow `2`-subgroups are semiabelian**, which by the order bound above covers every
+  finite nilpotent group of order not divisible by `32`.
 
 ## Main results
 

@@ -99,6 +99,29 @@ theorem exists_primitiveRoot_natCast {ℓ : ℕ} (hℓ : ℓ.Prime) (hℓ2 : ℓ
     rw [h1, orderOf_one] at hu
     omega
 
+/-- **A primitive root modulo an odd prime is invertible modulo that prime.**  A residue divisible
+by `ℓ` reproduces itself already at the square, which the defining property forbids. -/
+theorem exists_primitiveRoot_natCast_isUnit {ℓ : ℕ} (hℓ : ℓ.Prime) (hℓ2 : ℓ ≠ 2) :
+    ∃ g : ℕ, IsUnit ((g : ZMod ℓ)) ∧
+      (∀ n : ℕ, 1 ≤ n → n + 1 ≤ ℓ → ((ℓ : ℤ) ∣ (g : ℤ) ^ n - g) → n = 1) ∧
+      ¬ ((ℓ : ℤ) ∣ (g : ℤ) - 1) := by
+  haveI : Fact ℓ.Prime := ⟨hℓ⟩
+  obtain ⟨g, hg, hg1⟩ := exists_primitiveRoot_natCast hℓ hℓ2
+  refine ⟨g, ?_, hg, hg1⟩
+  have hl3 : 3 ≤ ℓ := by
+    rcases hℓ.eq_two_or_odd' with h | h
+    · exact absurd h hℓ2
+    · have := hℓ.two_le
+      rcases h with ⟨m, hm⟩
+      omega
+  rw [isUnit_iff_ne_zero]
+  intro h0
+  have hdvd : (ℓ : ℤ) ∣ (g : ℤ) := by
+    rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
+    exact_mod_cast h0
+  exact absurd (hg 2 (by omega) (by omega) (dvd_sub (dvd_pow hdvd two_ne_zero) hdvd))
+    (by norm_num)
+
 /-! ### The valuation of the residue characteristic -/
 
 variable {K : Type*} [Field K] [NumberField K] {ℓ : ℕ}
