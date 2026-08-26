@@ -1168,13 +1168,89 @@ Exactly two things, and only the second is a wall.
    which reaches the semiabelian `2`-groups.  By Kida (2024) the smallest non-semiabelian `2`-group
    has order `64`, so geometry alone can never finish it; the fix is to extend Scholz–Reichardt to
    `ℓ = 2`, where the argument above genuinely breaks (`ζ_2 = −1` lies in every field, `ρ` is
-   trivial, and `ℓ − 1 = 1` gives no room).  Serre's treatment replaces the cyclotomic character by
-   an argument at `ℚ(i)`; this has not been attempted here.
+   trivial, and `ℓ − 1 = 1` gives no room).  Mapped out in §0.16, whose first brick is landed.
 2. **From nilpotent to solvable.**  `Shafarevich.isSolvable_isInverseGalois_of_splitPrimePowerEP`
    already reduces everything to a *split* embedding problem with `p`-group kernel, and the
    nilpotent realizations above are not of that shape: filtering a `p`-group kernel leaves a
    residual non-split lifting.  The genuine Shafarevich argument uses Ikeda plus a Grunwald–Wang
    input, and Grunwald–Wang is not in the repo.
+
+---
+
+## 0.16 Status (2026-08-26, later) — mapping the prime `2`, and the first brick
+
+Landed: **the whole local–global layer now works at every prime**, `2` included.
+
+### Where oddness actually sat
+
+Tracing `Odd ℓ` down from `exists_surjective_hom_of_forall_ramified_primeResidue`
+(`CFT/Kummer/CentralEmbedding.lean`) through `ABHNRamified` → `ABHNLocalPower` → `ABHNCoboundary`
+→ `ABHNTorsion` shows it is consumed in **exactly one line** of the whole chain, at the archimedean
+places:
+
+```lean
+have hcop : Nat.Coprime (Nat.card ↥(stabilizer Gal(K/k) w)) n := by
+  rcases InfinitePlace.nat_card_stabilizer_eq_one_or_two k w with h | h
+  ...
+  · rw [h]; exact Nat.coprime_two_left.mpr hn
+```
+
+Everything else — the unramified finite places, the ramified ones, the Kummer bookkeeping, the
+Frattini argument — never looks at the parity of `ℓ`.
+
+That line is now the predicate `InverseGalois.CFT.IsCoprimeAtInfinitePlaces k K n`, and it has a
+second source besides oddness: `IsCoprimeAtInfinitePlaces.of_isUnramifiedAtInfinitePlaces`, which
+applies whenever no archimedean place of `K` ramifies over `k` — over `ℚ`, whenever `K` is totally
+real.  The chain is restated over the predicate, with the old `_of_odd` statements kept as
+corollaries, so:
+
+> **At `ℓ = 2` the Albert–Brauer–Hasse–Noether reduction, and with it the solvability of a central
+> Frattini embedding problem with kernel of order `2`, holds verbatim for a totally real base.**
+
+### What the rest of the `ℓ = 2` argument needs
+
+The induction hypothesis has to carry *totally real* alongside the Scholz condition.  That is not a
+burden — for odd `ℓ` it is automatic, an odd-degree Galois extension of `ℚ` having no element of
+order `2` to act as complex conjugation — and at `ℓ = 2` it is exactly what buys the archimedean
+places back.  With `K/ℚ` totally real and unramified at `2`:
+
+* **the local problem at `2` is always solvable unramified.**  `K/ℚ` unramified at `2` makes the
+  decomposition group `D₂ ⊆ G` cyclic of `2`-power order `f`.  Its preimage in `G̃` is a central
+  extension of a cyclic group by `ℤ/2`, hence abelian, hence either cyclic of order `2f` — solved by
+  the unramified extension of that degree — or split, and then the splitting composed with
+  `Ẑ ↠ ℤ/f` solves it, again unramified.
+* **the local problem at `∞` is trivially solvable**, the decomposition group being trivial.
+* **the ramified finite places are unchanged**: `2 · |D_v| ∣ p − 1` is the same Scholz congruence as
+  before, with `ℓ = 2`.
+
+So a global solution exists.  The work is in *correcting* it, and there the two things that break
+are known precisely.
+
+1. **`RadicalDisjoint` / `NilpotentRadical` are false at `2`.**  `not_surjective_of_radical` rests on
+   an automorphism sending `ζ ↦ ζ²`, which for `ℓ = 2` is the identity on `ζ = −1`; and the
+   statement itself fails, `2` being a square in the totally real `2`-extension `ℚ(√2)`.  Its one
+   use is `Scholz/AuxPrimeChoice.lean:70`, to know that the radicand `m` — a product of primes
+   already ramified in `A` — is not an `ℓ`-th power in `A`, so that Chebotarev can find a prime `q`
+   splitting completely in `A` with `m` a non-residue.  A ramification argument does *not* rescue
+   this: `ℚ(√m)` ramifies exactly where `A` does.  What is true at `2` is sharper and turns it into
+   a counting problem: `m` is a square in `A` iff `ℚ(√m) ⊆ A`, so the bad radicands form a subgroup
+   of `ℚ^×/(ℚ^×)²` of order `2^{d(G)}`, `d(G)` the minimal number of generators of `G = Gal(A/ℚ)`,
+   spanned by the quadratic subfields of `A`.  The correction must choose `m` inside the residue
+   span and outside that finite subgroup, which is a dimension count against
+   `Scholz/ResidueSpan.lean` rather than a new theorem about radicals.
+2. **The correcting characters are short by one dimension at `2` and `∞`.**  Write the defect of a
+   solution at a place `v` as a class in `ℚ_v^×/(ℚ_v^×)²`.  The correctors allowed by the Scholz
+   condition are `ℚ(√d)` with `d = ± 2^a ∏ pᵢ^{bᵢ} q`, where the `pᵢ` are already ramified and
+   `q ≡ 1 mod 2^N` is the new auxiliary prime.  Every odd factor is `≡ 1 mod 8`, hence a square in
+   `ℚ₂`, so the class of `d` at `2` is `(−1)^s 2^a` and its sign is `(−1)^s`: the *same* `s`.  The
+   pair (class at `2` mod unramified, sign) therefore ranges over an index-two subgroup of
+   `(ℤ/2)² × ℤ/2`, and the defect must satisfy the one relation
+   `(−1)`-component of the defect at `2` `=` defect at `∞`.
+
+Item 2 is the classical `ℓ = 2` difficulty — the same place where Šafarevič's 1954 argument had its
+gap — and is what a formalization has to supply, presumably from Hilbert reciprocity applied to the
+defect.  Item 1 is routine.  Nothing else in the nineteen files carrying `Odd ℓ` looks like it needs
+new mathematics.
 
 ---
 
