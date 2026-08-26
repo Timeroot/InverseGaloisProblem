@@ -34,11 +34,11 @@ open Module
 
 namespace InverseGalois.CFT
 
-/-- **The norm index bound** for the cyclic extensions of the fields of a class `P`: the norm
-subgroup of such an extension has finite index, and that index is at most the degree. -/
+/-- **The norm index bound** for the cyclic extensions whose larger field is of a class `P`: the
+norm subgroup of such an extension has finite index, and that index is at most the degree. -/
 def HasCyclicNormIndexBound (P : Type → Prop) : Prop :=
   ∀ (F E : Type) [Field F] [Field E] [Algebra F E] [FiniteDimensional F E] [IsGalois F E],
-    P F → IsCyclic (E ≃ₐ[F] E) →
+    P E → IsCyclic (E ≃ₐ[F] E) →
       (normSubgroup F E).index ≠ 0 ∧ (normSubgroup F E).index ≤ finrank F E
 
 variable {P : Type → Prop}
@@ -47,10 +47,10 @@ variable {P : Type → Prop}
 index bound is exactly the bound on that Brauer group. -/
 theorem hasCyclicBrauerBound_of_normIndex (h : HasCyclicNormIndexBound P) :
     BrauerGroup.HasCyclicBrauerBound P := by
-  intro F E _ _ _ _ _ hF hcyc
+  intro F E _ _ _ _ _ hE hcyc
   haveI := hcyc
   obtain ⟨σ₀, hσ₀⟩ := IsCyclic.exists_generator (α := E ≃ₐ[F] E)
-  obtain ⟨hne, hle⟩ := h F E hF hcyc
+  obtain ⟨hne, hle⟩ := h F E hE hcyc
   have hcard : Nat.card ↥(BrauerGroup.relative F E) = (normSubgroup F E).index :=
     card_brauerRelative_eq_index_normSubgroup hσ₀
   have hne' : Nat.card ↥(BrauerGroup.relative F E) ≠ 0 := by rw [hcard]; exact hne
@@ -61,12 +61,12 @@ extension by its degree.**  This is the counting half of the computation of the 
 local field: every Galois group of a local field is solvable, so the whole bound rests on the norm
 index of a cyclic extension. -/
 theorem card_relative_le_finrank_of_isSolvable_of_normIndex
-    (hclosed : BrauerGroup.IsFiniteExtensionClosed P) (h : HasCyclicNormIndexBound P)
+    (hclosed : BrauerGroup.IsFixedFieldClosed P) (h : HasCyclicNormIndexBound P)
     (K L : Type) [Field K] [Field L] [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    (hK : P K) (hsolv : IsSolvable (L ≃ₐ[K] L)) :
+    (hL : P L) (hsolv : IsSolvable (L ≃ₐ[K] L)) :
     Finite ↥(BrauerGroup.relative K L) ∧
       Nat.card ↥(BrauerGroup.relative K L) ≤ finrank K L :=
   BrauerGroup.card_relative_le_finrank_of_isSolvable hclosed
-    (hasCyclicBrauerBound_of_normIndex h) K L hK hsolv
+    (hasCyclicBrauerBound_of_normIndex h) K L hL hsolv
 
 end InverseGalois.CFT

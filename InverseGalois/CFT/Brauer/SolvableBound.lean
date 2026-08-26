@@ -12,15 +12,24 @@ resulting tower is cyclic, and the bottom step is abelian of smaller degree.  Fo
 one splits off the last nontrivial term of the derived series, which is an abelian normal subgroup:
 the top step is then abelian and the bottom step is solvable of smaller degree.
 
-The bound for the cyclic case is carried as a hypothesis, together with a class `P` of base fields
-on which it is assumed and which is closed under finite extension — for local fields it is the
-statement that the norm index of a cyclic extension is the degree.  This is the counting half of
-the computation of the Brauer group of a local field.
+The bound for the cyclic case is carried as a hypothesis, together with a class `P` of fields on
+which it is assumed.  The class is imposed on the *top* field of the extension, because that is
+where it lives in the intended application: the norm index of a cyclic extension of local fields is
+computed from the Herbrand quotient of the unit group of the larger field, and nothing at all is
+required of the smaller one.  For the same reason the class is asked to be inherited by fixed
+subfields rather than by finite extensions: the dévissage shrinks the top field of the tower to a
+fixed subfield at each step, and a fixed subfield of a complete valued field is again one, whereas
+extending a valuation upwards is a different and harder matter.
+
+## Main definitions
+
+* `BrauerGroup.IsFixedFieldClosed`: a class of fields inherited by the fixed subfields of its
+  members.
+* `BrauerGroup.HasCyclicBrauerBound`: the hypothesis, that a cyclic extension whose larger field is
+  of the class has relative Brauer group finite of order at most the degree.
 
 ## Main results
 
-* `BrauerGroup.HasCyclicBrauerBound`: the hypothesis, that a cyclic extension of a field of the
-  class has relative Brauer group finite of order at most the degree.
 * `BrauerGroup.card_relative_le_finrank_of_commute`: **the bound for an abelian extension.**
 * `BrauerGroup.card_relative_le_finrank_of_isSolvable`: **the bound for a solvable extension.**
 
@@ -35,15 +44,16 @@ open Module
 
 namespace BrauerGroup
 
-/-- A class of fields closed under finite extension. -/
-def IsFiniteExtensionClosed (P : Type u → Prop) : Prop :=
-  ∀ (F E : Type u) [Field F] [Field E] [Algebra F E], FiniteDimensional F E → P F → P E
+/-- A class of fields closed under passing to the fixed subfield of a group of automorphisms. -/
+def IsFixedFieldClosed (P : Type u → Prop) : Prop :=
+  ∀ (F E : Type u) [Field F] [Field E] [Algebra F E] [FiniteDimensional F E] [IsGalois F E],
+    P E → ∀ C : Subgroup (E ≃ₐ[F] E), P ↥(IntermediateField.fixedField C)
 
-/-- The relative Brauer group of a cyclic extension of a field of the class `P` is finite of order
-at most the degree. -/
+/-- The relative Brauer group of a cyclic extension whose larger field is of the class `P` is
+finite of order at most the degree. -/
 def HasCyclicBrauerBound (P : Type u → Prop) : Prop :=
   ∀ (F E : Type u) [Field F] [Field E] [Algebra F E] [FiniteDimensional F E] [IsGalois F E],
-    P F → IsCyclic (E ≃ₐ[F] E) →
+    P E → IsCyclic (E ≃ₐ[F] E) →
       Finite ↥(relative F E) ∧ Nat.card ↥(relative F E) ≤ finrank F E
 
 variable {P : Type u → Prop}
@@ -80,10 +90,10 @@ private theorem finrank_pos_of_isGalois (K L : Type u) [Field K] [Field L] [Alge
   exact Nat.card_pos
 
 /-- The dévissage of an abelian extension, by induction on a bound for the degree. -/
-private theorem aux_commute (hclosed : IsFiniteExtensionClosed P) (hcyc : HasCyclicBrauerBound P)
+private theorem aux_commute (hclosed : IsFixedFieldClosed P) (hcyc : HasCyclicBrauerBound P)
     (n : ℕ) :
     ∀ (K L : Type u) [Field K] [Field L] [Algebra K L] [FiniteDimensional K L] [IsGalois K L],
-      P K → (∀ x y : L ≃ₐ[K] L, x * y = y * x) → finrank K L ≤ n →
+      P L → (∀ x y : L ≃ₐ[K] L, x * y = y * x) → finrank K L ≤ n →
       Finite ↥(relative K L) ∧ Nat.card ↥(relative K L) ≤ finrank K L := by
   induction n with
   | zero =>
@@ -91,10 +101,10 @@ private theorem aux_commute (hclosed : IsFiniteExtensionClosed P) (hcyc : HasCyc
     have := finrank_pos_of_isGalois K L
     omega
   | succ n ih =>
-    intro K L _ _ _ _ _ hK hab hle
+    intro K L _ _ _ _ _ hL hab hle
     rcases subsingleton_or_nontrivial (L ≃ₐ[K] L) with hs | hs
     · haveI := hs
-      exact hcyc K L hK inferInstance
+      exact hcyc K L hL inferInstance
     · obtain ⟨σ, hσ⟩ := exists_ne (1 : L ≃ₐ[K] L)
       haveI hnormal : (Subgroup.zpowers σ).Normal :=
         ⟨fun m hm g => by rwa [hab g m, mul_assoc, mul_inv_cancel, mul_one]⟩
@@ -110,7 +120,7 @@ private theorem aux_commute (hclosed : IsFiniteExtensionClosed P) (hcyc : HasCyc
           * finrank ↥(IntermediateField.fixedField (Subgroup.zpowers σ)) L = finrank K L :=
         Module.finrank_mul_finrank (F := K)
           (K := ↥(IntermediateField.fixedField (Subgroup.zpowers σ))) (A := L)
-      have hL := finrank_pos_of_isGalois K L
+      have hL' := finrank_pos_of_isGalois K L
       have hb : 2 ≤ finrank ↥(IntermediateField.fixedField (Subgroup.zpowers σ)) L := by
         omega
       have ha : 0 < finrank K ↥(IntermediateField.fixedField (Subgroup.zpowers σ)) := by
@@ -130,9 +140,7 @@ private theorem aux_commute (hclosed : IsFiniteExtensionClosed P) (hcyc : HasCyc
         isCyclic_of_surjective _
           (IntermediateField.subgroupEquivAlgEquiv (Subgroup.zpowers σ)).surjective
       obtain ⟨htopfin, htop⟩ :=
-        hcyc ↥(IntermediateField.fixedField (Subgroup.zpowers σ)) L
-          (hclosed K ↥(IntermediateField.fixedField (Subgroup.zpowers σ)) inferInstance hK)
-          inferInstance
+        hcyc ↥(IntermediateField.fixedField (Subgroup.zpowers σ)) L hL inferInstance
       haveI := htopfin
       have habQ : ∀ a b : (L ≃ₐ[K] L) ⧸ Subgroup.zpowers σ, a * b = b * a := by
         intro a b
@@ -148,7 +156,8 @@ private theorem aux_commute (hclosed : IsFiniteExtensionClosed P) (hcyc : HasCyc
           (IsGalois.normalAutEquivQuotient (Subgroup.zpowers σ)).surjective y
         rw [← map_mul, ← map_mul, habQ]
       obtain ⟨hbotfin, hbot⟩ :=
-        ih K ↥(IntermediateField.fixedField (Subgroup.zpowers σ)) hK habK' (by omega)
+        ih K ↥(IntermediateField.fixedField (Subgroup.zpowers σ))
+          (hclosed K L hL (Subgroup.zpowers σ)) habK' (by omega)
       haveI := hbotfin
       refine ⟨finite_relative_of_tower K ↥(IntermediateField.fixedField (Subgroup.zpowers σ)) L,
         ?_⟩
@@ -163,18 +172,18 @@ private theorem aux_commute (hclosed : IsFiniteExtensionClosed P) (hcyc : HasCyc
 
 /-- **The relative Brauer group of an abelian extension is bounded by the degree**, as soon as it
 is for cyclic ones. -/
-theorem card_relative_le_finrank_of_commute (hclosed : IsFiniteExtensionClosed P)
+theorem card_relative_le_finrank_of_commute (hclosed : IsFixedFieldClosed P)
     (hcyc : HasCyclicBrauerBound P) (K L : Type u) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L] (hK : P K)
+    [FiniteDimensional K L] [IsGalois K L] (hL : P L)
     (hab : ∀ x y : L ≃ₐ[K] L, x * y = y * x) :
     Finite ↥(relative K L) ∧ Nat.card ↥(relative K L) ≤ finrank K L :=
-  aux_commute hclosed hcyc (finrank K L) K L hK hab le_rfl
+  aux_commute hclosed hcyc (finrank K L) K L hL hab le_rfl
 
 /-- The dévissage of a solvable extension, by induction on a bound for the degree. -/
-private theorem aux_solvable (hclosed : IsFiniteExtensionClosed P) (hcyc : HasCyclicBrauerBound P)
+private theorem aux_solvable (hclosed : IsFixedFieldClosed P) (hcyc : HasCyclicBrauerBound P)
     (n : ℕ) :
     ∀ (K L : Type u) [Field K] [Field L] [Algebra K L] [FiniteDimensional K L] [IsGalois K L],
-      P K → IsSolvable (L ≃ₐ[K] L) → finrank K L ≤ n →
+      P L → IsSolvable (L ≃ₐ[K] L) → finrank K L ≤ n →
       Finite ↥(relative K L) ∧ Nat.card ↥(relative K L) ≤ finrank K L := by
   induction n with
   | zero =>
@@ -182,11 +191,11 @@ private theorem aux_solvable (hclosed : IsFiniteExtensionClosed P) (hcyc : HasCy
     have := finrank_pos_of_isGalois K L
     omega
   | succ n ih =>
-    intro K L _ _ _ _ _ hK hsolv hle
+    intro K L _ _ _ _ _ hL hsolv hle
     haveI := hsolv
     rcases subsingleton_or_nontrivial (L ≃ₐ[K] L) with hs | hs
     · haveI := hs
-      exact hcyc K L hK inferInstance
+      exact hcyc K L hL inferInstance
     · obtain ⟨m, hm⟩ := hsolv.solvable
       obtain ⟨D, hDnormal, hDne, hDab⟩ := exists_abelian_normal (L ≃ₐ[K] L) m hm
       haveI := hDnormal
@@ -198,7 +207,7 @@ private theorem aux_solvable (hclosed : IsFiniteExtensionClosed P) (hcyc : HasCy
       have hmul : finrank K ↥(IntermediateField.fixedField D)
           * finrank ↥(IntermediateField.fixedField D) L = finrank K L :=
         Module.finrank_mul_finrank (F := K) (K := ↥(IntermediateField.fixedField D)) (A := L)
-      have hL := finrank_pos_of_isGalois K L
+      have hL' := finrank_pos_of_isGalois K L
       have hb : 2 ≤ finrank ↥(IntermediateField.fixedField D) L := by omega
       have ha : 0 < finrank K ↥(IntermediateField.fixedField D) := by
         rcases Nat.eq_zero_or_pos (finrank K ↥(IntermediateField.fixedField D)) with h | h
@@ -218,15 +227,14 @@ private theorem aux_solvable (hclosed : IsFiniteExtensionClosed P) (hcyc : HasCy
         rw [← map_mul, ← map_mul, hDab]
       obtain ⟨htopfin, htop⟩ :=
         card_relative_le_finrank_of_commute hclosed hcyc
-          ↥(IntermediateField.fixedField D) L
-          (hclosed K ↥(IntermediateField.fixedField D) inferInstance hK) habTop
+          ↥(IntermediateField.fixedField D) L hL habTop
       haveI := htopfin
       have hsolvK' : IsSolvable
           (↥(IntermediateField.fixedField D) ≃ₐ[K] ↥(IntermediateField.fixedField D)) :=
         solvable_of_surjective (f := (IsGalois.normalAutEquivQuotient D).toMonoidHom)
           (IsGalois.normalAutEquivQuotient D).surjective
       obtain ⟨hbotfin, hbot⟩ :=
-        ih K ↥(IntermediateField.fixedField D) hK hsolvK' (by omega)
+        ih K ↥(IntermediateField.fixedField D) (hclosed K L hL D) hsolvK' (by omega)
       haveI := hbotfin
       refine ⟨finite_relative_of_tower K ↥(IntermediateField.fixedField D) L, ?_⟩
       calc Nat.card ↥(relative K L)
@@ -239,10 +247,10 @@ private theorem aux_solvable (hclosed : IsFiniteExtensionClosed P) (hcyc : HasCy
 
 /-- **The relative Brauer group of a solvable extension is bounded by the degree**, as soon as it
 is for cyclic ones. -/
-theorem card_relative_le_finrank_of_isSolvable (hclosed : IsFiniteExtensionClosed P)
+theorem card_relative_le_finrank_of_isSolvable (hclosed : IsFixedFieldClosed P)
     (hcyc : HasCyclicBrauerBound P) (K L : Type u) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L] (hK : P K) (hsolv : IsSolvable (L ≃ₐ[K] L)) :
+    [FiniteDimensional K L] [IsGalois K L] (hL : P L) (hsolv : IsSolvable (L ≃ₐ[K] L)) :
     Finite ↥(relative K L) ∧ Nat.card ↥(relative K L) ≤ finrank K L :=
-  aux_solvable hclosed hcyc (finrank K L) K L hK hsolv le_rfl
+  aux_solvable hclosed hcyc (finrank K L) K L hL hsolv le_rfl
 
 end BrauerGroup
