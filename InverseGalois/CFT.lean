@@ -210,6 +210,7 @@ import InverseGalois.CFT.PGroupCompositum
 import InverseGalois.CFT.PiIndex
 import InverseGalois.CFT.RestrictLE
 import InverseGalois.CFT.ScalarSemidirect
+import InverseGalois.CFT.Scholz.AuxPrimeChoice
 import InverseGalois.CFT.Scholz.BadPrimes
 import InverseGalois.CFT.Scholz.BaseChange
 import InverseGalois.CFT.Scholz.BaseDescent
@@ -237,6 +238,8 @@ import InverseGalois.CFT.Scholz.RadicalSplitting
 import InverseGalois.CFT.Scholz.RadicalTower
 import InverseGalois.CFT.Scholz.RamificationControl
 import InverseGalois.CFT.Scholz.Realization
+import InverseGalois.CFT.Scholz.ResidueSpan
+import InverseGalois.CFT.Scholz.ResidueSymbol
 import InverseGalois.CFT.Scholz.Selector
 import InverseGalois.CFT.Scholz.SplitCase
 import InverseGalois.CFT.Scholz.SplitReduction
@@ -616,6 +619,17 @@ it that are available here.
 * `InverseGalois.CFT.Scholz.PowerResidue` turns the multiplicative question of being an `ℓ`-th power
   residue into an `𝔽_ℓ`-linear one, the units modulo a prime congruent to one modulo `ℓ` surjecting
   onto a cyclic group of order `ℓ` with the power residues as kernel.
+* `InverseGalois.CFT.Scholz.AuxPrimeChoice` chooses the auxiliary primes: a rational number which is
+  not an `ℓ`-th power admits infinitely many primes splitting completely in a nilpotent extension
+  containing the `ℓ`-th roots of unity but not in the radical field of that number, and such a prime
+  fails the power residue criterion for it.
+* `InverseGalois.CFT.Scholz.ResidueSymbol` packages the power residue character as a symbol on
+  natural numbers, additive on products of units and compatible with pulling a character back along
+  the reduction map of a divisor and with multiplying characters.
+* `InverseGalois.CFT.Scholz.ResidueSpan` makes the choice of auxiliary primes a piece of linear
+  algebra: their symbol vectors span the whole space of `𝔽_ℓ`-valued functions on a finite set of
+  primes, so every prescribed vector of symbols is realised by a single character of the units
+  modulo a product of auxiliary primes.
 
 ## Group extensions and the Brauer group
 
