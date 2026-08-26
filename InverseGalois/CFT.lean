@@ -228,7 +228,9 @@ import InverseGalois.CFT.Scholz.NilpotentRadical
 import InverseGalois.CFT.Scholz.NilpotentSylowTwo
 import InverseGalois.CFT.Scholz.PGroupInertia
 import InverseGalois.CFT.Scholz.PGroupSolution
+import InverseGalois.CFT.Scholz.PowerResidue
 import InverseGalois.CFT.Scholz.PrimeChoice
+import InverseGalois.CFT.Scholz.PrimeIndependence
 import InverseGalois.CFT.Scholz.ProperSolution
 import InverseGalois.CFT.Scholz.RadicalDisjoint
 import InverseGalois.CFT.Scholz.RadicalSplitting
@@ -608,6 +610,12 @@ it that are available here.
   a prime congruent to one modulo `ℓ` modulo which the radicand is an `ℓ`-th power splits completely
   in the radical field of that radicand, because an automorphism moving a generator by a root of
   unity congruent to one modulo a prime above it is the identity.
+* `InverseGalois.CFT.Scholz.PrimeIndependence` shows that a product of powers of distinct primes is
+  an `ℓ`-th power in the rationals only when every exponent is divisible by `ℓ`, the `p`-adic
+  valuation reading off the exponents; this is what makes an auxiliary radical genuinely new.
+* `InverseGalois.CFT.Scholz.PowerResidue` turns the multiplicative question of being an `ℓ`-th power
+  residue into an `𝔽_ℓ`-linear one, the units modulo a prime congruent to one modulo `ℓ` surjecting
+  onto a cyclic group of order `ℓ` with the power residues as kernel.
 
 ## Group extensions and the Brauer group
 
