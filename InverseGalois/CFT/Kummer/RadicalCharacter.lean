@@ -15,10 +15,11 @@ so Hilbert's theorem 90 produces a radical: an element `α` of `M` which every a
 multiplies by the corresponding root of unity.  Its `ℓ`-th power is fixed by the whole group and so
 comes from the base.
 
-If moreover `M` is abelian over a smaller field `k` over which `K` is normal, the radicand
-transforms under an automorphism `δ` of `K / k` by the exponent through which `δ` acts on the roots
-of unity, up to an `ℓ`-th power: it is an eigenvector of `δ` in the group of radicands modulo
-`ℓ`-th powers.  This is the input to the local analysis of the level of a radicand.
+If moreover `K` is normal over a smaller field `k` and the character is unchanged by the
+conjugation action of the Galois group over `k`, the radicand transforms under an automorphism `δ`
+of `K / k` by the exponent through which `δ` acts on the roots of unity, up to an `ℓ`-th power: it
+is an eigenvector of `δ` in the group of radicands modulo `ℓ`-th powers.  This is the input to the
+local analysis of the level of a radicand.
 
 ## Main results
 
@@ -26,8 +27,8 @@ of unity, up to an `ℓ`-th power: it is an eigenvector of `δ` in the group of 
   character and a root of unity of order dividing `ℓ`.
 * `InverseGalois.CFT.exists_radical`: **Hilbert's theorem 90 produces a radical for a character
   with values in the roots of unity of the base**, together with a radicand in the base.
-* `InverseGalois.CFT.exists_pow_mul_pow_eq`: **the radicand of a character of an abelian extension
-  is an eigenvector** for the automorphisms of the base.
+* `InverseGalois.CFT.exists_pow_mul_pow_eq`: **the radicand of a conjugation invariant character is
+  an eigenvector** for the automorphisms of the base.
 
 ## Tags
 
@@ -122,13 +123,15 @@ variable {k K M : Type*} [Field k] [Field K] [Field M]
   [FiniteDimensional k M] [IsGalois k M] [Normal k K]
 variable {ℓ g : ℕ} {ζ : K}
 
-/-- **The radicand of a character of an abelian extension is an eigenvector.**  An automorphism of
-the base lifts to the whole extension, where it commutes with the Galois group of the extension
-over the base; so it moves the radical by an element of the base times the power of the radical
-through which it acts on the roots of unity. -/
-theorem exists_pow_mul_pow_eq (habel : ∀ x y : Gal(M/k), x * y = y * x)
-    (δ : K ≃ₐ[k] K) (hζ0 : ζ ≠ 0) (hδζ : δ ζ = ζ ^ g) {α : M} (hα0 : α ≠ 0)
-    (hroot : ∀ σ : Gal(M/K), ∃ n : ℕ, σ α = (algebraMap K M ζ) ^ n * α)
+/-- **The radicand of a character invariant under conjugation is an eigenvector.**  An automorphism
+of the base lifts to the whole extension, where conjugation permutes the Galois group of the
+extension over the base without changing the character; so the lift moves the radical by an element
+of the base times the power of the radical through which it acts on the roots of unity. -/
+theorem exists_pow_mul_pow_eq (δ : K ≃ₐ[k] K) (hζ0 : ζ ≠ 0) (hδζ : δ ζ = ζ ^ g) {α : M}
+    (hα0 : α ≠ 0) (n : Gal(M/K) → ℕ)
+    (hroot : ∀ σ : Gal(M/K), σ α = (algebraMap K M ζ) ^ n σ * α)
+    (hconj : ∀ (τ : Gal(M/k)) (σ : Gal(M/K)), ∃ σ' : Gal(M/K), (∀ x : M, σ (τ x) = τ (σ' x)) ∧
+      (algebraMap K M ζ) ^ n σ' = (algebraMap K M ζ) ^ n σ)
     {w : K} (hw : algebraMap K M w = α ^ ℓ) :
     ∃ y : K, y ≠ 0 ∧ δ w = w ^ g * y ^ ℓ := by
   haveI : FiniteDimensional K M := FiniteDimensional.right k K M
@@ -144,14 +147,12 @@ theorem exists_pow_mul_pow_eq (habel : ∀ x y : Gal(M/k), x * y = y * x)
   -- the quotient of the conjugate radical by the `g`-th power of the radical is fixed
   have hfix : ∀ σ : Gal(M/K), σ (τ α / α ^ g) = τ α / α ^ g := by
     intro σ
-    obtain ⟨n, hn⟩ := hroot σ
-    have hcomm : σ (τ α) = τ (σ α) := by
-      have h := habel (σ.restrictScalars k) τ
-      exact congrArg (fun e : Gal(M/k) => e α) h
-    have h1 : σ (τ α) = (algebraMap K M ζ) ^ (g * n) * τ α := by
-      rw [hcomm, hn, map_mul, map_pow, hτcom, hδζ, map_pow, ← pow_mul]
-    have h2 : σ (α ^ g) = (algebraMap K M ζ) ^ (g * n) * α ^ g := by
-      rw [map_pow, hn, mul_pow, ← pow_mul, mul_comm n g]
+    obtain ⟨σ', hσ', hζeq⟩ := hconj τ σ
+    have h1 : σ (τ α) = (algebraMap K M ζ) ^ (g * n σ) * τ α := by
+      rw [hσ', hroot σ', map_mul, map_pow, hτcom, hδζ, map_pow, ← pow_mul, mul_comm g (n σ'),
+        pow_mul, hζeq, ← pow_mul, mul_comm (n σ) g]
+    have h2 : σ (α ^ g) = (algebraMap K M ζ) ^ (g * n σ) * α ^ g := by
+      rw [map_pow, hroot σ, mul_pow, ← pow_mul, mul_comm (n σ) g]
     rw [map_div₀, h1, h2, mul_div_mul_left _ _ (pow_ne_zero _ hξ0)]
   obtain ⟨y, hy⟩ := (IsGalois.mem_range_algebraMap_iff_fixed (τ α / α ^ g)).mpr hfix
   have hy0 : y ≠ 0 := by
