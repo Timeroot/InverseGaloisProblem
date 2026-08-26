@@ -111,6 +111,7 @@ import InverseGalois.CFT.Global.QuinaryForms
 import InverseGalois.CFT.Global.RealSigns
 import InverseGalois.CFT.Global.RationalSquareClasses
 import InverseGalois.CFT.Global.Reciprocity
+import InverseGalois.CFT.Global.ReciprocityOmit
 import InverseGalois.CFT.Global.SevenModEight
 import InverseGalois.CFT.Global.SquareClassApprox
 import InverseGalois.CFT.Global.SquarefreeCRT
@@ -345,6 +346,7 @@ import InverseGalois.CFT.Tate.Shapiro
 import InverseGalois.CFT.Tate.Surjection
 import InverseGalois.CFT.Tate.Trivial
 import InverseGalois.CFT.Tate.TrivialLattice
+import InverseGalois.CFT.TotallyReal
 import InverseGalois.CFT.Units.ABHN
 import InverseGalois.CFT.Units.ABHNArchimedean
 import InverseGalois.CFT.Units.ABHNCoboundary
@@ -913,6 +915,10 @@ it that are available here.
 * `InverseGalois.CFT.Global.HasseNorm` reads that off as the Hasse norm theorem for a quadratic
   extension of the rationals, equivalently the theorem of Albert, Brauer, Hasse and Noether for
   quaternion algebras over the rational field.
+* `InverseGalois.CFT.Global.ReciprocityOmit` drops one *finite* place from that principle instead
+  of the real one: with the real symbol given and all but one of the finite symbols trivial, the
+  product formula supplies the remaining one, so a rational which is everywhere locally a norm
+  except possibly at a single prime is a norm.
 * `InverseGalois.CFT.Herbrand` proves the counting theorem behind the Herbrand quotient: for a
   finite commutative group with an automorphism of finite order, the fixed points modulo the norms
   and the norm kernel modulo the differences have the same index.
@@ -2143,11 +2149,19 @@ it that are available here.
   as soon as every ramified place has cyclic decomposition group, prime residue field, and residue
   characteristic congruent to one modulo the product of the order of the cocycle and the order of
   that group**.
+* `InverseGalois.CFT.TotallyReal` is the other source of unramifiedness at the archimedean places.
+  A ramified archimedean place is a complex place lying over a real one, so a totally real extension
+  has none, and over the rationals the converse holds as well, the only place of `ℚ` being real.
+  **A Galois extension of the rationals of odd degree is totally real**, and **a compositum of
+  totally real intermediate fields is totally real**, so the condition is free where oddness was
+  available and survives the inductions that build a field step by step.
 * `InverseGalois.CFT.Units.ABHNArchimedean` removes the archimedean conditions when nothing ramifies
   there.  The decomposition group of an unramified archimedean place is trivial and a two-cochain of
   the trivial group is the differential of its only value, while a totally complex base is
   unramified at the archimedean places of every extension, so **over a totally complex base a
-  two-cocycle of the units which is a coboundary at every finite place is a coboundary**.
+  two-cocycle of the units which is a coboundary at every finite place is a coboundary**; the same
+  conclusion holds for **a totally real extension of an arbitrary base**, where nothing is asked of
+  the order of the cocycle either.
 * `InverseGalois.CFT.SqrtNegOne` is the group theory of a square root of minus one.  A field has at
   most two of them, so every automorphism either fixes a given square root `j` of minus one or
   negates it, and the subgroup fixing it is normal with two cosets; if `f` is fixed by that subgroup
