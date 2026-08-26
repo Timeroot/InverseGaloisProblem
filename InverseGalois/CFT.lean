@@ -223,6 +223,7 @@ import InverseGalois.CFT.Scholz.Condition
 import InverseGalois.CFT.Scholz.CorrectingCharacter
 import InverseGalois.CFT.Scholz.CorrectingSubfield
 import InverseGalois.CFT.Scholz.FrattiniStep
+import InverseGalois.CFT.Scholz.FrobeniusDefect
 import InverseGalois.CFT.Scholz.Induction
 import InverseGalois.CFT.Scholz.InertiaRankOne
 import InverseGalois.CFT.Scholz.InertiaTwist
@@ -650,6 +651,10 @@ it that are available here.
   order `ℓ ^ k` — and reads off the resulting shape of the modulus: its prime factors avoid the
   prescribed set and `ℓ`, are congruent to one modulo `ℓ ^ k`, and split completely in the field
   being corrected.
+* `InverseGalois.CFT.Scholz.FrobeniusDefect` measures what the correction has to cancel: at a prime
+  ramified in a subextension with split inertia, the image of an arithmetic Frobenius lies in the
+  image of the inertia group up to one element of the kernel, the same element for every arithmetic
+  Frobenius at the prime.
 
 ## Group extensions and the Brauer group
 
