@@ -15,27 +15,32 @@ import InverseGalois.CFT.InertiaTransport
 # Cyclic extensions of the rationals totally ramified at a single prescribed prime
 
 The correcting characters of the Scholz–Reichardt construction are cut out of the cyclotomic field
-of a *prescribed* prime-power conductor: for an odd prime `p` and an exponent `k ≥ 1` the field
-`ℚ(ζ_{p ^ k})` is cyclic over `ℚ`, is unramified away from `p`, and is totally ramified at `p`.
-Each of the three properties passes to the subfield of a prescribed degree `ℓ` dividing
-`φ (p ^ k)`: cyclicity and unramifiedness because they are inherited by subextensions, and total
-ramification because restriction maps an inertia subgroup onto the inertia subgroup below it and is
-surjective onto the Galois group of a normal subextension.
+of a *prescribed* prime-power conductor: for a prime `p` and an exponent `k ≥ 1` the field
+`ℚ(ζ_{p ^ k})` is unramified away from `p` and totally ramified at `p`, and it is cyclic over `ℚ`
+whenever `p` is odd or `k ≤ 2`.  Each of the three properties passes to the subfield of a
+prescribed degree `ℓ` dividing `φ (p ^ k)`: cyclicity and unramifiedness because they are inherited
+by subextensions, and total ramification because restriction maps an inertia subgroup onto the
+inertia subgroup below it and is surjective onto the Galois group of a normal subextension.
 
 The two cases used are `k = 1` with `ℓ ∣ p − 1`, which supplies a character ramified at a tame bad
 prime, and `p = ℓ`, `k = 2`, which supplies a character ramified at the residue characteristic.
+The second case is where the exponent `k = 2` earns its keep at the prime `2`: the units modulo `8`
+are not cyclic, but the units modulo `4` are, so the conductor `ℓ ^ 2` is exactly as large as it
+may be taken.
 
 ## Main results
 
 * `InverseGalois.CFT.isUnramifiedAt_of_notMem_primePow`: a subfield of a cyclotomic field of
   prime-power conductor is unramified away from that prime.
+* `InverseGalois.CFT.isCyclic_units_zmod_primePow`: the units modulo `p ^ k` form a cyclic group
+  when `p` is odd or `k ≤ 2`.
 * `InverseGalois.CFT.isCyclic_gal_cyclotomic_primePow`: the Galois group of a cyclotomic field of
-  odd prime-power conductor is cyclic.
+  prime-power conductor is cyclic under the same condition.
 * `InverseGalois.CFT.inertia_eq_top_cyclotomic_primePow`: a cyclotomic field of prime-power
   conductor is totally ramified at that prime.
-* `InverseGalois.CFT.exists_cyclic_totallyRamified`: **for an odd prime `p`, an exponent `k ≥ 1`
-  and a divisor `ℓ` of `φ (p ^ k)`, there is a cyclic extension of `ℚ` of degree `ℓ` unramified
-  away from `p` and totally ramified at `p`.**
+* `InverseGalois.CFT.exists_cyclic_totallyRamified`: **for a prime `p`, an exponent `k ≥ 1` with
+  `p` odd or `k ≤ 2`, and a divisor `ℓ` of `φ (p ^ k)`, there is a cyclic extension of `ℚ` of
+  degree `ℓ` unramified away from `p` and totally ramified at `p`.**
 * `InverseGalois.CFT.exists_intermediateField_cyclic_totallyRamified`: the same extension, as a
   subfield of a fixed algebraic closure of `ℚ`.
 
@@ -75,13 +80,22 @@ theorem ramifiedSet_subset_singleton_primePow (k : ℕ) (K : Type*) [Field K] [N
   ramifiedSet_subset_singleton hp.out fun Q _ hQ hmem =>
     isUnramifiedAt_of_notMem_primePow p k K Q hQ hmem
 
-/-- **The Galois group of a cyclotomic field of odd prime-power conductor is cyclic**, being the
-unit group of the integers modulo an odd prime power. -/
-theorem isCyclic_gal_cyclotomic_primePow (hp2 : p ≠ 2) (k : ℕ) (K : Type*) [Field K]
+/-- **The units modulo a prime power form a cyclic group** as soon as the prime is odd or the
+exponent is at most two, the group of units modulo `4` still being cyclic of order `2`. -/
+theorem isCyclic_units_zmod_primePow (k : ℕ) (hp2 : p ≠ 2 ∨ k ≤ 2) :
+    IsCyclic (ZMod (p ^ k))ˣ := by
+  rcases eq_or_ne p 2 with rfl | h2
+  · exact (ZMod.isCyclic_units_two_pow_iff k).mpr (hp2.resolve_left fun h => h rfl)
+  · exact ZMod.isCyclic_units_of_prime_pow p hp.out h2 k
+
+/-- **The Galois group of a cyclotomic field of prime-power conductor is cyclic**, being the unit
+group of the integers modulo that prime power, as soon as the prime is odd or the exponent is at
+most two. -/
+theorem isCyclic_gal_cyclotomic_primePow (k : ℕ) (hp2 : p ≠ 2 ∨ k ≤ 2) (K : Type*) [Field K]
     [NumberField K] [IsCyclotomicExtension {p ^ k} ℚ K] :
     IsCyclic Gal(K/ℚ) := by
   haveI : NeZero (p ^ k) := ⟨pow_ne_zero k hp.out.ne_zero⟩
-  haveI := ZMod.isCyclic_units_of_prime_pow p hp.out hp2 k
+  haveI := isCyclic_units_zmod_primePow p k hp2
   exact isCyclic_of_surjective (IsCyclotomicExtension.Rat.galEquivZMod (p ^ k) K).symm
     (IsCyclotomicExtension.Rat.galEquivZMod (p ^ k) K).symm.surjective
 
@@ -101,11 +115,11 @@ theorem inertia_eq_top_cyclotomic_primePow (k : ℕ) (K : Type*) [Field K] [Numb
 /-! ### The prescribed subfield -/
 
 /-- **A cyclic extension of the rationals of prescribed degree, totally ramified at a prescribed
-odd prime and unramified elsewhere.**  It is the subfield of degree `ℓ` of the cyclotomic field of
+prime and unramified elsewhere.**  It is the subfield of degree `ℓ` of the cyclotomic field of
 conductor `p ^ k`, which exists because that Galois group is cyclic of order `φ (p ^ k)`; the
 ramification statements are inherited from the cyclotomic field, total ramification because
 restriction maps inertia onto inertia and is surjective. -/
-theorem exists_cyclic_totallyRamified {ℓ : ℕ} (hp2 : p ≠ 2) (k : ℕ) (K : Type*) [Field K]
+theorem exists_cyclic_totallyRamified {ℓ : ℕ} (k : ℕ) (hp2 : p ≠ 2 ∨ k ≤ 2) (K : Type*) [Field K]
     [NumberField K] [IsCyclotomicExtension {p ^ k} ℚ K] (hdvd : ℓ ∣ Nat.totient (p ^ k)) :
     ∃ F : IntermediateField ℚ K, ∃ _ : NumberField ↥F,
       IsGalois ℚ ↥F ∧ IsCyclic Gal(↥F/ℚ) ∧ finrank ℚ ↥F = ℓ ∧ ramifiedSet ↥F ⊆ {p} ∧
@@ -113,7 +127,7 @@ theorem exists_cyclic_totallyRamified {ℓ : ℕ} (hp2 : p ≠ 2) (k : ℕ) (K :
         Ideal.inertia Gal(↥F/ℚ) Q = ⊤ := by
   haveI : NeZero (p ^ k) := ⟨pow_ne_zero k hp.out.ne_zero⟩
   haveI : IsGalois ℚ K := IsCyclotomicExtension.isGalois {p ^ k} ℚ K
-  haveI : IsCyclic Gal(K/ℚ) := isCyclic_gal_cyclotomic_primePow p hp2 k K
+  haveI : IsCyclic Gal(K/ℚ) := isCyclic_gal_cyclotomic_primePow p k hp2 K
   obtain ⟨F, hgal, hcyc, hrank⟩ := IsCyclic.exists_intermediateField_finrank_eq (d := ℓ) ℚ K
     (by rwa [finrank_cyclotomic (p ^ k) K])
   haveI := hgal
@@ -137,10 +151,10 @@ theorem exists_cyclic_totallyRamified {ℓ : ℕ} (hp2 : p ≠ 2) (k : ℕ) (K :
 /-! ### Inside a fixed algebraic closure -/
 
 /-- **A cyclic extension of the rationals of prescribed degree inside a fixed algebraic closure,
-totally ramified at a prescribed odd prime and unramified elsewhere.**  The subfield of the
-cyclotomic field is transported into the algebraic closure along the canonical isomorphism, which
-preserves the degree, the ramified primes and the total ramification. -/
-theorem exists_intermediateField_cyclic_totallyRamified {ℓ : ℕ} (hp2 : p ≠ 2) (k : ℕ)
+totally ramified at a prescribed prime and unramified elsewhere.**  The subfield of the cyclotomic
+field is transported into the algebraic closure along the canonical isomorphism, which preserves
+the degree, the ramified primes and the total ramification. -/
+theorem exists_intermediateField_cyclic_totallyRamified {ℓ : ℕ} (k : ℕ) (hp2 : p ≠ 2 ∨ k ≤ 2)
     (hdvd : ℓ ∣ Nat.totient (p ^ k)) :
     ∃ E : IntermediateField ℚ (AlgebraicClosure ℚ), ∃ _ : NumberField ↥E,
       IsGalois ℚ ↥E ∧ IsCyclic Gal(↥E/ℚ) ∧ finrank ℚ ↥E = ℓ ∧ ramifiedSet ↥E ⊆ {p} ∧
@@ -148,7 +162,7 @@ theorem exists_intermediateField_cyclic_totallyRamified {ℓ : ℕ} (hp2 : p ≠
         Ideal.inertia Gal(↥E/ℚ) Q = ⊤ := by
   haveI : NeZero (p ^ k) := ⟨pow_ne_zero k hp.out.ne_zero⟩
   obtain ⟨F, hNF, hgal, hcyc, hrank, hram, hinert⟩ :=
-    exists_cyclic_totallyRamified p hp2 k ↥(cycSubfield (p ^ k)) hdvd
+    exists_cyclic_totallyRamified p k hp2 ↥(cycSubfield (p ^ k)) hdvd
   haveI := hNF
   haveI := hgal
   haveI := hcyc

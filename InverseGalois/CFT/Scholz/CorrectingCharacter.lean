@@ -22,9 +22,9 @@ subgroup at the prime, which is what allows a power of it to cancel the unwanted
 
 ## Main results
 
-* `InverseGalois.CFT.exists_cyclic_totallyRamified_of_prime`: **for an odd prime `ℓ` and a prime
-  `p` equal to `ℓ` or congruent to one modulo `ℓ`, there is a cyclic extension of `ℚ` of degree
-  `ℓ` unramified away from `p` and totally ramified at `p`.**
+* `InverseGalois.CFT.exists_cyclic_totallyRamified_of_prime`: **for a prime `ℓ` and a prime `p`
+  equal to `ℓ` or congruent to one modulo `ℓ`, there is a cyclic extension of `ℚ` of degree `ℓ`
+  unramified away from `p` and totally ramified at `p`.**
 * `InverseGalois.CFT.exists_hom_inertia_map_eq`: **the same extension, together with a character
   with values in a prescribed group of order `ℓ` which maps the inertia subgroup at `p` onto that
   whole group.**
@@ -49,7 +49,7 @@ variable {ℓ p : ℕ}
 either `ℓ`, and then the conductor is `ℓ ^ 2` and `ℓ` divides `φ (ℓ ^ 2) = ℓ (ℓ - 1)`, or it is
 congruent to one modulo `ℓ`, and then the conductor is the prime itself and `ℓ` divides
 `φ p = p - 1`. -/
-theorem exists_cyclic_totallyRamified_of_prime (hℓ : ℓ.Prime) (hℓ2 : ℓ ≠ 2) (hp : p.Prime)
+theorem exists_cyclic_totallyRamified_of_prime (hℓ : ℓ.Prime) (hp : p.Prime)
     (hcond : p = ℓ ∨ ℓ ∣ p - 1) :
     ∃ E : IntermediateField ℚ (AlgebraicClosure ℚ), ∃ _ : NumberField ↥E,
       IsGalois ℚ ↥E ∧ IsCyclic Gal(↥E/ℚ) ∧ finrank ℚ ↥E = ℓ ∧ ramifiedSet ↥E ⊆ {p} ∧
@@ -57,13 +57,13 @@ theorem exists_cyclic_totallyRamified_of_prime (hℓ : ℓ.Prime) (hℓ2 : ℓ �
         Ideal.inertia Gal(↥E/ℚ) Q = ⊤ := by
   haveI : Fact p.Prime := ⟨hp⟩
   rcases hcond with rfl | hdvd
-  · refine exists_intermediateField_cyclic_totallyRamified p hℓ2 2 ?_
+  · refine exists_intermediateField_cyclic_totallyRamified p 2 (Or.inr le_rfl) ?_
     rw [Nat.totient_prime_pow hp two_pos]
     exact dvd_mul_of_dvd_left (dvd_pow_self p (by norm_num)) _
   · have hp2 : p ≠ 2 := by
       rintro rfl
       exact hℓ.one_lt.ne' (Nat.dvd_one.mp (by simpa using hdvd))
-    refine exists_intermediateField_cyclic_totallyRamified p hp2 1 ?_
+    refine exists_intermediateField_cyclic_totallyRamified p 1 (Or.inl hp2) ?_
     rwa [pow_one, Nat.totient_prime hp]
 
 /-! ### The character -/
@@ -72,7 +72,7 @@ theorem exists_cyclic_totallyRamified_of_prime (hℓ : ℓ.Prime) (hℓ2 : ℓ �
 ramified at the prime is cyclic of order `ℓ`, hence isomorphic to any prescribed group of that
 prime order; composing the isomorphism with the inclusion gives a character whose image is the
 prescribed group and which is surjective on every inertia subgroup at the prime. -/
-theorem exists_hom_inertia_map_eq (hℓ : ℓ.Prime) (hℓ2 : ℓ ≠ 2) (hp : p.Prime)
+theorem exists_hom_inertia_map_eq (hℓ : ℓ.Prime) (hp : p.Prime)
     (hcond : p = ℓ ∨ ℓ ∣ p - 1) {G : Type*} [Group G] (C : Subgroup G) (hC : Nat.card ↥C = ℓ) :
     ∃ E : IntermediateField ℚ (AlgebraicClosure ℚ), ∃ _ : NumberField ↥E, IsGalois ℚ ↥E ∧
       ramifiedSet ↥E ⊆ {p} ∧ ∃ χ : Gal(↥E/ℚ) →* G, χ.range = C ∧
@@ -80,7 +80,7 @@ theorem exists_hom_inertia_map_eq (hℓ : ℓ.Prime) (hℓ2 : ℓ ≠ 2) (hp : p
           (Ideal.inertia Gal(↥E/ℚ) Q).map χ = C := by
   haveI : Fact ℓ.Prime := ⟨hℓ⟩
   obtain ⟨E, hNF, hgal, hcyc, hrank, hram, hinert⟩ :=
-    exists_cyclic_totallyRamified_of_prime hℓ hℓ2 hp hcond
+    exists_cyclic_totallyRamified_of_prime hℓ hp hcond
   haveI := hNF
   haveI := hgal
   have hcard : Nat.card Gal(↥E/ℚ) = ℓ := by
@@ -97,7 +97,7 @@ theorem exists_hom_inertia_map_eq (hℓ : ℓ.Prime) (hℓ2 : ℓ ≠ 2) (hp : p
 recorded with the total ramification at the prime and the character with image the prescribed group
 of order `ℓ`, which is the shape in which it is used to correct the ramification of a solution of
 an embedding problem posed over a larger field. -/
-theorem exists_totallyRamified_hom_range_eq (hℓ : ℓ.Prime) (hℓ2 : ℓ ≠ 2) (hp : p.Prime)
+theorem exists_totallyRamified_hom_range_eq (hℓ : ℓ.Prime) (hp : p.Prime)
     (hcond : p = ℓ ∨ ℓ ∣ p - 1) {G : Type*} [Group G] (C : Subgroup G) (hC : Nat.card ↥C = ℓ) :
     ∃ E : IntermediateField ℚ (AlgebraicClosure ℚ), ∃ _ : NumberField ↥E, IsGalois ℚ ↥E ∧
       IsPGroup ℓ Gal(↥E/ℚ) ∧ ramifiedSet ↥E ⊆ {p} ∧
@@ -105,7 +105,7 @@ theorem exists_totallyRamified_hom_range_eq (hℓ : ℓ.Prime) (hℓ2 : ℓ ≠ 
         Ideal.inertia Gal(↥E/ℚ) Q = ⊤) ∧ ∃ χ : Gal(↥E/ℚ) →* G, χ.range = C := by
   haveI : Fact ℓ.Prime := ⟨hℓ⟩
   obtain ⟨E, hNF, hgal, hcyc, hrank, hram, hinert⟩ :=
-    exists_cyclic_totallyRamified_of_prime hℓ hℓ2 hp hcond
+    exists_cyclic_totallyRamified_of_prime hℓ hp hcond
   haveI := hNF
   haveI := hgal
   have hcard : Nat.card Gal(↥E/ℚ) = ℓ := by

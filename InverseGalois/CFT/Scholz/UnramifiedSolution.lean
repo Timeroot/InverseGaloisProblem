@@ -91,9 +91,6 @@ theorem exists_galEquiv_ramifiedSet_subset (hℓ : ℓ.Prime) (hodd : Odd ℓ)
       ∃ ψ : Gal(↥L/ℚ) ≃* G, ∀ τ, f (ψ τ) = e (galRestrictLE hAL τ) := by
   classical
   haveI : NeZero ℓ := ⟨hℓ.ne_zero⟩
-  have hℓ2 : ℓ ≠ 2 := by
-    rintro rfl
-    exact absurd (Nat.odd_iff.mp hodd) (by norm_num)
   -- the solution of the embedding problem, with Galois group the group to be realised
   obtain ⟨L₀, hAL₀, hNF₀, hGal₀, ψ₀, hcomp₀⟩ :=
     exists_galEquiv_of_centralStep hℓ hodd hf hpg hZ hfr hcard hHdvd A hsch e
@@ -124,7 +121,7 @@ theorem exists_galEquiv_ramifiedSet_subset (hℓ : ℓ.Prime) (hodd : Odd ℓ)
           Ideal.inertia Gal(↥Dq/ℚ) Q = ⊤) ∧ ∃ χ : Gal(↥Dq/ℚ) →* G, χ.range = f.ker := by
     intro q
     obtain ⟨hq, hcond⟩ := hclass q.1 q.2
-    exact exists_totallyRamified_hom_range_eq hℓ hℓ2 hq hcond f.ker hcard
+    exact exists_totallyRamified_hom_range_eq hℓ hq hcond f.ker hcard
   choose D hDNF hDgal hDpg hDram hDtot χ hχrange using hex
   haveI : ∀ q, NumberField ↥(D q) := hDNF
   haveI : ∀ q, IsGalois ℚ ↥(D q) := hDgal
