@@ -209,6 +209,7 @@ import InverseGalois.CFT.Local.UnitPowIndex
 import InverseGalois.CFT.Local.UnitRootPower
 import InverseGalois.CFT.Local.UnitValuation
 import InverseGalois.CFT.Local.UnramifiedCoboundary
+import InverseGalois.CFT.Local.UnramifiedInvariant
 import InverseGalois.CFT.Local.UnramifiedNormForm
 import InverseGalois.CFT.Local.UnramifiedUnits
 import InverseGalois.CFT.Local.ValuedTopology
@@ -1813,6 +1814,12 @@ it that are available here.
   of the units of the valuation ring vanishes.  Their Herbrand quotient is one and both groups are
   finite, so the upper group vanishes as well.  Read through the definition of that group, the norm
   map on the units of the valuation ring is surjective onto the fixed ones.
+* `InverseGalois.CFT.Local.UnramifiedInvariant` reads that vanishing as a computation of the upper
+  Tate group of the multiplicative group of the field: the valuation of a norm is the degree times
+  the valuation, so it descends to a map to the integers modulo the degree, the uniformizer in the
+  fixed field makes it surjective, and the surjectivity of the norm on the units of the valuation
+  ring makes it injective.  This is the invariant map of local class field theory in the unramified
+  case.
 * `InverseGalois.CFT.Local.PadicSquaresTwo` supplies the excluded prime: a dyadic unit is a square
   exactly when it is congruent to one modulo eight, and every nonzero dyadic number is a square
   times one of eight explicit representatives.
