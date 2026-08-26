@@ -21,16 +21,18 @@ of an `ℓ`-group with an abelian group, it contains the `ℓ`-th roots of unity
 being corrected.
 
 Feeding that field to the linear algebra of the power residue vectors gives the statement the
-construction actually uses: for a field with `ℓ`-group Galois group, a finite set of primes and a
-prescribed vector of power residue symbols, there is a modulus built out of primes of the prescribed
-level splitting completely in the field, together with a character of the units modulo that modulus
-realising the vector.
+construction actually uses: for a field with `ℓ`-group Galois group and a finite set of primes,
+there is a modulus built out of primes of the prescribed level splitting completely in the field
+such that every prescribed vector of power residue symbols is realised by a character of the units
+modulo that one modulus.  Fixing the modulus before the vector is what the construction needs, the
+vector being read off from a field which the modulus itself helps to build.
 
 ## Main results
 
-* `InverseGalois.CFT.exists_modulus_of_isPGroup`: **every prescribed vector of power residue symbols
-  is realised by a character of the units modulo a product of primes of level `k` splitting
-  completely in a given extension with `ℓ`-group Galois group.**
+* `InverseGalois.CFT.exists_modulus_of_isPGroup`: **a single product of primes of level `k`
+  splitting completely in a given extension with `ℓ`-group Galois group serves as a modulus for
+  which every prescribed vector of power residue symbols is realised by a character of the
+  units.**
 
 ## Tags
 
@@ -112,19 +114,19 @@ theorem modEq_of_splitsCompletely_auxConstraintField (hℓ : ℓ.Prime) {q : ℕ
 
 end
 
-/-- **Every prescribed vector of power residue symbols is realised by a character of the units
-modulo a product of primes of level `k` splitting completely in a given extension with `ℓ`-group
-Galois group.**  Adjoining the roots of unity of order `ℓ ^ k` to that extension produces a
-nilpotent extension containing the `ℓ`-th roots of unity, in which a prime other than `ℓ` splits
-completely exactly when it is congruent to one modulo `ℓ ^ k` and splits completely in the given
-extension. -/
+/-- **A single product of primes of level `k` splitting completely in a given extension with
+`ℓ`-group Galois group serves as a modulus for which every prescribed vector of power residue
+symbols is realised by a character of the units.**  Adjoining the roots of unity of order `ℓ ^ k` to
+that extension produces a nilpotent extension containing the `ℓ`-th roots of unity, in which a prime
+other than `ℓ` splits completely exactly when it is congruent to one modulo `ℓ ^ k` and splits
+completely in the given extension. -/
 theorem exists_modulus_of_isPGroup [Fact ℓ.Prime] (hodd : Odd ℓ) {k : ℕ} (hk : k ≠ 0)
-    (hpg : IsPGroup ℓ Gal(↥B/ℚ)) {S : Finset ℕ} (hSprime : ∀ p ∈ S, p.Prime)
-    (t : {p // p ∈ S} → ZMod ℓ) :
-    ∃ (Q : ℕ) (κ : (ZMod Q)ˣ →* Multiplicative (ZMod ℓ)), Q ≠ 0 ∧
+    (hpg : IsPGroup ℓ Gal(↥B/ℚ)) {S : Finset ℕ} (hSprime : ∀ p ∈ S, p.Prime) :
+    ∃ Q : ℕ, Q ≠ 0 ∧
       (∀ r : ℕ, r.Prime → r ∣ Q →
         r ∉ S ∧ r ≠ ℓ ∧ r ≡ 1 [MOD ℓ ^ k] ∧ SplitsCompletely ↥B r) ∧
-      ∀ (p : ℕ) (hp : p ∈ S), powerResidueSymbol κ p = t ⟨p, hp⟩ := by
+      ∀ t : {p // p ∈ S} → ZMod ℓ, ∃ κ : (ZMod Q)ˣ →* Multiplicative (ZMod ℓ),
+        ∀ (p : ℕ) (hp : p ∈ S), powerResidueSymbol κ p = t ⟨p, hp⟩ := by
   have hℓ : ℓ.Prime := Fact.out
   haveI : NeZero (ℓ ^ k) := ⟨pow_ne_zero k hℓ.ne_zero⟩
   obtain ⟨ζ, hζ, hζA⟩ := isPrimitiveRoot_mem_auxConstraintField (B := B) (ℓ := ℓ) (k := k) hk
@@ -133,10 +135,10 @@ theorem exists_modulus_of_isPGroup [Fact ℓ.Prime] (hodd : Odd ℓ) {k : ℕ} (
     intro q hq hqℓ hs
     have hmod := modEq_of_splitsCompletely_auxConstraintField (B := B) hℓ hq hqℓ hs
     exact dvd_trans (dvd_pow_self ℓ hk) ((Nat.modEq_iff_dvd' hq.one_le).mp hmod.symm)
-  obtain ⟨Q, κ, hQ0, hQr, hQκ⟩ :=
+  obtain ⟨Q, hQ0, hQr, hQκ⟩ :=
     exists_modulus_powerResidueSymbol (A := auxConstraintField B ℓ k) hodd
-      (isNilpotent_auxConstraintField hpg) hζ hζA hSprime hdvd t
-  refine ⟨Q, κ, hQ0, fun r hr hrQ => ?_, hQκ⟩
+      (isNilpotent_auxConstraintField hpg) hζ hζA hSprime hdvd
+  refine ⟨Q, hQ0, fun r hr hrQ => ?_, hQκ⟩
   obtain ⟨hrS, hrℓ, hrA⟩ := hQr r hr hrQ
   exact ⟨hrS, hrℓ, modEq_of_splitsCompletely_auxConstraintField (B := B) hℓ hr hrℓ hrA,
     splitsCompletely_of_le (le_sup_left : B ≤ auxConstraintField B ℓ k) hr hrA⟩

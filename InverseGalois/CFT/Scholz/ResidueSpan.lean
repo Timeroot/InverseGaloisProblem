@@ -19,9 +19,11 @@ corresponding product of powers of the primes of `S` is then an `ℓ`-th power r
 auxiliary prime — which is impossible, since that product is not an `ℓ`-th power in the rationals
 and therefore admits an auxiliary prime for which it is not a power residue.
 
-Consequently every prescribed vector of `ZMod ℓ` indexed by `S` is realised by a single character of
-the units modulo a product of auxiliary primes, obtained by pulling the characters of the individual
-primes back along the reduction maps and multiplying them with the appropriate exponents.
+The space of vectors being finite, finitely many auxiliary primes already span it, and their product
+is a modulus which works for every prescribed vector at once: each vector of `ZMod ℓ` indexed by `S`
+is realised by a character of the units modulo that one modulus, obtained by pulling the characters
+of the individual primes back along the reduction maps and multiplying them with the appropriate
+exponents.
 
 ## Main definitions
 
@@ -31,8 +33,9 @@ primes back along the reduction maps and multiplying them with the appropriate e
 
 * `InverseGalois.CFT.residueVectors_span_eq_top`: **the power residue vectors of the auxiliary
   primes span the whole space.**
-* `InverseGalois.CFT.exists_modulus_powerResidueSymbol`: **every prescribed vector of power residue
-  symbols is realised by a character of the units modulo a product of auxiliary primes.**
+* `InverseGalois.CFT.exists_modulus_powerResidueSymbol`: **a single product of auxiliary primes
+  serves as a modulus for which every prescribed vector of power residue symbols is realised by a
+  character of the units.**
 
 ## Tags
 
@@ -136,69 +139,68 @@ theorem residueVectors_span_eq_top [Fact ℓ.Prime] (hodd : Odd ℓ) [NumberFiel
   rw [Finset.sum_congr rfl hterm, ← Finset.univ_eq_attach, ← hfa]
   exact hfker _ (hV q κ hqp hqS hqne hqA hκ)
 
-/-- **Every prescribed vector of power residue symbols is realised by a character of the units
-modulo a product of auxiliary primes.**  Writing the vector as a combination of the vectors of
-finitely many auxiliary primes, the product of those primes is the modulus and the character is the
-product of the corresponding powers of the characters of the individual primes, pulled back along
-the reduction maps; the symbol being unchanged by such a pullback and additive in the character,
-the combination is reproduced exactly. -/
+/-- **A single modulus realises every prescribed vector of power residue symbols.**  The vectors of
+the auxiliary primes span the whole space, which is finite, so finitely many auxiliary primes
+already span it and the product of those primes is the modulus, chosen once and for all.  A
+prescribed vector is a combination of the vectors of those primes, and the character realising it is
+the product of the corresponding powers of the characters of the individual primes, pulled back
+along the reduction maps; the symbol being unchanged by such a pullback and additive in the
+character, the combination is reproduced exactly. -/
 theorem exists_modulus_powerResidueSymbol [Fact ℓ.Prime] (hodd : Odd ℓ) [NumberField ↥A]
     [IsGalois ℚ ↥A] (hnil : Group.IsNilpotent Gal(↥A/ℚ)) {ζ : AlgebraicClosure ℚ}
     (hζ : IsPrimitiveRoot ζ ℓ) (hζA : ζ ∈ A) (hSprime : ∀ p ∈ S, p.Prime)
-    (hdvd : ∀ q : ℕ, q.Prime → q ≠ ℓ → SplitsCompletely ↥A q → ℓ ∣ q - 1)
-    (t : {p // p ∈ S} → ZMod ℓ) :
-    ∃ (Q : ℕ) (κ : (ZMod Q)ˣ →* Multiplicative (ZMod ℓ)), Q ≠ 0 ∧
+    (hdvd : ∀ q : ℕ, q.Prime → q ≠ ℓ → SplitsCompletely ↥A q → ℓ ∣ q - 1) :
+    ∃ Q : ℕ, Q ≠ 0 ∧
       (∀ r : ℕ, r.Prime → r ∣ Q → r ∉ S ∧ r ≠ ℓ ∧ SplitsCompletely ↥A r) ∧
-      ∀ (p : ℕ) (hp : p ∈ S), powerResidueSymbol κ p = t ⟨p, hp⟩ := by
+      ∀ t : {p // p ∈ S} → ZMod ℓ, ∃ κ : (ZMod Q)ˣ →* Multiplicative (ZMod ℓ),
+        ∀ (p : ℕ) (hp : p ∈ S), powerResidueSymbol κ p = t ⟨p, hp⟩ := by
   classical
   have hℓ : ℓ.Prime := Fact.out
   haveI : NeZero ℓ := ⟨hℓ.ne_zero⟩
-  -- the vectors of the auxiliary primes span, so the target is a combination of finitely many
-  have hspan : Submodule.span (ZMod ℓ)
-      {w : {p // p ∈ S} → ZMod ℓ | ∃ (q : ℕ) (κ : (ZMod q)ˣ →* Multiplicative (ZMod ℓ)),
-        q.Prime ∧ q ∉ S ∧ q ≠ ℓ ∧ SplitsCompletely ↥A q ∧
-        (∀ x : (ZMod q)ˣ, κ x = 1 ↔ (x : ZMod q) ^ ((q - 1) / ℓ) = 1) ∧
-        w = residueVector S κ} = ⊤ :=
-    residueVectors_span_eq_top hodd hnil hζ hζA hSprime hdvd _
-      fun q κ hq hqS hqne hqA hκ => Submodule.subset_span ⟨q, κ, hq, hqS, hqne, hqA, hκ, rfl⟩
-  have ht : t ∈ Submodule.span (ZMod ℓ)
-      {w : {p // p ∈ S} → ZMod ℓ | ∃ (q : ℕ) (κ : (ZMod q)ˣ →* Multiplicative (ZMod ℓ)),
-        q.Prime ∧ q ∉ S ∧ q ≠ ℓ ∧ SplitsCompletely ↥A q ∧
-        (∀ x : (ZMod q)ˣ, κ x = 1 ↔ (x : ZMod q) ^ ((q - 1) / ℓ) = 1) ∧
-        w = residueVector S κ} := by
-    rw [hspan]; trivial
-  obtain ⟨n, c, g, hg⟩ := Submodule.mem_span_set'.mp ht
-  have hmem : ∀ i : Fin n, ∃ (q : ℕ) (κ : (ZMod q)ˣ →* Multiplicative (ZMod ℓ)),
+  -- the vectors of the auxiliary primes span, and there are only finitely many of them
+  set s : Set ({p // p ∈ S} → ZMod ℓ) :=
+    {w : {p // p ∈ S} → ZMod ℓ | ∃ (q : ℕ) (κ : (ZMod q)ˣ →* Multiplicative (ZMod ℓ)),
       q.Prime ∧ q ∉ S ∧ q ≠ ℓ ∧ SplitsCompletely ↥A q ∧
       (∀ x : (ZMod q)ˣ, κ x = 1 ↔ (x : ZMod q) ^ ((q - 1) / ℓ) = 1) ∧
-      (g i : {p // p ∈ S} → ZMod ℓ) = residueVector S κ := fun i => (g i).2
+      w = residueVector S κ}
+  have hspan : Submodule.span (ZMod ℓ) s = ⊤ :=
+    residueVectors_span_eq_top hodd hnil hζ hζA hSprime hdvd _
+      fun q κ hq hqS hqne hqA hκ => Submodule.subset_span ⟨q, κ, hq, hqS, hqne, hqA, hκ, rfl⟩
+  letI : Fintype ↥s := Fintype.ofFinite _
+  have hmem : ∀ w : ↥s, ∃ (q : ℕ) (κ : (ZMod q)ˣ →* Multiplicative (ZMod ℓ)),
+      q.Prime ∧ q ∉ S ∧ q ≠ ℓ ∧ SplitsCompletely ↥A q ∧
+      (∀ x : (ZMod q)ˣ, κ x = 1 ↔ (x : ZMod q) ^ ((q - 1) / ℓ) = 1) ∧
+      (w : {p // p ∈ S} → ZMod ℓ) = residueVector S κ := fun w => w.2
   choose qq κκ hqqp hqqS hqqne hqqA hqqκ hqqvec using hmem
-  -- the modulus and the character
-  set Q : ℕ := ∏ i, qq i with hQdef
-  have hQ0 : Q ≠ 0 := Finset.prod_ne_zero_iff.mpr fun i _ => (hqqp i).ne_zero
+  -- the modulus
+  set Q : ℕ := ∏ w : ↥s, qq w with hQdef
+  have hQ0 : Q ≠ 0 := Finset.prod_ne_zero_iff.mpr fun w _ => (hqqp w).ne_zero
   haveI : NeZero Q := ⟨hQ0⟩
-  have hdvdQ : ∀ i, qq i ∣ Q := fun i => Finset.dvd_prod_of_mem _ (Finset.mem_univ i)
-  refine ⟨Q, ∏ i : Fin n, ((κκ i).comp (ZMod.unitsMap (hdvdQ i))) ^ (c i).val, hQ0, ?_, ?_⟩
+  have hdvdQ : ∀ w : ↥s, qq w ∣ Q := fun w => Finset.dvd_prod_of_mem _ (Finset.mem_univ w)
+  refine ⟨Q, hQ0, ?_, ?_⟩
   · intro r hr hrQ
-    obtain ⟨i, -, hri⟩ := (Nat.Prime.prime hr).exists_mem_finset_dvd hrQ
-    obtain rfl : r = qq i := (Nat.prime_dvd_prime_iff_eq hr (hqqp i)).mp hri
-    exact ⟨hqqS i, hqqne i, hqqA i⟩
-  · intro p hp
+    obtain ⟨w, -, hrw⟩ := (Nat.Prime.prime hr).exists_mem_finset_dvd hrQ
+    obtain rfl : r = qq w := (Nat.prime_dvd_prime_iff_eq hr (hqqp w)).mp hrw
+    exact ⟨hqqS w, hqqne w, hqqA w⟩
+  · -- the character attached to a prescribed vector
+    intro t
+    have ht : t ∈ Submodule.span (ZMod ℓ) s := by rw [hspan]; trivial
+    obtain ⟨c, hc⟩ := Submodule.mem_span_iff_of_fintype.mp ht
+    refine ⟨∏ w : ↥s, ((κκ w).comp (ZMod.unitsMap (hdvdQ w))) ^ (c w).val, ?_⟩
+    intro p hp
     -- a prime of `S` is a unit modulo the product of the auxiliary primes
     have hpQ : IsUnit ((p : ZMod Q)) := by
-      refine (ZMod.isUnit_iff_coprime p Q).mpr (Nat.Coprime.prod_right fun i _ => ?_)
-      exact (Nat.coprime_primes (hSprime p hp) (hqqp i)).mpr fun h => hqqS i (h ▸ hp)
-    have hpi : ∀ i : Fin n, IsUnit ((p : ZMod (qq i))) :=
-      fun i => isUnit_natCast_of_mem (hqqp i) (hqqS i) hSprime hp
+      refine (ZMod.isUnit_iff_coprime p Q).mpr (Nat.Coprime.prod_right fun w _ => ?_)
+      exact (Nat.coprime_primes (hSprime p hp) (hqqp w)).mpr fun h => hqqS w (h ▸ hp)
     rw [powerResidueSymbol_prod_hom _ _ hpQ]
-    have hterm : ∀ i : Fin n, powerResidueSymbol
-        (((κκ i).comp (ZMod.unitsMap (hdvdQ i))) ^ (c i).val) p =
-          c i * (g i : {p // p ∈ S} → ZMod ℓ) ⟨p, hp⟩ := by
-      intro i
+    have hterm : ∀ w : ↥s, powerResidueSymbol
+        (((κκ w).comp (ZMod.unitsMap (hdvdQ w))) ^ (c w).val) p =
+          c w * (w : {p // p ∈ S} → ZMod ℓ) ⟨p, hp⟩ := by
+      intro w
       rw [powerResidueSymbol_pow_hom _ _ hpQ,
-        powerResidueSymbol_comp_unitsMap (κκ i) (hdvdQ i) hpQ, hqqvec i, residueVector,
+        powerResidueSymbol_comp_unitsMap (κκ w) (hdvdQ w) hpQ, hqqvec w, residueVector,
         nsmul_eq_mul, ZMod.natCast_val, ZMod.cast_id]
-    rw [Finset.sum_congr rfl fun i _ => hterm i, ← hg, Finset.sum_apply]
-    exact Finset.sum_congr rfl fun i _ => rfl
+    rw [Finset.sum_congr rfl fun w _ => hterm w, ← hc, Finset.sum_apply]
+    exact Finset.sum_congr rfl fun w _ => rfl
 
 end InverseGalois.CFT
