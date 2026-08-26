@@ -704,8 +704,13 @@ for a cyclic extension of degree `n`, and hence **the first inequality**:
 InverseGalois.CFT.first_inequality : n ≤ Nat.card (tateH0 (ideleClassAut (k := k) (K := K) σ) n)
 ```
 
-**The second inequality.** This is Milne VII §6, the algebraic proof, and it is where the work
-currently is. The strategy is Kummer-theoretic: adjoin an `ℓ`-th root of unity, choose a set of
+**The second inequality.** This is Milne VII §6, the algebraic proof. *This subsection describes
+the state on 2026-08-24 and has since been overtaken: the second inequality is done. The
+prime-degree case is `Kummer/SecondInequality.lean`, the root of unity is removed by
+`Kummer/CyclotomicDescent.lean`, and `Kummer/CyclicIndex.lean` climbs the tower to give
+`index_ideleDiag_sup_ideleNorm_eq_card`, the norm index of an arbitrary cyclic extension of number
+fields being its degree. What follows is kept for the map of the pieces.* The strategy is
+Kummer-theoretic: adjoin an `ℓ`-th root of unity, choose a set of
 places `S` containing the infinite places, the places above `ℓ` and enough places to make the
 class group trivial, and count the index of a large group of `n`-th powers inside the `S`-ideles
 in two ways. The counting ingredients are now in place.
@@ -1292,9 +1297,89 @@ completely in `A`, so such a `d` stays a square at `q` — and those are precise
 also has to avoid.  Items 1 and 2 are therefore two readings of a single dimension count against the
 quadratic subfields of `A`.
 
-Neither Poitou–Tate duality nor the global reciprocity law is in Mathlib or in this repository.  The
-same layer is what gap 2 (nilpotent → solvable) needs for Grunwald–Wang, so the two remaining gaps
-share their next prerequisite; see §0.10 for how far the idele-class-group side has got.
+Poitou–Tate duality is in neither Mathlib nor this repository.  Global reciprocity, on the other
+hand, *is* here in the degree-two case that item 2 needs — see §0.17, which turns item 2 into a
+theorem.  The same layer is what gap 2 (nilpotent → solvable) needs for Grunwald–Wang, so the two
+remaining gaps share their next prerequisite; see §0.10 for how far the idele-class-group side has
+got.
+
+---
+
+## 0.17 Status (2026-08-26, later still) — item 2 is a theorem, and it is Hilbert reciprocity
+
+§0.16 item 2 predicted that the correctors allowed by the Scholz condition satisfy **one relation**
+between their defect at `2` and their defect at `∞`, and guessed that the relation would have to
+come from reciprocity.  Both are now settled, and the reciprocity in question is the ordinary
+Hilbert product formula over `ℚ`, which the repository has had since
+`InverseGalois/CFT/Global/Reciprocity.lean`.  No Poitou–Tate duality is involved.
+
+The `(−1)`-component of a class in `ℚ₂^×/(ℚ₂^×)²` — the component that the quadratic extension
+`ℚ₂(i)` cuts out — is the Hilbert symbol `(−1, ·)₂`, and the defect at `∞` is the sign.  So the
+predicted relation is the identity `(−1, d)₂ = sign(d)`, and `Global/NegOneSymbol.lean` proves it
+for exactly the integers the Scholz condition produces:
+
+```lean
+InverseGalois.CFT.hilbertSymbolAt_neg_one_eq_one_of_one_mod_four {p : Nat.Primes}
+    (hp : (p : ℕ) % 4 = 1) {d : ℚ} (hd : d ≠ 0) :
+  hilbertSymbolAt p (-1) d = 1
+
+InverseGalois.CFT.hilbertSymbolAt_two_neg_one_intCast {d : ℤ} (hd : d ≠ 0)
+    (h : ∀ p : ℕ, p.Prime → p ≠ 2 → (p : ℤ) ∣ d → p % 4 = 1) :
+  hilbertSymbolAt primeTwo (-1) ((d : ℚ)) = if d < 0 then -1 else 1
+```
+
+The first is the local input: at a prime congruent to one modulo four, `−1` is a square, so its
+symbol against anything is trivial.  The second reads the product formula backwards — the product
+of the local symbols of `(−1, d)` over all places is one, every odd place contributes `1`, so the
+dyadic symbol is the reciprocal of the real one, which is the sign.  The corollary is item 2 as a
+formal statement:
+
+```lean
+InverseGalois.CFT.hilbertSymbolAt_two_neg_one_ne_neg_one_of_pos {d : ℤ} (hd : 0 < d)
+    (h : ∀ p : ℕ, p.Prime → p ≠ 2 → (p : ℤ) ∣ d → p % 4 = 1) :
+  hilbertSymbolAt primeTwo (-1) ((d : ℚ)) ≠ -1
+```
+
+A Scholz-admissible corrector at level `N ≥ 2` is `d = ± 2^a ∏ pᵢ^{bᵢ} q` with every odd factor
+congruent to `1` modulo `2^N`, hence to `1` modulo `4`; the hypothesis of the corollary is exactly
+that.  So the pair (dyadic defect, real defect) attainable by a corrector is confined to the
+index-two subgroup `{(0,+), (α,−), (β,+), (αβ,−)}` of the rank-three target, `α` the class of `−1`
+and `β` the class of `2`, precisely as the table in §0.16 predicted.  The prediction is no longer a
+count on paper; it is a theorem, and it is sharp.
+
+### The escape, and what it costs
+
+The same product formula says where the missing generator lives.  For an odd prime `q`,
+
+```lean
+InverseGalois.CFT.hilbertSymbolAt_two_neg_one_prime_of_three_mod_four {q : ℕ} (hq : q.Prime)
+    (hq4 : q % 4 = 3) :
+  hilbertSymbolAt primeTwo (-1) ((q : ℚ)) = -1
+```
+
+and `q > 0`, so `q` realizes the pair `(α, +)` that no admissible corrector can.  The deficiency is
+therefore **caused by the level condition itself**: it is the congruence `q ≡ 1 mod 2^N` on the
+auxiliary prime, not anything about the prime `2`, that removes the missing dimension.  Admitting a
+single auxiliary prime `q ≡ 3 mod 4` restores it.
+
+That is not free, and the price is worth stating plainly.
+
+* `ℚ(√q)` with `q ≡ 3 mod 4` has discriminant `4q`, so it **ramifies at `2`**.  This is not an
+  accident of the choice: `(−1, d)₂ = −1` forces `ℚ₂(√d)/ℚ₂` to be ramified, so *any* corrector that
+  moves the dyadic defect ramifies at `2`.  The induction invariant of §0.16 — `K/ℚ` totally real
+  and unramified at `2`, which is what buys back the archimedean places in
+  `IsCoprimeAtInfinitePlaces` and makes the local problem at `2` solvable unramified — cannot be
+  literally preserved across such a correction.  It has to be replaced by a bounded-dyadic-conductor
+  invariant.
+* `q ≡ 3 mod 4` violates the level congruence at `q` itself, so the next stage of the induction sees
+  a ramified prime that is not `≡ 1 mod 2^N`.  The Scholz congruence at a ramified place is what
+  makes the *local* embedding problem there solvable, so relaxing it at `q` has to be paid for at
+  the following step.
+
+Both costs are about the design of the induction invariant at `ℓ = 2`, not about a missing theorem.
+That is a real change of shape in the argument, and it is where the `ℓ = 2` work now sits; but the
+arithmetic input that §0.16 identified as the wall — one relation, from reciprocity, tying the
+dyadic defect to the real one — is supplied and proved.
 
 ---
 

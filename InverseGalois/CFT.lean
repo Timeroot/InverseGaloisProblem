@@ -102,6 +102,7 @@ import InverseGalois.CFT.Global.IntApprox
 import InverseGalois.CFT.Global.MatHasse
 import InverseGalois.CFT.Global.Meyer
 import InverseGalois.CFT.Global.OddQuinary
+import InverseGalois.CFT.Global.NegOneSymbol
 import InverseGalois.CFT.Global.OddUnitIsotropy
 import InverseGalois.CFT.Global.QuaternaryForms
 import InverseGalois.CFT.Global.QuinaryForms
@@ -881,6 +882,11 @@ it that are available here.
   collecting the multiplicativity statements proved place by place.
 * `InverseGalois.CFT.Global.Reciprocity` deduces Hilbert reciprocity over the rational field, that
   the product of the local symbols of a pair of nonzero rationals over all places is one.
+* `InverseGalois.CFT.Global.NegOneSymbol` reads the product formula backwards for the pair
+  `(-1, d)`: the symbol against `-1` is trivial at every prime congruent to one modulo four, so
+  for an integer all of whose odd prime factors are of that shape the dyadic symbol against `-1`
+  is exactly the sign, while a prime congruent to three modulo four is positive and has
+  nontrivial dyadic symbol.
 * `InverseGalois.CFT.Global.LocalSquare` reads the local hypothesis at a ramified odd place as a
   congruence: a trivial symbol there makes the first argument a square residue.
 * `InverseGalois.CFT.Global.SquarefreeCRT` supplies the integer input for the descent: a nonzero
