@@ -75,6 +75,7 @@ import InverseGalois.CFT.GroupCohomology.CyclicSurjective
 import InverseGalois.CFT.GroupCohomology.H1Transport
 import InverseGalois.CFT.GroupCohomology.IndexTwo
 import InverseGalois.CFT.GroupCohomology.Inflation
+import InverseGalois.CFT.GroupCohomology.InflationRestriction
 import InverseGalois.CFT.GroupCohomology.MapCoboundary
 import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.SylowRes
@@ -2018,6 +2019,12 @@ it that are available here.
   on a coset a one-cocycle of the subgroup, and dividing by the coboundary which trivialises that
   one-cocycle leaves the differential unchanged, so **a cochain trivialising an inflated cocycle can
   be chosen constant on cosets and invariant under the subgroup**.
+* `InverseGalois.CFT.GroupCohomology.InflationRestriction` is the other half of the sequence in
+  degree two, for an arbitrary normal subgroup: a choice of coset representatives replaces the two
+  named cosets of the index-two case, and the same three corrections show that **a two-cocycle whose
+  restriction to a normal subgroup with vanishing first cohomology is a coboundary is cohomologous
+  to an inflated cocycle**.  Combining the two halves gives the dévissage that a group has vanishing
+  second cohomology as soon as a normal subgroup and the quotient do.
 * `InverseGalois.CFT.Units.IdeleClassComap` puts the idele classes of a subfield inside the idele
   classes of a Galois extension.  The map is injective because a unit fixed by the whole Galois
   group is a unit of the subfield, and its image is exactly the part fixed by the Galois group over
