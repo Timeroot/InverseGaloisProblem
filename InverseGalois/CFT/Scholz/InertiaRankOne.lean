@@ -45,22 +45,24 @@ namespace InverseGalois.CFT
 number field of `ℓ`-power degree lying over `ℓ`, a homomorphism with values in a group of order `ℓ`
 is, on the inertia subgroup, a power of any homomorphism which reaches that whole group there. -/
 def IsInertiaRankOneAt (ℓ : ℕ) : Prop :=
-  ∀ (M : Type) [Field M] [NumberField M] [IsGalois ℚ M], IsPGroup ℓ Gal(M/ℚ) →
-    ∀ (P : Ideal (𝓞 M)) [P.IsPrime] [P.LiesOver (Ideal.span {(ℓ : ℤ)})] (G : Type) [Group G]
-      (C : Subgroup G), Nat.card ↥C = ℓ → HasInertiaCancellation M P C
+  ∀ (A : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥A] [IsGalois ℚ ↥A],
+    IsPGroup ℓ Gal(↥A/ℚ) →
+    ∀ (P : Ideal (𝓞 ↥A)) [P.IsPrime] [P.LiesOver (Ideal.span {(ℓ : ℤ)})] (G : Type) [Group G]
+      (C : Subgroup G), Nat.card ↥C = ℓ → HasInertiaCancellation ↥A P C
 
-variable {M : Type} [Field M] [NumberField M] [IsGalois ℚ M] {G : Type} [Group G] {ℓ p : ℕ}
+variable {A : IntermediateField ℚ (AlgebraicClosure ℚ)} [NumberField ↥A] [IsGalois ℚ ↥A]
+  {G : Type} [Group G] {ℓ p : ℕ}
 
 /-- **In an extension of `ℓ`-power degree the cancellation needed by the twist is available at
 every prime.**  Away from `ℓ` the inertia subgroup is cyclic, and at `ℓ` the cancellation is the
 recorded local condition. -/
 theorem hasInertiaCancellation_of_isPGroup (hℓ : ℓ.Prime) (hrank : IsInertiaRankOneAt ℓ)
-    (hG : IsPGroup ℓ Gal(M/ℚ)) (hp : p.Prime) (P : Ideal (𝓞 M)) [P.IsPrime]
+    (hG : IsPGroup ℓ Gal(↥A/ℚ)) (hp : p.Prime) (P : Ideal (𝓞 ↥A)) [P.IsPrime]
     [P.LiesOver (Ideal.span {(p : ℤ)})] (C : Subgroup G) (hC : Nat.card ↥C = ℓ) :
-    HasInertiaCancellation M P C := by
+    HasInertiaCancellation ↥A P C := by
   by_cases hne : p = ℓ
   · subst hne
-    exact hrank M hG P G C hC
+    exact hrank A hG P G C hC
   · haveI := isCyclic_inertia_of_isPGroup hℓ hp hne hG P
     exact hasInertiaCancellation_of_isCyclic P C
 

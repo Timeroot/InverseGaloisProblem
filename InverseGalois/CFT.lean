@@ -130,6 +130,7 @@ import InverseGalois.CFT.Kummer.CocycleDescent
 import InverseGalois.CFT.Kummer.CongruentRadical
 import InverseGalois.CFT.Kummer.CyclicIndex
 import InverseGalois.CFT.Kummer.CyclotomicDescent
+import InverseGalois.CFT.Kummer.CyclotomicPlace
 import InverseGalois.CFT.Kummer.Denominator
 import InverseGalois.CFT.Kummer.GlobalPower
 import InverseGalois.CFT.Kummer.InflationRootsOfUnity
@@ -226,11 +227,13 @@ import InverseGalois.CFT.Scholz.CompositumTransport
 import InverseGalois.CFT.Scholz.Condition
 import InverseGalois.CFT.Scholz.CorrectingCharacter
 import InverseGalois.CFT.Scholz.CorrectingSubfield
+import InverseGalois.CFT.Scholz.CyclicSupplement
 import InverseGalois.CFT.Scholz.FrattiniSolution
 import InverseGalois.CFT.Scholz.FrattiniStep
 import InverseGalois.CFT.Scholz.FrobeniusDefect
 import InverseGalois.CFT.Scholz.FrobeniusSymbol
 import InverseGalois.CFT.Scholz.Induction
+import InverseGalois.CFT.Scholz.InertSubfield
 import InverseGalois.CFT.Scholz.InertiaRankOne
 import InverseGalois.CFT.Scholz.InertiaTwist
 import InverseGalois.CFT.Scholz.LocalTransport

@@ -50,6 +50,8 @@ open scoped Pointwise
 
 namespace InverseGalois.CFT
 
+set_option synthInstance.maxHeartbeats 400000
+
 attribute [local instance] Ideal.Quotient.field
 
 /-! ### Commutators against a cyclic quotient -/
@@ -224,11 +226,12 @@ variable {ℓ : ℕ}
 prime of a Galois number field lying over `ℓ`, the image of the inertia subgroup in the
 abelianization of the decomposition group is cyclic. -/
 def IsAbelianInertiaCyclicAt (ℓ : ℕ) : Prop :=
-  ∀ (M : Type) [Field M] [NumberField M] [IsGalois ℚ M] (P : Ideal (𝓞 M)) [P.IsPrime]
-    [P.LiesOver (Ideal.span {(ℓ : ℤ)})],
-      IsCyclic ↥(((Ideal.inertia Gal(M/ℚ) P).subgroupOf (MulAction.stabilizer Gal(M/ℚ) P)).map
-        (Abelianization.of : ↥(MulAction.stabilizer Gal(M/ℚ) P) →*
-          Abelianization ↥(MulAction.stabilizer Gal(M/ℚ) P)))
+  ∀ (A : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥A] [IsGalois ℚ ↥A],
+    IsPGroup ℓ Gal(↥A/ℚ) →
+    ∀ (P : Ideal (𝓞 ↥A)) [P.IsPrime] [P.LiesOver (Ideal.span {(ℓ : ℤ)})],
+      IsCyclic ↥(((Ideal.inertia Gal(↥A/ℚ) P).subgroupOf (MulAction.stabilizer Gal(↥A/ℚ) P)).map
+        (Abelianization.of : ↥(MulAction.stabilizer Gal(↥A/ℚ) P) →*
+          Abelianization ↥(MulAction.stabilizer Gal(↥A/ℚ) P)))
 
 variable {M : Type} [Field M] [NumberField M] [IsGalois ℚ M]
 
@@ -259,27 +262,27 @@ condition.**  A homomorphism of an `ℓ`-group Galois group whose values on iner
 commutators and only sees the abelianization, where the inertia subgroup is cyclic. -/
 theorem isInertiaRankOneAt_of_isAbelianInertiaCyclicAt (hℓ : ℓ.Prime)
     (h : IsAbelianInertiaCyclicAt ℓ) : IsInertiaRankOneAt ℓ := by
-  intro M _ _ _ hM P _ _ G _ C hC θ χ hθ hχ
-  set D := MulAction.stabilizer Gal(M/ℚ) P with hD
-  set I := Ideal.inertia Gal(M/ℚ) P with hI
+  intro A _ _ hM P _ _ G _ C hC θ χ hθ hχ
+  set D := MulAction.stabilizer Gal(↥A/ℚ) P with hD
+  set I := Ideal.inertia Gal(↥A/ℚ) P with hI
   have hID : I ≤ D := Ideal.inertia_le_stabilizer P
   haveI : IsCyclic (↥D ⧸ I.subgroupOf D) := isCyclic_stabilizer_quotient_inertia hℓ P
   have hpgD : IsPGroup ℓ ↥D := hM.to_subgroup D
   -- transport the hypotheses to the decomposition group
-  have hmap : ∀ (ρ : Gal(M/ℚ) →* G), I.map ρ ≤ C →
+  have hmap : ∀ (ρ : Gal(↥A/ℚ) →* G), I.map ρ ≤ C →
       (I.subgroupOf D).map (ρ.comp D.subtype) ≤ C := by
     rintro ρ hρ _ ⟨x, hx, rfl⟩
-    exact hρ ⟨(x : Gal(M/ℚ)), Subgroup.mem_subgroupOf.mp hx, rfl⟩
+    exact hρ ⟨(x : Gal(↥A/ℚ)), Subgroup.mem_subgroupOf.mp hx, rfl⟩
   have hχD : (I.subgroupOf D).map (χ.comp D.subtype) = C := by
     refine le_antisymm (hmap χ hχ.le) ?_
     rw [← hχ]
     rintro _ ⟨σ, hσ, rfl⟩
     exact ⟨⟨σ, hID hσ⟩, Subgroup.mem_subgroupOf.mpr hσ, rfl⟩
-  have hkill : ∀ (ρ : Gal(M/ℚ) →* G), I.map ρ ≤ C →
+  have hkill : ∀ (ρ : Gal(↥A/ℚ) →* G), I.map ρ ≤ C →
       ∀ w ∈ commutator ↥D, (ρ.comp D.subtype) w = 1 := fun ρ hρ w hw =>
     eq_one_of_mem_commutator_of_isPGroup hℓ hpgD hC (ρ.comp D.subtype) (hmap ρ hρ) hw
   obtain ⟨a, ha⟩ := exists_zpow_mul_eq_one_of_isCyclic_abelianization
-    (θ.comp D.subtype) (χ.comp D.subtype) (h M P) (hkill θ hθ) (hkill χ hχ.le)
+    (θ.comp D.subtype) (χ.comp D.subtype) (h A hM P) (hkill θ hθ) (hkill χ hχ.le)
     (hmap θ hθ) hχD
   exact ⟨a, fun σ hσ => ha ⟨σ, hID hσ⟩ (Subgroup.mem_subgroupOf.mpr hσ)⟩
 

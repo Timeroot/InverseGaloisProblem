@@ -8,27 +8,32 @@ import InverseGalois.CFT.Kummer.LevelOne
 /-!
 # Radicands at the cyclotomic place
 
-At a place of residue characteristic `ℓ` where `ζ - 1` is a uniformizer, the residue field is the
-field with `ℓ` elements, and an automorphism `δ` of the base raising `ζ` to the power of a
-primitive root `g` acts trivially on the residue field, the radicands of an abelian extension of
-exponent `ℓ` are severely restricted.  Such a radicand satisfies `δ w = w ^ g` up to an `ℓ`-th
-power; comparing valuations shows that its valuation is divisible by `ℓ`, so that modulo `ℓ`-th
-powers it is a unit, and Fermat's little theorem then normalises it to a unit congruent to one.
-The level of that unit, the power of the uniformizer to which it is congruent to one, satisfies the
-congruence `g ^ n ≡ g` recorded in the previous file, so it is either one or at least `ℓ`.
+At a place of residue characteristic `ℓ` where `ζ - 1` is a uniformizer, an automorphism `δ` of the
+base raising `ζ` to the power of a primitive root `g` acts trivially on the residue field, and a
+Frobenius automorphism `φ` fixes the uniformizer and raises residues to their `ℓ`-th power, the
+radicands of an abelian extension of exponent `ℓ` are severely restricted.  Such a radicand
+satisfies `δ w = w ^ g` and `φ w = w` up to `ℓ`-th powers; comparing valuations shows that its
+valuation is divisible by `ℓ`, so that modulo `ℓ`-th powers it is a unit, and dividing by the
+Frobenius quotient normalises it to a unit congruent to one.  The level of that unit, the power of
+the uniformizer to which it is congruent to one, satisfies the congruence `g ^ n ≡ g` recorded in
+the previous file, so it is either one or at least `ℓ`.
 
 Two radicands of level one differ, after dividing by a power of the first, by a radicand of level
-at least two, hence of level at least `ℓ`; and a radicand of level at least `ℓ` is, up to an `ℓ`-th
-power, a unit congruent to one modulo the `ℓ`-th power of the uniformizer.  So modulo the radicands
-that are congruent to one in that sense, the radicands form a cyclic group of order at most `ℓ`.
+at least two, hence of level at least `ℓ`: the Frobenius forces the residue of the quotient of such
+a unit by the uniformizer into the prime field, so those residues span a line.  And a radicand of
+level at least `ℓ` is, up to an `ℓ`-th power, a unit congruent to one modulo the `ℓ`-th power of
+the uniformizer.  So modulo the radicands that are congruent to one in that sense, the radicands
+form a cyclic group of order at most `ℓ`.
 
 ## Main definitions
 
 * `InverseGalois.CFT.IsCyclotomicPlace`: the local data at the place: a uniformizer whose
-  `ℓ - 1`-st power is `ℓ`, a residue field with `ℓ` elements, and an automorphism in the inertia
-  subgroup raising the uniformizer to `g` times itself.
-* `InverseGalois.CFT.IsEigenRadicand`: a radicand whose conjugate is its `g`-th power, up to an
-  `ℓ`-th power.
+  `ℓ - 1`-st power is `ℓ`, a residue field of characteristic `ℓ`, an automorphism in the inertia
+  subgroup raising the uniformizer to `g` times itself, and a Frobenius automorphism.
+* `InverseGalois.CFT.IsEigenRadicand`: a radicand whose conjugate is its `g`-th power and which the
+  Frobenius fixes, both up to an `ℓ`-th power.
+* `InverseGalois.CFT.IsFrobUnit`: a unit which the Frobenius fixes up to the `ℓ`-th power of a unit
+  congruent to one.
 * `InverseGalois.CFT.IsCongrPow`: a radicand which is, up to an `ℓ`-th power, a unit congruent to
   one modulo the `ℓ`-th power of the uniformizer.
 
@@ -45,7 +50,7 @@ that are congruent to one in that sense, the radicands form a cyclic group of or
 
 ## Tags
 
-valuation, uniformizer, level, radicand, Kummer theory, cyclotomic field
+valuation, uniformizer, level, radicand, Kummer theory, cyclotomic field, Frobenius
 -/
 
 namespace InverseGalois.CFT
@@ -74,9 +79,10 @@ variable {K Γ : Type*} [Field K] [LinearOrderedCommGroupWithZero Γ]
 
 /-- **The local data at a place of residue characteristic `ℓ` carrying the `ℓ`-th roots of
 unity.**  The uniformizer `π` is `ζ - 1`, so that its `ℓ - 1`-st power is `ℓ` up to a unit, the
-residue field is the field with `ℓ` elements, and the automorphism `δ` lies in the inertia subgroup
-and raises `ζ` to the power of a primitive root `g` modulo `ℓ`. -/
-structure IsCyclotomicPlace (ℓ g : ℕ) (v : Valuation K Γ) (π : K) (δ : K →+* K) : Prop where
+automorphism `δ` lies in the inertia subgroup and raises `ζ` to the power of a primitive root `g`
+modulo `ℓ`, and the automorphism `φ` is a Frobenius over the prime field: it fixes the uniformizer
+and raises residues to their `ℓ`-th power. -/
+structure IsCyclotomicPlace (ℓ g : ℕ) (v : Valuation K Γ) (π : K) (δ φ : K →+* K) : Prop where
   /-- The residue characteristic is a prime. -/
   prime : ℓ.Prime
   /-- The uniformizer is nonzero. -/
@@ -87,8 +93,8 @@ structure IsCyclotomicPlace (ℓ g : ℕ) (v : Valuation K Γ) (π : K) (δ : K 
   exists_zpow : ∀ x : K, x ≠ 0 → ∃ n : ℤ, v x = v π ^ n
   /-- The place is ramified of index `ℓ - 1` over the residue characteristic. -/
   val_natCast : v (ℓ : K) = v π ^ (ℓ - 1)
-  /-- The residue field is the field with `ℓ` elements. -/
-  exists_natCast : ∀ x : K, v x ≤ 1 → ∃ m : ℕ, v (x - m) < 1
+  /-- A residue fixed by the Frobenius is an integer. -/
+  exists_natCast : ∀ x : K, v x ≤ 1 → v (x ^ ℓ - x) < 1 → ∃ m : ℕ, v (x - m) < 1
   /-- The automorphism preserves the place. -/
   map_val : ∀ x : K, v (δ x) = v x
   /-- The automorphism lies in the inertia subgroup. -/
@@ -99,11 +105,23 @@ structure IsCyclotomicPlace (ℓ g : ℕ) (v : Valuation K Γ) (π : K) (δ : K 
   eq_one_of_dvd : ∀ n : ℕ, 1 ≤ n → n + 1 ≤ ℓ → ((ℓ : ℤ) ∣ (g : ℤ) ^ n - g) → n = 1
   /-- A primitive root is not congruent to one. -/
   not_dvd_sub_one : ¬ (ℓ : ℤ) ∣ (g : ℤ) - 1
+  /-- The Frobenius preserves the place. -/
+  map_val_frob : ∀ x : K, v (φ x) = v x
+  /-- The Frobenius raises residues to their `ℓ`-th power. -/
+  frob_res : ∀ x : K, v x ≤ 1 → v (φ x - x ^ ℓ) < 1
+  /-- The Frobenius fixes the uniformizer. -/
+  frob_pi : φ π = π
 
-/-- **A radicand whose conjugate is its `g`-th power up to an `ℓ`-th power.**  The radicands of an
-abelian extension of exponent `ℓ` of the field below all have this property. -/
-def IsEigenRadicand (ℓ g : ℕ) (δ : K →+* K) (w : K) : Prop :=
-  ∃ y : K, y ≠ 0 ∧ δ w = w ^ g * y ^ ℓ
+/-- **A radicand whose conjugate is its `g`-th power and which the Frobenius fixes**, both up to an
+`ℓ`-th power.  The radicands of an abelian extension of exponent `ℓ` of the field below all have
+this property. -/
+def IsEigenRadicand (ℓ g : ℕ) (δ φ : K →+* K) (w : K) : Prop :=
+  (∃ y : K, y ≠ 0 ∧ δ w = w ^ g * y ^ ℓ) ∧ (∃ z : K, z ≠ 0 ∧ φ w = w * z ^ ℓ)
+
+/-- **A unit which the Frobenius fixes up to the `ℓ`-th power of a unit congruent to one.**  This
+normalisation of a radicand pins down its residue modulo the uniformizer. -/
+def IsFrobUnit (ℓ : ℕ) (v : Valuation K Γ) (φ : K →+* K) (u : K) : Prop :=
+  ∃ z : K, v (z - 1) < 1 ∧ φ u = u * z ^ ℓ
 
 /-- **A radicand which is a unit congruent to one modulo the `ℓ`-th power of the uniformizer**, up
 to an `ℓ`-th power.  Such a radicand generates an extension unramified at the place. -/
@@ -114,44 +132,50 @@ def IsCongrPow (ℓ : ℕ) (v : Valuation K Γ) (π : K) (w : K) : Prop :=
 
 section Eigen
 
-variable {ℓ g : ℕ} {δ : K →+* K} {w w₁ w₂ : K}
+variable {ℓ g : ℕ} {δ φ : K →+* K} {w w₁ w₂ : K}
 
 /-- The radicands are closed under multiplication. -/
-theorem IsEigenRadicand.mul (h₁ : IsEigenRadicand ℓ g δ w₁) (h₂ : IsEigenRadicand ℓ g δ w₂) :
-    IsEigenRadicand ℓ g δ (w₁ * w₂) := by
-  obtain ⟨y₁, hy₁, he₁⟩ := h₁
-  obtain ⟨y₂, hy₂, he₂⟩ := h₂
-  exact ⟨y₁ * y₂, mul_ne_zero hy₁ hy₂, by rw [map_mul, he₁, he₂, mul_pow, mul_pow]; ring⟩
+theorem IsEigenRadicand.mul (h₁ : IsEigenRadicand ℓ g δ φ w₁) (h₂ : IsEigenRadicand ℓ g δ φ w₂) :
+    IsEigenRadicand ℓ g δ φ (w₁ * w₂) := by
+  obtain ⟨⟨y₁, hy₁, he₁⟩, z₁, hz₁, hf₁⟩ := h₁
+  obtain ⟨⟨y₂, hy₂, he₂⟩, z₂, hz₂, hf₂⟩ := h₂
+  exact ⟨⟨y₁ * y₂, mul_ne_zero hy₁ hy₂, by rw [map_mul, he₁, he₂, mul_pow, mul_pow]; ring⟩,
+    z₁ * z₂, mul_ne_zero hz₁ hz₂, by rw [map_mul, hf₁, hf₂, mul_pow]; ring⟩
 
 /-- The radicands are closed under inverses. -/
-theorem IsEigenRadicand.inv (h : IsEigenRadicand ℓ g δ w) : IsEigenRadicand ℓ g δ w⁻¹ := by
-  obtain ⟨y, hy, he⟩ := h
-  refine ⟨y⁻¹, inv_ne_zero hy, ?_⟩
-  rw [map_inv₀, he, mul_inv, ← inv_pow, ← inv_pow]
+theorem IsEigenRadicand.inv (h : IsEigenRadicand ℓ g δ φ w) : IsEigenRadicand ℓ g δ φ w⁻¹ := by
+  obtain ⟨⟨y, hy, he⟩, z, hz, hf⟩ := h
+  refine ⟨⟨y⁻¹, inv_ne_zero hy, ?_⟩, z⁻¹, inv_ne_zero hz, ?_⟩
+  · rw [map_inv₀, he, mul_inv, ← inv_pow, ← inv_pow]
+  · rw [map_inv₀, hf, mul_inv, ← inv_pow]
 
 /-- The radicands are closed under natural powers. -/
-theorem IsEigenRadicand.pow (h : IsEigenRadicand ℓ g δ w) (j : ℕ) :
-    IsEigenRadicand ℓ g δ (w ^ j) := by
+theorem IsEigenRadicand.pow (h : IsEigenRadicand ℓ g δ φ w) (j : ℕ) :
+    IsEigenRadicand ℓ g δ φ (w ^ j) := by
   induction j with
-  | zero => exact ⟨1, one_ne_zero, by simp⟩
+  | zero => exact ⟨⟨1, one_ne_zero, by simp⟩, 1, one_ne_zero, by simp⟩
   | succ j ih => rw [pow_succ]; exact ih.mul h
 
 /-- The radicands are closed under division. -/
-theorem IsEigenRadicand.div (h₁ : IsEigenRadicand ℓ g δ w₁) (h₂ : IsEigenRadicand ℓ g δ w₂) :
-    IsEigenRadicand ℓ g δ (w₁ / w₂) := by
+theorem IsEigenRadicand.div (h₁ : IsEigenRadicand ℓ g δ φ w₁) (h₂ : IsEigenRadicand ℓ g δ φ w₂) :
+    IsEigenRadicand ℓ g δ φ (w₁ / w₂) := by
   rw [div_eq_mul_inv]
   exact h₁.mul h₂.inv
 
 /-- Every `ℓ`-th power is a radicand. -/
-theorem isEigenRadicand_pow {γ : K} (hγ : γ ≠ 0) : IsEigenRadicand ℓ g δ (γ ^ ℓ) := by
-  refine ⟨δ γ / γ ^ g, div_ne_zero ((map_ne_zero_iff δ δ.injective).mpr hγ) (pow_ne_zero g hγ), ?_⟩
-  rw [map_pow, div_pow, ← pow_mul, ← pow_mul]
-  field_simp
-  ring
+theorem isEigenRadicand_pow {γ : K} (hγ : γ ≠ 0) : IsEigenRadicand ℓ g δ φ (γ ^ ℓ) := by
+  refine ⟨⟨δ γ / γ ^ g,
+      div_ne_zero ((map_ne_zero_iff δ δ.injective).mpr hγ) (pow_ne_zero g hγ), ?_⟩,
+    φ γ / γ, div_ne_zero ((map_ne_zero_iff φ φ.injective).mpr hγ) hγ, ?_⟩
+  · rw [map_pow, div_pow, ← pow_mul, ← pow_mul]
+    field_simp
+    ring
+  · rw [map_pow, div_pow]
+    field_simp
 
 /-- Multiplying a radicand by an `ℓ`-th power gives a radicand. -/
-theorem IsEigenRadicand.mul_pow (h : IsEigenRadicand ℓ g δ w) {γ : K} (hγ : γ ≠ 0) :
-    IsEigenRadicand ℓ g δ (w * γ ^ ℓ) :=
+theorem IsEigenRadicand.mul_pow (h : IsEigenRadicand ℓ g δ φ w) {γ : K} (hγ : γ ≠ 0) :
+    IsEigenRadicand ℓ g δ φ (w * γ ^ ℓ) :=
   h.mul (isEigenRadicand_pow hγ)
 
 end Eigen
@@ -171,27 +195,27 @@ theorem eq_one_of_pow_eq_one {x : Γ} {n : ℕ} (hn : n ≠ 0) (hx : x ^ n = 1) 
 
 namespace IsCyclotomicPlace
 
-variable {ℓ g : ℕ} {v : Valuation K Γ} {π : K} {δ : K →+* K}
+variable {ℓ g : ℕ} {v : Valuation K Γ} {π : K} {δ φ : K →+* K}
 
 /-- The value group is nontrivial. -/
-theorem nontrivial (h : IsCyclotomicPlace ℓ g v π δ) : Nontrivial Γ :=
+theorem nontrivial (h : IsCyclotomicPlace ℓ g v π δ φ) : Nontrivial Γ :=
   ⟨⟨v π, 1, ne_of_lt h.lt_one⟩⟩
 
 /-- The uniformizer is integral. -/
-theorem le_one (h : IsCyclotomicPlace ℓ g v π δ) : v π ≤ 1 := h.lt_one.le
+theorem le_one (h : IsCyclotomicPlace ℓ g v π δ φ) : v π ≤ 1 := h.lt_one.le
 
 /-- The uniformizer is nonzero. -/
-theorem pi_ne_zero (h : IsCyclotomicPlace ℓ g v π δ) : π ≠ 0 := by
+theorem pi_ne_zero (h : IsCyclotomicPlace ℓ g v π δ φ) : π ≠ 0 := by
   haveI := h.nontrivial
   exact (Valuation.ne_zero_iff v).mp h.ne_zero
 
 /-- The valuation of the uniformizer is positive. -/
-theorem pos (h : IsCyclotomicPlace ℓ g v π δ) : 0 < v π :=
+theorem pos (h : IsCyclotomicPlace ℓ g v π δ φ) : 0 < v π :=
   lt_of_le_of_ne zero_le' (Ne.symm h.ne_zero)
 
 /-- **The valuation of an element of the place is a positive power of the valuation of the
 uniformizer.**  That exponent is the *level* of the element. -/
-theorem exists_pow (h : IsCyclotomicPlace ℓ g v π δ) {x : K} (hx0 : x ≠ 0) (hx : v x < 1) :
+theorem exists_pow (h : IsCyclotomicPlace ℓ g v π δ φ) {x : K} (hx0 : x ≠ 0) (hx : v x < 1) :
     ∃ n : ℕ, 1 ≤ n ∧ v x = v π ^ n := by
   obtain ⟨n, hn⟩ := h.exists_zpow x hx0
   have hn1 : (1 : ℤ) ≤ n := by
@@ -206,7 +230,7 @@ theorem exists_pow (h : IsCyclotomicPlace ℓ g v π δ) {x : K} (hx0 : x ≠ 0)
   exact congrArg _ (by omega)
 
 /-- **The uniformizer has the largest valuation below one.** -/
-theorem val_le_pi (h : IsCyclotomicPlace ℓ g v π δ) {x : K} (hx : v x < 1) : v x ≤ v π := by
+theorem val_le_pi (h : IsCyclotomicPlace ℓ g v π δ φ) {x : K} (hx : v x < 1) : v x ≤ v π := by
   rcases eq_or_ne x 0 with rfl | hx0
   · rw [Valuation.map_zero]
     exact zero_le'
@@ -216,7 +240,7 @@ theorem val_le_pi (h : IsCyclotomicPlace ℓ g v π δ) {x : K} (hx : v x < 1) :
     _ = v π := pow_one _
 
 /-- The residue characteristic lies in the place. -/
-theorem val_natCast_lt_one (h : IsCyclotomicPlace ℓ g v π δ) : v (ℓ : K) < 1 := by
+theorem val_natCast_lt_one (h : IsCyclotomicPlace ℓ g v π δ φ) : v (ℓ : K) < 1 := by
   rw [h.val_natCast]
   calc v π ^ (ℓ - 1) ≤ v π ^ 1 :=
         pow_le_pow_right_of_le_one' h.le_one (by have := h.prime.two_le; omega)
@@ -225,7 +249,7 @@ theorem val_natCast_lt_one (h : IsCyclotomicPlace ℓ g v π δ) : v (ℓ : K) <
 
 /-- **An integer lies in the place exactly when it is divisible by the residue
 characteristic.** -/
-theorem val_intCast_lt_one_iff (h : IsCyclotomicPlace ℓ g v π δ) (m : ℤ) :
+theorem val_intCast_lt_one_iff (h : IsCyclotomicPlace ℓ g v π δ φ) (m : ℤ) :
     v (m : K) < 1 ↔ (ℓ : ℤ) ∣ m := by
   constructor
   · intro hm
@@ -256,9 +280,9 @@ theorem val_intCast_lt_one_iff (h : IsCyclotomicPlace ℓ g v π δ) (m : ℤ) :
 /-- **The valuation of a radicand is divisible by `ℓ`.**  Applying the valuation to the equation
 defining a radicand gives its valuation raised to `g - 1`, an exponent prime to `ℓ`, as an `ℓ`-th
 power. -/
-theorem dvd_of_isEigenRadicand (h : IsCyclotomicPlace ℓ g v π δ) {w : K}
-    (hw : IsEigenRadicand ℓ g δ w) {a : ℤ} (ha : v w = v π ^ a) : (ℓ : ℤ) ∣ a := by
-  obtain ⟨y, hy0, he⟩ := hw
+theorem dvd_of_isEigenRadicand (h : IsCyclotomicPlace ℓ g v π δ φ) {w : K}
+    (hw : IsEigenRadicand ℓ g δ φ w) {a : ℤ} (ha : v w = v π ^ a) : (ℓ : ℤ) ∣ a := by
+  obtain ⟨⟨y, hy0, he⟩, -⟩ := hw
   obtain ⟨b, hb⟩ := h.exists_zpow y hy0
   have h1 : v (δ w) = v w := h.map_val w
   rw [he, v.map_mul, v.map_pow, v.map_pow, ha, hb, ← zpow_natCast (v π ^ a) g,
@@ -271,68 +295,76 @@ theorem dvd_of_isEigenRadicand (h : IsCyclotomicPlace ℓ g v π δ) {w : K}
   · exact absurd h4 h.not_dvd_sub_one
 
 /-- **A radicand is a unit congruent to one, up to an `ℓ`-th power.**  Its valuation is divisible
-by `ℓ`, so a power of the uniformizer makes it a unit; its residue is then an integer prime to `ℓ`,
-and Fermat's little theorem makes the `ℓ`-th power of that integer congruent to it. -/
-theorem exists_unit_congr_one (h : IsCyclotomicPlace ℓ g v π δ) {w : K} (hw0 : w ≠ 0)
-    (hw : IsEigenRadicand ℓ g δ w) :
-    ∃ u γ : K, γ ≠ 0 ∧ w = u * γ ^ ℓ ∧ v u = 1 ∧ v (u - 1) < 1 ∧ IsEigenRadicand ℓ g δ u := by
+by `ℓ`, so a power of the uniformizer makes it a unit; dividing that unit by the `ℓ`-th power of
+its quotient by the Frobenius eigenvalue makes it congruent to one. -/
+theorem exists_unit_congr_one (h : IsCyclotomicPlace ℓ g v π δ φ) {w : K} (hw0 : w ≠ 0)
+    (hw : IsEigenRadicand ℓ g δ φ w) :
+    ∃ u γ : K, γ ≠ 0 ∧ w = u * γ ^ ℓ ∧ v u = 1 ∧ v (u - 1) < 1 ∧
+      IsEigenRadicand ℓ g δ φ u ∧ IsFrobUnit ℓ v φ u := by
   haveI := h.nontrivial
-  haveI : Fact ℓ.Prime := ⟨h.prime⟩
   obtain ⟨a, ha⟩ := h.exists_zpow w hw0
   obtain ⟨m, rfl⟩ := h.dvd_of_isEigenRadicand hw ha
-  -- scale by a power of the uniformizer to reach a unit
   have hπ0 : π ≠ 0 := h.pi_ne_zero
-  have hγ₀ : (π ^ (-m : ℤ)) ≠ 0 := zpow_ne_zero _ hπ0
-  have hu₀v : v (w * (π ^ (-m : ℤ)) ^ ℓ) = 1 := by
-    rw [v.map_mul, v.map_pow, ha, map_zpow₀, ← zpow_natCast ((v π) ^ (-m : ℤ)) ℓ, ← zpow_mul,
-      ← zpow_add₀ h.ne_zero]
+  -- scale by a power of the uniformizer to reach a unit
+  obtain ⟨p, hp0, hpdef⟩ : ∃ p : K, p ≠ 0 ∧ p = π ^ (-m : ℤ) :=
+    ⟨_, zpow_ne_zero _ hπ0, rfl⟩
+  have hφp : φ p = p := by rw [hpdef, map_zpow₀, h.frob_pi]
+  obtain ⟨u₀, hu₀def⟩ : ∃ u₀ : K, u₀ = w * p ^ ℓ := ⟨_, rfl⟩
+  have hu₀v : v u₀ = 1 := by
+    rw [hu₀def, v.map_mul, v.map_pow, ha, hpdef, map_zpow₀,
+      ← zpow_natCast ((v π) ^ (-m : ℤ)) ℓ, ← zpow_mul, ← zpow_add₀ h.ne_zero]
     rw [show (ℓ : ℤ) * m + -m * ℓ = 0 by ring, zpow_zero]
-  -- scale by the `ℓ`-th power of the residue to reach a unit congruent to one
-  obtain ⟨c, hc⟩ := h.exists_natCast _ (le_of_eq hu₀v)
-  have hcd : ¬ (ℓ : ℤ) ∣ (c : ℤ) := by
-    intro hd
-    have hcv : v ((c : K)) < 1 := by
-      have := (h.val_intCast_lt_one_iff (c : ℤ)).mpr hd
-      rwa [Int.cast_natCast] at this
-    have : v (w * (π ^ (-m : ℤ)) ^ ℓ) < 1 := by
-      have hrw : w * (π ^ (-m : ℤ)) ^ ℓ = (w * (π ^ (-m : ℤ)) ^ ℓ - c) + c := by ring
-      rw [hrw]
-      exact lt_of_le_of_lt (v.map_add _ _) (max_lt hc hcv)
-    rw [hu₀v] at this
-    exact absurd this (lt_irrefl 1)
-  have hcv : v ((c : K)) = 1 := by
-    refine le_antisymm (valuation_natCast_le_one v c) (not_lt.mp fun hlt => hcd ?_)
-    exact (h.val_intCast_lt_one_iff (c : ℤ)).mp (by rwa [Int.cast_natCast])
-  have hc0 : (c : K) ≠ 0 := (Valuation.ne_zero_iff v).mp (by rw [hcv]; exact one_ne_zero)
-  obtain ⟨q, hq0, hq⟩ : ∃ q : K, q ≠ 0 ∧ q = π ^ (-m : ℤ) * (c : K)⁻¹ :=
-    ⟨_, mul_ne_zero hγ₀ (inv_ne_zero hc0), rfl⟩
-  have hsplit : w * q ^ ℓ = w * (π ^ (-m : ℤ)) ^ ℓ * ((c : K)⁻¹) ^ ℓ := by
-    rw [hq, mul_pow, ← mul_assoc]
-  refine ⟨w * q ^ ℓ, q⁻¹, inv_ne_zero hq0, ?_, ?_, ?_, hw.mul_pow hq0⟩
-  · rw [mul_assoc, ← mul_pow, mul_inv_cancel₀ hq0, one_pow, mul_one]
-  · rw [hsplit, v.map_mul, hu₀v, v.map_pow, map_inv₀, hcv, one_mul, inv_one, one_pow]
-  · -- the unit is congruent to one, by Fermat's little theorem
-    have hfermat : v ((c : K) ^ ℓ - c) < 1 := by
-      refine (h.val_intCast_lt_one_iff ((c : ℤ) ^ ℓ - c)).mpr ?_ |>.trans_le' (le_of_eq ?_)
-      · rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
-        push_cast
-        rw [ZMod.pow_card, sub_self]
-      · push_cast
-        ring_nf
-    have hinv : ((c : K)⁻¹) ^ ℓ * (c : K) ^ ℓ = 1 := by
-      rw [← mul_pow, inv_mul_cancel₀ hc0, one_pow]
-    have hrw : w * q ^ ℓ - 1
-        = ((c : K)⁻¹) ^ ℓ * ((w * (π ^ (-m : ℤ)) ^ ℓ - c) - ((c : K) ^ ℓ - c)) := by
-      rw [hsplit]
-      linear_combination hinv
-    rw [hrw, v.map_mul, v.map_pow, map_inv₀, hcv, inv_one, one_pow, one_mul]
-    exact lt_of_le_of_lt (v.map_sub _ _) (max_lt hc hfermat)
+  have hu₀0 : u₀ ≠ 0 := (Valuation.ne_zero_iff v).mp (by rw [hu₀v]; exact one_ne_zero)
+  -- the Frobenius multiplies the unit by an `ℓ`-th power
+  obtain ⟨z, hz0, hz⟩ : ∃ z : K, z ≠ 0 ∧ φ u₀ = u₀ * z ^ ℓ := by
+    obtain ⟨-, z, hz0, hzw⟩ := hw
+    refine ⟨z, hz0, ?_⟩
+    rw [hu₀def, map_mul, hzw, map_pow, hφp]
+    ring
+  have hzv : v z = 1 := by
+    have h1 : v (φ u₀) = v u₀ := h.map_val_frob u₀
+    rw [hz, v.map_mul, v.map_pow, hu₀v, one_mul] at h1
+    exact eq_one_of_pow_eq_one h.prime.pos.ne' h1
+  have hφz0 : φ z ≠ 0 := (map_ne_zero_iff φ φ.injective).mpr hz0
+  have hφu₀0 : φ u₀ ≠ 0 := (map_ne_zero_iff φ φ.injective).mpr hu₀0
+  -- divide by the `ℓ`-th power of the quotient of the unit by its Frobenius eigenvalue
+  obtain ⟨c, hcdef⟩ : ∃ c : K, c = u₀ / z := ⟨_, rfl⟩
+  have hc0 : c ≠ 0 := by rw [hcdef]; exact div_ne_zero hu₀0 hz0
+  have hcv : v c = 1 := by rw [hcdef, map_div₀, hu₀v, hzv, div_one]
+  have hφc0 : φ c ≠ 0 := (map_ne_zero_iff φ φ.injective).mpr hc0
+  have hφc : φ c = u₀ * z ^ ℓ / φ z := by rw [hcdef, map_div₀, hz]
+  have hres : v (u₀ - c ^ ℓ) < 1 := by
+    have hzl : z ^ ℓ = φ u₀ / u₀ := by rw [hz]; field_simp
+    have hkey : u₀ - c ^ ℓ = u₀ * (φ u₀ - u₀ ^ ℓ) / φ u₀ := by
+      rw [hcdef, div_pow, hzl]
+      field_simp
+    rw [hkey, map_div₀, v.map_mul, hu₀v, one_mul, h.map_val_frob u₀, hu₀v, div_one]
+    exact h.frob_res u₀ (le_of_eq hu₀v)
+  refine ⟨u₀ / c ^ ℓ, c / p, div_ne_zero hc0 hp0, ?_, ?_, ?_, ?_, ?_⟩
+  · rw [hu₀def, div_pow]
+    field_simp
+  · rw [map_div₀, v.map_pow, hu₀v, hcv, one_pow, div_one]
+  · have hrw : u₀ / c ^ ℓ - 1 = (u₀ - c ^ ℓ) / c ^ ℓ := by field_simp
+    rw [hrw, map_div₀, v.map_pow, hcv, one_pow, div_one]
+    exact hres
+  · have hrw : u₀ / c ^ ℓ = w * (p / c) ^ ℓ := by rw [hu₀def, div_pow]; ring
+    rw [hrw]
+    exact hw.mul_pow (div_ne_zero hp0 hc0)
+  · refine ⟨z * c / φ c, ?_, ?_⟩
+    · have hzc : z * c = u₀ := by rw [hcdef]; field_simp
+      have hrw : z * c / φ c - 1 = (φ z - z ^ ℓ) / z ^ ℓ := by
+        rw [hzc, hφc]
+        field_simp
+      rw [hrw, map_div₀, v.map_pow, hzv, one_pow, div_one]
+      exact h.frob_res z (le_of_eq hzv)
+    · rw [map_div₀, map_pow, hz, div_pow, mul_pow]
+      field_simp
 
 /-- **The level of a radicand which is a unit congruent to one is one, or at least `ℓ`.**  Below
 `ℓ` the congruence satisfied by the level forces a primitive root to be congruent to a power of
 itself with exponent prime to its order. -/
-theorem level_eq_or_le (h : IsCyclotomicPlace ℓ g v π δ) {u : K} (hu : v u = 1)
-    (hu1 : v (u - 1) < 1) (heig : IsEigenRadicand ℓ g δ u) :
+theorem level_eq_or_le (h : IsCyclotomicPlace ℓ g v π δ φ) {u : K} (hu : v u = 1)
+    (hu1 : v (u - 1) < 1) (heig : IsEigenRadicand ℓ g δ φ u) :
     v (u - 1) ≤ v π ^ ℓ ∨ v (u - 1) = v π := by
   haveI := h.nontrivial
   rcases eq_or_ne (u - 1) 0 with h0 | h0
@@ -345,7 +377,7 @@ theorem level_eq_or_le (h : IsCyclotomicPlace ℓ g v π δ) {u : K} (hu : v u =
     rw [hn]
     exact pow_le_pow_right_of_le_one' h.le_one hNℓ
   · right
-    obtain ⟨y, hy0, heq⟩ := heig
+    obtain ⟨⟨y, hy0, heq⟩, -⟩ := heig
     have hy : v y = 1 := by
       have h1 : v (δ u) = v u := h.map_val u
       rw [heq, v.map_mul, v.map_pow, v.map_pow, hu, one_pow, one_mul] at h1
@@ -360,19 +392,99 @@ theorem level_eq_or_le (h : IsCyclotomicPlace ℓ g v π δ) {u : K} (hu : v u =
       exact lt_of_le_of_lt hkey h.lt_one
     rw [hn, h.eq_one_of_dvd n hn1 (by omega) hdvd, pow_one]
 
+/-! ### The residue of a unit of level one -/
+
+/-- **The residue of the quotient of a unit of level one by the uniformizer lies in the prime
+field.**  The Frobenius fixes the uniformizer and moves the unit by at most the square of it, so it
+fixes that residue, which therefore satisfies the equation of the prime field. -/
+theorem pow_sub_self_lt_one (h : IsCyclotomicPlace ℓ g v π δ φ) {u : K} (hu : v u = 1)
+    (hlev : v (u - 1) = v π) (hf : IsFrobUnit ℓ v φ u) :
+    v (((u - 1) / π) ^ ℓ - (u - 1) / π) < 1 := by
+  haveI := h.nontrivial
+  obtain ⟨z, hz1, hz⟩ := hf
+  have hπ0 : π ≠ 0 := h.pi_ne_zero
+  obtain ⟨a, hadef⟩ : ∃ a : K, a = (u - 1) / π := ⟨_, rfl⟩
+  rw [← hadef]
+  have hav : v a = 1 := by rw [hadef, map_div₀, hlev, div_self h.ne_zero]
+  -- the Frobenius eigenvalue is congruent to one modulo the square of the uniformizer
+  have hzs : v (z ^ ℓ - 1) ≤ v π ^ 2 := by
+    obtain ⟨B, hB, hEq⟩ := exists_valuation_one_add_pow v (le_of_lt hz1) ℓ
+    rw [show (1 : K) + (z - 1) = z by ring] at hEq
+    have hexp : z ^ ℓ - 1 = (ℓ : K) * (z - 1) + (z - 1) ^ 2 * B := by rw [hEq]; ring
+    rw [hexp]
+    refine le_trans (v.map_add _ _) (max_le ?_ ?_)
+    · rw [v.map_mul, h.val_natCast]
+      calc v π ^ (ℓ - 1) * v (z - 1) ≤ v π ^ (ℓ - 1) * v π :=
+            mul_le_mul' le_rfl (h.val_le_pi hz1)
+        _ = v π ^ ℓ := by rw [← pow_succ]; congr 1; have := h.prime.two_le; omega
+        _ ≤ v π ^ 2 := pow_le_pow_right_of_le_one' h.le_one h.prime.two_le
+    · rw [v.map_mul, v.map_pow, pow_two, pow_two]
+      exact le_trans (mul_le_mul' (mul_le_mul' (h.val_le_pi hz1) (h.val_le_pi hz1)) hB)
+        (le_of_eq (mul_one _))
+  -- so the Frobenius moves the unit by at most the square of the uniformizer
+  have hfu : v (φ u - u) ≤ v π ^ 2 := by
+    have hrw : φ u - u = u * (z ^ ℓ - 1) := by rw [hz]; ring
+    rw [hrw, v.map_mul, hu, one_mul]
+    exact hzs
+  have hua : u = 1 + a * π := by rw [hadef, div_mul_cancel₀ _ hπ0]; ring
+  have hfa : v (φ a - a) ≤ v π := by
+    have hstep : (φ a - a) * π = φ u - u := by
+      rw [hua, map_add, map_mul, map_one, h.frob_pi]
+      ring
+    have h2 : v (φ a - a) * v π ≤ v π * v π := by
+      rw [← v.map_mul, hstep, ← pow_two]
+      exact hfu
+    exact le_of_mul_le_mul_right₀ h.ne_zero h2
+  have hfr := h.frob_res a (le_of_eq hav)
+  have hrw : a ^ ℓ - a = -(φ a - a ^ ℓ) + (φ a - a) := by ring
+  rw [hrw]
+  refine lt_of_le_of_lt (v.map_add _ _) (max_lt ?_ ?_)
+  · rw [Valuation.map_neg]
+    exact hfr
+  · exact lt_of_le_of_lt hfa h.lt_one
+
 /-- **Two units of level one differ by a power of the first, up to level two.**  Their residues
-generate the same line over the residue field, which has `ℓ` elements. -/
-theorem exists_pow_div_level (h : IsCyclotomicPlace ℓ g v π δ) {u₁ u₂ : K}
-    (hu₁ : v u₁ = 1) (h₁ : v (u₁ - 1) = v π) (h₂ : v (u₂ - 1) = v π) :
+generate the same line over the residue field, since the Frobenius forces both into the prime
+field. -/
+theorem exists_pow_div_level (h : IsCyclotomicPlace ℓ g v π δ φ) {u₁ u₂ : K}
+    (hu₁ : v u₁ = 1) (hu₂ : v u₂ = 1) (h₁ : v (u₁ - 1) = v π) (h₂ : v (u₂ - 1) = v π)
+    (hf₁ : IsFrobUnit ℓ v φ u₁) (hf₂ : IsFrobUnit ℓ v φ u₂) :
     ∃ j : ℕ, v (u₂ / u₁ ^ j - 1) ≤ v π ^ 2 := by
   haveI := h.nontrivial
+  have hπ0 : π ≠ 0 := h.pi_ne_zero
   have hu₁0 : u₁ ≠ 0 := (Valuation.ne_zero_iff v).mp (by rw [hu₁]; exact one_ne_zero)
   have hd0 : u₁ - 1 ≠ 0 := (Valuation.ne_zero_iff v).mp (by rw [h₁]; exact h.ne_zero)
   have hdle : v (u₁ - 1) ≤ 1 := by rw [h₁]; exact h.le_one
   have htv : v ((u₂ - 1) / (u₁ - 1)) = 1 := by
     rw [map_div₀, h₁, h₂]
     exact div_self h.ne_zero
-  obtain ⟨j, hj⟩ := h.exists_natCast _ (le_of_eq htv)
+  -- the residues of the two units span the same line over the prime field
+  have hres : v (((u₂ - 1) / (u₁ - 1)) ^ ℓ - (u₂ - 1) / (u₁ - 1)) < 1 := by
+    obtain ⟨a₁, ha₁def⟩ : ∃ x : K, x = (u₁ - 1) / π := ⟨_, rfl⟩
+    obtain ⟨a₂, ha₂def⟩ : ∃ x : K, x = (u₂ - 1) / π := ⟨_, rfl⟩
+    have ha₁v : v a₁ = 1 := by rw [ha₁def, map_div₀, h₁, div_self h.ne_zero]
+    have ha₂v : v a₂ = 1 := by rw [ha₂def, map_div₀, h₂, div_self h.ne_zero]
+    have ha₁0 : a₁ ≠ 0 := (Valuation.ne_zero_iff v).mp (by rw [ha₁v]; exact one_ne_zero)
+    have ht : (u₂ - 1) / (u₁ - 1) = a₂ / a₁ := by
+      rw [ha₁def, ha₂def]
+      field_simp
+    have e₁ : v (a₁ ^ ℓ - a₁) < 1 := by
+      rw [ha₁def]; exact h.pow_sub_self_lt_one hu₁ h₁ hf₁
+    have e₂ : v (a₂ ^ ℓ - a₂) < 1 := by
+      rw [ha₂def]; exact h.pow_sub_self_lt_one hu₂ h₂ hf₂
+    have hrw : (a₂ / a₁) ^ ℓ - a₂ / a₁
+        = (a₁ * (a₂ ^ ℓ - a₂) - a₂ * (a₁ ^ ℓ - a₁)) / (a₁ ^ ℓ * a₁) := by
+      have ha₁l : a₁ ^ ℓ ≠ 0 := pow_ne_zero _ ha₁0
+      rw [div_pow]
+      field_simp
+      ring
+    rw [ht, hrw, map_div₀, v.map_mul, v.map_pow, ha₁v, one_pow, one_mul, div_one]
+    refine lt_of_le_of_lt (v.map_sub _ _) (max_lt ?_ ?_)
+    · rw [v.map_mul, ha₁v, one_mul]
+      exact e₂
+    · rw [v.map_mul, ha₂v, one_mul]
+      exact e₁
+  obtain ⟨j, hj⟩ := h.exists_natCast _ (le_of_eq htv) hres
   refine ⟨j, ?_⟩
   obtain ⟨B, hB, hEq⟩ := exists_valuation_one_add_pow v hdle j
   rw [show (1 : K) + (u₁ - 1) = u₁ by ring] at hEq
@@ -395,19 +507,19 @@ theorem exists_pow_div_level (h : IsCyclotomicPlace ℓ g v π δ) {u₁ u₂ : 
 /-- **Two radicands are dependent modulo the radicands congruent to one.**  Either the first is
 itself congruent to one, or every other radicand is congruent to one after division by a power of
 it: the radicands form a cyclic group of order at most `ℓ` modulo those congruent to one. -/
-theorem isCongrPow_or_exists_div (h : IsCyclotomicPlace ℓ g v π δ) {w₁ w₂ : K}
-    (hw₁0 : w₁ ≠ 0) (hw₂0 : w₂ ≠ 0) (hw₁ : IsEigenRadicand ℓ g δ w₁)
-    (hw₂ : IsEigenRadicand ℓ g δ w₂) :
+theorem isCongrPow_or_exists_div (h : IsCyclotomicPlace ℓ g v π δ φ) {w₁ w₂ : K}
+    (hw₁0 : w₁ ≠ 0) (hw₂0 : w₂ ≠ 0) (hw₁ : IsEigenRadicand ℓ g δ φ w₁)
+    (hw₂ : IsEigenRadicand ℓ g δ φ w₂) :
     IsCongrPow ℓ v π w₁ ∨ ∃ j : ℕ, IsCongrPow ℓ v π (w₂ / w₁ ^ j) := by
   haveI := h.nontrivial
-  obtain ⟨u₁, γ₁, hγ₁, hwe₁, hu₁v, hu₁1, hu₁e⟩ := h.exists_unit_congr_one hw₁0 hw₁
-  obtain ⟨u₂, γ₂, hγ₂, hwe₂, hu₂v, hu₂1, hu₂e⟩ := h.exists_unit_congr_one hw₂0 hw₂
+  obtain ⟨u₁, γ₁, hγ₁, hwe₁, hu₁v, hu₁1, hu₁e, hu₁f⟩ := h.exists_unit_congr_one hw₁0 hw₁
+  obtain ⟨u₂, γ₂, hγ₂, hwe₂, hu₂v, hu₂1, hu₂e, hu₂f⟩ := h.exists_unit_congr_one hw₂0 hw₂
   rcases h.level_eq_or_le hu₁v hu₁1 hu₁e with hl₁ | hl₁
   · exact Or.inl ⟨u₁, γ₁, hγ₁, hu₁v, hl₁, hwe₁⟩
   rcases h.level_eq_or_le hu₂v hu₂1 hu₂e with hl₂ | hl₂
   · exact Or.inr ⟨0, u₂, γ₂, hγ₂, hu₂v, hl₂, by rw [pow_zero, div_one]; exact hwe₂⟩
   -- both have level one: divide by a power of the first
-  obtain ⟨j, hj⟩ := h.exists_pow_div_level hu₁v hl₁ hl₂
+  obtain ⟨j, hj⟩ := h.exists_pow_div_level hu₁v hu₂v hl₁ hl₂ hu₁f hu₂f
   have hu₁0 : u₁ ≠ 0 := (Valuation.ne_zero_iff v).mp (by rw [hu₁v]; exact one_ne_zero)
   have hu₃v : v (u₂ / u₁ ^ j) = 1 := by
     rw [map_div₀, v.map_pow, hu₁v, hu₂v, one_pow, div_one]
@@ -415,7 +527,7 @@ theorem isCongrPow_or_exists_div (h : IsCyclotomicPlace ℓ g v π δ) {w₁ w�
     rw [pow_two]
     exact mul_le_of_le_one_right' h.le_one
   have hu₃1 : v (u₂ / u₁ ^ j - 1) < 1 := lt_of_le_of_lt (le_trans hj hππ) h.lt_one
-  have hu₃e : IsEigenRadicand ℓ g δ (u₂ / u₁ ^ j) := hu₂e.div (hu₁e.pow j)
+  have hu₃e : IsEigenRadicand ℓ g δ φ (u₂ / u₁ ^ j) := hu₂e.div (hu₁e.pow j)
   refine Or.inr ⟨j, u₂ / u₁ ^ j, γ₂ / γ₁ ^ j, div_ne_zero hγ₂ (pow_ne_zero j hγ₁), hu₃v, ?_, ?_⟩
   · rcases h.level_eq_or_le hu₃v hu₃1 hu₃e with hl₃ | hl₃
     · exact hl₃
