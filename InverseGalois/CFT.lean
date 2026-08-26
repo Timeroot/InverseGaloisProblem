@@ -222,6 +222,7 @@ import InverseGalois.CFT.Scholz.CompositumTransport
 import InverseGalois.CFT.Scholz.Condition
 import InverseGalois.CFT.Scholz.CorrectingCharacter
 import InverseGalois.CFT.Scholz.CorrectingSubfield
+import InverseGalois.CFT.Scholz.FrattiniSolution
 import InverseGalois.CFT.Scholz.FrattiniStep
 import InverseGalois.CFT.Scholz.FrobeniusDefect
 import InverseGalois.CFT.Scholz.FrobeniusSymbol
@@ -670,6 +671,9 @@ it that are available here.
   no more than the field below is enlarged by the roots of unity of the auxiliary modulus and
   twisted by the character whose power residue symbols are the Frobenius defects, and the field cut
   out by the twisted solution realises the group of the central step at the required level.
+* `InverseGalois.CFT.Scholz.FrattiniSolution` collects the three stages into the central step of the
+  induction itself: at an odd prime, the rank one condition on the inertia subgroup at the residue
+  characteristic is the only hypothesis the central embedding step still rests on.
 
 ## Group extensions and the Brauer group
 

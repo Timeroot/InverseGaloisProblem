@@ -3,6 +3,7 @@ Copyright (c) 2025. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Scholz.FrattiniSolution
 import InverseGalois.CFT.Scholz.FrattiniStep
 import InverseGalois.CFT.Scholz.NilpotentSylowTwo
 import InverseGalois.Rigidity.RET.Specialization
@@ -48,6 +49,10 @@ them of order at most `16`.
   `InverseGalois.isInverseGalois_of_isNilpotent_of_not_dvd_thirtytwo_of_frattini`: the same two
   statements with the central step assumed only for the surjections whose kernel lies inside the
   Frattini subgroup of the source, which is the narrowest form the induction calls for.
+* `InverseGalois.isInverseGalois_of_isNilpotent_of_semiabelian_sylow_two_of_rankOne`,
+  `InverseGalois.isInverseGalois_of_isNilpotent_of_not_dvd_thirtytwo_of_rankOne`: **the same two
+  statements resting on the rank one condition at the odd primes alone**, a statement about the
+  inertia subgroup at the residue characteristic and nothing else.
 -/
 
 namespace InverseGalois
@@ -153,5 +158,28 @@ theorem isInverseGalois_of_isNilpotent_of_not_dvd_thirtytwo_of_frattini
     [Finite G] [Group.IsNilpotent G] (h32 : ¬ (32 ∣ Nat.card G)) : IsInverseGalois G :=
   isInverseGalois_of_isNilpotent_of_not_dvd_thirtytwo
     (fun q hq hodd => IsCentralStepSolvable.of_frattini hq (hstep q hq hodd)) G h32
+
+/-! ### The arithmetic hypothesis reduced to its local core -/
+
+/-- **Granted the rank one condition at the odd primes, a finite nilpotent group whose Sylow
+`2`-subgroups are semiabelian is a Galois group over `ℚ`.**  Everything the Scholz–Reichardt
+induction needs beyond group theory and the geometry of the prime `2` is the behaviour of the
+inertia subgroup at the residue characteristic. -/
+theorem isInverseGalois_of_isNilpotent_of_semiabelian_sylow_two_of_rankOne
+    (hrank : ∀ q : ℕ, q.Prime → Odd q → IsInertiaRankOneAt q) (G : Type) [Group G] [Finite G]
+    [Group.IsNilpotent G] (h2 : ∀ P : Sylow 2 G, IsSemiabelian ↥(P : Subgroup G)) :
+    IsInverseGalois G :=
+  isInverseGalois_of_isNilpotent_of_semiabelian_sylow_two
+    (fun q hq hodd => isCentralStepSolvable_of_isInertiaRankOneAt hq hodd (hrank q hq hodd))
+    G h2
+
+/-- **Granted the rank one condition at the odd primes, every finite nilpotent group of order not
+divisible by `32` is a Galois group over `ℚ`.** -/
+theorem isInverseGalois_of_isNilpotent_of_not_dvd_thirtytwo_of_rankOne
+    (hrank : ∀ q : ℕ, q.Prime → Odd q → IsInertiaRankOneAt q) (G : Type) [Group G] [Finite G]
+    [Group.IsNilpotent G] (h32 : ¬ (32 ∣ Nat.card G)) : IsInverseGalois G :=
+  isInverseGalois_of_isNilpotent_of_not_dvd_thirtytwo
+    (fun q hq hodd => isCentralStepSolvable_of_isInertiaRankOneAt hq hodd (hrank q hq hodd))
+    G h32
 
 end InverseGalois
