@@ -146,6 +146,8 @@ import InverseGalois.CFT.Kummer.CyclicIndex
 import InverseGalois.CFT.Kummer.CyclotomicDescent
 import InverseGalois.CFT.Kummer.CyclotomicPlace
 import InverseGalois.CFT.Kummer.Denominator
+import InverseGalois.CFT.Kummer.DyadicPlace
+import InverseGalois.CFT.Kummer.DyadicSquareClass
 import InverseGalois.CFT.Kummer.GlobalPower
 import InverseGalois.CFT.Kummer.InertiaBound
 import InverseGalois.CFT.Kummer.InflationRootsOfUnity
@@ -1331,6 +1333,19 @@ it that are available here.
   element inside the place; but it multiplies the radical by a `p`-th root of unity, and a
   nontrivial one has the same valuation as `ζ - 1` after subtracting one, so the root of unity is
   trivial and the radical is fixed.
+* `InverseGalois.CFT.Kummer.DyadicSquareClass` supplies that congruence at the exponent two, where
+  the roots of unity are already rational and `ζ - 1` is `-2`.  At a place where two is a
+  uniformizer and the residue field has two elements, multiplying a nonzero element by one or two
+  makes the exponent of the uniformizer even, and multiplying the remaining unit by a sign makes it
+  congruent to one modulo four: for a unit `u` the two halves `(u + 1) / 2` and `(u - 1) / 2` differ
+  by one, so the residue field, having no room for two distinct nonzero residues, puts one of them
+  in the place.  So the four rational numbers `1, -1, 2, -2` already meet every square class.
+* `InverseGalois.CFT.Kummer.DyadicPlace` reads those two properties off the local invariants.
+  Ramification index one says that two lies in the place and not in its square, which is the same as
+  saying that its valuation is that of a uniformizer; residue degree one says that the rational
+  integers surject onto the residue field, and two lies in the place, so only the residues of zero
+  and one remain.  Clearing a denominator which is a unit at the place extends the second statement
+  from the algebraic integers to every element integral at the place.
 * `InverseGalois.CFT.Kummer.LevelOne` measures how far a radicand is from that congruence.  The
   *level* of a unit at a place is the power of the uniformizer to which it is congruent to one, and
   the congruence above asks for level at least the exponent.  At a place where the uniformizer is
