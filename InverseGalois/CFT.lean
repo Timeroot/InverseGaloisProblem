@@ -363,6 +363,7 @@ import InverseGalois.CFT.TotallyReal
 import InverseGalois.CFT.Units.ABHN
 import InverseGalois.CFT.Units.ABHNArchimedean
 import InverseGalois.CFT.Units.ABHNCoboundary
+import InverseGalois.CFT.Units.ABHNFinite
 import InverseGalois.CFT.Units.ABHNLocalNorm
 import InverseGalois.CFT.Units.ABHNLocalPower
 import InverseGalois.CFT.Units.ABHNRamified
@@ -411,6 +412,7 @@ import InverseGalois.CFT.Units.InfiniteFixed
 import InverseGalois.CFT.Units.InfiniteGalois
 import InverseGalois.CFT.Units.InfiniteIdele
 import InverseGalois.CFT.Units.InfiniteOrbit
+import InverseGalois.CFT.Units.InflationDescent
 import InverseGalois.CFT.Units.LocalCoboundaryTwist
 import InverseGalois.CFT.Units.LocalEmbedding
 import InverseGalois.CFT.Units.LocalIdele
@@ -441,6 +443,7 @@ import InverseGalois.CFT.Units.SplitOutside
 import InverseGalois.CFT.Units.SplitPlaces
 import InverseGalois.CFT.Units.SplitPowIdele
 import InverseGalois.CFT.Units.SplitPowNorm
+import InverseGalois.CFT.Units.TowerCoboundary
 import InverseGalois.CFT.Units.UnitLattice
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
@@ -2264,6 +2267,25 @@ it that are available here.
 * `InverseGalois.CFT.Units.ABHNSqrtNegOneRamified` restates that with the ramified places
   discharged the way the construction verifies them, so that the presence of a square root of minus
   one replaces both the oddness of the exponent and the coprimality at the archimedean places.
+* `InverseGalois.CFT.Units.TowerCoboundary` transports a local coboundary up a tower.  A place of
+  the top field restricts to a place of the middle one, the decomposition group maps to the
+  decomposition group there, and the embedding of one completion into the other is equivariant for
+  that map, so **a two-cocycle inflated from the middle field which is a coboundary at the place
+  below is a coboundary at the place above** — whether or not the place above is ramified over the
+  place below, and in particular at a place the enlargement itself ramifies.
+* `InverseGalois.CFT.Units.InflationDescent` brings a trivialisation back down.  If the inflation of
+  a two-cocycle of the middle field to the top field is a coboundary there, then the one-cochain
+  trivialising it is, up to the value of a Hilbert ninety twist, constant on the cosets of the
+  kernel of the restriction map, so it descends: **a two-cocycle whose inflation is a coboundary is
+  itself a coboundary**.
+* `InverseGalois.CFT.Units.ABHNFinite` removes the last hypothesis.  A finite Galois extension of
+  the rational numbers is the splitting field of a polynomial, and multiplying that polynomial by
+  `X ^ 2 + 1` enlarges it to a finite Galois extension containing a square root of minus one.  The
+  local hypothesis is free at the places of the enlarged field lying above an unramified place of
+  the original one — which is what the place above two becomes — and inherited from the place below
+  at the others, so the previous file applies over the enlarged field and the trivialisation
+  descends: **a two-cocycle of units of the rational numbers killed by any nonzero integer and
+  locally trivial at the ramified finite places is a coboundary, with no hypothesis whatever**.
 * `InverseGalois.CFT.Kummer.CentralEmbedding` puts those pieces together.  The factor set of a
   section of a central extension with kernel of order `n`, transported into the units of a base
   field containing a primitive `n`-th root of unity, is a two-cocycle killed by `n`; if it is a
@@ -2279,10 +2301,9 @@ it that are available here.
   previous file, which asks only that the decomposition group at each ramified place be cyclic and
   that the roots of unity of the base field be locally powers with exponent its order.
 * `InverseGalois.CFT.Kummer.CentralEmbeddingSqrtNegOne` is the same list of criteria over an
-  extension of the rational numbers containing a square root of minus one, where nothing is asked at
-  the archimedean places and nothing about the parity of the order of the kernel.  Adjoining a
-  square root of minus one ramifies the place above two, and there the congruence on the residue
-  characteristic can never hold, so the criteria are also given in a mixed form in which each
+  extension of the rational numbers, where nothing is asked at the archimedean places and nothing
+  about the parity of the order of the kernel.  The congruence on the residue characteristic can
+  never hold at the place above two, so the criteria are also given in a mixed form in which each
   ramified place is discharged either by a homomorphic lift over its decomposition group or by the
   congruence.
 * `InverseGalois.CFT.GroupCohomology.CoprimeDescent` carries the solution back down from the
