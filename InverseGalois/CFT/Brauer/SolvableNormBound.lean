@@ -34,14 +34,14 @@ open Module
 
 namespace InverseGalois.CFT
 
-/-- **The norm index bound** for the cyclic extensions whose larger field is of a class `P`: the
-norm subgroup of such an extension has finite index, and that index is at most the degree. -/
-def HasCyclicNormIndexBound (P : Type → Prop) : Prop :=
+/-- **The norm index bound** for the cyclic extensions of a class `P`: the norm subgroup of such an
+extension has finite index, and that index is at most the degree. -/
+def HasCyclicNormIndexBound (P : ∀ (F E : Type) [Field F] [Field E] [Algebra F E], Prop) : Prop :=
   ∀ (F E : Type) [Field F] [Field E] [Algebra F E] [FiniteDimensional F E] [IsGalois F E],
-    P E → IsCyclic (E ≃ₐ[F] E) →
+    P F E → IsCyclic (E ≃ₐ[F] E) →
       (normSubgroup F E).index ≠ 0 ∧ (normSubgroup F E).index ≤ finrank F E
 
-variable {P : Type → Prop}
+variable {P : ∀ (F E : Type) [Field F] [Field E] [Algebra F E], Prop}
 
 /-- **The relative Brauer group of a cyclic extension is the units modulo the norms**, so the norm
 index bound is exactly the bound on that Brauer group. -/
@@ -61,9 +61,9 @@ extension by its degree.**  This is the counting half of the computation of the 
 local field: every Galois group of a local field is solvable, so the whole bound rests on the norm
 index of a cyclic extension. -/
 theorem card_relative_le_finrank_of_isSolvable_of_normIndex
-    (hclosed : BrauerGroup.IsFixedFieldClosed P) (h : HasCyclicNormIndexBound P)
+    (hclosed : BrauerGroup.IsDevissageClosed P) (h : HasCyclicNormIndexBound P)
     (K L : Type) [Field K] [Field L] [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    (hL : P L) (hsolv : IsSolvable (L ≃ₐ[K] L)) :
+    (hL : P K L) (hsolv : IsSolvable (L ≃ₐ[K] L)) :
     Finite ↥(BrauerGroup.relative K L) ∧
       Nat.card ↥(BrauerGroup.relative K L) ≤ finrank K L :=
   BrauerGroup.card_relative_le_finrank_of_isSolvable hclosed

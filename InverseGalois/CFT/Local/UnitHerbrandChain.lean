@@ -195,9 +195,9 @@ theorem finite_tate_kerUnitValAut [∀ k : ℤ, Finite (gradedAdd A k)] (h : Has
 
 /-! ### The units of the field -/
 
-variable (hsurj : Function.Surjective (Valued.v : A → ℤᵐ⁰))
+variable {m : ℤ} (hm : IsUnitValGen A m)
 
-include hsurj
+include hm
 
 /-- Both Tate groups of the units of the field are finite under a cyclic group. -/
 theorem finite_tate_smulUnitsAut [∀ k : ℤ, Finite (gradedAdd A k)] (h : HasResidueChar A p e)
@@ -215,12 +215,12 @@ theorem finite_tate_smulUnitsAut [∀ k : ℤ, Finite (gradedAdd A k)] (h : HasR
     refine Nat.finite_of_card_ne_zero ?_
     rw [card_tateHm1_int d hd]
     exact one_ne_zero
-  haveI : Finite (tateH0 (localUnitsTateSES hv hsurj σ hσ).σA d) := h0
-  haveI : Finite (tateHm1 (localUnitsTateSES hv hsurj σ hσ).σA d) := h1
-  haveI : Finite (tateH0 (localUnitsTateSES hv hsurj σ hσ).σC d) := hC0
-  haveI : Finite (tateHm1 (localUnitsTateSES hv hsurj σ hσ).σC d) := hCm
-  exact ⟨(localUnitsTateSES hv hsurj σ hσ).finite_tateH0_mid',
-    (localUnitsTateSES hv hsurj σ hσ).finite_tateHm1_mid'⟩
+  haveI : Finite (tateH0 (localUnitsTateSES hv hm σ hσ).σA d) := h0
+  haveI : Finite (tateHm1 (localUnitsTateSES hv hm σ hσ).σA d) := h1
+  haveI : Finite (tateH0 (localUnitsTateSES hv hm σ hσ).σC d) := hC0
+  haveI : Finite (tateHm1 (localUnitsTateSES hv hm σ hσ).σC d) := hCm
+  exact ⟨(localUnitsTateSES hv hm σ hσ).finite_tateH0_mid',
+    (localUnitsTateSES hv hm σ hσ).finite_tateHm1_mid'⟩
 
 /-- **The units of the field have Herbrand quotient the order of the group.** -/
 theorem herbrand_smulUnitsAut_eq_card [∀ k : ℤ, Finite (gradedAdd A k)]
@@ -228,12 +228,12 @@ theorem herbrand_smulUnitsAut_eq_card [∀ k : ℤ, Finite (gradedAdd A k)]
     (hσ : σ ^ d = 1) (hcard : Nat.card G = d) :
     herbrand (smulUnitsAut (R := A) σ) d = d := by
   obtain ⟨hA0, hAm⟩ := finite_tate_kerUnitValAut hv h hgen hσ hcard
-  obtain ⟨hB0, hBm⟩ := finite_tate_smulUnitsAut hv hsurj h hgen hσ hcard
+  obtain ⟨hB0, hBm⟩ := finite_tate_smulUnitsAut hv hm h hgen hσ hcard
   haveI := hA0
   haveI := hAm
   haveI := hB0
   haveI := hBm
-  rw [← herbrand_smulUnitsAut_mul hv hsurj σ (NeZero.ne d) hσ,
+  rw [← herbrand_smulUnitsAut_mul hv hm σ (NeZero.ne d) hσ,
     herbrand_kerUnitValAut_eq_one hv h hgen hσ hcard, one_mul]
 
 end InverseGalois.CFT

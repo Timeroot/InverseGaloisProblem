@@ -154,15 +154,15 @@ theorem finite_tate_adicUnitsField :
     Finite (tateH0 (smulUnitsAut (R := v.adicCompletion K) σ) d)
       ∧ Finite (tateHm1 (smulUnitsAut (R := v.adicCompletion K) σ) d) :=
   have ⟨_, _, h⟩ := exists_hasResidueChar_adicCompletion v
-  finite_tate_smulUnitsAut (valued_smul_adicCompletion v) (valued_adicCompletion_surjective v) h
-    hgen hσ hcard
+  finite_tate_smulUnitsAut (valued_smul_adicCompletion v)
+    (isUnitValGen_one (valued_adicCompletion_surjective v)) h hgen hσ hcard
 
 /-- **The units of the completion have Herbrand quotient the order of the decomposition group.** -/
 theorem herbrand_adicUnits_eq_card :
     herbrand (smulUnitsAut (R := v.adicCompletion K) σ) d = d :=
   have ⟨_, _, h⟩ := exists_hasResidueChar_adicCompletion v
   herbrand_smulUnitsAut_eq_card (valued_smul_adicCompletion v)
-    (valued_adicCompletion_surjective v) h hgen hσ hcard
+    (isUnitValGen_one (valued_adicCompletion_surjective v)) h hgen hσ hcard
 
 /-! ### The unramified case -/
 
