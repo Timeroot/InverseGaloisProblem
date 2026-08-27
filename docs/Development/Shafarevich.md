@@ -2076,10 +2076,20 @@ freely on a generator.
      `sqrtChar_eq_one_of_mem_inertia`) turns a square root of one of `1, −1, 2, −2` into a genuine
      character of `Gal(M/ℚ)` with values in any subgroup containing a prescribed element of order
      dividing two, and shows it is trivial on inertia at every place away from `2`.
-   - *Step G*, extending `θ|_I` to `μ` on `D`: `exists_monoidHom_range_le_ker_eqOn_of_card_dvd`
-     (`Scholz/CentralCyclicLift.lean`), which needs `|ker f| ∣ |D/I| = f(P/2)`.  **Wiring to do.**
-   - *Step H* = (F1′), making `2 ∣ f(P/2)` by adjoining `ℚ(ζ_r)` for `r ∣ 2^{2^k}+1`, so that
-     `ord_r(2) = 2^{k+1}`.  **To do.**
+   - *Step G*, extending `θ|_I` to `μ` on `D`: **landed** as `Scholz/DecompositionLift.lean`
+     (`exists_monoidHom_stabilizer_eqOn_inertia`), which wires
+     `exists_monoidHom_range_le_ker_eqOn_of_card_dvd` (`Scholz/CentralCyclicLift.lean`) to the
+     cyclicity of `D/I` and needs `|G| ∣ |D/I| = f(P/2)`.
+   - *Step H* = (F1′), making `2^k ∣ f(P/2)` by adjoining `ℚ(ζ_r)` for `r = 2^{2^k}+1`, so that
+     `ord_r(2) = 2^{k+1}`: **landed** as `Scholz/DyadicResidueDegree.lean`
+     (`pow_dvd_inertiaDeg_two_of_cycSubfield_le`).  Primality of the Fermat number is *not* needed:
+     `2^{2^k} ≡ −1 (mod 2^{2^k}+1)` alone pins the order.
+   - *The assembly*: **landed** as `Scholz/DyadicCorrector.lean` (`hasCorrectingCharAt_two`).
+     Given `|ker f| = 2`, `ζ₈ ∈ M`, `θ` unramified at `P | 2` and `|G| ∣ f(P/2)`, it produces
+     `HasCorrectingCharAt M f 2 θ` with `a = −1`.  The one case split is on whether the extension
+     `ν` of `θ|_I` to `Gal(M/Z)` is trivial: if it is, `χ := 1` and `a := 0` already work.
+     What remains to feed it is arithmetic, not algebra — the induction must arrange `ζ₈ ∈ M` and
+     `|G| ∣ f(P/2)`, both by enlarging `M` inside a `2`-extension ramified only at `2`.
 2. **(F3), the `θ`-relative refactor of `Scholz/RamificationControl.lean`.  DONE** (commit
    `13eb747`): `HasCorrectingCharAt M f p θ` carries the solution as a parameter.
    Historical note: `HasInertiaCancellation`

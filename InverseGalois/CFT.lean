@@ -259,6 +259,7 @@ import InverseGalois.CFT.Scholz.CorrectingCharacter
 import InverseGalois.CFT.Scholz.CorrectingSubfield
 import InverseGalois.CFT.Scholz.CyclicSupplement
 import InverseGalois.CFT.Scholz.DecompositionLift
+import InverseGalois.CFT.Scholz.DyadicCorrector
 import InverseGalois.CFT.Scholz.DyadicResidueDegree
 import InverseGalois.CFT.Scholz.FixedFieldRamification
 import InverseGalois.CFT.Scholz.FrattiniInertia
@@ -661,6 +662,13 @@ it that are available here.
   that prime modulo the conductor, and modulo a Fermat number the class of two has order exactly
   the corresponding power of two, so adjoining a root of unity of Fermat conductor forces the
   residue degree at two upwards while leaving two unramified.
+* `InverseGalois.CFT.Scholz.DyadicCorrector` assembles the correcting character at the prime two
+  itself, for an embedding problem whose kernel has order two.  The solution extends over the
+  decomposition group; over the fixed field of that group the extension, having only two values, is
+  cut out by a square root, and the place below is unramified of residue degree one, so in the
+  presence of the eighth roots of unity the square root agrees on inertia with a square root of one
+  of `1, -1, 2, -2`.  The quadratic character of that rational square root is ramified only at two
+  and cancels the solution there.
 * `InverseGalois.CFT.Scholz.CorrectingSubfield` carries a correcting character built inside an
   algebraic closure into any larger field containing the subfield it was built on.
 * `InverseGalois.CFT.Scholz.UnramifiedSolution` assembles the whole correction: adjoining the
