@@ -6,6 +6,7 @@ import InverseGalois.Solvable.PCentralFree
 import InverseGalois.Solvable.PCentralWord
 import InverseGalois.Solvable.CentralDual
 import InverseGalois.Solvable.PCentralShrink
+import InverseGalois.Solvable.DispositionShrink
 import InverseGalois.Solvable.Wreath
 import InverseGalois.Solvable.WreathFunctor
 import InverseGalois.Solvable.WreathRecognition
@@ -64,6 +65,10 @@ free of arithmetic input and applicable to both realization predicates of the de
   generating system onto one copy chosen by a vector of bits, observes that the characters of the
   last term of the lower `2`-central series are polynomial functions of that vector, and applies
   the Chevalley–Warning theorem to annihilate a prescribed array of elements.
+* `InverseGalois.Solvable.DispositionShrink` applies that collapse to the free objects themselves:
+  the free object of rank `d * r` carries `r` copies of a system of `d` generators, and for large
+  enough `r` an array of elements of the last term of its lower `2`-central series is annihilated
+  row by row by the collapse onto the free object of rank `d` along a suitable selection of copies.
 * `InverseGalois.Solvable.Wreath` presents every semidirect product `A ⋊[φ] H` with `A` abelian as
   a quotient of the single regular wreath product `A ≀ᵣ H`, so that a realization of the wreath
   product realizes every split extension of `H` by `A` at once.
