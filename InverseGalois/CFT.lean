@@ -290,6 +290,7 @@ import InverseGalois.CFT.Scholz.InertSubfield
 import InverseGalois.CFT.Scholz.InertiaRankOne
 import InverseGalois.CFT.Scholz.InertiaTwist
 import InverseGalois.CFT.Scholz.LocalTransport
+import InverseGalois.CFT.Scholz.MultiquadraticBase
 import InverseGalois.CFT.Scholz.NilpotentOdd
 import InverseGalois.CFT.Scholz.NilpotentRadical
 import InverseGalois.CFT.Scholz.NilpotentSylowTwo
@@ -313,6 +314,7 @@ import InverseGalois.CFT.Scholz.Selector
 import InverseGalois.CFT.Scholz.SplitCase
 import InverseGalois.CFT.Scholz.SplitReduction
 import InverseGalois.CFT.Scholz.SplitStep
+import InverseGalois.CFT.Scholz.StepRamification
 import InverseGalois.CFT.Scholz.Tame
 import InverseGalois.CFT.Scholz.Twist
 import InverseGalois.CFT.Scholz.TwistStep
@@ -771,6 +773,9 @@ it that are available here.
   turns that criterion into a condition modulo the splitting prime instead.
 * `InverseGalois.CFT.Scholz.SplitStep` performs one split step concretely, producing the field, its
   Galois group as a product, its degree and its ramified primes.
+* `InverseGalois.CFT.Scholz.StepRamification` pins the ramified primes of that step down to an
+  equality: ramification propagates upward from both factors, and the new factor is ramified at its
+  branching prime because a number field unramified everywhere is the rationals.
 * `InverseGalois.CFT.Scholz.Realization` bundles a field realising a group and satisfying `(S_N)`,
   and iterates the split step to realise every finite abelian `ℓ`-group at every level.
 * `InverseGalois.CFT.Scholz.Induction` isolates the central embedding step of the induction as a
@@ -867,6 +872,10 @@ it that are available here.
   blocks of primes whose products have square roots in the field with jointly surjective sign
   characters, trivial only on the Frattini subgroup, accounts for every square root of a squarefree
   product of primes there.
+* `InverseGalois.CFT.Scholz.MultiquadraticBase` starts the dyadic induction: iterating the split
+  step at the prime two from the rationals produces a field satisfying `(S_N)` ramified at exactly
+  as many distinct primes as the number of quadratic layers, with elementary abelian Galois group —
+  the free object of that rank and `2`-class one — and with each ramified prime a block of its own.
 * `InverseGalois.CFT.Scholz.DyadicResidueCorrection` is the correction itself at the prime two: a
   solution whose Frobenius defects sum to zero over each such block realises the group of the
   central step at the required level.
