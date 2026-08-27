@@ -160,6 +160,7 @@ import InverseGalois.CFT.Kummer.PowBasis
 import InverseGalois.CFT.Kummer.PowIndex
 import InverseGalois.CFT.Kummer.PowerCriterion
 import InverseGalois.CFT.Kummer.QuadraticChar
+import InverseGalois.CFT.Kummer.QuadraticGenerator
 import InverseGalois.CFT.Kummer.RadicalCharacter
 import InverseGalois.CFT.Kummer.RadicalClosure
 import InverseGalois.CFT.Kummer.RadicandLevel
@@ -1360,6 +1361,11 @@ it that are available here.
   arbitrary group gives a character with values in that group.  For the radicands `1, -1, 2, -2` the
   radicand is a unit at every place away from two, so the character is trivial on the inertia group
   everywhere except at two.
+* `InverseGalois.CFT.Kummer.QuadraticGenerator` produces the square root in the first place.  A
+  character of the Galois group of a finite Galois extension whose image has two elements is cut out
+  by the difference of an element fixed by its kernel with the image of that element under an
+  automorphism outside the kernel: the kernel fixes the difference, the automorphism negates it, so
+  its square lies in the base field and the automorphisms fixing it are exactly the kernel.
 * `InverseGalois.CFT.Kummer.LevelOne` measures how far a radicand is from that congruence.  The
   *level* of a unit at a place is the power of the uniformizer to which it is congruent to one, and
   the congruence above asks for level at least the exponent.  At a place where the uniformizer is
