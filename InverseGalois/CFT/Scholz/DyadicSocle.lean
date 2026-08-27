@@ -25,7 +25,9 @@ summing to zero over each block is orthogonal to all of them.
 Which exponent vectors those are is an invariant of the field that survives the whole
 Scholz–Reichardt climb: enlarging the field by a solution of a Frattini embedding problem creates no
 new square root of a rational number, so a family of blocks accounting for the square roots of one
-field accounts for those of every such enlargement.
+field accounts for those of every such enlargement.  At the foot of the climb the condition costs
+nothing, the primes involved in a radicand with a square root in the field being ramified there: a
+family containing the singleton of every ramified prime accounts for everything.
 
 ## Main definitions
 
@@ -41,8 +43,12 @@ field accounts for those of every such enlargement.
 * `InverseGalois.CFT.sum_mul_eq_zero_of_sq_mem_auxConstraintField`: **the orthogonality condition of
   the residue correction at the prime two, for a field whose square roots of products of ramified
   primes are accounted for by a family of blocks.**
+* `InverseGalois.CFT.mem_ramifiedSet_of_sq_eq_residueRadicand`: **a prime involved in the radicand
+  of an exponent vector ramifies in every field containing a square root of that radicand.**
 * `InverseGalois.CFT.IsBlockSpanned.of_le_of_ker_le_frattini`: **a family of blocks accounting for
   the square roots of a field accounts for those of any Frattini extension of it.**
+* `InverseGalois.CFT.isBlockSpanned_of_singleton_mem_of_mem_ramifiedSet`: **a family of blocks
+  containing the singleton of every ramified prime accounts for the square roots of the field.**
 
 ## Tags
 
@@ -137,6 +143,48 @@ theorem sum_mul_eq_zero_of_sq_mem_auxConstraintField {ι : Type*} {block : ι �
   have huA : u ∈ A := mem_of_sq_eq_of_ker_le_frattini hAL hfr huL hu
   exact sum_mul_eq_zero_of_mem_blockSpan ht (hspan a ⟨u, huA, hu⟩)
 
+/-! ### The primes involved in a radicand -/
+
+/-- The radicand of an exponent vector at the prime two splits off each prime it involves, the
+complementary factor being prime to it. -/
+theorem exists_eq_mul_residueRadicand (hSprime : ∀ p ∈ S, p.Prime)
+    (b : {q // q ∈ S} → ZMod 2) {p : ℕ} (hpS : p ∈ S) (hbp : b ⟨p, hpS⟩ = 1) :
+    ∃ M : ℕ, residueRadicand S b = p * M ∧ ¬ p ∣ M := by
+  classical
+  set P : {q // q ∈ S} := ⟨p, hpS⟩ with hP
+  refine ⟨∏ i ∈ (Finset.univ : Finset {q // q ∈ S}).erase P, (i : ℕ) ^ (b i).val, ?_, ?_⟩
+  · rw [residueRadicand, ← Finset.prod_erase_mul _ _ (Finset.mem_univ P), hbp,
+      show ((1 : ZMod 2)).val = 1 from rfl, pow_one, mul_comm]
+  · intro hdvd
+    have hcop : Nat.Coprime p (∏ i ∈ (Finset.univ : Finset {q // q ∈ S}).erase P,
+        (i : ℕ) ^ (b i).val) := by
+      refine Nat.Coprime.prod_right fun i hi => Nat.Coprime.pow_right _ ?_
+      refine (Nat.coprime_primes (hSprime p hpS) (hSprime i.1 i.2)).mpr fun h => ?_
+      exact (Finset.mem_erase.mp hi).1 (Subtype.ext h.symm)
+    have h1 : p ∣ 1 := hcop ▸ Nat.dvd_gcd dvd_rfl hdvd
+    exact (hSprime p hpS).one_lt.ne' (Nat.dvd_one.mp h1)
+
+/-- **A prime involved in the radicand of an exponent vector ramifies in every field containing a
+square root of that radicand.**  The prime divides the radicand exactly once, the other primes
+involved being distinct from it. -/
+theorem mem_ramifiedSet_of_sq_eq_residueRadicand
+    (A : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥A]
+    (hSprime : ∀ p ∈ S, p.Prime) {b : {q // q ∈ S} → ZMod 2}
+    (hb : ∃ u ∈ A, u ^ 2 = algebraMap ℚ (AlgebraicClosure ℚ) ((residueRadicand S b : ℕ) : ℚ))
+    {p : ℕ} (hpS : p ∈ S) (hbp : b ⟨p, hpS⟩ = 1) : p ∈ ramifiedSet ↥A := by
+  obtain ⟨u, huA, hu⟩ := hb
+  obtain ⟨M, hMeq, hMndvd⟩ := exists_eq_mul_residueRadicand hSprime b hpS hbp
+  have hcast : u ^ 2 = ((((residueRadicand S b : ℕ) : ℤ)) : AlgebraicClosure ℚ) := by
+    rw [hu, map_natCast]
+    push_cast
+    ring
+  have hnat : ¬ (p ^ 2 : ℕ) ∣ residueRadicand S b := by
+    rw [hMeq, sq, Nat.mul_dvd_mul_iff_left (hSprime p hpS).pos]
+    exact hMndvd
+  refine mem_ramifiedSet_of_sq_eq_intCast (sq_eq_intCast_coe A huA hcast) (hSprime p hpS)
+    (Int.natCast_dvd_natCast.mpr ⟨M, hMeq⟩) fun hdvd => hnat ?_
+  exact_mod_cast hdvd
+
 /-! ### The invariant along the climb -/
 
 /-- A field is **spanned by a family of blocks of primes** when every squarefree product of primes
@@ -157,5 +205,32 @@ theorem IsBlockSpanned.of_le_of_ker_le_frattini
     {ι : Type*} {block : ι → Finset ℕ} (hA : IsBlockSpanned A block) : IsBlockSpanned L block := by
   rintro S hS b ⟨u, huL, hu⟩
   exact hA S hS b ⟨u, mem_of_sq_eq_of_ker_le_frattini hAL hfr huL hu, hu⟩
+
+/-- **A family of blocks containing the singleton of every ramified prime accounts for the square
+roots of the field.**  Every prime involved in a radicand with a square root in the field ramifies
+there, so the exponent vector is the sum of the indicator vectors of the singletons of the primes
+it involves, all of them blocks of the family. -/
+theorem isBlockSpanned_of_singleton_mem_of_mem_ramifiedSet
+    (A : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥A] {ι : Type*}
+    {block : ι → Finset ℕ} (hcov : ∀ p ∈ ramifiedSet ↥A, ∃ i, block i = {p}) :
+    IsBlockSpanned A block := by
+  classical
+  intro S hS b hb
+  rw [← Finset.univ_sum_single b]
+  refine Submodule.sum_mem _ fun q _ => ?_
+  rcases eq_zero_or_one_zmod_two (b q) with h | h
+  · rw [h, Pi.single_zero]
+    exact Submodule.zero_mem _
+  obtain ⟨i, hi⟩ := hcov q.1 (mem_ramifiedSet_of_sq_eq_residueRadicand A hS hb q.2 h)
+  have hsingle : Pi.single q (b q) = blockVector S (block i) := by
+    ext r
+    rw [h, hi, blockVector]
+    by_cases hr : r = q
+    · subst hr
+      simp
+    · rw [Pi.single_eq_of_ne hr,
+        if_neg fun hc => hr (Subtype.ext (Finset.mem_singleton.mp hc))]
+  rw [hsingle]
+  exact Submodule.subset_span ⟨i, rfl⟩
 
 end InverseGalois.CFT

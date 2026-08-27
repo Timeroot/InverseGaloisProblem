@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.CutField
 import InverseGalois.CFT.KroneckerWeber
 import InverseGalois.CFT.Scholz.AuxPrimeField
 import InverseGalois.CFT.Scholz.FrobeniusDefect
@@ -46,10 +47,12 @@ vector has a radicand which is already a power there.
 
 ## Main results
 
-* `InverseGalois.CFT.isScholzRealizable_of_solution_of_forall_prod_eq_one`: **a solution of a
-  central Frattini embedding problem with kernel of prime order ramifying no more than the Scholz
-  field below it, whose Frobenius defects are orthogonal to the exponent vectors already radical in
-  the constraint field, gives a Scholz realization at the given level.**
+* `InverseGalois.CFT.exists_scholz_solution_of_forall_prod_eq_one`: **a solution of a central
+  Frattini embedding problem with kernel of prime order ramifying no more than the Scholz field
+  below it, whose Frobenius defects are orthogonal to the exponent vectors already radical in the
+  constraint field, is corrected to a Scholz field over that one.**
+* `InverseGalois.CFT.isScholzRealizable_of_solution_of_forall_prod_eq_one`: the same statement,
+  read as a Scholz realization at the given level.
 * `InverseGalois.CFT.isScholzRealizable_of_centralStep`: **a central Frattini embedding problem
   with kernel of prime order over a Scholz realization at the next level has a Scholz realization
   at the given level.**
@@ -87,14 +90,14 @@ set_option synthInstance.maxHeartbeats 1000000 in
 set_option maxHeartbeats 4000000 in
 /-- **A solution of a central Frattini embedding problem with kernel of prime order ramifying no
 more than the Scholz field below it, whose Frobenius defects are orthogonal to the exponent vectors
-already radical in the constraint field, gives a Scholz realization at the given level.**  The
+already radical in the constraint field, is corrected to a Scholz field over that one.**  The
 solution is enlarged by the roots of unity of an auxiliary modulus, and twisted by the character of
 the units modulo that modulus whose power residue symbols are the Frobenius defects at the primes
 ramified below; the orthogonality is exactly what makes such a character available.  The twist
 cancels those defects without disturbing the inertia there, and at the primes dividing the modulus
 the decomposition group is seen only through the character, whose values lie in a kernel of prime
 order. -/
-theorem isScholzRealizable_of_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) [NeZero ℓ] {N : ℕ}
+theorem exists_scholz_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) [NeZero ℓ] {N : ℕ}
     {G H : Type} [Group G] [Group H] [Finite G] {f : G →* H} (hf : Function.Surjective f)
     (hZ : f.ker ≤ Subgroup.center G) (hfr : f.ker ≤ frattini G) (hcard : Nat.card ↥f.ker = ℓ)
     (A : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥A] [IsGalois ℚ ↥A]
@@ -113,7 +116,9 @@ theorem isScholzRealizable_of_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) 
         (∃ u ∈ auxConstraintField L ℓ (N + 1), u ^ ℓ = algebraMap ℚ (AlgebraicClosure ℚ)
           ((residueRadicand (finite_ramifiedSet ↥A).toFinset a : ℕ) : ℚ)) →
         ∑ i, t i * a i = 0) :
-    IsScholzRealizable G ℓ N := by
+    ∃ (E : IntermediateField ℚ (AlgebraicClosure ℚ)) (hAE : A ≤ E) (_ : NumberField ↥E),
+      IsGalois ℚ ↥E ∧ IsScholz ℓ N ↥E ∧
+        ∃ ψ : Gal(↥E/ℚ) ≃* G, ∀ τ, f (ψ τ) = eA (galRestrictLE hAE τ) := by
   classical
   haveI : Fact ℓ.Prime := ⟨hℓ⟩
   -- the primes ramified in the field below
@@ -325,7 +330,61 @@ theorem isScholzRealizable_of_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) 
   have hlevel : IsLevel ℓ N ↥(IntermediateField.fixedField ψ'.ker) :=
     (IsLevel.of_tower (E := ↥(IntermediateField.fixedField ψ'.ker)) (M := ↥M) hlevelM).mono
       (Nat.le_succ N)
-  exact isScholzRealizable_of_isScholz_fixedField ↥M ψ' hψ'surj ⟨hlevel, hsplitψ'⟩
+  -- the corrected solution is cut out of the enlarged field by its kernel
+  have hcompψ' : ∀ σ, f (ψ' σ) = eA (galRestrictLE hAM σ) := by
+    intro σ
+    rw [hψ'def, mulCentral_apply, map_mul, MonoidHom.mem_ker.mp (hχker σ), mul_one]
+    exact hcompM σ
+  have hker' : ψ'.ker ≤ (galRestrictLE hAM).ker := by
+    intro σ hσ
+    have h1 : eA (galRestrictLE hAM σ) = 1 := by
+      rw [← hcompψ' σ, MonoidHom.mem_ker.mp hσ, map_one]
+    exact MonoidHom.mem_ker.mpr (by simpa using h1)
+  have hAE : A ≤ cutField ψ' := le_cutField ψ' hAM hker'
+  haveI : FiniteDimensional ℚ ↥(cutField ψ') :=
+    (IntermediateField.liftAlgEquiv
+      (IntermediateField.fixedField ψ'.ker)).toLinearEquiv.finiteDimensional
+  haveI : NumberField ↥(cutField ψ') := ⟨⟩
+  haveI : IsGalois ℚ ↥(cutField ψ') := ⟨⟩
+  have hsch : IsScholz ℓ N ↥(cutField ψ') :=
+    IsScholz.of_ringEquiv (IntermediateField.liftAlgEquiv
+      (IntermediateField.fixedField ψ'.ker)).toRingEquiv ⟨hlevel, hsplitψ'⟩
+  refine ⟨cutField ψ', hAE, inferInstance, inferInstance, hsch,
+    galEquivCutField ψ' hψ'surj, fun τ => ?_⟩
+  obtain ⟨σ, rfl⟩ := galRestrictLE_surjective (cutField_le ψ') τ
+  rw [galEquivCutField_galRestrictLE ψ' hψ'surj σ,
+    galRestrictLE_galRestrictLE hAE (cutField_le ψ') σ]
+  exact hcompψ' σ
+
+/-- **A solution of a central Frattini embedding problem with kernel of prime order ramifying no
+more than the Scholz field below it, whose Frobenius defects are orthogonal to the exponent vectors
+already radical in the constraint field, gives a Scholz realization at the given level.** -/
+theorem isScholzRealizable_of_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) [NeZero ℓ] {N : ℕ}
+    {G H : Type} [Group G] [Group H] [Finite G] {f : G →* H} (hf : Function.Surjective f)
+    (hZ : f.ker ≤ Subgroup.center G) (hfr : f.ker ≤ frattini G) (hcard : Nat.card ↥f.ker = ℓ)
+    (A : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥A] [IsGalois ℚ ↥A]
+    (hschA : IsScholz ℓ (N + 1) ↥A) (eA : Gal(↥A/ℚ) ≃* H)
+    (L : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥L] [IsGalois ℚ ↥L] (hAL : A ≤ L)
+    (hramL : ramifiedSet ↥L ⊆ ramifiedSet ↥A) (ψ₀ : Gal(↥L/ℚ) ≃* G)
+    (hcomp₀ : ∀ τ, f (ψ₀ τ) = eA (galRestrictLE hAL τ))
+    (horth : ∀ (M : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥M] [IsGalois ℚ ↥M]
+      (hLM : L ≤ M) (Θ : Gal(↥M/ℚ) →* G), (∀ σ, Θ σ = ψ₀ (galRestrictLE hLM σ)) →
+      ∀ ν : Multiplicative (ZMod ℓ) →* G, (∀ x, ν x ∈ f.ker) → Function.Injective ν →
+      ∀ t : {q // q ∈ (finite_ramifiedSet ↥A).toFinset} → ZMod ℓ,
+      (∀ q : {q // q ∈ (finite_ramifiedSet ↥A).toFinset}, ∃ P : Ideal (𝓞 ↥M), ∃ _ : P.IsPrime,
+        ∃ _ : P.LiesOver (Ideal.span {((q : ℕ) : ℤ)}), ∀ σ : Gal(↥M/ℚ), IsArithFrobAt ℤ σ P →
+          Θ σ * ν (Multiplicative.ofAdd (t q)) ∈ (Ideal.inertia Gal(↥M/ℚ) P).map Θ) →
+      ∀ a : {q // q ∈ (finite_ramifiedSet ↥A).toFinset} → ZMod ℓ,
+        (∃ u ∈ auxConstraintField L ℓ (N + 1), u ^ ℓ = algebraMap ℚ (AlgebraicClosure ℚ)
+          ((residueRadicand (finite_ramifiedSet ↥A).toFinset a : ℕ) : ℚ)) →
+        ∑ i, t i * a i = 0) :
+    IsScholzRealizable G ℓ N := by
+  obtain ⟨E, -, hNF, hGal, hsch, ψ, -⟩ :=
+    exists_scholz_solution_of_forall_prod_eq_one hℓ hf hZ hfr hcard A hschA eA L hAL hramL ψ₀
+      hcomp₀ horth
+  haveI := hNF
+  haveI := hGal
+  exact isScholzRealizable_of_isGalois ↥E hsch ψ
 
 /-- **A central Frattini embedding problem with kernel of prime order over a Scholz realization at
 the next level has a Scholz realization at the given level.**  The solution ramifying no more than
