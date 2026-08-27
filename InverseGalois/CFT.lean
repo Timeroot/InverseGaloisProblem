@@ -242,6 +242,7 @@ import InverseGalois.CFT.Local.UnramifiedInvariant
 import InverseGalois.CFT.Local.UnramifiedNormForm
 import InverseGalois.CFT.Local.UnramifiedUnits
 import InverseGalois.CFT.Local.ValuedTopology
+import InverseGalois.CFT.Multiquadratic
 import InverseGalois.CFT.NilpotentCompositum
 import InverseGalois.CFT.NilpotentQuotient
 import InverseGalois.CFT.NormSubgroup
@@ -509,6 +510,11 @@ it that are available here.
   factor, the Galois correspondence turning the intersection of two intermediate fields into the
   join of their fixing subgroups; over the rationals an involution so extended is an arithmetic
   Frobenius at infinitely many primes.
+* `InverseGalois.CFT.Multiquadratic` prescribes the signs by which an automorphism moves a finite
+  family of square roots: a sign pattern is realized by an automorphism fixing a given intermediate
+  field pointwise exactly when it is annihilated by the subsets whose product of square roots
+  already lies in that field, the linear functionals on a space of `ZMod 2`-valued functions being
+  the subset sums.
 * `InverseGalois.CFT.PGroupCompositum` bounds the Galois group of a compositum by the product of
   the Galois groups of its factors, so that a compositum of finitely many extensions of `ℓ`-power
   degree again has `ℓ`-power degree.
