@@ -158,7 +158,7 @@ end Core
 
 section Tower
 
-variable {L : Type} [Field L] [NumberField L]
+variable {L : Type*} [Field L] [NumberField L]
 
 /-- Residue degrees are multiplicative in a tower, so the residue degree of a prime in a
 subextension divides the residue degree of the prime above it. -/

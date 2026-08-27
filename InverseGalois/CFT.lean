@@ -259,6 +259,7 @@ import InverseGalois.CFT.Scholz.CorrectingCharacter
 import InverseGalois.CFT.Scholz.CorrectingSubfield
 import InverseGalois.CFT.Scholz.CyclicSupplement
 import InverseGalois.CFT.Scholz.DecompositionLift
+import InverseGalois.CFT.Scholz.DyadicResidueDegree
 import InverseGalois.CFT.Scholz.FixedFieldRamification
 import InverseGalois.CFT.Scholz.FrattiniInertia
 import InverseGalois.CFT.Scholz.FrattiniInertiaBound
@@ -655,6 +656,11 @@ it that are available here.
   the residue extension and is cyclic, so a solution which is unramified at the prime, and hence
   takes values in the kernel on inertia, extends over that quotient as soon as the residue degree
   is divisible by the order of the group of the embedding problem.
+* `InverseGalois.CFT.Scholz.DyadicResidueDegree` makes the residue degree at two divisible by a
+  prescribed power of two.  The residue degree of a prime in a cyclotomic field is the order of
+  that prime modulo the conductor, and modulo a Fermat number the class of two has order exactly
+  the corresponding power of two, so adjoining a root of unity of Fermat conductor forces the
+  residue degree at two upwards while leaving two unramified.
 * `InverseGalois.CFT.Scholz.CorrectingSubfield` carries a correcting character built inside an
   algebraic closure into any larger field containing the subfield it was built on.
 * `InverseGalois.CFT.Scholz.UnramifiedSolution` assembles the whole correction: adjoining the
