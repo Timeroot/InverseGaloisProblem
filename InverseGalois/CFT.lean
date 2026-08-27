@@ -65,6 +65,7 @@ import InverseGalois.CFT.Cyclotomic.TotallyRamified
 import InverseGalois.CFT.CyclotomicCompositum
 import InverseGalois.CFT.Decomposition
 import InverseGalois.CFT.Disjoint
+import InverseGalois.CFT.FibreCompositum
 import InverseGalois.CFT.FrobeniusStabilizer
 import InverseGalois.CFT.GaloisDescent
 import InverseGalois.CFT.GroupCohomology.Classification
@@ -262,6 +263,7 @@ import InverseGalois.CFT.Scholz.CyclicSupplement
 import InverseGalois.CFT.Scholz.DecompositionLift
 import InverseGalois.CFT.Scholz.DyadicCorrector
 import InverseGalois.CFT.Scholz.DyadicResidueDegree
+import InverseGalois.CFT.Scholz.ElementaryAbelianSolutionTwo
 import InverseGalois.CFT.Scholz.FixedFieldRamification
 import InverseGalois.CFT.Scholz.FrattiniInertia
 import InverseGalois.CFT.Scholz.FrattiniInertiaBound
@@ -605,6 +607,12 @@ it that are available here.
   available.
 * `InverseGalois.CFT.RestrictLE` restricts an automorphism of an intermediate field to a smaller
   intermediate field that is normal over the base.
+* `InverseGalois.CFT.FibreCompositum` presents a group as the fibre product of two of its quotients
+  over a common further quotient, whenever the two kernels intersect trivially and together exhaust
+  the kernel of the map to it, and transfers that presentation to Galois groups: the compositum of
+  two solutions of one embedding problem realizes the fibre product of the two solving groups,
+  because a subgroup of the fibre product surjecting onto one factor is everything as soon as the
+  kernel of that factor consists of non-generating elements.
 * `InverseGalois.CFT.Scholz.BaseDescent` descends a solved central Frattini embedding problem from
   an enlarged base field of degree prime to the order of the kernel back to the original base.
 * `InverseGalois.CFT.Scholz.CentralStep` combines the two: the solution obtained over the cyclotomic
@@ -692,6 +700,12 @@ it that are available here.
   layer of Fermat conductor, which forces the residue degree at two upwards; the conductor is
   chosen prime to all the unwanted primes, so the inertia subgroups there still sit inside a
   two-group and remain cyclic.
+* `InverseGalois.CFT.Scholz.ElementaryAbelianSolutionTwo` extends that solution to an elementary
+  abelian kernel.  A character of the kernel splits off a line: the quotient of the problem by the
+  kernel of the character has kernel of order two, the quotient by the line has a smaller kernel
+  and is solved by induction, and the compositum of the two solutions over the same field realizes
+  the fibre product of the two solving groups, which is the whole group and again ramifies nowhere
+  outside the field the problem was posed over.
 * `InverseGalois.CFT.Scholz.Selector` builds a single Galois number field containing a prescribed
   number field, a prescribed root of unity and prescribed radicals, the field whose completely
   split primes the induction selects.
