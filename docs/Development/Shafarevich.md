@@ -1712,6 +1712,70 @@ Step 1 is the deep one and is the natural next target.
   `isMulCoboundary₂_of_forall_subgroup_of_forall_inflated`, is the dévissage step: `H²(G, M) = 0`
   follows from `H¹(N, M) = 0`, `H²(N, M) = 0` and the vanishing of `H²` on inflated cocycles.  This
   is what a general-degree second inequality, and Tate's theorem after it, will be built on.
+* **The counting half of the *local* first inequality**, i.e. `|Br(L/K)| ≤ [L:K]` for every solvable
+  extension of local fields, in five modules:
+  * `Brauer/RelativeIndex.lean` — the relative Brauer group of a cyclic extension is `Kˣ/N Lˣ`.
+  * `Brauer/SolvableBound.lean` — the dévissage.  It is now stated for a predicate on the *pair*
+    `(F, E)` rather than on the top field alone, because the hypothesis actually carried through the
+    induction (every automorphism is an isometry) is a property of the pair.  `IsDevissageClosed P`
+    accordingly asks for *both* halves of the tower cut out by a subgroup: `P (fixedField C) E` and
+    `P F (fixedField C)`.
+  * `Brauer/SolvableNormBound.lean` — the same dévissage restated with the cyclic input as a bound
+    on the index of the norm subgroup, so that no algebra appears in the hypothesis.
+  * `Local/SubfieldValued.lean` — the descent brick.  A subfield of a valued field carries the
+    *restricted* valuation `(Valued.v).comap (algebraMap S A)` together with the induced uniformity;
+    `IsValuedExtension S A` bundles the two compatibilities, and everything the local computation
+    needs (completeness of a closed subfield, the residue characteristic, finiteness of the graded
+    pieces) descends along it *unchanged*, because the valuation is restricted and not renormalised.
+  * `Local/FixedFieldValued.lean` — the fixed subfield of a group of isometries is closed, hence
+    complete; its value group is still nontrivial because `∏_{σ ∈ C} σ π` is fixed and has value
+    `(v π)^{|C|}`; and the isometry hypothesis transports both ways, down via
+    `AlgEquiv.liftNormal_commutes` and up via `AlgEquiv.restrictScalars`.
+  * `Local/CompleteNormIndex.lean`, `Brauer/LocalBrauerBound.lean` — the assembly.
+    `IsLocalExtension K A` says `A` carries a complete valuation with a residue characteristic,
+    finite graded pieces and a nontrivial value group, preserved by every `K`-automorphism;
+    `card_relative_le_finrank_of_isLocalExtension` is the conclusion.
+* The local Herbrand chain (`Local/AdicHerbrand.lean`, `Local/AdicUnits.lean`,
+  `Local/UnitHerbrandChain.lean`, `Local/UnitValuation.lean`) no longer needs the valuation to be
+  *surjective* onto `ℤᵐ⁰`.  A generator `m` of the value group (`IsUnitValGen A m`) and the divided
+  map `unitValDiv hm x = unitVal x / m` have the same kernel, surject onto `ℤ`, and are
+  `G`-invariant, so a merely **nontrivial** value group suffices.  This is what makes the class of
+  local extensions closed under the dévissage: a fixed subfield has a nontrivial value group, but
+  its value group is `|C|·ℤ`, not `ℤ`.
+
+The one hypothesis still taken as input rather than proven is that every `K`-automorphism of `A` is
+an isometry.  For a complete discretely valued `A` this is automatic — the valuation ring is the
+integral closure of that of `K` — but proving it is an independent piece of work, and stating it as
+a hypothesis keeps the dévissage usable for the abstract valued fields the Herbrand chain runs on.
+
+### 0.20.1 The restriction map, computed (`Brauer/BaseChangeCentralizer.lean`)
+
+Every use of the invariant map needs `res_{L/K} : Br(K) → Br(L)` evaluated on an explicit algebra,
+and the classical formula is the *centralizer* formula: if `L` sits inside a central simple
+`K`-algebra `A` and `B = C_A(L)`, then
+
+```
+L ⊗_K A  ≅  M_{[L:K]}(B)      as L-algebras,
+```
+
+so `res_{L/K} [A] = [C_A(L)]` in `Br(L)`.  `exists_algEquiv_matrix_of_range_eq_centralizer` is that
+statement.  It is proved by making `A` a right `B`-module (a left `Bᵐᵒᵖ`-module, `BMod`), letting
+`L ⊗_K A` act by right multiplication on the first factor and left multiplication on the second
+(`toEndB`), and identifying the target:
+
+* `A ≅ B^{[L:K]}` as `Bᵐᵒᵖ`-modules is *free for free* — `B` is simple (it is the centralizer of a
+  simple subalgebra) and `SkolemNoether.nonempty_linearEquiv_of_finrank_eq` upgrades the dimension
+  identity `dim_K A = [L:K] · dim_K B` to an isomorphism of modules, with no Wedderburn
+  decomposition and no explicit basis;
+* `End_{Bᵐᵒᵖ}(B^d) ≅ M_d(End_{Bᵐᵒᵖ} B) ≅ M_d(B)` — the second step is `AlgEquiv.moduleEndSelfOp`,
+  and it is `B` rather than `Bᵐᵒᵖ` precisely because the module is a *right* module;
+* `L ⊗_K A` is simple, so `toEndB` is injective, and the two sides have the same `L`-dimension.
+
+The statement is phrased with an abstract `B` and an injective `g : B →ₐ[K] A` whose range is the
+centralizer, the embedding of `L` being *derived* as `g ∘ (algebraMap L B)`; this avoids having to
+put an `Algebra L` structure on the subtype `↥(Subalgebra.centralizer K …)` at the call site.
+Taking `B = L` recovers `exists_algEquiv_matrix_of_centralizer_eq_range` of `Brauer/Centralizer.lean`
+(a self-centralizing subfield splits), and taking `L = K` gives `K ⊗ A ≅ M_1(A)`.
 
 ---
 

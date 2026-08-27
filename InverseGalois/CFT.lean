@@ -3,6 +3,7 @@ import InverseGalois.CFT.Approximation.Completion
 import InverseGalois.CFT.Approximation.Places
 import InverseGalois.CFT.Approximation.PowClass
 import InverseGalois.CFT.Brauer.BaseChange
+import InverseGalois.CFT.Brauer.BaseChangeCentralizer
 import InverseGalois.CFT.Brauer.Centralizer
 import InverseGalois.CFT.Brauer.CentralizerProduct
 import InverseGalois.CFT.Brauer.CrossedProduct
