@@ -10,6 +10,7 @@ import InverseGalois.CFT.Brauer.CrossedProduct
 import InverseGalois.CFT.Brauer.CrossedProductCohomologous
 import InverseGalois.CFT.Brauer.CrossedProductMul
 import InverseGalois.CFT.Brauer.CrossedProductRecognition
+import InverseGalois.CFT.Brauer.CrossedProductRestrict
 import InverseGalois.CFT.Brauer.CrossedProductSimple
 import InverseGalois.CFT.Brauer.CrossedProductSplit
 import InverseGalois.CFT.Brauer.CrossedProductSplitting
@@ -776,6 +777,9 @@ it that are available here.
 * `InverseGalois.CFT.Brauer.CentralizerProduct` completes that picture: a central simple
   subalgebra and its centralizer multiply, `B ⊗[K] C_E(B) ≃ₐ[K] E`, and the centralizer is again
   central over `K`.
+* `InverseGalois.CFT.Brauer.BaseChangeCentralizer` computes the effect of extending scalars to a
+  subfield `L` of a central simple algebra `A`: the algebra `L ⊗[K] A` is the algebra of
+  `[L : K]` by `[L : K]` matrices over the centralizer of `L` in `A`.
 * `InverseGalois.CFT.GaloisDescent` proves Speiser's theorem: an `L`-vector space carrying a
   semilinear action of `Gal(L/K)` is the base change of its `K`-subspace of invariants.
 * `InverseGalois.CFT.Brauer.CrossedProduct` builds the crossed product algebra of a Galois
@@ -816,6 +820,10 @@ it that are available here.
 * `InverseGalois.CFT.Brauer.CrossedProductRecognition` is the converse construction: a central
   simple algebra of dimension `[L : K] ^ 2` containing a copy of `L` is a crossed product of
   `L / K`.
+* `InverseGalois.CFT.Brauer.CrossedProductRestrict` restricts a crossed product to an intermediate
+  field `M`: the automorphisms fixing `M` span the centralizer of the copy of `M`, so extending
+  scalars to `M` sends the Brauer class of a cocycle to the class of its restriction to
+  `Gal(L/M)`.
 * `InverseGalois.CFT.Brauer.H2Surjective` combines the two to invert the crossed product
   homomorphism: the relative Brauer group `Br(L / K)` of a finite Galois extension is isomorphic
   to the second cohomology group of `Gal(L/K)` with coefficients in `Lˣ`, and is killed by

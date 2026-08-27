@@ -1777,6 +1777,56 @@ put an `Algebra L` structure on the subtype `↥(Subalgebra.centralizer K …)` 
 Taking `B = L` recovers `exists_algEquiv_matrix_of_centralizer_eq_range` of `Brauer/Centralizer.lean`
 (a self-centralizing subfield splits), and taking `L = K` gives `K ⊗ A ≅ M_1(A)`.
 
+### 0.20.2 Restriction on crossed products (`Brauer/CrossedProductRestrict.lean`)
+
+§0.20.1 computes `res` in terms of a centralizer; this section computes that centralizer in the one
+case every invariant-map argument needs.  Let `E / K` be finite Galois, `f` a multiplicative
+`2`-cocycle of `Gal(E/K)` with values in `Eˣ`, and `M` an intermediate field.  Then
+
+```
+C_{(E/K, f)}(M) = (E/M, f|_{Gal(E/M) × Gal(E/M)}),
+```
+
+and consequently
+
+```
+res_{M/K} [E/K, f]  =  [E/M, f|_{Gal(E/M)}]    in Br(M).
+```
+
+`baseChangeHom_mk_csa` is that identity; `nonempty_algEquiv_matrix_restrict` is the algebra
+statement `M ⊗_K (E/K, f) ≅ M_{[M:K]}((E/M, f|))` it comes from.  On the cohomological side
+`restrictCocycle` is literally the restriction of cochains along `Gal(E/M) → Gal(E/K)`, so this says
+the diagram
+
+```
+H²(Gal(E/K), Eˣ) ──→ Br(K)
+      │ res                │ res
+      ▼                    ▼
+H²(Gal(E/M), Eˣ) ──→ Br(M)
+```
+
+commutes — the compatibility that turns `inv_L ∘ res = [L:K] · inv_K` into a computation with
+cocycles.
+
+Three points of the Lean encoding are worth recording.
+
+* The centralizer half is a support computation, not an algebra computation.  Writing `y` in the
+  basis of symbols, `y · u_c = u_c · y` for `c ∈ M` reads coordinatewise as
+  `(g c − c) · y_g = 0` (`toFinsupp_mul_incl` against `toFinsupp_incl_mul`), so every `g` in the
+  support of `y` fixes `M` pointwise.  `Finsupp.mapDomain_comapDomain` then rebuilds `y` from the
+  smaller crossed product.  `AlgEquiv.ofRingEquiv` is what promotes such a `g` to an element of
+  `Gal(E/M)`.
+* `CrossedProduct hf'` for the restricted cocycle carries an `Algebra M` structure but **no**
+  `Algebra K` structure globally — `M` is not central in `CrossedProduct hf`, so declaring one as an
+  instance would be wrong.  It is introduced with `letI` inside the proof of
+  `nonempty_algEquiv_matrix_restrict`, via `RingHom.toAlgebra'` on `incl hf' ∘ algebraMap K E`,
+  exactly long enough to feed `exists_algEquiv_matrix_of_range_eq_centralizer`.  This is why that
+  brick was stated with an abstract `B` and a derived embedding of `L`.
+* `AlgEquiv.restrictScalars K : Gal(E/M) → Gal(E/K)` is definitionally the identity on underlying
+  maps, so `restrictScalars_one`, `restrictScalars_mul`, `restrictScalars_apply` and
+  `restrictScalars_smul_units` are all `rfl` — but `rw` will not close goals by them, and each of
+  the multiplicativity proofs needs them spelled out.
+
 ---
 
 ## 1. Scholz–Reichardt
