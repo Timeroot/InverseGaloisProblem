@@ -2555,6 +2555,81 @@ Chebotarev choice of `p_χ`.  That is a workstream of the same order as the whol
 
 ---
 
+## 0.23 The `ℓ = 2` plan, checked line by line against Schmid's text
+
+§0.22 was written from the abstract and the section headings.  The full text has since been read
+(`pdftotext -layout` of the open-access PDF), and three of its details change the shape of the
+formalization enough to be worth recording.
+
+### Proposition 4.2 is itself an induction with kernels of order two
+
+Its statement is
+
+> Let `θ_i = Σ_{q ∈ Ram(P_i)} θ_q`, and assume `θ_i = 0` for all `i = 1,…,d`.  Then there exist
+> infinitely many pairwise disjoint `t`-sets `{p_1,…,p_t}` of rational primes such that
+> `Ê = ∏_{ν=1}^t K(√(p_ν e_ν))` is a strong Scholz field with respect to `N` admitting `G_d^c` as
+> Galois group over `ℚ` and having `Ram(Ê) = Ram(K) ∪ {p_1,…,p_t}`,
+
+and its proof runs over a basis `{χ_1,…,χ_t}` of `Hom(Z(H), 𝔽₂)`, one quadratic extension
+`K_{ν−1} ↦ K_ν = K_{ν−1}(√(p_ν e_ν))` per basis vector.  **Each step has kernel of order two.**
+
+That settles the question left open in §0.22: the repository does **not** need a residue correction
+with elementary abelian kernel.  `Scholz/DyadicResidueCorrection.exists_scholz_solution_two`, whose
+kernel hypothesis is `Nat.card ↥f.ker = 2`, *is* Schmid's inductive step; Proposition 4.2 is the
+`t`-fold iteration of it.  The pairwise-quadratic-residue machinery is still wanted, but for the
+base case (Lemmas 2.2/2.3), not for the correction.
+
+The apparent tension — the base field changes at every one of the `t` steps, while the obstruction
+`θ_q` was computed over the field at the bottom — is resolved by Schmid himself, twice:
+
+* `R = R(χ)` is an invariant of the cohomology class, so `q ∈ R ⟺ q ∈ R_0`;
+* "let `q ∈ Ram(P_i)` and let `q ∈ R_0`.  Using that `q` is busy in the Scholz field `K_0`, the
+  restrictions to `E_χ` of `Φ_q` and of the Frobenius `θ_q` introduced above agree."
+
+Business at `q` is exactly `IsSplitInertia`, which the repository already carries in `IsScholz`.
+
+### The block structure survives the climb for free
+
+`IsBlockSpanned` (`Scholz/DyadicSocle.lean`) is the repository's form of "the square classes of the
+field are spanned by the block indicators".  `IsBlockSpanned.of_le_of_ker_le_frattini` transports it
+up any Frattini subextension, and every step of the climb — central with kernel inside the Frattini
+subgroup — is one.  So the blocks never grow even though `Ram` does, and the defect vector `t` stays
+indexed by `Ram(A)` of the field at the bottom.  This is what makes the hypothesis `hdefect` of
+`exists_scholz_solution_two` stable along the induction.
+
+### The group-theoretic layer is finished
+
+`Solvable/DispositionShrink.lean` supplies all of §5:
+
+* `FreePClass.genPair`, the generators `x_{ij}` of `G_{d·r}^c`;
+* `FreePClass.collapse a`, Schmid's `π(α)`;
+* `FreePClass.exists_ne_zero_forall_prod_eq_one`, the Chevalley–Warning conclusion: for
+  `r > d · charCount · (c+1)` there is `α ≠ 0` with all `d` block products trivial;
+* `FreePClass.exists_rankMultiplier`, the choice of `r`.
+
+Both simplifications promised in §0.22 were taken: `lowerPCentralSeries` replaces `Z(G_d^c)`, so
+Schmid's Lemma 3.3 (transgression `Hom(Z(H),𝔽₂) ≅ H²(G,𝔽₂)`) and the direct-sum half of his
+Proposition 3.1 are never needed.
+
+### What remains, and in what order
+
+| tag | content | status |
+|---|---|---|
+| F1 | Lemmas 2.2 + 2.3: a chain of primes each `≡ 1 mod 2^N` and mutually quadratic, and the multiquadratic strong Scholz field they cut out | `stepPrime` + `PairwiseResidue` in place; assembly open |
+| F2 | `IsStrongScholz`: Scholz, plus pairwise disjoint blocks with square roots whose sign characters are jointly surjective and whose common kernel is Frattini | open |
+| F3 | Proposition 2.1 at `p = 2` | ✅ `exists_galEquiv_ramifiedSet_subset_two` |
+| F4 | the Scholz obstruction `θ_q` and its invariance under enlarging the base | partly in `FrobeniusDefect`; base-change half open |
+| F5 | Proposition 4.2 as the `t`-fold iteration of the order-two step | single step ✅; iteration open |
+| F6 | the shrinking: `E(α) = E_δ^{ker(collapse a)}`, `K(α) = E(α) ∩ K_δ`, `Ram(P_i(α)) = ⨆_{j : a_j = 1} Ram(P_{ij})`, and the transport of obstructions along `collapse a` | group half ✅; field half open |
+| F7 | the induction on the `2`-class, `∀ G` a finite `2`-group, `∀ N`, `IsScholzRealizable G 2 N`, and the removal of the semiabelian-Sylow-`2` hypothesis from `InverseGalois/Shafarevich.lean` | open |
+
+`PairwiseResidue.isSquare_natCast_swap` is the brick F1 was missing: `stepPrime` delivers
+`(q_j / q) = 1` for the primes already chosen, and reciprocity turns that into `(q / q_j) = 1`
+because `q_j ≡ 1 mod 4`.  Putting `ℚ(ζ_{q_j})` into the splitting field, as Schmid does, would give
+the same thing at a much higher cost.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.

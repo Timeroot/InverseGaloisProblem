@@ -248,6 +248,7 @@ import InverseGalois.CFT.NilpotentCompositum
 import InverseGalois.CFT.NilpotentQuotient
 import InverseGalois.CFT.NormSubgroup
 import InverseGalois.CFT.PGroupCompositum
+import InverseGalois.CFT.PairwiseResidue
 import InverseGalois.CFT.PiDual
 import InverseGalois.CFT.PiIndex
 import InverseGalois.CFT.PrimeProductSquare
@@ -322,6 +323,7 @@ import InverseGalois.CFT.SplitCompositum
 import InverseGalois.CFT.SplitInertiaPrime
 import InverseGalois.CFT.SplitSup
 import InverseGalois.CFT.SqrtCompositum
+import InverseGalois.CFT.SqrtCompositumDisjoint
 import InverseGalois.CFT.SqrtFrattini
 import InverseGalois.CFT.SqrtNegOne
 import InverseGalois.CFT.SqrtRamification
@@ -838,6 +840,14 @@ it that are available here.
   no more than the field below is enlarged by the roots of unity of the auxiliary modulus and
   twisted by the character whose power residue symbols are the Frobenius defects, and the field cut
   out by the twisted solution realises the group of the central step at the required level.
+* `InverseGalois.CFT.PairwiseResidue` makes a chain of primes mutually quadratic: a prime congruent
+  to one modulo an earlier prime is trivially a square there, and when the earlier prime is
+  congruent to one modulo four the law of quadratic reciprocity attaches the same symbol to both
+  primes and so turns the residue relation around.
+* `InverseGalois.CFT.SqrtCompositumDisjoint` keeps a square root out of a compositum with a field
+  ramified elsewhere: the squarefree part of the half coming from the second factor is congruent to
+  one modulo four and shares no prime with the radicand or with the other half, so it divides a
+  perfect square exactly once unless it is one.
 * `InverseGalois.CFT.SqrtFrattini` descends a square root of a base element along a Frattini
   subextension: an automorphism moves such a square root at most to its negative, so the
   automorphisms fixing it are everything or a maximal subgroup, and either way they contain the
