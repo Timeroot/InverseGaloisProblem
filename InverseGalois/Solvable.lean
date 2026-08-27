@@ -1,5 +1,6 @@
 import InverseGalois.Solvable.ChiefSeries
 import InverseGalois.Solvable.Nilpotent
+import InverseGalois.Solvable.PCentral
 import InverseGalois.Solvable.Wreath
 import InverseGalois.Solvable.WreathFunctor
 import InverseGalois.Solvable.WreathRecognition
@@ -38,6 +39,9 @@ free of arithmetic input and applicable to both realization predicates of the de
   kernel.
 * `InverseGalois.Solvable.Nilpotent` assembles a finite nilpotent group from its Sylow subgroups,
   reducing the nilpotent case to `p`-groups.
+* `InverseGalois.Solvable.PCentral` introduces the lower `p`-central series, the filtration with
+  elementary abelian central quotients that measures how far a `p`-group is from being elementary
+  abelian, and shows that it reaches the trivial subgroup in finitely many steps.
 * `InverseGalois.Solvable.Wreath` presents every semidirect product `A ⋊[φ] H` with `A` abelian as
   a quotient of the single regular wreath product `A ≀ᵣ H`, so that a realization of the wreath
   product realizes every split extension of `H` by `A` at once.
