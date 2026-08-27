@@ -268,7 +268,10 @@ import InverseGalois.CFT.Scholz.CorrectingSubfield
 import InverseGalois.CFT.Scholz.CyclicSupplement
 import InverseGalois.CFT.Scholz.DecompositionLift
 import InverseGalois.CFT.Scholz.DyadicCorrector
+import InverseGalois.CFT.Scholz.DyadicRadical
+import InverseGalois.CFT.Scholz.DyadicResidueCorrection
 import InverseGalois.CFT.Scholz.DyadicResidueDegree
+import InverseGalois.CFT.Scholz.DyadicSocle
 import InverseGalois.CFT.Scholz.ElementaryAbelianSolutionTwo
 import InverseGalois.CFT.Scholz.FixedFieldRamification
 import InverseGalois.CFT.Scholz.FrattiniInertia
@@ -316,6 +319,7 @@ import InverseGalois.CFT.SplitCompositum
 import InverseGalois.CFT.SplitInertiaPrime
 import InverseGalois.CFT.SplitSup
 import InverseGalois.CFT.SqrtCompositum
+import InverseGalois.CFT.SqrtFrattini
 import InverseGalois.CFT.SqrtNegOne
 import InverseGalois.CFT.SqrtRamification
 import InverseGalois.CFT.SquareClasses
@@ -824,6 +828,20 @@ it that are available here.
   no more than the field below is enlarged by the roots of unity of the auxiliary modulus and
   twisted by the character whose power residue symbols are the Frobenius defects, and the field cut
   out by the twisted solution realises the group of the central step at the required level.
+* `InverseGalois.CFT.SqrtFrattini` descends a square root of a base element along a Frattini
+  subextension: an automorphism moves such a square root at most to its negative, so the
+  automorphisms fixing it are everything or a maximal subgroup, and either way they contain the
+  Frattini subgroup.
+* `InverseGalois.CFT.Scholz.DyadicRadical` clears the cyclotomic layer of the constraint field at
+  the prime two: that layer is ramified only at two, so a field unramified at two meets it in the
+  rationals and acquires no new square root of an integer congruent to one modulo four.
+* `InverseGalois.CFT.Scholz.DyadicSocle` records which exponent vectors the correction at the prime
+  two has to avoid — those whose radicand is already a square in the field being corrected — and
+  reduces orthogonality to them to summing to zero over each block of a family of ramified primes
+  accounting for those square roots.
+* `InverseGalois.CFT.Scholz.DyadicResidueCorrection` is the correction itself at the prime two: a
+  solution whose Frobenius defects sum to zero over each such block realises the group of the
+  central step at the required level.
 * `InverseGalois.CFT.Scholz.FrattiniSolution` collects the three stages into the central step of the
   induction itself: at an odd prime, the rank one condition on the inertia subgroup at the residue
   characteristic is the only hypothesis the central embedding step still rests on.
