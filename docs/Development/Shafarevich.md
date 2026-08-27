@@ -1467,7 +1467,7 @@ shape in the argument is removed at the source: the archimedean places are simpl
 the criterion.  Concretely,
 
 ```lean
-InverseGalois.CFT.exists_surjective_hom_of_sq_eq_neg_one_of_forall_ramified_primeResidue
+InverseGalois.CFT.exists_surjective_hom_rat_of_forall_ramified_primeResidue
 ```
 
 is the exact analogue of `exists_surjective_hom_of_forall_ramified_primeResidue` with `Odd n`
@@ -1479,7 +1479,7 @@ unsatisfiable at `p = 2`, so the place above `2` has to be discharged the other 
 homomorphic lift of `π|_{D_v}` into `G`.  Hence the mixed criterion
 
 ```lean
-InverseGalois.CFT.exists_surjective_hom_of_sq_eq_neg_one_of_forall_ramified_lift_or_primeResidue
+InverseGalois.CFT.exists_surjective_hom_rat_of_forall_ramified_lift_or_primeResidue
 ```
 
 which asks, at each ramified place, for *either* a lift *or* the congruence.  The Scholz primes
@@ -1826,6 +1826,122 @@ Three points of the Lean encoding are worth recording.
   maps, so `restrictScalars_one`, `restrictScalars_mul`, `restrictScalars_apply` and
   `restrictScalars_smul_units` are all `rfl` — but `rw` will not close goals by them, and each of
   the multiplicativity proofs needs them spelled out.
+
+### 0.20.3 Route (c) is *free*: Albert–Brauer–Hasse–Noether over `ℚ` with no hypothesis at all
+
+The four preceding sections all end with the same recommendation — build the invariant map, because
+(T5) needs reciprocity.  That recommendation is now wrong for gap 1.  Route (c)'s form of (T5) is a
+theorem, and its proof does not touch reciprocity.
+
+```lean
+InverseGalois.CFT.exists_isMulCoboundary_of_forall_ramified
+    {K : Type} [Field K] [NumberField K] [Algebra ℚ K] [IsGalois ℚ K] {n : ℕ} (hn : n ≠ 0)
+    {a : Gal(K/ℚ) → Gal(K/ℚ) → ℚˣ} (hpow : ∀ x y, a x y ^ n = 1)
+    (ha : ∀ x y z, a y z * a x (y * z) = a (x * y) z * a x y)
+    (hram : ∀ v, ¬ Algebra.IsUnramifiedAt (𝓞 ℚ) v.asIdeal → ‹local coboundary at v›) :
+  ∃ b : Gal(K/ℚ) → Kˣ, ∀ g h, g • b h / b (g * h) * b g = Units.map (algebraMap ℚ K) (a g h)
+```
+
+No parity of `n`, no condition at the archimedean place, no square root of minus one, no total
+reality: **a torsion two-cocycle of rational units which is a coboundary at every ramified finite
+place is a coboundary.**  That is (T5) with the archimedean place omitted, which §0.20 identified as
+exactly what route (c) buys its deficiency-zero corrector count with.
+
+#### Why no reciprocity is needed
+
+§0.18 proved the same statement under the extra hypothesis `ι² = −1` in `K`, and §0.19 concluded
+that the hypothesis was fatal because it makes the place above `2` ramified.  It is fatal only if
+one insists that `K` be the field the induction carries.  It need not be: the hypothesis can be met
+by **enlarging** `K`, and the enlargement never enters the conclusion.
+
+* `K/ℚ` finite Galois is the splitting field of a separable `p ∈ ℚ[X]`
+  (`IsGalois.is_separable_splitting_field`).  Put `L := (p · (X² + 1)).SplittingField`.  Then `L/ℚ`
+  is finite Galois, contains a root of `X² + 1`, and receives `K` by
+  `Polynomial.IsSplittingField.lift`.
+* Inflate the cocycle along `AlgEquiv.restrictNormalHom K : Gal(L/ℚ) → Gal(K/ℚ)`.  Cocycle identity
+  and `n`-torsion inflate for free.
+* The local hypothesis inflates too, and this is the point that §0.19 missed.  A place `w` of `L`
+  lies above a place `v` of `K`; the inflated cocycle's local condition at `w` is the image of the
+  condition at `v` under the decomposition-group restriction and the map on local units.  It is
+  therefore supplied at **every** place `w` of `L`, ramified or not — including the places above `2`
+  that the enlargement has just ramified — because it is supplied at every place of `K` that the
+  criterion asks about, and the unramified places of `K` are discharged by
+  `exists_sub_add_eq_adicUnits_of_nsmul_eq_zero` as always.  Ramification created *by the
+  enlargement* costs nothing, because the hypothesis is transported from below rather than checked
+  above.
+* Apply §0.18 over `L`, and descend: a coboundary whose values are inflated is a coboundary
+  downstairs, because `Gal(L/ℚ) ↠ Gal(K/ℚ)` and the cochain can be pushed through Hilbert 90 for
+  the kernel.
+
+So the dyadic place, which under `ι ∈ K` was a genuine obstruction *for `K`*, is not one *for `L`*:
+the whole content of §0.19's negative computation is that `−1` is not a norm from `ℚ₂(i)`, and the
+inflated cocycle never has to be a norm anywhere, only to be a coboundary where it already is one.
+
+#### Modules
+
+* `Units/TowerCoboundary.lean` — a family of units of the base which is a local coboundary at a
+  place of a middle field inflates to a local coboundary at every place above it.  The compatibility
+  content is `adicCompletionAut_adicCompletionComap_restrict`: the automorphism of the completion
+  attached to `σ ∈ D_w` and the one attached to its restriction agree on the completion below, both
+  being continuous and agreeing on a dense image.
+* `Units/InflationDescent.lean` — `exists_isMulCoboundary_of_restrictNormalHom`: a global coboundary
+  for the inflated cocycle descends.
+* `Units/ABHNFinite.lean` — the assembly, plus the unramified-place bookkeeping
+  (`exists_sub_add_eq_adicUnits_of_pow_eq_one`).
+
+The consumers in `Kummer/CentralEmbeddingSqrtNegOne.lean` lose the hypothesis and are renamed
+`exists_surjective_hom_rat_of_forall_ramified{,_lift,_pow,_primeResidue,_lift_or_primeResidue}`.
+
+#### One Lean obstacle, and how it was side-stepped
+
+The natural enlargement is the compositum `K ⊔ ℚ(i)` inside a fixed algebraic closure.  That does
+not work: for `S : IntermediateField ℚ Ω` there are several competing `Algebra ℚ ↥S` structures
+(`IntermediateField.algebra'`, `DivisionRing.toRatAlgebra`, and the `SMul` coming from
+`SubfieldClass`), they are propositionally but not definitionally equal, and for the relative
+compositum `supOver A K : IntermediateField ↥K Ω` instance search resolves `Algebra ℚ ↥(supOver A K)`
+to `DivisionRing.toRatAlgebra`, so `FiniteDimensional ℚ`, `IsGalois ℚ` and
+`IsScalarTower ℚ ↥K ↥(supOver A K)` all fail to synthesize.  `Subsingleton.elim` transports a *Prop*
+across the diamond but cannot repair instance search inside a later `haveI`.
+
+For an **abstract** `L` there is no diamond at all — `L` carries one `Algebra ℚ` structure, the one
+it was given.  `Polynomial.SplittingField` is abstract, `Normal.of_isSplittingField` and
+`NumberField.of_module_finite` supply the two instances, and `IsSplittingField.lift` plus
+`IsScalarTower.of_algebraMap_eq fun x => (lift.commutes x).symm` supply the tower.  This is the
+pattern of `Mathlib/FieldTheory/PolynomialGaloisGroup.lean`, and it is the recommended shape for any
+"enlarge the field" step in this layer.
+
+One tactic note: writing `set q := p * (X ^ 2 + C 1)` makes `rw` rewrite inside `q.SplittingField`
+and unfold the construction again.  Introducing `q` by `obtain ⟨q, hqp, hqc⟩ : ∃ q : ℚ[X], _ := …`
+keeps it an opaque local, which is what the downstream `letI : Algebra K q.SplittingField` needs.
+
+#### What this changes strategically
+
+| | before | now |
+|---|---|---|
+| gap 1, `ℓ = 2` Scholz–Reichardt | blocked on (T5), i.e. on the invariant map | **local–global layer complete**; blocked on the induction invariant |
+| gap 2, `ElementaryAbelianKernelEP` | blocked on Grunwald–Wang | unchanged — still needs the invariant map |
+
+The invariant map is still worth building, and it is still the only route to gap 2.  It is no longer
+on the critical path for gap 1.
+
+#### What `ℓ = 2` still needs
+
+Route (c)'s induction invariant: `K/ℚ` Galois with `Gal(K/ℚ)` a `2`-group, **unramified at `2`**,
+every other ramified prime `≡ 1 mod 2^N`, and **no condition at the archimedean places**.  Against
+that invariant:
+
+1. **The local–global step.**  Done, by the theorem above; at `ℓ = 2` no cyclotomic base change is
+   needed either, since `μ₂ ⊂ ℚ`, so `Scholz/ProperSolution.lean`'s detour through
+   `cycSubfield ℓ` collapses.
+2. **The dyadic corrector.**  `IsInertiaRankOneAt 2` is false and stays false (§0.16); what replaces
+   it is a rank-**two** cancellation at the dyadic place, the two generators being the classes of
+   `−1` and `2`.  Since the sign is no longer part of the target, `{−1, 2, −2}` spans it exactly:
+   deficiency zero, and the auxiliary prime keeps its congruence `q ≡ 1 mod 2^N` (no `q ≡ 3 mod 4`
+   is needed, which is what makes route (c) better than §0.17's escape).
+3. **§0.16 item 1**, the radicand.  `RadicalDisjoint`/`NilpotentRadical` are false at `2`; the
+   replacement is the dimension count against the quadratic subfields of `A` — the bad radicands
+   form a subgroup of `ℚ^×/(ℚ^×)²` of order `2^{d(G)}`, and `Scholz/ResidueSpan.lean` has to be made
+   to dodge it.
 
 ---
 
