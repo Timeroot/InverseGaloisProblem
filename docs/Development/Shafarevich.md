@@ -2438,6 +2438,123 @@ for odd ℓ).
 
 ---
 
+## 0.22 Status (2026-08-27) — the `ℓ = 2` correction has a *hypothesis*, and it is Schmid's
+
+§0.21 item 3 is done: `Scholz/UnramifiedSolutionTwo.lean` proves
+`exists_galEquiv_ramifiedSet_subset_two`, the dyadic analogue of
+`exists_galEquiv_ramifiedSet_subset`, with **no** `Odd ℓ` and **no** `IsInertiaRankOneAt 2`.  That
+is Schmid's Proposition 2.1 for `p = 2`.  The next link, the dyadic analogue of
+`isScholzRealizable_of_centralStep`, turns out **not** to be a matter of removing `Odd ℓ` from
+`Scholz/ResidueSpan.lean`.  There is a genuine obstruction, it is sharp, and it is exactly the
+hypothesis of Schmid's Proposition 4.2.
+
+### The obstruction, derived from the repository's own statements
+
+Let `f : G ↠ H` be the central step, `Z = ker f` of order `2`, `Z ≤ frattini G`; let `A` be the
+Scholz field realizing `H`, `S = ramifiedSet A`, and `L ⊇ A` a solution with `ramifiedSet L ⊆ S`.
+For `p ∈ S` let `t_p ∈ 𝔽₂` be the Frobenius defect of `Scholz/FrobeniusDefect.lean` — `t_p = 0`
+exactly when the residue degree of `p` in `L` is one, i.e. when `L` too is *busy* at `p`.
+
+The correction twists by a character `χ` of conductor `Q`, a product of auxiliary primes `q`.  Every
+such `q` must split completely in `L` (that is what makes the twisted homomorphism busy at `q`).
+Now let `v = ∏_{p ∈ S'} p` for some `S' ⊆ S` and suppose `√v ∈ L`.  Then `q` splits in `ℚ(√v)`, so
+`(v/q) = 1` for every `q ∣ Q`, so `χ(v) = 1`, and therefore
+
+> **`Σ_{p ∈ S'} t_p = 0` is forced** for every `S'` with `√(∏_{p ∈ S'} p) ∈ L.
+
+Because `Z ≤ frattini G`, the quadratic subfields of `L` are exactly those of `A`; and because every
+`p ∈ S` is `≡ 1 mod 4` and `2 ∉ S`, the square classes `d` with `ℚ(√d) ⊆ A` are precisely the
+`v = ∏_{p ∈ S'} p` (no factor `−1`, `2` or `−2` survives: each would ramify at `2`).  So the
+achievable corrections are the vectors of `𝔽₂^S` orthogonal to
+
+```
+W  =  span { 1_{ramifiedSet ℚ(√d)}  :  ℚ(√d) ⊆ A quadratic }   ⊆   𝔽₂^S ,
+```
+
+a space of dimension `d(H) = dim H/Φ(H)`.  At odd `ℓ` the corresponding `W` is **zero** — that is
+precisely `pow_ne_of_isNilpotent` (`Scholz/AuxPrimeChoice.lean:70`), which says a rational number
+that is an `ℓ`-th power in an `ℓ`-extension of `ℚ` is already one, true because `ℚ(m^{1/ℓ})` is not
+Galois.  At `ℓ = 2` it *is* Galois, `W` is as large as the number of generators, and the twist
+simply cannot reach a defect vector with `Σ_{p ∈ S'} t_p = 1`.
+
+**Consequence.**  `residueVectors_span_eq_top` is false at `2` and no reformulation of
+`Scholz/ResidueSpan.lean` repairs it.  What must change is the *induction hypothesis*: the Scholz
+field has to be built so that the defect is orthogonal to `W` **by construction**.
+
+### This is Schmid's Proposition 4.2, and the fix is his shrinking process
+
+P. Schmid, *Realizing 2-groups as Galois groups following Shafarevich and Serre*, ANT **12** (2018)
+2387–2401 (open access) runs exactly this argument and names exactly this hypothesis.  His
+vocabulary maps onto the repository's:
+
+| Schmid | repository |
+|---|---|
+| `q` is *busy* (fleissig) in `K`: `φ(I_q) = φ(D_q)` | `IsSplitInertia` |
+| Scholz field w.r.t. `N`: (S1) `Ram(K) ⊆ 1 + p^N ℤ`, (S2) busy | `IsScholz ℓ N` |
+| Proposition 2.1 | `exists_galEquiv_ramifiedSet_subset_two` ✅ landed |
+| Scholz obstruction `θ_q ∈ Z(H)` | the defect `z` of `exists_mem_ker_mul_mem_map_inertia` |
+| Proposition 4.2 hypothesis `θ_i = Σ_{q ∈ Ram(P_i)} θ_q = 0` | `t ⊥ W` above |
+
+The extra structure Schmid carries is the **strong** Scholz field: the socle
+`S(K) = K^{Φ(G)} = P_1 ⋯ P_d`, where the `P_i` are quadratic and the sets `Ram(P_i)` are *pairwise
+disjoint and of equal cardinality*.  Then `W` is spanned by the `d` block indicators `1_{Ram(P_i)}`
+and the hypothesis is one bit per block — `d` conditions, not `|S|`.  Nothing forces those bits to
+vanish; they are made to vanish by **shrinking**:
+
+1. Realize, inductively on the `2`-class `c`, the *disposition group* `G_δ^{c−1} = F_δ/λ_c(F_δ)` for
+   a much larger rank `δ = r·d`, where `λ` is the lower `2`-central series
+   `λ_{n+1} = [λ_n, G]·λ_n²` and `r` is a polynomial in `d`.
+2. Solve the central step (Proposition 2.1) to get `E_δ` with group `G_δ^c`, `Ram(E_δ) = Ram(K_δ)`;
+   record the block obstructions `θ_{ij} ∈ λ_c(G_δ^c)` for `i ≤ d`, `j ≤ r`.
+3. For `α = (a_j) ∈ 𝔽₂^r` let `π(α) : G_δ^c ↠ G_d^c` send `x_{ij} ↦ x_i^{a_j}`.  The induced map
+   `α̃` on `λ_c` depends only on `α`, and each coordinate of `a ↦ Σ_j a_j α̃(θ_{ij})` is a
+   polynomial in `a` of degree `≤ c + 1` **with zero constant term**.
+4. Choose `r > (c+1)·d·dim λ_c(G_d^c)`.  **Chevalley–Warning** (`Mathlib/FieldTheory/
+   ChevalleyWarning.lean`) then produces a *nontrivial* common zero `α`, and the corresponding
+   subfield `E(α)`, of group `G_d^c`, has all its block obstructions zero.
+5. Proposition 4.2 now applies and produces a strong Scholz field with group `G_d^c`; every
+   `2`-group of rank `d` and `2`-class `c` is a quotient of it, and normal subfields of Scholz
+   fields are Scholz.
+
+No Poitou–Tate, no Grunwald–Wang, no Kronecker–Weber: the arithmetic inputs are Chebotarev,
+quadratic reciprocity, Hecke's ramification criterion for `K(√μ)`, Brauer–Hasse–Noether (already
+used by Proposition 2.1) and Chevalley–Warning.
+
+### What that costs here, and the two simplifications worth taking
+
+Schmid's Proposition 3.1 (the Lie-module decomposition `Z(G_d^c) = ⨁_{ν=1}^c L_d^ν` with
+`dim L_d^ν = (1/ν) Σ_{k∣ν} μ(k) d^{ν/k}`) is the deepest algebraic input, and it is quoted from a
+separate paper.  Two observations remove most of it:
+
+* **Only a degree bound is needed, not the grading.**  Chevalley–Warning needs `Σ deg < #vars` and a
+  known zero; `a = 0` is a zero because `π(0)` is the trivial map.  Homogeneity is never used.  So
+  `deg ≤ c + 1` suffices and the exact dimensions `ℓ_d^ν` are irrelevant — any finite bound on
+  `dim λ_c(G_d^c)` will do.
+* **`λ_c` may replace `Z`.**  Schmid works with `Z(G_d^c)`, which equals `λ_c(G_d^c)` by his
+  Proposition 3.1; but every use is of the kernel of `G_d^c ↠ G_d^{c−1}`, which *is* `λ_c` by
+  definition.
+
+What is genuinely required from the group-theory side is then:
+
+* `lowerPCentralSeries`: `λ_1 = ⊤`, `λ_{n+1} = ⁅λ_n, ⊤⁆ ⊔ (λ_n)^p`; normality, `λ_n/λ_{n+1}`
+  central and elementary abelian, surjective functoriality, and `λ_{c+1} = ⊥` for some `c` for every
+  finite `p`-group;
+* the disposition group `G_d^c = F_d/λ_{c+1}(F_d)`: finite, rank `≤ d`, `2`-class `≤ c`, and
+  universal for those two invariants;
+* `λ_c(G_d^c)` is generated by the images of `[x_{i_1}, …, x_{i_ν}]^{2^{c−ν}}`, `ν ≤ c` — the
+  spanning half of Proposition 3.1 (its direct-sum half is what we drop);
+* consequently: the induced map on `λ_c` depends only on `α` mod `Φ`, and is polynomial of degree
+  `≤ c` in `a`.
+
+and from the arithmetic side, Proposition 4.2 itself: Hecke's criterion, the factorisation
+`(μ) = 𝔟²·𝔇·(e)`, the Shafarevich symbol `{μ/q}` and its Legendre-symbol comparison, and the
+Chebotarev choice of `p_χ`.  That is a workstream of the same order as the whole odd-`ℓ`
+`ResidueSpan`/`AuxPrimeChoice`/`ResidueCorrection` stack, plus a new free-group layer.
+
+**So the `ℓ = 2` wall is no longer unmapped — it is a finite, elementary, and large plan.**
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
