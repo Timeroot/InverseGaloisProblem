@@ -29,6 +29,9 @@ because `2 ^ 2 ^ k` is congruent to `-1` there and `-1` is not `1`.  So a primit
   root of unity.**
 * `InverseGalois.CFT.pow_dvd_inertiaDeg_two_of_cycSubfield_le`: **adjoining the cyclotomic field of
   Fermat conductor makes the residue degree at two divisible by a prescribed power of two.**
+* `InverseGalois.CFT.not_dvd_fermat_of_le`: **a prime not exceeding a power of two does not divide
+  the Fermat number of the previous index**, so a Fermat conductor can be chosen prime to any
+  prescribed finite set of primes.
 
 ## Tags
 
@@ -79,6 +82,54 @@ theorem orderOf_two_zmod_fermat (k : ℕ) :
     have hdvd := (ZMod.natCast_eq_zero_iff 2 (2 ^ 2 ^ k + 1)).mp h2
     have := Nat.le_of_dvd (by norm_num) hdvd
     omega
+
+/-! ### The prime divisors of a Fermat number -/
+
+/-- **A prime divisor of a Fermat number is congruent to one modulo the next power of two.**  The
+class of two modulo such a prime has the same order `2 ^ (k + 1)` as it has modulo the Fermat
+number itself, and that order divides the order of the multiplicative group. -/
+theorem two_pow_succ_dvd_sub_one_of_dvd_fermat {k p : ℕ} (hp : p.Prime)
+    (hdvd : p ∣ 2 ^ 2 ^ k + 1) : 2 ^ (k + 1) ∣ p - 1 := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  have hp2 : p ≠ 2 := by
+    rintro rfl
+    exact not_two_dvd_fermat k hdvd
+  have hne0 : (((2 : ℕ) : ZMod p)) ≠ 0 := fun h =>
+    hp2 ((Nat.prime_dvd_prime_iff_eq hp Nat.prime_two).mp ((ZMod.natCast_eq_zero_iff 2 p).mp h))
+  have hzero : (((2 ^ 2 ^ k + 1 : ℕ) : ZMod p)) = 0 :=
+    (ZMod.natCast_eq_zero_iff (2 ^ 2 ^ k + 1) p).mpr hdvd
+  have hneg : (((2 : ℕ) : ZMod p)) ^ 2 ^ k = -1 := by
+    push_cast at hzero ⊢
+    linear_combination hzero
+  have hpow : (((2 : ℕ) : ZMod p)) ^ 2 ^ (k + 1) = 1 := by
+    rw [pow_succ, pow_mul, hneg, neg_one_sq]
+  have hord : orderOf (((2 : ℕ) : ZMod p)) = 2 ^ (k + 1) := by
+    obtain ⟨j, hjle, hj⟩ := (Nat.dvd_prime_pow Nat.prime_two).mp (orderOf_dvd_of_pow_eq_one hpow)
+    rcases eq_or_lt_of_le hjle with rfl | hlt
+    · exact hj
+    · exfalso
+      have hjk : j ≤ k := by omega
+      have h1 : (((2 : ℕ) : ZMod p)) ^ 2 ^ k = 1 :=
+        orderOf_dvd_iff_pow_eq_one.mp (by rw [hj]; exact pow_dvd_pow 2 hjk)
+      rw [hneg] at h1
+      exact hne0 (by push_cast; linear_combination -h1)
+  rw [← hord]
+  exact orderOf_dvd_of_pow_eq_one (ZMod.pow_card_sub_one_eq_one hne0)
+
+/-- **A prime divisor of a Fermat number exceeds the next power of two.** -/
+theorem two_pow_succ_lt_of_dvd_fermat {k p : ℕ} (hp : p.Prime) (hdvd : p ∣ 2 ^ 2 ^ k + 1) :
+    2 ^ (k + 1) < p := by
+  have h2 := hp.two_le
+  have hle := Nat.le_of_dvd (by omega) (two_pow_succ_dvd_sub_one_of_dvd_fermat hp hdvd)
+  omega
+
+/-- **A prime not exceeding a power of two does not divide the Fermat number of the previous
+index.**  Since a Fermat conductor can be taken as large as one likes, it can be taken prime to any
+prescribed finite set of primes. -/
+theorem not_dvd_fermat_of_le {k p : ℕ} (hp : p.Prime) (hple : p ≤ 2 ^ (k + 1)) :
+    ¬ p ∣ 2 ^ 2 ^ k + 1 := fun hdvd => by
+  have := two_pow_succ_lt_of_dvd_fermat hp hdvd
+  omega
 
 /-! ### The residue degree in a field containing a root of unity -/
 
