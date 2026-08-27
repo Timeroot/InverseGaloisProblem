@@ -22,10 +22,17 @@ So the exponent vectors in question are those whose radicand is a square in the 
 those are spanned by the indicator vectors of a family of blocks of ramified primes then a defect
 summing to zero over each block is orthogonal to all of them.
 
+Which exponent vectors those are is an invariant of the field that survives the whole
+Scholz–Reichardt climb: enlarging the field by a solution of a Frattini embedding problem creates no
+new square root of a rational number, so a family of blocks accounting for the square roots of one
+field accounts for those of every such enlargement.
+
 ## Main definitions
 
 * `InverseGalois.CFT.blockVector`: the indicator vector of a set of primes.
 * `InverseGalois.CFT.blockSpan`: the span of the indicator vectors of a family of blocks.
+* `InverseGalois.CFT.IsBlockSpanned`: a field whose square roots of squarefree products of primes
+  are accounted for by a family of blocks.
 
 ## Main results
 
@@ -34,6 +41,8 @@ summing to zero over each block is orthogonal to all of them.
 * `InverseGalois.CFT.sum_mul_eq_zero_of_sq_mem_auxConstraintField`: **the orthogonality condition of
   the residue correction at the prime two, for a field whose square roots of products of ramified
   primes are accounted for by a family of blocks.**
+* `InverseGalois.CFT.IsBlockSpanned.of_le_of_ker_le_frattini`: **a family of blocks accounting for
+  the square roots of a field accounts for those of any Frattini extension of it.**
 
 ## Tags
 
@@ -127,5 +136,26 @@ theorem sum_mul_eq_zero_of_sq_mem_auxConstraintField {ι : Type*} {block : ι �
   have huL : u ∈ L := mem_of_sq_eq_intCast_auxConstraintField L h2L hint huC hcast
   have huA : u ∈ A := mem_of_sq_eq_of_ker_le_frattini hAL hfr huL hu
   exact sum_mul_eq_zero_of_mem_blockSpan ht (hspan a ⟨u, huA, hu⟩)
+
+/-! ### The invariant along the climb -/
+
+/-- A field is **spanned by a family of blocks of primes** when every squarefree product of primes
+admitting a square root in it is, up to squares, a product of the blocks of the family. -/
+def IsBlockSpanned (A : IntermediateField ℚ (AlgebraicClosure ℚ)) {ι : Type*}
+    (block : ι → Finset ℕ) : Prop :=
+  ∀ S : Finset ℕ, (∀ p ∈ S, p.Prime) → ∀ b : {q // q ∈ S} → ZMod 2,
+    (∃ u ∈ A, u ^ 2 = algebraMap ℚ (AlgebraicClosure ℚ) ((residueRadicand S b : ℕ) : ℚ)) →
+      b ∈ blockSpan S block
+
+/-- **A family of blocks accounting for the square roots of a field accounts for those of any
+Frattini extension of it.**  A square root of a rational number in the larger field is fixed by the
+Frattini subgroup, hence by the automorphisms fixing the smaller field, so it lies in the smaller
+field already. -/
+theorem IsBlockSpanned.of_le_of_ker_le_frattini
+    {A L : IntermediateField ℚ (AlgebraicClosure ℚ)} [Normal ℚ ↥A] [FiniteDimensional ℚ ↥L]
+    [IsGalois ℚ ↥L] (hAL : A ≤ L) (hfr : (galRestrictLE hAL).ker ≤ frattini Gal(↥L/ℚ))
+    {ι : Type*} {block : ι → Finset ℕ} (hA : IsBlockSpanned A block) : IsBlockSpanned L block := by
+  rintro S hS b ⟨u, huL, hu⟩
+  exact hA S hS b ⟨u, mem_of_sq_eq_of_ker_le_frattini hAL hfr huL hu, hu⟩
 
 end InverseGalois.CFT

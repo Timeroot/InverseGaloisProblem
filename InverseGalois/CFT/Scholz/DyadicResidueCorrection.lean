@@ -51,11 +51,7 @@ theorem isScholzRealizable_of_solution_two {N : ℕ} {G H : Type} [Group G] [Gro
     (L : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥L] [IsGalois ℚ ↥L] (hAL : A ≤ L)
     (hramL : ramifiedSet ↥L ⊆ ramifiedSet ↥A) (ψ₀ : Gal(↥L/ℚ) ≃* G)
     (hcomp₀ : ∀ τ, f (ψ₀ τ) = eA (galRestrictLE hAL τ))
-    {ι : Type*} {block : ι → Finset ℕ}
-    (hspan : ∀ b : {q // q ∈ (finite_ramifiedSet ↥A).toFinset} → ZMod 2,
-      (∃ u ∈ A, u ^ 2 = algebraMap ℚ (AlgebraicClosure ℚ)
-        ((residueRadicand (finite_ramifiedSet ↥A).toFinset b : ℕ) : ℚ)) →
-      b ∈ blockSpan (finite_ramifiedSet ↥A).toFinset block)
+    {ι : Type*} {block : ι → Finset ℕ} (hspan : IsBlockSpanned A block)
     (hdefect : ∀ (M : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥M] [IsGalois ℚ ↥M]
       (hLM : L ≤ M) (Θ : Gal(↥M/ℚ) →* G), (∀ σ, Θ σ = ψ₀ (galRestrictLE hLM σ)) →
       ∀ ν : Multiplicative (ZMod 2) →* G, (∀ x, ν x ∈ f.ker) → Function.Injective ν →
@@ -86,7 +82,8 @@ theorem isScholzRealizable_of_solution_two {N : ℕ} {G H : Type} [Group G] [Gro
   refine isScholzRealizable_of_solution_of_forall_prod_eq_one Nat.prime_two hf hZ hfr hcard A
     hschA eA L hAL hramL ψ₀ hcomp₀ ?_
   intro M _ _ hLM Θ hΘ ν hν hνinj t hinert a ha
-  exact sum_mul_eq_zero_of_sq_mem_auxConstraintField A L hAL hfrL h2L hS4 hspan
+  exact sum_mul_eq_zero_of_sq_mem_auxConstraintField A L hAL hfrL h2L hS4
+    (hspan _ fun p hp => ((Set.Finite.mem_toFinset _).mp hp).1)
     (hdefect M hLM Θ hΘ ν hν hνinj t hinert) ha
 
 end InverseGalois.CFT
