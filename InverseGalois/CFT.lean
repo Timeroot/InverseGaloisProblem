@@ -146,6 +146,7 @@ import InverseGalois.CFT.Kummer.CyclicIndex
 import InverseGalois.CFT.Kummer.CyclotomicDescent
 import InverseGalois.CFT.Kummer.CyclotomicPlace
 import InverseGalois.CFT.Kummer.Denominator
+import InverseGalois.CFT.Kummer.DyadicInertiaChar
 import InverseGalois.CFT.Kummer.DyadicPlace
 import InverseGalois.CFT.Kummer.DyadicSquareClass
 import InverseGalois.CFT.Kummer.GlobalPower
@@ -158,6 +159,7 @@ import InverseGalois.CFT.Kummer.Pairing
 import InverseGalois.CFT.Kummer.PowBasis
 import InverseGalois.CFT.Kummer.PowIndex
 import InverseGalois.CFT.Kummer.PowerCriterion
+import InverseGalois.CFT.Kummer.QuadraticChar
 import InverseGalois.CFT.Kummer.RadicalCharacter
 import InverseGalois.CFT.Kummer.RadicalClosure
 import InverseGalois.CFT.Kummer.RadicandLevel
@@ -1346,6 +1348,18 @@ it that are available here.
   integers surject onto the residue field, and two lies in the place, so only the residues of zero
   and one remain.  Clearing a denominator which is a unit at the place extends the second statement
   from the algebraic integers to every element integral at the place.
+* `InverseGalois.CFT.Kummer.DyadicInertiaChar` turns that square class into an agreement of
+  characters.  Multiplying the radicand of a square root by the rational number which puts it in the
+  trivial class produces, once the eighth roots of unity are available, a radical of a radicand
+  congruent to one, which the inertia group at the place fixes; and the fixed radical is the product
+  of the original square root with a square root of one of `1, -1, 2, -2`, so the two are moved
+  alike by the inertia group.
+* `InverseGalois.CFT.Kummer.QuadraticChar` packages a square root of a rational number as a
+  character.  An automorphism moves such a square root to plus or minus itself, and the sign is
+  multiplicative, so sending the nontrivial sign to a prescribed element of order dividing two of an
+  arbitrary group gives a character with values in that group.  For the radicands `1, -1, 2, -2` the
+  radicand is a unit at every place away from two, so the character is trivial on the inertia group
+  everywhere except at two.
 * `InverseGalois.CFT.Kummer.LevelOne` measures how far a radicand is from that congruence.  The
   *level* of a unit at a place is the power of the uniformizer to which it is congruent to one, and
   the congruence above asks for level at least the exponent.  At a place where the uniformizer is
