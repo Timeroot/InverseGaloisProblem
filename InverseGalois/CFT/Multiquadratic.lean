@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.PiDual
 
 /-!
 # Prescribing the signs of a family of square roots
@@ -88,37 +89,20 @@ theorem mem_of_forall_sum_eq_zero {ι : Type*} [Fintype ι] [DecidableEq ι]
     (h : ∀ S : Finset ι, (∀ w ∈ W, ∑ i ∈ S, w i = 0) → ∑ i ∈ S, t i = 0) : t ∈ W := by
   classical
   haveI : Fact (Nat.Prime 2) := ⟨Nat.prime_two⟩
-  rw [← Subspace.forall_mem_dualAnnihilator_apply_eq_zero_iff W t]
-  intro φ hφ
-  set S : Finset ι := Finset.univ.filter (fun i => φ (Pi.single i (1 : ZMod 2)) = 1) with hSdef
-  have key : ∀ v : ι → ZMod 2, φ v = ∑ i ∈ S, v i := by
+  refine mem_of_forall_dualCoeff W t fun a ha => ?_
+  set S : Finset ι := Finset.univ.filter (fun i => a i = 1) with hSdef
+  have key : ∀ v : ι → ZMod 2, ∑ i, v i * a i = ∑ i ∈ S, v i := by
     intro v
-    have hv : φ v = φ (∑ i : ι, Pi.single i (v i)) := by rw [Finset.univ_sum_single]
-    rw [hv, map_sum]
-    have hterm : ∀ i ∈ (Finset.univ : Finset ι),
-        φ (Pi.single i (v i)) = if i ∈ S then v i else 0 := by
-      intro i _
-      have hsm : (Pi.single i (v i) : ι → ZMod 2) = v i • (Pi.single i (1 : ZMod 2)) := by
-        ext j
-        rcases eq_or_ne j i with rfl | hj
-        · simp
-        · simp [hj]
-      rw [hsm, map_smul, smul_eq_mul]
-      by_cases hi : i ∈ S
-      · rw [if_pos hi, (Finset.mem_filter.mp hi).2, mul_one]
-      · rw [if_neg hi]
-        have h0 : φ (Pi.single i (1 : ZMod 2)) = 0 := by
-          simp only [hSdef, Finset.mem_filter, Finset.mem_univ, true_and] at hi
-          rcases eq_zero_or_one_zmod_two (φ (Pi.single i (1 : ZMod 2))) with h' | h'
-          · exact h'
-          · exact absurd h' hi
-        rw [h0, mul_zero]
-    rw [Finset.sum_congr rfl hterm, Finset.sum_ite_mem, Finset.univ_inter]
+    rw [hSdef, Finset.sum_filter]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    by_cases h' : a i = 1
+    · rw [if_pos h', h', mul_one]
+    · rw [if_neg h']
+      rcases eq_zero_or_one_zmod_two (a i) with h'' | h''
+      · rw [h'', mul_zero]
+      · exact absurd h'' h'
   rw [key t]
-  rw [Submodule.mem_dualAnnihilator] at hφ
-  refine h S fun w hw => ?_
-  rw [← key w]
-  exact hφ w hw
+  exact h S fun w hw => by rw [← key w]; exact ha w hw
 
 /-- The image of a homomorphism from a group to the additive group of `ZMod 2`-valued functions,
 as a subspace. -/

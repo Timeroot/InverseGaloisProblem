@@ -247,6 +247,7 @@ import InverseGalois.CFT.NilpotentCompositum
 import InverseGalois.CFT.NilpotentQuotient
 import InverseGalois.CFT.NormSubgroup
 import InverseGalois.CFT.PGroupCompositum
+import InverseGalois.CFT.PiDual
 import InverseGalois.CFT.PiIndex
 import InverseGalois.CFT.RestrictLE
 import InverseGalois.CFT.ScalarSemidirect
@@ -510,6 +511,9 @@ it that are available here.
   factor, the Galois correspondence turning the intersection of two intermediate fields into the
   join of their fixing subgroups; over the rationals an involution so extended is an arithmetic
   Frobenius at infinitely many primes.
+* `InverseGalois.CFT.PiDual` records that a linear form on a finite product of copies of a field is
+  the pairing with a vector of coefficients, so that a vector lies in a subspace as soon as it is
+  killed by every coefficient vector killing the subspace.
 * `InverseGalois.CFT.Multiquadratic` prescribes the signs by which an automorphism moves a finite
   family of square roots: a sign pattern is realized by an automorphism fixing a given intermediate
   field pointwise exactly when it is annihilated by the subsets whose product of square roots
