@@ -315,7 +315,9 @@ import InverseGalois.CFT.Scholz.UnramifiedSolutionTwo
 import InverseGalois.CFT.SplitCompositum
 import InverseGalois.CFT.SplitInertiaPrime
 import InverseGalois.CFT.SplitSup
+import InverseGalois.CFT.SqrtCompositum
 import InverseGalois.CFT.SqrtNegOne
+import InverseGalois.CFT.SqrtRamification
 import InverseGalois.CFT.SquareClasses
 import InverseGalois.CFT.SubgroupCounting
 import InverseGalois.CFT.SubgroupHilbert90
