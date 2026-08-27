@@ -258,6 +258,7 @@ import InverseGalois.CFT.Scholz.Condition
 import InverseGalois.CFT.Scholz.CorrectingCharacter
 import InverseGalois.CFT.Scholz.CorrectingSubfield
 import InverseGalois.CFT.Scholz.CyclicSupplement
+import InverseGalois.CFT.Scholz.DecompositionLift
 import InverseGalois.CFT.Scholz.FixedFieldRamification
 import InverseGalois.CFT.Scholz.FrattiniInertia
 import InverseGalois.CFT.Scholz.FrattiniInertiaBound
@@ -649,6 +650,11 @@ it that are available here.
   with a homomorphism trivial on inertia: once the residue extension is large enough to admit one,
   the restriction of the solution to inertia extends to a character of the whole decomposition
   group with values in the kernel of the embedding problem.
+* `InverseGalois.CFT.Scholz.DecompositionLift` performs that extension at a prime of a number
+  field.  The quotient of the decomposition group by the inertia subgroup is the Galois group of
+  the residue extension and is cyclic, so a solution which is unramified at the prime, and hence
+  takes values in the kernel on inertia, extends over that quotient as soon as the residue degree
+  is divisible by the order of the group of the embedding problem.
 * `InverseGalois.CFT.Scholz.CorrectingSubfield` carries a correcting character built inside an
   algebraic closure into any larger field containing the subfield it was built on.
 * `InverseGalois.CFT.Scholz.UnramifiedSolution` assembles the whole correction: adjoining the
