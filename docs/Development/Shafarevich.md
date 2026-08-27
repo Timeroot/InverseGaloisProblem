@@ -1935,13 +1935,145 @@ that invariant:
    `cycSubfield ℓ` collapses.
 2. **The dyadic corrector.**  `IsInertiaRankOneAt 2` is false and stays false (§0.16); what replaces
    it is a rank-**two** cancellation at the dyadic place, the two generators being the classes of
-   `−1` and `2`.  Since the sign is no longer part of the target, `{−1, 2, −2}` spans it exactly:
-   deficiency zero, and the auxiliary prime keeps its congruence `q ≡ 1 mod 2^N` (no `q ≡ 3 mod 4`
-   is needed, which is what makes route (c) better than §0.17's escape).
+   `−1` and `2`.  `{−1, 2, −2}` spans the target exactly: deficiency zero, and the auxiliary prime
+   keeps its congruence `q ≡ 1 mod 2^N` (no `q ≡ 3 mod 4` is needed, which is what makes route (c)
+   better than §0.17's escape).  *The justification of "deficiency zero" given when this was first
+   written was wrong; see §0.21 for the correct one and for what it costs.*
 3. **§0.16 item 1**, the radicand.  `RadicalDisjoint`/`NilpotentRadical` are false at `2`; the
    replacement is the dimension count against the quadratic subfields of `A` — the bad radicands
    form a subgroup of `ℚ^×/(ℚ^×)²` of order `2^{d(G)}`, and `Scholz/ResidueSpan.lean` has to be made
    to dodge it.
+
+---
+
+## 0.21 Status (2026-08-27) — the `ℓ = 2` local–global step is *landed*; the dyadic corrector, correctly analysed
+
+### What landed
+
+Three modules, all sorry-free and in the default build.
+
+* **`Scholz/ProperSolutionTwo.lean`** — `hasProperSolution_two`.  A central Frattini embedding
+  problem with kernel of order `2`, posed over a field `A` of two-power degree satisfying `(S_{N+1})`,
+  is solvable over an extension of `A`.  The proof is the direct application of §0.20.3's
+  hypothesis-free ABHN over `ℚ`: `IsPrimitiveRoot (-1 : ℚ) 2` supplies the root of unity, so there is
+  **no cyclotomic base change**, and there is **no condition at the archimedean place**.  The local
+  hypothesis at each ramified place is `isCyclic_and_exists_hasResidueChar_rat`, which reads Serre's
+  condition off the places of `A` directly instead of transporting it to a compositum.
+* **`Scholz/CentralStepTwo.lean`** — `exists_surjective_hom_of_isScholz_two` and
+  `exists_surjective_hom_of_centralStep_two`.  Same interface as the odd-`ℓ`
+  `exists_surjective_hom_of_{isScholz,centralStep}`, with `Odd ℓ` gone and the coprime-index descent
+  deleted: the `ρ` that `HasProperSolution` supplies **is** `galRestrictLE`, which is exactly what
+  the coercion clause of `HasProperSolution` says.
+* **`Scholz/CentralCyclicLift.lean`** — the group-theoretic heart of the dyadic corrector, see below.
+
+One Lean note worth keeping.  `ProperSolutionTwo`'s local lemma is stated for
+`{K : Type*} [Field K] [NumberField K] [IsGalois ℚ K]` with **no `[Algebra ℚ K]` binder**.  Adding
+one makes the algebra structure an opaque `fvar` which cannot unify with the
+`DivisionRing.toRatAlgebra` baked into `IsScholz.isCyclic_stabilizer`,
+`mul_card_stabilizer_dvd_sub_one` and `inertia_ne_bot_iff_mem_ramifiedSet`.  For
+`A : IntermediateField ℚ (AlgebraicClosure ℚ)` the two candidate instances
+`IntermediateField.algebra' A` and `DivisionRing.toRatAlgebra` are equal by `rfl`, so the call site
+works; it is only the section variable that breaks it.
+
+### The dyadic corrector: the earlier sketch was right, the earlier *reason* was not
+
+§0.20.3 item 2 asserted that `{−1, 2, −2}` spans the dyadic target exactly, i.e. deficiency zero.
+That conclusion stands.  The justification offered there — "the decomposition group at `2` of the
+solution field is abelian, so its inertia character is determined by `ℚ₂`" — does **not** work, and
+the failure is instructive enough to record.
+
+Write `L₀ ⊇ A` for the solution field, `A` unramified at `2`, `C := ker f ≅ ℤ/2` central.  Then
+`I_2(L₀) ⊆ Gal(L₀/A) = C` and `D_2(L₀)/I_2` is cyclic, so `D := D_2(L₀)` really is abelian.  But
+abelian is not enough: `D` can be cyclic of order `4` with `I_2 = D²` the subgroup of squares, and
+then `Ψ|_{I_2}` — a surjection `I_2 ↠ ℤ/2` — does **not** extend to any character of `D`, so no
+comparison with a character of `D` can produce the corrector.  Such a `D` genuinely occurs: by local
+class field theory the map `ℚ₂^× → ℤ/4`, `2 ↦ 1`, `−1 ↦ 2`, `1 + 4ℤ₂ ↦ 0`, cuts out a cyclic quartic
+extension of `ℚ₂` with `e = 2, f = 2` whose inertia subgroup is the squares.
+
+What *is* true is the same statement one level up, over the absolute Galois group of `ℚ₂` rather
+than over `D`:
+
+> Because `2` is unramified in `A`, the local embedding problem at `2` has an **unramified**
+> solution: `G_{ℚ₂}` has a procyclic unramified quotient, and Frobenius may be sent to any preimage
+> in `G` of the Frobenius image in `H`.  The global solution and the unramified local one differ by
+> a genuine character `μ : G_{ℚ₂} → C` (their ratio is a homomorphism because `C` is central), and
+> `Ψ|_{I_2} = μ|_{I_2}` because the unramified solution is trivial on inertia.  A quadratic character
+> of `ℚ₂` is `χ_c` for `c ∈ ℚ₂^×/(ℚ₂^×)²`, a group of order `8` with representatives
+> `±1, ±2, ±5, ±10` of which `5` is the unramified class; so `μ|_{I_2} = χ_d|_{I_2}` for one of the
+> four **rational** classes `d ∈ {1, −1, 2, −2}`.
+
+Deficiency zero, confirmed — and the reason is the unramified local solution, not abelianness.
+
+Two consequences worth stating plainly.
+
+* Whether the dyadic place can be removed is **not** an invariant of the solution that a twist can
+  change: twisting `Ψ` by a quadratic character `λ` replaces `Ψ|_{I_2}` by `Ψ|_{I_2}·λ|_{I_2}`, and
+  `λ|_{I_2}` is always one of the four classes above.  It is a property of the embedding problem,
+  and the argument above is what makes it always favourable.
+* Allowing the corrector to be `χ_m` for a general rational `m` (rather than `m ∈ {−1, 2, −2}`) buys
+  nothing at `2`: `χ_m|_{I_2}` depends only on the class of `m` in `ℚ₂^×/(ℚ₂^×)²` modulo the
+  unramified class, i.e. only on `m` mod `⟨5⟩`, i.e. on one of the same four classes.  An auxiliary
+  prime `q ≡ 5 mod 8` contributes the unramified class and is invisible on inertia.
+
+### Making the unramified lift finite — `Scholz/CentralCyclicLift.lean`
+
+The argument above lives on `G_{ℚ₂}`, which the repository does not have.  It can be made finite.
+The only thing `G_{ℚ₂}` was used for is: *the unramified quotient is procyclic of order divisible by
+`exp G`, so Frobenius may be sent anywhere.*  A finite Galois `M/ℚ` has `D/I` cyclic of order the
+residue degree at `2`, so it suffices to make the residue degree divisible by `exp G` — and that
+costs one elementary enlargement:
+
+> For every `k`, any prime divisor `r` of `2^{2^k} + 1` has `ord_r(2) = 2^{k+1}` exactly
+> (`2^{2^k} ≡ −1`, so the order divides `2^{k+1}` and does not divide `2^k`).  Hence in `ℚ(ζ_r)` the
+> prime `2` is unramified with residue degree `2^{k+1}`.  Adjoin such an `r` with `2^{k+1} ≥ |G|`.
+
+Inertia upstairs surjects onto inertia downstairs, so a cancellation proved over `M·ℚ(ζ_r)` descends
+to `M`; and the enlargement is unramified at `2` and at every prime of the Scholz set, so it costs
+the induction invariant nothing except the prime `r`, which is an ordinary correctable prime.
+
+With the residue degree arranged, the group-theoretic step is exactly:
+
+```lean
+InverseGalois.CFT.exists_monoidHom_range_le_ker_eqOn
+    {D G H : Type*} [Group D] [Group G] [Group H] {I : Subgroup D} [I.Normal]
+    (hcyc : IsCyclic (D ⧸ I)) (hexp : ∀ g : G, g ^ Nat.card (D ⧸ I) = 1)
+    {f : G →* H} (hZ : f.ker ≤ Subgroup.center G) {θ : D →* G} (hI : ∀ σ ∈ I, θ σ ∈ f.ker) :
+  ∃ μ : D →* G, μ.range ≤ f.ker ∧ ∀ σ ∈ I, μ σ = θ σ
+```
+
+together with its `Nat.card G ∣ Nat.card (D ⧸ I)` corollary.  The proof picks a generator of `D ⧸ I`
+and a preimage `x`, builds the homomorphism `D →* G` killing `I` and sending `x ↦ θ x` (legitimate
+because the order of the quotient kills `G`), observes that it agrees with `θ` after composing with
+`f` — the two agree on `I` and at `x`, which generate `D` — and takes the pointwise ratio, which is
+a homomorphism because `f.ker` is central.  Supporting lemma:
+`exists_monoidHom_apply_eq_of_forall_mem_zpowers`, a homomorphism out of a cyclic group prescribed
+freely on a generator.
+
+### What the dyadic corrector still needs
+
+1. **(F2), the local Kummer fact.**  Let `M/ℚ` be finite Galois, `P | 2`, `D` and `I` its
+   decomposition and inertia groups, and `μ : D →* ℤ/2` any homomorphism.  Then there is
+   `d ∈ {1, −1, 2, −2}` with `μ` and `χ_d` agreeing on the inertia subgroup at `2` of `M·ℚ(√d)`.
+   Equivalently: `[ℚ₂^× : (ℚ₂^×)²] = 8` with representatives `±1, ±2, ±5, ±10`, `5` the unramified
+   class, plus Kummer theory in a field of characteristic `≠ 2` containing `μ₂` — every quadratic
+   extension of `ℚ₂` is `ℚ₂(√c)`.  This is the one genuinely arithmetic brick left at the dyadic
+   place; it wants the completion `v.adicCompletion ℚ` and the unit-square-class computation, not
+   local class field theory.
+2. **(F3), the `θ`-relative refactor of `Scholz/RamificationControl.lean`.**  `HasInertiaCancellation`
+   currently quantifies over *all* `θ`; at `2` the cancellation holds only for the solution actually
+   in hand.  `HasCorrectingChar` must therefore carry the current solution as a parameter, and
+   `exists_twist_ramifiedSet_inter` must re-establish it after each twist.  That is sound — twisting
+   at `p` multiplies the solution by a character trivial on inertia at every `q ≠ p`, so the
+   restriction to inertia at `q` is unchanged — but `exists_twist_ramifiedSet_sdiff` does not
+   currently expose the twisting formula `ψ₁ = ψ · χ^a`, so it needs strengthening first.
+3. **`Scholz/UnramifiedSolution.lean`.**  `hodd` and `IsInertiaRankOneAt ℓ` enter
+   `exists_galEquiv_ramifiedSet_subset` at exactly two points: the call to
+   `exists_galEquiv_of_centralStep` (now replaceable by an `ℓ = 2` analogue built on
+   `exists_surjective_hom_of_centralStep_two`), and the call to `hasInertiaCancellation_of_isPGroup`
+   at `p = ℓ`.  Away from `ℓ`, cyclic inertia already gives the cancellation for free, so the surgery
+   is confined to those two lines plus item 2.
+4. **§0.16 item 1**, the radicand, unchanged: `RadicalDisjoint`/`NilpotentRadical` are false at `2`
+   and the replacement is the dimension count against the quadratic subfields of `A`.
 
 ---
 

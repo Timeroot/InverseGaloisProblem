@@ -245,7 +245,9 @@ import InverseGalois.CFT.Scholz.AuxPrimeField
 import InverseGalois.CFT.Scholz.BadPrimes
 import InverseGalois.CFT.Scholz.BaseChange
 import InverseGalois.CFT.Scholz.BaseDescent
+import InverseGalois.CFT.Scholz.CentralCyclicLift
 import InverseGalois.CFT.Scholz.CentralStep
+import InverseGalois.CFT.Scholz.CentralStepTwo
 import InverseGalois.CFT.Scholz.CompositumTransport
 import InverseGalois.CFT.Scholz.Condition
 import InverseGalois.CFT.Scholz.CorrectingCharacter
@@ -274,6 +276,7 @@ import InverseGalois.CFT.Scholz.PrimeChoice
 import InverseGalois.CFT.Scholz.PrimeIndependence
 import InverseGalois.CFT.Scholz.PrimeOrderInertia
 import InverseGalois.CFT.Scholz.ProperSolution
+import InverseGalois.CFT.Scholz.ProperSolutionTwo
 import InverseGalois.CFT.Scholz.RadicalDisjoint
 import InverseGalois.CFT.Scholz.RadicalSplitting
 import InverseGalois.CFT.Scholz.RadicalTower
@@ -592,6 +595,11 @@ it that are available here.
   an enlarged base field of degree prime to the order of the kernel back to the original base.
 * `InverseGalois.CFT.Scholz.CentralStep` combines the two: the solution obtained over the cyclotomic
   compositum is carried to the normal closure over the rationals and descended there.
+* `InverseGalois.CFT.Scholz.ProperSolutionTwo` solves a central Frattini embedding problem with
+  kernel of order two directly over the given field, because `-1` is a primitive square root of
+  unity in the rationals and the criterion needs no condition at the archimedean place.
+* `InverseGalois.CFT.Scholz.CentralStepTwo` records that for a kernel of order two the solution is
+  therefore already defined over the rationals, so no base change and no descent are involved.
 * `InverseGalois.CFT.CutField` cuts a Galois extension down to the fixed field of the kernel of a
   homomorphism of its Galois group, read inside the ambient field, and identifies the Galois group
   of the result with the target of the homomorphism.
@@ -632,6 +640,10 @@ it that are available here.
 * `InverseGalois.CFT.Scholz.AbelianInertia` reads that local fact inside the decomposition group:
   the values of such a solution on inertia are central, so the solution factors through the
   abelianized decomposition group, where cyclicity of the image of inertia is all that is needed.
+* `InverseGalois.CFT.Scholz.CentralCyclicLift` compares such a solution on a decomposition group
+  with a homomorphism trivial on inertia: once the residue extension is large enough to admit one,
+  the restriction of the solution to inertia extends to a character of the whole decomposition
+  group with values in the kernel of the embedding problem.
 * `InverseGalois.CFT.Scholz.CorrectingSubfield` carries a correcting character built inside an
   algebraic closure into any larger field containing the subfield it was built on.
 * `InverseGalois.CFT.Scholz.UnramifiedSolution` assembles the whole correction: adjoining the
