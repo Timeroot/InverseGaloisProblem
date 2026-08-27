@@ -176,13 +176,16 @@ theorem exists_galEquiv_ramifiedSet_subset (hℓ : ℓ.Prime) (hodd : Odd ℓ)
     intro p _ hpS
     rw [hfixcomp]
     exact hpS
+  have hcharΨ : ∀ p ∈ T, p ∉ S → HasCorrectingCharAt ↥M f p Ψ := fun p hpT hpS =>
+    hasCorrectingCharAt_of_hasCorrectingChar (hclass p hpT).1 (hchar p hpT hpS) (hπ p hpT hpS)
   have hsub : ramifiedSet ↥(IntermediateField.fixedField Ψ.ker) \ S ⊆ ↑T := by
     rw [hfixΨ]
     intro q hq
     refine Finset.mem_coe.mpr (Finset.mem_sdiff.mpr ⟨Set.Finite.mem_toFinset _ |>.mpr hq.1, ?_⟩)
     exact fun h => hq.2 ((Set.Finite.mem_toFinset _).mp h)
   obtain ⟨ψ', hψ'surj, hψ'comp, hψ'ram⟩ :=
-    exists_twist_ramifiedSet_inter hf hfr hZ S T Ψ hΨsurj hchar hπ hsub
+    exists_twist_ramifiedSet_inter hf hfr hZ S T (fun q hq => (hclass q hq).1) Ψ hΨsurj hcharΨ hπ
+      hsub
   -- the field cut out by the twisted solution
   have hker' : ψ'.ker ≤ (galRestrictLE hAM).ker := by
     intro σ hσ

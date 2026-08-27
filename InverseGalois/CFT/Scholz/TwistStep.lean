@@ -58,6 +58,7 @@ theorem exists_twist_ramifiedSet_sdiff {f : G →* H} (hf : Function.Surjective 
     (P : Ideal (𝓞 M)) [P.IsPrime] [P.LiesOver (Ideal.span {(p : ℤ)})] (a : ℤ)
     (hcanc : ∀ σ ∈ Ideal.inertia Gal(M/ℚ) P, ψ σ * χ σ ^ a = 1) :
     ∃ ψ' : Gal(M/ℚ) →* G, Function.Surjective ψ' ∧ f.comp ψ' = f.comp ψ ∧
+      (∀ σ, ψ' σ = ψ σ * χ σ ^ a) ∧
       ramifiedSet ↥(IntermediateField.fixedField ψ'.ker) ⊆
         ramifiedSet ↥(IntermediateField.fixedField ψ.ker) \ {p} := by
   have hχker : ∀ x, χ x ∈ f.ker := fun x => hχ ⟨x, rfl⟩
@@ -69,7 +70,8 @@ theorem exists_twist_ramifiedSet_sdiff {f : G →* H} (hf : Function.Surjective 
   refine ⟨ψ', surjective_mulCentral hf hfr hψ (zpowCentral_mem_center χ hχcen a)
       (fun x => zpowCentral_mem χ hχcen a hχker x),
     comp_mulCentral (zpowCentral_mem_center χ hχcen a)
-      (fun x => zpowCentral_mem χ hχcen a hχker x), ?_⟩
+      (fun x => zpowCentral_mem χ hχcen a hχker x),
+    fun σ => by rw [hψ'def, mulCentral_apply, zpowCentral_apply], ?_⟩
   have key : ∀ q : ℕ, q.Prime → q ≠ p → q ∉ ramifiedSet ↥(IntermediateField.fixedField ψ.ker) →
       q ∉ ramifiedSet ↥(IntermediateField.fixedField ψ'.ker) := by
     intro q hq hqp hqψ

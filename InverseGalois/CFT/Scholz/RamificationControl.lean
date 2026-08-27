@@ -25,11 +25,19 @@ exactly what makes the twist possible — it says that the solution takes values
 inertia there, which is where the character reaches everything.  It is stable under twisting,
 because a twist does not change that composite.
 
+The character is allowed to depend on the solution it corrects, which is what the prime two needs:
+there the supply of characters ramified at two alone is finite, and which of them cancels a given
+solution on inertia is a property of that solution.  A twist at one prime does not disturb inertia
+at any other, because the character effecting it is trivial there, so a character correcting the
+original solution at a second prime still corrects the twisted one.
+
 ## Main definitions
 
 * `InverseGalois.CFT.HasInertiaCancellation`: cancellation on an inertia subgroup, the local input
   the twist needs.
 * `InverseGalois.CFT.HasCorrectingChar`: the character data available at a prime for the twist.
+* `InverseGalois.CFT.HasCorrectingCharAt`: the same data relative to one solution, which is all
+  the correction of that solution uses.
 
 ## Main results
 
@@ -38,6 +46,8 @@ because a twist does not change that composite.
 * `InverseGalois.CFT.hasCorrectingChar_of_normal`: a character of a normal subextension ramified
   only at the prime and totally ramified there, with image the whole kernel, inflates to a
   correcting character upstairs.
+* `InverseGalois.CFT.hasCorrectingCharAt_of_hasCorrectingChar`: a correcting character corrects
+  every solution that is unramified at the prime after composing with the surjection.
 * `InverseGalois.CFT.exists_twist_ramifiedSet_inter`: **a solution of a central Frattini embedding
   problem can be twisted so that it ramifies only inside a prescribed set of primes**, provided a
   correcting character is available at every prime outside that set at which it might ramify.
@@ -84,6 +94,34 @@ def HasCorrectingChar (M : Type*) [Field M] [NumberField M] [IsGalois ℚ M] {G 
           Q.LiesOver (Ideal.span {(q : ℤ)}) → ∀ σ ∈ Ideal.inertia Gal(M/ℚ) Q, χ σ = 1) ∧
         (Ideal.inertia Gal(M/ℚ) P).map χ = f.ker ∧ HasInertiaCancellation M P f.ker
 
+/-- **The character data available at a prime for the twist, relative to one solution.**  This is
+all that correcting that one solution uses: a character of the Galois group with values in the
+kernel of the embedding problem, trivial on the inertia subgroup at every other prime, and cancelling
+the solution on the inertia subgroup at some prime above this one. -/
+def HasCorrectingCharAt (M : Type*) [Field M] [NumberField M] [IsGalois ℚ M] {G H : Type*}
+    [Group G] [Group H] (f : G →* H) (p : ℕ) (θ : Gal(M/ℚ) →* G) : Prop :=
+  ∃ (χ : Gal(M/ℚ) →* G) (P : Ideal (𝓞 M)) (_ : P.IsPrime)
+    (_ : P.LiesOver (Ideal.span {(p : ℤ)})),
+      χ.range ≤ f.ker ∧
+        (∀ q : ℕ, q.Prime → q ≠ p → ∀ Q : Ideal (𝓞 M), Q.IsPrime →
+          Q.LiesOver (Ideal.span {(q : ℤ)}) → ∀ σ ∈ Ideal.inertia Gal(M/ℚ) Q, χ σ = 1) ∧
+        ∃ a : ℤ, ∀ σ ∈ Ideal.inertia Gal(M/ℚ) P, θ σ * χ σ ^ a = 1
+
+/-- **A correcting character corrects every solution that is unramified at the prime after
+composing with the surjection.**  Such a solution takes values in the kernel of the embedding
+problem on inertia there, which is exactly the hypothesis under which the character cancels it. -/
+theorem hasCorrectingCharAt_of_hasCorrectingChar {f : G →* H} {p : ℕ} (hp : p.Prime)
+    (h : HasCorrectingChar M f p) {θ : Gal(M/ℚ) →* G}
+    (hθ : p ∉ ramifiedSet ↥(fixedField (f.comp θ).ker)) :
+    HasCorrectingCharAt M f p θ := by
+  obtain ⟨χ, P, hPp, hPo, hχrange, hχram, hχmap, hcanc⟩ := h
+  haveI := hPp
+  haveI := hPo
+  refine ⟨χ, P, hPp, hPo, hχrange, hχram, hcanc θ χ ?_ hχmap⟩
+  rintro _ ⟨σ, hσ, rfl⟩
+  exact MonoidHom.mem_ker.mpr
+    (eq_one_of_notMem_ramifiedSet_fixedField_ker (f.comp θ) hp hθ P hσ)
+
 /-- **A character of a normal subextension inflates to a correcting character.**  Restriction to a
 normal subextension carries inertia onto inertia, so the inflated character is trivial on inertia at
 a prime unramified in the subextension and reaches, at the prime where the subextension is totally
@@ -122,8 +160,8 @@ inertia at one prime, which leaves the ramification elsewhere untouched and the 
 unchanged, so the bound shrinks by one prime and the process stops. -/
 theorem exists_twist_ramifiedSet_inter {f : G →* H} (hf : Function.Surjective f)
     (hfr : f.ker ≤ frattini G) (hZ : f.ker ≤ Subgroup.center G) (S : Set ℕ) :
-    ∀ (T : Finset ℕ) (ψ : Gal(M/ℚ) →* G), Function.Surjective ψ →
-      (∀ p ∈ T, p ∉ S → HasCorrectingChar M f p) →
+    ∀ (T : Finset ℕ), (∀ q ∈ T, q.Prime) → ∀ ψ : Gal(M/ℚ) →* G, Function.Surjective ψ →
+      (∀ p ∈ T, p ∉ S → HasCorrectingCharAt M f p ψ) →
       (∀ p ∈ T, p ∉ S → p ∉ ramifiedSet ↥(fixedField (f.comp ψ).ker)) →
       ramifiedSet ↥(fixedField ψ.ker) \ S ⊆ ↑T →
       ∃ ψ' : Gal(M/ℚ) →* G, Function.Surjective ψ' ∧ f.comp ψ' = f.comp ψ ∧
@@ -131,24 +169,27 @@ theorem exists_twist_ramifiedSet_inter {f : G →* H} (hf : Function.Surjective 
   intro T
   induction T using Finset.strongInduction with
   | _ T ih =>
-    intro ψ hψ hchar hπ hsub
+    intro hTp ψ hψ hchar hπ hsub
     by_cases hemp : ramifiedSet ↥(fixedField ψ.ker) \ S = ∅
     · have hS := Set.diff_eq_empty.mp hemp
       exact ⟨ψ, hψ, rfl, fun q hq => ⟨hq, hS hq⟩⟩
     obtain ⟨p, hpram, hpS⟩ := Set.nonempty_iff_ne_empty.mpr hemp
     have hpT : p ∈ T := hsub ⟨hpram, hpS⟩
     have hp : p.Prime := hpram.1
-    obtain ⟨χ, P, hPp, hPo, hχrange, hχram, hχmap, hcanc⟩ := hchar p hpT hpS
+    obtain ⟨χ, P, hPp, hPo, hχrange, hχram, a, ha⟩ := hchar p hpT hpS
     haveI := hPp
     haveI := hPo
-    have hψP : (Ideal.inertia Gal(M/ℚ) P).map ψ ≤ f.ker := by
-      intro x hx
-      obtain ⟨σ, hσ, rfl⟩ := hx
-      exact MonoidHom.mem_ker.mpr
-        (eq_one_of_notMem_ramifiedSet_fixedField_ker (f.comp ψ) hp (hπ p hpT hpS) P hσ)
-    obtain ⟨a, ha⟩ := hcanc ψ χ hψP hχmap
-    obtain ⟨ψ₁, hψ₁, hcomp, hram₁⟩ :=
+    obtain ⟨ψ₁, hψ₁, hcomp, hψ₁eq, hram₁⟩ :=
       exists_twist_ramifiedSet_sdiff hf hfr hZ ψ χ hψ hχrange hp hχram P a ha
+    have hchar₁ : ∀ q ∈ T.erase p, q ∉ S → HasCorrectingCharAt M f q ψ₁ := by
+      intro q hq hqS
+      obtain ⟨χ', Q, hQp, hQo, hχ'range, hχ'ram, b, hb⟩ :=
+        hchar q (Finset.mem_of_mem_erase hq) hqS
+      refine ⟨χ', Q, hQp, hQo, hχ'range, hχ'ram, b, fun σ hσ => ?_⟩
+      rw [hψ₁eq σ,
+        hχram q (hTp q (Finset.mem_of_mem_erase hq)) (Finset.mem_erase.mp hq).1 Q hQp hQo σ hσ,
+        one_zpow, mul_one]
+      exact hb σ hσ
     have hπ₁ : ∀ q ∈ T.erase p, q ∉ S → q ∉ ramifiedSet ↥(fixedField (f.comp ψ₁).ker) := by
       intro q hq hqS
       rw [hcomp]
@@ -159,8 +200,8 @@ theorem exists_twist_ramifiedSet_inter {f : G →* H} (hf : Function.Surjective 
       exact Finset.mem_coe.mpr (Finset.mem_erase.mpr
         ⟨fun hqp => h1.2 (Set.mem_singleton_iff.mpr hqp),
           Finset.mem_coe.mp (hsub ⟨h1.1, hq.2⟩)⟩)
-    obtain ⟨ψ', hψ', hcomp', hram'⟩ := ih (T.erase p) (Finset.erase_ssubset hpT) ψ₁ hψ₁
-      (fun q hq hqS => hchar q (Finset.mem_of_mem_erase hq) hqS) hπ₁ hsub₁
+    obtain ⟨ψ', hψ', hcomp', hram'⟩ := ih (T.erase p) (Finset.erase_ssubset hpT)
+      (fun q hq => hTp q (Finset.mem_of_mem_erase hq)) ψ₁ hψ₁ hchar₁ hπ₁ hsub₁
     refine ⟨ψ', hψ', hcomp'.trans hcomp, fun q hq => ?_⟩
     obtain ⟨hq1, hq2⟩ := hram' hq
     exact ⟨(hram₁ hq1).1, hq2⟩
