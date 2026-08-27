@@ -45,6 +45,7 @@ import InverseGalois.CFT.Brauer.SplittingSubfield
 import InverseGalois.CFT.Brauer.TensorSimple
 import InverseGalois.CFT.Brauer.Tower
 import InverseGalois.CFT.CentralCompositum
+import InverseGalois.CFT.CharacterSpan
 import InverseGalois.CFT.Compositum
 import InverseGalois.CFT.CompositumBase
 import InverseGalois.CFT.CompositumLift
@@ -249,10 +250,12 @@ import InverseGalois.CFT.NormSubgroup
 import InverseGalois.CFT.PGroupCompositum
 import InverseGalois.CFT.PiDual
 import InverseGalois.CFT.PiIndex
+import InverseGalois.CFT.PrimeProductSquare
 import InverseGalois.CFT.RestrictLE
 import InverseGalois.CFT.ScalarSemidirect
 import InverseGalois.CFT.Scholz.AbelianInertia
 import InverseGalois.CFT.Scholz.AbelianInertiaTransport
+import InverseGalois.CFT.Scholz.BlockRealization
 import InverseGalois.CFT.Scholz.AuxPrimeChoice
 import InverseGalois.CFT.Scholz.AuxPrimeField
 import InverseGalois.CFT.Scholz.BadPrimes
@@ -322,6 +325,7 @@ import InverseGalois.CFT.SqrtCompositum
 import InverseGalois.CFT.SqrtFrattini
 import InverseGalois.CFT.SqrtNegOne
 import InverseGalois.CFT.SqrtRamification
+import InverseGalois.CFT.SqrtSign
 import InverseGalois.CFT.SquareClasses
 import InverseGalois.CFT.SubgroupCounting
 import InverseGalois.CFT.SubgroupHilbert90
@@ -520,6 +524,12 @@ it that are available here.
 * `InverseGalois.CFT.PiDual` records that a linear form on a finite product of copies of a field is
   the pairing with a vector of coefficients, so that a vector lies in a subspace as soon as it is
   killed by every coefficient vector killing the subspace.
+* `InverseGalois.CFT.CharacterSpan` decomposes a character to the group of order two which vanishes
+  wherever a jointly surjective finite family of such characters vanishes: it is the sum of a
+  subfamily, the character factoring through the joint map as a linear form.
+* `InverseGalois.CFT.PrimeProductSquare` identifies a finite set of primes from the product of its
+  members: the product of two such products is a square exactly when the two sets coincide, and a
+  rational number whose square is a natural number is itself one.
 * `InverseGalois.CFT.Multiquadratic` prescribes the signs by which an automorphism moves a finite
   family of square roots: a sign pattern is realized by an automorphism fixing a given intermediate
   field pointwise exactly when it is annihilated by the subsets whose product of square roots
@@ -832,6 +842,10 @@ it that are available here.
   subextension: an automorphism moves such a square root at most to its negative, so the
   automorphisms fixing it are everything or a maximal subgroup, and either way they contain the
   Frattini subgroup.
+* `InverseGalois.CFT.SqrtSign` records the sign by which an automorphism moves a square root of a
+  base element as a canonical character of the Galois group, additive both in the automorphism and
+  in the square root, so that two square roots with the same character have a product of radicands
+  which is a square in the base field.
 * `InverseGalois.CFT.Scholz.DyadicRadical` clears the cyclotomic layer of the constraint field at
   the prime two: that layer is ramified only at two, so a field unramified at two meets it in the
   rationals and acquires no new square root of an integer congruent to one modulo four.
@@ -839,6 +853,10 @@ it that are available here.
   two has to avoid — those whose radicand is already a square in the field being corrected — and
   reduces orthogonality to them to summing to zero over each block of a family of ramified primes
   accounting for those square roots.
+* `InverseGalois.CFT.Scholz.BlockRealization` supplies such a family: a pairwise disjoint family of
+  blocks of primes whose products have square roots in the field with jointly surjective sign
+  characters, trivial only on the Frattini subgroup, accounts for every square root of a squarefree
+  product of primes there.
 * `InverseGalois.CFT.Scholz.DyadicResidueCorrection` is the correction itself at the prime two: a
   solution whose Frobenius defects sum to zero over each such block realises the group of the
   central step at the required level.
