@@ -3,6 +3,7 @@ Copyright (c) 2025. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.CutField
 import InverseGalois.CFT.RestrictLE
 import InverseGalois.CFT.Scholz.ProperSolutionTwo
 
@@ -24,6 +25,9 @@ restriction of automorphisms.
 * `InverseGalois.CFT.exists_surjective_hom_of_centralStep_two`: **the same conclusion under exactly
   the hypotheses of the central step of the Scholz-Reichardt induction**, where the field realises
   the quotient.
+* `InverseGalois.CFT.exists_galEquiv_of_centralStep_two`: **the solution field can be taken to have
+  Galois group the group being realised**, by cutting it down to the fixed field of the kernel of
+  the solution.
 
 ## Tags
 
@@ -84,5 +88,39 @@ theorem exists_surjective_hom_of_centralStep_two {N : ℕ}
   exact exists_surjective_hom_of_isScholz_two hZ hfr hcard
     (t := Function.surjInv hf) (fun h => Function.surjInv_eq hf h) A hG hsch hdvd
     (π₀ := e.toMonoidHom) e.surjective
+
+set_option synthInstance.maxHeartbeats 1000000 in
+set_option maxHeartbeats 1000000 in
+/-- **The solution field of a central step of order two can be taken to have Galois group the group
+being realised.**  Cutting the solution field down to the fixed field of the kernel of the solution
+loses neither the field the problem is posed over nor the realization of the quotient, and makes the
+Galois group a two-group, which is what the analysis of the ramification needs. -/
+theorem exists_galEquiv_of_centralStep_two {N : ℕ}
+    {G H : Type} [Group G] [Group H] [Finite G] {f : G →* H} (hf : Function.Surjective f)
+    (hpg : IsPGroup 2 G) (hZ : f.ker ≤ Subgroup.center G) (hfr : f.ker ≤ frattini G)
+    (hcard : Nat.card ↥f.ker = 2) (hHdvd : Nat.card H ∣ 2 ^ N)
+    (A : IntermediateField ℚ (AlgebraicClosure ℚ)) [IsGalois ℚ ↥A] [NumberField ↥A]
+    (hsch : IsScholz 2 (N + 1) ↥A) (e : Gal(↥A/ℚ) ≃* H) :
+    ∃ (L : IntermediateField ℚ (AlgebraicClosure ℚ)) (hAL : A ≤ L), NumberField ↥L ∧
+      IsGalois ℚ ↥L ∧ ∃ ψ : Gal(↥L/ℚ) ≃* G, ∀ τ, f (ψ τ) = e (galRestrictLE hAL τ) := by
+  obtain ⟨E, hAE, hNFE, hGalE, ψ, hψ, hcomp⟩ :=
+    exists_surjective_hom_of_centralStep_two hf hpg hZ hfr hcard hHdvd A hsch e
+  haveI := hNFE
+  haveI := hGalE
+  have hker : ψ.ker ≤ (galRestrictLE hAE).ker := by
+    intro σ hσ
+    have h1 : e (galRestrictLE hAE σ) = 1 := by
+      rw [← hcomp σ, MonoidHom.mem_ker.mp hσ, map_one]
+    exact MonoidHom.mem_ker.mpr (by simpa using h1)
+  have hAL : A ≤ cutField ψ := le_cutField ψ hAE hker
+  haveI : FiniteDimensional ℚ ↥(cutField ψ) :=
+    (IntermediateField.liftAlgEquiv
+      (IntermediateField.fixedField ψ.ker)).toLinearEquiv.finiteDimensional
+  haveI : NumberField ↥(cutField ψ) := ⟨⟩
+  haveI : IsGalois ℚ ↥(cutField ψ) := ⟨⟩
+  refine ⟨cutField ψ, hAL, inferInstance, inferInstance, galEquivCutField ψ hψ, fun τ => ?_⟩
+  obtain ⟨σ, rfl⟩ := galRestrictLE_surjective (cutField_le ψ) τ
+  rw [galEquivCutField_galRestrictLE ψ hψ σ, hcomp σ,
+    galRestrictLE_galRestrictLE hAL (cutField_le ψ) σ]
 
 end InverseGalois.CFT
