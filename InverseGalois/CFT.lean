@@ -47,6 +47,7 @@ import InverseGalois.CFT.Brauer.Tower
 import InverseGalois.CFT.CentralCompositum
 import InverseGalois.CFT.Compositum
 import InverseGalois.CFT.CompositumBase
+import InverseGalois.CFT.CompositumLift
 import InverseGalois.CFT.CutField
 import InverseGalois.CFT.Cyclotomic.BuildingBlock
 import InverseGalois.CFT.Cyclotomic.Chebotarev
@@ -503,6 +504,11 @@ it that are available here.
   trivial on one factor is central as soon as the other factor is abelian over the base, so that
   the subgroup it generates is normal and an involution of the abelian factor is realized as an
   arithmetic Frobenius at infinitely many primes.
+* `InverseGalois.CFT.CompositumLift` extends an automorphism of one factor of a compositum which
+  fixes the intersection of the two factors to the whole compositum by the identity on the other
+  factor, the Galois correspondence turning the intersection of two intermediate fields into the
+  join of their fixing subgroups; over the rationals an involution so extended is an arithmetic
+  Frobenius at infinitely many primes.
 * `InverseGalois.CFT.PGroupCompositum` bounds the Galois group of a compositum by the product of
   the Galois groups of its factors, so that a compositum of finitely many extensions of `ℓ`-power
   degree again has `ℓ`-power degree.
