@@ -66,6 +66,7 @@ import InverseGalois.CFT.CyclotomicCompositum
 import InverseGalois.CFT.Decomposition
 import InverseGalois.CFT.Disjoint
 import InverseGalois.CFT.FibreCompositum
+import InverseGalois.CFT.FrobeniusInvolution
 import InverseGalois.CFT.FrobeniusStabilizer
 import InverseGalois.CFT.GaloisDescent
 import InverseGalois.CFT.GroupCohomology.Classification
@@ -508,6 +509,10 @@ it that are available here.
   as the prime splits completely in the other, so residue degree one is inherited.
 * `InverseGalois.CFT.SplitSup` draws the conclusion for an arbitrary pair of number fields: a prime
   splitting completely in each of two number fields splits completely in their compositum.
+* `InverseGalois.CFT.FrobeniusInvolution` realizes an element of order two generating a normal
+  subgroup of the Galois group as the arithmetic Frobenius at a prime avoiding any prescribed
+  finite set, by comparing the primes splitting completely in the fixed field of the subgroup it
+  generates with those splitting completely in the whole field.
 
 ## Towards Kronecker–Weber
 
