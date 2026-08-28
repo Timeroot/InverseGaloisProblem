@@ -258,6 +258,7 @@ import InverseGalois.CFT.ScalarSemidirect
 import InverseGalois.CFT.Scholz.AbelianInertia
 import InverseGalois.CFT.Scholz.AbelianInertiaTransport
 import InverseGalois.CFT.Scholz.BlockGenerators
+import InverseGalois.CFT.Scholz.BlockInertia
 import InverseGalois.CFT.Scholz.BlockRealization
 import InverseGalois.CFT.Scholz.AuxPrimeChoice
 import InverseGalois.CFT.Scholz.AuxPrimeField
@@ -344,6 +345,7 @@ import InverseGalois.CFT.SqrtFrattini
 import InverseGalois.CFT.SqrtNegOne
 import InverseGalois.CFT.SqrtRamification
 import InverseGalois.CFT.SqrtSign
+import InverseGalois.CFT.SqrtUnramified
 import InverseGalois.CFT.SquareClasses
 import InverseGalois.CFT.SubgroupCounting
 import InverseGalois.CFT.SubgroupHilbert90
