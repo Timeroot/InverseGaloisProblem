@@ -6,6 +6,7 @@ import InverseGalois.Solvable.Shafarevich.PrimePower
 import InverseGalois.Solvable.Shafarevich.SplitAbelian
 import InverseGalois.Solvable.Shafarevich.AbelianKernel
 import InverseGalois.Solvable.Shafarevich.MinimalKernel
+import InverseGalois.Solvable.Shafarevich.FrattiniKernel
 import InverseGalois.Solvable.Shafarevich.ProductAbelian
 
 /-!
@@ -44,6 +45,10 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   is abelian.
 * `InverseGalois.Solvable.Shafarevich.MinimalKernel` continues that filtration through minimal
   normal subgroups, so that the kernel may be taken elementary abelian and minimal.
+* `InverseGalois.Solvable.Shafarevich.FrattiniKernel` splits such an embedding problem in two: a
+  minimal kernel outside the Frattini subgroup has a complement, so the problem is split with
+  abelian kernel, and over `â„š(T)` that half is already settled; what remains is the case of a
+  kernel inside the Frattini subgroup.
 * `InverseGalois.Solvable.Shafarevich.ProductAbelian` settles the split embedding problems with
   abelian kernel and trivial action: a realizable group stays realizable after multiplying by an
   arbitrary finite abelian group, by adjoining cyclic subfields of cyclotomic fields ramified at
