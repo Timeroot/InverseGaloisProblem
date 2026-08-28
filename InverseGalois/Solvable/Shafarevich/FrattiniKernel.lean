@@ -27,6 +27,8 @@ What is left is the Frattini case, and that is the arithmetic core of Shafarevic
   hypothesis: embedding problems whose kernel is a minimal elementary abelian normal subgroup
   *inside the Frattini subgroup*.
 * `Shafarevich.SplitAbelianEP` — split embedding problems with abelian kernel, over `ℚ`.
+* `Shafarevich.CyclicWreathEP` and `Shafarevich.splitAbelianEP_of_cyclicWreathEP` — the split half
+  needs only wreath products by a finite *cyclic* group.
 * `Shafarevich.elementaryAbelianKernel_of_frattini` — the dichotomy, for an arbitrary
   quotient-closed realization predicate.
 * `Shafarevich.elementaryAbelianKernelEPRegular_of_frattiniKernelEPRegular` — over `ℚ(T)` the split
@@ -126,6 +128,25 @@ def SplitAbelianEP : Prop :=
   ∀ (A U : Type) [CommGroup A] [Finite A] [Group U] [Finite U] (φ : U →* MulAut A),
     IsInverseGalois U → IsInverseGalois (A ⋊[φ] U)
 
+/-- **Wreathing a realizable group by a finite cyclic group preserves realizability over `ℚ`.**
+
+This single statement carries the whole split half of Shafarevich's theorem: the abelian kernel of
+a split embedding problem is a quotient of a wreath product with the same base group, and a wreath
+product by a finite abelian group is built out of wreath products by finite cyclic ones. -/
+def CyclicWreathEP : Prop :=
+  ∀ (C U : Type) [CommGroup C] [Finite C] [IsCyclic C] [Group U] [Finite U],
+    IsInverseGalois U → IsInverseGalois (C ≀ᵣ U)
+
+/-- **A cyclic bottom group suffices for the split half.**
+
+`RegularWreathProduct.toSemidirectProduct` presents `A ⋊[φ] U` as a quotient of `A ≀ᵣ U`, whose
+action does not depend on `φ`, and `IsInverseGalois.wreath_of_isCyclic` builds `A ≀ᵣ U` for an
+arbitrary finite abelian `A` out of the cyclic case. -/
+theorem splitAbelianEP_of_cyclicWreathEP (h : CyclicWreathEP) : SplitAbelianEP :=
+  fun A U _ _ _ _ φ hU =>
+    IsInverseGalois.semidirectProduct_of_wreath φ
+      (IsInverseGalois.wreath_of_isCyclic (fun C H _ _ _ _ _ hH => h C H hH) A U hU)
+
 /-! ## The dichotomy -/
 
 /-- **An embedding problem with minimal elementary abelian kernel is either split or a Frattini
@@ -215,5 +236,11 @@ theorem isSolvable_isInverseGalois_of_frattiniKernelEP (h : FrattiniKernelEP)
     (hs : SplitAbelianEP) (G : Type) [Group G] [Finite G] [IsSolvable G] : IsInverseGalois G :=
   isSolvable_isInverseGalois_of_elementaryAbelianKernelEP
     (elementaryAbelianKernelEP_of_frattiniKernelEP h hs) G
+
+/-- **Shafarevich's theorem, reduced to Frattini embedding problems and to wreath products by a
+finite cyclic group.** -/
+theorem isSolvable_isInverseGalois_of_frattiniKernelEP_of_cyclicWreathEP (h : FrattiniKernelEP)
+    (hc : CyclicWreathEP) (G : Type) [Group G] [Finite G] [IsSolvable G] : IsInverseGalois G :=
+  isSolvable_isInverseGalois_of_frattiniKernelEP h (splitAbelianEP_of_cyclicWreathEP hc) G
 
 end Shafarevich
