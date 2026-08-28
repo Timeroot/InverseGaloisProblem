@@ -256,6 +256,7 @@ import InverseGalois.CFT.RestrictLE
 import InverseGalois.CFT.ScalarSemidirect
 import InverseGalois.CFT.Scholz.AbelianInertia
 import InverseGalois.CFT.Scholz.AbelianInertiaTransport
+import InverseGalois.CFT.Scholz.BlockGenerators
 import InverseGalois.CFT.Scholz.BlockRealization
 import InverseGalois.CFT.Scholz.AuxPrimeChoice
 import InverseGalois.CFT.Scholz.AuxPrimeField
@@ -293,6 +294,7 @@ import InverseGalois.CFT.Scholz.InertiaRankOne
 import InverseGalois.CFT.Scholz.InertiaTwist
 import InverseGalois.CFT.Scholz.LocalTransport
 import InverseGalois.CFT.Scholz.MultiquadraticBase
+import InverseGalois.CFT.Scholz.MultiquadraticSqrt
 import InverseGalois.CFT.Scholz.NilpotentOdd
 import InverseGalois.CFT.Scholz.NilpotentRadical
 import InverseGalois.CFT.Scholz.NilpotentSylowTwo
@@ -317,6 +319,7 @@ import InverseGalois.CFT.Scholz.SplitCase
 import InverseGalois.CFT.Scholz.SplitReduction
 import InverseGalois.CFT.Scholz.SplitStep
 import InverseGalois.CFT.Scholz.StepRamification
+import InverseGalois.CFT.Scholz.StepSqrt
 import InverseGalois.CFT.Scholz.StrongScholz
 import InverseGalois.CFT.Scholz.Tame
 import InverseGalois.CFT.Scholz.Twist
@@ -779,6 +782,10 @@ it that are available here.
 * `InverseGalois.CFT.Scholz.StepRamification` pins the ramified primes of that step down to an
   equality: ramification propagates upward from both factors, and the new factor is ramified at its
   branching prime because a number field unramified everywhere is the rationals.
+* `InverseGalois.CFT.Scholz.StepSqrt` supplies the square root the step carries at the prime two:
+  from level two on the branching prime is congruent to one modulo four, so a Gauss sum in the
+  cyclotomic field of that conductor squares to it and generates the quadratic new factor, the
+  Galois group of a cyclotomic field of prime conductor having a single subgroup of index two.
 * `InverseGalois.CFT.Scholz.Realization` bundles a field realising a group and satisfying `(S_N)`,
   and iterates the split step to realise every finite abelian `ℓ`-group at every level.
 * `InverseGalois.CFT.Scholz.Induction` isolates the central embedding step of the induction as a
@@ -875,10 +882,19 @@ it that are available here.
   blocks of primes whose products have square roots in the field with jointly surjective sign
   characters, trivial only on the Frattini subgroup, accounts for every square root of a squarefree
   product of primes there.
+* `InverseGalois.CFT.Scholz.BlockGenerators` makes that family easy to carry along an induction:
+  when the square roots of the blocks are moved in sign by the distinguished generators of a free
+  object of positive `2`-class exactly diagonally, the joint sign character is the coordinate
+  character read through the realization, so both conditions hold at once.
 * `InverseGalois.CFT.Scholz.MultiquadraticBase` starts the dyadic induction: iterating the split
   step at the prime two from the rationals produces a field satisfying `(S_N)` ramified at exactly
   as many distinct primes as the number of quadratic layers, with elementary abelian Galois group —
-  the free object of that rank and `2`-class one — and with each ramified prime a block of its own.
+  the free object of that rank and `2`-class one — and with each ramified prime a block of its own,
+  equipped with a square root.
+* `InverseGalois.CFT.Scholz.MultiquadraticSqrt` matches those square roots to the generators: a
+  product of a nonempty subfamily of them is irrational, so every sign pattern is realized by an
+  automorphism and the joint sign character, the two groups having the same order, is an
+  isomorphism onto the free object of rank `d` and `2`-class one.
 * `InverseGalois.CFT.Scholz.StrongScholz` carries that data as the invariant of the induction on
   the `2`-class: a Scholz field realising a free object together with a pairwise disjoint family of
   blocks accounting for its square roots; the multiquadratic base supplies the case of class one,

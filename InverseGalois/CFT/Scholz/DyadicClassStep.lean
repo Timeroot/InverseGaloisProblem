@@ -109,7 +109,7 @@ theorem exists_uncorrected_classStep {δ c N : ℕ} (hc : 1 ≤ c)
   haveI := hNF
   haveI := hGal
   refine ⟨L, hAL, hNF, hGal, hram, ?_, ψ, hcomp⟩
-  exact R.isBlockSpanned.of_le_of_ker_le_frattini hAL
+  exact (R.isBlockSpanned hc).of_le_of_ker_le_frattini hAL
     (ker_galRestrictLE_le_frattini_of_comp hAL (FreePClass.ker_proj_le_frattini 2 δ c hc) hcomp)
 
 end InverseGalois.CFT

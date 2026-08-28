@@ -7,6 +7,7 @@ import InverseGalois.Solvable.PCentralWord
 import InverseGalois.Solvable.PCentralFrattini
 import InverseGalois.Solvable.PCentralTower
 import InverseGalois.Solvable.PCentralCoord
+import InverseGalois.Solvable.PCentralCharacter
 import InverseGalois.Solvable.ElementaryAbelian
 import InverseGalois.Solvable.CentralDual
 import InverseGalois.Solvable.PCentralShrink
@@ -72,6 +73,10 @@ free of arithmetic input and applicable to both realization predicates of the de
 * `InverseGalois.Solvable.PCentralCoord` identifies the bottom rung of that tower, the free object
   of `p`-class one and rank `d`, with the elementary abelian group of rank `d` and exponent `p`, by
   reading off the coordinates of an element along the generators.
+* `InverseGalois.Solvable.PCentralCharacter` composes that identification with the reduction of the
+  class to give the free object of positive `p`-class a canonical character onto the elementary
+  abelian group of the same rank, characterized by its values on the distinguished generators, onto,
+  and with kernel inside the Frattini subgroup.
 * `InverseGalois.Solvable.ElementaryAbelian` recognizes a finite abelian group of exponent dividing
   a prime and of order a power of it as that same elementary abelian group, and hence as the free
   object of `p`-class one, its exponent making it a vector space and its order the dimension.
