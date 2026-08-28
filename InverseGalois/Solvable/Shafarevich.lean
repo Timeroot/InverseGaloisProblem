@@ -11,7 +11,7 @@ import InverseGalois.Solvable.Shafarevich.ProductAbelian
 import InverseGalois.Solvable.Shafarevich.Radicand
 import InverseGalois.Solvable.Shafarevich.RadicalTower
 import InverseGalois.Solvable.Shafarevich.WreathGalois
-import InverseGalois.Solvable.Shafarevich.PrimeWreath
+import InverseGalois.Solvable.Shafarevich.Ikeda
 
 /-!
 # Shafarevich's theorem
@@ -63,7 +63,7 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   an orbit and shows the resulting field is Galois over the ground field.
 * `InverseGalois.Solvable.Shafarevich.WreathGalois` computes the Galois group of that field: it is
   the regular wreath product of the `p`-th roots of unity by the Galois group of the orbit's field.
-* `InverseGalois.Solvable.Shafarevich.PrimeWreath` deduces Ikeda's theorem for a kernel of prime
-  order, which is all the split half of the reduction consumes, leaving the Frattini-kernel
+* `InverseGalois.Solvable.Shafarevich.Ikeda` deduces Ikeda's theorem, that every split embedding
+  problem over `â„š` with finite abelian kernel is solvable, and so leaves the Frattini-kernel
   embedding problem as the one remaining hypothesis of Shafarevich's theorem.
 -/
