@@ -10,6 +10,7 @@ import InverseGalois.CFT.Scholz.FrobeniusDefect
 import InverseGalois.CFT.Scholz.FrobeniusSymbol
 import InverseGalois.CFT.Scholz.PrimeOrderInertia
 import InverseGalois.CFT.Scholz.Realization
+import InverseGalois.CFT.Scholz.SplitInertiaAt
 import InverseGalois.CFT.Scholz.UnramifiedSolution
 import InverseGalois.CFT.SplitCompositum
 import InverseGalois.CFT.SplitInertiaPrime
@@ -98,7 +99,12 @@ of the units modulo that modulus whose power residue symbols are the Frobenius d
 ramified below; the orthogonality is exactly what makes such a character available.  The twist
 cancels those defects without disturbing the inertia there, and at a prime split completely below —
 one dividing the modulus, or one the solution ramifies at afresh — the decomposition group lands in
-the kernel of the step, a group of prime order. -/
+the kernel of the step, a group of prime order.
+
+The defects are read at a prescribed finite set of primes containing the ramified ones, whose
+further members split completely below; at such a member the defect is an arithmetic Frobenius
+itself, again an element of the kernel of the step.  Cancelling the defect there costs nothing and
+buys residue degree one at every prime of the set, ramified in the correction or not. -/
 theorem exists_scholz_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) [NeZero ℓ] {N : ℕ}
     {G H : Type} [Group G] [Group H] [Finite G] {f : G →* H} (hf : Function.Surjective f)
     (hZ : f.ker ≤ Subgroup.center G) (hfr : f.ker ≤ frattini G) (hcard : Nat.card ↥f.ker = ℓ)
@@ -106,30 +112,28 @@ theorem exists_scholz_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) [NeZero 
     (hschA : IsScholz ℓ (N + 1) ↥A) (eA : Gal(↥A/ℚ) ≃* H)
     (L : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥L] [IsGalois ℚ ↥L] (hAL : A ≤ L)
     (hramL : IsScholzOver ℓ (N + 1) ↥A ↥L) (ψ₀ : Gal(↥L/ℚ) ≃* G)
-    (hcomp₀ : ∀ τ, f (ψ₀ τ) = eA (galRestrictLE hAL τ))
+    (hcomp₀ : ∀ τ, f (ψ₀ τ) = eA (galRestrictLE hAL τ)) (S : Finset ℕ)
+    (hSprime : ∀ q ∈ S, q.Prime) (hAS : ∀ q ∈ ramifiedSet ↥A, q ∈ S)
+    (hSsplit : ∀ q ∈ S, q ∉ ramifiedSet ↥A → SplitsCompletely ↥A q)
     (horth : ∀ (M : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥M] [IsGalois ℚ ↥M]
       (hLM : L ≤ M) (Θ : Gal(↥M/ℚ) →* G), (∀ σ, Θ σ = ψ₀ (galRestrictLE hLM σ)) →
       ∀ ν : Multiplicative (ZMod ℓ) →* G, (∀ x, ν x ∈ f.ker) → Function.Injective ν →
-      ∀ t : {q // q ∈ (finite_ramifiedSet ↥A).toFinset} → ZMod ℓ,
-      (∀ q : {q // q ∈ (finite_ramifiedSet ↥A).toFinset}, ∃ P : Ideal (𝓞 ↥M), ∃ _ : P.IsPrime,
+      ∀ t : {q // q ∈ S} → ZMod ℓ,
+      (∀ q : {q // q ∈ S}, ∃ P : Ideal (𝓞 ↥M), ∃ _ : P.IsPrime,
         ∃ _ : P.LiesOver (Ideal.span {((q : ℕ) : ℤ)}), ∀ σ : Gal(↥M/ℚ), IsArithFrobAt ℤ σ P →
           Θ σ * ν (Multiplicative.ofAdd (t q)) ∈ (Ideal.inertia Gal(↥M/ℚ) P).map Θ) →
-      (∀ q : {q // q ∈ (finite_ramifiedSet ↥A).toFinset}, (∃ P : Ideal (𝓞 ↥M), ∃ _ : P.IsPrime,
+      (∀ q : {q // q ∈ S}, (∃ P : Ideal (𝓞 ↥M), ∃ _ : P.IsPrime,
         ∃ _ : P.LiesOver (Ideal.span {((q : ℕ) : ℤ)}), ∀ σ : Gal(↥M/ℚ), IsArithFrobAt ℤ σ P →
           Θ σ ∈ (Ideal.inertia Gal(↥M/ℚ) P).map Θ) → t q = 0) →
-      ∀ a : {q // q ∈ (finite_ramifiedSet ↥A).toFinset} → ZMod ℓ,
+      ∀ a : {q // q ∈ S} → ZMod ℓ,
         (∃ u ∈ auxConstraintField L ℓ (N + 1), u ^ ℓ = algebraMap ℚ (AlgebraicClosure ℚ)
-          ((residueRadicand (finite_ramifiedSet ↥A).toFinset a : ℕ) : ℚ)) →
+          ((residueRadicand S a : ℕ) : ℚ)) →
         ∑ i, t i * a i = 0) :
     ∃ (E : IntermediateField ℚ (AlgebraicClosure ℚ)) (hAE : A ≤ E) (_ : NumberField ↥E),
-      IsGalois ℚ ↥E ∧ IsScholz ℓ N ↥E ∧
+      IsGalois ℚ ↥E ∧ IsScholz ℓ N ↥E ∧ (∀ q ∈ S, IsSplitInertiaAt ↥E q) ∧
         ∃ ψ : Gal(↥E/ℚ) ≃* G, ∀ τ, f (ψ τ) = eA (galRestrictLE hAE τ) := by
   classical
   haveI : Fact ℓ.Prime := ⟨hℓ⟩
-  -- the primes ramified in the field below
-  set S : Finset ℕ := (finite_ramifiedSet ↥A).toFinset with hSdef
-  have hSmem : ∀ q, q ∈ S ↔ q ∈ ramifiedSet ↥A := fun q => Set.Finite.mem_toFinset _
-  have hSprime : ∀ q ∈ S, q.Prime := fun q hq => ((hSmem q).mp hq).1
   -- the auxiliary modulus
   obtain ⟨Q, hQ0, hQr, hQκ⟩ :=
     exists_modulus_of_forall_pow_eq (B := L) (ℓ := ℓ) (k := N + 1) (Nat.succ_ne_zero N) hSprime
@@ -170,6 +174,26 @@ theorem exists_scholz_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) [NeZero 
   -- the cyclotomic subfield of that field
   haveI : IsCyclotomicExtension {Q} ℚ ↥(IntermediateField.restrict hCM) :=
     IsCyclotomicExtension.equiv _ _ _ (IntermediateField.restrict_algEquiv hCM)
+  -- at a prime split completely below, the decomposition group lands in the kernel of the step
+  have hkerD : ∀ q : ℕ, q.Prime → SplitsCompletely ↥A q → ∀ (P : Ideal (𝓞 ↥M)) (_ : P.IsPrime)
+      (_ : P.LiesOver (Ideal.span {(q : ℤ)})) (σ : Gal(↥M/ℚ)),
+      σ ∈ MulAction.stabilizer Gal(↥M/ℚ) P → Ψ σ ∈ f.ker := by
+    intro q hqp hsplitA P hPp hPo σ hσ
+    haveI := hPp
+    haveI := hPo
+    haveI := liesOver_under_intermediateField (p := q) (IntermediateField.restrict hAM) P
+    haveI : IsGalois ℚ ↥(IntermediateField.restrict hAM) := ⟨⟩
+    have hres : AlgEquiv.restrictNormalHom ↥(IntermediateField.restrict hAM) σ = 1 := by
+      have hmem := restrictNormal_mem_stabilizer (IntermediateField.restrict hAM) P hσ
+      rw [stabilizer_eq_bot_of_splitsCompletely ↥(IntermediateField.restrict hAM) hqp
+        (P.under (𝓞 ↥(IntermediateField.restrict hAM)))
+        (splitsCompletely_restrict hAM hqp hsplitA)] at hmem
+      simpa using hmem
+    have hgr : galRestrictLE hAM σ = 1 :=
+      MonoidHom.mem_ker.mp (by
+        rw [ker_galRestrictLE hAM, ← IntermediateField.restrictNormalHom_ker]
+        exact MonoidHom.mem_ker.mpr hres)
+    rw [MonoidHom.mem_ker, hcompM σ, hgr, map_one]
   -- the Frobenius defect at each prime ramified below
   have hex : ∀ q : {q // q ∈ S}, ∃ P : Ideal (𝓞 ↥M), ∃ _ : P.IsPrime,
       ∃ _ : P.LiesOver (Ideal.span {((q : ℕ) : ℤ)}), ∃ z ∈ f.ker,
@@ -191,14 +215,28 @@ theorem exists_scholz_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) [NeZero 
     obtain ⟨⟨P, hPp, hPo⟩⟩ := (Ideal.span {(q : ℤ)}).nonempty_primesOver (S := 𝓞 ↥M)
     haveI := hPp
     haveI := hPo
-    have hmemA : q ∈ ramifiedSet ↥(IntermediateField.restrict hAM) := by
-      rw [ramifiedSet_restrict hAM]
-      exact (hSmem q).mp hq
-    obtain ⟨z, hz, hzspec⟩ :=
-      exists_mem_ker_mul_mem_map_inertia (p := q) (IntermediateField.restrict hAM) hmemA
-        (isScholz_restrict hAM hschA).2 P Ψ
-        ((AlgEquiv.autCongr (IntermediateField.restrict_algEquiv hAM)).symm.trans eA) hcomp'
-    exact ⟨P, hPp, hPo, z, hz, hzspec, fun hc => absurd hc htriv⟩
+    by_cases hqA : q ∈ ramifiedSet ↥A
+    · have hmemA : q ∈ ramifiedSet ↥(IntermediateField.restrict hAM) := by
+        rw [ramifiedSet_restrict hAM]
+        exact hqA
+      obtain ⟨z, hz, hzspec⟩ :=
+        exists_mem_ker_mul_mem_map_inertia (p := q) (IntermediateField.restrict hAM) hmemA
+          (isScholz_restrict hAM hschA).2 P Ψ
+          ((AlgEquiv.autCongr (IntermediateField.restrict_algEquiv hAM)).symm.trans eA) hcomp'
+      exact ⟨P, hPp, hPo, z, hz, hzspec, fun hc => absurd hc htriv⟩
+    · -- a prime split completely below: an arithmetic Frobenius is itself the defect
+      have hsplitA : SplitsCompletely ↥A q := hSsplit q hq hqA
+      have hP0 : P ≠ ⊥ := ne_bot_of_liesOver_natCast hqp hPo
+      haveI : Finite (𝓞 ↥M ⧸ P) := finite_quotient_of_ne_bot P hP0
+      obtain ⟨σ₀, hσ₀⟩ : ∃ σ₀ : Gal(↥M/ℚ), IsArithFrobAt ℤ σ₀ P :=
+        ⟨_, IsArithFrobAt.arithFrobAt ℤ Gal(↥M/ℚ) P⟩
+      refine ⟨P, hPp, hPo, (Ψ σ₀)⁻¹,
+        inv_mem (hkerD q hqp hsplitA P hPp hPo σ₀ (mem_stabilizer_of_isArithFrobAt P hσ₀)),
+        fun σ hσ => ?_, fun hc => absurd hc htriv⟩
+      have hmem : σ * σ₀⁻¹ ∈ Ideal.inertia Gal(↥M/ℚ) P := hσ.mul_inv_mem_inertia hσ₀
+      have heq : Ψ σ * (Ψ σ₀)⁻¹ = Ψ (σ * σ₀⁻¹) := by rw [map_mul, map_inv]
+      rw [heq]
+      exact Subgroup.mem_map_of_mem Ψ hmem
   choose Pq hPqp hPqo zq hzq hzqspec hztriv using hex
   -- the kernel of the central step as a cyclic group of order `ℓ`
   have hcardZ : Nat.card (Multiplicative (ZMod ℓ)) = ℓ := by simp
@@ -264,6 +302,35 @@ theorem exists_scholz_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) [NeZero 
   -- the corrected solution
   set ψ' : Gal(↥M/ℚ) →* G := mulCentral Ψ χ hχcen with hψ'def
   have hψ'surj : Function.Surjective ψ' := surjective_mulCentral hf hfr hΨsurj hχcen hχker
+  -- at each prime of the prescribed set the correction cancels the defect
+  have habsorb : ∀ q : {q // q ∈ S}, (MulAction.stabilizer Gal(↥M/ℚ) (Pq q)).map ψ' ≤
+      (Ideal.inertia Gal(↥M/ℚ) (Pq q)).map ψ' := by
+    rintro ⟨q, hqS⟩
+    have hqp : q.Prime := hSprime q hqS
+    have hqQ : ¬ q ∣ Q := fun hd => (hQr q hqp hd).1 hqS
+    haveI := hPqp ⟨q, hqS⟩
+    haveI := hPqo ⟨q, hqS⟩
+    have hP0 : Pq ⟨q, hqS⟩ ≠ ⊥ := ne_bot_of_liesOver_natCast hqp (hPqo ⟨q, hqS⟩)
+    haveI : Finite (𝓞 ↥M ⧸ Pq ⟨q, hqS⟩) := finite_quotient_of_ne_bot _ hP0
+    obtain ⟨σ₀, hσ₀⟩ : ∃ σ₀ : Gal(↥M/ℚ), IsArithFrobAt ℤ σ₀ (Pq ⟨q, hqS⟩) :=
+      ⟨_, IsArithFrobAt.arithFrobAt ℤ Gal(↥M/ℚ) _⟩
+    have hag : ∀ σ ∈ Ideal.inertia Gal(↥M/ℚ) (Pq ⟨q, hqS⟩), ψ' σ = Ψ σ := by
+      intro σ hσ
+      rw [hψ'def, mulCentral_apply,
+        hχ1 q hqp hqQ (Pq ⟨q, hqS⟩) (hPqp ⟨q, hqS⟩) (hPqo ⟨q, hqS⟩) σ hσ, mul_one]
+    have hmapeq : (Ideal.inertia Gal(↥M/ℚ) (Pq ⟨q, hqS⟩)).map ψ' =
+        (Ideal.inertia Gal(↥M/ℚ) (Pq ⟨q, hqS⟩)).map Ψ := by
+      ext x
+      simp only [Subgroup.mem_map]
+      constructor
+      · rintro ⟨σ, hσ, rfl⟩
+        exact ⟨σ, hσ, (hag σ hσ).symm⟩
+      · rintro ⟨σ, hσ, rfl⟩
+        exact ⟨σ, hσ, hag σ hσ⟩
+    refine map_stabilizer_le_map_inertia (Pq ⟨q, hqS⟩) ψ' hP0 hσ₀ ?_
+    rw [hmapeq, hψ'def, mulCentral_apply,
+      hχ2 q hqS hqQ (Pq ⟨q, hqS⟩) (hPqp ⟨q, hqS⟩) (hPqo ⟨q, hqS⟩) σ₀ hσ₀]
+    exact hzqspec ⟨q, hqS⟩ σ₀ hσ₀
   -- the corrected solution has split inertia
   have hsplitψ' : IsSplitInertia ↥(IntermediateField.fixedField ψ'.ker) := by
     refine isSplitInertia_fixedField_ker_of_exists ψ' fun q hqram => ?_
@@ -272,40 +339,15 @@ theorem exists_scholz_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) [NeZero 
       rw [Ideal.span_singleton_prime (by exact_mod_cast hqp.ne_zero)]
       exact Nat.prime_iff_prime_int.mp hqp
     by_cases hqS : q ∈ S
-    · -- a prime ramified below: the correction cancels the defect
-      have hqQ : ¬ q ∣ Q := fun hd => (hQr q hqp hd).1 hqS
-      obtain ⟨P, hPp, hPo, hzspec⟩ : ∃ P : Ideal (𝓞 ↥M), ∃ _ : P.IsPrime,
-          ∃ _ : P.LiesOver (Ideal.span {(q : ℤ)}), ∀ σ : Gal(↥M/ℚ), IsArithFrobAt ℤ σ P →
-            Ψ σ * zq ⟨q, hqS⟩ ∈ (Ideal.inertia Gal(↥M/ℚ) P).map Ψ :=
-        ⟨Pq ⟨q, hqS⟩, hPqp ⟨q, hqS⟩, hPqo ⟨q, hqS⟩, hzqspec ⟨q, hqS⟩⟩
-      haveI := hPp
-      haveI := hPo
-      refine ⟨P, hPp, hPo, ?_⟩
-      have hP0 : P ≠ ⊥ := ne_bot_of_liesOver_natCast hqp hPo
-      haveI : Finite (𝓞 ↥M ⧸ P) := finite_quotient_of_ne_bot P hP0
-      obtain ⟨σ₀, hσ₀⟩ : ∃ σ₀ : Gal(↥M/ℚ), IsArithFrobAt ℤ σ₀ P :=
-        ⟨_, IsArithFrobAt.arithFrobAt ℤ Gal(↥M/ℚ) P⟩
-      have hag : ∀ σ ∈ Ideal.inertia Gal(↥M/ℚ) P, ψ' σ = Ψ σ := by
-        intro σ hσ
-        rw [hψ'def, mulCentral_apply, hχ1 q hqp hqQ P hPp hPo σ hσ, mul_one]
-      have hmapeq : (Ideal.inertia Gal(↥M/ℚ) P).map ψ' = (Ideal.inertia Gal(↥M/ℚ) P).map Ψ := by
-        ext x
-        simp only [Subgroup.mem_map]
-        constructor
-        · rintro ⟨σ, hσ, rfl⟩
-          exact ⟨σ, hσ, (hag σ hσ).symm⟩
-        · rintro ⟨σ, hσ, rfl⟩
-          exact ⟨σ, hσ, hag σ hσ⟩
-      refine map_stabilizer_le_map_inertia P ψ' hP0 hσ₀ ?_
-      rw [hmapeq, hψ'def, mulCentral_apply, hχ2 q hqS hqQ P hPp hPo σ₀ hσ₀]
-      exact hzspec σ₀ hσ₀
-    · -- a prime unramified below: the whole decomposition group lands in the kernel
+    · -- a prime of the prescribed set: the correction cancels the defect
+      exact ⟨Pq ⟨q, hqS⟩, hPqp ⟨q, hqS⟩, hPqo ⟨q, hqS⟩, habsorb ⟨q, hqS⟩⟩
+    · -- a prime outside it: the whole decomposition group lands in the kernel
       have hqM : q ∈ ramifiedSet ↥M :=
         ramifiedSet_subset ↥(IntermediateField.fixedField ψ'.ker) ↥M hqram
       rw [hsupeq] at hqM
       have hsplitA : SplitsCompletely ↥A q := by
         rcases hqM with h | h
-        · exact ((hramL q h).resolve_left fun hA => hqS ((hSmem q).mpr hA)).2
+        · exact ((hramL q h).resolve_left fun hA => hqS (hAS q hA)).2
         · have hqQ : q ∣ Q := Nat.dvd_of_mem_primeFactors
             (Finset.mem_coe.mp (ramifiedSet_subset_primeFactors Q ↥(cycSubfield Q) h))
           exact splitsCompletely_of_le hAL hqp (hQr q hqp hqQ).2.2.2
@@ -315,22 +357,12 @@ theorem exists_scholz_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) [NeZero 
       refine ⟨P, hPp, hPo, ?_⟩
       refine map_stabilizer_le_map_inertia_of_card_prime hqp P ψ' hℓ hcard ?_ hqram
       rintro - ⟨σ, hσ, rfl⟩
-      haveI := liesOver_under_intermediateField (p := q) (IntermediateField.restrict hAM) P
-      haveI : IsGalois ℚ ↥(IntermediateField.restrict hAM) := ⟨⟩
-      have hres : AlgEquiv.restrictNormalHom ↥(IntermediateField.restrict hAM) σ = 1 := by
-        have hmem := restrictNormal_mem_stabilizer (IntermediateField.restrict hAM) P hσ
-        rw [stabilizer_eq_bot_of_splitsCompletely ↥(IntermediateField.restrict hAM) hqp
-          (P.under (𝓞 ↥(IntermediateField.restrict hAM)))
-          (splitsCompletely_restrict hAM hqp hsplitA)] at hmem
-        simpa using hmem
-      have hgr : galRestrictLE hAM σ = 1 :=
-        MonoidHom.mem_ker.mp (by
-          rw [ker_galRestrictLE hAM, ← IntermediateField.restrictNormalHom_ker]
-          exact MonoidHom.mem_ker.mpr hres)
-      have hΨker : Ψ σ ∈ f.ker := by
-        rw [MonoidHom.mem_ker, hcompM σ, hgr, map_one]
       rw [hψ'def, mulCentral_apply]
-      exact Subgroup.mul_mem _ hΨker (hχker σ)
+      exact Subgroup.mul_mem _ (hkerD q hqp hsplitA P hPp hPo σ hσ) (hχker σ)
+  -- the corrected solution has residue degree one at every prime of the prescribed set
+  have hsplitS : ∀ q ∈ S, IsSplitInertiaAt ↥(IntermediateField.fixedField ψ'.ker) q := fun q hqS =>
+    isSplitInertiaAt_fixedField_ker_of_exists ψ' (hSprime q hqS)
+      ⟨Pq ⟨q, hqS⟩, hPqp ⟨q, hqS⟩, hPqo ⟨q, hqS⟩, habsorb ⟨q, hqS⟩⟩
   -- the corrected solution keeps the level
   have hlevelM : IsLevel ℓ (N + 1) ↥M := by
     intro q hq
@@ -364,7 +396,9 @@ theorem exists_scholz_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) [NeZero 
   have hsch : IsScholz ℓ N ↥(cutField ψ') :=
     IsScholz.of_ringEquiv (IntermediateField.liftAlgEquiv
       (IntermediateField.fixedField ψ'.ker)).toRingEquiv ⟨hlevel, hsplitψ'⟩
-  refine ⟨cutField ψ', hAE, inferInstance, inferInstance, hsch,
+  refine ⟨cutField ψ', hAE, inferInstance, inferInstance, hsch, fun q hqS =>
+    IsSplitInertiaAt.of_ringEquiv (hSprime q hqS) (IntermediateField.liftAlgEquiv
+      (IntermediateField.fixedField ψ'.ker)).toRingEquiv (hsplitS q hqS),
     galEquivCutField ψ' hψ'surj, fun τ => ?_⟩
   obtain ⟨σ, rfl⟩ := galRestrictLE_surjective (cutField_le ψ') τ
   rw [galEquivCutField_galRestrictLE ψ' hψ'surj σ,
@@ -397,9 +431,11 @@ theorem isScholzRealizable_of_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) 
           ((residueRadicand (finite_ramifiedSet ↥A).toFinset a : ℕ) : ℚ)) →
         ∑ i, t i * a i = 0) :
     IsScholzRealizable G ℓ N := by
-  obtain ⟨E, -, hNF, hGal, hsch, ψ, -⟩ :=
+  obtain ⟨E, -, hNF, hGal, hsch, -, ψ, -⟩ :=
     exists_scholz_solution_of_forall_prod_eq_one hℓ hf hZ hfr hcard A hschA eA L hAL hramL ψ₀
-      hcomp₀ horth
+      hcomp₀ (finite_ramifiedSet ↥A).toFinset (fun q hq => ((Set.Finite.mem_toFinset _).mp hq).1)
+      (fun q hq => (Set.Finite.mem_toFinset _).mpr hq)
+      (fun q hq hq' => absurd ((Set.Finite.mem_toFinset _).mp hq) hq') horth
   haveI := hNF
   haveI := hGal
   exact isScholzRealizable_of_isGalois ↥E hsch ψ

@@ -33,6 +33,10 @@ on the field `M` the solution is read inside.
 
 * `InverseGalois.CFT.isSplitInertiaAt_iff_mem_inertia`: **residue degree one at a prime is exactly
   the statement that an arithmetic Frobenius above it lies in the inertia group.**
+* `InverseGalois.CFT.splitsCompletely_of_isSplitInertiaAt`: a prime of residue degree one which
+  does not ramify splits completely.
+* `InverseGalois.CFT.isSplitInertiaAt_fixedField_ker_of_exists`: **residue degree one at a prime in
+  the fixed field of the kernel of a homomorphism, from absorption of one decomposition group.**
 * `InverseGalois.CFT.mem_map_inertia_iff_isSplitInertiaAt`: **a solution of a central step absorbs
   an arithmetic Frobenius into the image of the inertia group exactly when the prime has split
   inertia in the field the solution lives over.**
@@ -93,6 +97,14 @@ theorem IsSplitInertiaAt.of_ringEquiv {E F : Type*} [Field E] [Field F] [NumberF
   rw [← hdeg]
   exact h Q hQp hQo
 
+/-- **A prime of residue degree one which does not ramify splits completely.** -/
+theorem splitsCompletely_of_isSplitInertiaAt {K : Type*} [Field K] [NumberField K] {q : ℕ}
+    (hq : q.Prime) (h : IsSplitInertiaAt K q) (hram : q ∉ ramifiedSet K) :
+    SplitsCompletely K q := by
+  refine fun P hP => ⟨?_, h P hP.1 hP.2⟩
+  by_contra he
+  exact hram ⟨hq, P, hP, he⟩
+
 /-! ### Residue degree one and the Frobenius -/
 
 section Galois
@@ -147,6 +159,46 @@ theorem exists_isArithFrobAt_liesOver (hq : q.Prime) :
     finite_quotient_of_ne_bot P (ne_bot_of_liesOver_natCast hq hPover)
   exact ⟨P, inferInstance, hPover, arithFrobAt ℤ Gal(N/ℚ) P,
     IsArithFrobAt.arithFrobAt ℤ Gal(N/ℚ) P⟩
+
+/-! ### Residue degree one in the fixed field of a subgroup -/
+
+/-- **One prime above `q` decides residue degree one at `q` in the fixed field of a normal
+subgroup.**  The Galois group permutes the primes above `q` transitively and carries the
+decomposition group, the inertia subgroup and the normal subgroup along with them, so absorption of
+the decomposition group at one prime gives it at every prime. -/
+theorem isSplitInertiaAt_fixedField_of_exists (H : Subgroup Gal(N/ℚ)) [H.Normal] (hq : q.Prime)
+    (h : ∃ P : Ideal (𝓞 N), ∃ _ : P.IsPrime, ∃ _ : P.LiesOver (Ideal.span {(q : ℤ)}),
+      MulAction.stabilizer Gal(N/ℚ) P ≤ Ideal.inertia Gal(N/ℚ) P ⊔ H) :
+    IsSplitInertiaAt ↥(IntermediateField.fixedField H) q := by
+  obtain ⟨P, hPp, hPo, hle⟩ := h
+  haveI := hPp
+  haveI := hPo
+  haveI : Fact q.Prime := ⟨hq⟩
+  set E : IntermediateField ℚ N := IntermediateField.fixedField H with hE
+  haveI : NumberField ↥E := ⟨⟩
+  intro Q hQprime hQover
+  haveI := hQprime
+  haveI := hQover
+  obtain ⟨⟨P', hP'p, hP'o⟩⟩ := Q.nonempty_primesOver (S := 𝓞 N)
+  haveI := hP'p
+  haveI := hP'o
+  have hQeq : Q = P'.under (𝓞 ↥E) := hP'o.over
+  have hunder : (P'.under (𝓞 ↥E)).under ℤ = Ideal.span {(q : ℤ)} := by
+    rw [← hQeq]; exact hQover.over.symm
+  haveI : P'.LiesOver (Ideal.span {(q : ℤ)}) := ⟨by rw [← hunder, Ideal.under_under]⟩
+  rw [hQeq]
+  exact inertiaDeg_under_fixedField_eq_one_of_stabilizer_le H hq P'
+    (forall_stabilizer_le_of_stabilizer_le H P hPo hle P' inferInstance)
+
+/-- **One prime above `q` decides residue degree one at `q` in the fixed field of the kernel of a
+homomorphism.** -/
+theorem isSplitInertiaAt_fixedField_ker_of_exists {G : Type*} [Group G] (ψ : Gal(N/ℚ) →* G)
+    (hq : q.Prime)
+    (h : ∃ P : Ideal (𝓞 N), ∃ _ : P.IsPrime, ∃ _ : P.LiesOver (Ideal.span {(q : ℤ)}),
+      (MulAction.stabilizer Gal(N/ℚ) P).map ψ ≤ (Ideal.inertia Gal(N/ℚ) P).map ψ) :
+    IsSplitInertiaAt ↥(IntermediateField.fixedField ψ.ker) q := by
+  obtain ⟨P, hPp, hPo, hle⟩ := h
+  exact isSplitInertiaAt_fixedField_of_exists ψ.ker hq ⟨P, hPp, hPo, le_sup_ker_of_map_le hle⟩
 
 end Galois
 

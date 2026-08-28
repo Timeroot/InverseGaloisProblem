@@ -110,7 +110,9 @@ end Solution
 defects sum to zero over each block of a family accounting for the square roots of products of
 ramified primes is corrected to a Scholz field over the one below.**  Every defect a solution can
 carry is the canonical one, so the orthogonality the correction asks for is a condition on the field
-and the family of blocks alone. -/
+and the family of blocks alone.  The defects are read at a prescribed finite set of primes,
+congruent to one modulo four, containing the ramified ones and split completely below elsewhere; the
+correction then also gives residue degree one at every prime of that set. -/
 theorem exists_scholz_solution_two_canonical {N : ℕ} {G H : Type} [Group G] [Group H] [Finite G]
     {f : G →* H} (hf : Function.Surjective f) (hZ : f.ker ≤ Subgroup.center G)
     (hfr : f.ker ≤ frattini G) (hcard : Nat.card ↥f.ker = 2)
@@ -118,20 +120,20 @@ theorem exists_scholz_solution_two_canonical {N : ℕ} {G H : Type} [Group G] [G
     (hschA : IsScholz 2 (N + 2) ↥A) (eA : Gal(↥A/ℚ) ≃* H)
     (L : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥L] [IsGalois ℚ ↥L] (hAL : A ≤ L)
     (hramL : IsScholzOver 2 (N + 2) ↥A ↥L) (ψ₀ : Gal(↥L/ℚ) ≃* G)
-    (hcomp₀ : ∀ τ, f (ψ₀ τ) = eA (galRestrictLE hAL τ))
+    (hcomp₀ : ∀ τ, f (ψ₀ τ) = eA (galRestrictLE hAL τ)) (S : Finset ℕ)
+    (hSprime : ∀ q ∈ S, q.Prime) (hAS : ∀ q ∈ ramifiedSet ↥A, q ∈ S)
+    (hSsplit : ∀ q ∈ S, q ∉ ramifiedSet ↥A → SplitsCompletely ↥A q) (hS4 : ∀ q ∈ S, q % 4 = 1)
     {ι : Type*} {block : ι → Finset ℕ} (hspan : IsBlockSpanned A block)
-    (hdefect : ∀ i, ∑ p : {q // q ∈ (finite_ramifiedSet ↥A).toFinset},
-      canonicalDefect ↥L (p : ℕ) *
-        blockVector (finite_ramifiedSet ↥A).toFinset (block i) p = 0) :
+    (hdefect : ∀ i, ∑ p : {q // q ∈ S},
+      canonicalDefect ↥L (p : ℕ) * blockVector S (block i) p = 0) :
     ∃ (E : IntermediateField ℚ (AlgebraicClosure ℚ)) (hAE : A ≤ E) (_ : NumberField ↥E),
-      IsGalois ℚ ↥E ∧ IsScholz 2 (N + 1) ↥E ∧
+      IsGalois ℚ ↥E ∧ IsScholz 2 (N + 1) ↥E ∧ (∀ q ∈ S, IsSplitInertiaAt ↥E q) ∧
         ∃ ψ : Gal(↥E/ℚ) ≃* G, ∀ τ, f (ψ τ) = eA (galRestrictLE hAE τ) := by
-  refine exists_scholz_solution_two hf hZ hfr hcard A hschA eA L hAL hramL ψ₀ hcomp₀ hspan ?_
+  refine exists_scholz_solution_two hf hZ hfr hcard A hschA eA L hAL hramL ψ₀ hcomp₀ S hSprime
+    hAS hSsplit hS4 hspan ?_
   intro M _ _ hLM Θ hΘ ν _ _ t hinert hzero i
-  have ht : ∀ p : {q // q ∈ (finite_ramifiedSet ↥A).toFinset},
-      t p = canonicalDefect ↥L (p : ℕ) := fun p =>
-    eq_canonicalDefect (((Set.Finite.mem_toFinset _).mp p.2).1) hLM ψ₀ Θ hΘ ν (t p)
-      (hinert p) (hzero p)
+  have ht : ∀ p : {q // q ∈ S}, t p = canonicalDefect ↥L (p : ℕ) := fun p =>
+    eq_canonicalDefect (hSprime p p.2) hLM ψ₀ Θ hΘ ν (t p) (hinert p) (hzero p)
   simp only [ht]
   exact hdefect i
 
@@ -151,8 +153,16 @@ theorem isScholzRealizable_of_solution_two_canonical {N : ℕ} {G H : Type} [Gro
       canonicalDefect ↥L (p : ℕ) *
         blockVector (finite_ramifiedSet ↥A).toFinset (block i) p = 0) :
     IsScholzRealizable G 2 (N + 1) := by
-  obtain ⟨E, -, hNF, hGal, hsch, ψ, -⟩ := exists_scholz_solution_two_canonical hf hZ hfr hcard A
-    hschA eA L hAL hramL ψ₀ hcomp₀ hspan hdefect
+  have hS4 : ∀ p ∈ (finite_ramifiedSet ↥A).toFinset, p % 4 = 1 := by
+    intro p hp
+    have hdvd : (4 : ℕ) ∣ 2 ^ (N + 2) := ⟨2 ^ N, by ring⟩
+    have hmod : p ≡ 1 [MOD 4] := (hschA.1 p ((Set.Finite.mem_toFinset _).mp hp)).of_dvd hdvd
+    simpa [Nat.ModEq] using hmod
+  obtain ⟨E, -, hNF, hGal, hsch, -, ψ, -⟩ := exists_scholz_solution_two_canonical hf hZ hfr hcard A
+    hschA eA L hAL hramL ψ₀ hcomp₀ (finite_ramifiedSet ↥A).toFinset
+    (fun q hq => ((Set.Finite.mem_toFinset _).mp hq).1)
+    (fun q hq => (Set.Finite.mem_toFinset _).mpr hq)
+    (fun q hq hq' => absurd ((Set.Finite.mem_toFinset _).mp hq) hq') hS4 hspan hdefect
   haveI := hNF
   haveI := hGal
   exact isScholzRealizable_of_isGalois ↥E hsch ψ
