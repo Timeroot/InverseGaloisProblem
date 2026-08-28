@@ -250,6 +250,13 @@ theorem card_deg_le (w : LayerWord ι) : Multiset.card w.deg ≤ w.level + 1 := 
   | pow w ih => simpa using ih.trans (Nat.le_succ _)
   | comm w i ih => simpa using ih
 
+/-- Every layer word involves at least one generator. -/
+theorem deg_ne_zero (w : LayerWord ι) : w.deg ≠ 0 := by
+  induction w with
+  | gen i => simp
+  | pow w ih => simpa using ih
+  | comm w i ih => simp
+
 /-- **Rescaling the generators of a layer word multiplies its value by the product of the scaling
 exponents over its degree**, modulo the next layer. -/
 theorem eval_pow_div_mem (p : ℕ) (x : ι → P) (c : ι → ℕ) (w : LayerWord ι) :
