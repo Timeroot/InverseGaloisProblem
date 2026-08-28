@@ -3,6 +3,7 @@ Copyright (c) 2025. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Scholz.DyadicInduction
 import InverseGalois.CFT.Scholz.FrattiniInertiaBound
 import InverseGalois.CFT.Scholz.NilpotentSylowTwo
 import InverseGalois.Rigidity.RET.Specialization
@@ -48,6 +49,9 @@ inertia at a cyclotomic place.
 * `InverseGalois.isInverseGalois_of_isNilpotent_of_not_dvd_thirtytwo`,
   `InverseGalois.isInverseGalois_of_isNilpotent_of_not_dvd_sixteen`: **every finite nilpotent group
   of order not divisible by `32` is a Galois group over `ℚ`.**
+* `InverseGalois.isInverseGalois_of_isNilpotent_of_isDyadicClassStepSolvable`: **granted the
+  class-raising step of the dyadic Scholz–Reichardt induction, every finite nilpotent group is a
+  Galois group over `ℚ`**, with no condition on its Sylow `2`-subgroups.
 -/
 
 namespace InverseGalois
@@ -140,5 +144,19 @@ theorem isInverseGalois_of_isNilpotent_of_not_dvd_sixteen (G : Type) [Group G] [
     [Group.IsNilpotent G] (h16 : ¬ (16 ∣ Nat.card G)) : IsInverseGalois G :=
   isInverseGalois_of_isNilpotent_of_not_dvd_thirtytwo G fun hd =>
     h16 (dvd_trans (by norm_num) hd)
+
+/-! ### The prime `2` by the arithmetic route -/
+
+/-- **Granted the class-raising step of the dyadic Scholz–Reichardt induction, every finite
+nilpotent group is a Galois group over `ℚ`.**  The Sylow subgroups at the odd primes are realised
+by the ordinary Scholz–Reichardt induction and the one at the prime `2` by the dyadic induction,
+which climbs the `2`-class of the free objects rather than the order of the group and so needs no
+condition on the Sylow `2`-subgroup at all. -/
+theorem isInverseGalois_of_isNilpotent_of_isDyadicClassStepSolvable
+    (hstep : CFT.IsDyadicClassStepSolvable) (G : Type) [Group G] [Finite G]
+    [Group.IsNilpotent G] : IsInverseGalois G :=
+  isInverseGalois_of_isNilpotent_of_sylow_two
+    (fun _ hq hq2 => CFT.isCentralStepSolvable hq hq2) G fun P =>
+    CFT.isInverseGalois_of_isDyadicClassStepSolvable hstep _ P.isPGroup'
 
 end InverseGalois

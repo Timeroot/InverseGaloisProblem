@@ -2615,13 +2615,31 @@ Proposition 3.1 are never needed.
 
 | tag | content | status |
 |---|---|---|
-| F1 | Lemmas 2.2 + 2.3: a chain of primes each `≡ 1 mod 2^N` and mutually quadratic, and the multiquadratic strong Scholz field they cut out | `stepPrime` + `PairwiseResidue` in place; assembly open |
-| F2 | `IsStrongScholz`: Scholz, plus pairwise disjoint blocks with square roots whose sign characters are jointly surjective and whose common kernel is Frattini | open |
+| F1 | Lemmas 2.2 + 2.3: a chain of primes each `≡ 1 mod 2^N` and mutually quadratic, and the multiquadratic strong Scholz field they cut out | ✅ `Scholz/StepRamification.lean` + `Scholz/MultiquadraticBase.lean` |
+| F2 | `IsStrongScholz`: Scholz, plus pairwise disjoint blocks accounting for the square roots | ✅ `Scholz/StrongScholz.lean` |
 | F3 | Proposition 2.1 at `p = 2` | ✅ `exists_galEquiv_ramifiedSet_subset_two` |
 | F4 | the Scholz obstruction `θ_q` and its invariance under enlarging the base | partly in `FrobeniusDefect`; base-change half open |
 | F5 | Proposition 4.2 as the `t`-fold iteration of the order-two step | single step ✅; iteration open |
 | F6 | the shrinking: `E(α) = E_δ^{ker(collapse a)}`, `K(α) = E(α) ∩ K_δ`, `Ram(P_i(α)) = ⨆_{j : a_j = 1} Ram(P_{ij})`, and the transport of obstructions along `collapse a` | group half ✅; field half open |
-| F7 | the induction on the `2`-class, `∀ G` a finite `2`-group, `∀ N`, `IsScholzRealizable G 2 N`, and the removal of the semiabelian-Sylow-`2` hypothesis from `InverseGalois/Shafarevich.lean` | open |
+| F7 | the induction on the `2`-class, `∀ G` a finite `2`-group, `∀ N`, `IsScholzRealizable G 2 N`, and the removal of the semiabelian-Sylow-`2` hypothesis from `InverseGalois/Shafarevich.lean` | ✅ skeleton: `Scholz/DyadicInduction.lean` reduces all of it to `IsDyadicClassStepSolvable` |
+
+### The single remaining `ℓ = 2` wall
+
+`InverseGalois.CFT.IsDyadicClassStepSolvable` (`Scholz/DyadicInduction.lean`) is now the *only*
+open statement between the repository and the `2`-group case:
+
+```lean
+def IsDyadicClassStepSolvable : Prop :=
+  ∀ (c d N : ℕ), (∀ δ M, IsStrongScholzRealizable δ c M) → IsStrongScholzRealizable d (c + 1) N
+```
+
+Granted it, `isInverseGalois_of_isDyadicClassStepSolvable` realises every finite `2`-group and
+`isInverseGalois_of_isNilpotent_of_isDyadicClassStepSolvable` (`InverseGalois/Shafarevich.lean`)
+realises every finite nilpotent group with no condition on the Sylow `2`-subgroup.  Its proof is
+F4 + F5 + F6: apply `exists_galEquiv_ramifiedSet_subset_elemAbTwo` to
+`FreePClass.proj 2 (d * r) c` over the rank-`d·r` realization, read off the block obstructions,
+shrink along a Chevalley–Warning `α` from `FreePClass.exists_rankMultiplier`, and iterate
+`exists_scholz_solution_two` once per basis vector of the kernel.
 
 `PairwiseResidue.isSquare_natCast_swap` is the brick F1 was missing: `stepPrime` delivers
 `(q_j / q) = 1` for the primes already chosen, and reciprocity turns that into `(q / q_j) = 1`

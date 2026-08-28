@@ -272,6 +272,7 @@ import InverseGalois.CFT.Scholz.CorrectingSubfield
 import InverseGalois.CFT.Scholz.CyclicSupplement
 import InverseGalois.CFT.Scholz.DecompositionLift
 import InverseGalois.CFT.Scholz.DyadicCorrector
+import InverseGalois.CFT.Scholz.DyadicInduction
 import InverseGalois.CFT.Scholz.DyadicRadical
 import InverseGalois.CFT.Scholz.DyadicResidueCorrection
 import InverseGalois.CFT.Scholz.DyadicResidueDegree
@@ -881,6 +882,8 @@ it that are available here.
   the `2`-class: a Scholz field realising a free object together with a pairwise disjoint family of
   blocks accounting for its square roots; the multiquadratic base supplies the case of class one,
   and a strong Scholz realization of every free object realises every finite `2`-group.
+* `InverseGalois.CFT.Scholz.DyadicInduction` isolates the step that raises the `2`-class by one and
+  runs the induction from it: granted that step, every finite `2`-group is a Galois group over `ℚ`.
 * `InverseGalois.CFT.Scholz.DyadicResidueCorrection` is the correction itself at the prime two: a
   solution whose Frobenius defects sum to zero over each such block realises the group of the
   central step at the required level.

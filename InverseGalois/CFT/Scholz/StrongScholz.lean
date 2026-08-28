@@ -31,6 +31,8 @@ them realises every finite `2`-group.
 
 ## Main results
 
+* `InverseGalois.CFT.isStrongScholzRealizable_zero`: the free object of `2`-class zero is trivial
+  and is realised by `ℚ` itself.
 * `InverseGalois.CFT.isStrongScholzRealizable_one`: **the multiquadratic base is a strong Scholz
   realization of `2`-class one**, at every rank and every level.
 * `InverseGalois.CFT.isScholzRealizable_of_isStrongScholzRealizable`: a strong Scholz realization
@@ -93,6 +95,33 @@ theorem IsStrongScholzRealizable.mono {M : ℕ} (h : IsStrongScholzRealizable d 
   h.elim fun R => ⟨{ R with isScholz := R.isScholz.mono hMN }⟩
 
 /-! ### The base of the induction on the `2`-class -/
+
+/-- **The free object of `2`-class zero is realised by `ℚ` itself.**  It is the quotient of a free
+group by the whole group, hence trivial, and the rationals are unramified everywhere, so the empty
+blocks account for their square roots. -/
+theorem isStrongScholzRealizable_zero (d N : ℕ) : IsStrongScholzRealizable d 0 N := by
+  set E : IntermediateField ℚ (AlgebraicClosure ℚ) := ⊥ with hE
+  haveI : FiniteDimensional ℚ ↥E :=
+    FiniteDimensional.of_finrank_eq_succ (n := 0) IntermediateField.finrank_bot
+  haveI : NumberField ↥E := ⟨⟩
+  haveI : IsGalois ℚ ↥E :=
+    IsGalois.of_algEquiv (IntermediateField.botEquiv ℚ (AlgebraicClosure ℚ)).symm
+  have hrank : Module.finrank ℚ ↥E = 1 := IntermediateField.finrank_bot
+  have hcard : Nat.card Gal(↥E/ℚ) = 1 := (IsGalois.card_aut_eq_finrank ℚ ↥E).trans hrank
+  haveI : Subsingleton Gal(↥E/ℚ) := (Nat.card_eq_one_iff_unique.mp hcard).1
+  haveI : Unique Gal(↥E/ℚ) := uniqueOfSubsingleton 1
+  haveI : Subsingleton (FreePClass 2 d 0) :=
+    QuotientGroup.subsingleton_quotient_top
+  haveI : Unique (FreePClass 2 d 0) := uniqueOfSubsingleton 1
+  have hram : ramifiedSet ↥E = ∅ := ramifiedSet_eq_empty_of_finrank_eq_one ↥E hrank
+  exact ⟨{ carrier := E
+           isScholz := isScholz_of_finrank_eq_one ↥E hrank 2 N
+           block := fun _ => ∅
+           blockPrime := fun _ p hp => absurd hp (Finset.notMem_empty p)
+           blockDisjoint := fun _ _ _ => disjoint_bot_left
+           isBlockSpanned := isBlockSpanned_of_singleton_mem_of_mem_ramifiedSet E fun p hp =>
+             absurd hp (by rw [hram]; exact Set.notMem_empty p)
+           galEquiv := MulEquiv.ofUnique }⟩
 
 /-- **The multiquadratic base is a strong Scholz realization of `2`-class one.**  Iterating the
 split step at the prime two produces a field satisfying Serre's condition whose ramified primes are
