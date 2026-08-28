@@ -19,7 +19,9 @@ Chevalley–Warning theorem produces a nonzero `a` solving all of them at once.
 
 This file proves that counting argument in the form it is used: a nonzero vector of scalars
 annihilating finitely many prescribed degree-`s` forms with vector coefficients, together with the
-observation that a nonzero coefficient vector does give a surjection.
+observation that a nonzero coefficient vector does give a surjection.  The count needs only a bound
+on the total degree, so it is also carried out for combinations of monomials of mixed degree, which
+is the form the obstruction takes when the layer is described by words rather than by tensors.
 
 ## Main results
 
@@ -28,6 +30,9 @@ observation that a nonzero coefficient vector does give a surjection.
 * `InverseGalois.Shafarevich.exists_ne_zero_forall_sum_prod_smul_eq_zero` — **the shrinking
   lemma**: for `r` large there is a nonzero `a : Fin r → K` annihilating finitely many prescribed
   degree-`s` forms with coefficients in a finite dimensional space.
+* `InverseGalois.Shafarevich.exists_ne_zero_forall_sum_multiset_prod_smul_eq_zero` — the same count
+  for a combination of monomials of mixed degree, each named by the multiset of variables it
+  involves.
 * `InverseGalois.Shafarevich.sumSmul_surjective` — a nonzero coefficient vector combines `r` copies
   of a module onto it.
 
@@ -127,6 +132,81 @@ theorem exists_ne_zero_forall_sum_prod_smul_eq_zero {r s t : ℕ} (hs : s ≠ 0)
     Pi.smul_apply, smul_eq_mul, Finsupp.coe_zero, Pi.zero_apply]
   rw [← hν]
   exact Finset.sum_congr rfl fun I _ => mul_comm _ _
+
+/-! ### Monomials of mixed degree -/
+
+omit [Finite K] in
+/-- Evaluating the product of the variables named by a multiset. -/
+private theorem eval_multiset_prod_X {r : ℕ} (a : Fin r → K) (s : Multiset (Fin r)) :
+    eval a ((s.map X).prod : MvPolynomial (Fin r) K) = (s.map a).prod := by
+  induction s using Multiset.induction_on with
+  | empty => simp
+  | cons i s ih => simp [ih]
+
+omit [Finite K] in
+/-- The product of the variables named by a multiset has total degree the size of the multiset. -/
+private theorem totalDegree_multiset_prod_X_le {r : ℕ} (s : Multiset (Fin r)) :
+    ((s.map X).prod : MvPolynomial (Fin r) K).totalDegree ≤ Multiset.card s := by
+  induction s using Multiset.induction_on with
+  | empty => simp
+  | cons i s ih =>
+    rw [Multiset.map_cons, Multiset.prod_cons, Multiset.card_cons]
+    refine (totalDegree_mul _ _).trans ?_
+    rw [totalDegree_X]
+    omega
+
+/-- **The shrinking lemma for monomials of mixed degree.**  Given finitely many terms, each a
+vector of `W` tagged with a monomial in the coordinates of `a`, there is a nonzero vector of
+scalars `a` for which every one of the associated sums vanishes, provided no monomial is constant,
+every monomial has degree at most `s`, and `r` exceeds `s` times the total number of scalar
+equations involved.  Unlike the homogeneous form, the monomials here are allowed to have different
+degrees. -/
+theorem exists_ne_zero_forall_sum_multiset_prod_smul_eq_zero {α : Type*} [Fintype α] {r s t : ℕ}
+    {μ : α → Multiset (Fin r)} (hμ0 : ∀ A, μ A ≠ 0) (hμs : ∀ A, Multiset.card (μ A) ≤ s)
+    (hr : s * (t * Module.finrank K W) < r) (w : Fin t → α → W) :
+    ∃ a : Fin r → K, a ≠ 0 ∧ ∀ ν, ∑ A, ((μ A).map a).prod • w ν A = 0 := by
+  classical
+  set d := Module.finrank K W with hd
+  set b := Module.finBasis K W with hb
+  set f : Fin t × Fin d → MvPolynomial (Fin r) K := fun νl =>
+    ∑ A : α, C (b.repr (w νl.1 A) νl.2) * ((μ A).map X).prod with hf
+  have hfa : ∀ νl, f νl = ∑ A : α, C (b.repr (w νl.1 A) νl.2) * ((μ A).map X).prod :=
+    fun νl => by rw [hf]
+  -- no monomial is constant, so every one of these forms vanishes at the origin
+  have h0 : ∀ νl, eval 0 (f νl) = 0 := by
+    intro νl
+    rw [hfa, eval_sum]
+    refine Finset.sum_eq_zero fun A _ => ?_
+    obtain ⟨i, hi⟩ := Multiset.exists_mem_of_ne_zero (hμ0 A)
+    have hz : ((μ A).map (0 : Fin r → K)).prod = 0 :=
+      Multiset.prod_eq_zero_iff.mpr (Multiset.mem_map_of_mem _ hi)
+    rw [eval_mul, eval_multiset_prod_X, hz, mul_zero]
+  -- and each has total degree at most `s`
+  have hdeg1 : ∀ νl, (f νl).totalDegree ≤ s := by
+    intro νl
+    rw [hfa]
+    refine (totalDegree_finset_sum _ _).trans (Finset.sup_le fun A _ => ?_)
+    refine (totalDegree_mul _ _).trans ?_
+    rw [totalDegree_C, zero_add]
+    exact (totalDegree_multiset_prod_X_le (μ A)).trans (hμs A)
+  have hsum : (∑ νl : Fin t × Fin d, (f νl).totalDegree) < Fintype.card (Fin r) := by
+    refine lt_of_le_of_lt (Finset.sum_le_sum fun νl _ => hdeg1 νl) ?_
+    have hcard : (∑ _νl : Fin t × Fin d, s) = s * (t * d) := by
+      simp only [Finset.sum_const, Finset.card_univ, Fintype.card_prod, Fintype.card_fin,
+        smul_eq_mul]
+      ring
+    rw [hcard, Fintype.card_fin]
+    exact hr
+  obtain ⟨a, ha, hroot⟩ := exists_ne_zero_forall_eval_eq_zero h0 hsum
+  refine ⟨a, ha, fun ν => ?_⟩
+  refine (map_eq_zero_iff b.repr b.repr.injective).mp (Finsupp.ext fun l => ?_)
+  have hν := hroot (ν, l)
+  rw [hfa, eval_sum] at hν
+  simp only [eval_mul, eval_C, eval_multiset_prod_X] at hν
+  simp only [map_sum, Finsupp.coe_finset_sum, Finset.sum_apply, map_smul, Finsupp.coe_smul,
+    Pi.smul_apply, smul_eq_mul, Finsupp.coe_zero, Pi.zero_apply]
+  rw [← hν]
+  exact Finset.sum_congr rfl fun A _ => mul_comm _ _
 
 end Shrink
 
