@@ -182,6 +182,52 @@ theorem exists_inertia_eq_zpowers (hqp : q.Prime) (hq2 : q ≠ 2)
 
 /-! ### The coordinates of a generator of the inertia subgroup -/
 
+/-- **A generator of the inertia subgroup at an odd prime of the `i`-th block has the coordinates
+of the `i`-th distinguished generator.**  Only the square roots of the blocks and the way the
+distinguished generators move them enter, so the statement is made for a bare family of blocks and
+square roots rather than for a strong Scholz realization. -/
+theorem coordClass_inertia_generator_of_sqrt {d c : ℕ} (hc : 1 ≤ c)
+    (e : Gal(↥A/ℚ) ≃* FreePClass 2 d c) {B : Fin d → Finset ℕ}
+    (hBprime : ∀ j, ∀ p ∈ B j, p.Prime) (hBdisjoint : ∀ j k, j ≠ k → Disjoint (B j) (B k))
+    {w : Fin d → ↥A} (hw : ∀ j, w j ≠ 0)
+    (hwsq : ∀ j, w j ^ 2 = algebraMap ℚ ↥A ((∏ p ∈ B j, p : ℕ) : ℚ))
+    (hgen : ∀ k j, sqrtSign (w j) (e.symm (FreePClass.gen 2 d c k)) = if j = k then 1 else 0)
+    {i : Fin d} (hq : q ∈ B i) (hq2 : q ≠ 2) (P : Ideal (𝓞 ↥A)) [P.IsPrime]
+    [P.LiesOver (Ideal.span {(q : ℤ)})] {x : Gal(↥A/ℚ)}
+    (hx : Ideal.inertia Gal(↥A/ℚ) P = Subgroup.zpowers x) :
+    FreePClass.coordClass 2 d hc (e x) = Multiplicative.ofAdd (Pi.single i 1) := by
+  have hqp : q.Prime := hBprime i q hq
+  have hcoord : ∀ j : Fin d, sqrtSign (w j) x
+      = Multiplicative.toAdd (FreePClass.coordClass 2 d hc (e x)) j :=
+    fun j => sqrtSign_eq_coordClass hc e hw hwsq hgen x j
+  have hxmem : x ∈ Ideal.inertia Gal(↥A/ℚ) P := by
+    rw [hx]; exact Subgroup.mem_zpowers x
+  -- off the `i`-th coordinate the generator is trivial
+  have hoff : ∀ j : Fin d, j ≠ i → sqrtSign (w j) x = 0 := by
+    intro j hj
+    refine sqrtSign_eq_zero_of_notMem (hBprime j) (hwsq j) hqp hq2 ?_ P hxmem
+    exact fun hmem => (Finset.disjoint_left.mp (hBdisjoint j i hj)) hmem hq
+  -- on the `i`-th coordinate it is not
+  have hon : sqrtSign (w i) x = 1 := by
+    obtain ⟨σ, hσ, hσ1⟩ := exists_mem_inertia_sqrtSign_eq_one (hBprime i) (hw i) (hwsq i) hq P
+    rw [hx, Subgroup.mem_zpowers_iff] at hσ
+    obtain ⟨n, rfl⟩ := hσ
+    refine (eq_zero_or_one_zmod_two _).resolve_left fun hzero => ?_
+    have hker : x ∈ (sqrtSignChar (hw i) (hwsq i)).ker :=
+      (mem_ker_sqrtSignChar_iff _ _ x).mpr ((sqrtSign_eq_zero_iff _ x).mp hzero)
+    have hker' := (mem_ker_sqrtSignChar_iff (hw i) (hwsq i) (x ^ n)).mp
+      (Subgroup.zpow_mem _ hker n)
+    rw [← sqrtSign_eq_zero_iff] at hker'
+    rw [hker'] at hσ1
+    exact zero_ne_one hσ1
+  have hkey : Multiplicative.toAdd (FreePClass.coordClass 2 d hc (e x)) = Pi.single i 1 := by
+    funext j
+    rw [← hcoord j, Pi.single_apply]
+    rcases eq_or_ne j i with rfl | hj
+    · simpa using hon
+    · simpa [hj] using hoff j hj
+  rw [← hkey, ofAdd_toAdd]
+
 namespace StrongScholzRealization
 
 variable {d c N : ℕ}
@@ -192,40 +238,9 @@ theorem coordClass_inertia_generator (R : StrongScholzRealization d c N) (hc : 1
     (hq : q ∈ R.block i) (hq2 : q ≠ 2) (P : Ideal (𝓞 ↥R.carrier)) [P.IsPrime]
     [P.LiesOver (Ideal.span {(q : ℤ)})] {x : Gal(↥R.carrier/ℚ)}
     (hx : Ideal.inertia Gal(↥R.carrier/ℚ) P = Subgroup.zpowers x) :
-    FreePClass.coordClass 2 d hc (R.galEquiv x) = Multiplicative.ofAdd (Pi.single i 1) := by
-  have hqp : q.Prime := R.blockPrime i q hq
-  have hcoord : ∀ j : Fin d, sqrtSign (R.sqrt j) x
-      = Multiplicative.toAdd (FreePClass.coordClass 2 d hc (R.galEquiv x)) j :=
-    fun j => sqrtSign_eq_coordClass hc R.galEquiv R.sqrt_ne_zero R.sqrt_sq R.sqrtSign_gen x j
-  have hxmem : x ∈ Ideal.inertia Gal(↥R.carrier/ℚ) P := by
-    rw [hx]; exact Subgroup.mem_zpowers x
-  -- off the `i`-th coordinate the generator is trivial
-  have hoff : ∀ j : Fin d, j ≠ i → sqrtSign (R.sqrt j) x = 0 := by
-    intro j hj
-    refine sqrtSign_eq_zero_of_notMem (R.blockPrime j) (R.sqrt_sq j) hqp hq2 ?_ P hxmem
-    exact fun hmem => (Finset.disjoint_left.mp (R.blockDisjoint j i hj)) hmem hq
-  -- on the `i`-th coordinate it is not
-  have hon : sqrtSign (R.sqrt i) x = 1 := by
-    obtain ⟨σ, hσ, hσ1⟩ := exists_mem_inertia_sqrtSign_eq_one (R.blockPrime i)
-      (R.sqrt_ne_zero i) (R.sqrt_sq i) hq P
-    rw [hx, Subgroup.mem_zpowers_iff] at hσ
-    obtain ⟨n, rfl⟩ := hσ
-    refine (eq_zero_or_one_zmod_two _).resolve_left fun hzero => ?_
-    have hker : x ∈ (sqrtSignChar (R.sqrt_ne_zero i) (R.sqrt_sq i)).ker :=
-      (mem_ker_sqrtSignChar_iff _ _ x).mpr ((sqrtSign_eq_zero_iff _ x).mp hzero)
-    have hker' := (mem_ker_sqrtSignChar_iff (R.sqrt_ne_zero i) (R.sqrt_sq i) (x ^ n)).mp
-      (Subgroup.zpow_mem _ hker n)
-    rw [← sqrtSign_eq_zero_iff] at hker'
-    rw [hker'] at hσ1
-    exact zero_ne_one hσ1
-  have hkey : Multiplicative.toAdd (FreePClass.coordClass 2 d hc (R.galEquiv x))
-      = Pi.single i 1 := by
-    funext j
-    rw [← hcoord j, Pi.single_apply]
-    rcases eq_or_ne j i with rfl | hj
-    · simpa using hon
-    · simpa [hj] using hoff j hj
-  rw [← hkey, ofAdd_toAdd]
+    FreePClass.coordClass 2 d hc (R.galEquiv x) = Multiplicative.ofAdd (Pi.single i 1) :=
+  coordClass_inertia_generator_of_sqrt hc R.galEquiv R.blockPrime R.blockDisjoint R.sqrt_ne_zero
+    R.sqrt_sq R.sqrtSign_gen hq hq2 P hx
 
 /-- **The part of the inertia subgroup at an odd prime of the `i`-th block lying over the previous
 class is generated by the distinguished central element attached to the `i`-th generator.** -/

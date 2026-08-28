@@ -36,6 +36,10 @@ the identification is compatible with the two surjections.
   the cut field.
 * `InverseGalois.CFT.cutField_le_cutField`: **a homomorphism with the smaller kernel cuts out the
   larger field.**
+* `InverseGalois.CFT.cutField_eq_of_ker_eq`: **the field cut out by a homomorphism depends on its
+  kernel alone.**
+* `InverseGalois.CFT.cutField_eq_self_of_ker_eq_bot`: an injective homomorphism cuts out the whole
+  field.
 * `InverseGalois.CFT.cutField_comp_galRestrictLE`: **pulling a homomorphism back along a
   restriction does not change the field it cuts out.**
 
@@ -89,9 +93,19 @@ omit [FiniteDimensional F ↥E] [IsGalois F ↥E] in
 theorem cutField_le : cutField ψ ≤ E :=
   IntermediateField.lift_le _
 
+/-- The cut field is isomorphic to the fixed field of the kernel it was lifted from. -/
+noncomputable def cutFieldAlgEquiv : ↥(IntermediateField.fixedField ψ.ker) ≃ₐ[F] ↥(cutField ψ) :=
+  IntermediateField.liftAlgEquiv (IntermediateField.fixedField ψ.ker)
+
 /-- The cut field is normal over the base, the kernel being a normal subgroup. -/
 instance normal_cutField : Normal F ↥(cutField ψ) :=
-  Normal.of_algEquiv (IntermediateField.liftAlgEquiv (IntermediateField.fixedField ψ.ker))
+  Normal.of_algEquiv (cutFieldAlgEquiv ψ)
+
+instance isGalois_cutField : IsGalois F ↥(cutField ψ) :=
+  IsGalois.of_algEquiv (cutFieldAlgEquiv ψ)
+
+instance finiteDimensional_cutField : FiniteDimensional F ↥(cutField ψ) :=
+  (cutFieldAlgEquiv ψ).toLinearEquiv.finiteDimensional
 
 omit [FiniteDimensional F ↥E] [IsGalois F ↥E] in
 /-- Read inside the field the homomorphism is defined on, the cut field is the fixed field of the
@@ -137,6 +151,20 @@ variable {G₁ G₂ : Type*} [Group G₁] [Group G₂]
 theorem cutField_le_cutField (ψ₁ : Gal(↥E/F) →* G₁) (ψ₂ : Gal(↥E/F) →* G₂)
     (h : ψ₁.ker ≤ ψ₂.ker) : cutField ψ₂ ≤ cutField ψ₁ :=
   le_cutField ψ₁ (cutField_le ψ₂) (by rw [ker_galRestrictLE_cutField]; exact h)
+
+omit [FiniteDimensional F ↥E] [IsGalois F ↥E] in
+/-- **The field cut out by a homomorphism depends on its kernel alone.** -/
+theorem cutField_eq_of_ker_eq (ψ₁ : Gal(↥E/F) →* G₁) (ψ₂ : Gal(↥E/F) →* G₂)
+    (h : ψ₁.ker = ψ₂.ker) : cutField ψ₁ = cutField ψ₂ := by
+  unfold cutField
+  rw [h]
+
+omit [FiniteDimensional F ↥E] [IsGalois F ↥E] in
+/-- **An injective homomorphism cuts out the whole field.** -/
+theorem cutField_eq_self_of_ker_eq_bot (ψ₁ : Gal(↥E/F) →* G₁) (h : ψ₁.ker = ⊥) :
+    cutField ψ₁ = E := by
+  unfold cutField
+  rw [h, IntermediateField.fixedField_bot, IntermediateField.lift_top]
 
 end Compare
 

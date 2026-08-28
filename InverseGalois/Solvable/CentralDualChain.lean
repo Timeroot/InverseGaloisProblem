@@ -26,8 +26,9 @@ that sees it.
 * `InverseGalois.exists_dualFamily`: **an independent family in a central subgroup of exponent two
   has a dual family of characters.**
 * `InverseGalois.exists_charChain`: **an independent family in a finite central subgroup of
-  exponent two is listed by a family of characters separating the points of the subgroup and
-  detecting each member of the family at most once.**
+  exponent two is listed by a family of characters separating the points of the subgroup, each
+  member of the family being detected by at most one character and each character detecting at
+  most one member.**
 
 ## Tags
 
@@ -116,17 +117,20 @@ theorem exists_dualFamily (h : N ≤ Subgroup.center G) (hexp : ∀ w ∈ N, w ^
 
 open scoped Classical in
 /-- **An independent family in a finite central subgroup of exponent two is listed by a family of
-characters separating the points of the subgroup and detecting each member of the family at most
-once.**  The list is the dual family of the independent family followed by every character
-vanishing on the whole family: a character not killed by an element of the subgroup differs from a
-character of the second kind by a combination of the dual family, so the two kinds together
-separate the points. -/
+characters separating the points of the subgroup, each member of the family being detected by at
+most one character and each character detecting at most one member.**  The list is the dual family
+of the independent family followed by every character vanishing on the whole family: a character
+not killed by an element of the subgroup differs from a character of the second kind by a
+combination of the dual family, so the two kinds together separate the points, while a character
+of the list detecting a member of the family is the member's own dual character. -/
 theorem exists_charChain [Finite ↥N] (h : N ≤ Subgroup.center G) (hexp : ∀ w ∈ N, w ^ 2 = 1)
     (hzN : ∀ i, z i ∈ N) (hindep : ∀ i, z i ∉ otherSpan z i) :
     ∃ (t : ℕ) (chi : Fin t → (Additive ↥N →+ ZMod 2)),
       (∀ g ∈ N, (∀ k, charValue N (chi k) g = 0) → g = 1) ∧
-        ∀ (i : Fin d) (k₁ k₂ : Fin t), charValue N (chi k₁) (z i) ≠ 0 →
-          charValue N (chi k₂) (z i) ≠ 0 → k₁ = k₂ := by
+        (∀ (i : Fin d) (k₁ k₂ : Fin t), charValue N (chi k₁) (z i) ≠ 0 →
+          charValue N (chi k₂) (z i) ≠ 0 → k₁ = k₂) ∧
+        ∀ (k : Fin t) (i₁ i₂ : Fin d), charValue N (chi k) (z i₁) ≠ 0 →
+          charValue N (chi k) (z i₂) ≠ 0 → i₁ = i₂ := by
   obtain ⟨χ, hχ⟩ := exists_dualFamily h hexp hzN hindep
   haveI : Finite (Additive ↥N →+ ZMod 2) := finite_char (N := N) two_ne_zero
   -- the characters vanishing at every member of the family
@@ -136,7 +140,15 @@ theorem exists_charChain [Finite ↥N] (h : N ≤ Subgroup.center G) (hexp : ∀
   let chi₀ : Fin d ⊕ V → (Additive ↥N →+ ZMod 2) := Sum.elim χ Subtype.val
   -- reindex by an initial segment of the naturals
   let e := Fintype.equivFin (Fin d ⊕ V)
-  refine ⟨Fintype.card (Fin d ⊕ V), chi₀ ∘ e.symm, fun g hg hker => ?_, fun i k₁ k₂ h₁ h₂ => ?_⟩
+  have hval : ∀ (x : Fin d ⊕ V) (i : Fin d), charValue N (chi₀ x) (z i) ≠ 0 → x = Sum.inl i := by
+    rintro (j | ⟨φ, hφ⟩) i hx
+    · have := hχ j i
+      by_cases hij : i = j
+      · rw [hij]
+      · exact absurd (by simpa [chi₀, hij] using this) hx
+    · exact absurd (by simpa [chi₀] using hφ i) hx
+  refine ⟨Fintype.card (Fin d ⊕ V), chi₀ ∘ e.symm, fun g hg hker => ?_,
+    fun i k₁ k₂ h₁ h₂ => ?_, fun k i₁ i₂ h₁ h₂ => ?_⟩
   · -- every character kills `g`
     refine eq_one_of_forall_charValue_eq_zero Nat.prime_two h hexp hg fun φ => ?_
     set c : Fin d → ZMod 2 := fun i => charValue N φ (z i) with hc
@@ -177,13 +189,6 @@ theorem exists_charChain [Finite ↥N] (h : N ≤ Subgroup.center G) (hexp : ∀
     exact this.symm
   · -- at most one character of the list detects the `i`-th member
     refine e.symm.injective ?_
-    set a := e.symm k₁ with ha
-    set b := e.symm k₂ with hb
-    have hval : ∀ x : Fin d ⊕ V, charValue N (chi₀ x) (z i) ≠ 0 → x = Sum.inl i := by
-      rintro (j | ⟨φ, hφ⟩) hx
-      · have := hχ j i
-        by_cases hij : i = j
-        · rw [hij]
-        · exact absurd (by simpa [chi₀, hij] using this) hx
-      · exact absurd (by simpa [chi₀] using hφ i) hx
-    rw [hval a (by simpa [ha] using h₁), hval b (by simpa [hb] using h₂)]
+    rw [hval (e.symm k₁) i h₁, hval (e.symm k₂) i h₂]
+  · -- each character of the list detects at most one member of the family
+    exact Sum.inl_injective ((hval (e.symm k) i₁ h₁).symm.trans (hval (e.symm k) i₂ h₂))
