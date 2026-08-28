@@ -15,6 +15,8 @@ import InverseGalois.Solvable.Shafarevich.Ikeda
 import InverseGalois.Solvable.Shafarevich.Generic
 import InverseGalois.Solvable.Shafarevich.Shrink
 import InverseGalois.Solvable.Shafarevich.PCentral
+import InverseGalois.Solvable.Shafarevich.ClassTwo
+import InverseGalois.Solvable.Shafarevich.PCentralSpan
 
 /-!
 # Shafarevich's theorem
@@ -81,4 +83,11 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   is built: the descending `p`-central series, whose terms are characteristic, whose successive
   quotients are elementary abelian and central, and which a surjection carries onto the
   corresponding series of the image.
+* `InverseGalois.Solvable.Shafarevich.ClassTwo` records the commutator calculus that is available
+  inside one layer, where the commutators that arise are central: the commutator is bilinear, and
+  the `p`-th power of a product differs from the product of the `p`-th powers by a single binomial
+  power of the commutator.
+* `InverseGalois.Solvable.Shafarevich.PCentralSpan` uses that calculus to generate each layer
+  explicitly: starting from a generating set of the group and applying, at each step, either a
+  `p`-th power or a commutator with a generator produces a set of words generating the layer.
 -/
