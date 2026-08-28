@@ -288,6 +288,7 @@ import InverseGalois.CFT.Scholz.DyadicResidueCorrection
 import InverseGalois.CFT.Scholz.DyadicResidueDegree
 import InverseGalois.CFT.Scholz.DyadicShrink
 import InverseGalois.CFT.Scholz.DyadicSocle
+import InverseGalois.CFT.Scholz.DyadicStageTransition
 import InverseGalois.CFT.Scholz.DyadicStepUp
 import InverseGalois.CFT.Scholz.ElementaryAbelianSolutionTwo
 import InverseGalois.CFT.Scholz.FixedFieldRamification
@@ -956,6 +957,9 @@ it that are available here.
 * `InverseGalois.CFT.Scholz.DyadicLiftCorrection` makes the correction on a cover available at the
   prime two from that reading: it is enough that the obstructions of the field cut out by the
   uncorrected solution sum to zero over each block.
+* `InverseGalois.CFT.Scholz.DyadicStageTransition` compares two of those readings: adjoining to a
+  subgroup the element a stage of the dyadic climb is built on leaves the obstruction of every block
+  unchanged, so the climb carries its hypothesis from one stage to the next.
 * `InverseGalois.CFT.Scholz.SplitInertiaTower` carries that obstruction along a tower: it vanishes in
   every subfield of a field where it vanishes, it vanishes upstairs whenever the prime is totally
   ramified in the top layer, and in a compositum whose inertia over the base already lies in one
