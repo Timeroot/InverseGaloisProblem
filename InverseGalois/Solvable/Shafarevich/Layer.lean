@@ -28,6 +28,9 @@ elements span the layer.
   `InverseGalois.Shafarevich.layerLinear`, the same map read as a linear map.
 * `InverseGalois.Shafarevich.layerRep` — the resulting linear action of the automorphism group of
   the group on each of its layers.
+* `InverseGalois.Shafarevich.layerZeroMk` — the class in the zeroth layer of an arbitrary element of
+  the group, and `InverseGalois.Shafarevich.layerZeroLift`, the linear map out of the zeroth layer
+  attached to a homomorphism to an abelian group killed by `p`.
 
 ## Main results
 
@@ -299,5 +302,82 @@ theorem span_layerMk_eq_top {ι : Type*} (g : ι → P) (hg : ∀ i, g i ∈ pCe
   rwa [(layerMk_eq_iff hz hyn).mpr hdiv]
 
 end Span
+
+/-! ### Maps out of the zeroth layer -/
+
+section Zero
+
+variable {p : ℕ} {P Q : Type*} [Group P] [Group Q]
+
+/-- **The class of an arbitrary element of the group in the zeroth layer.**  The zeroth term of the
+descending `p`-central series is the whole group, so every element has a class there. -/
+def layerZeroMk (p : ℕ) (x : P) : Layer p P 0 := layerMk (n := 0) (Subgroup.mem_top x)
+
+@[simp]
+theorem layerZeroMk_mul (x y : P) :
+    layerZeroMk p (x * y) = layerZeroMk p x + layerZeroMk p y := rfl
+
+@[simp]
+theorem layerZeroMk_one : layerZeroMk p (1 : P) = 0 := rfl
+
+theorem layerZeroMk_eq_zero_iff {x : P} : layerZeroMk p x = 0 ↔ x ∈ pCentral p P 1 :=
+  layerMk_eq_zero_iff _
+
+/-- Every element of the zeroth layer is the class of an element of the group. -/
+theorem exists_layerZeroMk (v : Layer p P 0) : ∃ x : P, layerZeroMk p x = v := by
+  obtain ⟨x, _, hx⟩ := exists_layerMk v
+  exact ⟨x, hx⟩
+
+/-- The classes of the elements of the group span the zeroth layer. -/
+theorem span_range_layerZeroMk : Submodule.span (ZMod p) (Set.range (layerZeroMk (P := P) p)) = ⊤ :=
+  Submodule.eq_top_iff'.2 fun v => by
+    obtain ⟨x, rfl⟩ := exists_layerZeroMk v
+    exact Submodule.subset_span ⟨x, rfl⟩
+
+@[simp]
+theorem layerMap_layerZeroMk (f : P →* Q) (x : P) :
+    layerMap p f 0 (layerZeroMk p x) = layerZeroMk p (f x) :=
+  layerMap_layerMk f _
+
+/-- A homomorphism from the group to an abelian group killed by `p` annihilates the first term of
+the descending `p`-central series. -/
+theorem pCentral_one_le_ker {W : Type*} [AddCommGroup W] [Module (ZMod p) W]
+    (f : P →* Multiplicative W) : pCentral p P 1 ≤ f.ker := by
+  rw [pCentral_succ]
+  refine sup_le ((Subgroup.closure_le _).mpr ?_) (Subgroup.commutator_le.mpr fun x _ y _ => ?_)
+  · rintro _ ⟨x, -, rfl⟩
+    have hp : (p : ZMod p) • Multiplicative.toAdd (f x) = 0 := by
+      rw [ZMod.natCast_self, zero_smul]
+    rw [SetLike.mem_coe, MonoidHom.mem_ker, map_pow]
+    exact Multiplicative.toAdd.injective (by
+      rw [toAdd_pow, ← Nat.cast_smul_eq_nsmul (ZMod p), hp, toAdd_one])
+  · rw [MonoidHom.mem_ker, map_commutatorElement, commutatorElement_eq_one_iff_mul_comm]
+    exact mul_comm _ _
+
+set_option synthInstance.maxHeartbeats 400000 in
+/-- **A homomorphism out of the zeroth layer.**  The zeroth term of the descending `p`-central
+series is the whole group, so a homomorphism to an abelian group killed by `p` factors through the
+zeroth layer. -/
+def layerZeroLift {W : Type*} [AddCommGroup W] [Module (ZMod p) W] (f : P →* Multiplicative W) :
+    Layer p P 0 →ₗ[ZMod p] W :=
+  AddMonoidHom.toZModLinearMap p
+    { toFun := fun v => Multiplicative.toAdd
+        (QuotientGroup.lift (pCentral p P 1) f (pCentral_one_le_ker f) (Additive.toMul v).1)
+      map_zero' := congrArg Multiplicative.toAdd (map_one _)
+      map_add' := fun _ _ => congrArg Multiplicative.toAdd (map_mul _ _ _) }
+
+@[simp]
+theorem layerZeroLift_layerZeroMk {W : Type*} [AddCommGroup W] [Module (ZMod p) W]
+    (f : P →* Multiplicative W) (x : P) :
+    layerZeroLift f (layerZeroMk p x) = Multiplicative.toAdd (f x) := rfl
+
+/-- A linear map out of the zeroth layer is determined by its values on the classes of the elements
+of the group. -/
+theorem layerZero_ext {W : Type*} [AddCommGroup W] [Module (ZMod p) W]
+    {f g : Layer p P 0 →ₗ[ZMod p] W} (h : ∀ x : P, f (layerZeroMk p x) = g (layerZeroMk p x)) :
+    f = g :=
+  LinearMap.ext fun v => by obtain ⟨x, rfl⟩ := exists_layerZeroMk v; exact h x
+
+end Zero
 
 end InverseGalois.Shafarevich

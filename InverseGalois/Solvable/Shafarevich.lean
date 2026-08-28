@@ -23,6 +23,8 @@ import InverseGalois.Solvable.Shafarevich.Layer
 import InverseGalois.Solvable.Shafarevich.LayerShrink
 import InverseGalois.Solvable.Shafarevich.LayerCohomology
 import InverseGalois.Solvable.Shafarevich.LayerHomology
+import InverseGalois.Solvable.Shafarevich.LayerTensor
+import InverseGalois.Solvable.Shafarevich.HomologyOne
 
 /-!
 # Shafarevich's theorem
@@ -129,4 +131,13 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   cocycles, and so obtains the same count for the homology of the operator group with coefficients
   in a layer.  Having both is what makes the whole shrinking procedure work in ordinary
   (co)homology, with no recourse to Tate cohomology in negative degrees.
+* `InverseGalois.Solvable.Shafarevich.LayerTensor` runs the count in a tensor product of two layers
+  with a fixed module of coefficients: such a product is spanned by the tensors of the classes of
+  layer words, a shrinking homomorphism multiplies each of those by the product of the two monomials
+  attached to the words, and the degrees add.
+* `InverseGalois.Solvable.Shafarevich.HomologyOne` presents the first homology of a group acting
+  trivially on coefficients killed by `p`: it is covered by the zeroth layer of the descending
+  `p`-central series tensored with the coefficients, compatibly with changing the group and the
+  coefficients.  That is the universal coefficient formula in the shape the shrinking argument needs
+  it, and it is what turns a homology class into a tensor of layers on which the count operates.
 -/
