@@ -27,6 +27,8 @@ coordinate prime to the characteristic, which is what makes the resulting homomo
   the number of scalar equations involved.
 * `InverseGalois.Shafarevich.exists_genericShrink_mem_pCentral` — the same for the shrinking
   homomorphism between generic operator groups, which is then surjective as well.
+* `InverseGalois.Shafarevich.layerMap_genericShrink_genericLayerRep` — the map of layers it induces
+  respects the linear action of the operator group.
 
 ## Tags
 
@@ -166,6 +168,20 @@ theorem exists_ne_zero_forall_map_mem_pCentral {x : ι → P}
       _ = 0 := ha ν
   exact (layerMk_eq_zero_iff _).mp hfin
 
+/-- The same count, phrased for prescribed elements of the layer itself rather than for elements of
+the group. -/
+theorem exists_ne_zero_forall_layerMap_eq_zero {x : ι → P}
+    (hx : Subgroup.closure (Set.range x) = ⊤) (y : κ → Q) (σ : ι → κ) (blk : ι → Fin r)
+    (ψ : (Fin r → ℕ) → P →* Q) (hψ : ∀ a i, ψ a (x i) = y (σ i) ^ a (blk i))
+    (hr : (j + 1) * (t * Module.finrank (ZMod ℓ) (Layer ℓ Q j)) < r) (v : Fin t → Layer ℓ P j) :
+    ∃ a : Fin r → ZMod ℓ, a ≠ 0 ∧
+      ∀ ν, layerMap ℓ (ψ fun k => (a k).val) j (v ν) = 0 := by
+  choose z hz hzv using fun ν => exists_layerMk (v ν)
+  obtain ⟨a, ha0, ha⟩ := exists_ne_zero_forall_map_mem_pCentral hx y σ blk ψ hψ hr hz
+  refine ⟨a, ha0, fun ν => ?_⟩
+  rw [← hzv ν, layerMap_layerMk, layerMk_eq_zero_iff]
+  exact ha ν
+
 end Count
 
 /-! ### The generic instance -/
@@ -199,6 +215,40 @@ theorem exists_genericShrink_mem_pCentral {ℓ : ℕ} [hℓ : Fact ℓ.Prime] (h
   refine hℓ.out.coprime_iff_not_dvd.mpr fun hd => absurd (Nat.le_of_dvd ?_ hd) ?_
   · exact Nat.pos_of_ne_zero ((ZMod.val_ne_zero (a k)).mpr hk)
   · exact not_le.mpr (ZMod.val_lt (a k))
+
+omit [Group U] in
+/-- **A shrinking homomorphism can be chosen surjective and killing finitely many prescribed
+elements of a layer at once.** -/
+theorem exists_genericShrink_layerMap_eq_zero {ℓ : ℕ} [Fact ℓ.Prime] (hS : IsPGroup ℓ S) {j t : ℕ}
+    (hr : (j + 1) * (t * Module.finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j)) < r)
+    (v : Fin t → Layer ℓ (Generic U (r * n) S) j) :
+    ∃ a : Fin r → ℕ, Function.Surjective (genericShrink U r n S a) ∧
+      ∀ ν, layerMap ℓ (genericShrink U r n S a) j (v ν) = 0 := by
+  choose z hz hzv using fun ν => exists_layerMk (v ν)
+  obtain ⟨a, hsurj, ha⟩ := exists_genericShrink_mem_pCentral U r n S hS hr hz
+  refine ⟨a, hsurj, fun ν => ?_⟩
+  rw [← hzv ν, layerMap_layerMk, layerMk_eq_zero_iff]
+  exact ha ν
+
+/-! ### Equivariance -/
+
+/-- **The operator group acts linearly on every layer of the generic operator group.** -/
+def genericLayerRep (ℓ j : ℕ) : U →* Module.End (ZMod ℓ) (Layer ℓ (Generic U n S) j) :=
+  (layerRep ℓ (Generic U n S) j).comp (genericAut U n S)
+
+omit [Finite U] [Finite S] in
+@[simp]
+theorem genericLayerRep_apply (ℓ j : ℕ) (u : U) (v : Layer ℓ (Generic U n S) j) :
+    genericLayerRep U n S ℓ j u v = layerMap ℓ (genericAut U n S u).toMonoidHom j v := rfl
+
+omit [Finite U] [Finite S] in
+/-- **The map of layers induced by a shrinking homomorphism is equivariant** for the action of the
+operator group. -/
+theorem layerMap_genericShrink_genericLayerRep (a : Fin r → ℕ) (ℓ j : ℕ) (u : U)
+    (v : Layer ℓ (Generic U (r * n) S) j) :
+    layerMap ℓ (genericShrink U r n S a) j (genericLayerRep U (r * n) S ℓ j u v)
+      = genericLayerRep U n S ℓ j u (layerMap ℓ (genericShrink U r n S a) j v) :=
+  layerMap_layerRep _ (genericShrink_comp_genericAut U r n S a u) v
 
 end Generic
 

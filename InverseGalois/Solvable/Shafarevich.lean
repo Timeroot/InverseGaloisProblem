@@ -109,11 +109,13 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
 * `InverseGalois.Solvable.Shafarevich.Layer` makes each layer of the filtration into a vector space
   over `ZMod p`, realised as the image of one term in the quotient by the next, functorial in the
   group and spanned by the classes of any family that generates the term modulo the next one.  That
-  is the space in which the counting argument is carried out.
+  is the space in which the counting argument is carried out, and the automorphisms of the group
+  act on it linearly, so that it is a representation of any group of operators.
 * `InverseGalois.Solvable.Shafarevich.LayerShrink` ties the three together: the words of a given
   level span the layer, a shrinking homomorphism turns each of them into a monomial in the
   exponents of degree at most one more than the level, and the Chevalleyâ€“Warning count then
   produces a nonzero vector of exponents pushing finitely many prescribed elements of one term into
   the next, whose shrinking homomorphism is surjective because a nonzero vector has a coordinate
-  prime to the characteristic.
+  prime to the characteristic.  The layers of the generic groups are linear representations of the
+  operator group, and the map between them is equivariant.
 -/

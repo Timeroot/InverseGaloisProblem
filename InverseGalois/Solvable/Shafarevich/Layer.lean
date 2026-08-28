@@ -25,6 +25,8 @@ elements span the layer.
 * `InverseGalois.Shafarevich.Layer` — the same group written additively, a `ZMod p`-vector space.
 * `InverseGalois.Shafarevich.layerMk` — the class of an element of the `n`-th term.
 * `InverseGalois.Shafarevich.layerMap` — the map of layers induced by a homomorphism.
+* `InverseGalois.Shafarevich.layerRep` — the resulting linear action of the automorphism group of
+  the group on each of its layers.
 
 ## Main results
 
@@ -32,6 +34,8 @@ elements span the layer.
   quotient lies in the next term.
 * `InverseGalois.Shafarevich.span_layerMk_eq_top` — **a family generating the `n`-th term modulo the
   next one spans the layer.**
+* `InverseGalois.Shafarevich.layerMap_layerRep` — the map of layers induced by an equivariant
+  homomorphism is equivariant.
 
 ## Tags
 
@@ -173,7 +177,79 @@ theorem layerMap_smul (f : P →* Q) (c : ZMod p) (v : Layer p P n) :
     layerMap p f n (c • v) = c • layerMap p f n v :=
   ZMod.map_smul _ c v
 
+@[simp]
+theorem layerMap_id : layerMap p (MonoidHom.id P) n = AddMonoidHom.id (Layer p P n) := by
+  ext v
+  obtain ⟨x, hx, rfl⟩ := exists_layerMk v
+  rfl
+
+theorem layerMap_comp {R : Type*} [Group R] (g : Q →* R) (f : P →* Q) :
+    layerMap p (g.comp f) n = (layerMap p g n).comp (layerMap p f n) := by
+  ext v
+  obtain ⟨x, hx, rfl⟩ := exists_layerMk v
+  rfl
+
 end Map
+
+/-! ### The layer as a module over the operators -/
+
+section Aut
+
+variable {p : ℕ} {P Q : Type*} [Group P] [Group Q] {n : ℕ}
+
+/-- The isomorphism of layers induced by an isomorphism of groups. -/
+def layerCongr (p : ℕ) (e : P ≃* Q) (n : ℕ) : Layer p P n ≃+ Layer p Q n where
+  toFun := layerMap p e.toMonoidHom n
+  invFun := layerMap p e.symm.toMonoidHom n
+  left_inv v := by
+    rw [← AddMonoidHom.comp_apply, ← layerMap_comp,
+      show e.symm.toMonoidHom.comp e.toMonoidHom = MonoidHom.id P from
+        MonoidHom.ext e.symm_apply_apply, layerMap_id, AddMonoidHom.id_apply]
+  right_inv v := by
+    rw [← AddMonoidHom.comp_apply, ← layerMap_comp,
+      show e.toMonoidHom.comp e.symm.toMonoidHom = MonoidHom.id Q from
+        MonoidHom.ext e.apply_symm_apply, layerMap_id, AddMonoidHom.id_apply]
+  map_add' := map_add _
+
+@[simp]
+theorem layerCongr_apply (e : P ≃* Q) (v : Layer p P n) :
+    layerCongr p e n v = layerMap p e.toMonoidHom n v := rfl
+
+variable (p P n)
+
+/-- **The layers of a group are representations of its automorphism group over `ZMod p`.**  Every
+term of the descending `p`-central series is characteristic, so an automorphism of the group acts
+linearly on every layer. -/
+def layerRep : MulAut P →* Module.End (ZMod p) (Layer p P n) where
+  toFun e :=
+    { toFun := layerMap p e.toMonoidHom n
+      map_add' := map_add _
+      map_smul' := fun c v => layerMap_smul _ c v }
+  map_one' := by
+    refine LinearMap.ext fun v => ?_
+    obtain ⟨x, hx, rfl⟩ := exists_layerMk v
+    rfl
+  map_mul' e e' := by
+    refine LinearMap.ext fun v => ?_
+    obtain ⟨x, hx, rfl⟩ := exists_layerMk v
+    rfl
+
+variable {p P n}
+
+@[simp]
+theorem layerRep_apply (e : MulAut P) (v : Layer p P n) :
+    layerRep p P n e v = layerMap p e.toMonoidHom n v := rfl
+
+/-- **The map of layers induced by an equivariant homomorphism is equivariant.** -/
+theorem layerMap_layerRep (f : P →* Q) {e : MulAut P} {e' : MulAut Q}
+    (h : f.comp e.toMonoidHom = e'.toMonoidHom.comp f) (v : Layer p P n) :
+    layerMap p f n (layerRep p P n e v) = layerRep p Q n e' (layerMap p f n v) := by
+  have h1 : layerMap p (f.comp e.toMonoidHom) n v = layerMap p (e'.toMonoidHom.comp f) n v := by
+    rw [h]
+  rw [layerMap_comp, layerMap_comp] at h1
+  exact h1
+
+end Aut
 
 /-! ### Spanning the layer -/
 
