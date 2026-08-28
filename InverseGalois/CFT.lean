@@ -88,6 +88,7 @@ import InverseGalois.CFT.GroupCohomology.CyclicH2
 import InverseGalois.CFT.GroupCohomology.CyclicSubgroup
 import InverseGalois.CFT.GroupCohomology.CyclicSurjective
 import InverseGalois.CFT.GroupCohomology.ExtensionMap
+import InverseGalois.CFT.GroupCohomology.Pullback
 import InverseGalois.CFT.GroupCohomology.H1Transport
 import InverseGalois.CFT.GroupCohomology.IndexTwo
 import InverseGalois.CFT.GroupCohomology.Inflation
@@ -1019,6 +1020,11 @@ it that are available here.
   the factor set of the upper one, pushed forward along the map of kernels, is the factor set of
   the lower one pulled back along the map of quotients, up to the coboundary of the function
   comparing the two sections.
+* `InverseGalois.CFT.GroupCohomology.Pullback` reads an embedding problem as a single extension:
+  the fibre product of the middle term of an extension with a group mapping into the quotient is an
+  extension of that group by the same kernel, its factor set is the original factor set read through
+  that map, and it splits exactly when the map lifts.  For an abelian kernel the embedding problem
+  is therefore solvable exactly when the pulled back cohomology class vanishes.
 * `InverseGalois.CFT.Brauer.TensorSimple` proves that the tensor product of two central simple
   algebras is central simple, the multiplication of the Brauer group.
 * `InverseGalois.CFT.Brauer.Opposite` proves that a central simple algebra tensored with its
