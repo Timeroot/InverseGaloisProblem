@@ -12,6 +12,7 @@ import InverseGalois.Solvable.ElementaryAbelian
 import InverseGalois.Solvable.CentralDual
 import InverseGalois.Solvable.PCentralShrink
 import InverseGalois.Solvable.DispositionShrink
+import InverseGalois.Solvable.DispositionCharacter
 import InverseGalois.Solvable.Wreath
 import InverseGalois.Solvable.WreathFunctor
 import InverseGalois.Solvable.WreathRecognition
@@ -92,6 +93,10 @@ free of arithmetic input and applicable to both realization predicates of the de
   the free object of rank `d * r` carries `r` copies of a system of `d` generators, and for large
   enough `r` an array of elements of the last term of its lower `2`-central series is annihilated
   row by row by the collapse onto the free object of rank `d` along a suitable selection of copies.
+* `InverseGalois.Solvable.DispositionCharacter` reads that collapse through the coordinate
+  characters of the two free objects, where it becomes the linear map summing the coordinates of
+  each row over the selected copies, and records that it commutes with the projection of the tower
+  and is onto as soon as one copy is selected.
 * `InverseGalois.Solvable.Wreath` presents every semidirect product `A ⋊[φ] H` with `A` abelian as
   a quotient of the single regular wreath product `A ≀ᵣ H`, so that a realization of the wreath
   product realizes every split extension of `H` by `A` at once.

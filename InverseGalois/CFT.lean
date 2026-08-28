@@ -144,6 +144,7 @@ import InverseGalois.CFT.InertiaRestrict
 import InverseGalois.CFT.InertiaSubgroup
 import InverseGalois.CFT.InertiaSurjective
 import InverseGalois.CFT.InertiaTransport
+import InverseGalois.CFT.KerField
 import InverseGalois.CFT.KroneckerWeber
 import InverseGalois.CFT.Kummer.CentralEmbedding
 import InverseGalois.CFT.Kummer.CentralEmbeddingSqrtNegOne
@@ -660,6 +661,9 @@ it that are available here.
   available.
 * `InverseGalois.CFT.RestrictLE` restricts an automorphism of an intermediate field to a smaller
   intermediate field that is normal over the base.
+* `InverseGalois.CFT.KerField` cuts an intermediate field down to the fixed field of the kernel of a
+  homomorphism out of its Galois group, read inside the ambient field, and identifies the Galois
+  group of the result with the target of the homomorphism.
 * `InverseGalois.CFT.FibreCompositum` presents a group as the fibre product of two of its quotients
   over a common further quotient, whenever the two kernels intersect trivially and together exhaust
   the kernel of the map to it, and transfers that presentation to Galois groups: the compositum of

@@ -31,6 +31,8 @@ known, without any Kummer theory.
   character of a product of square roots is the sum of their sign characters.
 * `InverseGalois.CFT.sqrtSign_eq_zero_of_mem_frattini`: the Frattini subgroup lies in the kernel of
   every sign character.
+* `InverseGalois.CFT.sqrtSign_inclusion`: **the sign character is compatible with restriction to a
+  smaller intermediate field.**
 * `InverseGalois.CFT.exists_sq_eq_mul_of_sqrtSign_eq`: **two square roots of base elements with the
   same sign character have a product of radicands which is a square in the base field.**
 
@@ -134,6 +136,33 @@ theorem sqrtSign_eq_zero_of_mem_frattini (hm : u ^ 2 = algebraMap F M m) {σ : G
   refine (sqrtSign_eq_zero_iff u σ).mpr ?_
   have h := MulAction.mem_stabilizer_iff.mp (frattini_le_stabilizer_of_sq_eq hm hσ)
   simpa using h
+
+/-! ### Restriction to a smaller intermediate field -/
+
+section Restrict
+
+open IntermediateField
+
+variable {L : Type*} [Field L] [Algebra F L] {E E' : IntermediateField F L}
+
+/-- **The sign character is compatible with restriction to a smaller intermediate field.**  An
+automorphism of the larger field moves the image of an element of the smaller one by the same sign
+by which its restriction moves the element itself. -/
+theorem sqrtSign_inclusion (h : E ≤ E') [Normal F ↥E] (u : ↥E) (σ : Gal(↥E'/F)) :
+    sqrtSign (inclusion h u) σ = sqrtSign u (galRestrictLE h σ) := by
+  have key : ((σ (inclusion h u) : ↥E') : L) = ((galRestrictLE h σ u : ↥E) : L) := by
+    rw [coe_galRestrictLE h σ u]
+    rfl
+  have hiff : σ (inclusion h u) = inclusion h u ↔ galRestrictLE h σ u = u := by
+    constructor
+    · exact fun hc => Subtype.ext (key.symm.trans (congrArg Subtype.val hc))
+    · exact fun hc => Subtype.ext (key.trans (congrArg Subtype.val hc))
+  unfold sqrtSign
+  by_cases hu : galRestrictLE h σ u = u
+  · rw [if_pos (hiff.mpr hu), if_pos hu]
+  · rw [if_neg fun hc => hu (hiff.mp hc), if_neg hu]
+
+end Restrict
 
 /-! ### Recovering the radicand from the sign character -/
 
