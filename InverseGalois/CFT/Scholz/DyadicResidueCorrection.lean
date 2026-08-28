@@ -51,7 +51,7 @@ theorem exists_scholz_solution_two {N : ℕ} {G H : Type} [Group G] [Group H] [F
     (A : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥A] [IsGalois ℚ ↥A]
     (hschA : IsScholz 2 (N + 2) ↥A) (eA : Gal(↥A/ℚ) ≃* H)
     (L : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥L] [IsGalois ℚ ↥L] (hAL : A ≤ L)
-    (hramL : ramifiedSet ↥L ⊆ ramifiedSet ↥A) (ψ₀ : Gal(↥L/ℚ) ≃* G)
+    (hramL : IsScholzOver 2 (N + 2) ↥A ↥L) (ψ₀ : Gal(↥L/ℚ) ≃* G)
     (hcomp₀ : ∀ τ, f (ψ₀ τ) = eA (galRestrictLE hAL τ))
     {ι : Type*} {block : ι → Finset ℕ} (hspan : IsBlockSpanned A block)
     (hdefect : ∀ (M : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥M] [IsGalois ℚ ↥M]
@@ -74,7 +74,13 @@ theorem exists_scholz_solution_two {N : ℕ} {G H : Type} [Group G] [Group H] [F
   have h2A : (2 : ℕ) ∉ ramifiedSet ↥A := fun h => by
     have h4 := hS4 2 ((Set.Finite.mem_toFinset _).mpr h)
     norm_num at h4
-  have h2L : (2 : ℕ) ∉ ramifiedSet ↥L := fun h => h2A (hramL h)
+  have h2L : (2 : ℕ) ∉ ramifiedSet ↥L := by
+    intro h
+    rcases hramL 2 h with h' | ⟨h', -⟩
+    · exact h2A h'
+    · have hdvd : (4 : ℕ) ∣ 2 ^ (N + 2) := ⟨2 ^ N, by ring⟩
+      have h4 : (2 : ℕ) ≡ 1 [MOD 4] := h'.of_dvd hdvd
+      simp [Nat.ModEq] at h4
   -- the automorphisms fixing the field below lie in the Frattini subgroup
   have hfrL : (galRestrictLE hAL).ker ≤ frattini Gal(↥L/ℚ) := by
     intro σ hσ
@@ -99,7 +105,7 @@ theorem isScholzRealizable_of_solution_two {N : ℕ} {G H : Type} [Group G] [Gro
     (A : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥A] [IsGalois ℚ ↥A]
     (hschA : IsScholz 2 (N + 2) ↥A) (eA : Gal(↥A/ℚ) ≃* H)
     (L : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥L] [IsGalois ℚ ↥L] (hAL : A ≤ L)
-    (hramL : ramifiedSet ↥L ⊆ ramifiedSet ↥A) (ψ₀ : Gal(↥L/ℚ) ≃* G)
+    (hramL : IsScholzOver 2 (N + 2) ↥A ↥L) (ψ₀ : Gal(↥L/ℚ) ≃* G)
     (hcomp₀ : ∀ τ, f (ψ₀ τ) = eA (galRestrictLE hAL τ))
     {ι : Type*} {block : ι → Finset ℕ} (hspan : IsBlockSpanned A block)
     (hdefect : ∀ (M : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥M] [IsGalois ℚ ↥M]

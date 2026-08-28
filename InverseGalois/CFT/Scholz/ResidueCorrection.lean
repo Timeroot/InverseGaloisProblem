@@ -32,12 +32,14 @@ prescribed vector of power residue symbols is realised.  Feeding it the vector o
 character which cancels the defect at every prime ramified below, while leaving the ramification
 there untouched, because those primes do not divide the modulus.
 
-At the primes dividing the modulus nothing has to be checked: they split completely in the solution,
-so the whole decomposition group is seen only through the correcting character, and its image lies
-in the kernel of the central step, a group of prime order in which ramification alone forces the
-image of the inertia group to be everything.  Both families of primes are congruent to one modulo
-the required power of the residue characteristic, so the level condition survives, and the field cut
-out by the corrected solution satisfies Serre's condition in full.
+At the primes not ramified below nothing has to be checked, as long as they split completely in the
+field the problem is posed over: the whole decomposition group is then seen inside the kernel of the
+central step, a group of prime order in which ramification alone forces the image of the inertia
+group to be everything.  That covers the primes dividing the modulus, which split completely in the
+solution, and equally any fresh ramification the solution itself carries over a prime split
+completely below.  All these primes are congruent to one modulo the required power of the residue
+characteristic, so the level condition survives, and the field cut out by the corrected solution
+satisfies Serre's condition in full.
 
 Which vectors of power residue symbols a character can realise is where the residue characteristic
 enters: the exponent vectors whose radicand is already a power in the constraint field constrain the
@@ -48,7 +50,7 @@ vector has a radicand which is already a power there.
 ## Main results
 
 * `InverseGalois.CFT.exists_scholz_solution_of_forall_prod_eq_one`: **a solution of a central
-  Frattini embedding problem with kernel of prime order ramifying no more than the Scholz field
+  Frattini embedding problem with kernel of prime order ramifying harmlessly over the Scholz field
   below it, whose Frobenius defects are orthogonal to the exponent vectors already radical in the
   constraint field, is corrected to a Scholz field over that one.**
 * `InverseGalois.CFT.isScholzRealizable_of_solution_of_forall_prod_eq_one`: the same statement,
@@ -88,22 +90,22 @@ theorem isScholzRealizable_of_isScholz_fixedField {G : Type*} [Group G] {n : ℕ
 
 set_option synthInstance.maxHeartbeats 1000000 in
 set_option maxHeartbeats 4000000 in
-/-- **A solution of a central Frattini embedding problem with kernel of prime order ramifying no
-more than the Scholz field below it, whose Frobenius defects are orthogonal to the exponent vectors
-already radical in the constraint field, is corrected to a Scholz field over that one.**  The
-solution is enlarged by the roots of unity of an auxiliary modulus, and twisted by the character of
-the units modulo that modulus whose power residue symbols are the Frobenius defects at the primes
+/-- **A solution of a central Frattini embedding problem with kernel of prime order ramifying
+harmlessly over the Scholz field below it, whose Frobenius defects are orthogonal to the exponent
+vectors already radical in the constraint field, is corrected to a Scholz field over that one.**
+The solution is enlarged by the roots of unity of an auxiliary modulus, and twisted by the character
+of the units modulo that modulus whose power residue symbols are the Frobenius defects at the primes
 ramified below; the orthogonality is exactly what makes such a character available.  The twist
-cancels those defects without disturbing the inertia there, and at the primes dividing the modulus
-the decomposition group is seen only through the character, whose values lie in a kernel of prime
-order. -/
+cancels those defects without disturbing the inertia there, and at a prime split completely below —
+one dividing the modulus, or one the solution ramifies at afresh — the decomposition group lands in
+the kernel of the step, a group of prime order. -/
 theorem exists_scholz_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) [NeZero ℓ] {N : ℕ}
     {G H : Type} [Group G] [Group H] [Finite G] {f : G →* H} (hf : Function.Surjective f)
     (hZ : f.ker ≤ Subgroup.center G) (hfr : f.ker ≤ frattini G) (hcard : Nat.card ↥f.ker = ℓ)
     (A : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥A] [IsGalois ℚ ↥A]
     (hschA : IsScholz ℓ (N + 1) ↥A) (eA : Gal(↥A/ℚ) ≃* H)
     (L : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥L] [IsGalois ℚ ↥L] (hAL : A ≤ L)
-    (hramL : ramifiedSet ↥L ⊆ ramifiedSet ↥A) (ψ₀ : Gal(↥L/ℚ) ≃* G)
+    (hramL : IsScholzOver ℓ (N + 1) ↥A ↥L) (ψ₀ : Gal(↥L/ℚ) ≃* G)
     (hcomp₀ : ∀ τ, f (ψ₀ τ) = eA (galRestrictLE hAL τ))
     (horth : ∀ (M : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥M] [IsGalois ℚ ↥M]
       (hLM : L ≤ M) (Θ : Gal(↥M/ℚ) →* G), (∀ σ, Θ σ = ψ₀ (galRestrictLE hLM σ)) →
@@ -283,45 +285,44 @@ theorem exists_scholz_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) [NeZero 
       refine map_stabilizer_le_map_inertia P ψ' hP0 hσ₀ ?_
       rw [hmapeq, hψ'def, mulCentral_apply, hχ2 q hqS hqQ P hPp hPo σ₀ hσ₀]
       exact hzspec σ₀ hσ₀
-    · -- a prime dividing the modulus: the whole decomposition group lands in the kernel
+    · -- a prime unramified below: the whole decomposition group lands in the kernel
       have hqM : q ∈ ramifiedSet ↥M :=
         ramifiedSet_subset ↥(IntermediateField.fixedField ψ'.ker) ↥M hqram
       rw [hsupeq] at hqM
-      have hqQ : q ∣ Q := by
+      have hsplitA : SplitsCompletely ↥A q := by
         rcases hqM with h | h
-        · exact absurd ((hSmem q).mpr (hramL h)) hqS
-        · exact Nat.dvd_of_mem_primeFactors
+        · exact ((hramL q h).resolve_left fun hA => hqS ((hSmem q).mpr hA)).2
+        · have hqQ : q ∣ Q := Nat.dvd_of_mem_primeFactors
             (Finset.mem_coe.mp (ramifiedSet_subset_primeFactors Q ↥(cycSubfield Q) h))
-      obtain ⟨-, -, -, hsplitL⟩ := hQr q hqp hqQ
+          exact splitsCompletely_of_le hAL hqp (hQr q hqp hqQ).2.2.2
       obtain ⟨⟨P, hPp, hPo⟩⟩ := (Ideal.span {(q : ℤ)}).nonempty_primesOver (S := 𝓞 ↥M)
       haveI := hPp
       haveI := hPo
       refine ⟨P, hPp, hPo, ?_⟩
       refine map_stabilizer_le_map_inertia_of_card_prime hqp P ψ' hℓ hcard ?_ hqram
       rintro - ⟨σ, hσ, rfl⟩
-      haveI := liesOver_under_intermediateField (p := q) (IntermediateField.restrict hLM) P
-      haveI : IsGalois ℚ ↥(IntermediateField.restrict hLM) := ⟨⟩
-      have hres : AlgEquiv.restrictNormalHom ↥(IntermediateField.restrict hLM) σ = 1 := by
-        have hmem := restrictNormal_mem_stabilizer (IntermediateField.restrict hLM) P hσ
-        rw [stabilizer_eq_bot_of_splitsCompletely ↥(IntermediateField.restrict hLM) hqp
-          (P.under (𝓞 ↥(IntermediateField.restrict hLM)))
-          (splitsCompletely_restrict hLM hqp hsplitL)] at hmem
+      haveI := liesOver_under_intermediateField (p := q) (IntermediateField.restrict hAM) P
+      haveI : IsGalois ℚ ↥(IntermediateField.restrict hAM) := ⟨⟩
+      have hres : AlgEquiv.restrictNormalHom ↥(IntermediateField.restrict hAM) σ = 1 := by
+        have hmem := restrictNormal_mem_stabilizer (IntermediateField.restrict hAM) P hσ
+        rw [stabilizer_eq_bot_of_splitsCompletely ↥(IntermediateField.restrict hAM) hqp
+          (P.under (𝓞 ↥(IntermediateField.restrict hAM)))
+          (splitsCompletely_restrict hAM hqp hsplitA)] at hmem
         simpa using hmem
-      have hgr : galRestrictLE hLM σ = 1 :=
+      have hgr : galRestrictLE hAM σ = 1 :=
         MonoidHom.mem_ker.mp (by
-          rw [ker_galRestrictLE hLM, ← IntermediateField.restrictNormalHom_ker]
+          rw [ker_galRestrictLE hAM, ← IntermediateField.restrictNormalHom_ker]
           exact MonoidHom.mem_ker.mpr hres)
-      have hΨ1 : Ψ σ = 1 := by
-        rw [hΨdef]
-        simp only [MonoidHom.coe_comp, Function.comp_apply, MulEquiv.coe_toMonoidHom, hgr, map_one]
-      rw [hψ'def, mulCentral_apply, hΨ1, one_mul]
-      exact hχker σ
+      have hΨker : Ψ σ ∈ f.ker := by
+        rw [MonoidHom.mem_ker, hcompM σ, hgr, map_one]
+      rw [hψ'def, mulCentral_apply]
+      exact Subgroup.mul_mem _ hΨker (hχker σ)
   -- the corrected solution keeps the level
   have hlevelM : IsLevel ℓ (N + 1) ↥M := by
     intro q hq
     rw [hsupeq] at hq
     rcases hq with hq | hq
-    · exact hschA.1 q (hramL hq)
+    · exact (hramL q hq).elim (hschA.1 q) And.left
     · have hmem : q ∈ Q.primeFactors :=
         Finset.mem_coe.mp (ramifiedSet_subset_primeFactors Q ↥(cycSubfield Q) hq)
       exact (hQr q (Nat.prime_of_mem_primeFactors hmem)
@@ -356,16 +357,16 @@ theorem exists_scholz_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) [NeZero 
     galRestrictLE_galRestrictLE hAE (cutField_le ψ') σ]
   exact hcompψ' σ
 
-/-- **A solution of a central Frattini embedding problem with kernel of prime order ramifying no
-more than the Scholz field below it, whose Frobenius defects are orthogonal to the exponent vectors
-already radical in the constraint field, gives a Scholz realization at the given level.** -/
+/-- **A solution of a central Frattini embedding problem with kernel of prime order ramifying
+harmlessly over the Scholz field below it, whose Frobenius defects are orthogonal to the exponent
+vectors already radical in the constraint field, gives a Scholz realization at the given level.** -/
 theorem isScholzRealizable_of_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) [NeZero ℓ] {N : ℕ}
     {G H : Type} [Group G] [Group H] [Finite G] {f : G →* H} (hf : Function.Surjective f)
     (hZ : f.ker ≤ Subgroup.center G) (hfr : f.ker ≤ frattini G) (hcard : Nat.card ↥f.ker = ℓ)
     (A : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥A] [IsGalois ℚ ↥A]
     (hschA : IsScholz ℓ (N + 1) ↥A) (eA : Gal(↥A/ℚ) ≃* H)
     (L : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥L] [IsGalois ℚ ↥L] (hAL : A ≤ L)
-    (hramL : ramifiedSet ↥L ⊆ ramifiedSet ↥A) (ψ₀ : Gal(↥L/ℚ) ≃* G)
+    (hramL : IsScholzOver ℓ (N + 1) ↥A ↥L) (ψ₀ : Gal(↥L/ℚ) ≃* G)
     (hcomp₀ : ∀ τ, f (ψ₀ τ) = eA (galRestrictLE hAL τ))
     (horth : ∀ (M : IntermediateField ℚ (AlgebraicClosure ℚ)) [NumberField ↥M] [IsGalois ℚ ↥M]
       (hLM : L ≤ M) (Θ : Gal(↥M/ℚ) →* G), (∀ σ, Θ σ = ψ₀ (galRestrictLE hLM σ)) →
@@ -409,7 +410,7 @@ theorem isScholzRealizable_of_centralStep (hℓ : ℓ.Prime) (hodd : Odd ℓ)
   haveI := hNFL
   haveI := hGalL
   refine isScholzRealizable_of_solution_of_forall_prod_eq_one hℓ hf hZ hfr hcard R.carrier
-    R.isScholz R.galEquiv L hAL hramL ψ₀ hcomp₀ ?_
+    R.isScholz R.galEquiv L hAL (IsScholzOver.of_subset hramL) ψ₀ hcomp₀ ?_
   intro M _ _ hLM Θ _ ν _ _ t _ a ha
   obtain ⟨u, huA, hu⟩ := ha
   obtain ⟨ζ, hζ, hζA⟩ :=

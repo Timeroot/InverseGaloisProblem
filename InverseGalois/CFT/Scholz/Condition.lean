@@ -23,10 +23,14 @@ compositum whose second factor the prime splits completely in; that is the conte
 
 * `InverseGalois.CFT.IsSplitInertia`: every ramified prime has residue degree one.
 * `InverseGalois.CFT.IsScholz`: Serre's condition `(S_N)`.
+* `InverseGalois.CFT.IsScholzOver`: every prime ramified in a field is either ramified in a given
+  subfield or of the right level and split completely there.
 
 ## Main results
 
 * `InverseGalois.CFT.IsScholz.mono`: the condition weakens as the exponent decreases.
+* `InverseGalois.CFT.IsScholzOver.isLevel`: **the level condition passes to a field ramifying
+  harmlessly over one satisfying it.**
 * `InverseGalois.CFT.IsScholz.of_ringEquiv`: the condition is an isomorphism invariant.
 * `InverseGalois.CFT.isSplitInertia_of_tower`: residue degree one is inherited by subfields.
 * `InverseGalois.CFT.IsScholz.of_tower`: **the condition `(S_N)` is inherited by subfields.**
@@ -58,7 +62,27 @@ ramified rational prime is congruent to one modulo `ℓ ^ N` and has residue deg
 def IsScholz (ℓ N : ℕ) (K : Type*) [Field K] [NumberField K] : Prop :=
   IsLevel ℓ N K ∧ IsSplitInertia K
 
+/-- **A field ramifies harmlessly over a subfield** at level `N` for the prime `ℓ` when every
+rational prime ramified in it is either ramified in the subfield, or congruent to one modulo
+`ℓ ^ N` and split completely in the subfield.  This is the amount of fresh ramification the residue
+correction of the Scholz–Reichardt construction absorbs: at such a prime the whole decomposition
+group of the corrected field is seen inside the kernel of the central step, so the residue degree
+there is one for free. -/
+def IsScholzOver (ℓ N : ℕ) (A L : Type*) [Field A] [Field L] [NumberField A] [NumberField L] :
+    Prop :=
+  ∀ q ∈ ramifiedSet L, q ∈ ramifiedSet A ∨ (q ≡ 1 [MOD ℓ ^ N] ∧ SplitsCompletely A q)
+
 variable {E : Type*} [Field E] [NumberField E]
+
+/-- A field ramifying nowhere outside a subfield ramifies harmlessly over it. -/
+theorem IsScholzOver.of_subset {ℓ N : ℕ} {A : Type*} [Field A] [NumberField A]
+    (h : ramifiedSet E ⊆ ramifiedSet A) : IsScholzOver ℓ N A E :=
+  fun _ hq => Or.inl (h hq)
+
+/-- **The level condition passes to a field ramifying harmlessly over one satisfying it.** -/
+theorem IsScholzOver.isLevel {ℓ N : ℕ} {A : Type*} [Field A] [NumberField A]
+    (h : IsScholzOver ℓ N A E) (hA : IsLevel ℓ N A) : IsLevel ℓ N E :=
+  fun q hq => (h q hq).elim (hA q) And.left
 
 /-- The condition `(S_N)` contains the level condition. -/
 theorem IsScholz.isLevel {ℓ N : ℕ} (h : IsScholz ℓ N E) : IsLevel ℓ N E := h.1
