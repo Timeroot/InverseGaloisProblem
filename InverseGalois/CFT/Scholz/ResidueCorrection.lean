@@ -114,6 +114,9 @@ theorem exists_scholz_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) [NeZero 
       (∀ q : {q // q ∈ (finite_ramifiedSet ↥A).toFinset}, ∃ P : Ideal (𝓞 ↥M), ∃ _ : P.IsPrime,
         ∃ _ : P.LiesOver (Ideal.span {((q : ℕ) : ℤ)}), ∀ σ : Gal(↥M/ℚ), IsArithFrobAt ℤ σ P →
           Θ σ * ν (Multiplicative.ofAdd (t q)) ∈ (Ideal.inertia Gal(↥M/ℚ) P).map Θ) →
+      (∀ q : {q // q ∈ (finite_ramifiedSet ↥A).toFinset}, (∃ P : Ideal (𝓞 ↥M), ∃ _ : P.IsPrime,
+        ∃ _ : P.LiesOver (Ideal.span {((q : ℕ) : ℤ)}), ∀ σ : Gal(↥M/ℚ), IsArithFrobAt ℤ σ P →
+          Θ σ ∈ (Ideal.inertia Gal(↥M/ℚ) P).map Θ) → t q = 0) →
       ∀ a : {q // q ∈ (finite_ramifiedSet ↥A).toFinset} → ZMod ℓ,
         (∃ u ∈ auxConstraintField L ℓ (N + 1), u ^ ℓ = algebraMap ℚ (AlgebraicClosure ℚ)
           ((residueRadicand (finite_ramifiedSet ↥A).toFinset a : ℕ) : ℚ)) →
@@ -170,9 +173,17 @@ theorem exists_scholz_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) [NeZero 
   -- the Frobenius defect at each prime ramified below
   have hex : ∀ q : {q // q ∈ S}, ∃ P : Ideal (𝓞 ↥M), ∃ _ : P.IsPrime,
       ∃ _ : P.LiesOver (Ideal.span {((q : ℕ) : ℤ)}), ∃ z ∈ f.ker,
-        ∀ σ : Gal(↥M/ℚ), IsArithFrobAt ℤ σ P →
-          Ψ σ * z ∈ (Ideal.inertia Gal(↥M/ℚ) P).map Ψ := by
+        (∀ σ : Gal(↥M/ℚ), IsArithFrobAt ℤ σ P →
+          Ψ σ * z ∈ (Ideal.inertia Gal(↥M/ℚ) P).map Ψ) ∧
+        ((∃ P' : Ideal (𝓞 ↥M), ∃ _ : P'.IsPrime,
+          ∃ _ : P'.LiesOver (Ideal.span {((q : ℕ) : ℤ)}), ∀ σ : Gal(↥M/ℚ), IsArithFrobAt ℤ σ P' →
+            Ψ σ ∈ (Ideal.inertia Gal(↥M/ℚ) P').map Ψ) → z = 1) := by
     rintro ⟨q, hq⟩
+    by_cases htriv : ∃ P' : Ideal (𝓞 ↥M), ∃ _ : P'.IsPrime,
+        ∃ _ : P'.LiesOver (Ideal.span {((q : ℕ) : ℤ)}), ∀ σ : Gal(↥M/ℚ), IsArithFrobAt ℤ σ P' →
+          Ψ σ ∈ (Ideal.inertia Gal(↥M/ℚ) P').map Ψ
+    · obtain ⟨P, hPp, hPo, hP⟩ := htriv
+      exact ⟨P, hPp, hPo, 1, one_mem _, fun σ hσ => by simpa using hP σ hσ, fun _ => rfl⟩
     have hqp : q.Prime := hSprime q hq
     haveI : (Ideal.span {(q : ℤ)}).IsPrime := by
       rw [Ideal.span_singleton_prime (by exact_mod_cast hqp.ne_zero)]
@@ -187,8 +198,8 @@ theorem exists_scholz_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) [NeZero 
       exists_mem_ker_mul_mem_map_inertia (p := q) (IntermediateField.restrict hAM) hmemA
         (isScholz_restrict hAM hschA).2 P Ψ
         ((AlgEquiv.autCongr (IntermediateField.restrict_algEquiv hAM)).symm.trans eA) hcomp'
-    exact ⟨P, hPp, hPo, z, hz, hzspec⟩
-  choose Pq hPqp hPqo zq hzq hzqspec using hex
+    exact ⟨P, hPp, hPo, z, hz, hzspec, fun hc => absurd hc htriv⟩
+  choose Pq hPqp hPqo zq hzq hzqspec hztriv using hex
   -- the kernel of the central step as a cyclic group of order `ℓ`
   have hcardZ : Nat.card (Multiplicative (ZMod ℓ)) = ℓ := by simp
   set ι : Multiplicative (ZMod ℓ) ≃* ↥f.ker := mulEquivOfPrimeCardEq hcardZ hcard with hιdef
@@ -202,10 +213,13 @@ theorem exists_scholz_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) [NeZero 
       (∃ u ∈ auxConstraintField L ℓ (N + 1), u ^ ℓ = algebraMap ℚ (AlgebraicClosure ℚ)
         ((residueRadicand S a : ℕ) : ℚ)) → ∑ i, t i * a i = 0 := by
     refine horth M hLM Ψ (fun σ => rfl) (f.ker.subtype.comp ι.toMonoidHom) (fun x => (ι x).2)
-      (fun x y hxy => ι.injective (Subtype.ext hxy)) t fun q => ⟨Pq q, hPqp q, hPqo q, ?_⟩
-    intro σ hσ
-    rw [hνval q]
-    exact hzqspec q σ hσ
+      (fun x y hxy => ι.injective (Subtype.ext hxy)) t (fun q => ⟨Pq q, hPqp q, hPqo q, ?_⟩) ?_
+    · intro σ hσ
+      rw [hνval q]
+      exact hzqspec q σ hσ
+    · intro q hq
+      have h1 : (⟨zq q, hzq q⟩ : ↥f.ker) = 1 := Subtype.ext (hztriv q hq)
+      simp [htdef, h1]
   obtain ⟨κ, hκ⟩ := hQκ t hadm
   set χ₀ : Gal(↥M/ℚ) →* ↥f.ker :=
     ι.toMonoidHom.comp (κ.comp
@@ -375,6 +389,9 @@ theorem isScholzRealizable_of_solution_of_forall_prod_eq_one (hℓ : ℓ.Prime) 
       (∀ q : {q // q ∈ (finite_ramifiedSet ↥A).toFinset}, ∃ P : Ideal (𝓞 ↥M), ∃ _ : P.IsPrime,
         ∃ _ : P.LiesOver (Ideal.span {((q : ℕ) : ℤ)}), ∀ σ : Gal(↥M/ℚ), IsArithFrobAt ℤ σ P →
           Θ σ * ν (Multiplicative.ofAdd (t q)) ∈ (Ideal.inertia Gal(↥M/ℚ) P).map Θ) →
+      (∀ q : {q // q ∈ (finite_ramifiedSet ↥A).toFinset}, (∃ P : Ideal (𝓞 ↥M), ∃ _ : P.IsPrime,
+        ∃ _ : P.LiesOver (Ideal.span {((q : ℕ) : ℤ)}), ∀ σ : Gal(↥M/ℚ), IsArithFrobAt ℤ σ P →
+          Θ σ ∈ (Ideal.inertia Gal(↥M/ℚ) P).map Θ) → t q = 0) →
       ∀ a : {q // q ∈ (finite_ramifiedSet ↥A).toFinset} → ZMod ℓ,
         (∃ u ∈ auxConstraintField L ℓ (N + 1), u ^ ℓ = algebraMap ℚ (AlgebraicClosure ℚ)
           ((residueRadicand (finite_ramifiedSet ↥A).toFinset a : ℕ) : ℚ)) →
@@ -411,7 +428,7 @@ theorem isScholzRealizable_of_centralStep (hℓ : ℓ.Prime) (hodd : Odd ℓ)
   haveI := hGalL
   refine isScholzRealizable_of_solution_of_forall_prod_eq_one hℓ hf hZ hfr hcard R.carrier
     R.isScholz R.galEquiv L hAL (IsScholzOver.of_subset hramL) ψ₀ hcomp₀ ?_
-  intro M _ _ hLM Θ _ ν _ _ t _ a ha
+  intro M _ _ hLM Θ _ ν _ _ t _ _ a ha
   obtain ⟨u, huA, hu⟩ := ha
   obtain ⟨ζ, hζ, hζA⟩ :=
     isPrimitiveRoot_mem_auxConstraintField (B := L) (ℓ := ℓ) (k := N + 1) (Nat.succ_ne_zero N)

@@ -61,6 +61,9 @@ theorem exists_scholz_solution_two {N : ℕ} {G H : Type} [Group G] [Group H] [F
       (∀ q : {q // q ∈ (finite_ramifiedSet ↥A).toFinset}, ∃ P : Ideal (𝓞 ↥M), ∃ _ : P.IsPrime,
         ∃ _ : P.LiesOver (Ideal.span {((q : ℕ) : ℤ)}), ∀ σ : Gal(↥M/ℚ), IsArithFrobAt ℤ σ P →
           Θ σ * ν (Multiplicative.ofAdd (t q)) ∈ (Ideal.inertia Gal(↥M/ℚ) P).map Θ) →
+      (∀ q : {q // q ∈ (finite_ramifiedSet ↥A).toFinset}, (∃ P : Ideal (𝓞 ↥M), ∃ _ : P.IsPrime,
+        ∃ _ : P.LiesOver (Ideal.span {((q : ℕ) : ℤ)}), ∀ σ : Gal(↥M/ℚ), IsArithFrobAt ℤ σ P →
+          Θ σ ∈ (Ideal.inertia Gal(↥M/ℚ) P).map Θ) → t q = 0) →
       ∀ i, ∑ p, t p * blockVector (finite_ramifiedSet ↥A).toFinset (block i) p = 0) :
     ∃ (E : IntermediateField ℚ (AlgebraicClosure ℚ)) (hAE : A ≤ E) (_ : NumberField ↥E),
       IsGalois ℚ ↥E ∧ IsScholz 2 (N + 1) ↥E ∧
@@ -91,10 +94,10 @@ theorem exists_scholz_solution_two {N : ℕ} {G H : Type} [Group G] [Group H] [F
     simpa using hcomap (hfr hker)
   refine exists_scholz_solution_of_forall_prod_eq_one Nat.prime_two hf hZ hfr hcard A
     hschA eA L hAL hramL ψ₀ hcomp₀ ?_
-  intro M _ _ hLM Θ hΘ ν hν hνinj t hinert a ha
+  intro M _ _ hLM Θ hΘ ν hν hνinj t hinert hzero a ha
   exact sum_mul_eq_zero_of_sq_mem_auxConstraintField A L hAL hfrL h2L hS4
     (hspan _ fun p hp => ((Set.Finite.mem_toFinset _).mp hp).1)
-    (hdefect M hLM Θ hΘ ν hν hνinj t hinert) ha
+    (hdefect M hLM Θ hΘ ν hν hνinj t hinert hzero) ha
 
 /-- **A solution of a central Frattini embedding problem with kernel of order two, whose Frobenius
 defects sum to zero over each block of a family accounting for the square roots of products of
@@ -115,6 +118,9 @@ theorem isScholzRealizable_of_solution_two {N : ℕ} {G H : Type} [Group G] [Gro
       (∀ q : {q // q ∈ (finite_ramifiedSet ↥A).toFinset}, ∃ P : Ideal (𝓞 ↥M), ∃ _ : P.IsPrime,
         ∃ _ : P.LiesOver (Ideal.span {((q : ℕ) : ℤ)}), ∀ σ : Gal(↥M/ℚ), IsArithFrobAt ℤ σ P →
           Θ σ * ν (Multiplicative.ofAdd (t q)) ∈ (Ideal.inertia Gal(↥M/ℚ) P).map Θ) →
+      (∀ q : {q // q ∈ (finite_ramifiedSet ↥A).toFinset}, (∃ P : Ideal (𝓞 ↥M), ∃ _ : P.IsPrime,
+        ∃ _ : P.LiesOver (Ideal.span {((q : ℕ) : ℤ)}), ∀ σ : Gal(↥M/ℚ), IsArithFrobAt ℤ σ P →
+          Θ σ ∈ (Ideal.inertia Gal(↥M/ℚ) P).map Θ) → t q = 0) →
       ∀ i, ∑ p, t p * blockVector (finite_ramifiedSet ↥A).toFinset (block i) p = 0) :
     IsScholzRealizable G 2 (N + 1) := by
   obtain ⟨E, -, hNF, hGal, hsch, ψ, -⟩ :=
