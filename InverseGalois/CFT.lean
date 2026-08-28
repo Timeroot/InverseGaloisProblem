@@ -266,6 +266,7 @@ import InverseGalois.CFT.Scholz.BaseChange
 import InverseGalois.CFT.Scholz.BaseDescent
 import InverseGalois.CFT.Scholz.CentralCyclicLift
 import InverseGalois.CFT.Scholz.CentralStep
+import InverseGalois.CFT.Scholz.CanonicalDefect
 import InverseGalois.CFT.Scholz.CentralStepTwo
 import InverseGalois.CFT.Scholz.ClassStepData
 import InverseGalois.CFT.Scholz.CompositumTransport
@@ -320,6 +321,7 @@ import InverseGalois.CFT.Scholz.ResidueSpan
 import InverseGalois.CFT.Scholz.ResidueSymbol
 import InverseGalois.CFT.Scholz.Selector
 import InverseGalois.CFT.Scholz.SplitCase
+import InverseGalois.CFT.Scholz.SplitInertiaAt
 import InverseGalois.CFT.Scholz.SplitReduction
 import InverseGalois.CFT.Scholz.SplitStep
 import InverseGalois.CFT.Scholz.StepRamification
@@ -926,6 +928,13 @@ it that are available here.
 * `InverseGalois.CFT.Scholz.DyadicResidueCorrection` is the correction itself at the prime two: a
   solution whose Frobenius defects sum to zero over each such block realises the group of the
   central step at the required level.
+* `InverseGalois.CFT.Scholz.SplitInertiaAt` reads Serre's residue-degree condition one prime at a
+  time and identifies it with the statement that an arithmetic Frobenius above the prime lies in the
+  inertia group, hence with the vanishing of the defect a solution of a central step carries there.
+* `InverseGalois.CFT.Scholz.CanonicalDefect` turns that identification into the Scholz obstruction of
+  a prime: a solution preferring the trivial defect carries the defect zero exactly at the primes of
+  split inertia, so the orthogonality the correction asks for depends on nothing but the field below
+  and the family of blocks.
 * `InverseGalois.CFT.Scholz.FrattiniSolution` collects the three stages into the central step of the
   induction itself: at an odd prime, the rank one condition on the inertia subgroup at the residue
   characteristic is the only hypothesis the central embedding step still rests on.
