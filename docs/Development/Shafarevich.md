@@ -2859,6 +2859,105 @@ and **Tate–Poitou duality with the `Ш` groups** — none of which is in this 
 
 ---
 
+## 0.26 Status (2026-08-28, later still) — §2 of Schmidt–Wingberg is complete, and the wall is narrowed to Tate–Nakayama
+
+### The shrinking propositions are all theorems
+
+Everything Schmidt–Wingberg put in their §2 — the part of Theorem 15 that is pure algebra — is now
+in the repository, sorry- and axiom-free.
+
+| Schmidt–Wingberg | repository |
+|---|---|
+| Prop 2 (Chevalley–Warning) | `Shafarevich/Shrink.lean` |
+| Prop 5 (layers spanned by tensor powers) | `Shafarevich/PCentralSpan.lean`, `LayerWord.lean` |
+| Prop 6 (shrinking in `Ĥ^k(G, E ⊗ T)`) | `Shafarevich/LayerCohomology.lean`, `LayerHomology.lean` |
+| Prop 6, arbitrary acting group and tensor coefficients | `Shafarevich/GenericCohomology.lean` |
+| Prop 7 (shrinking in `H¹(F(m)/ν ⋊ G, E ⊗ T)`) | `Shafarevich/GenericHomology.lean` |
+| `[1] chap. 13 th. 2` (`σ*(ε_n) = π*(ε_m)`) | `CFT/GroupCohomology/ExtensionMap.lean` |
+
+`GenericCohomology.lean` is the form Step 1 needs: the classes to be killed belong to a finite
+group *mapping into* the operator group — the decomposition subgroup of a place — and the
+coefficients are a layer tensored with a fixed representation. It subsumes the `T = Ind_{G_𝔭}^G 𝔽_p`
+formulation without going through Shapiro, because the count never inspects the acting group; it
+solves one scalar equation per value taken by the finitely many cocycles, and a cocycle of a finite
+group takes `#H^c` values.
+
+`ExtensionMap.lean` is the compatibility that makes the shrinking usable at all: a morphism of
+extensions with abelian kernels identifies the class of the upper extension pushed forward along
+the map of kernels with the class of the lower one pulled back along the map of quotients, the
+trivialising cochain being the comparison of a transported section with a section below.
+
+### The arithmetic wall, located exactly
+
+Step 2 of Theorem 15 needs precisely one thing, its "Claim":
+
+> there is a surjection `Ĥ^{-2}(G, E(-1)) ↠ Ш²(k, E)`, `G = Gal(K|k)`, `E(-1) = E ⊗ μ_p^∨`.
+
+Schmidt–Wingberg get it from `Ш²(k,E) ≅ Ш¹(k,E′)^∨` (Tate–Poitou) together with `Ш¹(K,E′) = 0`,
+which forces `Ш¹(k,E′) ⊆ H¹(G,E′)`; dualising and using `H¹(G,M)^∨ ≅ H₁(G,M^∨)` and
+`E′^∨ = E(-1)` gives the Claim. Of the three inputs only the first is out of reach:
+
+* `Ш¹(K,E′) = 0` for a **trivial** module is elementary — a cyclic extension in which every prime
+  splits is trivial, which is `subsingleton_gal_of_isSolvable_of_splits_outside` in this
+  repository. No Chebotarev density is needed.
+* `H¹(G,M)^∨ ≅ H₁(G,M^∨)` over `𝔽_p` is finite-group duality, and `Ĥ^{-2} = H₁` is the
+  identification already used throughout `Shafarevich/GenericHomology.lean`.
+
+### Narrowing the wall: Tate–Nakayama in place of the nine-term sequence
+
+The Claim does not need the whole Poitou–Tate machine. Unwinding it with Kummer theory:
+
+1. `Ш²(k,E) ⊆ ker(H²(k,E) → H²(K,E))`, because `Ш²(K,E) = Ш(Br K)[p]^d = 0` by
+   Albert–Brauer–Hasse–Noether, which this repository has.
+2. Hochschild–Serre sends that kernel into `H¹(G, H¹(K,E))`, and Kummer theory rewrites the
+   coefficients as `H¹(K,E) ≅ (K^×/K^{×p}) ⊗ E(-1)`.
+3. Localisation embeds `(K^×/K^{×p}) ⊗ E(-1)` into `(∏_w K_w^×/K_w^{×p}) ⊗ E(-1)` — injectively,
+   by Grunwald–Wang for a squarefree exponent, which is `CFT/GrunwaldWang.lean` — and semi-local
+   Shapiro identifies the right-hand `H¹(G, −)` with `∏_𝔭 H¹(G_𝔭, −)`.
+4. So the locally trivial classes are the image of the connecting map from `H⁰(G, C ⊗ E(-1))`,
+   where `C` is the idele class group modulo `p`-th powers.
+5. **Tate–Nakayama** — cup product with the fundamental class — turns `Ĥ⁰(G, C ⊗ E(-1))` into
+   `Ĥ^{-2}(G, E(-1))`, which is exactly Schmidt–Wingberg's group.
+
+That is a genuinely smaller target than the nine-term sequence: it needs Tate's theorem for the
+*global* class formation, not local Tate duality and not the compact-discrete duality of restricted
+products.
+
+### What the repository's class field theory already supplies for that route
+
+| ingredient | status |
+|---|---|
+| the idele group and the idele class group | `CFT/Units/Idele*.lean` |
+| `H¹(Gal(K/k), C_K) = 0`, no hypothesis on the group | `Units/IdeleClassH1Full.lean` |
+| first inequality (`#Ĥ⁰(G,C_K) = [K:k]` for cyclic `G`) | `Units/IdeleClassIndex.lean` |
+| second inequality | `Kummer/SecondInequality.lean` |
+| Hasse norm theorem, Albert–Brauer–Hasse–Noether | `Units/HasseNorm.lean`, `Units/ABHN.lean` |
+| Tate cohomology of finite groups, Herbrand, Shapiro, hexagon | `CFT/Tate/` (57 modules) |
+| **cup products in group cohomology** | absent |
+| **the fundamental class of a class formation** | absent |
+| **Tate's cohomological triviality theorem** | absent |
+| **Tate–Nakayama** | absent |
+
+The first six rows are the axioms of a class formation, so the missing four are a self-contained
+project rather than a new theory: cup products (Mathlib has none for `groupCohomology`), then
+Tate's theorem, then the fundamental class, then Tate–Nakayama.
+
+### Two more shortcuts that do not work
+
+* **Inflating the obstruction from a large finite quotient of `G_k`.** One might hope to replace
+  `G_k` by a finite quotient `G̃` through which the obstruction is inflated, and then shrink with
+  Prop 6 applied to `G̃`. The shrinking bound is `(j+1) · t · #G̃^c · dim(layer ⊗ T) < r`, so the
+  rank `r`, hence `m = r·n`, grows with `#G̃`; but the quotient through which a class in `H²(G_k, E(m,ν))`
+  is inflated depends on `m`. The argument is circular. This is exactly why Schmidt–Wingberg need a
+  source for `Ш²` that lives on the *fixed* finite group `G`.
+* **Making the layers induced or projective.** Already refuted in §0.25 for `Λ²`; three further
+  attempts fail for the same reason. A free product over a free `G`-set has unordered-pair
+  stabilisers of order 2; `Map(G,P) ↠ P` is not equivariant for nonabelian `P`, so
+  Kaloujnine–Krasner only embeds; and `𝔽_p[U]` is semisimple only when `p ∤ #U`, a case the
+  reduction cannot be steered into.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
