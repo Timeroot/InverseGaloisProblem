@@ -322,6 +322,7 @@ import InverseGalois.CFT.Scholz.ResidueSymbol
 import InverseGalois.CFT.Scholz.Selector
 import InverseGalois.CFT.Scholz.SplitCase
 import InverseGalois.CFT.Scholz.SplitInertiaAt
+import InverseGalois.CFT.Scholz.SplitInertiaTower
 import InverseGalois.CFT.Scholz.SplitReduction
 import InverseGalois.CFT.Scholz.SplitStep
 import InverseGalois.CFT.Scholz.StepRamification
@@ -935,6 +936,10 @@ it that are available here.
   a prime: a solution preferring the trivial defect carries the defect zero exactly at the primes of
   split inertia, so the orthogonality the correction asks for depends on nothing but the field below
   and the family of blocks.
+* `InverseGalois.CFT.Scholz.SplitInertiaTower` carries that obstruction along a tower: it vanishes in
+  every subfield of a field where it vanishes, it vanishes upstairs whenever the prime is totally
+  ramified in the top layer, and in a compositum whose inertia over the base already lies in one
+  factor it is read off the other factor alone.
 * `InverseGalois.CFT.Scholz.FrattiniSolution` collects the three stages into the central step of the
   induction itself: at an odd prime, the rank one condition on the inertia subgroup at the residue
   characteristic is the only hypothesis the central embedding step still rests on.
