@@ -25,6 +25,8 @@ import InverseGalois.Solvable.Shafarevich.LayerCohomology
 import InverseGalois.Solvable.Shafarevich.LayerHomology
 import InverseGalois.Solvable.Shafarevich.LayerTensor
 import InverseGalois.Solvable.Shafarevich.HomologyOne
+import InverseGalois.Solvable.Shafarevich.SemidirectHomology
+import InverseGalois.Solvable.Shafarevich.GenericHomology
 
 /-!
 # Shafarevich's theorem
@@ -140,4 +142,16 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   `p`-central series tensored with the coefficients, compatibly with changing the group and the
   coefficients.  That is the universal coefficient formula in the shape the shrinking argument needs
   it, and it is what turns a homology class into a tensor of layers on which the count operates.
+* `InverseGalois.Solvable.Shafarevich.SemidirectHomology` supplies the exactness that the two counts
+  are fitted into: for coefficients inflated from the second factor of a semidirect product, a first
+  homology class of the product comes from the first factor as soon as it dies in the homology of
+  the second.  That is the tail of the homological Hochschildâ€“Serre sequence, with the quotient by
+  the kernel of the projection identified with the second factor.
+* `InverseGalois.Solvable.Shafarevich.GenericHomology` puts the pieces together: finitely many first
+  homology classes of a generic operator group extended by the operator group, with coefficients in
+  a layer tensored with a fixed representation, are annihilated all at once by one surjective
+  equivariant homomorphism onto the intended rank.  A first shrinking kills the images in the
+  homology of the operator group, so the classes come from the generic group itself, where the
+  coefficients are trivial and the first homology is the zeroth layer tensored with them; a second
+  shrinking kills the chosen preimages there.
 -/

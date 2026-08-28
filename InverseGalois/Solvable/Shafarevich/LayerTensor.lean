@@ -242,4 +242,40 @@ theorem exists_ne_zero_forall_tensor_eq_zero {x : ι → P}
 
 end Tensor
 
+/-! ### The generic instance -/
+
+section GenericTensor
+
+variable (U : Type) [Group U] [Finite U] (r n : ℕ) (S : Type) [Group S] [Finite S]
+
+omit [Group U] in
+/-- **A shrinking homomorphism can be chosen surjective and killing finitely many prescribed
+elements of the zeroth layer tensored with a layer and a module of coefficients at once.**  The
+number of scalar equations is the number of elements times the dimension of the target, and the
+number of blocks has to exceed that, times two more than the level of the layer. -/
+theorem exists_genericShrink_tensor_eq_zero {ℓ : ℕ} [hℓ : Fact ℓ.Prime] (hS : IsPGroup ℓ S)
+    {j t : ℕ} (T : Type*) [AddCommGroup T] [Module (ZMod ℓ) T] [Module.Finite (ZMod ℓ) T]
+    (hr : (j + 2) * (t * Module.finrank (ZMod ℓ) (Layer ℓ (Generic U n S) 0 ⊗[ZMod ℓ]
+      (Layer ℓ (Generic U n S) j ⊗[ZMod ℓ] T))) < r)
+    (v : Fin t → Layer ℓ (Generic U (r * n) S) 0 ⊗[ZMod ℓ]
+      (Layer ℓ (Generic U (r * n) S) j ⊗[ZMod ℓ] T)) :
+    ∃ a : Fin r → ℕ, Function.Surjective (genericShrink U r n S a) ∧
+      ∀ ν, TensorProduct.map (layerLinear ℓ (genericShrink U r n S a) 0)
+        (TensorProduct.map (layerLinear ℓ (genericShrink U r n S a) j) LinearMap.id) (v ν) = 0 := by
+  haveI : NeZero ℓ := ⟨hℓ.out.pos.ne'⟩
+  obtain ⟨a, ha0, ha⟩ := exists_ne_zero_forall_tensor_eq_zero (ℓ := ℓ)
+    (x := fun w : Fin (r * n) × U => (QuotientGroup.mk (FreeGroup.of w) : Generic U (r * n) S))
+    (closure_range_mk_of U (r * n) S)
+    (fun w : Fin n × U => (QuotientGroup.mk (FreeGroup.of w) : Generic U n S))
+    (fun w => ((finProdFinEquiv.symm w.1).2, w.2)) (fun w => (finProdFinEquiv.symm w.1).1)
+    (fun b => genericShrink U r n S b)
+    (fun b w => by rw [genericShrink_mk, shrinkHom_of, QuotientGroup.mk_pow]) T hr v
+  obtain ⟨k, hk⟩ := Function.ne_iff.mp ha0
+  refine ⟨fun i => (a i).val, genericShrink_surjective U r n S hS _ k ?_, ha⟩
+  refine hℓ.out.coprime_iff_not_dvd.mpr fun hd => absurd (Nat.le_of_dvd ?_ hd) ?_
+  · exact Nat.pos_of_ne_zero ((ZMod.val_ne_zero (a k)).mpr hk)
+  · exact not_le.mpr (ZMod.val_lt (a k))
+
+end GenericTensor
+
 end InverseGalois.Shafarevich
