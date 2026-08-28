@@ -87,6 +87,7 @@ import InverseGalois.CFT.GroupCohomology.CyclicCoboundary
 import InverseGalois.CFT.GroupCohomology.CyclicH2
 import InverseGalois.CFT.GroupCohomology.CyclicSubgroup
 import InverseGalois.CFT.GroupCohomology.CyclicSurjective
+import InverseGalois.CFT.GroupCohomology.ExtensionMap
 import InverseGalois.CFT.GroupCohomology.H1Transport
 import InverseGalois.CFT.GroupCohomology.IndexTwo
 import InverseGalois.CFT.GroupCohomology.Inflation
@@ -1014,6 +1015,10 @@ it that are available here.
 * `InverseGalois.CFT.GroupCohomology.Classification` closes the circle: the second cohomology
   group of `G` with coefficients in `M` is in bijection with the extensions of `G` by `M`, and
   vanishes exactly when every such extension splits.
+* `InverseGalois.CFT.GroupCohomology.ExtensionMap` compares two extensions joined by a morphism:
+  the factor set of the upper one, pushed forward along the map of kernels, is the factor set of
+  the lower one pulled back along the map of quotients, up to the coboundary of the function
+  comparing the two sections.
 * `InverseGalois.CFT.Brauer.TensorSimple` proves that the tensor product of two central simple
   algebras is central simple, the multiplication of the Brauer group.
 * `InverseGalois.CFT.Brauer.Opposite` proves that a central simple algebra tensored with its
