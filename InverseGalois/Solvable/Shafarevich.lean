@@ -13,6 +13,7 @@ import InverseGalois.Solvable.Shafarevich.RadicalTower
 import InverseGalois.Solvable.Shafarevich.WreathGalois
 import InverseGalois.Solvable.Shafarevich.Ikeda
 import InverseGalois.Solvable.Shafarevich.Generic
+import InverseGalois.Solvable.Shafarevich.Shrink
 
 /-!
 # Shafarevich's theorem
@@ -71,4 +72,8 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   copies of the regular representation of the quotient, and shows that every split embedding
   problem with `p`-group kernel is a quotient of a generic one, so that only the generic kernels
   need to be treated.
+* `InverseGalois.Solvable.Shafarevich.Shrink` supplies the counting argument that transports a
+  solution found for a generic kernel of very large rank down to the intended rank: a
+  Chevalleyâ€“Warning count produces a nonzero vector of scalars whose associated combination of
+  copies is surjective and annihilates finitely many prescribed obstructions at once.
 -/
