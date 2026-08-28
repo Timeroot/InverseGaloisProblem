@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Scholz.DyadicInduction
+import InverseGalois.CFT.Scholz.DyadicInitialStage
 import InverseGalois.CFT.Scholz.FrattiniInertiaBound
 import InverseGalois.CFT.Scholz.NilpotentSylowTwo
 import InverseGalois.Rigidity.RET.Specialization
@@ -23,11 +24,15 @@ order.  The geometric route is the Dentzer–Stoll wreath product construction o
 
 A finite nilpotent group is the direct product of its Sylow subgroups, and realizability over `ℚ`
 is closed under products of groups of coprime order, so the two routes may be applied prime by
-prime.  The arithmetic route covers every odd prime; the prime `2`, which the Scholz–Reichardt
-argument excludes, is left to the geometric route.  The result is that a finite nilpotent group is
-a Galois group over `ℚ` as soon as its Sylow `2`-subgroup is semiabelian.  That is a mild condition
-on a `2`-group: it holds for the abelian ones, for the cyclic ones, for the metacyclic ones, for
-those of nilpotency class at most `2`, and for all of them of order at most `16`.
+prime.  The geometric route reaches the prime `2` whenever the Sylow `2`-subgroup is semiabelian,
+which is a mild condition on a `2`-group: it holds for the abelian ones, for the cyclic ones, for
+the metacyclic ones, for those of nilpotency class at most `2`, and for all of them of order at
+most `16`.
+
+The prime `2` is reached in full by a third route, the dyadic induction of
+`InverseGalois/CFT/Scholz/`, which climbs the `2`-class of the free objects instead of the order of
+the group and so imposes no condition on the Sylow `2`-subgroup at all.  Together with the
+arithmetic route at the odd primes it gives Shafarevich's theorem for nilpotent groups.
 
 The central embedding step that the arithmetic route rests on is no longer a hypothesis: it comes
 from the rank one condition at the odd primes, which in turn comes from the local behaviour of
@@ -49,9 +54,10 @@ inertia at a cyclotomic place.
 * `InverseGalois.isInverseGalois_of_isNilpotent_of_not_dvd_thirtytwo`,
   `InverseGalois.isInverseGalois_of_isNilpotent_of_not_dvd_sixteen`: **every finite nilpotent group
   of order not divisible by `32` is a Galois group over `ℚ`.**
-* `InverseGalois.isInverseGalois_of_isNilpotent_of_isDyadicClassStepSolvable`: **granted the
-  class-raising step of the dyadic Scholz–Reichardt induction, every finite nilpotent group is a
-  Galois group over `ℚ`**, with no condition on its Sylow `2`-subgroups.
+* `InverseGalois.isInverseGalois_of_isPGroup_two`: **every finite `2`-group is a Galois group over
+  `ℚ`.**
+* `IsInverseGalois.of_isNilpotent`: **Shafarevich's theorem for nilpotent groups — every finite
+  nilpotent group is a Galois group over `ℚ`**, with no condition on its Sylow `2`-subgroups.
 -/
 
 namespace InverseGalois
@@ -158,5 +164,20 @@ theorem isInverseGalois_of_isNilpotent_of_isDyadicClassStepSolvable
   isInverseGalois_of_isNilpotent_of_sylow_two
     (fun _ hq hq2 => CFT.isCentralStepSolvable hq hq2) G fun P =>
     CFT.isInverseGalois_of_isDyadicClassStepSolvable hstep _ P.isPGroup'
+
+/-- **Every finite `2`-group is a Galois group over `ℚ`.**  The dyadic Scholz–Reichardt induction
+climbs the `2`-class of the free objects, and its class-raising step is supplied by shrinking a
+realization of a free object of larger rank. -/
+theorem isInverseGalois_of_isPGroup_two (G : Type) [Group G] [Finite G] (hG : IsPGroup 2 G) :
+    IsInverseGalois G :=
+  CFT.isInverseGalois_of_isDyadicClassStepSolvable CFT.isDyadicClassStepSolvable G hG
+
+/-- **Shafarevich's theorem for nilpotent groups: every finite nilpotent group is a Galois group
+over `ℚ`.**  A finite nilpotent group is the direct product of its Sylow subgroups, whose orders
+are pairwise coprime; the Sylow subgroups at the odd primes are realised by the ordinary
+Scholz–Reichardt induction and the one at the prime `2` by the dyadic induction. -/
+theorem _root_.IsInverseGalois.of_isNilpotent (G : Type) [Group G] [Finite G]
+    [Group.IsNilpotent G] : IsInverseGalois G :=
+  isInverseGalois_of_isNilpotent_of_isDyadicClassStepSolvable CFT.isDyadicClassStepSolvable G
 
 end InverseGalois

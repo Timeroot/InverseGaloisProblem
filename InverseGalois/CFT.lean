@@ -277,11 +277,13 @@ import InverseGalois.CFT.Scholz.Condition
 import InverseGalois.CFT.Scholz.CorrectingCharacter
 import InverseGalois.CFT.Scholz.CorrectingSubfield
 import InverseGalois.CFT.Scholz.CoverInertia
+import InverseGalois.CFT.Scholz.CoverObstruction
 import InverseGalois.CFT.Scholz.CyclicSupplement
 import InverseGalois.CFT.Scholz.DecompositionLift
 import InverseGalois.CFT.Scholz.DyadicClassStep
 import InverseGalois.CFT.Scholz.DyadicCorrector
 import InverseGalois.CFT.Scholz.DyadicInduction
+import InverseGalois.CFT.Scholz.DyadicInitialStage
 import InverseGalois.CFT.Scholz.DyadicLiftCorrection
 import InverseGalois.CFT.Scholz.DyadicRadical
 import InverseGalois.CFT.Scholz.DyadicResidueCorrection
@@ -965,6 +967,13 @@ it that are available here.
   subgroup of the kernel it has cut down to, and cutting that subgroup along a family of characters
   separating its points ends at the trivial subgroup, where the cover is a strong Scholz realization
   of the free object of the next `2`-class.
+* `InverseGalois.CFT.Scholz.CoverObstruction` reads the obstruction of a prime of a block in every
+  subfield cut out of a solution at once, off a generator of the inertia subgroup at the prime and
+  the central part of an arithmetic Frobenius above it.
+* `InverseGalois.CFT.Scholz.DyadicInitialStage` starts the climb by paying with rank: over a
+  realization of the free object of `r` times the rank, the vector of bits a counting argument
+  supplies collapses the copies of every row to a block whose obstruction vanishes against every
+  hyperplane, which raises the `2`-class of the induction by one.
 * `InverseGalois.CFT.Scholz.SplitInertiaTower` carries that obstruction along a tower: it vanishes in
   every subfield of a field where it vanishes, it vanishes upstairs whenever the prime is totally
   ramified in the top layer, and in a compositum whose inertia over the base already lies in one

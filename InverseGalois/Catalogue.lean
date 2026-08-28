@@ -326,15 +326,19 @@ Scholz–Reichardt induction of `InverseGalois.CFT.Scholz` realizes every finite
 for odd `ℓ`, building the extension one central step at a time inside a tightly controlled
 ramification pattern, and its last arithmetic input — that inertia at the residue characteristic
 has rank one — is a theorem, proved from the behaviour of the mod `ℓ` cyclotomic character at a
-place where `ζ - 1` is a uniformizer.  Combining it with the semiabelian route at the prime `2`,
-`InverseGalois.Shafarevich` gives, unconditionally but over `ℚ` only,
+place where `ζ - 1` is a uniformizer.  The prime `2`, which that induction excludes, is reached by
+the dyadic induction of the same directory, which climbs the `2`-class of the free objects instead
+of the order of the group and pays for the climb with rank.  So `InverseGalois.Shafarevich` gives,
+unconditionally but over `ℚ` only,
 
 * `InverseGalois.isInverseGalois_of_isPGroup_odd` — **every finite `ℓ`-group for odd `ℓ`**,
 * `InverseGalois.isInverseGalois_of_isNilpotent_of_odd` — **every finite nilpotent group of odd
-  order**, and
+  order**,
 * `InverseGalois.isInverseGalois_of_isNilpotent_of_semiabelian_sylow_two` — **every finite nilpotent
   group whose Sylow `2`-subgroups are semiabelian**, which by the order bound above covers every
-  finite nilpotent group of order not divisible by `32`.
+  finite nilpotent group of order not divisible by `32`,
+* `InverseGalois.isInverseGalois_of_isPGroup_two` — **every finite `2`-group**, and
+* `IsInverseGalois.of_isNilpotent` — **every finite nilpotent group**.
 
 ## Main results
 

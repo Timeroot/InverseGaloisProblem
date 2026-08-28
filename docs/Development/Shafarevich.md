@@ -2618,28 +2618,41 @@ Proposition 3.1 are never needed.
 | F1 | Lemmas 2.2 + 2.3: a chain of primes each `≡ 1 mod 2^N` and mutually quadratic, and the multiquadratic strong Scholz field they cut out | ✅ `Scholz/StepRamification.lean` + `Scholz/MultiquadraticBase.lean` |
 | F2 | `IsStrongScholz`: Scholz, plus pairwise disjoint blocks accounting for the square roots | ✅ `Scholz/StrongScholz.lean` |
 | F3 | Proposition 2.1 at `p = 2` | ✅ `exists_galEquiv_ramifiedSet_subset_two` |
-| F4 | the Scholz obstruction `θ_q` and its invariance under enlarging the base | partly in `FrobeniusDefect`; base-change half open |
-| F5 | Proposition 4.2 as the `t`-fold iteration of the order-two step | single step ✅; iteration open |
-| F6 | the shrinking: `E(α) = E_δ^{ker(collapse a)}`, `K(α) = E(α) ∩ K_δ`, `Ram(P_i(α)) = ⨆_{j : a_j = 1} Ram(P_{ij})`, and the transport of obstructions along `collapse a` | group half ✅; field half open |
-| F7 | the induction on the `2`-class, `∀ G` a finite `2`-group, `∀ N`, `IsScholzRealizable G 2 N`, and the removal of the semiabelian-Sylow-`2` hypothesis from `InverseGalois/Shafarevich.lean` | ✅ skeleton: `Scholz/DyadicInduction.lean` reduces all of it to `IsDyadicClassStepSolvable` |
+| F4 | the Scholz obstruction `θ_q` and its invariance under enlarging the base | ✅ `Scholz/CanonicalDefect.lean` + `Scholz/BlockDefect.lean` + `Scholz/CoverInertia.lean` + `Scholz/CentralDefect.lean` + `Scholz/CoverObstruction.lean` |
+| F5 | Proposition 4.2 as the `t`-fold iteration of the order-two step | ✅ `Scholz/DyadicStage.lean` (`ClimbStage`, `nonempty_realization`) |
+| F6 | the shrinking: `E(α) = E_δ^{ker(collapse a)}`, `K(α) = E(α) ∩ K_δ`, `Ram(P_i(α)) = ⨆_{j : a_j = 1} Ram(P_{ij})`, and the transport of obstructions along `collapse a` | ✅ `Solvable/DispositionShrink.lean` + `Scholz/DyadicShrink.lean` + `Scholz/ClassStepData.lean` |
+| F7 | the induction on the `2`-class, `∀ G` a finite `2`-group, `∀ N`, `IsScholzRealizable G 2 N`, and the removal of the semiabelian-Sylow-`2` hypothesis from `InverseGalois/Shafarevich.lean` | ✅ `Scholz/DyadicInduction.lean` + `Scholz/DyadicInitialStage.lean` |
 
-### The single remaining `ℓ = 2` wall
+### The `ℓ = 2` wall is closed
 
-`InverseGalois.CFT.IsDyadicClassStepSolvable` (`Scholz/DyadicInduction.lean`) is now the *only*
-open statement between the repository and the `2`-group case:
+`InverseGalois.CFT.isDyadicClassStepSolvable` (`Scholz/DyadicInitialStage.lean`) is a theorem:
 
 ```lean
 def IsDyadicClassStepSolvable : Prop :=
-  ∀ (c d N : ℕ), (∀ δ M, IsStrongScholzRealizable δ c M) → IsStrongScholzRealizable d (c + 1) N
+  ∀ (c d N : ℕ), 1 ≤ c → (∀ δ M, IsStrongScholzRealizable δ c M) →
+    IsStrongScholzRealizable d (c + 1) N
+
+theorem isDyadicClassStepSolvable : IsDyadicClassStepSolvable
 ```
 
-Granted it, `isInverseGalois_of_isDyadicClassStepSolvable` realises every finite `2`-group and
-`isInverseGalois_of_isNilpotent_of_isDyadicClassStepSolvable` (`InverseGalois/Shafarevich.lean`)
-realises every finite nilpotent group with no condition on the Sylow `2`-subgroup.  Its proof is
-F4 + F5 + F6: apply `exists_galEquiv_ramifiedSet_subset_elemAbTwo` to
-`FreePClass.proj 2 (d * r) c` over the rank-`d·r` realization, read off the block obstructions,
-shrink along a Chevalley–Warning `α` from `FreePClass.exists_rankMultiplier`, and iterate
-`exists_scholz_solution_two` once per basis vector of the kernel.
+so `InverseGalois.isInverseGalois_of_isPGroup_two` realises every finite `2`-group and
+`IsInverseGalois.of_isNilpotent` (`InverseGalois/Shafarevich.lean`) realises every finite nilpotent
+group with no condition on the Sylow `2`-subgroup.  Both depend on `propext`, `Classical.choice`
+and `Quot.sound` only.
+
+The proof is F4 + F5 + F6 assembled as follows.  `StrongScholzRealization.exists_centralPart`
+(`Scholz/CoverObstruction.lean`) reads, for each prime `q` of each block, a pair `(x, θ)` in
+`G_{d·r}^{c+1}` — a generator of the inertia subgroup at `q` and the central part of an arithmetic
+Frobenius above it — such that for *every* normal `W`, the obstruction of `q` in the subfield `W`
+cuts out vanishes exactly when `θ ∈ ⟨x⟩ ⊔ W`.  The `θ`'s of a row multiply to one element per copy,
+`FreePClass.exists_rankMultiplier` supplies a Chevalley–Warning `α` killing the collapse of the
+selected products, and `ClassStepData.shrink α` merges the copies.  For the shrunken data the same
+reading holds through `V ↦ (collapse α)⁻¹(V)` (`cutField_comap_comp`, `mem_sup_comap_iff`), and
+`FreePClass.zpowers_inf_ker_proj` cuts the collapsed inertia subgroup down to `⟨z_i⟩`: a hyperplane
+missing `z_i` joins it to the whole kernel, so nothing is obstructed, and a hyperplane containing
+`z_i` reads the obstruction of the row as the character of the collapsed product, which `α` made
+trivial.  That is exactly the `defect` field of `ClimbStage`, and `ClimbStage.nonempty_realization`
+iterates `exists_scholz_solution_two` once per basis vector of the kernel.
 
 `PairwiseResidue.isSquare_natCast_swap` is the brick F1 was missing: `stepPrime` delivers
 `(q_j / q) = 1` for the primes already chosen, and reciprocity turns that into `(q / q_j) = 1`
