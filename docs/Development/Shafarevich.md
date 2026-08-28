@@ -2739,6 +2739,126 @@ end-to-end; nilpotent → solvable is still open here.
 
 ---
 
+## 0.25 Status (2026-08-28, later) — Ikeda is a theorem, and the Schmidt–Wingberg tower, re-costed
+
+Three things happened after §0.24: the split half of the reduction stopped being a hypothesis, the
+Schmidt–Wingberg paper was read end to end, and two of its proof devices turned out to be avoidable.
+
+### The reduction, as it now stands
+
+| statement | status |
+|---|---|
+| `Shafarevich.cyclicWreathEP` | **theorem** (`Ikeda.lean`, `e81f957`, `ce5e2bb`) |
+| `Shafarevich.primeWreathEP` | **theorem** |
+| `Shafarevich.splitAbelianEP` — Ikeda | **theorem** |
+| `Shafarevich.FrattiniKernelEP` | **the one remaining hypothesis** |
+
+`Shafarevich.isInverseGalois_of_isSolvable_of_frattiniKernelEP` now realizes every finite solvable
+group over `ℚ` from `FrattiniKernelEP` alone. Upstream of it the chain is Ore → `SplitNilpotentEP`
+→ `SplitPrimePowerEP` → `AbelianKernelEP` → `ElementaryAbelianKernelEP` → `FrattiniKernelEP`.
+
+`Shafarevich/Generic.lean` (`8ddc8d7`) adds the first piece of Schmidt–Wingberg's own reduction: the
+relatively free operator group `Generic U n S = FreeGroup (Fin n × U) / ⋂ ker(f : · →* S)` with the
+`U`-action induced by left translation on the second coordinate, together with
+
+```lean
+theorem splitPrimePowerEP_of_genericSplitEP (h : ∀ ℓ : ℕ, GenericSplitEP ℓ) : SplitPrimePowerEP
+theorem genericSplitEP_of_splitPrimePowerEP (hℓ : ℓ.Prime) (h : SplitPrimePowerEP) : GenericSplitEP ℓ
+```
+
+so the split `p`-group case is *equivalent* to the case of a generic kernel. Forward: the orbit map
+`Generic U (Nat.card P) P ↠ P` is `U`-equivariant and surjective, so `Generic ⋊ U ↠ P ⋊[φ] U`.
+Backward: `Generic U n S` is itself a finite `ℓ`-group when `S` is.
+
+### The Schmidt–Wingberg dependency map
+
+Schmidt–Wingberg, *Extensions of profinite duality groups* (arXiv `math/9809211`), Theorem 14: every
+split embedding problem with finite nilpotent kernel has a proper solution; Theorem 15 is the same
+with Scholz conditions attached. The proof is an induction on a two-index filtration `τ = (i,j)`,
+each step of which is a *central* embedding problem with elementary abelian kernel
+`E(n,τ) = F(n)^{(τ)}/F(n)^{(τ+1)}`, and it has four steps:
+
+1. local split embedding problems at `Ram ∪ S_p ∪ S_∞` — Prop 6 with `T = Ind_{G_𝔭}^G 𝔽_p`;
+2. global solvability: the obstruction lives in `Ш²(k, E(n,τ))` and is killed by Prop 6 with
+   `T = Hom(μ_p, ℤ/p)`, after a Claim that needs **Tate–Poitou** `Ш²(k,A) ≅ Ш¹(k,A′)^∨`;
+3. properness and Scholz condition (i) — Neukirch's principal homogeneous space over
+   `H¹(G_k, E(n,τ))`, Lemma 10's injection `coker ↪ Ш¹`, and Prop 7(i);
+4. Scholz condition (ii) — Theorem 13 applied to `N_n`, plus Prop 7(ii).
+
+Underneath sit the shrinking propositions: Prop 2 (Chevalley–Warning), Prop 5 (the surjection
+`(P/P²)^{⊗j} ↠ P^{(τ)}/P^{(τ+1)}`), Prop 6 and Prop 7 (shrinking in cohomology).
+
+### The induced-module shortcut does **not** work
+
+It is tempting to hope that `E(n,τ)` is an *induced* `𝔽_p[G]`-module, since `F(n)/F(n)²` is
+`𝔽_p[G]^n` and Brauer–Hasse–Noether — which this repository has — gives `Ш²(K, 𝔽_p) = 0`, hence
+`Ш²(k, Ind_{1}^{G} 𝔽_p) = 0` by Shapiro; that would delete Tate–Poitou from step 2. It fails. The
+graded layers of a free (restricted) Lie algebra on a free `𝔽_p[U]`-module are not free: from
+`Λ²(A ⊕ B) = Λ²A ⊕ (A ⊗ B) ⊕ Λ²B` the cross term `A ⊗ B` is free, but `Λ²(𝔽_p[U])` is a sum of
+modules induced from subgroups of order ≤ 2, and is not free as soon as `U` has an involution. So
+`Ш²(k, E(n,τ))` need not vanish and **Tate–Poitou is genuinely required**.
+
+The Hochschild–Serre route is no substitute either: `Ш²(k,A) ⊆ ker(H²(G_k,A) → H²(G_K,A))` does hold
+(because `Ш²(K,𝔽_p) = Ш(Br K)[p] = 0`), but inflation only gives
+`H²(G,A) → ker → H¹(G, H¹(G_K,A))`, not a surjection onto `Ш²`.
+
+### Two devices that *can* be dropped
+
+**(a) Tate cohomology and dimension shifting are not needed for Props 6 and 7.** Schmidt–Wingberg
+prove Prop 6 for `Ĥ^k(G, E(m,τ) ⊗ T)` by shifting down to `k = −1`, where a class is represented by
+a module element and Prop 2 applies directly. But the shrinking map `ψ_a` is `G`-equivariant, so it
+acts on *cochains*, and a class dies as soon as one representing cochain is annihilated. For a
+**finite** `G` a `k`-cochain is a family of `#G^k` module elements, so Prop 2 with `t·#G^k` targets
+kills all of them at once — no complete resolution, no dimension shifting, no `Ĥ`. The two indices
+actually used are `k = 2` (ordinary cohomology, `2`-cocycles) and `k = −2`, and for a finite group
+`Ĥ^{−2}(G,A) = H_1(G,A)` is ordinary group homology, whose `1`-cycles are again finitely many module
+elements. Prop 7's group `F(m)/F(m)^{(τ)} ⋊ G` does grow with `m`, which is exactly why it needs its
+own argument; but that argument only ever applies the trick to `H_1(G, −)` and to
+`H_1(F(n)/τ, E ⊗ T) ≅ F(n)/F(n)² ⊗ E(n,τ) ⊗ T` (universal coefficients, a module), both fine.
+What remains needed from homological algebra is therefore: functoriality of `H²` and `H₁` in the
+coefficients, and the five-term Hochschild–Serre sequence in homology for a semidirect product.
+
+**(b) The refined `(i,j)` filtration — and with it Lemma 4(ii) and Witt's theorem — can be
+dropped.** The refinement `P^{(i,j)} = (P^i ∩ P_j)P^{i+1}` exists to make each graded layer a
+quotient of a *single* tensor power, so that `a ↦ ψ_a(z)` is a *homogeneous* form of degree `j`.
+Proving that the layer is exactly the length-`j` part is what forces Lemma 4(ii), and Lemma 4(ii) is
+Witt's theorem that `F_j/F_{j+1}` is a free `ℤ_p`-module — which Mathlib does not have. But
+Chevalley–Warning never asks for homogeneity: it asks for a bound on the total degree and for
+vanishing at the origin. On the coarse layer `P^i/P^{i+1}` the class of
+`[x_{α₁},…,x_{α_j}]^{p^{i−j}}` transforms by the monomial `a_{k₁}⋯a_{k_j}`, so `a ↦ ψ_a(z)` is a
+polynomial with all monomials of degree between `1` and `i`; it vanishes at `a = 0` and has total
+degree `≤ i`. That is exactly the hypothesis of `exists_ne_zero_forall_eval_eq_zero`. Only the
+*spanning* statement is then needed — `P^i/P^{i+1}` is generated by the images of the
+`[x_{α₁},…,x_{α_j}]^{p^{i−j}}`, `1 ≤ j ≤ i` — and spanning follows by induction from the definition
+`P^{i+1} = (P^i)^p[P^i,P]` and elementary commutator calculus (Lemma 4(i)), with no freeness input.
+
+### What has landed
+
+* `Shafarevich/Shrink.lean` (`49e31dc`) — Prop 2. `exists_ne_zero_forall_eval_eq_zero`: finitely
+  many polynomials over a finite field, vanishing at the origin, with total degrees summing to less
+  than the number of variables, have a common nonzero root (Chevalley–Warning plus the observation
+  that the solution count is a positive multiple of the characteristic).
+  `exists_ne_zero_forall_sum_prod_smul_eq_zero` is the homogeneous form actually quoted by
+  Schmidt–Wingberg, stated without `PiTensorProduct` by using the canonical decomposition
+  `⨂^s(⊕_r M) ⊗ N ≅ ⊕_{I ∈ (Fin r)^s} (M^{⊗s} ⊗ N)`, under which `ψ_a` is
+  `(w_I) ↦ ∑_I a_{I₁}⋯a_{I_s} • w_I`. `sumSmul_surjective` is the accompanying fact that a nonzero
+  coefficient vector combines `r` copies of a module onto it.
+* `Shafarevich/PCentral.lean` (`82f4176`) — the descending `p`-central series `pCentral p P n`
+  (indexed so `pCentral p P 0 = ⊤`), its characteristicity, naturality (`map_pCentral_le`, and
+  `map_pCentral`: a surjection carries the series *onto* the series — this is what lets operators
+  act on the layers), the two membership rules, monotonicity, and
+  `map_pCentral_le_center`: each layer is central in the corresponding quotient.
+
+### What remains
+
+Group-theoretic: the spanning statement for `pCentral` (the coarse Prop 5), and the polynomiality
+of `a ↦ ψ_a(z)` on the layer. Homological: functoriality of `H²`/`H₁` in the coefficients and
+Hochschild–Serre in homology for `F/τ ⋊ G`, then Props 6 and 7. Arithmetic, and this is the wall:
+Hoechsmann's obstruction criterion, Neukirch's principal homogeneous space, Lemma 10, Theorem 13,
+and **Tate–Poitou duality with the `Ш` groups** — none of which is in this repository or in Mathlib.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
