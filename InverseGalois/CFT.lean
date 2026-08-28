@@ -136,6 +136,7 @@ import InverseGalois.CFT.Global.ThreeSquares
 import InverseGalois.CFT.Global.ThreeSquaresOdd
 import InverseGalois.CFT.Global.ThreeSquaresTwo
 import InverseGalois.CFT.Global.TwoGenerators
+import InverseGalois.CFT.GrunwaldWang
 import InverseGalois.CFT.Herbrand
 import InverseGalois.CFT.InertiaAbelian
 import InverseGalois.CFT.InertiaFixedField
@@ -2063,6 +2064,18 @@ it that are available here.
   the same conclusion for a solvable one.  This is the statement that an extension of number fields
   in which almost every place splits completely is trivial, in the form that leaves a finite set of
   places entirely unconstrained.
+* `InverseGalois.CFT.GrunwaldWang` is the Grunwald–Wang theorem, the comparison of the classes of
+  the multiplicative group of a number field modulo `n`-th powers with their images in the
+  completions.  Prescribing finitely many of the local classes is the weak approximation just
+  described.  Conversely an element which is an `n`-th power in almost every completion is an
+  `n`-th power, for `n` squarefree: for a prime exponent and a base carrying the roots of unity
+  this is Kummer theory read against the previous item, an element which is not a `p`-th power
+  generating a cyclic extension of degree `p` by a radical which the decomposition group at a place
+  fixes exactly when the radicand is a local `p`-th power there, so that the hypothesis makes almost
+  every place split completely and the extension trivial.  The root of unity is removed by adjoining
+  it, the cyclotomic extension having degree prime to `p` so that the norm carries a `p`-th root
+  down, and a squarefree exponent is assembled from its prime factors by their Bezout relations.
+  Wang's counterexample lives at the exponent `8`, which is not squarefree, so no case is lost.
 * `InverseGalois.CFT.Units.DecompositionOutside` runs the argument that the decomposition groups
   generate the Galois group against that sharper input.  Throwing away finitely many places of the
   base field, and all the infinite places, costs nothing: the decomposition groups at the finite
