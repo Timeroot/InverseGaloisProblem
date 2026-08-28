@@ -23,8 +23,6 @@ the obstruction — a class in `H²(H, C_ℓ)` — is nonzero and class field th
 
 * `InverseGalois.CFT.mulEquivProdOfSection`: a surjection with central kernel and a homomorphic
   section presents its source as the direct product of the kernel with the target.
-* `InverseGalois.CFT.IsScholzRealizable.mono`: a realization at one level is a realization at every
-  smaller level.
 * `InverseGalois.CFT.IsCentralStepSolvable.of_nonsplit`: **the central step follows from its
   restriction to non-split extensions.**
 -/
@@ -55,16 +53,7 @@ def mulEquivProdOfSection {G H : Type*} [Group G] [Group H] (f : G →* H)
     rw [mul_assoc (p.1 : G) (s p.2), ← mul_assoc (s p.2), hcomm]
     group
 
-/-! ### Levels -/
-
 variable {G H : Type*} [Group G] [Group H] {ℓ N M : ℕ}
-
-/-- **A realization at one level is a realization at every smaller level.**  Serre's condition
-becomes weaker as the level drops, since a prime congruent to one modulo `ℓ ^ N` is congruent to
-one modulo every smaller power. -/
-theorem IsScholzRealizable.mono (h : IsScholzRealizable G ℓ N) (hMN : M ≤ N) :
-    IsScholzRealizable G ℓ M :=
-  h.elim fun R => ⟨{ R with isScholz := R.isScholz.mono hMN }⟩
 
 /-! ### The reduction -/
 
@@ -74,6 +63,7 @@ removed from its scope. -/
 def IsNonsplitCentralStepSolvable (ℓ : ℕ) : Prop :=
   ∀ (N : ℕ) {G H : Type} [Group G] [Group H] [Finite G] (f : G →* H), IsPGroup ℓ G →
     Function.Surjective f → f.ker ≤ Subgroup.center G → Nat.card f.ker = ℓ →
+    Nat.card H ∣ ℓ ^ N →
     (¬ ∃ s : H →* G, ∀ x, f (s x) = x) →
     IsScholzRealizable H ℓ (N + 1) → IsScholzRealizable G ℓ N
 
@@ -85,7 +75,7 @@ theorem IsCentralStepSolvable.of_nonsplit (hℓ : ℓ.Prime) (h : IsNonsplitCent
     IsCentralStepSolvable ℓ := by
   haveI : Fact ℓ.Prime := ⟨hℓ⟩
   haveI : NeZero ℓ := ⟨hℓ.ne_zero⟩
-  intro N G H _ _ _ f hpg hsurj hker hcard hH
+  intro N G H _ _ _ f hpg hsurj hker hcard hdvd hH
   by_cases hsplit : ∃ s : H →* G, ∀ x, f (s x) = x
   · obtain ⟨s, hs⟩ := hsplit
     have hZ : Nat.card (Multiplicative (ZMod ℓ)) = ℓ := by simp
@@ -93,6 +83,6 @@ theorem IsCentralStepSolvable.of_nonsplit (hℓ : ℓ.Prime) (h : IsNonsplitCent
     refine isScholzRealizable_of_prod_cyclic hℓ ?_ (hH.mono (Nat.le_succ N))
     exact (mulEquivProdOfSection f hker s hs).symm.trans
       ((MulEquiv.prodCongr e (MulEquiv.refl H)).trans MulEquiv.prodComm)
-  · exact h N f hpg hsurj hker hcard hsplit hH
+  · exact h N f hpg hsurj hker hcard hdvd hsplit hH
 
 end InverseGalois.CFT

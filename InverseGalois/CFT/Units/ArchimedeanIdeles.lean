@@ -29,6 +29,9 @@ same factor, and in the Herbrand quotient of the idele class group they cancel.
   of the base field.
 * `InverseGalois.CFT.herbrand_infiniteUnitsFamily_eq_permLattice`: the archimedean part of the
   ideles and the free lattice on the infinite places have the same Herbrand quotient.
+* `InverseGalois.CFT.exists_normHom_infiniteUnitsFamily`: **a fixed section of the archimedean part
+  of the ideles is a norm as soon as it is a local norm at one place above each infinite place of
+  the base field.**
 
 ## Tags
 
@@ -70,6 +73,28 @@ theorem herbrand_infiniteUnitsFamily_eq_permLattice {σ : Gal(K/k)}
     herbrand ((infiniteRingFamily (k := k) (K := K)).unitsFamily.familyAut σ) n
       = herbrand (permLatticeAut (toPerm σ : Equiv.Perm (InfinitePlace K))) n := by
   rw [herbrand_infiniteUnitsFamily hgen hn, herbrand_permLatticeAut_infinitePlace hgen hn]
+
+omit [IsGalois k K] in
+/-- **A fixed section of the archimedean part of the ideles is a norm as soon as it is a local norm
+at one place above each infinite place of the base field.**  The infinite places of the extension
+break into one orbit above each infinite place of the base field, and over an orbit the sections are
+the module induced from the decomposition group of any one of its points. -/
+theorem exists_normHom_infiniteUnitsFamily {σ : Gal(K/k)}
+    (hgen : ∀ g : Gal(K/k), g ∈ Subgroup.zpowers σ) {n : ℕ} (hn : Nat.card Gal(K/k) = n)
+    {f : ∀ w : InfinitePlace K, Additive w.Completionˣ}
+    (hf : (infiniteRingFamily (k := k) (K := K)).unitsFamily.familyAut σ f = f)
+    (h : ∀ ω : orbitRel.Quotient Gal(K/k) (InfinitePlace K), ∃ b,
+      normHom (smulUnitsAut (G := ↥(stabilizer Gal(K/k) ω.out)) (R := (ω.out).Completion)
+          (orbitTurn σ (orbitOut ω) (mem_stabilizer_of_smul_orbit_infinite (orbitOut ω))))
+        (Nat.card ↥(stabilizer Gal(K/k) ω.out)) b = f ω.out) :
+    ∃ u, normHom ((infiniteRingFamily (k := k) (K := K)).unitsFamily.familyAut σ) n u = f := by
+  haveI : Module.Finite k K := Module.Finite.of_restrictScalars_finite ℚ k K
+  refine exists_normHom_familyAut_orbits (infiniteRingFamily (k := k) (K := K)).unitsFamily σ n
+    fun ω => ?_
+  haveI : Fintype ω.orbit := Fintype.ofFinite _
+  exact exists_normHom_orbitFamily_infiniteUnits (orbitOut ω) hgen hn
+    (mem_stabilizer_of_smul_orbit_infinite (orbitOut ω))
+    (familyAut_orbitFamily_restrict _ hf) (h ω)
 
 end ArchimedeanIdeles
 

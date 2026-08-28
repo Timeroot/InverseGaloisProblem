@@ -631,6 +631,1486 @@ and settling the order `32` would remove the second exception at once. The bound
 
 ---
 
+## 0.10 Status (2026-08-24) — class field theory, and the second inequality
+
+Of the two blockers named in §0.2, Albert–Brauer–Hasse–Noether is the one that cannot be dodged:
+the embedding problem of Scholz–Reichardt is solvable exactly because a Brauer class that is
+locally trivial everywhere is trivial, and there is no elementary substitute for that in exponent
+`ℓ > 2`. The degree-two slice of ABHN is already in the tree (`docs/Development/ClassFieldTheory.md`
+§1.3), by an argument about ternary quadratic forms that generalises to nothing. So the real
+class field theory has to be built, and the route being followed is Milne, *Class Field Theory*,
+chapter VII: the two inequalities for the idele class group, then reciprocity, then the exact
+sequence of Brauer groups. This section records how far that has got; the file-level map is in
+`docs/Development/ClassFieldTheory.md` §4.
+
+**Tate cohomology of a cyclic group.** `InverseGalois/CFT/Tate/` is a self-contained development
+of `Ĥ⁰` and `Ĥ⁻¹` for an automorphism `σ` of an abelian group of order dividing `n`, together with
+the Herbrand quotient
+
+```lean
+InverseGalois.CFT.herbrand (σ : A ≃+ A) (n : ℕ) : ℚ :=
+  (Nat.card (tateH0 σ n) : ℚ) / (Nat.card (tateHm1 σ n) : ℚ)
+```
+
+and everything the quotient is normally used with: the six-term hexagon of a short exact sequence
+(`Exact.lean`, `Hexagon.lean`) and hence multiplicativity, invariance under a commensurable
+subgroup (`Commensurable.lean`, `Isogeny.lean`), Shapiro's lemma for an induced module
+(`Shapiro.lean`, `InducedLattice.lean`, `PermLattice.lean`), Hilbert 90 for a cyclic action
+(`CyclicHilbert90.lean`), and transport along an equivariant isomorphism (`Congr.lean`). For a
+trivial action the two groups are the cokernel and the kernel of multiplication by `n`
+(`Trivial.lean`, `TrivialLattice.lean`), which is what turns every Herbrand computation below into
+an index computation.
+
+**The local layer.** `InverseGalois/CFT/Local/` computes the local invariants a place at a time.
+The units of a complete discretely valued field have Herbrand quotient the degree of the extension
+(`UnitFiltration.lean`, `FiltrationHerbrand.lean`, `UnitHerbrandChain.lean`), by filtering the unit
+group and matching each graded piece against the additive filtration through the exponential
+(`Exp.lean`, `ExpEquiv.lean`, `ExpSurjective.lean`). The same exponential, run in the other
+direction, shows that a unit congruent to one to sufficient accuracy is an `n`-th power
+(`PowNeighbourhood.lean`), the accuracy needed being governed by the valuation of the residue
+characteristic and the valuation of `n`. Reading the Herbrand quotient of the units through its
+definition then gives the local index of the `n`-th powers:
+
+```lean
+InverseGalois.CFT.index_range_powMonoidHom_localUnitGroup
+    (hsurj : Function.Surjective (Valued.v : A → ℤᵐ⁰)) [∀ k : ℤ, Finite (gradedAdd A k)]
+    (h : HasResidueChar A p e) (hnz : n ≠ 0)
+    (hn : Valued.v ((n : ℕ) : A) = WithZero.exp (-(m : ℤ))) :
+  (powMonoidHom n : ↥(localUnitGroup A) →* ↥(localUnitGroup A)).range.index
+    = Nat.card (gradedAdd A 0) ^ m * Nat.card ↥(rootsOfUnity n A)
+```
+
+with the corresponding statements for the whole multiplicative group at a finite place
+(`AdicPowIndex.lean`) and at an infinite one (`InfinitePowIndex.lean`) — this is Milne 6.8. The
+local norm index `(K_v^× : Nm L_w^×) = [L_w : K_v]` for a cyclic local extension is
+`NormIndex.lean`, on top of the unramified and ramified norm forms.
+
+**The idele layer.** `InverseGalois/CFT/Units/` assembles the local factors into the ideles.
+`Idele.lean` defines them as a restricted product, written additively, of the unit groups of the
+completions; `AdicSIdeles.lean` and `SUnit.lean` cut out the `S`-ideles and the `S`-units;
+`IdeleClass.lean` forms the idele class group with its Galois action and identifies its Tate
+cohomology with that of the `S`-idele classes for a large enough `S`. Combining the local Herbrand
+quotients through Shapiro's lemma over the orbits of the Galois group on the places
+(`AdicIdeleHerbrand.lean`, `SIdeleHerbrand.lean`, `SUnitHerbrand.lean`) gives
+
+```lean
+InverseGalois.CFT.herbrand_ideleClassAut_eq_degree :
+  herbrand (ideleClassAut (k := k) (K := K) σ) n = n
+```
+
+for a cyclic extension of degree `n`, and hence **the first inequality**:
+
+```lean
+InverseGalois.CFT.first_inequality : n ≤ Nat.card (tateH0 (ideleClassAut (k := k) (K := K) σ) n)
+```
+
+**The second inequality.** This is Milne VII §6, the algebraic proof. *This subsection describes
+the state on 2026-08-24 and has since been overtaken: the second inequality is done. The
+prime-degree case is `Kummer/SecondInequality.lean`, the root of unity is removed by
+`Kummer/CyclotomicDescent.lean`, and `Kummer/CyclicIndex.lean` climbs the tower to give
+`index_ideleDiag_sup_ideleNorm_eq_card`, the norm index of an arbitrary cyclic extension of number
+fields being its degree. What follows is kept for the map of the pieces.* The strategy is
+Kummer-theoretic: adjoin an `ℓ`-th root of unity, choose a set of
+places `S` containing the infinite places, the places above `ℓ` and enough places to make the
+class group trivial, and count the index of a large group of `n`-th powers inside the `S`-ideles
+in two ways. The counting ingredients are now in place.
+
+* The global index of the `n`-th powers in the `S`-units — Milne 6.7's first half — is
+  `Units/SUnitIndex.lean`, `index_range_powMonoidHom_sUnits`, `= n ^ (r₁ + r₂ + |S|)` in the usual
+  notation; the proof is the Dirichlet unit lattice plus the Herbrand quotient of a trivial action
+  on a finitely generated group.
+* The product of the local indices over the relevant places — Milne 6.6 — is
+  `Kummer/PowIndex.lean`, `prod_index_range_powMonoidHom_units_of_isPrimitiveRoot`, `= n ^ (2 |S|)`
+  when the base field contains a primitive `n`-th root of unity and `S` contains every place at
+  which `n` is not a unit. Milne's product runs over `S` alone, which is exactly what this counts.
+* Its idele formulation is `Units/PowIdele.lean`: the subgroup of the `S`-ideles carrying the
+  `n`-th powers has relative index the product of those local indices,
+
+  ```lean
+  InverseGalois.CFT.relIndex_powSIdele_of_isPrimitiveRoot (hζ : IsPrimitiveRoot ζ n)
+      (F : Finset (HeightOneSpectrum (𝓞 K))) (hF : ∀ v, v ∈ F ↔ v ∈ S)
+      (hn : ∀ v, FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → v ∈ F) :
+    (powSIdele S T n).relIndex (sIdele S T) = n ^ (2 * (Fintype.card (InfinitePlace K) + F.card))
+  ```
+
+  resting on the general fact (`PiIndex.lean`) that two subgroups of a product which are given
+  place by place and agree outside a finite set have relative index the product of the local
+  relative indices.
+* Milne 6.4, that the group `E` of Kummer generators consists of norms, is the element-level
+  Shapiro chain of `Units/SIdeleNorm.lean`; Milne 6.5 is the index identity
+  `relIndex_sup_mul_relIndex_inf`.
+
+What is left of §6 is the Kummer-theoretic half rather than the counting half: 6.3 (an `S`-unit
+that is an `n`-th power in every completion at a place of `T` is one in the Kummer extension), 6.9
+(surjectivity of `U(S) → ∏_{v ∈ T} U_v/U_v^p`, which needs 6.3 and the order count `[M : L] = p^t`),
+the remaining inclusion in 6.7, and then 6.1–6.2, which reduce the general case to one containing
+the `p`-th roots of unity and need Milne 4.7 (Frobenius elements generate).
+
+**A topology-free route to the end of §6.** Milne's Proposition 4.5 — a finite solvable extension
+with `K^× · D` dense in `I_K` for some `D ⊆ Nm(I_L)` is trivial — is stated with the idele
+topology, which the repo does not have. It is not needed. The variant
+
+> if `L/K` is finite solvable and `D ≤ I_K` satisfies `D ⊆ Nm_{L/K}(I_L)` and `K^× · D = I_K`
+> **exactly**, then `L = K`
+
+has a two-line proof from the first inequality: pick `K ⊊ K' ⊆ L` with `K'/K` cyclic, then
+`I_K = K^× · D ⊆ K^× · Nm(I_{K'}) ⊆ I_K`, so `(I_K : K^× Nm I_{K'}) = 1`, contradicting
+`(I_K : K^× Nm I_{K'}) ≥ [K' : K] > 1`. Milne 6.10(b) delivers the *equality* `I_K = D · K^×`,
+not merely density, so the whole of §6 can be run without ever topologising the ideles.
+
+Both of the bricks that route needs are now laid, for the cyclic extensions that are all it uses.
+
+1. **The idele norm map.** `Units/IdeleNorm.lean` defines `ideleNorm k K hgen hσ : I_K → I_k` for a
+   cyclic extension. The assembly over the places is avoided entirely: the sum of the conjugates of
+   an idele is fixed by the generator, hence by the whole group, hence — by the fixed-point theorem
+   below — is the image of a unique idele of the base field, and that idele is the norm. The
+   defining property is `ideleComap_ideleNorm`, that the norm read in the extension is the Tate norm
+   of the Galois action.
+2. **Milne Lemma 4.1.** `Units/IdeleFixed.lean` proves `mem_range_ideleComap_iff`, that an idele of
+   the extension is fixed by the Galois group exactly when it comes from the base field, and
+   `Units/IdeleClassIndex.lean` proves the idele-class half in the form the inequalities want:
+
+   ```lean
+   InverseGalois.CFT.ideleQuotEquivTateH0 :
+     (↥(idele k) ⧸ ((ideleDiag k).range ⊔ (ideleNorm k K hgen hσ).range))
+       ≃+ tateH0 (ideleClassAut (k := k) σ) n
+   ```
+
+   The map sends an idele of the base field to the class of its image, which is fixed; it is
+   surjective because a fixed class is the class of a fixed idele and a fixed idele comes from the
+   base field; and it kills exactly the principal ideles and the norms, because a principal idele of
+   the extension fixed by the Galois group is the principal idele of a unit of the base field.
+
+So `first_inequality` now reads in its classical form,
+
+```lean
+InverseGalois.CFT.first_inequality_index :
+  n ≤ ((ideleDiag k).range ⊔ (ideleNorm k K hgen hσ).range).index
+```
+
+that is `(I_k : k^× · Nm I_K) ≥ [K : k]`, and the topology-free 4.5′ is its immediate corollary for
+a cyclic extension, `Units/NormIndex.lean`:
+
+```lean
+InverseGalois.CFT.subsingleton_gal_of_ideleDiag_sup_ideleNorm_eq_top
+    (htop : (ideleDiag k).range ⊔ (ideleNorm k K hgen hσ).range = ⊤) : Subsingleton Gal(K/k)
+```
+
+Norm transitivity, `Nm_{L/K} = Nm_{K'/K} ∘ Nm_{L/K'}` — what lets the cyclic step be taken inside a
+tower — is `Units/IdeleNormTower.lean`:
+
+```lean
+InverseGalois.CFT.ideleNorm_trans (x : ↥(idele K)) :
+  ideleNorm k F (ideleNorm F K x) = ideleNorm k K x
+```
+
+Both the tower compatibility of the inclusions (`ideleComap_trans`, `Units/IdeleTower.lean`, resting
+on the place-by-place compatibilities of `Units/PlaceTower.lean`) and the equivariance of the
+inclusion under restriction of automorphisms (`ideleAut_ideleComap_restrict`,
+`Units/IdeleRestrict.lean`, resting on `Units/PlaceRestrict.lean`) feed into it; the sum over the
+Galois group of the whole extension splits because lifting an automorphism of the middle field and
+multiplying by one fixing it is a bijection from the product of the two Galois groups.
+
+With that, **4.5′ holds for a solvable extension**, `Units/SolvableNorm.lean`:
+
+```lean
+InverseGalois.CFT.subsingleton_gal_of_isSolvable_of_ideleDiag_sup_le [IsSolvable Gal(K/k)]
+    (hD : D ≤ (ideleNorm k K).range) (htop : (ideleDiag k).range ⊔ D = ⊤) :
+  Subsingleton Gal(K/k)
+```
+
+The cyclic subextension is produced group-theoretically: a nontrivial finite solvable group has a
+nontrivial complex character (its abelianization is a nontrivial finite commutative group and
+characters separate the elements of such a group), and the quotient by the kernel of a character is
+a finite subgroup of `ℂ^×`, hence cyclic; the fixed field of the kernel is the `K'` above.
+
+What remains of the §6 count is recorded above; ABHN itself, however, does not wait for it — see
+§0.11.
+
+---
+
+## 0.11 Status (2026-08-25) — Albert–Brauer–Hasse–Noether, and the shape it takes for Scholz
+
+ABHN is in the tree. It did **not** need the second inequality, reciprocity, or the Brauer-group
+exact sequence of Milne §7: the cohomological form of the theorem is exactly the injectivity of
+`H²(G, K^×) → H²(G, I_K)` together with the vanishing of `H²` of the ideles place by place, and
+the injectivity is the long exact sequence of
+
+```text
+1 → K^× → I_K → C_K → 1
+```
+
+fed by `H¹(G, C_K) = 0`, which the first inequality already gives — `Units/IdeleClassH1.lean` for a
+cyclic group and `Units/IdeleClassH1Full.lean` in general, via dévissage along a solvable series.
+So the statement is
+
+```lean
+InverseGalois.CFT.injective_map_H2_globalUnits (k K) :          -- Units/IdeleClassSES.lean
+  Function.Injective ((map … (globalUnitsToIdele k K) …).hom)
+```
+
+and, combined with the place-by-place statement `exists_coboundary_idele`
+(`Units/IdeleCoboundary.lean`, a two-cocycle of the ideles which is a coboundary at every place is
+a coboundary — the restricted-product bookkeeping is `Units/IdeleClass.lean`):
+
+```lean
+InverseGalois.CFT.exists_sub_add_eq_globalUnits                 -- Units/ABHN.lean
+    {a : Gal(K/k) → Gal(K/k) → Additive Kˣ}
+    (ha  : ∀ x y z, globalUnitsAut x (a y z) + a x (y * z) = a (x * y) z + a x y)
+    (hinf : ∀ w : InfinitePlace K, … the image of `a` in `w.Completionˣ` is a coboundary …)
+    (hfin : ∀ v : HeightOneSpectrum (𝓞 K), … the image of `a` in `(v.adicCompletion K)ˣ` is … ) :
+  ∃ b, ∀ x y, a x y = globalUnitsAut x (b y) - b (x * y) + b x
+```
+
+**The local hypotheses, and how many of them are real.** For the Scholz–Reichardt step the cocycle
+is killed by an odd prime `ℓ`, and then almost all of `hinf`/`hfin` is free.
+
+* *Archimedean places.* `GroupCohomology/CoprimeCoboundary.lean` proves that summing the cocycle
+  identity over its third variable exhibits `|G| • f` as the coboundary of `y ↦ ∑ z, f y z`
+  (`nsmul_card_eq_of_isCocycle₂`), so a Bézout combination gives
+
+  ```lean
+  InverseGalois.CFT.exists_sub_add_eq_of_coprime (φ : G →* AddAut M)
+      (hcop : Nat.Coprime (Nat.card G) n) (hf : … cocycle …) (hn : ∀ x y, n • f x y = 0) :
+    ∃ c, ∀ x y, f x y = φ x (c y) - c (x * y) + c x
+  ```
+
+  Mathlib's `NumberField.InfinitePlace.nat_card_stabilizer_eq_one_or_two` says the decomposition
+  group at an archimedean place has order one or two, which is coprime to an odd `n`.
+* *Unramified finite places.* A unit killed by a nonzero integer has valuation zero, because the
+  valuation lands in the torsion-free group `ℤ` (`mem_ker_unitVal_of_nsmul_eq_zero`). So the local
+  component is a two-cocycle of the decomposition group with values in the units of the valuation
+  ring, and there `Local/UnramifiedCoboundary.lean` already had the vanishing: the decomposition
+  group is cyclic and the norm on the units of the valuation ring is surjective.
+* *Ramified finite places.* These are the only ones left, and they are precisely where Serre's
+  condition `(S_{N+1})` — `p ≡ 1 mod ℓ^{N+1}`, residue degree one, tame — is spent.
+
+The assembly of those three observations is the new module `Units/ABHNTorsion.lean`, whose main
+statement is the form of ABHN that a central embedding problem with kernel of odd prime order meets:
+
+```lean
+InverseGalois.CFT.exists_sub_add_eq_globalUnits_of_odd {n : ℕ} (hn : Odd n)
+    {a : Gal(K/k) → Gal(K/k) → Additive Kˣ}
+    (hpow : ∀ x y, n • a x y = 0)
+    (ha   : ∀ x y z, globalUnitsAut x (a y z) + a x (y * z) = a (x * y) z + a x y)
+    (hram : ∀ v, ¬ Algebra.IsUnramifiedAt (𝓞 k) v.asIdeal → … local coboundary at `v` …) :
+  ∃ b, ∀ x y, a x y = globalUnitsAut x (b y) - b (x * y) + b x
+```
+
+It rests on the equivariance of the local embeddings for the decomposition group,
+`smulUnitsAut_adicUnitHom` and `smulUnitsAut_infiniteUnitHom`, also in that module.
+
+**Getting back down to `μ_ℓ`.** ABHN is a statement about `K^×`, and the obstruction of the
+embedding problem lives in `H²(G, ℤ/ℓ)`. The two are matched by the Kummer sequence, which is
+`Kummer/InflationRootsOfUnity.lean`: Hilbert 90 turns a coboundary in `K^×` into an element `β`
+with `g • β / β = b g ^ n` (`exists_pow_eq_of_isMulCoboundary₂`), and over an extension containing
+an `n`-th root of `β` the inflated cocycle is cobounded by a cochain of `n`-th roots of unity
+(`exists_cochain_pow_eq_one`). Since `H²(D, μ_ℓ) → H²(D, K_w^×)` is injective for the local
+decomposition groups, nothing is lost in the passage.
+
+**Getting back down from `ℚ(μ_ℓ)`.** The Kummer argument wants the `ℓ`-th roots of unity in the
+base, and the degree of that adjunction divides `ℓ - 1`, hence is coprime to `ℓ`. The descent is
+group-theoretic, `GroupCohomology/CoprimeSplit.lean`:
+
+```lean
+InverseGalois.CFT.exists_splitting_of_coprime_index
+    (π : E →* G) (hπ : Function.Surjective π) (hc : π.ker ≤ Subgroup.center E)
+    (hcop : Nat.Coprime U.index (Nat.card π.ker)) (s : U →* E) (hs : ∀ u, π (s u) = u) :
+  ∃ σ : G →* E, ∀ g, π (σ g) = g
+```
+
+by the transfer: the transfer of the difference between the identity of `E` and the given section
+is the `U.index`-th power map on the kernel, which is bijective there, so inverting it turns the
+transfer into a retraction and dividing the identity by that retraction kills the kernel.
+
+**What is still missing for `IsFrattiniCentralStepSolvable ℓ`.** The remaining inputs are all on
+the ramified side and all local:
+
+1. local liftability at a ramified tame `p` satisfying `(S_{N+1})`, where `Gal(E/ℚ_p) ≅ (ℤ/ℓ^N)²`;
+2. the gluing of the local characters into one global condition;
+3. the radical closure — given `β ∈ K^×` and `n`, a finite normal extension `M/k` containing an
+   `n`-th root of `β`, which is `IntermediateField.normalClosure` applied to `K(α)` with
+   `Polynomial.monic_X_pow_sub_C` supplying integrality;
+4. the conversion of the resulting `μ_ℓ`-valued cochain into a solution of the embedding problem,
+   the improper-to-proper upgrade through the Frattini kernel (`Scholz/FrattiniStep.lean` already
+   has `exists_section_of_not_le_frattini`), and the preservation of `(S_N)`.
+
+---
+
+## 0.12 Status (2026-08-25) — item 5 is *not* Kronecker–Weber; it is one local count at `ℓ`
+
+Items 1, 3 and 4 of the list closing §0.11 are done (`Kummer/RadicalClosure.lean`,
+`Kummer/CocycleDescent.lean`, `Kummer/CentralEmbedding.lean`, `Local/PrimeResidue.lean`,
+`Units/ABHNRamified.lean`, `GroupCohomology/CoprimeDescent.lean`). What the Kummer tower now
+delivers is packaged as
+
+```lean
+InverseGalois.CFT.HasProperSolution (K : IntermediateField k Ω) (f : G →* H) (π : Gal(↥K/k) →* H) :=
+  ∃ M, K ≤ M ∧ NumberField ↥M ∧ IsGalois k ↥M ∧
+    ∃ ρ : Gal(↥M/k) →* Gal(↥K/k), Surjective ρ ∧ (ρ is restriction of automorphisms) ∧
+      ∃ φ : Gal(↥M/k) →* G, Surjective φ ∧ ∀ g, f (φ g) = π (ρ g)
+```
+
+— a *proper* solution of the embedding problem in a field containing the given one, with the
+compatibility retained. **It carries no ramification control at all**, and that is now the whole of
+what is left.
+
+### The reduction of Serre's Lemma 2.1.6 over ℚ
+
+Serre glues local characters using local *and* global class field theory. Over ℚ, and for a kernel
+`C = C_ℓ` of prime order, the gluing needs strictly less. Write `ε_p := φ̃|_{I_p}`, a character
+`I_p → C_ℓ` (it lands in `C_ℓ` because `φ = π ∘ φ̃` is unramified at every `p ∉ ram(L)`, and `L`
+satisfies `(S_{N+1})` so `ℓ ∉ ram(L)`). Two elementary observations collapse the problem:
+
+* `ε_p` is invariant under conjugation by the decomposition group `D_p`, because `C_ℓ` is central
+  in `G` and `ε_p` is the restriction of the homomorphism `φ̃` defined on all of `D_p`.
+* The group `Hom(I_p, C_ℓ)^{D_p}` is therefore the only receptacle, and it is *small*:
+
+| `p` | `Hom(I_p, C_ℓ)^{D_p}` | why |
+|---|---|---|
+| `p ≠ ℓ`, `ℓ ∤ p − 1` | trivial | Frobenius acts on tame inertia by `τ ↦ τ^p`, so `ε(τ)^{p−1} = 1` |
+| `p ≠ ℓ`, `ℓ ∣ p − 1` | cyclic of order `ℓ` | tame quotient of `I_p` is `∏_{q≠p} ℤ_q`, so `Hom(I_p, C_ℓ) ≅ C_ℓ` |
+| `p = ℓ` | cyclic of order `ℓ` | inflation–restriction: `H¹(D_ℓ, 𝔽_ℓ)` has order `ℓ²`, `H¹(D_ℓ/I_ℓ, 𝔽_ℓ)` order `ℓ`, `H²(Ẑ, 𝔽_ℓ) = 0` |
+
+and in each of the two nontrivial rows the restriction of an explicit **cyclotomic** character is a
+generator: the degree-`ℓ` subfield of `ℚ(μ_p)` for `p ≡ 1 mod ℓ` (totally ramified at `p`,
+unramified elsewhere), and the degree-`ℓ` subfield of `ℚ(μ_{ℓ²})` for `p = ℓ`. Hence
+
+> **Lemma 2.1.6 over ℚ for `C = C_ℓ` is: `ε := ∏_p χ_p^{a_p}`**, a finite product of cyclotomic
+> characters, with the exponents `a_p` read off one prime at a time. **No Kronecker–Weber, no
+> reciprocity law, no global idele class group.**
+
+`InverseGalois/CFT/Cyclotomic/OnePrimeRamified.lean` already supplies the characters of the second
+row (`exists_cyclic_ramified_exactly_at_one_prime`), and `Cyclotomic/CyclicSubfield.lean` the cyclic
+subfields of `ℚ(μ_q)`; the tame row is `TameCharacter.lean` (`tameChar_conj_arithFrobAt`,
+`card_inertia_dvd_sub_one`); `Scholz/Tame.lean` already has tame Kronecker–Weber
+(`exists_algHom_cyclotomicField_of_isLevel`).
+
+### What genuinely remains
+
+The single irreducible input is the last row of the table, i.e. the **local count at `ℓ`**:
+
+> **(L_ℓ)** `ℚ_ℓ` has exactly `ℓ + 1` cyclic extensions of degree `ℓ`; equivalently
+> `|H¹(G_{ℚ_ℓ}, ℤ/ℓ)| = ℓ²`; equivalently every cyclic degree-`ℓ` extension of `ℚ_ℓ` lies in
+> `ℚ_ℓ(μ_{ℓ²}) · ℚ_ℓ^{ur}` — **local Kronecker–Weber in exponent `ℓ` at the residue characteristic**.
+
+An elementary route avoiding local class field theory: descend to `E = ℚ_ℓ(μ_ℓ)`, whose degree
+`ℓ − 1` over `ℚ_ℓ` is prime to `ℓ`, so `H¹(G_{ℚ_ℓ}, ℤ/ℓ)` is the `ω`-eigenspace of
+`E^×/(E^×)^ℓ` for `Δ = Gal(E/ℚ_ℓ)` (Kummer theory plus inflation–restriction). As a `Δ`-module
+`E^×/(E^×)^ℓ ≅ 𝔽_ℓ ⊕ μ_ℓ ⊕ 𝔽_ℓ[Δ]` — valuation, roots of unity, and the principal units, the last
+by the `ℓ`-adic logarithm on `U¹` — so the `ω`-eigenspace is two-dimensional. The local unit
+filtration machinery this needs is already present (`Local/UnitFiltration.lean`, `Local/Exp.lean`,
+`Local/ExpEquiv.lean`, `Local/FiltrationHerbrand.lean`).
+
+*Why the wild place cannot be dodged.* `(S_N)` forbids ramification at `ℓ`, and the tame part of
+`I_ℓ` has order prime to `ℓ` so maps trivially into the `ℓ`-group `G`; the obstruction is exactly
+`φ̃` on **wild** inertia at `ℓ`. The Kummer freedom in the solution (replacing `β` by `βγ`,
+`γ ∈ k^×`) only moves the local class at `λ ∣ ℓ` inside the image of `k_λ^×`, which is a proper
+subgroup of `(K_λ^×/(K_λ^×)^ℓ)^{D_λ}` in general; and `(S_N)` does *not* require the solution to be
+unramified outside `ram(L)` — extra ramification at good primes `q ≡ 1 mod ℓ^N` splitting completely
+in `L` is harmless — but no amount of good extra ramification removes a bad one at `ℓ`.
+
+
+## 0.13 Status (2026-08-25) — the Scholz-side plumbing
+
+Four bricks, all sorry- and axiom-free, all pushed; full build green at 9106 jobs.
+
+**1. The induction contract now carries the order of the quotient.** All three central-step
+predicates — `IsCentralStepSolvable`, `IsNonsplitCentralStepSolvable`,
+`IsFrattiniCentralStepSolvable` — gained the hypothesis `Nat.card H ∣ ℓ ^ N`.  It is not
+cosmetic.  `exists_surjective_hom_of_forall_ramified_primeResidue` demands `ℓ · |D_v| ∣ p − 1` at
+every ramified place; `|D_v|` divides `|H|`, and Serre's condition at level `N + 1` supplies only
+`ℓ^{N+1} ∣ p − 1`, so without `|H| ∣ ℓ^N` the arithmetic hypothesis of the local–global engine
+cannot be met.  The induction is restructured accordingly: with `level(j) = N + (m − j)` along a
+central chain of length `m`, step `j → j+1` needs `2j+1 ≤ N+m`, so `m ≤ N+1`;
+`isScholzRealizable_of_card_eq_pow_of_le` carries `k ≤ N + 1` and the general
+`isScholzRealizable_of_card_eq_pow` realizes at `max N k` and drops back down with
+`IsScholzRealizable.mono` (moved into `Scholz/Realization.lean`, since `Scholz/SplitReduction.lean`
+imports `Scholz/Induction.lean` and not conversely).  Every externally visible statement, including
+all of `InverseGalois/Shafarevich.lean`, is unchanged.
+
+**2. Serre's condition is inherited by subfields** (`Scholz/Condition.lean`):
+`isSplitInertia_of_tower`, `IsScholz.of_tower`.  Both halves of `(S_N)` constrain only the ramified
+primes; `ramifiedSet_subset` moves the level condition down, and `Ideal.inertiaDeg_algebra_tower`
+factors the residue degree through the intermediate field.
+
+**3. Realizations from an abstract field, and from a quotient** (`Scholz/Realization.lean`):
+`isScholzRealizable_of_isGalois` embeds any number field satisfying `(S_N)` into
+`AlgebraicClosure ℚ` (via `embSubfield`/`embEquiv`) and transports the condition and the group;
+`isScholzRealizable_of_surjective` then realizes **every quotient** of the Galois group, by passing
+to the fixed field of the kernel.  This is the adapter the central step will finish with: an
+embedding-problem solution hands back a big field plus a surjection, not a `ScholzRealization`.
+
+**4. The local groups are cyclic** (`CFT/TameCyclic.lean`, `Scholz/Tame.lean`):
+`isCyclic_inertia_of_tame` — the tame character embeds inertia into the units of a finite field, so
+tame inertia is cyclic; `isCyclic_stabilizer_of_isSplitInertia` — the residue-degree half of `(S_N)`
+identifies the decomposition group with inertia; and the capstone `IsScholz.isCyclic_stabilizer`:
+for a field of `ℓ`-power degree satisfying `(S_N)` with `N ≥ 1`, the decomposition group at every
+ramified prime is cyclic.  That discharges the first of the three clauses of `hram` in
+`exists_surjective_hom_of_forall_ramified_primeResidue`.
+
+**What `hram` still wants**, per place `v` of `K` ramified over the base `k = ℚ(μ_ℓ)`:
+(i) `IsCyclic ↥(stabilizer Gal(K/k) v)` — the analogue over `k` of the capstone above;
+(ii) the residue field of `K_v` is prime, i.e. every integral element of the completion is
+congruent to a rational integer — this follows from residue degree one over `ℚ` but needs the
+identification of the residue field of the completion with `𝓞 K / P`;
+(iii) `ℓ · |D_v| ∣ p − 1`, which is now available from the level condition plus the new
+`Nat.card H ∣ ℓ ^ N` hypothesis.
+
+**Remaining assembly** (Serre's plan): (A) base-change to `k = ℚ(μ_ℓ)` with
+`Gal(K₀·k/k) ≅ Gal(K₀/ℚ)` — coprime degrees, so `CFT/Compositum.lean`'s
+`galEquivProd (h : A ⊓ B = ⊥)` is the tool; (B) the three clauses above; (C) the character
+`χ : ker f → k^×`; (D) `HasProperSolution`; (E) descent to `ℚ` by
+`exists_surjective_hom_comp_eq_of_coprime_index`; (F) ramification control by twisting, which needs
+the cyclotomic twisting characters of `Cyclotomic/OnePrimeRamified.lean` together with the local
+count `(L_ℓ)` of §0.12.
+
+### 0.14 Status (2026-08-25, later) — the local clauses are all discharged at the ℚ level
+
+Step (B) is finished, in the sense that each of the three clauses of `hram` is now a theorem about
+the rational prime below the place.
+
+* **(iii) the congruence.** `mul_card_stabilizer_dvd_sub_one` in `Scholz/Condition.lean`: from
+  `IsLevel ℓ (N + 1) E` and `Nat.card Gal(E/ℚ) ∣ ℓ ^ N` one gets
+  `ℓ * Nat.card ↥(stabilizer Gal(E/ℚ) P) ∣ p - 1` at every ramified `p`.  The decomposition group
+  is a subgroup, so its order divides `ℓ ^ N`, and the level condition supplies one more power.
+* **(i) cyclic decomposition group.** `IsScholz.isCyclic_stabilizer` in `Scholz/Tame.lean`.
+* **(ii) prime residue field and residue characteristic.** The new module
+  `Local/PrimeResidueField.lean`.  Residue degree one makes the residue field an extension of the
+  prime field of rank one, so `Int.cast : ℤ → 𝓞 K ⧸ P` is surjective
+  (`surjective_intCast_quotient_of_inertiaDeg_eq_one`); composing with the approximation lemma
+  `exists_algebraMap_sub_le_exp_neg_one` of `Local/AdicResidue.lean` — which already packages the
+  density of `K` in `v.adicCompletion K` — gives the predicate the criterion asks for
+  (`exists_intCast_sub_lt_one_of_inertiaDeg_eq_one`).  A companion lemma
+  `exists_hasResidueChar_of_liesOver` pins the residue characteristic to the *given* rational prime,
+  which the existing `exists_hasResidueChar_adicCompletion` of `Local/AdicHerbrand.lean` leaves
+  existentially quantified, and `exists_hasResidueChar_and_primeResidue` packages all three in the
+  exact `∃ q e, HasResidueChar ∧ prime residue ∧ m ∣ q - 1` shape of
+  `exists_surjective_hom_of_forall_ramified_primeResidue`.
+
+**(A) is now the gating item.**  A ℚ-base assembly is impossible in principle: the criterion needs
+a primitive `n`-th root of unity in the base, and `n = ℓ`.  So the local clauses have to be
+transported from `ℚ` to `k = ℚ(μ_ℓ)`.  The transport should be cheap — clause (ii) is already a
+statement about the residue degree of `v` over the rational prime, and clauses (i) and (iii) follow
+from `stabilizer Gal(K/k) v ≤ stabilizer Gal(K/ℚ) P`, since a subgroup of a cyclic group is cyclic
+and its order divides.  What is not cheap is the base change itself: `Gal(↥(A ⊔ B)/↥B) ≃* Gal(A/ℚ)`
+for `A ⊓ B = ⊥` needs an `Algebra ↥B ↥(A ⊔ B)` structure, hence `IntermediateField.extendScalars`
+and the attendant `IsScalarTower` pinning.  The group-theoretic content is already available:
+`galEquivProd` identifies `Gal(↥(A ⊔ B)/ℚ)` with `Gal(A/ℚ) × Gal(B/ℚ)`, under which the fixing
+subgroup of `B` is the first factor.
+
+## 0.15 Status (2026-08-26) — **the central step is unconditional; the odd nilpotent case is done**
+
+The last arithmetic hypothesis of the Scholz–Reichardt induction is gone.  `IsCentralStepSolvable ℓ`
+is now a **theorem** for every odd prime `ℓ` (`CFT/Scholz/FrattiniInertiaBound.lean`), so
+`InverseGalois/Shafarevich.lean` carries no hypotheses at all.  Full build green at **9165 jobs**,
+zero errors, zero warnings, zero sorries and zero axioms outside the comparator.
+
+Unconditionally over `ℚ`:
+
+* `InverseGalois.isInverseGalois_of_isPGroup_odd` — every finite `ℓ`-group, `ℓ` an odd prime;
+* `InverseGalois.isInverseGalois_of_isNilpotent_of_odd` — every finite nilpotent group of odd order;
+* `InverseGalois.isInverseGalois_of_isNilpotent_of_semiabelian_sylow_two` — every finite nilpotent
+  group whose Sylow `2`-subgroups are semiabelian, hence
+  `..._of_not_dvd_thirtytwo` / `..._of_not_dvd_sixteen`.
+
+### The chain that closed it
+
+The induction needed, at a prime `P` over `ℓ` of an `ℓ`-extension `A/ℚ`, that a solution of the
+central embedding problem be a *power of one fixed character* on the inertia subgroup.  That is the
+rank one condition, and it was reduced in three steps.
+
+**Step 1 — rank one from cyclicity** (`Scholz/AbelianInertia.lean`, `Scholz/InertiaRankOne.lean`).
+The values of the solution on inertia are central, so the solution factors through the abelianized
+decomposition group `D^ab`; there it suffices that the image `I^ab` of inertia be *cyclic*.
+
+**Step 2 — cyclicity from a small Frattini quotient** (`Scholz/FrattiniInertia.lean`).  `I^ab` is
+generated by what it contributes to `D^ab/(D^ab)^ℓ` together with `ℓ`-th powers, and `D/I` is cyclic
+of order the residue degree.  If the Frattini image of inertia has order at most `ℓ` **and** `D/I`
+is large enough — order divisible by the exponent of `Gal(A/ℚ)` — then `D` is generated by one
+element together with `I`, and `I^ab` comes out cyclic.  Largeness is not automatic but is bought:
+adjoin a cyclic extension of degree `ℓ^n` in which `ℓ` is *inert*, which forces the residue degree
+up, and then bring cyclicity back down with `Scholz/AbelianInertiaTransport.lean`, which moves
+`I^ab` along any homomorphism carrying decomposition into decomposition and inertia **onto** inertia
+(restriction to a normal subextension, and isomorphism of number fields, are both of this shape).
+This is the predicate `IsFrattiniInertiaSmallAt ℓ`.
+
+**Step 3 — the Frattini bound itself** (`Scholz/FrattiniInertiaSmall.lean`, the substantial one).
+Work in a field `N` containing a primitive `ℓ`-th root of unity `ζ`, at a prime `W ∣ ℓ`.  Let
+`ρ : Gal(N/ℚ) → (ZMod ℓ)ˣ` be the mod `ℓ` cyclotomic character, `S` the decomposition group of `W`,
+`H = S ⊓ ker ρ` and `F = fixedField H`.  `F` is *not* normal over `ℚ`, which is the reason the file
+carries its own glue (`fixedFieldAut`, `mem_inertia_fixedFieldHom`, …).  The master identity of
+`Scholz/FixedFieldRamification.lean` — the ramification index times the residue degree of the prime
+below a fixed field is the index of the intersection of the decomposition group with the subgroup —
+gives `e · f = |ρ(S)| ≤ ℓ − 1` at the place of `F` below `W`.  Since `ζ − 1` divides `ℓ` to depth
+`ℓ − 1`, that bound *pins* both invariants: `e = ℓ − 1`, `f = 1`
+(`Kummer/RamifiedCyclotomicPlace.lean`).  In particular `ρ(S) = ⊤`, so some `τ ∈ S` sends `ζ` to
+`ζ^g` with `g` a primitive root mod `ℓ`; such a `τ` normalises `H` and so descends to an
+automorphism `δ` of `F` fixing the place.  That is exactly the abstract local datum
+`IsCyclotomicPlace` of `Kummer/CyclotomicPlace.lean`, whose consequence
+`inertia_character_dependent` says: two `ZMod ℓ`-valued characters of `Gal(N/F)` invariant under
+conjugation by `τ` are *dependent on inertia*.  Conjugation invariance is free for characters pulled
+back from an abelian target containing the image of `τ`.  Transporting the dichotomy along a
+homomorphism `f : Gal(N/ℚ) → G` carrying `S` into `D` and inertia **onto** an `ℓ`-subgroup `I`
+bounds the image of `I` in `D^ab/(D^ab)^ℓ` by `ℓ`; the missing `(ℓ − 1)`-st roots needed to run the
+transfer are supplied by `powCoprime`, using `gcd(ℓ, ℓ − 1) = 1` and the fact that `I` is an
+`ℓ`-group.
+
+**Removing the root of unity** (`Scholz/FrattiniInertiaBound.lean`).  An `ℓ`-extension of `ℚ` with
+`ℓ` odd contains no `ζ_ℓ`, so Step 3 does not apply directly to `A`.  Pass to `M = A ⊔ ℚ(μ_ℓ)`.
+`M` is no longer an `ℓ`-extension — and that is fine, because Step 3 only asks that the *image of
+inertia* be an `ℓ`-group, which it is, being a subgroup of `Gal(A/ℚ)`.  With
+`f = autCongr eA ∘ restrictNormalHom A₀` for a copy `A₀ ≅ A` inside `M`, `map_inertia_eq_inertia`
+supplies the surjectivity onto inertia and `restrictNormal_mem_stabilizer` the containment of
+decomposition groups.  Hence `IsFrattiniInertiaSmallAt ℓ`, hence `IsAbelianInertiaCyclicAt ℓ`, hence
+`IsInertiaRankOneAt ℓ`, hence `IsCentralStepSolvable ℓ`.
+
+### What remains for full Shafarevich
+
+Exactly two things, and only the second is a wall.
+
+1. **The prime `2` in the nilpotent case.**  Handled today by the geometric (Dentzer–Stoll) route,
+   which reaches the semiabelian `2`-groups.  By Kida (2024) the smallest non-semiabelian `2`-group
+   has order `64`, so geometry alone can never finish it; the fix is to extend Scholz–Reichardt to
+   `ℓ = 2`, where the argument above genuinely breaks (`ζ_2 = −1` lies in every field, `ρ` is
+   trivial, and `ℓ − 1 = 1` gives no room).  Mapped out in §0.16, whose first brick is landed.
+2. **From nilpotent to solvable.**  `Shafarevich.isSolvable_isInverseGalois_of_splitPrimePowerEP`
+   already reduces everything to a *split* embedding problem with `p`-group kernel, and the
+   nilpotent realizations above are not of that shape: filtering a `p`-group kernel leaves a
+   residual non-split lifting.  The genuine Shafarevich argument uses Ikeda plus a Grunwald–Wang
+   input.  *(Superseded in part by §0.24: the power-class form of Grunwald–Wang, squarefree
+   exponent, is now in the repo; the character form and Poitou–Tate are not.)*
+
+---
+
+## 0.16 Status (2026-08-26, later) — mapping the prime `2`, and the first brick
+
+Landed: **the whole local–global layer now works at every prime**, `2` included.
+
+### Where oddness actually sat
+
+Tracing `Odd ℓ` down from `exists_surjective_hom_of_forall_ramified_primeResidue`
+(`CFT/Kummer/CentralEmbedding.lean`) through `ABHNRamified` → `ABHNLocalPower` → `ABHNCoboundary`
+→ `ABHNTorsion` shows it is consumed in **exactly one line** of the whole chain, at the archimedean
+places:
+
+```lean
+have hcop : Nat.Coprime (Nat.card ↥(stabilizer Gal(K/k) w)) n := by
+  rcases InfinitePlace.nat_card_stabilizer_eq_one_or_two k w with h | h
+  ...
+  · rw [h]; exact Nat.coprime_two_left.mpr hn
+```
+
+Everything else — the unramified finite places, the ramified ones, the Kummer bookkeeping, the
+Frattini argument — never looks at the parity of `ℓ`.
+
+That line is now the predicate `InverseGalois.CFT.IsCoprimeAtInfinitePlaces k K n`, and it has a
+second source besides oddness: `IsCoprimeAtInfinitePlaces.of_isUnramifiedAtInfinitePlaces`, which
+applies whenever no archimedean place of `K` ramifies over `k` — over `ℚ`, whenever `K` is totally
+real.  The chain is restated over the predicate, with the old `_of_odd` statements kept as
+corollaries, so:
+
+> **At `ℓ = 2` the Albert–Brauer–Hasse–Noether reduction, and with it the solvability of a central
+> Frattini embedding problem with kernel of order `2`, holds verbatim for a totally real base.**
+
+### What the rest of the `ℓ = 2` argument needs
+
+The induction hypothesis has to carry *totally real* alongside the Scholz condition.  That is not a
+burden — for odd `ℓ` it is automatic, an odd-degree Galois extension of `ℚ` having no element of
+order `2` to act as complex conjugation — and at `ℓ = 2` it is exactly what buys the archimedean
+places back.  With `K/ℚ` totally real and unramified at `2`:
+
+* **the local problem at `2` is always solvable unramified.**  `K/ℚ` unramified at `2` makes the
+  decomposition group `D₂ ⊆ G` cyclic of `2`-power order `f`.  Its preimage in `G̃` is a central
+  extension of a cyclic group by `ℤ/2`, hence abelian, hence either cyclic of order `2f` — solved by
+  the unramified extension of that degree — or split, and then the splitting composed with
+  `Ẑ ↠ ℤ/f` solves it, again unramified.
+* **the local problem at `∞` is trivially solvable**, the decomposition group being trivial.
+* **the ramified finite places are unchanged**: `2 · |D_v| ∣ p − 1` is the same Scholz congruence as
+  before, with `ℓ = 2`.
+
+So a global solution exists.  The work is in *correcting* it, and there the two things that break
+are known precisely.
+
+1. **`RadicalDisjoint` / `NilpotentRadical` are false at `2`.**  `not_surjective_of_radical` rests on
+   an automorphism sending `ζ ↦ ζ²`, which for `ℓ = 2` is the identity on `ζ = −1`; and the
+   statement itself fails, `2` being a square in the totally real `2`-extension `ℚ(√2)`.  Its one
+   use is `Scholz/AuxPrimeChoice.lean:70`, to know that the radicand `m` — a product of primes
+   already ramified in `A` — is not an `ℓ`-th power in `A`, so that Chebotarev can find a prime `q`
+   splitting completely in `A` with `m` a non-residue.  A ramification argument does *not* rescue
+   this: `ℚ(√m)` ramifies exactly where `A` does.  What is true at `2` is sharper and turns it into
+   a counting problem: `m` is a square in `A` iff `ℚ(√m) ⊆ A`, so the bad radicands form a subgroup
+   of `ℚ^×/(ℚ^×)²` of order `2^{d(G)}`, `d(G)` the minimal number of generators of `G = Gal(A/ℚ)`,
+   spanned by the quadratic subfields of `A`.  The correction must choose `m` inside the residue
+   span and outside that finite subgroup, which is a dimension count against
+   `Scholz/ResidueSpan.lean` rather than a new theorem about radicals.
+2. **The correcting characters are short by one dimension at `2` and `∞`.**  Write the defect of a
+   solution at a place `v` as a class in `ℚ_v^×/(ℚ_v^×)²`.  The correctors allowed by the Scholz
+   condition are `ℚ(√d)` with `d = ± 2^a ∏ pᵢ^{bᵢ} q`, where the `pᵢ` are already ramified and
+   `q ≡ 1 mod 2^N` is the new auxiliary prime.  Every odd factor is `≡ 1 mod 8`, hence a square in
+   `ℚ₂`, so the class of `d` at `2` is `(−1)^s 2^a` and its sign is `(−1)^s`: the *same* `s`.  The
+   pair (class at `2` mod unramified, sign) therefore ranges over an index-two subgroup of
+   `(ℤ/2)² × ℤ/2`, and the defect must satisfy the one relation
+   `(−1)`-component of the defect at `2` `=` defect at `∞`.
+
+Item 2 is the classical `ℓ = 2` difficulty — the same place where Šafarevič's 1954 argument had its
+gap — and is what a formalization has to supply, presumably from Hilbert reciprocity applied to the
+defect.  Item 1 is routine.
+
+### Item 2 in the repository's own language: `IsInertiaRankOneAt 2` is false
+
+Item 2 is not a stylistic obstacle; it is a *false hypothesis*, and the repository already names it.
+`Scholz/InertiaRankOne.lean` defines
+
+```lean
+def IsInertiaRankOneAt (ℓ : ℕ) : Prop := ...   -- at a place over `ℓ`, every homomorphism of order
+                                               -- dividing `ℓ` on inertia is a power of one fixed
+                                               -- surjective one
+```
+
+and `Scholz/FrattiniInertiaBound.lean` proves `isInertiaRankOneAt (hℓ : ℓ.Prime) (hodd : Odd ℓ)`.
+The oddness there is *not* removable, because the statement itself fails at `2`.  The abelianized
+inertia subgroup of `ℚ₂` is `ℤ₂^×  ≅ ℤ/2 × ℤ₂`, so its quotient by squares is `(ℤ/2)²`: there are
+**three** distinct ramified quadratic characters of `ℚ₂`, cut out by `ℚ₂(√−1)`, `ℚ₂(√2)` and
+`ℚ₂(√−2)`, and no one of them is a power of another.  Inertia at `2` has rank **two**, not one.
+For odd `ℓ` the corresponding group is `ℤ_ℓ^× ≅ ℤ/(ℓ−1) × ℤ_ℓ`, whose quotient by `ℓ`-th powers is
+cyclic of order `ℓ`, generated by the cyclotomic character of conductor `ℓ²` — which is exactly the
+generator `FrattiniInertiaSmall.lean` produces from a primitive root modulo `ℓ`, and `(ZMod 2)ˣ` is
+trivial so there is no primitive root to produce.
+
+This is the same count as item 2, seen locally instead of globally, and it says what the `ℓ = 2`
+theorem has to look like.  The correct statement is not rank one at `2`; it is rank one at the pair
+of places `{2, ∞}` *jointly*.  The two counts line up exactly:
+
+| | rank of the target | rank of the correctors |
+|---|---|---|
+| place `2`, mod unramified | `2`  (`{1, −1, 2, −2}`) | |
+| place `∞` | `1`  (the sign) | |
+| **total** | **3** | **2**  (`−1` and `2`, the sign being tied to the `−1`) |
+
+So the deficiency is exactly one dimension, and the missing input is one relation between the defect
+at `2` and the defect at `∞` of a *global* solution.  A purely local lemma cannot supply it; the only
+source is reciprocity, and in the standard treatments (Neukirch–Schmidt–Wingberg IX §6) it arrives as
+Poitou–Tate duality: the collection of local defects is correctable by a global quadratic character
+exactly when it annihilates the dual Selmer group, and the auxiliary prime `q` is chosen to shrink
+that dual Selmer group.  What `q` cannot kill are the classes `d` with `ℚ(√d) ⊆ A` — `q` splits
+completely in `A`, so such a `d` stays a square at `q` — and those are precisely the classes item 1
+also has to avoid.  Items 1 and 2 are therefore two readings of a single dimension count against the
+quadratic subfields of `A`.
+
+Poitou–Tate duality is in neither Mathlib nor this repository.  Global reciprocity, on the other
+hand, *is* here in the degree-two case that item 2 needs — see §0.17, which turns item 2 into a
+theorem.  The same layer is what gap 2 (nilpotent → solvable) needs for Grunwald–Wang, so the two
+remaining gaps share their next prerequisite; see §0.10 for how far the idele-class-group side has
+got.
+
+---
+
+## 0.17 Status (2026-08-26, later still) — item 2 is a theorem, and it is Hilbert reciprocity
+
+§0.16 item 2 predicted that the correctors allowed by the Scholz condition satisfy **one relation**
+between their defect at `2` and their defect at `∞`, and guessed that the relation would have to
+come from reciprocity.  Both are now settled, and the reciprocity in question is the ordinary
+Hilbert product formula over `ℚ`, which the repository has had since
+`InverseGalois/CFT/Global/Reciprocity.lean`.  No Poitou–Tate duality is involved.
+
+The `(−1)`-component of a class in `ℚ₂^×/(ℚ₂^×)²` — the component that the quadratic extension
+`ℚ₂(i)` cuts out — is the Hilbert symbol `(−1, ·)₂`, and the defect at `∞` is the sign.  So the
+predicted relation is the identity `(−1, d)₂ = sign(d)`, and `Global/NegOneSymbol.lean` proves it
+for exactly the integers the Scholz condition produces:
+
+```lean
+InverseGalois.CFT.hilbertSymbolAt_neg_one_eq_one_of_one_mod_four {p : Nat.Primes}
+    (hp : (p : ℕ) % 4 = 1) {d : ℚ} (hd : d ≠ 0) :
+  hilbertSymbolAt p (-1) d = 1
+
+InverseGalois.CFT.hilbertSymbolAt_two_neg_one_intCast {d : ℤ} (hd : d ≠ 0)
+    (h : ∀ p : ℕ, p.Prime → p ≠ 2 → (p : ℤ) ∣ d → p % 4 = 1) :
+  hilbertSymbolAt primeTwo (-1) ((d : ℚ)) = if d < 0 then -1 else 1
+```
+
+The first is the local input: at a prime congruent to one modulo four, `−1` is a square, so its
+symbol against anything is trivial.  The second reads the product formula backwards — the product
+of the local symbols of `(−1, d)` over all places is one, every odd place contributes `1`, so the
+dyadic symbol is the reciprocal of the real one, which is the sign.  The corollary is item 2 as a
+formal statement:
+
+```lean
+InverseGalois.CFT.hilbertSymbolAt_two_neg_one_ne_neg_one_of_pos {d : ℤ} (hd : 0 < d)
+    (h : ∀ p : ℕ, p.Prime → p ≠ 2 → (p : ℤ) ∣ d → p % 4 = 1) :
+  hilbertSymbolAt primeTwo (-1) ((d : ℚ)) ≠ -1
+```
+
+A Scholz-admissible corrector at level `N ≥ 2` is `d = ± 2^a ∏ pᵢ^{bᵢ} q` with every odd factor
+congruent to `1` modulo `2^N`, hence to `1` modulo `4`; the hypothesis of the corollary is exactly
+that.  So the pair (dyadic defect, real defect) attainable by a corrector is confined to the
+index-two subgroup `{(0,+), (α,−), (β,+), (αβ,−)}` of the rank-three target, `α` the class of `−1`
+and `β` the class of `2`, precisely as the table in §0.16 predicted.  The prediction is no longer a
+count on paper; it is a theorem, and it is sharp.
+
+### The escape, and what it costs
+
+The same product formula says where the missing generator lives.  For an odd prime `q`,
+
+```lean
+InverseGalois.CFT.hilbertSymbolAt_two_neg_one_prime_of_three_mod_four {q : ℕ} (hq : q.Prime)
+    (hq4 : q % 4 = 3) :
+  hilbertSymbolAt primeTwo (-1) ((q : ℚ)) = -1
+```
+
+and `q > 0`, so `q` realizes the pair `(α, +)` that no admissible corrector can.  The deficiency is
+therefore **caused by the level condition itself**: it is the congruence `q ≡ 1 mod 2^N` on the
+auxiliary prime, not anything about the prime `2`, that removes the missing dimension.  Admitting a
+single auxiliary prime `q ≡ 3 mod 4` restores it.
+
+That is not free, and the price is worth stating plainly.
+
+* `ℚ(√q)` with `q ≡ 3 mod 4` has discriminant `4q`, so it **ramifies at `2`**.  This is not an
+  accident of the choice: `(−1, d)₂ = −1` forces `ℚ₂(√d)/ℚ₂` to be ramified, so *any* corrector that
+  moves the dyadic defect ramifies at `2`.  The induction invariant of §0.16 — `K/ℚ` totally real
+  and unramified at `2`, which is what buys back the archimedean places in
+  `IsCoprimeAtInfinitePlaces` and makes the local problem at `2` solvable unramified — cannot be
+  literally preserved across such a correction.  It has to be replaced by a bounded-dyadic-conductor
+  invariant.
+* `q ≡ 3 mod 4` violates the level congruence at `q` itself, so the next stage of the induction sees
+  a ramified prime that is not `≡ 1 mod 2^N`.  The Scholz congruence at a ramified place is what
+  makes the *local* embedding problem there solvable, so relaxing it at `q` has to be paid for at
+  the following step.
+
+Both costs are about the design of the induction invariant at `ℓ = 2`, not about a missing theorem.
+That is a real change of shape in the argument, and it is where the `ℓ = 2` work now sits; but the
+arithmetic input that §0.16 identified as the wall — one relation, from reciprocity, tying the
+dyadic defect to the real one — is supplied and proved.
+
+---
+
+## 0.18 Status (2026-08-26, night) — Albert–Brauer–Hasse–Noether with **no** condition at infinity
+
+§0.16 located the whole of `Odd ℓ` in one line, at the archimedean places, and gave it a name:
+`IsCoprimeAtInfinitePlaces k K n`.  At `n = 2` that predicate says every archimedean place of `K` is
+unramified over `k`, i.e. over `ℚ` that `K` is totally real.  §0.17 then showed that the totally
+real-and-unramified-at-`2` invariant **cannot** be carried through the correction step: any
+corrector that moves the dyadic defect ramifies at `2`, and the corrector that supplies the missing
+dimension is `ℚ(√q)` with `q ≡ 3 mod 4`, which ramifies at `2` and breaks the level congruence.
+
+The way out is not to preserve the invariant but to make the theorem not need it.  That is now
+done.
+
+### The theorem
+
+```lean
+InverseGalois.CFT.exists_isMulCoboundary_of_sq_eq_neg_one
+    {K : Type} [Field K] [NumberField K] [Algebra ℚ K] [IsGalois ℚ K]
+    {ι : K} (hι : ι ^ 2 = -1) {n : ℕ} (hn : n ≠ 0)
+    {a : Gal(K/ℚ) → Gal(K/ℚ) → ℚˣ} (hpow : ∀ x y, a x y ^ n = 1)
+    (ha  : ∀ x y z, a y z * a x (y * z) = a (x * y) z * a x y)
+    (hram : ∀ v : HeightOneSpectrum (𝓞 K), ¬ Algebra.IsUnramifiedAt (𝓞 ℚ) v.asIdeal →
+              «a is a coboundary in (v.adicCompletion K)ˣ over the decomposition group at v») :
+  ∃ b : Gal(K/ℚ) → Kˣ, ∀ g h, g • b h / b (g * h) * b g = Units.map (algebraMap ℚ K) (a g h)
+```
+
+No hypothesis at the archimedean places, and **no parity condition on `n`**.  The single price is
+`ι ∈ K` with `ι² = −1`.
+
+### How it is proved
+
+Let `Γ = Gal(K/ℚ)` and `N = stabilizer Γ ι`.  Because `σ ι ∈ {ι, −ι}` for every `σ`, `N` is normal
+of index two (index exactly two, `ι ∉ ℚ`), and its fixed field `F` contains `ι`, hence is **totally
+complex**, hence `IsUnramifiedAtInfinitePlaces F K` holds vacuously — there is no real place of `F`
+left to ramify.
+
+1. **Restriction.**  Base change along `AlgEquiv.restrictScalars` from `ℚ` to `F` is definitionally
+   free: the action on `HeightOneSpectrum (𝓞 K)`, `adicCompletionAut`, `globalUnitsAut` and
+   `smulUnitsAut` all transport by `rfl` (`Units/BaseChangeCocycle.lean`).  So the existing
+   Albert–Brauer–Hasse–Noether theorem, applied over `F`, trivialises `a|_{N×N}`.
+2. **Inflation.**  A two-cocycle whose restriction to an index-two subgroup is a coboundary equals,
+   after twisting by the coboundary of a one-cochain, the *inflation* of a single invariant element
+   `c ∈ Kˣ` (`GroupCohomology/IndexTwo.lean`, `exists_twist_eq_indexTwoInflation`; the
+   `H¹(N, Kˣ) = 1` input is Hilbert 90 for the subgroup, `SubgroupHilbert90.lean`).  Twisting does
+   not disturb the local hypotheses (`Units/LocalCoboundaryTwist.lean`), so the local data descends
+   to the inflated cocycle.
+3. **Locally a sum of two squares.**  The inflation of `c` is a coboundary over the decomposition
+   group at `v` exactly when `c` is a norm from `K_v` for the quadratic subextension cut out by
+   `ι`, i.e. when `c` is a **sum of two squares** in the completion of `ℚ` under `v`
+   (`Units/LocalSqrtNegOne.lean`).  Being `Γ`-invariant, `c` is a rational number.
+4. **Globally a sum of two squares.**  A rational number which is a sum of two squares in every
+   `ℚ_p` is a sum of two squares (`Units/RatSumSquares.lean`), by the Hasse norm theorem for
+   `ℚ(i)/ℚ` — and the real place costs nothing, a sum of two squares in a single completion being
+   already positive.  So `c = x² + y² = N(x + y ι)`, and the inflation of `c` is a coboundary
+   globally (`SqrtNegOne.lean`, `isMulCoboundary₂_indexTwoInflation`).
+5. Undo the twist.
+
+### Modules
+
+| file | content |
+|---|---|
+| `CFT/SqrtNegOne.lean` | the stabiliser of a square root of `−1` is normal of index two; its fixed field is totally complex; `σ f · f = x² + y²` |
+| `CFT/SubgroupHilbert90.lean` | Hilbert 90 for a subgroup acting on `Kˣ` |
+| `CFT/GroupCohomology/Inflation.lean` | inflation of a two-cocycle along a quotient |
+| `CFT/GroupCohomology/IndexTwo.lean` | twist, `indexTwoInflation`, and the reduction of an index-two-split cocycle to it |
+| `CFT/Units/BaseChangeCocycle.lean` | `restrictScalars` transports every ingredient by `rfl` |
+| `CFT/Units/ABHNArchimedean.lean` | the archimedean clause is vacuous over a totally complex base |
+| `CFT/Units/LocalSqrtNegOne.lean` | the local coboundary condition ⇔ locally a sum of two squares |
+| `CFT/Units/LocalCoboundaryTwist.lean` | twisting preserves local triviality |
+| `CFT/Units/RatSumSquares.lean` | everywhere-locally a sum of two squares ⇒ a sum of two squares |
+| `CFT/Units/ABHNSqrtNegOne.lean` | the assembly |
+| `CFT/Units/ABHNSqrtNegOneRamified.lean` | the same with the ramified places in the form the construction verifies |
+| `CFT/Kummer/CentralEmbeddingSqrtNegOne.lean` | the four embedding-problem criteria over such a base, plus a mixed one |
+
+All sorry-free and axiom-free; full build green.
+
+### What this buys, and what it does not
+
+**Buys.**  The induction invariant at `ℓ = 2` no longer has to be *totally real*.  It can be
+`ι ∈ K` — an invariant which is preserved by *every* enlargement of `K`, in particular by every
+corrector, including `ℚ(√q)` with `q ≡ 3 mod 4`.  The obstruction §0.17 identified as a change of
+shape in the argument is removed at the source: the archimedean places are simply no longer part of
+the criterion.  Concretely,
+
+```lean
+InverseGalois.CFT.exists_surjective_hom_rat_of_forall_ramified_primeResidue
+```
+
+is the exact analogue of `exists_surjective_hom_of_forall_ramified_primeResidue` with `Odd n`
+deleted and `ι² = −1` in its place.
+
+**Does not buy.**  Requiring `ι ∈ K` makes the place above `2` **ramified**, and at a ramified place
+the criterion asks for something.  The residue-characteristic congruence `n · |D_v| ∣ p − 1` is
+unsatisfiable at `p = 2`, so the place above `2` has to be discharged the other way — by a
+homomorphic lift of `π|_{D_v}` into `G`.  Hence the mixed criterion
+
+```lean
+InverseGalois.CFT.exists_surjective_hom_rat_of_forall_ramified_lift_or_primeResidue
+```
+
+which asks, at each ramified place, for *either* a lift *or* the congruence.  The Scholz primes
+supply the congruence; the place above `2` must supply a lift.
+
+### What the `ℓ = 2` argument now needs
+
+Exactly one arithmetic statement, and it is purely local:
+
+> Let `K/ℚ` be a `2`-extension containing `i`, `v` the place above `2`, `D = D_v ⊆ Gal(K/ℚ)` its
+> decomposition group, and `1 → ℤ/2 → G̃ → D → 1` the pullback of the central extension along the
+> inclusion.  Then the surjection `G_{ℚ₂} ↠ D` lifts to `G̃`.
+
+Equivalently: the local obstruction in `H²(G_{ℚ₂}, ℤ/2) ≅ Br(ℚ₂)[2] ≅ ℤ/2` vanishes.  It is **not**
+automatic — that group is not zero — so this is a genuine condition on the tower, and the right
+formulation is a condition on the dyadic behaviour of `K` that the induction can carry (for instance
+that `K_v/ℚ₂` be *cyclic*, which makes `G̃_v` abelian and the lift a matter of choosing an
+unramified or split extension, as in the second bullet of §0.16).
+
+§0.19 works that condition out, finds that it **fails** in the base case, and concludes that
+`ι ∈ K` is not the `ℓ = 2` route after all.  The theorem stands; the route does not.
+
+---
+
+## 0.19 Status (2026-08-26, night, later) — the place `2` is silent when it is unramified, and that is the whole trade
+
+§0.18 built a real theorem and then drew the wrong strategic conclusion from it.  This section
+corrects the conclusion, computes the condition §0.18 left open (it is **false** in the smallest
+case), and states the one trade that the `ℓ = 2` induction actually faces.
+
+### Three corrections to §0.18
+
+1. **`ℚ(√q)` with `q ≡ 3 mod 4` is real.**  `q > 0`, so that corrector is a real quadratic field and
+   does not break total reality.  The two costs §0.17 records are the correct ones: it ramifies at
+   `2`, and it violates the level congruence at `q`.
+2. **The criterion asks nothing at an unramified place.**  In this repository the local hypothesis
+   of Albert–Brauer–Hasse–Noether ranges over the *ramified* finite places only, because
+   `exists_sub_add_eq_adicUnits_of_nsmul_eq_zero` (`Units/ABHNTorsion.lean`) discharges every
+   unramified finite place for a torsion cocycle, and `exists_sub_add_eq_infiniteUnits_of_coprime`
+   discharges the archimedean ones.  So under §0.16's invariant — `K/ℚ` totally real and unramified
+   at `2` — the prime `2` costs **nothing at all**.  That is the mechanism behind §0.16's first
+   bullet, and it is already a theorem here.
+3. **`ι ∈ K` therefore does not remove an obstruction; it creates one.**  Requiring `ι ∈ K` makes
+   the place above `2` ramified, and that is the only reason the criterion asks anything there.
+
+### The condition at `2` under `ι ∈ K`, computed
+
+Base case `K = ℚ(i)`, `v | 2`, `D_v = Gal(ℚ₂(i)/ℚ₂)` cyclic of order two, `n = 2`, values in
+`{±1}`.  For a cyclic decomposition group the second cohomology of the local units is the invariants
+modulo the norms, so the local condition is that `−1` be a norm from `ℚ₂(i)^×`, i.e. a sum of two
+squares in `ℚ₂`, i.e. that the Hilbert symbol `(−1, −1)₂` be trivial.  It is not, and the
+repository already proves it: `hilbertSymbolAt_two_neg_one_intCast` at `d = −1` (no odd prime
+divides `−1`, so the hypothesis is vacuous) gives `hilbertSymbolAt primeTwo (-1) (-1) = -1`.
+
+So at `v | 2` neither the power form, nor the sharper norm form of `Units/ABHNLocalNorm.lean`, nor a
+homomorphic lift `D_v →* G` can discharge a cocycle whose value `−1` occurs.  The condition §0.18
+posted as "the whole remaining `ℓ = 2` arithmetic" is not merely unproven — it is **false** for the
+smallest instance, and it has to be, because the embedding problem `ℤ/4 ↠ ℤ/2 = Gal(ℚ(i)/ℚ)` is
+genuinely unsolvable: `ℚ(√d)` lies in a cyclic quartic field exactly when `d` is a sum of two
+squares, and `−1` is not.  Its obstruction is the class `(−1, −1)`, ramified at exactly `{2, ∞}`.
+Dropping the archimedean condition without adding one at `2` would prove that false statement.
+
+### Why the place `2` cannot simply be omitted
+
+The sum of the local invariants of a class of `Br(K/ℚ)` is zero, so a place may be omitted from the
+hypotheses exactly when at most one invariant is left unknown.
+
+| invariant at | `K` totally real | `ι ∈ K` |
+|---|---|---|
+| `∞` | `0`, the decomposition group being trivial | unknown |
+| unramified finite | `0` | `0` |
+| Scholz primes | `0`, by the congruence | `0`, by the congruence |
+| `2` | ? | ? |
+
+Totally real leaves one unknown and reciprocity determines it.  `ι ∈ K` leaves two unknowns and one
+relation, and nothing follows.  This is §0.16's rank count again, read off the Brauer group instead
+of off the square classes.
+
+### The trade, stated once
+
+At `ℓ = 2` the induction has exactly two shapes, differing in one bit: whether `2` may ramify.
+
+**(a) `2` unramified** — the §0.16 invariant.  The local–global step needs nothing at `2`.  The
+price is the corrector count: the defect has rank three (the dyadic class modulo the unramified one,
+rank two; the sign, rank one) and the admissible correctors reach only an index-two subgroup of it
+(§0.17, and its local avatar is that `IsInertiaRankOneAt 2` is false).  Deficiency one.  Closing it
+needs either a corrector ramified at `2` — which contradicts the invariant — or a relation on the
+*defect* matching the one §0.17 proves for the *correctors*.  This is the classical difficulty; its
+shape is the special case of Grunwald–Wang at `2`, and it is where Šafarevič's 1954 argument went
+wrong.
+
+**(b) `2` allowed to ramify** — invariant: `K/ℚ` Galois, totally real, ramified only at `2` and at
+Scholz primes.  Now nothing needs correcting at `2`: `IsInertiaRankOneAt 2` is never invoked, the
+rank-three target collapses to the sign alone, and `ℚ(i)`, `ℚ(√2)`, `ℚ(√−2)` become admissible
+correctors, so the sign is freely correctable.  Correction at the *odd* ramified primes is the tame
+case and is unchanged.  The price is a single missing theorem, and it is a clean one.
+
+> **(T5)**  Let `K/ℚ` be a totally real Galois number field and `a` a two-cocycle of `Gal(K/ℚ)` with
+> values in `ℚˣ`, killed by `n`.  If `a` is a coboundary over the decomposition group at every
+> ramified finite place **except those above one fixed prime**, then `a` is a coboundary.
+
+Its proof is the reciprocity law for the Brauer group — the sum of the local invariants of a class
+split by `K` is zero — together with injectivity of the local invariant on `Br(K_v/ℚ_v)`.  The
+repository has the degree-two case over `ℚ`, the Hilbert product formula in
+`Global/Reciprocity.lean`, but not the invariant map; that is the next step of the class-field-theory
+tower already under construction (§0.10, the second inequality).
+
+**(b) is the better trade.**  (a) asks for exactly the input the classical argument got wrong.  (b)
+asks for a standard piece of class field theory which is on the critical path for gap 2 anyway —
+Grunwald–Wang, for the nilpotent-to-solvable reduction, needs the same layer.  The recommendation is
+to stop trying to move the archimedean place and to build the invariant map.
+
+### What this changes in the repository
+
+Nothing is retracted.  The theorem of §0.18 is true, sorry-free and axiom-free, and it is the right
+statement of Albert–Brauer–Hasse–Noether over a base containing `i`; it is simply not the `ℓ = 2`
+route.  The sharpening in `Units/ABHNLocalNorm.lean` — at a ramified place with cyclic decomposition
+group the local condition is that the values be **norms**, not powers, since the second cohomology
+of a cyclic group is its invariants modulo its norms — is the form (T5) will be phrased against, and
+it is what makes the computation above a one-line consequence of the Hilbert symbol.
+
+---
+
+## 0.20 Status (2026-08-26, late) — the second inequality is *done*; the wall is reciprocity alone
+
+### What is already in the repository, and was not recorded above
+
+A survey of the class-field-theory layer turns up two theorems that §0.10 and §0.19 still describe
+as future work.  They are complete, sorry-free, and in the default build.
+
+* **The second inequality, in every degree.**  `Kummer/CyclotomicDescent.lean` proves
+  `index_ideleDiag_sup_ideleNorm_eq_of_prime_degree` — for an extension of prime degree `p`,
+  `[J_k : k^× N(J_L)] = p` — by adjoining a `p`-th root of unity to the ambient algebraically closed
+  field and descending.  `Kummer/CyclicIndex.lean` then climbs the cyclic tower and lands
+  `index_ideleDiag_sup_ideleNorm_eq_card` and `index_ideleDiag_sup_ideleNorm_eq_finrank`: for any
+  **cyclic** extension of number fields the idele-class norm index is the degree.
+* **The Hasse norm theorem for cyclic extensions.**  `Units/HasseNorm.lean` combines that with the
+  first inequality and Hilbert 90 for the idele classes to prove
+  `card_tateHm1_ideleClassAut_eq_one` (`Ĥ⁻¹(G, C_K) = 0`) and
+  `mem_normSubgroup_of_mem_range_ideleNorm`: an element of `k` which is everywhere locally a norm
+  from a cyclic `L/k` is a global norm.
+
+Together with the local computations of `Local/NormIndex.lean` (`card_tateH0_adicUnitsField`,
+`subsingleton_tateHm1_adicUnitsField`) this means the **class field axiom is verified in the
+repository, locally and globally**: for a cyclic extension, `Ĥ⁰` has order the degree and `Ĥ⁻¹`
+vanishes, on the multiplicative group locally and on the idele class group globally.  In Neukirch's
+abstract formulation that is the entire input to class field theory *except* the invariant map.
+
+### The single remaining wall
+
+Everything left in the Shafarevich programme funnels through **global Artin reciprocity**, i.e. the
+invariant map `inv_v : Br(k_v) → ℚ/ℤ` together with `Σ_v inv_v = 0`:
+
+* gap 1 (`ℓ = 2` Scholz–Reichardt) needs (T5), which *is* `Σ inv_v = 0` plus injectivity of one
+  local `inv_v`;
+* gap 2 (`ElementaryAbelianKernelEP`) needs Grunwald–Wang, which needs the same layer.
+
+The second inequality is no longer the frontier; it is behind us.
+
+### Four shortcuts to (T5), and why each fails
+
+These were examined and ruled out.  Recording them so they are not re-attempted.
+
+1. **Counting.**  Both available counts fix only the *order* of the relevant subgroup, never which
+   subgroup it is.  `|Br(K/k)| = n` against `|⊕_v Br(K_w/k_v)| = ∏ n_v` says the kernel of `Σ inv`
+   has order `∏ n_v / n`; `[J : k^× N(J_K)] = n` against `[D_{v₀} : N] = n_{v₀}` says the same thing
+   in idele language.  Reciprocity is precisely the identification of the subgroup, so no count can
+   replace it.
+2. **Correcting by the quaternion class `(−1,−1)_ℚ`.**  That class is ramified exactly at `{2, ∞}`,
+   so multiplying by it exchanges an unknown at `2` for an unknown at `∞`: it proves
+   `(T5)@2 ⟺ (T5)@∞`, and nothing more.
+3. **Quaternion symbols.**  `Σ inv_v = 0` *is* available for symbol classes — that is the Hilbert
+   product formula, already proven in `Global/Reciprocity.lean` — and it is additive, so a *product*
+   of symbols would suffice.  But this needs `Br(ℚ)[2]` to be generated by quaternion classes, i.e.
+   index = exponent over `ℚ` (class field theory) or Merkurjev's theorem (harder), plus
+   `Br(ℚ_p)[2] ≅ ℤ/2` (local class field theory).  Circular.
+4. **Brauer induction.**  At `p = 2` every subgroup of a `2`-group is "elementary", so induction from
+   elementary subgroups says nothing.
+
+Also worth recording: one cannot simply assume local solvability at `2`.  The embedding problem
+`ℤ/4 ↠ ℤ/2 = Gal(ℚ₂(i)/ℚ₂)` is genuinely obstructed —
+`hilbertSymbolAt primeTwo (-1) (-1) = -1` in the repository — so the local condition at a dyadic
+ramified place is a real condition, not a formality.
+
+### Route (c): drop total reality instead, and omit the archimedean place
+
+§0.19 offered two shapes for the `ℓ = 2` induction.  There is a third, and on the corrector side it
+is strictly better than both.
+
+> **(c)** Keep the §0.16 invariant that `2` is **unramified**, but **drop** the requirement that `K`
+> be totally real, and use (T5) with the **archimedean** place omitted.
+
+Under (a) the corrector deficiency is one because a corrector `d = ± 2^a ∏ pᵢ^{bᵢ} q` has its sign
+tied to its `−1`-component: the target has rank three (dyadic class modulo unramified, rank two;
+sign, rank one) and the correctors reach only rank two.  Under (c) the sign is no longer part of the
+target — the archimedean condition is the one being omitted — so only the rank-two dyadic class must
+be corrected, and `{−1, 2, −2}` spans exactly that.  **Deficiency zero.**  The price is (T5) with the
+archimedean place omitted rather than a finite one; by shortcut 2 above that is the same theorem.
+
+So all three routes cost exactly one theorem, (T5), and (c) costs nothing else.  The recommendation
+of §0.19 is unchanged and reinforced: **build the invariant map**.
+
+### The shape of the remaining work
+
+Global reciprocity over `ℚ` decomposes as:
+
+1. **Local**: `Br(K) ≅ ℚ/ℤ` for a local field, with `Br(K^ur/K)` the whole of it.  The unramified
+   half is already done — `Local/UnramifiedInvariant.lean` builds `unramifiedInvariant` and proves
+   it bijective.  What is missing is that *every* class is split by an unramified extension.  The
+   classical algebraic proof of that goes through the valuation on a central division algebra: the
+   residue algebra is a division algebra over a finite field, hence commutative by Wedderburn's
+   little theorem (`littleWedderburn`, in Mathlib), and lifting a generator of the residue extension
+   produces an unramified maximal subfield.
+2. **Cyclotomic approximation**: every class of `Br(ℚ)` is split by a cyclic cyclotomic extension
+   with prescribed local degrees.
+3. **Reciprocity for cyclotomic extensions**, which is the elementary computation
+   `Frob_{(a)} : ζ ↦ ζ^a`.
+4. **Assembly of (T5)**, then the `ℓ = 2` Scholz induction under route (c), then Grunwald–Wang for
+   gap 2.
+
+Step 1 is the deep one and is the natural next target.
+
+### Bricks landed alongside this survey
+
+* `GroupCohomology/InflationRestriction.lean` — the exactness of `0 → H²(G/N, Mᴺ) → H²(G, M) →
+  H²(N, M)` at the middle term, for an **arbitrary** normal subgroup with vanishing `H¹(N, M)`,
+  written on cochains.  The index-two case was already in `GroupCohomology/IndexTwo.lean`; the
+  general case replaces the two named cosets by a choice of representatives
+  (`exists_cosetSection`) and runs the same three corrections.  The packaged consequence,
+  `isMulCoboundary₂_of_forall_subgroup_of_forall_inflated`, is the dévissage step: `H²(G, M) = 0`
+  follows from `H¹(N, M) = 0`, `H²(N, M) = 0` and the vanishing of `H²` on inflated cocycles.  This
+  is what a general-degree second inequality, and Tate's theorem after it, will be built on.
+* **The counting half of the *local* first inequality**, i.e. `|Br(L/K)| ≤ [L:K]` for every solvable
+  extension of local fields, in five modules:
+  * `Brauer/RelativeIndex.lean` — the relative Brauer group of a cyclic extension is `Kˣ/N Lˣ`.
+  * `Brauer/SolvableBound.lean` — the dévissage.  It is now stated for a predicate on the *pair*
+    `(F, E)` rather than on the top field alone, because the hypothesis actually carried through the
+    induction (every automorphism is an isometry) is a property of the pair.  `IsDevissageClosed P`
+    accordingly asks for *both* halves of the tower cut out by a subgroup: `P (fixedField C) E` and
+    `P F (fixedField C)`.
+  * `Brauer/SolvableNormBound.lean` — the same dévissage restated with the cyclic input as a bound
+    on the index of the norm subgroup, so that no algebra appears in the hypothesis.
+  * `Local/SubfieldValued.lean` — the descent brick.  A subfield of a valued field carries the
+    *restricted* valuation `(Valued.v).comap (algebraMap S A)` together with the induced uniformity;
+    `IsValuedExtension S A` bundles the two compatibilities, and everything the local computation
+    needs (completeness of a closed subfield, the residue characteristic, finiteness of the graded
+    pieces) descends along it *unchanged*, because the valuation is restricted and not renormalised.
+  * `Local/FixedFieldValued.lean` — the fixed subfield of a group of isometries is closed, hence
+    complete; its value group is still nontrivial because `∏_{σ ∈ C} σ π` is fixed and has value
+    `(v π)^{|C|}`; and the isometry hypothesis transports both ways, down via
+    `AlgEquiv.liftNormal_commutes` and up via `AlgEquiv.restrictScalars`.
+  * `Local/CompleteNormIndex.lean`, `Brauer/LocalBrauerBound.lean` — the assembly.
+    `IsLocalExtension K A` says `A` carries a complete valuation with a residue characteristic,
+    finite graded pieces and a nontrivial value group, preserved by every `K`-automorphism;
+    `card_relative_le_finrank_of_isLocalExtension` is the conclusion.
+* The local Herbrand chain (`Local/AdicHerbrand.lean`, `Local/AdicUnits.lean`,
+  `Local/UnitHerbrandChain.lean`, `Local/UnitValuation.lean`) no longer needs the valuation to be
+  *surjective* onto `ℤᵐ⁰`.  A generator `m` of the value group (`IsUnitValGen A m`) and the divided
+  map `unitValDiv hm x = unitVal x / m` have the same kernel, surject onto `ℤ`, and are
+  `G`-invariant, so a merely **nontrivial** value group suffices.  This is what makes the class of
+  local extensions closed under the dévissage: a fixed subfield has a nontrivial value group, but
+  its value group is `|C|·ℤ`, not `ℤ`.
+
+The one hypothesis still taken as input rather than proven is that every `K`-automorphism of `A` is
+an isometry.  For a complete discretely valued `A` this is automatic — the valuation ring is the
+integral closure of that of `K` — but proving it is an independent piece of work, and stating it as
+a hypothesis keeps the dévissage usable for the abstract valued fields the Herbrand chain runs on.
+
+### 0.20.1 The restriction map, computed (`Brauer/BaseChangeCentralizer.lean`)
+
+Every use of the invariant map needs `res_{L/K} : Br(K) → Br(L)` evaluated on an explicit algebra,
+and the classical formula is the *centralizer* formula: if `L` sits inside a central simple
+`K`-algebra `A` and `B = C_A(L)`, then
+
+```
+L ⊗_K A  ≅  M_{[L:K]}(B)      as L-algebras,
+```
+
+so `res_{L/K} [A] = [C_A(L)]` in `Br(L)`.  `exists_algEquiv_matrix_of_range_eq_centralizer` is that
+statement.  It is proved by making `A` a right `B`-module (a left `Bᵐᵒᵖ`-module, `BMod`), letting
+`L ⊗_K A` act by right multiplication on the first factor and left multiplication on the second
+(`toEndB`), and identifying the target:
+
+* `A ≅ B^{[L:K]}` as `Bᵐᵒᵖ`-modules is *free for free* — `B` is simple (it is the centralizer of a
+  simple subalgebra) and `SkolemNoether.nonempty_linearEquiv_of_finrank_eq` upgrades the dimension
+  identity `dim_K A = [L:K] · dim_K B` to an isomorphism of modules, with no Wedderburn
+  decomposition and no explicit basis;
+* `End_{Bᵐᵒᵖ}(B^d) ≅ M_d(End_{Bᵐᵒᵖ} B) ≅ M_d(B)` — the second step is `AlgEquiv.moduleEndSelfOp`,
+  and it is `B` rather than `Bᵐᵒᵖ` precisely because the module is a *right* module;
+* `L ⊗_K A` is simple, so `toEndB` is injective, and the two sides have the same `L`-dimension.
+
+The statement is phrased with an abstract `B` and an injective `g : B →ₐ[K] A` whose range is the
+centralizer, the embedding of `L` being *derived* as `g ∘ (algebraMap L B)`; this avoids having to
+put an `Algebra L` structure on the subtype `↥(Subalgebra.centralizer K …)` at the call site.
+Taking `B = L` recovers `exists_algEquiv_matrix_of_centralizer_eq_range` of `Brauer/Centralizer.lean`
+(a self-centralizing subfield splits), and taking `L = K` gives `K ⊗ A ≅ M_1(A)`.
+
+### 0.20.2 Restriction on crossed products (`Brauer/CrossedProductRestrict.lean`)
+
+§0.20.1 computes `res` in terms of a centralizer; this section computes that centralizer in the one
+case every invariant-map argument needs.  Let `E / K` be finite Galois, `f` a multiplicative
+`2`-cocycle of `Gal(E/K)` with values in `Eˣ`, and `M` an intermediate field.  Then
+
+```
+C_{(E/K, f)}(M) = (E/M, f|_{Gal(E/M) × Gal(E/M)}),
+```
+
+and consequently
+
+```
+res_{M/K} [E/K, f]  =  [E/M, f|_{Gal(E/M)}]    in Br(M).
+```
+
+`baseChangeHom_mk_csa` is that identity; `nonempty_algEquiv_matrix_restrict` is the algebra
+statement `M ⊗_K (E/K, f) ≅ M_{[M:K]}((E/M, f|))` it comes from.  On the cohomological side
+`restrictCocycle` is literally the restriction of cochains along `Gal(E/M) → Gal(E/K)`, so this says
+the diagram
+
+```
+H²(Gal(E/K), Eˣ) ──→ Br(K)
+      │ res                │ res
+      ▼                    ▼
+H²(Gal(E/M), Eˣ) ──→ Br(M)
+```
+
+commutes — the compatibility that turns `inv_L ∘ res = [L:K] · inv_K` into a computation with
+cocycles.
+
+Three points of the Lean encoding are worth recording.
+
+* The centralizer half is a support computation, not an algebra computation.  Writing `y` in the
+  basis of symbols, `y · u_c = u_c · y` for `c ∈ M` reads coordinatewise as
+  `(g c − c) · y_g = 0` (`toFinsupp_mul_incl` against `toFinsupp_incl_mul`), so every `g` in the
+  support of `y` fixes `M` pointwise.  `Finsupp.mapDomain_comapDomain` then rebuilds `y` from the
+  smaller crossed product.  `AlgEquiv.ofRingEquiv` is what promotes such a `g` to an element of
+  `Gal(E/M)`.
+* `CrossedProduct hf'` for the restricted cocycle carries an `Algebra M` structure but **no**
+  `Algebra K` structure globally — `M` is not central in `CrossedProduct hf`, so declaring one as an
+  instance would be wrong.  It is introduced with `letI` inside the proof of
+  `nonempty_algEquiv_matrix_restrict`, via `RingHom.toAlgebra'` on `incl hf' ∘ algebraMap K E`,
+  exactly long enough to feed `exists_algEquiv_matrix_of_range_eq_centralizer`.  This is why that
+  brick was stated with an abstract `B` and a derived embedding of `L`.
+* `AlgEquiv.restrictScalars K : Gal(E/M) → Gal(E/K)` is definitionally the identity on underlying
+  maps, so `restrictScalars_one`, `restrictScalars_mul`, `restrictScalars_apply` and
+  `restrictScalars_smul_units` are all `rfl` — but `rw` will not close goals by them, and each of
+  the multiplicativity proofs needs them spelled out.
+
+### 0.20.3 Route (c) is *free*: Albert–Brauer–Hasse–Noether over `ℚ` with no hypothesis at all
+
+The four preceding sections all end with the same recommendation — build the invariant map, because
+(T5) needs reciprocity.  That recommendation is now wrong for gap 1.  Route (c)'s form of (T5) is a
+theorem, and its proof does not touch reciprocity.
+
+```lean
+InverseGalois.CFT.exists_isMulCoboundary_of_forall_ramified
+    {K : Type} [Field K] [NumberField K] [Algebra ℚ K] [IsGalois ℚ K] {n : ℕ} (hn : n ≠ 0)
+    {a : Gal(K/ℚ) → Gal(K/ℚ) → ℚˣ} (hpow : ∀ x y, a x y ^ n = 1)
+    (ha : ∀ x y z, a y z * a x (y * z) = a (x * y) z * a x y)
+    (hram : ∀ v, ¬ Algebra.IsUnramifiedAt (𝓞 ℚ) v.asIdeal → ‹local coboundary at v›) :
+  ∃ b : Gal(K/ℚ) → Kˣ, ∀ g h, g • b h / b (g * h) * b g = Units.map (algebraMap ℚ K) (a g h)
+```
+
+No parity of `n`, no condition at the archimedean place, no square root of minus one, no total
+reality: **a torsion two-cocycle of rational units which is a coboundary at every ramified finite
+place is a coboundary.**  That is (T5) with the archimedean place omitted, which §0.20 identified as
+exactly what route (c) buys its deficiency-zero corrector count with.
+
+#### Why no reciprocity is needed
+
+§0.18 proved the same statement under the extra hypothesis `ι² = −1` in `K`, and §0.19 concluded
+that the hypothesis was fatal because it makes the place above `2` ramified.  It is fatal only if
+one insists that `K` be the field the induction carries.  It need not be: the hypothesis can be met
+by **enlarging** `K`, and the enlargement never enters the conclusion.
+
+* `K/ℚ` finite Galois is the splitting field of a separable `p ∈ ℚ[X]`
+  (`IsGalois.is_separable_splitting_field`).  Put `L := (p · (X² + 1)).SplittingField`.  Then `L/ℚ`
+  is finite Galois, contains a root of `X² + 1`, and receives `K` by
+  `Polynomial.IsSplittingField.lift`.
+* Inflate the cocycle along `AlgEquiv.restrictNormalHom K : Gal(L/ℚ) → Gal(K/ℚ)`.  Cocycle identity
+  and `n`-torsion inflate for free.
+* The local hypothesis inflates too, and this is the point that §0.19 missed.  A place `w` of `L`
+  lies above a place `v` of `K`; the inflated cocycle's local condition at `w` is the image of the
+  condition at `v` under the decomposition-group restriction and the map on local units.  It is
+  therefore supplied at **every** place `w` of `L`, ramified or not — including the places above `2`
+  that the enlargement has just ramified — because it is supplied at every place of `K` that the
+  criterion asks about, and the unramified places of `K` are discharged by
+  `exists_sub_add_eq_adicUnits_of_nsmul_eq_zero` as always.  Ramification created *by the
+  enlargement* costs nothing, because the hypothesis is transported from below rather than checked
+  above.
+* Apply §0.18 over `L`, and descend: a coboundary whose values are inflated is a coboundary
+  downstairs, because `Gal(L/ℚ) ↠ Gal(K/ℚ)` and the cochain can be pushed through Hilbert 90 for
+  the kernel.
+
+So the dyadic place, which under `ι ∈ K` was a genuine obstruction *for `K`*, is not one *for `L`*:
+the whole content of §0.19's negative computation is that `−1` is not a norm from `ℚ₂(i)`, and the
+inflated cocycle never has to be a norm anywhere, only to be a coboundary where it already is one.
+
+#### Modules
+
+* `Units/TowerCoboundary.lean` — a family of units of the base which is a local coboundary at a
+  place of a middle field inflates to a local coboundary at every place above it.  The compatibility
+  content is `adicCompletionAut_adicCompletionComap_restrict`: the automorphism of the completion
+  attached to `σ ∈ D_w` and the one attached to its restriction agree on the completion below, both
+  being continuous and agreeing on a dense image.
+* `Units/InflationDescent.lean` — `exists_isMulCoboundary_of_restrictNormalHom`: a global coboundary
+  for the inflated cocycle descends.
+* `Units/ABHNFinite.lean` — the assembly, plus the unramified-place bookkeeping
+  (`exists_sub_add_eq_adicUnits_of_pow_eq_one`).
+
+The consumers in `Kummer/CentralEmbeddingSqrtNegOne.lean` lose the hypothesis and are renamed
+`exists_surjective_hom_rat_of_forall_ramified{,_lift,_pow,_primeResidue,_lift_or_primeResidue}`.
+
+#### One Lean obstacle, and how it was side-stepped
+
+The natural enlargement is the compositum `K ⊔ ℚ(i)` inside a fixed algebraic closure.  That does
+not work: for `S : IntermediateField ℚ Ω` there are several competing `Algebra ℚ ↥S` structures
+(`IntermediateField.algebra'`, `DivisionRing.toRatAlgebra`, and the `SMul` coming from
+`SubfieldClass`), they are propositionally but not definitionally equal, and for the relative
+compositum `supOver A K : IntermediateField ↥K Ω` instance search resolves `Algebra ℚ ↥(supOver A K)`
+to `DivisionRing.toRatAlgebra`, so `FiniteDimensional ℚ`, `IsGalois ℚ` and
+`IsScalarTower ℚ ↥K ↥(supOver A K)` all fail to synthesize.  `Subsingleton.elim` transports a *Prop*
+across the diamond but cannot repair instance search inside a later `haveI`.
+
+For an **abstract** `L` there is no diamond at all — `L` carries one `Algebra ℚ` structure, the one
+it was given.  `Polynomial.SplittingField` is abstract, `Normal.of_isSplittingField` and
+`NumberField.of_module_finite` supply the two instances, and `IsSplittingField.lift` plus
+`IsScalarTower.of_algebraMap_eq fun x => (lift.commutes x).symm` supply the tower.  This is the
+pattern of `Mathlib/FieldTheory/PolynomialGaloisGroup.lean`, and it is the recommended shape for any
+"enlarge the field" step in this layer.
+
+One tactic note: writing `set q := p * (X ^ 2 + C 1)` makes `rw` rewrite inside `q.SplittingField`
+and unfold the construction again.  Introducing `q` by `obtain ⟨q, hqp, hqc⟩ : ∃ q : ℚ[X], _ := …`
+keeps it an opaque local, which is what the downstream `letI : Algebra K q.SplittingField` needs.
+
+#### What this changes strategically
+
+| | before | now |
+|---|---|---|
+| gap 1, `ℓ = 2` Scholz–Reichardt | blocked on (T5), i.e. on the invariant map | **local–global layer complete**; blocked on the induction invariant |
+| gap 2, `ElementaryAbelianKernelEP` | blocked on Grunwald–Wang | unchanged — still needs the invariant map |
+
+The invariant map is still worth building, and it is still the only route to gap 2.  It is no longer
+on the critical path for gap 1.
+
+#### What `ℓ = 2` still needs
+
+Route (c)'s induction invariant: `K/ℚ` Galois with `Gal(K/ℚ)` a `2`-group, **unramified at `2`**,
+every other ramified prime `≡ 1 mod 2^N`, and **no condition at the archimedean places**.  Against
+that invariant:
+
+1. **The local–global step.**  Done, by the theorem above; at `ℓ = 2` no cyclotomic base change is
+   needed either, since `μ₂ ⊂ ℚ`, so `Scholz/ProperSolution.lean`'s detour through
+   `cycSubfield ℓ` collapses.
+2. **The dyadic corrector.**  `IsInertiaRankOneAt 2` is false and stays false (§0.16); what replaces
+   it is a rank-**two** cancellation at the dyadic place, the two generators being the classes of
+   `−1` and `2`.  `{−1, 2, −2}` spans the target exactly: deficiency zero, and the auxiliary prime
+   keeps its congruence `q ≡ 1 mod 2^N` (no `q ≡ 3 mod 4` is needed, which is what makes route (c)
+   better than §0.17's escape).  *The justification of "deficiency zero" given when this was first
+   written was wrong; see §0.21 for the correct one and for what it costs.*
+3. **§0.16 item 1**, the radicand.  `RadicalDisjoint`/`NilpotentRadical` are false at `2`; the
+   replacement is the dimension count against the quadratic subfields of `A` — the bad radicands
+   form a subgroup of `ℚ^×/(ℚ^×)²` of order `2^{d(G)}`, and `Scholz/ResidueSpan.lean` has to be made
+   to dodge it.
+
+---
+
+## 0.21 Status (2026-08-27) — the `ℓ = 2` local–global step is *landed*; the dyadic corrector, correctly analysed
+
+### What landed
+
+Three modules, all sorry-free and in the default build.
+
+* **`Scholz/ProperSolutionTwo.lean`** — `hasProperSolution_two`.  A central Frattini embedding
+  problem with kernel of order `2`, posed over a field `A` of two-power degree satisfying `(S_{N+1})`,
+  is solvable over an extension of `A`.  The proof is the direct application of §0.20.3's
+  hypothesis-free ABHN over `ℚ`: `IsPrimitiveRoot (-1 : ℚ) 2` supplies the root of unity, so there is
+  **no cyclotomic base change**, and there is **no condition at the archimedean place**.  The local
+  hypothesis at each ramified place is `isCyclic_and_exists_hasResidueChar_rat`, which reads Serre's
+  condition off the places of `A` directly instead of transporting it to a compositum.
+* **`Scholz/CentralStepTwo.lean`** — `exists_surjective_hom_of_isScholz_two` and
+  `exists_surjective_hom_of_centralStep_two`.  Same interface as the odd-`ℓ`
+  `exists_surjective_hom_of_{isScholz,centralStep}`, with `Odd ℓ` gone and the coprime-index descent
+  deleted: the `ρ` that `HasProperSolution` supplies **is** `galRestrictLE`, which is exactly what
+  the coercion clause of `HasProperSolution` says.
+* **`Scholz/CentralCyclicLift.lean`** — the group-theoretic heart of the dyadic corrector, see below.
+
+One Lean note worth keeping.  `ProperSolutionTwo`'s local lemma is stated for
+`{K : Type*} [Field K] [NumberField K] [IsGalois ℚ K]` with **no `[Algebra ℚ K]` binder**.  Adding
+one makes the algebra structure an opaque `fvar` which cannot unify with the
+`DivisionRing.toRatAlgebra` baked into `IsScholz.isCyclic_stabilizer`,
+`mul_card_stabilizer_dvd_sub_one` and `inertia_ne_bot_iff_mem_ramifiedSet`.  For
+`A : IntermediateField ℚ (AlgebraicClosure ℚ)` the two candidate instances
+`IntermediateField.algebra' A` and `DivisionRing.toRatAlgebra` are equal by `rfl`, so the call site
+works; it is only the section variable that breaks it.
+
+### The dyadic corrector: the earlier sketch was right, the earlier *reason* was not
+
+§0.20.3 item 2 asserted that `{−1, 2, −2}` spans the dyadic target exactly, i.e. deficiency zero.
+That conclusion stands.  The justification offered there — "the decomposition group at `2` of the
+solution field is abelian, so its inertia character is determined by `ℚ₂`" — does **not** work, and
+the failure is instructive enough to record.
+
+Write `L₀ ⊇ A` for the solution field, `A` unramified at `2`, `C := ker f ≅ ℤ/2` central.  Then
+`I_2(L₀) ⊆ Gal(L₀/A) = C` and `D_2(L₀)/I_2` is cyclic, so `D := D_2(L₀)` really is abelian.  But
+abelian is not enough: `D` can be cyclic of order `4` with `I_2 = D²` the subgroup of squares, and
+then `Ψ|_{I_2}` — a surjection `I_2 ↠ ℤ/2` — does **not** extend to any character of `D`, so no
+comparison with a character of `D` can produce the corrector.  Such a `D` genuinely occurs: by local
+class field theory the map `ℚ₂^× → ℤ/4`, `2 ↦ 1`, `−1 ↦ 2`, `1 + 4ℤ₂ ↦ 0`, cuts out a cyclic quartic
+extension of `ℚ₂` with `e = 2, f = 2` whose inertia subgroup is the squares.
+
+What *is* true is the same statement one level up, over the absolute Galois group of `ℚ₂` rather
+than over `D`:
+
+> Because `2` is unramified in `A`, the local embedding problem at `2` has an **unramified**
+> solution: `G_{ℚ₂}` has a procyclic unramified quotient, and Frobenius may be sent to any preimage
+> in `G` of the Frobenius image in `H`.  The global solution and the unramified local one differ by
+> a genuine character `μ : G_{ℚ₂} → C` (their ratio is a homomorphism because `C` is central), and
+> `Ψ|_{I_2} = μ|_{I_2}` because the unramified solution is trivial on inertia.  A quadratic character
+> of `ℚ₂` is `χ_c` for `c ∈ ℚ₂^×/(ℚ₂^×)²`, a group of order `8` with representatives
+> `±1, ±2, ±5, ±10` of which `5` is the unramified class; so `μ|_{I_2} = χ_d|_{I_2}` for one of the
+> four **rational** classes `d ∈ {1, −1, 2, −2}`.
+
+Deficiency zero, confirmed — and the reason is the unramified local solution, not abelianness.
+
+Two consequences worth stating plainly.
+
+* Whether the dyadic place can be removed is **not** an invariant of the solution that a twist can
+  change: twisting `Ψ` by a quadratic character `λ` replaces `Ψ|_{I_2}` by `Ψ|_{I_2}·λ|_{I_2}`, and
+  `λ|_{I_2}` is always one of the four classes above.  It is a property of the embedding problem,
+  and the argument above is what makes it always favourable.
+* Allowing the corrector to be `χ_m` for a general rational `m` (rather than `m ∈ {−1, 2, −2}`) buys
+  nothing at `2`: `χ_m|_{I_2}` depends only on the class of `m` in `ℚ₂^×/(ℚ₂^×)²` modulo the
+  unramified class, i.e. only on `m` mod `⟨5⟩`, i.e. on one of the same four classes.  An auxiliary
+  prime `q ≡ 5 mod 8` contributes the unramified class and is invisible on inertia.
+
+### Making the unramified lift finite — `Scholz/CentralCyclicLift.lean`
+
+The argument above lives on `G_{ℚ₂}`, which the repository does not have.  It can be made finite.
+The only thing `G_{ℚ₂}` was used for is: *the unramified quotient is procyclic of order divisible by
+`exp G`, so Frobenius may be sent anywhere.*  A finite Galois `M/ℚ` has `D/I` cyclic of order the
+residue degree at `2`, so it suffices to make the residue degree divisible by `exp G` — and that
+costs one elementary enlargement:
+
+> For every `k`, any prime divisor `r` of `2^{2^k} + 1` has `ord_r(2) = 2^{k+1}` exactly
+> (`2^{2^k} ≡ −1`, so the order divides `2^{k+1}` and does not divide `2^k`).  Hence in `ℚ(ζ_r)` the
+> prime `2` is unramified with residue degree `2^{k+1}`.  Adjoin such an `r` with `2^{k+1} ≥ |G|`.
+
+Inertia upstairs surjects onto inertia downstairs, so a cancellation proved over `M·ℚ(ζ_r)` descends
+to `M`; and the enlargement is unramified at `2` and at every prime of the Scholz set, so it costs
+the induction invariant nothing except the prime `r`, which is an ordinary correctable prime.
+
+With the residue degree arranged, the group-theoretic step is exactly:
+
+```lean
+InverseGalois.CFT.exists_monoidHom_range_le_ker_eqOn
+    {D G H : Type*} [Group D] [Group G] [Group H] {I : Subgroup D} [I.Normal]
+    (hcyc : IsCyclic (D ⧸ I)) (hexp : ∀ g : G, g ^ Nat.card (D ⧸ I) = 1)
+    {f : G →* H} (hZ : f.ker ≤ Subgroup.center G) {θ : D →* G} (hI : ∀ σ ∈ I, θ σ ∈ f.ker) :
+  ∃ μ : D →* G, μ.range ≤ f.ker ∧ ∀ σ ∈ I, μ σ = θ σ
+```
+
+together with its `Nat.card G ∣ Nat.card (D ⧸ I)` corollary.  The proof picks a generator of `D ⧸ I`
+and a preimage `x`, builds the homomorphism `D →* G` killing `I` and sending `x ↦ θ x` (legitimate
+because the order of the quotient kills `G`), observes that it agrees with `θ` after composing with
+`f` — the two agree on `I` and at `x`, which generate `D` — and takes the pointwise ratio, which is
+a homomorphism because `f.ker` is central.  Supporting lemma:
+`exists_monoidHom_apply_eq_of_forall_mem_zpowers`, a homomorphism out of a cyclic group prescribed
+freely on a generator.
+
+### What the dyadic corrector still needs
+
+1. **(F2), the local Kummer fact — the route is settled and most of its bricks have landed.**
+   Let `M/ℚ` be finite Galois, `P | 2`, `D` and `I` the decomposition and inertia groups at `P`,
+   `Z` the decomposition field, and `μ : Gal(M/Z) →* ℤ/2` any character.  Then there is
+   `d ∈ {1, −1, 2, −2}` with `μ` and `χ_d` agreeing on `I`.  The proof needs **neither** the
+   completion `v.adicCompletion ℚ` **nor** the square-class count `[ℚ₂^× : (ℚ₂^×)²] = 8`: it is a
+   statement about the place `w` of `Z` under `P`, which has `e(w/2) = f(w/2) = 1`, and the only
+   input is that `2` is a uniformizer there and the residue field is `𝔽₂`.
+   - *Step A*, `e = f = 1` at the decomposition field: `ramificationIdx_eq_one_of_stabilizer_le`
+     (`Scholz/FixedFieldRamification.lean`), with `U := stabilizer Gal(M/ℚ) P`.  **In repo.**
+   - *Step B*, the quadratic subextension cut by `μ` is generated by a square root `y` of some
+     `β ∈ Z`: Mathlib's `exists_root_adjoin_eq_top_of_isCyclic`.  **In Mathlib.**
+   - *Steps C/D*, the square class: **landed** as `Kummer/DyadicSquareClass.lean` (pure valuation
+     layer — for a unit `u` exactly one of `(u ± 1)/2` lies in the place, and one of `1, 2` makes
+     the exponent of the uniformizer even) and `Kummer/DyadicPlace.lean` (the bridge, reading the
+     uniformizer off `e = 1` and the residue field off `f = 1`).
+   - *Step E*, a radical whose radicand is congruent to one modulo four is unramified:
+     `eq_of_isCongrPow` (`Kummer/InertiaBound.lean`).  **In repo.**
+   - *Step F*, the assembly `α := y·√d`: **landed** as `Kummer/DyadicInertiaChar.lean`
+     (`exists_sq_intCast_eqOn_inertia`).  Requiring `i, √2 ∈ M` — that is, `ζ₈ ∈ M`, which the
+     induction may arrange because `ℚ(ζ₈)/ℚ` is a `2`-extension ramified only at `2` — removes the
+     need for any compositum: `√d ∈ M` for all four `d`, so `y·√d` is a radical inside `M` itself.
+     The companion `Kummer/QuadraticChar.lean` (`sqrtChar`, `sqrtChar_range_le`,
+     `sqrtChar_eq_one_of_mem_inertia`) turns a square root of one of `1, −1, 2, −2` into a genuine
+     character of `Gal(M/ℚ)` with values in any subgroup containing a prescribed element of order
+     dividing two, and shows it is trivial on inertia at every place away from `2`.
+   - *Step G*, extending `θ|_I` to `μ` on `D`: **landed** as `Scholz/DecompositionLift.lean`
+     (`exists_monoidHom_stabilizer_eqOn_inertia`), which wires
+     `exists_monoidHom_range_le_ker_eqOn_of_card_dvd` (`Scholz/CentralCyclicLift.lean`) to the
+     cyclicity of `D/I` and needs `|G| ∣ |D/I| = f(P/2)`.
+   - *Step H* = (F1′), making `2^k ∣ f(P/2)` by adjoining `ℚ(ζ_r)` for `r = 2^{2^k}+1`, so that
+     `ord_r(2) = 2^{k+1}`: **landed** as `Scholz/DyadicResidueDegree.lean`
+     (`pow_dvd_inertiaDeg_two_of_cycSubfield_le`).  Primality of the Fermat number is *not* needed:
+     `2^{2^k} ≡ −1 (mod 2^{2^k}+1)` alone pins the order.
+   - *The assembly*: **landed** as `Scholz/DyadicCorrector.lean` (`hasCorrectingCharAt_two`).
+     Given `|ker f| = 2`, `ζ₈ ∈ M`, `θ` unramified at `P | 2` and `|G| ∣ f(P/2)`, it produces
+     `HasCorrectingCharAt M f 2 θ` with `a = −1`.  The one case split is on whether the extension
+     `ν` of `θ|_I` to `Gal(M/Z)` is trivial: if it is, `χ := 1` and `a := 0` already work.
+     What remains to feed it is arithmetic, not algebra — the induction must arrange `ζ₈ ∈ M` and
+     `|G| ∣ f(P/2)`, both by enlarging `M` inside a `2`-extension ramified only at `2`.
+2. **(F3), the `θ`-relative refactor of `Scholz/RamificationControl.lean`.  DONE** (commit
+   `13eb747`): `HasCorrectingCharAt M f p θ` carries the solution as a parameter.
+   Historical note: `HasInertiaCancellation`
+   currently quantifies over *all* `θ`; at `2` the cancellation holds only for the solution actually
+   in hand.  `HasCorrectingChar` must therefore carry the current solution as a parameter, and
+   `exists_twist_ramifiedSet_inter` must re-establish it after each twist.  That is sound — twisting
+   at `p` multiplies the solution by a character trivial on inertia at every `q ≠ p`, so the
+   restriction to inertia at `q` is unchanged — but `exists_twist_ramifiedSet_sdiff` does not
+   currently expose the twisting formula `ψ₁ = ψ · χ^a`, so it needs strengthening first.
+3. **`Scholz/UnramifiedSolution.lean`.**  `hodd` and `IsInertiaRankOneAt ℓ` enter
+   `exists_galEquiv_ramifiedSet_subset` at exactly two points: the call to
+   `exists_galEquiv_of_centralStep` (now replaceable by an `ℓ = 2` analogue built on
+   `exists_surjective_hom_of_centralStep_two`), and the call to `hasInertiaCancellation_of_isPGroup`
+   at `p = ℓ`.  Away from `ℓ`, cyclic inertia already gives the cancellation for free, so the surgery
+   is confined to those two lines plus item 2.
+4. **§0.16 item 1**, the radicand, unchanged: `RadicalDisjoint`/`NilpotentRadical` are false at `2`
+   and the replacement is the dimension count against the quadratic subfields of `A`.
+
+---
+
 ## 1. Scholz–Reichardt
 
 ### 1.1 Statement
@@ -959,6 +2439,525 @@ for odd ℓ).
 
 ---
 
+## 0.22 Status (2026-08-27) — the `ℓ = 2` correction has a *hypothesis*, and it is Schmid's
+
+§0.21 item 3 is done: `Scholz/UnramifiedSolutionTwo.lean` proves
+`exists_galEquiv_ramifiedSet_subset_two`, the dyadic analogue of
+`exists_galEquiv_ramifiedSet_subset`, with **no** `Odd ℓ` and **no** `IsInertiaRankOneAt 2`.  That
+is Schmid's Proposition 2.1 for `p = 2`.  The next link, the dyadic analogue of
+`isScholzRealizable_of_centralStep`, turns out **not** to be a matter of removing `Odd ℓ` from
+`Scholz/ResidueSpan.lean`.  There is a genuine obstruction, it is sharp, and it is exactly the
+hypothesis of Schmid's Proposition 4.2.
+
+### The obstruction, derived from the repository's own statements
+
+Let `f : G ↠ H` be the central step, `Z = ker f` of order `2`, `Z ≤ frattini G`; let `A` be the
+Scholz field realizing `H`, `S = ramifiedSet A`, and `L ⊇ A` a solution with `ramifiedSet L ⊆ S`.
+For `p ∈ S` let `t_p ∈ 𝔽₂` be the Frobenius defect of `Scholz/FrobeniusDefect.lean` — `t_p = 0`
+exactly when the residue degree of `p` in `L` is one, i.e. when `L` too is *busy* at `p`.
+
+The correction twists by a character `χ` of conductor `Q`, a product of auxiliary primes `q`.  Every
+such `q` must split completely in `L` (that is what makes the twisted homomorphism busy at `q`).
+Now let `v = ∏_{p ∈ S'} p` for some `S' ⊆ S` and suppose `√v ∈ L`.  Then `q` splits in `ℚ(√v)`, so
+`(v/q) = 1` for every `q ∣ Q`, so `χ(v) = 1`, and therefore
+
+> **`Σ_{p ∈ S'} t_p = 0` is forced** for every `S'` with `√(∏_{p ∈ S'} p) ∈ L.
+
+Because `Z ≤ frattini G`, the quadratic subfields of `L` are exactly those of `A`; and because every
+`p ∈ S` is `≡ 1 mod 4` and `2 ∉ S`, the square classes `d` with `ℚ(√d) ⊆ A` are precisely the
+`v = ∏_{p ∈ S'} p` (no factor `−1`, `2` or `−2` survives: each would ramify at `2`).  So the
+achievable corrections are the vectors of `𝔽₂^S` orthogonal to
+
+```
+W  =  span { 1_{ramifiedSet ℚ(√d)}  :  ℚ(√d) ⊆ A quadratic }   ⊆   𝔽₂^S ,
+```
+
+a space of dimension `d(H) = dim H/Φ(H)`.  At odd `ℓ` the corresponding `W` is **zero** — that is
+precisely `pow_ne_of_isNilpotent` (`Scholz/AuxPrimeChoice.lean:70`), which says a rational number
+that is an `ℓ`-th power in an `ℓ`-extension of `ℚ` is already one, true because `ℚ(m^{1/ℓ})` is not
+Galois.  At `ℓ = 2` it *is* Galois, `W` is as large as the number of generators, and the twist
+simply cannot reach a defect vector with `Σ_{p ∈ S'} t_p = 1`.
+
+**Consequence.**  `residueVectors_span_eq_top` is false at `2` and no reformulation of
+`Scholz/ResidueSpan.lean` repairs it.  What must change is the *induction hypothesis*: the Scholz
+field has to be built so that the defect is orthogonal to `W` **by construction**.
+
+### This is Schmid's Proposition 4.2, and the fix is his shrinking process
+
+P. Schmid, *Realizing 2-groups as Galois groups following Shafarevich and Serre*, ANT **12** (2018)
+2387–2401 (open access) runs exactly this argument and names exactly this hypothesis.  His
+vocabulary maps onto the repository's:
+
+| Schmid | repository |
+|---|---|
+| `q` is *busy* (fleissig) in `K`: `φ(I_q) = φ(D_q)` | `IsSplitInertia` |
+| Scholz field w.r.t. `N`: (S1) `Ram(K) ⊆ 1 + p^N ℤ`, (S2) busy | `IsScholz ℓ N` |
+| Proposition 2.1 | `exists_galEquiv_ramifiedSet_subset_two` ✅ landed |
+| Scholz obstruction `θ_q ∈ Z(H)` | the defect `z` of `exists_mem_ker_mul_mem_map_inertia` |
+| Proposition 4.2 hypothesis `θ_i = Σ_{q ∈ Ram(P_i)} θ_q = 0` | `t ⊥ W` above |
+
+The extra structure Schmid carries is the **strong** Scholz field: the socle
+`S(K) = K^{Φ(G)} = P_1 ⋯ P_d`, where the `P_i` are quadratic and the sets `Ram(P_i)` are *pairwise
+disjoint and of equal cardinality*.  Then `W` is spanned by the `d` block indicators `1_{Ram(P_i)}`
+and the hypothesis is one bit per block — `d` conditions, not `|S|`.  Nothing forces those bits to
+vanish; they are made to vanish by **shrinking**:
+
+1. Realize, inductively on the `2`-class `c`, the *disposition group* `G_δ^{c−1} = F_δ/λ_c(F_δ)` for
+   a much larger rank `δ = r·d`, where `λ` is the lower `2`-central series
+   `λ_{n+1} = [λ_n, G]·λ_n²` and `r` is a polynomial in `d`.
+2. Solve the central step (Proposition 2.1) to get `E_δ` with group `G_δ^c`, `Ram(E_δ) = Ram(K_δ)`;
+   record the block obstructions `θ_{ij} ∈ λ_c(G_δ^c)` for `i ≤ d`, `j ≤ r`.
+3. For `α = (a_j) ∈ 𝔽₂^r` let `π(α) : G_δ^c ↠ G_d^c` send `x_{ij} ↦ x_i^{a_j}`.  The induced map
+   `α̃` on `λ_c` depends only on `α`, and each coordinate of `a ↦ Σ_j a_j α̃(θ_{ij})` is a
+   polynomial in `a` of degree `≤ c + 1` **with zero constant term**.
+4. Choose `r > (c+1)·d·dim λ_c(G_d^c)`.  **Chevalley–Warning** (`Mathlib/FieldTheory/
+   ChevalleyWarning.lean`) then produces a *nontrivial* common zero `α`, and the corresponding
+   subfield `E(α)`, of group `G_d^c`, has all its block obstructions zero.
+5. Proposition 4.2 now applies and produces a strong Scholz field with group `G_d^c`; every
+   `2`-group of rank `d` and `2`-class `c` is a quotient of it, and normal subfields of Scholz
+   fields are Scholz.
+
+No Poitou–Tate, no Grunwald–Wang, no Kronecker–Weber: the arithmetic inputs are Chebotarev,
+quadratic reciprocity, Hecke's ramification criterion for `K(√μ)`, Brauer–Hasse–Noether (already
+used by Proposition 2.1) and Chevalley–Warning.
+
+### What that costs here, and the two simplifications worth taking
+
+Schmid's Proposition 3.1 (the Lie-module decomposition `Z(G_d^c) = ⨁_{ν=1}^c L_d^ν` with
+`dim L_d^ν = (1/ν) Σ_{k∣ν} μ(k) d^{ν/k}`) is the deepest algebraic input, and it is quoted from a
+separate paper.  Two observations remove most of it:
+
+* **Only a degree bound is needed, not the grading.**  Chevalley–Warning needs `Σ deg < #vars` and a
+  known zero; `a = 0` is a zero because `π(0)` is the trivial map.  Homogeneity is never used.  So
+  `deg ≤ c + 1` suffices and the exact dimensions `ℓ_d^ν` are irrelevant — any finite bound on
+  `dim λ_c(G_d^c)` will do.
+* **`λ_c` may replace `Z`.**  Schmid works with `Z(G_d^c)`, which equals `λ_c(G_d^c)` by his
+  Proposition 3.1; but every use is of the kernel of `G_d^c ↠ G_d^{c−1}`, which *is* `λ_c` by
+  definition.
+
+What is genuinely required from the group-theory side is then:
+
+* `lowerPCentralSeries`: `λ_1 = ⊤`, `λ_{n+1} = ⁅λ_n, ⊤⁆ ⊔ (λ_n)^p`; normality, `λ_n/λ_{n+1}`
+  central and elementary abelian, surjective functoriality, and `λ_{c+1} = ⊥` for some `c` for every
+  finite `p`-group;
+* the disposition group `G_d^c = F_d/λ_{c+1}(F_d)`: finite, rank `≤ d`, `2`-class `≤ c`, and
+  universal for those two invariants;
+* `λ_c(G_d^c)` is generated by the images of `[x_{i_1}, …, x_{i_ν}]^{2^{c−ν}}`, `ν ≤ c` — the
+  spanning half of Proposition 3.1 (its direct-sum half is what we drop);
+* consequently: the induced map on `λ_c` depends only on `α` mod `Φ`, and is polynomial of degree
+  `≤ c` in `a`.
+
+and from the arithmetic side, Proposition 4.2 itself: Hecke's criterion, the factorisation
+`(μ) = 𝔟²·𝔇·(e)`, the Shafarevich symbol `{μ/q}` and its Legendre-symbol comparison, and the
+Chebotarev choice of `p_χ`.  That is a workstream of the same order as the whole odd-`ℓ`
+`ResidueSpan`/`AuxPrimeChoice`/`ResidueCorrection` stack, plus a new free-group layer.
+
+**So the `ℓ = 2` wall is no longer unmapped — it is a finite, elementary, and large plan.**
+
+---
+
+## 0.23 The `ℓ = 2` plan, checked line by line against Schmid's text
+
+§0.22 was written from the abstract and the section headings.  The full text has since been read
+(`pdftotext -layout` of the open-access PDF), and three of its details change the shape of the
+formalization enough to be worth recording.
+
+### Proposition 4.2 is itself an induction with kernels of order two
+
+Its statement is
+
+> Let `θ_i = Σ_{q ∈ Ram(P_i)} θ_q`, and assume `θ_i = 0` for all `i = 1,…,d`.  Then there exist
+> infinitely many pairwise disjoint `t`-sets `{p_1,…,p_t}` of rational primes such that
+> `Ê = ∏_{ν=1}^t K(√(p_ν e_ν))` is a strong Scholz field with respect to `N` admitting `G_d^c` as
+> Galois group over `ℚ` and having `Ram(Ê) = Ram(K) ∪ {p_1,…,p_t}`,
+
+and its proof runs over a basis `{χ_1,…,χ_t}` of `Hom(Z(H), 𝔽₂)`, one quadratic extension
+`K_{ν−1} ↦ K_ν = K_{ν−1}(√(p_ν e_ν))` per basis vector.  **Each step has kernel of order two.**
+
+That settles the question left open in §0.22: the repository does **not** need a residue correction
+with elementary abelian kernel.  `Scholz/DyadicResidueCorrection.exists_scholz_solution_two`, whose
+kernel hypothesis is `Nat.card ↥f.ker = 2`, *is* Schmid's inductive step; Proposition 4.2 is the
+`t`-fold iteration of it.  The pairwise-quadratic-residue machinery is still wanted, but for the
+base case (Lemmas 2.2/2.3), not for the correction.
+
+The apparent tension — the base field changes at every one of the `t` steps, while the obstruction
+`θ_q` was computed over the field at the bottom — is resolved by Schmid himself, twice:
+
+* `R = R(χ)` is an invariant of the cohomology class, so `q ∈ R ⟺ q ∈ R_0`;
+* "let `q ∈ Ram(P_i)` and let `q ∈ R_0`.  Using that `q` is busy in the Scholz field `K_0`, the
+  restrictions to `E_χ` of `Φ_q` and of the Frobenius `θ_q` introduced above agree."
+
+Business at `q` is exactly `IsSplitInertia`, which the repository already carries in `IsScholz`.
+
+### The block structure survives the climb for free
+
+`IsBlockSpanned` (`Scholz/DyadicSocle.lean`) is the repository's form of "the square classes of the
+field are spanned by the block indicators".  `IsBlockSpanned.of_le_of_ker_le_frattini` transports it
+up any Frattini subextension, and every step of the climb — central with kernel inside the Frattini
+subgroup — is one.  So the blocks never grow even though `Ram` does, and the defect vector `t` stays
+indexed by `Ram(A)` of the field at the bottom.  This is what makes the hypothesis `hdefect` of
+`exists_scholz_solution_two` stable along the induction.
+
+### The group-theoretic layer is finished
+
+`Solvable/DispositionShrink.lean` supplies all of §5:
+
+* `FreePClass.genPair`, the generators `x_{ij}` of `G_{d·r}^c`;
+* `FreePClass.collapse a`, Schmid's `π(α)`;
+* `FreePClass.exists_ne_zero_forall_prod_eq_one`, the Chevalley–Warning conclusion: for
+  `r > d · charCount · (c+1)` there is `α ≠ 0` with all `d` block products trivial;
+* `FreePClass.exists_rankMultiplier`, the choice of `r`.
+
+Both simplifications promised in §0.22 were taken: `lowerPCentralSeries` replaces `Z(G_d^c)`, so
+Schmid's Lemma 3.3 (transgression `Hom(Z(H),𝔽₂) ≅ H²(G,𝔽₂)`) and the direct-sum half of his
+Proposition 3.1 are never needed.
+
+### What remains, and in what order
+
+| tag | content | status |
+|---|---|---|
+| F1 | Lemmas 2.2 + 2.3: a chain of primes each `≡ 1 mod 2^N` and mutually quadratic, and the multiquadratic strong Scholz field they cut out | ✅ `Scholz/StepRamification.lean` + `Scholz/MultiquadraticBase.lean` |
+| F2 | `IsStrongScholz`: Scholz, plus pairwise disjoint blocks accounting for the square roots | ✅ `Scholz/StrongScholz.lean` |
+| F3 | Proposition 2.1 at `p = 2` | ✅ `exists_galEquiv_ramifiedSet_subset_two` |
+| F4 | the Scholz obstruction `θ_q` and its invariance under enlarging the base | ✅ `Scholz/CanonicalDefect.lean` + `Scholz/BlockDefect.lean` + `Scholz/CoverInertia.lean` + `Scholz/CentralDefect.lean` + `Scholz/CoverObstruction.lean` |
+| F5 | Proposition 4.2 as the `t`-fold iteration of the order-two step | ✅ `Scholz/DyadicStage.lean` (`ClimbStage`, `nonempty_realization`) |
+| F6 | the shrinking: `E(α) = E_δ^{ker(collapse a)}`, `K(α) = E(α) ∩ K_δ`, `Ram(P_i(α)) = ⨆_{j : a_j = 1} Ram(P_{ij})`, and the transport of obstructions along `collapse a` | ✅ `Solvable/DispositionShrink.lean` + `Scholz/DyadicShrink.lean` + `Scholz/ClassStepData.lean` |
+| F7 | the induction on the `2`-class, `∀ G` a finite `2`-group, `∀ N`, `IsScholzRealizable G 2 N`, and the removal of the semiabelian-Sylow-`2` hypothesis from `InverseGalois/Shafarevich.lean` | ✅ `Scholz/DyadicInduction.lean` + `Scholz/DyadicInitialStage.lean` |
+
+### The `ℓ = 2` wall is closed
+
+`InverseGalois.CFT.isDyadicClassStepSolvable` (`Scholz/DyadicInitialStage.lean`) is a theorem:
+
+```lean
+def IsDyadicClassStepSolvable : Prop :=
+  ∀ (c d N : ℕ), 1 ≤ c → (∀ δ M, IsStrongScholzRealizable δ c M) →
+    IsStrongScholzRealizable d (c + 1) N
+
+theorem isDyadicClassStepSolvable : IsDyadicClassStepSolvable
+```
+
+so `InverseGalois.isInverseGalois_of_isPGroup_two` realises every finite `2`-group and
+`IsInverseGalois.of_isNilpotent` (`InverseGalois/Shafarevich.lean`) realises every finite nilpotent
+group with no condition on the Sylow `2`-subgroup.  Both depend on `propext`, `Classical.choice`
+and `Quot.sound` only.
+
+The proof is F4 + F5 + F6 assembled as follows.  `StrongScholzRealization.exists_centralPart`
+(`Scholz/CoverObstruction.lean`) reads, for each prime `q` of each block, a pair `(x, θ)` in
+`G_{d·r}^{c+1}` — a generator of the inertia subgroup at `q` and the central part of an arithmetic
+Frobenius above it — such that for *every* normal `W`, the obstruction of `q` in the subfield `W`
+cuts out vanishes exactly when `θ ∈ ⟨x⟩ ⊔ W`.  The `θ`'s of a row multiply to one element per copy,
+`FreePClass.exists_rankMultiplier` supplies a Chevalley–Warning `α` killing the collapse of the
+selected products, and `ClassStepData.shrink α` merges the copies.  For the shrunken data the same
+reading holds through `V ↦ (collapse α)⁻¹(V)` (`cutField_comap_comp`, `mem_sup_comap_iff`), and
+`FreePClass.zpowers_inf_ker_proj` cuts the collapsed inertia subgroup down to `⟨z_i⟩`: a hyperplane
+missing `z_i` joins it to the whole kernel, so nothing is obstructed, and a hyperplane containing
+`z_i` reads the obstruction of the row as the character of the collapsed product, which `α` made
+trivial.  That is exactly the `defect` field of `ClimbStage`, and `ClimbStage.nonempty_realization`
+iterates `exists_scholz_solution_two` once per basis vector of the kernel.
+
+`PairwiseResidue.isSquare_natCast_swap` is the brick F1 was missing: `stepPrime` delivers
+`(q_j / q) = 1` for the primes already chosen, and reciprocity turns that into `(q / q_j) = 1`
+because `q_j ≡ 1 mod 4`.  Putting `ℚ(ζ_{q_j})` into the splitting field, as Schmid does, would give
+the same thing at a much higher cost.
+
+---
+
+## 0.24 Status (2026-08-28) — **Grunwald–Wang is landed** for a squarefree exponent
+
+`InverseGalois/CFT/GrunwaldWang.lean`, sorry-free and axiom-free (`#print axioms` gives
+`[propext, Classical.choice, Quot.sound]` on all seven results). §4's gap table listed
+Grunwald–Wang as **ABSENT** with "zero hits, nothing adjacent"; that row is now out of date.
+
+### What is proved
+
+Let `K` be a number field, `n` an exponent, `S` a finite set of finite places.
+
+| statement | name |
+|---|---|
+| prescribed classes mod `n`-th powers at finitely many finite places are matched by some `b ∈ Kˣ` | `exists_ne_zero_forall_pow_mul_eq_adicCompletion` |
+| … by a `b` that is *not* a global `n`-th power, one prescribed class being no local one | `exists_ne_zero_not_exists_pow_eq_forall_pow_mul_eq_adicCompletion` |
+| a radical extension whose radicand is a local `p`-th power outside `S` is trivial | `subsingleton_gal_of_forall_localPow_outside` |
+| **Wang, prime exponent, `ζ_p ∈ K`** | `exists_pow_eq_of_forall_localPow_outside` |
+| **Wang, prime exponent, arbitrary `K`** | `exists_pow_eq_of_forall_localPow_outside_of_prime` |
+| **Grunwald–Wang, `n` squarefree** | `exists_pow_eq_of_forall_localPow_outside_of_squarefree` |
+| the same as a Hasse principle, both directions | `exists_pow_eq_iff_forall_localPow_outside_of_squarefree` |
+
+```lean
+theorem exists_pow_eq_iff_forall_localPow_outside_of_squarefree {n : ℕ} (hn : Squarefree n)
+    {S : Set (HeightOneSpectrum (𝓞 K))} (hS : S.Finite) {b : K} :
+    (∃ y : K, y ^ n = b) ↔ ∀ v : HeightOneSpectrum (𝓞 K), v ∉ S →
+      ∃ c : v.adicCompletion K, c ^ n = algebraMap K (v.adicCompletion K) b
+```
+
+### How it dodges the existence theorem
+
+The surjectivity half was already here (`Approximation/PowClass.lean`, weak approximation). The
+content is Wang's theorem, and the route uses **only the first inequality**, never reciprocity,
+never the Artin map, never the existence theorem:
+
+1. *Prime `p`, with `ζ_p ∈ K`.* If `b` is not a `p`-th power, `X^p − b` is irreducible, its
+   splitting field is cyclic of degree `p` and generated by a radical `β`. `Kummer/LocalPower.lean`
+   says the decomposition group at a place fixes `β` exactly when the radicand is a local `p`-th
+   power there. So the hypothesis makes every place outside a finite set split completely, and
+   `Units/SplitOutside.lean` — a solvable extension in which almost every place splits completely
+   is trivial, which rests on the first inequality alone — forces `p = 1`.
+2. *Removing `ζ_p`.* `K(ζ_p)/K` has degree `d` prime to `p`; transport the local hypothesis up
+   (`Units/PlaceComap.lean`), get `y` with `y^p = b` upstairs, take norms to get `N(y)^p = b^d`,
+   and read `ud + vp = 1` to get a `p`-th root in `Kˣ`.
+3. *Squarefree `n`.* Each prime factor `q ∣ n` inherits the local hypothesis from `c^n =
+   (c^{n/q})^q`, and roots of coprime exponents combine by Bezout.
+
+**No case is lost to squarefreeness.** Wang's counterexample — `16` is an `8`-th power in almost
+every completion of `ℚ` but not in `ℚ` — needs `8 ∣ n`, and `8 ∣ n` is incompatible with `n`
+squarefree; `K` is `s`-special only for `s ≥ 3`, since `K(ζ_4)/K` is always cyclic. §2.5's
+description of the obstruction is thereby confirmed from the formal side.
+
+### What this does *not* yet unlock
+
+Honest accounting against §2.4. The Shafarevich application needs
+
+```
+H¹(k, A) → ∏_{i=1}^r H¹(k_{𝔭_i}, A)
+```
+
+surjective for a **trivial** module `A = 𝔽_p^m`. When `ζ_p ∈ k` that group *is* `k^×/(k^×)^p` and
+this is exactly the file's prescription half; over a general base `H¹(k, ℤ/p) = Hom(G_k, ℤ/p)` is
+the group of cyclic degree-`p` *characters*, and prescribing those locally is the character form of
+Grunwald–Wang. Getting the character form from the power form over a general base is an eigenspace
+descent through `k(ζ_p)` — plausible, not written. So:
+
+* the **power-class** Grunwald–Wang for squarefree exponent: **done**;
+* the **character** form over a base without `ζ_p`: **not done** (needs the descent, or the
+  existence theorem);
+* the **special case** (`8 ∣ n`): **not done**, and it is genuinely false without the extra
+  hypotheses;
+* **Poitou–Tate duality** and the **Ш¹ Hasse principle** of §2.4: **untouched**.
+
+Grunwald–Wang was one of three arithmetic blockers for gap 2 (`ElementaryAbelianKernelEP`), not the
+only one. The nilpotent case of Shafarevich (§0.21, §0.22) remains what is actually proved
+end-to-end; nilpotent → solvable is still open here.
+
+---
+
+## 0.25 Status (2026-08-28, later) — Ikeda is a theorem, and the Schmidt–Wingberg tower, re-costed
+
+Three things happened after §0.24: the split half of the reduction stopped being a hypothesis, the
+Schmidt–Wingberg paper was read end to end, and two of its proof devices turned out to be avoidable.
+
+### The reduction, as it now stands
+
+| statement | status |
+|---|---|
+| `Shafarevich.cyclicWreathEP` | **theorem** (`Ikeda.lean`, `e81f957`, `ce5e2bb`) |
+| `Shafarevich.primeWreathEP` | **theorem** |
+| `Shafarevich.splitAbelianEP` — Ikeda | **theorem** |
+| `Shafarevich.FrattiniKernelEP` | **the one remaining hypothesis** |
+
+`Shafarevich.isInverseGalois_of_isSolvable_of_frattiniKernelEP` now realizes every finite solvable
+group over `ℚ` from `FrattiniKernelEP` alone. Upstream of it the chain is Ore → `SplitNilpotentEP`
+→ `SplitPrimePowerEP` → `AbelianKernelEP` → `ElementaryAbelianKernelEP` → `FrattiniKernelEP`.
+
+`Shafarevich/Generic.lean` (`8ddc8d7`) adds the first piece of Schmidt–Wingberg's own reduction: the
+relatively free operator group `Generic U n S = FreeGroup (Fin n × U) / ⋂ ker(f : · →* S)` with the
+`U`-action induced by left translation on the second coordinate, together with
+
+```lean
+theorem splitPrimePowerEP_of_genericSplitEP (h : ∀ ℓ : ℕ, GenericSplitEP ℓ) : SplitPrimePowerEP
+theorem genericSplitEP_of_splitPrimePowerEP (hℓ : ℓ.Prime) (h : SplitPrimePowerEP) : GenericSplitEP ℓ
+```
+
+so the split `p`-group case is *equivalent* to the case of a generic kernel. Forward: the orbit map
+`Generic U (Nat.card P) P ↠ P` is `U`-equivariant and surjective, so `Generic ⋊ U ↠ P ⋊[φ] U`.
+Backward: `Generic U n S` is itself a finite `ℓ`-group when `S` is.
+
+### The Schmidt–Wingberg dependency map
+
+Schmidt–Wingberg, *Extensions of profinite duality groups* (arXiv `math/9809211`), Theorem 14: every
+split embedding problem with finite nilpotent kernel has a proper solution; Theorem 15 is the same
+with Scholz conditions attached. The proof is an induction on a two-index filtration `τ = (i,j)`,
+each step of which is a *central* embedding problem with elementary abelian kernel
+`E(n,τ) = F(n)^{(τ)}/F(n)^{(τ+1)}`, and it has four steps:
+
+1. local split embedding problems at `Ram ∪ S_p ∪ S_∞` — Prop 6 with `T = Ind_{G_𝔭}^G 𝔽_p`;
+2. global solvability: the obstruction lives in `Ш²(k, E(n,τ))` and is killed by Prop 6 with
+   `T = Hom(μ_p, ℤ/p)`, after a Claim that needs **Tate–Poitou** `Ш²(k,A) ≅ Ш¹(k,A′)^∨`;
+3. properness and Scholz condition (i) — Neukirch's principal homogeneous space over
+   `H¹(G_k, E(n,τ))`, Lemma 10's injection `coker ↪ Ш¹`, and Prop 7(i);
+4. Scholz condition (ii) — Theorem 13 applied to `N_n`, plus Prop 7(ii).
+
+Underneath sit the shrinking propositions: Prop 2 (Chevalley–Warning), Prop 5 (the surjection
+`(P/P²)^{⊗j} ↠ P^{(τ)}/P^{(τ+1)}`), Prop 6 and Prop 7 (shrinking in cohomology).
+
+### The induced-module shortcut does **not** work
+
+It is tempting to hope that `E(n,τ)` is an *induced* `𝔽_p[G]`-module, since `F(n)/F(n)²` is
+`𝔽_p[G]^n` and Brauer–Hasse–Noether — which this repository has — gives `Ш²(K, 𝔽_p) = 0`, hence
+`Ш²(k, Ind_{1}^{G} 𝔽_p) = 0` by Shapiro; that would delete Tate–Poitou from step 2. It fails. The
+graded layers of a free (restricted) Lie algebra on a free `𝔽_p[U]`-module are not free: from
+`Λ²(A ⊕ B) = Λ²A ⊕ (A ⊗ B) ⊕ Λ²B` the cross term `A ⊗ B` is free, but `Λ²(𝔽_p[U])` is a sum of
+modules induced from subgroups of order ≤ 2, and is not free as soon as `U` has an involution. So
+`Ш²(k, E(n,τ))` need not vanish and **Tate–Poitou is genuinely required**.
+
+The Hochschild–Serre route is no substitute either: `Ш²(k,A) ⊆ ker(H²(G_k,A) → H²(G_K,A))` does hold
+(because `Ш²(K,𝔽_p) = Ш(Br K)[p] = 0`), but inflation only gives
+`H²(G,A) → ker → H¹(G, H¹(G_K,A))`, not a surjection onto `Ш²`.
+
+### Two devices that *can* be dropped
+
+**(a) Tate cohomology and dimension shifting are not needed for Props 6 and 7.** Schmidt–Wingberg
+prove Prop 6 for `Ĥ^k(G, E(m,τ) ⊗ T)` by shifting down to `k = −1`, where a class is represented by
+a module element and Prop 2 applies directly. But the shrinking map `ψ_a` is `G`-equivariant, so it
+acts on *cochains*, and a class dies as soon as one representing cochain is annihilated. For a
+**finite** `G` a `k`-cochain is a family of `#G^k` module elements, so Prop 2 with `t·#G^k` targets
+kills all of them at once — no complete resolution, no dimension shifting, no `Ĥ`. The two indices
+actually used are `k = 2` (ordinary cohomology, `2`-cocycles) and `k = −2`, and for a finite group
+`Ĥ^{−2}(G,A) = H_1(G,A)` is ordinary group homology, whose `1`-cycles are again finitely many module
+elements. Prop 7's group `F(m)/F(m)^{(τ)} ⋊ G` does grow with `m`, which is exactly why it needs its
+own argument; but that argument only ever applies the trick to `H_1(G, −)` and to
+`H_1(F(n)/τ, E ⊗ T) ≅ F(n)/F(n)² ⊗ E(n,τ) ⊗ T` (universal coefficients, a module), both fine.
+What remains needed from homological algebra is therefore: functoriality of `H²` and `H₁` in the
+coefficients, and the five-term Hochschild–Serre sequence in homology for a semidirect product.
+
+**(b) The refined `(i,j)` filtration — and with it Lemma 4(ii) and Witt's theorem — can be
+dropped.** The refinement `P^{(i,j)} = (P^i ∩ P_j)P^{i+1}` exists to make each graded layer a
+quotient of a *single* tensor power, so that `a ↦ ψ_a(z)` is a *homogeneous* form of degree `j`.
+Proving that the layer is exactly the length-`j` part is what forces Lemma 4(ii), and Lemma 4(ii) is
+Witt's theorem that `F_j/F_{j+1}` is a free `ℤ_p`-module — which Mathlib does not have. But
+Chevalley–Warning never asks for homogeneity: it asks for a bound on the total degree and for
+vanishing at the origin. On the coarse layer `P^i/P^{i+1}` the class of
+`[x_{α₁},…,x_{α_j}]^{p^{i−j}}` transforms by the monomial `a_{k₁}⋯a_{k_j}`, so `a ↦ ψ_a(z)` is a
+polynomial with all monomials of degree between `1` and `i`; it vanishes at `a = 0` and has total
+degree `≤ i`. That is exactly the hypothesis of `exists_ne_zero_forall_eval_eq_zero`. Only the
+*spanning* statement is then needed — `P^i/P^{i+1}` is generated by the images of the
+`[x_{α₁},…,x_{α_j}]^{p^{i−j}}`, `1 ≤ j ≤ i` — and spanning follows by induction from the definition
+`P^{i+1} = (P^i)^p[P^i,P]` and elementary commutator calculus (Lemma 4(i)), with no freeness input.
+
+### What has landed
+
+* `Shafarevich/Shrink.lean` (`49e31dc`) — Prop 2. `exists_ne_zero_forall_eval_eq_zero`: finitely
+  many polynomials over a finite field, vanishing at the origin, with total degrees summing to less
+  than the number of variables, have a common nonzero root (Chevalley–Warning plus the observation
+  that the solution count is a positive multiple of the characteristic).
+  `exists_ne_zero_forall_sum_prod_smul_eq_zero` is the homogeneous form actually quoted by
+  Schmidt–Wingberg, stated without `PiTensorProduct` by using the canonical decomposition
+  `⨂^s(⊕_r M) ⊗ N ≅ ⊕_{I ∈ (Fin r)^s} (M^{⊗s} ⊗ N)`, under which `ψ_a` is
+  `(w_I) ↦ ∑_I a_{I₁}⋯a_{I_s} • w_I`. `sumSmul_surjective` is the accompanying fact that a nonzero
+  coefficient vector combines `r` copies of a module onto it.
+* `Shafarevich/PCentral.lean` (`82f4176`) — the descending `p`-central series `pCentral p P n`
+  (indexed so `pCentral p P 0 = ⊤`), its characteristicity, naturality (`map_pCentral_le`, and
+  `map_pCentral`: a surjection carries the series *onto* the series — this is what lets operators
+  act on the layers), the two membership rules, monotonicity, and
+  `map_pCentral_le_center`: each layer is central in the corresponding quotient.
+
+### What remains
+
+Group-theoretic: the spanning statement for `pCentral` (the coarse Prop 5), and the polynomiality
+of `a ↦ ψ_a(z)` on the layer. Homological: functoriality of `H²`/`H₁` in the coefficients and
+Hochschild–Serre in homology for `F/τ ⋊ G`, then Props 6 and 7. Arithmetic, and this is the wall:
+Hoechsmann's obstruction criterion, Neukirch's principal homogeneous space, Lemma 10, Theorem 13,
+and **Tate–Poitou duality with the `Ш` groups** — none of which is in this repository or in Mathlib.
+
+---
+
+## 0.26 Status (2026-08-28, later still) — §2 of Schmidt–Wingberg is complete, and the wall is narrowed to Tate–Nakayama
+
+### The shrinking propositions are all theorems
+
+Everything Schmidt–Wingberg put in their §2 — the part of Theorem 15 that is pure algebra — is now
+in the repository, sorry- and axiom-free.
+
+| Schmidt–Wingberg | repository |
+|---|---|
+| Prop 2 (Chevalley–Warning) | `Shafarevich/Shrink.lean` |
+| Prop 5 (layers spanned by tensor powers) | `Shafarevich/PCentralSpan.lean`, `LayerWord.lean` |
+| Prop 6 (shrinking in `Ĥ^k(G, E ⊗ T)`) | `Shafarevich/LayerCohomology.lean`, `LayerHomology.lean` |
+| Prop 6, arbitrary acting group and tensor coefficients | `Shafarevich/GenericCohomology.lean` |
+| Prop 7 (shrinking in `H¹(F(m)/ν ⋊ G, E ⊗ T)`) | `Shafarevich/GenericHomology.lean` |
+| `[1] chap. 13 th. 2` (`σ*(ε_n) = π*(ε_m)`) | `CFT/GroupCohomology/ExtensionMap.lean` |
+
+`GenericCohomology.lean` is the form Step 1 needs: the classes to be killed belong to a finite
+group *mapping into* the operator group — the decomposition subgroup of a place — and the
+coefficients are a layer tensored with a fixed representation. It subsumes the `T = Ind_{G_𝔭}^G 𝔽_p`
+formulation without going through Shapiro, because the count never inspects the acting group; it
+solves one scalar equation per value taken by the finitely many cocycles, and a cocycle of a finite
+group takes `#H^c` values.
+
+`ExtensionMap.lean` is the compatibility that makes the shrinking usable at all: a morphism of
+extensions with abelian kernels identifies the class of the upper extension pushed forward along
+the map of kernels with the class of the lower one pulled back along the map of quotients, the
+trivialising cochain being the comparison of a transported section with a section below.
+
+### The arithmetic wall, located exactly
+
+Step 2 of Theorem 15 needs precisely one thing, its "Claim":
+
+> there is a surjection `Ĥ^{-2}(G, E(-1)) ↠ Ш²(k, E)`, `G = Gal(K|k)`, `E(-1) = E ⊗ μ_p^∨`.
+
+Schmidt–Wingberg get it from `Ш²(k,E) ≅ Ш¹(k,E′)^∨` (Tate–Poitou) together with `Ш¹(K,E′) = 0`,
+which forces `Ш¹(k,E′) ⊆ H¹(G,E′)`; dualising and using `H¹(G,M)^∨ ≅ H₁(G,M^∨)` and
+`E′^∨ = E(-1)` gives the Claim. Of the three inputs only the first is out of reach:
+
+* `Ш¹(K,E′) = 0` for a **trivial** module is elementary — a cyclic extension in which every prime
+  splits is trivial, which is `subsingleton_gal_of_isSolvable_of_splits_outside` in this
+  repository. No Chebotarev density is needed.
+* `H¹(G,M)^∨ ≅ H₁(G,M^∨)` over `𝔽_p` is finite-group duality, and `Ĥ^{-2} = H₁` is the
+  identification already used throughout `Shafarevich/GenericHomology.lean`.
+
+### Narrowing the wall: Tate–Nakayama in place of the nine-term sequence
+
+The Claim does not need the whole Poitou–Tate machine. Unwinding it with Kummer theory:
+
+1. `Ш²(k,E) ⊆ ker(H²(k,E) → H²(K,E))`, because `Ш²(K,E) = Ш(Br K)[p]^d = 0` by
+   Albert–Brauer–Hasse–Noether, which this repository has.
+2. Hochschild–Serre sends that kernel into `H¹(G, H¹(K,E))`, and Kummer theory rewrites the
+   coefficients as `H¹(K,E) ≅ (K^×/K^{×p}) ⊗ E(-1)`.
+3. Localisation embeds `(K^×/K^{×p}) ⊗ E(-1)` into `(∏_w K_w^×/K_w^{×p}) ⊗ E(-1)` — injectively,
+   by Grunwald–Wang for a squarefree exponent, which is `CFT/GrunwaldWang.lean` — and semi-local
+   Shapiro identifies the right-hand `H¹(G, −)` with `∏_𝔭 H¹(G_𝔭, −)`.
+4. So the locally trivial classes are the image of the connecting map from `H⁰(G, C ⊗ E(-1))`,
+   where `C` is the idele class group modulo `p`-th powers.
+5. **Tate–Nakayama** — cup product with the fundamental class — turns `Ĥ⁰(G, C ⊗ E(-1))` into
+   `Ĥ^{-2}(G, E(-1))`, which is exactly Schmidt–Wingberg's group.
+
+That is a genuinely smaller target than the nine-term sequence: it needs Tate's theorem for the
+*global* class formation, not local Tate duality and not the compact-discrete duality of restricted
+products.
+
+### What the repository's class field theory already supplies for that route
+
+| ingredient | status |
+|---|---|
+| the idele group and the idele class group | `CFT/Units/Idele*.lean` |
+| `H¹(Gal(K/k), C_K) = 0`, no hypothesis on the group | `Units/IdeleClassH1Full.lean` |
+| first inequality (`#Ĥ⁰(G,C_K) = [K:k]` for cyclic `G`) | `Units/IdeleClassIndex.lean` |
+| second inequality | `Kummer/SecondInequality.lean` |
+| Hasse norm theorem, Albert–Brauer–Hasse–Noether | `Units/HasseNorm.lean`, `Units/ABHN.lean` |
+| Tate cohomology of finite groups, Herbrand, Shapiro, hexagon | `CFT/Tate/` (57 modules) |
+| **cup products in group cohomology** | absent |
+| **the fundamental class of a class formation** | absent |
+| **Tate's cohomological triviality theorem** | absent |
+| **Tate–Nakayama** | absent |
+
+The first six rows are the axioms of a class formation, so the missing four are a self-contained
+project rather than a new theory: cup products (Mathlib has none for `groupCohomology`), then
+Tate's theorem, then the fundamental class, then Tate–Nakayama.
+
+### Two more shortcuts that do not work
+
+* **Inflating the obstruction from a large finite quotient of `G_k`.** One might hope to replace
+  `G_k` by a finite quotient `G̃` through which the obstruction is inflated, and then shrink with
+  Prop 6 applied to `G̃`. The shrinking bound is `(j+1) · t · #G̃^c · dim(layer ⊗ T) < r`, so the
+  rank `r`, hence `m = r·n`, grows with `#G̃`; but the quotient through which a class in `H²(G_k, E(m,ν))`
+  is inflated depends on `m`. The argument is circular. This is exactly why Schmidt–Wingberg need a
+  source for `Ш²` that lives on the *fixed* finite group `G`.
+* **Making the layers induced or projective.** Already refuted in §0.25 for `Λ²`; three further
+  attempts fail for the same reason. A free product over a free `G`-set has unordered-pair
+  stabilisers of order 2; `Map(G,P) ↠ P` is not equivariant for nonabelian `P`, so
+  Kaloujnine–Krasner only embeds; and `𝔽_p[U]` is semisimple only when `p ∤ #U`, a case the
+  reduction cannot be steered into.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
@@ -1122,7 +3121,7 @@ Roots: Mathlib at `/home/alex_harmonic_fun/InverseGaloisProblem/.lake/packages/m
 | **Dirichlet / natural density of sets of primes** | **ABSENT** | No `dirichletDensity`, `natDensity`, `upperDensity`. `$M/Combinatorics/Schnirelmann.lean` has `schnirelmannDensity`, the wrong notion. `$M/NumberTheory/PrimeCounting.lean` has `Nat.primeCounting` but no asymptotics; no PNT. |
 | **Class field theory**: Artin reciprocity, Artin map, ray class groups/fields, Hilbert class field, idele class group | **ABSENT** | Only a comment at `$M/RingTheory/Valuation/Discrete/Basic.lean:61` pointing at the external `mariainesdff/LocalClassFieldTheory` repo. |
 | **Kronecker–Weber** | **ABSENT** | Zero hits. |
-| **Grunwald–Wang** | **ABSENT** | Zero hits, nothing adjacent (no Ш, no local–global for cyclic extensions). |
+| **Grunwald–Wang** | **ABSENT in Mathlib / EXISTS locally** | Zero hits upstream, nothing adjacent (no Ш, no local–global for cyclic extensions). `$L/CFT/GrunwaldWang.lean` proves the power-class form for a squarefree exponent — see §0.24. |
 | **Poitou–Tate duality / local duality** | **ABSENT** | No profinite group cohomology at all. |
 | **Hilbert symbols, power residue symbols, higher reciprocity** | **ABSENT** | Quadratic case is complete (§4.2), everything above degree 2 is missing. |
 | **Brauer group** | **PARTIAL — a stub** | `$M/Algebra/BrauerGroup/Defs.lean` is 98 lines: `CSA`, `IsBrauerEquivalent`, `BrauerGroup K := Quotient …`. **There is no group structure on it.** No `Br(K) ≅ H²(Gal, K̄ˣ)`, no local invariants, no Albert–Brauer–Hasse–Noether. |
@@ -1346,7 +3345,9 @@ itself an **[L]**–**[XL]** project. Realistically 2+ years from today.
 
 ### Milestone 11 — Shafarevich. **[XXL, gated on 10 + Grunwald–Wang + Poitou–Tate]**
 
-Adds Grunwald–Wang (**[XXL]**, needs CFT), Poitou–Tate duality (**[XXL]**, needs profinite group
+Adds Grunwald–Wang (**[XXL]**, needs CFT — but see §0.24: the power-class form for a squarefree
+exponent is landed, so what is left of this item is the character form), Poitou–Tate duality
+(**[XXL]**, needs profinite group
 cohomology which Mathlib entirely lacks), the (i,j)-filtration and shrinking machinery
 (**[L]**, mostly elementary — Chevalley–Warning is already in Mathlib), and the Frattini/Fitting
 reduction (**[M]**; the Fitting subgroup does not appear to exist in Mathlib and would need

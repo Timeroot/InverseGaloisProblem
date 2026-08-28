@@ -30,6 +30,8 @@ from a manifestly understood one by something finite.
 
 * `InverseGalois.CFT.TateSES.herbrand_mul`: **the Herbrand quotient is multiplicative** in short
   exact sequences.
+* `InverseGalois.CFT.finite_tate_of_herbrand_ne_zero`: **a nonzero Herbrand quotient certifies that
+  both Tate groups are finite.**
 * `InverseGalois.CFT.herbrand_eq_one_of_finite`: **the Herbrand quotient of a finite module
   is `1`**.
 * `InverseGalois.CFT.TateSES.herbrand_eq_of_finite_sub`,
@@ -72,6 +74,25 @@ theorem herbrand_eq_one_of_finite (σ : A ≃+ A) {n : ℕ} (hσ : σ ^ n = 1) [
     herbrand σ n = 1 := by
   rw [herbrand, card_quotient_eq_card_quotient σ hσ]
   exact div_self (cast_card_tateHm1_pos σ n).ne'
+
+/-- **A nonzero Herbrand quotient certifies that both Tate groups are finite.**  The cardinality of
+an infinite type is recorded as zero, so a quotient that is neither zero nor a division by zero can
+only arise from two finite groups.  This is the practical route to finiteness for modules that are
+far too large to be finitely generated, such as the group of ideles that are units almost
+everywhere: the Herbrand quotient is computed first, place by place, and finiteness of the Tate
+groups is read off afterwards. -/
+theorem finite_tate_of_herbrand_ne_zero (σ : A ≃+ A) (n : ℕ) (h : herbrand σ n ≠ 0) :
+    Finite (tateH0 σ n) ∧ Finite (tateHm1 σ n) := by
+  rw [herbrand] at h
+  have h0 : Nat.card (tateH0 σ n) ≠ 0 := by
+    intro he
+    rw [he] at h
+    simp at h
+  have h1 : Nat.card (tateHm1 σ n) ≠ 0 := by
+    intro he
+    rw [he] at h
+    simp at h
+  exact ⟨(Nat.card_ne_zero.mp h0).2, (Nat.card_ne_zero.mp h1).2⟩
 
 namespace TateSES
 

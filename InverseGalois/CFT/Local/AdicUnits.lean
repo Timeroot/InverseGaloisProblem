@@ -65,7 +65,7 @@ theorem herbrand_adicUnits_mul (σ : ↥(stabilizer Gal(K/k) v)) {n : ℕ} (hn :
     [Finite (tateHm1 (smulUnitsAut (R := v.adicCompletion K) σ) n)] :
     herbrand (kerUnitValAut (valued_smul_adicCompletion v) σ) n * n
       = herbrand (smulUnitsAut (R := v.adicCompletion K) σ) n :=
-  herbrand_smulUnitsAut_mul (valued_smul_adicCompletion v) (valued_adicCompletion_surjective v) σ
-    hn hσ
+  herbrand_smulUnitsAut_mul (valued_smul_adicCompletion v)
+    (isUnitValGen_one (valued_adicCompletion_surjective v)) σ hn hσ
 
 end InverseGalois.CFT

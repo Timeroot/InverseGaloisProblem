@@ -53,7 +53,7 @@ theorem prod_range_card_pow {α : Type*} [Group α] [Fintype α] {a : α}
     · simpa [horder] using Finset.mem_range.mp hj
   rw [← IsCyclic.image_range_card ha, Finset.prod_image hinj]
 
-variable {K L : Type} [Field K] [Field L] [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
+variable {K L : Type*} [Field K] [Field L] [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
 
 /-- **The automorphism of the unit group induced by a field automorphism.** -/
 def unitsAut (g : L ≃ₐ[K] L) : Lˣ ≃* Lˣ := Units.mapEquiv g.toRingEquiv.toMulEquiv
@@ -96,6 +96,10 @@ theorem coe_prod_range_unitsAut (g : L ≃ₐ[K] L) (hg : ∀ φ : L ≃ₐ[K] L
   rw [hval, Algebra.norm_eq_prod_automorphisms, ← prod_range_card_pow hg fun φ => φ (x : L)]
   exact Finset.prod_congr rfl fun i _ => coe_unitsAut_pow g i x
 
+section Hilbert90
+
+variable {K L : Type} [Field K] [Field L] [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
+
 /-- **Hilbert's theorem 90 in Tate form.**  For a finite cyclic Galois extension the Tate group
 `Ĥ⁻¹` of the unit group is trivial: an element whose conjugates multiply to one is a quotient
 `g y / y`. -/
@@ -112,6 +116,8 @@ theorem tateHm1_unitsAut_eq_zero (g : L ≃ₐ[K] L)
   simp only [Units.val_div_eq_div_val, coe_unitsAut, Units.val_inv_eq_inv_val, map_inv₀,
     inv_div_inv]
   exact hy
+
+end Hilbert90
 
 /-- **A unit fixed by a generator lies in the base field.**  A generator fixes only what the whole
 Galois group fixes, and for a Galois extension that is the base field. -/

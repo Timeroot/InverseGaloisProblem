@@ -39,6 +39,8 @@ module; Shapiro's lemma replaces that contribution by the local module at one pl
   `τ` in every coordinate.
 * `InverseGalois.CFT.herbrand_indAut`: **the Herbrand quotient of an induced module is that of the
   module it is induced from.**
+* `InverseGalois.CFT.exists_normHom_indAut`: **a fixed tuple of an induced module is a norm as soon
+  as its coordinate `0` is one.**
 
 ## Tags
 
@@ -462,6 +464,16 @@ induced from. -/
 theorem subsingleton_tateH0_indAut (hτ : τ ^ m = 1) (h : Subsingleton (tateH0 τ m)) :
     Subsingleton (tateH0 (indAut τ d) (d * m)) :=
   ⟨fun _ _ => (tateH0IndEquiv τ m hτ).injective (@Subsingleton.elim _ h _ _)⟩
+
+/-- **A fixed tuple of an induced module is a norm as soon as its coordinate `0` is one.**  This is
+Shapiro's lemma for the upper Tate group, read on individual elements: the comparison map sends the
+class of a tuple to the class of its coordinate `0`, and it is injective. -/
+theorem exists_normHom_indAut (hτ : τ ^ m = 1) {f : ZMod d → B} (hf : indAut τ d f = f)
+    (h : ∃ b, normHom τ m b = f 0) : ∃ u, normHom (indAut τ d) (d * m) u = f := by
+  refine (tateH0.mk_eq_zero_iff (σ := indAut τ d) (n := d * m) f hf).mp
+    (tateH0IndHom_injective τ m hτ ?_)
+  rw [map_zero, tateH0IndHom_mk]
+  exact (tateH0.mk_eq_zero_iff _ _).mpr h
 
 /-! ### Shapiro's lemma for the lower Tate group -/
 

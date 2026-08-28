@@ -24,7 +24,13 @@ the structure theorem for finite abelian groups then covers every finite abelian
 
 ## Main results
 
+* `InverseGalois.CFT.isScholzRealizable_of_isGalois`: a number field satisfying Serre's condition
+  realises its Galois group.
+* `InverseGalois.CFT.isScholzRealizable_of_surjective`: **every quotient of the Galois group of a
+  field satisfying Serre's condition is realised.**
 * `InverseGalois.CFT.isScholzRealizable_of_subsingleton`: the trivial group is realised by `ℚ`.
+* `InverseGalois.CFT.IsScholzRealizable.mono`: a realization at one level is a realization at every
+  smaller level.
 * `InverseGalois.CFT.IsScholzRealizable.prod_cyclic_pow`: **a realised group stays realised after
   multiplication by a cyclic group of order `ℓ ^ e`.**
 * `InverseGalois.CFT.isScholzRealizable_pi`: a finite product of cyclic `ℓ`-groups is realised.
@@ -95,6 +101,37 @@ def ScholzRealization.congr (e : G ≃* H) (R : ScholzRealization G ℓ N) :
 theorem IsScholzRealizable.of_mulEquiv (e : G ≃* H) (h : IsScholzRealizable G ℓ N) :
     IsScholzRealizable H ℓ N :=
   h.elim fun R => ⟨R.congr e⟩
+
+/-- **A realization at one level is a realization at every smaller level.**  Serre's condition
+becomes weaker as the level drops, since a prime congruent to one modulo `ℓ ^ N` is congruent to
+one modulo every smaller power. -/
+theorem IsScholzRealizable.mono {M : ℕ} (h : IsScholzRealizable G ℓ N) (hMN : M ≤ N) :
+    IsScholzRealizable G ℓ M :=
+  h.elim fun R => ⟨{ R with isScholz := R.isScholz.mono hMN }⟩
+
+/-! ### Realizations from an abstract number field -/
+
+/-- **A number field satisfying Serre's condition realises its Galois group.**  A chosen embedding
+of the field into the algebraic closure of `ℚ` carries both the condition and the Galois group over
+to the image, which is a subfield of the algebraic closure as the structure demands. -/
+theorem isScholzRealizable_of_isGalois (F : Type*) [Field F] [NumberField F] [IsGalois ℚ F]
+    (h : IsScholz ℓ N F) (e : Gal(F/ℚ) ≃* G) : IsScholzRealizable G ℓ N :=
+  ⟨{ carrier := embSubfield F
+     isScholz := h.of_ringEquiv (embEquiv F).toRingEquiv
+     galEquiv := (AlgEquiv.autCongr (embEquiv F)).symm.trans e }⟩
+
+/-- **A quotient of the Galois group of a field satisfying Serre's condition is realised.**  The
+fixed field of the kernel is Galois over `ℚ` with the quotient as its Galois group, and it inherits
+Serre's condition from the field above it. -/
+theorem isScholzRealizable_of_surjective (F : Type*) [Field F] [NumberField F] [IsGalois ℚ F]
+    (h : IsScholz ℓ N F) (ψ : Gal(F/ℚ) →* G) (hψ : Function.Surjective ψ) :
+    IsScholzRealizable G ℓ N := by
+  haveI : NumberField ↥(IntermediateField.fixedField ψ.ker) := ⟨⟩
+  exact isScholzRealizable_of_isGalois ↥(IntermediateField.fixedField ψ.ker) h.of_tower
+    ((IsGalois.normalAutEquivQuotient ψ.ker).symm.trans
+      (QuotientGroup.quotientKerEquivOfSurjective ψ hψ))
+
+/-! ### The trivial group -/
 
 /-- **The trivial group is realised by `ℚ` itself.** -/
 theorem isScholzRealizable_of_subsingleton [Subsingleton G] : IsScholzRealizable G ℓ N := by

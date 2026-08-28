@@ -3,6 +3,7 @@ Copyright (c) 2025. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Tate.FamilyNorm
 import InverseGalois.CFT.Tate.FamilyOrbits
 import InverseGalois.CFT.Tate.FamilyRestrict
 
@@ -30,6 +31,9 @@ the subgroup is a known one whose Tate groups vanish the orbit contributes nothi
 * `InverseGalois.CFT.subsingleton_tateH0_orbitFamily_restrict`,
   `InverseGalois.CFT.subsingleton_tateHm1_orbitFamily_restrict`: **an orbit contributes nothing when
   the action on the subgroup at a point of it has vanishing Tate groups.**
+* `InverseGalois.CFT.exists_normHom_orbitFamily_restrict_top`: **a fixed section over an orbit on
+  which the family of subgroups is everything is a norm as soon as its value at the base point is a
+  norm for the ambient family.**
 
 ## Tags
 
@@ -93,6 +97,14 @@ theorem subsingleton_tateH0_stabAut_orbitFamily_restrict (m : ℕ)
     (addSubgroupCongr_stabAut_orbitFamily_restrict F N hN x₀ hH' hH'' g hNP τ hτ) m).injective
       (h.elim _ _)⟩
 
+/-- **An element of the subgroup at the base point is a norm as soon as it is one for the given
+action.** -/
+theorem exists_normHom_stabAut_orbitFamily_restrict (m : ℕ) {a : ↥(N (x₀ : X))}
+    (h : ∃ b, normHom τ m b = AddEquiv.addSubgroupCongr hNP a) :
+    ∃ b, normHom (stabAut x₀ hH' (orbitFamily (F.restrict N hN) ω) g) m b = a :=
+  exists_normHom_of_addEquiv (AddEquiv.addSubgroupCongr hNP)
+    (addSubgroupCongr_stabAut_orbitFamily_restrict F N hN x₀ hH' hH'' g hNP τ hτ) m h
+
 /-- The lower Tate group of the subgroup at the base point vanishes as soon as it vanishes for the
 given action. -/
 theorem subsingleton_tateHm1_stabAut_orbitFamily_restrict (m : ℕ)
@@ -120,6 +132,14 @@ theorem herbrand_stabAut_orbitFamily_restrict_top (m : ℕ) :
       = herbrand (stabAut x₀ hH' (orbitFamily F ω) g) m :=
   herbrand_congr ((AddEquiv.addSubgroupCongr hNtop).trans AddSubgroup.topEquiv)
     (coe_stabAut_orbitFamily_restrict F N hN x₀ hH' hH'' g) m
+
+/-- **An element of a subgroup that is everything is a norm for the restricted family as soon as it
+is one for the ambient one.** -/
+theorem exists_normHom_stabAut_orbitFamily_restrict_top (m : ℕ) {a : ↥(N (x₀ : X))}
+    (h : ∃ b, normHom (stabAut x₀ hH' (orbitFamily F ω) g) m b = (a : M (x₀ : X))) :
+    ∃ b, normHom (stabAut x₀ hH' (orbitFamily (F.restrict N hN) ω) g) m b = a :=
+  exists_normHom_of_addEquiv ((AddEquiv.addSubgroupCongr hNtop).trans AddSubgroup.topEquiv)
+    (coe_stabAut_orbitFamily_restrict F N hN x₀ hH' hH'' g) m h
 
 end Top
 
@@ -170,6 +190,17 @@ theorem herbrand_orbitFamily_restrict_top (hNtop : N (x₀ : X) = ⊤) :
   rw [herbrand_familyAut_orbit x₀ htrans hH hH' (orbitFamily (F.restrict N hN) ω) hz hdm,
     herbrand_familyAut_orbit x₀ htrans hH hH' (orbitFamily F ω) hz hdm]
   exact herbrand_stabAut_orbitFamily_restrict_top F N hN x₀ hH' hH'' _ hNtop m
+
+/-- **A fixed section over an orbit on which the family of subgroups is everything is a norm as soon
+as its value at the base point is a norm for the ambient family.** -/
+theorem exists_normHom_orbitFamily_restrict_top (hNtop : N (x₀ : X) = ⊤)
+    {f : ∀ z : ω.orbit, ↥(N (z : X))}
+    (hf : (orbitFamily (F.restrict N hN) ω).familyAut σ f = f)
+    (h : ∃ b, normHom (stabAut x₀ hH' (orbitFamily F ω) (orbitTurn σ x₀ hH)) m b
+      = ((f x₀ : ↥(N (x₀ : X))) : M (x₀ : X))) :
+    ∃ u, normHom ((orbitFamily (F.restrict N hN) ω).familyAut σ) n u = f :=
+  exists_normHom_familyAut_orbit x₀ htrans hH hH' (orbitFamily (F.restrict N hN) ω) hz hdm hf
+    (exists_normHom_stabAut_orbitFamily_restrict_top F N hN x₀ hH' hH'' _ hNtop m h)
 
 section Vanishing
 

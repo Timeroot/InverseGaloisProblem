@@ -23,11 +23,19 @@ compositum whose second factor the prime splits completely in; that is the conte
 
 * `InverseGalois.CFT.IsSplitInertia`: every ramified prime has residue degree one.
 * `InverseGalois.CFT.IsScholz`: Serre's condition `(S_N)`.
+* `InverseGalois.CFT.IsScholzOver`: every prime ramified in a field is either ramified in a given
+  subfield or of the right level and split completely there.
 
 ## Main results
 
 * `InverseGalois.CFT.IsScholz.mono`: the condition weakens as the exponent decreases.
+* `InverseGalois.CFT.IsScholzOver.isLevel`: **the level condition passes to a field ramifying
+  harmlessly over one satisfying it.**
 * `InverseGalois.CFT.IsScholz.of_ringEquiv`: the condition is an isomorphism invariant.
+* `InverseGalois.CFT.isSplitInertia_of_tower`: residue degree one is inherited by subfields.
+* `InverseGalois.CFT.IsScholz.of_tower`: **the condition `(S_N)` is inherited by subfields.**
+* `InverseGalois.CFT.mul_card_stabilizer_dvd_sub_one`: **at level `N + 1`, one more power of `ℓ`
+  than the order of a decomposition group divides `p - 1`** at every ramified prime `p`.
 * `InverseGalois.CFT.isSplitInertia_of_finrank_prime`: a Galois extension of `ℚ` of prime degree
   has residue degree one at every ramified prime.
 * `InverseGalois.CFT.isSplitInertia_of_sup`: **residue degree one passes to a compositum** in
@@ -36,6 +44,8 @@ compositum whose second factor the prime splits completely in; that is the conte
 -/
 
 open NumberField InverseGalois.NumberTheory
+
+open scoped Pointwise
 
 set_option synthInstance.maxHeartbeats 400000
 
@@ -52,7 +62,27 @@ ramified rational prime is congruent to one modulo `ℓ ^ N` and has residue deg
 def IsScholz (ℓ N : ℕ) (K : Type*) [Field K] [NumberField K] : Prop :=
   IsLevel ℓ N K ∧ IsSplitInertia K
 
+/-- **A field ramifies harmlessly over a subfield** at level `N` for the prime `ℓ` when every
+rational prime ramified in it is either ramified in the subfield, or congruent to one modulo
+`ℓ ^ N` and split completely in the subfield.  This is the amount of fresh ramification the residue
+correction of the Scholz–Reichardt construction absorbs: at such a prime the whole decomposition
+group of the corrected field is seen inside the kernel of the central step, so the residue degree
+there is one for free. -/
+def IsScholzOver (ℓ N : ℕ) (A L : Type*) [Field A] [Field L] [NumberField A] [NumberField L] :
+    Prop :=
+  ∀ q ∈ ramifiedSet L, q ∈ ramifiedSet A ∨ (q ≡ 1 [MOD ℓ ^ N] ∧ SplitsCompletely A q)
+
 variable {E : Type*} [Field E] [NumberField E]
+
+/-- A field ramifying nowhere outside a subfield ramifies harmlessly over it. -/
+theorem IsScholzOver.of_subset {ℓ N : ℕ} {A : Type*} [Field A] [NumberField A]
+    (h : ramifiedSet E ⊆ ramifiedSet A) : IsScholzOver ℓ N A E :=
+  fun _ hq => Or.inl (h hq)
+
+/-- **The level condition passes to a field ramifying harmlessly over one satisfying it.** -/
+theorem IsScholzOver.isLevel {ℓ N : ℕ} {A : Type*} [Field A] [NumberField A]
+    (h : IsScholzOver ℓ N A E) (hA : IsLevel ℓ N A) : IsLevel ℓ N E :=
+  fun q hq => (h q hq).elim (hA q) And.left
 
 /-- The condition `(S_N)` contains the level condition. -/
 theorem IsScholz.isLevel {ℓ N : ℕ} (h : IsScholz ℓ N E) : IsLevel ℓ N E := h.1
@@ -95,6 +125,60 @@ theorem IsLevel.of_ringEquiv {F : Type*} [Field F] [NumberField F] {ℓ N : ℕ}
 theorem IsScholz.of_ringEquiv {F : Type*} [Field F] [NumberField F] {ℓ N : ℕ} (e : E ≃+* F)
     (h : IsScholz ℓ N E) : IsScholz ℓ N F :=
   ⟨h.1.of_ringEquiv e, isSplitInertia_of_ringEquiv e h.2⟩
+
+section Tower
+
+variable {M : Type*} [Field M] [NumberField M] [Algebra E M]
+
+/-- **Split inertia is inherited by subfields.**  A prime ramified below is ramified above, and the
+residue degree above it factors through the intermediate field, so a residue degree equal to one at
+the top forces one at every stage. -/
+theorem isSplitInertia_of_tower (h : IsSplitInertia M) : IsSplitInertia E := by
+  intro p hp P hPprime hPover
+  haveI := hPprime
+  haveI := hPover
+  have hprime : p.Prime := hp.1
+  haveI := isMaximal_span_prime hprime
+  have hspan : (Ideal.span {(p : ℤ)} : Ideal ℤ) ≠ ⊥ := by
+    simpa [Ideal.span_singleton_eq_bot] using hprime.ne_zero
+  have hP0 : P ≠ ⊥ := by
+    intro hb
+    refine hspan ?_
+    rw [hPover.over, hb, Ideal.under,
+      Ideal.comap_bot_of_injective _ (FaithfulSMul.algebraMap_injective ℤ (𝓞 E))]
+  haveI : P.IsMaximal := Ring.DimensionLEOne.maximalOfPrime hP0 hPprime
+  obtain ⟨Q, hQmax, hQover⟩ := Ideal.exists_maximal_ideal_liesOver_of_isIntegral (S := 𝓞 M) P
+  haveI := hQmax
+  haveI := hQover
+  haveI : Q.IsPrime := hQmax.isPrime
+  haveI : Q.LiesOver (Ideal.span {(p : ℤ)}) := Ideal.LiesOver.trans Q P (Ideal.span {(p : ℤ)})
+  have hone := h p (ramifiedSet_subset E M hp) Q inferInstance inferInstance
+  rw [Ideal.inertiaDeg_algebra_tower (R := ℤ) (S := 𝓞 E) (T := 𝓞 M)
+    (Ideal.span {(p : ℤ)}) P Q] at hone
+  exact Nat.eq_one_of_mul_eq_one_right hone
+
+/-- **Serre's condition `(S_N)` is inherited by subfields.**  Both halves of the condition only
+constrain the ramified primes, and a subfield has fewer of them. -/
+theorem IsScholz.of_tower {ℓ N : ℕ} (h : IsScholz ℓ N M) : IsScholz ℓ N E :=
+  ⟨h.1.of_tower, isSplitInertia_of_tower h.2⟩
+
+end Tower
+
+/-- **One more power of `ℓ` than the order of the Galois group divides `p - 1`.**  The level
+condition at `N + 1` makes every ramified prime congruent to one modulo `ℓ ^ (N + 1)`, and the
+decomposition group at a prime above it is a subgroup of a group whose order divides `ℓ ^ N`.  This
+is the arithmetic hypothesis that the local solvability criterion for a central embedding problem
+with kernel of order `ℓ` asks for at every ramified place. -/
+theorem mul_card_stabilizer_dvd_sub_one [IsGalois ℚ E] {ℓ N : ℕ} (h : IsLevel ℓ (N + 1) E)
+    (hdvd : Nat.card Gal(E/ℚ) ∣ ℓ ^ N) {p : ℕ} (hmem : p ∈ ramifiedSet E) (P : Ideal (𝓞 E))
+    [P.IsPrime] [P.LiesOver (Ideal.span {(p : ℤ)})] :
+    ℓ * Nat.card ↥(MulAction.stabilizer Gal(E/ℚ) P) ∣ p - 1 := by
+  have hD : Nat.card ↥(MulAction.stabilizer Gal(E/ℚ) P) ∣ ℓ ^ N :=
+    (Subgroup.card_subgroup_dvd_card _).trans hdvd
+  have hpow : ℓ ^ (N + 1) ∣ p - 1 := (Nat.modEq_iff_dvd' hmem.1.one_le).mp (h p hmem).symm
+  refine dvd_trans ?_ hpow
+  calc ℓ * Nat.card ↥(MulAction.stabilizer Gal(E/ℚ) P) ∣ ℓ * ℓ ^ N := mul_dvd_mul_left ℓ hD
+    _ = ℓ ^ (N + 1) := by ring
 
 /-- **A Galois extension of `ℚ` of prime degree has split inertia.**  A ramified prime has
 ramification index different from one at some prime above it, hence at every prime above it, and

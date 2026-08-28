@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Tate.FamilyRestrictOrbit
+import InverseGalois.CFT.Tate.OrbitIndex
 import InverseGalois.CFT.Units.AdicOrbit
 
 /-!
@@ -38,6 +39,13 @@ unramified — both Tate groups of the orbit vanish.
   contributes the order of the decomposition group.**
 * `InverseGalois.CFT.subsingleton_tate_orbitFamily_adicSUnits_of_notMem`: **an unramified orbit above
   a place outside the set contributes nothing.**
+* `InverseGalois.CFT.exists_normHom_orbitFamily_adicSUnits_of_mem`: **a fixed section over an orbit
+  above a place of the set is a norm as soon as its value at one place above it is a local norm.**
+* `InverseGalois.CFT.exists_normHom_orbitFamily_adicSUnits_of_notMem`: **a fixed section over an
+  unramified orbit above a place outside the set is always a norm.**
+* `InverseGalois.CFT.exists_normHom_adicSIdeleFamily`: **the finite part of an idele that is a unit
+  outside the set is a norm as soon as it is a local norm at one place above each place of the
+  set**, provided every place outside the set is unramified.
 
 ## Tags
 
@@ -194,6 +202,93 @@ theorem subsingleton_tate_orbitFamily_adicSUnits_of_notMem
       (period_orbitShift_mul_card v₀ hgen hn hstabcard) (adicSUnits_of_notMem T hv₀) _
       (fun a => (stabAut_orbitFamily_adicUnits v₀ _ _).symm) hsub.2⟩
 
+/-- **A fixed section over an orbit above a place of the set is a norm as soon as its value at one
+place above it is a local norm.**  The local subgroup at a place of the set is the whole group of
+units of the completion there, so nothing is lost by reading the statement in the ambient family. -/
+theorem exists_normHom_orbitFamily_adicSUnits_of_mem (hv₀ : (v₀ : HeightOneSpectrum (𝓞 K)) ∈ T)
+    (hH : ∀ g : Gal(K/k), g • v₀ = v₀ → g ∈ stabilizer Gal(K/k) (v₀ : HeightOneSpectrum (𝓞 K)))
+    {f : ∀ z : ω.orbit, ↥(adicSUnits T (z : HeightOneSpectrum (𝓞 K)))}
+    (hf : (orbitFamily (adicSIdeleFamily T hT) ω).familyAut σ f = f)
+    (h : ∃ b, normHom (smulUnitsAut (G := ↥(stabilizer Gal(K/k) (v₀ : HeightOneSpectrum (𝓞 K))))
+        (R := (v₀ : HeightOneSpectrum (𝓞 K)).adicCompletion K) (orbitTurn σ v₀ hH))
+        (Nat.card ↥(stabilizer Gal(K/k) (v₀ : HeightOneSpectrum (𝓞 K)))) b
+      = ((f v₀ : ↥(adicSUnits T (v₀ : HeightOneSpectrum (𝓞 K)))) :
+          Additive ((v₀ : HeightOneSpectrum (𝓞 K)).adicCompletion K)ˣ)) :
+    ∃ u, normHom ((orbitFamily (adicSIdeleFamily T hT) ω).familyAut σ) n u = f := by
+  haveI : Fintype ↥(stabilizer Gal(K/k) (v₀ : HeightOneSpectrum (𝓞 K))) := Fintype.ofFinite _
+  have hstabcard : Nat.card ↥(stabilizer Gal(K/k) v₀)
+      = Nat.card ↥(stabilizer Gal(K/k) (v₀ : HeightOneSpectrum (𝓞 K))) :=
+    congrArg (fun H : Subgroup Gal(K/k) => Nat.card ↥H) (stabilizer_orbit_coe v₀)
+  have key : stabAut v₀ (smul_orbit_of_mem_stabilizer v₀)
+        (orbitFamily (adicRingFamily (k := k) (K := K)).unitsFamily ω) (orbitTurn σ v₀ hH)
+      = smulUnitsAut (G := ↥(stabilizer Gal(K/k) (v₀ : HeightOneSpectrum (𝓞 K))))
+          (R := (v₀ : HeightOneSpectrum (𝓞 K)).adicCompletion K) (orbitTurn σ v₀ hH) :=
+    AddEquiv.ext (stabAut_orbitFamily_adicUnits v₀ (orbitTurn σ v₀ hH))
+  refine exists_normHom_orbitFamily_restrict_top
+    (adicRingFamily (k := k) (K := K)).unitsFamily (adicSUnits T) (map_adicSUnits T hT) v₀
+    (exists_pow_orbitShift_apply_eq v₀ hgen) hH (smul_orbit_of_mem_stabilizer v₀)
+    (fun g => mem_stabilizer_iff.mp g.2) (orbitTurn_pow_card v₀ hH rfl)
+    (period_orbitShift_mul_card v₀ hgen hn hstabcard) (adicSUnits_of_mem T hv₀) hf ?_
+  rw [key]
+  exact h
+
+/-- **A fixed section over an unramified orbit above a place outside the set is always a norm**: the
+local subgroup there is the units of the valuation ring, whose upper Tate group vanishes. -/
+theorem exists_normHom_orbitFamily_adicSUnits_of_notMem
+    (hv₀ : (v₀ : HeightOneSpectrum (𝓞 K)) ∉ T)
+    (π : ((v₀ : HeightOneSpectrum (𝓞 K)).adicCompletion K)ˣ)
+    (hπfix : ∀ g : ↥(stabilizer Gal(K/k) (v₀ : HeightOneSpectrum (𝓞 K))),
+      g • (π : (v₀ : HeightOneSpectrum (𝓞 K)).adicCompletion K)
+        = (π : (v₀ : HeightOneSpectrum (𝓞 K)).adicCompletion K))
+    (hπval : unitVal (Additive.ofMul π) = 1)
+    {f : ∀ z : ω.orbit, ↥(adicSUnits T (z : HeightOneSpectrum (𝓞 K)))}
+    (hf : (orbitFamily (adicSIdeleFamily T hT) ω).familyAut σ f = f) :
+    ∃ u, normHom ((orbitFamily (adicSIdeleFamily T hT) ω).familyAut σ) n u = f :=
+  haveI := (subsingleton_tate_orbitFamily_adicSUnits_of_notMem v₀ T hT hgen hn hv₀ π hπfix hπval).1
+  exists_normHom_of_subsingleton f hf
+
 end Orbit
+
+/-! ### All the orbits at once -/
+
+section AllOrbits
+
+variable {k K : Type*} [Field k] [Field K] [Algebra k K] [NumberField K] [Finite Gal(K/k)]
+  (T : Set (HeightOneSpectrum (𝓞 K))) [DecidablePred (· ∈ T)]
+  (hT : ∀ (g : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), g • v ∈ T ↔ v ∈ T)
+  {σ : Gal(K/k)} (hgen : ∀ g : Gal(K/k), g ∈ Subgroup.zpowers σ) {n : ℕ}
+  (hn : Nat.card Gal(K/k) = n)
+
+include hT hgen hn
+
+/-- **The finite part of an idele that is a unit outside the set is a norm as soon as it is a local
+norm at one place above each place of the set.**  At a place outside the set nothing has to be
+assumed, because there the local subgroup is the units of the valuation ring and every fixed element
+of them is already a norm once the decomposition group fixes a uniformizer. -/
+theorem exists_normHom_adicSIdeleFamily
+    (hunram : ∀ v : HeightOneSpectrum (𝓞 K), v ∉ T →
+      ∃ π : (v.adicCompletion K)ˣ,
+        (∀ g : ↥(stabilizer Gal(K/k) v),
+            g • (π : v.adicCompletion K) = (π : v.adicCompletion K))
+          ∧ unitVal (Additive.ofMul π) = 1)
+    {f : ∀ v : HeightOneSpectrum (𝓞 K), ↥(adicSUnits T v)}
+    (hf : (adicSIdeleFamily T hT).familyAut σ f = f)
+    (h : ∀ ω : orbitRel.Quotient Gal(K/k) (HeightOneSpectrum (𝓞 K)), ω.out ∈ T → ∃ b,
+      normHom (smulUnitsAut (G := ↥(stabilizer Gal(K/k) ω.out))
+          (R := (ω.out).adicCompletion K)
+          (orbitTurn σ (orbitOut ω) (mem_stabilizer_of_smul_orbit (orbitOut ω))))
+        (Nat.card ↥(stabilizer Gal(K/k) ω.out)) b
+      = ((f ω.out : ↥(adicSUnits T ω.out)) : Additive ((ω.out).adicCompletion K)ˣ)) :
+    ∃ u, normHom ((adicSIdeleFamily T hT).familyAut σ) n u = f := by
+  refine exists_normHom_familyAut_orbits (adicSIdeleFamily T hT) σ n fun ω => ?_
+  haveI : Fintype ω.orbit := Fintype.ofFinite _
+  by_cases hv : ω.out ∈ T
+  · exact exists_normHom_orbitFamily_adicSUnits_of_mem (orbitOut ω) T hT hgen hn hv
+      (mem_stabilizer_of_smul_orbit (orbitOut ω)) (familyAut_orbitFamily_restrict _ hf) (h ω hv)
+  · obtain ⟨π, hπfix, hπval⟩ := hunram _ hv
+    exact exists_normHom_orbitFamily_adicSUnits_of_notMem (orbitOut ω) T hT hgen hn hv π hπfix hπval
+      (familyAut_orbitFamily_restrict _ hf)
+
+end AllOrbits
 
 end InverseGalois.CFT

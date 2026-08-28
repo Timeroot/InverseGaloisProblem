@@ -115,6 +115,18 @@ noncomputable def orbitEquiv (x₀ : X) (htrans : ∀ y : X, ∃ k : ℕ, (p ^ k
 theorem orbitEquiv_apply (x₀ : X) (htrans : ∀ y : X, ∃ k : ℕ, (p ^ k) x₀ = y)
     (j : ZMod (period p x₀)) : orbitEquiv p x₀ htrans j = (p ^ j.val) x₀ := rfl
 
+omit [Fintype X] in
+/-- The place `0` of the model is the base point. -/
+@[simp]
+theorem orbitPoint_zero (x₀ : X) : orbitPoint p x₀ 0 = x₀ := by
+  rw [orbitPoint_apply, ZMod.val_zero, pow_zero, Equiv.Perm.one_apply]
+
+/-- **The model sends the place `0` to the base point.** -/
+@[simp]
+theorem orbitEquiv_zero (x₀ : X) (htrans : ∀ y : X, ∃ k : ℕ, (p ^ k) x₀ = y) :
+    orbitEquiv p x₀ htrans 0 = x₀ :=
+  orbitPoint_zero p x₀
+
 /-- **The model is equivariant**: the permutation advances the place by one. -/
 theorem apply_orbitEquiv (x₀ : X) (htrans : ∀ y : X, ∃ k : ℕ, (p ^ k) x₀ = y)
     (j : ZMod (period p x₀)) :

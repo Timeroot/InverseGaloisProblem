@@ -25,6 +25,9 @@ of *linearly disjoint* extensions.
   that prime as its only ramified prime.
 * `InverseGalois.CFT.inf_eq_bot_of_splitsCompletely`: the combination used in practice — a field
   in which `q` splits completely meets a field ramified only at `q` in `ℚ`.
+* `InverseGalois.CFT.inf_eq_bot_of_ramifiedSet_disjoint'` and
+  `InverseGalois.CFT.inf_eq_bot_of_splitsCompletely'`: the same two statements for intermediate
+  fields of an arbitrary extension of `ℚ`, only the two fields themselves being number fields.
 -/
 
 open Module NumberField InverseGalois.NumberTheory
@@ -98,6 +101,32 @@ theorem inf_eq_bot_of_splitsCompletely {L : Type*} [Field L] [NumberField L]
     (A B : IntermediateField ℚ L) {q : ℕ} (hA : SplitsCompletely (↥A) q)
     (hB : ramifiedSet ↥B ⊆ {q}) : A ⊓ B = ⊥ := by
   refine inf_eq_bot_of_ramifiedSet_disjoint A B (Set.disjoint_right.mpr fun p hp hpA => ?_)
+  rw [Set.mem_singleton_iff.mp (hB hp)] at hpA
+  exact notMem_ramifiedSet_of_splitsCompletely hA hpA
+
+/-! ### Disjoint ramification inside an arbitrary extension of `ℚ` -/
+
+/-- **Two intermediate fields with disjoint ramification meet in `ℚ`.**  Unlike
+`InverseGalois.CFT.inf_eq_bot_of_ramifiedSet_disjoint`, the ambient field is not required to be
+a number field, only the two intermediate fields themselves. -/
+theorem inf_eq_bot_of_ramifiedSet_disjoint' {L : Type*} [Field L] [CharZero L]
+    (A B : IntermediateField ℚ L) [NumberField A] [NumberField B]
+    (h : Disjoint (ramifiedSet A) (ramifiedSet B)) : A ⊓ B = ⊥ := by
+  haveI : FiniteDimensional ℚ ↥(A ⊓ B) := by
+    have hincl := IntermediateField.inclusion (inf_le_left : A ⊓ B ≤ A)
+    exact FiniteDimensional.of_injective hincl.toLinearMap hincl.injective
+  haveI : NumberField ↥(A ⊓ B) := ⟨⟩
+  letI : Algebra ↥(A ⊓ B) ↥A := (IntermediateField.inclusion inf_le_left).toAlgebra
+  letI : Algebra ↥(A ⊓ B) ↥B := (IntermediateField.inclusion inf_le_right).toAlgebra
+  exact IntermediateField.finrank_eq_one_iff.mp
+    (finrank_eq_one_of_ramifiedSet_disjoint ↥(A ⊓ B) ↥A ↥B h)
+
+/-- **The disjointness criterion, over an arbitrary ambient extension of `ℚ`.**  A field in which
+the prime `q` splits completely meets a field ramified only at `q` in `ℚ`. -/
+theorem inf_eq_bot_of_splitsCompletely' {L : Type*} [Field L] [CharZero L]
+    (A B : IntermediateField ℚ L) [NumberField A] [NumberField B] {q : ℕ}
+    (hA : SplitsCompletely (↥A) q) (hB : ramifiedSet ↥B ⊆ {q}) : A ⊓ B = ⊥ := by
+  refine inf_eq_bot_of_ramifiedSet_disjoint' A B (Set.disjoint_right.mpr fun p hp hpA => ?_)
   rw [Set.mem_singleton_iff.mp (hB hp)] at hpA
   exact notMem_ramifiedSet_of_splitsCompletely hA hpA
 

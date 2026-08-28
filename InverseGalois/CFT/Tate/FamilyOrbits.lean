@@ -40,6 +40,10 @@ contribution is cohomologically trivial may be present in any number without aff
   have vanishing Tate groups.
 * `InverseGalois.CFT.herbrand_orbitFamily`: **the contribution of one orbit is the Herbrand quotient
   of the module at a point of it under a full turn of the orbit.**
+* `InverseGalois.CFT.familyAut_orbitFamily_restrict`: the restriction to an orbit of a section fixed
+  by a generator is fixed.
+* `InverseGalois.CFT.exists_normHom_orbitFamily`: **a fixed section over one orbit is a norm as soon
+  as its value at a point of the orbit is a norm for the decomposition group there.**
 
 ## Tags
 
@@ -73,6 +77,21 @@ theorem stabAut_orbitFamily {ω : orbitRel.Quotient G X} (x₀ : ω.orbit)
     (hH'' : ∀ g : ↥H, (g : G) • (x₀ : X) = (x₀ : X)) (g : ↥H) (a : M (x₀ : X)) :
     stabAut x₀ hH' (orbitFamily F ω) g a = F.transport (hH'' g) a :=
   orbitFamily_transport F (hH' g) (hH'' g) a
+
+/-- The action of a generator on the sections over one orbit is the action on the whole family. -/
+theorem familyAut_orbitFamily_apply {ω : orbitRel.Quotient G X} (f : ∀ z : ω.orbit, M (z : X))
+    (x : ω.orbit) :
+    (orbitFamily F ω).familyAut σ f x = F.transport (smul_inv_smul σ (x : X)) (f (σ⁻¹ • x)) :=
+  orbitFamily_transport F (smul_inv_smul σ x) (smul_inv_smul σ (x : X)) _
+
+/-- **The restriction to an orbit of a section fixed by a generator is fixed.** -/
+theorem familyAut_orbitFamily_restrict {ω : orbitRel.Quotient G X} {f : ∀ x, M x}
+    (hf : F.familyAut σ f = f) :
+    (orbitFamily F ω).familyAut σ (fun z : ω.orbit => f (z : X))
+      = fun z : ω.orbit => f (z : X) := by
+  funext x
+  rw [familyAut_orbitFamily_apply]
+  exact congrFun hf (x : X)
 
 /-! ### The product over the orbits -/
 
@@ -149,6 +168,28 @@ theorem herbrand_orbitFamily [Finite G] (hgen : ∀ g : G, g ∈ Subgroup.zpower
   refine herbrand_familyAut_orbit x₀
     (exists_pow_orbitShift_apply_eq x₀ hgen) (fun _ h => mem_stabilizer_iff.mpr h)
     (fun g => mem_stabilizer_iff.mp g.2) (orbitFamily F ω) ?_ ?_
+  · rw [← hm]
+    exact pow_card_eq_one'
+  · rw [show orbitShift (↥ω.orbit) σ = (toPerm σ⁻¹ : Equiv.Perm ↥ω.orbit) from rfl,
+      period_eq_card_orbit hgen' x₀, ← hm, card_orbit_mul_card_stabilizer, hn]
+
+/-- **A fixed section over one orbit is a norm as soon as its value at a point of the orbit is a
+norm for the decomposition group there.**  Transporting the modules over the orbit to the module at
+the point presents the sections as the module induced from the decomposition group, and Shapiro's
+lemma reads a norm there as a norm here. -/
+theorem exists_normHom_orbitFamily [Finite G] (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ)
+    {ω : orbitRel.Quotient G X} [Fintype ω.orbit] (x₀ : ω.orbit) {n m : ℕ}
+    (hn : Nat.card G = n) (hm : Nat.card ↥(stabilizer G x₀) = m)
+    {f : ∀ z : ω.orbit, M (z : X)} (hf : (orbitFamily F ω).familyAut σ f = f)
+    (h : ∃ b, normHom (stabAut x₀ (fun g => mem_stabilizer_iff.mp g.2) (orbitFamily F ω)
+        (orbitTurn σ x₀ fun _ hg => mem_stabilizer_iff.mpr hg)) m b = f x₀) :
+    ∃ u, normHom ((orbitFamily F ω).familyAut σ) n u = f := by
+  have hgen' : ∀ g : G, g ∈ Subgroup.zpowers σ⁻¹ := fun g => by
+    rw [Subgroup.zpowers_inv]
+    exact hgen g
+  refine exists_normHom_familyAut_orbit x₀
+    (exists_pow_orbitShift_apply_eq x₀ hgen) (fun _ hg => mem_stabilizer_iff.mpr hg)
+    (fun g => mem_stabilizer_iff.mp g.2) (orbitFamily F ω) ?_ ?_ hf h
   · rw [← hm]
     exact pow_card_eq_one'
   · rw [show orbitShift (↥ω.orbit) σ = (toPerm σ⁻¹ : Equiv.Perm ↥ω.orbit) from rfl,

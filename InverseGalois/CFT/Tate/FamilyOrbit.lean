@@ -35,6 +35,8 @@ the completions at the places above it rather than with a transported copy.
 * `InverseGalois.CFT.herbrand_familyAut_orbit`: **the Herbrand quotient of the sections of a family
   over a transitive orbit is the Herbrand quotient of the module at the base point for a full
   turn.**
+* `InverseGalois.CFT.exists_normHom_familyAut_orbit`: **a fixed section of a family over a
+  transitive orbit is a norm as soon as its value at the base point is a norm for a full turn.**
 
 ## Tags
 
@@ -89,6 +91,25 @@ noncomputable def orbitFamilyEquiv : (∀ x, M x) ≃+ (X → M x₀) where
 @[simp]
 theorem orbitFamilyEquiv_apply (f : ∀ x, M x) (x : X) :
     orbitFamilyEquiv x₀ htrans F f x = (orbitTransport x₀ htrans F x).symm (f x) := rfl
+
+/-- The base point sits at the place `0` of its own orbit. -/
+theorem orbitIdx_base : orbitIdx x₀ htrans x₀ = 0 := by
+  rw [orbitIdx, Equiv.symm_apply_eq, orbitEquiv_zero]
+
+/-- The chosen group element reaching the base point from itself is the identity. -/
+theorem orbitSection_base : orbitSection x₀ htrans x₀ = 1 := by
+  show (σ ^ (orbitIdx x₀ htrans x₀).val)⁻¹ = 1
+  rw [orbitIdx_base, ZMod.val_zero, pow_zero, inv_one]
+
+/-- The transport of the module at the base point to itself is the identity. -/
+theorem orbitTransport_base (a : M x₀) : orbitTransport x₀ htrans F x₀ a = a :=
+  (F.transport_congr (orbitSection_base x₀ htrans) (orbitSection_smul x₀ htrans x₀)
+    (one_smul G x₀) a).trans (F.transport_one_self x₀ a)
+
+/-- **The identification leaves the value at the base point unchanged.** -/
+@[simp]
+theorem orbitFamilyEquiv_base (f : ∀ x, M x) : orbitFamilyEquiv x₀ htrans F f x₀ = f x₀ := by
+  rw [orbitFamilyEquiv_apply, AddEquiv.symm_apply_eq, orbitTransport_base]
 
 /-! ### The action of a generator becomes a twisted shift -/
 
@@ -145,6 +166,20 @@ theorem subsingleton_tateH0_familyAut_orbit {m n : ℕ} (hz : (orbitTurn σ x₀
   haveI := subsingleton_tateH0_twistShiftAut_orbitCocycle x₀ htrans hH (stabAut x₀ hH' F) hz hn h
   exact ⟨fun _ _ => (tateH0Congr (orbitFamilyEquiv x₀ htrans F)
     (orbitFamilyEquiv_familyAut x₀ htrans hH hH' F) n).injective (Subsingleton.elim _ _)⟩
+
+include htrans hH hH' in
+/-- **A fixed section of a family over a transitive orbit is a norm as soon as its value at the base
+point is a norm for a full turn.**  This is the passage from a local norm at one place above a place
+of the base field to a norm at all of the places above it. -/
+theorem exists_normHom_familyAut_orbit {m n : ℕ} (hz : (orbitTurn σ x₀ hH) ^ m = 1)
+    (hn : period (orbitShift X σ) x₀ * m = n) {f : ∀ x, M x} (hf : F.familyAut σ f = f)
+    (h : ∃ b, normHom (stabAut x₀ hH' F (orbitTurn σ x₀ hH)) m b = f x₀) :
+    ∃ u, normHom (F.familyAut σ) n u = f := by
+  refine exists_normHom_of_addEquiv (orbitFamilyEquiv x₀ htrans F)
+    (orbitFamilyEquiv_familyAut x₀ htrans hH hH' F) n ?_
+  refine exists_normHom_twistShiftAut_orbitCocycle x₀ htrans hH (stabAut x₀ hH' F) hz hn ?_ ?_
+  · rw [← orbitFamilyEquiv_familyAut x₀ htrans hH hH' F, hf]
+  · rwa [orbitFamilyEquiv_base]
 
 include htrans hH hH' in
 /-- The lower Tate group of the sections of a family over a transitive orbit vanishes as soon as it
