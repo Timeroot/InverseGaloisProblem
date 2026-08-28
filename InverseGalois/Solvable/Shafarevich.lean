@@ -12,6 +12,7 @@ import InverseGalois.Solvable.Shafarevich.Radicand
 import InverseGalois.Solvable.Shafarevich.RadicalTower
 import InverseGalois.Solvable.Shafarevich.WreathGalois
 import InverseGalois.Solvable.Shafarevich.Ikeda
+import InverseGalois.Solvable.Shafarevich.Generic
 
 /-!
 # Shafarevich's theorem
@@ -66,4 +67,8 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
 * `InverseGalois.Solvable.Shafarevich.Ikeda` deduces Ikeda's theorem, that every split embedding
   problem over `â„š` with finite abelian kernel is solvable, and so leaves the Frattini-kernel
   embedding problem as the one remaining hypothesis of Shafarevich's theorem.
+* `InverseGalois.Solvable.Shafarevich.Generic` builds the relatively free operator group on `n`
+  copies of the regular representation of the quotient, and shows that every split embedding
+  problem with `p`-group kernel is a quotient of a generic one, so that only the generic kernels
+  need to be treated.
 -/
