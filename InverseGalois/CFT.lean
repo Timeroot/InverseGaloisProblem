@@ -288,6 +288,7 @@ import InverseGalois.CFT.Scholz.DyadicResidueCorrection
 import InverseGalois.CFT.Scholz.DyadicResidueDegree
 import InverseGalois.CFT.Scholz.DyadicShrink
 import InverseGalois.CFT.Scholz.DyadicSocle
+import InverseGalois.CFT.Scholz.DyadicStage
 import InverseGalois.CFT.Scholz.DyadicStageTransition
 import InverseGalois.CFT.Scholz.DyadicStepUp
 import InverseGalois.CFT.Scholz.ElementaryAbelianSolutionTwo
@@ -960,6 +961,10 @@ it that are available here.
 * `InverseGalois.CFT.Scholz.DyadicStageTransition` compares two of those readings: adjoining to a
   subgroup the element a stage of the dyadic climb is built on leaves the obstruction of every block
   unchanged, so the climb carries its hypothesis from one stage to the next.
+* `InverseGalois.CFT.Scholz.DyadicStage` is the climb itself: a stage is a cover together with the
+  subgroup of the kernel it has cut down to, and cutting that subgroup along a family of characters
+  separating its points ends at the trivial subgroup, where the cover is a strong Scholz realization
+  of the free object of the next `2`-class.
 * `InverseGalois.CFT.Scholz.SplitInertiaTower` carries that obstruction along a tower: it vanishes in
   every subfield of a field where it vanishes, it vanishes upstairs whenever the prime is totally
   ramified in the top layer, and in a compositum whose inertia over the base already lies in one
