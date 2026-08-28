@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.FibreCompositum
+import InverseGalois.CFT.Scholz.SubfieldScholz
 import InverseGalois.CFT.Scholz.UnramifiedSolutionTwo
 import InverseGalois.Solvable.CentralDual
 import InverseGalois.Solvable.PCentralGenerators
@@ -63,24 +64,6 @@ theorem map_frattini_le_frattini (hπ : Function.Surjective π) :
   Subgroup.map_le_iff_le_comap.mpr (frattini_le_comap_frattini_of_surjective hπ)
 
 end Group
-
-/-! ### The ramified primes of a compositum of subfields -/
-
-/-- **The ramified primes of a compositum of two number fields inside a common extension of the
-rationals are the ramified primes of the two factors together.** -/
-theorem ramifiedSet_sup_intermediateField {L : Type*} [Field L] [CharZero L]
-    (A B : IntermediateField ℚ L) [NumberField ↥A] [NumberField ↥B] :
-    ramifiedSet ↥(A ⊔ B) = ramifiedSet ↥A ∪ ramifiedSet ↥B := by
-  haveI : NumberField ↥(A ⊔ B) := ⟨⟩
-  have htop : IntermediateField.restrict (le_sup_left : A ≤ A ⊔ B) ⊔
-      IntermediateField.restrict (le_sup_right : B ≤ A ⊔ B) =
-      (⊤ : IntermediateField ℚ ↥(A ⊔ B)) := restrict_sup_restrict A B
-  have h1 : ramifiedSet ↥(⊤ : IntermediateField ℚ ↥(A ⊔ B)) =
-      ramifiedSet ↥A ∪ ramifiedSet ↥B := by
-    rw [← htop, ramifiedSet_sup, ramifiedSet_restrict, ramifiedSet_restrict]
-  rw [← h1]
-  exact (ramifiedSet_eq_of_ringEquiv
-    (IntermediateField.topEquiv (F := ℚ) (E := ↥(A ⊔ B))).toRingEquiv).symm
 
 /-! ### The induction on the order of the group -/
 

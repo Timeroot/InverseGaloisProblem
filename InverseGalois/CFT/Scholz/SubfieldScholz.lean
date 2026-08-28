@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Scholz.CompositumTransport
+import InverseGalois.CFT.UnramifiedCompositum
 
 /-!
 # Serre's condition on a subfield
@@ -24,6 +25,9 @@ piece, and the residue correction absorbs fresh ramification of exactly that kin
   with split inertia has residue degree one in every subfield.**
 * `InverseGalois.CFT.splitsCompletely_of_isSplitInertia_of_tower`: **a prime ramified in a field
   with split inertia splits completely in every subfield it does not ramify in.**
+* `InverseGalois.CFT.ramifiedSet_sup_intermediateField`: **the ramified primes of a compositum of
+  two number fields inside a common extension of the rationals are the ramified primes of the two
+  factors together.**
 * `InverseGalois.CFT.ramifiedSet_of_le`: ramification propagates upward along an inclusion of
   intermediate fields.
 * `InverseGalois.CFT.IsScholz.of_le`: Serre's condition is inherited by a smaller intermediate
@@ -79,6 +83,24 @@ theorem splitsCompletely_of_isSplitInertia_of_tower {E M : Type*} [Field E] [Num
   refine fun P hP => ⟨?_, inertiaDeg_eq_one_of_isSplitInertia_of_tower h hp P hP.1 hP.2⟩
   by_contra he
   exact hE ⟨hp.1, P, hP, he⟩
+
+/-! ### The ramified primes of a compositum of subfields -/
+
+/-- **The ramified primes of a compositum of two number fields inside a common extension of the
+rationals are the ramified primes of the two factors together.** -/
+theorem ramifiedSet_sup_intermediateField {L : Type*} [Field L] [CharZero L]
+    (A B : IntermediateField ℚ L) [NumberField ↥A] [NumberField ↥B] :
+    ramifiedSet ↥(A ⊔ B) = ramifiedSet ↥A ∪ ramifiedSet ↥B := by
+  haveI : NumberField ↥(A ⊔ B) := ⟨⟩
+  have htop : IntermediateField.restrict (le_sup_left : A ≤ A ⊔ B) ⊔
+      IntermediateField.restrict (le_sup_right : B ≤ A ⊔ B) =
+      (⊤ : IntermediateField ℚ ↥(A ⊔ B)) := restrict_sup_restrict A B
+  have h1 : ramifiedSet ↥(⊤ : IntermediateField ℚ ↥(A ⊔ B)) =
+      ramifiedSet ↥A ∪ ramifiedSet ↥B := by
+    rw [← htop, ramifiedSet_sup, ramifiedSet_restrict, ramifiedSet_restrict]
+  rw [← h1]
+  exact (ramifiedSet_eq_of_ringEquiv
+    (IntermediateField.topEquiv (F := ℚ) (E := ↥(A ⊔ B))).toRingEquiv).symm
 
 /-! ### Along an inclusion of intermediate fields -/
 

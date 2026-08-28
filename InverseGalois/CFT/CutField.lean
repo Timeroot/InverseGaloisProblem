@@ -34,6 +34,10 @@ the identification is compatible with the two surjections.
   the cut field with the target undoes the restriction.**
 * `InverseGalois.CFT.le_cutField`: a subextension on which the kernel acts trivially lies inside
   the cut field.
+* `InverseGalois.CFT.cutField_le_cutField`: **a homomorphism with the smaller kernel cuts out the
+  larger field.**
+* `InverseGalois.CFT.cutField_comp_galRestrictLE`: **pulling a homomorphism back along a
+  restriction does not change the field it cuts out.**
 
 ## Tags
 
@@ -122,5 +126,55 @@ theorem le_cutField {A : IntermediateField F L} (hAE : A ≤ E) [Normal F ↥A]
   intro x hx
   exact (IntermediateField.mem_lift ⟨x, hAE hx⟩).mpr
     (hle ((IntermediateField.mem_restrict hAE ⟨x, hAE hx⟩).mpr hx))
+
+/-! ### Comparing cut fields -/
+
+section Compare
+
+variable {G₁ G₂ : Type*} [Group G₁] [Group G₂]
+
+/-- **A homomorphism with the smaller kernel cuts out the larger field.** -/
+theorem cutField_le_cutField (ψ₁ : Gal(↥E/F) →* G₁) (ψ₂ : Gal(↥E/F) →* G₂)
+    (h : ψ₁.ker ≤ ψ₂.ker) : cutField ψ₂ ≤ cutField ψ₁ :=
+  le_cutField ψ₁ (cutField_le ψ₂) (by rw [ker_galRestrictLE_cutField]; exact h)
+
+end Compare
+
+/-! ### Pulling a homomorphism back to a larger field -/
+
+section Tower
+
+variable {E' : IntermediateField F L} [FiniteDimensional F ↥E'] [IsGalois F ↥E']
+
+omit [FiniteDimensional F ↥E] in
+/-- The field cut out by the restriction to a smaller intermediate field is that field. -/
+theorem cutField_galRestrictLE (h : E ≤ E') : cutField (galRestrictLE h) = E := by
+  rw [cutField, fixedField_ker_galRestrictLE h, IntermediateField.lift_restrict]
+
+/-- **Pulling a homomorphism back along a restriction does not change the field it cuts out.**
+Both kernels consist of the automorphisms acting trivially on the same subfield. -/
+theorem cutField_comp_galRestrictLE (h : E ≤ E') (ψ : Gal(↥E/F) →* G) :
+    cutField (ψ.comp (galRestrictLE h)) = cutField ψ := by
+  have hker : (galRestrictLE h).ker ≤ (ψ.comp (galRestrictLE h)).ker := by
+    intro σ hσ
+    rw [MonoidHom.mem_ker] at hσ ⊢
+    rw [MonoidHom.comp_apply, hσ, map_one]
+  have hA : cutField (ψ.comp (galRestrictLE h)) ≤ E :=
+    (cutField_le_cutField _ _ hker).trans (cutField_galRestrictLE h).le
+  refine le_antisymm (le_cutField ψ hA fun τ hτ => ?_)
+    (le_cutField (ψ.comp (galRestrictLE h)) ((cutField_le ψ).trans h) fun σ hσ => ?_)
+  · obtain ⟨σ, rfl⟩ := galRestrictLE_surjective h τ
+    have hσ : σ ∈ (galRestrictLE (cutField_le (ψ.comp (galRestrictLE h)))).ker := by
+      rw [ker_galRestrictLE_cutField]
+      exact hτ
+    rw [MonoidHom.mem_ker, galRestrictLE_galRestrictLE hA h]
+    exact hσ
+  · have hσ' : galRestrictLE h σ ∈ (galRestrictLE (cutField_le ψ)).ker := by
+      rw [ker_galRestrictLE_cutField]
+      exact hσ
+    rw [MonoidHom.mem_ker, ← galRestrictLE_galRestrictLE (cutField_le ψ) h]
+    exact hσ'
+
+end Tower
 
 end InverseGalois.CFT
