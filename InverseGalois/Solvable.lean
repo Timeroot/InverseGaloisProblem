@@ -8,6 +8,7 @@ import InverseGalois.Solvable.PCentralFrattini
 import InverseGalois.Solvable.PCentralTower
 import InverseGalois.Solvable.PCentralCoord
 import InverseGalois.Solvable.PCentralCharacter
+import InverseGalois.Solvable.PCentralPow
 import InverseGalois.Solvable.ElementaryAbelian
 import InverseGalois.Solvable.CentralDual
 import InverseGalois.Solvable.PCentralShrink
@@ -78,6 +79,11 @@ free of arithmetic input and applicable to both realization predicates of the de
   class to give the free object of positive `p`-class a canonical character onto the elementary
   abelian group of the same rank, characterized by its values on the distinguished generators, onto,
   and with kernel inside the Frattini subgroup.
+* `InverseGalois.Solvable.PCentralPow` raises a congruence along the lower `p`-central series to
+  the `p`-th power, one step further along at each turn, so that the `p ^ c`-th power map of the
+  free object of `p`-class `c + 1` depends only on the coordinates of its argument; the powers of
+  the distinguished generators it produces are the nontrivial elements of the kernel of the
+  projection that a cyclic subgroup with the coordinates of a single generator already covers.
 * `InverseGalois.Solvable.ElementaryAbelian` recognizes a finite abelian group of exponent dividing
   a prime and of order a power of it as that same elementary abelian group, and hence as the free
   object of `p`-class one, its exponent making it a vector space and its order the dimension.
