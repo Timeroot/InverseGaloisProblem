@@ -8,6 +8,10 @@ import InverseGalois.Solvable.Shafarevich.AbelianKernel
 import InverseGalois.Solvable.Shafarevich.MinimalKernel
 import InverseGalois.Solvable.Shafarevich.FrattiniKernel
 import InverseGalois.Solvable.Shafarevich.ProductAbelian
+import InverseGalois.Solvable.Shafarevich.Radicand
+import InverseGalois.Solvable.Shafarevich.RadicalTower
+import InverseGalois.Solvable.Shafarevich.WreathGalois
+import InverseGalois.Solvable.Shafarevich.PrimeWreath
 
 /-!
 # Shafarevich's theorem
@@ -53,4 +57,13 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   abelian kernel and trivial action: a realizable group stays realizable after multiplying by an
   arbitrary finite abelian group, by adjoining cyclic subfields of cyclotomic fields ramified at
   pairwise distinct primes.
+* `InverseGalois.Solvable.Shafarevich.Radicand` produces, inside a Galois number field, an element
+  whose Galois orbit is multiplicatively independent modulo `p`-th powers.
+* `InverseGalois.Solvable.Shafarevich.RadicalTower` adjoins a `p`-th root of every member of such
+  an orbit and shows the resulting field is Galois over the ground field.
+* `InverseGalois.Solvable.Shafarevich.WreathGalois` computes the Galois group of that field: it is
+  the regular wreath product of the `p`-th roots of unity by the Galois group of the orbit's field.
+* `InverseGalois.Solvable.Shafarevich.PrimeWreath` deduces Ikeda's theorem for a kernel of prime
+  order, which is all the split half of the reduction consumes, leaving the Frattini-kernel
+  embedding problem as the one remaining hypothesis of Shafarevich's theorem.
 -/
