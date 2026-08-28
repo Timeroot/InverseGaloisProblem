@@ -18,6 +18,7 @@ import InverseGalois.Solvable.Shafarevich.PCentral
 import InverseGalois.Solvable.Shafarevich.ClassTwo
 import InverseGalois.Solvable.Shafarevich.PCentralSpan
 import InverseGalois.Solvable.Shafarevich.LayerWord
+import InverseGalois.Solvable.Shafarevich.ShrinkHom
 
 /-!
 # Shafarevich's theorem
@@ -97,4 +98,10 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   involves.  Rescaling the generators multiplies the value of a word by the product of the scaling
   exponents over its degree, modulo the next layer, so a word of level `n` is a monomial in those
   exponents of total degree at most `n + 1`.
+* `InverseGalois.Solvable.Shafarevich.ShrinkHom` builds the map along which the counting argument
+  transports a solution: reading `r * n` letters as `r` blocks of `n`, a vector of exponents sends
+  the letter in position `i` of block `k` to the corresponding power of the letter `i`.  The
+  resulting homomorphism of free operator groups, and the homomorphism of generic groups it
+  induces, are equivariant, and are surjective as soon as one of the exponents is prime to the
+  characteristic.
 -/

@@ -30,7 +30,9 @@ Chevalley–Warning count asks for.
 
 * `InverseGalois.Shafarevich.LayerWord.eval_mem` — a word of level `n` lands in the `n`-th layer.
 * `InverseGalois.Shafarevich.LayerWord.eval_pow_div_mem` — rescaling the generators multiplies the
-  value of a word by the product of the scaling exponents over its degree, modulo the next layer.
+  value of a word by the product of the scaling exponents over its degree, modulo the next layer,
+  and `InverseGalois.Shafarevich.LayerWord.eval_comp_pow_div_mem` for the same statement when the
+  generators are also relabelled.
 * `InverseGalois.Shafarevich.layerGen_range` — the values of the words of level `n` are exactly the
   generators of the `n`-th layer.
 * `InverseGalois.Shafarevich.pCentral_eq_closure_eval_sup` — those values generate the layer.
@@ -273,6 +275,15 @@ theorem eval_pow_div_mem (p : ℕ) (x : ι → P) (c : ι → ℕ) (w : LayerWor
       commutatorElement_pow_pow_div_mem p (eval_mem p x w) (x i) C (c i)
     have h3 := mul_mem h1 h2
     rwa [div_mul_div_cancel, Nat.mul_comm C (c i)] at h3
+
+/-- **Rescaling a relabelled family of generators.**  Substituting `y (σ j) ^ c j` for the `j`-th
+generator multiplies the value of the relabelled word by the product of the scaling exponents over
+the degree, modulo the next layer. -/
+theorem eval_comp_pow_div_mem (p : ℕ) (σ : ι → κ) (y : κ → P) (c : ι → ℕ) (w : LayerWord ι) :
+    (w.eval p fun j => y (σ j) ^ c j) / (w.map σ).eval p y ^ (w.deg.map c).prod
+      ∈ pCentral p P (w.level + 1) := by
+  have h := eval_pow_div_mem p (y ∘ σ) c w
+  rwa [← eval_map p σ y w] at h
 
 end LayerWord
 
