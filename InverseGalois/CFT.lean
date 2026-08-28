@@ -267,6 +267,7 @@ import InverseGalois.CFT.Scholz.BaseDescent
 import InverseGalois.CFT.Scholz.CentralCyclicLift
 import InverseGalois.CFT.Scholz.CentralStep
 import InverseGalois.CFT.Scholz.CentralStepTwo
+import InverseGalois.CFT.Scholz.ClassStepData
 import InverseGalois.CFT.Scholz.CompositumTransport
 import InverseGalois.CFT.Scholz.Condition
 import InverseGalois.CFT.Scholz.CorrectingCharacter
@@ -279,7 +280,9 @@ import InverseGalois.CFT.Scholz.DyadicInduction
 import InverseGalois.CFT.Scholz.DyadicRadical
 import InverseGalois.CFT.Scholz.DyadicResidueCorrection
 import InverseGalois.CFT.Scholz.DyadicResidueDegree
+import InverseGalois.CFT.Scholz.DyadicShrink
 import InverseGalois.CFT.Scholz.DyadicSocle
+import InverseGalois.CFT.Scholz.DyadicStepUp
 import InverseGalois.CFT.Scholz.ElementaryAbelianSolutionTwo
 import InverseGalois.CFT.Scholz.FixedFieldRamification
 import InverseGalois.CFT.Scholz.FrattiniInertia
@@ -322,6 +325,7 @@ import InverseGalois.CFT.Scholz.SplitStep
 import InverseGalois.CFT.Scholz.StepRamification
 import InverseGalois.CFT.Scholz.StepSqrt
 import InverseGalois.CFT.Scholz.StrongScholz
+import InverseGalois.CFT.Scholz.SubfieldScholz
 import InverseGalois.CFT.Scholz.Tame
 import InverseGalois.CFT.Scholz.Twist
 import InverseGalois.CFT.Scholz.TwistStep
@@ -906,6 +910,17 @@ it that are available here.
 * `InverseGalois.CFT.Scholz.DyadicClassStep` solves the rung of the tower of free objects with no
   new ramification at all, the blocks of the realization below carrying over to the solution because
   the rung is a Frattini extension.
+* `InverseGalois.CFT.Scholz.SubfieldScholz` reads Serre's condition on a subfield: a prime ramified
+  in a field of split inertia has residue degree one in every subfield, so it splits completely in
+  every subfield it does not ramify in.
+* `InverseGalois.CFT.Scholz.DyadicShrink` shrinks a strong Scholz realization along a vector of
+  bits: collapsing the free object of rank `d * r` onto the one of rank `d` cuts out a subfield
+  whose blocks are the unions of the blocks the vector selects.
+* `InverseGalois.CFT.Scholz.ClassStepData` carries a rung of the induction — a realization together
+  with a field above it realising the next class and ramifying harmlessly over it — and shrinks the
+  realization and the field above it at the same time.
+* `InverseGalois.CFT.Scholz.DyadicStepUp` reads a Scholz solution of the rung over a strong Scholz
+  realization as a strong Scholz realization of the next class, with the very same blocks.
 * `InverseGalois.CFT.Scholz.DyadicInduction` isolates the step that raises the `2`-class by one and
   runs the induction from it: granted that step, every finite `2`-group is a Galois group over `ℚ`.
 * `InverseGalois.CFT.Scholz.DyadicResidueCorrection` is the correction itself at the prime two: a

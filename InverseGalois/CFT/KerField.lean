@@ -140,4 +140,26 @@ omit [FiniteDimensional F ↥A] [IsGalois F ↥A] in
 theorem inclusion_toKerField {y : ↥A} (hy : ∀ σ : Gal(↥A/F), π σ = 1 → σ y = y) :
     IntermediateField.inclusion (kerField_le π) (toKerField π hy) = y := rfl
 
+/-! ### Comparing the subfields cut out at two levels -/
+
+/-- **The subfield cut out by a homomorphism is contained in the one cut out by a homomorphism
+above it**, whenever the two are compatible with restriction.  An automorphism killed by the
+homomorphism above restricts to one killed by the homomorphism below, so it fixes everything the
+lower kernel does. -/
+theorem kerField_le_kerField {A B : IntermediateField F L} (hAB : A ≤ B) [FiniteDimensional F ↥A]
+    [IsGalois F ↥A] [FiniteDimensional F ↥B] [IsGalois F ↥B] {G G' : Type*} [Group G] [Group G']
+    (πA : Gal(↥A/F) →* G) (πB : Gal(↥B/F) →* G') (g : G' →* G)
+    (hg : ∀ τ, πA (galRestrictLE hAB τ) = g (πB τ)) : kerField πA ≤ kerField πB := by
+  intro x hx
+  have hxA : x ∈ A := kerField_le πA hx
+  have hfix : ∀ σ : Gal(↥A/F), πA σ = 1 → σ ⟨x, hxA⟩ = ⟨x, hxA⟩ := fun σ hσ =>
+    (IntermediateField.mem_fixedField_iff _ _).mp
+      ((IntermediateField.mem_lift (⟨x, hxA⟩ : ↥A)).mp hx) σ (MonoidHom.mem_ker.mpr hσ)
+  refine coe_mem_kerField πB (y := ⟨x, hAB hxA⟩) fun τ hτ => Subtype.ext ?_
+  have h1 : πA (galRestrictLE hAB τ) = 1 := by rw [hg, hτ, map_one]
+  have hcoe : ((galRestrictLE hAB τ ⟨x, hxA⟩ : ↥A) : L) = ((⟨x, hxA⟩ : ↥A) : L) := by
+    rw [hfix _ h1]
+  rw [coe_galRestrictLE hAB τ ⟨x, hxA⟩] at hcoe
+  exact hcoe
+
 end InverseGalois.CFT
