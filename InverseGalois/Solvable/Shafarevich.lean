@@ -22,6 +22,7 @@ import InverseGalois.Solvable.Shafarevich.ShrinkHom
 import InverseGalois.Solvable.Shafarevich.Layer
 import InverseGalois.Solvable.Shafarevich.LayerShrink
 import InverseGalois.Solvable.Shafarevich.LayerCohomology
+import InverseGalois.Solvable.Shafarevich.LayerHomology
 
 /-!
 # Shafarevich's theorem
@@ -124,4 +125,8 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   cocycle, a cocycle on a finite group takes only finitely many values, and a map of coefficients
   annihilating those values annihilates the class.  Finitely many prescribed classes, in any single
   degree, are therefore killed at once by a suitable surjective shrinking homomorphism.
+* `InverseGalois.Solvable.Shafarevich.LayerHomology` runs the same argument on cycles instead of
+  cocycles, and so obtains the same count for the homology of the operator group with coefficients
+  in a layer.  Having both is what makes the whole shrinking procedure work in ordinary
+  (co)homology, with no recourse to Tate cohomology in negative degrees.
 -/
