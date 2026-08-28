@@ -14,6 +14,7 @@ import InverseGalois.Solvable.Shafarevich.WreathGalois
 import InverseGalois.Solvable.Shafarevich.Ikeda
 import InverseGalois.Solvable.Shafarevich.Generic
 import InverseGalois.Solvable.Shafarevich.Shrink
+import InverseGalois.Solvable.Shafarevich.PCentral
 
 /-!
 # Shafarevich's theorem
@@ -76,4 +77,8 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   solution found for a generic kernel of very large rank down to the intended rank: a
   Chevalleyâ€“Warning count produces a nonzero vector of scalars whose associated combination of
   copies is surjective and annihilates finitely many prescribed obstructions at once.
+* `InverseGalois.Solvable.Shafarevich.PCentral` sets up the filtration along which such a solution
+  is built: the descending `p`-central series, whose terms are characteristic, whose successive
+  quotients are elementary abelian and central, and which a surjection carries onto the
+  corresponding series of the image.
 -/
