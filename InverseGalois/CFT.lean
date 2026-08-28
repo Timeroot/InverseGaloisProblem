@@ -315,6 +315,7 @@ import InverseGalois.CFT.Scholz.SplitCase
 import InverseGalois.CFT.Scholz.SplitReduction
 import InverseGalois.CFT.Scholz.SplitStep
 import InverseGalois.CFT.Scholz.StepRamification
+import InverseGalois.CFT.Scholz.StrongScholz
 import InverseGalois.CFT.Scholz.Tame
 import InverseGalois.CFT.Scholz.Twist
 import InverseGalois.CFT.Scholz.TwistStep
@@ -876,6 +877,10 @@ it that are available here.
   step at the prime two from the rationals produces a field satisfying `(S_N)` ramified at exactly
   as many distinct primes as the number of quadratic layers, with elementary abelian Galois group —
   the free object of that rank and `2`-class one — and with each ramified prime a block of its own.
+* `InverseGalois.CFT.Scholz.StrongScholz` carries that data as the invariant of the induction on
+  the `2`-class: a Scholz field realising a free object together with a pairwise disjoint family of
+  blocks accounting for its square roots; the multiquadratic base supplies the case of class one,
+  and a strong Scholz realization of every free object realises every finite `2`-group.
 * `InverseGalois.CFT.Scholz.DyadicResidueCorrection` is the correction itself at the prime two: a
   solution whose Frobenius defects sum to zero over each such block realises the group of the
   central step at the required level.
