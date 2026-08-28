@@ -24,7 +24,8 @@ elements span the layer.
   the `(n + 1)`-st term.
 * `InverseGalois.Shafarevich.Layer` — the same group written additively, a `ZMod p`-vector space.
 * `InverseGalois.Shafarevich.layerMk` — the class of an element of the `n`-th term.
-* `InverseGalois.Shafarevich.layerMap` — the map of layers induced by a homomorphism.
+* `InverseGalois.Shafarevich.layerMap` — the map of layers induced by a homomorphism, and
+  `InverseGalois.Shafarevich.layerLinear`, the same map read as a linear map.
 * `InverseGalois.Shafarevich.layerRep` — the resulting linear action of the automorphism group of
   the group on each of its layers.
 
@@ -177,6 +178,16 @@ theorem layerMap_smul (f : P →* Q) (c : ZMod p) (v : Layer p P n) :
     layerMap p f n (c • v) = c • layerMap p f n v :=
   ZMod.map_smul _ c v
 
+/-- **The linear map of layers induced by a homomorphism.** -/
+def layerLinear (p : ℕ) (f : P →* Q) (n : ℕ) : Layer p P n →ₗ[ZMod p] Layer p Q n where
+  toFun := layerMap p f n
+  map_add' := map_add _
+  map_smul' := layerMap_smul f
+
+@[simp]
+theorem layerLinear_apply (f : P →* Q) (v : Layer p P n) :
+    layerLinear p f n v = layerMap p f n v := rfl
+
 @[simp]
 theorem layerMap_id : layerMap p (MonoidHom.id P) n = AddMonoidHom.id (Layer p P n) := by
   ext v
@@ -221,10 +232,7 @@ variable (p P n)
 term of the descending `p`-central series is characteristic, so an automorphism of the group acts
 linearly on every layer. -/
 def layerRep : MulAut P →* Module.End (ZMod p) (Layer p P n) where
-  toFun e :=
-    { toFun := layerMap p e.toMonoidHom n
-      map_add' := map_add _
-      map_smul' := fun c v => layerMap_smul _ c v }
+  toFun e := layerLinear p e.toMonoidHom n
   map_one' := by
     refine LinearMap.ext fun v => ?_
     obtain ⟨x, hx, rfl⟩ := exists_layerMk v

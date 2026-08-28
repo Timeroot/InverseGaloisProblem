@@ -21,6 +21,7 @@ import InverseGalois.Solvable.Shafarevich.LayerWord
 import InverseGalois.Solvable.Shafarevich.ShrinkHom
 import InverseGalois.Solvable.Shafarevich.Layer
 import InverseGalois.Solvable.Shafarevich.LayerShrink
+import InverseGalois.Solvable.Shafarevich.LayerCohomology
 
 /-!
 # Shafarevich's theorem
@@ -118,4 +119,9 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   the next, whose shrinking homomorphism is surjective because a nonzero vector has a coordinate
   prime to the characteristic.  The layers of the generic groups are linear representations of the
   operator group, and the map between them is equivariant.
+* `InverseGalois.Solvable.Shafarevich.LayerCohomology` raises the count from the layer itself to the
+  cohomology of the operator group with coefficients in the layer: a class is the class of a
+  cocycle, a cocycle on a finite group takes only finitely many values, and a map of coefficients
+  annihilating those values annihilates the class.  Finitely many prescribed classes, in any single
+  degree, are therefore killed at once by a suitable surjective shrinking homomorphism.
 -/

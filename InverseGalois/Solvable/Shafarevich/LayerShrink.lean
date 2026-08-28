@@ -27,6 +27,9 @@ coordinate prime to the characteristic, which is what makes the resulting homomo
   the number of scalar equations involved.
 * `InverseGalois.Shafarevich.exists_genericShrink_mem_pCentral` — the same for the shrinking
   homomorphism between generic operator groups, which is then surjective as well.
+* `InverseGalois.Shafarevich.exists_genericShrink_rTensor_eq_zero` — the same again after extending
+  the layer by a finite-dimensional module of coefficients, which multiplies the number of scalar
+  equations by the dimension of that module.
 * `InverseGalois.Shafarevich.layerMap_genericShrink_genericLayerRep` — the map of layers it induces
   respects the linear action of the operator group.
 
@@ -34,6 +37,8 @@ coordinate prime to the characteristic, which is what makes the resulting homomo
 
 Shafarevich's theorem, embedding problem, p-central series, Chevalley–Warning
 -/
+
+open scoped TensorProduct
 
 namespace InverseGalois.Shafarevich
 
@@ -56,6 +61,32 @@ theorem natCast_multiset_prod_smul (μ : Multiset α) (a : α → ZMod ℓ) (v :
   exact congrArg (· • v) (congrArg Multiset.prod h)
 
 end Cast
+
+/-! ### Coordinates in a tensor product -/
+
+section Tensor
+
+variable {R : Type*} [CommRing R] {M T : Type*} [AddCommGroup M] [Module R M] [AddCommGroup T]
+  [Module R T] {d : ℕ}
+
+/-- Read along a finite basis of the right-hand factor, an element of a tensor product is a sum of
+pure tensors, one for each basis vector. -/
+theorem exists_sum_tmul_basis (b : Module.Basis (Fin d) R T) (x : M ⊗[R] T) :
+    ∃ w : Fin d → M, x = ∑ i, w i ⊗ₜ[R] b i := by
+  induction x using TensorProduct.induction_on with
+  | zero => exact ⟨0, by simp⟩
+  | tmul m t =>
+    refine ⟨fun i => b.repr t i • m, ?_⟩
+    calc m ⊗ₜ[R] t = m ⊗ₜ[R] ∑ i, b.repr t i • b i := by rw [b.sum_repr]
+      _ = ∑ i, (b.repr t i • m) ⊗ₜ[R] b i := by
+            rw [TensorProduct.tmul_sum]
+            exact Finset.sum_congr rfl fun i _ => (TensorProduct.smul_tmul _ _ _).symm
+  | add x y hx hy =>
+    obtain ⟨w, rfl⟩ := hx
+    obtain ⟨w', rfl⟩ := hy
+    exact ⟨w + w', by simp [TensorProduct.add_tmul, Finset.sum_add_distrib]⟩
+
+end Tensor
 
 /-! ### The counting argument in a layer -/
 
@@ -229,6 +260,44 @@ theorem exists_genericShrink_layerMap_eq_zero {ℓ : ℕ} [Fact ℓ.Prime] (hS :
   refine ⟨a, hsurj, fun ν => ?_⟩
   rw [← hzv ν, layerMap_layerMk, layerMk_eq_zero_iff]
   exact ha ν
+
+omit [Group U] in
+/-- The same count for a family indexed by an arbitrary finite type. -/
+theorem exists_genericShrink_forall_layerMap_eq_zero {ℓ : ℕ} [Fact ℓ.Prime] (hS : IsPGroup ℓ S)
+    {j : ℕ} {ι : Type*} [Finite ι]
+    (hr : (j + 1) * (Nat.card ι * Module.finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j)) < r)
+    (v : ι → Layer ℓ (Generic U (r * n) S) j) :
+    ∃ a : Fin r → ℕ, Function.Surjective (genericShrink U r n S a) ∧
+      ∀ ν, layerMap ℓ (genericShrink U r n S a) j (v ν) = 0 := by
+  obtain ⟨a, hsurj, ha⟩ := exists_genericShrink_layerMap_eq_zero U r n S hS hr
+    (v ∘ (Finite.equivFin ι).symm)
+  exact ⟨a, hsurj, fun ν => by simpa using ha (Finite.equivFin ι ν)⟩
+
+omit [Group U] in
+/-- **A shrinking homomorphism can be chosen surjective and killing finitely many prescribed
+elements of a layer with coefficients at once.**  Extending the layer by a finite-dimensional
+coefficient module multiplies the number of scalar equations by its dimension, which is again what
+the bound on the number of blocks records. -/
+theorem exists_genericShrink_rTensor_eq_zero {ℓ : ℕ} [Fact ℓ.Prime] (hS : IsPGroup ℓ S) {j t : ℕ}
+    (T : Type*) [AddCommGroup T] [Module (ZMod ℓ) T] [Module.Finite (ZMod ℓ) T]
+    (hr : (j + 1) * (t * Module.finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j ⊗[ZMod ℓ] T)) < r)
+    (v : Fin t → Layer ℓ (Generic U (r * n) S) j ⊗[ZMod ℓ] T) :
+    ∃ a : Fin r → ℕ, Function.Surjective (genericShrink U r n S a) ∧
+      ∀ ν, LinearMap.rTensor T (layerLinear ℓ (genericShrink U r n S a) j) (v ν) = 0 := by
+  set d := Module.finrank (ZMod ℓ) T with hd
+  choose w hw using fun ν => exists_sum_tmul_basis (Module.finBasis (ZMod ℓ) T) (v ν)
+  have hr' : (j + 1) * (Nat.card (Fin t × Fin d)
+      * Module.finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j)) < r := by
+    refine lt_of_le_of_lt (le_of_eq ?_) hr
+    rw [Nat.card_prod, Nat.card_eq_fintype_card, Nat.card_eq_fintype_card, Fintype.card_fin,
+      Fintype.card_fin, Module.finrank_tensorProduct, ← hd]
+    ring
+  obtain ⟨a, hsurj, ha⟩ := exists_genericShrink_forall_layerMap_eq_zero U r n S hS hr'
+    fun q : Fin t × Fin d => w q.1 q.2
+  refine ⟨a, hsurj, fun ν => ?_⟩
+  rw [hw ν, map_sum]
+  refine Finset.sum_eq_zero fun i _ => ?_
+  rw [LinearMap.rTensor_tmul, layerLinear_apply, ha (ν, i), TensorProduct.zero_tmul]
 
 /-! ### Equivariance -/
 
