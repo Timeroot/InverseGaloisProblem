@@ -78,6 +78,26 @@ theorem commutatorElement_inv_right_of_commute {x z : G} (h : Commute z ⁅x, z�
         group
     _ = ⁅x, z⁆⁻¹ := by rw [mul_assoc, ← h.inv_right.eq, inv_mul_cancel_left]
 
+/-- Raising the first argument of a commutator to a power raises the commutator to that power, as
+soon as the commutator is central enough. -/
+theorem commutatorElement_pow_left_of_commute {x z : G} (h : Commute x ⁅x, z⁆) (n : ℕ) :
+    ⁅x ^ n, z⁆ = ⁅x, z⁆ ^ n := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+    rw [pow_succ', commutatorElement_mul_left_of_commute (by rw [ih]; exact h.pow_right n), ih,
+      pow_succ]
+
+/-- Raising the second argument of a commutator to a power raises the commutator to that power, as
+soon as the commutator is central enough. -/
+theorem commutatorElement_pow_right_of_commute {x z : G} (h : Commute z ⁅x, z⁆) (n : ℕ) :
+    ⁅x, z ^ n⁆ = ⁅x, z⁆ ^ n := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+    rw [pow_succ', commutatorElement_mul_right_of_commute (by rw [ih]; exact h.pow_right n), ih,
+      pow_succ']
+
 /-! ### The class two power formula -/
 
 /-- Moving a power of `y` past `x` costs one copy of the commutator per unit of the exponent. -/

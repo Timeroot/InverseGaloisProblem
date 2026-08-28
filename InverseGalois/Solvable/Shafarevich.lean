@@ -17,6 +17,7 @@ import InverseGalois.Solvable.Shafarevich.Shrink
 import InverseGalois.Solvable.Shafarevich.PCentral
 import InverseGalois.Solvable.Shafarevich.ClassTwo
 import InverseGalois.Solvable.Shafarevich.PCentralSpan
+import InverseGalois.Solvable.Shafarevich.LayerWord
 
 /-!
 # Shafarevich's theorem
@@ -90,4 +91,10 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
 * `InverseGalois.Solvable.Shafarevich.PCentralSpan` uses that calculus to generate each layer
   explicitly: starting from a generating set of the group and applying, at each step, either a
   `p`-th power or a commutator with a generator produces a set of words generating the layer.
+* `InverseGalois.Solvable.Shafarevich.LayerWord` records those words as syntax rather than only as
+  the elements they produce, and reads off the two numbers that the counting argument needs: the
+  level of a word, which is the layer it lands in, and its degree, the multiset of generators it
+  involves.  Rescaling the generators multiplies the value of a word by the product of the scaling
+  exponents over its degree, modulo the next layer, so a word of level `n` is a monomial in those
+  exponents of total degree at most `n + 1`.
 -/
