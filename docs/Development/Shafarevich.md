@@ -3379,6 +3379,80 @@ order `n` (see §0.29's two negative observations).
 
 ---
 
+## 0.32 Status (2026-08-29) — the Frobenius normalization: what landed and what is left
+
+Target 1 of §0.31 needs a **canonical** generator of `Gal(L/K)` for an unramified local extension:
+`brauerInvariant hσ₀ hur hm` depends on the chosen generator `σ₀`, and replacing `σ₀` by `σ₀^k`
+rescales the invariant.  (`normQuotientValInvariant : Kˣ/N(Lˣ) ≅ (1/n)ℤ/ℤ` is already canonical,
+so the whole canonicity gap is the choice of `σ₀`.)  This section records the reduction.
+
+### The local formalism to work in
+
+There are two parallel local layers in the repo.  The Brauer-invariant layer lives in the **normed**
+one — `[NontriviallyNormedField K] [IsUltrametricDist K] [ProperSpace K]`, `divisionNorm`,
+`spectralNorm` — and *unramifiedness* there is the statement produced by the splitting theory of
+division algebras,
+
+```
+hur : ∀ z : L, z ≠ 0 → ∃ c : K, c ≠ 0 ∧ divisionNorm K L z = ‖c‖
+```
+
+("every absolute value is already the absolute value of a scalar", i.e. `e = 1`).
+`Brauer/AdicUnramified.lean` bridges this to the `Valued A ℤᵐ⁰` layer.  The Teichmüller lift is
+`Brauer/DivisionTeichmuller.lean`'s `exists_rootOfUnity_pow_divisionNorm_sub_lt_one`, in the normed
+layer already — a duplicate in the `Valued` layer is not needed.
+
+### Landed
+
+* `Brauer/UnramifiedAdjoin.lean`
+  * `isDivisionUniformizer_algebraMap` — under `hur` a uniformizer of `K` **is** a uniformizer of
+    `L`.  (This is the whole force of `e = 1`: an element of absolute value `< 1` has the absolute
+    value of a scalar of absolute value `< 1`.)
+  * `exists_adjoin_rootOfUnity_eq_top_of_unramified` — **`L = K(ζ)`** for the Teichmüller root of
+    unity `ζ` of order `N := #𝓀_L − 1`.  Proof: the powers of `ζ` cover every residue, so
+    `finrank_le_mul_of_divisionNorm_eq_pow` (`Brauer/DivisionMaximal.lean`, which needs **no**
+    centrality) applies to the subalgebra `M = K[ζ]` with `m = 1`, giving `[L:K] ≤ [M:K]`.
+  * `algEquiv_eq_of_apply_eq_of_adjoin_eq_top` — an automorphism is determined by its value on `ζ`.
+* `Brauer/UnramifiedAut.lean`
+  * `exists_isPrimitiveRoot_adjoin_eq_top_of_unramified`, and `autToPow_injective`: the Mathlib
+    monoid hom `IsPrimitiveRoot.autToPow K hζ : (L ≃ₐ[K] L) →* (ZMod N)ˣ` is **injective**.
+  * `mul_comm_algEquiv_of_unramified` — the automorphism group of an unramified local extension is
+    **commutative**.
+
+So `Gal(L/K) ↪ (ℤ/N)ˣ` canonically (the exponent `a(σ)` with `σζ = ζ^{a(σ)}` does not depend on the
+choice of the generator `ζ` of `μ_N`), and the Frobenius is *by definition* the element with
+`a(σ₀) = q`, where `q := #𝓀_K`.
+
+### The one remaining input
+
+That `σ₀` **generates** `Gal(L/K)`, equivalently the fundamental identity in the unramified case
+
+```
+f := [𝓀_L : 𝓀_K] = [L : K] =: n      (given e = 1)
+```
+
+Two half-arguments are available and neither is free:
+
+* `n ≤ f`.  Every `σ` preserves `𝒪_L` and `𝔪_L` (`divisionNorm` is `Algebra.norm`-defined, hence
+  `AlgEquiv`-invariant), so induces `σ̄ ∈ Gal(𝓀_L/𝓀_K)`, and `σ ↦ σ̄` is injective because
+  `σ̄(z) = z^{a(σ)}` for `z` the residue of `ζ`, which generates `𝓀_Lˣ`.  Needs the residue-field
+  functor `L ≃ₐ[K] L → 𝓀_L ≃ₐ[𝓀_K] 𝓀_L`, i.e. a `𝓀_K`-algebra structure on `DivisionResidue K L`.
+* `f ≤ n`.  `𝓀_L = 𝓀_K[z]` and `z` kills the reduction of `minpoly K ζ`, whose coefficients are
+  integral because `spectralNorm = spectralValue (minpoly K ·)`.
+
+An alternative that avoids the residue-field functor: Mathlib's
+`Ideal.ramificationIdx_mul_inertiaDeg_of_isLocalRing`
+(`Mathlib/NumberTheory/RamificationInertia/Basic.lean:966`) is exactly `e · f = n` for a local
+`S`, but it wants `IsDedekindDomain`, `IsIntegralClosure S R L` and `Module.Finite R S` — i.e. the
+DVR packaging of `𝒪_K ⊆ 𝒪_L`, which is a comparable amount of plumbing in the *other* formalism.
+
+Note that canonicity does **not** actually need `f = n`: `Gal(L/K) ↪ (ℤ/N)ˣ` already pins every
+element down, and the unique preimage of `Frob_q^{f/n}` is a canonical generator.  What `f = n`
+buys is that this generator is the *Frobenius*, which is what makes `inv ∘ res = f · inv` come out
+right on a tower.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
