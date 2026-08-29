@@ -97,6 +97,7 @@ import InverseGalois.CFT.GroupCohomology.InflationRestriction
 import InverseGalois.CFT.GroupCohomology.MapCoboundary
 import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.SylowRes
+import InverseGalois.CFT.GroupCohomology.TateTwist
 import InverseGalois.CFT.GroupCohomology.ToCocycle
 import InverseGalois.CFT.Global.DavenportCassels
 import InverseGalois.CFT.Global.DescentTools
@@ -2408,6 +2409,14 @@ it that are available here.
   cycles annihilate coboundaries.  For a finite group acting on a finite dimensional space the
   induced pairing is perfect: **the first homology of the contragredient representation is
   canonically the dual of the first cohomology**.
+* `InverseGalois.CFT.GroupCohomology.TateTwist` multiplies the action of a representation by a
+  character of the group.  The linear maps into the one dimensional representation of a character
+  are the dual representation twisted by the character, and the dual of a twist is the dual twisted
+  by the inverse character, so evaluation onto the double dual identifies **the dual of the linear
+  maps into the representation of a character with the twist by the inverse character** — the shape
+  in which a Tate twist appears.  Feeding that identification into the duality above, the first
+  homology of the twist surjects onto the dual of any subspace of the first cohomology of those
+  linear maps.
 * `InverseGalois.CFT.Units.IdeleClassH1Full` removes the cyclicity hypothesis altogether.  A group
   of prime-power order has a normal subgroup of prime index, so the tower dévissage and induction on
   the exponent settle every extension of prime-power degree; and restriction to a Sylow subgroup is
