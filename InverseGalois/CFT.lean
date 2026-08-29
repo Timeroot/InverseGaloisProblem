@@ -445,7 +445,9 @@ import InverseGalois.CFT.TateCohomology.Restrict
 import InverseGalois.CFT.TateCohomology.Shift
 import InverseGalois.CFT.TateCohomology.Shifting
 import InverseGalois.CFT.TateCohomology.SylowInjective
+import InverseGalois.CFT.TateCohomology.RestrictOne
 import InverseGalois.CFT.TateCohomology.SylowTrivial
+import InverseGalois.CFT.TateCohomology.TateDegreeTwo
 import InverseGalois.CFT.TateCohomology.TateTheorem
 import InverseGalois.CFT.TateCohomology.TorsionFree
 import InverseGalois.CFT.TateCohomology.Transfer
@@ -2861,4 +2863,22 @@ it that are available here.
   degrees on a Sylow subgroup for each prime empty it altogether, whence **the complete cohomology
   of the integers in a degree is the complete cohomology of the representation in the following
   degree**.
+* `InverseGalois.CFT.TateCohomology.RestrictOne` reconciles the two descriptions of restriction in
+  degree one.  The connecting map out of degree zero is computed on a lift of an invariant vector
+  and on the cochain measuring the failure of that lift to be invariant, and restricting the lift
+  and the cochain computes the connecting map of the restricted extension, so **the connecting map
+  out of degree zero is natural for restriction to a subgroup**.  In the extension defining the
+  shift a cocycle is its own lift, because the record of all the translates of its value at an
+  element is the difference between the translate of the cocycle and the cocycle, which is the
+  cocycle identity; hence **the class of a cocycle in the shift is invariant and the connecting map
+  carries it to the class of the cocycle**, and **restriction in degree one carries the class of a
+  cocycle to the class of the cocycle read on the subgroup**.
+* `InverseGalois.CFT.TateCohomology.TateDegreeTwo` states Tate's theorem about a class in degree
+  two, as it is usually met.  The degree drops by one on passing to the shift: a class in degree
+  two is the class of a cocycle of the shift, since the identification raising the degree is
+  surjective and every class in degree one is the class of a cocycle, and **restriction commutes
+  with the identification raising the degree** by the very way restriction was defined.  So **the
+  hypotheses in degrees one and two on the representation are the hypotheses in degrees zero and
+  one on the shift**, and **the complete cohomology of the integers in a degree is the complete
+  cohomology of the representation two degrees higher**.
 -/
