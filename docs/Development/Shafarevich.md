@@ -3246,6 +3246,52 @@ machinery between and after them is now complete and unconditional.
 
 ---
 
+## 0.30 Status (2026-08-29, night) — **the degree-two count is done**: two of the three class-formation conditions are unconditional
+
+Item 2 of §0.29 — `#Ĥ²(H, C_K) ≤ #H` for **every** subgroup `H ≤ Gal(K/k)` and **every** Galois
+extension of number fields — is now a theorem, sorry- and axiom-free. Note that the *inequality* is
+all that `isTateClassTwo_of_card_le` wants: the reverse inequality comes for free from a class `α`
+of order `#G`, whose multiples already fill `#G` elements. So §0.29's list now reads
+
+1. `Ĥ¹(H, C_K) = 0` — **done** (`isZero_tateModule_resObj_ideleClassRep_one`);
+2. `#Ĥ²(H, C_K) ≤ #H` — **done** (`card_tateModule_resObj_ideleClassRep_two_le`);
+3. a global `α ∈ Ĥ²(Gal(K/k), C_K)` annihilated only by multiples of `#Gal(K/k)` — **missing**, and
+   still exactly the invariant map, resting on the one local brick of §0.29.
+
+`isTateClassTwo_ideleClassRep`, `tateIdeleClassEquiv` and `tateNakayamaIdeleClass`
+(`CFT/Units/IdeleClassTate.lean`) therefore now carry **`hα` as their only hypothesis**.
+
+### The two dévissages
+
+Everything is bootstrapped from the cyclic count `#Ĥ²(C_K) = #Gal(K/k)`
+(`card_H2_ideleClassRep_cyclic`, §0.24 era) by two reductions, each split into an abstract module
+and its arithmetic instance.
+
+| module | content |
+| --- | --- |
+| `CFT/GroupCohomology/H2Transport.lean` | `H²` transported along `e : G ≃* G'` compatible with `φ : A ≃+ B`; gives `card_H2_eq_of_addEquiv`, `finite_H2_of_addEquiv` (and the `Rep k G` universe-polymorphic versions) |
+| `CFT/GroupCohomology/H2Devissage.lean` | counting inflation–restriction: `finite_and_card_H2_le_of_devissage` — for `π : G ↠ G'` with `B ↪ A` identifying `B` with `A^{ker π}`, and `Ĥ¹(ker π, A) = 0`, one has `#H²(G,A) ≤ #H²(G',B) · #H²(ker π, A)` |
+| `CFT/GroupCohomology/H2Sylow.lean` | `finite_and_card_H2_le_of_sylow` — `H²(G,A) ↪ ∏_p H²(P_p, A)` by `eq_zero_of_forall_prime_res`, and `∏_p #P_p = #G` |
+| `CFT/Units/IdeleClassH2Tower.lean` | the arithmetic instance of the dévissage: `galRestrictKerEquiv` identifies `Gal(K/F)` with `ker(Gal(K/k) ↠ Gal(F/k))`, `ideleClassComapLin` identifies `C_F` with `C_K^{Gal(K/F)}`, giving `finite_and_card_H2_ideleClassRep_of_tower` |
+| `CFT/Units/IdeleClassH2Full.lean` | the induction: prime-power degree by `Sylow.exists_subgroup_card_pow_prime` + `Subgroup.normal_of_index_eq_minFac_card` (cyclic degree `p` at the bottom, `p^n` on top, and `p · p^n = p^{n+1}` is *exact*, so no slack accumulates), then the general case by Sylow, since `Ĥ²` restricted to `S` is `Ĥ²` over `fixedField S` |
+
+The shape deliberately mirrors the degree-one story of §0.24 (`H1Transport` / `IdeleClassTower` /
+`IdeleClassH1Full`); the only genuinely new ingredient is that the tower step now needs the
+*vanishing* of `Ĥ¹` over the middle field as an input, which is exactly what the degree-one story
+delivers.
+
+### Two Lean gotchas worth keeping
+
+* **`Rep.ρ` vs `Action.ρ`.** Writing the type `((Action.res _ S.subtype).obj A).ρ s a` makes `.ρ`
+  resolve to `Action.ρ`, whose value is a `CategoryTheory.End` and is *not* a function. The fix used
+  throughout is a `noncomputable abbrev` whose **declared type** is `Rep ℤ ↥S` (`ideleClassRepRes`,
+  `ideleClassRepKer`); being an `abbrev` it still unifies with the unfolded form.
+* **`Module ℤ` diamonds.** Relating a `Rep ℤ` carrier to an invariants submodule through `≃ₗ[ℤ]`
+  produces mismatched `Module ℤ` instances; stating the transport with `≃+` and converting via
+  `AddEquiv.toIntLinearEquiv` (whose `Module ℤ` argument is implicit) avoids it.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.

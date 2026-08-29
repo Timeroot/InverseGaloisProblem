@@ -92,6 +92,9 @@ import InverseGalois.CFT.GroupCohomology.Duality
 import InverseGalois.CFT.GroupCohomology.ExtensionMap
 import InverseGalois.CFT.GroupCohomology.Pullback
 import InverseGalois.CFT.GroupCohomology.H1Transport
+import InverseGalois.CFT.GroupCohomology.H2Devissage
+import InverseGalois.CFT.GroupCohomology.H2Sylow
+import InverseGalois.CFT.GroupCohomology.H2Transport
 import InverseGalois.CFT.GroupCohomology.IndexTwo
 import InverseGalois.CFT.GroupCohomology.InfResTwo
 import InverseGalois.CFT.GroupCohomology.Inflation
@@ -500,6 +503,8 @@ import InverseGalois.CFT.Units.IdeleClassFixed
 import InverseGalois.CFT.Units.IdeleClassH1
 import InverseGalois.CFT.Units.IdeleClassH1Full
 import InverseGalois.CFT.Units.IdeleClassH2
+import InverseGalois.CFT.Units.IdeleClassH2Full
+import InverseGalois.CFT.Units.IdeleClassH2Tower
 import InverseGalois.CFT.Units.IdeleClassIndex
 import InverseGalois.CFT.Units.IdeleClassSES
 import InverseGalois.CFT.Units.IdeleClassTate
@@ -2982,20 +2987,50 @@ it that are available here.
   over the whole group** -- the shape in which the fundamental class of a class formation presents
   itself -- and that count therefore delivers both **Tate's theorem** and **the theorem of Tate and
   Nakayama for coefficients flat over the integers** on its own.
-* `InverseGalois.CFT.Units.IdeleClassTate` hands the first of the three conditions to the idele
-  class group.  The restriction of the representation to a subgroup of the Galois group is the
-  representation attached to the extension over the fixed field of that subgroup, and the first
-  cohomology of the idele class group of any Galois extension of number fields vanishes, so **the
-  complete cohomology of the idele class group in degree one vanishes on every subgroup**.  What
-  remains of the classical hypotheses is therefore the count in degree two and the order of a class
-  over the whole group, and with those in hand one gets **Tate's theorem for the idele class
-  group** -- the complete cohomology of the trivial integral representation in a degree is that of
-  the idele class group two degrees higher -- and **the theorem of Tate and Nakayama for the idele
-  class group** for coefficients flat over the integers.
 * `InverseGalois.CFT.Units.IdeleClassH2` supplies the count in degree two for a cyclic
   extension.  The zeroth Tate group of the automorphism by which a generator acts is the
   quotient of the ideles of the base field by the principal ideles together with the norms, an
   index which the two inequalities pin to the degree, so **the second cohomology of the idele
   class group of a cyclic extension of number fields has exactly as many elements as the Galois
   group**.
+* `InverseGalois.CFT.GroupCohomology.H2Transport` carries the second cohomology across an
+  isomorphism of groups compatible with an isomorphism of modules.  A two-cocycle is transported by
+  reindexing along the isomorphism, the transport of a coboundary is a coboundary, and the induced
+  map on classes is a bijection because the inverse isomorphism transports back, so **the two second
+  cohomology groups have the same number of elements and one is finite exactly when the other is**.
+* `InverseGalois.CFT.GroupCohomology.H2Devissage` is the counting form of inflation-restriction.  A
+  surjection of groups whose kernel acts on a module with an equivariant injection from a second
+  module identifying it with the invariants of the kernel presents the second cohomology of the
+  quotient as classes upstairs, so once the first cohomology of the kernel vanishes **the second
+  cohomology of the whole group is finite and has at most as many elements as the product of the
+  second cohomology of the quotient and the second cohomology of the kernel**.
+* `InverseGalois.CFT.GroupCohomology.H2Sylow` assembles the count from the Sylow subgroups.  A class
+  restricting to zero on every Sylow subgroup is zero, so the second cohomology embeds into the
+  product over the primes dividing the order, and the orders of the Sylow subgroups multiply to the
+  order of the group: **the second cohomology of a finite group is finite with at most as many
+  elements as the group as soon as this holds on each of its Sylow subgroups**.
+* `InverseGalois.CFT.Units.IdeleClassH2Tower` is that dévissage for a tower of number fields.
+  Restriction of scalars identifies the Galois group of the top field over the middle field with the
+  kernel of restriction to the middle field, and the idele classes of the middle field are exactly
+  the classes fixed by that kernel, so **the number of classes for the top field over the base is at
+  most the number for the middle field over the base times the number for the top field over the
+  middle field**.
+* `InverseGalois.CFT.Units.IdeleClassH2Full` removes the cyclicity hypothesis.  A group of
+  prime-power order has a normal subgroup of prime index, so the tower dévissage and induction on
+  the exponent settle every extension of prime-power degree, where the two counts multiply to
+  exactly the degree; and restriction to a Sylow subgroup is the cohomology over its fixed field,
+  whose degree is a prime power.  **The second cohomology of the idele class group of an arbitrary
+  Galois extension of number fields is finite and has at most as many elements as the Galois
+  group.**
+* `InverseGalois.CFT.Units.IdeleClassTate` hands the first two of the three conditions to the idele
+  class group.  The restriction of the representation to a subgroup of the Galois group is the
+  representation attached to the extension over the fixed field of that subgroup, so both the
+  vanishing of the first cohomology and the count of the second hold on every subgroup at once:
+  **the complete cohomology of the idele class group in degree one vanishes on every subgroup, and
+  in degree two it is finite with at most as many elements as the subgroup**.  What remains of the
+  classical hypotheses is therefore the order of a class over the whole group, and with that in hand
+  one gets **Tate's theorem for the idele class group** -- the complete cohomology of the trivial
+  integral representation in a degree is that of the idele class group two degrees higher -- and
+  **the theorem of Tate and Nakayama for the idele class group** for coefficients flat over the
+  integers.
 -/
