@@ -431,8 +431,11 @@ import InverseGalois.CFT.TateCohomology.Functorial
 import InverseGalois.CFT.TateCohomology.Graded
 import InverseGalois.CFT.TateCohomology.HomologyJunction
 import InverseGalois.CFT.TateCohomology.Induced
+import InverseGalois.CFT.TateCohomology.Iterate
 import InverseGalois.CFT.TateCohomology.Junction
 import InverseGalois.CFT.TateCohomology.Norm
+import InverseGalois.CFT.TateCohomology.PGroupInvariants
+import InverseGalois.CFT.TateCohomology.PGroupTrivial
 import InverseGalois.CFT.TateCohomology.Restrict
 import InverseGalois.CFT.TateCohomology.Shift
 import InverseGalois.CFT.TateCohomology.Shifting
@@ -2771,4 +2774,20 @@ it that are available here.
   restriction to a subgroup is killed by the index of that subgroup, so that **a class killed by a
   power of a prime and by restriction to a Sylow subgroup for that prime vanishes**: the study of
   the complete cohomology of a finite group reduces to its Sylow subgroups, one prime at a time.
+* `InverseGalois.CFT.TateCohomology.Iterate` repeats the shift and the coshift, so that **the
+  vanishing of the complete cohomology in a single degree travels to any other degree** at the
+  price of replacing the representation by an iterated shift or coshift of it.
+* `InverseGalois.CFT.TateCohomology.PGroupInvariants` counts the fixed points of a `p`-group acting
+  on a vector space over the field with `p` elements: the orbit of a nonzero vector spans a finite
+  stable subspace of cardinality divisible by `p`, and the origin is already fixed, so **a nonzero
+  representation of a `p`-group in characteristic `p` has a nonzero invariant vector**.  The same
+  statement for a stable subspace and for a quotient by one follow at once.
+* `InverseGalois.CFT.TateCohomology.PGroupTrivial` retracts the inclusion of the invariants and
+  sends a vector to the record of its retracted translates.  That map is equivariant, and it is
+  injective because its kernel is a stable subspace with no nonzero invariant vector; when the
+  first cohomology vanishes it is also surjective, because a function invariant modulo the image
+  produces a one-cocycle, and a one-cocycle is a coboundary.  So **a representation of a `p`-group
+  in characteristic `p` with no first cohomology is the representation on the functions on the
+  group**, and iterated shifting turns that into: **a representation of a `p`-group in
+  characteristic `p` with no complete cohomology in one degree has none in any degree**.
 -/
