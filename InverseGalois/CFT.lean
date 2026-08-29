@@ -443,6 +443,7 @@ import InverseGalois.CFT.TateCohomology.Restrict
 import InverseGalois.CFT.TateCohomology.Shift
 import InverseGalois.CFT.TateCohomology.Shifting
 import InverseGalois.CFT.TateCohomology.SylowInjective
+import InverseGalois.CFT.TateCohomology.SylowTrivial
 import InverseGalois.CFT.TateCohomology.TorsionFree
 import InverseGalois.CFT.TateCohomology.Transfer
 import InverseGalois.CFT.TotallyReal
@@ -2822,4 +2823,11 @@ it that are available here.
   being made of functions valued in a free module over the integers, so **a representation of a
   `p`-group over the integers whose complete cohomology vanishes in two consecutive degrees has
   none in any degree**.
+* `InverseGalois.CFT.TateCohomology.SylowTrivial` passes from the Sylow subgroups to the whole
+  group.  The order of a class divides the index of every subgroup to which the class restricts
+  trivially, and a Sylow subgroup for a prime has index prime to that prime, so a class restricting
+  trivially to a Sylow subgroup for every prime has an order divisible by no prime and vanishes.
+  Since a Sylow subgroup is a `p`-group, **a representation over the integers whose restriction to
+  a Sylow subgroup for each prime has no complete cohomology in two consecutive degrees, degrees
+  that may depend on the prime, has no complete cohomology in any degree**.
 -/
