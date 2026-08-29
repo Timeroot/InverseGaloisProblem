@@ -448,7 +448,11 @@ import InverseGalois.CFT.TateCohomology.SylowInjective
 import InverseGalois.CFT.TateCohomology.RestrictOne
 import InverseGalois.CFT.TateCohomology.SylowTrivial
 import InverseGalois.CFT.TateCohomology.TateDegreeTwo
+import InverseGalois.CFT.TateCohomology.TateNakayama
 import InverseGalois.CFT.TateCohomology.TateTheorem
+import InverseGalois.CFT.TateCohomology.Tensor
+import InverseGalois.CFT.TateCohomology.TensorExtension
+import InverseGalois.CFT.TateCohomology.TensorShift
 import InverseGalois.CFT.TateCohomology.TorsionFree
 import InverseGalois.CFT.TateCohomology.Transfer
 import InverseGalois.CFT.TotallyReal
@@ -2881,4 +2885,33 @@ it that are available here.
   hypotheses in degrees one and two on the representation are the hypotheses in degrees zero and
   one on the shift**, and **the complete cohomology of the integers in a degree is the complete
   cohomology of the representation two degrees higher**.
+* `InverseGalois.CFT.TateCohomology.Tensor` tensors two representations with the diagonal action.
+  **The tensor product does not depend on the order of the factors**, and when one factor is the
+  functions on the group with values in a module carrying no action the diagonal action is again
+  the action by translation: a function and a vector are sent to the record, at each element of the
+  group, of the value of the function there tensored with the translate of the vector by that
+  element.  That comparison is an isomorphism because the tensor product distributes over a finite
+  product, so **the tensor product of the functions on the group with any representation has no
+  complete cohomology**.
+* `InverseGalois.CFT.TateCohomology.TensorShift` moves that comparison past the shift.  Tensoring a
+  cokernel with a fixed module gives the cokernel of the tensored map, and under the comparison the
+  tensored embedding is the embedding of the tensor product, because the translates of a vector
+  tensored with a vector are the translates of the tensor of the two vectors.  So **the shift of a
+  representation tensored with another representation is the shift of the tensor product**, which
+  is what lets a statement about a tensor product be moved by one degree.
+* `InverseGalois.CFT.TateCohomology.TensorExtension` tensors the extension attached to a one
+  cocycle.  As a module that extension is the sum of the representation and the base ring, so
+  tensoring gives the sum of the tensor product and the second representation, with an element of
+  the group moving a pair by acting diagonally on the first entry and adding the value of the
+  cocycle tensored with the moved second entry.  **The tensored extension is again an extension**,
+  of the second representation by the tensor product, and **it is the extension tensored with the
+  representation**: the price usually paid to a flatness assumption is paid in advance by the
+  splitting of the extension as a module.
+* `InverseGalois.CFT.TateCohomology.TateNakayama` raises the degree by two with coefficients in a
+  tensor product.  The connecting map of the tensored extension goes from the complete cohomology
+  of a representation in a degree to that of the shift tensored with it in the following degree,
+  and the shift tensored with a representation is the shift of the tensor product; so **the
+  complete cohomology of a representation in a degree is the complete cohomology of its tensor
+  product with the coefficients two degrees higher**, as soon as the tensored extension has no
+  complete cohomology.
 -/
