@@ -425,6 +425,7 @@ import InverseGalois.CFT.Tate.Surjection
 import InverseGalois.CFT.Tate.Trivial
 import InverseGalois.CFT.Tate.TrivialLattice
 import InverseGalois.CFT.TateCohomology.Exact
+import InverseGalois.CFT.TateCohomology.Graded
 import InverseGalois.CFT.TateCohomology.HomologyJunction
 import InverseGalois.CFT.TateCohomology.Induced
 import InverseGalois.CFT.TateCohomology.Junction
@@ -2721,4 +2722,10 @@ it that are available here.
   sub lands in the classes killed by the norm, because its image in the coinvariants of the middle
   term already vanishes and the summation map of an injection is again injective on the invariants;
   the resulting three term sequence is again exact at both of its inner spots.
+* `InverseGalois.CFT.TateCohomology.Graded` assembles the four ranges into **the complete
+  cohomology in an arbitrary integer degree**: the ordinary cohomology above zero, the invariants
+  modulo norms at zero, the norm zero classes of the coinvariants at minus one, and the ordinary
+  homology of the degree shifted by one below that.  A map of representations induces a map in
+  every degree and a short exact sequence has a connecting map in every degree, and the resulting
+  sequence, running through all of the integers, is **exact at every one of its spots**.
 -/
