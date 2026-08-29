@@ -2,6 +2,7 @@ import InverseGalois.CFT.Approximation.Basic
 import InverseGalois.CFT.Approximation.Completion
 import InverseGalois.CFT.Approximation.Places
 import InverseGalois.CFT.Approximation.PowClass
+import InverseGalois.CFT.Brauer.AdicUnramified
 import InverseGalois.CFT.Brauer.BaseChange
 import InverseGalois.CFT.Brauer.BaseChangeCentralizer
 import InverseGalois.CFT.Brauer.Centralizer
@@ -3139,4 +3140,12 @@ it that are available here.
   the degree, so **the relative Brauer group of an unramified cyclic extension of a discretely
   valued field contains a class of order the degree** — with no completeness, no finite residue
   field and no norm index.
+* `InverseGalois.CFT.Brauer.AdicUnramified` joins the two halves.  A rank one valuation makes a
+  field into a nonarchimedean normed field whose norm determines the valuation, because the
+  comparison map of a rank one valuation is strictly monotone, so the unramifiedness produced by
+  the splitting theory of division algebras — every nonzero element of the splitting field has the
+  absolute value of a scalar — is the same statement as the unramifiedness read off the valuation.
+  Hence **every Brauer class over a complete, discretely valued, locally compact field, and in
+  particular over the completion of a number field at a finite place, lies in the relative Brauer
+  group of a cyclic extension whose relative Brauer group has an element of order the degree.**
 -/
