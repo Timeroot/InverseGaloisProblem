@@ -452,7 +452,9 @@ import InverseGalois.CFT.TateCohomology.TateNakayama
 import InverseGalois.CFT.TateCohomology.TateTheorem
 import InverseGalois.CFT.TateCohomology.Tensor
 import InverseGalois.CFT.TateCohomology.TensorExtension
+import InverseGalois.CFT.TateCohomology.TensorFunctor
 import InverseGalois.CFT.TateCohomology.TensorShift
+import InverseGalois.CFT.TateCohomology.TensorTrivial
 import InverseGalois.CFT.TateCohomology.TorsionFree
 import InverseGalois.CFT.TateCohomology.Transfer
 import InverseGalois.CFT.TotallyReal
@@ -2914,4 +2916,26 @@ it that are available here.
   complete cohomology of a representation in a degree is the complete cohomology of its tensor
   product with the coefficients two degrees higher**, as soon as the tensored extension has no
   complete cohomology.
+* `InverseGalois.CFT.TateCohomology.TensorFunctor` tensors a map of representations on the right
+  with a fixed representation.  The underlying map acts on the first factor and leaves the second
+  alone, and it commutes with the diagonal action because each factor is moved separately;
+  composition and identities are respected factor by factor, so an isomorphism stays an isomorphism
+  and a short complex stays a short complex.  Tensoring is right exact, so the map onto the
+  quotient stays surjective and the image of the sub is still the whole kernel; the one thing that
+  can fail is the injectivity of the map from the sub, and flatness of the fixed representation
+  supplies exactly that.  So **a short exact sequence tensored with a flat representation is short
+  exact**.
+* `InverseGalois.CFT.TateCohomology.TensorTrivial` pays the price left over by the previous file.
+  **Multiplication by a natural number commutes with tensoring**, because it may be carried out on
+  either factor, so multiplication by a prime is injective on the complete cohomology of a tensor
+  product as soon as the tensored reduction modulo that prime has none; over a `p`-group the order
+  of the group annihilates every degree, so the tensor product has nothing anywhere.  The reduction
+  of a representation with no complete cohomology is killed by `p` and has no first cohomology,
+  hence is the functions on the group, which stay acyclic after tensoring; and the hypothesis of no
+  torsion is removed by covering the representation with a free induced one, whose kernel has none.
+  **Restriction to a subgroup commutes with tensoring**, so the argument only has to be run on the
+  Sylow subgroups: **a representation whose restriction to a Sylow subgroup for every prime has no
+  complete cohomology in two consecutive degrees has none after tensoring with a representation
+  flat over the integers**, and **the theorem of Tate and Nakayama holds for coefficients flat over
+  the integers** with no hypothesis left over.
 -/

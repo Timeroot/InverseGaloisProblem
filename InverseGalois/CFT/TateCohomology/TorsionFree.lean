@@ -32,6 +32,9 @@ everywhere.
 
 * `InverseGalois.CFT.Tate.nsmulSeq_shortExact`: **a representation without torsion at `p` sits in a
   short exact sequence with its reduction modulo `p`.**
+* `InverseGalois.CFT.Tate.isZero_tateModule_of_injective_nsmul`: **a representation of a `p`-group
+  over the integers on whose complete cohomology multiplication by `p` is injective has none in any
+  degree.**
 * `InverseGalois.CFT.Tate.isZero_tateModule_of_isZero_two_int`: **a representation of a `p`-group
   over the integers without torsion at `p` whose complete cohomology vanishes in two consecutive
   degrees has none in any degree.**
@@ -187,6 +190,22 @@ theorem eq_zero_of_pow_nsmul_eq_zero {M : Type*} [AddCommGroup M]
     rw [smul_smul, ← pow_succ]
     exact hx
 
+/-- **A representation of a `p`-group over the integers on whose complete cohomology multiplication
+by `p` is injective has no complete cohomology in any degree.** -/
+theorem isZero_tateModule_of_injective_nsmul (hG : IsPGroup p G) (A : Rep ℤ G)
+    (hinj : ∀ m : ℤ, Function.Injective (tateMap (nsmulHom A p) (m + 1))) (n : ℤ) :
+    Limits.IsZero (tateModule A n) := by
+  obtain ⟨a, ha⟩ := (IsPGroup.iff_card (p := p) (G := G)).1 hG
+  have step : ∀ m : ℤ, Limits.IsZero (tateModule A (m + 1)) := by
+    intro m
+    refine isZero_of_forall_eq_zero fun x => ?_
+    refine eq_zero_of_pow_nsmul_eq_zero (p := p) (fun y hy => hinj m ?_) a x ?_
+    · rw [map_zero, tateMap_nsmulHom_apply A p (m + 1) y]
+      exact hy
+    · rw [← ha]
+      exact card_nsmul_eq_zero_tateModule A (m + 1) x
+  exact isZero_tateModule_congr (by omega) (step (n - 1))
+
 /-- **A representation of a `p`-group over the integers without torsion at `p` whose complete
 cohomology vanishes in two consecutive degrees has none in any degree.** -/
 theorem isZero_tateModule_of_isZero_two_int (hG : IsPGroup p G) (A : Rep ℤ G)
@@ -196,20 +215,7 @@ theorem isZero_tateModule_of_isZero_two_int (hG : IsPGroup p G) (A : Rep ℤ G)
   have hq : ∀ j : ℤ, Limits.IsZero (tateModule (modNsmul A p) j) :=
     isZero_tateModule_of_isZero_single_int hG _ (nsmul_modNsmul_eq_zero A p)
       (isZero_tateModule_X₃ hX i hi hi1)
-  obtain ⟨a, ha⟩ := (IsPGroup.iff_card (p := p) (G := G)).1 hG
-  have step : ∀ m : ℤ, Limits.IsZero (tateModule A (m + 1)) := by
-    intro m
-    refine isZero_of_forall_eq_zero fun x => ?_
-    have hinj : Function.Injective (tateMap (nsmulSeq A p).f (m + 1)) :=
-      injective_tateMap_f hX m (hq m)
-    refine eq_zero_of_pow_nsmul_eq_zero (p := p) (fun y hy => hinj ?_) a x ?_
-    · rw [map_zero]
-      show (tateMap (nsmulHom A p) (m + 1)) y = 0
-      rw [tateMap_nsmulHom_apply A p (m + 1) y]
-      exact hy
-    · rw [← ha]
-      exact card_nsmul_eq_zero_tateModule A (m + 1) x
-  exact isZero_tateModule_congr (by omega) (step (n - 1))
+  exact isZero_tateModule_of_injective_nsmul hG A (fun m => injective_tateMap_f hX m (hq m)) n
 
 end Int
 
