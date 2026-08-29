@@ -3292,6 +3292,93 @@ delivers.
 
 ---
 
+## 0.31 Status (2026-08-29, later) — the local brick is closed, and the route to `α` is re-planned (one claim of §0.29 was wrong)
+
+### What landed
+
+| module | content |
+| --- | --- |
+| `CFT/Local/NormValued.lean` | **going up.** `normValuation K L` is the valuation `y ↦ v(N_{L/K} y)`; carried on `spectralNorm.uniformSpace K L` it is a *topological* valuation (`normValued`), so a finite extension of a complete, discretely valued, locally compact field is again one. Plus: `valued_algEquiv_of_norm` (automorphisms preserve it, free from `Algebra.norm_eq_of_algEquiv`), `hasResidueChar_of_norm`, `isUnramifiedValued_of_norm`, and `finite_gradedAdd_of_properSpace` — the graded pieces are finite because `valAddSubgroup` is a **closed ball** (compact by `ProperSpace`) whose next step is **open**, so the quotient is discrete and compact. The old `GradedFinite.finite_gradedAdd` is unusable here: it wants a uniformizer of value exactly `exp(-1)`, and the norm valuation's value group is a proper subgroup of `ℤ`. The package is `exists_valued_of_spectralNorm`. |
+| `CFT/Brauer/LocalBrauerOrder.lean` | `card_relative_eq_finrank_of_spectralNorm`, `exists_cyclic_relative_card_eq_finrank`, `..._adicCompletion`: **every Brauer class over a complete, discretely valued, locally compact field lies in a relative Brauer group of exactly the order of the degree.** |
+
+So the node §0.29 called *"local: unramified splitting of a Brauer class"* is closed: the splitting
+field exists (`exists_cyclic_unramified_mem_relative`, §0.29 era) **and** it is a local field again
+with `#Br(L/K) = [L:K]`.
+
+### The base field is `ℚ`, and that is a large simplification
+
+Every hypothesis in the reduction chain is stated over `ℚ`: `GenericSplitEP`, `SplitPrimePowerEP`,
+`ElementaryAbelianKernelEP`, `FrattiniKernelEP` all quantify over `IsInverseGalois` (Galois group
+**over `ℚ`**). And `isTateClassTwo_ideleClassRep` takes `hα` **only for the full group** — the
+subgroup conditions are derived from the counting. So the single missing statement is
+
+> `∃ α ∈ Ĥ²(Gal(K/ℚ), C_K)` with `∀ m : ℤ, m • α = 0 → ([K:ℚ] : ℤ) ∣ m`, for every Galois `K/ℚ`,
+
+equivalently `Ĥ²(Gal(K/ℚ), C_K) ≅ ℤ/[K:ℚ]` (the order is already `≤ [K:ℚ]`). Consequently the
+**local invariant maps that are needed are only `inv_p : Br(ℚ_p) → ℚ/ℤ` and `inv_∞ : Br(ℝ) → ℚ/ℤ`**
+— not local class field theory over an arbitrary local field. Over `ℚ_p` the unramified extensions
+are `ℚ_p(ζ_m)`, `p ∤ m`, with Frobenius `ζ ↦ ζ^p`, and every abelian extension of `ℚ` is cyclotomic
+(`CFT/KroneckerWeber.lean`), so the whole invariant/reciprocity layer can be kept cyclotomic.
+
+### A correction to §0.29: `Ĥ²(G, I_K) ↠ Ĥ²(G, C_K)` is **false** in general
+
+§0.29 lists "plus the surjection `H²(G, I_K) ↠ H²(G, C_K)`" as if it were free. It is not, and it is
+not even true. From `1 → K^× → I_K → C_K → 1` the cokernel of that map injects into
+`H³(G, K^×)`, and `H³(G, I_K) = ⊕_v H³(G_w, K_w^×) = 0` (local duality: `Ĥ³ ≅ Ĥ¹(G_w, ℤ) = 0`), so
+
+```
+coker( Ĥ²(G, I_K) → Ĥ²(G, C_K) )  ≅  H³(G, K^×)  ≅  ℤ/(n/m),   m = lcm_v [K_w : k_v].
+```
+
+**Counterexample.** `K = ℚ(√5, √41)`, `G = (ℤ/2)²`, `n = 4`. Both `5` and `41` are `≡ 1 mod 4`, and
+`41 ≡ 1 mod 5` makes `41` a square mod `5` (hence `5` a square mod `41`), so at `5` and at `41`
+only one of the two quadratic subfields ramifies and the decomposition group has order `2`; at `2`
+and at `∞` the extension is unramified/split. So every `n_v ≤ 2`, `m = 2 < 4 = n`, and the map is
+not onto. The fundamental class of such a `K/ℚ` genuinely does **not** come from ideles at level
+`K`.
+
+It *is* onto when `G` is **cyclic**, since then `H³(G, K^×) ≅ Ĥ¹(G, K^×) = 0` by Hilbert 90 and
+two-periodicity. That is the only case in which the idele-theoretic description may be used
+directly.
+
+### The corrected route to `α`
+
+Write `Inv : Ĥ²(G_ℚ, C) → ℚ/ℤ` for the map induced by `Σ_p inv_p` on ideles. The two properties to
+prove are **well-definedness (reciprocity)** and **injectivity**, and then everything follows
+formally:
+
+* `inv_K ∘ res^{G_ℚ}_{G_K} = [K:ℚ] · Inv` (from `inv_w ∘ res = [K_w:k_v] · inv_v` locally);
+* pick `x` with `Inv x = 1/n`; then `inv_K(res_K x) = 0`, so `res_K x = 0` by injectivity over `K`,
+  i.e. `x ∈ H²(K/ℚ) = Ĥ²(Gal(K/ℚ), C_K)` (inflation is injective because `Ĥ¹ = 0`);
+* `x` has order `n` because `Inv` is injective. **That is `α`.**
+
+Injectivity can be bought by **counting** rather than by the Hasse principle: for a *cyclic* `L/F`
+of degree `d`, `#Ĥ²(Gal(L/F), C_L) = d` exactly — the second inequality gives `≤` and the **first
+inequality is already in the repo** (`CFT/Units/FirstInequality.lean`:
+`herbrand_ideleClassAut_eq_degree`, `first_inequality`, plus two-periodicity `CFT/Tate/Hexagon.lean`)
+gives `≥`. Since `Ĥ²(G, I_L) ↠ Ĥ²(G, C_L)` in the cyclic case and `Inv` is onto `(1/m)ℤ/ℤ`, a place
+of full local degree forces `Inv` to be an isomorphism on `Ĥ²(Gal(L/F), C_L)`, hence injective
+there. Every element of `Ĥ²(G_ℚ, C)` is split by a cyclic cyclotomic extension, which is where
+`CFT/Cyclotomic/Chebotarev.lean` (cyclotomic Chebotarev over `ℚ`) and the classical device
+"`ord_{p^r}(ℓ) → ∞`, so the cyclic degree-`p^r` subfield of `ℚ(ζ_{p^{r+1}})` has large local degree
+at any fixed finite set of primes" come in.
+
+So **ABHN is not needed for `α`**; reciprocity is. There is no way around reciprocity: the
+statement "`a ∈ ℚ^×` is a local norm from a cyclic `K` at every place but one, hence at that one
+too" is equivalent to it, and it is exactly what makes `C_ℚ / N C_K` *cyclic* rather than merely of
+order `n` (see §0.29's two negative observations).
+
+### Next targets, in order
+
+1. `inv_p : Br(ℚ_p) → ℚ/ℤ`, built on the unramified tower `ℚ_p(ζ_{p^n-1})` with its Frobenius
+   normalization, together with `inv ∘ res = f · inv`; and `inv_∞` on `Br(ℝ) = ℤ/2`.
+2. Reciprocity `Σ_v inv_v = 0` on `Br(ℚ)`, by Kronecker–Weber: every class is a cyclotomic cyclic
+   algebra, and the product formula for the cyclotomic norm-residue symbol is explicit.
+3. The assembly above, giving `hα` and therefore the class formation.
+4. Poitou–Tate / `Ш¹ ⊆ H¹` duality — still a separate project.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
