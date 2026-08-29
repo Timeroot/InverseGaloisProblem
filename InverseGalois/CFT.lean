@@ -40,6 +40,7 @@ import InverseGalois.CFT.Brauer.GaloisSplitting
 import InverseGalois.CFT.Brauer.Group
 import InverseGalois.CFT.Brauer.H2Brauer
 import InverseGalois.CFT.Brauer.H2Surjective
+import InverseGalois.CFT.Brauer.InvariantMap
 import InverseGalois.CFT.Brauer.Kernel
 import InverseGalois.CFT.Brauer.LocalBrauerBound
 import InverseGalois.CFT.Brauer.LocalBrauerOrder
@@ -3251,6 +3252,14 @@ it that are available here.
   agree, so the Frobenius automorphism is available as the generator, and **the invariant of a
   Brauer class split by an unramified extension of a local field attains the reciprocal of the
   degree** and **does not depend on the level of the unramified tower at which it is computed.**
+* `InverseGalois.CFT.Brauer.InvariantMap` removes the choice of splitting field as well, by working
+  inside a fixed algebraic closure.  Every Brauer class is split by a finite unramified extension
+  there, two such extensions both sit inside their compositum, which is again unramified, and the
+  invariant is unchanged on passing up a tower — an isomorphism being a tower of height one, so an
+  extension isomorphic to an unramified one is unramified and has the same invariant.  Hence **the
+  invariant of a Brauer class over a local field is well defined**, and **the invariants form a
+  homomorphism from the whole Brauer group to the rationals modulo one** which computes the
+  normalised invariant of every unramified extension.
 * `InverseGalois.CFT.Local.NormValued` carries the whole local package up a finite extension.  The
   value of the field norm is a valuation on the extension, because the norm of an element is the
   degree-th power of its spectral norm and the spectral norm is nonarchimedean; carried on the
