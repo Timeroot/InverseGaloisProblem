@@ -267,6 +267,7 @@ import InverseGalois.CFT.Local.UnitFiltration
 import InverseGalois.CFT.Local.UnitHerbrandChain
 import InverseGalois.CFT.Local.UnitIndex
 import InverseGalois.CFT.Local.UnitPowIndex
+import InverseGalois.CFT.Local.UnitPowRoot
 import InverseGalois.CFT.Local.UnitRootPower
 import InverseGalois.CFT.Local.UnitValuation
 import InverseGalois.CFT.Local.UnramifiedCoboundary
@@ -2129,6 +2130,13 @@ it that are available here.
   characteristic is trivial, which makes the roots rigid: over a prime residue field every element
   of the valuation ring is congruent to a rational integer, so a valuation preserving automorphism
   moves a root of unity of order prime to the residue characteristic by a unit congruent to one.
+* `InverseGalois.CFT.Local.UnitPowRoot` records where those roots live.  The root produced by the
+  exponential is itself the exponential of a small element, so it is again congruent to one, and
+  the Bezout relation keeps that property because a step of the filtration is a group.  Together
+  with the triviality of a unit congruent to one of order prime to the residue characteristic this
+  says that **raising to an exponent prime to the residue characteristic is a bijection of the
+  units congruent to one**, which is what lets a root of unity be pinned down inside a prescribed
+  class modulo the maximal ideal.
 * `InverseGalois.CFT.Approximation.PowClass` combines the two: every place supplies an accuracy
   within which an element of its completion differs from a prescribed nonzero one by an `n`-th
   power, and the smallest of the finitely many accuracies, cut down so as to keep the approximating
