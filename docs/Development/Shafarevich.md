@@ -3093,6 +3093,159 @@ is now in place for both flat and `p`-torsion coefficients.
 
 ---
 
+## 0.29 Status (2026-08-29, later still) — Tate's hypotheses reduced to a count, and a map of the remaining arithmetic
+
+### What landed
+
+`InverseGalois/CFT/TateCohomology/TateClassCount.lean` — the *abstract* half of the fundamental
+class. It removes every mention of the restricted class from the hypotheses of Tate's theorem:
+
+| name | statement |
+| --- | --- |
+| `exists_zsmul_of_card_eq` | an element of a finite commutative group annihilated by exactly the multiples of `Nat.card M` generates `M` |
+| `dvd_of_zsmul_tateRes_eq_zero` | if `m • α = 0 ⟹ #G ∣ m`, then `m • res_H α = 0 ⟹ #H ∣ m` |
+| `isTateClassTwo_of_card` | `IsTateClassTwo H A α` from `Ĥ¹(H,A) = 0`, `#Ĥ²(H,A) = #H` (finite), and `m • α = 0 ⟹ #G ∣ m` |
+| `tateTheoremTwoEquivOfCard` | Tate's theorem from that count |
+| `tateNakayamaFlatEquivOfCard` | Tate–Nakayama (flat coefficients) from that count |
+
+The order transfer in `dvd_of_zsmul_tateRes_eq_zero` needs **no** Sylow-specific input, only that
+`tateRes` is linear and that `cor ∘ res = ·[G:H]`: from `m • res α = 0` one gets
+`res (m • α) = 0`, hence `[G:H] • (m • α) = 0` by `index_smul_eq_zero_of_tateRes_eq_zero`, hence
+`#G ∣ [G:H]·m`, and `#H · [G:H] = #G` cancels the index. So the hypothesis of Tate's theorem on
+*every* subgroup at once follows from one global order statement plus one count per subgroup.
+
+That is exactly the shape in which a class formation presents its fundamental class, so what is
+left of §0.27 is now a purely arithmetic list:
+
+1. `Ĥ¹(H, C_K) = 0` — **the repo has this** (`eq_zero_H1_res_subgroup`,
+   `eq_zero_H1_ideleClassRep_general`, `subsingleton_H1_ideleClassRep_general`), modulo the
+   transport `resObj H (ideleClassRep k K) ↔ ideleClassRep (fixedField H) K`, whose pattern is
+   already written out inside `eq_zero_H1_res_subgroup`.
+2. `#Ĥ²(H, C_K) = #H` — **missing**.
+3. a global `α ∈ Ĥ²(Gal(K/k), C_K)` annihilated only by multiples of `#Gal(K/k)` — **missing**.
+
+Both missing items are the **invariant map**, and nothing weaker will do: see below.
+
+### Counting cannot replace the invariant map
+
+It is tempting to hope that `#Ĥ²(H,C_K) = #H` plus Sylow bookkeeping gives cyclicity for free.
+It does not. Two observations, both negative:
+
+* For a Sylow `p`-subgroup `P ≤ G` with `#Ĥ²(H,C) = #H` for all `H`, restriction *is* an
+  isomorphism `Ĥ²(G,C)(p) ≅ Ĥ²(P,C)` (because `cor ∘ res` is multiplication by an index prime to
+  `p`), and a global `α` of order `#G` restricts to an element of order `#P` (the other primary
+  parts restrict to zero). So the global statement and the Sylow statements are equivalent — but
+  that is a *transfer*, not a *proof*: something still has to produce cyclicity somewhere.
+* Cyclicity of `Ĥ²(P,C_K)` itself does not follow from counting. Inflation–restriction on a chain
+  `1 ◁ P' ◁ P` only exhibits `Ĥ²(P,C)` as an extension of `ℤ/#P'` by `ℤ/p`; every group of order
+  `p²` is such an extension. One genuinely needs a homomorphism `Ĥ²(P,C) → (1/#P)ℤ/ℤ` that is
+  injective, i.e. the **invariant map**.
+
+### The one local brick that is missing
+
+The invariant map is built from the local ones, and the repo's local half is already substantial:
+
+* `unramifiedInvariant`, `unramifiedInvariant_surjective/_injective`, `unramifiedInvariantEquiv`
+  (`CFT/Local/UnramifiedInvariant.lean`) — the invariant on the *unramified* part;
+* `subsingleton_tateH0_kerUnitValAut`, `subsingleton_tateHm1_kerUnitValAut`
+  (`CFT/Local/UnramifiedUnits.lean`), `herbrand_kerUnitValAut_eq_one`,
+  `herbrand_smulUnitsAut_eq_card` (`CFT/Local/UnitHerbrandChain.lean`),
+  `index_normSubgroup_eq_finrank_of_complete` (`CFT/Local/CompleteNormIndex.lean`) — the local norm
+  index and the Herbrand quotient of the units;
+* `brauerHom`, `brauerHom_injective` (`CFT/Brauer/H2Brauer.lean`), `cyclicBrauerHom`,
+  `mem_ker_cyclicBrauerHom_iff` (`CFT/Brauer/CyclicBrauer.lean`),
+  `exists_intermediateField_mem_relative`, `iSup_relative_eq_top`
+  (`CFT/Brauer/MaximalSubfield.lean`), `card_relative_le_finrank_of_isLocalExtension`
+  (`CFT/Brauer/LocalBrauerBound.lean`) — the Brauer-group dictionary.
+
+The brick that is absent, and on which the whole invariant map rests, is:
+
+> **every Brauer class over a complete discretely valued field with finite residue field is split
+> by an unramified extension.**
+
+The classical proof is by division algebras: extend the valuation of the base to a central division
+algebra `D`, observe that the residue division ring is finite hence a field by Wedderburn, deduce
+`e = f = d` for `d² = dim D`, and conclude that an unramified maximal subfield splits `D`. That is
+a self-contained project of a few files, and it is the *only* remaining input for item 2 above; the
+global invariant then follows from `⊕_v Br(K_w/k_v)` with semi-local Shapiro,
+`exists_sub_add_eq_globalUnits` (ABHN, `CFT/Units/ABHN.lean`) and Hilbert reciprocity, plus the
+surjection `H²(G, I_K) ↠ H²(G, C_K)`.
+
+### A re-analysis of §0.26 step 5 — and why "out (a)" is *not* free
+
+Two structural findings about the Schmidt–Wingberg argument, recorded so they are not rediscovered.
+
+**(i) Steps 3–5 can be run entirely over `𝔽_p`.** The sequence
+
+```
+0 → K^× / p → I_K / p → C_K / p → 0
+```
+
+is exact — left exactness is precisely Grunwald–Wang, which the repo already has in power-class
+form (`CFT/GrunwaldWang.lean`). All three terms are `𝔽_p`-vector spaces, so `⊗_{𝔽_p} E(-1)` is
+exact on it, and one gets `Ш²(k, E) ⊆ im δ` with `δ` the connecting map out of
+`Ĥ⁰(G, C_K ⊗ E(-1))`. No integral bookkeeping is needed anywhere in steps 3–5.
+
+**(ii) The lattice-presentation route needs only the *flat* Tate–Nakayama — but it does not close.**
+Choose a free presentation of `𝔽_p[G]`-modules over `ℤ[G]`,
+
+```
+0 → N → ℤ[G]^r → E(-1) → 0,
+```
+
+with `N` a lattice. Dimension shifting gives `Ĥ^{-2}(G, E(-1)) ≅ Ĥ^{-1}(G, N)`, and since
+`ℤ[G]^r ⊗ C_K` is induced hence acyclic, `Ĥ⁰(G, E(-1) ⊗ C_K) ≅ Ĥ¹(G, Q)` where
+`Q = ker(ℤ[G]^r ⊗ C_K → E(-1) ⊗ C_K)`. Surjectivity of `Ĥ¹(N ⊗ C_K) → Ĥ¹(Q)` — which is what the
+Claim of §0.26 asks for — would then need only
+
+```
+Ĥ²(G, T) = 0,   T = Tor₁^ℤ(E(-1), C_K).
+```
+
+Every module in sight is a lattice, so this route uses **only** `tateNakayamaFlatEquiv` (§0.27) and
+never the `p`-torsion version of §0.28. That is the good news. The bad news is that the required
+vanishing is generally **false**:
+
+```
+T ≅ C_K[p] ⊗_{𝔽_p} E(-1),      C_K[p] ≅ (∏_v μ_p(K_v)) / μ_p(K)
+```
+
+(the term `ker(K^× / p → 𝔸^× / p)` dies by Grunwald–Wang), and
+`∏_v μ_p(K_v) = ∏_𝔭 Ind_{G_𝔭}^G μ_p`, so by Shapiro
+
+```
+Ĥ²(G, C_K[p] ⊗ E(-1)) = ∏_𝔭 Ĥ²(G_𝔭, E)   (up to the μ_p(K) correction),
+```
+
+which is a product of *local* `Ĥ²`'s and is nonzero in general. **So "out (a)" of §0.26 is not
+free**, and the lattice route does not shortcut Poitou–Tate.
+
+**(iii) The Claim really is Poitou–Tate.** The statement `Ĥ^{-2}(G, E(-1)) ↠ Ш²(k, E)` is exactly
+the dual of the inclusion `Ш¹(k, E′) ⊆ H¹(G, E′)`. There is no cheaper reformulation hiding in it;
+the nine-term Poitou–Tate sequence (or at least the `Ш¹`–`Ш²` duality inside it) is a genuine
+prerequisite for Schmidt–Wingberg Theorem 15, and is a separate project from the fundamental class.
+
+### Consequence for the plan
+
+The dependency graph for the last hypothesis (`FrattiniKernelEP` ≡ SW Thm 14/15) is therefore:
+
+```
+                       local: unramified splitting of a Brauer class   [MISSING, ~few files]
+                                          ↓
+                       invariant map → #Ĥ²(H,C_K) = #H, α of order #G
+                                          ↓  (TateClassCount.lean — DONE)
+                       fundamental class = IsTateClassTwo on every Sylow
+                                          ↓  (TensorTrivial / TensorPTorsion — DONE)
+                       Tate–Nakayama for the coefficient modules of SW §2
+                                          ↓
+     Poitou–Tate / Ш¹⊆H¹ duality  [MISSING, separate project]  →  SW Thm 13 → Thm 15
+```
+
+Two independent missing bricks, both classical, neither small. The abstract cohomological
+machinery between and after them is now complete and unconditional.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.

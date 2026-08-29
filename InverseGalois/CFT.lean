@@ -447,6 +447,7 @@ import InverseGalois.CFT.TateCohomology.Shifting
 import InverseGalois.CFT.TateCohomology.SylowInjective
 import InverseGalois.CFT.TateCohomology.RestrictOne
 import InverseGalois.CFT.TateCohomology.SylowTrivial
+import InverseGalois.CFT.TateCohomology.TateClassCount
 import InverseGalois.CFT.TateCohomology.TateDegreeTwo
 import InverseGalois.CFT.TateCohomology.TateNakayama
 import InverseGalois.CFT.TateCohomology.TateTheorem
@@ -2951,4 +2952,17 @@ it that are available here.
   after tensoring with a representation killed by that prime** -- and when the prime acts without
   torsion the reduction inherits the vanishing from the representation itself.  This gives **the
   theorem of Tate and Nakayama for coefficients killed by a prime**.
+* `InverseGalois.CFT.TateCohomology.TateClassCount` turns the classical hypotheses of Tate's
+  theorem into a count.  **An element of a finite commutative group annihilated by exactly the
+  multiples of the order of the group generates the group**, because the subgroup of its multiples
+  has as many elements as the order of the element, which the annihilator pins to the order of the
+  group.  And **the restriction of a class annihilated by exactly the multiples of the order of the
+  group is annihilated by exactly the multiples of the order of the subgroup**: corestriction after
+  restriction is multiplication by the index, so the index times any multiple killing the
+  restriction already kills the class, and the order of the group is the order of the subgroup
+  times the index.  Together these say that **Tate's hypotheses on a subgroup follow from the
+  vanishing of the first complete cohomology, the count of the second, and the order of the class
+  over the whole group** -- the shape in which the fundamental class of a class formation presents
+  itself -- and that count therefore delivers both **Tate's theorem** and **the theorem of Tate and
+  Nakayama for coefficients flat over the integers** on its own.
 -/
