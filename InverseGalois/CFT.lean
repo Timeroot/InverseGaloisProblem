@@ -427,6 +427,7 @@ import InverseGalois.CFT.Tate.TrivialLattice
 import InverseGalois.CFT.TateCohomology.Exact
 import InverseGalois.CFT.TateCohomology.Induced
 import InverseGalois.CFT.TateCohomology.Norm
+import InverseGalois.CFT.TateCohomology.Shift
 import InverseGalois.CFT.TotallyReal
 import InverseGalois.CFT.Units.ABHN
 import InverseGalois.CFT.Units.ABHNArchimedean
@@ -2702,4 +2703,10 @@ it that are available here.
   choice: a vector of the middle whose norm comes from the sub has a well defined preimage of that
   norm, that preimage is invariant, and the vectors with that property surject onto the norm zero
   classes of the quotient by a map whose kernel the recipe kills.
+* `InverseGalois.CFT.TateCohomology.Shift` degenerates that sequence.  A representation embeds into
+  the functions on the group and is a quotient of them, and both middle groups of the functions
+  vanish, so the connecting map of either short exact sequence is an isomorphism: **the group in
+  degree zero of a representation is the group in degree minus one of the cokernel of the
+  embedding, and the group in degree minus one is the group in degree zero of the kernel of the
+  summation map.**
 -/
