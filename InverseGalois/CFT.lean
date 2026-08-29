@@ -263,6 +263,7 @@ import InverseGalois.CFT.Local.UnitValuation
 import InverseGalois.CFT.Local.UnramifiedCoboundary
 import InverseGalois.CFT.Local.UnramifiedInvariant
 import InverseGalois.CFT.Local.UnramifiedNormForm
+import InverseGalois.CFT.Local.UnramifiedNormValue
 import InverseGalois.CFT.Local.UnramifiedUnits
 import InverseGalois.CFT.Local.ValuedTopology
 import InverseGalois.CFT.Multiquadratic
@@ -3115,4 +3116,12 @@ it that are available here.
   underlying ring is a domain, hence of a division algebra: **every Brauer class over a
   nonarchimedean local field lies in the relative Brauer group of a cyclic extension whose nonzero
   elements have the absolute values of the nonzero scalars.**
+* `InverseGalois.CFT.Local.UnramifiedNormValue` reads the invariant of such an extension off the
+  valuation.  When the automorphisms preserve the valuation the norm is the product of the
+  conjugates, which all have the same value, so **the value of a norm is the degree-th power of a
+  value**; dividing by a generator of the value group, **the invariant kills the norms.**  If the
+  extension is unramified — every value of the larger field is already a value of the smaller — the
+  values of the base field fill the whole value group, so **the invariant is surjective**, and when
+  the norm subgroup has index the degree, as it does for a cyclic extension of complete fields,
+  **the units modulo the norms are the integers modulo the degree.**
 -/
