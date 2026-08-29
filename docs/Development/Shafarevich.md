@@ -3418,6 +3418,13 @@ layer already — a duplicate in the `Valued` layer is not needed.
     monoid hom `IsPrimitiveRoot.autToPow K hζ : (L ≃ₐ[K] L) →* (ZMod N)ˣ` is **injective**.
   * `mul_comm_algEquiv_of_unramified` — the automorphism group of an unramified local extension is
     **commutative**.
+  * `isCyclic_algEquiv_of_unramified` — it is in fact **cyclic**.  This one is a two-line corollary:
+    `Brauer/DivisionCyclic.lean` already had the residue functor and the faithfulness of the action
+    on the residue field (`divisionResidueHom`, `divisionResidueHom_comp`, `divisionResidueAut`,
+    `divisionResidueAut_injective`, `isCyclic_algEquiv_of_rootOfUnity`,
+    `norm_natCast_card_divisionResidue_sub_one`), and was missing only the input `L = K(ζ)`.
+    ⚠️ Do **not** re-derive the residue functor: a from-scratch `Brauer/DivisionResidueAut.lean`
+    written on 2026-08-29 was an exact duplicate of `DivisionCyclic.lean:126-190` and was deleted.
 
 So `Gal(L/K) ↪ (ℤ/N)ˣ` canonically (the exponent `a(σ)` with `σζ = ζ^{a(σ)}` does not depend on the
 choice of the generator `ζ` of `μ_N`), and the Frobenius is *by definition* the element with
@@ -3433,10 +3440,10 @@ f := [𝓀_L : 𝓀_K] = [L : K] =: n      (given e = 1)
 
 Two half-arguments are available and neither is free:
 
-* `n ≤ f`.  Every `σ` preserves `𝒪_L` and `𝔪_L` (`divisionNorm` is `Algebra.norm`-defined, hence
-  `AlgEquiv`-invariant), so induces `σ̄ ∈ Gal(𝓀_L/𝓀_K)`, and `σ ↦ σ̄` is injective because
-  `σ̄(z) = z^{a(σ)}` for `z` the residue of `ζ`, which generates `𝓀_Lˣ`.  Needs the residue-field
-  functor `L ≃ₐ[K] L → 𝓀_L ≃ₐ[𝓀_K] 𝓀_L`, i.e. a `𝓀_K`-algebra structure on `DivisionResidue K L`.
+* `n ≤ f`.  `divisionResidueAut_injective` already gives `Gal(L/K) ↪ RingAut 𝓀_L`, whose order is
+  `f' := log_p #𝓀_L`; that only yields `n ≤ f'`.  Sharpening to `n ≤ f` needs the *relative*
+  statement, i.e. a `𝓀_K`-algebra structure on `DivisionResidue K L` coming from
+  `DivisionResidue K K → DivisionResidue K L`, plus `Gal(𝓀_L/𝓀_K) ≅ ℤ/f`.
 * `f ≤ n`.  `𝓀_L = 𝓀_K[z]` and `z` kills the reduction of `minpoly K ζ`, whose coefficients are
   integral because `spectralNorm = spectralValue (minpoly K ·)`.
 
