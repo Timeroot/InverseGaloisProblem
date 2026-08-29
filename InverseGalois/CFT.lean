@@ -87,6 +87,7 @@ import InverseGalois.CFT.GroupCohomology.CyclicCoboundary
 import InverseGalois.CFT.GroupCohomology.CyclicH2
 import InverseGalois.CFT.GroupCohomology.CyclicSubgroup
 import InverseGalois.CFT.GroupCohomology.CyclicSurjective
+import InverseGalois.CFT.GroupCohomology.Duality
 import InverseGalois.CFT.GroupCohomology.ExtensionMap
 import InverseGalois.CFT.GroupCohomology.Pullback
 import InverseGalois.CFT.GroupCohomology.H1Transport
@@ -2400,6 +2401,13 @@ it that are available here.
   class of a finite group to its vanishing on subgroups of index prime to each prime dividing the
   order, by playing the annihilation by the order against the annihilation by the index that
   restriction and corestriction provide.
+* `InverseGalois.CFT.GroupCohomology.Duality` pairs cochains with chains by evaluating a function on
+  a set against a finitely supported family of functionals, one index at a time.  The pairing is
+  nondegenerate on both sides, and the differentials of the cochain complex of a representation and
+  of the chain complex of its contragredient are adjoint, so cocycles annihilate boundaries and
+  cycles annihilate coboundaries.  For a finite group acting on a finite dimensional space the
+  induced pairing is perfect: **the first homology of the contragredient representation is
+  canonically the dual of the first cohomology**.
 * `InverseGalois.CFT.Units.IdeleClassH1Full` removes the cyclicity hypothesis altogether.  A group
   of prime-power order has a normal subgroup of prime index, so the tower dévissage and induction on
   the exponent settle every extension of prime-power degree; and restriction to a Sylow subgroup is
