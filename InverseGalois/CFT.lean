@@ -54,6 +54,8 @@ import InverseGalois.CFT.Brauer.Split
 import InverseGalois.CFT.Brauer.SplittingSubfield
 import InverseGalois.CFT.Brauer.TensorSimple
 import InverseGalois.CFT.Brauer.Tower
+import InverseGalois.CFT.Brauer.UnramifiedClassOrder
+import InverseGalois.CFT.Brauer.UnramifiedRelative
 import InverseGalois.CFT.CentralCompositum
 import InverseGalois.CFT.CharacterSpan
 import InverseGalois.CFT.Compositum
@@ -3124,4 +3126,17 @@ it that are available here.
   values of the base field fill the whole value group, so **the invariant is surjective**, and when
   the norm subgroup has index the degree, as it does for a cyclic extension of complete fields,
   **the units modulo the norms are the integers modulo the degree.**
+* `InverseGalois.CFT.Brauer.UnramifiedRelative` transports that to the Brauer group: the relative
+  Brauer group of a cyclic extension is the units of the base field modulo the norms, so **the
+  relative Brauer group of an unramified cyclic extension of local fields is the integers modulo
+  the degree**, and in particular it contains a class of order the degree.
+* `InverseGalois.CFT.Brauer.UnramifiedClassOrder` reaches the same class of order the degree from
+  the valuation of the base field alone.  The units modulo the norms are killed by the degree,
+  because the norm of a scalar is its degree-th power; and for an unramified extension the value of
+  a norm is a degree-th power of a value of the base, so reading the value of a unit modulo the
+  degree is a surjection onto the integers modulo the degree that kills the norms.  An element of a
+  group killed by the degree whose image generates the integers modulo the degree has order exactly
+  the degree, so **the relative Brauer group of an unramified cyclic extension of a discretely
+  valued field contains a class of order the degree** — with no completeness, no finite residue
+  field and no norm index.
 -/
