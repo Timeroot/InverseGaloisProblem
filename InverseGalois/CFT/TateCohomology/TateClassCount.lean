@@ -29,11 +29,13 @@ formation is presented, and it feeds both Tate's theorem and the theorem of Tate
 
 ## Main results
 
-* `InverseGalois.CFT.Tate.exists_zsmul_of_card_eq`: **an element of a finite commutative group
+* `InverseGalois.CFT.Tate.exists_zsmul_of_card_le`,
+  `InverseGalois.CFT.Tate.exists_zsmul_of_card_eq`: **an element of a finite commutative group
   annihilated by exactly the multiples of the order generates the group.**
 * `InverseGalois.CFT.Tate.dvd_of_zsmul_tateRes_eq_zero`: **the restriction of a class of order the
   order of the group has order the order of the subgroup.**
-* `InverseGalois.CFT.Tate.isTateClassTwo_of_card`: **the classical hypotheses of Tate's theorem
+* `InverseGalois.CFT.Tate.isTateClassTwo_of_card_le`,
+  `InverseGalois.CFT.Tate.isTateClassTwo_of_card`: **the classical hypotheses of Tate's theorem
   follow from a count.**
 * `InverseGalois.CFT.Tate.tateTheoremTwoEquivOfCard`: **Tate's theorem** from that count.
 * `InverseGalois.CFT.Tate.tateNakayamaFlatEquivOfCard`: **the theorem of Tate and Nakayama** from
@@ -54,26 +56,34 @@ noncomputable section
 
 /-! ### An element that generates by a count -/
 
-/-- **An element of a finite commutative group annihilated by exactly the multiples of the order
-of the group generates the group**: the subgroup of its multiples has as many elements as the
-order of the element, which the annihilator pins to the order of the group. -/
-theorem exists_zsmul_of_card_eq {M : Type*} [AddCommGroup M] [Finite M] {β : M} {n : ℕ}
-    (hcard : Nat.card M = n) (hord : ∀ m : ℤ, m • β = 0 → (n : ℤ) ∣ m) (y : M) :
+/-- **An element of a finite commutative group with at most `n` elements annihilated only by
+multiples of `n` generates the group**: the subgroup of its multiples has as many elements as the
+order of the element, which the annihilator pushes up to at least `n`. -/
+theorem exists_zsmul_of_card_le {M : Type*} [AddCommGroup M] [Finite M] {β : M} {n : ℕ}
+    (hcard : Nat.card M ≤ n) (hord : ∀ m : ℤ, m • β = 0 → (n : ℤ) ∣ m) (y : M) :
     ∃ m : ℤ, y = m • β := by
-  have hdvd : addOrderOf β ∣ n := hcard ▸ addOrderOf_dvd_natCard β
-  have hdvd' : n ∣ addOrderOf β := by
+  have hdvd : n ∣ addOrderOf β := by
     have h : (addOrderOf β : ℤ) • β = 0 := by
       rw [natCast_zsmul]
       exact addOrderOf_nsmul_eq_zero β
     exact_mod_cast hord _ h
-  have heq : addOrderOf β = n := Nat.dvd_antisymm hdvd hdvd'
+  have hpos : 0 < addOrderOf β := addOrderOf_pos β
   have htop : AddSubgroup.zmultiples β = ⊤ :=
-    AddSubgroup.eq_top_of_card_eq _ (by rw [Nat.card_zmultiples, heq, hcard])
+    AddSubgroup.eq_top_of_le_card _ (by
+      rw [Nat.card_zmultiples]
+      exact hcard.trans (Nat.le_of_dvd hpos hdvd))
   have hy : y ∈ AddSubgroup.zmultiples β := by
     rw [htop]
     trivial
   obtain ⟨m, hm⟩ := AddSubgroup.mem_zmultiples_iff.1 hy
   exact ⟨m, hm.symm⟩
+
+/-- **An element of a finite commutative group annihilated by exactly the multiples of the order
+of the group generates the group.** -/
+theorem exists_zsmul_of_card_eq {M : Type*} [AddCommGroup M] [Finite M] {β : M} {n : ℕ}
+    (hcard : Nat.card M = n) (hord : ∀ m : ℤ, m • β = 0 → (n : ℤ) ∣ m) (y : M) :
+    ∃ m : ℤ, y = m • β :=
+  exists_zsmul_of_card_le hcard.le hord y
 
 /-! ### The order of a restricted class -/
 
@@ -110,19 +120,29 @@ section Criterion
 variable {G : Type} [Group G] [Finite G] {A : Rep ℤ G} {α : tateModule A 2}
 
 /-- **The classical hypotheses of Tate's theorem follow from a count**: the complete cohomology of
-the subgroup vanishes in degree one, in degree two it has as many elements as the subgroup, and the
-class is annihilated by exactly the multiples of the order of the whole group. -/
-theorem isTateClassTwo_of_card (H : Subgroup G) (h1 : Limits.IsZero (tateModule (resObj H A) 1))
+the subgroup vanishes in degree one, in degree two it has at most as many elements as the subgroup,
+and the class is annihilated by exactly the multiples of the order of the whole group.  The count in
+degree two is then an equality, since the restricted class alone accounts for as many elements as
+the subgroup has. -/
+theorem isTateClassTwo_of_card_le (H : Subgroup G) (h1 : Limits.IsZero (tateModule (resObj H A) 1))
     (hfin : Finite ↥(tateModule (resObj H A) 2))
-    (hcard : Nat.card ↥(tateModule (resObj H A) 2) = Nat.card ↥H)
+    (hcard : Nat.card ↥(tateModule (resObj H A) 2) ≤ Nat.card ↥H)
     (hα : ∀ m : ℤ, m • α = 0 → (Nat.card G : ℤ) ∣ m) :
     IsTateClassTwo H A α := by
   haveI := hfin
   exact
     { isZero_one := h1
       exists_zsmul := fun y =>
-        exists_zsmul_of_card_eq hcard (fun _ hm => dvd_of_zsmul_tateRes_eq_zero hα hm) y
+        exists_zsmul_of_card_le hcard (fun _ hm => dvd_of_zsmul_tateRes_eq_zero hα hm) y
       dvd_of_zsmul_eq_zero := fun _ hm => dvd_of_zsmul_tateRes_eq_zero hα hm }
+
+/-- **The classical hypotheses of Tate's theorem follow from a count.** -/
+theorem isTateClassTwo_of_card (H : Subgroup G) (h1 : Limits.IsZero (tateModule (resObj H A) 1))
+    (hfin : Finite ↥(tateModule (resObj H A) 2))
+    (hcard : Nat.card ↥(tateModule (resObj H A) 2) = Nat.card ↥H)
+    (hα : ∀ m : ℤ, m • α = 0 → (Nat.card G : ℤ) ∣ m) :
+    IsTateClassTwo H A α :=
+  isTateClassTwo_of_card_le H h1 hfin hcard.le hα
 
 variable (A α)
 
@@ -130,20 +150,20 @@ variable (A α)
 complete cohomology of the representation two degrees higher. -/
 def tateTheoremTwoEquivOfCard (h1 : ∀ H : Subgroup G, Limits.IsZero (tateModule (resObj H A) 1))
     (hfin : ∀ H : Subgroup G, Finite ↥(tateModule (resObj H A) 2))
-    (hcard : ∀ H : Subgroup G, Nat.card ↥(tateModule (resObj H A) 2) = Nat.card ↥H)
+    (hcard : ∀ H : Subgroup G, Nat.card ↥(tateModule (resObj H A) 2) ≤ Nat.card ↥H)
     (hα : ∀ m : ℤ, m • α = 0 → (Nat.card G : ℤ) ∣ m) (n : ℤ) :
     tateModule (Rep.trivial ℤ G ℤ) n ≃ₗ[ℤ] tateModule A (n + 1 + 1) :=
   tateTheoremTwoEquiv A α
-    (fun _ _ P => isTateClassTwo_of_card (P : Subgroup G) (h1 _) (hfin _) (hcard _) hα) n
+    (fun _ _ P => isTateClassTwo_of_card_le (P : Subgroup G) (h1 _) (hfin _) (hcard _) hα) n
 
 /-- **The theorem of Tate and Nakayama from a count**, for coefficients flat over the integers. -/
 def tateNakayamaFlatEquivOfCard (h1 : ∀ H : Subgroup G, Limits.IsZero (tateModule (resObj H A) 1))
     (hfin : ∀ H : Subgroup G, Finite ↥(tateModule (resObj H A) 2))
-    (hcard : ∀ H : Subgroup G, Nat.card ↥(tateModule (resObj H A) 2) = Nat.card ↥H)
+    (hcard : ∀ H : Subgroup G, Nat.card ↥(tateModule (resObj H A) 2) ≤ Nat.card ↥H)
     (hα : ∀ m : ℤ, m • α = 0 → (Nat.card G : ℤ) ∣ m) (M : Rep ℤ G) (hM : Module.Flat ℤ ↥M.V)
     (n : ℤ) : tateModule M n ≃ₗ[ℤ] tateModule (tensorObj A M) (n + 1 + 1) :=
   tateNakayamaFlatEquiv A α
-    (fun _ _ P => isTateClassTwo_of_card (P : Subgroup G) (h1 _) (hfin _) (hcard _) hα) M hM n
+    (fun _ _ P => isTateClassTwo_of_card_le (P : Subgroup G) (h1 _) (hfin _) (hcard _) hα) M hM n
 
 end Criterion
 

@@ -27,8 +27,8 @@ group two degrees higher, and tensoring with a representation flat over the inte
 * `InverseGalois.CFT.isZero_tateModule_resObj_ideleClassRep_one`: **the complete cohomology of the
   idele class group in degree one vanishes on every subgroup of the Galois group.**
 * `InverseGalois.CFT.isTateClassTwo_ideleClassRep`: **the classical hypotheses of Tate's theorem
-  hold for the idele class group** as soon as the degree two is finite of the order of the subgroup
-  and the class is annihilated by exactly the multiples of the degree.
+  hold for the idele class group** as soon as the degree two is finite with at most as many elements
+  as the subgroup and the class is annihilated by exactly the multiples of the degree.
 * `InverseGalois.CFT.tateIdeleClassEquiv`: **Tate's theorem for the idele class group.**
 * `InverseGalois.CFT.tateNakayamaIdeleClass`: **the theorem of Tate and Nakayama for the idele class
   group**, for coefficients flat over the integers.
@@ -64,20 +64,20 @@ theorem isZero_tateModule_resObj_ideleClassRep_one (S : Subgroup Gal(K/k)) :
 /-! ### The hypotheses of Tate's theorem -/
 
 /-- **The classical hypotheses of Tate's theorem hold for the idele class group** on a subgroup of
-the Galois group as soon as the complete cohomology in degree two is finite with as many elements as
-the subgroup and the class is annihilated by exactly the multiples of the degree of the extension.
+the Galois group as soon as the complete cohomology in degree two is finite with at most as many
+elements as the subgroup and the class is annihilated by exactly the multiples of the degree.
 The vanishing in degree one is already known. -/
 theorem isTateClassTwo_ideleClassRep {α : tateModule (ideleClassRep k K) 2} (S : Subgroup Gal(K/k))
     (hfin : Finite ↥(tateModule (resObj S (ideleClassRep k K)) 2))
-    (hcard : Nat.card ↥(tateModule (resObj S (ideleClassRep k K)) 2) = Nat.card ↥S)
+    (hcard : Nat.card ↥(tateModule (resObj S (ideleClassRep k K)) 2) ≤ Nat.card ↥S)
     (hα : ∀ m : ℤ, m • α = 0 → (Nat.card Gal(K/k) : ℤ) ∣ m) :
     IsTateClassTwo S (ideleClassRep k K) α :=
-  isTateClassTwo_of_card S (isZero_tateModule_resObj_ideleClassRep_one S) hfin hcard hα
+  isTateClassTwo_of_card_le S (isZero_tateModule_resObj_ideleClassRep_one S) hfin hcard hα
 
 variable (α : tateModule (ideleClassRep k K) 2)
   (hfin : ∀ S : Subgroup Gal(K/k), Finite ↥(tateModule (resObj S (ideleClassRep k K)) 2))
   (hcard : ∀ S : Subgroup Gal(K/k),
-    Nat.card ↥(tateModule (resObj S (ideleClassRep k K)) 2) = Nat.card ↥S)
+    Nat.card ↥(tateModule (resObj S (ideleClassRep k K)) 2) ≤ Nat.card ↥S)
   (hα : ∀ m : ℤ, m • α = 0 → (Nat.card Gal(K/k) : ℤ) ∣ m)
 
 /-- **Tate's theorem for the idele class group**: the complete cohomology of the trivial integral
