@@ -3028,6 +3028,71 @@ verbatim to every lattice of coefficients.
 
 ---
 
+## 0.28 Status (2026-08-29, later) — Tate–Nakayama for `p`-torsion coefficients, and the reason it cannot be made unconditional
+
+§0.27 left the flat case as the only reachable one. It is not: the *opposite* extreme — coefficients
+killed by a prime, which is exactly what step 5 of the §0.26 route needs — is now also a theorem,
+`InverseGalois/CFT/TateCohomology/TensorPTorsion.lean`, modulo **one** concrete vanishing.
+
+### What landed
+
+* `nsmul_tensorObj_eq_zero`, `nsmul_tensorObj_eq_zero'` — a tensor product one of whose factors is
+  killed by `m` is killed by `m` (the number moves onto that factor).
+* `isZero_tateModule_of_nsmul_eq_zero_coprime` — a representation killed by `m` with
+  `gcd(m, #G) = 1` has no complete cohomology: `#G` annihilates every degree too, and Bézout
+  finishes. So for coefficients killed by `p`, only the Sylow `p`-subgroup can carry anything.
+* `isoOfBijective`, `bijective_tensorHomLeft_nsmulSeq_g`, `tensorModNsmulIso` — **reduction modulo
+  `m` becomes an isomorphism after tensoring with a representation killed by `m`**: right exactness
+  keeps it surjective, and its kernel is the image of multiplication by `m`, which is zero on the
+  tensor product. So `E ⊗ M ≅ (E/mE) ⊗ M` whenever `mM = 0`.
+* `isZero_tateModule_tensorObj_of_nsmul` — a representation `N` killed by `p` whose restriction to
+  a Sylow `p`-subgroup has `H¹ = 0` satisfies: `N ⊗ M` is cohomologically trivial **for every** `M`.
+  (`p`-Sylow: `N` is the functions on the group, and the projection formula; other Sylows: coprime
+  orders.)
+* `isZero_tateModule_tensorObj_of_nsmul_eq_zero` — combining the two: if `Ĥ¹(P, E/pE) = 0` for a
+  Sylow `p`-subgroup `P`, then `E ⊗ M` is cohomologically trivial for every `M` killed by `p`.
+* `isZero_tateModule_tensorObj_of_torsionFree_nsmul` — when `p` acts on `E` without torsion the
+  hypothesis is automatic: `0 → E →ᵖ E → E/pE → 0` is short exact, so `E` cohomologically trivial
+  forces `Ĥ¹(E/pE) = 0`.
+* `tateNakayamaPTorsionEquiv` — **Tate–Nakayama for coefficients killed by a prime**, with the
+  single hypothesis `Ĥ¹(P, Ê/pÊ) = 0` on the splitting module `Ê = cocycleObj (shiftObj A) b`.
+
+### The hypothesis is genuine — an explicit counterexample
+
+It is tempting to hope that `E` cohomologically trivial already forces `E/pE` cohomologically
+trivial, which would make Tate–Nakayama unconditional for `p`-torsion coefficients. **It does not.**
+
+Take `G = ℤ/2 = ⟨σ⟩`, `R = ℤ[G]`, and `r = 1 + 3σ`. Multiplication by `r` on `R` has matrix
+`[[1,3],[3,1]]` in the basis `1, σ`, of determinant `-8 ≠ 0`, so it is injective, and
+
+```
+0 → R --·r--> R → E → 0,      E := R/rR
+```
+
+is a projective resolution of length 1. Hence `Ĥⁿ(H,E) = 0` for every `H ≤ G` and every `n`: `E` is
+cohomologically trivial. Smith normal form gives `E ≅ ℤ/8` as an abelian group, with `σ` acting by
+multiplication by `5` (from `x + 3σx = 0` and `3⁻¹ = 3` mod `8`). Checked directly: `E^G = 2ℤ/8`,
+`N E = 6·ℤ/8 = 2ℤ/8`, so `Ĥ⁰ = 0`; `ker N = {0,4} = (σ-1)E`, so `Ĥ¹ = 0`.
+
+But `E/2E = R/(r,2) = 𝔽₂[σ]/(1+σ) ≅ 𝔽₂` with **trivial** action (`5 ≡ 1` mod `2`), and
+`Ĥ⁰(ℤ/2, 𝔽₂) = 𝔽₂/N𝔽₂ = 𝔽₂ ≠ 0`. So `E/2E` is *not* cohomologically trivial.
+
+Consequences:
+
+* out (b) of §0.27 is dead in its naive form: no lifting trick will remove the hypothesis, because
+  the statement it would prove is false;
+* the classical Tor hypothesis in Tate–Nakayama is not an artefact of the classical proof;
+* what remains for step 5 of §0.26 is therefore an honest arithmetic question, and it is now a
+  *single* one: `Ĥ¹(P, Ê/pÊ) = 0` for `Ê` the splitting module of the global fundamental class.
+  Equivalently (dimension shift) `Ĥ³(P, Ê[p]) = 0`, and `Ê[p]` is a shift of `C_K[p]`.
+
+### Next target, unchanged
+
+Still the **fundamental class of the global class formation** (§0.27). Everything downstream of it
+is now in place for both flat and `p`-torsion coefficients.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.

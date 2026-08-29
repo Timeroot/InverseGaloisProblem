@@ -453,6 +453,7 @@ import InverseGalois.CFT.TateCohomology.TateTheorem
 import InverseGalois.CFT.TateCohomology.Tensor
 import InverseGalois.CFT.TateCohomology.TensorExtension
 import InverseGalois.CFT.TateCohomology.TensorFunctor
+import InverseGalois.CFT.TateCohomology.TensorPTorsion
 import InverseGalois.CFT.TateCohomology.TensorShift
 import InverseGalois.CFT.TateCohomology.TensorTrivial
 import InverseGalois.CFT.TateCohomology.TorsionFree
@@ -2938,4 +2939,16 @@ it that are available here.
   complete cohomology in two consecutive degrees has none after tensoring with a representation
   flat over the integers**, and **the theorem of Tate and Nakayama holds for coefficients flat over
   the integers** with no hypothesis left over.
+* `InverseGalois.CFT.TateCohomology.TensorPTorsion` replaces flatness by torsion.  **A tensor
+  product one of whose factors is killed by a natural number is killed by that number**, since the
+  number may be moved onto that factor, and **a representation killed by a number prime to the
+  order of the group has no complete cohomology**, since that order annihilates every degree too;
+  so only the Sylow subgroup for that prime can carry anything.  **Reducing modulo a natural number
+  becomes an isomorphism after tensoring with a representation killed by that number**: the
+  reduction stays surjective by right exactness, and its kernel is the image of multiplication by
+  the number, which is zero on the tensor product.  Hence **a representation whose reduction modulo
+  a prime has no first cohomology on a Sylow subgroup for that prime has no complete cohomology
+  after tensoring with a representation killed by that prime** -- and when the prime acts without
+  torsion the reduction inherits the vanishing from the representation itself.  This gives **the
+  theorem of Tate and Nakayama for coefficients killed by a prime**.
 -/
