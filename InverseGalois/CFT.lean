@@ -37,6 +37,7 @@ import InverseGalois.CFT.Brauer.H2Brauer
 import InverseGalois.CFT.Brauer.H2Surjective
 import InverseGalois.CFT.Brauer.Kernel
 import InverseGalois.CFT.Brauer.LocalBrauerBound
+import InverseGalois.CFT.Brauer.LocalBrauerOrder
 import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
 import InverseGalois.CFT.Brauer.Opposite
@@ -240,6 +241,7 @@ import InverseGalois.CFT.Local.InfiniteNormIndex
 import InverseGalois.CFT.Local.InfinitePowIndex
 import InverseGalois.CFT.Local.LegendreHilbert
 import InverseGalois.CFT.Local.NormIndex
+import InverseGalois.CFT.Local.NormValued
 import InverseGalois.CFT.Local.NormalLattice
 import InverseGalois.CFT.Local.OddAnisotropic
 import InverseGalois.CFT.Local.PadicHilbert
@@ -3148,4 +3150,20 @@ it that are available here.
   Hence **every Brauer class over a complete, discretely valued, locally compact field, and in
   particular over the completion of a number field at a finite place, lies in the relative Brauer
   group of a cyclic extension whose relative Brauer group has an element of order the degree.**
+* `InverseGalois.CFT.Local.NormValued` carries the whole local package up a finite extension.  The
+  value of the field norm is a valuation on the extension, because the norm of an element is the
+  degree-th power of its spectral norm and the spectral norm is nonarchimedean; carried on the
+  uniformity of the spectral norm it is a topological valuation, since a set is a neighbourhood of
+  zero exactly when it contains a ball, so **a finite extension of a complete, discretely valued,
+  locally compact field is again one**.  The field norm is invariant under the automorphisms over
+  the base by transport of structure, so **the automorphisms preserve the valuation**; the residue
+  characteristic multiplies by the degree; and a valuation ring of a proper metric space is a
+  compact set whose next step is open, so its quotient is discrete and compact, hence **the graded
+  pieces are finite** — with no uniformizer of the extension needed.
+* `InverseGalois.CFT.Brauer.LocalBrauerOrder` puts the going-up together with the counting.  The
+  cyclic splitting field produced by the theory of division algebras is unramified, hence a local
+  field again, so its relative Brauer group is the units of the base field modulo the norms, which
+  is the integers modulo the degree: **every Brauer class over a complete, discretely valued,
+  locally compact field, and in particular over the completion of a number field at a finite place,
+  lies in a relative Brauer group of exactly the order of the degree.**
 -/
