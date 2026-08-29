@@ -86,6 +86,7 @@ import InverseGalois.CFT.GroupCohomology.CyclicH1
 import InverseGalois.CFT.GroupCohomology.CyclicCoboundary
 import InverseGalois.CFT.GroupCohomology.CyclicH2
 import InverseGalois.CFT.GroupCohomology.CyclicSubgroup
+import InverseGalois.CFT.GroupCohomology.CyclicTate
 import InverseGalois.CFT.GroupCohomology.CyclicSurjective
 import InverseGalois.CFT.GroupCohomology.Duality
 import InverseGalois.CFT.GroupCohomology.ExtensionMap
@@ -497,6 +498,7 @@ import InverseGalois.CFT.Units.IdeleClassComap
 import InverseGalois.CFT.Units.IdeleClassFixed
 import InverseGalois.CFT.Units.IdeleClassH1
 import InverseGalois.CFT.Units.IdeleClassH1Full
+import InverseGalois.CFT.Units.IdeleClassH2
 import InverseGalois.CFT.Units.IdeleClassIndex
 import InverseGalois.CFT.Units.IdeleClassSES
 import InverseGalois.CFT.Units.IdeleClassTate
@@ -1187,6 +1189,12 @@ it that are available here.
   the cyclic cocycles already exhaust the second cohomology group.
 * `InverseGalois.CFT.GroupCohomology.CyclicH2` reads off the Herbrand description of the second
   cohomology group of a finite cyclic group: it is the invariants modulo the norms.
+* `InverseGalois.CFT.GroupCohomology.CyclicTate` matches that description with the zeroth Tate
+  group of a single automorphism.  The invariants of a finite cyclic group are the fixed points
+  of a generator and the norm of the group action is the norm operator of that generator, so
+  **the second cohomology of a finite cyclic group is the zeroth Tate group of the automorphism
+  by which a generator acts**; the integral module structure of a representation being unique,
+  the comparison of the two descriptions is an isomorphism of representations.
 * `InverseGalois.CFT.Brauer.MaximalSubfield` produces a maximal commutative subalgebra of a
   central simple algebra; inside a division algebra it is a field, and it splits the algebra, so
   every Brauer class is split by a finite subextension of the algebraic closure.
@@ -2976,4 +2984,10 @@ it that are available here.
   group** -- the complete cohomology of the trivial integral representation in a degree is that of
   the idele class group two degrees higher -- and **the theorem of Tate and Nakayama for the idele
   class group** for coefficients flat over the integers.
+* `InverseGalois.CFT.Units.IdeleClassH2` supplies the count in degree two for a cyclic
+  extension.  The zeroth Tate group of the automorphism by which a generator acts is the
+  quotient of the ideles of the base field by the principal ideles together with the norms, an
+  index which the two inequalities pin to the degree, so **the second cohomology of the idele
+  class group of a cyclic extension of number fields has exactly as many elements as the Galois
+  group**.
 -/
