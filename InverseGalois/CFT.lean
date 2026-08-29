@@ -499,6 +499,7 @@ import InverseGalois.CFT.Units.IdeleClassH1
 import InverseGalois.CFT.Units.IdeleClassH1Full
 import InverseGalois.CFT.Units.IdeleClassIndex
 import InverseGalois.CFT.Units.IdeleClassSES
+import InverseGalois.CFT.Units.IdeleClassTate
 import InverseGalois.CFT.Units.IdeleClassTower
 import InverseGalois.CFT.Units.IdeleCoboundary
 import InverseGalois.CFT.Units.IdeleFixed
@@ -2965,4 +2966,14 @@ it that are available here.
   over the whole group** -- the shape in which the fundamental class of a class formation presents
   itself -- and that count therefore delivers both **Tate's theorem** and **the theorem of Tate and
   Nakayama for coefficients flat over the integers** on its own.
+* `InverseGalois.CFT.Units.IdeleClassTate` hands the first of the three conditions to the idele
+  class group.  The restriction of the representation to a subgroup of the Galois group is the
+  representation attached to the extension over the fixed field of that subgroup, and the first
+  cohomology of the idele class group of any Galois extension of number fields vanishes, so **the
+  complete cohomology of the idele class group in degree one vanishes on every subgroup**.  What
+  remains of the classical hypotheses is therefore the count in degree two and the order of a class
+  over the whole group, and with those in hand one gets **Tate's theorem for the idele class
+  group** -- the complete cohomology of the trivial integral representation in a degree is that of
+  the idele class group two degrees higher -- and **the theorem of Tate and Nakayama for the idele
+  class group** for coefficients flat over the integers.
 -/
