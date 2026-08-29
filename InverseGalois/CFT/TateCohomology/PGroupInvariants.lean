@@ -15,7 +15,14 @@ fixed point of the action on that subspace, so there must be a second one.
 
 Two consequences are recorded in the shape in which they get used.  A nonzero stable subspace
 contains a nonzero invariant vector, and a stable subspace that is not everything is missed by
-some vector which is invariant modulo it.
+some vector which is invariant modulo it.  Both of them are also recorded over an arbitrary base,
+for a representation all of whose vectors are killed by `p`: such a representation can be read over
+the field with `p` elements, and the two conclusions do not mention the scalars.
+
+## Main definitions
+
+* `InverseGalois.CFT.Tate.zmodRep`: a representation whose vectors are killed by `p`, read over the
+  field with `p` elements.
 
 ## Main results
 
@@ -25,6 +32,9 @@ some vector which is invariant modulo it.
   nonzero invariant vector.**
 * `InverseGalois.CFT.Tate.exists_notMem_invariant_mod`: **a stable subspace that is not everything
   is missed by a vector invariant modulo it.**
+* `InverseGalois.CFT.Tate.exists_invariant_mem_ne_zero_of_nsmul`,
+  `InverseGalois.CFT.Tate.exists_notMem_invariant_mod_of_nsmul`: the same two statements over an
+  arbitrary base, for a representation whose vectors are killed by `p`.
 
 ## Tags
 
@@ -142,6 +152,53 @@ theorem exists_notMem_invariant_mod (hG : IsPGroup p G) (ρ : Representation (ZM
   rwa [Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero] at h2
 
 end PGroup
+
+/-! ### Other bases -/
+
+section Base
+
+variable {p : ℕ} {k G V : Type*} [CommRing k] [Group G] [AddCommGroup V] [Module k V]
+
+/-- **A representation read over the field with `p` elements**, when the vectors are killed by
+`p`. -/
+def zmodRep (p : ℕ) [Module (ZMod p) V] (ρ : Representation k G V) :
+    Representation (ZMod p) G V where
+  toFun g := ((ρ g).toAddMonoidHom).toZModLinearMap p
+  map_one' := by
+    ext v
+    show ρ 1 v = v
+    simp
+  map_mul' g h := by
+    ext v
+    show ρ (g * h) v = ρ g (ρ h v)
+    rw [map_mul]
+    rfl
+
+@[simp]
+theorem zmodRep_apply [Module (ZMod p) V] (ρ : Representation k G V) (g : G) (v : V) :
+    zmodRep p ρ g v = ρ g v := rfl
+
+variable [Fact p.Prime] [Finite G]
+
+/-- **A nonzero stable subspace contains a nonzero invariant vector**, over any base over which the
+vectors are killed by `p`. -/
+theorem exists_invariant_mem_ne_zero_of_nsmul (hG : IsPGroup p G) (ρ : Representation k G V)
+    (hp : ∀ v : V, p • v = 0) {U : Submodule k V} (hU : ∀ g : G, U ≤ U.comap (ρ g)) {a : V}
+    (haU : a ∈ U) (ha : a ≠ 0) : ∃ b : V, b ∈ U ∧ b ≠ 0 ∧ ∀ g : G, ρ g b = b := by
+  letI := AddCommGroup.zmodModule (n := p) hp
+  exact exists_invariant_mem_ne_zero hG (zmodRep p ρ)
+    (U := AddSubgroup.toZModSubmodule p U.toAddSubgroup) (fun g _ hx => hU g hx) haU ha
+
+/-- **A stable subspace that is not everything is missed by a vector invariant modulo it**, over any
+base over which the vectors are killed by `p`. -/
+theorem exists_notMem_invariant_mod_of_nsmul (hG : IsPGroup p G) (ρ : Representation k G V)
+    (hp : ∀ v : V, p • v = 0) {U : Submodule k V} (hU : ∀ g : G, U ≤ U.comap (ρ g)) {a : V}
+    (ha : a ∉ U) : ∃ b : V, b ∉ U ∧ ∀ g : G, ρ g b - b ∈ U := by
+  letI := AddCommGroup.zmodModule (n := p) hp
+  exact exists_notMem_invariant_mod hG (zmodRep p ρ)
+    (U := AddSubgroup.toZModSubmodule p U.toAddSubgroup) (fun g _ hx => hU g hx) ha
+
+end Base
 
 end
 

@@ -425,7 +425,9 @@ import InverseGalois.CFT.Tate.Surjection
 import InverseGalois.CFT.Tate.Trivial
 import InverseGalois.CFT.Tate.TrivialLattice
 import InverseGalois.CFT.TateCohomology.Acyclic
+import InverseGalois.CFT.TateCohomology.Additive
 import InverseGalois.CFT.TateCohomology.Annihilate
+import InverseGalois.CFT.TateCohomology.CohomTrivial
 import InverseGalois.CFT.TateCohomology.Exact
 import InverseGalois.CFT.TateCohomology.Functorial
 import InverseGalois.CFT.TateCohomology.Graded
@@ -436,10 +438,12 @@ import InverseGalois.CFT.TateCohomology.Junction
 import InverseGalois.CFT.TateCohomology.Norm
 import InverseGalois.CFT.TateCohomology.PGroupInvariants
 import InverseGalois.CFT.TateCohomology.PGroupTrivial
+import InverseGalois.CFT.TateCohomology.PTorsionTrivial
 import InverseGalois.CFT.TateCohomology.Restrict
 import InverseGalois.CFT.TateCohomology.Shift
 import InverseGalois.CFT.TateCohomology.Shifting
 import InverseGalois.CFT.TateCohomology.SylowInjective
+import InverseGalois.CFT.TateCohomology.TorsionFree
 import InverseGalois.CFT.TateCohomology.Transfer
 import InverseGalois.CFT.TotallyReal
 import InverseGalois.CFT.Units.ABHN
@@ -2790,4 +2794,32 @@ it that are available here.
   in characteristic `p` with no first cohomology is the representation on the functions on the
   group**, and iterated shifting turns that into: **a representation of a `p`-group in
   characteristic `p` with no complete cohomology in one degree has none in any degree**.
+* `InverseGalois.CFT.TateCohomology.PTorsionTrivial` carries that conclusion to the integers.  A
+  representation over the integers all of whose vectors are killed by `p` is a representation over
+  the field with `p` elements in disguise, so the inclusion of its invariants is retracted by an
+  additive, hence linear, map; and both the shift and the coshift of such a representation are
+  again killed by `p`.  So **a representation of a `p`-group over the integers killed by `p` with
+  no complete cohomology in one degree has none in any degree**.
+* `InverseGalois.CFT.TateCohomology.Additive` records that the map induced in a fixed degree is
+  additive in the map of representations: in the two middle degrees this is read off from the
+  description of the induced map on the invariants and on the coinvariants, and in the other
+  degrees it comes from the additivity of the complex of cochains and of the complex of chains.
+  Hence **a multiple of the identity of a representation induces that multiple on the complete
+  cohomology** in every degree.
+* `InverseGalois.CFT.TateCohomology.TorsionFree` divides a representation over the integers by the
+  multiples of a prime at which it has no torsion.  The reduction is killed by that prime, so for a
+  `p`-group it has no complete cohomology at all once the representation has none in two
+  consecutive degrees; the long exact sequence then makes multiplication by `p` injective on the
+  complete cohomology of the representation in every degree, and the order of the group, a power of
+  `p`, already annihilates it.  So **a representation of a `p`-group over the integers without
+  torsion at `p` whose complete cohomology vanishes in two consecutive degrees has none in any
+  degree**.
+* `InverseGalois.CFT.TateCohomology.CohomTrivial` removes the hypothesis on the torsion.  The free
+  module on the vectors of a representation maps onto it, so the functions on the group with values
+  in that free module map onto it too, and those functions have no complete cohomology; the
+  connecting map therefore identifies the complete cohomology of the representation in a degree
+  with that of the kernel of the surjection one degree higher.  That kernel has no torsion at all,
+  being made of functions valued in a free module over the integers, so **a representation of a
+  `p`-group over the integers whose complete cohomology vanishes in two consecutive degrees has
+  none in any degree**.
 -/
