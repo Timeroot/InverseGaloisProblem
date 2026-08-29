@@ -40,6 +40,7 @@ import InverseGalois.CFT.Brauer.GaloisSplitting
 import InverseGalois.CFT.Brauer.Group
 import InverseGalois.CFT.Brauer.H2Brauer
 import InverseGalois.CFT.Brauer.H2Surjective
+import InverseGalois.CFT.Brauer.InvariantInjective
 import InverseGalois.CFT.Brauer.InvariantMap
 import InverseGalois.CFT.Brauer.Kernel
 import InverseGalois.CFT.Brauer.LocalBrauerBound
@@ -3260,6 +3261,13 @@ it that are available here.
   invariant of a Brauer class over a local field is well defined**, and **the invariants form a
   homomorphism from the whole Brauer group to the rationals modulo one** which computes the
   normalised invariant of every unramified extension.
+* `InverseGalois.CFT.Brauer.InvariantInjective` shows the invariant loses nothing.  The relative
+  Brauer group of an unramified extension has the order of the degree and the invariant attains the
+  reciprocal of the degree, an element of that order in the rationals modulo one; a homomorphism
+  out of a finite group whose image contains an element of the order of the group is injective, so
+  **the invariant is injective on the relative Brauer group of an unramified extension**, and since
+  every class is split by such an extension, **a Brauer class over a local field is determined by
+  its invariant.**
 * `InverseGalois.CFT.Local.NormValued` carries the whole local package up a finite extension.  The
   value of the field norm is a valuation on the extension, because the norm of an element is the
   degree-th power of its spectral norm and the spectral norm is nonarchimedean; carried on the
