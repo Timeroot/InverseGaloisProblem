@@ -19,7 +19,12 @@ import InverseGalois.CFT.Brauer.CyclicBrauer
 import InverseGalois.CFT.Brauer.CyclicNorm
 import InverseGalois.CFT.Brauer.Division
 import InverseGalois.CFT.Brauer.DivisionAbsValue
+import InverseGalois.CFT.Brauer.DivisionCompact
+import InverseGalois.CFT.Brauer.DivisionInteger
+import InverseGalois.CFT.Brauer.DivisionMaximal
 import InverseGalois.CFT.Brauer.DivisionNorm
+import InverseGalois.CFT.Brauer.DivisionResidue
+import InverseGalois.CFT.Brauer.DivisionValueGroup
 import InverseGalois.CFT.Brauer.Exponent
 import InverseGalois.CFT.Brauer.GaloisSplitting
 import InverseGalois.CFT.Brauer.Group
