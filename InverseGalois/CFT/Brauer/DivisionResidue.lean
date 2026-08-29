@@ -53,13 +53,13 @@ namespace InverseGalois.CFT
 element.**  Such a ring is a field by the theorem of Wedderburn, and the multiplicative group of a
 finite field is cyclic. -/
 theorem exists_forall_eq_pow_of_finite_isDomain (R : Type*) [Ring R] [IsDomain R] [Finite R] :
-    ∃ g : R, ∀ x : R, x ≠ 0 → ∃ i : ℕ, x = g ^ i := by
+    ∃ g : R, g ≠ 0 ∧ ∀ x : R, x ≠ 0 → ∃ i : ℕ, x = g ^ i := by
   classical
   have hF : IsField R := Finite.isDomain_to_isField R
   letI : CommRing R := { (inferInstance : Ring R) with mul_comm := hF.mul_comm }
   haveI : Finite Rˣ := Finite.of_injective (fun u : Rˣ => (u : R)) Units.val_injective
   obtain ⟨g, hg⟩ := IsCyclic.exists_generator (α := Rˣ)
-  refine ⟨(g : R), fun x hx => ?_⟩
+  refine ⟨(g : R), g.ne_zero, fun x hx => ?_⟩
   obtain ⟨b, hb⟩ := hF.mul_inv_cancel hx
   let u : Rˣ := ⟨x, b, hb, (hF.mul_comm b x).trans hb⟩
   obtain ⟨i, hi⟩ := mem_powers_iff_mem_zpowers.2 (hg u)
@@ -182,11 +182,15 @@ variable (K D) in
 absolute value less than one.**  The residue ring is a finite ring without zero divisors, hence a
 finite field, and the nonzero elements of a finite field are the powers of a single one of them. -/
 theorem exists_pow_divisionNorm_sub_lt_one :
-    ∃ y : D, divisionNorm K D y ≤ 1 ∧
+    ∃ y : D, divisionNorm K D y = 1 ∧
       ∀ x : D, divisionNorm K D x = 1 → ∃ i : ℕ, divisionNorm K D (x - y ^ i) < 1 := by
-  obtain ⟨g, hg⟩ := exists_forall_eq_pow_of_finite_isDomain (DivisionResidue K D)
+  obtain ⟨g, hg0, hg⟩ := exists_forall_eq_pow_of_finite_isDomain (DivisionResidue K D)
   obtain ⟨y, rfl⟩ := (divisionResidueCon K D).mk'_surjective g
-  refine ⟨(y : D), mem_divisionIntegers.1 y.2, ?_⟩
+  have hy1 : divisionNorm K D (y : D) = 1 := by
+    refine le_antisymm (mem_divisionIntegers.1 y.2) (le_of_not_gt fun h => hg0 ?_)
+    rw [RingCon.coe_mk']
+    exact (divisionResidue_eq_zero_iff y).2 h
+  refine ⟨(y : D), hy1, ?_⟩
   intro x hx
   have hxO : x ∈ divisionIntegers K D := mem_divisionIntegers.2 hx.le
   have hne : ((⟨x, hxO⟩ : divisionIntegers K D) : DivisionResidue K D) ≠ 0 := fun h => by

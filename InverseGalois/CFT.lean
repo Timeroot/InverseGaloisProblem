@@ -25,6 +25,7 @@ import InverseGalois.CFT.Brauer.DivisionMaximal
 import InverseGalois.CFT.Brauer.DivisionNorm
 import InverseGalois.CFT.Brauer.DivisionResidue
 import InverseGalois.CFT.Brauer.DivisionSplitting
+import InverseGalois.CFT.Brauer.DivisionTeichmuller
 import InverseGalois.CFT.Brauer.DivisionValueGroup
 import InverseGalois.CFT.Brauer.Exponent
 import InverseGalois.CFT.Brauer.GaloisSplitting
@@ -3072,4 +3073,11 @@ it that are available here.
   centralizer and therefore **splits the algebra**: extending scalars to it produces a matrix
   algebra.  Applied to the subfield of the previous module this gives **a splitting field of degree
   the square root of the dimension carrying no absolute values beyond those of the base field**.
+* `InverseGalois.CFT.Brauer.DivisionTeichmuller` improves the residue generator to a root of unity.
+  Raising an integer congruent to one to the power `Q`, the number of residues, multiplies its
+  distance to one by at most `|Q| < 1`, so the powers `y ^ (Q ^ j)` of a residue generator form a
+  Cauchy sequence; the limit is a genuine root of unity of order exactly `Q - 1` congruent to the
+  generator, and its powers still meet every element of absolute value one.  **A division algebra
+  over a nonarchimedean local field is therefore generated over its base field by a root of unity
+  of order prime to the residue characteristic.**
 -/
