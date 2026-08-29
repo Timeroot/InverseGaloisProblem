@@ -49,6 +49,7 @@ import InverseGalois.CFT.Brauer.Quaternion
 import InverseGalois.CFT.Brauer.RationalBrauer
 import InverseGalois.CFT.Brauer.RelativeIndex
 import InverseGalois.CFT.Brauer.RealBrauer
+import InverseGalois.CFT.Brauer.RealInvariant
 import InverseGalois.CFT.Brauer.RealPlace
 import InverseGalois.CFT.Brauer.Semilinear
 import InverseGalois.CFT.Brauer.SkolemNoether
@@ -3156,6 +3157,10 @@ it that are available here.
   compatible, the class of `(L / K, σ, a)` is the class of `(L' / K, σ', a ^ [L' : L])`, whose
   value is `[L' : L] · v(a)` and whose degree is `[L' : L] · [L : K]`, so **the two levels of the
   tower give the same invariant** and the invariants glue along a tower.
+* `InverseGalois.CFT.Brauer.RealInvariant` records the archimedean member of the same family.  The
+  Brauer group of the reals is cyclic of order two, so it has exactly one injection into the
+  rationals modulo the integers, and **the invariant at the real place sends the class of the
+  Hamilton quaternions to one half.**
 * `InverseGalois.CFT.Brauer.AdicUnramified` joins the two halves.  A rank one valuation makes a
   field into a nonarchimedean normed field whose norm determines the valuation, because the
   comparison map of a rank one valuation is strictly monotone, so the unramifiedness produced by

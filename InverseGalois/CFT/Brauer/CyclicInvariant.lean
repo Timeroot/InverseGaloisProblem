@@ -72,6 +72,56 @@ theorem QModZ.mk_eq_zero_iff (q : ℚ) :
 theorem QModZ.mk_intCast (k : ℤ) : (QuotientAddGroup.mk (k : ℚ) : QModZ) = 0 :=
   (QModZ.mk_eq_zero_iff _).2 ⟨k, rfl⟩
 
+/-! ### The integers modulo `n` inside the rationals modulo the integers -/
+
+/-- The homomorphism of the integers into the rationals modulo the integers that divides by a given
+number. -/
+noncomputable def intQModZ (n : ℕ) : ℤ →+ QModZ :=
+  (QuotientAddGroup.mk' (AddSubgroup.zmultiples (1 : ℚ))).comp
+    ((AddMonoidHom.mulRight ((n : ℚ))⁻¹).comp (Int.castAddHom ℚ))
+
+theorem intQModZ_apply (n : ℕ) (k : ℤ) :
+    intQModZ n k = QuotientAddGroup.mk ((k : ℚ) / (n : ℚ)) := by
+  rw [div_eq_mul_inv]
+  rfl
+
+/-- Dividing the modulus by itself gives an integer. -/
+theorem intQModZ_natCast_self (n : ℕ) : intQModZ n (n : ℤ) = 0 := by
+  rcases Nat.eq_zero_or_pos n with hn | hn
+  · rw [hn]
+    simp
+  · have hne : ((n : ℚ)) ≠ 0 := Nat.cast_ne_zero.mpr hn.ne'
+    rw [intQModZ_apply]
+    push_cast
+    rw [div_self hne]
+    exact (QModZ.mk_eq_zero_iff _).2 ⟨1, by norm_num⟩
+
+/-- **The integers modulo `n`, inside the rationals modulo the integers.**  The class of `k` goes
+to `k / n`. -/
+noncomputable def zmodQModZ (n : ℕ) [NeZero n] : ZMod n →+ QModZ :=
+  ZMod.lift n ⟨intQModZ n, intQModZ_natCast_self n⟩
+
+theorem zmodQModZ_intCast (n : ℕ) [NeZero n] (k : ℤ) :
+    zmodQModZ n (k : ZMod n) = QuotientAddGroup.mk ((k : ℚ) / (n : ℚ)) := by
+  show ZMod.lift n ⟨intQModZ n, intQModZ_natCast_self n⟩ (k : ZMod n) = _
+  rw [ZMod.lift_coe]
+  exact intQModZ_apply n k
+
+/-- **The embedding of the integers modulo `n` is injective.** -/
+theorem zmodQModZ_injective (n : ℕ) [NeZero n] : Function.Injective (zmodQModZ n) := by
+  have hne : ((n : ℚ)) ≠ 0 := Nat.cast_ne_zero.mpr (NeZero.ne n)
+  show Function.Injective (ZMod.lift n ⟨intQModZ n, intQModZ_natCast_self n⟩)
+  rw [ZMod.lift_injective]
+  intro k hk
+  have hk' : (QuotientAddGroup.mk ((k : ℚ) / (n : ℚ)) : QModZ) = 0 := by
+    rw [← intQModZ_apply]
+    exact hk
+  obtain ⟨j, hj⟩ := (QModZ.mk_eq_zero_iff _).1 hk'
+  have hkq : (k : ℚ) = (j : ℚ) * (n : ℚ) := (div_eq_iff hne).1 hj.symm
+  have hkz : k = j * (n : ℤ) := by exact_mod_cast hkq
+  rw [ZMod.intCast_zmod_eq_zero_iff_dvd]
+  exact ⟨j, by rw [hkz, mul_comm]⟩
+
 /-! ### The invariant of a unit -/
 
 section Valued
