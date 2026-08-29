@@ -36,6 +36,7 @@ import InverseGalois.CFT.Brauer.H2Brauer
 import InverseGalois.CFT.Brauer.H2Surjective
 import InverseGalois.CFT.Brauer.Kernel
 import InverseGalois.CFT.Brauer.LocalBrauerBound
+import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
 import InverseGalois.CFT.Brauer.Opposite
 import InverseGalois.CFT.Brauer.Primary
@@ -3105,4 +3106,13 @@ it that are available here.
   is finite, and since the ring of integers of the completion is a complete discrete valuation ring,
   **the completion of a number field at a finite place is a proper metric space** — a nonarchimedean
   local field in the normed sense, on which the theory of division algebras is available.
+* `InverseGalois.CFT.Brauer.LocalUnramified` lifts the splitting theorem from division algebras to
+  Brauer classes.  The absolute value a division algebra induces on a subfield is a multiplicative
+  norm extending the absolute value of the base field, and over a complete nonarchimedean base the
+  spectral norm is the only such, so **the absolute value of a division algebra restricted to a
+  subfield is the spectral norm of that subfield** and the unramifiedness of the splitting field is
+  a statement about the field alone.  A Brauer class is the class of a central simple algebra whose
+  underlying ring is a domain, hence of a division algebra: **every Brauer class over a
+  nonarchimedean local field lies in the relative Brauer group of a cyclic extension whose nonzero
+  elements have the absolute values of the nonzero scalars.**
 -/
