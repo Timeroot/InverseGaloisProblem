@@ -29,6 +29,7 @@ import InverseGalois.CFT.Brauer.DivisionInteger
 import InverseGalois.CFT.Brauer.DivisionMaximal
 import InverseGalois.CFT.Brauer.DivisionNorm
 import InverseGalois.CFT.Brauer.DivisionResidue
+import InverseGalois.CFT.Brauer.DivisionResidueBase
 import InverseGalois.CFT.Brauer.DivisionSplitting
 import InverseGalois.CFT.Brauer.DivisionTeichmuller
 import InverseGalois.CFT.Brauer.DivisionValueGroup
@@ -51,6 +52,8 @@ import InverseGalois.CFT.Brauer.RelativeIndex
 import InverseGalois.CFT.Brauer.RealBrauer
 import InverseGalois.CFT.Brauer.RealInvariant
 import InverseGalois.CFT.Brauer.RealPlace
+import InverseGalois.CFT.Brauer.ResidueDegree
+import InverseGalois.CFT.Brauer.ResidueGalois
 import InverseGalois.CFT.Brauer.Semilinear
 import InverseGalois.CFT.Brauer.SkolemNoether
 import InverseGalois.CFT.Brauer.SolvableBound
@@ -3191,6 +3194,23 @@ it that are available here.
   of the integers modulo the number of nonzero residues**, and in particular it is commutative.
   The Frobenius automorphism is the element of that group which raises the root of unity to the
   number of residues of the base field.
+* `InverseGalois.CFT.Brauer.DivisionResidueBase` places the residues of the base field inside the
+  residue ring.  The absolute value of the algebra restricts on the scalars to the absolute value of
+  the base field, so **the residue field of the base field sits inside the residue ring of the
+  algebra**, and the inclusion is injective because its source is a field.
+* `InverseGalois.CFT.Brauer.ResidueDegree` bounds the residue field by the degree.  A relation among
+  integers can be rescaled so that its coefficients are integers and at least one of them is a unit,
+  and reducing the rescaled relation shows that **integers with independent residues are themselves
+  independent**, so the residue field of an extension has at most as many elements as the degree of
+  the extension allows.
+* `InverseGalois.CFT.Brauer.ResidueGalois` closes the gap in the other direction and names the
+  Frobenius.  An unramified extension is a cyclotomic extension, hence Galois, and its automorphisms
+  act faithfully on the residue field over the residue field of the base field, so the degree is at
+  most the residue degree; with the previous bound **the residue degree of an unramified extension
+  is its degree**.  The action on residues is therefore an isomorphism onto the Galois group of the
+  residue extension, and the automorphism matching the Frobenius of the residue fields generates:
+  **an unramified extension of a local field has an automorphism which generates its Galois group
+  and raises every residue to the number of residues of the base field.**
 * `InverseGalois.CFT.Brauer.AdicUnramified` joins the two halves.  A rank one valuation makes a
   field into a nonarchimedean normed field whose norm determines the valuation, because the
   comparison map of a rank one valuation is strictly monotone, so the unramifiedness produced by
