@@ -424,6 +424,7 @@ import InverseGalois.CFT.Tate.Shapiro
 import InverseGalois.CFT.Tate.Surjection
 import InverseGalois.CFT.Tate.Trivial
 import InverseGalois.CFT.Tate.TrivialLattice
+import InverseGalois.CFT.TateCohomology.Acyclic
 import InverseGalois.CFT.TateCohomology.Exact
 import InverseGalois.CFT.TateCohomology.Graded
 import InverseGalois.CFT.TateCohomology.HomologyJunction
@@ -2728,4 +2729,9 @@ it that are available here.
   homology of the degree shifted by one below that.  A map of representations induces a map in
   every degree and a short exact sequence has a connecting map in every degree, and the resulting
   sequence, running through all of the integers, is **exact at every one of its spots**.
+* `InverseGalois.CFT.TateCohomology.Acyclic` identifies the functions on the group with the
+  representation coinduced from the trivial subgroup, and deduces from Shapiro's lemma that **the
+  complete cohomology of the functions on the group vanishes in every integer degree**.  A short
+  exact sequence whose middle term is of that kind therefore has a **bijective connecting map in
+  every degree**, which is the mechanism that shifts a statement from one degree to the next.
 -/
