@@ -425,6 +425,7 @@ import InverseGalois.CFT.Tate.Surjection
 import InverseGalois.CFT.Tate.Trivial
 import InverseGalois.CFT.Tate.TrivialLattice
 import InverseGalois.CFT.TateCohomology.Acyclic
+import InverseGalois.CFT.TateCohomology.Annihilate
 import InverseGalois.CFT.TateCohomology.Exact
 import InverseGalois.CFT.TateCohomology.Graded
 import InverseGalois.CFT.TateCohomology.HomologyJunction
@@ -432,6 +433,7 @@ import InverseGalois.CFT.TateCohomology.Induced
 import InverseGalois.CFT.TateCohomology.Junction
 import InverseGalois.CFT.TateCohomology.Norm
 import InverseGalois.CFT.TateCohomology.Shift
+import InverseGalois.CFT.TateCohomology.Shifting
 import InverseGalois.CFT.TotallyReal
 import InverseGalois.CFT.Units.ABHN
 import InverseGalois.CFT.Units.ABHNArchimedean
@@ -2734,4 +2736,13 @@ it that are available here.
   complete cohomology of the functions on the group vanishes in every integer degree**.  A short
   exact sequence whose middle term is of that kind therefore has a **bijective connecting map in
   every degree**, which is the mechanism that shifts a statement from one degree to the next.
+* `InverseGalois.CFT.TateCohomology.Shifting` presents the embedding of a representation into the
+  functions on the group, and the summation onto it, as short exact sequences of representations,
+  and reads off the two identifications: **the complete cohomology of the shift in a degree is the
+  complete cohomology of the representation in the following degree**, and **the complete
+  cohomology of a representation in a degree is the complete cohomology of its coshift in the
+  following degree**.
+* `InverseGalois.CFT.TateCohomology.Annihilate` runs the two inductions those identifications
+  allow, upwards from degree zero and downwards from degree minus one, and concludes that **the
+  order of the group annihilates the complete cohomology in every integer degree**.
 -/
