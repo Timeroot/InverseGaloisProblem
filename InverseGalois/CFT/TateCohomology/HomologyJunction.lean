@@ -41,17 +41,17 @@ universe u
 
 noncomputable section
 
-variable {k G : Type u} [CommRing k] [Group G] [Fintype G]
+variable {k G : Type u} [CommRing k] [Group G] [Finite G]
 
 /-! ### Comparison with the coinvariants functor -/
 
-omit [Fintype G] in
+omit [Finite G] in
 /-- The coinvariants functor agrees with the map induced on coinvariants by an equivariant map. -/
 theorem coinvariantsFunctor_map_apply {A B : Rep k G} (φ : A ⟶ B) (x : Coinvariants A.ρ) :
     (Rep.coinvariantsFunctor k G).map φ x
       = Coinvariants.map A.ρ B.ρ φ.hom.hom (hom_equivariant φ) x := rfl
 
-omit [Fintype G] in
+omit [Finite G] in
 /-- **The isomorphism between the homology in degree zero and the coinvariants is natural.** -/
 theorem map_homology_H0Iso_hom {A B : Rep k G} (φ : A ⟶ B) (t : groupHomology A 0) :
     (groupHomology.H0Iso B).hom (groupHomology.map (MonoidHom.id G) φ 0 t)

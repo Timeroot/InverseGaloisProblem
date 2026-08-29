@@ -38,7 +38,7 @@ universe u
 
 noncomputable section
 
-variable {k G : Type u} [CommRing k] [Group G] [Fintype G]
+variable {k G : Type u} [CommRing k] [Group G] [Finite G]
 
 /-- **The order of the group annihilates the complete cohomology in a degree at least zero.** -/
 theorem card_nsmul_eq_zero_tateModule_ofNat (m : ℕ) :

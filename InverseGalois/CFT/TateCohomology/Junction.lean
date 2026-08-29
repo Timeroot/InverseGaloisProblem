@@ -41,22 +41,22 @@ universe u
 
 noncomputable section
 
-variable {k G : Type u} [CommRing k] [Group G] [Fintype G]
+variable {k G : Type u} [CommRing k] [Group G] [Finite G]
 
 /-! ### Comparison with the invariants functor -/
 
-omit [Fintype G] in
+omit [Finite G] in
 /-- **A morphism of representations commutes with the action.** -/
 theorem hom_equivariant {A B : Rep k G} (φ : A ⟶ B) (g : G) :
     φ.hom.hom ∘ₗ A.ρ g = B.ρ g ∘ₗ φ.hom.hom :=
   LinearMap.ext fun x => Rep.hom_comm_apply φ g x
 
-omit [Fintype G] in
+omit [Finite G] in
 /-- The invariants functor agrees with the map induced on invariants by an equivariant map. -/
 theorem invariantsFunctor_map_apply {A B : Rep k G} (φ : A ⟶ B) (x : A.ρ.invariants) :
     (Rep.invariantsFunctor k G).map φ x = invariantsMap φ.hom.hom (hom_equivariant φ) x := rfl
 
-omit [Fintype G] in
+omit [Finite G] in
 /-- **The isomorphism between the cohomology in degree zero and the invariants is natural.** -/
 theorem map_H0Iso_inv {A B : Rep k G} (φ : A ⟶ B) (y : A.ρ.invariants) :
     groupCohomology.map (MonoidHom.id G) φ 0 ((groupCohomology.H0Iso A).inv y)

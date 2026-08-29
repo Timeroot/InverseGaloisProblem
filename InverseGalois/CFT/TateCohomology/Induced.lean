@@ -50,7 +50,7 @@ open Representation
 
 noncomputable section
 
-variable {k G M V : Type*} [CommRing k] [Group G] [Fintype G]
+variable {k G M V : Type*} [CommRing k] [Group G] [Finite G]
   [AddCommGroup M] [Module k M] [AddCommGroup V] [Module k V]
 
 /-! ### The functions on the group -/
@@ -68,19 +68,20 @@ def inducedRep : Representation k G (G → M) where
 
 variable {k G M}
 
-omit [Fintype G] in
+omit [Finite G] in
 @[simp]
 theorem inducedRep_apply (g : G) (f : G → M) (x : G) : inducedRep k G M g f x = f (x * g) := rfl
 
+omit [Finite G] in
 /-- **The norm of a function on the group is the constant function whose value is the sum of its
 values.** -/
-theorem normMap_inducedRep (f : G → M) (x : G) :
+theorem normMap_inducedRep [Fintype G] (f : G → M) (x : G) :
     normMap (inducedRep k G M) f x = ∑ y : G, f y := by
   rw [normMap_apply]
   simp only [Finset.sum_apply, inducedRep_apply]
   exact Fintype.sum_equiv (Equiv.mulLeft x) _ _ fun g => rfl
 
-omit [Fintype G] in
+omit [Finite G] in
 /-- **The invariants of the functions on the group are the constant functions.** -/
 theorem mem_invariants_inducedRep_iff (f : G → M) :
     f ∈ (inducedRep k G M).invariants ↔ ∀ x : G, f x = f 1 := by
@@ -92,7 +93,7 @@ theorem mem_invariants_inducedRep_iff (f : G → M) :
     refine fun g => funext fun x => ?_
     rw [inducedRep_apply, hf (x * g), hf x]
 
-omit [Fintype G] in
+omit [Finite G] in
 /-- Translating a point mass moves its support anywhere. -/
 theorem inducedRep_pi_single [DecidableEq G] (g x : G) (m : M) :
     inducedRep k G M g (Pi.single x m) = Pi.single (x * g⁻¹) m := by
@@ -102,9 +103,10 @@ theorem inducedRep_pi_single [DecidableEq G] (g x : G) (m : M) :
   · rw [← h, mul_inv_cancel_right]
   · rw [h, inv_mul_cancel_right]
 
+omit [Finite G] in
 /-- In the coinvariants of the functions on the group a function is the class of the point mass at
 the neutral element carrying the sum of its values. -/
-theorem mk_eq_mk_pi_single [DecidableEq G] (f : G → M) :
+theorem mk_eq_mk_pi_single [Fintype G] [DecidableEq G] (f : G → M) :
     Coinvariants.mk (inducedRep k G M) f
       = Coinvariants.mk (inducedRep k G M) (Pi.single 1 (∑ y : G, f y)) := by
   have hsingle : ∀ x : G, Coinvariants.mk (inducedRep k G M) (Pi.single x (f x))
@@ -131,6 +133,7 @@ theorem mk_eq_mk_pi_single [DecidableEq G] (f : G → M) :
 /-- **The Tate group in degree zero of the functions on the group vanishes.** -/
 theorem H0_inducedRep_eq_zero (x : H0 (inducedRep k G M)) : x = 0 := by
   classical
+  letI := Fintype.ofFinite G
   obtain ⟨y, rfl⟩ := H0mk_surjective (inducedRep k G M) x
   refine (H0mk_eq_zero_iff _ _).mpr ⟨Pi.single 1 ((y : G → M) 1), funext fun z => ?_⟩
   rw [normMap_inducedRep, Finset.sum_pi_single']
@@ -140,6 +143,7 @@ theorem H0_inducedRep_eq_zero (x : H0 (inducedRep k G M)) : x = 0 := by
 /-- **The Tate group in degree minus one of the functions on the group vanishes.** -/
 theorem Hm1_inducedRep_eq_zero (x : Hm1 (inducedRep k G M)) : x = 0 := by
   classical
+  letI := Fintype.ofFinite G
   obtain ⟨y, hy⟩ := x
   obtain ⟨f, rfl⟩ := Coinvariants.mk_surjective (inducedRep k G M) y
   have hzero : ∑ z : G, f z = 0 := by
@@ -165,18 +169,18 @@ def coindEmb : V →ₗ[k] (G → V) where
   map_add' v w := by ext x; simp
   map_smul' c v := by ext x; simp
 
-omit [Fintype G] in
+omit [Finite G] in
 @[simp]
 theorem coindEmb_apply (v : V) (x : G) : coindEmb ρ v x = ρ x v := rfl
 
-omit [Fintype G] in
+omit [Finite G] in
 /-- **The embedding into the functions on the group is equivariant.** -/
 theorem coindEmb_equivariant (g : G) :
     coindEmb ρ ∘ₗ ρ g = inducedRep k G V g ∘ₗ coindEmb ρ := by
   ext v x
   simp [Module.End.mul_apply, map_mul]
 
-omit [Fintype G] in
+omit [Finite G] in
 /-- **The embedding into the functions on the group is injective.** -/
 theorem coindEmb_injective : Function.Injective (coindEmb ρ) := by
   intro v w h

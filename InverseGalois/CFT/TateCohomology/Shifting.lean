@@ -55,11 +55,11 @@ universe u
 
 noncomputable section
 
-variable {k G : Type u} [CommRing k] [Group G] [Fintype G]
+variable {k G : Type u} [CommRing k] [Group G] [Finite G]
 
 /-! ### Building short exact sequences of representations -/
 
-omit [Fintype G] in
+omit [Finite G] in
 /-- **A linear map commuting with the action is a morphism of representations.** -/
 def mkHom {A B : Rep k G} (f : A →ₗ[k] B) (hf : ∀ g, f ∘ₗ A.ρ g = B.ρ g ∘ₗ f) : A ⟶ B where
   hom := ModuleCat.ofHom f
@@ -67,12 +67,12 @@ def mkHom {A B : Rep k G} (f : A →ₗ[k] B) (hf : ∀ g, f ∘ₗ A.ρ g = B.�
     ext x
     exact LinearMap.congr_fun (hf g) x
 
-omit [Fintype G] in
+omit [Finite G] in
 @[simp]
 theorem mkHom_hom {A B : Rep k G} (f : A →ₗ[k] B) (hf : ∀ g, f ∘ₗ A.ρ g = B.ρ g ∘ₗ f) :
     (mkHom f hf).hom.hom = f := rfl
 
-omit [Fintype G] in
+omit [Finite G] in
 /-- **A short complex of representations is short exact as soon as its underlying maps are.** -/
 theorem shortExact_of_linearMap {X : ShortComplex (Rep k G)}
     (hf : Function.Injective X.f.hom.hom) (hg : Function.Surjective X.g.hom.hom)
@@ -113,7 +113,7 @@ def shiftSeq : ShortComplex (Rep k G) where
     ext v
     exact (Submodule.Quotient.mk_eq_zero _).2 ⟨v, rfl⟩
 
-omit [Fintype G] in
+omit [Finite G] in
 theorem shiftSeq_shortExact : (shiftSeq A).ShortExact :=
   shortExact_of_linearMap (coindEmb_injective A.ρ) (Submodule.mkQ_surjective _)
     fun _ hx => (Submodule.Quotient.mk_eq_zero _).1 hx

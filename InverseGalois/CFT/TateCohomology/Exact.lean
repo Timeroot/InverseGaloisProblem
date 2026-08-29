@@ -43,7 +43,7 @@ open Representation
 
 noncomputable section
 
-variable {k G A B C : Type*} [CommRing k] [Group G] [Fintype G]
+variable {k G A B C : Type*} [CommRing k] [Group G] [Finite G]
   [AddCommGroup A] [Module k A] [AddCommGroup B] [Module k B] [AddCommGroup C] [Module k C]
 
 /-! ### The vectors whose norm comes from the sub -/
@@ -54,6 +54,7 @@ section Source
 def normSource (β : Representation k G B) (f : A →ₗ[k] B) : Submodule k B :=
   (LinearMap.range f).comap (normMap β)
 
+omit [Finite G] in
 theorem mem_normSource_iff {β : Representation k G B} {f : A →ₗ[k] B} {b : B} :
     b ∈ normSource β f ↔ normMap β b ∈ LinearMap.range f := Iff.rfl
 
@@ -69,7 +70,7 @@ variable {α : Representation k G A} {β : Representation k G B} {γ : Represent
   (hfi : Function.Injective f) (hqs : Function.Surjective q)
   (hex : LinearMap.range f = LinearMap.ker q)
 
-omit [Fintype G] in
+omit [Finite G] in
 include hq hqs in
 /-- Every difference of a vector of the quotient and one of its translates is the image of such a
 difference in the middle. -/
@@ -87,6 +88,7 @@ def normDescent : ↥(normSource β f) →ₗ[k] A :=
   (LinearEquiv.ofInjective f hfi).symm.toLinearMap ∘ₗ
     ((normMap β).domRestrict (normSource β f)).codRestrict (LinearMap.range f) fun b => b.2
 
+omit [Finite G] in
 theorem f_normDescent (b : ↥(normSource β f)) :
     f (normDescent f hfi b) = normMap β (b : B) := by
   show f ((LinearEquiv.ofInjective f hfi).symm

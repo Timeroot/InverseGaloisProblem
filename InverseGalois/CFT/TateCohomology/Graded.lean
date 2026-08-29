@@ -56,7 +56,7 @@ theorem functionExact_of_exact {S : ShortComplex (ModuleCat.{u} k)} (hS : S.Exac
     Function.Exact ⇑S.f ⇑S.g :=
   (ShortComplex.ShortExact.moduleCat_exact_iff_function_exact S).1 hS
 
-variable {G : Type u} [Group G] [Fintype G]
+variable {G : Type u} [Group G] [Finite G]
 
 /-! ### The graded object -/
 
@@ -94,17 +94,17 @@ variable {X : ShortComplex (Rep k G)} (hX : X.ShortExact)
 
 include hX
 
-omit [Fintype G] in
+omit [Finite G] in
 /-- The map from the sub is injective. -/
 theorem shortExact_injective : Function.Injective X.f.hom.hom :=
   (Rep.mono_iff_injective X.f).1 hX.mono_f
 
-omit [Fintype G] in
+omit [Finite G] in
 /-- The map to the quotient is surjective. -/
 theorem shortExact_surjective : Function.Surjective X.g.hom.hom :=
   (Rep.epi_iff_surjective X.g).1 hX.epi_g
 
-omit [Fintype G] in
+omit [Finite G] in
 /-- The image of the sub is the kernel of the map to the quotient. -/
 theorem shortExact_range_eq_ker :
     LinearMap.range X.f.hom.hom = LinearMap.ker X.g.hom.hom :=

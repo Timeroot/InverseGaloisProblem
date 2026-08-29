@@ -54,7 +54,7 @@ open Representation
 
 noncomputable section
 
-variable {k G V W : Type*} [CommRing k] [Group G] [Fintype G]
+variable {k G V W : Type*} [CommRing k] [Group G] [Finite G]
   [AddCommGroup V] [Module k V] [AddCommGroup W] [Module k W]
 
 /-! ### The norm of a representation -/
@@ -65,13 +65,19 @@ variable (ρ : Representation k G V) (τ : Representation k G W)
 
 /-- **The norm of a representation of a finite group**: the sum of the actions of all the group
 elements. -/
-def normMap : V →ₗ[k] V := ∑ g : G, ρ g
+def normMap : V →ₗ[k] V := ∑ᶠ g : G, ρ g
 
-theorem normMap_apply (x : V) : normMap ρ x = ∑ g : G, ρ g x := by
-  simp [normMap, LinearMap.sum_apply]
+omit [Finite G] in
+theorem normMap_eq_sum [Fintype G] : normMap ρ = ∑ g : G, ρ g :=
+  finsum_eq_sum_of_fintype _
+
+omit [Finite G] in
+theorem normMap_apply [Fintype G] (x : V) : normMap ρ x = ∑ g : G, ρ g x := by
+  simp [normMap_eq_sum, LinearMap.sum_apply]
 
 /-- **The norm of a vector is invariant.** -/
 theorem apply_normMap (h : G) (x : V) : ρ h (normMap ρ x) = normMap ρ x := by
+  letI := Fintype.ofFinite G
   rw [normMap_apply, map_sum]
   refine Fintype.sum_equiv (Equiv.mulLeft h) _ _ fun g => ?_
   rw [Equiv.coe_mulLeft, map_mul]
@@ -82,6 +88,7 @@ theorem normMap_mem_invariants (x : V) : normMap ρ x ∈ ρ.invariants :=
 
 /-- **The norm of a translate is the norm.** -/
 theorem normMap_smul_apply (h : G) (x : V) : normMap ρ (ρ h x) = normMap ρ x := by
+  letI := Fintype.ofFinite G
   rw [normMap_apply, normMap_apply]
   refine Fintype.sum_equiv (Equiv.mulRight h) _ _ fun g => ?_
   rw [Equiv.coe_mulRight, map_mul]
@@ -112,6 +119,7 @@ theorem coinvariantsNorm_eq_zero_iff (x : V) :
 /-- **On the invariants the norm is multiplication by the order of the group.** -/
 theorem normMap_of_mem_invariants {x : V} (hx : x ∈ ρ.invariants) :
     normMap ρ x = Nat.card G • x := by
+  letI := Fintype.ofFinite G
   rw [normMap_apply, Nat.card_eq_fintype_card, ← Finset.card_univ, ← Finset.sum_const]
   exact Finset.sum_congr rfl fun g _ => hx g
 
@@ -119,6 +127,7 @@ theorem normMap_of_mem_invariants {x : V} (hx : x ∈ ρ.invariants) :
 vector.** -/
 theorem mk_normMap (x : V) :
     Coinvariants.mk ρ (normMap ρ x) = Nat.card G • Coinvariants.mk ρ x := by
+  letI := Fintype.ofFinite G
   rw [normMap_apply, map_sum, Nat.card_eq_fintype_card, ← Finset.card_univ, ← Finset.sum_const]
   exact Finset.sum_congr rfl fun g _ => Coinvariants.mk_self_apply ρ g x
 
@@ -203,10 +212,11 @@ include hf
 
 /-- **An equivariant map commutes with the norms.** -/
 theorem map_normMap (x : V) : f (normMap ρ x) = normMap τ (f x) := by
+  letI := Fintype.ofFinite G
   rw [normMap_apply, map_sum, normMap_apply]
   exact Finset.sum_congr rfl fun g _ => LinearMap.congr_fun (hf g) x
 
-omit [Fintype G] in
+omit [Finite G] in
 theorem map_mem_invariants {x : V} (hx : x ∈ ρ.invariants) : f x ∈ τ.invariants := fun g => by
   have h := LinearMap.congr_fun (hf g) x
   simp only [LinearMap.comp_apply, hx g] at h
@@ -216,11 +226,11 @@ theorem map_mem_invariants {x : V} (hx : x ∈ ρ.invariants) : f x ∈ τ.invar
 def invariantsMap : ρ.invariants →ₗ[k] τ.invariants :=
   (f.domRestrict ρ.invariants).codRestrict τ.invariants fun c => map_mem_invariants f hf c.2
 
-omit [Fintype G] in
+omit [Finite G] in
 @[simp]
 theorem invariantsMap_coe (x : ρ.invariants) : (invariantsMap f hf x : W) = f (x : V) := rfl
 
-omit [Fintype G] in
+omit [Finite G] in
 /-- **An injective equivariant map stays injective on the invariants.** -/
 theorem invariantsMap_injective (hfi : Function.Injective f) :
     Function.Injective (invariantsMap f hf) := fun x y h =>

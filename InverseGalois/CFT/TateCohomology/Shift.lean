@@ -46,7 +46,7 @@ open Representation
 
 noncomputable section
 
-variable {k G V : Type*} [CommRing k] [Group G] [Fintype G] [AddCommGroup V] [Module k V]
+variable {k G V : Type*} [CommRing k] [Group G] [Finite G] [AddCommGroup V] [Module k V]
 
 /-! ### The summation map -/
 
@@ -56,14 +56,21 @@ variable (ρ : Representation k G V)
 
 /-- **The map from the functions on the group onto the representation** that sums the values after
 undoing the translation. -/
-def augMap : (G → V) →ₗ[k] V := ∑ x : G, (ρ x⁻¹ : V →ₗ[k] V) ∘ₗ LinearMap.proj x
+def augMap : (G → V) →ₗ[k] V := ∑ᶠ x : G, (ρ x⁻¹ : V →ₗ[k] V) ∘ₗ LinearMap.proj x
 
-theorem augMap_apply (f : G → V) : augMap ρ f = ∑ x : G, ρ x⁻¹ (f x) := by
-  simp [augMap, LinearMap.sum_apply]
+omit [Finite G] in
+theorem augMap_eq_sum [Fintype G] :
+    augMap ρ = ∑ x : G, (ρ x⁻¹ : V →ₗ[k] V) ∘ₗ LinearMap.proj x :=
+  finsum_eq_sum_of_fintype _
+
+omit [Finite G] in
+theorem augMap_apply [Fintype G] (f : G → V) : augMap ρ f = ∑ x : G, ρ x⁻¹ (f x) := by
+  simp [augMap_eq_sum, LinearMap.sum_apply]
 
 /-- **The summation map is equivariant.** -/
 theorem augMap_comp_inducedRep (g : G) :
     augMap ρ ∘ₗ inducedRep k G V g = ρ g ∘ₗ augMap ρ := by
+  letI := Fintype.ofFinite G
   refine LinearMap.ext fun f => ?_
   rw [LinearMap.comp_apply, LinearMap.comp_apply, augMap_apply, augMap_apply, map_sum]
   refine Fintype.sum_equiv (Equiv.mulRight g) _ _ fun x => ?_
@@ -72,6 +79,7 @@ theorem augMap_comp_inducedRep (g : G) :
 
 theorem augMap_surjective : Function.Surjective (augMap ρ) := by
   classical
+  letI := Fintype.ofFinite G
   intro v
   refine ⟨Pi.single 1 v, ?_⟩
   rw [augMap_apply, Finset.sum_eq_single (1 : G)]
@@ -90,7 +98,7 @@ section Shift
 
 variable (ρ : Representation k G V)
 
-omit [Fintype G] in
+omit [Finite G] in
 theorem range_coindEmb_le_comap (g : G) :
     LinearMap.range (coindEmb ρ) ≤ (LinearMap.range (coindEmb ρ)).comap (inducedRep k G V g) := by
   rintro _ ⟨v, rfl⟩
@@ -103,7 +111,7 @@ group. -/
 def shiftRep : Representation k G ((G → V) ⧸ LinearMap.range (coindEmb ρ)) :=
   Representation.quotient (inducedRep k G V) _ (range_coindEmb_le_comap ρ)
 
-omit [Fintype G] in
+omit [Finite G] in
 theorem mkQ_comp_inducedRep (g : G) :
     (LinearMap.range (coindEmb ρ)).mkQ ∘ₗ inducedRep k G V g
       = shiftRep ρ g ∘ₗ (LinearMap.range (coindEmb ρ)).mkQ :=

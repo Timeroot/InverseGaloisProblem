@@ -427,13 +427,17 @@ import InverseGalois.CFT.Tate.TrivialLattice
 import InverseGalois.CFT.TateCohomology.Acyclic
 import InverseGalois.CFT.TateCohomology.Annihilate
 import InverseGalois.CFT.TateCohomology.Exact
+import InverseGalois.CFT.TateCohomology.Functorial
 import InverseGalois.CFT.TateCohomology.Graded
 import InverseGalois.CFT.TateCohomology.HomologyJunction
 import InverseGalois.CFT.TateCohomology.Induced
 import InverseGalois.CFT.TateCohomology.Junction
 import InverseGalois.CFT.TateCohomology.Norm
+import InverseGalois.CFT.TateCohomology.Restrict
 import InverseGalois.CFT.TateCohomology.Shift
 import InverseGalois.CFT.TateCohomology.Shifting
+import InverseGalois.CFT.TateCohomology.SylowInjective
+import InverseGalois.CFT.TateCohomology.Transfer
 import InverseGalois.CFT.TotallyReal
 import InverseGalois.CFT.Units.ABHN
 import InverseGalois.CFT.Units.ABHNArchimedean
@@ -2745,4 +2749,26 @@ it that are available here.
 * `InverseGalois.CFT.TateCohomology.Annihilate` runs the two inductions those identifications
   allow, upwards from degree zero and downwards from degree minus one, and concludes that **the
   order of the group annihilates the complete cohomology in every integer degree**.
+* `InverseGalois.CFT.TateCohomology.Functorial` records that the map induced in a fixed degree
+  takes the identity to the identity and a composite to the composite, so that **an isomorphism of
+  representations induces an isomorphism of the complete cohomology** and a representation
+  isomorphic to one with no complete cohomology has none either.
+* `InverseGalois.CFT.TateCohomology.Transfer` builds the two middle degrees of restriction and
+  corestriction from a choice of coset representatives.  Summing the actions of the
+  representatives on the left factors the norm of the group through the norm of the subgroup, and
+  summing on the right factors it the other way; the first sum carries invariants of the subgroup
+  to invariants of the group and multiplies invariants of the group by the index, and the second
+  does the same to the coinvariants, so **corestriction after restriction is multiplication by the
+  index** in degree zero and in degree minus one.
+* `InverseGalois.CFT.TateCohomology.Restrict` carries those two maps to every degree.  A choice of
+  coset representatives splits the group as the cosets times the subgroup, so the functions on the
+  group, read on the subgroup, are the functions on the subgroup with values in the functions on
+  the cosets, and therefore **still have no complete cohomology**; the connecting map of either
+  shifting sequence is still bijective after restriction and moves a degree.  Since the same
+  connecting maps are used on both sides, **corestriction after restriction is multiplication by
+  the index in every integer degree**.
+* `InverseGalois.CFT.TateCohomology.SylowInjective` draws the consequence that a class killed by
+  restriction to a subgroup is killed by the index of that subgroup, so that **a class killed by a
+  power of a prime and by restriction to a Sylow subgroup for that prime vanishes**: the study of
+  the complete cohomology of a finite group reduces to its Sylow subgroups, one prime at a time.
 -/

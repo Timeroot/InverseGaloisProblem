@@ -90,7 +90,7 @@ theorem isZero_groupCohomology_inducedRep (n : ℕ) :
     ((groupCohomology.functor k G (n + 1)).mapIso (coindBotIso (k := k) (G := G) (M := M)).symm ≪≫
       groupCohomology.coindIso _ (n + 1))
 
-variable [Fintype G]
+variable [Finite G]
 
 /-- **The homology of the functions on a finite group vanishes above degree zero.** -/
 theorem isZero_groupHomology_inducedRep (n : ℕ) :
