@@ -220,6 +220,12 @@ omit [Fintype G] in
 @[simp]
 theorem invariantsMap_coe (x : ρ.invariants) : (invariantsMap f hf x : W) = f (x : V) := rfl
 
+omit [Fintype G] in
+/-- **An injective equivariant map stays injective on the invariants.** -/
+theorem invariantsMap_injective (hfi : Function.Injective f) :
+    Function.Injective (invariantsMap f hf) := fun x y h =>
+  Subtype.ext (hfi (by simpa only [invariantsMap_coe] using congrArg Subtype.val h))
+
 /-- **The norm map is natural in the representation.** -/
 theorem coinvariantsNorm_comp_coinvariantsMap :
     coinvariantsNorm τ ∘ₗ Coinvariants.map ρ τ f hf

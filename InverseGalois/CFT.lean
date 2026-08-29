@@ -425,7 +425,9 @@ import InverseGalois.CFT.Tate.Surjection
 import InverseGalois.CFT.Tate.Trivial
 import InverseGalois.CFT.Tate.TrivialLattice
 import InverseGalois.CFT.TateCohomology.Exact
+import InverseGalois.CFT.TateCohomology.HomologyJunction
 import InverseGalois.CFT.TateCohomology.Induced
+import InverseGalois.CFT.TateCohomology.Junction
 import InverseGalois.CFT.TateCohomology.Norm
 import InverseGalois.CFT.TateCohomology.Shift
 import InverseGalois.CFT.TotallyReal
@@ -2709,4 +2711,14 @@ it that are available here.
   degree zero of a representation is the group in degree minus one of the cokernel of the
   embedding, and the group in degree minus one is the group in degree zero of the kernel of the
   summation map.**
+* `InverseGalois.CFT.TateCohomology.Junction` **joins the middle groups to the ordinary cohomology
+  above them.**  The connecting map of a short exact sequence out of the invariants of the quotient
+  kills the norms — the norm of a lift of a vector is an invariant lift of its norm, so the cochain
+  measuring the failure of the lift to be invariant vanishes — hence descends to the group in degree
+  zero, and the resulting three term sequence is exact at both of its inner spots.
+* `InverseGalois.CFT.TateCohomology.HomologyJunction` **joins the middle groups to the ordinary
+  homology below them.**  The connecting map of a short exact sequence into the coinvariants of the
+  sub lands in the classes killed by the norm, because its image in the coinvariants of the middle
+  term already vanishes and the summation map of an injection is again injective on the invariants;
+  the resulting three term sequence is again exact at both of its inner spots.
 -/
