@@ -43,6 +43,7 @@ import InverseGalois.CFT.Brauer.H2Surjective
 import InverseGalois.CFT.Brauer.Kernel
 import InverseGalois.CFT.Brauer.LocalBrauerBound
 import InverseGalois.CFT.Brauer.LocalBrauerOrder
+import InverseGalois.CFT.Brauer.LocalInvariant
 import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
 import InverseGalois.CFT.Brauer.Opposite
@@ -3233,6 +3234,11 @@ it that are available here.
   Hence **every Brauer class over a complete, discretely valued, locally compact field, and in
   particular over the completion of a number field at a finite place, lies in the relative Brauer
   group of a cyclic extension whose relative Brauer group has an element of order the degree.**
+* `InverseGalois.CFT.Brauer.LocalInvariant` takes the invariant with respect to the Frobenius
+  automorphism, and so removes the last choice from it.  The two descriptions of unramifiedness
+  agree, so the Frobenius automorphism is available as the generator, and **the invariant of a
+  Brauer class split by an unramified extension of a local field attains the reciprocal of the
+  degree** and **does not depend on the level of the unramified tower at which it is computed.**
 * `InverseGalois.CFT.Local.NormValued` carries the whole local package up a finite extension.  The
   value of the field norm is a valuation on the extension, because the norm of an element is the
   degree-th power of its spectral norm and the spectral norm is nonarchimedean; carried on the

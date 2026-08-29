@@ -3460,6 +3460,96 @@ right on a tower.
 
 ---
 
+## 0.33 Status (2026-08-29, night) — `f = n` is a theorem, the Frobenius is canonical, and the normalized invariant exists
+
+§0.32's "one remaining input" is **closed**, and the normalization it was blocking is landed.
+
+### Landed
+
+* `Brauer/DivisionResidueBase.lean` — `divisionResidueBase D : DivisionResidue K K →+* DivisionResidue K D`
+  and its injectivity.  This is the `𝓀_K`-algebra structure on `𝓀_L` that §0.32 said was missing.
+* `Brauer/ResidueDegree.lean` — `linearIndependent_of_linearIndependent_divisionResidue` (rescale a
+  relation so its coefficients are integers and one of them is a unit, then reduce) and hence
+  `card_divisionResidue_le_pow_finrank : #𝓀_L ≤ #𝓀_K ^ [L:K]`, i.e. **`f ≤ n`** for an arbitrary
+  finite extension.
+* `Brauer/ResidueGalois.lean` — the other half.  `isCyclotomicExtension_of_unramified` and
+  `isGalois_of_unramified` (an unramified extension is `K(ζ_N)`, hence cyclotomic, hence Galois);
+  `residueAlgAut` (the action on `𝓀_L` **over `𝓀_K`**) and `card_algEquiv_le_finrank_divisionResidue`
+  give `n ≤ f`.  Together: `card_divisionResidue_of_unramified` and
+  `finrank_divisionResidue_of_unramified` — **`f = n`** — and then
+  `exists_frobenius_of_unramified`: there is a `σ` with `zpowers σ = ⊤` raising every residue to
+  the `q`-th power.
+* `Brauer/Frobenius.lean` — `IsDivisionFrobenius σ` as a predicate, `eq_of_isDivisionFrobenius`
+  (**uniqueness**, via `divisionResidueAut_injective`), the choice-based `divisionFrobenius K L hur`
+  with `divisionFrobenius_zpowers`, `forall_mem_zpowers_divisionFrobenius` (exactly the shape
+  `brauerInvariant`'s `hσ₀` wants) and `eq_divisionFrobenius`.
+* `Brauer/FrobeniusTower.lean` — for `K ⊆ L ⊆ L'`: `divisionNorm_algebraMap_tower` (both sides are
+  the spectral norm, which is `spectralValue ∘ minpoly K`, and `minpoly.algebraMap_eq` says the
+  minimal polynomial does not change — Mathlib even has `spectralNorm.eq_of_tower` outright);
+  `unramified_of_unramified_tower`; `divisionIntegersTower`, `divisionResidueTower` and its
+  injectivity; and the payoff `restrictNormal_divisionFrobenius`:
+  **`(Frob_{L'/K}).restrictNormal L = Frob_{L/K}`.**
+* `Brauer/LocalInvariant.lean` — `localInvariant K L hur hm : Br(L/K) →* Multiplicative (ℚ/ℤ)`,
+  the invariant taken with respect to `divisionFrobenius`, with
+  `localInvariant_apply_cyclicBrauerHom`, `exists_localInvariant_eq` (**it attains `1/n`**) and
+  `localInvariant_tower` (**independent of the level of the unramified tower**, assembled from
+  `brauerInvariant_tower` + `restrictNormal_divisionFrobenius` + a `brauerInvariant_congr_apply`
+  that transports the implicit generator).
+
+### What target 1 of §0.31 still needs
+
+`localInvariant` is a map on `Br(L/K)` for **one** unramified `L`.  To get `inv_K : Br(K) → ℚ/ℤ`
+one needs well-definedness across splitting fields: if `x ∈ Br(L₁/K) ∩ Br(L₂/K)` with both `Lᵢ/K`
+unramified, the two invariants agree.  `localInvariant_tower` settles this **as soon as `L₁` and
+`L₂` both embed in a common unramified `L₃`**, because `Br(Lᵢ/K) ≤ Br(L₃/K)` by
+`BrauerGroup.relative_le_relative`.  So the remaining brick is the *standard unramified tower*:
+
+* the extension `K_n := K(ζ_{q^n−1})` inside a fixed algebraic closure, and `K_n ⊆ K_m` for `n ∣ m`;
+* `K_n/K` is **unramified** — this is the direction the repo does *not* have.  It needs a Hensel
+  lift of a root of unity from `𝓀_K` (equivalently `f ≥ n` for `K(ζ_m)`, `m` prime to `p`);
+  `exists_adjoin_rootOfUnity_eq_top_of_unramified` is the converse and does not help.
+* transport of `localInvariant` along a `K`-isomorphism of splitting fields (Frobenius goes to
+  Frobenius, so this should be routine once stated).
+
+### The route to `α`, re-examined — what does *not* work
+
+`hα` (`Units/IdeleClassTate.lean:89`) is exactly "`Ĥ²(Gal(K/ℚ), C_K)` has an element of order `n`";
+the `≤ n` half and `Ĥ¹ = 0` are already in the repo.  Four shortcuts were checked and all fail:
+
+1. **Sylow restriction on the `p`-parts.**  Gives an element of order the `p`-part in
+   `Ĥ²(Gal(K/K^{S_p}), ·)`, not in `Ĥ²(Gal(K/ℚ), ·)`.
+2. **Corestriction from a cyclic subgroup `H ≤ G`.**  `cor ∘ res = [G:H]`, so the class produced
+   has order `|H|`, not `n`.
+3. **"An element of order `d` for every `d ∣ n` ⇒ cyclic of order `n`."**  False: `(ℤ/2)²` has an
+   element of order `d` for every `d ∣ 2`.
+4. **"Pick a place of full local degree."**  Circular: knowing the local factor injects into
+   `Ĥ²(G, C)` is what reciprocity provides, and `n_v = n` forces `G_v = G`, hence `G` cyclic.
+   A place of full local degree exists only when `G` is cyclic.
+
+Two positive facts worth keeping:
+
+* **An elementary special case.**  For `E ⊆ ℚ(ζ_q)` the cyclic degree-`n` subfield with `q ≡ 1
+  (mod n)` prime, `E/ℚ` is ramified only at `q`, and totally (tamely) ramified there.  Using
+  `I_ℚ = ℚ^× × (ℝ_{>0} × ∏_p ℤ_p^×)` (valid because ℚ has class number one and
+  `ℚ^× ∩ (ℝ_{>0} × ∏ ℤ_p^×) = 1`), the map `θ : C_ℚ → (ℤ/q)^×`, `(r,(u_p)) ↦ ∏_{p ∣ q} [u_p]^{-1}`,
+  kills `ℚ^×` *by construction*, restricts at an unramified `p` to `Frob_p^{v_p}`, and at `∞` to
+  complex conjugation.  It kills local norms at `∞` and at unramified `p` (because `Frob_p^{f_w} =
+  1`), and at `q` because in a totally ramified extension all conjugates of a unit are congruent
+  mod the maximal ideal, so `N(u) ≡ ū^n`, while `N(π) = q`.  Hence `C_ℚ/N C_E ≅ ℤ/n` for these `E`
+  with no reciprocity input at all.
+* **An inflation–restriction bootstrap.**  For `ℚ ⊆ K ⊆ L` Galois, `H¹(Gal(L/K), C_L) = 0` makes
+  `0 → H²(K/ℚ) → H²(L/ℚ) → H²(L/K)` exact, so
+  `|H²(K/ℚ)| ≥ |H²(L/ℚ)| / |H²(L/K)| ≥ [L:ℚ]/[L:K] = [K:ℚ]`.
+  Hence **it suffices to find, for each Galois `K/ℚ`, one Galois `L ⊇ K` with `H²(L/ℚ)` cyclic of
+  order `[L:ℚ]`** — cyclicity of `H²(K/ℚ)` then comes for free, being a subgroup of a cyclic group.
+
+What is *not* avoidable: `C_ℚ ⊄ N_{L/K} C_L` place by place (already at an unramified `v` with
+`e(w/v) = 1`, `ℚ_v^× ⊆ N_{L_W/K_w}` fails), even though the global Artin map does kill `C_ℚ`.  So
+the everywhere-local-norm test only works on a cleverly chosen representative, and the general case
+genuinely needs the invariants `inv_v` together with `Σ_v inv_v = 0`.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
