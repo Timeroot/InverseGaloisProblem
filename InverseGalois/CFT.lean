@@ -93,6 +93,7 @@ import InverseGalois.CFT.GroupCohomology.ExtensionMap
 import InverseGalois.CFT.GroupCohomology.Pullback
 import InverseGalois.CFT.GroupCohomology.H1Transport
 import InverseGalois.CFT.GroupCohomology.IndexTwo
+import InverseGalois.CFT.GroupCohomology.InfResTwo
 import InverseGalois.CFT.GroupCohomology.Inflation
 import InverseGalois.CFT.GroupCohomology.InflationRestriction
 import InverseGalois.CFT.GroupCohomology.MapCoboundary
@@ -2433,6 +2434,13 @@ it that are available here.
   restriction to a normal subgroup with vanishing first cohomology is a coboundary is cohomologous
   to an inflated cocycle**.  Combining the two halves gives the dévissage that a group has vanishing
   second cohomology as soon as a normal subgroup and the quotient do.
+* `InverseGalois.CFT.GroupCohomology.InfResTwo` reads that analysis back into the language of
+  representations over the integers, where a two-cocycle whose restriction to a normal subgroup with
+  vanishing first cohomology dies is the inflation of a two-cocycle of the quotient with values in
+  the invariants.  The count which that exactness yields is the point: **a group whose kernel under
+  one map lies in the image of another has at most as many elements as the product**, so the second
+  cohomology of a group is bounded by the second cohomology of the quotient times the second
+  cohomology of the subgroup.
 * `InverseGalois.CFT.Units.IdeleClassComap` puts the idele classes of a subfield inside the idele
   classes of a Galois extension.  The map is injective because a unit fixed by the whole Galois
   group is a unit of the subfield, and its image is exactly the part fixed by the Galois group over
