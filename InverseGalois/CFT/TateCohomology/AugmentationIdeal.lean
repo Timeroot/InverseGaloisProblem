@@ -67,6 +67,10 @@ variable (k G : Type u) [CommRing k] [Group G] [Finite G]
 zero, as a representation. -/
 abbrev augIdeal : Rep k G := coshiftObj (Rep.trivial k G k)
 
+omit [Finite G] in
+/-- **Every element of the base ring is invariant** for the trivial action. -/
+theorem mem_invariants_trivial (c : k) : c ∈ (Rep.trivial k G k).ρ.invariants := fun _ => rfl
+
 /-- **The complete cohomology of the base ring in a degree is the complete cohomology of the
 augmentation ideal in the following degree.** -/
 def tateAugEquiv (n : ℤ) :
@@ -83,7 +87,7 @@ variable (G : Type) [Group G] [Finite G]
 
 omit [Finite G] in
 theorem mem_invariants_trivialInt (m : ℤ) : m ∈ (Rep.trivial ℤ G ℤ).ρ.invariants :=
-  fun _ => rfl
+  mem_invariants_trivial ℤ G m
 
 theorem normMap_trivialInt (m : ℤ) :
     normMap (Rep.trivial ℤ G ℤ).ρ m = (Nat.card G : ℤ) * m := by
