@@ -17,6 +17,7 @@ import InverseGalois.CFT.Brauer.CrossedProductSplit
 import InverseGalois.CFT.Brauer.CrossedProductSplitting
 import InverseGalois.CFT.Brauer.CyclicAlgebra
 import InverseGalois.CFT.Brauer.CyclicBrauer
+import InverseGalois.CFT.Brauer.CyclicInvariant
 import InverseGalois.CFT.Brauer.CyclicNorm
 import InverseGalois.CFT.Brauer.CyclicTower
 import InverseGalois.CFT.Brauer.Division
@@ -3148,6 +3149,13 @@ it that are available here.
   the degree, so **the relative Brauer group of an unramified cyclic extension of a discretely
   valued field contains a class of order the degree** — with no completeness, no finite residue
   field and no norm index.
+* `InverseGalois.CFT.Brauer.CyclicInvariant` divides by the degree instead of reducing modulo it,
+  so that the invariant of a class becomes a rational number modulo the integers rather than a
+  residue modulo the degree.  The gain is that the invariant no longer remembers the extension it
+  was computed with: for a tower `K ⊆ L ⊆ L'` of unramified cyclic extensions whose generators are
+  compatible, the class of `(L / K, σ, a)` is the class of `(L' / K, σ', a ^ [L' : L])`, whose
+  value is `[L' : L] · v(a)` and whose degree is `[L' : L] · [L : K]`, so **the two levels of the
+  tower give the same invariant** and the invariants glue along a tower.
 * `InverseGalois.CFT.Brauer.AdicUnramified` joins the two halves.  A rank one valuation makes a
   field into a nonarchimedean normed field whose norm determines the valuation, because the
   comparison map of a rank one valuation is strictly monotone, so the unramifiedness produced by

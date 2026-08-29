@@ -33,6 +33,8 @@ residue field, or the norm index: only the valuation of the base field.
 
 * `InverseGalois.CFT.pow_finrank_eq_one_normQuotient`: the units modulo the norms are killed by the
   degree.
+* `InverseGalois.CFT.finrank_dvd_unitValDiv_of_mem_normSubgroup`: the value of a norm, divided by a
+  generator of the value group, is a multiple of the degree.
 * `InverseGalois.CFT.normQuotientValInvariant_surjective`: **the units modulo the norms of an
   unramified extension surject onto the integers modulo the degree.**
 * `InverseGalois.CFT.exists_orderOf_eq_finrank_relative`: **the relative Brauer group of an
@@ -103,11 +105,11 @@ theorem baseValInvariant_surjective (hm : IsUnitValGen K m) (n : ℕ) :
   rw [baseValInvariant_apply, show Additive.ofMul (Additive.toMul x) = x from rfl, hx]
   simpa using congrArg Multiplicative.ofAdd hj
 
-/-- **The invariant kills the norms of an unramified extension.** -/
-theorem normSubgroup_le_ker_baseValInvariant (hur : HasUnramifiedNormValues K L)
-    (hm : IsUnitValGen K m) :
-    normSubgroup K L ≤ (baseValInvariant hm (finrank K L)).ker := by
-  intro a ha
+/-- **The value of a norm of an unramified extension is divisible by the degree.**  Divided by a
+generator of the value group, the value of a norm is a degree-th multiple. -/
+theorem finrank_dvd_unitValDiv_of_mem_normSubgroup (hur : HasUnramifiedNormValues K L)
+    (hm : IsUnitValGen K m) {a : Kˣ} (ha : a ∈ normSubgroup K L) :
+    (finrank K L : ℤ) ∣ unitValDiv hm (Additive.ofMul a) := by
   obtain ⟨y, hy⟩ := (mem_normSubgroup_iff a).1 ha
   obtain ⟨c, hc⟩ := hur y
   rw [hy] at hc
@@ -117,10 +119,15 @@ theorem normSubgroup_le_ker_baseValInvariant (hur : HasUnramifiedNormValues K L)
       = m * ((finrank K L : ℤ) * unitValDiv hm (Additive.ofMul c)) := by
     rw [← unitVal_eq_mul_unitValDiv hm, h1, unitVal_eq_mul_unitValDiv hm (Additive.ofMul c)]
     ring
-  have h3 : unitValDiv hm (Additive.ofMul a)
-      = (finrank K L : ℤ) * unitValDiv hm (Additive.ofMul c) :=
-    mul_left_cancel₀ hm.ne_zero h2
-  rw [MonoidHom.mem_ker, baseValInvariant_apply, h3]
+  exact ⟨unitValDiv hm (Additive.ofMul c), mul_left_cancel₀ hm.ne_zero h2⟩
+
+/-- **The invariant kills the norms of an unramified extension.** -/
+theorem normSubgroup_le_ker_baseValInvariant (hur : HasUnramifiedNormValues K L)
+    (hm : IsUnitValGen K m) :
+    normSubgroup K L ≤ (baseValInvariant hm (finrank K L)).ker := by
+  intro a ha
+  obtain ⟨c, hc⟩ := finrank_dvd_unitValDiv_of_mem_normSubgroup hur hm ha
+  rw [MonoidHom.mem_ker, baseValInvariant_apply, hc]
   simp
 
 /-- The invariant of an unramified extension, on the units modulo the norms. -/
