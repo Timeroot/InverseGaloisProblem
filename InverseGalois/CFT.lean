@@ -533,6 +533,8 @@ import InverseGalois.CFT.Units.AdicUnitGen
 import InverseGalois.CFT.Units.ArchimedeanIdeles
 import InverseGalois.CFT.Units.BaseChangeCocycle
 import InverseGalois.CFT.Units.BaseChangeIndex
+import InverseGalois.CFT.Units.BaseFundamental
+import InverseGalois.CFT.Units.BaseTate
 import InverseGalois.CFT.Units.ClassSet
 import InverseGalois.CFT.Units.CompletionFinite
 import InverseGalois.CFT.Units.CompletionGalois
@@ -3413,6 +3415,25 @@ it that are available here.
   integral representation two degrees lower; in degree minus two this is **the reciprocity
   isomorphism**, and tensoring gives **the theorem of Tate and Nakayama** for any coefficients flat
   over the integers.
+* `InverseGalois.CFT.Units.BaseFundamental` moves the base field off the rationals, by restriction
+  and then inflation.  An intermediate field of an extension Galois over the rationals corresponds
+  to the image of restriction of scalars, which is an injective homomorphism of Galois groups, and
+  the class over the rationals restricts along it to a class annihilated by exactly the multiples
+  of the order of that subgroup, which is the degree over the intermediate field; the two
+  representations agree because enlarging the base does not change how an automorphism moves an
+  idele.  A Galois extension of that base is then the quotient of its normal closure over the
+  rationals by a subgroup whose order annihilates every complete cohomology group, so that multiple
+  of the class restricts to zero and is inflated from the quotient, and the dévissage for a tower
+  turns the inflated class into one downstairs.  Hence **the second cohomology of the idele class
+  group of a Galois extension of number fields contains a class annihilated by exactly the
+  multiples of the degree**, with no hypothesis on the base.
+* `InverseGalois.CFT.Units.BaseTate` names that class and reaps the consequences over an arbitrary
+  base.  The vanishing of the first cohomology and the bound on the second were never special to
+  the rationals, so with the fundamental class in hand **Tate's theorem holds for the idele class
+  group of any Galois extension of number fields with no hypotheses**, identifying its complete
+  cohomology in every degree with that of the trivial integral representation two degrees lower;
+  degree minus two is **the reciprocity isomorphism** of the extension, and tensoring gives **the
+  theorem of Tate and Nakayama** for any coefficients flat over the integers.
 * `InverseGalois.CFT.Profinite.Cochain` is the cohomology of a topological group in degrees one and
   two, computed by the cochains that factor through a quotient by an open normal subgroup.  Those
   cochains are closed under the group operations and under the coboundary, so the cocycles form a
