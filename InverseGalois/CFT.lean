@@ -59,6 +59,7 @@ import InverseGalois.CFT.Brauer.Opposite
 import InverseGalois.CFT.Brauer.Primary
 import InverseGalois.CFT.Brauer.QuadraticExt
 import InverseGalois.CFT.Brauer.Quaternion
+import InverseGalois.CFT.Brauer.RamificationIdentity
 import InverseGalois.CFT.Brauer.RationalBrauer
 import InverseGalois.CFT.Brauer.RelativeIndex
 import InverseGalois.CFT.Brauer.RealBrauer
@@ -3315,6 +3316,19 @@ it that are available here.
   basis of the extension made of integers, and the absolute value of a combination of those is the
   absolute value of one of its coefficients: **an extension whose residue field is as large as the
   degree allows is unramified.**
+* `InverseGalois.CFT.Brauer.RamificationIdentity` accounts for the general case, where the residue
+  field is smaller than the degree allows and the missing room is taken up by the value group.  The
+  absolute value of an element of a finite extension is the root of index the degree of the absolute
+  value of its norm, so the absolute values of the nonzero elements are the integer powers of a
+  fixed number below one and **a finite extension of a local field has a uniformizer**.  Writing the
+  **ramification index** for the number of steps of the value group of the extension that make up
+  one step of the value group of the base, the products of a lift of a basis of the residue field
+  with the powers of a uniformizer below the ramification index form a basis: they are independent
+  because the absolute value of a combination of the lifts is the absolute value of a scalar, so the
+  terms of a relation have pairwise different absolute values and the largest of them cannot be
+  cancelled, and they generate because such a combination corrects an element so that its absolute
+  value drops by one step of the value group, while a subspace is closed for the absolute value.
+  Hence **the ramification index times the residue degree is the degree of the extension.**
 * `InverseGalois.CFT.Brauer.ResidueGalois` closes the gap in the other direction and names the
   Frobenius.  An unramified extension is a cyclotomic extension, hence Galois, and its automorphisms
   act faithfully on the residue field over the residue field of the base field, so the degree is at
