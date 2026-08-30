@@ -16,6 +16,7 @@ import InverseGalois.CFT.Brauer.CrossedProductSimple
 import InverseGalois.CFT.Brauer.CrossedProductSplit
 import InverseGalois.CFT.Brauer.CrossedProductSplitting
 import InverseGalois.CFT.Brauer.CyclicAlgebra
+import InverseGalois.CFT.Brauer.CyclicBaseChange
 import InverseGalois.CFT.Brauer.CyclicBrauer
 import InverseGalois.CFT.Brauer.CyclicInvariant
 import InverseGalois.CFT.Brauer.CyclicNorm
@@ -42,6 +43,7 @@ import InverseGalois.CFT.Brauer.H2Brauer
 import InverseGalois.CFT.Brauer.H2Surjective
 import InverseGalois.CFT.Brauer.InvariantInjective
 import InverseGalois.CFT.Brauer.InvariantMap
+import InverseGalois.CFT.Brauer.InvariantRestrict
 import InverseGalois.CFT.Brauer.Kernel
 import InverseGalois.CFT.Brauer.LocalBrauerBound
 import InverseGalois.CFT.Brauer.LocalBrauerOrder
@@ -110,6 +112,7 @@ import InverseGalois.CFT.GroupCohomology.CoprimeDescent
 import InverseGalois.CFT.GroupCohomology.CoprimeSplit
 import InverseGalois.CFT.GroupCohomology.Corestriction
 import InverseGalois.CFT.GroupCohomology.Cyclic
+import InverseGalois.CFT.GroupCohomology.CyclicRestrict
 import InverseGalois.CFT.GroupCohomology.CyclicH1
 import InverseGalois.CFT.GroupCohomology.CyclicCoboundary
 import InverseGalois.CFT.GroupCohomology.CyclicH2
@@ -3268,6 +3271,21 @@ it that are available here.
   **the invariant is injective on the relative Brauer group of an unramified extension**, and since
   every class is split by such an extension, **a Brauer class over a local field is determined by
   its invariant.**
+* `InverseGalois.CFT.GroupCohomology.CyclicRestrict` compares the explicit cyclic two-cocycles of
+  two cyclic groups joined by a homomorphism carrying a generator to the `d`-th power of a
+  generator, `d` being the ratio of the orders.  Such a homomorphism multiplies discrete logarithms
+  by `d`, and multiplying both sides of the comparison that defines the value of the cocycle by `d`
+  leaves it unchanged, so **the explicit cyclic two-cocycle pulls back to the explicit cyclic
+  two-cocycle with the same value**, on the nose rather than up to a coboundary.
+* `InverseGalois.CFT.Brauer.CyclicBaseChange` reads that off on Brauer groups.  The restriction map
+  is computed by restricting the defining cocycle, and the generator of the Galois group of an
+  extension of an intermediate field induces a power of the generator downstairs, so **base change
+  carries a cyclic algebra to a cyclic algebra with the same coefficient**, the degree of the
+  intermediate field having disappeared into the change of generator.
+* `InverseGalois.CFT.Brauer.InvariantRestrict` turns that into the behaviour of the invariant.  The
+  coefficient is unchanged and its value is unchanged, while the degree that one divides by drops
+  by the degree of the intermediate field, so **the invariant of a Brauer class is multiplied by
+  the degree of the intermediate field under base change.**
 * `InverseGalois.CFT.Local.NormValued` carries the whole local package up a finite extension.  The
   value of the field norm is a valuation on the extension, because the norm of an element is the
   degree-th power of its spectral norm and the spectral norm is nonarchimedean; carried on the

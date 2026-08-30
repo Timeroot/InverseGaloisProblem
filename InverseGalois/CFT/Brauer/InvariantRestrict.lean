@@ -1,0 +1,133 @@
+/-
+Copyright (c) 2026. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
+import Mathlib
+import InverseGalois.CFT.Brauer.CyclicBaseChange
+import InverseGalois.CFT.Brauer.CyclicInvariant
+
+/-!
+# The invariant of a Brauer class under base change to an intermediate field
+
+Let `K ⊆ M ⊆ L` be discretely valued fields with `L / K` cyclic Galois and unramified, and let `M`
+be an intermediate field whose normalised valuation restricts to the normalised valuation of `K` —
+that is, `M / K` is unramified as well.  Base change carries a class of the relative Brauer group
+`Br(L / K)` into `Br(L / M)`, and the two invariants are related by the degree:
+
+`inv_M (res_M x) = [M : K] · inv_K x`.
+
+The reason is transparent on cyclic algebras.  A class of `Br(L / K)` is `(L / K, σ₀, a)`, its
+invariant is `v(a) / [L : K]`, and base change turns it into `(L / M, σ₁, a)` with the *same*
+coefficient, because the generator `σ₁` of `Gal(L/M)` induces the power `σ₀ ^ [M : K]`.  So the
+invariant computed over `M` is `v(a) / [L : M]`, which is `[M : K]` times `v(a) / [L : K]`.
+
+## Main results
+
+* `InverseGalois.CFT.baseChangeHom_mem_relative`: base change to an intermediate field keeps a
+  class in the relative Brauer group.
+* `InverseGalois.CFT.natCard_gal_eq_mul`: the order of the Galois group of `L / K` is the degree of
+  `M / K` times the order of the Galois group of `L / M`.
+* `InverseGalois.CFT.brauerInvariant_baseChange`: **the invariant of a Brauer class is multiplied
+  by the degree of the intermediate field under base change.**
+
+## Tags
+
+Brauer group, relative Brauer group, invariant map, base change, restriction, class field theory
+-/
+
+namespace InverseGalois.CFT
+
+open Module
+
+open scoped WithZero
+
+variable {K M L : Type} [Field K] [Field M] [Field L] [Algebra K M] [Algebra M L] [Algebra K L]
+  [IsScalarTower K M L]
+
+/-! ### Base change stays in the relative Brauer group -/
+
+section Relative
+
+variable (M) in
+/-- **Base change to an intermediate field keeps a class in the relative Brauer group**, because
+base change to the top field factors through base change to the intermediate field. -/
+theorem baseChangeHom_mem_relative {x : BrauerGroup.{0, 0} K}
+    (hx : x ∈ BrauerGroup.relative K L) :
+    BrauerGroup.baseChangeHom M x ∈ BrauerGroup.relative M L := by
+  rw [BrauerGroup.relative, MonoidHom.mem_ker] at hx ⊢
+  rw [← MonoidHom.comp_apply, BrauerGroup.baseChangeHom_comp K M L]
+  exact hx
+
+end Relative
+
+/-! ### The degree of the intermediate field -/
+
+section Degree
+
+variable [FiniteDimensional K L] [IsGalois K L] [FiniteDimensional M L] [IsGalois M L]
+
+/-- The order of the Galois group of `L / K` is the degree of an intermediate field times the order
+of the Galois group of `L / M`. -/
+theorem natCard_gal_eq_mul :
+    Nat.card Gal(L/K) = finrank K M * Nat.card Gal(L/M) := by
+  haveI : FiniteDimensional K M := FiniteDimensional.left K M L
+  rw [IsGalois.card_aut_eq_finrank K L, IsGalois.card_aut_eq_finrank M L]
+  exact (Module.finrank_mul_finrank K M L).symm
+
+end Degree
+
+/-! ### The invariant under base change -/
+
+section Invariant
+
+variable [Valued K ℤᵐ⁰] [Valued M ℤᵐ⁰] [FiniteDimensional K L] [IsGalois K L]
+  [FiniteDimensional M L] [IsGalois M L] {mK mM : ℤ}
+
+/-- **The invariant of a Brauer class is multiplied by the degree of the intermediate field under
+base change.**  A class of the relative Brauer group is a cyclic algebra, base change keeps its
+coefficient and replaces the generator by one inducing its `[M : K]`-th power, and the invariant
+divides the value of the coefficient by the smaller degree `[L : M]`. -/
+theorem brauerInvariant_baseChange {σ₀ : Gal(L/K)} {σ₁ : Gal(L/M)}
+    (hσ₀ : ∀ x : Gal(L/K), x ∈ Subgroup.zpowers σ₀)
+    (hσ₁ : ∀ x : Gal(L/M), x ∈ Subgroup.zpowers σ₁)
+    (hpow : σ₁.restrictScalars K = σ₀ ^ finrank K M)
+    (hurK : HasUnramifiedNormValues K L) (hurM : HasUnramifiedNormValues M L)
+    (hmK : IsUnitValGen K mK) (hmM : IsUnitValGen M mM)
+    (hval : ∀ a : Kˣ,
+      unitValDiv hmM (Additive.ofMul (Units.map (algebraMap K M).toMonoidHom a))
+        = unitValDiv hmK (Additive.ofMul a))
+    (x : ↥(BrauerGroup.relative K L)) :
+    brauerInvariant hσ₁ hurM hmM
+        ⟨BrauerGroup.baseChangeHom M (x : BrauerGroup.{0, 0} K),
+          baseChangeHom_mem_relative M x.2⟩
+      = brauerInvariant hσ₀ hurK hmK x ^ finrank K M := by
+  haveI : FiniteDimensional K M := FiniteDimensional.left K M L
+  have hdK : ((finrank K M : ℚ)) ≠ 0 := Nat.cast_ne_zero.mpr Module.finrank_pos.ne'
+  have hdM : ((finrank M L : ℚ)) ≠ 0 := Nat.cast_ne_zero.mpr Module.finrank_pos.ne'
+  have hfin : finrank K M * finrank M L = finrank K L := Module.finrank_mul_finrank K M L
+  obtain ⟨x, hx⟩ := x
+  obtain ⟨a, rfl⟩ := exists_cyclicBrauerHom_eq hσ₀ x hx
+  have hsub : (⟨BrauerGroup.baseChangeHom M (cyclicBrauerHom hσ₀ a),
+        baseChangeHom_mem_relative M hx⟩ : ↥(BrauerGroup.relative M L))
+      = ⟨cyclicBrauerHom hσ₁ (Units.map (algebraMap K M).toMonoidHom a),
+        cyclicBrauerHom_mem_relative hσ₁ (Units.map (algebraMap K M).toMonoidHom a)⟩ :=
+    Subtype.ext (baseChangeHom_cyclicBrauerHom M hσ₀ hσ₁ hpow natCard_gal_eq_mul a)
+  rw [hsub, brauerInvariant_apply_cyclicBrauerHom, brauerInvariant_apply_cyclicBrauerHom,
+    baseInvariant_apply, baseInvariant_apply, ← ofAdd_nsmul]
+  refine congrArg Multiplicative.ofAdd ?_
+  rw [unitInvariant_apply, unitInvariant_apply, hval]
+  have hsmul : (finrank K M) •
+        (QuotientAddGroup.mk (((unitValDiv hmK (Additive.ofMul a) : ℤ) : ℚ)
+          / ((finrank K L : ℕ) : ℚ)) : QModZ)
+      = QuotientAddGroup.mk ((finrank K M : ℚ) * (((unitValDiv hmK (Additive.ofMul a) : ℤ) : ℚ)
+          / ((finrank K L : ℕ) : ℚ))) := by
+    rw [← nsmul_eq_mul]
+    exact (map_nsmul (QuotientAddGroup.mk' (AddSubgroup.zmultiples (1 : ℚ))) _ _).symm
+  rw [hsmul, ← hfin]
+  refine congrArg QuotientAddGroup.mk ?_
+  push_cast
+  field_simp
+
+end Invariant
+
+end InverseGalois.CFT
