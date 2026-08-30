@@ -45,9 +45,13 @@ import InverseGalois.CFT.Brauer.GaloisSplitting
 import InverseGalois.CFT.Brauer.Group
 import InverseGalois.CFT.Brauer.H2Brauer
 import InverseGalois.CFT.Brauer.H2Surjective
+import InverseGalois.CFT.Brauer.InertiaSubfield
+import InverseGalois.CFT.Brauer.InvariantBaseChange
+import InverseGalois.CFT.Brauer.InvariantBaseUnramified
 import InverseGalois.CFT.Brauer.InvariantCompositum
 import InverseGalois.CFT.Brauer.InvariantInjective
 import InverseGalois.CFT.Brauer.InvariantMap
+import InverseGalois.CFT.Brauer.InvariantRamified
 import InverseGalois.CFT.Brauer.InvariantRestrict
 import InverseGalois.CFT.Brauer.InvariantSurjective
 import InverseGalois.CFT.Brauer.Kernel
@@ -68,6 +72,7 @@ import InverseGalois.CFT.Brauer.RelativeTorsion
 import InverseGalois.CFT.Brauer.RealBrauer
 import InverseGalois.CFT.Brauer.RealInvariant
 import InverseGalois.CFT.Brauer.RealPlace
+import InverseGalois.CFT.Brauer.ResidueBaseChange
 import InverseGalois.CFT.Brauer.ResidueDegree
 import InverseGalois.CFT.Brauer.ResidueGalois
 import InverseGalois.CFT.Brauer.Semilinear
