@@ -3956,10 +3956,10 @@ extensions (`Mathlib/GroupTheory/GroupExtension/` has only a docstring TODO).
 
 | # | Missing piece | Notes |
 | --- | --- | --- |
-| 1 | `H^i(G_k, A)` for finite discrete `A`, as a filtered colimit `colim_M H^i(Gal(M/k), A)` over finite Galois `M ⊇ K`, with localization maps and `Ш^i` | the natural home for every statement of §3–§5; needs `groupCohomology.map` as inflation and a directedness argument.  **This is the next brick**, and both walls below sit on top of it. |
-| 2 | `Ш¹(k, A) ↪ H¹(Gal(K\|k), A)` from the Hasse principle, and its dual | duality-free; the bricks are listed in (d) |
-| 3 | Finiteness of `Ш²(k, E)` via ABHN + Hochschild–Serre | `CFT/Units/ABHN.lean` has `exists_sub_add_eq_globalUnits` already |
-| 4 | Local Tate duality for finite modules over a local field | the invariant map `inv : Br(K) → ℚ/ℤ` exists (§0.34); duality with `μ_p` coefficients is the next layer |
+| 1 | ~~`H^i(G_k, A)` for finite discrete `A`, as a filtered colimit `colim_M H^i(Gal(M/k), A)` over finite Galois `M ⊇ K`, with localization maps and `Ш^i`~~ | **DONE** — `InverseGalois/CFT/Profinite/`: `SmoothH1`/`SmoothH2` with `galInflH1`/`galInflH2`, `resH1`/`resH2`, and `sha1`/`sha2` (see §0.37) |
+| 2 | ~~`Ш¹(k, A) ↪ H¹(Gal(K\|k), A)` from the Hasse principle, and its dual~~ | **DONE** — `CFT/Units/HasseInflation.lean`: `exists_galInflH1_eq_of_forall_level` and `exists_galInflH1_eq_of_forall_level_outside`.  What is *not* done is the glue turning membership in `sha1` into the `levelDecompositionSet` hypothesis; that needs genuine decomposition subgroups of `G_k` (see §0.37) |
+| 3 | Finiteness of `Ш²(k, E)` via ABHN + Hochschild–Serre | `CFT/Units/ABHN.lean` has `exists_sub_add_eq_globalUnits` already.  **This is the next brick.** |
+| 4 | Local Tate duality for finite modules over a local field | `Br(K) ≅ ℚ/ℤ` is now a theorem — `localInvariantEquiv` (`CFT/Brauer/InvariantSurjective.lean`, §0.37); duality with `μ_p` coefficients is the next layer |
 | 5 | **Global duality `Ш²(k, A) ≅ Ш¹(k, A′)^∨`** | wall #1: the sole missing input of SW's Claim, hence of step 2 |
 | 6 | The `p`-th power Hilbert symbol over a number field and its product formula | the repo has the *quadratic* symbol over `ℚ` (`CFT/Global/Hilbert*.lean`) |
 | 7 | **Chebotarev density over a number field**, in the abelian/ray-class form of (e) | wall #2; **not in Mathlib**, though the analytic floor listed in (e) is |
@@ -3975,6 +3975,68 @@ Already-existing bricks that will be consumed and should not be rebuilt:
 * `CFT/Units/SplitNorm.lean` — `subsingleton_gal_of_isSolvable_of_free`, the Hasse-principle brick;
 * `CFT/GrunwaldWang.lean` — Grunwald–Wang in power-class form (SW Prop 11 wants the character
   form).
+
+---
+
+## 0.37 Status (2026-08-30) — rows 1 and 2 were already built; `Br(K) ≅ ℚ/ℤ` is now a theorem
+
+### (a) Two rows of the §0.36 table were stale
+
+A survey of the tree found that the "next brick" named in §0.36 had in fact already been laid,
+twice over.
+
+**Row 1** is `InverseGalois/CFT/Profinite/`.  It carries the smooth (= continuous, finite-level)
+cohomology of the absolute Galois group in degrees one and two — `SmoothH1`, `SmoothH2`,
+`smoothH1Mk`, `smoothH2Mk` — with the inflation maps `galInflH1`, `galInflH2` from a finite level,
+the localization maps `resH1`, `resH2` to a subgroup, and the Tate–Shafarevich subgroups
+`sha1 (S : Set (Subgroup G))`, `sha2` cut out by them (`Profinite/Res.lean`), plus the trivial-
+action dictionary in `Profinite/Trivial.lean` (`cocycleHom`, `smoothH1Mk_eq_one_iff_of_trivial`,
+`resH1_eq_one_iff_of_trivial`, `smoothH1Mk_mem_sha1_iff_le_ker`).
+
+**Row 2** is `InverseGalois/CFT/Units/HasseInflation.lean`.  It proves exactly the required
+statement — a smooth one-cocycle that dies on every decomposition subgroup at every finite level is
+inflated from that level:
+
+```lean
+theorem exists_galInflH1_eq_of_forall_level (hs : IsSmooth₁ u) (hloc : …) :
+    ∃ z : SmoothH1 (↥F ≃ₐ[k] ↥F) M, galInflH1 F hπ z = smoothH1Mk u hu hs
+```
+
+together with the variant `exists_galInflH1_eq_of_forall_level_outside` that ignores a finite set of
+places.
+
+**What is genuinely still open in row 2** is only the glue: `sha1` is stated for an abstract family
+`S : Set (Subgroup G_k)`, while `HasseInflation` quantifies over `levelDecompositionSet L`.  Making
+the two match needs *genuine* decomposition subgroups of `G_k` — i.e. a place of `k̄` over a place
+of `k` and its stabilizer — which is a design task in its own right and has been deferred.
+
+### (b) The Brauer group of a local field is `ℚ/ℤ`
+
+`InverseGalois/CFT/Brauer/InvariantSurjective.lean` closes the other half of the local invariant
+map.  Injectivity was already in `InvariantInjective.lean`; surjectivity needs unramified
+extensions of arbitrary degree, which the file builds by hand:
+
+* `dvd_of_pow_sub_one_dvd_pow_sub_one : 2 ≤ q → q ^ a - 1 ∣ q ^ b - 1 → a ∣ b`.  Elementary, but not
+  in Mathlib — only the converse `Nat.pow_sub_one_dvd_pow_sub_one` is.  The proof writes
+  `b = a·(b/a) + b%a`, moves to `ℤ` (where `x^b - 1 = x^{b%a}(x^{a(b/a)} - 1) + (x^{b%a} - 1)` is a
+  ring identity), and squeezes the remainder term between `0` and `q^a - 1`.
+* `dvd_card_divisionResidue_sub_one_of_isPrimitiveRoot` — a root of unity whose order is invertible
+  in `K` keeps that order in the residue field.  Its residue is a nonzero element of a finite field,
+  so `ζ^{N-1}` is congruent to `1`; and a root of unity of invertible order congruent to `1` **is**
+  `1` (`eq_one_of_pow_eq_one_of_divisionNorm_sub_lt_one`, from `DivisionCyclic.lean`).  Hence
+  `M ∣ N - 1`.
+* `exists_unramified_dvd_finrank` — given `n`, put `Q = #(residue field)` and `M = Q^n - 1`.  Then
+  `‖M‖ = 1` (`norm_natCast_pow_card_divisionResidue_sub_one`), so `L = CyclotomicField M K` is
+  unramified (`unramified_of_isCyclotomicExtension`) and its residue field has `Q^{[L:K]}` elements
+  (`card_divisionResidue_of_unramified`).  The primitive `M`-th root forces `M ∣ Q^{[L:K]} - 1`,
+  i.e. `Q^n - 1 ∣ Q^{[L:K]} - 1`, i.e. `n ∣ [L:K]`.
+* `localInvariantHom_surjective` — for a target `r + ℤ`, take `n = r.den`, get `L` with
+  `[L:K] = r.den · t`, take the class `w` with invariant `1/[L:K]` (`exists_localInvariant_eq`) and
+  raise it to the power `r.num · t`.
+* `localInvariantEquiv : BrauerGroup K ≃* Multiplicative (ℚ/ℤ)` — the two halves combined.
+
+This is the group-theoretic cornerstone of local class field theory and the prerequisite for row 4
+(local Tate duality) and row 6 (the `p`-th power Hilbert symbol).
 
 ---
 

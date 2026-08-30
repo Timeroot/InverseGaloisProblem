@@ -48,6 +48,7 @@ import InverseGalois.CFT.Brauer.InvariantCompositum
 import InverseGalois.CFT.Brauer.InvariantInjective
 import InverseGalois.CFT.Brauer.InvariantMap
 import InverseGalois.CFT.Brauer.InvariantRestrict
+import InverseGalois.CFT.Brauer.InvariantSurjective
 import InverseGalois.CFT.Brauer.Kernel
 import InverseGalois.CFT.Brauer.LocalBrauerBound
 import InverseGalois.CFT.Brauer.LocalBrauerOrder
@@ -3385,6 +3386,14 @@ it that are available here.
   **the invariant is injective on the relative Brauer group of an unramified extension**, and since
   every class is split by such an extension, **a Brauer class over a local field is determined by
   its invariant.**
+* `InverseGalois.CFT.Brauer.InvariantSurjective` shows the invariant misses nothing either.
+  Adjoining the roots of unity of order one less than a power of the number of residues is
+  unramified, and those roots of unity keep their order in the residue field, so the residue field
+  is at least as large as that power; one less than a power divides one less than another power
+  only when the exponents divide, so **a local field has an unramified extension of degree
+  divisible by any prescribed number.**  The invariant attains the reciprocal of that degree there,
+  hence **every rational modulo the integers is the invariant of a Brauer class**, and with the
+  previous item **the Brauer group of a local field is the rationals modulo the integers.**
 * `InverseGalois.CFT.GroupCohomology.CyclicRestrict` compares the explicit cyclic two-cocycles of
   two cyclic groups joined by a homomorphism carrying a generator to the `d`-th power of a
   generator, `d` being the ratio of the orders.  Such a homomorphism multiplies discrete logarithms
