@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Local.AdicHerbrand
+import InverseGalois.CFT.Local.AdicUnramified
+import InverseGalois.CFT.Local.InfiniteHerbrand
 import InverseGalois.CFT.Units.LocalNorm
 
 /-!
@@ -23,7 +25,8 @@ from below always is — is a value of the norm operator on the units of the val
 hence a norm.
 
 These are the two local conditions that will be met at the places away from the single prime where
-an auxiliary cyclic extension is allowed to ramify.
+an auxiliary cyclic extension is allowed to ramify.  The same argument for a trivial decomposition
+group applies verbatim at an infinite place that splits completely.
 
 ## Main results
 
@@ -32,6 +35,12 @@ an auxiliary cyclic extension is allowed to ramify.
 * `InverseGalois.CFT.mem_normSubgroup_adicCompletion_of_unitVal_eq_zero`: **at a place whose
   decomposition group is cyclic and fixes a uniformizer, every unit of the valuation ring of the
   base field is a norm.**
+* `InverseGalois.CFT.mem_normSubgroup_adicCompletion_of_isUnramifiedAt`: **at an unramified place
+  of a cyclic extension every unit of the valuation ring of the base field is a norm.**
+* `InverseGalois.CFT.mem_normSubgroup_infiniteCompletion_of_subsingleton_stabilizer`: **at an
+  infinite place that splits completely every local unit of the base field is a norm.**
+* `InverseGalois.CFT.mem_normSubgroup_infiniteCompletion_of_isReal`: **at a real infinite place
+  every local unit of the base field is a norm.**
 
 ## Tags
 
@@ -105,6 +114,57 @@ theorem mem_normSubgroup_adicCompletion_of_unitVal_eq_zero (w : HeightOneSpectru
   exact mem_normSubgroup_of_normHom_smulUnitsAut (exists_stabilizer_smul_eq k w) hgen
     (b := (y : Additive (w.adicCompletion K)ˣ)) hpush.symm
 
+variable (k) in
+/-- **At a place unramified over the base every unit of the valuation ring of the base field is a
+norm**, the Galois group being cyclic.  The decomposition group is then cyclic as a subgroup of a
+cyclic group, and an unramified place carries a uniformizer fixed by it. -/
+theorem mem_normSubgroup_adicCompletion_of_isUnramifiedAt [IsCyclic Gal(K/k)]
+    (w : HeightOneSpectrum (𝓞 K)) (hw : Algebra.IsUnramifiedAt (𝓞 k) w.asIdeal)
+    {a : ((primeUnder (𝓞 k) w).adicCompletion k)ˣ} (ha : unitVal (Additive.ofMul a) = 0) :
+    a ∈ normSubgroup ((primeUnder (𝓞 k) w).adicCompletion k) (w.adicCompletion K) := by
+  obtain ⟨π, hπfix, hπval⟩ := exists_fixedUniformizer_of_isUnramifiedAt (k := k) w hw
+  obtain ⟨σ, hgen⟩ := IsCyclic.exists_generator (α := ↥(stabilizer Gal(K/k) w))
+  exact mem_normSubgroup_adicCompletion_of_unitVal_eq_zero k w hgen π hπfix hπval ha
+
 end AdicLocalNorm
+
+/-! ### An infinite place that splits completely -/
+
+section InfiniteLocalNorm
+
+variable {k K : Type*} [Field k] [NumberField k] [Field K] [NumberField K] [Algebra k K]
+  [IsGalois k K]
+
+variable (k) in
+/-- **At an infinite place that splits completely every local unit of the base field is a norm.**
+The decomposition group being trivial, the norm operator of the Tate formalism is the sum of a
+single term, namely the identity, so the unit is its own norm. -/
+theorem mem_normSubgroup_infiniteCompletion_of_subsingleton_stabilizer (w : InfinitePlace K)
+    (hsplit : Subsingleton ↥(stabilizer Gal(K/k) w))
+    (a : ((w.comap (algebraMap k K)).Completion)ˣ) :
+    a ∈ normSubgroup ((w.comap (algebraMap k K)).Completion) w.Completion := by
+  haveI : Fintype ↥(stabilizer Gal(K/k) w) := Fintype.ofFinite _
+  haveI := isGalois_infiniteCompletion k w
+  have hcard : Nat.card ↥(stabilizer Gal(K/k) w) = 1 :=
+    Nat.card_eq_one_iff_unique.mpr ⟨hsplit, ⟨1⟩⟩
+  refine mem_normSubgroup_of_normHom_smulUnitsAut (exists_stabilizer_smul_eq_infinite k w)
+    (τ := 1) (fun g => by rw [Subsingleton.elim g 1]; exact Subgroup.mem_zpowers 1)
+    (b := infiniteUnitsComap k w (Additive.ofMul a)) ?_
+  rw [hcard, normHom_apply, Finset.sum_range_one, pow_zero]
+  rfl
+
+variable (k) in
+/-- **At a real infinite place every local unit of the base field is a norm.**  A place whose
+decomposition group is nontrivial is ramified, hence complex. -/
+theorem mem_normSubgroup_infiniteCompletion_of_isReal (w : InfinitePlace K) (hw : w.IsReal)
+    (a : ((w.comap (algebraMap k K)).Completion)ˣ) :
+    a ∈ normSubgroup ((w.comap (algebraMap k K)).Completion) w.Completion := by
+  refine mem_normSubgroup_infiniteCompletion_of_subsingleton_stabilizer k w ?_ a
+  rcases InfinitePlace.nat_card_stabilizer_eq_one_or_two k w with h1 | h2
+  · exact (Nat.card_eq_one_iff_unique.mp h1).1
+  · exact absurd (InfinitePlace.isRamified_iff_card_stabilizer_eq_two.mpr h2).isComplex
+      (InfinitePlace.not_isComplex_iff_isReal.mpr hw)
+
+end InfiniteLocalNorm
 
 end InverseGalois.CFT

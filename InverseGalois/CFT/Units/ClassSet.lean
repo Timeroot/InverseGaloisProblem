@@ -26,6 +26,8 @@ the Herbrand quotient requires.
 
 * `InverseGalois.CFT.exists_finite_ord_repr`: **a finite set of primes away from which every
   finitely supported system of orders is realised by an element of the field.**
+* `InverseGalois.CFT.exists_ord_repr_of_isPrincipalIdealRing`: **over a field whose ring of integers
+  is principal no exceptional set is needed.**
 * `InverseGalois.CFT.exists_finite_stable_ord_repr`: **the same set may be taken stable under the
   Galois group.**
 
@@ -92,6 +94,48 @@ theorem exists_finite_ord_repr :
   simp only [Units.val_mul, coe_toPrincipalIdeal] at hzz
   rw [FractionalIdeal.count_mul K v (Units.ne_zero Iu)
     (spanSingleton_ne_zero_iff.mpr (Units.ne_zero x)), hvT] at hzz
+  have hIuval : (Iu : FractionalIdeal (𝓞 K)⁰ K) = I := rfl
+  rw [hIuval, hcount v] at hzz
+  have hx : ord K v ((x : K)) = -n v := by
+    rw [ord_def]
+    lia
+  rw [Units.val_inv_eq_inv_val, ord_inv, hx, neg_neg]
+
+/-- **When the ring of integers is principal every finitely supported system of orders is realised
+by an element of the field, at every prime at once.**  A system of orders is the exponent vector of
+a fractional ideal, and every fractional ideal is then principal, so a generator has exactly the
+prescribed orders and no exceptional set of primes is needed. -/
+theorem exists_ord_repr_of_isPrincipalIdealRing [IsPrincipalIdealRing (𝓞 K)]
+    (n : HeightOneSpectrum (𝓞 K) → ℤ)
+    (hn : ∀ᶠ v : HeightOneSpectrum (𝓞 K) in Filter.cofinite, n v = 0) :
+    ∃ a : Kˣ, ∀ v, ord K v (a : K) = n v := by
+  classical
+  have hone : ∀ c : ClassGroup (𝓞 K), c = 1 := fun c =>
+    ClassGroup.induction (K := K) (P := fun c => c = 1)
+      (fun I => ClassGroup.mk_eq_one_iff.mpr
+        (FractionalIdeal.isPrincipal (K := K) (I : FractionalIdeal (𝓞 K)⁰ K))) c
+  set I : FractionalIdeal (𝓞 K)⁰ K := ∏ᶠ v, (v.asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^ n v with hIdef
+  have hcount : ∀ v, FractionalIdeal.count K v I = n v := fun v =>
+    FractionalIdeal.count_finprod K v n hn
+  by_cases hI0 : I = 0
+  · refine ⟨1, fun v => ?_⟩
+    have hv := hcount v
+    rw [hI0, FractionalIdeal.count_zero] at hv
+    rw [← hv]
+    simp
+  set Iu : (FractionalIdeal (𝓞 K)⁰ K)ˣ := Units.mk0 I hI0 with hIuDef
+  have h2 : (QuotientGroup.mk' (toPrincipalIdeal (𝓞 K) K).range) Iu
+      = (QuotientGroup.mk' (toPrincipalIdeal (𝓞 K) K).range) 1 := by
+    have h := congrArg (ClassGroup.equiv K) (hone (ClassGroup.mk Iu))
+    simpa using h
+  rw [QuotientGroup.mk'_eq_mk'] at h2
+  obtain ⟨z, ⟨x, rfl⟩, hz⟩ := h2
+  refine ⟨x⁻¹, fun v => ?_⟩
+  have hzz := congrArg (fun u : (FractionalIdeal (𝓞 K)⁰ K)ˣ =>
+    FractionalIdeal.count K v (u : FractionalIdeal (𝓞 K)⁰ K)) hz
+  simp only [Units.val_mul, coe_toPrincipalIdeal, Units.val_one] at hzz
+  rw [FractionalIdeal.count_mul K v (Units.ne_zero Iu)
+    (spanSingleton_ne_zero_iff.mpr (Units.ne_zero x)), FractionalIdeal.count_one] at hzz
   have hIuval : (Iu : FractionalIdeal (𝓞 K)⁰ K) = I := rfl
   rw [hIuval, hcount v] at hzz
   have hx : ord K v ((x : K)) = -n v := by

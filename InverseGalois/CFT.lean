@@ -554,6 +554,7 @@ import InverseGalois.CFT.Units.IdeleClassTate
 import InverseGalois.CFT.Units.IdeleClassTower
 import InverseGalois.CFT.Units.IdeleCoboundary
 import InverseGalois.CFT.Units.IdeleFixed
+import InverseGalois.CFT.Units.IdeleGen
 import InverseGalois.CFT.Units.IdeleNorm
 import InverseGalois.CFT.Units.IdeleNormTower
 import InverseGalois.CFT.Units.IdeleRep
@@ -574,6 +575,7 @@ import InverseGalois.CFT.Units.LocalSqrtNegOne
 import InverseGalois.CFT.Units.NormIndex
 import InverseGalois.CFT.Units.OrbitPlaces
 import InverseGalois.CFT.Units.PlaceComap
+import InverseGalois.CFT.Units.PlaceIdele
 import InverseGalois.CFT.Units.PlaceRestrict
 import InverseGalois.CFT.Units.PlaceTower
 import InverseGalois.CFT.Units.Places
