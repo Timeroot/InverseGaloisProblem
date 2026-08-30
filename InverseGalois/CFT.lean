@@ -522,6 +522,7 @@ import InverseGalois.CFT.Units.AdicIdeleHerbrand
 import InverseGalois.CFT.Units.AdicLocalNorm
 import InverseGalois.CFT.Units.AdicOrbit
 import InverseGalois.CFT.Units.AdicSIdeles
+import InverseGalois.CFT.Units.AdicUnitGen
 import InverseGalois.CFT.Units.ArchimedeanIdeles
 import InverseGalois.CFT.Units.BaseChangeCocycle
 import InverseGalois.CFT.Units.BaseChangeIndex
