@@ -535,6 +535,7 @@ import InverseGalois.CFT.Units.ClassSet
 import InverseGalois.CFT.Units.CompletionFinite
 import InverseGalois.CFT.Units.CompletionGalois
 import InverseGalois.CFT.Units.CompletionUnits
+import InverseGalois.CFT.Units.CompositumEmbed
 import InverseGalois.CFT.Units.CompositumFundamental
 import InverseGalois.CFT.Units.CyclicTrivial
 import InverseGalois.CFT.Units.Decomposition
@@ -544,6 +545,7 @@ import InverseGalois.CFT.Units.FirstInequality
 import InverseGalois.CFT.Units.FrobeniusPlace
 import InverseGalois.CFT.Units.GaloisAction
 import InverseGalois.CFT.Units.GeneratingPrimes
+import InverseGalois.CFT.Units.GlobalFundamental
 import InverseGalois.CFT.Units.HasseNorm
 import InverseGalois.CFT.Units.Herbrand
 import InverseGalois.CFT.Units.Idele
