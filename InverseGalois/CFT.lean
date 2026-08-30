@@ -560,6 +560,7 @@ import InverseGalois.CFT.Units.DecompositionOutside
 import InverseGalois.CFT.Units.HasseHom
 import InverseGalois.CFT.Units.HasseLevel
 import InverseGalois.CFT.Units.HasseInflation
+import InverseGalois.CFT.Units.HasseTwo
 import InverseGalois.CFT.Units.EquivariantLabel
 import InverseGalois.CFT.Units.FirstInequality
 import InverseGalois.CFT.Units.FrobeniusPlace
@@ -2278,6 +2279,16 @@ it that are available here.
   vanish, and vanishing on the subgroup fixing a level is exactly the condition for a class to come
   from that level.  So **an everywhere locally trivial class is inflated from the field
   trivialising its coefficients.**
+* `InverseGalois.CFT.Units.HasseTwo` does the same one degree up, with the roots of unity of the
+  base field for coefficients.  A class of the second cohomology of the absolute Galois group is
+  represented by a two-cocycle inflated from a finite Galois level, and there its values are units
+  of the base field, so the Albert-Brauer-Hasse-Noether theorem applies to it: a splitting at every
+  place of the level, archimedean places included, makes the level cocycle the coboundary of a
+  one-cochain of units of the level, and Kummer theory rescales that cochain over a further radical
+  extension until its values are roots of unity again.  Read on the absolute Galois group through
+  restriction to the larger level, the rescaled cochain is smooth, so **an everywhere locally
+  trivial class of the second cohomology with roots of unity coefficients is trivial** — and
+  nothing is assumed about the number of roots of unity, so the prime `2` is covered as well.
 * `InverseGalois.CFT.Units.FrobeniusPlace` identifies the decomposition group at a place of a Galois
   extension of number fields with the Galois group of the residue extension, over an arbitrary
   number field base.  The ring of integers upstairs is the ring of invariants of the ring of

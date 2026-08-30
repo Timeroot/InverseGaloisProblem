@@ -3958,8 +3958,8 @@ extensions (`Mathlib/GroupTheory/GroupExtension/` has only a docstring TODO).
 | --- | --- | --- |
 | 1 | ~~`H^i(G_k, A)` for finite discrete `A`, as a filtered colimit `colim_M H^i(Gal(M/k), A)` over finite Galois `M ⊇ K`, with localization maps and `Ш^i`~~ | **DONE** — `InverseGalois/CFT/Profinite/`: `SmoothH1`/`SmoothH2` with `galInflH1`/`galInflH2`, `resH1`/`resH2`, and `sha1`/`sha2` (see §0.37) |
 | 2 | ~~`Ш¹(k, A) ↪ H¹(Gal(K\|k), A)` from the Hasse principle, and its dual~~ | **DONE** — `CFT/Units/HasseInflation.lean`: `exists_galInflH1_eq_of_forall_level` and `exists_galInflH1_eq_of_forall_level_outside`.  What is *not* done is the glue turning membership in `sha1` into the `levelDecompositionSet` hypothesis; that needs genuine decomposition subgroups of `G_k` (see §0.37) |
-| 3 | Finiteness of `Ш²(k, E)` via ABHN + Hochschild–Serre | `CFT/Units/ABHN.lean` has `exists_sub_add_eq_globalUnits` already.  **This is the next brick.** |
-| 4 | Local Tate duality for finite modules over a local field | `Br(K) ≅ ℚ/ℤ` is now a theorem — `localInvariantEquiv` (`CFT/Brauer/InvariantSurjective.lean`, §0.37); duality with `μ_p` coefficients is the next layer |
+| 3 | ~~Finiteness of `Ш²(k, E)` via ABHN + Hochschild–Serre~~ | **DONE** — `CFT/Units/HasseTwo.lean`: `eq_one_of_forall_isLocallySplitLevel`, the vanishing of the everywhere locally trivial classes of `H²` with `μ_n` coefficients, valid at `p = 2` (see §0.38).  Same glue caveat as row 2 |
+| 4 | Local Tate duality for finite modules over a local field | `Br(K) ≅ ℚ/ℤ` is now a theorem — `localInvariantEquiv` (`CFT/Brauer/InvariantSurjective.lean`, §0.37); duality with `μ_p` coefficients is the next layer.  **This is the next brick.** |
 | 5 | **Global duality `Ш²(k, A) ≅ Ш¹(k, A′)^∨`** | wall #1: the sole missing input of SW's Claim, hence of step 2 |
 | 6 | The `p`-th power Hilbert symbol over a number field and its product formula | the repo has the *quadratic* symbol over `ℚ` (`CFT/Global/Hilbert*.lean`) |
 | 7 | **Chebotarev density over a number field**, in the abelian/ray-class form of (e) | wall #2; **not in Mathlib**, though the analytic floor listed in (e) is |
@@ -4037,6 +4037,92 @@ extensions of arbitrary degree, which the file builds by hand:
 
 This is the group-theoretic cornerstone of local class field theory and the prerequisite for row 4
 (local Tate duality) and row 6 (the `p`-th power Hilbert symbol).
+
+---
+
+## 0.38 Status (2026-08-30, later) — row 3 is laid: `Ш²(k, μ_n) = 0`, and the prime `2` is covered
+
+### (a) The relative Brauer group of a local field is bounded by the degree
+
+`InverseGalois/CFT/Brauer/RelativeTorsion.lean` isolates the `n`-torsion of `ℚ/ℤ` as a subgroup,
+transports it through `localInvariantEquiv`, and reads off the consequences for the relative Brauer
+group of a finite extension `L/K` of local fields:
+
+* `nsmulTorsionQModZ`, `zmodEquivNsmulTorsionQModZ`, `natCard_nsmulTorsionQModZ` — the `n`-torsion of
+  `ℚ/ℤ` is cyclic of order `n`;
+* `brauerTorsion`, `brauerTorsionEquiv`, `natCard_brauerTorsion` — hence the `n`-torsion of `Br K`
+  is cyclic of order `n`;
+* `relative_le_brauerTorsion`, `finite_relative_local`,
+  `card_relative_le_finrank_local : Nat.card ↥(relativeBrauerGroup K L) ≤ finrank K L` — a class
+  split by `L` is killed by `[L:K]`;
+* `relative_eq_brauerTorsion_of_unramified` — for unramified `L/K` the bound is an equality.
+
+The reverse bound `#Br(L/K) ≥ [L:K]` for an arbitrary `L` still wants the base-change formula
+`inv_L ∘ res = [L:K] · inv_K`, which is what would turn this into the local reciprocity isomorphism.
+
+### (b) The local-global principle for central embedding problems, now at `p = 2` as well
+
+The multiplicative wrappers of Albert–Brauer–Hasse–Noether that were in the tree all bought their
+silence at the archimedean places by restricting the integer killing the cocycle — odd order, or
+order coprime to the local degrees at infinity.  Two new files remove the restriction and pay for
+the infinite places instead:
+
+* `InverseGalois/CFT/Units/ABHNPlaces.lean` — `smulUnitsAut_infiniteUnitHom_algebraMap` (the
+  decomposition group at an archimedean place fixes the local units coming from the base field) and
+  `exists_isMulCoboundary_of_forall_place`: **a two-cocycle with values in `kˣ` which splits at
+  every place of `K`, archimedean places included, is the coboundary of a one-cochain with values
+  in `Kˣ`** — no hypothesis whatever on the cocycle.
+* `InverseGalois/CFT/Kummer/CentralEmbeddingPlaces.lean` —
+  `exists_surjective_hom_of_forall_place`, the archimedean twin
+  `exists_local_coboundary_of_exists_lift_infinitePlace` of
+  `exists_local_coboundary_of_exists_lift`, and
+  `exists_surjective_hom_of_forall_place_lift`: **a central Frattini embedding problem that is
+  solvable over the decomposition group at every place is solvable over a larger extension**, with
+  no restriction on the order of the kernel.
+
+This is the form of the criterion that survives at `p = 2`, where the real places genuinely
+obstruct.
+
+### (c) Row 3: the everywhere locally trivial classes of `H²` with `μ_n` coefficients vanish
+
+`InverseGalois/CFT/Units/HasseTwo.lean` is the degree-two analogue of `Units/HasseLevel.lean` and
+`Units/HasseInflation.lean`, and it is what §0.36(d) asked for:
+
+* `exists_level_cochain₂` — a two-cochain constant on the cosets of the kernel is a two-cochain of
+  the quotient (the curried companion of `exists_comap₂_eq`, with no action on the quotient
+  required);
+* `restrictNormalHom_eq_of_res` — restriction to a level factors through restriction to a larger
+  level, which is what transfers a cochain produced at the radical level back down;
+* `IsLocallySplitLevel ι L a` — the local hypothesis: the `kˣ`-transported level cocycle is a
+  coboundary in the completion at every place of `L`, archimedean places included;
+* `exists_isSmooth₁_coboundary₂_eq_of_isLocallySplitLevel` — the inflation of a locally split level
+  cocycle to `G_k` is the coboundary of a **smooth** one-cochain;
+* `smoothH2Mk_eq_one_of_isLocallySplitLevel`, and
+* `eq_one_of_forall_isLocallySplitLevel` — **a class of `SmoothH2 G_k M` every level representative
+  of which splits at every place of its level is trivial**, for coefficients `M` acted on trivially
+  and embedded in `kˣ` as the `n`-th roots of unity.
+
+The chain is: `exists_isGalois_smooth₂` (every class lives at a finite Galois level) →
+`exists_level_cochain₂` (descend the representative to that level) →
+`exists_isMulCoboundary_of_forall_place` (ABHN, §0.38(b), so `p = 2` is fine) →
+`exists_intermediateField_cochain_of_isMulCoboundary` (Kummer, `Kummer/CocycleDescent.lean`:
+rescale over a radical extension so the trivialising cochain is `μ_n`-valued) →
+`restrictNormalHom_eq_of_res` + `isSmoothHom_restrictNormalHom` (read it as a smooth cochain on
+`G_k`).  Notably the profinite Kummer sequence is **not** needed: the finite-level Hilbert 90
+argument already in `Kummer/InflationRootsOfUnity.lean` does the whole job.
+
+**What is still open in row 3** is the same glue as in row 2: `IsLocallySplitLevel` quantifies over
+the places of a *level*, while genuine membership in `sha2` is a statement about the decomposition
+subgroups of `G_k` itself.  Matching the two needs a place of `k̄` over a place of `k` and its
+stabilizer — the design task deferred in §0.37(a).  With that glue, the finiteness of `Ш²(k, E)`
+for a `G_K`-trivial `E ≅ (ℤ/p)^d` is `Ш²(K, μ_p)^d = 0` plus Hochschild–Serre.
+
+### (d) The table, updated
+
+Rows 1, 2 and 3 are laid (each modulo the one shared glue lemma).  The next brick is **row 4**,
+local Tate duality with `μ_p` coefficients, for which `localInvariantEquiv` (§0.37(b)) and the
+torsion computation of §0.38(a) are the inputs.  Rows 5 and 7 — Poitou–Tate and Chebotarev over a
+number field — remain the two walls.
 
 ---
 
