@@ -546,6 +546,7 @@ import InverseGalois.CFT.Units.FrobeniusPlace
 import InverseGalois.CFT.Units.GaloisAction
 import InverseGalois.CFT.Units.GeneratingPrimes
 import InverseGalois.CFT.Units.GlobalFundamental
+import InverseGalois.CFT.Units.GlobalTate
 import InverseGalois.CFT.Units.HasseNorm
 import InverseGalois.CFT.Units.Herbrand
 import InverseGalois.CFT.Units.Idele
@@ -3386,4 +3387,28 @@ it that are available here.
   is the integers modulo the degree: **every Brauer class over a complete, discretely valued,
   locally compact field, and in particular over the completion of a number field at a finite place,
   lies in a relative Brauer group of exactly the order of the degree.**
+* `InverseGalois.CFT.Units.CompositumEmbed` transports a fundamental class from one extension of the
+  rationals to another of the same degree.  The kernel of the restriction of automorphisms to a
+  subfield is the subgroup fixing that subfield pointwise, so two embeddings with intersection the
+  rationals and compositum the whole top field have complementary, jointly trivial kernels, and the
+  Galois group of the compositum is the product of the two groups; the cyclic computation upstairs
+  and the two restrictions therefore agree on orders, so **a class of the right order in the second
+  cohomology of the idele class group of a cyclic extension produces one for any other extension of
+  the same degree disjoint from it.**
+* `InverseGalois.CFT.Units.GlobalFundamental` supplies the disjoint partner unconditionally.  A
+  prime larger than the degree, congruent to one modulo twice the degree and splitting completely in
+  the given extension exists by Dirichlet, and the cyclotomic field of that conductor contains a
+  cyclic totally real subfield of exactly the degree, totally ramified there and unramified
+  elsewhere; the two are disjoint because ramification cannot survive complete splitting, and the
+  same complete splitting makes the generating idele a norm because the automorphisms permute the
+  places above the prime freely.  Hence **the second cohomology of the idele class group of an
+  arbitrary Galois extension of the rationals contains a class annihilated by exactly the multiples
+  of the degree**, which is the last of the three conditions defining a class formation.
+* `InverseGalois.CFT.Units.GlobalTate` names that class and reaps the consequences.  With the
+  vanishing of the first cohomology and the bound on the second already known for every subgroup,
+  **Tate's theorem holds for the idele class group of any Galois extension of the rationals with no
+  hypotheses**, identifying its complete cohomology in every degree with that of the trivial
+  integral representation two degrees lower; in degree minus two this is **the reciprocity
+  isomorphism**, and tensoring gives **the theorem of Tate and Nakayama** for any coefficients flat
+  over the integers.
 -/
