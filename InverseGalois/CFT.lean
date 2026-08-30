@@ -312,6 +312,8 @@ import InverseGalois.CFT.PrimeProductSquare
 import InverseGalois.CFT.Profinite.Cochain
 import InverseGalois.CFT.Profinite.Comap
 import InverseGalois.CFT.Profinite.InfRes
+import InverseGalois.CFT.Profinite.Quotient
+import InverseGalois.CFT.Profinite.Krull
 import InverseGalois.CFT.RestrictLE
 import InverseGalois.CFT.ScalarSemidirect
 import InverseGalois.CFT.Scholz.AbelianInertia
@@ -3461,4 +3463,18 @@ it that are available here.
   inflated**, because correcting by that coboundary makes the cocycle trivial on the kernel and
   hence constant on its cosets.  In degree two the same reading gives **every class represented at
   a level is inflated from it.**
+* `InverseGalois.CFT.Profinite.Quotient` names a *level*: an open normal subgroup which acts
+  trivially on the coefficients.  The quotient by it acts, and is discrete, and the projection to it
+  has open kernel, so composing with the projection is **inflation from that level**, injective in
+  degree one and hitting every class represented there in either degree.  The levels are cofinal for
+  a trivial reason: smoothness of a cochain is constancy on the cosets of an open normal subgroup
+  and smoothness of the action is triviality on one, and the intersection of the two is again open
+  and normal, so **every class of either degree is represented at a level.**
+* `InverseGalois.CFT.Profinite.Krull` reads that dictionary on the Galois group of an arbitrary
+  Galois extension, whose topology has the subgroups fixing a finite Galois intermediate field for a
+  basis at the identity.  Such a subgroup is the kernel of restriction to that field, hence open and
+  normal, and restriction is surjective, so **restriction to a finite Galois level is inflation**;
+  conversely an open subgroup is a neighbourhood of the identity and so contains one of them, which
+  makes the finite Galois levels cofinal and gives **every class of the first or second cohomology
+  of an infinite Galois group a representative at a finite Galois level.**
 -/
