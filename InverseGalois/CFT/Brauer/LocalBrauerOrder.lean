@@ -6,6 +6,7 @@ import Mathlib
 import InverseGalois.CFT.Brauer.AdicUnramified
 import InverseGalois.CFT.Brauer.UnramifiedRelative
 import InverseGalois.CFT.Local.AdicHerbrand
+import InverseGalois.CFT.Local.CyclicNormIndex
 import InverseGalois.CFT.Local.NormValued
 
 /-!
@@ -21,11 +22,19 @@ is the integers modulo the degree.
 So every Brauer class over a local field lies in a relative Brauer group of exactly the order of
 the degree of the extension: the local invariant map has a source of the expected size.
 
+Unramifiedness is in fact not needed for the count.  The relative Brauer group of any cyclic
+extension is the units of the base field modulo the norms, and the norm index of a cyclic extension
+of a local field is the degree whatever the ramification is, so the relative Brauer group of an
+arbitrary cyclic extension of a local field already has the order of the degree.
+
 ## Main results
 
 * `InverseGalois.CFT.card_relative_eq_finrank_of_spectralNorm`: **the relative Brauer group of an
   unramified cyclic extension of a complete, discretely valued, locally compact field has the order
   of the degree.**
+* `InverseGalois.CFT.card_relative_eq_finrank_local`: **the relative Brauer group of an arbitrary
+  cyclic extension of such a field has the order of the degree**, with no condition on the
+  ramification.
 * `InverseGalois.CFT.exists_cyclic_relative_card_eq_finrank`: **every Brauer class over such a field
   lies in a relative Brauer group of the order of the degree.**
 * `InverseGalois.CFT.exists_cyclic_relative_card_eq_finrank_adicCompletion`: the same for the
@@ -66,6 +75,19 @@ theorem card_relative_eq_finrank_of_spectralNorm [IsGalois K L] [IsCyclic (L ≃
   letI := instV
   haveI := instC
   exact card_relative_eq_finrank_of_unramified hv hres' hgr hur hm hσ₀
+
+/-! ### An arbitrary cyclic extension -/
+
+/-- **The relative Brauer group of a cyclic extension of a complete, discretely valued, locally
+compact field has the order of the degree**, with no condition on the ramification.  The relative
+Brauer group of a cyclic extension is the units of the base field modulo the norms, and the norm
+index of a cyclic extension of a local field is the degree. -/
+theorem card_relative_eq_finrank_local [IsGalois K L] [IsCyclic (L ≃ₐ[K] L)]
+    (hres : HasResidueChar K p e) :
+    Nat.card ↥(BrauerGroup.relative K L) = finrank K L := by
+  obtain ⟨σ₀, hσ₀⟩ := IsCyclic.exists_generator (α := L ≃ₐ[K] L)
+  rw [← Nat.card_congr (cyclicBrauerEquiv hσ₀).toEquiv, ← Subgroup.index_eq_card,
+    index_normSubgroup_eq_finrank_local K L hres]
 
 /-! ### Every Brauer class -/
 
