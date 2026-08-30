@@ -3957,8 +3957,8 @@ extensions (`Mathlib/GroupTheory/GroupExtension/` has only a docstring TODO).
 | # | Missing piece | Notes |
 | --- | --- | --- |
 | 1 | ~~`H^i(G_k, A)` for finite discrete `A`, as a filtered colimit `colim_M H^i(Gal(M/k), A)` over finite Galois `M ⊇ K`, with localization maps and `Ш^i`~~ | **DONE** — `InverseGalois/CFT/Profinite/`: `SmoothH1`/`SmoothH2` with `galInflH1`/`galInflH2`, `resH1`/`resH2`, and `sha1`/`sha2` (see §0.37) |
-| 2 | ~~`Ш¹(k, A) ↪ H¹(Gal(K\|k), A)` from the Hasse principle, and its dual~~ | **DONE** — `CFT/Units/HasseInflation.lean`: `exists_galInflH1_eq_of_forall_level` and `exists_galInflH1_eq_of_forall_level_outside`.  What is *not* done is the glue turning membership in `sha1` into the `levelDecompositionSet` hypothesis; that needs genuine decomposition subgroups of `G_k` (see §0.37) |
-| 3 | ~~Finiteness of `Ш²(k, E)` via ABHN + Hochschild–Serre~~ | **DONE** — `CFT/Units/HasseTwo.lean`: `eq_one_of_forall_isLocallySplitLevel`, the vanishing of the everywhere locally trivial classes of `H²` with `μ_n` coefficients, valid at `p = 2` (see §0.38).  Same glue caveat as row 2 |
+| 2 | ~~`Ш¹(k, A) ↪ H¹(Gal(K\|k), A)` from the Hasse principle, and its dual~~ | **DONE** — `CFT/Units/HasseInflation.lean`: `exists_galInflH1_eq_of_forall_level` and `exists_galInflH1_eq_of_forall_level_outside`, and — with the glue of §0.40 — `CFT/Units/HasseDecomposition.lean`: `exists_galInflH1_eq_of_finiteDecomposition(Outside)`, stated at the genuine decomposition subgroups of `G_k` |
+| 3 | ~~Finiteness of `Ш²(k, E)` via ABHN + Hochschild–Serre~~ | **DONE** — `CFT/Units/HasseTwo.lean`: `eq_one_of_forall_isLocallySplitLevel`, the vanishing of the everywhere locally trivial classes of `H²` with `μ_n` coefficients, valid at `p = 2` (see §0.38).  The degree-one glue is §0.40; the degree-two analogue of `HasseDecomposition` is not yet written, but its input `exists_stabilizer_prime_restrictNormalHom_eq` is |
 | 4 | ~~Local Tate duality for finite modules over a local field~~ | **DONE in the shape that is consumed** — `CFT/Local/CyclicNormIndex.lean` (the norm index of *any* cyclic extension of a local field is its degree) and `CFT/Local/KummerNonNorm.lean` (nondegeneracy of the `q`-th power norm residue symbol), see §0.39.  What is left of the row is `inv_M ∘ res = [M:K] · inv_K` |
 | 5 | **Global duality `Ш²(k, A) ≅ Ш¹(k, A′)^∨`** | wall #1: the sole missing input of SW's Claim, hence of step 2 |
 | 6 | The `p`-th power Hilbert symbol over a number field and its product formula | the repo has the *quadratic* symbol over `ℚ` (`CFT/Global/Hilbert*.lean`); the *local* nondegeneracy of the `p`-th power symbol is §0.39(b) |
@@ -4204,6 +4204,82 @@ has `localInvariant_baseChange` (`Brauer/LocalInvariantRestrict.lean`) only for 
 `ramification_mul_finrank_divisionResidue`, all of which are already in the tree.  That is a
 self-contained chunk and it is what would upgrade `card_relative_le_finrank_local` of §0.38(a) to
 an equality, i.e. to local reciprocity.
+
+---
+
+## 0.40 Status (2026-08-30, later still) — the glue is closed: genuine decomposition subgroups of `G_k`
+
+The "one shared glue lemma" that §0.36 rows 2 and 3 and §0.37(a) both deferred is now a theorem.
+
+### (a) The obstruction, restated
+
+`sha1`/`sha2` (`CFT/Profinite/Res.lean`) are stated for an abstract family `S : Set (Subgroup G)`,
+while `HasseLevel`/`HasseInflation` quantify over `levelDecompositionSet L` — the automorphisms
+whose *restriction to a finite level* fixes a place *of that level*.  A local-global principle
+produces the first shape, not the second.  Matching them needs genuine decomposition subgroups of
+`G_k` itself, i.e. primes of the ring of integers of the (infinite) top field and transitivity of
+the Galois action on them.
+
+### (b) `CFT/Units/InfiniteDecomposition.lean`
+
+`NumberField.RingOfIntegers K = integralClosure ℤ K` is defined for *any* field, with no
+`NumberField` hypothesis, and Mathlib already supplies the whole `𝓞`-functoriality package for
+infinite extensions (`inst_ringOfIntegersAlgebra`, `inst_isScalarTower`,
+`extension_algebra_isIntegral`, `ker_algebraMap_eq_bot`, and the `MulSemiringAction G (𝓞 K)`
+instance).  So the primes are there; what has to be proven is transitivity.
+
+* `under_smul_ringOfIntegers` — the prime of a subfield below a moved prime is the moved prime
+  below, for raw ideals and with no finiteness anywhere (the `HeightOneSpectrum` version in
+  `Units/PlaceRestrict.lean` needs `NumberField K`).
+* `isInvariant_ringOfIntegers_of_isGalois` — `Algebra.IsInvariant (𝓞 F) (𝓞 K) Gal(K/F)` for an
+  *arbitrary* Galois `K/F`, via `InfiniteGalois.mem_range_algebraMap_iff_fixed` (Mathlib's
+  `Algebra.isInvariant_of_isGalois` wants `FiniteDimensional`).
+* `smulCommClass_ringOfIntegers`, `continuousSMul_ringOfIntegers` — the two side conditions; the
+  second is `continuousSMul_iff_stabilizer_isOpen` plus `stabilizer_isOpen_of_isIntegral`, i.e. the
+  Krull topology.
+* `exists_smul_eq_of_under_eq_ringOfIntegers` — **the Galois group of an arbitrary Galois extension
+  acts transitively on the primes of its integers above a prime of the base.**  This is Mathlib's
+  `Algebra.IsInvariant.exists_smul_of_under_eq_of_profinite` (`RingTheory/Invariant/Profinite.lean`),
+  which does the whole compactness / inverse-limit argument; the work here was assembling its five
+  hypotheses for `𝓞 K` with the discrete topology.
+* `exists_stabilizer_prime_restrictNormalHom_eq` — **an automorphism of a level fixing a place
+  there is the restriction of an automorphism fixing a prime above**: lift by
+  `restrictNormalHom_surjective_level`, then correct by an element of `Gal(K/L)` using
+  transitivity.  This is the actual glue.
+* `finiteDecompositionSubgroups k K` and `finiteDecompositionSubgroupsOutside k K S` — the
+  stabilisers of the nonzero primes of `𝓞 K` (with the place below avoiding `S`).  `P ≠ ⊥` is part
+  of the definition on purpose: `stabilizer ⊥ = ⊤`, so admitting `⊥` would wrongly strengthen the
+  `sha1` hypothesis.
+* `eq_one_of_finiteDecomposition`, `eq_one_of_finiteDecompositionOutside` — **a homomorphism into a
+  commutative group killing a level and every decomposition subgroup is trivial.**
+* `eq_one_of_mem_sha1`, `eq_one_of_mem_sha1_outside` — **`Ш¹(G_k, M) = 0` for trivial coefficients,
+  with `Ш¹` taken over the genuine decomposition subgroups**, the class being reduced to a level by
+  `exists_isGalois_smooth₁` and the cocycle to a homomorphism by `Profinite/Trivial.lean`.
+
+### (c) `CFT/Units/HasseDecomposition.lean`
+
+The bridge to the consumer.  `HasseInflation`'s `exists_galInflH1_eq_of_forall_level_outside` works
+relative to the base `↥F` (the finite Galois level trivialising the coefficients), with
+`L : IntermediateField ↥F K`; and `ρ • P = P` for `ρ : K ≃ₐ[↥F] K` says exactly that
+`ρ ∈ stabilizer Gal(K/↥F) P`.  So the decomposition-subgroup hypothesis is fed straight in:
+
+* `eq_one_of_finiteDecompositionOutside_over`, and
+* `exists_galInflH1_eq_of_finiteDecomposition` /
+  `exists_galInflH1_eq_of_finiteDecompositionOutside` — **a class dying on the stabiliser of every
+  nonzero prime of `𝓞 K` is inflated from the field trivialising its coefficients**, with no level
+  left in the hypothesis.
+
+### (d) The table, updated again
+
+Rows 1, 2, 3 are now laid **without** the glue caveat, and row 4 is laid in the shape consumed.
+The remaining bricks are unchanged: row 4's leftover `inv_M ∘ res = [M:K]·inv_K`, row 6 (the `p`-th
+power Hilbert symbol over a number field and its product formula), row 8, row 9 — and the two
+walls, row 5 (**Poitou–Tate global duality**, `Ш²(k,A) ≅ Ш¹(k,A′)^∨`) and row 7 (**Chebotarev
+density over a number field**).
+
+Phase 1 is the finite places only; `levelDecompositionSetOutside` never mentions the archimedean
+ones, so nothing was lost.  Archimedean decomposition subgroups of `G_k` would be a separate
+construction and are not needed by anything downstream.
 
 ---
 

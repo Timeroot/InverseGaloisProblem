@@ -562,7 +562,9 @@ import InverseGalois.CFT.Units.Decomposition
 import InverseGalois.CFT.Units.DecompositionOutside
 import InverseGalois.CFT.Units.HasseHom
 import InverseGalois.CFT.Units.HasseLevel
+import InverseGalois.CFT.Units.InfiniteDecomposition
 import InverseGalois.CFT.Units.HasseInflation
+import InverseGalois.CFT.Units.HasseDecomposition
 import InverseGalois.CFT.Units.HasseTwo
 import InverseGalois.CFT.Units.EquivariantLabel
 import InverseGalois.CFT.Units.FirstInequality
@@ -2284,6 +2286,15 @@ it that are available here.
   the decomposition groups; so **a homomorphism killing a level and every automorphism local at a
   place of that level is trivial**, and for coefficients acted on trivially this is the vanishing of
   the everywhere locally trivial classes of the first cohomology.
+* `InverseGalois.CFT.Units.InfiniteDecomposition` supplies the places that an infinite extension
+  lacks.  Its ring of integers still has nonzero primes, it is the ring of invariants of the ring of
+  integers of the base, the action is continuous for the discrete topology because the stabiliser of
+  an integer is open, and the Galois group is profinite; so **the Galois group of an arbitrary
+  Galois extension acts transitively on the primes of its integers above a prime of the base**, and
+  an automorphism of a level fixing a place there is the restriction of an automorphism fixing a
+  prime above.  Hence **a homomorphism killing a level and the stabiliser of every nonzero prime is
+  trivial**, and with trivial coefficients **a class dying on every decomposition subgroup
+  vanishes** — which is the local condition in the shape a local-global principle states it.
 * `InverseGalois.CFT.Units.HasseInflation` spends that on a class of the first cohomology of an
   infinite Galois group whose coefficients are acted on through a finite Galois level.  Restriction
   of scalars identifies the subgroup fixing that level with the Galois group of the big field over
@@ -2292,6 +2303,10 @@ it that are available here.
   vanish, and vanishing on the subgroup fixing a level is exactly the condition for a class to come
   from that level.  So **an everywhere locally trivial class is inflated from the field
   trivialising its coefficients.**
+* `InverseGalois.CFT.Units.HasseDecomposition` restates that with the local conditions taken at the
+  decomposition subgroups rather than at the places of a level: **a class dying on the stabiliser of
+  every nonzero prime of the ring of integers of the top field is inflated from the field
+  trivialising its coefficients**, with no level left in the hypothesis.
 * `InverseGalois.CFT.Units.HasseTwo` does the same one degree up, with the roots of unity of the
   base field for coefficients.  A class of the second cohomology of the absolute Galois group is
   represented by a two-cocycle inflated from a finite Galois level, and there its values are units
