@@ -27,6 +27,8 @@ identifies with the degree `[M : S]` because the residue field does not grow the
 
 * `InverseGalois.CFT.unitVal_of_isNormUniformizer`: the valuation of a uniformizer generates the
   value group.
+* `InverseGalois.CFT.exists_unitValDiv_ratio`: the normalised valuation of the extension restricts
+  to a multiple of the normalised valuation of the base field.
 * `InverseGalois.CFT.localInvariantHom_baseChange`: **the invariant of a Brauer class is multiplied
   by the degree under base change to a finite extension of local fields.**
 
@@ -63,6 +65,25 @@ theorem unitVal_eq_zero_iff (u : Aˣ) : unitVal (Additive.ofMul u) = 0 ↔ ‖(u
   rw [norm_eq_one_iff_valued_eq_one]
   exact ⟨fun h => mem_ker_unitVal.1 (AddMonoidHom.mem_ker.2 h),
     fun h => AddMonoidHom.mem_ker.1 (mem_ker_unitVal.2 h)⟩
+
+/-- A unit has negative valuation exactly when it has absolute value less than one. -/
+theorem unitVal_lt_zero_iff (u : Aˣ) : unitVal (Additive.ofMul u) < 0 ↔ ‖(u : A)‖ < 1 := by
+  rw [Valued.toNormedField.norm_lt_one_iff, valued_eq_exp_unitVal u, ← WithZero.exp_zero,
+    WithZero.exp_lt_exp]
+
+/-- A unit has positive valuation exactly when it has absolute value greater than one. -/
+theorem zero_lt_unitVal_iff (u : Aˣ) : 0 < unitVal (Additive.ofMul u) ↔ 1 < ‖(u : A)‖ := by
+  rw [Valued.toNormedField.one_lt_norm_iff, valued_eq_exp_unitVal u, ← WithZero.exp_zero,
+    WithZero.exp_lt_exp]
+
+omit [Valued A ℤᵐ⁰] [Valuation.RankOne (Valued.v : Valuation A ℤᵐ⁰)] in
+/-- An additive homomorphism out of the units, evaluated on a unit divided by a power of another
+unit. -/
+theorem addHom_ofMul_mul_zpow (φ : Additive Aˣ →+ ℤ) (a b : Aˣ) (k : ℤ) :
+    φ (Additive.ofMul (a * b ^ (-k))) = φ (Additive.ofMul a) - k * φ (Additive.ofMul b) := by
+  rw [ofMul_mul, ofMul_zpow, map_add, map_zsmul]
+  simp only [zsmul_eq_mul, Int.cast_neg, Int.cast_id]
+  ring
 
 /-- **The valuation of a uniformizer is the generator of the value group**, up to sign: it is
 negative, it is a multiple of the generator, and no unit valuation lies strictly between it and
@@ -126,6 +147,101 @@ theorem isNormUniformizer_of_isDivisionUniformizer (hnl : ∀ y : L, ‖y‖ = d
 
 end Division
 
+/-! ### The ratio of the two normalised valuations -/
+
+section Ratio
+
+variable {K M : Type} [Field K] [Valued K ℤᵐ⁰]
+  [Valuation.RankOne (Valued.v : Valuation K ℤᵐ⁰)]
+variable [Field M] [Valued M ℤᵐ⁰] [Valuation.RankOne (Valued.v : Valuation M ℤᵐ⁰)]
+variable [Algebra K M] {mK mM : ℤ}
+
+/-- **The normalised valuation of an extension restricts to a multiple of the normalised valuation
+of the base field.**  The absolute values agree, so a unit of absolute value one downstairs has
+absolute value one upstairs, and the two normalised valuations therefore differ by the factor by
+which the generator of the value group grows.  That factor is not negative as soon as the two
+generators are chosen with the same sign. -/
+theorem exists_unitValDiv_ratio (hnorm : ∀ x : K, ‖algebraMap K M x‖ = ‖x‖)
+    (hmK : IsUnitValGen K mK) (hmM : IsUnitValGen M mM) (hsign : 0 < mK * mM) :
+    ∃ r : ℕ, ∀ a : Kˣ,
+      unitValDiv hmM (Additive.ofMul (Units.map (algebraMap K M).toMonoidHom a))
+        = (r : ℤ) * unitValDiv hmK (Additive.ofMul a) := by
+  have hnf : ∀ a : Kˣ,
+      ‖(((Units.map (algebraMap K M).toMonoidHom a : Mˣ)) : M)‖ = ‖((a : K))‖ := by
+    intro a
+    rw [Units.coe_map]
+    exact hnorm _
+  have hmapz : ∀ (a b : Kˣ) (k : ℤ),
+      Units.map (algebraMap K M).toMonoidHom (a * b ^ (-k))
+        = Units.map (algebraMap K M).toMonoidHom a
+          * (Units.map (algebraMap K M).toMonoidHom b) ^ (-k) := by
+    intro a b k
+    rw [map_mul, map_zpow]
+  -- a unit of the base field whose normalised valuation is one
+  obtain ⟨a₀, ha₀⟩ : ∃ a : Kˣ, unitValDiv hmK (Additive.ofMul a) = 1 := by
+    obtain ⟨y, hy⟩ := unitValDiv_surjective hmK 1
+    exact ⟨Additive.toMul y, hy⟩
+  obtain ⟨r₀, hr₀⟩ : ∃ z : ℤ,
+      unitValDiv hmM (Additive.ofMul (Units.map (algebraMap K M).toMonoidHom a₀)) = z := ⟨_, rfl⟩
+  -- the two normalised valuations are proportional
+  have hkey : ∀ a : Kˣ,
+      unitValDiv hmM (Additive.ofMul (Units.map (algebraMap K M).toMonoidHom a))
+        = r₀ * unitValDiv hmK (Additive.ofMul a) := by
+    intro a
+    obtain ⟨k, hk⟩ : ∃ k : ℤ, unitValDiv hmK (Additive.ofMul a) = k := ⟨_, rfl⟩
+    have hzero : unitValDiv hmK (Additive.ofMul (a * a₀ ^ (-k))) = 0 := by
+      rw [addHom_ofMul_mul_zpow, hk, ha₀]
+      ring
+    have hK1 : unitVal (Additive.ofMul (a * a₀ ^ (-k))) = 0 := by
+      rw [unitVal_eq_mul_unitValDiv hmK, hzero, mul_zero]
+    have hM1 : unitVal (Additive.ofMul
+        (Units.map (algebraMap K M).toMonoidHom (a * a₀ ^ (-k)))) = 0 := by
+      rw [unitVal_eq_zero_iff, hnf]
+      exact (unitVal_eq_zero_iff _).1 hK1
+    have hM2 : unitValDiv hmM (Additive.ofMul
+        (Units.map (algebraMap K M).toMonoidHom (a * a₀ ^ (-k)))) = 0 := by
+      rw [unitValDiv_apply, hM1, Int.zero_ediv]
+    rw [hmapz, addHom_ofMul_mul_zpow, hr₀] at hM2
+    rw [hk]
+    linear_combination hM2
+  -- the ratio is not negative
+  have hnn : 0 ≤ r₀ := by
+    have hK : unitVal (Additive.ofMul a₀) = mK := by
+      rw [unitVal_eq_mul_unitValDiv hmK, ha₀, mul_one]
+    have hM : unitVal (Additive.ofMul (Units.map (algebraMap K M).toMonoidHom a₀)) = mM * r₀ := by
+      rw [unitVal_eq_mul_unitValDiv hmM, hr₀]
+    rcases lt_trichotomy mK 0 with h | h | h
+    · have hMneg : mM < 0 := by
+        by_contra hc
+        push_neg at hc
+        nlinarith [mul_nonneg (neg_nonneg.2 h.le) hc]
+      have h1 : ‖((a₀ : K))‖ < 1 := by
+        rw [← unitVal_lt_zero_iff, hK]
+        exact h
+      have h2 : unitVal (Additive.ofMul (Units.map (algebraMap K M).toMonoidHom a₀)) < 0 := by
+        rw [unitVal_lt_zero_iff, hnf]
+        exact h1
+      rw [hM] at h2
+      nlinarith
+    · exact absurd h hmK.ne_zero
+    · have hMpos : 0 < mM := by
+        by_contra hc
+        push_neg at hc
+        nlinarith [mul_nonneg h.le (neg_nonneg.2 hc)]
+      have h1 : 1 < ‖((a₀ : K))‖ := by
+        rw [← zero_lt_unitVal_iff, hK]
+        exact h
+      have h2 : 0 < unitVal (Additive.ofMul (Units.map (algebraMap K M).toMonoidHom a₀)) := by
+        rw [zero_lt_unitVal_iff, hnf]
+        exact h1
+      rw [hM] at h2
+      nlinarith
+  refine ⟨r₀.toNat, fun a => ?_⟩
+  rw [Int.toNat_of_nonneg hnn]
+  exact hkey a
+
+end Ratio
+
 /-! ### The invariant map under an arbitrary base change -/
 
 section BaseChange
@@ -141,7 +257,7 @@ extension of local fields.**  The extension is factored through its maximal unra
 subextension; the unramified part multiplies the invariant by its degree, the remaining part
 multiplies it by the ratio of the two normalised valuations, and the fundamental identity says that
 this ratio is the degree of the remaining part because the residue field does not grow there. -/
-theorem localInvariantHom_baseChange (hnorm : ∀ x : K, ‖algebraMap K M x‖ = ‖x‖)
+theorem localInvariantHom_baseChange_of_ratio (hnorm : ∀ x : K, ‖algebraMap K M x‖ = ‖x‖)
     (hmK : IsUnitValGen K mK) (hmM : IsUnitValGen M mM) {r : ℕ}
     (hval : ∀ a : Kˣ,
       unitValDiv hmM (Additive.ofMul (Units.map (algebraMap K M).toMonoidHom a))
@@ -266,6 +382,18 @@ theorem localInvariantHom_baseChange (hnorm : ∀ x : K, ‖algebraMap K M x‖ 
     rw [← MonoidHom.comp_apply, BrauerGroup.baseChangeHom_comp K S M]
   rw [htrans] at hC
   rw [hC, hD, ← pow_mul, hrank]
+
+/-- **The invariant of a Brauer class is multiplied by the degree under base change to a finite
+extension of local fields.**  The two normalised valuations are proportional, and once the two
+generators of the value groups are chosen with the same sign the factor is a natural number, so the
+factorisation through the maximal unramified subextension applies. -/
+theorem localInvariantHom_baseChange (hnorm : ∀ x : K, ‖algebraMap K M x‖ = ‖x‖)
+    (hmK : IsUnitValGen K mK) (hmM : IsUnitValGen M mM) (hsign : 0 < mK * mM)
+    (x : BrauerGroup.{0, 0} K) :
+    localInvariantHom M hmM (BrauerGroup.baseChangeHom M x)
+      = localInvariantHom K hmK x ^ finrank K M := by
+  obtain ⟨r, hr⟩ := exists_unitValDiv_ratio hnorm hmK hmM hsign
+  exact localInvariantHom_baseChange_of_ratio hnorm hmK hmM hr x
 
 end BaseChange
 

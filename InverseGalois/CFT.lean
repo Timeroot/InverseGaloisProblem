@@ -59,6 +59,7 @@ import InverseGalois.CFT.Brauer.LocalBrauerBound
 import InverseGalois.CFT.Brauer.LocalBrauerOrder
 import InverseGalois.CFT.Brauer.LocalInvariant
 import InverseGalois.CFT.Brauer.LocalInvariantRestrict
+import InverseGalois.CFT.Brauer.LocalReciprocity
 import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
 import InverseGalois.CFT.Brauer.Opposite
