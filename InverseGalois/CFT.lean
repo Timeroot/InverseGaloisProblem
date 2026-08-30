@@ -587,6 +587,7 @@ import InverseGalois.CFT.Units.PowIdele
 import InverseGalois.CFT.Units.PowSIdeleClass
 import InverseGalois.CFT.Units.PowSIdeleNorm
 import InverseGalois.CFT.Units.PrimeAbove
+import InverseGalois.CFT.Units.RatFundamentalClass
 import InverseGalois.CFT.Units.RatSumSquares
 import InverseGalois.CFT.Units.SIdeleClass
 import InverseGalois.CFT.Units.SIdeleHerbrand
