@@ -133,6 +133,7 @@ import InverseGalois.CFT.GroupCohomology.H2Sylow
 import InverseGalois.CFT.GroupCohomology.H2Transport
 import InverseGalois.CFT.GroupCohomology.IndexTwo
 import InverseGalois.CFT.GroupCohomology.InfResTwo
+import InverseGalois.CFT.GroupCohomology.InfResTwoInjective
 import InverseGalois.CFT.GroupCohomology.Inflation
 import InverseGalois.CFT.GroupCohomology.InflationRestriction
 import InverseGalois.CFT.GroupCohomology.MapCoboundary
@@ -2511,6 +2512,12 @@ it that are available here.
   one map lies in the image of another has at most as many elements as the product**, so the second
   cohomology of a group is bounded by the second cohomology of the quotient times the second
   cohomology of the subgroup.
+* `InverseGalois.CFT.GroupCohomology.InfResTwoInjective` is the other end of the same sequence, in
+  the same language: **inflation in degree two is injective** once the first cohomology of the
+  subgroup vanishes, because a cochain trivialising an inflated cocycle can be taken constant on
+  cosets and fixed by the subgroup, and such a cochain descends to the quotient.  So an inflated
+  class has exactly the order of the class it is inflated from, which is how a lower bound for the
+  second cohomology of a quotient is carried upwards.
 * `InverseGalois.CFT.Units.IdeleClassComap` puts the idele classes of a subfield inside the idele
   classes of a Galois extension.  The map is injective because a unit fixed by the whole Galois
   group is a unit of the subfield, and its image is exactly the part fixed by the Galois group over
