@@ -3772,9 +3772,11 @@ multiplied by the ratio of the two valuations).
 
 ---
 
-## 0.36 Status (2026-08-30) — the class formation is **done**, §2 of Schmidt–Wingberg is **done**, and the Poitou–Tate step of §5 can be *removed*
+## 0.36 Status (2026-08-30) — the class formation is **done**, §2 of Schmidt–Wingberg is **done**, and the two remaining walls are *global duality* and *Chebotarev*
 
-Three things happened since §0.35, and one of them supersedes a conclusion recorded in §0.29.
+Three things happened since §0.35.  A fourth, an attempt to remove Poitou–Tate from step 2, was
+tried and **refuted**; the refutation is in (c) and is worth keeping, because the argument is
+seductive.
 
 ### (a) The class formation over `ℚ` is unconditional; `GlobalTate.lean` has landed
 
@@ -3820,10 +3822,12 @@ Hoechsmann's criterion ([3] Satz 1.1 in SW) is *also* already there, at finite l
 (`CFT/GroupCohomology/Pullback.lean`), together with the whole `H²`-classifies-extensions
 dictionary (`Classification.lean`, `OfCocycle.lean`, `ToCocycle.lean`, `ExtensionMap.lean`).
 
-### (c) The correction to §0.29(iii): **Poitou–Tate is not needed for step 2 of SW Theorem 15**
+### (c) §0.29(iii) stands: **Poitou–Tate *is* needed for step 2 of SW Theorem 15**
 
-§0.29(iii) recorded "the Claim really is Poitou–Tate; there is no cheaper reformulation hiding in
-it".  That is wrong, and the reason is worth writing down.
+An earlier revision of this section claimed the Claim could be bypassed by running the
+Chevalley–Warning count directly against `Ш²(k, E(n,τ))`.  That is **wrong**; §0.29(iii)
+("the Claim really is Poitou–Tate; there is no cheaper reformulation hiding in it") was right.
+The refutation is worth recording, because the tempting argument looks correct from a distance.
 
 SW's step 2 needs to kill an obstruction class living in `Ш²(k, E(n,τ))`.  Their Claim produces a
 commutative square with **surjective** horizontals
@@ -3834,35 +3838,79 @@ commutative square with **surjective** horizontals
 Ĥ^{-2}(G, E(n,τ)(-1))  ↠  Ш²(k, E(n,τ))
 ```
 
-so that Prop 6 (applied to the *left* column, a Tate cohomology group of the finite group `G`) can
-be used to shrink.  Getting the horizontals costs Tate–Poitou duality
+so that Prop 6 (applied to the *left* column, a Tate cohomology group of the **finite** group `G`)
+can be used to shrink.  Getting the horizontals costs Tate–Poitou duality
 `Ш²(k,E) ≅ Ш¹(k,E′)^∨`, the Hasse principle, and "the dual of cohomology is homology".
 
-But Prop 6 is *only* a Chevalley–Warning count, and the count needs exactly two things:
+The tempting shortcut: `Ш²(k, −)` is an `𝔽_p`-linear subfunctor of `H²(G_k, −)` and
+`θ_a : E(m,τ) → E(n,τ)` is homogeneous of degree `j` in `a`, so why not apply the count with
+`Ш²(k, E(n,τ))` itself as the target?
 
-1. the **target** is a finite-dimensional `𝔽_p`-vector space whose dimension does not depend on the
-   large rank `m`;
-2. the map induced by `a ∈ 𝔽_p^r` depends on `a` **polynomially, of bounded degree**.
+**Why it fails.**  The homogeneity of `θ_a` in `a` is *not* a statement about the map `θ_a`; it is
+a statement about its pullback along the fixed surjection `θ_τ(m) : (P_m/P_m²)^{⊗j} ↠ E(m,τ)` of
+Prop 5:
 
-Both hold with the target taken to be `Ш²(k, E(n,τ))` *itself*:
+```
+φ_a^{⊗j} = Σ_{i₁…i_j} a_{i₁}···a_{i_j} · (proj_{i₁} ⊗ ⋯ ⊗ proj_{i_j}),
+θ_a ∘ θ_τ(m) = θ_τ(n) ∘ φ_a^{⊗j}.
+```
 
-* `θ_a : E(m,τ) → E(n,τ)` is homogeneous of degree `j` in `a`, because
-  `φ_a^{⊗j} = Σ_{i₁…i_j} a_{i₁}···a_{i_j} · (proj_{i₁} ⊗ ⋯ ⊗ proj_{i_j})` and
-  `θ_τ(n) ∘ φ_a^{⊗j} = θ_a ∘ θ_τ(m)` with `θ_τ(m)` a *fixed* surjection (Prop 5);
-* `Ш²(k, −)` is an `𝔽_p`-linear subfunctor of `H²(G_k, −)`, so each coordinate of
-  `a ↦ Ш²(k, θ_a)(x)` is a degree-`j` polynomial in `a`;
-* `Ш²(k, E)` is **finite**, and its dimension depends only on `n`: local triviality restricts to
-  `K`; `E` is a trivial `G_K`-module `≅ (ℤ/p)^d`; `Ш²(K, ℤ/p) ≅ Ш²(K, μ_p) ≅ Ш(Br K)[p] = 0` by
-  Albert–Brauer–Hasse–Noether (needs `μ_p ⊆ K`, Hilbert 90, `H¹(G, C_K) = 0` — all present);
-  hence by Hochschild–Serre `Ш²(k, E) ⊆ inf H²(Gal(K/k), E)`, a finite group.
+The individual monomial maps `proj_{i₁} ⊗ ⋯ ⊗ proj_{i_j}` do **not** descend to `E(m,τ)` — only
+their `a`-weighted sum does — so there is no decomposition `θ_a = Σ_μ a^μ c_μ` with `c_μ` maps of
+`G`-modules, and hence no way to make `Ш²(k, θ_a)` polynomial in `a` at the level of `Ш²`.
+Polynomiality is only visible on *elements* of `E(m,τ)` lying in the image of pure tensors.  Every
+correct application of the count therefore has the shape
 
-So a **"Proposition 6′"** — shrinking for *any* `𝔽_p`-linear functor with finite-dimensional
-target — replaces Prop 6 *and* the Claim, needing only `r > j · t · dim_{𝔽_p} Ш²(k, E(n,τ))`.
-This removes Tate–Poitou from step 2 entirely.
+> represent the class to be killed by **boundedly many elements of `E(m,τ)`**, kill those, conclude
 
-Two caveats, established by re-reading the paper line by line:
+— and "boundedly" means *independently of `m`*, since `m = r·n` is chosen only after the count
+demands `r > d · t · dim W`.  This is exactly what the repo's counting core
+`Shafarevich.exists_ne_zero_forall_apply_eq_zero` (`Shafarevich/LayerTensor.lean`) already
+formalizes: it takes a spanning family `u` of the **source** with `Φ a (u ω) = (monomial) • u' ω`.
 
-* **Step 4 still needs duality.**  SW Theorem 13 (the existence of algebraic numbers with
+For `Ĥ^k(G, −)` with `G = Gal(K|k)` finite and fixed, a class is represented by a cochain with
+`|G|^k` values: bounded, so the count applies (that is Prop 6, and it is how step 1 works).  For
+`Ш²(k, −) ⊆ H²(G_k, −)`, a class is represented by a cocycle on `Gal(M|k)` for some finite `M`
+containing the field cut out by the extension in question — and that field grows with `m`.  The
+requirement is circular, and the shortcut collapses.
+
+One might hope to escape by *inflating*: is `Ш²(k, E) ⊆ inf H²(Gal(K|k), E)`?  Local triviality
+does restrict to `K`, and `Ш²(K, E) = 0` for a `G_K`-trivial `E` (see (d)), so
+`Ш²(k,E) ⊆ ker(res : H²(G_k,E) → H²(G_K,E)) = F¹H²`.  But Hochschild–Serre only gives
+`F¹/F² ↪ H¹(G, H¹(G_K, E))` with `F² = inf H²(G, E)`, and `H¹(G_K, E) = Hom(G_K, E)` is enormous.
+Cutting `F¹` down to `F²` is precisely the content of the duality theorem; there is no free lunch.
+
+### (d) What of (c) survives, and where the duality actually enters
+
+Three of the four ingredients of the Claim are duality-free and (almost) already in the repo:
+
+* **Hasse principle ⇒ `Ш¹(k, E′) ↪ H¹(Gal(K|k), E′)`.**  A class of `Ш¹(k, E′)` restricts into
+  `Ш¹(K, E′)`, which is `0` because a solvable extension in which every place splits completely is
+  trivial — `CFT/Units/SplitNorm.lean`, `subsingleton_gal_of_isSolvable_of_free`.  In degree one
+  inflation–restriction is exact on the left, so `Ш¹(k, E′) ⊆ inf H¹(G, E′)`.  (Note the contrast
+  with degree two above: this is *why* SW dualize into degree one.)
+* **Dualizing.**  `H¹(G, E′)^∨ ↠ Ш¹(k, E′)^∨`, and `H¹(G, E′)^∨ ≅ Ĥ^{-2}(G, E′^∨)` — the repo has
+  `h1DualEquiv` (`CFT/GroupCohomology/Duality.lean`) and `h1TwistEquiv`,
+  `exists_h1Twist_surjective` (`CFT/GroupCohomology/TateTwist.lean`).
+* **Prop 6 / Prop 7** on the resulting finite-group Tate cohomology: done
+  (`Shafarevich/GenericCohomology.lean`, `Shafarevich/GenericHomology.lean`).
+
+The **single** genuinely missing input is the global duality isomorphism
+
+```
+Ш²(k, A) ≅ Ш¹(k, A′)^∨,   A′ = Hom(A, μ_∞)
+```
+
+i.e. Poitou–Tate.  That, not a generalized Chevalley–Warning, is the wall in step 2.
+
+The finiteness observation from the discarded argument is still true and still useful in its own
+right: for a `G_K`-trivial `E ≅ (ℤ/p)^d` with `μ_p ⊆ K`, `Ш²(K, ℤ/p) ≅ Ш²(K, μ_p) ≅ Ш(Br K)[p] = 0`
+by Albert–Brauer–Hasse–Noether (needs `μ_p ⊆ K`, Hilbert 90, `H¹(G, C_K) = 0` — all present in the
+repo).  This is what makes `Ш²(k, E)` finite, and it will be needed anyway.
+
+And the two caveats established by re-reading the paper line by line remain:
+
+* **Step 4 needs duality too.**  SW Theorem 13 (the existence of algebraic numbers with
   prescribed local behaviour) uses Chebotarev's density theorem, local Tate duality
   (Serre, *Galois Cohomology* II §5.2, §5.5), the exactness of the lower line of the long
   Tate–Poitou sequence, a pigeonhole argument, and the Hilbert-symbol product formula
@@ -3871,18 +3919,52 @@ Two caveats, established by re-reading the paper line by line:
 * **Lemma 10** (`0 → Ш¹(k_S, A′) → Ш¹(k_S, S∖T, A′) → coker(k_S, T, A)^∨ → 0`) also quotes the
   local and global duality theorems.
 
+### (e) Chebotarev is the gateway, and Mathlib's analytic floor is further along than expected
+
+Every route to Shafarevich in the literature (Shafarevich 1954; NSW ch. IX §6 = Schmidt–Wingberg;
+Ishkhanov–Lur'e–Faddeev) passes through Chebotarev's density theorem over a general number field —
+it is not an artefact of one write-up.  The two uses in SW Theorem 13 are, precisely:
+
+* odd `p`: "choose a prime `P_{n+1} ∈ S ∖ T_n(K)` such that the image of `ξ` in
+  `H¹(k_{T_n}|K, ℤ/p)^∨` equals `Frob_{P_n}`" — ray-class Chebotarev for the maximal abelian
+  exponent-`p` extension of `K` unramified outside `T_n`;
+* `p = 2`: "there is a prime `Q ∉ T(K)` of `O_{K,S_∞}` with `Q^σ ≠ Q` and `Q = A·(x)`" — every
+  `S`-ideal class of `K` contains infinitely many primes.
+
+Both are *abelian* Chebotarev, i.e. **Dirichlet's theorem for ray classes of a number field**.
+Over `ℚ` this is Dirichlet + Kronecker–Weber, which the repo already has; over `K` it is not.
+
+Mathlib v4.28 turns out to supply a surprising amount of the analytic floor:
+
+* `Mathlib/NumberTheory/NumberField/DedekindZeta.lean` — `NumberField.dedekindZeta`,
+  `dedekindZeta_residue`, and `tendsto_sub_one_mul_dedekindZeta_nhdsGT`, i.e. **Dirichlet's
+  analytic class number formula**;
+* `Mathlib/NumberTheory/NumberField/Ideal/Asymptotics.lean` —
+  `NumberField.Ideal.tendsto_norm_le_and_mk_eq_div_atTop`: **the count of ideals of bounded norm in
+  a fixed class of the class group**;
+* `Mathlib/NumberTheory/LSeries/` — `Dirichlet.lean`, `Nonvanishing.lean`, `PrimesInAP.lean`,
+  `SumCoeff.lean`, `Positivity.lean`, `Convergence.lean`.
+
+What is missing: ray-class groups with their `L`-functions, an *error term* in the ideal count
+(`tendsto_norm_le_and_mk_eq_div_atTop` is a bare limit, and analytic continuation of `L(s,χ)` past
+`Re s = 1` needs `A(x) = O(x^{1-1/d})`), Landau's theorem for Dirichlet series with non-negative
+coefficients, non-vanishing at `s = 1`, and a density notion.  Also absent: any Chebotarev
+statement, `groupCohomology` inflation as a named map, and an `H²`-classification of group
+extensions (`Mathlib/GroupTheory/GroupExtension/` has only a docstring TODO).
+
 ### The remaining arithmetic, with costs
 
 | # | Missing piece | Notes |
 | --- | --- | --- |
-| 1 | `H^i(G_k, A)` for finite discrete `A`, as a filtered colimit `colim_M H^i(Gal(M/k), A)` over finite Galois `M ⊇ K`, with localization maps and `Ш^i` | the natural home for every statement of §3–§5; needs `groupCohomology.map` as inflation and a directedness argument.  **This is the next brick.** |
-| 2 | Finiteness of `Ш²(k, E)` via ABHN + Hochschild–Serre | `CFT/Units/ABHN.lean` has `exists_sub_add_eq_globalUnits` already |
-| 3 | "Prop 6′": Chevalley–Warning shrinking against an arbitrary finite-dimensional `𝔽_p`-linear target | a light generalization of `Shafarevich/Shrink.lean` |
+| 1 | `H^i(G_k, A)` for finite discrete `A`, as a filtered colimit `colim_M H^i(Gal(M/k), A)` over finite Galois `M ⊇ K`, with localization maps and `Ш^i` | the natural home for every statement of §3–§5; needs `groupCohomology.map` as inflation and a directedness argument.  **This is the next brick**, and both walls below sit on top of it. |
+| 2 | `Ш¹(k, A) ↪ H¹(Gal(K\|k), A)` from the Hasse principle, and its dual | duality-free; the bricks are listed in (d) |
+| 3 | Finiteness of `Ш²(k, E)` via ABHN + Hochschild–Serre | `CFT/Units/ABHN.lean` has `exists_sub_add_eq_globalUnits` already |
 | 4 | Local Tate duality for finite modules over a local field | the invariant map `inv : Br(K) → ℚ/ℤ` exists (§0.34); duality with `μ_p` coefficients is the next layer |
-| 5 | The `p`-th power Hilbert symbol over a number field and its product formula | the repo has the *quadratic* symbol over `ℚ` (`CFT/Global/Hilbert*.lean`) |
-| 6 | Chebotarev density over a number field | **not in Mathlib**; needs Hecke `L`-functions or an equivalent analytic input.  The heaviest single item. |
-| 7 | Poitou–Tate, at least the eight-term sequence for `μ_p` over `k_S` | needed by Lemma 10 and Theorem 13 |
-| 8 | SW Theorem 13, then Theorems 14 and 15 | assembly |
+| 5 | **Global duality `Ш²(k, A) ≅ Ш¹(k, A′)^∨`** | wall #1: the sole missing input of SW's Claim, hence of step 2 |
+| 6 | The `p`-th power Hilbert symbol over a number field and its product formula | the repo has the *quadratic* symbol over `ℚ` (`CFT/Global/Hilbert*.lean`) |
+| 7 | **Chebotarev density over a number field**, in the abelian/ray-class form of (e) | wall #2; **not in Mathlib**, though the analytic floor listed in (e) is |
+| 8 | Poitou–Tate, at least the eight-term sequence for `μ_p` over `k_S` | needed by Lemma 10 and Theorem 13 |
+| 9 | SW Theorem 13, then Theorems 14 and 15 | assembly |
 
 Already-existing bricks that will be consumed and should not be rebuilt:
 
