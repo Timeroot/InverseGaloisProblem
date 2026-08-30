@@ -550,6 +550,7 @@ import InverseGalois.CFT.Units.CyclicTrivial
 import InverseGalois.CFT.Units.Decomposition
 import InverseGalois.CFT.Units.DecompositionOutside
 import InverseGalois.CFT.Units.HasseHom
+import InverseGalois.CFT.Units.HasseLevel
 import InverseGalois.CFT.Units.EquivariantLabel
 import InverseGalois.CFT.Units.FirstInequality
 import InverseGalois.CFT.Units.FrobeniusPlace
@@ -2252,6 +2253,14 @@ it that are available here.
   trivial, and **a homomorphism of the Galois group of an arbitrary Galois extension of number
   fields into a commutative group killing every decomposition group is trivial** — finitely many
   places, and all the infinite places, being discardable as before.
+* `InverseGalois.CFT.Units.HasseLevel` carries that statement to an infinite extension, which has no
+  places of its own while each of its finite Galois levels is a number field and has them.  An
+  automorphism of the big field is local at a place of a level when its restriction to that level
+  fixes a place there, and a homomorphism into a commutative group killing a level factors through
+  the Galois group of the level, where the automorphisms local at a place of the level are exactly
+  the decomposition groups; so **a homomorphism killing a level and every automorphism local at a
+  place of that level is trivial**, and for coefficients acted on trivially this is the vanishing of
+  the everywhere locally trivial classes of the first cohomology.
 * `InverseGalois.CFT.Units.FrobeniusPlace` identifies the decomposition group at a place of a Galois
   extension of number fields with the Galois group of the residue extension, over an arbitrary
   number field base.  The ring of integers upstairs is the ring of invariants of the ring of
