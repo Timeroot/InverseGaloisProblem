@@ -3962,7 +3962,7 @@ extensions (`Mathlib/GroupTheory/GroupExtension/` has only a docstring TODO).
 | 4 | ~~Local Tate duality for finite modules over a local field~~ | **DONE in the shape that is consumed** — `CFT/Local/CyclicNormIndex.lean` (the norm index of *any* cyclic extension of a local field is its degree) and `CFT/Local/KummerNonNorm.lean` (nondegeneracy of the `q`-th power norm residue symbol), see §0.39.  What is left of the row is `inv_M ∘ res = [M:K] · inv_K` |
 | 5 | **Global duality `Ш²(k, A) ≅ Ш¹(k, A′)^∨`** | wall #1: the sole missing input of SW's Claim, hence of step 2 |
 | 6 | The `p`-th power Hilbert symbol over a number field and its product formula | the repo has the *quadratic* symbol over `ℚ` (`CFT/Global/Hilbert*.lean`); the *local* nondegeneracy of the `p`-th power symbol is §0.39(b) |
-| 7 | **Chebotarev density over a number field**, in the abelian/ray-class form of (e) | wall #2; **not in Mathlib**, though the analytic floor listed in (e) is |
+| 7 | ~~**Chebotarev density over a number field**, in the abelian/ray-class form of (e)~~ | **DONE for odd `p`** — `NumberTheory/RelativeSplitDensity.lean` + `CFT/RelativeFrobenius.lean`: Theorem 13 only needs the Frobenius *up to a scalar*, which is `exists_relStabilizer_eq_zpowers` (see §0.41).  What remains is "every ideal class contains a prime", used only in the `p = 2` Claim |
 | 8 | Poitou–Tate, at least the eight-term sequence for `μ_p` over `k_S` | needed by Lemma 10 and Theorem 13 |
 | 9 | SW Theorem 13, then Theorems 14 and 15 | assembly |
 
@@ -4280,6 +4280,133 @@ density over a number field**).
 Phase 1 is the finite places only; `levelDecompositionSetOutside` never mentions the archimedean
 ones, so nothing was lost.  Archimedean decomposition subgroups of `G_k` would be a separate
 construction and are not needed by anything downstream.
+
+---
+
+## 0.41 Status (2026-08-30, night) — **wall #2 falls for odd `p`**: Theorem 13 only needs Frobenius *up to a scalar*
+
+### (a) The analytic floor over a general base
+
+Two modules carry the density argument of `NumberTheory/SplitDensity.lean` from the base `ℚ` to an
+arbitrary number field `k`.
+
+* `InverseGalois/NumberTheory/RelativeSplitDensity.lean` — `idealSum`, `HasIdealDensity`, the
+  fibre decomposition of `log ζ_L(s)` over the primes of the base, and the three headline
+  statements `hasIdealDensity_relSplitSet` (the primes of `k` splitting completely in a Galois
+  `L|k` of degree `n` have Dirichlet density `1/n`), `infinite_relSplitSet`, and
+  `infinite_setOf_splitsCompletelyIn_not_splitsCompletelyIn`.
+* `InverseGalois/CFT/RelativeFrobenius.lean` — the decomposition dictionary at the base `k`:
+  `card_relStabilizer`, `relInertia_eq_bot_iff_isUnramifiedAt`, `relStabilizer_eq_bot_iff`,
+  `relStabilizer_eq_zpowers_arithFrobAt`, the restriction lemmas
+  `relAlgebraMap_smul_restrictNormal` / `relRestrictNormal_mem_stabilizer`, and
+  `relStabilizer_le_of_splitsCompletelyIn`.
+
+Their combination is
+
+```
+exists_relStabilizer_eq_zpowers :
+  (Subgroup.zpowers σ).Normal → (orderOf σ).Prime → ∀ T : Finset (HeightOneSpectrum (𝓞 k)),
+    ∃ v ∉ T, v ∉ relRamifiedSet k L, ∃ P over v,
+      MulAction.stabilizer Gal(L/k) P = Subgroup.zpowers σ ∧
+      Subgroup.zpowers (arithFrobAt (𝓞 k) Gal(L/k) P) = Subgroup.zpowers σ
+```
+
+— for `σ` of prime order generating a normal subgroup, the decomposition group at infinitely many
+primes of the base is exactly `⟨σ⟩`, and the Frobenius there generates `⟨σ⟩`.  It is **not** the
+statement `Frob_P = σ`: what is produced is `Frob_P = σ^j` for an uncontrolled `j ≢ 0 mod p`.
+
+### (b) The ambiguity is not removable by splitting conditions
+
+"Splits completely in `F`" is the condition `Frob ∈ Gal(M|F)`, i.e. membership in a *subgroup*.
+Every subgroup of an abelian `A` containing `σ` contains every `jσ`, so no boolean combination of
+complete-splitting conditions — in `M` or in any larger field, since the constraint sets pull back
+to subgroups — separates `σ` from `jσ`.  Nor does a nonabelian crossing help: for
+`G = A ⋊ ⟨c⟩` with `c` acting on `A ≅ 𝔽_p^d` by a generator of `𝔽_p^×`, the conjugacy class of `σ`
+is exactly `{jσ : j ≠ 0}`.  Pinning a single `Frob` is therefore equivalent to genuine Chebotarev,
+which needs `L(1, χ) ≠ 0` for `χ` of order `p`; for `p = 2` the ratio `ζ_M/ζ_k` gives it, for
+`p = 3, 4, 6` the pair `|L(s,χ)|²` does, and for `p ≥ 5` there is no escape from analytic
+continuation of Hecke `L`-series (which needs the ideal count with error term `O(x^{1-1/d})`, not
+in Mathlib).
+
+### (c) But Schmidt–Wingberg's Theorem 13 does not need it
+
+Reading the proof (arXiv `math/9809211`, pp. 14–16) line by line: the odd-`p` half constructs a
+sequence `z_1, z_2, … ∈ H¹(k_S|K, μ_p)` with
+
+```
+(1)  ∃ 𝔓_i ∈ S ∖ T(K) with (z_i)_{𝔓_i} ≡ Frob_{𝔓_i} mod H¹_nr(K_{𝔓_i}, μ_p),
+                       and (z_i)_𝔓 ∈ H¹_nr(K_𝔓, μ_p) for all 𝔓 ≠ 𝔓_i,
+(2)  (z_i)_𝔓 = ½ y_𝔓 for 𝔓 ∈ T(K),
+(3)  (z_{n+1})_{σ𝔓_i} = −(z_i)_{σ𝔓_i} for i ≤ n and all σ ∈ G(K|k) ∖ {1},
+```
+
+the prime `𝔓_{n+1}` being produced by "using Čebotarev's density theorem, we can choose a prime
+`𝔓_{n+1} ∈ S ∖ T_n(K)` such that the image of `−ξ` in `H¹(k_{T_n}|K, ℤ/pℤ)^∨` is equal to
+`Frob_{𝔓_{n+1}}`".
+
+`H¹(K_𝔓, μ_p)/H¹_nr` is **cyclic of order `p`** (local duality: it is dual to
+`H¹_nr(K_𝔓, ℤ/p) = ℤ/p`), and the map to `H¹(k_{T_n}|K, ℤ/pℤ)^∨ ≅ Gal(k_{T_n}|K)` sends its
+canonical generator to `Frob_𝔓`.  So a prime with `Frob_𝔓 = λ·(image of −ξ)`, `λ ≠ 0`, is just as
+good: put `λ^{-1}` times the generator in the `𝔓`-slot, and the exactness of the upper line still
+produces `z_{n+1}`.  Condition (1) weakens to
+
+```
+(1')  (z_i)_{𝔓_i} ≡ λ_i · Frob_{𝔓_i} mod H¹_nr,   λ_i ∈ 𝔽_p^×.
+```
+
+Propagate `λ` through the closing computation.  With `u = z_i(Frob_{σ𝔓_i})` and
+`w = z_i(Frob_{σ𝔓_N})`, and using that the Hilbert symbol is bilinear:
+
+| step | SW | with scalars |
+| --- | --- | --- |
+| `ψ` | `z_N(Frob_{σ𝔓_N}) = u` | unchanged |
+| (1) for `z_i` | `(z_i, σz_i)_{σ𝔓_i} = u` | `= u^{λ_i}` |
+| product formula | `(z_i, σz_i)_{𝔓_i} = u^{-1}` | `= u^{-λ_i}` |
+| (3) | `(z_i, σz_N)_{𝔓_i} = u` | `= u^{λ_i}` |
+| product formula | `(z_i, σz_N)_{σ𝔓_N} = u^{-1}` | `= u^{-λ_i}` |
+| (1) for `z_N` | `= w` | `= w^{λ_N}` |
+
+so `w^{λ_N} = u^{-λ_i}`, and what the proof needs is `w·u = 1`, i.e. `λ_i = λ_N`.  Nothing else in
+the argument touches the normalization: the two product-formula steps use only the *support* of
+`z_i` (the second bullet of (1)), and conditions (2), (3), (a), (b) are `λ`-free.
+
+The scalars are then absorbed by the pigeonhole.  SW apply the shoe-box principle to
+`ψ : {z_1, z_2, …} → μ_p^r` to get `i < N` with `ψ(z_i) = ψ(z_N)`; apply it instead to
+
+```
+z_i ↦ (ψ(z_i), λ_i) ∈ μ_p^r × 𝔽_p^×
+```
+
+— still a finite set, of size `p^r (p-1)` instead of `p^r` — and the pair `i < N` produced
+satisfies `ψ(z_i) = ψ(z_N)` **and** `λ_i = λ_N`.  The proof goes through verbatim.
+
+**Conclusion.**  For odd `p`, `exists_relStabilizer_eq_zpowers` is exactly the Chebotarev input
+that Theorem 13 consumes.  Row 7 of the §0.36 table is closed on the odd side, with no `L`-series,
+no ray-class groups and no analytic continuation.  (`Gal(k_{T_n}|K)` is a finite elementary abelian
+`p`-group, so every nonzero element has order `p` and generates a normal subgroup — the two
+hypotheses of the theorem.  The side condition `𝔓_{n+1} ∈ S = cs(Ω|k) ∪ T` is free: take
+`L = k_{T_n}·Ω` and `σ` the element that is `ξ` on `k_{T_n}` and `1` on `Ω`, whereupon
+`Frob ∈ ⟨σ⟩ ⊆ Gal(L|Ω)` forces complete splitting in `Ω` automatically.)
+
+### (d) What is left of row 7
+
+The `p = 2` half of Theorem 13 uses Chebotarev twice, and only one of the two is covered.
+
+* Condition (1) at `p = 2` reads `(z_i)_{𝔓_i} ≡ Frob_{𝔓_i} mod H¹_nr(K_{𝔓_i}, μ_2)`, and
+  `𝔽_2^× = {1}`: there is no scalar to absorb, and none is created, because
+  `exists_relStabilizer_eq_zpowers` at `orderOf σ = 2` gives `Frob_P = σ` on the nose.  **Covered.**
+* The Claim's proof needs: *"there exists a prime ideal `𝔔 ∉ T(K)` of `𝒪_{K,S_∞}` with
+  `𝔔 ≠ σ𝔔` such that `𝔔 = 𝔄·(x)` with `x ∈ K^×`"* — i.e. **every ideal class of `Cl_{S_∞}(K)`
+  contains a prime**, used to replace the fractional ideal `𝔄` in `(z̃_i) = 𝔓_i 𝔄²` by a prime, so
+  that `z̃_i` and `σz̃_i` are coprime.  Here `[𝔔] = [𝔄]` is needed exactly: `𝔔² = 𝔄²(x²)` in the
+  free abelian group of ideals forces `𝔔 = 𝔄(x)`.  `Cl_{S_∞}(K)` is an arbitrary finite abelian
+  group, so this is *not* a prime-order statement and the scalar trick does not apply.  **Open.**
+  Mathlib's `NumberField.Ideal.tendsto_norm_le_and_mk_eq_div_atTop` is the count of ideals of
+  bounded norm in a fixed class — the *ideal* count, not the *prime* count; upgrading it is the
+  non-vanishing `L(1, χ) ≠ 0` for an unramified class character.
+
+So row 7 reduces to a single classical statement: **every ideal class of a number field contains
+infinitely many prime ideals**.
 
 ---
 
