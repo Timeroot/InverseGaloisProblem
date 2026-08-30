@@ -309,6 +309,8 @@ import InverseGalois.CFT.PairwiseResidue
 import InverseGalois.CFT.PiDual
 import InverseGalois.CFT.PiIndex
 import InverseGalois.CFT.PrimeProductSquare
+import InverseGalois.CFT.Profinite.Cochain
+import InverseGalois.CFT.Profinite.Comap
 import InverseGalois.CFT.RestrictLE
 import InverseGalois.CFT.ScalarSemidirect
 import InverseGalois.CFT.Scholz.AbelianInertia
@@ -3411,4 +3413,20 @@ it that are available here.
   integral representation two degrees lower; in degree minus two this is **the reciprocity
   isomorphism**, and tensoring gives **the theorem of Tate and Nakayama** for any coefficients flat
   over the integers.
+* `InverseGalois.CFT.Profinite.Cochain` is the cohomology of a topological group in degrees one and
+  two, computed by the cochains that factor through a quotient by an open normal subgroup.  Those
+  cochains are closed under the group operations and under the coboundary, so the cocycles form a
+  group and the coboundaries a subgroup of it, and the quotient is the cohomology; an action for
+  which some open normal subgroup acts trivially takes a smooth cochain to a smooth coboundary,
+  which is what makes the two subgroups sit inside one another.  Because the topology of a finite
+  Galois group is discrete, a finite level and an infinite one are described in the same language.
+* `InverseGalois.CFT.Profinite.Comap` composes a cochain with a homomorphism into a group acting on
+  the same module.  The cocycle relation and the coboundary are both preserved because the two
+  actions agree, so all that is needed is that composition preserve smoothness, and two conditions
+  give that: a continuous homomorphism pulls an open normal subgroup back to one, and a
+  homomorphism with open kernel pulls every subgroup back to one containing that kernel, which
+  makes even a cochain that was not smooth become smooth.  So **there is a homomorphism of the
+  cohomology of the target into that of the source**, in degree one and in degree two, computed on
+  cocycles; the first condition is restriction to a closed subgroup and the second is inflation
+  from a finite level.
 -/
