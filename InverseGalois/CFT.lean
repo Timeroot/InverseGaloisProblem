@@ -19,6 +19,7 @@ import InverseGalois.CFT.Brauer.CrossedProductSplitting
 import InverseGalois.CFT.Brauer.CyclicAlgebra
 import InverseGalois.CFT.Brauer.CyclicBaseChange
 import InverseGalois.CFT.Brauer.CyclicBrauer
+import InverseGalois.CFT.Brauer.CyclicCompositum
 import InverseGalois.CFT.Brauer.CyclicInvariant
 import InverseGalois.CFT.Brauer.CyclicNorm
 import InverseGalois.CFT.Brauer.CyclicTower
@@ -43,6 +44,7 @@ import InverseGalois.CFT.Brauer.GaloisSplitting
 import InverseGalois.CFT.Brauer.Group
 import InverseGalois.CFT.Brauer.H2Brauer
 import InverseGalois.CFT.Brauer.H2Surjective
+import InverseGalois.CFT.Brauer.InvariantCompositum
 import InverseGalois.CFT.Brauer.InvariantInjective
 import InverseGalois.CFT.Brauer.InvariantMap
 import InverseGalois.CFT.Brauer.InvariantRestrict
@@ -3316,6 +3318,14 @@ it that are available here.
   base-change formula for cyclic algebras asks for is the change of normalisation: **the normalised
   invariant of a Brauer class over a local field is multiplied by the degree of a compatibly normed
   unramified intermediate field under base change.**
+* `InverseGalois.CFT.Brauer.CyclicCompositum` runs the same computation along a field that need not
+  be intermediate.  An isomorphism of Galois groups carrying a generator to a generator preserves
+  discrete logarithms and the two orders agree, so the explicit cyclic two-cocycle transports on the
+  nose, and **base change along a field that is not intermediate carries a cyclic algebra to a
+  cyclic algebra with the same coefficient**; no power of the generator appears.
+* `InverseGalois.CFT.Brauer.InvariantCompositum` reads off the invariant.  The coefficient and the
+  degree are both unchanged, so only the value of the coefficient can move, and **the invariant of a
+  Brauer class is multiplied by the factor by which the value of the base field is multiplied.**
 * `InverseGalois.CFT.Local.NormValued` carries the whole local package up a finite extension.  The
   value of the field norm is a valuation on the extension, because the norm of an element is the
   degree-th power of its spectral norm and the spectral norm is nonarchimedean; carried on the
