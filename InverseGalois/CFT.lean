@@ -558,6 +558,7 @@ import InverseGalois.CFT.Units.IdeleFixed
 import InverseGalois.CFT.Units.IdeleGen
 import InverseGalois.CFT.Units.IdeleNorm
 import InverseGalois.CFT.Units.IdeleNormTower
+import InverseGalois.CFT.Units.IdeleQuotCyclic
 import InverseGalois.CFT.Units.IdeleRep
 import InverseGalois.CFT.Units.IdeleRestrict
 import InverseGalois.CFT.Units.IdeleTower
