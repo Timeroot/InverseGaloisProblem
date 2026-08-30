@@ -101,6 +101,7 @@ import InverseGalois.CFT.Cyclotomic.Ramified
 import InverseGalois.CFT.Cyclotomic.Splitting
 import InverseGalois.CFT.Cyclotomic.SquareRoots
 import InverseGalois.CFT.Cyclotomic.TotallyRamified
+import InverseGalois.CFT.Cyclotomic.TotallyRealSubfield
 import InverseGalois.CFT.CyclotomicCompositum
 import InverseGalois.CFT.Decomposition
 import InverseGalois.CFT.Disjoint
@@ -135,6 +136,7 @@ import InverseGalois.CFT.GroupCohomology.IndexTwo
 import InverseGalois.CFT.GroupCohomology.InfResTwo
 import InverseGalois.CFT.GroupCohomology.InfResTwoInjective
 import InverseGalois.CFT.GroupCohomology.Inflation
+import InverseGalois.CFT.GroupCohomology.InflationOrder
 import InverseGalois.CFT.GroupCohomology.InflationRestriction
 import InverseGalois.CFT.GroupCohomology.MapCoboundary
 import InverseGalois.CFT.GroupCohomology.OfCocycle
