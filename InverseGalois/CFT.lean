@@ -202,6 +202,7 @@ import InverseGalois.CFT.InertiaTransport
 import InverseGalois.CFT.KerField
 import InverseGalois.CFT.KroneckerWeber
 import InverseGalois.CFT.Kummer.CentralEmbedding
+import InverseGalois.CFT.Kummer.CentralEmbeddingPlaces
 import InverseGalois.CFT.Kummer.CentralEmbeddingSqrtNegOne
 import InverseGalois.CFT.Kummer.CocycleDescent
 import InverseGalois.CFT.Kummer.CongruentRadical
@@ -530,6 +531,7 @@ import InverseGalois.CFT.Units.ABHNCoboundary
 import InverseGalois.CFT.Units.ABHNFinite
 import InverseGalois.CFT.Units.ABHNLocalNorm
 import InverseGalois.CFT.Units.ABHNLocalPower
+import InverseGalois.CFT.Units.ABHNPlaces
 import InverseGalois.CFT.Units.ABHNRamified
 import InverseGalois.CFT.Units.ABHNSqrtNegOne
 import InverseGalois.CFT.Units.ABHNSqrtNegOneRamified
@@ -2719,6 +2721,10 @@ it that are available here.
   `K` satisfies the additive cocycle identity exactly when it satisfies the multiplicative one, and
   **a two-cocycle of units of the base field killed by an odd integer and locally trivial at the
   ramified finite places is the coboundary of a one-cochain of units of the extension**.
+* `InverseGalois.CFT.Units.ABHNPlaces` drops the restriction on the integer.  Oddness was bought
+  by the archimedean places; paying for them instead, **a two-cocycle of units of the base field
+  which is locally trivial at every place, archimedean places included, is the coboundary of a
+  one-cochain of units of the extension** whatever integer kills it.
 * `InverseGalois.CFT.Units.ABHNLocalPower` discharges that local condition without any local
   reciprocity law.  The values of the cocycle come from the base field, so the decomposition group
   fixes them; when that group is cyclic its norm is therefore the power with exponent its order, and
@@ -2836,6 +2842,12 @@ it that are available here.
   coboundary is the factor set.  It is also discharged from the arithmetic hypothesis of the
   previous file, which asks only that the decomposition group at each ramified place be cyclic and
   that the roots of unity of the base field be locally powers with exponent its order.
+* `InverseGalois.CFT.Kummer.CentralEmbeddingPlaces` says the same thing over an arbitrary base
+  containing the roots of unity, at the price of inspecting the archimedean places too: **a central
+  embedding problem with kernel of any order inside the Frattini subgroup, solvable over the
+  decomposition group at every place, has a proper solution over a larger extension**.  This is the
+  local-global principle in the form that survives at the prime two, where the real places are the
+  obstruction that oddness was hiding.
 * `InverseGalois.CFT.Kummer.CentralEmbeddingSqrtNegOne` is the same list of criteria over an
   extension of the rational numbers, where nothing is asked at the archimedean places and nothing
   about the parity of the order of the kernel.  The congruence on the residue characteristic can
