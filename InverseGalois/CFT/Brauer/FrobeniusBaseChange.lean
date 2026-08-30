@@ -31,6 +31,8 @@ induces the `[M : K]`-th power of the Frobenius automorphism of `L / K`.**
 * `InverseGalois.CFT.eq_divisionFrobenius_of_restrictScalars`: **an automorphism inducing the
   `[M : K]`-th power of the Frobenius automorphism of `L / K` is the Frobenius automorphism of
   `L / M`.**
+* `InverseGalois.CFT.natCard_divisionResidue_self_eq_pow`: **an unramified intermediate field has as
+  many residues as the number of residues of the base field raised to the degree.**
 
 ## Tags
 
@@ -174,5 +176,89 @@ theorem eq_divisionFrobenius_of_restrictScalars (hnorm : ∀ x : K, ‖algebraMa
   eq_divisionFrobenius M L _ (isDivisionFrobenius_base hnorm hq hσ)
 
 end Base
+
+/-! ### The residues of the intermediate field -/
+
+section Residues
+
+variable {K M : Type u} [NontriviallyNormedField K] [IsUltrametricDist K] [ProperSpace K]
+variable [NontriviallyNormedField M] [IsUltrametricDist M] [ProperSpace M]
+variable [Algebra K M] [FiniteDimensional K M]
+
+omit [IsUltrametricDist M] [ProperSpace M] in
+/-- **The absolute value of a compatibly normed intermediate field is its absolute value over the
+base field.** -/
+theorem divisionNorm_self_eq (hnorm : ∀ x : K, ‖algebraMap K M x‖ = ‖x‖) (y : M) :
+    divisionNorm M M y = divisionNorm K M y := by
+  rw [divisionNorm_base, norm_eq_divisionNorm hnorm]
+
+/-- The integers of a compatibly normed intermediate field are its integers over the base field. -/
+noncomputable def divisionIntegersSelf (hnorm : ∀ x : K, ‖algebraMap K M x‖ = ‖x‖) :
+    divisionIntegers M M →+* divisionIntegers K M :=
+  RingHom.codRestrict (divisionIntegers M M).subtype (divisionIntegers K M) fun x => by
+    rw [mem_divisionIntegers, ← divisionNorm_self_eq hnorm]
+    exact mem_divisionIntegers.1 x.2
+
+@[simp]
+theorem coe_divisionIntegersSelf (hnorm : ∀ x : K, ‖algebraMap K M x‖ = ‖x‖)
+    (x : divisionIntegers M M) :
+    ((divisionIntegersSelf hnorm x : divisionIntegers K M) : M) = (x : M) := rfl
+
+/-- **The residue ring of a compatibly normed intermediate field is its residue ring over the base
+field.** -/
+noncomputable def divisionResidueSelf (hnorm : ∀ x : K, ‖algebraMap K M x‖ = ‖x‖) :
+    DivisionResidue M M →+* DivisionResidue K M :=
+  (divisionResidueCon M M).lift
+    (((divisionResidueCon K M).mk').comp (divisionIntegersSelf hnorm))
+    (by
+      intro x y h
+      have h' : divisionNorm M M ((x : M) - (y : M)) < 1 := h
+      rw [RingCon.ker_apply]
+      simp only [RingHom.comp_apply, RingCon.coe_mk']
+      refine divisionResidue_eq_iff.2 ?_
+      rw [coe_divisionIntegersSelf, coe_divisionIntegersSelf, ← divisionNorm_self_eq hnorm]
+      exact h')
+
+@[simp]
+theorem divisionResidueSelf_coe (hnorm : ∀ x : K, ‖algebraMap K M x‖ = ‖x‖)
+    (x : divisionIntegers M M) :
+    divisionResidueSelf hnorm ((x : divisionIntegers M M) : DivisionResidue M M)
+      = ((divisionIntegersSelf hnorm x : divisionIntegers K M) : DivisionResidue K M) := rfl
+
+/-- **The two residue rings of a compatibly normed intermediate field agree**, because the two
+absolute values agree and so the integers and the congruence on them agree. -/
+theorem divisionResidueSelf_bijective (hnorm : ∀ x : K, ‖algebraMap K M x‖ = ‖x‖) :
+    Function.Bijective (divisionResidueSelf hnorm) := by
+  constructor
+  · intro a b hab
+    obtain ⟨x, rfl⟩ := (divisionResidueCon M M).mk'_surjective a
+    obtain ⟨y, rfl⟩ := (divisionResidueCon M M).mk'_surjective b
+    simp only [RingCon.coe_mk', divisionResidueSelf_coe, divisionResidue_eq_iff,
+      coe_divisionIntegersSelf] at hab ⊢
+    rwa [divisionNorm_self_eq hnorm]
+  · intro r
+    obtain ⟨x, rfl⟩ := (divisionResidueCon K M).mk'_surjective r
+    have hx : (x : M) ∈ divisionIntegers M M := by
+      rw [mem_divisionIntegers, divisionNorm_self_eq hnorm]
+      exact mem_divisionIntegers.1 x.2
+    refine ⟨((⟨(x : M), hx⟩ : divisionIntegers M M) : DivisionResidue M M), ?_⟩
+    rw [divisionResidueSelf_coe, RingCon.coe_mk']
+    exact congrArg _ (Subtype.ext rfl)
+
+/-- A compatibly normed intermediate field has the same number of residues over itself as over the
+base field. -/
+theorem natCard_divisionResidue_self (hnorm : ∀ x : K, ‖algebraMap K M x‖ = ‖x‖) :
+    Nat.card (DivisionResidue M M) = Nat.card (DivisionResidue K M) :=
+  Nat.card_eq_of_bijective _ (divisionResidueSelf_bijective hnorm)
+
+/-- **An unramified intermediate field has as many residues as the number of residues of the base
+field raised to the degree.** -/
+theorem natCard_divisionResidue_self_eq_pow (hnorm : ∀ x : K, ‖algebraMap K M x‖ = ‖x‖)
+    (hur : ∀ z : M, z ≠ 0 → ∃ c : K, c ≠ 0 ∧ divisionNorm K M z = ‖c‖) :
+    Nat.card (DivisionResidue M M) = Nat.card (DivisionResidue K K) ^ finrank K M := by
+  rw [natCard_divisionResidue_self hnorm]
+  exact card_divisionResidue_of_unramified K M hur
+
+end Residues
 
 end InverseGalois.CFT

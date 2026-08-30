@@ -49,6 +49,7 @@ import InverseGalois.CFT.Brauer.Kernel
 import InverseGalois.CFT.Brauer.LocalBrauerBound
 import InverseGalois.CFT.Brauer.LocalBrauerOrder
 import InverseGalois.CFT.Brauer.LocalInvariant
+import InverseGalois.CFT.Brauer.LocalInvariantRestrict
 import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
 import InverseGalois.CFT.Brauer.Opposite
@@ -3298,7 +3299,17 @@ it that are available here.
   every residue to the power counted by the residues of the intermediate field is the Frobenius
   automorphism there.  Iterating the Frobenius automorphism downstairs does exactly that, so **an
   automorphism inducing the power of the Frobenius automorphism given by the degree of the
-  intermediate field is the Frobenius automorphism of the intermediate field.**
+  intermediate field is the Frobenius automorphism of the intermediate field.**  The two absolute
+  values of the intermediate field agree, so its residues over itself are its residues over the
+  base field, and **an unramified intermediate field has as many residues as the number of residues
+  of the base field raised to the degree.**
+* `InverseGalois.CFT.Brauer.LocalInvariantRestrict` normalises the base-change formula.  Both
+  invariants are taken with respect to the Frobenius automorphism, and the Frobenius automorphism
+  of the top field over the intermediate field is precisely an automorphism inducing the power of
+  the Frobenius automorphism downstairs given by the degree, so the change of generator that the
+  base-change formula for cyclic algebras asks for is the change of normalisation: **the normalised
+  invariant of a Brauer class over a local field is multiplied by the degree of a compatibly normed
+  unramified intermediate field under base change.**
 * `InverseGalois.CFT.Local.NormValued` carries the whole local package up a finite extension.  The
   value of the field norm is a valuation on the extension, because the norm of an element is the
   degree-th power of its spectral norm and the spectral norm is nonarchimedean; carried on the
