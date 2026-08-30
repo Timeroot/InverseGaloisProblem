@@ -63,6 +63,7 @@ import InverseGalois.CFT.Brauer.Quaternion
 import InverseGalois.CFT.Brauer.RamificationIdentity
 import InverseGalois.CFT.Brauer.RationalBrauer
 import InverseGalois.CFT.Brauer.RelativeIndex
+import InverseGalois.CFT.Brauer.RelativeTorsion
 import InverseGalois.CFT.Brauer.RealBrauer
 import InverseGalois.CFT.Brauer.RealInvariant
 import InverseGalois.CFT.Brauer.RealPlace
