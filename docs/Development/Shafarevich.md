@@ -3959,9 +3959,9 @@ extensions (`Mathlib/GroupTheory/GroupExtension/` has only a docstring TODO).
 | 1 | ~~`H^i(G_k, A)` for finite discrete `A`, as a filtered colimit `colim_M H^i(Gal(M/k), A)` over finite Galois `M ⊇ K`, with localization maps and `Ш^i`~~ | **DONE** — `InverseGalois/CFT/Profinite/`: `SmoothH1`/`SmoothH2` with `galInflH1`/`galInflH2`, `resH1`/`resH2`, and `sha1`/`sha2` (see §0.37) |
 | 2 | ~~`Ш¹(k, A) ↪ H¹(Gal(K\|k), A)` from the Hasse principle, and its dual~~ | **DONE** — `CFT/Units/HasseInflation.lean`: `exists_galInflH1_eq_of_forall_level` and `exists_galInflH1_eq_of_forall_level_outside`.  What is *not* done is the glue turning membership in `sha1` into the `levelDecompositionSet` hypothesis; that needs genuine decomposition subgroups of `G_k` (see §0.37) |
 | 3 | ~~Finiteness of `Ш²(k, E)` via ABHN + Hochschild–Serre~~ | **DONE** — `CFT/Units/HasseTwo.lean`: `eq_one_of_forall_isLocallySplitLevel`, the vanishing of the everywhere locally trivial classes of `H²` with `μ_n` coefficients, valid at `p = 2` (see §0.38).  Same glue caveat as row 2 |
-| 4 | Local Tate duality for finite modules over a local field | `Br(K) ≅ ℚ/ℤ` is now a theorem — `localInvariantEquiv` (`CFT/Brauer/InvariantSurjective.lean`, §0.37); duality with `μ_p` coefficients is the next layer.  **This is the next brick.** |
+| 4 | ~~Local Tate duality for finite modules over a local field~~ | **DONE in the shape that is consumed** — `CFT/Local/CyclicNormIndex.lean` (the norm index of *any* cyclic extension of a local field is its degree) and `CFT/Local/KummerNonNorm.lean` (nondegeneracy of the `q`-th power norm residue symbol), see §0.39.  What is left of the row is `inv_M ∘ res = [M:K] · inv_K` |
 | 5 | **Global duality `Ш²(k, A) ≅ Ш¹(k, A′)^∨`** | wall #1: the sole missing input of SW's Claim, hence of step 2 |
-| 6 | The `p`-th power Hilbert symbol over a number field and its product formula | the repo has the *quadratic* symbol over `ℚ` (`CFT/Global/Hilbert*.lean`) |
+| 6 | The `p`-th power Hilbert symbol over a number field and its product formula | the repo has the *quadratic* symbol over `ℚ` (`CFT/Global/Hilbert*.lean`); the *local* nondegeneracy of the `p`-th power symbol is §0.39(b) |
 | 7 | **Chebotarev density over a number field**, in the abelian/ray-class form of (e) | wall #2; **not in Mathlib**, though the analytic floor listed in (e) is |
 | 8 | Poitou–Tate, at least the eight-term sequence for `μ_p` over `k_S` | needed by Lemma 10 and Theorem 13 |
 | 9 | SW Theorem 13, then Theorems 14 and 15 | assembly |
@@ -4122,7 +4122,88 @@ for a `G_K`-trivial `E ≅ (ℤ/p)^d` is `Ш²(K, μ_p)^d = 0` plus Hochschild�
 Rows 1, 2 and 3 are laid (each modulo the one shared glue lemma).  The next brick is **row 4**,
 local Tate duality with `μ_p` coefficients, for which `localInvariantEquiv` (§0.37(b)) and the
 torsion computation of §0.38(a) are the inputs.  Rows 5 and 7 — Poitou–Tate and Chebotarev over a
-number field — remain the two walls.
+number field — remain the two walls.  (Row 4 was laid the same day; see §0.39.)
+
+---
+
+## 0.39 Status (2026-08-30, later still) — the local norm index for **every** cyclic extension, and the nondegeneracy of the norm residue symbol
+
+### (a) The unramifiedness hypothesis was never needed
+
+`InverseGalois/CFT/Local/CompleteNormIndex.lean` has carried, for some time, the sharp local first
+inequality
+
+```
+(normSubgroup K L).index = finrank K L
+```
+
+for an arbitrary cyclic `L/K` — ramified or not — *provided* the larger field `L` is itself
+presented as complete and discretely valued with the automorphisms acting by isometries.  What was
+missing was the package supplying that presentation.  The only one in the tree,
+`exists_valued_of_spectralNorm` (`CFT/Local/NormValued.lean`), carries a hypothesis
+
+```
+hval : ∀ z : L, z ≠ 0 → ∃ c : K, c ≠ 0 ∧ spectralNorm K L z = ‖c‖
+```
+
+which says `L/K` is unramified.  Reading its proof line by line shows that `hval` is used for
+**one** conclusion only, `IsUnramifiedValued K L`; every other component — the valuation
+`normValued K L`, completeness, rank one, proper-ness, the residue characteristic, finiteness of
+the graded pieces, invariance under `Gal(L/K)`, a unit of nontrivial value, a generator of the
+value group — is proved from the field norm alone and does not care about ramification.
+
+`InverseGalois/CFT/Local/CyclicNormIndex.lean` therefore just drops it:
+
+* `exists_valued_of_finite` — **a finite extension of a complete, discretely valued, locally
+  compact field carries all the structure of a local field**, with no hypothesis on the extension;
+* `index_normSubgroup_eq_finrank_local` — **the norm index of any cyclic extension of a local field
+  is its degree**;
+* `exists_notMem_normSubgroup` — hence a cyclic extension of degree bigger than one always has a
+  unit of the base field which is not a norm.
+
+This is the first inequality of local class field theory in full.  It is one of the two halves of
+the local reciprocity isomorphism `Kˣ / N Lˣ ≅ Gal(L/K)^{ab}`; what the second half still wants is
+the base-change formula `inv_L ∘ res = [L:K] · inv_K` of §0.38(a).
+
+### (b) The norm residue symbol is nondegenerate
+
+`InverseGalois/CFT/Local/KummerNonNorm.lean` is the immediate arithmetic consequence, and it is the
+shape in which the theory of embedding problems actually consumes local duality.  Let `K` be a
+local field containing a primitive `q`-th root of unity, `q` prime, and let `a ∈ K` not be a `q`-th
+power.  Then `X^q - a` is irreducible (`X_pow_sub_C_irreducible_of_prime`, valid at `q = 2` too),
+its splitting field is cyclic of degree `q` over `K` (Mathlib's Kummer API), and (a) gives a unit of
+`K` which is not a norm from it:
+
+* `exists_notMem_normSubgroup_of_isSplittingField` — for any field presented as a splitting field of
+  `X^q - a`;
+* `exists_cyclic_notMem_normSubgroup` — packaged with the construction of the extension by
+  `AdjoinRoot`, together with the root itself and the degree.
+
+Written with the norm residue symbol `(a, c)` — the class of the cyclic algebra of `K(q√a)` with
+coefficient `c`, equivalently the amount by which the Artin symbol of `c` moves `q√a` — this says
+that the symbol is nondegenerate in its second argument: for every `a` which is not a `q`-th power
+there is a `c` with `(a, c) ≠ 1`.  That is the duality between `H¹(K, μ_q)` and `H¹(K, ℤ/q)` in the
+only shape rows 6 and 9 use it.
+
+### (c) What row 4 still owes
+
+The full statement of local Tate duality — a perfect pairing
+`H^i(K, A) × H^{2-i}(K, A′) → H²(K, 𝔾_m) = ℚ/ℤ` for every finite module `A` — is not what SW
+Theorem 13 consumes; it consumes the `i = 1`, `A = ℤ/p` case, which is (b), plus the *global*
+product formula for the same symbol (row 6).  So the honest reading of the table is that row 4 is
+laid in its usable form, and the remaining work has moved into rows 6 and 5.
+
+The one piece of row 4 which is genuinely still missing and genuinely still wanted elsewhere is the
+invariant-map functoriality `inv_M ∘ res = [M:K] · inv_K` for an arbitrary finite `M/K`.  The tree
+has `localInvariant_baseChange` (`Brauer/LocalInvariantRestrict.lean`) only for `K ⊆ M ⊆ L` with
+`L/K` unramified, and `brauerInvariant_baseChange_compositum`
+(`Brauer/InvariantCompositum.lean`) only when `Gal(N/M) ≅ Gal(E/K)`, which fails as soon as
+`E ∩ M ≠ K`.  The classical repair is to factor `M/K` through its maximal unramified subextension
+`M₀` (degree `f`) and the totally ramified `M/M₀` (degree `e`), using
+`exists_unramified_le_finrank_eq`, `eq_of_finrank_eq_of_unramified` and
+`ramification_mul_finrank_divisionResidue`, all of which are already in the tree.  That is a
+self-contained chunk and it is what would upgrade `card_relative_le_finrank_local` of §0.38(a) to
+an equality, i.e. to local reciprocity.
 
 ---
 

@@ -246,6 +246,7 @@ import InverseGalois.CFT.Local.AdicUnits
 import InverseGalois.CFT.Local.AdicUnramified
 import InverseGalois.CFT.Local.ComplexHerbrand
 import InverseGalois.CFT.Local.CompleteNormIndex
+import InverseGalois.CFT.Local.CyclicNormIndex
 import InverseGalois.CFT.Local.DyadicAnisotropic
 import InverseGalois.CFT.Local.DyadicHilbert
 import InverseGalois.CFT.Local.DyadicHilbertMul
@@ -271,6 +272,7 @@ import InverseGalois.CFT.Local.InfiniteFamily
 import InverseGalois.CFT.Local.InfiniteHerbrand
 import InverseGalois.CFT.Local.InfiniteNormIndex
 import InverseGalois.CFT.Local.InfinitePowIndex
+import InverseGalois.CFT.Local.KummerNonNorm
 import InverseGalois.CFT.Local.LegendreHilbert
 import InverseGalois.CFT.Local.NormIndex
 import InverseGalois.CFT.Local.NormValued
@@ -1267,6 +1269,16 @@ it that are available here.
   whose larger field is complete and discretely valued, the Herbrand quotient of the unit group is
   the degree and Hilbert's theorem 90 makes its denominator one, so the norm subgroup of the base
   has index exactly the degree.
+* `InverseGalois.CFT.Local.CyclicNormIndex` removes the hypotheses on the larger field: a finite
+  extension of a complete, discretely valued, locally compact field carries all the structure of a
+  local field for the valuation transported by the field norm, whatever the ramification, and the
+  automorphisms over the base preserve that valuation because they do not change the norm.  So
+  **the norm index of any cyclic extension of a local field is its degree**, and a cyclic extension
+  of degree bigger than one always has a unit of the base field which is not a norm.
+* `InverseGalois.CFT.Local.KummerNonNorm` reads that off for a radical extension.  Over a local
+  field with a primitive `q`-th root of unity, `q` prime, an element which is not a `q`-th power
+  generates a cyclic extension of degree `q`, so **some unit of the base field is not a norm from
+  it**: the norm residue symbol is nondegenerate in its second argument.
 * `InverseGalois.CFT.Brauer.LocalBrauerBound` feeds the two into the dévissage: the extensions
   whose larger field is complete and discretely valued with the automorphisms acting by isometries
   are closed under the dévissage and satisfy the cyclic norm index bound, so the relative Brauer
