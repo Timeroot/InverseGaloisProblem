@@ -311,6 +311,7 @@ import InverseGalois.CFT.PiIndex
 import InverseGalois.CFT.PrimeProductSquare
 import InverseGalois.CFT.Profinite.Cochain
 import InverseGalois.CFT.Profinite.Comap
+import InverseGalois.CFT.Profinite.InfRes
 import InverseGalois.CFT.RestrictLE
 import InverseGalois.CFT.ScalarSemidirect
 import InverseGalois.CFT.Scholz.AbelianInertia
@@ -3450,4 +3451,14 @@ it that are available here.
   cohomology of the target into that of the source**, in degree one and in degree two, computed on
   cocycles; the first condition is restriction to a closed subgroup and the second is inflation
   from a finite level.
+* `InverseGalois.CFT.Profinite.InfRes` reads off what smoothness alone forces.  A smooth one
+  cocycle is trivial on the subgroup it is smooth for, and the values of a smooth cocycle in either
+  degree are fixed by that subgroup, so a cocycle constant on the cosets of the kernel of a
+  surjection is literally a cocycle of the quotient composed with the projection.  In degree one
+  that gives both halves of inflation and restriction that get used: **inflation is injective**,
+  because a one cochain of the quotient which becomes a coboundary upstairs was already the
+  coboundary of the same element, and **a class whose restriction to the kernel is trivial is
+  inflated**, because correcting by that coboundary makes the cocycle trivial on the kernel and
+  hence constant on its cosets.  In degree two the same reading gives **every class represented at
+  a level is inflated from it.**
 -/
