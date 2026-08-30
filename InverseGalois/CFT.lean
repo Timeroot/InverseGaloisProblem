@@ -537,6 +537,7 @@ import InverseGalois.CFT.Units.AdicOrbit
 import InverseGalois.CFT.Units.AdicSIdeles
 import InverseGalois.CFT.Units.AdicUnitGen
 import InverseGalois.CFT.Units.ArchimedeanIdeles
+import InverseGalois.CFT.Units.BaseArtin
 import InverseGalois.CFT.Units.BaseChangeCocycle
 import InverseGalois.CFT.Units.BaseChangeIndex
 import InverseGalois.CFT.Units.BaseFundamental
@@ -3474,6 +3475,11 @@ it that are available here.
   cohomology in every degree with that of the trivial integral representation two degrees lower;
   degree minus two is **the reciprocity isomorphism** of the extension, and tensoring gives **the
   theorem of Tate and Nakayama** for any coefficients flat over the integers.
+* `InverseGalois.CFT.Units.BaseArtin` puts a name on the left hand side of that identification.
+  Composing it with the description of the complete cohomology of the trivial integral
+  representation in degree minus two gives **the reciprocity isomorphism between the abelianization
+  of the Galois group of an extension of number fields and the complete cohomology of the idele
+  class group in degree zero**, the invariant idele classes modulo the norms from the extension.
 * `InverseGalois.CFT.Profinite.Cochain` is the cohomology of a topological group in degrees one and
   two, computed by the cochains that factor through a quotient by an open normal subgroup.  Those
   cochains are closed under the group operations and under the coboundary, so the cocycles form a
