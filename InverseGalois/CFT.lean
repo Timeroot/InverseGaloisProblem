@@ -551,6 +551,7 @@ import InverseGalois.CFT.Units.Decomposition
 import InverseGalois.CFT.Units.DecompositionOutside
 import InverseGalois.CFT.Units.HasseHom
 import InverseGalois.CFT.Units.HasseLevel
+import InverseGalois.CFT.Units.HasseInflation
 import InverseGalois.CFT.Units.EquivariantLabel
 import InverseGalois.CFT.Units.FirstInequality
 import InverseGalois.CFT.Units.FrobeniusPlace
@@ -2261,6 +2262,14 @@ it that are available here.
   the decomposition groups; so **a homomorphism killing a level and every automorphism local at a
   place of that level is trivial**, and for coefficients acted on trivially this is the vanishing of
   the everywhere locally trivial classes of the first cohomology.
+* `InverseGalois.CFT.Units.HasseInflation` spends that on a class of the first cohomology of an
+  infinite Galois group whose coefficients are acted on through a finite Galois level.  Restriction
+  of scalars identifies the subgroup fixing that level with the Galois group of the big field over
+  it, and there the level acts trivially, so a cocycle becomes a homomorphism into the
+  coefficients; local triviality makes it kill the decomposition groups of a level above, hence
+  vanish, and vanishing on the subgroup fixing a level is exactly the condition for a class to come
+  from that level.  So **an everywhere locally trivial class is inflated from the field
+  trivialising its coefficients.**
 * `InverseGalois.CFT.Units.FrobeniusPlace` identifies the decomposition group at a place of a Galois
   extension of number fields with the Galois group of the residue extension, over an arbitrary
   number field base.  The ring of integers upstairs is the ring of invariants of the ring of
