@@ -80,6 +80,7 @@ import InverseGalois.CFT.Brauer.UnramifiedAdjoin
 import InverseGalois.CFT.Brauer.UnramifiedAut
 import InverseGalois.CFT.Brauer.UnramifiedClassOrder
 import InverseGalois.CFT.Brauer.UnramifiedCompositum
+import InverseGalois.CFT.Brauer.UnramifiedDegree
 import InverseGalois.CFT.Brauer.UnramifiedRelative
 import InverseGalois.CFT.CentralCompositum
 import InverseGalois.CFT.CharacterSpan
