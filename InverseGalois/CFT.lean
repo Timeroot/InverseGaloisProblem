@@ -314,6 +314,8 @@ import InverseGalois.CFT.Profinite.Comap
 import InverseGalois.CFT.Profinite.InfRes
 import InverseGalois.CFT.Profinite.Quotient
 import InverseGalois.CFT.Profinite.Krull
+import InverseGalois.CFT.Profinite.Res
+import InverseGalois.CFT.Profinite.Trivial
 import InverseGalois.CFT.RestrictLE
 import InverseGalois.CFT.ScalarSemidirect
 import InverseGalois.CFT.Scholz.AbelianInertia
@@ -547,6 +549,7 @@ import InverseGalois.CFT.Units.CompositumFundamental
 import InverseGalois.CFT.Units.CyclicTrivial
 import InverseGalois.CFT.Units.Decomposition
 import InverseGalois.CFT.Units.DecompositionOutside
+import InverseGalois.CFT.Units.HasseHom
 import InverseGalois.CFT.Units.EquivariantLabel
 import InverseGalois.CFT.Units.FirstInequality
 import InverseGalois.CFT.Units.FrobeniusPlace
@@ -2241,6 +2244,14 @@ it that are available here.
   places whose place below avoids a prescribed finite set already generate a solvable Galois group,
   because in the fixed field of the subgroup they generate every place of the base field outside the
   prescribed set splits completely.
+* `InverseGalois.CFT.Units.HasseHom` reads that generation statement as one about homomorphisms out
+  of the Galois group, where the solvability hypothesis becomes free.  A homomorphism into a
+  commutative group has a normal kernel whose fixed field is a quotient of the Galois group
+  embedding in that commutative group, hence abelian; so if every automorphism fixing a place lies
+  in the kernel then every place splits completely in a solvable subextension, which is therefore
+  trivial, and **a homomorphism of the Galois group of an arbitrary Galois extension of number
+  fields into a commutative group killing every decomposition group is trivial** — finitely many
+  places, and all the infinite places, being discardable as before.
 * `InverseGalois.CFT.Units.FrobeniusPlace` identifies the decomposition group at a place of a Galois
   extension of number fields with the Galois group of the residue extension, over an arbitrary
   number field base.  The ring of integers upstairs is the ring of invariants of the ring of
@@ -3477,4 +3488,15 @@ it that are available here.
   conversely an open subgroup is a neighbourhood of the identity and so contains one of them, which
   makes the finite Galois levels cofinal and gives **every class of the first or second cohomology
   of an infinite Galois group a representative at a finite Galois level.**
+* `InverseGalois.CFT.Profinite.Res` goes the other way, along the inclusion of a subgroup: the
+  subspace topology makes the inclusion continuous and the subgroup inherits smoothness of the
+  action, so composing a cochain with it is **restriction to that subgroup**, and its triviality
+  says the representing cocycle is a coboundary there.  A family of subgroups then cuts out the
+  classes dying on every member of it, the shape in which the everywhere locally trivial classes of
+  a number field appear once a place is read as a decomposition subgroup.
+* `InverseGalois.CFT.Profinite.Trivial` is the case of coefficients on which the group acts
+  trivially, the one that carries the local-global arguments.  There the cocycle relation says
+  exactly that the cochain is a homomorphism, every coboundary is trivial, and smoothness is
+  openness of the kernel, so **a class dies on a family of subgroups exactly when every one of them
+  lies in the kernel of the corresponding homomorphism.**
 -/
