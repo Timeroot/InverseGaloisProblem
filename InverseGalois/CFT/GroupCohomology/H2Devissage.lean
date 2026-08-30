@@ -30,6 +30,9 @@ in its own right rather than as the fixed field of a subgroup.
 * `InverseGalois.CFT.card_H2_quotientToInvariants_of_devissage`: the second cohomology of the
   representation induced on the invariants of the kernel has as many elements as the second
   cohomology of the given representation of the quotient.
+* `InverseGalois.CFT.exists_zsmul_eq_zero_imp_dvd_H2_of_devissage`: **a class annihilated only by
+  the multiples of a number is matched by such a class of the given representation of the
+  quotient.**
 * `InverseGalois.CFT.finite_and_card_H2_le_of_devissage`: **the second cohomology of `G` is finite
   and has at most as many elements as the product of the second cohomology of the quotient and the
   second cohomology of the kernel.**
@@ -97,6 +100,16 @@ theorem card_H2_quotientToInvariants_of_devissage (hπ : Function.Surjective π)
   card_H2_eq_of_addEquiv (QuotientGroup.quotientKerEquivOfSurjective π hπ)
     (devissageEquiv π φ hφinj hφeq hφrange).symm
     (devissage_intertwines π φ hφinj hφeq hφrange hπ)
+
+/-- **A class of the representation induced on the invariants of the kernel that is annihilated
+only by the multiples of a number is matched by such a class of the given representation of the
+quotient.** -/
+theorem exists_zsmul_eq_zero_imp_dvd_H2_of_devissage (hπ : Function.Surjective π) {n : ℕ}
+    (h : ∃ γ : ↥(H2 (A.quotientToInvariants π.ker)), ∀ m : ℤ, m • γ = 0 → (n : ℤ) ∣ m) :
+    ∃ γ : ↥(H2 B), ∀ m : ℤ, m • γ = 0 → (n : ℤ) ∣ m :=
+  exists_zsmul_eq_zero_imp_dvd_H2_of_addEquiv (QuotientGroup.quotientKerEquivOfSurjective π hπ)
+    (devissageEquiv π φ hφinj hφeq hφrange).symm
+    (devissage_intertwines π φ hφinj hφeq hφrange hπ) h
 
 /-- The second cohomology of the representation induced on the invariants of the kernel is finite
 as soon as the second cohomology of the given representation of the quotient is. -/

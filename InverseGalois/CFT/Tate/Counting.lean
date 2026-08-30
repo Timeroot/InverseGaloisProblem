@@ -22,6 +22,10 @@ inequality supplies the bound on the other Tate group, and the two together leav
 
 ## Main results
 
+* `InverseGalois.CFT.forall_mem_multiples_of_addEquiv`: a generator of an abelian group is carried
+  to a generator by an isomorphism.
+* `InverseGalois.CFT.surjective_of_mem_range_of_forall_mem_multiples`: a homomorphism whose range
+  contains an element generating the target is surjective.
 * `InverseGalois.CFT.tateH0.zsmul_mk_eq_zero`: the exponent annihilates the class of a fixed
   point.
 * `InverseGalois.CFT.tateH0.exists_normHom_of_map_surjective`: **a fixed point whose image has the
@@ -36,6 +40,25 @@ Tate cohomology, norm, counting, fundamental class
 namespace InverseGalois.CFT
 
 variable {A B : Type*} [AddCommGroup A] [AddCommGroup B] {σA : A ≃+ A} {σB : B ≃+ B} {n : ℕ}
+
+/-- **A generator of an abelian group is carried to a generator by an isomorphism.** -/
+theorem forall_mem_multiples_of_addEquiv (e : A ≃+ B) {b : A}
+    (hb : ∀ z : A, z ∈ AddSubmonoid.multiples b) (w : B) :
+    w ∈ AddSubmonoid.multiples (e b) := by
+  obtain ⟨m, hm⟩ := hb (e.symm w)
+  refine ⟨m, ?_⟩
+  dsimp only at hm ⊢
+  rw [← map_nsmul e m b, hm, AddEquiv.apply_symm_apply]
+
+/-- **A homomorphism whose range contains an element generating the target is surjective.** -/
+theorem surjective_of_mem_range_of_forall_mem_multiples {f : A →+ B} {b : B} (hb : b ∈ f.range)
+    (hgen : ∀ z : B, z ∈ AddSubmonoid.multiples b) : Function.Surjective f := by
+  intro z
+  obtain ⟨m, hm⟩ := hgen z
+  obtain ⟨a, ha⟩ := hb
+  refine ⟨m • a, ?_⟩
+  rw [map_nsmul, ha]
+  exact hm
 
 /-- The exponent annihilates the class of a fixed point: the corresponding multiple of the point
 is its own norm. -/

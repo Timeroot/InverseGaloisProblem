@@ -34,6 +34,9 @@ residue characteristic exceeds the degree.
 * `InverseGalois.CFT.exists_zsmul_eq_zero_imp_dvd_H2_ideleClassRep_rat`: **the second cohomology of
   the idele class group of a totally real cyclic extension of the rationals ramified at a single
   prime contains a class annihilated by exactly the multiples of the degree.**
+* `InverseGalois.CFT.exists_adicPlaceIdele_forall_mem_multiples_rat`: **an idele of the rationals
+  supported at the distinguished prime whose class generates the quotient by the principal ideles
+  and the norms, and has order the degree.**
 
 ## Tags
 
@@ -142,6 +145,38 @@ theorem exists_zsmul_eq_zero_imp_dvd_H2_ideleClassRep_rat [IsCyclic Gal(K/ℚ)] 
   refine heightOneSpectrum_rat_eq_of_natCast_mem hq ?_ (natCast_mem_ratPlace q hq)
   rw [primeUnder_asIdeal, Ideal.under_def, Ideal.mem_comap, map_natCast]
   exact hmem
+
+/-- **An idele of the rationals supported at the distinguished prime whose class generates the
+quotient by the principal ideles and the norms, and has order the degree.**  It is the idele whose
+component at that prime is the unit produced by the cyclicity of the residue field. -/
+theorem exists_adicPlaceIdele_forall_mem_multiples_rat [IsCyclic Gal(K/ℚ)] [IsTotallyReal K]
+    {q : ℕ} (hq : q.Prime) (hqn : ¬ q ∣ Nat.card Gal(K/ℚ)) (hram : ramifiedSet K ⊆ {q}) :
+    ∃ u : Additive ((ratPlace q hq).adicCompletion ℚ)ˣ,
+      (∀ z : ↥(idele ℚ) ⧸ ((ideleDiag ℚ).range ⊔ (ideleNorm ℚ K).range),
+          z ∈ AddSubmonoid.multiples
+            ((adicPlaceIdele ℚ (ratPlace q hq) u : ↥(idele ℚ)) :
+              ↥(idele ℚ) ⧸ ((ideleDiag ℚ).range ⊔ (ideleNorm ℚ K).range))) ∧
+        addOrderOf ((adicPlaceIdele ℚ (ratPlace q hq) u : ↥(idele ℚ)) :
+            ↥(idele ℚ) ⧸ ((ideleDiag ℚ).range ⊔ (ideleNorm ℚ K).range))
+          = Nat.card Gal(K/ℚ) := by
+  obtain ⟨σ, hgen⟩ := IsCyclic.exists_generator (α := Gal(K/ℚ))
+  obtain ⟨g, hg⟩ := exists_unitGen_pow_mul_pow ℚ (ratPlace q hq) hq (natCast_mem_ratPlace q hq)
+    (Nat.card_pos (α := Gal(K/ℚ))).ne' hqn
+  have hinf : ∀ (w : InfinitePlace K) (b : ((w.comap (algebraMap ℚ K)).Completion)ˣ),
+      b ∈ normSubgroup ((w.comap (algebraMap ℚ K)).Completion) w.Completion :=
+    fun w b => mem_normSubgroup_infiniteCompletion_of_isReal ℚ w (IsTotallyReal.isReal w) b
+  have hfin : ∀ w : HeightOneSpectrum (𝓞 K), primeUnder (𝓞 ℚ) w ≠ ratPlace q hq →
+      ∀ b : ((primeUnder (𝓞 ℚ) w).adicCompletion ℚ)ˣ, unitVal (Additive.ofMul b) = 0 →
+        b ∈ normSubgroup ((primeUnder (𝓞 ℚ) w).adicCompletion ℚ) (w.adicCompletion K) := by
+    intro w hne b hb
+    refine mem_normSubgroup_adicCompletion_of_isUnramifiedAt ℚ w ?_ hb
+    refine isUnramifiedAt_of_ramifiedSet_subset_singleton hq hram w fun hmem => hne ?_
+    refine heightOneSpectrum_rat_eq_of_natCast_mem hq ?_ (natCast_mem_ratPlace q hq)
+    rw [primeUnder_asIdeal, Ideal.under_def, Ideal.mem_comap, map_natCast]
+    exact hmem
+  exact ⟨Additive.ofMul g,
+    forall_mem_multiples_ideleQuot K hgen (ratPlace q hq) hinf hfin hg,
+    addOrderOf_ideleQuot_eq K hgen (ratPlace q hq) hinf hfin hg⟩
 
 end Class
 

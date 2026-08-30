@@ -32,6 +32,9 @@ the Galois group of the top field over the middle field.
 
 ## Main results
 
+* `InverseGalois.CFT.exists_zsmul_eq_zero_imp_dvd_H2_ideleClassRep_of_tower`: **a class of the
+  second cohomology of the invariants of the middle field that is annihilated only by the multiples
+  of a number is matched by such a class for the middle field over the base.**
 * `InverseGalois.CFT.finite_and_card_H2_ideleClassRep_of_tower`: **the second cohomology of the
   idele class group of the top field over the base is finite and has at most as many elements as
   the product of the second cohomology for the middle field over the base and the second cohomology
@@ -126,6 +129,25 @@ theorem eq_zero_H1_ideleClassRepKer
   eq_zero_H1_of_mulEquiv (A := ideleClassRepKer k F K) (B := ideleClassRep F K)
     (galRestrictKerEquiv k F K).symm (LinearEquiv.refl ℤ (IdeleClass K))
     (fun s a => ideleClassRepKer_rho k F K s a) hKF z
+
+variable (k F K) in
+omit [NumberField k] in
+/-- **A class of the second cohomology of the invariants of the middle field that is annihilated
+only by the multiples of a number is matched by such a class for the middle field over the
+base.** -/
+theorem exists_zsmul_eq_zero_imp_dvd_H2_ideleClassRep_of_tower {n : ℕ}
+    (h : ∃ γ : ↥(H2 ((ideleClassRep k K).quotientToInvariants
+        (AlgEquiv.restrictNormalHom F : Gal(K/k) →* Gal(F/k)).ker)),
+      ∀ m : ℤ, m • γ = 0 → (n : ℤ) ∣ m) :
+    ∃ γ : ↥(H2 (ideleClassRep k F)), ∀ m : ℤ, m • γ = 0 → (n : ℤ) ∣ m :=
+  exists_zsmul_eq_zero_imp_dvd_H2_of_devissage
+    (AlgEquiv.restrictNormalHom F : Gal(K/k) →* Gal(F/k))
+    (ideleClassComapLin F K)
+    (fun _ _ h => ideleClassComap_injective F K h)
+    (fun g b => (ideleClassAut_ideleClassComap F g b).symm)
+    (fun a ha => (mem_range_ideleClassComap_iff F K a).mpr
+      fun σ => ha (σ.restrictScalars k) (restrictNormalHom_restrictScalars k F σ))
+    (AlgEquiv.restrictNormalHom_surjective (F := k) (K₁ := F) (E := K)) h
 
 /-- **Dévissage of the second cohomology of the idele class group along a tower.**  The number of
 classes for the top field over the base is at most the number of classes for the middle field over

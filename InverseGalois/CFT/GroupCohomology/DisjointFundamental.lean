@@ -72,6 +72,22 @@ def conjEquiv (H : Subgroup Γ) [hH : H.Normal] (γ : Γ) : ↥H ≃ ↥H where
   left_inv h := Subtype.ext (by group)
   right_inv h := Subtype.ext (by group)
 
+/-! ### The action of a group element -/
+
+/-- The action of a group element on a representation over the integers, as an isomorphism of the
+underlying additive group. -/
+def rhoAddEquiv (A : Rep ℤ Γ) (γ : Γ) : ↥A.V ≃+ ↥A.V where
+  toFun := A.ρ γ
+  invFun := A.ρ γ⁻¹
+  left_inv x := by
+    rw [← Module.End.mul_apply, ← map_mul, inv_mul_cancel, map_one, Module.End.one_apply]
+  right_inv x := by
+    rw [← Module.End.mul_apply, ← map_mul, mul_inv_cancel, map_one, Module.End.one_apply]
+  map_add' x y := map_add _ x y
+
+@[simp]
+theorem rhoAddEquiv_apply (A : Rep ℤ Γ) (γ : Γ) (x : ↥A.V) : rhoAddEquiv A γ x = A.ρ γ x := rfl
+
 /-! ### The norm of a normal subgroup -/
 
 variable (A : Rep ℤ Γ) (H : Subgroup Γ) [H.Normal] [Fintype ↥H]

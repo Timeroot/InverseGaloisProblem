@@ -32,6 +32,8 @@ because the function exhibiting the image as a coboundary can be transported bac
   representations related by such an isomorphism have the same number of elements.**
 * `InverseGalois.CFT.finite_H2_of_mulEquiv`: finiteness of the second cohomology is transported
   along such an isomorphism.
+* `InverseGalois.CFT.exists_zsmul_eq_zero_imp_dvd_H2_of_addEquiv`: **a class annihilated only by
+  the multiples of a number is transported along such an isomorphism.**
 
 ## Tags
 
@@ -157,6 +159,17 @@ theorem card_H2_eq_of_addEquiv : Nat.card ↥(H2 C) = Nat.card ↥(H2 D) :=
 with an additive isomorphism of the modules. -/
 theorem finite_H2_of_addEquiv [Finite ↥(H2 D)] : Finite ↥(H2 C) :=
   finite_H2_of_mulEquiv e φ.toIntLinearEquiv hφ
+
+/-- **A class annihilated only by the multiples of a number is transported along an isomorphism of
+groups compatible with an additive isomorphism of the modules.**  The transport is additive and
+injective, so it neither creates nor destroys an annihilating multiple. -/
+theorem exists_zsmul_eq_zero_imp_dvd_H2_of_addEquiv {n : ℕ}
+    (h : ∃ γ : ↥(H2 C), ∀ m : ℤ, m • γ = 0 → (n : ℤ) ∣ m) :
+    ∃ γ : ↥(H2 D), ∀ m : ℤ, m • γ = 0 → (n : ℤ) ∣ m := by
+  obtain ⟨γ, hγ⟩ := h
+  refine ⟨h2TransportMap e φ.toIntLinearEquiv hφ γ, fun m hm => ?_⟩
+  refine hγ m ((h2TransportMap_bijective e φ.toIntLinearEquiv hφ).1 ?_)
+  rw [map_zsmul, hm, map_zero]
 
 end IntTransport
 

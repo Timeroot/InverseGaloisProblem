@@ -35,6 +35,10 @@ is totally ramified at `q` and unramified everywhere else.
 * `InverseGalois.CFT.isTotallyReal_of_two_mul_finrank_dvd`: an intermediate field of a CM field with
   cyclic Galois group over the rationals is totally real as soon as twice its degree divides the
   degree of the ambient field.
+* `InverseGalois.CFT.exists_cyclic_totallyRamified_totallyReal_of_dvd`: **a totally real cyclic
+  extension of the rationals of prescribed degree inside the cyclotomic field of a given prime
+  conductor**, totally ramified at that prime and unramified elsewhere, whenever twice the degree
+  divides the prime minus one.
 * `InverseGalois.CFT.exists_prime_cyclic_totallyRamified_totallyReal`: **a totally real cyclic
   extension of the rationals of prescribed degree, totally ramified at a single large prime and
   unramified elsewhere.**
@@ -145,6 +149,34 @@ end Cyclotomic
 
 /-! ### The assembled auxiliary field -/
 
+/-- **A totally real cyclic extension of the rationals of prescribed degree inside the cyclotomic
+field of a given prime conductor**, totally ramified at that prime and unramified elsewhere.  The
+subfield of the prescribed degree is cyclic, totally ramified at the conductor and unramified
+elsewhere, and it is totally real because twice its degree divides the degree of the cyclotomic
+field. -/
+theorem exists_cyclic_totallyRamified_totallyReal_of_dvd {n q : ℕ} (hn : n ≠ 0) (hqp : q.Prime)
+    (hdvd : 2 * n ∣ q - 1) :
+    n < q ∧
+      ∃ (F : IntermediateField ℚ (CyclotomicField q ℚ)) (_ : NumberField ↥F),
+        IsGalois ℚ ↥F ∧ IsCyclic Gal(↥F/ℚ) ∧ IsTotallyReal ↥F ∧ finrank ℚ ↥F = n ∧
+        ramifiedSet ↥F ⊆ {q} ∧
+        ∀ (Q : Ideal (𝓞 ↥F)) (_ : Q.IsPrime) (_ : Q.LiesOver (Ideal.span {(q : ℤ)})),
+          Ideal.inertia Gal(↥F/ℚ) Q = ⊤ := by
+  haveI : Fact q.Prime := ⟨hqp⟩
+  have hn1 : 1 ≤ n := Nat.one_le_iff_ne_zero.mpr hn
+  have h2 : 2 ≤ q := hqp.two_le
+  have hle : 2 * n ≤ q - 1 := Nat.le_of_dvd (by omega) hdvd
+  have hnq : n < q := by omega
+  have hq2 : 2 < q := by omega
+  haveI : IsCyclotomicExtension {q ^ 1} ℚ (CyclotomicField q ℚ) := by rw [pow_one]; infer_instance
+  have hrank : finrank ℚ (CyclotomicField q ℚ) = q - 1 := finrank_cyclotomic_of_prime q _
+  obtain ⟨F, hNF, hgal, hcyc, hFrank, hram, hinert⟩ :=
+    exists_cyclic_totallyRamified q 1 (Or.inr (by norm_num)) (CyclotomicField q ℚ)
+      (ℓ := n) (by rw [pow_one, Nat.totient_prime hqp]; exact dvd_trans ⟨2, mul_comm 2 n⟩ hdvd)
+  refine ⟨hnq, F, hNF, hgal, hcyc, ?_, hFrank, hram, hinert⟩
+  exact isTotallyReal_of_two_mul_finrank_dvd_cyclotomic q (CyclotomicField q ℚ) hq2 F
+    (by rw [hFrank, hrank]; exact hdvd)
+
 /-- **A totally real cyclic extension of the rationals of prescribed degree, totally ramified at a
 single large prime and unramified elsewhere.**  Dirichlet's theorem supplies a prime `q` congruent
 to one modulo twice the degree; the subfield of the cyclotomic field of conductor `q` of that
@@ -159,21 +191,7 @@ theorem exists_prime_cyclic_totallyRamified_totallyReal {n : ℕ} (hn : n ≠ 0)
           Ideal.inertia Gal(↥F/ℚ) Q = ⊤ := by
   obtain ⟨q, hqB, hqp, -, hdvd⟩ := Nat.exists_prime_gt_and_pow_dvd_sub_one (m := 2 * n)
     (Nat.mul_ne_zero two_ne_zero hn) (max B n)
-  haveI : Fact q.Prime := ⟨hqp⟩
-  have hBq : B < q := lt_of_le_of_lt (le_max_left B n) hqB
-  have hnq : n < q := lt_of_le_of_lt (le_max_right B n) hqB
-  have hq2 : 2 < q := by
-    have h2 : 2 ≤ q := hqp.two_le
-    have hle : 2 * n ≤ q - 1 := Nat.le_of_dvd (by omega) hdvd
-    have hn1 : 1 ≤ n := Nat.one_le_iff_ne_zero.mpr hn
-    omega
-  haveI : IsCyclotomicExtension {q ^ 1} ℚ (CyclotomicField q ℚ) := by rw [pow_one]; infer_instance
-  have hrank : finrank ℚ (CyclotomicField q ℚ) = q - 1 := finrank_cyclotomic_of_prime q _
-  obtain ⟨F, hNF, hgal, hcyc, hFrank, hram, hinert⟩ :=
-    exists_cyclic_totallyRamified q 1 (Or.inr (by norm_num)) (CyclotomicField q ℚ)
-      (ℓ := n) (by rw [pow_one, Nat.totient_prime hqp]; exact dvd_trans ⟨2, mul_comm 2 n⟩ hdvd)
-  refine ⟨q, hBq, hnq, hqp, F, hNF, hgal, hcyc, ?_, hFrank, hram, hinert⟩
-  exact isTotallyReal_of_two_mul_finrank_dvd_cyclotomic q (CyclotomicField q ℚ) hq2 F
-    (by rw [hFrank, hrank]; exact hdvd)
+  obtain ⟨hnq, hF⟩ := exists_cyclic_totallyRamified_totallyReal_of_dvd hn hqp hdvd
+  exact ⟨q, lt_of_le_of_lt (le_max_left B n) hqB, hnq, hqp, hF⟩
 
 end InverseGalois.CFT
