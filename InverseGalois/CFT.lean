@@ -483,6 +483,7 @@ import InverseGalois.CFT.Tate.Shapiro
 import InverseGalois.CFT.Tate.Surjection
 import InverseGalois.CFT.Tate.Trivial
 import InverseGalois.CFT.Tate.TrivialLattice
+import InverseGalois.CFT.TateCohomology.Abelianization
 import InverseGalois.CFT.TateCohomology.Acyclic
 import InverseGalois.CFT.TateCohomology.Additive
 import InverseGalois.CFT.TateCohomology.Annihilate
@@ -3133,6 +3134,13 @@ it that are available here.
   over the whole group** -- the shape in which the fundamental class of a class formation presents
   itself -- and that count therefore delivers both **Tate's theorem** and **the theorem of Tate and
   Nakayama for coefficients flat over the integers** on its own.
+* `InverseGalois.CFT.TateCohomology.Abelianization` names the group side of the reciprocity law.
+  Below degree minus one the complete cohomology is the homology with the degree shifted by one, so
+  in degree minus two it is the first homology group; the first homology group of a trivial
+  representation is the abelianization of the group tensored with the coefficients, and over the
+  integers the tensor factor may be dropped.  So **the complete cohomology of the trivial integral
+  representation in degree minus two is the abelianization of the group**, written additively,
+  which is the object Tate's theorem matches against the classes of the base modulo the norms.
 * `InverseGalois.CFT.Units.IdeleClassH2` supplies the count in degree two for a cyclic
   extension.  The zeroth Tate group of the automorphism by which a generator acts is the
   quotient of the ideles of the base field by the principal ideles together with the norms, an
