@@ -519,6 +519,7 @@ import InverseGalois.CFT.Units.ABHNSqrtNegOneRamified
 import InverseGalois.CFT.Units.ABHNTorsion
 import InverseGalois.CFT.Units.AdicFixed
 import InverseGalois.CFT.Units.AdicIdeleHerbrand
+import InverseGalois.CFT.Units.AdicLocalNorm
 import InverseGalois.CFT.Units.AdicOrbit
 import InverseGalois.CFT.Units.AdicSIdeles
 import InverseGalois.CFT.Units.ArchimedeanIdeles
@@ -1820,6 +1821,11 @@ it that are available here.
   local-to-global criterion then exhibits an idele that is a local norm at every place as the norm
   of an idele, and the norm theorem turns a unit of the base field that is a local norm everywhere
   into the norm of a unit of the extension.
+* `InverseGalois.CFT.Units.AdicLocalNorm` settles two cases of that local condition.  At a place
+  that splits completely the norm operator of the trivial decomposition group is the identity, so
+  every local unit of the base field is a norm.  At a place whose decomposition group is cyclic and
+  fixes a uniformizer, the zeroth Tate group of the units of the valuation ring of the completion
+  vanishes, and a unit coming from below is fixed there, so it is a norm.
 * `InverseGalois.CFT.Local.AdicAction` carries a field automorphism to the adic completions: it
   preserves the valuation of an element up to moving the prime, so it is an isometry of the valued
   field at a prime onto the valued field at the image prime, and extends by continuity to a ring

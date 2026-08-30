@@ -39,6 +39,10 @@ norms with the integers modulo the degree.
   extension is surjective.**
 * `InverseGalois.CFT.unramifiedNormEquiv`: **the units modulo the norms of an unramified extension
   of norm index the degree are the integers modulo the degree.**
+* `InverseGalois.CFT.mem_normSubgroup_iff_dvd_unitValDiv`: **a unit of the base field of an
+  unramified extension is a norm exactly when the degree divides its value.**
+* `InverseGalois.CFT.mem_normSubgroup_of_unitVal_eq_zero`: **a unit of the valuation ring of the
+  base field of an unramified extension is a norm.**
 
 ## Tags
 
@@ -176,6 +180,54 @@ noncomputable def unramifiedNormEquiv
     exact ⟨QuotientGroup.mk a, ha⟩
   · rw [show Nat.card (Kˣ ⧸ normSubgroup K A) = (normSubgroup K A).index from rfl, hindex,
       ← Nat.card_congr (Multiplicative.ofAdd (α := ZMod (finrank K A))), Nat.card_zmod]
+
+/-! ### Which units are norms -/
+
+/-- **The invariant of an unramified extension has exactly the norms as its kernel**, when the norm
+subgroup has index the degree.  The invariant is onto the integers modulo the degree, so its kernel
+has index the degree as well, and it contains the norms. -/
+theorem ker_unramifiedInvariantUnits
+    (hv : ∀ (σ : A ≃ₐ[K] A) (x : A), Valued.v (σ x) = Valued.v x) (hur : IsUnramifiedValued K A)
+    (hm : IsUnitValGen A m) (hindex : (normSubgroup K A).index = finrank K A) :
+    (unramifiedInvariantUnits K hm).ker = normSubgroup K A := by
+  haveI : NeZero (finrank K A) := ⟨(Module.finrank_pos_iff.2 inferInstance).ne'⟩
+  have hle : normSubgroup K A ≤ (unramifiedInvariantUnits K hm).ker :=
+    normSubgroup_le_ker_unramifiedInvariantUnits hv hm
+  have hkerindex : (unramifiedInvariantUnits K hm).ker.index = finrank K A := by
+    have e := QuotientGroup.quotientKerEquivOfSurjective (unramifiedInvariantUnits K hm)
+      (unramifiedInvariantUnits_surjective hur hm)
+    rw [show (unramifiedInvariantUnits K hm).ker.index
+        = Nat.card (Kˣ ⧸ (unramifiedInvariantUnits K hm).ker) from rfl, Nat.card_congr e.toEquiv,
+      ← Nat.card_congr (Multiplicative.ofAdd (α := ZMod (finrank K A))), Nat.card_zmod]
+  refine le_antisymm ?_ hle
+  rw [← Subgroup.relIndex_eq_one]
+  have hmul := Subgroup.relIndex_mul_index hle
+  rw [hkerindex, hindex] at hmul
+  refine Nat.eq_of_mul_eq_mul_right (Nat.pos_of_ne_zero (NeZero.ne (finrank K A))) ?_
+  rw [one_mul]
+  exact hmul
+
+/-- **A unit of the base field of an unramified extension is a norm exactly when the degree divides
+its value**, once the norm subgroup has index the degree. -/
+theorem mem_normSubgroup_iff_dvd_unitValDiv
+    (hv : ∀ (σ : A ≃ₐ[K] A) (x : A), Valued.v (σ x) = Valued.v x) (hur : IsUnramifiedValued K A)
+    (hm : IsUnitValGen A m) (hindex : (normSubgroup K A).index = finrank K A) (a : Kˣ) :
+    a ∈ normSubgroup K A ↔
+      (finrank K A : ℤ) ∣ unitValDiv hm (Additive.ofMul (unitsAlgebraMap K A a)) := by
+  haveI : NeZero (finrank K A) := ⟨(Module.finrank_pos_iff.2 inferInstance).ne'⟩
+  rw [← ker_unramifiedInvariantUnits hv hur hm hindex, MonoidHom.mem_ker,
+    unramifiedInvariantUnits_apply, show (1 : Multiplicative (ZMod (finrank K A)))
+      = Multiplicative.ofAdd 0 from rfl, Equiv.apply_eq_iff_eq Multiplicative.ofAdd]
+  exact ZMod.intCast_zmod_eq_zero_iff_dvd _ _
+
+/-- **A unit of the valuation ring of the base field of an unramified extension is a norm**, once
+the norm subgroup has index the degree: its value is zero, and the degree divides zero. -/
+theorem mem_normSubgroup_of_unitVal_eq_zero
+    (hv : ∀ (σ : A ≃ₐ[K] A) (x : A), Valued.v (σ x) = Valued.v x) (hur : IsUnramifiedValued K A)
+    (hm : IsUnitValGen A m) (hindex : (normSubgroup K A).index = finrank K A) {a : Kˣ}
+    (ha : unitVal (Additive.ofMul (unitsAlgebraMap K A a)) = 0) : a ∈ normSubgroup K A := by
+  rw [mem_normSubgroup_iff_dvd_unitValDiv hv hur hm hindex, unitValDiv_apply, ha, Int.zero_ediv]
+  exact dvd_zero _
 
 end GaloisIndex
 
