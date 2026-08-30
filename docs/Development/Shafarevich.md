@@ -3625,6 +3625,153 @@ of size `n`.  Then `inv ∘ res = f · inv` from `finrank_divisionResidue_of_unr
 
 ---
 
+## 0.35 Status (2026-08-30) — **the fundamental class is reachable without reciprocity**: the cyclotomic-auxiliary route
+
+The chain at the end of §0.34 ("… then reciprocity `Σ_v inv_v = 0` over ℚ, then the assembly giving
+`hα`") is **no longer the plan**.  A survey of what the repository already owns turned up a route to
+`hα` that never mentions the Brauer group, never mentions the Artin map, and needs neither
+Kronecker–Weber, nor Chebotarev, nor local class field theory, nor the *ramified* local restriction
+formula.  It costs one genuinely number-theoretic argument (step 6 below) and a stack of plumbing.
+
+### The wall, restated
+
+`InverseGalois/CFT/Units/IdeleClassTate.lean:89`:
+
+```lean
+theorem isTateClassTwo_ideleClassRep {α : tateModule (ideleClassRep k K) 2} (S : Subgroup Gal(K/k))
+    (hα : ∀ m : ℤ, m • α = 0 → (Nat.card Gal(K/k) : ℤ) ∣ m) :
+    IsTateClassTwo S (ideleClassRep k K) α
+```
+
+Everything else in Tate–Nakayama for the idele class group is landed: `Ĥ¹ = 0` for every subgroup
+(`Units/IdeleClassH1Full.lean`), `|Ĥ²(S)| ≤ |S|` for every subgroup
+(`Units/IdeleClassH2Full.lean`), and `isTateClassTwo_of_card_le` turns "`α` has order exactly `n`"
+into the Tate class.  So the *only* missing input is an element of order `|Gal(K/ℚ)|` in
+`H²(Gal(K/ℚ), C_K)` — the fundamental class.
+
+### Why counting cannot do it
+
+Recorded so nobody re-tries it.  `Ĥ¹(S) = 0` together with `|Ĥ²(S)| ≤ |S|` for *all* subgroups `S`
+does **not** force an element of order `|G|`: for `G = (ℤ/2)²` the data `Ĥ²(G) = (ℤ/2)²`,
+`Ĥ²(S) = ℤ/2` for each of the three subgroups of order two, satisfies every inequality and has
+exponent `2 < 4`.  Two related tricks also fail:
+
+* "`|ker(res : Ĥ²(K'/ℚ) → Ĥ²(K'/K))| ≥ n` for a big enough `K'`" needs a `K' ⊇ K` carrying a place
+  of full local degree, which forces `Gal(K'/ℚ)` solvable — no good for general `K`.
+* `K ⊆ K'` with `K'/ℚ` cyclic forces `K/ℚ` cyclic, so one cannot simply enlarge to a cyclic field.
+
+Some genuine arithmetic input is required.  The route below is the cheapest one found.
+
+### The route
+
+Let `K/ℚ` be finite Galois, `n = [K : ℚ]`.
+
+1. **Auxiliary prime `q`.**  Pick a prime `q ≡ 1 (mod 2n)` with `q ∤ disc K`.  Available:
+   `Nat.exists_prime_gt_and_pow_dvd_sub_one` (`Cyclotomic/CyclicSubfield.lean`).
+2. **Auxiliary cyclic field `L`.**  `L` = the degree-`n` subfield of `ℚ(ζ_q)`.  It is cyclic,
+   totally ramified at `q`, unramified everywhere else, and **totally real** (`n ∣ (q−1)/2` forces
+   `−1` into the index-`n` subgroup `H ≤ (ℤ/q)ˣ`, and `H` is exactly the `n`-th powers).  Available:
+   `exists_cyclic_totallyRamified`, `exists_intermediateField_cyclic_totallyRamified`
+   (`Cyclotomic/TotallyRamified.lean`), `Subgroup.exists_index_eq_of_isCyclic`,
+   `IsCyclic.exists_intermediateField_finrank_eq` (`Cyclotomic/CyclicSubfield.lean`).
+3. **Auxiliary prime `p`.**  Pick `p ∤ disc K`, `p ≠ q`, with `p mod q` a primitive root of
+   `(ℤ/q)ˣ`; then `Frob_p` generates `Gal(L/ℚ) ≅ (ℤ/q)ˣ / H ≅ ℤ/n`, i.e. `p` is inert in `L`.
+   Needs Dirichlet on primes in arithmetic progressions — Mathlib
+   `Mathlib/NumberTheory/LSeries/PrimesInAP.lean`.
+4. **Linear disjointness is automatic.**  `K ∩ ℚ(ζ_q) = ℚ`, because `ℚ(ζ_q)/ℚ` is totally ramified
+   at `q` while `K` is unramified at `q`.  Hence `Gal(KL/K) ≅ Gal(L/ℚ) = Δ`, cyclic of order `n`.
+5. **The two quotients have order `n`.**  `Q_ℚ := I_ℚ / (ℚˣ ⊔ N_{L/ℚ} I_L)` and
+   `Q_K := I_K / (Kˣ ⊔ N_{KL/K} I_{KL})` both have order exactly `n`, from
+   `card_H2_ideleClassRep_of_generator` (`Units/IdeleClassH2.lean`) transported by
+   `ideleQuotEquivTateH0` (`Units/IdeleClassIndex.lean:175`) and `tateH0AddEquivH2`
+   (`GroupCohomology/CyclicTate.lean:229`).
+6. **(α) The idele `j` has order exactly `n` in `Q_ℚ`.**  Here `j` is `p` at the place `p` and `1`
+   everywhere else.  *Proof by relation-chasing.*  Suppose `j^d = r · N(y)` with `r ∈ ℚˣ`,
+   `y ∈ I_L`.  Compare place by place:
+   * at `ℓ ∉ {p, q}`: `f_ℓ ∣ v_ℓ(r)`, because `v_ℓ` of a local norm lies in `f_ℓ ℤ`;
+   * at `p`: `d ≡ v_p(r) (mod f_p = n)`, because `p` is inert in `L`;
+   * at `q`: `r = N(y_w)^{-1}`, and `N(L_w^×) ⊆ ⟨q⟩ · U_H` where `U_H` = the units whose residue
+     lies in `H` (`L_w/ℚ_q` is totally ramified of degree `n`, so `N(u) ≡ ū^n mod q`).
+
+   Reducing the `q`-unit part of `r` mod `q` gives
+   `sign(r) · ∏_{ℓ ≠ q} (ℓ mod q)^{v_ℓ(r)} ∈ H`.  Since `−1 ∈ H` (totally real!) and
+   `(ℓ mod q)^{f_ℓ} ∈ H`, all the terms with `ℓ ≠ p` die, leaving `Frob_p^{v_p(r)} = 1` in
+   `(ℤ/q)ˣ/H`, i.e. `n ∣ v_p(r) ≡ d`.  ∎
+7. **(β) `[u_q^p] = [j]^{-1}` in `Q_ℚ`**, where `u_q^p` is `p` at the place `q` and `1` elsewhere.
+   Indeed `j · u_q^p · (diag p)^{-1}` is `p^{-1}` outside `{p, q}` and `1` at `p, q`; every such
+   place is unramified in `L` (or is `∞`, where `L_u = ℝ` and the norm is the identity), and units
+   are norms in unramified local extensions.
+8. **The norm map `N_{K/ℚ} : Q_K → Q_ℚ` is an isomorphism.**  Well defined because
+   `N_{K/ℚ} ∘ N_{KL/K} = N_{KL/ℚ} = N_{L/ℚ} ∘ N_{KL/L}`.  **Surjective** because at the place `q`
+   the extension `K_w/ℚ_q` is unramified, so the norm is onto the units (`exists_normHom_kerUnitVal`,
+   `Local/UnramifiedUnits.lean`), and hitting `u = p` produces `[j]^{-1}`, a generator by (α)+(β).
+   Equal finite orders `n` then give injectivity.
+9. **`[j_K] = 0` in `Q_K`.**  `N_{K/ℚ}([j_K]) = [j]^n = 0` by `ideleNorm ∘ ideleComap = (·)^{[K:ℚ]}`,
+   and `N_{K/ℚ}` is injective by step 8.
+10. **Translate to cohomology.**  The class `x ∈ H²(Δ, C_L)` matching `[j]` has order `n`;
+    `res(inf x) ∈ H²(Gal(KL/K), C_{KL})` matches `[j_K] = 0`.
+11. **Inflation–restriction in degree two** (legitimate here because `Ĥ¹` of the idele class group
+    vanishes — already proven) produces a unique `α ∈ H²(Gal(K/ℚ), C_K)` with `inf α = inf x`, of
+    order `n`.  That is exactly `hα`.
+
+### What this retires
+
+* **Artin reciprocity in general form is off the critical path.**  Cyclicity of `C_ℚ / N C_L` is
+  *equivalent* to reciprocity, but the elementary cyclotomic construction above supplies the one
+  instance of it that is needed, directly.
+* **The ramified local restriction formula `inv_L ∘ res = [L:K] · inv_K` is not needed.**  Because
+  the auxiliary prime `p` is chosen unramified in `K`, only the already-landed unramified case
+  (`localInvariant_baseChange`, `Brauer/LocalInvariantRestrict.lean`) would ever be used — and in
+  fact the route above does not use the Brauer group at all.  §0.31's "next targets, in order" is
+  superseded from its reciprocity bullet onward.
+* Kronecker–Weber, Chebotarev density and local class field theory are all unnecessary; the only
+  analytic input is Dirichlet's theorem, which Mathlib has.
+
+### Bricks to build, in order
+
+1. Local: `N(u) ≡ ū^n (mod 𝔪)` for a totally ramified extension of degree `n`, and hence
+   `N(L_w^×) ⊆ ⟨π⟩ · U_H` once a uniformizer with `N(π_L) = π` is known.  Globally
+   `π_L = N_{ℚ(ζ_q)/L}(1 − ζ_q)` has `N_{L/ℚ}(π_L) = q`.
+2. Local: `v(N_{L_w/k_v}(y)) = f · v_w(y)` in the unramified case — check whether
+   `valued_algebraMap_norm` (`Local/UnramifiedNormValue.lean`) already covers it.
+3. The reduction identity for `r ∈ ℚˣ`:
+   `r · q^{−v_q(r)} mod q = sign(r) · ∏_{ℓ ≠ q} (ℓ mod q)^{v_ℓ(r)}` — reuse whatever generation of
+   `ℚˣ` by `−1` and the primes `Global/Reciprocity.lean` / `RationalSquareClasses.lean` used.
+4. `f_ℓ(L/ℚ)` = order of `ℓ mod q` in `(ℤ/q)ˣ / H`, from `orderOf_arithFrobAt`
+   (`Cyclotomic/Frobenius.lean`) plus the subfield dictionary.
+5. Statement (α): `j^d ∈ ℚˣ ⊔ N I_L → n ∣ d`.
+6. Statement (β): `[u_q^p] = [j]^{-1}`.
+7. Bijectivity of `N_{K/ℚ} : Q_K → Q_ℚ`, and `[j_K] = 0`.
+8. Cohomological plumbing: naturality of `tateH0ToH2` along a compatible pair (group homomorphism
+   plus equivariant coefficient map), and inflation–restriction exactness in degree two for the
+   idele class representation.  Check `Units/InflationDescent.lean`,
+   `Units/IdeleClassH2Tower.lean`, `Units/IdeleClassTower.lean` first.
+
+### Inventory of the repository assets this route uses
+
+`card_H2_ideleClassRep_of_generator`, `card_H2_ideleClassRep_cyclic` (`Units/IdeleClassH2.lean`);
+`tateH0AddEquivH2`, `card_H2_eq_card_tateH0`, `tateH0ToH2`, `ker_tateH0ToH2`
+(`GroupCohomology/CyclicTate.lean`); `ideleQuotEquivTateH0`, `toTateH0`, `first_inequality_index`,
+`mem_ker_toTateH0_iff`, `toTateH0_surjective` (`Units/IdeleClassIndex.lean`);
+`finite_and_card_H2_res_subgroup` (`Units/IdeleClassH2Full.lean`); `eq_zero_H1_res_subgroup`
+(`Units/IdeleClassH1Full.lean`); `exists_normHom_kerUnitVal` (`Local/UnramifiedUnits.lean`);
+`unramifiedInvariantUnits_surjective`, `valued_algebraMap_norm` (`Local/UnramifiedNormValue.lean`);
+`exists_cyclic_totallyRamified` (`Cyclotomic/TotallyRamified.lean`); `orderOf_arithFrobAt`,
+`galEquivZMod_arithFrobAt` (`Cyclotomic/Frobenius.lean`);
+`Nat.exists_prime_gt_and_pow_dvd_sub_one`, `exists_prime_and_cyclic_intermediateField`
+(`Cyclotomic/CyclicSubfield.lean`); `hilbert_reciprocity`, `exists_sub_sq_iff_forall_local`
+(`Global/Reciprocity.lean`, `Global/HasseNorm.lean` — quadratic reciprocity and the quadratic Hasse
+norm theorem over ℚ are already done, and are the `n = 2` shadow of exactly this argument).
+
+### Landed since §0.31
+
+`84303e3`, `7e65083`, `bb7e06e`, `f859ac7`, `4126374`, `7f47e58` (the last being the base change of
+a cyclic algebra along a compositum: `Brauer/CyclicCompositum.lean` +
+`Brauer/InvariantCompositum.lean`, giving `brauerInvariant_baseChange_compositum` — the invariant is
+multiplied by the ratio of the two valuations).
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
