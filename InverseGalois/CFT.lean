@@ -9,6 +9,7 @@ import InverseGalois.CFT.Brauer.Centralizer
 import InverseGalois.CFT.Brauer.CentralizerProduct
 import InverseGalois.CFT.Brauer.CrossedProduct
 import InverseGalois.CFT.Brauer.CrossedProductCohomologous
+import InverseGalois.CFT.Brauer.CrossedProductCompositum
 import InverseGalois.CFT.Brauer.CrossedProductMul
 import InverseGalois.CFT.Brauer.CrossedProductRecognition
 import InverseGalois.CFT.Brauer.CrossedProductRestrict
@@ -1182,6 +1183,11 @@ it that are available here.
   field `M`: the automorphisms fixing `M` span the centralizer of the copy of `M`, so extending
   scalars to `M` sends the Brauer class of a cocycle to the class of its restriction to
   `Gal(L/M)`.
+* `InverseGalois.CFT.Brauer.CrossedProductCompositum` extends a crossed product along a field that
+  need not be intermediate: an isomorphism between the Galois group of a second extension and the
+  Galois group of the first, compatible with the embedding of the first top field, transports the
+  cocycle, and extension of scalars sends the Brauer class of the cocycle to the class of its
+  transport.
 * `InverseGalois.CFT.Brauer.H2Surjective` combines the two to invert the crossed product
   homomorphism: the relative Brauer group `Br(L / K)` of a finite Galois extension is isomorphic
   to the second cohomology group of `Gal(L/K)` with coefficients in `Lˣ`, and is killed by
