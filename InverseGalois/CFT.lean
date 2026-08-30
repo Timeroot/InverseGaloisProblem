@@ -39,6 +39,7 @@ import InverseGalois.CFT.Brauer.DivisionValueGroup
 import InverseGalois.CFT.Brauer.Exponent
 import InverseGalois.CFT.Brauer.Frobenius
 import InverseGalois.CFT.Brauer.FrobeniusBaseChange
+import InverseGalois.CFT.Brauer.FrobeniusRamified
 import InverseGalois.CFT.Brauer.FrobeniusTower
 import InverseGalois.CFT.Brauer.GaloisSplitting
 import InverseGalois.CFT.Brauer.Group
@@ -3461,6 +3462,13 @@ it that are available here.
   values of the intermediate field agree, so its residues over itself are its residues over the
   base field, and **an unramified intermediate field has as many residues as the number of residues
   of the base field raised to the degree.**
+* `InverseGalois.CFT.Brauer.FrobeniusRamified` treats the opposite case, a base field which has no
+  more residues than the one below it.  The two absolute values of the extension still agree and
+  the two Frobenius conditions ask for the same power, so **an automorphism of an extension of a
+  base field with the same residues is a Frobenius automorphism over the smaller base field as soon
+  as it is one over the larger**, and hence **the Frobenius automorphism of an unramified extension
+  of the larger base field restricts to the Frobenius automorphism of an unramified extension of
+  the smaller one inside it.**
 * `InverseGalois.CFT.Brauer.LocalInvariantRestrict` normalises the base-change formula.  Both
   invariants are taken with respect to the Frobenius automorphism, and the Frobenius automorphism
   of the top field over the intermediate field is precisely an automorphism inducing the power of
