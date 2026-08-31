@@ -585,6 +585,7 @@ import InverseGalois.CFT.Units.CompositumEmbed
 import InverseGalois.CFT.Units.CompositumFundamental
 import InverseGalois.CFT.Units.CyclicTrivial
 import InverseGalois.CFT.Units.Decomposition
+import InverseGalois.CFT.Units.DecompositionGalois
 import InverseGalois.CFT.Units.DecompositionOutside
 import InverseGalois.CFT.Units.HasseHom
 import InverseGalois.CFT.Units.HasseLevel
@@ -1293,8 +1294,9 @@ it that are available here.
 * `InverseGalois.CFT.Brauer.PlaceInvariant` localizes a Brauer class of a number field at a finite
   place: the completion there is a local field, so base change followed by the local invariant map
   attaches to every class a rational number modulo the integers, and that number vanishes exactly
-  when the completion splits the class.  Base change of the smooth second cohomology of an absolute
-  Galois group is read off the same identification, and is functorial in the field.
+  when the completion splits the class.  The archimedean members of the family come from a real
+  embedding of the base in the same way.  Base change of the smooth second cohomology of an
+  absolute Galois group is read off the same identification, and is functorial in the field.
 * `InverseGalois.CFT.Brauer.LocalSymbol` feeds the `n`-th power symbol through that
   identification.  An algebraic closure is closed under `n`-th roots, so nothing is lost in reading
   the symbol of two units in the units of the closure, and the invariant map turns it into a
@@ -2133,6 +2135,9 @@ it that are available here.
   an automorphism over the completion of the base is continuous, hence preserves the unit ball and
   restricts to the extension.  So the elements fixed by the decomposition group are exactly those
   coming from the completion of the base.
+* `InverseGalois.CFT.Units.DecompositionGalois` packages that as an isomorphism of groups: the
+  decomposition group at a prime **is** the Galois group of the completion over the completion of
+  the prime below, so its order is the local degree.
 * `InverseGalois.CFT.Units.CompletionUnits` passes that description to the unit groups: a fixed
   unit comes from the completion of the base and is nonzero there, hence is a unit below.
 * `InverseGalois.CFT.Units.OrbitPlaces` identifies the orbits of the Galois group on the height one

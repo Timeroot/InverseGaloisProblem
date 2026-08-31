@@ -4,13 +4,14 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Brauer.BaseChange
+import InverseGalois.CFT.Brauer.RealInvariant
 import InverseGalois.CFT.Brauer.SmoothInvariant
 import InverseGalois.CFT.Local.AdicHerbrand
 import InverseGalois.CFT.Local.AdicLocalField
 import InverseGalois.CFT.Local.AdicUnits
 
 /-!
-# The invariant of a Brauer class at a finite place of a number field
+# The invariant of a Brauer class at a place of a number field
 
 A central simple algebra over a number field can be completed at a finite place, and the resulting
 central simple algebra over a local field has an invariant, a rational number modulo the integers.
@@ -37,6 +38,8 @@ argument about the map of Galois groups.
   finite place.**
 * `InverseGalois.CFT.smoothPlaceInvariant`: the invariant at a finite place, read on the smooth
   second cohomology of the absolute Galois group.
+* `InverseGalois.CFT.realEmbeddingInvariant`, `InverseGalois.CFT.realPlaceInvariant`: the
+  archimedean members of the same family, attached to a real embedding of the base.
 
 ## Main results
 
@@ -44,6 +47,7 @@ argument about the map of Galois groups.
   of the smooth second cohomology is functorial in the field.
 * `InverseGalois.CFT.placeInvariant_eq_one_iff`: **a Brauer class of a number field has trivial
   invariant at a place exactly when the completion at that place splits it.**
+* `InverseGalois.CFT.realEmbeddingInvariant_eq_one_iff`: the same at a real embedding.
 
 ## Tags
 
@@ -181,5 +185,57 @@ theorem smoothPlaceInvariant_eq_smoothLocalInvariantEquiv {p e : ℕ}
     ← smoothBrauerEquiv_apply, smoothBrauerEquiv_smoothBaseChange]
 
 end Smooth
+
+/-! ### The invariant at a real place -/
+
+section RealPlace
+
+variable (k : Type) [Field k]
+
+/-- **The invariant of a Brauer class at a real embedding of the base**: base change the algebra
+along the embedding, and take the invariant at the real place. -/
+noncomputable def realEmbeddingInvariant [Algebra k ℝ] :
+    BrauerGroup.{0, 0} k →* Multiplicative QModZ :=
+  realBrauerInvariant.comp (BrauerGroup.baseChangeHom ℝ)
+
+theorem realEmbeddingInvariant_apply [Algebra k ℝ] (x : BrauerGroup.{0, 0} k) :
+    realEmbeddingInvariant k x = realBrauerInvariant (BrauerGroup.baseChangeHom ℝ x) := rfl
+
+/-- **A Brauer class has trivial invariant at a real embedding of the base exactly when the reals
+split it.** -/
+theorem realEmbeddingInvariant_eq_one_iff [Algebra k ℝ] (x : BrauerGroup.{0, 0} k) :
+    realEmbeddingInvariant k x = 1 ↔ x ∈ BrauerGroup.relative k ℝ := by
+  rw [realEmbeddingInvariant_apply, realBrauerInvariant_eq_one_iff, BrauerGroup.relative,
+    MonoidHom.mem_ker]
+
+/-- The invariant of a Brauer class at a real embedding, read on the smooth second cohomology of
+the absolute Galois group. -/
+noncomputable def smoothRealEmbeddingInvariant [NumberField k] [Algebra k ℝ] :
+    SmoothH2 Gal(AlgebraicClosure k/k) (AlgebraicClosure k)ˣ →* Multiplicative QModZ :=
+  (realEmbeddingInvariant k).comp (smoothBrauerEquiv k).toMonoidHom
+
+theorem smoothRealEmbeddingInvariant_apply [NumberField k] [Algebra k ℝ]
+    (z : SmoothH2 Gal(AlgebraicClosure k/k) (AlgebraicClosure k)ˣ) :
+    smoothRealEmbeddingInvariant k z = realEmbeddingInvariant k (smoothBrauerEquiv k z) := rfl
+
+variable [NumberField k]
+
+/-- **The invariant of a Brauer class of a number field at a real place.** -/
+noncomputable def realPlaceInvariant {w : InfinitePlace k} (hw : w.IsReal) :
+    BrauerGroup.{0, 0} k →* Multiplicative QModZ :=
+  letI : Algebra k ℝ := (InfinitePlace.embedding_of_isReal hw).toAlgebra
+  realEmbeddingInvariant k
+
+/-- The invariant at a real place, read on the smooth second cohomology of the absolute Galois
+group. -/
+noncomputable def smoothRealPlaceInvariant {w : InfinitePlace k} (hw : w.IsReal) :
+    SmoothH2 Gal(AlgebraicClosure k/k) (AlgebraicClosure k)ˣ →* Multiplicative QModZ :=
+  (realPlaceInvariant k hw).comp (smoothBrauerEquiv k).toMonoidHom
+
+theorem smoothRealPlaceInvariant_apply {w : InfinitePlace k} (hw : w.IsReal)
+    (z : SmoothH2 Gal(AlgebraicClosure k/k) (AlgebraicClosure k)ˣ) :
+    smoothRealPlaceInvariant k hw z = realPlaceInvariant k hw (smoothBrauerEquiv k z) := rfl
+
+end RealPlace
 
 end InverseGalois.CFT
