@@ -4682,6 +4682,116 @@ Build: 9450 jobs green, zero warnings, zero sorries outside the comparator.
 
 ---
 
+## 0.45 Status (2026-08-31, night) — Ш² restricts to a larger base, and inflation preserves the Brauer class
+
+Two bricks, and one correction to the §0.26 table.
+
+### (a) `CFT/Units/DecompositionRestrict.lean` — step 1 of the narrowed route of §0.26
+
+§0.26 narrowed the remaining route to: *first* show that an everywhere locally trivial class over
+`k` dies after passing to a base that contains the roots of unity, *then* feed that into
+Hochschild–Serre.  Step 1 is now a theorem.  Three pieces:
+
+* `continuous_galRestrictScalarsHom` — an automorphism of `Ω` over an intermediate field `k ⊆ K` is
+  in particular one over `k`, and that inclusion `Gal(Ω/K) → Gal(Ω/k)` is *continuous* for the
+  Krull topologies.  The proof is the only one with content: a finite subextension `E/k` is
+  finitely generated (`IntermediateField.essFiniteType_iff` is the practical route to `E.FG`),
+  adjoining generators to `K` gives a finite subextension of `Ω/K`, and an automorphism fixing the
+  latter fixes `E` pointwise because `E` lands in the fixed field of the group it generates.
+* `decompositionSubgroups_le_galRestrictScalarsHom` — a prime of `𝓞 Ω` and an archimedean place of
+  `Ω` are *the same objects* whichever base one works over, and the two stabilizer conditions are
+  literally the same proposition, so each decomposition subgroup over `K` sits inside the
+  corresponding one over `k`.  Both cases are `rw [mem_stabilizer_iff] at hx ⊢; exact hx`.
+* `comapH2_mem_sha2_decompositionSubgroups` (and its degree-one twin) — feeding those two into
+  `comapH2_mem_sha2` (§0.40): **Ш²(k, ·) restricts into Ш²(K, ·)**.
+
+Composing with row 3 gives the statement the route asked for:
+
+```lean
+theorem eq_one_of_mem_sha2_of_isPrimitiveRoot_intermediate … :
+    comapH2 (galRestrictScalarsHom k K Ω) hπ (isSmoothHom_galRestrictScalarsHom k K Ω) z = 1
+```
+
+so `Ш²(k, M) ⊆ ker(H²(k, M) → H²(K, M))` whenever `K` contains the `n`-th roots of unity.
+
+**Correction to the §0.26 table.**  Four of its rows are stale.  "the fundamental class of a class
+formation", "Tate's cohomological triviality theorem", "Tate–Nakayama" and "cup products" were all
+listed as *absent*; `baseFundamentalClass`, `baseTateEquiv`, `baseTateNakayamaEquiv` and
+`baseArtinEquiv` landed in `74e3a6d` (§0.35–§0.36) and `CFT/Profinite/Cup.lean` in §0.44.  The
+residual obstacle in that direction is narrower than the table suggests: the `Module.Flat ℤ`
+hypothesis on the coefficients, which `p`-torsion modules do not satisfy (§0.28).
+
+### (b) `CFT/Brauer/CrossedProductInflate.lean` — the brick §0.44 named
+
+§0.44 ended by naming the missing compatibility for the bridge `SmoothH2 G_K Ωˣ ≅ Br(K)`: that
+inflating a cocycle to a larger splitting field does not change the Brauer class.  That is now a
+theorem.
+
+For a tower `K ⊆ L ⊆ L'` of finite Galois extensions, the inflation of `f : Gal(L/K)² → Lˣ` is
+
+```lean
+inflateCocycle L' f = fun p => Units.map (algebraMap L L')
+  (f (AlgEquiv.restrictNormalHom L p.1, AlgEquiv.restrictNormalHom L p.2))
+```
+
+and it is a cocycle by a transport lemma stated for an arbitrary pair of a group homomorphism and
+an equivariant coefficient homomorphism (`isMulCocycle₂_comp`), instantiated at
+`AlgEquiv.restrictNormalHom L` and `Units.map (algebraMap L L')`; the equivariance
+`smul_units_map_algebraMap` is `AlgEquiv.restrictNormal_commutes` wrapped in `Units.ext`.
+
+The recognition theorem is the `CyclicTower.lean` pattern run for an arbitrary Galois group instead
+of a cyclic one, and it reuses that file's `coordMatrix` toolkit verbatim.  Given a simple algebra
+`A` of dimension `[L : K]²` containing `L` via `emb` together with units `u σ` conjugating it by
+`Gal(L/K)` and multiplying by `f`, and a basis `b : Basis ι L L'`, put
+
+```lean
+W σ = emb.mapMatrix (coordMatrix b fun j => σ (b j)) * diagonal (fun _ => u (σ.restrictNormal L))
+```
+
+inside `Matrix ι ι A`.  Two facts make these the symbols of the inflated cocycle:
+`coordMatrix_map`, which says `S (σ * τ) = S σ * (S τ).map (σ|_L)` — that is exactly the semilinear
+cocycle identity the change-of-basis matrices satisfy — and `hDcomm`, which says the diagonal of a
+symbol conjugates matrix entries by the restriction.  A dimension count
+`finrank K (Matrix ι ι A) = [L:K]² · |ι|² = [L':K]²` then lets
+`crossedProductAlgHom_bijective` (§0.36's recognition API) conclude:
+
+```lean
+nonempty_algEquiv_matrix_inflateCocycle :
+  Nonempty (CrossedProduct (isMulCocycle₂_inflateCocycle (L' := L') hf) ≃ₐ[K]
+    Matrix (Fin (finrank L L')) (Fin (finrank L L')) A)
+```
+
+Applying it to `A = CrossedProduct hf` itself, with `emb = inclAlgHom hf` and the symbols
+`unitSymbol hf g = (isUnit_single_one hf g).unit`, gives the headline
+
+```lean
+mk_csa_inflateCocycle (hf : IsMulCocycle₂ f) :
+  (⟦csa (isMulCocycle₂_inflateCocycle (L' := L') hf)⟧ : BrauerGroup K) = ⟦csa hf⟧
+```
+
+i.e. `(L'/K, inf f) ≅ M_{[L':L]}((L/K, f))` in the Brauer group.  This is the cyclic
+`cyclicBrauerHom_restrictNormal` of `CyclicTower.lean` with the cyclicity dropped.
+
+**Lean note.**  `crossedProductAlgHom` and `crossedProductAlgHom_bijective` live in a
+`variable {K L A : Type u}` block, so the target algebra must be in the *same* universe as `K`.
+Declaring the index type `{ι : Type*}` makes `Matrix ι ι A : Type (max u u_1)` and the application
+fails on universes; `{ι : Type}` (so `max 0 0 u = u`) is the fix, and it costs nothing because the
+only instantiation is `Fin (finrank L L')`.
+
+### What is left
+
+Unchanged: rows 5 and 8 (Poitou–Tate global duality, wall #1), row 6 (the `p`-th power Hilbert
+symbol and the product formula), row 7 (Chebotarev, `p = 2` only), row 9 (the Schmidt–Wingberg
+Theorem 13/14/15 assembly).  On the row-6 line the next step is now the colimit itself:
+`colim_L H²(Gal(L/K), Lˣ) ≅ colim_L Br(L/K) = Br(K)`, for which (b) supplies the compatibility that
+makes the maps of the colimit system well defined, and then the composite with `localInvariantHom`
+is the invariant map on `SmoothH2`.
+
+Build: 9454 jobs green, zero warnings, zero sorries outside the comparator; the new headline has
+axioms `[propext, Classical.choice, Quot.sound]`.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.

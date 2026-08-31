@@ -10,6 +10,7 @@ import InverseGalois.CFT.Brauer.CentralizerProduct
 import InverseGalois.CFT.Brauer.CrossedProduct
 import InverseGalois.CFT.Brauer.CrossedProductCohomologous
 import InverseGalois.CFT.Brauer.CrossedProductCompositum
+import InverseGalois.CFT.Brauer.CrossedProductInflate
 import InverseGalois.CFT.Brauer.CrossedProductMul
 import InverseGalois.CFT.Brauer.CrossedProductRecognition
 import InverseGalois.CFT.Brauer.CrossedProductRestrict
@@ -1259,6 +1260,10 @@ it that are available here.
   Galois group of the first, compatible with the embedding of the first top field, transports the
   cocycle, and extension of scalars sends the Brauer class of the cocycle to the class of its
   transport.
+* `InverseGalois.CFT.Brauer.CrossedProductInflate` enlarges the splitting field: a cocycle of an
+  intermediate extension inflates along the restriction of automorphisms, and the crossed product
+  of the inflated cocycle is the algebra of matrices over the original one indexed by a basis of
+  the larger field over the intermediate one, so inflation leaves the Brauer class unchanged.
 * `InverseGalois.CFT.Brauer.H2Surjective` combines the two to invert the crossed product
   homomorphism: the relative Brauer group `Br(L / K)` of a finite Galois extension is isomorphic
   to the second cohomology group of `Gal(L/K)` with coefficients in `Lˣ`, and is killed by
