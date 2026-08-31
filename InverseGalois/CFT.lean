@@ -71,6 +71,7 @@ import InverseGalois.CFT.Brauer.Opposite
 import InverseGalois.CFT.Brauer.PlaceCoboundary
 import InverseGalois.CFT.Brauer.PlaceCrossedProduct
 import InverseGalois.CFT.Brauer.PlaceInvariant
+import InverseGalois.CFT.Brauer.PlaceInvariantFinite
 import InverseGalois.CFT.Brauer.Primary
 import InverseGalois.CFT.Brauer.QuadraticExt
 import InverseGalois.CFT.Brauer.Quaternion
@@ -568,6 +569,7 @@ import InverseGalois.CFT.Units.ABHNRamified
 import InverseGalois.CFT.Units.ABHNSqrtNegOne
 import InverseGalois.CFT.Units.ABHNSqrtNegOneRamified
 import InverseGalois.CFT.Units.ABHNTorsion
+import InverseGalois.CFT.Units.ABHNUnitValues
 import InverseGalois.CFT.Units.AdicFixed
 import InverseGalois.CFT.Units.AdicIdeleHerbrand
 import InverseGalois.CFT.Units.AdicLocalNorm
@@ -1303,6 +1305,11 @@ it that are available here.
   when the completion splits the class.  The archimedean members of the family come from a real
   embedding of the base in the same way.  Base change of the smooth second cohomology of an
   absolute Galois group is read off the same identification, and is functorial in the field.
+* `InverseGalois.CFT.Brauer.PlaceInvariantFinite` bounds the places at which that number can fail to
+  vanish.  A class is the class of a crossed product of a finite Galois extension of number fields,
+  only finitely many places ramify, and each of the finitely many values of the cocycle is a unit of
+  the valuation ring outside a finite set, so **a Brauer class over a number field is split by the
+  completion at all but finitely many finite places**.
 * `InverseGalois.CFT.Brauer.PlaceCrossedProduct` computes that localization on crossed products.
   Restricting a cocycle to the decomposition group is base change to the decomposition field, and
   over that field the extension and the completion of the base are linearly disjoint, so a second
@@ -2840,6 +2847,11 @@ it that are available here.
   two-cocycle of the units killed by an odd integer which is a coboundary at every ramified finite
   place is a coboundary**, which is the form in which the theorem meets a central embedding problem
   with kernel of odd prime order.
+* `InverseGalois.CFT.Units.ABHNUnitValues` removes the torsion hypothesis from that observation.  A
+  unit of a number field has nonzero order at only finitely many primes, so each value of a
+  two-cocycle of the units is a unit of the valuation ring at all but finitely many places, and
+  **at an unramified place where every value of the cocycle is such a unit the local component is a
+  coboundary**.
 * `InverseGalois.CFT.Kummer.RadicalClosure` provides the field over which the descent from the units
   to the roots of unity takes place.  A finite extension inside an algebraic closure is contained in
   a finite normal extension containing an `n`-th root of each of finitely many prescribed elements:

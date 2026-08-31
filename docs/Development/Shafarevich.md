@@ -5472,6 +5472,93 @@ Build: 9470 jobs green, zero warnings, zero sorries outside the comparator.
 
 ---
 
+## 0.54 Status (2026-08-31, late night) — almost all local invariants vanish
+
+Item 2 of §0.51(d) is **done**.
+
+```lean
+theorem finite_setOf_not_mem_relative_adicCompletion (x : BrauerGroup k) :
+    {v : HeightOneSpectrum (𝓞 k) | x ∉ BrauerGroup.relative k (v.adicCompletion k)}.Finite
+
+theorem finite_setOf_placeInvariant_ne_one (x : BrauerGroup k) :
+    {v : HeightOneSpectrum (𝓞 k) | placeInvariant k v x ≠ 1}.Finite
+```
+
+(`Brauer/PlaceInvariantFinite.lean`), with the base-change phrasing
+`finite_setOf_baseChangeHom_adicCompletion_ne_one` in between.  Unconditional, sorry-free,
+axiom-free.  Together with §0.53 this says that `brauerToCompletions` is injective *and* lands in
+the restricted product: a Brauer class over a number field is determined by its local invariants,
+and only finitely many of them are nontrivial.
+
+### (a) `CFT/Units/ABHNUnitValues.lean` — dropping the torsion hypothesis of `ABHNTorsion`
+
+`Units/ABHNTorsion.lean` proved that at an unramified finite place the local component of a
+two-cocycle of the units is a coboundary **provided the cocycle is killed by a nonzero integer**.
+Reading that proof, the torsion hypothesis is used for exactly one thing: to know that the values
+land in `(unitVal).ker`, the units of the valuation ring, where the second cohomology of the cyclic
+decomposition group vanishes (`Local/UnramifiedCoboundary.lean`, `exists_sub_add_eq_adicUnits`).
+So the hypothesis can simply be replaced by that conclusion:
+
+```lean
+theorem exists_sub_add_eq_adicUnits_of_unitVal (v : HeightOneSpectrum (𝓞 K))
+    (hunr : Algebra.IsUnramifiedAt (𝓞 k) v.asIdeal)
+    {a : Gal(K/k) → Gal(K/k) → Additive Kˣ}
+    (hu : ∀ x y : Gal(K/k), unitVal (Additive.ofMul (adicUnitHom v (a x y).toMul)) = 0)
+    (ha : ∀ x y z : Gal(K/k),
+      globalUnitsAut x (a y z) + a x (y * z) = a (x * y) z + a x y) :
+    ∃ c : ↥(stabilizer Gal(K/k) v) → Additive (v.adicCompletion K)ˣ, …
+```
+
+and the hypothesis `hu` is then available for free at almost every place, because it is literally
+the statement that the diagonal image of a unit is an idele:
+
+```lean
+theorem finite_setOf_unitVal_adicUnitHom_ne_zero (u : Kˣ) :
+    {v : HeightOneSpectrum (𝓞 K) | unitVal (Additive.ofMul (adicUnitHom v u)) ≠ 0}.Finite
+```
+
+which is `fullDiag_mem_idele` (`Units/Idele.lean`) read through `mem_idele` and
+`Filter.eventually_cofinite`.  A number field element has nonzero order at only finitely many
+primes; nothing further is needed.
+
+### (b) `CFT/Brauer/PlaceInvariantFinite.lean` — the bad set, and pushing it down
+
+Take a class `x` of `Br(k)`.  By `exists_isGalois_mem_relative` and
+`exists_mk_csa_eq_of_mem_relative` it is `⟦CrossedProduct.csa hf⟧` for a two-cocycle
+`f : Gal(L|k) × Gal(L|k) → Lˣ` of a finite Galois extension of number fields.  Upstairs, put
+
+```
+Bad = {w : ramified over k} ∪ ⋃_{(σ,τ)} {w : unitVal (adicUnitHom w (f (σ,τ))) ≠ 0}.
+```
+
+The first piece is finite by `finite_setOf_not_isUnramifiedAt` (a ramified place divides the
+different ideal, and a nonzero ideal has finitely many prime divisors); the union is over the
+**finite** set `Gal(L|k) × Gal(L|k)`, so `Set.finite_iUnion` applies to the finiteness of (a).
+Downstairs, every place of `k` has a place of `L` above it (`exists_primeUnder_eq`), so the set of
+bad places of `k` is contained in `primeUnder (𝓞 k) '' Bad`, which is finite.  And a place of `k`
+under a `w ∉ Bad` is good: `exists_sub_add_eq_adicUnits_of_unitVal` produces the local coboundary
+and `mem_relative_mk_csa_adicCompletion_iff_exists` (§0.53) turns it into splitting.
+
+The additive form of the cocycle identity for `f` is re-derived inline, as in `HasseNoether.lean`;
+the dictionary lemma `toMul_globalUnitsAut` (`Units/ABHNCoboundary.lean`) is what makes it one
+`simp only`.
+
+### (c) What is left of the product formula
+
+Of the three items of §0.51(d), **items 1 and 2 are closed**.  What remains is
+
+3. **the sum vanishes**, `∑_v inv_v(x) = 0` — the reciprocity law.
+
+This is not a bookkeeping item: it is the fundamental class of global class field theory, and it is
+what upgrades §0.53 + §0.54 to the exact sequence `0 → Br(k) → ⊕_v Br(k_v) → ℚ/ℤ → 0`.  It is also
+the input that rows 5 and 8 of the §0.36 table (Poitou–Tate, wall #1) are waiting on: the pairing
+`Ш¹(k, A′) × Ш²(k, A) → ℚ/ℤ` is *defined* by a sum of local invariants, and its well-definedness is
+exactly the product formula.
+
+Build: 9472 jobs green, zero warnings, zero sorries outside the comparator.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
