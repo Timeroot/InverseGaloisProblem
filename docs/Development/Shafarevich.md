@@ -5765,20 +5765,32 @@ of the criterion is then ABHN over `L` (`eq_one_of_forall_invariant_eq_one`) plu
 `BrauerGroup.baseChangeHom_comp`, since `(x_L)_w` and `(x_v)_{L_w}` are the same base change of `x`
 read two ways.
 
-### (c) The real next brick: the completion tower `k_v ⊆ L_w`
+### (c) The completion tower `k_v ⊆ L_w` is already built
 
-What both (b) and every route to reciprocity need is the same missing plumbing.  For `L/k` a finite
-Galois extension of number fields, `w` a place of `L` over `v`:
+The plumbing that (b) consumes turned out to be in the tree already, from the ABHN work:
 
-1. `w.adicCompletion L` as an **algebra over** `v.adicCompletion k` — the ring map
-   `adicCompletionComap` exists (`CFT/Units/CompletionGalois.lean`), the `Algebra` instance and the
-   `IsScalarTower` over `k` are there, but
-2. `FiniteDimensional (v.adicCompletion k) (w.adicCompletion L)`, and
-3. `IsGalois (v.adicCompletion k) (w.adicCompletion L)` with Galois group the decomposition group —
-   in particular **cyclic when `L/k` is cyclic**, which is what (a) is applied to,
+| ingredient | source |
+| --- | --- |
+| `Algebra (v.adicCompletion k) (w.adicCompletion L)` | `instAlgebraAdicCompletion` (`CFT/Units/CompletionFinite.lean`), from the ring map `adicCompletionComap` |
+| `IsScalarTower k (v.adicCompletion k) (w.adicCompletion L)` | `instIsScalarTowerBaseAdicCompletion` (`CFT/Units/CompletionGalois.lean`) |
+| `FiniteDimensional (v.adicCompletion k) (w.adicCompletion L)` | `finiteDimensional_adicCompletion` — an **instance** |
+| `IsGalois (v.adicCompletion k) (w.adicCompletion L)` | `isGalois_adicCompletion` — a theorem, so `attribute [local instance]` |
+| the Galois group is the decomposition group | `restrictToBase`, `adicCompletionAut_restrictToBase`, `mem_range_algebraMap_iff_forall_stabilizer_smul_eq` |
 
-are not in the tree.  This is the classical "the completion of a Galois extension is Galois with
-group `D_w`", and it is a bounded, purely algebraic project with no analysis in it.
+So the only genuinely new step is `IsCyclic (L_w ≃ₐ[k_v] L_w)` for cyclic `L/k`, which is
+`restrictToBase` packaged as an injective group homomorphism into `Gal(L/k)`.
+
+That makes the splitting criterion a three-step chain, each step short:
+
+1. **Hasse principle for relative Brauer groups.**  `x ∈ Br(L/k)` iff every completion of `L`,
+   finite or infinite, splits `x`.  Forwards is monotonicity of `relative`; backwards is ABHN over
+   `L` (`eq_one_of_forall_invariant_eq_one`) together with `BrauerGroup.baseChangeHom_comp`, since
+   `(x_L)_w` and `x_{L_w}` are the same base change read two ways.
+2. **Descend the local condition to `k_v`.**  `x ∈ Br(L_w / k)` iff `x_{k_v} ∈ Br(L_w / k_v)`, again
+   just `baseChangeHom_comp` along `k → k_v → L_w`.
+3. **Read it off as an invariant**, by (a): `Br(L_w / k_v) = brauerTorsion k_v [L_w : k_v]`, and
+   membership in the latter is `placeInvariant k v x ^ [L_w : k_v] = 1` by injectivity of
+   `localInvariantHom`.
 
 ### (d) Reciprocity itself, costed
 
@@ -5802,7 +5814,103 @@ With (c) in hand the two remaining routes are both explicit computations, not so
   cyclic algebra bridge**, which is still on the deferred list.
 
 The second route avoids Lubin–Tate entirely and is the one to take; its enabling lemma is that
-bridge, and its prerequisite is (c).
+bridge, and its prerequisite is the chain of (c).
+
+---
+
+## 0.57 Status (2026-08-31) — the chain of §0.56(c) is built: when a cyclic extension of number fields splits a Brauer class
+
+The three-step chain named in §0.56(c) is now three files, all sorry- and axiom-free.
+
+### (a) `CFT/Units/CompletionCyclic.lean` — the decomposition group is a subgroup
+
+The local input of §0.56(a) is a statement about a *cyclic* extension of a local field, so applying
+it at a place of a global cyclic extension needs the completion `L_w / k_v` to be cyclic.  It is,
+for the cheapest possible reason: restriction
+
+```
+Gal(L_w | k_v) → Gal(L | k)
+```
+
+is **injective** (`restrictToBase_injective`), because an automorphism of `L_w` over `k_v` is
+continuous (`continuous_algEquiv`, already in `Units/CompletionGalois.lean`) and `L` is dense in
+`L_w`, so its values on `L` determine it.  Packaged as a group homomorphism `restrictToBaseHom`
+(the `map_one'`/`map_mul'` proofs are `FaithfulSMul.algebraMap_injective` plus
+`toAdicCompletion_restrictToBase`), Mathlib's `isCyclic_of_injective` then gives
+
+```
+isCyclic_algEquiv_adicCompletion : IsCyclic Gal(L | k) → IsCyclic Gal(L_w | k_v).
+```
+
+No decomposition-group theory, no `e·f·g`, no surjectivity: only injectivity is needed, and only
+subgroup-heredity of cyclicity is used.
+
+### (b) `CFT/Brauer/RelativeHasse.lean` — the Hasse principle for a fixed extension
+
+`Brauer/HasseNoether.lean` and `Brauer/TotalInvariant.lean` state Albert–Brauer–Hasse–Noether for a
+fixed *class*: a class of `Br(L)` which is locally trivial everywhere is trivial.  What the
+splitting criterion needs is the same theorem read for a fixed *extension*:
+
+```
+mem_relative_iff_forall_completion :
+  x ∈ Br(L | k) ↔ (∀ w finite, x ∈ Br(L_w | k)) ∧ (∀ U real, x ∈ Br(L_U | k)).
+```
+
+The forward direction is `BrauerGroup.relative_le_relative` twice.  The reverse direction applies
+ABHN over `L` to `base_L(x)` and, at each place, rewrites
+`base_{L_w}(base_L(x)) = base_{L_w}(x)` with `BrauerGroup.baseChangeHom_comp` — the *only* content
+is that functoriality of base change lets the same class be read either way.
+
+The complex places drop out: `relative_completion_eq_top_of_isComplex_extension` transports
+`BrauerGroup.relative_eq_top_of_isAlgClosed ℂ` along `AlgEquiv.ofRingEquiv` applied to
+`InfinitePlace.Completion.ringEquivComplexOfIsComplex`, whose compatibility with the base is
+`extensionEmbedding_coe` after `IsScalarTower.algebraMap_apply k L U.Completion`.  Finally
+
+```
+mem_relative_adicCompletion_iff_baseChange :
+  x ∈ Br(L_w | k) ↔ base_{k_v}(x) ∈ Br(L_w | k_v),   v = w ∩ k
+```
+
+is again `baseChangeHom_comp`, and it is what turns a global condition into a local-field one.
+
+### (c) `CFT/Brauer/RelativeCyclic.lean` — the criterion
+
+Putting (a), (b) and §0.56(a) together:
+
+```
+mem_relative_adicCompletion_iff_pow_placeInvariant :
+  x ∈ Br(L_w | k)  ↔  inv_v(x) ^ [L_w : k_v] = 0
+
+mem_relative_iff_forall_pow_placeInvariant :
+  x ∈ Br(L | k)  ↔  (∀ w, [L_w : k_v] · inv_v(x) = 0) ∧ (∀ U real, x ∈ Br(L_U | k)).
+```
+
+Note which hypotheses are *absent*.  There is no unramifiedness assumption; there is no isometry
+hypothesis `‖·‖_{k_v} = ‖·‖_{L_w}`, which genuinely fails for an adic tower and is why
+`Brauer/LocalReciprocity.lean`'s `relative_eq_brauerTorsion` — the same statement for an arbitrary
+finite Galois extension of local fields — cannot be used here; and there is no restriction on the
+residue characteristic, since `exists_hasResidueChar_adicCompletion` supplies one for every place.
+The cyclic hypothesis is the price paid for dropping the isometry, and it is free for us: the
+extensions reciprocity is proven against are cyclic anyway.
+
+### (d) What is left, unchanged
+
+Reciprocity, `totalInvariant k = 1`.  The route is §0.56(d)'s second one, and its remaining
+prerequisite is the single deferred item
+
+> **the cup product ↔ cyclic algebra bridge**: for `K ∋ ζ_n`, `b ∈ K^×` and `L = K(b^{1/n})`
+> cyclic of degree `n` with `σβ = ζβ`, the class `kummerSymbolUnits a b` of
+> `Profinite/Symbol.lean` is the class `cyclicBrauerHom hσ a` of `Brauer/CyclicNorm.lean`.
+
+That bridge is what makes `localSymbol` (`Brauer/LocalSymbol.lean`: already bimultiplicative,
+`n`-torsion, trivial on `n`-th powers) *computable*: it identifies its kernel with a norm group, and
+from `N_{K(x^{1/n})|K}(x^{1/n}) = (−1)^{n−1} x` one gets `⟨x, −x⟩ = 1`, hence skew-symmetry by the
+usual expansion of `⟨ab, −ab⟩ = 1`, hence the tame value at the auxiliary prime from the *unramified*
+formula `localInvariant_apply_cyclicBrauerHom` on the other argument.  Without it the symbol is a
+pairing whose values are never computed, and reciprocity is a statement about values.
+
+Build: 9478 jobs green, zero warnings, zero sorries outside the comparator; all ten new
+declarations have axioms `[propext, Classical.choice, Quot.sound]`.
 
 ---
 

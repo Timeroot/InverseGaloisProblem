@@ -79,6 +79,8 @@ import InverseGalois.CFT.Brauer.QuadraticExt
 import InverseGalois.CFT.Brauer.Quaternion
 import InverseGalois.CFT.Brauer.RamificationIdentity
 import InverseGalois.CFT.Brauer.RationalBrauer
+import InverseGalois.CFT.Brauer.RelativeCyclic
+import InverseGalois.CFT.Brauer.RelativeHasse
 import InverseGalois.CFT.Brauer.RelativeIndex
 import InverseGalois.CFT.Brauer.RelativeTorsion
 import InverseGalois.CFT.Brauer.RealBrauer
@@ -586,6 +588,7 @@ import InverseGalois.CFT.Units.BaseChangeIndex
 import InverseGalois.CFT.Units.BaseFundamental
 import InverseGalois.CFT.Units.BaseTate
 import InverseGalois.CFT.Units.ClassSet
+import InverseGalois.CFT.Units.CompletionCyclic
 import InverseGalois.CFT.Units.CompletionFinite
 import InverseGalois.CFT.Units.CompletionGalois
 import InverseGalois.CFT.Units.CompletionHilbert90
@@ -3835,4 +3838,22 @@ it that are available here.
   invariant of a local field is injective, so **the symbol of a unit vanishes exactly when the unit
   is a norm**, and since the classes killed by the degree are all split by the extension, **the
   symbol attains the reciprocal of the degree.**  None of this asks the extension to be unramified.
+* `InverseGalois.CFT.Units.CompletionCyclic` supplies the group theory that makes the local theory
+  of a cyclic extension apply at a place of a global one.  An automorphism of a completion is
+  continuous and the field is dense in it, so **restriction to the field is injective on the Galois
+  group of the completion**; hence **the completion of a cyclic extension of number fields is a
+  cyclic extension of the completion below.**
+* `InverseGalois.CFT.Brauer.RelativeHasse` reads the Albert-Brauer-Hasse-Noether theorem as a
+  statement about a fixed extension rather than a fixed class.  Base change is functorial, so the
+  completion of the base-changed class at a place of the extension is the base change of the class
+  to that completion, and **a Brauer class of a number field is split by a finite extension exactly
+  when every completion of the extension splits it.**  A complex place of the extension is the
+  complex numbers over the base and splits everything, so only the finite places and the real
+  places appear, and **at a finite place the condition is one over the completion of the base.**
+* `InverseGalois.CFT.Brauer.RelativeCyclic` combines the two with the local theory.  At a finite
+  place the completion of a cyclic extension is a cyclic extension of the completion below, whose
+  relative Brauer group is the classes killed by its degree, so **that place splits a class exactly
+  when the local degree kills the invariant at the place below**; hence **a cyclic extension of
+  number fields splits a Brauer class exactly when every local degree kills the invariant at the
+  place below and every real place of the extension splits the class.**
 -/
