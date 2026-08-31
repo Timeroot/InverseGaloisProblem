@@ -331,6 +331,7 @@ import InverseGalois.CFT.Profinite.Cup
 import InverseGalois.CFT.Profinite.Hilbert90
 import InverseGalois.CFT.Profinite.InfRes
 import InverseGalois.CFT.Profinite.Kummer
+import InverseGalois.CFT.Profinite.KummerHom
 import InverseGalois.CFT.Profinite.Quotient
 import InverseGalois.CFT.Profinite.Krull
 import InverseGalois.CFT.Profinite.Res
@@ -3657,4 +3658,13 @@ it that are available here.
   produces a radical from such a cocycle, whose power is fixed by everything and so lies in the
   base.  A class is trivial exactly when the radicand is already a power there, because two roots
   of the same element differ by a root of unity of the base.
+* `InverseGalois.CFT.Profinite.KummerHom` assembles those cocycles.  Two roots of the same unit
+  differ by a root of unity of the base, which every automorphism fixes, so the coboundary of a
+  root does not depend on the root, and a cocycle is determined by its coboundary because the
+  coefficients inject into the units of the extension; choosing a root of every unit of the base
+  therefore gives a homomorphism, multiplicative because a product of roots is a root of the
+  product.  Its kernel is the powers and it is surjective, so **the units of the base modulo the
+  `n`-th powers are the first cohomology with coefficients in the `n`-th roots of unity.**  The
+  situation is not vacuous: over an algebraically closed extension the roots of unity of the base,
+  with the trivial action, are such data.
 -/
