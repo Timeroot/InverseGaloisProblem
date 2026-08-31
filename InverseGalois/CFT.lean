@@ -124,6 +124,7 @@ import InverseGalois.CFT.GroupCohomology.Classification
 import InverseGalois.CFT.GroupCohomology.CentralLift
 import InverseGalois.CFT.GroupCohomology.CentralTwist
 import InverseGalois.CFT.GroupCohomology.Cohomologous
+import InverseGalois.CFT.GroupCohomology.CoboundaryDescent
 import InverseGalois.CFT.GroupCohomology.CoprimeCoboundary
 import InverseGalois.CFT.GroupCohomology.CoprimeDescent
 import InverseGalois.CFT.GroupCohomology.CoprimeSplit
@@ -561,6 +562,7 @@ import InverseGalois.CFT.Units.BaseTate
 import InverseGalois.CFT.Units.ClassSet
 import InverseGalois.CFT.Units.CompletionFinite
 import InverseGalois.CFT.Units.CompletionGalois
+import InverseGalois.CFT.Units.CompletionHilbert90
 import InverseGalois.CFT.Units.CompletionUnits
 import InverseGalois.CFT.Units.CompositumEmbed
 import InverseGalois.CFT.Units.CompositumFundamental
@@ -643,6 +645,7 @@ import InverseGalois.CFT.Units.SplitPlaces
 import InverseGalois.CFT.Units.SplitPowIdele
 import InverseGalois.CFT.Units.SplitPowNorm
 import InverseGalois.CFT.Units.TowerCoboundary
+import InverseGalois.CFT.Units.TowerDescent
 import InverseGalois.CFT.Units.UnitLattice
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
