@@ -62,6 +62,7 @@ import InverseGalois.CFT.Brauer.LocalBrauerOrder
 import InverseGalois.CFT.Brauer.LocalInvariant
 import InverseGalois.CFT.Brauer.LocalInvariantRestrict
 import InverseGalois.CFT.Brauer.LocalReciprocity
+import InverseGalois.CFT.Brauer.LocalSymbol
 import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
 import InverseGalois.CFT.Brauer.Opposite
@@ -1288,6 +1289,11 @@ it that are available here.
 * `InverseGalois.CFT.Brauer.SmoothInvariant` composes that with the invariant map: the smooth
   second cohomology of the absolute Galois group of a local field with coefficients in the units
   of an algebraic closure is the rationals modulo the integers.
+* `InverseGalois.CFT.Brauer.LocalSymbol` feeds the `n`-th power symbol through that
+  identification.  An algebraic closure is closed under `n`-th roots, so nothing is lost in reading
+  the symbol of two units in the units of the closure, and the invariant map turns it into a
+  rational number modulo the integers killed by `n`: **the norm residue symbol of a local field**,
+  bimultiplicative and trivial as soon as one of its arguments is an `n`-th power.
 * `InverseGalois.CFT.Brauer.H2Surjective` combines the two to invert the crossed product
   homomorphism: the relative Brauer group `Br(L / K)` of a finite Galois extension is isomorphic
   to the second cohomology group of `Gal(L/K)` with coefficients in `Lˣ`, and is killed by

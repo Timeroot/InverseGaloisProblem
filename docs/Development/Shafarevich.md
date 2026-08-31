@@ -5123,6 +5123,76 @@ Build: 9461 jobs green, zero warnings, zero sorries outside the comparator.
 
 ---
 
+## 0.50 Status (2026-08-31, late night) — the norm residue symbol of a local field
+
+`CFT/Brauer/LocalSymbol.lean` closes the local half of row 6.  Over a local field `K` (perfect,
+complete, discretely valued, locally compact) containing a primitive `n`-th root of unity `ζ`, the
+composite
+
+```
+Kˣ × Kˣ  —kummerSymbol→  H²(G_K, μ_n)  —coeffH2→  H²(G_K, K̄ˣ)  —smoothBrauer→  Br(K)  —inv→  ℚ/ℤ
+```
+
+is packaged as
+
+```lean
+noncomputable def localSymbol (hres : HasResidueChar K p e) (hm : IsUnitValGen K m)
+    (hζ : IsPrimitiveRoot ζ n) : Kˣ →* Kˣ →* Multiplicative QModZ
+```
+
+together with `pow_localSymbol_eq_one` (values in the `n`-torsion), and
+`localSymbol_eq_one_of_isPow_left` / `_right`.  The general form `localKummerSymbol` takes arbitrary
+Kummer data and an arbitrary pairing; `localSymbol` instantiates it at `Multiplicative (ZMod n)`
+with `mulZMod n`, which is where §0.49 put the choice of primitive root.
+
+Two small things make the assembly clean:
+
+* `MonoidHom.compHom` post-composes a *bilinear* gadget in one step — `localKummerSymbol` is just
+  `(MonoidHom.compHom inv).comp (kummerSymbolUnits h Φ)`, so bimultiplicativity is inherited rather
+  than re-proved.
+* `exists_units_pow_eq_self`: over an algebraically closed field every unit is an `n`-th power.
+  This discharges the hypothesis of §0.49's `kummerSymbolUnits_eq_one_iff` outright, so
+
+  ```lean
+  theorem localKummerSymbol_eq_one_iff … :
+      localKummerSymbol hres hm h Φ a b = 1 ↔ kummerSymbol h Φ a b = 1
+  ```
+
+  holds with no side condition: **the invariant sees the whole symbol.**
+
+### What row 6 still lacks, and why it is not a local question
+
+The product formula `∑_v inv_v (a,b)_v = 0` is *not* a statement about the symbol; it is the
+statement that the sum of the local invariants of a global Brauer class vanishes.  Formally that is
+the middle of
+
+```
+0 → Br(k) → ⊕_v Br(k_v) → ℚ/ℤ → 0,
+```
+
+whose left exactness is row 3 (`eq_one_of_mem_sha2`).  The repo's global class formation
+(`Units/GlobalTate.lean`) produces `globalFundamentalClass` by a *choice* — the existence of a
+class annihilated by exactly the multiples of the degree — which is enough for Tate's theorem but
+does **not** pin the invariant map down as the sum of local invariants.  Getting the product
+formula therefore means building the invariant map of the global class formation from the local
+ones, which needs:
+
+* the decomposition subgroup `D_v ≤ G_k` identified with `G_{k_v}` as a topological group, with
+  `Ω` becoming `k̄_v` as a `D_v`-module (the repo has `decompositionSubgroups`
+  (`Units/InfiniteDecomposition.lean`) and the completions, but not yet the identification at the
+  level of absolute Galois groups);
+* the localization `H²(G_k, Ωˣ) → H²(D_v, Ωˣ) ≅ Br(k_v)` for each `v`, and the fact that all but
+  finitely many components vanish;
+* exactness of `H²(G, K̄ˣ) → H²(G, I) → H²(G, C)` from `Units/IdeleClassSES.lean`, plus Shapiro to
+  read `H²(G, I)` as `⊕_v Br(k_v)`.
+
+That is the next large project on the critical path, and it is shared with row 8: Poitou–Tate needs
+the same localization maps.
+
+Build: 9462 jobs green, zero warnings, zero sorries outside the comparator.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
