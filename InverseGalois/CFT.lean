@@ -330,6 +330,7 @@ import InverseGalois.CFT.Profinite.Comap
 import InverseGalois.CFT.Profinite.Cup
 import InverseGalois.CFT.Profinite.Hilbert90
 import InverseGalois.CFT.Profinite.InfRes
+import InverseGalois.CFT.Profinite.Kummer
 import InverseGalois.CFT.Profinite.Quotient
 import InverseGalois.CFT.Profinite.Krull
 import InverseGalois.CFT.Profinite.Res
@@ -3635,4 +3636,25 @@ it that are available here.
   exactly that the cochain is a homomorphism, every coboundary is trivial, and smoothness is
   openness of the kernel, so **a class dies on a family of subgroups exactly when every one of them
   lies in the kernel of the corresponding homomorphism.**
+* `InverseGalois.CFT.Profinite.Cup` multiplies two one cochains into a two cochain along a pairing
+  of the coefficients.  The cocycle relation in degree two is the pairing of the two relations in
+  degree one, and smoothness is inherited from a subgroup smoothing both factors and acting
+  trivially on the target, so **there is a cup product of first cohomology into second**; it
+  commutes with composing along a homomorphism, hence with restriction, so **a class whose either
+  factor dies everywhere locally is itself everywhere locally trivial.**
+* `InverseGalois.CFT.Profinite.Hilbert90` is the arithmetic input.  A smooth cocycle is constant on
+  the cosets of the subgroup fixing a finite Galois level and its values are fixed by that
+  subgroup, hence lie in the level, so choosing a preimage of each automorphism of the level turns
+  it into a cocycle there, where Noether's theorem supplies a primitive; every automorphism acts on
+  the level through its restriction, so the same primitive works upstairs.  Thus **a smooth one
+  cocycle with values in the units of the extension is a coboundary**, and the first cohomology of
+  an infinite Galois group with those coefficients is trivial.
+* `InverseGalois.CFT.Profinite.Kummer` is what that triviality computes.  When the base contains a
+  primitive root of unity of the relevant order, a root of a unit of the base has a coboundary
+  whose values are roots of unity of the base, and an element of the extension is fixed by the
+  subgroup fixing the normal closure of the field it generates, so **the coboundary of a radical is
+  a smooth one cocycle with roots of unity as coefficients**; conversely Hilbert's theorem ninety
+  produces a radical from such a cocycle, whose power is fixed by everything and so lies in the
+  base.  A class is trivial exactly when the radicand is already a power there, because two roots
+  of the same element differ by a root of unity of the base.
 -/
