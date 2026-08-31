@@ -331,6 +331,7 @@ import InverseGalois.CFT.PiDual
 import InverseGalois.CFT.PiIndex
 import InverseGalois.CFT.PrimeProductSquare
 import InverseGalois.CFT.Profinite.Cochain
+import InverseGalois.CFT.Profinite.Coeff
 import InverseGalois.CFT.Profinite.Comap
 import InverseGalois.CFT.Profinite.Cup
 import InverseGalois.CFT.Profinite.Hilbert90
@@ -3623,6 +3624,12 @@ it that are available here.
   which some open normal subgroup acts trivially takes a smooth cochain to a smooth coboundary,
   which is what makes the two subgroups sit inside one another.  Because the topology of a finite
   Galois group is discrete, a finite level and an infinite one are described in the same language.
+* `InverseGalois.CFT.Profinite.Coeff` composes a cochain with a homomorphism of the coefficients
+  commuting with the two actions.  The cocycle relations are equations built from the group law and
+  the action, so they are preserved, and a cochain constant on the cosets of an open normal
+  subgroup stays constant there, so smoothness is preserved; a coboundary goes to the coboundary of
+  the image of its primitive.  So **there is a homomorphism of the cohomology of the source
+  coefficients into that of the target**, in degree one and in degree two, computed on cocycles.
 * `InverseGalois.CFT.Profinite.Comap` composes a cochain with a homomorphism into a group acting on
   the same module.  The cocycle relation and the coboundary are both preserved because the two
   actions agree, so all that is needed is that composition preserve smoothness, and two conditions
