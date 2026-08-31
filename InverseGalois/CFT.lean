@@ -66,6 +66,7 @@ import InverseGalois.CFT.Brauer.LocalSymbol
 import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
 import InverseGalois.CFT.Brauer.Opposite
+import InverseGalois.CFT.Brauer.PlaceCrossedProduct
 import InverseGalois.CFT.Brauer.PlaceInvariant
 import InverseGalois.CFT.Brauer.Primary
 import InverseGalois.CFT.Brauer.QuadraticExt
@@ -585,6 +586,7 @@ import InverseGalois.CFT.Units.CompositumEmbed
 import InverseGalois.CFT.Units.CompositumFundamental
 import InverseGalois.CFT.Units.CyclicTrivial
 import InverseGalois.CFT.Units.Decomposition
+import InverseGalois.CFT.Units.DecompositionField
 import InverseGalois.CFT.Units.DecompositionGalois
 import InverseGalois.CFT.Units.DecompositionOutside
 import InverseGalois.CFT.Units.HasseHom
@@ -1297,6 +1299,11 @@ it that are available here.
   when the completion splits the class.  The archimedean members of the family come from a real
   embedding of the base in the same way.  Base change of the smooth second cohomology of an
   absolute Galois group is read off the same identification, and is functorial in the field.
+* `InverseGalois.CFT.Brauer.PlaceCrossedProduct` computes that localization on crossed products.
+  Restricting a cocycle to the decomposition group is base change to the decomposition field, and
+  over that field the extension and the completion of the base are linearly disjoint, so a second
+  base change reads the cocycle on the Galois group of the completions.  The invariant at the place
+  therefore vanishes exactly when the local cocycle is a coboundary.
 * `InverseGalois.CFT.Brauer.LocalSymbol` feeds the `n`-th power symbol through that
   identification.  An algebraic closure is closed under `n`-th roots, so nothing is lost in reading
   the symbol of two units in the units of the closure, and the invariant map turns it into a
@@ -2138,6 +2145,10 @@ it that are available here.
 * `InverseGalois.CFT.Units.DecompositionGalois` packages that as an isomorphism of groups: the
   decomposition group at a prime **is** the Galois group of the completion over the completion of
   the prime below, so its order is the local degree.
+* `InverseGalois.CFT.Units.DecompositionField` names the subfield fixed by the decomposition
+  group.  An element of it has its image in the completion fixed by the decomposition group, hence
+  coming from the completion of the base, so the decomposition field embeds into the completion of
+  the base and the Galois group of the completions is the Galois group over it.
 * `InverseGalois.CFT.Units.CompletionUnits` passes that description to the unit groups: a fixed
   unit comes from the completion of the base and is nonzero there, hence is a unit below.
 * `InverseGalois.CFT.Units.OrbitPlaces` identifies the orbits of the Galois group on the height one

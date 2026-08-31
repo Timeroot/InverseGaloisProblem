@@ -5295,6 +5295,106 @@ Build: 9463 jobs green, zero warnings, zero sorries outside the comparator.
 
 ---
 
+## 0.52 Status (2026-08-31, late night) — the bridge of §0.51(d)1 is built: base change of a crossed product to a completion
+
+The missing compatibility named at the end of §0.51(d)1 — *"`k_v ⊗_k (K/k, a)` is the crossed
+product `(K_w/k_v, res a)`"* — is now a theorem, in `CFT/Brauer/PlaceCrossedProduct.lean`, resting
+on a new brick `CFT/Units/DecompositionField.lean`.
+
+### (a) The decomposition field, and the tower that was *not* needed
+
+The plan of record was to go through the completion `F_u` of the decomposition field
+`F = K^{D_w}` and to compare degrees along `k_v → F_u → K_w`.  That is painful in Lean, because
+`primeUnder (𝓞 k) (primeUnder (𝓞 F) w) = primeUnder (𝓞 k) w` holds only propositionally and the
+repo has to transport along it with the `ringCast` machinery of `Units/PlaceTower.lean`.
+
+None of it is necessary.  `Units/CompletionGalois.lean` already proves
+
+```lean
+mem_range_algebraMap_iff_forall_stabilizer_smul_eq :
+    z ∈ Set.range (algebraMap (primeUnder (𝓞 k) w).adicCompletion k) (w.adicCompletion K))
+      ↔ ∀ σ : ↥(stabilizer Gal(K/k) w), σ • z = z
+```
+
+so an element of `F` — fixed by the decomposition group by definition — lands in the image of
+`k_v` the moment it is pushed into `K_w`.  That gives a ring homomorphism directly,
+
+```lean
+noncomputable def decompositionFieldHom : ↥(decompositionField k w) →+* (primeUnder (𝓞 k) w).adicCompletion k
+```
+
+built as `(rangeEquivBaseCompletion k w).symm ∘ codRestrict (toAdicCompletion w ∘ algebraMap …)`,
+together with `algebraMap_decompositionFieldHom` saying the triangle into `K_w` commutes.  From it
+come the `Algebra ↥F k_v` instance and both scalar towers (`k → F → k_v` and `F → k_v → K_w`).
+`F_u`, `ringCast` and the degree count are all off the critical path.
+
+### (b) The Galois groups
+
+`Units/DecompositionGalois.lean` has `decompositionEquiv k w : ↥(stabilizer Gal(K/k) w) ≃* Gal(K_w/k_v)`,
+and `IntermediateField.subgroupEquivAlgEquiv` has `↥(stabilizer Gal(K/k) w) ≃* Gal(K/F)`.  Composing,
+
+```lean
+noncomputable def localDecompositionEquiv : Gal(K_w/k_v) ≃* Gal(K/↥(decompositionField k w))
+```
+
+with the compatibility `algebraMap_localDecompositionEquiv` — `τ` and `localDecompositionEquiv k w τ`
+agree on the image of `K` — which is exactly the hypothesis shape `he` of
+`CrossedProduct.baseChangeHom_mk_csa_compositum`.
+
+### (c) The bridge, in two steps
+
+`Brauer/CrossedProductRestrict.lean` computes base change from `k` to an intermediate field, and
+`Brauer/CrossedProductCompositum.lean` computes base change along a field over which the Galois
+group is unchanged.  `F` is precisely the field where the second applies, so the composite
+
+```
+Br(k) —base change→ Br(F) —base change→ Br(k_v)
+```
+
+evaluated on `⟦(K/k, f)⟧` is the class of the crossed product of
+
+```lean
+noncomputable def localCocycle (f : Gal(K/k) × Gal(K/k) → Kˣ) :
+    Gal(K_w/k_v) × Gal(K_w/k_v) → (w.adicCompletion K)ˣ :=
+  CrossedProduct.compositumCocycle (localDecompositionEquiv k w)
+    (CrossedProduct.restrictCocycle ↥(decompositionField k w) f)
+```
+
+(`baseChangeHom_mk_csa_adicCompletion`, via `BrauerGroup.baseChangeHom_comp`), and with
+`Brauer/Kernel.lean`'s `mk_csa_eq_one_iff` this gives the payoff
+
+```lean
+theorem placeInvariant_mk_csa_eq_one_iff (hf : IsMulCocycle₂ f) :
+    placeInvariant k (primeUnder (𝓞 k) w) (⟦CrossedProduct.csa hf⟧ : BrauerGroup k) = 1
+      ↔ IsMulCoboundary₂ (localCocycle k w f)
+```
+
+**the invariant at a finite place of a crossed-product class vanishes exactly when the local
+cocycle is a coboundary.**  That is the hypothesis `hfin` of `exists_sub_add_eq_globalUnits`
+(`Units/ABHN.lean`) up to the notational dictionary between `IsMulCoboundary₂` and the
+`Additive`/`smulUnitsAut`/`adicUnitHom` spelling, which is the next brick.
+
+### (d) What §0.51(d)1 still needs after this
+
+1. the notational dictionary just named (mechanical);
+2. the archimedean analogue: `w.Completion` in place of `w.adicCompletion K`, an infinite-place
+   decomposition field, and `Br(ℝ)` in place of `Br(k_v)` — `Brauer/RealInvariant.lean` supplies
+   the invariant, the decomposition-field construction transcribes;
+3. surjectivity of `H²(Gal(K/k), Kˣ) → Br(K/k)` for a *variable* splitting field, so that an
+   arbitrary class of `Br(k)` is a crossed product — `H2Surjective.lean` has the finite-level
+   statement.
+
+Lean notes: two instance traps.  A module-level `set_option synthInstance.maxHeartbeats 1000000`
+is mandatory once `Algebra ↥(IntermediateField …) (… adicCompletion …)` is in scope — the default
+20000 cannot even find `SMul ↥F k_v`, and the failure surfaces as a bogus goal rather than an
+error.  And `IsGalois k_v K_w` is needed to *state* `localCocycle`, so the in-proof
+`haveI := isGalois_adicCompletion k w` is too late; it must be
+`attribute [local instance] isGalois_adicCompletion` before the `variable` block.
+
+Build: 9466 jobs green, zero warnings, zero sorries outside the comparator.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
