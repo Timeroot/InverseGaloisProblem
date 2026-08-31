@@ -5914,6 +5914,79 @@ declarations have axioms `[propext, Classical.choice, Quot.sound]`.
 
 ---
 
+## 0.58 Status (2026-08-31) — step 1 of the bridge: the power symbol *is* a carry cocycle
+
+`CFT/Profinite/SymbolCyclic.lean`, sorry- and axiom-free.  This is the cohomological half of the
+bridge named in §0.57(d): it rewrites `kummerSymbolUnits` — defined as a cup product of two Kummer
+classes — as (the inverse of) the class of the *explicit cyclic-algebra cocycle* of
+`GroupCohomology/Cyclic.lean`, with no finite level, no crossed product and no Brauer group in
+sight.
+
+### (a) The dictionary
+
+Fix `n`, a primitive `n`-th root `ζ ∈ k`, and Kummer data
+`h : IsKummerData k Ω (Multiplicative (ZMod n)) (zmodRootHom hζ) n`.  For `a : kˣ` write
+
+* `Z := kummerRootUnit Ω hζ : Ωˣ` — the image of `ζ` in the units of `Ω`, so `Z ^ n = 1`;
+* `R := h.root a : Ωˣ` — a chosen `n`-th root, so `R ^ n = a`;
+* `α := kummerChar h a : Gal(Ω/k) → ZMod n` — the Kummer cochain read additively.
+
+`kummerChar_mul` says `α` is a homomorphism (the action on the coefficients is trivial, so the
+cocycle identity *is* additivity), and `smul_root_eq_kummerRootUnit_pow` says
+
+```
+g • R = Z ^ (α g).val * R.
+```
+
+### (b) The computation
+
+The one-cochain `u g := R ^ (β g).val`, `β := kummerChar h b`, has coboundary
+
+```
+coboundary₂ u (g, g') = Z ^ ((α g).val * (β g').val) · ( R ^ ((β g).val + (β g').val)
+                                                        / R ^ (β g + β g').val ).
+```
+
+The first factor is exactly the cup product `coeffMap₂ h.unitsHom (mulCup₁₁ (mulZMod n) …)` whose
+class is `kummerSymbolUnits h (mulZMod n) a b`; the identification uses `ZMod.val_mul` together
+with `pow_mod_of_pow_eq_one` for `Z ^ n = 1`, so that reducing the product of residues modulo `n`
+costs nothing.  The second factor is the **carry**: by `pow_val_add_div` (a two-line lemma valid in
+any group) it is `1` when `(β g).val + (β g').val < n` and `R ^ n = a` otherwise — i.e. it is
+`kummerCyclicCocycle h a b`, the image under `Gal(Ω/k) → ZMod n` of `cyclicCocycle`.  Hence
+
+```
+kummerSymbolUnits h (mulZMod n) a b · smoothH2Mk (kummerCyclicCocycle h a b) = 1.
+```
+
+### (c) Two things that made this cheap
+
+* `hsym : kummerSymbolUnits h Φ a b = smoothH2Mk (coeffMap₂ h.unitsHom (mulCup₁₁ Φ …)) _ _ := rfl`.
+  The whole chain `kummerSymbolUnits → coeffH2 → cupSmoothH1 → kummerHom → smoothH1Mk` is
+  definitional, because `cupSmoothH1_apply` and `coeffH2_smoothH2Mk` are themselves `rfl`.  No
+  rewriting under proof-argument metavariables was needed.
+* Smoothness of both the carry cocycle and the correcting cochain is inherited verbatim from
+  smoothness of the Kummer cochain of `b`: the same open normal subgroup works, since both are
+  built out of `β` alone.
+
+### (d) What step 2 needs
+
+The remaining half is purely a *level* statement, with no cohomology in it:
+
+> if `E ⊆ Ω` is a finite cyclic Galois level with generator `σ₀`, of degree exactly `n`, whose
+> discrete logarithm matches the Kummer character of `b`, then
+> `inflateCocycle Ω (cyclicUnitCocycle σ₀ a) = kummerCyclicCocycle h a b`.
+
+Feeding that to `mk_csa_eq_smoothBrauer` identifies `smoothBrauer` of the symbol with the class of
+the crossed product, i.e. with `cyclicBrauerHom hσ₀ a`, and feeding it instead to
+`isMulCoboundary₂_of_coboundary₂_inflateCocycle` together with
+`isMulCoboundary₂_cyclicUnitCocycle_iff` gives the norm criterion
+`kummerSymbolUnits a b = 1 ↔ a ∈ N_{E/k}(Eˣ)` with no Brauer group at all.
+
+Build: 9479 jobs green, zero warnings, zero sorries outside the comparator; all eight new
+declarations have axioms `[propext, Classical.choice, Quot.sound]`.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.

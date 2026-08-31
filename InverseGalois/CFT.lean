@@ -357,6 +357,7 @@ import InverseGalois.CFT.Profinite.Krull
 import InverseGalois.CFT.Profinite.Res
 import InverseGalois.CFT.Profinite.ShaComap
 import InverseGalois.CFT.Profinite.Symbol
+import InverseGalois.CFT.Profinite.SymbolCyclic
 import InverseGalois.CFT.Profinite.Trivial
 import InverseGalois.CFT.RelativeFrobenius
 import InverseGalois.CFT.RestrictLE
@@ -3812,6 +3813,14 @@ it that are available here.
   primitive root to a residue exhibits them as Kummer coefficients.  Composing with the inclusion
   of the roots of unity into the units of the extension lands the symbol in the second cohomology
   of the units, injectively when the extension is closed under `n`-th roots.
+* `InverseGalois.CFT.Profinite.SymbolCyclic` rewrites that symbol in the shape a crossed product
+  wants.  The Kummer cochain of a unit is a homomorphism to the residues modulo `n`, so a chosen
+  `n`-th root of the unit is multiplied by a power of the fixed primitive root when an automorphism
+  moves it; the powers of that root indexed by the second argument therefore have as coboundary the
+  cup product times the two cocycle which records the carry, taking the value one when two residues
+  add without wrapping around and the first argument when they wrap.  Hence **the power symbol is
+  the inverse of the class of the carry cocycle of its arguments**, which is the cocycle of a
+  cyclic algebra.
 * `InverseGalois.CFT.Units.KummerDecomposition` reads that off over a number field.  A cocycle for
   a trivial action is a homomorphism, and a homomorphism killing a level and every decomposition
   subgroup is trivial, so the first cohomology with roots of unity as coefficients has no
