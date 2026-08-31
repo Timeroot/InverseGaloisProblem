@@ -344,6 +344,7 @@ import InverseGalois.CFT.Profinite.Quotient
 import InverseGalois.CFT.Profinite.Krull
 import InverseGalois.CFT.Profinite.Res
 import InverseGalois.CFT.Profinite.ShaComap
+import InverseGalois.CFT.Profinite.Symbol
 import InverseGalois.CFT.Profinite.Trivial
 import InverseGalois.CFT.RelativeFrobenius
 import InverseGalois.CFT.RestrictLE
@@ -3721,6 +3722,16 @@ it that are available here.
   second cohomology of the units of the extension.**  Running the correction backwards, from a
   chosen root of every value of a cochain whose coboundary is the `n`-th power of a cocycle,
   identifies **the image as exactly the classes killed by `n`.**
+* `InverseGalois.CFT.Profinite.Symbol` pairs two units of the base.  Cupping their Kummer classes
+  along a pairing of the roots of unity with themselves gives **the `n`-th power symbol**, a
+  bimultiplicative map on the units of the base with values in the second cohomology; it is killed
+  by `n`, it is trivial as soon as one of its arguments is a power, and it commutes with
+  restriction, so **it is everywhere locally trivial as soon as one of its arguments is everywhere
+  a local power.**  The pairing of the roots of unity is a choice of a primitive root, which the
+  integers modulo `n` carry for free: multiplication there is a pairing, and raising a chosen
+  primitive root to a residue exhibits them as Kummer coefficients.  Composing with the inclusion
+  of the roots of unity into the units of the extension lands the symbol in the second cohomology
+  of the units, injectively when the extension is closed under `n`-th roots.
 * `InverseGalois.CFT.Units.KummerDecomposition` reads that off over a number field.  A cocycle for
   a trivial action is a homomorphism, and a homomorphism killing a level and every decomposition
   subgroup is trivial, so the first cohomology with roots of unity as coefficients has no

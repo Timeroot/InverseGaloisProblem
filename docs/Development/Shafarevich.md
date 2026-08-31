@@ -5028,6 +5028,101 @@ Build: 9460 jobs green, zero warnings, zero sorries outside the comparator.
 
 ---
 
+## 0.49 Status (2026-08-31, late night) — the `n`-th power symbol
+
+Row 6 of the §0.36 table asks for the `p`-th power Hilbert symbol.  Its *definition* and its
+formal properties are now in the repository; only the product formula (global reciprocity) is
+still missing.
+
+### `CFT/Profinite/Symbol.lean`
+
+Given Kummer data `h : IsKummerData k Ω M ι n` (see `KummerHom.lean`: `M` is an abstract copy of
+the `n`-th roots of unity with its trivial `Gal(Ω/k)`-action, `ι : M →* kˣ` the inclusion) and a
+pairing `Φ : M →* M →* M`, the symbol is the cup product of the two Kummer classes:
+
+```lean
+noncomputable def kummerSymbol : kˣ →* kˣ →* SmoothH2 Gal(Ω/k) M where
+  toFun a := (cupSmoothH1 Φ (h.equivariant Φ) (h.kummerHom a)).comp h.kummerHom
+```
+
+Bimultiplicativity is free — it is exactly the statement that `kummerHom` and `cupSmoothH1` are
+homomorphisms, so `map_one'`/`map_mul'` are one `rw` each.  Because the action on `M` is trivial,
+*every* pairing is equivariant (`IsKummerData.equivariant`, proved by three rewrites with
+`h.smul_eq`), which is what keeps `kummerSymbol h Φ` a two-argument gadget instead of a
+three-argument one carrying an equivariance proof around.
+
+The four properties that make it usable:
+
+* `kummerSymbol_eq_one_of_isPow_left` / `_right`: the symbol is trivial as soon as one argument is
+  an `n`-th power in `k`.  This is `kummerClass_eq_one_iff` plus `map_one`, so the symbol descends
+  to `kˣ/(kˣ)ⁿ × kˣ/(kˣ)ⁿ`.
+* `resH2_kummerSymbol`: restriction to a subgroup `H ≤ Gal(Ω/k)` turns the symbol into the symbol
+  of the restricted classes — that is, the symbol localizes.  This is `resH2_cupSmoothH1` from
+  `Cup.lean`.
+* `kummerSymbol_mem_sha2_left` / `_right`: combining the previous two with `KummerRes.lean`'s
+  `resH1_kummerClass_eq_one_iff`, a symbol one of whose arguments lies in `h.localPowers S` is in
+  `sha2 M S`.  Over a number field, with `S` the decomposition subgroups, this says: *a symbol one
+  of whose arguments is locally a power everywhere is everywhere locally trivial.*
+* `pow_kummerSymbol_eq_one`: the symbol is killed by `n`.  The general fact behind it,
+  `smoothH2_pow_eq_one`, is that `H²(G, M)` is killed by `n` when `M` is — one line, because
+  `coboundary₂ 1 = 1`.
+
+### Avoiding a discrete logarithm
+
+A pairing `μ_n × μ_n → μ_n` is *not* canonical: it is a choice of a primitive root, i.e. a
+discrete logarithm.  Rather than manufacture one on an abstract cyclic group, the file supplies
+the model where the pairing is free:
+
+```lean
+def mulZMod : Multiplicative (ZMod n) →* Multiplicative (ZMod n) →* Multiplicative (ZMod n)
+noncomputable def zmodRootHom (hζ : IsPrimitiveRoot ζ n) : Multiplicative (ZMod n) →* kˣ
+theorem isKummerData_zmod (hζ) (hroot) : IsKummerData k Ω (Multiplicative (ZMod n)) (zmodRootHom hζ) n
+```
+
+`mulZMod` is multiplication in `ZMod n` read multiplicatively, and `zmodRootHom hζ` sends a
+residue `a` to `ζ^a.val`.  That this is a homomorphism is `ZMod.val_add` together with
+`pow_mod_of_pow_eq_one`; injectivity is `IsPrimitiveRoot.pow_inj` on representatives below `n`,
+and surjectivity onto the `n`-th roots of unity is `IsPrimitiveRoot.eq_pow_of_pow_eq_one` with
+`ZMod.val_cast_of_lt`.  The trivial action `zmodTrivialAction` is a `def` used through `letI`,
+deliberately not a global instance — the same pattern as `rootsOfUnityTrivialAction`.
+
+⚠ In this Mathlib pin `Multiplicative` is a plain `def`, `ofAdd`/`toAdd` are `Equiv`s, and the
+simp lemmas `ofAdd_toAdd`, `toAdd_mul`, … live in the **root** namespace, *not* under
+`Multiplicative.`; `Multiplicative.ofAdd_toAdd` is an unknown constant.  All of them are `rfl`, so
+the file uses `show`/`rfl` throughout and closes injectivity with `Multiplicative.ext` (which
+*does* exist) applied to `ZMod.val_injective`.
+
+### Landing the symbol in the Brauer group
+
+`IsKummerData.unitsHom = Units.map (algebraMap k Ω) ∘ ι : M →* Ωˣ` is the coefficient
+homomorphism into the units of the extension; it is equivariant because the base units are fixed
+(`smul_units_algebraMap`), injective, and its image consists of `n`-th roots of unity.  Pushing
+the symbol along it:
+
+```lean
+noncomputable def kummerSymbolUnits : kˣ →* kˣ →* SmoothH2 Gal(Ω/k) Ωˣ :=
+  ...(coeffH2 h.unitsHom h.unitsHom_equivariant).comp (kummerSymbol h Φ a)
+theorem kummerSymbolUnits_eq_one_iff (hroot : ∀ y : Ωˣ, ∃ z : Ωˣ, z ^ n = y) (a b : kˣ) :
+    kummerSymbolUnits h Φ a b = 1 ↔ kummerSymbol h Φ a b = 1
+```
+
+The `iff` is §0.48's `coeffH2_injective`: over an extension closed under `n`-th roots, nothing is
+lost by reading the symbol in `H²(Gal(Ω/k), Ωˣ)`.  Composed with §0.46's `smoothBrauerEquiv` this
+is a symbol with values in `Br(k)[n]`, and over a local field §0.47's
+`smoothLocalInvariantEquiv` turns it into a number in `(1/n)ℤ/ℤ ⊆ ℚ/ℤ`.
+
+### What is still missing for row 6
+
+The *product formula* `∏_v (a,b)_v = 0`.  That is global reciprocity — the statement that the sum
+of the local invariants of a global Brauer class vanishes — and it needs the exact sequence
+`0 → Br(k) → ⊕_v Br(k_v) → ℚ/ℤ → 0`, of which only the injectivity on the left (row 3's
+`eq_one_of_mem_sha2`, in the roots-of-unity form) is currently available.  The symbol as built is
+already enough for the *local* Scholz–Reichardt bookkeeping, which is where it is wanted.
+
+Build: 9461 jobs green, zero warnings, zero sorries outside the comparator.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
