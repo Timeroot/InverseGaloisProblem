@@ -4560,6 +4560,128 @@ Build: 9445 jobs green, zero warnings, zero sorries outside the comparator.
 
 ---
 
+## 0.44 Status (2026-08-31, later) — the profinite cup product, and `H¹(G_k, μ_n) = kˣ/(kˣ)ⁿ`
+
+The mirror that §0.43 asked for is built, and with it the first cohomology of an *infinite* Galois
+group is now computed, not merely defined.  Five modules, all sorry- and axiom-free.
+
+### (a) `CFT/Profinite/Cup.lean` — the multiplicative cup product
+
+The input is a pairing `Φ : M → M' → M''` of the coefficients of three smooth modules,
+multiplicative in each variable and compatible with the three actions, and the product of two
+`1`-cochains is
+
+```lean
+mulCup₁₁ Φ u v = fun p => Φ (u p.1) (p.1 • v p.2)
+```
+
+with `isMulCocycle₂_mulCup₁₁`, `isSmooth₂_mulCup₁₁` (the subgroup at which the product is constant
+is the intersection of the three subgroups for the two factors and the action — `IsOpenNormal.inf`,
+exactly as predicted), and `mulCup₁₁_mem_smoothCoboundary₂_left`/`_right` with explicit primitives.
+Descending gives
+
+```lean
+cupSmoothH1 Φ hΦ : SmoothH1 G M → SmoothH1 G M' →* SmoothH2 G M''
+```
+
+`comapH2_cupSmoothH1` makes it commute with pullback along any smooth homomorphism, hence
+`resH2_cupSmoothH1` with restriction to a subgroup, hence `cupSmoothH1_mem_sha2_left`/`_right`:
+**a cup product one of whose factors is everywhere locally trivial is everywhere locally trivial.**
+That is the shape in which the Hilbert symbol will be consumed.
+
+### (b) `CFT/Profinite/Hilbert90.lean` — Hilbert 90 for an infinite Galois group
+
+`isMulCoboundary₁_of_isMulCocycle₁_smooth`: a *smooth* `1`-cocycle of `Gal(Ω|k)` with values in
+`Ωˣ` is the coboundary of a single unit; hence `subsingleton_smoothH1_units`.  The reduction to the
+finite case is the only interesting step and it is short: a smooth cochain is constant on the
+cosets of an open normal subgroup, the fixing subgroups of the finite Galois levels are cofinal
+among those (`exists_fixingSubgroup_le`, §0.40), and the values of a cocycle constant on the cosets
+of `E.fixingSubgroup` are *fixed* by that subgroup, so by `InfiniteGalois.fixedField_fixingSubgroup`
+they lie in `E` itself.  Choosing a preimage of each automorphism of `E` turns the cocycle into a
+cocycle of the finite level, Noether's form supplies a primitive there, and the primitive works
+upstairs unchanged because every automorphism of `Ω` acts on `E` through its restriction.
+
+### (c) `CFT/Profinite/Kummer.lean` — the two directions
+
+With a primitive `n`-th root of unity in the base, the coefficients are an abstract `M` mapping
+into `kˣ` by `ι` with image the `n`-th roots of unity — deliberately the *same* convention as
+`eq_one_of_mem_sha2` (row 3), so the two layers compose.
+
+* `exists_isMulCocycle₁_kummer`: if `β ^ n = a` with `a ∈ kˣ` then `σ ↦ σ • β / β` has values in
+  the `n`-th roots of unity of the base, and the resulting `M`-valued cochain is a *smooth*
+  cocycle.  Smoothness is where the infinite case differs from the finite one, and it comes from
+  `exists_isOpenNormal_forall_apply_eq`: a single element of `Ω` is fixed by the subgroup fixing
+  the normal closure of the field it generates, which is open because that closure is finite.
+* `exists_pow_eq_of_isMulCocycle₁`: conversely, Hilbert 90 turns a smooth cocycle into a radical
+  `β`, and `β ^ n` is fixed by everything, hence lies in the base.
+* `smoothH1Mk_eq_one_iff_exists_pow`: the class is trivial exactly when the radicand is already an
+  `n`-th power in the base.
+
+### (d) `CFT/Profinite/KummerHom.lean` — the isomorphism
+
+`IsKummerData k Ω M ι n` bundles the five hypotheses (a primitive root in `k`, the trivial action
+on `M`, `ι` injective with image the `n`-th roots of unity, and an `n`-th root in `Ω` of every unit
+of `k`).  Two roots of the same unit differ by a root of unity of the base, which every
+automorphism fixes, so `smul_div_eq_of_pow_eq` says the coboundary does not depend on the root; and
+a cocycle is determined by its coboundary because `ι` is injective.  So `cochain` is well defined,
+`cochain_mul` is multiplicative, and
+
+```lean
+kummerHom      : kˣ →* SmoothH1 Gal(Ω/k) M
+ker_kummerHom  : kummerHom.ker = (powMonoidHom n).range
+kummerHom_surjective
+kummerEquiv    : kˣ ⧸ (powMonoidHom n : kˣ →* kˣ).range ≃* SmoothH1 Gal(Ω/k) M
+```
+
+**Non-vacuity was a genuine risk** and is now closed.  A grep showed that the abstract-`M`-with-`ι`
+convention introduced by row 3 had never once been instantiated, so the entire layer could have
+been about an empty class of data.  `isKummerData_rootsOfUnity` supplies the witness — `M` is
+`rootsOfUnity n k` with the trivial action (`rootsOfUnityTrivialAction`, kept a `def` rather than a
+global instance to avoid an instance diamond on `Gal(Ω/k)`-actions), and `exists_units_pow_eq`
+supplies the roots whenever `Ω` is algebraically closed.
+
+### (e) `CFT/Profinite/KummerRes.lean` — restriction, and Ш¹ in Kummer terms
+
+The point of the whole layer.  The cochain of `a` measures how far a chosen root is from being
+fixed, and because the action on the coefficients is trivial a cocycle is a coboundary on a
+subgroup exactly when it *vanishes* there.  So
+
+```lean
+resH1_kummerClass_eq_one_iff_smul_root : resH1 D (h.kummerClass a) = 1 ↔ ∀ d ∈ D, d • h.root a = h.root a
+resH1_kummerClass_eq_one_iff_mem_fixedField :
+  resH1 D (h.kummerClass a) = 1 ↔ ∃ b ∈ IntermediateField.fixedField D, b ^ n = algebraMap k Ω a
+resH1_fixingSubgroup_kummerClass_eq_one_iff :
+  resH1 E.fixingSubgroup (h.kummerClass a) = 1 ↔ ∃ b : ↥E, (b : Ω) ^ n = algebraMap k Ω a
+```
+
+No closedness hypothesis on `D` is needed: the fixed field is taken as it stands, and the
+intermediate-field form follows from `InfiniteGalois.fixedField_fixingSubgroup`.  Over a family `S`
+of subgroups this reads off the everywhere locally trivial classes: `localPowers S` is the subgroup
+of `kˣ` of units that are `n`-th powers in the field fixed by every `D ∈ S`, and
+
+```lean
+map_localPowers : (h.localPowers S).map h.kummerHom = sha1 M S
+```
+
+For `S` the genuine decomposition subgroups of `G_k` (`decompositionSubgroups`, §0.40) this is
+exactly **`Ш¹(k, μ_n) = {a ∈ kˣ : a is locally an n-th power} / (kˣ)ⁿ`**, which is the object the
+dual of row 5 has to be paired with, and the object Theorem 13 of Schmidt–Wingberg computes.
+
+### What this does and does not unlock
+
+It does *not* touch rows 5 and 8: Poitou–Tate is still wall #1.  What it does is make rows 6 and 9
+writable in the same language as row 3.  The remaining piece for the Hilbert symbol itself is the
+**invariant map on `SmoothH2`** — the repository has `localInvariant` only at the finite level
+(`CFT/Brauer/LocalInvariant.lean`), and the bridge `SmoothH2 G_K Ωˣ ≅ Br(K)` does not exist.
+Building it needs one compatibility that a search of the 81 modules of `CFT/Brauer/` did not turn
+up: that the crossed product of an *inflated* cocycle (same base, larger splitting field) has the
+same Brauer class, i.e. `(Ω_E/K, inf f) ≅ M_{[E:L]}((L/K, f))`.  That is the next brick on this
+line.
+
+Build: 9450 jobs green, zero warnings, zero sorries outside the comparator.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.

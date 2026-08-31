@@ -332,6 +332,7 @@ import InverseGalois.CFT.Profinite.Hilbert90
 import InverseGalois.CFT.Profinite.InfRes
 import InverseGalois.CFT.Profinite.Kummer
 import InverseGalois.CFT.Profinite.KummerHom
+import InverseGalois.CFT.Profinite.KummerRes
 import InverseGalois.CFT.Profinite.Quotient
 import InverseGalois.CFT.Profinite.Krull
 import InverseGalois.CFT.Profinite.Res
@@ -3667,4 +3668,10 @@ it that are available here.
   `n`-th powers are the first cohomology with coefficients in the `n`-th roots of unity.**  The
   situation is not vacuous: over an algebraically closed extension the roots of unity of the base,
   with the trivial action, are such data.
+* `InverseGalois.CFT.Profinite.KummerRes` restricts those classes.  The cochain of a unit measures
+  how far a chosen root is from being fixed, and on a subgroup it is a coboundary exactly when it
+  vanishes there, so **a Kummer class dies on a subgroup exactly when the unit is a power in the
+  field that subgroup fixes**; one root is fixed precisely when every root is, because two roots
+  differ by a root of unity of the base.  Over a family of subgroups this describes the everywhere
+  locally trivial classes as the image of the units that are locally powers.
 -/
