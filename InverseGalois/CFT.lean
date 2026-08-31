@@ -66,6 +66,7 @@ import InverseGalois.CFT.Brauer.LocalSymbol
 import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
 import InverseGalois.CFT.Brauer.Opposite
+import InverseGalois.CFT.Brauer.PlaceInvariant
 import InverseGalois.CFT.Brauer.Primary
 import InverseGalois.CFT.Brauer.QuadraticExt
 import InverseGalois.CFT.Brauer.Quaternion
@@ -1289,6 +1290,11 @@ it that are available here.
 * `InverseGalois.CFT.Brauer.SmoothInvariant` composes that with the invariant map: the smooth
   second cohomology of the absolute Galois group of a local field with coefficients in the units
   of an algebraic closure is the rationals modulo the integers.
+* `InverseGalois.CFT.Brauer.PlaceInvariant` localizes a Brauer class of a number field at a finite
+  place: the completion there is a local field, so base change followed by the local invariant map
+  attaches to every class a rational number modulo the integers, and that number vanishes exactly
+  when the completion splits the class.  Base change of the smooth second cohomology of an absolute
+  Galois group is read off the same identification, and is functorial in the field.
 * `InverseGalois.CFT.Brauer.LocalSymbol` feeds the `n`-th power symbol through that
   identification.  An algebraic closure is closed under `n`-th roots, so nothing is lost in reading
   the symbol of two units in the units of the closure, and the invariant map turns it into a

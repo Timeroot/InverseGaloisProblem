@@ -5193,6 +5193,108 @@ Build: 9462 jobs green, zero warnings, zero sorries outside the comparator.
 
 ---
 
+## 0.51 Status (2026-08-31, late night) — the localization of the Brauer group at a finite place
+
+`CFT/Brauer/PlaceInvariant.lean` lays the first brick of the project named at the end of §0.50 —
+and it turns out that the hardest-looking prerequisite listed there is **not needed at all**.
+
+### (a) The localization map does not need the decomposition group
+
+§0.50 planned the localization `H²(G_k, Ωˣ) → H²(D_v, Ωˣ) ≅ Br(k_v)` and observed that it requires
+identifying the decomposition subgroup `D_v ≤ G_k` with `G_{k_v}` as a topological group, with `Ω`
+becoming `k̄_v` as a `D_v`-module.  That is a genuine piece of work (a normal-closure/compositum
+argument plus continuity of the comparison map) and it has *not* been done.
+
+It does not have to be.  The same map is available purely algebraically:
+
+```
+Br(k)  —baseChangeHom k_v→  Br(k_v)  —localInvariantHom→  ℚ/ℤ
+```
+
+`BrauerGroup.baseChangeHom` (`Brauer/BaseChange.lean`) sends `⟦A⟧` to `⟦k_v ⊗_k A⟧` with no Galois
+theory whatsoever, and `localInvariantHom` (`Brauer/InvariantMap.lean`) is the invariant map of
+local class field theory.  Composing them is
+
+```lean
+noncomputable def placeInvariant (v : HeightOneSpectrum (𝓞 k)) :
+    BrauerGroup.{0, 0} k →* Multiplicative QModZ
+```
+
+and, because `smoothBrauerEquiv` identifies `Br` of a perfect field with `SmoothH2` of its absolute
+Galois group, the cohomological form `smoothPlaceInvariant` is a one-line transport.  The
+comparison of Galois groups is thereby *replaced* by the comparison of Brauer groups, which is a
+tensor product.
+
+### (b) The completion is a local field in the sense the repo already uses
+
+Every hypothesis of the local invariant map is discharged for `v.adicCompletion k`:
+
+| hypothesis | source |
+| --- | --- |
+| `Valued _ ℤᵐ⁰`, `CompleteSpace` | Mathlib |
+| `Valuation.RankOne` | `NumberField.instRankOneValuedAdicCompletion` — but only with `synthInstance.maxHeartbeats 1000000`; at the default it times out |
+| `ProperSpace` | `Local.properSpace_adicCompletion` (`Local/AdicLocalField.lean`) |
+| `PerfectField` | new instance `charZero_adicCompletion` + `PerfectField.ofCharZero` |
+| `IsUnitValGen _ 1` | `isUnitValGen_one (valued_adicCompletion_surjective v)` — the canonical normalization, so `placeInvariant` carries no `hm` argument |
+| `HasResidueChar _ p e` | `exists_hasResidueChar_adicCompletion` (`Local/AdicHerbrand.lean`) — available for *every* place, so it can be produced inside a proof rather than carried as a hypothesis |
+
+The last row is what makes the main result unconditional:
+
+```lean
+theorem placeInvariant_eq_one_iff (v) (x) :
+    placeInvariant k v x = 1 ↔ x ∈ BrauerGroup.relative k (v.adicCompletion k)
+```
+
+**a Brauer class of a number field has trivial invariant at a place exactly when the completion
+there splits it.**  Injectivity of the local invariant map (`localInvariantHom_injective`) is the
+whole content of the forward direction.
+
+### (c) Base change of the smooth second cohomology, functorially
+
+The same transport gives, for perfect fields,
+
+```lean
+noncomputable def smoothBaseChange (k K : Type u) … :
+    SmoothH2 Gal(AlgebraicClosure k/k) (AlgebraicClosure k)ˣ →*
+      SmoothH2 Gal(AlgebraicClosure K/K) (AlgebraicClosure K)ˣ
+```
+
+with `smoothBaseChange_self` and `smoothBaseChange_comp` inherited from `baseChangeHom_self` and
+`baseChangeHom_comp`.  This is the coefficient-and-group change that a direct construction would
+have had to build by hand out of `comapH2` and `coeffH2`, complete with an `IsSmoothHom` proof.
+
+### (d) What the product formula still needs
+
+With the localizations in place, the sequence
+
+```
+0 → Br(k) → ⊕_v Br(k_v) → ℚ/ℤ → 0
+```
+
+decomposes into three independent statements, all now expressible without any profinite plumbing:
+
+1. **Injectivity** (Albert–Brauer–Hasse–Noether): `(∀ v, placeInvariant k v x = 1) → x = 1`.  The
+   repo has the finite-level cocycle form, `exists_sub_add_eq_globalUnits` (`Units/ABHN.lean`), and
+   `H2Surjective.lean` identifies `Br(K/k)` with `H²(Gal(K/k), Kˣ)`.  The bridge that is missing is
+   the compatibility of *algebraic* base change `k_v ⊗_k −` with *cohomological* restriction to the
+   decomposition subgroup: `k_v ⊗_k (K/k, a)` is the crossed product `(K_w/k_v, res a)`.
+2. **Almost-all vanishing**: for a fixed `x`, `placeInvariant k v x = 1` for all but finitely many
+   `v`.  Classically, a splitting field `K/k` is unramified outside a finite set and the values of
+   a cocycle are units outside a finite set, and `H²` of the units of an unramified local extension
+   vanishes — the last of which the repo has (`Local/UnramifiedCoboundary.lean`,
+   `subsingleton_tate_adicUnits`).
+3. **The sum vanishes**.  This is the deep one and is the reciprocity law.
+
+Items 1 and 2 need the same bridge, and it is a bounded, purely algebraic project; item 3 is not.
+
+The archimedean places are not yet covered: `Brauer/RealInvariant.lean` has
+`realBrauerInvariant : Br(ℝ) →* ℚ/ℤ`, so the missing step is only to turn a real embedding of `k`
+into an `Algebra k ℝ` and base change along it.
+
+Build: 9463 jobs green, zero warnings, zero sorries outside the comparator.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
