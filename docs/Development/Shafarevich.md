@@ -5395,6 +5395,83 @@ Build: 9466 jobs green, zero warnings, zero sorries outside the comparator.
 
 ---
 
+## 0.53 Status (2026-08-31, late night) — the Albert–Brauer–Hasse–Noether theorem, on the Brauer group
+
+Item 1 of §0.51(d) is **done**.
+
+```lean
+theorem eq_one_of_forall_mem_relative (x : BrauerGroup k)
+    (hfin : ∀ v : HeightOneSpectrum (𝓞 k), x ∈ BrauerGroup.relative k (v.adicCompletion k))
+    (hinf : ∀ u : InfinitePlace k, x ∈ BrauerGroup.relative k u.Completion) :
+    x = 1
+```
+
+**a Brauer class over a number field which is split by every completion is trivial**
+(`Brauer/HasseNoether.lean`), together with the invariant-map phrasing
+`eq_one_of_forall_placeInvariant_eq_one` and the packaged
+
+```lean
+theorem brauerToCompletions_injective : Function.Injective (brauerToCompletions k)
+```
+
+into `(∏_v Br(k_v)) × (∏_u Br(k_u))`.  Unconditional, sorry-free, axiom-free.
+
+### (a) The three §0.52(d) items, and where each landed
+
+1. **The notational dictionary** — `Brauer/PlaceCoboundary.lean`.  The two identifications of the
+   decomposition group agree (`localDecompositionEquiv_decompositionEquiv`), so transporting
+   `IsMulCoboundary₂ (localCocycle k w f)` along `decompositionEquiv` and unwinding
+   `Additive`/`smulUnitsAut`/`adicUnitHom` gives
+   `placeInvariant_mk_csa_eq_one_iff_exists` and its `relative`-phrased twin
+   `mem_relative_mk_csa_adicCompletion_iff_exists`, which are *literally* the `hfin` clause of
+   `exists_sub_add_eq_globalUnits`.
+2. **The archimedean analogue** — `Units/InfiniteDecompositionField.lean` +
+   `Brauer/InfinitePlaceCrossedProduct.lean`.  This turned out to be a transcription rather than a
+   new construction: the whole infinite-place infrastructure already existed in parallel
+   (`mem_range_algebraMap_iff_forall_stabilizer_smul_eq_infinite`, `isGalois_infiniteCompletion`,
+   `finiteDimensional_infiniteCompletion`, and crucially `stabilizerAlgEquivInfinite`, the infinite
+   analogue of `decompositionEquiv`), so only the decomposition-field embedding and the two-step
+   base change had to be written.  `Br(ℝ)` is *not* used: the statement is
+   `x ∈ BrauerGroup.relative k u.Completion`, which needs no invariant map at all.
+3. **Surjectivity for a variable splitting field** — already in the repo.
+   `exists_mk_csa_eq_of_mem_relative` (`Brauer/SmoothBrauer.lean`) plus
+   `exists_isGalois_mem_relative` (`Brauer/GaloisSplitting.lean`, applicable because a number field
+   is perfect) writes an arbitrary class of `Br(k)` as `⟦CrossedProduct.csa hf⟧` for a cocycle of
+   some finite Galois extension of number fields.
+
+### (b) The assembly
+
+Given `x : Br(k)`, pick the Galois splitting field `L` (a number field by
+`NumberField.of_module_finite`) and write `x = ⟦csa hf⟧`.  Then:
+
+* `hfin` at a prime `v` of `𝓞 L` is the hypothesis at `primeUnder (𝓞 k) v`;
+* `hinf` at an infinite place `w` of `L` is the hypothesis at `w.comap (algebraMap k ↥L)`;
+* the cocycle identity `IsMulCocycle₂ f` *is* the additive cocycle identity `ha`, via the one-line
+  dictionary `Additive.toMul (globalUnitsAut σ u) = σ • Additive.toMul u`, proved by `Units.ext rfl`;
+* `exists_sub_add_eq_globalUnits` then returns a cochain, which is exactly a witness of
+  `IsMulCoboundary₂ f`, and `CrossedProduct.mk_csa_eq_one_iff` concludes.
+
+So the global input is *only* `Units/ABHN.lean`; everything else is the crossed-product dictionary.
+
+### (c) What is left of the product formula
+
+Of the three items of §0.51(d), **item 1 is closed**.  Remaining:
+
+2. **almost-all vanishing** of `placeInvariant k v x` — a splitting field is unramified outside a
+   finite set and `H²` of the units of an unramified local extension vanishes
+   (`Local/UnramifiedCoboundary.lean`, `subsingleton_tate_adicUnits`);
+3. **the sum vanishes** — the reciprocity law, still the deep one.
+
+Lean notes.  `MonoidHom.pi` does not exist in Mathlib; the product of monoid homomorphisms into a
+dependent product is `Pi.monoidHom`.  `placeInvariant` takes `k` explicitly but
+`placeInvariant_eq_one_iff` takes it implicitly.  And an `@[simp]` lemma whose right-hand side is a
+pair of lambdas needs the binder types written out, or the field projections inside them cannot be
+elaborated.
+
+Build: 9470 jobs green, zero warnings, zero sorries outside the comparator.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.

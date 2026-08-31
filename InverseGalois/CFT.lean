@@ -46,7 +46,9 @@ import InverseGalois.CFT.Brauer.GaloisSplitting
 import InverseGalois.CFT.Brauer.Group
 import InverseGalois.CFT.Brauer.H2Brauer
 import InverseGalois.CFT.Brauer.H2Surjective
+import InverseGalois.CFT.Brauer.HasseNoether
 import InverseGalois.CFT.Brauer.InertiaSubfield
+import InverseGalois.CFT.Brauer.InfinitePlaceCrossedProduct
 import InverseGalois.CFT.Brauer.InflateTower
 import InverseGalois.CFT.Brauer.InvariantBaseChange
 import InverseGalois.CFT.Brauer.InvariantBaseUnramified
@@ -66,6 +68,7 @@ import InverseGalois.CFT.Brauer.LocalSymbol
 import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
 import InverseGalois.CFT.Brauer.Opposite
+import InverseGalois.CFT.Brauer.PlaceCoboundary
 import InverseGalois.CFT.Brauer.PlaceCrossedProduct
 import InverseGalois.CFT.Brauer.PlaceInvariant
 import InverseGalois.CFT.Brauer.Primary
@@ -592,6 +595,7 @@ import InverseGalois.CFT.Units.DecompositionOutside
 import InverseGalois.CFT.Units.HasseHom
 import InverseGalois.CFT.Units.HasseLevel
 import InverseGalois.CFT.Units.InfiniteDecomposition
+import InverseGalois.CFT.Units.InfiniteDecompositionField
 import InverseGalois.CFT.Units.HasseInflation
 import InverseGalois.CFT.Units.HasseDecomposition
 import InverseGalois.CFT.Units.HasseTwo
@@ -1304,6 +1308,17 @@ it that are available here.
   over that field the extension and the completion of the base are linearly disjoint, so a second
   base change reads the cocycle on the Galois group of the completions.  The invariant at the place
   therefore vanishes exactly when the local cocycle is a coboundary.
+* `InverseGalois.CFT.Brauer.PlaceCoboundary` reads that criterion on the decomposition group.  The
+  two identifications of the decomposition group, with the Galois group of the completions and with
+  the Galois group over the decomposition field, agree, so **the invariant at a finite place of the
+  class of a crossed product vanishes exactly when the cocycle restricted to the decomposition
+  group is a coboundary in the units of the completion** — the shape taken by the local hypotheses
+  of the Albert-Brauer-Hasse-Noether theorem.
+* `InverseGalois.CFT.Brauer.InfinitePlaceCrossedProduct` runs the same two-step base change at an
+  infinite place, where the decomposition field is the subfield fixed by the stabiliser of the
+  place: **the completion at an infinite place splits the class of a crossed product exactly when
+  the cocycle restricted to the decomposition group is a coboundary in the units of the
+  completion.**
 * `InverseGalois.CFT.Brauer.LocalSymbol` feeds the `n`-th power symbol through that
   identification.  An algebraic closure is closed under `n`-th roots, so nothing is lost in reading
   the symbol of two units in the units of the closure, and the invariant map turns it into a
@@ -2169,6 +2184,10 @@ it that are available here.
   of an element and therefore norm preserving, hence restricts to the extension; the completion
   above is a splitting field over the completion below, and the elements, and so also the units,
   fixed by the decomposition group are exactly those coming from below.
+* `InverseGalois.CFT.Units.InfiniteDecompositionField` names the subfield fixed by the stabiliser
+  of an infinite place.  An element of it has its image in the completion fixed by that stabiliser,
+  hence coming from the completion of the base, so the decomposition field embeds into the
+  completion of the base and the automorphism group of the completions is the Galois group over it.
 * `InverseGalois.CFT.Units.InfiniteFixed` runs the argument of `AdicFixed` at the infinite places.
   A family of local units of the base field gives one of the extension by taking, at each place, the
   image of the unit at the place below, and again the families so obtained are exactly the fixed
@@ -2790,6 +2809,12 @@ it that are available here.
   a coboundary is a coboundary, so **a two-cocycle with values in the units of the top field which
   is a coboundary at every place is a coboundary** — the Albert-Brauer-Hasse-Noether theorem in the
   shape of the vanishing of the second Tate-Shafarevich group of the units.
+* `InverseGalois.CFT.Brauer.HasseNoether` reads that on the Brauer group.  Every class over a
+  number field is split by a finite Galois extension and is therefore the class of a crossed
+  product of it, base change to a completion is base change of the cocycle to the decomposition
+  group, and a cocycle which is a coboundary at every place is a coboundary; so **a Brauer class
+  over a number field which is split by every completion is trivial**, and **the Brauer group of a
+  number field injects into the product of the Brauer groups of its completions.**
 * `InverseGalois.CFT.Kummer.InflationRootsOfUnity` turns a statement about the units back into one
   about the roots of unity.  If a two-cocycle whose values are `n`-th roots of unity is a coboundary
   in the units, then the `n`-th powers of the cochain witnessing that form a one-cocycle, so
