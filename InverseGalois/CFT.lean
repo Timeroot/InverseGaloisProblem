@@ -575,6 +575,7 @@ import InverseGalois.CFT.Units.InfiniteDecomposition
 import InverseGalois.CFT.Units.HasseInflation
 import InverseGalois.CFT.Units.HasseDecomposition
 import InverseGalois.CFT.Units.HasseTwo
+import InverseGalois.CFT.Units.HasseTwoDecomposition
 import InverseGalois.CFT.Units.EquivariantLabel
 import InverseGalois.CFT.Units.FirstInequality
 import InverseGalois.CFT.Units.FrobeniusPlace
@@ -609,8 +610,10 @@ import InverseGalois.CFT.Units.IdeleTower
 import InverseGalois.CFT.Units.InfiniteComap
 import InverseGalois.CFT.Units.InfiniteFixed
 import InverseGalois.CFT.Units.InfiniteGalois
+import InverseGalois.CFT.Units.InfiniteHilbert90
 import InverseGalois.CFT.Units.InfiniteIdele
 import InverseGalois.CFT.Units.InfiniteOrbit
+import InverseGalois.CFT.Units.InfiniteTowerDescent
 import InverseGalois.CFT.Units.InflationDescent
 import InverseGalois.CFT.Units.LocalCoboundaryTwist
 import InverseGalois.CFT.Units.LocalEmbedding

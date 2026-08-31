@@ -33,6 +33,9 @@ decomposition subgroup.
   primes of its ring of integers.
 * `InverseGalois.CFT.finiteDecompositionSubgroupsOutside`: the same for the primes whose place of
   the base field avoids a prescribed set.
+* `InverseGalois.CFT.infiniteDecompositionSubgroups`: **the decomposition subgroups at the infinite
+  places of an arbitrary Galois extension of a number field**, the stabilisers of its archimedean
+  places.
 
 ## Main results
 
@@ -207,6 +210,11 @@ variable {k K} in
 theorem finiteDecompositionSubgroupsOutside_subset (S : Set (HeightOneSpectrum (𝓞 k))) :
     finiteDecompositionSubgroupsOutside k K S ⊆ finiteDecompositionSubgroups k K :=
   fun _ ⟨P, hPp, hPbot, _, hD⟩ => ⟨P, hPp, hPbot, hD⟩
+
+/-- **The decomposition subgroups at the infinite places of an arbitrary Galois extension of a
+number field**: the stabilisers of its archimedean places. -/
+def infiniteDecompositionSubgroups : Set (Subgroup Gal(K/k)) :=
+  {D | ∃ w : InfinitePlace K, D = stabilizer Gal(K/k) w}
 
 end Family
 

@@ -4111,15 +4111,16 @@ rescale over a radical extension so the trivialising cochain is `μ_n`-valued) �
 `G_k`).  Notably the profinite Kummer sequence is **not** needed: the finite-level Hilbert 90
 argument already in `Kummer/InflationRootsOfUnity.lean` does the whole job.
 
-**What is still open in row 3** is the same glue as in row 2: `IsLocallySplitLevel` quantifies over
-the places of a *level*, while genuine membership in `sha2` is a statement about the decomposition
-subgroups of `G_k` itself.  Matching the two needs a place of `k̄` over a place of `k` and its
+**What was still open in row 3** (closed in §0.42) is the same glue as in row 2:
+`IsLocallySplitLevel` quantifies over the places of a *level*, while genuine membership in `sha2`
+is a statement about the decomposition subgroups of `G_k` itself.  Matching the two needs a place of `k̄` over a place of `k` and its
 stabilizer — the design task deferred in §0.37(a).  With that glue, the finiteness of `Ш²(k, E)`
 for a `G_K`-trivial `E ≅ (ℤ/p)^d` is `Ш²(K, μ_p)^d = 0` plus Hochschild–Serre.
 
 ### (d) The table, updated
 
-Rows 1, 2 and 3 are laid (each modulo the one shared glue lemma).  The next brick is **row 4**,
+Rows 1, 2 and 3 are laid (each modulo the one shared glue lemma, itself closed in §0.40 for
+degree one and in §0.42 for degree two).  The next brick is **row 4**,
 local Tate duality with `μ_p` coefficients, for which `localInvariantEquiv` (§0.37(b)) and the
 torsion computation of §0.38(a) are the inputs.  Rows 5 and 7 — Poitou–Tate and Chebotarev over a
 number field — remain the two walls.  (Row 4 was laid the same day; see §0.39.)
@@ -4278,8 +4279,12 @@ walls, row 5 (**Poitou–Tate global duality**, `Ш²(k,A) ≅ Ш¹(k,A′)^∨`
 density over a number field**).
 
 Phase 1 is the finite places only; `levelDecompositionSetOutside` never mentions the archimedean
-ones, so nothing was lost.  Archimedean decomposition subgroups of `G_k` would be a separate
-construction and are not needed by anything downstream.
+ones, so nothing was lost *in degree one*.
+
+> **Correction (see §0.42).**  The last sentence of this subsection originally read that
+> archimedean decomposition subgroups of `G_k` "are not needed by anything downstream".  That is
+> false in degree two: `IsLocallySplitLevel` is a *conjunction* of an archimedean clause and a
+> finite clause, so the degree-two glue needs the archimedean half as well.  It is built in §0.42.
 
 ---
 
@@ -4407,6 +4412,90 @@ The `p = 2` half of Theorem 13 uses Chebotarev twice, and only one of the two is
 
 So row 7 reduces to a single classical statement: **every ideal class of a number field contains
 infinitely many prime ideals**.
+
+---
+
+## 0.42 Status (2026-08-31) — the degree-two glue is closed: `Ш²(k, μ_n) = 0` for the genuine decomposition subgroups of `G_k`
+
+§0.38(c) named the one thing still open in row 3: `IsLocallySplitLevel` quantifies over the places
+of a finite *level*, while membership in `sha2` is a statement about the decomposition subgroups of
+`G_k` itself.  That glue is now a theorem, in both halves.
+
+`IsLocallySplitLevel` (`Units/HasseTwo.lean`) is a **conjunction** — an archimedean clause over
+`InfinitePlace ↥L` and a finite clause over `HeightOneSpectrum (𝓞 ↥L)` — so closing it required
+building the archimedean mirror of the whole finite tower, not just the finite half.  This is where
+the last sentence of §0.40 was wrong.
+
+### (a) The finite half — `Units/TowerDescent.lean`, `Units/HasseTwoDecomposition.lean`
+
+For a tower `k ⊆ F ⊆ K` of number fields and a prime `v` of `K`, a local coboundary of the
+decomposition group at `v` with values in `(v.adicCompletion K)ˣ` descends to one of the
+decomposition group at the prime below with values in the completion of `F`
+(`exists_sub_add_eq_adicUnits_descent`).  The three inputs are: the decomposition group at `v` maps
+*onto* the one below (`stabilizerRestrictPlaceFinite_surjective`), the kernel is the automorphisms
+fixing `F`, and Hilbert 90 for that kernel (`Units/CompletionHilbert90.lean`) together with the
+abstract descent of a 2-coboundary along a surjection (`GroupCohomology/CoboundaryDescent.lean`).
+
+`exists_sub_add_eq_adicUnits_of_resH2` then goes from `sha2` to the local condition at a finite
+place of a level: pick a prime `P` of `𝓞 Ω` above the place, take the trivialising cochain of
+`stabilizer Gal(Ω/k) P`, use its *smoothness* to make it constant on the automorphisms fixing some
+finite Galois `E₀`, enlarge the level to `E ⊔ E₀`, descend the cochain along the surjection onto
+the decomposition group of that level, and finally descend the tower `k ⊆ E ⊆ E''`.
+
+### (b) The archimedean half — `Units/InfiniteHilbert90.lean`, `Units/InfiniteTowerDescent.lean`
+
+The same four steps, with `HeightOneSpectrum` replaced by `InfinitePlace` and `adicCompletion` by
+`InfinitePlace.Completion`:
+
+* `stabilizerAlgEquivInfinite` — **the decomposition group at an infinite place *is* the
+  automorphism group of the completion there**, `↥(stabilizer Gal(K/k) w) ≃* (w.Completion ≃ₐ[…] …)`.
+  This is what makes Hilbert 90 available: a subgroup `S` of it is the Galois group of `w.Completion`
+  over the fixed field of the image, a *finite* extension, so
+  `isMulCoboundary₁_of_isMulCocycle₁_stabilizerInfinite` is Mathlib's Hilbert 90 read through that
+  isomorphism.
+* `stabilizerRestrictPlaceInfinite_surjective` — surjectivity onto the decomposition group at the
+  place below, from `NumberField.InfinitePlace.exists_smul_eq_of_comap_eq` (which needs no
+  `NumberField` instance, so it also applies over an infinite `Ω`).
+* `exists_infiniteUnitsComapHom_eq_of_ker` — the units of `w.Completion` fixed by the whole
+  decomposition group over `F` are the units of the completion of `F`.
+* `exists_sub_add_eq_infiniteUnits_descent` — the descent, assembled from the same abstract lemma.
+
+`Units/InfiniteDecomposition.lean` gains `infiniteDecompositionSubgroups k Ω`, the archimedean
+counterpart of `finiteDecompositionSubgroups`, and `Units/HasseTwoDecomposition.lean` gains the
+`RestrictInfinitePlace` section and `exists_sub_add_eq_infiniteUnits_of_resH2`.
+
+### (c) The assembly
+
+```lean
+theorem eq_one_of_mem_sha2 {n : ℕ} [NeZero n] {ζ : k} (hζ : IsPrimitiveRoot ζ n)
+    (htriv : ∀ (g : Gal(Ω/k)) (m : M), g • m = m)
+    {ι : M →* kˣ} (hιinj : Function.Injective ι) (hιpow : ∀ m : M, ι m ^ n = 1)
+    (hιsurj : ∀ y : kˣ, y ^ n = 1 → ∃ m : M, ι m = y)
+    (z : SmoothH2 Gal(Ω/k) M)
+    (hz : z ∈ sha2 M (finiteDecompositionSubgroups k Ω ∪ infiniteDecompositionSubgroups k Ω)) :
+    z = 1
+```
+
+for `Ω` an algebraic closure of the number field `k` and `M` a `G_k`-trivial group of `n`-th roots
+of unity.  A class of `sha2` is represented by a cocycle inflated from a finite Galois level; the
+two bridge theorems turn the vanishing on the two families of decomposition subgroups into the two
+clauses of `IsLocallySplitLevel` for that representative; and
+`eq_one_of_forall_isLocallySplitLevel` (Albert–Brauer–Hasse–Noether plus Kummer theory) finishes.
+
+So **row 3 is done**: `Ш²(k, μ_n) = 0` in the form the downstream Hochschild–Serre argument needs,
+stated for the genuine decomposition subgroups of `G_k` and with no hypothesis left.
+
+**Cost.** `Units/InfiniteTowerDescent.lean` needs `maxHeartbeats 4000000` on its headline theorem
+and takes ~11 min to compile on its own; the pathology is instance search on `(w.Completion)ˣ`
+(failing `Ring`/`AddCommGroup`/`LieRing` searches), the same one the three shortcut instances in
+`Units/InfiniteHilbert90.lean` were introduced to cure.
+
+Build: 9444 jobs green, zero warnings, zero sorries outside the comparator.
+
+**What is left** is unchanged from §0.41: rows 5 and 8 (Poitou–Tate global duality), row 6 (the
+`p`-th power Hilbert symbol and the product formula), row 7 (Chebotarev / "every ideal class
+contains infinitely many primes", needed for `p = 2` only), and row 9 (the Schmidt–Wingberg
+Theorem 13/14/15 assembly).
 
 ---
 
