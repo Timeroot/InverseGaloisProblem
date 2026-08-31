@@ -80,6 +80,8 @@ import InverseGalois.CFT.Brauer.ResidueDegree
 import InverseGalois.CFT.Brauer.ResidueGalois
 import InverseGalois.CFT.Brauer.Semilinear
 import InverseGalois.CFT.Brauer.SkolemNoether
+import InverseGalois.CFT.Brauer.SmoothBrauer
+import InverseGalois.CFT.Brauer.SmoothInvariant
 import InverseGalois.CFT.Brauer.SmoothLevel
 import InverseGalois.CFT.Brauer.SolvableBound
 import InverseGalois.CFT.Brauer.SolvableNormBound
@@ -1276,6 +1278,13 @@ it that are available here.
   of finite Galois levels with the same smooth class can be compared in their compositum and have
   the same Brauer class.  The resulting map from the smooth second cohomology of the whole Galois
   group to the Brauer group of the base is a homomorphism, and it is injective.
+* `InverseGalois.CFT.Brauer.SmoothBrauer` makes it surjective when the top field is an algebraic
+  closure of a perfect field: a Brauer class split by a finite Galois extension is the class of a
+  crossed product of that extension, so the Brauer group of a perfect field *is* the smooth second
+  cohomology of its absolute Galois group with coefficients in the units of an algebraic closure.
+* `InverseGalois.CFT.Brauer.SmoothInvariant` composes that with the invariant map: the smooth
+  second cohomology of the absolute Galois group of a local field with coefficients in the units
+  of an algebraic closure is the rationals modulo the integers.
 * `InverseGalois.CFT.Brauer.H2Surjective` combines the two to invert the crossed product
   homomorphism: the relative Brauer group `Br(L / K)` of a finite Galois extension is isomorphic
   to the second cohomology group of `Gal(L/K)` with coefficients in `Lˣ`, and is killed by

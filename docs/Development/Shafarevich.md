@@ -4898,6 +4898,65 @@ then the composite with `localInvariantHom` is the invariant map on `SmoothH2`.
 
 ---
 
+## 0.47 Status (2026-08-31, late night) — `H²(G_k, k̄ˣ) = Br(k)`, and `= ℚ/ℤ` for a local field
+
+§0.46 built `smoothBrauerHom` and proved it injective.  It is also surjective, as soon as the top
+field is an algebraic closure of a **perfect** field, and then the local invariant turns it into an
+isomorphism with `ℚ/ℤ`.
+
+### (a) `CFT/Brauer/SmoothBrauer.lean`
+
+Two steps, both short because the pieces were already there.
+
+* `exists_mk_csa_eq_of_mem_relative` — a `Type u` restatement of `H2Surjective.lean`'s
+  `exists_brauerHom_eq`, avoiding that file's universe-0 restriction.  The restriction came from
+  `brauerHom`, which the statement need not mention: `exists_csa_finrank_sq_of_mem_relative`
+  (`SplittingSubfield.lean`) and `exists_algEquiv_crossedProduct_of_finrank_sq`
+  (`CrossedProductRecognition.lean`) are both stated in `Type u`, and chaining them directly gives
+  `∃ c (hc : IsMulCocycle₂ c), ⟦CrossedProduct.csa hc⟧ = x`.
+* `smoothBrauerHom_surjective` — `GaloisSplitting.lean`'s `exists_isGalois_mem_relative` produces a
+  finite Galois level `E ⊆ k̄` splitting the class, the previous bullet produces a cocycle there,
+  and `mk_csa_eq_smoothBrauer E hc rfl` identifies its inflation's smooth class as a preimage.
+
+Hence
+
+```lean
+smoothBrauerEquiv (k) [PerfectField k] :
+  SmoothH2 Gal(AlgebraicClosure k/k) (AlgebraicClosure k)ˣ ≃* BrauerGroup k
+```
+
+**The Brauer group of a perfect field is the smooth second cohomology of its absolute Galois
+group.**  Note `smoothBrauerHom` elaborates at `BrauerGroup.{u, u}`, which is what
+`localInvariantEquiv` (stated at `BrauerGroup.{0, 0}`) needs when `k : Type`.
+
+### (b) `CFT/Brauer/SmoothInvariant.lean`
+
+Composing with §'s `localInvariantEquiv`:
+
+```lean
+smoothLocalInvariantEquiv (K) [PerfectField K] (hres : HasResidueChar K p e)
+    (hm : IsUnitValGen K m) :
+  SmoothH2 Gal(AlgebraicClosure K/K) (AlgebraicClosure K)ˣ ≃* Multiplicative QModZ
+```
+
+This is the invariant map of local class field theory in cohomological form — the half of the norm
+residue symbol that turns a cup product into a number.
+
+### Why this is on the critical path
+
+Re-reading §0.41(c): SW's Theorem 13 consumes the `p`-th power Hilbert symbol only through
+(i) bilinearity, (ii) the product formula `∏_v (a, b)_v = 1`, and (iii) the local computation
+`(z, σz)_𝔓 = z(Frob_𝔓)` at a prime where one argument is unramified.  All three are statements
+about `inv_v(χ_a ∪ χ_b)`, so the invariant map on `SmoothH2` is the first of the two halves.  The
+second is the cup product `H¹(G, μ_p) × H¹(G, μ_p) → H²(G, k̄ˣ)`, which `CFT/Profinite/Cup.lean`
+already supports *provided* the base contains `μ_p`: for a trivial action on `μ_p` the pairing
+`Φ(ζ^a)(η) = η^a` is genuinely `G`-equivariant (for a non-trivial action it is not — that is the
+`μ_p ⊗ μ_p` twist), and SW work over a base containing `μ_p` throughout.
+
+Build: 9458 jobs green, zero warnings, zero sorries outside the comparator.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
