@@ -48,6 +48,7 @@ import InverseGalois.CFT.Brauer.H2Brauer
 import InverseGalois.CFT.Brauer.H2Surjective
 import InverseGalois.CFT.Brauer.HasseNoether
 import InverseGalois.CFT.Brauer.InertiaSubfield
+import InverseGalois.CFT.Brauer.InfiniteInvariant
 import InverseGalois.CFT.Brauer.InfinitePlaceCrossedProduct
 import InverseGalois.CFT.Brauer.InflateTower
 import InverseGalois.CFT.Brauer.InvariantBaseChange
@@ -95,6 +96,7 @@ import InverseGalois.CFT.Brauer.SolvableNormBound
 import InverseGalois.CFT.Brauer.Split
 import InverseGalois.CFT.Brauer.SplittingSubfield
 import InverseGalois.CFT.Brauer.TensorSimple
+import InverseGalois.CFT.Brauer.TotalInvariant
 import InverseGalois.CFT.Brauer.Tower
 import InverseGalois.CFT.Brauer.UnramifiedAdjoin
 import InverseGalois.CFT.Brauer.UnramifiedAut
@@ -1310,6 +1312,11 @@ it that are available here.
   only finitely many places ramify, and each of the finitely many values of the cocycle is a unit of
   the valuation ring outside a finite set, so **a Brauer class over a number field is split by the
   completion at all but finitely many finite places**.
+* `InverseGalois.CFT.Brauer.InfiniteInvariant` completes the family at the archimedean places.  The
+  completion at a complex place is isomorphic over the base to the complex numbers, hence splits
+  every class, and the completion at a real place is isomorphic over the base to the reals, hence
+  splits exactly the classes split by the associated real embedding, so **every infinite place
+  carries an invariant which vanishes exactly when the completion there splits the class**.
 * `InverseGalois.CFT.Brauer.PlaceCrossedProduct` computes that localization on crossed products.
   Restricting a cocycle to the decomposition group is base change to the decomposition field, and
   over that field the extension and the completion of the base are linearly disjoint, so a second
@@ -2822,6 +2829,10 @@ it that are available here.
   group, and a cocycle which is a coboundary at every place is a coboundary; so **a Brauer class
   over a number field which is split by every completion is trivial**, and **the Brauer group of a
   number field injects into the product of the Brauer groups of its completions.**
+* `InverseGalois.CFT.Brauer.TotalInvariant` collects the local invariants into a single family, one
+  rational number modulo the integers for each place.  All but finitely many of them vanish, so
+  their sum over all places is defined, and a class with all of them zero is split everywhere:
+  **a Brauer class over a number field is determined by its family of local invariants.**
 * `InverseGalois.CFT.Kummer.InflationRootsOfUnity` turns a statement about the units back into one
   about the roots of unity.  If a two-cocycle whose values are `n`-th roots of unity is a coboundary
   in the units, then the `n`-th powers of the cochain witnessing that form a one-cocycle, so

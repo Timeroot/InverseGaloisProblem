@@ -5559,6 +5559,136 @@ Build: 9472 jobs green, zero warnings, zero sorries outside the comparator.
 
 ---
 
+## 0.55 Status (2026-08-31, late night) — the archimedean invariant, and the full family
+
+Two new modules, `CFT/Brauer/InfiniteInvariant.lean` and `CFT/Brauer/TotalInvariant.lean`.  Together
+they close the archimedean gap flagged at the end of §0.51(d) and give the family of local
+invariants a single name.
+
+### (a) `CFT/Brauer/InfiniteInvariant.lean` — the invariant at an infinite place
+
+Up to now the archimedean side of the theory was phrased through *real embeddings*:
+`realEmbeddingInvariant k` needs an `[Algebra k ℝ]` instance supplied by the caller, and
+`realPlaceInvariant k hw` supplies it from a proof that a place is real.  The completions
+`u.Completion` never appeared on the invariant side, so `eq_one_of_forall_placeInvariant_eq_one`
+still had to take its archimedean hypothesis in the raw form `x ∈ BrauerGroup.relative k u.Completion`.
+
+The two facts that fix this are entirely about the shape of the completion.
+
+```lean
+theorem relative_completion_eq_top_of_isComplex {u : InfinitePlace k} (hu : u.IsComplex) :
+    BrauerGroup.relative k u.Completion = ⊤
+
+theorem relative_completion_eq_relative_real {u : InfinitePlace k} (hu : u.IsReal) [Algebra k ℝ]
+    (halg : (algebraMap k ℝ) = (InfinitePlace.embedding_of_isReal hu : k →+* ℝ)) :
+    BrauerGroup.relative k u.Completion = BrauerGroup.relative k ℝ
+```
+
+Mathlib already has the two ring isomorphisms `ringEquivComplexOfIsComplex` and
+`ringEquivRealOfIsReal`, and the compatibility with the base is `extensionEmbedding_coe` /
+`extensionEmbeddingOfIsReal_coe`.  What is worth recording is the mechanical part: **turn the ring
+isomorphism into an `AlgEquiv` with `AlgEquiv.ofRingEquiv`, not with a structure-update `{ e.symm
+with commutes' := … }`**.  The structure-update route builds an `AlgHom` whose application unfolds
+to `(↑↑e.symm.toRingHom).toFun x`, and `rw [RingEquiv.apply_symm_apply]` then fails to match; with
+`AlgEquiv.ofRingEquiv hmap` the same proof is two `relative_le_relative_of_algHom` calls on
+`e.toAlgHom` and `e.symm.toAlgHom`, and the compatibility hypothesis `hmap` is exactly what
+`ofRingEquiv` asks for.  A pleasant surprise: `algebraMap k u.Completion r` is *definitionally* the
+coercion `↑r`, so `hmap` is `extensionEmbedding_coe` applied verbatim, with no glue.
+
+For the complex case, `relative k ℂ = ⊤` is `BrauerGroup.relative_eq_top_of_isAlgClosed`, and the
+`Algebra k ℂ` instance needed to state it is a `letI` from `u.embedding`; the conclusion is about
+`u.Completion` only, so the instance never escapes.
+
+The invariant itself is then a `dite` on `u.IsReal`:
+
+```lean
+noncomputable def infinitePlaceInvariant (u : InfinitePlace k) :
+    BrauerGroup.{0, 0} k →* Multiplicative QModZ :=
+  if hu : u.IsReal then realPlaceInvariant k hu else 1
+
+theorem infinitePlaceInvariant_eq_one_iff (u : InfinitePlace k) (x : BrauerGroup.{0, 0} k) :
+    infinitePlaceInvariant k u x = 1 ↔ x ∈ BrauerGroup.relative k u.Completion
+```
+
+Note that none of these need `[NumberField k]`: `InfinitePlace`, its completion and
+`realPlaceInvariant` are all defined for a bare field, so the linter's `omit [NumberField k] in` is
+correct and not a warning to be silenced.
+
+### (b) `CFT/Brauer/TotalInvariant.lean` — the family, and its sum
+
+```lean
+noncomputable def localInvariants :
+    BrauerGroup.{0, 0} k →*
+      ((HeightOneSpectrum (𝓞 k) → Multiplicative QModZ) ×
+        (InfinitePlace k → Multiplicative QModZ))
+
+theorem localInvariants_injective : Function.Injective (localInvariants k)
+```
+
+which is the Albert–Brauer–Hasse–Noether theorem in its final form: **a Brauer class over a number
+field is determined by its family of local invariants.**  The archimedean hypothesis of
+`eq_one_of_forall_placeInvariant_eq_one` is now discharged by (a), so the intermediate statement
+
+```lean
+theorem eq_one_of_forall_invariant_eq_one (x : BrauerGroup.{0, 0} k)
+    (hfin : ∀ v : HeightOneSpectrum (𝓞 k), placeInvariant k v x = 1)
+    (hinf : ∀ u : InfinitePlace k, infinitePlaceInvariant k u x = 1) :
+    x = 1
+```
+
+mentions no relative Brauer groups at all.
+
+The sum over all places is a `MonoidHom` because of §0.54:
+
+```lean
+noncomputable def totalInvariant : BrauerGroup.{0, 0} k →* Multiplicative QModZ where
+  toFun x := (∏ᶠ v : HeightOneSpectrum (𝓞 k), placeInvariant k v x) *
+    ∏ u : InfinitePlace k, infinitePlaceInvariant k u x
+```
+
+`map_mul'` is `finprod_mul_distrib` fed with `finite_setOf_placeInvariant_ne_one` twice — the
+`Function.mulSupport` of `fun v => placeInvariant k v x` *is* the set of §0.54 on the nose, so no
+conversion lemma is needed — followed by `Finset.prod_mul_distrib` (the infinite places are a
+`Fintype`) and `mul_mul_mul_comm`.
+
+### (c) What is left
+
+Reciprocity is now a one-line statement in the repository's own vocabulary:
+
+```
+totalInvariant k = 1.
+```
+
+That is item 3 of §0.51(d), unchanged, and still the input rows 5, 6 and 8 of the §0.36 table are
+waiting on.  What §0.55 adds is that everything *around* it is now phrased in invariants: the exact
+sequence to aim for is
+
+```
+0 → Br(k) --localInvariants--> ⊕_v ℚ/ℤ --sum--> ℚ/ℤ → 0,
+```
+
+whose left exactness is `localInvariants_injective` (done), whose "almost all vanish" is §0.54
+(done), and whose middle exactness is reciprocity plus a surjectivity statement.
+
+Also worth recording, from the survey done while choosing this brick: **row 4 of the §0.36 table is
+stale.**  Its stated remainder, `inv_M ∘ res = [M : K] · inv_K`, is already a theorem —
+`localInvariantHom_baseChange` in `CFT/Brauer/InvariantBaseChange.lean`.  Local class field theory
+in this repository is complete (`localInvariantEquiv`, `localInvariantHom_injective`,
+`localInvariantHom_baseChange`), and so is the idele class formation on the global side
+(`first_inequality`, `globalFundamentalClass`, `globalTateEquiv`, `globalReciprocityEquiv`,
+`H¹(G, C_K) = 0`, `H²(G, K*) ↪ H²(G, I_K)`).  The reciprocity law is genuinely the one missing
+global input, not a bookkeeping gap.
+
+One shortcut was considered and **refuted**: one cannot get reciprocity by comparing indices, on the
+grounds that the image of `H²(G, I_K)` in `H²(G, C_K)` and the kernel of the sum have the same
+index.  The image is generated by `1 / lcm_v(n_v)`, not by `1 / n`, and these differ already for a
+biquadratic extension.
+
+Build: 9474 jobs green, zero warnings, zero sorries outside the comparator; axioms of
+`localInvariants_injective` and `totalInvariant` are `[propext, Classical.choice, Quot.sound]`.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
