@@ -23,6 +23,7 @@ import InverseGalois.CFT.Brauer.CyclicBrauer
 import InverseGalois.CFT.Brauer.CyclicCompositum
 import InverseGalois.CFT.Brauer.CyclicInvariant
 import InverseGalois.CFT.Brauer.CyclicNorm
+import InverseGalois.CFT.Brauer.CyclicNormResidue
 import InverseGalois.CFT.Brauer.CyclicTower
 import InverseGalois.CFT.Brauer.Division
 import InverseGalois.CFT.Brauer.DivisionAbsValue
@@ -3826,4 +3827,12 @@ it that are available here.
   so **a decomposition subgroup over the intermediate field sits inside one over the base.**  Hence
   an everywhere locally trivial class of the second cohomology with roots of unity coefficients
   **dies as soon as one passes to a field containing a primitive root of unity.**
+* `InverseGalois.CFT.Brauer.CyclicNormResidue` composes the invariant of a local field with the
+  cyclic algebra construction: **the norm residue symbol of a cyclic extension of a local field.**
+  The norm index of such an extension is the degree, whatever the ramification, so **its relative
+  Brauer group has as many elements as the degree** and, being contained in the classes killed by
+  the degree and as numerous as they are, **is exactly the classes killed by the degree.**  The
+  invariant of a local field is injective, so **the symbol of a unit vanishes exactly when the unit
+  is a norm**, and since the classes killed by the degree are all split by the extension, **the
+  symbol attains the reciprocal of the degree.**  None of this asks the extension to be unramified.
 -/

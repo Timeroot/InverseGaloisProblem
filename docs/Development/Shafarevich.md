@@ -3959,7 +3959,7 @@ extensions (`Mathlib/GroupTheory/GroupExtension/` has only a docstring TODO).
 | 1 | ~~`H^i(G_k, A)` for finite discrete `A`, as a filtered colimit `colim_M H^i(Gal(M/k), A)` over finite Galois `M ⊇ K`, with localization maps and `Ш^i`~~ | **DONE** — `InverseGalois/CFT/Profinite/`: `SmoothH1`/`SmoothH2` with `galInflH1`/`galInflH2`, `resH1`/`resH2`, and `sha1`/`sha2` (see §0.37) |
 | 2 | ~~`Ш¹(k, A) ↪ H¹(Gal(K\|k), A)` from the Hasse principle, and its dual~~ | **DONE** — `CFT/Units/HasseInflation.lean`: `exists_galInflH1_eq_of_forall_level` and `exists_galInflH1_eq_of_forall_level_outside`, and — with the glue of §0.40 — `CFT/Units/HasseDecomposition.lean`: `exists_galInflH1_eq_of_finiteDecomposition(Outside)`, stated at the genuine decomposition subgroups of `G_k` |
 | 3 | ~~Finiteness of `Ш²(k, E)` via ABHN + Hochschild–Serre~~ | **DONE** — `CFT/Units/HasseTwo.lean`: `eq_one_of_forall_isLocallySplitLevel`, the vanishing of the everywhere locally trivial classes of `H²` with `μ_n` coefficients, valid at `p = 2` (see §0.38).  The degree-one glue is §0.40; the degree-two glue is §0.42 — `CFT/Units/HasseTwoDecomposition.lean`: `eq_one_of_mem_sha2`, stated at `sha2 M (decompositionSubgroups k Ω)`, the genuine decomposition subgroups of `G_k` |
-| 4 | ~~Local Tate duality for finite modules over a local field~~ | **DONE in the shape that is consumed** — `CFT/Local/CyclicNormIndex.lean` (the norm index of *any* cyclic extension of a local field is its degree) and `CFT/Local/KummerNonNorm.lean` (nondegeneracy of the `q`-th power norm residue symbol), see §0.39.  What is left of the row is `inv_M ∘ res = [M:K] · inv_K` |
+| 4 | ~~Local Tate duality for finite modules over a local field~~ | **DONE** — `CFT/Local/CyclicNormIndex.lean` (the norm index of *any* cyclic extension of a local field is its degree), `CFT/Local/KummerNonNorm.lean` (nondegeneracy of the `q`-th power norm residue symbol), see §0.39; `inv_M ∘ res = [M:K] · inv_K` is `localInvariantHom_baseChange` (`CFT/Brauer/InvariantBaseChange.lean`); and `CFT/Brauer/CyclicNormResidue.lean` assembles the norm residue symbol of a cyclic extension of a local field, see §0.56 |
 | 5 | **Global duality `Ш²(k, A) ≅ Ш¹(k, A′)^∨`** | wall #1: the sole missing input of SW's Claim, hence of step 2 |
 | 6 | The `p`-th power Hilbert symbol over a number field and its product formula | the repo has the *quadratic* symbol over `ℚ` (`CFT/Global/Hilbert*.lean`); the *local* nondegeneracy of the `p`-th power symbol is §0.39(b) |
 | 7 | ~~**Chebotarev density over a number field**, in the abelian/ray-class form of (e)~~ | **DONE for odd `p`** — `NumberTheory/RelativeSplitDensity.lean` + `CFT/RelativeFrobenius.lean`: Theorem 13 only needs the Frobenius *up to a scalar*, which is `exists_relStabilizer_eq_zpowers` (see §0.41).  What remains is "every ideal class contains a prime", used only in the `p = 2` Claim |
@@ -5686,6 +5686,123 @@ biquadratic extension.
 
 Build: 9474 jobs green, zero warnings, zero sorries outside the comparator; axioms of
 `localInvariants_injective` and `totalInvariant` are `[propext, Classical.choice, Quot.sound]`.
+
+---
+
+## 0.56 Status (2026-08-31) — the norm residue symbol of a cyclic local extension, and the shape of reciprocity
+
+### (a) `CFT/Brauer/CyclicNormResidue.lean`
+
+Two bricks that were already in the tree turn out to fit together with nothing in between:
+
+* `cyclicBrauerEquiv` (`CFT/Brauer/CyclicNorm.lean`) — for *any* finite cyclic Galois `L/K` of
+  *any* fields, `Kˣ / N(Lˣ) ≃* Br(L/K)`, together with `exists_cyclicBrauerHom_eq` (surjectivity)
+  and `ker_cyclicBrauerHom`.  No local hypotheses at all.
+* `index_normSubgroup_eq_finrank_local` (`CFT/Local/CyclicNormIndex.lean`) — the norm index of a
+  cyclic extension of a local field is the degree, **ramified or not**.
+
+Transporting the second along the first is immediate and gives the two structural facts:
+
+```lean
+theorem natCard_relative_eq_finrank_of_cyclic … :
+    Nat.card ↥(BrauerGroup.relative K L) = finrank K L
+theorem relative_eq_brauerTorsion_of_cyclic … :
+    BrauerGroup.relative K L = brauerTorsion K (finrank K L)
+```
+
+The second is `Subgroup.eq_of_le_of_card_ge` fed with `relative_le_brauerTorsion` and
+`natCard_brauerTorsion`.  It is the *general* form of `relative_eq_brauerTorsion_of_unramified`
+(`CFT/Brauer/RelativeTorsion.lean`): **a cyclic extension of a local field splits exactly the
+classes killed by its degree**, with no unramifiedness hypothesis and no Frobenius.
+
+The symbol itself is the composite of the two maps that are now available:
+
+```lean
+noncomputable def cyclicNormResidue (hm : IsUnitValGen K m) : Kˣ →* Multiplicative QModZ :=
+  (localInvariantHom K hm).comp (cyclicBrauerHom hsigma)
+```
+
+with `ker_cyclicNormResidue = normSubgroup K L` (injectivity of `localInvariantHom` turns the
+kernel of the cyclic algebra map into the kernel of the symbol), the user-facing
+`cyclicNormResidue_eq_one_iff` (*a unit has trivial symbol exactly when it is a norm*),
+`pow_cyclicNormResidue_eq_one`, and
+
+```lean
+theorem exists_cyclicNormResidue_eq … :
+    ∃ a : Kˣ, cyclicNormResidue hsigma hm a
+      = Multiplicative.ofAdd (QuotientAddGroup.mk (1 / (finrank K L : ℚ)) : QModZ)
+```
+
+so the symbol is onto `(1/n)ℤ/ℤ`.  Together: `Kˣ / N(Lˣ) ≅ (1/n)ℤ/ℤ ≅ ℤ/n ≅ Gal(L/K)`, which is
+local class field theory for cyclic extensions in the concrete form the global argument consumes.
+`a ↦ σ₀ ^ (n · inv(L/K, σ₀, a))` is the local Artin map, and it is now one definition away.
+
+Build: 9475 jobs green, zero warnings, zero sorries outside the comparator; all seven new
+declarations have axioms `[propext, Classical.choice, Quot.sound]`.
+
+### (b) The obstruction named in §0.55 was the wrong one
+
+§0.55 left reciprocity as `totalInvariant k = 1` and the next brick as the *global splitting
+criterion*
+
+> `x ∈ Br(L/k)` ⟺ for every place `v`, `placeInvariant k v x ^ n_v = 1`, `n_v` the local degree.
+
+The apparent obstruction was `localInvariantHom_baseChange`, whose hypothesis
+`hnorm : ∀ x : K, ‖algebraMap K M x‖ = ‖x‖` genuinely fails for a tower of adic completions:
+`valued_adicCompletionComap` gives `v(comap z) = v(z) ^ e` and `normValued K L` restricts to
+`v_K ^ n`, so neither normalization is an isometry.
+
+That lemma is **not needed**.  `relative_eq_brauerTorsion_of_cyclic` is *intrinsic* — it is a
+statement about the subgroup `Br(L_w / k_v) ≤ Br(k_v)`, not about comparing two invariant maps —
+so the criterion factors as
+
+```
+x_v ∈ Br(L_w / k_v)  ⟺  x_v ∈ brauerTorsion k_v n_v  ⟺  inv_v(x) ^ n_v = 1,
+```
+
+the middle step being (a) and the right step `localInvariantHom_injective`.  The reverse direction
+of the criterion is then ABHN over `L` (`eq_one_of_forall_invariant_eq_one`) plus
+`BrauerGroup.baseChangeHom_comp`, since `(x_L)_w` and `(x_v)_{L_w}` are the same base change of `x`
+read two ways.
+
+### (c) The real next brick: the completion tower `k_v ⊆ L_w`
+
+What both (b) and every route to reciprocity need is the same missing plumbing.  For `L/k` a finite
+Galois extension of number fields, `w` a place of `L` over `v`:
+
+1. `w.adicCompletion L` as an **algebra over** `v.adicCompletion k` — the ring map
+   `adicCompletionComap` exists (`CFT/Units/CompletionGalois.lean`), the `Algebra` instance and the
+   `IsScalarTower` over `k` are there, but
+2. `FiniteDimensional (v.adicCompletion k) (w.adicCompletion L)`, and
+3. `IsGalois (v.adicCompletion k) (w.adicCompletion L)` with Galois group the decomposition group —
+   in particular **cyclic when `L/k` is cyclic**, which is what (a) is applied to,
+
+are not in the tree.  This is the classical "the completion of a Galois extension is Galois with
+group `D_w`", and it is a bounded, purely algebraic project with no analysis in it.
+
+### (d) Reciprocity itself, costed
+
+With (c) in hand the two remaining routes are both explicit computations, not soft arguments:
+
+* **Cyclotomic.** Every class of `Br(ℚ)` is split by a cyclic subfield of some `ℚ(ζ_m)`; the sum
+  formula becomes the product formula for the local Artin symbols of `ℚ(ζ_m)/ℚ`.  At `p ∤ m` the
+  extension is unramified and `localInvariant_apply_cyclicBrauerHom` already gives `v(a)/n`; at
+  `p ∣ m` it is wildly ramified and needs the explicit local Artin map of `ℚ_p(ζ_{p^k})/ℚ_p`, i.e.
+  Lubin–Tate.  That last piece is the expensive one.
+* **One auxiliary tame prime.**  Split off a single auxiliary prime `q` and a cyclic
+  `L ⊆ ℚ(ζ_q)` of degree `N ∣ q − 1`, so that the only ramified place is *tame*.  The tame symbol
+  reduces to the unramified formula by bilinearity together with `⟨−a, a⟩ = 1` (which holds because
+  `N_{K(a^{1/N})/K}(a^{1/N}) = (−1)^{N−1} a`) and the fact that the Kummer extension of a unit is
+  unramified.  The local tame norm groups are then computable from
+  `index_normSubgroup_eq_finrank_local`, `Φ_q(1) = q = N(1 − ζ_q)`, "a subgroup of index prime to
+  `q` contains `1 + qℤ_q`", and uniqueness of the index-`N` subgroup of a cyclic group.
+  **Caveat, established while costing this:** knowing the *kernels* of the local symbols does not
+  pin the symbols themselves, so one genuine ramified (tame) computation survives, and routing it
+  through the bilinear `kummerSymbol` of `CFT/Profinite/Symbol.lean` needs the **cup product ↔
+  cyclic algebra bridge**, which is still on the deferred list.
+
+The second route avoids Lubin–Tate entirely and is the one to take; its enabling lemma is that
+bridge, and its prerequisite is (c).
 
 ---
 
