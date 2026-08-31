@@ -129,6 +129,7 @@ import InverseGalois.CFT.GroupCohomology.CoprimeCoboundary
 import InverseGalois.CFT.GroupCohomology.CoprimeDescent
 import InverseGalois.CFT.GroupCohomology.CoprimeSplit
 import InverseGalois.CFT.GroupCohomology.Corestriction
+import InverseGalois.CFT.GroupCohomology.Cup
 import InverseGalois.CFT.GroupCohomology.Cyclic
 import InverseGalois.CFT.GroupCohomology.CyclicRestrict
 import InverseGalois.CFT.GroupCohomology.CyclicH1

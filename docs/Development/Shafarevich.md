@@ -3958,7 +3958,7 @@ extensions (`Mathlib/GroupTheory/GroupExtension/` has only a docstring TODO).
 | --- | --- | --- |
 | 1 | ~~`H^i(G_k, A)` for finite discrete `A`, as a filtered colimit `colim_M H^i(Gal(M/k), A)` over finite Galois `M ⊇ K`, with localization maps and `Ш^i`~~ | **DONE** — `InverseGalois/CFT/Profinite/`: `SmoothH1`/`SmoothH2` with `galInflH1`/`galInflH2`, `resH1`/`resH2`, and `sha1`/`sha2` (see §0.37) |
 | 2 | ~~`Ш¹(k, A) ↪ H¹(Gal(K\|k), A)` from the Hasse principle, and its dual~~ | **DONE** — `CFT/Units/HasseInflation.lean`: `exists_galInflH1_eq_of_forall_level` and `exists_galInflH1_eq_of_forall_level_outside`, and — with the glue of §0.40 — `CFT/Units/HasseDecomposition.lean`: `exists_galInflH1_eq_of_finiteDecomposition(Outside)`, stated at the genuine decomposition subgroups of `G_k` |
-| 3 | ~~Finiteness of `Ш²(k, E)` via ABHN + Hochschild–Serre~~ | **DONE** — `CFT/Units/HasseTwo.lean`: `eq_one_of_forall_isLocallySplitLevel`, the vanishing of the everywhere locally trivial classes of `H²` with `μ_n` coefficients, valid at `p = 2` (see §0.38).  The degree-one glue is §0.40; the degree-two analogue of `HasseDecomposition` is not yet written, but its input `exists_stabilizer_prime_restrictNormalHom_eq` is |
+| 3 | ~~Finiteness of `Ш²(k, E)` via ABHN + Hochschild–Serre~~ | **DONE** — `CFT/Units/HasseTwo.lean`: `eq_one_of_forall_isLocallySplitLevel`, the vanishing of the everywhere locally trivial classes of `H²` with `μ_n` coefficients, valid at `p = 2` (see §0.38).  The degree-one glue is §0.40; the degree-two glue is §0.42 — `CFT/Units/HasseTwoDecomposition.lean`: `eq_one_of_mem_sha2`, stated at `sha2 M (decompositionSubgroups k Ω)`, the genuine decomposition subgroups of `G_k` |
 | 4 | ~~Local Tate duality for finite modules over a local field~~ | **DONE in the shape that is consumed** — `CFT/Local/CyclicNormIndex.lean` (the norm index of *any* cyclic extension of a local field is its degree) and `CFT/Local/KummerNonNorm.lean` (nondegeneracy of the `q`-th power norm residue symbol), see §0.39.  What is left of the row is `inv_M ∘ res = [M:K] · inv_K` |
 | 5 | **Global duality `Ш²(k, A) ≅ Ш¹(k, A′)^∨`** | wall #1: the sole missing input of SW's Claim, hence of step 2 |
 | 6 | The `p`-th power Hilbert symbol over a number field and its product formula | the repo has the *quadratic* symbol over `ℚ` (`CFT/Global/Hilbert*.lean`); the *local* nondegeneracy of the `p`-th power symbol is §0.39(b) |
@@ -4496,6 +4496,67 @@ Build: 9444 jobs green, zero warnings, zero sorries outside the comparator.
 `p`-th power Hilbert symbol and the product formula), row 7 (Chebotarev / "every ideal class
 contains infinitely many primes", needed for `p = 2` only), and row 9 (the Schmidt–Wingberg
 Theorem 13/14/15 assembly).
+
+---
+
+## 0.43 Status (2026-08-31) — cup products in low degrees
+
+Two corrections to the §0.36 table first.
+
+* **Row 4 is finished, not partial.**  The cell says "what is left of the row is
+  `inv_M ∘ res = [M:K] · inv_K`".  That is exactly `localInvariant_baseChange` in
+  `CFT/Brauer/LocalInvariantRestrict.lean`, together with `restrictScalars_divisionFrobenius`.
+  Nothing is left of row 4.
+* **The general-base class formation of §0.36(a) is not "bounded, mechanical".**
+  `CFT/Units/IdeleQuotCyclic.lean` carries `[IsPrincipalIdealRing (𝓞 k)]` on
+  `forall_mem_multiples_ideleQuot`, `addOrderOf_ideleQuot_eq`,
+  `exists_addOrderOf_H2_ideleClassRep_eq` and
+  `exists_zsmul_eq_zero_imp_dvd_H2_ideleClassRep`, and the class group is a genuine obstruction, not
+  a convenience.  What *is* unconditional in `k` is the **order**: `first_inequality_index`
+  (`Units/IdeleClassIndex.lean`), `card_tateModule_resObj_ideleClassRep_two_le`
+  (`Units/IdeleClassTate.lean`) and the periodicity `tateH0AddEquivH2` give
+  `#Ĥ⁰(Gal(F|k), C_F) = n` with no hypothesis; only the *cyclicity* of that group uses the
+  principal-ideal hypothesis.  The repair is to work with `S`-ideles for a finite set `T` of primes
+  generating `Cl(k)` and to choose the auxiliary prime `q` so that every `v ∈ T` splits completely
+  in `F`, i.e. `q` split completely in `K · ℚ(ζ_{2n}) · ∏_{v ∈ T} ℚ(ζ_n, (Nv)^{1/n})`.
+
+### The brick
+
+Rows 5, 6 and 8 all consume cup products, and **neither Mathlib v4.28 nor this repository had
+any** (`grep -ri cup Mathlib/RepresentationTheory/` is empty).
+`CFT/GroupCohomology/Cup.lean` supplies them in the two degrees that matter, without the monoidal
+structure on `Rep k G`: instead of a tensor product of representations the input is an equivariant
+bilinear pairing of the coefficients,
+
+```lean
+(Φ : A →ₗ[k] B →ₗ[k] C) (hΦ : ∀ g a b, Φ (A.ρ g a) (B.ρ g b) = C.ρ g (Φ a b))
+```
+
+and the product of two `1`-cochains is
+
+```lean
+cup₁₁ Φ f₁ f₂ = fun p => Φ (f₁ p.1) (B.ρ p.1 (f₂ p.2))
+```
+
+matching Mathlib's sign conventions for `d₀₁`, `d₁₂`, `d₂₃`.  The three computations are
+`cup₁₁_mem_cocycles₂` (a product of cocycles is a cocycle), and
+`cup₁₁_mem_coboundaries₂_left` / `_right` (a product with a coboundary is a coboundary), the latter
+two with explicit primitives `y ↦ Φ a (f₂ y)` and `x ↦ -Φ (f₁ x) (B.ρ x b)`.  Descending through
+`Submodule.liftQ` twice gives
+
+```lean
+cupH1 Φ hΦ : H1 A →ₗ[k] H1 B →ₗ[k] H2 C
+cupH1_apply : cupH1 Φ hΦ (H1π A f₁) (H1π B f₂) = H2π C (cupCocycles₁₁ A B Φ hΦ f₁ f₂)
+```
+
+Note for the consumer: this is the **`Rep k G` / finite-level** flavour.  The profinite layer
+(`CFT/Profinite/Cochain.lean`) is multiplicative — `IsMulCocycle₁`/`IsMulCocycle₂` and
+`SmoothH1`/`SmoothH2` — so a multiplicative, smoothness-preserving mirror will be needed before the
+Hilbert symbol can be written as `H¹(G_K, μ_p) × H¹(G_K, μ_p) → H²(G_K, μ_p)`.  Smoothness is the
+easy half: the product of two cochains constant on the cosets of `N` and `N'` is constant on the
+cosets of `N ⊓ N'`, which is `IsOpenNormal.inf`.
+
+Build: 9445 jobs green, zero warnings, zero sorries outside the comparator.
 
 ---
 
