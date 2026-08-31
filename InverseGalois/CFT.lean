@@ -621,6 +621,7 @@ import InverseGalois.CFT.Units.InfiniteIdele
 import InverseGalois.CFT.Units.InfiniteOrbit
 import InverseGalois.CFT.Units.InfiniteTowerDescent
 import InverseGalois.CFT.Units.InflationDescent
+import InverseGalois.CFT.Units.KummerDecomposition
 import InverseGalois.CFT.Units.LocalCoboundaryTwist
 import InverseGalois.CFT.Units.LocalEmbedding
 import InverseGalois.CFT.Units.LocalIdele
@@ -3674,4 +3675,10 @@ it that are available here.
   field that subgroup fixes**; one root is fixed precisely when every root is, because two roots
   differ by a root of unity of the base.  Over a family of subgroups this describes the everywhere
   locally trivial classes as the image of the units that are locally powers.
+* `InverseGalois.CFT.Units.KummerDecomposition` reads that off over a number field.  A cocycle for
+  a trivial action is a homomorphism, and a homomorphism killing a level and every decomposition
+  subgroup is trivial, so the first cohomology with roots of unity as coefficients has no
+  everywhere locally trivial class; under the Kummer isomorphism, **a unit of a number field with a
+  primitive root of unity which becomes a power in the decomposition field at every nonzero prime
+  is already a power.**
 -/
