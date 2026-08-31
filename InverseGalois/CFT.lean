@@ -339,6 +339,7 @@ import InverseGalois.CFT.Profinite.InfRes
 import InverseGalois.CFT.Profinite.Kummer
 import InverseGalois.CFT.Profinite.KummerHom
 import InverseGalois.CFT.Profinite.KummerRes
+import InverseGalois.CFT.Profinite.KummerTwo
 import InverseGalois.CFT.Profinite.Quotient
 import InverseGalois.CFT.Profinite.Krull
 import InverseGalois.CFT.Profinite.Res
@@ -3710,6 +3711,16 @@ it that are available here.
   field that subgroup fixes**; one root is fixed precisely when every root is, because two roots
   differ by a root of unity of the base.  Over a family of subgroups this describes the everywhere
   locally trivial classes as the image of the units that are locally powers.
+* `InverseGalois.CFT.Profinite.KummerTwo` runs the same computation one degree up.  A smooth
+  cochain with values in the units is constant on the cosets of a finite level, so it has finitely
+  many values and one open normal subgroup fixes them all, which makes its coboundary smooth.  If
+  the image of a two cocycle is that coboundary, then the `n`-th power of the cochain has trivial
+  coboundary, hence is a one cocycle, hence is the coboundary of a single unit by Hilbert's theorem
+  ninety, and an `n`-th root of that unit corrects the cochain into one with values in the roots of
+  unity: **the second cohomology with coefficients in the `n`-th roots of unity injects into the
+  second cohomology of the units of the extension.**  Running the correction backwards, from a
+  chosen root of every value of a cochain whose coboundary is the `n`-th power of a cocycle,
+  identifies **the image as exactly the classes killed by `n`.**
 * `InverseGalois.CFT.Units.KummerDecomposition` reads that off over a number field.  A cocycle for
   a trivial action is a homomorphism, and a homomorphism killing a level and every decomposition
   subgroup is trivial, so the first cohomology with roots of unity as coefficients has no

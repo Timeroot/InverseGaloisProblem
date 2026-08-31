@@ -4957,6 +4957,77 @@ Build: 9458 jobs green, zero warnings, zero sorries outside the comparator.
 
 ---
 
+## 0.48 Status (2026-08-31, late night) — coefficient functoriality, and `H²(G, μ_n) = Br(k)[n]`
+
+Two bricks, both prerequisites for the Hilbert symbol named at the end of §0.47.
+
+### (a) `CFT/Profinite/Coeff.lean` — functoriality in the coefficients
+
+The repo had `Comap.lean` (functoriality in the *group*) but nothing in the *coefficients*.  For a
+homomorphism `φ : M →* N` commuting with the two actions:
+
+```lean
+coeffMap₁ φ u := fun g => φ (u g)          coeffMap₂ φ a := fun p => φ (a p)
+coeffH1 φ hφ : SmoothH1 G M →* SmoothH1 G N
+coeffH2 φ hφ : SmoothH2 G M →* SmoothH2 G N
+```
+
+All the content is that the cocycle relations are equations built from the group law and the
+action, that a cochain constant on the cosets of an open normal subgroup stays constant there, and
+that `coboundary₂ (coeffMap₁ φ u) = coeffMap₂ φ (coboundary₂ u)`.  Both maps are computed on
+cocycles by `rfl`.
+
+⚠ One asymmetry to remember: `coeffH1`'s descent needs `(coeffMap₁_smul_div φ hφ t).symm` while
+`coeffH2`'s needs the *unsymmetrised* equation, because `smoothCoboundary₁`'s carrier is
+`{u | ∃ t, (fun g => g • t / t) = u}` and `smoothCoboundary₂`'s is
+`{a | ∃ u, IsSmooth₁ u ∧ coboundary₂ u = a}` — the two equations point in opposite directions.
+
+### (b) `CFT/Profinite/KummerTwo.lean` — the Kummer sequence one degree up
+
+Let `Ω/k` be Galois with every unit of `Ω` having an `n`-th root (e.g. `Ω = k̄`), and let
+`ι : M →* Ωˣ` be an injective equivariant map onto the `n`-th roots of unity of `Ω`.  Then
+
+* `pow_coeffH2_eq_one` — every class in the image is killed by `n`;
+* `coeffH2_injective` — **`coeffH2 ι : H²(G, M) → H²(G, Ωˣ)` is injective**;
+* `exists_coeffH2_eq_of_pow_eq_one` — **every class killed by `n` is in the image**;
+* `range_coeffH2`, `kummerH2Equiv` — so `H²(G, μ_n) ≅ H²(G, Ωˣ)[n]`, which by §0.47 is `Br(k)[n]`
+  when `k` is perfect and `Ω = k̄`.
+
+Injectivity is Hilbert 90.  If `ι ∘ b = coboundary₂ w`, then `coboundary₂ (wⁿ) = 1`, so `wⁿ` is a
+smooth *one* cocycle, so `wⁿ = g ↦ g•β/β`; an `n`-th root `γ` of `β` corrects `w` into
+`t g := w g · γ / (g•γ)`, whose `n`-th power is `(g•β/β)·(β/g•β) = 1` and whose coboundary is still
+`coboundary₂ w` (because `g ↦ γ/(g•γ)` is the inverse of a one cocycle).  Surjectivity onto the
+`n`-torsion is the same computation backwards: choose an `n`-th root `ρ(y)` of every unit, put
+`v := ρ ∘ u` where `coboundary₂ u = aⁿ`, and `a / coboundary₂ v` takes values in `μ_n`.
+
+**The one real obstacle** was smoothness of `coboundary₂ v`.  `Cochain.lean`'s
+`IsSmooth₁.coboundary₂` needs `IsSmoothAction G M` — *one* open normal subgroup acting trivially on
+*all* of `M` — and `Ωˣ` does not satisfy that.  The fix is that it does not have to: a smooth
+cochain `u : Gal(Ω/k) → Ωˣ` is constant on the cosets of `E.fixingSubgroup` for a *finite* Galois
+level `E` (`exists_fixingSubgroup_le`), and `restrictNormalHom_surjective_level` gives a section, so
+`u` has only `|Gal(E/k)|` values; the normal closure of the field they generate is a finite level
+whose fixing subgroup fixes them all.  That is
+
+```lean
+exists_isOpenNormal_forall_smul_eq_of_isSmooth₁ :
+  IsSmooth₁ u → ∃ P, IsOpenNormal P ∧ ∀ g m, m ∈ P → m • u g = u g
+isSmooth₂_coboundary₂_of_isSmooth₁ : IsSmooth₁ u → IsSmooth₂ (coboundary₂ u)
+```
+
+and the second is `Cochain.lean`'s proof verbatim with `hact n hn.2` replaced by `hfix y n hn.2`.
+
+### Why this is on the critical path
+
+The Hilbert symbol wants `H¹(G, μ_p) × H¹(G, μ_p) → H²(G, μ_p) → H²(G, k̄ˣ) —inv→ ℚ/ℤ`.
+`Cup.lean` gives the first arrow (for `μ_p` in the base, the pairing `Φ(ζᵃ)(η) = η^a` is
+`G`-equivariant), `coeffH2 ι` is the second, and §0.47's `smoothLocalInvariantEquiv` is the third.
+Injectivity of `coeffH2 ι` is what makes the symbol *faithful*: a cup product is trivial in
+`Br(K)` exactly when it is trivial in `H²(G, μ_p)`.
+
+Build: 9460 jobs green, zero warnings, zero sorries outside the comparator.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
