@@ -79,6 +79,7 @@ import InverseGalois.CFT.Brauer.ResidueDegree
 import InverseGalois.CFT.Brauer.ResidueGalois
 import InverseGalois.CFT.Brauer.Semilinear
 import InverseGalois.CFT.Brauer.SkolemNoether
+import InverseGalois.CFT.Brauer.SmoothLevel
 import InverseGalois.CFT.Brauer.SolvableBound
 import InverseGalois.CFT.Brauer.SolvableNormBound
 import InverseGalois.CFT.Brauer.Split
@@ -1264,6 +1265,11 @@ it that are available here.
   intermediate extension inflates along the restriction of automorphisms, and the crossed product
   of the inflated cocycle is the algebra of matrices over the original one indexed by a basis of
   the larger field over the intermediate one, so inflation leaves the Brauer class unchanged.
+* `InverseGalois.CFT.Brauer.SmoothLevel` descends a smooth two cocycle of the Galois group of an
+  arbitrary Galois extension to a finite Galois level: its values lie in the level it is constant
+  for, and it is the inflation of a cocycle there.  Inflation is injective on classes, a
+  trivialising cochain being correctable to one constant on the cosets of the subgroup fixing the
+  level by Hilbert's theorem ninety relative to that level.
 * `InverseGalois.CFT.Brauer.H2Surjective` combines the two to invert the crossed product
   homomorphism: the relative Brauer group `Br(L / K)` of a finite Galois extension is isomorphic
   to the second cohomology group of `Gal(L/K)` with coefficients in `Lˣ`, and is killed by
