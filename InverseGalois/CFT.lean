@@ -47,6 +47,7 @@ import InverseGalois.CFT.Brauer.Group
 import InverseGalois.CFT.Brauer.H2Brauer
 import InverseGalois.CFT.Brauer.H2Surjective
 import InverseGalois.CFT.Brauer.InertiaSubfield
+import InverseGalois.CFT.Brauer.InflateTower
 import InverseGalois.CFT.Brauer.InvariantBaseChange
 import InverseGalois.CFT.Brauer.InvariantBaseUnramified
 import InverseGalois.CFT.Brauer.InvariantCompositum
@@ -1270,6 +1271,11 @@ it that are available here.
   for, and it is the inflation of a cocycle there.  Inflation is injective on classes, a
   trivialising cochain being correctable to one constant on the cosets of the subgroup fixing the
   level by Hilbert's theorem ninety relative to that level.
+* `InverseGalois.CFT.Brauer.InflateTower` assembles the levels into a single homomorphism:
+  inflating twice along a tower of normal subfields is inflating once to the top, so two cocycles
+  of finite Galois levels with the same smooth class can be compared in their compositum and have
+  the same Brauer class.  The resulting map from the smooth second cohomology of the whole Galois
+  group to the Brauer group of the base is a homomorphism, and it is injective.
 * `InverseGalois.CFT.Brauer.H2Surjective` combines the two to invert the crossed product
   homomorphism: the relative Brauer group `Br(L / K)` of a finite Galois extension is isomorphic
   to the second cohomology group of `Gal(L/K)` with coefficients in `Lˣ`, and is killed by

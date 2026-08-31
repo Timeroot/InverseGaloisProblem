@@ -4792,6 +4792,112 @@ axioms `[propext, Classical.choice, Quot.sound]`.
 
 ---
 
+## 0.46 Status (2026-08-31, late night) — the colimit: `SmoothH2(G_k, Ωˣ) ↪ Br(k)`
+
+§0.45(b) supplied the compatibility; this section builds the map it makes well defined.  The
+statement is the one the row-6 line asked for:
+
+```lean
+smoothBrauerHom : SmoothH2 Gal(Ω/k) Ωˣ →* BrauerGroup k
+smoothBrauerHom_injective : Function.Injective (smoothBrauerHom (k := k) (K := Ω))
+```
+
+for an arbitrary Galois extension `Ω/k` (no finiteness anywhere).  Three files moved.
+
+### (a) `CFT/Profinite/Cochain.lean` — three quotient lemmas
+
+`smoothH2Mk` is a `QuotientGroup.mk` of a subtype, so the three obvious facts about it were
+missing and every one of them is needed below:
+
+* `smoothH2Mk_congr` — equal cocycles have equal classes (a `subst` + `rfl`; it exists only to
+  avoid dependent rewriting, since the proof arguments change type when the cocycle does);
+* `smoothH2Mk_eq_iff` — **two classes agree exactly when the quotient of the cocycles is the
+  coboundary of a *smooth* cochain**, via `QuotientGroup.eq` and `Subgroup.mem_subgroupOf`
+  followed by a `show` that turns the subgroup membership `b⁻¹ * a ∈ smoothCoboundary₂` into the
+  pointwise `fun p => a p / b p`;
+* `smoothH2Mk_eq_mul` — the same dodge for `smoothH2Mk_mul`.
+
+### (b) `CFT/Brauer/InflateTower.lean` — transitivity of inflation, and the compositum trick
+
+**Transitivity.**  For a tower `k ⊆ L ⊆ L' ⊆ K` of normal subfields,
+
+```lean
+inflateCocycle_trans (w : Gal(L/k)² → Lˣ) :
+  inflateCocycle K (inflateCocycle L' w) = inflateCocycle K w
+```
+
+This is short because Mathlib already has the restriction half:
+`IsScalarTower.AlgEquiv.restrictNormalHom_comp_apply` (`FieldTheory/Normal/Defs.lean:245`) says
+`σ|_L = (σ|_{L'})|_L`, so the proof is `Units.ext` plus a three-step `rw` ending in
+`← IsScalarTower.algebraMap_apply`.
+
+**Raising a level.**  The awkwardness in stating "compare two levels in their compositum" is that
+`Algebra ↥E ↥F` for `E ≤ F` is *not* an instance — the two are intermediate fields of the same
+`K`, not a tower.  Rather than introduce a global instance (which would clash with the ambient
+`Algebra ↥E K`), the level-raising is packaged as an existential whose *statement* never mentions
+the extra algebra, and the instances live inside the proof:
+
+```lean
+exists_cocycle_of_le (hEF : E ≤ F) (hw : IsMulCocycle₂ w) :
+  ∃ v (hv : IsMulCocycle₂ v), inflateCocycle K v = inflateCocycle K w ∧
+    (⟦CrossedProduct.csa hv⟧ : BrauerGroup k) = ⟦CrossedProduct.csa hw⟧
+```
+
+with `letI : Algebra ↥E ↥F := ((IntermediateField.inclusion hEF).toRingHom).toAlgebra` and both
+scalar towers by `IsScalarTower.of_algebraMap_eq fun _ => rfl` — all three `rfl`s hold on the nose.
+The witness is `inflateCocycle ↥F w`; the first conjunct is `inflateCocycle_trans` and the second
+is §0.45(b)'s `mk_csa_inflateCocycle`.
+
+**Well-definedness.**  With those two, the key comparison is a five-line proof: given cocycles at
+levels `E₁, E₂` whose inflations to `K` have the same smooth class, raise both to `E₁ ⊔ E₂` (which
+is finite and Galois over `k` by `IntermediateField.finiteDimensional_sup` and the repo's
+`isGalois_sup`), read the hypothesis through `smoothH2Mk_eq_iff` to get a smooth cochain
+trivialising the quotient, and feed it to `SmoothLevel.lean`'s
+`isMulCoboundary₂_of_coboundary₂_inflateCocycle` — the descent of a smooth trivialisation to the
+level — to conclude via `mk_csa_eq_mk_csa_iff`:
+
+```lean
+mk_csa_eq_mk_csa_of_smoothH2Mk_eq :
+  … → (⟦CrossedProduct.csa hw₁⟧ : BrauerGroup k) = ⟦CrossedProduct.csa hw₂⟧
+```
+
+`existsUnique_mk_csa` then packages "every smooth class comes from some level"
+(`exists_isGalois_levelCocycle₂`) with that uniqueness into an `∃!`, `smoothBrauer` is its
+`choose`, and `mk_csa_eq_smoothBrauer` is the defining property.  Multiplicativity
+(`smoothBrauer_mul`) is the same compositum argument once more: raise the two levels to
+`E₁ ⊔ E₂`, note that inflation is multiplicative (`map_mul` of `Units.map`), and use
+`CrossedProduct.mk_csa_mul`.  `MonoidHom.mk'` then avoids proving `map_one` separately.
+
+**Injectivity.**  A cocycle at a finite level whose crossed product splits is a coboundary there
+(`mk_csa_eq_one_iff`), and the inflation of that trivialising cochain — pull back along
+`AlgEquiv.restrictNormalHom E` and push forward along `Units.map (algebraMap ↥E K)` — is smooth
+(it is constant on the cosets of `E.fixingSubgroup`, which is open normal) with differential the
+inflated coboundary.  So the class dies in `SmoothH2`:
+
+```lean
+smoothH2Mk_eq_one_of_mk_csa_eq_one (hw : IsMulCocycle₂ w)
+    (h : (⟦CrossedProduct.csa hw⟧ : BrauerGroup k) = 1) :
+  smoothH2Mk (inflateCocycle K w) … = 1
+```
+
+and `injective_iff_map_eq_one` plus `exists_isGalois_levelCocycle₂` finishes.
+
+**Lean note.**  `isGalois_sup` already existed in `CFT/Compositum.lean` (proved by `inferInstance`);
+declaring it again is a hard error, not a shadow.  The `omit`s the `unusedSectionVars` linter asked
+for are all of `[IsGalois k K]`, plus `[FiniteDimensional k ↥E]` on the coboundary computation —
+the `IsGalois k K` hypothesis is only needed for the *surjectivity* half (`exists_levelCocycle₂`),
+never for inflation itself.
+
+### What is left
+
+Unchanged: rows 5 and 8 (Poitou–Tate, wall #1), row 7 (Chebotarev, `p = 2` only), row 9 (the
+Schmidt–Wingberg 13/14/15 assembly).  On row 6 the remaining step is *surjectivity* of
+`smoothBrauerHom` — every class of `Br(k)` is split by some finite Galois extension, which is
+`H2Surjective.lean`'s `exists_brauerHom_eq` at each level, modulo its universe-0 restriction — and
+then the composite with `localInvariantHom` is the invariant map on `SmoothH2`.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.

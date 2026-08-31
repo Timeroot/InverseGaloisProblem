@@ -33,6 +33,8 @@ closed subgroup simply by restricting the cochain.
 * `InverseGalois.CFT.smoothH1Mk_eq_one_iff`, `InverseGalois.CFT.smoothH2Mk_eq_one_iff`: a class
   vanishes exactly when its cocycle is the coboundary of a smooth cochain.
 * `InverseGalois.CFT.smoothH2Mk_surjective`: every class is the class of a smooth cocycle.
+* `InverseGalois.CFT.smoothH2Mk_eq_iff`: two smooth two cocycles have the same class exactly when
+  their quotient is the coboundary of a smooth cochain.
 
 ## Tags
 
@@ -310,6 +312,31 @@ theorem smoothH2Mk_surjective (x : SmoothH2 G M) :
   obtain ⟨⟨a, ha, hs⟩, rfl⟩ := QuotientGroup.mk_surjective x
   exact ⟨a, ha, hs, rfl⟩
 
+/-- Equal two cocycles have equal classes. -/
+theorem smoothH2Mk_congr {a b : G × G → M} (ha : IsMulCocycle₂ a) (has : IsSmooth₂ a)
+    (hb : IsMulCocycle₂ b) (hbs : IsSmooth₂ b) (h : a = b) :
+    smoothH2Mk a ha has = smoothH2Mk b hb hbs := by
+  subst h
+  rfl
+
+/-- **Two smooth two cocycles have the same class exactly when their quotient is the coboundary of
+a smooth cochain.** -/
+theorem smoothH2Mk_eq_iff {a b : G × G → M} (ha : IsMulCocycle₂ a) (has : IsSmooth₂ a)
+    (hb : IsMulCocycle₂ b) (hbs : IsSmooth₂ b) :
+    smoothH2Mk a ha has = smoothH2Mk b hb hbs ↔
+      ∃ u : G → M, IsSmooth₁ u ∧ coboundary₂ u = fun p => a p / b p := by
+  have hfun : (b⁻¹ * a : G × G → M) = fun p => a p / b p := by
+    funext p
+    show (b p)⁻¹ * a p = a p / b p
+    rw [div_eq_mul_inv, mul_comm]
+  have hkey : (smoothH2Mk b hb hbs = smoothH2Mk a ha has) ↔
+      ((⟨b, hb, hbs⟩ : smoothCocycle₂ G M)⁻¹ * ⟨a, ha, has⟩ ∈
+        (smoothCoboundary₂ G M).subgroupOf (smoothCocycle₂ G M)) := QuotientGroup.eq
+  rw [eq_comm, hkey, Subgroup.mem_subgroupOf]
+  show (b⁻¹ * a : G × G → M) ∈ smoothCoboundary₂ G M ↔ _
+  rw [hfun]
+  exact Iff.rfl
+
 /-- The class of a product of smooth one cocycles is the product of the classes. -/
 theorem smoothH1Mk_mul {u v : G → M} (hu : IsMulCocycle₁ u) (hus : IsSmooth₁ u)
     (hv : IsMulCocycle₁ v) (hvs : IsSmooth₁ v) :
@@ -323,6 +350,15 @@ theorem smoothH2Mk_mul {a b : G × G → M} (ha : IsMulCocycle₂ a) (has : IsSm
     smoothH2Mk (a * b) ((smoothCocycle₂ G M).mul_mem ⟨ha, has⟩ ⟨hb, hbs⟩).1
         ((smoothCocycle₂ G M).mul_mem ⟨ha, has⟩ ⟨hb, hbs⟩).2
       = smoothH2Mk a ha has * smoothH2Mk b hb hbs := rfl
+
+/-- The class of a two cocycle which is a product of smooth two cocycles is the product of the
+classes. -/
+theorem smoothH2Mk_eq_mul {a b c : G × G → M} (ha : IsMulCocycle₂ a) (has : IsSmooth₂ a)
+    (hb : IsMulCocycle₂ b) (hbs : IsSmooth₂ b) (hc : IsMulCocycle₂ c) (hcs : IsSmooth₂ c)
+    (h : c = a * b) :
+    smoothH2Mk c hc hcs = smoothH2Mk a ha has * smoothH2Mk b hb hbs := by
+  subst h
+  exact smoothH2Mk_mul ha has hb hbs
 
 end Cohomology
 
