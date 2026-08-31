@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Profinite.Cochain
+import InverseGalois.CFT.Profinite.Res
 
 /-!
 # The cup product of two classes of the first cohomology of a topological group
@@ -21,6 +22,12 @@ on either side, with an explicit primitive.  So the product descends to classes.
 
 This is the multiplicative mirror, for the cohomology computed by smooth cochains, of the additive
 cup product of `InverseGalois.CFT.cup₁₁`.
+
+Pulling a product back along a homomorphism of topological groups is the product of the pullbacks,
+so in particular restriction to a subgroup is multiplicative for the cup product.  A product one of
+whose factors restricts trivially to every subgroup of a family therefore restricts trivially to
+every subgroup of that family: the cup product pairs the everywhere locally trivial classes of the
+first cohomology with everything, into the everywhere locally trivial classes of the second.
 
 ## Main definitions
 
@@ -41,6 +48,11 @@ cup product of `InverseGalois.CFT.cup₁₁`.
   one is a coboundary of degree two**, on either side.
 * `InverseGalois.CFT.cupSmoothH1_apply`: the cup product of two classes is the class of the product
   of any two cocycles representing them.
+* `InverseGalois.CFT.comapH2_cupSmoothH1` and `InverseGalois.CFT.resH2_cupSmoothH1`: **the cup
+  product commutes with pullback along a homomorphism**, and hence with restriction to a subgroup.
+* `InverseGalois.CFT.cupSmoothH1_mem_sha2_left` and
+  `InverseGalois.CFT.cupSmoothH1_mem_sha2_right`: **a cup product one of whose factors is
+  everywhere locally trivial is everywhere locally trivial.**
 
 ## Tags
 
@@ -247,5 +259,85 @@ theorem cupSmoothH1_apply {u : G → M} (hu : IsMulCocycle₁ u) (hus : IsSmooth
           (isSmooth₂_mulCup₁₁ Φ hus hvs) := rfl
 
 end Descent
+
+/-! ### Pulling a product back along a homomorphism -/
+
+section Comap
+
+variable {G Q : Type*} [Group G] [Group Q]
+variable {M N P : Type*} [CommGroup M] [CommGroup N] [CommGroup P]
+variable [MulDistribMulAction G N] [MulDistribMulAction Q N]
+
+/-- **The pullback of a product of two cochains of degree one is the product of the pullbacks**,
+for a homomorphism along which the action on the second factor of the pairing is compatible. -/
+theorem comap₂_mulCup₁₁ (Φ : M →* N →* P) {π : G →* Q}
+    (hπ : ∀ (g : G) (n : N), g • n = π g • n) (u : Q → M) (v : Q → N) :
+    comap₂ π (mulCup₁₁ Φ u v) = mulCup₁₁ Φ (comap₁ π u) (comap₁ π v) := by
+  funext p
+  obtain ⟨x, y⟩ := p
+  show Φ (u (π x)) (π x • v (π y)) = Φ (u (π x)) (x • v (π y))
+  rw [hπ x (v (π y))]
+
+end Comap
+
+section ComapClass
+
+variable {G Q : Type*} [Group G] [TopologicalSpace G] [Group Q] [TopologicalSpace Q]
+variable {M N P : Type*} [CommGroup M] [CommGroup N] [CommGroup P]
+variable [MulDistribMulAction G M] [MulDistribMulAction G N] [MulDistribMulAction G P]
+variable [MulDistribMulAction Q M] [MulDistribMulAction Q N] [MulDistribMulAction Q P]
+variable [IsSmoothAction G N] [IsSmoothAction Q N]
+
+/-- **The cup product commutes with pullback along a homomorphism of topological groups.** -/
+theorem comapH2_cupSmoothH1 (Φ : M →* N →* P)
+    (hΦG : ∀ (g : G) (m : M) (n : N), Φ (g • m) (g • n) = g • Φ m n)
+    (hΦQ : ∀ (q : Q) (m : M) (n : N), Φ (q • m) (q • n) = q • Φ m n)
+    {π : G →* Q} (hπM : ∀ (g : G) (m : M), g • m = π g • m)
+    (hπN : ∀ (g : G) (n : N), g • n = π g • n)
+    (hπP : ∀ (g : G) (p : P), g • p = π g • p) (hsm : IsSmoothHom π)
+    (α : SmoothH1 Q M) (β : SmoothH1 Q N) :
+    comapH2 π hπP hsm (cupSmoothH1 Φ hΦQ α β)
+      = cupSmoothH1 Φ hΦG (comapH1 π hπM hsm α) (comapH1 π hπN hsm β) := by
+  obtain ⟨u, hu, hus, rfl⟩ := smoothH1Mk_surjective α
+  obtain ⟨v, hv, hvs, rfl⟩ := smoothH1Mk_surjective β
+  rw [cupSmoothH1_apply, comapH2_smoothH2Mk, comapH1_smoothH1Mk, comapH1_smoothH1Mk,
+    cupSmoothH1_apply]
+  exact congrArg QuotientGroup.mk (Subtype.ext (comap₂_mulCup₁₁ Φ hπN u v))
+
+end ComapClass
+
+/-! ### Restriction of a product, and the everywhere locally trivial classes -/
+
+section Res
+
+variable {G : Type*} [Group G] [TopologicalSpace G]
+variable {M N P : Type*} [CommGroup M] [CommGroup N] [CommGroup P]
+variable [MulDistribMulAction G M] [MulDistribMulAction G N] [MulDistribMulAction G P]
+variable [IsSmoothAction G N]
+variable (Φ : M →* N →* P) (hΦ : ∀ (g : G) (m : M) (n : N), Φ (g • m) (g • n) = g • Φ m n)
+
+/-- **The cup product commutes with restriction to a subgroup.** -/
+theorem resH2_cupSmoothH1 (H : Subgroup G) (α : SmoothH1 G M) (β : SmoothH1 G N) :
+    resH2 H (cupSmoothH1 Φ hΦ α β)
+      = cupSmoothH1 (G := ↥H) Φ (fun h m n => hΦ (h : G) m n) (resH1 H α) (resH1 H β) :=
+  comapH2_cupSmoothH1 (G := ↥H) (Q := G) (π := H.subtype) Φ (fun h m n => hΦ (h : G) m n) hΦ
+    (fun _ _ => rfl)
+    (fun _ _ => rfl) (fun _ _ => rfl) (isSmoothHom_subtype H) α β
+
+/-- **A cup product whose first factor is everywhere locally trivial is everywhere locally
+trivial.** -/
+theorem cupSmoothH1_mem_sha2_left {S : Set (Subgroup G)} {α : SmoothH1 G M}
+    (hα : α ∈ sha1 M S) (β : SmoothH1 G N) : cupSmoothH1 Φ hΦ α β ∈ sha2 P S := by
+  refine mem_sha2.2 fun D hD => ?_
+  rw [resH2_cupSmoothH1, mem_sha1.1 hα D hD, map_one, MonoidHom.one_apply]
+
+/-- **A cup product whose second factor is everywhere locally trivial is everywhere locally
+trivial.** -/
+theorem cupSmoothH1_mem_sha2_right {S : Set (Subgroup G)} (α : SmoothH1 G M)
+    {β : SmoothH1 G N} (hβ : β ∈ sha1 N S) : cupSmoothH1 Φ hΦ α β ∈ sha2 P S := by
+  refine mem_sha2.2 fun D hD => ?_
+  rw [resH2_cupSmoothH1, mem_sha1.1 hβ D hD, map_one]
+
+end Res
 
 end InverseGalois.CFT
