@@ -36,6 +36,7 @@ decomposition subgroup.
 * `InverseGalois.CFT.infiniteDecompositionSubgroups`: **the decomposition subgroups at the infinite
   places of an arbitrary Galois extension of a number field**, the stabilisers of its archimedean
   places.
+* `InverseGalois.CFT.decompositionSubgroups`: the two families together.
 
 ## Main results
 
@@ -215,6 +216,23 @@ theorem finiteDecompositionSubgroupsOutside_subset (S : Set (HeightOneSpectrum (
 number field**: the stabilisers of its archimedean places. -/
 def infiniteDecompositionSubgroups : Set (Subgroup Gal(K/k)) :=
   {D | ∃ w : InfinitePlace K, D = stabilizer Gal(K/k) w}
+
+/-- **The decomposition subgroups of an arbitrary Galois extension of a number field**, at the
+finite and at the infinite places together. -/
+def decompositionSubgroups : Set (Subgroup Gal(K/k)) :=
+  finiteDecompositionSubgroups k K ∪ infiniteDecompositionSubgroups k K
+
+omit [NumberField k] in
+variable {k K} in
+/-- A decomposition subgroup at a nonzero prime is a decomposition subgroup. -/
+theorem finiteDecompositionSubgroups_subset :
+    finiteDecompositionSubgroups k K ⊆ decompositionSubgroups k K := Set.subset_union_left
+
+omit [NumberField k] in
+variable {k K} in
+/-- A decomposition subgroup at an infinite place is a decomposition subgroup. -/
+theorem infiniteDecompositionSubgroups_subset :
+    infiniteDecompositionSubgroups k K ⊆ decompositionSubgroups k K := Set.subset_union_right
 
 end Family
 

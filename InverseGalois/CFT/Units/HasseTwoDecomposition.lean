@@ -536,19 +536,19 @@ theorem eq_one_of_mem_sha2
     {ι : M →* kˣ} (hιinj : Function.Injective ι) (hιpow : ∀ m : M, ι m ^ n = 1)
     (hιsurj : ∀ y : kˣ, y ^ n = 1 → ∃ m : M, ι m = y)
     (z : SmoothH2 Gal(Ω/k) M)
-    (hz : z ∈ sha2 M (finiteDecompositionSubgroups k Ω ∪ infiniteDecompositionSubgroups k Ω)) :
+    (hz : z ∈ sha2 M (decompositionSubgroups k Ω)) :
     z = 1 := by
   refine eq_one_of_forall_isLocallySplitLevel hζ htriv hιinj hιpow hιsurj z ?_
   rintro E _ _ b hb ⟨A, hA, hAs, hAinf, hAz⟩
-  have hzD : ∀ D ∈ finiteDecompositionSubgroups k Ω ∪ infiniteDecompositionSubgroups k Ω,
+  have hzD : ∀ D ∈ decompositionSubgroups k Ω,
       resH2 D (smoothH2Mk A hA hAs) = 1 := by
     intro D hD
     rw [hAz]
     exact mem_sha2.1 hz D hD
   exact ⟨fun w => exists_sub_add_eq_infiniteUnits_of_resH2 htriv ι E hb hA hAs hAinf
-      (fun D hD => hzD D (Or.inr hD)) w,
+      (fun D hD => hzD D (infiniteDecompositionSubgroups_subset hD)) w,
     fun v => exists_sub_add_eq_adicUnits_of_resH2 htriv ι E hb hA hAs hAinf
-      (fun D hD => hzD D (Or.inl hD)) v⟩
+      (fun D hD => hzD D (finiteDecompositionSubgroups_subset hD)) v⟩
 
 end Sha
 
