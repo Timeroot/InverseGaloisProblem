@@ -88,6 +88,7 @@ import InverseGalois.CFT.Brauer.PlaceExponent
 import InverseGalois.CFT.Brauer.PlaceFrobenius
 import InverseGalois.CFT.Brauer.PlaceInvariant
 import InverseGalois.CFT.Brauer.PlaceInvariantFinite
+import InverseGalois.CFT.Brauer.PlaceRadical
 import InverseGalois.CFT.Brauer.PlaceTotallyRamified
 import InverseGalois.CFT.Brauer.PlaceUnramified
 import InverseGalois.CFT.Brauer.Primary
@@ -4218,4 +4219,10 @@ it that are available here.
   the inverse of the power residue symbol of its coefficient against the power of the radical**.
   A totally ramified cyclic extension of a local field is presented that way, so this is what
   computes the invariant at a ramified place.
+* `InverseGalois.CFT.Brauer.PlaceRadical` reads that computation globally.  Base change to the
+  completion turns a cyclic algebra into the cyclic algebra of the decomposition group with the
+  same coefficient, so **the invariant at a finite place of a cyclic algebra whose completed
+  splitting field is presented by a radical is the inverse of the power residue symbol of its
+  coefficient against the power of the radical**.  At a totally ramified place the local generator
+  restricts to the global one, so no correcting power survives.
 -/
