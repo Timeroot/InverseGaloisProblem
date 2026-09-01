@@ -90,6 +90,7 @@ import InverseGalois.CFT.Brauer.PlaceInvariant
 import InverseGalois.CFT.Brauer.PlaceInvariantFinite
 import InverseGalois.CFT.Brauer.PlaceRadical
 import InverseGalois.CFT.Brauer.PlaceRamified
+import InverseGalois.CFT.Brauer.PlaceSubcyclotomic
 import InverseGalois.CFT.Brauer.PlaceTotallyRamified
 import InverseGalois.CFT.Brauer.PlaceUnramified
 import InverseGalois.CFT.Brauer.Primary
@@ -4234,4 +4235,14 @@ it that are available here.
   ramified place of a cyclic algebra whose completed splitting field is presented by a radical, of
   a coefficient which is a unit of the valuation ring, is the class modulo the integers of the
   power residue exponent of the coefficient divided by the exponent**.
+* `InverseGalois.CFT.Brauer.PlaceSubcyclotomic` brings the unramified term down to the subfield that
+  actually splits the algebra.  The cyclic algebra of a subfield for the restricted generator is the
+  cyclic algebra of the cyclotomic field for the coefficient raised to the relative degree, and that
+  degree cancels between the value of the power and the degree of the cyclotomic field, so **the
+  invariant of a cyclic algebra over the rationals split by a subfield of a cyclotomic field, at a
+  place away from the conductor, is the exponent of the automorphism raising the roots of unity to
+  the power of the prime below the place, times the value of the coefficient, divided by the degree
+  of the subfield**.  A rational prime is a uniformiser of the completion at the place it
+  determines, so **its value there is minus one** and for that coefficient only the exponent, with a
+  sign, survives.
 -/
