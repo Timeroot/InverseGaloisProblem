@@ -4029,5 +4029,7 @@ it that are available here.
   and roots of unity of order invertible in the residue field are separated by the maximal ideal.
   Hence **the Frobenius of a completion raises a root of unity of order invertible in the residue
   field to the power given by the number of residues of the base**, which is the cyclotomic
-  description of the Frobenius, obtained with no global Frobenius element in sight.
+  description of the Frobenius, obtained with no global Frobenius element in sight; and every
+  automorphism of the completion restricts to the extension compatibly with the inclusion, so the
+  same holds for **a root of unity of the extension itself**.
 -/

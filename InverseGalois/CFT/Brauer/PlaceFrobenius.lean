@@ -36,6 +36,8 @@ the Frobenius, and it is obtained here without ever constructing a global Froben
 * `InverseGalois.CFT.divisionFrobenius_rootOfUnity_adicCompletion`: **the Frobenius of a completion
   raises a root of unity of order invertible in the residue field to the power given by the number
   of residues of the base.**
+* `InverseGalois.CFT.restrictToBase_divisionFrobenius_rootOfUnity`: the same for a root of unity of
+  the number field itself.
 
 ## Tags
 
@@ -48,6 +50,20 @@ set_option synthInstance.maxHeartbeats 1000000
 namespace InverseGalois.CFT
 
 open IsDedekindDomain Module MulAction NumberField
+
+/-! ### The value of a natural number in a completion -/
+
+section NatCast
+
+variable {K : Type} [Field K] [NumberField K] (w : HeightOneSpectrum (𝓞 K))
+
+/-- The value of a natural number in the completion is its value in the number field. -/
+theorem valued_natCast_adicCompletion (m : ℕ) :
+    Valued.v ((m : ℕ) : w.adicCompletion K) = w.valuation K (m : K) := by
+  rw [← map_natCast (toAdicCompletion w) m, toAdicCompletion_apply,
+    HeightOneSpectrum.valuedAdicCompletion_eq_valuation']
+
+end NatCast
 
 section PlaceFrobenius
 
@@ -146,6 +162,26 @@ theorem divisionFrobenius_rootOfUnity_adicCompletion (hram : ramIdx (𝓞 k) w =
         ((primeUnder (𝓞 k) w).adicCompletion k)) :=
   apply_rootOfUnity_of_isDivisionFrobenius k w hram
     (isDivisionFrobenius_divisionFrobenius _ _ _) hm hmv hζ
+
+/-! ### The Frobenius on the roots of unity of the number field -/
+
+variable (k) in
+/-- **The Frobenius of a completion raises a root of unity of the number field to the power given by
+the number of residues of the base.**  Every automorphism of the completion restricts to an
+automorphism of the extension, compatibly with the inclusion of the extension into its completion,
+so the statement about the completion is a statement about the extension. -/
+theorem restrictToBase_divisionFrobenius_rootOfUnity (hram : ramIdx (𝓞 k) w = 1) {m : ℕ}
+    (hm : m ≠ 0) (hmv : w.valuation K (m : K) = 1) {ζ : K} (hζ : ζ ^ m = 1) :
+    restrictToBase k w (divisionFrobenius ((primeUnder (𝓞 k) w).adicCompletion k)
+        (w.adicCompletion K)
+        (fun z hz => exists_divisionNorm_eq_norm_adicCompletion k w hram z hz)) ζ
+      = ζ ^ Nat.card (DivisionResidue ((primeUnder (𝓞 k) w).adicCompletion k)
+        ((primeUnder (𝓞 k) w).adicCompletion k)) := by
+  refine (toAdicCompletion w).injective ?_
+  rw [toAdicCompletion_restrictToBase k w _ ζ, map_pow]
+  exact divisionFrobenius_rootOfUnity_adicCompletion k w hram hm
+    (by rw [valued_natCast_adicCompletion w m]; exact hmv)
+    (by rw [← map_pow, hζ, map_one])
 
 end PlaceFrobenius
 
