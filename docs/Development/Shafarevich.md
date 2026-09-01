@@ -6919,6 +6919,138 @@ Frobenius element.  Step 4 is then the count over the auxiliary prime.
 
 ---
 
+## 0.68 Status (2026-09-01) — the Frobenius as an element of the Galois group
+
+`CFT/Brauer/PlaceFrobenius.lean`, `CFT/Brauer/ResidueCard.lean` and
+`CFT/Local/RatResidueDegree.lean`, sorry- and axiom-free.  Together they turn the Frobenius
+automorphism of a completion — which the splitting theory of division algebras defines by its effect
+on the residues of a maximal order — into a *named element of the global Galois group*.  That is the
+bridge step 2 of the assembly of §0.66(d) needs before it can speak of the exponent `c_v` in
+`Frob_v = σ₀^{c_v}`, and it is also the half of step 3 that §0.67(c) asked for.
+
+### (a) The two measures of an element of the completion
+
+At a place `w` of `K` with `ramIdx (𝓞 k) w = 1` the two absolute values on `K_w` — the `divisionNorm`
+of the division-algebra theory, which is the `n`-th root of `‖N_{K_w/k_v}(·)‖`, and the valuation
+`K_w` carries as a completion — answer the same two questions:
+
+```lean
+divisionNorm_le_one_iff_adicCompletion (hram : ramIdx (𝓞 k) w = 1) (z : K_w) :
+    divisionNorm k_v K_w z ≤ 1 ↔ Valued.v z ≤ 1
+divisionNorm_lt_one_iff_adicCompletion (hram : ramIdx (𝓞 k) w = 1) (z : K_w) :
+    divisionNorm k_v K_w z < 1 ↔ Valued.v z < 1
+```
+
+Both come from `valued_algebraNorm_adicCompletion` (§0.67), which says `v(N(z)) = v(z)^n` when
+`e = 1`: a `n`-th power is `≤ 1` (resp. `< 1`) exactly when its base is, and `x ↦ x^{1/n}` is an
+order isomorphism of the nonnegative reals.  Consequently
+
+```lean
+isValuedFrobenius_of_isDivisionFrobenius (hram) (hσ : IsDivisionFrobenius σ) :
+    IsValuedFrobenius (Nat.card (DivisionResidue k_v k_v)) σ
+```
+
+— being an integer and being congruent to zero mean the same thing for the two measures, and those
+are the only two notions `IsValuedFrobenius` mentions.
+
+### (b) The cyclotomic description
+
+`IsValuedFrobenius.apply_rootOfUnity` (`Local/RootOfUnityValued.lean`) then gives, with no choice
+left and no *global* Frobenius element ever constructed,
+
+```lean
+divisionFrobenius_rootOfUnity_adicCompletion (hram) (hm : m ≠ 0)
+    (hmv : Valued.v ((m : ℕ) : K_w) = 1) (hζ : ζ ^ m = 1) :
+    divisionFrobenius k_v K_w _ ζ = ζ ^ Nat.card (DivisionResidue k_v k_v)
+```
+
+and, since `AlgEquiv.restrictNormal` commutes with the inclusion `K → K_w`, the same statement for a
+root of unity of the number field itself (`restrictToBase_divisionFrobenius_rootOfUnity`).  The
+hypothesis `hmv` is the invertibility of `m` in the residue field; over `K` it reads
+`w.valuation K (m : K) = 1`, converted by `valued_natCast_adicCompletion`.
+
+### (c) The exponent is the rational prime
+
+Write `Q := Nat.card (DivisionResidue k_v k_v)` for the exponent above.  `Brauer/ResidueCard.lean`
+identifies it whenever the residue field is no larger than the prime field, by an argument that
+never mentions `CharP` or `ZMod`:
+
+1. every residue is the residue of a rational integer, as soon as every integer of the field is
+   congruent to one (`surjective_intCast_divisionResidue`);
+2. the residue characteristic is congruent to zero, so reducing a rational integer modulo `p` leaves
+   a surjection `Fin p → DivisionResidue K K`, giving `Q ≤ p`;
+3. the residue of `1` has additive order exactly `p`, giving `p ∣ Q`.
+
+Hence `natCard_divisionResidue_eq_prime : Q = p`, and via
+`exists_intCast_sub_lt_one_of_inertiaDeg_eq_one` and `exists_hasResidueChar_of_liesOver`
+(`Local/PrimeResidueField.lean`) its adic form
+
+```lean
+natCard_divisionResidue_adicCompletion_eq_prime (hp : p.Prime) (v : HeightOneSpectrum (𝓞 K))
+    [v.asIdeal.LiesOver (Ideal.span {(p : ℤ)})]
+    (hdeg : (Ideal.span {(p : ℤ)}).inertiaDeg v.asIdeal = 1) :
+    Nat.card (DivisionResidue (v.adicCompletion K) (v.adicCompletion K)) = p
+```
+
+`Local/RatResidueDegree.lean` supplies the hypothesis over the rationals for free.  A finite place
+lies over the rational prime it contains (`liesOver_span_of_natCast_mem`: the span of that prime is
+maximal and is contained in the proper ideal below the place), a finite place of `ℚ` contains the
+prime `Rat.HeightOneSpectrum.natGenerator` attaches to it (`natCast_natGenerator_mem`), and over `ℚ`
+the residue degree is squeezed between `1` and `finrank ℚ ℚ` by `Ideal.inertiaDeg_pos` and
+`Ideal.inertiaDeg_le_finrank`, so `inertiaDeg_rat_eq_one`.  Therefore
+`natCard_divisionResidue_adicCompletion_rat : Q = q`, the rational prime below the place.
+
+### (d) The Frobenius as an element of the Galois group
+
+Two automorphisms which agree on a generator of the extension are equal
+(`AlgHom.ext_of_adjoin_eq_top`), so the cyclotomic description *determines* the Frobenius:
+
+```lean
+restrictToBase_divisionFrobenius_eq_of_adjoin (hram) (hm : m ≠ 0)
+    (hmv : w.valuation K (m : K) = 1) (hζ : ζ ^ m = 1)
+    (hgen : Algebra.adjoin k ({ζ} : Set K) = ⊤) {τ : Gal(K/k)} (hτ : τ ζ = ζ ^ Q) :
+    restrictToBase k w (divisionFrobenius k_v K_w _) = τ
+```
+
+with the specialisation `restrictToBase_divisionFrobenius_eq_of_adjoin_rat` over `ℚ`, where `Q` is
+replaced by the rational prime `q` the place contains.  For `K = ℚ(ζ_m)` and `q ∤ m` this is exactly
+the classical statement `Frob_q = (ζ ↦ ζ^q)`, and it is what turns the invariant formula of §0.67
+into a computation with the index character of `(ℤ/q)^×`.
+
+### (e) Lean notes
+
+* The generic theorems of `ResidueCard.lean` are stated purely with `‖·‖` and carry no `Valued`
+  instance, so the mismatch of §0.55 (the `NormedField` instances on `v.adicCompletion k` and
+  `w.adicCompletion K` use different normalisations) never arises; the adic specialisation converts
+  by `have h : ‖x‖ ≤ 1 ↔ Valued.v x ≤ 1 := Valued.toNormedField.norm_le_one_iff` followed by `rw [h]`
+  — rewriting with the Mathlib lemma directly does not fire.
+* The additive name for `orderOf_eq_one_iff` is `AddMonoid.addOrderOf_eq_one_iff`, not
+  `addOrderOf_eq_one_iff`.
+* `RingCon.coe_mk' : (c.mk' : R → c.Quotient) = ((↑) : R → c.Quotient) := rfl`, so
+  `(map_intCast c.mk' b).symm` followed by `rw [RingCon.coe_mk']` moves between `(b : c.Quotient)`
+  and the residue of `(b : divisionIntegers K K)`.
+* A file mentioning `DivisionResidue (v.adicCompletion K) (v.adicCompletion K)` needs *both*
+  `Units/CompletionFinite` (for `NontriviallyNormedField`) and `Local/AdicLocalField` (for
+  `ProperSpace`, which then supplies `CompleteSpace`, which `divisionIntegers` asks for).
+* `Ideal.LiesOver` is built from `⟨(isMaximal_span_prime hq).eq_of_le hne hle⟩` with
+  `hle : Ideal.span {(q : ℤ)} ≤ Ideal.under ℤ v.asIdeal` and `hne : Ideal.under ℤ v.asIdeal ≠ ⊤`.
+* `natCard_divisionResidue_self` was already taken by a base-change statement in
+  `Brauer/FrobeniusBaseChange.lean`; the new names avoid it.
+
+### (f) What is left for reciprocity
+
+Steps 1 and 2 of §0.66(d) are done, and the Frobenius half of step 3 is now done as well.  The next
+brick is the translation of the exponent: `placeInvariant_cyclicBrauerHom` states the invariant as
+`baseInvariant(a)^s` with `s` defined *locally* by `divisionFrobenius = σ^s`, while the arithmetic of
+step 4 wants it in terms of `c_v` defined *globally* by `restrictToBase (divisionFrobenius) = σ₀^{c_v}`.
+The two are related by `c_v = (stabilizer Gal(K/k) w).index · s`, since `restrictToBase` is
+multiplicative and `hres` identifies `restrictToBase k w σ` with `σ₀^{index}`; the local degree is
+`n / index`, so `s·v(a)/d = c_v·v(a)/n`, which is the classical `inv_v((χ, a)) = χ(Frob_v)·v(a)`.
+After that: the criterion producing `hram` from global unramifiedness, the Kummer identification
+`L_w/ℚ_q = ℚ_q((−q)^{1/N})` for the ramified place, and the count over the auxiliary prime.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.

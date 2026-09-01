@@ -6,6 +6,7 @@ import Mathlib
 import InverseGalois.CFT.Brauer.DivisionResidueBase
 import InverseGalois.CFT.Local.AdicLocalField
 import InverseGalois.CFT.Local.PrimeResidueField
+import InverseGalois.CFT.Local.RatResidueDegree
 import InverseGalois.CFT.Units.CompletionFinite
 
 /-!
@@ -32,6 +33,8 @@ has both properties, so its completion has exactly `p` residues.
   rational integers and whose residue characteristic is `p` has exactly `p` residues.**
 * `InverseGalois.CFT.natCard_divisionResidue_adicCompletion_eq_prime`: **the completion of a number
   field at a place of residue degree one over `p` has exactly `p` residues.**
+* `InverseGalois.CFT.natCard_divisionResidue_adicCompletion_rat`: **the completion of the rationals
+  at a finite place has exactly as many residues as the rational prime the place contains.**
 
 ## Tags
 
@@ -141,6 +144,15 @@ theorem natCard_divisionResidue_adicCompletion_eq_prime (hp : p.Prime)
     refine hlt.2 ?_
     rw [he.val_p]
     simpa using WithZero.exp_lt_exp.mpr (show (-(e : ℤ)) < 0 by omega)
+
+/-- **The completion of the rationals at a finite place has exactly as many residues as the rational
+prime the place contains.**  Every finite place of the rationals has residue degree one over the
+prime it contains. -/
+theorem natCard_divisionResidue_adicCompletion_rat {q : ℕ} (hq : q.Prime)
+    (v : HeightOneSpectrum (𝓞 ℚ)) (hv : ((q : ℕ) : 𝓞 ℚ) ∈ v.asIdeal) :
+    Nat.card (DivisionResidue (v.adicCompletion ℚ) (v.adicCompletion ℚ)) = q := by
+  haveI := liesOver_span_of_natCast_mem hq v hv
+  exact natCard_divisionResidue_adicCompletion_eq_prime hq v (inertiaDeg_rat_eq_one hq v)
 
 end Adic
 
