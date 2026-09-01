@@ -7553,6 +7553,109 @@ This is needed because the two sides of the ramified computation live in differe
 
 ---
 
+## 0.74 Status (2026-09-01) — **global reciprocity over ℚ in odd prime degree is proven**
+
+`InverseGalois.CFT.totalInvariant_eq_one_of_pow_eq_one` (`CFT/Brauer/RatReciprocity.lean`):
+
+```lean
+theorem totalInvariant_eq_one_of_pow_eq_one {N : ℕ} (hN : N.Prime) (hNodd : Odd N)
+    {x : BrauerGroup.{0, 0} ℚ} (hx : x ^ N = 1) : totalInvariant ℚ x = 1
+```
+
+Sorry-free and axiom-free.  Full build green, 9535 jobs, zero warnings.  This is the sum-of-local-
+invariants half of Albert–Brauer–Hasse–Noether over ℚ, for every class of odd prime order — no
+longer restricted to the subcyclotomic family of §0.71–0.73.
+
+### (a) The three layers
+
+**Layer 1 — the direct route** (`Brauer/SubcyclotomicSplit.lean`, on top of
+`Cyclotomic/AuxiliarySubfield.lean`).  Fix an odd prime `N` and a class `x` with `x^N = 1`.  Choose
+an auxiliary prime `q` with `2N ∣ q − 1` and let `F ⊆ ℚ(ζ_q)` be the subfield of degree `N`.  Then:
+
+* `F` is totally real (`2N ∣ q − 1` puts complex conjugation inside the fixing subgroup) and
+  totally ramified at `q`, so §0.71–0.73 applies verbatim and every cyclic algebra over `F` with
+  rational coefficient has vanishing total invariant;
+* a rational prime `p ≠ q` splits completely in `F` exactly when `p^{(q−1)/N} ≡ 1 (mod q)`;
+* if no bad prime of `x` splits completely in `F`, then the local degree at each bad place is the
+  full `N`, which kills an invariant of order dividing `N`; the real places split `x` because its
+  order is odd; so `x ∈ BrauerGroup.relative ℚ F` by the Hasse principle, hence `x` *is* such a
+  cyclic algebra and `totalInvariant ℚ x = 1`.
+
+So: **if all bad primes of `x` are `N`-th power non-residues mod one common `q`, reciprocity holds
+for `x`.**  This is `totalInvariant_eq_one_of_forall_pow_ne_one`.
+
+**Layer 2 — the corrector** (`Brauer/SubcyclotomicCorrector.lean`).  The direct route cannot be
+applied to an arbitrary `x`: with three or more bad primes there need be no single `q` making them
+all non-residues.  Instead one *moves* invariants.  For a prime `p` that is a non-residue mod `q`
+and any prescribed `t` with `t^N = 1`, `exists_placeInvariant_eq_of_pow_ne_one` produces
+
+```lean
+y : BrauerGroup ℚ,  y^N = 1,  totalInvariant ℚ y = 1,
+  placeInvariant ℚ (ratPlace p) y = t,  and  placeInvariant ℚ v y = 1 for v ∉ {p, q}.
+```
+
+`y` is a power of the cyclic algebra `(F/ℚ, σ_g, p)`.  Its invariant at `p` is
+`ofAdd(−c/N)` where `p ≡ g^c (mod q)`, by the ramified computation of §0.72–0.73; non-residuality
+of `p` says exactly `N ∤ c` (`not_dvd_of_natCast_pow_ne_one`, via Fermat), and for `N` prime that
+makes `ofAdd(−c/N)` a *generator* of the `N`-torsion of `ℚ/ℤ`, so a suitable power hits any `t`
+(`exists_pow_ofAdd_intQModZ_eq`, which inverts `c` in the field `ZMod N`).  Its invariants away from
+`p` and `q` vanish because the coefficient `p` is a unit there and `F` is unramified there.  Its
+total invariant vanishes by layer 1 applied to itself.
+
+**Layer 3 — the descent** (`Brauer/RatReciprocity.lean`).  Induct on `|S|`, where `S` is any finite
+set of rational primes containing all bad primes of `x`.
+
+* `|S| ≤ 1`: one auxiliary prime `q ∉ S` with the single bad prime a non-residue suffices — layer 1.
+  (`exists_prime_two_mul_dvd_sub_one_pow_ne_one` supplies it: this is `AuxPrimePair` /
+  `SplitDensityPair` instantiated at the cyclotomic field `ℚ(ζ_N)`, which is where the
+  `2 < N` hypothesis and the nilpotency of `Gal(ℚ(ζ_N)/ℚ)` are used.)
+* `|S| ≥ 2`: pick `p₁ ≠ p₂ ∈ S` and an auxiliary `q ∉ S` making **both** non-residues — this is the
+  *pair* statement, and it is exactly why `SplitDensityPair`'s two-at-once density bound was built.
+  Correctors `y₁, y₂` cancel the invariants at `p₁` and `p₂`.  The new class `x·y₁·y₂` has the same
+  total invariant as `x`, still `N`-torsion, and its bad set is inside `insert q (S \ {p₁, p₂})`,
+  of cardinality `≤ |S| − 1`.  Apply the inductive hypothesis.
+
+The reason a *pair* is needed, and not one prime at a time, is the accounting: each corrector
+introduces one new bad prime `q`, so killing one bad prime keeps the count flat.  Killing two at a
+cost of one is what makes the induction terminate.
+
+### (b) New modules
+
+| module | content |
+| --- | --- |
+| `CFT/Cyclotomic/AuxiliarySubfield.lean` | `exists_nat_primitiveRoot_of_prime`; `exists_intermediateField_subcyclotomic` — the totally real, totally ramified degree-`d` subfield of `ℚ(ζ_q)` with its power-residue splitting law |
+| `CFT/Brauer/SubcyclotomicSplit.lean` | `mem_relative_of_forall_not_splitsCompletely`; `totalInvariant_eq_one_of_mem_relative_subcyclotomic`; `totalInvariant_eq_one_of_forall_pow_ne_one` |
+| `CFT/Brauer/SubcyclotomicCorrector.lean` | `exists_pow_ofAdd_intQModZ_eq`; `not_dvd_of_natCast_pow_ne_one`; `exists_placeInvariant_eq_of_pow_ne_one` |
+| `CFT/Brauer/RatReciprocity.lean` | `exists_prime_two_mul_dvd_sub_one_pow_ne_one`; the induction; `totalInvariant_eq_one_of_pow_eq_one` |
+
+### (c) What is left on the reciprocity line
+
+1. **`N = 2`.**  Every step above uses oddness twice: the real places split a class of odd order
+   (`OddArchimedean`), and the subfield of `ℚ(ζ_q)` of degree `N` is totally real only when
+   `2N ∣ q − 1`, which for `N = 2` forces `4 ∣ q − 1` but leaves the archimedean invariant alive.
+   For `N = 2` the archimedean term must be *computed*, not discarded: the total invariant of a
+   quaternion algebra over ℚ has a genuine contribution at the real place.  The repo already has
+   `Brauer/RealInvariant.lean` and `Brauer/QuadraticExt.lean`; the missing piece is the real-place
+   analogue of the ramified computation.
+2. **Prime power and arbitrary order.**  `BrauerGroup ℚ` is torsion (`relative_le_brauerTorsion`),
+   so it is the direct sum of its `p`-primary parts; reciprocity for each `x` of order `p^k`
+   follows from the prime case only after the corrector is generalised to prescribe an invariant of
+   order `p^k`, which needs `2p^k ∣ q − 1` and `ZMod (p^k)`-invertibility of `c` — the latter is
+   again just `p ∤ c`, so the argument goes through with `ZMod N` a local ring rather than a field.
+   That is the cheapest generalisation and should be done before `N = 2`.
+3. **General number field `k`.**  Base change: `F₀ · k` is cyclic of degree `N` over `k` when
+   `k ∩ ℚ(ζ_q) = ℚ`, which holds for all but finitely many `q`.  The corrector construction is
+   unchanged; the density statement needs `SplitDensityPair` over `k` rather than over ℚ.
+
+### (d) Where this feeds
+
+Reciprocity over ℚ is the last input to the **fundamental class / invariant map** of global class
+field theory over ℚ, which is what row 5 (Poitou–Tate) and row 8 (the eight-term sequence) of the
+Schmidt–Wingberg tower consume.  It also completes the `Ш²` story of row 3 in the one degree where
+the local–global principle for the Brauer group is used directly.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.

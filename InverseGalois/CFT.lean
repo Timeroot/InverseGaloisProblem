@@ -104,6 +104,7 @@ import InverseGalois.CFT.Brauer.RamificationIdentity
 import InverseGalois.CFT.Brauer.RadicalInvariant
 import InverseGalois.CFT.Brauer.RadicalLevel
 import InverseGalois.CFT.Brauer.RatCount
+import InverseGalois.CFT.Brauer.RatReciprocity
 import InverseGalois.CFT.Brauer.RationalBrauer
 import InverseGalois.CFT.Brauer.RelativeCyclic
 import InverseGalois.CFT.Brauer.RelativeHasse
@@ -126,7 +127,9 @@ import InverseGalois.CFT.Brauer.SolvableNormBound
 import InverseGalois.CFT.Brauer.Split
 import InverseGalois.CFT.Brauer.SplitLocalDegree
 import InverseGalois.CFT.Brauer.SplittingSubfield
+import InverseGalois.CFT.Brauer.SubcyclotomicCorrector
 import InverseGalois.CFT.Brauer.SubcyclotomicReciprocity
+import InverseGalois.CFT.Brauer.SubcyclotomicSplit
 import InverseGalois.CFT.Brauer.SymbolCyclicAlgebra
 import InverseGalois.CFT.Brauer.SymbolNorm
 import InverseGalois.CFT.Brauer.SymbolSteinberg
@@ -146,6 +149,7 @@ import InverseGalois.CFT.Compositum
 import InverseGalois.CFT.CompositumBase
 import InverseGalois.CFT.CompositumLift
 import InverseGalois.CFT.CutField
+import InverseGalois.CFT.Cyclotomic.AuxiliarySubfield
 import InverseGalois.CFT.Cyclotomic.BuildingBlock
 import InverseGalois.CFT.Cyclotomic.Chebotarev
 import InverseGalois.CFT.Cyclotomic.CyclicSubfield
@@ -4326,4 +4330,32 @@ it that are available here.
   integers are simultaneously not `ℓ`-th power residues**.  Correcting one place at a time trades
   one bad place for another and never reduces their number; two at once is what makes the count
   drop.
+* `InverseGalois.CFT.Cyclotomic.AuxiliarySubfield` assembles the field the reciprocity law wants.
+  The units modulo a prime are cyclic, so **a natural number whose powers exhaust the nonzero
+  residues modulo a prime** exists and names a generator of the Galois group; and inside the
+  cyclotomic field of a prime conductor there is **a totally real subfield of any prescribed degree
+  dividing half the degree**, totally ramified at that conductor, in which **a rational prime
+  splits completely exactly when it is a power residue of the matching exponent**.
+* `InverseGalois.CFT.Brauer.SubcyclotomicSplit` turns that splitting law into reciprocity for a
+  class rather than for a coefficient.  At a place above a prime that does not split completely in
+  an extension of prime degree the local degree is the whole degree, and the real places split a
+  class of odd order, so **a class of odd prime order is split by a cyclic extension of that degree
+  in which no prime carrying a nontrivial invariant splits completely**; a split class is a cyclic
+  algebra, so **the total invariant of a class split by such a totally real subfield vanishes**,
+  and therefore **reciprocity holds for a class of odd prime order all of whose bad primes are
+  power non-residues modulo an auxiliary prime**.
+* `InverseGalois.CFT.Brauer.SubcyclotomicCorrector` builds the class that moves an invariant.  A
+  power non-residue is a power of a primitive root with exponent prime to the degree, and a residue
+  class prime to a prime generates the elements killed by it, so a suitable power of the cyclic
+  algebra of that prime gives **a class of odd prime order with trivial total invariant, a
+  prescribed invariant at a given prime, and trivial invariants away from that prime and the
+  auxiliary one**.
+* `InverseGalois.CFT.Brauer.RatReciprocity` runs the correction to exhaustion.  For any two primes
+  there is **an auxiliary prime, outside any prescribed finite set, modulo which both are power
+  non-residues of the prescribed odd prime exponent**; multiplying a class by the two correctors it
+  supplies kills its invariants at those two primes at the cost of one at the auxiliary prime, so
+  the number of bad primes drops by one and never rises.  Descending on that number to the case of
+  a single bad prime, where the splitting field itself can be chosen to miss it, gives **the total
+  invariant of every Brauer class of the rationals of odd prime order is trivial** — global
+  reciprocity over the rationals in that degree.
 -/
