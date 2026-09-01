@@ -6258,6 +6258,104 @@ to `q` contains `1 + qℤ_q`", uniqueness of the index-`N` subgroup of a cyclic 
 
 ---
 
+## 0.62 Status (2026-09-01) — the Steinberg relation: `⟨1-a, a⟩ = 1`
+
+`CFT/Brauer/SymbolSteinberg.lean`, sorry- and axiom-free.  With §0.61 this gives the power symbol
+**all three universal relations of Milnor K-theory**: bilinearity (free, the symbol is a
+`kˣ →* kˣ →* SmoothH2`), skew-symmetry (§0.61(c)), and now Steinberg.  Those are exactly the
+relations every local computation of the symbol is assembled from, so this is the last purely
+*algebraic* input before the local evaluation of §0.61(e).
+
+### (a) The norm of a base element minus the root
+
+The one new general tool.  For a power basis `pb : PowerBasis K S`, multiplication by `pb.gen` has
+characteristic polynomial `minpoly K pb.gen` (`charpoly_leftMulMatrix`), and `Matrix.eval_charpoly`
+evaluates a characteristic polynomial as `det (r • 1 - M)`.  Since `Algebra.norm` *is* that
+determinant (`Algebra.norm_eq_matrix_det`) and `leftMulMatrix` is an algebra map, the two sides are
+literally the same determinant:
+
+```lean
+norm_algebraMap_sub_powerBasis_gen (pb : PowerBasis K S) (r : K) :
+    Algebra.norm K (algebraMap K S r - pb.gen) = (minpoly K pb.gen).eval r
+```
+
+(four rewrites and a `congr 1`).  This is the general form of "the norm is the constant coefficient
+of the minimal polynomial up to sign" that §0.61(b) used at `r = 0`, and it is what makes the
+Steinberg computation cheap: **no Galois conjugates are ever enumerated.**
+
+Applied to `pb := kummerLevelPowerBasis h b` (the `adjoin.powerBasis` of the chosen root, retyped
+over `↥(kummerLevel h b)` — the §0.61(d) defeq dance again) together with
+`minpoly_kummerLevelGen = X^m - C c` from §0.61(b), and after factoring
+`1 - e·x = e·(e⁻¹ - x)`:
+
+```lean
+norm_one_sub_algebraMap_mul_kummerLevelGen (e ≠ 0) :
+    N_{E|k}(1 - e·x) = e^m · ((e⁻¹)^m - c) = 1 - e^m · c
+```
+
+### (b) `1 - a` is a norm from the level of `a`
+
+Keep `m := [E:k]`, `t := n/m`, `x^m = c`, `c^t = a` of §0.61.  Take `e := ζ^j` for `j < t`: then
+`e^m = (ζ^m)^j`, and `ζ^m` is a *primitive `t`-th root of unity* (`IsPrimitiveRoot.pow_of_dvd`,
+`n/m = t`).  So by (a) the `t` elements `1 - ζ^j x` of `E` have norms
+
+```
+N(1 - ζ^j x) = 1 - (ζ^m)^j · c,      j = 0, …, t-1,
+```
+
+and those are exactly the values at `X = 1` of the linear factors of `X^t - C a`
+(`X_pow_sub_C_eq_prod` for the primitive `t`-th root `ζ^m` and the root `c` of `c^t = a`).  Hence
+their product is `1 - a`, and the norm is multiplicative:
+
+```lean
+exists_norm_eq_one_sub (a : kˣ) (ha : a ≠ 1) :
+    ∃ w ≠ 0, N_{k⟮a^{1/n}⟯ | k}(w) = 1 - a,      w := ∏_{j<t} (1 - ζ^j·x)
+```
+
+Note the two degenerate cases are handled for free: `t = 1` gives the classical
+`1 - a = N(1 - a^{1/n})`, and `w ≠ 0` is read off backwards from `N(w) = 1 - a ≠ 0`.
+
+Feeding this into `kummerSymbolUnits_eq_one_iff_norm_kummerLevel` (§0.61(a)):
+
+```lean
+kummerSymbolUnits_one_sub      (u = 1 - a) :  ⟨1 - a, a⟩ = 1
+kummerSymbolUnits_self_one_sub (u = 1 - a) :  ⟨a, 1 - a⟩ = 1     -- by skew-symmetry
+```
+
+### (c) The companion relation `⟨a, -a⟩ = 1`
+
+Purely formal from (b).  For `a ≠ 1`, `-a = (1-a)/(1-a⁻¹)` in `kˣ`, and both
+`⟨a, 1-a⟩ = 1` (Steinberg) and `⟨a, 1-a⁻¹⟩ = 1` hold — the latter because `⟨a⁻¹, 1-a⁻¹⟩ = 1` is
+Steinberg for `a⁻¹` and `⟨·, v⟩` is a homomorphism, so `⟨a, v⟩ = ⟨a⁻¹, v⟩⁻¹`.  The case `a = 1` is
+`map_one`.
+
+```lean
+kummerSymbolUnits_neg_self (a : kˣ) :  ⟨a, -a⟩ = 1
+```
+
+### (d) Lean notes
+
+* `charpoly_leftMulMatrix` is in the *root* namespace (`Mathlib/LinearAlgebra/Matrix/Charpoly/
+  Minpoly.lean`), not in `Matrix`; `Matrix.eval_charpoly` is `M.charpoly.eval t = (scalar t - M).det`.
+* `hζ.pow_of_dvd hm0 ⟨t, hmt⟩ : IsPrimitiveRoot (ζ^m) (n/m)` — the exponent is `n/m`, so convert it
+  to `t` *before* using it; and by §0.61(d) `n / m = t` must be proved by rewriting `m*t → n` inside
+  `Nat.mul_div_cancel_left`, never by rewriting `n → m*t` in the goal.
+* `Algebra.norm_zero` turns "`N(w) = 1 - a ≠ 0`" into `w ≠ 0` with no extra hypotheses, which is
+  much cheaper than showing each factor `1 - ζ^j x` is nonzero.
+
+Build: 9484 jobs green, zero warnings, zero sorries outside the comparator; all twelve new or
+refactored declarations have axioms `[propext, Classical.choice, Quot.sound]`.
+
+### (e) What is left for reciprocity
+
+Unchanged from §0.61(e): the *local* evaluation of the symbol (the tame value at an auxiliary prime,
+then `totalInvariant k = 1`).  The relations of (a)–(c) are the algebra that computation runs on:
+the tame symbol at a place of residue characteristic prime to `n` is determined by bilinearity,
+skew-symmetry and `⟨u, -u⟩ = 1` once one knows `⟨u, v⟩ = 1` for two *units* `u, v`, which is the
+statement that a Kummer extension by a unit is unramified.  That is the next brick.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.

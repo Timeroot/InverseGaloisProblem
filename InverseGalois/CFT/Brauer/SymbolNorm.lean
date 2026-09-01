@@ -28,6 +28,8 @@ skew symmetry of the symbol.
 
 * `InverseGalois.CFT.kummerSymbolUnits_eq_one_iff_norm_kummerLevel`: **the power symbol of two units
   is trivial exactly when the first is a norm from the level of the second.**
+* `InverseGalois.CFT.minpoly_kummerLevelGen`: **the minimal polynomial of the chosen root of a unit
+  is the difference of the degree-th power of the variable and a base element.**
 * `InverseGalois.CFT.norm_kummerLevelGen`: **the norm of the chosen root of a unit is the base
   element it powers to, up to the sign of the degree of the level.**
 * `InverseGalois.CFT.exists_norm_eq_neg_one_pow`: **every unit is a norm from its own level after
@@ -133,6 +135,31 @@ theorem exists_algebraMap_eq_pow_card (b : kˣ) :
 
 /-! ### The minimal polynomial and the norm of the root -/
 
+/-- The degree of the minimal polynomial of the chosen root of a unit is the degree of the level of
+that unit. -/
+theorem natDegree_minpoly_kummerLevelGen (b : kˣ) :
+    (minpoly k (kummerLevelGen h b)).natDegree = Nat.card Gal(↥(kummerLevel h b)/k) := by
+  have hint : IsIntegral k ((h.root b : Ωˣ) : Ω) := isIntegral_kummerRoot h b
+  have hmg : minpoly k (kummerLevelGen h b) = minpoly k ((h.root b : Ωˣ) : Ω) :=
+    IntermediateField.minpoly_gen k ((h.root b : Ωˣ) : Ω)
+  rw [hmg, ← IntermediateField.adjoin.finrank hint]
+  exact (IsGalois.card_aut_eq_finrank k ↥(kummerLevel h b)).symm
+
+/-- **The minimal polynomial of the chosen root of a unit over the base** is the difference of the
+degree-th power of the variable and the base element that that power of the root equals. -/
+theorem minpoly_kummerLevelGen (b : kˣ) {c : k}
+    (hc : algebraMap k ↥(kummerLevel h b) c
+      = kummerLevelGen h b ^ Nat.card Gal(↥(kummerLevel h b)/k)) :
+    minpoly k (kummerLevelGen h b) = X ^ Nat.card Gal(↥(kummerLevel h b)/k) - C c := by
+  have hm0 : Nat.card Gal(↥(kummerLevel h b)/k) ≠ 0 := Nat.card_pos.ne'
+  have hgenint : IsIntegral k (kummerLevelGen h b) := IsIntegral.of_finite k _
+  have hmonic : (X ^ Nat.card Gal(↥(kummerLevel h b)/k) - C c : k[X]).Monic :=
+    monic_X_pow_sub_C c hm0
+  refine Polynomial.eq_of_dvd_of_natDegree_le_of_leadingCoeff (minpoly.dvd k _ ?_) ?_ ?_
+  · rw [map_sub, map_pow, aeval_X, aeval_C, hc, sub_self]
+  · exact le_of_eq (by rw [natDegree_X_pow_sub_C, natDegree_minpoly_kummerLevelGen h b])
+  · rw [(minpoly.monic hgenint).leadingCoeff, hmonic.leadingCoeff]
+
 /-- **The norm of the chosen root of a unit, from the level of that unit**, is the base element it
 powers to, up to the sign of the degree of the level. -/
 theorem norm_kummerLevelGen (b : kˣ) {c : k}
@@ -142,29 +169,16 @@ theorem norm_kummerLevelGen (b : kˣ) {c : k}
       = (-1) ^ (Nat.card Gal(↥(kummerLevel h b)/k) + 1) * c := by
   have hm0 : Nat.card Gal(↥(kummerLevel h b)/k) ≠ 0 := Nat.card_pos.ne'
   have hint : IsIntegral k ((h.root b : Ωˣ) : Ω) := isIntegral_kummerRoot h b
-  have hgenint : IsIntegral k (kummerLevelGen h b) := IsIntegral.of_finite k _
   have hmg : minpoly k (kummerLevelGen h b) = minpoly k ((h.root b : Ωˣ) : Ω) :=
     IntermediateField.minpoly_gen k ((h.root b : Ωˣ) : Ω)
-  have hdeg : (minpoly k (kummerLevelGen h b)).natDegree
-      = Nat.card Gal(↥(kummerLevel h b)/k) := by
-    rw [hmg, ← IntermediateField.adjoin.finrank hint]
-    exact (IsGalois.card_aut_eq_finrank k ↥(kummerLevel h b)).symm
-  have hmonic : (X ^ Nat.card Gal(↥(kummerLevel h b)/k) - C c : k[X]).Monic :=
-    monic_X_pow_sub_C c hm0
-  have hminpoly : minpoly k (kummerLevelGen h b)
-      = X ^ Nat.card Gal(↥(kummerLevel h b)/k) - C c := by
-    refine Polynomial.eq_of_dvd_of_natDegree_le_of_leadingCoeff (minpoly.dvd k _ ?_) ?_ ?_
-    · rw [map_sub, map_pow, aeval_X, aeval_C, hc, sub_self]
-    · exact le_of_eq (by rw [natDegree_X_pow_sub_C, hdeg])
-    · rw [(minpoly.monic hgenint).leadingCoeff, hmonic.leadingCoeff]
   have hpb : (IntermediateField.adjoin.powerBasis hint).gen = kummerLevelGen h b :=
     IntermediateField.adjoin.powerBasis_gen hint
   have hpbdim : (IntermediateField.adjoin.powerBasis hint).dim
       = Nat.card Gal(↥(kummerLevel h b)/k) := by
-    rw [IntermediateField.adjoin.powerBasis_dim, ← hmg, hdeg]
+    rw [IntermediateField.adjoin.powerBasis_dim, ← hmg, natDegree_minpoly_kummerLevelGen h b]
   have hnorm := Algebra.PowerBasis.norm_gen_eq_coeff_zero_minpoly
     (IntermediateField.adjoin.powerBasis hint)
-  rw [hpb, hpbdim, hminpoly] at hnorm
+  rw [hpb, hpbdim, minpoly_kummerLevelGen h b hc] at hnorm
   have hgoal : Algebra.norm k (kummerLevelGen h b)
       = (-1) ^ Nat.card Gal(↥(kummerLevel h b)/k)
         * (X ^ Nat.card Gal(↥(kummerLevel h b)/k) - C c : k[X]).coeff 0 := hnorm

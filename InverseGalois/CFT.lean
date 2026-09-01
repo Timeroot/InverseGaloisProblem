@@ -100,6 +100,7 @@ import InverseGalois.CFT.Brauer.Split
 import InverseGalois.CFT.Brauer.SplittingSubfield
 import InverseGalois.CFT.Brauer.SymbolCyclicAlgebra
 import InverseGalois.CFT.Brauer.SymbolNorm
+import InverseGalois.CFT.Brauer.SymbolSteinberg
 import InverseGalois.CFT.Brauer.TensorSimple
 import InverseGalois.CFT.Brauer.TotalInvariant
 import InverseGalois.CFT.Brauer.Tower
@@ -3862,6 +3863,16 @@ it that are available here.
   **every unit is, after the sign `(-1) ^ (n + 1)`, a norm from its own level** and the symbol of
   that corrected unit against the unit is trivial; applying this to a product and expanding by
   bilinearity leaves exactly the two cross terms, so **the power symbol is skew symmetric.**
+* `InverseGalois.CFT.Brauer.SymbolSteinberg` computes the remaining universal relation.  The
+  characteristic polynomial of multiplication by the chosen root is its minimal polynomial, so
+  **the norm of a base element minus the root is that minimal polynomial evaluated at the base
+  element**; one minus `e` times the root therefore has norm `1 - e ^ m * c`.  Taking for `e` the
+  powers `ζ ^ j` with `j < t` makes those base values the roots of `X ^ t - C b`, whose value at
+  one is `1 - b`, so multiplying the corresponding elements together shows **one minus a unit is a
+  norm from the level of that unit** and hence **the power symbol of one minus a unit against that
+  unit is trivial.**  Skew symmetry turns the arguments around, and writing the negative of a unit
+  as the ratio of one minus the unit and one minus its inverse gives **the power symbol of a unit
+  against its negative is trivial.**
 * `InverseGalois.CFT.Units.KummerDecomposition` reads that off over a number field.  A cocycle for
   a trivial action is a homomorphism, and a homomorphism killing a level and every decomposition
   subgroup is trivial, so the first cohomology with roots of unity as coefficients has no
