@@ -1,0 +1,92 @@
+/-
+Copyright (c) 2026. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
+import Mathlib
+import InverseGalois.CFT.Units.HasseInflation
+import InverseGalois.CFT.Units.InfiniteDecomposition
+
+/-!
+# Inflation from the field trivialising the coefficients, from the decomposition subgroups
+
+A class of the first cohomology of the Galois group of an arbitrary Galois extension of a number
+field, with coefficients acted on through a finite Galois level, is inflated from that level as
+soon as it is locally trivial at every finite Galois level over it.  Local triviality there is a
+statement about the places of a level, and what a local-global principle actually provides is a
+statement about the decomposition subgroups of the whole group: the class dies on the stabiliser of
+every nonzero prime of the ring of integers of the top field.
+
+The two are the same because the Galois group acts transitively on the primes above a given place,
+so an automorphism whose restriction to a level fixes a place there agrees, modulo the subgroup
+fixing the level, with an automorphism fixing a prime above.  Local triviality at the decomposition
+subgroups is in fact the stronger-looking hypothesis, and it gives the vanishing outright, with no
+level in sight.
+
+## Main results
+
+* `InverseGalois.CFT.eq_one_of_finiteDecompositionOutside_over`: **a cocycle dying on every
+  decomposition subgroup vanishes over the field trivialising its coefficients.**
+* `InverseGalois.CFT.exists_galInflH1_eq_of_finiteDecomposition`,
+  `InverseGalois.CFT.exists_galInflH1_eq_of_finiteDecompositionOutside`: **a class dying on every
+  decomposition subgroup is inflated from the field trivialising its coefficients.**
+
+## Tags
+
+number field, Galois cohomology, inflation, decomposition group, local-global principle
+-/
+
+namespace InverseGalois.CFT
+
+open IsDedekindDomain MulAction NumberField groupCohomology
+
+section Bridge
+
+variable {k K : Type*} [Field k] [Field K] [Algebra k K] [IsGalois k K]
+  {M : Type*} [CommGroup M] [MulDistribMulAction Gal(K/k) M] [IsSmoothAction Gal(K/k) M]
+  (F : IntermediateField k K) [FiniteDimensional k F] [IsGalois k F] [NumberField ↥F]
+  [MulDistribMulAction (F ≃ₐ[k] F) M]
+  (hπ : ∀ (g : Gal(K/k)) (m : M), g • m = AlgEquiv.restrictNormalHom F g • m)
+  {u : Gal(K/k) → M} (hu : IsMulCocycle₁ u)
+
+include hπ hu
+
+omit [IsSmoothAction Gal(K/k) M] [FiniteDimensional k F] in
+/-- **A cocycle whose restriction over the field trivialising the coefficients dies on every
+decomposition subgroup at a nonzero prime whose place of that field avoids a finite set vanishes
+there.**  Every automorphism over the field agrees, modulo the subgroup fixing a suitable level,
+with one fixing a prime. -/
+theorem eq_one_of_finiteDecompositionOutside_over
+    (L : IntermediateField ↥F K) [NumberField ↥L] [IsGalois ↥F ↥L]
+    {S : Set (HeightOneSpectrum (𝓞 ↥F))} (hS : S.Finite)
+    (hlev : ∀ ρ ∈ L.fixingSubgroup, u ((ρ : K ≃ₐ[↥F] K).restrictScalars k) = 1)
+    (hD : ∀ D ∈ finiteDecompositionSubgroupsOutside ↥F K S, ∀ ρ ∈ D,
+      u ((ρ : K ≃ₐ[↥F] K).restrictScalars k) = 1) (ρ : K ≃ₐ[↥F] K) :
+    u (ρ.restrictScalars k) = 1 :=
+  eq_one_of_finiteDecompositionOutside L
+    (cocycleHomOver F (fun _ hσ m => smul_eq_self_of_mem_fixingSubgroup F hπ hσ m) hu)
+    (fun τ hτ => MonoidHom.mem_ker.mpr (hlev τ hτ)) hS
+    (fun D hDmem τ hτ => hD D hDmem τ hτ) ρ
+
+/-- **A class dying on every decomposition subgroup at a nonzero prime whose place of the field
+trivialising its coefficients avoids a finite set is inflated from that field.** -/
+theorem exists_galInflH1_eq_of_finiteDecompositionOutside (hs : IsSmooth₁ u)
+    {S : Set (HeightOneSpectrum (𝓞 ↥F))} (hS : S.Finite)
+    (hD : ∀ D ∈ finiteDecompositionSubgroupsOutside ↥F K S, ∀ ρ ∈ D,
+      u ((ρ : K ≃ₐ[↥F] K).restrictScalars k) = 1) :
+    ∃ z : SmoothH1 (↥F ≃ₐ[k] ↥F) M, galInflH1 F hπ z = smoothH1Mk u hu hs := by
+  refine exists_galInflH1_eq_of_forall_level_outside F hπ hu hs hS ?_
+  intro L _ _ hlev ρ _
+  exact eq_one_of_finiteDecompositionOutside_over F hπ hu L hS hlev hD ρ
+
+/-- **A class dying on every decomposition subgroup at a nonzero prime is inflated from the field
+trivialising its coefficients.** -/
+theorem exists_galInflH1_eq_of_finiteDecomposition (hs : IsSmooth₁ u)
+    (hD : ∀ D ∈ finiteDecompositionSubgroups ↥F K, ∀ ρ ∈ D,
+      u ((ρ : K ≃ₐ[↥F] K).restrictScalars k) = 1) :
+    ∃ z : SmoothH1 (↥F ≃ₐ[k] ↥F) M, galInflH1 F hπ z = smoothH1Mk u hu hs :=
+  exists_galInflH1_eq_of_finiteDecompositionOutside F hπ hu hs Set.finite_empty
+    (fun D hDmem => hD D (finiteDecompositionSubgroupsOutside_subset ∅ hDmem))
+
+end Bridge
+
+end InverseGalois.CFT

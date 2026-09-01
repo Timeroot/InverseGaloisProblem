@@ -36,7 +36,9 @@ field.
 * `InverseGalois.CFT.mem_range_globalUnitsComap_iff`: the units of the extension fixed by the
   Galois group are the units of the base field.
 * `InverseGalois.CFT.ideleQuotEquivTateH0`: **the zeroth Tate group of the idele class group is the
-  quotient of the ideles of the base field by the principal ideles and the norms.**
+  quotient of the ideles of the base field by the principal ideles and the norms.**  It carries the
+  class of an idele of the base field to the class attached to it,
+  `InverseGalois.CFT.ideleQuotEquivTateH0_mk`.
 * `InverseGalois.CFT.first_inequality_index`: **the first inequality**, as a lower bound for the
   index of the principal ideles together with the norms.
 
@@ -178,6 +180,10 @@ noncomputable def ideleQuotEquivTateH0 :
   (QuotientAddGroup.quotientAddEquivOfEq
     (AddSubgroup.ext fun b => (mem_ker_toTateH0_iff hgen hn b).symm)).trans
       (QuotientAddGroup.quotientKerEquivOfSurjective _ (toTateH0_surjective hgen hn))
+
+@[simp]
+theorem ideleQuotEquivTateH0_mk (b : ↥(idele k)) :
+    ideleQuotEquivTateH0 hgen hn (QuotientAddGroup.mk b) = toTateH0 (K := K) σ n b := rfl
 
 /-- **The order of the zeroth Tate group of the idele class group is the index of the principal
 ideles together with the norms.** -/

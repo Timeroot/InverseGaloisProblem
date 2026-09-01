@@ -24,6 +24,9 @@ on the quotient with values in the invariants.
 
 ## Main results
 
+* `InverseGalois.CFT.exists_coboundary₂_inflated_of_cochain`: **a given cochain trivialising an
+  inflated cocycle can be corrected to be constant on cosets and invariant under the subgroup**, as
+  soon as the associated one cocycle on the subgroup is a coboundary there.
 * `InverseGalois.CFT.exists_coboundary₂_inflated`: **a cochain trivialising an inflated cocycle can
   be chosen constant on cosets and invariant under the subgroup.**
 
@@ -89,20 +92,17 @@ theorem isMulCocycle₁_div_one_of_inflated {a : G × G → M}
     u (x * y) / u 1 = x • (u y / u 1) * (u x / u 1) := by
   rw [eq_smul_mul_of_inflated hinfl hu x hy, mul_div_assoc]
 
-/-- **A cochain trivialising an inflated two cocycle can be corrected to be inflated itself.**  The
-corrected cochain is constant on the cosets of the subgroup and takes values fixed by it, so it is
-the pullback of a cochain on the quotient with values in the invariants. -/
-theorem exists_coboundary₂_inflated
-    (hH1 : ∀ f : G → M, (∀ x ∈ N, ∀ y ∈ N, f (x * y) = x • f y * f x) →
-      ∃ t : M, ∀ x ∈ N, x • t / t = f x)
-    {a : G × G → M}
+/-- **A given cochain trivialising an inflated two cocycle can be corrected to be inflated itself**,
+as soon as the map measuring its failure to be constant on a coset is a coboundary on the subgroup.
+The corrected cochain is constant on the cosets of the subgroup and takes values fixed by it, so it
+is the pullback of a cochain on the quotient with values in the invariants. -/
+theorem exists_coboundary₂_inflated_of_cochain {a : G × G → M}
     (hinfl : ∀ (x y n : G), n ∈ N → ∀ m : G, m ∈ N → a (x * n, y * m) = a (x, y))
-    (hcob : IsMulCoboundary₂ a) :
-    ∃ u : G → M, (∀ g n : G, n ∈ N → u (g * n) = u g) ∧
-      (∀ g n : G, n ∈ N → n • u g = u g) ∧ coboundary₂ u = a := by
-  obtain ⟨u, hu⟩ := isMulCoboundary₂_iff.mp hcob
-  obtain ⟨s, hs⟩ := hH1 (fun g => u g / u 1)
-    (isMulCocycle₁_div_one_of_inflated hinfl hu)
+    {u : G → M} (hu : coboundary₂ u = a)
+    (hH1 : ∃ t : M, ∀ x ∈ N, x • t / t = u x / u 1) :
+    ∃ u' : G → M, (∀ g n : G, n ∈ N → u' (g * n) = u' g) ∧
+      (∀ g n : G, n ∈ N → n • u' g = u' g) ∧ coboundary₂ u' = a := by
+  obtain ⟨s, hs⟩ := hH1
   obtain ⟨u', hu'⟩ : ∃ u' : G → M, ∀ g : G, u' g = u g * (g • s / s)⁻¹ := ⟨_, fun _ => rfl⟩
   have hfun : u' = u * (fun g : G => g • s / s)⁻¹ := funext fun g => hu' g
   have hcb : coboundary₂ u' = a := by
@@ -133,6 +133,21 @@ theorem exists_coboundary₂_inflated
   simp only [coboundary₂_apply, one_smul, one_mul, hng, hn1, div_self'] at h1
   have h2 : n • u' g / u' g * u' 1 = 1 * u' 1 := by rw [h1, one_mul]
   exact div_eq_one.mp (mul_right_cancel h2)
+
+/-- **A cochain trivialising an inflated two cocycle can be corrected to be inflated itself.**  The
+corrected cochain is constant on the cosets of the subgroup and takes values fixed by it, so it is
+the pullback of a cochain on the quotient with values in the invariants. -/
+theorem exists_coboundary₂_inflated
+    (hH1 : ∀ f : G → M, (∀ x ∈ N, ∀ y ∈ N, f (x * y) = x • f y * f x) →
+      ∃ t : M, ∀ x ∈ N, x • t / t = f x)
+    {a : G × G → M}
+    (hinfl : ∀ (x y n : G), n ∈ N → ∀ m : G, m ∈ N → a (x * n, y * m) = a (x, y))
+    (hcob : IsMulCoboundary₂ a) :
+    ∃ u : G → M, (∀ g n : G, n ∈ N → u (g * n) = u g) ∧
+      (∀ g n : G, n ∈ N → n • u g = u g) ∧ coboundary₂ u = a := by
+  obtain ⟨u, hu⟩ := isMulCoboundary₂_iff.mp hcob
+  exact exists_coboundary₂_inflated_of_cochain hinfl hu
+    (hH1 (fun g => u g / u 1) (isMulCocycle₁_div_one_of_inflated hinfl hu))
 
 end Inflation
 

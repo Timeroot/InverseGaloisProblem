@@ -113,6 +113,22 @@ theorem exists_normHom_smulUnitsAut_of_mem_normSubgroup
   rw [coe_normHom_smulUnitsAut hτ y, ← algebraMap_norm_eq_prod_smul hsurj (y : L), hy]
   rfl
 
+/-- **A unit of the base field which is a value of the Tate norm operator is a norm**, that operator
+for a generator of a group of automorphisms exhausting the Galois group being the field norm. -/
+theorem mem_normSubgroup_of_normHom_smulUnitsAut
+    (hsurj : ∀ τ : L ≃ₐ[k₀] L, ∃ g : G, ∀ z : L, g • z = τ z) {τ : G}
+    (hτ : ∀ g : G, g ∈ Subgroup.zpowers τ) {a : k₀ˣ} {b : Additive Lˣ}
+    (hb : normHom (smulUnitsAut (R := L) τ) (Nat.card G) b
+      = Additive.ofMul (Units.map (algebraMap k₀ L).toMonoidHom a)) :
+    a ∈ normSubgroup k₀ L := by
+  refine (mem_normSubgroup_iff a).mpr ⟨Additive.toMul b, ?_⟩
+  have h := coe_normHom_smulUnitsAut (R := L) hτ (Additive.toMul b)
+  rw [show Additive.ofMul (Additive.toMul b) = b from rfl, hb,
+    ← algebraMap_norm_eq_prod_smul hsurj ((Additive.toMul b : Lˣ) : L)] at h
+  have h2 : algebraMap k₀ L (a : k₀)
+      = algebraMap k₀ L (Algebra.norm k₀ ((Additive.toMul b : Lˣ) : L)) := h
+  exact (FaithfulSMul.algebraMap_injective k₀ L h2).symm
+
 end GroupNorm
 
 /-! ### The decomposition group as a group of automorphisms of the completion -/
