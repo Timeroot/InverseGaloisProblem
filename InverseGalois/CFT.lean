@@ -90,6 +90,7 @@ import InverseGalois.CFT.Brauer.PlaceInvariant
 import InverseGalois.CFT.Brauer.PlaceInvariantFinite
 import InverseGalois.CFT.Brauer.PlaceRadical
 import InverseGalois.CFT.Brauer.PlaceRamified
+import InverseGalois.CFT.Brauer.PlaceRamifiedAut
 import InverseGalois.CFT.Brauer.PlaceSubcyclotomic
 import InverseGalois.CFT.Brauer.PlaceTotallyRamified
 import InverseGalois.CFT.Brauer.PlaceUnramified
@@ -4235,6 +4236,12 @@ it that are available here.
   ramified place of a cyclic algebra whose completed splitting field is presented by a radical, of
   a coefficient which is a unit of the valuation ring, is the class modulo the integers of the
   power residue exponent of the coefficient divided by the exponent**.
+* `InverseGalois.CFT.Brauer.PlaceRamifiedAut` states that evaluation without any local Galois data.
+  An automorphism of the completion is determined by its restriction to the extension, so it is the
+  automorphism induced by that restriction, and the radical presenting the completion may therefore
+  be moved by the automorphism induced by the chosen generator; the order of the Galois group of the
+  completions at a totally ramified place is the degree of the extension, so **the invariant is
+  prescribed by the extension, the chosen generator, and the power residue exponent alone**.
 * `InverseGalois.CFT.Brauer.PlaceSubcyclotomic` brings the unramified term down to the subfield that
   actually splits the algebra.  The cyclic algebra of a subfield for the restricted generator is the
   cyclic algebra of the cyclotomic field for the coefficient raised to the relative degree, and that
