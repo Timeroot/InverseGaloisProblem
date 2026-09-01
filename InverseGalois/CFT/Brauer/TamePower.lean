@@ -142,7 +142,9 @@ theorem localSymbol_uniformiser_eq_powerResidue_of_valued_eq_one (hres : HasResi
   by_cases hnp : ∃ c : Kˣ, c ^ n = b
   · rw [localSymbol_eq_one_of_isPow_right hres hm hζ π hnp,
       natCast_eq_zero_of_isPow hres hζ hpn hb hnp hj, neg_zero, map_zero, ofAdd_zero]
-  · exact localSymbol_uniformiser_eq_powerResidue hres hm hζ hn hpn hπ hb hnp hj
+  · refine localSymbol_uniformiser_eq_powerResidue hres hm hζ (isRadicalExponent_of_prime hn) hpn hπ
+      hb (fun ℓ hl hln => ?_) hj
+    rwa [(Nat.prime_dvd_prime_iff_eq hl hn).1 hln]
 
 /-- **The tame norm residue symbol of a uniformiser against any unit of the valuation ring**, for a
 uniformiser normalised so that its divided valuation is minus one: it is the class, modulo the

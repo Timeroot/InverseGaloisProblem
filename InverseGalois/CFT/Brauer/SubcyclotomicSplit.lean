@@ -105,13 +105,13 @@ end Split
 section Reciprocity
 
 /-- **The total invariant of a Brauer class of the rationals split by a totally real subfield of
-odd prime degree of the cyclotomic field of an odd prime conductor, totally ramified there,
+odd degree of the cyclotomic field of an odd prime conductor, totally ramified there,
 vanishes.**  Such a class is a cyclic algebra over that subfield, and the invariants of a cyclic
 algebra over it cancel. -/
 theorem totalInvariant_eq_one_of_mem_relative_subcyclotomic (q : ℕ) [hq : Fact q.Prime]
     (hodd : Odd q) (L F : Type) [Field L] [NumberField L] [IsCyclotomicExtension {q} ℚ L]
     [IsGalois ℚ L] [Field F] [NumberField F] [Algebra F L] [IsScalarTower ℚ F L] [IsGalois ℚ F]
-    [IsTotallyReal F] {N : ℕ} [NeZero N] (hN : N.Prime) (hNodd : Odd N)
+    [IsTotallyReal F] {N : ℕ} [NeZero N] (hNodd : Odd N)
     (hcard : Nat.card Gal(F/ℚ) = N)
     (hinertia : ∀ (Q : Ideal (𝓞 F)) (_ : Q.IsPrime) (_ : Q.LiesOver (Ideal.span {(q : ℤ)})),
       Ideal.inertia Gal(F/ℚ) Q = ⊤)
@@ -123,7 +123,7 @@ theorem totalInvariant_eq_one_of_mem_relative_subcyclotomic (q : ℕ) [hq : Fact
   obtain ⟨a, ha⟩ :=
     exists_cyclicBrauerHom_eq (forall_mem_zpowers_restrictNormal (L := F) hgen) x hx
   rw [← ha]
-  exact totalInvariant_cyclicBrauerHom_subcyclotomic q L F hodd hN hNodd hcard hinertia hg hgord
+  exact totalInvariant_cyclicBrauerHom_subcyclotomic q L F hodd hNodd hcard hinertia hg hgord
     hgen a
 
 /-- **Reciprocity for a Brauer class of the rationals of odd prime order all of whose bad primes
@@ -155,7 +155,7 @@ theorem totalInvariant_eq_one_of_forall_pow_ne_one {N : ℕ} (hN : N.Prime) (hNo
   have hcard : Nat.card Gal(↥F/ℚ) = N := by
     rw [IsGalois.card_aut_eq_finrank ℚ ↥F, hrank]
   refine totalInvariant_eq_one_of_mem_relative_subcyclotomic q hqodd (CyclotomicField q ℚ) ↥F
-    hN hNodd hcard hinertia ?_
+    hNodd hcard hinertia ?_
   refine mem_relative_of_forall_not_splitsCompletely hN hNodd hx ↥F hcard fun p hp hinv hsc => ?_
   obtain ⟨hpq, hres⟩ := hbad p hp hinv
   exact hres ((hsplit p hp hpq).mp hsc)

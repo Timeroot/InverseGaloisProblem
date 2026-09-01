@@ -30,8 +30,11 @@ unramified extension reads the value of a unit, which is trivial.
 
 * `InverseGalois.CFT.exists_pow_eq_of_residue_pow_eq`: **a unit which is a power modulo the maximal
   ideal is a power**, for an exponent prime to the residue characteristic.
+* `InverseGalois.CFT.IsRadicalExponent`: the exponents, among them the prime ones and the odd ones,
+  for which a radical polynomial is irreducible exactly when its constant term is not a power of
+  prime order dividing the exponent.
 * `InverseGalois.CFT.irreducible_X_pow_sub_C_residue`: **the reduction of the minimal polynomial of
-  a root of prime order of a unit stays irreducible.**
+  a root of such an order of a unit stays irreducible.**
 * `InverseGalois.CFT.exists_valued_of_radical_unit`: **a radical extension of prime degree by a unit
   is an unramified extension of local fields.**
 * `InverseGalois.CFT.mem_normSubgroup_of_radical_unit`: **every unit of the valuation ring of the
@@ -48,6 +51,32 @@ namespace InverseGalois.CFT
 open Module Polynomial
 
 open scoped Valued WithZero
+
+/-! ### Exponents of an irreducible radical polynomial -/
+
+section Exponent
+
+/-- **An exponent for which the difference of that power of the variable and a constant is
+irreducible exactly when the constant is not a power of prime order dividing the exponent.**  Both
+a prime exponent and an odd exponent have this property. -/
+def IsRadicalExponent (n : ℕ) : Prop :=
+  ∀ (F : Type) [Field F] (a : F),
+    Irreducible ((X : F[X]) ^ n - C a) ↔ ∀ ℓ : ℕ, ℓ.Prime → ℓ ∣ n → ∀ b : F, b ^ ℓ ≠ a
+
+/-- A prime exponent is an exponent of an irreducible radical polynomial, the only prime dividing
+it being itself. -/
+theorem isRadicalExponent_of_prime {n : ℕ} (hn : n.Prime) : IsRadicalExponent n := by
+  intro F _ a
+  rw [X_pow_sub_C_irreducible_iff_of_prime hn]
+  exact ⟨fun hb ℓ hℓ hℓn => by rwa [(Nat.prime_dvd_prime_iff_eq hℓ hn).1 hℓn],
+    fun hb => hb n hn dvd_rfl⟩
+
+/-- An odd exponent is an exponent of an irreducible radical polynomial. -/
+theorem isRadicalExponent_of_odd {n : ℕ} (hn : Odd n) : IsRadicalExponent n := by
+  intro F _ a
+  exact X_pow_sub_C_irreducible_iff_forall_prime_of_odd hn
+
+end Exponent
 
 /-! ### Units and the residue field -/
 
@@ -96,16 +125,17 @@ theorem exists_pow_eq_of_residue_pow_eq (hres : HasResidueChar K p e) {d : ℕ} 
     (ζ := Units.mk0 (c : K) hc0) (b := Units.mk0 (y₀ : K) hy0) hc hlt
   exact ⟨(z : K), congrArg Units.val hz⟩
 
-/-- **The reduction of the difference of a prime power of the variable and a unit stays
-irreducible**, when the exponent is prime to the residue characteristic and the unit is not a power
-of that order in the base field. -/
-theorem irreducible_X_pow_sub_C_residue (hres : HasResidueChar K p e) {ℓ : ℕ} (hl : ℓ.Prime)
-    (hpl : ¬ p ∣ ℓ) {c : ↥(𝒪[K])} (hc : Valued.v (c : K) = 1)
-    (hnp : ∀ z : K, z ^ ℓ ≠ (c : K)) :
-    Irreducible (X ^ ℓ - C (IsLocalRing.residue ↥(𝒪[K]) c)) := by
-  refine X_pow_sub_C_irreducible_of_prime hl fun y hy => ?_
-  obtain ⟨z, hz⟩ := exists_pow_eq_of_residue_pow_eq hres hl.ne_zero hpl hc hy
-  exact hnp z hz
+/-- **The reduction of the difference of a power of the variable and a unit stays irreducible**,
+when the exponent is prime to the residue characteristic and the unit is not a power of any prime
+order dividing the exponent in the base field. -/
+theorem irreducible_X_pow_sub_C_residue (hres : HasResidueChar K p e) {n : ℕ}
+    (hn : IsRadicalExponent n) (hpn : ¬ p ∣ n) {c : ↥(𝒪[K])} (hc : Valued.v (c : K) = 1)
+    (hnp : ∀ ℓ : ℕ, ℓ.Prime → ℓ ∣ n → ∀ z : K, z ^ ℓ ≠ (c : K)) :
+    Irreducible (X ^ n - C (IsLocalRing.residue ↥(𝒪[K]) c)) := by
+  refine (hn 𝓀[K] _).2 fun ℓ hl hln y hy => ?_
+  obtain ⟨z, hz⟩ := exists_pow_eq_of_residue_pow_eq hres hl.ne_zero
+    (fun hd => hpn (hd.trans hln)) hc hy
+  exact hnp ℓ hl hln z hz
 
 end Residue
 
@@ -134,13 +164,13 @@ theorem exists_valued_of_radical_unit (pb : PowerBasis K L) {ℓ : ℕ} (hl : �
   have hFmin : (X ^ ℓ - C c₀).map (Subring.subtype 𝒪[K]) = minpoly K pb.gen := by
     rw [hmin, Polynomial.map_sub, Polynomial.map_pow, Polynomial.map_X, Polynomial.map_C]
     rfl
-  have hnp : ∀ z : K, z ^ ℓ ≠ c := by
-    refine (X_pow_sub_C_irreducible_iff_of_prime hl).1 ?_
+  have hnp : ∀ k : ℕ, k.Prime → k ∣ ℓ → ∀ z : K, z ^ k ≠ c := by
+    refine (isRadicalExponent_of_prime hl K c).1 ?_
     rw [← hmin]
     exact minpoly.irreducible (IsIntegral.of_finite K pb.gen)
   have hirr : Irreducible ((X ^ ℓ - C c₀).map (IsLocalRing.residue ↥(𝒪[K]))) := by
     rw [Polynomial.map_sub, Polynomial.map_pow, Polynomial.map_X, Polynomial.map_C]
-    exact irreducible_X_pow_sub_C_residue hres hl hpl hcval hnp
+    exact irreducible_X_pow_sub_C_residue hres (isRadicalExponent_of_prime hl) hpl hcval hnp
   exact exists_valued_of_residue_irreducible pb hF hFmin hirr hres
 
 /-- **Every unit of the valuation ring of the base field is a norm from a radical extension of

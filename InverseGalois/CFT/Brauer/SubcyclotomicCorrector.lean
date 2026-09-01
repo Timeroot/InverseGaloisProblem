@@ -162,7 +162,7 @@ theorem exists_placeInvariant_eq_of_pow_ne_one {N : ℕ} (hN : N.Prime) (hNodd :
       exact hvp (heightOneSpectrum_rat_eq_of_natCast_mem hp hmem (natCast_mem_ratPlace p hp))
   -- The total invariant and the order.
   have htot : totalInvariant ℚ (cyclicBrauerHom hσ₀ a) = 1 :=
-    totalInvariant_cyclicBrauerHom_subcyclotomic q (CyclotomicField q ℚ) ↥F hqodd hN hNodd hcard
+    totalInvariant_cyclicBrauerHom_subcyclotomic q (CyclotomicField q ℚ) ↥F hqodd hNodd hcard
       hinertia hg hgord hgen a
   have hord : (cyclicBrauerHom hσ₀ a) ^ N = 1 := by
     have h := pow_finrank_eq_one_of_mem_relative (L := ↥F) (cyclicBrauerHom hσ₀ a)

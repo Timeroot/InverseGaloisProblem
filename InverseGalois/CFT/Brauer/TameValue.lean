@@ -59,27 +59,27 @@ variable {K L : Type} [Field K] [Valued K ℤᵐ⁰]
   [Valuation.RankOne (Valued.v : Valuation K ℤᵐ⁰)] [CompleteSpace K] [ProperSpace K]
   [Field L] [Algebra K L] [FiniteDimensional K L] {p e : ℕ}
 
-/-- **Every absolute value of a radical extension of prime degree by a unit is the absolute value
-of a scalar**, the reduction of the minimal polynomial of the generator staying irreducible when
-the residue characteristic does not divide the degree. -/
-theorem exists_divisionNorm_eq_of_radical_unit (pb : PowerBasis K L) {ℓ : ℕ} (hl : ℓ.Prime)
-    (hpl : ¬ p ∣ ℓ) {c : K} (hc : Valued.v c = 1) (hmin : minpoly K pb.gen = X ^ ℓ - C c)
-    (hres : HasResidueChar K p e) (z : L) (hz : z ≠ 0) :
+/-- **Every absolute value of a radical extension by a unit is the absolute value of a scalar**,
+the reduction of the minimal polynomial of the generator staying irreducible when the residue
+characteristic does not divide the degree. -/
+theorem exists_divisionNorm_eq_of_radical_unit (pb : PowerBasis K L) {n : ℕ}
+    (hn : IsRadicalExponent n) (hn0 : n ≠ 0) (hpn : ¬ p ∣ n) {c : K} (hc : Valued.v c = 1)
+    (hmin : minpoly K pb.gen = X ^ n - C c) (hres : HasResidueChar K p e) (z : L) (hz : z ≠ 0) :
     ∃ d : K, d ≠ 0 ∧ divisionNorm K L z = ‖d‖ := by
   have hcmem : c ∈ 𝒪[K] := le_of_eq hc
   set c₀ : ↥(𝒪[K]) := ⟨c, hcmem⟩ with hc₀
   have hcval : Valued.v ((c₀ : ↥(𝒪[K])) : K) = 1 := hc
-  have hF : (X ^ ℓ - C c₀).Monic := monic_X_pow_sub_C _ hl.ne_zero
-  have hFmin : (X ^ ℓ - C c₀).map (Subring.subtype 𝒪[K]) = minpoly K pb.gen := by
+  have hF : (X ^ n - C c₀).Monic := monic_X_pow_sub_C _ hn0
+  have hFmin : (X ^ n - C c₀).map (Subring.subtype 𝒪[K]) = minpoly K pb.gen := by
     rw [hmin, Polynomial.map_sub, Polynomial.map_pow, Polynomial.map_X, Polynomial.map_C]
     rfl
-  have hnp : ∀ y : K, y ^ ℓ ≠ c := by
-    refine (X_pow_sub_C_irreducible_iff_of_prime hl).1 ?_
+  have hnp : ∀ ℓ : ℕ, ℓ.Prime → ℓ ∣ n → ∀ y : K, y ^ ℓ ≠ c := by
+    refine (hn K c).1 ?_
     rw [← hmin]
     exact minpoly.irreducible (IsIntegral.of_finite K pb.gen)
-  have hirr : Irreducible ((X ^ ℓ - C c₀).map (IsLocalRing.residue ↥(𝒪[K]))) := by
+  have hirr : Irreducible ((X ^ n - C c₀).map (IsLocalRing.residue ↥(𝒪[K]))) := by
     rw [Polynomial.map_sub, Polynomial.map_pow, Polynomial.map_X, Polynomial.map_C]
-    exact irreducible_X_pow_sub_C_residue hres hl hpl hcval hnp
+    exact irreducible_X_pow_sub_C_residue hres hn hpn hcval hnp
   obtain ⟨d, hd0, hd⟩ := exists_norm_eq_spectralNorm pb hF hFmin hirr z hz
   exact ⟨d, hd0, by rw [divisionNorm_eq_spectralNorm, hd]⟩
 
@@ -98,13 +98,39 @@ variable (h : IsKummerData K Ω (Multiplicative (ZMod n)) (zmodRootHom hζ) n)
 
 attribute [local instance] finiteDimensional_kummerLevel isGalois_kummerLevel
 
-/-- **The level of a unit which is not a power has degree the exponent**, when the exponent is
-prime: the degree divides the exponent, and a level of degree one belongs to a power. -/
-theorem card_gal_kummerLevel_eq_of_not_isPow (hn : n.Prime) {b : Kˣ}
-    (hnp : ¬ ∃ c : Kˣ, c ^ n = b) : Nat.card Gal(↥(kummerLevel h b)/K) = n := by
-  rcases hn.eq_one_or_self_of_dvd _ (card_gal_kummerLevel_dvd h b) with hd1 | hdn
-  · exact absurd (exists_pow_eq_of_card_gal_kummerLevel_eq_one h b hd1) hnp
-  · exact hdn
+/-- **The level of a unit which is not a power of any prime order dividing the exponent has degree
+the exponent**: the degree divides the exponent, and the unit is the power, with the complementary
+exponent, of a scalar. -/
+theorem card_gal_kummerLevel_eq_of_not_isPow {b : Kˣ}
+    (hnp : ∀ ℓ : ℕ, ℓ.Prime → ℓ ∣ n → ¬ ∃ c : Kˣ, c ^ ℓ = b) :
+    Nat.card Gal(↥(kummerLevel h b)/K) = n := by
+  obtain ⟨d, hd⟩ := card_gal_kummerLevel_dvd h b
+  have hd0 : d ≠ 0 := by
+    rintro rfl
+    exact NeZero.ne n (by rw [hd, Nat.mul_zero])
+  have hdvd : d ∣ n := ⟨Nat.card Gal(↥(kummerLevel h b)/K), hd.trans (Nat.mul_comm _ _)⟩
+  obtain ⟨c, hc⟩ := exists_algebraMap_eq_pow_card h b
+  have hbn : algebraMap K ↥(kummerLevel h b) (b : K) = kummerLevelGen h b ^ n := by
+    refine (algebraMap ↥(kummerLevel h b) Ω).injective ?_
+    rw [map_pow, ← IsScalarTower.algebraMap_apply]
+    exact (congrArg Units.val (h.root_pow b)).symm
+  have hcd : c ^ d = (b : K) := by
+    refine (algebraMap K ↥(kummerLevel h b)).injective ?_
+    rw [map_pow, hc, ← pow_mul, ← hd, hbn]
+  have hc0 : c ≠ 0 := by
+    rintro rfl
+    exact b.ne_zero (by rw [← hcd, zero_pow hd0])
+  have hu : Units.mk0 c hc0 ^ d = b := by
+    refine Units.ext ?_
+    rw [Units.val_pow_eq_pow_val, Units.val_mk0]
+    exact hcd
+  have hd1 : d = 1 := by
+    by_contra hne
+    obtain ⟨ℓ, hl, hld⟩ := Nat.exists_prime_and_dvd hne
+    refine hnp ℓ hl (hld.trans hdvd) ⟨Units.mk0 c hc0 ^ (d / ℓ), ?_⟩
+    rw [← pow_mul, Nat.div_mul_cancel hld, hu]
+  rw [hd1, Nat.mul_one] at hd
+  exact hd.symm
 
 end Degree
 
@@ -124,9 +150,8 @@ variable (h : IsKummerData K Ω (Multiplicative (ZMod n)) (zmodRootHom hζ) n)
 attribute [local instance] finiteDimensional_kummerLevel isGalois_kummerLevel
 
 /-- **The level of a unit of the valuation ring of full degree is unramified**: it is the radical
-extension of prime degree by that unit, so every absolute value of it is the absolute value of a
-scalar. -/
-theorem exists_divisionNorm_eq_kummerLevel (hn : n.Prime) (hpn : ¬ p ∣ n)
+extension by that unit, so every absolute value of it is the absolute value of a scalar. -/
+theorem exists_divisionNorm_eq_kummerLevel (hn : IsRadicalExponent n) (hpn : ¬ p ∣ n)
     (hres : HasResidueChar K p e) {b : Kˣ} (hb : Valued.v (b : K) = 1)
     (hdn : Nat.card Gal(↥(kummerLevel h b)/K) = n) (z : ↥(kummerLevel h b)) (hz : z ≠ 0) :
     ∃ d : K, d ≠ 0 ∧ divisionNorm K ↥(kummerLevel h b) z = ‖d‖ := by
@@ -140,7 +165,8 @@ theorem exists_divisionNorm_eq_kummerLevel (hn : n.Prime) (hpn : ¬ p ∣ n)
     rw [hc, hbn, hdn]
   have hmin : minpoly K (kummerLevelPowerBasis h b).gen = X ^ n - C (b : K) := by
     rw [kummerLevelPowerBasis_gen, minpoly_kummerLevelGen h b hc, hcb, hdn]
-  exact exists_divisionNorm_eq_of_radical_unit (kummerLevelPowerBasis h b) hn hpn hb hmin hres z hz
+  exact exists_divisionNorm_eq_of_radical_unit (kummerLevelPowerBasis h b) hn (NeZero.ne n) hpn hb
+    hmin hres z hz
 
 end Level
 
@@ -244,14 +270,14 @@ ring which is not a power**: it is the class, modulo the integers, of the opposi
 character of the unit at any automorphism inducing the Frobenius automorphism of the level of the
 unit, divided by the exponent. -/
 theorem localKummerSymbol_uniformiser_eq_kummerChar (hres : HasResidueChar K p e)
-    (hm : IsUnitValGen K m) (hn : n.Prime) (hpn : ¬ p ∣ n) {π : Kˣ}
+    (hm : IsUnitValGen K m) (hn : IsRadicalExponent n) (hpn : ¬ p ∣ n) {π : Kˣ}
     (hπ : unitValDiv hm (Additive.ofMul π) = 1) {b : Kˣ} (hb : Valued.v (b : K) = 1)
-    (hnp : ¬ ∃ c : Kˣ, c ^ n = b) {g : Gal(AlgebraicClosure K/K)}
+    (hnp : ∀ ℓ : ℕ, ℓ.Prime → ℓ ∣ n → ¬ ∃ c : Kˣ, c ^ ℓ = b) {g : Gal(AlgebraicClosure K/K)}
     (hg : IsDivisionFrobenius (AlgEquiv.restrictNormalHom ↥(kummerLevel h b) g)) :
     localKummerSymbol hres hm h (mulZMod n) π b
       = Multiplicative.ofAdd (zmodQModZ n (-kummerChar h b g)) := by
   have hdn : Nat.card Gal(↥(kummerLevel h b)/K) = n :=
-    card_gal_kummerLevel_eq_of_not_isPow h hn hnp
+    card_gal_kummerLevel_eq_of_not_isPow h hnp
   have hur : ∀ z : ↥(kummerLevel h b), z ≠ 0 →
       ∃ d : K, d ≠ 0 ∧ divisionNorm K ↥(kummerLevel h b) z = ‖d‖ :=
     exists_divisionNorm_eq_kummerLevel h hn hpn hres hb hdn
@@ -294,9 +320,9 @@ ring which is not a power**: it is the class, modulo the integers, of the opposi
 character of the unit at any automorphism inducing the Frobenius automorphism of the level of the
 unit, divided by the exponent. -/
 theorem localSymbol_uniformiser_eq_kummerChar (hres : HasResidueChar K p e)
-    (hm : IsUnitValGen K m) (hζ : IsPrimitiveRoot ζ n) (hn : n.Prime) (hpn : ¬ p ∣ n) {π : Kˣ}
-    (hπ : unitValDiv hm (Additive.ofMul π) = 1) {b : Kˣ} (hb : Valued.v (b : K) = 1)
-    (hnp : ¬ ∃ c : Kˣ, c ^ n = b) {g : Gal(AlgebraicClosure K/K)}
+    (hm : IsUnitValGen K m) (hζ : IsPrimitiveRoot ζ n) (hn : IsRadicalExponent n) (hpn : ¬ p ∣ n)
+    {π : Kˣ} (hπ : unitValDiv hm (Additive.ofMul π) = 1) {b : Kˣ} (hb : Valued.v (b : K) = 1)
+    (hnp : ∀ ℓ : ℕ, ℓ.Prime → ℓ ∣ n → ¬ ∃ c : Kˣ, c ^ ℓ = b) {g : Gal(AlgebraicClosure K/K)}
     (hg : IsDivisionFrobenius (AlgEquiv.restrictNormalHom
       ↥(kummerLevel (isKummerData_zmod (Ω := AlgebraicClosure K) hζ exists_units_pow_eq) b) g)) :
     localSymbol hres hm hζ π b

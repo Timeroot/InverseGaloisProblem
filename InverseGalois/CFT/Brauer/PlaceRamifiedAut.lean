@@ -101,7 +101,8 @@ ramified place the order of that group is the degree of the extension. -/
 theorem placeInvariant_cyclicBrauerHom_of_radical_aut
     (hres : HasResidueChar ((primeUnder (𝓞 k) w).adicCompletion k) p e)
     (hinertia : Ideal.inertia Gal(K/k) w.asIdeal = ⊤)
-    {ζ : (primeUnder (𝓞 k) w).adicCompletion k} (hζ : IsPrimitiveRoot ζ n) (hn : n.Prime)
+    {ζ : (primeUnder (𝓞 k) w).adicCompletion k} (hζ : IsPrimitiveRoot ζ n)
+    (hn : IsRadicalExponent n)
     (hpn : ¬ p ∣ n) {σ₀ : Gal(K/k)} (hσ₀ : ∀ x : Gal(K/k), x ∈ Subgroup.zpowers σ₀)
     (hst : σ₀ • w = w) (hcard : Nat.card Gal(K/k) = n)
     {b : ((primeUnder (𝓞 k) w).adicCompletion k)ˣ} {ν : w.adicCompletion K}
@@ -111,17 +112,16 @@ theorem placeInvariant_cyclicBrauerHom_of_radical_aut
       = algebraMap ((primeUnder (𝓞 k) w).adicCompletion k) (w.adicCompletion K) ζ * ν)
     (hb : unitValDiv (isUnitValGen_one (valued_adicCompletion_surjective (primeUnder (𝓞 k) w)))
       (Additive.ofMul b) = -1)
-    {a : kˣ} (ha : Valued.v (algebraMap k ((primeUnder (𝓞 k) w).adicCompletion k) (a : k)) = 1)
-    {j : ℕ}
-    (hj : Valued.v (ζ ^ j
-        - algebraMap k ((primeUnder (𝓞 k) w).adicCompletion k) (a : k)
-          ^ ((Nat.card (DivisionResidue ((primeUnder (𝓞 k) w).adicCompletion k)
-            ((primeUnder (𝓞 k) w).adicCompletion k)) - 1) / n)) < 1) :
+    {u : (primeUnder (𝓞 k) w).adicCompletion k} (hu : Valued.v u = 1)
+    (hu1 : Valued.v (ζ - u ^ ((Nat.card (DivisionResidue ((primeUnder (𝓞 k) w).adicCompletion k)
+      ((primeUnder (𝓞 k) w).adicCompletion k)) - 1) / n)) < 1)
+    {a : kˣ} {j : ℕ}
+    (hj : Valued.v (algebraMap k ((primeUnder (𝓞 k) w).adicCompletion k) (a : k) - u ^ j) < 1) :
     placeInvariant k (primeUnder (𝓞 k) w) (cyclicBrauerHom hσ₀ a)
       = Multiplicative.ofAdd (zmodQModZ n (j : ZMod n)) := by
   obtain ⟨σ, hσ, hrestr⟩ := exists_restrictScalars_eq_of_inertia_eq_top k w hinertia hσ₀
   refine placeInvariant_cyclicBrauerHom_of_radical_eq_powerResidue k w hres hinertia hζ hn hpn hσ₀
-    hσ hrestr ?_ hpow ?_ hb ha hj
+    hσ hrestr ?_ hpow ?_ hb hu hu1 hj
   · rw [natCard_aut_adicCompletion_of_inertia_eq_top k w hinertia, hcard]
   · rw [← adicCompletionAut_apply_eq_of_restrictScalars_eq k w hst hrestr ν]
     exact hact

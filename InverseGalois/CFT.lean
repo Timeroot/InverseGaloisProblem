@@ -75,6 +75,7 @@ import InverseGalois.CFT.Brauer.LocalSymbolRamified
 import InverseGalois.CFT.Brauer.LocalSymbolUnits
 import InverseGalois.CFT.Brauer.TameEvaluation
 import InverseGalois.CFT.Brauer.TameSymbol
+import InverseGalois.CFT.Brauer.TameOdd
 import InverseGalois.CFT.Brauer.TamePower
 import InverseGalois.CFT.Brauer.TameResidue
 import InverseGalois.CFT.Brauer.TameValue
@@ -4183,6 +4184,16 @@ it that are available here.
   uniformiser of a completion carries — the sign is the other one, and the symbol is skew
   symmetric, so **the tame norm residue symbol of a unit against such a uniformiser** is read off
   the power residue exponent as well.
+* `InverseGalois.CFT.Brauer.TameOdd` reads that symbol against an arbitrary exponent of an
+  irreducible radical polynomial, an odd one in particular.  A unit whose power residue value is a
+  primitive root of unity of the exponent is a power of no prime order dividing the exponent, for a
+  root of that order would be a root of unity of a proper divisor of the exponent, so its symbol
+  against a uniformiser is the class, modulo the integers, of the opposite of the inverse of the
+  exponent.  Any unit congruent to a power of that one differs from that power by a unit congruent
+  to one, which is an exact power, so **the tame norm residue symbol of a uniformiser against a unit
+  congruent to a power of the chosen one is the class, modulo the integers, of the opposite of that
+  power divided by the exponent**, and the two normalisations of the uniformiser and the two orders
+  of the arguments give the three remaining signs.
 * `InverseGalois.CFT.Local.RatUniformiser` supplies that local datum over the rationals.  The
   ramification index of a finite place of the rationals is at most the degree of the rationals over
   themselves and is positive, so **a finite place of the rationals is unramified over the rational
@@ -4300,7 +4311,7 @@ it that are available here.
   same discrete logarithm with opposite signs, so **the sum of all the local invariants of a cyclic
   algebra over the rationals split by a totally real subfield of the cyclotomic field of an odd
   prime conductor, with a rational prime away from the conductor as coefficient, vanishes** — the
-  reciprocity law for that family.  When the subfield has odd prime degree the conductor and minus
+  reciprocity law for that family.  When the subfield has odd degree the conductor and minus
   one are norms from it, so the algebras they name are trivial; minus one and the rational primes
   generate the units of the rationals, and therefore **the sum of all the local invariants vanishes
   for every rational coefficient**.

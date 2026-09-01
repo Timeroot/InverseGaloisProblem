@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Brauer.PlaceRadical
-import InverseGalois.CFT.Brauer.TamePower
+import InverseGalois.CFT.Brauer.TameOdd
 
 /-!
 # The invariant at a totally ramified place is a power residue symbol
@@ -61,7 +61,8 @@ evaluation of the symbol applies after a skew symmetry, and the two signs cancel
 theorem placeInvariant_cyclicBrauerHom_of_radical_eq_powerResidue
     (hres : HasResidueChar ((primeUnder (𝓞 k) w).adicCompletion k) p e)
     (hinertia : Ideal.inertia Gal(K/k) w.asIdeal = ⊤)
-    {ζ : (primeUnder (𝓞 k) w).adicCompletion k} (hζ : IsPrimitiveRoot ζ n) (hn : n.Prime)
+    {ζ : (primeUnder (𝓞 k) w).adicCompletion k} (hζ : IsPrimitiveRoot ζ n)
+    (hn : IsRadicalExponent n)
     (hpn : ¬ p ∣ n) {σ₀ : Gal(K/k)} (hσ₀ : ∀ x : Gal(K/k), x ∈ Subgroup.zpowers σ₀)
     {σ : Gal(w.adicCompletion K/(primeUnder (𝓞 k) w).adicCompletion k)}
     (hσ : ∀ x : Gal(w.adicCompletion K/(primeUnder (𝓞 k) w).adicCompletion k),
@@ -75,18 +76,22 @@ theorem placeInvariant_cyclicBrauerHom_of_radical_eq_powerResidue
       = algebraMap ((primeUnder (𝓞 k) w).adicCompletion k) (w.adicCompletion K) ζ * ν)
     (hb : unitValDiv (isUnitValGen_one (valued_adicCompletion_surjective (primeUnder (𝓞 k) w)))
       (Additive.ofMul b) = -1)
-    {a : kˣ} (ha : Valued.v (algebraMap k ((primeUnder (𝓞 k) w).adicCompletion k) (a : k)) = 1)
-    {j : ℕ}
-    (hj : Valued.v (ζ ^ j
-        - algebraMap k ((primeUnder (𝓞 k) w).adicCompletion k) (a : k)
-          ^ ((Nat.card (DivisionResidue ((primeUnder (𝓞 k) w).adicCompletion k)
-            ((primeUnder (𝓞 k) w).adicCompletion k)) - 1) / n)) < 1) :
+    {u : (primeUnder (𝓞 k) w).adicCompletion k} (hu : Valued.v u = 1)
+    (hu1 : Valued.v (ζ - u ^ ((Nat.card (DivisionResidue ((primeUnder (𝓞 k) w).adicCompletion k)
+      ((primeUnder (𝓞 k) w).adicCompletion k)) - 1) / n)) < 1)
+    {a : kˣ} {j : ℕ}
+    (hj : Valued.v (algebraMap k ((primeUnder (𝓞 k) w).adicCompletion k) (a : k) - u ^ j) < 1) :
     placeInvariant k (primeUnder (𝓞 k) w) (cyclicBrauerHom hσ₀ a)
       = Multiplicative.ofAdd (zmodQModZ n (j : ZMod n)) := by
-  have hsymbol := localSymbol_unit_eq_powerResidue_of_unitValDiv_eq_neg_one (π := b)
-    (b := Units.map (algebraMap k ((primeUnder (𝓞 k) w).adicCompletion k)).toMonoidHom a) (j := j)
-    hres (isUnitValGen_one (valued_adicCompletion_surjective (primeUnder (𝓞 k) w))) hζ hn hpn hb ha
-    hj
+  have hu0 : u ≠ 0 := by
+    intro h0
+    rw [h0, map_zero] at hu
+    exact zero_ne_one hu
+  have hsymbol := localSymbol_unit_eq_powerResidue_of_congr (π := b)
+    (b := Units.map (algebraMap k ((primeUnder (𝓞 k) w).adicCompletion k)).toMonoidHom a)
+    (u := Units.mk0 u hu0) (c := j)
+    hres (isUnitValGen_one (valued_adicCompletion_surjective (primeUnder (𝓞 k) w))) hζ hn hpn hb hu
+    hu1 hj
   rw [placeInvariant_cyclicBrauerHom_of_radical_of_inertia_eq_top k w hres hinertia hζ hσ₀ hσ
       hrestr hcard hpow hact a, hsymbol, map_neg, ofAdd_neg, inv_inv]
 

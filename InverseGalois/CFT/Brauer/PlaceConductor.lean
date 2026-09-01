@@ -71,7 +71,7 @@ automorphism raising the roots of unity to the power of the coefficient as a pow
 generator. -/
 theorem placeInvariant_cyclicBrauerHom_conductor (hq : q.Prime) (hodd : Odd q)
     (W : HeightOneSpectrum (𝓞 L)) [W.asIdeal.LiesOver (Ideal.span {(q : ℤ)})] {N : ℕ}
-    [NeZero N] (hN : N.Prime) (hcard : Nat.card Gal(F/ℚ) = N)
+    [NeZero N] (hNodd : Odd N) (hcard : Nat.card Gal(F/ℚ) = N)
     (hinertia : Ideal.inertia Gal(F/ℚ) (primeUnder (𝓞 F) W).asIdeal = ⊤) {g : ℕ}
     (hg : Nat.Coprime g q) (hgord : ∀ k : ℕ, q ∣ g ^ k - 1 → (q - 1) ∣ k)
     (hgen : ∀ x : Gal(L/ℚ), x ∈ Subgroup.zpowers (cyclotomicPowerAut q L hg)) {p : ℕ}
@@ -105,15 +105,14 @@ theorem placeInvariant_cyclicBrauerHom_conductor (hq : q.Prime) (hodd : Odd q)
     rw [← hNcard, mul_comm, hfin, finrank_cyclotomic_of_prime q L]
   have hqN : ¬ q ∣ N := by
     intro hd
-    have h1 : q ≤ N := Nat.le_of_dvd (Nat.pos_of_ne_zero hN.ne_zero) hd
+    have h1 : q ≤ N := Nat.le_of_dvd (Nat.pos_of_ne_zero (NeZero.ne N)) hd
     have h2 : N ≤ q - 1 := Nat.le_of_dvd (by have := hq.one_lt; omega) (Dvd.intro_left _ hMN)
     have := hq.one_lt
     omega
   have hgnd : ¬ q ∣ g := (Nat.Prime.coprime_iff_not_dvd hq).mp hg.symm
-  have hpnd : ¬ q ∣ p := (Nat.Prime.coprime_iff_not_dvd hq).mp hp.symm
   -- the root of unity of the completion of the rationals with the prescribed residue
   obtain ⟨ζ, hζprim, hζres⟩ :=
-    exists_isPrimitiveRoot_valued_sub_natCast_lt_one hres hgnd hgord hN.ne_zero hMN
+    exists_isPrimitiveRoot_valued_sub_natCast_lt_one hres hgnd hgord (NeZero.ne N) hMN
   -- the generator fixes the place of the conductor, which is totally ramified
   obtain ⟨ζL, hζL⟩ := IsCyclotomicExtension.exists_isPrimitiveRoot (S := ({q} : Set ℕ)) ℚ L
     rfl (NeZero.ne q)
@@ -156,18 +155,27 @@ theorem placeInvariant_cyclicBrauerHom_conductor (hq : q.Prime) (hodd : Odd q)
       (valued_adicCompletion_surjective (primeUnder (𝓞 ℚ) (primeUnder (𝓞 F) W))) ?_
     rw [Units.val_mk0, Valuation.map_neg]
     exact valued_natCast_adicCompletion_rat hq _
+  have hcardres : Nat.card (DivisionResidue
+      ((primeUnder (𝓞 ℚ) (primeUnder (𝓞 F) W)).adicCompletion ℚ)
+      ((primeUnder (𝓞 ℚ) (primeUnder (𝓞 F) W)).adicCompletion ℚ)) = q :=
+    natCard_divisionResidue_adicCompletion_rat hq _ hmemQ
+  have hdiv : (q - 1) / N = Module.finrank F L :=
+    Nat.div_eq_of_eq_mul_left (Nat.pos_of_ne_zero (NeZero.ne N)) hMN.symm
   refine placeInvariant_cyclicBrauerHom_of_radical_aut ℚ (primeUnder (𝓞 F) W) hres hinertia
-    hζprim hN hqN (forall_mem_zpowers_restrictNormal (L := F) hgen) hst hcard hpow hact hb ?_ ?_
-  · rw [hap, map_natCast]
-    exact valued_natCast_eq_one_of_not_dvd hq (valued_residueChar_lt_one hres) hpnd
-  · have hcardres : Nat.card (DivisionResidue
-        ((primeUnder (𝓞 ℚ) (primeUnder (𝓞 F) W)).adicCompletion ℚ)
-        ((primeUnder (𝓞 ℚ) (primeUnder (𝓞 F) W)).adicCompletion ℚ)) = q :=
-      natCard_divisionResidue_adicCompletion_rat hq _ hmemQ
-    have hdiv : (q - 1) / N = Module.finrank F L :=
-      Nat.div_eq_of_eq_mul_left (Nat.pos_of_ne_zero hN.ne_zero) hMN.symm
-    rw [hap, map_natCast, hcardres, hdiv]
-    exact valued_pow_sub_natCast_pow_lt_one_of_dvd hres hζres
+    hζprim (isRadicalExponent_of_odd hNodd) hqN (forall_mem_zpowers_restrictNormal (L := F) hgen)
+    hst hcard hpow hact hb
+    (u := ((g : ℕ) : (primeUnder (𝓞 ℚ) (primeUnder (𝓞 F) W)).adicCompletion ℚ)) ?_ ?_ ?_
+  · exact valued_natCast_eq_one_of_not_dvd hq (valued_residueChar_lt_one hres) hgnd
+  · rw [hcardres, hdiv, ← Nat.cast_pow]
+    exact hζres
+  · have hcast : ((((p : ℕ) : ℤ) - ((g ^ c : ℕ) : ℤ) : ℤ) :
+        (primeUnder (𝓞 ℚ) (primeUnder (𝓞 F) W)).adicCompletion ℚ)
+        = ((p : ℕ) : (primeUnder (𝓞 ℚ) (primeUnder (𝓞 F) W)).adicCompletion ℚ)
+          - ((g : ℕ) : (primeUnder (𝓞 ℚ) (primeUnder (𝓞 F) W)).adicCompletion ℚ) ^ c := by
+      push_cast
+      ring
+    rw [hap, map_natCast, ← hcast]
+    exact valued_intCast_lt_one_of_dvd hres
       (dvd_sub_pow_of_cyclotomicPowerAut_eq_pow q L hg hp hc)
 
 end Conductor
