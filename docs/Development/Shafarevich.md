@@ -6356,6 +6356,140 @@ statement that a Kummer extension by a unit is unramified.  That is the next bri
 
 ---
 
+## 0.63 Status (2026-09-01) — the brick of §0.62(e): `⟨u, v⟩ = 1` for two units
+
+Three new modules, all sorry- and axiom-free: `CFT/Local/GaussNorm.lean`,
+`CFT/Local/RadicalUnramified.lean`, `CFT/Brauer/LocalSymbolUnits.lean`.  Build 9487 jobs green,
+zero warnings; every new declaration has axioms `[propext, Classical.choice, Quot.sound]`.
+
+With this the **tame symbol is completely determined**: bilinearity (free), skew-symmetry (§0.61),
+Steinberg and `⟨a, -a⟩ = 1` (§0.62), and now `⟨u, v⟩ = 1` for two units, so the symbol only depends
+on the *values* of its two arguments and on `⟨π, u⟩`.
+
+### (a) The Gauss norm as the way to recognise an unramified extension
+
+The mathematical statement wanted is: *`K` complete with a rank-one valuation, `L = K(x)` with
+`minpoly K x = F`, `F` monic with integral coefficients whose reduction `F̄` is irreducible over the
+residue field `𝓀[K]`; then `L/K` is unramified.*
+
+The route that the repository already had (`exists_valued_of_spectralNorm`) needs exactly one input:
+
+```lean
+hval : ∀ z : L, z ≠ 0 → ∃ c : K, c ≠ 0 ∧ spectralNorm K L z = ‖c‖
+```
+
+("every absolute value of `L` is already an absolute value of a scalar" — which *is*
+unramifiedness, since the value group does not grow).  The cheap way to get `hval` is **not** to
+compute norms, matrices or resultants but to *build* the absolute value:
+
+* write `z ∈ L` in the power basis `1, x, …, x^{d-1}` — `repPoly pb z : K[X]` of degree `< d`;
+* take the **Gauss (sup) norm** `coordNorm pb z := (repPoly pb z).supNorm`, the largest absolute
+  value of a coordinate;
+* the only nontrivial axiom is multiplicativity, and it reduces to
+  `coordNorm z = coordNorm w = 1 ⇒ coordNorm (z·w) = 1` by scaling;
+* that in turn is: the product of two integral representatives, reduced `%ₘ F`, still has a
+  coefficient of absolute value one — i.e. `(P·Q) %ₘ F` does not reduce to `0` mod the maximal
+  ideal.  Over `R/𝔪 = 𝓀[K]` the quotient `𝓀[X]/(F̄)` is a **field** because `F̄` is irreducible, so
+  `P̄ ≠ 0`, `Q̄ ≠ 0` force `F̄ ∤ P̄·Q̄`, and `deg((P·Q) %ₘ F) < deg F` then forbids
+  `(P·Q) %ₘ F ≡ 0`;
+* `coordNorm` is therefore an `AbsoluteValue L ℝ` extending `‖·‖` on `K`, so by
+  `spectralNorm_unique_field_norm_ext` it **equals the spectral norm**;
+* and the values of `coordNorm` are literally `‖c‖` for `c` a coordinate of `z`, which is `hval`.
+
+```lean
+spectralNorm_eq_coordNorm  (hF : F.Monic) (hFmin : F.map ι = minpoly K pb.gen)
+    (hirr : Irreducible (F.map (IsLocalRing.residue 𝒪[K]))) (z : L) :
+    spectralNorm K L z = coordNorm pb z
+exists_valued_of_residue_irreducible … :
+    ∃ (_ : Valued L ℤᵐ⁰) (_ : CompleteSpace L) (m : ℤ) (e' : ℕ), … ∧ IsUnramifiedValued K L ∧ …
+```
+
+Mathlib has `Polynomial.supNorm` and its basic lemmas but **no multiplicativity**, so
+`supNorm_C_mul` and the ultrametric `supNorm_add_le` are proved here too.
+
+### (b) A radical extension by a unit is unramified
+
+Now specialise `F = X^ℓ - C c` with `c` a **unit** of `𝒪[K]` and `ℓ` **prime**, `ℓ` prime to the
+residue characteristic `p`.  Two steps:
+
+1. *Hensel.* If `c̄ = ȳ^ℓ` in `𝓀[K]` then `c/y^ℓ ≡ 1`, and the repository's
+   `exists_pow_eq_of_valued_sub_lt_one` (a unit congruent to one is an `n`-th power whenever
+   `p ∤ n`) gives `c ∈ (K^×)^ℓ`:
+
+   ```lean
+   exists_pow_eq_of_residue_pow_eq (hres) (hd : d ≠ 0) (hpd : ¬ p ∣ d)
+       (hc : v c = 1) (hy : y ^ d = residue c) : ∃ z : K, z ^ d = c
+   ```
+
+2. *Irreducibility.* For a **prime** exponent, `X^ℓ - C a` is irreducible exactly when `a` is not
+   an `ℓ`-th power (`X_pow_sub_C_irreducible_iff_of_prime`) — no `4 ∣ d` clause to worry about, and
+   this is exactly the case Scholz–Reichardt needs.  So `c ∉ (K^×)^ℓ ⇒ c̄ ∉ (𝓀^×)^ℓ ⇒ X^ℓ - C c̄`
+   irreducible, and (a) applies.
+
+Combining with `index_normSubgroup_eq_finrank_local` (norm index of a cyclic local extension = the
+degree) and `mem_normSubgroup_of_unitVal_eq_zero` (in an unramified extension a unit of value `0`
+is a norm; `v(a) = v(N a) = v(a)^{[L:K]} = 1`):
+
+```lean
+mem_normSubgroup_of_radical_unit [IsGalois K L] [IsCyclic Gal(L/K)] (pb : PowerBasis K L)
+    (hl : ℓ.Prime) (hpl : ¬ p ∣ ℓ) (hc : v c = 1) (hmin : minpoly K pb.gen = X ^ ℓ - C c)
+    (hres : HasResidueChar K p e) (ha : v a = 1) : a ∈ normSubgroup K L
+```
+
+### (c) `⟨u, v⟩ = 1`
+
+`kummerSymbolUnits_eq_one_iff_norm_kummerLevel` (§0.61(a)) says `⟨a, b⟩ = 1` iff `a` is a norm from
+the level `E := k⟮b^{1/n}⟯`.  With `n = ℓ` prime, `[E:k] ∣ ℓ` leaves two cases:
+
+* `[E:k] = 1`: then `a = N(a)` because `N ∘ algebraMap = (·)^{[E:k]} = id`;
+* `[E:k] = ℓ`: then §0.61(b) gives `minpoly k x = X^ℓ - C c` with `algebraMap c = x^ℓ`, and
+  `x^ℓ = algebraMap b` by the definition of the chosen root, so `c = b` — the minimal polynomial is
+  `X^ℓ - C b`, a **radical extension by a unit**, and (b) applies.
+
+`IsCyclic Gal(E/k)` comes for free from `exists_generator_kummerLevel_index` (§0.60).
+
+```lean
+kummerSymbolUnits_eq_one_of_valued_eq_one (hn : n.Prime) (hpn : ¬ p ∣ n) (hres)
+    (ha : v a = 1) (hb : v b = 1) : kummerSymbolUnits h (mulZMod n) a b = 1
+localSymbol_eq_one_of_valued_eq_one … : localSymbol hres hm hζ a b = 1
+```
+
+The bridge from the power symbol to the norm residue symbol is one `rw`
+(`localKummerSymbol = invariantEquiv ∘ kummerSymbolUnits`), so §0.61 and §0.62 are lifted at the
+same time:
+
+```lean
+localSymbol_mul_swap      : ⟨a,b⟩ · ⟨b,a⟩ = 1
+localSymbol_one_sub       : ⟨1-a, a⟩ = 1
+localSymbol_self_one_sub  : ⟨a, 1-a⟩ = 1
+localSymbol_neg_self      : ⟨a, -a⟩ = 1
+```
+
+### (d) Lean notes
+
+* `Polynomial.degree_sum_fin_lt` is stated with `C (f i) * X ^ i`, **not** `monomial i (f i)`;
+  unifying against a `monomial` sum blows the heartbeat budget at `whnf`.  Rewrite with
+  `← Polynomial.C_mul_X_pow_eq_monomial` first.
+* Use `IsLocalRing.residue_eq_zero_iff`, not `Ideal.Quotient.eq_zero_iff_mem` — the latter's pattern
+  does not match `IsLocalRing.residue`.  And `rw` does not see through `Ne`, so insert `ne_eq`.
+* `Valued.toNormedField` and the `IsUltrametricDist L` instance need only `[Valued L Γ₀]` and
+  `Valuation.RankOne` — **no `CompleteSpace`** — so the Gauss-norm section splits into three
+  (`CoordNorm` / `Mul` adds `FiniteDimensional` / `Spectral` adds `CompleteSpace`) and the
+  `unusedSectionVars` linter stays quiet without a single `omit`.
+* `exists_valued_of_spectralNorm` was hiding the compatibility `v y = v (N_{L|K} y)` (which is
+  `rfl` inside its own proof); it is now the first conjunct of the existential, which is what makes
+  "`a` is a unit ⇒ `unitVal (algebraMap a) = 0`" a two-line computation.
+* `mem_normSubgroup_of_radical_unit` is stated for `{K L : Type}`, so the Kummer-level section must
+  use `Type`, not `Type u`.
+
+### (e) What is left for reciprocity
+
+The tame symbol is now pinned down up to `⟨π, u⟩`, so the remaining step is the *evaluation*:
+`localInvariant_apply_cyclicBrauerHom` at an auxiliary prime `q ≡ 1 mod n` (§0.56(d)) and then
+`totalInvariant k = 1`.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.

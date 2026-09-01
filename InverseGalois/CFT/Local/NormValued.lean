@@ -302,12 +302,13 @@ variable (K L : Type) [Field K] [Valued K ℤᵐ⁰]
 /-- **A finite extension of a complete, discretely valued, locally compact field carries all the
 structure of a local field**: a valuation extending that of the base field, completeness, a residue
 characteristic, finite graded pieces, invariance under the automorphisms over the base field, and a
-generator of the value group.  When every absolute value of the extension is an absolute value of a
-scalar, the extension is moreover unramified. -/
+generator of the value group.  The valuation is the value of the field norm.  When every absolute
+value of the extension is an absolute value of a scalar, the extension is moreover unramified. -/
 theorem exists_valued_of_spectralNorm (hres : HasResidueChar K p e)
     (hnt : ∃ x : Kˣ, Valued.v (x : K) ≠ 1)
     (hval : ∀ z : L, z ≠ 0 → ∃ c : K, c ≠ 0 ∧ spectralNorm K L z = ‖c‖) :
     ∃ (_ : Valued L ℤᵐ⁰) (_ : CompleteSpace L) (m : ℤ) (e' : ℕ),
+      (∀ y : L, Valued.v y = Valued.v (Algebra.norm K y)) ∧
       (∀ (σ : L ≃ₐ[K] L) (x : L), Valued.v (σ x) = Valued.v x) ∧
         HasResidueChar L p e' ∧ (∀ k : ℤ, Finite (gradedAdd L k)) ∧
         IsUnramifiedValued K L ∧ IsUnitValGen L m := by
@@ -325,7 +326,7 @@ theorem exists_valued_of_spectralNorm (hres : HasResidueChar K p e)
   haveI : ProperSpace L :=
     ProperSpace.of_nontriviallyNormedField_of_weaklyLocallyCompactSpace L
   obtain ⟨m, hm⟩ := exists_isUnitValGen (exists_units_val_ne_one_of_norm hvL hnt)
-  exact ⟨inferInstance, inferInstance, m, finrank K L * e, valued_algEquiv_of_norm hvL,
+  exact ⟨inferInstance, inferInstance, m, finrank K L * e, hvL, valued_algEquiv_of_norm hvL,
     hasResidueChar_of_norm hvL hres, fun k => finite_gradedAdd_of_properSpace k,
     isUnramifiedValued_of_norm hvL hval, hm⟩
 

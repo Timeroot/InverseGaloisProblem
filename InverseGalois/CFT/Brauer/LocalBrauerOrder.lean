@@ -70,7 +70,7 @@ theorem card_relative_eq_finrank_of_spectralNorm [IsGalois K L] [IsCyclic (L ≃
   have hnt : ∃ x : Kˣ, Valued.v (x : K) ≠ 1 :=
     ⟨Units.mk0 u fun h => hu0 (by rw [h, map_zero]), hu1⟩
   obtain ⟨σ₀, hσ₀⟩ := IsCyclic.exists_generator (α := L ≃ₐ[K] L)
-  obtain ⟨instV, instC, m, e', hv, hres', hgr, hur, hm⟩ :=
+  obtain ⟨instV, instC, m, e', -, hv, hres', hgr, hur, hm⟩ :=
     exists_valued_of_spectralNorm K L hres hnt hval
   letI := instV
   haveI := instC
