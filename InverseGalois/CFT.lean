@@ -74,6 +74,7 @@ import InverseGalois.CFT.Brauer.LocalSymbolRamified
 import InverseGalois.CFT.Brauer.LocalSymbolUnits
 import InverseGalois.CFT.Brauer.TameEvaluation
 import InverseGalois.CFT.Brauer.TameSymbol
+import InverseGalois.CFT.Brauer.TamePower
 import InverseGalois.CFT.Brauer.TameResidue
 import InverseGalois.CFT.Brauer.TameValue
 import InverseGalois.CFT.Brauer.LocalUnramified
@@ -340,6 +341,7 @@ import InverseGalois.CFT.Local.PowNeighbourhood
 import InverseGalois.CFT.Local.RadicalUnramified
 import InverseGalois.CFT.Local.RamifiedNormForm
 import InverseGalois.CFT.Local.RatResidueDegree
+import InverseGalois.CFT.Local.ResidueRootUnity
 import InverseGalois.CFT.Local.RootOfUnityValued
 import InverseGalois.CFT.Local.SpectralNorm
 import InverseGalois.CFT.Local.TraceIntegral
@@ -4136,4 +4138,18 @@ it that are available here.
   to the other leaves the Brauer class of the cyclic algebra unchanged**, because the cyclic algebra
   of the first extension already contains a copy of the second in which the very same unit
   implements the second generator.
+* `InverseGalois.CFT.Local.ResidueRootUnity` lifts the roots of unity of the residue field.
+  Fermat's little theorem makes the power of exponent one less than the residue characteristic of a
+  natural number prime to it congruent to one, and such a factor has a root of that exponent again
+  congruent to one, so dividing the number by that root produces **a root of unity of order one less
+  than the residue characteristic congruent to the number**.  Taking the number to be a primitive
+  root modulo the residue characteristic and raising to the complementary power, **a complete valued
+  field of residue characteristic `q` contains a primitive root of unity of every order dividing
+  `q - 1`**.
+* `InverseGalois.CFT.Brauer.TamePower` removes the last hypothesis from the tame symbol.  A unit
+  which is an exact power has the power of its root by one less than the number of residues for its
+  power residue value, hence a power residue exponent divisible by the exponent, and the symbol is
+  trivial on a power as well, so **the tame norm residue symbol of a uniformiser against any unit of
+  the valuation ring is the class, modulo the integers, of the opposite of the power residue
+  exponent of the unit divided by the exponent**.
 -/
