@@ -21,6 +21,7 @@ import InverseGalois.CFT.Brauer.CyclicAlgebra
 import InverseGalois.CFT.Brauer.CyclicBaseChange
 import InverseGalois.CFT.Brauer.CyclicBrauer
 import InverseGalois.CFT.Brauer.CyclicCompositum
+import InverseGalois.CFT.Brauer.CyclicGenerator
 import InverseGalois.CFT.Brauer.CyclicInvariant
 import InverseGalois.CFT.Brauer.CyclicNorm
 import InverseGalois.CFT.Brauer.CyclicNormResidue
@@ -3571,6 +3572,14 @@ it that are available here.
   agree, so the Frobenius automorphism is available as the generator, and **the invariant of a
   Brauer class split by an unramified extension of a local field attains the reciprocal of the
   degree** and **does not depend on the level of the unramified tower at which it is computed.**
+* `InverseGalois.CFT.Brauer.CyclicGenerator` records how the invariant reacts to a change of the
+  generator of the cyclic group.  Writing a second generator as a power of the first, the discrete
+  logarithms differ by that power, so the two carry cocycles differ by the coboundary built from
+  the integer part of the rescaled discrete logarithm.  Hence **raising the scalar to the same
+  power leaves the Brauer class of a cyclic algebra unchanged**, and therefore **the invariant
+  taken with respect to a power of a generator is the corresponding power of the invariant**; in
+  particular the invariant with respect to an arbitrary generator of an unramified extension is a
+  power of the Frobenius invariant.
 * `InverseGalois.CFT.Brauer.InvariantMap` removes the choice of splitting field as well, by working
   inside a fixed algebraic closure.  Every Brauer class is split by a finite unramified extension
   there, two such extensions both sit inside their compositum, which is again unramified, and the
