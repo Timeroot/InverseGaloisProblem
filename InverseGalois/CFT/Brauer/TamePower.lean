@@ -139,6 +139,24 @@ theorem localSymbol_uniformiser_eq_powerResidue_of_valued_eq_one (hres : HasResi
       natCast_eq_zero_of_isPow hres hζ hpn hb hnp hj, neg_zero, map_zero, ofAdd_zero]
   · exact localSymbol_uniformiser_eq_powerResidue hres hm hζ hn hpn hπ hb hnp hj
 
+/-- **The tame norm residue symbol of a uniformiser against any unit of the valuation ring**, for a
+uniformiser normalised so that its divided valuation is minus one: it is the class, modulo the
+integers, of the power residue exponent of the unit, divided by the exponent.  The reciprocal of
+such a uniformiser has divided valuation one, and the symbol is multiplicative. -/
+theorem localSymbol_eq_powerResidue_of_unitValDiv_eq_neg_one (hres : HasResidueChar K p e)
+    (hm : IsUnitValGen K m) (hζ : IsPrimitiveRoot ζ n) (hn : n.Prime) (hpn : ¬ p ∣ n) {π : Kˣ}
+    (hπ : unitValDiv hm (Additive.ofMul π) = -1) {b : Kˣ} (hb : Valued.v (b : K) = 1) {j : ℕ}
+    (hj : Valued.v (ζ ^ j - (b : K) ^ ((Nat.card (DivisionResidue K K) - 1) / n)) < 1) :
+    localSymbol hres hm hζ π b = Multiplicative.ofAdd (zmodQModZ n (j : ZMod n)) := by
+  have hinv : unitValDiv hm (Additive.ofMul π⁻¹) = 1 := by
+    have hneg : Additive.ofMul π⁻¹ = -(Additive.ofMul π) := rfl
+    rw [hneg, map_neg, hπ, neg_neg]
+  have hkey :=
+    localSymbol_uniformiser_eq_powerResidue_of_valued_eq_one hres hm hζ hn hpn hinv hb hj
+  have hmul : localSymbol hres hm hζ π b * localSymbol hres hm hζ π⁻¹ b = 1 := by
+    rw [← MonoidHom.mul_apply, ← map_mul, mul_inv_cancel, map_one, MonoidHom.one_apply]
+  rw [eq_inv_iff_mul_eq_one.2 hmul, hkey, map_neg, ofAdd_neg, inv_inv]
+
 end Root
 
 end InverseGalois.CFT

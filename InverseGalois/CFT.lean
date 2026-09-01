@@ -341,6 +341,7 @@ import InverseGalois.CFT.Local.PowNeighbourhood
 import InverseGalois.CFT.Local.RadicalUnramified
 import InverseGalois.CFT.Local.RamifiedNormForm
 import InverseGalois.CFT.Local.RatResidueDegree
+import InverseGalois.CFT.Local.RatUniformiser
 import InverseGalois.CFT.Local.ResidueRootUnity
 import InverseGalois.CFT.Local.RootOfUnityValued
 import InverseGalois.CFT.Local.SpectralNorm
@@ -4151,5 +4152,15 @@ it that are available here.
   power residue value, hence a power residue exponent divisible by the exponent, and the symbol is
   trivial on a power as well, so **the tame norm residue symbol of a uniformiser against any unit of
   the valuation ring is the class, modulo the integers, of the opposite of the power residue
-  exponent of the unit divided by the exponent**.
+  exponent of the unit divided by the exponent**.  The symbol is multiplicative in the uniformiser,
+  so for a uniformiser whose divided valuation is minus one — the normalisation an actual
+  uniformiser of a completion carries — the sign is the other one.
+* `InverseGalois.CFT.Local.RatUniformiser` supplies that local datum over the rationals.  The
+  ramification index of a finite place of the rationals is at most the degree of the rationals over
+  themselves and is positive, so **a finite place of the rationals is unramified over the rational
+  prime below it**; the valuation of a rational prime is the exponential of minus that index, so
+  **a rational prime is a uniformiser of the completion of the rationals at a place containing it**
+  and **that completion has the prime as its residue characteristic, with exponent one**.  Dividing
+  the valuation of a unit by the generator of the value group leaves the logarithm alone, so **the
+  reciprocal of a uniformiser has divided valuation one**.
 -/
