@@ -94,6 +94,7 @@ import InverseGalois.CFT.Brauer.Primary
 import InverseGalois.CFT.Brauer.QuadraticExt
 import InverseGalois.CFT.Brauer.Quaternion
 import InverseGalois.CFT.Brauer.RamificationIdentity
+import InverseGalois.CFT.Brauer.RadicalLevel
 import InverseGalois.CFT.Brauer.RatCount
 import InverseGalois.CFT.Brauer.RationalBrauer
 import InverseGalois.CFT.Brauer.RelativeCyclic
@@ -4203,4 +4204,10 @@ it that are available here.
   unity of an order prime to the residue characteristic agreeing on residues are equal, whence
   **the automorphism of the intermediate completion multiplies the radical by a root of unity
   prescribed in the completion of the base**.
+* `InverseGalois.CFT.Brauer.RadicalLevel` matches the radical presentation of a cyclic level with
+  the Kummer presentation.  The radical and the chosen root of its power differ by a root of unity
+  of the base, so an automorphism moves the two by the same root of unity, and **the discrete
+  logarithm of a level presented by a radical computes the Kummer character of the power of the
+  radical**.  That is the hypothesis under which the power residue symbol is the class of a cyclic
+  algebra, so a level offered in radical form can be fed to the symbol directly.
 -/
