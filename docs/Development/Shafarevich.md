@@ -7642,10 +7642,15 @@ cost of one is what makes the induction terminate.
    follows from the prime case only after the corrector is generalised to prescribe an invariant of
    order `p^k`, which needs `2p^k ∣ q − 1` and `ZMod (p^k)`-invertibility of `c` — the latter is
    again just `p ∤ c`, so the argument goes through with `ZMod N` a local ring rather than a field.
-   That is the cheapest generalisation and should be done before `N = 2`.
-3. **General number field `k`.**  Base change: `F₀ · k` is cyclic of degree `N` over `k` when
-   `k ∩ ℚ(ζ_q) = ℚ`, which holds for all but finitely many `q`.  The corrector construction is
-   unchanged; the density statement needs `SplitDensityPair` over `k` rather than over ℚ.
+   That is the cheapest generalisation and should be done before `N = 2`.  **The local half of it
+   is done, see §0.75.**
+3. **General number field `k`.**  Base change alone does *not* suffice: the ramified-place
+   computation needs the residue degree of the auxiliary place over the rational prime below it to
+   be prime to `N`, and over a general `k` that fails.  What is needed is the corestriction
+   `Cor : Br(k) → Br(ℚ)` compatible with the local invariants (or, equivalently, a Lubin–Tate
+   construction of the local invariant over an arbitrary local field).  The base-change remark that
+   `F₀ · k` is cyclic of degree `N` over `k` when `k ∩ ℚ(ζ_q) = ℚ` is still true and still useful,
+   but it is not by itself a proof.
 
 ### (d) Where this feeds
 
@@ -7653,6 +7658,70 @@ Reciprocity over ℚ is the last input to the **fundamental class / invariant ma
 field theory over ℚ, which is what row 5 (Poitou–Tate) and row 8 (the eight-term sequence) of the
 Schmidt–Wingberg tower consume.  It also completes the `Ш²` story of row 3 in the one degree where
 the local–global principle for the Brauer group is used directly.
+
+---
+
+## 0.75 Status (2026-09-01) — the local layer of reciprocity now runs at an arbitrary odd exponent
+
+Commit `94944fa`.  Build green, 9536 jobs, no warnings, no sorries, no axioms.
+
+### (a) The new abstraction
+
+`InverseGalois.CFT.IsRadicalExponent n` (in `CFT/Local/RadicalUnramified.lean`) says: for every
+field `F` and every `a : F`, `X ^ n - C a` is irreducible exactly when `a` is a power of no prime
+order dividing `n`.  Two proofs that it holds:
+
+* `isRadicalExponent_of_prime` — from `X_pow_sub_C_irreducible_iff_of_prime`;
+* `isRadicalExponent_of_odd` — from Mathlib's `X_pow_sub_C_irreducible_iff_forall_prime_of_odd`.
+
+Every place in the tame-symbol chain that used to demand a *prime* exponent now demands only
+`IsRadicalExponent`: `irreducible_X_pow_sub_C_residue`, `exists_divisionNorm_eq_of_radical_unit`,
+`card_gal_kummerLevel_eq_of_not_isPow`, `exists_divisionNorm_eq_kummerLevel`,
+`localKummerSymbol_uniformiser_eq_kummerChar`, `localSymbol_uniformiser_eq_kummerChar`,
+`localSymbol_uniformiser_eq_powerResidue`.  The "no hypothesis at all" theorem
+`localSymbol_uniformiser_eq_powerResidue_of_valued_eq_one` stays prime-gated on purpose: for
+composite `n` a unit can be an `ℓ`-th power without being an `n`-th power, and the case split in
+its proof collapses.
+
+### (b) The replacement interface: `CFT/Brauer/TameOdd.lean`
+
+Instead of "the power residue exponent of `b`", the symbol is now computed against a *single*
+reference unit `u` whose power residue value is a primitive `n`-th root of unity:
+
+* `not_isPow_of_valued_sub_pow_lt_one` — such a `u` is a power of no prime order dividing `n`
+  (a root of order `ℓ` would make `ζ ^ (n / ℓ) = 1`);
+* `localSymbol_uniformiser_eq_powerResidue_of_exponent_one` — its symbol against a uniformiser is
+  `−1/n`;
+* `localSymbol_uniformiser_eq_powerResidue_of_congr` — any `b` with `v(b − u^c) < 1` differs from
+  `u^c` by a unit congruent to `1`, which is an exact `n`-th power, so its symbol is `−c/n`;
+* `localSymbol_eq_powerResidue_of_congr`, `localSymbol_unit_eq_powerResidue_of_congr` — the two
+  remaining sign normalisations.
+
+`PlaceRamified`, `PlaceRamifiedAut` and `PlaceConductor` now take the congruence datum `(u, hu,
+hu1, hj)` rather than a power residue value, and
+`totalInvariant_cyclicBrauerHom_subcyclotomic{,_eq_one}` require only `Odd N`.
+
+### (c) What still gates arbitrary odd `N` at the global layer
+
+Two items, both in the *global* half:
+
+1. `mem_relative_of_forall_not_splitsCompletely` (`CFT/Brauer/SubcyclotomicSplit.lean`) turns
+   "`p` does not split completely in `F`" into "`N` divides the local degree" via
+   `prime_dvd_finrank_adicCompletion_of_not_splitsCompletely`, and that step is exactly where
+   primality is used: for cyclic `Gal(F/ℚ)` of order `N` a proper decomposition subgroup is only
+   excluded when `N` is prime.  For `N = ℓ^k` the right hypothesis is "`p` does not split
+   completely in the degree-`ℓ` subfield of `F`", i.e. "`p` is not an `ℓ`-th power residue mod
+   `q`" — the *same* density input the prime case already uses, so `SplitDensityPair` need not
+   change.  What is missing is the group-theoretic transport: the decomposition subgroup of a
+   cyclic group of order `ℓ^k` is everything as soon as its image in the quotient of order `ℓ` is
+   nontrivial.
+2. `exists_pow_ofAdd_intQModZ_eq` (`CFT/Brauer/SubcyclotomicCorrector.lean`) inverts `c` in
+   `ZMod N` as a field.  For `N = ℓ^k` replace `hc : ¬ (N : ℤ) ∣ c` by `IsUnit ((c : ZMod N))` and
+   `inv_mul_cancel₀` by `ZMod.inv_mul_of_unit`; `not_dvd_of_natCast_pow_ne_one` is then applied at
+   the exponent `ℓ` rather than at `N`.
+
+Composite `N` with several prime factors additionally needs simultaneous non-residuality for every
+prime divisor, which *is* a new density statement; the prime-power case does not.
 
 ---
 
