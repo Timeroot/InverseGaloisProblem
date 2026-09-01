@@ -81,6 +81,7 @@ import InverseGalois.CFT.Brauer.PlaceCrossedProduct
 import InverseGalois.CFT.Brauer.PlaceCyclic
 import InverseGalois.CFT.Brauer.PlaceInvariant
 import InverseGalois.CFT.Brauer.PlaceInvariantFinite
+import InverseGalois.CFT.Brauer.PlaceUnramified
 import InverseGalois.CFT.Brauer.Primary
 import InverseGalois.CFT.Brauer.QuadraticExt
 import InverseGalois.CFT.Brauer.Quaternion
@@ -4010,4 +4011,13 @@ it that are available here.
   automorphism**, and in particular **a cyclic algebra whose coefficient is a unit at an unramified
   place has trivial invariant there**, so only the places dividing the coefficient and the ramified
   places can contribute to the sum of the invariants over all places.
+* `InverseGalois.CFT.Brauer.PlaceUnramified` supplies the unramifiedness that computation asks for.
+  Every automorphism of the completion comes from the decomposition group, which acts by isometries,
+  so the norm of an element of the completion, being the product of its conjugates, has the value of
+  that element raised to the degree; when the ramification index is one that value is already the
+  value of a scalar, so **every absolute value of the completion at an unramified place is an
+  absolute value of a scalar**.  The Galois group of the completions is finite, so a generator has
+  the Frobenius automorphism among its powers, and therefore **a cyclic algebra whose coefficient is
+  a unit at a finite place unramified in the extension has trivial invariant at that place**, with
+  nothing left to supply.
 -/

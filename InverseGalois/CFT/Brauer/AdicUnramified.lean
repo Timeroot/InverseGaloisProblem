@@ -57,6 +57,13 @@ theorem valued_eq_of_norm_eq {a b : K} (h : ‖a‖ = ‖b‖) : Valued.v a = Va
   le_antisymm (Valued.toNormedField.norm_le_iff.1 h.le)
     (Valued.toNormedField.norm_le_iff.1 h.ge)
 
+omit [CompleteSpace K] in
+/-- Two elements of the same value have the same absolute value: the comparison map of a rank one
+valuation is monotone. -/
+theorem norm_eq_of_valued_eq {a b : K} (h : Valued.v a = Valued.v b) : ‖a‖ = ‖b‖ :=
+  le_antisymm (Valued.toNormedField.norm_le_iff.2 h.le)
+    (Valued.toNormedField.norm_le_iff.2 h.ge)
+
 /-! ### Unramifiedness in the two languages -/
 
 variable [Field L] [Algebra K L] [FiniteDimensional K L]
