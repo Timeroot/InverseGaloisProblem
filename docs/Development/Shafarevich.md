@@ -7051,6 +7051,122 @@ After that: the criterion producing `hram` from global unramifiedness, the Kumme
 
 ---
 
+## 0.69 Status (2026-09-01) — the local invariant from a global datum
+
+`CFT/Brauer/PlaceExponent.lean`, sorry- and axiom-free.  This is the brick §0.68(f) named: the
+invariant of a cyclic algebra at a finite place, expressed by the exponent of the *restricted*
+Frobenius rather than by the local one.  It is the last purely formal step before the count over
+places; from here on every remaining task is arithmetic input, not bookkeeping.
+
+### (a) The value of a unit at a place
+
+```lean
+placeValue (v : HeightOneSpectrum (𝓞 k)) (a : kˣ) : ℤ :=
+  unitValDiv (isUnitValGen_one (valued_adicCompletion_surjective v))
+    (Additive.ofMul (Units.map (algebraMap k (v.adicCompletion k)).toMonoidHom a))
+```
+
+The valuation of `a` in `k_v`, normalised so that a uniformiser has value `1`; the normalisation is
+free because `Valued.v : k_v → ℤᵐ⁰` is surjective, so `1` generates the value group
+(`isUnitValGen_one`).  `placeValue_eq_zero` records the case that matters for the count: a unit of
+the ring of integers of `k_v` has value `0`, proved by `ker_unitValDiv` (dividing by a generator does
+not change the kernel) together with `mem_ker_unitVal`.
+
+### (b) Restriction is the decomposition identification
+
+Two maps `(K_w ≃ₐ[k_v] K_w) → Gal(K/k)` are in play: `restrictToBase`, which restricts an
+automorphism of the completion along `K → K_w`, and `localDecompositionEquiv`, which identifies the
+Galois group of the completions with `Gal(K/Z_w)` for the decomposition field `Z_w`.  They agree:
+
+```lean
+restrictToBase_eq_restrictScalars_localDecompositionEquiv (τ) :
+    restrictToBase k w τ = (localDecompositionEquiv k w τ).restrictScalars k
+```
+
+Both sides are determined by their effect on the image of `K` in `K_w`, so the proof is
+`AlgEquiv.ext` composed with `FaithfulSMul.algebraMap_injective K K_w`, then
+`toAdicCompletion_restrictToBase` on one side and `algebraMap_localDecompositionEquiv` on the other.
+This is the statement that makes the hypothesis `hres` of `placeInvariant_cyclicBrauerHom` — which is
+phrased with `localDecompositionEquiv` — usable for `restrictToBase`.
+
+### (c) Index times local degree is the degree
+
+```lean
+index_mul_finrank_adicCompletion :
+    (stabilizer Gal(K/k) w).index * finrank k_v K_w = Nat.card Gal(K/k)
+```
+
+`finrank k_v K_w = Nat.card (K_w ≃ₐ[k_v] K_w)` by `IsGalois.card_aut_eq_finrank` (stated with
+`Nat.card`, not `Fintype.card`), then `localDecompositionEquiv` and `decompositionFieldEquiv`
+transport that to `Nat.card ↥(stabilizer Gal(K/k) w)`, and `Subgroup.index_mul_card` finishes.  Note
+that positivity of both factors then comes for free from `Nat.card_pos` and `Nat.mul_eq_zero`; there
+is no need to invoke `Module.finrank_pos` and its instance burden.
+
+### (d) The two exponents
+
+With `e := (stabilizer Gal(K/k) w).index`, `d := finrank k_v K_w`, `n := Nat.card Gal(K/k)`:
+
+```lean
+restrictToBase_divisionFrobenius_eq_pow (hres) (hur) (hs : divisionFrobenius k_v K_w hur = σ ^ s) :
+    restrictToBase k w (divisionFrobenius k_v K_w hur) = σ₀ ^ (e * s)
+```
+
+— `restrictToBase` is multiplicative because it is the underlying function of the monoid
+homomorphism `restrictToBaseHom`, so `rw [hs, ← restrictToBaseHom_apply, map_pow]` moves the power
+outside, and (b) plus `hres` turn `restrictToBase k w σ` into `σ₀ ^ e`.  Hence if the *global*
+exponent `c` is defined by `restrictToBase k w (divisionFrobenius …) = σ₀ ^ c`, then `σ₀ ^ (e·s) =
+σ₀ ^ c`, and since `orderOf σ₀ = n` (from `Subgroup.eq_top_iff'`, `Nat.card_zpowers` and
+`Subgroup.topEquiv`), `pow_eq_pow_iff_modEq` gives `e·s ≡ c [MOD n]`.
+
+### (e) The invariant
+
+```lean
+placeInvariant_cyclicBrauerHom_eq_intQModZ (hσ₀) (hσ) (hres) (hur) (hs) (hc) (a : kˣ) :
+    placeInvariant k (primeUnder (𝓞 k) w) (cyclicBrauerHom hσ₀ a)
+      = Multiplicative.ofAdd (intQModZ (Nat.card Gal(K/k))
+          ((c : ℤ) * placeValue (primeUnder (𝓞 k) w) a))
+```
+
+This is the classical `inv_v (K/k, σ₀, a) = c_v · v(a) / n`.  The proof rewrites with
+`placeInvariant_cyclicBrauerHom` (§0.67), `baseInvariant_apply`, `unitInvariant_apply` and
+`← ofAdd_nsmul` to reach `s • ⟦V/d⟧ = ⟦c·V/n⟧` in `QModZ`, and then discharges that by hand: with
+`c = e·s + n·t` and `n = e·d`,
+
+```
+s·V/d − c·V/n = s·V/d − (e·s·V)/(e·d) − t·V = −t·V ∈ ℤ.
+```
+
+### (f) Lean notes
+
+* `set x := … with h` does **not** capture occurrences created by *later* rewrites, so a proof that
+  first abbreviates and then rewrites ends up comparing `x` against its own unfolding.  The fix used
+  here is the opposite order: unfold the definition in the goal first (`rw [placeValue_def]`), keep
+  the arithmetic in a separate `private` lemma over plain integers, and let unification of that
+  lemma's variables do the abbreviating.
+* `QModZ` is an `abbrev` for `ℚ ⧸ AddSubgroup.zmultiples (1 : ℚ)`, so `QuotientAddGroup.mk`
+  elaborates at it directly, but `n • ⟦x⟧ = ⟦n • x⟧` is not `rfl`; a two-line induction with
+  `succ_nsmul` proves it (`nsmul_qModZ_mk`).
+* `Nat.ModEq.dvd : a ≡ b [MOD n] → (n : ℤ) ∣ (b : ℤ) - (a : ℤ)` produces `↑(e * s)`, so a `push_cast`
+  is needed before the hypothesis has the shape `(c : ℤ) - (e : ℤ) * (s : ℤ) = (n : ℤ) * t`.
+* `restrictToBaseHom` lives in `Units/CompletionCyclic.lean`, which is *not* transitively imported by
+  `Brauer/PlaceFrobenius.lean` nor by `Brauer/PlaceCyclic.lean`; the import is explicit.
+
+### (g) What is left for reciprocity
+
+Steps 1, 2 and the Frobenius half of step 3 of §0.66(d) are done, and the exponent translation is
+now done too.  Remaining:
+
+1. the criterion producing `hram : ramIdx (𝓞 k) w = 1` from global unramifiedness of `w` — the
+   definition already *is* that statement, so what is needed is the supply of it for the places of a
+   subfield of `ℚ(ζ_q)` away from `q`;
+2. the ramified place: the Kummer identification `L_w/ℚ_q = ℚ_q((−q)^{1/N})` combined with
+   `localSymbol_uniformiser_eq_powerResidue` (§0.66);
+3. the count: `totalInvariant k (cyclicBrauerHom hσ₀ a) = 1` for the auxiliary prime `q ≡ 1 mod n`
+   and cyclic `L ⊆ ℚ(ζ_q)` of degree `N ∣ q − 1`, together with triviality of the archimedean
+   invariants.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
