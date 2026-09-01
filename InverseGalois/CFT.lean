@@ -291,6 +291,7 @@ import InverseGalois.CFT.Local.AdicUnramified
 import InverseGalois.CFT.Local.ComplexHerbrand
 import InverseGalois.CFT.Local.CompleteNormIndex
 import InverseGalois.CFT.Local.CyclicNormIndex
+import InverseGalois.CFT.Local.CyclotomicUniformiser
 import InverseGalois.CFT.Local.DyadicAnisotropic
 import InverseGalois.CFT.Local.DyadicHilbert
 import InverseGalois.CFT.Local.DyadicHilbertMul
@@ -4105,4 +4106,11 @@ it that are available here.
   rationals at a place of a cyclotomic field away from the conductor is the exponent expressing that
   automorphism as a power of the chosen generator, times the value of the coefficient, divided by
   the degree**.
+* `InverseGalois.CFT.Local.CyclotomicUniformiser` describes the ramified place.  A prime of odd
+  order is the product of the partial geometric sums of a primitive root of unity of that order
+  times the corresponding power of the difference of the root and one, and each partial sum is
+  congruent to the number of its terms, so by Wilson's theorem **the power of exponent one less than
+  the prime of the difference of the root and one is the opposite of the prime, times a factor
+  congruent to one** — in particular **a primitive root of unity of prime order is congruent to
+  one** in any valued field of that residue characteristic.
 -/
