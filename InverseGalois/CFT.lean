@@ -89,6 +89,7 @@ import InverseGalois.CFT.Brauer.PlaceFrobenius
 import InverseGalois.CFT.Brauer.PlaceInvariant
 import InverseGalois.CFT.Brauer.PlaceInvariantFinite
 import InverseGalois.CFT.Brauer.PlaceRadical
+import InverseGalois.CFT.Brauer.PlaceRamified
 import InverseGalois.CFT.Brauer.PlaceTotallyRamified
 import InverseGalois.CFT.Brauer.PlaceUnramified
 import InverseGalois.CFT.Brauer.Primary
@@ -4163,7 +4164,9 @@ it that are available here.
   the valuation ring is the class, modulo the integers, of the opposite of the power residue
   exponent of the unit divided by the exponent**.  The symbol is multiplicative in the uniformiser,
   so for a uniformiser whose divided valuation is minus one — the normalisation an actual
-  uniformiser of a completion carries — the sign is the other one.
+  uniformiser of a completion carries — the sign is the other one, and the symbol is skew
+  symmetric, so **the tame norm residue symbol of a unit against such a uniformiser** is read off
+  the power residue exponent as well.
 * `InverseGalois.CFT.Local.RatUniformiser` supplies that local datum over the rationals.  The
   ramification index of a finite place of the rationals is at most the degree of the rationals over
   themselves and is positive, so **a finite place of the rationals is unramified over the rational
@@ -4225,4 +4228,10 @@ it that are available here.
   splitting field is presented by a radical is the inverse of the power residue symbol of its
   coefficient against the power of the radical**.  At a totally ramified place the local generator
   restricts to the global one, so no correcting power survives.
+* `InverseGalois.CFT.Brauer.PlaceRamified` evaluates that symbol.  The power of the radical has the
+  divided valuation of the inverse of a uniformiser, so the tame computation applies after a skew
+  symmetry, and its sign cancels against the sign of the inverse: **the invariant at a totally
+  ramified place of a cyclic algebra whose completed splitting field is presented by a radical, of
+  a coefficient which is a unit of the valuation ring, is the class modulo the integers of the
+  power residue exponent of the coefficient divided by the exponent**.
 -/

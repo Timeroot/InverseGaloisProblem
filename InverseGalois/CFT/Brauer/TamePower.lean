@@ -29,6 +29,11 @@ the power residue exponent.
 * `InverseGalois.CFT.localSymbol_uniformiser_eq_powerResidue_of_valued_eq_one`: **the tame norm
   residue symbol of a uniformiser against any unit of the valuation ring is the class, modulo the
   integers, of the opposite of the power residue exponent of the unit, divided by the exponent.**
+* `InverseGalois.CFT.localSymbol_eq_powerResidue_of_unitValDiv_eq_neg_one`: the same symbol for a
+  uniformiser normalised the other way, where the sign of the exponent disappears.
+* `InverseGalois.CFT.localSymbol_unit_eq_powerResidue_of_unitValDiv_eq_neg_one`: **the tame norm
+  residue symbol of a unit of the valuation ring against such a uniformiser**, obtained from the
+  skew symmetry of the symbol.
 
 ## Tags
 
@@ -156,6 +161,19 @@ theorem localSymbol_eq_powerResidue_of_unitValDiv_eq_neg_one (hres : HasResidueC
   have hmul : localSymbol hres hm hζ π b * localSymbol hres hm hζ π⁻¹ b = 1 := by
     rw [← MonoidHom.mul_apply, ← map_mul, mul_inv_cancel, map_one, MonoidHom.one_apply]
   rw [eq_inv_iff_mul_eq_one.2 hmul, hkey, map_neg, ofAdd_neg, inv_inv]
+
+/-- **The tame norm residue symbol of a unit of the valuation ring against a uniformiser** whose
+divided valuation is minus one: it is the class, modulo the integers, of the opposite of the power
+residue exponent of the unit, divided by the exponent.  The symbol is skew symmetric, so the two
+orders of the arguments differ by a sign. -/
+theorem localSymbol_unit_eq_powerResidue_of_unitValDiv_eq_neg_one (hres : HasResidueChar K p e)
+    (hm : IsUnitValGen K m) (hζ : IsPrimitiveRoot ζ n) (hn : n.Prime) (hpn : ¬ p ∣ n) {π : Kˣ}
+    (hπ : unitValDiv hm (Additive.ofMul π) = -1) {b : Kˣ} (hb : Valued.v (b : K) = 1) {j : ℕ}
+    (hj : Valued.v (ζ ^ j - (b : K) ^ ((Nat.card (DivisionResidue K K) - 1) / n)) < 1) :
+    localSymbol hres hm hζ b π = Multiplicative.ofAdd (zmodQModZ n (-(j : ZMod n))) := by
+  have hswap := localSymbol_mul_swap hres hm hζ π b
+  rw [localSymbol_eq_powerResidue_of_unitValDiv_eq_neg_one hres hm hζ hn hpn hπ hb hj] at hswap
+  rw [eq_inv_of_mul_eq_one_right hswap, map_neg, ofAdd_neg]
 
 end Root
 
