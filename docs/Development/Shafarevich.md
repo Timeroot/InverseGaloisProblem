@@ -6694,6 +6694,121 @@ Frobenius read in the residue field.
 
 ---
 
+## 0.66 Status (2026-09-01) — the tame symbol *is* the power residue symbol
+
+`CFT/Brauer/TameResidue.lean`, sorry- and axiom-free.  This is the brick that §0.65(e) asked for:
+the last local statement in the reciprocity chain, and the first one whose statement mentions
+neither a Frobenius, nor a Kummer character, nor the Kummer level.
+
+### (a) The statement
+
+```lean
+localSymbol_uniformiser_eq_powerResidue (hres : HasResidueChar K p e)
+    (hm : IsUnitValGen K m) (hζ : IsPrimitiveRoot ζ n) (hn : n.Prime) (hpn : ¬ p ∣ n) {π : Kˣ}
+    (hπ : unitValDiv hm (Additive.ofMul π) = 1) {b : Kˣ} (hb : Valued.v (b : K) = 1)
+    (hnp : ¬ ∃ c : Kˣ, c ^ n = b) {j : ℕ}
+    (hj : Valued.v (ζ ^ j - (b : K) ^ ((Nat.card (DivisionResidue K K) - 1) / n)) < 1) :
+    localSymbol hres hm hζ π b = Multiplicative.ofAdd (zmodQModZ n (-(j : ZMod n)))
+```
+
+Read `Q := Nat.card (DivisionResidue K K)` as the order of the residue field.  The hypothesis `hj`
+says exactly that `ζ^j ≡ b^((Q−1)/n)` in the residue field: this is Euler's criterion, and `j` is
+the exponent of the classical `n`-th power residue symbol `(b/𝔭)_n = ζ^j`.  So the theorem reads
+
+> `⟨π, b⟩ = ζ^{−j}` where `ζ^j = (b/𝔭)_n`,
+
+which is the textbook formula for the tame norm residue symbol, with the sign convention already
+fixed by §0.65(c).  Note the residue congruence is stated by a *valuation* inequality rather than
+in the residue field itself: `Valued.v (x − y) < 1` is the same thing as `x ≡ y` mod the maximal
+ideal, and it keeps the statement inside `K` where the rest of the file lives.
+
+### (b) The proof
+
+`localSymbol_uniformiser_eq_kummerChar` (§0.65(c)) already gives
+`⟨π, b⟩ = ofAdd (zmodQModZ n (−kummerChar h b g))` for **any** `g` whose restriction to the level
+`E = K(b^{1/n})` is a Frobenius.  So the whole content is to identify `kummerChar h b g` with `j`.
+That is a three-step computation on the Kummer generator `x := b^{1/n} ∈ E`:
+
+1. `x` is a unit of the division integers: `divisionNorm x ^ n = divisionNorm (x^n) =
+   divisionNorm (algebraMap b) = ‖b‖ = 1`, and a positive real with a nontrivial power equal to `1`
+   is `1` (`divisionNorm_eq_one_of_pow_eq_one`, factored out of the trichotomy block inside
+   `dvd_card_divisionResidue_sub_one_of_isPrimitiveRoot`).
+2. `g` acts on `x` by `ζ^{χ(g)}`, where `χ = kummerChar h b`: this is
+   `restrictNormalHom_kummerLevelGen`, the level-level form of
+   `smul_root_eq_kummerRootUnit_pow`.  Since `g|E` is a Frobenius, `g x ≡ x^Q`, and dividing by the
+   unit `x` gives `ζ^{χ(g)} ≡ x^{Q−1}` — this is `divisionNorm_sub_pow_card_sub_one_lt_one`,
+   stated for an arbitrary eigenvector `σ x = c · x`.
+3. `n ∣ Q − 1` because `ζ` is a primitive `n`-th root of unity in `K` and `n` is invertible
+   (`dvd_card_divisionResidue_sub_one_of_isPrimitiveRoot`, fed by `norm_natCast_of_not_dvd`), so
+   `x^{Q−1} = (x^n)^{(Q−1)/n} = b^{(Q−1)/n}` lands back in `K`.  Combining,
+   `ζ^{χ(g)} ≡ b^{(Q−1)/n} ≡ ζ^j`, and two `n`-th roots of unity congruent mod the maximal ideal
+   are equal (`eq_of_valued_sub_lt_one`), so `χ(g) ≡ j mod n`.
+
+Steps 1–3 are `valued_pow_kummerChar_sub_pow_lt_one` and
+`kummerChar_eq_of_valued_pow_sub_pow_lt_one`; the theorem of (a) is their composition with §0.65(c)
+and `exists_isDivisionFrobenius_restrictNormalHom`.
+
+### (c) Lean notes
+
+* `TameValue.lean` does **not** transitively import `Brauer/FrobeniusBaseChange.lean`,
+  `Local/PrimeResidue.lean` or `Local/RootOfUnityValued.lean`; a file built on top of it needs all
+  three explicitly (for `isDivisionFrobenius_iff`, `valued_residueChar_lt_one`,
+  `eq_of_valued_sub_lt_one` respectively).
+* Proving an equality in `↥E` from an equality of `Ω`-coercions: `SetLike.coe_eq_coe.mp` is much
+  more robust than `Subtype.ext` or `(algebraMap ↥E Ω).injective`.  The latter forces
+  `IntermediateField.algebraMap_apply` to fire twice with different instantiations, where it
+  collides with `IntermediateField.coe_algebraMap_apply` on the inner map.
+* `Valued.v.map_sub _ _ : v (x − y) ≤ max (v x) (v y)` takes the valuation as its *first explicit*
+  argument, so it is `Valued.v.map_sub _ _`, not `Valuation.map_sub _ _ _`.
+* To turn `ζ^a = ζ^b` into `a ≡ b mod n`: `IsOfFinOrder.pow_eq_pow_iff_modEq` (the bare
+  `pow_eq_pow_iff_modEq` is in a group section and does not apply to a field), with
+  `IsOfFinOrder ζ` from `isOfFinOrder_iff_pow_eq_one.2 ⟨n, _, hζ.pow_eq_one⟩`.  It produces
+  `[MOD orderOf ζ]`; rewrite `← hζ.eq_orderOf` in the *hypothesis*, never in the goal, since `n`
+  also occurs in the `ZMod n` of the conclusion.
+* The two roots-of-unity comparison went through `eq_of_valued_sub_lt_one`
+  (`Local/RootOfUnityValued.lean`) rather than the `divisionNorm` analogue
+  `eq_one_of_pow_eq_one_of_divisionNorm_sub_lt_one` at `D = K`, which avoids ever mentioning
+  `divisionNorm K K`.
+
+### (d) What is left for reciprocity
+
+The local side of the reciprocity computation is now **complete**: every ingredient of
+`inv_v(⟨a, b⟩)` at a tame place is a power residue symbol with an explicit exponent.  What remains
+is purely global, the assembly of §0.56(d):
+
+1. base change of a cyclic algebra `(L/k, σ₀, a)` to a completion `k_v` is the cyclic algebra
+   `(L_w/k_v, σ_v, a)` of the decomposition group, with the *same* `a`.  The intermediate-field
+   case is `baseChangeHom_cyclicBrauerHom` (`Brauer/CyclicBaseChange.lean`); the completion case
+   has to be routed through `decompositionFieldHom` / `localDecompositionEquiv`
+   (`Units/DecompositionGalois.lean`) and `baseChangeHom_mk_csa_adicCompletion`
+   (`Brauer/PlaceCrossedProduct.lean`).
+2. `placeInvariant k v (cyclicBrauerHom hσ₀ a) = c_v · v(a) / n` at an unramified `v`, where
+   `Frob_v = σ₀^{c_v}`, from `localInvariant_cyclicBrauerHom_pow`.
+3. the tame place, from `localSymbol_uniformiser_eq_powerResidue` above.
+4. `totalInvariant k (cyclicBrauerHom hσ₀ a) = 1` for the auxiliary prime `q ≡ 1 mod n` and the
+   cyclic `L ⊆ ℚ(ζ_q)` of degree `N ∣ q − 1`.
+
+Two arithmetic identities behind step 1 were checked by hand and should be recorded, because they
+are the reason the base change is coefficient-preserving.  With `n = m·d`, `L/k` cyclic of degree
+`n` with generator `σ₀`, and the decomposition subgroup at `v` generated by `σ₀^m` (so `d` is the
+local degree):
+
+* **carry cocycle.** `⌊(m·i + m·j)/n⌋ = ⌊(i + j)/d⌋` for `0 ≤ i, j < d`.  Hence the cyclic-algebra
+  cocycle of `(L/k, σ₀, a)` restricted to `⟨σ₀^m⟩` is *literally* the cyclic-algebra cocycle of
+  `(L_w/k_v, σ₀^m, a)`; the degree ratio disappears into the choice of generator.
+* **invariant normalisation.** `localInvariant = baseInvariant(a)^s` with
+  `divisionFrobenius = σ_v^s`; under `σ_v ↔ σ₀^m` and `d = n/m` this is
+  `s·v(a)/d = (m·s)·v(a)/n = c_v·v(a)/n`, which is the classical `inv_v((χ, a)) = χ(Frob_v)·v(a)`.
+
+Two shortcuts were **refuted** and should not be retried: reciprocity does not follow from
+`globalReciprocityEquiv` (`Units/GlobalTate.lean`), whose fundamental class is an `Exists.choose`
+and therefore not pinned to invariant `1/n`; and it does not follow from comparing indices, since
+the image of `H²(G, I_K)` in `H²(G, C_K)` is generated by `1/lcm_v(n_v)`, not `1/n` (§0.55).
+Nor does the elementary generator-by-generator argument of `CFT/Global/Reciprocity.lean` — which
+proves quadratic Hilbert reciprocity over `ℚ` from Mathlib's quadratic reciprocity — generalise to
+`n`-th powers, since the analogue of the input is Eisenstein reciprocity.
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
