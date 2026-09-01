@@ -6574,6 +6574,126 @@ assembly of §0.56(d): the auxiliary prime `q ≡ 1 mod n`, the cyclic `L ⊆ �
 
 ---
 
+## 0.65 Status (2026-09-01) — the *value* of the tame symbol
+
+`CFT/Brauer/TameValue.lean`, plus two lemmas added to `CFT/Brauer/CyclicGenerator.lean`.  Both
+sorry- and axiom-free; build 9491 jobs green, zero warnings.
+
+§0.64(b) computed the *kernel* of `⟨π, b⟩` by a counting argument that never touches a ramified
+computation.  The caveat of §0.56(d) — *"knowing the kernels of the local symbols does not pin the
+symbols themselves"* — is what this module removes: the symbol itself, not just its triviality.
+
+### (a) The level of a unit is unramified, as an equation on absolute values
+
+The counting argument of §0.64(b) used `mem_normSubgroup_of_radical_unit`, which needs
+unramifiedness only through the *norm* map.  The invariant map needs it through
+`localInvariantHom_apply_of_unramified`, whose hypothesis is the sharper
+
+```lean
+hur : ∀ z : L, z ≠ 0 → ∃ c : K, c ≠ 0 ∧ divisionNorm K L z = ‖c‖
+```
+
+— every absolute value of `L` is already an absolute value of `K`.  That is exactly what the
+Gauss-norm brick `exists_norm_eq_spectralNorm` produces from an irreducible residual minimal
+polynomial, so the proof of `exists_valued_of_radical_unit` (`CFT/Local/RadicalUnramified.lean`)
+transports verbatim:
+
+```lean
+exists_divisionNorm_eq_of_radical_unit (pb : PowerBasis K L) (hl : ℓ.Prime) (hpl : ¬ p ∣ ℓ)
+    (hc : Valued.v c = 1) (hmin : minpoly K pb.gen = X ^ ℓ - C c) (hres) (z) (hz : z ≠ 0) :
+    ∃ d : K, d ≠ 0 ∧ divisionNorm K L z = ‖d‖
+exists_divisionNorm_eq_kummerLevel (hn : n.Prime) (hpn : ¬ p ∣ n) (hres)
+    (hb : Valued.v (b : K) = 1) (hdn : Nat.card Gal(↥(kummerLevel h b)/K) = n) : …
+```
+
+the second feeding the first with the minimal polynomial `X ^ n - C b` of the chosen root
+(`minpoly_kummerLevelGen`), which is available exactly when the level has full degree — and that is
+`card_gal_kummerLevel_eq_of_not_isPow`, the degree dividing `n` (`card_gal_kummerLevel_dvd`) and a
+level of degree one belonging to a power.
+
+### (b) The symbol as an invariant, and the generator mismatch
+
+Composing `localKummerSymbol_apply`, `smoothLocalInvariantEquiv_apply`,
+`smoothBrauerHom_kummerSymbolUnits` (§0.59) and `localInvariantHom_apply_of_unramified` gives
+
+```lean
+localKummerSymbol_eq_inv_localInvariant … :
+    localKummerSymbol hres hm h (mulZMod n) a b
+      = (localInvariant K ↥(kummerLevel h b) hur hm ⟨cyclicBrauerHom hσ₀ a, _⟩)⁻¹
+```
+
+The inverse is the one already visible in `smoothBrauerHom_kummerSymbolUnits`.  The subtlety is
+that `cyclicBrauerHom hσ₀` is taken with respect to the generator `σ₀` supplied by
+`exists_generator_kummerLevel_index` — the one whose discrete logarithm *is* the Kummer character —
+whereas `localInvariant` is normalised by the **Frobenius** automorphism.  Rescaling is a power:
+
+```lean
+localInvariant_eq_brauerInvariant_pow (hs : divisionFrobenius K L hur = σ₀ ^ s) :
+    localInvariant K L hur hm y = brauerInvariant hσ₀ … hm y ^ s
+localInvariant_cyclicBrauerHom_pow (hs) (a : Kˣ) :
+    localInvariant K L hur hm ⟨cyclicBrauerHom hσ₀ a, _⟩ = baseInvariant hm (finrank K L) a ^ s
+```
+
+both immediate from `brauerInvariant_congr_apply` and `brauerInvariant_pow_generator`.
+
+### (c) `t = 1`, so the exponent is the Kummer character itself
+
+For a uniformiser `π` the base invariant is `1 / [E : K]`, so
+
+```lean
+localKummerSymbol_uniformiser_eq (hπ : unitValDiv hm (Additive.ofMul π) = 1)
+    (hs : divisionFrobenius K ↥(kummerLevel h b) hur = σ₀ ^ s) :
+    localKummerSymbol hres hm h (mulZMod n) π b
+      = Multiplicative.ofAdd (intQModZ (finrank K ↥(kummerLevel h b)) (-(s : ℤ)))
+```
+
+and what is left is to identify `s`.  This is where no residue-field computation is needed:
+`exists_generator_kummerLevel_index` returns a generator `σ₀`, an index `t` with
+`Nat.card Gal(E/K) * t = n`, and `(kummerChar h b g).val = t * (dlog σ₀ (restrict g)).val` for
+every `g`.  When `b` is not a power and `n` is prime the level has full degree `n` by (a), so
+`t = 1` and the discrete logarithm of the Frobenius automorphism *is* the Kummer character.
+`IsDivisionFrobenius` is a bare `Prop` — it takes no unramifiedness argument — so the hypothesis
+can be stated on the restriction of an arbitrary `g` and turned into `hs` by
+`eq_divisionFrobenius`:
+
+```lean
+localKummerSymbol_uniformiser_eq_kummerChar … (hb : Valued.v (b : K) = 1)
+    (hnp : ¬ ∃ c : Kˣ, c ^ n = b)
+    (hg : IsDivisionFrobenius (AlgEquiv.restrictNormalHom ↥(kummerLevel h b) g)) :
+    localKummerSymbol hres hm h (mulZMod n) π b
+      = Multiplicative.ofAdd (zmodQModZ n (-kummerChar h b g))
+localSymbol_uniformiser_eq_kummerChar … :
+    localSymbol hres hm hζ π b = Multiplicative.ofAdd (zmodQModZ n (-kummerChar h b g))
+```
+
+`zmodQModZ n` is injective, so this pins the symbol exactly, and
+`exists_isDivisionFrobenius_restrictNormalHom` says such a `g` exists (`levelPreimage`).  Together
+with §0.64(a) — the tame form moves every occurrence of the uniformiser into the first argument —
+**the tame norm residue symbol is now computed, not merely characterised by its kernel.**
+
+### (d) Lean notes
+
+* `localInvariantHom_apply_of_unramified hm hur _` with the relative class left implicit sends the
+  elaborator into a `whnf` timeout: it has to solve `↑?x =?= cyclicBrauerHom hσ₀ a` for a subtype
+  metavariable.  Supplying `⟨cyclicBrauerHom hσ₀ a, cyclicBrauerHom_mem_relative hσ₀ a⟩` explicitly
+  makes it instant.
+* `IsSmoothAction` is a `Prop`-valued class, so the section-level
+  `attribute [local instance] zmodTrivialAction isSmoothAction_zmod` and the `letI`/`haveI` pair
+  inside the body of `localSymbol` are definitionally interchangeable; the `Root` section can state
+  its theorem about `localSymbol` and prove it by `exact` on the `localKummerSymbol` form.
+* The arithmetic `((ofAdd (intQModZ d 1)) ^ s)⁻¹ = ofAdd (intQModZ d (-s))` is cleanest through the
+  additive hom: `← ofAdd_nsmul, ← ofAdd_neg, ← map_nsmul, ← map_neg` and then `nsmul_eq_mul` on `ℤ`.
+
+### (e) What is left for reciprocity
+
+Unchanged in shape, but the local input is now complete: the auxiliary prime `q ≡ 1 mod n`, the
+cyclic `L ⊆ ℚ(ζ_q)` of degree `N ∣ q − 1`, and `totalInvariant k = 1`.  The next local brick, if
+the global assembly wants it in classical form, is the residue identification
+`ζ^s ≡ b^((q−1)/n)` — *the tame symbol is the power residue symbol* — which is `kummerChar` at a
+Frobenius read in the residue field.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.

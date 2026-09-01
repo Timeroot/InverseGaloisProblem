@@ -35,6 +35,9 @@ is cohomologous to the cocycle of `g` with coefficient `a`, and the Brauer class
   raises the invariant to the `t`-th power.**
 * `InverseGalois.CFT.brauerInvariant_eq_localInvariant_pow`: **the invariant taken with respect to
   a power of the Frobenius automorphism is the corresponding power of the normalised invariant.**
+* `InverseGalois.CFT.localInvariant_cyclicBrauerHom_pow`: **the normalised invariant of the class
+  of a cyclic algebra taken with respect to an arbitrary generator** is the invariant of its
+  scalar, raised to the discrete logarithm of the Frobenius automorphism.
 
 ## Tags
 
@@ -220,6 +223,33 @@ theorem brauerInvariant_eq_localInvariant_pow
   refine (brauerInvariant_congr_apply hσ hσ₀ ht _ hm y).trans ?_
   exact brauerInvariant_pow_generator (forall_mem_zpowers_divisionFrobenius K L hur) ht
     (hasUnramifiedNormValues_of_divisionNorm hur) hm y
+
+/-- **The normalised invariant is the power, by the discrete logarithm of the Frobenius
+automorphism, of the invariant taken with respect to an arbitrary generator.** -/
+theorem localInvariant_eq_brauerInvariant_pow
+    (hur : ∀ z : L, z ≠ 0 → ∃ c : K, c ≠ 0 ∧ divisionNorm K L z = ‖c‖) (hm : IsUnitValGen K m)
+    (hσ₀ : ∀ x : Gal(L/K), x ∈ Subgroup.zpowers σ₀) {s : ℕ}
+    (hs : divisionFrobenius K L hur = σ₀ ^ s) (y : ↥(BrauerGroup.relative K L)) :
+    localInvariant K L hur hm y
+      = brauerInvariant hσ₀ (hasUnramifiedNormValues_of_divisionNorm hur) hm y ^ s := by
+  have hs' : ∀ x : Gal(L/K), x ∈ Subgroup.zpowers (σ₀ ^ s) := by
+    rw [← hs]
+    exact forall_mem_zpowers_divisionFrobenius K L hur
+  refine (brauerInvariant_congr_apply hs (forall_mem_zpowers_divisionFrobenius K L hur) hs'
+    (hasUnramifiedNormValues_of_divisionNorm hur) hm y).trans ?_
+  exact brauerInvariant_pow_generator hσ₀ hs' (hasUnramifiedNormValues_of_divisionNorm hur) hm y
+
+/-- **The normalised invariant of the class of a cyclic algebra taken with respect to an arbitrary
+generator** is the invariant of its scalar, raised to the discrete logarithm of the Frobenius
+automorphism. -/
+theorem localInvariant_cyclicBrauerHom_pow
+    (hur : ∀ z : L, z ≠ 0 → ∃ c : K, c ≠ 0 ∧ divisionNorm K L z = ‖c‖) (hm : IsUnitValGen K m)
+    (hσ₀ : ∀ x : Gal(L/K), x ∈ Subgroup.zpowers σ₀) {s : ℕ}
+    (hs : divisionFrobenius K L hur = σ₀ ^ s) (a : Kˣ) :
+    localInvariant K L hur hm ⟨cyclicBrauerHom hσ₀ a, cyclicBrauerHom_mem_relative hσ₀ a⟩
+      = baseInvariant hm (finrank K L) a ^ s := by
+  rw [localInvariant_eq_brauerInvariant_pow hur hm hσ₀ hs,
+    brauerInvariant_apply_cyclicBrauerHom hσ₀ (hasUnramifiedNormValues_of_divisionNorm hur) hm a]
 
 end Frobenius
 

@@ -71,6 +71,7 @@ import InverseGalois.CFT.Brauer.LocalSymbol
 import InverseGalois.CFT.Brauer.LocalSymbolUnits
 import InverseGalois.CFT.Brauer.TameEvaluation
 import InverseGalois.CFT.Brauer.TameSymbol
+import InverseGalois.CFT.Brauer.TameValue
 import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
 import InverseGalois.CFT.Brauer.Opposite
@@ -3973,4 +3974,15 @@ it that are available here.
   **the kernel of the norm residue symbol**: the symbol of two elements is trivial exactly when the
   unit of the valuation ring built from them and their values is a power, and the symbol of a
   uniformiser against a unit of the valuation ring which is not a power **has order the exponent.**
+* `InverseGalois.CFT.Brauer.TameValue` computes the value itself.  The level of a unit of the
+  valuation ring which is not a power of prime order is the radical extension by that unit, and the
+  reduction of the minimal polynomial of the chosen root stays irreducible, so **that level is
+  unramified**; the symbol of a uniformiser against the unit is therefore the inverse of the class
+  of a cyclic algebra over an unramified extension, whose invariant is the value of the uniformiser
+  divided by the degree once the invariant is taken with respect to the generator matching the
+  Kummer character.  Rescaling that generator to the Frobenius automorphism multiplies the invariant
+  by the discrete logarithm of the Frobenius automorphism, which is the value of the Kummer
+  character of the unit at any automorphism inducing it, so **the tame symbol of a uniformiser
+  against a unit of the valuation ring is the class, modulo the integers, of the opposite of the
+  Kummer character of that unit at a Frobenius automorphism, divided by the exponent.**
 -/
