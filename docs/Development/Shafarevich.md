@@ -5987,6 +5987,68 @@ declarations have axioms `[propext, Classical.choice, Quot.sound]`.
 
 ---
 
+## 0.59 Status (2026-09-01) — step 2: the bridge of §0.57(d) is built
+
+`CFT/Brauer/SymbolCyclicAlgebra.lean`, sorry- and axiom-free.  With §0.58 the symbol is the inverse
+of the class of the carry cocycle `kummerCyclicCocycle h a b`; what remains is that that cocycle is
+*inflated from a finite level*, which is a statement with no cohomology in it at all.
+
+### (a) The one hypothesis
+
+The carry cocycle reads only the Kummer character `β := kummerChar h b`.  The cyclic algebra
+cocycle of a level `E` reads only the discrete logarithm `dlog σ₀` of `Gal(E/k)`.  So the *only*
+thing the comparison needs is that the two carry conditions agree:
+
+```lean
+hcarry : ∀ g g',  (dlog σ₀ (g|E)).val + (dlog σ₀ (g'|E)).val < Nat.card Gal(E/k)
+                ↔ (β g).val + (β g').val < n
+```
+
+and then `inflateCocycle Ω (cyclicUnitCocycle σ₀ a) = kummerCyclicCocycle h a b` pointwise, by
+`if_pos`/`if_neg` and `IsScalarTower.algebraMap_apply` on the two branches.  Stating the hypothesis
+this way is deliberate: it is satisfied not only when `[E : k] = n` and `dlog σ₀ (g|E) = β g`
+(`carry_iff_of_dlog_eq`, a one-line `rw`), but also when `b` is a `d`-th power and the character
+lands in the subgroup of index `d`, where the level has degree `n / d` and the carries still match.
+
+### (b) The two conclusions
+
+Feeding the equality to `mk_csa_eq_smoothBrauer` at the level `E` gives
+
+```lean
+smoothBrauerHom (kummerSymbolUnits h (mulZMod n) a b) = (cyclicBrauerHom hσ₀ a)⁻¹
+```
+
+— the bridge named in §0.57(d).  Composing with `smoothBrauerHom_injective` and
+`mem_ker_cyclicBrauerHom_iff` turns it into the statement the downstream computations actually
+consume:
+
+```lean
+kummerSymbolUnits h (mulZMod n) a b = 1 ↔ ∃ c : Eˣ, Algebra.norm k (c : E) = (a : k)
+```
+
+**the power symbol is trivial exactly when its first argument is a norm from the level.**  This is
+what makes `localSymbol` computable: its kernel is now a norm group, and its *values* are local
+invariants of cyclic algebras, so `localInvariant_apply_cyclicBrauerHom` applies.
+
+### (c) What is still missing before `⟨−a, a⟩ = 1`
+
+Nothing cohomological: only the *construction* of the level.  Both theorems above take `E`, `σ₀`
+and `hcarry` as hypotheses, and the remaining Kummer-theory brick is to produce them from `b`
+alone:
+
+> `E := k⟮b^{1/n}⟯` is finite Galois with `Gal(E/k)` cyclic, the Kummer character descends to an
+> injective character of `Gal(E/k)`, and if the character is onto `ZMod n` then a preimage of `1`
+> generates and its discrete logarithm is the character.
+
+That is the next file.  With it, `N_{k(a^{1/n})/k}(a^{1/n}) = (−1)^{n−1} a` gives
+`⟨(−1)^{n−1} a, a⟩ = 1` directly from the norm criterion, and skew-symmetry follows by expanding
+`⟨(−1)^{n−1} ab, ab⟩ = 1`.
+
+Build: 9480 jobs green, zero warnings, zero sorries outside the comparator; all seven new
+declarations have axioms `[propext, Classical.choice, Quot.sound]`.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.

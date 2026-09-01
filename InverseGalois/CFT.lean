@@ -98,6 +98,7 @@ import InverseGalois.CFT.Brauer.SolvableBound
 import InverseGalois.CFT.Brauer.SolvableNormBound
 import InverseGalois.CFT.Brauer.Split
 import InverseGalois.CFT.Brauer.SplittingSubfield
+import InverseGalois.CFT.Brauer.SymbolCyclicAlgebra
 import InverseGalois.CFT.Brauer.TensorSimple
 import InverseGalois.CFT.Brauer.TotalInvariant
 import InverseGalois.CFT.Brauer.Tower
@@ -3821,6 +3822,13 @@ it that are available here.
   add without wrapping around and the first argument when they wrap.  Hence **the power symbol is
   the inverse of the class of the carry cocycle of its arguments**, which is the cocycle of a
   cyclic algebra.
+* `InverseGalois.CFT.Brauer.SymbolCyclicAlgebra` reads that off in the Brauer group.  The carry
+  cocycle depends only on the Kummer character of the second argument, so a finite cyclic Galois
+  level whose discrete logarithm to a chosen generator computes that character inflates its cyclic
+  algebra cocycle exactly to the carry cocycle; the class is therefore computed at the level, and
+  **the Brauer class of the power symbol is the inverse of the class of the cyclic algebra of its
+  first argument.**  A cyclic algebra splits exactly when its unit is a norm, so **the power symbol
+  is trivial exactly when its first argument is a norm from that level.**
 * `InverseGalois.CFT.Units.KummerDecomposition` reads that off over a number field.  A cocycle for
   a trivial action is a homomorphism, and a homomorphism killing a level and every decomposition
   subgroup is trivial, so the first cohomology with roots of unity as coefficients has no
