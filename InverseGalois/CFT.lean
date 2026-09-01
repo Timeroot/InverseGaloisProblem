@@ -26,6 +26,7 @@ import InverseGalois.CFT.Brauer.CyclicInvariant
 import InverseGalois.CFT.Brauer.CyclicNorm
 import InverseGalois.CFT.Brauer.CyclicNormResidue
 import InverseGalois.CFT.Brauer.CyclicTower
+import InverseGalois.CFT.Brauer.CyclicTransport
 import InverseGalois.CFT.Brauer.CyclotomicFrobenius
 import InverseGalois.CFT.Brauer.Division
 import InverseGalois.CFT.Brauer.DivisionAbsValue
@@ -291,6 +292,7 @@ import InverseGalois.CFT.Local.AdicUnramified
 import InverseGalois.CFT.Local.ComplexHerbrand
 import InverseGalois.CFT.Local.CompleteNormIndex
 import InverseGalois.CFT.Local.CyclicNormIndex
+import InverseGalois.CFT.Local.CyclotomicRadical
 import InverseGalois.CFT.Local.CyclotomicUniformiser
 import InverseGalois.CFT.Local.DyadicAnisotropic
 import InverseGalois.CFT.Local.DyadicHilbert
@@ -4113,4 +4115,16 @@ it that are available here.
   the prime of the difference of the root and one is the opposite of the prime, times a factor
   congruent to one** — in particular **a primitive root of unity of prime order is congruent to
   one** in any valued field of that residue characteristic.
+* `InverseGalois.CFT.Local.CyclotomicRadical` extracts the radical hidden at the ramified place.
+  Correcting the difference of a primitive root of unity of prime order and one by a unit congruent
+  to one produces **a root of the opposite of the prime of exponent one less than the prime**, and
+  such a root is congruent to the difference itself.  An automorphism of the field is then pinned
+  down on it by its effect on the root of unity: **an automorphism raising the root of unity to a
+  power multiplies the radical by the root of unity of order one less than the prime whose residue
+  is that power**.
+* `InverseGalois.CFT.Brauer.CyclicTransport` moves a cyclic algebra between splitting fields.  **An
+  isomorphism of two cyclic extensions of the base carrying one chosen generator of the Galois group
+  to the other leaves the Brauer class of the cyclic algebra unchanged**, because the cyclic algebra
+  of the first extension already contains a copy of the second in which the very same unit
+  implements the second generator.
 -/

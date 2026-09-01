@@ -7478,6 +7478,79 @@ identifying `w.adicCompletion F₀` with a subfield of `K(ζ_q)`.
 
 ---
 
+## 0.73 Status (2026-09-01) — bricks 1–3 of the ramified place, and the transport lemma
+
+Bricks (1), (2), (3) of §0.72(c) are done.  Two new modules landed:
+
+### (a) `CFT/Local/CyclotomicRadical.lean` — brick 3 (and the assembly of 1 + 2)
+
+For a complete valued field `A` of residue characteristic `q` (odd) containing a primitive `q`-th
+root of unity `ζ`:
+
+* `exists_pow_eq_neg_natCast` : `∃ μ, μ^(q-1) = −q ∧ v (μ/(ζ−1) − 1) < 1`.  This is brick (1)
+  (`exists_pow_sub_one_eq_neg_natCast_mul` from `Local/CyclotomicUniformiser.lean`) corrected by
+  brick (2) (`exists_mem_unitFiltration_zero_pow_eq` from `Local/UnitPowRoot.lean`, which was
+  already in the repo).  The extra conclusion — that `μ` is congruent to the uniformiser `ζ − 1` —
+  is what makes brick (3) go through, so it is carried along rather than discarded.
+* `pow_aut_div_eq_one` : `(σ μ / μ)^(q-1) = 1` for any ring automorphism `σ`, because `μ^(q-1)` is
+  a rational integer.
+* `valued_aut_div_sub_natCast_lt_one` : if `σ` preserves the valuation and `σ ζ = ζ^a`, then
+  `v (σ μ / μ − a) < 1`.  The proof splits `σ μ / μ` as `(1 + ζ + ⋯ + ζ^{a-1}) · (σ w / w)` with
+  `w := μ/(ζ−1)`, uses `valued_geomSum_sub_natCast_lt_one` on the first factor and `v (σ w/w − 1) < 1`
+  on the second.
+* `aut_eq_mul_of_pow_eq_one` : combining the two with `eq_of_valued_sub_lt_one`
+  (`Local/RootOfUnityValued.lean:141`), **`σ μ = η · μ` for the unique `(q−1)`-st root of unity `η`
+  whose residue is `a`** — i.e. `σ_a(μ) = ω(a)·μ`, the Teichmüller statement of brick (3).
+
+The module is stated for an abstract `Valued A ℤᵐ⁰` with `HasResidueChar A q e`, so it applies
+verbatim to `λ.adicCompletion ℚ(ζ_q)` once that is equipped with its `HasResidueChar` instance.
+
+### (b) `CFT/Brauer/CyclicTransport.lean` — moving a cyclic algebra between splitting fields
+
+`cyclicBrauerHom_congr` : given cyclic `L/K` and `L'/K` with chosen generators `σ₀`, `σ₀'` and an
+isomorphism `φ : L ≃ₐ[K] L'` with `φ ∘ σ₀ = σ₀' ∘ φ`, the two cyclic algebras have the same Brauer
+class.  The proof is `nonempty_algEquiv_cyclicAlgebra` applied to the copy of `L'` inside
+`cyclicAlgebra hσ₀ a` obtained by composing the tautological copy of `L` with `φ.symm`; the unit
+supplied by `exists_unit_cyclicAlgebra` implements `σ₀'` on that copy precisely because `φ`
+intertwines the generators.  The degree-`< 2` case is handled separately, exactly as in
+`Brauer/CyclicTower.lean`.
+
+This is needed because the two sides of the ramified computation live in different types:
+`baseChangeHom_cyclicBrauerHom_adicCompletion` produces the completion `w.adicCompletion F₀`, while
+`smoothBrauerHom_kummerSymbolUnits` wants an `IntermediateField ℚ_q Ω`.
+
+### (c) Two questions settled
+
+* **The composite-`N` worry is moot.**  `localSymbol_uniformiser_eq_powerResidue`
+  (`Brauer/TameResidue.lean:238`) carries `hn : n.Prime`, and §0.72(c) already notes that this is
+  harmless: in the Shafarevich application `N = ℓ` is prime.  So there is no need to generalise the
+  `TameValue.lean` chain to composite `n`, and no need to route the ramified place through the full
+  cyclotomic field to dodge the hypothesis.  Work directly at `F₀_w = ℚ_q(ν)` with `ν^N = −q`.
+* **How to identify `F₀_w` with a Kummer level, without building an isomorphism by hand.**  Pick
+  *any* `ℚ_q`-embedding `ψ : F₀_w →ₐ[ℚ_q] Ω` and set `E := ψ.fieldRange`.  Then `AlgEquiv.ofInjective`
+  supplies `F₀_w ≃ₐ[ℚ_q] ↥E` for free, and `E = kummerLevel h (−q)` because `h.root (−q)` and `ψ ν`
+  differ by a `N`-th root of unity, which already lies in `ℚ_q`.  This replaces the
+  Galois-correspondence bookkeeping of §0.72(c) step 4 by a one-line construction plus a
+  degree count.
+
+### (d) Brick 4: the chain that is left
+
+1. `λ.adicCompletion ℚ(ζ_q)` is a complete valued field of residue characteristic `q` containing a
+   primitive `ζ_q` — a `HasResidueChar` instance plus the image of `ζ_q`.
+2. §0.73(a) gives `μ` with `μ^{q-1} = −q` and `σ_a μ = ω(a)·μ`.
+3. `ν := μ^{(q-1)/N}` satisfies `ν^N = −q` and `σ_g ν = ζ_N·ν` with `ζ_N := ω(g)^{(q-1)/N}`
+   primitive.
+4. `F₀_w = ℚ_q(ν)`: `X^N + q` is Eisenstein at `q`, hence irreducible, so `[ℚ_q(ν):ℚ_q] = N`; the
+   local Galois group of `ℚ_q(ζ_q)/ℚ_q` is cyclic, so its subfield of degree `N` is unique, and both
+   `F₀_w` and `ℚ_q(ν)` are such a subfield.
+5. `E := ψ.fieldRange` for an embedding `ψ` as in §0.73(c); `E = kummerLevel h (−q)`; transport the
+   Brauer class along `cyclicBrauerHom_congr`.
+6. `hcarry` follows from step 3 through `carry_iff_of_dlog_eq`; then
+   `smoothBrauerHom_kummerSymbolUnits`, `localSymbol_mul_swap` (`Brauer/LocalSymbolUnits.lean:155`)
+   and `localSymbol_uniformiser_eq_powerResidue` (`Brauer/TameResidue.lean:238`) evaluate
+   `inv_q = ofAdd (−c/N)`.
+7. The arithmetic cancellation of §0.72(c) against `inv_p = ofAdd (c/N)` finishes `totalInvariant`.
+
 ---
 
 ## 3. What is reachable *without* class field theory
