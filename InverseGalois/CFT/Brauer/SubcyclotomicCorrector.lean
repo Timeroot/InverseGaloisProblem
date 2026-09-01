@@ -171,7 +171,7 @@ theorem exists_placeInvariant_eq_of_pow_ne_one {ℓ e : ℕ} (hℓ : ℓ.Prime) 
   -- The total invariant and the order.
   have htot : totalInvariant ℚ (cyclicBrauerHom hσ₀ a) = 1 :=
     totalInvariant_cyclicBrauerHom_subcyclotomic q (CyclotomicField q ℚ) ↥F hqodd
-      (isRadicalExponent_of_odd hNodd) hcard hinertia hg hgord hgen hqdvd a
+      hcard hinertia hg hgord hgen hqdvd a
   have hord : (cyclicBrauerHom hσ₀ a) ^ ℓ ^ e = 1 := by
     have h := pow_finrank_eq_one_of_mem_relative (L := ↥F) (cyclicBrauerHom hσ₀ a)
       (cyclicBrauerHom_mem_relative hσ₀ a)

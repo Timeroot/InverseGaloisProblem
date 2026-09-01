@@ -62,7 +62,6 @@ theorem placeInvariant_cyclicBrauerHom_of_radical_eq_powerResidue
     (hres : HasResidueChar ((primeUnder (𝓞 k) w).adicCompletion k) p e)
     (hinertia : Ideal.inertia Gal(K/k) w.asIdeal = ⊤)
     {ζ : (primeUnder (𝓞 k) w).adicCompletion k} (hζ : IsPrimitiveRoot ζ n)
-    (hn : IsRadicalExponent n)
     (hpn : ¬ p ∣ n) {σ₀ : Gal(K/k)} (hσ₀ : ∀ x : Gal(K/k), x ∈ Subgroup.zpowers σ₀)
     {σ : Gal(w.adicCompletion K/(primeUnder (𝓞 k) w).adicCompletion k)}
     (hσ : ∀ x : Gal(w.adicCompletion K/(primeUnder (𝓞 k) w).adicCompletion k),
@@ -90,7 +89,7 @@ theorem placeInvariant_cyclicBrauerHom_of_radical_eq_powerResidue
   have hsymbol := localSymbol_unit_eq_powerResidue_of_congr (π := b)
     (b := Units.map (algebraMap k ((primeUnder (𝓞 k) w).adicCompletion k)).toMonoidHom a)
     (u := Units.mk0 u hu0) (c := j)
-    hres (isUnitValGen_one (valued_adicCompletion_surjective (primeUnder (𝓞 k) w))) hζ hn hpn hb hu
+    hres (isUnitValGen_one (valued_adicCompletion_surjective (primeUnder (𝓞 k) w))) hζ hpn hb hu
     hu1 hj
   rw [placeInvariant_cyclicBrauerHom_of_radical_of_inertia_eq_top k w hres hinertia hζ hσ₀ hσ
       hrestr hcard hpow hact a, hsymbol, map_neg, ofAdd_neg, inv_inv]

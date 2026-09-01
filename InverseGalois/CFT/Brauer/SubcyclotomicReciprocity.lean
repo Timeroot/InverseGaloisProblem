@@ -118,7 +118,7 @@ invariant is minus the exponent expressing the automorphism raising the roots of
 of the coefficient as a power of the generator, and at the conductor the power residue symbol reads
 that same exponent with the opposite sign. -/
 theorem totalInvariant_cyclicBrauerHom_subcyclotomic_eq_one [hq : Fact q.Prime] (hodd : Odd q)
-    {N : ℕ} [NeZero N] (hrad : IsRadicalExponent N) (hcard : Nat.card Gal(F/ℚ) = N)
+    {N : ℕ} [NeZero N] (hcard : Nat.card Gal(F/ℚ) = N)
     (hinertia : ∀ (Q : Ideal (𝓞 F)) (_ : Q.IsPrime) (_ : Q.LiesOver (Ideal.span {(q : ℤ)})),
       Ideal.inertia Gal(F/ℚ) Q = ⊤)
     {g : ℕ} (hg : Nat.Coprime g q) (hgord : ∀ k : ℕ, q ∣ g ^ k - 1 → (q - 1) ∣ k)
@@ -138,7 +138,7 @@ theorem totalInvariant_cyclicBrauerHom_subcyclotomic_eq_one [hq : Fact q.Prime] 
   haveI := liesOver_span_of_natCast_mem hq.out (primeUnder (𝓞 F) Wq) hmemF
   have hinert : Ideal.inertia Gal(F/ℚ) (primeUnder (𝓞 F) Wq).asIdeal = ⊤ :=
     hinertia _ (primeUnder (𝓞 F) Wq).isPrime inferInstance
-  have hinvq := placeInvariant_cyclicBrauerHom_conductor q L F hq.out hodd Wq hrad hcard hinert hg
+  have hinvq := placeInvariant_cyclicBrauerHom_conductor q L F hq.out hodd Wq hcard hinert hg
     hgord hgen (dvd_sub_pow_of_cyclotomicPowerAut_eq_pow q L hg hpqc hc) (by rw [hap]; norm_cast)
   rw [primeUnder_eq_ratPlace hq.out (primeUnder (𝓞 F) Wq)] at hinvq
   have hNq : ∀ ℓ : ℕ, ℓ.Prime → ℓ ∣ q → ℓ = q := fun ℓ hℓ hd =>
@@ -160,7 +160,7 @@ vanishes.**  Minus one is a unit at every finite place, so only the conductor co
 the power residue symbol reads half the predecessor of the conductor, which is a multiple of the
 degree as soon as twice the degree divides that predecessor. -/
 theorem totalInvariant_cyclicBrauerHom_subcyclotomic_neg_one [hq : Fact q.Prime] (hodd : Odd q)
-    {N : ℕ} [NeZero N] (hrad : IsRadicalExponent N) (hcard : Nat.card Gal(F/ℚ) = N)
+    {N : ℕ} [NeZero N] (hcard : Nat.card Gal(F/ℚ) = N)
     (hinertia : ∀ (Q : Ideal (𝓞 F)) (_ : Q.IsPrime) (_ : Q.LiesOver (Ideal.span {(q : ℤ)})),
       Ideal.inertia Gal(F/ℚ) Q = ⊤)
     {g : ℕ} (hg : Nat.Coprime g q) (hgord : ∀ k : ℕ, q ∣ g ^ k - 1 → (q - 1) ∣ k)
@@ -176,7 +176,7 @@ theorem totalInvariant_cyclicBrauerHom_subcyclotomic_neg_one [hq : Fact q.Prime]
   haveI := liesOver_span_of_natCast_mem hq.out (primeUnder (𝓞 F) Wq) hmemF
   have hinert : Ideal.inertia Gal(F/ℚ) (primeUnder (𝓞 F) Wq).asIdeal = ⊤ :=
     hinertia _ (primeUnder (𝓞 F) Wq).isPrime inferInstance
-  have hinvq := placeInvariant_cyclicBrauerHom_conductor q L F hq.out hodd Wq hrad hcard hinert hg
+  have hinvq := placeInvariant_cyclicBrauerHom_conductor q L F hq.out hodd Wq hcard hinert hg
     hgord hgen (dvd_neg_one_sub_pow_half hq.out hodd hg hgord) (by rw [hap]; norm_num)
   rw [primeUnder_eq_ratPlace hq.out (primeUnder (𝓞 F) Wq)] at hinvq
   have hNq : ∀ ℓ : ℕ, ℓ.Prime → ℓ ∣ q → ℓ = q := fun ℓ hℓ hd =>
@@ -201,7 +201,7 @@ away from the conductor is the case already settled by the two-place cancellatio
 a norm from the splitting field so its algebra is trivial, and `-1` contributes only at the
 conductor, where the power residue symbol vanishes. -/
 theorem totalInvariant_cyclicBrauerHom_subcyclotomic [hq : Fact q.Prime] (hodd : Odd q) {N : ℕ}
-    [NeZero N] (hrad : IsRadicalExponent N) (hcard : Nat.card Gal(F/ℚ) = N)
+    [NeZero N] (hcard : Nat.card Gal(F/ℚ) = N)
     (hinertia : ∀ (Q : Ideal (𝓞 F)) (_ : Q.IsPrime) (_ : Q.LiesOver (Ideal.span {(q : ℤ)})),
       Ideal.inertia Gal(F/ℚ) Q = ⊤)
     {g : ℕ} (hg : Nat.Coprime g q) (hgord : ∀ k : ℕ, q ∣ g ^ k - 1 → (q - 1) ∣ k)
@@ -224,7 +224,7 @@ theorem totalInvariant_cyclicBrauerHom_subcyclotomic [hq : Fact q.Prime] (hodd :
   have hneg : ((totalInvariant ℚ).comp
       (cyclicBrauerHom (forall_mem_zpowers_restrictNormal (L := F) hgen))) (-1) = 1 := by
     rw [MonoidHom.comp_apply]
-    exact totalInvariant_cyclicBrauerHom_subcyclotomic_neg_one q L F hodd hrad hcard hinertia hg
+    exact totalInvariant_cyclicBrauerHom_subcyclotomic_neg_one q L F hodd hcard hinertia hg
       hgord hgen h2N (by rw [Units.val_neg, Units.val_one])
   have hprime : ∀ (p : ℕ) (u : ℚˣ), p.Prime → (u : ℚ) = (p : ℚ) →
       ((totalInvariant ℚ).comp
@@ -236,7 +236,7 @@ theorem totalInvariant_cyclicBrauerHom_subcyclotomic [hq : Fact q.Prime] (hodd :
     · refine hker _ ?_
       obtain ⟨b, hb⟩ := exists_units_norm_eq_conductor q L F hq2
       exact ⟨b, by rw [hb, hu, hpq]⟩
-    · exact totalInvariant_cyclicBrauerHom_subcyclotomic_eq_one q L F hodd hrad hcard hinertia hg
+    · exact totalInvariant_cyclicBrauerHom_subcyclotomic_eq_one q L F hodd hcard hinertia hg
         hgord hgen hpq hu
   exact eq_one_of_neg_one_of_prime ((totalInvariant ℚ).comp
     (cyclicBrauerHom (forall_mem_zpowers_restrictNormal (L := F) hgen))) hneg hprime a

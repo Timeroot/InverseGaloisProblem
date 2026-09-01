@@ -5,6 +5,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Mathlib
 import InverseGalois.CFT.Local.CyclicNormIndex
 import InverseGalois.CFT.Local.GaussNorm
+import InverseGalois.CFT.Local.KummerIrreducible
+import InverseGalois.CFT.Local.RootOfUnityValued
 import InverseGalois.CFT.Local.UnitRootPower
 import InverseGalois.CFT.Local.UnramifiedNormValue
 
@@ -30,9 +32,11 @@ unramified extension reads the value of a unit, which is trivial.
 
 * `InverseGalois.CFT.exists_pow_eq_of_residue_pow_eq`: **a unit which is a power modulo the maximal
   ideal is a power**, for an exponent prime to the residue characteristic.
-* `InverseGalois.CFT.IsRadicalExponent`: the exponents, among them the prime ones and the odd ones,
-  for which a radical polynomial is irreducible exactly when its constant term is not a power of
-  prime order dividing the exponent.
+* `InverseGalois.CFT.IsRadicalExponent`: the exponents, among them the prime ones, the odd ones and
+  the orders of roots of unity, for which a radical polynomial is irreducible exactly when its
+  constant term is not a power of prime order dividing the exponent.
+* `InverseGalois.CFT.isRadicalExponent_residueField`: **the order of a root of unity of a valued
+  field is such an exponent over the residue field.**
 * `InverseGalois.CFT.irreducible_X_pow_sub_C_residue`: **the reduction of the minimal polynomial of
   a root of such an order of a unit stays irreducible.**
 * `InverseGalois.CFT.exists_valued_of_radical_unit`: **a radical extension of prime degree by a unit
@@ -56,27 +60,67 @@ open scoped Valued WithZero
 
 section Exponent
 
-/-- **An exponent for which the difference of that power of the variable and a constant is
-irreducible exactly when the constant is not a power of prime order dividing the exponent.**  Both
-a prime exponent and an odd exponent have this property. -/
-def IsRadicalExponent (n : ℕ) : Prop :=
-  ∀ (F : Type) [Field F] (a : F),
-    Irreducible ((X : F[X]) ^ n - C a) ↔ ∀ ℓ : ℕ, ℓ.Prime → ℓ ∣ n → ∀ b : F, b ^ ℓ ≠ a
+/-- **An exponent for which, over a given field, the difference of that power of the variable and a
+constant is irreducible exactly when the constant is not a power of prime order dividing the
+exponent.**  A prime exponent, an odd exponent, and the order of a root of unity of the field all
+have this property. -/
+def IsRadicalExponent (n : ℕ) (F : Type*) [Field F] : Prop :=
+  ∀ a : F, Irreducible ((X : F[X]) ^ n - C a) ↔ ∀ ℓ : ℕ, ℓ.Prime → ℓ ∣ n → ∀ b : F, b ^ ℓ ≠ a
 
 /-- A prime exponent is an exponent of an irreducible radical polynomial, the only prime dividing
 it being itself. -/
-theorem isRadicalExponent_of_prime {n : ℕ} (hn : n.Prime) : IsRadicalExponent n := by
-  intro F _ a
+theorem isRadicalExponent_of_prime {n : ℕ} (hn : n.Prime) {F : Type*} [Field F] :
+    IsRadicalExponent n F := by
+  intro a
   rw [X_pow_sub_C_irreducible_iff_of_prime hn]
   exact ⟨fun hb ℓ hℓ hℓn => by rwa [(Nat.prime_dvd_prime_iff_eq hℓ hn).1 hℓn],
     fun hb => hb n hn dvd_rfl⟩
 
 /-- An odd exponent is an exponent of an irreducible radical polynomial. -/
-theorem isRadicalExponent_of_odd {n : ℕ} (hn : Odd n) : IsRadicalExponent n := by
-  intro F _ a
-  exact X_pow_sub_C_irreducible_iff_forall_prime_of_odd hn
+theorem isRadicalExponent_of_odd {n : ℕ} (hn : Odd n) {F : Type*} [Field F] :
+    IsRadicalExponent n F :=
+  fun _ => X_pow_sub_C_irreducible_iff_forall_prime_of_odd hn
+
+/-- The square of the quarter power of a root of unity whose order is a multiple of four is minus
+one, the quarter power being a root of unity of order four. -/
+theorem sq_pow_div_four_eq_neg_one {F : Type*} [Field F] {n : ℕ} (hn : n ≠ 0) {ζ : F}
+    (hζ : IsPrimitiveRoot ζ n) (h4 : 4 ∣ n) : (ζ ^ (n / 4)) ^ 2 = -1 :=
+  ((hζ.pow (Nat.pos_of_ne_zero hn) (Nat.div_mul_cancel h4).symm).pow (by norm_num)
+    (by norm_num)).eq_neg_one_of_two_right
+
+/-- **The order of a root of unity is an exponent of an irreducible radical polynomial**: a fourth
+power dividing the order comes with the square root of minus one given by the quarter power of that
+root of unity. -/
+theorem isRadicalExponent_of_isPrimitiveRoot {F : Type*} [Field F] {n : ℕ} (hn : n ≠ 0) {ζ : F}
+    (hζ : IsPrimitiveRoot ζ n) : IsRadicalExponent n F := fun _ =>
+  X_pow_sub_C_irreducible_iff_of_ne_zero hn fun h4 =>
+    ⟨ζ ^ (n / 4), sq_pow_div_four_eq_neg_one hn hζ h4⟩
 
 end Exponent
+
+/-! ### The residue field of a valued field with a root of unity -/
+
+section ResidueExponent
+
+open scoped Valued
+
+variable {K : Type} [Field K] [Valued K ℤᵐ⁰]
+
+/-- **The order of a root of unity of a valued field is an exponent of an irreducible radical
+polynomial over the residue field**: a root of unity is an integer of the valuation, so the
+reduction of the quarter power of the root of unity is a square root of minus one. -/
+theorem isRadicalExponent_residueField {n : ℕ} (hn : n ≠ 0) {ζ : K}
+    (hζ : IsPrimitiveRoot ζ n) : IsRadicalExponent n 𝓀[K] := by
+  refine fun _ => X_pow_sub_C_irreducible_iff_of_ne_zero hn fun h4 => ?_
+  have hmem : ζ ∈ 𝒪[K] := le_of_eq (valued_eq_one_of_pow_eq_one₀ hn hζ.pow_eq_one)
+  have hu : ((⟨ζ, hmem⟩ : ↥(𝒪[K])) ^ (n / 4)) ^ 2 = -1 := by
+    apply Subtype.ext
+    push_cast
+    exact sq_pow_div_four_eq_neg_one hn hζ h4
+  refine ⟨IsLocalRing.residue ↥(𝒪[K]) (⟨ζ, hmem⟩ ^ (n / 4)), ?_⟩
+  rw [← map_pow, hu, map_neg, map_one]
+
+end ResidueExponent
 
 /-! ### Units and the residue field -/
 
@@ -129,10 +173,10 @@ theorem exists_pow_eq_of_residue_pow_eq (hres : HasResidueChar K p e) {d : ℕ} 
 when the exponent is prime to the residue characteristic and the unit is not a power of any prime
 order dividing the exponent in the base field. -/
 theorem irreducible_X_pow_sub_C_residue (hres : HasResidueChar K p e) {n : ℕ}
-    (hn : IsRadicalExponent n) (hpn : ¬ p ∣ n) {c : ↥(𝒪[K])} (hc : Valued.v (c : K) = 1)
+    (hn : IsRadicalExponent n 𝓀[K]) (hpn : ¬ p ∣ n) {c : ↥(𝒪[K])} (hc : Valued.v (c : K) = 1)
     (hnp : ∀ ℓ : ℕ, ℓ.Prime → ℓ ∣ n → ∀ z : K, z ^ ℓ ≠ (c : K)) :
     Irreducible (X ^ n - C (IsLocalRing.residue ↥(𝒪[K]) c)) := by
-  refine (hn 𝓀[K] _).2 fun ℓ hl hln y hy => ?_
+  refine (hn _).2 fun ℓ hl hln y hy => ?_
   obtain ⟨z, hz⟩ := exists_pow_eq_of_residue_pow_eq hres hl.ne_zero
     (fun hd => hpn (hd.trans hln)) hc hy
   exact hnp ℓ hl hln z hz
@@ -165,7 +209,7 @@ theorem exists_valued_of_radical_unit (pb : PowerBasis K L) {ℓ : ℕ} (hl : �
     rw [hmin, Polynomial.map_sub, Polynomial.map_pow, Polynomial.map_X, Polynomial.map_C]
     rfl
   have hnp : ∀ k : ℕ, k.Prime → k ∣ ℓ → ∀ z : K, z ^ k ≠ c := by
-    refine (isRadicalExponent_of_prime hl K c).1 ?_
+    refine (isRadicalExponent_of_prime (F := K) hl c).1 ?_
     rw [← hmin]
     exact minpoly.irreducible (IsIntegral.of_finite K pb.gen)
   have hirr : Irreducible ((X ^ ℓ - C c₀).map (IsLocalRing.residue ↥(𝒪[K]))) := by

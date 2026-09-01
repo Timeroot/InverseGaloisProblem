@@ -102,7 +102,6 @@ theorem placeInvariant_cyclicBrauerHom_of_radical_aut
     (hres : HasResidueChar ((primeUnder (𝓞 k) w).adicCompletion k) p e)
     (hinertia : Ideal.inertia Gal(K/k) w.asIdeal = ⊤)
     {ζ : (primeUnder (𝓞 k) w).adicCompletion k} (hζ : IsPrimitiveRoot ζ n)
-    (hn : IsRadicalExponent n)
     (hpn : ¬ p ∣ n) {σ₀ : Gal(K/k)} (hσ₀ : ∀ x : Gal(K/k), x ∈ Subgroup.zpowers σ₀)
     (hst : σ₀ • w = w) (hcard : Nat.card Gal(K/k) = n)
     {b : ((primeUnder (𝓞 k) w).adicCompletion k)ˣ} {ν : w.adicCompletion K}
@@ -120,7 +119,7 @@ theorem placeInvariant_cyclicBrauerHom_of_radical_aut
     placeInvariant k (primeUnder (𝓞 k) w) (cyclicBrauerHom hσ₀ a)
       = Multiplicative.ofAdd (zmodQModZ n (j : ZMod n)) := by
   obtain ⟨σ, hσ, hrestr⟩ := exists_restrictScalars_eq_of_inertia_eq_top k w hinertia hσ₀
-  refine placeInvariant_cyclicBrauerHom_of_radical_eq_powerResidue k w hres hinertia hζ hn hpn hσ₀
+  refine placeInvariant_cyclicBrauerHom_of_radical_eq_powerResidue k w hres hinertia hζ hpn hσ₀
     hσ hrestr ?_ hpow ?_ hb hu hu1 hj
   · rw [natCard_aut_adicCompletion_of_inertia_eq_top k w hinertia, hcard]
   · rw [← adicCompletionAut_apply_eq_of_restrictScalars_eq k w hst hrestr ν]

@@ -70,7 +70,7 @@ the coefficient to the base of that primitive root, which is the exponent naming
 modulo the conductor. -/
 theorem placeInvariant_cyclicBrauerHom_conductor (hq : q.Prime) (hodd : Odd q)
     (W : HeightOneSpectrum (𝓞 L)) [W.asIdeal.LiesOver (Ideal.span {(q : ℤ)})] {N : ℕ}
-    [NeZero N] (hrad : IsRadicalExponent N) (hcard : Nat.card Gal(F/ℚ) = N)
+    [NeZero N] (hcard : Nat.card Gal(F/ℚ) = N)
     (hinertia : Ideal.inertia Gal(F/ℚ) (primeUnder (𝓞 F) W).asIdeal = ⊤) {g : ℕ}
     (hg : Nat.Coprime g q) (hgord : ∀ k : ℕ, q ∣ g ^ k - 1 → (q - 1) ∣ k)
     (hgen : ∀ x : Gal(L/ℚ), x ∈ Subgroup.zpowers (cyclotomicPowerAut q L hg)) {m : ℤ} {c : ℕ}
@@ -159,7 +159,7 @@ theorem placeInvariant_cyclicBrauerHom_conductor (hq : q.Prime) (hodd : Odd q)
   have hdiv : (q - 1) / N = Module.finrank F L :=
     Nat.div_eq_of_eq_mul_left (Nat.pos_of_ne_zero (NeZero.ne N)) hMN.symm
   refine placeInvariant_cyclicBrauerHom_of_radical_aut ℚ (primeUnder (𝓞 F) W) hres hinertia
-    hζprim hrad hqN (forall_mem_zpowers_restrictNormal (L := F) hgen)
+    hζprim hqN (forall_mem_zpowers_restrictNormal (L := F) hgen)
     hst hcard hpow hact hb
     (u := ((g : ℕ) : (primeUnder (𝓞 ℚ) (primeUnder (𝓞 F) W)).adicCompletion ℚ)) ?_ ?_ ?_
   · exact valued_natCast_eq_one_of_not_dvd hq (valued_residueChar_lt_one hres) hgnd

@@ -63,7 +63,8 @@ variable {K L : Type} [Field K] [Valued K ℤᵐ⁰]
 the reduction of the minimal polynomial of the generator staying irreducible when the residue
 characteristic does not divide the degree. -/
 theorem exists_divisionNorm_eq_of_radical_unit (pb : PowerBasis K L) {n : ℕ}
-    (hn : IsRadicalExponent n) (hn0 : n ≠ 0) (hpn : ¬ p ∣ n) {c : K} (hc : Valued.v c = 1)
+    (hn : IsRadicalExponent n K) (hnk : IsRadicalExponent n 𝓀[K]) (hn0 : n ≠ 0) (hpn : ¬ p ∣ n)
+    {c : K} (hc : Valued.v c = 1)
     (hmin : minpoly K pb.gen = X ^ n - C c) (hres : HasResidueChar K p e) (z : L) (hz : z ≠ 0) :
     ∃ d : K, d ≠ 0 ∧ divisionNorm K L z = ‖d‖ := by
   have hcmem : c ∈ 𝒪[K] := le_of_eq hc
@@ -74,12 +75,12 @@ theorem exists_divisionNorm_eq_of_radical_unit (pb : PowerBasis K L) {n : ℕ}
     rw [hmin, Polynomial.map_sub, Polynomial.map_pow, Polynomial.map_X, Polynomial.map_C]
     rfl
   have hnp : ∀ ℓ : ℕ, ℓ.Prime → ℓ ∣ n → ∀ y : K, y ^ ℓ ≠ c := by
-    refine (hn K c).1 ?_
+    refine (hn c).1 ?_
     rw [← hmin]
     exact minpoly.irreducible (IsIntegral.of_finite K pb.gen)
   have hirr : Irreducible ((X ^ n - C c₀).map (IsLocalRing.residue ↥(𝒪[K]))) := by
     rw [Polynomial.map_sub, Polynomial.map_pow, Polynomial.map_X, Polynomial.map_C]
-    exact irreducible_X_pow_sub_C_residue hres hn hpn hcval hnp
+    exact irreducible_X_pow_sub_C_residue hres hnk hpn hcval hnp
   obtain ⟨d, hd0, hd⟩ := exists_norm_eq_spectralNorm pb hF hFmin hirr z hz
   exact ⟨d, hd0, by rw [divisionNorm_eq_spectralNorm, hd]⟩
 
@@ -151,7 +152,7 @@ attribute [local instance] finiteDimensional_kummerLevel isGalois_kummerLevel
 
 /-- **The level of a unit of the valuation ring of full degree is unramified**: it is the radical
 extension by that unit, so every absolute value of it is the absolute value of a scalar. -/
-theorem exists_divisionNorm_eq_kummerLevel (hn : IsRadicalExponent n) (hpn : ¬ p ∣ n)
+theorem exists_divisionNorm_eq_kummerLevel (hpn : ¬ p ∣ n)
     (hres : HasResidueChar K p e) {b : Kˣ} (hb : Valued.v (b : K) = 1)
     (hdn : Nat.card Gal(↥(kummerLevel h b)/K) = n) (z : ↥(kummerLevel h b)) (hz : z ≠ 0) :
     ∃ d : K, d ≠ 0 ∧ divisionNorm K ↥(kummerLevel h b) z = ‖d‖ := by
@@ -165,8 +166,9 @@ theorem exists_divisionNorm_eq_kummerLevel (hn : IsRadicalExponent n) (hpn : ¬ 
     rw [hc, hbn, hdn]
   have hmin : minpoly K (kummerLevelPowerBasis h b).gen = X ^ n - C (b : K) := by
     rw [kummerLevelPowerBasis_gen, minpoly_kummerLevelGen h b hc, hcb, hdn]
-  exact exists_divisionNorm_eq_of_radical_unit (kummerLevelPowerBasis h b) hn (NeZero.ne n) hpn hb
-    hmin hres z hz
+  exact exists_divisionNorm_eq_of_radical_unit (kummerLevelPowerBasis h b)
+    (isRadicalExponent_of_isPrimitiveRoot (NeZero.ne n) hζ)
+    (isRadicalExponent_residueField (NeZero.ne n) hζ) (NeZero.ne n) hpn hb hmin hres z hz
 
 end Level
 
@@ -270,7 +272,7 @@ ring which is not a power**: it is the class, modulo the integers, of the opposi
 character of the unit at any automorphism inducing the Frobenius automorphism of the level of the
 unit, divided by the exponent. -/
 theorem localKummerSymbol_uniformiser_eq_kummerChar (hres : HasResidueChar K p e)
-    (hm : IsUnitValGen K m) (hn : IsRadicalExponent n) (hpn : ¬ p ∣ n) {π : Kˣ}
+    (hm : IsUnitValGen K m) (hpn : ¬ p ∣ n) {π : Kˣ}
     (hπ : unitValDiv hm (Additive.ofMul π) = 1) {b : Kˣ} (hb : Valued.v (b : K) = 1)
     (hnp : ∀ ℓ : ℕ, ℓ.Prime → ℓ ∣ n → ¬ ∃ c : Kˣ, c ^ ℓ = b) {g : Gal(AlgebraicClosure K/K)}
     (hg : IsDivisionFrobenius (AlgEquiv.restrictNormalHom ↥(kummerLevel h b) g)) :
@@ -280,7 +282,7 @@ theorem localKummerSymbol_uniformiser_eq_kummerChar (hres : HasResidueChar K p e
     card_gal_kummerLevel_eq_of_not_isPow h hnp
   have hur : ∀ z : ↥(kummerLevel h b), z ≠ 0 →
       ∃ d : K, d ≠ 0 ∧ divisionNorm K ↥(kummerLevel h b) z = ‖d‖ :=
-    exists_divisionNorm_eq_kummerLevel h hn hpn hres hb hdn
+    exists_divisionNorm_eq_kummerLevel h hpn hres hb hdn
   obtain ⟨σ₀, t, hgen, htpos, hmt, hval⟩ := exists_generator_kummerLevel_index h b
   have ht1 : t = 1 := by
     rw [hdn] at hmt
@@ -320,7 +322,7 @@ ring which is not a power**: it is the class, modulo the integers, of the opposi
 character of the unit at any automorphism inducing the Frobenius automorphism of the level of the
 unit, divided by the exponent. -/
 theorem localSymbol_uniformiser_eq_kummerChar (hres : HasResidueChar K p e)
-    (hm : IsUnitValGen K m) (hζ : IsPrimitiveRoot ζ n) (hn : IsRadicalExponent n) (hpn : ¬ p ∣ n)
+    (hm : IsUnitValGen K m) (hζ : IsPrimitiveRoot ζ n) (hpn : ¬ p ∣ n)
     {π : Kˣ} (hπ : unitValDiv hm (Additive.ofMul π) = 1) {b : Kˣ} (hb : Valued.v (b : K) = 1)
     (hnp : ∀ ℓ : ℕ, ℓ.Prime → ℓ ∣ n → ¬ ∃ c : Kˣ, c ^ ℓ = b) {g : Gal(AlgebraicClosure K/K)}
     (hg : IsDivisionFrobenius (AlgEquiv.restrictNormalHom
@@ -329,7 +331,7 @@ theorem localSymbol_uniformiser_eq_kummerChar (hres : HasResidueChar K p e)
       = Multiplicative.ofAdd (zmodQModZ n
           (-kummerChar (isKummerData_zmod (Ω := AlgebraicClosure K) hζ exists_units_pow_eq) b g)) :=
   localKummerSymbol_uniformiser_eq_kummerChar
-    (isKummerData_zmod (Ω := AlgebraicClosure K) hζ exists_units_pow_eq) hres hm hn hpn hπ hb hnp hg
+    (isKummerData_zmod (Ω := AlgebraicClosure K) hζ exists_units_pow_eq) hres hm hpn hπ hb hnp hg
 
 end Root
 

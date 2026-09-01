@@ -341,6 +341,7 @@ import InverseGalois.CFT.Local.InfiniteFamily
 import InverseGalois.CFT.Local.InfiniteHerbrand
 import InverseGalois.CFT.Local.InfiniteNormIndex
 import InverseGalois.CFT.Local.InfinitePowIndex
+import InverseGalois.CFT.Local.KummerIrreducible
 import InverseGalois.CFT.Local.KummerNonNorm
 import InverseGalois.CFT.Local.LegendreHilbert
 import InverseGalois.CFT.Local.NormIndex
@@ -4006,6 +4007,13 @@ it that are available here.
   the spectral norm**, so every value it takes is already the absolute value of a scalar and
   therefore **a generator whose minimal polynomial stays irreducible modulo the maximal ideal
   generates an unramified extension of local fields.**
+* `InverseGalois.CFT.Local.KummerIrreducible` removes the parity restriction from the criterion for
+  a radical polynomial to be irreducible.  Splitting a prime factor off the exponent, the norm of a
+  root of the radical of the complementary exponent is a power of the constant term up to the sign
+  of the parity of that factor, and over a field with a square root of minus one an opposite is a
+  power exactly when the element is; so **the difference of a power of the variable and a constant
+  is irreducible as soon as the constant is not a power of any prime order dividing the exponent**,
+  for every nonzero exponent whose multiples of four come with a square root of minus one.
 * `InverseGalois.CFT.Local.RadicalUnramified` applies that criterion to a radical extension.  A unit
   which becomes a power of an exponent prime to the residue characteristic modulo the maximal ideal
   is already a power, because a unit congruent to one is a power with that exponent; so for a prime

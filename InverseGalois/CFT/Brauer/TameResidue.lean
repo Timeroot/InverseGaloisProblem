@@ -236,7 +236,7 @@ the opposite of an exponent whose power of the chosen root of unity is congruent
 the unit by the quotient of one less than the number of residues by the exponent, divided by the
 exponent. -/
 theorem localSymbol_uniformiser_eq_powerResidue (hres : HasResidueChar K p e)
-    (hm : IsUnitValGen K m) (hζ : IsPrimitiveRoot ζ n) (hn : IsRadicalExponent n) (hpn : ¬ p ∣ n)
+    (hm : IsUnitValGen K m) (hζ : IsPrimitiveRoot ζ n) (hpn : ¬ p ∣ n)
     {π : Kˣ} (hπ : unitValDiv hm (Additive.ofMul π) = 1) {b : Kˣ} (hb : Valued.v (b : K) = 1)
     (hnp : ∀ ℓ : ℕ, ℓ.Prime → ℓ ∣ n → ¬ ∃ c : Kˣ, c ^ ℓ = b) {j : ℕ}
     (hj : Valued.v (ζ ^ j - (b : K) ^ ((Nat.card (DivisionResidue K K) - 1) / n)) < 1) :
@@ -244,9 +244,9 @@ theorem localSymbol_uniformiser_eq_powerResidue (hres : HasResidueChar K p e)
   obtain ⟨g, hg⟩ :=
     exists_isDivisionFrobenius_restrictNormalHom
       (isKummerData_zmod (Ω := AlgebraicClosure K) hζ exists_units_pow_eq)
-      (exists_divisionNorm_eq_kummerLevel _ hn hpn hres hb
+      (exists_divisionNorm_eq_kummerLevel _ hpn hres hb
         (card_gal_kummerLevel_eq_of_not_isPow _ hnp))
-  rw [localSymbol_uniformiser_eq_kummerChar hres hm hζ hn hpn hπ hb hnp hg,
+  rw [localSymbol_uniformiser_eq_kummerChar hres hm hζ hpn hπ hb hnp hg,
     kummerChar_eq_of_valued_pow_sub_pow_lt_one _ hres hpn hb hg hj]
 
 end Root

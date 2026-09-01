@@ -112,11 +112,11 @@ theorem not_isPow_of_valued_sub_pow_lt_one (hres : HasResidueChar K p e)
 is the class, modulo the integers, of minus the reciprocal of the exponent.  Such a unit is not a
 power of any prime order dividing the exponent, so the symbol reads its power residue exponent. -/
 theorem localSymbol_uniformiser_eq_powerResidue_of_exponent_one (hres : HasResidueChar K p e)
-    (hm : IsUnitValGen K m) (hζ : IsPrimitiveRoot ζ n) (hn : IsRadicalExponent n) (hpn : ¬ p ∣ n)
+    (hm : IsUnitValGen K m) (hζ : IsPrimitiveRoot ζ n) (hpn : ¬ p ∣ n)
     {π : Kˣ} (hπ : unitValDiv hm (Additive.ofMul π) = 1) {u : Kˣ} (hu : Valued.v (u : K) = 1)
     (hu1 : Valued.v (ζ - (u : K) ^ ((Nat.card (DivisionResidue K K) - 1) / n)) < 1) :
     localSymbol hres hm hζ π u = Multiplicative.ofAdd (zmodQModZ n (-(1 : ZMod n))) := by
-  have hkey := localSymbol_uniformiser_eq_powerResidue hres hm hζ hn hpn hπ hu
+  have hkey := localSymbol_uniformiser_eq_powerResidue hres hm hζ hpn hπ hu
     (fun ℓ hl hln => not_isPow_of_valued_sub_pow_lt_one hres hζ hpn hu hu1 hl hln) (j := 1)
     (by rwa [pow_one])
   rwa [Nat.cast_one] at hkey
@@ -128,7 +128,7 @@ of power residue exponent one** is the class, modulo the integers, of the opposi
 divided by the exponent.  The quotient of the two is congruent to one, hence an exact power, and
 the symbol against an exact power is trivial. -/
 theorem localSymbol_uniformiser_eq_powerResidue_of_congr (hres : HasResidueChar K p e)
-    (hm : IsUnitValGen K m) (hζ : IsPrimitiveRoot ζ n) (hn : IsRadicalExponent n) (hpn : ¬ p ∣ n)
+    (hm : IsUnitValGen K m) (hζ : IsPrimitiveRoot ζ n) (hpn : ¬ p ∣ n)
     {π : Kˣ} (hπ : unitValDiv hm (Additive.ofMul π) = 1) {u : Kˣ} (hu : Valued.v (u : K) = 1)
     (hu1 : Valued.v (ζ - (u : K) ^ ((Nat.card (DivisionResidue K K) - 1) / n)) < 1) {b : Kˣ}
     {c : ℕ} (hbc : Valued.v ((b : K) - (u : K) ^ c) < 1) :
@@ -155,7 +155,7 @@ theorem localSymbol_uniformiser_eq_powerResidue_of_congr (hres : HasResidueChar 
   have hbw : b = u ^ c * (b * (u ^ c)⁻¹) := by
     rw [mul_comm b ((u ^ c)⁻¹), ← mul_assoc, mul_inv_cancel, one_mul]
   rw [hbw, map_mul, localSymbol_eq_one_of_isPow_right hres hm hζ π ⟨y, hy⟩, mul_one, map_pow,
-    localSymbol_uniformiser_eq_powerResidue_of_exponent_one hres hm hζ hn hpn hπ hu hu1,
+    localSymbol_uniformiser_eq_powerResidue_of_exponent_one hres hm hζ hpn hπ hu hu1,
     ← ofAdd_nsmul, ← map_nsmul, nsmul_eq_mul, mul_neg_one]
 
 /-- **The tame norm residue symbol of a uniformiser against a unit congruent to a power of a unit
@@ -163,7 +163,7 @@ of power residue exponent one**, for a uniformiser normalised so that its divide
 minus one: the sign of the exponent then disappears.  The reciprocal of such a uniformiser has
 divided valuation one, and the symbol is multiplicative. -/
 theorem localSymbol_eq_powerResidue_of_congr (hres : HasResidueChar K p e) (hm : IsUnitValGen K m)
-    (hζ : IsPrimitiveRoot ζ n) (hn : IsRadicalExponent n) (hpn : ¬ p ∣ n) {π : Kˣ}
+    (hζ : IsPrimitiveRoot ζ n) (hpn : ¬ p ∣ n) {π : Kˣ}
     (hπ : unitValDiv hm (Additive.ofMul π) = -1) {u : Kˣ} (hu : Valued.v (u : K) = 1)
     (hu1 : Valued.v (ζ - (u : K) ^ ((Nat.card (DivisionResidue K K) - 1) / n)) < 1) {b : Kˣ}
     {c : ℕ} (hbc : Valued.v ((b : K) - (u : K) ^ c) < 1) :
@@ -172,7 +172,7 @@ theorem localSymbol_eq_powerResidue_of_congr (hres : HasResidueChar K p e) (hm :
     have hneg : Additive.ofMul π⁻¹ = -(Additive.ofMul π) := rfl
     rw [hneg, map_neg, hπ, neg_neg]
   have hkey :=
-    localSymbol_uniformiser_eq_powerResidue_of_congr hres hm hζ hn hpn hinv hu hu1 hbc
+    localSymbol_uniformiser_eq_powerResidue_of_congr hres hm hζ hpn hinv hu hu1 hbc
   have hmul : localSymbol hres hm hζ π b * localSymbol hres hm hζ π⁻¹ b = 1 := by
     rw [← MonoidHom.mul_apply, ← map_mul, mul_inv_cancel, map_one, MonoidHom.one_apply]
   rw [eq_inv_iff_mul_eq_one.2 hmul, hkey, map_neg, ofAdd_neg, inv_inv]
@@ -182,13 +182,13 @@ exponent one against a uniformiser** whose divided valuation is minus one: it is
 the integers, of the opposite of that power, divided by the exponent.  The symbol is skew
 symmetric, so the two orders of the arguments differ by a sign. -/
 theorem localSymbol_unit_eq_powerResidue_of_congr (hres : HasResidueChar K p e)
-    (hm : IsUnitValGen K m) (hζ : IsPrimitiveRoot ζ n) (hn : IsRadicalExponent n) (hpn : ¬ p ∣ n)
+    (hm : IsUnitValGen K m) (hζ : IsPrimitiveRoot ζ n) (hpn : ¬ p ∣ n)
     {π : Kˣ} (hπ : unitValDiv hm (Additive.ofMul π) = -1) {u : Kˣ} (hu : Valued.v (u : K) = 1)
     (hu1 : Valued.v (ζ - (u : K) ^ ((Nat.card (DivisionResidue K K) - 1) / n)) < 1) {b : Kˣ}
     {c : ℕ} (hbc : Valued.v ((b : K) - (u : K) ^ c) < 1) :
     localSymbol hres hm hζ b π = Multiplicative.ofAdd (zmodQModZ n (-(c : ZMod n))) := by
   have hswap := localSymbol_mul_swap hres hm hζ π b
-  rw [localSymbol_eq_powerResidue_of_congr hres hm hζ hn hpn hπ hu hu1 hbc] at hswap
+  rw [localSymbol_eq_powerResidue_of_congr hres hm hζ hpn hπ hu hu1 hbc] at hswap
   rw [eq_inv_of_mul_eq_one_right hswap, map_neg, ofAdd_neg]
 
 end Root
