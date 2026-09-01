@@ -94,6 +94,7 @@ import InverseGalois.CFT.Brauer.Primary
 import InverseGalois.CFT.Brauer.QuadraticExt
 import InverseGalois.CFT.Brauer.Quaternion
 import InverseGalois.CFT.Brauer.RamificationIdentity
+import InverseGalois.CFT.Brauer.RadicalInvariant
 import InverseGalois.CFT.Brauer.RadicalLevel
 import InverseGalois.CFT.Brauer.RatCount
 import InverseGalois.CFT.Brauer.RationalBrauer
@@ -4210,4 +4211,11 @@ it that are available here.
   logarithm of a level presented by a radical computes the Kummer character of the power of the
   radical**.  That is the hypothesis under which the power residue symbol is the class of a cyclic
   algebra, so a level offered in radical form can be fed to the symbol directly.
+* `InverseGalois.CFT.Brauer.RadicalInvariant` evaluates the invariant of a cyclic algebra whose
+  level is given by a radical.  The carry condition is automatic there, and an abstract cyclic
+  extension may be embedded into the algebraic closure without changing the Brauer class or the
+  radical, so **the invariant of a cyclic algebra over a cyclic extension presented by a radical is
+  the inverse of the power residue symbol of its coefficient against the power of the radical**.
+  A totally ramified cyclic extension of a local field is presented that way, so this is what
+  computes the invariant at a ramified place.
 -/
