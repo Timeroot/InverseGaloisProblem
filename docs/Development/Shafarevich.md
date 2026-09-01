@@ -6049,6 +6049,79 @@ declarations have axioms `[propext, Classical.choice, Quot.sound]`.
 
 ---
 
+## 0.60 Status (2026-09-01) — the level itself: `k⟮b^{1/n}⟯` is cyclic and carries the character
+
+`CFT/Profinite/KummerLevel.lean`, sorry- and axiom-free.  This is the brick §0.59(c) named: it
+*constructs* the `E`, `σ₀` and `hcarry` that `Brauer/SymbolCyclicAlgebra.lean` takes as hypotheses.
+
+### (a) The only geometric input
+
+Everything follows from one identity already in the tree,
+`smul_root_eq_kummerRootUnit_pow`:
+
+```
+g • R = Z ^ (β g).val * R,     R := h.root b,  Z := ζ in Ω,  β := kummerChar h b.
+```
+
+Read three ways it gives the whole file:
+
+* `Z ^ j = 1` only for `n ∣ j` (`isPrimitiveRoot_kummerRootUnit`, which is
+  `IsPrimitiveRoot.map_of_injective` along `Units.map (algebraMap k Ω)`), so **`g` fixes `R` exactly
+  when `β g = 0`** (`smul_root_eq_self_iff`).
+* `Z` lies in the base, so `g • R` lies in `k⟮R⟯`: the level `kummerLevel h b := k⟮R⟯` is stable
+  under every automorphism, hence **normal**, hence — separability being inherited downwards —
+  **finite Galois** (`isGalois_kummerLevel`; finiteness is `adjoin.finiteDimensional` applied to the
+  monic `X ^ n - C b`).
+* combining the two with `fixingSubgroup_adjoin_simple_eq_stabilizer` (which, thanks to its
+  `omit`ed finiteness hypotheses, applies to the *infinite* `Ω`): **the subgroup fixing the level is
+  the kernel of the Kummer character** (`mem_fixingSubgroup_kummerLevel_iff`).
+
+### (b) Why no quotient group appears
+
+The obvious move — descend `β` to a character of `Gal(E/k)` — needs `QuotientGroup.lift` and then
+fights the dependent type `ZMod (Nat.card Gal(E/k))`.  It is avoidable.  Composing
+`restrictNormalHom_ker` with (a) gives the single working lemma
+
+```lean
+restrictNormalHom_kummerLevel_eq_iff :  g|E = g'|E  ↔  β g = β g'
+```
+
+and everything else is read off it.  If `β g₀ = 1` for some `g₀`, put `σ₀ := g₀|E`; then
+`g|E = σ₀ ^ (β g).val` for every `g` (apply the lemma to `g` and `g₀ ^ (β g).val`), so `σ₀`
+generates by surjectivity of restriction (`restrictNormalHom_surjective_level`), `orderOf σ₀ = n`
+by `orderOf_eq_iff`, and `pow_eq_pow_iff_modEq` converts `σ₀ ^ (dlog σ₀ (g|E)).val = σ₀ ^ (β g).val`
+into the equality of the two residues *as naturals*, both being `< n`.  That is exactly the shape
+`carry_iff_of_dlog_eq` wants:
+
+```lean
+exists_generator_kummerLevel (hg₀ : kummerChar h b g₀ = 1) :
+    ∃ σ₀ : Gal(E/k), (∀ x, x ∈ Subgroup.zpowers σ₀) ∧ Nat.card Gal(E/k) = n ∧
+      ∀ g, (dlog σ₀ (g|E)).val = (kummerChar h b g).val
+```
+
+Stating the conclusion with `.val` on both sides is the point: no residue ever has to be
+transported along `Nat.card Gal(E/k) = n`.
+
+### (c) What it unlocks, and the one gap that remains
+
+Feeding this to §0.59(b) gives, for any `b` whose character is onto,
+
+```
+kummerSymbolUnits h (mulZMod n) a b = 1  ↔  a ∈ N_{k⟮b^{1/n}⟯ | k}( k⟮b^{1/n}⟯ˣ ).
+```
+
+With `a := (−1)^{n+1} b` and the norm of the generator this is `⟨(−1)^{n+1} b, b⟩ = 1`.  But
+skew-symmetry needs that relation for `a`, `b` *and* `ab`, and the character of a product need not
+be onto even when both factors' are — indeed the character of an `n`-th power is zero.  So the
+general level, of degree `m ∣ n` with the character landing in the subgroup of index `t = n / m`,
+is genuinely required; there `N(β^t) = (−1)^{(m+1)t} b` and the missing `(−1)^{t−1}` is
+`N(ζ^{t/2})` when `t` is even.  That, plus the norm computation itself, is the next file.
+
+Build: 9481 jobs green, zero warnings, zero sorries outside the comparator; all eighteen new
+declarations have axioms `[propext, Classical.choice, Quot.sound]`.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
