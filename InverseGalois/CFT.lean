@@ -79,6 +79,7 @@ import InverseGalois.CFT.Brauer.Opposite
 import InverseGalois.CFT.Brauer.PlaceCoboundary
 import InverseGalois.CFT.Brauer.PlaceCrossedProduct
 import InverseGalois.CFT.Brauer.PlaceCyclic
+import InverseGalois.CFT.Brauer.PlaceCyclotomic
 import InverseGalois.CFT.Brauer.PlaceExponent
 import InverseGalois.CFT.Brauer.PlaceFrobenius
 import InverseGalois.CFT.Brauer.PlaceInvariant
@@ -88,6 +89,7 @@ import InverseGalois.CFT.Brauer.Primary
 import InverseGalois.CFT.Brauer.QuadraticExt
 import InverseGalois.CFT.Brauer.Quaternion
 import InverseGalois.CFT.Brauer.RamificationIdentity
+import InverseGalois.CFT.Brauer.RatCount
 import InverseGalois.CFT.Brauer.RationalBrauer
 import InverseGalois.CFT.Brauer.RelativeCyclic
 import InverseGalois.CFT.Brauer.RelativeHasse
@@ -4080,4 +4082,18 @@ it that are available here.
   cyclic algebra is the exponent expressing the restricted Frobenius as a power of the chosen
   generator, times the value of the coefficient at the place, divided by the degree** — the local
   invariant computed from a global datum.
+* `InverseGalois.CFT.Brauer.PlaceCyclotomic` removes the local data from that description: the
+  generator of the Galois group of the completions and the exponent of the local Frobenius are both
+  produced by the extension, so **at an unramified finite place the invariant is determined by the
+  ramification index and the exponent of the restricted Frobenius**, and in particular **it is
+  trivial wherever the coefficient is a unit**.  Over the rationals the restricted Frobenius is the
+  automorphism raising a generating root of unity to the power of the prime below the place, and for
+  a subfield of a cyclotomic field away from the conductor both remaining side conditions hold
+  automatically.
+* `InverseGalois.CFT.Brauer.RatCount` counts the places that contribute.  **The invariant of a
+  cyclic algebra over the rationals vanishes at every finite place containing no prime of the
+  conductor at which the coefficient is a unit**, and the product of the local invariants over the
+  finite places is a finite product over any set outside which they vanish, so **for a totally real
+  splitting field inside a cyclotomic field with a single ramified prime and a rational prime as
+  coefficient the sum of all the local invariants has exactly two terms**.
 -/

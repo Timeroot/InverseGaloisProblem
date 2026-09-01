@@ -7269,6 +7269,104 @@ Of §0.69(g) only the genuinely arithmetic item survives:
 
 ---
 
+## 0.71 Status (2026-09-01) — the invariant away from the conductor, and the count over places
+
+`CFT/Brauer/PlaceCyclotomic.lean` and `CFT/Brauer/RatCount.lean`, sorry- and axiom-free (build green
+at 9502 jobs, no warnings).  They discharge the *bookkeeping* half of §0.70(e) item 2: the total
+invariant of the algebra reciprocity is about is now literally a product of **two** local invariants.
+
+### (a) The unramified-place formula with nothing left to supply
+
+§0.69 states the unramified-place invariant with four auxiliary inputs: a generator `σ` of the
+Galois group of the *completions*, a proof `hres` that it restricts to `σ₀`, the exponent `s` of the
+local Frobenius as a power of `σ`, and the exponent `c` of the *global* Frobenius as a power of
+`σ₀`.  The first three are produced by the extension itself —
+`exists_forall_mem_zpowers_restrictScalars_eq` (`Brauer/PlaceCyclic.lean`) gives `σ, hres`, and
+`exists_divisionFrobenius_eq_pow_adicCompletion` (`Brauer/PlaceUnramified.lean`) gives `s` — so they
+can be obtained inside the proof rather than asked of a caller.  (The two calls each mention the
+norm-surjectivity witness `hur`, and the terms match because it is a proof.)  What is left is
+
+```lean
+placeInvariant_cyclicBrauerHom_eq_intQModZ_of_ramIdx_eq_one (k) (w) (hσ₀)
+  (hram : ramIdx (𝓞 k) w = 1) (hc : restrictToBase k w (divisionFrobenius …) = σ₀ ^ c) (a : kˣ) :
+  placeInvariant k (primeUnder (𝓞 k) w) (cyclicBrauerHom hσ₀ a)
+    = Multiplicative.ofAdd (intQModZ (Nat.card Gal(K/k)) ((c : ℤ) * placeValue _ a))
+```
+
+and its corollary, the workhorse of the count, where the exponent never has to be named at all:
+
+```lean
+placeInvariant_cyclicBrauerHom_eq_one_of_valued_eq_one (k) (w) (hσ₀) (hram) (ha : Valued.v … = 1) :
+  placeInvariant k (primeUnder (𝓞 k) w) (cyclicBrauerHom hσ₀ a) = 1
+```
+
+Over `ℚ`, feeding `restrictToBase_divisionFrobenius_eq_of_adjoin_rat` (§0.69) into the first gives
+`placeInvariant_cyclicBrauerHom_rat_of_adjoin`, whose only remaining input is a *global* datum: an
+automorphism `τ` with `τ ζ = ζ ^ q` for the rational prime `q` below the place, together with `τ =
+σ₀ ^ c`.  Specializing the two side conditions to a subfield of a cyclotomic field via
+`ramIdx_rat_eq_one_of_not_dvd` and `valuation_natCast_eq_one_of_not_dvd` (§0.70(a)) gives
+`placeInvariant_cyclicBrauerHom_rat_of_adjoin_not_dvd`, which asks only `¬ q ∣ N` and `¬ q ∣ m`.
+
+### (b) Everything but two places drops out
+
+The vanishing statement is packaged for the rationals without any `LiesOver` instance in sight:
+
+```lean
+placeInvariant_cyclicBrauerHom_rat_eq_one_of_notMem (hσ₀) (N) (E) [IsCyclotomicExtension {N} ℚ E]
+  [Algebra K E] (v : HeightOneSpectrum (𝓞 ℚ))
+  (hN : ∀ ℓ, ℓ.Prime → ℓ ∣ N → ((ℓ : ℕ) : 𝓞 ℚ) ∉ v.asIdeal) (ha : v.valuation ℚ (a : ℚ) = 1) :
+  placeInvariant ℚ v (cyclicBrauerHom hσ₀ a) = 1
+```
+
+A place of `ℚ` is the place below a place of `K` (`exists_primeUnder_eq`), the unramifiedness comes
+from the quantified form `ramIdx_rat_eq_one_of_forall_prime_not_dvd`, and the unit condition is read
+off the valuation.  Combining with §0.70(b) — for a totally real `K` the archimedean invariants
+vanish, so `totalInvariant` is the finite product over the finite places — and with
+`finprod_eq_prod_of_mulSupport_subset`:
+
+```lean
+totalInvariant_cyclicBrauerHom_rat_eq_mul (hσ₀) (N) (E) (hp : p.Prime) (hq : q.Prime) (hpq : p ≠ q)
+  (hN : ∀ ℓ, ℓ.Prime → ℓ ∣ N → ℓ = q) (hap : (a : ℚ) = (p : ℚ)) :
+  totalInvariant ℚ (cyclicBrauerHom hσ₀ a)
+    = placeInvariant ℚ (ratPlace p hp) (cyclicBrauerHom hσ₀ a)
+      * placeInvariant ℚ (ratPlace q hq) (cyclicBrauerHom hσ₀ a)
+```
+
+This is exactly the shape reciprocity is proved in: for `K = F₀ ⊆ ℚ(ζ_q)` cyclic totally real of
+degree `N ∣ q − 1` and coefficient a rational prime `p ≠ q`, the whole of reciprocity is the
+cancellation of two explicitly-named terms.
+
+### (c) Lean notes
+
+* **An algebra diamond at `ℚ`.**  Writing `algebraMap ℚ (v.adicCompletion ℚ) x` *literally at `ℚ`*
+  elaborates with `DivisionRing.toRatAlgebra`, whereas a lemma stated generically in `k` and
+  instantiated at `k := ℚ` carries `HeightOneSpectrum.instAlgebraAdicCompletion (𝓞 ℚ) ℚ v`.  These
+  are not syntactically equal, and the mismatch surfaces both as an `Application type mismatch` and,
+  inside a `rw`, as a `(deterministic) timeout at whnf`.  The fix is never to write the `ℚ`-level
+  `algebraMap` in a statement: state the hypothesis as `v.valuation ℚ x = 1` and bridge it with a
+  *generically stated* lemma used as a rewrite on the goal, so the goal supplies the instance.
+* `HeightOneSpectrum.valuedAdicCompletion_eq_valuation' v x` proves
+  `Valued.v (algebraMap K (v.adicCompletion K) x) = v.valuation K x` by direct term application —
+  the algebra map and the completion coercion are definitionally equal.
+* `ramIdx_rat_eq_one_of_forall_prime_not_dvd` needs no `LiesOver` instance, so it avoids having to
+  extract the residue characteristic of a place that is not already known to lie over a named prime.
+  Prefer it to `ramIdx_rat_eq_one_of_not_dvd` whenever the place is generic.
+* Distinctness of two `ratPlace`s is cleanest through `natGenerator_eq_of_natCast_mem`, not through
+  injectivity of the underlying equivalence (which would force unfolding the definition).
+
+### (d) What is left for reciprocity
+
+1. the ramified place `q`, unchanged from §0.70(e);
+2. the *arithmetic* half of the count: the cyclotomic Frobenius `τ` with `τ ζ = ζ ^ p`, and the
+   identity between its exponent and the power residue symbol.  For `τ`, Mathlib supplies
+   `IsCyclotomicExtension.Rat.galEquivZMod n K : Gal(K/ℚ) ≃* (ZMod n)ˣ` together with
+   `galEquivZMod_apply_of_pow_eq` and `galEquivZMod_restrictNormal_apply`
+   (`Mathlib/NumberTheory/NumberField/Cyclotomic/Galois.lean`), so `τ` is the preimage of
+   `ZMod.unitOfCoprime p _` and `hgen` comes from `IsPrimitiveRoot.powerBasis` and
+   `PowerBasis.adjoin_gen_eq_top`.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
