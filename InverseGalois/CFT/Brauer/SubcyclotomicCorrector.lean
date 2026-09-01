@@ -51,27 +51,29 @@ open IsDedekindDomain Module NumberField InverseGalois.NumberTheory
 
 section Torsion
 
-/-- **The class of an integer prime to a prime generates the elements of the rationals modulo the
-integers killed by that prime.**  Such an element is the class of a residue, and the residues
-modulo a prime form a field in which the integer is invertible, so the residue is a multiple of
-it. -/
-theorem exists_pow_ofAdd_intQModZ_eq {N : ℕ} (hN : N.Prime) {c : ℤ} (hc : ¬ (N : ℤ) ∣ c)
+/-- **The class of an integer invertible modulo an exponent generates the elements of the rationals
+modulo the integers killed by that exponent.**  Such an element is the class of a residue, and the
+integer is invertible among the residues, so the residue is a multiple of it. -/
+theorem exists_pow_ofAdd_intQModZ_eq {N : ℕ} [NeZero N] {c : ℤ} (hc : IsUnit ((c : ZMod N)))
     {t : Multiplicative QModZ} (ht : t ^ N = 1) :
     ∃ e : ℕ, (Multiplicative.ofAdd (intQModZ N c)) ^ e = t := by
-  haveI : Fact N.Prime := ⟨hN⟩
-  haveI : NeZero N := ⟨hN.ne_zero⟩
   have htor : Multiplicative.toAdd t ∈ nsmulTorsionQModZ N :=
     (pow_eq_one_iff_nsmul_toAdd t N).mp ht
   obtain ⟨k, hk⟩ := (mem_nsmulTorsionQModZ_iff_exists N).mp htor
-  have hcz : ((c : ZMod N)) ≠ 0 := fun h => hc ((ZMod.intCast_zmod_eq_zero_iff_dvd c N).mp h)
   have hval : (((k * (c : ZMod N)⁻¹).val : ℕ) : ZMod N) = k * (c : ZMod N)⁻¹ := by
     rw [ZMod.natCast_val, ZMod.cast_id]
   have hkey : ((((((k * (c : ZMod N)⁻¹).val : ℕ) : ℤ) * c : ℤ)) : ZMod N) = k := by
     push_cast
-    rw [hval, mul_assoc, inv_mul_cancel₀ hcz, mul_one]
+    rw [hval, mul_assoc, ZMod.inv_mul_of_unit _ hc, mul_one]
   refine ⟨(k * (c : ZMod N)⁻¹).val, ?_⟩
   rw [← ofAdd_nsmul, ← map_nsmul, nsmul_eq_mul, intQModZ_eq_zmodQModZ, hkey, hk]
   rfl
+
+/-- The class of an integer prime to a prime exponent is invertible among the residues. -/
+theorem isUnit_intCast_zmod_of_prime {N : ℕ} (hN : N.Prime) {c : ℤ} (hc : ¬ (N : ℤ) ∣ c) :
+    IsUnit ((c : ZMod N)) := by
+  haveI : Fact N.Prime := ⟨hN⟩
+  exact (isUnit_iff_ne_zero).mpr fun h => hc ((ZMod.intCast_zmod_eq_zero_iff_dvd c N).mp h)
 
 end Torsion
 
@@ -174,7 +176,7 @@ theorem exists_placeInvariant_eq_of_pow_ne_one {N : ℕ} (hN : N.Prime) (hNodd :
   have hNc : ¬ (N : ℤ) ∣ (-(c : ℤ)) := by
     rw [dvd_neg, Int.natCast_dvd_natCast]
     exact not_dvd_of_natCast_pow_ne_one hq hg hNdvd hpg hres
-  obtain ⟨e, he⟩ := exists_pow_ofAdd_intQModZ_eq hN hNc ht
+  obtain ⟨e, he⟩ := exists_pow_ofAdd_intQModZ_eq (isUnit_intCast_zmod_of_prime hN hNc) ht
   refine ⟨(cyclicBrauerHom hσ₀ a) ^ e, ?_, ?_, ?_, ?_⟩
   · rw [← pow_mul, mul_comm, pow_mul, hord, one_pow]
   · rw [map_pow, htot, one_pow]
