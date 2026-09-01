@@ -68,6 +68,7 @@ import InverseGalois.CFT.Brauer.LocalInvariantRestrict
 import InverseGalois.CFT.Brauer.LocalReciprocity
 import InverseGalois.CFT.Brauer.LocalSymbol
 import InverseGalois.CFT.Brauer.LocalSymbolUnits
+import InverseGalois.CFT.Brauer.TameSymbol
 import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
 import InverseGalois.CFT.Brauer.Opposite
@@ -3945,4 +3946,12 @@ it that are available here.
   invariant map being an isomorphism, skew symmetry, the Steinberg relation and the triviality of
   the symbol of a unit against its negative also descend from the power symbol, so **a tame symbol
   is determined by the values of its two arguments.**
+* `InverseGalois.CFT.Brauer.TameSymbol` carries that out.  Choosing a uniformiser writes every
+  element as a power of it times a unit of the valuation ring, and bilinearity together with skew
+  symmetry, the triviality of the symbol of a uniformiser against its own negative and the
+  triviality of the symbol of two units move every occurrence of the uniformiser into the first
+  argument, so **the symbol of two elements is the symbol of the uniformiser against an explicit
+  unit of the valuation ring** built from the two elements and their values.  A unit congruent to
+  one is a power of any exponent prime to the residue characteristic, so **that remaining pairing
+  only sees the residue of its second argument.**
 -/
