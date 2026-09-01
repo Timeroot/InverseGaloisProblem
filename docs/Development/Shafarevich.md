@@ -6122,6 +6122,142 @@ declarations have axioms `[propext, Classical.choice, Quot.sound]`.
 
 ---
 
+## 0.61 Status (2026-09-01) — the gap of §0.60(c) is closed: the power symbol is skew-symmetric
+
+`CFT/Profinite/KummerLevelDegree.lean` and `CFT/Brauer/SymbolNorm.lean`, both sorry- and axiom-free.
+Together they remove the "character is onto" hypothesis and prove `⟨a,b⟩⟨b,a⟩ = 1` for *every* pair
+of units.
+
+### (a) The general level (`KummerLevelDegree.lean`)
+
+`restrictNormalHom_kummerLevel_eq_iff` of §0.60(b) says `g|E = g'|E ↔ β g = β g'`, i.e. the fibres
+of restriction to `E := kummerLevel h b` are exactly the fibres of `β := kummerChar h b`.  Since
+restriction is onto (`restrictNormalHom_surjective_level`), that is precisely the statement that
+`β` *descends* to `Gal(E/k)`.  The descent is written without any quotient group: pick, for each
+`σ : Gal(E/k)`, a preimage (`levelPreimage`, by `Classical.choose` of surjectivity) and set
+
+```lean
+levelChar h b σ := kummerChar h b (levelPreimage h b σ)
+```
+
+Well-definedness, `levelChar (σ * τ) = levelChar σ + levelChar τ`, and injectivity are all one
+application of the fibre lemma.  Injectivity of a homomorphism `Gal(E/k) ↪ ZMod n` gives at once
+
+```lean
+card_gal_kummerLevel_dvd :  m ∣ n,        m := Nat.card Gal(E/k)
+card_nsmul_kummerChar    :  m • β g = 0
+```
+
+(the second by Lagrange in `Gal(E/k)`, transported through the descent).
+
+**The counting step.**  Let `t := n / m`.  `m • x = 0` in `ZMod n` says `n ∣ m * x.val`, i.e.
+`t ∣ x.val`, so the image of `levelChar` sits inside the set of multiples of `t`.  But the image has
+exactly `m` elements (injectivity) and there are exactly `m` multiples of `t` in `ZMod n`
+(`j ↦ (j*t : ZMod n)` is injective on `range m` because `j*t < n`).  `Finset.eq_of_subset_of_card_le`
+turns the inclusion into an equality, so `t` itself is in the image: some `σ₀` has
+`levelChar σ₀ = t`.  Then `σ₀` generates (its `levelChar`-image already exhausts the group) and
+
+```lean
+exists_generator_kummerLevel_index :
+    ∃ σ₀ t, (∀ x, x ∈ Subgroup.zpowers σ₀) ∧ 0 < t ∧ m * t = n ∧
+      ∀ g, (kummerChar h b g).val = t * (dlog σ₀ (g|E)).val
+```
+
+Multiplying the discrete logarithm by `t` is order-preserving on the relevant range, so
+`carry_iff_of_index` converts the carry condition of `dlog` into the carry condition of `β`, with
+**no hypothesis at all on `b`**.  That is the last input `Brauer/SymbolCyclicAlgebra.lean` was
+missing:
+
+```lean
+kummerSymbolUnits_eq_one_iff_norm_kummerLevel (a b : kˣ) :
+    ⟨a, b⟩ = 1  ↔  ∃ c : (k⟮b^{1/n}⟯)ˣ, N(c) = a
+```
+
+### (b) The norm of the root (`SymbolNorm.lean`)
+
+Write `R := h.root b`, `x := kummerLevelGen h b` for `R` read inside `E`, and `m := Nat.card
+Gal(E/k)` as above.  `card_nsmul_kummerChar` says `n ∣ (β g).val * m`, so in
+
+```
+g • R^m = (Z^{(β g).val})^m · R^m = (Z^{(β g).val · m}) · R^m = R^m
+```
+
+the root of unity disappears: **`R^m` is fixed by every automorphism of `Ω`**.  Restriction to `E`
+is onto, so `x^m` is fixed by every element of `Gal(E/k)`, and — `E` being *finite* Galois —
+`IsGalois.mem_range_algebraMap_iff_fixed` puts it in the base: `x^m = c` for some `c : k`.
+
+Hence `X^m - C c` is a monic polynomial killing `x`, so `minpoly k x ∣ X^m - C c`; and
+`natDegree (minpoly k x) = [k⟮R⟯ : k] = m` by `adjoin.finrank` plus `IsGalois.card_aut_eq_finrank`.
+Two monic polynomials of the same degree, one dividing the other, are equal
+(`Polynomial.eq_of_dvd_of_natDegree_le_of_leadingCoeff`), so
+
+```
+minpoly k x = X^m - C c,   N_{E|k}(x) = (-1)^m · coeff 0 = (-1)^{m+1} c
+```
+
+by `Algebra.PowerBasis.norm_gen_eq_coeff_zero_minpoly` on `adjoin.powerBasis`.
+
+Now raise to the index.  `c^t = b` (both have the same image `R^{mt} = R^n = b` in `Ω`), so
+
+```
+N(x^t) = ((-1)^{m+1} c)^t = (-1)^{mt + t} b = (-1)^{n+t} b.
+```
+
+For odd `t` that is already `(-1)^{n+1} b`.  For even `t = 2s` the correction is a *base* element:
+`N(ζ^s) = ζ^{sm}` and `sm = n/2`, so `ζ^{sm}` is a primitive second root of unity, i.e. `-1`
+(`IsPrimitiveRoot.pow_of_dvd` then `eq_neg_one_of_two_right`), and `x^t · ζ^s` has norm
+`(-1)^{n+t} b · (-1) = (-1)^{n+1} b`.  Either way
+
+```lean
+exists_norm_eq_neg_one_pow (b : kˣ) : ∃ w ≠ 0, N_{k⟮b^{1/n}⟯ | k}(w) = (-1)^{n+1} b
+```
+
+and therefore `⟨(-1)^{n+1} b, b⟩ = 1` for every `b`.
+
+### (c) Skew-symmetry falls out of bilinearity
+
+Abbreviate `S x y := ⟨x, y⟩` and `ε := (-1)^{n+1} : kˣ`.  Applying (b) to `a`, to `b`, and to `ab`,
+and expanding `S (εa) a`, `S (εb) b`, `S (ε(ab)) (ab)` by bilinearity of `kummerSymbolUnits` (the
+target `SmoothH2` is a commutative group, so `kˣ →* kˣ →* SmoothH2` is bilinear on the nose):
+
+```
+S ε a · S a a = 1,   S ε b · S b b = 1,   (S ε a · S ε b) · ((S a a · S b a) · (S a b · S b b)) = 1.
+```
+
+Cancelling the first two relations inside the third leaves exactly `S a b · S b a = 1`.  The
+rearrangement is a two-line lemma in an abstract `CommGroup` (`mul_swap_aux`), so no cohomology is
+touched:
+
+```lean
+kummerSymbolUnits_mul_swap (a b : kˣ) :  ⟨a, b⟩ · ⟨b, a⟩ = 1
+```
+
+### (d) Lean notes
+
+* Never `rw` an equation that rewrites *away from* `n` in a goal mentioning `kummerLevel h b`: `n`
+  occurs in the `NeZero n` instance argument, so the motive is not type correct.  Rewriting *to* `n`
+  is fine.  The arithmetic of `carry_iff_of_index` is therefore hoisted into a fully abstract
+  `∀ M N T x y : ℕ, 0 < T → M * T = N → (x + y < M ↔ T*x + T*y < N)`.
+* `adjoin.powerBasis hint` lives over `↥k⟮R⟯`, whose instances are only *defeq* to those of
+  `↥(kummerLevel h b)`; `rw` sees two different terms.  Restating the power-basis norm with
+  `have hgoal : ... := hnorm` forces the coercion and costs nothing.
+* Restriction is best applied through `Subtype.ext` plus `AlgEquiv.restrictNormalHom_apply` (stated
+  with the `SetLike` coercion), not through `algebraMap` injectivity.
+
+Build: 9483 jobs green, zero warnings, zero sorries outside the comparator; all twenty-four new
+declarations have axioms `[propext, Classical.choice, Quot.sound]`.
+
+### (e) What is left for reciprocity
+
+The symbol is now a genuine skew-symmetric pairing on `kˣ × kˣ` with values in the Brauer group, and
+`smoothBrauerHom_kummerSymbolUnits` computes its class as a cyclic algebra.  What remains of the
+§0.56(d) plan is the *local* evaluation: the tame value at the auxiliary prime via
+`localInvariant_apply_cyclicBrauerHom`, and then `totalInvariant k = 1` by the one-auxiliary-prime
+route (`Φ_q(1) = q = N(1 - ζ_q)`, `index_normSubgroup_eq_finrank_local`, "a subgroup of index prime
+to `q` contains `1 + qℤ_q`", uniqueness of the index-`N` subgroup of a cyclic group).
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
