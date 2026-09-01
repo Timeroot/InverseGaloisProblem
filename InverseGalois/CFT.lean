@@ -79,6 +79,7 @@ import InverseGalois.CFT.Brauer.Opposite
 import InverseGalois.CFT.Brauer.PlaceCoboundary
 import InverseGalois.CFT.Brauer.PlaceCrossedProduct
 import InverseGalois.CFT.Brauer.PlaceCyclic
+import InverseGalois.CFT.Brauer.PlaceFrobenius
 import InverseGalois.CFT.Brauer.PlaceInvariant
 import InverseGalois.CFT.Brauer.PlaceInvariantFinite
 import InverseGalois.CFT.Brauer.PlaceUnramified
@@ -4020,4 +4021,13 @@ it that are available here.
   the Frobenius automorphism among its powers, and therefore **a cyclic algebra whose coefficient is
   a unit at a finite place unramified in the extension has trivial invariant at that place**, with
   nothing left to supply.
+* `InverseGalois.CFT.Brauer.PlaceFrobenius` describes that Frobenius automorphism on the roots of
+  unity.  At a place of ramification index one the absolute value of the division algebra and the
+  valuation of the completion answer the same two questions, because the value of the algebra norm
+  is the degree-th power of the value; so an automorphism raising every residue of the division
+  algebra to the power given by the number of residues of the base does the same for the valuation,
+  and roots of unity of order invertible in the residue field are separated by the maximal ideal.
+  Hence **the Frobenius of a completion raises a root of unity of order invertible in the residue
+  field to the power given by the number of residues of the base**, which is the cyclotomic
+  description of the Frobenius, obtained with no global Frobenius element in sight.
 -/
