@@ -610,6 +610,7 @@ import InverseGalois.CFT.Units.AdicFixed
 import InverseGalois.CFT.Units.AdicIdeleHerbrand
 import InverseGalois.CFT.Units.AdicLocalNorm
 import InverseGalois.CFT.Units.AdicOrbit
+import InverseGalois.CFT.Units.AdicRadical
 import InverseGalois.CFT.Units.AdicSIdeles
 import InverseGalois.CFT.Units.AdicUnitGen
 import InverseGalois.CFT.Units.ArchimedeanIdeles
@@ -4128,7 +4129,9 @@ it that are available here.
   is that power**.  Raising the radical to a power descends it to any exponent dividing one less
   than the prime, and the multiplier descends with it; a root of unity congruent to a natural number
   of that multiplicative order modulo the prime is primitive, so the descended multiplier is a
-  primitive root of unity of the smaller exponent.
+  primitive root of unity of the smaller exponent.  At the other extreme, a root of unity of order
+  prime to the residue characteristic congruent to one is one, so **an automorphism whose power of
+  the exponent is congruent to one modulo the prime fixes the descended radical outright**.
 * `InverseGalois.CFT.Brauer.LocalSymbolRamified` computes the invariant of a cyclic algebra over a
   ramified level.  The power symbol of two units is the inverse of the class of the cyclic algebra
   of the first over any cyclic level carrying the Kummer character of the second, and the invariant
@@ -4163,4 +4166,14 @@ it that are available here.
   and **that completion has the prime as its residue characteristic, with exponent one**.  Dividing
   the valuation of a unit by the generator of the value group leaves the logarithm alone, so **the
   reciprocal of a uniformiser has divided valuation one**.
+* `InverseGalois.CFT.Units.AdicRadical` puts the radical in the completion of a number field.  A
+  primitive root of unity stays primitive there, so **the completion of a number field containing a
+  primitive root of unity of odd prime order, at a place containing that prime, carries a radical of
+  the opposite of the prime of every exponent dividing one less than it**, one and the same radical
+  for every isometry of the completion.  The automorphisms of a decomposition group give such
+  isometries, acting on the image of the field through the global automorphism they come from, and
+  the base field plays no role in that description.  **An automorphism of finite order raises a root
+  of unity to an exponent whose power of that order is congruent to one**, and over an intermediate
+  field every automorphism has order dividing the number of automorphisms of the extension, so
+  **the radical comes from the completion of the intermediate field**.
 -/

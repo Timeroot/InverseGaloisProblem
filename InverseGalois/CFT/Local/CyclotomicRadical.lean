@@ -30,7 +30,9 @@ by its residue, so the multiplier is the Teichmüller lift of the exponent.
 Raising the radical to a power descends it to any divisor of one less than the prime: the power of
 exponent that divisor is again a radical, of the same opposite of the prime, and the automorphism
 multiplies it by the corresponding power of the Teichmüller lift, which is congruent to the same
-power of the exponent.
+power of the exponent.  When that power of the exponent is congruent to one modulo the prime, the
+multiplier is a root of unity of order prime to the residue characteristic congruent to one, hence
+trivial, and the automorphism fixes the descended radical outright.
 
 ## Main results
 
@@ -45,9 +47,15 @@ power of the exponent.
   root of unity of order dividing one less than the prime whose residue is that exponent.**
 * `InverseGalois.CFT.isPrimitiveRoot_of_valued_sub_natCast_lt_one`: **a root of unity congruent to a
   natural number of that multiplicative order modulo the residue characteristic is primitive.**
+* `InverseGalois.CFT.eq_one_of_valued_sub_natCast_lt_one`: **a root of unity of order prime to the
+  residue characteristic congruent to a natural number congruent to one is one.**
+* `InverseGalois.CFT.eq_one_of_dvd_pow_sub_one`: the Teichmüller multiplier is trivial when its
+  exponent is.
 * `InverseGalois.CFT.exists_pow_eq_neg_natCast_aut`: **a radical of the opposite of the prime of any
   exponent dividing one less than the prime, together with the root of unity by which a given
   automorphism multiplies it.**
+* `InverseGalois.CFT.exists_pow_eq_neg_natCast_forall_aut`: **one such radical serves every
+  automorphism at once.**
 
 ## Tags
 
@@ -256,6 +264,39 @@ theorem isPrimitiveRoot_of_valued_sub_natCast_lt_one (h : HasResidueChar A q e) 
   by_contra hnd
   exact absurd (valued_natCast_eq_one_of_not_dvd hqp hqv hnd) (ne_of_lt hlt)
 
+/-- **A root of unity of order prime to the residue characteristic congruent to a natural number
+which is itself congruent to one is one.**  The number differs from one by a multiple of the residue
+characteristic, so the root of unity is congruent to one, and a root of unity of order prime to the
+residue characteristic is determined by its residue. -/
+theorem eq_one_of_valued_sub_natCast_lt_one (h : HasResidueChar A q e) {N : ℕ} (hN : N ≠ 0)
+    (hqN : ¬ q ∣ N) {ξ : A} (hξ : ξ ^ N = 1) {b : ℕ} (hb1 : 1 ≤ b)
+    (hb : Valued.v (ξ - (b : A)) < 1) (hbq : q ∣ b - 1) : ξ = 1 := by
+  have hNv : Valued.v ((N : ℕ) : A) = 1 :=
+    valued_natCast_eq_one_of_not_dvd h.prime (valued_residueChar_lt_one h) hqN
+  have hlt : Valued.v (((b - 1 : ℕ) : A)) < 1 := by
+    obtain ⟨c, hc⟩ := hbq
+    rw [hc, Nat.cast_mul, Valuation.map_mul]
+    calc Valued.v ((q : ℕ) : A) * Valued.v ((c : ℕ) : A)
+        ≤ Valued.v ((q : ℕ) : A) * 1 := mul_le_mul' le_rfl (valued_natCast_le_one c)
+      _ = Valued.v ((q : ℕ) : A) := mul_one _
+      _ < 1 := valued_residueChar_lt_one h
+  rw [Nat.cast_sub hb1, Nat.cast_one] at hlt
+  refine eq_one_of_valued_sub_one_lt_one hN hNv hξ ?_
+  have hkey : ξ - 1 = (ξ - (b : A)) + ((b : A) - 1) := by ring
+  rw [hkey]
+  exact lt_of_le_of_lt (Valuation.map_add Valued.v _ _) (max_lt hb hlt)
+
+/-- **The Teichmüller multiplier is trivial when its exponent is.**  The multiplier is congruent to
+a power of a natural number, and that power is congruent to one modulo the residue characteristic,
+so the multiplier is a root of unity of order prime to the residue characteristic congruent to
+one. -/
+theorem eq_one_of_dvd_pow_sub_one (h : HasResidueChar A q e) {M N : ℕ} (hN : N ≠ 0)
+    (hqN : ¬ q ∣ N) {ξ : A} (hξ : ξ ^ N = 1) {a : ℕ} (ha : a ≠ 0)
+    (hva : Valued.v (ξ - (a : A) ^ M) < 1) (hdvd : q ∣ a ^ M - 1) : ξ = 1 := by
+  refine eq_one_of_valued_sub_natCast_lt_one h hN hqN hξ
+    (Nat.one_le_pow _ _ (Nat.pos_of_ne_zero ha)) ?_ hdvd
+  rwa [Nat.cast_pow]
+
 end Primitive
 
 /-! ### Descending the radical -/
@@ -294,6 +335,54 @@ theorem exists_pow_eq_neg_natCast_aut (h : HasResidueChar A q e) (hodd : Odd q)
   · rw [map_pow, ← mul_pow, ← hσμ]
   · rw [← pow_mul, hMN, hηpow]
   · exact valued_sub_pow_lt_one hηv.le (valued_natCast_le_one a) hηa M
+
+/-- **One radical of the opposite of the residue characteristic serves every automorphism at
+once.**  The radical is chosen before any automorphism is named, and each automorphism then
+multiplies it by a root of unity congruent to the corresponding power of the exponent to which it
+raises the root of unity; when that power is congruent to one modulo the prime, the automorphism
+fixes the radical outright. -/
+theorem exists_pow_eq_neg_natCast_forall_aut (h : HasResidueChar A q e) (hodd : Odd q)
+    (hζ : IsPrimitiveRoot ζ q) {M N : ℕ} (hMN : M * N = q - 1) :
+    ∃ ν : A, ν ^ N = -((q : ℕ) : A) ∧
+      (∀ τ : A ≃+* A, (∀ x : A, Valued.v (τ x) = Valued.v x) → ∀ a : ℕ, τ ζ = ζ ^ a →
+        ∃ ξ : A, τ ν = ξ * ν ∧ ξ ^ N = 1 ∧ Valued.v (ξ - (a : A) ^ M) < 1) ∧
+      ∀ τ : A ≃+* A, (∀ x : A, Valued.v (τ x) = Valued.v x) → ∀ a : ℕ, τ ζ = ζ ^ a →
+        q ∣ a ^ M - 1 → τ ν = ν := by
+  obtain ⟨μ, hμ, hμζ⟩ := exists_pow_eq_neg_natCast h hodd hζ
+  have hq := h.prime
+  have hq1 : 1 < q := hq.one_lt
+  have hq10 : q - 1 ≠ 0 := by omega
+  have hqne : ((q : ℕ) : A) ≠ 0 := h.natCast_ne_zero hq.ne_zero
+  have hμ0 : μ ≠ 0 := by
+    intro hz
+    rw [hz, zero_pow hq10] at hμ
+    exact hqne (neg_eq_zero.mp hμ.symm)
+  have hN0 : N ≠ 0 := by
+    rintro rfl
+    exact hq10 (by simpa using hMN.symm)
+  have hqN : ¬ q ∣ N := by
+    intro hd
+    have hle : N ≤ q - 1 := Nat.le_of_dvd (Nat.pos_of_ne_zero hq10) ⟨M, by rw [← hMN, mul_comm]⟩
+    have := Nat.le_of_dvd (Nat.pos_of_ne_zero hN0) hd
+    omega
+  have hmain : ∀ τ : A ≃+* A, (∀ x : A, Valued.v (τ x) = Valued.v x) → ∀ a : ℕ, τ ζ = ζ ^ a →
+      ∃ ξ : A, τ (μ ^ M) = ξ * μ ^ M ∧ ξ ^ N = 1 ∧ Valued.v (ξ - (a : A) ^ M) < 1 := by
+    intro τ hτv a hτζ
+    have hηpow : (τ μ / μ) ^ (q - 1) = 1 := pow_aut_div_eq_one h hμ
+    have hηa : Valued.v (τ μ / μ - (a : A)) < 1 :=
+      valued_aut_div_sub_natCast_lt_one h hζ hτv hτζ hμζ
+    have hτμ : τ μ = (τ μ / μ) * μ := (div_mul_cancel₀ _ hμ0).symm
+    have hηv : Valued.v (τ μ / μ) = 1 := by
+      rw [map_div₀, hτv, div_self ((Valuation.ne_zero_iff _).mpr hμ0)]
+    exact ⟨(τ μ / μ) ^ M, by rw [map_pow, ← mul_pow, ← hτμ], by rw [← pow_mul, hMN, hηpow],
+      valued_sub_pow_lt_one hηv.le (valued_natCast_le_one a) hηa M⟩
+  refine ⟨μ ^ M, by rw [← pow_mul, hMN, hμ], hmain, fun τ hτv a hτζ hdvd => ?_⟩
+  obtain ⟨ξ, hξμ, hξN, hξa⟩ := hmain τ hτv a hτζ
+  have ha0 : a ≠ 0 := by
+    rintro rfl
+    rw [pow_zero] at hτζ
+    exact hζ.ne_one hq1 (τ.injective (by rw [hτζ, map_one]))
+  rw [hξμ, eq_one_of_dvd_pow_sub_one h hN0 hqN hξN ha0 hξa hdvd, one_mul]
 
 end Descent
 
