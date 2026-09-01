@@ -33,8 +33,8 @@ that law is a power residue condition modulo the conductor.
   rationals of odd prime order is split by a cyclic extension of that degree in which no prime
   carrying a nontrivial invariant splits completely.**
 * `InverseGalois.CFT.totalInvariant_eq_one_of_mem_relative_subcyclotomic`: **the total invariant of
-  a Brauer class of the rationals split by a totally real subfield of odd prime degree of the
-  cyclotomic field of an odd prime conductor, totally ramified there, vanishes.**
+  a Brauer class of the rationals split by a totally real subfield of the cyclotomic field of an
+  odd prime conductor, totally ramified there, vanishes.**
 * `InverseGalois.CFT.totalInvariant_eq_one_of_forall_pow_ne_one`: **reciprocity for a class of odd
   prime order all of whose bad primes are non-residues modulo an auxiliary prime.**
 * `InverseGalois.CFT.mem_relative_of_forall_not_dvd_primePow` and
@@ -136,16 +136,17 @@ end Split
 section Reciprocity
 
 /-- **The total invariant of a Brauer class of the rationals split by a totally real subfield of
-odd degree of the cyclotomic field of an odd prime conductor, totally ramified there,
-vanishes.**  Such a class is a cyclic algebra over that subfield, and the invariants of a cyclic
-algebra over it cancel. -/
+the cyclotomic field of an odd prime conductor, totally ramified there, vanishes** when the degree
+of that subfield is a radical exponent and twice it divides the predecessor of the conductor.  Such
+a class is a cyclic algebra over that subfield, and the invariants of a cyclic algebra over it
+cancel. -/
 theorem totalInvariant_eq_one_of_mem_relative_subcyclotomic (q : ℕ) [hq : Fact q.Prime]
     (hodd : Odd q) (L F : Type) [Field L] [NumberField L] [IsCyclotomicExtension {q} ℚ L]
     [IsGalois ℚ L] [Field F] [NumberField F] [Algebra F L] [IsScalarTower ℚ F L] [IsGalois ℚ F]
-    [IsTotallyReal F] {N : ℕ} [NeZero N] (hNodd : Odd N)
+    [IsTotallyReal F] {N : ℕ} [NeZero N] (hrad : IsRadicalExponent N)
     (hcard : Nat.card Gal(F/ℚ) = N)
     (hinertia : ∀ (Q : Ideal (𝓞 F)) (_ : Q.IsPrime) (_ : Q.LiesOver (Ideal.span {(q : ℤ)})),
-      Ideal.inertia Gal(F/ℚ) Q = ⊤)
+      Ideal.inertia Gal(F/ℚ) Q = ⊤) (h2N : 2 * N ∣ q - 1)
     {x : BrauerGroup.{0, 0} ℚ} (hx : x ∈ BrauerGroup.relative ℚ F) :
     totalInvariant ℚ x = 1 := by
   haveI : NeZero q := ⟨hq.out.ne_zero⟩
@@ -154,8 +155,8 @@ theorem totalInvariant_eq_one_of_mem_relative_subcyclotomic (q : ℕ) [hq : Fact
   obtain ⟨a, ha⟩ :=
     exists_cyclicBrauerHom_eq (forall_mem_zpowers_restrictNormal (L := F) hgen) x hx
   rw [← ha]
-  exact totalInvariant_cyclicBrauerHom_subcyclotomic q L F hodd hNodd hcard hinertia hg hgord
-    hgen a
+  exact totalInvariant_cyclicBrauerHom_subcyclotomic q L F hodd hrad hcard hinertia hg hgord
+    hgen h2N a
 
 /-- **Reciprocity for a Brauer class of the rationals of odd prime order all of whose bad primes
 are non-residues modulo an auxiliary prime.**  The subfield of prescribed degree of the cyclotomic
@@ -186,7 +187,7 @@ theorem totalInvariant_eq_one_of_forall_pow_ne_one {N : ℕ} (hN : N.Prime) (hNo
   have hcard : Nat.card Gal(↥F/ℚ) = N := by
     rw [IsGalois.card_aut_eq_finrank ℚ ↥F, hrank]
   refine totalInvariant_eq_one_of_mem_relative_subcyclotomic q hqodd (CyclotomicField q ℚ) ↥F
-    hNodd hcard hinertia ?_
+    (isRadicalExponent_of_odd hNodd) hcard hinertia hdvd ?_
   refine mem_relative_of_forall_not_splitsCompletely hN hNodd hx ↥F hcard fun p hp hinv hsc => ?_
   obtain ⟨hpq, hres⟩ := hbad p hp hinv
   exact hres ((hsplit p hp hpq).mp hsc)
@@ -231,7 +232,7 @@ theorem totalInvariant_eq_one_of_forall_pow_ne_one_primePow {ℓ e : ℕ} (hℓ 
   have hcard : Nat.card Gal(↥F/ℚ) = ℓ ^ e := by
     rw [IsGalois.card_aut_eq_finrank ℚ ↥F, hrank]
   refine totalInvariant_eq_one_of_mem_relative_subcyclotomic q hqodd (CyclotomicField q ℚ) ↥F
-    hNodd hcard hinertia ?_
+    (isRadicalExponent_of_odd hNodd) hcard hinertia hdvd ?_
   refine mem_relative_of_forall_not_dvd_primePow hℓ hNodd hx ↥F hcard ?_
   intro p hp hinv P hP hPo
   obtain ⟨hpq, hres⟩ := hbad p hp hinv

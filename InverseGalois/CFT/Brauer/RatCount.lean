@@ -33,6 +33,8 @@ and one from the ramified place, and reciprocity is the statement that they canc
   invariants of a cyclic algebra over the rationals with a totally real splitting field inside a
   cyclotomic field of prime-power conductor, and with a rational prime as coefficient, is the sum
   of just two of them.**
+* `InverseGalois.CFT.totalInvariant_cyclicBrauerHom_rat_eq_single`: **the same sum has a single
+  term when the coefficient is a unit at every finite place.**
 
 ## Tags
 
@@ -147,6 +149,31 @@ theorem totalInvariant_cyclicBrauerHom_rat_eq_mul {σ₀ : Gal(K/ℚ)}
       exact hvp (heightOneSpectrum_rat_eq_of_natCast_mem hp hmem (natCast_mem_ratPlace p hp))
   rw [totalInvariant_cyclicBrauerHom_rat hσ₀ a, finprod_placeInvariant_eq_prod ℚ _ _ hvan,
     Finset.prod_pair (ratPlace_ne_ratPlace hp hq hpq)]
+
+/-- **The sum of all the local invariants of a cyclic algebra over the rationals has a single
+term** when the splitting field is totally real and sits inside a cyclotomic field whose conductor
+has a single prime factor `q`, and the coefficient is a unit at every finite place.  Every place
+away from the conductor is unramified in the splitting field and sees the coefficient as a unit,
+and the archimedean invariants vanish because the splitting field is totally real. -/
+theorem totalInvariant_cyclicBrauerHom_rat_eq_single {σ₀ : Gal(K/ℚ)}
+    (hσ₀ : ∀ x : Gal(K/ℚ), x ∈ Subgroup.zpowers σ₀) (N : ℕ) [NeZero N] (E : Type) [Field E]
+    [NumberField E] [IsCyclotomicExtension {N} ℚ E] [Algebra K E] {q : ℕ} (hq : q.Prime)
+    (hN : ∀ ℓ : ℕ, ℓ.Prime → ℓ ∣ N → ℓ = q) {a : ℚˣ}
+    (ha : ∀ v : HeightOneSpectrum (𝓞 ℚ), v.valuation ℚ (a : ℚ) = 1) :
+    totalInvariant ℚ (cyclicBrauerHom hσ₀ a)
+      = placeInvariant ℚ (ratPlace q hq) (cyclicBrauerHom hσ₀ a) := by
+  classical
+  have hvan : ∀ v ∉ ({ratPlace q hq} : Finset (HeightOneSpectrum (𝓞 ℚ))),
+      placeInvariant ℚ v (cyclicBrauerHom hσ₀ a) = 1 := by
+    intro v hv
+    rw [Finset.mem_singleton] at hv
+    refine placeInvariant_cyclicBrauerHom_rat_eq_one_of_notMem hσ₀ N E v (fun ℓ hℓ hdvd hmem =>
+      hv ?_) (ha v)
+    refine heightOneSpectrum_rat_eq_of_natCast_mem hq ?_ (natCast_mem_ratPlace q hq)
+    rw [← hN ℓ hℓ hdvd]
+    exact hmem
+  rw [totalInvariant_cyclicBrauerHom_rat hσ₀ a, finprod_placeInvariant_eq_prod ℚ _ _ hvan,
+    Finset.prod_singleton]
 
 end TwoPlaces
 

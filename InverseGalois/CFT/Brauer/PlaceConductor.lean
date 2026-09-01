@@ -19,21 +19,21 @@ A subfield of the cyclotomic field of an odd prime conductor is totally ramified
 the completion there is presented by a radical of the opposite of the prime whose exponent is the
 degree of the subfield.  The chosen generator multiplies that radical by a root of unity whose
 residue is the complementary power of the primitive root naming the generator, so the invariant of
-a cyclic algebra with a rational prime as coefficient is read off by the power residue symbol of
+a cyclic algebra with a rational integer as coefficient is read off by the power residue symbol of
 that coefficient.
 
 The exponent the symbol produces is the discrete logarithm of the coefficient to the base of the
-primitive root, which is exactly the exponent expressing the automorphism raising the roots of
-unity to the power of the coefficient as a power of the generator.  That is the same exponent the
-place attached to the coefficient produces, with the opposite sign; so the two places cancel.
+primitive root.  For a rational prime as coefficient that is exactly the exponent expressing the
+automorphism raising the roots of unity to the power of the coefficient as a power of the
+generator, which is the same exponent the place attached to the coefficient produces, with the
+opposite sign; so the two places cancel.
 
 ## Main results
 
 * `InverseGalois.CFT.placeInvariant_cyclicBrauerHom_conductor`: **the invariant, at the place of an
   odd prime conductor, of a cyclic algebra over the rationals split by a subfield of the cyclotomic
-  field of that conductor, with a rational prime away from the conductor as coefficient**, is the
-  class of the exponent expressing the automorphism raising the roots of unity to the power of that
-  coefficient as a power of the generator.
+  field of that conductor, with an integral coefficient congruent to a power of the primitive root
+  naming the generator**, is the class of that exponent.
 
 ## Tags
 
@@ -61,23 +61,20 @@ variable (q : ℕ) [NeZero q] (L F : Type) [Field L] [NumberField L]
   [IsScalarTower ℚ F L] [IsGalois ℚ F]
 
 /-- **The invariant, at the place of an odd prime conductor, of a cyclic algebra over the rationals
-split by a subfield of the cyclotomic field of that conductor, with a rational prime away from the
-conductor as coefficient.**  The completion of the subfield there is presented by a radical of the
+split by a subfield of the cyclotomic field of that conductor, with an integral coefficient away
+from the conductor.**  The completion of the subfield there is presented by a radical of the
 opposite of the conductor whose exponent is the degree of the subfield, and the generator
 multiplies that radical by the root of unity whose residue is the complementary power of the
 primitive root; the power residue symbol of the coefficient then reads the discrete logarithm of
-the coefficient to the base of that primitive root, which is the exponent expressing the
-automorphism raising the roots of unity to the power of the coefficient as a power of the
-generator. -/
+the coefficient to the base of that primitive root, which is the exponent naming the coefficient
+modulo the conductor. -/
 theorem placeInvariant_cyclicBrauerHom_conductor (hq : q.Prime) (hodd : Odd q)
     (W : HeightOneSpectrum (𝓞 L)) [W.asIdeal.LiesOver (Ideal.span {(q : ℤ)})] {N : ℕ}
-    [NeZero N] (hNodd : Odd N) (hcard : Nat.card Gal(F/ℚ) = N)
+    [NeZero N] (hrad : IsRadicalExponent N) (hcard : Nat.card Gal(F/ℚ) = N)
     (hinertia : Ideal.inertia Gal(F/ℚ) (primeUnder (𝓞 F) W).asIdeal = ⊤) {g : ℕ}
     (hg : Nat.Coprime g q) (hgord : ∀ k : ℕ, q ∣ g ^ k - 1 → (q - 1) ∣ k)
-    (hgen : ∀ x : Gal(L/ℚ), x ∈ Subgroup.zpowers (cyclotomicPowerAut q L hg)) {p : ℕ}
-    (hp : Nat.Coprime p q) {c : ℕ}
-    (hc : cyclotomicPowerAut q L hp = cyclotomicPowerAut q L hg ^ c) {a : ℚˣ}
-    (hap : (a : ℚ) = ((p : ℕ) : ℚ)) :
+    (hgen : ∀ x : Gal(L/ℚ), x ∈ Subgroup.zpowers (cyclotomicPowerAut q L hg)) {m : ℤ} {c : ℕ}
+    (hcong : (q : ℤ) ∣ m - ((g ^ c : ℕ) : ℤ)) {a : ℚˣ} (hap : (a : ℚ) = ((m : ℤ) : ℚ)) :
     placeInvariant ℚ (primeUnder (𝓞 ℚ) (primeUnder (𝓞 F) W))
         (cyclicBrauerHom (forall_mem_zpowers_restrictNormal (L := F) hgen) a)
       = Multiplicative.ofAdd (zmodQModZ N (c : ZMod N)) := by
@@ -162,21 +159,20 @@ theorem placeInvariant_cyclicBrauerHom_conductor (hq : q.Prime) (hodd : Odd q)
   have hdiv : (q - 1) / N = Module.finrank F L :=
     Nat.div_eq_of_eq_mul_left (Nat.pos_of_ne_zero (NeZero.ne N)) hMN.symm
   refine placeInvariant_cyclicBrauerHom_of_radical_aut ℚ (primeUnder (𝓞 F) W) hres hinertia
-    hζprim (isRadicalExponent_of_odd hNodd) hqN (forall_mem_zpowers_restrictNormal (L := F) hgen)
+    hζprim hrad hqN (forall_mem_zpowers_restrictNormal (L := F) hgen)
     hst hcard hpow hact hb
     (u := ((g : ℕ) : (primeUnder (𝓞 ℚ) (primeUnder (𝓞 F) W)).adicCompletion ℚ)) ?_ ?_ ?_
   · exact valued_natCast_eq_one_of_not_dvd hq (valued_residueChar_lt_one hres) hgnd
   · rw [hcardres, hdiv, ← Nat.cast_pow]
     exact hζres
-  · have hcast : ((((p : ℕ) : ℤ) - ((g ^ c : ℕ) : ℤ) : ℤ) :
+  · have hcast : ((m - ((g ^ c : ℕ) : ℤ) : ℤ) :
         (primeUnder (𝓞 ℚ) (primeUnder (𝓞 F) W)).adicCompletion ℚ)
-        = ((p : ℕ) : (primeUnder (𝓞 ℚ) (primeUnder (𝓞 F) W)).adicCompletion ℚ)
+        = ((m : ℤ) : (primeUnder (𝓞 ℚ) (primeUnder (𝓞 F) W)).adicCompletion ℚ)
           - ((g : ℕ) : (primeUnder (𝓞 ℚ) (primeUnder (𝓞 F) W)).adicCompletion ℚ) ^ c := by
       push_cast
       ring
-    rw [hap, map_natCast, ← hcast]
-    exact valued_intCast_lt_one_of_dvd hres
-      (dvd_sub_pow_of_cyclotomicPowerAut_eq_pow q L hg hp hc)
+    rw [hap, map_intCast, ← hcast]
+    exact valued_intCast_lt_one_of_dvd hres hcong
 
 end Conductor
 
