@@ -28,6 +28,7 @@ import InverseGalois.CFT.Brauer.CyclicNormResidue
 import InverseGalois.CFT.Brauer.CyclicTower
 import InverseGalois.CFT.Brauer.CyclicTransport
 import InverseGalois.CFT.Brauer.CyclotomicFrobenius
+import InverseGalois.CFT.Brauer.CyclotomicGenerator
 import InverseGalois.CFT.Brauer.Division
 import InverseGalois.CFT.Brauer.DivisionAbsValue
 import InverseGalois.CFT.Brauer.DivisionCompact
@@ -83,6 +84,7 @@ import InverseGalois.CFT.Brauer.Opposite
 import InverseGalois.CFT.Brauer.PlaceCoboundary
 import InverseGalois.CFT.Brauer.PlaceCrossedProduct
 import InverseGalois.CFT.Brauer.PlaceCyclic
+import InverseGalois.CFT.Brauer.PlaceConductor
 import InverseGalois.CFT.Brauer.PlaceCyclotomic
 import InverseGalois.CFT.Brauer.PlaceExponent
 import InverseGalois.CFT.Brauer.PlaceFrobenius
@@ -122,6 +124,7 @@ import InverseGalois.CFT.Brauer.SolvableBound
 import InverseGalois.CFT.Brauer.SolvableNormBound
 import InverseGalois.CFT.Brauer.Split
 import InverseGalois.CFT.Brauer.SplittingSubfield
+import InverseGalois.CFT.Brauer.SubcyclotomicReciprocity
 import InverseGalois.CFT.Brauer.SymbolCyclicAlgebra
 import InverseGalois.CFT.Brauer.SymbolNorm
 import InverseGalois.CFT.Brauer.SymbolSteinberg
@@ -349,6 +352,7 @@ import InverseGalois.CFT.Local.RadicalUnramified
 import InverseGalois.CFT.Local.RamifiedNormForm
 import InverseGalois.CFT.Local.RatResidueDegree
 import InverseGalois.CFT.Local.RatUniformiser
+import InverseGalois.CFT.Local.ResidueDiscreteLog
 import InverseGalois.CFT.Local.ResiduePrimitiveRoot
 import InverseGalois.CFT.Local.ResidueRootUnity
 import InverseGalois.CFT.Local.RootOfUnityValued
@@ -4252,4 +4256,29 @@ it that are available here.
   of the subfield**.  A rational prime is a uniformiser of the completion at the place it
   determines, so **its value there is minus one** and for that coefficient only the exponent, with a
   sign, survives.
+* `InverseGalois.CFT.Brauer.CyclotomicGenerator` identifies the exponent that appears there.  The
+  Galois group of a cyclotomic field of prime conductor is the group of units of the residues, in
+  which a primitive root has the order of the whole group, so **the automorphism raising the roots
+  of unity to the power of a primitive root generates the Galois group** and every automorphism
+  naming a number prime to the conductor is a natural power of it.  Reading that identity in the
+  of units, **the exponent expressing one such automorphism as a power of another expresses the
+  first number as a power of the second modulo the conductor** — the discrete logarithm.
+* `InverseGalois.CFT.Local.ResidueDiscreteLog` turns that discrete logarithm into the congruence the
+  power residue symbol reads.  A multiple of the residue characteristic has valuation less than one,
+  and congruences multiply, so **the power by the discrete logarithm of a root of unity congruent to
+  a power of a primitive root is congruent to the same power of the number**.  The root of unity
+  supplied by the residue prescription is exactly the one whose power the ramified invariant tests.
+* `InverseGalois.CFT.Brauer.PlaceConductor` assembles the ramified term.  The conductor is totally
+  ramified in a cyclotomic field of prime conductor, so the chosen generator fixes the place above
+  it and the completion of the subfield is presented by a radical of the opposite of the conductor
+  moved by the prescribed root of unity, whose coefficient is a uniformiser of the completion of the
+  rationals; the congruence above supplies the power residue exponent.  Hence **the invariant at the
+  place of the conductor of a cyclic algebra over the rationals split by a subfield of a cyclotomic
+  field of prime conductor, of a rational prime away from the conductor as coefficient, is the
+  discrete logarithm of that prime divided by the degree of the subfield**.
+* `InverseGalois.CFT.Brauer.SubcyclotomicReciprocity` puts the two terms together.  They carry the
+  same discrete logarithm with opposite signs, so **the sum of all the local invariants of a cyclic
+  algebra over the rationals split by a totally real subfield of the cyclotomic field of an odd
+  prime conductor, with a rational prime away from the conductor as coefficient, vanishes** — the
+  reciprocity law for that family.
 -/
