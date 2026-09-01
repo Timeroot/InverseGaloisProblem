@@ -33,14 +33,20 @@ generator is such a primitive root.
   group of units.
 * `InverseGalois.CFT.exists_intermediateField_subcyclotomic`: **a totally real subfield of
   prescribed degree of the cyclotomic field of a prime conductor**, totally ramified at that
-  conductor, in which a rational prime splits completely exactly when it is a power residue.
+  conductor, in which a rational prime splits completely exactly when it is a power residue and
+  whose decomposition group at a prime above a rational prime is read off from a power residue
+  condition of matching exponent.
 
 ## Tags
 
 cyclotomic field, primitive root, totally real, totally ramified, power residue, auxiliary prime
 -/
 
+set_option synthInstance.maxHeartbeats 1000000
+
 open Module NumberField InverseGalois.NumberTheory
+
+open scoped Pointwise
 
 namespace InverseGalois.CFT
 
@@ -94,14 +100,19 @@ variable (q : ℕ) [hq : Fact q.Prime]
 
 /-- **A totally real subfield of prescribed degree of the cyclotomic field of a prime conductor**,
 totally ramified at that conductor and unramified elsewhere, in which a rational prime other than
-the conductor splits completely exactly when it is a power residue of the matching exponent.  The
-degree is asked to divide half of the degree of the cyclotomic field, which is what buys total
-reality. -/
+the conductor splits completely exactly when it is a power residue of the matching exponent, and
+whose decomposition group at a prime above such a rational prime has order dividing a number
+exactly when the correspondingly larger power residue condition holds.  The degree is asked to
+divide half of the degree of the cyclotomic field, which is what buys total reality. -/
 theorem exists_intermediateField_subcyclotomic {d : ℕ} (hd : d ≠ 0) (hdvd : 2 * d ∣ q - 1)
     (E : Type) [Field E] [NumberField E] [IsCyclotomicExtension {q} ℚ E] :
     ∃ F : IntermediateField ℚ E, finrank ℚ ↥F = d ∧ IsGalois ℚ ↥F ∧ IsCyclic Gal(↥F/ℚ) ∧
       IsTotallyReal ↥F ∧
       (∀ p : ℕ, p.Prime → p ≠ q → (SplitsCompletely ↥F p ↔ (p : ZMod q) ^ ((q - 1) / d) = 1)) ∧
+      (∀ (p : ℕ), p.Prime → p ≠ q → ∀ (P : Ideal (𝓞 ↥F)) (_ : P.IsPrime)
+        (_ : P.LiesOver (Ideal.span {(p : ℤ)})) (m : ℕ),
+          (Nat.card ↥(MulAction.stabilizer Gal(↥F/ℚ) P) ∣ m ↔
+            (p : ZMod q) ^ (m * ((q - 1) / d)) = 1)) ∧
       ∀ (Q : Ideal (𝓞 ↥F)) (_ : Q.IsPrime) (_ : Q.LiesOver (Ideal.span {(q : ℤ)})),
         Ideal.inertia Gal(↥F/ℚ) Q = ⊤ := by
   haveI : IsCyclotomicExtension {q ^ 1} ℚ E := by rw [pow_one]; infer_instance
@@ -111,10 +122,10 @@ theorem exists_intermediateField_subcyclotomic {d : ℕ} (hd : d ≠ 0) (hdvd : 
   have hd1 : 1 ≤ d := Nat.one_le_iff_ne_zero.mpr hd
   have hq3 : 2 < q := by omega
   have hdvd' : d ∣ q - 1 := dvd_trans ⟨2, mul_comm 2 d⟩ hdvd
-  obtain ⟨F, hrank, hgal, hcyc, hsplit, -⟩ :=
+  obtain ⟨F, hrank, hgal, hcyc, hsplit, hdeg, -⟩ :=
     exists_intermediateField_finrank_eq_and_splitsCompletely q hd hdvd' E
   haveI := hgal
-  refine ⟨F, hrank, hgal, hcyc, ?_, hsplit, ?_⟩
+  refine ⟨F, hrank, hgal, hcyc, ?_, hsplit, hdeg, ?_⟩
   · refine isTotallyReal_of_two_mul_finrank_dvd_cyclotomic q E hq3 F ?_
     rw [hrank, finrank_cyclotomic_of_prime q E]
     exact hdvd

@@ -7725,6 +7725,82 @@ prime divisor, which *is* a new density statement; the prime-power case does not
 
 ---
 
+## 0.76 Status (2026-09-01) — **global reciprocity over ℚ holds for every class of odd order**
+
+Full build green, 9537 jobs, no warnings, no sorries, no axioms.
+
+```lean
+theorem totalInvariant_eq_one_of_pow_eq_one {ℓ e : ℕ} (hℓ : ℓ.Prime) (hℓodd : Odd ℓ)
+    {x : BrauerGroup.{0, 0} ℚ} (hx : x ^ ℓ ^ e = 1) : totalInvariant ℚ x = 1
+
+theorem totalInvariant_eq_one_of_pow_eq_one_odd :
+    ∀ n : ℕ, Odd n → ∀ x : BrauerGroup.{0, 0} ℚ, x ^ n = 1 → totalInvariant ℚ x = 1
+```
+
+Both in `CFT/Brauer/RatReciprocity.lean`.  This closes both items of §0.75(c) and item 2 of
+§0.74(c).
+
+### (a) Prime power: what actually had to change
+
+The global half turned out to need *no new density input at all*.  The point is the arithmetic
+identity
+
+```
+ℓ^(e-1) · ((q − 1) / ℓ^e)  =  (q − 1) / ℓ ,
+```
+
+so a prime `p` that is not an `ℓ`-th power residue mod `q` is, a fortiori, not an `ℓ^e`-th power
+residue, and the *decomposition group* of `p` in the cyclic group `Gal(F/ℚ)` of order `ℓ^e` is
+already the whole group: `card_stabilizer_under_dvd_iff_mem_fixingSubgroup` reads the order of that
+group off the power residue condition (`CFT/Cyclotomic/SubfieldFrobenius.lean`,
+`CFT/Cyclotomic/AuxiliarySubfield.lean` conjunct 6), and
+`primePow_dvd_finrank_adicCompletion_of_not_dvd` turns it into `ℓ^e ∣ [F_w : ℚ_p]`.  So the density
+theorem is invoked at the *prime* exponent `ℓ`, over the field `cycSubfield (ℓ^e)`: splitting
+completely there gives `ℓ^e ∣ q − 1` (which is what the subcyclotomic construction needs) while the
+non-residue clause is at exponent `ℓ` (which is what the local degree needs).
+
+Concretely, `exists_prime_two_mul_dvd_sub_one_pow_ne_one` now feeds
+`exists_prime_splitsCompletely_pow_ne_one₂` with `A = cycSubfield (ℓ^e)` and the primitive `ℓ`-th
+root `cycRoot (ℓ^e) ^ ℓ^(e-1)`, and the corrector's coefficient inversion uses
+
+```lean
+theorem isUnit_intCast_zmod_of_primePow {ℓ e : ℕ} (hℓ : ℓ.Prime) {c : ℤ} (hc : ¬ (ℓ : ℤ) ∣ c) :
+    IsUnit ((c : ZMod (ℓ ^ e)))
+```
+
+(`ZMod.unitOfIsCoprime` on `IsCoprime c (ℓ^e)`) in place of the field inverse.  `ZMod (ℓ^e)` is a
+local ring, and `c` prime to `ℓ` is exactly a unit of it, so `ofAdd(−c/ℓ^e)` still generates the
+`ℓ^e`-torsion of `ℚ/ℤ` and a suitable power hits any prescribed `t`.
+
+### (b) Arbitrary odd order: primary decomposition
+
+`BrauerGroup ℚ` is abelian, so a class killed by `n = ℓ^e · m` with `gcd(ℓ^e, m) = 1` splits as
+`x = (x^{ℓ^e})^A · (x^m)^B` for a Bézout pair `1 = ℓ^e A + m B`; `x^m` is killed by `ℓ^e` and
+`x^{ℓ^e}` is killed by `m < n`.  Strong induction on `n` at `ℓ = n.minFac` (odd because `n` is),
+with `Nat.ordProj_mul_ordCompl_eq_self` and `Nat.coprime_ordCompl` — the same idiom as
+`iSup_primaryComponent_eq_top` in `CFT/Brauer/Primary.lean`.
+
+### (c) What is left on the reciprocity line
+
+Only the 2-part, and it is genuinely harder than the odd part; two independent places where
+oddness was load-bearing:
+
+1. **The archimedean invariant.**  For odd order the real place is discarded (`OddArchimedean`) and
+   the auxiliary subfield of `ℚ(ζ_q)` is chosen totally real.  A class of 2-power order can have
+   `inv_∞ = 1/2`, and then no totally real `F` splits it: the Hasse-principle step needs
+   `[F_w : ℝ] = 2`, i.e. an *imaginary* `F`.  Taking `q ≡ 3 (mod 4)` and `F = ℚ(√−q) ⊂ ℚ(ζ_q)`
+   keeps the ramification at the odd prime `q`, so the tame machinery of §0.71–0.73 still applies —
+   but the place count has to grow an archimedean term: `inv_∞ (F/ℚ, σ, a) = 1/2` exactly when
+   `a < 0`.  That is the missing computation, and it is the whole of the `N = 2` case.
+2. **`IsRadicalExponent 2^k` is false for `k ≥ 2`** (`X⁴ + 4` is reducible while `−4` is not a
+   square), so the tame-symbol chain of §0.75(a) does not run at exponent `4`.  For a *totally
+   tamely ramified* extension the radical generator is a uniformiser and `X^n − π` is Eisenstein,
+   so the irreducibility hypothesis is avoidable there; the unit half of the chain
+   (`card_gal_kummerLevel_eq_of_not_isPow`) is the part that really fails and would have to be
+   restated for the uniformiser case only.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
