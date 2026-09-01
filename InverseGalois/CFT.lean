@@ -96,6 +96,7 @@ import InverseGalois.CFT.Brauer.RealBrauer
 import InverseGalois.CFT.Brauer.RealInvariant
 import InverseGalois.CFT.Brauer.RealPlace
 import InverseGalois.CFT.Brauer.ResidueBaseChange
+import InverseGalois.CFT.Brauer.ResidueCard
 import InverseGalois.CFT.Brauer.ResidueDegree
 import InverseGalois.CFT.Brauer.ResidueGalois
 import InverseGalois.CFT.Brauer.Semilinear
@@ -4032,4 +4033,14 @@ it that are available here.
   description of the Frobenius, obtained with no global Frobenius element in sight; and every
   automorphism of the completion restricts to the extension compatibly with the inclusion, so the
   same holds for **a root of unity of the extension itself**.
+* `InverseGalois.CFT.Brauer.ResidueCard` names the exponent in that description.  The residues of a
+  field are a finite ring without zero divisors, and every one of them is the residue of a rational
+  integer as soon as every integer of the field is congruent to a rational integer; a rational
+  integer is congruent to one of the residue characteristic many of them, while the residue of one
+  already has that additive order.  So **a field whose integers are congruent to rational integers
+  and whose residue characteristic is `p` has exactly `p` residues**, and since residue degree one
+  is exactly the congruence in question, **the completion of a number field at a place of residue
+  degree one over `p` has exactly `p` residues**.  Over the rationals every finite place has residue
+  degree one, so the Frobenius of a completion of an extension of the rationals raises a root of
+  unity to the power of the rational prime below the place.
 -/
