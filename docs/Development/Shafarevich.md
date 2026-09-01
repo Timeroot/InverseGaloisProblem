@@ -6490,6 +6490,90 @@ The tame symbol is now pinned down up to `⟨π, u⟩`, so the remaining step is
 
 ---
 
+## 0.64 Status (2026-09-01) — the tame form, and the kernel of the tame symbol
+
+Two modules, `CFT/Brauer/TameSymbol.lean` (commit `ac1d395`) and
+`CFT/Brauer/TameEvaluation.lean`.  Both sorry- and axiom-free.
+
+### (a) The tame form
+
+Fix a uniformiser `π`, i.e. a unit with `unitValDiv hm π = 1` (`exists_unitValDiv_eq_one`, which is
+just surjectivity of `unitValDiv`).  Then `a · π^{-v(a)}` is a unit of the valuation ring
+(`valued_mul_zpow_uniformiser`), so every element is `π^i u` with `u` a unit.  Expanding
+`⟨π^i u, π^j w⟩` by bilinearity gives four terms; `⟨u, w⟩ = 1` is §0.63, the skew relation moves
+`π` out of the second argument, and `⟨π, π⟩ = ⟨π, -1⟩` because `⟨π, -π⟩ = 1` and `⟨π, -1⟩² = 1`.
+What is left is
+
+```lean
+localSymbol_zpow_mul_zpow_mul … : ⟨π ^ i * u, π ^ j * w⟩ = ⟨π, (-1) ^ (i * j) * w ^ i * u ^ (-j)⟩
+localSymbol_eq_uniformiser … :
+    ⟨a, b⟩ = ⟨π, (-1) ^ (v a * v b) * b ^ (v a) * a ^ (-(v b))⟩
+valued_tame_argument_eq_one … : v ((-1) ^ (v a * v b) * b ^ (v a) * a ^ (-(v b))) = 1
+```
+
+so **the symbol of two elements is the symbol of the uniformiser against an explicit unit of the
+valuation ring.**  And that remaining pairing only sees the *residue* of its second argument, since
+a unit congruent to one is a power of any exponent prime to `p`
+(`localSymbol_eq_one_of_valued_sub_one_lt`, `localSymbol_congr_of_valued_div_sub_one_lt`).
+
+### (b) The evaluation is a counting argument, not a ramified computation
+
+The plan of §0.63(e) was to route `⟨π, u⟩` through `localInvariant_apply_cyclicBrauerHom`.  That is
+not needed for the *kernel*, and the kernel is what the global argument consumes.  Write
+`E := k⟮u^{1/n}⟯` for the level of `u`.  Three facts already in the tree combine:
+
+* `mem_normSubgroup_of_radical_unit` (§0.63(b)) — `E/K` is unramified, so **every** unit of the
+  valuation ring of `K` is a norm from `E`;
+* `index_normSubgroup_eq_finrank_local` — `[Kˣ : N(Eˣ)] = [E : K]`;
+* the elementary observation that a subgroup of `Kˣ` containing every unit of the valuation ring
+  *and* a uniformiser is all of `Kˣ`, because `a = π^{v(a)} · (a π^{-v(a)})`.
+
+So `π ∈ N(Eˣ)` forces `N(Eˣ) = Kˣ`, hence `[E:K] = 1`, hence `u` is a power — the last step being
+`exists_pow_eq_of_card_gal_kummerLevel_eq_one`, which reads off `algebraMap c = u^{1/n}` from
+`exists_algebraMap_eq_pow_card` at degree one.  Nothing ramified is ever computed.
+
+```lean
+eq_top_of_units_le_of_uniformiser_mem (hm) (hU : ∀ x, v x = 1 → x ∈ N)
+    (hπ : unitValDiv hm π = 1) (hmem : π ∈ N) : N = ⊤
+not_mem_normSubgroup_kummerLevel … (hnp : ¬ ∃ c, c ^ n = b) : π ∉ normSubgroup K ↥(kummerLevel h b)
+localSymbol_uniformiser_eq_one_iff … : ⟨π, b⟩ = 1 ↔ ∃ c : Kˣ, c ^ n = b
+localSymbol_eq_one_iff_isPow … :
+    ⟨a, b⟩ = 1 ↔ ∃ c : Kˣ, c ^ n = (-1) ^ (v a * v b) * b ^ (v a) * a ^ (-(v b))
+localSymbol_unit_uniformiser_eq_one_iff … (ha : v a = 1) : ⟨a, π⟩ = 1 ↔ ∃ c : Kˣ, c ^ n = a
+orderOf_localSymbol_uniformiser … (hnp : ¬ ∃ c, c ^ n = b) : orderOf ⟨π, b⟩ = n
+```
+
+The middle one is **the kernel of the tame norm residue symbol**, complete: the symbol of any two
+elements is trivial exactly when one explicit unit of the valuation ring is an `n`-th power.
+
+The bridge that makes the "only if" direction usable is
+`localKummerSymbol_eq_one_iff_kummerSymbolUnits`, the *biconditional* form of the descent used in
+§0.63(c) — `localKummerSymbol_eq_one_iff` composed with `kummerSymbolUnits_eq_one_iff`, the second
+needing only that an algebraic closure is closed under `n`-th roots.
+
+### (c) Lean notes
+
+* `ofMul_mul` and `ofMul_zpow` live in the **root** namespace, not `Additive` — they are declared
+  after `end Additive` in `Mathlib/Algebra/Group/TypeTags/Basic.lean`.  `Additive.ofMul_mul` is an
+  unknown constant.
+* `ring` does not work in a `CommGroup`; the AC-rearrangements of the tame form are
+  `mul_mul_mul_comm` together with `← zpow_add` and a `show … = 0 by ring` on the `ℤ` exponent.
+* `Valuation.map_eq_of_sub_lt v (h : v (y - x) < v x) : v y = v x` is the clean route from
+  `v (u - 1) < 1` to `v u = 1`.
+* In `localSymbol_zpow_mul_zpow_mul` a bare `rw [map_mul, …]` matches the *outer* application
+  first; pin each rewrite with explicit arguments (`map_mul (localSymbol hres hm hζ) (π ^ i) u`).
+* `isKummerData_zmod` has `Ω` implicit, so in a `refine` where it is the *first* explicit argument
+  the `IsAlgClosed Ω` instance of `exists_units_pow_eq` is stuck; pass `(Ω := AlgebraicClosure K)`.
+
+### (d) What is left for reciprocity
+
+The local side is now complete for a tame prime: the symbol is computed by its kernel, and
+`orderOf_localSymbol_uniformiser` says it is onto the `n`-torsion.  What remains is the global
+assembly of §0.56(d): the auxiliary prime `q ≡ 1 mod n`, the cyclic `L ⊆ ℚ(ζ_q)` of degree
+`N ∣ q − 1`, and `totalInvariant k = 1`.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.

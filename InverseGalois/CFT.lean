@@ -68,6 +68,7 @@ import InverseGalois.CFT.Brauer.LocalInvariantRestrict
 import InverseGalois.CFT.Brauer.LocalReciprocity
 import InverseGalois.CFT.Brauer.LocalSymbol
 import InverseGalois.CFT.Brauer.LocalSymbolUnits
+import InverseGalois.CFT.Brauer.TameEvaluation
 import InverseGalois.CFT.Brauer.TameSymbol
 import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
@@ -3954,4 +3955,13 @@ it that are available here.
   unit of the valuation ring** built from the two elements and their values.  A unit congruent to
   one is a power of any exponent prime to the residue characteristic, so **that remaining pairing
   only sees the residue of its second argument.**
+* `InverseGalois.CFT.Brauer.TameEvaluation` evaluates what is left.  A subgroup of the units of the
+  base which contains every unit of the valuation ring and a uniformiser is everything, because
+  dividing by the matching power of the uniformiser leaves a unit of the valuation ring; the norm
+  subgroup of the level of a unit contains every unit of the valuation ring and has index the degree
+  of that level, so **a uniformiser is a norm from the level of a unit exactly when that level is
+  trivial**, which happens exactly when the unit is a power.  Together with the tame form this is
+  **the kernel of the norm residue symbol**: the symbol of two elements is trivial exactly when the
+  unit of the valuation ring built from them and their values is a power, and the symbol of a
+  uniformiser against a unit of the valuation ring which is not a power **has order the exponent.**
 -/
