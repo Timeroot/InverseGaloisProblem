@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Mathlib
 import InverseGalois.CFT.Local.AdicResidue
 import InverseGalois.CFT.Local.CyclotomicUniformiser
+import InverseGalois.CFT.Local.PrimeResidue
 import InverseGalois.CFT.Local.UnitPowRoot
 
 /-!
@@ -26,6 +27,11 @@ and the difference of the root and one contributes the partial geometric sum, wh
 the number of its terms.  A root of unity of order prime to the residue characteristic is determined
 by its residue, so the multiplier is the Teichmüller lift of the exponent.
 
+Raising the radical to a power descends it to any divisor of one less than the prime: the power of
+exponent that divisor is again a radical, of the same opposite of the prime, and the automorphism
+multiplies it by the corresponding power of the Teichmüller lift, which is congruent to the same
+power of the exponent.
+
 ## Main results
 
 * `InverseGalois.CFT.exists_pow_eq_neg_natCast`: **a primitive root of unity of odd prime order,
@@ -37,6 +43,11 @@ by its residue, so the multiplier is the Teichmüller lift of the exponent.
   exponent to which the automorphism raises the root of unity.**
 * `InverseGalois.CFT.aut_eq_mul_of_pow_eq_one`: **an automorphism multiplies such a radical by the
   root of unity of order dividing one less than the prime whose residue is that exponent.**
+* `InverseGalois.CFT.isPrimitiveRoot_of_valued_sub_natCast_lt_one`: **a root of unity congruent to a
+  natural number of that multiplicative order modulo the residue characteristic is primitive.**
+* `InverseGalois.CFT.exists_pow_eq_neg_natCast_aut`: **a radical of the opposite of the prime of any
+  exponent dividing one less than the prime, together with the root of unity by which a given
+  automorphism multiplies it.**
 
 ## Tags
 
@@ -207,5 +218,83 @@ theorem aut_eq_mul_of_pow_eq_one (h : HasResidueChar A q e) (hζ : IsPrimitiveRo
   rwa [div_eq_iff hμ0] at heq
 
 end Action
+
+/-! ### Recognising a primitive root of unity by its residue -/
+
+section Primitive
+
+variable {A : Type*} [Field A] [Valued A ℤᵐ⁰] {q e : ℕ}
+
+/-- **A root of unity congruent to a natural number of that multiplicative order modulo the residue
+characteristic is primitive.**  Powers of the root of unity stay congruent to the corresponding
+powers of the number, and a natural number congruent to one is divisible by the residue
+characteristic after subtracting one, so a power of the root of unity is one only when the
+corresponding power of the number is one modulo the residue characteristic. -/
+theorem isPrimitiveRoot_of_valued_sub_natCast_lt_one (h : HasResidueChar A q e) {N : ℕ}
+    (hN : N ≠ 0) {ξ : A} (hξ : ξ ^ N = 1) {b : ℕ} (hb : Valued.v (ξ - (b : A)) < 1)
+    (hord : ∀ k : ℕ, q ∣ b ^ k - 1 → N ∣ k) : IsPrimitiveRoot ξ N := by
+  have hqp := h.prime
+  have hqv := valued_residueChar_lt_one h
+  have hξv : Valued.v ξ = 1 := valued_eq_one_of_pow_eq_one₀ hN hξ
+  have hbv : Valued.v ((b : A)) = 1 := by
+    refine (Valuation.map_eq_of_sub_lt Valued.v ?_).trans hξv
+    rw [Valuation.map_sub_swap, hξv]
+    exact hb
+  have hb0 : b ≠ 0 := by
+    rintro rfl
+    rw [Nat.cast_zero, map_zero] at hbv
+    exact zero_ne_one hbv
+  refine ⟨hξ, fun l hl => hord l ?_⟩
+  have hpow : Valued.v (ξ ^ l - (b : A) ^ l) < 1 :=
+    valued_sub_pow_lt_one hξv.le hbv.le hb l
+  rw [hl] at hpow
+  have hb1 : 1 ≤ b ^ l := Nat.one_le_pow _ _ (Nat.pos_of_ne_zero hb0)
+  have hlt : Valued.v (((b ^ l - 1 : ℕ) : A)) < 1 := by
+    rw [Nat.cast_sub hb1, Nat.cast_pow, Nat.cast_one,
+      show (b : A) ^ l - 1 = -(1 - (b : A) ^ l) by ring, Valuation.map_neg]
+    exact hpow
+  by_contra hnd
+  exact absurd (valued_natCast_eq_one_of_not_dvd hqp hqv hnd) (ne_of_lt hlt)
+
+end Primitive
+
+/-! ### Descending the radical -/
+
+section Descent
+
+variable {A : Type*} [Field A] [Valued A ℤᵐ⁰] [CompleteSpace A] {q e : ℕ} {ζ : A} {σ : A ≃+* A}
+
+/-- **A radical of the opposite of the residue characteristic of any exponent dividing one less than
+the residue characteristic, together with the root of unity by which a given automorphism multiplies
+it.**  The power of the radical of full exponent by the complementary factor is such a radical, and
+the automorphism multiplies it by the corresponding power of the Teichmüller lift, which is
+congruent to the same power of the exponent to which the automorphism raises the root of unity. -/
+theorem exists_pow_eq_neg_natCast_aut (h : HasResidueChar A q e) (hodd : Odd q)
+    (hζ : IsPrimitiveRoot ζ q) (hσv : ∀ x : A, Valued.v (σ x) = Valued.v x) {a : ℕ}
+    (hσζ : σ ζ = ζ ^ a) {M N : ℕ} (hMN : M * N = q - 1) :
+    ∃ ν ξ : A, ν ^ N = -((q : ℕ) : A) ∧ σ ν = ξ * ν ∧ ξ ^ N = 1 ∧
+      Valued.v (ξ - (a : A) ^ M) < 1 := by
+  obtain ⟨μ, hμ, hμζ⟩ := exists_pow_eq_neg_natCast h hodd hζ
+  have hq := h.prime
+  have hq1 : 1 < q := hq.one_lt
+  have hq10 : q - 1 ≠ 0 := by omega
+  have hqne : ((q : ℕ) : A) ≠ 0 := h.natCast_ne_zero hq.ne_zero
+  have hμ0 : μ ≠ 0 := by
+    intro hz
+    rw [hz, zero_pow hq10] at hμ
+    exact hqne (neg_eq_zero.mp hμ.symm)
+  have hηpow : (σ μ / μ) ^ (q - 1) = 1 := pow_aut_div_eq_one h hμ
+  have hηa : Valued.v (σ μ / μ - (a : A)) < 1 :=
+    valued_aut_div_sub_natCast_lt_one h hζ hσv hσζ hμζ
+  have hσμ : σ μ = (σ μ / μ) * μ := (div_mul_cancel₀ _ hμ0).symm
+  have hηv : Valued.v (σ μ / μ) = 1 := by
+    rw [map_div₀, hσv, div_self ((Valuation.ne_zero_iff _).mpr hμ0)]
+  refine ⟨μ ^ M, (σ μ / μ) ^ M, ?_, ?_, ?_, ?_⟩
+  · rw [← pow_mul, hMN, hμ]
+  · rw [map_pow, ← mul_pow, ← hσμ]
+  · rw [← pow_mul, hMN, hηpow]
+  · exact valued_sub_pow_lt_one hηv.le (valued_natCast_le_one a) hηa M
+
+end Descent
 
 end InverseGalois.CFT

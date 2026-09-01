@@ -70,6 +70,7 @@ import InverseGalois.CFT.Brauer.LocalInvariant
 import InverseGalois.CFT.Brauer.LocalInvariantRestrict
 import InverseGalois.CFT.Brauer.LocalReciprocity
 import InverseGalois.CFT.Brauer.LocalSymbol
+import InverseGalois.CFT.Brauer.LocalSymbolRamified
 import InverseGalois.CFT.Brauer.LocalSymbolUnits
 import InverseGalois.CFT.Brauer.TameEvaluation
 import InverseGalois.CFT.Brauer.TameSymbol
@@ -4121,7 +4122,15 @@ it that are available here.
   such a root is congruent to the difference itself.  An automorphism of the field is then pinned
   down on it by its effect on the root of unity: **an automorphism raising the root of unity to a
   power multiplies the radical by the root of unity of order one less than the prime whose residue
-  is that power**.
+  is that power**.  Raising the radical to a power descends it to any exponent dividing one less
+  than the prime, and the multiplier descends with it; a root of unity congruent to a natural number
+  of that multiplicative order modulo the prime is primitive, so the descended multiplier is a
+  primitive root of unity of the smaller exponent.
+* `InverseGalois.CFT.Brauer.LocalSymbolRamified` computes the invariant of a cyclic algebra over a
+  ramified level.  The power symbol of two units is the inverse of the class of the cyclic algebra
+  of the first over any cyclic level carrying the Kummer character of the second, and the invariant
+  map is defined on the whole Brauer group, so **the norm residue symbol of two units is the inverse
+  of the invariant of that cyclic algebra**, with no unramifiedness hypothesis on the level.
 * `InverseGalois.CFT.Brauer.CyclicTransport` moves a cyclic algebra between splitting fields.  **An
   isomorphism of two cyclic extensions of the base carrying one chosen generator of the Galois group
   to the other leaves the Brauer class of the cyclic algebra unchanged**, because the cyclic algebra
