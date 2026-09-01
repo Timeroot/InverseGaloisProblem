@@ -88,6 +88,7 @@ import InverseGalois.CFT.Brauer.PlaceExponent
 import InverseGalois.CFT.Brauer.PlaceFrobenius
 import InverseGalois.CFT.Brauer.PlaceInvariant
 import InverseGalois.CFT.Brauer.PlaceInvariantFinite
+import InverseGalois.CFT.Brauer.PlaceTotallyRamified
 import InverseGalois.CFT.Brauer.PlaceUnramified
 import InverseGalois.CFT.Brauer.Primary
 import InverseGalois.CFT.Brauer.QuadraticExt
@@ -342,6 +343,7 @@ import InverseGalois.CFT.Local.RadicalUnramified
 import InverseGalois.CFT.Local.RamifiedNormForm
 import InverseGalois.CFT.Local.RatResidueDegree
 import InverseGalois.CFT.Local.RatUniformiser
+import InverseGalois.CFT.Local.ResiduePrimitiveRoot
 import InverseGalois.CFT.Local.ResidueRootUnity
 import InverseGalois.CFT.Local.RootOfUnityValued
 import InverseGalois.CFT.Local.SpectralNorm
@@ -698,6 +700,7 @@ import InverseGalois.CFT.Units.PowIdele
 import InverseGalois.CFT.Units.PowSIdeleClass
 import InverseGalois.CFT.Units.PowSIdeleNorm
 import InverseGalois.CFT.Units.PrimeAbove
+import InverseGalois.CFT.Units.RadicalDescent
 import InverseGalois.CFT.Units.RatFundamentalClass
 import InverseGalois.CFT.Units.RatRamIdx
 import InverseGalois.CFT.Units.RatSumSquares
@@ -4176,4 +4179,28 @@ it that are available here.
   of unity to an exponent whose power of that order is congruent to one**, and over an intermediate
   field every automorphism has order dividing the number of automorphisms of the extension, so
   **the radical comes from the completion of the intermediate field**.
+* `InverseGalois.CFT.Brauer.PlaceTotallyRamified` reads the local data at the place where that
+  radical lives.  Inertia sits inside the decomposition group, so **the decomposition group of a
+  totally ramified prime is the whole Galois group**; its index is then one, whence **the local
+  degree at a totally ramified place is the degree of the extension** and **the Galois group of the
+  completions has a generator restricting to a prescribed generator of the Galois group of the
+  extension**, with no correcting power in between.  A finite place of the rationals is determined
+  by the rational prime it contains, so **the place of the rationals below a place above a rational
+  prime is the place attached to that prime**, and conversely.
+* `InverseGalois.CFT.Local.ResiduePrimitiveRoot` names the residue the radical is to have.  The
+  multiplicative group of the residues modulo a prime is cyclic, so **a prime has a primitive
+  root**, and raising the root of unity above it to the complementary power, **a complete valued
+  field of residue characteristic a prime contains, for every factorisation of one less than that
+  prime, a primitive root of unity of the second factor congruent to the first power of a
+  prescribed primitive root**.  Prescribing the residue is what makes the root of unity usable in a
+  field and in an extension of it at once.
+* `InverseGalois.CFT.Units.RadicalDescent` brings the radical and its multiplier down a tower.  The
+  radical of a normal extension is fixed by the decomposition group over an intermediate field, so
+  **the completion of the intermediate field carries a radical of the opposite of the prime of
+  every exponent whose complementary factor is the degree of the upper layer**; an automorphism of
+  the top field fixing the place acts on the smaller completion through its restriction, so the
+  root of unity multiplying the radical descends with its order and its residue.  Two roots of
+  unity of an order prime to the residue characteristic agreeing on residues are equal, whence
+  **the automorphism of the intermediate completion multiplies the radical by a root of unity
+  prescribed in the completion of the base**.
 -/
