@@ -114,6 +114,7 @@ import InverseGalois.CFT.Brauer.SymbolNorm
 import InverseGalois.CFT.Brauer.SymbolSteinberg
 import InverseGalois.CFT.Brauer.TensorSimple
 import InverseGalois.CFT.Brauer.TotalInvariant
+import InverseGalois.CFT.Brauer.TotallyRealInvariant
 import InverseGalois.CFT.Brauer.Tower
 import InverseGalois.CFT.Brauer.UnramifiedAdjoin
 import InverseGalois.CFT.Brauer.UnramifiedAut
@@ -687,6 +688,7 @@ import InverseGalois.CFT.Units.PowSIdeleClass
 import InverseGalois.CFT.Units.PowSIdeleNorm
 import InverseGalois.CFT.Units.PrimeAbove
 import InverseGalois.CFT.Units.RatFundamentalClass
+import InverseGalois.CFT.Units.RatRamIdx
 import InverseGalois.CFT.Units.RatSumSquares
 import InverseGalois.CFT.Units.SIdeleClass
 import InverseGalois.CFT.Units.SIdeleHerbrand
@@ -2184,6 +2186,14 @@ it that are available here.
   prime below it: they differ by the ramification index, which is at least one, so the inclusion of
   the base field is uniformly continuous for the two adic topologies and extends to a map of the
   completion of the base at a prime into the completion of the extension at any prime above it.
+* `InverseGalois.CFT.Units.RatRamIdx` computes that ramification index over the rationals.  The ring
+  of integers of the rationals is the rational integers, so the structure map from the rational
+  integers is surjective and the ideal below a place extends to the same ideal whichever of the two
+  is used as the base; since the ramification index depends on the base only through the extended
+  ideal, it agrees with the ramification index over the rational integers, and is therefore one
+  whenever the place is unramified in the sense of commutative algebra.  For a place of a subfield
+  of the cyclotomic field of conductor `n` lying over a rational prime not dividing `n` this is the
+  cyclotomic unramifiedness already available.
 * `InverseGalois.CFT.Units.CompletionFinite` shows that map makes the completion above a finite
   extension of the completion below, of degree at most the degree of the global extension.  A
   finite spanning set of the extension over the base spans, over the completion of the base, a
@@ -2857,6 +2867,13 @@ it that are available here.
   rational number modulo the integers for each place.  All but finitely many of them vanish, so
   their sum over all places is defined, and a class with all of them zero is split everywhere:
   **a Brauer class over a number field is determined by its family of local invariants.**
+* `InverseGalois.CFT.Brauer.TotallyRealInvariant` removes the archimedean places from that sum for
+  the classes the reciprocity computation is about.  Every infinite place of the rationals is real,
+  so the completion there splits exactly what the reals split, and a field with a real embedding
+  therefore splits at every infinite place whatever it splits globally.  A totally real number
+  field supplies such an embedding from any of its own infinite places, so **the total invariant of
+  a cyclic algebra over the rationals with a totally real splitting field is the product of its
+  invariants at the finite places.**
 * `InverseGalois.CFT.Kummer.InflationRootsOfUnity` turns a statement about the units back into one
   about the roots of unity.  If a two-cocycle whose values are `n`-th roots of unity is a coboundary
   in the units, then the `n`-th powers of the cochain witnessing that form a one-cocycle, so

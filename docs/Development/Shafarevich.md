@@ -7167,6 +7167,108 @@ now done too.  Remaining:
 
 ---
 
+## 0.70 Status (2026-09-01) — the unramified supply and the archimedean places
+
+`CFT/Units/RatRamIdx.lean` and `CFT/Brauer/TotallyRealInvariant.lean`, sorry- and axiom-free.  They
+discharge item 1 of §0.69(g) and the second half of item 3.
+
+### (a) The ramification index over the rationals
+
+The `hram : ramIdx (𝓞 k) w = 1` that every unramified-place statement of §0.67–§0.69 asks for is
+stated relative to the *ring of integers of the base field*, whereas both Mathlib's
+`Algebra.IsUnramifiedAt` and the cyclotomic computations of
+`Mathlib/NumberTheory/NumberField/Cyclotomic/Ideal.lean` are stated relative to `ℤ`.  Over `ℚ` the
+two agree, and the bridge is three lines of ideal theory:
+
+* `Ideal.ramificationIdx f p P` is `sSup {n | Ideal.map f p ≤ P ^ n}`, so it depends on the base
+  only through the *extended* ideal — `ramificationIdx_congr`.
+* `algebraMap ℤ (𝓞 ℚ)` is `Rat.ringOfIntegersEquiv.symm` (any two ring maps out of `ℤ` agree), hence
+  surjective, so `Ideal.map (algebraMap ℤ (𝓞 ℚ)) (Ideal.under ℤ P) = Ideal.under (𝓞 ℚ) P`.
+* Therefore `ramIdx (𝓞 ℚ) w = Ideal.ramificationIdx (algebraMap ℤ (𝓞 K)) (Ideal.under ℤ w.asIdeal)
+  w.asIdeal`, which is `1` as soon as `Algebra.IsUnramifiedAt ℤ w.asIdeal`.
+
+Combined with the repo's existing `Cyclotomic/Ramified.lean` this gives, for a place `w` of any
+number field embedded in the cyclotomic field of conductor `n`,
+
+```lean
+ramIdx_rat_eq_one_of_not_dvd (n) (E) [IsCyclotomicExtension {n} ℚ E] [Algebra F E] (p)
+  (w : HeightOneSpectrum (𝓞 F)) [w.asIdeal.LiesOver (Ideal.span {(p : ℤ)})] (hn : ¬ p ∣ n) :
+  ramIdx (𝓞 ℚ) w = 1
+```
+
+together with the version quantified over the primes contained in `w`.  The same file records that
+a natural number prime to the residue characteristic is a unit at the place
+(`valuation_natCast_eq_one_of_not_dvd`), which is the remaining side condition `hmv` of
+`restrictToBase_divisionFrobenius_eq_of_adjoin_rat`.
+
+### (b) The archimedean places drop out for a totally real splitting field
+
+`ℚ` is totally real, so its single infinite place `u` is real and `relative ℚ u.Completion` is
+`relative ℚ ℝ` — the hypothesis `algebraMap ℚ ℝ = embedding_of_isReal hu` of
+`relative_completion_eq_relative_real` is free, because `Subsingleton (ℚ →+* ℝ)`.  A ring
+homomorphism `L →+* ℝ` is automatically a `ℚ`-algebra homomorphism (`RingHom.toRatAlgHom`), so the
+monotonicity `relative_le_relative_of_algHom` gives
+
+```lean
+infinitePlaceInvariant_rat_eq_one_of_isTotallyReal (u : InfinitePlace ℚ)
+  (hx : x ∈ BrauerGroup.relative ℚ L) : infinitePlaceInvariant ℚ u x = 1
+```
+
+for `L` a totally real number field — any infinite place of `L` is real and supplies the embedding.
+Applied to `cyclicBrauerHom hσ₀ a`, whose class lies in `relative ℚ L` by construction, this leaves
+
+```lean
+totalInvariant_cyclicBrauerHom_rat (a : ℚˣ) :
+  totalInvariant ℚ (cyclicBrauerHom hσ₀ a)
+    = ∏ᶠ v : HeightOneSpectrum (𝓞 ℚ), placeInvariant ℚ v (cyclicBrauerHom hσ₀ a)
+```
+
+so the reciprocity statement for such an algebra is now purely a statement about the finite places.
+This is exactly the shape wanted, because the field `F₀ ⊆ ℚ(ζ_q)` produced by
+`exists_cyclic_totallyRamified_totallyReal_of_dvd` is totally real by construction.
+
+### (c) Why the subfield cannot be traded for the whole cyclotomic field
+
+There is a tempting simplification: `cyclicBrauerHom_restrictNormal` (`Brauer/CyclicTower.lean`)
+says that for a tower `k ⊆ L ⊆ L'` with compatible generators,
+
+```
+(L/k, σ₀|_L, a) = (L'/k, σ', a ^ [L' : L])
+```
+
+in the Brauer group, so the invariants of `(F₀/ℚ, σ₀, a)` are the invariants of
+`(ℚ(ζ_q)/ℚ, σ', a^{(q−1)/N})`, and the *only* Frobenius one ever has to identify is the cyclotomic
+one, `ζ ↦ ζ^p`, for which `restrictToBase_divisionFrobenius_eq_of_adjoin_rat` already applies with
+no tower functoriality.  This is worth using at the finite places.
+
+It cannot, however, replace §(b): `ℚ(ζ_q)` is totally *complex* for `q > 2`, so it admits no real
+embedding and the archimedean invariant of `(ℚ(ζ_q)/ℚ, σ', b)` need not vanish — the quaternion
+algebra `(ℚ(ζ_3)/ℚ, σ, −1)` is a counterexample.  The vanishing is a property of the totally real
+subfield, and has to be proven there.
+
+### (d) Lean notes
+
+* `Rat.ringOfIntegersEquiv : 𝓞 ℚ ≃+* ℤ`; `algebraMap ℤ (𝓞 ℚ) = Rat.ringOfIntegersEquiv.symm` by
+  `RingHom.ext_int _ _`.
+* `RingHom.toRatAlgHom` is stated for *arbitrary* `Algebra ℚ R`, `Algebra ℚ S` instances (its
+  `commutes'` goes through `Subsingleton (ℚ →+* R)`), so it does not impose the `algebraRat`
+  instance and cannot create a diamond with the algebra structure a caller already has.
+* `Ideal.LiesOver.over` is the field `p = P.under R`, so it rewrites *forwards* from the ideal below
+  to the span; `rw [← Ideal.LiesOver.over]` is the direction that turns membership in `under ℤ P`
+  into membership in `span {(p : ℤ)}`.
+
+### (e) What is left for reciprocity
+
+Of §0.69(g) only the genuinely arithmetic item survives:
+
+1. the ramified place `q`: the Kummer identification `L_w/ℚ_q = ℚ_q((−q)^{1/N})` combined with
+   `localSymbol_uniformiser_eq_powerResidue`;
+2. the count itself, `∏ᶠ v, placeInvariant ℚ v (cyclicBrauerHom hσ₀ a) = 1`, whose content is that
+   the cyclotomic Frobenius exponent at `p` and the power residue symbol of `p` at `q` are negatives
+   of each other modulo `1`.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
