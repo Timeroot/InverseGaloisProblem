@@ -7365,6 +7365,119 @@ cancellation of two explicitly-named terms.
    `ZMod.unitOfCoprime p _` and `hgen` comes from `IsPrimitiveRoot.powerBasis` and
    `PowerBasis.adjoin_gen_eq_top`.
 
+## 0.72 Status (2026-09-01) — the cyclotomic Frobenius, and the blueprint for the ramified place
+
+`CFT/Brauer/CyclotomicFrobenius.lean`, sorry- and axiom-free (build green at 9503 jobs, no
+warnings).  It closes item 2 of §0.71(d) — the *arithmetic* half of the unramified term — and this
+section also records, in full, the computation that item 1 (the ramified place) has to be built out
+of.
+
+### (a) The automorphism raising the roots of unity to a given power
+
+`placeInvariant_cyclicBrauerHom_rat_of_adjoin_not_dvd` asks its caller for a global automorphism
+`τ` with `τ ζ = ζ ^ q`, a generator `ζ` of the field, and an exponent `c` with `τ = σ₀ ^ c`.  For a
+cyclotomic field the first two are supplied outright:
+
+```lean
+noncomputable def cyclotomicPowerAut (n) (K) [IsCyclotomicExtension {n} ℚ K] (hp : p.Coprime n) :
+    Gal(K/ℚ) := (IsCyclotomicExtension.Rat.galEquivZMod n K).symm (ZMod.unitOfCoprime p hp)
+
+cyclotomicPowerAut_apply (hx : x ^ n = 1) : cyclotomicPowerAut n K hp x = x ^ p
+adjoin_zeta_rat_eq_top : Algebra.adjoin ℚ {IsCyclotomicExtension.zeta n ℚ K} = ⊤
+```
+
+`galEquivZMod_apply_of_pow_eq` gives `σ x = x ^ (galEquivZMod n K σ).val.val` for *every* `x` with
+`x ^ n = 1`, not only for a primitive root, and `ZMod.coe_unitOfCoprime` together with
+`ZMod.val_natCast` turns the unit back into `p % n`; the exponent is then repaired by
+
+```lean
+pow_mod_eq_pow_of_pow_eq_one {M} [Monoid M] (hx : x ^ n = 1) (p) : x ^ (p % n) = x ^ p
+```
+
+which has to be stated at monoid level, because `ζ` is a field element and the existing
+`Semiabelian.pow_mod_eq_pow` is a group lemma.  Feeding all three in:
+
+```lean
+placeInvariant_cyclicBrauerHom_cyclotomic (hσ₀) (w) [Fact q.Prime]
+  [w.asIdeal.LiesOver (Ideal.span {(q : ℤ)})] (hqn : Nat.Coprime q n)
+  (hc : cyclotomicPowerAut n K hqn = σ₀ ^ c) (a : ℚˣ) :
+  placeInvariant ℚ (primeUnder (𝒪 ℚ) w) (cyclicBrauerHom hσ₀ a)
+    = Multiplicative.ofAdd (intQModZ (Nat.card Gal(K/ℚ)) ((c : ℤ) * placeValue _ a))
+```
+
+Nothing local survives: the only hypotheses are `Nat.Coprime q n` and the discrete logarithm `hc`
+of the cyclotomic Frobenius to the chosen generator.
+
+### (b) Lean notes
+
+* `IsCyclotomicExtension.isGalois` (`Mathlib/NumberTheory/Cyclotomic/Basic.lean:589`) is a
+  **theorem** with the set `S` explicit, not an instance, so `IsGalois ℚ K` is *not* synthesised
+  from `[IsCyclotomicExtension {n} ℚ K]`.  Making it a `local instance` is unsafe — synthesis would
+  have to guess the conductor through a metavariable — so it is carried as an ordinary section
+  variable `[IsGalois ℚ K]`, which callers discharge with `haveI := IsCyclotomicExtension.isGalois
+  {n} ℚ K`.
+* `IsCyclotomicExtension.adjoin_primitive_root_eq_top` (`:460`) gives `hgen` directly; there is no
+  need to go through `IsPrimitiveRoot.powerBasis` and `PowerBasis.adjoin_gen_eq_top` as §0.71(d)
+  guessed.
+* A bare statement mentioning `cyclicBrauerHom` over a cyclotomic `K` times out at `isDefEq` with
+  the default 200000 heartbeats; `set_option synthInstance.maxHeartbeats 1000000` and
+  `set_option maxHeartbeats 1000000` at the top of the module clear it, as in
+  `Brauer/TotalInvariant.lean` and `Brauer/RatCount.lean`.
+
+### (c) The ramified place: the computation to formalise
+
+This is the whole of what is left, written out so that it can be built brick by brick.  Fix an odd
+prime `q`, a divisor `N ∣ q − 1`, and write `K = ℚ_q`, `ζ = ζ_q`, `λ = ζ − 1`.
+
+1. **`λ` is a uniformiser of `K(ζ)`** and `∏_{a=1}^{q-1} (ζ^a − 1) = Φ_q(1) = q` (the sign is `+`
+   because `q − 1` is even).  Each factor is `λ·u_a` with `u_a = 1 + ζ + ⋯ + ζ^{a-1} ≡ a (mod λ)`, so
+   `q = λ^{q-1}·u` with `u ≡ (q−1)! ≡ −1 (mod λ)` by Wilson.  Hence `λ^{q-1} = −q·v` with
+   `v ≡ 1 (mod λ)`.
+2. **A unit `≡ 1` modulo the maximal ideal is a `(q−1)`-th power**, by Hensel: the residue equation
+   `x^{q-1} = 1` has `x = 1` as a simple root because `q − 1` is prime to the residue
+   characteristic.  Write `v = w^{q-1}` with `w ≡ 1 (mod λ)` and put `μ := λ / w`.  Then
+   `μ^{q-1} = −q`, so **`K(ζ_q) = K((−q)^{1/(q-1)})` is a Kummer extension** — `K` contains the
+   `(q−1)`-st roots of unity by Teichmüller.
+3. **The Galois action on `μ` is the Teichmüller character.**  `σ_a(μ)/μ` is a `(q−1)`-st root of
+   unity because `μ^{q-1} = −q` lies in `K`, and
+   `σ_a(μ)/μ = (σ_a(λ)/λ)·(w/σ_a(w)) ≡ a·1 (mod 𝔪)`, since `w ≡ 1` forces `σ_a(w) ≡ 1`.  A root of
+   unity of order prime to the residue characteristic is determined by its residue, so
+   **`σ_a(μ) = ω(a)·μ`** with `ω` the Teichmüller lift.
+4. **Descend to degree `N`.**  Put `ν := μ^{(q-1)/N}`, so `ν^N = −q` and
+   `σ_a(ν) = ω(a)^{(q-1)/N}·ν`.  The stabiliser of `ν` is `{a : a^{(q-1)/N} ≡ 1} =` the `N`-th
+   powers, which is the subgroup cutting out `F₀`, so `w.adicCompletion F₀ = K(ν)` is the Kummer
+   level of `−q`, and for `g` a generator of `(ℤ/q)ˣ` the root of unity
+   `ζ_N := ω(g)^{(q-1)/N}` is primitive and **`σ_g` restricts to the canonical Kummer generator
+   `ν ↦ ζ_N ν`.**
+
+Step 4 is exactly the `hcarry` hypothesis of `smoothBrauerHom_kummerSymbolUnits`
+(`Brauer/SymbolCyclicAlgebra.lean`), which asks that `dlog σ₀` on the level agree with the Kummer
+character.  So no generator mismatch survives, and
+
+```
+inv_q (cyclicBrauerHom hσ_g p) = inv ⟨p, −q⟩⁻¹ = inv ⟨−q, p⟩
+```
+
+by `localSymbol_mul_swap` (`Brauer/LocalSymbolUnits.lean:155`).  The right-hand side has a
+uniformiser in the first slot and a unit in the second, which is precisely the shape of
+`localSymbol_uniformiser_eq_powerResidue` (`Brauer/TameResidue.lean:238`, and its `hn : n.Prime` is
+harmless because `N = ℓ` is prime in the Shafarevich application): it equals
+`ofAdd (zmodQModZ N (−j))` where `ζ_N^j ≡ p^{(q-1)/N} (mod 𝔪)`.
+
+The two terms then cancel by pure arithmetic: `ζ_N^j = ω(g)^{j(q-1)/N} ≡ g^{j(q-1)/N}` and
+`p ≡ g^c (mod q)` for the exponent `c` of §0.72(a), so `j ≡ c (mod N)` and the invariants are
+`ofAdd (c/N)` and `ofAdd (−c/N)`.
+
+### (d) What is left for reciprocity
+
+Only §0.72(c).  Its four steps are independent bricks: (1) is a cyclotomic identity that can be
+proved in the number field and transported, (2) is Hensel for `x^{q-1} = v`, (3) is the
+determination of a root of unity by its residue — the same lemma `eq_of_valued_sub_lt_one` that
+`Brauer/TameResidue.lean` already uses — and (4) is a Galois-correspondence bookkeeping step
+identifying `w.adicCompletion F₀` with a subfield of `K(ζ_q)`.
+
+---
+
 ---
 
 ## 3. What is reachable *without* class field theory

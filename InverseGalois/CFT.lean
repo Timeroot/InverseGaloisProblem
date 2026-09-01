@@ -26,6 +26,7 @@ import InverseGalois.CFT.Brauer.CyclicInvariant
 import InverseGalois.CFT.Brauer.CyclicNorm
 import InverseGalois.CFT.Brauer.CyclicNormResidue
 import InverseGalois.CFT.Brauer.CyclicTower
+import InverseGalois.CFT.Brauer.CyclotomicFrobenius
 import InverseGalois.CFT.Brauer.Division
 import InverseGalois.CFT.Brauer.DivisionAbsValue
 import InverseGalois.CFT.Brauer.DivisionCompact
@@ -4096,4 +4097,12 @@ it that are available here.
   finite places is a finite product over any set outside which they vanish, so **for a totally real
   splitting field inside a cyclotomic field with a single ramified prime and a rational prime as
   coefficient the sum of all the local invariants has exactly two terms**.
+* `InverseGalois.CFT.Brauer.CyclotomicFrobenius` names the automorphism that computes the surviving
+  unramified term.  Through the description of the Galois group of a cyclotomic field as the units
+  of the integers modulo the conductor, a natural number prime to the conductor names **the
+  automorphism raising every root of unity of order dividing the conductor to that power**, and a
+  chosen primitive root generates the field, so **the invariant of a cyclic algebra over the
+  rationals at a place of a cyclotomic field away from the conductor is the exponent expressing that
+  automorphism as a power of the chosen generator, times the value of the coefficient, divided by
+  the degree**.
 -/
