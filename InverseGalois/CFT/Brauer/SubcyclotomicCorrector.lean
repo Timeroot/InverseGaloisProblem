@@ -11,7 +11,7 @@ import InverseGalois.CFT.Brauer.SubcyclotomicSplit
 /-!
 # Prescribing the invariant of a Brauer class at a single prime
 
-Reciprocity for a class of odd prime-power order is proved by moving its local invariants around
+Reciprocity for a class of prime-power order is proved by moving its local invariants around
 until only one of them is left, and moving them needs a supply of correcting classes: given a
 rational prime and a prescribed value of that order, a class whose total invariant vanishes, whose
 invariant at the prime is the prescribed value, and whose invariants are trivial everywhere else
@@ -31,8 +31,8 @@ the class to the matching power leaves the vanishing of the other invariants unt
 * `InverseGalois.CFT.not_dvd_of_natCast_pow_ne_one`: the exponent expressing a power non-residue as
   a power of a primitive root is prime to the exponent of the residue condition.
 * `InverseGalois.CFT.exists_placeInvariant_eq_of_pow_ne_one`: **a Brauer class of the rationals
-  with trivial total invariant, a prescribed invariant of odd prime-power order at a given prime,
-  and trivial invariants away from that prime and an auxiliary one.**
+  with trivial total invariant, a prescribed invariant of prime-power order at a given prime, and
+  trivial invariants away from that prime and an auxiliary one.**
 
 ## Tags
 
@@ -106,25 +106,25 @@ end DiscreteLog
 
 section Corrector
 
-/-- **A Brauer class of the rationals with trivial total invariant, a prescribed invariant of odd
+/-- **A Brauer class of the rationals with trivial total invariant, a prescribed invariant of
 prime-power order at a given prime, and trivial invariants away from that prime and an auxiliary
 one.**  The class is a power of the cyclic algebra with the given prime as coefficient, split by the
 subfield of that degree of the cyclotomic field of the auxiliary prime; the exponent of the
 Frobenius at the given prime is prime to the degree because the prime is a power non-residue for the
-prime exponent, so the invariant there runs over all the values of that order. -/
-theorem exists_placeInvariant_eq_of_pow_ne_one {ℓ e : ℕ} (hℓ : ℓ.Prime) (hℓodd : Odd ℓ)
+prime exponent, so the invariant there runs over all the values of that order.  That subfield is
+totally real, so the reals split the class as well. -/
+theorem exists_placeInvariant_eq_of_pow_ne_one {ℓ e : ℕ} (hℓ : ℓ.Prime)
     (he : e ≠ 0) {q : ℕ} (hq : q.Prime) (hqdvd : 2 * ℓ ^ e ∣ q - 1) {p : ℕ} (hp : p.Prime)
     (hpq : p ≠ q) (hres : ((p : ℕ) : ZMod q) ^ ((q - 1) / ℓ) ≠ 1) {t : Multiplicative QModZ}
     (ht : t ^ ℓ ^ e = 1) :
     ∃ y : BrauerGroup.{0, 0} ℚ, y ^ ℓ ^ e = 1 ∧ totalInvariant ℚ y = 1 ∧
-      placeInvariant ℚ (ratPlace p hp) y = t ∧
+      y ∈ BrauerGroup.relative ℚ ℝ ∧ placeInvariant ℚ (ratPlace p hp) y = t ∧
       ∀ v : HeightOneSpectrum (𝓞 ℚ), v ≠ ratPlace p hp → v ≠ ratPlace q hq →
         placeInvariant ℚ v y = 1 := by
   haveI : Fact q.Prime := ⟨hq⟩
   haveI : Fact p.Prime := ⟨hp⟩
   haveI : NeZero (ℓ ^ e) := ⟨pow_ne_zero e hℓ.ne_zero⟩
   haveI : NeZero q := ⟨hq.ne_zero⟩
-  have hNodd : Odd (ℓ ^ e) := hℓodd.pow
   have hone : 1 ≤ ℓ ^ e := Nat.one_le_pow e ℓ hℓ.pos
   have hqodd : Odd q := by
     rcases hq.eq_two_or_odd' with rfl | h
@@ -184,9 +184,11 @@ theorem exists_placeInvariant_eq_of_pow_ne_one {ℓ e : ℕ} (hℓ : ℓ.Prime) 
     exact not_dvd_of_natCast_pow_ne_one hq hg hℓdvd hpg hres
   obtain ⟨k, hk⟩ :=
     exists_pow_ofAdd_intQModZ_eq (isUnit_intCast_zmod_of_primePow (e := e) hℓ hNc) ht
-  refine ⟨(cyclicBrauerHom hσ₀ a) ^ k, ?_, ?_, ?_, ?_⟩
+  refine ⟨(cyclicBrauerHom hσ₀ a) ^ k, ?_, ?_, ?_, ?_, ?_⟩
   · rw [← pow_mul, mul_comm, pow_mul, hord, one_pow]
   · rw [map_pow, htot, one_pow]
+  · exact pow_mem (mem_relative_real_of_isTotallyReal (L := ↥F)
+      (cyclicBrauerHom_mem_relative hσ₀ a)) k
   · rw [map_pow, hinvp, hk]
   · intro v hvp hvq
     rw [map_pow, hvan v hvp hvq, one_pow]

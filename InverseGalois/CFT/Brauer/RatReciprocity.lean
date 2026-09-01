@@ -137,13 +137,14 @@ section Reduction
 auxiliary prime modulo which that prime is a power non-residue splits the class over the
 corresponding subfield of a cyclotomic field. -/
 theorem totalInvariant_eq_one_of_forall_eq {ℓ e : ℕ} (hℓ : ℓ.Prime) (hℓodd : Odd ℓ) (he : e ≠ 0)
-    {x : BrauerGroup.{0, 0} ℚ} (hx : x ^ ℓ ^ e = 1) {p₀ : ℕ} (hp₀ : p₀.Prime)
+    {x : BrauerGroup.{0, 0} ℚ} (hxreal : x ∈ BrauerGroup.relative ℚ ℝ) (hx : x ^ ℓ ^ e = 1)
+    {p₀ : ℕ} (hp₀ : p₀.Prime)
     (hbad : ∀ (p : ℕ) (hp : p.Prime), placeInvariant ℚ (ratPlace p hp) x ≠ 1 → p = p₀) :
     totalInvariant ℚ x = 1 := by
   classical
   obtain ⟨q, hqp, hqT, hqdvd, hq₀, -⟩ :=
     exists_prime_two_mul_dvd_sub_one_pow_ne_one hℓ hℓodd he hp₀ hp₀ ({p₀} : Finset ℕ)
-  refine totalInvariant_eq_one_of_forall_pow_ne_one_primePow hℓ hℓodd he hx hqp hqdvd
+  refine totalInvariant_eq_one_of_forall_pow_ne_one_primePow hℓ he hxreal hx hqp hqdvd
     fun p hp hinv => ?_
   have hpeq : p = p₀ := hbad p hp hinv
   refine ⟨fun h => hqT (Finset.mem_singleton.mpr (h ▸ hpeq)), ?_⟩
@@ -153,15 +154,15 @@ theorem totalInvariant_eq_one_of_forall_eq {ℓ e : ℕ} (hℓ : ℓ.Prime) (h�
 /-- **Reciprocity for a class of odd prime-power order whose bad primes lie in a set of at most one
 element.** -/
 theorem totalInvariant_eq_one_of_card_le_one {ℓ e : ℕ} (hℓ : ℓ.Prime) (hℓodd : Odd ℓ) (he : e ≠ 0)
-    {x : BrauerGroup.{0, 0} ℚ} (hx : x ^ ℓ ^ e = 1) (S : Finset ℕ) (hSp : ∀ p ∈ S, p.Prime)
-    (hcard : S.card ≤ 1)
+    {x : BrauerGroup.{0, 0} ℚ} (hxreal : x ∈ BrauerGroup.relative ℚ ℝ) (hx : x ^ ℓ ^ e = 1)
+    (S : Finset ℕ) (hSp : ∀ p ∈ S, p.Prime) (hcard : S.card ≤ 1)
     (hbad : ∀ (p : ℕ) (hp : p.Prime), placeInvariant ℚ (ratPlace p hp) x ≠ 1 → p ∈ S) :
     totalInvariant ℚ x = 1 := by
   classical
   rcases S.eq_empty_or_nonempty with rfl | ⟨p₀, hp₀S⟩
-  · exact totalInvariant_eq_one_of_forall_eq hℓ hℓodd he hx Nat.prime_two
+  · exact totalInvariant_eq_one_of_forall_eq hℓ hℓodd he hxreal hx Nat.prime_two
       fun p hp hinv => absurd (hbad p hp hinv) (Finset.notMem_empty p)
-  · exact totalInvariant_eq_one_of_forall_eq hℓ hℓodd he hx (hSp p₀ hp₀S)
+  · exact totalInvariant_eq_one_of_forall_eq hℓ hℓodd he hxreal hx (hSp p₀ hp₀S)
       fun p hp hinv => Finset.card_le_one.mp hcard p (hbad p hp hinv) p₀ hp₀S
 
 /-- **Reciprocity for a class of odd prime-power order whose bad primes lie in a set of bounded
@@ -169,19 +170,19 @@ size**, by induction on the bound.  Two bad primes are cancelled at once against
 prime, which lowers the count by one. -/
 theorem totalInvariant_eq_one_of_card_le {ℓ e : ℕ} (hℓ : ℓ.Prime) (hℓodd : Odd ℓ) (he : e ≠ 0)
     (n : ℕ) :
-    ∀ x : BrauerGroup.{0, 0} ℚ, x ^ ℓ ^ e = 1 →
+    ∀ x : BrauerGroup.{0, 0} ℚ, x ∈ BrauerGroup.relative ℚ ℝ → x ^ ℓ ^ e = 1 →
       ∀ S : Finset ℕ, (∀ p ∈ S, p.Prime) → S.card ≤ n →
         (∀ (p : ℕ) (hp : p.Prime), placeInvariant ℚ (ratPlace p hp) x ≠ 1 → p ∈ S) →
         totalInvariant ℚ x = 1 := by
   classical
   induction n with
   | zero =>
-    intro x hx S hSp hcard hbad
-    exact totalInvariant_eq_one_of_card_le_one hℓ hℓodd he hx S hSp (by omega) hbad
+    intro x hxreal hx S hSp hcard hbad
+    exact totalInvariant_eq_one_of_card_le_one hℓ hℓodd he hxreal hx S hSp (by omega) hbad
   | succ n ih =>
-    intro x hx S hSp hcard hbad
+    intro x hxreal hx S hSp hcard hbad
     by_cases hle : S.card ≤ 1
-    · exact totalInvariant_eq_one_of_card_le_one hℓ hℓodd he hx S hSp hle hbad
+    · exact totalInvariant_eq_one_of_card_le_one hℓ hℓodd he hxreal hx S hSp hle hbad
     have hlt : 1 < S.card := by omega
     obtain ⟨p₁, hp₁S, p₂, hp₂S, hne⟩ := Finset.one_lt_card.mp hlt
     have hp₁ : p₁.Prime := hSp p₁ hp₁S
@@ -193,16 +194,17 @@ theorem totalInvariant_eq_one_of_card_le {ℓ e : ℕ} (hℓ : ℓ.Prime) (hℓo
     have hinvpow : ∀ v : HeightOneSpectrum (𝓞 ℚ), ((placeInvariant ℚ v x)⁻¹) ^ ℓ ^ e = 1 := by
       intro v
       rw [inv_pow, ← map_pow, hx, map_one, inv_one]
-    obtain ⟨y₁, hy₁pow, hy₁tot, hy₁p, hy₁van⟩ :=
-      exists_placeInvariant_eq_of_pow_ne_one hℓ hℓodd he hqp hqdvd hp₁ hp₁q hq₁
+    obtain ⟨y₁, hy₁pow, hy₁tot, hy₁real, hy₁p, hy₁van⟩ :=
+      exists_placeInvariant_eq_of_pow_ne_one hℓ he hqp hqdvd hp₁ hp₁q hq₁
         (hinvpow (ratPlace p₁ hp₁))
-    obtain ⟨y₂, hy₂pow, hy₂tot, hy₂p, hy₂van⟩ :=
-      exists_placeInvariant_eq_of_pow_ne_one hℓ hℓodd he hqp hqdvd hp₂ hp₂q hq₂
+    obtain ⟨y₂, hy₂pow, hy₂tot, hy₂real, hy₂p, hy₂van⟩ :=
+      exists_placeInvariant_eq_of_pow_ne_one hℓ he hqp hqdvd hp₂ hp₂q hq₂
         (hinvpow (ratPlace p₂ hp₂))
     have hkey : totalInvariant ℚ (x * y₁ * y₂) = totalInvariant ℚ x := by
       rw [map_mul, map_mul, hy₁tot, hy₂tot, mul_one, mul_one]
     rw [← hkey]
-    refine ih (x * y₁ * y₂) (by rw [mul_pow, mul_pow, hx, hy₁pow, hy₂pow, one_mul, one_mul])
+    refine ih (x * y₁ * y₂) (mul_mem (mul_mem hxreal hy₁real) hy₂real)
+      (by rw [mul_pow, mul_pow, hx, hy₁pow, hy₂pow, one_mul, one_mul])
       (insert q (S \ ({p₁, p₂} : Finset ℕ))) ?_ ?_ ?_
     · intro r hr
       rcases Finset.mem_insert.mp hr with rfl | hr'
@@ -272,7 +274,8 @@ theorem totalInvariant_eq_one_of_pow_eq_one {ℓ e : ℕ} (hℓ : ℓ.Prime) (h�
     · intro p hp hinv
       exact Finset.mem_image.mpr ⟨ratPlace p hp, hfin.mem_toFinset.mpr hinv,
         natGenerator_eq_of_natCast_mem hp (natCast_mem_ratPlace p hp)⟩
-  exact totalInvariant_eq_one_of_card_le hℓ hℓodd he S.card x hx S hSp le_rfl hbad
+  exact totalInvariant_eq_one_of_card_le hℓ hℓodd he S.card x
+    (mem_relative_real_of_odd_pow_eq_one hℓodd.pow hx) hx S hSp le_rfl hbad
 
 /-- **The invariants of a Brauer class of odd order over the rationals add up to zero.**  Splitting
 the order at its least prime factor into a prime power and a coprime cofactor, a Bézout relation

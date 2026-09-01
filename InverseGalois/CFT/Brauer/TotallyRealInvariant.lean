@@ -23,6 +23,8 @@ invariants at the finite places alone.
 
 * `InverseGalois.CFT.relative_completion_rat_eq_relative_real`: the completion of the rationals at
   an infinite place splits the same Brauer classes as the reals.
+* `InverseGalois.CFT.mem_relative_real_of_isTotallyReal`: **a Brauer class of the rationals split
+  by a totally real number field is split by the reals.**
 * `InverseGalois.CFT.infinitePlaceInvariant_rat_eq_one_of_isTotallyReal`: **a Brauer class of the
   rationals split by a totally real number field has trivial invariant at every infinite place.**
 * `InverseGalois.CFT.totalInvariant_eq_finprod`: the total invariant is the product over the finite
@@ -59,6 +61,16 @@ theorem infinitePlaceInvariant_rat_eq_one_of_ringHom {L : Type} [Field L] [Algeb
     (hx : x ∈ BrauerGroup.relative ℚ L) : infinitePlaceInvariant ℚ u x = 1 := by
   rw [infinitePlaceInvariant_eq_one_iff, relative_completion_rat_eq_relative_real]
   exact relative_le_relative_of_algHom ψ.toRatAlgHom hx
+
+/-- **A Brauer class of the rationals split by a totally real number field is split by the
+reals.**  Any infinite place of the splitting field is real and provides an embedding of that field
+into the reals. -/
+theorem mem_relative_real_of_isTotallyReal {L : Type} [Field L] [NumberField L] [IsTotallyReal L]
+    {x : BrauerGroup.{0, 0} ℚ} (hx : x ∈ BrauerGroup.relative ℚ L) :
+    x ∈ BrauerGroup.relative ℚ ℝ := by
+  obtain ⟨U⟩ : Nonempty (InfinitePlace L) := inferInstance
+  exact relative_le_relative_of_algHom
+    (InfinitePlace.embedding_of_isReal (IsTotallyReal.isReal U)).toRatAlgHom hx
 
 /-- **A Brauer class of the rationals split by a totally real number field has trivial invariant at
 every infinite place.**  Any infinite place of the splitting field is real and provides the real

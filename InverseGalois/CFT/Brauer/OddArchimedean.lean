@@ -7,25 +7,29 @@ import InverseGalois.CFT.Brauer.RealBrauer
 import InverseGalois.CFT.Brauer.TotallyRealInvariant
 
 /-!
-# A Brauer class of odd order is split at every archimedean place
+# A Brauer class split by the reals is split at every archimedean place
+
+The completion of the rationals at an infinite place is the reals, and the completion of a number
+field at a real place receives the reals, so a class of the rationals which the reals split is
+split by every archimedean completion of every number field.  The archimedean conditions in the
+Hasse principle are then automatic, and the total invariant is the product over the finite places.
 
 The Brauer group of the reals has two elements, so every real class is killed by squaring.  A class
 of the rationals whose order is odd therefore base changes to the trivial class over the reals: its
-image is killed both by two and by the odd exponent, hence by their greatest common divisor.
-
-The completion of the rationals at an infinite place is the reals, and the completion of a number
-field at a real place receives the reals, so the same class is split by every archimedean
-completion of every number field.  For a class of odd order the archimedean conditions in the Hasse
-principle are therefore automatic, and the total invariant is the product over the finite places.
+image is killed both by two and by the odd exponent, hence by their greatest common divisor.  Every
+class of odd order is in this way split at every archimedean place.
 
 ## Main results
 
+* `InverseGalois.CFT.mem_relative_completion_of_mem_relative_real`: **a Brauer class of the
+  rationals split by the reals is split by the completion of any number field at a real place.**
+* `InverseGalois.CFT.totalInvariant_eq_finprod_of_mem_relative_real`: **the total invariant of such
+  a class is the product of its invariants at the finite places.**
 * `InverseGalois.CFT.mem_relative_real_of_odd_pow_eq_one`: **a Brauer class of the rationals killed
   by an odd exponent is split by the reals.**
-* `InverseGalois.CFT.mem_relative_completion_of_odd_pow_eq_one`: **such a class is split by the
-  completion of any number field at a real place.**
-* `InverseGalois.CFT.totalInvariant_eq_finprod_of_odd_pow_eq_one`: **the total invariant of such a
-  class is the product of its invariants at the finite places.**
+* `InverseGalois.CFT.mem_relative_completion_of_odd_pow_eq_one`,
+  `InverseGalois.CFT.totalInvariant_eq_finprod_of_odd_pow_eq_one`: the same conclusions for a class
+  of odd order.
 
 ## Tags
 
@@ -35,6 +39,38 @@ Brauer group, real place, infinite place, odd order, invariant, Hasse principle
 namespace InverseGalois.CFT
 
 open IsDedekindDomain NumberField
+
+/-! ### Splitting at the reals kills the archimedean invariants -/
+
+section Real
+
+variable {x : BrauerGroup.{0, 0} ℚ} (hx : x ∈ BrauerGroup.relative ℚ ℝ)
+
+include hx
+
+/-- **A Brauer class of the rationals split by the reals is split by the completion of any number
+field at a real place.**  Such a completion receives the reals, and the reals already split the
+class. -/
+theorem mem_relative_completion_of_mem_relative_real {L : Type} [Field L] [NumberField L]
+    {U : InfinitePlace L} (hU : U.IsReal) : x ∈ BrauerGroup.relative ℚ U.Completion :=
+  relative_le_relative_of_algHom
+    ((InfinitePlace.Completion.ringEquivRealOfIsReal hU).symm.toRingHom.toRatAlgHom) hx
+
+/-- **A Brauer class of the rationals split by the reals has trivial invariant at every infinite
+place.**  The completion of the rationals at an infinite place splits the same classes as the
+reals. -/
+theorem infinitePlaceInvariant_rat_eq_one_of_mem_relative_real (u : InfinitePlace ℚ) :
+    infinitePlaceInvariant ℚ u x = 1 := by
+  rw [infinitePlaceInvariant_eq_one_iff, relative_completion_rat_eq_relative_real]
+  exact hx
+
+/-- **The total invariant of a Brauer class of the rationals split by the reals is the product of
+its invariants at the finite places.** -/
+theorem totalInvariant_eq_finprod_of_mem_relative_real :
+    totalInvariant ℚ x = ∏ᶠ v : HeightOneSpectrum (𝓞 ℚ), placeInvariant ℚ v x :=
+  totalInvariant_eq_finprod ℚ x (infinitePlaceInvariant_rat_eq_one_of_mem_relative_real hx)
+
+end Real
 
 /-! ### Odd order kills the real base change -/
 
@@ -58,27 +94,23 @@ theorem mem_relative_real_of_odd_pow_eq_one : x ∈ BrauerGroup.relative ℚ ℝ
   exact orderOf_eq_one_iff.mp (Nat.dvd_one.mp hgcd)
 
 /-- **A Brauer class of the rationals killed by an odd exponent is split by the completion of any
-number field at a real place.**  Such a completion receives the reals, and the reals already split
-the class. -/
+number field at a real place.** -/
 theorem mem_relative_completion_of_odd_pow_eq_one {L : Type} [Field L] [NumberField L]
     {U : InfinitePlace L} (hU : U.IsReal) : x ∈ BrauerGroup.relative ℚ U.Completion :=
-  relative_le_relative_of_algHom
-    ((InfinitePlace.Completion.ringEquivRealOfIsReal hU).symm.toRingHom.toRatAlgHom)
-    (mem_relative_real_of_odd_pow_eq_one hN hx)
+  mem_relative_completion_of_mem_relative_real (mem_relative_real_of_odd_pow_eq_one hN hx) hU
 
 /-- **A Brauer class of the rationals killed by an odd exponent has trivial invariant at every
-infinite place.**  The completion of the rationals at an infinite place splits the same classes as
-the reals. -/
+infinite place.** -/
 theorem infinitePlaceInvariant_rat_eq_one_of_odd_pow_eq_one (u : InfinitePlace ℚ) :
-    infinitePlaceInvariant ℚ u x = 1 := by
-  rw [infinitePlaceInvariant_eq_one_iff, relative_completion_rat_eq_relative_real]
-  exact mem_relative_real_of_odd_pow_eq_one hN hx
+    infinitePlaceInvariant ℚ u x = 1 :=
+  infinitePlaceInvariant_rat_eq_one_of_mem_relative_real
+    (mem_relative_real_of_odd_pow_eq_one hN hx) u
 
 /-- **The total invariant of a Brauer class of the rationals killed by an odd exponent is the
 product of its invariants at the finite places.** -/
 theorem totalInvariant_eq_finprod_of_odd_pow_eq_one :
     totalInvariant ℚ x = ∏ᶠ v : HeightOneSpectrum (𝓞 ℚ), placeInvariant ℚ v x :=
-  totalInvariant_eq_finprod ℚ x (infinitePlaceInvariant_rat_eq_one_of_odd_pow_eq_one hN hx)
+  totalInvariant_eq_finprod_of_mem_relative_real (mem_relative_real_of_odd_pow_eq_one hN hx)
 
 end OddReal
 

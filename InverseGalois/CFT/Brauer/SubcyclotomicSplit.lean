@@ -15,32 +15,33 @@ import InverseGalois.CFT.Local.RatResidueDegree
 # Reciprocity for a class split by a subfield of a cyclotomic field
 
 A cyclic extension of the rationals splits a Brauer class exactly when its local degree kills the
-local invariant at every finite place and its real places split the class.  For a class of odd
-order the archimedean conditions are automatic, and for an extension of prime degree the local
-degree at a rational prime is that degree unless the prime splits completely.  So a class killed by
-an odd prime is split by a cyclic extension of that degree as soon as none of the rational primes
-carrying a nontrivial invariant splits completely in it.
+local invariant at every finite place and its real places split the class.  A class which the
+reals already split meets the archimedean conditions automatically, and for an extension of prime
+degree the local degree at a rational prime is that degree unless the prime splits completely.  So
+such a class killed by a prime is split by a cyclic extension of that degree as soon as none of the
+rational primes carrying a nontrivial invariant splits completely in it.
 
 Every class split by a cyclic extension is a cyclic algebra, and the total invariant of a cyclic
-algebra split by a totally real subfield of odd prime degree of the cyclotomic field of an odd
-prime conductor, totally ramified there, vanishes.  Reciprocity therefore holds for every class of
-odd prime order whose bad primes can be made to miss the splitting law of such a subfield — and
-that law is a power residue condition modulo the conductor.
+algebra split by a totally real subfield of the cyclotomic field of an odd prime conductor, totally
+ramified there, vanishes.  Reciprocity therefore holds for every class of prime order split by the
+reals whose bad primes can be made to miss the splitting law of such a subfield — and that law is a
+power residue condition modulo the conductor.
 
 ## Main results
 
 * `InverseGalois.CFT.mem_relative_of_forall_not_splitsCompletely`: **a Brauer class of the
-  rationals of odd prime order is split by a cyclic extension of that degree in which no prime
-  carrying a nontrivial invariant splits completely.**
+  rationals of prime order which the reals split is split by a cyclic extension of that degree in
+  which no prime carrying a nontrivial invariant splits completely.**
 * `InverseGalois.CFT.totalInvariant_eq_one_of_mem_relative_subcyclotomic`: **the total invariant of
   a Brauer class of the rationals split by a totally real subfield of the cyclotomic field of an
   odd prime conductor, totally ramified there, vanishes.**
-* `InverseGalois.CFT.totalInvariant_eq_one_of_forall_pow_ne_one`: **reciprocity for a class of odd
-  prime order all of whose bad primes are non-residues modulo an auxiliary prime.**
+* `InverseGalois.CFT.totalInvariant_eq_one_of_forall_pow_ne_one`: **reciprocity for a class of
+  prime order split by the reals all of whose bad primes are non-residues modulo an auxiliary
+  prime.**
 * `InverseGalois.CFT.mem_relative_of_forall_not_dvd_primePow` and
   `InverseGalois.CFT.totalInvariant_eq_one_of_forall_pow_ne_one_primePow`: the same two statements
-  at an odd prime-power order, where the local degree is read off from the order of the
-  decomposition group instead of from splitting completely.
+  at a prime-power order, where the local degree is read off from the order of the decomposition
+  group instead of from splitting completely.
 
 ## Tags
 
@@ -77,23 +78,24 @@ theorem exists_prime_primeUnder_eq_ratPlace {K : Type} [Field K] [NumberField K]
 
 end Below
 
-/-! ### Splitting a class of odd prime order -/
+/-! ### Splitting a class of prime power order -/
 
 section Split
 
 /-- **A Brauer class of the rationals of odd prime order is split by a cyclic extension of that
 degree in which no prime carrying a nontrivial invariant splits completely.**  At a place above
 such a prime the local degree is the whole degree, which kills an invariant of that order; at every
-other finite place the invariant is already trivial; and the real places split a class of odd
-order. -/
-theorem mem_relative_of_forall_not_splitsCompletely {N : ℕ} (hN : N.Prime) (hNodd : Odd N)
-    {x : BrauerGroup.{0, 0} ℚ} (hx : x ^ N = 1) (F : Type) [Field F] [NumberField F]
+other finite place the invariant is already trivial; and the real places split the class as soon as
+the reals do. -/
+theorem mem_relative_of_forall_not_splitsCompletely {N : ℕ} (hN : N.Prime)
+    {x : BrauerGroup.{0, 0} ℚ} (hxreal : x ∈ BrauerGroup.relative ℚ ℝ) (hx : x ^ N = 1)
+    (F : Type) [Field F] [NumberField F]
     [IsGalois ℚ F] [IsCyclic Gal(F/ℚ)] (hcard : Nat.card Gal(F/ℚ) = N)
     (hbad : ∀ (p : ℕ) (hp : p.Prime), placeInvariant ℚ (ratPlace p hp) x ≠ 1 →
       ¬ SplitsCompletely F p) :
     x ∈ BrauerGroup.relative ℚ F := by
   rw [mem_relative_iff_forall_pow_placeInvariant]
-  refine ⟨fun w => ?_, fun U hU => mem_relative_completion_of_odd_pow_eq_one hNodd hx hU⟩
+  refine ⟨fun w => ?_, fun U hU => mem_relative_completion_of_mem_relative_real hxreal hU⟩
   by_cases hinv : placeInvariant ℚ (primeUnder (𝓞 ℚ) w) x = 1
   · rw [hinv, one_pow]
   · obtain ⟨p, hp, hpw, hlies⟩ := exists_prime_primeUnder_eq_ratPlace w
@@ -108,16 +110,17 @@ theorem mem_relative_of_forall_not_splitsCompletely {N : ℕ} (hN : N.Prime) (hN
 of that degree whose decomposition group at every place carrying a nontrivial invariant is the
 whole group.**  The order of that decomposition group is a power of the prime dividing the degree,
 so failing to divide the next smaller power makes it the whole degree, which kills an invariant of
-order dividing the degree; the real places split a class of odd order. -/
-theorem mem_relative_of_forall_not_dvd_primePow {ℓ e : ℕ} (hℓ : ℓ.Prime) (hodd : Odd (ℓ ^ e))
-    {x : BrauerGroup.{0, 0} ℚ} (hx : x ^ ℓ ^ e = 1) (F : Type) [Field F] [NumberField F]
+order dividing the degree; the real places split the class as soon as the reals do. -/
+theorem mem_relative_of_forall_not_dvd_primePow {ℓ e : ℕ} (hℓ : ℓ.Prime)
+    {x : BrauerGroup.{0, 0} ℚ} (hxreal : x ∈ BrauerGroup.relative ℚ ℝ) (hx : x ^ ℓ ^ e = 1)
+    (F : Type) [Field F] [NumberField F]
     [IsGalois ℚ F] [IsCyclic Gal(F/ℚ)] (hcard : Nat.card Gal(F/ℚ) = ℓ ^ e)
     (hbad : ∀ (p : ℕ) (hp : p.Prime), placeInvariant ℚ (ratPlace p hp) x ≠ 1 →
       ∀ (P : Ideal (𝓞 F)) (_ : P.IsPrime) (_ : P.LiesOver (Ideal.span {(p : ℤ)})),
         ¬ Nat.card ↥(stabilizer Gal(F/ℚ) P) ∣ ℓ ^ (e - 1)) :
     x ∈ BrauerGroup.relative ℚ F := by
   rw [mem_relative_iff_forall_pow_placeInvariant]
-  refine ⟨fun w => ?_, fun U hU => mem_relative_completion_of_odd_pow_eq_one hodd hx hU⟩
+  refine ⟨fun w => ?_, fun U hU => mem_relative_completion_of_mem_relative_real hxreal hU⟩
   by_cases hinv : placeInvariant ℚ (primeUnder (𝓞 ℚ) w) x = 1
   · rw [hinv, one_pow]
   · obtain ⟨p, hp, hpw, hlies⟩ := exists_prime_primeUnder_eq_ratPlace w
@@ -163,8 +166,9 @@ are non-residues modulo an auxiliary prime.**  The subfield of prescribed degree
 field of the auxiliary prime is totally real and totally ramified at that prime, and a rational
 prime splits completely in it exactly when it is a power residue; the bad primes therefore fail to
 split completely, so the class is split by that subfield. -/
-theorem totalInvariant_eq_one_of_forall_pow_ne_one {N : ℕ} (hN : N.Prime) (hNodd : Odd N)
-    {x : BrauerGroup.{0, 0} ℚ} (hx : x ^ N = 1) {q : ℕ} (hq : q.Prime) (hdvd : 2 * N ∣ q - 1)
+theorem totalInvariant_eq_one_of_forall_pow_ne_one {N : ℕ} (hN : N.Prime)
+    {x : BrauerGroup.{0, 0} ℚ} (hxreal : x ∈ BrauerGroup.relative ℚ ℝ) (hx : x ^ N = 1) {q : ℕ}
+    (hq : q.Prime) (hdvd : 2 * N ∣ q - 1)
     (hbad : ∀ (p : ℕ) (hp : p.Prime), placeInvariant ℚ (ratPlace p hp) x ≠ 1 →
       p ≠ q ∧ ((p : ℕ) : ZMod q) ^ ((q - 1) / N) ≠ 1) :
     totalInvariant ℚ x = 1 := by
@@ -188,7 +192,7 @@ theorem totalInvariant_eq_one_of_forall_pow_ne_one {N : ℕ} (hN : N.Prime) (hNo
     rw [IsGalois.card_aut_eq_finrank ℚ ↥F, hrank]
   refine totalInvariant_eq_one_of_mem_relative_subcyclotomic q hqodd (CyclotomicField q ℚ) ↥F
     hcard hinertia hdvd ?_
-  refine mem_relative_of_forall_not_splitsCompletely hN hNodd hx ↥F hcard fun p hp hinv hsc => ?_
+  refine mem_relative_of_forall_not_splitsCompletely hN hxreal hx ↥F hcard fun p hp hinv hsc => ?_
   obtain ⟨hpq, hres⟩ := hbad p hp hinv
   exact hres ((hsplit p hp hpq).mp hsc)
 
@@ -199,15 +203,14 @@ there, and the order of its decomposition group at a prime above a rational prim
 a power residue condition; a prime that is not an `ℓ`-th power residue therefore has the whole
 group as decomposition group, so the class is split by that subfield. -/
 theorem totalInvariant_eq_one_of_forall_pow_ne_one_primePow {ℓ e : ℕ} (hℓ : ℓ.Prime)
-    (hℓodd : Odd ℓ) (he : e ≠ 0) {x : BrauerGroup.{0, 0} ℚ} (hx : x ^ ℓ ^ e = 1) {q : ℕ}
-    (hq : q.Prime) (hdvd : 2 * ℓ ^ e ∣ q - 1)
+    (he : e ≠ 0) {x : BrauerGroup.{0, 0} ℚ} (hxreal : x ∈ BrauerGroup.relative ℚ ℝ)
+    (hx : x ^ ℓ ^ e = 1) {q : ℕ} (hq : q.Prime) (hdvd : 2 * ℓ ^ e ∣ q - 1)
     (hbad : ∀ (p : ℕ) (hp : p.Prime), placeInvariant ℚ (ratPlace p hp) x ≠ 1 →
       p ≠ q ∧ ((p : ℕ) : ZMod q) ^ ((q - 1) / ℓ) ≠ 1) :
     totalInvariant ℚ x = 1 := by
   haveI : Fact q.Prime := ⟨hq⟩
   haveI : NeZero (ℓ ^ e) := ⟨pow_ne_zero e hℓ.ne_zero⟩
   haveI : NeZero q := ⟨hq.ne_zero⟩
-  have hNodd : Odd (ℓ ^ e) := hℓodd.pow
   have hone : 1 ≤ ℓ ^ e := Nat.one_le_pow e ℓ hℓ.pos
   have hqodd : Odd q := by
     rcases hq.eq_two_or_odd' with rfl | h
@@ -233,7 +236,7 @@ theorem totalInvariant_eq_one_of_forall_pow_ne_one_primePow {ℓ e : ℕ} (hℓ 
     rw [IsGalois.card_aut_eq_finrank ℚ ↥F, hrank]
   refine totalInvariant_eq_one_of_mem_relative_subcyclotomic q hqodd (CyclotomicField q ℚ) ↥F
     hcard hinertia hdvd ?_
-  refine mem_relative_of_forall_not_dvd_primePow hℓ hNodd hx ↥F hcard ?_
+  refine mem_relative_of_forall_not_dvd_primePow hℓ hxreal hx ↥F hcard ?_
   intro p hp hinv P hP hPo
   obtain ⟨hpq, hres⟩ := hbad p hp hinv
   rw [hdeg p hp hpq P hP hPo (ℓ ^ (e - 1)), harith]
