@@ -159,6 +159,7 @@ import InverseGalois.CFT.Cyclotomic.QuadraticSubfield
 import InverseGalois.CFT.Cyclotomic.Ramified
 import InverseGalois.CFT.Cyclotomic.Splitting
 import InverseGalois.CFT.Cyclotomic.SquareRoots
+import InverseGalois.CFT.Cyclotomic.SubfieldNorm
 import InverseGalois.CFT.Cyclotomic.TotallyRamified
 import InverseGalois.CFT.Cyclotomic.TotallyRealSubfield
 import InverseGalois.CFT.CyclotomicCompositum
@@ -401,6 +402,7 @@ import InverseGalois.CFT.Profinite.ShaComap
 import InverseGalois.CFT.Profinite.Symbol
 import InverseGalois.CFT.Profinite.SymbolCyclic
 import InverseGalois.CFT.Profinite.Trivial
+import InverseGalois.CFT.RatUnits
 import InverseGalois.CFT.RelativeFrobenius
 import InverseGalois.CFT.RestrictLE
 import InverseGalois.CFT.ScalarSemidirect
@@ -4261,8 +4263,8 @@ it that are available here.
   which a primitive root has the order of the whole group, so **the automorphism raising the roots
   of unity to the power of a primitive root generates the Galois group** and every automorphism
   naming a number prime to the conductor is a natural power of it.  Reading that identity in the
-  of units, **the exponent expressing one such automorphism as a power of another expresses the
-  first number as a power of the second modulo the conductor** — the discrete logarithm.
+  group of units, **the exponent expressing one such automorphism as a power of another expresses
+  the first number as a power of the second modulo the conductor** — the discrete logarithm.
 * `InverseGalois.CFT.Local.ResidueDiscreteLog` turns that discrete logarithm into the congruence the
   power residue symbol reads.  A multiple of the residue characteristic has valuation less than one,
   and congruences multiply, so **the power by the discrete logarithm of a root of unity congruent to
@@ -4276,9 +4278,22 @@ it that are available here.
   place of the conductor of a cyclic algebra over the rationals split by a subfield of a cyclotomic
   field of prime conductor, of a rational prime away from the conductor as coefficient, is the
   discrete logarithm of that prime divided by the degree of the subfield**.
+* `InverseGalois.CFT.RatUnits` records what is left to check once the primes away from the
+  conductor are settled.  A nonzero rational is its numerator over its denominator and each of
+  those is a signed product of primes, so **a multiplicative map out of the units of the rationals
+  that kills minus one and every prime is trivial**.
+* `InverseGalois.CFT.Cyclotomic.SubfieldNorm` disposes of the two coefficients the local
+  computation does not reach.  Taking the norm in two steps factors the norm of a cyclotomic field
+  through any intermediate field, and an odd prime is the norm of one less than a primitive root of
+  unity of that conductor, so **an odd prime conductor is a norm from every intermediate field of
+  its cyclotomic field**; and the norm of a scalar is its power by the degree, so **minus one is a
+  norm from an extension of the rationals of odd degree**.
 * `InverseGalois.CFT.Brauer.SubcyclotomicReciprocity` puts the two terms together.  They carry the
   same discrete logarithm with opposite signs, so **the sum of all the local invariants of a cyclic
   algebra over the rationals split by a totally real subfield of the cyclotomic field of an odd
   prime conductor, with a rational prime away from the conductor as coefficient, vanishes** — the
-  reciprocity law for that family.
+  reciprocity law for that family.  When the subfield has odd prime degree the conductor and minus
+  one are norms from it, so the algebras they name are trivial; minus one and the rational primes
+  generate the units of the rationals, and therefore **the sum of all the local invariants vanishes
+  for every rational coefficient**.
 -/
