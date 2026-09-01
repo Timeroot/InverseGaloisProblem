@@ -71,6 +71,7 @@ import InverseGalois.CFT.Brauer.LocalSymbol
 import InverseGalois.CFT.Brauer.LocalSymbolUnits
 import InverseGalois.CFT.Brauer.TameEvaluation
 import InverseGalois.CFT.Brauer.TameSymbol
+import InverseGalois.CFT.Brauer.TameResidue
 import InverseGalois.CFT.Brauer.TameValue
 import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
@@ -3985,4 +3986,15 @@ it that are available here.
   character of the unit at any automorphism inducing it, so **the tame symbol of a uniformiser
   against a unit of the valuation ring is the class, modulo the integers, of the opposite of the
   Kummer character of that unit at a Frobenius automorphism, divided by the exponent.**
+* `InverseGalois.CFT.Brauer.TameResidue` reads that value classically.  The chosen root of a unit
+  of the valuation ring has absolute value one, and a Frobenius automorphism of its level both
+  multiplies it by the root of unity the Kummer character names and moves it to within distance one
+  of its power by the number of residues of the base, so cancelling the chosen root leaves that
+  root of unity congruent to a power of it; the exponent divides one less than the number of
+  residues, so that power is a power of the unit itself and no trace of the level survives.  Two
+  roots of unity of order prime to the residue characteristic at distance less than one are equal,
+  so **the Kummer character of a unit at a Frobenius automorphism is the power residue exponent of
+  that unit**, and **the tame symbol of a uniformiser against a unit of the valuation ring is the
+  class, modulo the integers, of the opposite of the power residue exponent of the unit, divided by
+  the exponent.**
 -/
