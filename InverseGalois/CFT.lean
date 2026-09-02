@@ -479,6 +479,7 @@ import InverseGalois.CFT.Scholz.CoverObstruction
 import InverseGalois.CFT.Scholz.CyclicSupplement
 import InverseGalois.CFT.Scholz.DecompositionLift
 import InverseGalois.CFT.Scholz.DyadicAuxPrime
+import InverseGalois.CFT.Scholz.DyadicAuxPrimeFamily
 import InverseGalois.CFT.Scholz.DyadicClassStep
 import InverseGalois.CFT.Scholz.DyadicCorrector
 import InverseGalois.CFT.Scholz.DyadicInduction
@@ -542,6 +543,7 @@ import InverseGalois.CFT.Scholz.SubfieldScholz
 import InverseGalois.CFT.Scholz.Tame
 import InverseGalois.CFT.Scholz.Twist
 import InverseGalois.CFT.Scholz.TwistStep
+import InverseGalois.CFT.Scholz.TwoPowerRadical
 import InverseGalois.CFT.Scholz.UnramifiedFactorInertia
 import InverseGalois.CFT.Scholz.UnramifiedSolution
 import InverseGalois.CFT.Scholz.UnramifiedSolutionTwo
@@ -4804,6 +4806,29 @@ it that are available here.
   list at once.  Hence, for a list of primes shorter than a power of `ℓ`, **there is a prime
   congruent to one modulo twice an arbitrarily large power of `ℓ`, avoiding any prescribed finite
   set, modulo which every prime on the list fails to be a power residue at that exponent**.
+* `InverseGalois.CFT.Scholz.TwoPowerRadical` supplies the missing irreducibility at the prime two.
+  For an odd prime the polynomial `X` raised to a prime power, minus a constant without a root of
+  prime exponent, is irreducible; at two the honest criterion also involves the constant modulo
+  fourth powers of minus four, and that correction disappears over a field already containing a
+  square root of minus one, since minus four is then a fourth power there.  Adjoining one square
+  root of the constant, a square root of it would have a norm whose square is minus the constant,
+  and the square root of minus one turns that norm into a square root of the constant; so the
+  induction on the exponent, run over all fields at once, gives **`X` raised to a power of two,
+  minus a non-square, is irreducible over a field containing a square root of minus one**.  Hence
+  **a rational number without a square root in a field of matching roots of unity is enlarged by
+  the full two-power factor**, and **a rational number with a square root but no fourth root there
+  is still enlarged by half of it**, its two-power root being a root of half the order of an
+  element already present.
+* `InverseGalois.CFT.Scholz.DyadicAuxPrimeFamily` runs the family density argument at the prime
+  two.  Over the cyclotomic field of a two-power conductor only two ramifies, so an odd prime has
+  no square root there and its radical of two-power exponent multiplies the degree by that whole
+  exponent; two itself does have a square root there once the conductor is at least eight, an
+  explicit one being a primitive eighth root of unity plus its inverse, but no fourth root, so its
+  radical still multiplies the degree by half the exponent.  The uniform factor of half the
+  exponent grows without bound while the number of prescribed primes does not, so the union bound
+  succeeds for all of them at once and yields **a prime congruent to one modulo a prescribed power
+  of two, avoiding any prescribed finite set, modulo which every prime on a list shorter than half
+  the exponent fails to be a power residue at that exponent**.
 * `InverseGalois.CFT.Brauer.BaseOddReciprocity` closes global reciprocity over an arbitrary number
   field in odd order.  A class has nontrivial invariants at only finitely many places, hence above
   only finitely many rational primes, and the exponent at which those primes are asked to be
