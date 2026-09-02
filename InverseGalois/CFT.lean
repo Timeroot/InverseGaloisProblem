@@ -746,6 +746,7 @@ import InverseGalois.CFT.Units.IdeleNormTower
 import InverseGalois.CFT.Units.IdeleQuotCyclic
 import InverseGalois.CFT.Units.IdeleRep
 import InverseGalois.CFT.Units.IdeleRestrict
+import InverseGalois.CFT.Units.IdeleTorusSha
 import InverseGalois.CFT.Units.IdeleTower
 import InverseGalois.CFT.Units.InertPlace
 import InverseGalois.CFT.Units.InfiniteComap
@@ -3565,6 +3566,17 @@ it that are available here.
   integral representation in a degree is that of the idele class group two degrees higher -- and
   **the theorem of Tate and Nakayama for the idele class group** for coefficients flat over the
   integers.
+* `InverseGalois.CFT.Units.IdeleTorusSha` spends that theorem on the local-global obstruction of a
+  torus.  Tensoring the sequence of the units, the ideles and the idele classes with a
+  representation flat over the integers leaves it exact, so the long exact sequence of complete
+  cohomology reads the classes of the units which die in the ideles as the image of the connecting
+  map coming out of the idele classes one degree lower; and the theorem of Tate and Nakayama turns
+  the idele classes in that degree into the representation itself two degrees lower.  Those classes
+  are the everywhere locally trivial ones, since by Shapiro's lemma the cohomology of the ideles is
+  the product of the cohomologies of the completions, so **the everywhere locally trivial part of
+  the complete cohomology of the units tensored with a lattice, in degree `n + 3`, is exactly the
+  image of the complete cohomology of the lattice in degree `n`**.  In degree one, that is the
+  degree `-2` of the lattice: a finite object, where the cohomology of the units is not.
 * `InverseGalois.CFT.Brauer.DivisionInteger` collects the first consequences of that absolute value.
   The elements of absolute value at most one form the **integers** of the algebra; the base field
   has an element whose absolute value is the largest one below one, and every absolute value of the

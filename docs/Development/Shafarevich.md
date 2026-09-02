@@ -3960,7 +3960,7 @@ extensions (`Mathlib/GroupTheory/GroupExtension/` has only a docstring TODO).
 | 2 | ~~`Ш¹(k, A) ↪ H¹(Gal(K\|k), A)` from the Hasse principle, and its dual~~ | **DONE** — `CFT/Units/HasseInflation.lean`: `exists_galInflH1_eq_of_forall_level` and `exists_galInflH1_eq_of_forall_level_outside`, and — with the glue of §0.40 — `CFT/Units/HasseDecomposition.lean`: `exists_galInflH1_eq_of_finiteDecomposition(Outside)`, stated at the genuine decomposition subgroups of `G_k` |
 | 3 | ~~Finiteness of `Ш²(k, E)` via ABHN + Hochschild–Serre~~ | **DONE** — `CFT/Units/HasseTwo.lean`: `eq_one_of_forall_isLocallySplitLevel`, the vanishing of the everywhere locally trivial classes of `H²` with `μ_n` coefficients, valid at `p = 2` (see §0.38).  The degree-one glue is §0.40; the degree-two glue is §0.42 — `CFT/Units/HasseTwoDecomposition.lean`: `eq_one_of_mem_sha2`, stated at `sha2 M (decompositionSubgroups k Ω)`, the genuine decomposition subgroups of `G_k` |
 | 4 | ~~Local Tate duality for finite modules over a local field~~ | **DONE** — `CFT/Local/CyclicNormIndex.lean` (the norm index of *any* cyclic extension of a local field is its degree), `CFT/Local/KummerNonNorm.lean` (nondegeneracy of the `q`-th power norm residue symbol), see §0.39; `inv_M ∘ res = [M:K] · inv_K` is `localInvariantHom_baseChange` (`CFT/Brauer/InvariantBaseChange.lean`); and `CFT/Brauer/CyclicNormResidue.lean` assembles the norm residue symbol of a cyclic extension of a local field, see §0.56 |
-| 5 | **Global duality `Ш²(k, A) ≅ Ш¹(k, A′)^∨`** | wall #1 as of §0.36; §0.84(c) argued this row was replaceable by degree-two Hochschild–Serre, but **§0.87 refutes that** (step 3 there is circular), so the row stands |
+| 5 | **Global duality `Ш²(k, A) ≅ Ш¹(k, A′)^∨`** | wall #1 as of §0.36; §0.84(c) argued this row was replaceable by degree-two Hochschild–Serre, but **§0.87 refutes that** (step 3 there is circular), so the row stands.  **§0.88 does the torsion-free half unconditionally** (`CFT/Units/IdeleTorusSha.lean`: the locally trivial part of `Ĥ^{n+3}(G, K^×⊗N)` is the image of `Ĥ^n(G,N)`, from the class formation alone) and reduces the `p`-torsion half to the derived correction `Ĥ^*(G, C_K[p]⊗W)` in Tate–Nakayama |
 | 6 | The `p`-th power Hilbert symbol over a number field and its product formula | the repo has the *quadratic* symbol over `ℚ` (`CFT/Global/Hilbert*.lean`); the *local* nondegeneracy of the `p`-th power symbol is §0.39(b) |
 | 7 | ~~**Chebotarev density over a number field**, in the abelian/ray-class form of (e)~~ | **DONE for odd `p`** — `NumberTheory/RelativeSplitDensity.lean` + `CFT/RelativeFrobenius.lean`: Theorem 13 only needs the Frobenius *up to a scalar*, which is `exists_relStabilizer_eq_zpowers` (see §0.41).  What remains is "every ideal class contains a prime", used only in the `p = 2` Claim |
 | 8 | Poitou–Tate, at least the eight-term sequence for `μ_p` over `k_S` | needed by Lemma 10 and Theorem 13; §0.84(c) argued this row was avoidable, **§0.87 refutes that** |
@@ -8748,6 +8748,111 @@ locally trivial part of `H¹(G, Hom(G_K, E))`.  The computation is three lines o
 cancels `c σ` — and it is what any repair of the route will need, on either candidate above.  It is
 also, in the duality language, precisely the assertion that the map `Ш² → H¹(G, H¹(G_K, E))` lands
 in `Ш¹`, which is the group Poitou–Tate computes.
+
+---
+
+## 0.88 Status (2026-09-02) — `Ш¹` from the idele sequence: the lattice case is done, the `p`-torsion case is Poitou–Tate
+
+§0.87(c) ends at the group `Ш¹(G, Hom_cont(G_K, E))`.  This section computes it, in the one case
+where the existing class-formation machinery suffices, and pins down exactly what is missing in the
+case the route actually needs.
+
+### (a) The reduction that costs nothing
+
+Kummer theory identifies the coefficient module.  With `μ_p ⊆ K` and `W := Hom(μ_p, E) = E(-1)`,
+
+`Hom_cont(G_K, E) ≅ (K^×/K^{×p}) ⊗_{𝔽_p} W = K^× ⊗_ℤ W`   as `G = Gal(K/k)`-modules,
+
+so the group of §0.87(c) is `Ш¹(G, K^× ⊗ W)`, the kernel of `Ĥ¹(G, K^×⊗W) → Ĥ¹(G, I_K⊗W)` — the
+target being `⊕'_v Ĥ¹(G_w, K_w^×⊗W)` by Shapiro's lemma.
+
+Now tensor the idele sequence `0 → K^× → I_K → C_K → 0` with any coefficient module `M` for which
+it stays exact.  The long exact sequence of complete cohomology gives, **in every degree at once**,
+
+`Ш^{i+1}(G, K^×⊗M) = im(δ : Ĥ^i(G, C_K⊗M) → Ĥ^{i+1}(G, K^×⊗M)) = coker(Ĥ^i(G, I_K⊗M) → Ĥ^i(G, C_K⊗M))`.
+
+That is the whole trick: **the locally trivial classes of the units are a quotient of the cohomology
+of the idele classes one degree lower**, and the idele class group is the module of a class
+formation, so its cohomology is computable by Tate–Nakayama.  No duality is used.
+
+### (b) The lattice case, in Lean
+
+For `M = N` a `G`-lattice (flat over `ℤ`) the tensored sequence is exact because flatness is exactly
+what preserves injectivity, and `tateNakayamaIdeleClass` gives `Ĥ^i(G, C_K⊗N) ≅ Ĥ^{i-2}(G, N)`.
+`CFT/Units/IdeleTorusSha.lean` assembles this:
+
+```lean
+theorem range_shaTorusMap (n : ℤ) :
+    LinearMap.range (shaTorusMap α hα N hN n)
+      = LinearMap.ker (tateMap (tensorHomLeft N (globalUnitsToIdele k K)) (n + 1 + 1 + 1)).hom
+```
+
+where `shaTorusMap α hα N hN n : Ĥ^n(G, N) →ₗ Ĥ^{n+3}(G, K^×⊗N)` is Tate–Nakayama followed by the
+connecting map.  In words: **the everywhere locally trivial part of `Ĥ^{n+3}(G, K^×⊗N)` is exactly
+the image of `Ĥ^n(G, N)`.**  Sorry- and axiom-free; build green at 9594 jobs.
+
+Sanity checks.  `n = -2` gives `Ш¹(G, K^×⊗N)` as a quotient of `Ĥ^{-2}(G,N) = H_1(G,N)`, which is
+finite while `H¹(G, K^×⊗N)` need not be.  For `N = ℤ` trivial the source is `G^ab` and the target is
+`Ш¹(G, K^×) ⊆ H¹(G,K^×) = 0` (Hilbert 90) — consistent, not tight.  For `N = ℤ[G]` both sides
+vanish.  And the statement is the exact dual of the classical `Ш¹(k,T) ≅ Ш²(k, X̂)^∨` of Ono and
+Sansuc: `Ĥ^{-2}(G,N) ≅ Ĥ¹(G, Hom(N,ℚ/ℤ))^∨ ≅ Ĥ²(G, X̂)^∨` for `X̂ = Hom(N,ℤ)` the character lattice,
+since `X̂⊗ℚ` is cohomologically trivial.  So the brick is the torsion-free half of global duality for
+tori, obtained from the class formation alone.
+
+### (c) The `p`-torsion case: where the content really is
+
+The route needs `M = W`, which is `p`-torsion, not a lattice.  Two things have to be checked.
+
+**Exactness of the tensored sequence** — this one is free.  `Tor_1(C_K, W) = C_K[p] ⊗ W`, and the
+connecting map `C_K[p] → K^×/K^{×p}` is zero: the snake of `0 → K^× → I_K → C_K → 0` gives
+
+`0 → μ_p(K) → I_K[p] → C_K[p] → K^×/K^{×p} → I_K/I_K^p`,
+
+and `I_K[p] = ∏_w μ_p(K_w) = ∏_w μ_p` (roots of unity are units at every place), so the image of
+`C_K[p]` in `K^×/K^{×p}` lies in `Ш¹(K, μ_p)`, which vanishes by Grunwald–Wang — in the repository,
+`exists_pow_eq_of_forall_localPow_outside_of_prime` (`CFT/GrunwaldWang.lean`), prime exponent, no
+roots-of-unity hypothesis, so the `p = 2` special case never arises.  **So `0 → K^×⊗W → I_K⊗W →
+C_K⊗W → 0` is exact and the reduction of (a) applies verbatim.**
+
+**Tate–Nakayama with `p`-torsion coefficients** — this one is not free, and it is the whole
+difficulty.  The theorem in its honest form computes `Ĥ^n(G, M ⊗^L C_K)`, and for `M` with torsion
+the derived tensor product has `H_1 = Tor_1(C_K, M) = C_K[p]⊗M`, so the naive statement acquires an
+error term measured by `Ĥ^*(G, C_K[p] ⊗ W)`.  The repository already has the `p`-torsion
+Tate–Nakayama gated on exactly one hypothesis:
+
+```lean
+def tateNakayamaPTorsionEquiv (A : Rep ℤ G) (α : tateModule A 2) (M : Rep ℤ G)
+    (hM : ∀ v : ↥M.V, p • v = 0)
+    (hE : ∀ P : Sylow p G, Limits.IsZero (groupCohomology (resObj (P : Subgroup G)
+      (modNsmul (cocycleObj (shiftObj A) (tateTwoCocycle A α)) p)) 1)) (n : ℤ) :
+    tateModule M n ≃ₗ[ℤ] tateModule (tensorObj A M) (n + 1 + 1)
+```
+
+(`CFT/TateCohomology/TensorPTorsion.lean`).  Unwinding the dimension shift for `A = C_K`, the
+hypothesis `hE` is the vanishing of a Tate group of `C_K[p]` over each Sylow subgroup — and that
+group does **not** vanish in general: `Ĥ²(P, I_K[p]) = ∏_{orbits} Ĥ²(P_w, μ_p)` maps into it and is
+nonzero as soon as some decomposition group is nontrivial.  This is not a defect of the Lean
+statement; it is the reason Poitou–Tate is a theorem about `Ш` and not a corollary of the class
+formation.  **The `p`-torsion case of (a) is Poitou–Tate.**
+
+### (d) What this changes
+
+Row 5 of the §0.36 table stands, but its shape is now precise rather than a slogan:
+
+* The **torsion-free** half of global duality for tori is *done*, from the class formation, with no
+  duality input at all (`range_shaTorusMap`).
+* The **`p`-torsion** half reduces, by (c), to controlling `Ĥ^*(G, C_K[p] ⊗ W)` — equivalently, to
+  the derived correction in Tate–Nakayama.  That is a single, sharply stated object, and it is the
+  first place where a genuine Poitou–Tate input is unavoidable.
+* Grunwald–Wang has now found its first real use downstream: it is what makes the tensored idele
+  sequence exact for `p`-torsion coefficients.
+
+Bricks available for the next step, all present and sorry-free: `ideleClassShortComplex_shortExact`,
+`tensorSeq_shortExact`, `tateδ`/`tateExact_δ_map`, `tateNakayamaIdeleClass`,
+`tateNakayamaPTorsionEquiv`, `isZero_tateModule_tensorObj_of_nsmul`, and the Grunwald–Wang power
+theorem.  What is *not* present: the Kummer identification
+`Hom_cont(G_K,E) ≅ (K^×/K^{×p}) ⊗ Hom(μ_p,E)` as `G`-modules, Shapiro for `I_K ⊗ M`, and any handle
+on `C_K[p]` as a `G`-module.
 
 ---
 
