@@ -28,6 +28,7 @@ which the invariants of a class in the Brauer group are grouped.
   prime exactly when that prime is the one below it.
 * `InverseGalois.CFT.placesOverEquiv`: **the places above a rational prime match the primes over
   it.**
+* `InverseGalois.CFT.finite_placesOver`: **only finitely many places lie above a rational prime.**
 * `InverseGalois.CFT.mk_norm_eq_prod_norm_primesOver`: **the norm of an algebraic integer reduces
   modulo a rational prime to the product, over the primes of the number field over it, of the norms
   of the reductions modulo the corresponding ramified powers.**
@@ -75,6 +76,16 @@ noncomputable def placesOverEquiv (P : HeightOneSpectrum (𝓞 ℚ)) :
       (primeUnder_eq_iff_liesOver P _).mpr hQ.2⟩
   left_inv v := by ext; rfl
   right_inv Q := by ext; rfl
+
+/-- **Only finitely many places of a number field lie above a rational prime**, since they match
+the finitely many primes of the ring of integers over it. -/
+theorem finite_placesOver (P : HeightOneSpectrum (𝓞 ℚ)) :
+    {u : HeightOneSpectrum (𝓞 k) | primeUnder (𝓞 ℚ) u = P}.Finite := by
+  classical
+  letI hft : Fintype {v : HeightOneSpectrum (𝓞 k) // primeUnder (𝓞 ℚ) v = P} :=
+    Fintype.ofEquiv _ (placesOverEquiv P).symm
+  letI : Fintype ↑({u : HeightOneSpectrum (𝓞 k) | primeUnder (𝓞 ℚ) u = P}) := hft
+  exact Set.toFinite _
 
 open scoped Classical in
 /-- **The norm of an algebraic integer reduces modulo a rational prime to the product, over the

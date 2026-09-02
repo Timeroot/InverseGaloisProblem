@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Brauer.NormPlaceValue
+import InverseGalois.CFT.Brauer.NormPrimesOver
 import InverseGalois.CFT.Brauer.TotalInvariant
 
 /-!
@@ -22,14 +23,28 @@ prime relative to another prime below a different one is zero.  Globally, a prod
 places of the number field is a product over the fibres of the products over each fibre, which is
 the interchange of a doubly indexed product with finite support.
 
+The invariants above a rational prime are also read off from residues rather than from values, in
+which case each of them is the additive character applied to an exponent naming a power of a fixed
+generator of the residue field.  Since only finitely many places lie above a rational prime, the
+product over the fibre is then the character applied to the sum of the exponents, reduced modulo
+the order of the generator.
+
 ## Main results
 
 * `InverseGalois.CFT.finprod_ofAdd`: a product of exponentials of an additively written family is
   the exponential of its sum.
+* `InverseGalois.CFT.natCast_finsum_mem_zmod`: reducing a finite sum of natural numbers modulo an
+  integer is the sum of the reductions.
 * `InverseGalois.CFT.finprod_placeInvariant_fibre`: **the product of the invariants over the places
   above a rational prime**, when each of them is the exponential of the residue degree times the
   value of a coefficient, is the exponential of the value at the rational prime of the norm of the
   coefficient.
+* `InverseGalois.CFT.finprod_placeInvariant_fibre_eq_of_value`: **that product is the invariant at
+  the rational prime** as soon as the latter is the exponential of the same exponent times the
+  value there of the norm of the coefficient.
+* `InverseGalois.CFT.finprod_placeInvariant_fibre_natCast`: **the same product when each invariant
+  is instead the exponential of a residue exponent**, which is then the exponential of the sum of
+  those exponents.
 * `InverseGalois.CFT.finprod_placeInvariant_eq_of_fibre`: **the product of the invariants over all
   finite places agrees with a product over the rational primes** as soon as it does so fibre by
   fibre.
@@ -69,6 +84,21 @@ theorem finprod_ofAdd {ι M : Type} [AddCommMonoid M] (f : ι → M) :
       exact h
     rw [finsum_of_infinite_support h, finprod_of_infinite_mulSupport hinf]
     rfl
+
+/-- Reducing a finite sum of natural numbers modulo an integer is the sum of the reductions. -/
+theorem natCast_finsum_mem_zmod {ι : Type} {S : Set ι} (hS : S.Finite) (j : ι → ℕ) (N : ℕ) :
+    ((∑ᶠ v ∈ S, j v : ℕ) : ZMod N) = ∑ᶠ v ∈ S, ((j v : ℕ) : ZMod N) := by
+  classical
+  have hsupp : (Function.support (Set.indicator S j)).Finite :=
+    hS.subset Set.support_indicator_subset
+  have h := AddMonoidHom.map_finsum (Nat.castAddMonoidHom (ZMod N)) hsupp
+  rw [finsum_mem_def, finsum_mem_def]
+  simp only [Nat.coe_castAddMonoidHom] at h
+  rw [h]
+  refine finsum_congr fun v => ?_
+  by_cases hv : v ∈ S
+  · rw [Set.indicator_of_mem hv, Set.indicator_of_mem hv]
+  · rw [Set.indicator_of_notMem hv, Set.indicator_of_notMem hv, Nat.cast_zero]
 
 end OfAdd
 
@@ -115,6 +145,51 @@ theorem finprod_placeInvariant_fibre {N : ℕ} (X : BrauerGroup.{0, 0} k) (a : k
       simp [inertiaDeg_eq_zero_of_comap_ne hcomap]
   rw [finprod_congr hterm, finprod_ofAdd, ← AddMonoidHom.map_finsum φ hH, hφ, hHdef,
     ← placeValue_normUnit P a]
+
+/-- **The product of the invariants over the places above a rational prime is the invariant at that
+prime**, as soon as each of them is the exponential of a fixed exponent times the residue degree
+times the value of a coefficient and the invariant at the prime is the exponential of the same
+exponent times the value there of the norm of the coefficient. -/
+theorem finprod_placeInvariant_fibre_eq_of_value {N : ℕ} (X : BrauerGroup.{0, 0} k)
+    (Z : BrauerGroup.{0, 0} ℚ) (a : kˣ) (c : ℕ) (P : HeightOneSpectrum (𝓞 ℚ))
+    (hloc : ∀ v : HeightOneSpectrum (𝓞 k), primeUnder (𝓞 ℚ) v = P →
+      placeInvariant k v X = Multiplicative.ofAdd (intQModZ N
+        ((c : ℤ) * (((P.asIdeal.inertiaDeg v.asIdeal : ℕ) : ℤ) * placeValue v a))))
+    (hlocP : placeInvariant ℚ P Z = Multiplicative.ofAdd (intQModZ N
+      ((c : ℤ) * placeValue P (Units.map (Algebra.norm ℚ : k →* ℚ) a)))) :
+    ∏ᶠ v : HeightOneSpectrum (𝓞 k),
+        Set.mulIndicator {u | primeUnder (𝓞 ℚ) u = P} (fun u => placeInvariant k u X) v
+      = placeInvariant ℚ P Z := by
+  rw [finprod_placeInvariant_fibre X a c P hloc, hlocP]
+
+/-- **The product of the invariants over the places above a rational prime**, when each of them is
+the exponential of a residue exponent read modulo an integer, is the exponential of the sum of
+those exponents.  The places outside the fibre contribute nothing. -/
+theorem finprod_placeInvariant_fibre_natCast {N : ℕ} [NeZero N] (X : BrauerGroup.{0, 0} k)
+    (P : HeightOneSpectrum (𝓞 ℚ)) (j : HeightOneSpectrum (𝓞 k) → ℕ)
+    (hloc : ∀ v : HeightOneSpectrum (𝓞 k), primeUnder (𝓞 ℚ) v = P →
+      placeInvariant k v X = Multiplicative.ofAdd (zmodQModZ N ((j v : ℕ) : ZMod N))) :
+    ∏ᶠ v : HeightOneSpectrum (𝓞 k),
+        Set.mulIndicator {u | primeUnder (𝓞 ℚ) u = P} (fun u => placeInvariant k u X) v
+      = Multiplicative.ofAdd (zmodQModZ N
+          (((∑ᶠ v ∈ {u : HeightOneSpectrum (𝓞 k) | primeUnder (𝓞 ℚ) u = P}, j v : ℕ) :
+            ZMod N))) := by
+  classical
+  set S : Set (HeightOneSpectrum (𝓞 k)) := {u | primeUnder (𝓞 ℚ) u = P} with hSdef
+  set J : HeightOneSpectrum (𝓞 k) → ZMod N := Set.indicator S (fun u => ((j u : ℕ) : ZMod N))
+    with hJdef
+  have hS : S.Finite := finite_placesOver P
+  have hsupp : (Function.support J).Finite := hS.subset Set.support_indicator_subset
+  have hterm : ∀ v : HeightOneSpectrum (𝓞 k),
+      Set.mulIndicator S (fun u => placeInvariant k u X) v
+        = Multiplicative.ofAdd (zmodQModZ N (J v)) := by
+    intro v
+    by_cases hv : v ∈ S
+    · rw [Set.mulIndicator_of_mem hv, hloc v hv, hJdef, Set.indicator_of_mem hv]
+    · rw [Set.mulIndicator_of_notMem hv, hJdef, Set.indicator_of_notMem hv, map_zero]
+      rfl
+  rw [finprod_congr hterm, finprod_ofAdd, ← AddMonoidHom.map_finsum (zmodQModZ N) hsupp,
+    natCast_finsum_mem_zmod hS j N, finsum_mem_def]
 
 end Fibre
 

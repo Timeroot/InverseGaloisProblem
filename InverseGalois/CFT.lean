@@ -45,6 +45,7 @@ import InverseGalois.CFT.Brauer.DivisionSplitting
 import InverseGalois.CFT.Brauer.DivisionTeichmuller
 import InverseGalois.CFT.Brauer.DivisionValueGroup
 import InverseGalois.CFT.Brauer.Exponent
+import InverseGalois.CFT.Brauer.FibreConductor
 import InverseGalois.CFT.Brauer.FibreExponent
 import InverseGalois.CFT.Brauer.FibreInvariant
 import InverseGalois.CFT.Brauer.Frobenius
@@ -56,6 +57,7 @@ import InverseGalois.CFT.Brauer.Group
 import InverseGalois.CFT.Brauer.H2Brauer
 import InverseGalois.CFT.Brauer.H2Surjective
 import InverseGalois.CFT.Brauer.HasseNoether
+import InverseGalois.CFT.Brauer.InertiaDegRat
 import InverseGalois.CFT.Brauer.InertiaSubfield
 import InverseGalois.CFT.Brauer.InfiniteInvariant
 import InverseGalois.CFT.Brauer.InfinitePlaceCrossedProduct
@@ -108,6 +110,7 @@ import InverseGalois.CFT.Brauer.PlaceRamified
 import InverseGalois.CFT.Brauer.PlaceRamifiedAut
 import InverseGalois.CFT.Brauer.PlaceSubcyclotomic
 import InverseGalois.CFT.Brauer.PlaceSubcyclotomicBase
+import InverseGalois.CFT.Brauer.PlaceSubcyclotomicFibre
 import InverseGalois.CFT.Brauer.PlaceSubcyclotomicPower
 import InverseGalois.CFT.Brauer.PlaceTotallyRamified
 import InverseGalois.CFT.Brauer.PlaceUnramified
@@ -4499,6 +4502,17 @@ it that are available here.
   degree, to the number of residues of the base.  Hence **the invariant at an unramified finite
   place, with the exponent split as a rational exponent times the residue degree of the place**,
   which confines the dependence on the place to a single natural number.
+* `InverseGalois.CFT.Brauer.InertiaDegRat` compares the two ways of measuring that residue degree.
+  The absolute norm of an ideal is the absolute norm of the ideal below it raised to the residue
+  degree, and it is also the rational prime raised to the residue degree over the integers; every
+  finite place of the rationals has residue degree one, so the absolute norm of the place of the
+  rationals below is the prime itself, and **the residue degree of a place over the ideal generated
+  by the rational prime below it is its residue degree over the place of the rationals below it**.
+* `InverseGalois.CFT.Brauer.PlaceSubcyclotomicFibre` measures the exponent that way.  The local
+  computation counts residues as powers of the rational prime, whereas adding up the invariants
+  above one rational prime takes norms relative to the integers of the rationals; the two residue
+  degrees agree, so **the invariant at an unramified finite place, with the residue degree measured
+  against the place of the rationals below**, takes the shape in which a whole fibre can be summed.
 * `InverseGalois.CFT.Brauer.ResidueGenerator` prepares the ramified place over an arbitrary base.
   The Teichmüller lift of a generator of the residues is a root of unity of order one less than the
   number of residues whose powers meet every element of absolute value one, so its power of
@@ -4593,11 +4607,16 @@ it that are available here.
   vanishing because the residue degree of a prime relative to a rational prime other than the one
   below it is zero, and the norm formula for values at places sums them.  Hence **the product of
   the invariants over the places above a rational prime is the exponential of the value at that
-  prime of the norm of the coefficient**.  Globally, the interchange of a doubly indexed product of
+  prime of the norm of the coefficient**, hence **is the invariant at that prime** as soon as the
+  latter is the exponential of the same exponent times the value there of the norm.  Globally, the
+  interchange of a doubly indexed product of
   finite support expresses a product over the places of the number field as the product over the
   rational primes of the products over the places above them, so **the product of the invariants
   over all finite places agrees with a product over the rational primes** as soon as it does so
-  fibre by fibre.
+  fibre by fibre.  When the invariants above a prime are instead read off from residues, each of
+  them being the exponential of an exponent naming a power of a fixed generator, **the product over
+  the fibre is the exponential of the sum of those exponents**, the sum being finite because only
+  finitely many places lie above a rational prime.
 * `InverseGalois.CFT.Brauer.NormPrimesOver` specialises the Chinese remainder splitting of a norm to
   a number field.  The ring of integers of a number field is a finitely generated torsion free
   module over the integers of the rationals, which is a principal ideal ring, so it is free of rank
@@ -4606,15 +4625,17 @@ it that are available here.
   to the product, over the primes of the ring of integers over it, of the norms of the reductions
   modulo the corresponding ramified powers**.  A place of a number field lies over a rational prime
   exactly when that prime is the one below it, so **the places above a rational prime match the
-  primes over it**, and the product can be read as one over the fibre of the map sending a place to
-  the rational prime below it — the shape in which the invariants of a class in the Brauer group are
-  grouped.
+  primes over it** — in particular **only finitely many of them do** — and the product can be read
+  as one over the fibre of the map sending a place to the rational prime below it, the shape in
+  which the invariants of a class in the Brauer group are grouped.
 * `InverseGalois.CFT.Brauer.ResidueCongruence` reads a local statement as a congruence.  The
   valuation of an integer of a number field in the completion at a place is its valuation there, so
   **two integers agree modulo a place exactly when their difference is small in the completion**;
   and since a power of a difference of small valuation is again small, **a power of an integer that
   is close to a power of a root of unity reduces modulo the place to the same power of the natural
-  number representing that root**.
+  number representing that root**.  The completion has as many residues as the place, so the same
+  statement is available with the power written as the local computation of an invariant produces
+  it, by the number of residues of the completion.
 * `InverseGalois.CFT.Brauer.FibreExponent` adds up the exponents naming the invariants above one
   rational prime.  Raising an element of a residue field to the number of its elements less one
   over the degree is the norm to the residue field below followed by the corresponding power there,
@@ -4626,4 +4647,10 @@ it that are available here.
   above the prime**.  The natural number has order the degree there, so an equality of its powers
   is a congruence: **the exponents above a rational prime add up, modulo the degree, to the
   exponent of the prime**.
+* `InverseGalois.CFT.Brauer.FibreConductor` compares the invariants at the prime whose roots of
+  unity generate the splitting field.  Each invariant above that prime, and the invariant at the
+  prime itself, is the exponential of an exponent read from a residue congruence against a fixed
+  generator of order the degree; the exponents above the prime add up to the one below it, so
+  **the product of the invariants over the places above the prime is the invariant at the prime**
+  as soon as the prime is unramified in the number field.
 -/
