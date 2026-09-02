@@ -756,6 +756,7 @@ import InverseGalois.CFT.Units.InfiniteTowerDescent
 import InverseGalois.CFT.Units.InflationDescent
 import InverseGalois.CFT.Units.KummerDecomposition
 import InverseGalois.CFT.Units.LocalCoboundaryTwist
+import InverseGalois.CFT.Units.LocalDegreeLcm
 import InverseGalois.CFT.Units.LocalEmbedding
 import InverseGalois.CFT.Units.LocalIdele
 import InverseGalois.CFT.Units.LocalNorm
@@ -2545,6 +2546,15 @@ it that are available here.
   of places of the base, whose decomposition group is the whole Galois group**, and discarding the
   finitely many ramified places as well makes the arithmetic Frobenius there a generator of the
   Galois group, with no analysis at all.
+* `InverseGalois.CFT.Units.LocalDegreeLcm` collects those places prime by prime.  For every prime
+  dividing the degree of a cyclic extension, the exponent obtained by dividing the degree by that
+  prime does not kill a generator, so some place away from a prescribed finite set of places of the
+  base has local degree not dividing it; and a divisor of the degree which is not the whole degree
+  divides the degree divided by some prime factor.  Hence **finitely many places, all lying over
+  primes outside the prescribed set, have local degrees whose least common multiple is the degree**,
+  or equivalently the degree and the complementary degrees at those places have greatest common
+  divisor one.  This is the arithmetic input for the surjectivity of the sum of the local
+  invariants: each prime part of the degree is already carried by a single place.
 * `InverseGalois.CFT.Units.HasseHom` reads that generation statement as one about homomorphisms out
   of the Galois group, where the solvability hypothesis becomes free.  A homomorphism into a
   commutative group has a normal kernel whose fixed field is a quotient of the Galois group
