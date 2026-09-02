@@ -8138,6 +8138,80 @@ wall; row 7's `p = 2` leftover ("every `S`-ideal class contains a prime") still 
 
 ---
 
+## 0.81 Status (2026-09-02) — **the Hasse norm theorem is proven**
+
+Commit: build green at **9589 jobs**, zero warnings, zero errors; all seven new theorems have
+axioms `[propext, Classical.choice, Quot.sound]`.
+
+The archimedean lemma flagged as missing in §0.80(b) is now in place, and with it the Hasse norm
+theorem for cyclic extensions of number fields.
+
+### (a) `InverseGalois/CFT/Brauer/InfiniteCyclic.lean` — the infinite-place mirror
+
+A transcription of `PlaceCyclic.lean` with `HeightOneSpectrum (𝓞 K)` replaced by
+`InfinitePlace K`, `adicCompletion` by `Completion`, `primeUnder (𝓞 k)` by
+`comap (algebraMap k K)`, and the decomposition-field plumbing taken from
+`Units/InfiniteDecompositionField.lean`.  Three theorems:
+
+* `exists_forall_mem_zpowers_restrictScalars_eq_infinite` — the decomposition group at `w` is a
+  subgroup of a finite cyclic group, hence `Subgroup.zpowers (σ₀ ^ (stabilizer Gal(K/k) w).index)`
+  (`subgroup_eq_zpowers_pow` fed by `Subgroup.index_mul_card`), and
+  `localInfiniteDecompositionEquiv` identifies it with
+  `w.Completion ≃ₐ[(w.comap (algebraMap k K)).Completion] w.Completion`.  So the local Galois group
+  has a generator whose restriction to `K` is that power.
+* `baseChangeHom_cyclicBrauerHom_infiniteCompletion` — factor the base change through the
+  decomposition field: `baseChangeHom_cyclicBrauerHom` for the first step (coefficient untouched),
+  `baseChangeHom_cyclicBrauerHom_compositum` for the second (coefficient untouched), and
+  `IsScalarTower.algebraMap_apply` to compose the two coefficient maps.
+* `infinitePlaceInvariant_cyclicBrauerHom_eq_one_iff` — the same five-rewrite chain as at a finite
+  place, ending in `rfl` to reconcile `↑(Units.map ↑(algebraMap k M) a)` with `algebraMap k M ↑a`.
+
+The whole file typechecked on the first attempt; there was genuinely no new mathematics in it,
+which is a good sign that the finite/infinite split in the invariant layer is drawn in the right
+place.
+
+### (b) `InverseGalois/CFT/Brauer/HasseNorm.lean`
+
+Both directions are statements about the single Brauer class `cyclicBrauerHom hσ₀ a`.
+
+*Forward.*  If `a` is a global norm then `mem_ker_cyclicBrauerHom_iff` makes the class trivial, so
+every local invariant is `map_one`, so by the two `…_eq_one_iff` lemmas `a` is a local norm at
+every finite and every infinite place.
+
+*Converse.*  If `a` is a local norm everywhere then every local invariant vanishes — the quantifier
+is over places of `K`, and every place of `k` is hit, by `exists_primeUnder_eq` at the finite
+places and `NumberField.InfinitePlace.comap_surjective` at the infinite ones — so
+`eq_one_of_forall_invariant_eq_one` (ABHN, §0.72) kills the class, and
+`mem_ker_cyclicBrauerHom_iff` returns the global norm.
+
+```lean
+theorem exists_norm_eq_of_forall_local (hσ₀ : ∀ x : Gal(K/k), x ∈ Subgroup.zpowers σ₀)
+    (hfin : ∀ w : HeightOneSpectrum (𝓞 K), ∃ b : (w.adicCompletion K)ˣ,
+      Algebra.norm ((primeUnder (𝓞 k) w).adicCompletion k) (b : w.adicCompletion K)
+        = algebraMap k ((primeUnder (𝓞 k) w).adicCompletion k) (a : k))
+    (hinf : ∀ w : InfinitePlace K, ∃ b : (w.Completion)ˣ,
+      Algebra.norm (w.comap (algebraMap k K)).Completion (b : w.Completion)
+        = algebraMap k (w.comap (algebraMap k K)).Completion (a : k)) :
+    ∃ b : Kˣ, Algebra.norm k (b : K) = (a : k)
+```
+
+`exists_norm_eq_iff_forall_local` packages the two directions as a single `Iff`.
+
+### (c) Where this leaves the table
+
+Rows 6 and 7 (modulo the `p = 2` leftover) are closed and packaged, and the Hasse norm theorem is
+a bonus consequence that costs nothing further.  Rows 5 and 8 — Poitou–Tate — remain the wall, and
+`SplitPrimePowerEP` is still the sole remaining hypothesis of `Shafarevich/Main.lean`.
+
+Worth noting for the Poitou–Tate work: the Hasse norm theorem is precisely the `H⁰`-level statement
+that `Ш(k, N_{K/k})` vanishes for a *cyclic* `K/k`, i.e. the cyclic case of the local–global
+principle for a norm torus.  Its proof here goes through the Brauer group rather than through
+duality, so it does not by itself give any of the Ш machinery; but it does confirm that the
+invariant layer is now strong enough to state and prove local–global principles, which is the
+shape everything in rows 5 and 8 will take.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
