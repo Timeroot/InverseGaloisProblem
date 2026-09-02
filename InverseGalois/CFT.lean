@@ -86,6 +86,7 @@ import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
 import InverseGalois.CFT.Brauer.NormFactors
 import InverseGalois.CFT.Brauer.NormPlaceValue
+import InverseGalois.CFT.Brauer.NormPrimesOver
 import InverseGalois.CFT.Brauer.NormReduction
 import InverseGalois.CFT.Brauer.OddArchimedean
 import InverseGalois.CFT.Brauer.Opposite
@@ -4595,4 +4596,15 @@ it that are available here.
   rational primes of the products over the places above them, so **the product of the invariants
   over all finite places agrees with a product over the rational primes** as soon as it does so
   fibre by fibre.
+* `InverseGalois.CFT.Brauer.NormPrimesOver` specialises the Chinese remainder splitting of a norm to
+  a number field.  The ring of integers of a number field is a finitely generated torsion free
+  module over the integers of the rationals, which is a principal ideal ring, so it is free of rank
+  the degree of the field, and that rank is the dimension over the residue field of the reduction
+  modulo a rational prime; hence **the norm of an algebraic integer reduces modulo a rational prime
+  to the product, over the primes of the ring of integers over it, of the norms of the reductions
+  modulo the corresponding ramified powers**.  A place of a number field lies over a rational prime
+  exactly when that prime is the one below it, so **the places above a rational prime match the
+  primes over it**, and the product can be read as one over the fibre of the map sending a place to
+  the rational prime below it — the shape in which the invariants of a class in the Brauer group are
+  grouped.
 -/
