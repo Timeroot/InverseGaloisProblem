@@ -4,6 +4,7 @@ import InverseGalois.CFT.Approximation.Places
 import InverseGalois.CFT.Approximation.PowClass
 import InverseGalois.CFT.BaseCompositum
 import InverseGalois.CFT.BaseRamification
+import InverseGalois.CFT.BaseTotallyRamified
 import InverseGalois.CFT.Brauer.AdicUnramified
 import InverseGalois.CFT.Brauer.BaseChange
 import InverseGalois.CFT.Brauer.BaseChangeCentralizer
@@ -4696,4 +4697,15 @@ it that are available here.
   residue of the norm.  Hence **the total invariant of a cyclic algebra over a number field split
   by a subfield of the field of the primitive roots of unity of an odd prime, with an integral
   coefficient that is a unit above that prime, vanishes**.
+* `InverseGalois.CFT.BaseTotallyRamified` transfers total ramification into a compositum, the
+  direction opposite to the transfer of unramifiedness.  **The ramification index is multiplicative
+  in a tower of number fields**, so it can be computed along either side of the compositum square:
+  up through the Galois extension of the rationals it is divisible by the degree of that extension
+  when that extension is totally ramified, and up through the new base field it is unchanged when
+  the place is unramified there.  That degree therefore divides the ramification index of the
+  compositum over the new base, which is the order of an inertia subgroup and so at most the degree
+  of the compositum over the new base, itself at most the degree of the original extension because
+  restriction of automorphisms is injective.  The inequalities close up, and **total ramification in
+  a Galois extension of the rationals passes to a compositum with a number field in which the place
+  is unramified**.
 -/
