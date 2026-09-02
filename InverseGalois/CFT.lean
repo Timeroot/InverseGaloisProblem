@@ -114,6 +114,7 @@ import InverseGalois.CFT.Brauer.PlaceSubcyclotomicBase
 import InverseGalois.CFT.Brauer.PlaceSubcyclotomicFibre
 import InverseGalois.CFT.Brauer.PlaceSubcyclotomicPower
 import InverseGalois.CFT.Brauer.PlaceTotallyRamified
+import InverseGalois.CFT.Brauer.PlaceUnitValue
 import InverseGalois.CFT.Brauer.PlaceUnramified
 import InverseGalois.CFT.Brauer.Primary
 import InverseGalois.CFT.Brauer.QuadraticExt
@@ -123,6 +124,7 @@ import InverseGalois.CFT.Brauer.RadicalInvariant
 import InverseGalois.CFT.Brauer.RadicalLevel
 import InverseGalois.CFT.Brauer.RatCount
 import InverseGalois.CFT.Brauer.RatReciprocity
+import InverseGalois.CFT.Brauer.RatResidueOrder
 import InverseGalois.CFT.Brauer.RationalBrauer
 import InverseGalois.CFT.Brauer.RelativeCyclic
 import InverseGalois.CFT.Brauer.RelativeHasse
@@ -4661,4 +4663,17 @@ it that are available here.
   class**, and in particular **has vanishing total invariant** as soon as the rational one does.
   This is the shape in which reciprocity over the rationals carries reciprocity over an arbitrary
   number field.
+* `InverseGalois.CFT.Brauer.PlaceUnitValue` records when a unit stays a unit.  The value of a unit
+  at a finite place is the logarithm of the valuation of its image in the completion, so **the
+  value vanishes exactly when that valuation is one**; and the value of a norm at a place of the
+  rationals is the sum over the places above it of the residue degree times the value there, so
+  **the norm of a unit invertible at every place above a rational prime is invertible at that
+  prime**.  This is what lets the same coefficient be fed to the local computation at the conductor
+  simultaneously over a number field and over the rationals.
+* `InverseGalois.CFT.Brauer.RatResidueOrder` names the residues of the rationals.  The residue ring
+  at a place containing a prime has that prime as its number of elements and as its characteristic,
+  so **two natural numbers have the same residue there exactly when they are congruent modulo the
+  prime**; consequently **a power of a primitive root has as multiplicative order the complementary
+  factor of its exponent in one less than the prime**.  This is the input that lets the exponents
+  naming the invariants above a prime be compared with the exponent naming the invariant below.
 -/
