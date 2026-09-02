@@ -3576,7 +3576,9 @@ it that are available here.
   the product of the cohomologies of the completions, so **the everywhere locally trivial part of
   the complete cohomology of the units tensored with a lattice, in degree `n + 3`, is exactly the
   image of the complete cohomology of the lattice in degree `n`**.  In degree one, that is the
-  degree `-2` of the lattice: a finite object, where the cohomology of the units is not.
+  degree `-2` of the lattice: a finite object, where the cohomology of the units is not.  Every
+  Galois extension of number fields carries a fundamental class, so the statement holds with no
+  hypothesis on the extension beyond flatness of the lattice.
 * `InverseGalois.CFT.Brauer.DivisionInteger` collects the first consequences of that absolute value.
   The elements of absolute value at most one form the **integers** of the algebra; the base field
   has an element whose absolute value is the largest one below one, and every absolute value of the

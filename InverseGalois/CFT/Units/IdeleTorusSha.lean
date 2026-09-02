@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.TateCohomology.TensorFunctor
+import InverseGalois.CFT.Units.BaseTate
 import InverseGalois.CFT.Units.IdeleClassSES
 import InverseGalois.CFT.Units.IdeleClassTate
 
@@ -34,6 +35,8 @@ object while the cohomology of the units is not.
 
 * `InverseGalois.CFT.shaTorusMap`: the map from the complete cohomology of a lattice to the complete
   cohomology of the units tensored with it, three degrees higher.
+* `InverseGalois.CFT.baseShaTorusMap`: the same map for the fundamental class of the extension, which
+  every Galois extension of number fields has.
 
 ## Main results
 
@@ -41,6 +44,10 @@ object while the cohomology of the units is not.
 * `InverseGalois.CFT.exists_shaTorusMap_eq`: **every locally trivial class is produced by it.**
 * `InverseGalois.CFT.range_shaTorusMap`: **the locally trivial classes of the units tensored with a
   lattice are exactly the image of the complete cohomology of the lattice three degrees lower.**
+* `InverseGalois.CFT.range_baseShaTorusMap`: the same statement for an arbitrary Galois extension of
+  number fields, with no hypothesis beyond flatness of the lattice.
+* `InverseGalois.CFT.range_baseShaTorusMap_one`: **the everywhere locally trivial classes of the
+  first cohomology are a quotient of the complete cohomology of the lattice in degree `-2`.**
 
 ## Tags
 
@@ -127,6 +134,35 @@ theorem range_shaTorusMap (n : ℤ) :
   refine ⟨?_, exists_shaTorusMap_eq α hα N hN n x⟩
   rintro ⟨y, rfl⟩
   exact tateMap_shaTorusMap_eq_zero α hα N hN n y
+
+/-! ### The unconditional form -/
+
+/-- **The map from the complete cohomology of a lattice to the locally trivial classes of the units
+tensored with it**, built from the fundamental class of the extension.  Every Galois extension of
+number fields has one, so this needs no hypotheses beyond flatness of the lattice. -/
+def baseShaTorusMap (n : ℤ) :
+    tateModule N n →ₗ[ℤ] tateModule (tensorObj (globalUnitsRep k K) N) (n + 1 + 1 + 1) :=
+  shaTorusMap (baseFundamentalClass k K) (zsmul_baseFundamentalClass_eq_zero_imp_dvd k K) N hN n
+
+/-- **The locally trivial classes of the units of a Galois extension of number fields tensored with
+a lattice are exactly the image of the complete cohomology of the lattice three degrees lower.**
+The kernel on the right is the group of everywhere locally trivial classes, since the cohomology of
+the ideles is the product of the cohomologies of the completions; so the group of everywhere locally
+trivial classes of a torus is a quotient of the complete cohomology of its cocharacter lattice, and
+in particular finite. -/
+theorem range_baseShaTorusMap (n : ℤ) :
+    LinearMap.range (baseShaTorusMap N hN n)
+      = LinearMap.ker (tateMap (tensorHomLeft N (globalUnitsToIdele k K)) (n + 1 + 1 + 1)).hom :=
+  range_shaTorusMap _ _ N hN n
+
+/-- **The everywhere locally trivial classes of the first cohomology of the units tensored with a
+lattice form a quotient of the complete cohomology of the lattice in degree `-2`.**  For a finite
+group that degree is a finite object, so the group of everywhere locally trivial classes of a torus
+over a number field is finite. -/
+theorem range_baseShaTorusMap_one :
+    LinearMap.range (baseShaTorusMap N hN (-2))
+      = LinearMap.ker (tateMap (tensorHomLeft N (globalUnitsToIdele k K)) 1).hom :=
+  range_baseShaTorusMap N hN (-2)
 
 end
 

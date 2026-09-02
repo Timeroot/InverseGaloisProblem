@@ -8789,7 +8789,25 @@ theorem range_shaTorusMap (n : ℤ) :
 
 where `shaTorusMap α hα N hN n : Ĥ^n(G, N) →ₗ Ĥ^{n+3}(G, K^×⊗N)` is Tate–Nakayama followed by the
 connecting map.  In words: **the everywhere locally trivial part of `Ĥ^{n+3}(G, K^×⊗N)` is exactly
-the image of `Ĥ^n(G, N)`.**  Sorry- and axiom-free; build green at 9594 jobs.
+the image of `Ĥ^n(G, N)`.**  Sorry- and axiom-free.
+
+The hypotheses `α`, `hα` — a class of order divisible by `#G` in `Ĥ²(G, C_K)` — are *not* an extra
+assumption: §0.82(b) closed the fundamental-class brick, so `baseFundamentalClass k K` exists for
+every Galois extension of number fields (`CFT/Units/BaseTate.lean`).  Instantiating gives the
+unconditional form, also in `IdeleTorusSha.lean`:
+
+```lean
+theorem range_baseShaTorusMap (n : ℤ) :
+    LinearMap.range (baseShaTorusMap N hN n)
+      = LinearMap.ker (tateMap (tensorHomLeft N (globalUnitsToIdele k K)) (n + 1 + 1 + 1)).hom
+
+theorem range_baseShaTorusMap_one :
+    LinearMap.range (baseShaTorusMap N hN (-2))
+      = LinearMap.ker (tateMap (tensorHomLeft N (globalUnitsToIdele k K)) 1).hom
+```
+
+so for **any** Galois extension of number fields and **any** `ℤ`-flat `N : Rep ℤ Gal(K/k)`, the
+everywhere locally trivial classes in `Ĥ¹(G, K^×⊗N)` are a quotient of `Ĥ^{-2}(G, N) = H_1(G, N)`.
 
 Sanity checks.  `n = -2` gives `Ш¹(G, K^×⊗N)` as a quotient of `Ĥ^{-2}(G,N) = H_1(G,N)`, which is
 finite while `H¹(G, K^×⊗N)` need not be.  For `N = ℤ` trivial the source is `G^ab` and the target is
@@ -8835,12 +8853,18 @@ nonzero as soon as some decomposition group is nontrivial.  This is not a defect
 statement; it is the reason Poitou–Tate is a theorem about `Ш` and not a corollary of the class
 formation.  **The `p`-torsion case of (a) is Poitou–Tate.**
 
+This is the same obstruction §0.29(ii) hit from the other direction: presenting `E(-1)` by a lattice
+and chasing the resulting sequence stalled on `Ĥ²(G, C_K[p]⊗E(-1)) = ∏_𝔭 Ĥ²(G_𝔭, E) ≠ 0`, and
+§0.29(iii) already concluded "the Claim really is Poitou–Tate".  What (b) adds is that the *other*
+half — everything torsion-free — is now a theorem in the repository rather than a plan, so the
+`C_K[p]` term is the entire remaining content, not one difficulty among several.
+
 ### (d) What this changes
 
 Row 5 of the §0.36 table stands, but its shape is now precise rather than a slogan:
 
 * The **torsion-free** half of global duality for tori is *done*, from the class formation, with no
-  duality input at all (`range_shaTorusMap`).
+  duality input at all and no hypothesis on the extension (`range_baseShaTorusMap`).
 * The **`p`-torsion** half reduces, by (c), to controlling `Ĥ^*(G, C_K[p] ⊗ W)` — equivalently, to
   the derived correction in Tate–Nakayama.  That is a single, sharply stated object, and it is the
   first place where a genuine Poitou–Tate input is unavoidable.
