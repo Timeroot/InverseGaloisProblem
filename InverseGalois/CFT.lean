@@ -8,6 +8,7 @@ import InverseGalois.CFT.BaseTotallyRamified
 import InverseGalois.CFT.Brauer.AdicUnramified
 import InverseGalois.CFT.Brauer.BaseChange
 import InverseGalois.CFT.Brauer.BaseChangeCentralizer
+import InverseGalois.CFT.Brauer.BaseCyclicClass
 import InverseGalois.CFT.Brauer.BaseCyclotomic
 import InverseGalois.CFT.Brauer.BaseSubcyclotomic
 import InverseGalois.CFT.Brauer.Centralizer
@@ -96,6 +97,7 @@ import InverseGalois.CFT.Brauer.NormPlaceValue
 import InverseGalois.CFT.Brauer.NormPrimesOver
 import InverseGalois.CFT.Brauer.NormReduction
 import InverseGalois.CFT.Brauer.OddArchimedean
+import InverseGalois.CFT.Brauer.OddArchimedeanBase
 import InverseGalois.CFT.Brauer.Opposite
 import InverseGalois.CFT.Brauer.PlaceCoboundary
 import InverseGalois.CFT.Brauer.PlaceCrossedProduct
@@ -4388,6 +4390,11 @@ it that are available here.
   completion of any number field at a real place; **the total invariant of such a class is
   therefore the product of its invariants at the finite places**, and the archimedean conditions of
   the Hasse principle are automatic.
+* `InverseGalois.CFT.Brauer.OddArchimedeanBase` repeats that observation over an arbitrary number
+  field.  The completion at a real place is the reals over the base, whose Brauer group is killed
+  by two, and the completion at a complex place is algebraically closed, so **a Brauer class of a
+  number field killed by an odd exponent has trivial invariant at every infinite place** and **its
+  total invariant is the product of its invariants at the finite places**.
 * `InverseGalois.CFT.Brauer.SplitLocalDegree` reads a completely split prime locally.  The order of
   the decomposition group at a prime is the ramification index times the residue degree and also
   the degree of the completion over the completion below, so **a rational prime splits completely
@@ -4720,4 +4727,16 @@ it that are available here.
   the compositum of the base with a cyclotomic field of prime conductor unramified in the base is
   trivial**, on the sole arithmetic hypothesis that **a rational prime outside the ramified set of
   a number field is unramified at every place above it**.
+* `InverseGalois.CFT.Brauer.BaseCyclicClass` assembles the correcting classes themselves over an
+  arbitrary number field.  The group of residues prime to a prime conductor is the Galois group of
+  the cyclotomic field of that conductor, so **every residue prime to the conductor is a power of a
+  fixed generating residue**; the residue cardinality of a place away from the conductor is such a
+  residue, and the exponent expressing it scales the valuation, so **the invariant of a cyclic
+  class at a finite place of the base lying over a rational prime other than the conductor is the
+  valuation of the coefficient times that exponent**.  Composing the base with a totally real
+  subfield of prescribed degree of the cyclotomic field then produces **the correcting Brauer
+  classes of a number field**: a homomorphism from the units of the base to its Brauer group whose
+  classes are killed by the prescribed degree, are trivial at every archimedean place, have trivial
+  total invariant on the integral units at the conductor, and have those prescribed invariants at
+  the finite places away from it.
 -/
