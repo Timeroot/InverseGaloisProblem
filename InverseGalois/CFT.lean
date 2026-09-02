@@ -48,6 +48,7 @@ import InverseGalois.CFT.Brauer.Exponent
 import InverseGalois.CFT.Brauer.FibreConductor
 import InverseGalois.CFT.Brauer.FibreExponent
 import InverseGalois.CFT.Brauer.FibreInvariant
+import InverseGalois.CFT.Brauer.FibreTotal
 import InverseGalois.CFT.Brauer.Frobenius
 import InverseGalois.CFT.Brauer.FrobeniusBaseChange
 import InverseGalois.CFT.Brauer.FrobeniusRamified
@@ -4609,8 +4610,8 @@ it that are available here.
   the invariants over the places above a rational prime is the exponential of the value at that
   prime of the norm of the coefficient**, hence **is the invariant at that prime** as soon as the
   latter is the exponential of the same exponent times the value there of the norm.  Globally, the
-  interchange of a doubly indexed product of
-  finite support expresses a product over the places of the number field as the product over the
+  interchange of a doubly indexed product of finite support expresses a product over the places of
+  the number field as the product over the
   rational primes of the products over the places above them, so **the product of the invariants
   over all finite places agrees with a product over the rational primes** as soon as it does so
   fibre by fibre.  When the invariants above a prime are instead read off from residues, each of
@@ -4653,4 +4654,11 @@ it that are available here.
   generator of order the degree; the exponents above the prime add up to the one below it, so
   **the product of the invariants over the places above the prime is the invariant at the prime**
   as soon as the prime is unramified in the number field.
+* `InverseGalois.CFT.Brauer.FibreTotal` passes from the fibres to the whole.  The total invariant
+  of a class is the product of the invariants at the finite places once those at the infinite
+  places are trivial, so **a class of a number field whose invariants above each rational prime
+  multiply to the invariant there of a class of the rationals has the same total invariant as that
+  class**, and in particular **has vanishing total invariant** as soon as the rational one does.
+  This is the shape in which reciprocity over the rationals carries reciprocity over an arbitrary
+  number field.
 -/
