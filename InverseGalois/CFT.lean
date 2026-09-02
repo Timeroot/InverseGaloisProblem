@@ -3,6 +3,7 @@ import InverseGalois.CFT.Approximation.Completion
 import InverseGalois.CFT.Approximation.Places
 import InverseGalois.CFT.Approximation.PowClass
 import InverseGalois.CFT.BaseCompositum
+import InverseGalois.CFT.BaseRamification
 import InverseGalois.CFT.Brauer.AdicUnramified
 import InverseGalois.CFT.Brauer.BaseChange
 import InverseGalois.CFT.Brauer.BaseChangeCentralizer
@@ -807,6 +808,15 @@ it that are available here.
   degree and the cyclicity of the compositum over the base are those of the other factor over the
   rationals** — the shape in which the reciprocity computation over an arbitrary base meets its
   auxiliary cyclic field.
+* `InverseGalois.CFT.BaseRamification` transports unramifiedness from the small factor of such a
+  compositum to the compositum itself.  **The order of an inertia group is the ramification index**,
+  so triviality of inertia is exactly unramifiedness; and **restriction of automorphisms to the
+  small factor carries inertia to inertia**, because an automorphism trivial on the residues at a
+  place of the compositum is trivial on the residues at the place below.  Since that restriction is
+  injective, **a place of the compositum whose trace on the small factor is unramified over the
+  rationals is unramified over the number field** — the compositum with a cyclotomic field is
+  unramified away from the conductor over an arbitrary base, just as the cyclotomic field is over
+  the rationals.
 * `InverseGalois.CFT.CentralCompositum` observes that an automorphism of a compositum which is
   trivial on one factor is central as soon as the other factor is abelian over the base, so that
   the subgroup it generates is normal and an involution of the abelian factor is realized as an
