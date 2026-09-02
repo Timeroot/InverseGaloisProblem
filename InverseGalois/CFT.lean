@@ -82,6 +82,7 @@ import InverseGalois.CFT.Brauer.TameValue
 import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
 import InverseGalois.CFT.Brauer.NormPlaceValue
+import InverseGalois.CFT.Brauer.NormReduction
 import InverseGalois.CFT.Brauer.OddArchimedean
 import InverseGalois.CFT.Brauer.Opposite
 import InverseGalois.CFT.Brauer.PlaceCoboundary
@@ -144,6 +145,7 @@ import InverseGalois.CFT.Brauer.SymbolSteinberg
 import InverseGalois.CFT.Brauer.TensorSimple
 import InverseGalois.CFT.Brauer.TotalInvariant
 import InverseGalois.CFT.Brauer.TotallyRealInvariant
+import InverseGalois.CFT.Brauer.TotallyRealInvariantBase
 import InverseGalois.CFT.Brauer.Tower
 import InverseGalois.CFT.Brauer.UnramifiedAdjoin
 import InverseGalois.CFT.Brauer.UnramifiedAut
@@ -4481,4 +4483,27 @@ it that are available here.
   primitive roots of unity of that prime, with a coefficient that is a unit there**, is the class of
   the exponent naming the coefficient raised to the complementary power of the degree as a power of
   that root of unity.
+* `InverseGalois.CFT.Brauer.TotallyRealInvariantBase` clears the archimedean places over an
+  arbitrary base.  A complex place splits everything, and a real place splits whatever embeds into
+  the reals over the associated embedding of the base; a totally real extension does, because the
+  composite of that embedding with the inclusion of the reals into the complex numbers extends to
+  the extension, and being totally real forces the extension of it to be fixed by conjugation, hence
+  to factor through the reals.  So **a Brauer class of a number field split by a totally real
+  extension has trivial invariant at every infinite place**, and **its total invariant is the
+  product of its invariants at the finite places** — in particular for a cyclic algebra with a
+  totally real splitting field, which is the shape the reciprocity computation over an arbitrary
+  base takes.
+* `InverseGalois.CFT.Brauer.NormReduction` computes a norm componentwise and modulo a maximal ideal.
+  An element of a finite product of algebras is the product of the elements agreeing with it in a
+  single coordinate and equal to one elsewhere, and multiplication by such an element is
+  multiplication by its one coordinate on the corresponding factor and the identity on the
+  complementary product, so **the norm of an element of a finite product of algebras is the product
+  of the norms of its components**.  Separately, a basis of an algebra reduces modulo an ideal of
+  the base to a spanning family of the reduction, hence to a basis as soon as the reduction has the
+  dimension the rank predicts; the coefficients in it are the reductions of the coefficients, so the
+  matrix of multiplication reduces to the matrix of multiplication, and **the norm of an element
+  reduces modulo a maximal ideal of the base to the norm of its reduction**.  Together these express
+  the norm of an algebraic integer modulo a rational prime through the residue fields of the places
+  above it, which is what compares the invariants of a cyclic algebra at the places over a prime
+  with the invariant of its trace down to the rationals.
 -/
