@@ -11,6 +11,7 @@ import InverseGalois.CFT.Brauer.BaseChangeCentralizer
 import InverseGalois.CFT.Brauer.BaseCyclicClass
 import InverseGalois.CFT.Brauer.BaseCyclotomic
 import InverseGalois.CFT.Brauer.BaseSubcyclotomic
+import InverseGalois.CFT.Brauer.BaseSubcyclotomicSplit
 import InverseGalois.CFT.Brauer.Centralizer
 import InverseGalois.CFT.Brauer.CentralizerProduct
 import InverseGalois.CFT.Brauer.CrossedProduct
@@ -35,6 +36,7 @@ import InverseGalois.CFT.Brauer.CyclicTower
 import InverseGalois.CFT.Brauer.CyclicTransport
 import InverseGalois.CFT.Brauer.CyclotomicFrobenius
 import InverseGalois.CFT.Brauer.CyclotomicGenerator
+import InverseGalois.CFT.Brauer.DecompositionTransfer
 import InverseGalois.CFT.Brauer.Division
 import InverseGalois.CFT.Brauer.DivisionAbsValue
 import InverseGalois.CFT.Brauer.DivisionCompact
@@ -4763,4 +4765,25 @@ it that are available here.
   classes are killed by the prescribed degree, are trivial at every archimedean place, have trivial
   total invariant, and have those prescribed invariants at the finite places away from the
   conductor.
+* `InverseGalois.CFT.Brauer.DecompositionTransfer` compares a decomposition group of a compositum
+  with the decomposition group of the factor that is an extension of the rationals.  The stabiliser
+  of a place in the Galois group of an extension of the rationals is the decomposition group there,
+  and its order is the residue degree once the prime is unramified, so **the residue degree of a
+  place of a subfield of a cyclotomic field divides the order of the stabiliser of a place of the
+  compositum**.  Multiplicativity of the residue degree in a tower bounds the residue degree of the
+  compositum by the residue degree of the base times that stabiliser order, and the degree of the
+  base bounds its own residue degree; so **a power of a prime dividing a product of a bounded
+  number and a prime power is bounded by the multiplicity of the prime in the bound plus the
+  exponent**, which is the arithmetic that converts a decomposition condition over the rationals
+  into one over an arbitrary base.
+* `InverseGalois.CFT.Brauer.BaseSubcyclotomicSplit` turns those comparisons into reciprocity over an
+  arbitrary number field for a class of prime-power order.  Composing the base with the subfield of
+  prescribed prime-power degree of the cyclotomic field of an auxiliary prime gives a cyclic
+  extension satisfying reciprocity, and the order of its decomposition group at a place is, up to
+  the residue degree contributed by the base, the order named by a power residue symbol.  Enlarging
+  the exponent of the auxiliary congruence by the multiplicity of the prime in the degree of the
+  base therefore absorbs that contribution, and **the invariants of a Brauer class of a number
+  field, of prime-power order and trivial at the infinite places, add up to zero as soon as every
+  rational prime below a place carrying a nontrivial invariant fails a power residue condition
+  modulo an auxiliary prime**.
 -/

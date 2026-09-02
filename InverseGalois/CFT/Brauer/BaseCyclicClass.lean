@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Brauer.BaseCyclotomic
+import InverseGalois.CFT.Brauer.DecompositionTransfer
 import InverseGalois.CFT.Brauer.NormAdjust
 import InverseGalois.CFT.Brauer.PlaceSubcyclotomicBase
 import InverseGalois.CFT.Cyclotomic.AuxiliarySubfield
@@ -44,6 +45,10 @@ cardinality of the place; this last is what lets a correction be aimed at one pr
 * `InverseGalois.CFT.exists_placeInvariant_cyclicBrauerHom_base`: **the invariant of a cyclic class
   at a finite place of the base away from the conductor** is the valuation of the unit scaled by
   the discrete logarithm of the residue cardinality.
+* `InverseGalois.CFT.exists_subcyclotomicSplittingField_base`: **the splitting field of the
+  correcting classes**, cyclic of the prescribed degree, whose relative Brauer group satisfies
+  reciprocity and whose decomposition groups away from the conductor control a power residue
+  condition, together with the correcting classes themselves.
 * `InverseGalois.CFT.exists_cyclicBrauerHom_base`: **the correcting Brauer classes of a number
   field**, with their exponent, their archimedean triviality, their reciprocity, and their
   invariants away from the conductor.
@@ -59,6 +64,8 @@ set_option maxHeartbeats 1000000
 namespace InverseGalois.CFT
 
 open IsDedekindDomain Module NumberField InverseGalois.NumberTheory
+
+open scoped Pointwise
 
 /-! ### Discrete logarithms modulo a prime conductor -/
 
@@ -153,29 +160,46 @@ end Invariant
 
 section Construction
 
-/-- **The correcting Brauer classes of a number field.**  For a prime conductor unramified in the
-base whose group of residues has order divisible by twice a prescribed degree, and a residue
-generating that group, there is a homomorphism from the units of the base to its Brauer group whose
-classes are killed by the prescribed degree, are trivial at every archimedean place, have trivial
-total invariant, and have prescribed invariants at the finite places away from the conductor.  The
-homomorphism is the cyclic algebra construction for the compositum of the base with a totally real
-subfield of the cyclotomic field of the conductor.  The conductor is totally ramified in that
-compositum, so the norms from it realise every family of values at the places above the conductor,
-and adjusting by a norm reduces the total invariant of an arbitrary unit to that of an algebraic
-integer which is a unit at the conductor. -/
-theorem exists_cyclicBrauerHom_base (k : Type) [Field k] [NumberField k] {q : ℕ} (hq : q.Prime)
-    (hqk : q ∉ ramifiedSet k) {N : ℕ} (hN : N ≠ 0) (h2N : 2 * N ∣ q - 1) {g : ℕ}
+/-- **The splitting field of the correcting classes of a number field, with those classes.**  For a
+prime conductor unramified in the base whose group of residues has order divisible by twice a
+prescribed degree, and a residue generating that group, the compositum of the base with a totally
+real subfield of the cyclotomic field of the conductor is a cyclic extension of the prescribed
+degree with three properties.
+
+Every class it splits has trivial total invariant, because such a class is a cyclic algebra for it
+and the conductor is totally ramified in it, so that the norms realise every family of values at
+the places above the conductor and an arbitrary unit is reduced by a norm to an algebraic integer
+which is a unit at the conductor.
+
+The order of its decomposition group at a place away from the conductor controls a power residue
+condition modulo the conductor, up to the residue degree of the base: the decomposition group of
+the auxiliary subfield at the place below is what the splitting law names, and the two residue
+degrees differ by a factor bounded by the degree of the base.
+
+And there is a homomorphism from the units of the base to its Brauer group whose classes are killed
+by the prescribed degree, are trivial at every archimedean place, have trivial total invariant, and
+have prescribed invariants at the finite places away from the conductor. -/
+theorem exists_subcyclotomicSplittingField_base (k : Type) [Field k] [NumberField k] {q : ℕ}
+    (hq : q.Prime) (hqk : q ∉ ramifiedSet k) {N : ℕ} (hN : N ≠ 0) (h2N : 2 * N ∣ q - 1) {g : ℕ}
     (hg : Nat.Coprime g q) (hgord : ∀ m : ℕ, q ∣ g ^ m - 1 → (q - 1) ∣ m) :
-    ∃ Y : kˣ →* BrauerGroup.{0, 0} k,
-      (∀ a : kˣ, Y a ^ N = 1) ∧
-      (∀ (a : kˣ) (u : InfinitePlace k), infinitePlaceInvariant k u (Y a) = 1) ∧
-      (∀ a : kˣ, totalInvariant k (Y a) = 1) ∧
-      ∀ (v : HeightOneSpectrum (𝓞 k)) (p : ℕ), p.Prime → p ≠ q →
-        ((p : ℕ) : 𝓞 k) ∈ v.asIdeal →
-        ∃ c : ℕ, ((g : ℕ) : ZMod q) ^ c
-            = ((p : ℕ) : ZMod q) ^ (Ideal.span {(p : ℤ)}).inertiaDeg v.asIdeal ∧
-          ∀ a : kˣ, placeInvariant k v (Y a)
-            = Multiplicative.ofAdd (intQModZ N ((c : ℤ) * placeValue v a)) := by
+    ∃ (E : Type) (_ : Field E) (_ : NumberField E) (_ : Algebra k E) (_ : IsGalois k E),
+      IsCyclic Gal(E/k) ∧ Nat.card Gal(E/k) = N ∧
+      (∀ x : BrauerGroup.{0, 0} k, x ∈ BrauerGroup.relative k E → totalInvariant k x = 1) ∧
+      (∀ (w : HeightOneSpectrum (𝓞 E)) (p : ℕ), p.Prime → p ≠ q →
+        ((p : ℕ) : 𝓞 E) ∈ w.asIdeal →
+        ∃ A n : ℕ, A ∣ N ∧ n ≠ 0 ∧ n ≤ finrank ℚ k ∧
+          A ∣ n * Nat.card ↥(MulAction.stabilizer Gal(E/k) w.asIdeal) ∧
+          ∀ m : ℕ, A ∣ m → ((p : ℕ) : ZMod q) ^ (m * ((q - 1) / N)) = 1) ∧
+      ∃ Y : kˣ →* BrauerGroup.{0, 0} k,
+        (∀ a : kˣ, Y a ^ N = 1) ∧
+        (∀ (a : kˣ) (u : InfinitePlace k), infinitePlaceInvariant k u (Y a) = 1) ∧
+        (∀ a : kˣ, totalInvariant k (Y a) = 1) ∧
+        ∀ (v : HeightOneSpectrum (𝓞 k)) (p : ℕ), p.Prime → p ≠ q →
+          ((p : ℕ) : 𝓞 k) ∈ v.asIdeal →
+          ∃ c : ℕ, ((g : ℕ) : ZMod q) ^ c
+              = ((p : ℕ) : ZMod q) ^ (Ideal.span {(p : ℤ)}).inertiaDeg v.asIdeal ∧
+            ∀ a : kˣ, placeInvariant k v (Y a)
+              = Multiplicative.ofAdd (intQModZ N ((c : ℤ) * placeValue v a)) := by
   haveI : Fact q.Prime := ⟨hq⟩
   haveI : NeZero q := ⟨hq.ne_zero⟩
   haveI : NeZero N := ⟨hN⟩
@@ -187,7 +211,7 @@ theorem exists_cyclicBrauerHom_base (k : Type) [Field k] [NumberField k] {q : �
   have hodd : Odd q := hq.odd_of_ne_two hq2
   haveI : IsGalois ℚ (CyclotomicField q ℚ) := IsCyclotomicExtension.isGalois {q} ℚ _
   haveI : IsCyclotomicExtension {q ^ 1} ℚ (CyclotomicField q ℚ) := by rw [pow_one]; infer_instance
-  obtain ⟨F, hrankF, hgalF, hcycF, hrealF, -, -, hinertia₀⟩ :=
+  obtain ⟨F, hrankF, hgalF, hcycF, hrealF, -, hdegF, hinertia₀⟩ :=
     exists_intermediateField_subcyclotomic q hN h2N (CyclotomicField q ℚ)
   haveI := hgalF
   haveI := hcycF
@@ -257,8 +281,50 @@ theorem exists_cyclicBrauerHom_base (k : Type) [Field k] [NumberField k] {q : �
   have hcardE : Nat.card Gal(↥(baseCompositum ιF)/k) = N := by
     rw [IsGalois.card_aut_eq_finrank k ↥(baseCompositum ιF),
       finrank_eq_of_adjoin_eq_top hgenE hdisjF, hrankF]
-  refine ⟨cyclicBrauerHom (forall_mem_zpowers_restrictNormal (L := ↥(baseCompositum ιF)) hσ),
-    fun a => ?_, fun a u => ?_, fun a => ?_, fun v p hp hpq hmem => ?_⟩
+  have hrecip : ∀ a : kˣ, totalInvariant k
+      (cyclicBrauerHom (forall_mem_zpowers_restrictNormal (L := ↥(baseCompositum ιF)) hσ) a)
+        = 1 := by
+    intro a
+    refine totalInvariant_eq_one_of_integral_qunit (E := ↥(baseCompositum ιF)) hq _
+      (fun θ => MonoidHom.mem_ker.mp ((mem_ker_cyclicBrauerHom_iff _ _).mpr ⟨θ, rfl⟩))
+      (fun W hW => inertia_eq_top_of_natCast_mem hq hqk hinertia₀ hgenE W hW)
+      (fun a hab hav => ?_) a
+    obtain ⟨b, hb⟩ := hab
+    exact totalInvariant_cyclicBrauerHom_base_cyclotomic hq hodd hcardF₀ h2N hqk hinertia₀ hg
+      hgord hσ hζ hgenζ hσζ hgenK hgenE hb hav
+  refine ⟨↥(baseCompositum ιF), inferInstance, inferInstance, inferInstance, inferInstance,
+    isCyclic_of_surjective (galEquivSub k ↥F ↥(baseCompositum ιF) hgenE hdisjF).symm
+      (galEquivSub k ↥F ↥(baseCompositum ιF) hgenE hdisjF).symm.surjective,
+    hcardE, fun x hx => ?_, fun w p hp hpq hmem => ?_,
+    cyclicBrauerHom (forall_mem_zpowers_restrictNormal (L := ↥(baseCompositum ιF)) hσ),
+    fun a => ?_, fun a u => ?_, hrecip, fun v p hp hpq hmem => ?_⟩
+  · obtain ⟨a, ha⟩ := exists_cyclicBrauerHom_eq
+      (forall_mem_zpowers_restrictNormal (L := ↥(baseCompositum ιF)) hσ) x hx
+    rw [← ha]
+    exact hrecip a
+  · haveI := liesOver_span_of_natCast_mem hp w hmem
+    have hmemF : ((p : ℕ) : 𝓞 ↥F) ∈ (primeUnder (𝓞 ↥F) w).asIdeal := by
+      rw [primeUnder_asIdeal, Ideal.under_def, Ideal.mem_comap, map_natCast]
+      exact hmem
+    have hmemk : ((p : ℕ) : 𝓞 k) ∈ (primeUnder (𝓞 k) w).asIdeal := by
+      rw [primeUnder_asIdeal, Ideal.under_def, Ideal.mem_comap, map_natCast]
+      exact hmem
+    haveI : (primeUnder (𝓞 ↥F) w).asIdeal.IsPrime := (primeUnder (𝓞 ↥F) w).isPrime
+    haveI := liesOver_span_of_natCast_mem hp (primeUnder (𝓞 ↥F) w) hmemF
+    haveI := liesOver_span_of_natCast_mem hp (primeUnder (𝓞 k) w) hmemk
+    have hpF : p ∉ ramifiedSet ↥F := fun hpr => hpq (Set.mem_singleton_iff.mp (hramF hpr))
+    have hA : Nat.card ↥(MulAction.stabilizer Gal(↥F/ℚ) (primeUnder (𝓞 ↥F) w).asIdeal)
+        = (Ideal.span {(p : ℤ)}).inertiaDeg (primeUnder (𝓞 ↥F) w).asIdeal :=
+      card_stabilizer_eq_inertiaDeg_of_notMem_ramifiedSet hp hpF (primeUnder (𝓞 ↥F) w).asIdeal
+    obtain ⟨hn0, hnle⟩ := inertiaDeg_span_pos_le_finrank hp (primeUnder (𝓞 k) w)
+    refine ⟨Nat.card ↥(MulAction.stabilizer Gal(↥F/ℚ) (primeUnder (𝓞 ↥F) w).asIdeal),
+      (Ideal.span {(p : ℤ)}).inertiaDeg (primeUnder (𝓞 k) w).asIdeal, ?_, hn0, hnle, ?_,
+      fun m hm => (hdegF p hp hpq (primeUnder (𝓞 ↥F) w).asIdeal inferInstance inferInstance m).mp
+        hm⟩
+    · rw [← hcardF₀]
+      exact Subgroup.card_subgroup_dvd_card _
+    · rw [hA]
+      exact inertiaDeg_span_dvd_mul_card_stabilizer (F := ↥F) hp w hmem
   · have h := pow_finrank_eq_one_of_mem_relative
       (cyclicBrauerHom (forall_mem_zpowers_restrictNormal (L := ↥(baseCompositum ιF)) hσ) a)
       (cyclicBrauerHom_mem_relative
@@ -266,16 +332,31 @@ theorem exists_cyclicBrauerHom_base (k : Type) [Field k] [NumberField k] {q : �
     rwa [finrank_eq_of_adjoin_eq_top hgenE hdisjF, hrankF] at h
   · exact infinitePlaceInvariant_eq_one_of_adjoin_isTotallyReal hgenE u
       (cyclicBrauerHom_mem_relative _ a)
-  · refine totalInvariant_eq_one_of_integral_qunit (E := ↥(baseCompositum ιF)) hq _
-      (fun θ => MonoidHom.mem_ker.mp ((mem_ker_cyclicBrauerHom_iff _ _).mpr ⟨θ, rfl⟩))
-      (fun W hW => inertia_eq_top_of_natCast_mem hq hqk hinertia₀ hgenE W hW)
-      (fun a hab hav => ?_) a
-    obtain ⟨b, hb⟩ := hab
-    exact totalInvariant_cyclicBrauerHom_base_cyclotomic hq hodd hcardF₀ h2N hqk hinertia₀ hg
-      hgord hσ hζ hgenζ hσζ hgenK hgenE hb hav
   · obtain ⟨c, hc, hinv⟩ := exists_placeInvariant_cyclicBrauerHom_base
       (E := ↥(baseCompositum ιF)) hq hg hgord hσ hζ hgenζ hσζ hgenK v hp hpq hmem
     exact ⟨c, hc, fun a => by rw [hinv a, hcardE]⟩
+
+/-- **The correcting Brauer classes of a number field.**  For a prime conductor unramified in the
+base whose group of residues has order divisible by twice a prescribed degree, and a residue
+generating that group, there is a homomorphism from the units of the base to its Brauer group whose
+classes are killed by the prescribed degree, are trivial at every archimedean place, have trivial
+total invariant, and have prescribed invariants at the finite places away from the conductor. -/
+theorem exists_cyclicBrauerHom_base (k : Type) [Field k] [NumberField k] {q : ℕ} (hq : q.Prime)
+    (hqk : q ∉ ramifiedSet k) {N : ℕ} (hN : N ≠ 0) (h2N : 2 * N ∣ q - 1) {g : ℕ}
+    (hg : Nat.Coprime g q) (hgord : ∀ m : ℕ, q ∣ g ^ m - 1 → (q - 1) ∣ m) :
+    ∃ Y : kˣ →* BrauerGroup.{0, 0} k,
+      (∀ a : kˣ, Y a ^ N = 1) ∧
+      (∀ (a : kˣ) (u : InfinitePlace k), infinitePlaceInvariant k u (Y a) = 1) ∧
+      (∀ a : kˣ, totalInvariant k (Y a) = 1) ∧
+      ∀ (v : HeightOneSpectrum (𝓞 k)) (p : ℕ), p.Prime → p ≠ q →
+        ((p : ℕ) : 𝓞 k) ∈ v.asIdeal →
+        ∃ c : ℕ, ((g : ℕ) : ZMod q) ^ c
+            = ((p : ℕ) : ZMod q) ^ (Ideal.span {(p : ℤ)}).inertiaDeg v.asIdeal ∧
+          ∀ a : kˣ, placeInvariant k v (Y a)
+            = Multiplicative.ofAdd (intQModZ N ((c : ℤ) * placeValue v a)) := by
+  obtain ⟨_, _, _, _, _, _, _, _, _, Y, hY⟩ :=
+    exists_subcyclotomicSplittingField_base k hq hqk hN h2N hg hgord
+  exact ⟨Y, hY⟩
 
 end Construction
 
