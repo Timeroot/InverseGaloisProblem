@@ -45,6 +45,7 @@ import InverseGalois.CFT.Brauer.DivisionSplitting
 import InverseGalois.CFT.Brauer.DivisionTeichmuller
 import InverseGalois.CFT.Brauer.DivisionValueGroup
 import InverseGalois.CFT.Brauer.Exponent
+import InverseGalois.CFT.Brauer.FibreExponent
 import InverseGalois.CFT.Brauer.FibreInvariant
 import InverseGalois.CFT.Brauer.Frobenius
 import InverseGalois.CFT.Brauer.FrobeniusBaseChange
@@ -130,6 +131,7 @@ import InverseGalois.CFT.Brauer.RealPlace
 import InverseGalois.CFT.Brauer.ResidueBaseChange
 import InverseGalois.CFT.Brauer.ResidueCard
 import InverseGalois.CFT.Brauer.ResidueCardDegree
+import InverseGalois.CFT.Brauer.ResidueCongruence
 import InverseGalois.CFT.Brauer.ResidueDegree
 import InverseGalois.CFT.Brauer.ResidueGalois
 import InverseGalois.CFT.Brauer.ResidueGenerator
@@ -4607,4 +4609,21 @@ it that are available here.
   primes over it**, and the product can be read as one over the fibre of the map sending a place to
   the rational prime below it — the shape in which the invariants of a class in the Brauer group are
   grouped.
+* `InverseGalois.CFT.Brauer.ResidueCongruence` reads a local statement as a congruence.  The
+  valuation of an integer of a number field in the completion at a place is its valuation there, so
+  **two integers agree modulo a place exactly when their difference is small in the completion**;
+  and since a power of a difference of small valuation is again small, **a power of an integer that
+  is close to a power of a root of unity reduces modulo the place to the same power of the natural
+  number representing that root**.
+* `InverseGalois.CFT.Brauer.FibreExponent` adds up the exponents naming the invariants above one
+  rational prime.  Raising an element of a residue field to the number of its elements less one
+  over the degree is the norm to the residue field below followed by the corresponding power there,
+  so **the norm of the reduction of an integer at a place, raised to that power, is the power by
+  the exponent naming the place of the natural number representing the root of unity**.  At an
+  unramified prime, reduction modulo a place is reduction modulo the ramified power to which the
+  Chinese remainder theorem splits the norm, so **the reduction of the norm of the integer, raised
+  to that power, is the power of the natural number by the sum of the exponents over the places
+  above the prime**.  The natural number has order the degree there, so an equality of its powers
+  is a congruence: **the exponents above a rational prime add up, modulo the degree, to the
+  exponent of the prime**.
 -/
