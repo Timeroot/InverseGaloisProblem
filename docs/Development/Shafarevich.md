@@ -3960,10 +3960,10 @@ extensions (`Mathlib/GroupTheory/GroupExtension/` has only a docstring TODO).
 | 2 | ~~`Ш¹(k, A) ↪ H¹(Gal(K\|k), A)` from the Hasse principle, and its dual~~ | **DONE** — `CFT/Units/HasseInflation.lean`: `exists_galInflH1_eq_of_forall_level` and `exists_galInflH1_eq_of_forall_level_outside`, and — with the glue of §0.40 — `CFT/Units/HasseDecomposition.lean`: `exists_galInflH1_eq_of_finiteDecomposition(Outside)`, stated at the genuine decomposition subgroups of `G_k` |
 | 3 | ~~Finiteness of `Ш²(k, E)` via ABHN + Hochschild–Serre~~ | **DONE** — `CFT/Units/HasseTwo.lean`: `eq_one_of_forall_isLocallySplitLevel`, the vanishing of the everywhere locally trivial classes of `H²` with `μ_n` coefficients, valid at `p = 2` (see §0.38).  The degree-one glue is §0.40; the degree-two glue is §0.42 — `CFT/Units/HasseTwoDecomposition.lean`: `eq_one_of_mem_sha2`, stated at `sha2 M (decompositionSubgroups k Ω)`, the genuine decomposition subgroups of `G_k` |
 | 4 | ~~Local Tate duality for finite modules over a local field~~ | **DONE** — `CFT/Local/CyclicNormIndex.lean` (the norm index of *any* cyclic extension of a local field is its degree), `CFT/Local/KummerNonNorm.lean` (nondegeneracy of the `q`-th power norm residue symbol), see §0.39; `inv_M ∘ res = [M:K] · inv_K` is `localInvariantHom_baseChange` (`CFT/Brauer/InvariantBaseChange.lean`); and `CFT/Brauer/CyclicNormResidue.lean` assembles the norm residue symbol of a cyclic extension of a local field, see §0.56 |
-| 5 | **Global duality `Ш²(k, A) ≅ Ш¹(k, A′)^∨`** | wall #1: the sole missing input of SW's Claim, hence of step 2 |
+| 5 | **Global duality `Ш²(k, A) ≅ Ш¹(k, A′)^∨`** | wall #1 as of §0.36; **§0.84(c) argues this row is not needed at all** — degree-two Hochschild–Serre plus the finite-dimensional approximation of step 3 there replaces it |
 | 6 | The `p`-th power Hilbert symbol over a number field and its product formula | the repo has the *quadratic* symbol over `ℚ` (`CFT/Global/Hilbert*.lean`); the *local* nondegeneracy of the `p`-th power symbol is §0.39(b) |
 | 7 | ~~**Chebotarev density over a number field**, in the abelian/ray-class form of (e)~~ | **DONE for odd `p`** — `NumberTheory/RelativeSplitDensity.lean` + `CFT/RelativeFrobenius.lean`: Theorem 13 only needs the Frobenius *up to a scalar*, which is `exists_relStabilizer_eq_zpowers` (see §0.41).  What remains is "every ideal class contains a prime", used only in the `p = 2` Claim |
-| 8 | Poitou–Tate, at least the eight-term sequence for `μ_p` over `k_S` | needed by Lemma 10 and Theorem 13 |
+| 8 | Poitou–Tate, at least the eight-term sequence for `μ_p` over `k_S` | needed by Lemma 10 and Theorem 13; **§0.84(c) argues this row is not needed either** |
 | 9 | SW Theorem 13, then Theorems 14 and 15 | assembly |
 
 Already-existing bricks that will be consumed and should not be rebuilt:
@@ -8363,7 +8363,7 @@ Build green at **9590 jobs**, zero warnings, zero errors; all five theorems have
 
 ---
 
-## 0.84 Status (2026-09-02) — the local degrees of a cyclic extension, and a map of the two routes past Poitou–Tate
+## 0.84 Status (2026-09-02) — the local degrees of a cyclic extension, and a route that avoids Poitou–Tate altogether
 
 `InverseGalois/CFT/Units/LocalDegreeLcm.lean`.
 
@@ -8414,34 +8414,61 @@ needed only if one insists on *deriving* surjectivity from `H³(G,K^×) = 1`, an
 surjectivity directly.  So the missing piece for the fundamental exact sequence is the idele-class
 long exact sequence plus invariant-map injectivity, both of which are ordinary work — not duality.
 
-### (c) A candidate route past Poitou–Tate, with its gap stated honestly
+### (c) Poitou–Tate looks avoidable: Hochschild–Serre in degree two does the same job
 
 Row 5 of §0.36 asks for `Ш²(k,A) ≅ Ш¹(k,A′)^∨`, but Schmidt–Wingberg only ever *use* the surjection
 `Ĥ^{-2}(G, E(-1)) ↠ Ш²(k, E)` to kill a class `z ∈ Ш²(k, E(m,τ))` after applying `θ_a`, and Prop 6
 (`Shafarevich/GenericCohomology.lean`) is what does the killing.  For that argument an **injection**
 of `Ш²(k,E)` into a *finite-group* cohomology group of the right shape works just as well as the
-surjection: Prop 6 kills the image, and injectivity then kills the class.  Concretely:
+surjection: Prop 6 kills the image, and injectivity then kills the class.  Write
+`1 → G_K → G_k → G → 1` with `G = Gal(K/k)` the group already realised, `E` the layer, an
+`𝔽_p[G]`-module of finite dimension, on which `G_K` acts trivially.
 
-1. `Ш²(K, ℤ/p) ≅ Ш²(K, μ_p) = 0` — the repository has this as `eq_one_of_mem_sha2` (row 3, §0.79) —
-   so `Ш²(k, E) ⊆ F¹H²` for the Hochschild–Serre filtration of `1 → G_K → G_k → G → 1`.
-2. Degree-two Hochschild–Serre gives `F¹/F² ↪ H¹(G, H¹(G_K, E))`.
-3. If the class is inflated from `G_S = Gal(k_S/k)` with `S ⊇ Ram(K/k) ∪ S_p ∪ S_∞`, then
-   `H¹(G_S(K), E) ≅ H¹(K_S/K, ℤ/p) ⊗ E(-1) = V ⊗ E(-1)` with `V` **finite and independent of `E`** —
-   exactly the shape `Ĥ^k(G, E(m,τ) ⊗ T)` that Prop 6 consumes.
-4. `F² = im(inf : H²(G,E) → H²(k,E))` is itself finite-group cohomology, so a second application of
-   the shrinking argument disposes of it.
+1. `z ∈ Ш²(k,E)` restricts to a locally trivial class over `K`, and `Ш²(K, E) = 0` because
+   `E ≅ μ_p^r` as a `G_K`-module and the repository has `eq_one_of_mem_sha2` (row 3, §0.79).  So
+   `z ∈ F¹ = ker(res)` for the Hochschild–Serre filtration.
+2. Degree-two Hochschild–Serre gives `F¹/F² ↪ H¹(G, H¹(G_K, E))`, and `H¹(G_K,E)` is
+   `Hom_cont(G_K, 𝔽_p) ⊗_{𝔽_p} E = E ⊗ T` with the diagonal `G`-action — exactly the shape
+   `Layer ⊗ T` that Prop 6 consumes.
+3. `T = Hom_cont(G_K, 𝔽_p)` is infinite dimensional, but that does not matter: a class in
+   `H¹(G, E ⊗ T)` is represented by a cocycle on the *finite* group `G`, so it has finitely many
+   values, each a finite sum of pure tensors; the `𝔽_p`-span `T₀` of the `G`-orbit of the finitely
+   many `T`-components appearing is finite dimensional and `G`-stable, and the cocycle already takes
+   its values in `E ⊗ T₀`.  So the class is inflated from `H¹(G, E ⊗ T₀)` with `T₀` finite
+   dimensional, which is what Prop 6 requires.
+4. Prop 6 with `c = 1`, `t = 1`, `H = G`, `f = id`, `T = T₀` kills the image of `z`; so after the
+   shrink `z` lies in `F² = im(inf : H²(G,E) → H²(k,E))`.
+5. Prop 6 again, with `c = 2`, `t = 1`, `H = G`, `f = id`, `T` the trivial one-dimensional
+   representation, kills the class of `H²(G,E)` it comes from.  Hence `z = 0`.
+
+Step 3 is what removes the gap that this section originally recorded.  The earlier plan was to make
+`T` finite by inflating from `G_S = Gal(k_S/k)`, which needed `Ш²(k,A) = Ш²(k_S/k,A)` (NSW 9.1.x) —
+a statement whose standard proof may itself use duality — and needed `H¹(K_S/K, ℤ/p)` finite.
+Neither is required: **finite-dimensional approximation inside the coefficients does the same work,
+because `G` is finite.**
+
+It is worth being precise about what Prop 6 is, since the shape of the argument depends on it.
+`exists_operatorHom_res_cohomology_eq_zero` is *not* a cohomological-triviality statement about the
+layer; it is a counting statement — given `t` classes in `H^c(H, Layer_j ⊗ T)` with `H` finite and
+`T` finite dimensional, a large enough shrink kills all `t` of them at once.  So the coefficients
+must be finite dimensional and the family of classes finite, which is exactly what steps 3–5
+arrange.
 
 Required inputs, with verdicts:
 
 | input | status |
 | --- | --- |
-| (A) `Ш²(k,A) = Ш²(k_S/k, A)` for large `S` (NSW 9.1.x) | **the gap** — unverified whether the standard proof itself uses duality |
-| (B) `H¹(K_S/K, ℤ/p)` finite (S-units + finite class group) | ordinary work; `Units/SUnit*.lean` is the starting point |
-| (C) degree-two Hochschild–Serre / transgression | see (d) |
-| (D) `Ш²(K, E) = 0` | **have it** (`eq_one_of_mem_sha2`) |
+| (C) degree-two Hochschild–Serre / transgression for a closed normal subgroup of finite index | **the remaining wall**; see (d) |
+| `Ш²(K, E) = 0` for `E ≅ μ_p^r` over `K` | **have it** (`eq_one_of_mem_sha2`) |
+| `H¹(G_K, E) ≅ Hom_cont(G_K,𝔽_p) ⊗ E` as `G`-modules | ordinary work |
+| finite-dimensional approximation in the coefficients | elementary, step 3 above |
+| Prop 6 with coefficients | **have it** (`exists_operatorHom_res_cohomology_eq_zero`) |
+| naturality of the filtration under the shrink `θ_a` | ordinary work |
 
-If (A) turns out to need duality, this route collapses back into row 5 and nothing is lost but the
-reconnaissance.  It is recorded as a *candidate*, not as a plan.
+If this holds up, **row 5 and row 8 of the §0.36 table are not needed at all** and the critical path
+for `GenericSplitEP` becomes degree-two Hochschild–Serre rather than Poitou–Tate.  Recorded as the
+current best route, not yet as a proven reduction: the pieces above have been checked
+mathematically but none of the new ones is formalised.
 
 ### (d) Transgression is available at the level of cochains
 
@@ -8462,6 +8489,17 @@ inflation–restriction theorem with no need to build the `G/N`-action on `H¹(N
 sequence, or any spectral sequence.  Because `θ_a` transports the chosen cochains, naturality in the
 module comes for free.  This is the cheapest available form of input (C), and it is a modification
 of existing code rather than new infrastructure.
+
+Step 2 of (c) needs slightly more than the relative theorem: it needs the transgression as a *map*
+into `H¹(G/N, H¹(N,A))`, so that a class which is not inflated is sent to a nonzero target that
+Prop 6 can then kill.  The cochain-level construction above supplies the underlying cochain
+`σ ↦ [n ↦ a (σ, σ⁻¹ n σ)]`; what has to be added is that it is a 1-cocycle for the conjugation
+action of `G/N` on `H¹(N,A)` and that its class does not depend on the twist used to normalise `a`.
+Both are cochain computations of the same kind as the ones already in
+`GroupCohomology/InflationRestriction.lean`, and the relative theorem is precisely the statement
+that a vanishing transgression class means inflated.  The remaining, genuinely new ingredient is the
+profinite bookkeeping: `G_k` is not a finite group, so the argument has to be run in the
+repository's continuous-cochain framework rather than for abstract groups.
 
 Two Lean notes.  `(s.gcd f : ℤ)` elaborates as `Finset.gcd s (fun b => (f b : ℤ))`, not as a cast of
 the natural-number gcd; the cast has to be spelled `((s.gcd f : ℕ) : ℤ)`.  And `choose!` does not
