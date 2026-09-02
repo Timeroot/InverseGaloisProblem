@@ -35,6 +35,7 @@ import InverseGalois.CFT.Brauer.CyclicGenerator
 import InverseGalois.CFT.Brauer.CyclicInvariant
 import InverseGalois.CFT.Brauer.CyclicNorm
 import InverseGalois.CFT.Brauer.CyclicNormResidue
+import InverseGalois.CFT.Brauer.CyclicProduct
 import InverseGalois.CFT.Brauer.CyclicTower
 import InverseGalois.CFT.Brauer.CyclicTransport
 import InverseGalois.CFT.Brauer.CyclotomicFrobenius
@@ -4890,4 +4891,15 @@ it that are available here.
   infinite place, and has the same total invariant.  Splitting an arbitrary finite order into its
   two-part and its odd part then gives **global reciprocity over a number field: the invariants of a
   Brauer class add up to zero**.
+* `InverseGalois.CFT.Brauer.CyclicProduct` reads reciprocity on the classes that carry the
+  arithmetic.  A cyclic algebra and the power residue symbol of two units both have a Brauer class
+  over the base, so the invariants of either multiply to one over all places; only finitely many of
+  the finite places contribute, and the statement can be read over any finite set carrying them
+  together with the finitely many archimedean terms.  That is **the product formula for the norm
+  residue symbol**.  The same base change identifies what a single factor measures: over a
+  completion the cyclic algebra becomes the cyclic algebra of the decomposition group with the same
+  coefficient, and a cyclic algebra is split exactly when its coefficient is a norm, so **the
+  invariant at a finite place vanishes precisely when the coefficient is a norm from the completion
+  of the splitting field there**.  The product formula is then the statement that the failures to
+  be a local norm cancel.
 -/

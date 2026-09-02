@@ -8063,6 +8063,81 @@ of the tower, not just over `ℚ`.  That hypothesis is now discharged.  The next
 
 ---
 
+## 0.80 Status (2026-09-02) — row 6 packaged: the product formula in usable form, and the local factor
+
+`CFT/Brauer/CyclicProduct.lean`, full build green at **9587 jobs**, no warnings, axioms
+`[propext, Classical.choice, Quot.sound]`.  §0.79 proved global reciprocity as a statement about
+`totalInvariant`; this section turns it into the statements a *consumer* wants, and identifies what
+a single local factor means.
+
+### (a) The product formula, in three shapes
+
+`totalInvariant` is by definition `(∏ᶠ v, placeInvariant k v x) * ∏ u, infinitePlaceInvariant k u x`,
+so `totalInvariant_eq_one_base` gives immediately
+
+```lean
+theorem finprod_placeInvariant_mul_prod_infinitePlaceInvariant_eq_one (x : BrauerGroup.{0,0} k) :
+    (∏ᶠ v : HeightOneSpectrum (𝓞 k), placeInvariant k v x) *
+        ∏ u : InfinitePlace k, infinitePlaceInvariant k u x = 1
+```
+
+and, composed with the general-base `finprod_placeInvariant_eq_prod` of `RatCount.lean`, the form
+that SW Theorem 13 consumes — a genuine `Finset.prod` over any finite set of finite places outside
+which the invariants vanish, times the finitely many archimedean terms:
+
+```lean
+theorem prod_placeInvariant_mul_prod_infinitePlaceInvariant_eq_one (x : BrauerGroup.{0,0} k)
+    (S : Finset (HeightOneSpectrum (𝓞 k))) (h : ∀ v ∉ S, placeInvariant k v x = 1) :
+    (∏ v ∈ S, placeInvariant k v x) * ∏ u : InfinitePlace k, infinitePlaceInvariant k u x = 1
+```
+
+Specialised to the classes that carry the arithmetic these are one-liners, because the Brauer class
+is all that reciprocity sees: `totalInvariant_cyclicBrauerHom` for a cyclic algebra
+`(K/k, σ₀, a)`, `totalInvariant_smoothBrauerHom` for the Brauer class of a smooth `H²`, and
+
+```lean
+theorem totalInvariant_smoothBrauerHom_kummerSymbolUnits (h : IsKummerData k Ω M ι n)
+    (Φ : M →* M →* M) (a b : kˣ) :
+    totalInvariant k (smoothBrauerHom (kummerSymbolUnits h Φ a b)) = 1
+```
+
+which is `∏_v (a, b)_v = 1`, the product formula for the `n`-th power residue symbol over an
+arbitrary number field — the last unproved input of the `p = 2` half of SW Theorem 13 that was not
+a duality statement.
+
+### (b) What a single local factor is
+
+The same base change that proves the formula also says what one factor measures.  Over the
+completion the cyclic algebra becomes the cyclic algebra of the decomposition group with the *same*
+coefficient (`baseChangeHom_cyclicBrauerHom_adicCompletion`, §0.67), and a cyclic algebra is split
+exactly when its coefficient is a norm (`mem_ker_cyclicBrauerHom_iff`).  Chaining those through
+`placeInvariant_eq_one_iff` (which unfolds `BrauerGroup.relative` to a kernel membership) gives, in
+five rewrites,
+
+```lean
+theorem placeInvariant_cyclicBrauerHom_eq_one_iff (w : HeightOneSpectrum (𝓞 K))
+    (hσ₀ : ∀ x : Gal(K/k), x ∈ Subgroup.zpowers σ₀) (a : kˣ) :
+    placeInvariant k (primeUnder (𝓞 k) w) (cyclicBrauerHom hσ₀ a) = 1 ↔
+      ∃ b : (w.adicCompletion K)ˣ,
+        Algebra.norm ((primeUnder (𝓞 k) w).adicCompletion k) (b : w.adicCompletion K)
+          = algebraMap k ((primeUnder (𝓞 k) w).adicCompletion k) (a : k)
+```
+
+So the product formula is exactly the statement that the failures of `a` to be a local norm cancel.
+Combined with ABHN (`eq_one_of_forall_invariant_eq_one`) this is one archimedean lemma short of the
+**Hasse norm theorem** for cyclic extensions; the missing piece is the infinite-place mirror of
+`PlaceCyclic.lean`, for which `Units/InfiniteDecompositionField.lean` already supplies the whole
+decomposition-field plumbing (`localInfiniteDecompositionEquiv`,
+`algebraMap_localInfiniteDecompositionEquiv`), so it is a transcription rather than a new argument.
+
+### (c) Where this leaves the table
+
+Row 6 is now closed *and packaged*.  Rows 5 and 8 — Poitou–Tate — are untouched and remain the
+wall; row 7's `p = 2` leftover ("every `S`-ideal class contains a prime") still waits on ray-class
+`L`-functions that Mathlib does not have.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
