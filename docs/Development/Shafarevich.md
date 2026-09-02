@@ -3960,10 +3960,10 @@ extensions (`Mathlib/GroupTheory/GroupExtension/` has only a docstring TODO).
 | 2 | ~~`Ш¹(k, A) ↪ H¹(Gal(K\|k), A)` from the Hasse principle, and its dual~~ | **DONE** — `CFT/Units/HasseInflation.lean`: `exists_galInflH1_eq_of_forall_level` and `exists_galInflH1_eq_of_forall_level_outside`, and — with the glue of §0.40 — `CFT/Units/HasseDecomposition.lean`: `exists_galInflH1_eq_of_finiteDecomposition(Outside)`, stated at the genuine decomposition subgroups of `G_k` |
 | 3 | ~~Finiteness of `Ш²(k, E)` via ABHN + Hochschild–Serre~~ | **DONE** — `CFT/Units/HasseTwo.lean`: `eq_one_of_forall_isLocallySplitLevel`, the vanishing of the everywhere locally trivial classes of `H²` with `μ_n` coefficients, valid at `p = 2` (see §0.38).  The degree-one glue is §0.40; the degree-two glue is §0.42 — `CFT/Units/HasseTwoDecomposition.lean`: `eq_one_of_mem_sha2`, stated at `sha2 M (decompositionSubgroups k Ω)`, the genuine decomposition subgroups of `G_k` |
 | 4 | ~~Local Tate duality for finite modules over a local field~~ | **DONE** — `CFT/Local/CyclicNormIndex.lean` (the norm index of *any* cyclic extension of a local field is its degree), `CFT/Local/KummerNonNorm.lean` (nondegeneracy of the `q`-th power norm residue symbol), see §0.39; `inv_M ∘ res = [M:K] · inv_K` is `localInvariantHom_baseChange` (`CFT/Brauer/InvariantBaseChange.lean`); and `CFT/Brauer/CyclicNormResidue.lean` assembles the norm residue symbol of a cyclic extension of a local field, see §0.56 |
-| 5 | **Global duality `Ш²(k, A) ≅ Ш¹(k, A′)^∨`** | wall #1 as of §0.36; **§0.84(c) argues this row is not needed at all** — degree-two Hochschild–Serre plus the finite-dimensional approximation of step 3 there replaces it |
+| 5 | **Global duality `Ш²(k, A) ≅ Ш¹(k, A′)^∨`** | wall #1 as of §0.36; §0.84(c) argued this row was replaceable by degree-two Hochschild–Serre, but **§0.87 refutes that** (step 3 there is circular), so the row stands |
 | 6 | The `p`-th power Hilbert symbol over a number field and its product formula | the repo has the *quadratic* symbol over `ℚ` (`CFT/Global/Hilbert*.lean`); the *local* nondegeneracy of the `p`-th power symbol is §0.39(b) |
 | 7 | ~~**Chebotarev density over a number field**, in the abelian/ray-class form of (e)~~ | **DONE for odd `p`** — `NumberTheory/RelativeSplitDensity.lean` + `CFT/RelativeFrobenius.lean`: Theorem 13 only needs the Frobenius *up to a scalar*, which is `exists_relStabilizer_eq_zpowers` (see §0.41).  What remains is "every ideal class contains a prime", used only in the `p = 2` Claim |
-| 8 | Poitou–Tate, at least the eight-term sequence for `μ_p` over `k_S` | needed by Lemma 10 and Theorem 13; **§0.84(c) argues this row is not needed either** |
+| 8 | Poitou–Tate, at least the eight-term sequence for `μ_p` over `k_S` | needed by Lemma 10 and Theorem 13; §0.84(c) argued this row was avoidable, **§0.87 refutes that** |
 | 9 | SW Theorem 13, then Theorems 14 and 15 | assembly |
 
 Already-existing bricks that will be consumed and should not be rebuilt:
@@ -8680,6 +8680,74 @@ so the class in `H¹(G, Hom_cont(G_K, E))` has to be moved between the two.
 
 Build green at **9593 jobs**, zero warnings, zero errors; the new theorem has axioms
 `[propext, Classical.choice, Quot.sound]`.
+
+---
+
+## 0.87 Status (2026-09-02) — step 3 of §0.84(c) is circular, and Poitou–Tate is back
+
+With the inflation–restriction machinery in hand the §0.84(c) route can be checked against the
+actual statement of Prop 6, and **step 3 does not survive**.  §0.36(c) already recorded the failure
+mode; §0.84(c) walked into it.
+
+### (a) The refutation
+
+`exists_genericShrink_res_cohomology_eq_zero` reads, in order of binders,
+
+```lean
+(T : Rep (ZMod ℓ) U) [Module.Finite (ZMod ℓ) T]
+(hr : (j + 1) * (t * Nat.card H ^ c *
+  Module.finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j ⊗[ZMod ℓ] T)) < r)
+(x : Fin t → groupCohomology ((Action.res _ f).obj (genericLayerTensor U (r * n) S ℓ j T)) c)
+```
+
+so `T` is fixed **before** `r`, and `r` has to exceed a constant times `dim T`; only then is the
+class `x`, which lives over `m = r · n`, supplied.  Step 3 chooses `T = T₀`, the `𝔽_p`-span of the
+`G`-orbit of the `T`-components of a cocycle representing the transgression of `z`.  A one-cocycle
+on `G` with values in `E(m) ⊗ T` has `#G` values, each with `dim E(m)` components, so
+
+`dim T₀ ≤ #G² · dim E(m,τ)`,   and `m = r·n`.
+
+The bound then demands `r > (j+1) · #G · dim E(n,τ) · #G² · dim E(rn,τ)`, and `dim E(m,τ)` grows
+with `m` — already linearly for `j = 1`, since `Generic U m S` is relatively free on `m` orbits of
+generators.  The requirement is circular; step 3 is exactly the "represent the class by boundedly
+many elements, where *boundedly* means independently of `m`" trap of §0.36(c).
+
+Everything else in §0.84(c) stands.  Step 1 (`Ш²(K,E) = 0`, so `z ∈ F¹`) is proven; step 2
+(degree-two Hochschild–Serre) is proven, abstractly in §0.85 and for continuous cochains in §0.86;
+step 5 (Prop 6 on `H²(G,E)` with `T` the trivial representation, which *is* fixed a priori) is fine.
+What fails is only the passage `F¹ → F²`, and it fails for one reason: **`T` has to be finite
+dimensional and known before `m`.**
+
+### (b) What would repair it
+
+The route is repaired by any statement that makes the coefficient module of the transgression a
+priori finite dimensional.  Two candidates, both classical:
+
+* `Ш²(k, E) ⊆ inf H²(k_S/k, E)` for a fixed finite `S ⊇ S_∞ ∪ S_p ∪ Ram(K/k)`.  Then
+  `T = Hom_cont(Gal(K_S/K), 𝔽_p)` is finite dimensional and depends only on `K` and `S`, both fixed
+  before the induction starts.  This is the "earlier plan" §0.84(c) discarded; it is back.
+* Poitou–Tate, which is what Schmidt–Wingberg use, and which makes `T = 𝔽_p(-1)` — one dimensional.
+
+So **rows 5 and 8 of the §0.36 table are again the wall**, and the honest reading is that §0.85 and
+§0.86 built a genuinely useful piece of machinery (a relative, continuous-cochain Hochschild–Serre)
+without removing the duality requirement.
+
+### (c) A byproduct worth keeping: the transgression of a locally trivial class is locally a
+coboundary
+
+Let `a` be a two-cocycle of `G_k` normalised so that `a (n, y) = 1` for `n ∈ G_K` and all `y`, let
+`D ≤ G_k` be a decomposition group, and suppose `a` restricted to `D` is the coboundary of a cochain
+`c` on `D`.  Because `a` vanishes at every pair whose first entry lies in `G_K`, the restriction
+`χ = c|_{D ∩ G_K}` is a homomorphism, and for `σ ∈ D`, `x ∈ D ∩ G_K`,
+
+`transgression a σ x = σ • χ (σ⁻¹ x σ) / χ x`.
+
+That is: the transgression class of an everywhere locally trivial class lies in the everywhere
+locally trivial part of `H¹(G, Hom(G_K, E))`.  The computation is three lines of cochain algebra —
+`∂c (x, σ) = a (x, σ) = 1` gives `c (x σ) = χ x · c σ`, and substituting into `∂c (σ, σ⁻¹ x σ)`
+cancels `c σ` — and it is what any repair of the route will need, on either candidate above.  It is
+also, in the duality language, precisely the assertion that the map `Ш² → H¹(G, H¹(G_K, E))` lands
+in `Ш¹`, which is the group Poitou–Tate computes.
 
 ---
 

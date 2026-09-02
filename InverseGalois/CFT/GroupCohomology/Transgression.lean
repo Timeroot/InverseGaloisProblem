@@ -33,6 +33,9 @@ stated for every normalised representative of the class since the correction pro
 * `InverseGalois.CFT.transgression_smul_left`: it depends only on the coset of its element.
 * `InverseGalois.CFT.transgression_mul_left`: **the transgression satisfies the one-cocycle
   identity**, for the action translating both the source and the target.
+* `InverseGalois.CFT.transgression_eq_smul_div_of_eq_coboundary`: **on a subgroup along which the
+  cocycle is a coboundary the transgression is a coboundary too**, of the restriction of the
+  trivialising cochain to the intersection with the normal subgroup.
 * `InverseGalois.CFT.exists_twist_inflated_of_transgression_trivial`: **a two-cocycle whose
   restriction to a normal subgroup acting trivially is a coboundary and whose transgression is a
   coboundary is cohomologous to an inflated cocycle.**
@@ -113,6 +116,37 @@ theorem transgression_mul_left (htriv : ∀ n ∈ N, ∀ m : M, n • m = m) (ha
       = σ • transgression a τ (σ⁻¹ * x * σ) * transgression a σ x := by
   rw [transgression_apply, transgression_apply, transgression_apply,
     transgression_mul ha h1 σ τ hx, htriv x hx, div_self', mul_one]
+
+omit [N.Normal] in
+/-- A cochain trivialising a two-cochain along a subgroup is multiplicative at every pair whose
+first entry also lies in the normal subgroup, because the two-cochain is trivial there. -/
+theorem map_mul_of_eq_coboundary (htriv : ∀ n ∈ N, ∀ m : M, n • m = m)
+    (h1 : ∀ n ∈ N, ∀ y : G, a (n, y) = 1) {D : Subgroup G} {c : G → M}
+    (hc : ∀ x ∈ D, ∀ y ∈ D, a (x, y) = x • c y / c (x * y) * c x)
+    {x : G} (hxD : x ∈ D) (hxN : x ∈ N) {y : G} (hyD : y ∈ D) :
+    c (x * y) = c x * c y := by
+  have h := hc x hxD y hyD
+  rw [h1 x hxN y, htriv x hxN, eq_comm, div_mul_eq_mul_div, div_eq_one] at h
+  rw [← h, mul_comm]
+
+omit [N.Normal] in
+/-- **On a subgroup along which the cocycle is a coboundary the transgression is a coboundary
+too.**  This is the local half of the picture: a class that dies over a decomposition group has a
+transgression that dies there as well, as the coboundary of the restriction of the trivialising
+cochain to the intersection with the normal subgroup. -/
+theorem transgression_eq_smul_div_of_eq_coboundary (htriv : ∀ n ∈ N, ∀ m : M, n • m = m)
+    (h1 : ∀ n ∈ N, ∀ y : G, a (n, y) = 1) {D : Subgroup G} {c : G → M}
+    (hc : ∀ x ∈ D, ∀ y ∈ D, a (x, y) = x • c y / c (x * y) * c x)
+    {σ : G} (hσ : σ ∈ D) {x : G} (hxD : x ∈ D) (hxN : x ∈ N) :
+    transgression a σ x = σ • c (σ⁻¹ * x * σ) / c x := by
+  have hconj : σ⁻¹ * x * σ ∈ D := mul_mem (mul_mem (inv_mem hσ) hxD) hσ
+  have h := hc σ hσ _ hconj
+  rw [show σ * (σ⁻¹ * x * σ) = x * σ by group,
+    map_mul_of_eq_coboundary htriv h1 hc hxD hxN hσ] at h
+  rw [transgression_apply, h]
+  apply Additive.ofMul.injective
+  simp only [div_eq_mul_inv, ofMul_mul, ofMul_inv]
+  abel
 
 /-- **A two-cocycle whose restriction to a normal subgroup acting trivially is a coboundary and
 whose transgression is a coboundary is cohomologous to an inflated cocycle.**  The transgression is
