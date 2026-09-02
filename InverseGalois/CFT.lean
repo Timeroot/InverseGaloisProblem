@@ -8,6 +8,7 @@ import InverseGalois.CFT.BaseTotallyRamified
 import InverseGalois.CFT.Brauer.AdicUnramified
 import InverseGalois.CFT.Brauer.BaseChange
 import InverseGalois.CFT.Brauer.BaseChangeCentralizer
+import InverseGalois.CFT.Brauer.BaseCyclotomic
 import InverseGalois.CFT.Brauer.BaseSubcyclotomic
 import InverseGalois.CFT.Brauer.Centralizer
 import InverseGalois.CFT.Brauer.CentralizerProduct
@@ -4708,4 +4709,15 @@ it that are available here.
   restriction of automorphisms is injective.  The inequalities close up, and **total ramification in
   a Galois extension of the rationals passes to a compositum with a number field in which the place
   is unramified**.
+* `InverseGalois.CFT.Brauer.BaseCyclotomic` discharges the arithmetic hypotheses of the comparison
+  theorem in the case that matters, where the top field is the compositum of the base with the
+  field of the primitive roots of unity of a prime that is unramified in the base.  A cyclotomic
+  field of prime conductor is ramified only at that conductor, so its ramified set is disjoint from
+  that of the base; the degrees of the two sides of the compositum square therefore agree, total
+  ramification at the conductor is inherited by the compositum and unramifiedness away from the
+  conductor is inherited too, and a place above the conductor, being totally ramified, is fixed by
+  every automorphism.  Hence **the total invariant of a cyclic algebra over a number field split by
+  the compositum of the base with a cyclotomic field of prime conductor unramified in the base is
+  trivial**, on the sole arithmetic hypothesis that **a rational prime outside the ramified set of
+  a number field is unramified at every place above it**.
 -/
