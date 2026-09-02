@@ -1,8 +1,10 @@
 import InverseGalois.NumberTheory.IdealEulerProduct
 import InverseGalois.NumberTheory.IdealNormCount
 import InverseGalois.NumberTheory.IntegerPointsSublinear
+import InverseGalois.NumberTheory.NormSign
 import InverseGalois.NumberTheory.PrimeLowerBound
 import InverseGalois.NumberTheory.RelativeSplitDensity
+import InverseGalois.NumberTheory.SignApproximation
 import InverseGalois.NumberTheory.SplitCompletely
 import InverseGalois.NumberTheory.SplitDensity
 import InverseGalois.NumberTheory.SplitDensityPair
@@ -20,6 +22,14 @@ import InverseGalois.NumberTheory.SplitSubfield
 * `InverseGalois.NumberTheory.IntegerPointsSublinear` and
   `InverseGalois.NumberTheory.PrimeLowerBound` are elementary estimates used by the specialization
   arguments.
+* `InverseGalois.NumberTheory.NormSign` records the archimedean half of the product formula as an
+  identity of real numbers: the norm of an element of a number field is the product of its real
+  embeddings times a positive factor coming from the complex places, so the norm and that product
+  have the same sign.
+* `InverseGalois.NumberTheory.SignApproximation` shows the real places of a number field are
+  independent as far as signs are concerned: for any prescribed set of real places there is an
+  element of the field which is negative at exactly those places, obtained from a generator of the
+  field by cutting out a short interval around one of its real values with a pair of rationals.
 * `InverseGalois.NumberTheory.SplitCompletely` proves Schur's theorem on prime divisors of
   polynomial values and deduces that infinitely many rational primes split completely in a number
   field that is Galois over `ℚ`.

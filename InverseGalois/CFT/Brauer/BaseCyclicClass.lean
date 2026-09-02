@@ -290,7 +290,7 @@ theorem exists_subcyclotomicSplittingField_base (k : Type) [Field k] [NumberFiel
       (fun W hW => inertia_eq_top_of_natCast_mem hq hqk hinertia₀ hgenE W hW)
       (fun a hab hav => ?_) a
     obtain ⟨b, hb⟩ := hab
-    exact totalInvariant_cyclicBrauerHom_base_cyclotomic hq hodd hcardF₀ h2N hqk hinertia₀ hg
+    exact totalInvariant_cyclicBrauerHom_base_cyclotomic hq hodd hcardF₀ hqk hinertia₀ hg
       hgord hσ hζ hgenζ hσζ hgenK hgenE hb hav
   refine ⟨↥(baseCompositum ιF), inferInstance, inferInstance, inferInstance, inferInstance,
     isCyclic_of_surjective (galEquivSub k ↥F ↥(baseCompositum ιF) hgenE hdisjF).symm

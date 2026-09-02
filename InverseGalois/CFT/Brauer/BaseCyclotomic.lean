@@ -6,6 +6,7 @@ import Mathlib
 import InverseGalois.CFT.BaseTotallyRamified
 import InverseGalois.CFT.Brauer.BaseSubcyclotomic
 import InverseGalois.CFT.Brauer.CyclotomicGenerator
+import InverseGalois.CFT.Brauer.RealCyclicSign
 import InverseGalois.CFT.Cyclotomic.CyclicSubfield
 import InverseGalois.CFT.Cyclotomic.TotallyRamified
 
@@ -30,6 +31,12 @@ compositum, and unramifiedness away from the conductor transfers by restriction 
 Finally, a place above the conductor is totally ramified in the compositum, so its decomposition
 group is everything and in particular contains the chosen generator.
 
+What the specialization leaves open is the comparison of the archimedean invariants of the two
+sides, and that is settled separately according to the subfield chosen inside the cyclotomic field.
+A totally real subfield contributes nothing at either end.  A totally complex quadratic subfield
+contributes the signs of the coefficient at the real places of the base, and those multiply out to
+the sign of its norm, which is exactly the single archimedean invariant on the rational side.
+
 ## Main results
 
 * `InverseGalois.CFT.ramIdx_rat_eq_one_of_notMem_ramifiedSet`: **a rational prime outside the
@@ -37,6 +44,9 @@ group is everything and in particular contains the chosen generator.
 * `InverseGalois.CFT.totalInvariant_cyclicBrauerHom_base_cyclotomic`: **the total invariant of a
   cyclic algebra over a number field, split by the compositum of the base with a cyclotomic field
   of prime conductor unramified in the base, is trivial.**
+* `InverseGalois.CFT.totalInvariant_cyclicBrauerHom_base_cyclotomic_two`: the same conclusion for a
+  totally complex quadratic subfield of the cyclotomic field, where the archimedean invariants are
+  the signs of the coefficient and multiply out to the sign of its norm.
 
 ## Tags
 
@@ -92,16 +102,17 @@ variable {q : ℕ} [NeZero q] {k K E L₀ F₀ : Type} [Field k] [NumberField k]
   [IsTotallyReal F₀] [Algebra F₀ E] [Algebra L₀ K] [IsScalarTower ℚ L₀ K] [IsScalarTower ℚ k K]
   [IsScalarTower ℚ k E] [IsScalarTower ℚ F₀ E]
 
+omit [IsTotallyReal F₀] in
 /-- **The total invariant of a cyclic algebra over a number field, split by the compositum of the
-base with a cyclotomic field of prime conductor unramified in the base, is trivial.**  The
+base with a cyclotomic field of prime conductor unramified in the base, is trivial** as soon as its
+archimedean invariants multiply to those of the corresponding algebra over the rationals.  The
 compositum square is controlled entirely by the ramified sets: the cyclotomic field is ramified only
 at the conductor, which is unramified in the base, so the two ramified sets are disjoint, the
 degrees of the two sides of the square agree, total ramification at the conductor and
 unramifiedness away from it both transfer to the compositum, and the chosen generator of the cyclic
 Galois group fixes every place above the conductor because such a place is totally ramified. -/
-theorem totalInvariant_cyclicBrauerHom_base_cyclotomic (hq : q.Prime) (hodd : Odd q) {N : ℕ}
-    [NeZero N] (hcardF₀ : Nat.card Gal(F₀/ℚ) = N) (h2N : 2 * N ∣ q - 1)
-    (hqk : q ∉ ramifiedSet k)
+theorem totalInvariant_cyclicBrauerHom_base_cyclotomic_arch (hq : q.Prime) (hodd : Odd q) {N : ℕ}
+    [NeZero N] (hcardF₀ : Nat.card Gal(F₀/ℚ) = N) (hqk : q ∉ ramifiedSet k)
     (hinertia₀ : ∀ (Q : Ideal (𝓞 F₀)) (_ : Q.IsPrime) (_ : Q.LiesOver (Ideal.span {(q : ℤ)})),
       Ideal.inertia Gal(F₀/ℚ) Q = ⊤)
     {g : ℕ} (hg : Nat.Coprime g q) (hgord : ∀ m : ℕ, q ∣ g ^ m - 1 → (q - 1) ∣ m)
@@ -110,7 +121,13 @@ theorem totalInvariant_cyclicBrauerHom_base_cyclotomic (hq : q.Prime) (hodd : Od
     (hgenK : Algebra.adjoin k (Set.range (algebraMap L₀ K)) = ⊤)
     (hgenE : Algebra.adjoin k (Set.range (algebraMap F₀ E)) = ⊤)
     {a : kˣ} {b : 𝓞 k} (hab : (a : k) = algebraMap (𝓞 k) k b)
-    (hav : ∀ v : HeightOneSpectrum (𝓞 k), ((q : ℕ) : 𝓞 k) ∈ v.asIdeal → placeValue v a = 0) :
+    (hav : ∀ v : HeightOneSpectrum (𝓞 k), ((q : ℕ) : 𝓞 k) ∈ v.asIdeal → placeValue v a = 0)
+    (harch : (∏ u : InfinitePlace k, infinitePlaceInvariant k u
+          (cyclicBrauerHom (forall_mem_zpowers_restrictNormal (L := E) hσ) a))
+        = ∏ u : InfinitePlace ℚ, infinitePlaceInvariant ℚ u
+          (cyclicBrauerHom (forall_mem_zpowers_restrictNormal (L := F₀)
+            (forall_mem_zpowers_cyclotomicPowerAut q L₀ hq hg hgord))
+            (Units.map (Algebra.norm ℚ : k →* ℚ) a))) :
     totalInvariant k (cyclicBrauerHom (forall_mem_zpowers_restrictNormal (L := E) hσ) a) = 1 := by
   haveI : Fact q.Prime := ⟨hq⟩
   haveI : IsCyclotomicExtension {q ^ 1} ℚ L₀ := by rw [pow_one]; infer_instance
@@ -184,9 +201,71 @@ theorem totalInvariant_cyclicBrauerHom_base_cyclotomic (hq : q.Prime) (hodd : Od
     haveI := liesOver_span_of_natCast_mem hp (primeUnder (𝓞 L₀) w) hmemL
     exact ramIdx_eq_one_of_ramIdx_eq_one hgenK w
       (ramIdx_rat_eq_one_of_not_dvd q L₀ p (primeUnder (𝓞 L₀) w) hpq)
-  exact totalInvariant_cyclicBrauerHom_base_subcyclotomic hq hodd hcardE hcardF₀ hMN hMN₀ h2N hg
+  exact totalInvariant_cyclicBrauerHom_base_subcyclotomic_arch hq hodd hcardE hcardF₀ hMN hMN₀ hg
     hgord (forall_mem_zpowers_cyclotomicPowerAut q L₀ hq hg hgord) hinertia₀ hσ hζ hgenζ hσζ
-    hgenE hinertiaE hσW hunramk hunramK hab hav
+    hinertiaE hσW hunramk hunramK hab hav harch
+
+/-- **The total invariant of a cyclic algebra over a number field, split by the compositum of the
+base with a totally real subfield of a cyclotomic field of prime conductor unramified in the base,
+is trivial.**  Both splitting fields are generated by a totally real field, so nothing is
+contributed at the infinite places on either side and the archimedean comparison is automatic. -/
+theorem totalInvariant_cyclicBrauerHom_base_cyclotomic (hq : q.Prime) (hodd : Odd q) {N : ℕ}
+    [NeZero N] (hcardF₀ : Nat.card Gal(F₀/ℚ) = N) (hqk : q ∉ ramifiedSet k)
+    (hinertia₀ : ∀ (Q : Ideal (𝓞 F₀)) (_ : Q.IsPrime) (_ : Q.LiesOver (Ideal.span {(q : ℤ)})),
+      Ideal.inertia Gal(F₀/ℚ) Q = ⊤)
+    {g : ℕ} (hg : Nat.Coprime g q) (hgord : ∀ m : ℕ, q ∣ g ^ m - 1 → (q - 1) ∣ m)
+    {σ : Gal(K/k)} (hσ : ∀ x : Gal(K/k), x ∈ Subgroup.zpowers σ) {ζ : K}
+    (hζ : IsPrimitiveRoot ζ q) (hgenζ : Algebra.adjoin k ({ζ} : Set K) = ⊤) (hσζ : σ ζ = ζ ^ g)
+    (hgenK : Algebra.adjoin k (Set.range (algebraMap L₀ K)) = ⊤)
+    (hgenE : Algebra.adjoin k (Set.range (algebraMap F₀ E)) = ⊤)
+    {a : kˣ} {b : 𝓞 k} (hab : (a : k) = algebraMap (𝓞 k) k b)
+    (hav : ∀ v : HeightOneSpectrum (𝓞 k), ((q : ℕ) : 𝓞 k) ∈ v.asIdeal → placeValue v a = 0) :
+    totalInvariant k (cyclicBrauerHom (forall_mem_zpowers_restrictNormal (L := E) hσ) a) = 1 := by
+  refine totalInvariant_cyclicBrauerHom_base_cyclotomic_arch hq hodd hcardF₀ hqk hinertia₀ hg
+    hgord hσ hζ hgenζ hσζ hgenK hgenE hab hav ?_
+  have h1 : ∀ u : InfinitePlace k, infinitePlaceInvariant k u
+      (cyclicBrauerHom (forall_mem_zpowers_restrictNormal (L := E) hσ) a) = 1 :=
+    fun u => infinitePlaceInvariant_cyclicBrauerHom_of_adjoin_isTotallyReal
+      (forall_mem_zpowers_restrictNormal (L := E) hσ) hgenE a u
+  have h2 : ∀ u : InfinitePlace ℚ, infinitePlaceInvariant ℚ u
+      (cyclicBrauerHom (forall_mem_zpowers_restrictNormal (L := F₀)
+        (forall_mem_zpowers_cyclotomicPowerAut q L₀ hq hg hgord))
+        (Units.map (Algebra.norm ℚ : k →* ℚ) a)) = 1 :=
+    fun u => infinitePlaceInvariant_cyclicBrauerHom_of_isTotallyReal
+      (forall_mem_zpowers_restrictNormal (L := F₀)
+        (forall_mem_zpowers_cyclotomicPowerAut q L₀ hq hg hgord)) _ u
+  simp only [h1, h2, Finset.prod_const_one]
+
+omit [IsTotallyReal F₀] in
+/-- **The total invariant of a cyclic algebra over a number field, split by the compositum of the
+base with a totally complex quadratic subfield of a cyclotomic field of prime conductor unramified
+in the base, is trivial.**  The compositum with a quadratic field is again quadratic, and it is
+totally complex because the subfield already is, so the invariant of the algebra at a real place of
+the base is the sign of the coefficient there; those signs multiply out to the sign of the norm of
+the coefficient, which is the archimedean invariant on the rational side. -/
+theorem totalInvariant_cyclicBrauerHom_base_cyclotomic_two [IsTotallyComplex F₀] (hq : q.Prime)
+    (hodd : Odd q) (hcardF₀ : Nat.card Gal(F₀/ℚ) = 2) (hqk : q ∉ ramifiedSet k)
+    (hinertia₀ : ∀ (Q : Ideal (𝓞 F₀)) (_ : Q.IsPrime) (_ : Q.LiesOver (Ideal.span {(q : ℤ)})),
+      Ideal.inertia Gal(F₀/ℚ) Q = ⊤)
+    {g : ℕ} (hg : Nat.Coprime g q) (hgord : ∀ m : ℕ, q ∣ g ^ m - 1 → (q - 1) ∣ m)
+    {σ : Gal(K/k)} (hσ : ∀ x : Gal(K/k), x ∈ Subgroup.zpowers σ) {ζ : K}
+    (hζ : IsPrimitiveRoot ζ q) (hgenζ : Algebra.adjoin k ({ζ} : Set K) = ⊤) (hσζ : σ ζ = ζ ^ g)
+    (hgenK : Algebra.adjoin k (Set.range (algebraMap L₀ K)) = ⊤)
+    (hgenE : Algebra.adjoin k (Set.range (algebraMap F₀ E)) = ⊤)
+    {a : kˣ} {b : 𝓞 k} (hab : (a : k) = algebraMap (𝓞 k) k b)
+    (hav : ∀ v : HeightOneSpectrum (𝓞 k), ((q : ℕ) : 𝓞 k) ∈ v.asIdeal → placeValue v a = 0) :
+    totalInvariant k (cyclicBrauerHom (forall_mem_zpowers_restrictNormal (L := E) hσ) a) = 1 := by
+  haveI : Fact q.Prime := ⟨hq⟩
+  haveI : IsCyclotomicExtension {q ^ 1} ℚ L₀ := by rw [pow_one]; infer_instance
+  haveI : IsTotallyComplex E := NumberField.isTotallyComplex_of_algebra F₀ E
+  have hramF : ramifiedSet F₀ ⊆ {q} := ramifiedSet_subset_singleton_primePow q 1 L₀ F₀
+  have hdisjF : Disjoint (ramifiedSet F₀) (ramifiedSet k) :=
+    Set.disjoint_left.mpr fun p hp hpk => hqk (by rwa [Set.mem_singleton_iff.mp (hramF hp)] at hpk)
+  have hrankF : finrank ℚ F₀ = 2 := (IsGalois.card_aut_eq_finrank ℚ F₀).symm.trans hcardF₀
+  have hrankE : finrank k E = 2 := by rw [finrank_eq_of_adjoin_eq_top hgenE hdisjF, hrankF]
+  refine totalInvariant_cyclicBrauerHom_base_cyclotomic_arch hq hodd hcardF₀ hqk hinertia₀ hg
+    hgord hσ hζ hgenζ hσζ hgenK hgenE hab hav ?_
+  exact prod_infinitePlaceInvariant_cyclicBrauerHom_eq_rat hrankE hrankF _ _ a
 
 end BaseCyclotomic
 
