@@ -41,7 +41,8 @@ power residue condition modulo the conductor.
 * `InverseGalois.CFT.mem_relative_of_forall_not_dvd_primePow` and
   `InverseGalois.CFT.totalInvariant_eq_one_of_forall_pow_ne_one_primePow`: the same two statements
   at a prime-power order, where the local degree is read off from the order of the decomposition
-  group instead of from splitting completely.
+  group instead of from splitting completely, and the degree of the splitting field is allowed to
+  exceed the order of the class.
 
 ## Tags
 
@@ -106,15 +107,15 @@ theorem mem_relative_of_forall_not_splitsCompletely {N : ℕ} (hN : N.Prime)
       rw [← map_pow, hx, map_one]
     rw [hm, pow_mul, hpow, one_pow]
 
-/-- **A Brauer class of the rationals killed by an odd prime power is split by a cyclic extension
-of that degree whose decomposition group at every place carrying a nontrivial invariant is the
-whole group.**  The order of that decomposition group is a power of the prime dividing the degree,
-so failing to divide the next smaller power makes it the whole degree, which kills an invariant of
-order dividing the degree; the real places split the class as soon as the reals do. -/
-theorem mem_relative_of_forall_not_dvd_primePow {ℓ e : ℕ} (hℓ : ℓ.Prime)
+/-- **A Brauer class of the rationals killed by a prime power is split by a cyclic extension of
+prime-power degree whose decomposition group at every place carrying a nontrivial invariant is not
+killed by the next smaller power.**  The order of that decomposition group is a power of the prime,
+so failing to divide the next smaller power makes it a multiple of the order of the class, which
+kills the local invariant; the real places split the class as soon as the reals do. -/
+theorem mem_relative_of_forall_not_dvd_primePow {ℓ d e : ℕ} (hℓ : ℓ.Prime)
     {x : BrauerGroup.{0, 0} ℚ} (hxreal : x ∈ BrauerGroup.relative ℚ ℝ) (hx : x ^ ℓ ^ e = 1)
     (F : Type) [Field F] [NumberField F]
-    [IsGalois ℚ F] [IsCyclic Gal(F/ℚ)] (hcard : Nat.card Gal(F/ℚ) = ℓ ^ e)
+    [IsGalois ℚ F] [IsCyclic Gal(F/ℚ)] (hcard : Nat.card Gal(F/ℚ) = ℓ ^ d)
     (hbad : ∀ (p : ℕ) (hp : p.Prime), placeInvariant ℚ (ratPlace p hp) x ≠ 1 →
       ∀ (P : Ideal (𝓞 F)) (_ : P.IsPrime) (_ : P.LiesOver (Ideal.span {(p : ℤ)})),
         ¬ Nat.card ↥(stabilizer Gal(F/ℚ) P) ∣ ℓ ^ (e - 1)) :
@@ -126,7 +127,7 @@ theorem mem_relative_of_forall_not_dvd_primePow {ℓ e : ℕ} (hℓ : ℓ.Prime)
   · obtain ⟨p, hp, hpw, hlies⟩ := exists_prime_primeUnder_eq_ratPlace w
     haveI := hlies
     haveI : w.asIdeal.IsPrime := w.isPrime
-    obtain ⟨m, hm⟩ := primePow_dvd_finrank_adicCompletion_of_not_dvd F hℓ hcard w
+    obtain ⟨m, hm⟩ := primePow_dvd_finrank_adicCompletion_of_not_dvd (e := e) F hℓ hcard w
       (hbad p hp (by rwa [hpw] at hinv) w.asIdeal ‹_› ‹_›)
     have hpow : placeInvariant ℚ (primeUnder (𝓞 ℚ) w) x ^ ℓ ^ e = 1 := by
       rw [← map_pow, hx, map_one]
@@ -196,43 +197,45 @@ theorem totalInvariant_eq_one_of_forall_pow_ne_one {N : ℕ} (hN : N.Prime)
   obtain ⟨hpq, hres⟩ := hbad p hp hinv
   exact hres ((hsplit p hp hpq).mp hsc)
 
-/-- **Reciprocity for a Brauer class of the rationals of odd prime-power order all of whose bad
-primes are non-residues of the prime exponent modulo an auxiliary prime.**  The subfield of degree
-the prime power of the cyclotomic field of the auxiliary prime is totally real and totally ramified
-there, and the order of its decomposition group at a prime above a rational prime is read off from
-a power residue condition; a prime that is not an `ℓ`-th power residue therefore has the whole
-group as decomposition group, so the class is split by that subfield. -/
-theorem totalInvariant_eq_one_of_forall_pow_ne_one_primePow {ℓ e : ℕ} (hℓ : ℓ.Prime)
-    (he : e ≠ 0) {x : BrauerGroup.{0, 0} ℚ} (hxreal : x ∈ BrauerGroup.relative ℚ ℝ)
-    (hx : x ^ ℓ ^ e = 1) {q : ℕ} (hq : q.Prime) (hdvd : 2 * ℓ ^ e ∣ q - 1)
+/-- **Reciprocity for a Brauer class of the rationals of prime-power order all of whose bad primes
+fail a power residue condition modulo an auxiliary prime.**  The subfield of degree a prescribed
+power of the prime of the cyclotomic field of the auxiliary prime is totally real and totally
+ramified there, and the order of its decomposition group at a prime above a rational prime is read
+off from a power residue condition; a bad prime therefore has a decomposition group large enough to
+kill the local invariant, so the class is split by that subfield. -/
+theorem totalInvariant_eq_one_of_forall_pow_ne_one_primePow {ℓ d e : ℕ} (hℓ : ℓ.Prime)
+    (he : e ≠ 0) (hed : e ≤ d) {x : BrauerGroup.{0, 0} ℚ}
+    (hxreal : x ∈ BrauerGroup.relative ℚ ℝ)
+    (hx : x ^ ℓ ^ e = 1) {q : ℕ} (hq : q.Prime) (hdvd : 2 * ℓ ^ d ∣ q - 1)
     (hbad : ∀ (p : ℕ) (hp : p.Prime), placeInvariant ℚ (ratPlace p hp) x ≠ 1 →
-      p ≠ q ∧ ((p : ℕ) : ZMod q) ^ ((q - 1) / ℓ) ≠ 1) :
+      p ≠ q ∧ ((p : ℕ) : ZMod q) ^ ((q - 1) / ℓ ^ (d - e + 1)) ≠ 1) :
     totalInvariant ℚ x = 1 := by
   haveI : Fact q.Prime := ⟨hq⟩
-  haveI : NeZero (ℓ ^ e) := ⟨pow_ne_zero e hℓ.ne_zero⟩
+  haveI : NeZero (ℓ ^ d) := ⟨pow_ne_zero d hℓ.ne_zero⟩
   haveI : NeZero q := ⟨hq.ne_zero⟩
-  have hone : 1 ≤ ℓ ^ e := Nat.one_le_pow e ℓ hℓ.pos
+  have hone : 1 ≤ ℓ ^ d := Nat.one_le_pow d ℓ hℓ.pos
   have hqodd : Odd q := by
     rcases hq.eq_two_or_odd' with rfl | h
     · have h2 := Nat.le_of_dvd (by norm_num) hdvd
       omega
     · exact h
-  have hNdvd : ℓ ^ e ∣ q - 1 := dvd_trans ⟨2, mul_comm 2 (ℓ ^ e)⟩ hdvd
-  have hsplitpow : ℓ ^ e = ℓ * ℓ ^ (e - 1) := by
-    conv_lhs => rw [show e = 1 + (e - 1) by omega]
-    rw [pow_add, pow_one]
-  have harith : ℓ ^ (e - 1) * ((q - 1) / ℓ ^ e) = (q - 1) / ℓ := by
+  have hNdvd : ℓ ^ d ∣ q - 1 := dvd_trans ⟨2, mul_comm 2 (ℓ ^ d)⟩ hdvd
+  have hsplitpow : ℓ ^ d = ℓ ^ (d - e + 1) * ℓ ^ (e - 1) := by
+    rw [← pow_add]
+    congr 1
+    omega
+  have harith : ℓ ^ (e - 1) * ((q - 1) / ℓ ^ d) = (q - 1) / ℓ ^ (d - e + 1) := by
     obtain ⟨k, hk⟩ := hNdvd
-    rw [hk, Nat.mul_div_cancel_left _ (pow_pos hℓ.pos e), hsplitpow, mul_assoc,
-      Nat.mul_div_cancel_left _ hℓ.pos]
+    rw [hk, Nat.mul_div_cancel_left _ (pow_pos hℓ.pos d), hsplitpow, mul_assoc,
+      Nat.mul_div_cancel_left _ (pow_pos hℓ.pos (d - e + 1))]
   haveI : IsGalois ℚ (CyclotomicField q ℚ) :=
     IsCyclotomicExtension.isGalois {q} ℚ (CyclotomicField q ℚ)
   obtain ⟨F, hrank, hgal, hcyc, hreal, -, hdeg, hinertia⟩ :=
-    exists_intermediateField_subcyclotomic q (pow_ne_zero e hℓ.ne_zero) hdvd (CyclotomicField q ℚ)
+    exists_intermediateField_subcyclotomic q (pow_ne_zero d hℓ.ne_zero) hdvd (CyclotomicField q ℚ)
   haveI := hgal
   haveI := hcyc
   haveI := hreal
-  have hcard : Nat.card Gal(↥F/ℚ) = ℓ ^ e := by
+  have hcard : Nat.card Gal(↥F/ℚ) = ℓ ^ d := by
     rw [IsGalois.card_aut_eq_finrank ℚ ↥F, hrank]
   refine totalInvariant_eq_one_of_mem_relative_subcyclotomic q hqodd (CyclotomicField q ℚ) ↥F
     hcard hinertia hdvd ?_

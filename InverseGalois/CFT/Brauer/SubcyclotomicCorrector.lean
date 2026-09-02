@@ -28,6 +28,8 @@ the class to the matching power leaves the vanishing of the other invariants unt
 
 * `InverseGalois.CFT.exists_pow_ofAdd_intQModZ_eq`: the class of an integer invertible modulo an
   exponent generates the elements of the rationals modulo the integers killed by that exponent.
+* `InverseGalois.CFT.exists_pow_ofAdd_intQModZ_eq_of_not_dvd`: an integer divided by a power of a
+  prime generates the elements killed by a smaller power, as soon as its own prime part is small.
 * `InverseGalois.CFT.not_dvd_of_natCast_pow_ne_one`: the exponent expressing a power non-residue as
   a power of a primitive root is prime to the exponent of the residue condition.
 * `InverseGalois.CFT.exists_placeInvariant_eq_of_pow_ne_one`: **a Brauer class of the rationals
@@ -78,6 +80,46 @@ theorem isUnit_intCast_zmod_of_primePow {ℓ e : ℕ} (hℓ : ℓ.Prime) {c : �
     exact (((Nat.prime_iff_prime_int.mp hℓ).coprime_iff_not_dvd.mpr hc).symm).pow_right
   exact ⟨ZMod.unitOfIsCoprime c hcop, ZMod.coe_unitOfIsCoprime c hcop⟩
 
+/-- **An integer divided by a power of a prime generates the elements of the rationals modulo the
+integers killed by a smaller power**, as soon as the part of the integer prime to that prime is
+divided by at most the difference of the two exponents.  Cancelling the prime part of the integer
+from the fraction lowers the modulus to a power still at least the smaller one, and there the
+remaining factor is invertible. -/
+theorem exists_pow_ofAdd_intQModZ_eq_of_not_dvd {ℓ d e : ℕ} (hℓ : ℓ.Prime) (hed : e ≤ d) {c : ℤ}
+    (hc : ¬ ((ℓ : ℤ) ^ (d - e + 1)) ∣ c) {t : Multiplicative QModZ} (ht : t ^ ℓ ^ e = 1) :
+    ∃ k : ℕ, (Multiplicative.ofAdd (intQModZ (ℓ ^ d) c)) ^ k = t := by
+  have hc0 : c ≠ 0 := by
+    rintro rfl
+    exact hc (dvd_zero _)
+  have hfin : FiniteMultiplicity (ℓ : ℤ) c :=
+    Int.finiteMultiplicity_iff.mpr ⟨by simpa using hℓ.ne_one, hc0⟩
+  obtain ⟨c', hceq, hc'⟩ := hfin.exists_eq_pow_mul_and_not_dvd
+  obtain ⟨j, hjdef⟩ : ∃ j, multiplicity (ℓ : ℤ) c = j := ⟨_, rfl⟩
+  rw [hjdef] at hceq
+  have hjle : j ≤ d - e := by
+    by_contra hlt
+    exact hc (hceq ▸ Dvd.dvd.mul_right (pow_dvd_pow (ℓ : ℤ) (by omega)) c')
+  have hpow : ℓ ^ (d - j) * ℓ ^ j = ℓ ^ d := by
+    rw [← pow_add]
+    congr 1
+    omega
+  have hcmul : c = c' * ((ℓ ^ j : ℕ) : ℤ) := by
+    rw [hceq]
+    push_cast
+    ring
+  have hrw : intQModZ (ℓ ^ d) c = intQModZ (ℓ ^ (d - j)) c' := by
+    rw [← hpow, hcmul, intQModZ_mul_natCast _ (pow_ne_zero j hℓ.ne_zero)]
+  haveI : NeZero (ℓ ^ (d - j)) := ⟨pow_ne_zero _ hℓ.ne_zero⟩
+  have htj : t ^ ℓ ^ (d - j) = 1 := by
+    have hsplit : ℓ ^ (d - j) = ℓ ^ e * ℓ ^ (d - j - e) := by
+      rw [← pow_add]
+      congr 1
+      omega
+    rw [hsplit, pow_mul, ht, one_pow]
+  obtain ⟨k, hk⟩ :=
+    exists_pow_ofAdd_intQModZ_eq (isUnit_intCast_zmod_of_primePow (e := d - j) hℓ hc') htj
+  exact ⟨k, by rwa [hrw]⟩
+
 end Torsion
 
 /-! ### The discrete logarithm of a non-residue -/
@@ -109,38 +151,39 @@ section Corrector
 /-- **A Brauer class of the rationals with trivial total invariant, a prescribed invariant of
 prime-power order at a given prime, and trivial invariants away from that prime and an auxiliary
 one.**  The class is a power of the cyclic algebra with the given prime as coefficient, split by the
-subfield of that degree of the cyclotomic field of the auxiliary prime; the exponent of the
-Frobenius at the given prime is prime to the degree because the prime is a power non-residue for the
-prime exponent, so the invariant there runs over all the values of that order.  That subfield is
-totally real, so the reals split the class as well. -/
-theorem exists_placeInvariant_eq_of_pow_ne_one {ℓ e : ℕ} (hℓ : ℓ.Prime)
-    (he : e ≠ 0) {q : ℕ} (hq : q.Prime) (hqdvd : 2 * ℓ ^ e ∣ q - 1) {p : ℕ} (hp : p.Prime)
-    (hpq : p ≠ q) (hres : ((p : ℕ) : ZMod q) ^ ((q - 1) / ℓ) ≠ 1) {t : Multiplicative QModZ}
+subfield of prescribed prime-power degree of the cyclotomic field of the auxiliary prime; the
+exponent of the Frobenius at the given prime is divided by only a small power of the prime, because
+the prime is a power non-residue for that power, so the invariant there runs over all the values of
+the prescribed order.  That subfield is totally real, so the reals split the class as well. -/
+theorem exists_placeInvariant_eq_of_pow_ne_one {ℓ d e : ℕ} (hℓ : ℓ.Prime)
+    (he : e ≠ 0) (hed : e ≤ d) {q : ℕ} (hq : q.Prime) (hqdvd : 2 * ℓ ^ d ∣ q - 1) {p : ℕ}
+    (hp : p.Prime) (hpq : p ≠ q)
+    (hres : ((p : ℕ) : ZMod q) ^ ((q - 1) / ℓ ^ (d - e + 1)) ≠ 1) {t : Multiplicative QModZ}
     (ht : t ^ ℓ ^ e = 1) :
-    ∃ y : BrauerGroup.{0, 0} ℚ, y ^ ℓ ^ e = 1 ∧ totalInvariant ℚ y = 1 ∧
+    ∃ y : BrauerGroup.{0, 0} ℚ, y ^ ℓ ^ d = 1 ∧ totalInvariant ℚ y = 1 ∧
       y ∈ BrauerGroup.relative ℚ ℝ ∧ placeInvariant ℚ (ratPlace p hp) y = t ∧
       ∀ v : HeightOneSpectrum (𝓞 ℚ), v ≠ ratPlace p hp → v ≠ ratPlace q hq →
         placeInvariant ℚ v y = 1 := by
   haveI : Fact q.Prime := ⟨hq⟩
   haveI : Fact p.Prime := ⟨hp⟩
-  haveI : NeZero (ℓ ^ e) := ⟨pow_ne_zero e hℓ.ne_zero⟩
+  haveI : NeZero (ℓ ^ d) := ⟨pow_ne_zero d hℓ.ne_zero⟩
   haveI : NeZero q := ⟨hq.ne_zero⟩
-  have hone : 1 ≤ ℓ ^ e := Nat.one_le_pow e ℓ hℓ.pos
+  have hone : 1 ≤ ℓ ^ d := Nat.one_le_pow d ℓ hℓ.pos
   have hqodd : Odd q := by
     rcases hq.eq_two_or_odd' with rfl | h
     · have h2 := Nat.le_of_dvd (by norm_num) hqdvd
       omega
     · exact h
-  have hNdvd : ℓ ^ e ∣ q - 1 := dvd_trans ⟨2, mul_comm 2 (ℓ ^ e)⟩ hqdvd
-  have hℓdvd : ℓ ∣ q - 1 := dvd_trans (dvd_pow_self ℓ he) hNdvd
+  have hNdvd : ℓ ^ d ∣ q - 1 := dvd_trans ⟨2, mul_comm 2 (ℓ ^ d)⟩ hqdvd
+  have hℓdvd : ℓ ^ (d - e + 1) ∣ q - 1 := dvd_trans (pow_dvd_pow ℓ (by omega)) hNdvd
   haveI : IsGalois ℚ (CyclotomicField q ℚ) :=
     IsCyclotomicExtension.isGalois {q} ℚ (CyclotomicField q ℚ)
   obtain ⟨F, hrank, hgal, hcyc, hreal, -, -, hinertia⟩ :=
-    exists_intermediateField_subcyclotomic q (pow_ne_zero e hℓ.ne_zero) hqdvd (CyclotomicField q ℚ)
+    exists_intermediateField_subcyclotomic q (pow_ne_zero d hℓ.ne_zero) hqdvd (CyclotomicField q ℚ)
   haveI := hgal
   haveI := hcyc
   haveI := hreal
-  have hcard : Nat.card Gal(↥F/ℚ) = ℓ ^ e := by
+  have hcard : Nat.card Gal(↥F/ℚ) = ℓ ^ d := by
     rw [IsGalois.card_aut_eq_finrank ℚ ↥F, hrank]
   obtain ⟨g, hg, hgord⟩ := exists_nat_primitiveRoot_of_prime hq
   have hgen := forall_mem_zpowers_cyclotomicPowerAut q (CyclotomicField q ℚ) hq hg hgord
@@ -153,7 +196,7 @@ theorem exists_placeInvariant_eq_of_pow_ne_one {ℓ e : ℕ} (hℓ : ℓ.Prime)
   obtain ⟨W, hW⟩ := exists_primeUnder_eq (𝓞 ℚ) (𝓞 (CyclotomicField q ℚ)) (ratPlace p hp)
   haveI := liesOver_span_of_primeUnder_eq_ratPlace hp W hW
   have hinvp : placeInvariant ℚ (ratPlace p hp) (cyclicBrauerHom hσ₀ a)
-      = Multiplicative.ofAdd (intQModZ (ℓ ^ e) (-(c : ℤ))) := by
+      = Multiplicative.ofAdd (intQModZ (ℓ ^ d) (-(c : ℤ))) := by
     have h := placeInvariant_cyclicBrauerHom_subcyclotomic_ratPlace q (CyclotomicField q ℚ) ↥F
       hgen W hpq' hc hap
     rwa [hcard] at h
@@ -172,18 +215,17 @@ theorem exists_placeInvariant_eq_of_pow_ne_one {ℓ e : ℕ} (hℓ : ℓ.Prime)
   have htot : totalInvariant ℚ (cyclicBrauerHom hσ₀ a) = 1 :=
     totalInvariant_cyclicBrauerHom_subcyclotomic q (CyclotomicField q ℚ) ↥F hqodd
       hcard hinertia hg hgord hgen hqdvd a
-  have hord : (cyclicBrauerHom hσ₀ a) ^ ℓ ^ e = 1 := by
+  have hord : (cyclicBrauerHom hσ₀ a) ^ ℓ ^ d = 1 := by
     have h := pow_finrank_eq_one_of_mem_relative (L := ↥F) (cyclicBrauerHom hσ₀ a)
       (cyclicBrauerHom_mem_relative hσ₀ a)
     rwa [hrank] at h
   -- The exponent to raise it to.
   have hpg : ((p : ℕ) : ZMod q) = ((g : ℕ) : ZMod q) ^ c :=
     natCast_zmod_eq_pow_of_cyclotomicPowerAut_eq_pow q (CyclotomicField q ℚ) hg hpq' hc
-  have hNc : ¬ (ℓ : ℤ) ∣ (-(c : ℤ)) := by
-    rw [dvd_neg, Int.natCast_dvd_natCast]
+  have hNc : ¬ ((ℓ : ℤ) ^ (d - e + 1)) ∣ (-(c : ℤ)) := by
+    rw [dvd_neg, ← Nat.cast_pow, Int.natCast_dvd_natCast]
     exact not_dvd_of_natCast_pow_ne_one hq hg hℓdvd hpg hres
-  obtain ⟨k, hk⟩ :=
-    exists_pow_ofAdd_intQModZ_eq (isUnit_intCast_zmod_of_primePow (e := e) hℓ hNc) ht
+  obtain ⟨k, hk⟩ := exists_pow_ofAdd_intQModZ_eq_of_not_dvd hℓ hed hNc ht
   refine ⟨(cyclicBrauerHom hσ₀ a) ^ k, ?_, ?_, ?_, ?_, ?_⟩
   · rw [← pow_mul, mul_comm, pow_mul, hord, one_pow]
   · rw [map_pow, htot, one_pow]

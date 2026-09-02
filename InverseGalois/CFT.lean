@@ -441,6 +441,7 @@ import InverseGalois.CFT.Scholz.CoverInertia
 import InverseGalois.CFT.Scholz.CoverObstruction
 import InverseGalois.CFT.Scholz.CyclicSupplement
 import InverseGalois.CFT.Scholz.DecompositionLift
+import InverseGalois.CFT.Scholz.DyadicAuxPrime
 import InverseGalois.CFT.Scholz.DyadicClassStep
 import InverseGalois.CFT.Scholz.DyadicCorrector
 import InverseGalois.CFT.Scholz.DyadicInduction
@@ -481,6 +482,7 @@ import InverseGalois.CFT.Scholz.PrimeIndependence
 import InverseGalois.CFT.Scholz.PrimeOrderInertia
 import InverseGalois.CFT.Scholz.ProperSolution
 import InverseGalois.CFT.Scholz.ProperSolutionTwo
+import InverseGalois.CFT.Scholz.QuarticRadical
 import InverseGalois.CFT.Scholz.RadicalDegree
 import InverseGalois.CFT.Scholz.RadicalDisjoint
 import InverseGalois.CFT.Scholz.RadicalSplitting
@@ -4346,6 +4348,23 @@ it that are available here.
   root of it**; for `ℓ` prime and the number without an `ℓ`-th root there that root has minimal
   polynomial `X ^ ℓ` minus the number, so **the compositum has degree exactly `ℓ` times the degree
   of the field**.
+* `InverseGalois.CFT.Scholz.QuarticRadical` supplies the same measurement for fourth roots, which
+  is what the prime two needs.  A rational number can acquire a square root in an abelian extension
+  of the rationals, but not a fourth root: comparing the two automorphisms that negate a square
+  root of the number and a square root of minus one shows that **an abelian extension contains no
+  fourth root of a rational number `m` whenever `m`, `-m` and `-1` are all rational non-squares**.
+  In the other direction, over a field containing a square root of minus one the norm of a square
+  root of an adjoined square root would, corrected by that square root of minus one, be a square
+  root of the constant, so **`X ^ 4` minus a non-square is irreducible there**.
+* `InverseGalois.CFT.Scholz.DyadicAuxPrime` runs the density argument at the prime two, where
+  squares are not enough: a prime congruent to one modulo a high power of two is congruent to one
+  modulo eight, so two is always a square modulo it.  Raising the exponent repairs this.  Over the
+  cyclotomic field of a two-power conductor at least four, only two is ramified, so an odd prime
+  has no square root there and its fourth radical multiplies the degree by four, while the fourth
+  radical of two at least doubles it because that field is abelian.  A quarter and a quarter, or a
+  half and a quarter, fall short of one, so the density bound yields **a prime congruent to one
+  modulo a prescribed power of two modulo which two prescribed primes, not both two, are
+  simultaneously fourth-power non-residues**.
 * `InverseGalois.CFT.Scholz.AuxPrimePair` spends that exact degree on two conditions at once.  Two
   reciprocals of `ℓ` times a degree fall short of the reciprocal of the degree once `ℓ` is at least
   three, so the density bound of `InverseGalois.NumberTheory.SplitDensityPair` leaves **infinitely

@@ -8,6 +8,7 @@ import InverseGalois.CFT.Brauer.SubcyclotomicCorrector
 import InverseGalois.CFT.Cyclotomic.Splitting
 import InverseGalois.CFT.CyclotomicCompositum
 import InverseGalois.CFT.Scholz.AuxPrimePair
+import InverseGalois.CFT.Scholz.DyadicAuxPrime
 import InverseGalois.CFT.Scholz.PrimeIndependence
 
 /-!
@@ -29,9 +30,12 @@ count therefore drops by one at each step.
 
 ## Main results
 
-* `InverseGalois.CFT.exists_prime_two_mul_dvd_sub_one_pow_ne_one`: **an auxiliary prime congruent
-  to one modulo twice a given odd prime power, modulo which two prescribed rational primes are both
-  power non-residues for the prime exponent.**
+* `InverseGalois.CFT.HasAuxPrimes`: the supply of auxiliary primes the reduction consumes, with a
+  prescribed excess of the degree of the correcting field over the order of the class.
+* `InverseGalois.CFT.exists_prime_two_mul_dvd_sub_one_pow_ne_one` and
+  `InverseGalois.CFT.hasAuxPrimes_of_odd`: **an auxiliary prime congruent to one modulo twice a
+  given odd prime power, modulo which two prescribed rational primes are both power non-residues
+  for the prime exponent** — a supply with no excess.
 * `InverseGalois.CFT.totalInvariant_eq_one_of_pow_eq_one`: **the invariants of a Brauer class of
   odd prime-power order over the rationals add up to zero.**
 * `InverseGalois.CFT.totalInvariant_eq_one_of_pow_eq_one_odd`: **the invariants of a Brauer class
@@ -65,6 +69,17 @@ end Place
 /-! ### The auxiliary prime -/
 
 section AuxPrime
+
+/-- **A supply of auxiliary primes for the reduction**, with a prescribed excess `j`.  For every
+nonzero exponent, every two rational primes and every finite set of primes to avoid it produces a
+prime congruent to one modulo twice that power of `ℓ` modulo which neither of the two prescribed
+primes is an `ℓ ^ (j + 1)`-th power residue.  The excess measures how much larger than the order of
+a Brauer class the degree of the field correcting it has to be. -/
+def HasAuxPrimes (ℓ j : ℕ) : Prop :=
+  ∀ d : ℕ, d ≠ 0 → ∀ p₁ p₂ : ℕ, p₁.Prime → p₂.Prime → ∀ T : Finset ℕ,
+    ∃ q : ℕ, q.Prime ∧ q ∉ T ∧ 2 * ℓ ^ d ∣ q - 1 ∧
+      ((p₁ : ℕ) : ZMod q) ^ ((q - 1) / ℓ ^ (j + 1)) ≠ 1 ∧
+      ((p₂ : ℕ) : ZMod q) ^ ((q - 1) / ℓ ^ (j + 1)) ≠ 1
 
 /-- **An auxiliary prime congruent to one modulo twice a given odd prime power, modulo which two
 prescribed rational primes are both power non-residues for the prime exponent.**  A rational prime
@@ -127,84 +142,119 @@ theorem exists_prime_two_mul_dvd_sub_one_pow_ne_one {ℓ e : ℕ} (hℓ : ℓ.Pr
   exact ⟨q, hqp, hqT, Nat.Coprime.mul_dvd_of_dvd_of_dvd hcop hpar hdvd, by exact_mod_cast hq₁,
     by exact_mod_cast hq₂⟩
 
+/-- **An odd prime has a supply of auxiliary primes with no excess**: two rational primes are
+already non-residues for the prime exponent itself modulo infinitely many primes congruent to one
+modulo twice any power of it. -/
+theorem hasAuxPrimes_of_odd {ℓ : ℕ} (hℓ : ℓ.Prime) (hℓodd : Odd ℓ) : HasAuxPrimes ℓ 0 := by
+  intro d hd p₁ p₂ hp₁ hp₂ T
+  obtain ⟨q, hqp, hqT, hqdvd, hq₁, hq₂⟩ :=
+    exists_prime_two_mul_dvd_sub_one_pow_ne_one hℓ hℓodd hd hp₁ hp₂ T
+  exact ⟨q, hqp, hqT, hqdvd, by simpa using hq₁, by simpa using hq₂⟩
+
+/-- **The prime two has a supply of auxiliary primes with excess one**: two rational primes are
+both fourth-power non-residues modulo infinitely many primes congruent to one modulo twice any
+power of two.  Squares would not do, since such a prime is congruent to one modulo eight and two is
+therefore a square modulo it. -/
+theorem hasAuxPrimes_two : HasAuxPrimes 2 1 := by
+  intro d hd p₁ p₂ hp₁ hp₂ T
+  have hexp : (2 : ℕ) * 2 ^ d = 2 ^ (d + 1) := by rw [pow_succ]; ring
+  have he : 2 ≤ d + 1 := by omega
+  by_cases hboth : p₁ = 2 ∧ p₂ = 2
+  · obtain ⟨h1, h2⟩ := hboth
+    subst h1
+    subst h2
+    obtain ⟨q, hqp, hqT, hqdvd, hq₁, -⟩ :=
+      exists_prime_dvd_sub_one_pow_four_ne_one he Nat.prime_two Nat.prime_three
+        (by rintro ⟨-, h⟩; norm_num at h) T
+    exact ⟨q, hqp, hqT, by rw [hexp]; exact hqdvd, by simpa using hq₁, by simpa using hq₁⟩
+  · obtain ⟨q, hqp, hqT, hqdvd, hq₁, hq₂⟩ :=
+      exists_prime_dvd_sub_one_pow_four_ne_one he hp₁ hp₂ hboth T
+    exact ⟨q, hqp, hqT, by rw [hexp]; exact hqdvd, by simpa using hq₁, by simpa using hq₂⟩
+
 end AuxPrime
 
 /-! ### Reducing the number of bad primes -/
 
 section Reduction
 
-/-- **Reciprocity for a class of odd prime-power order with at most one bad prime.**  A single
+/-- **Reciprocity for a class of prime-power order with at most one bad prime.**  A single
 auxiliary prime modulo which that prime is a power non-residue splits the class over the
 corresponding subfield of a cyclotomic field. -/
-theorem totalInvariant_eq_one_of_forall_eq {ℓ e : ℕ} (hℓ : ℓ.Prime) (hℓodd : Odd ℓ) (he : e ≠ 0)
-    {x : BrauerGroup.{0, 0} ℚ} (hxreal : x ∈ BrauerGroup.relative ℚ ℝ) (hx : x ^ ℓ ^ e = 1)
-    {p₀ : ℕ} (hp₀ : p₀.Prime)
+theorem totalInvariant_eq_one_of_forall_eq {ℓ j e : ℕ} (hℓ : ℓ.Prime) (haux : HasAuxPrimes ℓ j)
+    (he : e ≠ 0) {x : BrauerGroup.{0, 0} ℚ} (hxreal : x ∈ BrauerGroup.relative ℚ ℝ)
+    (hx : x ^ ℓ ^ e = 1) {p₀ : ℕ} (hp₀ : p₀.Prime)
     (hbad : ∀ (p : ℕ) (hp : p.Prime), placeInvariant ℚ (ratPlace p hp) x ≠ 1 → p = p₀) :
     totalInvariant ℚ x = 1 := by
   classical
-  obtain ⟨q, hqp, hqT, hqdvd, hq₀, -⟩ :=
-    exists_prime_two_mul_dvd_sub_one_pow_ne_one hℓ hℓodd he hp₀ hp₀ ({p₀} : Finset ℕ)
-  refine totalInvariant_eq_one_of_forall_pow_ne_one_primePow hℓ he hxreal hx hqp hqdvd
-    fun p hp hinv => ?_
+  obtain ⟨q, hqp, hqT, hqdvd, hq₀, -⟩ := haux (e + j) (by omega) p₀ p₀ hp₀ hp₀ ({p₀} : Finset ℕ)
+  have harith : e + j - e + 1 = j + 1 := by omega
+  refine totalInvariant_eq_one_of_forall_pow_ne_one_primePow hℓ he (Nat.le_add_right e j) hxreal hx
+    hqp hqdvd fun p hp hinv => ?_
   have hpeq : p = p₀ := hbad p hp hinv
   refine ⟨fun h => hqT (Finset.mem_singleton.mpr (h ▸ hpeq)), ?_⟩
-  rw [hpeq]
+  rw [hpeq, harith]
   exact hq₀
 
-/-- **Reciprocity for a class of odd prime-power order whose bad primes lie in a set of at most one
+/-- **Reciprocity for a class of prime-power order whose bad primes lie in a set of at most one
 element.** -/
-theorem totalInvariant_eq_one_of_card_le_one {ℓ e : ℕ} (hℓ : ℓ.Prime) (hℓodd : Odd ℓ) (he : e ≠ 0)
-    {x : BrauerGroup.{0, 0} ℚ} (hxreal : x ∈ BrauerGroup.relative ℚ ℝ) (hx : x ^ ℓ ^ e = 1)
+theorem totalInvariant_eq_one_of_card_le_one {ℓ j e : ℕ} (hℓ : ℓ.Prime) (haux : HasAuxPrimes ℓ j)
+    (he : e ≠ 0) {x : BrauerGroup.{0, 0} ℚ} (hxreal : x ∈ BrauerGroup.relative ℚ ℝ)
+    (hx : x ^ ℓ ^ e = 1)
     (S : Finset ℕ) (hSp : ∀ p ∈ S, p.Prime) (hcard : S.card ≤ 1)
     (hbad : ∀ (p : ℕ) (hp : p.Prime), placeInvariant ℚ (ratPlace p hp) x ≠ 1 → p ∈ S) :
     totalInvariant ℚ x = 1 := by
   classical
   rcases S.eq_empty_or_nonempty with rfl | ⟨p₀, hp₀S⟩
-  · exact totalInvariant_eq_one_of_forall_eq hℓ hℓodd he hxreal hx Nat.prime_two
+  · exact totalInvariant_eq_one_of_forall_eq hℓ haux he hxreal hx Nat.prime_two
       fun p hp hinv => absurd (hbad p hp hinv) (Finset.notMem_empty p)
-  · exact totalInvariant_eq_one_of_forall_eq hℓ hℓodd he hxreal hx (hSp p₀ hp₀S)
+  · exact totalInvariant_eq_one_of_forall_eq hℓ haux he hxreal hx (hSp p₀ hp₀S)
       fun p hp hinv => Finset.card_le_one.mp hcard p (hbad p hp hinv) p₀ hp₀S
 
-/-- **Reciprocity for a class of odd prime-power order whose bad primes lie in a set of bounded
-size**, by induction on the bound.  Two bad primes are cancelled at once against a common auxiliary
-prime, which lowers the count by one. -/
-theorem totalInvariant_eq_one_of_card_le {ℓ e : ℕ} (hℓ : ℓ.Prime) (hℓodd : Odd ℓ) (he : e ≠ 0)
+/-- **Reciprocity for a class of prime-power order whose bad primes lie in a set of bounded size**,
+by induction on the bound.  Two bad primes are cancelled at once against a common auxiliary prime,
+which lowers the count by one at the cost of raising the order of the class by the excess of the
+supply of auxiliary primes. -/
+theorem totalInvariant_eq_one_of_card_le {ℓ j : ℕ} (hℓ : ℓ.Prime) (haux : HasAuxPrimes ℓ j)
     (n : ℕ) :
-    ∀ x : BrauerGroup.{0, 0} ℚ, x ∈ BrauerGroup.relative ℚ ℝ → x ^ ℓ ^ e = 1 →
+    ∀ e : ℕ, e ≠ 0 → ∀ x : BrauerGroup.{0, 0} ℚ, x ∈ BrauerGroup.relative ℚ ℝ → x ^ ℓ ^ e = 1 →
       ∀ S : Finset ℕ, (∀ p ∈ S, p.Prime) → S.card ≤ n →
         (∀ (p : ℕ) (hp : p.Prime), placeInvariant ℚ (ratPlace p hp) x ≠ 1 → p ∈ S) →
         totalInvariant ℚ x = 1 := by
   classical
   induction n with
   | zero =>
-    intro x hxreal hx S hSp hcard hbad
-    exact totalInvariant_eq_one_of_card_le_one hℓ hℓodd he hxreal hx S hSp (by omega) hbad
+    intro e he x hxreal hx S hSp hcard hbad
+    exact totalInvariant_eq_one_of_card_le_one hℓ haux he hxreal hx S hSp (by omega) hbad
   | succ n ih =>
-    intro x hxreal hx S hSp hcard hbad
+    intro e he x hxreal hx S hSp hcard hbad
     by_cases hle : S.card ≤ 1
-    · exact totalInvariant_eq_one_of_card_le_one hℓ hℓodd he hxreal hx S hSp hle hbad
+    · exact totalInvariant_eq_one_of_card_le_one hℓ haux he hxreal hx S hSp hle hbad
     have hlt : 1 < S.card := by omega
     obtain ⟨p₁, hp₁S, p₂, hp₂S, hne⟩ := Finset.one_lt_card.mp hlt
     have hp₁ : p₁.Prime := hSp p₁ hp₁S
     have hp₂ : p₂.Prime := hSp p₂ hp₂S
-    obtain ⟨q, hqp, hqS, hqdvd, hq₁, hq₂⟩ :=
-      exists_prime_two_mul_dvd_sub_one_pow_ne_one hℓ hℓodd he hp₁ hp₂ S
+    obtain ⟨q, hqp, hqS, hqdvd, hq₁, hq₂⟩ := haux (e + j) (by omega) p₁ p₂ hp₁ hp₂ S
+    have harith : e + j - e + 1 = j + 1 := by omega
+    have hq₁' : ((p₁ : ℕ) : ZMod q) ^ ((q - 1) / ℓ ^ (e + j - e + 1)) ≠ 1 := by rwa [harith]
+    have hq₂' : ((p₂ : ℕ) : ZMod q) ^ ((q - 1) / ℓ ^ (e + j - e + 1)) ≠ 1 := by rwa [harith]
     have hp₁q : p₁ ≠ q := fun h => hqS (h ▸ hp₁S)
     have hp₂q : p₂ ≠ q := fun h => hqS (h ▸ hp₂S)
     have hinvpow : ∀ v : HeightOneSpectrum (𝓞 ℚ), ((placeInvariant ℚ v x)⁻¹) ^ ℓ ^ e = 1 := by
       intro v
       rw [inv_pow, ← map_pow, hx, map_one, inv_one]
+    have hxd : x ^ ℓ ^ (e + j) = 1 := by
+      rw [pow_add, pow_mul, hx, one_pow]
     obtain ⟨y₁, hy₁pow, hy₁tot, hy₁real, hy₁p, hy₁van⟩ :=
-      exists_placeInvariant_eq_of_pow_ne_one hℓ he hqp hqdvd hp₁ hp₁q hq₁
+      exists_placeInvariant_eq_of_pow_ne_one hℓ he (Nat.le_add_right e j) hqp hqdvd hp₁ hp₁q hq₁'
         (hinvpow (ratPlace p₁ hp₁))
     obtain ⟨y₂, hy₂pow, hy₂tot, hy₂real, hy₂p, hy₂van⟩ :=
-      exists_placeInvariant_eq_of_pow_ne_one hℓ he hqp hqdvd hp₂ hp₂q hq₂
+      exists_placeInvariant_eq_of_pow_ne_one hℓ he (Nat.le_add_right e j) hqp hqdvd hp₂ hp₂q hq₂'
         (hinvpow (ratPlace p₂ hp₂))
     have hkey : totalInvariant ℚ (x * y₁ * y₂) = totalInvariant ℚ x := by
       rw [map_mul, map_mul, hy₁tot, hy₂tot, mul_one, mul_one]
     rw [← hkey]
-    refine ih (x * y₁ * y₂) (mul_mem (mul_mem hxreal hy₁real) hy₂real)
-      (by rw [mul_pow, mul_pow, hx, hy₁pow, hy₂pow, one_mul, one_mul])
+    refine ih (e + j) (by omega) (x * y₁ * y₂) (mul_mem (mul_mem hxreal hy₁real) hy₂real)
+      (by rw [mul_pow, mul_pow, hxd, hy₁pow, hy₂pow, one_mul, one_mul])
       (insert q (S \ ({p₁, p₂} : Finset ℕ))) ?_ ?_ ?_
     · intro r hr
       rcases Finset.mem_insert.mp hr with rfl | hr'
@@ -274,7 +324,7 @@ theorem totalInvariant_eq_one_of_pow_eq_one {ℓ e : ℕ} (hℓ : ℓ.Prime) (h�
     · intro p hp hinv
       exact Finset.mem_image.mpr ⟨ratPlace p hp, hfin.mem_toFinset.mpr hinv,
         natGenerator_eq_of_natCast_mem hp (natCast_mem_ratPlace p hp)⟩
-  exact totalInvariant_eq_one_of_card_le hℓ hℓodd he S.card x
+  exact totalInvariant_eq_one_of_card_le hℓ (hasAuxPrimes_of_odd hℓ hℓodd) S.card e he x
     (mem_relative_real_of_odd_pow_eq_one hℓodd.pow hx) hx S hSp le_rfl hbad
 
 /-- **The invariants of a Brauer class of odd order over the rationals add up to zero.**  Splitting
