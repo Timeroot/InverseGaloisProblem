@@ -8284,6 +8284,85 @@ Build green at **9589 jobs**, zero warnings, zero errors; the three touched theo
 
 ---
 
+## 0.83 Status (2026-09-02) — Chebotarev for cyclic prime-power extensions, with no analysis
+
+`InverseGalois/CFT/Units/InertPlace.lean` is new.  It is a purely group-theoretic reading of a
+theorem the repository already had, and it removes what §0.79 called the blocking sub-task of the
+fundamental exact sequence.
+
+### (a) The input
+
+`Units/DecompositionOutside.lean` proves, for a Galois `K/k` of number fields with **solvable**
+Galois group and any *finite* set `S` of places of `k`,
+
+```lean
+decompositionSubgroupOutside_eq_top (hS : S.Finite) :
+  Subgroup.closure {σ | ∃ v : HeightOneSpectrum (𝓞 K), primeUnder (𝓞 k) v ∉ S ∧ σ • v = v} = ⊤
+```
+
+— the decomposition groups of the places lying over the primes *outside* `S` generate everything.
+That is the whole analytic content one usually imports from Chebotarev, and it was obtained here
+from the class-formation machinery, not from a density theorem.
+
+### (b) What it gives, by pure group theory
+
+Reading the generation statement contrapositively yields four consequences, each in the new file.
+
+* `exists_stabilizer_not_le`: for `H ≠ ⊤` there is a place outside `S` whose stabilizer is **not**
+  contained in `H`.  (A subgroup containing every generator is everything.)
+* `exists_mem_stabilizer_pow_ne_one`: if `G = ⟨σ₀⟩` is cyclic and `σ₀ ^ m ≠ 1`, some place outside
+  `S` carries a decomposition element `τ` with `τ ^ m ≠ 1`.  Here the abelian case does not even
+  need the solvability hypothesis to be supplied — `isSolvable_of_comm` produces it.
+* `exists_card_stabilizer_not_dvd`: the same statement about orders, i.e. **the local degrees of a
+  cyclic extension have the global degree as their lcm**, and every exponent that fails to kill a
+  generator is missed by some local degree.  This is exactly the surjectivity input for
+  `Σ_v inv_v : ⊕_v Br(K_w/k_v) → (1/n)ℤ/ℤ`.
+* `exists_stabilizer_eq_top_of_isPGroup`: for `G` cyclic of **prime-power** order, some place
+  outside `S` has decomposition group all of `G`.  The proof takes `m = p^(a-1)` where
+  `p^a = orderOf σ₀`, extracts a `τ` of order not dividing `p^(a-1)`, hence of order `p^a`, hence a
+  generator.
+
+### (c) The packaged form
+
+Discarding, in addition, the finitely many ramified primes (`finite_relRamifiedSet`) turns the last
+item into a genuine density statement:
+
+```lean
+exists_arithFrobAt_zpowers_eq_top (hp : p.Prime) (hσ₀ : ∀ x, x ∈ Subgroup.zpowers σ₀)
+    (hne : σ₀ ≠ 1) (hpG : IsPGroup p Gal(K/k)) (hT : T.Finite) :
+  ∃ v ∉ T, v ∉ relRamifiedSet k K ∧ ∃ P …,
+    stabilizer Gal(K/k) P = ⊤ ∧ Subgroup.zpowers (arithFrobAt (𝓞 k) Gal(K/k) P) = ⊤
+```
+
+For a cyclic extension of prime-power degree, avoiding any prescribed finite set of primes, there is
+an unramified prime whose **arithmetic Frobenius generates the Galois group** — Chebotarev in the
+only case Scholz–Reichardt and the Schmidt–Wingberg tower ever use it, obtained with no `L`-function
+and no analysis.  It supersedes `exists_relStabilizer_eq_zpowers`
+(`CFT/RelativeFrobenius.lean:273`), which was restricted to `(orderOf σ).Prime`.
+
+### (d) Three Poitou–Tate shortcuts that do not work
+
+Recorded so they are not retried.
+
+1. A pairing `Ш²(k,A) × Ш¹(k,A′) → ℚ/ℤ` by itself does not give the direction that is needed,
+   `Ш¹(k,A′)^∨ ↠ Ш²(k,A)`; nondegeneracy on both sides (or one side plus a cardinality comparison)
+   is the honest content of the duality, and there is no cheaper packaging of it.
+2. `H²(G, I_K) → H²(G, C_K)` is **not** surjective for general non-cyclic `G` — an everywhere
+   unramified `(ℤ/2)²` extension is a counterexample — so "cyclic" is essential in the fundamental
+   exact sequence and cannot be relaxed to reach the general case.
+3. The route through `Ĥ³(G, K^×) ≅ Ĥ¹(G, K^×) = 1` needs odd-degree cyclic periodicity, which
+   `Units/CyclicTate.lean` does not have (it carries only `tateH0AddEquivH2`).
+
+Two Lean notes.  The divisibility-of-prime-powers lemma must be spelled
+`Nat.pow_dvd_pow_iff_le_right`; the unqualified name is visible only inside `namespace Nat`.  And
+the *relative* ideal action `MulAction Gal(K/k) (Ideal (𝓞 K))` needs `open scoped Pointwise`, the
+same requirement already recorded for `Ideal (𝓞 F)` under `Gal(F/ℚ)`.
+
+Build green at **9590 jobs**, zero warnings, zero errors; all five theorems have axioms
+`[propext, Classical.choice, Quot.sound]`.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.

@@ -745,6 +745,7 @@ import InverseGalois.CFT.Units.IdeleQuotCyclic
 import InverseGalois.CFT.Units.IdeleRep
 import InverseGalois.CFT.Units.IdeleRestrict
 import InverseGalois.CFT.Units.IdeleTower
+import InverseGalois.CFT.Units.InertPlace
 import InverseGalois.CFT.Units.InfiniteComap
 import InverseGalois.CFT.Units.InfiniteFixed
 import InverseGalois.CFT.Units.InfiniteGalois
@@ -2533,6 +2534,17 @@ it that are available here.
   places whose place below avoids a prescribed finite set already generate a solvable Galois group,
   because in the fixed field of the subgroup they generate every place of the base field outside the
   prescribed set splits completely.
+* `InverseGalois.CFT.Units.InertPlace` reads the same generation statement as a statement about the
+  supply of places.  No proper subgroup of a solvable Galois group contains every decomposition
+  group away from a finite set of places of the base, so for a cyclic extension an exponent which
+  does not kill a generator fails to kill some element of some such decomposition group, the
+  elements killed by a fixed exponent forming a subgroup.  When the degree is a power of a prime the
+  orders of the elements are powers of that prime, hence totally ordered by divisibility, so an
+  element escaping the largest proper exponent has the order of a generator and therefore generates:
+  **a cyclic extension of prime power degree has a finite place, away from any prescribed finite set
+  of places of the base, whose decomposition group is the whole Galois group**, and discarding the
+  finitely many ramified places as well makes the arithmetic Frobenius there a generator of the
+  Galois group, with no analysis at all.
 * `InverseGalois.CFT.Units.HasseHom` reads that generation statement as one about homomorphisms out
   of the Galois group, where the solvability hypothesis becomes free.  A homomorphism into a
   commutative group has a normal kernel whose fixed field is a quotient of the Galois group
