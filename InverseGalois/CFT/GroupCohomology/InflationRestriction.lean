@@ -26,6 +26,15 @@ coset representative `σ`, makes it trivial at every pair whose second entry lie
 trivial at every pair with an entry in `N` is then inflated, by two applications of the cocycle
 identity, and its values are automatically `N`-invariant.
 
+Only the third correction reads anything about the first cohomology of `N`, and it reads only the
+family of one-cocycles `n ↦ a (σ, σ⁻¹ n σ)`, one for each `σ`: the transgression.  Vanishing of the
+whole first cohomology group is therefore far more than is needed.  It is enough that the
+transgression be a coboundary *as a family*, that is, that there be a single one-cocycle `φ` of `N`
+with `a (σ, σ⁻¹ x σ) = σ • φ (σ⁻¹ x σ) / φ x` up to a coboundary for every `σ`; a preliminary twist
+by the extension of `φ` reading the coset decomposition then removes it.  This relative form is the
+statement that a two-cocycle restricting to a coboundary on `N` and with vanishing transgression is
+inflated, and the absolute form is the case `φ = 1`.
+
 The consequence used in a dévissage is the last theorem: a group whose subgroup and quotient both
 have vanishing second cohomology has vanishing second cohomology, provided the first cohomology of
 the subgroup vanishes as well.
@@ -37,7 +46,15 @@ the subgroup vanishes as well.
 * `InverseGalois.CFT.exists_twist_eq_one_of_mem_left_of_section`: a two-cocycle trivial on the
   subgroup becomes, after a twist, trivial at every pair whose first entry lies in the subgroup.
 * `InverseGalois.CFT.exists_twist_eq_one_of_mem_of_section`: it becomes, after a further twist,
-  trivial at every pair with an entry in the subgroup.
+  trivial at every pair with an entry in the subgroup, as soon as each transgression cocycle is a
+  coboundary.
+* `InverseGalois.CFT.transgression_mul`: the transgression cocycles of two elements compose, up to
+  the coboundary of the value of the two-cocycle at the pair.
+* `InverseGalois.CFT.exists_twist_conj_eq_smul_div`: a transgression which is a coboundary as a
+  family becomes, after a twist, a coboundary elementwise.
+* `InverseGalois.CFT.exists_twist_inflated_of_transgression`: **a two-cocycle whose restriction to
+  a normal subgroup is a coboundary and whose transgression vanishes is cohomologous to an inflated
+  cocycle.**
 * `InverseGalois.CFT.exists_twist_inflated`: **a two-cocycle whose restriction to a normal subgroup
   is a coboundary is cohomologous to an inflated cocycle**, when the first cohomology of the
   subgroup vanishes.
@@ -181,19 +198,38 @@ theorem isMulCocycle₁_conj_of_eq_one {a : G × G → M} (ha : IsMulCocycle₂ 
   rw [show σ⁻¹ * (x * y) * σ = σ⁻¹ * x * σ * (σ⁻¹ * y * σ) by group]
   exact hmain.symm
 
+/-- **The transgression cocycles compose.**  The one-cocycle attached to a product of two elements
+is the product of the translate of the second by the first, the first, and the coboundary of the
+value of the two-cocycle at the pair. -/
+theorem transgression_mul {a : G × G → M} (ha : IsMulCocycle₂ a)
+    (h1 : ∀ n ∈ N, ∀ y : G, a (n, y) = 1) (σ τ : G) {x : G} (hx : x ∈ N) :
+    a (σ * τ, (σ * τ)⁻¹ * x * (σ * τ))
+      = σ • a (τ, τ⁻¹ * (σ⁻¹ * x * σ) * τ) * a (σ, σ⁻¹ * x * σ) * (x • a (σ, τ) / a (σ, τ)) := by
+  have hc : σ⁻¹ * x * σ ∈ N := by simpa using ‹N.Normal›.conj_mem _ hx σ⁻¹
+  have hB := ha σ (σ⁻¹ * x * σ) τ
+  rw [h1 _ hc τ, smul_one, one_mul, show σ * (σ⁻¹ * x * σ) = x * σ by group,
+    smul_apply_of_mem_left ha h1 hx σ τ] at hB
+  have hA := ha σ τ (τ⁻¹ * (σ⁻¹ * x * σ) * τ)
+  rw [show τ * (τ⁻¹ * (σ⁻¹ * x * σ) * τ) = σ⁻¹ * x * σ * τ by group, ← hB] at hA
+  rw [show (σ * τ)⁻¹ * x * (σ * τ) = τ⁻¹ * (σ⁻¹ * x * σ) * τ by group]
+  apply mul_right_cancel (b := a (σ, τ))
+  rw [hA]
+  apply Additive.ofMul.injective
+  simp only [div_eq_mul_inv, ofMul_mul, ofMul_inv]
+  abel
+
 /-- **A two-cocycle trivial at every pair whose first entry lies in the subgroup becomes, after a
-twist, trivial at every pair with an entry in the subgroup.**  This is the step which consumes the
-vanishing of the first cohomology of the subgroup. -/
+twist, trivial at every pair with an entry in the subgroup**, as soon as each of its transgression
+cocycles is a coboundary.  This is the step which consumes information about the first cohomology
+of the subgroup. -/
 theorem exists_twist_eq_one_of_mem_of_section
     (hs : ∀ g : G, g * (s g)⁻¹ ∈ N) (hsc : ∀ g h : G, g * h⁻¹ ∈ N → s g = s h) (hs1 : s 1 = 1)
-    (hH1 : ∀ f : G → M, (∀ x ∈ N, ∀ y ∈ N, f (x * y) = x • f y * f x) →
-      ∃ t : M, ∀ x ∈ N, x • t / t = f x)
-    {a : G × G → M} (ha : IsMulCocycle₂ a) (h1 : ∀ n ∈ N, ∀ y : G, a (n, y) = 1) :
+    {a : G × G → M} (ha : IsMulCocycle₂ a) (h1 : ∀ n ∈ N, ∀ y : G, a (n, y) = 1)
+    (hTr : ∀ σ : G, ∃ t : M, ∀ x ∈ N, x • t / t = a (σ, σ⁻¹ * x * σ)) :
     ∃ u : G → M, (∀ n ∈ N, ∀ y : G, twist a u (n, y) = 1) ∧
       (∀ x : G, ∀ n ∈ N, twist a u (x, n) = 1) := by
   classical
-  choose T hT using fun σ : G =>
-    hH1 (fun m : G => a (σ, σ⁻¹ * m * σ)) (isMulCocycle₁_conj_of_eq_one ha h1 σ)
+  choose T hT using hTr
   obtain ⟨T', hT'one, hT'⟩ : ∃ T' : G → M, T' 1 = 1 ∧
       ∀ σ : G, ∀ x ∈ N, x • T' σ / T' σ = a (σ, σ⁻¹ * x * σ) := by
     obtain ⟨T', hT'def⟩ : ∃ T' : G → M, ∀ σ : G, T' σ = if σ = 1 then 1 else T σ :=
@@ -230,6 +266,42 @@ theorem exists_twist_eq_one_of_mem_of_section
   have hkey := smul_apply_of_mem_left (isMulCocycle₂_twist ha u) hone (hs x) (s x) n
   rw [show x * (s x)⁻¹ * s x = x by group] at hkey
   rw [hkey, hrep (s x) (cosetSection_cosetSection hs hsc x) n hn, smul_one]
+
+/-- **A transgression which is a coboundary as a family becomes, after a twist, a coboundary
+elementwise.**  The correcting cochain extends the trivialising one-cocycle of the subgroup by
+reading the decomposition of an element along its coset, and the twist leaves untouched the
+triviality at every pair whose first entry lies in the subgroup. -/
+theorem exists_twist_conj_eq_smul_div
+    (hs : ∀ g : G, g * (s g)⁻¹ ∈ N) (hsc : ∀ g h : G, g * h⁻¹ ∈ N → s g = s h) (hs1 : s 1 = 1)
+    {a : G × G → M} (h1 : ∀ n ∈ N, ∀ y : G, a (n, y) = 1)
+    {φ : G → M} (hφ : ∀ x ∈ N, ∀ y ∈ N, φ (x * y) = x • φ y * φ x)
+    (hcls : ∀ σ : G, ∃ t : M, ∀ x ∈ N,
+      a (σ, σ⁻¹ * x * σ) = σ • φ (σ⁻¹ * x * σ) / φ x * (x • t / t)) :
+    ∃ u : G → M, (∀ n ∈ N, ∀ y : G, twist a u (n, y) = 1) ∧
+      (∀ σ : G, ∃ t : M, ∀ x ∈ N, x • t / t = twist a u (σ, σ⁻¹ * x * σ)) := by
+  obtain ⟨u, hu⟩ : ∃ u : G → M, ∀ g : G, u g = φ (g * (s g)⁻¹) := ⟨_, fun _ => rfl⟩
+  have huN : ∀ n ∈ N, u n = φ n := by
+    intro n hn
+    rw [hu, cosetSection_eq_one hsc hs1 hn, inv_one, mul_one]
+  refine ⟨u, fun n hn y => ?_, fun σ => ?_⟩
+  · have hstep : u (n * y) = n • u y * φ n := by
+      rw [hu, cosetSection_mul_left hsc y hn,
+        show n * y * (s y)⁻¹ = n * (y * (s y)⁻¹) by group, hφ n hn _ (hs y), hu]
+    rw [twist_apply, h1 n hn y, hstep, huN n hn]
+    apply Additive.ofMul.injective
+    simp only [div_eq_mul_inv, mul_inv, one_mul, ofMul_mul, ofMul_inv, ofMul_one]
+    abel
+  · obtain ⟨t, ht⟩ := hcls σ
+    refine ⟨t * u σ, fun x hx => ?_⟩
+    have hcx : σ⁻¹ * x * σ ∈ N := by simpa using ‹N.Normal›.conj_mem _ hx σ⁻¹
+    have hux : u (σ⁻¹ * x * σ) = φ (σ⁻¹ * x * σ) := huN _ hcx
+    have hxσ : u (σ * (σ⁻¹ * x * σ)) = x • u σ * φ x := by
+      rw [show σ * (σ⁻¹ * x * σ) = x * σ by group, hu, cosetSection_mul_left hsc σ hx,
+        show x * σ * (s σ)⁻¹ = x * (σ * (s σ)⁻¹) by group, hφ x hx _ (hs σ), ← hu]
+    rw [twist_apply, ht x hx, hux, hxσ]
+    apply Additive.ofMul.injective
+    simp only [smul_mul', div_eq_mul_inv, mul_inv, ofMul_mul, ofMul_inv]
+    abel
 
 end ThirdNormalisation
 
@@ -275,6 +347,38 @@ section Exactness
 
 variable {N : Subgroup G} [N.Normal]
 
+/-- **A two-cocycle whose restriction to a normal subgroup is a coboundary and whose transgression
+vanishes is cohomologous to an inflated cocycle.**  The transgression is asked to vanish for every
+normalised cocycle, since the correction proceeds by successive twists; the corrected cocycle
+depends only on the pair of cosets and takes values fixed by the subgroup, so it is the inflation
+of a two-cocycle of the quotient with values in the invariants.  This is the exactness of the
+inflation-restriction sequence in degree two, in the form which does not ask the first cohomology
+of the subgroup to vanish. -/
+theorem exists_twist_inflated_of_transgression
+    {a : G × G → M} (ha : IsMulCocycle₂ a)
+    (hres : ∃ b : G → M, ∀ x ∈ N, ∀ y ∈ N, a (x, y) = x • b y / b (x * y) * b x)
+    (htr : ∀ c : G × G → M, IsMulCocycle₂ c → (∀ n ∈ N, ∀ y : G, c (n, y) = 1) →
+      ∃ φ : G → M, (∀ x ∈ N, ∀ y ∈ N, φ (x * y) = x • φ y * φ x) ∧
+        ∀ σ : G, ∃ t : M, ∀ x ∈ N,
+          c (σ, σ⁻¹ * x * σ) = σ • φ (σ⁻¹ * x * σ) / φ x * (x • t / t)) :
+    ∃ u : G → M,
+      (∀ (x y n : G), n ∈ N → ∀ m : G, m ∈ N → twist a u (x * n, y * m) = twist a u (x, y)) ∧
+      (∀ n : G, n ∈ N → ∀ x y : G, n • twist a u (x, y) = twist a u (x, y)) := by
+  obtain ⟨s, hs, hsc, hs1⟩ := exists_cosetSection N
+  obtain ⟨u₁, h₁⟩ := exists_twist_eq_one_on_subgroup hres
+  obtain ⟨u₂, h₂⟩ :=
+    exists_twist_eq_one_of_mem_left_of_section hs hsc hs1 (isMulCocycle₂_twist ha u₁) h₁
+  rw [twist_twist] at h₂
+  obtain ⟨φ, hφ, hcls⟩ := htr _ (isMulCocycle₂_twist ha (u₁ * u₂)) h₂
+  obtain ⟨u₃, h₃, hTr⟩ := exists_twist_conj_eq_smul_div hs hsc hs1 h₂ hφ hcls
+  obtain ⟨u₄, h₄, h₅⟩ := exists_twist_eq_one_of_mem_of_section hs hsc hs1
+    (isMulCocycle₂_twist (isMulCocycle₂_twist ha (u₁ * u₂)) u₃) h₃ hTr
+  rw [twist_twist, twist_twist] at h₄ h₅
+  refine ⟨u₁ * u₂ * (u₃ * u₄), fun x y n hn m hm => ?_, fun n hn x y => ?_⟩
+  · rw [apply_mul_right_eq_of_eq_one (isMulCocycle₂_twist ha _) h₅ _ _ hm,
+      apply_mul_left_eq_of_eq_one (isMulCocycle₂_twist ha _) h₄ h₅ _ _ hn]
+  · exact smul_apply_eq_of_eq_one (isMulCocycle₂_twist ha _) h₄ h₅ hn x y
+
 /-- **A two-cocycle whose restriction to a normal subgroup is a coboundary is cohomologous to an
 inflated cocycle**, as soon as the first cohomology of the subgroup vanishes.  The corrected
 cocycle depends only on the pair of cosets and takes values fixed by the subgroup, so it is the
@@ -288,17 +392,12 @@ theorem exists_twist_inflated
     ∃ u : G → M,
       (∀ (x y n : G), n ∈ N → ∀ m : G, m ∈ N → twist a u (x * n, y * m) = twist a u (x, y)) ∧
       (∀ n : G, n ∈ N → ∀ x y : G, n • twist a u (x, y) = twist a u (x, y)) := by
-  obtain ⟨s, hs, hsc, hs1⟩ := exists_cosetSection N
-  obtain ⟨u₁, h₁⟩ := exists_twist_eq_one_on_subgroup hres
-  obtain ⟨u₂, h₂⟩ :=
-    exists_twist_eq_one_of_mem_left_of_section hs hsc hs1 (isMulCocycle₂_twist ha u₁) h₁
-  obtain ⟨u₃, h₃, h₄⟩ := exists_twist_eq_one_of_mem_of_section hs hsc hs1 hH1
-    (isMulCocycle₂_twist (isMulCocycle₂_twist ha u₁) u₂) h₂
-  rw [twist_twist, twist_twist] at h₃ h₄
-  refine ⟨u₁ * (u₂ * u₃), fun x y n hn m hm => ?_, fun n hn x y => ?_⟩
-  · rw [apply_mul_right_eq_of_eq_one (isMulCocycle₂_twist ha _) h₄ _ _ hm,
-      apply_mul_left_eq_of_eq_one (isMulCocycle₂_twist ha _) h₃ h₄ _ _ hn]
-  · exact smul_apply_eq_of_eq_one (isMulCocycle₂_twist ha _) h₃ h₄ hn x y
+  refine exists_twist_inflated_of_transgression ha hres fun c hc h1 =>
+    ⟨1, fun x _ y _ => by simp, fun σ => ?_⟩
+  obtain ⟨t, ht⟩ := hH1 (fun m : G => c (σ, σ⁻¹ * m * σ)) (isMulCocycle₁_conj_of_eq_one hc h1 σ)
+  have ht' : ∀ x ∈ N, x • t / t = c (σ, σ⁻¹ * x * σ) := ht
+  refine ⟨t, fun x hx => ?_⟩
+  rw [← ht' x hx, Pi.one_apply, Pi.one_apply, smul_one, div_one, one_mul]
 
 /-- **The second cohomology of a group vanishes as soon as that of a normal subgroup, that of the
 quotient, and the first cohomology of the subgroup do.**  This is the dévissage step: a cocycle is

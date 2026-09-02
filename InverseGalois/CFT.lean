@@ -258,6 +258,7 @@ import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.SylowRes
 import InverseGalois.CFT.GroupCohomology.TateTwist
 import InverseGalois.CFT.GroupCohomology.ToCocycle
+import InverseGalois.CFT.GroupCohomology.Transgression
 import InverseGalois.CFT.Global.DavenportCassels
 import InverseGalois.CFT.Global.DescentTools
 import InverseGalois.CFT.Global.Existence
@@ -2902,7 +2903,20 @@ it that are available here.
   named cosets of the index-two case, and the same three corrections show that **a two-cocycle whose
   restriction to a normal subgroup with vanishing first cohomology is a coboundary is cohomologous
   to an inflated cocycle**.  Combining the two halves gives the dévissage that a group has vanishing
-  second cohomology as soon as a normal subgroup and the quotient do.
+  second cohomology as soon as a normal subgroup and the quotient do.  Only the third of the three
+  corrections reads anything about the first cohomology of the subgroup, and it reads only the
+  family of one-cocycles `x ↦ a (σ, σ⁻¹ x σ)` indexed by the elements `σ` of the group; so the same
+  file proves the sharper statement that **a two-cocycle restricting to a coboundary on a normal
+  subgroup and whose transgression is a coboundary as a family is cohomologous to an inflated
+  cocycle**, with the vanishing of the whole first cohomology as the case of a trivial family.
+* `InverseGalois.CFT.GroupCohomology.Transgression` identifies that family when the subgroup acts
+  trivially on the module, which is the situation of an embedding problem split by the fixed field
+  of the subgroup.  Triviality of the action makes each `x ↦ a (σ, σ⁻¹ x σ)` a homomorphism on the
+  subgroup, invariant under conjugation by it, so depending only on the coset of `σ`, and the
+  cocycle identity in two variables becomes the one-cocycle identity in one: **the transgression is
+  a one-cocycle of the quotient with values in the homomorphisms from the subgroup to the module**.
+  The obstruction to a class being inflated is therefore a class of the quotient, a finite object
+  even when the subgroup is enormous, and the criterion for inflation is that it be a coboundary.
 * `InverseGalois.CFT.GroupCohomology.InfResTwo` reads that analysis back into the language of
   representations over the integers, where a two-cocycle whose restriction to a normal subgroup with
   vanishing first cohomology dies is the inflation of a two-cocycle of the quotient with values in

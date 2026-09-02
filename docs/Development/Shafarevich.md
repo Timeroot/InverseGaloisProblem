@@ -8511,6 +8511,106 @@ Build green at **9591 jobs**, zero warnings, zero errors; all four new theorems 
 
 ---
 
+## 0.85 Status (2026-09-02) — the relative inflation–restriction theorem, and the transgression as a one-cocycle of the quotient
+
+Input (C) of §0.84(c) — degree-two Hochschild–Serre — is now proven for abstract groups, in the only
+form the Shafarevich argument needs.  Two files changed.
+
+**(a) `GroupCohomology/InflationRestriction.lean`: the blanket hypothesis is gone.**  The engine of
+that file corrects a two-cocycle `a` by three successive twists.  Only the third consumed anything
+about the first cohomology of `N`, through the single line
+
+```lean
+choose T hT using fun σ : G =>
+  hH1 (fun m : G => a (σ, σ⁻¹ * m * σ)) (isMulCocycle₁_conj_of_eq_one ha h1 σ)
+```
+
+so the hypothesis `hH1 : H¹(N,M) = 0` was doing far more work than required: what is used is only
+that each member of the family `x ↦ a (σ, σ⁻¹ x σ)` is a coboundary.  `exists_twist_eq_one_of_mem_of_section`
+now takes exactly that,
+
+```lean
+(hTr : ∀ σ : G, ∃ t : M, ∀ x ∈ N, x • t / t = a (σ, σ⁻¹ * x * σ))
+```
+
+and the `choose` collapses to `choose T hT using hTr`.
+
+That is still a pointwise condition, and what a vanishing transgression *class* gives is weaker: a
+single one-cocycle `φ` of `N` with `a (σ, σ⁻¹ x σ) = σ • φ (σ⁻¹ x σ) / φ x` up to a coboundary, for
+every `σ` at once.  The gap is closed by one further twist, `exists_twist_conj_eq_smul_div`: extend
+`φ` to `G` by `u g = φ (g (s g)⁻¹)`, reading the decomposition of `g` along its coset, and twist by
+`u`.  Two computations, both two lines, do it — `u (n y) = n • u y * φ n` for `n ∈ N`, which keeps
+the twisted cocycle trivial at every pair whose first entry lies in `N`, and `u (x σ) = x • u σ * φ x`
+for `x ∈ N`, which turns the transgression into `x ↦ x • (t · u σ) / (t · u σ)`.  No cocycle
+hypothesis on `a` is needed for either.  Assembling gives
+
+```lean
+theorem exists_twist_inflated_of_transgression
+    {a : G × G → M} (ha : IsMulCocycle₂ a)
+    (hres : ∃ b : G → M, ∀ x ∈ N, ∀ y ∈ N, a (x, y) = x • b y / b (x * y) * b x)
+    (htr : ∀ c : G × G → M, IsMulCocycle₂ c → (∀ n ∈ N, ∀ y : G, c (n, y) = 1) →
+      ∃ φ : G → M, (∀ x ∈ N, ∀ y ∈ N, φ (x * y) = x • φ y * φ x) ∧
+        ∀ σ : G, ∃ t : M, ∀ x ∈ N,
+          c (σ, σ⁻¹ * x * σ) = σ • φ (σ⁻¹ * x * σ) / φ x * (x • t / t)) :
+    ∃ u : G → M, (inflated) ∧ (fixed)
+```
+
+The transgression is asked to be a coboundary for every *normalised* cocycle rather than for `a`
+itself, because the correction proceeds by twists; this is honest and costs nothing downstream,
+since the vanishing will come from a statement about `H¹(G/N, Hom(N,E))` that applies to any
+representative.  The old `exists_twist_inflated` is now a two-line corollary, taking `φ = 1`, so its
+single caller (`InfResTwo.lean:226`) is untouched.
+
+Also proven there: `transgression_mul`, the composition law
+
+`a (στ, (στ)⁻¹ x στ) = σ • a (τ, τ⁻¹ (σ⁻¹ x σ) τ) · a (σ, σ⁻¹ x σ) · (x • a (σ,τ) / a (σ,τ))`,
+
+from two applications of the cocycle identity plus `smul_apply_of_mem_left`.  The last factor is the
+coboundary of `a (σ,τ)`, which is exactly why the transgression is a cocycle only modulo `B¹(N,M)`
+in general.
+
+**(b) `GroupCohomology/Transgression.lean` (new): the trivial-action case, where the transgression
+is an honest one-cocycle of the quotient.**  This is the case of the Shafarevich embedding problem:
+`N = G_K` acts trivially on the kernel `E`, because `K` splits it.  With `htriv : ∀ n ∈ N, ∀ m : M, n • m = m`
+the picture collapses pleasantly.
+
+* `transgression a σ x = a (σ, σ⁻¹ x σ)`, and `transgression_mul_mem` says it is *multiplicative* on
+  `N`: the one-cocycle condition `f (xy) = x • f y · f x` loses its twist.
+* `transgression_conj`: it is invariant under conjugation by `N`.  The reason is one line — a
+  homomorphism into an abelian group kills conjugation — and it is the concrete form of "inner
+  automorphisms act trivially on `H¹(N,M)`".
+* `transgression_smul_left`: hence `transgression a (nσ) = transgression a σ` for `n ∈ N`, so the
+  transgression is a function on `G/N`.
+* `transgression_mul_left`: the coboundary factor of `transgression_mul` is `x • a(σ,τ) / a(σ,τ) = 1`,
+  so the composition law becomes the exact one-cocycle identity
+  `transgression a (στ) x = σ • transgression a τ (σ⁻¹ x σ) · transgression a σ x`
+  for the action of `G` on `Hom (N, M)` translating source and target.
+
+So the obstruction to a class being inflated is a class in `H¹(G/N, Hom(N,M))` — a cohomology group
+of a *finite* group, no matter how enormous `N` is.  `exists_twist_inflated_of_transgression_trivial`
+packages the criterion in that language.
+
+**(c) What this leaves.**  Against the table of §0.84(c): input (C) is now **done for abstract
+groups**.  What remains on that route is
+1. the profinite version — the same statements for `G_k` with continuous cochains, which should be
+   the existing `Profinite/InfRes.lean` machinery (`exists_comapH2_eq` already turns "constant on
+   kernel cosets" into "inflated") plus smoothness of the three twisting cochains;
+2. `H¹(G_K, E) ≅ Hom_cont(G_K, 𝔽_p) ⊗_{𝔽_p} E` as `Gal(K/k)`-modules, which is now visibly the same
+   object as `Hom (N, M)` above;
+3. the finite-dimensional approximation of §0.84(c) step 3;
+4. Prop 6 applied to the resulting class, and naturality of the whole picture under the shrink `θ_a`.
+
+Rows 5 and 8 of §0.36 (Poitou–Tate, Ш¹ duality) remain unneeded on this route.
+
+One Lean note: `rw [← transgression_apply]` fails, because the reversed pattern
+`?a (?σ, ?σ⁻¹ * ?x * ?σ)` has a metavariable in head position; the arguments have to be given
+explicitly, `rw [← transgression_apply a σ (n⁻¹ * x * n)]`.
+
+Build green at **9592 jobs**, zero warnings, zero errors; every new theorem has axioms among
+`[propext, Classical.choice, Quot.sound]`.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
