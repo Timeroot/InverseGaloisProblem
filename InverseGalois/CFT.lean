@@ -81,6 +81,7 @@ import InverseGalois.CFT.Brauer.TameResidue
 import InverseGalois.CFT.Brauer.TameValue
 import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
+import InverseGalois.CFT.Brauer.NormPlaceValue
 import InverseGalois.CFT.Brauer.OddArchimedean
 import InverseGalois.CFT.Brauer.Opposite
 import InverseGalois.CFT.Brauer.PlaceCoboundary
@@ -4411,4 +4412,14 @@ it that are available here.
   reals split, and Bézout splits an arbitrary order into its two-part and its odd part, giving
   **the total invariant of every Brauer class of the rationals is trivial** — global reciprocity
   over the rationals, in every degree and with no hypothesis at all.
+* `InverseGalois.CFT.Brauer.NormPlaceValue` measures a norm.  The multiplicity of a height one
+  prime in an ideal is additive on nonzero ideals, is one exactly at the prime itself, and is read
+  off from the adic valuation; the relative norm carries a prime of an extension to the prime below
+  it raised to the residue degree, and the residue degree of a prime over one it does not lie over
+  vanishes, so **the multiplicity of a prime of the base in the relative norm of an ideal is the
+  sum over all the primes of the extension of the residue degree times the multiplicity there**.
+  Factoring an ideal into primes and writing an element as a quotient of algebraic integers turns
+  that into a statement about values at places: **the value at a place of the base field of the
+  norm of a nonzero element is the sum over the places of the extension of the residue degree over
+  that place times the value there**.
 -/

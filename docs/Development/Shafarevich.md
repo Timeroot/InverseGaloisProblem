@@ -7871,6 +7871,77 @@ the Schmidt–Wingberg tower, so this is now the next item on the critical path.
 
 ---
 
+## 0.78 Plan (2026-09-02) — global reciprocity over a general number field, by norm comparison
+
+This section records the chosen route for §0.77(d) so that it survives context loss.  Target:
+
+```lean
+theorem totalInvariant_eq_one_general (k : Type) [Field k] [NumberField k]
+    (x : BrauerGroup.{0, 0} k) : totalInvariant k x = 1
+```
+
+### (a) Routes considered and rejected
+
+1. **Cohomological corestriction on `Br(k) = H²(G_k, k̄ˣ)`.**  `CFT/GroupCohomology/Corestriction.lean`
+   already has `cor` with `res ≫ cor = [G:S] • id`.  But Mathlib's `BrauerGroup` is
+   central-simple-algebra based; connecting it to `H²(G_k, k̄ˣ)` *and* proving the global
+   Mackey/Shapiro compatibility `res_{ℚ_p} ∘ Cor_{k/ℚ} = Σ_{v|p} Cor_{k_v/ℚ_p} ∘ res` is strictly
+   more work than the direct route below.
+2. **Class formation / fundamental class.**  `Units/GlobalTate.lean` and `Units/BaseFundamental.lean`
+   give the class formation over an arbitrary base, but `globalFundamentalClass` is an
+   `Exists.choose`, so the invariant map is not pinned to `Σ_v inv_v`.  Order counting cannot break
+   the circle; only a genuine computation can.
+3. **Restriction only.**  `totalInvariant k (Res y) = [k:ℚ] · totalInvariant ℚ y = 0` is cheap
+   (via `Ideal.sum_ramification_inertia`) but `Res : Br(ℚ) → Br(k)` is not surjective.
+4. **Rational coefficients over `k`.**  The invariant vectors reachable with `a ∈ ℚˣ` are too
+   constrained; "two places suffice" is a ℚ-specific accident of `RatCount.lean`.
+
+### (b) The norm-comparison route
+
+Let `F ⊆ ℚ(ζ_q)` be the totally real cyclic subfield of degree `M` used on the ℚ side, and let
+`a ∈ kˣ`.  Compare
+
+```
+totalInvariant k (cyclicBrauerHom (F·k / k) a)   vs.   totalInvariant ℚ (cyclicBrauerHom (F/ℚ) (N_{k/ℚ} a))
+```
+
+place by place.  The right-hand side is `1` by `totalInvariant_eq_one` (§0.77).  Hand check:
+
+* **`p ≠ q`** (so `F/ℚ_p` is unramified).  Left side at `v | p`:
+  `χ(Frob_v|_F) · w_v(a) = f_v · χ(Frob_p) · w_v(a)`, because `Frob_v|_F = Frob_p^{f_v}`.
+  Right side at `p`: `χ(Frob_p) · v_p(N_{k/ℚ} a) = χ(Frob_p) · Σ_{v|p} f_v · w_v(a)`.  Equal after
+  summing over `v | p`.
+* **`p = q`** (`F/ℚ_q` totally tamely ramified of degree `M | q − 1`, `k_v/ℚ_q` unramified of
+  degree `f`).  The tame symbol over `𝔽_{q^f}` is `ā^{(q^f − 1)/M}`; the ℚ side is
+  `(N̄a)^{(q − 1)/M} = ā^{(1 + q + ⋯ + q^{f−1})(q − 1)/M} = ā^{(q^f − 1)/M}`.  Literally equal.
+* **archimedean**: both trivial, `F` being totally real (`2 · deg | q − 1`).
+
+**Reduction.**  Take `M = ℓ^{e+t}` with `t = v_ℓ([k:ℚ])`; choose `q` by the existing ℚ-side density
+theorem `exists_prime_two_mul_dvd_sub_one_pow_ne_one` (`RatReciprocity.lean`) with `T` containing
+the primes ramified in `k` and the bad primes.  Then `k ∩ ℚ(ζ_q) = ℚ` automatically, because every
+nontrivial subfield of `ℚ(ζ_q)` is ramified at `q`.  No non-residue condition over `k` is needed.
+
+**Grouping.**  The place-by-place comparison needs a sum over the places of `k` above each rational
+prime.  Since `Ideal.inertiaDeg p P = 0` whenever `P` does not lie over `p` (it is the `else`
+branch of the definition), that sum can be written as a plain `∑ᶠ W : HeightOneSpectrum (𝓞 K)` with
+no `if` and no explicit "primes over" `Finset`.  Downstream, `Finset.prod_fiberwise_of_maps_to`
+converts the `finprod` over places of `k` into a product over rational primes.
+
+### (c) Brick decomposition
+
+1. `CFT/Brauer/NormPlaceValue.lean` — **landed 2026-09-02**.  `primeCount` and its API,
+   `primeCount_relNorm`, `placeOrd` and its API, `placeOrd_norm`, `placeValue_normUnit`:
+   *the value at a place of the base of the norm of a unit is `Σ_W f_W · (value at W)`*.
+2. Frobenius compatibility: `Frob_v|_F = Frob_p^{f_v}` under `Gal(F·k/k) ≅ Gal(F/ℚ)`.
+3. Place-by-place comparison at the unramified primes, plus the fibrewise grouping.
+4. The tame place at `q`: the general-`k` analogue of `PlaceConductor.lean` /
+   `PlaceSubcyclotomic.lean`, for `k_v/ℚ_q` unramified of degree `f_v`.
+5. Archimedean triviality for totally real `F`.
+6. Assembly, plus the reduction of a general `x ∈ Br(k)` of `ℓ`-power order (primary decomposition
+   and Bézout, as in §0.77(c)).
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
