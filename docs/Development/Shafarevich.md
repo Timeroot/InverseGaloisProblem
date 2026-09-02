@@ -8611,6 +8611,78 @@ Build green at **9592 jobs**, zero warnings, zero errors; every new theorem has 
 
 ---
 
+## 0.86 Status (2026-09-02) — the relative inflation–restriction theorem, for continuous cochains
+
+Item 1 of §0.85(c) is done.  `CFT/Profinite/Transgression.lean` proves
+
+```lean
+theorem exists_comapH2_eq_of_transgression (hsm : IsSmoothHom π) (hsurj : Function.Surjective π)
+    (htriv : ∀ n ∈ π.ker, ∀ m : M, n • m = m)
+    {a : G × G → M} (ha : IsMulCocycle₂ a) (has : IsSmooth₂ a)
+    {b : G → M} (hbs : IsSmooth₁ b)
+    (hb : ∀ x ∈ π.ker, ∀ y ∈ π.ker, a (x, y) = x • b y / b (x * y) * b x)
+    (htr : ∀ c : G × G → M, IsMulCocycle₂ c → IsSmooth₂ c →
+      (∀ n ∈ π.ker, ∀ y : G, c (n, y) = 1) →
+      ∃ φ : G → M, IsSmooth₁ φ ∧ (∀ x ∈ π.ker, ∀ y ∈ π.ker, φ (x * y) = φ x * φ y) ∧
+        ∀ σ : G, ∀ x ∈ π.ker, transgression c σ x = σ • φ (σ⁻¹ * x * σ) / φ x) :
+    ∃ x : SmoothH2 Q M, comapH2 π hπ hsm x = smoothH2Mk a ha has
+```
+
+for `π : G →* Q` a smooth surjection onto a discrete group, in the repository's continuous-cochain
+framework (`SmoothH2`, `comapH2`).  Both trivialisations are asked to be smooth, and both hypotheses
+come out smooth in the intended application: `b` from `Ш²(K,E) = 0` read at a finite level, and `φ`
+from a class of `H¹(G, Hom_cont(G_K, E))`, whose cocycles are smooth by construction.
+
+**(a) Why the smoothness cannot be recovered after the fact.**  `smoothH2Mk (twist a u) = smoothH2Mk a`
+requires `IsSmooth₁ u`, not merely that `a` and `twist a u` are both smooth.  Suppose `∂u` is
+`N₁`-bi-invariant.  Then for `n ∈ N₁`, `u (g n) = g • ψ n * u g` with `ψ x = u x / u 1`, and `ψ|N₁`
+is a one-cocycle — a homomorphism when `N₁` acts trivially.  It need not vanish, and it cannot be
+cancelled by multiplying `u` by a global one-cocycle, since `coboundary₂ w = 1` exactly when `w` is
+a one-cocycle.  **So `∂u` smooth does not imply `u` smooth**, and each of the four corrections has to
+be *built* smooth.
+
+**(b) The correction is tracked, not repaired.**  Each of the four twisting cochains of
+`InflationRestriction.lean` is defined by decomposing an element along its coset:
+`u₁ = b` extended by `1`, `u₂ g = (a (g (s g)⁻¹, s g))⁻¹`, `u₃ g = φ (g (s g)⁻¹)`, and `u₄` likewise.
+Consequently each is constant along any normal `N₀ ≤ N` acting trivially along which *its own data*
+is constant — for `u₁` that is `b`, for `u₂` it is `a`, for `u₃` it is `φ`, and for `u₄` nothing
+beyond triviality of the action.  The recurring computation is
+
+`g n (s g)⁻¹ = (g (s g)⁻¹) · (s g · n · (s g)⁻¹)`, with the conjugate again in `N₀`,
+
+together with `s (g n) = s g`.  Each of the four existence lemmas now carries that invariance as an
+extra `∀ N₀, N₀ ≤ N → … → ∀ g n, u (g n) = u g` conjunct of its conclusion, so existing callers only
+gained an `_` in their `obtain` pattern.  The new helper `twist_eq_of_mem` propagates constancy of a
+two-cochain across a twist, which is what feeds the constancy of `a` forward from one correction to
+the next.
+
+**(c) The proof shrinks twice.**  This is forced.  The hypothesis `htr` is a ∀-statement over
+normalised cocycles, and each instance returns its *own* `φ` with its own smoothness subgroup; so
+the open normal subgroup cannot be fixed before `φ` is known, and the tempting alternative — descend
+to a finite quotient `G/N'` first and quote the abstract theorem there — is circular.  Instead:
+
+1. `R = N₁ ⊓ N₂ ⊓ K` where `N₁` is a smoothness subgroup for `a`, `N₂` one for `b`, and `K ≤ π.ker`
+   is open normal (which exists: apply `hsm` to `⊥`, since `(⊥ : Subgroup Q).comap π = π.ker`, so
+   `π.ker` itself need not be assumed open).  Along `R`, `u₁` and `u₂` are constant, hence so is
+   `twist a (u₁ * u₂)`, which makes it smooth and lets `htr` be applied to it.
+2. `R' = R ⊓ N₃` with `N₃` a smoothness subgroup for the `φ` just produced.  Along `R'` all four
+   corrections are constant, so the total correction is smooth and
+   `twist a (u₁ u₂ (u₃ u₄))` is constant on the cosets of `π.ker`, which `exists_comapH2_eq` turns
+   into "inflated".
+
+The last step passes from `twist` to `coboundary₂` through `eq_twist_mul_coboundary₂` and
+`smoothH2Mk_eq_iff`.
+
+**(d) What this leaves.**  Of §0.85(c): item 1 done; items 2–4 remain.  A note on the interface for
+item 4: Prop 6 (`exists_operatorHom_res_cohomology_eq_zero`) lives in Mathlib's `Rep`/`groupCohomology`
+framework, while everything above is in the repository's elementary multiplicative-cochain framework,
+so the class in `H¹(G, Hom_cont(G_K, E))` has to be moved between the two.
+
+Build green at **9593 jobs**, zero warnings, zero errors; the new theorem has axioms
+`[propext, Classical.choice, Quot.sound]`.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.

@@ -189,16 +189,23 @@ theorem smul_apply_of_mem_left {a : G × G → M} (ha : IsMulCocycle₂ a)
   rwa [h1 n hn g, h1 n hn (g * y), mul_one, mul_one] at h
 
 /-- The first normalisation: a two-cocycle whose restriction to `N` is a coboundary becomes, after
-a twist, trivial on `N × N`. -/
-theorem exists_twist_eq_one_on_subgroup {a : G × G → M}
-    (hres : ∃ b : G → M, ∀ x ∈ N, ∀ y ∈ N, a (x, y) = x • b y / b (x * y) * b x) :
-    ∃ u : G → M, ∀ x ∈ N, ∀ y ∈ N, twist a u (x, y) = 1 := by
+a twist, trivial on `N × N`.  The correcting cochain extends the trivialising one by the identity,
+so it is constant along any subgroup of `N` along which the trivialising one is constant. -/
+theorem exists_twist_eq_one_on_subgroup {a : G × G → M} {b : G → M}
+    (hb : ∀ x ∈ N, ∀ y ∈ N, a (x, y) = x • b y / b (x * y) * b x) :
+    ∃ u : G → M, (∀ x ∈ N, ∀ y ∈ N, twist a u (x, y) = 1) ∧
+      ∀ N₀ : Subgroup G, N₀ ≤ N → (∀ g : G, ∀ n ∈ N₀, b (g * n) = b g) →
+        ∀ g : G, ∀ n ∈ N₀, u (g * n) = u g := by
   classical
-  obtain ⟨b, hb⟩ := hres
-  refine ⟨fun g => if g ∈ N then b g else 1, fun x hx y hy => ?_⟩
-  have hxy : x * y ∈ N := mul_mem hx hy
-  simp only [twist, coboundary₂, if_pos hx, if_pos hy, if_pos hxy]
-  rw [← hb x hx y hy, div_self']
+  refine ⟨fun g => if g ∈ N then b g else 1, fun x hx y hy => ?_, fun N₀ hle hb₀ g n hn => ?_⟩
+  · have hxy : x * y ∈ N := mul_mem hx hy
+    simp only [twist, coboundary₂, if_pos hx, if_pos hy, if_pos hxy]
+    rw [← hb x hx y hy, div_self']
+  · have hmem : g * n ∈ N ↔ g ∈ N :=
+      ⟨fun h => by simpa using mul_mem h (inv_mem (hle hn)), fun h => mul_mem h (hle hn)⟩
+    by_cases hg : g ∈ N
+    · simp only [if_pos (hmem.mpr hg), if_pos hg, hb₀ g n hn]
+    · simp only [if_neg fun h => hg (hmem.mp h), if_neg hg]
 
 /-- The second normalisation: a two-cocycle trivial on `N × N` becomes, after a twist, trivial at
 every pair whose first entry lies in `N`. -/
@@ -341,7 +348,8 @@ theorem exists_twist_eq_indexTwoInflation [N.Normal] (hσ : σ ∉ N)
     {a : G × G → M} (ha : IsMulCocycle₂ a)
     (hres : ∃ b : G → M, ∀ x ∈ N, ∀ y ∈ N, a (x, y) = x • b y / b (x * y) * b x) :
     ∃ (c : M) (u : G → M), (∀ g : G, g • c = c) ∧ twist a u = indexTwoInflation N c := by
-  obtain ⟨u₁, h₁⟩ := exists_twist_eq_one_on_subgroup hres
+  obtain ⟨b, hb⟩ := hres
+  obtain ⟨u₁, h₁, _⟩ := exists_twist_eq_one_on_subgroup hb
   obtain ⟨u₂, h₂⟩ := exists_twist_eq_one_of_mem_left hcov (isMulCocycle₂_twist ha u₁) h₁
   obtain ⟨u₃, h₃, h₄⟩ := exists_twist_eq_one_of_mem hσ hcov hH1
     (isMulCocycle₂_twist (isMulCocycle₂_twist ha u₁) u₂) h₂

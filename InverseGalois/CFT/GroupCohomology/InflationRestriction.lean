@@ -39,8 +39,16 @@ The consequence used in a dévissage is the last theorem: a group whose subgroup
 have vanishing second cohomology has vanishing second cohomology, provided the first cohomology of
 the subgroup vanishes as well.
 
+Each of the three corrections is built from the data it is given by reading the decomposition of an
+element along its coset, so each one is constant along any normal subgroup of `N` acting trivially
+along which its data is constant.  That is recorded alongside the correction, because it is what
+carries the whole argument over to a topological group, where the corrections have to remain
+continuous.
+
 ## Main results
 
+* `InverseGalois.CFT.twist_eq_of_mem`: a twist by a cochain constant along a normal subgroup
+  acting trivially keeps a two-cochain constant along that subgroup.
 * `InverseGalois.CFT.exists_cosetSection`: a normal subgroup admits a choice of coset
   representatives sending the subgroup itself to the identity.
 * `InverseGalois.CFT.exists_twist_eq_one_of_mem_left_of_section`: a two-cocycle trivial on the
@@ -72,6 +80,27 @@ namespace InverseGalois.CFT
 open groupCohomology
 
 variable {G M : Type*} [Group G] [CommGroup M] [MulDistribMulAction G M]
+
+/-! ### Constancy along a subgroup -/
+
+section CosetConstant
+
+variable {N₀ : Subgroup G}
+
+/-- **A twist by a cochain constant along a normal subgroup acting trivially keeps a two-cochain
+constant along that subgroup.**  This is what makes the successive corrections of a smooth cocycle
+smooth again. -/
+theorem twist_eq_of_mem (hN₀ : N₀.Normal) (htriv : ∀ n ∈ N₀, ∀ m : M, n • m = m)
+    {a : G × G → M} (ha₀ : ∀ x y : G, ∀ n ∈ N₀, ∀ m ∈ N₀, a (x * n, y * m) = a (x, y))
+    {u : G → M} (hu₀ : ∀ g : G, ∀ n ∈ N₀, u (g * n) = u g)
+    (x y : G) {n : G} (hn : n ∈ N₀) {m : G} (hm : m ∈ N₀) :
+    twist a u (x * n, y * m) = twist a u (x, y) := by
+  have hc : y⁻¹ * n * y ∈ N₀ := by simpa using hN₀.conj_mem n hn y⁻¹
+  rw [twist_apply, twist_apply, ha₀ x y n hn m hm, hu₀ y m hm, hu₀ x n hn, mul_smul,
+    htriv n hn, show x * n * (y * m) = x * y * (y⁻¹ * n * y * m) by group,
+    hu₀ (x * y) _ (mul_mem hc hm)]
+
+end CosetConstant
 
 /-! ### A choice of coset representatives -/
 
@@ -150,25 +179,34 @@ variable {N : Subgroup G} [N.Normal] {s : G → G}
 omit [N.Normal] in
 /-- **A two-cocycle trivial on the subgroup becomes, after a twist, trivial at every pair whose
 first entry lies in the subgroup.**  The correcting cochain reads the value of the cocycle at the
-pair splitting an element along its coset. -/
+pair splitting an element along its coset, so it is constant along any normal subgroup of `N` along
+which the cocycle is constant. -/
 theorem exists_twist_eq_one_of_mem_left_of_section
     (hs : ∀ g : G, g * (s g)⁻¹ ∈ N) (hsc : ∀ g h : G, g * h⁻¹ ∈ N → s g = s h) (hs1 : s 1 = 1)
     {a : G × G → M} (ha : IsMulCocycle₂ a) (h0 : ∀ x ∈ N, ∀ y ∈ N, a (x, y) = 1) :
-    ∃ u : G → M, ∀ n ∈ N, ∀ y : G, twist a u (n, y) = 1 := by
+    ∃ u : G → M, (∀ n ∈ N, ∀ y : G, twist a u (n, y) = 1) ∧
+      ∀ N₀ : Subgroup G, N₀ ≤ N → N₀.Normal →
+        (∀ x y : G, ∀ n ∈ N₀, ∀ m ∈ N₀, a (x * n, y * m) = a (x, y)) →
+        ∀ g : G, ∀ n ∈ N₀, u (g * n) = u g := by
   obtain ⟨u, hu⟩ : ∃ u : G → M, ∀ g : G, u g = (a (g * (s g)⁻¹, s g))⁻¹ := ⟨_, fun _ => rfl⟩
-  refine ⟨u, fun n hn y => ?_⟩
-  have hun : u n = 1 := by
-    rw [hu, cosetSection_eq_one hsc hs1 hn, inv_one, mul_one, h0 n hn 1 N.one_mem, inv_one]
-  have hkey : a (n * y * (s y)⁻¹, s y) = n • a (y * (s y)⁻¹, s y) * a (n, y) := by
-    have h := ha n (y * (s y)⁻¹) (s y)
-    rw [h0 n hn _ (hs y), mul_one, inv_mul_cancel_right,
-      show n * (y * (s y)⁻¹) = n * y * (s y)⁻¹ by group] at h
-    exact h
-  have hsny : s (n * y) = s y := cosetSection_mul_left hsc y hn
-  rw [twist_apply, hun, mul_one, hu, hu, hsny, hkey]
-  apply Additive.ofMul.injective
-  simp only [smul_inv', div_eq_mul_inv, mul_inv, inv_inv, ofMul_mul, ofMul_inv, ofMul_one]
-  abel
+  refine ⟨u, fun n hn y => ?_, fun N₀ hle hN₀ ha₀ g n hn => ?_⟩
+  · have hun : u n = 1 := by
+      rw [hu, cosetSection_eq_one hsc hs1 hn, inv_one, mul_one, h0 n hn 1 N.one_mem, inv_one]
+    have hkey : a (n * y * (s y)⁻¹, s y) = n • a (y * (s y)⁻¹, s y) * a (n, y) := by
+      have h := ha n (y * (s y)⁻¹) (s y)
+      rw [h0 n hn _ (hs y), mul_one, inv_mul_cancel_right,
+        show n * (y * (s y)⁻¹) = n * y * (s y)⁻¹ by group] at h
+      exact h
+    have hsny : s (n * y) = s y := cosetSection_mul_left hsc y hn
+    rw [twist_apply, hun, mul_one, hu, hu, hsny, hkey]
+    apply Additive.ofMul.injective
+    simp only [smul_inv', div_eq_mul_inv, mul_inv, inv_inv, ofMul_mul, ofMul_inv, ofMul_one]
+    abel
+  · have hsn : s (g * n) = s g := hsc _ _ (hle (hN₀.conj_mem n hn g))
+    have hval : a (g * (s g)⁻¹ * (s g * n * (s g)⁻¹), s g) = a (g * (s g)⁻¹, s g) := by
+      have h := ha₀ (g * (s g)⁻¹) (s g) _ (hN₀.conj_mem n hn (s g)) 1 N₀.one_mem
+      rwa [mul_one] at h
+    rw [hu, hu, hsn, show g * n * (s g)⁻¹ = g * (s g)⁻¹ * (s g * n * (s g)⁻¹) by group, hval]
 
 end SecondNormalisation
 
@@ -221,13 +259,16 @@ theorem transgression_mul {a : G × G → M} (ha : IsMulCocycle₂ a)
 /-- **A two-cocycle trivial at every pair whose first entry lies in the subgroup becomes, after a
 twist, trivial at every pair with an entry in the subgroup**, as soon as each of its transgression
 cocycles is a coboundary.  This is the step which consumes information about the first cohomology
-of the subgroup. -/
+of the subgroup.  The correcting cochain translates a chosen trivialisation along the coset
+decomposition, so it is constant along any normal subgroup of `N` acting trivially. -/
 theorem exists_twist_eq_one_of_mem_of_section
     (hs : ∀ g : G, g * (s g)⁻¹ ∈ N) (hsc : ∀ g h : G, g * h⁻¹ ∈ N → s g = s h) (hs1 : s 1 = 1)
     {a : G × G → M} (ha : IsMulCocycle₂ a) (h1 : ∀ n ∈ N, ∀ y : G, a (n, y) = 1)
     (hTr : ∀ σ : G, ∃ t : M, ∀ x ∈ N, x • t / t = a (σ, σ⁻¹ * x * σ)) :
     ∃ u : G → M, (∀ n ∈ N, ∀ y : G, twist a u (n, y) = 1) ∧
-      (∀ x : G, ∀ n ∈ N, twist a u (x, n) = 1) := by
+      (∀ x : G, ∀ n ∈ N, twist a u (x, n) = 1) ∧
+      ∀ N₀ : Subgroup G, N₀ ≤ N → N₀.Normal → (∀ n ∈ N₀, ∀ m : M, n • m = m) →
+        ∀ g : G, ∀ n ∈ N₀, u (g * n) = u g := by
   classical
   choose T hT using hTr
   obtain ⟨T', hT'one, hT'⟩ : ∃ T' : G → M, T' 1 = 1 ∧
@@ -262,15 +303,19 @@ theorem exists_twist_eq_one_of_mem_of_section
       rw [hu, cosetSection_mul_right hsc σ hn, hσ]
     rw [twist_apply, hun n hn, smul_one, huσn, huσ, smul_inv', one_div, inv_inv,
       ← div_eq_mul_inv, hval, div_self']
-  refine ⟨u, hone, fun x n hn => ?_⟩
-  have hkey := smul_apply_of_mem_left (isMulCocycle₂_twist ha u) hone (hs x) (s x) n
-  rw [show x * (s x)⁻¹ * s x = x by group] at hkey
-  rw [hkey, hrep (s x) (cosetSection_cosetSection hs hsc x) n hn, smul_one]
+  refine ⟨u, hone, fun x n hn => ?_, fun N₀ hle hN₀ htriv g n hn => ?_⟩
+  · have hkey := smul_apply_of_mem_left (isMulCocycle₂_twist ha u) hone (hs x) (s x) n
+    rw [show x * (s x)⁻¹ * s x = x by group] at hkey
+    rw [hkey, hrep (s x) (cosetSection_cosetSection hs hsc x) n hn, smul_one]
+  · have hsn : s (g * n) = s g := hsc _ _ (hle (hN₀.conj_mem n hn g))
+    rw [hu, hu, hsn, show g * n * (s g)⁻¹ = g * (s g)⁻¹ * (s g * n * (s g)⁻¹) by group,
+      mul_smul, htriv _ (hN₀.conj_mem n hn (s g))]
 
 /-- **A transgression which is a coboundary as a family becomes, after a twist, a coboundary
 elementwise.**  The correcting cochain extends the trivialising one-cocycle of the subgroup by
 reading the decomposition of an element along its coset, and the twist leaves untouched the
-triviality at every pair whose first entry lies in the subgroup. -/
+triviality at every pair whose first entry lies in the subgroup.  It is constant along any normal
+subgroup of `N` along which the trivialising one-cocycle is constant. -/
 theorem exists_twist_conj_eq_smul_div
     (hs : ∀ g : G, g * (s g)⁻¹ ∈ N) (hsc : ∀ g h : G, g * h⁻¹ ∈ N → s g = s h) (hs1 : s 1 = 1)
     {a : G × G → M} (h1 : ∀ n ∈ N, ∀ y : G, a (n, y) = 1)
@@ -278,12 +323,14 @@ theorem exists_twist_conj_eq_smul_div
     (hcls : ∀ σ : G, ∃ t : M, ∀ x ∈ N,
       a (σ, σ⁻¹ * x * σ) = σ • φ (σ⁻¹ * x * σ) / φ x * (x • t / t)) :
     ∃ u : G → M, (∀ n ∈ N, ∀ y : G, twist a u (n, y) = 1) ∧
-      (∀ σ : G, ∃ t : M, ∀ x ∈ N, x • t / t = twist a u (σ, σ⁻¹ * x * σ)) := by
+      (∀ σ : G, ∃ t : M, ∀ x ∈ N, x • t / t = twist a u (σ, σ⁻¹ * x * σ)) ∧
+      ∀ N₀ : Subgroup G, N₀ ≤ N → N₀.Normal → (∀ g : G, ∀ n ∈ N₀, φ (g * n) = φ g) →
+        ∀ g : G, ∀ n ∈ N₀, u (g * n) = u g := by
   obtain ⟨u, hu⟩ : ∃ u : G → M, ∀ g : G, u g = φ (g * (s g)⁻¹) := ⟨_, fun _ => rfl⟩
   have huN : ∀ n ∈ N, u n = φ n := by
     intro n hn
     rw [hu, cosetSection_eq_one hsc hs1 hn, inv_one, mul_one]
-  refine ⟨u, fun n hn y => ?_, fun σ => ?_⟩
+  refine ⟨u, fun n hn y => ?_, fun σ => ?_, fun N₀ hle hN₀ hφ₀ g n hn => ?_⟩
   · have hstep : u (n * y) = n • u y * φ n := by
       rw [hu, cosetSection_mul_left hsc y hn,
         show n * y * (s y)⁻¹ = n * (y * (s y)⁻¹) by group, hφ n hn _ (hs y), hu]
@@ -302,6 +349,9 @@ theorem exists_twist_conj_eq_smul_div
     apply Additive.ofMul.injective
     simp only [smul_mul', div_eq_mul_inv, mul_inv, ofMul_mul, ofMul_inv]
     abel
+  · have hsn : s (g * n) = s g := hsc _ _ (hle (hN₀.conj_mem n hn g))
+    rw [hu, hu, hsn, show g * n * (s g)⁻¹ = g * (s g)⁻¹ * (s g * n * (s g)⁻¹) by group,
+      hφ₀ _ _ (hN₀.conj_mem n hn (s g))]
 
 end ThirdNormalisation
 
@@ -365,13 +415,14 @@ theorem exists_twist_inflated_of_transgression
       (∀ (x y n : G), n ∈ N → ∀ m : G, m ∈ N → twist a u (x * n, y * m) = twist a u (x, y)) ∧
       (∀ n : G, n ∈ N → ∀ x y : G, n • twist a u (x, y) = twist a u (x, y)) := by
   obtain ⟨s, hs, hsc, hs1⟩ := exists_cosetSection N
-  obtain ⟨u₁, h₁⟩ := exists_twist_eq_one_on_subgroup hres
-  obtain ⟨u₂, h₂⟩ :=
+  obtain ⟨b, hb⟩ := hres
+  obtain ⟨u₁, h₁, _⟩ := exists_twist_eq_one_on_subgroup hb
+  obtain ⟨u₂, h₂, _⟩ :=
     exists_twist_eq_one_of_mem_left_of_section hs hsc hs1 (isMulCocycle₂_twist ha u₁) h₁
   rw [twist_twist] at h₂
   obtain ⟨φ, hφ, hcls⟩ := htr _ (isMulCocycle₂_twist ha (u₁ * u₂)) h₂
-  obtain ⟨u₃, h₃, hTr⟩ := exists_twist_conj_eq_smul_div hs hsc hs1 h₂ hφ hcls
-  obtain ⟨u₄, h₄, h₅⟩ := exists_twist_eq_one_of_mem_of_section hs hsc hs1
+  obtain ⟨u₃, h₃, hTr, _⟩ := exists_twist_conj_eq_smul_div hs hsc hs1 h₂ hφ hcls
+  obtain ⟨u₄, h₄, h₅, _⟩ := exists_twist_eq_one_of_mem_of_section hs hsc hs1
     (isMulCocycle₂_twist (isMulCocycle₂_twist ha (u₁ * u₂)) u₃) h₃ hTr
   rw [twist_twist, twist_twist] at h₄ h₅
   refine ⟨u₁ * u₂ * (u₃ * u₄), fun x y n hn m hm => ?_, fun n hn x y => ?_⟩

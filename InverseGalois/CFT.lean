@@ -454,6 +454,7 @@ import InverseGalois.CFT.Profinite.Res
 import InverseGalois.CFT.Profinite.ShaComap
 import InverseGalois.CFT.Profinite.Symbol
 import InverseGalois.CFT.Profinite.SymbolCyclic
+import InverseGalois.CFT.Profinite.Transgression
 import InverseGalois.CFT.Profinite.Trivial
 import InverseGalois.CFT.RatUnits
 import InverseGalois.CFT.RelativeFrobenius
@@ -3924,6 +3925,17 @@ it that are available here.
   inflated**, because correcting by that coboundary makes the cocycle trivial on the kernel and
   hence constant on its cosets.  In degree two the same reading gives **every class represented at
   a level is inflated from it.**
+* `InverseGalois.CFT.Profinite.Transgression` supplies what degree two needs beyond that reading.
+  A class restricting trivially to the kernel is not yet constant on its cosets: it has to be
+  corrected by successive twists, and the correction is only available once the transgression of
+  the twisted cocycle is a coboundary.  Each of the four corrections is built by decomposing an
+  element along its coset, so each is constant along any normal subgroup of the kernel acting
+  trivially along which its own data is constant, and the corrected cocycle is then smooth.  The
+  order matters: the subgroup for the first two corrections is read off the cocycle and its
+  trivialisation, while the last two need a smaller one, cut out by the trivialisation of the
+  transgression that the first two produce.  Shrinking twice gives **a smooth class whose
+  restriction to the kernel and whose transgression are trivialised by smooth cochains is inflated
+  from the quotient.**
 * `InverseGalois.CFT.Profinite.Quotient` names a *level*: an open normal subgroup which acts
   trivially on the coefficients.  The quotient by it acts, and is discrete, and the projection to it
   has open kernel, so composing with the projection is **inflation from that level**, injective in
