@@ -97,6 +97,7 @@ import InverseGalois.CFT.Brauer.PlaceFrobenius
 import InverseGalois.CFT.Brauer.PlaceFrobeniusDegree
 import InverseGalois.CFT.Brauer.PlaceInvariant
 import InverseGalois.CFT.Brauer.PlaceInvariantFinite
+import InverseGalois.CFT.Brauer.PlaceOrders
 import InverseGalois.CFT.Brauer.PlaceRadical
 import InverseGalois.CFT.Brauer.PlaceRamified
 import InverseGalois.CFT.Brauer.PlaceRamifiedAut
@@ -4519,4 +4520,16 @@ it that are available here.
   multiplicative group of a subfield is the norm to that subfield raised to the complementary
   power**.  This is what turns a power residue symbol computed in the residue field of a place into
   one computed in the prime field below it.
+* `InverseGalois.CFT.Brauer.PlaceOrders` realises prescribed orders at finitely many places.  A
+  prime of a Dedekind domain is contained neither in its own square nor in any other prime, so
+  prime avoidance produces an element of it lying outside the union of its square with finitely many
+  other primes, and **that element has multiplicity one at the prime and multiplicity zero at each
+  of the others**.  Multiplying powers of such elements realises any prescribed system of
+  multiplicities, and a quotient of two of them realises any prescribed system of orders, so
+  **prescribed orders at finitely many finite places of a number field are realised by a single
+  element of the field** and **any element can be corrected to have order zero at each of finitely
+  many finite places**.  Since the class of a cyclic algebra is unchanged when its coefficient is
+  multiplied by a norm, and a correcting factor of prescribed orders can be produced as such a norm,
+  nothing is lost by computing the invariant only for a coefficient which is a unit at the places
+  under consideration.
 -/
