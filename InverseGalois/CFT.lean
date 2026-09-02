@@ -112,6 +112,7 @@ import InverseGalois.CFT.Brauer.RelativeHasse
 import InverseGalois.CFT.Brauer.RelativeIndex
 import InverseGalois.CFT.Brauer.RelativeTorsion
 import InverseGalois.CFT.Brauer.RealBrauer
+import InverseGalois.CFT.Brauer.RealCorrector
 import InverseGalois.CFT.Brauer.RealInvariant
 import InverseGalois.CFT.Brauer.RealPlace
 import InverseGalois.CFT.Brauer.ResidueBaseChange
@@ -4401,4 +4402,13 @@ it that are available here.
   a single bad prime, where the splitting field itself can be chosen to miss it, gives **the total
   invariant of every Brauer class of the rationals of odd prime order is trivial** — global
   reciprocity over the rationals in that degree.
+* `InverseGalois.CFT.Brauer.RealCorrector` removes the last restriction.  The quaternion algebra
+  attached to minus one and the field of cube roots of unity is ramified at three, where its
+  invariant is the class of one half, and the correction procedure applies to it only if it is
+  split by the reals, which would leave that invariant uncancelled; so it is **a class of order two
+  which the reals do not split and whose total invariant is trivial**, its two halves at three and
+  at infinity cancelling.  Multiplying by it moves any class of two-power order into the ones the
+  reals split, and Bézout splits an arbitrary order into its two-part and its odd part, giving
+  **the total invariant of every Brauer class of the rationals is trivial** — global reciprocity
+  over the rationals, in every degree and with no hypothesis at all.
 -/

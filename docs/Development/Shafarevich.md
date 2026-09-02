@@ -7801,6 +7801,76 @@ oddness was load-bearing:
 
 ---
 
+## 0.77 Status (2026-09-02) — **global reciprocity over ℚ, unconditionally, in every degree**
+
+Full build green, 9541 jobs, no warnings, no sorries, no axioms.
+
+```lean
+theorem totalInvariant_eq_one (x : BrauerGroup.{0, 0} ℚ) : totalInvariant ℚ x = 1
+```
+
+in `CFT/Brauer/RealCorrector.lean`.  This closes §0.76(c) — both obstacles listed there are gone,
+and neither was removed the way that section predicted.
+
+### (a) The archimedean obstacle was dodged, not solved
+
+§0.76(c)1 proposed computing `inv_∞` of a cyclic algebra over an imaginary quadratic subfield of
+`ℚ(ζ_q)`, `q ≡ 3 (mod 4)`.  That is a real computation and it was not needed.  What the 2-part
+actually needs is only *one* class that the reals do not split and whose total invariant is
+already known to vanish; multiplying by it is then a bijection of the two cosets of
+`BrauerGroup.relative ℚ ℝ`, and the reduction of §0.76 (`totalInvariant_eq_one_of_mem_relative_real`
+— the old prime-power proof, with `x ∈ relative ℚ ℝ` promoted from a by-product of oddness to a
+hypothesis) applies to the corrected class.
+
+The corrector is the quaternion algebra `z = (−1, ℚ(ζ₃)/ℚ, σ)`, ramified at 3 and at ∞.  Two
+observations make it free:
+
+1. Its invariant **at 3** is `1/2`.  This is `placeInvariant_cyclicBrauerHom_conductor`, the
+   ramified-place brick of §0.73, at `q = 3`, `N = 2`, `F = L = ℚ(ζ₃)` — the *whole* cyclotomic
+   field, not a proper subfield, so no `IsTotallyReal` plumbing and no `⊤`-subfield instances are
+   involved.  It evaluates to `((q − 1)/2 : ZMod N) = (1 : ZMod 2)`, i.e. `ofAdd(1/2)`.  Note that
+   the hypothesis `2N ∣ q − 1` of `totalInvariant_cyclicBrauerHom_subcyclotomic_neg_one` fails here
+   (`4 ∤ 2`) — that failure is exactly why this class is *not* already known to be reciprocal, and
+   is what makes it useful.
+2. Therefore the reals **do not** split it.  If they did, the reduction would give
+   `totalInvariant ℚ z = 1`; but `z` is unramified away from 3 and ∞ (`hunit`: `−1` is a unit at
+   every finite place), so the total invariant is the product of just those two factors, and the
+   archimedean one would be trivial, leaving `ofAdd(1/2) = 1`.  Contradiction.
+
+Given that, `inv_∞(z)` is a non-trivial square root of `1` in `Multiplicative ℚ/ℤ`, hence is
+`ofAdd(1/2)` as well — `QModZ.eq_half_of_add_self_eq_zero`, an elementary parity argument on a
+representative — and the two halves cancel: `totalInvariant ℚ z = 1`.
+
+### (b) The radical-exponent obstacle never arose
+
+§0.76(c)2 worried that `IsRadicalExponent (2^k)` is false for `k ≥ 2`.  It is not consumed: the
+2-power case is proved by *correcting into* `relative ℚ ℝ` and then invoking the already-built
+`totalInvariant_eq_one_of_mem_relative_real` at `ℓ = 2`, whose auxiliary-prime input is
+`hasAuxPrimes_two` and whose local layer is the `ℓ = 2` instance of §0.75 — all of which was
+already green.  The exponent-`2^k` radical statement is never needed because the *corrector* has
+order two, not order `2^k`.
+
+### (c) Assembly
+
+`totalInvariant_eq_one_of_pow_eq_one_two_pow` handles `x^{2^e} = 1`: split on whether the reals
+already split `x`; if not, `x · z` lies in `relative ℚ ℝ` (the quotient by it has order two, by
+`sq_eq_one_brauerGroup_real`) and is killed by `2^{max e 1}`.
+`totalInvariant_eq_one_of_pow_eq_one_nat` splits `n = 2^k · m` by
+`Nat.ordProj_mul_ordCompl_eq_self` and recombines the two-power and odd parts by Bézout.  Finally
+`Monoid.IsTorsion (BrauerGroup ℚ)` (`exists_pow_eq_one`, valid over any perfect field) removes the
+order hypothesis entirely.
+
+### (d) What is left on the reciprocity line
+
+Only §0.76(c)3, the **general number field** `k`: the ramified-place computation needs the residue
+degree of the auxiliary place over the rational prime below it to be prime to `N`, which fails over
+a general `k`.  The fix is corestriction `Cor : Br(k) → Br(ℚ)` compatible with local invariants, or
+a Lubin–Tate construction of the local invariant over an arbitrary local field.  Rows 5 and 8 of
+the §0.36 table (Poitou–Tate, the eight-term sequence) consume reciprocity over the base field of
+the Schmidt–Wingberg tower, so this is now the next item on the critical path.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.

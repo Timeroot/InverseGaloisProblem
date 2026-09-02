@@ -36,6 +36,8 @@ count therefore drops by one at each step.
   `InverseGalois.CFT.hasAuxPrimes_of_odd`: **an auxiliary prime congruent to one modulo twice a
   given odd prime power, modulo which two prescribed rational primes are both power non-residues
   for the prime exponent** — a supply with no excess.
+* `InverseGalois.CFT.totalInvariant_eq_one_of_mem_relative_real`: **the invariants of a Brauer
+  class of prime-power order over the rationals split by the reals add up to zero.**
 * `InverseGalois.CFT.totalInvariant_eq_one_of_pow_eq_one`: **the invariants of a Brauer class of
   odd prime-power order over the rationals add up to zero.**
 * `InverseGalois.CFT.totalInvariant_eq_one_of_pow_eq_one_odd`: **the invariants of a Brauer class
@@ -305,11 +307,13 @@ end Reduction
 
 section Reciprocity
 
-/-- **The invariants of a Brauer class of odd prime-power order over the rationals add up to
-zero.**  Its invariants are nontrivial at only finitely many places, and the rational primes below
-them form a finite set which the reduction shrinks one element at a time. -/
-theorem totalInvariant_eq_one_of_pow_eq_one {ℓ e : ℕ} (hℓ : ℓ.Prime) (hℓodd : Odd ℓ)
-    {x : BrauerGroup.{0, 0} ℚ} (hx : x ^ ℓ ^ e = 1) : totalInvariant ℚ x = 1 := by
+/-- **The invariants of a Brauer class of prime-power order split by the reals add up to zero.**
+Its invariants are nontrivial at only finitely many places, and the rational primes below them form
+a finite set which the reduction shrinks one element at a time. -/
+theorem totalInvariant_eq_one_of_mem_relative_real {ℓ j e : ℕ} (hℓ : ℓ.Prime)
+    (haux : HasAuxPrimes ℓ j) {x : BrauerGroup.{0, 0} ℚ}
+    (hxreal : x ∈ BrauerGroup.relative ℚ ℝ) (hx : x ^ ℓ ^ e = 1) :
+    totalInvariant ℚ x = 1 := by
   classical
   rcases eq_or_ne e 0 with rfl | he
   · rw [pow_zero, pow_one] at hx
@@ -324,8 +328,15 @@ theorem totalInvariant_eq_one_of_pow_eq_one {ℓ e : ℕ} (hℓ : ℓ.Prime) (h�
     · intro p hp hinv
       exact Finset.mem_image.mpr ⟨ratPlace p hp, hfin.mem_toFinset.mpr hinv,
         natGenerator_eq_of_natCast_mem hp (natCast_mem_ratPlace p hp)⟩
-  exact totalInvariant_eq_one_of_card_le hℓ (hasAuxPrimes_of_odd hℓ hℓodd) S.card e he x
-    (mem_relative_real_of_odd_pow_eq_one hℓodd.pow hx) hx S hSp le_rfl hbad
+  exact totalInvariant_eq_one_of_card_le hℓ haux S.card e he x hxreal hx S hSp le_rfl hbad
+
+/-- **The invariants of a Brauer class of odd prime-power order over the rationals add up to
+zero.**  A class of odd order is split by the reals, because the Brauer group of the reals has
+order two. -/
+theorem totalInvariant_eq_one_of_pow_eq_one {ℓ e : ℕ} (hℓ : ℓ.Prime) (hℓodd : Odd ℓ)
+    {x : BrauerGroup.{0, 0} ℚ} (hx : x ^ ℓ ^ e = 1) : totalInvariant ℚ x = 1 :=
+  totalInvariant_eq_one_of_mem_relative_real hℓ (hasAuxPrimes_of_odd hℓ hℓodd)
+    (mem_relative_real_of_odd_pow_eq_one hℓodd.pow hx) hx
 
 /-- **The invariants of a Brauer class of odd order over the rationals add up to zero.**  Splitting
 the order at its least prime factor into a prime power and a coprime cofactor, a Bézout relation
