@@ -10,6 +10,7 @@ import InverseGalois.CFT.Brauer.BaseChange
 import InverseGalois.CFT.Brauer.BaseChangeCentralizer
 import InverseGalois.CFT.Brauer.BaseCyclicClass
 import InverseGalois.CFT.Brauer.BaseCyclotomic
+import InverseGalois.CFT.Brauer.BaseOddReciprocity
 import InverseGalois.CFT.Brauer.BaseSubcyclotomic
 import InverseGalois.CFT.Brauer.BaseSubcyclotomicSplit
 import InverseGalois.CFT.Brauer.Centralizer
@@ -457,6 +458,7 @@ import InverseGalois.CFT.Scholz.BlockGenerators
 import InverseGalois.CFT.Scholz.BlockInertia
 import InverseGalois.CFT.Scholz.BlockRealization
 import InverseGalois.CFT.Scholz.AuxPrimeChoice
+import InverseGalois.CFT.Scholz.AuxPrimeFamily
 import InverseGalois.CFT.Scholz.AuxPrimeField
 import InverseGalois.CFT.Scholz.AuxPrimePair
 import InverseGalois.CFT.Scholz.BadPrimes
@@ -4786,4 +4788,30 @@ it that are available here.
   field, of prime-power order and trivial at the infinite places, add up to zero as soon as every
   rational prime below a place carrying a nontrivial invariant fails a power residue condition
   modulo an auxiliary prime**.
+* `InverseGalois.NumberTheory.SplitDensityFamily` widens the density bound behind the choice of an
+  auxiliary prime from one exceptional field to a whole family of them.  Iterating the subadditivity
+  of a Dirichlet series along a finite index set bounds **the density of a set of primes covered by
+  a finite set together with a finite family of others by the sum of the densities of the family**,
+  so **infinitely many primes split completely in a Galois number field and in none of a finite
+  family of larger ones** as soon as the reciprocals of the larger degrees do not add up to the
+  reciprocal of the smaller one.  The enlargement factor of each larger field only has to exceed the
+  number of conditions imposed, which is what lets a single prime carry arbitrarily many
+  simultaneous non-residue conditions.
+* `InverseGalois.CFT.Scholz.AuxPrimeFamily` produces that prime.  Over the cyclotomic field of a
+  power of an odd prime a rational prime that is not an `ℓ`-th power there stays one after adjoining
+  a root of unity of the wanted order, so **the radical field of the corresponding prime power has
+  the full degree above the cyclotomic field**, and the family density bound applies to the whole
+  list at once.  Hence, for a list of primes shorter than a power of `ℓ`, **there is a prime
+  congruent to one modulo twice an arbitrarily large power of `ℓ`, avoiding any prescribed finite
+  set, modulo which every prime on the list fails to be a power residue at that exponent**.
+* `InverseGalois.CFT.Brauer.BaseOddReciprocity` closes global reciprocity over an arbitrary number
+  field in odd order.  A class has nontrivial invariants at only finitely many places, hence above
+  only finitely many rational primes, and the exponent at which those primes are asked to be
+  non-residues may be raised at will by raising the degree of the auxiliary cyclotomic subfield; so
+  a single auxiliary prime discharges the hypothesis of the splitting criterion for all of them
+  simultaneously, and the archimedean invariants of a class of odd order are trivial because the
+  Brauer group of the reals is killed by two.  Hence **the invariants of a Brauer class of a number
+  field of odd prime-power order add up to zero**, and, splitting an arbitrary odd order at its
+  least prime factor and recombining by a Bézout relation, **the invariants of a Brauer class of a
+  number field of odd order add up to zero**.
 -/
