@@ -92,6 +92,7 @@ import InverseGalois.CFT.Brauer.TameResidue
 import InverseGalois.CFT.Brauer.TameValue
 import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
+import InverseGalois.CFT.Brauer.NormAdjust
 import InverseGalois.CFT.Brauer.NormFactors
 import InverseGalois.CFT.Brauer.NormPlaceValue
 import InverseGalois.CFT.Brauer.NormPrimesOver
@@ -121,6 +122,7 @@ import InverseGalois.CFT.Brauer.PlaceSubcyclotomicPower
 import InverseGalois.CFT.Brauer.PlaceTotallyRamified
 import InverseGalois.CFT.Brauer.PlaceUnitValue
 import InverseGalois.CFT.Brauer.PlaceUnramified
+import InverseGalois.CFT.Brauer.PrescribedValue
 import InverseGalois.CFT.Brauer.Primary
 import InverseGalois.CFT.Brauer.QuadraticExt
 import InverseGalois.CFT.Brauer.Quaternion
@@ -4727,6 +4729,28 @@ it that are available here.
   the compositum of the base with a cyclotomic field of prime conductor unramified in the base is
   trivial**, on the sole arithmetic hypothesis that **a rational prime outside the ramified set of
   a number field is unramified at every place above it**.
+* `InverseGalois.CFT.Brauer.PrescribedValue` gives the places of a number field whatever values one
+  likes.  The Chinese remainder theorem supplies an algebraic integer congruent, modulo one more
+  than the prescribed power of each of finitely many chosen primes, to that power of a uniformiser
+  there, and the correction has too small a valuation to disturb the leading term, so **an element
+  of a Dedekind domain may be given prescribed valuations at finitely many places**; a quotient of
+  two such integers then gives **a unit of a number field with prescribed values at finitely many
+  places**.  The construction also clears denominators without disturbing a finite set of places,
+  so **a unit trivial at finitely many places is a quotient of two algebraic integers trivial
+  there**.
+* `InverseGalois.CFT.Brauer.NormAdjust` exploits total ramification to compute norms.  If the
+  inertia group at a place of a Galois extension is the whole Galois group then the number of
+  places above the place beneath it and the residue degree there are both one, since those two
+  numbers and the order of the inertia group multiply to the order of the Galois group; so **a
+  place whose inertia group is the whole Galois group is the only place above the place beneath it,
+  and has residue degree one**, and the value of a norm at the place below is exactly the value of
+  the element at the place above.  Since values at finitely many places may be prescribed at will,
+  **the norms realise every family of values at the places above a totally ramified prime**.  A
+  rational prime unramified in the base and totally ramified in a Galois extension of the rationals
+  is totally ramified in the compositum, so for a homomorphism to the Brauer group that kills the
+  norms an arbitrary unit may be adjusted to be a unit at that prime and then written as a quotient
+  of algebraic integers which are units there: **trivial total invariant on those algebraic
+  integers forces trivial total invariant on every unit**.
 * `InverseGalois.CFT.Brauer.BaseCyclicClass` assembles the correcting classes themselves over an
   arbitrary number field.  The group of residues prime to a prime conductor is the Galois group of
   the cyclotomic field of that conductor, so **every residue prime to the conductor is a power of a
@@ -4737,6 +4761,6 @@ it that are available here.
   subfield of prescribed degree of the cyclotomic field then produces **the correcting Brauer
   classes of a number field**: a homomorphism from the units of the base to its Brauer group whose
   classes are killed by the prescribed degree, are trivial at every archimedean place, have trivial
-  total invariant on the integral units at the conductor, and have those prescribed invariants at
-  the finite places away from it.
+  total invariant, and have those prescribed invariants at the finite places away from the
+  conductor.
 -/
