@@ -8212,6 +8212,78 @@ shape everything in rows 5 and 8 will take.
 
 ---
 
+## 0.82 Status (2026-09-02) — the idele-generation layer no longer needs a principal ideal ring, and §0.36(a) was stale
+
+Two housekeeping items, one a genuine generalization and one a correction to this document.
+
+### (a) `Units/IdeleGen.lean` and `Units/IdeleQuotCyclic.lean` work over any number field
+
+`exists_sub_adicPlaceIdele_mem_sup` used to carry `[IsPrincipalIdealRing (𝓞 k)]`, purely so that a
+prescribed system of orders `n : HeightOneSpectrum (𝓞 k) → ℤ` of cofinite support could be realized
+by a single element of `kˣ`.  Over a base with a nontrivial class group that is false, but it is
+false only on a *finite* set of primes: `Units/ClassSet.lean` already proves
+
+```lean
+exists_finite_ord_repr (K) : ∃ T : Set (HeightOneSpectrum (𝓞 K)), T.Finite ∧
+  ∀ n, (∀ᶠ v in Filter.cofinite, n v = 0) → ∃ a : Kˣ, ∀ v ∉ T, ord K v (a : K) = n v
+```
+
+so the hypothesis to carry is the conclusion of that lemma, not the principality.  The signature now
+takes an exceptional set `T`, requires the distinguished place `q ∉ T`, and *weakens* the local-norm
+hypothesis `hfin` at the places of `T`: outside `T` one still only needs units of the valuation ring
+to be norms, but at a place of `T` every element of the base completion must be one, because after
+subtracting the principal idele the component there need not be a unit.  Concretely `hfin` becomes
+
+```lean
+(hfin : ∀ w : HeightOneSpectrum (𝓞 K), primeUnder (𝓞 k) w ≠ q →
+  ∀ b : ((primeUnder (𝓞 k) w).adicCompletion k)ˣ,
+    (primeUnder (𝓞 k) w ∉ T → unitVal (Additive.ofMul b) = 0) →
+      b ∈ normSubgroup ((primeUnder (𝓞 k) w).adicCompletion k) (w.adicCompletion K))
+```
+
+The same replacement runs through the four theorems of `Units/IdeleQuotCyclic.lean`
+(`forall_mem_multiples_ideleQuot`, `addOrderOf_ideleQuot_eq`,
+`exists_addOrderOf_H2_ideleClassRep_eq`, `exists_zsmul_eq_zero_imp_dvd_H2_ideleClassRep`), and
+`Units/RatFundamentalClass.lean` instantiates `T := ∅` — over `ℚ` the ring of integers is principal,
+so the exceptional set is empty and `hfin`'s new premise is discharged by `Set.notMem_empty`.
+
+Two Lean notes.  `Rigidity.RET.ord` lives in the **top-level** `Rigidity` namespace
+(`Rigidity/RET/Genus/Ord.lean:46`), so a file that does not `open Rigidity.RET` silently turns `ord`
+into an auto-bound implicit and reports "Function expected at `ord` but this term has type `?m.8`".
+And Mathlib v4.28 spells it `Set.notMem_empty`, not `Set.not_mem_empty`.
+
+### (b) §0.36(a) is stale: the general-base class formation was already built
+
+§0.36(a) said that a class formation over an arbitrary number field base "needs only" the compositum
+`k·F₀` with a cyclic totally real `F₀ ⊂ ℚ(ζ_q)`, and called that a bounded mechanical project.  That
+project is unnecessary: `InverseGalois/CFT/Units/BaseFundamental.lean` already proves
+
+```lean
+theorem exists_zsmul_eq_zero_imp_dvd_H2_ideleClassRep_base (k K) :
+    ∃ α : ↥(H2 (ideleClassRep k K)), ∀ m : ℤ, m • α = 0 → (Nat.card Gal(K/k) : ℤ) ∣ m
+```
+
+for every pair of number fields `k ⊆ K` with `K/k` Galois, and it does so **without** constructing
+any auxiliary cyclic extension of `k`.  The route is restriction followed by inflation:
+
+* `exists_zsmul_eq_zero_imp_dvd_H2_ideleClassRep_of_rat` restricts the `ℚ`-fundamental class of a
+  Galois `L/ℚ` to the subgroup `S = (galRestrictScalarsHom ℚ k L).range ≅ Gal(L/k)`, using
+  `tateRes` and `exists_zsmul_eq_zero_imp_dvd_H2_of_addEquiv`;
+* `exists_zsmul_eq_zero_imp_dvd_H2_ideleClassRep_of_top` inflates from `Gal(L/k)` to `Gal(K/k)` for
+  `k ⊆ K ⊆ L`, via `mem_range_inflTwo_of_resTwo_eq_zero` and `eq_zero_H1_res_subgroup`;
+* the base theorem takes `L = ↥(IntermediateField.normalClosure ℚ K (AlgebraicClosure K))` and
+  composes the two.
+
+So the generalization of (a) is a convenience for the *statement* of the idele-generation lemmas,
+not a prerequisite for anything; the class formation over an arbitrary number field is already
+unconditional, and `BaseTate.lean` / `BaseArtin.lean` already carry Tate's theorem and the Artin map
+over that base.
+
+Build green at **9589 jobs**, zero warnings, zero errors; the three touched theorems have axioms
+`[propext, Classical.choice, Quot.sound]`.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
