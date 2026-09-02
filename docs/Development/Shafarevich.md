@@ -7974,6 +7974,95 @@ that `a` is a unit at every place above `q`.  This is why the local–global nor
 
 ---
 
+## 0.79 Status (2026-09-02) — **global reciprocity over an arbitrary number field is proven**
+
+Commit `bd1779b`, full build green at **9586 jobs**, no warnings, and
+
+```lean
+theorem InverseGalois.CFT.totalInvariant_eq_one_base (k : Type) [Field k] [NumberField k]
+    (x : BrauerGroup.{0, 0} k) : totalInvariant k x = 1
+```
+
+in `CFT/Brauer/BaseReciprocity.lean`, with axioms `[propext, Classical.choice, Quot.sound]`.
+**Row 6 of the §0.36 table is closed.**  Every brick of the §0.78 plan is landed; what this section
+records is the last stage, the two-primary part, which §0.78 had not planned in detail.
+
+### (a) Why the odd part did not finish the job
+
+`totalInvariant_eq_one_of_pow_eq_one_odd_base` (§0.78, `BaseOddReciprocity.lean`) covers a class of
+odd order because the auxiliary prime argument needs the class to be split at every infinite place,
+and a class of odd order in `Br(ℝ) ≅ ℤ/2` is automatically split.  For a class of two-power order
+the archimedean invariants are genuinely there and have to be cleared first.  Concretely,
+`totalInvariant_eq_one_of_forall_pow_ne_one_primePow_base` takes an explicit hypothesis
+
+```lean
+(harch : ∀ u : InfinitePlace k, infinitePlaceInvariant k u x = 1)
+```
+
+so what the `ℓ = 2` case needs is a way to *modify* `x` by something of known total invariant until
+`harch` holds.
+
+### (b) The correction: sign correctors and sign approximation
+
+Two inputs, both new.
+
+1. **A sign corrector** (`CFT/Brauer/BaseSignCorrector.lean`, `exists_signCorrector_base`).  For a
+   prime `q ≡ 3 (mod 4)` unramified in `k`, the quadratic subfield of `ℚ(ζ_q)` is *imaginary*, so
+   the cyclic algebra attached to `(F·k)/k` and a coefficient `a ∈ kˣ` has invariant at a real
+   place `u` equal to the **sign** of `a` under the real embedding of `u`.  It has order dividing
+   two and total invariant `1`, the latter by the odd-order reciprocity already proven (the class
+   is of order two, but the *coefficient* side is what the odd machinery consumes — see
+   `RealCyclicSign.lean` and `FibreTotal.lean`).  So
+
+   ```lean
+   Y : kˣ →* BrauerGroup k,   Y a ^ 2 = 1,   totalInvariant k (Y a) = 1,
+   infinitePlaceInvariant k u (Y a) = realCyclicInvariant (sign of a at u)
+   ```
+
+2. **Sign approximation** (`NumberTheory/SignApproximation.lean`,
+   `exists_units_pos_iff_notMem_set`).  *Every* pattern of signs at the real places of a number
+   field is realised by a unit.  Mathlib v4.28 has **no** weak-approximation lemma for infinite
+   places, so this was built from scratch and elementarily: a primitive element `θ` takes pairwise
+   distinct real values at the real places (two ring homs `k →+* ℝ` agreeing on `θ` agree
+   everywhere, via `RingHom.toRatAlgHom` and `AlgHom.ext_of_adjoin_eq_top`); with
+   `δ := min (insert 1 {|θ_w − θ_{u₀}|})` positive, two rationals `c < d` straddling `θ_{u₀}`
+   inside `δ` make `(θ − c)(θ − d)` negative at `u₀` and positive at every other real place; a
+   `Finset.induction_on` multiplies these together.  This is worth remembering as a **reusable
+   substitute** for infinite-place approximation anywhere else in the tree.
+
+Given `x`, apply (2) to `S = {u | infinitePlaceInvariant k u x ≠ 1}` and multiply: since `Br(ℝ)`
+has order two, "`x` and `Y a` are split at `u` together" already forces `inv_u(x · Y a) = 1`
+(`infinitePlaceInvariant_mul_eq_one_of_isReal`).  The product has two-power order, is split at
+every infinite place, and has the same total invariant as `x`.
+
+### (c) The auxiliary prime `q ≡ 3 (mod 4)`
+
+Mathlib has no usable Dirichlet-in-progressions statement, and the repo's dyadic family produces
+`q ≡ 1 (mod 2^d)` — the wrong congruence.  The fix: `q ≡ 3 (mod 4)` is exactly "`q` does not split
+completely in `ℚ(ζ_4)`", and `infinite_setOf_splitsCompletely_not_splitsCompletely ℚ (ℚ(ζ_4))`
+(degrees `1 < 2`) supplies infinitely many such primes.  That is
+`exists_prime_three_mod_four_notMem`.
+
+For the auxiliary prime of the two-power argument itself, the bookkeeping with
+`L := Nat.log 2 (finrank ℚ k)` is: take `M := P.card + 3` (so `3 ≤ M` and `P.card < 2^{M−1}`) and
+`d := e + L + P.card + 2` (so `d − e − L + 1 = M`), and call the dyadic family at `d + 1` so that
+`2 · 2^d ∣ q − 1`.
+
+### (d) Assembly
+
+`totalInvariant_eq_one_of_pow_eq_one_nat_base` splits an arbitrary finite order `n = 2^c · m` with
+`m` odd, uses Bézout to write `x = (x^{2^c})^α · (x^m)^β`, and applies the two-power case to `x^m`
+and the odd case to `x^{2^c}`.  `exists_pow_eq_one` (every Brauer class of a perfect field has
+finite order) then gives the unconditional statement.
+
+### (e) What this unblocks
+
+Rows 5 and 8 of the §0.36 table — the Poitou–Tate input — consume reciprocity over the base field
+of the tower, not just over `ℚ`.  That hypothesis is now discharged.  The next brick is row 5,
+`Ш²(k, A) ≅ Ш¹(k, A′)^∨`, and then row 8, the eight-term sequence for `μ_p` over `k_S`.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
