@@ -81,6 +81,7 @@ import InverseGalois.CFT.Brauer.TameResidue
 import InverseGalois.CFT.Brauer.TameValue
 import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
+import InverseGalois.CFT.Brauer.NormFactors
 import InverseGalois.CFT.Brauer.NormPlaceValue
 import InverseGalois.CFT.Brauer.NormReduction
 import InverseGalois.CFT.Brauer.OddArchimedean
@@ -4506,4 +4507,16 @@ it that are available here.
   the norm of an algebraic integer modulo a rational prime through the residue fields of the places
   above it, which is what compares the invariants of a cyclic algebra at the places over a prime
   with the invariant of its trace down to the rationals.
+* `InverseGalois.CFT.Brauer.NormFactors` carries that reduction through to the individual places.
+  The Chinese remainder theorem splits the reduction of an extension of Dedekind domains modulo a
+  maximal ideal of the base as the product of the reductions modulo the powers of the primes lying
+  over it to which they ramify, and that splitting respects the residue field of the base, so
+  **the norm of an element reduces modulo a maximal ideal of the base to the product, over the
+  primes lying over it, of the norms of the reductions modulo the corresponding ramified powers**.
+  A separate computation records the shape of a norm of finite fields: it is a power, by the
+  quotient of the orders of the two multiplicative groups, so **raising an element of a finite field
+  to the power the order of its multiplicative group divided by a divisor of the order of the
+  multiplicative group of a subfield is the norm to that subfield raised to the complementary
+  power**.  This is what turns a power residue symbol computed in the residue field of a place into
+  one computed in the prime field below it.
 -/
