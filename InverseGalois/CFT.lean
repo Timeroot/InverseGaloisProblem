@@ -669,6 +669,7 @@ import InverseGalois.CFT.TateCohomology.SylowTrivial
 import InverseGalois.CFT.TateCohomology.TateClassCount
 import InverseGalois.CFT.TateCohomology.TateDegreeTwo
 import InverseGalois.CFT.TateCohomology.TateNakayama
+import InverseGalois.CFT.TateCohomology.TateNakayamaError
 import InverseGalois.CFT.TateCohomology.TateTheorem
 import InverseGalois.CFT.TateCohomology.Tensor
 import InverseGalois.CFT.TateCohomology.TensorExtension
@@ -3609,6 +3610,16 @@ it that are available here.
   complete cohomology of a representation in a degree is the complete cohomology of its tensor
   product with the coefficients two degrees higher**, as soon as the tensored extension has no
   complete cohomology.
+* `InverseGalois.CFT.TateCohomology.TateNakayamaError` asks what happens when the tensored
+  extension does have some.  The comparison is a map whatever the coefficients are, since it is
+  built from the connecting map of the tensored extension and two isomorphisms; and the long exact
+  sequence describes it completely, **its image being the classes that die in the tensored
+  extension and its kernel the classes that come from there**.  So **the comparison is bijective
+  as soon as the tensored extension has no complete cohomology in the two degrees that bound it**,
+  rather than in all of them, and what measures the failure of the theorem of Tate and Nakayama is
+  exactly the complete cohomology of the extension tensored with the coefficients, in those two
+  degrees.  The comparison agrees with the isomorphism of the previous file wherever the latter is
+  defined, so nothing that was proved with it has to be reproved.
 * `InverseGalois.CFT.TateCohomology.TensorFunctor` tensors a map of representations on the right
   with a fixed representation.  The underlying map acts on the first factor and leaves the second
   alone, and it commutes with the diagonal action because each factor is moved separately;
