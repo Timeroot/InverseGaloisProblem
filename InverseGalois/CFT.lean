@@ -646,6 +646,7 @@ import InverseGalois.CFT.TateCohomology.Annihilate
 import InverseGalois.CFT.TateCohomology.AugmentationIdeal
 import InverseGalois.CFT.TateCohomology.CocycleExtension
 import InverseGalois.CFT.TateCohomology.CohomTrivial
+import InverseGalois.CFT.TateCohomology.Duality
 import InverseGalois.CFT.TateCohomology.Exact
 import InverseGalois.CFT.TateCohomology.Functorial
 import InverseGalois.CFT.TateCohomology.Graded
@@ -3666,6 +3667,25 @@ it that are available here.
   representation and its reduction.  Hence **a short exact sequence stays short exact after
   tensoring with coefficients killed by a prime as soon as its first map stays injective modulo
   that prime** -- and with no condition at all when its middle term is itself killed by the prime.
+* `InverseGalois.CFT.TateCohomology.Duality` pairs the two middle degrees against each other.  The
+  functionals on a representation with values in a fixed module carry an action of the group
+  through the source, and **the norm of such a functional is its composition with the norm of the
+  representation**, because summing over the group is the same as summing over its inverses.  That
+  one identity is the whole of the duality: an invariant functional is constant on the orbits, so
+  it descends to the coinvariants, and it kills the norms, so evaluation on the classes of
+  vanishing norm does not see the functionals that are themselves norms.  What comes out is a map
+  from the complete cohomology in degree zero of the functionals to the functionals on the complete
+  cohomology in degree minus one, and **that map is bijective as soon as the coefficients receive
+  every functional defined on the norms and every functional defined on the vectors of vanishing
+  norm**.  Injectivity is one extension: a functional killing the classes of vanishing norm factors
+  through the norms, and an extension of that factor has the given functional as its norm.
+  Surjectivity is the other: a functional read on the vectors of vanishing norm extends, and the
+  extension is already invariant, since the difference of a vector and one of its translates has
+  vanishing norm and trivial class.  Coefficients killed by a prime supply both extensions with
+  nothing further, by the retraction of the previous file, so **a representation killed by a prime
+  is dual to itself in the two middle degrees against any coefficients whatsoever**.  This is the
+  base case from which the shift of degree carries the duality to every pair of degrees adding to
+  minus one.
 * `InverseGalois.CFT.TateCohomology.TateClassCount` turns the classical hypotheses of Tate's
   theorem into a count.  **An element of a finite commutative group annihilated by exactly the
   multiples of the order of the group generates the group**, because the subgroup of its multiples
