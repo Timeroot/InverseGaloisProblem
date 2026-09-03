@@ -33,8 +33,11 @@ of unity of the field.
 
 ## Main results
 
+* `InverseGalois.CFT.exists_zsmul_eq_of_ideleDiag_eq_zsmul`: **a unit of the field whose principal
+  idele is a power in the ideles is itself a power in the field**, by the Hasse principle for
+  powers.
 * `InverseGalois.CFT.exists_torsion_idele_mk_eq`: **an idele class killed by a prime is the class of
-  an idele killed by that prime**, by the Hasse principle for powers.
+  an idele killed by that prime.**
 * `InverseGalois.CFT.ideleClassTorsionShortComplex_shortExact`: **the elements killed by a prime of
   the units, of the ideles and of the idele classes form a short exact sequence of representations
   of the Galois group.**
@@ -85,15 +88,12 @@ section Hasse
 
 variable {K : Type} [Field K] [NumberField K]
 
-/-- **An idele class killed by a prime is the class of an idele killed by that prime.**  A
-representative has its power equal to the principal idele of a unit of the field, so that unit is a
-power in the completion at every finite place; Wang's theorem makes it a power in the field, and
-subtracting the principal idele of a root leaves the class unchanged and kills the power. -/
-theorem exists_torsion_idele_mk_eq {p : ℕ} (hp : p.Prime) (c : IdeleClass K)
-    (hc : (p : ℤ) • c = 0) :
-    ∃ x : ↥(idele K), (p : ℤ) • x = 0 ∧ QuotientAddGroup.mk' (ideleDiag K).range x = c := by
-  obtain ⟨z, rfl⟩ := QuotientAddGroup.mk_surjective c
-  obtain ⟨u, hu⟩ := (QuotientAddGroup.eq_zero_iff _).1 hc
+/-- **A unit of the field whose principal idele is a power in the ideles is itself a power in the
+field.**  Reading the equation at a finite place makes the unit a power in that completion, and for
+a prime exponent Wang's theorem then makes it a power in the field. -/
+theorem exists_zsmul_eq_of_ideleDiag_eq_zsmul {p : ℕ} (hp : p.Prime) (u : Additive Kˣ)
+    (z : ↥(idele K)) (hu : ideleDiag K u = (p : ℤ) • z) :
+    ∃ y : Additive Kˣ, (p : ℤ) • y = u := by
   -- the unit is a `p`-th power at every finite place
   have hloc : ∀ v : HeightOneSpectrum (𝓞 K), v ∉ (∅ : Set (HeightOneSpectrum (𝓞 K))) →
       ∃ c : v.adicCompletion K,
@@ -118,17 +118,27 @@ theorem exists_torsion_idele_mk_eq {p : ℕ} (hp : p.Prime) (c : IdeleClass K)
     intro h
     rw [h, zero_pow hp.ne_zero] at hy
     exact (Additive.toMul u : Kˣ).ne_zero hy.symm
-  have hap : (p : ℤ) • (Additive.ofMul (Units.mk0 y hy0) : Additive Kˣ) = u := by
-    refine Additive.toMul.injective ?_
-    rw [toMul_zsmul, zpow_natCast]
-    refine Units.ext ?_
-    rw [Units.val_pow_eq_pow_val]
-    exact hy
+  refine ⟨Additive.ofMul (Units.mk0 y hy0), ?_⟩
+  refine Additive.toMul.injective ?_
+  rw [toMul_zsmul, zpow_natCast]
+  refine Units.ext ?_
+  rw [Units.val_pow_eq_pow_val]
+  exact hy
+
+/-- **An idele class killed by a prime is the class of an idele killed by that prime.**  A
+representative has its power equal to the principal idele of a unit of the field, so that unit is a
+power in the field; subtracting the principal idele of a root leaves the class unchanged and kills
+the power. -/
+theorem exists_torsion_idele_mk_eq {p : ℕ} (hp : p.Prime) (c : IdeleClass K)
+    (hc : (p : ℤ) • c = 0) :
+    ∃ x : ↥(idele K), (p : ℤ) • x = 0 ∧ QuotientAddGroup.mk' (ideleDiag K).range x = c := by
+  obtain ⟨z, rfl⟩ := QuotientAddGroup.mk_surjective c
+  obtain ⟨u, hu⟩ := (QuotientAddGroup.eq_zero_iff _).1 hc
   have hu' : ideleDiag K u = (p : ℤ) • z := hu
-  refine ⟨z - ideleDiag K (Additive.ofMul (Units.mk0 y hy0)), ?_, ?_⟩
-  · rw [zsmul_sub, ← hu', ← map_zsmul, hap, sub_self]
-  · have hz : QuotientAddGroup.mk' (ideleDiag K).range
-        (ideleDiag K (Additive.ofMul (Units.mk0 y hy0))) = 0 :=
+  obtain ⟨y, hy⟩ := exists_zsmul_eq_of_ideleDiag_eq_zsmul hp u z hu'
+  refine ⟨z - ideleDiag K y, ?_, ?_⟩
+  · rw [zsmul_sub, ← hu', ← map_zsmul, hy, sub_self]
+  · have hz : QuotientAddGroup.mk' (ideleDiag K).range (ideleDiag K y) = 0 :=
       (QuotientAddGroup.eq_zero_iff _).2 ⟨_, rfl⟩
     rw [map_sub, hz, sub_zero]
     rfl

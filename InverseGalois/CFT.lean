@@ -673,6 +673,7 @@ import InverseGalois.CFT.TateCohomology.TateTheorem
 import InverseGalois.CFT.TateCohomology.Tensor
 import InverseGalois.CFT.TateCohomology.TensorExtension
 import InverseGalois.CFT.TateCohomology.TensorFunctor
+import InverseGalois.CFT.TateCohomology.TensorPExact
 import InverseGalois.CFT.TateCohomology.TensorPTorsion
 import InverseGalois.CFT.TateCohomology.TensorShift
 import InverseGalois.CFT.TateCohomology.TensorTrivial
@@ -760,6 +761,8 @@ import InverseGalois.CFT.Units.IdeleOrbitTate
 import InverseGalois.CFT.Units.IdeleQuotCyclic
 import InverseGalois.CFT.Units.IdeleRep
 import InverseGalois.CFT.Units.IdeleRestrict
+import InverseGalois.CFT.Units.IdeleTensorSha
+import InverseGalois.CFT.Units.IdeleTensorTorsion
 import InverseGalois.CFT.Units.IdeleTorsion
 import InverseGalois.CFT.Units.IdeleTorusSha
 import InverseGalois.CFT.Units.IdeleTower
@@ -3640,6 +3643,18 @@ it that are available here.
   after tensoring with a representation killed by that prime** -- and when the prime acts without
   torsion the reduction inherits the vanishing from the representation itself.  This gives **the
   theorem of Tate and Nakayama for coefficients killed by a prime**.
+* `InverseGalois.CFT.TateCohomology.TensorPExact` keeps a short exact sequence exact when the
+  coefficients are killed by a prime.  Tensoring preserves surjectivity and exactness in the
+  middle whatever the coefficients are; only injectivity can fail, and it does not fail here.  A
+  module killed by a prime is a vector space over the field with that many elements, so a subspace
+  of it is a direct summand: **an injection into a module killed by a prime has a retraction**,
+  additive rather than equivariant, and a retraction is all that survives of it into the tensor
+  product.  So **a map into a representation killed by a prime stays injective after tensoring**
+  with anything, and for a general map the same argument applies to its reduction modulo the
+  prime, since tensoring with coefficients killed by a prime does not see the difference between a
+  representation and its reduction.  Hence **a short exact sequence stays short exact after
+  tensoring with coefficients killed by a prime as soon as its first map stays injective modulo
+  that prime** -- and with no condition at all when its middle term is itself killed by the prime.
 * `InverseGalois.CFT.TateCohomology.TateClassCount` turns the classical hypotheses of Tate's
   theorem into a count.  **An element of a finite commutative group annihilated by exactly the
   multiples of the order of the group generates the group**, because the subgroup of its multiples
@@ -3719,6 +3734,26 @@ it that are available here.
   degree `-2` of the lattice: a finite object, where the cohomology of the units is not.  Every
   Galois extension of number fields carries a fundamental class, so the statement holds with no
   hypothesis on the extension beyond flatness of the lattice.
+* `InverseGalois.CFT.Units.IdeleTensorTorsion` removes the flatness.  Coefficients killed by a prime
+  are not flat, and exactly one thing can go wrong: the principal ideles might not stay injective
+  after tensoring.  They do.  Tensoring with coefficients killed by a prime does not distinguish a
+  module from its reduction modulo that prime, so the question is whether a unit of the field whose
+  principal idele is a power of an idele is a power in the field; reading the equation at each place
+  makes it a power in every completion, and for a prime exponent Wang's theorem makes it a power in
+  the field.  So **the principal ideles stay injective modulo a prime**, and **the units, the ideles
+  and the idele classes stay short exact after tensoring with coefficients killed by a prime**.  For
+  the elements killed by the prime nothing has to be checked at all: there the middle term is itself
+  killed by the prime, and an injection into such a module has a retraction which survives any
+  tensoring.
+* `InverseGalois.CFT.Units.IdeleTensorSha` reads the two long exact sequences that result.  In every
+  degree, **the locally trivial classes of the units tensored with coefficients killed by a prime
+  are exactly the image of the connecting map** coming out of the complete cohomology of the idele
+  classes tensored with the same coefficients, one degree lower; so they vanish as soon as that
+  cohomology does, with no hypothesis on the extension beyond finiteness of its Galois group.  The
+  same reading applies to the elements of the three groups killed by the prime, and there it
+  measures the failure of the theorem of Tate and Nakayama for coefficients with torsion, the
+  elements of the idele classes killed by the prime being the first derived tensor product of the
+  idele classes with such coefficients.
 * `InverseGalois.CFT.Brauer.DivisionInteger` collects the first consequences of that absolute value.
   The elements of absolute value at most one form the **integers** of the algebra; the base field
   has an element whose absolute value is the largest one below one, and every absolute value of the
