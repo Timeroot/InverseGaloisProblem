@@ -651,6 +651,7 @@ import InverseGalois.CFT.TateCohomology.PGroupInvariants
 import InverseGalois.CFT.TateCohomology.PGroupTrivial
 import InverseGalois.CFT.TateCohomology.PTorsionTrivial
 import InverseGalois.CFT.TateCohomology.Restrict
+import InverseGalois.CFT.TateCohomology.Shapiro
 import InverseGalois.CFT.TateCohomology.Shift
 import InverseGalois.CFT.TateCohomology.Shifting
 import InverseGalois.CFT.TateCohomology.SylowInjective
@@ -3329,6 +3330,18 @@ it that are available here.
   to invariants of the group and multiplies invariants of the group by the index, and the second
   does the same to the coinvariants, so **corestriction after restriction is multiplication by the
   index** in degree zero and in degree minus one.
+* `InverseGalois.CFT.TateCohomology.Shapiro` compares the complete cohomology of a group with
+  coefficients coinduced from a subgroup with the complete cohomology of that subgroup.  An
+  equivariant function is invariant exactly when it is constant, so evaluation at the neutral
+  element identifies the invariants; the function supported on the subgroup carrying all the
+  translates of a vector and the sum over a transversal of the classes of the values are mutually
+  inverse on the coinvariants; and since the group is the product of a transversal and the
+  subgroup, the norm of the group becomes the norm of the subgroup under that pair of maps.  A
+  commuting square of that shape transports both middle Tate groups, and the ordinary cohomology
+  above and the ordinary homology below are the two halves of Shapiro's lemma already available,
+  the second through the isomorphism between the induced and the coinduced representation of a
+  subgroup of finite index: **the complete cohomology of a coinduced representation is the complete
+  cohomology of the representation it is coinduced from, in every integer degree.**
 * `InverseGalois.CFT.TateCohomology.Restrict` carries those two maps to every degree.  A choice of
   coset representatives splits the group as the cosets times the subgroup, so the functions on the
   group, read on the subgroup, are the functions on the subgroup with values in the functions on
