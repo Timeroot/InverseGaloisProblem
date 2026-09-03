@@ -2203,7 +2203,9 @@ it that are available here.
   at them are the representation coinduced from the units of the completion at any one of them, and
   **the complete cohomology of the local factor of the ideles at a finite place of the base field is
   the complete cohomology of the decomposition group with coefficients in the units of the
-  completion at a place above it**, in every integer degree.
+  completion at a place above it**, in every integer degree.  The same argument at an infinite
+  place, which differs from the finite one only in the family it is applied to, gives the same
+  description of the local factor there.
 * `InverseGalois.CFT.Local.InfiniteAction` builds the same picture at an infinite place.  An
   automorphism fixing such a place preserves its absolute value, so it is an isometry of the field
   for the metric of the place and extends to the completion there; the decomposition group of the
