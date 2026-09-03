@@ -681,6 +681,7 @@ import InverseGalois.CFT.TateCohomology.TensorExtension
 import InverseGalois.CFT.TateCohomology.TensorFunctor
 import InverseGalois.CFT.TateCohomology.TensorPExact
 import InverseGalois.CFT.TateCohomology.TensorPTorsion
+import InverseGalois.CFT.TateCohomology.TensorPTorsionShift
 import InverseGalois.CFT.TateCohomology.TensorRight
 import InverseGalois.CFT.TateCohomology.TensorShift
 import InverseGalois.CFT.TateCohomology.TensorTor
@@ -3742,6 +3743,23 @@ it that are available here.
   degree is the complete cohomology of the first derived tensor product two degrees higher.**  That
   is exactly the correction to the theorem of Tate and Nakayama for coefficients which are not
   flat.
+* `InverseGalois.CFT.TateCohomology.TensorPTorsionShift` computes that correction without ever
+  forming a derived tensor product, by working in the first variable instead.  A presentation of a
+  representation by one on which a prime acts without torsion, read modulo that prime, becomes four
+  exact terms: the vectors of the quotient killed by the prime, the two reductions, and the
+  reduction of the quotient.  Cutting them at the cycles gives two short exact sequences whose
+  middle terms are reductions, hence killed by the prime, so both stay short exact after tensoring
+  with any coefficients killed by the prime -- no flatness and no derived functor are needed.  What
+  sits at the bottom is identified directly: a vector of the sub whose image is a multiple of the
+  prime determines uniquely the vector of the middle term it is the multiple of, that vector has
+  image killed by the prime in the quotient, every such image arises this way, and the vectors of
+  the sub dying on either side are exactly the multiples of the prime, so **the lower kernel of a
+  reduced presentation is the vectors of the quotient killed by the prime.**  Both connecting maps
+  are then bijective whenever the two terms of the presentation are acyclic after tensoring, and
+  **the complete cohomology of a representation tensored with coefficients killed by a prime, in a
+  degree, is the complete cohomology of the vectors it kills, tensored with the same coefficients,
+  two degrees higher.**  The free cover supplies a presentation for which the hypotheses hold as
+  soon as the representation is cohomologically trivial on each Sylow subgroup for the prime.
 * `InverseGalois.CFT.TateCohomology.Duality` pairs the two middle degrees against each other.  The
   functionals on a representation with values in a fixed module carry an action of the group
   through the source, and **the norm of such a functional is its composition with the norm of the
