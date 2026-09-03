@@ -646,6 +646,7 @@ import InverseGalois.CFT.TateCohomology.Annihilate
 import InverseGalois.CFT.TateCohomology.AugmentationIdeal
 import InverseGalois.CFT.TateCohomology.CocycleExtension
 import InverseGalois.CFT.TateCohomology.CohomTrivial
+import InverseGalois.CFT.TateCohomology.DeltaNatural
 import InverseGalois.CFT.TateCohomology.Duality
 import InverseGalois.CFT.TateCohomology.DualityDivisible
 import InverseGalois.CFT.TateCohomology.DualityShift
@@ -3421,6 +3422,15 @@ it that are available here.
   homology of the degree shifted by one below that.  A map of representations induces a map in
   every degree and a short exact sequence has a connecting map in every degree, and the resulting
   sequence, running through all of the integers, is **exact at every one of its spots**.
+* `InverseGalois.CFT.TateCohomology.DeltaNatural` compares the long exact sequences of two short
+  exact sequences joined by a map: **the connecting map of the complete cohomology commutes with a
+  map of short exact sequences in every integer degree.**  Away from the two middle degrees this is
+  the naturality of the connecting map of a map of complexes; out of degree zero and into degree
+  minus one it follows from that same naturality once the comparison of the ordinary cohomology and
+  homology in degree zero with the invariants and the coinvariants is known to be natural.  Out of
+  degree minus one there is no ordinary connecting map behind it: a class there is computed from a
+  vector of the middle whose norm comes from the sub, the map of sequences carries such a vector to
+  another one, and both ends of the snake are carried along with it.
 * `InverseGalois.CFT.TateCohomology.Acyclic` identifies the functions on the group with the
   representation coinduced from the trivial subgroup, and deduces from Shapiro's lemma that **the
   complete cohomology of the functions on the group vanishes in every integer degree**.  A short
