@@ -666,6 +666,7 @@ import InverseGalois.CFT.TateCohomology.Product
 import InverseGalois.CFT.TateCohomology.Restrict
 import InverseGalois.CFT.TateCohomology.Shapiro
 import InverseGalois.CFT.TateCohomology.Shift
+import InverseGalois.CFT.TateCohomology.ShiftNatural
 import InverseGalois.CFT.TateCohomology.Shifting
 import InverseGalois.CFT.TateCohomology.SylowInjective
 import InverseGalois.CFT.TateCohomology.RestrictOne
@@ -3442,6 +3443,15 @@ it that are available here.
   complete cohomology of the representation in the following degree**, and **the complete
   cohomology of a representation in a degree is the complete cohomology of its coshift in the
   following degree**.
+* `InverseGalois.CFT.TateCohomology.ShiftNatural` makes those two identifications natural.  A map of
+  representations induces a map of the functions on the group, by composing a function with it; that
+  map carries the record of the translates of a vector to the record of the translates of its image,
+  so it descends to the shifts, and it commutes with the summation, so it restricts to the coshifts.
+  Both defining sequences are therefore functorial with the functions on the group in the middle,
+  and since the connecting map of the complete cohomology commutes with a map of short exact
+  sequences, **both moves of the degree commute with a map of representations**.  A dimension
+  shifting argument can then be carried along a diagram instead of being applied to one
+  representation at a time.
 * `InverseGalois.CFT.TateCohomology.Product` takes a family of representations indexed by an
   arbitrary set and forms the product on which the group acts one factor at a time.  A family is
   invariant exactly when each of its members is and the norm of a family is the family of the
