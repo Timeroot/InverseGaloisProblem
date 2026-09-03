@@ -590,6 +590,7 @@ import InverseGalois.CFT.Tate.Exact
 import InverseGalois.CFT.Tate.Family
 import InverseGalois.CFT.Tate.FamilyCoboundary
 import InverseGalois.CFT.Tate.FamilyCoind
+import InverseGalois.CFT.Tate.FamilyConst
 import InverseGalois.CFT.Tate.FamilyFree
 import InverseGalois.CFT.Tate.FamilyNorm
 import InverseGalois.CFT.Tate.FamilyOrbit
@@ -2230,6 +2231,15 @@ it that are available here.
   finite places and for the infinite ones alike, with no hypothesis on the Galois group beyond
   finiteness.  In particular the ideles have no cohomology in a degree in which no local factor
   has any.
+* `InverseGalois.CFT.Tate.FamilyConst` singles out the family that is the same module at every
+  index, transported by a fixed action of the group on that module.  Its sections are the functions
+  from the index set to the module, acted on by moving the argument and the value at once, and
+  every permutation module of arithmetic is of that shape — the `p`-torsion of the ideles, for
+  instance, where the index set is the set of places and the module is the group of `p`-th roots of
+  unity.  The orbit decomposition then reads: **the complete cohomology of the functions from a set
+  with a group action to a module is the product, over the orbits, of the complete cohomology of
+  the stabiliser of a point of the orbit with coefficients in that module**, in every integer
+  degree and with no hypothesis on the group beyond finiteness.
 * `InverseGalois.CFT.Local.InfiniteAction` builds the same picture at an infinite place.  An
   automorphism fixing such a place preserves its absolute value, so it is an isometry of the field
   for the metric of the place and extends to the completion there; the decomposition group of the
