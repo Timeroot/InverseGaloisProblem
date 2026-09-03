@@ -685,6 +685,7 @@ import InverseGalois.CFT.TateCohomology.TensorPTorsionShift
 import InverseGalois.CFT.TateCohomology.TensorRight
 import InverseGalois.CFT.TateCohomology.TensorShift
 import InverseGalois.CFT.TateCohomology.TensorTor
+import InverseGalois.CFT.TateCohomology.TensorTorsionError
 import InverseGalois.CFT.TateCohomology.TensorTrivial
 import InverseGalois.CFT.TateCohomology.TorsionFree
 import InverseGalois.CFT.TateCohomology.TorsionInduced
@@ -718,6 +719,7 @@ import InverseGalois.CFT.Units.BaseChangeCocycle
 import InverseGalois.CFT.Units.BaseChangeIndex
 import InverseGalois.CFT.Units.BaseFundamental
 import InverseGalois.CFT.Units.BaseTate
+import InverseGalois.CFT.Units.BaseTateTorsion
 import InverseGalois.CFT.Units.ClassSet
 import InverseGalois.CFT.Units.CompletionCyclic
 import InverseGalois.CFT.Units.CompletionFinite
@@ -796,6 +798,7 @@ import InverseGalois.CFT.Units.LocalNorm
 import InverseGalois.CFT.Units.LocalPowIdele
 import InverseGalois.CFT.Units.LocalSqrtNegOne
 import InverseGalois.CFT.Units.NormIndex
+import InverseGalois.CFT.Units.NsmulTorsionRep
 import InverseGalois.CFT.Units.OrbitPlaces
 import InverseGalois.CFT.Units.PlaceComap
 import InverseGalois.CFT.Units.PlaceIdele
@@ -3760,6 +3763,19 @@ it that are available here.
   degree, is the complete cohomology of the vectors it kills, tensored with the same coefficients,
   two degrees higher.**  The free cover supplies a presentation for which the hypotheses hold as
   soon as the representation is cohomologically trivial on each Sylow subgroup for the prime.
+* `InverseGalois.CFT.TateCohomology.TensorTorsionError` removes the hypotheses altogether, by naming
+  what the comparison of Tate and Nakayama loses instead of asking that it lose nothing.  The
+  comparison is built from a connecting map followed by two identifications, and identifications
+  neither add to a kernel nor take from an image, so what the comparison kills is what the
+  connecting map kills, and what dies just after it is what dies just after the connecting map.
+  Those two are read off the long exact sequence of the extension by a cocycle: **the kernel of the
+  comparison is the image of the term before it and its image is the kernel of the term after it**,
+  and both of those terms are the extension tensored with the coefficients.  When the coefficients
+  are killed by a prime that extension is the vectors killed by the prime, three and four degrees
+  above, so **the comparison of Tate and Nakayama sits in four exact terms whose two ends are the
+  vectors killed by the prime, tensored with the same coefficients** -- with no hypothesis at all
+  beyond the classical one on the Sylow subgroups.  The isomorphism of the previous file is the
+  case where the two ends vanish.
 * `InverseGalois.CFT.TateCohomology.Duality` pairs the two middle degrees against each other.  The
   functionals on a representation with values in a fixed module carry an action of the group
   through the source, and **the norm of such a functional is its composition with the norm of the
@@ -3903,6 +3919,14 @@ it that are available here.
   measures the failure of the theorem of Tate and Nakayama for coefficients with torsion, the
   elements of the idele classes killed by the prime being the first derived tensor product of the
   idele classes with such coefficients.
+* `InverseGalois.CFT.Units.NsmulTorsionRep` reconciles the two names the development gives to the
+  vectors killed by a number.  The general machinery reads them as the kernel of multiplication by a
+  natural number inside a representation; the idele side reads them as the representation carried by
+  the elements of an abelian group killed by an integer, for the induced action.  Multiplying by a
+  natural number is multiplying by the corresponding integer, so the two subgroups have the same
+  elements and the same action, and **the two descriptions are the same representation**.  The
+  identification survives tensoring with any coefficients, so a vanishing computed on the roots of
+  unity of the completions can be handed to the machinery for the elements a prime kills, and back.
 * `InverseGalois.CFT.Brauer.DivisionInteger` collects the first consequences of that absolute value.
   The elements of absolute value at most one form the **integers** of the algebra; the base field
   has an element whose absolute value is the largest one below one, and every absolute value of the
@@ -4226,6 +4250,16 @@ it that are available here.
   cohomology in every degree with that of the trivial integral representation two degrees lower;
   degree minus two is **the reciprocity isomorphism** of the extension, and tensoring gives **the
   theorem of Tate and Nakayama** for any coefficients flat over the integers.
+* `InverseGalois.CFT.Units.BaseTateTorsion` drops the flatness, which the coefficients of an
+  embedding problem never have.  The fundamental class satisfies the classical hypotheses on every
+  subgroup, so in particular on every Sylow subgroup, and the four exact terms attached to the
+  comparison apply verbatim: **the comparison of Tate and Nakayama for the idele class group of a
+  Galois extension of number fields, for coefficients killed by a prime, is exact on both sides
+  against the idele classes killed by that prime, tensored with the same coefficients**, three and
+  four degrees above.  It is therefore an isomorphism exactly when those two groups vanish, and
+  they are local: the idele classes killed by a prime sit between the units and the ideles, so the
+  two conditions descend to a product over the places of the roots of unity of the completions and
+  to the roots of unity of the field.
 * `InverseGalois.CFT.Units.BaseArtin` puts a name on the left hand side of that identification.
   Composing it with the description of the complete cohomology of the trivial integral
   representation in degree minus two gives **the reciprocity isomorphism between the abelianization
