@@ -26,6 +26,8 @@ places and the finite ones, indexed by different sets.
   subgroup contains them all.
 * `InverseGalois.CFT.prodAutHom`: the action on a product of two modules.
 * `InverseGalois.CFT.prodTorsionEquiv`: the elements of a product killed by an integer.
+* `InverseGalois.CFT.torsionHom`, `InverseGalois.CFT.torsionMap`: **a map of modules commuting with
+  the actions is a map of the representations on the elements killed by an integer.**
 
 ## Main results
 
@@ -137,6 +139,39 @@ def torsionProdIso :
       exact funext fun b => by cases b <;> rfl
 
 end Prod
+
+/-! ### Maps -/
+
+section Map
+
+variable {G A B : Type} [Group G] [AddCommGroup A] [AddCommGroup B]
+  {φ : G →* AddAut A} {ψ : G →* AddAut B} (m : ℤ) (f : A →+ B)
+
+/-- A map of modules carries the elements killed by an integer to the elements killed by it. -/
+def torsionHom : ↥(AddSubgroup.torsionBy A m) →+ ↥(AddSubgroup.torsionBy B m) where
+  toFun a := ⟨f a, mem_torsionBy.2 (by rw [← map_zsmul, mem_torsionBy.1 a.2, map_zero])⟩
+  map_zero' := Subtype.ext (map_zero f)
+  map_add' _ _ := Subtype.ext (map_add f _ _)
+
+@[simp]
+theorem coe_torsionHom (a : ↥(AddSubgroup.torsionBy A m)) :
+    ((torsionHom m f a : ↥(AddSubgroup.torsionBy B m)) : B) = f (a : A) := rfl
+
+/-- The restriction of an injective map to the elements killed by an integer is injective. -/
+theorem torsionHom_injective (hf : Function.Injective f) :
+    Function.Injective (torsionHom m f) := fun _ _ h =>
+  Subtype.ext (hf (congrArg Subtype.val h))
+
+/-- **A map of modules commuting with the actions is a map of the representations on the elements
+killed by an integer.** -/
+def torsionMap (hf : ∀ (g : G) (a : A), f (φ g a) = ψ g (f a)) :
+    torsionRep φ m ⟶ torsionRep ψ m where
+  hom := ModuleCat.ofHom (torsionHom m f).toIntLinearMap
+  comm g := by
+    ext a
+    exact Subtype.ext (hf g a.1)
+
+end Map
 
 /-! ### Transporting along an equality of actions -/
 

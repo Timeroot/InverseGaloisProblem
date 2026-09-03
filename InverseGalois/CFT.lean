@@ -748,6 +748,7 @@ import InverseGalois.CFT.Units.IdeleClassH2Tower
 import InverseGalois.CFT.Units.IdeleClassIndex
 import InverseGalois.CFT.Units.IdeleClassSES
 import InverseGalois.CFT.Units.IdeleClassTate
+import InverseGalois.CFT.Units.IdeleClassTorsionSES
 import InverseGalois.CFT.Units.IdeleClassTower
 import InverseGalois.CFT.Units.IdeleCoboundary
 import InverseGalois.CFT.Units.IdeleFixed
@@ -3067,6 +3068,16 @@ it that are available here.
   starts at the first cohomology of the idele classes, which has just been shown to vanish, so **the
   second cohomology of the units injects into the second cohomology of the ideles** — the global
   half of the Albert-Brauer-Hasse-Noether theorem.
+* `InverseGalois.CFT.Units.IdeleClassTorsionSES` restricts that sequence to the elements killed by a
+  fixed integer.  Injectivity of the first map and exactness in the middle survive the restriction
+  untouched, since both are read off from the same equations; what needs an argument is that the
+  second map stays surjective, because a class killed by the integer is only represented by an idele
+  whose power is a principal idele.  That principal idele comes from a unit of the field which is a
+  power in every completion, so for a prime exponent Wang's theorem makes it a power in the field,
+  and subtracting the principal idele of a root moves the representative to one killed by the
+  exponent without changing its class.  **For a prime exponent the elements killed by that prime of
+  the units, of the ideles and of the idele classes again form a short exact sequence of
+  representations of the Galois group.**
 * `InverseGalois.CFT.GroupCohomology.CyclicCoboundary` turns the Herbrand description of the second
   cohomology of a finite cyclic group into the concrete statement the local half needs: if every
   invariant element is a norm then every two-cocycle is a coboundary, with an explicit one-cochain.
