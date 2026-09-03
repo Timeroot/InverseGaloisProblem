@@ -594,6 +594,7 @@ import InverseGalois.CFT.Tate.FamilyFree
 import InverseGalois.CFT.Tate.FamilyNorm
 import InverseGalois.CFT.Tate.FamilyOrbit
 import InverseGalois.CFT.Tate.FamilyOrbits
+import InverseGalois.CFT.Tate.FamilyProduct
 import InverseGalois.CFT.Tate.FamilyReindex
 import InverseGalois.CFT.Tate.FamilyRestrict
 import InverseGalois.CFT.Tate.FamilyRestrictOrbit
@@ -749,6 +750,7 @@ import InverseGalois.CFT.Units.IdeleFixed
 import InverseGalois.CFT.Units.IdeleGen
 import InverseGalois.CFT.Units.IdeleNorm
 import InverseGalois.CFT.Units.IdeleNormTower
+import InverseGalois.CFT.Units.IdeleOrbitTate
 import InverseGalois.CFT.Units.IdeleQuotCyclic
 import InverseGalois.CFT.Units.IdeleRep
 import InverseGalois.CFT.Units.IdeleRestrict
@@ -1843,6 +1845,16 @@ it that are available here.
   sections of any family is the product over the orbits of the index set of the contribution of one
   orbit, and that contribution is the Herbrand quotient of the module at a point of the orbit under
   a full turn: exactly the local factor of the group of ideles at a place of the base field.
+* `InverseGalois.CFT.Tate.FamilyProduct` does the same for an arbitrary finite group and in every
+  degree at once.  Reindexing along the decomposition of the index set into its orbits and splitting
+  a disjoint union are both isomorphisms of representations, so **the sections of a family are the
+  product over the orbits of the sections over one orbit**; the complete cohomology of a product is
+  the product of the complete cohomologies, and the sections over one orbit are coinduced from the
+  stabiliser of a chosen point.  Chaining the three gives **the complete cohomology of the sections
+  as a product of local contributions, one for each orbit, each computed in the stabiliser of a
+  point of that orbit** — for the ideles of a Galois extension of number fields, a product over the
+  places of the base field of cohomology groups of decomposition groups — and in particular the
+  sections have no cohomology in a degree as soon as no local contribution has any.
 * `InverseGalois.CFT.Tate.NormSurjective` reads the vanishing of the upper Tate group as a statement
   about individual elements: that group is the fixed points modulo the norms, so it vanishes exactly
   when every fixed point is a norm.  Being a norm is transported by an equivariant isomorphism, and
@@ -2209,6 +2221,15 @@ it that are available here.
   completion at a place above it**, in every integer degree.  The same argument at an infinite
   place, which differs from the finite one only in the family it is applied to, gives the same
   description of the local factor there.
+* `InverseGalois.CFT.Units.IdeleOrbitTate` puts the local factors back together.  The places of the
+  extension are the disjoint union of the orbits, one for each place of the base field, so the
+  units of all the completions are the product of the local factors and complete cohomology turns
+  that product into a product: **in every degree the complete cohomology of the group of ideles is
+  the product, over the places of the base field, of the complete cohomology of the decomposition
+  group of a place above it with coefficients in the units of the completion there** — for the
+  finite places and for the infinite ones alike, with no hypothesis on the Galois group beyond
+  finiteness.  In particular the ideles have no cohomology in a degree in which no local factor
+  has any.
 * `InverseGalois.CFT.Local.InfiniteAction` builds the same picture at an infinite place.  An
   automorphism fixing such a place preserves its absolute value, so it is an isometry of the field
   for the metric of the place and extends to the completion there; the decomposition group of the
