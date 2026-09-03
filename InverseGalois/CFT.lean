@@ -647,6 +647,7 @@ import InverseGalois.CFT.TateCohomology.AugmentationIdeal
 import InverseGalois.CFT.TateCohomology.CocycleExtension
 import InverseGalois.CFT.TateCohomology.CohomTrivial
 import InverseGalois.CFT.TateCohomology.Duality
+import InverseGalois.CFT.TateCohomology.DualityDivisible
 import InverseGalois.CFT.TateCohomology.DualityShift
 import InverseGalois.CFT.TateCohomology.Exact
 import InverseGalois.CFT.TateCohomology.Functorial
@@ -3703,6 +3704,15 @@ it that are available here.
   **the complete cohomology of the functionals on a representation killed by a prime, in any
   degree, is the group of functionals on the complete cohomology of the representation in the
   complementary degree.**
+* `InverseGalois.CFT.TateCohomology.DualityDivisible` removes the hypothesis on the representation.
+  The duality asks of the coefficients only that they receive every functional defined on a
+  submodule, and for coefficients in which every element is divisible by every integer that is the
+  criterion of Baer rather than a condition on the module the submodule sits in.  So **a divisible
+  group of coefficients is dualizing for every representation of a finite group whatsoever**, and
+  in particular, the circle of the rationals being divisible, **the characters of the complete
+  cohomology of a representation in a degree are the complete cohomology of the characters of the
+  representation in the complementary degree** -- the duality of Tate for a finite group, with no
+  hypothesis on the representation and none on the degree.
 * `InverseGalois.CFT.TateCohomology.TateClassCount` turns the classical hypotheses of Tate's
   theorem into a count.  **An element of a finite commutative group annihilated by exactly the
   multiples of the order of the group generates the group**, because the subgroup of its multiples
