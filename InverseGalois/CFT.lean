@@ -681,7 +681,9 @@ import InverseGalois.CFT.TateCohomology.TensorExtension
 import InverseGalois.CFT.TateCohomology.TensorFunctor
 import InverseGalois.CFT.TateCohomology.TensorPExact
 import InverseGalois.CFT.TateCohomology.TensorPTorsion
+import InverseGalois.CFT.TateCohomology.TensorRight
 import InverseGalois.CFT.TateCohomology.TensorShift
+import InverseGalois.CFT.TateCohomology.TensorTor
 import InverseGalois.CFT.TateCohomology.TensorTrivial
 import InverseGalois.CFT.TateCohomology.TorsionFree
 import InverseGalois.CFT.TateCohomology.TorsionInduced
@@ -3720,6 +3722,26 @@ it that are available here.
   representation and its reduction.  Hence **a short exact sequence stays short exact after
   tensoring with coefficients killed by a prime as soon as its first map stays injective modulo
   that prime** -- and with no condition at all when its middle term is itself killed by the prime.
+* `InverseGalois.CFT.TateCohomology.TensorRight` tensors in the other variable.  A map of
+  coefficients, tensored on the left with a fixed representation, is again a map of
+  representations, and composition and identities are respected factor by factor, so a short
+  complex of coefficients is carried to a short complex.  Right exactness holds on either side, so
+  again only injectivity can fail and flatness of the fixed representation supplies it: **a short
+  exact sequence of coefficients tensored with a flat representation is short exact.**  Both
+  variables are needed together, because a class formation sits in the first and the coefficients
+  of an embedding problem sit in the second.
+* `InverseGalois.CFT.TateCohomology.TensorTor` measures what is lost when the coefficients are
+  presented.  Tensoring a representation with a presentation of the coefficients is right exact but
+  not exact: the map from the sub of the presentation into its middle term need no longer be
+  injective, and its kernel is **the first derived tensor product**, which vanishes as soon as the
+  representation is flat.  Nothing else is lost, so the four terms are exact, and cutting them at
+  the image of the middle map gives two short exact sequences with the tensor products with the sub
+  and with the middle term in the middle.  Those two are acyclic whenever the representation is
+  cohomologically trivial on every Sylow subgroup and the presentation is flat, so both connecting
+  maps are bijective and **the complete cohomology of the tensor product with the coefficients in a
+  degree is the complete cohomology of the first derived tensor product two degrees higher.**  That
+  is exactly the correction to the theorem of Tate and Nakayama for coefficients which are not
+  flat.
 * `InverseGalois.CFT.TateCohomology.Duality` pairs the two middle degrees against each other.  The
   functionals on a representation with values in a fixed module carry an action of the group
   through the source, and **the norm of such a functional is its composition with the norm of the
