@@ -653,6 +653,7 @@ import InverseGalois.CFT.TateCohomology.Norm
 import InverseGalois.CFT.TateCohomology.PGroupInvariants
 import InverseGalois.CFT.TateCohomology.PGroupTrivial
 import InverseGalois.CFT.TateCohomology.PTorsionTrivial
+import InverseGalois.CFT.TateCohomology.Product
 import InverseGalois.CFT.TateCohomology.Restrict
 import InverseGalois.CFT.TateCohomology.Shapiro
 import InverseGalois.CFT.TateCohomology.Shift
@@ -3340,6 +3341,19 @@ it that are available here.
   complete cohomology of the representation in the following degree**, and **the complete
   cohomology of a representation in a degree is the complete cohomology of its coshift in the
   following degree**.
+* `InverseGalois.CFT.TateCohomology.Product` takes a family of representations indexed by an
+  arbitrary set and forms the product on which the group acts one factor at a time.  A family is
+  invariant exactly when each of its members is and the norm of a family is the family of the
+  norms, so in degree zero the complete cohomology of the product is the product of the complete
+  cohomologies.  A family of functions on the group is the same thing as a function on the group
+  with values in the product, and under that identification the embeddings of the factors assemble
+  into the embedding of the product and the summations of the factors into the summation of the
+  product; so the product sits in two short exact sequences whose middle term is the functions on
+  the group with values in the product, hence has no complete cohomology, and whose remaining terms
+  are the products of the shifts and of the coshifts.  Running the resulting bijections in the two
+  directions from degree zero gives **the complete cohomology of a product of representations as
+  the product of their complete cohomologies, in every integer degree**, which is what turns a
+  module built place by place into a product of local contributions.
 * `InverseGalois.CFT.TateCohomology.Annihilate` runs the two inductions those identifications
   allow, upwards from degree zero and downwards from degree minus one, and concludes that **the
   order of the group annihilates the complete cohomology in every integer degree**.
