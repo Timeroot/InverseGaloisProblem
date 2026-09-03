@@ -435,6 +435,8 @@ import InverseGalois.CFT.PGroupCompositum
 import InverseGalois.CFT.PairwiseResidue
 import InverseGalois.CFT.PiDual
 import InverseGalois.CFT.PiIndex
+import InverseGalois.CFT.PoitouTate.CupDual
+import InverseGalois.CFT.PoitouTate.Dual
 import InverseGalois.CFT.PrimeProductSquare
 import InverseGalois.CFT.Profinite.Cochain
 import InverseGalois.CFT.Profinite.Coeff
@@ -4016,6 +4018,22 @@ it that are available here.
   trivially on the target, so **there is a cup product of first cohomology into second**; it
   commutes with composing along a homomorphism, hence with restriction, so **a class whose either
   factor dies everywhere locally is itself everywhere locally trivial.**
+* `InverseGalois.CFT.PoitouTate.Dual` names the second factor that pairing wants.  The
+  homomorphisms from a module to a fixed group of coefficients carry the action that transports the
+  argument backwards and the value forwards, and this makes evaluation a pairing of a module with
+  that Cartier dual, equivariant for the two actions and universal: sending an element to
+  evaluation at it compares a module with its double dual.  An open normal subgroup acting
+  trivially on the module and on the coefficients acts trivially on the homomorphisms between them,
+  so **the Cartier dual of a smooth module is smooth**, and a module and its dual have cohomology
+  of the same kind.
+* `InverseGalois.CFT.PoitouTate.CupDual` cups along that evaluation.  A class with values in a
+  module pairs with a class with values in its Cartier dual into a second cohomology class with
+  values in the coefficients; the pairing commutes with restriction, so **either factor dying
+  everywhere locally makes the product everywhere locally trivial**.  Over a number field the
+  coefficients embed equivariantly in the units of a Galois extension, where the second cohomology
+  is the Brauer group, so **the local invariants of the pairing of a class with a dual class
+  multiply to one over all places** — a product formula of which the one for the power residue
+  symbol is the case where the module and its dual are both the roots of unity.
 * `InverseGalois.CFT.Profinite.Hilbert90` is the arithmetic input.  A smooth cocycle is constant on
   the cosets of the subgroup fixing a finite Galois level and its values are fixed by that
   subgroup, hence lie in the level, so choosing a preimage of each automorphism of the level turns

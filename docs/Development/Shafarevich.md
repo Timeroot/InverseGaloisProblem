@@ -3961,7 +3961,7 @@ extensions (`Mathlib/GroupTheory/GroupExtension/` has only a docstring TODO).
 | 3 | ~~Finiteness of `Ш²(k, E)` via ABHN + Hochschild–Serre~~ | **DONE** — `CFT/Units/HasseTwo.lean`: `eq_one_of_forall_isLocallySplitLevel`, the vanishing of the everywhere locally trivial classes of `H²` with `μ_n` coefficients, valid at `p = 2` (see §0.38).  The degree-one glue is §0.40; the degree-two glue is §0.42 — `CFT/Units/HasseTwoDecomposition.lean`: `eq_one_of_mem_sha2`, stated at `sha2 M (decompositionSubgroups k Ω)`, the genuine decomposition subgroups of `G_k` |
 | 4 | ~~Local Tate duality for finite modules over a local field~~ | **DONE** — `CFT/Local/CyclicNormIndex.lean` (the norm index of *any* cyclic extension of a local field is its degree), `CFT/Local/KummerNonNorm.lean` (nondegeneracy of the `q`-th power norm residue symbol), see §0.39; `inv_M ∘ res = [M:K] · inv_K` is `localInvariantHom_baseChange` (`CFT/Brauer/InvariantBaseChange.lean`); and `CFT/Brauer/CyclicNormResidue.lean` assembles the norm residue symbol of a cyclic extension of a local field, see §0.56 |
 | 5 | **Global duality `Ш²(k, A) ≅ Ш¹(k, A′)^∨`** | wall #1 as of §0.36; §0.84(c) argued this row was replaceable by degree-two Hochschild–Serre, but **§0.87 refutes that** (step 3 there is circular), so the row stands.  **§0.88 does the torsion-free half unconditionally** (`CFT/Units/IdeleTorusSha.lean`: the locally trivial part of `Ĥ^{n+3}(G, K^×⊗N)` is the image of `Ĥ^n(G,N)`, from the class formation alone) and reduces the `p`-torsion half to the derived correction `Ĥ^*(G, C_K[p]⊗W)` in Tate–Nakayama |
-| 6 | The `p`-th power Hilbert symbol over a number field and its product formula | the repo has the *quadratic* symbol over `ℚ` (`CFT/Global/Hilbert*.lean`); the *local* nondegeneracy of the `p`-th power symbol is §0.39(b) |
+| 6 | ~~The `p`-th power Hilbert symbol over a number field and its product formula~~ | **DONE** — `CFT/Profinite/Symbol.lean` builds `kummerSymbol` for Kummer data of any exponent over any base, and `CFT/Brauer/CyclicProduct.lean` proves `totalInvariant_smoothBrauerHom_kummerSymbolUnits` and its finite-set form; `CFT/PoitouTate/CupDual.lean` generalizes both to the pairing of a class with a class with Cartier dual coefficients (see §0.89).  The *local* nondegeneracy of the `p`-th power symbol is §0.39(b) |
 | 7 | ~~**Chebotarev density over a number field**, in the abelian/ray-class form of (e)~~ | **DONE for odd `p`** — `NumberTheory/RelativeSplitDensity.lean` + `CFT/RelativeFrobenius.lean`: Theorem 13 only needs the Frobenius *up to a scalar*, which is `exists_relStabilizer_eq_zpowers` (see §0.41).  What remains is "every ideal class contains a prime", used only in the `p = 2` Claim |
 | 8 | Poitou–Tate, at least the eight-term sequence for `μ_p` over `k_S` | needed by Lemma 10 and Theorem 13; §0.84(c) argued this row was avoidable, **§0.87 refutes that** |
 | 9 | SW Theorem 13, then Theorems 14 and 15 | assembly |
@@ -8877,6 +8877,88 @@ Bricks available for the next step, all present and sorry-free: `ideleClassShort
 theorem.  What is *not* present: the Kummer identification
 `Hom_cont(G_K,E) ≅ (K^×/K^{×p}) ⊗ Hom(μ_p,E)` as `G`-modules, Shapiro for `I_K ⊗ M`, and any handle
 on `C_K[p]` as a `G`-module.
+
+---
+
+## 0.89 Status (2026-09-03) — the Cartier dual and its pairing; row 6 was already done; and `C_K[p]` is a quotient of a coinduced module
+
+### (a) Two new modules
+
+`CFT/PoitouTate/Dual.lean` and `CFT/PoitouTate/CupDual.lean`, both sorry- and axiom-free.
+
+* `CartierDual A μ` is `A →* μ` with the action `(g • f) a = g • f (g⁻¹ • a)`, a `CommGroup` with a
+  `MulDistribMulAction`.  `evalPairing A μ : A →* CartierDual A μ →* μ` is evaluation and
+  `evalPairing_smul` is its equivariance; `toDoubleDual` is the comparison with the double dual.
+  `IsSmoothAction G (CartierDual A μ)` is an instance: an open normal subgroup acting trivially on
+  `A` and on `μ` acts trivially on `A →* μ`.  So the dual of a smooth module is a smooth module and
+  `SmoothH1 G (CartierDual A μ)` is defined.
+* `cupDual A μ : SmoothH1 G A →* SmoothH1 G (CartierDual A μ) →* SmoothH2 G μ` is
+  `cupSmoothH1 (evalPairing A μ)`.  It commutes with restriction (`resH2_cupDual`) and carries the
+  everywhere locally trivial classes of either factor into `sha2` (`cupDual_mem_sha2_left/right`).
+* `dualSymbolUnits A ιμ hιμ` pushes the pairing into `Ωˣ` along an equivariant `ιμ : μ →* Ωˣ`, and
+  `totalInvariant_smoothBrauerHom_dualSymbolUnits` is **the product formula: the local invariants
+  of the pairing of a class with a dual class multiply to one over all places of a number field.**
+  There is a finite-set form with the same proof shape as the power residue symbol's.
+
+In Poitou–Tate terms this is the *easy* half of the central exactness: the image of `H¹(k,A)` in
+the restricted product of the `H¹(k_v,A)` is contained in the annihilator of the image of
+`H¹(k,A^D)`.  The hard half is the reverse inclusion.
+
+### (b) Row 6 of the §0.36 table is stale: it is done
+
+The row reads "the repo has the *quadratic* symbol over `ℚ`".  That predates
+`CFT/Profinite/Symbol.lean`, which builds `kummerSymbol h Φ : kˣ →* kˣ →* SmoothH2 Gal(Ω/k) M` for
+any Kummer data of any exponent `n` over any base, together with `resH2_kummerSymbol` and
+`kummerSymbolUnits`, and `CFT/Brauer/CyclicProduct.lean`, which proves
+`totalInvariant_smoothBrauerHom_kummerSymbolUnits` and
+`prod_placeInvariant_mul_prod_infinitePlaceInvariant_kummerSymbolUnits`.  That is the `p`-th power
+symbol over a number field and its product formula.  **Row 6 should be marked DONE.**
+
+### (c) `C_K[p]` is a quotient of a coinduced module, and its Tate cohomology is local
+
+§0.88(c) named "any handle on `C_K[p]` as a `G`-module" as missing.  The handle is already in the
+sequence §0.88(c) writes down.  With `μ_p ⊆ K`,
+
+`0 → μ_p(K) → I_K[p] → C_K[p] → Ш¹(K, μ_p) = 0`,
+
+the last vanishing by Grunwald–Wang, so
+
+**`C_K[p] ≅ (∏_w μ_p) / μ_p(K)`**, the product over *all* places `w` of `K`.
+
+Now `∏_w μ_p` is not an opaque module.  Group the places over the places of `k`: for each place `v`
+of `k` the set `{w | v}` is one `G`-orbit, and `∏_{w|v} μ_p` is the module of sections of a
+constant family over that orbit.  That is exactly the situation of `CFT/Tate/FamilyCoind.lean`
+(2026-09-02): **the sections of a family over a transitive orbit are coinduced from the stabiliser
+of a base point**, so by Shapiro
+
+`Ĥ^n(G, ∏_{w|v} μ_p) ≅ Ĥ^n(D_w, μ_p)` for every `n : ℤ`,
+
+`D_w` the decomposition group.  `CFT/Units/AdicOrbitTate.lean` (2026-09-02/03) already instantiates
+this for the units of the completions at the finite places and at the infinite ones,
+`adicOrbitTateEquiv` and `infiniteOrbitTateEquiv`, with no cyclicity hypothesis.
+
+So the error term of `p`-torsion Tate–Nakayama, `Ĥ^*(G, C_K[p] ⊗ W)`, is computed by the long exact
+sequence of `0 → μ_p(K) ⊗ W → (∏_w μ_p) ⊗ W → C_K[p] ⊗ W → 0` — exact because everything in sight
+is an `𝔽_p`-vector space — out of `Ĥ^*(G, μ_p ⊗ W)` and a product of **local** groups
+`Ĥ^*(D_w, μ_p ⊗ W)`.  That is the shape of the Poitou–Tate sequence, and it is reachable with the
+bricks in the repository rather than with a fresh duality theory.
+
+### (d) What this makes the next steps
+
+1. **Tate cohomology of a finite group commutes with products.**  True for arbitrary index sets
+   (products are exact in `Ab` and the complete resolution is a fixed complex of finitely generated
+   free modules), absent from the repository, and needed to turn the per-place Shapiro statement
+   into a statement about `I_K[p]`.  This is the one genuinely missing general lemma and it is
+   small.
+2. **`I_K[p] = ∏_w μ_p` as a `G`-module**, in the repository's idele language, and the resulting
+   `Ĥ^*(G, I_K[p] ⊗ W) ≅ ∏_v Ĥ^*(D_w, μ_p ⊗ W)`.
+3. **`C_K[p] ≅ I_K[p]/μ_p(K)`** from the snake sequence and `Ш¹(K,μ_p) = 0`
+   (`exists_pow_eq_of_forall_localPow_outside_of_prime`).
+4. The long exact sequence, and then the error term in `tateNakayamaPTorsionEquiv`.
+
+Row 5 is then a computation rather than a wall.  Row 8, the eight-term sequence itself, remains a
+separate and larger object; nothing here shortens it, but nothing in rows 5 and 9 evidently needs
+it in full once (1)–(4) are in place.
 
 ---
 
