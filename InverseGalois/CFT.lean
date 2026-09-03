@@ -684,6 +684,9 @@ import InverseGalois.CFT.TateCohomology.TensorPTorsion
 import InverseGalois.CFT.TateCohomology.TensorShift
 import InverseGalois.CFT.TateCohomology.TensorTrivial
 import InverseGalois.CFT.TateCohomology.TorsionFree
+import InverseGalois.CFT.TateCohomology.TorsionInduced
+import InverseGalois.CFT.TateCohomology.TorsionNakayama
+import InverseGalois.CFT.TateCohomology.TorsionShift
 import InverseGalois.CFT.TateCohomology.Transfer
 import InverseGalois.CFT.TotallyReal
 import InverseGalois.CFT.Units.ABHN
@@ -3677,6 +3680,34 @@ it that are available here.
   after tensoring with a representation killed by that prime** -- and when the prime acts without
   torsion the reduction inherits the vanishing from the representation itself.  This gives **the
   theorem of Tate and Nakayama for coefficients killed by a prime**.
+* `InverseGalois.CFT.TateCohomology.TorsionShift` factors multiplication by a natural number into
+  two short exact sequences: the vectors it kills, the representation and its multiples, and then
+  the multiples, the representation and the reduction.  Both have the representation itself in the
+  middle, so when it has no complete cohomology at all both connecting maps are bijective and
+  **the complete cohomology of the reduction in a degree is the complete cohomology of the vectors
+  killed by the number two degrees higher.**  In particular **the reduction has no first cohomology
+  as soon as those vectors have none in degree three**, which is what the previous file asks of the
+  extension attached to the fundamental class.
+* `InverseGalois.CFT.TateCohomology.TorsionInduced` takes the vectors killed by a number along the
+  sequence defining the shift.  Taking them is a functor, and exactness on the left and in the
+  middle survives at once; on the right it survives too, because the record of all the translates
+  of a vector can be undone by reading off the value at the identity, so a function whose class in
+  the shift is killed by the number can be corrected by the record of its own value at the identity
+  into a function that is itself killed by the number.  The functions on the group with values in
+  the vectors killed by the number are exactly the vectors killed by the number in the functions on
+  the group, so the middle term still has no complete cohomology, over the group and over any of
+  its subgroups, and **the complete cohomology of the vectors killed by a number in the shift is
+  the complete cohomology of the vectors killed by that number one degree higher.**
+* `InverseGalois.CFT.TateCohomology.TorsionNakayama` spends those two dimension shifts on the
+  hypothesis left over above.  The extension attached to the fundamental class is cohomologically
+  trivial on each Sylow subgroup, and the base ring has no torsion at the prime, so the vectors of
+  the extension killed by the prime are the vectors of the shift killed by the prime.  Running the
+  shift of the torsion and then the shift of the reduction, **the reduction modulo a prime of the
+  extension attached to the fundamental class has no first cohomology on a Sylow subgroup for that
+  prime as soon as the vectors of the representation killed by the prime have no complete
+  cohomology there in degree four**, and **the theorem of Tate and Nakayama for coefficients killed
+  by a prime holds under that hypothesis alone** -- a statement about the coefficients one starts
+  from rather than about an auxiliary extension.
 * `InverseGalois.CFT.TateCohomology.TensorPExact` keeps a short exact sequence exact when the
   coefficients are killed by a prime.  Tensoring preserves surjectivity and exactness in the
   middle whatever the coefficients are; only injectivity can fail, and it does not fail here.  A
