@@ -601,6 +601,7 @@ import InverseGalois.CFT.Tate.FamilyRestrict
 import InverseGalois.CFT.Tate.FamilyRestrictOrbit
 import InverseGalois.CFT.Tate.FamilyRing
 import InverseGalois.CFT.Tate.FamilySigma
+import InverseGalois.CFT.Tate.FamilyTorsion
 import InverseGalois.CFT.Tate.Fibers
 import InverseGalois.CFT.Tate.Finite
 import InverseGalois.CFT.Tate.FiniteExact
@@ -1856,6 +1857,15 @@ it that are available here.
   point of that orbit** — for the ideles of a Galois extension of number fields, a product over the
   places of the base field of cohomology groups of decomposition groups — and in particular the
   sections have no cohomology in a degree as soon as no local contribution has any.
+* `InverseGalois.CFT.Tate.FamilyTorsion` applies that decomposition to the elements killed by a
+  fixed integer.  Those form a subgroup of every abelian group and are carried onto one another by
+  every isomorphism, so a family of modules has a subfamily of them, and the sections of the
+  subfamily are exactly the sections of the family killed by the integer.  The conclusion is **the
+  complete cohomology of the sections killed by an integer as a product over the orbits of the
+  index set of the complete cohomology of a stabiliser with coefficients in the elements killed by
+  that integer there**.  For the ideles of a Galois extension of number fields the sections killed
+  by a prime are the `p`-torsion of the idele group, the orbits are the places of the base field
+  and the local coefficients are the roots of unity of the completions.
 * `InverseGalois.CFT.Tate.NormSurjective` reads the vanishing of the upper Tate group as a statement
   about individual elements: that group is the fixed points modulo the norms, so it vanishes exactly
   when every fixed point is a norm.  Being a norm is transported by an equivariant isomorphism, and
