@@ -587,6 +587,7 @@ import InverseGalois.CFT.Tate.CyclicInduced
 import InverseGalois.CFT.Tate.Exact
 import InverseGalois.CFT.Tate.Family
 import InverseGalois.CFT.Tate.FamilyCoboundary
+import InverseGalois.CFT.Tate.FamilyCoind
 import InverseGalois.CFT.Tate.FamilyFree
 import InverseGalois.CFT.Tate.FamilyNorm
 import InverseGalois.CFT.Tate.FamilyOrbit
@@ -1800,6 +1801,17 @@ it that are available here.
   the family with copies of the module at the base point and the action of a generator with a
   twisted shift, so the Herbrand quotient of the sections is the Herbrand quotient of the module at
   the base point for a full turn of the orbit.
+* `InverseGalois.CFT.Tate.FamilyCoind` removes the choice from that comparison and extends it to a
+  group that need not be cyclic.  A section of a family over a transitively acted upon index set is
+  remembered by the function on the group sending an element to the value, at a base point, of the
+  translated section; that function is equivariant for the stabiliser of the base point, every
+  equivariant function arises from exactly one section, and translating a section translates the
+  function, so **the sections of a family over a transitive orbit are the representation coinduced
+  from the module at the base point**.  Coinduction is transparent to complete cohomology, so **the
+  complete cohomology of the sections is the complete cohomology of the stabiliser of the base point
+  with coefficients in the module there**: for the local factors of the group of ideles at the
+  places above a place of the base field, the stabiliser is the decomposition group and the module
+  is the local factor at one place above it.
 * `InverseGalois.CFT.Tate.FamilyRing` supplies the transport data in the form in which arithmetic
   produces it.  What a Galois automorphism carries from one place to another is a whole completion,
   a ring and not just a group, and a compatible system of ring isomorphisms along the action on the
