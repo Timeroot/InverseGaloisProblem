@@ -749,6 +749,7 @@ import InverseGalois.CFT.Units.IdeleClassIndex
 import InverseGalois.CFT.Units.IdeleClassSES
 import InverseGalois.CFT.Units.IdeleClassTate
 import InverseGalois.CFT.Units.IdeleClassTorsionSES
+import InverseGalois.CFT.Units.IdeleClassTorsionTate
 import InverseGalois.CFT.Units.IdeleClassTower
 import InverseGalois.CFT.Units.IdeleCoboundary
 import InverseGalois.CFT.Units.IdeleFixed
@@ -3078,6 +3079,15 @@ it that are available here.
   exponent without changing its class.  **For a prime exponent the elements killed by that prime of
   the units, of the ideles and of the idele classes again form a short exact sequence of
   representations of the Galois group.**
+* `InverseGalois.CFT.Units.IdeleClassTorsionTate` reads its long exact sequence.  Two of the three
+  terms are known: the middle one is, in every degree, the product over the places of the base field
+  of the complete cohomology of a decomposition group with coefficients in the roots of unity of a
+  completion, and the term on the left is the complete cohomology of the roots of unity of the field
+  itself.  Read forwards this gives a vanishing criterion — **the idele classes killed by the prime
+  have no complete cohomology in a degree in which no local factor has any and the roots of unity of
+  the field have none one degree higher.**  Read backwards it identifies the image of the connecting
+  map: **the everywhere locally trivial classes of the roots of unity of the field are exactly the
+  classes coming from the idele classes killed by the prime, one degree lower.**
 * `InverseGalois.CFT.GroupCohomology.CyclicCoboundary` turns the Herbrand description of the second
   cohomology of a finite cyclic group into the concrete statement the local half needs: if every
   invariant element is a norm then every two-cocycle is a coboundary, with an explicit one-cochain.
