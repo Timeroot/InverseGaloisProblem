@@ -647,6 +647,7 @@ import InverseGalois.CFT.TateCohomology.AugmentationIdeal
 import InverseGalois.CFT.TateCohomology.CocycleExtension
 import InverseGalois.CFT.TateCohomology.CohomTrivial
 import InverseGalois.CFT.TateCohomology.Duality
+import InverseGalois.CFT.TateCohomology.DualityShift
 import InverseGalois.CFT.TateCohomology.Exact
 import InverseGalois.CFT.TateCohomology.Functorial
 import InverseGalois.CFT.TateCohomology.Graded
@@ -3686,6 +3687,22 @@ it that are available here.
   is dual to itself in the two middle degrees against any coefficients whatsoever**.  This is the
   base case from which the shift of degree carries the duality to every pair of degrees adding to
   minus one.
+* `InverseGalois.CFT.TateCohomology.DualityShift` carries it there.  A function on the group with
+  values in the functionals on a module is read as the functional summing the values its members
+  take on the values of a function on the group, and **that reading is a bijection which respects
+  the action**.  Under it the two constructions of the shift trade places: the summation map of the
+  functionals becomes precomposition with the record of the translates, and the record of the
+  translates of the functionals becomes precomposition with the summation map.  So **the coshift of
+  the functionals is the functionals on the shift**, with nothing asked, and **the shift of the
+  functionals is the functionals on the coshift** as soon as a functional defined on the vectors of
+  vanishing sum extends to all the functions on the group -- again free when the representation is
+  killed by a prime.  Since the complete cohomology of a shift in a degree is the complete
+  cohomology of the representation one degree higher, those two identifications move the degree of
+  the functionals up and down at will, and both moves preserve being killed by a prime.  An
+  induction over the integers starting from the two middle degrees therefore reaches every degree:
+  **the complete cohomology of the functionals on a representation killed by a prime, in any
+  degree, is the group of functionals on the complete cohomology of the representation in the
+  complementary degree.**
 * `InverseGalois.CFT.TateCohomology.TateClassCount` turns the classical hypotheses of Tate's
   theorem into a count.  **An element of a finite commutative group annihilated by exactly the
   multiples of the order of the group generates the group**, because the subgroup of its multiples
