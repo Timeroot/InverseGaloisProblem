@@ -779,6 +779,7 @@ import InverseGalois.CFT.Units.IdeleTensorSha
 import InverseGalois.CFT.Units.IdeleTensorTorsion
 import InverseGalois.CFT.Units.IdeleTorsion
 import InverseGalois.CFT.Units.IdeleTorusSha
+import InverseGalois.CFT.Units.IdeleTorusShaTorsion
 import InverseGalois.CFT.Units.IdeleTower
 import InverseGalois.CFT.Units.InertPlace
 import InverseGalois.CFT.Units.InfiniteComap
@@ -4260,6 +4261,17 @@ it that are available here.
   they are local: the idele classes killed by a prime sit between the units and the ideles, so the
   two conditions descend to a product over the places of the roots of unity of the completions and
   to the roots of unity of the field.
+* `InverseGalois.CFT.Units.IdeleTorusShaTorsion` spends that on the local-global obstruction, for
+  coefficients an embedding problem can supply.  The comparison of Tate and Nakayama, followed by
+  the connecting map of the sequence of the idele classes, carries the complete cohomology of
+  coefficients killed by a prime into the classes of the units tensored with them three degrees
+  higher which die in the ideles -- the everywhere locally trivial ones, the cohomology of the
+  ideles being a product over the places.  What that composite reaches is exactly what the
+  connecting map produces from the idele classes on which the obstruction vanishes, and that is
+  unconditional; when the obstruction group has no complete cohomology in the degree at hand,
+  **the everywhere locally trivial classes of the units tensored with coefficients killed by a
+  prime are exactly the image of the complete cohomology of the coefficients three degrees lower**,
+  a finite object where the cohomology of the units is not.
 * `InverseGalois.CFT.Units.BaseArtin` puts a name on the left hand side of that identification.
   Composing it with the description of the complete cohomology of the trivial integral
   representation in degree minus two gives **the reciprocity isomorphism between the abelianization
