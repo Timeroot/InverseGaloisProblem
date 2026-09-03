@@ -687,6 +687,7 @@ import InverseGalois.CFT.Units.AdicFixed
 import InverseGalois.CFT.Units.AdicIdeleHerbrand
 import InverseGalois.CFT.Units.AdicLocalNorm
 import InverseGalois.CFT.Units.AdicOrbit
+import InverseGalois.CFT.Units.AdicOrbitTate
 import InverseGalois.CFT.Units.AdicRadical
 import InverseGalois.CFT.Units.AdicSIdeles
 import InverseGalois.CFT.Units.AdicUnitGen
@@ -2196,6 +2197,13 @@ it that are available here.
   where no labelling of the orbit is needed: restricting the family of all completions to one orbit
   and reading the action of the stabiliser of a point off the transports gives the local factor
   Herbrand quotient the order of the decomposition group.
+* `InverseGalois.CFT.Units.AdicOrbitTate` reads the same family through coinduction instead of
+  through the Herbrand quotient, and so loses the hypothesis that the Galois group be cyclic.  The
+  places above a fixed finite place of the base field are one orbit, so the units of the completions
+  at them are the representation coinduced from the units of the completion at any one of them, and
+  **the complete cohomology of the local factor of the ideles at a finite place of the base field is
+  the complete cohomology of the decomposition group with coefficients in the units of the
+  completion at a place above it**, in every integer degree.
 * `InverseGalois.CFT.Local.InfiniteAction` builds the same picture at an infinite place.  An
   automorphism fixing such a place preserves its absolute value, so it is an isometry of the field
   for the metric of the place and extends to the completion there; the decomposition group of the

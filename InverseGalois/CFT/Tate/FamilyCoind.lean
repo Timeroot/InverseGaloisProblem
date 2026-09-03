@@ -54,7 +54,8 @@ open CategoryTheory MulAction Tate
 noncomputable section
 
 variable {G X : Type} [Group G] [MulAction G X] (x₀ : X)
-  (htrans : ∀ y : X, ∃ g : G, g • y = x₀)
+  (htrans : ∀ y : X, ∃ g : G, g • y = x₀) {H : Subgroup G}
+  (hH : ∀ g : G, g • x₀ = x₀ → g ∈ H) (hH' : ∀ g : ↥H, (g : G) • x₀ = x₀)
   {M : X → Type} [∀ x, AddCommGroup (M x)] (F : FamilyAction M G)
 
 /-! ### The two representations -/
@@ -66,12 +67,11 @@ def orbitSectionsRep : Rep ℤ G := repOfAddAut F.familyAut
 theorem orbitSectionsRep_ρ_apply (g : G) (u : ∀ x, M x) :
     (orbitSectionsRep F).ρ g u = F.familyAut g u := rfl
 
-/-- The module at the base point, as a representation of the stabiliser of that point. -/
-def orbitStabRep : Rep ℤ ↥(stabilizer G x₀) :=
-  repOfAddAut (stabAut x₀ (fun s : ↥(stabilizer G x₀) => s.2) F)
+/-- The module at the base point, as a representation of a subgroup fixing that point. -/
+def orbitStabRep : Rep ℤ ↥H := repOfAddAut (stabAut x₀ hH' F)
 
-theorem orbitStabRep_ρ_apply (s : ↥(stabilizer G x₀)) (a : M x₀) :
-    (orbitStabRep x₀ F).ρ s a = F.transport (s.2 : (s : G) • x₀ = x₀) a := rfl
+theorem orbitStabRep_ρ_apply (s : ↥H) (a : M x₀) :
+    (orbitStabRep x₀ hH' F).ρ s a = F.transport (hH' s) a := rfl
 
 /-! ### The equivariant function attached to a section -/
 
@@ -81,29 +81,28 @@ def orbitCoindFun (u : ∀ x, M x) : G → M x₀ := fun g => F.familyAut g u x�
 
 /-- **The function attached to a section is equivariant for the stabiliser of the base point.** -/
 theorem orbitCoindFun_mem (u : ∀ x, M x) :
-    orbitCoindFun x₀ F u ∈ Representation.coindV (stabilizer G x₀).subtype
-      (orbitStabRep x₀ F).ρ := by
+    orbitCoindFun x₀ F u ∈ Representation.coindV H.subtype (orbitStabRep x₀ hH' F).ρ := by
   intro s g
-  show F.familyAut ((s : G) * g) u x₀ = (orbitStabRep x₀ F).ρ s (F.familyAut g u x₀)
+  show F.familyAut ((s : G) * g) u x₀ = (orbitStabRep x₀ hH' F).ρ s (F.familyAut g u x₀)
   rw [map_mul, AddAut.mul_apply, orbitStabRep_ρ_apply]
-  exact F.familyAut_apply_eq_transport (s.2 : (s : G) • x₀ = x₀) _
+  exact F.familyAut_apply_eq_transport (hH' s) _
 
 /-- The equivariant function attached to a section, as a map of additive groups. -/
 def orbitCoindHom : (∀ x, M x) →+
-    ↥(Representation.coindV (stabilizer G x₀).subtype (orbitStabRep x₀ F).ρ) where
-  toFun u := ⟨orbitCoindFun x₀ F u, orbitCoindFun_mem x₀ F u⟩
+    ↥(Representation.coindV H.subtype (orbitStabRep x₀ hH' F).ρ) where
+  toFun u := ⟨orbitCoindFun x₀ F u, orbitCoindFun_mem x₀ hH' F u⟩
   map_zero' := Subtype.ext (funext fun g => congrFun (map_zero (F.familyAut g)) x₀)
   map_add' u v := Subtype.ext (funext fun g => congrFun (map_add (F.familyAut g) u v) x₀)
 
 theorem orbitCoindHom_coe (u : ∀ x, M x) (g : G) :
-    (orbitCoindHom x₀ F u).val g = F.familyAut g u x₀ := rfl
+    (orbitCoindHom x₀ hH' F u).val g = F.familyAut g u x₀ := rfl
 
 /-! ### The identification -/
 
 include htrans in
 /-- **A section is determined by the values at the base point of its translates**, when the action
 on the index set is transitive. -/
-theorem orbitCoindHom_injective : Function.Injective (orbitCoindHom x₀ F) := by
+theorem orbitCoindHom_injective : Function.Injective (orbitCoindHom x₀ hH' F) := by
   rw [injective_iff_map_eq_zero]
   intro u hu
   refine funext fun x => ?_
@@ -112,14 +111,14 @@ theorem orbitCoindHom_injective : Function.Injective (orbitCoindHom x₀ F) := b
   rw [F.familyAut_apply_eq_transport hg u] at h
   exact (map_eq_zero_iff (F.transport hg) (F.transport hg).injective).1 h
 
-include htrans in
+include htrans hH in
 /-- **Every function equivariant for the stabiliser of the base point comes from a section**, when
 the action on the index set is transitive.  The section takes at an index the value transported back
 from the base point along a group element carrying the index there; the equivariance makes the
 result independent of that element. -/
-theorem orbitCoindHom_surjective : Function.Surjective (orbitCoindHom x₀ F) := by
+theorem orbitCoindHom_surjective : Function.Surjective (orbitCoindHom x₀ hH' F) := by
   rintro ⟨f, hf⟩
-  have hf' := (Tate.mem_coindV_iff (orbitStabRep x₀ F).ρ f).1 hf
+  have hf' := (Tate.mem_coindV_iff (orbitStabRep x₀ hH' F).ρ f).1 hf
   choose c hc using htrans
   refine ⟨fun y => (F.transport (hc y)).symm (f (c y)), Subtype.ext (funext fun h => ?_)⟩
   have hh : h • (h⁻¹ • x₀) = x₀ := smul_inv_smul h x₀
@@ -129,7 +128,7 @@ theorem orbitCoindHom_surjective : Function.Surjective (orbitCoindHom x₀ F) :=
     rw [inv_mul_cancel_right]
     exact hh
   have hfh : f h = F.transport hs (f (c (h⁻¹ • x₀))) := by
-    have hcv := hf' ⟨_, hs⟩ (c (h⁻¹ • x₀))
+    have hcv := hf' ⟨_, hH _ hs⟩ (c (h⁻¹ • x₀))
     rw [inv_mul_cancel_right] at hcv
     rw [hcv, orbitStabRep_ρ_apply]
   have hb : f (c (h⁻¹ • x₀))
@@ -145,18 +144,19 @@ theorem orbitCoindHom_surjective : Function.Surjective (orbitCoindHom x₀ F) :=
 /-- **The sections of a family over a transitive orbit are the functions equivariant for the
 stabiliser of the base point.** -/
 def orbitCoindEquiv : (∀ x, M x) ≃ₗ[ℤ]
-    ↥(Representation.coindV (stabilizer G x₀).subtype (orbitStabRep x₀ F).ρ) :=
-  (AddEquiv.ofBijective (orbitCoindHom x₀ F)
-    ⟨orbitCoindHom_injective x₀ htrans F, orbitCoindHom_surjective x₀ htrans F⟩).toIntLinearEquiv
+    ↥(Representation.coindV H.subtype (orbitStabRep x₀ hH' F).ρ) :=
+  (AddEquiv.ofBijective (orbitCoindHom x₀ hH' F)
+    ⟨orbitCoindHom_injective x₀ htrans hH' F,
+      orbitCoindHom_surjective x₀ htrans hH hH' F⟩).toIntLinearEquiv
 
 theorem orbitCoindEquiv_apply (u : ∀ x, M x) (g : G) :
-    (orbitCoindEquiv x₀ htrans F u).val g = F.familyAut g u x₀ := rfl
+    (orbitCoindEquiv x₀ htrans hH hH' F u).val g = F.familyAut g u x₀ := rfl
 
 /-- **The sections of a family over a transitive orbit are coinduced from the stabiliser of the
 base point.** -/
 def orbitCoindIso :
-    orbitSectionsRep F ≅ Rep.coind (stabilizer G x₀).subtype (orbitStabRep x₀ F) :=
-  Action.mkIso (orbitCoindEquiv x₀ htrans F).toModuleIso fun g => by
+    orbitSectionsRep F ≅ Rep.coind H.subtype (orbitStabRep x₀ hH' F) :=
+  Action.mkIso (orbitCoindEquiv x₀ htrans hH hH' F).toModuleIso fun g => by
     ext u h
     show F.familyAut h (F.familyAut g u) x₀ = F.familyAut (h * g) u x₀
     rw [map_mul, AddAut.mul_apply]
@@ -166,9 +166,9 @@ variable [Finite G]
 /-- **The complete cohomology of the sections of a family over a transitive orbit is the complete
 cohomology of the stabiliser of the base point with coefficients in the module there.** -/
 def orbitTateEquiv (n : ℤ) :
-    tateModule (orbitSectionsRep F) n ≃ₗ[ℤ] tateModule (orbitStabRep x₀ F) n :=
-  (tateMapIso (orbitCoindIso x₀ htrans F) n).toLinearEquiv.trans
-    (tateShapiroEquiv (orbitStabRep x₀ F) n)
+    tateModule (orbitSectionsRep F) n ≃ₗ[ℤ] tateModule (orbitStabRep x₀ hH' F) n :=
+  (tateMapIso (orbitCoindIso x₀ htrans hH hH' F) n).toLinearEquiv.trans
+    (tateShapiroEquiv (orbitStabRep x₀ hH' F) n)
 
 end
 
