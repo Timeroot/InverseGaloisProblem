@@ -636,6 +636,7 @@ import InverseGalois.CFT.Tate.RealHerbrand
 import InverseGalois.CFT.Tate.Restrict
 import InverseGalois.CFT.Tate.Shapiro
 import InverseGalois.CFT.Tate.Surjection
+import InverseGalois.CFT.Tate.TorsionRep
 import InverseGalois.CFT.Tate.Trivial
 import InverseGalois.CFT.Tate.TrivialLattice
 import InverseGalois.CFT.TateCohomology.Abelianization
@@ -656,6 +657,7 @@ import InverseGalois.CFT.TateCohomology.Norm
 import InverseGalois.CFT.TateCohomology.PGroupInvariants
 import InverseGalois.CFT.TateCohomology.PGroupTrivial
 import InverseGalois.CFT.TateCohomology.PTorsionTrivial
+import InverseGalois.CFT.TateCohomology.Pair
 import InverseGalois.CFT.TateCohomology.Product
 import InverseGalois.CFT.TateCohomology.Restrict
 import InverseGalois.CFT.TateCohomology.Shapiro
@@ -756,6 +758,7 @@ import InverseGalois.CFT.Units.IdeleOrbitTate
 import InverseGalois.CFT.Units.IdeleQuotCyclic
 import InverseGalois.CFT.Units.IdeleRep
 import InverseGalois.CFT.Units.IdeleRestrict
+import InverseGalois.CFT.Units.IdeleTorsion
 import InverseGalois.CFT.Units.IdeleTorusSha
 import InverseGalois.CFT.Units.IdeleTower
 import InverseGalois.CFT.Units.InertPlace
@@ -1866,6 +1869,13 @@ it that are available here.
   that integer there**.  For the ideles of a Galois extension of number fields the sections killed
   by a prime are the `p`-torsion of the idele group, the orbits are the places of the base field
   and the local coefficients are the roots of unity of the completions.
+* `InverseGalois.CFT.Tate.TorsionRep` supplies the two elementary manipulations that stand between
+  that decomposition and a module of arithmetic origin.  A subgroup containing every element of the
+  ambient module killed by an integer has exactly those elements as its own, so passing to the
+  subgroup changes nothing; and the elements of a product of two modules killed by an integer are
+  the pairs of elements killed by it, so a module visibly built from two halves contributes the
+  product of the two answers.  Both are recorded as isomorphisms of representations, so complete
+  cohomology is carried along them, as it is along an equality of actions on a fixed module.
 * `InverseGalois.CFT.Tate.NormSurjective` reads the vanishing of the upper Tate group as a statement
   about individual elements: that group is the fixed points modulo the norms, so it vanishes exactly
   when every fixed point is a norm.  Being a norm is transported by an equivariant isomorphism, and
@@ -2250,6 +2260,18 @@ it that are available here.
   with a group action to a module is the product, over the orbits, of the complete cohomology of
   the stabiliser of a point of the orbit with coefficients in that module**, in every integer
   degree and with no hypothesis on the group beyond finiteness.
+* `InverseGalois.CFT.Units.IdeleTorsion` reads the elements of the ideles killed by a nonzero
+  integer place by place.  Such an element has every local component killed by that integer, so its
+  local valuation, an integer killed by a nonzero integer, vanishes at every finite place; the
+  finiteness condition that cuts the ideles out of the product of all the local unit groups is
+  therefore automatic, and those elements are exactly the elements of the whole product killed by
+  the integer — a root of unity at every place, with no restriction at all.  Splitting that product
+  into the infinite half and the finite half and applying the orbit decomposition to each gives
+  **the complete cohomology of the elements of the ideles killed by a nonzero integer as the
+  product, over the places of the base field, of the complete cohomology of the decomposition group
+  of a place above it with coefficients in the elements killed by that integer of the units of the
+  completion there**, and in particular the vanishing of the whole as soon as every local factor
+  vanishes.
 * `InverseGalois.CFT.Local.InfiniteAction` builds the same picture at an infinite place.  An
   automorphism fixing such a place preserves its absolute value, so it is an isometry of the field
   for the metric of the place and extends to the completion there; the decomposition group of the
@@ -3395,6 +3417,11 @@ it that are available here.
   directions from degree zero gives **the complete cohomology of a product of representations as
   the product of their complete cohomologies, in every integer degree**, which is what turns a
   module built place by place into a product of local contributions.
+* `InverseGalois.CFT.TateCohomology.Pair` specialises that to a product of two representations, a
+  family indexed by the two booleans, and records the identification of a function on the booleans
+  with a pair.  The group of ideles is a product of the local factors at the infinite places and
+  those at the finite ones, two halves indexed by different sets, so its cohomology is only the
+  product of the two contributions once this specialisation is available.
 * `InverseGalois.CFT.TateCohomology.Annihilate` runs the two inductions those identifications
   allow, upwards from degree zero and downwards from degree minus one, and concludes that **the
   order of the group annihilates the complete cohomology in every integer degree**.
