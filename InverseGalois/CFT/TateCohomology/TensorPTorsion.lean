@@ -40,6 +40,10 @@ killed by a prime.
   killed by a natural number is killed by that number.**
 * `InverseGalois.CFT.Tate.isZero_tateModule_of_nsmul_eq_zero_coprime`: **a representation killed
   by a natural number prime to the order of the group has no complete cohomology.**
+* `InverseGalois.CFT.Tate.isZero_tateModule_tensorObj_of_coprime`,
+  `InverseGalois.CFT.Tate.isZero_tateModule_tensorObj_of_coprime'`: **a tensor product one of whose
+  factors is killed by a natural number prime to the order of the group has no complete
+  cohomology.**
 * `InverseGalois.CFT.Tate.isZero_tateModule_tensorObj_of_nsmul`: **a representation killed by a
   prime whose restriction to a Sylow subgroup for that prime has no first cohomology has no
   complete cohomology after tensoring with any representation.**
@@ -119,6 +123,21 @@ theorem isZero_tateModule_of_nsmul_eq_zero_coprime (A : Rep k G) {m : ℕ}
   refine (one_smul ℤ x).symm.trans ?_
   rw [hb, add_smul, mul_comm (m : ℤ), mul_comm (Nat.card G : ℤ), mul_smul, mul_smul,
     natCast_zsmul, natCast_zsmul, h1, h2, smul_zero, smul_zero, add_zero]
+
+/-- **A tensor product whose second factor is killed by a natural number prime to the order of the
+group has no complete cohomology.** -/
+theorem isZero_tateModule_tensorObj_of_coprime (A M : Rep k G) {m : ℕ}
+    (hM : ∀ v : ↥M.V, m • v = 0) (hcop : Nat.Coprime m (Nat.card G)) (n : ℤ) :
+    Limits.IsZero (tateModule (tensorObj A M) n) :=
+  isZero_tateModule_of_nsmul_eq_zero_coprime _ (nsmul_tensorObj_eq_zero A M m hM) hcop n
+
+/-- **A tensor product whose first factor is killed by a natural number prime to the order of the
+group has no complete cohomology.**  This is the vanishing of a local contribution at a place whose
+decomposition group has order prime to the exponent of the module sitting there. -/
+theorem isZero_tateModule_tensorObj_of_coprime' (A M : Rep k G) {m : ℕ}
+    (hA : ∀ v : ↥A.V, m • v = 0) (hcop : Nat.Coprime m (Nat.card G)) (n : ℤ) :
+    Limits.IsZero (tateModule (tensorObj A M) n) :=
+  isZero_tateModule_of_nsmul_eq_zero_coprime _ (nsmul_tensorObj_eq_zero' A M m hA) hcop n
 
 end Torsion
 

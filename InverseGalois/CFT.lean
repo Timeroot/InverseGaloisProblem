@@ -784,6 +784,7 @@ import InverseGalois.CFT.Units.IdeleTensorTorsion
 import InverseGalois.CFT.Units.IdeleTorsion
 import InverseGalois.CFT.Units.IdeleTorsionTensor
 import InverseGalois.CFT.Units.IdeleTorusSha
+import InverseGalois.CFT.Units.IdeleTorusShaLocal
 import InverseGalois.CFT.Units.IdeleTorusShaTorsion
 import InverseGalois.CFT.Units.IdeleTower
 import InverseGalois.CFT.Units.InertPlace
@@ -4329,6 +4330,14 @@ it that are available here.
   **the everywhere locally trivial classes of the units tensored with coefficients killed by a
   prime are exactly the image of the complete cohomology of the coefficients three degrees lower**,
   a finite object where the cohomology of the units is not.
+* `InverseGalois.CFT.Units.IdeleTorusShaLocal` reads that obstruction one place at a time, which is
+  what the decomposition of the ideles killed by a prime makes possible.  Most places cost nothing:
+  the roots of unity of a completion are killed by the prime while the complete cohomology of a
+  decomposition group is killed by its order, so **a place whose decomposition group has order prime
+  to the prime contributes nothing at all.**  The decomposition group of an archimedean place has
+  order one or two, so for an odd prime every archimedean place is of that kind and drops out, and
+  what is left of the criterion is a condition at the finite places together with one on the roots
+  of unity of the field.
 * `InverseGalois.CFT.Units.BaseArtin` puts a name on the left hand side of that identification.
   Composing it with the description of the complete cohomology of the trivial integral
   representation in degree minus two gives **the reciprocity isomorphism between the abelianization

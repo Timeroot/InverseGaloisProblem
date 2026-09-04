@@ -36,6 +36,8 @@ group, and comparing it for a product and for each factor identifies the canonic
 
 ## Main results
 
+* `InverseGalois.CFT.Tate.nsmul_eq_zero_of_equivPi`: **coefficients of finite rank over the field
+  with a prime number of elements are killed by that prime.**
 * `InverseGalois.CFT.Tate.coordMap_map`: the coordinates are natural in the group.
 * `InverseGalois.CFT.Tate.isZero_tateModule_tensorObj_piRep`: **a product of representations killed
   by a prime, tensored with coefficients of finite rank over the field with that many elements, has
@@ -76,6 +78,23 @@ def intLinearOfAddHom (f : M →+ N) : M →ₗ[ℤ] N where
 theorem intLinearOfAddHom_apply (f : M →+ N) (x : M) : intLinearOfAddHom f x = f x := rfl
 
 end IntLinear
+
+/-! ### Coefficients of finite rank over a prime field -/
+
+section Killed
+
+variable {p d : ℕ} {W : Type*} [AddCommGroup W]
+
+/-- **Coefficients of finite rank over the field with a prime number of elements are killed by that
+prime.** -/
+theorem nsmul_eq_zero_of_equivPi (e : W ≃+ (Fin d → ZMod p)) (x : W) : p • x = 0 := by
+  refine e.injective ?_
+  rw [map_nsmul, map_zero]
+  refine funext fun j => ?_
+  show p • e x j = 0
+  rw [nsmul_eq_mul, ZMod.natCast_self, zero_mul]
+
+end Killed
 
 /-! ### Multiplying a vector killed by a number by a residue class -/
 
