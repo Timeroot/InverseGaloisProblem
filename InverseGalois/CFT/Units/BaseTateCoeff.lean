@@ -5,6 +5,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Mathlib
 import InverseGalois.CFT.TateCohomology.FreePresentation
 import InverseGalois.CFT.TateCohomology.NakayamaCoeff
+import InverseGalois.CFT.TateCohomology.NakayamaRestrict
+import InverseGalois.CFT.TateCohomology.SylowSurjective
 import InverseGalois.CFT.Units.IdeleTorusShaSharp
 
 /-!
@@ -22,6 +24,12 @@ is a quotient of the free module on its elements, that part is always available.
 then asks is only that the classes of the idele classes tensored with the coefficients be spanned by
 those coming from the presentation together with those coming from the ideles.
 
+The comparison also commutes with corestriction from a subgroup, and the coefficients are killed by
+the prime, so corestriction from a Sylow subgroup for that prime is onto.  The spanning condition
+may therefore be read on that subgroup alone, which is to say on the extension of the subfield it
+fixes: **the criterion for the base field follows from the criterion for a subfield over which the
+extension has degree a power of the prime.**
+
 ## Main results
 
 * `InverseGalois.CFT.surjective_baseTateNakayamaTwoMap`: **the comparison of Tate and Nakayama for
@@ -32,6 +40,8 @@ those coming from the presentation together with those coming from the ideles.
   the units tensored with coefficients killed by a prime are exactly the image of the complete
   cohomology of the coefficients three degrees lower**, as soon as the idele classes tensored with
   the coefficients are spanned by what the free presentation and the ideles produce.
+* `InverseGalois.CFT.range_shaTorusPTorsionMap_of_sylow`: **the same conclusion from the same
+  spanning condition read on a Sylow subgroup for the prime.**
 
 ## Tags
 
@@ -118,6 +128,27 @@ theorem range_shaTorusPTorsionMap_of_free (n : ℤ)
   refine range_shaTorusPTorsionMap_of_sup_eq_top k K W hW n (eq_top_iff.2 ?_)
   rw [← h, ker_baseTateNakayamaPTorsionRight k K W hW n]
   exact sup_le_sup_right (range_tateMap_freeCounit_le_baseTateNakayama k K W n) _
+
+/-! ### The criterion on a Sylow subgroup -/
+
+/-- **The everywhere locally trivial classes of the units tensored with coefficients killed by a
+prime are exactly the image of the complete cohomology of the coefficients three degrees lower**, as
+soon as the classes of the idele classes tensored with the coefficients are spanned, on a Sylow
+subgroup for that prime, by those the comparison of Tate and Nakayama produces together with those
+coming from the ideles. -/
+theorem range_shaTorusPTorsionMap_of_sylow (P : Sylow p Gal(K/k)) (n : ℤ)
+    (h : LinearMap.range (resTateNakayamaTwoMap (P : Subgroup Gal(K/k)) (ideleClassRep k K)
+          (baseFundamentalClass k K) W n)
+        ⊔ LinearMap.range (tateMap (resHom (P : Subgroup Gal(K/k))
+            (tensorHomLeft W (ideleToIdeleClass k K))) (n + 1 + 1)).hom = ⊤) :
+    LinearMap.range (shaTorusPTorsionMap k K W hW n)
+      = LinearMap.ker (tateMap (tensorHomLeft W (globalUnitsToIdele k K)) (n + 1 + 1 + 1)).hom := by
+  refine range_shaTorusPTorsionMap_of_sup_eq_top k K W hW n ?_
+  rw [ker_baseTateNakayamaPTorsionRight k K W hW n]
+  exact sup_range_eq_top_of_cor_two (P : Subgroup Gal(K/k)) (ideleClassRep k K)
+    (baseFundamentalClass k K) W (tensorHomLeft W (ideleToIdeleClass k K)) n
+    (surjective_tateCor_sylow_of_prime P (tensorObj (ideleClassRep k K) W) (n + 1 + 1)
+      (nsmul_tensorObj_eq_zero (ideleClassRep k K) W p hW)) h
 
 end Sha
 

@@ -46,6 +46,9 @@ subgroup and the restricted cocycle.
 * `InverseGalois.CFT.Tate.injective_tateNakayamaMap_of_res`: **the comparison of Tate and Nakayama
   is injective as soon as it is injective on a subgroup to which restriction of the coefficients is
   injective.**
+* `InverseGalois.CFT.Tate.sup_range_eq_top_of_cor`: **what the comparison of Tate and Nakayama and a
+  second map reach together is everything as soon as it is everything on a subgroup from which
+  corestriction is onto.**
 
 ## Tags
 
@@ -160,6 +163,25 @@ theorem surjective_tateNakayamaMap_of_cor (n : ℤ)
   obtain ⟨z, rfl⟩ := hres w
   exact ⟨tateCor H M n z, (tateCor_tateNakayamaMap H A b M n z).symm⟩
 
+/-- **What the comparison of Tate and Nakayama and a second map reach together is everything as soon
+as it is everything on a subgroup from which corestriction is onto.** -/
+theorem sup_range_eq_top_of_cor {N : Rep k G} (φ : N ⟶ tensorObj A M) (n : ℤ)
+    (hcor : Function.Surjective (tateCor H (tensorObj A M) (n + 1 + 1)))
+    (h : LinearMap.range (resTateNakayamaMap H A b M n)
+        ⊔ LinearMap.range (tateMap (resHom H φ) (n + 1 + 1)).hom = ⊤) :
+    LinearMap.range (tateNakayamaMap A b M n)
+      ⊔ LinearMap.range (tateMap φ (n + 1 + 1)).hom = ⊤ := by
+  refine Submodule.eq_top_iff'.2 fun y => ?_
+  obtain ⟨w, rfl⟩ := hcor y
+  have hw : w ∈ LinearMap.range (resTateNakayamaMap H A b M n)
+      ⊔ LinearMap.range (tateMap (resHom H φ) (n + 1 + 1)).hom := h ▸ Submodule.mem_top
+  obtain ⟨a, ⟨z, hz⟩, c, ⟨u, hu⟩, rfl⟩ := Submodule.mem_sup.1 hw
+  rw [map_add]
+  refine Submodule.mem_sup.2 ⟨tateNakayamaMap A b M n (tateCor H M n z),
+    LinearMap.mem_range_self _ _, tateMap φ (n + 1 + 1) (tateCor H N (n + 1 + 1) u),
+    LinearMap.mem_range_self _ _, ?_⟩
+  rw [← hz, ← hu, tateCor_tateNakayamaMap, tateCor_naturality]
+
 /-- **The comparison of Tate and Nakayama is injective as soon as it is injective on a subgroup to
 which restriction of the coefficients is injective.** -/
 theorem injective_tateNakayamaMap_of_res (n : ℤ)
@@ -205,6 +227,17 @@ theorem surjective_tateNakayamaTwoMap_of_cor (n : ℤ)
     (hcor : Function.Surjective (tateCor H (tensorObj A M) (n + 1 + 1))) :
     Function.Surjective (tateNakayamaTwoMap A α M n) :=
   surjective_tateNakayamaMap_of_cor H A (tateTwoCocycle A α) M n hres hcor
+
+/-- **What the comparison of Tate and Nakayama for a class in degree two and a second map reach
+together is everything as soon as it is everything on a subgroup from which corestriction is
+onto.** -/
+theorem sup_range_eq_top_of_cor_two {N : Rep ℤ G} (φ : N ⟶ tensorObj A M) (n : ℤ)
+    (hcor : Function.Surjective (tateCor H (tensorObj A M) (n + 1 + 1)))
+    (h : LinearMap.range (resTateNakayamaTwoMap H A α M n)
+        ⊔ LinearMap.range (tateMap (resHom H φ) (n + 1 + 1)).hom = ⊤) :
+    LinearMap.range (tateNakayamaTwoMap A α M n)
+      ⊔ LinearMap.range (tateMap φ (n + 1 + 1)).hom = ⊤ :=
+  sup_range_eq_top_of_cor H A (tateTwoCocycle A α) M φ n hcor h
 
 /-- **The comparison of Tate and Nakayama for a class in degree two is injective as soon as it is
 injective on a subgroup to which restriction of the coefficients is injective.** -/
