@@ -767,6 +767,7 @@ import InverseGalois.CFT.Units.IdeleClassH2Tower
 import InverseGalois.CFT.Units.IdeleClassIndex
 import InverseGalois.CFT.Units.IdeleClassSES
 import InverseGalois.CFT.Units.IdeleClassTate
+import InverseGalois.CFT.Units.IdeleClassTorsionLocal
 import InverseGalois.CFT.Units.IdeleClassTorsionSES
 import InverseGalois.CFT.Units.IdeleClassTorsionTate
 import InverseGalois.CFT.Units.IdeleClassTower
@@ -3114,6 +3115,16 @@ it that are available here.
   the field have none one degree higher.**  Read backwards it identifies the image of the connecting
   map: **the everywhere locally trivial classes of the roots of unity of the field are exactly the
   classes coming from the idele classes killed by the prime, one degree lower.**
+* `InverseGalois.CFT.Units.IdeleClassTorsionLocal` runs the same long exact sequence after tensoring
+  with coefficients, which is where it is needed, the idele classes killed by a prime tensored with
+  coefficients being exactly what measures the failure of the theorem of Tate and Nakayama for
+  coefficients with torsion.  The sequence stays exact because its middle term is killed by the
+  prime, and the middle group of the three is again a product of local ones once the coefficients
+  have finite rank over the prime field.  So **a class of the idele classes killed by a prime,
+  tensored with the coefficients, is the image of a family of local classes exactly when the
+  connecting map kills it**, one member of the family for each place of the base field; and every
+  class is of that form as soon as the roots of unity of the field, tensored with the coefficients,
+  carry no complete cohomology one degree higher.
 * `InverseGalois.CFT.GroupCohomology.CyclicCoboundary` turns the Herbrand description of the second
   cohomology of a finite cyclic group into the concrete statement the local half needs: if every
   invariant element is a norm then every two-cocycle is a coboundary, with an explicit one-cochain.
