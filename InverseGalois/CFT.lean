@@ -673,6 +673,7 @@ import InverseGalois.CFT.TateCohomology.Iterate
 import InverseGalois.CFT.TateCohomology.Junction
 import InverseGalois.CFT.TateCohomology.NakayamaCoeff
 import InverseGalois.CFT.TateCohomology.NakayamaNatural
+import InverseGalois.CFT.TateCohomology.NakayamaNextNatural
 import InverseGalois.CFT.TateCohomology.NakayamaRestrict
 import InverseGalois.CFT.TateCohomology.NakayamaSubgroup
 import InverseGalois.CFT.TateCohomology.NakayamaSubgroupError
@@ -772,6 +773,7 @@ import InverseGalois.CFT.Units.DecompositionIdele
 import InverseGalois.CFT.Units.DecompositionInvariant
 import InverseGalois.CFT.Units.DecompositionLocalization
 import InverseGalois.CFT.Units.DecompositionNakayama
+import InverseGalois.CFT.Units.DecompositionNakayamaNext
 import InverseGalois.CFT.Units.DecompositionOutside
 import InverseGalois.CFT.Units.DecompositionPlaceInjective
 import InverseGalois.CFT.Units.DecompositionReciprocity
@@ -2612,6 +2614,14 @@ it that are available here.
   the completion at the place**, and a fortiori from the ideles: on a decomposition group the
   classes of the idele classes the comparison reaches are classes of ideles, with no information
   about the extension away from the place.
+* `InverseGalois.CFT.Units.DecompositionNakayamaNext` does the same for the map that leaves the
+  comparison.  The localised fundamental class is carried to the restriction of the fundamental
+  class, so the two extensions attached to those classes are compared by a map of representations,
+  and **on the decomposition group at a finite place the values the map leaving the comparison
+  takes on the classes coming from the units of the completion there are exactly the image of the
+  values the purely local map takes**.  Again nothing about the extension away from the place
+  enters, so the local half of the comparison of the global obstruction with the local ones is a
+  computation at one place.
 * `InverseGalois.CFT.Units.DecompositionField` names the subfield fixed by the decomposition
   group.  An element of it has its image in the completion fixed by the decomposition group, hence
   coming from the completion of the base, so the decomposition field embeds into the completion of
@@ -4010,6 +4020,20 @@ it that are available here.
   the class on the source.  The consequence used later is a containment of images: **whatever the
   comparison produces for a class that comes from another representation already comes from that
   representation.**
+* `InverseGalois.CFT.TateCohomology.NakayamaNextNatural` carries that naturality one step further
+  along the long exact sequence.  The map that leaves the comparison is the map induced by the
+  inclusion of the tensor product into the extension attached to the class, read through the
+  identification of the shift of a tensor product with the tensor product of the shift and through
+  the identification of the complete cohomology of a shift with that of the representation one
+  degree higher; both identifications are natural, and the two extensions are compared by the very
+  map that made the comparison natural, so **the map leaving the comparison commutes with a map of
+  representations as well**.  What that buys is the only form in which the obstruction of Tate and
+  Nakayama is computable: it is a map out of a group with no independent description, but **the
+  values it takes on the classes coming from a second representation are exactly the image of the
+  values the map of that second representation takes**, and the second representation may be a
+  local one.  The identification of the target of the obstruction with the vectors killed by the
+  prime is an isomorphism, so a spanning statement about the obstruction is the same statement
+  about the map it is built from, where that naturality is available.
 * `InverseGalois.CFT.TateCohomology.DeltaShift` removes the connecting map from that comparison
   altogether.  The sequence defining the shift is the universal extension with acyclic middle term,
   and its connecting map is the identification of the complete cohomology of the shift with that of
@@ -4814,7 +4838,10 @@ it that are available here.
   of the prime.  The values that obstruction takes at all are the kernel of the map entering the
   comparison one degree higher, so the condition can also be read entirely inside the vectors of the
   idele classes killed by the prime, tensored with the coefficients, as the equality of one image
-  with one kernel there.
+  with one kernel there.  The identification of the target of the obstruction with those vectors is
+  an isomorphism, so the whole criterion may equally be stated for the map the obstruction is built
+  from -- the form in which it is natural in the representation, hence the form in which its values
+  can be compared with local ones.
 * `InverseGalois.CFT.Units.BaseTateTorsion` drops the flatness, which the coefficients of an
   embedding problem never have.  The fundamental class satisfies the classical hypotheses on every
   subgroup, so in particular on every Sylow subgroup, and the four exact terms attached to the
