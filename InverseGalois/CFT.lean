@@ -599,6 +599,7 @@ import InverseGalois.CFT.Tate.FamilyOrbit
 import InverseGalois.CFT.Tate.FamilyOrbits
 import InverseGalois.CFT.Tate.FamilyProduct
 import InverseGalois.CFT.Tate.FamilyReindex
+import InverseGalois.CFT.Tate.FamilyResGroup
 import InverseGalois.CFT.Tate.FamilyRestrict
 import InverseGalois.CFT.Tate.FamilyRestrictCoind
 import InverseGalois.CFT.Tate.FamilyRestrictOrbit
@@ -819,6 +820,7 @@ import InverseGalois.CFT.Units.IdeleRestrict
 import InverseGalois.CFT.Units.IdeleTensorSha
 import InverseGalois.CFT.Units.IdeleTensorTorsion
 import InverseGalois.CFT.Units.IdeleTorsion
+import InverseGalois.CFT.Units.IdeleTorsionSubgroup
 import InverseGalois.CFT.Units.IdeleTorsionTensor
 import InverseGalois.CFT.Units.IdeleTorusSha
 import InverseGalois.CFT.Units.IdeleTorusShaLocal
@@ -4212,6 +4214,16 @@ it that are available here.
   point of the orbit with coefficients in the module there tensored with the restricted
   coefficients**, and the same for the sections killed by the prime.  The vanishing follows, but a
   long exact sequence built out of these groups needs the isomorphism itself, so both are stated.
+* `InverseGalois.CFT.Tate.FamilyResGroup` observes that all of this is available on a subgroup of
+  the acting group with nothing to prove.  A subgroup moves the index set by the restricted action
+  and transports the modules by the same isomorphisms, so it acts on the same family; the sections
+  are the same sections, carrying the restriction of the action of the whole group, and so are the
+  sections killed by an integer.  **The orbit decomposition therefore holds over every subgroup**,
+  with the orbits of the subgroup in place of the orbits of the group and the stabiliser in the
+  subgroup in place of the stabiliser in the group.  That is what a criterion formulated over a
+  Sylow subgroup asks for: the group of a Sylow subgroup moves the places of an extension in orbits
+  finer than the places of the base field, and the stabiliser at one of them is the intersection of
+  the subgroup with the decomposition group there.
 * `InverseGalois.CFT.Units.IdeleTorsionTensor` is that statement for the ideles.  The elements of
   the ideles killed by a prime are the elements killed by it of the whole product of the local unit
   groups, the product splits into the infinite places and the finite ones, and each half is the
@@ -4223,6 +4235,18 @@ it that are available here.
   coefficients** — and in particular the vanishing of the whole as soon as every local factor
   vanishes.  That is the hypothesis the local-global obstruction of the theory of tori is stated
   with, now genuinely local.
+* `InverseGalois.CFT.Units.IdeleTorsionSubgroup` says the same over a subgroup of the Galois group.
+  A subgroup does not fix the places of the base field: it moves the places of the extension in
+  orbits of its own, generally finer, and the stabiliser at one of them is the intersection of the
+  subgroup with the decomposition group there.  Nothing new has to be computed, because the units of
+  the completions are a family of modules on which the subgroup acts by the restricted action, and
+  the only point to identify is that the transport by an element of the subgroup fixing a place is
+  the transport by that element of the whole group.  So **the complete cohomology of a subgroup with
+  coefficients in the elements of the ideles killed by a prime, tensored with coefficients of finite
+  rank over the field with that many elements, is the product over the orbits of the subgroup on the
+  places of the extension of the complete cohomology of the stabiliser there with coefficients in
+  the roots of unity of the completion tensored with the restricted coefficients** — which is what a
+  criterion formulated over a Sylow subgroup asks for.
 * `InverseGalois.CFT.TateCohomology.Duality` pairs the two middle degrees against each other.  The
   functionals on a representation with values in a fixed module carry an action of the group
   through the source, and **the norm of such a functional is its composition with the norm of the

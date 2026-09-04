@@ -9496,6 +9496,111 @@ with `tateRes`, i.e. the commuting square between `obs_G` and `obs_H`.
 
 ---
 
+## 0.94 Status (2026-09-04, night) — §0.93(e) is **closed**: the obstruction ladder over a subgroup, and row 5 as one equation about one map
+
+### (a) What landed
+
+The "next brick" of §0.93(e) is done, and it turned out not to need a commuting square at all.  The
+subgroup instance of the four-term sequence is obtained by *substitution*, and the only thing that
+had to be supplied was the hypothesis of `TensorTorsionError.lean` for the substituted data:
+
+```lean
+hT' : ∀ q : ℕ, q.Prime → ∀ Q : Sylow q ↥H,
+  IsTateClassTwo (Q : Subgroup ↥H) (resObj H A) (tateRes H A 2 α)
+```
+
+The difficulty is that `Q : Subgroup ↥H` is a group of *pairs* — an element of `H` together with a
+proof — whereas everything the class formation supplies is indexed by `Subgroup G`.  The repository
+had no transitivity-of-restriction lemma.  Three of `IsTateClassTwo`'s fields were dispatched as
+follows.
+
+* Field 3 (`dvd_of_zsmul_eq_zero`) needs **no transport at all**: `dvd_of_zsmul_tateRes_eq_zero`
+  applied twice.  Order of a class is not a cohomological statement.
+* Field 1 (`isZero_one`) is transported along the isomorphism
+  `Q ≃* Q.map H.subtype` (`Subgroup.equivMapOfInjective`, gotcha 1294) by a new degree-one analogue
+  of `tateTwoCongr`.
+* Field 2 (`exists_zsmul`) is *not* transported; it is re-derived from field 3 by
+  `isTateClassTwo_of_card_le`, given finiteness and the count in degree two, both transported by
+  `tateTwoCongr`.
+
+The transport datum is free: `resObj Q (resObj H A)` and `(Action.res _ e).obj (resObj (Q.map
+H.subtype) A)` are **the same representation on the nose**, so the comparison morphism is
+`hom := ModuleCat.ofHom LinearMap.id`, `comm := fun _ => rfl`, and bijectivity is
+`Function.bijective_id` (gotcha 1295).
+
+Four files:
+
+* `TateCohomology/GroupCongr.lean` (edited) — `tateOneCongr`, the degree-one analogue of
+  `tateTwoCongr`.
+* `TateCohomology/RestrictTrans.lean` (new) — `subgroupTransEquiv`, `resTransHom`,
+  `resTransTateOne`, `resTransTateTwo`, and the payoff `isTateClassTwo_resObj_of_card`.
+* `TateCohomology/NakayamaSubgroupError.lean` (new) — `isTateClassTwo_sylow_resObj`, the two maps
+  `resTateNakayamaPTorsionErrorLeft`/`Right`, and the exactness statements
+  `range_resTateNakayamaPTorsionErrorLeft`, `ker_resTateNakayamaPTorsionErrorRight`,
+  `exact_resTateNakayamaPTorsionErrorLeft`, `exact_resTateNakayamaPTorsionErrorRight`.  Note the
+  middle map is `resTateNakayamaTwoMap` — the *global* comparison read on `H` — via
+  `resTateNakayamaTwoMap_eq`, so the ladder really is the restriction of the global one.
+* `Units/BaseTateSylow.lean` (new) — the number-field instance:
+  `resBaseTateNakayamaPTorsionRight`, `ker_resBaseTateNakayamaPTorsionRight`, and the two forms of
+  the criterion, `range_shaTorusPTorsionMap_of_sylow_sup` and
+  `range_shaTorusPTorsionMap_of_sylow_map`.
+
+Commit `2ea3c58`; full root build **9675 jobs**, 0 warnings, 0 errors, 0 `.lean` sorries.
+
+### (b) Row 5, as one equation
+
+Combining with §0.92's Sylow reduction, the entire remaining content of row 5 is now:
+
+> For `P` a Sylow `p`-subgroup of `G = Gal(K/k)`, with
+> `obs_P := resBaseTateNakayamaPTorsionRight k K W hW P n`
+> the obstruction map `Ĥ^{n+2}(P, C_K ⊗ W) → Ĥ^{n+4}(P, C_K[p] ⊗ W)`, and
+> `ι_* : Ĥ^{n+2}(P, I_K ⊗ W) → Ĥ^{n+2}(P, C_K ⊗ W)`,
+>
+> ```
+> obs_P (range ι_*) = range obs_P.
+> ```
+
+That is `range_shaTorusPTorsionMap_of_sylow_map`.  Everything else — the class formation, the
+fundamental class, the counts on every subgroup, the four-term sequence, the Sylow reduction, the
+subgroup ladder — is a theorem.  This is a statement about a **single linear map over a `p`-group**,
+placed over a field `k' = K^P` over which `K/k'` has `p`-power degree.
+
+### (c) Why this is the right shape for Route 1
+
+Over a `p`-group the local input simplifies twice over.
+
+* `C_K[p] ≅ I_K[p] / μ_p(K)` and `I_K[p] = ∏_w μ_p(K_w)`, so
+  `Ĥ^*(P, I_K[p] ⊗ W) ≅ ∏_{P\text{-orbits } o} Ĥ^*(P ∩ D_w, μ_p(K_w) ⊗ W)` by Shapiro
+  (`Tate.tateOrbitsEquiv`, gotcha 1291, plus the `AdicSOrbitTate` layer).
+* `range obs_P` is therefore a subgroup of a *product of local groups*, and the assertion
+  `obs_P (range ι_*) = range obs_P` says the local components that actually occur already occur on
+  ideles.  Since `ι_*` is itself the product map, the equation is a **sum-of-invariants** statement:
+  the obstruction of a class of idele classes is a vector of local invariants summing to zero, and
+  every such vector is attained.
+
+So the target object of the next brick is the identification of `Ĥ^{n+4}(P, C_K[p] ⊗ W)` with (a
+quotient of) `∏_o Ĥ^*(P ∩ D_w, μ_p(K_w) ⊗ W)`, together with the description of `obs_P ∘ ι_*` as
+the product of the local obstructions.
+
+### (d) Lean notes
+
+* **1294.** `Subgroup.equivMapOfInjective (H : Subgroup G) (f : G →* N) (hf : Injective f) :
+  H ≃* H.map f` is at `Mathlib/Algebra/Group/Subgroup/Map.lean:478`; `Subgroup.subtype_injective`
+  exists (`Defs.lean:236`).
+* **1295.** For `Q : Subgroup ↥H` and `S := Q.map H.subtype`, the comparison
+  `(Action.res _ (e : ↥Q →* ↥S)).obj (resObj S A) ⟶ resObj Q (resObj H A)` is
+  `hom := ModuleCat.ofHom LinearMap.id`, **`comm := fun _ => rfl`**.  The two representations agree
+  on the nose.
+* **1296.** `Units/IdeleClassTate.lean` declares `variable {k K : Type}` — **implicit**; its counting
+  lemmas take only `(S : Subgroup Gal(K/k))`.  By contrast `zsmul_baseFundamentalClass_eq_zero_imp_dvd`
+  (`Units/BaseTate.lean`) has `k K` explicit.
+* **1297.** `resObj S (tensorObj A W)` and `tensorObj (resObj S A) (resObj S W)` are defeq, so
+  `ker`/`range` statements mixing the two unify with no bridging.
+* **1298.** `lake build InverseGalois.CFT.TateCohomology.NakayamaSubgroupError` = **8084 jobs**; full
+  root build with all four files = **9675 jobs**.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
@@ -9914,6 +10019,145 @@ Milestone 2 is regular only over the multivariable base k(t_h : h ∈ H), not ov
 milestone plan that tries to route solvable groups through `IsRegularInverseGalois` is attempting
 an open problem. (Dentzer's paper studies exactly which semiabelian groups *do* have geometric
 realizations — that is the correct reference if a regular statement is ever wanted.)
+
+---
+
+## 0.95 Status (2026-09-04, later) — Shapiro over a subgroup: the ideles' `p`-torsion decomposed over an arbitrary subgroup of the Galois group
+
+### (a) The obstacle §0.94 left, and why base change was the wrong idea
+
+§0.94 reduced row 5 to a single statement about a single map over a Sylow subgroup `P ≤ G`:
+
+```
+obs_P : Ĥ⁰(P, C_K ⊗ W)  →  Ĥ²(P, C_K[p] ⊗ W)      (i.e. `…_of_sylow_map … (-2)` after shifting)
+range obs_P ∘ ι_*  =  range obs_P                  (the content of row 5)
+```
+
+and the plan for computing the target is Shapiro: `Ĥ*(G, I_K[p] ⊗ W) ≅ ∏_v Ĥ*(D_w, μ_p(K_w) ⊗ W)`,
+the product over the places `v` of the *base* field.  A subgroup `P` does **not** fix the places of
+the base field, so the naive reading fails.
+
+The tempting fix — base change `k ⇝ K^P`, so that `P` becomes the full Galois group of `K/K^P` and
+the existing whole-group statement applies verbatim — is a **trap**, and was rejected.  It forces
+every object in sight (`W`, `α`, the class formation data, the fundamental class) to be re-derived
+over the new base field, and the compatibility of `obs` with that base change is exactly as hard as
+the thing being proved.  Route taken instead, per §0.93(d) ("Shapiro works for *any* subgroup"):
+**restrict the family action, not the base field.**
+
+### (b) Brick 1 — `Tate/FamilyResGroup.lean`
+
+Every orbit-decomposition theorem in `Tate/Family*.lean` is stated for a bare
+`{G X : Type} [Group G] [MulAction G X] [Finite G]` with a `FamilyAction M G`.  A subgroup `S ≤ G`
+acts on the *same* family, with the *same* transports:
+
+```lean
+def FamilyAction.resGroup (F : FamilyAction M G) (S : Subgroup G) : FamilyAction M ↥S where
+  map g x := F.map (g : G) x
+  map_one x a := F.map_one x a
+  map_mul g h x a := F.map_mul (g : G) (h : G) x a
+```
+
+There is nothing to prove: `Subgroup.instMulAction`'s `(g : ↥S) • x` is *definitionally*
+`(g : G) • x` (`Submonoid.smul_def` is `rfl`), so all six compatibilities are `rfl`:
+
+| statement | proof |
+| --- | --- |
+| `(F.resGroup S).familyAut = F.familyAut.comp S.subtype` | `rfl` |
+| `(F.torsion m).resGroup S = (F.resGroup S).torsion m` | `rfl` |
+| `orbitSectionsRep (F.resGroup S) = resObj S (orbitSectionsRep F)` | `rfl` |
+| `torsionRep (F.resGroup S).familyAut m = resObj S (torsionRep F.familyAut m)` | `rfl` |
+| `repOfAddAut (φ.comp f) = (Action.res _ f).obj (repOfAddAut φ)` | `rfl` |
+| `torsionRep (φ.comp f) m = (Action.res _ f).obj (torsionRep φ m)` | `rfl` |
+
+so `tateTensorTorsionResGroupEquiv` — the orbit decomposition over `S` — is literally
+`tateTensorTorsionEquiv (F.resGroup S) (resObj S W) e x₀ hH hH' n`.
+
+Two small pieces of glue had to be added alongside.
+
+1. **`stabilizerSubgroupHom S x : ↥(stabilizer ↥S x) →* ↥(stabilizer G x)`** — `⟨(g : ↥S), g.2⟩`,
+   all fields `rfl`.  This is needed because *no*
+   `MulSemiringAction ↥(stabilizer ↥S v) (v.adicCompletion K)` instance exists in the repository,
+   so the local factor over `S` cannot be phrased with `smulUnitsAut` directly; it is phrased as
+   `(smulUnitsAut (G := D_v)).comp (stabilizerSubgroupHom S v)`.
+2. **`resObj_pairRep S A B : resObj S (pairRep A B) = pairRep (resObj S A) (resObj S B)`.**  This
+   is a genuine (if two-line) obstruction, not a `rfl`.  `resObj S (piRep A) = piRep (fun i => resObj
+   S (A i))` **is** `rfl`, because the `.V` field of `(Action.res _ f).obj X` iota-reduces to `X.V`
+   even with `i` free.  But `pairFamily A B = fun b => cond b A B`, and under the binder
+   `cond b (resObj S A) (resObj S B)` is *stuck*.  Proof: `funext b; cases b <;> rfl`, then `rw`.
+
+### (c) Brick 2 — `Units/IdeleTorsionSubgroup.lean`
+
+The number-field instantiation.  The only mathematical content is the identification of the local
+factor: for an orbit `ω` of `S` on the places of `K` and a chosen `v₀ ∈ ω`,
+
+```lean
+theorem stabAut_resGroup_adicUnits_eq :
+    stabAut v₀ _ (orbitFamily ((adicRingFamily (k := k) (K := K)).unitsFamily.resGroup S) ω)
+      = (smulUnitsAut (G := ↥(stabilizer Gal(K/k) (v₀ : HeightOneSpectrum (𝓞 K))))
+          (R := (v₀ : HeightOneSpectrum (𝓞 K)).adicCompletion K)).comp
+        (stabilizerSubgroupHom S (v₀ : HeightOneSpectrum (𝓞 K)))
+```
+
+— the transport by an element of `S` fixing `v₀` *is* the transport by that element of `G`.  Proof:
+`stabAut_orbitFamily` (which applies verbatim to the restricted family, gotcha 1314) followed by
+`transport_adicUnitsFamily`.  Mirror statement at the infinite places.
+
+From that, `adicIdeleTorsionTensorTateResEquiv` / `infiniteIdeleTorsionTensorTateResEquiv` and then
+
+```lean
+def ideleTorsionTensorTateResEquiv (n : ℤ) :
+    tateModule (resObj S (tensorObj (torsionRep (ideleAutHom k K) (p : ℤ)) W)) n ≃+
+      (∀ ω : orbitRel.Quotient ↥S (InfinitePlace K),        tateModule … n) ×
+      (∀ ω : orbitRel.Quotient ↥S (HeightOneSpectrum (𝓞 K)), tateModule … n)
+```
+
+**the complete cohomology of an arbitrary subgroup `S ≤ Gal(K/k)` with coefficients in `I_K[p] ⊗ W`,
+as the product over the `S`-orbits of places of `K` of the complete cohomology of the stabiliser
+there with coefficients in `μ_p(K_w) ⊗ (W|_S)`**, together with the vanishing corollary
+`isZero_tateModule_tensor_ideleTorsionRes`.
+
+The assembly is four isomorphisms glued: `ideleTorsionIso` (torsion of the restricted product is the
+torsion of the full product), `fullIdeleTorsionIso` (the full product splits as a pair), the
+`eqToIso` of `resObj_pairRep`, and `tateTensorPairEquiv`; then the two halves.
+
+Costs: `lake build …Units.IdeleTorsionSubgroup` = **8227 jobs**; full root build = **9677 jobs**,
+0 warnings, 0 errors.
+
+### (d) Gotchas recorded
+
+* **1308.** `TateCohomology/Pair.lean` declares `variable {k G : Type}` — universe-monomorphic.  A
+  caller writing `universe u` + `{k G : Type u}` gets `pairRep … has type Rep.{0} … but is expected
+  to have type Rep.{u} …`.  Use `{k G : Type}`.
+* **1309.** `resObj` commutes with `piRep` definitionally but **not** with `pairRep` (see (b)2).
+* **1310.** `tensorIsoLeft W (f : A ≅ B) : tensorObj A W ≅ tensorObj B W` — coefficient argument
+  **first**, iso second.
+* **1311.** There is no `resIso`; restrict an iso with `(Action.res _ S.subtype).mapIso f`.
+* **1312.** Leaving `tateTensorPairEquiv _ _ …` with underscores over a restricted representation
+  times out `isDefEq` at 200000 heartbeats.  Pass both representation arguments explicitly and set
+  `synthInstance.maxHeartbeats 800000` / `maxHeartbeats 1000000`.
+* **1314.** `stabAut_orbitFamily F x₀ hH' hH'' g a` applies verbatim with
+  `F := (…).unitsFamily.resGroup S`; `transport_adicUnitsFamily` /
+  `transport_infiniteUnitsFamily` then finish with all arguments `_`.
+* **1316.** `Tate/FamilyConst.lean` (home of `smul_orbit_of_mem_stabilizer_val` and
+  `mem_stabilizer_val_of_smul_orbit`) is **not** in the import closure of
+  `Units/IdeleTorsionTensor.lean`; import it explicitly.
+
+### (e) What the next brick is
+
+The place-by-place description is now available over the Sylow subgroup, so the remaining chain for
+row 5 is:
+
+1. the short exact sequence `0 → μ_p(K) ⊗ W → I_K[p] ⊗ W → C_K[p] ⊗ W → 0` read over `S`.  This
+   should be nearly free: `resSeq` preserves short exactness and `resSeq_cocycleSeq` &c. are all
+   `rfl` (gotcha 1114).
+2. the identification of `Ĥ^{n+4}(P, C_K[p] ⊗ W)` with a quotient of `∏_ω Ĥ^*(P ∩ D_w, μ_p(K_w) ⊗ W)`
+   coming from 1, and the description of `obs_P ∘ ι_*` as the product of the local obstructions.
+3. **the real content**: the sum-of-invariants / reciprocity input proving
+   `obs_P(range ι_*) = range obs_P` at `n = -2`.
+
+Step 3 is where the global input (reciprocity, the product formula for the `p`-th power Hilbert
+symbol — row 6, already done) finally enters; steps 1 and 2 are bookkeeping of the kind just
+completed.
 
 ---
 
