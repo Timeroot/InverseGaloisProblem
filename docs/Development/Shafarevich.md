@@ -10663,6 +10663,167 @@ would-be ladder is not exact: `C_K ⊗ N --p--> C_K ⊗ N` has kernel `(C_K ⊗ 
 
 ---
 
+## 0.99 Status (2026-09-04, latest) — the projection formula absorbs every local contribution, so only the *local cokernels* are left; plus the exact place Poitou–Tate enters Schmidt–Wingberg
+
+### (a) What landed
+
+Commit `f11f281` (previous session) added `TateCohomology/NakayamaNextNatural.lean` and
+`Units/DecompositionNakayamaNext.lean` (the map *leaving* the comparison is natural in the
+representation, and at a decomposition group its values on the classes from the completion are the
+image of the purely local ones), plus two theorems in `Units/BaseTateSylow.lean`.  Full root build
+**9683 jobs**, 0 warnings, 0 sorries.
+
+This session added three theorems, no new modules:
+
+* `Tate.tateCor_tateMap_tensorHomLeft_tateNakayamaTwoMap` and
+  `Tate.map_tateCor_range_tateNakayamaTwoMap_le` in
+  `TateCohomology/NakayamaSubgroup.lean` — **the projection formula for the comparison**: if
+  `φ : A' ⟶ resObj H A` carries `β` to `tateRes H A 2 α`, then
+  `cor_H ( (tensorHomLeft _ φ)_* ( TN_{A'} β x ) ) = TN_A α (cor_H x)`, hence
+  `cor_H ( φ_* ( range TN_{A'} ) ) ≤ range TN_A`.
+  Proof: `tateMap_tensorHomLeft_tateNakayamaTwoMap` turns the left side into
+  `cor_H (resTateNakayamaTwoMap H A α M n x)`, and `tateCor_tateNakayamaTwoMap` finishes.
+* `map_tateCor_range_tateNakayamaTwoMap_decompositionUnits_le` in
+  `Units/DecompositionNakayama.lean` — the same, specialised to `H = D_w` and
+  `φ = decompositionPlaceIdeleClass k w`, discharged by `tateMap_localizedFundamentalClass`.
+* `range_shaTorusPTorsionMap_of_sylow_nakayama` in `Units/BaseTateSylow.lean` — the row-5 criterion
+  in the canonical form of gotcha 1076, with **no obstruction in the statement at all**:
+  ```
+  range (resTateNakayamaTwoMap P (ideleClassRep k K) (baseFundamentalClass k K) W n)
+    ⊔ range (tateMap (resHom P (tensorHomLeft W (ideleToIdeleClass k K))) (n+1+1)).hom = ⊤
+  ```
+  implies `range (shaTorusPTorsionMap k K W hW n) = ker (…globalUnitsToIdele…)`.  Discharged by
+  `range_shaTorusPTorsionMap_of_sylow_sup` after `rw [ker_resBaseTateNakayamaPTorsionRight]`.
+
+### (b) Where Poitou–Tate actually enters Schmidt–Wingberg
+
+Read off `sw.txt` lines 1255–1345.  In the whole paper **Poitou–Tate is used exactly once**, inside
+the Claim of step 2, and only as
+
+>  `Ш²(k, E(n,τ)) ≅ Ш¹(k, E(n,τ)′)^∨`,  where `E′ = Hom(E, μ_p)`.
+
+Everything downstream is elementary: `E′` is a *trivial* `G_K`-module, so the Hasse principle gives
+`Ш¹(k,E′) ↪ H¹(K|k, E′)`; dualising that injection gives the surjection
+
+>  `Ĥ^{-2}(G, E(n,τ)(-1)) ↠ Ш²(k, E(n,τ))`,
+
+which is the map the Claim needs, and it is natural in `π : F(m) ↠ F(n)`.  Proposition 6 is then
+applied with **`k = -2`** and `T = Hom(μ_p, ℤ/pℤ)` — a **one-dimensional** `T`, fixed in advance.
+SW state explicitly (line ~340) that Prop 6 is used only for `k = 2` and `k = -2`.
+
+### (c) Consequence: row 5 at `n = -2` repairs §0.87(a) without recreating its circularity
+
+§0.87(a) refuted the §0.84(c) Hochschild–Serre route because its step 3 needed
+`dim T₀ ≤ #G² · dim E(m,τ)` with `m = r·n`, and the binder order of
+`exists_genericShrink_res_cohomology_eq_zero` made that circular: the module `T` whose cohomology
+had to be killed grew with `m`.
+
+The route of record does **not** have that defect.  Its inputs are:
+
+1. §0.84(c) steps 1–2, both already proven: `Ш²(K,E) = 0` (`eq_one_of_mem_sha2`) and the degree-two
+   Hochschild–Serre sequence (§0.85/§0.86), giving `Ш²(k,E) ⊆ inf H²(G,E)` modulo transgression;
+2. **row 5 at `n = -2`**, i.e. `Ш¹(G, K^× ⊗ W) = image of Ĥ^{-2}(G,W)`, with `W = E(-1)` and the
+   Kummer identification of §0.88(a);
+3. Prop 6 at `k = -2` with `T = Hom(μ_p, 𝔽_p)` — **one-dimensional and fixed a priori**, so the
+   §0.87(a) circularity cannot recur;
+4. Prop 6 at `k = 2` with `T = 𝔽_p` trivial, to kill the residual inflated class.
+
+The two shrinks compose: for a target `n` take `m₁ = m₀^{(2)}(n)` and then `m = m₀^{(-2)}(m₁)`; the
+surjection `F(m) ↠ F(m₁)` kills the transgression and `F(m₁) ↠ F(n)` kills the inflated class.
+
+### (d) The projection formula absorbs the local Tate–Nakayama contributions
+
+With (a) in hand the shape of step 3 collapses.  Write `P` for a `p`-Sylow of `G`, `w` for a place,
+`P_w = P ∩ D_w`.  The criterion is `range TN_P ⊔ range ι_* = ⊤` inside `Ĥ^{n+2}(P, C_K ⊗ W)`.
+Decompose `range ι_*` over the places (§0.98(e) item 1).  At each place the *local* comparison
+`TN_w` produces classes which, by
+`map_tateCor_range_tateNakayamaTwoMap_decompositionUnits_le`, corestrict **into `range TN_P`**.
+So the local Tate–Nakayama part of `range ι_*` contributes nothing new, and the whole content of
+step 3 is that the **local cokernels** span:
+
+>  `ker Left_P (n+1)  =  Σ_w cor_w ( ker Left_w (n+1) )`   inside `Ĥ^{n+4}(P, C_K[p] ⊗ W)`,
+
+where `cor_w` is `Ĥ^{n+4}(P_w, μ_p(K_w) ⊗ W) → Ĥ^{n+4}(P, I_K[p] ⊗ W) → Ĥ^{n+4}(P, C_K[p] ⊗ W)`.
+
+* The `⊇` inclusion needs exactly one compatibility, `Left_P ∘ cor_w = cor_{P_w}^P ∘ Left_w`, i.e.
+  **naturality of `Left`** — see (e).  (Compare gotcha 1345: in the ambient equation the `⊆`
+  direction is the automatic one; here, after the decomposition, the roles have swapped, because
+  `⊇` is the statement that the local pieces *land* in the right place.)
+* The `⊆` inclusion is the reciprocity content and has **no plan yet**.
+
+### (e) Scope of the `Left`-naturality brick
+
+`Left_A(n) = tateMap g_A n ∘ E_A(n)⁻¹` where `g_A = (cocycleTensorSeq (shiftObj A) (tateTwoCocycle A
+α) W).g` and `E_A = cocycleTensorObjPTorsionEquiv`.  The relation `ψ ≫ g_B = g_A` is **free** from
+`cocycleTensorSeqHom`'s `comm₂₃` (its `τ₃` is `𝟙 W`).  So `Left`-naturality is *exactly* naturality
+of `E`, which decomposes into four pieces:
+
+1. `tateMapIso (cocycleTensorIso …)` — formal;
+2. `tensorPTorsionShiftFreeEquiv` (`TensorPTorsionShift.lean:536`) — **the substantial one**: built
+   from the free presentation `kerSeq (freeHom E)` via `modNsmul`, `modCycleSeq`, `modTorSeq`,
+   `modTorTorsionIso` and two `tateδ`s, so it needs functoriality of `freeObj`/`freeHom`/`kerObj`
+   plus `tateδ`-naturality (`DeltaNatural.lean`);
+3. `tateMapIso (tensorIsoLeft W (cocycleNsmulTorsionIso …).symm)` — formal;
+4. `tensorShiftNsmulTorsionEquiv` — formal.
+
+Estimate: 600+ lines over 2–3 modules.
+
+### (f) Shortcuts ruled out this session
+
+* **Dévissage of `W` to the trivial module `𝔽_p`.**  Legitimate (`𝔽_p[P]` is local for a `p`-group
+  `P`, so every composition factor is trivial) but useless: `W = 𝔽_p` already contains the
+  difficulty, since `Ш¹(P, K^×/p)` is a Selmer-type group.
+* **Lattice resolution `0 → X_1 → X_0 → W → 0` with `X_0` free over `ℤ[P]`.**  Then
+  `Ĥ^*(P, C_K ⊗ X_0) = 0`, so the induced inclusion `range TN_W ⊇ range v_* = 0` says nothing.
+  Consistent with §0.98(c).  (The *other* dévissage, `0 → X --p--> X → W → 0` when `W` lifts to a
+  lattice, replaces `W` by `μ_p(K) ⊗ W` in the connecting term — not obviously easier, and it needs
+  `W` liftable.)
+* **Milne, *Arithmetic Duality Theorems*.**  Grepped `adt.txt`: it has **no** finite-group-level
+  Ш-duality theorem; all of its I.4 material is phrased over `G_S`.
+* **`K^× ⊗ W` as a Cartier dual.**  `Hom(W^∨, K^×) = W ⊗ μ_p ≠ K^× ⊗ W`, so the finite-level
+  Tate/Nakayama duality for tori does not extend to these coefficients.  Corroborates §0.88(c):
+  the `p`-torsion case is genuinely Poitou–Tate.
+* **`E(n,τ)` free over `𝔽_p[G]`.**  True for `τ = (1,1)` (`F/F^p[F,F] = 𝔽_p[G]^d`, and then
+  `Ĥ^*(G, C_K ⊗ 𝔽_p[G]^d) = 0` and row 5 would be vacuous), but **false in general**: for `p` odd
+  the degree-two graded piece is `Λ²(𝔽_p[G]^d)`, on which the stabiliser of a basis pair `{g,h}` is
+  `⟨hg^{-1}⟩` when `hg^{-1}` is an involution.  So `E(n,τ)` is a sum of `Ind_H^G` of modules over
+  subgroups `H` with nontrivial `H` in general, and no free lunch.  (Unverified against SW; recorded
+  only to close off the "maybe the coefficients are always induced" hope.)
+* **The unramified places impose no condition.**  For `x ∈ H²(G,E)` inflated to `H²(k,E)` and `v`
+  unramified in `K`, the composite `H²(G,E) → H²(D_w,E) → H²(k_v,E)` factors through
+  `H²(Ẑ, E) = 0` because `G_{k_v} ↠ Ẑ ↠ D_w`.  So `Ш²(k,E) ∩ inf H²(G,E)` is cut out by the
+  **ramified and archimedean** places only.  A real simplification of the *statement*, but it does
+  not by itself produce the surjection of (b).
+
+### (g) Gotchas
+
+1342. `rw [tateMap_comp_apply]` FAILS on a goal whose inner map is `(cocycleTensorSeq X b M).f` —
+      use explicitly-typed `have h1/h2/h3 := tateMap_comp_apply _ _ _ _` and chain with
+      `refine h1.trans ?_` / `rw [h2]` / `refine h3.trans ?_` / `exact congrArg …`; also write
+      `tateMap φ n x` as a plain application, never `(tateMap φ n).hom x` in a `show`.
+1343. Full root build with `NakayamaNextNatural.lean` + `DecompositionNakayamaNext.lean` + the
+      extended `BaseTateSylow.lean` is **9683 jobs**; `lake build …NakayamaNextNatural` alone is
+      8086 jobs (~10 s); `BaseTateSylow` + `DecompositionNakayamaNext` together is 8685 jobs
+      (~2 min).
+1344. `rw [tateMap_localizedFundamentalClass k w] at h` succeeds even when the rewritten term occurs
+      in the *type of an existential binder*.
+1345. (MATH) In `map obs_P (range ι_{P,*}) = range obs_P`, the `⊆` inclusion is **automatic**
+      (`range obs_P = ker Left_P` and `Left_P ∘ obs_P = 0`); all content is in `⊇`.
+1346. `Submodule.map f (Submodule.map g (LinearMap.range h))` membership unpacks with
+      `rintro _ ⟨_, ⟨_, ⟨x, rfl⟩, rfl⟩, rfl⟩`, and the witness proof must then be the **`.symm`** of
+      the projection formula, since `LinearMap.range` membership is `∃ y, f y = x`.
+
+### (h) Next
+
+1. The `Left`-naturality brick of (e) — it makes the `⊇` half of (d) automatic.
+2. Step 2's second half (§0.98(e) item 1): `Ĥ^*(P, I_{K,S} ⊗ W)` for finite `S`, and
+   `range ι_* = ⋃_S range ι_{S,*}`.  `Units/SIdeleClass.lean` (`SIdele`, `sIdeleDiag`,
+   `sIdeleClassSES`), `SIdeleHerbrand.lean`, `SIdeleNorm.lean`, `AdicSIdeles.lean` and
+   `AdicOrbitTate.lean` are the base to build on.
+3. Step 3's `⊆` half — still the wall.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —

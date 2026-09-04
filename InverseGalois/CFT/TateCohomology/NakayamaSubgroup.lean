@@ -30,6 +30,14 @@ and carry the fundamental class localised at a place to the restriction of the f
 Then everything the comparison of Tate and Nakayama produces on the subgroup already comes from
 that representation: the global obstruction, read on the subgroup, is a local obstruction.
 
+The statement also runs the other way.  Corestriction carries the comparison of the subgroup to the
+comparison of the group, because the comparison is a product with a fixed class and corestriction
+moves such a product past itself.  Combining the two: a class produced on the subgroup by the
+auxiliary representation is carried, first along that representation and then by corestriction, to
+a class the comparison of the whole group produces.  The values a local comparison takes therefore
+never leave the values the global comparison takes, and a spanning statement for the global
+comparison needs only what the local ones fail to reach.
+
 ## Main results
 
 * `InverseGalois.CFT.Tate.resHom_tensorHomLeft`: reading a map tensored on the left with a fixed
@@ -43,6 +51,10 @@ that representation: the global obstruction, read on the subgroup, is a local ob
   degree two to the restricted class.**
 * `InverseGalois.CFT.Tate.range_resTateNakayamaTwoMap_le`: **what the comparison of Tate and
   Nakayama produces on a subgroup already comes from such a representation.**
+* `InverseGalois.CFT.Tate.tateCor_tateMap_tensorHomLeft_tateNakayamaTwoMap` and
+  `InverseGalois.CFT.Tate.map_tateCor_range_tateNakayamaTwoMap_le`: **what the comparison of the
+  subgroup produces, transported along such a representation, corestricts to what the comparison of
+  the group produces.**
 
 ## Tags
 
@@ -165,6 +177,33 @@ theorem range_resTateNakayamaTwoMap_le {A' : Rep ℤ ↥H} (φ : A' ⟶ resObj H
   rintro _ ⟨x, rfl⟩
   exact ⟨tateNakayamaTwoMap A' β (resObj H M) n x,
     tateMap_tensorHomLeft_tateNakayamaTwoMap H α M φ β hβ n x⟩
+
+/-- **What the comparison of Tate and Nakayama of a subgroup produces, for a representation of the
+subgroup carrying a class in degree two to the restriction of the prescribed class, corestricts to
+what the comparison of Tate and Nakayama of the whole group produces**, on the corestriction of the
+class it was produced from. -/
+theorem tateCor_tateMap_tensorHomLeft_tateNakayamaTwoMap {A' : Rep ℤ ↥H} (φ : A' ⟶ resObj H A)
+    (β : tateModule A' 2) (hβ : tateMap φ 2 β = tateRes H A 2 α) (n : ℤ)
+    (x : ↥(tateModule (resObj H M) n)) :
+    tateCor H (tensorObj A M) (n + 1 + 1)
+        (tateMap (tensorHomLeft (resObj H M) φ) (n + 1 + 1)
+          (tateNakayamaTwoMap A' β (resObj H M) n x))
+      = tateNakayamaTwoMap A α M n (tateCor H M n x) := by
+  rw [tateMap_tensorHomLeft_tateNakayamaTwoMap H α M φ β hβ n x]
+  exact tateCor_tateNakayamaTwoMap H A α M n x
+
+/-- **Everything the comparison of Tate and Nakayama of a subgroup produces, transported along a
+representation of the subgroup carrying a class in degree two to the restriction of the prescribed
+class, corestricts into what the comparison of Tate and Nakayama of the whole group produces.** -/
+theorem map_tateCor_range_tateNakayamaTwoMap_le {A' : Rep ℤ ↥H} (φ : A' ⟶ resObj H A)
+    (β : tateModule A' 2) (hβ : tateMap φ 2 β = tateRes H A 2 α) (n : ℤ) :
+    Submodule.map (tateCor H (tensorObj A M) (n + 1 + 1))
+        (Submodule.map (tateMap (tensorHomLeft (resObj H M) φ) (n + 1 + 1)).hom
+          (LinearMap.range (tateNakayamaTwoMap A' β (resObj H M) n)))
+      ≤ LinearMap.range (tateNakayamaTwoMap A α M n) := by
+  rintro _ ⟨_, ⟨_, ⟨x, rfl⟩, rfl⟩, rfl⟩
+  exact ⟨tateCor H M n x,
+    (tateCor_tateMap_tensorHomLeft_tateNakayamaTwoMap H α M φ β hβ n x).symm⟩
 
 end Subgroup
 

@@ -21,6 +21,13 @@ comparison of the global obstruction with the local ones: on a decomposition gro
 the idele classes that the comparison reaches are exactly classes of ideles, and no information
 about the extension away from the place is involved.
 
+Corestriction sends the local statement back up.  The comparison is a product with a fixed class,
+and corestriction moves such a product past itself, so a class produced by the local comparison at a
+place is carried, first to the idele classes and then by corestriction, to a class the global
+comparison produces.  Whatever the places contribute is therefore already accounted for, and the
+question of what the global comparison misses is a question about the places jointly, not about any
+one of them.
+
 ## Main results
 
 * `InverseGalois.CFT.tateMap_localizedFundamentalClass`: **the localised fundamental class is
@@ -30,6 +37,9 @@ about the extension away from the place is involved.
   units of the completion there.**
 * `InverseGalois.CFT.range_resTateNakayamaTwoMap_le_idele`: **the comparison of Tate and Nakayama,
   read on a decomposition group, produces nothing that does not already come from the ideles.**
+* `InverseGalois.CFT.map_tateCor_range_tateNakayamaTwoMap_decompositionUnits_le`: **what the
+  comparison of Tate and Nakayama of a decomposition group produces from the units of the completion
+  there corestricts into what the comparison for the idele class group produces.**
 
 ## Tags
 
@@ -82,6 +92,21 @@ theorem range_resTateNakayamaTwoMap_le_idele (M : Rep ℤ Gal(K/k)) (n : ℤ) :
     rw [decompositionPlaceIdeleClass, ← tensorHomLeft_comp, resHom_tensorHomLeft]
   rw [h, tateMap_comp, ModuleCat.hom_comp]
   exact LinearMap.range_comp_le_range _ _
+
+variable (k) in
+/-- **What the comparison of Tate and Nakayama of the decomposition group at a finite place produces
+from the units of the completion there corestricts into what the comparison of Tate and Nakayama for
+the idele class group and the fundamental class produces.**  Corestriction moves a product with a
+fixed class past itself, and the localised fundamental class is carried to the restriction of the
+fundamental class, so a purely local class never leaves the values of the global comparison. -/
+theorem map_tateCor_range_tateNakayamaTwoMap_decompositionUnits_le (M : Rep ℤ Gal(K/k)) (n : ℤ) :
+    Submodule.map (tateCor (stabilizer Gal(K/k) w) (tensorObj (ideleClassRep k K) M) (n + 1 + 1))
+        (Submodule.map (tateMap (tensorHomLeft (resObj (stabilizer Gal(K/k) w) M)
+            (decompositionPlaceIdeleClass k w)) (n + 1 + 1)).hom
+          (LinearMap.range (tateNakayamaTwoMap (decompositionUnitsRep k w)
+            (localizedFundamentalClass k w) (resObj (stabilizer Gal(K/k) w) M) n)))
+      ≤ LinearMap.range (tateNakayamaTwoMap (ideleClassRep k K) (baseFundamentalClass k K) M n) :=
+  map_tateCor_range_tateNakayamaTwoMap_le _ _ M _ _ (tateMap_localizedFundamentalClass k w) n
 
 end
 

@@ -58,6 +58,9 @@ with the coefficients, as the equality of one image with one kernel there.
 * `InverseGalois.CFT.map_resBaseTateNakayamaPTorsionRight_eq_range_iff`,
   `InverseGalois.CFT.range_shaTorusPTorsionMap_of_sylow_next`: the same criterion, stated for the
   map the obstruction is built from rather than for the obstruction itself.
+* `InverseGalois.CFT.range_shaTorusPTorsionMap_of_sylow_nakayama`: the same criterion, stated with
+  no obstruction at all — the comparison of Tate and Nakayama over the Sylow subgroup, together with
+  the classes coming from the ideles, spans.
 
 ## Tags
 
@@ -222,6 +225,22 @@ theorem range_shaTorusPTorsionMap_of_sylow_next (P : Sylow p Gal(K/k)) (n : ℤ)
       = LinearMap.ker (tateMap (tensorHomLeft W (globalUnitsToIdele k K)) (n + 1 + 1 + 1)).hom :=
   range_shaTorusPTorsionMap_of_sylow_map k K W hW P n
     ((map_resBaseTateNakayamaPTorsionRight_eq_range_iff k K W hW (P : Subgroup Gal(K/k)) n _).2 h)
+
+/-- **The everywhere locally trivial classes of the units tensored with coefficients killed by a
+prime are exactly the image of the complete cohomology of the coefficients three degrees lower**, as
+soon as the comparison of Tate and Nakayama over a Sylow subgroup for that prime, together with the
+classes coming from the ideles, spans the classes of the idele classes tensored with the
+coefficients.  This is the criterion in the form in which no obstruction appears at all: only the
+comparison itself, and the ideles. -/
+theorem range_shaTorusPTorsionMap_of_sylow_nakayama (P : Sylow p Gal(K/k)) (n : ℤ)
+    (h : LinearMap.range (resTateNakayamaTwoMap (P : Subgroup Gal(K/k)) (ideleClassRep k K)
+          (baseFundamentalClass k K) W n)
+        ⊔ LinearMap.range (tateMap (resHom (P : Subgroup Gal(K/k))
+          (tensorHomLeft W (ideleToIdeleClass k K))) (n + 1 + 1)).hom = ⊤) :
+    LinearMap.range (shaTorusPTorsionMap k K W hW n)
+      = LinearMap.ker (tateMap (tensorHomLeft W (globalUnitsToIdele k K)) (n + 1 + 1 + 1)).hom := by
+  refine range_shaTorusPTorsionMap_of_sylow_sup k K W hW P n ?_
+  rwa [ker_resBaseTateNakayamaPTorsionRight k K W hW (P : Subgroup Gal(K/k)) n]
 
 end
 
