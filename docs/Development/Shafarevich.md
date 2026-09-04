@@ -8962,6 +8962,103 @@ it in full once (1)–(4) are in place.
 
 ---
 
+## 0.90 Status (2026-09-04) — §0.89(d) items 1–4 are all landed, and row 5 is now one sharp statement
+
+### (a) The four next steps of §0.89(d) are done
+
+All four are in the repository, sorry- and axiom-free.  Full build green at 9636 jobs.
+
+1. **Tate cohomology commutes with products** — `CFT/TateCohomology/Product.lean`
+   (`tatePiEquiv`, `isZero_tateModule_piRep`), and its tensored refinement
+   `CFT/TateCohomology/TensorPi.lean` (`tensorSectionsIso`, `isZero_tateModule_tensorObj_piRep`).
+   The tensored form needs the coefficients to be of finite rank over the prime field, because `⊗`
+   does *not* commute with infinite products; the bridging lemma is
+   `nsmul_eq_zero_of_equivPi : (W ≃+ (Fin d → ZMod p)) → ∀ x, p • x = 0`.
+2. **`I_K[p] = ∏_w μ_p` and the local decomposition** — `CFT/Tate/FamilyTensorOrbit.lean`
+   (`tateTensorOrbitsEquiv`, `tateTensorTorsionEquiv`), `CFT/TateCohomology/TensorPair.lean`,
+   `CFT/Units/IdeleTorsionTensor.lean` (`ideleTorsionTensorTateEquiv`,
+   `isZero_tateModule_tensor_ideleTorsion`).  So
+   `Ĥ^n(G, I_K[p] ⊗ W) ≅ ∏_v Ĥ^n(D_w, μ_p ⊗ W)`, one factor per place of the base field.
+3. **`C_K[p] ≅ I_K[p]/μ_p(K)`** — already present as
+   `ideleClassTorsionShortComplex_shortExact` (`CFT/Units/IdeleClassTorsionSES.lean`), which is
+   exactly the snake sequence with `Ш¹(K,μ_p) = 0` folded in.
+4. **The long exact sequence** — `CFT/Units/IdeleClassTorsionLocal.lean` (2026-09-04):
+   `ker_tateδ_tensor_ideleClassTorsion` and `exists_localTorsion_tateMap_eq`, so a class of
+   `Ĥ^n(G, C_K[p] ⊗ W)` is the image of a family of local classes exactly when the connecting map
+   into `Ĥ^{n+1}(G, μ_p(K) ⊗ W)` kills it, and `exists_localTorsion_tateMap_eq_of_isZero` when that
+   target vanishes.  **The error term of `tateNakayamaPTorsionEquiv` is now a global group presented
+   by local ones.**
+
+Two further bricks landed on top:
+
+* `CFT/Units/IdeleTorusShaLocal.lean` reads the obstruction of §0.88(c) one place at a time.  The
+  local module is killed by `p` and the complete cohomology of a decomposition group is killed by
+  its order, so **a place with `p ∤ #D_w` contributes nothing**
+  (`isZero_tateModule_tensor_adicTorsion_of_coprime`, and the archimedean twin).  A decomposition
+  group at an archimedean place has order one or two
+  (`NumberField.InfinitePlace.nat_card_stabilizer_eq_one_or_two`), so **for odd `p` the archimedean
+  places drop out of the criterion entirely** (`range_shaTorusPTorsionMap_of_isZero_adic`), leaving
+  a condition at the finite places and one on `Ĥ^{n+5}(G, μ_p(K) ⊗ W)`.
+* `CFT/TateCohomology/TensorPTorsion.lean` gained `isZero_tateModule_tensorObj_of_coprime` and its
+  primed twin: a tensor product one of whose factors is killed by a number prime to `#G` has no
+  complete cohomology.
+
+### (b) Row 5, sharply
+
+The sufficient condition of §0.88(c) — "the obstruction group vanishes" — is *false* in general, and
+saying so is not enough.  `CFT/Units/IdeleTorusShaSharp.lean` replaces it by a necessary **and**
+sufficient one.  The unconditional statement is `range_shaTorusPTorsionMap`:
+
+`im(shaTorusPTorsionMap) = δ(ker obs)`,  while  `Ш = δ(⊤)`,
+
+with `obs = baseTateNakayamaPTorsionRight : Ĥ^{n+2}(G, C_K⊗W) → Ĥ^{n+4}(G, C_K[p]⊗W)`.  A map's
+image of a submodule is all of its image exactly when the submodule and the kernel span
+(`map_eq_range_iff_sup_ker_eq_top`), and `ker δ` is what comes from the ideles
+(`ker_tateδ_tensor_ideleClass`).  Hence
+
+```lean
+theorem range_shaTorusPTorsionMap_eq_iff' (n : ℤ) :
+    LinearMap.range (shaTorusPTorsionMap k K W hW n)
+        = LinearMap.ker (tateMap (tensorHomLeft W (globalUnitsToIdele k K))
+          (n + 1 + 1 + 1)).hom ↔
+      Submodule.map (baseTateNakayamaPTorsionRight k K W hW n)
+          (LinearMap.range (tateMap (tensorHomLeft W (ideleToIdeleClass k K)) (n + 1 + 1)).hom)
+        = LinearMap.range (baseTateNakayamaPTorsionRight k K W hW n)
+```
+
+In words: **the everywhere locally trivial classes of `K^× ⊗ W` are exactly the image of
+`Ĥ^n(G, W)` if and only if the obstruction of Tate and Nakayama takes no value on the idele classes
+that it does not already take on the ideles.**  The units and `Ш` have been eliminated; what is left
+is a statement about the obstruction and the places, which is the shape any duality input has to
+take.
+
+### (c) What is still missing, and what is unexpectedly present
+
+Missing, for row 5:
+
+* The comparison of the *global* Tate–Nakayama obstruction with the *local* ones — i.e. that the
+  global fundamental class restricts to the local fundamental classes, giving a commuting square
+  between `obs` and the per-place error maps.  With (a)4 and (b) in place this is the only step
+  between the criterion and a theorem, and it is where the sum-of-invariants (reciprocity) enters.
+* The Kummer identification `Hom_cont(G_K, E) ≅ (K^×/K^{×p}) ⊗ Hom(μ_p, E)` as `G`-modules
+  (§0.88(c) already flagged this), which is what connects all of the `K^×⊗W` work to `Ш²(k,E)`.
+
+Present, and worth remembering because it removes a large chunk of what "Poitou–Tate" usually costs:
+
+* **Tate duality for a finite group in every degree, for `p`-torsion coefficients**, is already a
+  theorem here — `Tate.tateDualEquiv` in `CFT/TateCohomology/DualityShift.lean`:
+  `Ĥ^n(G, Hom(A,C)) ≅ Hom(Ĥ^{-n-1}(G,A), C)`.  So the *formal* half of local duality is done; only
+  the identification of the local coefficient dual with the class formation's `Hom(M, K_w^×)` is
+  not.  If `μ_p ⊆ k` — which the Shafarevich induction can arrange — the dual has trivial action and
+  the identification is immediate.
+* The product formula for the `p`-th power symbol and for the Cartier-dual pairing
+  (`totalInvariant_smoothBrauerHom_kummerSymbolUnits`,
+  `totalInvariant_smoothBrauerHom_dualSymbolUnits`), which is the global input.
+
+So the remaining content of row 5 is *one* comparison square, not a duality theory.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
