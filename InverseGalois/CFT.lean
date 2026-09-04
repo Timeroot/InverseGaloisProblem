@@ -661,6 +661,7 @@ import InverseGalois.CFT.TateCohomology.Exact
 import InverseGalois.CFT.TateCohomology.FreePresentation
 import InverseGalois.CFT.TateCohomology.Functorial
 import InverseGalois.CFT.TateCohomology.Graded
+import InverseGalois.CFT.TateCohomology.GroupCongr
 import InverseGalois.CFT.TateCohomology.HomologyJunction
 import InverseGalois.CFT.TateCohomology.Induced
 import InverseGalois.CFT.TateCohomology.Iterate
@@ -752,6 +753,7 @@ import InverseGalois.CFT.Units.CyclicTrivial
 import InverseGalois.CFT.Units.Decomposition
 import InverseGalois.CFT.Units.DecompositionField
 import InverseGalois.CFT.Units.DecompositionGalois
+import InverseGalois.CFT.Units.DecompositionInvariant
 import InverseGalois.CFT.Units.DecompositionOutside
 import InverseGalois.CFT.Units.HasseHom
 import InverseGalois.CFT.Units.HasseLevel
@@ -2470,6 +2472,16 @@ it that are available here.
 * `InverseGalois.CFT.Units.DecompositionGalois` packages that as an isomorphism of groups: the
   decomposition group at a prime **is** the Galois group of the completion over the completion of
   the prime below, so its order is the local degree.
+* `InverseGalois.CFT.Units.DecompositionInvariant` reads a class of the decomposition group with
+  coefficients in the units of the completion as a rational modulo the integers.  The two groups
+  acting on those units — the decomposition group and the Galois group of the completions — are
+  identified by that isomorphism, and the identification matches their actions, so transporting
+  cohomology along it makes the complete cohomology in degree two of the decomposition group the
+  second cohomology of a finite Galois extension of local fields.  The crossed product construction
+  turns the latter into the Brauer classes of the completion of the base split by the completion of
+  the extension, and the invariant map of a local field reads such a class as a rational modulo the
+  integers, killed by the local degree.  Since the invariant map of a local field is injective,
+  **a class of the decomposition group at a finite place is determined by its invariant.**
 * `InverseGalois.CFT.Units.DecompositionField` names the subfield fixed by the decomposition
   group.  An element of it has its image in the completion fixed by the decomposition group, hence
   coming from the completion of the base, so the decomposition field embeds into the completion of
@@ -3478,6 +3490,15 @@ it that are available here.
   homology of the degree shifted by one below that.  A map of representations induces a map in
   every degree and a short exact sequence has a connecting map in every degree, and the resulting
   sequence, running through all of the integers, is **exact at every one of its spots**.
+* `InverseGalois.CFT.TateCohomology.GroupCongr` transports cohomology along an isomorphism of
+  groups.  A homomorphism of groups together with a compatible map of coefficients composes a
+  cochain with the homomorphism in its arguments and with the coefficient map in its values; when
+  the homomorphism is an isomorphism and the coefficient map is bijective, both operations are
+  bijections, so the induced map of complexes of inhomogeneous cochains is an isomorphism in every
+  degree and hence an isomorphism of complexes.  Homology carries that to an isomorphism, so **the
+  cohomology of a group with coefficients in a representation depends on the pair only up to
+  isomorphism**, which is what lets a computation made for one presentation of a group be read off
+  for another.
 * `InverseGalois.CFT.TateCohomology.DeltaNatural` compares the long exact sequences of two short
   exact sequences joined by a map: **the connecting map of the complete cohomology commutes with a
   map of short exact sequences in every integer degree.**  Away from the two middle degrees this is
