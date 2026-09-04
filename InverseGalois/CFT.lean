@@ -2530,8 +2530,10 @@ it that are available here.
   the decomposition group, and the two agree because the transport of the family at a place left
   where it is **is** that action.  So **the units of the completion at a finite place are a
   subrepresentation of the ideles for the decomposition group there**, and composing with the
-  passage to classes lands them in the idele class group.  Reading the component at the place
-  recovers the unit it was built from, so the embedding is injective.
+  passage to classes lands them in the idele class group.  Reading the component at the place is
+  equivariant for the same reason, and it recovers the unit an idele supported there was built
+  from, so **the units of the completion are a retract of the ideles for the decomposition group**
+  and the embedding stays injective after any functor is applied to it.
 * `InverseGalois.CFT.Units.DecompositionField` names the subfield fixed by the decomposition
   group.  An element of it has its image in the completion fixed by the decomposition group, hence
   coming from the completion of the base, so the decomposition field embeds into the completion of

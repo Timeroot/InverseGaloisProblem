@@ -20,9 +20,10 @@ group, and the two agree because the transport of the family at a fixed place **
 
 The embedding is therefore a map of representations of the decomposition group, from the units of
 the completion there to the ideles read on that subgroup, and composing with the passage to classes
-it lands in the idele class group.  Since a component of an idele supported at one place recovers
-the unit it was built from, the embedding is injective, and so is the map it induces on any
-functor of the underlying module.
+it lands in the idele class group.  Reading the component at the place is equivariant for the same
+reason, and it recovers the unit an idele supported there was built from: **the units of the
+completion are a retract of the ideles for the decomposition group**, so the embedding stays
+injective after any functor is applied to it.
 
 ## Main definitions
 
@@ -30,12 +31,16 @@ functor of the underlying module.
   a subrepresentation of the ideles for the decomposition group there.**
 * `InverseGalois.CFT.decompositionPlaceIdeleClass`: the same, followed by the passage to idele
   classes.
+* `InverseGalois.CFT.decompositionPlaceProj`: the component at a finite place, as a map of
+  representations of the decomposition group there.
 
 ## Main results
 
 * `InverseGalois.CFT.ideleAut_adicPlaceIdele`: **an automorphism fixing a finite place carries the
   idele supported there attached to a unit to the one attached to the transported unit.**
 * `InverseGalois.CFT.adicPlaceIdele_injective`: the embedding is injective.
+* `InverseGalois.CFT.decompositionPlaceIdele_comp_proj`: **the units of the completion at a finite
+  place are a retract of the ideles for the decomposition group there.**
 
 ## Tags
 
@@ -119,6 +124,46 @@ theorem adicPlaceIdele_injective :
   rwa [coe_adicPlaceIdele, coe_adicPlaceIdele, fullPlaceIdele_snd_self,
     fullPlaceIdele_snd_self] at h
 
+/-! ### Reading the component at the place -/
+
+/-- The component at a finite place of an idele. -/
+def placeComponent : ↥(idele K) →+ Additive (w.adicCompletion K)ˣ where
+  toFun x := (x : FullIdele K).2 w
+  map_zero' := rfl
+  map_add' _ _ := rfl
+
+@[simp]
+theorem placeComponent_apply (x : ↥(idele K)) :
+    placeComponent w x = (x : FullIdele K).2 w := rfl
+
+/-- The component at a finite place of the idele supported there attached to a unit is that
+unit. -/
+@[simp]
+theorem placeComponent_adicPlaceIdele (u : Additive (w.adicCompletion K)ˣ) :
+    placeComponent w (adicPlaceIdele K w u) = u := by
+  rw [placeComponent_apply, coe_adicPlaceIdele, fullPlaceIdele_snd_self]
+
+omit [NumberField k] in
+variable (k) in
+/-- **An automorphism fixing a finite place moves the component of an idele there by the transport
+of the family at that place.** -/
+theorem placeComponent_ideleAut (σ : Gal(K/k)) (hσ : σ • w = w) (x : ↥(idele K)) :
+    placeComponent w (ideleAut (k := k) σ x)
+      = (adicRingFamily (k := k) (K := K)).unitsFamily.transport hσ (placeComponent w x) := by
+  rw [placeComponent_apply, coe_ideleAut, fullIdeleAut, prodAut_apply]
+  show (adicRingFamily (k := k) (K := K)).unitsFamily.familyAut σ ((x : FullIdele K).2) w
+    = (adicRingFamily (k := k) (K := K)).unitsFamily.transport hσ (placeComponent w x)
+  rw [FamilyAction.familyAut_apply_eq_transport _ hσ, placeComponent_apply]
+
+omit [NumberField k] in
+variable (k) in
+/-- **Reading the component at a finite place is equivariant for the decomposition group there.** -/
+theorem placeComponent_ideleAut_stabilizer (σ : ↥(stabilizer Gal(K/k) w)) (x : ↥(idele K)) :
+    placeComponent w (ideleAut (k := k) (σ : Gal(K/k)) x)
+      = smulUnitsAut σ (placeComponent w x) := by
+  rw [placeComponent_ideleAut k w (σ : Gal(K/k)) (mem_stabilizer_iff.mp σ.2) x,
+    transport_adicUnitsFamily w (σ : Gal(K/k)) (mem_stabilizer_iff.mp σ.2) _]
+
 end Equivariance
 
 /-! ### The map of representations -/
@@ -157,6 +202,31 @@ variable (k) in
 theorem decompositionPlaceIdeleClass_hom (u : Additive (w.adicCompletion K)ˣ) :
     (decompositionPlaceIdeleClass k w).hom.hom u
       = QuotientAddGroup.mk' (ideleDiag K).range (adicPlaceIdele K w u) := rfl
+
+variable (k) in
+/-- **The component at a finite place, as a map of representations of the decomposition group
+there.** -/
+def decompositionPlaceProj :
+    Tate.resObj (stabilizer Gal(K/k) w) (ideleRep k K) ⟶ decompositionUnitsRep k w where
+  hom := ModuleCat.ofHom (placeComponent w).toIntLinearMap
+  comm σ := by
+    ext x
+    exact placeComponent_ideleAut_stabilizer k w σ x
+
+omit [NumberField k] [IsGalois k K] in
+variable (k) in
+@[simp]
+theorem decompositionPlaceProj_hom (x : ↥(idele K)) :
+    (decompositionPlaceProj k w).hom.hom x = placeComponent w x := rfl
+
+omit [NumberField k] [IsGalois k K] in
+variable (k) in
+/-- **The units of the completion at a finite place are a retract of the ideles for the
+decomposition group there.** -/
+theorem decompositionPlaceIdele_comp_proj :
+    decompositionPlaceIdele k w ≫ decompositionPlaceProj k w = 𝟙 _ := by
+  ext u
+  exact placeComponent_adicPlaceIdele w u
 
 end Rep
 
