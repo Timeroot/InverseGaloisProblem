@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.TateCohomology.NakayamaSubgroupError
+import InverseGalois.CFT.TateCohomology.TorsionErrorLong
 import InverseGalois.CFT.Units.BaseTateCoeff
 
 /-!
@@ -29,18 +30,27 @@ no value that it does not already take on the ideles.  That is the local shape a
 the everywhere locally trivial classes has to take, now placed over a field over which the extension
 has degree a power of the prime.
 
+The values the obstruction takes at all are themselves named by the long exact sequence it belongs
+to: they are exactly what the map entering the comparison one degree higher kills.  So the spanning
+condition can be read entirely inside the vectors of the idele classes killed by the prime, tensored
+with the coefficients, as the equality of one image with one kernel there.
+
 ## Main definitions
 
 * `InverseGalois.CFT.resBaseTateNakayamaPTorsionRight`: the obstruction of Tate and Nakayama for the
   idele class group with coefficients killed by a prime, read on a subgroup of the Galois group.
+* `InverseGalois.CFT.resBaseTateNakayamaPTorsionLeft`: the map entering the comparison there.
 
 ## Main results
 
 * `InverseGalois.CFT.ker_resBaseTateNakayamaPTorsionRight`: **the classes of the idele classes
   tensored with the coefficients on which the obstruction vanishes, read on a subgroup, are exactly
   the values of the comparison of Tate and Nakayama there.**
+* `InverseGalois.CFT.range_resBaseTateNakayamaPTorsionRight`: **the values the obstruction takes on
+  a subgroup are exactly what the map entering the comparison one degree higher kills.**
 * `InverseGalois.CFT.range_shaTorusPTorsionMap_of_sylow_sup`,
-  `InverseGalois.CFT.range_shaTorusPTorsionMap_of_sylow_map`: **the everywhere locally trivial
+  `InverseGalois.CFT.range_shaTorusPTorsionMap_of_sylow_map`,
+  `InverseGalois.CFT.range_shaTorusPTorsionMap_of_sylow_ker`: **the everywhere locally trivial
   classes of the units tensored with coefficients killed by a prime are exactly the image of the
   complete cohomology of the coefficients three degrees lower**, as soon as the obstruction of the
   Sylow subgroup takes no value on the idele classes that it does not already take on the ideles.
@@ -94,6 +104,31 @@ theorem ker_resBaseTateNakayamaPTorsionRight (n : ℤ) :
     (fun T => card_tateModule_resObj_ideleClassRep_two_le T)
     (zsmul_baseFundamentalClass_eq_zero_imp_dvd k K) S W hW n
 
+/-- **The map entering the comparison of Tate and Nakayama for the idele class group with
+coefficients killed by a prime, read on a subgroup of the Galois group**: the vectors of the idele
+classes killed by the prime, tensored with the coefficients, three degrees above the lower of the
+two degrees. -/
+def resBaseTateNakayamaPTorsionLeft (n : ℤ) :
+    ↥(tateModule (tensorObj (nsmulTorsion (resObj S (ideleClassRep k K)) p) (resObj S W))
+        (n + 1 + 1 + 1)) →ₗ[ℤ] ↥(tateModule (resObj S W) n) :=
+  resTateNakayamaPTorsionErrorLeft (ideleClassRep k K) (baseFundamentalClass k K)
+    (fun T => isZero_tateModule_resObj_ideleClassRep_one T)
+    (fun T => finite_tateModule_resObj_ideleClassRep_two T)
+    (fun T => card_tateModule_resObj_ideleClassRep_two_le T)
+    (zsmul_baseFundamentalClass_eq_zero_imp_dvd k K) S W hW n
+
+/-- **The values the obstruction of Tate and Nakayama takes on a subgroup are exactly what the map
+entering the comparison one degree higher kills**, both being read off the same term of the long
+exact sequence of the extension attached to the fundamental class. -/
+theorem range_resBaseTateNakayamaPTorsionRight (n : ℤ) :
+    LinearMap.range (resBaseTateNakayamaPTorsionRight k K W hW S n)
+      = LinearMap.ker (resBaseTateNakayamaPTorsionLeft k K W hW S (n + 1)) :=
+  range_resTateNakayamaPTorsionErrorRight (ideleClassRep k K) (baseFundamentalClass k K)
+    (fun T => isZero_tateModule_resObj_ideleClassRep_one T)
+    (fun T => finite_tateModule_resObj_ideleClassRep_two T)
+    (fun T => card_tateModule_resObj_ideleClassRep_two_le T)
+    (zsmul_baseFundamentalClass_eq_zero_imp_dvd k K) S W hW n
+
 /-! ### The criterion on a Sylow subgroup -/
 
 /-- **The everywhere locally trivial classes of the units tensored with coefficients killed by a
@@ -125,6 +160,22 @@ theorem range_shaTorusPTorsionMap_of_sylow_map (P : Sylow p Gal(K/k)) (n : ℤ)
   refine range_shaTorusPTorsionMap_of_sylow_sup k K W hW P n ?_
   rw [sup_comm]
   exact (map_eq_range_iff_sup_ker_eq_top _ _).1 h
+
+/-- **The everywhere locally trivial classes of the units tensored with coefficients killed by a
+prime are exactly the image of the complete cohomology of the coefficients three degrees lower**, as
+soon as the obstruction of Tate and Nakayama over a Sylow subgroup for that prime takes, on the
+ideles tensored with the coefficients, every value that the map entering the comparison one degree
+higher kills. -/
+theorem range_shaTorusPTorsionMap_of_sylow_ker (P : Sylow p Gal(K/k)) (n : ℤ)
+    (h : Submodule.map (resBaseTateNakayamaPTorsionRight k K W hW (P : Subgroup Gal(K/k)) n)
+          (LinearMap.range (tateMap (resHom (P : Subgroup Gal(K/k))
+            (tensorHomLeft W (ideleToIdeleClass k K))) (n + 1 + 1)).hom)
+        = LinearMap.ker
+          (resBaseTateNakayamaPTorsionLeft k K W hW (P : Subgroup Gal(K/k)) (n + 1))) :
+    LinearMap.range (shaTorusPTorsionMap k K W hW n)
+      = LinearMap.ker (tateMap (tensorHomLeft W (globalUnitsToIdele k K)) (n + 1 + 1 + 1)).hom := by
+  refine range_shaTorusPTorsionMap_of_sylow_map k K W hW P n ?_
+  rw [h, range_resBaseTateNakayamaPTorsionRight]
 
 end
 

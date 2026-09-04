@@ -716,6 +716,7 @@ import InverseGalois.CFT.TateCohomology.TensorShift
 import InverseGalois.CFT.TateCohomology.TensorTor
 import InverseGalois.CFT.TateCohomology.TensorTorsionError
 import InverseGalois.CFT.TateCohomology.TensorTrivial
+import InverseGalois.CFT.TateCohomology.TorsionErrorLong
 import InverseGalois.CFT.TateCohomology.TorsionFree
 import InverseGalois.CFT.TateCohomology.TorsionInduced
 import InverseGalois.CFT.TateCohomology.TorsionNakayama
@@ -4175,6 +4176,18 @@ it that are available here.
   **what the comparison of Tate and Nakayama produces over a subgroup is exactly what the
   obstruction map of that subgroup kills**, and a spanning condition over a subgroup becomes a
   statement about one linear map defined there.
+* `InverseGalois.CFT.TateCohomology.TorsionErrorLong` widens that window by one place.  The
+  obstruction is, through the identification of the tensored extension with the vectors killed by
+  the prime three degrees higher, the map induced by the inclusion of the tensor product into the
+  extension, and the map that follows it in the long exact sequence is the one induced by the
+  projection of the extension onto the coefficients -- which is, through the same identification,
+  the map entering the comparison one degree higher.  Exactness of the long exact sequence at the
+  middle term therefore says that **what the obstruction of Tate and Nakayama at a prime produces in
+  a degree is exactly what the map entering the comparison one degree higher kills**, so the four
+  term sequence extends to a long exact sequence alternating between the coefficients, their tensor
+  product with the representation, and the vectors of the representation killed by the prime.  A
+  statement about the image of the obstruction thereby becomes a statement about the kernel of an
+  explicit map, over the group or over any subgroup of it.
 * `InverseGalois.CFT.TateCohomology.TensorPi` lets the coefficients pass through a product.  A
   tensor product does not commute with an infinite product of groups, so a family of
   representations tensored with fixed coefficients is not in general the product of the tensored
@@ -4785,7 +4798,10 @@ it that are available here.
   the coefficients three degrees lower as soon as the obstruction of a Sylow subgroup for that prime
   takes no value on the idele classes that it does not already take on the ideles** -- the shape a
   duality theorem has to take, now placed over a field over which the extension has degree a power
-  of the prime.
+  of the prime.  The values that obstruction takes at all are the kernel of the map entering the
+  comparison one degree higher, so the condition can also be read entirely inside the vectors of the
+  idele classes killed by the prime, tensored with the coefficients, as the equality of one image
+  with one kernel there.
 * `InverseGalois.CFT.Units.BaseTateTorsion` drops the flatness, which the coefficients of an
   embedding problem never have.  The fundamental class satisfies the classical hypotheses on every
   subgroup, so in particular on every Sylow subgroup, and the four exact terms attached to the

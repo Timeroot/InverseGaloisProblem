@@ -10394,6 +10394,118 @@ about the kernel of the dual map, where the sum-of-invariants relation is the na
 
 ---
 
+## 0.97 Status (2026-09-04, later still) — the obstruction sequence extends past the obstruction, so row 5 is now an image-equals-kernel statement inside one group
+
+### (a) What landed
+
+`InverseGalois/CFT/TateCohomology/TorsionErrorLong.lean` (new, ~155 lines) and an extension of
+`InverseGalois/CFT/Units/BaseTateSylow.lean`.  Build green: the new module alone 8085 jobs,
+`BaseTateSylow` 8396 jobs, full root build **9680 jobs**, `grep -c "warning:\|error:"` = 0, 0
+sorries.
+
+New declarations, in `InverseGalois.CFT.Tate`:
+
+* `range_tateNakayamaNextMap A b M n :`
+  `range (tateNakayamaNextMap A b M n) = ker (tateMap (cocycleTensorSeq (shiftObj A) b M).g (n+1))`
+* `range_tateNakayamaTwoNextMap` — the same for the cocycle attached to a class in degree two.
+* `range_tateNakayamaPTorsionErrorRight A α W hW hT n :`
+  `range (tateNakayamaPTorsionErrorRight … n) = ker (tateNakayamaPTorsionErrorLeft … (n+1))`
+* `exact_tateNakayamaPTorsionErrorRightLeft` — the same as `Function.Exact`.
+* `range_resTateNakayamaPTorsionErrorRight`, `exact_resTateNakayamaPTorsionErrorRightLeft` — over a
+  subgroup.
+
+and in `InverseGalois.CFT`:
+
+* `resBaseTateNakayamaPTorsionLeft k K W hW S n` — the map entering the comparison for the idele
+  class group with the fundamental class, read on a subgroup `S`.
+* `range_resBaseTateNakayamaPTorsionRight k K W hW S n :`
+  `range (obs_S n) = ker (resBaseTateNakayamaPTorsionLeft k K W hW S (n+1))`
+* `range_shaTorusPTorsionMap_of_sylow_ker` — the row-5 criterion with the right-hand side of `(*)`
+  replaced by that kernel.
+
+### (b) The mathematics
+
+The four-term sequence of `TensorTorsionError.lean` is a window on the long exact sequence of
+`cocycleTensorSeq (shiftObj A) (tateTwoCocycle A α) W`, which is
+`0 → shiftObj A ⊗ W → cocycleTensorObj → W → 0`.  Writing `E(n)` for
+`cocycleTensorObjPTorsionEquiv A α W hW hT n`, an isomorphism
+`Ĥ^n(cocycleTensorObj) ≅ Ĥ^{n+3}(A[p] ⊗ W)`, the two error maps are literally
+
+```
+errorLeft  n = (tateMap g n)   ∘ E(n)⁻¹      : Ĥ^{n+3}(A[p]⊗W) → Ĥ^n(W)
+errorRight n = E(n+1) ∘ (tateMap f (n+1)) ∘ (tateNakayamaIso)⁻¹
+                                             : Ĥ^{n+2}(A⊗W) → Ĥ^{n+4}(A[p]⊗W)
+```
+
+so exactness of the long exact sequence at `Ĥ^{n+1}(cocycleTensorObj)` — i.e.
+`range (tateMap f (n+1)) = ker (tateMap g (n+1))`, which is `tateExact_map_map` — transports along
+`E(n+1)` to `range (errorRight n) = ker (errorLeft (n+1))`.  The whole thing is therefore one long
+exact sequence
+
+```
+… --errorLeft n--> Ĥ^n(W) --TN--> Ĥ^{n+2}(A⊗W) --errorRight n--> Ĥ^{n+4}(A[p]⊗W)
+   --errorLeft (n+1)--> Ĥ^{n+1}(W) --TN--> …
+```
+
+alternating between the coefficients, their tensor product with the representation, and the vectors
+killed by the prime.
+
+### (c) The new shape of row 5
+
+§0.94(b) stated the remaining content of row 5 as, for `P` a Sylow `p`-subgroup of `Gal(K/k)`,
+
+```
+(*)   Submodule.map obs_P (range ι_*) = range obs_P
+```
+
+The right-hand side was, until now, opaque: `range obs_P` is the image of a map out of a group we
+have no independent handle on.  §0.97 replaces it by an explicitly described subgroup of the target:
+
+```
+(*)   Submodule.map obs_P (range ι_*) = ker (Left_P (n+1))
+```
+
+with both sides living inside `Ĥ^{n+4}(P, C_K[p] ⊗ W)`, the group that §0.95 decomposes into local
+pieces.  `Left_P (n+1) : Ĥ^{n+4}(P, C_K[p] ⊗ W) → Ĥ^{n+1}(P, W)` is `resBaseTateNakayamaPTorsionLeft`
+— an explicit linear map, not a `range`.  This is the form in which the reciprocity input can be
+fed: at `n = -2` the target `Ĥ^{-1}(P, W)` is the norm-kernel of `W`, and the sum-of-invariants
+relation is exactly a statement that a product of local classes lands in it.
+
+### (d) What did *not* change
+
+The two remaining steps of §0.95(e) are untouched: step 2 (the local decomposition of
+`Ĥ^{n+4}(P, C_K[p] ⊗ W)` and the componentwise description of `obs_P ∘ ι_*`) and step 3 (the
+reciprocity input).  What §0.97 buys is that step 3's *target* is now a kernel of an explicit map
+rather than an image of an inaccessible one, so step 2's local decomposition has something concrete
+to be compared against.
+
+### (e) Lean facts learned
+
+* **1334.** `tateExact_map_map hX n : Function.Exact (tateMap X.f n) (tateMap X.g n)` lives at
+  `TateCohomology/Graded.lean:131`, next to `tateExact_map_δ` (146) and `tateExact_δ_map` (162).
+  `LinearMap.exact_iff` does **not** apply to it directly (the maps are `ModuleCat` homs, not
+  `LinearMap`s); the repo idiom, at `TateNakayamaError.lean:94`, is
+  `ext x; simp only [LinearMap.mem_range, LinearMap.mem_ker]; exact (tateExact_map_map … x).symm`.
+* **1335.** For `E` a `LinearEquiv`, the shape `range (E ∘ₗ f) = ker (g ∘ₗ E.symm)` closes with
+  `rw [LinearMap.range_comp, <range f = ker g>, LinearMap.ker_comp]` followed by
+  `exact Submodule.map_equiv_eq_comap_symm _ _`.
+* **1336.** `Units/BaseTateSylow.lean` is a leaf — only `InverseGalois/CFT.lean` imports it — so
+  editing it costs 8396 jobs, and a new `TateCohomology/` module it depends on costs 8085.
+* **1337.** Reflowing a paragraph in a module docstring can push the *next* line over 100
+  characters; re-run the character-accurate length check after every rewrap, not once at the end.
+
+### (f) What the next brick is
+
+Unchanged in substance from §0.95(e)/§0.96(j), now with the sharper target of (c):
+
+1. **Step 2.** Present `Ĥ^{n+4}(P, C_K[p] ⊗ W)` through the short exact sequence of
+   `Units/IdeleClassTorsionSubgroup.lean` and the orbit product of
+   `Units/IdeleTorsionSubgroup.lean`, and describe `obs_P ∘ ι_*` componentwise.
+2. **Step 3.** The reciprocity input, now in the form `map obs_P (range ι_*) = ker (Left_P (n+1))`,
+   optionally run in the dual form supplied by `DualityNatural.lean`.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
