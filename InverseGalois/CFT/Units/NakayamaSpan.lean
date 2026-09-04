@@ -37,6 +37,11 @@ carrying a Sylow subgroup and a choice of coefficients through every intermediat
 * `InverseGalois.CFT.range_shaTorusPTorsionMap_of_span`: **the everywhere locally trivial classes
   of the units tensored with coefficients killed by a prime are exactly the classes the comparison
   of Tate and Nakayama produces**, whenever the span holds.
+* `InverseGalois.CFT.exists_shaTorusPTorsionMap_of_span`: the same read as **surjectivity onto the
+  everywhere locally trivial classes**.
+* `InverseGalois.CFT.exists_shaTorusPTorsionMap_one_of_span`: that surjectivity in the degree an
+  embedding problem uses, from the complete cohomology of the coefficients in degree minus two onto
+  the first cohomology of the units tensored with them, cut down by the local conditions.
 
 ## Tags
 
@@ -82,6 +87,32 @@ theorem range_shaTorusPTorsionMap_of_span (h : HasIdeleClassNakayamaSpan k K p)
       = LinearMap.ker (tateMap (tensorHomLeft W (globalUnitsToIdele k K)) (n + 1 + 1 + 1)).hom := by
   obtain ⟨P⟩ : Nonempty (Sylow p Gal(K/k)) := inferInstance
   exact range_shaTorusPTorsionMap_of_sylow_nakayama k K W hW P n (h W hW P n)
+
+/-- **Every everywhere locally trivial class of the units tensored with coefficients killed by a
+prime comes from the complete cohomology of the coefficients three degrees lower**, whenever the
+span holds.  This is the surjectivity the statement is used for. -/
+theorem exists_shaTorusPTorsionMap_of_span (h : HasIdeleClassNakayamaSpan k K p)
+    (W : Rep ℤ Gal(K/k)) (hW : ∀ w : ↥W.V, p • w = 0) (n : ℤ)
+    (x : ↥(tateModule (tensorObj (globalUnitsRep k K) W) (n + 1 + 1 + 1)))
+    (hx : tateMap (tensorHomLeft W (globalUnitsToIdele k K)) (n + 1 + 1 + 1) x = 0) :
+    ∃ y : ↥(tateModule W n), shaTorusPTorsionMap k K W hW n y = x := by
+  have hmem : x ∈ LinearMap.range (shaTorusPTorsionMap k K W hW n) := by
+    rw [range_shaTorusPTorsionMap_of_span h W hW n]
+    exact hx
+  exact hmem
+
+/-- **Every class of the units tensored with coefficients killed by a prime which is trivial in the
+ideles comes from the complete cohomology of the coefficients in degree minus two**, whenever the
+span holds.  This is the reading of the statement in the degree in which an embedding problem uses
+it: the first cohomology of the units tensored with the coefficients, cut down by the local
+conditions, is reached from two degrees below zero. -/
+theorem exists_shaTorusPTorsionMap_one_of_span (h : HasIdeleClassNakayamaSpan k K p)
+    (W : Rep ℤ Gal(K/k)) (hW : ∀ w : ↥W.V, p • w = 0)
+    (x : ↥(tateModule (tensorObj (globalUnitsRep k K) W) 1))
+    (hx : tateMap (tensorHomLeft W (globalUnitsToIdele k K)) 1 x = 0) :
+    ∃ y : ↥(tateModule W (-2)), shaTorusPTorsionMap k K W hW (-2) y = x := by
+  refine exists_shaTorusPTorsionMap_of_span h W hW (-2) ?_ ?_
+  exact hx
 
 end
 

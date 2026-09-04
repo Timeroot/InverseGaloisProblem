@@ -4892,7 +4892,10 @@ it that are available here.
   arithmetic of the extension, and a Sylow subgroup exists because the Galois group is finite, so
   **the everywhere locally trivial classes of the units tensored with coefficients killed by a
   prime are exactly the image of the complete cohomology of the coefficients three degrees lower**
-  whenever the span holds, with no subgroup left in the statement.
+  whenever the span holds, with no subgroup left in the statement.  Read as a surjection and
+  specialised to degree minus two, that is the shape an embedding problem asks for: the first
+  cohomology of the units tensored with the coefficients, cut down by the condition of being
+  trivial in the ideles, is reached from two degrees below zero.
 * `InverseGalois.CFT.Units.BaseArtin` puts a name on the left hand side of that identification.
   Composing it with the description of the complete cohomology of the trivial integral
   representation in degree minus two gives **the reciprocity isomorphism between the abelianization

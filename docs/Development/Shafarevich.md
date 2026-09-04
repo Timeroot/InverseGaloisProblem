@@ -10824,6 +10824,104 @@ Estimate: 600+ lines over 2–3 modules.
 
 ---
 
+## 1.00 Status (2026-09-04, latest) — row 5 is now a single named hypothesis, and the Tor route is refuted
+
+### (a) What landed
+
+Commits `0db1ee4` and `dce307e`; full root build **9684 jobs**, 0 warnings, 0 errors, 0 sorries,
+axioms `[propext, Choice, Quot.sound]`.
+
+* `Units/IdeleClassTorsionSubgroup.lean` (`0db1ee4`) — step 2 bookkeeping.
+  `range_tateMap_tensor_ideleClassTorsionRes`: the classes of `Ĥ^n(S, C_K[p] ⊗ W)` coming from the
+  ideles are exactly `ker δ`.  `exists_ideleTorsionLocal_of_tateδ_eq_zero` /
+  `tateδ_tateMap_ideleTorsionLocal_eq_zero`: each such class is the class of a family of *purely
+  local* classes, one per `S`-orbit of places, via `ideleTorsionTensorTateResEquiv`.  Both are
+  stated in the gotcha-1340 shape `∃ y, f ((equiv).symm y) = x` to dodge the ℤ-smul diamond.
+* **`Units/NakayamaSpan.lean`** (`dce307e`) — the wall, named.
+
+```
+def HasIdeleClassNakayamaSpan (k K : Type) … (p : ℕ) [Fact p.Prime] : Prop :=
+  ∀ W : Rep ℤ Gal(K/k), (∀ w : ↥W.V, p • w = 0) → ∀ (P : Sylow p Gal(K/k)) (n : ℤ),
+    LinearMap.range (resTateNakayamaTwoMap ↑P (ideleClassRep k K) (baseFundamentalClass k K) W n)
+      ⊔ LinearMap.range (tateMap (resHom ↑P
+          (tensorHomLeft W (ideleToIdeleClass k K))) (n + 1 + 1)).hom = ⊤
+```
+
+  with `range_shaTorusPTorsionMap_of_span` deriving row 5 from it (`Sylow.nonempty` supplies the
+  subgroup, so none appears in the conclusion), plus its surjectivity readings
+  `exists_shaTorusPTorsionMap_of_span` and `exists_shaTorusPTorsionMap_one_of_span`.  The latter is
+  literally the map §0.99(b) says Schmidt–Wingberg needs:
+
+>  `Ĥ^{-2}(G, W)  ↠  Ш¹(G, K^× ⊗ W)`,  `W = E(-1)`.
+
+  This is the repository's standard treatment of an out-of-reach step: a `Prop`-valued `def`, never
+  an axiom and never a `sorry`.
+
+### (b) The remaining chain to `FrattiniKernelEP`, in full
+
+1. `Ш²(K, E) = 0` — **done** (`eq_one_of_mem_sha2`).
+2. degree-two Hochschild–Serre, giving `Ш²(k,E) ⊆ inf H²(G,E)` modulo transgression — **done**
+   (§0.85/§0.86).
+3. `Ĥ^{-2}(G, E(-1)) ↠ Ш¹(G, K^× ⊗ E(-1))` — **done conditionally**
+   (`exists_shaTorusPTorsionMap_one_of_span`).
+4. Kummer, as `G`-modules: `K^× ⊗ E(-1) ≅ H¹(K, E)` when `μ_p ⊆ K` — **missing** (§0.90(c) item 2).
+5. `Ш¹(G, H¹(K,E)) ↠ Ш²(k, E)`, the edge map of 2 restricted to the locally trivial classes —
+   **missing**, but elementary given 1 and 2.
+6. Prop 6 at `k = -2` with the one-dimensional `T = Hom(μ_p, 𝔽_p)`, and at `k = 2` with `T = 𝔽_p`
+   — **done** (`Shafarevich/Shrink.lean`), composed as in §0.99(c).
+
+So exactly two elementary bricks (4, 5) and one hypothesis (`HasIdeleClassNakayamaSpan`) stand
+between the repository and all-solvable.
+
+### (c) Why the span is hard — a refutation to not re-derive
+
+The repository's Tate–Nakayama for a general coefficient module `W` is conditional on
+`Tor₁^ℤ(C_K, W)` being cohomologically trivial.  For `W` killed by `p`,
+
+>  `Tor₁^ℤ(C_K, W) ≅ C_K[p] ⊗_{𝔽_p} W`,
+
+so it is tempting to hope `C_K[p]` is cohomologically trivial and thereby get the span for free.
+**It is not.**  From `1 → K^× → I_K → C_K → 1`,
+
+>  `1 → μ_p(K) → I_K[p] → C_K[p] → ker(K^×/K^{×p} → I_K/I_K^p) → 1`,
+
+and `I_K[p] = ∏_v μ_p(K_v)` — a *full* product, since roots of unity are units everywhere — which
+is `∏_{orbits} Ind_{D_w}^{G} μ_p(K_w)`.  Shapiro then gives `Ĥ^*(G, I_K[p]) = ⊕_v Ĥ^*(D_w, μ_p(K_w))`,
+generally nonzero.  (The last term of the four is where Grunwald–Wang and the Wang counterexample
+live.)  So no dévissage of the coefficients and no Tor computation removes the arithmetic input.
+
+Together with §0.98(b) (no local product description of `Ĥ^*(P, I_K ⊗ W)`), §0.98(c) (lattice
+dévissage is circular) and §0.99(f), the class-formation machinery is now exhausted: it computes
+`coker TN = range obs = ker Left`, and nothing more.
+
+### (d) Orientation of the two halves of §0.99(d), restated
+
+For `ker Left_P (n+1) = Σ_w cor_w (ker Left_w (n+1))`:
+
+* `⊇` (`ker Left_P ⊇ Σ_w cor_w(…)`) is the naturality of `Left` — it is a *prerequisite* for using
+  the other half, since it is what lets a local class be recognised inside `Right_P(range ι_*)`,
+  but on its own it proves nothing about the span.
+* `⊆` is the reciprocity content, i.e. exactly the input Poitou–Tate supplies in the literature.
+
+### (e) Lean notes
+
+* An `Int`-numeral degree such as `(-2 : ℤ) + 1 + 1 + 1` **is** `rfl`-equal to `1`, but supplying an
+  argument of the `1`-form to a lemma stated in the `+1+1+1`-form raises *Application type
+  mismatch*: the elaborator checks argument types at a lower transparency.  Work around it with
+  `refine lemma … ?_ ?_` — unification against the goal assigns the value argument, leaving only the
+  side condition, which `exact` then closes at default transparency.  (gotcha 1347)
+* `Sylow.nonempty` (`Mathlib/GroupTheory/Sylow.lean:177`) is an instance, so
+  `obtain ⟨P⟩ : Nonempty (Sylow p Gal(K/k)) := inferInstance` is all that is needed to drop a Sylow
+  subgroup out of a statement. (gotcha 1348)
+
+### (f) Next
+
+1. Brick 4 of (b): the Kummer identification as `G`-modules.
+2. Brick 5 of (b): the edge map on locally trivial classes.
+3. `Left`-naturality (§0.99(e)), then step 3's `⊆` — still the wall.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
