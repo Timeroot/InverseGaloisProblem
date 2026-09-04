@@ -671,6 +671,7 @@ import InverseGalois.CFT.TateCohomology.Junction
 import InverseGalois.CFT.TateCohomology.NakayamaCoeff
 import InverseGalois.CFT.TateCohomology.NakayamaNatural
 import InverseGalois.CFT.TateCohomology.NakayamaRestrict
+import InverseGalois.CFT.TateCohomology.NakayamaSubgroup
 import InverseGalois.CFT.TateCohomology.Norm
 import InverseGalois.CFT.TateCohomology.PGroupInvariants
 import InverseGalois.CFT.TateCohomology.PGroupTrivial
@@ -681,6 +682,7 @@ import InverseGalois.CFT.TateCohomology.Restrict
 import InverseGalois.CFT.TateCohomology.RestrictDelta
 import InverseGalois.CFT.TateCohomology.RestrictNatural
 import InverseGalois.CFT.TateCohomology.RestrictShift
+import InverseGalois.CFT.TateCohomology.RestrictShiftBridge
 import InverseGalois.CFT.TateCohomology.RestrictSplit
 import InverseGalois.CFT.TateCohomology.Shapiro
 import InverseGalois.CFT.TateCohomology.Shift
@@ -3760,6 +3762,16 @@ it that are available here.
   to the two defining sequences, which are split, this removes the restriction on the degree from
   the two identifications themselves: **both moves of the degree commute with restriction and with
   corestriction in every integer degree.**
+* `InverseGalois.CFT.TateCohomology.RestrictShiftBridge` compares the two shifts a subgroup has.
+  The shift of a representation read on a subgroup is still the functions on the whole group, while
+  the shift of the representation read on the subgroup is the functions on the subgroup only: the
+  second is not the first read on the subgroup, and there is a canonical map from the first to the
+  second.  It is the comparison of a split sequence with the sequence defining a shift, for the
+  splitting given by the value at the unit of the group and by subtracting the record of all the
+  translates of that value, and on a function it restricts to the subgroup and subtracts those
+  translates.  **The identification raising the degree by one on a subgroup is the identification of
+  the restricted representation composed with that map**, and **the map commutes with the passage of
+  the shift through a tensor product**, on the nose.
 * `InverseGalois.CFT.TateCohomology.NakayamaRestrict` carries that square to the comparison of Tate
   and Nakayama.  The extension a cocycle tensors is a product as a sequence of modules, the tensor
   product being one coordinate and the coefficients the other, and read on a subgroup it is the
@@ -3773,6 +3785,20 @@ it that are available here.
   builds.  This is what lets a question about the comparison for the whole group be settled on a
   Sylow subgroup one prime at a time: corestriction from a Sylow subgroup is onto, and it carries
   the image of the comparison there into the image of the comparison here.
+* `InverseGalois.CFT.TateCohomology.NakayamaSubgroup` identifies the comparison a subgroup inherits
+  with the comparison it has of its own.  The cocycle of the shift read on the subgroup and the
+  cocycle chosen on the subgroup both have, as their class in degree one, the restriction of the
+  prescribed class in degree two; pushed along the comparison of the two shifts they are therefore
+  cohomologous, and a map of representations carrying one cocycle to a cohomologous one carries the
+  connecting map of one tensored extension to the connecting map of the other.  So **the comparison
+  of Tate and Nakayama on a subgroup is the comparison of the subgroup**, for the representation
+  read there and the restriction of the class.  The consequence is a local-to-global statement: if a
+  representation of the subgroup maps to the representation of the group read there and carries a
+  class in degree two of its own to the restriction of the prescribed class — as the units of a
+  completion map to the idele classes and carry the fundamental class localised at a place to the
+  restriction of the fundamental class — then **everything the comparison produces on the subgroup
+  already comes from that representation**, so that a global obstruction read on a decomposition
+  group is a local obstruction.
 * `InverseGalois.CFT.TateCohomology.SylowInjective` draws the consequence that a class killed by
   restriction to a subgroup is killed by the index of that subgroup, so that **a class killed by a
   power of a prime and by restriction to a Sylow subgroup for that prime vanishes**: the study of
