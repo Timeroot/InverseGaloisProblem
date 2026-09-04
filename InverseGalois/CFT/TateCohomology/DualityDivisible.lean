@@ -79,6 +79,28 @@ def dualDegCongr (C : Type) [AddCommGroup C] (A : Rep ℤ G) {m n : ℤ} (h : m 
     ↥(tateModule (coeffDualObj A C) n) ≃ₗ[ℤ] (↥(tateModule A (-n - 1)) →ₗ[ℤ] C) := by
   subst h; exact e
 
+theorem dualDegCongr_rfl (C : Type) [AddCommGroup C] (A : Rep ℤ G) {m : ℤ}
+    (e : ↥(tateModule (coeffDualObj A C) m) ≃ₗ[ℤ] (↥(tateModule A (-m - 1)) →ₗ[ℤ] C)) :
+    dualDegCongr C A (rfl : m = m) e = e := rfl
+
+/-- The comparison of a degree with the next one over the coshift, read at a degree presented in
+another way. -/
+def tateCoshiftEquivCongr (A : Rep ℤ G) {d n : ℤ} (h : d + 1 = n) :
+    ↥(tateModule A d) ≃ₗ[ℤ] ↥(tateModule (coshiftObj A) n) := by
+  subst h; exact tateCoshiftEquiv A d
+
+theorem tateCoshiftEquivCongr_rfl (A : Rep ℤ G) (d : ℤ) :
+    tateCoshiftEquivCongr A (rfl : d + 1 = d + 1) = tateCoshiftEquiv A d := rfl
+
+/-- The comparison of a degree over the shift with the next one, read at a degree presented in
+another way. -/
+def tateShiftEquivCongr (A : Rep ℤ G) {d n : ℤ} (h : d + 1 = n) :
+    ↥(tateModule (shiftObj A) d) ≃ₗ[ℤ] ↥(tateModule A n) := by
+  subst h; exact tateShiftEquiv A d
+
+theorem tateShiftEquivCongr_rfl (A : Rep ℤ G) (d : ℤ) :
+    tateShiftEquivCongr A (rfl : d + 1 = d + 1) = tateShiftEquiv A d := rfl
+
 /-- The duality in degree zero, from the pairing of the two middle degrees. -/
 def dualBase (C : Type) [AddCommGroup C] (hC : Module.Baer ℤ C) (A : Rep ℤ G) :
     ↥(tateModule (coeffDualObj A C) 0) ≃ₗ[ℤ] (↥(tateModule A (-(0 : ℤ) - 1)) →ₗ[ℤ] C) := by
@@ -91,24 +113,37 @@ def dualStepUp (C : Type) [AddCommGroup C] (hC : Module.Baer ℤ C) (A : Rep ℤ
     (e : ↥(tateModule (coeffDualObj (coshiftObj A) C) n)
       ≃ₗ[ℤ] (↥(tateModule (coshiftObj A) (-n - 1)) →ₗ[ℤ] C)) :
     ↥(tateModule (coeffDualObj A C) (n + 1))
-      ≃ₗ[ℤ] (↥(tateModule A (-(n + 1) - 1)) →ₗ[ℤ] C) := by
-  have hs : ↥(tateModule A (-(n + 1) - 1)) ≃ₗ[ℤ] ↥(tateModule (coshiftObj A) (-n - 1)) := by
-    have h := tateCoshiftEquiv A (-(n + 1) - 1)
-    rwa [show (-(n + 1) - 1 + 1) = -n - 1 from by ring] at h
-  exact ((tateCoeffDualCoshiftEquiv A C (isExtendableInto_of_baer hC _) n).symm.trans e).trans
-    (LinearEquiv.arrowCongr hs.symm (LinearEquiv.refl ℤ C))
+      ≃ₗ[ℤ] (↥(tateModule A (-(n + 1) - 1)) →ₗ[ℤ] C) :=
+  ((tateCoeffDualCoshiftEquiv A C (isExtendableInto_of_baer hC _) n).symm.trans e).trans
+    (LinearEquiv.arrowCongr
+      (tateCoshiftEquivCongr A (show -(n + 1) - 1 + 1 = -n - 1 from by ring)).symm
+      (LinearEquiv.refl ℤ C))
+
+theorem dualStepUp_apply (C : Type) [AddCommGroup C] (hC : Module.Baer ℤ C) (A : Rep ℤ G) (n : ℤ)
+    (e : ↥(tateModule (coeffDualObj (coshiftObj A) C) n)
+      ≃ₗ[ℤ] (↥(tateModule (coshiftObj A) (-n - 1)) →ₗ[ℤ] C))
+    (y : ↥(tateModule (coeffDualObj A C) (n + 1))) (z : ↥(tateModule A (-(n + 1) - 1))) :
+    dualStepUp C hC A n e y z
+      = e ((tateCoeffDualCoshiftEquiv A C (isExtendableInto_of_baer hC _) n).symm y)
+        (tateCoshiftEquivCongr A (show -(n + 1) - 1 + 1 = -n - 1 from by ring) z) := rfl
 
 /-- The step that lowers the degree of the functionals by one, at the cost of replacing the
 representation by its shift. -/
 def dualStepDown (C : Type) [AddCommGroup C] (A : Rep ℤ G) (n : ℤ)
     (e : ↥(tateModule (coeffDualObj (shiftObj A) C) (n + 1))
       ≃ₗ[ℤ] (↥(tateModule (shiftObj A) (-(n + 1) - 1)) →ₗ[ℤ] C)) :
-    ↥(tateModule (coeffDualObj A C) n) ≃ₗ[ℤ] (↥(tateModule A (-n - 1)) →ₗ[ℤ] C) := by
-  have hs : ↥(tateModule (shiftObj A) (-(n + 1) - 1)) ≃ₗ[ℤ] ↥(tateModule A (-n - 1)) := by
-    have h := tateShiftEquiv A (-(n + 1) - 1)
-    rwa [show (-(n + 1) - 1 + 1) = -n - 1 from by ring] at h
-  exact ((tateCoeffDualShiftEquiv A C n).trans e).trans
-    (LinearEquiv.arrowCongr hs (LinearEquiv.refl ℤ C))
+    ↥(tateModule (coeffDualObj A C) n) ≃ₗ[ℤ] (↥(tateModule A (-n - 1)) →ₗ[ℤ] C) :=
+  ((tateCoeffDualShiftEquiv A C n).trans e).trans
+    (LinearEquiv.arrowCongr (tateShiftEquivCongr A (show -(n + 1) - 1 + 1 = -n - 1 from by ring))
+      (LinearEquiv.refl ℤ C))
+
+theorem dualStepDown_apply (C : Type) [AddCommGroup C] (A : Rep ℤ G) (n : ℤ)
+    (e : ↥(tateModule (coeffDualObj (shiftObj A) C) (n + 1))
+      ≃ₗ[ℤ] (↥(tateModule (shiftObj A) (-(n + 1) - 1)) →ₗ[ℤ] C))
+    (y : ↥(tateModule (coeffDualObj A C) n)) (z : ↥(tateModule A (-n - 1))) :
+    dualStepDown C A n e y z
+      = e (tateCoeffDualShiftEquiv A C n y)
+        ((tateShiftEquivCongr A (show -(n + 1) - 1 + 1 = -n - 1 from by ring)).symm z) := rfl
 
 end Steps
 

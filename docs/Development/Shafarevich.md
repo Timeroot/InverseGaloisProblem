@@ -10159,6 +10159,239 @@ Step 3 is where the global input (reciprocity, the product formula for the `p`-t
 symbol — row 6, already done) finally enters; steps 1 and 2 are bookkeeping of the kind just
 completed.
 
+## 0.96 Status (2026-09-04, later still) — Poitou–Tate, read as a duality: what row 5 actually needs, and the naturality brick that was missing
+
+### (a) The question this section answers
+
+The directive was "work on Poitou–Tate, make sure it *feeds* appropriately into rows 5/6".  Row 6
+(the `p`-th power Hilbert symbol and its product formula) is done.  Row 5 is
+
+```
+Ш²(k, A)  ≅  Ш¹(k, A′)^∨                            (global duality, Poitou–Tate)
+```
+
+but §0.94 already reduced *the thing row 5 is used for* to the single equation
+
+```
+(*)     range (obs_P ∘ ι_*)  =  range obs_P ,       obs_P : Ĥ⁰(P, C_K ⊗ W) → Ĥ²(P, C_K[p] ⊗ W)
+```
+
+over a Sylow subgroup `P ≤ G = Gal(K/k)`.  So the question is not "how do I state the nine-term
+sequence" but "which duality statement, at the *finite* level the repository works at, discharges
+`(*)`".
+
+### (b) Milne's route, and why the repository does not take it
+
+Milne, *Arithmetic Duality Theorems* (local copy: `/home/alex_harmonic_fun/igp-logs/adt.txt`;
+§I.1 at line 977, Thm I.1.8 at 1183, the `(G_S, C_S)` material at 2515–2552, Thm I.4.6 at 2635,
+Thm I.4.10 at 2866) proves global duality for a **`P`-class formation** `(G_S, C_S)` by producing,
+for every finitely generated `G_S`-module `M`, maps
+
+```
+α^r(G_S, M) : Ext^r_{G_S}(M, C_S)  →  H^{2-r}(G_S, M)^∨
+```
+
+and showing `α^r` is an isomorphism for `r ≥ 1` (Thm I.4.6), whence the nine-term sequence
+(Thm I.4.10).  Formalizing that literally would require the `Ext^r_{G_S}(M, C_S)` machinery over a
+**profinite** group, plus the `S`-idele class formation as an object in its own right.
+
+The repository is built the other way round: everything lives at the *finite* level
+`Ĥ^*(G, C_K ⊗ W)` with `G = Gal(K/k)` finite, and the profinite statements are assembled from
+finite ones.  **At the finite level Milne's `α^r` factors as**
+
+```
+Ĥ^r(G, Hom(M, C_K))  --(Tate cup-product duality)-->  Ĥ^{-r-1}(G, M)^∨
+Ĥ^r(G, Hom(M, C_K))  <--(Tate–Nakayama, cup with the fundamental class)--  Ĥ^{r-2}(G, M)
+```
+
+and **both halves are already in the repository**:
+
+* Tate–Nakayama — `TateCohomology/Nakayama*.lean`, `Units/BaseTateSylow.lean` (conditional only on
+  the `Tor₁` clause, which is discharged for the modules in play).
+* Tate cup-product duality — `TateCohomology/Duality.lean` (degree `0` against degree `-1`),
+  `DualityShift.lean` (the two degree-moving identifications), `DualityDivisible.lean` (the
+  recursion over all of `ℤ`, with the criterion of Baer replacing the hypothesis on the
+  representation), culminating in
+  `tateDualEquivOfBaer : Ĥ^n(G, Hom(A, C)) ≃ₗ (Ĥ^{-n-1}(G, A) →ₗ C)` and its specialization
+  `tateCharacterEquiv` at `C = ℝ/ℤ`.
+
+**Decision (governing): stay with the `Ĥ^*(G, C_K ⊗ W)` formulation; do not build
+`Ext^r_{G_S}(M, C_S)`.**  What was actually missing was neither half of the factorization — it was
+that *the duality was not known to be compatible with a map of the representation*, which is
+precisely what turns a statement about `range` into a statement about `ker`.
+
+### (c) The dual reformulation of `(*)`
+
+Over a field of coefficients (or any dualizing `C`), for a map `u : X → Y` of finite abelian groups,
+
+```
+range u = Y   ⟺   ker (u^∨ : Y^∨ → X^∨) = 0
+range (v ∘ u) = range v   ⟺   ker (u^∨ ∘ (…)) ∩ … = …
+```
+
+and the useful form of `(*)` is: **a functional on `Ĥ²(P, C_K[p] ⊗ W)` that kills
+`range (obs_P ∘ ι_*)` kills `range obs_P`.**  Under the duality this functional *is* a class of
+`Ĥ^{-3}` of the dual representation, `obs_P^∨` *is* the map the duality attaches to `obs_P`, and
+`ι_*^∨` *is* the map attached to `ι_*`.  Getting from "the functional attached to `obs_P`" to "the
+map induced by the dual of `obs_P`" is exactly the naturality square
+
+```
+Ĥ^n(G, Hom(B, C)) --(Hom(φ,C))_*--> Ĥ^n(G, Hom(A, C))
+      |  dual                              |  dual
+      v                                    v
+Ĥ^{-n-1}(G, B)^∨  --(- ∘ φ_*)-->     Ĥ^{-n-1}(G, A)^∨
+```
+
+which is what `DualityNatural.lean` now proves, for every `φ`, every `n` and every `C` satisfying
+the criterion of Baer.
+
+### (d) The blocker inside `DualityDivisible.lean`, and its removal
+
+`tateDualEquivOfBaer` is defined by recursion on the degree.  Each step transports a duality
+against `coshiftObj A` up one degree, or a duality against `shiftObj A` down one degree, and each
+transport had to reconcile two spellings of a degree, e.g. `-(n+1)-1+1` versus `-n-1`.  Both steps
+did that with
+
+```lean
+rwa [show (-(n+1)-1+1) = -n-1 from by ring] at h
+```
+
+producing an **opaque `Eq.mpr`** in the middle of the definition.  Naturality against such a term is
+unprovable: the equation relates two expressions *both* containing `n`, so `subst` does not apply,
+and `generalize` breaks the dependent motive.
+
+Fix (commit below): add `subst`-defined degree-comparison helpers to `DualityDivisible.lean` and
+re-define the two steps in term mode against them:
+
+```lean
+def tateCoshiftEquivCongr (A : Rep ℤ G) {d n : ℤ} (h : d + 1 = n) :
+    ↥(tateModule A d) ≃ₗ[ℤ] ↥(tateModule (coshiftObj A) n) := by subst h; exact tateCoshiftEquiv A d
+
+def tateShiftEquivCongr (A : Rep ℤ G) {d n : ℤ} (h : d + 1 = n) :
+    ↥(tateModule (shiftObj A) d) ≃ₗ[ℤ] ↥(tateModule A n) := by subst h; exact tateShiftEquiv A d
+```
+
+plus `dualStepUp_apply` / `dualStepDown_apply`, both `rfl` (gotcha 1325).  With those in hand every
+naturality step is `subst h; exact <the ShiftNatural lemma>`.
+
+The refactor was **free**: nothing in the repository imports `DualityDivisible.lean` except
+`InverseGalois/CFT.lean` (gotcha 1324), so `lake build …DualityDivisible` is 8063 jobs / 49 s.  Had
+the helpers gone into `Shifting.lean` or `ShiftNatural.lean`, as first planned, most of the CFT tree
+would have been invalidated.
+
+### (e) `TateCohomology/DualityNatural.lean` — what landed
+
+`coeffDualHom φ C : coeffDualObj B C ⟶ coeffDualObj A C` (a map of representations reverses the
+direction on functionals), functorial (`coeffDualHom_id`, `coeffDualHom_comp`), and then the three
+squares:
+
+| square | statement | proof |
+| --- | --- | --- |
+| middle degrees | `tateDualZeroEquiv_naturality` | `H0mk_surjective` + `exists_Hm1mk`, then `rfl` |
+| coshift/shift | `coeffDualShiftIso_naturality` | both routes are `∑ₓ ψ x (φ (f x))` |
+| shift/coshift | `coeffDualCoshiftIso_naturality` | both routes are `∑ₓ ψ x (φ (z x))` |
+
+The recursion is carried by a predicate rather than by mirroring the construction:
+
+```lean
+def IsTateDualNatural (C : Type) [AddCommGroup C] (n : ℤ)
+    (e : ∀ A : Rep ℤ G, ↥(tateModule (coeffDualObj A C) n) ≃ₗ[ℤ]
+      (↥(tateModule A (-n - 1)) →ₗ[ℤ] C)) : Prop :=
+  ∀ {A B : Rep ℤ G} (φ : A ⟶ B) (x) (z),
+    e A (tateMap (coeffDualHom φ C) n x) z = e B x (tateMap φ (-n - 1) z)
+```
+
+with `IsTateDualNatural.degCongr`, `.stepUp`, `.stepDown` matching the three constructors of the
+recursion one for one — the point being that `tateDualEquivNat C hC m` *is literally* a term of type
+`∀ A, …`, and `tateDualEquivNeg`'s inner argument *is literally*
+`(fun A' => dualDegCongr C A' h (… A')) (shiftObj A)`, so the `Prop`-level recursion lines up with
+the data-level one exactly.  Results:
+
+```lean
+theorem tateDualEquivOfBaer_naturality_apply (C) (hC : Module.Baer ℤ C) (n : ℤ) (φ : A ⟶ B) (x) (z) :
+    tateDualEquivOfBaer C hC A n (tateMap (coeffDualHom φ C) n x) z
+      = tateDualEquivOfBaer C hC B n x (tateMap φ (-n - 1) z)
+
+theorem tateCharacterEquiv_naturality (n : ℤ) (φ : A ⟶ B) (x) (z) :
+    tateCharacterEquiv A n (tateMap (coeffDualHom φ (AddCircle (1 : ℚ))) n x) z
+      = tateCharacterEquiv B n x (tateMap φ (-n - 1) z)
+```
+
+Costs: `lake build …TateCohomology.DualityNatural` = **8066 jobs**, 13 s; full root build =
+**9679 jobs**, 0 warnings, 0 errors.
+
+### (f) Two negative findings worth not re-discovering
+
+* **`tateDualEquiv` (in `DualityShift.lean`) is `.some`-defined** — it is extracted from
+  `nonempty_tateDualEquiv` by choice, so *no* naturality statement about it is provable, and none
+  should be attempted.  The canonical version is `tateDualEquivOfBaer` in `DualityDivisible.lean`;
+  everything downstream must use that one.
+* **Gotcha 1129, sharpened.** The biquadratic counterexample refutes an idelic fundamental class:
+  `α` does not lift to `H²(G, I_K)` because `Ĥ²(G, I_K)` is a direct **sum** over the places, so a
+  class with infinitely many nonzero local components has no preimage.  This is why the route to
+  `(*)` goes through the *torsion* sequence `0 → μ_p(K) ⊗ W → I_K[p] ⊗ W → C_K[p] ⊗ W → 0` and not
+  through `I_K` itself.
+
+### (g) §0.95(e) step 1 is already landed
+
+`Units/IdeleClassTorsionSubgroup.lean` (built earlier the same day) is exactly step 1 of the §0.95(e)
+plan: `resSeq_tensorSeq_ideleClassTorsion_shortExact`,
+`range_tateδ_tensor_ideleClassTorsionRes` (the image of the connecting map is the kernel of the map
+to the ideles) and the two vanishing corollaries, the second with the hypothesis on the ideles
+replaced by the vanishing of every local factor over the `S`-orbits.  So the remaining chain is
+steps 2 and 3 only.
+
+### (h) The error sequence, continued
+
+The four-term error sequence recorded in §0.93 continues to the left as a long exact sequence:
+
+```
+… --Left(n)--> Ĥ^n(W) --…--> Ĥ^{n+2}(A[p] ⊗ W) --obs(n)--> Ĥ^{n+4}(A[p] ⊗ W) --Left(n+2)--> Ĥ^{n+2}(W) → …
+```
+
+so `range obs(n) = ker Left(n+2)` is available *if* exactness at `Ĥ^{n+4}(A[p] ⊗ W)` is proved — a
+third exactness statement of the same shape as the two already there.  That is an optional brick: it
+would let `(*)` be attacked as a statement about a kernel from the start, without invoking the
+duality at all.  Recorded, not scheduled.
+
+### (i) Gotchas recorded
+
+* **1324.** Nothing imports `TateCohomology/DualityDivisible.lean` except `InverseGalois/CFT.lean`
+  (import at `CFT.lean:662`, narrative at `CFT.lean:4295`).  Edits there cost 8063 jobs / 49 s.
+* **1325.** `LinearEquiv.symm_symm … := rfl`; `LinearEquiv.arrowCongr e₁ e₂ f x = e₂ (f (e₁.symm x))`
+  (`Mathlib/Algebra/Module/Equiv/Basic.lean:649`).  Hence `dualStepUp_apply` / `dualStepDown_apply`
+  hold by `rfl`.
+* **1326.** `tateMap_comp_apply` lives in `NakayamaNatural.lean:74`, **not** `Functorial.lean`.  To
+  keep the duality tree independent of Nakayama, declare a `private` copy.
+* **1327.** `Norm.lean:181` `exists_Hm1mk` is oriented `x = Hm1mk …`, so `obtain ⟨v, hv, rfl⟩`
+  substitutes `x`.
+* **1328.** `ShiftNatural.lean:54` uses `C` for a *representation*; a new file using `C` for
+  coefficients must not collide.
+* **1329.** `Duality.lean:279` `tateDualZeroEquiv A C h₁ h₂ = coeffDualEquiv A.ρ C h₁ h₂`.
+* **1330.** `↥(coeffDualObj A C).V` is **not** reducibly a function type: `f v` on a term of that
+  type fails with "Function expected".  Type the map as
+  `coeffDualLinear : (↥B.V →ₗ[k] C) →ₗ[k] (↥A.V →ₗ[k] C)` and let `mkHom` do the defeq; state
+  equivariance against `coeffDual B.ρ C g`, not against `(coeffDualObj B C).ρ g`.
+* **1331.** For the same reason `(ψ : G → …)` fails on a variable of type
+  `↥(coshiftObj X).V` — the coercion resolver does not unfold to find the `Subtype`.  Use `ψ.1`,
+  whose elaboration *does* whnf the type.
+* **1332.** `rw [indDualMap_apply, indDualMap_apply]` does **not** close the resulting sum equality;
+  finish with `exact Finset.sum_congr rfl fun x _ => rfl` (the two summand families are defeq
+  pointwise but live over different modules).
+* **1333.** Dot notation fails on a `def … : Prop := ∀ …`: `h.degCongr` reports
+  "The environment does not contain `Function.degCongr`" because the type is whnf'd to a `Pi`.
+  Write `IsTateDualNatural.degCongr h he` in full.  Relatedly, a statement whose only occurrence of
+  the section variable `G` is inside an implicit argument leaves `Finite ?m` stuck — pin it with
+  `(G := G)`.
+
+### (j) What the next brick is
+
+Unchanged from §0.95(e): step 2 (identify `Ĥ^{n+4}(P, C_K[p] ⊗ W)` as a quotient of
+`∏_ω Ĥ^*(P ∩ D_w, μ_p(K_w) ⊗ W)` and describe `obs_P ∘ ι_*` as the product of the local
+obstructions) and step 3 (the reciprocity input).  What §0.96 adds is that step 3 may now be run in
+its dual form: the naturality square lets a statement about `range obs_P` be converted into one
+about the kernel of the dual map, where the sum-of-invariants relation is the natural input.
+
 ---
 
 ## Sources

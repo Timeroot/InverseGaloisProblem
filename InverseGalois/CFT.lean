@@ -660,6 +660,7 @@ import InverseGalois.CFT.TateCohomology.DeltaRetract
 import InverseGalois.CFT.TateCohomology.DeltaShift
 import InverseGalois.CFT.TateCohomology.Duality
 import InverseGalois.CFT.TateCohomology.DualityDivisible
+import InverseGalois.CFT.TateCohomology.DualityNatural
 import InverseGalois.CFT.TateCohomology.DualityShift
 import InverseGalois.CFT.TateCohomology.Exact
 import InverseGalois.CFT.TateCohomology.FreePresentation
@@ -4301,6 +4302,18 @@ it that are available here.
   cohomology of a representation in a degree are the complete cohomology of the characters of the
   representation in the complementary degree** -- the duality of Tate for a finite group, with no
   hypothesis on the representation and none on the degree.
+* `InverseGalois.CFT.TateCohomology.DualityNatural` compares the duality for two representations.
+  A map of representations reads a functional on the target as a functional on the source, and that
+  reading is again a map of representations, in the opposite direction.  Each of the three pieces
+  the duality is assembled from respects it: the pairing of the two middle degrees evaluates a
+  functional on the image of a representative either way round, and the two identifications that
+  move the degree both come down to the same sum of values.  Since the recursion over the integers
+  is a chain of those moves, **the duality is compatible with every map of representations in every
+  degree**: dualizing a class and restricting the functional along the map gives the same
+  functional as moving the class along the dual map and dualizing there.  That is what a duality
+  statement about an image needs, because a class lies in the image of a map exactly when every
+  functional killing the image kills it, so a question about the image of one map turns into a
+  question about the kernel of the map the duality attaches to it.
 * `InverseGalois.CFT.TateCohomology.TateClassCount` turns the classical hypotheses of Tate's
   theorem into a count.  **An element of a finite commutative group annihilated by exactly the
   multiples of the order of the group generates the group**, because the subgroup of its multiples
