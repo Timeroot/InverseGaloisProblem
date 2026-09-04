@@ -761,6 +761,7 @@ import InverseGalois.CFT.Units.DecompositionGalois
 import InverseGalois.CFT.Units.DecompositionIdele
 import InverseGalois.CFT.Units.DecompositionInvariant
 import InverseGalois.CFT.Units.DecompositionOutside
+import InverseGalois.CFT.Units.DecompositionPlaceInjective
 import InverseGalois.CFT.Units.DecompositionReciprocity
 import InverseGalois.CFT.Units.HasseHom
 import InverseGalois.CFT.Units.HasseLevel
@@ -2553,6 +2554,16 @@ it that are available here.
   formula pays for.  Correcting the lift by the resulting global one-cochain bounds the cocycle on
   the nose, so **the second cohomology of the units of the completion at a finite place fixed by
   the whole Galois group injects into the second cohomology of the idele class group.**
+* `InverseGalois.CFT.Units.DecompositionPlaceInjective` removes the hypothesis on the place.  The
+  decomposition group at a finite place is the Galois group of the extension over the decomposition
+  field, and over that field the place is fixed by the whole group, so the statement transports by
+  nothing more than renaming the group: **a two-cocycle of the decomposition group at a finite place
+  with values in the units of the completion there whose ideles bound in the idele classes is a
+  coboundary.**  Counting turns the resulting injection into a bijection — the source has exactly as
+  many elements as the group by local reciprocity, the target at most that many by the second
+  inequality — so **the second cohomology of the units of a completion at a finite place is the
+  second cohomology of the idele class group on the decomposition group there**, and the order of
+  the latter is pinned to the local degree.
 * `InverseGalois.CFT.Units.DecompositionField` names the subfield fixed by the decomposition
   group.  An element of it has its image in the completion fixed by the decomposition group, hence
   coming from the completion of the base, so the decomposition field embeds into the completion of
