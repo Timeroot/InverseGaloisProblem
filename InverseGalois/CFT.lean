@@ -809,6 +809,7 @@ import InverseGalois.CFT.Units.IdeleClassTate
 import InverseGalois.CFT.Units.IdeleClassTorsionLocal
 import InverseGalois.CFT.Units.IdeleClassTorsionSES
 import InverseGalois.CFT.Units.IdeleClassTorsionSubgroup
+import InverseGalois.CFT.Units.IdeleClassTorsionSubgroupLocal
 import InverseGalois.CFT.Units.IdeleClassTorsionTate
 import InverseGalois.CFT.Units.IdeleClassTower
 import InverseGalois.CFT.Units.IdeleCoboundary
@@ -4271,6 +4272,18 @@ it that are available here.
   over the subgroup in a degree in which no local factor has any and the roots of unity of the field
   have none one degree higher**, the local factors being indexed by the orbits of the subgroup on
   the places of the extension.
+* `InverseGalois.CFT.Units.IdeleClassTorsionSubgroupLocal` turns that vanishing statement into a
+  presentation.  Exactness in the middle of the same long exact sequence says that **a class of the
+  idele classes killed by a prime, tensored with the coefficients and read on a subgroup, is the
+  image of a family of local classes exactly when the connecting map kills it**, one member of the
+  family for each orbit of the subgroup on the places of the extension; and the connecting map lands
+  in the roots of unity of the field, so **every class comes from such a family as soon as those
+  carry no complete cohomology over the subgroup one degree higher**.  The presentation is stated
+  for the target of the obstruction to the theorem of Tate and Nakayama as well: the vectors killed
+  by a number inside the representation attached to an action are the elements killed by that number
+  for the action, so the obstruction over a subgroup lands in a group presented entirely by local
+  data.  That is the shape in which the criterion for the everywhere locally trivial classes of the
+  units, read on a Sylow subgroup, is waiting to be checked.
 * `InverseGalois.CFT.TateCohomology.Duality` pairs the two middle degrees against each other.  The
   functionals on a representation with values in a fixed module carry an action of the group
   through the source, and **the norm of such a functional is its composition with the norm of the

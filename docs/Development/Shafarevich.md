@@ -10506,6 +10506,163 @@ Unchanged in substance from §0.95(e)/§0.96(j), now with the sharper target of 
 
 ---
 
+## 0.98 Status (2026-09-04, later) — the first half of step 2 is **landed**, and two structural facts about the second half
+
+### (a) What landed
+
+`InverseGalois/CFT/Units/IdeleClassTorsionSubgroupLocal.lean` (full root build **9681 jobs**, 0
+warnings, 0 errors).  It is the subgroup analogue of `Units/IdeleClassTorsionLocal.lean`, i.e. the
+*target of the obstruction*, presented locally, over an arbitrary `S ≤ Gal(K|k)` — and therefore
+over a Sylow `p`-subgroup `P`, which is the only case the criterion of `Units/BaseTateSylow.lean`
+ever asks about.
+
+```lean
+theorem ker_tateδ_tensor_ideleClassTorsionRes (n : ℤ) :
+    LinearMap.ker (tateδ (resSeq_tensorSeq_ideleClassTorsion_shortExact hp W S) n).hom
+      = LinearMap.range (tateMap
+        (resHom S (tensorHomLeft W (ideleToIdeleClassTorsion k K (p : ℤ)))) n).hom
+
+abbrev localTorsionResFamily (n : ℤ) : Type :=      -- ∏ over S-orbits of places of K
+  (∀ ω : orbitRel.Quotient ↥S (InfinitePlace K), …) × (∀ ω : orbitRel.Quotient ↥S (…), …)
+
+theorem exists_localTorsionRes_tateMap_eq_of_isZero (n : ℤ)
+    (h : Limits.IsZero (tateModule (resObj S (tensorObj (torsionRep globalUnitsAut (p:ℤ)) W)) (n+1)))
+    (x : tateModule (resObj S (tensorObj (torsionRep (ideleClassAutHom k K) (p : ℤ)) W)) n) :
+    ∃ y : localTorsionResFamily (p := p) W S w₀ v₀ n,
+      tateMap (resHom S (tensorHomLeft W (ideleToIdeleClassTorsion k K (p : ℤ)))) n
+        ((ideleTorsionTensorTateResEquiv S W e w₀ v₀ n).symm y) = x
+```
+
+and the bridge to the shape `BaseTateSylow.lean` states the obstruction in,
+
+```lean
+def ideleClassTorsionNsmulResEquiv (n : ℤ) :
+    ↥(tateModule (tensorObj (nsmulTorsion (resObj S (ideleClassRep k K)) p) (resObj S W)) n)
+      ≃ₗ[ℤ] ↥(tateModule (resObj S (tensorObj (torsionRep (ideleClassAutHom k K) (p:ℤ)) W)) n) :=
+  tateTensorNsmulTorsionRepEquiv ((ideleClassAutHom k K).comp S.subtype) p (resObj S W) n
+```
+
+which is accepted **verbatim**: `resObj S (repOfAddAut φ)` and `repOfAddAut (φ.comp S.subtype)` are
+definitionally equal, as are `resObj S (torsionRep φ m)` and `torsionRep (φ.comp S.subtype) m` and
+(gotcha 1297) `resObj S (tensorObj A W)` and `tensorObj (resObj S A) (resObj S W)`.  So
+`tateTensorNsmulTorsionRepEquiv` from `Units/NsmulTorsionRep.lean`, stated for a bare finite group,
+already *is* the subgroup bridge; no new transport was needed.
+
+So the **target** of `obs_P` is now a group presented entirely by local data.  What is still missing
+from step 2 is the description of `obs_P ∘ ι_*` — and (b) says that description cannot take the
+shape §0.93(d) assumed.
+
+### (b) Negative result — `Ĥ^*(P, I_K ⊗ W)` has **no** local product (or sum) description
+
+§0.88(d) and §0.93(d) both list "Shapiro for `I_K ⊗ M`" as a pending brick, on the analogy with
+`Ĥ^*(G, I_K) = ⊕_v Ĥ^*(D_w, K_w^×)` and with the landed
+`Ĥ^*(S, I_K[p] ⊗ W) ≅ ∏_ω Ĥ^*(S ∩ D_w, μ_p(K_w) ⊗ W)` of `Units/IdeleTorsionSubgroup.lean`.  **The
+naive form is false.**
+
+*Why the torsion case works.*  Two facts, both worth keeping:
+
+* for any family `(M_w)`, the natural map `(∏_w M_w)/p → ∏_w (M_w/p)` is an isomorphism (surjective
+  componentwise; injective because `(p x_w)_w = p·(x_w)_w`);
+* for `W` a **finite-dimensional** `𝔽_p`-vector space, `− ⊗_{𝔽_p} W ≅ (−)^{dim W}` commutes with
+  arbitrary products.
+
+Together: `(∏_w M_w) ⊗_ℤ W ≅ ∏_w (M_w ⊗_ℤ W)` whenever `W` is killed by `p` and finite-dimensional.
+This is exactly what makes `I_K[p] = ∏_w μ_p(K_w)` survive tensoring, and it is what
+`ideleTorsionTensorTateResEquiv` rests on.
+
+*Why the full-idele case fails.*  `I_K ⊗ W` is the restricted product `∏'_w (K_w^× ⊗ W)` with
+respect to `O_w^× ⊗ W`, so `Ĥ^*(P, I_K ⊗ W) = colim_S Ĥ^*(P, I_{K,S} ⊗ W)` with
+
+```
+Ĥ^*(P, I_{K,S} ⊗ W)  =  ∏_{ω ⊆ S} Ĥ^*(P_w, K_w^× ⊗ W)  ×  ∏_{ω ⊄ S} Ĥ^*(P_w, O_w^× ⊗ W).
+```
+
+For `I_K` itself the second product vanishes for `S ⊇ Ram(K|k)`, because the local units of an
+unramified extension are cohomologically trivial.  **After tensoring with `W` they do not.**  Take
+`M` cohomologically trivial over a group `D`; from `0 → M[p] → M → pM → 0` and
+`0 → pM → M → M/pM → 0` one gets `Ĥ^i(D, M/pM) ≅ Ĥ^{i+1}(D, pM) ≅ Ĥ^{i+2}(D, M[p])`.  With
+`M = O_w^×`, `M[p] = μ_p(K_w)`, `W = 𝔽_p` trivial (so `M ⊗ W = M/pM`):
+
+```
+Ĥ^i(D_w, O_w^× ⊗ 𝔽_p)  ≅  Ĥ^{i+2}(D_w, μ_p(K_w)).
+```
+
+Concretely, over `k = ℚ(ζ_p)` with `K|k` cyclic of degree `p` and `w` an *unramified* place with
+`D_w` of order `p`: `Ĥ^0(D_w, O_w^× ⊗ 𝔽_p) ≅ Ĥ^2(D_w, μ_p) ≅ Ĥ^0(D_w, μ_p) = μ_p/μ_p^p ≅ ℤ/p ≠ 0`.
+By Chebotarev infinitely many places are of that kind, so the second product has infinitely many
+nonzero factors for **every** finite `S`.
+
+*What survives.*  The colimit is filtered, so `range ι_* = ⋃_S range (ι_{S,*})` inside the fixed
+group `Ĥ^{n+2}(P, C_K ⊗ W)`: a class comes from the ideles iff it comes from the `S`-ideles for
+**some** finite `S`.  That is the classical formulation (Tate's tori paper works with `I_{K,S}`
+throughout, never with a product formula for `I_K ⊗ W`), and it is what step 2's second half has to
+be built on.  The brick to schedule is therefore **`Ĥ^*(P, I_{K,S} ⊗ W)` for a finite `S`**, not a
+product formula for `I_K ⊗ W`.
+
+### (c) Negative result — lattice dévissage on `W` is circular; free `𝔽_p[P]`-dévissage shifts the degree but has no base case
+
+Two dévissages suggest themselves for reducing the `p`-torsion criterion to the torsion-free one of
+§0.88(b) (`range_baseShaTorusMap`).  Neither works, for opposite reasons.
+
+**Lattice resolution.**  Take `0 → X_1 → X_0 → W → 0` with `X_i` `P`-lattices.  Tensoring with `C_K`
+gives the four-term sequence `0 → Tor_1(C_K,W) → C_K⊗X_1 → C_K⊗X_0 → C_K⊗W → 0`, and
+`Tor_1(C_K,W) = C_K[p] ⊗ W` — **the same obstruction group** the four-term error sequence of
+`TensorTorsionError.lean` produces.  So the lattice case cannot be leveraged by presentation; the
+Tor term reproduces the difficulty verbatim.
+
+**Free `𝔽_p[P]`-resolution.**  Take `0 → W' → F → W → 0` with `F` free over `𝔽_p[P]`.  Because every
+term is an `𝔽_p`-vector space, `X ⊗_ℤ − = (X/p) ⊗_{𝔽_p} −` on this sequence, which is exact for
+**any** `X`; and `X ⊗_ℤ 𝔽_p[P]^d ≅ Ind_1^P((X/p)^d)` is induced, so `Ĥ^*(P, X ⊗ F) = 0`.  Hence the
+connecting map is an isomorphism `Ĥ^m(P, X ⊗ W) ≅ Ĥ^{m+1}(P, X ⊗ W')`, **naturally in `X`** — so it
+carries the whole diagram (`E`, `I`, `C`, `C[p]`) at once.  Cup product commutes with connecting
+maps, so `TN` is carried too, and
+
+> the row-5 criterion at `(W, m)` holds **iff** it holds at `(W', m+1)`.
+
+Since `𝔽_p[P]` is self-injective (`P` a `p`-group, so `𝔽_p[P]` is a Frobenius algebra and free =
+injective), `W` also *embeds* in a free module, so the shift runs downwards as well.  Consequently
+**the criterion, quantified over all `W`, is independent of the degree**: it may be checked in
+whichever degree is most convenient.  That is a real simplification of the target, but it is a
+reduction with no base case — every degree remains equally open.
+
+A tempting corollary is false and worth writing down: "if `W = N/pN` for a `P`-lattice `N` then
+`TN_W` is an isomorphism" does **not** follow from `TN_N` being one, because the bottom row of the
+would-be ladder is not exact: `C_K ⊗ N --p--> C_K ⊗ N` has kernel `(C_K ⊗ N)[p] ⊇ C_K[p] ⊗ N ≠ 0`.
+
+### (d) Lean notes
+
+* **1338.** `resObj S (repOfAddAut φ)` is **definitionally** `repOfAddAut (φ.comp S.subtype)`, and
+  likewise `resObj S (torsionRep φ m) = torsionRep (φ.comp S.subtype) m`.  Combined with gotcha
+  1297 this means every `Units/NsmulTorsionRep.lean` statement, though phrased for a bare finite
+  group, applies to a subgroup of the Galois group with no transport at all — just instantiate
+  `G := ↥S` and `φ := (…).comp S.subtype`.
+* **1339.** A hypothesis such as `hp : p.Prime` that appears only in the *proof term* and not in the
+  statement is **not** auto-included, even when the statement's other arguments were themselves
+  formed with it in a previous declaration.  `exists_localTorsionRes_tateMap_eq_of_isZero` needed an
+  explicit `include hp in`; `exists_localTorsionRes_tateMap_eq`, whose statement mentions
+  `resSeq_tensorSeq_ideleClassTorsion_shortExact hp W S`, did not.
+* **1340.** Composing a `tateMap` with an `AddEquiv` between two `∀ ω, tateModule …`-products via
+  `AddEquiv.toIntLinearEquiv` invites the `ℤ`-smul instance diamond of gotcha 850 (the Pi type gets
+  `Pi.module ℤ` from the `ModuleCat ℤ` factors, not `AddCommGroup.toIntModule`).  The repo idiom in
+  `Units/IdeleClassTorsionLocal.lean` — state the result as `∃ y, f ((equiv).symm y) = x`, applying
+  the equivalence to *elements* — sidesteps it entirely and is what this file uses.
+* **1341.** `lake build InverseGalois.CFT.Units.IdeleClassTorsionSubgroupLocal` type-checks under
+  `lake env lean` in ≈2 min; the full root build with it is **9681 jobs**.
+
+### (e) What the next brick is
+
+1. **Step 2, second half.**  `Ĥ^*(P, I_{K,S} ⊗ W)` for a finite `S` containing the ramified and
+   archimedean places, as the product of the local factors at `S` and the unit factors outside it,
+   and `range ι_*` as the union over `S` of the images.  (Replaces the impossible product formula
+   for `I_K ⊗ W`; see (b).)
+2. **Step 3.**  The reciprocity input, in the form `map obs_P (range ι_*) = ker (Left_P (n+1))`.
+   The exact sequence it must consume — `0 → Br(K|k) → ⊕_w Br(K_w|k_v) --Σ inv--> ℚ/ℤ`, i.e. ABHN
+   (`eq_one_of_mem_sha2`) plus reciprocity (`totalInvariant_eq_one_base`) — is already in the repo;
+   what is missing is the machine that carries it from `K^×` coefficients to `K^× ⊗ W`
+   coefficients, and that machine is Tate–Nakayama duality for the class formation.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
