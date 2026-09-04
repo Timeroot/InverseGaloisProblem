@@ -9059,6 +9059,150 @@ So the remaining content of row 5 is *one* comparison square, not a duality theo
 
 ---
 
+## 0.91 Status (2026-09-04, later) — coefficient naturality, the free presentation, and the one structural gap that blocks every remaining route into row 5
+
+### (a) What landed
+
+Four commits, all sorry- and axiom-free.
+
+* `b343cb0` — cyclic periodicity of complete cohomology (`CFT/TateCohomology/Cyclic.lean`).
+* `38e1066` — the comparison of Tate and Nakayama is **natural in the representation**
+  (`CFT/TateCohomology/NakayamaNatural.lean`).
+* `4e9aad0` — the comparison of Tate and Nakayama is **natural in the coefficients**
+  (`CFT/TateCohomology/NakayamaCoeff.lean`).  The payoff lemma is
+  `range_tateMap_tensorHomRight_le`: if the comparison is onto for coefficients `M`, then
+  everything a map `ψ : M ⟶ N` induces two degrees higher is already a value of the comparison
+  for `N`.
+* `3a797d8` — **the free presentation** (`CFT/TateCohomology/FreePresentation.lean`) and what it
+  produces for the idele class group (`CFT/Units/BaseTateCoeff.lean`).  `freeRep W` is the free
+  module on the *elements* of `W` with the group permuting the generators, `freeCounit W` reads a
+  formal combination as the combination itself; `flat_freeRep` and `freeCounit_surjective` present
+  every representation by a flat one.
+
+Two facts worth keeping from `BaseTateCoeff.lean`:
+
+* `⇑(baseTateNakayamaEquiv k K M hM n) = tateNakayamaTwoMap (ideleClassRep k K)
+  (baseFundamentalClass k K) M n` is provable by **plain `rfl`** (`coe_baseTateNakayamaEquiv`), so
+  the comparison is onto whenever the coefficients are flat over `ℤ`
+  (`surjective_baseTateNakayamaTwoMap`).
+* Hence `range_shaTorusPTorsionMap_of_free`: **row 5 holds for `W` as soon as the free presentation
+  and the ideles together span `Ĥ^{n+2}(G, C_K ⊗ W)`.**  No Tate–Nakayama obstruction appears in
+  that statement at all.
+
+A fifth brick landed with this section: `CFT/TateCohomology/SylowSurjective.lean`, the companion of
+`SylowInjective.lean`.  Writing `1 = u·[G:H] + v·m` with `m` killing a class exhibits the class as
+`cor(u · res x)`, so `mem_range_tateCor_of_coprime`; coefficients killed by `m` have complete
+cohomology killed by `m` (`nsmul_eq_zero_tateModule_of_nsmul`, from `tateMap_nsmul_id_apply`); so
+**corestriction from a Sylow subgroup is onto the complete cohomology of coefficients killed by a
+power of that prime** (`surjective_tateCor_sylow`).
+
+### (b) Row 5 restated, and why the free presentation is a reformulation and not a closure
+
+`exact_baseTateNakayamaPTorsionRight` says `ker obs = range TN`.  Combined with §0.90(b):
+
+> **row 5 for `W` ⟺ `range ι_* ⊔ range TN = ⊤` in `Ĥ^{n+2}(G, C_K ⊗ W)`**,
+
+where `ι_*` is induced by `I_K ↠ C_K` and `TN` is the Tate–Nakayama comparison.  Two things were
+settled about this:
+
+1. **An idelic fundamental class is a dead end.**  If one had a class `α_I ∈ Ĥ²(G, I_K)` inducing
+   an isomorphism in the Tate–Nakayama style, `range ι_*` would already be everything, which forces
+   `Ш = 0` for *every* coefficient module — false.  So the extra generators cannot come from
+   repeating the class-formation argument on the ideles.
+2. **The free presentation restates the problem.**  With `π : W₀ ↠ W`, `W₀` free over `ℤ`,
+   `range TN ⊇ range (1 ⊗ π)_*`, so `range (1⊗π)_* ⊔ range ι_* = ⊤` is *sufficient*.  Chasing it
+   through δ-naturality, that condition is equivalent to the surjectivity
+   `Ш^{n+3}(G, K^× ⊗ W₀) ↠ Ш^{n+3}(G, K^× ⊗ W)`, and the cokernel is controlled by
+   `0 → Tor₁(C_K, W) → C_K ⊗ R → C_K ⊗ W₀ → C_K ⊗ W → 0`, which lands back on
+   `Ĥ^*(G, C_K[p] ⊗ W)` — the group §0.90(c) already names.  So the presentation buys a cleaner
+   statement, not a proof.
+
+### (c) The structural gap: `tateRes` and `tateCor` are not known to commute with `tateδ`
+
+`tateRes` and `tateCor` (`CFT/TateCohomology/Restrict.lean`) are defined by **recursion on the
+degree** through `resShiftEquiv`/`resCoshiftEquiv`, with `res0`/`resm1` (resp. `cor0`/`corm1`) as
+base cases.  `tateModule` and `tateδ` (`Graded.lean:64`, `Graded.lean:120`) are likewise glued from
+four different Mathlib constructions (`H0`, `groupCohomology`, `Hm1`, `groupHomology`; and
+`H0toH1`, `groupCohomology.δ`, `deltaMid`, `H1toHm1`, `groupHomology.δ`).
+
+The repository has **no** lemma saying that `tateRes` (or `tateCor`) commutes with `tateδ` of a
+general short exact sequence.  What exists is `tateShiftEquiv_naturality`
+(`ShiftNatural.lean:133`), which is naturality in the *representation map*, and
+`tateδ_naturality_apply` (`DeltaNatural.lean:195`), naturality of `tateδ` in a map of short exact
+sequences.  Neither gives the required square, and proving it needs
+
+* a 3×3 lemma — the connecting map of the rows and the connecting map of the shifting columns
+  commute up to sign — for which the repository has no bicomplex, and
+* explicit cochain base cases in degrees `0` and `-1`, where the gluing happens.
+
+This one missing square is what blocks, simultaneously:
+
+1. the **local–global comparison** of §0.90(c) item 1 (the global fundamental class restricting to
+   the local ones is a statement in degree two, but comparing `obs` with the per-place error maps
+   needs res–δ in *every* degree);
+2. the **Sylow reduction** of the criterion in (b): the reduction needs
+   `cor ∘ TN^P = TN_G ∘ cor`, i.e. corestriction compatible with the two connecting maps hidden in
+   `tateNakayamaTwoMap`.  `SylowSurjective.lean` supplies the *other* half (`cor` from a Sylow
+   subgroup is onto), so this is the only obstacle;
+3. Poitou–Tate in any form that mixes restriction with dimension shifting.
+
+### (d) A near-miss: `Ш²(k, μ_p) = 0` over an arbitrary base
+
+Row 3 (`eq_one_of_mem_sha2`, `CFT/Units/HasseTwoDecomposition.lean:533`) needs a primitive `n`-th
+root **in the base field** and a trivial action.  `eq_one_of_mem_sha2_of_isPrimitiveRoot_intermediate`
+(`CFT/Units/DecompositionRestrict.lean:172`) already removes that over an intermediate field `K`
+containing the roots of unity, together with `decompositionSubgroups_le_galRestrictScalarsHom` and
+`comapH2_mem_sha2_decompositionSubgroups`.  The **only** missing step for an arbitrary base is:
+
+> `resH2 : SmoothH2 G_k μ_p → SmoothH2 G_K μ_p` is injective on `p`-torsion when `[K:k]` is prime
+> to `p`,
+
+i.e. **corestriction/transfer in the smooth (profinite) layer**.  Three things were checked about
+this, and all three are worth recording because each looks like it should work and does not:
+
+* `CFT/GroupCohomology/InfResTwoInjective.lean` is about **inflation**, not restriction.
+* `CFT/GroupCohomology/Corestriction.lean` *does* build `cor`, `res` and `res_comp_cor` in every
+  degree for a discrete group, and `eq_zero_of_res_eq_zero_of_prime_pow` is exactly the statement
+  wanted — **but its `res` is the Shapiro composite** `H^n(G,A) → H^n(G, Coind_S^G Res A) ≅
+  H^n(S, Res A)`, not the honest cochain restriction `groupCohomology.map S.subtype (𝟙 _)`.
+  `map_subtype_id_eq` reduces the identification of the two to
+  `groupCohomology.coindIso.hom = groupCohomology.map S.subtype (counit)`, which Mathlib v4.28 does
+  **not** state.  Until that is proved, `eq_zero_of_res_eq_zero_of_prime_pow` cannot be applied to
+  a hypothesis about genuine restriction.
+* `mem_range_inflTwo_of_resTwo_eq_zero` (`CFT/GroupCohomology/InfResTwo.lean:187`) *is* exactness of
+  inflation–restriction in degree two — but it assumes `H¹(S, A) = 0`, and for `S = G_K`,
+  `A = μ_p` that group is `K^×/(K^×)^p ≠ 0`.  The sequence one would need is the seven-term
+  Hochschild–Serre, where `ker(res)` is squeezed between `H²(Q, A^S)` and `H¹(Q, H¹(S,A))`, both of
+  which vanish here because `#Q` is prime to `p`.
+* `CFT/Profinite/InfRes.lean`'s `exists_comapH2_eq` is only the "cocycle literally constant on the
+  cosets of the kernel" version, not exactness.
+
+Also recorded, because it removes one apparent route: the Kummer bridge
+`CFT/Profinite/KummerTwo.lean` gives `coeffH2_injective` — `H²(G_k, μ_n) ↪ H²(G_k, Ω^×)` with **no**
+hypothesis that `ζ_n ∈ k` — and `kummerH2Equiv` identifies the image with the `n`-torsion of
+`H²(G_k, Ω^×)`.  This does **not** reduce the problem to Albert–Brauer–Hasse–Noether for `Ω^×`,
+because `Br(k) → Br(K)` is not injective either; the transfer is needed on both sides.
+
+**However**, this whole item is probably *not* on the critical path: the Shafarevich induction can
+arrange `μ_p ⊆ k` (see §0.90(c)), and with that hypothesis row 3 is already the theorem needed.
+
+### (e) Lean notes from these commits
+
+* `include hW` in a section does **not** add `hW` to the signature of a `def` whose body does not
+  mention it — `baseTateNakayamaPTorsionMap k K W n` takes four explicit arguments while
+  `baseTateNakayamaPTorsionLeft k K W hW n` takes five.
+* `rw` can fail on a goal whose function coercion goes through a `ModuleCat.of`-carrier instance
+  that is defeq but not syntactically equal to the plain one (`Module k ↥(freeRep W).V` versus
+  `Module k (↥W.V →₀ k)`).  Insert an explicit `show <plain form>` before the `rw`.
+* `Module.Flat.of_free` is an instance in Mathlib, so `inferInstanceAs (Module.Flat k (α →₀ k))`
+  works directly.
+* `Rep.ofMulDistribMulAction` + `cocyclesOfIsMulCocycle₂` + `H2π_eq_zero_iff` +
+  `isMulCoboundary₂_of_mem_coboundaries₂` is the additive ↔ multiplicative `H²` dictionary; the
+  pattern to copy is `isMulCoboundary₂_pow_natCard` (`Corestriction.lean:280`).
+* A full root build is now **9643 jobs**.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.

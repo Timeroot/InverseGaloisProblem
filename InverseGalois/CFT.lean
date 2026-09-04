@@ -677,6 +677,7 @@ import InverseGalois.CFT.TateCohomology.ShiftNatural
 import InverseGalois.CFT.TateCohomology.Shifting
 import InverseGalois.CFT.TateCohomology.SylowInjective
 import InverseGalois.CFT.TateCohomology.RestrictOne
+import InverseGalois.CFT.TateCohomology.SylowSurjective
 import InverseGalois.CFT.TateCohomology.SylowTrivial
 import InverseGalois.CFT.TateCohomology.TateClassCount
 import InverseGalois.CFT.TateCohomology.TateDegreeTwo
@@ -3567,6 +3568,15 @@ it that are available here.
   restriction to a subgroup is killed by the index of that subgroup, so that **a class killed by a
   power of a prime and by restriction to a Sylow subgroup for that prime vanishes**: the study of
   the complete cohomology of a finite group reduces to its Sylow subgroups, one prime at a time.
+* `InverseGalois.CFT.TateCohomology.SylowSurjective` reads the same relation in the other
+  direction.  Writing one as a combination of the index of a subgroup and a multiple that kills a
+  class, the term carrying the multiple disappears and the class is exhibited as a corestriction,
+  so **a class killed by a natural number prime to the index of a subgroup comes from that
+  subgroup**.  Coefficients killed by a power of a prime have complete cohomology killed by the
+  same power, because the multiple of the identity that kills them induces that multiple on the
+  cohomology; so **corestriction from a Sylow subgroup is onto the complete cohomology of
+  coefficients killed by a power of that prime**, which is the surjectivity accompanying the
+  injectivity of restriction.
 * `InverseGalois.CFT.TateCohomology.Iterate` repeats the shift and the coshift, so that **the
   vanishing of the complete cohomology in a single degree travels to any other degree** at the
   price of replacing the representation by an iterated shift or coshift of it.
