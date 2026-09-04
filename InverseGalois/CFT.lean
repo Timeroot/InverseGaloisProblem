@@ -682,6 +682,7 @@ import InverseGalois.CFT.TateCohomology.TensorFunctor
 import InverseGalois.CFT.TateCohomology.TensorPExact
 import InverseGalois.CFT.TateCohomology.TensorPTorsion
 import InverseGalois.CFT.TateCohomology.TensorPTorsionShift
+import InverseGalois.CFT.TateCohomology.TensorPi
 import InverseGalois.CFT.TateCohomology.TensorRight
 import InverseGalois.CFT.TateCohomology.TensorShift
 import InverseGalois.CFT.TateCohomology.TensorTor
@@ -3777,6 +3778,24 @@ it that are available here.
   vectors killed by the prime, tensored with the same coefficients** -- with no hypothesis at all
   beyond the classical one on the Sylow subgroups.  The isomorphism of the previous file is the
   case where the two ends vanish.
+* `InverseGalois.CFT.TateCohomology.TensorPi` lets the coefficients pass through a product.  A
+  tensor product does not commute with an infinite product of groups, so a family of
+  representations tensored with fixed coefficients is not in general the product of the tensored
+  factors; it is, however, as soon as the coefficients are of finite rank over the field with a
+  prime number of elements and every factor is killed by that prime.  A choice of coordinates on
+  the coefficients multiplies a vector killed by the prime by a residue class, and **that
+  multiplication is additive in the class precisely because the vector is killed by the prime**, so
+  the coordinates assemble into a map from the group tensored with the coefficients to a finite
+  power of the group.  Reading the coordinates back off the distinguished vectors inverts it, and
+  **an abelian group killed by a prime, tensored with coefficients of finite rank over the field
+  with that many elements, is a finite power of the group** -- naturally in the group.  Naturality
+  compares the coordinates of a product with the coordinates of each factor and identifies the
+  canonical map between them, so **a product of representations killed by a prime, tensored with
+  such coefficients, is the product of the factors tensored with them**, and it has no complete
+  cohomology in a degree in which no factor tensored with the coefficients has any.  For the ideles
+  that is the whole point: the vectors killed by a prime are a product over the places, and this is
+  what turns the obstruction to the comparison of Tate and Nakayama into a condition place by
+  place.
 * `InverseGalois.CFT.TateCohomology.Duality` pairs the two middle degrees against each other.  The
   functionals on a representation with values in a fixed module carry an action of the group
   through the source, and **the norm of such a functional is its composition with the norm of the
