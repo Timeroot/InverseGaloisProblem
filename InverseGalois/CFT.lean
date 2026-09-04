@@ -806,6 +806,7 @@ import InverseGalois.CFT.Units.IdeleClassSES
 import InverseGalois.CFT.Units.IdeleClassTate
 import InverseGalois.CFT.Units.IdeleClassTorsionLocal
 import InverseGalois.CFT.Units.IdeleClassTorsionSES
+import InverseGalois.CFT.Units.IdeleClassTorsionSubgroup
 import InverseGalois.CFT.Units.IdeleClassTorsionTate
 import InverseGalois.CFT.Units.IdeleClassTower
 import InverseGalois.CFT.Units.IdeleCoboundary
@@ -4247,6 +4248,15 @@ it that are available here.
   places of the extension of the complete cohomology of the stabiliser there with coefficients in
   the roots of unity of the completion tensored with the restricted coefficients** — which is what a
   criterion formulated over a Sylow subgroup asks for.
+* `InverseGalois.CFT.Units.IdeleClassTorsionSubgroup` passes from the ideles to the idele classes
+  there.  A short exact sequence of representations stays short exact when read on a subgroup,
+  because injectivity, surjectivity and exactness in the middle are statements about the underlying
+  modules and those do not change, so the roots of unity of the field, the ideles killed by a prime
+  and the idele classes killed by that prime still give a long exact sequence of complete cohomology
+  of the subgroup.  **The idele classes killed by the prime therefore have no complete cohomology
+  over the subgroup in a degree in which no local factor has any and the roots of unity of the field
+  have none one degree higher**, the local factors being indexed by the orbits of the subgroup on
+  the places of the extension.
 * `InverseGalois.CFT.TateCohomology.Duality` pairs the two middle degrees against each other.  The
   functionals on a representation with values in a fixed module carry an action of the group
   through the source, and **the norm of such a functional is its composition with the norm of the
