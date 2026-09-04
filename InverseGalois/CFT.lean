@@ -758,6 +758,7 @@ import InverseGalois.CFT.Units.DecompositionFundamental
 import InverseGalois.CFT.Units.DecompositionGalois
 import InverseGalois.CFT.Units.DecompositionInvariant
 import InverseGalois.CFT.Units.DecompositionOutside
+import InverseGalois.CFT.Units.DecompositionReciprocity
 import InverseGalois.CFT.Units.HasseHom
 import InverseGalois.CFT.Units.HasseLevel
 import InverseGalois.CFT.Units.InfiniteDecomposition
@@ -2507,6 +2508,19 @@ it that are available here.
   class, so the classical hypotheses of Tate's theorem hold on every subgroup: **the units of the
   completion at a finite place are the module of a class formation for the decomposition group**,
   and the theorems of Tate and of Tate and Nakayama apply to them.
+* `InverseGalois.CFT.Units.DecompositionReciprocity` matches the two invariants the theory carries
+  at a finite place.  One is attached to a Brauer class of the base and reads it after extending
+  scalars to the completion; the other is attached to a class of the decomposition group and reads
+  it after turning that class into a Brauer class of the completion.  A two-cocycle of the whole
+  Galois group has a localization at each place, and the crossed product of the localization is the
+  crossed product of the cocycle extended to the completion, so **the invariant at a place of the
+  class of a global crossed product is the invariant of the class of the decomposition group at any
+  place above it.**  The product formula for the invariants of a Brauer class therefore reads as a
+  statement about decomposition groups, and it says something no local argument can: if the
+  localizations of a global cocycle are coboundaries at every finite place but one, and the class is
+  split at every infinite place, the invariant left over is the inverse of a product of trivial ones
+  and so is trivial too.  All the local invariants then vanish, and the theorem of Albert, Brauer,
+  Hasse and Noether applies: **one place may be left out of a local-global hypothesis for free.**
 * `InverseGalois.CFT.Units.DecompositionField` names the subfield fixed by the decomposition
   group.  An element of it has its image in the completion fixed by the decomposition group, hence
   coming from the completion of the base, so the decomposition field embeds into the completion of
