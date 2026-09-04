@@ -10936,6 +10936,22 @@ For `ker Left_P (n+1) = Σ_w cor_w (ker Left_w (n+1))`:
    `Ш¹(G, K^× ⊗ W) → H²(G, E)`, avoiding the profinite/finite bridge altogether.
 4. `Left`-naturality (§0.99(e)), then step 3's `⊆` — still the wall.
 
+### (g) The twist can be made to disappear
+
+`W = E(-1) = Hom(μ_p, E)` is a genuine twist only while `μ_p ⊄ k`.  As soon as `μ_p ⊆ k` the
+Galois group `G = Gal(K/k)` acts trivially on `μ_p`, a choice of primitive `p`-th root of unity
+gives a `G`-isomorphism `Hom(μ_p, E) ≅ E`, and brick 4 collapses to
+
+>  `K^× ⊗ E ≅ H¹(K, E)`  —  `kummerEquiv` tensored with `E`, plus `G`-equivariance.
+
+And `μ_p ⊆ k` may be *assumed*: `[k(μ_p) : k]` divides `p - 1`, hence is prime to `p`, while every
+module in sight is killed by `p`.  So restriction to `k(μ_p)` is injective and corestriction is
+surjective on all the groups involved — the same res–cor device the repository already uses to
+reduce row 5 to a Sylow subgroup (`surjective_tateCor_sylow_of_prime`,
+`range_shaTorusPTorsionMap_of_sylow`).  Doing this *first* is likely the cheapest path through
+bricks 4 and 5: it removes the twist, makes `μ_p` a trivial module everywhere, and makes the
+Kummer sequence over `K` a sequence of `G`-modules with no coefficient subtleties.
+
 ---
 
 ## Sources
