@@ -654,6 +654,7 @@ import InverseGalois.CFT.TateCohomology.Duality
 import InverseGalois.CFT.TateCohomology.DualityDivisible
 import InverseGalois.CFT.TateCohomology.DualityShift
 import InverseGalois.CFT.TateCohomology.Exact
+import InverseGalois.CFT.TateCohomology.FreePresentation
 import InverseGalois.CFT.TateCohomology.Functorial
 import InverseGalois.CFT.TateCohomology.Graded
 import InverseGalois.CFT.TateCohomology.HomologyJunction
@@ -727,6 +728,7 @@ import InverseGalois.CFT.Units.BaseChangeCocycle
 import InverseGalois.CFT.Units.BaseChangeIndex
 import InverseGalois.CFT.Units.BaseFundamental
 import InverseGalois.CFT.Units.BaseTate
+import InverseGalois.CFT.Units.BaseTateCoeff
 import InverseGalois.CFT.Units.BaseTateTorsion
 import InverseGalois.CFT.Units.ClassSet
 import InverseGalois.CFT.Units.CompletionCyclic
@@ -3518,6 +3520,12 @@ it that are available here.
 * `InverseGalois.CFT.TateCohomology.Annihilate` runs the two inductions those identifications
   allow, upwards from degree zero and downwards from degree minus one, and concludes that **the
   order of the group annihilates the complete cohomology in every integer degree**.
+* `InverseGalois.CFT.TateCohomology.FreePresentation` presents an arbitrary representation by one
+  whose underlying module is free: the free module on the elements of the representation, with the
+  group permuting the generators, maps onto it by reading a formal combination of elements as the
+  combination itself.  The construction costs nothing and is available for every representation,
+  and it is what lets a theorem which asks the coefficients to be flat say something about
+  coefficients which are not.
 * `InverseGalois.CFT.TateCohomology.Functorial` records that the map induced in a fixed degree
   takes the identity to the identity and a composite to the composite, so that **an isomorphism of
   representations induces an isomorphism of the complete cohomology** and a representation
@@ -4372,6 +4380,16 @@ it that are available here.
   cohomology in every degree with that of the trivial integral representation two degrees lower;
   degree minus two is **the reciprocity isomorphism** of the extension, and tensoring gives **the
   theorem of Tate and Nakayama** for any coefficients flat over the integers.
+* `InverseGalois.CFT.Units.BaseTateCoeff` puts the flat case to work on coefficients which are not
+  flat.  The comparison of Tate and Nakayama is natural in the coefficients and is onto whenever
+  they are flat, so **everything a map out of a flat representation induces two degrees higher is
+  already a value of the comparison for the target**; the free presentation of the coefficients
+  supplies such a map for free.  The criterion for the locally trivial classes therefore loses its
+  reference to the obstruction altogether: **the everywhere locally trivial classes of the units
+  tensored with coefficients killed by a prime are exactly the image of the complete cohomology of
+  the coefficients three degrees lower as soon as the classes of the idele classes tensored with
+  the coefficients are spanned by those the free presentation produces together with those coming
+  from the ideles.**
 * `InverseGalois.CFT.Units.BaseTateTorsion` drops the flatness, which the coefficients of an
   embedding problem never have.  The fundamental class satisfies the classical hypotheses on every
   subgroup, so in particular on every Sylow subgroup, and the four exact terms attached to the
