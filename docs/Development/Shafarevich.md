@@ -10917,11 +10917,24 @@ For `ker Left_P (n+1) = Σ_w cor_w (ker Left_w (n+1))`:
   `obtain ⟨P⟩ : Nonempty (Sylow p Gal(K/k)) := inferInstance` is all that is needed to drop a Sylow
   subgroup out of a statement. (gotcha 1348)
 
-### (f) Next
+### (f) Next, with the bricks already on the shelf
 
-1. Brick 4 of (b): the Kummer identification as `G`-modules.
-2. Brick 5 of (b): the edge map on locally trivial classes.
-3. `Left`-naturality (§0.99(e)), then step 3's `⊆` — still the wall.
+1. **Brick 4** — the Kummer identification as `G`-modules.  Its core is already present:
+   `Profinite/KummerHom.lean` has `IsKummerData`, `IsKummerData.kummerEquiv`
+   (`K^×/(K^×)^n ≅ SmoothH1 G_K μ_n`), `ker_kummerHom`, `kummerHom_surjective`, and
+   `Profinite/KummerRes.lean` has the restriction behaviour (`resH1_kummerClass_eq_one_iff`,
+   `map_localPowers` — the locally trivial classes are the units that are `n`-th powers in every
+   completion).  What is missing is (i) equivariance of `kummerEquiv` for the *outer* group
+   `Gal(K/k)`, and (ii) the twist `E ≅ μ_p ⊗ Hom(μ_p, E)` when `μ_p ⊆ K`, which turns
+   `SmoothH1 G_K μ_p ⊗ Hom(μ_p,E)` into `SmoothH1 G_K E`.
+2. **Brick 5** — the edge map on locally trivial classes.  `Profinite/Transgression.lean`
+   (`exists_comapH2_eq_of_transgression`) is the degree-two inflation–restriction input and
+   `Profinite/ShaComap.lean` the functoriality of `sha2`; `eq_one_of_mem_sha2` is input 1.
+3. **A restructuring worth considering before either.**  Inputs 1 and 2 already give
+   `Ш²(k,E) ⊆ inf H²(G,E)`, so the *target* of the surjection lives inside a finite-level group.
+   Bricks 4 and 5 may therefore be replaceable by a purely finite-level construction of
+   `Ш¹(G, K^× ⊗ W) → H²(G, E)`, avoiding the profinite/finite bridge altogether.
+4. `Left`-naturality (§0.99(e)), then step 3's `⊆` — still the wall.
 
 ---
 
