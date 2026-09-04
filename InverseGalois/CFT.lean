@@ -602,6 +602,7 @@ import InverseGalois.CFT.Tate.FamilyRestrictOrbit
 import InverseGalois.CFT.Tate.FamilyRing
 import InverseGalois.CFT.Tate.FamilySigma
 import InverseGalois.CFT.Tate.FamilyTensor
+import InverseGalois.CFT.Tate.FamilyTensorOrbit
 import InverseGalois.CFT.Tate.FamilyTorsion
 import InverseGalois.CFT.Tate.Fibers
 import InverseGalois.CFT.Tate.Finite
@@ -683,6 +684,7 @@ import InverseGalois.CFT.TateCohomology.TensorFunctor
 import InverseGalois.CFT.TateCohomology.TensorPExact
 import InverseGalois.CFT.TateCohomology.TensorPTorsion
 import InverseGalois.CFT.TateCohomology.TensorPTorsionShift
+import InverseGalois.CFT.TateCohomology.TensorPair
 import InverseGalois.CFT.TateCohomology.TensorPi
 import InverseGalois.CFT.TateCohomology.TensorRight
 import InverseGalois.CFT.TateCohomology.TensorShift
@@ -3798,6 +3800,12 @@ it that are available here.
   that is the whole point: the vectors killed by a prime are a product over the places, and this is
   what turns the obstruction to the comparison of Tate and Nakayama into a condition place by
   place.
+* `InverseGalois.CFT.TateCohomology.TensorPair` reads that off for a module visibly built from two
+  halves.  A product of two representations is a product of a family indexed by the booleans, so
+  **the complete cohomology of a product of two representations killed by a prime, tensored with
+  coefficients of finite rank over the field with that many elements, is the product of the
+  complete cohomologies of the two factors tensored with the coefficients** — the group of ideles
+  being exactly such a module, the infinite places and the finite ones.
 * `InverseGalois.CFT.Tate.FamilyTensor` carries the coefficients through the orbit decomposition
   itself, and does it without ever unwinding that decomposition.  Tensoring each module of a family
   with a fixed representation, and letting the group act on both factors at once, gives another
@@ -3809,15 +3817,23 @@ it that are available here.
   for an arbitrary family applies verbatim to the tensored one, and **the sections of a family
   killed by a prime, tensored with such coefficients, have no complete cohomology in a degree as
   soon as no stabiliser has any with the restricted coefficients**.
+* `InverseGalois.CFT.Tate.FamilyTensorOrbit` upgrades the vanishing to the identification behind
+  it: **the complete cohomology of the sections of a family tensored with the coefficients is the
+  product, over the orbits of the index set, of the complete cohomology of the stabiliser of a
+  point of the orbit with coefficients in the module there tensored with the restricted
+  coefficients**, and the same for the sections killed by the prime.  The vanishing follows, but a
+  long exact sequence built out of these groups needs the isomorphism itself, so both are stated.
 * `InverseGalois.CFT.Units.IdeleTorsionTensor` is that statement for the ideles.  The elements of
   the ideles killed by a prime are the elements killed by it of the whole product of the local unit
   groups, the product splits into the infinite places and the finite ones, and each half is the
-  sections of a family of modules over the places of the extension, so the two previous files
-  combine into **the vanishing of the complete cohomology of the elements of the ideles killed by a
-  prime, tensored with coefficients of finite rank over the field with that many elements, as soon
-  as the decomposition group of every place of the base field has none with coefficients in the
-  roots of unity of a completion above it tensored with the restricted coefficients**.  That is the
-  hypothesis the local-global obstruction of the theory of tori is stated with, now genuinely local.
+  sections of a family of modules over the places of the extension, so the previous files combine
+  into **the complete cohomology of the elements of the ideles killed by a prime, tensored with
+  coefficients of finite rank over the field with that many elements, as the product over the
+  places of the base field of the complete cohomology of the decomposition group of a place above
+  it with coefficients in the roots of unity of the completion there tensored with the restricted
+  coefficients** — and in particular the vanishing of the whole as soon as every local factor
+  vanishes.  That is the hypothesis the local-global obstruction of the theory of tori is stated
+  with, now genuinely local.
 * `InverseGalois.CFT.TateCohomology.Duality` pairs the two middle degrees against each other.  The
   functionals on a representation with values in a fixed module carry an action of the group
   through the source, and **the norm of such a functional is its composition with the norm of the
