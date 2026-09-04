@@ -666,6 +666,7 @@ import InverseGalois.CFT.TateCohomology.PTorsionTrivial
 import InverseGalois.CFT.TateCohomology.Pair
 import InverseGalois.CFT.TateCohomology.Product
 import InverseGalois.CFT.TateCohomology.Restrict
+import InverseGalois.CFT.TateCohomology.RestrictNatural
 import InverseGalois.CFT.TateCohomology.Shapiro
 import InverseGalois.CFT.TateCohomology.Shift
 import InverseGalois.CFT.TateCohomology.ShiftNatural
@@ -3531,6 +3532,13 @@ it that are available here.
   shifting sequence is still bijective after restriction and moves a degree.  Since the same
   connecting maps are used on both sides, **corestriction after restriction is multiplication by
   the index in every integer degree**.
+* `InverseGalois.CFT.TateCohomology.RestrictNatural` reads a map of representations on the subgroup
+  and follows it through that construction.  In the two middle degrees the two transfers commute
+  with any equivariant map, one term of the sum at a time; in every other degree the identifications
+  used are connecting maps of the shifting sequences read on the subgroup, and a connecting map
+  commutes with a map of short exact sequences.  So **restriction to a subgroup and corestriction
+  from it both commute with a map of representations, in every integer degree**, which is what turns
+  a comparison of coefficients into a comparison of the local and the global reading of a class.
 * `InverseGalois.CFT.TateCohomology.SylowInjective` draws the consequence that a class killed by
   restriction to a subgroup is killed by the index of that subgroup, so that **a class killed by a
   power of a prime and by restriction to a Sylow subgroup for that prime vanishes**: the study of
