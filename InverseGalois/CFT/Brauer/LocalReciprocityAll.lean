@@ -116,15 +116,16 @@ variable {K : Type} [Field K] [Valued K ℤᵐ⁰]
 
 variable (M : Type) [Field M] [Algebra K M] [FiniteDimensional K M]
 
-/-- **A class over a local field killed by the degree of a finite extension is split by that
-extension.**  The extension carries the valuation of the field norm, and the comparison map of the
-base corrected by the degree-th root turns that valuation into an absolute value restricting to the
-absolute value of the base, so the base change formula for the invariant map applies: the invariant
-of the class computed upstairs is the degree times its invariant downstairs, hence trivial, and a
-class over a local field is determined by its invariant. -/
-theorem brauerTorsion_le_relative_of_finrank (hres : HasResidueChar K p e)
+/-- **A finite extension of a local field is again a local field.**  It carries the valuation of
+the field norm; the comparison map of the base corrected by the degree-th root turns that valuation
+into an absolute value restricting to the absolute value of the base; the extension is complete and
+locally compact for it; its residue field has the same characteristic as that of the base; and its
+value group has a generator. -/
+theorem exists_valued_of_finiteDimensional (hres : HasResidueChar K p e)
     (hmK : IsUnitValGen K mK) :
-    brauerTorsion K (finrank K M) ≤ BrauerGroup.relative K M := by
+    ∃ (_ : Valued M ℤᵐ⁰) (_ : Valuation.RankOne (Valued.v : Valuation M ℤᵐ⁰))
+      (_ : CompleteSpace M) (_ : ProperSpace M) (e' : ℕ) (mM : ℤ),
+        (∀ x : K, ‖algebraMap K M x‖ = ‖x‖) ∧ HasResidueChar M p e' ∧ IsUnitValGen M mM := by
   haveI : Algebra.IsAlgebraic K M := Algebra.IsAlgebraic.of_finite K M
   have hn : finrank K M ≠ 0 := Module.finrank_pos.ne'
   have hnt : ∃ x : Kˣ, Valued.v (x : K) ≠ 1 := exists_units_val_ne_one_of_isUnitValGen hmK
@@ -152,6 +153,17 @@ theorem brauerTorsion_le_relative_of_finrank (hres : HasResidueChar K p e)
     exact congrArg NNReal.toReal (rankOneHomRoot_pow K hn (Valued.v x))
   obtain ⟨e', hresM⟩ := exists_hasResidueChar_of_norm hnorm hres
   obtain ⟨mM, hmM⟩ := exists_isUnitValGen (exists_units_val_ne_one_of_norm hvM hnt)
+  exact ⟨inferInstance, inferInstance, inferInstance, inferInstance, e', mM, hnorm, hresM, hmM⟩
+
+/-- **A class over a local field killed by the degree of a finite extension is split by that
+extension.**  The extension is again a local field, with an absolute value restricting to the
+absolute value of the base, so the base change formula for the invariant map applies: the invariant
+of the class computed upstairs is the degree times its invariant downstairs, hence trivial, and a
+class over a local field is determined by its invariant. -/
+theorem brauerTorsion_le_relative_of_finrank (hres : HasResidueChar K p e)
+    (hmK : IsUnitValGen K mK) :
+    brauerTorsion K (finrank K M) ≤ BrauerGroup.relative K M := by
+  obtain ⟨_, _, _, _, e', mM, hnorm, hresM, hmM⟩ := exists_valued_of_finiteDimensional M hres hmK
   rcases lt_or_gt_of_ne (mul_ne_zero hmK.ne_zero hmM.ne_zero) with hlt | hgt
   · refine brauerTorsion_le_relative M hnorm hresM hmK hmM.neg ?_
     rw [mul_neg]
@@ -191,5 +203,35 @@ theorem exists_mem_relative_localInvariantHom_eq [IsGalois K M] (hres : HasResid
   rw [map_pow, hx, hy, map_one]
 
 end Reciprocity
+
+/-! ### Local reciprocity over an intermediate field -/
+
+section Tower
+
+variable {K : Type} [Field K] [Valued K ℤᵐ⁰]
+  [Valuation.RankOne (Valued.v : Valuation K ℤᵐ⁰)] [CompleteSpace K] [ProperSpace K]
+  {mK : ℤ} {p e : ℕ}
+
+variable (M L : Type) [Field M] [Field L] [Algebra K M] [FiniteDimensional K M] [Algebra M L]
+  [FiniteDimensional M L]
+
+/-- **The relative Brauer group of a finite Galois extension of an intermediate field of a finite
+extension of a local field has exactly as many elements as the degree.**  The intermediate field is
+again a local field, so local reciprocity applies over it. -/
+theorem card_relative_eq_finrank_tower [IsGalois M L] (hres : HasResidueChar K p e)
+    (hmK : IsUnitValGen K mK) :
+    Nat.card ↥(BrauerGroup.relative M L) = finrank M L := by
+  obtain ⟨_, _, _, _, e', mM, _, hresM, hmM⟩ := exists_valued_of_finiteDimensional M hres hmK
+  exact card_relative_eq_finrank L hresM hmM
+
+/-- **The relative Brauer group of a finite Galois extension of an intermediate field of a finite
+extension of a local field is finite.** -/
+theorem finite_relative_tower [IsGalois M L] (hres : HasResidueChar K p e)
+    (hmK : IsUnitValGen K mK) :
+    Finite ↥(BrauerGroup.relative M L) := by
+  obtain ⟨_, _, _, _, e', mM, _, hresM, hmM⟩ := exists_valued_of_finiteDimensional M hres hmK
+  exact finite_relative_local L hresM hmM
+
+end Tower
 
 end InverseGalois.CFT
