@@ -756,6 +756,7 @@ import InverseGalois.CFT.Units.Decomposition
 import InverseGalois.CFT.Units.DecompositionField
 import InverseGalois.CFT.Units.DecompositionFundamental
 import InverseGalois.CFT.Units.DecompositionGalois
+import InverseGalois.CFT.Units.DecompositionIdele
 import InverseGalois.CFT.Units.DecompositionInvariant
 import InverseGalois.CFT.Units.DecompositionOutside
 import InverseGalois.CFT.Units.DecompositionReciprocity
@@ -2521,6 +2522,16 @@ it that are available here.
   split at every infinite place, the invariant left over is the inverse of a product of trivial ones
   and so is trivial too.  All the local invariants then vanish, and the theorem of Albert, Brauer,
   Hasse and Noether applies: **one place may be left out of a local-global hypothesis for free.**
+* `InverseGalois.CFT.Units.DecompositionIdele` puts the units of a completion inside the ideles.
+  An idele supported at a single finite place is carried by an automorphism to an idele supported
+  at the image place, so the ideles supported at one place are stable exactly under the
+  automorphisms fixing it, and on that subgroup the embedding is equivariant: the automorphism
+  moves the components of an idele around and moves the units of the completion by the action of
+  the decomposition group, and the two agree because the transport of the family at a place left
+  where it is **is** that action.  So **the units of the completion at a finite place are a
+  subrepresentation of the ideles for the decomposition group there**, and composing with the
+  passage to classes lands them in the idele class group.  Reading the component at the place
+  recovers the unit it was built from, so the embedding is injective.
 * `InverseGalois.CFT.Units.DecompositionField` names the subfield fixed by the decomposition
   group.  An element of it has its image in the completion fixed by the decomposition group, hence
   coming from the completion of the base, so the decomposition field embeds into the completion of
