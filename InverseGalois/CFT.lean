@@ -4895,7 +4895,9 @@ it that are available here.
   whenever the span holds, with no subgroup left in the statement.  Read as a surjection and
   specialised to degree minus two, that is the shape an embedding problem asks for: the first
   cohomology of the units tensored with the coefficients, cut down by the condition of being
-  trivial in the ideles, is reached from two degrees below zero.
+  trivial in the ideles, is reached from two degrees below zero.  **The span holds whenever the
+  prime does not divide the degree of the extension**, since a Sylow subgroup is then trivial and
+  the order of a group annihilates its complete cohomology, so nothing is left to span.
 * `InverseGalois.CFT.Units.BaseArtin` puts a name on the left hand side of that identification.
   Composing it with the description of the complete cohomology of the trivial integral
   representation in degree minus two gives **the reciprocity isomorphism between the abelianization

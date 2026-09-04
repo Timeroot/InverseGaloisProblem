@@ -10856,6 +10856,9 @@ def HasIdeleClassNakayamaSpan (k K : Type) … (p : ℕ) [Fact p.Prime] : Prop :
 
   This is the repository's standard treatment of an out-of-reach step: a `Prop`-valued `def`, never
   an axiom and never a `sorry`.
+  `hasIdeleClassNakayamaSpan_of_not_dvd` discharges it unconditionally when `p ∤ [K:k]`: the Sylow
+  subgroup is then trivial and `card_nsmul_eq_zero_tateModule` makes every module in sight vanish.
+  So the hypothesis is non-vacuous and correct in the degenerate case; only `p | [K:k]` is open.
 
 ### (b) The remaining chain to `FrattiniKernelEP`, in full
 

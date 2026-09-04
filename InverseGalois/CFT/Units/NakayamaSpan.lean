@@ -34,6 +34,8 @@ carrying a Sylow subgroup and a choice of coefficients through every intermediat
 
 ## Main results
 
+* `InverseGalois.CFT.hasIdeleClassNakayamaSpan_of_not_dvd`: **the span holds whenever the prime
+  does not divide the degree of the extension.**
 * `InverseGalois.CFT.range_shaTorusPTorsionMap_of_span`: **the everywhere locally trivial classes
   of the units tensored with coefficients killed by a prime are exactly the classes the comparison
   of Tate and Nakayama produces**, whenever the span holds.
@@ -75,6 +77,27 @@ def HasIdeleClassNakayamaSpan : Prop :=
         (tensorHomLeft W (ideleToIdeleClass k K))) (n + 1 + 1)).hom = ⊤
 
 variable {k K p}
+
+/-- **The span holds whenever the prime does not divide the degree of the extension.**  A Sylow
+subgroup for a prime that does not divide the order of the group is trivial, and the order of a
+group annihilates its complete cohomology, so every module read over that subgroup vanishes and
+there is nothing left to span. -/
+theorem hasIdeleClassNakayamaSpan_of_not_dvd (hp : ¬ p ∣ Nat.card Gal(K/k)) :
+    HasIdeleClassNakayamaSpan k K p := by
+  intro W _ P n
+  have hdvd : Nat.card ↥(P : Subgroup Gal(K/k)) ∣ Nat.card Gal(K/k) :=
+    Subgroup.card_subgroup_dvd_card _
+  obtain ⟨m, hm⟩ := P.isPGroup'.exists_card_eq
+  have hcard : Nat.card ↥(P : Subgroup Gal(K/k)) = 1 := by
+    rcases m with _ | m
+    · simpa using hm
+    · exact absurd (dvd_trans (dvd_pow_self p (Nat.succ_ne_zero m)) (hm ▸ hdvd)) hp
+  refine Submodule.eq_top_iff'.2 fun x => ?_
+  have hx : x = 0 := by
+    have hz := card_nsmul_eq_zero_tateModule _ _ x
+    rwa [hcard, one_nsmul] at hz
+  subst hx
+  exact Submodule.zero_mem _
 
 /-- **The everywhere locally trivial classes of the units tensored with coefficients killed by a
 prime are exactly the image of the complete cohomology of the coefficients three degrees lower**,
