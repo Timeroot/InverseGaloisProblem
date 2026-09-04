@@ -650,6 +650,7 @@ import InverseGalois.CFT.TateCohomology.CocycleExtension
 import InverseGalois.CFT.TateCohomology.CohomTrivial
 import InverseGalois.CFT.TateCohomology.Cyclic
 import InverseGalois.CFT.TateCohomology.DeltaNatural
+import InverseGalois.CFT.TateCohomology.DeltaShift
 import InverseGalois.CFT.TateCohomology.Duality
 import InverseGalois.CFT.TateCohomology.DualityDivisible
 import InverseGalois.CFT.TateCohomology.DualityShift
@@ -3740,6 +3741,20 @@ it that are available here.
   the class on the source.  The consequence used later is a containment of images: **whatever the
   comparison produces for a class that comes from another representation already comes from that
   representation.**
+* `InverseGalois.CFT.TateCohomology.DeltaShift` removes the connecting map from that comparison
+  altogether.  The sequence defining the shift is the universal extension with acyclic middle term,
+  and its connecting map is the identification of the complete cohomology of the shift with that of
+  the representation one degree higher; so **the connecting map of an extension that compares with
+  the shifting sequence is that identification composed with the map induced by the comparison in
+  the third place.**  The tensored extension does compare with it, because it is a sum as a module:
+  reading an element in the first entry of all of its translates is an equivariant map into the
+  functions on the group, and modulo the translates of the tensor product the result depends only on
+  the second entry, so the coefficients map to the shift of the tensor product by sending an element
+  to the class of the function pairing the values of the cocycle with the moved element.  The
+  outcome is that **the comparison of Tate and Nakayama is a composite of identifications of shifts
+  and of maps induced by morphisms of representations**, with no connecting map left in it, so any
+  statement already available for induced maps and for the identification of a shift reaches the
+  comparison itself.
 * `InverseGalois.CFT.TateCohomology.TensorFunctor` tensors a map of representations on the right
   with a fixed representation.  The underlying map acts on the first factor and leaves the second
   alone, and it commutes with the diagonal action because each factor is moved separately;
