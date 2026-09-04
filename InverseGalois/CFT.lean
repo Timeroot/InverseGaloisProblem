@@ -666,6 +666,7 @@ import InverseGalois.CFT.TateCohomology.Iterate
 import InverseGalois.CFT.TateCohomology.Junction
 import InverseGalois.CFT.TateCohomology.NakayamaCoeff
 import InverseGalois.CFT.TateCohomology.NakayamaNatural
+import InverseGalois.CFT.TateCohomology.NakayamaRestrict
 import InverseGalois.CFT.TateCohomology.Norm
 import InverseGalois.CFT.TateCohomology.PGroupInvariants
 import InverseGalois.CFT.TateCohomology.PGroupTrivial
@@ -3610,6 +3611,19 @@ it that are available here.
   to the two defining sequences, which are split, this removes the restriction on the degree from
   the two identifications themselves: **both moves of the degree commute with restriction and with
   corestriction in every integer degree.**
+* `InverseGalois.CFT.TateCohomology.NakayamaRestrict` carries that square to the comparison of Tate
+  and Nakayama.  The extension a cocycle tensors is a product as a sequence of modules, the tensor
+  product being one coordinate and the coefficients the other, and read on a subgroup it is the
+  extension the restricted cocycle tensors, on the nose; so **the connecting map of the tensored
+  extension commutes with restriction to a subgroup and with corestriction from it**, in every
+  integer degree.  The comparison is that connecting map followed by two identifications, the shift
+  of a tensor product with the tensor product of the shift and the shift of the degree, and both of
+  those commute with restriction and with corestriction as well.  Hence **the comparison of Tate and
+  Nakayama attached to a class in degree two commutes with restriction to a subgroup and with
+  corestriction from it**, the comparison on the subgroup being the one the restricted cocycle
+  builds.  This is what lets a question about the comparison for the whole group be settled on a
+  Sylow subgroup one prime at a time: corestriction from a Sylow subgroup is onto, and it carries
+  the image of the comparison there into the image of the comparison here.
 * `InverseGalois.CFT.TateCohomology.SylowInjective` draws the consequence that a class killed by
   restriction to a subgroup is killed by the index of that subgroup, so that **a class killed by a
   power of a prime and by restriction to a Sylow subgroup for that prime vanishes**: the study of
