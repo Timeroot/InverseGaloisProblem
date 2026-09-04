@@ -143,6 +143,18 @@ theorem placeComponent_adicPlaceIdele (u : Additive (w.adicCompletion K)ˣ) :
     placeComponent w (adicPlaceIdele K w u) = u := by
   rw [placeComponent_apply, coe_adicPlaceIdele, fullPlaceIdele_snd_self]
 
+/-- The component at a finite place of an idele supported at another one is trivial. -/
+@[simp]
+theorem placeComponent_adicPlaceIdele_of_ne {v : HeightOneSpectrum (𝓞 K)} (h : w ≠ v)
+    (u : Additive (v.adicCompletion K)ˣ) : placeComponent w (adicPlaceIdele K v u) = 0 := by
+  rw [placeComponent_apply, coe_adicPlaceIdele, fullPlaceIdele_snd_of_ne h]
+
+/-- The component at a finite place of a principal idele is the image of the unit in the completion
+there. -/
+@[simp]
+theorem placeComponent_ideleDiag (a : Additive Kˣ) :
+    placeComponent w (ideleDiag K a) = Additive.ofMul (adicUnitHom w a.toMul) := rfl
+
 omit [NumberField k] in
 variable (k) in
 /-- **An automorphism fixing a finite place moves the component of an idele there by the transport

@@ -255,6 +255,7 @@ import InverseGalois.CFT.GroupCohomology.Inflation
 import InverseGalois.CFT.GroupCohomology.InflationOrder
 import InverseGalois.CFT.GroupCohomology.InflationRestriction
 import InverseGalois.CFT.GroupCohomology.MapCoboundary
+import InverseGalois.CFT.GroupCohomology.MapInjective
 import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.SylowRes
 import InverseGalois.CFT.GroupCohomology.TateTwist
@@ -720,6 +721,7 @@ import InverseGalois.CFT.Units.ABHNCoboundary
 import InverseGalois.CFT.Units.ABHNFinite
 import InverseGalois.CFT.Units.ABHNLocalNorm
 import InverseGalois.CFT.Units.ABHNLocalPower
+import InverseGalois.CFT.Units.ABHNOnePlace
 import InverseGalois.CFT.Units.ABHNPlaces
 import InverseGalois.CFT.Units.ABHNRamified
 import InverseGalois.CFT.Units.ABHNSqrtNegOne
@@ -820,6 +822,7 @@ import InverseGalois.CFT.Units.InfiniteGalois
 import InverseGalois.CFT.Units.InfiniteHilbert90
 import InverseGalois.CFT.Units.InfiniteIdele
 import InverseGalois.CFT.Units.InfiniteOrbit
+import InverseGalois.CFT.Units.InfinitePlaceIdele
 import InverseGalois.CFT.Units.InfiniteTowerDescent
 import InverseGalois.CFT.Units.InflationDescent
 import InverseGalois.CFT.Units.KummerDecomposition
@@ -859,6 +862,7 @@ import InverseGalois.CFT.Units.SplitOutside
 import InverseGalois.CFT.Units.SplitPlaces
 import InverseGalois.CFT.Units.SplitPowIdele
 import InverseGalois.CFT.Units.SplitPowNorm
+import InverseGalois.CFT.Units.StablePlaceIdele
 import InverseGalois.CFT.Units.TowerCoboundary
 import InverseGalois.CFT.Units.TowerDescent
 import InverseGalois.CFT.Units.UnitLattice
@@ -2534,6 +2538,21 @@ it that are available here.
   equivariant for the same reason, and it recovers the unit an idele supported there was built
   from, so **the units of the completion are a retract of the ideles for the decomposition group**
   and the embedding stays injective after any functor is applied to it.
+* `InverseGalois.CFT.Units.InfinitePlaceIdele` reads the archimedean components of an idele.  An
+  automorphism permutes them exactly as it permutes the finite ones, so reading the component at an
+  infinite place is equivariant for the decomposition group there; the component of a principal
+  idele is the image of the unit in the completion, and the component of an idele supported at a
+  finite place is trivial.  These are the archimedean halves of the computations that separate one
+  finite place from all the others.
+* `InverseGalois.CFT.Units.StablePlaceIdele` treats a finite place fixed by the whole Galois group,
+  where the group is its own decomposition group.  A two-cocycle with values in the units of the
+  completion there whose ideles bound in the idele class group already bounds upstairs: a bounding
+  one-cochain of the classes lifts to the ideles, the failure of the lift to bound is a two-cocycle
+  of the units of the top field which at every place other than the distinguished one is the
+  coboundary of the component of the lift, and one place left out is exactly what the product
+  formula pays for.  Correcting the lift by the resulting global one-cochain bounds the cocycle on
+  the nose, so **the second cohomology of the units of the completion at a finite place fixed by
+  the whole Galois group injects into the second cohomology of the idele class group.**
 * `InverseGalois.CFT.Units.DecompositionField` names the subfield fixed by the decomposition
   group.  An element of it has its image in the completion fixed by the decomposition group, hence
   coming from the completion of the base, so the decomposition field embeds into the completion of
@@ -3240,11 +3259,22 @@ it that are available here.
 * `InverseGalois.CFT.GroupCohomology.MapCoboundary` records the elementary fact that a map of
   representations which is injective on second cohomology reflects coboundaries, which is how an
   injectivity statement coming from a long exact sequence gets applied to an explicit cocycle.
+* `InverseGalois.CFT.GroupCohomology.MapInjective` records the converse packaging.  A class in
+  second cohomology is the class of a two-cocycle and vanishes exactly when that cocycle is a
+  coboundary, so **a map of representations which reflects coboundaries in degree two is injective
+  on second cohomology** — the shape in which an injectivity statement is produced by an explicit
+  computation with cochains rather than consumed by one.
 * `InverseGalois.CFT.Units.ABHN` combines the two halves.  The second cohomology of the units
   injects into the second cohomology of the ideles, and a two-cocycle of the ideles which is locally
   a coboundary is a coboundary, so **a two-cocycle with values in the units of the top field which
   is a coboundary at every place is a coboundary** — the Albert-Brauer-Hasse-Noether theorem in the
   shape of the vanishing of the second Tate-Shafarevich group of the units.
+* `InverseGalois.CFT.Units.ABHNOnePlace` spends the product formula on that statement.  The local
+  invariants of a Brauer class multiply to one, so the invariant at any single place is determined
+  by all the others and one place costs nothing to leave out: **a two-cocycle of the Galois group
+  with values in the units of the top field which is a coboundary at every infinite place and at
+  every finite place but one is a coboundary.**  The hypotheses are stated on explicit cochains,
+  which is the form in which a cocycle arrives from a long exact sequence.
 * `InverseGalois.CFT.Brauer.HasseNoether` reads that on the Brauer group.  Every class over a
   number field is split by a finite Galois extension and is therefore the class of a crossed
   product of it, base change to a completion is base change of the cocycle to the decomposition
