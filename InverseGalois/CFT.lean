@@ -760,6 +760,7 @@ import InverseGalois.CFT.Units.DecompositionFundamental
 import InverseGalois.CFT.Units.DecompositionGalois
 import InverseGalois.CFT.Units.DecompositionIdele
 import InverseGalois.CFT.Units.DecompositionInvariant
+import InverseGalois.CFT.Units.DecompositionLocalization
 import InverseGalois.CFT.Units.DecompositionOutside
 import InverseGalois.CFT.Units.DecompositionPlaceInjective
 import InverseGalois.CFT.Units.DecompositionReciprocity
@@ -2564,6 +2565,16 @@ it that are available here.
   inequality — so **the second cohomology of the units of a completion at a finite place is the
   second cohomology of the idele class group on the decomposition group there**, and the order of
   the latter is pinned to the local degree.
+* `InverseGalois.CFT.Units.DecompositionLocalization` inverts that isomorphism.  A class of the
+  idele class group, restricted to a decomposition group, becomes a class of the units of the
+  completion: the localisation of a global class at a place.  Applied to the fundamental class of
+  the extension it produces at every finite place a class whose ideles are, by construction, the
+  restriction of the fundamental class, and which is a fundamental class in its own right — only
+  the multiples of the order of the decomposition group annihilate it, so it generates, its order
+  is the degree of the extension of the completions, and its invariant is a rational with exactly
+  that denominator.  **The classical hypotheses of Tate's theorem hold for it on every subgroup of
+  the decomposition group**, so it serves everywhere the local fundamental class serves, while its
+  relation to the global class is an equation and not a comparison of invariants.
 * `InverseGalois.CFT.Units.DecompositionField` names the subfield fixed by the decomposition
   group.  An element of it has its image in the completion fixed by the decomposition group, hence
   coming from the completion of the base, so the decomposition field embeds into the completion of
