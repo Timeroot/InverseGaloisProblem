@@ -10950,7 +10950,14 @@ surjective on all the groups involved — the same res–cor device the reposito
 reduce row 5 to a Sylow subgroup (`surjective_tateCor_sylow_of_prime`,
 `range_shaTorusPTorsionMap_of_sylow`).  Doing this *first* is likely the cheapest path through
 bricks 4 and 5: it removes the twist, makes `μ_p` a trivial module everywhere, and makes the
-Kummer sequence over `K` a sequence of `G`-modules with no coefficient subtleties.
+Kummer sequence over `K` a sequence of `G`-modules with no coefficient subtleties.  The abstract engine for
+this is already present and general: `TateCohomology/SylowSurjective.lean` has
+`surjective_tateCor_of_coprime` (corestriction from a subgroup of index prime to a multiple killing
+the cohomology is onto) and `nsmul_eq_zero_tateModule_of_nsmul`, and
+`TateCohomology/SylowInjective.lean` has `eq_zero_of_tateRes_eq_zero`.  Neither is phrased for a
+Sylow subgroup, so both apply verbatim to `Gal(K/k(μ_p)) ≤ Gal(K/k)`; what is missing is only the
+base-field plumbing (and the compatibility of `baseFundamentalClass` with the change of base, which
+§0.92 flags as the one thing its `.choose` definition does not supply).
 
 ---
 
