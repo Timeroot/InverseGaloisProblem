@@ -660,6 +660,7 @@ import InverseGalois.CFT.TateCohomology.HomologyJunction
 import InverseGalois.CFT.TateCohomology.Induced
 import InverseGalois.CFT.TateCohomology.Iterate
 import InverseGalois.CFT.TateCohomology.Junction
+import InverseGalois.CFT.TateCohomology.NakayamaCoeff
 import InverseGalois.CFT.TateCohomology.NakayamaNatural
 import InverseGalois.CFT.TateCohomology.Norm
 import InverseGalois.CFT.TateCohomology.PGroupInvariants
@@ -3694,6 +3695,19 @@ it that are available here.
   exactly the complete cohomology of the extension tensored with the coefficients, in those two
   degrees.  The comparison agrees with the isomorphism of the previous file wherever the latter is
   defined, so nothing that was proved with it has to be reproved.
+* `InverseGalois.CFT.TateCohomology.NakayamaCoeff` asks how that comparison depends on the
+  coefficients, the representation and the class staying fixed.  Nothing has to be corrected this
+  time: the cocycle that builds the twisted extension belongs to the representation and not to the
+  coefficients, so a map of coefficients extends to the two tensored extensions simply by acting on
+  both coordinates, and that extension is equivariant as it stands.  It is a map of short exact
+  sequences whose two outer components are the map of coefficients itself and the same map tensored
+  with the representation, so the connecting maps agree; the comparison of the shift of a tensor
+  product with the tensor product of the shift is natural in the second factor as well, and **the
+  comparison of Tate and Nakayama attached to a class in degree two commutes with a map of
+  coefficients**.  The consequence is what makes a free presentation of the coefficients useful:
+  **if the comparison is onto for one set of coefficients, then everything the map of coefficients
+  produces two degrees higher is already a value of the comparison for the target**, so the failure
+  of the comparison to be onto is confined to the cokernel of the map a presentation induces.
 * `InverseGalois.CFT.TateCohomology.NakayamaNatural` asks how that comparison depends on the
   representation it is attached to.  A map of representations carries a class in degree two to a
   class in degree two, but it carries the cocycle chosen for the first only to a cocycle
