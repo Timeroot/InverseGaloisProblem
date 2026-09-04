@@ -785,6 +785,7 @@ import InverseGalois.CFT.Units.IdeleTorsion
 import InverseGalois.CFT.Units.IdeleTorsionTensor
 import InverseGalois.CFT.Units.IdeleTorusSha
 import InverseGalois.CFT.Units.IdeleTorusShaLocal
+import InverseGalois.CFT.Units.IdeleTorusShaSharp
 import InverseGalois.CFT.Units.IdeleTorusShaTorsion
 import InverseGalois.CFT.Units.IdeleTower
 import InverseGalois.CFT.Units.InertPlace
@@ -4338,6 +4339,15 @@ it that are available here.
   order one or two, so for an odd prime every archimedean place is of that kind and drops out, and
   what is left of the criterion is a condition at the finite places together with one on the roots
   of unity of the field.
+* `InverseGalois.CFT.Units.IdeleTorusShaSharp` turns the sufficient condition into a necessary and
+  sufficient one, which matters because the obstruction group does not vanish in general.  The image
+  of a submodule under a linear map is everything the map reaches exactly when the submodule and the
+  kernel together span, and the kernel of the connecting map is what comes from the ideles, so
+  **the everywhere locally trivial classes of the units tensored with coefficients killed by a prime
+  are exactly the image of the complete cohomology of the coefficients three degrees lower precisely
+  when the obstruction of Tate and Nakayama takes no value on the idele classes that it does not
+  already take on the ideles.**  The units and the locally trivial classes have disappeared from the
+  criterion; what is left is a statement about the obstruction and the places.
 * `InverseGalois.CFT.Units.BaseArtin` puts a name on the left hand side of that identification.
   Composing it with the description of the complete cohomology of the trivial integral
   representation in degree minus two gives **the reciprocity isomorphism between the abelianization
