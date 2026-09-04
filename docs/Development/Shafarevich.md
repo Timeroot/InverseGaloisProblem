@@ -9203,6 +9203,130 @@ arrange `μ_p ⊆ k` (see §0.90(c)), and with that hypothesis row 3 is already 
 
 ---
 
+## 0.92 Status (2026-09-04, night) — §0.91(c) is **closed**: res and cor commute with `tateδ`, and the Sylow reduction of the row-5 criterion is a theorem
+
+### (a) The θ-trick, and why no bicomplex was needed
+
+§0.91(c) said the missing square needed "a 3×3 lemma … for which the repository has no bicomplex,
+and explicit cochain base cases in degrees `0` and `-1`".  Both halves of that estimate were wrong.
+The square follows from **dimension shifting alone**, provided the extension is split as a sequence
+of modules — and the two defining sequences are.
+
+The trick, in the direction of the shift.  Let `X : 0 → X₁ → X₂ → X₃ → 0` be a short exact sequence
+of representations and suppose `r : X₂ → X₁` is a module retraction of `X.f` and `s : X₃ → X₂` a
+module section of `X.g`.  Read an element of `X₂` along all of its translates and apply `r`:
+
+```
+retractMid r : X₂ → Ind(X₁),   (retractMid r x)(g) = r (ρ_{X₂}(g) x).
+```
+
+This *is* equivariant (the retraction is applied after the translation, so no equivariance of `r`
+is used), it restores `coindEmb` on `X₁`, and modulo the translates of `X₁` its value depends only
+on the image in `X₃`.  So it assembles into a map of short exact sequences `X ⟶ shiftSeq X₁` whose
+first component is the **identity**, and `tateδ_eq_tateShiftEquiv` (already in `DeltaShift.lean`)
+turns the connecting map into an induced map followed by `tateShiftEquiv`.  Dually, from a section
+`s` alone, the trace `tr(f) = augMap (s ∘ f)` gives `coshiftSeq X₃ ⟶ X` with third component the
+identity, and `tateδ_eq_tateCoshiftEquiv` turns the connecting map into `tateCoshiftEquiv` followed
+by an induced map.
+
+Restriction is a functor, so both comparisons survive passage to a subgroup with their identity
+components intact; the two `resSeq` versions of those identities are `tateδ_res_eq_resShiftEquiv`
+and `tateδ_res_eq_resCoshiftEquiv` (`RestrictSplit.lean`).
+
+### (b) The degree analysis
+
+`tateRes`/`tateCor` are defined by recursion: for `n ≥ 0` through `resShiftEquiv`, for `n ≤ −1`
+through `resCoshiftEquiv`.  Gotcha **1094**: `tateResNat H (m+1) A` is *literally*
+`resShiftEquiv ∘ tateResNat H m (shiftObj A) ∘ (tateShiftEquiv A m).symm`, so the res/shift square
+commutes **definitionally** for `n ≥ 0`, and dually the res/coshift square for `n ≤ −2`.  Hence:
+
+| degree | route |
+| --- | --- |
+| `n ≥ 0` | the shift θ-trick + `tateRes_tateShiftEquiv` (definitional) |
+| `n = −1` | `RestrictDelta.lean`, the honest cochain computation, already present |
+| `n ≤ −2` | the coshift θ-trick + `tateRes_tateCoshiftEquiv` (definitional) |
+
+which is `tateRes_tateδ` / `tateCor_tateδ` in **every integer degree** for any module-split
+extension.  Feeding the two defining sequences back in (they are module-split, `ShiftSplit.lean`)
+removes the degree restriction from the identifications themselves:
+`tateRes_tateShiftEquiv_int`, `tateCor_tateShiftEquiv_int`, `tateRes_tateCoshiftEquiv_int`,
+`tateCor_tateCoshiftEquiv_int`.
+
+Commit `a78bb26`, three new modules: `ShiftSplit.lean`, `DeltaRetract.lean`, `RestrictSplit.lean`.
+
+### (c) Tate–Nakayama against restriction, and the Sylow reduction
+
+`cocycleTensorSeq A b M` is a product as a sequence of modules — `X₁` is the first coordinate
+(`LinearMap.fst`), `X₃` the second (`cocycleTensorInr`) — and, crucially,
+
+```lean
+resSeq H (cocycleTensorSeq S b M)
+  = cocycleTensorSeq (resObj H S) (resCocycles₁ H S b) (resObj H M) := rfl
+```
+
+so `tateRes_tateδ` applies verbatim.  `tateNakayamaMap` is that connecting map followed by
+`shiftTensorIso` and `tateShiftEquiv`, both compatible with res/cor, so (commit `fe915dd`,
+`NakayamaRestrict.lean`)
+
+> **`tateRes ∘ TN_G = TN_H ∘ tateRes` and `tateCor ∘ TN_H = TN_G ∘ tateCor`, in every integer
+> degree**, where `TN_H := resTateNakayamaMap H A b M n` is built from the restricted cocycle.
+
+Two consequences are packaged: `surjective_tateNakayamaMap_of_cor` and
+`sup_range_eq_top_of_cor` (what `TN` and a second map reach together is everything as soon as it is
+everything on a subgroup from which corestriction is onto).
+
+Applied to the idele class group (commit `f208286`, `BaseTateCoeff.lean`), with `W` killed by `p`
+so that `C_K ⊗ W` is too and `surjective_tateCor_sylow_of_prime` applies:
+
+```lean
+theorem range_shaTorusPTorsionMap_of_sylow (P : Sylow p Gal(K/k)) (n : ℤ)
+    (h : LinearMap.range (resTateNakayamaTwoMap (P : Subgroup Gal(K/k)) (ideleClassRep k K)
+          (baseFundamentalClass k K) W n)
+        ⊔ LinearMap.range (tateMap (resHom (P : Subgroup Gal(K/k))
+            (tensorHomLeft W (ideleToIdeleClass k K))) (n + 1 + 1)).hom = ⊤) :
+    LinearMap.range (shaTorusPTorsionMap k K W hW n)
+      = LinearMap.ker (tateMap (tensorHomLeft W (globalUnitsToIdele k K)) (n + 1 + 1 + 1)).hom
+```
+
+**Item 2 of §0.91(c) is therefore closed**: row 5 for `Gal(K|k)` reduces to row 5 read on a Sylow
+`p`-subgroup, i.e. to an extension of `p`-power degree.
+
+### (d) What item 1 of §0.91(c) actually needs, now that the square is available
+
+Not the square.  `baseFundamentalClass k K` is produced by `.choose` from
+`exists_zsmul_eq_zero_imp_dvd_H2_ideleClassRep_base` and is characterised **only** by its
+annihilator; nothing ties it to the invariant maps.  `isTateClassTwo_baseFundamentalClass` holds for
+every subgroup, which is all Tate's theorem needs, but "the global class restricts to the local
+classes" is a statement about invariants and cannot even be formulated against the present
+definition.  So item 1 of §0.91(c) is really two steps:
+
+1. give the fundamental class an **invariant-theoretic characterisation** (`inv_v ∘ res_{D_w}`
+   computes `1/[K_w:k_v]`), which means rebuilding it out of `localInvariantHom` and the
+   reciprocity law rather than choosing it; then
+2. the comparison square, which the new res/δ machinery now supplies for free.
+
+### (e) Lean notes
+
+* **1109.** `rw [resHom_id] at h` fails on `tateMap (resHom H (𝟙 X.X₃)) n` when the implicit
+  arguments are `A := (coshiftSeq X.X₃).X₃`, `B := X.X₃`: defeq but not syntactically equal, and
+  `resHom_id`'s pattern needs `A = B` syntactically.  Prove a side lemma and combine with
+  `congrArg`/`Eq.trans`, letting `exact` absorb the difference.
+* **1110.** `exact calc <term>` puts the `calc` keyword at a large column and silently parses the
+  later `_ = … := …` steps *outside* the block — the errors that result ("Missing cases",
+  "left-hand side is true : Bool") point nowhere near the cause.  Use the bare `calc` **tactic** on
+  its own line.
+* **1113.** The subgroup machinery is already phrased with `resObj H (shiftObj_G A)`, never
+  `shiftObj_H (resObj H A)`, so the feared `indRestrict`/`indExtend` bridge is not needed.
+* **1114.** `resSeq_cocycleSeq`, `resObj_cocycleObj`, `resObj_tensorObj`, `resSeq_cocycleTensorSeq`
+  are all `rfl`.
+* **1115.** `ShortComplex.ShortExact` is `Prop`-valued, so two proofs of the short-exactness of the
+  same complex give defeq `tateδ`s.
+* **1102 (performance).** Pass the sequence explicitly as a named argument
+  (`traceSubHom (X := cocycleTensorSeq A b M) …`) to avoid whnf blowups.
+* A full root build is now **9651 jobs**.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
