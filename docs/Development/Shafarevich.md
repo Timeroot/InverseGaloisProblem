@@ -9327,6 +9327,175 @@ definition.  So item 1 of §0.91(c) is really two steps:
 
 ---
 
+## 0.93 Status (2026-09-04, late) — the comparison square is **landed**, and it proves the *opposite* of what §0.90(c) hoped
+
+### (a) What landed
+
+Two commits.
+
+**`TateCohomology/RestrictShiftBridge.lean` + `TateCohomology/NakayamaSubgroup.lean`** (commit
+`5c4d380`, 9669 jobs).  The comparison of Tate and Nakayama *defined on a subgroup by restricting
+the ingredients built on the whole group* is the same map as the comparison the subgroup builds for
+itself out of the restricted representation and the restricted class:
+
+```lean
+theorem resTateNakayamaTwoMap_eq (n : ℤ) :
+    resTateNakayamaTwoMap H A α M n
+      = tateNakayamaTwoMap (resObj H A) (tateRes H A 2 α) (resObj H M) n
+```
+
+The proof is the cohomologous-cocycle argument: the cocycle of the shift read on `H`, pushed along
+`resShiftHom H A`, and the cocycle `H` chooses for `tateRes H A 2 α` have the same class in degree
+one (`exists_resShiftHom_tateTwoCocycle`), so `tateδ_cocycleTensorSeq_naturality` carries one
+connecting map to the other; the remaining compatibility (`resShiftHom_shiftTensorIso`) is on the
+nose.
+
+The consequence is the usable form.  If a representation `A'` **of the subgroup** maps to
+`resObj H A` and carries a class `β : tateModule A' 2` to `tateRes H A 2 α`, then
+
+```lean
+theorem range_resTateNakayamaTwoMap_le (φ : A' ⟶ resObj H A) (β : tateModule A' 2)
+    (hβ : tateMap φ 2 β = tateRes H A 2 α) (n : ℤ) :
+    LinearMap.range (resTateNakayamaTwoMap H A α M n)
+      ≤ LinearMap.range (tateMap (tensorHomLeft (resObj H M) φ) (n + 1 + 1)).hom
+```
+
+**`Units/DecompositionNakayama.lean`** (commit `7692bc8`, 9670 jobs) is the arithmetic instance:
+`H := D_w = stabilizer Gal(K/k) w`, `A := ideleClassRep k K`, `α := baseFundamentalClass k K`,
+`A' := decompositionUnitsRep k w`, `φ := decompositionPlaceIdeleClass k w`,
+`β := localizedFundamentalClass k w`.  The hypothesis `hβ` is *exactly*
+`map_localizedFundamentalClass k w` from `Units/DecompositionLocalization.lean` — no bridging lemma
+was needed, because `tateMap φ 2` and `((groupCohomology.functor ℤ H 2).map φ).hom` are
+definitionally equal (gotcha 1272).  Composing with `decompositionPlaceIdele k w` gives
+
+```lean
+theorem range_resTateNakayamaTwoMap_le_idele (M : Rep ℤ Gal(K/k)) (n : ℤ) :
+    LinearMap.range (resTateNakayamaTwoMap (stabilizer Gal(K/k) w) (ideleClassRep k K)
+        (baseFundamentalClass k K) M n)
+      ≤ LinearMap.range (tateMap (resHom (stabilizer Gal(K/k) w)
+          (tensorHomLeft M (ideleToIdeleClass k K))) (n + 1 + 1)).hom
+```
+
+So §0.92(d) is closed as originally scoped: step 1 by the localisation route
+(`localizedFundamentalClass`, which needs no invariant-theoretic rebuild of the global class), step
+2 by the res/δ square.
+
+### (b) The negative result this proves — §0.90(c) was too optimistic
+
+§0.90(c) said "the remaining content of row 5 is *one* comparison square, not a duality theory".
+That is now **refuted by the square itself**.
+
+The Sylow criterion `range_shaTorusPTorsionMap_of_sylow` (`Units/BaseTateCoeff.lean`) asks, for a
+subgroup `S ≤ Gal(K|k)`,
+
+```
+range (TN restricted to S)  ⊔  range (ι_* restricted to S)  =  ⊤
+```
+
+in `Ĥ^{n+2}(S, C_K ⊗ W)`.  The new brick says that on `S = D_w` the **first** summand is contained
+in the **second**:
+
+```
+range TN|_{D_w}  ≤  range ι_*|_{D_w}.
+```
+
+Hence on a decomposition group the sup *collapses* to `range ι_*|_{D_w}`, and demanding that it be
+`⊤` is demanding `Ш = 0`.  A decomposition group therefore cannot discharge the criterion.  The
+criterion genuinely wants a **Sylow** subgroup, and a Sylow `p`-subgroup of `Gal(K|k)` is not a
+decomposition group.  There is no cheap substitution.
+
+This is worth stating sharply because it kills the shortcut: the square is a *local* statement, and
+row 5 is a *global* one.  The square says everything the obstruction sees at one place comes from
+that place; it says nothing about how the places fit together.  What glues them is reciprocity, and
+reciprocity in the form needed here **is** Poitou–Tate.
+
+### (c) Where row 5 actually stands
+
+Row 5 is `Ш²(k,A) ≅ Ш¹(k,A′)^∨`.  In the repo's idelic form it is (§0.90, gotcha 1076)
+
+> `range ι_* ⊔ range TN = ⊤` in `Ĥ^{n+2}(G, C_K ⊗ W)`, `W` the `p`-torsion coefficient module.
+
+Since `TensorTorsionError.lean` gives `ker obs = range TN` for the obstruction map
+`obs = tateNakayamaPTorsionErrorRight`, this is equivalent to
+
+> `obs (range ι_*) = range obs`,
+
+which is a *restatement* of row 5, not a proof of it.  Genuinely new mathematical input is required.
+
+Schmidt–Wingberg's "Claim" (SW Prop. 16 / Thm 14) is precisely: **a surjection
+`Ĥ^{-2}(G, E(-1)) ↠ Ш²(k,E)`, natural in `E`.**  Four inputs go into it, of which the repo already
+has three:
+
+1. the Hasse principle `Ш¹(k,E′) ↪ H¹(G,E′)` — `Units/SplitNorm.lean`;
+2. dualising — `Cartier`/`Dual` layer;
+3. `H¹(G,M)^∨ ≅ Ĥ^{-2}(G,M^∨)` — `h1DualEquiv`/`h1TwistEquiv`;
+4. **the surjection `Ш¹(k,E′)^∨ ↠ Ш²(k,E)`** — the hard direction of Poitou–Tate.  *Missing.*
+
+### (d) Two candidate routes, and the choice
+
+**Route 1 — Poitou–Tate proper, via the `p`-torsion half of `IdeleTorusSha`.**  The torsion-free
+half is done (`IdeleTorusSha.lean`, `IdeleTorusShaLocal.lean`).  The `p`-torsion obstruction chain
+is (gotcha 1280):
+
+* `Tor₁(C_K, W) = C_K[p] ⊗ W`;
+* `C_K[p] ≅ I_K[p] / μ_p(K)` (`ideleClassTorsionShortComplex_shortExact`);
+* `Ĥ^*(G, I_K[p] ⊗ W) ≅ ∏_v Ĥ^*(D_w, μ_p(K_w) ⊗ W)` by Shapiro — and Shapiro works for *any*
+  subgroup, so on a Sylow `P` the product runs over `P`-orbits of places with stabilisers
+  `P ∩ D_w`.
+
+This is where the new decomposition square *does* pay: it identifies the local factor of the
+obstruction with the localised fundamental class at `w`, which is what the sum-of-invariants formula
+is about.
+
+**Route 2 — §0.87(b) repair candidate A.**  Prove `Ш²(k,E) ⊆ inf H²(k_S/k, E)` for a fixed finite
+`S ⊇ S_∞ ∪ S_p ∪ Ram(K/k)`.  That makes the transgression coefficient module
+`T = Hom_cont(Gal(K_S/K), 𝔽_p)` finite-dimensional *a priori*, which removes Poitou–Tate from SW's
+step 2 entirely and dissolves the `T`-before-`r` circularity of §0.87(a).  The cost is a different
+classical theorem (finiteness of the `S`-class group and `S`-units, plus the standard
+`Ш` ⊆ `S`-ramified argument).
+
+**Choice: Route 1.**  It is the route the repo is already instrumented for — every brick from
+`DecompositionIdele` through `DecompositionLocalization` to `DecompositionNakayama` was built for
+it, and it is the route the user's directive ("work on Poitou–Tate … make sure it feeds
+appropriately into 5/6") names.  Route 2 is kept as the fallback if the sum-of-invariants step
+stalls.
+
+### (e) Next brick
+
+Both routes need the **subgroup form of the obstruction ladder**: that the obstruction map on a
+subgroup is the restriction of the global one, i.e. that
+
+```
+Ĥ^n(H,W) --TN_H--> Ĥ^{n+2}(H, C ⊗ W) --obs_H--> Ĥ^{n+4}(H, C[p] ⊗ W)
+```
+
+is the `tateRes` of the global ladder, with `ker obs_H = range TN_H`.  `TensorTorsionError.lean` is
+already stated for an arbitrary finite group and an arbitrary Tate class, so the `H`-instance exists
+by substitution (`A := resObj H C`, `α := tateRes H C 2 α`); what is missing is the *compatibility*
+with `tateRes`, i.e. the commuting square between `obs_G` and `obs_H`.
+
+### (f) Lean notes
+
+* **1272 (verified).** `tateMap φ 2 β` and `((groupCohomology.functor ℤ H 2).map φ).hom β` are
+  **definitionally equal**: Mathlib's `groupCohomology.functor n`
+  (`RepresentationTheory/Homological/GroupCohomology/Functoriality.lean:483`) has
+  `map φ := map (MonoidHom.id _) φ n`, matching `tateMap`'s `.ofNat (m+1)` branch.  So
+  `map_localizedFundamentalClass k w` is accepted verbatim as a proof of the `tateMap`-phrased
+  statement.
+* **1273.** `tensorHomLeft_comp` (`TensorFunctor.lean:73`) is oriented
+  `tensorHomLeft M Φ ≫ tensorHomLeft M Ψ = tensorHomLeft M (Φ ≫ Ψ)`, so pushing a composite
+  *inside* needs `rw [← tensorHomLeft_comp]`.
+* **1274.** `resHom H (tensorHomLeft M ψ) = tensorHomLeft (resObj H M) (resHom H ψ)` is `rfl`; it is
+  now the named lemma `Tate.resHom_tensorHomLeft` in `NakayamaSubgroup.lean`.
+* **1275.** To conclude `range (tateMap (f ≫ g) n).hom ≤ range (tateMap g n).hom`, use
+  `rw [tateMap_comp, ModuleCat.hom_comp]; exact LinearMap.range_comp_le_range _ _`.  The direct
+  `rintro _ ⟨x, rfl⟩; exact ⟨_, (tateMap_comp_apply _ _ _ x).symm⟩` fails with unsolved metavariables
+  and a `ConcreteCategory.hom` vs `ModuleCat.Hom.hom` mismatch.
+* **1276.** `lake build InverseGalois.CFT.Units.DecompositionNakayama` = **8652 jobs** (~47 s); the
+  full root build with it is **9670 jobs**, 0 warnings, 0 errors.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
