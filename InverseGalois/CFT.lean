@@ -763,6 +763,7 @@ import InverseGalois.CFT.Units.DecompositionGalois
 import InverseGalois.CFT.Units.DecompositionIdele
 import InverseGalois.CFT.Units.DecompositionInvariant
 import InverseGalois.CFT.Units.DecompositionLocalization
+import InverseGalois.CFT.Units.DecompositionNakayama
 import InverseGalois.CFT.Units.DecompositionOutside
 import InverseGalois.CFT.Units.DecompositionPlaceInjective
 import InverseGalois.CFT.Units.DecompositionReciprocity
@@ -2577,6 +2578,14 @@ it that are available here.
   that denominator.  **The classical hypotheses of Tate's theorem hold for it on every subgroup of
   the decomposition group**, so it serves everywhere the local fundamental class serves, while its
   relation to the global class is an equation and not a comparison of invariants.
+* `InverseGalois.CFT.Units.DecompositionNakayama` reads the comparison of Tate and Nakayama at a
+  decomposition group.  The comparison attached to the idele class group and the fundamental class,
+  read there, is the comparison of that group for the restricted class, and the localised
+  fundamental class is a class of the units of the completion whose ideles are that restriction.
+  So **everything the comparison produces on a decomposition group already comes from the units of
+  the completion at the place**, and a fortiori from the ideles: on a decomposition group the
+  classes of the idele classes the comparison reaches are classes of ideles, with no information
+  about the extension away from the place.
 * `InverseGalois.CFT.Units.DecompositionField` names the subfield fixed by the decomposition
   group.  An element of it has its image in the completion fixed by the decomposition group, hence
   coming from the completion of the base, so the decomposition field embeds into the completion of

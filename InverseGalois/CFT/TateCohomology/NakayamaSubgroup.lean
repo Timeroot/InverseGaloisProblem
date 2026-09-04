@@ -32,6 +32,8 @@ that representation: the global obstruction, read on the subgroup, is a local ob
 
 ## Main results
 
+* `InverseGalois.CFT.Tate.resHom_tensorHomLeft`: reading a map tensored on the left with a fixed
+  representation on a subgroup is tensoring the map read on the subgroup.
 * `InverseGalois.CFT.Tate.tateNakayamaTwoMap_res` and
   `InverseGalois.CFT.Tate.resTateNakayamaTwoMap_eq`: **the comparison of Tate and Nakayama on a
   subgroup is the comparison of the subgroup for the restricted representation and the restricted
@@ -77,6 +79,20 @@ theorem exists_cohomologous_of_H1π_eq (φ : A ⟶ B) (b : groupCohomology.cocyc
   abel
 
 end Cohomologous
+
+/-! ### Restricting a map tensored on the left -/
+
+section Tensor
+
+variable {k G : Type u} [CommRing k] [Group G]
+
+/-- Reading a map tensored on the left with a fixed representation on a subgroup is tensoring the
+map read on the subgroup with the fixed representation read on the subgroup. -/
+theorem resHom_tensorHomLeft (H : Subgroup G) (M : Rep k G) {A B : Rep k G} (ψ : A ⟶ B) :
+    resHom H (tensorHomLeft M ψ) = tensorHomLeft (resObj H M) (resHom H ψ) :=
+  rfl
+
+end Tensor
 
 /-! ### The comparison of Tate and Nakayama -/
 
