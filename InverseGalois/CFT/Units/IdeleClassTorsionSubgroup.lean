@@ -26,6 +26,12 @@ unity of the completion, and the outer term is the roots of unity of the field. 
 idele classes killed by the prime have no complete cohomology over the subgroup in a degree in which
 no local factor has any and the roots of unity of the field have none one degree higher.
 
+The same combination describes, and not merely bounds, the classes that come from the places: a
+class of the idele classes killed by the prime lifts to the ideles exactly when the connecting map
+kills it, and a lift to the ideles is the same thing as a family of purely local classes indexed by
+the orbits.  So the classes of the idele classes reachable from the places form the kernel of one
+explicit map, and every one of them is written as a family over the places.
+
 ## Main results
 
 * `InverseGalois.CFT.resSeq_tensorSeq_ideleClassTorsion_shortExact`: **the roots of unity, the
@@ -40,6 +46,11 @@ no local factor has any and the roots of unity of the field have none one degree
 * `InverseGalois.CFT.isZero_tateModule_tensor_ideleClassTorsionRes_of_local`: **the same, with the
   hypothesis on the ideles replaced by the vanishing of every local factor**, indexed by the orbits
   of the subgroup on the places of the extension.
+* `InverseGalois.CFT.range_tateMap_tensor_ideleClassTorsionRes`: **the classes of the idele classes
+  killed by the prime which come from the ideles are exactly those the connecting map kills.**
+* `InverseGalois.CFT.exists_ideleTorsionLocal_of_tateδ_eq_zero` and
+  `InverseGalois.CFT.tateδ_tateMap_ideleTorsionLocal_eq_zero`: **those classes are exactly the
+  classes of families of purely local classes**, one for each orbit of the subgroup on the places.
 
 ## Tags
 
@@ -110,6 +121,19 @@ theorem range_tateδ_tensor_ideleClassTorsionRes (n : ℤ) :
   exact tateMap_tateδ_tensor_ideleClassTorsionRes_eq_zero hp W S n y
 
 include hp in
+/-- **The classes of the idele classes killed by a prime, tensored with any coefficients, which come
+from the ideles are exactly those the connecting map kills**, over a subgroup of the Galois group.
+This is exactness of the long exact sequence at the quotient term, the companion of
+`InverseGalois.CFT.range_tateδ_tensor_ideleClassTorsionRes`. -/
+theorem range_tateMap_tensor_ideleClassTorsionRes (n : ℤ) :
+    LinearMap.range (tateMap
+        (resHom S (tensorHomLeft W (ideleToIdeleClassTorsion k K (p : ℤ)))) n).hom
+      = LinearMap.ker (tateδ (resSeq_tensorSeq_ideleClassTorsion_shortExact hp W S) n).hom := by
+  ext x
+  simp only [LinearMap.mem_range, LinearMap.mem_ker]
+  exact (tateExact_map_δ (resSeq_tensorSeq_ideleClassTorsion_shortExact hp W S) n x).symm
+
+include hp in
 /-- **The idele classes killed by a prime, tensored with any coefficients, have no complete
 cohomology over a subgroup in a degree in which the ideles killed by the prime have none and the
 roots of unity of the field have none one degree higher.** -/
@@ -157,6 +181,31 @@ theorem isZero_tateModule_tensor_ideleClassTorsionRes_of_local (n : ℤ)
       (tateModule (resObj S (tensorObj (torsionRep (ideleClassAutHom k K) (p : ℤ)) W)) n) :=
   isZero_tateModule_tensor_ideleClassTorsionRes hp W S n
     (isZero_tateModule_tensor_ideleTorsionRes S W e w₀ v₀ n h₁ h₂) h₃
+
+/-- **A class of the idele classes killed by a prime, tensored with coefficients of finite rank over
+the field with that many elements, which the connecting map kills is the class of a family of purely
+local classes**, one for each orbit of the subgroup on the places of the extension, the class at an
+orbit lying in the complete cohomology of the stabiliser there with coefficients in the roots of
+unity of the completion tensored with the restricted coefficients. -/
+theorem exists_ideleTorsionLocal_of_tateδ_eq_zero (n : ℤ)
+    (x : ↥(tateModule (resObj S (tensorObj (torsionRep (ideleClassAutHom k K) (p : ℤ)) W)) n))
+    (hx : tateδ (resSeq_tensorSeq_ideleClassTorsion_shortExact hp W S) n x = 0) :
+    ∃ y, tateMap (resHom S (tensorHomLeft W (ideleToIdeleClassTorsion k K (p : ℤ)))) n
+        ((ideleTorsionTensorTateResEquiv S W e w₀ v₀ n).symm y) = x := by
+  obtain ⟨z, hz⟩ :=
+    (tateExact_map_δ (resSeq_tensorSeq_ideleClassTorsion_shortExact hp W S) n x).1 hx
+  exact ⟨ideleTorsionTensorTateResEquiv S W e w₀ v₀ n z, by
+    rw [AddEquiv.symm_apply_apply]; exact hz⟩
+
+/-- **The class of a family of purely local classes is killed by the connecting map.**  Together
+with `InverseGalois.CFT.exists_ideleTorsionLocal_of_tateδ_eq_zero` this says that the classes of the
+idele classes killed by the prime which come from the places are exactly those the connecting map
+kills. -/
+theorem tateδ_tateMap_ideleTorsionLocal_eq_zero (n : ℤ) (y) :
+    tateδ (resSeq_tensorSeq_ideleClassTorsion_shortExact hp W S) n
+        (tateMap (resHom S (tensorHomLeft W (ideleToIdeleClassTorsion k K (p : ℤ)))) n
+          ((ideleTorsionTensorTateResEquiv S W e w₀ v₀ n).symm y)) = 0 :=
+  (tateExact_map_δ (resSeq_tensorSeq_ideleClassTorsion_shortExact hp W S) n).apply_apply_eq_zero _
 
 end Local
 
