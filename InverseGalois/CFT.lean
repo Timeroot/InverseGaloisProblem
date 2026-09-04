@@ -649,6 +649,7 @@ import InverseGalois.CFT.TateCohomology.AugmentationIdeal
 import InverseGalois.CFT.TateCohomology.CocycleExtension
 import InverseGalois.CFT.TateCohomology.CohomTrivial
 import InverseGalois.CFT.TateCohomology.Cyclic
+import InverseGalois.CFT.TateCohomology.DeltaCoshift
 import InverseGalois.CFT.TateCohomology.DeltaNatural
 import InverseGalois.CFT.TateCohomology.DeltaShift
 import InverseGalois.CFT.TateCohomology.Duality
@@ -671,7 +672,9 @@ import InverseGalois.CFT.TateCohomology.PTorsionTrivial
 import InverseGalois.CFT.TateCohomology.Pair
 import InverseGalois.CFT.TateCohomology.Product
 import InverseGalois.CFT.TateCohomology.Restrict
+import InverseGalois.CFT.TateCohomology.RestrictDelta
 import InverseGalois.CFT.TateCohomology.RestrictNatural
+import InverseGalois.CFT.TateCohomology.RestrictShift
 import InverseGalois.CFT.TateCohomology.Shapiro
 import InverseGalois.CFT.TateCohomology.Shift
 import InverseGalois.CFT.TateCohomology.ShiftNatural
@@ -3565,6 +3568,23 @@ it that are available here.
   commutes with a map of short exact sequences.  So **restriction to a subgroup and corestriction
   from it both commute with a map of representations, in every integer degree**, which is what turns
   a comparison of coefficients into a comparison of the local and the global reading of a class.
+* `InverseGalois.CFT.TateCohomology.RestrictShift` records the two recursions that define those maps
+  as the statements they are.  In a nonnegative degree restriction is defined through the
+  identification of the complete cohomology of the shift, and in a degree below minus one through
+  the identification of the complete cohomology of the coshift, so **restriction commutes with the
+  identification of the shift in every nonnegative degree and with the identification of the coshift
+  in every degree below minus one**, and the same for corestriction, with nothing to prove in either
+  range.  The two degrees left out are the two where the recursion has a base case rather than a
+  step, and they are the only place where the comparison carries content.
+* `InverseGalois.CFT.TateCohomology.RestrictDelta` supplies that content in the degree below zero.
+  A class in degree minus one is represented by an element of the middle term whose norm comes from
+  the sub, and the connecting map sends it to the class of that preimage; the transfer of such an
+  element is again of that kind because the norm of the group is the transfer of the norm of the
+  subgroup, and the preimage transfers along with it.  Reading the same computation in the two
+  directions gives that **the connecting map in degree minus one commutes with restriction to a
+  subgroup and with corestriction from it**, for an arbitrary short exact sequence of
+  representations.  With the two recursions this is the missing base case: the connecting map of an
+  extension commutes with restriction and with corestriction in every integer degree.
 * `InverseGalois.CFT.TateCohomology.SylowInjective` draws the consequence that a class killed by
   restriction to a subgroup is killed by the index of that subgroup, so that **a class killed by a
   power of a prime and by restriction to a Sylow subgroup for that prime vanishes**: the study of
@@ -3755,6 +3775,18 @@ it that are available here.
   and of maps induced by morphisms of representations**, with no connecting map left in it, so any
   statement already available for induced maps and for the identification of a shift reaches the
   comparison itself.
+* `InverseGalois.CFT.TateCohomology.DeltaCoshift` does the same on the other side, which is what a
+  negative degree needs.  The sequence defining the coshift of a representation has the functions on
+  the group as middle term and the summation over the group onto the representation, and its
+  connecting map is the identification of the complete cohomology of the representation with that of
+  its coshift one degree higher.  An extension whose projection has a section as a map of modules
+  compares with it: lifting the values of a function on the group and summing them after undoing the
+  translation is an equivariant map into the middle term of the extension, compatible with the two
+  projections because the section is one, and the identity on the quotient.  So **the connecting map
+  of such an extension is the identification of the coshift followed by the map induced on the
+  subs.**  The tensored extension is of that kind, its middle term being a product, so **the
+  comparison of Tate and Nakayama is also a composite of induced maps and the identification of a
+  coshift**, which is the expression a degree below the range the shift covers.
 * `InverseGalois.CFT.TateCohomology.TensorFunctor` tensors a map of representations on the right
   with a fixed representation.  The underlying map acts on the first factor and leaves the second
   alone, and it commutes with the diagonal action because each factor is moved separately;
