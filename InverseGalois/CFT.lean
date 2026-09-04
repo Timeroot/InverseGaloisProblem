@@ -673,6 +673,7 @@ import InverseGalois.CFT.TateCohomology.NakayamaCoeff
 import InverseGalois.CFT.TateCohomology.NakayamaNatural
 import InverseGalois.CFT.TateCohomology.NakayamaRestrict
 import InverseGalois.CFT.TateCohomology.NakayamaSubgroup
+import InverseGalois.CFT.TateCohomology.NakayamaSubgroupError
 import InverseGalois.CFT.TateCohomology.Norm
 import InverseGalois.CFT.TateCohomology.PGroupInvariants
 import InverseGalois.CFT.TateCohomology.PGroupTrivial
@@ -685,6 +686,7 @@ import InverseGalois.CFT.TateCohomology.RestrictNatural
 import InverseGalois.CFT.TateCohomology.RestrictShift
 import InverseGalois.CFT.TateCohomology.RestrictShiftBridge
 import InverseGalois.CFT.TateCohomology.RestrictSplit
+import InverseGalois.CFT.TateCohomology.RestrictTrans
 import InverseGalois.CFT.TateCohomology.Shapiro
 import InverseGalois.CFT.TateCohomology.Shift
 import InverseGalois.CFT.TateCohomology.ShiftNatural
@@ -748,6 +750,7 @@ import InverseGalois.CFT.Units.BaseFundamental
 import InverseGalois.CFT.Units.BaseFundamentalCyclic
 import InverseGalois.CFT.Units.BaseTate
 import InverseGalois.CFT.Units.BaseTateCoeff
+import InverseGalois.CFT.Units.BaseTateSylow
 import InverseGalois.CFT.Units.BaseTateTorsion
 import InverseGalois.CFT.Units.ClassSet
 import InverseGalois.CFT.Units.CompletionCyclic
@@ -4160,6 +4163,14 @@ it that are available here.
   vectors killed by the prime, tensored with the same coefficients** -- with no hypothesis at all
   beyond the classical one on the Sylow subgroups.  The isomorphism of the previous file is the
   case where the two ends vanish.
+* `InverseGalois.CFT.TateCohomology.NakayamaSubgroupError` reads those four terms over a subgroup.
+  A subgroup carries the restricted class, and the count that yields the classical hypotheses on the
+  subgroups of the group yields them on the subgroups of a subgroup, so the four term exact sequence
+  exists there with the representation and the coefficients read on the subgroup.  Its middle map is
+  the comparison the subgroup inherits, which is the comparison of the subgroup itself.  Hence
+  **what the comparison of Tate and Nakayama produces over a subgroup is exactly what the
+  obstruction map of that subgroup kills**, and a spanning condition over a subgroup becomes a
+  statement about one linear map defined there.
 * `InverseGalois.CFT.TateCohomology.TensorPi` lets the coefficients pass through a product.  A
   tensor product does not commute with an infinite product of groups, so a family of
   representations tensored with fixed coefficients is not in general the product of the tensored
@@ -4269,6 +4280,18 @@ it that are available here.
   over the whole group** -- the shape in which the fundamental class of a class formation presents
   itself -- and that count therefore delivers both **Tate's theorem** and **the theorem of Tate and
   Nakayama for coefficients flat over the integers** on its own.
+* `InverseGalois.CFT.TateCohomology.RestrictTrans` carries that count down one more step, from the
+  subgroups of a group to the subgroups of a subgroup.  A subgroup of a subgroup is a group of
+  elements of the subgroup, and its image in the ambient group is a group of elements of that
+  group; the two differ by the proof of membership each element carries, so they are isomorphic and
+  a representation read on either of them is read along the same homomorphism.  **The complete
+  cohomology of a subgroup of a subgroup is therefore the complete cohomology of its image**, in
+  every degree, and the count made for the subgroups of the group is a count for the subgroups of a
+  subgroup.  The remaining hypothesis needs no transport at all, the order of a restricted class
+  being controlled by the order of the class one started with, so **the classical hypotheses of
+  Tate's theorem for a class restricted to a subgroup hold on every subgroup of that subgroup** --
+  which is what lets a construction available for a group with a fundamental class be run over a
+  subgroup of it.
 * `InverseGalois.CFT.TateCohomology.Abelianization` names the group side of the reciprocity law.
   Below degree minus one the complete cohomology is the homology with the degree shifted by one, so
   in degree minus two it is the first homology group; the first homology group of a trivial
@@ -4703,7 +4726,19 @@ it that are available here.
   tensored with coefficients killed by a prime are exactly the image of the complete cohomology of
   the coefficients three degrees lower as soon as the classes of the idele classes tensored with
   the coefficients are spanned by those the free presentation produces together with those coming
-  from the ideles.**
+  from the ideles.**  The same file reads the spanning condition on a Sylow subgroup for the prime,
+  corestriction from such a subgroup being onto on coefficients killed by it.
+* `InverseGalois.CFT.Units.BaseTateSylow` makes that Sylow condition explicit.  The fundamental
+  class of the idele class group satisfies the count on every subgroup of the Galois group, hence on
+  every subgroup of a Sylow subgroup, so the obstruction of Tate and Nakayama at the prime is
+  defined over that Sylow subgroup and **what the comparison produces there is exactly what it
+  kills**.  The condition the locally trivial classes ask for therefore becomes a statement about a
+  single linear map over the subgroup: **the everywhere locally trivial classes of the units
+  tensored with coefficients killed by a prime are exactly the image of the complete cohomology of
+  the coefficients three degrees lower as soon as the obstruction of a Sylow subgroup for that prime
+  takes no value on the idele classes that it does not already take on the ideles** -- the shape a
+  duality theorem has to take, now placed over a field over which the extension has degree a power
+  of the prime.
 * `InverseGalois.CFT.Units.BaseTateTorsion` drops the flatness, which the coefficients of an
   embedding problem never have.  The fundamental class satisfies the classical hypotheses on every
   subgroup, so in particular on every Sylow subgroup, and the four exact terms attached to the

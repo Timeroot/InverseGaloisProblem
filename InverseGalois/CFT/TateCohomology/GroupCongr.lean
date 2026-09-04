@@ -27,7 +27,8 @@ extension of the completions.
   isomorphism of groups and a bijective map of coefficients.**
 * `InverseGalois.CFT.Tate.tateModuleCongrSucc`: the same statement in a positive degree of the
   complete cohomology.
-* `InverseGalois.CFT.Tate.tateTwoCongr`: the same statement in degree two.
+* `InverseGalois.CFT.Tate.tateOneCongr`, `InverseGalois.CFT.Tate.tateTwoCongr`: the same statement
+  in degrees one and two.
 
 ## Main results
 
@@ -109,6 +110,12 @@ def tateModuleCongrSucc (hφ : Function.Bijective ⇑φ.hom.hom) (m : ℕ) :
     tateModule A ((m : ℤ) + 1) ≅ tateModule B ((m : ℤ) + 1) :=
   eqToIso (tateModule_natCast_succ A m) ≪≫ groupCohomologyCongr e φ hφ (m + 1) ≪≫
     eqToIso (tateModule_natCast_succ B m).symm
+
+/-- **Degree one of the complete cohomology of a group depends on the pair of the group and its
+coefficients only up to isomorphism**, which is the degree whose vanishing enters Tate's theorem. -/
+def tateOneCongr (hφ : Function.Bijective ⇑φ.hom.hom) : tateModule A 1 ≅ tateModule B 1 :=
+  eqToIso (congrArg (tateModule A) (by norm_num)) ≪≫ tateModuleCongrSucc e φ hφ 0 ≪≫
+    eqToIso (congrArg (tateModule B) (by norm_num))
 
 /-- **Degree two of the complete cohomology of a group depends on the pair of the group and its
 coefficients only up to isomorphism**, which is the degree carrying the local invariants. -/
