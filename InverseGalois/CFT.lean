@@ -851,6 +851,7 @@ import InverseGalois.CFT.Units.LocalIdele
 import InverseGalois.CFT.Units.LocalNorm
 import InverseGalois.CFT.Units.LocalPowIdele
 import InverseGalois.CFT.Units.LocalSqrtNegOne
+import InverseGalois.CFT.Units.NakayamaSpan
 import InverseGalois.CFT.Units.NormIndex
 import InverseGalois.CFT.Units.NsmulTorsionRep
 import InverseGalois.CFT.Units.OrbitPlaces
@@ -4880,6 +4881,18 @@ it that are available here.
   when the obstruction of Tate and Nakayama takes no value on the idele classes that it does not
   already take on the ideles.**  The units and the locally trivial classes have disappeared from the
   criterion; what is left is a statement about the obstruction and the places.
+* `InverseGalois.CFT.Units.NakayamaSpan` gives that criterion a name.  Read over a Sylow subgroup
+  for the prime, and with the obstruction traded for the comparison it measures, what remains is a
+  single span: **the classes the comparison of Tate and Nakayama produces, together with the
+  classes coming from the ideles, fill the complete cohomology of the idele classes tensored with
+  coefficients killed by the prime.**  For coefficients that are free as abelian groups the
+  comparison is surjective by itself and the span holds for nothing; for coefficients killed by a
+  prime it is the assertion that the failure of surjectivity is carried by the places.  Naming it
+  separates what the general theory of a class formation supplies from what is genuinely about the
+  arithmetic of the extension, and a Sylow subgroup exists because the Galois group is finite, so
+  **the everywhere locally trivial classes of the units tensored with coefficients killed by a
+  prime are exactly the image of the complete cohomology of the coefficients three degrees lower**
+  whenever the span holds, with no subgroup left in the statement.
 * `InverseGalois.CFT.Units.BaseArtin` puts a name on the left hand side of that identification.
   Composing it with the description of the complete cohomology of the trivial integral
   representation in degree minus two gives **the reciprocity isomorphism between the abelianization
