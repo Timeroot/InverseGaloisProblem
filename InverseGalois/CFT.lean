@@ -600,6 +600,7 @@ import InverseGalois.CFT.Tate.FamilyOrbits
 import InverseGalois.CFT.Tate.FamilyProduct
 import InverseGalois.CFT.Tate.FamilyReindex
 import InverseGalois.CFT.Tate.FamilyRestrict
+import InverseGalois.CFT.Tate.FamilyRestrictCoind
 import InverseGalois.CFT.Tate.FamilyRestrictOrbit
 import InverseGalois.CFT.Tate.FamilyRing
 import InverseGalois.CFT.Tate.FamilySigma
@@ -737,6 +738,7 @@ import InverseGalois.CFT.Units.AdicOrbit
 import InverseGalois.CFT.Units.AdicOrbitTate
 import InverseGalois.CFT.Units.AdicRadical
 import InverseGalois.CFT.Units.AdicSIdeles
+import InverseGalois.CFT.Units.AdicSOrbitTate
 import InverseGalois.CFT.Units.AdicUnitGen
 import InverseGalois.CFT.Units.ArchimedeanIdeles
 import InverseGalois.CFT.Units.BaseArtin
@@ -1900,6 +1902,13 @@ it that are available here.
   of its action on the ambient module, so an orbit where the subgroup is everything contributes what
   it contributes to the ambient family, and an orbit where the action on the subgroup is a known one
   with vanishing Tate groups contributes nothing.
+* `InverseGalois.CFT.Tate.FamilyRestrictCoind` reads the same restriction through coinduction
+  instead of through the Herbrand quotient, and so needs no hypothesis on the group beyond
+  finiteness.  The sections of a family over a transitive orbit are coinduced from the module at a
+  base point, so the contribution of an orbit to a restriction is the complete cohomology of the
+  stabiliser of that point with coefficients in the subgroup there; identifying that subgroup with
+  whatever group it is declared to be carries the computation along, and an orbit whose declared
+  action has no complete cohomology contributes nothing in that degree.
 * `InverseGalois.CFT.Tate.FamilySigma` splits the sections of a family whose index set is a
   disjoint union of pieces each carried into itself by the group: they are the product over the
   pieces of the sections over each piece.  Over finitely many pieces the Herbrand quotients
@@ -2383,6 +2392,14 @@ it that are available here.
   isometries, so those subgroups form an invariant family, and an orbit above a place of the set
   contributes the order of the decomposition group while an unramified orbit outside it contributes
   nothing.
+* `InverseGalois.CFT.Units.AdicSOrbitTate` reads that restriction in every degree at once.  Above a
+  place of the set the local subgroup is everything, so the contribution is the complete cohomology
+  of the decomposition group with coefficients in the units of the completion, exactly as for the
+  whole group of ideles; above an unramified place outside the set the local subgroup is the units
+  of the valuation ring of an unramified extension, whose complete cohomology vanishes in every
+  degree.  So **the ideles that are units outside a set of places have no complete cohomology in a
+  degree as soon as no local factor at a place of the set has any**, provided every place outside
+  the set is unramified.
 * `InverseGalois.CFT.Units.AdicIdeleHerbrand` multiplies the finite local factors together.  When
   the chosen places are the range of an equivariant injection from a finite index set and every
   other place is unramified, the ideles that are units outside them have Herbrand quotient the
