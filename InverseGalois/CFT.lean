@@ -664,6 +664,7 @@ import InverseGalois.CFT.Tate.RealHerbrand
 import InverseGalois.CFT.Tate.Restrict
 import InverseGalois.CFT.Tate.Shapiro
 import InverseGalois.CFT.Tate.Surjection
+import InverseGalois.CFT.Tate.TensorSplit
 import InverseGalois.CFT.Tate.TorsionRep
 import InverseGalois.CFT.Tate.Trivial
 import InverseGalois.CFT.Tate.TrivialLattice
@@ -846,6 +847,7 @@ import InverseGalois.CFT.Units.IdeleOrbitTate
 import InverseGalois.CFT.Units.IdeleQuotCyclic
 import InverseGalois.CFT.Units.IdeleRep
 import InverseGalois.CFT.Units.IdeleRestrict
+import InverseGalois.CFT.Units.IdeleTensorOrbit
 import InverseGalois.CFT.Units.IdeleTensorSha
 import InverseGalois.CFT.Units.IdeleTensorTorsion
 import InverseGalois.CFT.Units.IdeleTorsion
@@ -908,6 +910,7 @@ import InverseGalois.CFT.Units.StablePlaceIdele
 import InverseGalois.CFT.Units.TowerCoboundary
 import InverseGalois.CFT.Units.TowerDescent
 import InverseGalois.CFT.Units.UnitLattice
+import InverseGalois.CFT.Units.UnramifiedSplit
 import InverseGalois.CFT.Units.UnramifiedTateRep
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
@@ -2368,6 +2371,14 @@ it that are available here.
   finite places and for the infinite ones alike, with no hypothesis on the Galois group beyond
   finiteness.  In particular the ideles have no cohomology in a degree in which no local factor
   has any.
+* `InverseGalois.CFT.Units.IdeleTensorOrbit` carries that description across a twist of the
+  coefficients.  Coefficients of finite rank over a prime field are finitely presented, so tensoring
+  with them commutes with the product over the places and with coinduction from a decomposition
+  group, and the two operations may be performed in either order.  Hence **in every degree the
+  complete cohomology of the group of ideles tensored with such coefficients is the product, over
+  the places of the base field, of the complete cohomology of the decomposition group of a place
+  above it with coefficients in the units of the completion there tensored with the restricted
+  coefficients** — again for the finite places and for the infinite ones alike.
 * `InverseGalois.CFT.Tate.FamilyConst` singles out the family that is the same module at every
   index, transported by a fixed action of the group on that module.  Its sections are the functions
   from the index set to the module, acted on by moving the argument and the value at once, and
@@ -3344,6 +3355,14 @@ it that are available here.
   decomposition group there is cyclic and the completion has a uniformizer it fixes, so the norms of
   the units of the valuation ring exhaust the fixed ones, and **every two-cocycle of the
   decomposition group with values in those units is a coboundary**.
+* `InverseGalois.CFT.Units.UnramifiedSplit` extracts from that same uniformizer the splitting a
+  twist needs.  Subtracting from a unit of the completion the power of a fixed uniformizer carrying
+  its valuation is a homomorphism onto the units of the valuation ring which commutes with the
+  action and is the identity on those units, so **the units of the valuation ring at an unramified
+  place are a retract of the whole local factor**.  Tensored coefficients destroy the vanishing of
+  the complete cohomology of the units of the valuation ring but not the retraction, and **the
+  complete cohomology of those units with twisted coefficients therefore injects into that of the
+  local factor.**
 * `InverseGalois.CFT.Units.IdeleCoboundary` globalises that: a two-cocycle with values in the ideles
   which is a coboundary at every place is a coboundary.  The coordinates in a Galois orbit determine
   one another, so a local one-cochain at each place assembles into a global one; at all but the
@@ -4120,6 +4139,13 @@ it that are available here.
   can fail is the injectivity of the map from the sub, and flatness of the fixed representation
   supplies exactly that.  So **a short exact sequence tensored with a flat representation is short
   exact**.
+* `InverseGalois.CFT.Tate.TensorSplit` records what is left of injectivity when flatness is out of
+  reach.  A map of representations with a left inverse is carried by any functor to a map with a
+  left inverse, and a map with a left inverse is injective; complete cohomology in a fixed degree is
+  such a functor and so is tensoring on the right, so **a map of representations that is a retract
+  stays injective after tensoring, after passing to complete cohomology, and after both**.  That is
+  what separates a local factor of the ideles from the units of its valuation ring once the
+  coefficients are twisted, the vanishing available for untwisted coefficients being gone.
 * `InverseGalois.CFT.TateCohomology.TensorTrivial` pays the price left over by the previous file.
   **Multiplication by a natural number commutes with tensoring**, because it may be carried out on
   either factor, so multiplication by a prime is injective on the complete cohomology of a tensor
