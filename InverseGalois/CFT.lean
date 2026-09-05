@@ -456,6 +456,7 @@ import InverseGalois.CFT.Profinite.KummerHom
 import InverseGalois.CFT.Profinite.KummerLevel
 import InverseGalois.CFT.Profinite.KummerLevelDegree
 import InverseGalois.CFT.Profinite.KummerRes
+import InverseGalois.CFT.Profinite.KummerTwist
 import InverseGalois.CFT.Profinite.KummerTwo
 import InverseGalois.CFT.Profinite.Pi
 import InverseGalois.CFT.Profinite.Quotient
@@ -470,6 +471,7 @@ import InverseGalois.CFT.Profinite.TransgressionInflate
 import InverseGalois.CFT.Profinite.TransgressionRestrict
 import InverseGalois.CFT.Profinite.Trivial
 import InverseGalois.CFT.Profinite.Twist
+import InverseGalois.CFT.Profinite.TwistConj
 import InverseGalois.CFT.RatUnits
 import InverseGalois.CFT.RelativeFrobenius
 import InverseGalois.CFT.RestrictLE
@@ -5172,6 +5174,23 @@ it that are available here.
   place and trivial elsewhere; on the other it is the observation that an endomorphism of a cyclic
   group is a power map, so each coordinate of a twisted class is a power of the class one started
   from, and those powers reassemble the homomorphism one started from.
+* `InverseGalois.CFT.Profinite.TwistConj` makes the twist equivariant.  The first cohomology of a
+  normal subgroup carries the conjugation action of the ambient group, and for a map of the
+  coefficients to commute with it the map has to move as well: an element of the ambient group
+  carries a homomorphism between two of its modules to the one which translates the argument
+  backwards and the value forwards, and **that is an action of the ambient group on the
+  homomorphisms of the coefficients** for which the induced map in cohomology is equivariant.  So
+  **conjugating a twisted class is twisting by the conjugated element and the conjugated
+  homomorphism**, once the classes the base group provides are themselves equivariant.
+* `InverseGalois.CFT.Profinite.KummerTwist` reads the two together over a field.  The Kummer
+  homomorphism of an intermediate field is surjective with the `p`-th powers as its kernel, so it
+  is exactly the datum the twist consumes: **the first cohomology of the subgroup fixing the field,
+  with coefficients in a finite module killed by `p` which is a product of copies of the roots of
+  unity, is the tensor product of the units of the field with the homomorphisms of the roots of
+  unity into those coefficients**, and the Galois group of the base acts on the three sides
+  compatibly — on the units by restriction, on the homomorphisms by translation of the value, on
+  the cohomology by conjugation.  This is the shape in which the kernel of a lifting problem meets
+  the units of the field the problem is solved over.
 * `InverseGalois.CFT.Profinite.Symbol` pairs two units of the base.  Cupping their Kummer classes
   along a pairing of the roots of unity with themselves gives **the `n`-th power symbol**, a
   bimultiplicative map on the units of the base with values in the second cohomology; it is killed
