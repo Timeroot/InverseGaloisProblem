@@ -453,6 +453,7 @@ import InverseGalois.CFT.Profinite.InfRes
 import InverseGalois.CFT.Profinite.Kummer
 import InverseGalois.CFT.Profinite.KummerConj
 import InverseGalois.CFT.Profinite.KummerAction
+import InverseGalois.CFT.Profinite.KummerFinite
 import InverseGalois.CFT.Profinite.KummerHom
 import InverseGalois.CFT.Profinite.KummerLevel
 import InverseGalois.CFT.Profinite.KummerLevelDegree
@@ -5278,6 +5279,20 @@ it that are available here.
   with coefficients in the units of the subextension tensored with the homomorphisms of the roots of
   unity.**  The everywhere locally trivial classes travel along it, and the two readings of them
   vanish together — which is what a local-global principle has to supply.
+* `InverseGalois.CFT.Profinite.KummerFinite` names the group class field theory computes with.  The
+  quotient of an infinite Galois group by the subgroup fixing a normal intermediate field is the
+  Galois group of that field, restriction to it being surjective with that subgroup as kernel, and
+  **the cohomology of a representation does not notice which of the two presentations of the group
+  is used**: an identification of a module with the coefficients of a representation, equivariant
+  along an isomorphism of the acting groups, is an isomorphism of representations once one of them
+  is restricted along that isomorphism.  Composing with the identification above, **the first
+  cohomology of the quotient with values in the first cohomology of the subgroup is the first
+  cohomology of the Galois group of the intermediate field with coefficients in any representation
+  identified with the units of that field tensored with the homomorphisms of the roots of unity into
+  the kernel of a lifting problem** — for instance the tensor product of the representation on the
+  units with a representation of the coefficients, which is the object the theorems of Tate and of
+  Nakayama are stated about.  The everywhere locally trivial classes travel along it and the two
+  readings of them vanish together.
 * `InverseGalois.CFT.Profinite.Symbol` pairs two units of the base.  Cupping their Kummer classes
   along a pairing of the roots of unity with themselves gives **the `n`-th power symbol**, a
   bimultiplicative map on the units of the base with values in the second cohomology; it is killed

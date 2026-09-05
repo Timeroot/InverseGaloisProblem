@@ -11651,6 +11651,87 @@ isomorphism, via `Action.res` — a separate, reusable brick, and Mathlib v4.28 
 
 ---
 
+## 1.09 Status (2026-09-05, latest) — brick 4 now speaks the language of `Units/`: the level group is `Gal(K/k)`, not a quotient
+
+`Profinite/KummerFinite.lean`; full root build **9706 jobs**, 0 warnings, 0 errors, 0 sorries.
+
+### (a) The deferred brick of §1.08(b) was already in the repository — correction
+
+§1.08(b) says the invariance of `groupCohomology` under an isomorphism of groups is "a separate,
+reusable brick, and Mathlib v4.28 has no such lemma".  The second half is true of *Mathlib*
+(`Functoriality.lean`'s `congr` compares two **equal** homomorphisms) but false of the repository:
+`TateCohomology/GroupCongr.lean`, namespace `InverseGalois.CFT.Tate`, has had the whole brick since
+the Tate–Nakayama tower was built:
+
+```
+bijective_cochainsMap_f     isIso_cochainsMap_of_bijective
+groupCohomologyCongr (e : G ≃* G') (φ : (Action.res _ ↑e).obj A ⟶ B) (hφ : Bijective ⇑φ.hom.hom) (n)
+  : groupCohomology A n ≅ groupCohomology B n
+groupCohomologyCongr_hom (= groupCohomology.map ↑e φ n, by rfl)
+groupCohomologyResCongr    tateModuleCongrSucc    tateOneCongr    tateTwoCongr
+```
+
+universe-polymorphic in `{k G G' : Type u}`.  The mandatory grep-before-writing rule caught the
+duplicate before it was written.  (gotcha 1499)
+
+### (b) What the new module does
+
+The level group is presented twice: `Gal(Ω/k) ⧸ K.fixingSubgroup`, which is what inflation of a
+cochain produces, and `Gal(↥K/k)`, which is what `Units/` computes with (`globalUnitsRep k K`,
+`tensorObj … W`, `HasIdeleClassNakayamaSpan`).  `Profinite/KummerFinite.lean` identifies them and
+carries the twisted Kummer statement across.
+
+* `repIsoOfEquivSmul e B φ hφ : (Action.res _ ↑e).obj B ≅ Rep.ofDistribMulAction ℤ G T`, for
+  `e : G ≃* G'`, `B : Rep ℤ G'`, `φ : T ≃+ ↥B.V` and
+  `hφ : ∀ g t, φ (g • t) = B.ρ (e g) (φ t)`.  Same one-liner as `repIsoOfAddEquiv`, with `φ.symm`
+  in place of `φ` because the restricted representation is the *source*.
+* `groupCohomologyEquivOfSmul` = `Tate.groupCohomologyCongr` of that, in every degree;
+  `h1MulEquivOfSmul` is degree one wrapped in `Multiplicative` so that it composes with
+  `smoothH1EquivOfAddEquiv`.
+* `quotientFixingSubgroupEquiv K : Gal(Ω/k) ⧸ K.fixingSubgroup ≃* Gal(↥K/k)`, being
+  `QuotientGroup.liftEquiv _ (restrictNormalHom_surjective_level K)
+  (IntermediateField.restrictNormalHom_ker K).symm`; `quotientFixingSubgroupEquiv_mk` is `rfl`.
+* `kummerFiniteH1Equiv` composes `kummerSmoothH1Equiv` with `h1MulEquivOfSmul`, giving
+  **`SmoothH1 (Gal(Ω/k) ⧸ K.fixingSubgroup) (SmoothH1 ↥K.fixingSubgroup E) ≃* Multiplicative ↥(H1 B)`**
+  for *any* `B : Rep ℤ Gal(↥K/k)` together with an intertwiner
+  `φ : Additive (↥K)ˣ ⊗[ℤ] Additive (M →* E) ≃+ ↥B.V`.  `kummerFiniteSha1` carries `sha1Level`
+  along it and `sha1Level_eq_bot_iff_finite` says the two readings vanish together.
+
+Taking `B` as a parameter rather than constructing it is what keeps §1.08(b)'s diamond away: no
+second `Gal(↥K/k)`-action is ever put on `(↥K)ˣ`.  The consumer supplies
+`B = tensorObj (globalUnitsRep k ↥K) W` with `W` the representation on `Additive (M →* E)`, and
+proves `hφ` — which, by `restrictUnits_smul` (`rfl`) and `quotientFixingSubgroupEquiv_mk` (`rfl`),
+is an equality of the two *definitionally identical* actions on the left tensor factor.
+
+### (c) The chain as it now stands
+
+>  `Ĥ^{-2}(G, W)  ↠  Ш¹_{idelic}(G, K^× ⊗ W)`  — brick 3, conditional on the span
+>  `Ш¹(G, K^× ⊗ W) ≅ sha1Level`                — brick 4, **done** (§1.05–§1.08 + this module)
+>  `sha1Level = ⊥  ⇒  Ш²(k,E) ⊆ inf`           — brick 5, **done** (§1.03–§1.04)
+>  `Ĥ^{-2}(G, W) = 0` after shrinking `G`      — Prop 6, **done** (`Shafarevich/Shrink.lean`)
+
+with `W = E(-1) = Hom(μ_p, E)`.  So the surjection chain closes as soon as the two Ш's are the
+same group, i.e. as soon as **"trivial on every decomposition subgroup" and "trivial in the ideles"
+agree**.  That is the one comparison §1.08(a) already flagged: `(K ⊔ F)^× / p ≅ K_w^× / p`,
+henselization versus completion, together with Shapiro for `Ĥ^*(G, I_K ⊗ W)`.  It is now the *only*
+thing between the profinite tower and the idelic one, and it is arithmetic rather than formal.
+
+### (d) Lean notes
+
+* `Rep.ofDistribMulAction ℤ G T` and `Tate.groupCohomologyCongr` compose without any universe
+  gymnastics as long as everything is `Type` (i.e. `Type 0`), which the packaging already was.
+* `Action.mkIso`'s `comm` obligation, applied to an element, reads `f (M.ρ g x) = N.ρ g (f x)`:
+  source action first, then the map.  With `f = φ.symm` the proof is
+  `rw [φ.apply_symm_apply] at hb; show …; rw [← hb, φ.symm_apply_apply]`.
+* `Function.Bijective ⇑(iso).hom.hom.hom` — three `.hom`s for an `Iso` in `Rep` (Iso, `Action.Hom`,
+  `ModuleCat.Hom`), where `groupCohomologyCongr`'s hypothesis takes two for a bare morphism.  It is
+  closed by `φ.symm.bijective`.
+* `QuotientGroup.liftEquiv (hφ : Surjective φ) (HN : N = φ.ker) : G ⧸ N ≃* H`, with `liftEquiv_coe`
+  a `simp` lemma and `rfl`; Mathlib's `InfiniteGalois.normalAutEquivQuotient` is the same
+  construction but phrased through `fixedField H`, so it is not directly usable here.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
