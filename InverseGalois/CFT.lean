@@ -627,6 +627,7 @@ import InverseGalois.CFT.Tate.FamilyRestrictOrbit
 import InverseGalois.CFT.Tate.FamilyRing
 import InverseGalois.CFT.Tate.FamilySigma
 import InverseGalois.CFT.Tate.FamilyTensor
+import InverseGalois.CFT.Tate.FamilyTensorFull
 import InverseGalois.CFT.Tate.FamilyTensorOrbit
 import InverseGalois.CFT.Tate.FamilyTorsion
 import InverseGalois.CFT.Tate.Fibers
@@ -4295,6 +4296,19 @@ it that are available here.
   point of the orbit with coefficients in the module there tensored with the restricted
   coefficients**, and the same for the sections killed by the prime.  The vanishing follows, but a
   long exact sequence built out of these groups needs the isomorphism itself, so both are stated.
+* `InverseGalois.CFT.Tate.FamilyTensorFull` removes the hypothesis that the modules of the family
+  be killed by the prime, which the groups that actually occur do not satisfy: the units of the
+  completions of a number field at its places are killed by nothing.  Only the coefficients need be
+  finite.  A basis of the coefficients over the prime field writes every element of a tensor
+  product as a sum of pure tensors along the basis vectors, and the element determines those
+  coordinates up to multiples of the prime; divisibility by the prime is read in the quotient by
+  the multiples of the prime, which is killed by the prime whatever the module, so the coordinate
+  map available there detects it.  An element of the kernel therefore has all its coordinates
+  divisible by the prime, and the prime moves across the tensor sign onto the basis vectors, where
+  it kills them.  Hence **the sections of an arbitrary family tensored with coefficients of finite
+  rank over the prime field are the sections of the tensored family**, and **the complete
+  cohomology of those tensored sections is the product over the orbits of the local
+  contributions** — which is the group of ideles, place by place, in its decomposition groups.
 * `InverseGalois.CFT.Tate.FamilyResGroup` observes that all of this is available on a subgroup of
   the acting group with nothing to prove.  A subgroup moves the index set by the restricted action
   and transports the modules by the same isomorphisms, so it acts on the same family; the sections
