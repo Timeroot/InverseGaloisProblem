@@ -11051,6 +11051,78 @@ generally nonzero, which is precisely why (a)(2) is a *sufficient* condition and
 
 ---
 
+## 1.02 Status (2026-09-05, later) — the span is now a statement about a *family* of subgroups, read entirely on the map leaving the comparison
+
+### (a) What landed
+
+Commit `a2ebcf5`.  Full root build **9685 jobs**, 0 warnings, 0 errors, 0 sorries; axioms of every
+new declaration are `[propext, Classical.choice, Quot.sound]`.
+
+1. **`Units/NakayamaSpan.lean`** — `hasIdeleClassNakayamaSpan_of_next`.  The named hypothesis
+   `HasIdeleClassNakayamaSpan k K p` is now implied by a statement in which the comparison of Tate
+   and Nakayama does not appear at all, only the map *leaving* it:
+
+   >  `map obs_P ( range ι_{P,*} )  =  range obs_P`   for every `p`-torsion `W`, every Sylow `P`,
+   >  every degree.
+
+   Proof: `ker_resBaseTateNakayamaPTorsionRight` rewrites `range TN_P` as `ker obs_P`, `sup_comm`,
+   then `map_eq_range_iff_sup_ker_eq_top` (`Units/IdeleTorusShaSharp.lean:68`) converts the `⊔ = ⊤`
+   into the image identity, and `map_resBaseTateNakayamaPTorsionRight_eq_range_iff` strips the
+   `cocycleTensorObjPTorsionEquiv`.  This matters because `obs` is *natural in the coefficients* and
+   the comparison is not, so only in this form can the places be brought to bear.
+
+2. **`TateCohomology/NakayamaNextRestrict.lean`** — the family assembly,
+   `map_range_eq_range_of_iSup_cor` and its degree-two specialisation
+   `map_range_eq_range_of_iSup_cor_two`.  Given a family of subgroups `Hs : ι → Subgroup G` and, for
+   each `i`, an explicit submodule `V i ⊆ Ĥ^{n+2}(Hs i, A ⊗ M)` with
+
+   * `hV` — `cor_{Hs i} (V i) ≤ range ι_*`, and
+   * `hglob` — `range obs_G ≤ ⨆_i cor_{Hs i} ( obs_{Hs i} (V i) )`,
+
+   the conclusion is `map obs_G (range ι_*) = range obs_G`, exactly the hypothesis of (1).  The proof
+   is four lines and consumes `tateCor_tateNakayamaNextMap`: a value produced on a subgroup out of a
+   class whose corestriction `ι_*` already reaches is a value produced on the whole group out of a
+   class `ι_*` reaches.
+
+### (b) The shape of the family hypothesis, corrected
+
+The previous session's draft of (2) took the hypothesis in the form *"on each subgroup, `obs`
+attains on the local ideles every value it attains at all"*.  That is **not** what the decomposition
+brick supplies and is in general false at a single place — a single decomposition group sees only
+one local factor, and §0.99's projection formula gives the inclusion in the wrong direction
+(gotcha 1277).  The usable form quantifies over an explicit family of submodules `V i` and asks only
+that the *corestrictions* cover, which is what Shapiro produces.  Four wrapper lemmas built on the
+old form (`sup_range_eq_top_iff_map_range`, `sup_range_eq_top_of_iSup_cor`, and their `_two`
+versions) were deleted along with a private copy of the generic linear-algebra lemma the repository
+already had.
+
+### (c) What is left, unchanged in substance
+
+* `hglob` at the family of decomposition subgroups of `P` — i.e. still
+  `range obs_P ⊆ Σ_w cor_w(range obs_{P_w})`, the reciprocity wall of §1.01(d).  The assembly above
+  is the consumer that has been waiting for it; nothing else is missing on that side.
+* `hV` for the same family — the easy direction, Shapiro's decomposition of `range ι_*`; deliberately
+  not yet wired up, because `hglob` has no proof and the machinery would be unconsumed.
+* Bricks 4 and 5 of §1.00(b), and §1.00(g)'s reduction to `μ_p ⊆ k` first.
+
+### (d) Lean notes
+
+* `map_eq_range_iff_sup_ker_eq_top (f : M →ₗ[R] N) (S : Submodule R M) : Submodule.map f S =
+  LinearMap.range f ↔ S ⊔ LinearMap.ker f = ⊤` already exists at
+  `Units/IdeleTorusShaSharp.lean:68`, used at `BaseTateSylow.lean:189`.  Do not re-derive it in a
+  `TateCohomology/` module — `IdeleTorusShaSharp` does not import `NakayamaNextRestrict`, so the two
+  copies would not even clash at elaboration time.  (gotcha 1353)
+* `Units/BaseTateSylow.lean:213` already carries `range_shaTorusPTorsionMap_of_sylow_next`, the
+  "next map" form of the Sylow criterion.  (gotcha 1355)
+* There is **no** `Gal(K/k)`-action on `SmoothH1 G_K M` anywhere under `CFT/Profinite/`; bricks 4/5
+  would have to build it.  (gotcha 1356)
+* No module under `CFT/` mentions `IsInverseGalois` except the four `Scholz/*` files: there is no
+  general bridge from `SmoothH2` classes to embedding problems, and the only EP↔arithmetic bridge is
+  `CFT/Kummer/CentralEmbeddingPlaces.lean`, whose `exists_surjective_hom_of_forall_place_lift`
+  needs a **central** kernel.  (gotcha 1357)
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —

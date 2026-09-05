@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Profinite.InfRes
+import InverseGalois.CFT.Profinite.Res
 import InverseGalois.CFT.GroupCohomology.Transgression
 
 /-!
@@ -33,6 +34,13 @@ the transgression is read and once after.
 * `InverseGalois.CFT.exists_comapH2_eq_of_transgression`: **a class of the second cohomology of a
   topological group whose restriction to the kernel of a smooth surjection onto a discrete group is
   trivial and whose transgression is trivial is inflated from the quotient.**
+* `InverseGalois.CFT.exists_comapH2_eq_of_locally_coboundary`: **the same conclusion for a class
+  which is trivial along every member of a family of subgroups**, from the vanishing of those first
+  cohomology classes of the quotient which are trivial along the family.  Over a subgroup along
+  which the cocycle is a coboundary the transgression is one too, so the hypothesis on the class is
+  entirely local and the hypothesis left over is a Hasse principle for the quotient.
+* `InverseGalois.CFT.exists_comapH2_eq_of_mem_sha2`: the same, with the local hypothesis read on the
+  class rather than on a chosen cocycle.
 
 ## Tags
 
@@ -47,19 +55,33 @@ variable {G Q M : Type*} [Group G] [TopologicalSpace G] [Group Q] [TopologicalSp
   [DiscreteTopology Q] [CommGroup M] [MulDistribMulAction G M] [MulDistribMulAction Q M]
 variable {π : G →* Q} (hπ : ∀ (g : G) (m : M), g • m = π g • m)
 
+/-- **A twist of a smooth two cocycle by a smooth one cochain has the same class.** -/
+theorem smoothH2Mk_twist {a : G × G → M} (ha : IsMulCocycle₂ a) (has : IsSmooth₂ a)
+    {u : G → M} (hus : IsSmooth₁ u) (hcs : IsSmooth₂ (twist a u)) :
+    smoothH2Mk (twist a u) (isMulCocycle₂_twist ha u) hcs = smoothH2Mk a ha has := by
+  refine ((smoothH2Mk_eq_iff ha has (isMulCocycle₂_twist ha u) hcs).mpr ⟨u, hus, ?_⟩).symm
+  funext p
+  rw [eq_twist_mul_coboundary₂ a u p]
+  apply Additive.ofMul.injective
+  simp only [div_eq_mul_inv, ofMul_mul, ofMul_inv]
+  abel
+
 /-- **A class of the second cohomology of a topological group whose restriction to the kernel of a
 smooth surjection onto a discrete group is trivial and whose transgression is trivial is inflated
 from the quotient.**  The kernel is asked to act trivially on the coefficients, which is the case of
 an embedding problem split by the corresponding extension; the trivialisation of the restriction and
 the trivialisation of the transgression are asked to be smooth, which is what keeps the corrections
-smooth.  The transgression is asked to be trivial for every smooth cocycle trivial along the kernel,
-since the correction proceeds by successive twists. -/
+smooth.  The transgression is asked to be trivial for every smooth cocycle of the same class which
+is trivial along the kernel, since the correction proceeds by successive twists; asking it only of
+the cocycles of the given class is what lets the hypothesis be read off a condition on that class,
+such as its triviality over every decomposition group. -/
 theorem exists_comapH2_eq_of_transgression (hsm : IsSmoothHom π) (hsurj : Function.Surjective π)
     (htriv : ∀ n ∈ π.ker, ∀ m : M, n • m = m)
     {a : G × G → M} (ha : IsMulCocycle₂ a) (has : IsSmooth₂ a)
     {b : G → M} (hbs : IsSmooth₁ b)
     (hb : ∀ x ∈ π.ker, ∀ y ∈ π.ker, a (x, y) = x • b y / b (x * y) * b x)
-    (htr : ∀ c : G × G → M, IsMulCocycle₂ c → IsSmooth₂ c →
+    (htr : ∀ (c : G × G → M) (hc : IsMulCocycle₂ c) (hcs : IsSmooth₂ c),
+      smoothH2Mk c hc hcs = smoothH2Mk a ha has →
       (∀ n ∈ π.ker, ∀ y : G, c (n, y) = 1) →
       ∃ φ : G → M, IsSmooth₁ φ ∧ (∀ x ∈ π.ker, ∀ y ∈ π.ker, φ (x * y) = φ x * φ y) ∧
         ∀ σ : G, ∀ x ∈ π.ker, transgression c σ x = σ • φ (σ⁻¹ * x * σ) / φ x) :
@@ -89,7 +111,8 @@ theorem exists_comapH2_eq_of_transgression (hsm : IsSmoothHom π) (hsurj : Funct
     simp only [Pi.mul_apply, hu₁R g n hn, hu₂R g n hn]
   obtain ⟨φ, hφs, hφ, hcls⟩ := htr _ (isMulCocycle₂_twist ha (u₁ * u₂))
     ⟨R, hR, fun x y n hn m hm =>
-      twist_eq_of_mem hR.normal (fun n hn => htriv n (hRle hn)) haR hu₁₂R x y hn hm⟩ h₂
+      twist_eq_of_mem hR.normal (fun n hn => htriv n (hRle hn)) haR hu₁₂R x y hn hm⟩
+    (smoothH2Mk_twist ha has ⟨R, hR, hu₁₂R⟩ _) h₂
   obtain ⟨R', hR', hR'le, hR'R, hφR'⟩ : ∃ R' : Subgroup G, IsOpenNormal R' ∧ R' ≤ π.ker ∧
       R' ≤ R ∧ (∀ g : G, ∀ n ∈ R', φ (g * n) = φ g) := by
     obtain ⟨N₃, hN₃, hφ₁⟩ := hφs
@@ -137,5 +160,93 @@ theorem exists_comapH2_eq_of_transgression (hsm : IsSmoothHom π) (hsurj : Funct
   apply Additive.ofMul.injective
   simp only [div_eq_mul_inv, ofMul_mul, ofMul_inv]
   abel
+
+/-- **A class of the second cohomology of a topological group trivial along the kernel of a smooth
+surjection onto a discrete group and along every member of a family of subgroups is inflated from
+the quotient**, as soon as every transgression which is a coboundary along each member of the family
+is a coboundary.  The transgression of a cocycle is a one cocycle of the quotient with values in the
+homomorphisms from the kernel, and over a subgroup along which the cocycle is a coboundary it is the
+coboundary of the trivialising cochain; so a class trivial at every member of the family has a
+transgression trivial there too, and the hypothesis left is a statement about the locally trivial
+classes of the first cohomology of the quotient alone — the shape in which the family is a family of
+decomposition subgroups and the statement is a Hasse principle. -/
+theorem exists_comapH2_eq_of_locally_coboundary (hsm : IsSmoothHom π)
+    (hsurj : Function.Surjective π) (htriv : ∀ n ∈ π.ker, ∀ m : M, n • m = m)
+    {a : G × G → M} (ha : IsMulCocycle₂ a) (has : IsSmooth₂ a)
+    {b : G → M} (hbs : IsSmooth₁ b)
+    (hb : ∀ x ∈ π.ker, ∀ y ∈ π.ker, a (x, y) = x • b y / b (x * y) * b x)
+    {S : Set (Subgroup G)}
+    (hloc : ∀ D ∈ S, ∃ d : G → M, ∀ x ∈ D, ∀ y ∈ D, a (x, y) = x • d y / d (x * y) * d x)
+    (hsha : ∀ t : G → G → M,
+      (∃ R : Subgroup G, IsOpenNormal R ∧ ∀ σ x : G, ∀ n ∈ R, t σ (x * n) = t σ x) →
+      (∀ σ : G, ∀ x ∈ π.ker, ∀ y ∈ π.ker, t σ (x * y) = t σ x * t σ y) →
+      (∀ σ τ : G, ∀ x ∈ π.ker, t (σ * τ) x = σ • t τ (σ⁻¹ * x * σ) * t σ x) →
+      (∀ n ∈ π.ker, ∀ σ : G, ∀ x ∈ π.ker, t (n * σ) x = t σ x) →
+      (∀ D ∈ S, ∃ e : G → M, ∀ σ ∈ D, ∀ x ∈ D, x ∈ π.ker →
+        t σ x = σ • e (σ⁻¹ * x * σ) / e x) →
+      ∃ φ : G → M, IsSmooth₁ φ ∧ (∀ x ∈ π.ker, ∀ y ∈ π.ker, φ (x * y) = φ x * φ y) ∧
+        ∀ σ : G, ∀ x ∈ π.ker, t σ x = σ • φ (σ⁻¹ * x * σ) / φ x) :
+    ∃ x : SmoothH2 Q M, comapH2 π hπ hsm x = smoothH2Mk a ha has := by
+  refine exists_comapH2_eq_of_transgression hπ hsm hsurj htriv ha has hbs hb ?_
+  intro c hc hcs hcoh h1
+  obtain ⟨v, _, hv⟩ := (smoothH2Mk_eq_iff hc hcs ha has).1 hcoh
+  refine hsha (transgression c) ?_ (fun σ x hx y hy => transgression_mul_mem htriv hc h1 σ hx hy)
+    (fun σ τ x hx => transgression_mul_left htriv hc h1 σ τ hx)
+    (fun n hn σ x hx => transgression_smul_left htriv hc h1 hn σ hx) ?_
+  · obtain ⟨R, hR, hcR⟩ := hcs
+    refine ⟨R, hR, fun σ x n hn => ?_⟩
+    have hconj : σ⁻¹ * n * σ ∈ R := by simpa using hR.normal.conj_mem n hn σ⁻¹
+    have h := hcR σ (σ⁻¹ * x * σ) 1 R.one_mem _ hconj
+    rw [mul_one] at h
+    rw [transgression_apply, transgression_apply,
+      show σ⁻¹ * (x * n) * σ = σ⁻¹ * x * σ * (σ⁻¹ * n * σ) by group]
+    exact h
+  · intro D hD
+    obtain ⟨d, hd⟩ := hloc D hD
+    refine ⟨fun g => d g * v g, fun σ hσ x hxD hxN => ?_⟩
+    refine transgression_eq_smul_div_of_eq_coboundary htriv h1 (D := D)
+      (c := fun g => d g * v g) ?_ hσ hxD hxN
+    intro p hp q hq
+    have hc' : c (p, q) = p • v q / v (p * q) * v p * (p • d q / d (p * q) * d p) := by
+      have hpq := congrFun hv (p, q)
+      rw [coboundary₂_apply] at hpq
+      rw [← hd p hp q hq, hpq]
+      apply Additive.ofMul.injective
+      simp only [div_eq_mul_inv, ofMul_mul, ofMul_inv]
+      abel
+    rw [hc']
+    apply Additive.ofMul.injective
+    simp only [smul_mul', div_eq_mul_inv, mul_inv, ofMul_mul, ofMul_inv]
+    abel
+
+/-- **A locally trivial class of the second cohomology of a topological group whose restriction to
+the kernel of a smooth surjection onto a discrete group is trivial is inflated from the quotient**,
+as soon as the locally trivial transgressions all vanish.  This is the previous statement with the
+local hypothesis read on the class rather than on a chosen cocycle. -/
+theorem exists_comapH2_eq_of_mem_sha2 (hsm : IsSmoothHom π) (hsurj : Function.Surjective π)
+    (htriv : ∀ n ∈ π.ker, ∀ m : M, n • m = m)
+    {a : G × G → M} (ha : IsMulCocycle₂ a) (has : IsSmooth₂ a)
+    {b : G → M} (hbs : IsSmooth₁ b)
+    (hb : ∀ x ∈ π.ker, ∀ y ∈ π.ker, a (x, y) = x • b y / b (x * y) * b x)
+    {S : Set (Subgroup G)} (hmem : smoothH2Mk a ha has ∈ sha2 M S)
+    (hsha : ∀ t : G → G → M,
+      (∃ R : Subgroup G, IsOpenNormal R ∧ ∀ σ x : G, ∀ n ∈ R, t σ (x * n) = t σ x) →
+      (∀ σ : G, ∀ x ∈ π.ker, ∀ y ∈ π.ker, t σ (x * y) = t σ x * t σ y) →
+      (∀ σ τ : G, ∀ x ∈ π.ker, t (σ * τ) x = σ • t τ (σ⁻¹ * x * σ) * t σ x) →
+      (∀ n ∈ π.ker, ∀ σ : G, ∀ x ∈ π.ker, t (n * σ) x = t σ x) →
+      (∀ D ∈ S, ∃ e : G → M, ∀ σ ∈ D, ∀ x ∈ D, x ∈ π.ker →
+        t σ x = σ • e (σ⁻¹ * x * σ) / e x) →
+      ∃ φ : G → M, IsSmooth₁ φ ∧ (∀ x ∈ π.ker, ∀ y ∈ π.ker, φ (x * y) = φ x * φ y) ∧
+        ∀ σ : G, ∀ x ∈ π.ker, t σ x = σ • φ (σ⁻¹ * x * σ) / φ x) :
+    ∃ x : SmoothH2 Q M, comapH2 π hπ hsm x = smoothH2Mk a ha has := by
+  refine exists_comapH2_eq_of_locally_coboundary hπ hsm hsurj htriv ha has hbs hb ?_ hsha
+  intro D hD
+  obtain ⟨u, _, hu⟩ := (smoothH2Mk_mem_sha2 ha has).1 hmem D hD
+  classical
+  refine ⟨fun g => if hg : g ∈ D then u ⟨g, hg⟩ else 1, fun x hx y hy => ?_⟩
+  have h := congrFun hu (⟨x, hx⟩, ⟨y, hy⟩)
+  rw [coboundary₂_apply] at h
+  simp only [dif_pos hx, dif_pos hy, dif_pos (D.mul_mem hx hy)]
+  exact h.symm
 
 end InverseGalois.CFT
