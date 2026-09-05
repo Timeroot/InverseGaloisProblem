@@ -11123,6 +11123,93 @@ already had.
 
 ---
 
+## 1.03 Status (2026-09-05, later still) — **brick 5 is done at the profinite level**, and the local condition is the *localised* one
+
+### (a) What landed
+
+Commits `73f68ec`, `c7faa77`, `565db26`, `a1c110a`, `b9bd14d`, `d07b7fd`, `6ed5e84`, `782d566`.
+Full root build **9691 jobs**, 0 warnings, 0 errors, 0 sorries.
+
+The whole of brick 5 of §1.00(b), in the profinite language of `CFT/Profinite/`, is now a theorem.
+The tower, bottom to top:
+
+1. **`Profinite/Transgression.lean`** (`73f68ec`, strengthened in `d07b7fd`) — the raw descent.  A
+   smooth two cocycle `a` whose restriction to `π.ker` is the coboundary of a smooth `b` is
+   corrected by four successive twists into a cocycle inflated from the quotient, provided the
+   transgression of the twisted cocycle is the coboundary of a smooth homomorphism.  Each correction
+   is built by decomposing an element along its coset, so smoothness survives, but the order matters:
+   the last two corrections need an open normal subgroup cut out by the trivialisation the first two
+   produce.  `exists_comapH2_eq_of_locally_coboundary` packages this with the local input in the form
+   `smoothH2Mk_mem_sha2` delivers, and `exists_comapH2_eq_of_mem_sha2` is then a one-liner.
+2. **`Profinite/H1Conj.lean`** (`c7faa77`) — the conjugation action of the ambient group on
+   `SmoothH1 ↥N M` for `N` normal, with the subgroup acting trivially, so it is an action of the
+   quotient.  **This retires gotcha 1356**, which said no such action existed.
+3. **`Profinite/TransgressionClass.lean`** (`b9bd14d`) — `IsTransgressionDatum`, the four conditions
+   a transgression satisfies, and `transClass`, the class in `SmoothH1 G (SmoothH1 ↥N M)` they
+   define.  `transClass_eq_one_iff` is the equivalence with trivialisation by a smooth homomorphism;
+   the hard direction needs the trivialising homomorphism on the kernel to be extendable smoothly to
+   the whole group, which is why `HasOpenNormalBasis` (true for compact groups) appears.
+4. **`Profinite/TransgressionRestrict.lean`** (`6ed5e84`, `782d566`) — the local side.  A
+   transgression restricted to a subgroup `D` in both variables is a transgression for
+   `N.subgroupOf D`, hence has a class `localTransClass` of its own; the localisation homomorphism
+   `resCoeffH1` restricts a class to `D` and its coefficients to `N ⊓ D` at the same time; and
+   `resCoeffH1 (transClass h) = localTransClass h D` is `rfl`.  The everywhere locally trivial
+   classes of that localised system are `sha1Loc`, and the capstone is
+
+   >  `exists_comapH2_eq_of_sha1Loc_eq_bot` — a class of `H²(G,M)` which is locally trivial on a
+   >  family `S` and dies on `π.ker` is inflated from the discrete quotient, as soon as
+   >  `sha1Loc M π.ker S = ⊥`.
+
+### (b) A correction to §1.00(b) item 5: which `Ш¹` it is
+
+Item 5 was written as `Ш¹(G, H¹(K,E))` with the localisation `H¹(G_v, H¹(K,E))` — the *same*
+coefficients restricted.  That is **not** what local triviality of the class supplies.  The
+transgression is functorial in the whole extension: for `D ≤ G_k` with image `D̄` in `G`,
+
+>  `H²(G_k,M)₁ --tg--> H¹(G, H¹(N,M))`
+>  `      | res_D                | res_{D̄} then localise the coefficients`
+>  `H²(D,M)₁  --tg--> H¹(D̄, H¹(D ⊓ N, M))`
+
+so `res_D α = 0` only forces the image of `tg α` in `H¹(D̄, H¹(D ⊓ N, M))` to vanish — the
+coefficients are localised along with the class.  This is strictly weaker than the naive reading, so
+the theorem obtained is strictly stronger, and it is also the *correct* target: the arithmetic
+`Ш¹(G, K^× ⊗ W)` of step 3 is defined as `ker( H¹(G, K^×⊗W) → H¹(G, I_K⊗W) )`, and Shapiro turns the
+right-hand side into `⊕_v H¹(D_w, K_w^×⊗W)` — the coefficients localised.  The two match.
+
+### (c) What is left for brick 5's arithmetic side
+
+`sha1Loc M π.ker S` lives in `SmoothH1 G_k (SmoothH1 G_K M)` while the arithmetic `Ш¹` lives in
+`H¹(Gal(K/k), –)`.  Two elementary steps bridge them, neither yet written:
+
+1. **Inflation.** `G_K` acts trivially on `SmoothH1 G_K M` (`conjH1_eq_self_of_mem`), so the
+   transgression cochain factors through `Gal(K/k)` and the class is inflated; inflation is
+   injective in degree one (`Profinite/Quotient.lean`), so `sha1Loc = ⊥` follows from the
+   finite-level statement plus compatibility of the localisations.
+2. **Brick 4**, unchanged: `SmoothH1 G_K E ≅ K^× ⊗ W` as `Gal(K/k)`-modules, with
+   `SmoothH1 G_{K_w} E ≅ K_w^× ⊗ W` compatibly.  `Profinite/KummerConj.lean` (`565db26`, `a1c110a`)
+   already carries the equivariance half; the twist half collapses once §1.00(g)'s reduction to
+   `μ_p ⊆ k` is done.
+
+### (d) Lean notes
+
+* `transClass_eq_one`'s smoothness hypothesis was weakened from `IsSmooth₁ φ` to
+  `IsSmooth₁ (fun x : ↥N => φ ↑x)` — the proof only ever used the latter.  Callers supply
+  `isSmooth₁_comp (continuous_subtype N) hφs`.  (gotcha 1418)
+* `isSmooth₁_comp` (`Profinite/Res.lean`) needs an explicit `rw [map_mul f x n]`: `f (x*n) = f x * f n`
+  is defeq only for a `MonoidHom.mk'` built with an `rfl` proof, not for a general `MonoidHom`.
+  (gotcha 1419)
+* `abel` treats `Additive.ofMul 1` as an atom, so the `Additive.ofMul.injective; simp only [...];
+  abel` idiom must include `ofMul_one` whenever a literal `1` can appear (e.g. from `1 / a`).
+  (gotcha 1413)
+* `Subgroup.normal_subgroupOf` and `Subgroup.instMulDistribMulAction` are both instances, and the
+  subgroup action is `SMul.comp` along the coercion, so `(σ : ↥D) • m` is *definitionally*
+  `(↑σ : G) • m`.  That is why `resSubH1_smul` and `resCoeffH1_transClass` are both `rfl`.
+  (gotcha 1421)
+* `Profinite/Coeff.lean` is **not** reachable from `Profinite/TransgressionClass.lean`; a module
+  wanting `coeffH1` must import it explicitly.  (gotcha 1422)
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
