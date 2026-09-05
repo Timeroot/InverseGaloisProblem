@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Profinite.Coeff
 import InverseGalois.CFT.Profinite.TransgressionClass
 
 /-!
@@ -25,6 +26,10 @@ so the subgroup is not required to have a basis of open normal subgroups.
 
 * `InverseGalois.CFT.restrictCochain`: a family of maps, restricted to a subgroup in both variables.
 * `InverseGalois.CFT.localTransClass`: **the class of a transgression restricted to a subgroup.**
+* `InverseGalois.CFT.resCoeffH1`: the localisation of a class of the first cohomology with values in
+  the first cohomology of a normal subgroup.
+* `InverseGalois.CFT.sha1Loc`: **the classes of the first cohomology with values in the first
+  cohomology of a normal subgroup whose localisation is everywhere trivial.**
 
 ## Main results
 
@@ -32,10 +37,15 @@ so the subgroup is not required to have a basis of open normal subgroups.
   of a subgroup.**
 * `InverseGalois.CFT.localTransClass_eq_one`: the restricted class vanishes when the transgression
   is, on the subgroup, the coboundary of a smooth homomorphism.
+* `InverseGalois.CFT.transClass_mem_sha1Loc_iff`: the class of a transgression is everywhere locally
+  trivial exactly when all its restricted classes vanish.
 * `InverseGalois.CFT.exists_comapH2_eq_of_localTransClass`: **a locally trivial class of the second
   cohomology whose restriction to the kernel of a smooth surjection onto a discrete group is trivial
   is inflated from the quotient**, as soon as a transgression whose restricted classes all vanish
   has itself a vanishing class.
+* `InverseGalois.CFT.exists_comapH2_eq_of_sha1Loc_eq_bot`: the same, **as soon as the everywhere
+  locally trivial classes of the first cohomology with values in the first cohomology of the kernel
+  are trivial.**
 
 ## Tags
 
@@ -69,6 +79,27 @@ theorem continuous_interHom : Continuous (interHom N D) := by
     continuous_subtype_val.comp continuous_subtype_val
   exact continuous_induced_rng.2 h
 
+/-- The part of a subgroup lying inside another one, viewed inside the first. -/
+def interSubHom : ↥(N.subgroupOf D) →* ↥N where
+  toFun y := ⟨((y : ↥D) : G), Subgroup.mem_subgroupOf.1 y.2⟩
+  map_one' := rfl
+  map_mul' _ _ := rfl
+
+omit [TopologicalSpace G] in
+@[simp]
+theorem coe_interSubHom (y : ↥(N.subgroupOf D)) :
+    ((interSubHom N D y : ↥N) : G) = ((y : ↥D) : G) := rfl
+
+/-- The passage to the larger subgroup is continuous for the subspace topologies. -/
+theorem continuous_interSubHom : Continuous (interSubHom N D) := by
+  have h : Continuous fun y : ↥(N.subgroupOf D) => ((y : ↥D) : G) :=
+    continuous_subtype_val.comp continuous_subtype_val
+  exact continuous_induced_rng.2 h
+
+/-- The passage to the larger subgroup is a smooth homomorphism. -/
+theorem isSmoothHom_interSubHom : IsSmoothHom (interSubHom N D) :=
+  isSmoothHom_of_continuous (continuous_interSubHom N D)
+
 variable {N D}
 
 /-- The part of an open subgroup inside a subgroup is open there. -/
@@ -83,6 +114,20 @@ omit [TopologicalSpace G] in
 theorem trivial_subgroupOf (htriv : ∀ n ∈ N, ∀ m : M, n • m = m) :
     ∀ n ∈ N.subgroupOf D, ∀ m : M, n • m = m :=
   fun n hn m => htriv (n : G) (Subgroup.mem_subgroupOf.1 hn) m
+
+variable (N D) in
+/-- **Restriction of a class of the first cohomology of a subgroup to the part of it lying inside
+another subgroup.**  Read on the Galois group of a number field, this is the localisation of a
+class at a place. -/
+def resSubH1 : SmoothH1 ↥N M →* SmoothH1 ↥(N.subgroupOf D) M :=
+  comapH1 (interSubHom N D) (fun _ _ => rfl) (isSmoothHom_interSubHom N D)
+
+/-- Restriction to the part inside another subgroup is computed on cocycles. -/
+theorem resSubH1_smoothH1Mk {u : ↥N → M} (hu : IsMulCocycle₁ u) (hs : IsSmooth₁ u) :
+    resSubH1 N D (smoothH1Mk u hu hs)
+      = smoothH1Mk (comap₁ (interSubHom N D) u)
+        (isMulCocycle₁_comap₁ _ (fun _ _ => rfl) hu)
+        ((isSmoothHom_interSubHom N D).isSmooth₁ hs) := rfl
 
 end Inter
 
@@ -145,6 +190,59 @@ theorem localTransClass_eq_one (h : IsTransgressionDatum N M t)
 
 end Restrict
 
+/-! ### The localisation of a class of the first cohomology -/
+
+section Localise
+
+variable {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
+variable {M : Type*} [CommGroup M] [MulDistribMulAction G M]
+variable {N : Subgroup G} [hN : N.Normal]
+
+/-- **Restriction to the part inside a subgroup commutes with the conjugation action of that
+subgroup**, both being conjugation by the same element of the ambient group. -/
+theorem resSubH1_smul (D : Subgroup G) (σ : ↥D) (z : SmoothH1 ↥N M) :
+    resSubH1 N D (σ • z) = σ • resSubH1 N D z := by
+  obtain ⟨u, hu, hs, rfl⟩ := smoothH1Mk_surjective z
+  rfl
+
+variable (N) in
+/-- **The localisation of a class of the first cohomology with values in the first cohomology of a
+normal subgroup**: restrict the class to a subgroup, and its coefficients to the part of the normal
+subgroup lying inside that subgroup. -/
+def resCoeffH1 (D : Subgroup G) :
+    SmoothH1 G (SmoothH1 ↥N M) →* SmoothH1 ↥D (SmoothH1 ↥(N.subgroupOf D) M) :=
+  (coeffH1 (resSubH1 N D) (resSubH1_smul D)).comp (resH1 D)
+
+variable (M N) in
+/-- **The classes of the first cohomology with values in the first cohomology of a normal subgroup
+whose localisation at every member of a family of subgroups is trivial.**  For the Galois group of
+a number field and the family of decomposition subgroups these are the everywhere locally trivial
+classes of the localised system, the coefficients being localised along with the class. -/
+def sha1Loc (S : Set (Subgroup G)) : Subgroup (SmoothH1 G (SmoothH1 ↥N M)) :=
+  ⨅ D ∈ S, (resCoeffH1 N D).ker
+
+@[simp]
+theorem mem_sha1Loc {S : Set (Subgroup G)} {z : SmoothH1 G (SmoothH1 ↥N M)} :
+    z ∈ sha1Loc M N S ↔ ∀ D ∈ S, resCoeffH1 N D z = 1 := by
+  simp [sha1Loc, Subgroup.mem_iInf, MonoidHom.mem_ker]
+
+variable {t : G → G → M}
+
+/-- **The localisation of the class of a transgression is the class of the transgression
+restricted.** -/
+theorem resCoeffH1_transClass (h : IsTransgressionDatum N M t)
+    (htriv : ∀ n ∈ N, ∀ m : M, n • m = m) (hop : IsOpen (N : Set G)) (D : Subgroup G) :
+    resCoeffH1 N D (transClass h htriv hop) = localTransClass h htriv hop D := rfl
+
+/-- **The class of a transgression is everywhere locally trivial exactly when all its restricted
+classes vanish.** -/
+theorem transClass_mem_sha1Loc_iff (h : IsTransgressionDatum N M t)
+    (htriv : ∀ n ∈ N, ∀ m : M, n • m = m) (hop : IsOpen (N : Set G)) {S : Set (Subgroup G)} :
+    transClass h htriv hop ∈ sha1Loc M N S ↔ ∀ D ∈ S, localTransClass h htriv hop D = 1 := by
+  simp only [mem_sha1Loc, resCoeffH1_transClass]
+
+end Localise
+
 /-! ### Inflation from the vanishing of the restricted transgression classes -/
 
 section Package
@@ -175,6 +273,27 @@ theorem exists_comapH2_eq_of_localTransClass (hbasis : HasOpenNormalBasis G) (hs
   refine hsha t h fun D hD => ?_
   obtain ⟨e, hes, hem, he⟩ := hloc D hD
   exact localTransClass_eq_one h htriv (isOpenNormal_ker_of_isSmoothHom hsm).isOpen D hes hem he
+
+/-- **A locally trivial class of the second cohomology of a topological group whose restriction to
+the kernel of a smooth surjection onto a discrete group is trivial is inflated from the quotient,
+as soon as the everywhere locally trivial classes of the first cohomology with values in the first
+cohomology of the kernel are themselves trivial.**  This is the descent in its arithmetic shape:
+the only input beyond the local triviality of the class is the vanishing of one group measuring
+the failure of a local-global principle one degree down. -/
+theorem exists_comapH2_eq_of_sha1Loc_eq_bot (hbasis : HasOpenNormalBasis G) (hsm : IsSmoothHom π)
+    (hsurj : Function.Surjective π) (htriv : ∀ n ∈ π.ker, ∀ m : M, n • m = m)
+    {a : G × G → M} (ha : IsMulCocycle₂ a) (has : IsSmooth₂ a)
+    {b : G → M} (hbs : IsSmooth₁ b)
+    (hb : ∀ x ∈ π.ker, ∀ y ∈ π.ker, a (x, y) = x • b y / b (x * y) * b x)
+    {S : Set (Subgroup G)} (hmem : smoothH2Mk a ha has ∈ sha2 M S)
+    (hsha1 : sha1Loc M π.ker S = ⊥) :
+    ∃ x : SmoothH2 Q M, comapH2 π hπ hsm x = smoothH2Mk a ha has := by
+  refine exists_comapH2_eq_of_localTransClass hπ hbasis hsm hsurj htriv ha has hbs hb hmem ?_
+  intro t h hloc
+  have hz : transClass h htriv (isOpenNormal_ker_of_isSmoothHom hsm).isOpen ∈ sha1Loc M π.ker S :=
+    (transClass_mem_sha1Loc_iff h htriv _).2 hloc
+  rw [hsha1] at hz
+  exact Subgroup.mem_bot.1 hz
 
 end Package
 

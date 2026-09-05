@@ -4993,7 +4993,12 @@ it that are available here.
   and nothing else: **a locally trivial class of the second cohomology whose restriction to the
   kernel is trivial is inflated from the quotient as soon as a transgression whose restricted
   classes all vanish has itself a vanishing class.**  Only that direction is used, so the members of
-  the family are not asked to have a basis of open normal subgroups of their own.
+  the family are not asked to have a basis of open normal subgroups of their own.  Restricting a
+  class and localising its coefficients at the same time is a homomorphism, and the restricted class
+  of a transgression is the localisation of its class, so the hypothesis is the vanishing of a
+  single group: **the everywhere locally trivial classes of the first cohomology with values in the
+  first cohomology of the kernel.**  That is the group a local-global principle one degree down
+  computes, and with it the descent has the shape arithmetic delivers.
 * `InverseGalois.CFT.Profinite.Quotient` names a *level*: an open normal subgroup which acts
   trivially on the coefficients.  The quotient by it acts, and is discrete, and the projection to it
   has open kernel, so composing with the projection is **inflation from that level**, injective in
