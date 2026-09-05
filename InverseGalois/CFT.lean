@@ -456,6 +456,7 @@ import InverseGalois.CFT.Profinite.KummerHom
 import InverseGalois.CFT.Profinite.KummerLevel
 import InverseGalois.CFT.Profinite.KummerLevelDegree
 import InverseGalois.CFT.Profinite.KummerRes
+import InverseGalois.CFT.Profinite.KummerTower
 import InverseGalois.CFT.Profinite.KummerTwist
 import InverseGalois.CFT.Profinite.KummerTwo
 import InverseGalois.CFT.Profinite.Pi
@@ -472,6 +473,7 @@ import InverseGalois.CFT.Profinite.TransgressionRestrict
 import InverseGalois.CFT.Profinite.Trivial
 import InverseGalois.CFT.Profinite.Twist
 import InverseGalois.CFT.Profinite.TwistConj
+import InverseGalois.CFT.Profinite.TwistRes
 import InverseGalois.CFT.RatUnits
 import InverseGalois.CFT.RelativeFrobenius
 import InverseGalois.CFT.RestrictLE
@@ -5191,6 +5193,25 @@ it that are available here.
   compatibly — on the units by restriction, on the homomorphisms by translation of the value, on
   the cohomology by conjugation.  This is the shape in which the kernel of a lifting problem meets
   the units of the field the problem is solved over.
+* `InverseGalois.CFT.Profinite.TwistRes` localises a twisted class.  A homomorphism of base groups
+  induces a map of first cohomologies by precomposing a cocycle with it, a homomorphism of the
+  coefficients induces one by postcomposing, and **the two compositions commute on the nose**.  So
+  the twist is natural in the base group: once the classes the base group provides are carried to
+  the classes its image provides, **the whole twisting map is carried to the twisting map of the
+  image, tensored with the identity on the homomorphisms of the coefficients.**  Two cases are
+  recorded, the restriction along an inclusion of subgroups and the restriction of the first
+  cohomology of a normal subgroup to the part of it lying inside another subgroup — which read on
+  the Galois group of a number field is the localisation of a class at a place.
+* `InverseGalois.CFT.Profinite.KummerTower` carries Kummer theory up a tower of fields.  A unit of
+  an intermediate field is a unit of every larger one, the subgroup fixing the larger field sits
+  inside the subgroup fixing the smaller one, and **the restriction of the Kummer class of a unit is
+  the Kummer class of that same unit read upstairs.**  The reason is once more that the Kummer
+  cochain is characterised and not merely constructed: the root chosen upstairs and the root chosen
+  downstairs are two roots of the same element of the ambient extension, so they have the same
+  coboundary and the two cochains agree before any class is taken.  Twisting being natural in the
+  base group, the same then holds for the coefficients of a lifting problem: read through the
+  identification of the first cohomology with the tensor product of the units with the
+  homomorphisms of the roots of unity, **restricting a class is including the units.**
 * `InverseGalois.CFT.Profinite.Symbol` pairs two units of the base.  Cupping their Kummer classes
   along a pairing of the roots of unity with themselves gives **the `n`-th power symbol**, a
   bimultiplicative map on the units of the base with values in the second cohomology; it is killed
