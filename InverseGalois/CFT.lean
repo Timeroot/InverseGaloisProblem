@@ -456,6 +456,7 @@ import InverseGalois.CFT.Profinite.KummerAction
 import InverseGalois.CFT.Profinite.KummerHom
 import InverseGalois.CFT.Profinite.KummerLevel
 import InverseGalois.CFT.Profinite.KummerLevelDegree
+import InverseGalois.CFT.Profinite.KummerLocal
 import InverseGalois.CFT.Profinite.KummerRes
 import InverseGalois.CFT.Profinite.KummerTower
 import InverseGalois.CFT.Profinite.KummerTwist
@@ -5253,6 +5254,18 @@ it that are available here.
   base group, the same then holds for the coefficients of a lifting problem: read through the
   identification of the first cohomology with the tensor product of the units with the
   homomorphisms of the roots of unity, **restricting a class is including the units.**
+* `InverseGalois.CFT.Profinite.KummerLocal` says which tower that is at a place.  A place is a
+  decomposition subgroup, and localising a class of the subgroup fixing a subextension means
+  restricting it to the part of that subgroup lying inside the decomposition subgroup.  **That part
+  is the subgroup fixing the compositum of the subextension with the fixed field of the place**:
+  the part of a subgroup inside another one and the intersection of the two have the same elements
+  and the same topology, both inherited from the big group, so they induce the same map in the
+  first cohomology; the subgroup fixing a compositum is the intersection of the subgroups fixing
+  the factors; and a closed subgroup is the subgroup fixing its own fixed field.  Hence
+  **localising a Kummer class at a place is including the units of the field into the units of that
+  compositum**, and the same for the twisted identification.  The fixed field of a decomposition
+  subgroup is an infinite extension of the base, which is why the tower below asks nothing of the
+  size of the intermediate field.
 * `InverseGalois.CFT.Profinite.Symbol` pairs two units of the base.  Cupping their Kummer classes
   along a pairing of the roots of unity with themselves gives **the `n`-th power symbol**, a
   bimultiplicative map on the units of the base with values in the second cohomology; it is killed
