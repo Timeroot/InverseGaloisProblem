@@ -328,6 +328,7 @@ import InverseGalois.CFT.Kummer.DyadicPlace
 import InverseGalois.CFT.Kummer.DyadicSquareClass
 import InverseGalois.CFT.Kummer.GlobalPower
 import InverseGalois.CFT.Kummer.InertiaBound
+import InverseGalois.CFT.Kummer.InfiniteLevelPower
 import InverseGalois.CFT.Kummer.InflationRootsOfUnity
 import InverseGalois.CFT.Kummer.LevelOne
 import InverseGalois.CFT.Kummer.LocalPower
@@ -795,6 +796,7 @@ import InverseGalois.CFT.Units.CompositumFundamental
 import InverseGalois.CFT.Units.CyclicTrivial
 import InverseGalois.CFT.Units.Decomposition
 import InverseGalois.CFT.Units.DecompositionField
+import InverseGalois.CFT.Units.DecompositionFieldTower
 import InverseGalois.CFT.Units.DecompositionFundamental
 import InverseGalois.CFT.Units.DecompositionGalois
 import InverseGalois.CFT.Units.DecompositionIdele
@@ -2118,6 +2120,14 @@ it that are available here.
   is what turns a local condition at finitely many places into a global one.  The same holds at an
   infinite place, the completion of the base below being the fixed field of the decomposition group
   there too.
+* `InverseGalois.CFT.Kummer.InfiniteLevelPower` frees that criterion from the extension being
+  finite.  A radical of an arbitrary Galois extension generates a finite Galois subextension, and
+  the place of that subextension below the given prime carries a decomposition group onto which the
+  decomposition subgroup above maps; so an automorphism of the subextension fixing the place is the
+  restriction of one fixing the prime, and therefore fixes the radical.  The place of the base below
+  the place of the subextension is the place of the base below the given one, so the completion in
+  which the root is found is the intended one, at a prime of the integers and at an archimedean
+  place alike.
 * `InverseGalois.CFT.Kummer.Pairing` compares two radicals through their exponent vectors.  Writing
   an element of the subgroup as a product of powers of the power basis times a `p`-th power, the
   automorphism which multiplies the `i`-th radical by the `cᵢ`-th power of the root of unity fixes
@@ -2668,6 +2678,13 @@ it that are available here.
   group.  An element of it has its image in the completion fixed by the decomposition group, hence
   coming from the completion of the base, so the decomposition field embeds into the completion of
   the base and the Galois group of the completions is the Galois group over it.
+* `InverseGalois.CFT.Units.DecompositionFieldTower` moves that description along a tower.  An
+  element of the top field lies in the decomposition field of a level exactly when its image in the
+  completion above comes from the completion of the level, and an automorphism of the top field
+  fixing the prime restricts to one of the level fixing the prime below; the transport of the
+  completions along the tower carries the completion of the level to itself, so the decomposition
+  field of the level is stable under every automorphism fixing the prime and its embedding into the
+  completion of the level intertwines the two actions.
 * `InverseGalois.CFT.Units.CompletionUnits` passes that description to the unit groups: a fixed
   unit comes from the completion of the base and is nonzero there, hence is a unit below.
 * `InverseGalois.CFT.Units.OrbitPlaces` identifies the orbits of the Galois group on the height one

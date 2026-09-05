@@ -41,6 +41,9 @@ are killed by nothing.
 
 * `InverseGalois.CFT.Tate.exists_nsmul_of_coordInv_eq_zero`: a family of elements whose associated
   sum of pure tensors vanishes consists of multiples of the prime.
+* `InverseGalois.CFT.Tate.map_eq_zero_of_forall_exists_nsmul`: **a map tensored with coefficients
+  of finite rank over the prime field kills whatever a second one kills** as soon as divisibility
+  by the prime after the second follows from divisibility by the prime after the first.
 * `InverseGalois.CFT.bijective_sectionsTensorMap_of_equivPi`: the comparison map of the sections
   with the tensored family is bijective.
 * `InverseGalois.CFT.isZero_tateModule_tensor_orbitSectionsRep_of_equivPi`: the complete cohomology
@@ -149,6 +152,36 @@ theorem exists_nsmul_of_coordInv_eq_zero (g : Fin d → M) (hg : coordInv M e g 
   exact h1
 
 end Coord
+
+/-! ### Comparing the kernels of two maps tensored with the coefficients -/
+
+section Ker
+
+variable {p d : ℕ} [Fact p.Prime] {W M N N' : Type*} [AddCommGroup W] [Module ℤ W]
+  [AddCommGroup M] [Module ℤ M] [AddCommGroup N] [Module ℤ N] [AddCommGroup N'] [Module ℤ N']
+  (e : W ≃+ (Fin d → ZMod p))
+
+include e in
+/-- **A map tensored with coefficients of finite rank over the prime field kills whatever a second
+map tensored with them kills, as soon as divisibility by the prime after the second follows from
+divisibility by the prime after the first.**  An element of the tensor product is a sum of pure
+tensors along a basis of the coefficients; the first map kills it exactly when its coordinates
+become divisible by the prime, and then so do the coordinates after the second map, which lets the
+prime be moved across the tensor sign onto the basis vectors, where it kills them. -/
+theorem map_eq_zero_of_forall_exists_nsmul (f : M →ₗ[ℤ] N) (f' : M →ₗ[ℤ] N')
+    (hff : ∀ a : M, (∃ b : N, p • b = f a) → ∃ c : N', p • c = f' a) {t : M ⊗[ℤ] W}
+    (ht : TensorProduct.map f LinearMap.id t = 0) :
+    TensorProduct.map f' LinearMap.id t = 0 := by
+  obtain ⟨g, rfl⟩ := surjective_coordInv e t
+  rw [coordInv_map e f g] at ht
+  rw [coordInv_map e f' g]
+  choose c hc using fun j : Fin d =>
+    hff (g j) (exists_nsmul_of_coordInv_eq_zero e (fun i => f (g i)) ht j)
+  rw [coordInv_apply]
+  refine Finset.sum_eq_zero fun j _ => ?_
+  rw [← hc j, nsmul_tmul, nsmul_eq_zero_of_equivPi e, TensorProduct.tmul_zero]
+
+end Ker
 
 end Tate
 
