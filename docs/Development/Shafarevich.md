@@ -11278,6 +11278,155 @@ Only brick 4, unchanged in substance: `SmoothH1 G_K E ≅ K^× ⊗ W` as `Gal(K/
 
 ---
 
+## 1.05 Status (2026-09-05, latest) — **brick 4's construction side is built**: the first cohomology of the subgroup fixing a field *is* the units tensor the homomorphisms of the roots of unity, equivariantly and compatibly with restriction
+
+### (a) What landed
+
+Seven modules under `InverseGalois/CFT/Profinite/`, none of them previously recorded here.  Commits
+`f1d3382` (`TwistRes`, `KummerTower`) and the present one (`TwistTensor`, plus the tensor-level
+additions to `KummerTwist`); the first four landed with the profinite Kummer group.  Full root build
+**9700 jobs**, 0 warnings, 0 errors, 0 sorries.
+
+This is brick 4 of §1.04(b), the coefficient bridge, on its construction side.  The target is
+
+>  `SmoothH1 G_K E ≅ K^× ⊗_ℤ Hom(μ_p, E)` as `Gal(K/k)`-modules,
+>  compatibly with restriction to a decomposition subgroup.
+
+The route is not "compose four isomorphisms" (the abandoned plan of gotcha 1445) but **build the
+map directly and characterise it**, which is why every statement below is an equation between two
+maps rather than a diagram chase.
+
+1. **`Pi.lean` — the algebra of coefficient maps.**  A homomorphism of the coefficients induces a
+   map of first cohomologies by postcomposing a cocycle (`coeffH1`); when the coefficients are acted
+   on trivially this is functorial in the coefficients, so `coeffH1End` makes the endomorphisms of
+   the coefficient group act on the cohomology, and `smoothH1PiHom` compares the cohomology of a
+   product of coefficient groups with the product of the cohomologies.
+2. **`Twist.lean` — the twist itself.**  Given a class `κ a ∈ H¹(G, M)` provided by an element `a`
+   of a base group and a homomorphism `w : M →* E` of the coefficients, `twistClass κ a w` is
+   `coeffH1 w (κ a)`.  It is bimultiplicative, hence `twistMap` out of
+   `Additive A ⊗[ℤ] Additive (M →* E)`; and when `M` is cyclic, `E` is killed by `p`, `κ` is
+   surjective with kernel the `p`-th powers and `E ≅ ∏ M`, `twistEquiv` upgrades `twistMap` to an
+   isomorphism.  The coordinates `twistCoord` are what invert it.
+3. **`TwistConj.lean` — equivariance on a pure tensor.**  The first cohomology of a *normal*
+   subgroup `N ◁ G` carries the conjugation action of `G`, and for `coeffH1` to commute with it the
+   homomorphism of the coefficients must move too: `homSMul σ w = σ ∘ w ∘ σ⁻¹`.  This is an action
+   (`homMulDistribMulAction`), `conjH1_coeffH1` is the commutation, and `conjH1_twistClass` is the
+   equivariance of the twist on a pure tensor, conditional on the classes the base group provides
+   being equivariant (`hκ : conjH1 σ (κ a) = κ (ρ σ a)`).
+4. **`KummerTwist.lean` — the arithmetic instance.**  For `K` an intermediate field of a Galois
+   `Ω/k`, `kummerSubHom` is surjective with the `p`-th powers as kernel, which is exactly the datum
+   `twistEquiv` consumes, so
+
+   >  `kummerTwistEquiv : Additive (↥K)ˣ ⊗[ℤ] Additive (M →* E) ≃+ Additive (SmoothH1 ↥K.fixingSubgroup E)`.
+
+   `conjH1_kummerTwistClass` is its `Gal(Ω/k)`-equivariance on a pure tensor, obtained from
+   `conjH1_kummerSubHom` with `ρ σ = AlgEquiv.restrictNormalHom ↥K σ • ·`.
+5. **`TwistRes.lean` — naturality in the group.**  A homomorphism `π` of base groups induces
+   `comapH1` by precomposing a cocycle, `coeffH1` by postcomposing; `comapH1_coeffH1` says **the two
+   compositions are equal on the nose** (both are `smoothH1Mk` of the same cochain).  Hence
+   `comapH1_twistMap`: once the classes the base group provides are carried along by some
+   `ν : A →* A'`, the whole twisting map is carried to the twisting map of the image, tensored with
+   the identity on `M →* E`.  Two instances are packaged: `resInclH1` along an inclusion of
+   subgroups, and `resSubH1 N D` for the part of `N` lying inside `D` — read on `G_k` with
+   `N = G_K` and `D` a decomposition subgroup, that is **localisation at a place**.
+6. **`KummerTower.lean` — naturality along a tower of fields.**  For `K ≤ L` the Kummer *cochain*
+   of a unit `a ∈ (↥K)ˣ`, restricted to `L.fixingSubgroup`, is the Kummer cochain of `j a` read
+   upstairs (`kummerSubCochain_tower`), because the cochain is *characterised* — the chosen `p`-th
+   roots of `a` upstairs and downstairs are two roots of the same element of `Ω`, so they have the
+   same coboundary — and so the two cochains agree *before* any class is taken.  Feeding this into
+   `comapH1_twistMap` gives `resInclH1_kummerTwistEquiv`: **through the identification, restricting
+   a class is including the units.**
+7. **`TwistTensor.lean` — equivariance of the whole map.**  `homSMulHom σ` packages `homSMul σ` as
+   an endomorphism of `M →* E`, and
+
+   >  `conjH1 σ ∘ twistMap κ = twistMap κ ∘ (ρ σ ⊗ homSMulHom σ)`
+
+   is `conjH1_twistMap`, by `TensorProduct.induction_on` off `conjH1_twistClass`.  For the action to
+   be an action of the *quotient*, `N` must move both factors trivially; on the second factor that
+   is automatic (`homSMul_eq_self_of_mem`: a subgroup acting trivially on source and target acts
+   trivially on the homomorphisms between them).  On the arithmetic side `KummerTwist.lean` now
+   carries `conjH1_kummerTwistMap` / `conjH1_kummerTwistEquiv` together with the two triviality
+   facts `smul_units_eq_self_of_mem_fixingSubgroup` (an automorphism fixing `K` pointwise restricts
+   to `1`, by `IntermediateField.restrictNormalHom_ker`) and
+   `homSMul_eq_self_of_mem_fixingSubgroup`.
+
+### (b) What is left of brick 4
+
+Two items, both packaging rather than mathematics:
+
+1. **Descend the action.**  Everything above is stated for `Gal(Ω/k)` acting through
+   `K.fixingSubgroup`-triviality.  `Profinite/Quotient.lean` already has the general machinery —
+   `class ActsTrivially N M`, `quotientAut N M : G ⧸ N →* MulAut M`,
+   `instance quotientMulDistribMulAction`, `quotientMk_smul … = rfl`, `isSmoothAction_of_actsTrivially`
+   — and `TransgressionInflate.lean:92` instantiates it for `SmoothH1 ↥N M`.  What is missing is only
+   the *arithmetic* instantiation: `homMulDistribMulAction` is a `def`, not an `instance`, and the
+   transport along `Gal(Ω/k) ⧸ K.fixingSubgroup ≃* Gal(↥K/k)` (which is
+   `QuotientGroup.quotientKerEquivOfSurjective` applied to `AlgEquiv.restrictNormalHom`, its kernel
+   being `IntermediateField.restrictNormalHom_ker`) has not been written down.  (gotcha 1467)
+2. **The local `hν`.**  `resSubH1_twistClass` / `resSubH1_twistMap` are in place abstractly; the
+   arithmetic hypothesis they still want is the identification of `↥(N.subgroupOf D)` — for
+   `N = K.fixingSubgroup` and `D` a decomposition subgroup — with `↥L.fixingSubgroup` for
+   `L = K ⊔ fixedField D`.  That needs `D` closed and the infinite Galois correspondence, plus the
+   henselization-versus-completion comparison `(K ⊔ F)^× / p ≅ K_w^× / p`.
+
+Then the language bridge of §1.04(b) item 1 (`Profinite/Discrete.lean`) carries the result into
+`tateModule … 1` and it can feed `sha1Level`.
+
+### (c) Strategic reconnaissance: the reciprocity wall is where it looked
+
+A pass over `Units/NakayamaSpan.lean`, `Units/BaseTate.lean`, `Units/BaseFundamental.lean`,
+`Units/GlobalTate.lean` and `Units/IdeleTorusShaTorsion.lean` settled three things about row 5, all
+negative, and one about the shape of the endgame.
+
+* **The sufficient conditions in `NakayamaSpan.lean` are not a proof route.**  Both
+  `hasIdeleClassNakayamaSpan_of_isZero` and `_of_isZero_idele` ask a Tate group of the ideles to
+  vanish, and it does not.  Take `k = ℚ`, `K = ℚ(i)`, `p = 2`, `G = P = ℤ/2`.  Then
+  `I_K[2] = ⊕_w μ_2(K_w) = ⊕_v Ind_{G_v}^G ℤ/2`, and `Ĥ⁰(G_v, ℤ/2)` is `0` for split `v`
+  (`G_v = 1`) but `ℤ/2` for non-split `v`.  So `Ĥ⁰(G, I_K[2]) = ⊕_{v \text{ non-split}} ℤ/2 ≠ 0`.
+  The conditions are genuinely only sufficient.  (gotcha 1468)
+* **No reformulation of the span escapes reciprocity.**  `range ι_* = ker δ` for the connecting map
+  `δ : Ĥ^{n+2}(P, C ⊗ W) → Ĥ^{n+3}(P, K^× ⊗ W)`, so
+  `range TN_P ⊔ range ι_* = ⊤ ⟺ range (δ ∘ TN_P) = range δ ⟺ Ш^{n+3}(P, K^× ⊗ W) = range shaTorusPTorsionMap`,
+  which is row 5 itself.  The span is a restatement, not a reduction.  (gotcha 1469)
+* **The structural blocker is `.choose`.**  `baseFundamentalClass k K` is
+  `(exists_zsmul_eq_zero_imp_dvd_H2_ideleClassRep_base k K).choose`, and it is built from
+  `globalFundamentalClass`, itself `.choose` (`_of_rat` restricts, `_of_top` inflates, `_base` takes
+  the normal closure over ℚ).  The global-versus-local comparison square that row 5 needs cannot be
+  written against an opaque class; it wants the invariant-theoretic construction out of
+  `localInvariantHom` plus Hasse reciprocity, i.e. the `CFT/Brauer/` tower.  That is the largest
+  single remaining item in the whole file.  (gotcha 1118)
+* **There are two independent hypothesis routes to all-solvable.**  `Main.lean:71`
+  `isSolvable_isInverseGalois_of_splitPrimePowerEP` needs `SplitPrimePowerEP` *alone*, and
+  `Generic.lean:256` `splitPrimePowerEP_of_genericSplitEP` reduces that to `∀ ℓ, GenericSplitEP ℓ`.
+  The `FrattiniKernelEP` route is the other.  Brick 4 is needed on both, which is why it is the
+  right thing to be building while the reciprocity tower is unaffordable.  (gotcha 1470)
+* Note also that the `Units/` side's "everywhere locally trivial" is
+  `ker (tateMap (tensorHomLeft W (globalUnitsToIdele k K)) n)` — through the *ideles*, i.e. with
+  localised coefficients by Shapiro, which is exactly the correction §1.03(b) made on the profinite
+  side.  The two sides are asking the same question.  (gotcha 1471)
+
+### (d) Lean notes
+
+* The general machinery for a quotient action on `SmoothH1` already exists in
+  `Profinite/Quotient.lean`; gotcha 1356 ("no arithmetic `Gal(K/k)`-action on `SmoothH1 G_K M`")
+  means only that the arithmetic instantiation is missing.  (gotcha 1467)
+* `TensorProduct.induction_on` naturality proofs want `simp only [map_zero]` and
+  `simp only [map_add, hz, hz']`, never `rw`; the `tmul` case is
+  `rw [TensorProduct.map_tmul]; exact congrArg Additive.ofMul (…)`, and `Additive.ofMul a` is
+  definitionally `a`, so `x.toMul` closes the coercion gap.  (gotchas 1461, 1454)
+* `MonoidHom.mk' (homSMul σ) (homSMul_mul σ)` is the whole of `homSMulHom`: `mk'` wants only
+  `MulOneClass` on the source and `Group` on the target, and `M →* E` is a `CommGroup`.
+* A statement mentioning `AlgEquiv.restrictNormalHom (↥K) σ • a` for `a : (↥K)ˣ` times out
+  instance search at the default budget; it needs
+  `set_option synthInstance.maxHeartbeats 400000` and `set_option maxHeartbeats 1000000`.
+  (gotcha 1381, now also for `smul_units_eq_self_of_mem_fixingSubgroup`)
+* `restrictNormalHom_eq_one_of_mem_fixingSubgroup` already exists, in `Brauer/SmoothLevel.lean:87`.
+  A duplicate in `Profinite/` is not caught by `lake build <Module>` — it surfaces only at the root
+  build, as *environment already contains …* on the `import` line of `InverseGalois/CFT.lean`.
+  Grep the whole of `InverseGalois/` for a new name, not just the subdirectory.  (gotcha 1472)
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
