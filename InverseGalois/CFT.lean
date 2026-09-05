@@ -674,6 +674,7 @@ import InverseGalois.CFT.TateCohomology.Junction
 import InverseGalois.CFT.TateCohomology.NakayamaCoeff
 import InverseGalois.CFT.TateCohomology.NakayamaNatural
 import InverseGalois.CFT.TateCohomology.NakayamaNextNatural
+import InverseGalois.CFT.TateCohomology.NakayamaNextRestrict
 import InverseGalois.CFT.TateCohomology.NakayamaRestrict
 import InverseGalois.CFT.TateCohomology.NakayamaSubgroup
 import InverseGalois.CFT.TateCohomology.NakayamaSubgroupError
@@ -4035,6 +4036,17 @@ it that are available here.
   local one.  The identification of the target of the obstruction with the vectors killed by the
   prime is an isomorphism, so a spanning statement about the obstruction is the same statement
   about the map it is built from, where that naturality is available.
+* `InverseGalois.CFT.TateCohomology.NakayamaNextRestrict` asks the same question of a subgroup
+  rather than of a map of representations.  The two identifications of degree that the map leaving
+  the comparison is read through both commute with restriction and with corestriction, and they are
+  invertible, so their inverses do too; the induced map commutes with both by naturality.  Hence
+  **the map leaving the comparison commutes with restriction to a subgroup and with corestriction
+  from it**, and the consequence used later is again a statement about images: as soon as
+  corestriction of the tensor product from the subgroup is onto, **whatever the map leaving the
+  comparison reaches on the whole group is the corestriction of what it reaches on the subgroup**.
+  That is what turns a question about a Sylow subgroup into a question about the places one at a
+  time, since the classes coming from a product over the places are corestrictions from the
+  stabilisers of the places.
 * `InverseGalois.CFT.TateCohomology.DeltaShift` removes the connecting map from that comparison
   altogether.  The sequence defining the shift is the universal extension with acyclic middle term,
   and its connecting map is the identification of the complete cohomology of the shift with that of

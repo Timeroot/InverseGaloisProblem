@@ -10961,6 +10961,96 @@ base-field plumbing (and the compatibility of `baseFundamentalClass` with the ch
 
 ---
 
+## 1.01 Status (2026-09-05) — sufficient conditions for the span, and the `Left`-naturality brick of §0.99(e) is **not** needed
+
+### (a) What landed
+
+Full root build **9685 jobs**, 0 warnings, 0 errors, 0 sorries.
+
+1. **`Units/NakayamaSpan.lean`**, two new sufficient conditions for `HasIdeleClassNakayamaSpan`:
+
+   * `hasIdeleClassNakayamaSpan_of_isZero` — if `Ĥ^{n+4}(P, C_K[p] ⊗ W)` vanishes for every Sylow
+     `P`, every `W` killed by `p` and every `n`, the span holds.  Reason: that group is where the
+     obstruction lands, so `obs_P = 0`, so `ker obs_P = ⊤`, and `ker obs_P = range TN_P`
+     (`ker_resBaseTateNakayamaPTorsionRight`) already fills the whole group before the ideles
+     contribute anything.  The proof is five lines: transport the vanishing across
+     `isZero_tateModule_tensorObj_nsmulTorsion_repOfAddAut`, then `top_sup_eq`.
+   * `hasIdeleClassNakayamaSpan_of_isZero_idele` — the same conclusion from vanishing of
+     `Ĥ^{n+4}(P, I_K[p] ⊗ W)` **and** `Ĥ^{n+5}(P, μ_p(K) ⊗ W)`, via the squeeze
+     `isZero_tateModule_tensor_ideleClassTorsionRes`.  The first of the two is a condition **place
+     by place** (Shapiro: `Ĥ^*(P, I_K[p] ⊗ W) = ⊕_ω Ĥ^*(P_w, μ_p(K_w) ⊗ W)`), so this reduces the
+     span to data read off the local extensions.
+
+2. **`TateCohomology/NakayamaNextRestrict.lean`** (new module) — the map leaving the comparison of
+   Tate and Nakayama against a subgroup:
+
+   * `resNakayamaIso` — the two identifications of degree, read on a subgroup — together with
+     `tateRes_tateNakayamaIso`, `tateCor_resNakayamaIso` and the two `symm` versions.
+   * `resTateNakayamaNextMap`, `tateRes_tateNakayamaNextMap`, **`tateCor_tateNakayamaNextMap`**, and
+     `map_range_resTateNakayamaNextMap`:
+
+     >  `cor_H ( range obs_H )  =  range obs_G`   whenever `cor_H` is onto on `Ĥ^{n+2}(–, A ⊗ M)`.
+
+   * `resTateNakayamaTwoNextMap` and the same three statements for the cocycle attached to a
+     prescribed class in degree two.
+
+### (b) Why (2) replaces the 600-line brick of §0.99(e)
+
+§0.99(d) phrased row 5's remaining half as an identity between **kernels of `Left`**, and §0.99(e)
+costed the `⊇` half as naturality of `Left` — a large ladder of squares.  That is avoidable.
+`range_resBaseTateNakayamaPTorsionRight` (`Units/BaseTateSylow.lean:130`) says
+
+>  `range obs_S (n)  =  ker Left_S (n+1)`
+
+for **every** subgroup `S`, so every statement §0.99(d) makes about `ker Left` is literally a
+statement about `range obs`, and the identity to prove becomes
+
+>  `range obs_P  =  Σ_w cor_w ( range obs_{P_w} )`.
+
+The `⊇` half of *that* is `tateCor_tateNakayamaTwoNextMap` — landed above, four lines — because
+`map_resBaseTateNakayamaPTorsionRight_eq_range_iff` (`BaseTateSylow.lean:143`) strips the
+`cocycleTensorObjPTorsionEquiv` off any spanning statement and leaves exactly
+`tateNakayamaTwoNextMap`.  **`Left`-naturality is off the critical path.**  Item 4 of §1.00(f)
+should be read as: *step 3's `⊆` only.*
+
+### (c) The structure of `C_K[p]`, from Grunwald–Wang
+
+`exists_pow_eq_of_forall_localPow_outside_of_prime` (`CFT/GrunwaldWang.lean:226`) needs only the
+**finite** places and tolerates a finite exceptional set, and it carries no roots-of-unity
+hypothesis.  Hence for *every* prime `p`
+
+>  `ker( K^×/(K^×)^p → I_K/I_K^p ) = 1`,   so   `C_K[p] ≅ I_K[p] / μ_p(K)`
+
+— the four-term sequence of §1.00(c) collapses to three terms.  This is the exact sequence the
+repository already carries as `resSeq_tensorSeq_ideleClassTorsion_shortExact`
+(`Units/IdeleClassTorsionSubgroup.lean:81`); the observation is that Grunwald–Wang is what makes it
+short, and that it is short for *every* `p`, not only for `p` odd or `μ_p ⊆ K`.  It does **not**
+make `C_K[p]` cohomologically trivial (§1.00(c) stands): the middle term `⊕_w Ĥ^*(P_w, μ_p(K_w))` is
+generally nonzero, which is precisely why (a)(2) is a *sufficient* condition and not a proof.
+
+### (d) What is left
+
+* Step 3's `⊆` — `range obs_P ⊆ Σ_w cor_w(range obs_{P_w})`.  Still the reciprocity wall; this is
+  where Poitou–Tate enters in the literature.  The best lead remains `C_K[p] ≅ I_K[p]/μ_p(K)` plus
+  Shapiro: the obstruction is a map out of `Ĥ^{n+2}(P, C_K[p] ⊗ W)`, whose only non-local input is
+  the `μ_p(K)` term, and the reciprocity law is exactly a statement about that term.
+* Bricks 4 and 5 of §1.00(b), unchanged — and §1.00(g)'s reduction to `μ_p ⊆ k` first.
+
+### (e) Lean notes
+
+* `lake build InverseGalois.CFT.Units.NakayamaSpan` with the two new imports is **8410 jobs, ~93 s**;
+  `…TateCohomology.NakayamaNextRestrict` is **8072 jobs, ~24 s**.  (gotcha 1349)
+* `rw [tateCor_naturality]` / `rw [tateRes_naturality]` **fail** on a goal whose morphism is
+  `(cocycleTensorSeq S b M).f` while the surrounding `tateCor`/`tateRes` names the object as
+  `cocycleTensorObj S b M`: the two are defeq only by unfolding the non-reducible `cocycleTensorSeq`
+  and taking a structure projection, which `rw`'s keyed matching will not do.  Instantiating the
+  lemma's implicit objects explicitly — `tateRes_naturality (A := tensorObj (shiftObj A) M)
+  (B := cocycleTensorObj (shiftObj A) b M) H …` — elaborates fine (argument types are checked at
+  default transparency) and produces a hypothesis in the `cocycleTensorObj` form; `exact h` then
+  closes the goal.  (gotcha 1352)
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —

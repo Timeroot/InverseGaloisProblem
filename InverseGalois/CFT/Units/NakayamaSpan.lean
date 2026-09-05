@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Units.BaseTateSylow
+import InverseGalois.CFT.Units.IdeleClassTorsionSubgroup
+import InverseGalois.CFT.Units.NsmulTorsionRep
 
 /-!
 # When the comparison of Tate and Nakayama, together with the ideles, spans
@@ -36,6 +38,14 @@ carrying a Sylow subgroup and a choice of coefficients through every intermediat
 
 * `InverseGalois.CFT.hasIdeleClassNakayamaSpan_of_not_dvd`: **the span holds whenever the prime
   does not divide the degree of the extension.**
+* `InverseGalois.CFT.hasIdeleClassNakayamaSpan_of_isZero`: **the span holds whenever the idele
+  classes killed by the prime, tensored with the coefficients, have no complete cohomology over a
+  Sylow subgroup** in the degree the obstruction lands in.
+* `InverseGalois.CFT.hasIdeleClassNakayamaSpan_of_isZero_idele`: **the span holds whenever the
+  ideles killed by the prime and the roots of unity of the extension, each tensored with the
+  coefficients, have no complete cohomology over a Sylow subgroup** in the two relevant degrees.
+  The first of these two conditions is a statement about the places one at a time, so this reduces
+  the span to conditions that can be read off the local extensions.
 * `InverseGalois.CFT.range_shaTorusPTorsionMap_of_span`: **the everywhere locally trivial classes
   of the units tensored with coefficients killed by a prime are exactly the classes the comparison
   of Tate and Nakayama produces**, whenever the span holds.
@@ -98,6 +108,46 @@ theorem hasIdeleClassNakayamaSpan_of_not_dvd (hp : ¬ p ∣ Nat.card Gal(K/k)) :
     rwa [hcard, one_nsmul] at hz
   subst hx
   exact Submodule.zero_mem _
+
+/-- **The span holds whenever the idele classes killed by the prime, tensored with the
+coefficients, have no complete cohomology over a Sylow subgroup for the prime** in the degree the
+obstruction of Tate and Nakayama lands in.  There the obstruction is the zero map, so the
+comparison of Tate and Nakayama is already surjective and the ideles are not needed at all. -/
+theorem hasIdeleClassNakayamaSpan_of_isZero
+    (h : ∀ W : Rep ℤ Gal(K/k), (∀ w : ↥W.V, p • w = 0) → ∀ (P : Sylow p Gal(K/k)) (n : ℤ),
+      Limits.IsZero (tateModule (resObj (P : Subgroup Gal(K/k))
+        (tensorObj (torsionRep (ideleClassAutHom k K) (p : ℤ)) W)) (n + 1 + 1 + 1 + 1))) :
+    HasIdeleClassNakayamaSpan k K p := by
+  intro W hW P n
+  have hz : Limits.IsZero (tateModule (tensorObj
+      (nsmulTorsion (resObj (P : Subgroup Gal(K/k)) (ideleClassRep k K)) p)
+      (resObj (P : Subgroup Gal(K/k)) W)) (n + 1 + 1 + 1 + 1)) :=
+    isZero_tateModule_tensorObj_nsmulTorsion_repOfAddAut
+      ((ideleClassAutHom k K).comp (P : Subgroup Gal(K/k)).subtype) p
+      (resObj (P : Subgroup Gal(K/k)) W) (n + 1 + 1 + 1 + 1) (h W hW P n)
+  have hker : LinearMap.ker
+      (resBaseTateNakayamaPTorsionRight k K W hW (P : Subgroup Gal(K/k)) n) = ⊤ :=
+    Submodule.eq_top_iff'.2 fun x => LinearMap.mem_ker.2 (eq_zero_of_isZero hz _)
+  rw [← ker_resBaseTateNakayamaPTorsionRight k K W hW (P : Subgroup Gal(K/k)) n, hker, top_sup_eq]
+
+/-- **The span holds whenever the ideles killed by the prime and the roots of unity of the
+extension, each tensored with the coefficients, have no complete cohomology over a Sylow subgroup
+for the prime** in the two relevant degrees.  The idele classes killed by the prime sit between
+those two groups, so their complete cohomology is squeezed to nothing, and the obstruction of Tate
+and Nakayama has nowhere to go.  The condition on the ideles is a condition on the places one at a
+time, so this reduces the span to data read off the local extensions. -/
+theorem hasIdeleClassNakayamaSpan_of_isZero_idele
+    (hI : ∀ W : Rep ℤ Gal(K/k), (∀ w : ↥W.V, p • w = 0) → ∀ (P : Sylow p Gal(K/k)) (n : ℤ),
+      Limits.IsZero (tateModule (resObj (P : Subgroup Gal(K/k))
+        (tensorObj (torsionRep (ideleAutHom k K) (p : ℤ)) W)) (n + 1 + 1 + 1 + 1)))
+    (hU : ∀ W : Rep ℤ Gal(K/k), (∀ w : ↥W.V, p • w = 0) → ∀ (P : Sylow p Gal(K/k)) (n : ℤ),
+      Limits.IsZero (tateModule (resObj (P : Subgroup Gal(K/k))
+        (tensorObj (torsionRep (globalUnitsAut (k := k) (K := K)) (p : ℤ)) W))
+          (n + 1 + 1 + 1 + 1 + 1))) :
+    HasIdeleClassNakayamaSpan k K p :=
+  hasIdeleClassNakayamaSpan_of_isZero fun W hW P n =>
+    isZero_tateModule_tensor_ideleClassTorsionRes (Fact.out : p.Prime) W
+      (P : Subgroup Gal(K/k)) (n + 1 + 1 + 1 + 1) (hI W hW P n) (hU W hW P n)
 
 /-- **The everywhere locally trivial classes of the units tensored with coefficients killed by a
 prime are exactly the image of the complete cohomology of the coefficients three degrees lower**,
