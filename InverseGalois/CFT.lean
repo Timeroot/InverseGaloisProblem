@@ -445,6 +445,7 @@ import InverseGalois.CFT.Profinite.Cochain
 import InverseGalois.CFT.Profinite.Coeff
 import InverseGalois.CFT.Profinite.Comap
 import InverseGalois.CFT.Profinite.Cup
+import InverseGalois.CFT.Profinite.FixingSubgroup
 import InverseGalois.CFT.Profinite.H1Conj
 import InverseGalois.CFT.Profinite.Hilbert90
 import InverseGalois.CFT.Profinite.InfRes
@@ -4998,6 +4999,18 @@ it that are available here.
   soon as the subgroup is open.  This is the coefficient module the transgression of an
   inflation-restriction sequence asks for, and for the Galois group of a number field and the
   subgroup fixing a finite extension it is the module Kummer theory computes.
+* `InverseGalois.CFT.Profinite.FixingSubgroup` reconciles the two pictures of that subgroup.  An
+  automorphism of the extension fixing an intermediate field is an automorphism over that field,
+  and Galois theory records this as an isomorphism of groups; but each side carries a topology of
+  its own, the subgroup the one it inherits and the Galois group over the field the one built from
+  the finite extensions of *that* field, and the two lattices of finite extensions are different.
+  **The isomorphism respects both topologies.**  Enlarging a finite extension of the base by the
+  intermediate field makes it finite over that field, which is one direction; the Krull topology of
+  the big group already sees a finite extension of the intermediate field, which is the other.  So
+  continuous cochains match up, and the first cohomology of the Galois group over an intermediate
+  field *is* the first cohomology of the subgroup which fixes it — the transport is carried out for
+  any isomorphism of topological groups smooth in both directions, since the argument sees only the
+  substitution of one variable for another.
 * `InverseGalois.CFT.Profinite.Trivial` is the case of coefficients on which the group acts
   trivially, the one that carries the local-global arguments.  There the cocycle relation says
   exactly that the cochain is a homomorphism, every coboundary is trivial, and smoothness is
@@ -5058,7 +5071,9 @@ it that are available here.
   `n`-th root: conjugating the cochain of a unit is the cochain built from the conjugate of the
   chosen root, which is a root of the conjugated unit, so the two agree before any class is taken.
   The one arithmetic input is that the roots of unity already lie in the small base, which is what
-  makes an automorphism over it leave the coefficients alone.
+  makes an automorphism over it leave the coefficients alone.  Transporting the Kummer isomorphism
+  itself across the two topologies then puts **the units of the intermediate field modulo `n`-th
+  powers on the first cohomology of the subgroup**, an isomorphism of modules over the quotient.
 * `InverseGalois.CFT.Profinite.KummerRes` restricts those classes.  The cochain of a unit measures
   how far a chosen root is from being fixed, and on a subgroup it is a coboundary exactly when it
   vanishes there, so **a Kummer class dies on a subgroup exactly when the unit is a power in the
