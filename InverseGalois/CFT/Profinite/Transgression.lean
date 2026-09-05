@@ -169,27 +169,32 @@ homomorphisms from the kernel, and over a subgroup along which the cocycle is a 
 coboundary of the trivialising cochain; so a class trivial at every member of the family has a
 transgression trivial there too, and the hypothesis left is a statement about the locally trivial
 classes of the first cohomology of the quotient alone — the shape in which the family is a family of
-decomposition subgroups and the statement is a Hasse principle. -/
+decomposition subgroups and the statement is a Hasse principle.  The local trivialisation produced
+is not a bare function: on the intersection of the subgroup with the kernel it is a smooth
+homomorphism, because the cocycle is trivial along the kernel there.  The local condition is
+therefore the vanishing of a class of the first cohomology of the subgroup, which is what an
+arithmetic local-global principle supplies. -/
 theorem exists_comapH2_eq_of_locally_coboundary (hsm : IsSmoothHom π)
     (hsurj : Function.Surjective π) (htriv : ∀ n ∈ π.ker, ∀ m : M, n • m = m)
     {a : G × G → M} (ha : IsMulCocycle₂ a) (has : IsSmooth₂ a)
     {b : G → M} (hbs : IsSmooth₁ b)
     (hb : ∀ x ∈ π.ker, ∀ y ∈ π.ker, a (x, y) = x • b y / b (x * y) * b x)
     {S : Set (Subgroup G)}
-    (hloc : ∀ D ∈ S, ∃ d : G → M, ∀ x ∈ D, ∀ y ∈ D, a (x, y) = x • d y / d (x * y) * d x)
+    (hloc : ∀ D ∈ S, ∃ d : ↥D → M, IsSmooth₁ d ∧ coboundary₂ d = comap₂ D.subtype a)
     (hsha : ∀ t : G → G → M,
       (∃ R : Subgroup G, IsOpenNormal R ∧ ∀ σ x : G, ∀ n ∈ R, t σ (x * n) = t σ x) →
       (∀ σ : G, ∀ x ∈ π.ker, ∀ y ∈ π.ker, t σ (x * y) = t σ x * t σ y) →
       (∀ σ τ : G, ∀ x ∈ π.ker, t (σ * τ) x = σ • t τ (σ⁻¹ * x * σ) * t σ x) →
       (∀ n ∈ π.ker, ∀ σ : G, ∀ x ∈ π.ker, t (n * σ) x = t σ x) →
-      (∀ D ∈ S, ∃ e : G → M, ∀ σ ∈ D, ∀ x ∈ D, x ∈ π.ker →
-        t σ x = σ • e (σ⁻¹ * x * σ) / e x) →
+      (∀ D ∈ S, ∃ e : G → M, IsSmooth₁ (fun x : ↥(D ⊓ π.ker) => e x) ∧
+        (∀ x ∈ D ⊓ π.ker, ∀ y ∈ D ⊓ π.ker, e (x * y) = e x * e y) ∧
+        ∀ σ ∈ D, ∀ x ∈ D, x ∈ π.ker → t σ x = σ • e (σ⁻¹ * x * σ) / e x) →
       ∃ φ : G → M, IsSmooth₁ φ ∧ (∀ x ∈ π.ker, ∀ y ∈ π.ker, φ (x * y) = φ x * φ y) ∧
         ∀ σ : G, ∀ x ∈ π.ker, t σ x = σ • φ (σ⁻¹ * x * σ) / φ x) :
     ∃ x : SmoothH2 Q M, comapH2 π hπ hsm x = smoothH2Mk a ha has := by
   refine exists_comapH2_eq_of_transgression hπ hsm hsurj htriv ha has hbs hb ?_
   intro c hc hcs hcoh h1
-  obtain ⟨v, _, hv⟩ := (smoothH2Mk_eq_iff hc hcs ha has).1 hcoh
+  obtain ⟨v, hvs, hv⟩ := (smoothH2Mk_eq_iff hc hcs ha has).1 hcoh
   refine hsha (transgression c) ?_ (fun σ x hx y hy => transgression_mul_mem htriv hc h1 σ hx hy)
     (fun σ τ x hx => transgression_mul_left htriv hc h1 σ τ hx)
     (fun n hn σ x hx => transgression_smul_left htriv hc h1 hn σ hx) ?_
@@ -202,22 +207,77 @@ theorem exists_comapH2_eq_of_locally_coboundary (hsm : IsSmoothHom π)
       show σ⁻¹ * (x * n) * σ = σ⁻¹ * x * σ * (σ⁻¹ * n * σ) by group]
     exact h
   · intro D hD
-    obtain ⟨d, hd⟩ := hloc D hD
-    refine ⟨fun g => d g * v g, fun σ hσ x hxD hxN => ?_⟩
-    refine transgression_eq_smul_div_of_eq_coboundary htriv h1 (D := D)
-      (c := fun g => d g * v g) ?_ hσ hxD hxN
-    intro p hp q hq
-    have hc' : c (p, q) = p • v q / v (p * q) * v p * (p • d q / d (p * q) * d p) := by
-      have hpq := congrFun hv (p, q)
-      rw [coboundary₂_apply] at hpq
-      rw [← hd p hp q hq, hpq]
+    obtain ⟨d, hds, hd⟩ := hloc D hD
+    classical
+    obtain ⟨d', hd'mem⟩ : ∃ d' : G → M, ∀ g (hg : g ∈ D), d' g = d ⟨g, hg⟩ :=
+      ⟨fun g => if hg : g ∈ D then d ⟨g, hg⟩ else 1, fun g hg => dif_pos hg⟩
+    have hdcob : ∀ x ∈ D, ∀ y ∈ D, a (x, y) = x • d' y / d' (x * y) * d' x := by
+      intro x hx y hy
+      have h := congrFun hd (⟨x, hx⟩, ⟨y, hy⟩)
+      rw [coboundary₂_apply] at h
+      rw [hd'mem x hx, hd'mem y hy, hd'mem _ (D.mul_mem hx hy)]
+      exact h.symm
+    have hd'sm : IsSmooth₁ fun x : ↥(D ⊓ π.ker) => d' (x : G) := by
+      have heq : (fun x : ↥(D ⊓ π.ker) => d' (x : G))
+          = fun x : ↥(D ⊓ π.ker) => d (Subgroup.inclusion (inf_le_left : D ⊓ π.ker ≤ D) x) :=
+        funext fun x => hd'mem _ x.2.1
+      rw [heq]
+      exact isSmooth₁_comp_inclusion (D ⊓ π.ker) inf_le_left hds
+    have hvsm : IsSmooth₁ fun x : ↥(D ⊓ π.ker) => v (x : G) := by
+      obtain ⟨R, hR, hvR⟩ := hvs
+      exact ⟨R.comap (D ⊓ π.ker).subtype, hR.comap (continuous_subtype (D ⊓ π.ker)),
+        fun x n hn => hvR (x : G) (n : G) (Subgroup.mem_comap.1 hn)⟩
+    refine ⟨fun g => d' g * v g, ?_, ?_, fun σ hσ x hxD hxN => ?_⟩
+    · obtain ⟨R₁, hR₁, hd₁⟩ := hd'sm
+      obtain ⟨R₂, hR₂, hv₁⟩ := hvsm
+      exact ⟨R₁ ⊓ R₂, hR₁.inf hR₂,
+        fun x n hn => congrArg₂ (fun p q : M => p * q) (hd₁ x n hn.1) (hv₁ x n hn.2)⟩
+    · intro x hx y hy
+      show d' (x * y) * v (x * y) = d' x * v x * (d' y * v y)
+      have hcob := hdcob x hx.1 y hy.1
+      rw [htriv x hx.2] at hcob
+      have hvxy := congrFun hv (x, y)
+      rw [coboundary₂_apply, h1 x hx.2 y, htriv x hx.2] at hvxy
+      have hA : a (x, y) * d' (x * y) = d' y * d' x := by
+        calc a (x, y) * d' (x * y) = d' y / d' (x * y) * d' x * d' (x * y) := by rw [hcob]
+          _ = d' y * d' x := by
+              apply Additive.ofMul.injective
+              simp only [div_eq_mul_inv, ofMul_mul, ofMul_inv]
+              abel
+      have hr : v (x * y) = v y * v x * a (x, y) := by
+        calc v (x * y) = v (x * y) * a (x, y) * (1 / a (x, y)) := by
+              apply Additive.ofMul.injective
+              simp only [div_eq_mul_inv, ofMul_mul, ofMul_inv, ofMul_one]
+              abel
+          _ = v (x * y) * a (x, y) * (v y / v (x * y) * v x) := by rw [hvxy]
+          _ = v y * v x * a (x, y) := by
+              apply Additive.ofMul.injective
+              simp only [div_eq_mul_inv, ofMul_mul, ofMul_inv]
+              abel
+      calc d' (x * y) * v (x * y) = d' (x * y) * (v y * v x * a (x, y)) := by rw [hr]
+        _ = a (x, y) * d' (x * y) * (v y * v x) := by
+            apply Additive.ofMul.injective
+            simp only [ofMul_mul]
+            abel
+        _ = d' y * d' x * (v y * v x) := by rw [hA]
+        _ = d' x * v x * (d' y * v y) := by
+            apply Additive.ofMul.injective
+            simp only [ofMul_mul]
+            abel
+    · refine transgression_eq_smul_div_of_eq_coboundary htriv h1 (D := D)
+        (c := fun g => d' g * v g) ?_ hσ hxD hxN
+      intro p hp q hq
+      have hc' : c (p, q) = p • v q / v (p * q) * v p * (p • d' q / d' (p * q) * d' p) := by
+        have hpq := congrFun hv (p, q)
+        rw [coboundary₂_apply] at hpq
+        rw [← hdcob p hp q hq, hpq]
+        apply Additive.ofMul.injective
+        simp only [div_eq_mul_inv, ofMul_mul, ofMul_inv]
+        abel
+      rw [hc']
       apply Additive.ofMul.injective
-      simp only [div_eq_mul_inv, ofMul_mul, ofMul_inv]
+      simp only [smul_mul', div_eq_mul_inv, mul_inv, ofMul_mul, ofMul_inv]
       abel
-    rw [hc']
-    apply Additive.ofMul.injective
-    simp only [smul_mul', div_eq_mul_inv, mul_inv, ofMul_mul, ofMul_inv]
-    abel
 
 /-- **A locally trivial class of the second cohomology of a topological group whose restriction to
 the kernel of a smooth surjection onto a discrete group is trivial is inflated from the quotient**,
@@ -234,19 +294,13 @@ theorem exists_comapH2_eq_of_mem_sha2 (hsm : IsSmoothHom π) (hsurj : Function.S
       (∀ σ : G, ∀ x ∈ π.ker, ∀ y ∈ π.ker, t σ (x * y) = t σ x * t σ y) →
       (∀ σ τ : G, ∀ x ∈ π.ker, t (σ * τ) x = σ • t τ (σ⁻¹ * x * σ) * t σ x) →
       (∀ n ∈ π.ker, ∀ σ : G, ∀ x ∈ π.ker, t (n * σ) x = t σ x) →
-      (∀ D ∈ S, ∃ e : G → M, ∀ σ ∈ D, ∀ x ∈ D, x ∈ π.ker →
-        t σ x = σ • e (σ⁻¹ * x * σ) / e x) →
+      (∀ D ∈ S, ∃ e : G → M, IsSmooth₁ (fun x : ↥(D ⊓ π.ker) => e x) ∧
+        (∀ x ∈ D ⊓ π.ker, ∀ y ∈ D ⊓ π.ker, e (x * y) = e x * e y) ∧
+        ∀ σ ∈ D, ∀ x ∈ D, x ∈ π.ker → t σ x = σ • e (σ⁻¹ * x * σ) / e x) →
       ∃ φ : G → M, IsSmooth₁ φ ∧ (∀ x ∈ π.ker, ∀ y ∈ π.ker, φ (x * y) = φ x * φ y) ∧
         ∀ σ : G, ∀ x ∈ π.ker, t σ x = σ • φ (σ⁻¹ * x * σ) / φ x) :
-    ∃ x : SmoothH2 Q M, comapH2 π hπ hsm x = smoothH2Mk a ha has := by
-  refine exists_comapH2_eq_of_locally_coboundary hπ hsm hsurj htriv ha has hbs hb ?_ hsha
-  intro D hD
-  obtain ⟨u, _, hu⟩ := (smoothH2Mk_mem_sha2 ha has).1 hmem D hD
-  classical
-  refine ⟨fun g => if hg : g ∈ D then u ⟨g, hg⟩ else 1, fun x hx y hy => ?_⟩
-  have h := congrFun hu (⟨x, hx⟩, ⟨y, hy⟩)
-  rw [coboundary₂_apply] at h
-  simp only [dif_pos hx, dif_pos hy, dif_pos (D.mul_mem hx hy)]
-  exact h.symm
+    ∃ x : SmoothH2 Q M, comapH2 π hπ hsm x = smoothH2Mk a ha has :=
+  exists_comapH2_eq_of_locally_coboundary hπ hsm hsurj htriv ha has hbs hb
+    ((smoothH2Mk_mem_sha2 ha has).1 hmem) hsha
 
 end InverseGalois.CFT

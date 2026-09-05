@@ -330,10 +330,10 @@ variable {π : G →* Q} (hπ : ∀ (g : G) (m : M), g • m = π g • m)
 
 /-- **A locally trivial class of the second cohomology of a topological group whose restriction to
 the kernel of a smooth surjection onto a discrete group is trivial is inflated from the quotient**,
-as soon as every transgression class which is locally a coboundary vanishes.  This is the Hasse
-principle of the previous file, with the five conditions on a transgression replaced by the single
-class it defines in the first cohomology of the quotient with values in the first cohomology of the
-kernel. -/
+as soon as every transgression class which is locally the coboundary of a smooth homomorphism
+vanishes.  This is the Hasse principle of the previous file, with the five conditions on a
+transgression replaced by the single class it defines in the first cohomology of the quotient with
+values in the first cohomology of the kernel. -/
 theorem exists_comapH2_eq_of_transClass (hbasis : HasOpenNormalBasis G) (hsm : IsSmoothHom π)
     (hsurj : Function.Surjective π) (htriv : ∀ n ∈ π.ker, ∀ m : M, n • m = m)
     {a : G × G → M} (ha : IsMulCocycle₂ a) (has : IsSmooth₂ a)
@@ -341,8 +341,9 @@ theorem exists_comapH2_eq_of_transClass (hbasis : HasOpenNormalBasis G) (hsm : I
     (hb : ∀ x ∈ π.ker, ∀ y ∈ π.ker, a (x, y) = x • b y / b (x * y) * b x)
     {S : Set (Subgroup G)} (hmem : smoothH2Mk a ha has ∈ sha2 M S)
     (hsha : ∀ (t : G → G → M) (h : IsTransgressionDatum π.ker M t),
-      (∀ D ∈ S, ∃ e : G → M, ∀ σ ∈ D, ∀ x ∈ D, x ∈ π.ker →
-        t σ x = σ • e (σ⁻¹ * x * σ) / e x) →
+      (∀ D ∈ S, ∃ e : G → M, IsSmooth₁ (fun x : ↥(D ⊓ π.ker) => e x) ∧
+        (∀ x ∈ D ⊓ π.ker, ∀ y ∈ D ⊓ π.ker, e (x * y) = e x * e y) ∧
+        ∀ σ ∈ D, ∀ x ∈ D, x ∈ π.ker → t σ x = σ • e (σ⁻¹ * x * σ) / e x) →
       transClass h htriv (isOpenNormal_ker_of_isSmoothHom hsm).isOpen = 1) :
     ∃ x : SmoothH2 Q M, comapH2 π hπ hsm x = smoothH2Mk a ha has := by
   refine exists_comapH2_eq_of_mem_sha2 hπ hsm hsurj htriv ha has hbs hb hmem ?_
