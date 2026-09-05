@@ -11732,6 +11732,134 @@ thing between the profinite tower and the idelic one, and it is arithmetic rathe
 
 ---
 
+## 1.10 Status (2026-09-05, latest) — **gap (ii-b) is closed**: the twisted cohomology of the ideles in degree one injects into that of the full product of the local unit groups
+
+New modules `Tate/FamilyTrunc.lean`, `Tate/LiftInvariants.lean`, `Tate/FamilyInvariant.lean`,
+`Tate/FamilyTensorFinsupp.lean`, `Units/InvariantUniformizer.lean`,
+`Units/IdeleValuationSplit.lean`, `Units/IdeleFullCompare.lean`; `Tate/FamilyConst.lean` rewritten
+around the constant family (the old Shapiro-for-permutation-modules content of that file was dead
+code and is gone; its two orbit/stabiliser helpers moved to `Tate/FamilyOrbits.lean`).
+
+### (a) The statement
+
+`Units/IdeleFullCompare.lean`:
+
+```
+injective_tateMap_one_tensor_ideleToFullIdele
+  (W : Rep ℤ Gal(K/k)) {p d : ℕ} [Fact p.Prime] (e : ↥W.V ≃+ (Fin d → ZMod p)) :
+  Function.Injective (Tate.tateMap (tensorHomLeft W (ideleToFullIdele k K)) 1)
+```
+
+`Ĥ¹(G, I_K ⊗ W) ↪ Ĥ¹(G, ∏_v K_v^× ⊗ W)`, for a finite Galois group and coefficients of finite rank
+over `𝔽_p`.  Composed with the Shapiro decomposition of the *full* product
+(`Units/IdeleTensorOrbit.lean`, `Tate/FamilyTensorFull.lean`) this says **`Ш_dec ⊆ Ш_idelic`**: a
+class trivial on every decomposition subgroup is trivial in the whole product, hence already
+trivial in the restricted product.  The reverse inclusion `Ш_idelic ⊆ Ш_dec` is gotcha 1514 and was
+already available, so the two Ш's of §1.09(c) are the same group *modulo* the henselization-vs-
+completion comparison, which is gap (ii-a) and is untouched.
+
+### (b) Route A, as built
+
+The obstruction was that `I_K ⊆ ∏_v K_v^×` is not a `G`-retract (gotcha 1589) and the quotient is
+not cohomologically trivial (gotcha 1538), so nothing formal gives injectivity.  What does give it
+is a *lifting of invariants* in degree zero:
+
+>  `Ĥ⁰` is invariants-modulo-norms, so a map along which every invariant of the target lifts to an
+>  invariant of the source is surjective there (`Tate.surjective_tateMap_zero_of_lift`); in a short
+>  exact sequence a degree in which the quotient map is surjective is a degree out of which the
+>  connecting map vanishes, so the inclusion of the sub is injective one degree up
+>  (`Tate.injective_tateMap_succ_of_surjective`).  Combined:
+>  `Tate.injective_tateMap_one_of_lift_invariants`.
+
+The lifting is supplied by the vector of valuations.  Write `V := fullIdeleVal : ∏_v K_v^× → ∏_v ℤ`
+(`Units/IdeleValuationSplit.lean`), a map of representations onto the *permutation* module
+`placeIntRep k K = orbitSectionsRep (constFamily (HeightOneSpectrum (𝓞 K)) ℤ Gal(K/k))`, whose
+kernel-up-to-finite-support is exactly `idele K`.  A right inverse `S := valSection s` needs a
+`G`-invariant family `s` of local units which are uniformizers at all but finitely many places;
+`Units/InvariantUniformizer.lean` builds it from `Tate/FamilyInvariant.lean` (choose a value at one
+index of each orbit fixed by the stabiliser there, transport around the orbit) plus the fact that
+the decomposition group *is* the stabiliser and that only the places dividing the different fail to
+carry a uniformizer fixed by it.
+
+Then, for `a₀ ∈ (∏_v K_v^× ) ⊗ W` with all `g·a₀ − a₀ ∈ I_K ⊗ W`:
+
+1. `V(a₀) ∈ (∏_v ℤ) ⊗ W` is moved by `G` only in finitely many places
+   (`mem_finsuppTensor_of_mem_range`, using that `V` carries `I_K` into the finitely-supported
+   sections);
+2. `Tate/FamilyTensorFinsupp.lean`'s `exists_rho_invariant_sub_finsuppTensor` replaces it by an
+   invariant `n'` differing in finitely many places only — this is `Tate/FamilyTrunc.lean`'s
+   truncation on the finite invariant saturation, transported across the bijection
+   `bijective_sectionsTensorMap_of_equivPi` (which needs no hypothesis on the family, only
+   `e : ↥W.V ≃+ (Fin d → ZMod p)`);
+3. `S(n')` is invariant, and `S(n') − a₀ = −S(V(a₀) − n') − (a₀ − S(V(a₀)))` lies in `I_K ⊗ W`,
+   the first term by `valSectionHom_mem_range_of_finsuppTensor` and the second by
+   `sub_valSectionHom_mem_range`.
+
+The short exact sequence `0 → I_K → ∏_v K_v^× → Q → 0` survives tensoring with `W` even though `W`
+is not flat, by `Tate.tensorSeq_shortExact_of_injective_modNsmul` plus
+`injective_modNsmulHom_ideleToFullIdele` (the integers have no torsion, so the inclusion stays
+injective mod `p`).
+
+### (c) Lean notes
+
+* **gotcha 1622 (elaboration, important).**  The `binop%` elaborator behind `-`/`+` **ignores type
+  ascriptions** when computing the max type of the operands: writing
+  `familyAut g X - (sectionsTensorMap … : ∀ _ : HeightOneSpectrum (𝓞 K), ℤ ⊗[ℤ] ↥W.V)` still fails
+  with `failed to synthesize HSub …`.  The fix is never to hand-write a mixed-type subtraction —
+  restructure so that the subtraction appears only in a goal *generated* by instantiating a lemma
+  (goals produced by unification never go through `binop%`).  That is why
+  `exists_rho_invariant_sub_finsuppTensor` exists as an abstract lemma at all.
+* **gotcha 1623.**  For `⟨a - b, proof⟩` where `a - b` trips `HSub`, write `⟨_, proof⟩` and let the
+  placeholder be inferred from the proof's type.
+* **gotcha 1624.**  Prefer `refine LinearMap.mem_range.2 ⟨witness, ?_⟩` over building a
+  `have hstep : LHS = RHS`: the `refine` route inherits the goal's already-fixed instances, whereas
+  the `have` re-elaborates from scratch and hits `binop%`.
+* **gotcha 1631 (elaboration, important).**  `exact Tate.injective_tateMap_one_of_lift_invariants
+  hXT hlift` against the goal `Function.Injective (tateMap (tensorHomLeft W (ideleToFullIdele k K))
+  1)` **times out at `isDefEq`** (>1M heartbeats, ~120 s) even though
+  `(Tate.tensorSeq W (ideleFullShortComplex k K)).f = tensorHomLeft W (ideleToFullIdele k K)` is
+  `rfl` *instantly* on its own, and even though the same `exact` against the goal stated with
+  `(Tate.tensorSeq W …).f` succeeds instantly.  The unifier gets lost inside `tateMap` before it
+  ever compares the morphism arguments.  **Fix:** bind the `rfl` as a `have` and rewrite the goal
+  first —
+  ```lean
+  have hfeq : (Tate.tensorSeq W (ideleFullShortComplex k K)).f
+      = tensorHomLeft W (ideleToFullIdele k K) := rfl
+  rw [← hfeq]
+  exact Tate.injective_tateMap_one_of_lift_invariants hXT hlift
+  ```
+  which runs in 0.7 s.  This is the operational form of gotcha 1612 ("never `rw` across the
+  `tensorSeq`-vs-`tensorObj` defeq boundary — convert with a typed `have`").
+* **gotcha 1632.**  `attribute [local reducible] Tate.tensorSeq` is **rejected** ("failed to set
+  `[local reducible]` … affects the term indexing datastructures used by `simp` and type class
+  resolution"), so the reducibility route to the same fix is not available.
+* **gotcha 1633 (diagnosis recipe).**  To localise a whnf/isDefEq timeout, copy the theorem into
+  `.scratch/`, stub its prerequisites with `sorry`, and put `set_option profiler true in` on it;
+  the per-tactic breakdown names the culprit (`tactic execution of … exact took 119s`).  A scratch
+  probe importing `Mathlib` plus a couple of repo modules elaborates in ~60 s, about 2.5× cheaper
+  than the real `lake build` of the module.
+* `Tate/FamilyConst.lean`'s old `tateConstEquiv`/`tateConstOrbitEquiv`/
+  `isZero_tateModule_constFamily` were referenced nowhere; but the file also carried
+  `smul_orbit_of_mem_stabilizer_val` and `mem_stabilizer_val_of_smul_orbit`, which
+  `Units/IdeleTorsionSubgroup.lean` *does* use.  A per-module `lake build` never sees this: only the
+  root build does (gotcha 1472 again, in the deletion direction).
+
+### (d) Where Shafarevich stands
+
+Unchanged from §1.09 except that (ii-b) is now a theorem:
+
+>  `Ĥ^{-2}(G, W)  ↠  Ш¹_{idelic}(G, K^× ⊗ W)`  — brick 3, conditional on `HasIdeleClassNakayamaSpan`
+>  `Ш¹(G, K^× ⊗ W) ≅ sha1Level`                — brick 4, done
+>  `sha1Level = ⊥  ⇒  Ш²(k,E) ⊆ inf`           — brick 5, done
+>  `Ĥ^{-2}(G, W) = 0` after shrinking `G`      — Prop 6, done
+>  `Ш_dec = Ш_idelic`                          — (ii-b) **done**, (ii-a) open
+
+The two open items are therefore (i) `HasIdeleClassNakayamaSpan` — the reciprocity identity
+`ker Left_P = Σ_w cor_w(ker Left_w)`, blocked on `baseFundamentalClass` being `.choose`-defined —
+and (ii-a) the henselization-vs-completion comparison `(K ⊔ F)^×/p ≅ K_w^×/p`.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —

@@ -615,6 +615,7 @@ import InverseGalois.CFT.Tate.FamilyCoboundary
 import InverseGalois.CFT.Tate.FamilyCoind
 import InverseGalois.CFT.Tate.FamilyConst
 import InverseGalois.CFT.Tate.FamilyFree
+import InverseGalois.CFT.Tate.FamilyInvariant
 import InverseGalois.CFT.Tate.FamilyNorm
 import InverseGalois.CFT.Tate.FamilyOrbit
 import InverseGalois.CFT.Tate.FamilyOrbits
@@ -627,9 +628,11 @@ import InverseGalois.CFT.Tate.FamilyRestrictOrbit
 import InverseGalois.CFT.Tate.FamilyRing
 import InverseGalois.CFT.Tate.FamilySigma
 import InverseGalois.CFT.Tate.FamilyTensor
+import InverseGalois.CFT.Tate.FamilyTensorFinsupp
 import InverseGalois.CFT.Tate.FamilyTensorFull
 import InverseGalois.CFT.Tate.FamilyTensorOrbit
 import InverseGalois.CFT.Tate.FamilyTorsion
+import InverseGalois.CFT.Tate.FamilyTrunc
 import InverseGalois.CFT.Tate.Fibers
 import InverseGalois.CFT.Tate.Finite
 import InverseGalois.CFT.Tate.FiniteExact
@@ -642,6 +645,7 @@ import InverseGalois.CFT.Tate.InducedLattice
 import InverseGalois.CFT.Tate.InfinitePlaces
 import InverseGalois.CFT.Tate.Isogeny
 import InverseGalois.CFT.Tate.Lattice
+import InverseGalois.CFT.Tate.LiftInvariants
 import InverseGalois.CFT.Tate.Mul
 import InverseGalois.CFT.Tate.NormSurjective
 import InverseGalois.CFT.Tate.NormalBasis
@@ -840,6 +844,7 @@ import InverseGalois.CFT.Units.IdeleClassTorsionTate
 import InverseGalois.CFT.Units.IdeleClassTower
 import InverseGalois.CFT.Units.IdeleCoboundary
 import InverseGalois.CFT.Units.IdeleFixed
+import InverseGalois.CFT.Units.IdeleFullCompare
 import InverseGalois.CFT.Units.IdeleGen
 import InverseGalois.CFT.Units.IdeleNorm
 import InverseGalois.CFT.Units.IdeleNormTower
@@ -858,6 +863,7 @@ import InverseGalois.CFT.Units.IdeleTorusShaLocal
 import InverseGalois.CFT.Units.IdeleTorusShaSharp
 import InverseGalois.CFT.Units.IdeleTorusShaTorsion
 import InverseGalois.CFT.Units.IdeleTower
+import InverseGalois.CFT.Units.IdeleValuationSplit
 import InverseGalois.CFT.Units.InertPlace
 import InverseGalois.CFT.Units.InfiniteComap
 import InverseGalois.CFT.Units.InfiniteFixed
@@ -868,6 +874,7 @@ import InverseGalois.CFT.Units.InfiniteOrbit
 import InverseGalois.CFT.Units.InfinitePlaceIdele
 import InverseGalois.CFT.Units.InfiniteTowerDescent
 import InverseGalois.CFT.Units.InflationDescent
+import InverseGalois.CFT.Units.InvariantUniformizer
 import InverseGalois.CFT.Units.KummerDecomposition
 import InverseGalois.CFT.Units.LocalCoboundaryTwist
 import InverseGalois.CFT.Units.LocalDegreeLcm
@@ -2379,15 +2386,15 @@ it that are available here.
   the places of the base field, of the complete cohomology of the decomposition group of a place
   above it with coefficients in the units of the completion there tensored with the restricted
   coefficients** — again for the finite places and for the infinite ones alike.
-* `InverseGalois.CFT.Tate.FamilyConst` singles out the family that is the same module at every
-  index, transported by a fixed action of the group on that module.  Its sections are the functions
-  from the index set to the module, acted on by moving the argument and the value at once, and
-  every permutation module of arithmetic is of that shape — the `p`-torsion of the ideles, for
-  instance, where the index set is the set of places and the module is the group of `p`-th roots of
-  unity.  The orbit decomposition then reads: **the complete cohomology of the functions from a set
-  with a group action to a module is the product, over the orbits, of the complete cohomology of
-  the stabiliser of a point of the orbit with coefficients in that module**, in every integer
-  degree and with no hypothesis on the group beyond finiteness.
+* `InverseGalois.CFT.Tate.FamilyConst` singles out the family with a single group repeated at every
+  index, all of its transports being the identity.  Its sections are the functions from the index
+  set to that group, and **the action assembled from the transports is the permutation action**: a
+  group element moves a function by moving its argument backwards.  That is the family measuring
+  the valuations of an idele — the valuation at a finite place of a number field is an integer
+  whatever the place is, and an automorphism carries the valuation at a place to the valuation at
+  the image place — and the reading is completed by the observation that **scaling an invariant
+  section by a vector of integers is equivariant for the permutation action on the vector**, which
+  is what makes a right inverse of the vector of valuations a map of representations.
 * `InverseGalois.CFT.Units.IdeleTorsion` reads the elements of the ideles killed by a nonzero
   integer place by place.  Such an element has every local component killed by that integer, so its
   local valuation, an integer killed by a nonzero integer, vanishes at every finite place; the
@@ -4335,6 +4342,70 @@ it that are available here.
   rank over the prime field are the sections of the tensored family**, and **the complete
   cohomology of those tensored sections is the product over the orbits of the local
   contributions** — which is the group of ideles, place by place, in its decomposition groups.
+* `InverseGalois.CFT.Tate.FamilyTensorFinsupp` reads the support of such a tensored section.  The
+  comparison with the sections of the tensored family is computed coordinatewise, so its value at
+  an index is assembled from the values of the coordinates there and vanishes wherever all of them
+  do: **coordinates of finite support assemble to an element whose comparison has finite support.**
+  The converse is the useful direction and calls on the divisibility argument again — off the
+  support the coordinates are divisible by the prime, and the prime moves onto the basis vectors of
+  the coefficients, which it kills — so truncating the coordinates on the support changes nothing
+  and **an element whose comparison has finite support is assembled from coordinates of finite
+  support.**
+* `InverseGalois.CFT.Tate.FamilyTrunc` corrects a section on a finite invariant set.  A section
+  need not be fixed by the group, but it may fail to be fixed only in finitely many coordinates;
+  enlarging those to an invariant set, which stays finite because the group is finite, and
+  replacing the section by zero there produces a section that is fixed and differs from the
+  original only in finitely many coordinates.  So **a section which the group moves only in
+  finitely many coordinates differs by a section of finite support from a section the group
+  fixes** — which says exactly that an invariant of the quotient of the product by the sections of
+  finite support lifts to an invariant of the product.
+* `InverseGalois.CFT.Tate.LiftInvariants` turns such a lifting into an injection.  In degree zero
+  the complete cohomology is the invariants modulo the norms, so **a map of representations along
+  which every invariant of the target lifts to an invariant of the source is surjective there**;
+  and in a short exact sequence a degree in which the map induced by the quotient is surjective is
+  a degree out of which the connecting map vanishes, so **the map induced by the inclusion of the
+  sub is injective one degree above.**  Hence **a short exact sequence whose quotient has every
+  invariant lifted to the middle term has the complete cohomology of the sub injecting into that
+  of the middle term in degree one.**
+* `InverseGalois.CFT.Tate.FamilyInvariant` builds the invariant section such an argument needs out
+  of local data.  A section is fixed by the whole group exactly when its value at every index is
+  carried to its value at the translated index, so it is enough to choose, at one index of every
+  orbit, a value that the stabiliser there leaves alone: transporting it around the orbit is
+  unambiguous because two group elements reaching the same index differ by a member of the
+  stabiliser.  The values so obtained are transports of the chosen ones, so **a family whose value
+  at each index can be chosen with a property preserved by the transports and fixed by the
+  stabiliser there has an invariant section all of whose values have the property**, and the
+  indices carrying such a value form an invariant set, so no invariance has to be assumed.
+* `InverseGalois.CFT.Units.InvariantUniformizer` supplies that data for the local unit groups.  A
+  uniformizer at a place is at best fixed by the decomposition group, never by the whole Galois
+  group, which moves the place; what a whole family of them can satisfy is that an automorphism
+  carrying one place to another carry the chosen uniformizer at the first to the chosen one at the
+  second.  The decomposition group is exactly the stabiliser, so the previous construction applies,
+  and **all but finitely many places carry a uniformizer fixed by their decomposition group**,
+  since an element of the base field of valuation minus one at a place provides one and only the
+  places dividing the different fail to admit such an element.  Hence **a Galois invariant section
+  of the family of local unit groups whose value at each of those places is a uniformizer.**
+* `InverseGalois.CFT.Units.IdeleValuationSplit` measures the quotient of the whole product of the
+  local unit groups by the ideles.  An element of the product is an idele exactly when its vector
+  of local valuations vanishes at all but finitely many places, and that vector is a section of the
+  family with a copy of the integers at every finite place, equivariantly, an automorphism
+  preserving the valuation while moving the place.  Raising the invariant family of uniformizers to
+  a given vector of integers is a right inverse of it, equivariant for the same reason, so
+  **subtracting off the vector of valuations leaves an idele** and **the ideles, the whole product
+  and the quotient form a short exact sequence of representations** in which **the inclusion of the
+  ideles stays injective modulo a nonzero integer** — the integers having no torsion — so the
+  sequence survives tensoring with coefficients that are not flat.
+* `InverseGalois.CFT.Units.IdeleFullCompare` assembles the comparison.  Coefficients of finite rank
+  over a prime field pass through the sections of the family of integers, so after tensoring with
+  them finiteness of support is still read place by place, and an element of the tensored product
+  all of whose Galois translates differ from it by ideles has a vector of valuations which the
+  Galois group moves in finitely many places only.  Clearing that vector on the finite invariant
+  saturation of those places and feeding the result back through the invariant uniformizers
+  produces **an invariant element of the tensored product differing from the original one by an
+  idele**, which is the lifting of invariants the previous file asks for.  Hence **the twisted
+  complete cohomology of the ideles in degree one injects into that of the product of all the local
+  unit groups** — so a class trivial on every decomposition group, which by the orbit decomposition
+  is a class trivial in the whole product, is already trivial in the ideles.
 * `InverseGalois.CFT.Tate.FamilyResGroup` observes that all of this is available on a subgroup of
   the acting group with nothing to prove.  A subgroup moves the index set by the restricted action
   and transports the modules by the same isomorphisms, so it acts on the same family; the sections

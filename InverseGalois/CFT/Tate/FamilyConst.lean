@@ -3,160 +3,111 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
-import InverseGalois.CFT.Tate.FamilyProduct
+import InverseGalois.CFT.Tate.Family
 
 /-!
-# The functions from a set with a group action to a module
+# The family with the same group at every index
 
-The simplest family of modules over a set carrying a group action is the one that is the same module
-at every index, transported by a fixed action of the group on that module.  Its sections are the
-functions from the index set to the module, acted on by moving the argument and the value at once,
-and every permutation module of arithmetic — the local factors of the `p`-torsion of the ideles, for
-instance, where the index set is the set of places and the module is the group of `p`-th roots of
-unity — is of this shape.
+The simplest family of abelian groups over a set with a group action is the one with a single group
+repeated at every index, the transports all being the identity.  Its sections are just the functions
+from the index set to that group, and the action assembled from the transports is the permutation
+action: a group element moves a function by moving its argument backwards.
 
-The general orbit decomposition therefore applies, and applies without any hypothesis on the group
-beyond finiteness: **the complete cohomology of the functions from a set with a group action to a
-module is the product, over the orbits of the set, of the complete cohomology of the stabiliser of a
-point of the orbit with coefficients in that module.**  This is Shapiro's lemma for permutation
-modules, in every integer degree at once.
+This is the family that measures the valuations of an idele.  The valuation at a finite place of a
+number field is an integer whatever the place is, and an automorphism of the field carries the
+valuation at a place to the valuation at the image place, so the vector of valuations of an idele is
+a section of the family with a copy of the integers at every place, equivariantly.
 
 ## Main definitions
 
-* `InverseGalois.CFT.constFamily`: the family that is the same module at every index.
+* `InverseGalois.CFT.constFamily`: **the family with the same group at every index.**
 
 ## Main results
 
-* `InverseGalois.CFT.tateConstOrbitEquiv`: over one orbit, the complete cohomology of the functions
-  to the module is the complete cohomology of the stabiliser of a point with coefficients in the
-  module.
-* `InverseGalois.CFT.tateConstEquiv`: **the complete cohomology of the functions from a set with a
-  group action to a module is the product over the orbits of the local contributions.**
-* `InverseGalois.CFT.isZero_tateModule_constFamily`: the functions have no complete cohomology in a
-  degree as soon as no stabiliser contributes any.
+* `InverseGalois.CFT.constFamily_familyAut_apply`: **the assembled action is the permutation action
+  on functions.**
+* `InverseGalois.CFT.constFamily_familyAut_apply_smul`: the same, read forwards at a translated
+  index.
+* `InverseGalois.CFT.FamilyAction.familyAut_zsmul_of_familyAut_eq`: **scaling an invariant section
+  by a vector of integers is equivariant for the permutation action on the vector.**
 
 ## Tags
 
-permutation module, Shapiro's lemma, orbit, stabiliser, Tate cohomology
+family of modules, sections, permutation module, group action
 -/
 
 namespace InverseGalois.CFT
 
-open CategoryTheory MulAction Tate
+/-! ### Transport in a constant family -/
 
-noncomputable section
+section Cast
 
-variable {G X A : Type} [Group G] [MulAction G X] [AddCommGroup A]
+variable {X A : Type*} [AddCommGroup A]
 
-/-! ### The family that does not vary -/
-
-/-- Transporting a family that does not vary along an equality of indices does nothing. -/
-@[simp]
-theorem famCast_const {x y : X} (h : x = y) :
-    famCast (fun _ : X => A) h = AddEquiv.refl A := by
+/-- Transport along an equality of indices in a family with the same group at every index is the
+identity. -/
+theorem famCast_const {x y : X} (h : x = y) (a : A) : famCast (fun _ : X => A) h a = a := by
   subst h
   rfl
 
-/-- **The family that is the same module at every index**, transported by a fixed action of the
-group on that module. -/
-def constFamily (φ : G →* AddAut A) : FamilyAction (fun _ : X => A) G where
-  map g _ := φ g
-  map_one x a := by
-    rw [famCast_const, map_one]
-    rfl
-  map_mul g h x a := by
-    rw [famCast_const, map_mul, AddAut.mul_apply]
-    rfl
+end Cast
+
+/-! ### The constant family -/
+
+section Const
+
+variable (X : Type*) (A : Type*) [AddCommGroup A] (G : Type*) [Group G] [MulAction G X]
+
+/-- **The family with the same group at every index**, the transports all being the identity.  Its
+sections are the functions from the index set to that group. -/
+def constFamily : FamilyAction (fun _ : X => A) G where
+  map _ _ := AddEquiv.refl A
+  map_one _ a := (famCast_const _ a).symm
+  map_mul _ _ _ a := (famCast_const _ a).symm
+
+variable {X A G}
 
 @[simp]
-theorem constFamily_map (φ : G →* AddAut A) (g : G) (x : X) :
-    (constFamily (X := X) φ).map g x = φ g := rfl
+theorem constFamily_map_apply (g : G) (x : X) (a : A) :
+    (constFamily X A G).map g x a = a := rfl
 
-/-- **A transport of the family that does not vary is the action on the module.** -/
-theorem constFamily_transport (φ : G →* AddAut A) {g : G} {x y : X} (h : g • x = y) (a : A) :
-    (constFamily (X := X) φ).transport h a = φ g a := by
-  rw [FamilyAction.transport_apply, famCast_const]
-  rfl
+theorem constFamily_transport {g : G} {x y : X} (h : g • x = y) (a : A) :
+    (constFamily X A G).transport h a = a := by
+  rw [FamilyAction.transport_apply, constFamily_map_apply, famCast_const]
 
-/-- **The sections of the family that does not vary are the functions from the index set to the
-module**, acted on by moving the argument and the value at once. -/
-theorem familyAut_constFamily_apply (φ : G →* AddAut A) (g : G) (f : X → A) (x : X) :
-    (constFamily (X := X) φ).familyAut g f x = φ g (f (g⁻¹ • x)) :=
-  ((constFamily (X := X) φ).familyAut_apply_eq_transport (smul_inv_smul g x) f).trans
-    (constFamily_transport φ (smul_inv_smul g x) _)
+/-- **The action assembled from the identity transports is the permutation action on functions.** -/
+theorem constFamily_familyAut_apply (g : G) (f : X → A) (x : X) :
+    (constFamily X A G).familyAut g f x = f (g⁻¹ • x) := by
+  rw [(constFamily X A G).familyAut_apply_eq_transport (smul_inv_smul g x) f,
+    constFamily_transport]
 
-/-! ### One orbit -/
+/-- **The permutation action, read forwards at a translated index.** -/
+theorem constFamily_familyAut_apply_smul (g : G) (f : X → A) (x : X) :
+    (constFamily X A G).familyAut g f (g • x) = f x := by
+  rw [FamilyAction.familyAut_apply_smul, constFamily_map_apply]
 
-section Orbit
+end Const
 
-variable (φ : G →* AddAut A) {ω : orbitRel.Quotient G X} (x₀ : ω.orbit)
+/-! ### Scaling an invariant section -/
 
-/-- The stabiliser of a point of an orbit, as a subgroup fixing the corresponding point of the
-orbit. -/
-theorem smul_orbit_of_mem_stabilizer_val (g : ↥(stabilizer G (x₀ : X))) : (g : G) • x₀ = x₀ :=
-  Subtype.ext (mem_stabilizer_iff.mp g.2)
+section Zsmul
 
-/-- A group element fixing a point of an orbit fixes the underlying point of the set. -/
-theorem mem_stabilizer_val_of_smul_orbit (g : G) (h : g • x₀ = x₀) : g ∈ stabilizer G (x₀ : X) :=
-  congrArg Subtype.val h
+variable {X : Type*} {M : X → Type*} [∀ x, AddCommGroup (M x)] {G : Type*} [Group G]
+  [MulAction G X] (F : FamilyAction M G)
 
-/-- **The action of the stabiliser of a point of an orbit on the module there is the given action of
-that subgroup on the module.** -/
-theorem orbitStabRep_constFamily :
-    orbitStabRep x₀ (smul_orbit_of_mem_stabilizer_val x₀)
-        (orbitFamily (constFamily (X := X) φ) ω)
-      = repOfAddAut (φ.comp (stabilizer G (x₀ : X)).subtype) :=
-  congrArg repOfAddAut <| MonoidHom.ext fun g => AddEquiv.ext fun a =>
-    (stabAut_orbitFamily (constFamily (X := X) φ) x₀ (smul_orbit_of_mem_stabilizer_val x₀)
-        (fun s => mem_stabilizer_iff.mp s.2) g a).trans
-      (constFamily_transport φ (mem_stabilizer_iff.mp g.2) a)
+/-- **Scaling a section carried onto itself by a group element, by a vector of integers indexed by
+the places, is equivariant for the permutation action on the vector.**  The transports are additive,
+so they carry the scaled section at an index to the scaled section at the translated index, the
+scalar following the index. -/
+theorem FamilyAction.familyAut_zsmul_of_familyAut_eq {s : ∀ x, M x} {g : G}
+    (hs : F.familyAut g s = s) (n : X → ℤ) :
+    F.familyAut g (fun x => n x • s x) = fun x => (constFamily X ℤ G).familyAut g n x • s x := by
+  refine F.familyAut_eq_of_map g _ _ fun x => ?_
+  have hx := congrFun hs (g • x)
+  rw [FamilyAction.familyAut_apply_smul] at hx
+  show F.map g x (n x • s x) = (constFamily X ℤ G).familyAut g n (g • x) • s (g • x)
+  rw [_root_.map_zsmul, constFamily_familyAut_apply_smul, hx]
 
-variable [Finite G]
-
-/-- **Over one orbit the complete cohomology of the functions to the module is the complete
-cohomology of the stabiliser of a point of the orbit with coefficients in the module.** -/
-def tateConstOrbitEquiv (n : ℤ) :
-    tateModule (orbitSectionsRep (orbitFamily (constFamily (X := X) φ) ω)) n ≃ₗ[ℤ]
-      tateModule (repOfAddAut (φ.comp (stabilizer G (x₀ : X)).subtype)) n := by
-  rw [← orbitStabRep_constFamily φ x₀]
-  exact orbitTateEquiv x₀ (fun y => exists_smul_eq G y x₀) (mem_stabilizer_val_of_smul_orbit x₀)
-    (smul_orbit_of_mem_stabilizer_val x₀) _ n
-
-end Orbit
-
-/-! ### All the orbits -/
-
-section Orbits
-
-variable [Finite G] (φ : G →* AddAut A)
-  (x₀ : ∀ ω : orbitRel.Quotient G X, ω.orbit)
-
-/-- **The complete cohomology of the functions from a set with a group action to a module is the
-product, over the orbits of the set, of the complete cohomology of the stabiliser of a point of the
-orbit with coefficients in the module.**  The set is the disjoint union of its orbits, so the
-functions split accordingly, and the functions on one orbit are coinduced from the stabiliser of a
-chosen point of it. -/
-def tateConstEquiv (n : ℤ) :
-    tateModule (orbitSectionsRep (constFamily (X := X) φ)) n ≃+
-      ∀ ω : orbitRel.Quotient G X,
-        tateModule (repOfAddAut (φ.comp (stabilizer G ((x₀ ω : ω.orbit) : X)).subtype)) n :=
-  (tateOrbitsEquiv (constFamily (X := X) φ) n).trans <|
-    AddEquiv.piCongrRight fun ω => (tateConstOrbitEquiv φ (x₀ ω) n).toAddEquiv
-
-/-- **The functions from a set with a group action to a module have no complete cohomology in a
-degree as soon as no stabiliser contributes any.** -/
-theorem isZero_tateModule_constFamily (n : ℤ)
-    (h : ∀ ω : orbitRel.Quotient G X, Limits.IsZero
-      (tateModule (repOfAddAut (φ.comp (stabilizer G ((x₀ ω : ω.orbit) : X)).subtype)) n)) :
-    Limits.IsZero (tateModule (orbitSectionsRep (constFamily (X := X) φ)) n) := by
-  rw [ModuleCat.isZero_iff_subsingleton]
-  haveI : ∀ ω : orbitRel.Quotient G X, Subsingleton
-      ↥(tateModule (repOfAddAut (φ.comp (stabilizer G ((x₀ ω : ω.orbit) : X)).subtype)) n) :=
-    fun ω => ModuleCat.isZero_iff_subsingleton.1 (h ω)
-  exact (tateConstEquiv φ x₀ n).injective.subsingleton
-
-end Orbits
-
-end
+end Zsmul
 
 end InverseGalois.CFT
