@@ -457,6 +457,7 @@ import InverseGalois.CFT.Profinite.KummerLevel
 import InverseGalois.CFT.Profinite.KummerLevelDegree
 import InverseGalois.CFT.Profinite.KummerRes
 import InverseGalois.CFT.Profinite.KummerTwo
+import InverseGalois.CFT.Profinite.Pi
 import InverseGalois.CFT.Profinite.Quotient
 import InverseGalois.CFT.Profinite.Krull
 import InverseGalois.CFT.Profinite.Res
@@ -468,6 +469,7 @@ import InverseGalois.CFT.Profinite.TransgressionClass
 import InverseGalois.CFT.Profinite.TransgressionInflate
 import InverseGalois.CFT.Profinite.TransgressionRestrict
 import InverseGalois.CFT.Profinite.Trivial
+import InverseGalois.CFT.Profinite.Twist
 import InverseGalois.CFT.RatUnits
 import InverseGalois.CFT.RelativeFrobenius
 import InverseGalois.CFT.RestrictLE
@@ -5145,6 +5147,31 @@ it that are available here.
   second cohomology of the units of the extension.**  Running the correction backwards, from a
   chosen root of every value of a cochain whose coboundary is the `n`-th power of a cocycle,
   identifies **the image as exactly the classes killed by `n`.**
+* `InverseGalois.CFT.Profinite.Pi` takes the coefficients apart.  A cochain with values in a finite
+  product is a family of cochains, one for each factor, and it is smooth exactly when each member
+  is, being constant on the intersection of the finitely many levels the members need; the same
+  reading of the cocycle condition and of the coboundaries gives **the first cohomology with
+  coefficients in a finite product as the product of the first cohomologies**, the isomorphism
+  being the family of the maps induced by the projections.  An isomorphism of the coefficients
+  likewise induces one in cohomology, so a chosen decomposition of the coefficients turns a class
+  into a family of classes.  Underneath both is the plainest fact about the construction: a
+  coefficient map acts on cochains by composition, so **the passage to cohomology respects
+  composition, the identity and — the coefficients being abelian — pointwise multiplication of
+  coefficient maps**, and therefore carries a power of the identity to that power of the class.
+* `InverseGalois.CFT.Profinite.Twist` puts the coefficients back together, and is the shape in
+  which Kummer theory reaches a lifting problem.  The coefficients of such a problem are a finite
+  module killed by a prime, which as an abstract group is a product of copies of the roots of
+  unity, and a homomorphism of the roots of unity into it carries a Kummer class to a class with
+  those coefficients, multiplicatively in the element of the base group and in the homomorphism.
+  So the construction is a map out of the tensor product of the two, and **that map is an
+  isomorphism onto the first cohomology with the larger coefficients.**  The inverse is a
+  coordinate computation.  Each coordinate of a class comes from an element of the base group, well
+  defined up to a `p`-th power — and a `p`-th power dies in the tensor product, the group of
+  homomorphisms being killed by `p`.  That this is an inverse on one side is the observation that
+  the coordinates of the class attached to the inclusion of a factor are the given class in that
+  place and trivial elsewhere; on the other it is the observation that an endomorphism of a cyclic
+  group is a power map, so each coordinate of a twisted class is a power of the class one started
+  from, and those powers reassemble the homomorphism one started from.
 * `InverseGalois.CFT.Profinite.Symbol` pairs two units of the base.  Cupping their Kummer classes
   along a pairing of the roots of unity with themselves gives **the `n`-th power symbol**, a
   bimultiplicative map on the units of the base with values in the second cohomology; it is killed
