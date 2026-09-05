@@ -457,6 +457,7 @@ import InverseGalois.CFT.Profinite.KummerHom
 import InverseGalois.CFT.Profinite.KummerLevel
 import InverseGalois.CFT.Profinite.KummerLevelDegree
 import InverseGalois.CFT.Profinite.KummerLocal
+import InverseGalois.CFT.Profinite.KummerRep
 import InverseGalois.CFT.Profinite.KummerRes
 import InverseGalois.CFT.Profinite.KummerTower
 import InverseGalois.CFT.Profinite.KummerTwist
@@ -5266,6 +5267,17 @@ it that are available here.
   compositum**, and the same for the twisted identification.  The fixed field of a decomposition
   subgroup is an infinite extension of the base, which is why the tower below asks nothing of the
   size of the intermediate field.
+* `InverseGalois.CFT.Profinite.KummerRep` hands the identification over to class field theory.  An
+  equivariant identification of an additive module with the additive copy of a multiplicative one is
+  an isomorphism of representations over the integers, so **the twisted Kummer identification is an
+  isomorphism in the category of representations of the quotient by the subgroup fixing the
+  subextension**, and the two sides have the same cohomology.  Since that quotient is discrete, its
+  smooth first cohomology is the ordinary first cohomology of the additive copy of its coefficients,
+  and composing the two gives **the first cohomology of the Galois group of the subextension with
+  values in the first cohomology of the subgroup as the first cohomology of that same finite group
+  with coefficients in the units of the subextension tensored with the homomorphisms of the roots of
+  unity.**  The everywhere locally trivial classes travel along it, and the two readings of them
+  vanish together — which is what a local-global principle has to supply.
 * `InverseGalois.CFT.Profinite.Symbol` pairs two units of the base.  Cupping their Kummer classes
   along a pairing of the roots of unity with themselves gives **the `n`-th power symbol**, a
   bimultiplicative map on the units of the base with values in the second cohomology; it is killed

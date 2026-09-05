@@ -11574,6 +11574,83 @@ Kummer statements never used finiteness, only the two topological facts above.
 
 ---
 
+## 1.08 Status (2026-09-05, latest) — **brick 4 is built on both sides**: the localisation of a Kummer class at a place, and the identification read in the category of representations
+
+Commits `39ef23b` (`Profinite/KummerLocal.lean`) and the present one (`Profinite/KummerRep.lean`).
+
+### (a) The local step (§1.06(c) item 2)
+
+`Profinite/KummerLocal.lean`.  Localising a class of `N = K.fixingSubgroup` at a place `D` means
+`resSubH1 N D`, whose target is the first cohomology of `↥(N.subgroupOf D)`.  The module identifies
+that with the subgroup fixing the compositum, in three moves.
+
+* `interEquiv N D hH : ↥(N.subgroupOf D) ≃* ↥H` for any `H` with `g ∈ H ↔ g ∈ N ∧ g ∈ D`.  Both
+  sides are elements of the big group lying in both subgroups, and both carry the topology induced
+  from it, so the identification and its inverse are continuous (`continuous_induced_rng` twice) and
+  it is a smooth homomorphism.  `comapInterH1` is the map it induces in the first cohomology.
+* `resSubH1_eq_comapInterH1 : resSubH1 N D z = comapInterH1 N D hH (resInclH1 hle z)`.  Both sides
+  substitute the same element of the big group into the cocycle, so after
+  `obtain ⟨u, hu, hs, rfl⟩ := smoothH1Mk_surjective z` the goal is closed by a bare `rfl`.
+* `mem_fixingSubgroup_sup_iff` (`fixingSubgroup_sup` + `Subgroup.mem_inf`) and
+  `fixingSubgroup_fixedField_of_isClosed` (`InfiniteGalois.fixingSubgroup_fixedField ⟨D, hD⟩`)
+  supply the hypothesis `hH` for `H = (K ⊔ fixedField D).fixingSubgroup`.
+
+The two payoffs are `resSubH1_kummerSubHom_sup` and `resSubH1_kummerTwistEquiv_sup`: **localising a
+Kummer class at a place is including the units of `K` into the units of `K ⊔ fixedField D`**, and
+the same through the twisted identification.  Routing through `resInclH1` and reusing
+`resInclH1_kummerSubHom` / `resInclH1_kummerTwistEquiv` from `KummerTower.lean` avoids all
+`TensorProduct.map … LinearMap.id` bookkeeping.  Note the design choice: the Kummer data `hL` for
+the compositum is a *hypothesis*, exactly as in `KummerTower.lean`; constructing it from `hK` would
+need "the `p`-th roots of unity in `K ⊔ F` are those in `K`", which is a separate arithmetic fact
+and not what this module is about.
+
+Still open on the local side, and needed only where the profinite side meets the idelic one:
+`(K ⊔ F)^× / p ≅ K_w^× / p`, the henselization-versus-completion comparison.
+
+### (b) The `Rep` packaging (§1.06(c) item 1)
+
+`Profinite/KummerRep.lean`.  Two generic bricks and their arithmetic instantiation.
+
+* `repIsoOfAddEquiv Q S T e he : Rep.ofDistribMulAction ℤ Q T ≅ Rep.ofMulDistribMulAction Q S`, for
+  `e : T ≃+ Additive S` with `e (g • t) = Additive.ofMul (g • (e t).toMul)`.  One line:
+  `Action.mkIso e.toIntLinearEquiv.toModuleIso fun g => ModuleCat.hom_ext (LinearMap.ext …)`.  Both
+  directions are `rfl` on elements (`repIsoOfAddEquiv_hom_apply`, `_inv_apply`).
+* `smoothH1EquivOfAddEquiv : SmoothH1 Q S ≃* Multiplicative ↥(H1 (Rep.ofDistribMulAction ℤ Q T))`
+  for discrete `Q`, being `discreteSmoothH1Equiv` followed by
+  `(groupCohomology.functor ℤ Q 1).mapIso` of the above, read as an `AddEquiv` through
+  `Iso.toLinearEquiv` and wrapped by `AddEquiv.toMultiplicative`.
+* `kummerRepIso` and `kummerSmoothH1Equiv` instantiate them at `Q = Gal(Ω/k) ⧸ K.fixingSubgroup`,
+  `S = SmoothH1 ↥K.fixingSubgroup E`, `T = Additive (↥K)ˣ ⊗[ℤ] Additive (M →* E)`, with `he` being
+  exactly `kummerTwistEquiv_smul` from `KummerAction.lean` and the discreteness of `Q` coming from
+  `QuotientGroup.discreteTopology hop`.
+* `kummerSha1` is `sha1Level E K.fixingSubgroup hop S` carried across, and `sha1Level_eq_bot_iff`
+  says **the two readings vanish together**.  That is the sentence the local-global input to
+  `exists_comapH2_eq_of_sha1Level_eq_bot` has to be proved in: a statement about
+  `H¹` of a *finite* group with coefficients in `K^× ⊗ Hom(μ_p, E)`.
+
+What is deliberately *not* done: presenting the finite group as `K ≃ₐ[k] K` rather than as
+`Gal(Ω/k) ⧸ K.fixingSubgroup`.  The two are isomorphic (`QuotientGroup.quotientKerEquivOfSurjective`
+of `AlgEquiv.restrictNormalHom ↥K`), but transporting the *action* onto `(↥K)ˣ` along that iso would
+put a second `Gal(↥K/k)`-action on the units beside the natural one, which is the diamond the
+development already refused once.  The clean route is invariance of `groupCohomology` under a group
+isomorphism, via `Action.res` — a separate, reusable brick, and Mathlib v4.28 has no such lemma
+(`Functoriality.lean` has `congr` only for two *equal* homomorphisms).  It is wanted only when the
+`Units/` side actually consumes the group, so it is deferred rather than guessed at.
+
+### (c) Lean notes
+
+* `smoothH1Mk_congr rfl _ _ _ _` frequently cannot synthesize its implicit cochain arguments when
+  the two sides are only definitionally equal; a bare `rfl` does the job.  (gotcha 1492)
+* `InfiniteGalois.fixingSubgroup_fixedField` takes a bundled `ClosedSubgroup`; `⟨D, hD⟩` with
+  `hD : IsClosed (D : Set G)` is the anonymous constructor.  (gotcha 1494)
+* `Rep.ofMulDistribMulAction (M G : Type)` and the repo's `discreteSmoothH1Equiv (G M : Type)` are
+  both `Type 0`-only, so the whole packaging section is stated with `k Ω M E J : Type`.
+* `Rep.ofDistribMulAction ℤ Q T` needs `SMulCommClass Q ℤ T`; it is found automatically from
+  `DistribMulAction Q T` on an `AddCommGroup`.
+* The doc heading convention in this file is `## 1.0N Status (…)` with no `§`.  (gotcha 1495)
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
