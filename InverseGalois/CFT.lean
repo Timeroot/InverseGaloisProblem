@@ -449,6 +449,7 @@ import InverseGalois.CFT.Profinite.H1Conj
 import InverseGalois.CFT.Profinite.Hilbert90
 import InverseGalois.CFT.Profinite.InfRes
 import InverseGalois.CFT.Profinite.Kummer
+import InverseGalois.CFT.Profinite.KummerConj
 import InverseGalois.CFT.Profinite.KummerHom
 import InverseGalois.CFT.Profinite.KummerLevel
 import InverseGalois.CFT.Profinite.KummerLevelDegree
@@ -5048,6 +5049,16 @@ it that are available here.
   `n`-th powers are the first cohomology with coefficients in the `n`-th roots of unity.**  The
   situation is not vacuous: over an algebraically closed extension the roots of unity of the base,
   with the trivial action, are such data.
+* `InverseGalois.CFT.Profinite.KummerConj` lets a larger group watch.  Read Kummer theory over an
+  intermediate field, normal over a smaller base, on the subgroup of the big Galois group which
+  fixes that field: the classes of its units live in the first cohomology of a normal subgroup, and
+  the base group acts on both sides, on units by restricting an automorphism and on cohomology by
+  conjugating a cocycle.  **The two actions agree.**  The reason is that the Kummer cochain is
+  characterised and not merely constructed, as the only cochain whose image is the coboundary of an
+  `n`-th root: conjugating the cochain of a unit is the cochain built from the conjugate of the
+  chosen root, which is a root of the conjugated unit, so the two agree before any class is taken.
+  The one arithmetic input is that the roots of unity already lie in the small base, which is what
+  makes an automorphism over it leave the coefficients alone.
 * `InverseGalois.CFT.Profinite.KummerRes` restricts those classes.  The cochain of a unit measures
   how far a chosen root is from being fixed, and on a subgroup it is a coboundary exactly when it
   vanishes there, so **a Kummer class dies on a subgroup exactly when the unit is a power in the

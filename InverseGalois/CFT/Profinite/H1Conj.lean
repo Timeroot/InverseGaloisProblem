@@ -79,6 +79,13 @@ section Eq
 variable {H : Type*} [Group H] [TopologicalSpace H]
 variable {M : Type*} [CommGroup M] [MulDistribMulAction H M]
 
+/-- Two equal smooth one cocycles have the same class. -/
+theorem smoothH1Mk_congr {u v : H → M} (huv : u = v) (hu : IsMulCocycle₁ u) (hus : IsSmooth₁ u)
+    (hv : IsMulCocycle₁ v) (hvs : IsSmooth₁ v) :
+    smoothH1Mk u hu hus = smoothH1Mk v hv hvs := by
+  subst huv
+  rfl
+
 /-- **Two smooth one cocycles have the same class exactly when their quotient is a coboundary.** -/
 theorem smoothH1Mk_eq_iff {u v : H → M} (hu : IsMulCocycle₁ u) (hus : IsSmooth₁ u)
     (hv : IsMulCocycle₁ v) (hvs : IsSmooth₁ v) :
