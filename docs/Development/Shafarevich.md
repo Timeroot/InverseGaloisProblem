@@ -11427,6 +11427,92 @@ negative, and one about the shape of the endgame.
 
 ---
 
+## §1.06  Status (2026-09-05, latest) — the twisted Kummer identification descends to `Gal(K/k)`
+
+Commit `719ac8b`, full root build green: **9703 jobs, 0 warnings, 0 errors, 0 sorries.**
+
+### (a) What landed
+
+Three new modules and two one-word promotions finish the "as `Gal(K/k)`-modules" half of brick 4.
+
+* `Profinite/QuotientAction.lean` — the additive form of `Profinite/Quotient.lean`.  A new class
+  `AddActsTrivially N T` (each element of `N` fixes every point of the `AddCommGroup` `T`) and, from
+  it, `instance quotientDistribMulAction : DistribMulAction (G ⧸ N) T` built by lifting
+  `DistribMulAction.toAddAut G T` through `QuotientGroup.lift`; `quotientAddMk_smul` is `rfl`.  This
+  is needed because a tensor product is an additive group and there is no writing it otherwise,
+  while the coefficients and their cohomology stay multiplicative.
+* `Profinite/TwistAction.lean` — `instance tensorDistribMulAction : DistribMulAction G (Additive A
+  ⊗[ℤ] Additive B)`, the *diagonal* action, built from `tensorSMulMap` (a `TensorProduct.map` of the
+  two `MulDistribMulAction.toMonoidHom`s) with `tensorSMulMap_one` / `tensorSMulMap_comp` proved by
+  `TensorProduct.ext'`.  Then `tensorSMul_eq_self_of_forall`, the instance
+  `actsTrivially_tensor : [ActsTrivially N A] → [ActsTrivially N B] → AddActsTrivially N (Additive A
+  ⊗[ℤ] Additive B)`, and `conjH1_twistMap_smul`, which is `conjH1_twistMap` with the tensor map
+  replaced by `σ • z`.
+* `Profinite/KummerAction.lean` — the arithmetic instantiation.
+  `noncomputable instance restrictUnitsMulDistribMulAction : MulDistribMulAction Gal(Ω/k) ((↥K)ˣ)`
+  is `MulDistribMulAction.compHom ((↥K)ˣ) (AlgEquiv.restrictNormalHom (↥K))` (so `σ • a` is
+  *definitionally* `restrictNormalHom (↥K) σ • a`, and every earlier statement lines up on the
+  nose); `instance actsTrivially_units` and the theorem `actsTrivially_hom` say the subgroup fixing
+  the field moves neither factor; `conjH1_kummerTwistEquiv_smul` is the equivariance in action form;
+  and **`kummerTwistEquiv_smul` is the payoff** —
+  for `g : Gal(Ω/k) ⧸ K.fixingSubgroup`,
+  `kummerTwistEquiv … (g • z) = Additive.ofMul (g • (kummerTwistEquiv … z).toMul)`,
+  proved by `QuotientGroup.mk_surjective` and one `exact`, everything else being `rfl`.
+* `Profinite/TwistConj.lean`: `homMulDistribMulAction` promoted from `def` to `instance`.
+* `Profinite/Krull.lean`: `normal_fixingSubgroup` promoted from `theorem` to `instance`, so
+  `K.fixingSubgroup.Normal` is now found by instance search (this retires gotcha 1380).  `Normal` is
+  a `Prop`-valued class, so no diamond can bite; the full build confirms no regression.
+
+### (b) The trap that shaped the design  (gotcha 1478 — MATH/Lean)
+
+The first draft also declared `instance additiveDistribMulAction : DistribMulAction G (Additive M)`
+from `MulDistribMulAction G M`, so that the *target* `Additive (SmoothH1 ↥N E)` would carry the
+quotient action too.  **That instance silently destroys `tensorDistribMulAction`.**  With a
+`G`-action on `Additive A` in scope, Mathlib's own `TensorProduct` left action
+(`DistribMulAction R' (M ⊗[R] N)` for `R'` acting on the left factor) becomes applicable to
+`Additive A ⊗[ℤ] Additive B`, and it is found *first*: `σ • x ⊗ₜ y` then means
+`(σ • x) ⊗ₜ y`, not the diagonal `(σ • x) ⊗ₜ (σ • y)`.  The symptom is a `show` tactic failing on
+what looks like a defeq goal, plus a `whnf` timeout.  The two actions are genuinely different, so
+this is not a diamond to be papered over with priorities: the fix is to *not* give `Additive M` a
+global `G`-action, and to write the target side as `Additive.ofMul (g • _.toMul)` instead.
+
+The consequence for packaging: when the identification is finally read as an isomorphism of
+`Rep ℤ Gal(K/k)`, the source must be built with `Rep.ofDistribMulAction ℤ Q _` out of
+`tensorDistribMulAction`, and the target with `Rep.ofMulDistribMulAction Q (SmoothH1 ↥N E)` (whose
+carrier is already `Additive` of the cohomology).  No `Additive`-valued action instance is needed
+anywhere.
+
+### (c) What is left of brick 4
+
+1. **The `Rep` packaging.**  Assemble `kummerTwistEquiv` + `kummerTwistEquiv_smul` into an
+   isomorphism in `Rep ℤ (Gal(Ω/k) ⧸ K.fixingSubgroup)`, then transport along
+   `Gal(Ω/k) ⧸ K.fixingSubgroup ≃* Gal(↥K/k)` (this is
+   `QuotientGroup.quotientKerEquivOfSurjective` applied to `AlgEquiv.restrictNormalHom (↥K)`, whose
+   kernel is `IntermediateField.restrictNormalHom_ker`), and finally through
+   `Profinite/Discrete.lean` into `groupCohomology` / `tateModule`, so that
+   `Ш¹(Gal(K/k), K^× ⊗ W)` can be spoken about at the finite level.
+2. **The remaining local step** — supply `hν` for the `resSubH1 N D` case: identify
+   `↥(N.subgroupOf D)` (for `N = K.fixingSubgroup`, `D` a decomposition subgroup) with
+   `↥L.fixingSubgroup` for `L = K ⊔ fixedField D`.  Needs `D` closed / the infinite Galois
+   correspondence, plus `(K ⊔ F)^× / p ≅ K_w^× / p`.
+
+### (d) Lean notes
+
+* An `instance` whose body mentions `AlgEquiv.restrictNormalHom` must be `noncomputable`.
+* Section variables used only in the *proof term* of a `theorem` are not auto-included (gotcha
+  1289); `include hfix in` is required, and it goes *after* the `set_option … in` lines and *before*
+  the docstring.
+* `rw`'s closing `rfl` is reducible-transparency only: after `rw [one_smul, one_smul]` a goal
+  `Additive.ofMul (Additive.toMul x) ⊗ₜ y = x ⊗ₜ y` is still open — add an explicit `rfl`
+  (gotcha 1473).
+* `MulDistribMulAction.compHom` / `DistribMulAction.compHom` are `abbrev`s taking the acted-on type
+  explicitly (gotcha 1476); `DistribMulAction.toAddAut G T` and `AddAut.applyDistribMulAction` are
+  the additive counterparts of `MulDistribMulAction.toMulAut` used in `Profinite/Quotient.lean`.
+* `Units/InfiniteTowerDescent.lean` takes ~1000 s in a full build — after
+  `Units/CompositumFundamental.lean` it is the second most expensive module in the CFT tree.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
