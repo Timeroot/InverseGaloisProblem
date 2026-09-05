@@ -42,10 +42,15 @@ of subgroups of statements about those subgroups.
 * `InverseGalois.CFT.Tate.map_range_resTateNakayamaNextMap`: **what the map leaving the comparison
   reaches is the corestriction of what it reaches on a subgroup**, as soon as corestriction of the
   tensor product from that subgroup is onto.
+* `InverseGalois.CFT.Tate.map_range_eq_range_of_iSup_cor`: **the map leaving the comparison takes,
+  on what a second map reaches, every value it takes at all** as soon as every value it takes on the
+  whole group is a sum of corestrictions of values it takes, on a family of subgroups, on classes
+  whose corestrictions the second map already reaches.
 * `InverseGalois.CFT.Tate.tateRes_tateNakayamaTwoNextMap`,
-  `InverseGalois.CFT.Tate.tateCor_tateNakayamaTwoNextMap` and
-  `InverseGalois.CFT.Tate.map_range_resTateNakayamaTwoNextMap`: the same three statements for the
-  cocycle attached to a prescribed class in degree two.
+  `InverseGalois.CFT.Tate.tateCor_tateNakayamaTwoNextMap`,
+  `InverseGalois.CFT.Tate.map_range_resTateNakayamaTwoNextMap` and
+  `InverseGalois.CFT.Tate.map_range_eq_range_of_iSup_cor_two`: the same statements for the cocycle
+  attached to a prescribed class in degree two.
 
 ## Tags
 
@@ -181,6 +186,31 @@ theorem map_range_resTateNakayamaNextMap (n : ℤ)
     exact ⟨resTateNakayamaNextMap H A b M n y, LinearMap.mem_range_self _ _,
       tateCor_tateNakayamaNextMap H A b M n y⟩
 
+/-- **The map leaving the comparison of Tate and Nakayama takes, on what a second map reaches,
+every value it takes at all** as soon as every value it takes on the whole group is a sum of
+corestrictions of values it takes, on a family of subgroups, on classes whose corestrictions the
+second map already reaches.  This is how a question about the whole group becomes a question about
+the members of the family one at a time: the map leaving the comparison commutes with corestriction,
+so a value produced on a subgroup from a class the second map reaches after corestriction is a value
+produced on the whole group from a class the second map reaches. -/
+theorem map_range_eq_range_of_iSup_cor {ι : Type*} (Hs : ι → Subgroup G) {N : Rep k G}
+    (φ : N ⟶ tensorObj A M) (n : ℤ)
+    (V : ∀ i, Submodule k ↥(tateModule (resObj (Hs i) (tensorObj A M)) (n + 1 + 1)))
+    (hV : ∀ i, Submodule.map (tateCor (Hs i) (tensorObj A M) (n + 1 + 1)) (V i)
+      ≤ LinearMap.range (tateMap φ (n + 1 + 1)).hom)
+    (hglob : LinearMap.range (tateNakayamaNextMap A b M n)
+      ≤ ⨆ i, Submodule.map (tateCor (Hs i) (cocycleTensorObj (shiftObj A) b M) (n + 1))
+        (Submodule.map (resTateNakayamaNextMap (Hs i) A b M n) (V i))) :
+    Submodule.map (tateNakayamaNextMap A b M n)
+        (LinearMap.range (tateMap φ (n + 1 + 1)).hom)
+      = LinearMap.range (tateNakayamaNextMap A b M n) := by
+  refine le_antisymm ?_ (hglob.trans (iSup_le fun i => ?_))
+  · rintro _ ⟨x, _, rfl⟩
+    exact LinearMap.mem_range_self _ x
+  · rintro _ ⟨_, ⟨v, hv, rfl⟩, rfl⟩
+    exact ⟨tateCor (Hs i) (tensorObj A M) (n + 1 + 1) v, hV i ⟨v, hv, rfl⟩,
+      (tateCor_tateNakayamaNextMap (Hs i) A b M n v).symm⟩
+
 end Nakayama
 
 /-! ### A class in degree two -/
@@ -224,6 +254,24 @@ theorem map_range_resTateNakayamaTwoNextMap (n : ℤ)
         (LinearMap.range (resTateNakayamaTwoNextMap H A α M n))
       = LinearMap.range (tateNakayamaTwoNextMap A α M n) :=
   map_range_resTateNakayamaNextMap H A (tateTwoCocycle A α) M n hcor
+
+/-- **The map leaving the comparison for a class in degree two takes, on what a second map reaches,
+every value it takes at all** as soon as every value it takes on the whole group is a sum of
+corestrictions of values it takes, on a family of subgroups, on classes whose corestrictions the
+second map already reaches. -/
+theorem map_range_eq_range_of_iSup_cor_two {ι : Type*} (Hs : ι → Subgroup G) {N : Rep ℤ G}
+    (φ : N ⟶ tensorObj A M) (n : ℤ)
+    (V : ∀ i, Submodule ℤ ↥(tateModule (resObj (Hs i) (tensorObj A M)) (n + 1 + 1)))
+    (hV : ∀ i, Submodule.map (tateCor (Hs i) (tensorObj A M) (n + 1 + 1)) (V i)
+      ≤ LinearMap.range (tateMap φ (n + 1 + 1)).hom)
+    (hglob : LinearMap.range (tateNakayamaTwoNextMap A α M n)
+      ≤ ⨆ i, Submodule.map (tateCor (Hs i)
+          (cocycleTensorObj (shiftObj A) (tateTwoCocycle A α) M) (n + 1))
+        (Submodule.map (resTateNakayamaTwoNextMap (Hs i) A α M n) (V i))) :
+    Submodule.map (tateNakayamaTwoNextMap A α M n)
+        (LinearMap.range (tateMap φ (n + 1 + 1)).hom)
+      = LinearMap.range (tateNakayamaTwoNextMap A α M n) :=
+  map_range_eq_range_of_iSup_cor A (tateTwoCocycle A α) M Hs φ n V hV hglob
 
 end DegreeTwo
 

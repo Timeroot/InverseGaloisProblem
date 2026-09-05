@@ -46,6 +46,10 @@ carrying a Sylow subgroup and a choice of coefficients through every intermediat
   coefficients, have no complete cohomology over a Sylow subgroup** in the two relevant degrees.
   The first of these two conditions is a statement about the places one at a time, so this reduces
   the span to conditions that can be read off the local extensions.
+* `InverseGalois.CFT.hasIdeleClassNakayamaSpan_of_next`: **the span holds whenever the map leaving
+  the comparison of Tate and Nakayama over a Sylow subgroup takes, on the classes coming from the
+  ideles, every value it takes at all.**  This is the form of the span in which only a map natural
+  in the coefficients appears, so the form in which the places can be brought to bear.
 * `InverseGalois.CFT.range_shaTorusPTorsionMap_of_span`: **the everywhere locally trivial classes
   of the units tensored with coefficients killed by a prime are exactly the classes the comparison
   of Tate and Nakayama produces**, whenever the span holds.
@@ -148,6 +152,31 @@ theorem hasIdeleClassNakayamaSpan_of_isZero_idele
   hasIdeleClassNakayamaSpan_of_isZero fun W hW P n =>
     isZero_tateModule_tensor_ideleClassTorsionRes (Fact.out : p.Prime) W
       (P : Subgroup Gal(K/k)) (n + 1 + 1 + 1 + 1) (hI W hW P n) (hU W hW P n)
+
+/-- **The span holds whenever the map leaving the comparison of Tate and Nakayama over a Sylow
+subgroup for the prime takes, on the classes coming from the ideles, every value it takes at all.**
+The classes the comparison produces are exactly those the map leaving it kills, so a spanning
+statement about the comparison is a statement about the values of that map; and the map leaving the
+comparison is natural in the representation, so unlike the comparison itself its values can be
+compared with local ones. -/
+theorem hasIdeleClassNakayamaSpan_of_next
+    (h : ∀ W : Rep ℤ Gal(K/k), (∀ w : ↥W.V, p • w = 0) → ∀ (P : Sylow p Gal(K/k)) (n : ℤ),
+      Submodule.map
+          (tateNakayamaTwoNextMap (resObj (P : Subgroup Gal(K/k)) (ideleClassRep k K))
+            (tateRes (P : Subgroup Gal(K/k)) (ideleClassRep k K) 2 (baseFundamentalClass k K))
+            (resObj (P : Subgroup Gal(K/k)) W) n)
+          (LinearMap.range (tateMap (resHom (P : Subgroup Gal(K/k))
+            (tensorHomLeft W (ideleToIdeleClass k K))) (n + 1 + 1)).hom)
+        = LinearMap.range
+          (tateNakayamaTwoNextMap (resObj (P : Subgroup Gal(K/k)) (ideleClassRep k K))
+            (tateRes (P : Subgroup Gal(K/k)) (ideleClassRep k K) 2 (baseFundamentalClass k K))
+            (resObj (P : Subgroup Gal(K/k)) W) n)) :
+    HasIdeleClassNakayamaSpan k K p := by
+  intro W hW P n
+  rw [← ker_resBaseTateNakayamaPTorsionRight k K W hW (P : Subgroup Gal(K/k)) n, sup_comm]
+  exact (map_eq_range_iff_sup_ker_eq_top _ _).1
+    ((map_resBaseTateNakayamaPTorsionRight_eq_range_iff k K W hW (P : Subgroup Gal(K/k)) n _).2
+      (h W hW P n))
 
 /-- **The everywhere locally trivial classes of the units tensored with coefficients killed by a
 prime are exactly the image of the complete cohomology of the coefficients three degrees lower**,
