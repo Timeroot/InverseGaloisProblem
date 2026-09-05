@@ -221,6 +221,7 @@ import InverseGalois.CFT.FibreCompositum
 import InverseGalois.CFT.FrobeniusInvolution
 import InverseGalois.CFT.FrobeniusStabilizer
 import InverseGalois.CFT.GaloisDescent
+import InverseGalois.CFT.GroupCohomology.AbelianLift
 import InverseGalois.CFT.GroupCohomology.Classification
 import InverseGalois.CFT.GroupCohomology.CentralLift
 import InverseGalois.CFT.GroupCohomology.CentralTwist
@@ -3405,6 +3406,13 @@ it that are available here.
   coboundary, then correcting the section by the cochain produces **a homomorphic lift of that
   homomorphism**, and when the kernel lies inside the Frattini subgroup the lift is automatically
   surjective, so it solves the embedding problem properly.
+* `InverseGalois.CFT.GroupCohomology.AbelianLift` runs the same engine with the centrality dropped.
+  For a merely abelian kernel the factor set is still a two-cocycle, now for the action of the
+  quotient by conjugation through the section, and correcting the section by a trivialising cochain
+  still produces a homomorphic lift; the kernel is presented as an abstract abelian group with an
+  injection into the source, so **a caller may supply the module structure it already has** rather
+  than transport one onto a subtype.  The converse also holds: the factor set pulled back along a
+  homomorphism which lifts is the coboundary of the difference between the section and the lift.
 * `InverseGalois.CFT.Kummer.RootsInBase` matches the two sides of that exchange.  A field containing
   a primitive `n`-th root of unity already contains every `n`-th root of unity of every extension,
   because the image of the primitive root is still primitive; hence the Galois group acts trivially
