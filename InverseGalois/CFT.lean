@@ -445,6 +445,7 @@ import InverseGalois.CFT.Profinite.Cochain
 import InverseGalois.CFT.Profinite.Coeff
 import InverseGalois.CFT.Profinite.Comap
 import InverseGalois.CFT.Profinite.Cup
+import InverseGalois.CFT.Profinite.H1Conj
 import InverseGalois.CFT.Profinite.Hilbert90
 import InverseGalois.CFT.Profinite.InfRes
 import InverseGalois.CFT.Profinite.Kummer
@@ -4986,6 +4987,16 @@ it that are available here.
   says the representing cocycle is a coboundary there.  A family of subgroups then cuts out the
   classes dying on every member of it, the shape in which the everywhere locally trivial classes of
   a number field appear once a place is read as a decomposition subgroup.
+* `InverseGalois.CFT.Profinite.H1Conj` puts the quotient back on what restriction produced.  An
+  element of the ambient group conjugates a normal subgroup into itself, so substituting the
+  conjugate and then acting on the coefficients carries a cochain on the subgroup to another one,
+  and that substitution preserves the cocycle relation, the coboundaries and smoothness: **the
+  ambient group acts on the first cohomology of a normal subgroup.**  Conjugating a cocycle by an
+  element of the subgroup only multiplies it by the coboundary of the value the cocycle already
+  takes there, so **the subgroup acts trivially and the action is one of the quotient**, smooth as
+  soon as the subgroup is open.  This is the coefficient module the transgression of an
+  inflation-restriction sequence asks for, and for the Galois group of a number field and the
+  subgroup fixing a finite extension it is the module Kummer theory computes.
 * `InverseGalois.CFT.Profinite.Trivial` is the case of coefficients on which the group acts
   trivially, the one that carries the local-global arguments.  There the cocycle relation says
   exactly that the cochain is a homomorphism, every coboundary is trivial, and smoothness is
