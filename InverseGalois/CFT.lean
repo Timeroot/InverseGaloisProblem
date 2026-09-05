@@ -463,6 +463,7 @@ import InverseGalois.CFT.Profinite.ShaComap
 import InverseGalois.CFT.Profinite.Symbol
 import InverseGalois.CFT.Profinite.SymbolCyclic
 import InverseGalois.CFT.Profinite.Transgression
+import InverseGalois.CFT.Profinite.TransgressionClass
 import InverseGalois.CFT.Profinite.Trivial
 import InverseGalois.CFT.RatUnits
 import InverseGalois.CFT.RelativeFrobenius
@@ -4969,6 +4970,19 @@ it that are available here.
   transgression that the first two produce.  Shrinking twice gives **a smooth class whose
   restriction to the kernel and whose transgression are trivialised by smooth cochains is inflated
   from the quotient.**
+* `InverseGalois.CFT.Profinite.TransgressionClass` reads the hypothesis that argument leaves over as
+  a single cohomology class.  A transgression is uniformly smooth, is a homomorphism on the kernel,
+  is a one cocycle for conjugation, and depends only on the coset of its index; those four
+  conditions are exactly what makes it a smooth one cocycle of the group with values in the first
+  cohomology of the kernel.  The kernel acts trivially on the coefficients, so that cohomology is
+  the group of smooth homomorphisms and two cohomologous cocycles there are equal, which turns the
+  trivialisation of a transgression into the vanishing of its class.  One step is not formal: the
+  homomorphism the vanishing provides lives on the kernel and is extended by the unit outside, and
+  the extension is smooth only if the homomorphism kills an open normal subgroup of the whole group.
+  **A compact group has a basis of such subgroups**, its open subgroups being closed of finite
+  index, and with that in hand the Hasse principle asked for becomes **the vanishing of those
+  classes of the first cohomology of the group with values in the first cohomology of the kernel
+  which are locally coboundaries.**
 * `InverseGalois.CFT.Profinite.Quotient` names a *level*: an open normal subgroup which acts
   trivially on the coefficients.  The quotient by it acts, and is discrete, and the projection to it
   has open kernel, so composing with the projection is **inflation from that level**, injective in
