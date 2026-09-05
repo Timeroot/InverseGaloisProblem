@@ -11210,6 +11210,74 @@ right-hand side into `⊕_v H¹(D_w, K_w^×⊗W)` — the coefficients localised
 
 ---
 
+## 1.04 Status (2026-09-05, latest) — the transgression is always inflated, so its local conditions are a group of the *finite* quotient
+
+### (a) What landed
+
+Commit `3fc2890`, `InverseGalois/CFT/Profinite/TransgressionInflate.lean`.  Full root build **9692
+jobs**, 0 warnings, 0 errors, 0 sorries.
+
+This is item 1 of §1.03(c), the inflation half of brick 5's arithmetic side.
+
+1. **The transgression is trivial on the kernel.**  `IsTransgressionDatum.apply_one` reads the
+   cocycle condition at `σ = τ = 1` and `x ∈ N`: it says `t 1 x = t 1 x * t 1 x`, so `t 1 x = 1`.
+   With the left-invariance condition `t (n σ) x = t σ x` for `n ∈ N` this gives
+   `IsTransgressionDatum.apply_eq_one_of_mem`: `t n x = 1` for all `n, x ∈ N`.  Hence
+   `transCochain_eq_one_of_mem` — the transgression cochain is identically `1` on `N`.
+2. **So the transgression class is inflated.**  `N` acts trivially on `SmoothH1 ↥N M`
+   (`conjH1_eq_self_of_mem`, made an instance `actsTrivially_smoothH1`), and a smooth cocycle that
+   is trivial on an open normal subgroup on which the coefficients are fixed is inflated
+   (`exists_inflH1_eq`, `Profinite/Quotient.lean`).  `exists_inflH1_transClass` therefore produces
+   `x : SmoothH1 (G ⧸ N) (SmoothH1 ↥N M)` with `inflH1 x = transClass h`.
+3. **Localising an inflated class is inflating its localisation.**  With
+   `quotSubHom : ↥D ⧸ N.subgroupOf D →* G ⧸ N` and the coefficient map `resSubH1 N D`, the
+   composite `resCoeffQuotH1 N D` is defined on the quotient groups alone, and
+
+   >  `resCoeffH1 N D ∘ inflH1 N = inflH1 (N.subgroupOf D) ∘ resCoeffQuotH1 N D`
+
+   is **`rfl`** once the class is written as `smoothH1Mk` of a cocycle.  Since inflation is
+   injective in degree one, `resCoeffH1 N D (inflH1 x) = 1 ↔ resCoeffQuotH1 N D x = 1`.
+4. **The hypothesis is now a group of the quotient.**  `sha1Level M N hop S` is the subgroup of
+   `SmoothH1 (G ⧸ N) (SmoothH1 ↥N M)` cut out by the localisations, and `sha1Level_eq` presents it
+   as `⨅ D ∈ S, (resCoeffQuotH1 N D hop).ker`.  For `G = G_k`, `N = G_K` this is literally
+   `Ш¹(Gal(K/k), H¹(G_K, M))` with the coefficients localised at each `D`, exactly the group
+   §1.03(b) identified.  The capstone `exists_comapH2_eq_of_sha1Level_eq_bot` is the descent
+   theorem conditioned on it, and `transClass_eq_one_of_sha1Level` the step that consumes it.
+
+### (b) What is left of brick 5's arithmetic side
+
+Only brick 4, unchanged in substance: `SmoothH1 G_K E ≅ K^× ⊗ W` as `Gal(K/k)`-modules, with
+`SmoothH1 G_{K_w} E ≅ K_w^× ⊗ W` compatibly with `resSubH1`.  Two sub-bridges:
+
+1. **The language bridge.**  `sha1Level` lives in `SmoothH1` of the *discrete* group `G_k ⧸ G_K`,
+   while `Ш¹(Gal(K/k), K^×⊗W)` lives in `tateModule … 1 = groupCohomology … 1`.  On a discrete group
+   the smoothness condition is empty, so the two cohomologies agree; this is
+   `Profinite/Discrete.lean`.
+2. **The coefficient bridge**, which is brick 4 proper: Kummer plus the twist.  The equivariance
+   half is `Profinite/KummerConj.lean`; the twist is
+   `Hom_{cont}(G_K, μ_p) ⊗_{𝔽_p} W ≅ Hom_{cont}(G_K, μ_p ⊗ W)`, an isomorphism because `W` is a
+   finite-dimensional `𝔽_p`-vector space, checked on a basis (the map itself is natural, so the
+   basis does not survive into the statement).  Note that the twist does **not** need `μ_p ⊆ k`:
+   the map `a ⊗ w ↦ (x ↦ w(x α / α))`, `α^p = a`, is `Gal(K/k)`-equivariant for the diagonal action
+   on `K^× ⊗ Hom(μ_p, E)` as it stands.  §1.00(g)'s reduction remains available but is not a
+   prerequisite.
+
+### (c) Lean notes
+
+* `IsTransgressionDatum` forces `t 1 x = 1` for `x ∈ N`: the cocycle condition at `σ = τ = 1` gives
+  `a = a * a`, closed by `left_eq_mul.1`.  (gotcha 1429)
+* `refine ⟨fun h => lemma _ _ _ ?_, …⟩` is illegal when the `?_` needs the lambda-bound `h` — the
+  metavariable is created outside the lambda.  Symptom: two errors, *don't know how to synthesize
+  placeholder* and *unsolved goals* listing a goal without `h`.  Use `constructor` and `intro h`
+  bullets.  (gotcha 1430)
+* `resCoeffH1 N D (inflH1 N A hop x) = inflH1 (N.subgroupOf D) A_D _ (resCoeffQuotH1 N D hop x)` is
+  `rfl` after `obtain ⟨u, hu, hs, rfl⟩ := smoothH1Mk_surjective x`: `comapH1` and `coeffH1` compose
+  definitionally on `smoothH1Mk`.  (gotcha 1431)
+* `waitbuild.sh` may not create its log file at all while waiting for memory; a missing log is not
+  an error.  (gotcha 1433)
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —

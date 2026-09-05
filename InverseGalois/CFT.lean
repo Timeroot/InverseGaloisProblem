@@ -445,6 +445,7 @@ import InverseGalois.CFT.Profinite.Cochain
 import InverseGalois.CFT.Profinite.Coeff
 import InverseGalois.CFT.Profinite.Comap
 import InverseGalois.CFT.Profinite.Cup
+import InverseGalois.CFT.Profinite.Discrete
 import InverseGalois.CFT.Profinite.FixingSubgroup
 import InverseGalois.CFT.Profinite.H1Conj
 import InverseGalois.CFT.Profinite.Hilbert90
@@ -5020,6 +5021,16 @@ it that are available here.
   attached to the quotient alone: **the everywhere locally trivial classes of the first cohomology
   of the quotient with values in the first cohomology of the kernel**, which for a finite quotient
   is a group of ordinary group cohomology.
+* `InverseGalois.CFT.Profinite.Discrete` says that last clause exactly.  On a discrete group the
+  trivial subgroup is open, so every cochain is smooth and every action is smooth, and the smooth
+  cocycles are all the cocycles; passing to classes, **the smooth cohomology of a discrete group is
+  the ordinary cohomology of the additive copy of its coefficients**, in degree one and in degree
+  two.  This is the seam between the two languages the development speaks.  Everything above a
+  fixed finite level is written with smooth cochains on an infinite Galois group, because that is
+  the language in which a class can be inflated from a level or restricted to a decomposition
+  subgroup; everything below it is written with representations and complete cohomology, because
+  that is the language of the theorems of Tate and Nakayama.  A class of the quotient crosses from
+  one side to the other here and nowhere else.
 * `InverseGalois.CFT.Profinite.Krull` reads that dictionary on the Galois group of an arbitrary
   Galois extension, whose topology has the subgroups fixing a finite Galois intermediate field for a
   basis at the identity.  Such a subgroup is the kernel of restriction to that field, hence open and
