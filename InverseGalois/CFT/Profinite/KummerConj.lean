@@ -193,11 +193,11 @@ end Kummer
 section Iso
 
 variable {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω] [IsGalois k Ω]
-variable {K : IntermediateField k Ω} [FiniteDimensional k ↥K]
+variable {K : IntermediateField k Ω}
 variable {M : Type*} [CommGroup M] [MulDistribMulAction Gal(Ω/↥K) M] {ι : M →* (↥K)ˣ}
 variable {n : ℕ} [NeZero n] [MulDistribMulAction Gal(Ω/k) M]
 
-omit [IsGalois k Ω] [FiniteDimensional k ↥K] [NeZero n] in
+omit [IsGalois k Ω] [NeZero n] in
 /-- The subgroup fixing an intermediate field acts on the roots of unity in the two available ways,
 through the Galois group of the base and through the Galois group over the field, and both actions
 are trivial. -/

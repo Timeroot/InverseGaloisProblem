@@ -99,7 +99,7 @@ end Hom
 section Twist
 
 variable {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω] [IsGalois k Ω]
-variable {K : IntermediateField k Ω} [FiniteDimensional k ↥K]
+variable {K : IntermediateField k Ω}
 variable {M : Type*} [CommGroup M] [MulDistribMulAction Gal(Ω/↥K) M] {ι : M →* (↥K)ˣ}
 variable {p : ℕ} [NeZero p] [MulDistribMulAction Gal(Ω/k) M]
 variable {E : Type*} [CommGroup E] [MulDistribMulAction Gal(Ω/k) E]

@@ -57,14 +57,13 @@ open groupCohomology TensorProduct
 section Twist
 
 variable {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω] [IsGalois k Ω]
-variable {K : IntermediateField k Ω} [FiniteDimensional k ↥K]
+variable {K : IntermediateField k Ω}
 variable {M : Type*} [CommGroup M] [MulDistribMulAction Gal(Ω/↥K) M] {ι : M →* (↥K)ˣ}
 variable {p : ℕ} [NeZero p] [MulDistribMulAction Gal(Ω/k) M]
 variable {E : Type*} [CommGroup E] [MulDistribMulAction Gal(Ω/k) E]
 variable (h : IsKummerData ↥K Ω M ι p) (htriv : ∀ (σ : Gal(Ω/k)) (m : M), σ • m = m)
 
-omit [IsGalois k Ω] [FiniteDimensional k ↥K] [NeZero p]
-  [MulDistribMulAction Gal(Ω/↥K) M] in
+omit [IsGalois k Ω] [NeZero p] [MulDistribMulAction Gal(Ω/↥K) M] in
 include htriv in
 /-- The subgroup fixing an intermediate field acts trivially on coefficients the whole Galois group
 acts trivially on. -/

@@ -90,8 +90,6 @@ theorem resInclH1_kummerSubClass (htriv : ∀ (σ : Gal(Ω/k)) (m : M), σ • m
     (isSmooth₁_kummerSubCochain hK a)) ?_
   exact smoothH1Mk_congr (funext fun y => kummerSubCochain_tower hK hL j hj hιj hle a y) _ _ _ _
 
-variable [FiniteDimensional k ↥K] [FiniteDimensional k ↥L]
-
 include hj hιj in
 /-- **The Kummer homomorphisms of a tower are compatible with restriction**: restricting the class
 of a unit gives the class of that unit read in the larger field. -/
@@ -106,7 +104,7 @@ end Tower
 section TwistTower
 
 variable {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω] [IsGalois k Ω]
-variable {K L : IntermediateField k Ω} [FiniteDimensional k ↥K] [FiniteDimensional k ↥L]
+variable {K L : IntermediateField k Ω}
 variable {M : Type*} [CommGroup M] [MulDistribMulAction Gal(Ω/↥K) M]
   [MulDistribMulAction Gal(Ω/↥L) M] [MulDistribMulAction Gal(Ω/k) M]
 variable {ιK : M →* (↥K)ˣ} {ιL : M →* (↥L)ˣ} {p : ℕ} [NeZero p]
