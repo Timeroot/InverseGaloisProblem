@@ -464,6 +464,7 @@ import InverseGalois.CFT.Profinite.Symbol
 import InverseGalois.CFT.Profinite.SymbolCyclic
 import InverseGalois.CFT.Profinite.Transgression
 import InverseGalois.CFT.Profinite.TransgressionClass
+import InverseGalois.CFT.Profinite.TransgressionInflate
 import InverseGalois.CFT.Profinite.TransgressionRestrict
 import InverseGalois.CFT.Profinite.Trivial
 import InverseGalois.CFT.RatUnits
@@ -5006,6 +5007,19 @@ it that are available here.
   a trivial reason: smoothness of a cochain is constancy on the cosets of an open normal subgroup
   and smoothness of the action is triviality on one, and the intersection of the two is again open
   and normal, so **every class of either degree is represented at a level.**
+* `InverseGalois.CFT.Profinite.TransgressionInflate` puts the descent at that level.  A
+  transgression indexed by the unit satisfies the cocycle condition there, which says its value is
+  its own square, so it is trivial; and the family depends only on the class of its index, so **a
+  transgression indexed by an element of the kernel is trivial** and the cochain it defines is
+  trivial on the kernel.  The kernel also acts trivially on the coefficients, so **the class of a
+  transgression is inflated from the quotient**, and inflation is injective in degree one, so
+  nothing is lost by asking for its vanishing there.  Localising an inflated class is inflating its
+  localisation — the two are computed by the same cochain on the subgroup — so the localisations may
+  be read at the level too, as maps of the quotient by the kernel to the quotients of the subgroups
+  by their parts of it.  The hypothesis of the descent thereby becomes a statement about a group
+  attached to the quotient alone: **the everywhere locally trivial classes of the first cohomology
+  of the quotient with values in the first cohomology of the kernel**, which for a finite quotient
+  is a group of ordinary group cohomology.
 * `InverseGalois.CFT.Profinite.Krull` reads that dictionary on the Galois group of an arbitrary
   Galois extension, whose topology has the subgroups fixing a finite Galois intermediate field for a
   basis at the identity.  Such a subgroup is the kernel of restriction to that field, hence open and
