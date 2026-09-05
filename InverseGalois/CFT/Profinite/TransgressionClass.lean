@@ -232,7 +232,8 @@ def transClass (h : IsTransgressionDatum N M t) (htriv : ∀ n ∈ N, ∀ m : M,
 restriction of that homomorphism to the subgroup being the cochain which trivialises it. -/
 theorem transClass_eq_one (h : IsTransgressionDatum N M t)
     (htriv : ∀ n ∈ N, ∀ m : M, n • m = m) (hop : IsOpen (N : Set G)) {φ : G → M}
-    (hφs : IsSmooth₁ φ) (hφm : ∀ x ∈ N, ∀ y ∈ N, φ (x * y) = φ x * φ y)
+    (hφs : IsSmooth₁ fun x : ↥N => φ (x : G))
+    (hφm : ∀ x ∈ N, ∀ y ∈ N, φ (x * y) = φ x * φ y)
     (hφ : ∀ σ : G, ∀ x ∈ N, t σ x = σ • φ (σ⁻¹ * x * σ) / φ x) :
     transClass h htriv hop = 1 := by
   have hc : IsMulCocycle₁ (fun x : ↥N => φ (x : G)) := by
@@ -240,12 +241,8 @@ theorem transClass_eq_one (h : IsTransgressionDatum N M t)
     have hx : (x : ↥N) • φ (y : G) = φ (y : G) := htriv (x : G) x.2 _
     show φ ((x : G) * (y : G)) = (x : ↥N) • φ (y : G) * φ (x : G)
     rw [hx, hφm (x : G) x.2 (y : G) y.2, mul_comm]
-  have hs : IsSmooth₁ (fun x : ↥N => φ (x : G)) := by
-    obtain ⟨R, hR, hcon⟩ := hφs
-    exact ⟨R.comap N.subtype, isOpenNormal_comap_subtype N hR,
-      fun x n hn => hcon (x : G) (n : G) hn⟩
   rw [transClass, smoothH1Mk_eq_one_iff]
-  refine ⟨smoothH1Mk (fun x : ↥N => φ (x : G)) hc hs, funext fun σ => ?_⟩
+  refine ⟨smoothH1Mk (fun x : ↥N => φ (x : G)) hc hφs, funext fun σ => ?_⟩
   rw [transCochain_apply, smul_eq_conjH1, conjH1_smoothH1Mk, div_eq_iff_eq_mul,
     ← smoothH1Mk_mul]
   refine smoothH1Mk_congr (funext fun x => ?_) _ _ _ _
@@ -315,7 +312,8 @@ theorem transClass_eq_one_iff [IsTopologicalGroup G] (hbasis : HasOpenNormalBasi
       (∀ x ∈ N, ∀ y ∈ N, φ (x * y) = φ x * φ y) ∧
       ∀ σ : G, ∀ x ∈ N, t σ x = σ • φ (σ⁻¹ * x * σ) / φ x :=
   ⟨exists_eq_smul_div_of_transClass_eq_one hbasis h htriv hop,
-    fun ⟨_, hφs, hφm, hφ⟩ => transClass_eq_one h htriv hop hφs hφm hφ⟩
+    fun ⟨_, hφs, hφm, hφ⟩ =>
+      transClass_eq_one h htriv hop (isSmooth₁_comp (continuous_subtype N) hφs) hφm hφ⟩
 
 end Class
 

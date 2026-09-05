@@ -27,8 +27,8 @@ attached to an arbitrary family of subgroups.
 ## Main results
 
 * `InverseGalois.CFT.isSmoothHom_subtype`: the inclusion of a subgroup is a smooth homomorphism.
-* `InverseGalois.CFT.isSmooth₁_comp_inclusion`: a smooth cochain on a subgroup stays smooth on a
-  smaller subgroup.
+* `InverseGalois.CFT.isSmooth₁_comp`: a smooth cochain stays smooth after composition with a
+  continuous homomorphism, so in particular on a smaller subgroup.
 * `InverseGalois.CFT.resH1_eq_one_iff`: restriction of a class to a subgroup is trivial exactly
   when the cocycle is a coboundary on that subgroup.
 * `InverseGalois.CFT.smoothH1Mk_mem_sha1`, `InverseGalois.CFT.smoothH2Mk_mem_sha2`: membership
@@ -56,6 +56,15 @@ theorem IsOpenNormal.comap {f : H →* G} (hf : Continuous f) {N : Subgroup G}
   rw [Subgroup.coe_comap]
   exact hN.isOpen.preimage hf
 
+/-- **A smooth cochain stays smooth after composition with a continuous homomorphism.** -/
+theorem isSmooth₁_comp {f : H →* G} (hf : Continuous f) {M : Type*} {d : G → M}
+    (hd : IsSmooth₁ d) : IsSmooth₁ fun x : H => d (f x) := by
+  obtain ⟨R, hR, hdR⟩ := hd
+  refine ⟨R.comap f, hR.comap hf, fun x n hn => ?_⟩
+  show d (f (x * n)) = d (f x)
+  rw [map_mul f x n]
+  exact hdR (f x) (f n) (Subgroup.mem_comap.1 hn)
+
 end Preimage
 
 /-! ### The inclusion of a subgroup -/
@@ -79,11 +88,8 @@ theorem continuous_inclusion {K : Subgroup G} (hle : H ≤ K) :
 
 /-- **A smooth cochain on a subgroup stays smooth on a smaller subgroup.** -/
 theorem isSmooth₁_comp_inclusion {K : Subgroup G} (hle : H ≤ K) {M : Type*} {d : ↥K → M}
-    (hd : IsSmooth₁ d) : IsSmooth₁ fun x : ↥H => d (Subgroup.inclusion hle x) := by
-  obtain ⟨R, hR, hdR⟩ := hd
-  refine ⟨R.comap (Subgroup.inclusion hle), hR.comap (continuous_inclusion H hle),
-    fun x n hn => ?_⟩
-  exact hdR (Subgroup.inclusion hle x) (Subgroup.inclusion hle n) (Subgroup.mem_comap.1 hn)
+    (hd : IsSmooth₁ d) : IsSmooth₁ fun x : ↥H => d (Subgroup.inclusion hle x) :=
+  isSmooth₁_comp (continuous_inclusion H hle) hd
 
 /-- **The inclusion of a subgroup is a smooth homomorphism.** -/
 theorem isSmoothHom_subtype : IsSmoothHom (H.subtype) :=

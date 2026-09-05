@@ -464,6 +464,7 @@ import InverseGalois.CFT.Profinite.Symbol
 import InverseGalois.CFT.Profinite.SymbolCyclic
 import InverseGalois.CFT.Profinite.Transgression
 import InverseGalois.CFT.Profinite.TransgressionClass
+import InverseGalois.CFT.Profinite.TransgressionRestrict
 import InverseGalois.CFT.Profinite.Trivial
 import InverseGalois.CFT.RatUnits
 import InverseGalois.CFT.RelativeFrobenius
@@ -4983,6 +4984,16 @@ it that are available here.
   index, and with that in hand the Hasse principle asked for becomes **the vanishing of those
   classes of the first cohomology of the group with values in the first cohomology of the kernel
   which are locally coboundaries.**
+* `InverseGalois.CFT.Profinite.TransgressionRestrict` says the same of the local condition itself.
+  Restricting both variables of a transgression to a subgroup leaves the four conditions standing,
+  with respect to the part of the kernel lying inside that subgroup, so **a transgression restricts
+  to a transgression of a subgroup** and has there a class of its own.  A trivialisation on the
+  subgroup is a homomorphism on that part and is smooth there, which is precisely what makes the
+  restricted class vanish, so the local hypothesis is one cohomology class per member of the family
+  and nothing else: **a locally trivial class of the second cohomology whose restriction to the
+  kernel is trivial is inflated from the quotient as soon as a transgression whose restricted
+  classes all vanish has itself a vanishing class.**  Only that direction is used, so the members of
+  the family are not asked to have a basis of open normal subgroups of their own.
 * `InverseGalois.CFT.Profinite.Quotient` names a *level*: an open normal subgroup which acts
   trivially on the coefficients.  The quotient by it acts, and is discrete, and the projection to it
   has open kernel, so composing with the projection is **inflation from that level**, injective in
