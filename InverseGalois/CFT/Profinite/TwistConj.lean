@@ -73,7 +73,7 @@ theorem homSMul_one (σ : G) : homSMul σ (1 : M →* E) = 1 :=
 
 variable (G M E) in
 /-- **The homomorphisms between two modules over a group form a module over that group.** -/
-def homMulDistribMulAction : MulDistribMulAction G (M →* E) where
+instance homMulDistribMulAction : MulDistribMulAction G (M →* E) where
   smul := homSMul
   one_smul := one_homSMul
   mul_smul σ τ w := (homSMul_comp σ τ w).symm
