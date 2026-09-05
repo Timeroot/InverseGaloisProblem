@@ -795,7 +795,9 @@ import InverseGalois.CFT.Units.CompositumEmbed
 import InverseGalois.CFT.Units.CompositumFundamental
 import InverseGalois.CFT.Units.CyclicTrivial
 import InverseGalois.CFT.Units.Decomposition
+import InverseGalois.CFT.Units.DecompositionClosed
 import InverseGalois.CFT.Units.DecompositionField
+import InverseGalois.CFT.Units.DecompositionFieldLevel
 import InverseGalois.CFT.Units.DecompositionFieldTower
 import InverseGalois.CFT.Units.DecompositionFundamental
 import InverseGalois.CFT.Units.DecompositionGalois
@@ -2685,6 +2687,16 @@ it that are available here.
   completions along the tower carries the completion of the level to itself, so the decomposition
   field of the level is stable under every automorphism fixing the prime and its embedding into the
   completion of the level intertwines the two actions.
+* `InverseGalois.CFT.Units.DecompositionFieldLevel` reads the decomposition field of a level from
+  the big extension above it.  A finite Galois level contains any given level together with any
+  given finite set of elements, so the levels are cofinal; and **an element of a level lies in the
+  decomposition field of the level over a smaller level exactly when every automorphism of the whole
+  extension fixing the prime and the smaller level pointwise fixes it** — one direction restricts
+  such an automorphism to the level, the other lifts an automorphism of the level fixing the prime
+  below and observes that the lift fixes the smaller level because its restriction does.
+  Restricting an automorphism fixing the prime first to the level and then to the smaller one is
+  restricting it to the smaller one directly, so the embedding of the decomposition field into the
+  completion of the smaller level is equivariant for the automorphisms fixing the prime.
 * `InverseGalois.CFT.Units.CompletionUnits` passes that description to the unit groups: a fixed
   unit comes from the completion of the base and is nonzero there, hence is a unit below.
 * `InverseGalois.CFT.Units.OrbitPlaces` identifies the orbits of the Galois group on the height one
@@ -2939,6 +2951,12 @@ it that are available here.
   prime above.  Hence **a homomorphism killing a level and the stabiliser of every nonzero prime is
   trivial**, and with trivial coefficients **a class dying on every decomposition subgroup
   vanishes** — which is the local condition in the shape a local-global principle states it.
+* `InverseGalois.CFT.Units.DecompositionClosed` puts a decomposition subgroup of an infinite
+  extension into the Galois correspondence.  An automorphism fixes a prime of the integers exactly
+  when it respects the membership of every integer, and it fixes an archimedean place exactly when
+  it preserves the absolute value of every element; each of those conditions cuts out the preimage
+  of a set in a discrete space under a continuous map, so **every decomposition subgroup is closed**
+  and hence **is the subgroup fixing its own fixed field.**
 * `InverseGalois.CFT.Units.HasseInflation` spends that on a class of the first cohomology of an
   infinite Galois group whose coefficients are acted on through a finite Galois level.  Restriction
   of scalars identifies the subgroup fixing that level with the Galois group of the big field over
