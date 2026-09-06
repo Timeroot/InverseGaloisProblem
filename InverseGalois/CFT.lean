@@ -463,6 +463,8 @@ import InverseGalois.CFT.Profinite.KummerHom
 import InverseGalois.CFT.Profinite.KummerLevel
 import InverseGalois.CFT.Profinite.KummerLevelDegree
 import InverseGalois.CFT.Profinite.KummerLocal
+import InverseGalois.CFT.Profinite.KummerLocalCompare
+import InverseGalois.CFT.Profinite.KummerLocalSurjective
 import InverseGalois.CFT.Profinite.KummerRep
 import InverseGalois.CFT.Profinite.KummerRes
 import InverseGalois.CFT.Profinite.KummerTower
@@ -5452,6 +5454,24 @@ it that are available here.
   compositum**, and the same for the twisted identification.  The fixed field of a decomposition
   subgroup is an infinite extension of the base, which is why the tower below asks nothing of the
   size of the intermediate field.
+* `InverseGalois.CFT.Profinite.KummerLocalSurjective` reads that identification in both directions.
+  The comparison between the two readings of the part of a subgroup lying inside another one comes
+  from an isomorphism of topological groups, so writing down the induced map of the inverse gives a
+  two sided inverse and **the comparison is bijective**.  Transporting that bijectivity across the
+  twisted Kummer identification turns two properties of the inclusion of the units into properties
+  of localisation: **a twisted class dies at the place exactly when its datum dies under the
+  inclusion**, **localisation is surjective as soon as the inclusion is surjective modulo the
+  coefficients**, and consequently **whatever localisation kills is killed by every homomorphism
+  that kills the classes whose datum the inclusion kills.**  This is what lets the compositum
+  reading of a local condition be compared with any other reading of it.
+* `InverseGalois.CFT.Profinite.KummerLocalCompare` performs that comparison.  Localisation at a
+  place is a map of the coefficients of the first cohomology of the decomposition subgroup, and a
+  surjective map of the coefficients kills the least a map can, so **a class trivial after
+  localisation at the compositum is trivial after every map of the coefficients which kills the
+  twisted Kummer data that the inclusion of the units kills** — and the same for a global class,
+  restricted to the place first.  The map to be compared with is the one to the units of the
+  completion of the level at the place below, for which the hypothesis to be checked is precisely
+  that a unit which becomes a power in the compositum becomes a power in the completion.
 * `InverseGalois.CFT.Profinite.KummerRep` hands the identification over to class field theory.  An
   equivariant identification of an additive module with the additive copy of a multiplicative one is
   an isomorphism of representations over the integers, so **the twisted Kummer identification is an

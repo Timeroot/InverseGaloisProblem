@@ -14,6 +14,11 @@ group law and the action, and it preserves smoothness, because a cochain constan
 an open normal subgroup stays constant there.  A coboundary goes to the coboundary of the image of
 its primitive, so the construction descends to cohomology in degrees one and two.
 
+Two homomorphisms out of the same coefficients can be compared in the first cohomology whenever one
+of them is surjective and kills less than the other: a class killed by the surjective one is killed
+by the other as well, because the primitive of the image lifts and the discrepancy takes values in
+the smaller kernel.
+
 ## Main definitions
 
 * `InverseGalois.CFT.coeffMap₁`, `InverseGalois.CFT.coeffMap₂`: composing a cochain with a
@@ -27,6 +32,8 @@ its primitive, so the construction descends to cohomology in degrees one and two
 * `InverseGalois.CFT.coboundary₂_coeffMap₁`: it commutes with the coboundary.
 * `InverseGalois.CFT.coeffH1_smoothH1Mk`, `InverseGalois.CFT.coeffH2_smoothH2Mk`: the maps in
   cohomology are computed on cocycles.
+* `InverseGalois.CFT.coeffH1_eq_one_of_coeffH1_eq_one`: **a class killed by a surjective map of the
+  coefficients is killed by every map of the coefficients with a larger kernel.**
 
 ## Tags
 
@@ -163,5 +170,40 @@ theorem coeffH2_smoothH2Mk {a : G × G → M} (ha : IsMulCocycle₂ a) (hs : IsS
       = smoothH2Mk (coeffMap₂ φ a) (isMulCocycle₂_coeffMap₂ φ hφ ha) (hs.coeffMap₂ φ) := rfl
 
 end Cohomology
+
+/-! ### Comparing two maps of the coefficients -/
+
+section Compare
+
+variable {G M N N' : Type*} [Group G] [TopologicalSpace G] [CommGroup M] [CommGroup N]
+  [CommGroup N'] [MulDistribMulAction G M] [MulDistribMulAction G N] [MulDistribMulAction G N']
+  (φ : M →* N) (hφ : ∀ (g : G) (m : M), φ (g • m) = g • φ m)
+  (ψ : M →* N') (hψ : ∀ (g : G) (m : M), ψ (g • m) = g • ψ m)
+
+include hφ hψ in
+/-- **A class of the first cohomology killed by a surjective map of the coefficients is killed by
+every map of the coefficients with a larger kernel.**  A cocycle whose image is a coboundary is the
+coboundary of a primitive of the image; surjectivity lifts that primitive to the coefficients
+themselves, and the cocycle then differs from the coboundary of the lift by a cochain with values in
+the kernel, which the second map contracts to the identity. -/
+theorem coeffH1_eq_one_of_coeffH1_eq_one (hsurj : Function.Surjective φ)
+    (hker : φ.ker ≤ ψ.ker) {x : SmoothH1 G M} (hx : coeffH1 φ hφ x = 1) :
+    coeffH1 ψ hψ x = 1 := by
+  obtain ⟨u, hu, hs, rfl⟩ := smoothH1Mk_surjective x
+  rw [coeffH1_smoothH1Mk] at hx
+  obtain ⟨t', ht'⟩ := (smoothH1Mk_eq_one_iff _ _).1 hx
+  obtain ⟨t, rfl⟩ := hsurj t'
+  rw [coeffH1_smoothH1Mk]
+  refine (smoothH1Mk_eq_one_iff _ _).2 ⟨ψ t, funext fun g => ?_⟩
+  have hg : φ (g • t / t) = φ (u g) := by
+    rw [map_div, hφ]
+    exact congrFun ht' g
+  have hmem : (g • t / t) / u g ∈ φ.ker := by
+    rw [MonoidHom.mem_ker, map_div, hg, div_self']
+  have hkerψ := hker hmem
+  rw [MonoidHom.mem_ker, map_div, div_eq_one] at hkerψ
+  rw [coeffMap₁_apply, ← hkerψ, map_div, hψ]
+
+end Compare
 
 end InverseGalois.CFT
