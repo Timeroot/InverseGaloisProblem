@@ -12532,6 +12532,105 @@ Baer (`baer_addCircle`), not from any counting, so no finiteness of `Ш¹` is ne
 
 ---
 
+## 1.16 Status (2026-09-06, later still) — the Cartier brick landed: **a cyclic representation is dual to the maps out of it, in every degree**
+
+### (a) What is now a theorem
+
+`InverseGalois/CFT/TateCohomology/CyclicDual.lean` (new, sorry- and axiom-free; full root build
+**9743 jobs**, 0 warnings) proves, for `A B : Rep ℤ G` with `G` finite, `↥A.V` finite **cyclic**,
+and `B` killed by `Nat.card ↥A.V`:
+
+* `cartierIso : linHomObj B A ≅ coeffDualObj (linHomObj A B) (AddCircle (1 : ℚ))` — **the maps into
+  a cyclic representation are the functionals on the maps out of it**, as objects of `Rep ℤ G`;
+* `cartierPairing (n : ℤ) : ↥(tateModule (linHomObj A B) n) ≃ₗ[ℤ]
+  (↥(tateModule (linHomObj B A) (-n - 1)) →ₗ[ℤ] AddCircle (1 : ℚ))`;
+* `exists_cartierPairing_eq` — every character of a submodule of
+  `Ĥ^{-n-1}(G, Hom(B,A))` is `cartierPairing` against a single class of `Ĥⁿ(G, Hom(A,B))`.
+
+Supporting bricks, all reusable:
+
+* `cyclicChar M : M →+ AddCircle (1 : ℚ)` and `cyclicChar_injective` — **an injective character of
+  a finite cyclic group** (its image is the `Nat.card M`-torsion of the rational circle);
+* `exists_comp_cyclicChar` — every character of a group killed by `Nat.card M` factors through it;
+* `bijective_evalGen` — **evaluation at a generator is a bijection `(M →+ B) ≃ B`** when `B` is
+  killed by `Nat.card M`;
+* `comp_comm_of_isAddCyclic` — **the endomorphisms of a cyclic group commute**;
+* `linHomObj A B : Rep k G` for `[CommRing k]` — the conjugation action on `↥A.V →ₗ[k] ↥B.V`
+  (the pre-existing `homRep` in `GroupCohomology/TateTwist.lean:123` demands `[Field k]` and is
+  therefore unusable at `k = ℤ`).
+
+### (b) Why the proof needs no counting
+
+`Φ f = χ ∘ f ∘ ev`, where `ev : Hom(A,B) ≅ B` is evaluation at a generator `a₀` of `↥A.V` and
+`χ : ↥A.V ↪ ℚ/ℤ` has range the `Nat.card ↥A.V`-torsion.  Both factors are already bijections, so
+`Φ` is one; no comparison of orders and no finiteness of any Tate module enters.  Equivariance
+needs exactly `A.ρ g ∘ₗ ψ = ψ ∘ₗ A.ρ g` for `ψ = f ∘ₗ B.ρ g⁻¹ ∘ₗ x`, i.e. commutativity of
+`End(↥A.V)`, which holds because `↥A.V` is cyclic.
+
+### (c) How it feeds rows 5/6
+
+With `A := μ_p` (cyclic of order `p`), `B := E` and `n = -2`:
+`Ĥ^{-2}(G, Hom(μ_p, E)) ≅ (Ĥ¹(G, Hom(E, μ_p)))^∨ = H¹(G, E′)^∨` — using `tateModule X 1 =
+groupCohomology X 1` by `rfl` (finding 900).  `exists_cartierPairing_eq` then turns an injection
+`Ш¹(k, E′) ↪ H¹(G, E′)` into a surjection `Ĥ^{-2}(G, E(-1)) ↠ Ш¹(k, E′)^∨`, which is the shape SW
+Proposition 6 consumes.  The remaining chain item is step 2, the injection
+`Ш¹(k, E′) ↪ H¹(G, E′)`, and then step 1 (`Ш²(k,E) ≅ Ш¹(k,E′)^∨`), still the sole wall.
+
+### (d) Findings
+
+* **1905.** `CharacterModule A := A →+ AddCircle (1 : ℚ)`,
+  `Mathlib/Algebra/Module/CharacterModule.lean:46` — a plain `→+`, not a bundled linear map.
+* **1906.** `ZMod.lift : {f : ℤ →+ A // f n = 0} ≃ (ZMod n →+ A)`,
+  `Mathlib/Data/ZMod/Basic.lean:1136`, with `ZMod.lift_coe` (:1150), `lift_comp_coe` (:1157),
+  `lift_comp_castAddHom` (:1161).
+* **1907.** `zmodAddCyclicAddEquiv [AddGroup G] (h : IsAddCyclic G) : ZMod (Nat.card G) ≃+ G`,
+  `Mathlib/GroupTheory/SpecificGroups/Cyclic.lean:784`; `addEquivOfAddCyclicCardEq` (:812);
+  `AddSubgroup.isAddCyclic_zmultiples` is an instance (:72); `IsAddCyclic.exists_generator` (:56).
+  Mathlib has **no** `End (ZMod n) ≃ ZMod n`.
+* **1908.** Finite-group Tate duality is already a theorem:
+  `Tate.tateDualEquiv (C) (n) (A) (hA : ∀ v, p • v = 0)`,
+  `CFT/TateCohomology/DualityShift.lean:373` — but it is `.some`-defined and so carries no
+  naturality; `DualityFinite.lean`'s `tateDualPairing` is the usable one.
+* **1909 (MATH — the Cartier route).** See §1.16(b): the pairing is a composition of two
+  bijections, so no counting argument is needed.
+* **1910.** `Rep ℤ G` forces `G : Type 0` (`Rep k G` needs `k G : Type u`, and `ℤ : Type 0`).
+  Declare `{G : Type} [Group G]`, not `{G : Type u}`.
+* **1911 (the linear-map-space ℤ-module diamond).** `Rep.of (Representation.linHom A.ρ B.ρ)`
+  written directly at `k = ℤ` fails: *synthesized* `AddCommGroup.toIntModule (↑A.V →ₗ[ℤ] ↑B.V)`,
+  *inferred* `LinearMap.module`.  **Fix:** define the object generically in `k` with `[CommRing k]`
+  (exactly as `coeffDualObj` does), so `Module k (V →ₗ[k] W)` can only resolve to
+  `LinearMap.module`; then instantiate at `k = ℤ`.
+* **1912 (the fix for 1903, generalised).** `↥(linHomObj A B).V` does not auto-unfold for `CoeFun`,
+  so `x (cyclicGen ↥A.V)` gives "Function expected".  A **type ascription on the term**,
+  `(x : ↥A.V →ₗ[ℤ] ↥B.V) …`, does **not** help — ascription elaborates `x` against the expected
+  type and returns `x` with its original type.  Only a **binder** annotation works:
+  `LinearMap.ext fun (x : ↥A.V →ₗ[ℤ] ↥B.V) => …`.  Where the binder is not yours to annotate
+  (a structure-instance field, or `intro` against `Function.Injective`), either `show ∀ F : <good
+  type>, …` before `intro`, or hoist the statement into a standalone lemma whose binders you do
+  control (this is why `cartierFun_injective` / `cartierFun_surjective` are phrased over
+  `↥B.V →ₗ[ℤ] ↥A.V` and `bijective_cartierLinear` is a one-line consequence).
+* **1913.** `AddMonoidHom.congr_fun` does not exist.  Use `DFunLike.congr_fun`.  (And it produces
+  `((χ).comp f) y`, not `χ (f y)` — state the `have` with the shape you want and let defeq do the
+  work, rather than `rw`-ing it.)
+* **1914.** `LinearMap.lcomp ℤ N f` / `LinearMap.compRight ℤ f` at `S = R = ℤ` require
+  `SMulCommClass ℤ ℤ ↥A.V`, which is **not** synthesized for a `ModuleCat ℤ` carrier.
+  `LinearMap.llcomp` is too semilinear to be worth the `RingHomCompTriple` hypotheses.
+* **1915.** `LinearMap.applyₗ : M →ₗ[R] (M →ₗ[R] M₂) →ₗ[R] M₂`,
+  `Mathlib/Algebra/Module/LinearMap/End.lean:387` — this *does* work at `k = ℤ` against a
+  `ModuleCat` carrier, and is how `evalGen` is built.
+* **1916 (the recipe for a linear map into an object-derived type).** When the codomain is
+  `↥(coeffDualObj X C).V`, building the map as a `LinearMap` structure instance forces a
+  `map_smul'` obligation whose `•` on the *domain* is picked by whichever instance elaboration
+  reaches first — and a standalone `c • f` over `↥B.V →ₗ[ℤ] ↥A.V` picks `SubNegMonoid.toZSMul`,
+  not `LinearMap.module`, so the two never match.  **Fix:** build an `AddMonoidHom` (only
+  `map_zero'` / `map_add'`, both instance-free) and apply `intLinear`, whose own `map_smul'` is
+  proved by `map_intCast_smul f ℤ ℤ c v` and is therefore valid for *any* `Module ℤ` instance.
+* **1917.** `omit [Finite ↥A.V] in` before a docstring before `theorem` is the right order, and
+  `omit … in include h in` chains in that order (rule 18 confirmed again for `↥A.V`-shaped
+  instance arguments).
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —

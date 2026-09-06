@@ -90,11 +90,24 @@ end RationalCircle
 
 section Cyclic
 
+/-- **The homomorphisms of the integers modulo a number into a group are the elements of the group
+killed by that number.** -/
+def zmodHomEquiv (n : ℕ) (B : Type*) [AddCommGroup B] :
+    {b : B // n • b = 0} ≃ (ZMod n →+ B) :=
+  (Equiv.subtypeEquiv (zmultiplesHom B) (fun x => by simp [natCast_zsmul])).trans (ZMod.lift n)
+
+/-- The homomorphism attached to an element takes one to that element. -/
+theorem zmodHomEquiv_apply_one {n : ℕ} {B : Type*} [AddCommGroup B] (b : {b : B // n • b = 0}) :
+    zmodHomEquiv n B b 1 = b.1 := by
+  have h : ((1 : ℤ) : ZMod n) = 1 := by push_cast; ring
+  show ZMod.lift n _ (1 : ZMod n) = _
+  rw [← h, ZMod.lift_coe]
+  simp
+
 /-- The characters of a cyclic group are the torsion of the rational circle of its order. -/
 def zmodCharacterEquiv (n : ℕ) :
     {x : AddCircle (1 : ℚ) // n • x = 0} ≃ CharacterModule (ZMod n) :=
-  (Equiv.subtypeEquiv (zmultiplesHom (AddCircle (1 : ℚ)))
-    (fun x => by simp [natCast_zsmul])).trans (ZMod.lift n)
+  zmodHomEquiv n (AddCircle (1 : ℚ))
 
 /-- **A cyclic group has as many characters as elements.** -/
 theorem card_characterModule_zmod {n : ℕ} (hn : 0 < n) :

@@ -696,6 +696,7 @@ import InverseGalois.CFT.TateCohomology.AugmentationIdeal
 import InverseGalois.CFT.TateCohomology.CocycleExtension
 import InverseGalois.CFT.TateCohomology.CohomTrivial
 import InverseGalois.CFT.TateCohomology.Cyclic
+import InverseGalois.CFT.TateCohomology.CyclicDual
 import InverseGalois.CFT.TateCohomology.CyclicVanishing
 import InverseGalois.CFT.TateCohomology.DeltaCoshift
 import InverseGalois.CFT.TateCohomology.DeltaNatural
@@ -4709,6 +4710,27 @@ it that are available here.
   degree**, which is the form a duality argument takes when the submodule is the part of the
   cohomology cut out by conditions at the places and one wants a single class inducing a prescribed
   functional on it.
+* `InverseGalois.CFT.TateCohomology.CyclicDual` applies that to the two representations of maps
+  attached to a pair, one of which is cyclic.  Fix a representation whose vectors form a finite
+  cyclic group and a second representation killed by the order of the first.  Composing a map into
+  the cyclic representation with a map out of it produces an endomorphism of the cyclic group;
+  evaluating that endomorphism at a generator turns it into a vector of the second representation,
+  and an injective character of the cyclic group -- the identification of a finite cyclic group
+  with the elements of the rational circle killed by its order -- reads the vector off as a value
+  in the circle.  The pairing so obtained is a bijection for a reason that needs no counting:
+  evaluation at a generator already identifies the maps out of the cyclic representation with the
+  vectors of the second, and composing with the character already identifies the maps into the
+  cyclic representation with the characters of the second, so the pairing is a composition of two
+  bijections.  It respects the action because **the endomorphisms of a cyclic group commute with
+  one another**, which makes conjugating a composite by a group element leave it unchanged.  So
+  **the maps into a cyclic representation are the functionals on the maps out of it**, and feeding
+  that isomorphism to the duality of the previous file gives **a duality between the complete
+  cohomology of the maps out of a cyclic representation in one degree and the complete cohomology
+  of the maps into it in the complementary degree** -- in every degree, and again in the strong
+  form that every character of a submodule is the pairing against a single class.  Taking the
+  cyclic representation to be the roots of unity of a prime order, the maps out of it are a twist
+  and the maps into it are the dual in the sense of Cartier, so this is the duality that turns a
+  statement about classes of the dual into a statement about classes of the twist.
 * `InverseGalois.CFT.TateCohomology.TateClassCount` turns the classical hypotheses of Tate's
   theorem into a count.  **An element of a finite commutative group annihilated by exactly the
   multiples of the order of the group generates the group**, because the subgroup of its multiples
