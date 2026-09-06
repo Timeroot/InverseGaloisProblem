@@ -464,6 +464,7 @@ import InverseGalois.CFT.Profinite.KummerLevel
 import InverseGalois.CFT.Profinite.KummerLevelDegree
 import InverseGalois.CFT.Profinite.KummerLocal
 import InverseGalois.CFT.Profinite.KummerLocalCompare
+import InverseGalois.CFT.Profinite.KummerLocalQuot
 import InverseGalois.CFT.Profinite.KummerLocalSurjective
 import InverseGalois.CFT.Profinite.KummerRep
 import InverseGalois.CFT.Profinite.KummerRes
@@ -5521,6 +5522,15 @@ it that are available here.
   restricted to the place first.  The map to be compared with is the one to the units of the
   completion of the level at the place below, for which the hypothesis to be checked is precisely
   that a unit which becomes a power in the compositum becomes a power in the completion.
+* `InverseGalois.CFT.Profinite.KummerLocalQuot` moves that comparison to the level at which the
+  obstruction reads it.  The coefficients of these classes are acted on through the quotient by the
+  subgroup fixing the level, so a locally trivial class is already a statement about the finite
+  quotient of a decomposition subgroup by its part fixing that level, and the comparison costs
+  nothing to rewrite there: surjectivity of localisation and the description of what it kills are
+  statements about the coefficients alone.  Hence **a class of that quotient trivial after
+  localisation at the compositum is trivial after every map of the coefficients which kills the
+  twisted Kummer data the inclusion of the units kills**, and **a class which is locally trivial at
+  every subgroup of a family is killed at each member of that family.**
 * `InverseGalois.CFT.Profinite.KummerRep` hands the identification over to class field theory.  An
   equivariant identification of an additive module with the additive copy of a multiplicative one is
   an isomorphism of representations over the integers, so **the twisted Kummer identification is an
