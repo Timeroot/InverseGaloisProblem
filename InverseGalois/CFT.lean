@@ -351,6 +351,7 @@ import InverseGalois.CFT.Kummer.RootsInBase
 import InverseGalois.CFT.Kummer.SUnitExt
 import InverseGalois.CFT.Kummer.SUnitUnramified
 import InverseGalois.CFT.Kummer.SecondInequality
+import InverseGalois.CFT.Kummer.SupKummerData
 import InverseGalois.CFT.Kummer.SupPowSurjective
 import InverseGalois.CFT.Kummer.Unramified
 import InverseGalois.CFT.Level
@@ -895,6 +896,7 @@ import InverseGalois.CFT.Units.InfiniteTowerDescent
 import InverseGalois.CFT.Units.InflationDescent
 import InverseGalois.CFT.Units.InvariantUniformizer
 import InverseGalois.CFT.Units.KummerDecomposition
+import InverseGalois.CFT.Units.KummerIdele
 import InverseGalois.CFT.Units.LocalCoboundaryTwist
 import InverseGalois.CFT.Units.LocalDegreeLcm
 import InverseGalois.CFT.Units.LocalEmbedding
@@ -2184,6 +2186,13 @@ it that are available here.
   power as an element of the completion below is fixed there, the two differing by a root of unity
   already present in the base.  The radicand is not asked to lie in the base, only the local root,
   which is what lets a Kummer argument run for an element of a compositum.
+* `InverseGalois.CFT.Kummer.SupKummerData` carries a Kummer situation up to a larger level.  A
+  primitive root of unity of the smaller level stays primitive in the larger one, so every root of
+  unity there is one of its powers and already comes from below; the injectivity of the parameter
+  group and the vanishing of its `p`-th powers travel along the inclusion of the units, and the
+  roots of the units of the larger level are supplied by the ambient extension.  Nothing is asked
+  of the action of the Galois group of the larger level, a Kummer situation forcing it to be
+  trivial, so the trivial action is the one that is taken.
 * `InverseGalois.CFT.Kummer.SupPowSurjective` shows the compositum is no larger than the level
   modulo `p`-th powers.  A `p`-th root of a given unit of the compositum, together with `p`-th roots
   of the finitely many representatives of the local power classes, generates a single finite Galois
@@ -4544,6 +4553,18 @@ it that are available here.
   decomposition subgroup with a completion knows how to annihilate — and chaining that with the
   previous file gives **a class of the first cohomology of the twisted units whose local class
   vanishes at every place dies in the ideles.**
+* `InverseGalois.CFT.Units.KummerIdele` supplies those local hypotheses for a class coming from
+  Kummer theory, and so closes the passage from an everywhere locally trivial class of the
+  transgression cohomology to the ideles.  A place of the level is met by a place of the whole
+  extension above it, whose decomposition subgroup is the group fixing a level of its own; the
+  compositum of that level with the Kummer level is where the local argument lives, Kummer data
+  ascending to it and the units of the level surjecting onto its units with the coefficients
+  attached, while a tensor killed there is read at the place as zero.  The arithmetical criterion
+  for a locally trivial class then applies at each finite and each infinite place, the comparison
+  of a stabiliser of a place of the level with a quotient of a stabiliser upstairs being the one
+  identification the criterion needs.  Feeding the two families of local vanishings to the
+  detection theorem of the previous file gives **the class of the twisted units attached to an
+  everywhere locally trivial Kummer class dies in the ideles.**
 * `InverseGalois.CFT.Tate.FamilyResGroup` observes that all of this is available on a subgroup of
   the acting group with nothing to prove.  A subgroup moves the index set by the restricted action
   and transports the modules by the same isomorphisms, so it acts on the same family; the sections
