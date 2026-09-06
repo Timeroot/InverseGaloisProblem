@@ -451,8 +451,10 @@ import InverseGalois.CFT.PiIndex
 import InverseGalois.CFT.PoitouTate.CupDual
 import InverseGalois.CFT.PoitouTate.Dual
 import InverseGalois.CFT.PoitouTate.Isotropic
+import InverseGalois.CFT.PoitouTate.Selmer
 import InverseGalois.CFT.PoitouTate.ShaSurjection
 import InverseGalois.CFT.PoitouTate.ShaTate
+import InverseGalois.CFT.PoitouTate.Unramified
 import InverseGalois.CFT.PrimeProductSquare
 import InverseGalois.CFT.Profinite.Cochain
 import InverseGalois.CFT.Profinite.Coeff
@@ -6774,4 +6776,31 @@ it that are available here.
   **the power residue symbols of two units of a number field multiply to one over the finite
   places**, with no hypothesis on the field beyond containing the roots of unity when the exponent
   is an odd prime.
+* `InverseGalois.CFT.PoitouTate.Unramified` names the local half of the resulting duality.  A class
+  of a local field modulo powers is unramified when the value of any representative is divisible by
+  the exponent; reading the value modulo the exponent is a homomorphism onto the integers modulo it,
+  onto because there is a uniformiser and killed by the powers, so **the unramified classes are the
+  kernel of a surjection and have index the exponent.**  Away from the residue characteristic two
+  such classes have trivial symbol: each representative is a unit of the valuation ring times a
+  power, powers drop out of a bimultiplicative symbol, and the symbol of two units of the valuation
+  ring is trivial in the tame case.  When there are exactly the exponent squared classes in all —
+  which the local index formula gives at a place not dividing the exponent, once the roots of unity
+  are present — the unramified classes are half of them, and the counting lemma for a perfect
+  self-pairing upgrades trivial self-pairing to equality: **the unramified classes of a local field
+  are precisely their own orthogonal complement under the norm residue symbol.**  That is the local
+  condition cutting out the Selmer group in the global duality argument.
+* `InverseGalois.CFT.PoitouTate.Selmer` supplies the global half.  Each unit of a number field
+  outside a finite set of finite places has a class in the units of each of those completions
+  modulo powers, and for a set carrying every prime above the exponent and large enough that every
+  divisor outside it is principal, **that map is faithful on the units outside the set**: one which
+  is a power locally at each place of the set is a power at every infinite place too, the field
+  being totally complex once it carries a root of unity of order bigger than two, and is a unit
+  elsewhere, so the criterion for a radical to be trivial applies.  Counting with the index of the
+  powers in those units, the image is the exponent raised to the number of places of the set, and
+  the local index formula makes the whole product of local classes the exponent raised to twice
+  that, so **the image is exactly a square root of the whole**.  It pairs trivially with itself by
+  the product formula, the symbols outside the set being symbols of two units of a valuation ring
+  away from its residue characteristic, and the counting lemma turns the inclusion into an
+  equality: **the classes of the units outside a set of places are precisely their own orthogonal
+  complement in the local classes at those places.**
 -/

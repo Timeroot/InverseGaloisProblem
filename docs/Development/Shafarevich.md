@@ -13325,6 +13325,202 @@ hand.
 
 ---
 
+## 1.23 Status (2026-09-06, later) — **the product formula for the power residue symbol**
+
+Commit `5e11f05`.  Two new modules, both sorry- and axiom-free; full root build **9752 jobs, 0
+warnings**.
+
+### (a) `Brauer/PlaceSymbol.lean` — brick B6
+
+The gap flagged in §1.22(c) was that the repository knew the product formula only at the level of
+*Brauer invariants* (`finprod_placeInvariant_mul_prod_infinitePlaceInvariant_eq_one`), and knew the
+*symbol* only at a single completion (`Brauer/PlaceRadical.lean`).  Nothing equated the two at a
+place.  `PlaceSymbol.lean` closes that:
+
+* `finrank_adicCompletion_eq_one_of_card_gal_eq_one`,
+  `exists_algebraMap_adicCompletion_eq_of_card_gal_eq_one` — a place of `K` whose decomposition
+  group is trivial has `K_w = k_v`, stated as surjectivity of `algebraMap`.  The route is
+  `Module.finrank_eq_one_iff_of_nonzero'` applied at `1`; `Algebra.bijective_algebraMap_iff` does
+  **not** apply (the codomain is not an `IntermediateField`).
+* `placeInvariant_cyclicBrauerHom_eq_one_of_card_gal_eq_one` — at such a place the algebra splits,
+  because the norm from a degree-one extension is the identity (`Algebra.norm_algebraMap`,
+  `pow_one`).
+* `placeInvariant_cyclicBrauerHom_of_globalRadical` — the opposite extreme: when the decomposition
+  group is everything, the *global* radical presentation `β^n = b`, `σ₀ β = ζβ` transports to the
+  completion, so `PlaceRadical`'s local computation applies verbatim.  The transport is two
+  `IsScalarTower.algebraMap_apply` rewrites in each of `hpow'` and `hact'`, plus
+  `hβ : (localDecompositionEquiv k w σ) β = σ₀ β`, obtained as
+  `congrArg (fun f => f β) hrestr` after `Subgroup.index_mul_card` forces the index to be `1`.
+* `placeInvariant_cyclicBrauerHom_eq_inv_localSymbol` — for **prime** `n` those are the only two
+  cases (`Nat.Prime.eq_one_or_self_of_dvd` on
+  `Nat.card Gal(K_w/k_v) ∣ Nat.card Gal(K/k) = n`), so at *every* finite place
+
+  `placeInvariant k v (cyclicBrauerHom hσ₀ a) = ((a, b)_v)⁻¹`.
+
+### (b) `Brauer/SymbolProduct.lean` — the global product formula
+
+`finprod_localSymbol_eq_one` proves, for a number field `k` with a primitive `n`-th root of unity,
+`n` prime, `k` totally complex,
+
+  `∏ᶠ v : HeightOneSpectrum (𝓞 k), (a, b)_v = 1`   for all `a b : kˣ`,
+
+together with a `Finset` form `prod_localSymbol_eq_one` (over any `S` containing the support) and
+the two `_of_ne_two` variants that drop the totally-complex hypothesis.
+
+The proof splits on whether `b` is already an `n`-th power.  If it is, every local symbol is `1`
+(`localSymbol_eq_one_of_isPow_right`) and `finprod_congr`/`finprod_one` finish.  If it is not,
+`X^n - C b` is irreducible (`X_pow_sub_C_irreducible_of_prime`), its splitting field is a cyclic
+degree-`n` extension carrying the radical `rootOfSplitsXPowSubC`, and `autEquivZmod` supplies the
+generator `σ₀` with `σ₀ β = ζβ`.  Then (a) rewrites every finite-place Brauer invariant as an
+inverse symbol, and the infinite places contribute nothing.
+
+**The hypothesis on the field is free for odd prime exponent.**  `isTotallyComplex_of_isPrimitiveRoot`:
+a number field containing a primitive `n`-th root of unity with `2 < n` has no real place
+(`NumberField.InfinitePlace.IsPrimitiveRoot.nrRealPlaces_eq_zero_of_two_lt` +
+`NumberField.nrRealPlaces_eq_zero_iff`).  Since row 8 is only ever used at odd `p`, the product
+formula is unconditional there.
+
+This is exactly the ingredient Schmidt–Wingberg invoke at `sw.txt:760`: *"recall that for arbitrary
+classes `a`, `b` … we have the product formula `∏_{P ∈ S(K)} (a, b)_P = 1` for the Hilbert
+symbol"*.
+
+### (c) The row-8 brick list, revised
+
+| # | brick | status |
+|---|---|---|
+| B1 | `dim_{𝔽_p} K(S,p) = |S|` | ✅ `index_range_powMonoidHom_sUnits` (`Units/SUnitIndex.lean:163`) |
+| B2 | Dirichlet `S`-unit theorem | ✅ subsumed by B1 — **not** a separate gap after all |
+| B3 | `dim_{𝔽_p} W = 2·|S|` | ✅ `relIndex_powSIdele_of_isPrimitiveRoot` (`Units/PowIdele.lean:156`) |
+| B4 | Selmer injectivity | ✅ `exists_pow_eq_of_forall_localPow` (`Kummer/PowerCriterion.lean:132`) with `T = ∅` |
+| B5 | local perfect pairing | ✅ `localSymbolQuotEquivDual`, `exists_forall_localSymbol_eq` (§1.22) |
+| B6 | `placeInvariant = symbol⁻¹` at every place | ✅ `Brauer/PlaceSymbol.lean` |
+| B6′ | global product formula in symbol form | ✅ `Brauer/SymbolProduct.lean` |
+| B7 | annihilator calculus for a perfect pairing | ✅ `PoitouTate/Isotropic.lean` |
+| B8 | local self-orthogonality of the units at `v ∤ p` | ✅ `perpSubgroup_unramifiedClasses` (`PoitouTate/Unramified.lean`) |
+| B9 | assembly `V = V^⊥` | ✅ `perpSubgroup_selmerGroup` (`PoitouTate/Selmer.lean`) |
+
+Item 2 of §1.22(c) — the one flagged as "a possible Mathlib gap" — is **not** a gap: B1 and B3
+were already theorems of the repository.
+
+### (d) Findings
+
+* **2007 (BUILD).**  The ASCII slot for `import …Brauer.PlaceSymbol` in `CFT.lean` is between
+  `PlaceSubcyclotomicPower` and `PlaceTotallyRamified` (`Su` < `Sy` < `T`), not where the previous
+  plan predicted.  `SymbolProduct` sorts between `SymbolNorm` and `SymbolSteinberg`.
+* **2008/2009 (BUILD).**  `lake build …Brauer.PlaceSymbol` = 8623 jobs ~25 s;
+  `…Brauer.SymbolProduct` = 8624 jobs ~31 s.  Full root build with both = **9752 jobs**.
+* **2010 (MATHLIB — trap).**  The lemma is
+  `NumberField.InfinitePlace.IsPrimitiveRoot.nrRealPlaces_eq_zero_of_two_lt`
+  (`InfinitePlace/Basic.lean:495`): the `IsPrimitiveRoot` namespace is *nested inside*
+  `NumberField.InfinitePlace`, so **dot notation `hζ.nrRealPlaces_eq_zero_of_two_lt` fails** with
+  "the environment does not contain `IsPrimitiveRoot.nrRealPlaces_eq_zero_of_two_lt`".  Use the
+  fully qualified name with explicit arguments.
+* **2011 (MATHLIB).**  `NumberField.nrRealPlaces_eq_zero_iff : nrRealPlaces K = 0 ↔
+  IsTotallyComplex K` at `TotallyRealComplex.lean:214`; `IsTotallyComplex` is an `@[mk_iff] class`
+  with the single field `isComplex`; `isTotallyComplex_of_algebra` at `:228`.
+* **2012 (LEAN).**  To prove `y ∈ Subgroup.zpowers (Multiplicative.ofAdd (1 : ZMod n))`, the goal
+  after `refine ⟨_, ?_⟩` is **un-beta-reduced** — `(fun x => Multiplicative.ofAdd 1 ^ x) … = y` —
+  so `rw [← ofAdd_zsmul]` reports "did not find an occurrence".  Insert an explicit `show` first.
+* **2013 (MATHLIB).**  `finprod_congr`, `finprod_one`, `finprod_inv_distrib` and
+  `finprod_eq_prod_of_mulSupport_subset` all work on `Multiplicative QModZ`; a `calc` step
+  `∏ᶠ v : ι, _ = ∏ᶠ _ : ι, (1 : M) := finprod_congr hall` elaborates with `_` for the body.
+* **2016 (REPO).**  `infinitePlaceInvariant_of_isComplex` is an equation of **`MonoidHom`s**, so
+  applying it to a class is `rw [...]` followed by `rfl`.
+* **2017 (MATH).**  Routing the global product formula through `kummerLevel`/`IsKummerData` over an
+  `IntermediateField k Ω` is the wrong shape; the `SplittingField` template of
+  `Kummer/PowerCriterion.lean:148–177` is the right one and transplanted first time.
+
+---
+
+## 1.24 Status (2026-09-06, later still) — **B8 and B9 are done: `V = V^⊥`**
+
+Two new modules close the last two bricks of the row-8 list, both sorry- and axiom-free
+(`[propext, Classical.choice, Quot.sound]`).
+
+### (a) `InverseGalois/CFT/PoitouTate/Unramified.lean` (B8)
+
+The local half.  For a local field `K` with `μ_n ⊆ K`, `n` prime, and residue characteristic prime
+to `n`:
+
+* `unitValMod hm n : Kˣ →* Multiplicative (ZMod n)` reads the normalised valuation mod `n`;
+  `unitValModQuot` factors it through the classes, `unramifiedClasses hm n` is its kernel, and
+  `index_unramifiedClasses` / `card_unramifiedClasses` say the index and the order are both `n`
+  (a uniformiser gives surjectivity, `n`-th powers give factorisation).
+* `localSymbol_eq_one_of_dvd_unitValDiv`: two classes with valuation divisible by `n` pair
+  trivially — split each representative as `unit · (π^r)^n`, kill the powers by bimultiplicativity,
+  and finish with `localSymbol_eq_one_of_valued_eq_one`.
+* `perpSubgroup_unramifiedClasses`: with `Nat.card (Kˣ/(Kˣ)^n) = n * n`, `perpSubgroup_eq_self`
+  turns isotropy into equality.  `perpSubgroup_unramifiedClasses_adicCompletion` is the same at a
+  finite place `v ∤ n` of a number field, the cardinality coming from
+  `index_range_powMonoidHom_units_adicCompletion`.
+
+### (b) `InverseGalois/CFT/PoitouTate/Selmer.lean` (B9)
+
+The global half.  `S` is presented as a `Fintype Y` with an injective `ι : Y → HeightOneSpectrum`,
+so that `Set.range ι` is literally the set the `S`-unit API wants (finding 2033).
+
+* `localClasses v n` (`abbrev`), `localClassHom`, `sUnitClassHom ι n : ↥(sUnits K (Set.range ι))
+  →* ∀ y, localClasses (ι y) n`, and `selmerGroup ι n` = its range.
+* `ker_sUnitClassHom` = **B4 instantiated at `T = ∅`**: the kernel is exactly the `n`-th powers.
+  `hsurj` is trivially `⟨1, one_mem _, …⟩`, `hbinf` is `exists_pow_eq_completion_of_isComplex`
+  (every element of `ℂ` is an `n`-th power), `hbunit` is `valuation_eq_one_of_mem_sUnits`.
+* `card_selmerGroup = n ^ (#∞ + #Y)` by Noether I plus B1
+  (`index_range_powMonoidHom_sUnits`).
+* `card_pi_localClasses = n ^ (2 (#∞ + #Y))` by `Nat.card_pi` + `Finset.prod_image` +
+  `prod_index_range_powMonoidHom_units_of_isPrimitiveRoot`, every *infinite* index being `1`
+  because `μ_n ⊆ K` with `2 < n` forces `IsTotallyComplex K`.
+* `selmerGroup_le_perpSubgroup` is the product formula `prod_localSymbol_eq_one`, the symbols
+  outside `S` being trivial by `localSymbol_eq_one_of_valued_eq_one`.
+* `perpSubgroup_selmerGroup`: `perpSubgroup_eq_self` + `injective_flip_piPairing`.  **`V = V^⊥`.**
+
+The two hypotheses that stay are `hnι` (`S` contains every place above `n`) and `hrepr` (every
+divisor supported outside `S` is principal) — both are inputs the caller supplies by enlarging `S`.
+
+### (c) Findings
+
+* **2026 (BUILD — resolves 2025).**  The missing `PerfectField (v.adicCompletion K)` is really a
+  missing `CharZero`: Mathlib's `PerfectField.ofCharZero` is an instance
+  (`FieldTheory/Perfect.lean:260`), and the repo's `charZero_adicCompletion` lives at
+  `Brauer/PlaceInvariant.lean:113`.  **Importing `InverseGalois.CFT.Brauer.PlaceInvariant` supplies
+  it**; `Local/AdicLocalField.lean` does not.
+* **2027 (REPO — name clash).**  `sUnitLocalHom` already exists at
+  `Kummer/LocalSurjective.lean:97`.  `localClasses`, `localClassHom`, `sUnitClassHom`,
+  `selmerGroup`, `localSymbolPiPairing` were all free.
+* **2028 (LEAN).**  `← _root_.map_pow` fails on `↑x ^ n = 1` when `↑` is `QuotientGroup.mk` — `mk`
+  is a bare function, not a bundled hom.  Use `← QuotientGroup.mk_pow`.
+* **2029 (LEAN).**  `congrFun (MonoidHom.mem_ker.mp ha) i` on a Pi-valued hom leaves `1 i` on the
+  right; `rw [Pi.one_apply]` must come before `QuotientGroup.eq_one_iff`.
+* **2030 (BUILD).**  `lake build …PoitouTate.Unramified` = 8459 jobs ~37 s;
+  `…PoitouTate.Selmer` = **8631 jobs ~17 s**.
+* **2031 (REPO).**  `Units/PrimeAbove.lean` is the "three shapes of `v ∤ n`" hub:
+  `valuation_eq_one_iff_notMem` (:41), `valuation_natCast_eq_one_iff` (:47),
+  `valued_natCast_eq_one_iff` (:53), `finitePlace_natCast_eq_one_iff` (:68).  Chain with
+  `valued_intCast_eq_one_iff_not_dvd` (`Local/PrimeResidue.lean:83`).
+* **2032 (REPO).**  `Units/SUnitValuation.lean:39/44` gives `valuation_eq_one_iff_ord_eq_zero` and
+  `valuation_eq_one_of_mem_sUnits`; `HeightOneSpectrum.valuedAdicCompletion_eq_valuation'`
+  transports to the completion, via the `rfl` bridge for `Units.map (algebraMap …)`.
+* **2033 (MATH — B9 design).**  Index the local product by a `Fintype Y` with injective `ι`, not by
+  `↥T` for a `Finset T`: rewriting `Set.range Subtype.val = ↑T` inside `↥(sUnits K …)` is a
+  dependent rewrite.  Use `Finset.univ.image ι` only where a `Finset` product is needed.
+* **2034 (LEAN).**  `HasEnoughRootsOfUnity K n` from a primitive root:
+  `⟨⟨ζ, hζ⟩, rootsOfUnity.isCyclic K n⟩`.
+* **2035 (LEAN — the Pi-of-quotients instance diamond, IMPORTANT).**  For
+  `A := (y : Y) → (Kᵥˣ ⧸ (powMonoidHom n).range)` with *concrete* `Kᵥ`, `MulOneClass A` resolves to
+  `Pi.mulOneClass` while `Group A` resolves to `Pi.group`.  They **are** defeq (`rfl` proves it),
+  but a lemma whose codomain is a *metavariable* — `MonoidHom.range`, `perpSubgroup`, `piPairing`,
+  `quotientKerEquivRange` — gets stuck trying to invert the projection
+  `Group.toDivInvMonoid.toMulOneClass ?inst =?= Pi.mulOneClass …` and reports a bogus
+  "Application type mismatch".  **Fix: pin the type explicitly** —
+  `MonoidHom.range (N := …)`, `perpSubgroup (A := …)`, `piPairing (A := …)`,
+  `quotientKerEquivRange (H := …)`.  With the type given, the defeq check runs on concrete terms
+  and succeeds.  The abstract-`CommGroup` version of the same statement typechecks with no help,
+  so this only bites on real number-field types.
+* **2036 (REPO).**  `index_range_powMonoidHom_sUnits` (`Units/SUnitIndex.lean:163`) takes the
+  exponent **explicitly** — `variable … (n : ℕ)` at `:102` — so it is
+  `index_range_powMonoidHom_sUnits n hinj`, not `… hinj`.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
