@@ -13521,6 +13521,166 @@ divisor supported outside `S` is principal) — both are inputs the caller suppl
 
 ---
 
+## 1.25 Status (2026-09-06, later still) — **Shapiro's lemma for smooth cochains: the coinduced module loses nothing in degrees one and two**
+
+New module `InverseGalois/CFT/Profinite/Coinduced.lean`, sorry- and axiom-free; full root build
+**9755 jobs, 0 warnings**.
+
+### (a) Why this brick
+
+Every dévissage in Poitou–Tate runs through induced/coinduced modules: one embeds a finite module
+`E` into `Coind_{G_K}^{G_k}(E|_{G_K})` for a finite Galois `K|k` that splits the action, and reads
+off the cohomology of the coinduced piece by Shapiro.  Before this module the repo had *no*
+Shapiro at the profinite/smooth level at all — the two files named `Shapiro.lean`
+(`CFT/Tate/Shapiro.lean`, `CFT/TateCohomology/Shapiro.lean`) are both for **finite-group** Tate
+cohomology (finding 761).
+
+### (b) What is in the file
+
+For `H : Subgroup G` and a `↥H`-module `M` (multiplicative, `CommGroup`):
+
+* `smoothCoind H M : Subgroup (G → M)` — the functions with `f (h * x) = h • f x`;
+  `smoothCoindAction` makes `G` act by `(g • f) x = f (x * g)`.
+* `smoothCoindEval H M : ↥(smoothCoind H M) →* M`, `f ↦ f 1`, is `↥H`-equivariant
+  (`smoothCoindEval_smul`).
+* `smoothShapiroH1 = coeffH1 smoothCoindEval ∘ resH1 H`, likewise `smoothShapiroH2`.
+* **`smoothShapiroH1_injective`** — no hypothesis on `H` whatsoever.
+* **`smoothShapiroH2_injective`** — `[H.Normal]` and `HasOpenNormalCore H` (the latter is free for
+  an open subgroup of a compact group, `hasOpenNormalCore_of_isOpen`).  **No finite index needed.**
+* `sha1_smoothCoind_eq_bot`, `sha2_smoothCoind_eq_bot` — if `H` itself belongs to the family `S`,
+  a coinduced module has no everywhere locally trivial class in that degree.
+* Coset bookkeeping: `coindRep H σ x = σ ↑x`, `coindPart H σ hσ x = x * (coindRep H σ x)⁻¹ : ↥H`,
+  with `coindPart_mul_coindRep`, `coindPart_subgroup_mul`, `coindRep_subgroup_mul`,
+  `coindRep_mul_mem`, `coindPart_mul_mem`.
+
+### (c) The proofs, in one paragraph each
+
+**Degree 1.**  Write `φ x = (u x) 1` for a smooth cocycle `u` of the coinduced module.  Reading
+`IsMulCocycle₁ u` at the neutral element gives `(u y) x = φ (x y) / φ x` and, for `h : ↥H`,
+`φ (h x) = h • φ x * φ h`.  If the Shapiro image dies there is `t` with `h • t / t = φ h`, and
+`F x := φ x * t` is then *equivariant*, i.e. lies in `smoothCoind H M`; and
+`(g • F / F) z = φ (z g) / φ z = (u g) z`, so `u` is the coboundary of `F`.
+
+**Degree 2.**  Write `Φ x y = (a (x, y)) 1`.  Reading `IsMulCocycle₂ a` at the neutral element
+gives the two identities the file records as `smoothCoind_cocycle₂_apply`
+(`(a (x,y)) z = Φ (z x) y * Φ z x / Φ z (x y)`) and `smoothCoind_cocycle₂_smul`
+(`Φ (h z) x * Φ h z = h • Φ z x * Φ h (z x)`).  The ansatz
+
+```
+U x z := Φ z x * w (z * x) / w z
+```
+
+satisfies `coboundary₂ U = a` for **any** function `w` — the three `w`-factors cancel.  So the only
+condition on `w` is that each `U x` be equivariant, and *that* forces
+`ψ (h, t) := Φ h t * w (h t) / (h • w t)` to be independent of `t`.  A primitive `v` of the
+restricted cocycle supplies exactly such a `w`: split `t = τ t * ρ t` with `τ t : ↥H` and `ρ t` the
+chosen coset representative, and put `w t := v (τ t) / Φ (τ t) (ρ t)`.  The identity
+`w (h t) = v h * (h • w t) / Φ h t` (the file's `hwmul`) then follows from the coboundary equation
+at `(h, τ t)` and the cocycle identity at `(h, τ t, ρ t)`.  Smoothness of `U` is where
+`HasOpenNormalCore` enters: intersect the open normal subgroup of `a` with an open normal subgroup
+of `G` inside the one where `v` is constant; right translation by `n` fixes `ρ` and multiplies `τ`
+by the conjugate `ρ n ρ⁻¹`, which lies in both.
+
+### (d) What this does **not** yet give
+
+`Ш^i(k, Coind_{G_K}^{G_k} M) ≅ Ш^i(K, M)` — the statement the dévissage actually consumes — needs
+two more bricks on top of injectivity:
+
+1. **Surjectivity** of `smoothShapiroH1`/`smoothShapiroH2` (same transversal machinery, run
+   backwards: build a cocycle of `G` from one of `H`).
+2. **Compatibility with localisation**: `res_{D_v} Coind_H^G M ≅ ∏_{w | v} Coind_{H ∩ D_w}^{D_v} M`,
+   i.e. the double-coset formula, which is what turns `Ш` over `k` into `Ш` over `K`.
+
+Until (2) exists, the usable consequence is the weak one recorded as `sha*_smoothCoind_eq_bot`.
+
+### (e) Two prime-to-`p` reductions that make any base case *trivial* coefficients
+
+Recorded here because they are cheap and they shape every remaining dévissage.  For `E` a finite
+`𝔽_p[G]`-module, `G = Gal(K|k)`:
+
+1. Replace `k` by `k(μ_p)`.  The degree divides `p − 1`, so it is prime to `p`; `corH2_resH2`
+   (`Profinite/Corestriction.lean:686`) plus `orderOf ∣ gcd(p^a, [k(μ_p):k]) = 1` says nothing is
+   lost.  **WLOG `μ_p ⊆ k`.**
+2. Replace `k` by the fixed field of a `p`-Sylow `P ≤ G`.  The index is prime to `p`, same
+   argument.  **WLOG `G` is a `p`-group**, whence every simple `𝔽_p[G]`-module is trivial and `E`
+   has a `G`-filtration with all graded pieces `𝔽_p ≅ μ_p`.
+
+⚠️ What this does **not** do: naive induction along that filtration does **not** prove `Ш² = 0` —
+the lift of an everywhere locally trivial class need not be everywhere locally trivial.  The
+inductive statement has to be the full duality, not `Ш`-vanishing.
+
+### (f) Findings
+
+* **2037 (REPO).**  `coboundary₂` is defined in the **repo**, not Mathlib:
+  `InverseGalois/CFT/GroupCohomology/IndexTwo.lean:59`,
+  `def coboundary₂ (u : G → M) : G × G → M := fun p => p.1 • u p.2 / u (p.1 * p.2) * u p.1`,
+  with `coboundary₂_apply` at `:61`.
+* **2038 (MATHLIB).**  `IsMulCocycle₁` / `IsMulCocycle₂` are at
+  `Mathlib/RepresentationTheory/**Homological**/GroupCohomology/LowDegree.lean:611/615` (note the
+  `Homological/` component).  Companions there: `map_one_of_isMulCocycle₁`,
+  `map_one_fst_of_isMulCocycle₂`, `map_one_snd_of_isMulCocycle₂`, `map_inv_of_isMulCocycle₁`.
+* **2039 (MATHLIB).**  `MulDistribMulAction`'s *fields* are `smul_mul` and `smul_one`
+  (`Algebra/Group/Action/Defs.lean:598`); the exported simp lemmas are `smul_mul'`, and — for a
+  `Group`/`DivisionMonoid` target — `smul_inv'` and `smul_div'`
+  (`Algebra/Group/Action/Basic.lean:203/206`).
+* **2040 (MATHLIB).**  `QuotientGroup.eq : (↑a : α ⧸ s) = ↑b ↔ a⁻¹ * b ∈ s`
+  (`GroupTheory/Coset/Defs.lean:196`).  A section of `G ⧸ H` with no `Quotient.out` defeq pain:
+  `⟨Function.surjInv QuotientGroup.mk_surjective, Function.surjInv_eq _⟩`.
+* **2041 (REPO — name clash).**  `coind`, `coindV`, `coindEval` are **taken** in
+  `InverseGalois.CFT.Tate` (`CFT/TateCohomology/Shapiro.lean:138/141/143/172`).  Hence the
+  `smoothCoind*` / `smoothShapiro*` prefix.  `coindRep`, `coindPart`, `shapiro` were free.
+* **2042 (REPO — already done).**  SW's step "`Ш¹(k, E′) ↪ H¹(Gal(K|k), E′)`" is a repo theorem:
+  `shaInflH1` (`Units/HasseDecomposition.lean:145`), `galInflH1_shaInflH1` (:153),
+  `shaInflH1_injective` (:162), on `exists_galInflH1_eq_of_mem_sha1` (:119) and
+  `sha1_le_range_galInflH1` (:139).
+* **2043 (REPO — already done).**  `Ш`-compatibility under base change to an intermediate field is
+  a repo theorem: `Units/DecompositionRestrict.lean` — `eq_one_of_mem_sha1_intermediate` (:190),
+  `eq_one_of_mem_sha2_of_isPrimitiveRoot_intermediate` (:204), and the two `comapH*_mem_sha*`
+  lemmas (:158/:167).  ⚠️ These are stated through `galRestrictScalarsHom k K Ω`, **not** through
+  `resH1/resH2` on `K.fixingSubgroup`, so a Shapiro brick stated for a `Subgroup` needs a transport
+  step to meet them.
+* **2044 (LEAN — REUSABLE, IMPORTANT).**  There is no `abel` for multiplicative commutative groups
+  and `group` does not use commutativity.  **The reliable idiom is to transfer:**
+  ```lean
+  refine Additive.ofMul.injective ?_
+  simp only [ofMul_mul, ofMul_div, ofMul_inv]
+  abel
+  ```
+  (`ofMul_mul/ofMul_inv/ofMul_div` at `Algebra/Group/TypeTags/Basic.lean:166/372/405`, all root
+  namespace).  This closes *any* identity in a `CommGroup`; when a hypothesis `A * B = C * D` is
+  needed, first `rw` one atom away (`hA : A = C * D / B` via `mul_div_cancel_right`) and then
+  transfer.  The file's four `private theorem coindAlg*` are all one-liners this way.
+* **2045 (LEAN).**  `isMulCocycle₁_coeffMap₁ _ hφ …` and `IsSmooth₁.coeffMap₁ _` **fail** with
+  `_` for the coefficient homomorphism when the expected type is a raw lambda: unifying
+  `coeffMap₁ ?φ (comap₁ H.subtype u)` with `fun h => ↑(u ↑h) 1` is higher-order.  Pass the
+  homomorphism explicitly (`(smoothCoindEval H M)`); the remaining defeq then goes through.
+* **2046 (LEAN).**  State a "computed on cocycles" lemma with the *target* cocycle/smoothness
+  proofs as **explicit hypotheses** (`… (ha' : IsMulCocycle₂ …) (hs' : IsSmooth₂ …) : … := rfl`).
+  Proof irrelevance makes it `rfl` regardless, and the caller is free to supply whatever proof it
+  already has — much more robust than reproducing the canonical proof term.
+* **2047 (MATH — the ansatz was derived, not guessed).**  In degree 2 the *general* solution of
+  `coboundary₂ U = a` inside the coinduced module is `U x z = Φ z x * w (z x) / w z` for an
+  arbitrary `w`; the coinduced condition then pins `w` down to the transversal formula.  This is
+  why no finite index is needed — nothing is averaged over the cosets, one representative per coset
+  suffices.
+* **2048 (REPO — a real ceiling).**  There is **no `SmoothH3`** under `CFT/Profinite/`, so a
+  Cassels–Tate style 3-cochain construction is not available.  This is the reason the
+  **dimension-shifted, degree-1 Selmer** formulation of row 5 —
+  `Ш²(A) ≅ Sel_L(Q) / im H¹(k, I)` with `L_v = im H¹(k_v, I)` — is the right target: every pairing
+  in it is `H¹ × H¹ → H²`, which `Profinite/Cup.lean` supports.
+* **2049 (BUILD).**  `lake build …Profinite.Coinduced` is cheap; full root build with it
+  = **9755 jobs**.
+
+### (g) Routes rejected here
+
+* Descending `Ш²` by inflation from `Ш²(K, M|_K) = 0` — `ker res` is not controlled.
+* Proving `Ш²(k, E) = 0` by induction along an `𝔽_p`-filtration — see (e).
+* Using the repo's `cupDual` as the Poitou–Tate `Ш² × Ш¹` pairing — it is an `H¹ × H¹ → H²`
+  pairing (finding 1920).
+* Greenberg–Wiles as an independent input — it is a corollary of Poitou–Tate, so circular.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —

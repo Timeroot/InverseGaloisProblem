@@ -458,6 +458,7 @@ import InverseGalois.CFT.PoitouTate.Unramified
 import InverseGalois.CFT.PrimeProductSquare
 import InverseGalois.CFT.Profinite.Cochain
 import InverseGalois.CFT.Profinite.Coeff
+import InverseGalois.CFT.Profinite.Coinduced
 import InverseGalois.CFT.Profinite.Comap
 import InverseGalois.CFT.Profinite.Connecting
 import InverseGalois.CFT.Profinite.Corestriction
@@ -5327,6 +5328,25 @@ it that are available here.
   the element and a chosen representative; the correction is produced by three applications of the
   cocycle relation, and it is a coboundary, so **the identity survives in cohomology in the second
   degree as well**.
+* `InverseGalois.CFT.Profinite.Coinduced` builds, out of a module for a subgroup, a module for the
+  whole group: the functions on the group that are equivariant for the subgroup acting on the left,
+  the whole group acting by translation on the right.  Evaluation at the neutral element is
+  equivariant for the subgroup, so restricting a class of the coinduced module and then evaluating
+  gives **the map of Shapiro's lemma**, and the content here is that this map **loses nothing**.
+  In the first degree a cocycle of the coinduced module is recovered from its values at the neutral
+  element, by the cocycle relation read there, and those values transform under the subgroup up to
+  the value at the element of the subgroup; a primitive of the restricted cocycle corrects exactly
+  that discrepancy, turning the values themselves into an element of the coinduced module which is
+  a primitive of the cocycle.  In the second degree the values at the neutral element again
+  determine the cocycle, and the ansatz that takes a function on the group to the quotient of its
+  values at a point translated by the argument and at the point, weighted by the value of the
+  cocycle, solves the coboundary equation whatever that function is, the weights cancelling in
+  threes.  What the function must do is make the result equivariant, and splitting an element into
+  a part in the subgroup and a chosen representative of its coset produces one out of a primitive
+  of the restricted cocycle; its smoothness comes from an open normal subgroup of the whole group
+  inside the one where the primitive is constant, which is what an open normal core provides.
+  Consequently **a coinduced module has no everywhere locally trivial class in either degree** as
+  soon as the subgroup one coinduces from is among the subgroups where triviality is imposed.
 * `InverseGalois.CFT.Profinite.Comap` composes a cochain with a homomorphism into a group acting on
   the same module.  The cocycle relation and the coboundary are both preserved because the two
   actions agree, so all that is needed is that composition preserve smoothness, and two conditions
