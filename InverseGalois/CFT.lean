@@ -446,6 +446,7 @@ import InverseGalois.CFT.PiDual
 import InverseGalois.CFT.PiIndex
 import InverseGalois.CFT.PoitouTate.CupDual
 import InverseGalois.CFT.PoitouTate.Dual
+import InverseGalois.CFT.PoitouTate.ShaSurjection
 import InverseGalois.CFT.PoitouTate.ShaTate
 import InverseGalois.CFT.PrimeProductSquare
 import InverseGalois.CFT.Profinite.Cochain
@@ -5451,6 +5452,16 @@ it that are available here.
   cohomology in degree minus two of the maps the other way and the rational circle is injective, so
   **every character of the everywhere locally trivial classes is the pairing against a single class
   in degree minus two.**
+* `InverseGalois.CFT.PoitouTate.ShaSurjection` turns that exhaustion around.  Global duality for a
+  finite module over a number field compares the everywhere locally trivial classes of the second
+  cohomology with the characters of the everywhere locally trivial classes of the first cohomology
+  of the Cartier dual; the two groups are cut out by the same local conditions, one degree apart
+  and on coefficients traded for their dual.  Granted that comparison, a locally trivial class of
+  degree two is a character, and every character comes from a single class of complete cohomology
+  of the level, so **the complete cohomology of the level in degree minus two covers the everywhere
+  locally trivial classes of the second cohomology** — the obstruction to an embedding problem
+  which the local conditions have already killed everywhere locally becomes one class of a finite
+  group's complete cohomology.
 * `InverseGalois.CFT.Profinite.Hilbert90` is the arithmetic input.  A smooth cocycle is constant on
   the cosets of the subgroup fixing a finite Galois level and its values are fixed by that
   subgroup, hence lie in the level, so choosing a preimage of each automorphism of the level turns

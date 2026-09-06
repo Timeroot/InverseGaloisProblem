@@ -12780,6 +12780,98 @@ repository-friendly: `localInvariantHom` and the reciprocity law are already the
 
 ---
 
+## 1.18 Status (2026-09-06, latest) — the wall is now a **named hypothesis with a proved consequence**: `HasPoitouTateDuality ⇒ Ĥ^{-2}(G, E(-1)) ↠ Ш²(k, E)`
+
+### (a) The new module
+
+`InverseGalois/CFT/PoitouTate/ShaSurjection.lean` (imported from `CFT.lean:449`, narrative paragraph
+after the `ShaTate` one).  It does exactly two things.
+
+**It names step 1.**
+
+```lean
+def HasPoitouTateDuality : Prop :=
+  Nonempty (Additive ↥(sha2 (Multiplicative ↥B.V) (decompositionSubgroups k Ω)) ≃+
+    (Additive ↥(sha1 (Multiplicative ↥(linHomObj B A).V) (decompositionSubgroups k Ω)) →ₗ[ℤ]
+      AddCircle (1 : ℚ)))
+```
+
+i.e. `Ш²(k, B) ≅ Ш¹(k, Hom(B, A))^∨` with `A` the cyclic coefficient module and `Hom(B,A) = B′` its
+Cartier dual.  This is a `Prop`-valued `def`, in the house style of `HasIdeleClassNakayamaSpan` /
+`FrattiniKernelEP` — **never an axiom**.
+
+**It proves the consequence SW actually use.**
+
+```lean
+theorem exists_surjective_of_hasPoitouTateDuality (hd : HasPoitouTateDuality F A B) :
+    ∃ Φ : ↥(tateModule (linHomObj A B) (-2)) →+
+        Additive ↥(sha2 (Multiplicative ↥B.V) (decompositionSubgroups k Ω)),
+      Function.Surjective Φ
+```
+
+The proof is three lines of plumbing on top of §1.17: transport a locally trivial degree-two class
+across `D` to a character of `Ш¹(k, B′)`, realise that character by a class of `Ĥ^{-2}` via
+`exists_cartierPairing_eq`, done.  Supporting API: `shaTateShift` (the degree-retyped copy of
+`shaTateLinear`), `shaTateShift_injective`, `shaCharacter` / `_zero` / `_add`,
+`exists_shaCharacter_eq`, `shaDualHom`, `shaDualHom_surjective`.
+
+So the chain of §1.17(c) is now **complete as an implication**: everything except the box marked ❌
+is a theorem, and the ❌ box is a hypothesis that a downstream consumer can carry.
+
+### (b) Route survey for step 1 — what the literature actually costs
+
+* **Milne, *Arithmetic Duality Theorems*, Thm 4.10** proves Poitou–Tate through
+  `Ext^r_{G_S}(M^D, C_S)`.  That is the profinite-`Ext` route **already abandoned** in this project
+  (§0.9x): it needs derived functors of `Hom` over a profinite group ring, which Mathlib has not got
+  and which is a library-scale build in its own right.  (Finding 1933.)
+* **Tate's original proof**, recorded in Milne's NOTES (`adt.txt:3678`), is a *counting* argument for
+  finite `S`: the global Euler–Poincaré formula (Milne Thm 5.1)
+  `χ(G_S, M) · χ(G_S, M^D) = ∏_{v ∈ S} χ(K_v, M)` forces `|Ш¹_S(K, M)| = |Ш²_S(K, M^D)|`, and the
+  general case follows by passing to the limit over `S`.  This route still needs **local Tate
+  duality** plus both Euler characteristic formulas.
+* Both routes therefore bottom out at local Tate duality.  That is the first real brick, and the
+  repository is unusually well placed for it: `localInvariantHom` gives `H²(k_v, μ_n) ≅ ℤ/n`,
+  `CFT/Brauer/LocalReciprocity.lean` and `CFT/Local/NormIndex.lean` give the invariant-map machinery,
+  and `CFT/Local/HilbertSymbol.lean` / `CFT/Brauer/LocalSymbol.lean` already carry the `n`-th Hilbert
+  symbol whose **non-degeneracy** is the `i = 1`, `M = μ_n` case of the duality.
+* **Finding 1934.** A merely *one-sided non-degenerate* pairing does not suffice.  SW need the
+  canonical surjection `(Ш¹)^∨ ↠ Ш²` in order to fit it into their commutative square with
+  `E(m,τ) → E(n,τ)`; a non-canonical splitting breaks the naturality that square depends on.  So
+  full perfectness — genuine Poitou–Tate — is what has to be built.
+
+### (c) Findings
+
+* **1929 (BUILD).**  The gotcha-1923 degree-numeral pathology recurs at *every* `.comp` or
+  structure-field proof that crosses the `tateModule X 1` vs `tateModule X (-(-2 : ℤ) - 1)`
+  boundary.  The general fix is a **degree-retyped copy of the map**, introduced once as a `def`:
+  ```lean
+  def shaTateShift :
+      Additive ↥(sha1 (Multiplicative ↥(linHomObj B A).V) (decompositionSubgroups k Ω)) →ₗ[ℤ]
+        ↥(tateModule (linHomObj B A) (-(-2 : ℤ) - 1)) :=
+    shaTateLinear F A B hπ
+  ```
+  A single coercion in a `def` body is fast; afterwards every use matches syntactically and
+  `exists_cartierPairing_eq` applies as a direct term, with no `have … exact` dance.
+* **1930 (BUILD).**  Even with the shift in place, the `map_zero'` / `map_add'` fields of an
+  `AddMonoidHom` whose `toFun` crosses that boundary still time out at `isDefEq` when proved by
+  `rw`.  **Pure terms work:**
+  ```lean
+  map_zero' := (congrArg D.symm (shaCharacter_zero F A B hπ hB)).trans (_root_.map_zero D.symm)
+  map_add' x y :=
+    (congrArg D.symm (shaCharacter_add F A B hπ hB x y)).trans (_root_.map_add D.symm _ _)
+  ```
+* **1931.**  A downstream module reusing `Multiplicative ↥X.V` for `X : Rep ℤ G` must re-declare
+  `attribute [local instance] repMulDistribMulAction` — it is `local` in `CyclicTate.lean` and does
+  **not** propagate to importers.  Symptom: `failed to synthesize HSMul Gal(↥F/k) (Multiplicative
+  ↑(linHomObj B A).V) ?m`.
+* **1932.**  `lake build InverseGalois.CFT.PoitouTate.ShaSurjection` is 8264 jobs, ~116 s.
+* **1933 (MATH).**  See (b): Milne's Thm 4.10 route is the abandoned profinite-`Ext` one; Tate's
+  original is a counting argument off the Euler–Poincaré formulas.
+* **1934 (MATH).**  See (b): one-sided non-degeneracy is not enough; SW need the canonical
+  surjection.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
