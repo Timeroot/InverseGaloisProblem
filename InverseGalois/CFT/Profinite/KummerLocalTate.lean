@@ -36,15 +36,23 @@ representations induced by such a local map**.
 * `InverseGalois.CFT.repPullEquiv`: the two readings of those coefficients agree.
 * `InverseGalois.CFT.locCoeffHom`: **an additive map of the coefficients, read as a localisation of
   the coefficients of the first cohomology.**
+* `InverseGalois.CFT.repHomCoeff`: the local map carried by the map of representations itself.
 
 ## Main results
 
 * `InverseGalois.CFT.locCoeffHom_smul`: the localisation it defines is equivariant.
+* `InverseGalois.CFT.repHomCoeff_smul`: the map of representations is equivariant for the
+  decomposition group.
 * `InverseGalois.CFT.tateMap_tateRes_eq_zero_of_locCoeffHom_comapH1_eq_one`: a class killed by that
   localisation after restriction is killed by restriction followed by the map of representations.
+* `InverseGalois.CFT.tateMap_tateRes_eq_zero_of_comapH1_eq_one`: the same conclusion with the local
+  map taken to be the one the map of representations already carries.
 * `InverseGalois.CFT.tateMap_tateRes_kummerFiniteH1Equiv_eq_zero`: **an everywhere locally trivial
   class, read over the Galois group of the level, dies under restriction to a decomposition subgroup
   followed by any map of representations induced by a local map of the coefficients.**
+* `InverseGalois.CFT.tateMap_tateRes_kummerFiniteH1Equiv_eq_zero_of_tensor_eq_zero`: the same
+  conclusion asking only that the map of representations kill what the inclusion of the units of the
+  level kills.
 
 ## Tags
 
@@ -189,6 +197,48 @@ theorem tateMap_tateRes_eq_zero_of_locCoeffHom_comapH1_eq_one {u : Q → S} (hu 
   rw [κ.symm_apply_apply]
   exact hcoef t
 
+/-- **The map of representations itself, read on the module identified with its source.**  This is
+the local map of the coefficients in the only case that arises: the one the map of representations
+already provides. -/
+noncomputable def repHomCoeff : T →+ ↥B'.V :=
+  Φ.hom.hom.toAddMonoidHom.comp φ.toAddMonoidHom
+
+omit [TopologicalSpace Q] [DiscreteTopology Q] [Finite G] [TopologicalSpace Q']
+  [DiscreteTopology Q'] [MulDistribMulAction Q' S]
+  [MulDistribMulAction Q' (Multiplicative (B'.V : Type))]
+  [DistribMulAction Q' (B'.V : Type)] in
+/-- It is the map of representations. -/
+theorem repHomCoeff_apply (t : T) : repHomCoeff B φ B' Φ t = Φ.hom.hom (φ t) := rfl
+
+omit [TopologicalSpace Q] [DiscreteTopology Q] [Finite G] [TopologicalSpace Q']
+  [DiscreteTopology Q'] [MulDistribMulAction Q' S]
+  [MulDistribMulAction Q' (Multiplicative (B'.V : Type))]
+  [DistribMulAction Q' (B'.V : Type)] in
+include hφ in
+/-- A map of representations is equivariant for a subgroup identified with the acting group of the
+source. -/
+theorem repHomCoeff_smul (hcomm : ∀ g : Q', ((e' g : ↥H) : G) = e (π g)) (g : Q') (t : T) :
+    repHomCoeff B φ B' Φ (π g • t) = B'.ρ (e' g) (repHomCoeff B φ B' Φ t) := by
+  show Φ.hom.hom (φ (π g • t)) = B'.ρ (e' g) (Φ.hom.hom (φ t))
+  rw [hφ, ← hcomm]
+  exact Rep.hom_comm_apply Φ (e' g) (φ t)
+
+include hκ hφ hact hactT in
+/-- **A class of the first cohomology killed by the localisation of its restriction along a map of
+representations is killed by restriction to the subgroup followed by that map.** -/
+theorem tateMap_tateRes_eq_zero_of_comapH1_eq_one {u : Q → S} (hu : IsMulCocycle₁ u)
+    (hs : IsSmooth₁ u)
+    (hcomm : ∀ g : Q', ((e' g : ↥H) : G) = e (π g))
+    (hx : coeffH1 (locCoeffHom κ B' (repHomCoeff B φ B' Φ))
+      (locCoeffHom_smul κ hκ e' B' hact π hπ (repHomCoeff B φ B' Φ)
+        (repHomCoeff_smul e B φ hφ e' B' π Φ hcomm))
+      (comapH1 π hπ hsm (smoothH1Mk u hu hs)) = 1) :
+    tateMap Φ 1 (tateRes H B 1 (Multiplicative.toAdd
+      (h1MulEquivOfSmul e B φ hφ
+        (smoothH1EquivOfAddEquiv Q S T κ hκ (smoothH1Mk u hu hs))))) = 0 :=
+  tateMap_tateRes_eq_zero_of_locCoeffHom_comapH1_eq_one κ hκ e B φ hφ e' B' hact hactT π hπ hsm Φ
+    (repHomCoeff B φ B' Φ) (repHomCoeff_smul e B φ hφ e' B' π Φ hcomm) hu hs (fun _ => rfl) hcomm hx
+
 end Pull
 
 /-! ### The everywhere locally trivial classes of a twisted Kummer identification -/
@@ -271,6 +321,32 @@ theorem tateMap_tateRes_kummerFiniteH1Equiv_eq_zero
     ((kummerTwistEquiv hK htriv htrivEK α hEp) t))) = 1
   rw [AddEquiv.symm_apply_apply, hlocker t ht]
   rfl
+
+include hK hL hj hιj hD htriv htrivEK htrivEL α hEp hfix hφ in
+/-- **A class of the first cohomology which is locally trivial at every subgroup of a family, read
+over the Galois group of the level, dies under restriction to a decomposition subgroup followed by
+any map of representations killing what the inclusion of the units into the units of a compositum
+kills.**  A map of representations is equivariant for the decomposition subgroup all by itself, so
+that is the only hypothesis on it beyond surjectivity of the inclusion on the twisted Kummer
+data. -/
+theorem tateMap_tateRes_kummerFiniteH1Equiv_eq_zero_of_tensor_eq_zero
+    (hop : IsOpen (K.fixingSubgroup : Set Gal(Ω/k)))
+    (hsurj : Function.Surjective (TensorProduct.map (MonoidHom.toAdditive j).toIntLinearMap
+      (LinearMap.id : Additive (M →* E) →ₗ[ℤ] Additive (M →* E))))
+    (hlocker : ∀ t : Additive (↥K)ˣ ⊗[ℤ] Additive (M →* E),
+      TensorProduct.map (MonoidHom.toAdditive j).toIntLinearMap LinearMap.id t = 0 →
+        Φ.hom.hom (φ t) = 0)
+    (hcomm : ∀ g : ↥D ⧸ K.fixingSubgroup.subgroupOf D, ((e' g : ↥H) : Gal(↥K/k))
+      = quotientFixingSubgroupEquiv K (quotSubHom K.fixingSubgroup D g))
+    {S : Set (Subgroup Gal(Ω/k))} (hDS : D ∈ S)
+    {z : SmoothH1 (Gal(Ω/k) ⧸ K.fixingSubgroup) (SmoothH1 ↥K.fixingSubgroup E)}
+    (hz : z ∈ sha1Level E K.fixingSubgroup hop S) :
+    tateMap Φ 1 (tateRes H B 1 (Multiplicative.toAdd
+      (kummerFiniteH1Equiv hK htriv htrivEK α hEp hfix B φ hφ hop z))) = 0 :=
+  tateMap_tateRes_kummerFiniteH1Equiv_eq_zero hK hL j hj hιj hD htriv htrivEK htrivEL α hEp hfix
+    B φ hφ e' B' Φ (repHomCoeff B φ B' Φ) hop hsurj hlocker
+    (repHomCoeff_smul (quotientFixingSubgroupEquiv K) B φ hφ e' B'
+      (quotSubHom K.fixingSubgroup D) Φ hcomm) (fun _ => rfl) hcomm hDS hz
 
 end Arith
 
