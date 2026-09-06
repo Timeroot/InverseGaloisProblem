@@ -322,6 +322,7 @@ import InverseGalois.CFT.Kummer.CongruentRadical
 import InverseGalois.CFT.Kummer.CyclicIndex
 import InverseGalois.CFT.Kummer.CyclotomicDescent
 import InverseGalois.CFT.Kummer.CyclotomicPlace
+import InverseGalois.CFT.Kummer.DecompositionLocalPower
 import InverseGalois.CFT.Kummer.Denominator
 import InverseGalois.CFT.Kummer.DyadicInertiaChar
 import InverseGalois.CFT.Kummer.DyadicPlace
@@ -2130,6 +2131,16 @@ it that are available here.
   the place of the subextension is the place of the base below the given one, so the completion in
   which the root is found is the intended one, at a prime of the integers and at an archimedean
   place alike.
+* `InverseGalois.CFT.Kummer.DecompositionLocalPower` turns that criterion into the comparison of the
+  two readings of a local condition on a cohomology class.  The profinite reading says that a unit
+  of a level becomes a `p`-th power in the compositum of the level with the fixed field of a
+  decomposition subgroup; the idelic one says that it becomes a `p`-th power in the completion at
+  the place below.  An automorphism over the level lying in the subgroup fixes both factors of the
+  compositum, hence a `p`-th root there, so the criterion applies and the first reading implies the
+  second.  A class is not a unit but an element of a tensor product of the units with coefficients
+  of finite rank over the field with `p` elements, where divisibility by `p` is read coordinate by
+  coordinate along a basis of the coefficients; so the comparison for a single unit carries the
+  whole class from the compositum to the completion, at a prime and at an archimedean place alike.
 * `InverseGalois.CFT.Kummer.Pairing` compares two radicals through their exponent vectors.  Writing
   an element of the subgroup as a product of powers of the power basis times a `p`-th power, the
   automorphism which multiplies the `i`-th radical by the `cᵢ`-th power of the root of unity fixes
