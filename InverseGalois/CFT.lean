@@ -5349,6 +5349,18 @@ it that are available here.
   inside the one where the primitive is constant, which is what an open normal core provides.
   Consequently **a coinduced module has no everywhere locally trivial class in either degree** as
   soon as the subgroup one coinduces from is among the subgroups where triviality is imposed.
+  The same splitting run backwards shows that the map **misses nothing** either, once the chosen
+  representatives are asked to contain the neutral element, which costs nothing.  A cocycle of the
+  subgroup is extended to the whole group in the first degree by the telescoping quotient of its
+  values at the parts in the subgroup of two translates of a point, whose equivariance is the
+  cocycle relation of what one started from; in the second degree the values of the cocycle at the
+  splittings of a point and of the point translated by the argument play the role the values at
+  the neutral element played before, their divided differences are a cocycle for the formal reason
+  that they are divided differences at all, and their equivariance is again the cocycle relation of
+  what one started from, read at the splitting of a product.  Both extensions restrict to the
+  cocycle one started from exactly, so **Shapiro's lemma holds in the first and in the second
+  degree**: the cohomology of the group with coefficients in a module coinduced from a normal
+  subgroup with an open normal core is the cohomology of that subgroup.
 * `InverseGalois.CFT.Profinite.Comap` composes a cochain with a homomorphism into a group acting on
   the same module.  The cocycle relation and the coboundary are both preserved because the two
   actions agree, so all that is needed is that composition preserve smoothness, and two conditions

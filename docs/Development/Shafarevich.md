@@ -13587,7 +13587,7 @@ by the conjugate `ρ n ρ⁻¹`, which lies in both.
 two more bricks on top of injectivity:
 
 1. **Surjectivity** of `smoothShapiroH1`/`smoothShapiroH2` (same transversal machinery, run
-   backwards: build a cocycle of `G` from one of `H`).
+   backwards: build a cocycle of `G` from one of `H`).  ✅ **DONE**, see §1.27.
 2. **Compatibility with localisation**: `res_{D_v} Coind_H^G M ≅ ∏_{w | v} Coind_{H ∩ D_w}^{D_v} M`,
    i.e. the double-coset formula, which is what turns `Ш` over `k` into `Ш` over `K`.
 
@@ -13837,6 +13837,133 @@ Then SW Thms 14 and 15 turn Thm 13 into `GenericSplitEP ℓ`
   idelic symbol *is* the upper-line pairing.
 * Proving skew-symmetry of `localSymbol` first — not needed, see (e).
 * Building the eight-term `k_S` sequence — not needed for Thm 13, see (a).
+
+---
+
+## 1.27 Status (2026-09-06, latest) — **Shapiro's lemma is now an isomorphism: the coinduced module loses nothing *and* misses nothing**
+
+§1.25(d) listed exactly two bricks between `smoothShapiro*_injective` and the statement the row-5
+dévissage consumes.  **Brick 1 is done.**  `smoothShapiroH1` and `smoothShapiroH2` are bijective for
+a normal subgroup with an open normal core, and are packaged as `MulEquiv`s.
+
+### (a) The two constructions
+
+Write `τ = coindPart H σ hσ : G → ↥H` and `ρ = coindRep H σ : G → G` for the splitting
+`z = ρ z · τ z` attached to a section `σ` of `G ↠ G ⧸ H`.  Everything below needs `σ` normalised at
+the neutral coset, `σ (1 : G ⧸ H) = 1`, which is free: `exists_coindSection` takes any section and
+patches its value at one point.  With that normalisation `ρ 1 = 1` and `τ 1 = 1`, and — this is the
+whole point — **the Shapiro image of the extension is literally the cocycle one started from**, so
+no coboundary correction is ever needed.
+
+**Degree one.**  Given a smooth `1`-cocycle `v : ↥H → M`, put
+
+```
+U : G → Coind_H^G M,     (U g) z  =  v (τ (z · g)) / v (τ z).
+```
+
+* *Lands in the coinduced module.* `τ (h · z) = h · τ z` (`coindPart_subgroup_mul`), so the numerator
+  and denominator each pick up a factor `h • (−)` by the cocycle relation of `v`, and the quotient is
+  exactly `h • ((U g) z)`.
+* *Is a cocycle.* `(U (g₁ g₂)) z = (U g₂) (z g₁) · (U g₁) z` is the telescoping identity
+  `A/C = (A/B)(B/C)` after `z (g₁ g₂) = (z g₁) g₂`; `div_mul_div_cancel` closes it.
+* *Is smooth.* If `v` kills `N' ⊴ᵒ H` and `N ≤ N' ∩ H` is an open normal subgroup of `G`
+  (`HasOpenNormalCore`), then `τ (z g n) = τ (z g) · n'` with `n'` a `ρ (z g)`-conjugate of `n`,
+  still in `N`; so `U (g n) = U g`.
+* *Restricts back to `v`.* `(U h) 1 = v (τ h) / v (τ 1) = v h / v 1 = v h`, using
+  `coindPart_of_mem`, `coindPart_one` and `groupCohomology.map_one_of_isMulCocycle₁`.
+
+**Degree two.**  Given a smooth `2`-cocycle `b : ↥H × ↥H → M`, put
+
+```
+Φ : G → G → M,           Φ z x  =  b (τ z, τ (ρ z · x)),
+A : G × G → Coind_H^G M, (A (x, y)) z  =  Φ (z x) y · Φ z x / Φ z (x y).
+```
+
+Three observations make the Lean proof short, and they are worth recording because they are what one
+would otherwise rediscover painfully:
+
+1. **The cocycle relation of `A` is an identity in `Φ` alone** — it is the statement that a "divided
+   difference" of `Φ` is a cocycle, true for *any* `Φ` whatsoever.  In the file it is the private
+   abelian-group identity `coindAlgFive`.
+2. **The equivariance of `A (x, y)` is precisely `IsMulCocycle₂ b`,** read at the splitting of a
+   product.  Concretely `Φ (h z) x = h • Φ z x · b (h, τ (z x)) / b (h, τ z)` (this is `hΦH`, and its
+   proof is one `rw` plus `hb h (τ z) (τ (ρ z · x))`), after which the three error terms cancel
+   telescopically — the private identity `coindAlgSix`.  The input to `hΦH` is
+   `coindPart_mul : τ (z x) = τ z · τ (ρ z · x)`, the multiplicativity of the splitting, which in
+   turn rests on `coindRep_coindRep_mul : ρ (ρ z · x) = ρ (z x)` and **uses normality of `H`**.
+3. **Smoothness has to be proved in *both* variables of `Φ`** (`hΦsmOne`, `hΦsmTwo`), because
+   `A (x n, y m)` shifts `Φ`'s first argument as well as its second; the bookkeeping
+   `x n (y m) = x y (y⁻¹ n y) m` uses normality of the open core `N` in `G`.
+
+Restriction back to `b`: `(A (h₁, h₂)) 1 = Φ h₁ h₂ · Φ 1 h₁ / Φ 1 (h₁ h₂) = b (h₁, h₂) · b(1,1) /
+b(1,1)`, using `groupCohomology.map_one_fst_of_isMulCocycle₂` twice.
+
+### (b) New API in `InverseGalois/CFT/Profinite/Coinduced.lean`
+
+Fourteen declarations, all sorry- and axiom-free:
+
+| name | statement |
+| --- | --- |
+| `exists_coindSection` | a section of `G ↠ G ⧸ H` with `σ (1 : G ⧸ H) = 1` |
+| `coindRep_of_mem` | `x ∈ H → ρ x = 1` |
+| `coindRep_coindRep_mul` | `ρ (ρ z · x) = ρ (z x)` (needs `[H.Normal]`) |
+| `coindPart_of_mem` | `τ (h : G) = h` |
+| `coindPart_one` | `τ 1 = 1` |
+| `coindPart_mul` | `τ (z x) = τ z · τ (ρ z · x)` |
+| `smoothShapiroH1_surjective`, `smoothShapiroH2_surjective` | the two constructions above |
+| `smoothShapiroH1_bijective`, `smoothShapiroH2_bijective` | with §1.25's injectivity |
+| `smoothShapiroH1Equiv`, `smoothShapiroH2Equiv` (+ `_apply` simp lemmas) | the `MulEquiv` packaging |
+
+plus the two private abelian-group identities `coindAlgFive`, `coindAlgSix`.
+
+So, for `H ⊴ G` with an open normal core and any `↥H`-module `M`:
+
+```
+SmoothH1 G ↥(smoothCoind H M) ≃* SmoothH1 ↥H M
+SmoothH2 G ↥(smoothCoind H M) ≃* SmoothH2 ↥H M
+```
+
+### (c) What remains for the row-5 reduction
+
+Only §1.25(d) item 2: the **double-coset / localisation formula**
+`res_{D_v} Coind_H^G M ≅ ∏_{w | v} Coind_{H ∩ D_w}^{D_v} M`.  Shapiro alone identifies the *global*
+cohomologies; item 2 is what identifies the *local conditions* on both sides and hence turns `Ш`
+over `k` into `Ш` over `K`.
+
+### (d) Findings
+
+* **2057 (REPO).**  `smoothH1Mk_congr` lives in `CFT/Profinite/H1Conj.lean:83`, **not** in
+  `Cochain.lean`; `smoothH2Mk_congr` lives in `CFT/Profinite/Cochain.lean:316`.  Their argument
+  orders **differ**: `smoothH1Mk_congr (huv : u = v) hu hus hv hvs` puts the equation *first*,
+  `smoothH2Mk_congr ha has hb hbs (h : a = b)` puts it *last*.
+* **2058 (NAME CLASH).**  `H1Conj.lean:58` defines `InverseGalois.CFT.map_one_of_isMulCocycle₁`,
+  which shadows Mathlib's `groupCohomology.map_one_of_isMulCocycle₁` in any file that imports
+  `H1Conj` inside `namespace InverseGalois.CFT`.  Always write the `groupCohomology.` prefix
+  explicitly (same for `map_one_fst_of_isMulCocycle₂`, for symmetry of style).
+* **2059 (MATHLIB).**  `QuotientGroup.eq_one_iff`
+  (`Mathlib/GroupTheory/QuotientGroup/Defs.lean:120`) requires `[N.Normal]`.  To normalise a coset
+  section of a not-yet-known-normal subgroup, phrase the condition as `σ ((1 : G) : G ⧸ H) = 1` and
+  reason with `QuotientGroup.eq` instead.
+* **2060 (MATHLIB).**  `smul_div'` is at `Mathlib/Algebra/Group/Action/Basic.lean:206`:
+  `r • (x / y) = r • x / r • y`.
+* **2061 (LEAN).**  After `refine ⟨fun x => if … then … else …, fun x => ?_, _⟩` the goal contains an
+  unreduced beta-redex, so `rw [if_pos …]` reports "did not find an occurrence".  Insert
+  `dsimp only` first.
+* **2062 (LEAN).**  A function introduced by `obtain ⟨A, hAdef⟩ : ∃ A, ∀ …, … = …` is an **opaque
+  local**: `show` cannot see through it and fails with "not definitionally equal".  Produce a
+  `have hval := hAdef … …` and rewrite with it, or `show` only the un-unfolded form.
+* **2063 (BUILD).**  `lake build InverseGalois.CFT.Profinite.Coinduced` = **8033 jobs**, 53 s.  Full
+  root build with this change = **9757 jobs** (unchanged: no new module).
+
+### (e) Routes rejected here
+
+* A **right-coset (non-normal) splitting** for the degree-2 argument.  `coindPart_mul` — the
+  multiplicativity of the splitting that carries the whole degree-2 proof — is false without
+  `[H.Normal]`, and the general case would need the genuine double-coset bookkeeping.  Since every
+  use in the row-5 dévissage has `H = G_K` normal in `H = G_k`, this costs nothing.
+* Correcting the Shapiro image by an explicit coboundary.  Unnecessary once `σ` is normalised at the
+  neutral coset: the image is the original cocycle **on the nose**, so the final step is
+  `smoothH*Mk_congr` on an equality of functions rather than a computation in cohomology.
 
 ---
 
