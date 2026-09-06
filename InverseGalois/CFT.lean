@@ -332,7 +332,9 @@ import InverseGalois.CFT.Kummer.InertiaBound
 import InverseGalois.CFT.Kummer.InfiniteLevelPower
 import InverseGalois.CFT.Kummer.InflationRootsOfUnity
 import InverseGalois.CFT.Kummer.LevelOne
+import InverseGalois.CFT.Kummer.LocalPowRepresentatives
 import InverseGalois.CFT.Kummer.LocalPower
+import InverseGalois.CFT.Kummer.LocalPowerRange
 import InverseGalois.CFT.Kummer.LocalSurjective
 import InverseGalois.CFT.Kummer.Pairing
 import InverseGalois.CFT.Kummer.PowBasis
@@ -349,6 +351,7 @@ import InverseGalois.CFT.Kummer.RootsInBase
 import InverseGalois.CFT.Kummer.SUnitExt
 import InverseGalois.CFT.Kummer.SUnitUnramified
 import InverseGalois.CFT.Kummer.SecondInequality
+import InverseGalois.CFT.Kummer.SupPowSurjective
 import InverseGalois.CFT.Kummer.Unramified
 import InverseGalois.CFT.Level
 import InverseGalois.CFT.Local.AdicAction
@@ -2141,6 +2144,30 @@ it that are available here.
   of finite rank over the field with `p` elements, where divisibility by `p` is read coordinate by
   coordinate along a basis of the coefficients; so the comparison for a single unit carries the
   whole class from the compositum to the completion, at a prime and at an archimedean place alike.
+* `InverseGalois.CFT.Kummer.LocalPowRepresentatives` makes the local power classes finite and
+  represents them globally.  The `n`-th powers have finite index in the units of a completion of a
+  number field, the index being the product of the absolute value of `n` there with the number of
+  `n`-th roots of unity; weak approximation prescribes a single element of the field at one place up
+  to an `n`-th power, so the units of the field surject onto that finite group and a section of the
+  surjection has finite range.  Finitely many units of the field therefore meet every power class of
+  the completion, at a prime and at an archimedean place alike.
+* `InverseGalois.CFT.Kummer.LocalPowerRange` states the criterion for a radical in the form an
+  infinite extension needs.  An element fixed by the decomposition group at a place has an image in
+  the completion coming from the completion below, that completion being the fixed field of the
+  decomposition group acting on the one above; conversely an element whose image has the same `n`-th
+  power as an element of the completion below is fixed there, the two differing by a root of unity
+  already present in the base.  The radicand is not asked to lie in the base, only the local root,
+  which is what lets a Kummer argument run for an element of a compositum.
+* `InverseGalois.CFT.Kummer.SupPowSurjective` shows the compositum is no larger than the level
+  modulo `p`-th powers.  A `p`-th root of a given unit of the compositum, together with `p`-th roots
+  of the finitely many representatives of the local power classes, generates a single finite Galois
+  level; there the unit is fixed by the decomposition group, so its image in the completion comes
+  from below and is a representative times a `p`-th power, and the corresponding quotient of roots
+  is a radical whose local `p`-th power comes from below, hence lies in the compositum.  Choosing
+  the representatives before the level is what keeps the argument inside one finite extension.
+  Tensoring with coefficients of finite rank over the field with `p` elements preserves the
+  conclusion, a `p`-th power crossing the tensor sign to annihilate the coefficients, so the units
+  of the level surject onto the units of the compositum with the coefficients attached.
 * `InverseGalois.CFT.Kummer.Pairing` compares two radicals through their exponent vectors.  Writing
   an element of the subgroup as a product of powers of the power basis times a `p`-th power, the
   automorphism which multiplies the `i`-th radical by the `cᵢ`-th power of the root of unity fixes
