@@ -92,6 +92,7 @@ import InverseGalois.CFT.Brauer.LocalReciprocity
 import InverseGalois.CFT.Brauer.LocalReciprocityAll
 import InverseGalois.CFT.Brauer.LocalSymbol
 import InverseGalois.CFT.Brauer.LocalSymbolNondegenerate
+import InverseGalois.CFT.Brauer.LocalSymbolPerfect
 import InverseGalois.CFT.Brauer.LocalSymbolRamified
 import InverseGalois.CFT.Brauer.LocalSymbolUnits
 import InverseGalois.CFT.Brauer.TameEvaluation
@@ -5923,6 +5924,16 @@ it that are available here.
   nontrivially with**, and skew symmetry says the same on the other side, so **the norm residue
   symbol descends to a nondegenerate pairing of the elements of a local field modulo powers with
   themselves**, for every exponent and with no condition on the residue characteristic.
+* `InverseGalois.CFT.Brauer.LocalSymbolPerfect` turns that into a perfect pairing.  The symbol kills
+  the powers in either argument, so it descends to a pairing of the classes of a local field modulo
+  powers with themselves, and nondegeneracy says the classes **inject** into their own group of
+  characters valued in the rationals modulo the integers.  A finite abelian group has exactly as
+  many characters as elements, so as soon as the classes are finite an injection between them and
+  their characters is a bijection: **every character of the units of a local field which kills the
+  powers is the symbol against a single element**, unique modulo powers.  That is local duality in
+  degree one for the roots of unity, read entirely through the symbol; finiteness of the classes is
+  left as a hypothesis, so that the statement applies verbatim to a completion of a number field at
+  either kind of place, where the local index formula supplies it.
 * `InverseGalois.CFT.Brauer.TameValue` computes the value itself.  The level of a unit of the
   valuation ring which is not a power of prime order is the radical extension by that unit, and the
   reduction of the minimal polynomial of the chosen root stays irreducible, so **that level is

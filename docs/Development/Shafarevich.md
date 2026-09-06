@@ -13221,6 +13221,110 @@ statement.  So the honest order of work is: normalise the valuation (or generali
 
 ---
 
+## 1.22 Status (2026-09-06, latest) — **the norm residue symbol is a perfect pairing**
+
+`InverseGalois/CFT/Brauer/LocalSymbolPerfect.lean` upgrades yesterday's nondegeneracy to
+**perfectness**, which is the form rows 5/8 actually consume:
+
+* `card_monoidHom_qModZ : Nat.card (A →* Multiplicative QModZ) = Nat.card A` for any finite abelian
+  `A`, and `finite_monoidHom_qModZ`.
+* `localSymbolLeftQuot` / `localSymbolDual` — the symbol against a fixed element, descended to
+  `Kˣ ⧸ (powMonoidHom n).range`, and the resulting map `Kˣ →* (Kˣ/(Kˣ)ⁿ)^∨`.
+* `ker_localSymbolDual : (localSymbolDual …).ker = (powMonoidHom n : Kˣ →* Kˣ).range` — the whole
+  content of §1.21, repackaged as a kernel.
+* `localSymbolQuotDual`, `injective_localSymbolQuotDual` — the classes inject into their own
+  character group.
+* `surjective_localSymbolDual`, `bijective_localSymbolQuotDual`,
+  `localSymbolQuotEquivDual : (Kˣ ⧸ (Kˣ)ⁿ) ≃* ((Kˣ ⧸ (Kˣ)ⁿ) →* Multiplicative QModZ)` — **perfect
+  pairing.**
+* `exists_forall_localSymbol_eq` — the quotient-free consumer form: a character `χ : Kˣ →*
+  Multiplicative QModZ` with `χ (cⁿ) = 1` for all `c` is `χ = localSymbol · b` for a single `b`.
+
+### (a) The `hsurj` worry of §1.21(b) evaporated
+
+§1.21(b) predicted that perfectness would be blocked on finiteness of `Kˣ/(Kˣ)ⁿ`, which in the
+repository's axiomatisation is the `hsurj`-dependent index statement.  That prediction was wrong in
+a useful way.  Two things changed it:
+
+1. **Finiteness is a hypothesis, not a conclusion.**  The three perfectness theorems carry
+   `[Finite (Kˣ ⧸ (powMonoidHom n : Kˣ →* Kˣ).range)]` as an instance binder.  Nothing in the proof
+   of perfectness needs to know *why* the classes are finite.
+2. **The consumer already has it.**  `Kummer/LocalPowRepresentatives.lean` proves
+   `finiteIndex_range_powMonoidHom_units_adicCompletion` (:55) and
+   `…_infiniteCompletion` (:72) for a number field, from `Local/AdicPowIndex.lean` and
+   `Local/InfinitePowIndex.lean` — **with no `hsurj` anywhere**, because at a completion of a number
+   field the index formula is already available in normalised form.  `Subgroup.FiniteIndex` gives
+   the `Finite` instance.
+
+So a first draft that carried `hsurj : Function.Surjective (Valued.v : K → ℤᵐ⁰)` and
+`[∀ k : ℤ, Finite (gradedAdd K k)]` through three lemmas (`index_range_powMonoidHom_units_ne_zero`,
+`finiteIndex_range_powMonoidHom_units`, `finite_quotient_range_powMonoidHom_units`, built on
+`TrivialIndex.index_range_powMonoidHom_units_padicValNat`) was **deleted**: it duplicated existing
+work in a strictly weaker form.  Generalising `UnitPowIndex.lean` off `hsurj` is therefore **not**
+on the critical path after all.
+
+### (b) What this is, mathematically
+
+For a local field `K` containing the `n`-th roots of unity, `Kˣ/(Kˣ)ⁿ ≅ H¹(G_K, μ_n)` by Kummer
+theory and `μ_n ≅ ℤ/n` after choosing `ζ`, so the perfect pairing
+
+  `Kˣ/(Kˣ)ⁿ  ×  Kˣ/(Kˣ)ⁿ  →  ℚ/ℤ`
+
+**is local Tate duality in degree one for `μ_n`** — the case actually used by Schmidt–Wingberg at
+`sw.txt:720`, and the only case row 8 needs.  It is now a theorem of the repository with no
+hypothesis beyond finiteness of the classes.
+
+### (c) Where this leaves row 8
+
+The plan of §1.19 is unchanged and now has its first brick.  The remaining inputs to
+
+  `H¹(k_S|K, μ_p) → ∏_{v ∈ S} H¹(K_v, μ_p) → H¹(k_S|K, ℤ/p)^∨`  exact,
+
+i.e. "the image of the Selmer group `K(S,p)` in `⊕_{v∈S} K_v^×/p` is **maximal isotropic** for the
+symbol pairing", are:
+
+1. **isotropy** — the product formula for the Hilbert symbol, which is row 6, already a theorem
+   (`totalInvariant_smoothBrauerHom_kummerSymbolUnits`);
+2. **the dimension count** `Σ_{v∈S} dim_{𝔽_p} K_v^×/p = 2 · dim_{𝔽_p} K(S,p)`, from the local index
+   formula (`index_range_powMonoidHom_units_adicCompletion`) together with Dirichlet's `S`-unit
+   theorem and `Cl_S(K)/p = 1` for `S` large;
+3. **injectivity** of `K(S,p) → ∏_{v∈S} K_v^×/p` when `Cl_S(K)/p = 1`;
+4. the linear algebra "isotropic of half the dimension ⟹ equal to its own orthogonal complement",
+   for which `localSymbolQuotEquivDual` is exactly the ingredient that turns an orthogonal
+   complement into an annihilator of known dimension.
+
+Item 2 is the one with a possible Mathlib gap (the `S`-unit theorem); items 1 and 4 are now in
+hand.
+
+### (d) Findings
+
+* **1977 (REPO — decisive).**  `Kummer/LocalPowRepresentatives.lean` already proves
+  `finiteIndex_range_powMonoidHom_units_adicCompletion` (:55) and
+  `finiteIndex_range_powMonoidHom_units_infiniteCompletion` (:72) for a number field, plus
+  `exists_finite_pow_representatives_adicCompletion` (:86) and `…_infiniteCompletion` (:138).
+  **Grep `powMonoidHom` before writing any local-index lemma.**
+* **1978 (LEAN).**  `ext x` on a goal `f = g` with `f g : (Kˣ ⧸ P) →* M` goes *all the way through*
+  `QuotientGroup`'s ext lemma and hands back `x : Kˣ`.  A following
+  `induction x using QuotientGroup.induction_on` then fails with "Invalid target: x has type Kˣ but
+  is expected to have type ?m ⧸ ?m".  (`injective_iff_map_eq_one` does **not** do this — there the
+  `induction` is required.)
+* **1979 (LEAN).**  For the side goal of `QuotientGroup.lift N f h`, `rw [← MonoidHom.mem_ker, …]`
+  misfires; `MonoidHom.mem_ker.mp (by rw [ker_…]; exact hx)` works.
+* **1980 (MATHLIB).**  `MonoidHom.toAdditiveLeft : (α →* Multiplicative β) ≃ (Additive α →+ β)` at
+  `Mathlib/Algebra/Group/TypeTags/Hom.lean:96`; `AddMonoidHom.toMultiplicativeLeft` at :109;
+  `MonoidHom.toAdditiveRight` at :135.  The primed names (`MonoidHom.toAdditive'`, `toAdditive''`,
+  …) are **deprecated aliases** since 2025-09-19.
+* **1981 (MATHLIB).**  `rootsOfUnity.fintype` (`RingTheory/RootsOfUnity/Basic.lean:234`) is inside
+  `section IsDomain` with `variable [NeZero k] [CommRing R] [IsDomain R]`, so
+  `Finite ↥(rootsOfUnity n K)` needs **`[NeZero n]`**, not merely `n ≠ 0`.
+* **1982 (REPO).**  `Tate.intLinearEquiv : (M →+ N) ≃ (M →ₗ[ℤ] N)` (~`Pontryagin.lean:170`) and
+  `Tate.card_linearDual [Finite M] : Nat.card (M →ₗ[ℤ] AddCircle (1 : ℚ)) = Nat.card M` (:180);
+  `Tate.card_characterModule` (:133), `Tate.finite_characterModule` (:153).  `QModZ`
+  (`Brauer/CyclicInvariant.lean:63`) is reducibly `AddCircle (1 : ℚ)`, so these compose directly.
+* **1983 (BUILD).**  `lake build InverseGalois.CFT.Brauer.LocalSymbolPerfect` is 8453 jobs, ~13 s.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
