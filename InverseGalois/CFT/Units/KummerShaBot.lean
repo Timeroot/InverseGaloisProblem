@@ -85,13 +85,13 @@ two.  The class dies in the ideles, so the comparison produces it; but there is 
 produced from. -/
 theorem kummerFiniteH1Equiv_eq_one_of_span
     (eW : ↥W.V ≃+ (Fin dW → ZMod p)) (hWp : ∀ w : ↥W.V, p • w = 0)
-    (hspan : HasIdeleClassNakayamaSpan k ↥K p)
+    (hspan : HasIdeleClassNakayamaSpanAt k ↥K p W (-2))
     (hzero : ∀ y : ↥(tateModule W (-2)), y = 0)
     {z : SmoothH1 (Gal(Ω/k) ⧸ K.fixingSubgroup) (SmoothH1 ↥K.fixingSubgroup E)}
     (hz : z ∈ sha1Level E K.fixingSubgroup hop (decompositionSubgroups k Ω)) :
     kummerFiniteH1Equiv hK htriv htrivEK α hEp hfix
       (tensorObj (globalUnitsRep k ↥K) W) φ hφ hop z = 1 := by
-  obtain ⟨y, hy⟩ := exists_shaTorusPTorsionMap_one_of_span hspan W hWp _
+  obtain ⟨y, hy⟩ := exists_shaTorusPTorsionMap_one_of_spanAt W hWp hspan _
     (tateMap_globalUnitsToIdele_kummerFiniteH1Equiv_eq_zero hK htriv htrivEK α hEp hfix W φ hφ
       hφmap eM hroot hop eW hz)
   rw [hzero y, _root_.map_zero] at hy
@@ -104,7 +104,7 @@ and the coefficients have no complete cohomology in degree minus two.  The readi
 group of the level is injective, so it is enough that every class read there is trivial. -/
 theorem sha1Level_eq_bot_of_span
     (eW : ↥W.V ≃+ (Fin dW → ZMod p)) (hWp : ∀ w : ↥W.V, p • w = 0)
-    (hspan : HasIdeleClassNakayamaSpan k ↥K p)
+    (hspan : HasIdeleClassNakayamaSpanAt k ↥K p W (-2))
     (hzero : ∀ y : ↥(tateModule W (-2)), y = 0) :
     sha1Level E K.fixingSubgroup hop (decompositionSubgroups k Ω) = ⊥ := by
   refine eq_bot_iff.2 fun z hz => ?_

@@ -12108,6 +12108,175 @@ invariant-theoretically out of `localInvariantHom` plus reciprocity
 
 ---
 
+## 1.13 **REFUTATION** (2026-09-06) — `HasIdeleClassNakayamaSpan` as stated is FALSE
+
+**Do not attempt to prove `HasIdeleClassNakayamaSpan k K p` in its current, `∀ W`-quantified
+form.**  It is false: there is a number field `k`, a finite Galois extension `K/k` and a prime `p`
+for which the span fails at `W = 𝔽_p` (trivial action) and `n = -2`.  What follows is the
+computation, the counterexample, and what has to replace the hypothesis.
+
+Throughout: `G = Gal(K/k)`, `I = I_K` the ideles, `C = C_K` the idele classes, `p` an odd prime,
+`μ_p ⊆ k` (so `μ_p` is the trivial `G`-module `𝔽_p`).  `Ĥ` is Tate cohomology of the finite group
+`G`; `D_v ≤ G` are the decomposition subgroups; `Ш^i(G,A) = ker(Ĥ^i(G,A) → ∏_v Ĥ^i(D_v,A))`.
+Take `P = G` (i.e. `G` a `p`-group), so the Sylow subgroup in the statement of the span is all of
+`G` and drops out.
+
+### (a) At `n = -2` and `W` trivial, the Tate–Nakayama term contributes **nothing**
+
+The span at `(W, n)` reads `range TN_W(n) ⊔ range ι_*(n+2) = ⊤` inside `Ĥ^{n+2}(G, C ⊗ W)`, where
+`ι_* : Ĥ^{n+2}(G, I ⊗ W) → Ĥ^{n+2}(G, C ⊗ W)`.  Put `n = -2`, `W = 𝔽_p`.
+
+* `TN` is natural in the coefficient module.  Along the reduction `ℤ ↠ 𝔽_p` the square
+
+  ```
+  Ĥ^{-2}(G, ℤ)  --TN-->  Ĥ⁰(G, C)
+       |                    |
+       v                    v
+  Ĥ^{-2}(G, 𝔽_p) --TN-->  Ĥ⁰(G, C/p)
+  ```
+
+  commutes, and the **left vertical is surjective**: the Bockstein gives
+  `Ĥ^{-2}(G,ℤ) → Ĥ^{-2}(G,𝔽_p) → Ĥ^{-1}(G,ℤ)` and `Ĥ^{-1}(G,ℤ) = 0`.  Hence
+  `range TN_{𝔽_p}(-2) = image(Ĥ⁰(G,C) → Ĥ⁰(G,C/p))` (the top `TN` is Tate's isomorphism
+  `Ĥ^{-2}(G,ℤ) ≅ Ĥ⁰(G,C)`, so the top row is onto `Ĥ⁰(G,C)`).
+* `Ĥ⁰(G, I) → Ĥ⁰(G, C)` is **surjective**, because the next term is `Ĥ¹(G, K^×) = 0`
+  (Hilbert 90).  Combined with naturality of `I → C` in the reduction square,
+
+  > `range TN_{𝔽_p}(-2) ⊆ range ι_*(0)`.
+
+**So at `W` trivial and `n = -2` the span is *equivalent* to `range ι_* = ⊤`, i.e. to
+`Ш¹(G, K^× ⊗ W) = 0` — which is precisely the conclusion it is used to derive.**  The whole
+Tate–Nakayama tower is doing no work in that instance.  (This is special to trivial `W`: the same
+argument works for any `W` that is a quotient of a lattice `Y` with `Ĥ^{n-1}(G,Y) → Ĥ^{n-1}(G,W)`
+zero, e.g. any trivial `W = 𝔽_p^d`; for a genuinely non-trivial `W` the `TN` term is strictly
+bigger than the idelic one, because `Ĥ²(G,I) → Ĥ²(G,C)` need **not** be surjective —
+its image is `(1/lcm_v |D_v|)ℤ/ℤ` inside `Ĥ²(G,C) ≅ (1/|G|)ℤ/ℤ`, which is the content of
+gotcha 1129, "there is no idelic fundamental class".)
+
+### (b) The cokernel of `ι_*` at `n = -2` is `Ш²(G, μ_p)`
+
+Bockstein for a `G`-module `M`, `i = 0`:
+`0 → Ĥ⁰(G,M)/p → Ĥ⁰(G,M/p) → Ĥ¹(G,M[p]) → 0` (the right-hand map is onto because `p` kills
+`Ĥ¹(G,M[p])`), naturally in `M`.  Apply it to `M = I` over `M = C`:
+
+```
+0 → Ĥ⁰(G,I)/p → Ĥ⁰(G,I/p) → Ĥ¹(G,I[p]) → 0
+       | (a)         | (b)        | (c)
+0 → Ĥ⁰(G,C)/p → Ĥ⁰(G,C/p) → Ĥ¹(G,C[p]) → 0
+```
+
+`(a)` is onto by Hilbert 90 as above, so the snake lemma gives `coker(b) ≅ coker(c)`.  Now
+Grunwald–Wang at prime exponent — **already in the repo**, `exists_pow_eq_of_forall_localPow_
+outside_of_prime` (`CFT/GrunwaldWang.lean:226`) — makes `0 → μ_p → I[p] → C[p] → 0` exact
+(§1.01(c), `resSeq_tensorSeq_ideleClassTorsion_shortExact`).  Since `I[p] = ∏_w μ_p =
+∏_v Ind_{D_v}^G μ_p`, Shapiro plus "Tate cohomology of a finite group commutes with products"
+gives `Ĥ^i(G, I[p]) = ∏_v Ĥ^i(D_v, μ_p)` with the map from `Ĥ^i(G, μ_p)` being the product of the
+restrictions.  Hence
+
+> **`coker(ι_* : Ĥ⁰(G, I/p) → Ĥ⁰(G, C/p)) ≅ Ш²(G, μ_p)`,**
+
+and by (a), **the span at `(W = 𝔽_p, n = -2)` holds if and only if `Ш²(G, μ_p) = 0`.**
+
+### (c) A `(k, K, p)` with `Ш²(G, μ_p) ≠ 0`
+
+*Group theory.*  For `G = (ℤ/p)²`, `p` odd, the exponent-`p` Heisenberg extension
+`1 → ℤ/p → H → (ℤ/p)² → 1` (with `H = ⟨a,b : a^p = b^p = [a,b]^p = 1, [a,b]` central`⟩`) is
+non-split, so its class `0 ≠ x₁x₂ ∈ H²(G, 𝔽_p)`; but over any cyclic `C = ⟨(s,t)⟩ ≤ G` the
+preimage is `⟨a^s b^t, z⟩ ≅ (ℤ/p)²` (exponent `p`!), so `res_C(x₁x₂) = 0`.  Equivalently, in
+`H^*(G,𝔽_p) = Λ(x₁,x₂) ⊗ 𝔽_p[y₁,y₂]`, `res_C(a·x₁x₂ + b·y₁ + c·y₂) = (bs+ct)·y`, which vanishes for
+every `(s,t) ≠ 0` iff `b = c = 0`.  So `Ш²_ω((ℤ/p)², 𝔽_p) = ⟨x₁x₂⟩ ≅ 𝔽_p ≠ 0` for odd `p`
+(and `= 0` for `p = 2`).
+
+*Arithmetic realisation.*  `p = 3`, `k = ℚ(μ_3) = ℚ(√-3)`, `K = k(α^{1/3}, β^{1/3})` with `α, β`
+independent modulo cubes chosen so that
+
+* `α = π₁` a prime element, `β = π₂ ·` (a cube) with `π₂` a prime element;
+* `β ∈ (k_v^×)³` for every `v ∣ 3` and for `v = v₁` (the place of `π₁`);
+* `α ∈ (k_{v₂}^×)³`, arranged by picking `𝔭₂` split in `k(α^{1/3})` (Chebotarev).
+
+Then: `v₁` ramifies only in `k(α^{1/3})`, so `D_{v₁}` is cyclic of order 3; symmetrically for `v₂`;
+every `v ∣ 3` splits in `k(β^{1/3})` so `D_v ≤ Gal(k(α^{1/3})/k)` is cyclic; the unique archimedean
+place is complex, `D_∞ = 1`; every other place is unramified, so `D_v = ⟨Frob_v⟩` is cyclic.  **All
+decomposition subgroups are cyclic**, hence `Ш²(G, μ_3) ⊇ Ш²_ω((ℤ/3)², 𝔽_3) ≠ 0`.
+
+Therefore `HasIdeleClassNakayamaSpan ℚ(μ_3) K 3` is **false**, and
+`kummerFiniteH1Equiv_eq_one_of_span` / `sha1Level_eq_bot_of_span`
+(`Units/KummerShaBot.lean`) are **vacuous** for such a `K`.  Both remain true theorems; they just
+cannot be discharged by proving their hypothesis in general.
+
+Note the structural reason: by Chebotarev **every cyclic subgroup of `G` is a decomposition
+subgroup**, so `Ш^i(G,A) ⊆ Ш^i_ω(G,A)` always, and the span can only ever hold when the
+Tate–Šafarevič group of the *finite* group `G` over its decomposition subgroups vanishes.  That is
+a condition on `K`, not a theorem about `K`.
+
+### (d) A positive by-product: `Ш²(k, μ_p) = 0` with **no** Poitou–Tate
+
+At the level of the full absolute Galois group the answer is the opposite.  Kummer
+`0 → μ_p → 𝔾_m → 𝔾_m → 0` plus Hilbert 90 gives, globally and at every place,
+`0 → k^×/(k^×)^p → H²(k, μ_p) → Br(k)[p] → 0`.  A locally trivial class maps to a locally trivial
+Brauer class, which vanishes by Albert–Brauer–Hasse–Noether — **already in the repo**,
+`eq_one_of_mem_sha2`; so it comes from an `α ∈ k^×/(k^×)^p` that is a local `p`-th power
+everywhere, hence a global `p`-th power by Grunwald–Wang at prime exponent — **also already in the
+repo**.  So
+
+> **`Ш²(k, μ_p) = 0` for every number field `k` and every prime `p`, from two theorems the repo
+> already has.**
+
+Consequently every class of `Ш²(G, μ_p)` dies under inflation to `G_k`, hence dies at some finite
+level: for every `K` there is `K' ⊇ K` with `inf(Ш²(Gal(K/k), μ_p)) = 0` in `H²(Gal(K'/k), μ_p)`.
+This does **not** give `Ш²(Gal(K'/k), μ_p) = 0` (new classes appear at level `K'`), so it does not
+repair the span; but it does say the correct shape of the hypothesis is an **`∃ K`** statement, and
+it is the germ of the replacement.
+
+### (e) What has to change
+
+1. **Refactor the hypothesis to be per-coefficient and per-degree.**  `HasIdeleClassNakayamaSpan`
+   quantifies over *all* `W` and *all* `n`, and is used at exactly one pair: `W = E(-1)` and
+   `n = -2`.  A predicate `HasIdeleClassNakayamaSpanAt k K p W n` is not refuted by (c) — the
+   counterexample only kills the instance `W = 𝔽_p`.  (When `μ_p ⊆ k` and the kernel `E` of the
+   embedding problem is the *trivial* module `𝔽_p`, though — the central `ℤ/p` case, which is a
+   genuine case of `FrattiniKernelEP` — `W = E(-1)` **is** trivial, and by (a)+(b) the span is
+   then literally equivalent to `Ш²(G, μ_p) = 0`.  So the refactor makes the statement honest, not
+   provable.)
+2. **The chooser of `K` must be the consumer.**  Row 5's real statement is
+   `∃ K ⊇ k(μ_p, E)` — compatible with whatever the Šafarevič induction needs — such that the span
+   holds at `W = E(-1)`, `n = -2`.  Sufficient conditions worth having in Lean, in increasing
+   order of usefulness:
+   * *some* place `v` has `D_v ⊇` a Sylow `p`-subgroup of `G` ⟹ `Ш^i(G, A) = 0` for every `p`-torsion
+     `A` and every `i` (restriction to a Sylow subgroup is injective on `p`-primary parts) ⟹ the
+     span for every `W` and every `n`.  Cheap to state, but only satisfiable when the Sylow
+     subgroup is a *local* Galois group — restrictive.
+   * `Ш²_ω(G, μ_p ⊗ W) = 0`, which subsumes the above and is the sharp form of (b).
+3. **Or abandon the Tate–Nakayama route at `n = -2` altogether** and take Schmidt–Wingberg's own
+   road: Poitou–Tate `Ш²(k,E) ≅ Ш¹(k,E′)^∨` with `E′ = Hom(E, μ_p)`, then
+   `Ш¹(k,E′) ↪ H¹(G,E′)` and finite-group Tate duality `Ĥ^i(G,M)^∨ ≅ Ĥ^{-i-1}(G, M^D)` to get
+   `Ĥ^{-2}(G, E(-1)) ↠ Ш²(k, E)`.  The repo has neither the Poitou–Tate pairing nor finite-group
+   Tate duality yet.  By §0.99(b) this is the *only* place Schmidt–Wingberg use Poitou–Tate.
+
+### (f) A caution about "reduce to `Ш²(k,E) ⊆ inf H²(G,E)`"
+
+That containment is, on its own, **vacuous**: continuous cochain cohomology of a profinite group
+with discrete coefficients is the filtered colimit of the finite-level cohomologies, so *every*
+class of `H²(k,E)` is inflated from some finite `K'`.  The content of row 5 is therefore not the
+containment but its **uniformity**: `K` (and hence `G`) must be fixed *before* the finitely many
+classes that Schmidt–Wingberg's Proposition 6 is allowed to kill are chosen, because Prop 6's
+threshold `m₀` depends on the number `t` of classes.  Any restructuring of rows 5/6 has to keep
+that quantifier order — see §0.87(a), where losing it is exactly the recorded circularity.
+
+### (g) Reading of SW Proposition 6 (`sw.txt:258–345`), for the record
+
+Prop 6 does **not** make `Ĥ^k(G, E(m,τ) ⊗ T)` vanish.  It says: given `n, t, k, T, τ`, there is
+`m₀ ≥ n` such that for all `m ≥ m₀` and *any prescribed* `x₁, …, x_t ∈ Ĥ^k(G, E(m,τ) ⊗ T)` there
+is a surjective pro-`p`-`G`-operator homomorphism `ψ : F(m) ↠ F(n)` whose induced map kills
+`x₁, …, x_t`.  The proof dimension-shifts to `k = -1` via `A_k = I_G^{-(k+1)}`, uses Lemma 5's
+`G`-equivariant surjection `κ(d) : (F(d)/F(d)_2)^{⊗j} ↠ F(d)^{(τ)}/F(d)^{(τ+1)}`, takes `m = rn`
+with `r` large and applies Proposition 2.  This is why row 5 is *not* subsumed by Prop 6: to feed
+Prop 6 one needs a **fixed, `m`-independent** number of generating classes, and the only source of
+such a bound in SW is the duality `Ĥ^{-2}(G, E(m,τ)(-1)) ↠ Ш²(k, E(m,τ))` with the
+one-dimensional `T = Hom(μ_p, 𝔽_p)`.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
