@@ -13681,6 +13681,165 @@ inductive statement has to be the full duality, not `Ш`-vanishing.
 
 ---
 
+## 1.26 Status (2026-09-06, latest) — **the exactness of the Poitou–Tate upper line, in the only form SW Thm 13 consumes**
+
+Two new modules, `InverseGalois/CFT/PoitouTate/LocalConditions.lean` and
+`InverseGalois/CFT/PoitouTate/Prescribed.lean`, both sorry- and axiom-free; full root build
+**9757 jobs, 0 warnings**.
+
+### (a) The realisation that unlocked this
+
+SW Theorem 13 does not need the nine-term Poitou–Tate sequence.  It needs exactly one consequence
+of it, quoted in the proof as *"by the exactness of the upper line we find a class
+`z_{n+1} ∈ H¹(k_S|K, μ_p)` with properties (1), (2), (3)"*: a **global class with prescribed local
+behaviour**, the obstruction to its existence being a pairing condition against a computable
+subgroup.
+
+For `A = μ_p` that upper line **is already proven in this repo**.  `perpSubgroup_selmerGroup`
+(`PoitouTate/Selmer.lean:323`) says the classes of the `S`-units are their own orthogonal
+complement inside `∏_{v ∈ S} K_v^× / (K_v^×)^p` under the product of the norm residue symbols —
+`V = V^⊥`, i.e. `V` is a maximal isotropic subgroup of a nondegenerately paired finite group.
+Everything SW extracts from Poitou–Tate in this step is pure linear algebra on top of that one
+sentence.  The two new modules are that linear algebra (abstract), and its instantiation at a
+number field (concrete).
+
+### (b) `LocalConditions.lean` — the abstract statement
+
+For a pairing `φ : A →* A →* M` on a **finite** commutative group `A`:
+
+* `perpSubgroupLeft φ V` — `{a | ∀ b ∈ V, φ a b = 1}`, the complement in the *first* argument
+  (the repo already had `perpSubgroup`, the complement in the second).  `mem_perpSubgroupLeft`,
+  `flip_flip_pairing`, `perpSubgroup_bot`, `perpSubgroupLeft_bot`.
+* `injective_of_injective_flip` — for finite `A`, a pairing injective in one argument is injective
+  in the other (counting: `|A| ≤ |Hom(A, M)|` both ways).
+* **`perpSubgroupLeft_eq_self`** — if `φ` is nondegenerate and `perpSubgroup φ V = V`, then
+  `perpSubgroupLeft φ V = V` as well.  This is what makes "unramified" a *two-sided* condition
+  with no extra work.
+* `perpSubgroup_inf_perpSubgroupLeft` — `(V ⊓ L^⊥)^⊥ ⊇ V^⊥ ⊔ L`, the easy half.
+* **`exists_mul_eq_of_forall_pairing_eq_one`** — the theorem the whole file exists for.  If `φ` is
+  nondegenerate, `V^⊥ = V`, and `c ∈ A` pairs trivially with every element of `V ⊓ L^⊥`, then
+  `c ∈ V ⊔ L`, i.e. **`∃ a ∈ V, ∃ l ∈ L, a * l = c`.**  The proof is the duality
+  `(V ⊓ L^⊥)^⊥ = V^⊥ ⊔ L` for finite groups, read at `V^⊥ = V`.
+* `section Pi` — `flip_piPairing`, `perpSubgroup_piPairing_pi`, **`perpSubgroupLeft_piPairing_pi`**:
+  the orthogonal complement of a product subgroup under a product pairing is the product of the
+  complements, in either argument.
+
+### (c) `Prescribed.lean` — the same, read at a number field
+
+* `localClassPairing hres hζ v` — the norm residue symbol at a finite place, on
+  `localClasses v n = (K_v)^× / ((K_v)^×)^n`; `localSymbolPiPairing_eq_piPairing` identifies the
+  product of these with the abstract `piPairing` **by `rfl`**.
+* `localUnramified v n` and `finite_localClasses v` (from
+  `finiteIndex_range_powMonoidHom_units_adicCompletion`).
+* **`perpSubgroupLeft_localUnramified`** — at a place not dividing `n`, the unramified classes are
+  their own complement on the left too.  Immediate from `perpSubgroupLeft_eq_self` plus the
+  already-proven right-hand statement `perpSubgroup_unramifiedClasses_adicCompletion`.
+* **`exists_sUnitClass_mul_eq`** — for `n` an odd prime, `ι` an injective family of finite places
+  containing every place above `n`, and `L` an arbitrary family of local conditions: if `c` pairs
+  trivially with every `S`-unit class in `selmerGroup ι n ⊓ ∏_y L_y^⊥`, then
+  `∃ a ∈ selmerGroup ι n, ∃ l ∈ ∏_y L_y, a * l = c`.
+* **`exists_sUnitClass_mul_eq_unramified`** — the shape actually used: each place either prescribes
+  the class **exactly** (`L y = ⊥`, dual `D y = ⊤`) or **up to an unramified class**
+  (`L y = D y = localUnramified`).  So the test subgroup is *the `S`-units unramified at the places
+  of the second kind*, and the conclusion is a global `S`-unit hitting the prescribed classes
+  exactly at the first kind of place and up to ramification at the second.
+
+### (d) The dictionary to SW Theorem 13
+
+| SW (`sw.txt:657` ff.) | here |
+| --- | --- |
+| `K(S, p) = {a ∈ K^× / (K^×)^p : v(a) ≡ 0 (p) ∀ v ∉ S}` | `selmerGroup ι p` |
+| `∏_{v ∈ S} K_v^× / (K_v^×)^p` | `(y : Y) → localClasses (ι y) p` |
+| the Poitou–Tate pairing on it | `localSymbolPiPairing` |
+| `K(S,p)` is maximal isotropic | `perpSubgroup_selmerGroup` (already proven, §1.24) |
+| `T_n ⊆ S`, class prescribed exactly at `T_n` | `L y = ⊥` |
+| unramified off `T_n` | `L y = localUnramified (ι y) p` |
+| the test group `K(T_n, p)` | `selmerGroup ι p ⊓ ∏_y D_y` |
+| *"by exactness of the upper line, ∃ `z_{n+1}`"* | `exists_sUnitClass_mul_eq_unramified` |
+
+The induction in SW Thm 13 moves one place at a time from the "unramified" part into the "exact"
+part; the theorem above is stated for an arbitrary such split, so it is the induction *step*, ready
+to be iterated.
+
+### (e) Two things this route does **not** need
+
+1. **No skew-symmetry of the norm residue symbol.**  `exists_mul_eq_of_forall_pairing_eq_one` only
+   ever uses `V^⊥ = V` and nondegeneracy; the pairing is never required to satisfy
+   `φ a b = (φ b a)⁻¹`.  That is fortunate: `localSymbol`'s skew-symmetry is a genuinely separate
+   (and for even `n` false-as-naively-stated) theorem.
+2. **No `G_S` machinery.**  Nothing here mentions the Galois group of the maximal `S`-ramified
+   extension, restricted ramification cohomology, or the eight-term sequence.  The whole "upper
+   line" is consumed through the idelic Kummer picture, which the repo already has.
+
+### (f) Findings
+
+* **2050 (TOOLING).**  In a `python3` read/replace/write heredoc, the search string must reproduce
+  the file's *exact* leading whitespace — a tactic bullet line begins `    · ` (four spaces, `·`,
+  space), **not** six spaces.  A silent no-op replace is the failure mode; diagnose with
+  `sed -n '<N>p' <file> | od -c`.
+* **2051 (LEAN — REUSABLE, IMPORTANT).**  When a lemma's `[CommGroup A]` (or
+  `[∀ i, CommGroup (A i)]`) instance argument is still a **metavariable** while Lean unifies the
+  lemma's conclusion with the goal, and the concrete type is a quotient of the units of an adic
+  completion (`localClasses v n = (v.adicCompletion K)ˣ ⧸ (powMonoidHom n).range`), Lean cannot
+  match `CommGroup.toGroup ?inst` against the synthesised `QuotientGroup.Quotient.group N`.  It
+  instead **eta-expands the quotient group structure field by field** (`Quot.lift`,
+  `Quotient.map₂`, `npow := fun n x => x ^ n`), dragging in the completion's entire ring tower
+  (`Field.toCommRing`, `UniformSpace.Completion.commRing`, `WithVal.instField`, `Semiring.npow`).
+  The result is a `(deterministic) timeout at whnf` that does **not** go away at 2 000 000
+  heartbeats.  **Fix: apply the lemma with `@` and supply the instances explicitly**
+  (`inferInstance` / `(fun _ => inferInstance)`).  Equivalently, `have key := lemma (A := …) …`
+  with *no expected type* also works, because TC synthesis then runs before unification.
+* **2052 (LEAN — DIAGNOSIS).**  `set_option trace.Meta.isDefEq.onFailure true` together with a
+  deliberately **low** `maxHeartbeats` (20 000) localises 2051: the tail of the trace shows
+  `(?m.NNN y).1.1.1.1.1 =?= { mul := Quotient.map₂ … }`, a metavariable instance being projected
+  against an expanded structure.  `set_option diagnostics true` complements it by naming the
+  unfolded declarations.
+* **2053 (LEAN).**  `CommGroup.toGroup` takes its `CommGroup` argument **instance-implicitly**, so
+  `CommGroup.toGroup inst` is a "function expected" error; write `@CommGroup.toGroup _ inst`.
+* **2054 (REPO — `@`-argument orders).**  `Isotropic.lean`'s `section Pi` has variables
+  `{ι} [Fintype ι] {A : ι → Type*} [∀ i, CommGroup (A i)] {M} [CommGroup M]` with `[DecidableEq ι]`
+  as a *theorem-local* binder on `injective_flip_piPairing`, so the order is
+  `@injective_flip_piPairing ι instFintype A instCG M instCGM instDecEq φ hφ`.
+  `LocalConditions.lean`'s `section Pi` already has `[DecidableEq ι]` in the variable line, so
+  there the order is `@perpSubgroupLeft_piPairing_pi ι instFintype instDecEq A instCG M instCGM φ L`.
+* **2055 (REPO — instance paths on the completion).**
+  `#synth Monoid (v.adicCompletion K)` = `Field.toSemifield.toDivisionSemiring.toMonoidWithZero.toMonoid`;
+  `#synth CommMonoid (v.adicCompletion K)` =
+  `(UniformSpace.Completion.commRing (WithVal (HeightOneSpectrum.valuation K v))).toCommMonoid`;
+  `Monoid Uˣ = Units.instMonoid`, `Group Uˣ = Units.instGroup`,
+  `CommGroup Uˣ = Units.instCommGroupUnits`;
+  `Group (localClasses v n) = QuotientGroup.Quotient.group (powMonoidHom n).range`,
+  `CommGroup (localClasses v n) = QuotientGroup.Quotient.commGroup …`;
+  `Group/CommGroup ((y : Y) → localClasses (ι y) n)` = `Pi.group` / `Pi.commGroup`.  Cross-path
+  `rfl`s at the **top level** are cheap; the blowup of 2051 only happens under a binder with a
+  metavariable instance.
+* **2056 (BUILD).**  `lake build InverseGalois.CFT.PoitouTate.Prescribed` = **8633 jobs**, ~14 s
+  once fixed (32–37 s while erroring).  Full root build with both new modules = **9757 jobs**.
+
+### (g) What is still missing for SW Theorem 13
+
+`exists_sUnitClass_mul_eq_unramified` supplies the *existence* half.  The rest of Thm 13 is:
+
+1. **Čebotarev** to choose the next auxiliary place `P_{n+1}` with prescribed Frobenius image.
+2. The **pigeonhole ("shoe box")** argument bounding how many places have to be tried.
+3. The **local duality at unramified places** used to read the condition at `P_{n+1}` off the
+   symbol — this is B8, already proven.
+4. The **product formula** `∏_{v} (a, b)_v = 1` — already proven (§1.23).
+5. The `p = 2` variant (three elements / a partition instead of two elements); the theorem above
+   assumes `2 < n` because `perpSubgroup_selmerGroup` does.
+
+Then SW Thms 14 and 15 turn Thm 13 into `GenericSplitEP ℓ`
+(`Solvable/Shafarevich/Generic.lean:250`) → `SplitPrimePowerEP` → Shafarevich.
+
+### (h) Routes rejected here
+
+* Using the repo's `cupDual` for this step — wrong pairing (finding 1920), and unnecessary: the
+  idelic symbol *is* the upper-line pairing.
+* Proving skew-symmetry of `localSymbol` first — not needed, see (e).
+* Building the eight-term `k_S` sequence — not needed for Thm 13, see (a).
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —

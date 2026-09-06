@@ -451,6 +451,8 @@ import InverseGalois.CFT.PiIndex
 import InverseGalois.CFT.PoitouTate.CupDual
 import InverseGalois.CFT.PoitouTate.Dual
 import InverseGalois.CFT.PoitouTate.Isotropic
+import InverseGalois.CFT.PoitouTate.LocalConditions
+import InverseGalois.CFT.PoitouTate.Prescribed
 import InverseGalois.CFT.PoitouTate.Selmer
 import InverseGalois.CFT.PoitouTate.ShaSurjection
 import InverseGalois.CFT.PoitouTate.ShaTate
@@ -6823,4 +6825,30 @@ it that are available here.
   away from its residue characteristic, and the counting lemma turns the inclusion into an
   equality: **the classes of the units outside a set of places are precisely their own orthogonal
   complement in the local classes at those places.**
+* `InverseGalois.CFT.PoitouTate.LocalConditions` extracts from that self-duality the statement one
+  actually builds extensions with.  A pairing has two orthogonal complements, one for each
+  argument, and they agree on a subgroup already known to be its own complement on one side,
+  because exchanging the arguments leaves the pairing perfect and the subgroup isotropic; so no
+  symmetry of the symbol is needed to read a maximal isotropic subgroup from either side.  Given
+  such a subgroup and any further subgroup, thought of as conditions imposed one local factor at a
+  time, **the elements pairing trivially with the part of the isotropic subgroup dual to the
+  conditions are exactly those congruent to the isotropic subgroup modulo the conditions.**  One
+  inclusion is immediate; the other counts, pairing the isotropic subgroup against the conditions
+  to see it, modulo the part dual to them, as characters of the conditions killing the common part,
+  and rewriting the resulting index by the second isomorphism theorem.  Since the pairing on a
+  product is the product of the pairings, conditions imposed one factor at a time have their
+  complement computed one factor at a time.  Read at the classes of a number field modulo powers,
+  this is **the existence of a global class with prescribed local behaviour**: an assignment of
+  local classes is congruent to a global one modulo the conditions exactly when it is orthogonal to
+  the global classes obeying the dual conditions.
+* `InverseGalois.CFT.PoitouTate.Prescribed` reads that at the classes of a number field.  Two
+  shapes of condition occur: the condition imposing nothing, whose dual imposes everything, and the
+  condition of being unramified, which at a place away from the exponent is its own dual on the
+  left as well as on the right, the classes of a local field being nondegenerately paired in either
+  argument.  So for a set of places split into a part where the local class is prescribed exactly
+  and a part where it is prescribed only up to an unramified class, the units to test against are
+  exactly those unramified on the second part, and **an assignment of local classes orthogonal to
+  them is met, place by place, by the class of a unit outside the set**.  Splitting a set of places
+  this way and moving places from the second part to the first one at a time is the induction
+  behind the construction of a number with prescribed local behaviour.
 -/
