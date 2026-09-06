@@ -466,6 +466,7 @@ import InverseGalois.CFT.Profinite.KummerLocal
 import InverseGalois.CFT.Profinite.KummerLocalCompare
 import InverseGalois.CFT.Profinite.KummerLocalQuot
 import InverseGalois.CFT.Profinite.KummerLocalSurjective
+import InverseGalois.CFT.Profinite.KummerLocalTate
 import InverseGalois.CFT.Profinite.KummerRep
 import InverseGalois.CFT.Profinite.KummerRes
 import InverseGalois.CFT.Profinite.KummerTower
@@ -5569,6 +5570,16 @@ it that are available here.
   coefficients does the same thing, so when the two homomorphisms agree and the two identifications
   of the coefficients agree the two cocycles are equal.  Hence **a smooth class whose localisation
   at a subgroup is trivial has vanishing image in the complete cohomology of that subgroup.**
+* `InverseGalois.CFT.Profinite.KummerLocalTate` runs that argument on an everywhere locally trivial
+  class.  All the local data are one additive map from the twisted Kummer coefficients to the
+  coefficients of a representation of a decomposition subgroup, asked to kill what the inclusion of
+  the units into the units of a compositum kills, to be equivariant, and to agree with the map of
+  representations; everything else is bookkeeping, because a representation pulled back along an
+  isomorphism of groups supplies the action localisation needs and the two readings of its
+  coefficients are the identity.  Comparison with the compositum then kills the localised class at
+  the level of the quotient, and the transport carries the vanishing across: **an everywhere locally
+  trivial class, read over the Galois group of the level, dies under restriction to a decomposition
+  subgroup followed by any map of representations induced by such a local map.**
 * `InverseGalois.CFT.Profinite.Symbol` pairs two units of the base.  Cupping their Kummer classes
   along a pairing of the roots of unity with themselves gives **the `n`-th power symbol**, a
   bimultiplicative map on the units of the base with values in the second cohomology; it is killed

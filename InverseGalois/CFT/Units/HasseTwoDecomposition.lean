@@ -32,6 +32,10 @@ coboundary along the tower of the two levels gives the local condition at the sm
 * `InverseGalois.CFT.stabilizerRestrictPrime`: **the decomposition group at a nonzero prime maps to
   the decomposition group of a level at the place below it.**
 * `InverseGalois.CFT.stabilizerRestrictInfinitePlace`: the same at an infinite place.
+* `InverseGalois.CFT.stabilizerQuotientEquivPrime`: **the decomposition group at a nonzero prime,
+  modulo the automorphisms fixing a level, is the decomposition group of that level at the place
+  below it.**
+* `InverseGalois.CFT.stabilizerQuotientEquivInfinitePlace`: the same at an infinite place.
 
 ## Main results
 
@@ -131,6 +135,31 @@ theorem mem_ker_stabilizerRestrictPrime_iff {σ : ↥(stabilizer Gal(Ω/k) P)} :
     σ ∈ (stabilizerRestrictPrime L hv).ker ↔ (σ : Gal(Ω/k)) ∈ L.fixingSubgroup := by
   rw [MonoidHom.mem_ker, ← IntermediateField.restrictNormalHom_ker L, MonoidHom.mem_ker]
   exact ⟨fun h => congrArg Subtype.val h, fun h => Subtype.ext h⟩
+
+omit [IsGalois k Ω] [NumberField ↥L] [P.IsPrime] in
+/-- The automorphisms of the decomposition group at a nonzero prime that fix a level are exactly
+the kernel of restriction to that level. -/
+theorem subgroupOf_fixingSubgroup_eq_ker_stabilizerRestrictPrime :
+    L.fixingSubgroup.subgroupOf (stabilizer Gal(Ω/k) P) = (stabilizerRestrictPrime L hv).ker :=
+  Subgroup.ext fun _ =>
+    Subgroup.mem_subgroupOf.trans (mem_ker_stabilizerRestrictPrime_iff L hv).symm
+
+omit [NumberField ↥L] in
+/-- **The decomposition group at a nonzero prime, modulo the automorphisms fixing a level, is the
+decomposition group of that level at the place below it.** -/
+noncomputable def stabilizerQuotientEquivPrime :
+    ↥(stabilizer Gal(Ω/k) P) ⧸ L.fixingSubgroup.subgroupOf (stabilizer Gal(Ω/k) P)
+      ≃* ↥(stabilizer Gal(↥L/k) v) :=
+  (QuotientGroup.quotientMulEquivOfEq
+      (subgroupOf_fixingSubgroup_eq_ker_stabilizerRestrictPrime L hv)).trans
+    (QuotientGroup.quotientKerEquivOfSurjective _ (stabilizerRestrictPrime_surjective L hv))
+
+omit [NumberField ↥L] in
+@[simp]
+theorem coe_stabilizerQuotientEquivPrime (σ : ↥(stabilizer Gal(Ω/k) P)) :
+    ((stabilizerQuotientEquivPrime L hv (QuotientGroup.mk σ) :
+        ↥(stabilizer Gal(↥L/k) v)) : Gal(↥L/k))
+      = AlgEquiv.restrictNormalHom (F := k) (K₁ := Ω) ↥L σ.1 := rfl
 
 end RestrictPrime
 
@@ -380,6 +409,32 @@ theorem mem_ker_stabilizerRestrictInfinitePlace_iff {σ : ↥(stabilizer Gal(Ω/
     σ ∈ (stabilizerRestrictInfinitePlace L hv).ker ↔ (σ : Gal(Ω/k)) ∈ L.fixingSubgroup := by
   rw [MonoidHom.mem_ker, ← IntermediateField.restrictNormalHom_ker L, MonoidHom.mem_ker]
   exact ⟨fun h => congrArg Subtype.val h, fun h => Subtype.ext h⟩
+
+omit [IsGalois k Ω] [NumberField ↥L] in
+/-- The automorphisms of the decomposition group at an infinite place that fix a level are exactly
+the kernel of restriction to that level. -/
+theorem subgroupOf_fixingSubgroup_eq_ker_stabilizerRestrictInfinitePlace :
+    L.fixingSubgroup.subgroupOf (stabilizer Gal(Ω/k) w)
+      = (stabilizerRestrictInfinitePlace L hv).ker :=
+  Subgroup.ext fun _ =>
+    Subgroup.mem_subgroupOf.trans (mem_ker_stabilizerRestrictInfinitePlace_iff L hv).symm
+
+omit [NumberField ↥L] in
+/-- **The decomposition group at an infinite place, modulo the automorphisms fixing a level, is the
+decomposition group of that level at the place below it.** -/
+noncomputable def stabilizerQuotientEquivInfinitePlace :
+    ↥(stabilizer Gal(Ω/k) w) ⧸ L.fixingSubgroup.subgroupOf (stabilizer Gal(Ω/k) w)
+      ≃* ↥(stabilizer Gal(↥L/k) v) :=
+  (QuotientGroup.quotientMulEquivOfEq
+      (subgroupOf_fixingSubgroup_eq_ker_stabilizerRestrictInfinitePlace L hv)).trans
+    (QuotientGroup.quotientKerEquivOfSurjective _ (stabilizerRestrictInfinitePlace_surjective L hv))
+
+omit [NumberField ↥L] in
+@[simp]
+theorem coe_stabilizerQuotientEquivInfinitePlace (σ : ↥(stabilizer Gal(Ω/k) w)) :
+    ((stabilizerQuotientEquivInfinitePlace L hv (QuotientGroup.mk σ) :
+        ↥(stabilizer Gal(↥L/k) v)) : Gal(↥L/k))
+      = AlgEquiv.restrictNormalHom (F := k) (K₁ := Ω) ↥L σ.1 := rfl
 
 end RestrictInfinitePlace
 
