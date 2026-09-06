@@ -13136,6 +13136,91 @@ prime to `p` — is unblocked in the degree where the Ш² statements live.
 
 ---
 
+## 1.21 Status (2026-09-06, latest) — **the norm residue symbol is nondegenerate, for every exponent**
+
+The first brick of local Tate duality identified in §1.18(b) — the `i = 1`, `M = μ_n` case — is now a
+theorem.  `InverseGalois/CFT/Brauer/LocalSymbolNondegenerate.lean`:
+
+* `one_lt_finrank_kummerLevel h hnp : 1 < finrank K ↥(kummerLevel h b)` for `b` not an `n`-th power;
+* `exists_kummerSymbolUnits_ne_one_of_not_isPow hres hnp :
+  ∃ a, kummerSymbolUnits h (mulZMod n) a b ≠ 1`;
+* `exists_localSymbol_ne_one_of_not_isPow` and `exists_localSymbol_ne_one_of_not_isPow_left` —
+  the same for the norm residue symbol, in either argument;
+* `forall_localSymbol_eq_one_iff_isPow` / `forall_localSymbol_eq_one_iff_isPow'` —
+  **the kernel of the norm residue symbol is exactly the `n`-th powers, on either side.**
+
+### (a) The argument, and what it does *not* need
+
+The route that first suggested itself went through the tame decomposition
+`localSymbol_eq_one_iff_isPow` and needed "some unit of the valuation ring is not an `n`-th power",
+i.e. a counting statement about `O^×/(O^×)^n`.  That is available in the repository only as
+`index_range_powMonoidHom_localUnitGroup_of_valued_eq_one` (`Local/UnitPowIndex.lean:156`), which
+demands an extra normalisation hypothesis `hsurj : Function.Surjective (Valued.v : K → ℤᵐ⁰)`
+together with `[∀ k : ℤ, Finite (gradedAdd K k)]` — neither of which a general `IsUnitValGen K m`
+supplies.  **That route was abandoned.**
+
+The route that works runs entirely through the *level* of a single element and needs no counting at
+all.  If `b` is not an `n`-th power then `Nat.card Gal(kummerLevel h b / K) ≠ 1`
+(`exists_pow_eq_of_card_gal_kummerLevel_eq_one`, `Brauer/TameEvaluation.lean:82`), hence
+`1 < finrank`; the level is cyclic (`exists_generator_kummerLevel_index`); a cyclic extension of a
+local field of degree `> 1` has a non-norm (`exists_notMem_normSubgroup`, from the norm-index
+theorem `Local/CyclicNormIndex.lean`); and
+`kummerSymbolUnits_eq_one_iff_norm_kummerLevel` (`Brauer/SymbolNorm.lean:65`) says the symbol is
+trivial exactly on the norms.  Consequently the statement holds
+
+* for **every** exponent `n` — no primality;
+* with **no** condition relating `n` to the residue characteristic — no tameness;
+* with **no** choice of uniformiser, and no appeal to the tame decomposition of the symbol.
+
+Skew symmetry (`localSymbol_mul_swap`) transports it from the right argument to the left.
+
+### (b) Where this leaves rows 5/8
+
+Row 4 of the §0.36 table was already marked done through `Local/KummerNonNorm.lean`; what is new is
+the statement at the level of the *symbol as a pairing*, in both arguments and with no side
+conditions, which is the form the Poitou–Tate assembly will consume.  The next brick, if the local
+route (i) of §1.17(c) is continued, is to package this as a **perfect** pairing: for prime `n = p`
+the group `Kˣ/(Kˣ)^p` is a finite `𝔽_p`-vector space and a nondegenerate bilinear form on a
+finite-dimensional space induces an isomorphism onto the dual.  That needs finiteness of
+`Kˣ/(Kˣ)^p` for a local field in the repository's axiomatisation, which is *not* yet available for
+the same reason the counting route above failed — it is exactly the `hsurj`-dependent index
+statement.  So the honest order of work is: normalise the valuation (or generalise
+`UnitPowIndex.lean` off `hsurj`) **before** attempting perfectness.
+
+### (c) Findings
+
+* **1970 (REPO — decisive).**  `Brauer/TameEvaluation.lean` already contains far more than its name
+  suggests: `exists_pow_eq_of_card_gal_kummerLevel_eq_one` (:82),
+  `localKummerSymbol_eq_one_iff_kummerSymbolUnits` (:168), `localSymbol_uniformiser_eq_one_iff`
+  (:187), `localSymbol_eq_one_iff_isPow` (:205, the full kernel of the *tame* symbol),
+  `localSymbol_unit_uniformiser_eq_one_iff` (:219), `orderOf_localSymbol_uniformiser` (:233),
+  `not_mem_normSubgroup_kummerLevel` (:128), `eq_top_of_units_le_of_uniformiser_mem` (:57).
+  Grep it before writing anything about local symbols.
+* **1971 (REPO).**  `TameEvaluation.lean` imports `TameSymbol.lean` which imports
+  `LocalSymbolUnits.lean`, so the single import `InverseGalois.CFT.Brauer.TameEvaluation` reaches
+  `LocalSymbol`, `LocalSymbolUnits`, `SymbolNorm` and `Local/CyclicNormIndex` as well.
+* **1972 (REPO).**  `NormSubgroup.lean:35/40`:
+  `normSubgroup K L := (Units.map (Algebra.norm K : L →* K)).range` and
+  `mem_normSubgroup_iff (a : Kˣ) : a ∈ normSubgroup K L ↔ ∃ b : Lˣ, Algebra.norm K (b : L) = a`.
+  Note gotcha 29: `exists_notMem_normSubgroup K L` takes a bare `Type`, so it is applied to
+  `↥(kummerLevel h b)`, while lemmas taking an `IntermediateField` argument take `kummerLevel h b`.
+* **1973 (MATHLIB).**  `IntermediateField.finrank_eq_one_iff : finrank F K = 1 ↔ K = ⊥` is at
+  `FieldTheory/IntermediateField/Adjoin/Basic.lean:275` (`rank_eq_one_iff` :270,
+  `finrank_eq_one_iff_eq_top` :305), and `IntermediateField.mem_bot` at
+  `.../Adjoin/Defs.lean:99`.  **`Mathlib/FieldTheory/Adjoin.lean` does not exist** in the v4.28
+  pin.  In the end none of these were needed — `IsGalois.card_aut_eq_finrank` plus `omega` is
+  shorter.
+* **1974 (LEAN).**  `linter.unusedSectionVars` fired on `[CompleteSpace K] [ProperSpace K]` in
+  `one_lt_finrank_kummerLevel`.  Rather than `omit … in`, the file is split into three sections so
+  that the purely Kummer-theoretic lemma sits in a section carrying no valuation hypotheses at all.
+  Splitting sections is almost always cleaner than an `omit` when a file mixes hypothesis levels.
+* **1975 (REPO).**  `Local/UnitValuation.lean:210` `unitValDiv (hm : IsUnitValGen A m) :
+  Additive Aˣ →+ ℤ`, with `ker_unitValDiv` (:227) and `unitValDiv_surjective` (:238).
+* **1976 (BUILD).**  `lake build InverseGalois.CFT.Brauer.LocalSymbolNondegenerate` is 8451 jobs,
+  ~10 s.  A full root build with it is **9748 jobs**, 0 warnings.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
