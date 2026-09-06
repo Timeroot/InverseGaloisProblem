@@ -619,6 +619,7 @@ import InverseGalois.CFT.Tate.CyclicInduced
 import InverseGalois.CFT.Tate.Exact
 import InverseGalois.CFT.Tate.Family
 import InverseGalois.CFT.Tate.FamilyCoboundary
+import InverseGalois.CFT.Tate.FamilyCoboundaryOne
 import InverseGalois.CFT.Tate.FamilyCoind
 import InverseGalois.CFT.Tate.FamilyConst
 import InverseGalois.CFT.Tate.FamilyFree
@@ -2020,6 +2021,14 @@ it that are available here.
   produced explicitly from the local ones and a transversal for the cosets of a stabiliser.  The
   construction keeps the values inside an invariant family of subgroups wherever the cocycle's own
   values lie there, which is what a restricted product such as the ideles requires.
+* `InverseGalois.CFT.Tate.FamilyCoboundaryOne` is the same passage in degree one, where it is both
+  shorter and sharper.  A one-cocycle with values in the sections of a family whose restriction to
+  the stabiliser of every index is a coboundary there is **a coboundary**, and the trivialising
+  section is written down: at each index it is the local trivialising element at the orbit
+  representative, transported forward by a group element carrying the representative to the index
+  and corrected by the value of the cocycle at that group element.  Independence of the choice of
+  that group element is exactly the local identity at the representative, so no transversal and no
+  finiteness of any kind is needed.
 * `InverseGalois.CFT.Tate.CyclicAction` states that computation for a cyclic group acting
   transitively on a finite set, where the orbit–stabiliser theorem reads the Herbrand quotient of
   the free lattice as the order of the stabiliser of a point: the form in which the places of a
