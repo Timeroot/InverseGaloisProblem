@@ -12631,6 +12631,155 @@ Proposition 6 consumes.  The remaining chain item is step 2, the injection
 
 ---
 
+## 1.17 Status (2026-09-06, later still) — **steps 2, 3 and 4 of the Poitou–Tate chain are all theorems**: `Ĥ^{-2}(G, E(-1)) ↠ Ш¹(k, E′)^∨`
+
+### (a) What is now a theorem
+
+Two commits, both sorry- and axiom-free, full root build **9744 jobs**, 0 warnings.
+
+**Step 2 — `Ш¹(k, M) ↪ H¹(Gal(F/k), M)`** (commit `d26b0e5`).  It turned out that the harder half
+of this was *already in the repository*: `Units/HasseInflation.lean` had the inflation statement and
+`Units/HasseDecomposition.lean` the level machinery.  What was missing was the Ш-shaped packaging,
+now added to `Units/HasseDecomposition.lean` (in a new `Sha` section, which needed
+`open scoped Pointwise` — finding 1918) and `Units/DecompositionRestrict.lean`:
+
+```lean
+theorem eq_one_of_mem_sha1_intermediate            -- DecompositionRestrict.lean
+theorem exists_galInflH1_eq_of_mem_sha1            -- HasseDecomposition.lean
+theorem sha1_le_range_galInflH1
+def     shaInflH1        : ↥(sha1 M (decompositionSubgroups k Ω)) →* SmoothH1 (Gal(F/k)) M
+theorem galInflH1_shaInflH1
+theorem shaInflH1_injective
+```
+
+The mathematical content: an everywhere locally trivial class is trivial on every decomposition
+subgroup, hence (by the pre-existing local-global brick for the level) inflated from the finite
+Galois level `F` that trivialises the coefficients; and inflation from a level is injective by
+inflation–restriction, because the restriction to `Gal(Ω/F)` of an inflated class vanishes and the
+kernel of inflation is `H¹` of the quotient acting on invariants, which is `0` here.
+
+**Steps 3 + 4 assembled — `InverseGalois/CFT/PoitouTate/ShaTate.lean`** (new, commit `fe0e416`).
+This glues step 2 to the Cartier pairing of §1.16:
+
+```lean
+def     h1AddEquiv (A : Rep ℤ G) :
+          ↥(H1 (Rep.ofMulDistribMulAction G (Multiplicative ↥A.V))) ≃+ ↥(H1 A)
+def     smoothH1RepHom (A : Rep ℤ G) :
+          Additive (SmoothH1 G (Multiplicative ↥A.V)) →+ ↥(H1 A)
+theorem smoothH1RepHom_injective
+def     restrictRepAction (X : Rep ℤ (↥F ≃ₐ[k] ↥F)) :
+          MulDistribMulAction Gal(Ω/k) (Multiplicative ↥X.V)
+theorem restrictRepAction_smul
+def     shaTateHom :
+          Additive ↥(sha1 (Multiplicative ↥(linHomObj B A).V) (decompositionSubgroups k Ω)) →+
+            ↥(tateModule (linHomObj B A) 1)
+theorem shaTateHom_injective
+def     shaTateLinear                              -- the same, as a ℤ-linear map
+theorem shaTateLinear_injective
+
+theorem exists_cartierPairing_sha_eq (hB : ∀ b : ↥B.V, Nat.card ↥A.V • b = 0)
+    (χ : Additive ↥(sha1 (Multiplicative ↥(linHomObj B A).V) (decompositionSubgroups k Ω)) →ₗ[ℤ]
+      AddCircle (1 : ℚ)) :
+    ∃ x : ↥(tateModule (linHomObj A B) (-2)),
+      ∀ t, cartierPairing A B hB (-2) x (shaTateLinear F A B hπ t) = χ t
+```
+
+With `A := μ_p`, `B := E`, so that `linHomObj B A = E′ = Hom(E, μ_p)` and
+`linHomObj A B = E(-1) = Hom(μ_p, E)`, the last line **is**
+
+```
+Ĥ^{-2}(G, E(-1))  ↠  Ш¹(k, E′)^∨ ,
+```
+
+the left half of SW's `Ĥ^{-2}(G, E(-1)) ↠ Ш²(k,E)`.
+
+### (b) Why the smooth/complete comparison is the whole trick
+
+`sha1` and `shaInflH1` live in the **profinite, multiplicative, smooth-cochain** world; the Cartier
+pairing lives in the **finite-group, additive, `Rep ℤ G`** world.  The bridge is three already-built
+isomorphisms, composed:
+
+1. `discreteSmoothH1Equiv` (`Profinite/Discrete.lean:138`) — on a *finite* group with the discrete
+   topology, smoothness of a cochain is vacuous, so `SmoothH1 G M = H¹(G, M)` in the multiplicative
+   sense.
+2. `repIso` (`GroupCohomology/CyclicTate.lean:110`) — `Rep.ofMulDistribMulAction G (Multiplicative
+   ↥A.V) ≅ A`, so multiplicative and additive `H¹` agree.
+3. `H1 A = groupCohomology A 1 = tateModule A 1` by `rfl` (findings 900, 1921).
+
+The only genuinely new plumbing is `restrictRepAction`: the level's action must be transported up to
+the whole `Gal(Ω/k)` so that `sha1` and `decompositionSubgroups` typecheck.  `MulDistribMulAction.
+compHom` along `AlgEquiv.restrictNormalHom F` does it, and the resulting compatibility hypothesis
+`hπ` is then `fun _ _ => rfl` (finding 1926).  Smoothness of that pulled-back action is automatic
+because the kernel of `restrictNormalHom` is open normal (finding 1925).
+
+### (c) What is left — step 1, and nothing else
+
+The chain of §1.14(b) now reads:
+
+| step | statement | status |
+|---|---|---|
+| 4 | `Ĥ^{-2}(G, X) ≅ (Ĥ¹(G, X^∨))^∨`, realisation over an injection | ✅ `exists_tateDualPairing_eq`, §1.15 |
+| 3 | `E(-1)^∨ ≅ E′`, i.e. `linHomObj B A ≅ coeffDualObj (linHomObj A B) ℚ/ℤ` | ✅ `cartierIso`, §1.16 |
+| 2 | `Ш¹(k, E′) ↪ H¹(G, E′)` | ✅ `shaInflH1_injective` + `shaTateLinear_injective` |
+| 3+4+2 | `Ĥ^{-2}(G, E(-1)) ↠ Ш¹(k, E′)^∨` | ✅ `exists_cartierPairing_sha_eq` |
+| 1 | `Ш²(k, E) ≅ Ш¹(k, E′)^∨` — **Poitou–Tate global duality** | ❌ the sole wall |
+
+Step 1 is to be stated as a named `Prop`-valued hypothesis (never an axiom) and then attacked.  Two
+things are already known about how *not* to attack it:
+
+* **Finding 1920.** The repository's `cupDual` (`PoitouTate/CupDual.lean`) is a `H¹ × H¹ → H²`
+  pairing, **not** the Poitou–Tate `Ш² × Ш¹` pairing.  A naive cup product of a class in `Ш²` with
+  one in `Ш¹` would land in `H³(k_v, μ_p) = 0` (since `cd(k_v) = 2`), so it carries no information;
+  the real pairing is Cassels–Tate-style, built from a *global* lift of a local trivialisation.  The
+  optimistic sentence in §1.14(b) about reusing `cupDual` is hereby corrected.
+* **Finding 1922.** SW invoke Tate–Poitou duality explicitly (`sw.txt:1290–1340`).  There is no
+  lighter substitute anywhere in their text — the duality genuinely has to be built.
+
+The two plausible first bricks are (i) **local Tate duality** `H^i(k_v, M) × H^{2-i}(k_v, M′) →
+H²(k_v, μ_p) ≅ ℚ/ℤ`, from which the global pairing is assembled by summing local invariants, or
+(ii) the **Cassels–Tate construction** of the `Ш² × Ш¹` pairing directly.  (i) is the more
+repository-friendly: `localInvariantHom` and the reciprocity law are already theorems.
+
+### (d) Findings
+
+* **1918.** `HasseDecomposition.lean` needed `open scoped Pointwise` for
+  `stabilizer Gal(K/k) (Ideal (𝓞 K))` to elaborate in the new `Sha` section.
+* **1919.** `decompositionSubgroups k Ω` does **not** actually consume `[NumberField k]`; including
+  it in a section `variable` list fires `linter.unusedSectionVars`.
+* **1921.** `Mathlib/.../LowDegree.lean:927` reads `abbrev H1 := groupCohomology A 1`, so `H1 A`,
+  `groupCohomology A 1` and `tateModule A 1` are all `rfl`-equal.
+* **1923 (BUILD — a real unifier pathology).**  Applying
+  `Tate.exists_cartierPairing_eq A B hB (-2) ι hι χ` where `ι`'s type is *written* at degree `1`
+  while the lemma expects `(-n - 1)` with `n = -2` **times out** at `isDefEq`/`whnf`, even at
+  2 000 000 heartbeats — as a direct term, via `refine … ?_ ?_ χ`, **and** via a type ascription
+  `(ι : _ →ₗ[ℤ] ↥(tateModule X (-(-2 : ℤ) - 1)))`.  Yet every ingredient in isolation is instant:
+  `rfl` between the two carrier types, between the two `LinearMap` types, on the element coercion,
+  on `Function.Injective` transport, and on the `Module ℤ` instances (probes `.scratch/st2–st5`).
+  **The working idiom is to elaborate the application with no expected type and then discharge:**
+  ```lean
+  have h := exists_cartierPairing_eq A B hB (-2) (shaTateLinear F A B hπ)
+    (shaTateLinear_injective F A B hπ) χ
+  exact h
+  ```
+  Stating the lemma at a generic `n`, or with `ι` already typed at `(-(-2 : ℤ) - 1)`, is also fast.
+* **1924.** `shaInflH1` and `shaInflH1_injective` take **`M` as the first explicit argument**, then
+  `F`, then `hπ` (because `HasseDecomposition.lean` uses `variable (M) in` and `M` precedes `F`).
+* **1925.** `isSmoothAction_of_isOpenNormal_ker` (`Profinite/Comap.lean:161`) together with
+  `isOpenNormal_ker_restrictNormalHom` (`Profinite/Krull.lean:65`) produce
+  `IsSmoothAction Gal(Ω/k) M` from `hπ` **inside a `def` body with `haveI`** — the resulting type
+  never mentions the instance, and `IsSmoothAction` is a `Prop` class, so proof irrelevance makes
+  later reconstructions definitionally equal.
+* **1926.** `MulDistribMulAction.compHom A f` (`Mathlib/Algebra/GroupWithZero/Action/End.lean:50`)
+  is an `abbrev`; pulling a level action back along `AlgEquiv.restrictNormalHom F` therefore makes
+  the compatibility hypothesis provable by `fun _ _ => rfl`.
+* **1927.** `intLinear` (`PTorsionTrivial.lean:110`) is already reachable from
+  `TateCohomology/CyclicDual.lean` (used there at line 253), so no extra import of `TensorPi.lean`
+  is needed for the `AddMonoidHom → LinearMap ℤ` conversion.
+* **1928.** Full root build after `fe0e416` is **9744 jobs**;
+  `lake build InverseGalois.CFT.PoitouTate.ShaTate` alone is 8263 jobs, ~38 s.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
