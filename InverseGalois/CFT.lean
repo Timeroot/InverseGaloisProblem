@@ -2,9 +2,19 @@ import InverseGalois.CFT.Approximation.Basic
 import InverseGalois.CFT.Approximation.Completion
 import InverseGalois.CFT.Approximation.Places
 import InverseGalois.CFT.Approximation.PowClass
+import InverseGalois.CFT.BaseCompositum
+import InverseGalois.CFT.BaseRamification
+import InverseGalois.CFT.BaseTotallyRamified
 import InverseGalois.CFT.Brauer.AdicUnramified
 import InverseGalois.CFT.Brauer.BaseChange
 import InverseGalois.CFT.Brauer.BaseChangeCentralizer
+import InverseGalois.CFT.Brauer.BaseCyclicClass
+import InverseGalois.CFT.Brauer.BaseCyclotomic
+import InverseGalois.CFT.Brauer.BaseOddReciprocity
+import InverseGalois.CFT.Brauer.BaseReciprocity
+import InverseGalois.CFT.Brauer.BaseSignCorrector
+import InverseGalois.CFT.Brauer.BaseSubcyclotomic
+import InverseGalois.CFT.Brauer.BaseSubcyclotomicSplit
 import InverseGalois.CFT.Brauer.Centralizer
 import InverseGalois.CFT.Brauer.CentralizerProduct
 import InverseGalois.CFT.Brauer.CrossedProduct
@@ -25,10 +35,12 @@ import InverseGalois.CFT.Brauer.CyclicGenerator
 import InverseGalois.CFT.Brauer.CyclicInvariant
 import InverseGalois.CFT.Brauer.CyclicNorm
 import InverseGalois.CFT.Brauer.CyclicNormResidue
+import InverseGalois.CFT.Brauer.CyclicProduct
 import InverseGalois.CFT.Brauer.CyclicTower
 import InverseGalois.CFT.Brauer.CyclicTransport
 import InverseGalois.CFT.Brauer.CyclotomicFrobenius
 import InverseGalois.CFT.Brauer.CyclotomicGenerator
+import InverseGalois.CFT.Brauer.DecompositionTransfer
 import InverseGalois.CFT.Brauer.Division
 import InverseGalois.CFT.Brauer.DivisionAbsValue
 import InverseGalois.CFT.Brauer.DivisionCompact
@@ -43,6 +55,10 @@ import InverseGalois.CFT.Brauer.DivisionSplitting
 import InverseGalois.CFT.Brauer.DivisionTeichmuller
 import InverseGalois.CFT.Brauer.DivisionValueGroup
 import InverseGalois.CFT.Brauer.Exponent
+import InverseGalois.CFT.Brauer.FibreConductor
+import InverseGalois.CFT.Brauer.FibreExponent
+import InverseGalois.CFT.Brauer.FibreInvariant
+import InverseGalois.CFT.Brauer.FibreTotal
 import InverseGalois.CFT.Brauer.Frobenius
 import InverseGalois.CFT.Brauer.FrobeniusBaseChange
 import InverseGalois.CFT.Brauer.FrobeniusRamified
@@ -52,7 +68,10 @@ import InverseGalois.CFT.Brauer.Group
 import InverseGalois.CFT.Brauer.H2Brauer
 import InverseGalois.CFT.Brauer.H2Surjective
 import InverseGalois.CFT.Brauer.HasseNoether
+import InverseGalois.CFT.Brauer.HasseNorm
+import InverseGalois.CFT.Brauer.InertiaDegRat
 import InverseGalois.CFT.Brauer.InertiaSubfield
+import InverseGalois.CFT.Brauer.InfiniteCyclic
 import InverseGalois.CFT.Brauer.InfiniteInvariant
 import InverseGalois.CFT.Brauer.InfinitePlaceCrossedProduct
 import InverseGalois.CFT.Brauer.InflateTower
@@ -70,7 +89,10 @@ import InverseGalois.CFT.Brauer.LocalBrauerOrder
 import InverseGalois.CFT.Brauer.LocalInvariant
 import InverseGalois.CFT.Brauer.LocalInvariantRestrict
 import InverseGalois.CFT.Brauer.LocalReciprocity
+import InverseGalois.CFT.Brauer.LocalReciprocityAll
 import InverseGalois.CFT.Brauer.LocalSymbol
+import InverseGalois.CFT.Brauer.LocalSymbolNondegenerate
+import InverseGalois.CFT.Brauer.LocalSymbolPerfect
 import InverseGalois.CFT.Brauer.LocalSymbolRamified
 import InverseGalois.CFT.Brauer.LocalSymbolUnits
 import InverseGalois.CFT.Brauer.TameEvaluation
@@ -79,45 +101,68 @@ import InverseGalois.CFT.Brauer.TameOdd
 import InverseGalois.CFT.Brauer.TamePower
 import InverseGalois.CFT.Brauer.TameResidue
 import InverseGalois.CFT.Brauer.TameValue
+import InverseGalois.CFT.Brauer.TameUnramified
 import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
+import InverseGalois.CFT.Brauer.NormAdjust
+import InverseGalois.CFT.Brauer.NormFactors
+import InverseGalois.CFT.Brauer.NormPlaceValue
+import InverseGalois.CFT.Brauer.NormPrimesOver
+import InverseGalois.CFT.Brauer.NormReduction
 import InverseGalois.CFT.Brauer.OddArchimedean
+import InverseGalois.CFT.Brauer.OddArchimedeanBase
 import InverseGalois.CFT.Brauer.Opposite
 import InverseGalois.CFT.Brauer.PlaceCoboundary
 import InverseGalois.CFT.Brauer.PlaceCrossedProduct
 import InverseGalois.CFT.Brauer.PlaceCyclic
 import InverseGalois.CFT.Brauer.PlaceConductor
+import InverseGalois.CFT.Brauer.PlaceConductorBase
 import InverseGalois.CFT.Brauer.PlaceCyclotomic
 import InverseGalois.CFT.Brauer.PlaceExponent
 import InverseGalois.CFT.Brauer.PlaceFrobenius
+import InverseGalois.CFT.Brauer.PlaceFrobeniusDegree
 import InverseGalois.CFT.Brauer.PlaceInvariant
 import InverseGalois.CFT.Brauer.PlaceInvariantFinite
+import InverseGalois.CFT.Brauer.PlaceOrders
 import InverseGalois.CFT.Brauer.PlaceRadical
 import InverseGalois.CFT.Brauer.PlaceRamified
 import InverseGalois.CFT.Brauer.PlaceRamifiedAut
 import InverseGalois.CFT.Brauer.PlaceSubcyclotomic
+import InverseGalois.CFT.Brauer.PlaceSubcyclotomicBase
+import InverseGalois.CFT.Brauer.PlaceSubcyclotomicFibre
+import InverseGalois.CFT.Brauer.PlaceSubcyclotomicPower
+import InverseGalois.CFT.Brauer.PlaceSymbol
 import InverseGalois.CFT.Brauer.PlaceTotallyRamified
+import InverseGalois.CFT.Brauer.PlaceUnitValue
 import InverseGalois.CFT.Brauer.PlaceUnramified
+import InverseGalois.CFT.Brauer.PrescribedValue
 import InverseGalois.CFT.Brauer.Primary
 import InverseGalois.CFT.Brauer.QuadraticExt
 import InverseGalois.CFT.Brauer.Quaternion
 import InverseGalois.CFT.Brauer.RamificationIdentity
 import InverseGalois.CFT.Brauer.RadicalInvariant
 import InverseGalois.CFT.Brauer.RadicalLevel
+import InverseGalois.CFT.Brauer.RatBase
 import InverseGalois.CFT.Brauer.RatCount
 import InverseGalois.CFT.Brauer.RatReciprocity
+import InverseGalois.CFT.Brauer.RatResidueOrder
 import InverseGalois.CFT.Brauer.RationalBrauer
 import InverseGalois.CFT.Brauer.RelativeCyclic
 import InverseGalois.CFT.Brauer.RelativeHasse
 import InverseGalois.CFT.Brauer.RelativeIndex
 import InverseGalois.CFT.Brauer.RelativeTorsion
 import InverseGalois.CFT.Brauer.RealBrauer
+import InverseGalois.CFT.Brauer.RealCorrector
+import InverseGalois.CFT.Brauer.RealCyclicSign
 import InverseGalois.CFT.Brauer.RealInvariant
 import InverseGalois.CFT.Brauer.RealPlace
 import InverseGalois.CFT.Brauer.ResidueBaseChange
 import InverseGalois.CFT.Brauer.ResidueCard
+import InverseGalois.CFT.Brauer.ResidueCardDegree
+import InverseGalois.CFT.Brauer.ResidueCongruence
 import InverseGalois.CFT.Brauer.ResidueDegree
 import InverseGalois.CFT.Brauer.ResidueGalois
+import InverseGalois.CFT.Brauer.ResidueGenerator
 import InverseGalois.CFT.Brauer.Semilinear
 import InverseGalois.CFT.Brauer.SkolemNoether
 import InverseGalois.CFT.Brauer.SmoothBrauer
@@ -126,6 +171,7 @@ import InverseGalois.CFT.Brauer.SmoothLevel
 import InverseGalois.CFT.Brauer.SolvableBound
 import InverseGalois.CFT.Brauer.SolvableNormBound
 import InverseGalois.CFT.Brauer.Split
+import InverseGalois.CFT.Brauer.SplitBase
 import InverseGalois.CFT.Brauer.SplitLocalDegree
 import InverseGalois.CFT.Brauer.SplittingSubfield
 import InverseGalois.CFT.Brauer.SubcyclotomicCorrector
@@ -133,10 +179,13 @@ import InverseGalois.CFT.Brauer.SubcyclotomicReciprocity
 import InverseGalois.CFT.Brauer.SubcyclotomicSplit
 import InverseGalois.CFT.Brauer.SymbolCyclicAlgebra
 import InverseGalois.CFT.Brauer.SymbolNorm
+import InverseGalois.CFT.Brauer.SymbolProduct
+import InverseGalois.CFT.Brauer.SymbolReciprocity
 import InverseGalois.CFT.Brauer.SymbolSteinberg
 import InverseGalois.CFT.Brauer.TensorSimple
 import InverseGalois.CFT.Brauer.TotalInvariant
 import InverseGalois.CFT.Brauer.TotallyRealInvariant
+import InverseGalois.CFT.Brauer.TotallyRealInvariantBase
 import InverseGalois.CFT.Brauer.Tower
 import InverseGalois.CFT.Brauer.UnramifiedAdjoin
 import InverseGalois.CFT.Brauer.UnramifiedAut
@@ -159,6 +208,7 @@ import InverseGalois.CFT.Cyclotomic.DivisorSubfield
 import InverseGalois.CFT.Cyclotomic.EighthRootSubfield
 import InverseGalois.CFT.Cyclotomic.Frobenius
 import InverseGalois.CFT.Cyclotomic.FrobeniusSplitting
+import InverseGalois.CFT.Cyclotomic.ImaginarySubfield
 import InverseGalois.CFT.Cyclotomic.InertiaOrder
 import InverseGalois.CFT.Cyclotomic.OnePrimeRamified
 import InverseGalois.CFT.Cyclotomic.PrimeSelection
@@ -177,6 +227,7 @@ import InverseGalois.CFT.FibreCompositum
 import InverseGalois.CFT.FrobeniusInvolution
 import InverseGalois.CFT.FrobeniusStabilizer
 import InverseGalois.CFT.GaloisDescent
+import InverseGalois.CFT.GroupCohomology.AbelianLift
 import InverseGalois.CFT.GroupCohomology.Classification
 import InverseGalois.CFT.GroupCohomology.CentralLift
 import InverseGalois.CFT.GroupCohomology.CentralTwist
@@ -211,10 +262,12 @@ import InverseGalois.CFT.GroupCohomology.Inflation
 import InverseGalois.CFT.GroupCohomology.InflationOrder
 import InverseGalois.CFT.GroupCohomology.InflationRestriction
 import InverseGalois.CFT.GroupCohomology.MapCoboundary
+import InverseGalois.CFT.GroupCohomology.MapInjective
 import InverseGalois.CFT.GroupCohomology.OfCocycle
 import InverseGalois.CFT.GroupCohomology.SylowRes
 import InverseGalois.CFT.GroupCohomology.TateTwist
 import InverseGalois.CFT.GroupCohomology.ToCocycle
+import InverseGalois.CFT.GroupCohomology.Transgression
 import InverseGalois.CFT.Global.DavenportCassels
 import InverseGalois.CFT.Global.DescentTools
 import InverseGalois.CFT.Global.Existence
@@ -275,15 +328,19 @@ import InverseGalois.CFT.Kummer.CongruentRadical
 import InverseGalois.CFT.Kummer.CyclicIndex
 import InverseGalois.CFT.Kummer.CyclotomicDescent
 import InverseGalois.CFT.Kummer.CyclotomicPlace
+import InverseGalois.CFT.Kummer.DecompositionLocalPower
 import InverseGalois.CFT.Kummer.Denominator
 import InverseGalois.CFT.Kummer.DyadicInertiaChar
 import InverseGalois.CFT.Kummer.DyadicPlace
 import InverseGalois.CFT.Kummer.DyadicSquareClass
 import InverseGalois.CFT.Kummer.GlobalPower
 import InverseGalois.CFT.Kummer.InertiaBound
+import InverseGalois.CFT.Kummer.InfiniteLevelPower
 import InverseGalois.CFT.Kummer.InflationRootsOfUnity
 import InverseGalois.CFT.Kummer.LevelOne
+import InverseGalois.CFT.Kummer.LocalPowRepresentatives
 import InverseGalois.CFT.Kummer.LocalPower
+import InverseGalois.CFT.Kummer.LocalPowerRange
 import InverseGalois.CFT.Kummer.LocalSurjective
 import InverseGalois.CFT.Kummer.Pairing
 import InverseGalois.CFT.Kummer.PowBasis
@@ -300,6 +357,8 @@ import InverseGalois.CFT.Kummer.RootsInBase
 import InverseGalois.CFT.Kummer.SUnitExt
 import InverseGalois.CFT.Kummer.SUnitUnramified
 import InverseGalois.CFT.Kummer.SecondInequality
+import InverseGalois.CFT.Kummer.SupKummerData
+import InverseGalois.CFT.Kummer.SupPowSurjective
 import InverseGalois.CFT.Kummer.Unramified
 import InverseGalois.CFT.Level
 import InverseGalois.CFT.Local.AdicAction
@@ -391,26 +450,66 @@ import InverseGalois.CFT.PGroupCompositum
 import InverseGalois.CFT.PairwiseResidue
 import InverseGalois.CFT.PiDual
 import InverseGalois.CFT.PiIndex
+import InverseGalois.CFT.PoitouTate.CupDual
+import InverseGalois.CFT.PoitouTate.Dual
+import InverseGalois.CFT.PoitouTate.GlobalClasses
+import InverseGalois.CFT.PoitouTate.Isotropic
+import InverseGalois.CFT.PoitouTate.LocalConditions
+import InverseGalois.CFT.PoitouTate.Prescribed
+import InverseGalois.CFT.PoitouTate.Selmer
+import InverseGalois.CFT.PoitouTate.ShaSurjection
+import InverseGalois.CFT.PoitouTate.ShaTate
+import InverseGalois.CFT.PoitouTate.Unramified
 import InverseGalois.CFT.PrimeProductSquare
 import InverseGalois.CFT.Profinite.Cochain
 import InverseGalois.CFT.Profinite.Coeff
+import InverseGalois.CFT.Profinite.Coinduced
 import InverseGalois.CFT.Profinite.Comap
+import InverseGalois.CFT.Profinite.Connecting
+import InverseGalois.CFT.Profinite.Corestriction
 import InverseGalois.CFT.Profinite.Cup
+import InverseGalois.CFT.Profinite.Discrete
+import InverseGalois.CFT.Profinite.FixingSubgroup
+import InverseGalois.CFT.Profinite.H1Conj
 import InverseGalois.CFT.Profinite.Hilbert90
 import InverseGalois.CFT.Profinite.InfRes
 import InverseGalois.CFT.Profinite.Kummer
+import InverseGalois.CFT.Profinite.KummerConj
+import InverseGalois.CFT.Profinite.KummerAction
+import InverseGalois.CFT.Profinite.KummerFinite
 import InverseGalois.CFT.Profinite.KummerHom
 import InverseGalois.CFT.Profinite.KummerLevel
 import InverseGalois.CFT.Profinite.KummerLevelDegree
+import InverseGalois.CFT.Profinite.KummerLocal
+import InverseGalois.CFT.Profinite.KummerLocalCompare
+import InverseGalois.CFT.Profinite.KummerLocalQuot
+import InverseGalois.CFT.Profinite.KummerLocalSurjective
+import InverseGalois.CFT.Profinite.KummerLocalTate
+import InverseGalois.CFT.Profinite.KummerRep
 import InverseGalois.CFT.Profinite.KummerRes
+import InverseGalois.CFT.Profinite.KummerTower
+import InverseGalois.CFT.Profinite.KummerTransport
+import InverseGalois.CFT.Profinite.KummerTwist
 import InverseGalois.CFT.Profinite.KummerTwo
+import InverseGalois.CFT.Profinite.Pi
+import InverseGalois.CFT.Profinite.PiTwo
 import InverseGalois.CFT.Profinite.Quotient
+import InverseGalois.CFT.Profinite.QuotientAction
 import InverseGalois.CFT.Profinite.Krull
 import InverseGalois.CFT.Profinite.Res
 import InverseGalois.CFT.Profinite.ShaComap
 import InverseGalois.CFT.Profinite.Symbol
 import InverseGalois.CFT.Profinite.SymbolCyclic
+import InverseGalois.CFT.Profinite.Transgression
+import InverseGalois.CFT.Profinite.TransgressionClass
+import InverseGalois.CFT.Profinite.TransgressionInflate
+import InverseGalois.CFT.Profinite.TransgressionRestrict
 import InverseGalois.CFT.Profinite.Trivial
+import InverseGalois.CFT.Profinite.Twist
+import InverseGalois.CFT.Profinite.TwistAction
+import InverseGalois.CFT.Profinite.TwistConj
+import InverseGalois.CFT.Profinite.TwistRes
+import InverseGalois.CFT.Profinite.TwistTensor
 import InverseGalois.CFT.RatUnits
 import InverseGalois.CFT.RelativeFrobenius
 import InverseGalois.CFT.RestrictLE
@@ -422,6 +521,7 @@ import InverseGalois.CFT.Scholz.BlockGenerators
 import InverseGalois.CFT.Scholz.BlockInertia
 import InverseGalois.CFT.Scholz.BlockRealization
 import InverseGalois.CFT.Scholz.AuxPrimeChoice
+import InverseGalois.CFT.Scholz.AuxPrimeFamily
 import InverseGalois.CFT.Scholz.AuxPrimeField
 import InverseGalois.CFT.Scholz.AuxPrimePair
 import InverseGalois.CFT.Scholz.BadPrimes
@@ -441,6 +541,8 @@ import InverseGalois.CFT.Scholz.CoverInertia
 import InverseGalois.CFT.Scholz.CoverObstruction
 import InverseGalois.CFT.Scholz.CyclicSupplement
 import InverseGalois.CFT.Scholz.DecompositionLift
+import InverseGalois.CFT.Scholz.DyadicAuxPrime
+import InverseGalois.CFT.Scholz.DyadicAuxPrimeFamily
 import InverseGalois.CFT.Scholz.DyadicClassStep
 import InverseGalois.CFT.Scholz.DyadicCorrector
 import InverseGalois.CFT.Scholz.DyadicInduction
@@ -481,6 +583,7 @@ import InverseGalois.CFT.Scholz.PrimeIndependence
 import InverseGalois.CFT.Scholz.PrimeOrderInertia
 import InverseGalois.CFT.Scholz.ProperSolution
 import InverseGalois.CFT.Scholz.ProperSolutionTwo
+import InverseGalois.CFT.Scholz.QuarticRadical
 import InverseGalois.CFT.Scholz.RadicalDegree
 import InverseGalois.CFT.Scholz.RadicalDisjoint
 import InverseGalois.CFT.Scholz.RadicalSplitting
@@ -503,6 +606,7 @@ import InverseGalois.CFT.Scholz.SubfieldScholz
 import InverseGalois.CFT.Scholz.Tame
 import InverseGalois.CFT.Scholz.Twist
 import InverseGalois.CFT.Scholz.TwistStep
+import InverseGalois.CFT.Scholz.TwoPowerRadical
 import InverseGalois.CFT.Scholz.UnramifiedFactorInertia
 import InverseGalois.CFT.Scholz.UnramifiedSolution
 import InverseGalois.CFT.Scholz.UnramifiedSolutionTwo
@@ -537,15 +641,30 @@ import InverseGalois.CFT.Tate.CyclicInduced
 import InverseGalois.CFT.Tate.Exact
 import InverseGalois.CFT.Tate.Family
 import InverseGalois.CFT.Tate.FamilyCoboundary
+import InverseGalois.CFT.Tate.FamilyCoboundaryOne
+import InverseGalois.CFT.Tate.FamilyCoind
+import InverseGalois.CFT.Tate.FamilyConst
 import InverseGalois.CFT.Tate.FamilyFree
+import InverseGalois.CFT.Tate.FamilyH1Local
+import InverseGalois.CFT.Tate.FamilyInvariant
 import InverseGalois.CFT.Tate.FamilyNorm
 import InverseGalois.CFT.Tate.FamilyOrbit
 import InverseGalois.CFT.Tate.FamilyOrbits
+import InverseGalois.CFT.Tate.FamilyProduct
 import InverseGalois.CFT.Tate.FamilyReindex
+import InverseGalois.CFT.Tate.FamilyResGroup
 import InverseGalois.CFT.Tate.FamilyRestrict
+import InverseGalois.CFT.Tate.FamilyRestrictCoind
 import InverseGalois.CFT.Tate.FamilyRestrictOrbit
 import InverseGalois.CFT.Tate.FamilyRing
 import InverseGalois.CFT.Tate.FamilySigma
+import InverseGalois.CFT.Tate.FamilyTensor
+import InverseGalois.CFT.Tate.FamilyTensorFinsupp
+import InverseGalois.CFT.Tate.FamilyTensorFull
+import InverseGalois.CFT.Tate.FamilyTensorLocal
+import InverseGalois.CFT.Tate.FamilyTensorOrbit
+import InverseGalois.CFT.Tate.FamilyTorsion
+import InverseGalois.CFT.Tate.FamilyTrunc
 import InverseGalois.CFT.Tate.Fibers
 import InverseGalois.CFT.Tate.Finite
 import InverseGalois.CFT.Tate.FiniteExact
@@ -558,6 +677,7 @@ import InverseGalois.CFT.Tate.InducedLattice
 import InverseGalois.CFT.Tate.InfinitePlaces
 import InverseGalois.CFT.Tate.Isogeny
 import InverseGalois.CFT.Tate.Lattice
+import InverseGalois.CFT.Tate.LiftInvariants
 import InverseGalois.CFT.Tate.Mul
 import InverseGalois.CFT.Tate.NormSurjective
 import InverseGalois.CFT.Tate.NormalBasis
@@ -573,6 +693,7 @@ import InverseGalois.CFT.Tate.Pi
 import InverseGalois.CFT.Tate.PiSplit
 import InverseGalois.CFT.Tate.Primes
 import InverseGalois.CFT.Tate.Prod
+import InverseGalois.CFT.Tate.ProdH1
 import InverseGalois.CFT.Tate.QuotientFixed
 import InverseGalois.CFT.Tate.RealBasis
 import InverseGalois.CFT.Tate.RealForm
@@ -580,6 +701,8 @@ import InverseGalois.CFT.Tate.RealHerbrand
 import InverseGalois.CFT.Tate.Restrict
 import InverseGalois.CFT.Tate.Shapiro
 import InverseGalois.CFT.Tate.Surjection
+import InverseGalois.CFT.Tate.TensorSplit
+import InverseGalois.CFT.Tate.TorsionRep
 import InverseGalois.CFT.Tate.Trivial
 import InverseGalois.CFT.Tate.TrivialLattice
 import InverseGalois.CFT.TateCohomology.Abelianization
@@ -589,34 +712,80 @@ import InverseGalois.CFT.TateCohomology.Annihilate
 import InverseGalois.CFT.TateCohomology.AugmentationIdeal
 import InverseGalois.CFT.TateCohomology.CocycleExtension
 import InverseGalois.CFT.TateCohomology.CohomTrivial
+import InverseGalois.CFT.TateCohomology.Cyclic
+import InverseGalois.CFT.TateCohomology.CyclicDual
+import InverseGalois.CFT.TateCohomology.CyclicVanishing
+import InverseGalois.CFT.TateCohomology.DeltaCoshift
+import InverseGalois.CFT.TateCohomology.DeltaNatural
+import InverseGalois.CFT.TateCohomology.DeltaRetract
+import InverseGalois.CFT.TateCohomology.DeltaShift
+import InverseGalois.CFT.TateCohomology.Duality
+import InverseGalois.CFT.TateCohomology.DualityDivisible
+import InverseGalois.CFT.TateCohomology.DualityFinite
+import InverseGalois.CFT.TateCohomology.DualityNatural
+import InverseGalois.CFT.TateCohomology.DualityShift
 import InverseGalois.CFT.TateCohomology.Exact
+import InverseGalois.CFT.TateCohomology.FreePresentation
 import InverseGalois.CFT.TateCohomology.Functorial
 import InverseGalois.CFT.TateCohomology.Graded
+import InverseGalois.CFT.TateCohomology.GroupCongr
 import InverseGalois.CFT.TateCohomology.HomologyJunction
 import InverseGalois.CFT.TateCohomology.Induced
 import InverseGalois.CFT.TateCohomology.Iterate
 import InverseGalois.CFT.TateCohomology.Junction
+import InverseGalois.CFT.TateCohomology.NakayamaCoeff
+import InverseGalois.CFT.TateCohomology.NakayamaNatural
+import InverseGalois.CFT.TateCohomology.NakayamaNextNatural
+import InverseGalois.CFT.TateCohomology.NakayamaNextRestrict
+import InverseGalois.CFT.TateCohomology.NakayamaRestrict
+import InverseGalois.CFT.TateCohomology.NakayamaSubgroup
+import InverseGalois.CFT.TateCohomology.NakayamaSubgroupError
 import InverseGalois.CFT.TateCohomology.Norm
 import InverseGalois.CFT.TateCohomology.PGroupInvariants
 import InverseGalois.CFT.TateCohomology.PGroupTrivial
 import InverseGalois.CFT.TateCohomology.PTorsionTrivial
+import InverseGalois.CFT.TateCohomology.Pair
+import InverseGalois.CFT.TateCohomology.Pontryagin
+import InverseGalois.CFT.TateCohomology.Product
 import InverseGalois.CFT.TateCohomology.Restrict
+import InverseGalois.CFT.TateCohomology.RestrictDelta
+import InverseGalois.CFT.TateCohomology.RestrictNatural
+import InverseGalois.CFT.TateCohomology.RestrictShift
+import InverseGalois.CFT.TateCohomology.RestrictShiftBridge
+import InverseGalois.CFT.TateCohomology.RestrictSplit
+import InverseGalois.CFT.TateCohomology.RestrictTrans
+import InverseGalois.CFT.TateCohomology.Shapiro
 import InverseGalois.CFT.TateCohomology.Shift
+import InverseGalois.CFT.TateCohomology.ShiftNatural
+import InverseGalois.CFT.TateCohomology.ShiftSplit
 import InverseGalois.CFT.TateCohomology.Shifting
 import InverseGalois.CFT.TateCohomology.SylowInjective
 import InverseGalois.CFT.TateCohomology.RestrictOne
+import InverseGalois.CFT.TateCohomology.SylowSurjective
 import InverseGalois.CFT.TateCohomology.SylowTrivial
 import InverseGalois.CFT.TateCohomology.TateClassCount
 import InverseGalois.CFT.TateCohomology.TateDegreeTwo
 import InverseGalois.CFT.TateCohomology.TateNakayama
+import InverseGalois.CFT.TateCohomology.TateNakayamaError
 import InverseGalois.CFT.TateCohomology.TateTheorem
 import InverseGalois.CFT.TateCohomology.Tensor
 import InverseGalois.CFT.TateCohomology.TensorExtension
 import InverseGalois.CFT.TateCohomology.TensorFunctor
+import InverseGalois.CFT.TateCohomology.TensorPExact
 import InverseGalois.CFT.TateCohomology.TensorPTorsion
+import InverseGalois.CFT.TateCohomology.TensorPTorsionShift
+import InverseGalois.CFT.TateCohomology.TensorPair
+import InverseGalois.CFT.TateCohomology.TensorPi
+import InverseGalois.CFT.TateCohomology.TensorRight
 import InverseGalois.CFT.TateCohomology.TensorShift
+import InverseGalois.CFT.TateCohomology.TensorTor
+import InverseGalois.CFT.TateCohomology.TensorTorsionError
 import InverseGalois.CFT.TateCohomology.TensorTrivial
+import InverseGalois.CFT.TateCohomology.TorsionErrorLong
 import InverseGalois.CFT.TateCohomology.TorsionFree
+import InverseGalois.CFT.TateCohomology.TorsionInduced
+import InverseGalois.CFT.TateCohomology.TorsionNakayama
+import InverseGalois.CFT.TateCohomology.TorsionShift
 import InverseGalois.CFT.TateCohomology.Transfer
 import InverseGalois.CFT.TotallyReal
 import InverseGalois.CFT.Units.ABHN
@@ -625,6 +794,7 @@ import InverseGalois.CFT.Units.ABHNCoboundary
 import InverseGalois.CFT.Units.ABHNFinite
 import InverseGalois.CFT.Units.ABHNLocalNorm
 import InverseGalois.CFT.Units.ABHNLocalPower
+import InverseGalois.CFT.Units.ABHNOnePlace
 import InverseGalois.CFT.Units.ABHNPlaces
 import InverseGalois.CFT.Units.ABHNRamified
 import InverseGalois.CFT.Units.ABHNSqrtNegOne
@@ -635,15 +805,21 @@ import InverseGalois.CFT.Units.AdicFixed
 import InverseGalois.CFT.Units.AdicIdeleHerbrand
 import InverseGalois.CFT.Units.AdicLocalNorm
 import InverseGalois.CFT.Units.AdicOrbit
+import InverseGalois.CFT.Units.AdicOrbitTate
 import InverseGalois.CFT.Units.AdicRadical
 import InverseGalois.CFT.Units.AdicSIdeles
+import InverseGalois.CFT.Units.AdicSOrbitTate
 import InverseGalois.CFT.Units.AdicUnitGen
 import InverseGalois.CFT.Units.ArchimedeanIdeles
 import InverseGalois.CFT.Units.BaseArtin
 import InverseGalois.CFT.Units.BaseChangeCocycle
 import InverseGalois.CFT.Units.BaseChangeIndex
 import InverseGalois.CFT.Units.BaseFundamental
+import InverseGalois.CFT.Units.BaseFundamentalCyclic
 import InverseGalois.CFT.Units.BaseTate
+import InverseGalois.CFT.Units.BaseTateCoeff
+import InverseGalois.CFT.Units.BaseTateSylow
+import InverseGalois.CFT.Units.BaseTateTorsion
 import InverseGalois.CFT.Units.ClassSet
 import InverseGalois.CFT.Units.CompletionCyclic
 import InverseGalois.CFT.Units.CompletionFinite
@@ -654,9 +830,20 @@ import InverseGalois.CFT.Units.CompositumEmbed
 import InverseGalois.CFT.Units.CompositumFundamental
 import InverseGalois.CFT.Units.CyclicTrivial
 import InverseGalois.CFT.Units.Decomposition
+import InverseGalois.CFT.Units.DecompositionClosed
 import InverseGalois.CFT.Units.DecompositionField
+import InverseGalois.CFT.Units.DecompositionFieldLevel
+import InverseGalois.CFT.Units.DecompositionFieldTower
+import InverseGalois.CFT.Units.DecompositionFundamental
 import InverseGalois.CFT.Units.DecompositionGalois
+import InverseGalois.CFT.Units.DecompositionIdele
+import InverseGalois.CFT.Units.DecompositionInvariant
+import InverseGalois.CFT.Units.DecompositionLocalization
+import InverseGalois.CFT.Units.DecompositionNakayama
+import InverseGalois.CFT.Units.DecompositionNakayamaNext
 import InverseGalois.CFT.Units.DecompositionOutside
+import InverseGalois.CFT.Units.DecompositionPlaceInjective
+import InverseGalois.CFT.Units.DecompositionReciprocity
 import InverseGalois.CFT.Units.HasseHom
 import InverseGalois.CFT.Units.HasseLevel
 import InverseGalois.CFT.Units.InfiniteDecomposition
@@ -666,6 +853,7 @@ import InverseGalois.CFT.Units.HasseDecomposition
 import InverseGalois.CFT.Units.HasseTwo
 import InverseGalois.CFT.Units.HasseTwoDecomposition
 import InverseGalois.CFT.Units.DecompositionRestrict
+import InverseGalois.CFT.Units.DecompositionSubgroup
 import InverseGalois.CFT.Units.EquivariantLabel
 import InverseGalois.CFT.Units.FirstInequality
 import InverseGalois.CFT.Units.FrobeniusPlace
@@ -673,6 +861,7 @@ import InverseGalois.CFT.Units.GaloisAction
 import InverseGalois.CFT.Units.GeneratingPrimes
 import InverseGalois.CFT.Units.GlobalFundamental
 import InverseGalois.CFT.Units.GlobalTate
+import InverseGalois.CFT.Units.GlobalUnitsLocal
 import InverseGalois.CFT.Units.HasseNorm
 import InverseGalois.CFT.Units.Herbrand
 import InverseGalois.CFT.Units.Idele
@@ -687,32 +876,59 @@ import InverseGalois.CFT.Units.IdeleClassH2Tower
 import InverseGalois.CFT.Units.IdeleClassIndex
 import InverseGalois.CFT.Units.IdeleClassSES
 import InverseGalois.CFT.Units.IdeleClassTate
+import InverseGalois.CFT.Units.IdeleClassTorsionLocal
+import InverseGalois.CFT.Units.IdeleClassTorsionSES
+import InverseGalois.CFT.Units.IdeleClassTorsionSubgroup
+import InverseGalois.CFT.Units.IdeleClassTorsionSubgroupLocal
+import InverseGalois.CFT.Units.IdeleClassTorsionTate
 import InverseGalois.CFT.Units.IdeleClassTower
 import InverseGalois.CFT.Units.IdeleCoboundary
 import InverseGalois.CFT.Units.IdeleFixed
+import InverseGalois.CFT.Units.IdeleFullCompare
 import InverseGalois.CFT.Units.IdeleGen
+import InverseGalois.CFT.Units.IdeleLocalVanish
 import InverseGalois.CFT.Units.IdeleNorm
 import InverseGalois.CFT.Units.IdeleNormTower
+import InverseGalois.CFT.Units.IdeleOrbitTate
 import InverseGalois.CFT.Units.IdeleQuotCyclic
 import InverseGalois.CFT.Units.IdeleRep
 import InverseGalois.CFT.Units.IdeleRestrict
+import InverseGalois.CFT.Units.IdeleTensorOrbit
+import InverseGalois.CFT.Units.IdeleTensorSha
+import InverseGalois.CFT.Units.IdeleTensorTorsion
+import InverseGalois.CFT.Units.IdeleTorsion
+import InverseGalois.CFT.Units.IdeleTorsionSubgroup
+import InverseGalois.CFT.Units.IdeleTorsionTensor
+import InverseGalois.CFT.Units.IdeleTorusSha
+import InverseGalois.CFT.Units.IdeleTorusShaLocal
+import InverseGalois.CFT.Units.IdeleTorusShaSharp
+import InverseGalois.CFT.Units.IdeleTorusShaTorsion
 import InverseGalois.CFT.Units.IdeleTower
+import InverseGalois.CFT.Units.IdeleValuationSplit
+import InverseGalois.CFT.Units.InertPlace
 import InverseGalois.CFT.Units.InfiniteComap
 import InverseGalois.CFT.Units.InfiniteFixed
 import InverseGalois.CFT.Units.InfiniteGalois
 import InverseGalois.CFT.Units.InfiniteHilbert90
 import InverseGalois.CFT.Units.InfiniteIdele
 import InverseGalois.CFT.Units.InfiniteOrbit
+import InverseGalois.CFT.Units.InfinitePlaceIdele
 import InverseGalois.CFT.Units.InfiniteTowerDescent
 import InverseGalois.CFT.Units.InflationDescent
+import InverseGalois.CFT.Units.InvariantUniformizer
 import InverseGalois.CFT.Units.KummerDecomposition
+import InverseGalois.CFT.Units.KummerIdele
+import InverseGalois.CFT.Units.KummerShaBot
 import InverseGalois.CFT.Units.LocalCoboundaryTwist
+import InverseGalois.CFT.Units.LocalDegreeLcm
 import InverseGalois.CFT.Units.LocalEmbedding
 import InverseGalois.CFT.Units.LocalIdele
 import InverseGalois.CFT.Units.LocalNorm
 import InverseGalois.CFT.Units.LocalPowIdele
 import InverseGalois.CFT.Units.LocalSqrtNegOne
+import InverseGalois.CFT.Units.NakayamaSpan
 import InverseGalois.CFT.Units.NormIndex
+import InverseGalois.CFT.Units.NsmulTorsionRep
 import InverseGalois.CFT.Units.OrbitPlaces
 import InverseGalois.CFT.Units.PlaceComap
 import InverseGalois.CFT.Units.PlaceIdele
@@ -740,9 +956,12 @@ import InverseGalois.CFT.Units.SplitOutside
 import InverseGalois.CFT.Units.SplitPlaces
 import InverseGalois.CFT.Units.SplitPowIdele
 import InverseGalois.CFT.Units.SplitPowNorm
+import InverseGalois.CFT.Units.StablePlaceIdele
 import InverseGalois.CFT.Units.TowerCoboundary
 import InverseGalois.CFT.Units.TowerDescent
 import InverseGalois.CFT.Units.UnitLattice
+import InverseGalois.CFT.Units.UnramifiedSplit
+import InverseGalois.CFT.Units.UnramifiedTateRep
 import InverseGalois.CFT.Unramified
 import InverseGalois.CFT.UnramifiedCompositum
 
@@ -778,6 +997,29 @@ it that are available here.
 * `InverseGalois.CFT.CompositumBase` views the compositum as an extension of one of its two
   factors, and identifies its Galois group over that factor with the Galois group of the other
   factor over the base, when the two meet in the base field.
+* `InverseGalois.CFT.BaseCompositum` builds the compositum of a number field with a Galois
+  extension of the rationals inside an algebraic closure of the former, without asking the two to
+  be given as subfields of a common field.  A primitive element of the smaller factor identifies
+  the compositum with the splitting field over the base of the minimal polynomial of that element,
+  because normality over the rationals puts every root of that polynomial in the image of the
+  chosen embedding; so **the compositum is a finite Galois extension of the base generated by the
+  image of the other factor**.  Restriction of automorphisms to that image is injective because an
+  automorphism fixing a generating set is the identity, and **surjective as soon as no rational
+  prime ramifies in both factors**: the fixed field of the image of restriction has image in the
+  compositum fixed by the whole Galois group over the base, hence lands in the base, so no rational
+  prime ramifies in it and Minkowski's bound collapses it to the rationals.  Consequently **the
+  degree and the cyclicity of the compositum over the base are those of the other factor over the
+  rationals** — the shape in which the reciprocity computation over an arbitrary base meets its
+  auxiliary cyclic field.
+* `InverseGalois.CFT.BaseRamification` transports unramifiedness from the small factor of such a
+  compositum to the compositum itself.  **The order of an inertia group is the ramification index**,
+  so triviality of inertia is exactly unramifiedness; and **restriction of automorphisms to the
+  small factor carries inertia to inertia**, because an automorphism trivial on the residues at a
+  place of the compositum is trivial on the residues at the place below.  Since that restriction is
+  injective, **a place of the compositum whose trace on the small factor is unramified over the
+  rationals is unramified over the number field** — the compositum with a cyclotomic field is
+  unramified away from the conductor over an arbitrary base, just as the cyclotomic field is over
+  the rationals.
 * `InverseGalois.CFT.CentralCompositum` observes that an automorphism of a compositum which is
   trivial on one factor is central as soon as the other factor is abelian over the base, so that
   the subgroup it generates is normal and an involution of the abelian factor is realized as an
@@ -1723,6 +1965,17 @@ it that are available here.
   the family with copies of the module at the base point and the action of a generator with a
   twisted shift, so the Herbrand quotient of the sections is the Herbrand quotient of the module at
   the base point for a full turn of the orbit.
+* `InverseGalois.CFT.Tate.FamilyCoind` removes the choice from that comparison and extends it to a
+  group that need not be cyclic.  A section of a family over a transitively acted upon index set is
+  remembered by the function on the group sending an element to the value, at a base point, of the
+  translated section; that function is equivariant for the stabiliser of the base point, every
+  equivariant function arises from exactly one section, and translating a section translates the
+  function, so **the sections of a family over a transitive orbit are the representation coinduced
+  from the module at the base point**.  Coinduction is transparent to complete cohomology, so **the
+  complete cohomology of the sections is the complete cohomology of the stabiliser of the base point
+  with coefficients in the module there**: for the local factors of the group of ideles at the
+  places above a place of the base field, the stabiliser is the decomposition group and the module
+  is the local factor at one place above it.
 * `InverseGalois.CFT.Tate.FamilyRing` supplies the transport data in the form in which arithmetic
   produces it.  What a Galois automorphism carries from one place to another is a whole completion,
   a ring and not just a group, and a compatible system of ring isomorphisms along the action on the
@@ -1737,6 +1990,13 @@ it that are available here.
   of its action on the ambient module, so an orbit where the subgroup is everything contributes what
   it contributes to the ambient family, and an orbit where the action on the subgroup is a known one
   with vanishing Tate groups contributes nothing.
+* `InverseGalois.CFT.Tate.FamilyRestrictCoind` reads the same restriction through coinduction
+  instead of through the Herbrand quotient, and so needs no hypothesis on the group beyond
+  finiteness.  The sections of a family over a transitive orbit are coinduced from the module at a
+  base point, so the contribution of an orbit to a restriction is the complete cohomology of the
+  stabiliser of that point with coefficients in the subgroup there; identifying that subgroup with
+  whatever group it is declared to be carries the computation along, and an orbit whose declared
+  action has no complete cohomology contributes nothing in that degree.
 * `InverseGalois.CFT.Tate.FamilySigma` splits the sections of a family whose index set is a
   disjoint union of pieces each carried into itself by the group: they are the product over the
   pieces of the sections over each piece.  Over finitely many pieces the Herbrand quotients
@@ -1750,6 +2010,32 @@ it that are available here.
   sections of any family is the product over the orbits of the index set of the contribution of one
   orbit, and that contribution is the Herbrand quotient of the module at a point of the orbit under
   a full turn: exactly the local factor of the group of ideles at a place of the base field.
+* `InverseGalois.CFT.Tate.FamilyProduct` does the same for an arbitrary finite group and in every
+  degree at once.  Reindexing along the decomposition of the index set into its orbits and splitting
+  a disjoint union are both isomorphisms of representations, so **the sections of a family are the
+  product over the orbits of the sections over one orbit**; the complete cohomology of a product is
+  the product of the complete cohomologies, and the sections over one orbit are coinduced from the
+  stabiliser of a chosen point.  Chaining the three gives **the complete cohomology of the sections
+  as a product of local contributions, one for each orbit, each computed in the stabiliser of a
+  point of that orbit** — for the ideles of a Galois extension of number fields, a product over the
+  places of the base field of cohomology groups of decomposition groups — and in particular the
+  sections have no cohomology in a degree as soon as no local contribution has any.
+* `InverseGalois.CFT.Tate.FamilyTorsion` applies that decomposition to the elements killed by a
+  fixed integer.  Those form a subgroup of every abelian group and are carried onto one another by
+  every isomorphism, so a family of modules has a subfamily of them, and the sections of the
+  subfamily are exactly the sections of the family killed by the integer.  The conclusion is **the
+  complete cohomology of the sections killed by an integer as a product over the orbits of the
+  index set of the complete cohomology of a stabiliser with coefficients in the elements killed by
+  that integer there**.  For the ideles of a Galois extension of number fields the sections killed
+  by a prime are the `p`-torsion of the idele group, the orbits are the places of the base field
+  and the local coefficients are the roots of unity of the completions.
+* `InverseGalois.CFT.Tate.TorsionRep` supplies the two elementary manipulations that stand between
+  that decomposition and a module of arithmetic origin.  A subgroup containing every element of the
+  ambient module killed by an integer has exactly those elements as its own, so passing to the
+  subgroup changes nothing; and the elements of a product of two modules killed by an integer are
+  the pairs of elements killed by it, so a module visibly built from two halves contributes the
+  product of the two answers.  Both are recorded as isomorphisms of representations, so complete
+  cohomology is carried along them, as it is along an equality of actions on a fixed module.
 * `InverseGalois.CFT.Tate.NormSurjective` reads the vanishing of the upper Tate group as a statement
   about individual elements: that group is the fixed points modulo the norms, so it vanishes exactly
   when every fixed point is a norm.  Being a norm is transported by an equivariant isomorphism, and
@@ -1767,6 +2053,21 @@ it that are available here.
   produced explicitly from the local ones and a transversal for the cosets of a stabiliser.  The
   construction keeps the values inside an invariant family of subgroups wherever the cocycle's own
   values lie there, which is what a restricted product such as the ideles requires.
+* `InverseGalois.CFT.Tate.FamilyCoboundaryOne` is the same passage in degree one, where it is both
+  shorter and sharper.  A one-cocycle with values in the sections of a family whose restriction to
+  the stabiliser of every index is a coboundary there is **a coboundary**, and the trivialising
+  section is written down: at each index it is the local trivialising element at the orbit
+  representative, transported forward by a group element carrying the representative to the index
+  and corrected by the value of the cocycle at that group element.  Independence of the choice of
+  that group element is exactly the local identity at the representative, so no transversal and no
+  finiteness of any kind is needed.
+* `InverseGalois.CFT.Tate.FamilyH1Local` reads that as a statement about cohomology classes.
+  Evaluation at an index is a map of representations of any subgroup fixing the index, so a class
+  in the first cohomology of the sections has a local class at every index: restrict to the
+  stabiliser, then evaluate.  **A class all of whose local classes vanish is zero.**  This is
+  Shapiro's lemma in the only form the ideles need, and it costs nothing beyond the coboundary
+  theorem: the local hypothesis is consumed at the level of cochains, so no naturality statement
+  for a comparison of coinduced modules ever has to be proved.
 * `InverseGalois.CFT.Tate.CyclicAction` states that computation for a cyclic group acting
   transitively on a finite set, where the orbit–stabiliser theorem reads the Herbrand quotient of
   the free lattice as the order of the stabiliser of a point: the form in which the places of a
@@ -1875,6 +2176,55 @@ it that are available here.
   is what turns a local condition at finitely many places into a global one.  The same holds at an
   infinite place, the completion of the base below being the fixed field of the decomposition group
   there too.
+* `InverseGalois.CFT.Kummer.InfiniteLevelPower` frees that criterion from the extension being
+  finite.  A radical of an arbitrary Galois extension generates a finite Galois subextension, and
+  the place of that subextension below the given prime carries a decomposition group onto which the
+  decomposition subgroup above maps; so an automorphism of the subextension fixing the place is the
+  restriction of one fixing the prime, and therefore fixes the radical.  The place of the base below
+  the place of the subextension is the place of the base below the given one, so the completion in
+  which the root is found is the intended one, at a prime of the integers and at an archimedean
+  place alike.
+* `InverseGalois.CFT.Kummer.DecompositionLocalPower` turns that criterion into the comparison of the
+  two readings of a local condition on a cohomology class.  The profinite reading says that a unit
+  of a level becomes a `p`-th power in the compositum of the level with the fixed field of a
+  decomposition subgroup; the idelic one says that it becomes a `p`-th power in the completion at
+  the place below.  An automorphism over the level lying in the subgroup fixes both factors of the
+  compositum, hence a `p`-th root there, so the criterion applies and the first reading implies the
+  second.  A class is not a unit but an element of a tensor product of the units with coefficients
+  of finite rank over the field with `p` elements, where divisibility by `p` is read coordinate by
+  coordinate along a basis of the coefficients; so the comparison for a single unit carries the
+  whole class from the compositum to the completion, at a prime and at an archimedean place alike.
+* `InverseGalois.CFT.Kummer.LocalPowRepresentatives` makes the local power classes finite and
+  represents them globally.  The `n`-th powers have finite index in the units of a completion of a
+  number field, the index being the product of the absolute value of `n` there with the number of
+  `n`-th roots of unity; weak approximation prescribes a single element of the field at one place up
+  to an `n`-th power, so the units of the field surject onto that finite group and a section of the
+  surjection has finite range.  Finitely many units of the field therefore meet every power class of
+  the completion, at a prime and at an archimedean place alike.
+* `InverseGalois.CFT.Kummer.LocalPowerRange` states the criterion for a radical in the form an
+  infinite extension needs.  An element fixed by the decomposition group at a place has an image in
+  the completion coming from the completion below, that completion being the fixed field of the
+  decomposition group acting on the one above; conversely an element whose image has the same `n`-th
+  power as an element of the completion below is fixed there, the two differing by a root of unity
+  already present in the base.  The radicand is not asked to lie in the base, only the local root,
+  which is what lets a Kummer argument run for an element of a compositum.
+* `InverseGalois.CFT.Kummer.SupKummerData` carries a Kummer situation up to a larger level.  A
+  primitive root of unity of the smaller level stays primitive in the larger one, so every root of
+  unity there is one of its powers and already comes from below; the injectivity of the parameter
+  group and the vanishing of its `p`-th powers travel along the inclusion of the units, and the
+  roots of the units of the larger level are supplied by the ambient extension.  Nothing is asked
+  of the action of the Galois group of the larger level, a Kummer situation forcing it to be
+  trivial, so the trivial action is the one that is taken.
+* `InverseGalois.CFT.Kummer.SupPowSurjective` shows the compositum is no larger than the level
+  modulo `p`-th powers.  A `p`-th root of a given unit of the compositum, together with `p`-th roots
+  of the finitely many representatives of the local power classes, generates a single finite Galois
+  level; there the unit is fixed by the decomposition group, so its image in the completion comes
+  from below and is a representative times a `p`-th power, and the corresponding quotient of roots
+  is a radical whose local `p`-th power comes from below, hence lies in the compositum.  Choosing
+  the representatives before the level is what keeps the argument inside one finite extension.
+  Tensoring with coefficients of finite rank over the field with `p` elements preserves the
+  conclusion, a `p`-th power crossing the tensor sign to annihilate the coefficients, so the units
+  of the level surject onto the units of the compositum with the coefficients attached.
 * `InverseGalois.CFT.Kummer.Pairing` compares two radicals through their exponent vectors.  Writing
   an element of the subgroup as a product of powers of the power basis times a `p`-th power, the
   automorphism which multiplies the `i`-th radical by the `cᵢ`-th power of the root of unity fixes
@@ -2107,6 +2457,63 @@ it that are available here.
   where no labelling of the orbit is needed: restricting the family of all completions to one orbit
   and reading the action of the stabiliser of a point off the transports gives the local factor
   Herbrand quotient the order of the decomposition group.
+* `InverseGalois.CFT.Units.AdicOrbitTate` reads the same family through coinduction instead of
+  through the Herbrand quotient, and so loses the hypothesis that the Galois group be cyclic.  The
+  places above a fixed finite place of the base field are one orbit, so the units of the completions
+  at them are the representation coinduced from the units of the completion at any one of them, and
+  **the complete cohomology of the local factor of the ideles at a finite place of the base field is
+  the complete cohomology of the decomposition group with coefficients in the units of the
+  completion at a place above it**, in every integer degree.  The same argument at an infinite
+  place, which differs from the finite one only in the family it is applied to, gives the same
+  description of the local factor there.
+* `InverseGalois.CFT.Units.UnramifiedTateRep` computes one of those local coefficients outright.
+  At an unramified place the decomposition group is generated by a single element and the base
+  field already contains a uniformizer, so both middle degrees of the complete cohomology of the
+  units of the valuation ring vanish — the lower one by Hilbert's theorem 90 with the uniformizer
+  absorbing the valuation of the representative, the upper one because the Herbrand quotient is
+  one.  Periodicity for a group with one generator then propagates the vanishing in both
+  directions: **the units of the valuation ring of the completion at an unramified finite place
+  have no complete cohomology in any degree at all.**  The places outside a finite set therefore
+  contribute nothing, which is what lets the ideles be replaced by the ideles that are units
+  outside that set.
+* `InverseGalois.CFT.Units.IdeleOrbitTate` puts the local factors back together.  The places of the
+  extension are the disjoint union of the orbits, one for each place of the base field, so the
+  units of all the completions are the product of the local factors and complete cohomology turns
+  that product into a product: **in every degree the complete cohomology of the group of ideles is
+  the product, over the places of the base field, of the complete cohomology of the decomposition
+  group of a place above it with coefficients in the units of the completion there** — for the
+  finite places and for the infinite ones alike, with no hypothesis on the Galois group beyond
+  finiteness.  In particular the ideles have no cohomology in a degree in which no local factor
+  has any.
+* `InverseGalois.CFT.Units.IdeleTensorOrbit` carries that description across a twist of the
+  coefficients.  Coefficients of finite rank over a prime field are finitely presented, so tensoring
+  with them commutes with the product over the places and with coinduction from a decomposition
+  group, and the two operations may be performed in either order.  Hence **in every degree the
+  complete cohomology of the group of ideles tensored with such coefficients is the product, over
+  the places of the base field, of the complete cohomology of the decomposition group of a place
+  above it with coefficients in the units of the completion there tensored with the restricted
+  coefficients** — again for the finite places and for the infinite ones alike.
+* `InverseGalois.CFT.Tate.FamilyConst` singles out the family with a single group repeated at every
+  index, all of its transports being the identity.  Its sections are the functions from the index
+  set to that group, and **the action assembled from the transports is the permutation action**: a
+  group element moves a function by moving its argument backwards.  That is the family measuring
+  the valuations of an idele — the valuation at a finite place of a number field is an integer
+  whatever the place is, and an automorphism carries the valuation at a place to the valuation at
+  the image place — and the reading is completed by the observation that **scaling an invariant
+  section by a vector of integers is equivariant for the permutation action on the vector**, which
+  is what makes a right inverse of the vector of valuations a map of representations.
+* `InverseGalois.CFT.Units.IdeleTorsion` reads the elements of the ideles killed by a nonzero
+  integer place by place.  Such an element has every local component killed by that integer, so its
+  local valuation, an integer killed by a nonzero integer, vanishes at every finite place; the
+  finiteness condition that cuts the ideles out of the product of all the local unit groups is
+  therefore automatic, and those elements are exactly the elements of the whole product killed by
+  the integer — a root of unity at every place, with no restriction at all.  Splitting that product
+  into the infinite half and the finite half and applying the orbit decomposition to each gives
+  **the complete cohomology of the elements of the ideles killed by a nonzero integer as the
+  product, over the places of the base field, of the complete cohomology of the decomposition group
+  of a place above it with coefficients in the elements killed by that integer of the units of the
+  completion there**, and in particular the vanishing of the whole as soon as every local factor
+  vanishes.
 * `InverseGalois.CFT.Local.InfiniteAction` builds the same picture at an infinite place.  An
   automorphism fixing such a place preserves its absolute value, so it is an isometry of the field
   for the metric of the place and extends to the completion there; the decomposition group of the
@@ -2145,6 +2552,14 @@ it that are available here.
   isometries, so those subgroups form an invariant family, and an orbit above a place of the set
   contributes the order of the decomposition group while an unramified orbit outside it contributes
   nothing.
+* `InverseGalois.CFT.Units.AdicSOrbitTate` reads that restriction in every degree at once.  Above a
+  place of the set the local subgroup is everything, so the contribution is the complete cohomology
+  of the decomposition group with coefficients in the units of the completion, exactly as for the
+  whole group of ideles; above an unramified place outside the set the local subgroup is the units
+  of the valuation ring of an unramified extension, whose complete cohomology vanishes in every
+  degree.  So **the ideles that are units outside a set of places have no complete cohomology in a
+  degree as soon as no local factor at a place of the set has any**, provided every place outside
+  the set is unramified.
 * `InverseGalois.CFT.Units.AdicIdeleHerbrand` multiplies the finite local factors together.  When
   the chosen places are the range of an equivariant injection from a finite index set and every
   other place is unramified, the ideles that are units outside them have Herbrand quotient the
@@ -2249,10 +2664,134 @@ it that are available here.
 * `InverseGalois.CFT.Units.DecompositionGalois` packages that as an isomorphism of groups: the
   decomposition group at a prime **is** the Galois group of the completion over the completion of
   the prime below, so its order is the local degree.
+* `InverseGalois.CFT.Units.DecompositionInvariant` reads a class of the decomposition group with
+  coefficients in the units of the completion as a rational modulo the integers.  The two groups
+  acting on those units — the decomposition group and the Galois group of the completions — are
+  identified by that isomorphism, and the identification matches their actions, so transporting
+  cohomology along it makes the complete cohomology in degree two of the decomposition group the
+  second cohomology of a finite Galois extension of local fields.  The crossed product construction
+  turns the latter into the Brauer classes of the completion of the base split by the completion of
+  the extension, and the invariant map of a local field reads such a class as a rational modulo the
+  integers, killed by the local degree.  Since the invariant map of a local field is injective,
+  **a class of the decomposition group at a finite place is determined by its invariant.**
+* `InverseGalois.CFT.Units.DecompositionFundamental` pins down the class the local theory is about.
+  The crossed product construction is an isomorphism onto the relative Brauer group of the
+  completions, and local reciprocity counts that group: it has as many elements as the local
+  degree.  So **the complete cohomology in degree two of a decomposition group at a finite place
+  has as many elements as the local degree**, and, the invariant being injective and killed by the
+  degree, **every rational modulo the integers killed by the local degree is the invariant of
+  exactly one class.**  The reciprocal of the local degree has the local degree as its order, so
+  the class it names — **the fundamental class of the decomposition group** — has that order too,
+  which is the number of elements of the whole group: **the complete cohomology in degree two of a
+  decomposition group at a finite place is cyclic, generated by its fundamental class.**
+* `InverseGalois.CFT.Units.DecompositionSubgroup` spreads that description over every subgroup at
+  once.  A subgroup of the decomposition group is again the automorphism group of the completion,
+  this time over the subfield it fixes, and that subfield is an intermediate field of a finite
+  extension of a local field, hence a local field itself.  So Hilbert's theorem 90 gives **the
+  vanishing of the complete cohomology of the units of the completion in degree one on every
+  subgroup**, and local reciprocity over the fixed subfield, read through the crossed product
+  construction, gives **exactly as many classes in degree two as the subgroup has elements**.  The
+  order of the decomposition group is the local degree, which is the order of the fundamental
+  class, so the classical hypotheses of Tate's theorem hold on every subgroup: **the units of the
+  completion at a finite place are the module of a class formation for the decomposition group**,
+  and the theorems of Tate and of Tate and Nakayama apply to them.
+* `InverseGalois.CFT.Units.DecompositionReciprocity` matches the two invariants the theory carries
+  at a finite place.  One is attached to a Brauer class of the base and reads it after extending
+  scalars to the completion; the other is attached to a class of the decomposition group and reads
+  it after turning that class into a Brauer class of the completion.  A two-cocycle of the whole
+  Galois group has a localization at each place, and the crossed product of the localization is the
+  crossed product of the cocycle extended to the completion, so **the invariant at a place of the
+  class of a global crossed product is the invariant of the class of the decomposition group at any
+  place above it.**  The product formula for the invariants of a Brauer class therefore reads as a
+  statement about decomposition groups, and it says something no local argument can: if the
+  localizations of a global cocycle are coboundaries at every finite place but one, and the class is
+  split at every infinite place, the invariant left over is the inverse of a product of trivial ones
+  and so is trivial too.  All the local invariants then vanish, and the theorem of Albert, Brauer,
+  Hasse and Noether applies: **one place may be left out of a local-global hypothesis for free.**
+* `InverseGalois.CFT.Units.DecompositionIdele` puts the units of a completion inside the ideles.
+  An idele supported at a single finite place is carried by an automorphism to an idele supported
+  at the image place, so the ideles supported at one place are stable exactly under the
+  automorphisms fixing it, and on that subgroup the embedding is equivariant: the automorphism
+  moves the components of an idele around and moves the units of the completion by the action of
+  the decomposition group, and the two agree because the transport of the family at a place left
+  where it is **is** that action.  So **the units of the completion at a finite place are a
+  subrepresentation of the ideles for the decomposition group there**, and composing with the
+  passage to classes lands them in the idele class group.  Reading the component at the place is
+  equivariant for the same reason, and it recovers the unit an idele supported there was built
+  from, so **the units of the completion are a retract of the ideles for the decomposition group**
+  and the embedding stays injective after any functor is applied to it.
+* `InverseGalois.CFT.Units.InfinitePlaceIdele` reads the archimedean components of an idele.  An
+  automorphism permutes them exactly as it permutes the finite ones, so reading the component at an
+  infinite place is equivariant for the decomposition group there; the component of a principal
+  idele is the image of the unit in the completion, and the component of an idele supported at a
+  finite place is trivial.  These are the archimedean halves of the computations that separate one
+  finite place from all the others.
+* `InverseGalois.CFT.Units.StablePlaceIdele` treats a finite place fixed by the whole Galois group,
+  where the group is its own decomposition group.  A two-cocycle with values in the units of the
+  completion there whose ideles bound in the idele class group already bounds upstairs: a bounding
+  one-cochain of the classes lifts to the ideles, the failure of the lift to bound is a two-cocycle
+  of the units of the top field which at every place other than the distinguished one is the
+  coboundary of the component of the lift, and one place left out is exactly what the product
+  formula pays for.  Correcting the lift by the resulting global one-cochain bounds the cocycle on
+  the nose, so **the second cohomology of the units of the completion at a finite place fixed by
+  the whole Galois group injects into the second cohomology of the idele class group.**
+* `InverseGalois.CFT.Units.DecompositionPlaceInjective` removes the hypothesis on the place.  The
+  decomposition group at a finite place is the Galois group of the extension over the decomposition
+  field, and over that field the place is fixed by the whole group, so the statement transports by
+  nothing more than renaming the group: **a two-cocycle of the decomposition group at a finite place
+  with values in the units of the completion there whose ideles bound in the idele classes is a
+  coboundary.**  Counting turns the resulting injection into a bijection — the source has exactly as
+  many elements as the group by local reciprocity, the target at most that many by the second
+  inequality — so **the second cohomology of the units of a completion at a finite place is the
+  second cohomology of the idele class group on the decomposition group there**, and the order of
+  the latter is pinned to the local degree.
+* `InverseGalois.CFT.Units.DecompositionLocalization` inverts that isomorphism.  A class of the
+  idele class group, restricted to a decomposition group, becomes a class of the units of the
+  completion: the localisation of a global class at a place.  Applied to the fundamental class of
+  the extension it produces at every finite place a class whose ideles are, by construction, the
+  restriction of the fundamental class, and which is a fundamental class in its own right — only
+  the multiples of the order of the decomposition group annihilate it, so it generates, its order
+  is the degree of the extension of the completions, and its invariant is a rational with exactly
+  that denominator.  **The classical hypotheses of Tate's theorem hold for it on every subgroup of
+  the decomposition group**, so it serves everywhere the local fundamental class serves, while its
+  relation to the global class is an equation and not a comparison of invariants.
+* `InverseGalois.CFT.Units.DecompositionNakayama` reads the comparison of Tate and Nakayama at a
+  decomposition group.  The comparison attached to the idele class group and the fundamental class,
+  read there, is the comparison of that group for the restricted class, and the localised
+  fundamental class is a class of the units of the completion whose ideles are that restriction.
+  So **everything the comparison produces on a decomposition group already comes from the units of
+  the completion at the place**, and a fortiori from the ideles: on a decomposition group the
+  classes of the idele classes the comparison reaches are classes of ideles, with no information
+  about the extension away from the place.
+* `InverseGalois.CFT.Units.DecompositionNakayamaNext` does the same for the map that leaves the
+  comparison.  The localised fundamental class is carried to the restriction of the fundamental
+  class, so the two extensions attached to those classes are compared by a map of representations,
+  and **on the decomposition group at a finite place the values the map leaving the comparison
+  takes on the classes coming from the units of the completion there are exactly the image of the
+  values the purely local map takes**.  Again nothing about the extension away from the place
+  enters, so the local half of the comparison of the global obstruction with the local ones is a
+  computation at one place.
 * `InverseGalois.CFT.Units.DecompositionField` names the subfield fixed by the decomposition
   group.  An element of it has its image in the completion fixed by the decomposition group, hence
   coming from the completion of the base, so the decomposition field embeds into the completion of
   the base and the Galois group of the completions is the Galois group over it.
+* `InverseGalois.CFT.Units.DecompositionFieldTower` moves that description along a tower.  An
+  element of the top field lies in the decomposition field of a level exactly when its image in the
+  completion above comes from the completion of the level, and an automorphism of the top field
+  fixing the prime restricts to one of the level fixing the prime below; the transport of the
+  completions along the tower carries the completion of the level to itself, so the decomposition
+  field of the level is stable under every automorphism fixing the prime and its embedding into the
+  completion of the level intertwines the two actions.
+* `InverseGalois.CFT.Units.DecompositionFieldLevel` reads the decomposition field of a level from
+  the big extension above it.  A finite Galois level contains any given level together with any
+  given finite set of elements, so the levels are cofinal; and **an element of a level lies in the
+  decomposition field of the level over a smaller level exactly when every automorphism of the whole
+  extension fixing the prime and the smaller level pointwise fixes it** — one direction restricts
+  such an automorphism to the level, the other lifts an automorphism of the level fixing the prime
+  below and observes that the lift fixes the smaller level because its restriction does.
+  Restricting an automorphism fixing the prime first to the level and then to the smaller one is
+  restricting it to the smaller one directly, so the embedding of the decomposition field into the
+  completion of the smaller level is equivariant for the automorphisms fixing the prime.
 * `InverseGalois.CFT.Units.CompletionUnits` passes that description to the unit groups: a fixed
   unit comes from the completion of the base and is nonzero there, hence is a unit below.
 * `InverseGalois.CFT.Units.OrbitPlaces` identifies the orbits of the Galois group on the height one
@@ -2462,6 +3001,26 @@ it that are available here.
   places whose place below avoids a prescribed finite set already generate a solvable Galois group,
   because in the fixed field of the subgroup they generate every place of the base field outside the
   prescribed set splits completely.
+* `InverseGalois.CFT.Units.InertPlace` reads the same generation statement as a statement about the
+  supply of places.  No proper subgroup of a solvable Galois group contains every decomposition
+  group away from a finite set of places of the base, so for a cyclic extension an exponent which
+  does not kill a generator fails to kill some element of some such decomposition group, the
+  elements killed by a fixed exponent forming a subgroup.  When the degree is a power of a prime the
+  orders of the elements are powers of that prime, hence totally ordered by divisibility, so an
+  element escaping the largest proper exponent has the order of a generator and therefore generates:
+  **a cyclic extension of prime power degree has a finite place, away from any prescribed finite set
+  of places of the base, whose decomposition group is the whole Galois group**, and discarding the
+  finitely many ramified places as well makes the arithmetic Frobenius there a generator of the
+  Galois group, with no analysis at all.
+* `InverseGalois.CFT.Units.LocalDegreeLcm` collects those places prime by prime.  For every prime
+  dividing the degree of a cyclic extension, the exponent obtained by dividing the degree by that
+  prime does not kill a generator, so some place away from a prescribed finite set of places of the
+  base has local degree not dividing it; and a divisor of the degree which is not the whole degree
+  divides the degree divided by some prime factor.  Hence **finitely many places, all lying over
+  primes outside the prescribed set, have local degrees whose least common multiple is the degree**,
+  or equivalently the degree and the complementary degrees at those places have greatest common
+  divisor one.  This is the arithmetic input for the surjectivity of the sum of the local
+  invariants: each prime part of the degree is already carried by a single place.
 * `InverseGalois.CFT.Units.HasseHom` reads that generation statement as one about homomorphisms out
   of the Galois group, where the solvability hypothesis becomes free.  A homomorphism into a
   commutative group has a normal kernel whose fixed field is a quotient of the Galois group
@@ -2487,6 +3046,12 @@ it that are available here.
   prime above.  Hence **a homomorphism killing a level and the stabiliser of every nonzero prime is
   trivial**, and with trivial coefficients **a class dying on every decomposition subgroup
   vanishes** — which is the local condition in the shape a local-global principle states it.
+* `InverseGalois.CFT.Units.DecompositionClosed` puts a decomposition subgroup of an infinite
+  extension into the Galois correspondence.  An automorphism fixes a prime of the integers exactly
+  when it respects the membership of every integer, and it fixes an archimedean place exactly when
+  it preserves the absolute value of every element; each of those conditions cuts out the preimage
+  of a set in a discrete space under a continuous map, so **every decomposition subgroup is closed**
+  and hence **is the subgroup fixing its own fixed field.**
 * `InverseGalois.CFT.Units.HasseInflation` spends that on a class of the first cohomology of an
   infinite Galois group whose coefficients are acted on through a finite Galois level.  Restriction
   of scalars identifies the subgroup fixing that level with the Galois group of the big field over
@@ -2809,7 +3374,20 @@ it that are available here.
   named cosets of the index-two case, and the same three corrections show that **a two-cocycle whose
   restriction to a normal subgroup with vanishing first cohomology is a coboundary is cohomologous
   to an inflated cocycle**.  Combining the two halves gives the dévissage that a group has vanishing
-  second cohomology as soon as a normal subgroup and the quotient do.
+  second cohomology as soon as a normal subgroup and the quotient do.  Only the third of the three
+  corrections reads anything about the first cohomology of the subgroup, and it reads only the
+  family of one-cocycles `x ↦ a (σ, σ⁻¹ x σ)` indexed by the elements `σ` of the group; so the same
+  file proves the sharper statement that **a two-cocycle restricting to a coboundary on a normal
+  subgroup and whose transgression is a coboundary as a family is cohomologous to an inflated
+  cocycle**, with the vanishing of the whole first cohomology as the case of a trivial family.
+* `InverseGalois.CFT.GroupCohomology.Transgression` identifies that family when the subgroup acts
+  trivially on the module, which is the situation of an embedding problem split by the fixed field
+  of the subgroup.  Triviality of the action makes each `x ↦ a (σ, σ⁻¹ x σ)` a homomorphism on the
+  subgroup, invariant under conjugation by it, so depending only on the coset of `σ`, and the
+  cocycle identity in two variables becomes the one-cocycle identity in one: **the transgression is
+  a one-cocycle of the quotient with values in the homomorphisms from the subgroup to the module**.
+  The obstruction to a class being inflated is therefore a class of the quotient, a finite object
+  even when the subgroup is enormous, and the criterion for inflation is that it be a coboundary.
 * `InverseGalois.CFT.GroupCohomology.InfResTwo` reads that analysis back into the language of
   representations over the integers, where a two-cocycle whose restriction to a normal subgroup with
   vanishing first cohomology dies is the inflation of a two-cocycle of the quotient with values in
@@ -2869,6 +3447,35 @@ it that are available here.
   starts at the first cohomology of the idele classes, which has just been shown to vanish, so **the
   second cohomology of the units injects into the second cohomology of the ideles** — the global
   half of the Albert-Brauer-Hasse-Noether theorem.
+* `InverseGalois.CFT.Units.IdeleClassTorsionSES` restricts that sequence to the elements killed by a
+  fixed integer.  Injectivity of the first map and exactness in the middle survive the restriction
+  untouched, since both are read off from the same equations; what needs an argument is that the
+  second map stays surjective, because a class killed by the integer is only represented by an idele
+  whose power is a principal idele.  That principal idele comes from a unit of the field which is a
+  power in every completion, so for a prime exponent Wang's theorem makes it a power in the field,
+  and subtracting the principal idele of a root moves the representative to one killed by the
+  exponent without changing its class.  **For a prime exponent the elements killed by that prime of
+  the units, of the ideles and of the idele classes again form a short exact sequence of
+  representations of the Galois group.**
+* `InverseGalois.CFT.Units.IdeleClassTorsionTate` reads its long exact sequence.  Two of the three
+  terms are known: the middle one is, in every degree, the product over the places of the base field
+  of the complete cohomology of a decomposition group with coefficients in the roots of unity of a
+  completion, and the term on the left is the complete cohomology of the roots of unity of the field
+  itself.  Read forwards this gives a vanishing criterion — **the idele classes killed by the prime
+  have no complete cohomology in a degree in which no local factor has any and the roots of unity of
+  the field have none one degree higher.**  Read backwards it identifies the image of the connecting
+  map: **the everywhere locally trivial classes of the roots of unity of the field are exactly the
+  classes coming from the idele classes killed by the prime, one degree lower.**
+* `InverseGalois.CFT.Units.IdeleClassTorsionLocal` runs the same long exact sequence after tensoring
+  with coefficients, which is where it is needed, the idele classes killed by a prime tensored with
+  coefficients being exactly what measures the failure of the theorem of Tate and Nakayama for
+  coefficients with torsion.  The sequence stays exact because its middle term is killed by the
+  prime, and the middle group of the three is again a product of local ones once the coefficients
+  have finite rank over the prime field.  So **a class of the idele classes killed by a prime,
+  tensored with the coefficients, is the image of a family of local classes exactly when the
+  connecting map kills it**, one member of the family for each place of the base field; and every
+  class is of that form as soon as the roots of unity of the field, tensored with the coefficients,
+  carry no complete cohomology one degree higher.
 * `InverseGalois.CFT.GroupCohomology.CyclicCoboundary` turns the Herbrand description of the second
   cohomology of a finite cyclic group into the concrete statement the local half needs: if every
   invariant element is a norm then every two-cocycle is a coboundary, with an explicit one-cochain.
@@ -2885,6 +3492,14 @@ it that are available here.
   decomposition group there is cyclic and the completion has a uniformizer it fixes, so the norms of
   the units of the valuation ring exhaust the fixed ones, and **every two-cocycle of the
   decomposition group with values in those units is a coboundary**.
+* `InverseGalois.CFT.Units.UnramifiedSplit` extracts from that same uniformizer the splitting a
+  twist needs.  Subtracting from a unit of the completion the power of a fixed uniformizer carrying
+  its valuation is a homomorphism onto the units of the valuation ring which commutes with the
+  action and is the identity on those units, so **the units of the valuation ring at an unramified
+  place are a retract of the whole local factor**.  Tensored coefficients destroy the vanishing of
+  the complete cohomology of the units of the valuation ring but not the retraction, and **the
+  complete cohomology of those units with twisted coefficients therefore injects into that of the
+  local factor.**
 * `InverseGalois.CFT.Units.IdeleCoboundary` globalises that: a two-cocycle with values in the ideles
   which is a coboundary at every place is a coboundary.  The coordinates in a Galois orbit determine
   one another, so a local one-cochain at each place assembles into a global one; at all but the
@@ -2893,11 +3508,22 @@ it that are available here.
 * `InverseGalois.CFT.GroupCohomology.MapCoboundary` records the elementary fact that a map of
   representations which is injective on second cohomology reflects coboundaries, which is how an
   injectivity statement coming from a long exact sequence gets applied to an explicit cocycle.
+* `InverseGalois.CFT.GroupCohomology.MapInjective` records the converse packaging.  A class in
+  second cohomology is the class of a two-cocycle and vanishes exactly when that cocycle is a
+  coboundary, so **a map of representations which reflects coboundaries in degree two is injective
+  on second cohomology** — the shape in which an injectivity statement is produced by an explicit
+  computation with cochains rather than consumed by one.
 * `InverseGalois.CFT.Units.ABHN` combines the two halves.  The second cohomology of the units
   injects into the second cohomology of the ideles, and a two-cocycle of the ideles which is locally
   a coboundary is a coboundary, so **a two-cocycle with values in the units of the top field which
   is a coboundary at every place is a coboundary** — the Albert-Brauer-Hasse-Noether theorem in the
   shape of the vanishing of the second Tate-Shafarevich group of the units.
+* `InverseGalois.CFT.Units.ABHNOnePlace` spends the product formula on that statement.  The local
+  invariants of a Brauer class multiply to one, so the invariant at any single place is determined
+  by all the others and one place costs nothing to leave out: **a two-cocycle of the Galois group
+  with values in the units of the top field which is a coboundary at every infinite place and at
+  every finite place but one is a coboundary.**  The hypotheses are stated on explicit cochains,
+  which is the form in which a cocycle arrives from a long exact sequence.
 * `InverseGalois.CFT.Brauer.HasseNoether` reads that on the Brauer group.  Every class over a
   number field is split by a finite Galois extension and is therefore the class of a crossed
   product of it, base change to a completion is base change of the cocycle to the decomposition
@@ -2957,6 +3583,13 @@ it that are available here.
   coboundary, then correcting the section by the cochain produces **a homomorphic lift of that
   homomorphism**, and when the kernel lies inside the Frattini subgroup the lift is automatically
   surjective, so it solves the embedding problem properly.
+* `InverseGalois.CFT.GroupCohomology.AbelianLift` runs the same engine with the centrality dropped.
+  For a merely abelian kernel the factor set is still a two-cocycle, now for the action of the
+  quotient by conjugation through the section, and correcting the section by a trivialising cochain
+  still produces a homomorphic lift; the kernel is presented as an abstract abelian group with an
+  injection into the source, so **a caller may supply the module structure it already has** rather
+  than transport one onto a subtype.  The converse also holds: the factor set pulled back along a
+  homomorphism which lifts is the coboundary of the difference between the section and the lift.
 * `InverseGalois.CFT.Kummer.RootsInBase` matches the two sides of that exchange.  A field containing
   a primitive `n`-th root of unity already contains every `n`-th root of unity of every extension,
   because the image of the primitive root is still primitive; hence the Galois group acts trivially
@@ -3195,6 +3828,24 @@ it that are available here.
   homology of the degree shifted by one below that.  A map of representations induces a map in
   every degree and a short exact sequence has a connecting map in every degree, and the resulting
   sequence, running through all of the integers, is **exact at every one of its spots**.
+* `InverseGalois.CFT.TateCohomology.GroupCongr` transports cohomology along an isomorphism of
+  groups.  A homomorphism of groups together with a compatible map of coefficients composes a
+  cochain with the homomorphism in its arguments and with the coefficient map in its values; when
+  the homomorphism is an isomorphism and the coefficient map is bijective, both operations are
+  bijections, so the induced map of complexes of inhomogeneous cochains is an isomorphism in every
+  degree and hence an isomorphism of complexes.  Homology carries that to an isomorphism, so **the
+  cohomology of a group with coefficients in a representation depends on the pair only up to
+  isomorphism**, which is what lets a computation made for one presentation of a group be read off
+  for another.
+* `InverseGalois.CFT.TateCohomology.DeltaNatural` compares the long exact sequences of two short
+  exact sequences joined by a map: **the connecting map of the complete cohomology commutes with a
+  map of short exact sequences in every integer degree.**  Away from the two middle degrees this is
+  the naturality of the connecting map of a map of complexes; out of degree zero and into degree
+  minus one it follows from that same naturality once the comparison of the ordinary cohomology and
+  homology in degree zero with the invariants and the coinvariants is known to be natural.  Out of
+  degree minus one there is no ordinary connecting map behind it: a class there is computed from a
+  vector of the middle whose norm comes from the sub, the map of sequences carries such a vector to
+  another one, and both ends of the snake are carried along with it.
 * `InverseGalois.CFT.TateCohomology.Acyclic` identifies the functions on the group with the
   representation coinduced from the trivial subgroup, and deduces from Shapiro's lemma that **the
   complete cohomology of the functions on the group vanishes in every integer degree**.  A short
@@ -3206,9 +3857,77 @@ it that are available here.
   complete cohomology of the representation in the following degree**, and **the complete
   cohomology of a representation in a degree is the complete cohomology of its coshift in the
   following degree**.
+* `InverseGalois.CFT.TateCohomology.ShiftNatural` makes those two identifications natural.  A map of
+  representations induces a map of the functions on the group, by composing a function with it; that
+  map carries the record of the translates of a vector to the record of the translates of its image,
+  so it descends to the shifts, and it commutes with the summation, so it restricts to the coshifts.
+  Both defining sequences are therefore functorial with the functions on the group in the middle,
+  and since the connecting map of the complete cohomology commutes with a map of short exact
+  sequences, **both moves of the degree commute with a map of representations**.  A dimension
+  shifting argument can then be carried along a diagram instead of being applied to one
+  representation at a time.
+* `InverseGalois.CFT.TateCohomology.ShiftSplit` observes that the two defining sequences are split
+  once the action is forgotten.  A vector placed at the unit of the group sums to that vector, so it
+  is a section of the summation, and subtracting the vector so placed at the unit retracts the
+  functions on the group onto the kernel of the summation; the value at the unit of the group
+  recovers a vector from the record of all of its translates, and subtracting the record of the
+  translates of that value kills the translates and so descends to a section of the passage to the
+  shift.  Neither splitting is equivariant, and neither can be, since an equivariant one would make
+  the complete cohomology of the representation a summand of a group that vanishes.  What they give
+  is **the hypothesis under which an extension compares with the two defining sequences**, and the
+  two defining sequences satisfy it themselves.
+* `InverseGalois.CFT.TateCohomology.Cyclic` compares the shift with the coshift directly, for a
+  group generated by a single element.  Send a function on the group to the function whose value at
+  a point is the value of the original at the point translated by the generator, corrected by the
+  inverse action of the generator, minus the original value.  This twisted difference is
+  equivariant, because every element of the group commutes with the generator; it kills exactly the
+  record of the translates of a vector, because a function killed by it is determined by its value
+  at the neutral element; and its values are exactly the functions whose values sum to zero,
+  because a telescoping sum inverts the difference against the generator whenever the total
+  vanishes.  So it identifies the shift with the coshift, the two moves of the degree compose, and
+  **the complete cohomology of a representation of a finite cyclic group in a degree is its
+  complete cohomology two degrees lower**.  A vanishing statement in one degree therefore
+  propagates to every second degree above it, which is what makes the arithmetic of a cyclic
+  extension computable.
+* `InverseGalois.CFT.TateCohomology.CyclicVanishing` turns that periodicity into a criterion an
+  arithmetic input can meet.  The two middle degrees are elementary — degree zero is the invariants
+  modulo the norms and degree minus one is the classes in the coinvariants killed by the norm — so
+  asking them to vanish is asking that every invariant vector be a norm and that every vector killed
+  by the norm be the difference of a vector and one of its translates, which is exactly the shape a
+  computation in a cyclic extension produces.  For a group generated by a single element the norm is
+  moreover the plain sum of the powers of that element below its order, so no reference to the group
+  as an index set survives.  Periodicity moves both directions, so a degree without cohomology has
+  none two degrees higher and none two degrees lower, and an induction over the integers starting
+  from the adjacent pair reaches everything: **a representation of a finite cyclic group whose
+  invariants are all norms and whose norm-zero vectors are all differences has no complete
+  cohomology in any degree whatsoever.**
+* `InverseGalois.CFT.TateCohomology.Product` takes a family of representations indexed by an
+  arbitrary set and forms the product on which the group acts one factor at a time.  A family is
+  invariant exactly when each of its members is and the norm of a family is the family of the
+  norms, so in degree zero the complete cohomology of the product is the product of the complete
+  cohomologies.  A family of functions on the group is the same thing as a function on the group
+  with values in the product, and under that identification the embeddings of the factors assemble
+  into the embedding of the product and the summations of the factors into the summation of the
+  product; so the product sits in two short exact sequences whose middle term is the functions on
+  the group with values in the product, hence has no complete cohomology, and whose remaining terms
+  are the products of the shifts and of the coshifts.  Running the resulting bijections in the two
+  directions from degree zero gives **the complete cohomology of a product of representations as
+  the product of their complete cohomologies, in every integer degree**, which is what turns a
+  module built place by place into a product of local contributions.
+* `InverseGalois.CFT.TateCohomology.Pair` specialises that to a product of two representations, a
+  family indexed by the two booleans, and records the identification of a function on the booleans
+  with a pair.  The group of ideles is a product of the local factors at the infinite places and
+  those at the finite ones, two halves indexed by different sets, so its cohomology is only the
+  product of the two contributions once this specialisation is available.
 * `InverseGalois.CFT.TateCohomology.Annihilate` runs the two inductions those identifications
   allow, upwards from degree zero and downwards from degree minus one, and concludes that **the
   order of the group annihilates the complete cohomology in every integer degree**.
+* `InverseGalois.CFT.TateCohomology.FreePresentation` presents an arbitrary representation by one
+  whose underlying module is free: the free module on the elements of the representation, with the
+  group permuting the generators, maps onto it by reading a formal combination of elements as the
+  combination itself.  The construction costs nothing and is available for every representation,
+  and it is what lets a theorem which asks the coefficients to be flat say something about
+  coefficients which are not.
 * `InverseGalois.CFT.TateCohomology.Functorial` records that the map induced in a fixed degree
   takes the identity to the identity and a composite to the composite, so that **an isomorphism of
   representations induces an isomorphism of the complete cohomology** and a representation
@@ -3220,6 +3939,18 @@ it that are available here.
   to invariants of the group and multiplies invariants of the group by the index, and the second
   does the same to the coinvariants, so **corestriction after restriction is multiplication by the
   index** in degree zero and in degree minus one.
+* `InverseGalois.CFT.TateCohomology.Shapiro` compares the complete cohomology of a group with
+  coefficients coinduced from a subgroup with the complete cohomology of that subgroup.  An
+  equivariant function is invariant exactly when it is constant, so evaluation at the neutral
+  element identifies the invariants; the function supported on the subgroup carrying all the
+  translates of a vector and the sum over a transversal of the classes of the values are mutually
+  inverse on the coinvariants; and since the group is the product of a transversal and the
+  subgroup, the norm of the group becomes the norm of the subgroup under that pair of maps.  A
+  commuting square of that shape transports both middle Tate groups, and the ordinary cohomology
+  above and the ordinary homology below are the two halves of Shapiro's lemma already available,
+  the second through the isomorphism between the induced and the coinduced representation of a
+  subgroup of finite index: **the complete cohomology of a coinduced representation is the complete
+  cohomology of the representation it is coinduced from, in every integer degree.**
 * `InverseGalois.CFT.TateCohomology.Restrict` carries those two maps to every degree.  A choice of
   coset representatives splits the group as the cosets times the subgroup, so the functions on the
   group, read on the subgroup, are the functions on the subgroup with values in the functions on
@@ -3227,10 +3958,92 @@ it that are available here.
   shifting sequence is still bijective after restriction and moves a degree.  Since the same
   connecting maps are used on both sides, **corestriction after restriction is multiplication by
   the index in every integer degree**.
+* `InverseGalois.CFT.TateCohomology.RestrictNatural` reads a map of representations on the subgroup
+  and follows it through that construction.  In the two middle degrees the two transfers commute
+  with any equivariant map, one term of the sum at a time; in every other degree the identifications
+  used are connecting maps of the shifting sequences read on the subgroup, and a connecting map
+  commutes with a map of short exact sequences.  So **restriction to a subgroup and corestriction
+  from it both commute with a map of representations, in every integer degree**, which is what turns
+  a comparison of coefficients into a comparison of the local and the global reading of a class.
+* `InverseGalois.CFT.TateCohomology.RestrictShift` records the two recursions that define those maps
+  as the statements they are.  In a nonnegative degree restriction is defined through the
+  identification of the complete cohomology of the shift, and in a degree below minus one through
+  the identification of the complete cohomology of the coshift, so **restriction commutes with the
+  identification of the shift in every nonnegative degree and with the identification of the coshift
+  in every degree below minus one**, and the same for corestriction, with nothing to prove in either
+  range.  The two degrees left out are the two where the recursion has a base case rather than a
+  step, and they are the only place where the comparison carries content.
+* `InverseGalois.CFT.TateCohomology.RestrictDelta` supplies that content in the degree below zero.
+  A class in degree minus one is represented by an element of the middle term whose norm comes from
+  the sub, and the connecting map sends it to the class of that preimage; the transfer of such an
+  element is again of that kind because the norm of the group is the transfer of the norm of the
+  subgroup, and the preimage transfers along with it.  Reading the same computation in the two
+  directions gives that **the connecting map in degree minus one commutes with restriction to a
+  subgroup and with corestriction from it**, for an arbitrary short exact sequence of
+  representations.  With the two recursions this is the base case that a comparison in a general
+  degree rests on.
+* `InverseGalois.CFT.TateCohomology.RestrictSplit` closes the square between restriction and the
+  connecting map.  Reading a sequence on a subgroup is a functor and carries the identity on the sub
+  to the identity, so a comparison of an extension with either defining sequence survives passage to
+  a subgroup, and the connecting map of the restricted extension is the restricted comparison
+  composed with the identification of the shift for the subgroup, and dually with the coshift.  Each
+  of those two identifications commutes with restriction exactly in the range of degrees where it is
+  the definition, and the two ranges together with the base case in the degree below zero leave
+  nothing out.  Hence **restriction to a subgroup and corestriction from it both commute with the
+  connecting map of an extension split as a sequence of modules, in every integer degree**.  Applied
+  to the two defining sequences, which are split, this removes the restriction on the degree from
+  the two identifications themselves: **both moves of the degree commute with restriction and with
+  corestriction in every integer degree.**
+* `InverseGalois.CFT.TateCohomology.RestrictShiftBridge` compares the two shifts a subgroup has.
+  The shift of a representation read on a subgroup is still the functions on the whole group, while
+  the shift of the representation read on the subgroup is the functions on the subgroup only: the
+  second is not the first read on the subgroup, and there is a canonical map from the first to the
+  second.  It is the comparison of a split sequence with the sequence defining a shift, for the
+  splitting given by the value at the unit of the group and by subtracting the record of all the
+  translates of that value, and on a function it restricts to the subgroup and subtracts those
+  translates.  **The identification raising the degree by one on a subgroup is the identification of
+  the restricted representation composed with that map**, and **the map commutes with the passage of
+  the shift through a tensor product**, on the nose.
+* `InverseGalois.CFT.TateCohomology.NakayamaRestrict` carries that square to the comparison of Tate
+  and Nakayama.  The extension a cocycle tensors is a product as a sequence of modules, the tensor
+  product being one coordinate and the coefficients the other, and read on a subgroup it is the
+  extension the restricted cocycle tensors, on the nose; so **the connecting map of the tensored
+  extension commutes with restriction to a subgroup and with corestriction from it**, in every
+  integer degree.  The comparison is that connecting map followed by two identifications, the shift
+  of a tensor product with the tensor product of the shift and the shift of the degree, and both of
+  those commute with restriction and with corestriction as well.  Hence **the comparison of Tate and
+  Nakayama attached to a class in degree two commutes with restriction to a subgroup and with
+  corestriction from it**, the comparison on the subgroup being the one the restricted cocycle
+  builds.  This is what lets a question about the comparison for the whole group be settled on a
+  Sylow subgroup one prime at a time: corestriction from a Sylow subgroup is onto, and it carries
+  the image of the comparison there into the image of the comparison here.
+* `InverseGalois.CFT.TateCohomology.NakayamaSubgroup` identifies the comparison a subgroup inherits
+  with the comparison it has of its own.  The cocycle of the shift read on the subgroup and the
+  cocycle chosen on the subgroup both have, as their class in degree one, the restriction of the
+  prescribed class in degree two; pushed along the comparison of the two shifts they are therefore
+  cohomologous, and a map of representations carrying one cocycle to a cohomologous one carries the
+  connecting map of one tensored extension to the connecting map of the other.  So **the comparison
+  of Tate and Nakayama on a subgroup is the comparison of the subgroup**, for the representation
+  read there and the restriction of the class.  The consequence is a local-to-global statement: if a
+  representation of the subgroup maps to the representation of the group read there and carries a
+  class in degree two of its own to the restriction of the prescribed class — as the units of a
+  completion map to the idele classes and carry the fundamental class localised at a place to the
+  restriction of the fundamental class — then **everything the comparison produces on the subgroup
+  already comes from that representation**, so that a global obstruction read on a decomposition
+  group is a local obstruction.
 * `InverseGalois.CFT.TateCohomology.SylowInjective` draws the consequence that a class killed by
   restriction to a subgroup is killed by the index of that subgroup, so that **a class killed by a
   power of a prime and by restriction to a Sylow subgroup for that prime vanishes**: the study of
   the complete cohomology of a finite group reduces to its Sylow subgroups, one prime at a time.
+* `InverseGalois.CFT.TateCohomology.SylowSurjective` reads the same relation in the other
+  direction.  Writing one as a combination of the index of a subgroup and a multiple that kills a
+  class, the term carrying the multiple disappears and the class is exhibited as a corestriction,
+  so **a class killed by a natural number prime to the index of a subgroup comes from that
+  subgroup**.  Coefficients killed by a power of a prime have complete cohomology killed by the
+  same power, because the multiple of the identity that kills them induces that multiple on the
+  cohomology; so **corestriction from a Sylow subgroup is onto the complete cohomology of
+  coefficients killed by a power of that prime**, which is the surjectivity accompanying the
+  injectivity of restriction.
 * `InverseGalois.CFT.TateCohomology.Iterate` repeats the shift and the coshift, so that **the
   vanishing of the complete cohomology in a single degree travels to any other degree** at the
   price of replacing the representation by an iterated shift or coshift of it.
@@ -3357,6 +4170,103 @@ it that are available here.
   complete cohomology of a representation in a degree is the complete cohomology of its tensor
   product with the coefficients two degrees higher**, as soon as the tensored extension has no
   complete cohomology.
+* `InverseGalois.CFT.TateCohomology.TateNakayamaError` asks what happens when the tensored
+  extension does have some.  The comparison is a map whatever the coefficients are, since it is
+  built from the connecting map of the tensored extension and two isomorphisms; and the long exact
+  sequence describes it completely, **its image being the classes that die in the tensored
+  extension and its kernel the classes that come from there**.  So **the comparison is bijective
+  as soon as the tensored extension has no complete cohomology in the two degrees that bound it**,
+  rather than in all of them, and what measures the failure of the theorem of Tate and Nakayama is
+  exactly the complete cohomology of the extension tensored with the coefficients, in those two
+  degrees.  The comparison agrees with the isomorphism of the previous file wherever the latter is
+  defined, so nothing that was proved with it has to be reproved.
+* `InverseGalois.CFT.TateCohomology.NakayamaCoeff` asks how that comparison depends on the
+  coefficients, the representation and the class staying fixed.  Nothing has to be corrected this
+  time: the cocycle that builds the twisted extension belongs to the representation and not to the
+  coefficients, so a map of coefficients extends to the two tensored extensions simply by acting on
+  both coordinates, and that extension is equivariant as it stands.  It is a map of short exact
+  sequences whose two outer components are the map of coefficients itself and the same map tensored
+  with the representation, so the connecting maps agree; the comparison of the shift of a tensor
+  product with the tensor product of the shift is natural in the second factor as well, and **the
+  comparison of Tate and Nakayama attached to a class in degree two commutes with a map of
+  coefficients**.  The consequence is what makes a free presentation of the coefficients useful:
+  **if the comparison is onto for one set of coefficients, then everything the map of coefficients
+  produces two degrees higher is already a value of the comparison for the target**, so the failure
+  of the comparison to be onto is confined to the cokernel of the map a presentation induces.
+* `InverseGalois.CFT.TateCohomology.NakayamaNatural` asks how that comparison depends on the
+  representation it is attached to.  A map of representations carries a class in degree two to a
+  class in degree two, but it carries the cocycle chosen for the first only to a cocycle
+  cohomologous to the cocycle chosen for the second, and the difference is a coboundary.  That
+  coboundary is precisely the correction that makes the obvious map of the two tensored extensions
+  equivariant: the vector whose failure to be invariant is the difference is added to the tensor
+  coordinate, and the corrected map is a map of short exact sequences which is the map of
+  representations tensored with the coefficients on the sub and the identity on the quotient.  The
+  connecting maps therefore agree, the comparison of the shift of a tensor product with the tensor
+  product of the shift is natural, and **the comparison of Tate and Nakayama attached to a class in
+  degree two commutes with a map of representations**, the class on the target being the image of
+  the class on the source.  The consequence used later is a containment of images: **whatever the
+  comparison produces for a class that comes from another representation already comes from that
+  representation.**
+* `InverseGalois.CFT.TateCohomology.NakayamaNextNatural` carries that naturality one step further
+  along the long exact sequence.  The map that leaves the comparison is the map induced by the
+  inclusion of the tensor product into the extension attached to the class, read through the
+  identification of the shift of a tensor product with the tensor product of the shift and through
+  the identification of the complete cohomology of a shift with that of the representation one
+  degree higher; both identifications are natural, and the two extensions are compared by the very
+  map that made the comparison natural, so **the map leaving the comparison commutes with a map of
+  representations as well**.  What that buys is the only form in which the obstruction of Tate and
+  Nakayama is computable: it is a map out of a group with no independent description, but **the
+  values it takes on the classes coming from a second representation are exactly the image of the
+  values the map of that second representation takes**, and the second representation may be a
+  local one.  The identification of the target of the obstruction with the vectors killed by the
+  prime is an isomorphism, so a spanning statement about the obstruction is the same statement
+  about the map it is built from, where that naturality is available.
+* `InverseGalois.CFT.TateCohomology.NakayamaNextRestrict` asks the same question of a subgroup
+  rather than of a map of representations.  The two identifications of degree that the map leaving
+  the comparison is read through both commute with restriction and with corestriction, and they are
+  invertible, so their inverses do too; the induced map commutes with both by naturality.  Hence
+  **the map leaving the comparison commutes with restriction to a subgroup and with corestriction
+  from it**, and the consequence used later is again a statement about images: as soon as
+  corestriction of the tensor product from the subgroup is onto, **whatever the map leaving the
+  comparison reaches on the whole group is the corestriction of what it reaches on the subgroup**.
+  That is what turns a question about a Sylow subgroup into a question about the places one at a
+  time, since the classes coming from a product over the places are corestrictions from the
+  stabilisers of the places.
+* `InverseGalois.CFT.TateCohomology.DeltaShift` removes the connecting map from that comparison
+  altogether.  The sequence defining the shift is the universal extension with acyclic middle term,
+  and its connecting map is the identification of the complete cohomology of the shift with that of
+  the representation one degree higher; so **the connecting map of an extension that compares with
+  the shifting sequence is that identification composed with the map induced by the comparison in
+  the third place.**  The tensored extension does compare with it, because it is a sum as a module:
+  reading an element in the first entry of all of its translates is an equivariant map into the
+  functions on the group, and modulo the translates of the tensor product the result depends only on
+  the second entry, so the coefficients map to the shift of the tensor product by sending an element
+  to the class of the function pairing the values of the cocycle with the moved element.  The
+  outcome is that **the comparison of Tate and Nakayama is a composite of identifications of shifts
+  and of maps induced by morphisms of representations**, with no connecting map left in it, so any
+  statement already available for induced maps and for the identification of a shift reaches the
+  comparison itself.
+* `InverseGalois.CFT.TateCohomology.DeltaCoshift` does the same on the other side, which is what a
+  negative degree needs.  The sequence defining the coshift of a representation has the functions on
+  the group as middle term and the summation over the group onto the representation, and its
+  connecting map is the identification of the complete cohomology of the representation with that of
+  its coshift one degree higher.  An extension whose projection has a section as a map of modules
+  compares with it: lifting the values of a function on the group and summing them after undoing the
+  translation is an equivariant map into the middle term of the extension, compatible with the two
+  projections because the section is one, and the identity on the quotient.  So **the connecting map
+  of such an extension is the identification of the coshift followed by the map induced on the
+  subs.**  The tensored extension is of that kind, its middle term being a product, so **the
+  comparison of Tate and Nakayama is also a composite of induced maps and the identification of a
+  coshift**, which is the expression a degree below the range the shift covers.
+* `InverseGalois.CFT.TateCohomology.DeltaRetract` frees the first of those two comparisons from the
+  tensor product it was written for.  All that the comparison with the shifting sequence uses is a
+  retraction of the middle term of the extension onto its sub as a map of modules: reading all the
+  translates of an element of the middle term through such a retraction is equivariant and restores
+  the embedding of the sub, and modulo the translates of the sub the result depends only on the
+  image in the quotient, because two elements with the same image differ by an element of the sub.
+  So **the connecting map of an extension whose sub is a direct summand of its middle term is the
+  map induced on the quotients followed by the identification of the shift**, for any extension
+  split as a sequence of modules, the tensored one among them.
 * `InverseGalois.CFT.TateCohomology.TensorFunctor` tensors a map of representations on the right
   with a fixed representation.  The underlying map acts on the first factor and leaves the second
   alone, and it commutes with the diagonal action because each factor is moved separately;
@@ -3366,6 +4276,13 @@ it that are available here.
   can fail is the injectivity of the map from the sub, and flatness of the fixed representation
   supplies exactly that.  So **a short exact sequence tensored with a flat representation is short
   exact**.
+* `InverseGalois.CFT.Tate.TensorSplit` records what is left of injectivity when flatness is out of
+  reach.  A map of representations with a left inverse is carried by any functor to a map with a
+  left inverse, and a map with a left inverse is injective; complete cohomology in a fixed degree is
+  such a functor and so is tensoring on the right, so **a map of representations that is a retract
+  stays injective after tensoring, after passing to complete cohomology, and after both**.  That is
+  what separates a local factor of the ideles from the units of its valuation ring once the
+  coefficients are twisted, the vanishing available for untwisted coefficients being gone.
 * `InverseGalois.CFT.TateCohomology.TensorTrivial` pays the price left over by the previous file.
   **Multiplication by a natural number commutes with tensoring**, because it may be carried out on
   either factor, so multiplication by a prime is injective on the complete cohomology of a tensor
@@ -3391,6 +4308,446 @@ it that are available here.
   after tensoring with a representation killed by that prime** -- and when the prime acts without
   torsion the reduction inherits the vanishing from the representation itself.  This gives **the
   theorem of Tate and Nakayama for coefficients killed by a prime**.
+* `InverseGalois.CFT.TateCohomology.TorsionShift` factors multiplication by a natural number into
+  two short exact sequences: the vectors it kills, the representation and its multiples, and then
+  the multiples, the representation and the reduction.  Both have the representation itself in the
+  middle, so when it has no complete cohomology at all both connecting maps are bijective and
+  **the complete cohomology of the reduction in a degree is the complete cohomology of the vectors
+  killed by the number two degrees higher.**  In particular **the reduction has no first cohomology
+  as soon as those vectors have none in degree three**, which is what the previous file asks of the
+  extension attached to the fundamental class.
+* `InverseGalois.CFT.TateCohomology.TorsionInduced` takes the vectors killed by a number along the
+  sequence defining the shift.  Taking them is a functor, and exactness on the left and in the
+  middle survives at once; on the right it survives too, because the record of all the translates
+  of a vector can be undone by reading off the value at the identity, so a function whose class in
+  the shift is killed by the number can be corrected by the record of its own value at the identity
+  into a function that is itself killed by the number.  The functions on the group with values in
+  the vectors killed by the number are exactly the vectors killed by the number in the functions on
+  the group, so the middle term still has no complete cohomology, over the group and over any of
+  its subgroups, and **the complete cohomology of the vectors killed by a number in the shift is
+  the complete cohomology of the vectors killed by that number one degree higher.**
+* `InverseGalois.CFT.TateCohomology.TorsionNakayama` spends those two dimension shifts on the
+  hypothesis left over above.  The extension attached to the fundamental class is cohomologically
+  trivial on each Sylow subgroup, and the base ring has no torsion at the prime, so the vectors of
+  the extension killed by the prime are the vectors of the shift killed by the prime.  Running the
+  shift of the torsion and then the shift of the reduction, **the reduction modulo a prime of the
+  extension attached to the fundamental class has no first cohomology on a Sylow subgroup for that
+  prime as soon as the vectors of the representation killed by the prime have no complete
+  cohomology there in degree four**, and **the theorem of Tate and Nakayama for coefficients killed
+  by a prime holds under that hypothesis alone** -- a statement about the coefficients one starts
+  from rather than about an auxiliary extension.
+* `InverseGalois.CFT.TateCohomology.TensorPExact` keeps a short exact sequence exact when the
+  coefficients are killed by a prime.  Tensoring preserves surjectivity and exactness in the
+  middle whatever the coefficients are; only injectivity can fail, and it does not fail here.  A
+  module killed by a prime is a vector space over the field with that many elements, so a subspace
+  of it is a direct summand: **an injection into a module killed by a prime has a retraction**,
+  additive rather than equivariant, and a retraction is all that survives of it into the tensor
+  product.  So **a map into a representation killed by a prime stays injective after tensoring**
+  with anything, and for a general map the same argument applies to its reduction modulo the
+  prime, since tensoring with coefficients killed by a prime does not see the difference between a
+  representation and its reduction.  Hence **a short exact sequence stays short exact after
+  tensoring with coefficients killed by a prime as soon as its first map stays injective modulo
+  that prime** -- and with no condition at all when its middle term is itself killed by the prime.
+* `InverseGalois.CFT.TateCohomology.TensorRight` tensors in the other variable.  A map of
+  coefficients, tensored on the left with a fixed representation, is again a map of
+  representations, and composition and identities are respected factor by factor, so a short
+  complex of coefficients is carried to a short complex.  Right exactness holds on either side, so
+  again only injectivity can fail and flatness of the fixed representation supplies it: **a short
+  exact sequence of coefficients tensored with a flat representation is short exact.**  Both
+  variables are needed together, because a class formation sits in the first and the coefficients
+  of an embedding problem sit in the second.
+* `InverseGalois.CFT.TateCohomology.TensorTor` measures what is lost when the coefficients are
+  presented.  Tensoring a representation with a presentation of the coefficients is right exact but
+  not exact: the map from the sub of the presentation into its middle term need no longer be
+  injective, and its kernel is **the first derived tensor product**, which vanishes as soon as the
+  representation is flat.  Nothing else is lost, so the four terms are exact, and cutting them at
+  the image of the middle map gives two short exact sequences with the tensor products with the sub
+  and with the middle term in the middle.  Those two are acyclic whenever the representation is
+  cohomologically trivial on every Sylow subgroup and the presentation is flat, so both connecting
+  maps are bijective and **the complete cohomology of the tensor product with the coefficients in a
+  degree is the complete cohomology of the first derived tensor product two degrees higher.**  That
+  is exactly the correction to the theorem of Tate and Nakayama for coefficients which are not
+  flat.
+* `InverseGalois.CFT.TateCohomology.TensorPTorsionShift` computes that correction without ever
+  forming a derived tensor product, by working in the first variable instead.  A presentation of a
+  representation by one on which a prime acts without torsion, read modulo that prime, becomes four
+  exact terms: the vectors of the quotient killed by the prime, the two reductions, and the
+  reduction of the quotient.  Cutting them at the cycles gives two short exact sequences whose
+  middle terms are reductions, hence killed by the prime, so both stay short exact after tensoring
+  with any coefficients killed by the prime -- no flatness and no derived functor are needed.  What
+  sits at the bottom is identified directly: a vector of the sub whose image is a multiple of the
+  prime determines uniquely the vector of the middle term it is the multiple of, that vector has
+  image killed by the prime in the quotient, every such image arises this way, and the vectors of
+  the sub dying on either side are exactly the multiples of the prime, so **the lower kernel of a
+  reduced presentation is the vectors of the quotient killed by the prime.**  Both connecting maps
+  are then bijective whenever the two terms of the presentation are acyclic after tensoring, and
+  **the complete cohomology of a representation tensored with coefficients killed by a prime, in a
+  degree, is the complete cohomology of the vectors it kills, tensored with the same coefficients,
+  two degrees higher.**  The free cover supplies a presentation for which the hypotheses hold as
+  soon as the representation is cohomologically trivial on each Sylow subgroup for the prime.
+* `InverseGalois.CFT.TateCohomology.TensorTorsionError` removes the hypotheses altogether, by naming
+  what the comparison of Tate and Nakayama loses instead of asking that it lose nothing.  The
+  comparison is built from a connecting map followed by two identifications, and identifications
+  neither add to a kernel nor take from an image, so what the comparison kills is what the
+  connecting map kills, and what dies just after it is what dies just after the connecting map.
+  Those two are read off the long exact sequence of the extension by a cocycle: **the kernel of the
+  comparison is the image of the term before it and its image is the kernel of the term after it**,
+  and both of those terms are the extension tensored with the coefficients.  When the coefficients
+  are killed by a prime that extension is the vectors killed by the prime, three and four degrees
+  above, so **the comparison of Tate and Nakayama sits in four exact terms whose two ends are the
+  vectors killed by the prime, tensored with the same coefficients** -- with no hypothesis at all
+  beyond the classical one on the Sylow subgroups.  The isomorphism of the previous file is the
+  case where the two ends vanish.
+* `InverseGalois.CFT.TateCohomology.NakayamaSubgroupError` reads those four terms over a subgroup.
+  A subgroup carries the restricted class, and the count that yields the classical hypotheses on the
+  subgroups of the group yields them on the subgroups of a subgroup, so the four term exact sequence
+  exists there with the representation and the coefficients read on the subgroup.  Its middle map is
+  the comparison the subgroup inherits, which is the comparison of the subgroup itself.  Hence
+  **what the comparison of Tate and Nakayama produces over a subgroup is exactly what the
+  obstruction map of that subgroup kills**, and a spanning condition over a subgroup becomes a
+  statement about one linear map defined there.
+* `InverseGalois.CFT.TateCohomology.TorsionErrorLong` widens that window by one place.  The
+  obstruction is, through the identification of the tensored extension with the vectors killed by
+  the prime three degrees higher, the map induced by the inclusion of the tensor product into the
+  extension, and the map that follows it in the long exact sequence is the one induced by the
+  projection of the extension onto the coefficients -- which is, through the same identification,
+  the map entering the comparison one degree higher.  Exactness of the long exact sequence at the
+  middle term therefore says that **what the obstruction of Tate and Nakayama at a prime produces in
+  a degree is exactly what the map entering the comparison one degree higher kills**, so the four
+  term sequence extends to a long exact sequence alternating between the coefficients, their tensor
+  product with the representation, and the vectors of the representation killed by the prime.  A
+  statement about the image of the obstruction thereby becomes a statement about the kernel of an
+  explicit map, over the group or over any subgroup of it.
+* `InverseGalois.CFT.TateCohomology.TensorPi` lets the coefficients pass through a product.  A
+  tensor product does not commute with an infinite product of groups, so a family of
+  representations tensored with fixed coefficients is not in general the product of the tensored
+  factors; it is, however, as soon as the coefficients are of finite rank over the field with a
+  prime number of elements and every factor is killed by that prime.  A choice of coordinates on
+  the coefficients multiplies a vector killed by the prime by a residue class, and **that
+  multiplication is additive in the class precisely because the vector is killed by the prime**, so
+  the coordinates assemble into a map from the group tensored with the coefficients to a finite
+  power of the group.  Reading the coordinates back off the distinguished vectors inverts it, and
+  **an abelian group killed by a prime, tensored with coefficients of finite rank over the field
+  with that many elements, is a finite power of the group** -- naturally in the group.  Naturality
+  compares the coordinates of a product with the coordinates of each factor and identifies the
+  canonical map between them, so **a product of representations killed by a prime, tensored with
+  such coefficients, is the product of the factors tensored with them**, and it has no complete
+  cohomology in a degree in which no factor tensored with the coefficients has any.  For the ideles
+  that is the whole point: the vectors killed by a prime are a product over the places, and this is
+  what turns the obstruction to the comparison of Tate and Nakayama into a condition place by
+  place.
+* `InverseGalois.CFT.TateCohomology.TensorPair` reads that off for a module visibly built from two
+  halves.  A product of two representations is a product of a family indexed by the booleans, so
+  **the complete cohomology of a product of two representations killed by a prime, tensored with
+  coefficients of finite rank over the field with that many elements, is the product of the
+  complete cohomologies of the two factors tensored with the coefficients** — the group of ideles
+  being exactly such a module, the infinite places and the finite ones.
+* `InverseGalois.CFT.Tate.FamilyTensor` carries the coefficients through the orbit decomposition
+  itself, and does it without ever unwinding that decomposition.  Tensoring each module of a family
+  with a fixed representation, and letting the group act on both factors at once, gives another
+  family over the same index set; **the sections of the tensored family are the sections of the
+  original family tensored with the coefficients** whenever every module of the family is killed by
+  a prime and the coefficients are of finite rank over the field with that many elements, by the
+  same coordinates as for a product.  At a base point of an orbit the stabiliser sees the module
+  there tensored with the coefficients restricted to it, so the orbit decomposition already proved
+  for an arbitrary family applies verbatim to the tensored one, and **the sections of a family
+  killed by a prime, tensored with such coefficients, have no complete cohomology in a degree as
+  soon as no stabiliser has any with the restricted coefficients**.
+* `InverseGalois.CFT.Tate.FamilyTensorOrbit` upgrades the vanishing to the identification behind
+  it: **the complete cohomology of the sections of a family tensored with the coefficients is the
+  product, over the orbits of the index set, of the complete cohomology of the stabiliser of a
+  point of the orbit with coefficients in the module there tensored with the restricted
+  coefficients**, and the same for the sections killed by the prime.  The vanishing follows, but a
+  long exact sequence built out of these groups needs the isomorphism itself, so both are stated.
+* `InverseGalois.CFT.Tate.FamilyTensorFull` removes the hypothesis that the modules of the family
+  be killed by the prime, which the groups that actually occur do not satisfy: the units of the
+  completions of a number field at its places are killed by nothing.  Only the coefficients need be
+  finite.  A basis of the coefficients over the prime field writes every element of a tensor
+  product as a sum of pure tensors along the basis vectors, and the element determines those
+  coordinates up to multiples of the prime; divisibility by the prime is read in the quotient by
+  the multiples of the prime, which is killed by the prime whatever the module, so the coordinate
+  map available there detects it.  An element of the kernel therefore has all its coordinates
+  divisible by the prime, and the prime moves across the tensor sign onto the basis vectors, where
+  it kills them.  Hence **the sections of an arbitrary family tensored with coefficients of finite
+  rank over the prime field are the sections of the tensored family**, and **the complete
+  cohomology of those tensored sections is the product over the orbits of the local
+  contributions** — which is the group of ideles, place by place, in its decomposition groups.
+* `InverseGalois.CFT.Tate.FamilyTensorLocal` twists the detection of a class at the indices.  Since
+  the coefficients pass through the sections, a class of the first cohomology of the twisted
+  sections is a class of the sections of the twisted family, and the coboundary theorem for families
+  applies to it; the local hypothesis it needs is the given one, because evaluation at an index
+  commutes with tensoring and the twisted family at a fixed index is the module there tensored with
+  the restricted coefficients.  So **a class of the first cohomology of the twisted sections
+  vanishes as soon as, at every index, its restriction to the stabiliser followed by evaluation
+  there vanishes** — the local-global statement the ideles need, with no isomorphism onto a
+  coinduced module anywhere in it.
+* `InverseGalois.CFT.Tate.ProdH1` cuts a representation into two pieces.  A pair of maps out of a
+  representation whose combined effect is a bijection presents it as a product of the two targets,
+  and in degree one the two coboundary witnesses of the two images assemble to a single element,
+  which is a coboundary witness for the cocycle itself: **a class of the first cohomology vanishes
+  as soon as both of its images do.**  The pair wanted is the two projections of a product of two
+  modules acted on componentwise, and its twist by coefficients, which is available with no
+  hypothesis on the two modules because a tensor product commutes with a product of *two* of them.
+  The ideles of a number field are such a product, of the infinite places and the finite ones, and
+  their local unit groups are killed by no integer, so this is the only form of the splitting that
+  reaches them.
+* `InverseGalois.CFT.Tate.FamilyTensorFinsupp` reads the support of such a tensored section.  The
+  comparison with the sections of the tensored family is computed coordinatewise, so its value at
+  an index is assembled from the values of the coordinates there and vanishes wherever all of them
+  do: **coordinates of finite support assemble to an element whose comparison has finite support.**
+  The converse is the useful direction and calls on the divisibility argument again — off the
+  support the coordinates are divisible by the prime, and the prime moves onto the basis vectors of
+  the coefficients, which it kills — so truncating the coordinates on the support changes nothing
+  and **an element whose comparison has finite support is assembled from coordinates of finite
+  support.**
+* `InverseGalois.CFT.Tate.FamilyTrunc` corrects a section on a finite invariant set.  A section
+  need not be fixed by the group, but it may fail to be fixed only in finitely many coordinates;
+  enlarging those to an invariant set, which stays finite because the group is finite, and
+  replacing the section by zero there produces a section that is fixed and differs from the
+  original only in finitely many coordinates.  So **a section which the group moves only in
+  finitely many coordinates differs by a section of finite support from a section the group
+  fixes** — which says exactly that an invariant of the quotient of the product by the sections of
+  finite support lifts to an invariant of the product.
+* `InverseGalois.CFT.Tate.LiftInvariants` turns such a lifting into an injection.  In degree zero
+  the complete cohomology is the invariants modulo the norms, so **a map of representations along
+  which every invariant of the target lifts to an invariant of the source is surjective there**;
+  and in a short exact sequence a degree in which the map induced by the quotient is surjective is
+  a degree out of which the connecting map vanishes, so **the map induced by the inclusion of the
+  sub is injective one degree above.**  Hence **a short exact sequence whose quotient has every
+  invariant lifted to the middle term has the complete cohomology of the sub injecting into that
+  of the middle term in degree one.**
+* `InverseGalois.CFT.Tate.FamilyInvariant` builds the invariant section such an argument needs out
+  of local data.  A section is fixed by the whole group exactly when its value at every index is
+  carried to its value at the translated index, so it is enough to choose, at one index of every
+  orbit, a value that the stabiliser there leaves alone: transporting it around the orbit is
+  unambiguous because two group elements reaching the same index differ by a member of the
+  stabiliser.  The values so obtained are transports of the chosen ones, so **a family whose value
+  at each index can be chosen with a property preserved by the transports and fixed by the
+  stabiliser there has an invariant section all of whose values have the property**, and the
+  indices carrying such a value form an invariant set, so no invariance has to be assumed.
+* `InverseGalois.CFT.Units.InvariantUniformizer` supplies that data for the local unit groups.  A
+  uniformizer at a place is at best fixed by the decomposition group, never by the whole Galois
+  group, which moves the place; what a whole family of them can satisfy is that an automorphism
+  carrying one place to another carry the chosen uniformizer at the first to the chosen one at the
+  second.  The decomposition group is exactly the stabiliser, so the previous construction applies,
+  and **all but finitely many places carry a uniformizer fixed by their decomposition group**,
+  since an element of the base field of valuation minus one at a place provides one and only the
+  places dividing the different fail to admit such an element.  Hence **a Galois invariant section
+  of the family of local unit groups whose value at each of those places is a uniformizer.**
+* `InverseGalois.CFT.Units.IdeleValuationSplit` measures the quotient of the whole product of the
+  local unit groups by the ideles.  An element of the product is an idele exactly when its vector
+  of local valuations vanishes at all but finitely many places, and that vector is a section of the
+  family with a copy of the integers at every finite place, equivariantly, an automorphism
+  preserving the valuation while moving the place.  Raising the invariant family of uniformizers to
+  a given vector of integers is a right inverse of it, equivariant for the same reason, so
+  **subtracting off the vector of valuations leaves an idele** and **the ideles, the whole product
+  and the quotient form a short exact sequence of representations** in which **the inclusion of the
+  ideles stays injective modulo a nonzero integer** — the integers having no torsion — so the
+  sequence survives tensoring with coefficients that are not flat.
+* `InverseGalois.CFT.Units.IdeleFullCompare` assembles the comparison.  Coefficients of finite rank
+  over a prime field pass through the sections of the family of integers, so after tensoring with
+  them finiteness of support is still read place by place, and an element of the tensored product
+  all of whose Galois translates differ from it by ideles has a vector of valuations which the
+  Galois group moves in finitely many places only.  Clearing that vector on the finite invariant
+  saturation of those places and feeding the result back through the invariant uniformizers
+  produces **an invariant element of the tensored product differing from the original one by an
+  idele**, which is the lifting of invariants the previous file asks for.  Hence **the twisted
+  complete cohomology of the ideles in degree one injects into that of the product of all the local
+  unit groups** — so a class trivial on every decomposition group, which by the orbit decomposition
+  is a class trivial in the whole product, is already trivial in the ideles.
+* `InverseGalois.CFT.Units.IdeleLocalVanish` draws that conclusion.  The product of all the local
+  unit groups is a product of the infinite places and the finite ones, so a class of its twisted
+  first cohomology vanishes as soon as both of its projections do; and each half is the sections of
+  a family indexed by the places of that kind, where a twisted class is detected at the indices.
+  Restriction to the decomposition subgroup of a place commutes with reading the ideles at the
+  places of one kind, so the local hypothesis at a place is exactly the local hypothesis the
+  detection theorem wants there.  Chaining the three steps with the injection of the previous file
+  gives **a class of the first cohomology of the twisted ideles that is trivial in every
+  decomposition subgroup is trivial** — the local-global statement in the form the Shafarevich
+  tower consumes, with no isomorphism onto a coinduced module used anywhere along the way.
+* `InverseGalois.CFT.Units.GlobalUnitsLocal` reads the units of the field themselves that way.  A
+  unit becomes an idele on the diagonal and an idele has a component at every place, and the whole
+  passage from the one to the other is transparent: the diagonal is defined componentwise, the
+  ideles sit inside the product of the local unit groups by inclusion, each half of that product is
+  a projection, and evaluating a section at an index is evaluation.  So **the twisted units read in
+  the decomposition subgroup of a place and evaluated there are the embedding of the units into the
+  completion, tensored with the identity of the coefficients** — a map the comparison of a
+  decomposition subgroup with a completion knows how to annihilate — and chaining that with the
+  previous file gives **a class of the first cohomology of the twisted units whose local class
+  vanishes at every place dies in the ideles.**
+* `InverseGalois.CFT.Units.KummerIdele` supplies those local hypotheses for a class coming from
+  Kummer theory, and so closes the passage from an everywhere locally trivial class of the
+  transgression cohomology to the ideles.  A place of the level is met by a place of the whole
+  extension above it, whose decomposition subgroup is the group fixing a level of its own; the
+  compositum of that level with the Kummer level is where the local argument lives, Kummer data
+  ascending to it and the units of the level surjecting onto its units with the coefficients
+  attached, while a tensor killed there is read at the place as zero.  The arithmetical criterion
+  for a locally trivial class then applies at each finite and each infinite place, the comparison
+  of a stabiliser of a place of the level with a quotient of a stabiliser upstairs being the one
+  identification the criterion needs.  Feeding the two families of local vanishings to the
+  detection theorem of the previous file gives **the class of the twisted units attached to an
+  everywhere locally trivial Kummer class dies in the ideles.**
+* `InverseGalois.CFT.Units.KummerShaBot` draws the conclusion.  A class that dies in the ideles is
+  produced by the comparison of Tate and Nakayama out of the complete cohomology of the coefficients
+  three degrees lower, as soon as that comparison spans together with the classes coming from the
+  ideles; so if the coefficients have no complete cohomology in degree minus two there is nothing
+  for the class to be produced from, and it is trivial.  The reading of a locally trivial class over
+  the Galois group of the level is injective, so **the everywhere locally trivial classes of a level
+  are all trivial** under those two conditions — one a statement about the extension alone, the
+  other about the group alone, and neither about the lifting problem.
+* `InverseGalois.CFT.Tate.FamilyResGroup` observes that all of this is available on a subgroup of
+  the acting group with nothing to prove.  A subgroup moves the index set by the restricted action
+  and transports the modules by the same isomorphisms, so it acts on the same family; the sections
+  are the same sections, carrying the restriction of the action of the whole group, and so are the
+  sections killed by an integer.  **The orbit decomposition therefore holds over every subgroup**,
+  with the orbits of the subgroup in place of the orbits of the group and the stabiliser in the
+  subgroup in place of the stabiliser in the group.  That is what a criterion formulated over a
+  Sylow subgroup asks for: the group of a Sylow subgroup moves the places of an extension in orbits
+  finer than the places of the base field, and the stabiliser at one of them is the intersection of
+  the subgroup with the decomposition group there.
+* `InverseGalois.CFT.Units.IdeleTorsionTensor` is that statement for the ideles.  The elements of
+  the ideles killed by a prime are the elements killed by it of the whole product of the local unit
+  groups, the product splits into the infinite places and the finite ones, and each half is the
+  sections of a family of modules over the places of the extension, so the previous files combine
+  into **the complete cohomology of the elements of the ideles killed by a prime, tensored with
+  coefficients of finite rank over the field with that many elements, as the product over the
+  places of the base field of the complete cohomology of the decomposition group of a place above
+  it with coefficients in the roots of unity of the completion there tensored with the restricted
+  coefficients** — and in particular the vanishing of the whole as soon as every local factor
+  vanishes.  That is the hypothesis the local-global obstruction of the theory of tori is stated
+  with, now genuinely local.
+* `InverseGalois.CFT.Units.IdeleTorsionSubgroup` says the same over a subgroup of the Galois group.
+  A subgroup does not fix the places of the base field: it moves the places of the extension in
+  orbits of its own, generally finer, and the stabiliser at one of them is the intersection of the
+  subgroup with the decomposition group there.  Nothing new has to be computed, because the units of
+  the completions are a family of modules on which the subgroup acts by the restricted action, and
+  the only point to identify is that the transport by an element of the subgroup fixing a place is
+  the transport by that element of the whole group.  So **the complete cohomology of a subgroup with
+  coefficients in the elements of the ideles killed by a prime, tensored with coefficients of finite
+  rank over the field with that many elements, is the product over the orbits of the subgroup on the
+  places of the extension of the complete cohomology of the stabiliser there with coefficients in
+  the roots of unity of the completion tensored with the restricted coefficients** — which is what a
+  criterion formulated over a Sylow subgroup asks for.
+* `InverseGalois.CFT.Units.IdeleClassTorsionSubgroup` passes from the ideles to the idele classes
+  there.  A short exact sequence of representations stays short exact when read on a subgroup,
+  because injectivity, surjectivity and exactness in the middle are statements about the underlying
+  modules and those do not change, so the roots of unity of the field, the ideles killed by a prime
+  and the idele classes killed by that prime still give a long exact sequence of complete cohomology
+  of the subgroup.  **The idele classes killed by the prime therefore have no complete cohomology
+  over the subgroup in a degree in which no local factor has any and the roots of unity of the field
+  have none one degree higher**, the local factors being indexed by the orbits of the subgroup on
+  the places of the extension.
+* `InverseGalois.CFT.Units.IdeleClassTorsionSubgroupLocal` turns that vanishing statement into a
+  presentation.  Exactness in the middle of the same long exact sequence says that **a class of the
+  idele classes killed by a prime, tensored with the coefficients and read on a subgroup, is the
+  image of a family of local classes exactly when the connecting map kills it**, one member of the
+  family for each orbit of the subgroup on the places of the extension; and the connecting map lands
+  in the roots of unity of the field, so **every class comes from such a family as soon as those
+  carry no complete cohomology over the subgroup one degree higher**.  The presentation is stated
+  for the target of the obstruction to the theorem of Tate and Nakayama as well: the vectors killed
+  by a number inside the representation attached to an action are the elements killed by that number
+  for the action, so the obstruction over a subgroup lands in a group presented entirely by local
+  data.  That is the shape in which the criterion for the everywhere locally trivial classes of the
+  units, read on a Sylow subgroup, is waiting to be checked.
+* `InverseGalois.CFT.TateCohomology.Duality` pairs the two middle degrees against each other.  The
+  functionals on a representation with values in a fixed module carry an action of the group
+  through the source, and **the norm of such a functional is its composition with the norm of the
+  representation**, because summing over the group is the same as summing over its inverses.  That
+  one identity is the whole of the duality: an invariant functional is constant on the orbits, so
+  it descends to the coinvariants, and it kills the norms, so evaluation on the classes of
+  vanishing norm does not see the functionals that are themselves norms.  What comes out is a map
+  from the complete cohomology in degree zero of the functionals to the functionals on the complete
+  cohomology in degree minus one, and **that map is bijective as soon as the coefficients receive
+  every functional defined on the norms and every functional defined on the vectors of vanishing
+  norm**.  Injectivity is one extension: a functional killing the classes of vanishing norm factors
+  through the norms, and an extension of that factor has the given functional as its norm.
+  Surjectivity is the other: a functional read on the vectors of vanishing norm extends, and the
+  extension is already invariant, since the difference of a vector and one of its translates has
+  vanishing norm and trivial class.  Coefficients killed by a prime supply both extensions with
+  nothing further, by the retraction of the previous file, so **a representation killed by a prime
+  is dual to itself in the two middle degrees against any coefficients whatsoever**.  This is the
+  base case from which the shift of degree carries the duality to every pair of degrees adding to
+  minus one.
+* `InverseGalois.CFT.TateCohomology.DualityShift` carries it there.  A function on the group with
+  values in the functionals on a module is read as the functional summing the values its members
+  take on the values of a function on the group, and **that reading is a bijection which respects
+  the action**.  Under it the two constructions of the shift trade places: the summation map of the
+  functionals becomes precomposition with the record of the translates, and the record of the
+  translates of the functionals becomes precomposition with the summation map.  So **the coshift of
+  the functionals is the functionals on the shift**, with nothing asked, and **the shift of the
+  functionals is the functionals on the coshift** as soon as a functional defined on the vectors of
+  vanishing sum extends to all the functions on the group -- again free when the representation is
+  killed by a prime.  Since the complete cohomology of a shift in a degree is the complete
+  cohomology of the representation one degree higher, those two identifications move the degree of
+  the functionals up and down at will, and both moves preserve being killed by a prime.  An
+  induction over the integers starting from the two middle degrees therefore reaches every degree:
+  **the complete cohomology of the functionals on a representation killed by a prime, in any
+  degree, is the group of functionals on the complete cohomology of the representation in the
+  complementary degree.**
+* `InverseGalois.CFT.TateCohomology.DualityDivisible` removes the hypothesis on the representation.
+  The duality asks of the coefficients only that they receive every functional defined on a
+  submodule, and for coefficients in which every element is divisible by every integer that is the
+  criterion of Baer rather than a condition on the module the submodule sits in.  So **a divisible
+  group of coefficients is dualizing for every representation of a finite group whatsoever**, and
+  in particular, the circle of the rationals being divisible, **the characters of the complete
+  cohomology of a representation in a degree are the complete cohomology of the characters of the
+  representation in the complementary degree** -- the duality of Tate for a finite group, with no
+  hypothesis on the representation and none on the degree.
+* `InverseGalois.CFT.TateCohomology.DualityNatural` compares the duality for two representations.
+  A map of representations reads a functional on the target as a functional on the source, and that
+  reading is again a map of representations, in the opposite direction.  Each of the three pieces
+  the duality is assembled from respects it: the pairing of the two middle degrees evaluates a
+  functional on the image of a representative either way round, and the two identifications that
+  move the degree both come down to the same sum of values.  Since the recursion over the integers
+  is a chain of those moves, **the duality is compatible with every map of representations in every
+  degree**: dualizing a class and restricting the functional along the map gives the same
+  functional as moving the class along the dual map and dualizing there.  That is what a duality
+  statement about an image needs, because a class lies in the image of a map exactly when every
+  functional killing the image kills it, so a question about the image of one map turns into a
+  question about the kernel of the map the duality attaches to it.
+* `InverseGalois.CFT.TateCohomology.Pontryagin` counts the characters of a finite commutative group
+  and recovers the group from them.  A cyclic group of an order has as many characters as the
+  circle of the rationals has elements killed by that order, and those elements are the multiples
+  of the reciprocal of the order, an element of exactly that order; so **a cyclic group has as many
+  characters as elements**, and since the characters of a finite product are the products of the
+  characters, the structure theorem for finite commutative groups gives the same count in general.
+  Reading an element as the functional "evaluate at me" is then injective, a nonzero element being
+  detected by some character, and an injection between finite sets of the same size is a bijection:
+  **a finite commutative group is the characters of its characters.**
+* `InverseGalois.CFT.TateCohomology.DualityFinite` turns that recovery into a statement about
+  complete cohomology.  The evaluation of a representation in the functionals on its functionals is
+  a map of representations, compatible with every map of representations, and for a representation
+  with finitely many vectors it is an isomorphism; complete cohomology carries an isomorphism to a
+  bijection, so composing with the duality identifies **the classes of a representation with
+  finitely many vectors, in any degree, with the characters of the classes of its functionals in
+  the complementary degree** -- and that identification too is compatible with every map of
+  representations.  Because the circle of the rationals receives every functional defined on a
+  submodule, the identification is more than a count: **every character of a submodule of the
+  complete cohomology of the functionals is the pairing against some class of the complementary
+  degree**, which is the form a duality argument takes when the submodule is the part of the
+  cohomology cut out by conditions at the places and one wants a single class inducing a prescribed
+  functional on it.
+* `InverseGalois.CFT.TateCohomology.CyclicDual` applies that to the two representations of maps
+  attached to a pair, one of which is cyclic.  Fix a representation whose vectors form a finite
+  cyclic group and a second representation killed by the order of the first.  Composing a map into
+  the cyclic representation with a map out of it produces an endomorphism of the cyclic group;
+  evaluating that endomorphism at a generator turns it into a vector of the second representation,
+  and an injective character of the cyclic group -- the identification of a finite cyclic group
+  with the elements of the rational circle killed by its order -- reads the vector off as a value
+  in the circle.  The pairing so obtained is a bijection for a reason that needs no counting:
+  evaluation at a generator already identifies the maps out of the cyclic representation with the
+  vectors of the second, and composing with the character already identifies the maps into the
+  cyclic representation with the characters of the second, so the pairing is a composition of two
+  bijections.  It respects the action because **the endomorphisms of a cyclic group commute with
+  one another**, which makes conjugating a composite by a group element leave it unchanged.  So
+  **the maps into a cyclic representation are the functionals on the maps out of it**, and feeding
+  that isomorphism to the duality of the previous file gives **a duality between the complete
+  cohomology of the maps out of a cyclic representation in one degree and the complete cohomology
+  of the maps into it in the complementary degree** -- in every degree, and again in the strong
+  form that every character of a submodule is the pairing against a single class.  Taking the
+  cyclic representation to be the roots of unity of a prime order, the maps out of it are a twist
+  and the maps into it are the dual in the sense of Cartier, so this is the duality that turns a
+  statement about classes of the dual into a statement about classes of the twist.
 * `InverseGalois.CFT.TateCohomology.TateClassCount` turns the classical hypotheses of Tate's
   theorem into a count.  **An element of a finite commutative group annihilated by exactly the
   multiples of the order of the group generates the group**, because the subgroup of its multiples
@@ -3404,6 +4761,18 @@ it that are available here.
   over the whole group** -- the shape in which the fundamental class of a class formation presents
   itself -- and that count therefore delivers both **Tate's theorem** and **the theorem of Tate and
   Nakayama for coefficients flat over the integers** on its own.
+* `InverseGalois.CFT.TateCohomology.RestrictTrans` carries that count down one more step, from the
+  subgroups of a group to the subgroups of a subgroup.  A subgroup of a subgroup is a group of
+  elements of the subgroup, and its image in the ambient group is a group of elements of that
+  group; the two differ by the proof of membership each element carries, so they are isomorphic and
+  a representation read on either of them is read along the same homomorphism.  **The complete
+  cohomology of a subgroup of a subgroup is therefore the complete cohomology of its image**, in
+  every degree, and the count made for the subgroups of the group is a count for the subgroups of a
+  subgroup.  The remaining hypothesis needs no transport at all, the order of a restricted class
+  being controlled by the order of the class one started with, so **the classical hypotheses of
+  Tate's theorem for a class restricted to a subgroup hold on every subgroup of that subgroup** --
+  which is what lets a construction available for a group with a fundamental class be run over a
+  subgroup of it.
 * `InverseGalois.CFT.TateCohomology.Abelianization` names the group side of the reciprocity law.
   Below degree minus one the complete cohomology is the homology with the degree shifted by one, so
   in degree minus two it is the first homology group; the first homology group of a trivial
@@ -3457,6 +4826,47 @@ it that are available here.
   integral representation in a degree is that of the idele class group two degrees higher -- and
   **the theorem of Tate and Nakayama for the idele class group** for coefficients flat over the
   integers.
+* `InverseGalois.CFT.Units.IdeleTorusSha` spends that theorem on the local-global obstruction of a
+  torus.  Tensoring the sequence of the units, the ideles and the idele classes with a
+  representation flat over the integers leaves it exact, so the long exact sequence of complete
+  cohomology reads the classes of the units which die in the ideles as the image of the connecting
+  map coming out of the idele classes one degree lower; and the theorem of Tate and Nakayama turns
+  the idele classes in that degree into the representation itself two degrees lower.  Those classes
+  are the everywhere locally trivial ones, since by Shapiro's lemma the cohomology of the ideles is
+  the product of the cohomologies of the completions, so **the everywhere locally trivial part of
+  the complete cohomology of the units tensored with a lattice, in degree `n + 3`, is exactly the
+  image of the complete cohomology of the lattice in degree `n`**.  In degree one, that is the
+  degree `-2` of the lattice: a finite object, where the cohomology of the units is not.  Every
+  Galois extension of number fields carries a fundamental class, so the statement holds with no
+  hypothesis on the extension beyond flatness of the lattice.
+* `InverseGalois.CFT.Units.IdeleTensorTorsion` removes the flatness.  Coefficients killed by a prime
+  are not flat, and exactly one thing can go wrong: the principal ideles might not stay injective
+  after tensoring.  They do.  Tensoring with coefficients killed by a prime does not distinguish a
+  module from its reduction modulo that prime, so the question is whether a unit of the field whose
+  principal idele is a power of an idele is a power in the field; reading the equation at each place
+  makes it a power in every completion, and for a prime exponent Wang's theorem makes it a power in
+  the field.  So **the principal ideles stay injective modulo a prime**, and **the units, the ideles
+  and the idele classes stay short exact after tensoring with coefficients killed by a prime**.  For
+  the elements killed by the prime nothing has to be checked at all: there the middle term is itself
+  killed by the prime, and an injection into such a module has a retraction which survives any
+  tensoring.
+* `InverseGalois.CFT.Units.IdeleTensorSha` reads the two long exact sequences that result.  In every
+  degree, **the locally trivial classes of the units tensored with coefficients killed by a prime
+  are exactly the image of the connecting map** coming out of the complete cohomology of the idele
+  classes tensored with the same coefficients, one degree lower; so they vanish as soon as that
+  cohomology does, with no hypothesis on the extension beyond finiteness of its Galois group.  The
+  same reading applies to the elements of the three groups killed by the prime, and there it
+  measures the failure of the theorem of Tate and Nakayama for coefficients with torsion, the
+  elements of the idele classes killed by the prime being the first derived tensor product of the
+  idele classes with such coefficients.
+* `InverseGalois.CFT.Units.NsmulTorsionRep` reconciles the two names the development gives to the
+  vectors killed by a number.  The general machinery reads them as the kernel of multiplication by a
+  natural number inside a representation; the idele side reads them as the representation carried by
+  the elements of an abelian group killed by an integer, for the induced action.  Multiplying by a
+  natural number is multiplying by the corresponding integer, so the two subgroups have the same
+  elements and the same action, and **the two descriptions are the same representation**.  The
+  identification survives tensoring with any coefficients, so a vanishing computed on the roots of
+  unity of the completions can be handed to the machinery for the elements a prime kills, and back.
 * `InverseGalois.CFT.Brauer.DivisionInteger` collects the first consequences of that absolute value.
   The elements of absolute value at most one form the **integers** of the algebra; the base field
   has an element whose absolute value is the largest one below one, and every absolute value of the
@@ -3780,6 +5190,97 @@ it that are available here.
   cohomology in every degree with that of the trivial integral representation two degrees lower;
   degree minus two is **the reciprocity isomorphism** of the extension, and tensoring gives **the
   theorem of Tate and Nakayama** for any coefficients flat over the integers.
+* `InverseGalois.CFT.Units.BaseFundamentalCyclic` closes the two inequalities against each other.
+  The second cohomology of the idele class group has at most as many elements as the Galois group,
+  by the dévissage through cyclic extensions, and the fundamental class is annihilated by exactly
+  the multiples of the degree, so the subgroup of its multiples already has at least that many.
+  Hence **the second cohomology of the idele class group of a Galois extension of number fields is
+  cyclic of order exactly the degree, generated by the fundamental class**, and any class with the
+  same annihilator generates it too — the annihilator alone pins the class down up to a multiple
+  prime to the degree.
+* `InverseGalois.CFT.Units.BaseTateCoeff` puts the flat case to work on coefficients which are not
+  flat.  The comparison of Tate and Nakayama is natural in the coefficients and is onto whenever
+  they are flat, so **everything a map out of a flat representation induces two degrees higher is
+  already a value of the comparison for the target**; the free presentation of the coefficients
+  supplies such a map for free.  The criterion for the locally trivial classes therefore loses its
+  reference to the obstruction altogether: **the everywhere locally trivial classes of the units
+  tensored with coefficients killed by a prime are exactly the image of the complete cohomology of
+  the coefficients three degrees lower as soon as the classes of the idele classes tensored with
+  the coefficients are spanned by those the free presentation produces together with those coming
+  from the ideles.**  The same file reads the spanning condition on a Sylow subgroup for the prime,
+  corestriction from such a subgroup being onto on coefficients killed by it.
+* `InverseGalois.CFT.Units.BaseTateSylow` makes that Sylow condition explicit.  The fundamental
+  class of the idele class group satisfies the count on every subgroup of the Galois group, hence on
+  every subgroup of a Sylow subgroup, so the obstruction of Tate and Nakayama at the prime is
+  defined over that Sylow subgroup and **what the comparison produces there is exactly what it
+  kills**.  The condition the locally trivial classes ask for therefore becomes a statement about a
+  single linear map over the subgroup: **the everywhere locally trivial classes of the units
+  tensored with coefficients killed by a prime are exactly the image of the complete cohomology of
+  the coefficients three degrees lower as soon as the obstruction of a Sylow subgroup for that prime
+  takes no value on the idele classes that it does not already take on the ideles** -- the shape a
+  duality theorem has to take, now placed over a field over which the extension has degree a power
+  of the prime.  The values that obstruction takes at all are the kernel of the map entering the
+  comparison one degree higher, so the condition can also be read entirely inside the vectors of the
+  idele classes killed by the prime, tensored with the coefficients, as the equality of one image
+  with one kernel there.  The identification of the target of the obstruction with those vectors is
+  an isomorphism, so the whole criterion may equally be stated for the map the obstruction is built
+  from -- the form in which it is natural in the representation, hence the form in which its values
+  can be compared with local ones.
+* `InverseGalois.CFT.Units.BaseTateTorsion` drops the flatness, which the coefficients of an
+  embedding problem never have.  The fundamental class satisfies the classical hypotheses on every
+  subgroup, so in particular on every Sylow subgroup, and the four exact terms attached to the
+  comparison apply verbatim: **the comparison of Tate and Nakayama for the idele class group of a
+  Galois extension of number fields, for coefficients killed by a prime, is exact on both sides
+  against the idele classes killed by that prime, tensored with the same coefficients**, three and
+  four degrees above.  It is therefore an isomorphism exactly when those two groups vanish, and
+  they are local: the idele classes killed by a prime sit between the units and the ideles, so the
+  two conditions descend to a product over the places of the roots of unity of the completions and
+  to the roots of unity of the field.
+* `InverseGalois.CFT.Units.IdeleTorusShaTorsion` spends that on the local-global obstruction, for
+  coefficients an embedding problem can supply.  The comparison of Tate and Nakayama, followed by
+  the connecting map of the sequence of the idele classes, carries the complete cohomology of
+  coefficients killed by a prime into the classes of the units tensored with them three degrees
+  higher which die in the ideles -- the everywhere locally trivial ones, the cohomology of the
+  ideles being a product over the places.  What that composite reaches is exactly what the
+  connecting map produces from the idele classes on which the obstruction vanishes, and that is
+  unconditional; when the obstruction group has no complete cohomology in the degree at hand,
+  **the everywhere locally trivial classes of the units tensored with coefficients killed by a
+  prime are exactly the image of the complete cohomology of the coefficients three degrees lower**,
+  a finite object where the cohomology of the units is not.
+* `InverseGalois.CFT.Units.IdeleTorusShaLocal` reads that obstruction one place at a time, which is
+  what the decomposition of the ideles killed by a prime makes possible.  Most places cost nothing:
+  the roots of unity of a completion are killed by the prime while the complete cohomology of a
+  decomposition group is killed by its order, so **a place whose decomposition group has order prime
+  to the prime contributes nothing at all.**  The decomposition group of an archimedean place has
+  order one or two, so for an odd prime every archimedean place is of that kind and drops out, and
+  what is left of the criterion is a condition at the finite places together with one on the roots
+  of unity of the field.
+* `InverseGalois.CFT.Units.IdeleTorusShaSharp` turns the sufficient condition into a necessary and
+  sufficient one, which matters because the obstruction group does not vanish in general.  The image
+  of a submodule under a linear map is everything the map reaches exactly when the submodule and the
+  kernel together span, and the kernel of the connecting map is what comes from the ideles, so
+  **the everywhere locally trivial classes of the units tensored with coefficients killed by a prime
+  are exactly the image of the complete cohomology of the coefficients three degrees lower precisely
+  when the obstruction of Tate and Nakayama takes no value on the idele classes that it does not
+  already take on the ideles.**  The units and the locally trivial classes have disappeared from the
+  criterion; what is left is a statement about the obstruction and the places.
+* `InverseGalois.CFT.Units.NakayamaSpan` gives that criterion a name.  Read over a Sylow subgroup
+  for the prime, and with the obstruction traded for the comparison it measures, what remains is a
+  single span: **the classes the comparison of Tate and Nakayama produces, together with the
+  classes coming from the ideles, fill the complete cohomology of the idele classes tensored with
+  coefficients killed by the prime.**  For coefficients that are free as abelian groups the
+  comparison is surjective by itself and the span holds for nothing; for coefficients killed by a
+  prime it is the assertion that the failure of surjectivity is carried by the places.  Naming it
+  separates what the general theory of a class formation supplies from what is genuinely about the
+  arithmetic of the extension, and a Sylow subgroup exists because the Galois group is finite, so
+  **the everywhere locally trivial classes of the units tensored with coefficients killed by a
+  prime are exactly the image of the complete cohomology of the coefficients three degrees lower**
+  whenever the span holds, with no subgroup left in the statement.  Read as a surjection and
+  specialised to degree minus two, that is the shape an embedding problem asks for: the first
+  cohomology of the units tensored with the coefficients, cut down by the condition of being
+  trivial in the ideles, is reached from two degrees below zero.  **The span holds whenever the
+  prime does not divide the degree of the extension**, since a Sylow subgroup is then trivial and
+  the order of a group annihilates its complete cohomology, so nothing is left to span.
 * `InverseGalois.CFT.Units.BaseArtin` puts a name on the left hand side of that identification.
   Composing it with the description of the complete cohomology of the trivial integral
   representation in degree minus two gives **the reciprocity isomorphism between the abelianization
@@ -3798,6 +5299,71 @@ it that are available here.
   subgroup stays constant there, so smoothness is preserved; a coboundary goes to the coboundary of
   the image of its primitive.  So **there is a homomorphism of the cohomology of the source
   coefficients into that of the target**, in degree one and in degree two, computed on cocycles.
+* `InverseGalois.CFT.Profinite.Connecting` takes a short exact sequence of coefficients and lifts a
+  cocycle of the quotient term by term to the module.  The lift is not a cocycle, but its
+  coboundary is killed by the projection, so it has its values in the submodule, and it is a smooth
+  cocycle there; a second lift differs from the first by a cochain of the submodule, so the class
+  it gives in the second cohomology of the submodule is the same.  The passage is **exact in the
+  middle**: a class obtained this way dies in the second cohomology of the module, because there
+  its cocycle is visibly a coboundary, and conversely a class that dies there is the coboundary of
+  a cochain whose projection is a cocycle of the quotient carrying it back.  This is what lowers a
+  question about the second cohomology to a question about the first, where the reciprocity law is
+  available.
+* `InverseGalois.CFT.Profinite.Corestriction` goes the other way from restriction.  Choose one
+  element in each left coset of a subgroup of finite index; a group element carries the chosen
+  representative of a coset into the coset of the chosen representative of the translated coset,
+  and the discrepancy is an element of the subgroup obeying a cocycle rule of its own along a
+  product.  Averaging a cochain of the subgroup at those elements, each term carried back by the
+  chosen representative, sends cocycles to cocycles and coboundaries to coboundaries, so it
+  **descends to a homomorphism of the first cohomology of the subgroup into that of the whole
+  group**.  Smoothness needs an open normal subgroup of the whole group inside a given open normal
+  subgroup of the subgroup, which is available whenever the subgroup is open in a compact group,
+  the normal core of an open subgroup of finite index being open again.  The point of the
+  construction is that **the average of a restricted class is the class raised to the number of
+  cosets**, which is what kills the part of a class prime to the index and reduces a question about
+  a group to the same question about a subgroup.  The same average works one degree up, on a
+  cochain of two variables: the two arguments are taken at the discrepancy of the first element
+  along the coset already translated by the second, and at the discrepancy of the second, and the
+  whole term is carried back by the representative chosen for the coset translated by the product.
+  Its cocycle relation is the cocycle relation of the original at the three discrepancies, and it
+  turns the coboundary of a cochain of one variable into the coboundary of that cochain's average
+  exactly, so it too descends to cohomology.  Here, though, the average of a restricted class is
+  the class raised to the number of cosets only after correcting by an explicit cochain of one
+  variable, the quotient of the value at a chosen representative and a discrepancy by the value at
+  the element and a chosen representative; the correction is produced by three applications of the
+  cocycle relation, and it is a coboundary, so **the identity survives in cohomology in the second
+  degree as well**.
+* `InverseGalois.CFT.Profinite.Coinduced` builds, out of a module for a subgroup, a module for the
+  whole group: the functions on the group that are equivariant for the subgroup acting on the left,
+  the whole group acting by translation on the right.  Evaluation at the neutral element is
+  equivariant for the subgroup, so restricting a class of the coinduced module and then evaluating
+  gives **the map of Shapiro's lemma**, and the content here is that this map **loses nothing**.
+  In the first degree a cocycle of the coinduced module is recovered from its values at the neutral
+  element, by the cocycle relation read there, and those values transform under the subgroup up to
+  the value at the element of the subgroup; a primitive of the restricted cocycle corrects exactly
+  that discrepancy, turning the values themselves into an element of the coinduced module which is
+  a primitive of the cocycle.  In the second degree the values at the neutral element again
+  determine the cocycle, and the ansatz that takes a function on the group to the quotient of its
+  values at a point translated by the argument and at the point, weighted by the value of the
+  cocycle, solves the coboundary equation whatever that function is, the weights cancelling in
+  threes.  What the function must do is make the result equivariant, and splitting an element into
+  a part in the subgroup and a chosen representative of its coset produces one out of a primitive
+  of the restricted cocycle; its smoothness comes from an open normal subgroup of the whole group
+  inside the one where the primitive is constant, which is what an open normal core provides.
+  Consequently **a coinduced module has no everywhere locally trivial class in either degree** as
+  soon as the subgroup one coinduces from is among the subgroups where triviality is imposed.
+  The same splitting run backwards shows that the map **misses nothing** either, once the chosen
+  representatives are asked to contain the neutral element, which costs nothing.  A cocycle of the
+  subgroup is extended to the whole group in the first degree by the telescoping quotient of its
+  values at the parts in the subgroup of two translates of a point, whose equivariance is the
+  cocycle relation of what one started from; in the second degree the values of the cocycle at the
+  splittings of a point and of the point translated by the argument play the role the values at
+  the neutral element played before, their divided differences are a cocycle for the formal reason
+  that they are divided differences at all, and their equivariance is again the cocycle relation of
+  what one started from, read at the splitting of a product.  Both extensions restrict to the
+  cocycle one started from exactly, so **Shapiro's lemma holds in the first and in the second
+  degree**: the cohomology of the group with coefficients in a module coinduced from a normal
+  subgroup with an open normal core is the cohomology of that subgroup.
 * `InverseGalois.CFT.Profinite.Comap` composes a cochain with a homomorphism into a group acting on
   the same module.  The cocycle relation and the coboundary are both preserved because the two
   actions agree, so all that is needed is that composition preserve smoothness, and two conditions
@@ -3817,6 +5383,45 @@ it that are available here.
   inflated**, because correcting by that coboundary makes the cocycle trivial on the kernel and
   hence constant on its cosets.  In degree two the same reading gives **every class represented at
   a level is inflated from it.**
+* `InverseGalois.CFT.Profinite.Transgression` supplies what degree two needs beyond that reading.
+  A class restricting trivially to the kernel is not yet constant on its cosets: it has to be
+  corrected by successive twists, and the correction is only available once the transgression of
+  the twisted cocycle is a coboundary.  Each of the four corrections is built by decomposing an
+  element along its coset, so each is constant along any normal subgroup of the kernel acting
+  trivially along which its own data is constant, and the corrected cocycle is then smooth.  The
+  order matters: the subgroup for the first two corrections is read off the cocycle and its
+  trivialisation, while the last two need a smaller one, cut out by the trivialisation of the
+  transgression that the first two produce.  Shrinking twice gives **a smooth class whose
+  restriction to the kernel and whose transgression are trivialised by smooth cochains is inflated
+  from the quotient.**
+* `InverseGalois.CFT.Profinite.TransgressionClass` reads the hypothesis that argument leaves over as
+  a single cohomology class.  A transgression is uniformly smooth, is a homomorphism on the kernel,
+  is a one cocycle for conjugation, and depends only on the coset of its index; those four
+  conditions are exactly what makes it a smooth one cocycle of the group with values in the first
+  cohomology of the kernel.  The kernel acts trivially on the coefficients, so that cohomology is
+  the group of smooth homomorphisms and two cohomologous cocycles there are equal, which turns the
+  trivialisation of a transgression into the vanishing of its class.  One step is not formal: the
+  homomorphism the vanishing provides lives on the kernel and is extended by the unit outside, and
+  the extension is smooth only if the homomorphism kills an open normal subgroup of the whole group.
+  **A compact group has a basis of such subgroups**, its open subgroups being closed of finite
+  index, and with that in hand the Hasse principle asked for becomes **the vanishing of those
+  classes of the first cohomology of the group with values in the first cohomology of the kernel
+  which are locally coboundaries.**
+* `InverseGalois.CFT.Profinite.TransgressionRestrict` says the same of the local condition itself.
+  Restricting both variables of a transgression to a subgroup leaves the four conditions standing,
+  with respect to the part of the kernel lying inside that subgroup, so **a transgression restricts
+  to a transgression of a subgroup** and has there a class of its own.  A trivialisation on the
+  subgroup is a homomorphism on that part and is smooth there, which is precisely what makes the
+  restricted class vanish, so the local hypothesis is one cohomology class per member of the family
+  and nothing else: **a locally trivial class of the second cohomology whose restriction to the
+  kernel is trivial is inflated from the quotient as soon as a transgression whose restricted
+  classes all vanish has itself a vanishing class.**  Only that direction is used, so the members of
+  the family are not asked to have a basis of open normal subgroups of their own.  Restricting a
+  class and localising its coefficients at the same time is a homomorphism, and the restricted class
+  of a transgression is the localisation of its class, so the hypothesis is the vanishing of a
+  single group: **the everywhere locally trivial classes of the first cohomology with values in the
+  first cohomology of the kernel.**  That is the group a local-global principle one degree down
+  computes, and with it the descent has the shape arithmetic delivers.
 * `InverseGalois.CFT.Profinite.Quotient` names a *level*: an open normal subgroup which acts
   trivially on the coefficients.  The quotient by it acts, and is discrete, and the projection to it
   has open kernel, so composing with the projection is **inflation from that level**, injective in
@@ -3824,6 +5429,36 @@ it that are available here.
   a trivial reason: smoothness of a cochain is constancy on the cosets of an open normal subgroup
   and smoothness of the action is triviality on one, and the intersection of the two is again open
   and normal, so **every class of either degree is represented at a level.**
+* `InverseGalois.CFT.Profinite.QuotientAction` does the same for coefficients written additively.  A
+  tensor product of two modules over a group is an additive group and there is no writing it
+  otherwise, so the passage to the quotient has to be available in that notation too: **a subgroup
+  each of whose elements fixes every point of an additive module lets the quotient by it act**, and
+  the action of the quotient is the one for which the projection is equivariant.  The two forms are
+  used side by side, the coefficients of a lifting problem and their cohomology multiplicatively and
+  the tensor product which computes that cohomology additively.
+* `InverseGalois.CFT.Profinite.TransgressionInflate` puts the descent at that level.  A
+  transgression indexed by the unit satisfies the cocycle condition there, which says its value is
+  its own square, so it is trivial; and the family depends only on the class of its index, so **a
+  transgression indexed by an element of the kernel is trivial** and the cochain it defines is
+  trivial on the kernel.  The kernel also acts trivially on the coefficients, so **the class of a
+  transgression is inflated from the quotient**, and inflation is injective in degree one, so
+  nothing is lost by asking for its vanishing there.  Localising an inflated class is inflating its
+  localisation — the two are computed by the same cochain on the subgroup — so the localisations may
+  be read at the level too, as maps of the quotient by the kernel to the quotients of the subgroups
+  by their parts of it.  The hypothesis of the descent thereby becomes a statement about a group
+  attached to the quotient alone: **the everywhere locally trivial classes of the first cohomology
+  of the quotient with values in the first cohomology of the kernel**, which for a finite quotient
+  is a group of ordinary group cohomology.
+* `InverseGalois.CFT.Profinite.Discrete` says that last clause exactly.  On a discrete group the
+  trivial subgroup is open, so every cochain is smooth and every action is smooth, and the smooth
+  cocycles are all the cocycles; passing to classes, **the smooth cohomology of a discrete group is
+  the ordinary cohomology of the additive copy of its coefficients**, in degree one and in degree
+  two.  This is the seam between the two languages the development speaks.  Everything above a
+  fixed finite level is written with smooth cochains on an infinite Galois group, because that is
+  the language in which a class can be inflated from a level or restricted to a decomposition
+  subgroup; everything below it is written with representations and complete cohomology, because
+  that is the language of the theorems of Tate and Nakayama.  A class of the quotient crosses from
+  one side to the other here and nowhere else.
 * `InverseGalois.CFT.Profinite.Krull` reads that dictionary on the Galois group of an arbitrary
   Galois extension, whose topology has the subgroups fixing a finite Galois intermediate field for a
   basis at the identity.  Such a subgroup is the kernel of restriction to that field, hence open and
@@ -3837,6 +5472,28 @@ it that are available here.
   says the representing cocycle is a coboundary there.  A family of subgroups then cuts out the
   classes dying on every member of it, the shape in which the everywhere locally trivial classes of
   a number field appear once a place is read as a decomposition subgroup.
+* `InverseGalois.CFT.Profinite.H1Conj` puts the quotient back on what restriction produced.  An
+  element of the ambient group conjugates a normal subgroup into itself, so substituting the
+  conjugate and then acting on the coefficients carries a cochain on the subgroup to another one,
+  and that substitution preserves the cocycle relation, the coboundaries and smoothness: **the
+  ambient group acts on the first cohomology of a normal subgroup.**  Conjugating a cocycle by an
+  element of the subgroup only multiplies it by the coboundary of the value the cocycle already
+  takes there, so **the subgroup acts trivially and the action is one of the quotient**, smooth as
+  soon as the subgroup is open.  This is the coefficient module the transgression of an
+  inflation-restriction sequence asks for, and for the Galois group of a number field and the
+  subgroup fixing a finite extension it is the module Kummer theory computes.
+* `InverseGalois.CFT.Profinite.FixingSubgroup` reconciles the two pictures of that subgroup.  An
+  automorphism of the extension fixing an intermediate field is an automorphism over that field,
+  and Galois theory records this as an isomorphism of groups; but each side carries a topology of
+  its own, the subgroup the one it inherits and the Galois group over the field the one built from
+  the finite extensions of *that* field, and the two lattices of finite extensions are different.
+  **The isomorphism respects both topologies.**  Enlarging a finite extension of the base by the
+  intermediate field makes it finite over that field, which is one direction; the Krull topology of
+  the big group already sees a finite extension of the intermediate field, which is the other.  So
+  continuous cochains match up, and the first cohomology of the Galois group over an intermediate
+  field *is* the first cohomology of the subgroup which fixes it — the transport is carried out for
+  any isomorphism of topological groups smooth in both directions, since the argument sees only the
+  substitution of one variable for another.
 * `InverseGalois.CFT.Profinite.Trivial` is the case of coefficients on which the group acts
   trivially, the one that carries the local-global arguments.  There the cocycle relation says
   exactly that the cochain is a homomorphism, every coboundary is trivial, and smoothness is
@@ -3848,6 +5505,43 @@ it that are available here.
   trivially on the target, so **there is a cup product of first cohomology into second**; it
   commutes with composing along a homomorphism, hence with restriction, so **a class whose either
   factor dies everywhere locally is itself everywhere locally trivial.**
+* `InverseGalois.CFT.PoitouTate.Dual` names the second factor that pairing wants.  The
+  homomorphisms from a module to a fixed group of coefficients carry the action that transports the
+  argument backwards and the value forwards, and this makes evaluation a pairing of a module with
+  that Cartier dual, equivariant for the two actions and universal: sending an element to
+  evaluation at it compares a module with its double dual.  An open normal subgroup acting
+  trivially on the module and on the coefficients acts trivially on the homomorphisms between them,
+  so **the Cartier dual of a smooth module is smooth**, and a module and its dual have cohomology
+  of the same kind.
+* `InverseGalois.CFT.PoitouTate.CupDual` cups along that evaluation.  A class with values in a
+  module pairs with a class with values in its Cartier dual into a second cohomology class with
+  values in the coefficients; the pairing commutes with restriction, so **either factor dying
+  everywhere locally makes the product everywhere locally trivial**.  Over a number field the
+  coefficients embed equivariantly in the units of a Galois extension, where the second cohomology
+  is the Brauer group, so **the local invariants of the pairing of a class with a dual class
+  multiply to one over all places** — a product formula of which the one for the power residue
+  symbol is the case where the module and its dual are both the roots of unity.
+* `InverseGalois.CFT.PoitouTate.ShaTate` reads the everywhere locally trivial classes as characters
+  of complete cohomology.  A class of the first cohomology dying on every decomposition subgroup is
+  inflated from the finite Galois level trivialising the coefficients, and inflation from a level
+  is injective; on a finite group with the discrete topology smoothness is no condition, so the
+  cohomology of the level is the ordinary cohomology of the additive copy of the coefficients,
+  which is complete cohomology in degree one.  Thus **the everywhere locally trivial classes sit
+  inside the complete cohomology of the level.**  When the coefficients are the maps of a finite
+  module into a finite cyclic one killing it, that complete cohomology is dual to complete
+  cohomology in degree minus two of the maps the other way and the rational circle is injective, so
+  **every character of the everywhere locally trivial classes is the pairing against a single class
+  in degree minus two.**
+* `InverseGalois.CFT.PoitouTate.ShaSurjection` turns that exhaustion around.  Global duality for a
+  finite module over a number field compares the everywhere locally trivial classes of the second
+  cohomology with the characters of the everywhere locally trivial classes of the first cohomology
+  of the Cartier dual; the two groups are cut out by the same local conditions, one degree apart
+  and on coefficients traded for their dual.  Granted that comparison, a locally trivial class of
+  degree two is a character, and every character comes from a single class of complete cohomology
+  of the level, so **the complete cohomology of the level in degree minus two covers the everywhere
+  locally trivial classes of the second cohomology** — the obstruction to an embedding problem
+  which the local conditions have already killed everywhere locally becomes one class of a finite
+  group's complete cohomology.
 * `InverseGalois.CFT.Profinite.Hilbert90` is the arithmetic input.  A smooth cocycle is constant on
   the cosets of the subgroup fixing a finite Galois level and its values are fixed by that
   subgroup, hence lie in the level, so choosing a preimage of each automorphism of the level turns
@@ -3872,6 +5566,18 @@ it that are available here.
   `n`-th powers are the first cohomology with coefficients in the `n`-th roots of unity.**  The
   situation is not vacuous: over an algebraically closed extension the roots of unity of the base,
   with the trivial action, are such data.
+* `InverseGalois.CFT.Profinite.KummerConj` lets a larger group watch.  Read Kummer theory over an
+  intermediate field, normal over a smaller base, on the subgroup of the big Galois group which
+  fixes that field: the classes of its units live in the first cohomology of a normal subgroup, and
+  the base group acts on both sides, on units by restricting an automorphism and on cohomology by
+  conjugating a cocycle.  **The two actions agree.**  The reason is that the Kummer cochain is
+  characterised and not merely constructed, as the only cochain whose image is the coboundary of an
+  `n`-th root: conjugating the cochain of a unit is the cochain built from the conjugate of the
+  chosen root, which is a root of the conjugated unit, so the two agree before any class is taken.
+  The one arithmetic input is that the roots of unity already lie in the small base, which is what
+  makes an automorphism over it leave the coefficients alone.  Transporting the Kummer isomorphism
+  itself across the two topologies then puts **the units of the intermediate field modulo `n`-th
+  powers on the first cohomology of the subgroup**, an isomorphism of modules over the quotient.
 * `InverseGalois.CFT.Profinite.KummerRes` restricts those classes.  The cochain of a unit measures
   how far a chosen root is from being fixed, and on a subgroup it is a coboundary exactly when it
   vanishes there, so **a Kummer class dies on a subgroup exactly when the unit is a power in the
@@ -3888,6 +5594,193 @@ it that are available here.
   second cohomology of the units of the extension.**  Running the correction backwards, from a
   chosen root of every value of a cochain whose coboundary is the `n`-th power of a cocycle,
   identifies **the image as exactly the classes killed by `n`.**
+* `InverseGalois.CFT.Profinite.Pi` takes the coefficients apart.  A cochain with values in a finite
+  product is a family of cochains, one for each factor, and it is smooth exactly when each member
+  is, being constant on the intersection of the finitely many levels the members need; the same
+  reading of the cocycle condition and of the coboundaries gives **the first cohomology with
+  coefficients in a finite product as the product of the first cohomologies**, the isomorphism
+  being the family of the maps induced by the projections.  An isomorphism of the coefficients
+  likewise induces one in cohomology, so a chosen decomposition of the coefficients turns a class
+  into a family of classes.  Underneath both is the plainest fact about the construction: a
+  coefficient map acts on cochains by composition, so **the passage to cohomology respects
+  composition, the identity and — the coefficients being abelian — pointwise multiplication of
+  coefficient maps**, and therefore carries a power of the identity to that power of the class.
+* `InverseGalois.CFT.Profinite.PiTwo` reads the second cohomology of a product the same way.  The
+  cocycle identity is an equation between values, so it holds in a product exactly when it holds in
+  every factor, and for a finite family smoothness is again smoothness factor by factor; where the
+  finiteness is spent a second time is injectivity, because a class dying in every factor is a
+  family of coboundaries and the one cochains they come from have to be assembled into a single
+  smooth one cochain.  So **the second cohomology of a finite product of coefficients is the
+  product of the second cohomologies**, and transport along an isomorphism of the coefficients
+  again carries a class to a family of classes.  Restriction to a subgroup commutes with a map of
+  the coefficients — both are composition of the cocycle with something — so **a map of the
+  coefficients preserves being everywhere locally trivial**.
+* `InverseGalois.CFT.Profinite.Twist` puts the coefficients back together, and is the shape in
+  which Kummer theory reaches a lifting problem.  The coefficients of such a problem are a finite
+  module killed by a prime, which as an abstract group is a product of copies of the roots of
+  unity, and a homomorphism of the roots of unity into it carries a Kummer class to a class with
+  those coefficients, multiplicatively in the element of the base group and in the homomorphism.
+  So the construction is a map out of the tensor product of the two, and **that map is an
+  isomorphism onto the first cohomology with the larger coefficients.**  The inverse is a
+  coordinate computation.  Each coordinate of a class comes from an element of the base group, well
+  defined up to a `p`-th power — and a `p`-th power dies in the tensor product, the group of
+  homomorphisms being killed by `p`.  That this is an inverse on one side is the observation that
+  the coordinates of the class attached to the inclusion of a factor are the given class in that
+  place and trivial elsewhere; on the other it is the observation that an endomorphism of a cyclic
+  group is a power map, so each coordinate of a twisted class is a power of the class one started
+  from, and those powers reassemble the homomorphism one started from.
+* `InverseGalois.CFT.Profinite.TwistConj` makes the twist equivariant.  The first cohomology of a
+  normal subgroup carries the conjugation action of the ambient group, and for a map of the
+  coefficients to commute with it the map has to move as well: an element of the ambient group
+  carries a homomorphism between two of its modules to the one which translates the argument
+  backwards and the value forwards, and **that is an action of the ambient group on the
+  homomorphisms of the coefficients** for which the induced map in cohomology is equivariant.  So
+  **conjugating a twisted class is twisting by the conjugated element and the conjugated
+  homomorphism**, once the classes the base group provides are themselves equivariant.
+* `InverseGalois.CFT.Profinite.TwistTensor` says the same thing about the whole tensor product.  The
+  twist is bilinear, so it is a map out of a tensor product, and conjugation moves the two factors
+  separately — the classes the base group provides by whatever action they carry, the homomorphisms
+  of the coefficients by conjugation.  **The twisting map out of the tensor product intertwines the
+  two**, which is what makes the identification an identification of modules rather than of groups;
+  a tensor product is generated by its pure tensors and both sides are additive, so there is nothing
+  more to it.  For the action to be an action of the quotient the normal subgroup has to move both
+  factors trivially, and on the homomorphisms of the coefficients that is automatic: **a subgroup
+  acting trivially on the source and on the target acts trivially on the homomorphisms between
+  them.**
+* `InverseGalois.CFT.Profinite.TwistAction` turns that equivariance into a module structure.  **An
+  element of a group acts on a tensor product of two of its modules by acting on each factor**, the
+  diagonal action; a tensor product is generated by its pure tensors, so the axioms reduce to the
+  axioms on each factor.  With the action in place the equivariance of the twisting map is an
+  equation between an action and conjugation rather than between two tensor maps, which is the form
+  the descent to the quotient consumes: **a subgroup acting trivially on both factors acts trivially
+  on the tensor product**, and it acts trivially on the first cohomology of itself, so the two sides
+  descend together.
+* `InverseGalois.CFT.Profinite.KummerTwist` reads the two together over a field.  The Kummer
+  homomorphism of an intermediate field is surjective with the `p`-th powers as its kernel, so it
+  is exactly the datum the twist consumes: **the first cohomology of the subgroup fixing the field,
+  with coefficients in a finite module killed by `p` which is a product of copies of the roots of
+  unity, is the tensor product of the units of the field with the homomorphisms of the roots of
+  unity into those coefficients**, and the Galois group of the base acts on the three sides
+  compatibly — on the units by restriction, on the homomorphisms by translation of the value, on
+  the cohomology by conjugation.  This is the shape in which the kernel of a lifting problem meets
+  the units of the field the problem is solved over.  The equivariance is recorded on the whole
+  tensor product as well, and **the subgroup fixing the field moves neither factor** — it restricts
+  to the identity on the field, so it fixes the units, and it acts trivially on the roots of unity
+  and on the coefficients, so it fixes the homomorphisms between them — which is what makes the
+  identification one of modules over the Galois group of the finite extension.
+* `InverseGalois.CFT.Profinite.KummerAction` takes that last step.  **The Galois group of the base
+  acts on the units of a normal subextension by restriction**; the subgroup fixing the subextension
+  restricts to the identity there, so it fixes the units, and it fixes the homomorphisms of the
+  roots of unity into the coefficients, hence the tensor product of the two; and it acts trivially
+  on the first cohomology of itself.  The quotient by it therefore acts on both sides and **the
+  twisted Kummer identification is equivariant for that quotient** — which is the Galois group of
+  the subextension, a finite group with no profinite group left in it.  This is the shape in which
+  the locally trivial part of an obstruction is finally measured.
+* `InverseGalois.CFT.Profinite.TwistRes` localises a twisted class.  A homomorphism of base groups
+  induces a map of first cohomologies by precomposing a cocycle with it, a homomorphism of the
+  coefficients induces one by postcomposing, and **the two compositions commute on the nose**.  So
+  the twist is natural in the base group: once the classes the base group provides are carried to
+  the classes its image provides, **the whole twisting map is carried to the twisting map of the
+  image, tensored with the identity on the homomorphisms of the coefficients.**  Two cases are
+  recorded, the restriction along an inclusion of subgroups and the restriction of the first
+  cohomology of a normal subgroup to the part of it lying inside another subgroup — which read on
+  the Galois group of a number field is the localisation of a class at a place.
+* `InverseGalois.CFT.Profinite.KummerTower` carries Kummer theory up a tower of fields.  A unit of
+  an intermediate field is a unit of every larger one, the subgroup fixing the larger field sits
+  inside the subgroup fixing the smaller one, and **the restriction of the Kummer class of a unit is
+  the Kummer class of that same unit read upstairs.**  The reason is once more that the Kummer
+  cochain is characterised and not merely constructed: the root chosen upstairs and the root chosen
+  downstairs are two roots of the same element of the ambient extension, so they have the same
+  coboundary and the two cochains agree before any class is taken.  Twisting being natural in the
+  base group, the same then holds for the coefficients of a lifting problem: read through the
+  identification of the first cohomology with the tensor product of the units with the
+  homomorphisms of the roots of unity, **restricting a class is including the units.**
+* `InverseGalois.CFT.Profinite.KummerLocal` says which tower that is at a place.  A place is a
+  decomposition subgroup, and localising a class of the subgroup fixing a subextension means
+  restricting it to the part of that subgroup lying inside the decomposition subgroup.  **That part
+  is the subgroup fixing the compositum of the subextension with the fixed field of the place**:
+  the part of a subgroup inside another one and the intersection of the two have the same elements
+  and the same topology, both inherited from the big group, so they induce the same map in the
+  first cohomology; the subgroup fixing a compositum is the intersection of the subgroups fixing
+  the factors; and a closed subgroup is the subgroup fixing its own fixed field.  Hence
+  **localising a Kummer class at a place is including the units of the field into the units of that
+  compositum**, and the same for the twisted identification.  The fixed field of a decomposition
+  subgroup is an infinite extension of the base, which is why the tower below asks nothing of the
+  size of the intermediate field.
+* `InverseGalois.CFT.Profinite.KummerLocalSurjective` reads that identification in both directions.
+  The comparison between the two readings of the part of a subgroup lying inside another one comes
+  from an isomorphism of topological groups, so writing down the induced map of the inverse gives a
+  two sided inverse and **the comparison is bijective**.  Transporting that bijectivity across the
+  twisted Kummer identification turns two properties of the inclusion of the units into properties
+  of localisation: **a twisted class dies at the place exactly when its datum dies under the
+  inclusion**, **localisation is surjective as soon as the inclusion is surjective modulo the
+  coefficients**, and consequently **whatever localisation kills is killed by every homomorphism
+  that kills the classes whose datum the inclusion kills.**  This is what lets the compositum
+  reading of a local condition be compared with any other reading of it.
+* `InverseGalois.CFT.Profinite.KummerLocalCompare` performs that comparison.  Localisation at a
+  place is a map of the coefficients of the first cohomology of the decomposition subgroup, and a
+  surjective map of the coefficients kills the least a map can, so **a class trivial after
+  localisation at the compositum is trivial after every map of the coefficients which kills the
+  twisted Kummer data that the inclusion of the units kills** — and the same for a global class,
+  restricted to the place first.  The map to be compared with is the one to the units of the
+  completion of the level at the place below, for which the hypothesis to be checked is precisely
+  that a unit which becomes a power in the compositum becomes a power in the completion.
+* `InverseGalois.CFT.Profinite.KummerLocalQuot` moves that comparison to the level at which the
+  obstruction reads it.  The coefficients of these classes are acted on through the quotient by the
+  subgroup fixing the level, so a locally trivial class is already a statement about the finite
+  quotient of a decomposition subgroup by its part fixing that level, and the comparison costs
+  nothing to rewrite there: surjectivity of localisation and the description of what it kills are
+  statements about the coefficients alone.  Hence **a class of that quotient trivial after
+  localisation at the compositum is trivial after every map of the coefficients which kills the
+  twisted Kummer data the inclusion of the units kills**, and **a class which is locally trivial at
+  every subgroup of a family is killed at each member of that family.**
+* `InverseGalois.CFT.Profinite.KummerRep` hands the identification over to class field theory.  An
+  equivariant identification of an additive module with the additive copy of a multiplicative one is
+  an isomorphism of representations over the integers, so **the twisted Kummer identification is an
+  isomorphism in the category of representations of the quotient by the subgroup fixing the
+  subextension**, and the two sides have the same cohomology.  Since that quotient is discrete, its
+  smooth first cohomology is the ordinary first cohomology of the additive copy of its coefficients,
+  and composing the two gives **the first cohomology of the Galois group of the subextension with
+  values in the first cohomology of the subgroup as the first cohomology of that same finite group
+  with coefficients in the units of the subextension tensored with the homomorphisms of the roots of
+  unity.**  The everywhere locally trivial classes travel along it, and the two readings of them
+  vanish together — which is what a local-global principle has to supply.
+* `InverseGalois.CFT.Profinite.KummerFinite` names the group class field theory computes with.  The
+  quotient of an infinite Galois group by the subgroup fixing a normal intermediate field is the
+  Galois group of that field, restriction to it being surjective with that subgroup as kernel, and
+  **the cohomology of a representation does not notice which of the two presentations of the group
+  is used**: an identification of a module with the coefficients of a representation, equivariant
+  along an isomorphism of the acting groups, is an isomorphism of representations once one of them
+  is restricted along that isomorphism.  Composing with the identification above, **the first
+  cohomology of the quotient with values in the first cohomology of the subgroup is the first
+  cohomology of the Galois group of the intermediate field with coefficients in any representation
+  identified with the units of that field tensored with the homomorphisms of the roots of unity into
+  the kernel of a lifting problem** — for instance the tensor product of the representation on the
+  units with a representation of the coefficients, which is the object the theorems of Tate and of
+  Nakayama are stated about.  The everywhere locally trivial classes travel along it and the two
+  readings of them vanish together.
+* `InverseGalois.CFT.Profinite.KummerTransport` writes that identification on cocycles.  Both of the
+  transports it is assembled from — the one along the identification of the coefficients and the one
+  along the isomorphism of the acting groups — are the map induced by a homomorphism of the acting
+  groups together with a map of the representations, in the forward direction, so **the class of a
+  smooth one cocycle with values in the units is the class of the one cocycle read at the inverse
+  isomorphism of the groups with its values carried across the identification of the
+  coefficients.**  That is what makes the identification usable: restriction to a subgroup reads a
+  cocycle at the elements of the subgroup and a map of representations applies to its values, while
+  on the smooth side composition with a homomorphism of the acting groups and with a map of the
+  coefficients does the same thing, so when the two homomorphisms agree and the two identifications
+  of the coefficients agree the two cocycles are equal.  Hence **a smooth class whose localisation
+  at a subgroup is trivial has vanishing image in the complete cohomology of that subgroup.**
+* `InverseGalois.CFT.Profinite.KummerLocalTate` runs that argument on an everywhere locally trivial
+  class.  All the local data are one additive map from the twisted Kummer coefficients to the
+  coefficients of a representation of a decomposition subgroup, asked to kill what the inclusion of
+  the units into the units of a compositum kills, to be equivariant, and to agree with the map of
+  representations; everything else is bookkeeping, because a representation pulled back along an
+  isomorphism of groups supplies the action localisation needs and the two readings of its
+  coefficients are the identity.  Comparison with the compositum then kills the localised class at
+  the level of the quotient, and the transport carries the vanishing across: **an everywhere locally
+  trivial class, read over the Galois group of the level, dies under restriction to a decomposition
+  subgroup followed by any map of representations induced by such a local map.**
 * `InverseGalois.CFT.Profinite.Symbol` pairs two units of the base.  Cupping their Kummer classes
   along a pairing of the roots of unity with themselves gives **the `n`-th power symbol**, a
   bimultiplicative map on the units of the base with values in the second cohomology; it is killed
@@ -3970,7 +5863,11 @@ it that are available here.
   a prime of the ring of integers and an archimedean place are the same objects over either base,
   so **a decomposition subgroup over the intermediate field sits inside one over the base.**  Hence
   an everywhere locally trivial class of the second cohomology with roots of unity coefficients
-  **dies as soon as one passes to a field containing a primitive root of unity.**
+  **dies as soon as one passes to a field containing a primitive root of unity.**  A finite module
+  on which the group over the intermediate field acts trivially, and which is killed by the order
+  of the roots of unity, is a product of copies of them; reading the class factor by factor gives
+  the same conclusion there, so **an everywhere locally trivial class with coefficients in a
+  finite module split by the intermediate field dies over that field.**
 * `InverseGalois.CFT.Brauer.CyclicNormResidue` composes the invariant of a local field with the
   cyclic algebra construction: **the norm residue symbol of a cyclic extension of a local field.**
   The norm index of such an extension is the degree, whatever the ramification, so **its relative
@@ -3979,6 +5876,21 @@ it that are available here.
   invariant of a local field is injective, so **the symbol of a unit vanishes exactly when the unit
   is a norm**, and since the classes killed by the degree are all split by the extension, **the
   symbol attains the reciprocal of the degree.**  None of this asks the extension to be unramified.
+* `InverseGalois.CFT.Brauer.LocalReciprocityAll` removes the last hypothesis from the count.  The
+  base-change formula for the invariant map asks the extension to carry an absolute value
+  restricting to the one below, and a finite extension of a local field carries the value of the
+  field norm, which restricts to the degree-th power of the value below; but a comparison map of a
+  rank one valuation may be composed with the degree-th root, which is again strictly monotone,
+  kills zero, fixes one and preserves products, so it is again a comparison map, and the absolute
+  value it defines does restrict to the one below.  A generator of the value group of either sign
+  serves, since the opposite of a generator is again one.  None of the data chosen appears in the
+  conclusion, so it may all be chosen inside the proof: **the relative Brauer group of an arbitrary
+  finite Galois extension of a local field is exactly the classes killed by the degree, and has as
+  many elements as the degree** — with no hypothesis on the ramification, on the Galois group, or
+  on the absolute value of the extension.  The same construction, applied to an intermediate field
+  rather than to the whole extension, says that **a finite extension of a local field is again a
+  local field** and so carries local reciprocity itself: the count holds for a finite Galois
+  extension of any intermediate field of a finite extension of a local field.
 * `InverseGalois.CFT.Units.CompletionCyclic` supplies the group theory that makes the local theory
   of a cyclic extension apply at a place of a global one.  An automorphism of a completion is
   continuous and the field is dense in it, so **restriction to the field is injective on the Galois
@@ -4046,6 +5958,34 @@ it that are available here.
   **the kernel of the norm residue symbol**: the symbol of two elements is trivial exactly when the
   unit of the valuation ring built from them and their values is a power, and the symbol of a
   uniformiser against a unit of the valuation ring which is not a power **has order the exponent.**
+* `InverseGalois.CFT.Brauer.LocalSymbolNondegenerate` draws the conclusion for an arbitrary pair.
+  An element whose level is trivial is a power, so the level of an element which is not a power is a
+  cyclic extension of degree bigger than one; the norm index of such an extension of a local field
+  is its degree, so some element of the base is not a norm from it, and the symbol is trivial
+  exactly on the norms.  So **an element which is not a power always has a partner it pairs
+  nontrivially with**, and skew symmetry says the same on the other side, so **the norm residue
+  symbol descends to a nondegenerate pairing of the elements of a local field modulo powers with
+  themselves**, for every exponent and with no condition on the residue characteristic.
+* `InverseGalois.CFT.Brauer.LocalSymbolPerfect` turns that into a perfect pairing.  The symbol kills
+  the powers in either argument, so it descends to a pairing of the classes of a local field modulo
+  powers with themselves, and nondegeneracy says the classes **inject** into their own group of
+  characters valued in the rationals modulo the integers.  A finite abelian group has exactly as
+  many characters as elements, so as soon as the classes are finite an injection between them and
+  their characters is a bijection: **every character of the units of a local field which kills the
+  powers is the symbol against a single element**, unique modulo powers.  That is local duality in
+  degree one for the roots of unity, read entirely through the symbol; finiteness of the classes is
+  left as a hypothesis, so that the statement applies verbatim to a completion of a number field at
+  either kind of place, where the local index formula supplies it.
+* `InverseGalois.CFT.PoitouTate.Isotropic` draws the consequence a perfect pairing has for a
+  subgroup.  Identifying a finite abelian group with its own characters carries the elements
+  pairing trivially with a subgroup onto the characters killing that subgroup, and those are the
+  characters of the quotient, of which there are as many as there are elements of the quotient:
+  **a subgroup and its orthogonal complement have complementary orders**.  So a subgroup pairing
+  trivially with itself is at most half the group, and **one that is exactly half is its own
+  orthogonal complement** — the shape the global duality statement takes for the classes of a
+  number field modulo powers.  A pairing on a product of groups is assembled by multiplying the
+  values on the factors, and is nondegenerate as soon as each factor is, a single factor being
+  isolated by pairing against an element supported there.
 * `InverseGalois.CFT.Brauer.TameValue` computes the value itself.  The level of a unit of the
   valuation ring which is not a power of prime order is the radical extension by that unit, and the
   reduction of the minimal polynomial of the chosen root stays irreducible, so **that level is
@@ -4207,6 +6147,18 @@ it that are available here.
   congruent to a power of the chosen one is the class, modulo the integers, of the opposite of that
   power divided by the exponent**, and the two normalisations of the uniformiser and the two orders
   of the arguments give the three remaining signs.
+* `InverseGalois.CFT.Brauer.TameUnramified` evaluates the symbol against an argument whose valuation
+  the exponent divides.  The symbol is killed by the exponent, so a power of a uniformiser whose
+  exponent is a multiple of the exponent pairs trivially with everything, and such an argument may
+  be replaced by the unit of the valuation ring left after dividing by the matching power of a
+  uniformiser without changing any of its symbols.  Splitting the second argument the same way
+  leaves the symbol of two units of the valuation ring, which is trivial, so **the tame norm residue
+  symbol of an element whose valuation the exponent divides, against anything, is its symbol against
+  a uniformiser raised to the divided valuation of the second argument**.  Multiplying by a power of
+  a uniformiser changes neither the symbol nor the property of being a power, and the kernel of the
+  symbol of a unit of the valuation ring against a uniformiser is exactly the powers, so **that
+  symbol against a uniformiser is trivial exactly when the element is a power**, and reading it is a
+  faithful reading of the class of the element.
 * `InverseGalois.CFT.Local.RatUniformiser` supplies that local datum over the rationals.  The
   ramification index of a finite place of the rationals is at most the degree of the rationals over
   themselves and is positive, so **a finite place of the rationals is unramified over the rational
@@ -4334,6 +6286,11 @@ it that are available here.
   completion of any number field at a real place; **the total invariant of such a class is
   therefore the product of its invariants at the finite places**, and the archimedean conditions of
   the Hasse principle are automatic.
+* `InverseGalois.CFT.Brauer.OddArchimedeanBase` repeats that observation over an arbitrary number
+  field.  The completion at a real place is the reals over the base, whose Brauer group is killed
+  by two, and the completion at a complex place is algebraically closed, so **a Brauer class of a
+  number field killed by an odd exponent has trivial invariant at every infinite place** and **its
+  total invariant is the product of its invariants at the finite places**.
 * `InverseGalois.CFT.Brauer.SplitLocalDegree` reads a completely split prime locally.  The order of
   the decomposition group at a prime is the ramification index times the residue degree and also
   the degree of the completion over the completion below, so **a rational prime splits completely
@@ -4346,6 +6303,23 @@ it that are available here.
   root of it**; for `ℓ` prime and the number without an `ℓ`-th root there that root has minimal
   polynomial `X ^ ℓ` minus the number, so **the compositum has degree exactly `ℓ` times the degree
   of the field**.
+* `InverseGalois.CFT.Scholz.QuarticRadical` supplies the same measurement for fourth roots, which
+  is what the prime two needs.  A rational number can acquire a square root in an abelian extension
+  of the rationals, but not a fourth root: comparing the two automorphisms that negate a square
+  root of the number and a square root of minus one shows that **an abelian extension contains no
+  fourth root of a rational number `m` whenever `m`, `-m` and `-1` are all rational non-squares**.
+  In the other direction, over a field containing a square root of minus one the norm of a square
+  root of an adjoined square root would, corrected by that square root of minus one, be a square
+  root of the constant, so **`X ^ 4` minus a non-square is irreducible there**.
+* `InverseGalois.CFT.Scholz.DyadicAuxPrime` runs the density argument at the prime two, where
+  squares are not enough: a prime congruent to one modulo a high power of two is congruent to one
+  modulo eight, so two is always a square modulo it.  Raising the exponent repairs this.  Over the
+  cyclotomic field of a two-power conductor at least four, only two is ramified, so an odd prime
+  has no square root there and its fourth radical multiplies the degree by four, while the fourth
+  radical of two at least doubles it because that field is abelian.  A quarter and a quarter, or a
+  half and a quarter, fall short of one, so the density bound yields **a prime congruent to one
+  modulo a prescribed power of two modulo which two prescribed primes, not both two, are
+  simultaneously fourth-power non-residues**.
 * `InverseGalois.CFT.Scholz.AuxPrimePair` spends that exact degree on two conditions at once.  Two
   reciprocals of `ℓ` times a degree fall short of the reciprocal of the degree once `ℓ` is at least
   three, so the density bound of `InverseGalois.NumberTheory.SplitDensityPair` leaves **infinitely
@@ -4382,4 +6356,549 @@ it that are available here.
   a single bad prime, where the splitting field itself can be chosen to miss it, gives **the total
   invariant of every Brauer class of the rationals of odd prime order is trivial** — global
   reciprocity over the rationals in that degree.
+* `InverseGalois.CFT.Brauer.RealCorrector` removes the last restriction.  The quaternion algebra
+  attached to minus one and the field of cube roots of unity is ramified at three, where its
+  invariant is the class of one half, and the correction procedure applies to it only if it is
+  split by the reals, which would leave that invariant uncancelled; so it is **a class of order two
+  which the reals do not split and whose total invariant is trivial**, its two halves at three and
+  at infinity cancelling.  Multiplying by it moves any class of two-power order into the ones the
+  reals split, and Bézout splits an arbitrary order into its two-part and its odd part, giving
+  **the total invariant of every Brauer class of the rationals is trivial** — global reciprocity
+  over the rationals, in every degree and with no hypothesis at all.
+* `InverseGalois.CFT.Brauer.NormPlaceValue` measures a norm.  The multiplicity of a height one
+  prime in an ideal is additive on nonzero ideals, is one exactly at the prime itself, and is read
+  off from the adic valuation; the relative norm carries a prime of an extension to the prime below
+  it raised to the residue degree, and the residue degree of a prime over one it does not lie over
+  vanishes, so **the multiplicity of a prime of the base in the relative norm of an ideal is the
+  sum over all the primes of the extension of the residue degree times the multiplicity there**.
+  Factoring an ideal into primes and writing an element as a quotient of algebraic integers turns
+  that into a statement about values at places: **the value at a place of the base field of the
+  norm of a nonzero element is the sum over the places of the extension of the residue degree over
+  that place times the value there**.
+* `InverseGalois.CFT.Brauer.ResidueCardDegree` counts the residues of a completion of an arbitrary
+  number field.  Reducing an integer of the field in the residue ring of the completion is a ring
+  homomorphism whose kernel is the place, because the valuation of an integer in the completion is
+  its valuation in the field; and it is surjective, because the field is dense in its completion, so
+  every integer of the completion differs from an integer of the field by something of valuation
+  less than one.  Hence **the residue ring of a completion has as many elements as the residue field
+  of the place**, and since the absolute norm of a place is the residue characteristic raised to the
+  residue degree, **the completion of a number field at a place over `p` has `p` raised to the
+  residue degree many residues**.  Over the rationals the residue degree is one and this is the
+  earlier count.
+* `InverseGalois.CFT.Brauer.PlaceFrobeniusDegree` frees the cyclotomic description of the Frobenius
+  from the rationals.  The Frobenius raises a root of unity to the power given by the number of
+  residues of the base, and that number is now known for an arbitrary base: so **the Frobenius of an
+  unramified place raises a root of unity to the power of the rational prime below the place raised
+  to the residue degree of the place of the base**, and **when the extension is generated by that
+  root of unity the description determines the Frobenius**.  Feeding that into the local computation
+  gives **the invariant at an unramified place of a cyclic algebra whose splitting field is
+  generated by a root of unity**, over an arbitrary number field: the exponent expressing the
+  Frobenius as a power of the chosen generator, times the value of the coefficient, divided by the
+  degree.
+* `InverseGalois.CFT.Brauer.PlaceSubcyclotomicBase` passes that computation to a subfield, over an
+  arbitrary base.  The cyclic algebra of a subfield for the restricted generator is the cyclic
+  algebra of the larger field for the coefficient raised to the relative degree; raising the
+  coefficient to that degree multiplies its value by the same factor, and the degree of the larger
+  field is the degree of the subfield times the relative degree, so the factor cancels in the
+  rationals modulo the integers.  Hence **the invariant at an unramified finite place of a cyclic
+  algebra over an arbitrary number field, split by a subfield of an extension generated by a root of
+  unity**, is the exponent expressing the Frobenius as a power of the chosen generator, times the
+  value of the coefficient, divided by the degree of the subfield.
+* `InverseGalois.CFT.Brauer.PlaceSubcyclotomicPower` splits that exponent into a part depending on
+  the rational prime and a part depending on the place.  Iterating an automorphism raises a root of
+  unity to the iterated power of the exponent, and two powers of a root of unity agree when the
+  exponents are congruent modulo its order; so a power of the generator raising the root of unity
+  to the rational prime below the place raises it, once iterated as many times as the residue
+  degree, to the number of residues of the base.  Hence **the invariant at an unramified finite
+  place, with the exponent split as a rational exponent times the residue degree of the place**,
+  which confines the dependence on the place to a single natural number.
+* `InverseGalois.CFT.Brauer.InertiaDegRat` compares the two ways of measuring that residue degree.
+  The absolute norm of an ideal is the absolute norm of the ideal below it raised to the residue
+  degree, and it is also the rational prime raised to the residue degree over the integers; every
+  finite place of the rationals has residue degree one, so the absolute norm of the place of the
+  rationals below is the prime itself, and **the residue degree of a place over the ideal generated
+  by the rational prime below it is its residue degree over the place of the rationals below it**.
+* `InverseGalois.CFT.Brauer.PlaceSubcyclotomicFibre` measures the exponent that way.  The local
+  computation counts residues as powers of the rational prime, whereas adding up the invariants
+  above one rational prime takes norms relative to the integers of the rationals; the two residue
+  degrees agree, so **the invariant at an unramified finite place, with the residue degree measured
+  against the place of the rationals below**, takes the shape in which a whole fibre can be summed.
+* `InverseGalois.CFT.Brauer.ResidueGenerator` prepares the ramified place over an arbitrary base.
+  The Teichmüller lift of a generator of the residues is a root of unity of order one less than the
+  number of residues whose powers meet every element of absolute value one, so its power of
+  complementary exponent has order the exponent, and a prescribed root of unity of that order is a
+  power of it with exponent prime to the order.  Reduction of the units of one cyclic group of
+  residues onto the units of a quotient is surjective, so that exponent lifts to one prime to the
+  order of the Teichmüller lift, and the corresponding power of the lift is still a generator.
+  Hence **a root of unity of order dividing one less than the number of residues is the power of
+  complementary exponent of a generator of the residues**, for the absolute value of a complete
+  field and for the valuation of a completion of a number field alike.
+* `InverseGalois.CFT.Brauer.PlaceConductorBase` reads the ramified place over an arbitrary base.  A
+  rational prime unramified at a place of a number field is a uniformiser of the completion there,
+  because the valuation of a rational prime is the exponential of minus the ramification index; so
+  the radical of the opposite of an odd prime, which presents the completion of a subfield of the
+  field generated by the primitive roots of unity of that prime, has a uniformiser as its
+  coefficient, exactly as it does over the rationals.  What changes is the residue field, which is
+  now an extension of the field with as many elements as the prime, of degree the residue degree of
+  the place; the generator of its residues whose complementary power is the root of unity
+  multiplying the radical comes from the root of unity itself rather than from a rational primitive
+  root.  Naming the exponent by that generator is not stable under a change of place, so it is
+  recorded by the congruence it satisfies, and **the invariant, at a place above an odd prime
+  unramified in the base, of a cyclic algebra split by a subfield of the field generated by the
+  primitive roots of unity of that prime, with a coefficient that is a unit there**, is the class of
+  the exponent naming the coefficient raised to the complementary power of the degree as a power of
+  that root of unity.
+* `InverseGalois.CFT.Brauer.TotallyRealInvariantBase` clears the archimedean places over an
+  arbitrary base.  A complex place splits everything, and a real place splits whatever embeds into
+  the reals over the associated embedding of the base; an extension generated by a totally real
+  subfield does, because the composite of that embedding with the inclusion of the reals into the
+  complex numbers extends to the extension, and the extension of it agrees with its conjugate on the
+  generating subfield, hence everywhere, so it is fixed by conjugation and factors through the
+  reals.  A generating subfield is what the general base calls for, since an extension of a base
+  with a complex place is never itself totally real, while the splitting fields the reciprocity
+  computation uses are compositums of the base with a totally real field of the rationals.  So
+  **a Brauer class of a number field split by an extension generated by a totally real subfield has
+  trivial invariant at every infinite place**, and **its total invariant is the product of its
+  invariants at the finite places** — in particular for a cyclic algebra with such a splitting
+  field, which is the shape the reciprocity computation over an arbitrary base takes.
+* `InverseGalois.CFT.Brauer.SplitBase` decides, over an arbitrary base, when a cyclic extension
+  splits a Brauer class.  At a finite place the order of the decomposition group is the local
+  degree, so in an extension of prime-power degree **a power of the prime divides the local degree
+  at a place whose decomposition group is not killed by the next smaller power**, and that kills an
+  invariant of that order.  At an archimedean place the condition comes from the base: a real place
+  of the extension restricts to a real place of the base, and the two completions are the reals
+  along compatible embeddings, so **a class with trivial invariant at every infinite place of the
+  base is split by the completion of the extension at a real place**.  Together, **a class killed
+  by a prime power, trivial at the infinite places, is split by a cyclic extension of prime-power
+  degree whose decomposition group at every place carrying a nontrivial invariant is large
+  enough** — the criterion the reciprocity computation over an arbitrary base feeds its auxiliary
+  field into.
+* `InverseGalois.CFT.Brauer.NormReduction` computes a norm componentwise and modulo a maximal ideal.
+  An element of a finite product of algebras is the product of the elements agreeing with it in a
+  single coordinate and equal to one elsewhere, and multiplication by such an element is
+  multiplication by its one coordinate on the corresponding factor and the identity on the
+  complementary product, so **the norm of an element of a finite product of algebras is the product
+  of the norms of its components**.  Separately, a basis of an algebra reduces modulo an ideal of
+  the base to a spanning family of the reduction, hence to a basis as soon as the reduction has the
+  dimension the rank predicts; the coefficients in it are the reductions of the coefficients, so the
+  matrix of multiplication reduces to the matrix of multiplication, and **the norm of an element
+  reduces modulo a maximal ideal of the base to the norm of its reduction**.  Together these express
+  the norm of an algebraic integer modulo a rational prime through the residue fields of the places
+  above it, which is what compares the invariants of a cyclic algebra at the places over a prime
+  with the invariant of its trace down to the rationals.
+* `InverseGalois.CFT.Brauer.NormFactors` carries that reduction through to the individual places.
+  The Chinese remainder theorem splits the reduction of an extension of Dedekind domains modulo a
+  maximal ideal of the base as the product of the reductions modulo the powers of the primes lying
+  over it to which they ramify, and that splitting respects the residue field of the base, so
+  **the norm of an element reduces modulo a maximal ideal of the base to the product, over the
+  primes lying over it, of the norms of the reductions modulo the corresponding ramified powers**.
+  A separate computation records the shape of a norm of finite fields: it is a power, by the
+  quotient of the orders of the two multiplicative groups, so **raising an element of a finite field
+  to the power the order of its multiplicative group divided by a divisor of the order of the
+  multiplicative group of a subfield is the norm to that subfield raised to the complementary
+  power**.  This is what turns a power residue symbol computed in the residue field of a place into
+  one computed in the prime field below it.
+* `InverseGalois.CFT.Brauer.PlaceOrders` realises prescribed orders at finitely many places.  A
+  prime of a Dedekind domain is contained neither in its own square nor in any other prime, so
+  prime avoidance produces an element of it lying outside the union of its square with finitely many
+  other primes, and **that element has multiplicity one at the prime and multiplicity zero at each
+  of the others**.  Multiplying powers of such elements realises any prescribed system of
+  multiplicities, and a quotient of two of them realises any prescribed system of orders, so
+  **prescribed orders at finitely many finite places of a number field are realised by a single
+  element of the field** and **any element can be corrected to have order zero at each of finitely
+  many finite places**.  Since the class of a cyclic algebra is unchanged when its coefficient is
+  multiplied by a norm, and a correcting factor of prescribed orders can be produced as such a norm,
+  nothing is lost by computing the invariant only for a coefficient which is a unit at the places
+  under consideration.
+* `InverseGalois.CFT.Brauer.FibreInvariant` groups the places of a number field by the rational
+  prime below them.  A product of exponentials of an additively written family is the exponential
+  of its sum, so a product of invariants is read as a sum of exponents; over a single fibre those
+  exponents are the residue degree times the value of the coefficient, the terms outside the fibre
+  vanishing because the residue degree of a prime relative to a rational prime other than the one
+  below it is zero, and the norm formula for values at places sums them.  Hence **the product of
+  the invariants over the places above a rational prime is the exponential of the value at that
+  prime of the norm of the coefficient**, hence **is the invariant at that prime** as soon as the
+  latter is the exponential of the same exponent times the value there of the norm.  Globally, the
+  interchange of a doubly indexed product of finite support expresses a product over the places of
+  the number field as the product over the
+  rational primes of the products over the places above them, so **the product of the invariants
+  over all finite places agrees with a product over the rational primes** as soon as it does so
+  fibre by fibre.  When the invariants above a prime are instead read off from residues, each of
+  them being the exponential of an exponent naming a power of a fixed generator, **the product over
+  the fibre is the exponential of the sum of those exponents**, the sum being finite because only
+  finitely many places lie above a rational prime.
+* `InverseGalois.CFT.Brauer.NormPrimesOver` specialises the Chinese remainder splitting of a norm to
+  a number field.  The ring of integers of a number field is a finitely generated torsion free
+  module over the integers of the rationals, which is a principal ideal ring, so it is free of rank
+  the degree of the field, and that rank is the dimension over the residue field of the reduction
+  modulo a rational prime; hence **the norm of an algebraic integer reduces modulo a rational prime
+  to the product, over the primes of the ring of integers over it, of the norms of the reductions
+  modulo the corresponding ramified powers**.  A place of a number field lies over a rational prime
+  exactly when that prime is the one below it, so **the places above a rational prime match the
+  primes over it** — in particular **only finitely many of them do** — and the product can be read
+  as one over the fibre of the map sending a place to the rational prime below it, the shape in
+  which the invariants of a class in the Brauer group are grouped.
+* `InverseGalois.CFT.Brauer.ResidueCongruence` reads a local statement as a congruence.  The
+  valuation of an integer of a number field in the completion at a place is its valuation there, so
+  **two integers agree modulo a place exactly when their difference is small in the completion**;
+  and since a power of a difference of small valuation is again small, **a power of an integer that
+  is close to a power of a root of unity reduces modulo the place to the same power of the natural
+  number representing that root**.  The completion has as many residues as the place, so the same
+  statement is available with the power written as the local computation of an invariant produces
+  it, by the number of residues of the completion.
+* `InverseGalois.CFT.Brauer.FibreExponent` adds up the exponents naming the invariants above one
+  rational prime.  Raising an element of a residue field to the number of its elements less one
+  over the degree is the norm to the residue field below followed by the corresponding power there,
+  so **the norm of the reduction of an integer at a place, raised to that power, is the power by
+  the exponent naming the place of the natural number representing the root of unity**.  At an
+  unramified prime, reduction modulo a place is reduction modulo the ramified power to which the
+  Chinese remainder theorem splits the norm, so **the reduction of the norm of the integer, raised
+  to that power, is the power of the natural number by the sum of the exponents over the places
+  above the prime**.  The natural number has order the degree there, so an equality of its powers
+  is a congruence: **the exponents above a rational prime add up, modulo the degree, to the
+  exponent of the prime**.
+* `InverseGalois.CFT.Brauer.FibreConductor` compares the invariants at the prime whose roots of
+  unity generate the splitting field.  Each invariant above that prime, and the invariant at the
+  prime itself, is the exponential of an exponent read from a residue congruence against a fixed
+  generator of order the degree; the exponents above the prime add up to the one below it, so
+  **the product of the invariants over the places above the prime is the invariant at the prime**
+  as soon as the prime is unramified in the number field.
+* `InverseGalois.CFT.Brauer.FibreTotal` passes from the fibres to the whole.  The total invariant
+  of a class is the product of the invariants at the finite places once those at the infinite
+  places are trivial, so **a class of a number field whose invariants above each rational prime
+  multiply to the invariant there of a class of the rationals has the same total invariant as that
+  class**, and in particular **has vanishing total invariant** as soon as the rational one does.
+  This is the shape in which reciprocity over the rationals carries reciprocity over an arbitrary
+  number field.
+* `InverseGalois.CFT.Brauer.PlaceUnitValue` records when a unit stays a unit.  The value of a unit
+  at a finite place is the logarithm of the valuation of its image in the completion, so **the
+  value vanishes exactly when that valuation is one**; and the value of a norm at a place of the
+  rationals is the sum over the places above it of the residue degree times the value there, so
+  **the norm of a unit invertible at every place above a rational prime is invertible at that
+  prime**.  This is what lets the same coefficient be fed to the local computation at the conductor
+  simultaneously over a number field and over the rationals.
+* `InverseGalois.CFT.Brauer.RatResidueOrder` names the residues of the rationals.  The residue ring
+  at a place containing a prime has that prime as its number of elements and as its characteristic,
+  so **two natural numbers have the same residue there exactly when they are congruent modulo the
+  prime**; consequently **a power of a primitive root has as multiplicative order the complementary
+  factor of its exponent in one less than the prime**.  This is the input that lets the exponents
+  naming the invariants above a prime be compared with the exponent naming the invariant below.
+* `InverseGalois.CFT.Brauer.RatBase` identifies the two ways of taking the rationals as a base.
+  The rational integers extend to the integers of the rationals by an isomorphism, so **a place of
+  the rationals is unramified over the rational integers**, and **the norm of an algebraic integer
+  relative to the integers of the rationals is the norm of its image relative to the rationals**.
+  The first lets the computation at the conductor over an arbitrary base be applied over the
+  rationals themselves, the second lets the coefficient below be the norm of the coefficient above.
+* `InverseGalois.CFT.Brauer.BaseSubcyclotomic` carries reciprocity from the rationals to an
+  arbitrary number field for the cyclic algebras built from the roots of unity of an odd prime.
+  The invariant at the place of the conductor of such an algebra is packaged over an arbitrary base
+  as **the class of the exponent that expresses the coefficient as a power residue there**, so that
+  the two sides of the comparison are two instances of one statement.  Both splitting fields are
+  generated by a totally real field, so the infinite places contribute nothing; away from the
+  conductor the invariants above a rational prime are read from one exponent weighted by the
+  residue degrees, which add up with the values to the value of the norm; and at the conductor the
+  exponents naming the power residues above the prime add up to the exponent naming the power
+  residue of the norm.  Hence **the total invariant of a cyclic algebra over a number field split
+  by a subfield of the field of the primitive roots of unity of an odd prime, with an integral
+  coefficient that is a unit above that prime, vanishes**.
+* `InverseGalois.CFT.BaseTotallyRamified` transfers total ramification into a compositum, the
+  direction opposite to the transfer of unramifiedness.  **The ramification index is multiplicative
+  in a tower of number fields**, so it can be computed along either side of the compositum square:
+  up through the Galois extension of the rationals it is divisible by the degree of that extension
+  when that extension is totally ramified, and up through the new base field it is unchanged when
+  the place is unramified there.  That degree therefore divides the ramification index of the
+  compositum over the new base, which is the order of an inertia subgroup and so at most the degree
+  of the compositum over the new base, itself at most the degree of the original extension because
+  restriction of automorphisms is injective.  The inequalities close up, and **total ramification in
+  a Galois extension of the rationals passes to a compositum with a number field in which the place
+  is unramified**.
+* `InverseGalois.CFT.Brauer.BaseCyclotomic` discharges the arithmetic hypotheses of the comparison
+  theorem in the case that matters, where the top field is the compositum of the base with the
+  field of the primitive roots of unity of a prime that is unramified in the base.  A cyclotomic
+  field of prime conductor is ramified only at that conductor, so its ramified set is disjoint from
+  that of the base; the degrees of the two sides of the compositum square therefore agree, total
+  ramification at the conductor is inherited by the compositum and unramifiedness away from the
+  conductor is inherited too, and a place above the conductor, being totally ramified, is fixed by
+  every automorphism.  Hence **the total invariant of a cyclic algebra over a number field split by
+  the compositum of the base with a cyclotomic field of prime conductor unramified in the base is
+  trivial**, on the sole arithmetic hypothesis that **a rational prime outside the ramified set of
+  a number field is unramified at every place above it**.
+* `InverseGalois.CFT.Brauer.PrescribedValue` gives the places of a number field whatever values one
+  likes.  The Chinese remainder theorem supplies an algebraic integer congruent, modulo one more
+  than the prescribed power of each of finitely many chosen primes, to that power of a uniformiser
+  there, and the correction has too small a valuation to disturb the leading term, so **an element
+  of a Dedekind domain may be given prescribed valuations at finitely many places**; a quotient of
+  two such integers then gives **a unit of a number field with prescribed values at finitely many
+  places**.  The construction also clears denominators without disturbing a finite set of places,
+  so **a unit trivial at finitely many places is a quotient of two algebraic integers trivial
+  there**.
+* `InverseGalois.CFT.Brauer.NormAdjust` exploits total ramification to compute norms.  If the
+  inertia group at a place of a Galois extension is the whole Galois group then the number of
+  places above the place beneath it and the residue degree there are both one, since those two
+  numbers and the order of the inertia group multiply to the order of the Galois group; so **a
+  place whose inertia group is the whole Galois group is the only place above the place beneath it,
+  and has residue degree one**, and the value of a norm at the place below is exactly the value of
+  the element at the place above.  Since values at finitely many places may be prescribed at will,
+  **the norms realise every family of values at the places above a totally ramified prime**.  A
+  rational prime unramified in the base and totally ramified in a Galois extension of the rationals
+  is totally ramified in the compositum, so for a homomorphism to the Brauer group that kills the
+  norms an arbitrary unit may be adjusted to be a unit at that prime and then written as a quotient
+  of algebraic integers which are units there: **trivial total invariant on those algebraic
+  integers forces trivial total invariant on every unit**.
+* `InverseGalois.CFT.Brauer.BaseCyclicClass` assembles the correcting classes themselves over an
+  arbitrary number field.  The group of residues prime to a prime conductor is the Galois group of
+  the cyclotomic field of that conductor, so **every residue prime to the conductor is a power of a
+  fixed generating residue**; the residue cardinality of a place away from the conductor is such a
+  residue, and the exponent expressing it scales the valuation, so **the invariant of a cyclic
+  class at a finite place of the base lying over a rational prime other than the conductor is the
+  valuation of the coefficient times that exponent**.  Composing the base with a totally real
+  subfield of prescribed degree of the cyclotomic field then produces **the correcting Brauer
+  classes of a number field**: a homomorphism from the units of the base to its Brauer group whose
+  classes are killed by the prescribed degree, are trivial at every archimedean place, have trivial
+  total invariant, and have those prescribed invariants at the finite places away from the
+  conductor.
+* `InverseGalois.CFT.Brauer.DecompositionTransfer` compares a decomposition group of a compositum
+  with the decomposition group of the factor that is an extension of the rationals.  The stabiliser
+  of a place in the Galois group of an extension of the rationals is the decomposition group there,
+  and its order is the residue degree once the prime is unramified, so **the residue degree of a
+  place of a subfield of a cyclotomic field divides the order of the stabiliser of a place of the
+  compositum**.  Multiplicativity of the residue degree in a tower bounds the residue degree of the
+  compositum by the residue degree of the base times that stabiliser order, and the degree of the
+  base bounds its own residue degree; so **a power of a prime dividing a product of a bounded
+  number and a prime power is bounded by the multiplicity of the prime in the bound plus the
+  exponent**, which is the arithmetic that converts a decomposition condition over the rationals
+  into one over an arbitrary base.
+* `InverseGalois.CFT.Brauer.BaseSubcyclotomicSplit` turns those comparisons into reciprocity over an
+  arbitrary number field for a class of prime-power order.  Composing the base with the subfield of
+  prescribed prime-power degree of the cyclotomic field of an auxiliary prime gives a cyclic
+  extension satisfying reciprocity, and the order of its decomposition group at a place is, up to
+  the residue degree contributed by the base, the order named by a power residue symbol.  Enlarging
+  the exponent of the auxiliary congruence by the multiplicity of the prime in the degree of the
+  base therefore absorbs that contribution, and **the invariants of a Brauer class of a number
+  field, of prime-power order and trivial at the infinite places, add up to zero as soon as every
+  rational prime below a place carrying a nontrivial invariant fails a power residue condition
+  modulo an auxiliary prime**.
+* `InverseGalois.NumberTheory.SplitDensityFamily` widens the density bound behind the choice of an
+  auxiliary prime from one exceptional field to a whole family of them.  Iterating the subadditivity
+  of a Dirichlet series along a finite index set bounds **the density of a set of primes covered by
+  a finite set together with a finite family of others by the sum of the densities of the family**,
+  so **infinitely many primes split completely in a Galois number field and in none of a finite
+  family of larger ones** as soon as the reciprocals of the larger degrees do not add up to the
+  reciprocal of the smaller one.  The enlargement factor of each larger field only has to exceed the
+  number of conditions imposed, which is what lets a single prime carry arbitrarily many
+  simultaneous non-residue conditions.
+* `InverseGalois.CFT.Scholz.AuxPrimeFamily` produces that prime.  Over the cyclotomic field of a
+  power of an odd prime a rational prime that is not an `ℓ`-th power there stays one after adjoining
+  a root of unity of the wanted order, so **the radical field of the corresponding prime power has
+  the full degree above the cyclotomic field**, and the family density bound applies to the whole
+  list at once.  Hence, for a list of primes shorter than a power of `ℓ`, **there is a prime
+  congruent to one modulo twice an arbitrarily large power of `ℓ`, avoiding any prescribed finite
+  set, modulo which every prime on the list fails to be a power residue at that exponent**.
+* `InverseGalois.CFT.Scholz.TwoPowerRadical` supplies the missing irreducibility at the prime two.
+  For an odd prime the polynomial `X` raised to a prime power, minus a constant without a root of
+  prime exponent, is irreducible; at two the honest criterion also involves the constant modulo
+  fourth powers of minus four, and that correction disappears over a field already containing a
+  square root of minus one, since minus four is then a fourth power there.  Adjoining one square
+  root of the constant, a square root of it would have a norm whose square is minus the constant,
+  and the square root of minus one turns that norm into a square root of the constant; so the
+  induction on the exponent, run over all fields at once, gives **`X` raised to a power of two,
+  minus a non-square, is irreducible over a field containing a square root of minus one**.  Hence
+  **a rational number without a square root in a field of matching roots of unity is enlarged by
+  the full two-power factor**, and **a rational number with a square root but no fourth root there
+  is still enlarged by half of it**, its two-power root being a root of half the order of an
+  element already present.
+* `InverseGalois.CFT.Scholz.DyadicAuxPrimeFamily` runs the family density argument at the prime
+  two.  Over the cyclotomic field of a two-power conductor only two ramifies, so an odd prime has
+  no square root there and its radical of two-power exponent multiplies the degree by that whole
+  exponent; two itself does have a square root there once the conductor is at least eight, an
+  explicit one being a primitive eighth root of unity plus its inverse, but no fourth root, so its
+  radical still multiplies the degree by half the exponent.  The uniform factor of half the
+  exponent grows without bound while the number of prescribed primes does not, so the union bound
+  succeeds for all of them at once and yields **a prime congruent to one modulo a prescribed power
+  of two, avoiding any prescribed finite set, modulo which every prime on a list shorter than half
+  the exponent fails to be a power residue at that exponent**.
+* `InverseGalois.CFT.Brauer.BaseOddReciprocity` closes global reciprocity over an arbitrary number
+  field in odd order.  A class has nontrivial invariants at only finitely many places, hence above
+  only finitely many rational primes, and the exponent at which those primes are asked to be
+  non-residues may be raised at will by raising the degree of the auxiliary cyclotomic subfield; so
+  a single auxiliary prime discharges the hypothesis of the splitting criterion for all of them
+  simultaneously, and the archimedean invariants of a class of odd order are trivial because the
+  Brauer group of the reals is killed by two.  Hence **the invariants of a Brauer class of a number
+  field of odd prime-power order add up to zero**, and, splitting an arbitrary odd order at its
+  least prime factor and recombining by a Bézout relation, **the invariants of a Brauer class of a
+  number field of odd order add up to zero**.
+* `InverseGalois.CFT.Brauer.RealCyclicSign` reads the archimedean invariants of a quadratic cyclic
+  algebra as signs.  The complex numbers are a quadratic extension of the reals generated by
+  conjugation, so a real unit produces a cyclic algebra whose class is trivial exactly when the unit
+  is a norm, that is exactly when it is positive: the resulting invariant is **the sign of the
+  unit**, and two units of the same sign share it.  Over an arbitrary number field whose splitting
+  field is a quadratic extension with no real place, the splitting field embeds into the complex
+  numbers over the completion at a real place and the embedding is not real, so restriction is an
+  injection between two groups of order two, hence an isomorphism carrying conjugation to the chosen
+  generator; base change along it therefore keeps the coefficient, and **the invariant at a real
+  place of such an algebra is the sign of the coefficient there**.  Multiplying over all the
+  infinite places and comparing with the archimedean half of the product formula, where the complex
+  places contribute a positive factor to the norm, gives **the archimedean invariants of such an
+  algebra multiply out to the archimedean invariant over the rationals of the algebra attached to
+  the norm of the coefficient** — the archimedean comparison that reciprocity over an arbitrary base
+  needs in degree two, where no totally real splitting field is available.
+* `InverseGalois.CFT.Cyclotomic.ImaginarySubfield` supplies the splitting field that comparison
+  wants.  Complex conjugation of a CM field is an automorphism of order two, and an embedding of an
+  intermediate field into the complex numbers extends to the whole field, where it carries that
+  conjugation to conjugation of the complex numbers; so **an intermediate field that complex
+  conjugation moves is totally complex**, and complex conjugation moves every intermediate field
+  over which the ambient field has odd degree, its fixing group then having odd order.  Inside the
+  cyclotomic field of prime conductor this is an arithmetic condition on the degree, and it produces
+  **a totally complex subfield of prescribed degree of the cyclotomic field of a prime conductor**,
+  totally ramified there and with the same power residue splitting law as its totally real
+  counterpart, whenever the complementary degree is odd.
+* `InverseGalois.CFT.Brauer.BaseSignCorrector` assembles the two into the corrections that
+  reciprocity in the two-primary case consumes.  The comparison of a cyclic algebra over a number
+  field with its counterpart over the rationals is first freed of the assumption that both splitting
+  fields are totally real, the archimedean comparison becoming a hypothesis; then it is discharged
+  in the totally complex quadratic case by the sign computation.  Composing the base with the
+  imaginary quadratic subfield of the cyclotomic field of a prime conductor congruent to three
+  modulo four and unramified in the base gives a totally complex quadratic extension, and its cyclic
+  algebras are **classes killed by two, of trivial total invariant, whose invariant at a real place
+  is the sign of the coefficient there** — corrections able to realise any prescribed pattern of
+  archimedean invariants, as no class pulled back from the rationals could.
+* `InverseGalois.CFT.Brauer.BaseReciprocity` completes global reciprocity over an arbitrary number
+  field.  The odd part of the order is already settled, and what the two-primary part needs is a way
+  to clear the archimedean invariants before the auxiliary prime argument applies.  The real places
+  of a number field are independent as far as signs are concerned: a generator of the field takes
+  distinct real values at them, and cutting out a short interval around one of those values with a
+  pair of rationals produces an element negative at that place alone, so every pattern of signs is
+  realised by a unit.  Feeding such a unit to a sign corrector, whose conductor is one of the
+  infinitely many primes congruent to three modulo four, yields a class matching the archimedean
+  behaviour of the given one; their product is of two-power order, split by every completion at an
+  infinite place, and has the same total invariant.  Splitting an arbitrary finite order into its
+  two-part and its odd part then gives **global reciprocity over a number field: the invariants of a
+  Brauer class add up to zero**.
+* `InverseGalois.CFT.Brauer.CyclicProduct` reads reciprocity on the classes that carry the
+  arithmetic.  A cyclic algebra and the power residue symbol of two units both have a Brauer class
+  over the base, so the invariants of either multiply to one over all places; only finitely many of
+  the finite places contribute, and the statement can be read over any finite set carrying them
+  together with the finitely many archimedean terms.  That is **the product formula for the norm
+  residue symbol**.  The same base change identifies what a single factor measures: over a
+  completion the cyclic algebra becomes the cyclic algebra of the decomposition group with the same
+  coefficient, and a cyclic algebra is split exactly when its coefficient is a norm, so **the
+  invariant at a finite place vanishes precisely when the coefficient is a norm from the completion
+  of the splitting field there**.  The product formula is then the statement that the failures to
+  be a local norm cancel.
+* `InverseGalois.CFT.Brauer.InfiniteCyclic` supplies the archimedean half of that local reading.
+  The two-step base change through the decomposition field works verbatim at an infinite place: the
+  decomposition group is a subgroup of a finite cyclic group, hence generated by the power of the
+  global generator by its index, and the automorphism group of the completions is that
+  decomposition group, so **extending scalars to the completion at an infinite place sends a cyclic
+  algebra to the cyclic algebra of the decomposition group with the same coefficient**.  Read
+  through the invariant, **the invariant at an infinite place vanishes exactly when the coefficient
+  is a norm from the completion of the splitting field there**.
+* `InverseGalois.CFT.Brauer.HasseNorm` puts the two local readings together with the theorem of
+  Albert, Brauer, Hasse and Noether.  For a cyclic extension of number fields the coefficient of a
+  cyclic algebra is a norm exactly when the algebra is split, so being a norm globally forces every
+  local invariant to vanish, and conversely a class all of whose local invariants vanish is trivial.
+  Since every place of the base carries a place of the extension above it, the local conditions can
+  be quantified over the primes and infinite places of the extension.  The result is **the Hasse
+  norm theorem: an element of the base field of a cyclic extension of number fields is a norm
+  exactly when it is a norm from the completion of the extension at every place**.
+* `InverseGalois.CFT.Brauer.PlaceSymbol` makes the local reading of a cyclic algebra uniform over
+  all the finite places at once, when the extension has prime degree and is presented by a radical
+  of the base.  A decomposition group is then a subgroup of a group of prime order, so it is
+  everything or it is trivial.  Where it is everything the completion of the extension is again
+  presented by the image of the radical, the chosen generator restricts to the local one with no
+  correcting power, and the invariant is the inverse of the power residue symbol of the coefficient
+  against the radicand.  Where it is trivial the completion of the extension is the completion of
+  the base: the coefficient is its own norm and the invariant vanishes, while the radical itself
+  descends, so the radicand is a local power and the symbol is trivial as well.  Hence **at every
+  finite place the invariant of a cyclic algebra over a cyclic extension of prime degree presented
+  by a radical is the inverse of the power residue symbol of its coefficient against the radicand**
+  — the identification which turns the product formula for the invariants into the product formula
+  for the symbol.
+* `InverseGalois.CFT.Brauer.SymbolProduct` makes that turn.  Given two units of a number field
+  containing a primitive root of unity of prime order, either the second is already a power, and
+  every local symbol is trivial, or the polynomial cutting out its root is irreducible and its
+  splitting field is a cyclic extension of that degree presented by a radical — the automorphism
+  matching the chosen root of unity generates the Galois group and multiplies the radical by it.
+  At every finite place the invariant of the cyclic algebra built on the first unit is then the
+  inverse of the local symbol, and a field with a root of unity of order bigger than two has no
+  real place, so no archimedean invariant survives.  Global reciprocity therefore says exactly that
+  **the power residue symbols of two units of a number field multiply to one over the finite
+  places**, with no hypothesis on the field beyond containing the roots of unity when the exponent
+  is an odd prime.
+* `InverseGalois.CFT.Brauer.SymbolReciprocity` reads that product formula between two units each
+  ramified at a single place.  A unit whose value at a place is divisible by the exponent has a
+  value at the Frobenius automorphism of that place, its symbol there against a uniformiser, and
+  the symbol at such a place is that value raised to the value of the other argument.  Take two
+  units, each of value divisible by the exponent at every finite place but one, and let the first
+  be a power in every completion whose residue characteristic divides the exponent.  Then the
+  symbol is trivial at the places of that residue characteristic because the first unit is a power
+  there, and trivial away from the two exceptional places because both units have value divisible
+  by the exponent, so the product formula reduces to the two exceptional places: **the value of the
+  first unit at the Frobenius automorphism of the exceptional place of the second, raised to the
+  value of the second there, is the value of the second at the Frobenius automorphism of the
+  exceptional place of the first, raised to the value of the first there.**
+* `InverseGalois.CFT.PoitouTate.Unramified` names the local half of the resulting duality.  A class
+  of a local field modulo powers is unramified when the value of any representative is divisible by
+  the exponent; reading the value modulo the exponent is a homomorphism onto the integers modulo it,
+  onto because there is a uniformiser and killed by the powers, so **the unramified classes are the
+  kernel of a surjection and have index the exponent.**  Away from the residue characteristic two
+  such classes have trivial symbol: each representative is a unit of the valuation ring times a
+  power, powers drop out of a bimultiplicative symbol, and the symbol of two units of the valuation
+  ring is trivial in the tame case.  When there are exactly the exponent squared classes in all —
+  which the local index formula gives at a place not dividing the exponent, once the roots of unity
+  are present — the unramified classes are half of them, and the counting lemma for a perfect
+  self-pairing upgrades trivial self-pairing to equality: **the unramified classes of a local field
+  are precisely their own orthogonal complement under the norm residue symbol.**  That is the local
+  condition cutting out the Selmer group in the global duality argument.
+* `InverseGalois.CFT.PoitouTate.Selmer` supplies the global half.  Each unit of a number field
+  outside a finite set of finite places has a class in the units of each of those completions
+  modulo powers, and for a set carrying every prime above the exponent and large enough that every
+  divisor outside it is principal, **that map is faithful on the units outside the set**: one which
+  is a power locally at each place of the set is a power at every infinite place too, the field
+  being totally complex once it carries a root of unity of order bigger than two, and is a unit
+  elsewhere, so the criterion for a radical to be trivial applies.  Counting with the index of the
+  powers in those units, the image is the exponent raised to the number of places of the set, and
+  the local index formula makes the whole product of local classes the exponent raised to twice
+  that, so **the image is exactly a square root of the whole**.  It pairs trivially with itself by
+  the product formula, the symbols outside the set being symbols of two units of a valuation ring
+  away from its residue characteristic, and the counting lemma turns the inclusion into an
+  equality: **the classes of the units outside a set of places are precisely their own orthogonal
+  complement in the local classes at those places.**
+* `InverseGalois.CFT.PoitouTate.LocalConditions` extracts from that self-duality the statement one
+  actually builds extensions with.  A pairing has two orthogonal complements, one for each
+  argument, and they agree on a subgroup already known to be its own complement on one side,
+  because exchanging the arguments leaves the pairing perfect and the subgroup isotropic; so no
+  symmetry of the symbol is needed to read a maximal isotropic subgroup from either side.  Given
+  such a subgroup and any further subgroup, thought of as conditions imposed one local factor at a
+  time, **the elements pairing trivially with the part of the isotropic subgroup dual to the
+  conditions are exactly those congruent to the isotropic subgroup modulo the conditions.**  One
+  inclusion is immediate; the other counts, pairing the isotropic subgroup against the conditions
+  to see it, modulo the part dual to them, as characters of the conditions killing the common part,
+  and rewriting the resulting index by the second isomorphism theorem.  Since the pairing on a
+  product is the product of the pairings, conditions imposed one factor at a time have their
+  complement computed one factor at a time.  Read at the classes of a number field modulo powers,
+  this is **the existence of a global class with prescribed local behaviour**: an assignment of
+  local classes is congruent to a global one modulo the conditions exactly when it is orthogonal to
+  the global classes obeying the dual conditions.
+* `InverseGalois.CFT.PoitouTate.Prescribed` reads that at the classes of a number field.  Two
+  shapes of condition occur: the condition imposing nothing, whose dual imposes everything, and the
+  condition of being unramified, which at a place away from the exponent is its own dual on the
+  left as well as on the right, the classes of a local field being nondegenerately paired in either
+  argument.  So for a set of places split into a part where the local class is prescribed exactly
+  and a part where it is prescribed only up to an unramified class, the units to test against are
+  exactly those unramified on the second part, and **an assignment of local classes orthogonal to
+  them is met, place by place, by the class of a unit outside the set**.  Splitting a set of places
+  this way and moving places from the second part to the first one at a time is the induction
+  behind the construction of a number with prescribed local behaviour.
+
+* `InverseGalois.CFT.PoitouTate.GlobalClasses` supplies the dictionary that induction is run
+  through.  The valuation modulo the exponent of the class of a unit of the number field at a
+  finite place is the value of that unit at the place, so the class is unramified exactly when the
+  exponent divides that value: a condition on the ramification of a class is a congruence on an
+  integer.  A Galois automorphism carries the completion at a place isometrically onto the
+  completion at the image of the place, hence carries the powers onto the powers and identifies
+  the classes at the two places; that identification matches the class of a unit with the class of
+  its image, preserves the valuation modulo the exponent and **carries the unramified classes onto
+  the unramified classes**, so a prescription of local behaviour transports along the Galois group
+  with nothing lost.
 -/

@@ -13,10 +13,11 @@ import InverseGalois.CFT.Units.IdeleQuotCyclic
 # A class of the right order over the rationals
 
 The computation of the norm quotient of a cyclic extension ramified at a single place applies over
-any base whose ring of integers has principal ideals and at which the local conditions can be
+any base at which a prescribed system of orders can be realised and the local conditions can be
 checked.  Over the rationals all of that is available: the ring of integers is a principal ideal
-ring, the finite places correspond to the rational primes, and the two local hypotheses are
-supplied by total reality at the archimedean places and by unramifiedness at the finite ones.
+ring, so the exceptional set of primes carrying the ideal classes is empty, the finite places
+correspond to the rational primes, and the two local hypotheses are supplied by total reality at
+the archimedean places and by unramifiedness at the finite ones.
 
 A prime of the ring of integers of the rationals is determined by the rational prime it contains,
 so a place of an extension whose prime below is not the distinguished one does not contain the
@@ -43,7 +44,7 @@ residue characteristic exceeds the degree.
 number field, idele class group, fundamental class, cyclic extension, totally real
 -/
 
-open IsDedekindDomain NumberField InverseGalois.NumberTheory
+open IsDedekindDomain NumberField Rigidity.RET InverseGalois.NumberTheory
 
 namespace InverseGalois.CFT
 
@@ -138,9 +139,11 @@ theorem exists_zsmul_eq_zero_imp_dvd_H2_ideleClassRep_rat [IsCyclic Gal(K/ℚ)] 
   obtain ⟨g, hg⟩ := exists_unitGen_pow_mul_pow ℚ (ratPlace q hq) hq (natCast_mem_ratPlace q hq)
     (Nat.card_pos (α := Gal(K/ℚ))).ne' hqn
   refine exists_zsmul_eq_zero_imp_dvd_H2_ideleClassRep (k := ℚ) K hgen (ratPlace q hq)
+    (T := ∅) (Set.notMem_empty _)
+    (fun n hn => (exists_ord_repr_of_isPrincipalIdealRing ℚ n hn).imp fun a ha v _ => ha v)
     (fun w b => mem_normSubgroup_infiniteCompletion_of_isReal ℚ w (IsTotallyReal.isReal w) b)
     (fun w hne b hb => ?_) hg
-  refine mem_normSubgroup_adicCompletion_of_isUnramifiedAt ℚ w ?_ hb
+  refine mem_normSubgroup_adicCompletion_of_isUnramifiedAt ℚ w ?_ (hb (Set.notMem_empty _))
   refine isUnramifiedAt_of_ramifiedSet_subset_singleton hq hram w fun hmem => hne ?_
   refine heightOneSpectrum_rat_eq_of_natCast_mem hq ?_ (natCast_mem_ratPlace q hq)
   rw [primeUnder_asIdeal, Ideal.under_def, Ideal.mem_comap, map_natCast]
@@ -165,18 +168,24 @@ theorem exists_adicPlaceIdele_forall_mem_multiples_rat [IsCyclic Gal(K/ℚ)] [Is
   have hinf : ∀ (w : InfinitePlace K) (b : ((w.comap (algebraMap ℚ K)).Completion)ˣ),
       b ∈ normSubgroup ((w.comap (algebraMap ℚ K)).Completion) w.Completion :=
     fun w b => mem_normSubgroup_infiniteCompletion_of_isReal ℚ w (IsTotallyReal.isReal w) b
+  have hTrepr : ∀ n : HeightOneSpectrum (𝓞 ℚ) → ℤ,
+      (∀ᶠ v : HeightOneSpectrum (𝓞 ℚ) in Filter.cofinite, n v = 0) →
+        ∃ a : ℚˣ, ∀ v ∉ (∅ : Set (HeightOneSpectrum (𝓞 ℚ))), ord ℚ v (a : ℚ) = n v :=
+    fun n hn => (exists_ord_repr_of_isPrincipalIdealRing ℚ n hn).imp fun a ha v _ => ha v
   have hfin : ∀ w : HeightOneSpectrum (𝓞 K), primeUnder (𝓞 ℚ) w ≠ ratPlace q hq →
-      ∀ b : ((primeUnder (𝓞 ℚ) w).adicCompletion ℚ)ˣ, unitVal (Additive.ofMul b) = 0 →
+      ∀ b : ((primeUnder (𝓞 ℚ) w).adicCompletion ℚ)ˣ,
+        (primeUnder (𝓞 ℚ) w ∉ (∅ : Set (HeightOneSpectrum (𝓞 ℚ))) →
+          unitVal (Additive.ofMul b) = 0) →
         b ∈ normSubgroup ((primeUnder (𝓞 ℚ) w).adicCompletion ℚ) (w.adicCompletion K) := by
     intro w hne b hb
-    refine mem_normSubgroup_adicCompletion_of_isUnramifiedAt ℚ w ?_ hb
+    refine mem_normSubgroup_adicCompletion_of_isUnramifiedAt ℚ w ?_ (hb (Set.notMem_empty _))
     refine isUnramifiedAt_of_ramifiedSet_subset_singleton hq hram w fun hmem => hne ?_
     refine heightOneSpectrum_rat_eq_of_natCast_mem hq ?_ (natCast_mem_ratPlace q hq)
     rw [primeUnder_asIdeal, Ideal.under_def, Ideal.mem_comap, map_natCast]
     exact hmem
   exact ⟨Additive.ofMul g,
-    forall_mem_multiples_ideleQuot K hgen (ratPlace q hq) hinf hfin hg,
-    addOrderOf_ideleQuot_eq K hgen (ratPlace q hq) hinf hfin hg⟩
+    forall_mem_multiples_ideleQuot K hgen (ratPlace q hq) (Set.notMem_empty _) hTrepr hinf hfin hg,
+    addOrderOf_ideleQuot_eq K hgen (ratPlace q hq) (Set.notMem_empty _) hTrepr hinf hfin hg⟩
 
 end Class
 

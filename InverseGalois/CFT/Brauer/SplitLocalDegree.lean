@@ -32,8 +32,8 @@ the local degree.
   extension of the rationals of prime degree, the degree divides the local degree at a rational
   prime that does not split completely.**
 * `InverseGalois.CFT.primePow_dvd_finrank_adicCompletion_of_not_dvd`: **in a Galois extension of
-  the rationals of prime-power degree, the degree divides the local degree at a place whose
-  decomposition group is not killed by the next smaller power.**
+  the rationals of prime-power degree, a power of the prime divides the local degree at a place
+  whose decomposition group is not killed by the next smaller power.**
 
 ## Tags
 
@@ -96,16 +96,16 @@ theorem prime_dvd_finrank_adicCompletion_of_not_splitsCompletely {N : ℕ} (hN :
   · exact absurd h1 hne
   · rw [h1]
 
-/-- **In a Galois extension of the rationals of prime-power degree, the degree divides the local
-degree at a place whose decomposition group is not killed by the next smaller power.**  The order
-of the decomposition group is a power of the prime at most the degree, and failing to divide the
-next smaller power leaves only the degree itself. -/
-theorem primePow_dvd_finrank_adicCompletion_of_not_dvd {ℓ e : ℕ} (hℓ : ℓ.Prime)
-    (hcard : Nat.card Gal(K/ℚ) = ℓ ^ e) (w : HeightOneSpectrum (𝓞 K))
+/-- **In a Galois extension of the rationals of prime-power degree, a power of the prime divides
+the local degree at a place whose decomposition group is not killed by the next smaller power.**
+The order of the decomposition group is a power of the prime, and failing to divide the next
+smaller power puts its exponent at least as high. -/
+theorem primePow_dvd_finrank_adicCompletion_of_not_dvd {ℓ d e : ℕ} (hℓ : ℓ.Prime)
+    (hcard : Nat.card Gal(K/ℚ) = ℓ ^ d) (w : HeightOneSpectrum (𝓞 K))
     (h : ¬ Nat.card ↥(stabilizer Gal(K/ℚ) w.asIdeal) ∣ ℓ ^ (e - 1)) :
     ℓ ^ e ∣ finrank ((primeUnder (𝓞 ℚ) w).adicCompletion ℚ) (w.adicCompletion K) := by
   rw [← card_stabilizer_asIdeal_eq_finrank_adicCompletion K w]
-  have hdvd : Nat.card ↥(stabilizer Gal(K/ℚ) w.asIdeal) ∣ ℓ ^ e := by
+  have hdvd : Nat.card ↥(stabilizer Gal(K/ℚ) w.asIdeal) ∣ ℓ ^ d := by
     rw [← hcard]
     exact Subgroup.card_subgroup_dvd_card _
   obtain ⟨i, hi, hieq⟩ := (Nat.dvd_prime_pow hℓ).mp hdvd

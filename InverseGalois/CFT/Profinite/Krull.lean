@@ -53,7 +53,7 @@ section Fixing
 variable {k K : Type*} [Field k] [Field K] [Algebra k K] (L : IntermediateField k K)
 
 /-- The subgroup fixing a normal intermediate field is normal. -/
-theorem normal_fixingSubgroup [Normal k L] : L.fixingSubgroup.Normal := by
+instance normal_fixingSubgroup [Normal k L] : L.fixingSubgroup.Normal := by
   rw [← IntermediateField.restrictNormalHom_ker L]
   exact MonoidHom.normal_ker _
 

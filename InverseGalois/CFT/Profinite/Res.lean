@@ -27,6 +27,8 @@ attached to an arbitrary family of subgroups.
 ## Main results
 
 * `InverseGalois.CFT.isSmoothHom_subtype`: the inclusion of a subgroup is a smooth homomorphism.
+* `InverseGalois.CFT.isSmooth₁_comp`: a smooth cochain stays smooth after composition with a
+  continuous homomorphism, so in particular on a smaller subgroup.
 * `InverseGalois.CFT.resH1_eq_one_iff`: restriction of a class to a subgroup is trivial exactly
   when the cocycle is a coboundary on that subgroup.
 * `InverseGalois.CFT.smoothH1Mk_mem_sha1`, `InverseGalois.CFT.smoothH2Mk_mem_sha2`: membership
@@ -41,6 +43,30 @@ namespace InverseGalois.CFT
 
 open groupCohomology
 
+/-! ### The preimage of an open normal subgroup -/
+
+section Preimage
+
+variable {G H : Type*} [Group G] [TopologicalSpace G] [Group H] [TopologicalSpace H]
+
+/-- The preimage of an open normal subgroup along a continuous homomorphism is open and normal. -/
+theorem IsOpenNormal.comap {f : H →* G} (hf : Continuous f) {N : Subgroup G}
+    (hN : IsOpenNormal N) : IsOpenNormal (N.comap f) := by
+  refine ⟨hN.normal.comap _, ?_⟩
+  rw [Subgroup.coe_comap]
+  exact hN.isOpen.preimage hf
+
+/-- **A smooth cochain stays smooth after composition with a continuous homomorphism.** -/
+theorem isSmooth₁_comp {f : H →* G} (hf : Continuous f) {M : Type*} {d : G → M}
+    (hd : IsSmooth₁ d) : IsSmooth₁ fun x : H => d (f x) := by
+  obtain ⟨R, hR, hdR⟩ := hd
+  refine ⟨R.comap f, hR.comap hf, fun x n hn => ?_⟩
+  show d (f (x * n)) = d (f x)
+  rw [map_mul f x n]
+  exact hdR (f x) (f n) (Subgroup.mem_comap.1 hn)
+
+end Preimage
+
 /-! ### The inclusion of a subgroup -/
 
 section Subgroup
@@ -49,6 +75,21 @@ variable {G : Type*} [Group G] [TopologicalSpace G] (H : Subgroup G)
 
 /-- The inclusion of a subgroup is continuous for the subspace topology. -/
 theorem continuous_subtype : Continuous (H.subtype) := continuous_subtype_val
+
+omit [TopologicalSpace G] in
+/-- The inclusion of a subgroup in a larger one takes an element to itself. -/
+theorem coe_inclusion_apply {K : Subgroup G} (hle : H ≤ K) (x : ↥H) :
+    (Subgroup.inclusion hle x : G) = (x : G) := rfl
+
+/-- The inclusion of a subgroup in a larger one is continuous for the subspace topologies. -/
+theorem continuous_inclusion {K : Subgroup G} (hle : H ≤ K) :
+    Continuous (Subgroup.inclusion hle) :=
+  continuous_induced_rng.2 (by exact continuous_subtype_val)
+
+/-- **A smooth cochain on a subgroup stays smooth on a smaller subgroup.** -/
+theorem isSmooth₁_comp_inclusion {K : Subgroup G} (hle : H ≤ K) {M : Type*} {d : ↥K → M}
+    (hd : IsSmooth₁ d) : IsSmooth₁ fun x : ↥H => d (Subgroup.inclusion hle x) :=
+  isSmooth₁_comp (continuous_inclusion H hle) hd
 
 /-- **The inclusion of a subgroup is a smooth homomorphism.** -/
 theorem isSmoothHom_subtype : IsSmoothHom (H.subtype) :=

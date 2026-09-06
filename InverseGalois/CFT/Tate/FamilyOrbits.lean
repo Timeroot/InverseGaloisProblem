@@ -29,6 +29,9 @@ contribution is cohomologically trivial may be present in any number without aff
 
 ## Main results
 
+* `InverseGalois.CFT.smul_orbit_of_mem_stabilizer_val`,
+  `InverseGalois.CFT.mem_stabilizer_val_of_smul_orbit`: fixing a point of an orbit and fixing the
+  underlying point of the set are the same condition.
 * `InverseGalois.CFT.stabAut_orbitFamily`: the action of the stabiliser of a point of an orbit on
   the module there is its action as a subgroup of the whole group.
 * `InverseGalois.CFT.herbrand_familyAut_orbits`: **the Herbrand quotient of the sections of a family
@@ -69,6 +72,19 @@ theorem orbitFamily_transport {ω : orbitRel.Quotient G X} {g : G} {x y : ω.orb
     (orbitFamily F ω).transport h a = F.transport h' a := by
   subst h
   rfl
+
+/-! ### The stabiliser of a point of an orbit -/
+
+/-- The stabiliser of a point of an orbit, as a subgroup fixing the corresponding point of the
+orbit. -/
+theorem smul_orbit_of_mem_stabilizer_val {ω : orbitRel.Quotient G X} (x₀ : ω.orbit)
+    (g : ↥(stabilizer G (x₀ : X))) : (g : G) • x₀ = x₀ :=
+  Subtype.ext (mem_stabilizer_iff.mp g.2)
+
+/-- A group element fixing a point of an orbit fixes the underlying point of the set. -/
+theorem mem_stabilizer_val_of_smul_orbit {ω : orbitRel.Quotient G X} (x₀ : ω.orbit) (g : G)
+    (h : g • x₀ = x₀) : g ∈ stabilizer G (x₀ : X) :=
+  congrArg Subtype.val h
 
 /-- **The action of the stabiliser of a point of an orbit on the module there is its action as a
 subgroup of the whole group.** -/

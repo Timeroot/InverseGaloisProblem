@@ -3960,10 +3960,10 @@ extensions (`Mathlib/GroupTheory/GroupExtension/` has only a docstring TODO).
 | 2 | ~~`Ш¹(k, A) ↪ H¹(Gal(K\|k), A)` from the Hasse principle, and its dual~~ | **DONE** — `CFT/Units/HasseInflation.lean`: `exists_galInflH1_eq_of_forall_level` and `exists_galInflH1_eq_of_forall_level_outside`, and — with the glue of §0.40 — `CFT/Units/HasseDecomposition.lean`: `exists_galInflH1_eq_of_finiteDecomposition(Outside)`, stated at the genuine decomposition subgroups of `G_k` |
 | 3 | ~~Finiteness of `Ш²(k, E)` via ABHN + Hochschild–Serre~~ | **DONE** — `CFT/Units/HasseTwo.lean`: `eq_one_of_forall_isLocallySplitLevel`, the vanishing of the everywhere locally trivial classes of `H²` with `μ_n` coefficients, valid at `p = 2` (see §0.38).  The degree-one glue is §0.40; the degree-two glue is §0.42 — `CFT/Units/HasseTwoDecomposition.lean`: `eq_one_of_mem_sha2`, stated at `sha2 M (decompositionSubgroups k Ω)`, the genuine decomposition subgroups of `G_k` |
 | 4 | ~~Local Tate duality for finite modules over a local field~~ | **DONE** — `CFT/Local/CyclicNormIndex.lean` (the norm index of *any* cyclic extension of a local field is its degree), `CFT/Local/KummerNonNorm.lean` (nondegeneracy of the `q`-th power norm residue symbol), see §0.39; `inv_M ∘ res = [M:K] · inv_K` is `localInvariantHom_baseChange` (`CFT/Brauer/InvariantBaseChange.lean`); and `CFT/Brauer/CyclicNormResidue.lean` assembles the norm residue symbol of a cyclic extension of a local field, see §0.56 |
-| 5 | **Global duality `Ш²(k, A) ≅ Ш¹(k, A′)^∨`** | wall #1: the sole missing input of SW's Claim, hence of step 2 |
-| 6 | The `p`-th power Hilbert symbol over a number field and its product formula | the repo has the *quadratic* symbol over `ℚ` (`CFT/Global/Hilbert*.lean`); the *local* nondegeneracy of the `p`-th power symbol is §0.39(b) |
+| 5 | **Global duality `Ш²(k, A) ≅ Ш¹(k, A′)^∨`** | wall #1 as of §0.36; §0.84(c) argued this row was replaceable by degree-two Hochschild–Serre, but **§0.87 refutes that** (step 3 there is circular), so the row stands.  **§0.88 does the torsion-free half unconditionally** (`CFT/Units/IdeleTorusSha.lean`: the locally trivial part of `Ĥ^{n+3}(G, K^×⊗N)` is the image of `Ĥ^n(G,N)`, from the class formation alone) and reduces the `p`-torsion half to the derived correction `Ĥ^*(G, C_K[p]⊗W)` in Tate–Nakayama |
+| 6 | ~~The `p`-th power Hilbert symbol over a number field and its product formula~~ | **DONE** — `CFT/Profinite/Symbol.lean` builds `kummerSymbol` for Kummer data of any exponent over any base, and `CFT/Brauer/CyclicProduct.lean` proves `totalInvariant_smoothBrauerHom_kummerSymbolUnits` and its finite-set form; `CFT/PoitouTate/CupDual.lean` generalizes both to the pairing of a class with a class with Cartier dual coefficients (see §0.89).  The *local* nondegeneracy of the `p`-th power symbol is §0.39(b) |
 | 7 | ~~**Chebotarev density over a number field**, in the abelian/ray-class form of (e)~~ | **DONE for odd `p`** — `NumberTheory/RelativeSplitDensity.lean` + `CFT/RelativeFrobenius.lean`: Theorem 13 only needs the Frobenius *up to a scalar*, which is `exists_relStabilizer_eq_zpowers` (see §0.41).  What remains is "every ideal class contains a prime", used only in the `p = 2` Claim |
-| 8 | Poitou–Tate, at least the eight-term sequence for `μ_p` over `k_S` | needed by Lemma 10 and Theorem 13 |
+| 8 | Poitou–Tate, at least the eight-term sequence for `μ_p` over `k_S` | needed by Lemma 10 and Theorem 13; §0.84(c) argued this row was avoidable, **§0.87 refutes that** |
 | 9 | SW Theorem 13, then Theorems 14 and 15 | assembly |
 
 Already-existing bricks that will be consumed and should not be rebuilt:
@@ -7801,6 +7801,1806 @@ oddness was load-bearing:
 
 ---
 
+## 0.77 Status (2026-09-02) — **global reciprocity over ℚ, unconditionally, in every degree**
+
+Full build green, 9541 jobs, no warnings, no sorries, no axioms.
+
+```lean
+theorem totalInvariant_eq_one (x : BrauerGroup.{0, 0} ℚ) : totalInvariant ℚ x = 1
+```
+
+in `CFT/Brauer/RealCorrector.lean`.  This closes §0.76(c) — both obstacles listed there are gone,
+and neither was removed the way that section predicted.
+
+### (a) The archimedean obstacle was dodged, not solved
+
+§0.76(c)1 proposed computing `inv_∞` of a cyclic algebra over an imaginary quadratic subfield of
+`ℚ(ζ_q)`, `q ≡ 3 (mod 4)`.  That is a real computation and it was not needed.  What the 2-part
+actually needs is only *one* class that the reals do not split and whose total invariant is
+already known to vanish; multiplying by it is then a bijection of the two cosets of
+`BrauerGroup.relative ℚ ℝ`, and the reduction of §0.76 (`totalInvariant_eq_one_of_mem_relative_real`
+— the old prime-power proof, with `x ∈ relative ℚ ℝ` promoted from a by-product of oddness to a
+hypothesis) applies to the corrected class.
+
+The corrector is the quaternion algebra `z = (−1, ℚ(ζ₃)/ℚ, σ)`, ramified at 3 and at ∞.  Two
+observations make it free:
+
+1. Its invariant **at 3** is `1/2`.  This is `placeInvariant_cyclicBrauerHom_conductor`, the
+   ramified-place brick of §0.73, at `q = 3`, `N = 2`, `F = L = ℚ(ζ₃)` — the *whole* cyclotomic
+   field, not a proper subfield, so no `IsTotallyReal` plumbing and no `⊤`-subfield instances are
+   involved.  It evaluates to `((q − 1)/2 : ZMod N) = (1 : ZMod 2)`, i.e. `ofAdd(1/2)`.  Note that
+   the hypothesis `2N ∣ q − 1` of `totalInvariant_cyclicBrauerHom_subcyclotomic_neg_one` fails here
+   (`4 ∤ 2`) — that failure is exactly why this class is *not* already known to be reciprocal, and
+   is what makes it useful.
+2. Therefore the reals **do not** split it.  If they did, the reduction would give
+   `totalInvariant ℚ z = 1`; but `z` is unramified away from 3 and ∞ (`hunit`: `−1` is a unit at
+   every finite place), so the total invariant is the product of just those two factors, and the
+   archimedean one would be trivial, leaving `ofAdd(1/2) = 1`.  Contradiction.
+
+Given that, `inv_∞(z)` is a non-trivial square root of `1` in `Multiplicative ℚ/ℤ`, hence is
+`ofAdd(1/2)` as well — `QModZ.eq_half_of_add_self_eq_zero`, an elementary parity argument on a
+representative — and the two halves cancel: `totalInvariant ℚ z = 1`.
+
+### (b) The radical-exponent obstacle never arose
+
+§0.76(c)2 worried that `IsRadicalExponent (2^k)` is false for `k ≥ 2`.  It is not consumed: the
+2-power case is proved by *correcting into* `relative ℚ ℝ` and then invoking the already-built
+`totalInvariant_eq_one_of_mem_relative_real` at `ℓ = 2`, whose auxiliary-prime input is
+`hasAuxPrimes_two` and whose local layer is the `ℓ = 2` instance of §0.75 — all of which was
+already green.  The exponent-`2^k` radical statement is never needed because the *corrector* has
+order two, not order `2^k`.
+
+### (c) Assembly
+
+`totalInvariant_eq_one_of_pow_eq_one_two_pow` handles `x^{2^e} = 1`: split on whether the reals
+already split `x`; if not, `x · z` lies in `relative ℚ ℝ` (the quotient by it has order two, by
+`sq_eq_one_brauerGroup_real`) and is killed by `2^{max e 1}`.
+`totalInvariant_eq_one_of_pow_eq_one_nat` splits `n = 2^k · m` by
+`Nat.ordProj_mul_ordCompl_eq_self` and recombines the two-power and odd parts by Bézout.  Finally
+`Monoid.IsTorsion (BrauerGroup ℚ)` (`exists_pow_eq_one`, valid over any perfect field) removes the
+order hypothesis entirely.
+
+### (d) What is left on the reciprocity line
+
+Only §0.76(c)3, the **general number field** `k`: the ramified-place computation needs the residue
+degree of the auxiliary place over the rational prime below it to be prime to `N`, which fails over
+a general `k`.  The fix is corestriction `Cor : Br(k) → Br(ℚ)` compatible with local invariants, or
+a Lubin–Tate construction of the local invariant over an arbitrary local field.  Rows 5 and 8 of
+the §0.36 table (Poitou–Tate, the eight-term sequence) consume reciprocity over the base field of
+the Schmidt–Wingberg tower, so this is now the next item on the critical path.
+
+---
+
+## 0.78 Plan (2026-09-02) — global reciprocity over a general number field, by norm comparison
+
+This section records the chosen route for §0.77(d) so that it survives context loss.  Target:
+
+```lean
+theorem totalInvariant_eq_one_general (k : Type) [Field k] [NumberField k]
+    (x : BrauerGroup.{0, 0} k) : totalInvariant k x = 1
+```
+
+### (a) Routes considered and rejected
+
+1. **Cohomological corestriction on `Br(k) = H²(G_k, k̄ˣ)`.**  `CFT/GroupCohomology/Corestriction.lean`
+   already has `cor` with `res ≫ cor = [G:S] • id`.  But Mathlib's `BrauerGroup` is
+   central-simple-algebra based; connecting it to `H²(G_k, k̄ˣ)` *and* proving the global
+   Mackey/Shapiro compatibility `res_{ℚ_p} ∘ Cor_{k/ℚ} = Σ_{v|p} Cor_{k_v/ℚ_p} ∘ res` is strictly
+   more work than the direct route below.
+2. **Class formation / fundamental class.**  `Units/GlobalTate.lean` and `Units/BaseFundamental.lean`
+   give the class formation over an arbitrary base, but `globalFundamentalClass` is an
+   `Exists.choose`, so the invariant map is not pinned to `Σ_v inv_v`.  Order counting cannot break
+   the circle; only a genuine computation can.
+3. **Restriction only.**  `totalInvariant k (Res y) = [k:ℚ] · totalInvariant ℚ y = 0` is cheap
+   (via `Ideal.sum_ramification_inertia`) but `Res : Br(ℚ) → Br(k)` is not surjective.
+4. **Rational coefficients over `k`.**  The invariant vectors reachable with `a ∈ ℚˣ` are too
+   constrained; "two places suffice" is a ℚ-specific accident of `RatCount.lean`.
+
+### (b) The norm-comparison route
+
+Let `F ⊆ ℚ(ζ_q)` be the totally real cyclic subfield of degree `M` used on the ℚ side, and let
+`a ∈ kˣ`.  Compare
+
+```
+totalInvariant k (cyclicBrauerHom (F·k / k) a)   vs.   totalInvariant ℚ (cyclicBrauerHom (F/ℚ) (N_{k/ℚ} a))
+```
+
+place by place.  The right-hand side is `1` by `totalInvariant_eq_one` (§0.77).  Hand check:
+
+* **`p ≠ q`** (so `F/ℚ_p` is unramified).  Left side at `v | p`:
+  `χ(Frob_v|_F) · w_v(a) = f_v · χ(Frob_p) · w_v(a)`, because `Frob_v|_F = Frob_p^{f_v}`.
+  Right side at `p`: `χ(Frob_p) · v_p(N_{k/ℚ} a) = χ(Frob_p) · Σ_{v|p} f_v · w_v(a)`.  Equal after
+  summing over `v | p`.
+* **`p = q`** (`F/ℚ_q` totally tamely ramified of degree `M | q − 1`, `k_v/ℚ_q` unramified of
+  degree `f`).  The tame symbol over `𝔽_{q^f}` is `ā^{(q^f − 1)/M}`; the ℚ side is
+  `(N̄a)^{(q − 1)/M} = ā^{(1 + q + ⋯ + q^{f−1})(q − 1)/M} = ā^{(q^f − 1)/M}`.  Literally equal.
+* **archimedean**: both trivial, `F` being totally real (`2 · deg | q − 1`).
+
+**Reduction.**  Take `M = ℓ^{e+t}` with `t = v_ℓ([k:ℚ])`; choose `q` by the existing ℚ-side density
+theorem `exists_prime_two_mul_dvd_sub_one_pow_ne_one` (`RatReciprocity.lean`) with `T` containing
+the primes ramified in `k` and the bad primes.  Then `k ∩ ℚ(ζ_q) = ℚ` automatically, because every
+nontrivial subfield of `ℚ(ζ_q)` is ramified at `q`.  No non-residue condition over `k` is needed.
+
+**Grouping.**  The place-by-place comparison needs a sum over the places of `k` above each rational
+prime.  Since `Ideal.inertiaDeg p P = 0` whenever `P` does not lie over `p` (it is the `else`
+branch of the definition), that sum can be written as a plain `∑ᶠ W : HeightOneSpectrum (𝓞 K)` with
+no `if` and no explicit "primes over" `Finset`.  Downstream, `Finset.prod_fiberwise_of_maps_to`
+converts the `finprod` over places of `k` into a product over rational primes.
+
+### (c) Brick decomposition
+
+1. `CFT/Brauer/NormPlaceValue.lean` — **landed 2026-09-02**.  `primeCount` and its API,
+   `primeCount_relNorm`, `placeOrd` and its API, `placeOrd_norm`, `placeValue_normUnit`:
+   *the value at a place of the base of the norm of a unit is `Σ_W f_W · (value at W)`*.
+2. Frobenius compatibility: `Frob_v|_F = Frob_p^{f_v}` under `Gal(F·k/k) ≅ Gal(F/ℚ)`.
+   **Landed 2026-09-02** as `CFT/Brauer/ResidueCardDegree.lean` + `CFT/Brauer/PlaceFrobeniusDegree.lean`.
+3. Place-by-place comparison at the unramified primes, plus the fibrewise grouping.
+   **Landed 2026-09-02** as `CFT/Brauer/PlaceSubcyclotomicBase.lean`.
+4. The tame place at `q`: the general-`k` analogue of `PlaceConductor.lean` /
+   `PlaceSubcyclotomic.lean`, for `k_v/ℚ_q` unramified of degree `f_v`.
+   **Landed 2026-09-02** as `CFT/Brauer/ResidueGenerator.lean` (4a) +
+   `CFT/Brauer/PlaceConductorBase.lean` (4b).  4b assumes the coefficient is a **unit at `v`**; see
+   the note on that hypothesis below.
+5. Archimedean triviality for totally real `F`.  **Landed 2026-09-02** as
+   `CFT/Brauer/TotallyRealInvariantBase.lean`.
+6. The norm dictionary between the residue fields above `q` and the prime field.  **Landed
+   2026-09-02** as `CFT/Brauer/NormReduction.lean` (the norm of an element of a product is the
+   product of the norms; the norm reduces modulo a maximal ideal of the base to the norm of the
+   reduction) and `CFT/Brauer/NormFactors.lean` (the Chinese remainder splitting of the reduction,
+   hence `N(a) mod q = ∏_{v|q} N_{κ(v)/𝔽_q}(ā_v)`; and `x^{(Q_v−1)/N} = N_{κ(v)/𝔽_q}(x)^{(q−1)/N}`).
+7. The `Fk` setup: `K = k(ζ_q)`, `Gal(K/k)` cyclic of order `q − 1`, the subfield `F` of degree `N`,
+   totally real, totally ramified at `q`.
+8. Norm comparison assembly; the split criterion over `k` (the analogue of `SplitLocalDegree.lean`
+   and `mem_relative_of_forall_not_dvd_primePow`); and the reduction of a general `x ∈ Br(k)` of
+   `ℓ`-power order (primary decomposition and Bézout, as in §0.77(c)).
+
+### (d) The unit hypothesis at `q` is free
+
+Brick 4b computes the invariant at `v | q` only for a coefficient `a` that is a **unit at `v`**, and
+over a general `k` the `a` produced by `exists_cyclicBrauerHom_eq` has arbitrary, non-uniform
+valuations at the places above `q`.  Over `ℚ` this never arose, because `ℚˣ` is generated by `−1`
+and the primes and each generator is handled separately; over `k` there is no such generation, and
+`kˣ / (q-units · ℚˣ) ≅ (⊕_{v|q} ℤ)/diagonal` is nontrivial as soon as two places lie over `q`.
+
+The hypothesis costs nothing all the same, because **`cyclicBrauerHom` kills norms**: if
+`c ∈ N_{Fk/k}((Fk)ˣ)` then `cyclicBrauerHom a = cyclicBrauerHom (a · c)`, so `a` may be replaced by
+any element of its coset.  For `w` the unique place of `Fk` over `v | q` (the extension is totally
+ramified there) one has `ord_v(N_{Fk/k} β) = ord_w(β)`, and `ord_w` is surjective onto `ℤ`; by the
+approximation theorem in the Dedekind domain `𝓞_{Fk}` there is a single `β` realising any
+prescribed vector of valuations at the finitely many places over `q`.  So one may always arrange
+that `a` is a unit at every place above `q`.  This is why the local–global norm decomposition
+`k ⊗_ℚ ℚ_q ≅ ∏_{v|q} k_v` — which is absent from Mathlib — is **not** needed: the reduction
+`N(a) mod q = ∏_{v|q} N_{κ(v)/𝔽_q}(ā_v)` of brick 6, valid for `q`-units, suffices.
+
+---
+
+## 0.79 Status (2026-09-02) — **global reciprocity over an arbitrary number field is proven**
+
+Commit `bd1779b`, full build green at **9586 jobs**, no warnings, and
+
+```lean
+theorem InverseGalois.CFT.totalInvariant_eq_one_base (k : Type) [Field k] [NumberField k]
+    (x : BrauerGroup.{0, 0} k) : totalInvariant k x = 1
+```
+
+in `CFT/Brauer/BaseReciprocity.lean`, with axioms `[propext, Classical.choice, Quot.sound]`.
+**Row 6 of the §0.36 table is closed.**  Every brick of the §0.78 plan is landed; what this section
+records is the last stage, the two-primary part, which §0.78 had not planned in detail.
+
+### (a) Why the odd part did not finish the job
+
+`totalInvariant_eq_one_of_pow_eq_one_odd_base` (§0.78, `BaseOddReciprocity.lean`) covers a class of
+odd order because the auxiliary prime argument needs the class to be split at every infinite place,
+and a class of odd order in `Br(ℝ) ≅ ℤ/2` is automatically split.  For a class of two-power order
+the archimedean invariants are genuinely there and have to be cleared first.  Concretely,
+`totalInvariant_eq_one_of_forall_pow_ne_one_primePow_base` takes an explicit hypothesis
+
+```lean
+(harch : ∀ u : InfinitePlace k, infinitePlaceInvariant k u x = 1)
+```
+
+so what the `ℓ = 2` case needs is a way to *modify* `x` by something of known total invariant until
+`harch` holds.
+
+### (b) The correction: sign correctors and sign approximation
+
+Two inputs, both new.
+
+1. **A sign corrector** (`CFT/Brauer/BaseSignCorrector.lean`, `exists_signCorrector_base`).  For a
+   prime `q ≡ 3 (mod 4)` unramified in `k`, the quadratic subfield of `ℚ(ζ_q)` is *imaginary*, so
+   the cyclic algebra attached to `(F·k)/k` and a coefficient `a ∈ kˣ` has invariant at a real
+   place `u` equal to the **sign** of `a` under the real embedding of `u`.  It has order dividing
+   two and total invariant `1`, the latter by the odd-order reciprocity already proven (the class
+   is of order two, but the *coefficient* side is what the odd machinery consumes — see
+   `RealCyclicSign.lean` and `FibreTotal.lean`).  So
+
+   ```lean
+   Y : kˣ →* BrauerGroup k,   Y a ^ 2 = 1,   totalInvariant k (Y a) = 1,
+   infinitePlaceInvariant k u (Y a) = realCyclicInvariant (sign of a at u)
+   ```
+
+2. **Sign approximation** (`NumberTheory/SignApproximation.lean`,
+   `exists_units_pos_iff_notMem_set`).  *Every* pattern of signs at the real places of a number
+   field is realised by a unit.  Mathlib v4.28 has **no** weak-approximation lemma for infinite
+   places, so this was built from scratch and elementarily: a primitive element `θ` takes pairwise
+   distinct real values at the real places (two ring homs `k →+* ℝ` agreeing on `θ` agree
+   everywhere, via `RingHom.toRatAlgHom` and `AlgHom.ext_of_adjoin_eq_top`); with
+   `δ := min (insert 1 {|θ_w − θ_{u₀}|})` positive, two rationals `c < d` straddling `θ_{u₀}`
+   inside `δ` make `(θ − c)(θ − d)` negative at `u₀` and positive at every other real place; a
+   `Finset.induction_on` multiplies these together.  This is worth remembering as a **reusable
+   substitute** for infinite-place approximation anywhere else in the tree.
+
+Given `x`, apply (2) to `S = {u | infinitePlaceInvariant k u x ≠ 1}` and multiply: since `Br(ℝ)`
+has order two, "`x` and `Y a` are split at `u` together" already forces `inv_u(x · Y a) = 1`
+(`infinitePlaceInvariant_mul_eq_one_of_isReal`).  The product has two-power order, is split at
+every infinite place, and has the same total invariant as `x`.
+
+### (c) The auxiliary prime `q ≡ 3 (mod 4)`
+
+Mathlib has no usable Dirichlet-in-progressions statement, and the repo's dyadic family produces
+`q ≡ 1 (mod 2^d)` — the wrong congruence.  The fix: `q ≡ 3 (mod 4)` is exactly "`q` does not split
+completely in `ℚ(ζ_4)`", and `infinite_setOf_splitsCompletely_not_splitsCompletely ℚ (ℚ(ζ_4))`
+(degrees `1 < 2`) supplies infinitely many such primes.  That is
+`exists_prime_three_mod_four_notMem`.
+
+For the auxiliary prime of the two-power argument itself, the bookkeeping with
+`L := Nat.log 2 (finrank ℚ k)` is: take `M := P.card + 3` (so `3 ≤ M` and `P.card < 2^{M−1}`) and
+`d := e + L + P.card + 2` (so `d − e − L + 1 = M`), and call the dyadic family at `d + 1` so that
+`2 · 2^d ∣ q − 1`.
+
+### (d) Assembly
+
+`totalInvariant_eq_one_of_pow_eq_one_nat_base` splits an arbitrary finite order `n = 2^c · m` with
+`m` odd, uses Bézout to write `x = (x^{2^c})^α · (x^m)^β`, and applies the two-power case to `x^m`
+and the odd case to `x^{2^c}`.  `exists_pow_eq_one` (every Brauer class of a perfect field has
+finite order) then gives the unconditional statement.
+
+### (e) What this unblocks
+
+Rows 5 and 8 of the §0.36 table — the Poitou–Tate input — consume reciprocity over the base field
+of the tower, not just over `ℚ`.  That hypothesis is now discharged.  The next brick is row 5,
+`Ш²(k, A) ≅ Ш¹(k, A′)^∨`, and then row 8, the eight-term sequence for `μ_p` over `k_S`.
+
+---
+
+## 0.80 Status (2026-09-02) — row 6 packaged: the product formula in usable form, and the local factor
+
+`CFT/Brauer/CyclicProduct.lean`, full build green at **9587 jobs**, no warnings, axioms
+`[propext, Classical.choice, Quot.sound]`.  §0.79 proved global reciprocity as a statement about
+`totalInvariant`; this section turns it into the statements a *consumer* wants, and identifies what
+a single local factor means.
+
+### (a) The product formula, in three shapes
+
+`totalInvariant` is by definition `(∏ᶠ v, placeInvariant k v x) * ∏ u, infinitePlaceInvariant k u x`,
+so `totalInvariant_eq_one_base` gives immediately
+
+```lean
+theorem finprod_placeInvariant_mul_prod_infinitePlaceInvariant_eq_one (x : BrauerGroup.{0,0} k) :
+    (∏ᶠ v : HeightOneSpectrum (𝓞 k), placeInvariant k v x) *
+        ∏ u : InfinitePlace k, infinitePlaceInvariant k u x = 1
+```
+
+and, composed with the general-base `finprod_placeInvariant_eq_prod` of `RatCount.lean`, the form
+that SW Theorem 13 consumes — a genuine `Finset.prod` over any finite set of finite places outside
+which the invariants vanish, times the finitely many archimedean terms:
+
+```lean
+theorem prod_placeInvariant_mul_prod_infinitePlaceInvariant_eq_one (x : BrauerGroup.{0,0} k)
+    (S : Finset (HeightOneSpectrum (𝓞 k))) (h : ∀ v ∉ S, placeInvariant k v x = 1) :
+    (∏ v ∈ S, placeInvariant k v x) * ∏ u : InfinitePlace k, infinitePlaceInvariant k u x = 1
+```
+
+Specialised to the classes that carry the arithmetic these are one-liners, because the Brauer class
+is all that reciprocity sees: `totalInvariant_cyclicBrauerHom` for a cyclic algebra
+`(K/k, σ₀, a)`, `totalInvariant_smoothBrauerHom` for the Brauer class of a smooth `H²`, and
+
+```lean
+theorem totalInvariant_smoothBrauerHom_kummerSymbolUnits (h : IsKummerData k Ω M ι n)
+    (Φ : M →* M →* M) (a b : kˣ) :
+    totalInvariant k (smoothBrauerHom (kummerSymbolUnits h Φ a b)) = 1
+```
+
+which is `∏_v (a, b)_v = 1`, the product formula for the `n`-th power residue symbol over an
+arbitrary number field — the last unproved input of the `p = 2` half of SW Theorem 13 that was not
+a duality statement.
+
+### (b) What a single local factor is
+
+The same base change that proves the formula also says what one factor measures.  Over the
+completion the cyclic algebra becomes the cyclic algebra of the decomposition group with the *same*
+coefficient (`baseChangeHom_cyclicBrauerHom_adicCompletion`, §0.67), and a cyclic algebra is split
+exactly when its coefficient is a norm (`mem_ker_cyclicBrauerHom_iff`).  Chaining those through
+`placeInvariant_eq_one_iff` (which unfolds `BrauerGroup.relative` to a kernel membership) gives, in
+five rewrites,
+
+```lean
+theorem placeInvariant_cyclicBrauerHom_eq_one_iff (w : HeightOneSpectrum (𝓞 K))
+    (hσ₀ : ∀ x : Gal(K/k), x ∈ Subgroup.zpowers σ₀) (a : kˣ) :
+    placeInvariant k (primeUnder (𝓞 k) w) (cyclicBrauerHom hσ₀ a) = 1 ↔
+      ∃ b : (w.adicCompletion K)ˣ,
+        Algebra.norm ((primeUnder (𝓞 k) w).adicCompletion k) (b : w.adicCompletion K)
+          = algebraMap k ((primeUnder (𝓞 k) w).adicCompletion k) (a : k)
+```
+
+So the product formula is exactly the statement that the failures of `a` to be a local norm cancel.
+Combined with ABHN (`eq_one_of_forall_invariant_eq_one`) this is one archimedean lemma short of the
+**Hasse norm theorem** for cyclic extensions; the missing piece is the infinite-place mirror of
+`PlaceCyclic.lean`, for which `Units/InfiniteDecompositionField.lean` already supplies the whole
+decomposition-field plumbing (`localInfiniteDecompositionEquiv`,
+`algebraMap_localInfiniteDecompositionEquiv`), so it is a transcription rather than a new argument.
+
+### (c) Where this leaves the table
+
+Row 6 is now closed *and packaged*.  Rows 5 and 8 — Poitou–Tate — are untouched and remain the
+wall; row 7's `p = 2` leftover ("every `S`-ideal class contains a prime") still waits on ray-class
+`L`-functions that Mathlib does not have.
+
+---
+
+## 0.81 Status (2026-09-02) — **the Hasse norm theorem is proven**
+
+Commit: build green at **9589 jobs**, zero warnings, zero errors; all seven new theorems have
+axioms `[propext, Classical.choice, Quot.sound]`.
+
+The archimedean lemma flagged as missing in §0.80(b) is now in place, and with it the Hasse norm
+theorem for cyclic extensions of number fields.
+
+### (a) `InverseGalois/CFT/Brauer/InfiniteCyclic.lean` — the infinite-place mirror
+
+A transcription of `PlaceCyclic.lean` with `HeightOneSpectrum (𝓞 K)` replaced by
+`InfinitePlace K`, `adicCompletion` by `Completion`, `primeUnder (𝓞 k)` by
+`comap (algebraMap k K)`, and the decomposition-field plumbing taken from
+`Units/InfiniteDecompositionField.lean`.  Three theorems:
+
+* `exists_forall_mem_zpowers_restrictScalars_eq_infinite` — the decomposition group at `w` is a
+  subgroup of a finite cyclic group, hence `Subgroup.zpowers (σ₀ ^ (stabilizer Gal(K/k) w).index)`
+  (`subgroup_eq_zpowers_pow` fed by `Subgroup.index_mul_card`), and
+  `localInfiniteDecompositionEquiv` identifies it with
+  `w.Completion ≃ₐ[(w.comap (algebraMap k K)).Completion] w.Completion`.  So the local Galois group
+  has a generator whose restriction to `K` is that power.
+* `baseChangeHom_cyclicBrauerHom_infiniteCompletion` — factor the base change through the
+  decomposition field: `baseChangeHom_cyclicBrauerHom` for the first step (coefficient untouched),
+  `baseChangeHom_cyclicBrauerHom_compositum` for the second (coefficient untouched), and
+  `IsScalarTower.algebraMap_apply` to compose the two coefficient maps.
+* `infinitePlaceInvariant_cyclicBrauerHom_eq_one_iff` — the same five-rewrite chain as at a finite
+  place, ending in `rfl` to reconcile `↑(Units.map ↑(algebraMap k M) a)` with `algebraMap k M ↑a`.
+
+The whole file typechecked on the first attempt; there was genuinely no new mathematics in it,
+which is a good sign that the finite/infinite split in the invariant layer is drawn in the right
+place.
+
+### (b) `InverseGalois/CFT/Brauer/HasseNorm.lean`
+
+Both directions are statements about the single Brauer class `cyclicBrauerHom hσ₀ a`.
+
+*Forward.*  If `a` is a global norm then `mem_ker_cyclicBrauerHom_iff` makes the class trivial, so
+every local invariant is `map_one`, so by the two `…_eq_one_iff` lemmas `a` is a local norm at
+every finite and every infinite place.
+
+*Converse.*  If `a` is a local norm everywhere then every local invariant vanishes — the quantifier
+is over places of `K`, and every place of `k` is hit, by `exists_primeUnder_eq` at the finite
+places and `NumberField.InfinitePlace.comap_surjective` at the infinite ones — so
+`eq_one_of_forall_invariant_eq_one` (ABHN, §0.72) kills the class, and
+`mem_ker_cyclicBrauerHom_iff` returns the global norm.
+
+```lean
+theorem exists_norm_eq_of_forall_local (hσ₀ : ∀ x : Gal(K/k), x ∈ Subgroup.zpowers σ₀)
+    (hfin : ∀ w : HeightOneSpectrum (𝓞 K), ∃ b : (w.adicCompletion K)ˣ,
+      Algebra.norm ((primeUnder (𝓞 k) w).adicCompletion k) (b : w.adicCompletion K)
+        = algebraMap k ((primeUnder (𝓞 k) w).adicCompletion k) (a : k))
+    (hinf : ∀ w : InfinitePlace K, ∃ b : (w.Completion)ˣ,
+      Algebra.norm (w.comap (algebraMap k K)).Completion (b : w.Completion)
+        = algebraMap k (w.comap (algebraMap k K)).Completion (a : k)) :
+    ∃ b : Kˣ, Algebra.norm k (b : K) = (a : k)
+```
+
+`exists_norm_eq_iff_forall_local` packages the two directions as a single `Iff`.
+
+### (c) Where this leaves the table
+
+Rows 6 and 7 (modulo the `p = 2` leftover) are closed and packaged, and the Hasse norm theorem is
+a bonus consequence that costs nothing further.  Rows 5 and 8 — Poitou–Tate — remain the wall, and
+`SplitPrimePowerEP` is still the sole remaining hypothesis of `Shafarevich/Main.lean`.
+
+Worth noting for the Poitou–Tate work: the Hasse norm theorem is precisely the `H⁰`-level statement
+that `Ш(k, N_{K/k})` vanishes for a *cyclic* `K/k`, i.e. the cyclic case of the local–global
+principle for a norm torus.  Its proof here goes through the Brauer group rather than through
+duality, so it does not by itself give any of the Ш machinery; but it does confirm that the
+invariant layer is now strong enough to state and prove local–global principles, which is the
+shape everything in rows 5 and 8 will take.
+
+---
+
+## 0.82 Status (2026-09-02) — the idele-generation layer no longer needs a principal ideal ring, and §0.36(a) was stale
+
+Two housekeeping items, one a genuine generalization and one a correction to this document.
+
+### (a) `Units/IdeleGen.lean` and `Units/IdeleQuotCyclic.lean` work over any number field
+
+`exists_sub_adicPlaceIdele_mem_sup` used to carry `[IsPrincipalIdealRing (𝓞 k)]`, purely so that a
+prescribed system of orders `n : HeightOneSpectrum (𝓞 k) → ℤ` of cofinite support could be realized
+by a single element of `kˣ`.  Over a base with a nontrivial class group that is false, but it is
+false only on a *finite* set of primes: `Units/ClassSet.lean` already proves
+
+```lean
+exists_finite_ord_repr (K) : ∃ T : Set (HeightOneSpectrum (𝓞 K)), T.Finite ∧
+  ∀ n, (∀ᶠ v in Filter.cofinite, n v = 0) → ∃ a : Kˣ, ∀ v ∉ T, ord K v (a : K) = n v
+```
+
+so the hypothesis to carry is the conclusion of that lemma, not the principality.  The signature now
+takes an exceptional set `T`, requires the distinguished place `q ∉ T`, and *weakens* the local-norm
+hypothesis `hfin` at the places of `T`: outside `T` one still only needs units of the valuation ring
+to be norms, but at a place of `T` every element of the base completion must be one, because after
+subtracting the principal idele the component there need not be a unit.  Concretely `hfin` becomes
+
+```lean
+(hfin : ∀ w : HeightOneSpectrum (𝓞 K), primeUnder (𝓞 k) w ≠ q →
+  ∀ b : ((primeUnder (𝓞 k) w).adicCompletion k)ˣ,
+    (primeUnder (𝓞 k) w ∉ T → unitVal (Additive.ofMul b) = 0) →
+      b ∈ normSubgroup ((primeUnder (𝓞 k) w).adicCompletion k) (w.adicCompletion K))
+```
+
+The same replacement runs through the four theorems of `Units/IdeleQuotCyclic.lean`
+(`forall_mem_multiples_ideleQuot`, `addOrderOf_ideleQuot_eq`,
+`exists_addOrderOf_H2_ideleClassRep_eq`, `exists_zsmul_eq_zero_imp_dvd_H2_ideleClassRep`), and
+`Units/RatFundamentalClass.lean` instantiates `T := ∅` — over `ℚ` the ring of integers is principal,
+so the exceptional set is empty and `hfin`'s new premise is discharged by `Set.notMem_empty`.
+
+Two Lean notes.  `Rigidity.RET.ord` lives in the **top-level** `Rigidity` namespace
+(`Rigidity/RET/Genus/Ord.lean:46`), so a file that does not `open Rigidity.RET` silently turns `ord`
+into an auto-bound implicit and reports "Function expected at `ord` but this term has type `?m.8`".
+And Mathlib v4.28 spells it `Set.notMem_empty`, not `Set.not_mem_empty`.
+
+### (b) §0.36(a) is stale: the general-base class formation was already built
+
+§0.36(a) said that a class formation over an arbitrary number field base "needs only" the compositum
+`k·F₀` with a cyclic totally real `F₀ ⊂ ℚ(ζ_q)`, and called that a bounded mechanical project.  That
+project is unnecessary: `InverseGalois/CFT/Units/BaseFundamental.lean` already proves
+
+```lean
+theorem exists_zsmul_eq_zero_imp_dvd_H2_ideleClassRep_base (k K) :
+    ∃ α : ↥(H2 (ideleClassRep k K)), ∀ m : ℤ, m • α = 0 → (Nat.card Gal(K/k) : ℤ) ∣ m
+```
+
+for every pair of number fields `k ⊆ K` with `K/k` Galois, and it does so **without** constructing
+any auxiliary cyclic extension of `k`.  The route is restriction followed by inflation:
+
+* `exists_zsmul_eq_zero_imp_dvd_H2_ideleClassRep_of_rat` restricts the `ℚ`-fundamental class of a
+  Galois `L/ℚ` to the subgroup `S = (galRestrictScalarsHom ℚ k L).range ≅ Gal(L/k)`, using
+  `tateRes` and `exists_zsmul_eq_zero_imp_dvd_H2_of_addEquiv`;
+* `exists_zsmul_eq_zero_imp_dvd_H2_ideleClassRep_of_top` inflates from `Gal(L/k)` to `Gal(K/k)` for
+  `k ⊆ K ⊆ L`, via `mem_range_inflTwo_of_resTwo_eq_zero` and `eq_zero_H1_res_subgroup`;
+* the base theorem takes `L = ↥(IntermediateField.normalClosure ℚ K (AlgebraicClosure K))` and
+  composes the two.
+
+So the generalization of (a) is a convenience for the *statement* of the idele-generation lemmas,
+not a prerequisite for anything; the class formation over an arbitrary number field is already
+unconditional, and `BaseTate.lean` / `BaseArtin.lean` already carry Tate's theorem and the Artin map
+over that base.
+
+Build green at **9589 jobs**, zero warnings, zero errors; the three touched theorems have axioms
+`[propext, Classical.choice, Quot.sound]`.
+
+---
+
+## 0.83 Status (2026-09-02) — Chebotarev for cyclic prime-power extensions, with no analysis
+
+`InverseGalois/CFT/Units/InertPlace.lean` is new.  It is a purely group-theoretic reading of a
+theorem the repository already had, and it removes what §0.79 called the blocking sub-task of the
+fundamental exact sequence.
+
+### (a) The input
+
+`Units/DecompositionOutside.lean` proves, for a Galois `K/k` of number fields with **solvable**
+Galois group and any *finite* set `S` of places of `k`,
+
+```lean
+decompositionSubgroupOutside_eq_top (hS : S.Finite) :
+  Subgroup.closure {σ | ∃ v : HeightOneSpectrum (𝓞 K), primeUnder (𝓞 k) v ∉ S ∧ σ • v = v} = ⊤
+```
+
+— the decomposition groups of the places lying over the primes *outside* `S` generate everything.
+That is the whole analytic content one usually imports from Chebotarev, and it was obtained here
+from the class-formation machinery, not from a density theorem.
+
+### (b) What it gives, by pure group theory
+
+Reading the generation statement contrapositively yields four consequences, each in the new file.
+
+* `exists_stabilizer_not_le`: for `H ≠ ⊤` there is a place outside `S` whose stabilizer is **not**
+  contained in `H`.  (A subgroup containing every generator is everything.)
+* `exists_mem_stabilizer_pow_ne_one`: if `G = ⟨σ₀⟩` is cyclic and `σ₀ ^ m ≠ 1`, some place outside
+  `S` carries a decomposition element `τ` with `τ ^ m ≠ 1`.  Here the abelian case does not even
+  need the solvability hypothesis to be supplied — `isSolvable_of_comm` produces it.
+* `exists_card_stabilizer_not_dvd`: the same statement about orders, i.e. **the local degrees of a
+  cyclic extension have the global degree as their lcm**, and every exponent that fails to kill a
+  generator is missed by some local degree.  This is exactly the surjectivity input for
+  `Σ_v inv_v : ⊕_v Br(K_w/k_v) → (1/n)ℤ/ℤ`.
+* `exists_stabilizer_eq_top_of_isPGroup`: for `G` cyclic of **prime-power** order, some place
+  outside `S` has decomposition group all of `G`.  The proof takes `m = p^(a-1)` where
+  `p^a = orderOf σ₀`, extracts a `τ` of order not dividing `p^(a-1)`, hence of order `p^a`, hence a
+  generator.
+
+### (c) The packaged form
+
+Discarding, in addition, the finitely many ramified primes (`finite_relRamifiedSet`) turns the last
+item into a genuine density statement:
+
+```lean
+exists_arithFrobAt_zpowers_eq_top (hp : p.Prime) (hσ₀ : ∀ x, x ∈ Subgroup.zpowers σ₀)
+    (hne : σ₀ ≠ 1) (hpG : IsPGroup p Gal(K/k)) (hT : T.Finite) :
+  ∃ v ∉ T, v ∉ relRamifiedSet k K ∧ ∃ P …,
+    stabilizer Gal(K/k) P = ⊤ ∧ Subgroup.zpowers (arithFrobAt (𝓞 k) Gal(K/k) P) = ⊤
+```
+
+For a cyclic extension of prime-power degree, avoiding any prescribed finite set of primes, there is
+an unramified prime whose **arithmetic Frobenius generates the Galois group** — Chebotarev in the
+only case Scholz–Reichardt and the Schmidt–Wingberg tower ever use it, obtained with no `L`-function
+and no analysis.  It supersedes `exists_relStabilizer_eq_zpowers`
+(`CFT/RelativeFrobenius.lean:273`), which was restricted to `(orderOf σ).Prime`.
+
+### (d) Three Poitou–Tate shortcuts that do not work
+
+Recorded so they are not retried.
+
+1. A pairing `Ш²(k,A) × Ш¹(k,A′) → ℚ/ℤ` by itself does not give the direction that is needed,
+   `Ш¹(k,A′)^∨ ↠ Ш²(k,A)`; nondegeneracy on both sides (or one side plus a cardinality comparison)
+   is the honest content of the duality, and there is no cheaper packaging of it.
+2. `H²(G, I_K) → H²(G, C_K)` is **not** surjective for general non-cyclic `G` — an everywhere
+   unramified `(ℤ/2)²` extension is a counterexample — so "cyclic" is essential in the fundamental
+   exact sequence and cannot be relaxed to reach the general case.
+3. The route through `Ĥ³(G, K^×) ≅ Ĥ¹(G, K^×) = 1` needs odd-degree cyclic periodicity, which
+   `Units/CyclicTate.lean` does not have (it carries only `tateH0AddEquivH2`).
+
+Two Lean notes.  The divisibility-of-prime-powers lemma must be spelled
+`Nat.pow_dvd_pow_iff_le_right`; the unqualified name is visible only inside `namespace Nat`.  And
+the *relative* ideal action `MulAction Gal(K/k) (Ideal (𝓞 K))` needs `open scoped Pointwise`, the
+same requirement already recorded for `Ideal (𝓞 F)` under `Gal(F/ℚ)`.
+
+Build green at **9590 jobs**, zero warnings, zero errors; all five theorems have axioms
+`[propext, Classical.choice, Quot.sound]`.
+
+---
+
+## 0.84 Status (2026-09-02) — the local degrees of a cyclic extension, and a route that avoids Poitou–Tate altogether
+
+`InverseGalois/CFT/Units/LocalDegreeLcm.lean`.
+
+### (a) The degree is the least common multiple of the local degrees
+
+The order of the decomposition group at `v` is the local degree `n_v = [K_w : k_v]`, and it divides
+`n = [K:k]`.  §0.83(b)'s `exists_card_stabilizer_not_dvd` gives the converse prime by prime, and the
+new module collects the places:
+
+* `exists_finset_dvd_lcm_card_stabilizer` — for cyclic `Gal(K/k)` with generator `σ₀` and any finite
+  set `S` of primes of the base, there is a `Finset F` of places of `K`, all lying over primes
+  outside `S`, with `n ∣ F.lcm (fun v => n_v)`.
+* `exists_finset_gcd_localDegree_eq_one` — for the same `F`, `Nat.gcd n (F.gcd fun v => n / n_v) = 1`.
+* `exists_finset_intCombination_localDegree_modEq` — hence there are integers `c_v` with
+  `∑_{v ∈ F} c_v · (n / n_v) ≡ 1 (mod n)`.
+
+The first proof runs over `p ∈ n.primeFactors`, applying `exists_card_stabilizer_not_dvd` with
+exponent `n / p` (legitimate because `orderOf σ₀ = n`, so `σ₀ ^ (n/p) ≠ 1`), and then uses the
+elementary fact that a divisor `L ∣ n` with `L ≠ n` divides `n / p` for `p` any prime factor of
+`n / L`.  No `p`-adic valuations appear anywhere.  The second proof is equally valuation-free: if
+`g` divides `n` and every `n / n_v`, then every `n_v` divides `n / g`, so the least common multiple
+does too, so `n ∣ n / g` and therefore `g = 1`.  The third is Bézout, via a general auxiliary lemma
+`exists_intCombination_eq_finsetGcd` (a greatest common divisor of a `Finset`-indexed family of
+naturals is an integral linear combination of it, by induction on the `Finset` from
+`Nat.gcd_eq_gcd_ab`), which Mathlib v4.28 does not have.
+
+This is exactly the arithmetic input for **surjectivity of `Σ_v inv_v : ⊕_v Br(K_w/k_v) → (1/n)ℤ/ℤ`**:
+the image of `Br(K_w/k_v)` in `(1/n)ℤ/ℤ` is the subgroup generated by `(n/n_v)·(1/n)`, and the third
+theorem says those subgroups generate.
+
+### (b) Middle exactness of the cyclic fundamental sequence needs no `H³`
+
+The fundamental exact sequence for a cyclic extension,
+
+    0 → Br(K/k) → ⊕_v Br(K_w/k_v) --Σ inv_v--> (1/n)ℤ/ℤ → 0,
+
+decomposes into three independent statements, and the repository's distance to each is now known.
+
+* **Injectivity** is Albert–Brauer–Hasse–Noether, `brauerToCompletions_injective`
+  (`Brauer/HasseNoether.lean:126`) — done.
+* **`im ⊆ ker`** is global reciprocity, `totalInvariant_eq_one_base` — done.
+* **Surjectivity** needs only `lcm_v n_v = n`, which is (a) — done.
+* **Middle exactness** is the long exact sequence of `0 → K^× → I_K → C_K → 0` together with
+  injectivity of the invariant map on `H²(G, C_K)`.  It does **not** require `Ĥ³(G, K^×) = 1`.
+
+That last point corrects the framing of §0.83(d) item 3: the odd-degree periodicity `Ĥ³ ≅ Ĥ¹` is
+needed only if one insists on *deriving* surjectivity from `H³(G,K^×) = 1`, and (a) supplies
+surjectivity directly.  So the missing piece for the fundamental exact sequence is the idele-class
+long exact sequence plus invariant-map injectivity, both of which are ordinary work — not duality.
+
+### (c) Poitou–Tate looks avoidable: Hochschild–Serre in degree two does the same job
+
+Row 5 of §0.36 asks for `Ш²(k,A) ≅ Ш¹(k,A′)^∨`, but Schmidt–Wingberg only ever *use* the surjection
+`Ĥ^{-2}(G, E(-1)) ↠ Ш²(k, E)` to kill a class `z ∈ Ш²(k, E(m,τ))` after applying `θ_a`, and Prop 6
+(`Shafarevich/GenericCohomology.lean`) is what does the killing.  For that argument an **injection**
+of `Ш²(k,E)` into a *finite-group* cohomology group of the right shape works just as well as the
+surjection: Prop 6 kills the image, and injectivity then kills the class.  Write
+`1 → G_K → G_k → G → 1` with `G = Gal(K/k)` the group already realised, `E` the layer, an
+`𝔽_p[G]`-module of finite dimension, on which `G_K` acts trivially.
+
+1. `z ∈ Ш²(k,E)` restricts to a locally trivial class over `K`, and `Ш²(K, E) = 0` because
+   `E ≅ μ_p^r` as a `G_K`-module and the repository has `eq_one_of_mem_sha2` (row 3, §0.79).  So
+   `z ∈ F¹ = ker(res)` for the Hochschild–Serre filtration.
+2. Degree-two Hochschild–Serre gives `F¹/F² ↪ H¹(G, H¹(G_K, E))`, and `H¹(G_K,E)` is
+   `Hom_cont(G_K, 𝔽_p) ⊗_{𝔽_p} E = E ⊗ T` with the diagonal `G`-action — exactly the shape
+   `Layer ⊗ T` that Prop 6 consumes.
+3. `T = Hom_cont(G_K, 𝔽_p)` is infinite dimensional, but that does not matter: a class in
+   `H¹(G, E ⊗ T)` is represented by a cocycle on the *finite* group `G`, so it has finitely many
+   values, each a finite sum of pure tensors; the `𝔽_p`-span `T₀` of the `G`-orbit of the finitely
+   many `T`-components appearing is finite dimensional and `G`-stable, and the cocycle already takes
+   its values in `E ⊗ T₀`.  So the class is inflated from `H¹(G, E ⊗ T₀)` with `T₀` finite
+   dimensional, which is what Prop 6 requires.
+4. Prop 6 with `c = 1`, `t = 1`, `H = G`, `f = id`, `T = T₀` kills the image of `z`; so after the
+   shrink `z` lies in `F² = im(inf : H²(G,E) → H²(k,E))`.
+5. Prop 6 again, with `c = 2`, `t = 1`, `H = G`, `f = id`, `T` the trivial one-dimensional
+   representation, kills the class of `H²(G,E)` it comes from.  Hence `z = 0`.
+
+Step 3 is what removes the gap that this section originally recorded.  The earlier plan was to make
+`T` finite by inflating from `G_S = Gal(k_S/k)`, which needed `Ш²(k,A) = Ш²(k_S/k,A)` (NSW 9.1.x) —
+a statement whose standard proof may itself use duality — and needed `H¹(K_S/K, ℤ/p)` finite.
+Neither is required: **finite-dimensional approximation inside the coefficients does the same work,
+because `G` is finite.**
+
+It is worth being precise about what Prop 6 is, since the shape of the argument depends on it.
+`exists_operatorHom_res_cohomology_eq_zero` is *not* a cohomological-triviality statement about the
+layer; it is a counting statement — given `t` classes in `H^c(H, Layer_j ⊗ T)` with `H` finite and
+`T` finite dimensional, a large enough shrink kills all `t` of them at once.  So the coefficients
+must be finite dimensional and the family of classes finite, which is exactly what steps 3–5
+arrange.
+
+Required inputs, with verdicts:
+
+| input | status |
+| --- | --- |
+| (C) degree-two Hochschild–Serre / transgression for a closed normal subgroup of finite index | **the remaining wall**; see (d) |
+| `Ш²(K, E) = 0` for `E ≅ μ_p^r` over `K` | **have it** (`eq_one_of_mem_sha2`) |
+| `H¹(G_K, E) ≅ Hom_cont(G_K,𝔽_p) ⊗ E` as `G`-modules | ordinary work |
+| finite-dimensional approximation in the coefficients | elementary, step 3 above |
+| Prop 6 with coefficients | **have it** (`exists_operatorHom_res_cohomology_eq_zero`) |
+| naturality of the filtration under the shrink `θ_a` | ordinary work |
+
+If this holds up, **row 5 and row 8 of the §0.36 table are not needed at all** and the critical path
+for `GenericSplitEP` becomes degree-two Hochschild–Serre rather than Poitou–Tate.  Recorded as the
+current best route, not yet as a proven reduction: the pieces above have been checked
+mathematically but none of the new ones is formalised.
+
+### (d) Transgression is available at the level of cochains
+
+The repository already has a degree-two inflation–restriction theorem,
+`mem_range_inflTwo_of_resTwo_eq_zero` (`GroupCohomology/InfResTwo.lean`), whose only use of the
+blanket hypothesis "`H¹(N,A) = 0`" is inside `exists_twist_eq_one_of_mem_of_section`
+(`GroupCohomology/InflationRestriction.lean`), at exactly one line:
+
+```lean
+choose T hT using fun σ : G =>
+  hH1 (fun m : G => a (σ, σ⁻¹ * m * σ)) (isMulCocycle₁_conj_of_eq_one ha h1 σ)
+```
+
+That is, it is applied only to the family of conjugation 1-cocycles `n ↦ a (σ, σ⁻¹ n σ)`, one per
+coset representative `σ` — which *is* the transgression datum.  Replacing the blanket hypothesis by
+"these particular classes vanish in `H¹(N,A)`" therefore yields a **relative** degree-two
+inflation–restriction theorem with no need to build the `G/N`-action on `H¹(N,A)`, the seven-term
+sequence, or any spectral sequence.  Because `θ_a` transports the chosen cochains, naturality in the
+module comes for free.  This is the cheapest available form of input (C), and it is a modification
+of existing code rather than new infrastructure.
+
+Step 2 of (c) needs slightly more than the relative theorem: it needs the transgression as a *map*
+into `H¹(G/N, H¹(N,A))`, so that a class which is not inflated is sent to a nonzero target that
+Prop 6 can then kill.  The cochain-level construction above supplies the underlying cochain
+`σ ↦ [n ↦ a (σ, σ⁻¹ n σ)]`; what has to be added is that it is a 1-cocycle for the conjugation
+action of `G/N` on `H¹(N,A)` and that its class does not depend on the twist used to normalise `a`.
+Both are cochain computations of the same kind as the ones already in
+`GroupCohomology/InflationRestriction.lean`, and the relative theorem is precisely the statement
+that a vanishing transgression class means inflated.  The remaining, genuinely new ingredient is the
+profinite bookkeeping: `G_k` is not a finite group, so the argument has to be run in the
+repository's continuous-cochain framework rather than for abstract groups.
+
+Two Lean notes.  `(s.gcd f : ℤ)` elaborates as `Finset.gcd s (fun b => (f b : ℤ))`, not as a cast of
+the natural-number gcd; the cast has to be spelled `((s.gcd f : ℕ) : ℤ)`.  And `choose!` does not
+strip the membership argument when the target type has no `Nonempty` instance, so a choice over
+`p ∈ n.primeFactors` has to be pushed through `Finset.attach` rather than `Finset.image f`.
+
+Build green at **9591 jobs**, zero warnings, zero errors; all four new theorems have axioms
+`[propext, Classical.choice, Quot.sound]`.
+
+---
+
+## 0.85 Status (2026-09-02) — the relative inflation–restriction theorem, and the transgression as a one-cocycle of the quotient
+
+Input (C) of §0.84(c) — degree-two Hochschild–Serre — is now proven for abstract groups, in the only
+form the Shafarevich argument needs.  Two files changed.
+
+**(a) `GroupCohomology/InflationRestriction.lean`: the blanket hypothesis is gone.**  The engine of
+that file corrects a two-cocycle `a` by three successive twists.  Only the third consumed anything
+about the first cohomology of `N`, through the single line
+
+```lean
+choose T hT using fun σ : G =>
+  hH1 (fun m : G => a (σ, σ⁻¹ * m * σ)) (isMulCocycle₁_conj_of_eq_one ha h1 σ)
+```
+
+so the hypothesis `hH1 : H¹(N,M) = 0` was doing far more work than required: what is used is only
+that each member of the family `x ↦ a (σ, σ⁻¹ x σ)` is a coboundary.  `exists_twist_eq_one_of_mem_of_section`
+now takes exactly that,
+
+```lean
+(hTr : ∀ σ : G, ∃ t : M, ∀ x ∈ N, x • t / t = a (σ, σ⁻¹ * x * σ))
+```
+
+and the `choose` collapses to `choose T hT using hTr`.
+
+That is still a pointwise condition, and what a vanishing transgression *class* gives is weaker: a
+single one-cocycle `φ` of `N` with `a (σ, σ⁻¹ x σ) = σ • φ (σ⁻¹ x σ) / φ x` up to a coboundary, for
+every `σ` at once.  The gap is closed by one further twist, `exists_twist_conj_eq_smul_div`: extend
+`φ` to `G` by `u g = φ (g (s g)⁻¹)`, reading the decomposition of `g` along its coset, and twist by
+`u`.  Two computations, both two lines, do it — `u (n y) = n • u y * φ n` for `n ∈ N`, which keeps
+the twisted cocycle trivial at every pair whose first entry lies in `N`, and `u (x σ) = x • u σ * φ x`
+for `x ∈ N`, which turns the transgression into `x ↦ x • (t · u σ) / (t · u σ)`.  No cocycle
+hypothesis on `a` is needed for either.  Assembling gives
+
+```lean
+theorem exists_twist_inflated_of_transgression
+    {a : G × G → M} (ha : IsMulCocycle₂ a)
+    (hres : ∃ b : G → M, ∀ x ∈ N, ∀ y ∈ N, a (x, y) = x • b y / b (x * y) * b x)
+    (htr : ∀ c : G × G → M, IsMulCocycle₂ c → (∀ n ∈ N, ∀ y : G, c (n, y) = 1) →
+      ∃ φ : G → M, (∀ x ∈ N, ∀ y ∈ N, φ (x * y) = x • φ y * φ x) ∧
+        ∀ σ : G, ∃ t : M, ∀ x ∈ N,
+          c (σ, σ⁻¹ * x * σ) = σ • φ (σ⁻¹ * x * σ) / φ x * (x • t / t)) :
+    ∃ u : G → M, (inflated) ∧ (fixed)
+```
+
+The transgression is asked to be a coboundary for every *normalised* cocycle rather than for `a`
+itself, because the correction proceeds by twists; this is honest and costs nothing downstream,
+since the vanishing will come from a statement about `H¹(G/N, Hom(N,E))` that applies to any
+representative.  The old `exists_twist_inflated` is now a two-line corollary, taking `φ = 1`, so its
+single caller (`InfResTwo.lean:226`) is untouched.
+
+Also proven there: `transgression_mul`, the composition law
+
+`a (στ, (στ)⁻¹ x στ) = σ • a (τ, τ⁻¹ (σ⁻¹ x σ) τ) · a (σ, σ⁻¹ x σ) · (x • a (σ,τ) / a (σ,τ))`,
+
+from two applications of the cocycle identity plus `smul_apply_of_mem_left`.  The last factor is the
+coboundary of `a (σ,τ)`, which is exactly why the transgression is a cocycle only modulo `B¹(N,M)`
+in general.
+
+**(b) `GroupCohomology/Transgression.lean` (new): the trivial-action case, where the transgression
+is an honest one-cocycle of the quotient.**  This is the case of the Shafarevich embedding problem:
+`N = G_K` acts trivially on the kernel `E`, because `K` splits it.  With `htriv : ∀ n ∈ N, ∀ m : M, n • m = m`
+the picture collapses pleasantly.
+
+* `transgression a σ x = a (σ, σ⁻¹ x σ)`, and `transgression_mul_mem` says it is *multiplicative* on
+  `N`: the one-cocycle condition `f (xy) = x • f y · f x` loses its twist.
+* `transgression_conj`: it is invariant under conjugation by `N`.  The reason is one line — a
+  homomorphism into an abelian group kills conjugation — and it is the concrete form of "inner
+  automorphisms act trivially on `H¹(N,M)`".
+* `transgression_smul_left`: hence `transgression a (nσ) = transgression a σ` for `n ∈ N`, so the
+  transgression is a function on `G/N`.
+* `transgression_mul_left`: the coboundary factor of `transgression_mul` is `x • a(σ,τ) / a(σ,τ) = 1`,
+  so the composition law becomes the exact one-cocycle identity
+  `transgression a (στ) x = σ • transgression a τ (σ⁻¹ x σ) · transgression a σ x`
+  for the action of `G` on `Hom (N, M)` translating source and target.
+
+So the obstruction to a class being inflated is a class in `H¹(G/N, Hom(N,M))` — a cohomology group
+of a *finite* group, no matter how enormous `N` is.  `exists_twist_inflated_of_transgression_trivial`
+packages the criterion in that language.
+
+**(c) What this leaves.**  Against the table of §0.84(c): input (C) is now **done for abstract
+groups**.  What remains on that route is
+1. the profinite version — the same statements for `G_k` with continuous cochains, which should be
+   the existing `Profinite/InfRes.lean` machinery (`exists_comapH2_eq` already turns "constant on
+   kernel cosets" into "inflated") plus smoothness of the three twisting cochains;
+2. `H¹(G_K, E) ≅ Hom_cont(G_K, 𝔽_p) ⊗_{𝔽_p} E` as `Gal(K/k)`-modules, which is now visibly the same
+   object as `Hom (N, M)` above;
+3. the finite-dimensional approximation of §0.84(c) step 3;
+4. Prop 6 applied to the resulting class, and naturality of the whole picture under the shrink `θ_a`.
+
+Rows 5 and 8 of §0.36 (Poitou–Tate, Ш¹ duality) remain unneeded on this route.
+
+One Lean note: `rw [← transgression_apply]` fails, because the reversed pattern
+`?a (?σ, ?σ⁻¹ * ?x * ?σ)` has a metavariable in head position; the arguments have to be given
+explicitly, `rw [← transgression_apply a σ (n⁻¹ * x * n)]`.
+
+Build green at **9592 jobs**, zero warnings, zero errors; every new theorem has axioms among
+`[propext, Classical.choice, Quot.sound]`.
+
+---
+
+## 0.86 Status (2026-09-02) — the relative inflation–restriction theorem, for continuous cochains
+
+Item 1 of §0.85(c) is done.  `CFT/Profinite/Transgression.lean` proves
+
+```lean
+theorem exists_comapH2_eq_of_transgression (hsm : IsSmoothHom π) (hsurj : Function.Surjective π)
+    (htriv : ∀ n ∈ π.ker, ∀ m : M, n • m = m)
+    {a : G × G → M} (ha : IsMulCocycle₂ a) (has : IsSmooth₂ a)
+    {b : G → M} (hbs : IsSmooth₁ b)
+    (hb : ∀ x ∈ π.ker, ∀ y ∈ π.ker, a (x, y) = x • b y / b (x * y) * b x)
+    (htr : ∀ c : G × G → M, IsMulCocycle₂ c → IsSmooth₂ c →
+      (∀ n ∈ π.ker, ∀ y : G, c (n, y) = 1) →
+      ∃ φ : G → M, IsSmooth₁ φ ∧ (∀ x ∈ π.ker, ∀ y ∈ π.ker, φ (x * y) = φ x * φ y) ∧
+        ∀ σ : G, ∀ x ∈ π.ker, transgression c σ x = σ • φ (σ⁻¹ * x * σ) / φ x) :
+    ∃ x : SmoothH2 Q M, comapH2 π hπ hsm x = smoothH2Mk a ha has
+```
+
+for `π : G →* Q` a smooth surjection onto a discrete group, in the repository's continuous-cochain
+framework (`SmoothH2`, `comapH2`).  Both trivialisations are asked to be smooth, and both hypotheses
+come out smooth in the intended application: `b` from `Ш²(K,E) = 0` read at a finite level, and `φ`
+from a class of `H¹(G, Hom_cont(G_K, E))`, whose cocycles are smooth by construction.
+
+**(a) Why the smoothness cannot be recovered after the fact.**  `smoothH2Mk (twist a u) = smoothH2Mk a`
+requires `IsSmooth₁ u`, not merely that `a` and `twist a u` are both smooth.  Suppose `∂u` is
+`N₁`-bi-invariant.  Then for `n ∈ N₁`, `u (g n) = g • ψ n * u g` with `ψ x = u x / u 1`, and `ψ|N₁`
+is a one-cocycle — a homomorphism when `N₁` acts trivially.  It need not vanish, and it cannot be
+cancelled by multiplying `u` by a global one-cocycle, since `coboundary₂ w = 1` exactly when `w` is
+a one-cocycle.  **So `∂u` smooth does not imply `u` smooth**, and each of the four corrections has to
+be *built* smooth.
+
+**(b) The correction is tracked, not repaired.**  Each of the four twisting cochains of
+`InflationRestriction.lean` is defined by decomposing an element along its coset:
+`u₁ = b` extended by `1`, `u₂ g = (a (g (s g)⁻¹, s g))⁻¹`, `u₃ g = φ (g (s g)⁻¹)`, and `u₄` likewise.
+Consequently each is constant along any normal `N₀ ≤ N` acting trivially along which *its own data*
+is constant — for `u₁` that is `b`, for `u₂` it is `a`, for `u₃` it is `φ`, and for `u₄` nothing
+beyond triviality of the action.  The recurring computation is
+
+`g n (s g)⁻¹ = (g (s g)⁻¹) · (s g · n · (s g)⁻¹)`, with the conjugate again in `N₀`,
+
+together with `s (g n) = s g`.  Each of the four existence lemmas now carries that invariance as an
+extra `∀ N₀, N₀ ≤ N → … → ∀ g n, u (g n) = u g` conjunct of its conclusion, so existing callers only
+gained an `_` in their `obtain` pattern.  The new helper `twist_eq_of_mem` propagates constancy of a
+two-cochain across a twist, which is what feeds the constancy of `a` forward from one correction to
+the next.
+
+**(c) The proof shrinks twice.**  This is forced.  The hypothesis `htr` is a ∀-statement over
+normalised cocycles, and each instance returns its *own* `φ` with its own smoothness subgroup; so
+the open normal subgroup cannot be fixed before `φ` is known, and the tempting alternative — descend
+to a finite quotient `G/N'` first and quote the abstract theorem there — is circular.  Instead:
+
+1. `R = N₁ ⊓ N₂ ⊓ K` where `N₁` is a smoothness subgroup for `a`, `N₂` one for `b`, and `K ≤ π.ker`
+   is open normal (which exists: apply `hsm` to `⊥`, since `(⊥ : Subgroup Q).comap π = π.ker`, so
+   `π.ker` itself need not be assumed open).  Along `R`, `u₁` and `u₂` are constant, hence so is
+   `twist a (u₁ * u₂)`, which makes it smooth and lets `htr` be applied to it.
+2. `R' = R ⊓ N₃` with `N₃` a smoothness subgroup for the `φ` just produced.  Along `R'` all four
+   corrections are constant, so the total correction is smooth and
+   `twist a (u₁ u₂ (u₃ u₄))` is constant on the cosets of `π.ker`, which `exists_comapH2_eq` turns
+   into "inflated".
+
+The last step passes from `twist` to `coboundary₂` through `eq_twist_mul_coboundary₂` and
+`smoothH2Mk_eq_iff`.
+
+**(d) What this leaves.**  Of §0.85(c): item 1 done; items 2–4 remain.  A note on the interface for
+item 4: Prop 6 (`exists_operatorHom_res_cohomology_eq_zero`) lives in Mathlib's `Rep`/`groupCohomology`
+framework, while everything above is in the repository's elementary multiplicative-cochain framework,
+so the class in `H¹(G, Hom_cont(G_K, E))` has to be moved between the two.
+
+Build green at **9593 jobs**, zero warnings, zero errors; the new theorem has axioms
+`[propext, Classical.choice, Quot.sound]`.
+
+---
+
+## 0.87 Status (2026-09-02) — step 3 of §0.84(c) is circular, and Poitou–Tate is back
+
+With the inflation–restriction machinery in hand the §0.84(c) route can be checked against the
+actual statement of Prop 6, and **step 3 does not survive**.  §0.36(c) already recorded the failure
+mode; §0.84(c) walked into it.
+
+### (a) The refutation
+
+`exists_genericShrink_res_cohomology_eq_zero` reads, in order of binders,
+
+```lean
+(T : Rep (ZMod ℓ) U) [Module.Finite (ZMod ℓ) T]
+(hr : (j + 1) * (t * Nat.card H ^ c *
+  Module.finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j ⊗[ZMod ℓ] T)) < r)
+(x : Fin t → groupCohomology ((Action.res _ f).obj (genericLayerTensor U (r * n) S ℓ j T)) c)
+```
+
+so `T` is fixed **before** `r`, and `r` has to exceed a constant times `dim T`; only then is the
+class `x`, which lives over `m = r · n`, supplied.  Step 3 chooses `T = T₀`, the `𝔽_p`-span of the
+`G`-orbit of the `T`-components of a cocycle representing the transgression of `z`.  A one-cocycle
+on `G` with values in `E(m) ⊗ T` has `#G` values, each with `dim E(m)` components, so
+
+`dim T₀ ≤ #G² · dim E(m,τ)`,   and `m = r·n`.
+
+The bound then demands `r > (j+1) · #G · dim E(n,τ) · #G² · dim E(rn,τ)`, and `dim E(m,τ)` grows
+with `m` — already linearly for `j = 1`, since `Generic U m S` is relatively free on `m` orbits of
+generators.  The requirement is circular; step 3 is exactly the "represent the class by boundedly
+many elements, where *boundedly* means independently of `m`" trap of §0.36(c).
+
+Everything else in §0.84(c) stands.  Step 1 (`Ш²(K,E) = 0`, so `z ∈ F¹`) is proven; step 2
+(degree-two Hochschild–Serre) is proven, abstractly in §0.85 and for continuous cochains in §0.86;
+step 5 (Prop 6 on `H²(G,E)` with `T` the trivial representation, which *is* fixed a priori) is fine.
+What fails is only the passage `F¹ → F²`, and it fails for one reason: **`T` has to be finite
+dimensional and known before `m`.**
+
+### (b) What would repair it
+
+The route is repaired by any statement that makes the coefficient module of the transgression a
+priori finite dimensional.  Two candidates, both classical:
+
+* `Ш²(k, E) ⊆ inf H²(k_S/k, E)` for a fixed finite `S ⊇ S_∞ ∪ S_p ∪ Ram(K/k)`.  Then
+  `T = Hom_cont(Gal(K_S/K), 𝔽_p)` is finite dimensional and depends only on `K` and `S`, both fixed
+  before the induction starts.  This is the "earlier plan" §0.84(c) discarded; it is back.
+* Poitou–Tate, which is what Schmidt–Wingberg use, and which makes `T = 𝔽_p(-1)` — one dimensional.
+
+So **rows 5 and 8 of the §0.36 table are again the wall**, and the honest reading is that §0.85 and
+§0.86 built a genuinely useful piece of machinery (a relative, continuous-cochain Hochschild–Serre)
+without removing the duality requirement.
+
+### (c) A byproduct worth keeping: the transgression of a locally trivial class is locally a
+coboundary
+
+Let `a` be a two-cocycle of `G_k` normalised so that `a (n, y) = 1` for `n ∈ G_K` and all `y`, let
+`D ≤ G_k` be a decomposition group, and suppose `a` restricted to `D` is the coboundary of a cochain
+`c` on `D`.  Because `a` vanishes at every pair whose first entry lies in `G_K`, the restriction
+`χ = c|_{D ∩ G_K}` is a homomorphism, and for `σ ∈ D`, `x ∈ D ∩ G_K`,
+
+`transgression a σ x = σ • χ (σ⁻¹ x σ) / χ x`.
+
+That is: the transgression class of an everywhere locally trivial class lies in the everywhere
+locally trivial part of `H¹(G, Hom(G_K, E))`.  The computation is three lines of cochain algebra —
+`∂c (x, σ) = a (x, σ) = 1` gives `c (x σ) = χ x · c σ`, and substituting into `∂c (σ, σ⁻¹ x σ)`
+cancels `c σ` — and it is what any repair of the route will need, on either candidate above.  It is
+also, in the duality language, precisely the assertion that the map `Ш² → H¹(G, H¹(G_K, E))` lands
+in `Ш¹`, which is the group Poitou–Tate computes.
+
+---
+
+## 0.88 Status (2026-09-02) — `Ш¹` from the idele sequence: the lattice case is done, the `p`-torsion case is Poitou–Tate
+
+§0.87(c) ends at the group `Ш¹(G, Hom_cont(G_K, E))`.  This section computes it, in the one case
+where the existing class-formation machinery suffices, and pins down exactly what is missing in the
+case the route actually needs.
+
+### (a) The reduction that costs nothing
+
+Kummer theory identifies the coefficient module.  With `μ_p ⊆ K` and `W := Hom(μ_p, E) = E(-1)`,
+
+`Hom_cont(G_K, E) ≅ (K^×/K^{×p}) ⊗_{𝔽_p} W = K^× ⊗_ℤ W`   as `G = Gal(K/k)`-modules,
+
+so the group of §0.87(c) is `Ш¹(G, K^× ⊗ W)`, the kernel of `Ĥ¹(G, K^×⊗W) → Ĥ¹(G, I_K⊗W)` — the
+target being `⊕'_v Ĥ¹(G_w, K_w^×⊗W)` by Shapiro's lemma.
+
+Now tensor the idele sequence `0 → K^× → I_K → C_K → 0` with any coefficient module `M` for which
+it stays exact.  The long exact sequence of complete cohomology gives, **in every degree at once**,
+
+`Ш^{i+1}(G, K^×⊗M) = im(δ : Ĥ^i(G, C_K⊗M) → Ĥ^{i+1}(G, K^×⊗M)) = coker(Ĥ^i(G, I_K⊗M) → Ĥ^i(G, C_K⊗M))`.
+
+That is the whole trick: **the locally trivial classes of the units are a quotient of the cohomology
+of the idele classes one degree lower**, and the idele class group is the module of a class
+formation, so its cohomology is computable by Tate–Nakayama.  No duality is used.
+
+### (b) The lattice case, in Lean
+
+For `M = N` a `G`-lattice (flat over `ℤ`) the tensored sequence is exact because flatness is exactly
+what preserves injectivity, and `tateNakayamaIdeleClass` gives `Ĥ^i(G, C_K⊗N) ≅ Ĥ^{i-2}(G, N)`.
+`CFT/Units/IdeleTorusSha.lean` assembles this:
+
+```lean
+theorem range_shaTorusMap (n : ℤ) :
+    LinearMap.range (shaTorusMap α hα N hN n)
+      = LinearMap.ker (tateMap (tensorHomLeft N (globalUnitsToIdele k K)) (n + 1 + 1 + 1)).hom
+```
+
+where `shaTorusMap α hα N hN n : Ĥ^n(G, N) →ₗ Ĥ^{n+3}(G, K^×⊗N)` is Tate–Nakayama followed by the
+connecting map.  In words: **the everywhere locally trivial part of `Ĥ^{n+3}(G, K^×⊗N)` is exactly
+the image of `Ĥ^n(G, N)`.**  Sorry- and axiom-free.
+
+The hypotheses `α`, `hα` — a class of order divisible by `#G` in `Ĥ²(G, C_K)` — are *not* an extra
+assumption: §0.82(b) closed the fundamental-class brick, so `baseFundamentalClass k K` exists for
+every Galois extension of number fields (`CFT/Units/BaseTate.lean`).  Instantiating gives the
+unconditional form, also in `IdeleTorusSha.lean`:
+
+```lean
+theorem range_baseShaTorusMap (n : ℤ) :
+    LinearMap.range (baseShaTorusMap N hN n)
+      = LinearMap.ker (tateMap (tensorHomLeft N (globalUnitsToIdele k K)) (n + 1 + 1 + 1)).hom
+
+theorem range_baseShaTorusMap_one :
+    LinearMap.range (baseShaTorusMap N hN (-2))
+      = LinearMap.ker (tateMap (tensorHomLeft N (globalUnitsToIdele k K)) 1).hom
+```
+
+so for **any** Galois extension of number fields and **any** `ℤ`-flat `N : Rep ℤ Gal(K/k)`, the
+everywhere locally trivial classes in `Ĥ¹(G, K^×⊗N)` are a quotient of `Ĥ^{-2}(G, N) = H_1(G, N)`.
+
+Sanity checks.  `n = -2` gives `Ш¹(G, K^×⊗N)` as a quotient of `Ĥ^{-2}(G,N) = H_1(G,N)`, which is
+finite while `H¹(G, K^×⊗N)` need not be.  For `N = ℤ` trivial the source is `G^ab` and the target is
+`Ш¹(G, K^×) ⊆ H¹(G,K^×) = 0` (Hilbert 90) — consistent, not tight.  For `N = ℤ[G]` both sides
+vanish.  And the statement is the exact dual of the classical `Ш¹(k,T) ≅ Ш²(k, X̂)^∨` of Ono and
+Sansuc: `Ĥ^{-2}(G,N) ≅ Ĥ¹(G, Hom(N,ℚ/ℤ))^∨ ≅ Ĥ²(G, X̂)^∨` for `X̂ = Hom(N,ℤ)` the character lattice,
+since `X̂⊗ℚ` is cohomologically trivial.  So the brick is the torsion-free half of global duality for
+tori, obtained from the class formation alone.
+
+### (c) The `p`-torsion case: where the content really is
+
+The route needs `M = W`, which is `p`-torsion, not a lattice.  Two things have to be checked.
+
+**Exactness of the tensored sequence** — this one is free.  `Tor_1(C_K, W) = C_K[p] ⊗ W`, and the
+connecting map `C_K[p] → K^×/K^{×p}` is zero: the snake of `0 → K^× → I_K → C_K → 0` gives
+
+`0 → μ_p(K) → I_K[p] → C_K[p] → K^×/K^{×p} → I_K/I_K^p`,
+
+and `I_K[p] = ∏_w μ_p(K_w) = ∏_w μ_p` (roots of unity are units at every place), so the image of
+`C_K[p]` in `K^×/K^{×p}` lies in `Ш¹(K, μ_p)`, which vanishes by Grunwald–Wang — in the repository,
+`exists_pow_eq_of_forall_localPow_outside_of_prime` (`CFT/GrunwaldWang.lean`), prime exponent, no
+roots-of-unity hypothesis, so the `p = 2` special case never arises.  **So `0 → K^×⊗W → I_K⊗W →
+C_K⊗W → 0` is exact and the reduction of (a) applies verbatim.**
+
+**Tate–Nakayama with `p`-torsion coefficients** — this one is not free, and it is the whole
+difficulty.  The theorem in its honest form computes `Ĥ^n(G, M ⊗^L C_K)`, and for `M` with torsion
+the derived tensor product has `H_1 = Tor_1(C_K, M) = C_K[p]⊗M`, so the naive statement acquires an
+error term measured by `Ĥ^*(G, C_K[p] ⊗ W)`.  The repository already has the `p`-torsion
+Tate–Nakayama gated on exactly one hypothesis:
+
+```lean
+def tateNakayamaPTorsionEquiv (A : Rep ℤ G) (α : tateModule A 2) (M : Rep ℤ G)
+    (hM : ∀ v : ↥M.V, p • v = 0)
+    (hE : ∀ P : Sylow p G, Limits.IsZero (groupCohomology (resObj (P : Subgroup G)
+      (modNsmul (cocycleObj (shiftObj A) (tateTwoCocycle A α)) p)) 1)) (n : ℤ) :
+    tateModule M n ≃ₗ[ℤ] tateModule (tensorObj A M) (n + 1 + 1)
+```
+
+(`CFT/TateCohomology/TensorPTorsion.lean`).  Unwinding the dimension shift for `A = C_K`, the
+hypothesis `hE` is the vanishing of a Tate group of `C_K[p]` over each Sylow subgroup — and that
+group does **not** vanish in general: `Ĥ²(P, I_K[p]) = ∏_{orbits} Ĥ²(P_w, μ_p)` maps into it and is
+nonzero as soon as some decomposition group is nontrivial.  This is not a defect of the Lean
+statement; it is the reason Poitou–Tate is a theorem about `Ш` and not a corollary of the class
+formation.  **The `p`-torsion case of (a) is Poitou–Tate.**
+
+This is the same obstruction §0.29(ii) hit from the other direction: presenting `E(-1)` by a lattice
+and chasing the resulting sequence stalled on `Ĥ²(G, C_K[p]⊗E(-1)) = ∏_𝔭 Ĥ²(G_𝔭, E) ≠ 0`, and
+§0.29(iii) already concluded "the Claim really is Poitou–Tate".  What (b) adds is that the *other*
+half — everything torsion-free — is now a theorem in the repository rather than a plan, so the
+`C_K[p]` term is the entire remaining content, not one difficulty among several.
+
+### (d) What this changes
+
+Row 5 of the §0.36 table stands, but its shape is now precise rather than a slogan:
+
+* The **torsion-free** half of global duality for tori is *done*, from the class formation, with no
+  duality input at all and no hypothesis on the extension (`range_baseShaTorusMap`).
+* The **`p`-torsion** half reduces, by (c), to controlling `Ĥ^*(G, C_K[p] ⊗ W)` — equivalently, to
+  the derived correction in Tate–Nakayama.  That is a single, sharply stated object, and it is the
+  first place where a genuine Poitou–Tate input is unavoidable.
+* Grunwald–Wang has now found its first real use downstream: it is what makes the tensored idele
+  sequence exact for `p`-torsion coefficients.
+
+Bricks available for the next step, all present and sorry-free: `ideleClassShortComplex_shortExact`,
+`tensorSeq_shortExact`, `tateδ`/`tateExact_δ_map`, `tateNakayamaIdeleClass`,
+`tateNakayamaPTorsionEquiv`, `isZero_tateModule_tensorObj_of_nsmul`, and the Grunwald–Wang power
+theorem.  What is *not* present: the Kummer identification
+`Hom_cont(G_K,E) ≅ (K^×/K^{×p}) ⊗ Hom(μ_p,E)` as `G`-modules, Shapiro for `I_K ⊗ M`, and any handle
+on `C_K[p]` as a `G`-module.
+
+---
+
+## 0.89 Status (2026-09-03) — the Cartier dual and its pairing; row 6 was already done; and `C_K[p]` is a quotient of a coinduced module
+
+### (a) Two new modules
+
+`CFT/PoitouTate/Dual.lean` and `CFT/PoitouTate/CupDual.lean`, both sorry- and axiom-free.
+
+* `CartierDual A μ` is `A →* μ` with the action `(g • f) a = g • f (g⁻¹ • a)`, a `CommGroup` with a
+  `MulDistribMulAction`.  `evalPairing A μ : A →* CartierDual A μ →* μ` is evaluation and
+  `evalPairing_smul` is its equivariance; `toDoubleDual` is the comparison with the double dual.
+  `IsSmoothAction G (CartierDual A μ)` is an instance: an open normal subgroup acting trivially on
+  `A` and on `μ` acts trivially on `A →* μ`.  So the dual of a smooth module is a smooth module and
+  `SmoothH1 G (CartierDual A μ)` is defined.
+* `cupDual A μ : SmoothH1 G A →* SmoothH1 G (CartierDual A μ) →* SmoothH2 G μ` is
+  `cupSmoothH1 (evalPairing A μ)`.  It commutes with restriction (`resH2_cupDual`) and carries the
+  everywhere locally trivial classes of either factor into `sha2` (`cupDual_mem_sha2_left/right`).
+* `dualSymbolUnits A ιμ hιμ` pushes the pairing into `Ωˣ` along an equivariant `ιμ : μ →* Ωˣ`, and
+  `totalInvariant_smoothBrauerHom_dualSymbolUnits` is **the product formula: the local invariants
+  of the pairing of a class with a dual class multiply to one over all places of a number field.**
+  There is a finite-set form with the same proof shape as the power residue symbol's.
+
+In Poitou–Tate terms this is the *easy* half of the central exactness: the image of `H¹(k,A)` in
+the restricted product of the `H¹(k_v,A)` is contained in the annihilator of the image of
+`H¹(k,A^D)`.  The hard half is the reverse inclusion.
+
+### (b) Row 6 of the §0.36 table is stale: it is done
+
+The row reads "the repo has the *quadratic* symbol over `ℚ`".  That predates
+`CFT/Profinite/Symbol.lean`, which builds `kummerSymbol h Φ : kˣ →* kˣ →* SmoothH2 Gal(Ω/k) M` for
+any Kummer data of any exponent `n` over any base, together with `resH2_kummerSymbol` and
+`kummerSymbolUnits`, and `CFT/Brauer/CyclicProduct.lean`, which proves
+`totalInvariant_smoothBrauerHom_kummerSymbolUnits` and
+`prod_placeInvariant_mul_prod_infinitePlaceInvariant_kummerSymbolUnits`.  That is the `p`-th power
+symbol over a number field and its product formula.  **Row 6 should be marked DONE.**
+
+### (c) `C_K[p]` is a quotient of a coinduced module, and its Tate cohomology is local
+
+§0.88(c) named "any handle on `C_K[p]` as a `G`-module" as missing.  The handle is already in the
+sequence §0.88(c) writes down.  With `μ_p ⊆ K`,
+
+`0 → μ_p(K) → I_K[p] → C_K[p] → Ш¹(K, μ_p) = 0`,
+
+the last vanishing by Grunwald–Wang, so
+
+**`C_K[p] ≅ (∏_w μ_p) / μ_p(K)`**, the product over *all* places `w` of `K`.
+
+Now `∏_w μ_p` is not an opaque module.  Group the places over the places of `k`: for each place `v`
+of `k` the set `{w | v}` is one `G`-orbit, and `∏_{w|v} μ_p` is the module of sections of a
+constant family over that orbit.  That is exactly the situation of `CFT/Tate/FamilyCoind.lean`
+(2026-09-02): **the sections of a family over a transitive orbit are coinduced from the stabiliser
+of a base point**, so by Shapiro
+
+`Ĥ^n(G, ∏_{w|v} μ_p) ≅ Ĥ^n(D_w, μ_p)` for every `n : ℤ`,
+
+`D_w` the decomposition group.  `CFT/Units/AdicOrbitTate.lean` (2026-09-02/03) already instantiates
+this for the units of the completions at the finite places and at the infinite ones,
+`adicOrbitTateEquiv` and `infiniteOrbitTateEquiv`, with no cyclicity hypothesis.
+
+So the error term of `p`-torsion Tate–Nakayama, `Ĥ^*(G, C_K[p] ⊗ W)`, is computed by the long exact
+sequence of `0 → μ_p(K) ⊗ W → (∏_w μ_p) ⊗ W → C_K[p] ⊗ W → 0` — exact because everything in sight
+is an `𝔽_p`-vector space — out of `Ĥ^*(G, μ_p ⊗ W)` and a product of **local** groups
+`Ĥ^*(D_w, μ_p ⊗ W)`.  That is the shape of the Poitou–Tate sequence, and it is reachable with the
+bricks in the repository rather than with a fresh duality theory.
+
+### (d) What this makes the next steps
+
+1. **Tate cohomology of a finite group commutes with products.**  True for arbitrary index sets
+   (products are exact in `Ab` and the complete resolution is a fixed complex of finitely generated
+   free modules), absent from the repository, and needed to turn the per-place Shapiro statement
+   into a statement about `I_K[p]`.  This is the one genuinely missing general lemma and it is
+   small.
+2. **`I_K[p] = ∏_w μ_p` as a `G`-module**, in the repository's idele language, and the resulting
+   `Ĥ^*(G, I_K[p] ⊗ W) ≅ ∏_v Ĥ^*(D_w, μ_p ⊗ W)`.
+3. **`C_K[p] ≅ I_K[p]/μ_p(K)`** from the snake sequence and `Ш¹(K,μ_p) = 0`
+   (`exists_pow_eq_of_forall_localPow_outside_of_prime`).
+4. The long exact sequence, and then the error term in `tateNakayamaPTorsionEquiv`.
+
+Row 5 is then a computation rather than a wall.  Row 8, the eight-term sequence itself, remains a
+separate and larger object; nothing here shortens it, but nothing in rows 5 and 9 evidently needs
+it in full once (1)–(4) are in place.
+
+---
+
+## 0.90 Status (2026-09-04) — §0.89(d) items 1–4 are all landed, and row 5 is now one sharp statement
+
+### (a) The four next steps of §0.89(d) are done
+
+All four are in the repository, sorry- and axiom-free.  Full build green at 9636 jobs.
+
+1. **Tate cohomology commutes with products** — `CFT/TateCohomology/Product.lean`
+   (`tatePiEquiv`, `isZero_tateModule_piRep`), and its tensored refinement
+   `CFT/TateCohomology/TensorPi.lean` (`tensorSectionsIso`, `isZero_tateModule_tensorObj_piRep`).
+   The tensored form needs the coefficients to be of finite rank over the prime field, because `⊗`
+   does *not* commute with infinite products; the bridging lemma is
+   `nsmul_eq_zero_of_equivPi : (W ≃+ (Fin d → ZMod p)) → ∀ x, p • x = 0`.
+2. **`I_K[p] = ∏_w μ_p` and the local decomposition** — `CFT/Tate/FamilyTensorOrbit.lean`
+   (`tateTensorOrbitsEquiv`, `tateTensorTorsionEquiv`), `CFT/TateCohomology/TensorPair.lean`,
+   `CFT/Units/IdeleTorsionTensor.lean` (`ideleTorsionTensorTateEquiv`,
+   `isZero_tateModule_tensor_ideleTorsion`).  So
+   `Ĥ^n(G, I_K[p] ⊗ W) ≅ ∏_v Ĥ^n(D_w, μ_p ⊗ W)`, one factor per place of the base field.
+3. **`C_K[p] ≅ I_K[p]/μ_p(K)`** — already present as
+   `ideleClassTorsionShortComplex_shortExact` (`CFT/Units/IdeleClassTorsionSES.lean`), which is
+   exactly the snake sequence with `Ш¹(K,μ_p) = 0` folded in.
+4. **The long exact sequence** — `CFT/Units/IdeleClassTorsionLocal.lean` (2026-09-04):
+   `ker_tateδ_tensor_ideleClassTorsion` and `exists_localTorsion_tateMap_eq`, so a class of
+   `Ĥ^n(G, C_K[p] ⊗ W)` is the image of a family of local classes exactly when the connecting map
+   into `Ĥ^{n+1}(G, μ_p(K) ⊗ W)` kills it, and `exists_localTorsion_tateMap_eq_of_isZero` when that
+   target vanishes.  **The error term of `tateNakayamaPTorsionEquiv` is now a global group presented
+   by local ones.**
+
+Two further bricks landed on top:
+
+* `CFT/Units/IdeleTorusShaLocal.lean` reads the obstruction of §0.88(c) one place at a time.  The
+  local module is killed by `p` and the complete cohomology of a decomposition group is killed by
+  its order, so **a place with `p ∤ #D_w` contributes nothing**
+  (`isZero_tateModule_tensor_adicTorsion_of_coprime`, and the archimedean twin).  A decomposition
+  group at an archimedean place has order one or two
+  (`NumberField.InfinitePlace.nat_card_stabilizer_eq_one_or_two`), so **for odd `p` the archimedean
+  places drop out of the criterion entirely** (`range_shaTorusPTorsionMap_of_isZero_adic`), leaving
+  a condition at the finite places and one on `Ĥ^{n+5}(G, μ_p(K) ⊗ W)`.
+* `CFT/TateCohomology/TensorPTorsion.lean` gained `isZero_tateModule_tensorObj_of_coprime` and its
+  primed twin: a tensor product one of whose factors is killed by a number prime to `#G` has no
+  complete cohomology.
+
+### (b) Row 5, sharply
+
+The sufficient condition of §0.88(c) — "the obstruction group vanishes" — is *false* in general, and
+saying so is not enough.  `CFT/Units/IdeleTorusShaSharp.lean` replaces it by a necessary **and**
+sufficient one.  The unconditional statement is `range_shaTorusPTorsionMap`:
+
+`im(shaTorusPTorsionMap) = δ(ker obs)`,  while  `Ш = δ(⊤)`,
+
+with `obs = baseTateNakayamaPTorsionRight : Ĥ^{n+2}(G, C_K⊗W) → Ĥ^{n+4}(G, C_K[p]⊗W)`.  A map's
+image of a submodule is all of its image exactly when the submodule and the kernel span
+(`map_eq_range_iff_sup_ker_eq_top`), and `ker δ` is what comes from the ideles
+(`ker_tateδ_tensor_ideleClass`).  Hence
+
+```lean
+theorem range_shaTorusPTorsionMap_eq_iff' (n : ℤ) :
+    LinearMap.range (shaTorusPTorsionMap k K W hW n)
+        = LinearMap.ker (tateMap (tensorHomLeft W (globalUnitsToIdele k K))
+          (n + 1 + 1 + 1)).hom ↔
+      Submodule.map (baseTateNakayamaPTorsionRight k K W hW n)
+          (LinearMap.range (tateMap (tensorHomLeft W (ideleToIdeleClass k K)) (n + 1 + 1)).hom)
+        = LinearMap.range (baseTateNakayamaPTorsionRight k K W hW n)
+```
+
+In words: **the everywhere locally trivial classes of `K^× ⊗ W` are exactly the image of
+`Ĥ^n(G, W)` if and only if the obstruction of Tate and Nakayama takes no value on the idele classes
+that it does not already take on the ideles.**  The units and `Ш` have been eliminated; what is left
+is a statement about the obstruction and the places, which is the shape any duality input has to
+take.
+
+### (c) What is still missing, and what is unexpectedly present
+
+Missing, for row 5:
+
+* The comparison of the *global* Tate–Nakayama obstruction with the *local* ones — i.e. that the
+  global fundamental class restricts to the local fundamental classes, giving a commuting square
+  between `obs` and the per-place error maps.  With (a)4 and (b) in place this is the only step
+  between the criterion and a theorem, and it is where the sum-of-invariants (reciprocity) enters.
+* The Kummer identification `Hom_cont(G_K, E) ≅ (K^×/K^{×p}) ⊗ Hom(μ_p, E)` as `G`-modules
+  (§0.88(c) already flagged this), which is what connects all of the `K^×⊗W` work to `Ш²(k,E)`.
+
+Present, and worth remembering because it removes a large chunk of what "Poitou–Tate" usually costs:
+
+* **Tate duality for a finite group in every degree, for `p`-torsion coefficients**, is already a
+  theorem here — `Tate.tateDualEquiv` in `CFT/TateCohomology/DualityShift.lean`:
+  `Ĥ^n(G, Hom(A,C)) ≅ Hom(Ĥ^{-n-1}(G,A), C)`.  So the *formal* half of local duality is done; only
+  the identification of the local coefficient dual with the class formation's `Hom(M, K_w^×)` is
+  not.  If `μ_p ⊆ k` — which the Shafarevich induction can arrange — the dual has trivial action and
+  the identification is immediate.
+* The product formula for the `p`-th power symbol and for the Cartier-dual pairing
+  (`totalInvariant_smoothBrauerHom_kummerSymbolUnits`,
+  `totalInvariant_smoothBrauerHom_dualSymbolUnits`), which is the global input.
+
+So the remaining content of row 5 is *one* comparison square, not a duality theory.
+
+---
+
+## 0.91 Status (2026-09-04, later) — coefficient naturality, the free presentation, and the one structural gap that blocks every remaining route into row 5
+
+### (a) What landed
+
+Four commits, all sorry- and axiom-free.
+
+* `b343cb0` — cyclic periodicity of complete cohomology (`CFT/TateCohomology/Cyclic.lean`).
+* `38e1066` — the comparison of Tate and Nakayama is **natural in the representation**
+  (`CFT/TateCohomology/NakayamaNatural.lean`).
+* `4e9aad0` — the comparison of Tate and Nakayama is **natural in the coefficients**
+  (`CFT/TateCohomology/NakayamaCoeff.lean`).  The payoff lemma is
+  `range_tateMap_tensorHomRight_le`: if the comparison is onto for coefficients `M`, then
+  everything a map `ψ : M ⟶ N` induces two degrees higher is already a value of the comparison
+  for `N`.
+* `3a797d8` — **the free presentation** (`CFT/TateCohomology/FreePresentation.lean`) and what it
+  produces for the idele class group (`CFT/Units/BaseTateCoeff.lean`).  `freeRep W` is the free
+  module on the *elements* of `W` with the group permuting the generators, `freeCounit W` reads a
+  formal combination as the combination itself; `flat_freeRep` and `freeCounit_surjective` present
+  every representation by a flat one.
+
+Two facts worth keeping from `BaseTateCoeff.lean`:
+
+* `⇑(baseTateNakayamaEquiv k K M hM n) = tateNakayamaTwoMap (ideleClassRep k K)
+  (baseFundamentalClass k K) M n` is provable by **plain `rfl`** (`coe_baseTateNakayamaEquiv`), so
+  the comparison is onto whenever the coefficients are flat over `ℤ`
+  (`surjective_baseTateNakayamaTwoMap`).
+* Hence `range_shaTorusPTorsionMap_of_free`: **row 5 holds for `W` as soon as the free presentation
+  and the ideles together span `Ĥ^{n+2}(G, C_K ⊗ W)`.**  No Tate–Nakayama obstruction appears in
+  that statement at all.
+
+A fifth brick landed with this section: `CFT/TateCohomology/SylowSurjective.lean`, the companion of
+`SylowInjective.lean`.  Writing `1 = u·[G:H] + v·m` with `m` killing a class exhibits the class as
+`cor(u · res x)`, so `mem_range_tateCor_of_coprime`; coefficients killed by `m` have complete
+cohomology killed by `m` (`nsmul_eq_zero_tateModule_of_nsmul`, from `tateMap_nsmul_id_apply`); so
+**corestriction from a Sylow subgroup is onto the complete cohomology of coefficients killed by a
+power of that prime** (`surjective_tateCor_sylow`).
+
+### (b) Row 5 restated, and why the free presentation is a reformulation and not a closure
+
+`exact_baseTateNakayamaPTorsionRight` says `ker obs = range TN`.  Combined with §0.90(b):
+
+> **row 5 for `W` ⟺ `range ι_* ⊔ range TN = ⊤` in `Ĥ^{n+2}(G, C_K ⊗ W)`**,
+
+where `ι_*` is induced by `I_K ↠ C_K` and `TN` is the Tate–Nakayama comparison.  Two things were
+settled about this:
+
+1. **An idelic fundamental class is a dead end.**  If one had a class `α_I ∈ Ĥ²(G, I_K)` inducing
+   an isomorphism in the Tate–Nakayama style, `range ι_*` would already be everything, which forces
+   `Ш = 0` for *every* coefficient module — false.  So the extra generators cannot come from
+   repeating the class-formation argument on the ideles.
+2. **The free presentation restates the problem.**  With `π : W₀ ↠ W`, `W₀` free over `ℤ`,
+   `range TN ⊇ range (1 ⊗ π)_*`, so `range (1⊗π)_* ⊔ range ι_* = ⊤` is *sufficient*.  Chasing it
+   through δ-naturality, that condition is equivalent to the surjectivity
+   `Ш^{n+3}(G, K^× ⊗ W₀) ↠ Ш^{n+3}(G, K^× ⊗ W)`, and the cokernel is controlled by
+   `0 → Tor₁(C_K, W) → C_K ⊗ R → C_K ⊗ W₀ → C_K ⊗ W → 0`, which lands back on
+   `Ĥ^*(G, C_K[p] ⊗ W)` — the group §0.90(c) already names.  So the presentation buys a cleaner
+   statement, not a proof.
+
+### (c) The structural gap: `tateRes` and `tateCor` are not known to commute with `tateδ`
+
+`tateRes` and `tateCor` (`CFT/TateCohomology/Restrict.lean`) are defined by **recursion on the
+degree** through `resShiftEquiv`/`resCoshiftEquiv`, with `res0`/`resm1` (resp. `cor0`/`corm1`) as
+base cases.  `tateModule` and `tateδ` (`Graded.lean:64`, `Graded.lean:120`) are likewise glued from
+four different Mathlib constructions (`H0`, `groupCohomology`, `Hm1`, `groupHomology`; and
+`H0toH1`, `groupCohomology.δ`, `deltaMid`, `H1toHm1`, `groupHomology.δ`).
+
+The repository has **no** lemma saying that `tateRes` (or `tateCor`) commutes with `tateδ` of a
+general short exact sequence.  What exists is `tateShiftEquiv_naturality`
+(`ShiftNatural.lean:133`), which is naturality in the *representation map*, and
+`tateδ_naturality_apply` (`DeltaNatural.lean:195`), naturality of `tateδ` in a map of short exact
+sequences.  Neither gives the required square, and proving it needs
+
+* a 3×3 lemma — the connecting map of the rows and the connecting map of the shifting columns
+  commute up to sign — for which the repository has no bicomplex, and
+* explicit cochain base cases in degrees `0` and `-1`, where the gluing happens.
+
+This one missing square is what blocks, simultaneously:
+
+1. the **local–global comparison** of §0.90(c) item 1 (the global fundamental class restricting to
+   the local ones is a statement in degree two, but comparing `obs` with the per-place error maps
+   needs res–δ in *every* degree);
+2. the **Sylow reduction** of the criterion in (b): the reduction needs
+   `cor ∘ TN^P = TN_G ∘ cor`, i.e. corestriction compatible with the two connecting maps hidden in
+   `tateNakayamaTwoMap`.  `SylowSurjective.lean` supplies the *other* half (`cor` from a Sylow
+   subgroup is onto), so this is the only obstacle;
+3. Poitou–Tate in any form that mixes restriction with dimension shifting.
+
+### (d) A near-miss: `Ш²(k, μ_p) = 0` over an arbitrary base
+
+Row 3 (`eq_one_of_mem_sha2`, `CFT/Units/HasseTwoDecomposition.lean:533`) needs a primitive `n`-th
+root **in the base field** and a trivial action.  `eq_one_of_mem_sha2_of_isPrimitiveRoot_intermediate`
+(`CFT/Units/DecompositionRestrict.lean:172`) already removes that over an intermediate field `K`
+containing the roots of unity, together with `decompositionSubgroups_le_galRestrictScalarsHom` and
+`comapH2_mem_sha2_decompositionSubgroups`.  The **only** missing step for an arbitrary base is:
+
+> `resH2 : SmoothH2 G_k μ_p → SmoothH2 G_K μ_p` is injective on `p`-torsion when `[K:k]` is prime
+> to `p`,
+
+i.e. **corestriction/transfer in the smooth (profinite) layer**.  Three things were checked about
+this, and all three are worth recording because each looks like it should work and does not:
+
+* `CFT/GroupCohomology/InfResTwoInjective.lean` is about **inflation**, not restriction.
+* `CFT/GroupCohomology/Corestriction.lean` *does* build `cor`, `res` and `res_comp_cor` in every
+  degree for a discrete group, and `eq_zero_of_res_eq_zero_of_prime_pow` is exactly the statement
+  wanted — **but its `res` is the Shapiro composite** `H^n(G,A) → H^n(G, Coind_S^G Res A) ≅
+  H^n(S, Res A)`, not the honest cochain restriction `groupCohomology.map S.subtype (𝟙 _)`.
+  `map_subtype_id_eq` reduces the identification of the two to
+  `groupCohomology.coindIso.hom = groupCohomology.map S.subtype (counit)`, which Mathlib v4.28 does
+  **not** state.  Until that is proved, `eq_zero_of_res_eq_zero_of_prime_pow` cannot be applied to
+  a hypothesis about genuine restriction.
+* `mem_range_inflTwo_of_resTwo_eq_zero` (`CFT/GroupCohomology/InfResTwo.lean:187`) *is* exactness of
+  inflation–restriction in degree two — but it assumes `H¹(S, A) = 0`, and for `S = G_K`,
+  `A = μ_p` that group is `K^×/(K^×)^p ≠ 0`.  The sequence one would need is the seven-term
+  Hochschild–Serre, where `ker(res)` is squeezed between `H²(Q, A^S)` and `H¹(Q, H¹(S,A))`, both of
+  which vanish here because `#Q` is prime to `p`.
+* `CFT/Profinite/InfRes.lean`'s `exists_comapH2_eq` is only the "cocycle literally constant on the
+  cosets of the kernel" version, not exactness.
+
+Also recorded, because it removes one apparent route: the Kummer bridge
+`CFT/Profinite/KummerTwo.lean` gives `coeffH2_injective` — `H²(G_k, μ_n) ↪ H²(G_k, Ω^×)` with **no**
+hypothesis that `ζ_n ∈ k` — and `kummerH2Equiv` identifies the image with the `n`-torsion of
+`H²(G_k, Ω^×)`.  This does **not** reduce the problem to Albert–Brauer–Hasse–Noether for `Ω^×`,
+because `Br(k) → Br(K)` is not injective either; the transfer is needed on both sides.
+
+**However**, this whole item is probably *not* on the critical path: the Shafarevich induction can
+arrange `μ_p ⊆ k` (see §0.90(c)), and with that hypothesis row 3 is already the theorem needed.
+
+### (e) Lean notes from these commits
+
+* `include hW` in a section does **not** add `hW` to the signature of a `def` whose body does not
+  mention it — `baseTateNakayamaPTorsionMap k K W n` takes four explicit arguments while
+  `baseTateNakayamaPTorsionLeft k K W hW n` takes five.
+* `rw` can fail on a goal whose function coercion goes through a `ModuleCat.of`-carrier instance
+  that is defeq but not syntactically equal to the plain one (`Module k ↥(freeRep W).V` versus
+  `Module k (↥W.V →₀ k)`).  Insert an explicit `show <plain form>` before the `rw`.
+* `Module.Flat.of_free` is an instance in Mathlib, so `inferInstanceAs (Module.Flat k (α →₀ k))`
+  works directly.
+* `Rep.ofMulDistribMulAction` + `cocyclesOfIsMulCocycle₂` + `H2π_eq_zero_iff` +
+  `isMulCoboundary₂_of_mem_coboundaries₂` is the additive ↔ multiplicative `H²` dictionary; the
+  pattern to copy is `isMulCoboundary₂_pow_natCard` (`Corestriction.lean:280`).
+* A full root build is now **9643 jobs**.
+
+---
+
+## 0.92 Status (2026-09-04, night) — §0.91(c) is **closed**: res and cor commute with `tateδ`, and the Sylow reduction of the row-5 criterion is a theorem
+
+### (a) The θ-trick, and why no bicomplex was needed
+
+§0.91(c) said the missing square needed "a 3×3 lemma … for which the repository has no bicomplex,
+and explicit cochain base cases in degrees `0` and `-1`".  Both halves of that estimate were wrong.
+The square follows from **dimension shifting alone**, provided the extension is split as a sequence
+of modules — and the two defining sequences are.
+
+The trick, in the direction of the shift.  Let `X : 0 → X₁ → X₂ → X₃ → 0` be a short exact sequence
+of representations and suppose `r : X₂ → X₁` is a module retraction of `X.f` and `s : X₃ → X₂` a
+module section of `X.g`.  Read an element of `X₂` along all of its translates and apply `r`:
+
+```
+retractMid r : X₂ → Ind(X₁),   (retractMid r x)(g) = r (ρ_{X₂}(g) x).
+```
+
+This *is* equivariant (the retraction is applied after the translation, so no equivariance of `r`
+is used), it restores `coindEmb` on `X₁`, and modulo the translates of `X₁` its value depends only
+on the image in `X₃`.  So it assembles into a map of short exact sequences `X ⟶ shiftSeq X₁` whose
+first component is the **identity**, and `tateδ_eq_tateShiftEquiv` (already in `DeltaShift.lean`)
+turns the connecting map into an induced map followed by `tateShiftEquiv`.  Dually, from a section
+`s` alone, the trace `tr(f) = augMap (s ∘ f)` gives `coshiftSeq X₃ ⟶ X` with third component the
+identity, and `tateδ_eq_tateCoshiftEquiv` turns the connecting map into `tateCoshiftEquiv` followed
+by an induced map.
+
+Restriction is a functor, so both comparisons survive passage to a subgroup with their identity
+components intact; the two `resSeq` versions of those identities are `tateδ_res_eq_resShiftEquiv`
+and `tateδ_res_eq_resCoshiftEquiv` (`RestrictSplit.lean`).
+
+### (b) The degree analysis
+
+`tateRes`/`tateCor` are defined by recursion: for `n ≥ 0` through `resShiftEquiv`, for `n ≤ −1`
+through `resCoshiftEquiv`.  Gotcha **1094**: `tateResNat H (m+1) A` is *literally*
+`resShiftEquiv ∘ tateResNat H m (shiftObj A) ∘ (tateShiftEquiv A m).symm`, so the res/shift square
+commutes **definitionally** for `n ≥ 0`, and dually the res/coshift square for `n ≤ −2`.  Hence:
+
+| degree | route |
+| --- | --- |
+| `n ≥ 0` | the shift θ-trick + `tateRes_tateShiftEquiv` (definitional) |
+| `n = −1` | `RestrictDelta.lean`, the honest cochain computation, already present |
+| `n ≤ −2` | the coshift θ-trick + `tateRes_tateCoshiftEquiv` (definitional) |
+
+which is `tateRes_tateδ` / `tateCor_tateδ` in **every integer degree** for any module-split
+extension.  Feeding the two defining sequences back in (they are module-split, `ShiftSplit.lean`)
+removes the degree restriction from the identifications themselves:
+`tateRes_tateShiftEquiv_int`, `tateCor_tateShiftEquiv_int`, `tateRes_tateCoshiftEquiv_int`,
+`tateCor_tateCoshiftEquiv_int`.
+
+Commit `a78bb26`, three new modules: `ShiftSplit.lean`, `DeltaRetract.lean`, `RestrictSplit.lean`.
+
+### (c) Tate–Nakayama against restriction, and the Sylow reduction
+
+`cocycleTensorSeq A b M` is a product as a sequence of modules — `X₁` is the first coordinate
+(`LinearMap.fst`), `X₃` the second (`cocycleTensorInr`) — and, crucially,
+
+```lean
+resSeq H (cocycleTensorSeq S b M)
+  = cocycleTensorSeq (resObj H S) (resCocycles₁ H S b) (resObj H M) := rfl
+```
+
+so `tateRes_tateδ` applies verbatim.  `tateNakayamaMap` is that connecting map followed by
+`shiftTensorIso` and `tateShiftEquiv`, both compatible with res/cor, so (commit `fe915dd`,
+`NakayamaRestrict.lean`)
+
+> **`tateRes ∘ TN_G = TN_H ∘ tateRes` and `tateCor ∘ TN_H = TN_G ∘ tateCor`, in every integer
+> degree**, where `TN_H := resTateNakayamaMap H A b M n` is built from the restricted cocycle.
+
+Two consequences are packaged: `surjective_tateNakayamaMap_of_cor` and
+`sup_range_eq_top_of_cor` (what `TN` and a second map reach together is everything as soon as it is
+everything on a subgroup from which corestriction is onto).
+
+Applied to the idele class group (commit `f208286`, `BaseTateCoeff.lean`), with `W` killed by `p`
+so that `C_K ⊗ W` is too and `surjective_tateCor_sylow_of_prime` applies:
+
+```lean
+theorem range_shaTorusPTorsionMap_of_sylow (P : Sylow p Gal(K/k)) (n : ℤ)
+    (h : LinearMap.range (resTateNakayamaTwoMap (P : Subgroup Gal(K/k)) (ideleClassRep k K)
+          (baseFundamentalClass k K) W n)
+        ⊔ LinearMap.range (tateMap (resHom (P : Subgroup Gal(K/k))
+            (tensorHomLeft W (ideleToIdeleClass k K))) (n + 1 + 1)).hom = ⊤) :
+    LinearMap.range (shaTorusPTorsionMap k K W hW n)
+      = LinearMap.ker (tateMap (tensorHomLeft W (globalUnitsToIdele k K)) (n + 1 + 1 + 1)).hom
+```
+
+**Item 2 of §0.91(c) is therefore closed**: row 5 for `Gal(K|k)` reduces to row 5 read on a Sylow
+`p`-subgroup, i.e. to an extension of `p`-power degree.
+
+### (d) What item 1 of §0.91(c) actually needs, now that the square is available
+
+Not the square.  `baseFundamentalClass k K` is produced by `.choose` from
+`exists_zsmul_eq_zero_imp_dvd_H2_ideleClassRep_base` and is characterised **only** by its
+annihilator; nothing ties it to the invariant maps.  `isTateClassTwo_baseFundamentalClass` holds for
+every subgroup, which is all Tate's theorem needs, but "the global class restricts to the local
+classes" is a statement about invariants and cannot even be formulated against the present
+definition.  So item 1 of §0.91(c) is really two steps:
+
+1. give the fundamental class an **invariant-theoretic characterisation** (`inv_v ∘ res_{D_w}`
+   computes `1/[K_w:k_v]`), which means rebuilding it out of `localInvariantHom` and the
+   reciprocity law rather than choosing it; then
+2. the comparison square, which the new res/δ machinery now supplies for free.
+
+### (e) Lean notes
+
+* **1109.** `rw [resHom_id] at h` fails on `tateMap (resHom H (𝟙 X.X₃)) n` when the implicit
+  arguments are `A := (coshiftSeq X.X₃).X₃`, `B := X.X₃`: defeq but not syntactically equal, and
+  `resHom_id`'s pattern needs `A = B` syntactically.  Prove a side lemma and combine with
+  `congrArg`/`Eq.trans`, letting `exact` absorb the difference.
+* **1110.** `exact calc <term>` puts the `calc` keyword at a large column and silently parses the
+  later `_ = … := …` steps *outside* the block — the errors that result ("Missing cases",
+  "left-hand side is true : Bool") point nowhere near the cause.  Use the bare `calc` **tactic** on
+  its own line.
+* **1113.** The subgroup machinery is already phrased with `resObj H (shiftObj_G A)`, never
+  `shiftObj_H (resObj H A)`, so the feared `indRestrict`/`indExtend` bridge is not needed.
+* **1114.** `resSeq_cocycleSeq`, `resObj_cocycleObj`, `resObj_tensorObj`, `resSeq_cocycleTensorSeq`
+  are all `rfl`.
+* **1115.** `ShortComplex.ShortExact` is `Prop`-valued, so two proofs of the short-exactness of the
+  same complex give defeq `tateδ`s.
+* **1102 (performance).** Pass the sequence explicitly as a named argument
+  (`traceSubHom (X := cocycleTensorSeq A b M) …`) to avoid whnf blowups.
+* A full root build is now **9651 jobs**.
+
+---
+
+## 0.93 Status (2026-09-04, late) — the comparison square is **landed**, and it proves the *opposite* of what §0.90(c) hoped
+
+### (a) What landed
+
+Two commits.
+
+**`TateCohomology/RestrictShiftBridge.lean` + `TateCohomology/NakayamaSubgroup.lean`** (commit
+`5c4d380`, 9669 jobs).  The comparison of Tate and Nakayama *defined on a subgroup by restricting
+the ingredients built on the whole group* is the same map as the comparison the subgroup builds for
+itself out of the restricted representation and the restricted class:
+
+```lean
+theorem resTateNakayamaTwoMap_eq (n : ℤ) :
+    resTateNakayamaTwoMap H A α M n
+      = tateNakayamaTwoMap (resObj H A) (tateRes H A 2 α) (resObj H M) n
+```
+
+The proof is the cohomologous-cocycle argument: the cocycle of the shift read on `H`, pushed along
+`resShiftHom H A`, and the cocycle `H` chooses for `tateRes H A 2 α` have the same class in degree
+one (`exists_resShiftHom_tateTwoCocycle`), so `tateδ_cocycleTensorSeq_naturality` carries one
+connecting map to the other; the remaining compatibility (`resShiftHom_shiftTensorIso`) is on the
+nose.
+
+The consequence is the usable form.  If a representation `A'` **of the subgroup** maps to
+`resObj H A` and carries a class `β : tateModule A' 2` to `tateRes H A 2 α`, then
+
+```lean
+theorem range_resTateNakayamaTwoMap_le (φ : A' ⟶ resObj H A) (β : tateModule A' 2)
+    (hβ : tateMap φ 2 β = tateRes H A 2 α) (n : ℤ) :
+    LinearMap.range (resTateNakayamaTwoMap H A α M n)
+      ≤ LinearMap.range (tateMap (tensorHomLeft (resObj H M) φ) (n + 1 + 1)).hom
+```
+
+**`Units/DecompositionNakayama.lean`** (commit `7692bc8`, 9670 jobs) is the arithmetic instance:
+`H := D_w = stabilizer Gal(K/k) w`, `A := ideleClassRep k K`, `α := baseFundamentalClass k K`,
+`A' := decompositionUnitsRep k w`, `φ := decompositionPlaceIdeleClass k w`,
+`β := localizedFundamentalClass k w`.  The hypothesis `hβ` is *exactly*
+`map_localizedFundamentalClass k w` from `Units/DecompositionLocalization.lean` — no bridging lemma
+was needed, because `tateMap φ 2` and `((groupCohomology.functor ℤ H 2).map φ).hom` are
+definitionally equal (gotcha 1272).  Composing with `decompositionPlaceIdele k w` gives
+
+```lean
+theorem range_resTateNakayamaTwoMap_le_idele (M : Rep ℤ Gal(K/k)) (n : ℤ) :
+    LinearMap.range (resTateNakayamaTwoMap (stabilizer Gal(K/k) w) (ideleClassRep k K)
+        (baseFundamentalClass k K) M n)
+      ≤ LinearMap.range (tateMap (resHom (stabilizer Gal(K/k) w)
+          (tensorHomLeft M (ideleToIdeleClass k K))) (n + 1 + 1)).hom
+```
+
+So §0.92(d) is closed as originally scoped: step 1 by the localisation route
+(`localizedFundamentalClass`, which needs no invariant-theoretic rebuild of the global class), step
+2 by the res/δ square.
+
+### (b) The negative result this proves — §0.90(c) was too optimistic
+
+§0.90(c) said "the remaining content of row 5 is *one* comparison square, not a duality theory".
+That is now **refuted by the square itself**.
+
+The Sylow criterion `range_shaTorusPTorsionMap_of_sylow` (`Units/BaseTateCoeff.lean`) asks, for a
+subgroup `S ≤ Gal(K|k)`,
+
+```
+range (TN restricted to S)  ⊔  range (ι_* restricted to S)  =  ⊤
+```
+
+in `Ĥ^{n+2}(S, C_K ⊗ W)`.  The new brick says that on `S = D_w` the **first** summand is contained
+in the **second**:
+
+```
+range TN|_{D_w}  ≤  range ι_*|_{D_w}.
+```
+
+Hence on a decomposition group the sup *collapses* to `range ι_*|_{D_w}`, and demanding that it be
+`⊤` is demanding `Ш = 0`.  A decomposition group therefore cannot discharge the criterion.  The
+criterion genuinely wants a **Sylow** subgroup, and a Sylow `p`-subgroup of `Gal(K|k)` is not a
+decomposition group.  There is no cheap substitution.
+
+This is worth stating sharply because it kills the shortcut: the square is a *local* statement, and
+row 5 is a *global* one.  The square says everything the obstruction sees at one place comes from
+that place; it says nothing about how the places fit together.  What glues them is reciprocity, and
+reciprocity in the form needed here **is** Poitou–Tate.
+
+### (c) Where row 5 actually stands
+
+Row 5 is `Ш²(k,A) ≅ Ш¹(k,A′)^∨`.  In the repo's idelic form it is (§0.90, gotcha 1076)
+
+> `range ι_* ⊔ range TN = ⊤` in `Ĥ^{n+2}(G, C_K ⊗ W)`, `W` the `p`-torsion coefficient module.
+
+Since `TensorTorsionError.lean` gives `ker obs = range TN` for the obstruction map
+`obs = tateNakayamaPTorsionErrorRight`, this is equivalent to
+
+> `obs (range ι_*) = range obs`,
+
+which is a *restatement* of row 5, not a proof of it.  Genuinely new mathematical input is required.
+
+Schmidt–Wingberg's "Claim" (SW Prop. 16 / Thm 14) is precisely: **a surjection
+`Ĥ^{-2}(G, E(-1)) ↠ Ш²(k,E)`, natural in `E`.**  Four inputs go into it, of which the repo already
+has three:
+
+1. the Hasse principle `Ш¹(k,E′) ↪ H¹(G,E′)` — `Units/SplitNorm.lean`;
+2. dualising — `Cartier`/`Dual` layer;
+3. `H¹(G,M)^∨ ≅ Ĥ^{-2}(G,M^∨)` — `h1DualEquiv`/`h1TwistEquiv`;
+4. **the surjection `Ш¹(k,E′)^∨ ↠ Ш²(k,E)`** — the hard direction of Poitou–Tate.  *Missing.*
+
+### (d) Two candidate routes, and the choice
+
+**Route 1 — Poitou–Tate proper, via the `p`-torsion half of `IdeleTorusSha`.**  The torsion-free
+half is done (`IdeleTorusSha.lean`, `IdeleTorusShaLocal.lean`).  The `p`-torsion obstruction chain
+is (gotcha 1280):
+
+* `Tor₁(C_K, W) = C_K[p] ⊗ W`;
+* `C_K[p] ≅ I_K[p] / μ_p(K)` (`ideleClassTorsionShortComplex_shortExact`);
+* `Ĥ^*(G, I_K[p] ⊗ W) ≅ ∏_v Ĥ^*(D_w, μ_p(K_w) ⊗ W)` by Shapiro — and Shapiro works for *any*
+  subgroup, so on a Sylow `P` the product runs over `P`-orbits of places with stabilisers
+  `P ∩ D_w`.
+
+This is where the new decomposition square *does* pay: it identifies the local factor of the
+obstruction with the localised fundamental class at `w`, which is what the sum-of-invariants formula
+is about.
+
+**Route 2 — §0.87(b) repair candidate A.**  Prove `Ш²(k,E) ⊆ inf H²(k_S/k, E)` for a fixed finite
+`S ⊇ S_∞ ∪ S_p ∪ Ram(K/k)`.  That makes the transgression coefficient module
+`T = Hom_cont(Gal(K_S/K), 𝔽_p)` finite-dimensional *a priori*, which removes Poitou–Tate from SW's
+step 2 entirely and dissolves the `T`-before-`r` circularity of §0.87(a).  The cost is a different
+classical theorem (finiteness of the `S`-class group and `S`-units, plus the standard
+`Ш` ⊆ `S`-ramified argument).
+
+**Choice: Route 1.**  It is the route the repo is already instrumented for — every brick from
+`DecompositionIdele` through `DecompositionLocalization` to `DecompositionNakayama` was built for
+it, and it is the route the user's directive ("work on Poitou–Tate … make sure it feeds
+appropriately into 5/6") names.  Route 2 is kept as the fallback if the sum-of-invariants step
+stalls.
+
+### (e) Next brick
+
+Both routes need the **subgroup form of the obstruction ladder**: that the obstruction map on a
+subgroup is the restriction of the global one, i.e. that
+
+```
+Ĥ^n(H,W) --TN_H--> Ĥ^{n+2}(H, C ⊗ W) --obs_H--> Ĥ^{n+4}(H, C[p] ⊗ W)
+```
+
+is the `tateRes` of the global ladder, with `ker obs_H = range TN_H`.  `TensorTorsionError.lean` is
+already stated for an arbitrary finite group and an arbitrary Tate class, so the `H`-instance exists
+by substitution (`A := resObj H C`, `α := tateRes H C 2 α`); what is missing is the *compatibility*
+with `tateRes`, i.e. the commuting square between `obs_G` and `obs_H`.
+
+### (f) Lean notes
+
+* **1272 (verified).** `tateMap φ 2 β` and `((groupCohomology.functor ℤ H 2).map φ).hom β` are
+  **definitionally equal**: Mathlib's `groupCohomology.functor n`
+  (`RepresentationTheory/Homological/GroupCohomology/Functoriality.lean:483`) has
+  `map φ := map (MonoidHom.id _) φ n`, matching `tateMap`'s `.ofNat (m+1)` branch.  So
+  `map_localizedFundamentalClass k w` is accepted verbatim as a proof of the `tateMap`-phrased
+  statement.
+* **1273.** `tensorHomLeft_comp` (`TensorFunctor.lean:73`) is oriented
+  `tensorHomLeft M Φ ≫ tensorHomLeft M Ψ = tensorHomLeft M (Φ ≫ Ψ)`, so pushing a composite
+  *inside* needs `rw [← tensorHomLeft_comp]`.
+* **1274.** `resHom H (tensorHomLeft M ψ) = tensorHomLeft (resObj H M) (resHom H ψ)` is `rfl`; it is
+  now the named lemma `Tate.resHom_tensorHomLeft` in `NakayamaSubgroup.lean`.
+* **1275.** To conclude `range (tateMap (f ≫ g) n).hom ≤ range (tateMap g n).hom`, use
+  `rw [tateMap_comp, ModuleCat.hom_comp]; exact LinearMap.range_comp_le_range _ _`.  The direct
+  `rintro _ ⟨x, rfl⟩; exact ⟨_, (tateMap_comp_apply _ _ _ x).symm⟩` fails with unsolved metavariables
+  and a `ConcreteCategory.hom` vs `ModuleCat.Hom.hom` mismatch.
+* **1276.** `lake build InverseGalois.CFT.Units.DecompositionNakayama` = **8652 jobs** (~47 s); the
+  full root build with it is **9670 jobs**, 0 warnings, 0 errors.
+
+---
+
+## 0.94 Status (2026-09-04, night) — §0.93(e) is **closed**: the obstruction ladder over a subgroup, and row 5 as one equation about one map
+
+### (a) What landed
+
+The "next brick" of §0.93(e) is done, and it turned out not to need a commuting square at all.  The
+subgroup instance of the four-term sequence is obtained by *substitution*, and the only thing that
+had to be supplied was the hypothesis of `TensorTorsionError.lean` for the substituted data:
+
+```lean
+hT' : ∀ q : ℕ, q.Prime → ∀ Q : Sylow q ↥H,
+  IsTateClassTwo (Q : Subgroup ↥H) (resObj H A) (tateRes H A 2 α)
+```
+
+The difficulty is that `Q : Subgroup ↥H` is a group of *pairs* — an element of `H` together with a
+proof — whereas everything the class formation supplies is indexed by `Subgroup G`.  The repository
+had no transitivity-of-restriction lemma.  Three of `IsTateClassTwo`'s fields were dispatched as
+follows.
+
+* Field 3 (`dvd_of_zsmul_eq_zero`) needs **no transport at all**: `dvd_of_zsmul_tateRes_eq_zero`
+  applied twice.  Order of a class is not a cohomological statement.
+* Field 1 (`isZero_one`) is transported along the isomorphism
+  `Q ≃* Q.map H.subtype` (`Subgroup.equivMapOfInjective`, gotcha 1294) by a new degree-one analogue
+  of `tateTwoCongr`.
+* Field 2 (`exists_zsmul`) is *not* transported; it is re-derived from field 3 by
+  `isTateClassTwo_of_card_le`, given finiteness and the count in degree two, both transported by
+  `tateTwoCongr`.
+
+The transport datum is free: `resObj Q (resObj H A)` and `(Action.res _ e).obj (resObj (Q.map
+H.subtype) A)` are **the same representation on the nose**, so the comparison morphism is
+`hom := ModuleCat.ofHom LinearMap.id`, `comm := fun _ => rfl`, and bijectivity is
+`Function.bijective_id` (gotcha 1295).
+
+Four files:
+
+* `TateCohomology/GroupCongr.lean` (edited) — `tateOneCongr`, the degree-one analogue of
+  `tateTwoCongr`.
+* `TateCohomology/RestrictTrans.lean` (new) — `subgroupTransEquiv`, `resTransHom`,
+  `resTransTateOne`, `resTransTateTwo`, and the payoff `isTateClassTwo_resObj_of_card`.
+* `TateCohomology/NakayamaSubgroupError.lean` (new) — `isTateClassTwo_sylow_resObj`, the two maps
+  `resTateNakayamaPTorsionErrorLeft`/`Right`, and the exactness statements
+  `range_resTateNakayamaPTorsionErrorLeft`, `ker_resTateNakayamaPTorsionErrorRight`,
+  `exact_resTateNakayamaPTorsionErrorLeft`, `exact_resTateNakayamaPTorsionErrorRight`.  Note the
+  middle map is `resTateNakayamaTwoMap` — the *global* comparison read on `H` — via
+  `resTateNakayamaTwoMap_eq`, so the ladder really is the restriction of the global one.
+* `Units/BaseTateSylow.lean` (new) — the number-field instance:
+  `resBaseTateNakayamaPTorsionRight`, `ker_resBaseTateNakayamaPTorsionRight`, and the two forms of
+  the criterion, `range_shaTorusPTorsionMap_of_sylow_sup` and
+  `range_shaTorusPTorsionMap_of_sylow_map`.
+
+Commit `2ea3c58`; full root build **9675 jobs**, 0 warnings, 0 errors, 0 `.lean` sorries.
+
+### (b) Row 5, as one equation
+
+Combining with §0.92's Sylow reduction, the entire remaining content of row 5 is now:
+
+> For `P` a Sylow `p`-subgroup of `G = Gal(K/k)`, with
+> `obs_P := resBaseTateNakayamaPTorsionRight k K W hW P n`
+> the obstruction map `Ĥ^{n+2}(P, C_K ⊗ W) → Ĥ^{n+4}(P, C_K[p] ⊗ W)`, and
+> `ι_* : Ĥ^{n+2}(P, I_K ⊗ W) → Ĥ^{n+2}(P, C_K ⊗ W)`,
+>
+> ```
+> obs_P (range ι_*) = range obs_P.
+> ```
+
+That is `range_shaTorusPTorsionMap_of_sylow_map`.  Everything else — the class formation, the
+fundamental class, the counts on every subgroup, the four-term sequence, the Sylow reduction, the
+subgroup ladder — is a theorem.  This is a statement about a **single linear map over a `p`-group**,
+placed over a field `k' = K^P` over which `K/k'` has `p`-power degree.
+
+### (c) Why this is the right shape for Route 1
+
+Over a `p`-group the local input simplifies twice over.
+
+* `C_K[p] ≅ I_K[p] / μ_p(K)` and `I_K[p] = ∏_w μ_p(K_w)`, so
+  `Ĥ^*(P, I_K[p] ⊗ W) ≅ ∏_{P\text{-orbits } o} Ĥ^*(P ∩ D_w, μ_p(K_w) ⊗ W)` by Shapiro
+  (`Tate.tateOrbitsEquiv`, gotcha 1291, plus the `AdicSOrbitTate` layer).
+* `range obs_P` is therefore a subgroup of a *product of local groups*, and the assertion
+  `obs_P (range ι_*) = range obs_P` says the local components that actually occur already occur on
+  ideles.  Since `ι_*` is itself the product map, the equation is a **sum-of-invariants** statement:
+  the obstruction of a class of idele classes is a vector of local invariants summing to zero, and
+  every such vector is attained.
+
+So the target object of the next brick is the identification of `Ĥ^{n+4}(P, C_K[p] ⊗ W)` with (a
+quotient of) `∏_o Ĥ^*(P ∩ D_w, μ_p(K_w) ⊗ W)`, together with the description of `obs_P ∘ ι_*` as
+the product of the local obstructions.
+
+### (d) Lean notes
+
+* **1294.** `Subgroup.equivMapOfInjective (H : Subgroup G) (f : G →* N) (hf : Injective f) :
+  H ≃* H.map f` is at `Mathlib/Algebra/Group/Subgroup/Map.lean:478`; `Subgroup.subtype_injective`
+  exists (`Defs.lean:236`).
+* **1295.** For `Q : Subgroup ↥H` and `S := Q.map H.subtype`, the comparison
+  `(Action.res _ (e : ↥Q →* ↥S)).obj (resObj S A) ⟶ resObj Q (resObj H A)` is
+  `hom := ModuleCat.ofHom LinearMap.id`, **`comm := fun _ => rfl`**.  The two representations agree
+  on the nose.
+* **1296.** `Units/IdeleClassTate.lean` declares `variable {k K : Type}` — **implicit**; its counting
+  lemmas take only `(S : Subgroup Gal(K/k))`.  By contrast `zsmul_baseFundamentalClass_eq_zero_imp_dvd`
+  (`Units/BaseTate.lean`) has `k K` explicit.
+* **1297.** `resObj S (tensorObj A W)` and `tensorObj (resObj S A) (resObj S W)` are defeq, so
+  `ker`/`range` statements mixing the two unify with no bridging.
+* **1298.** `lake build InverseGalois.CFT.TateCohomology.NakayamaSubgroupError` = **8084 jobs**; full
+  root build with all four files = **9675 jobs**.
+
+---
+
 ## 3. What is reachable *without* class field theory
 
 This is the section that matters for this repository.
@@ -8219,6 +10019,4272 @@ Milestone 2 is regular only over the multivariable base k(t_h : h ∈ H), not ov
 milestone plan that tries to route solvable groups through `IsRegularInverseGalois` is attempting
 an open problem. (Dentzer's paper studies exactly which semiabelian groups *do* have geometric
 realizations — that is the correct reference if a regular statement is ever wanted.)
+
+---
+
+## 0.95 Status (2026-09-04, later) — Shapiro over a subgroup: the ideles' `p`-torsion decomposed over an arbitrary subgroup of the Galois group
+
+### (a) The obstacle §0.94 left, and why base change was the wrong idea
+
+§0.94 reduced row 5 to a single statement about a single map over a Sylow subgroup `P ≤ G`:
+
+```
+obs_P : Ĥ⁰(P, C_K ⊗ W)  →  Ĥ²(P, C_K[p] ⊗ W)      (i.e. `…_of_sylow_map … (-2)` after shifting)
+range obs_P ∘ ι_*  =  range obs_P                  (the content of row 5)
+```
+
+and the plan for computing the target is Shapiro: `Ĥ*(G, I_K[p] ⊗ W) ≅ ∏_v Ĥ*(D_w, μ_p(K_w) ⊗ W)`,
+the product over the places `v` of the *base* field.  A subgroup `P` does **not** fix the places of
+the base field, so the naive reading fails.
+
+The tempting fix — base change `k ⇝ K^P`, so that `P` becomes the full Galois group of `K/K^P` and
+the existing whole-group statement applies verbatim — is a **trap**, and was rejected.  It forces
+every object in sight (`W`, `α`, the class formation data, the fundamental class) to be re-derived
+over the new base field, and the compatibility of `obs` with that base change is exactly as hard as
+the thing being proved.  Route taken instead, per §0.93(d) ("Shapiro works for *any* subgroup"):
+**restrict the family action, not the base field.**
+
+### (b) Brick 1 — `Tate/FamilyResGroup.lean`
+
+Every orbit-decomposition theorem in `Tate/Family*.lean` is stated for a bare
+`{G X : Type} [Group G] [MulAction G X] [Finite G]` with a `FamilyAction M G`.  A subgroup `S ≤ G`
+acts on the *same* family, with the *same* transports:
+
+```lean
+def FamilyAction.resGroup (F : FamilyAction M G) (S : Subgroup G) : FamilyAction M ↥S where
+  map g x := F.map (g : G) x
+  map_one x a := F.map_one x a
+  map_mul g h x a := F.map_mul (g : G) (h : G) x a
+```
+
+There is nothing to prove: `Subgroup.instMulAction`'s `(g : ↥S) • x` is *definitionally*
+`(g : G) • x` (`Submonoid.smul_def` is `rfl`), so all six compatibilities are `rfl`:
+
+| statement | proof |
+| --- | --- |
+| `(F.resGroup S).familyAut = F.familyAut.comp S.subtype` | `rfl` |
+| `(F.torsion m).resGroup S = (F.resGroup S).torsion m` | `rfl` |
+| `orbitSectionsRep (F.resGroup S) = resObj S (orbitSectionsRep F)` | `rfl` |
+| `torsionRep (F.resGroup S).familyAut m = resObj S (torsionRep F.familyAut m)` | `rfl` |
+| `repOfAddAut (φ.comp f) = (Action.res _ f).obj (repOfAddAut φ)` | `rfl` |
+| `torsionRep (φ.comp f) m = (Action.res _ f).obj (torsionRep φ m)` | `rfl` |
+
+so `tateTensorTorsionResGroupEquiv` — the orbit decomposition over `S` — is literally
+`tateTensorTorsionEquiv (F.resGroup S) (resObj S W) e x₀ hH hH' n`.
+
+Two small pieces of glue had to be added alongside.
+
+1. **`stabilizerSubgroupHom S x : ↥(stabilizer ↥S x) →* ↥(stabilizer G x)`** — `⟨(g : ↥S), g.2⟩`,
+   all fields `rfl`.  This is needed because *no*
+   `MulSemiringAction ↥(stabilizer ↥S v) (v.adicCompletion K)` instance exists in the repository,
+   so the local factor over `S` cannot be phrased with `smulUnitsAut` directly; it is phrased as
+   `(smulUnitsAut (G := D_v)).comp (stabilizerSubgroupHom S v)`.
+2. **`resObj_pairRep S A B : resObj S (pairRep A B) = pairRep (resObj S A) (resObj S B)`.**  This
+   is a genuine (if two-line) obstruction, not a `rfl`.  `resObj S (piRep A) = piRep (fun i => resObj
+   S (A i))` **is** `rfl`, because the `.V` field of `(Action.res _ f).obj X` iota-reduces to `X.V`
+   even with `i` free.  But `pairFamily A B = fun b => cond b A B`, and under the binder
+   `cond b (resObj S A) (resObj S B)` is *stuck*.  Proof: `funext b; cases b <;> rfl`, then `rw`.
+
+### (c) Brick 2 — `Units/IdeleTorsionSubgroup.lean`
+
+The number-field instantiation.  The only mathematical content is the identification of the local
+factor: for an orbit `ω` of `S` on the places of `K` and a chosen `v₀ ∈ ω`,
+
+```lean
+theorem stabAut_resGroup_adicUnits_eq :
+    stabAut v₀ _ (orbitFamily ((adicRingFamily (k := k) (K := K)).unitsFamily.resGroup S) ω)
+      = (smulUnitsAut (G := ↥(stabilizer Gal(K/k) (v₀ : HeightOneSpectrum (𝓞 K))))
+          (R := (v₀ : HeightOneSpectrum (𝓞 K)).adicCompletion K)).comp
+        (stabilizerSubgroupHom S (v₀ : HeightOneSpectrum (𝓞 K)))
+```
+
+— the transport by an element of `S` fixing `v₀` *is* the transport by that element of `G`.  Proof:
+`stabAut_orbitFamily` (which applies verbatim to the restricted family, gotcha 1314) followed by
+`transport_adicUnitsFamily`.  Mirror statement at the infinite places.
+
+From that, `adicIdeleTorsionTensorTateResEquiv` / `infiniteIdeleTorsionTensorTateResEquiv` and then
+
+```lean
+def ideleTorsionTensorTateResEquiv (n : ℤ) :
+    tateModule (resObj S (tensorObj (torsionRep (ideleAutHom k K) (p : ℤ)) W)) n ≃+
+      (∀ ω : orbitRel.Quotient ↥S (InfinitePlace K),        tateModule … n) ×
+      (∀ ω : orbitRel.Quotient ↥S (HeightOneSpectrum (𝓞 K)), tateModule … n)
+```
+
+**the complete cohomology of an arbitrary subgroup `S ≤ Gal(K/k)` with coefficients in `I_K[p] ⊗ W`,
+as the product over the `S`-orbits of places of `K` of the complete cohomology of the stabiliser
+there with coefficients in `μ_p(K_w) ⊗ (W|_S)`**, together with the vanishing corollary
+`isZero_tateModule_tensor_ideleTorsionRes`.
+
+The assembly is four isomorphisms glued: `ideleTorsionIso` (torsion of the restricted product is the
+torsion of the full product), `fullIdeleTorsionIso` (the full product splits as a pair), the
+`eqToIso` of `resObj_pairRep`, and `tateTensorPairEquiv`; then the two halves.
+
+Costs: `lake build …Units.IdeleTorsionSubgroup` = **8227 jobs**; full root build = **9677 jobs**,
+0 warnings, 0 errors.
+
+### (d) Gotchas recorded
+
+* **1308.** `TateCohomology/Pair.lean` declares `variable {k G : Type}` — universe-monomorphic.  A
+  caller writing `universe u` + `{k G : Type u}` gets `pairRep … has type Rep.{0} … but is expected
+  to have type Rep.{u} …`.  Use `{k G : Type}`.
+* **1309.** `resObj` commutes with `piRep` definitionally but **not** with `pairRep` (see (b)2).
+* **1310.** `tensorIsoLeft W (f : A ≅ B) : tensorObj A W ≅ tensorObj B W` — coefficient argument
+  **first**, iso second.
+* **1311.** There is no `resIso`; restrict an iso with `(Action.res _ S.subtype).mapIso f`.
+* **1312.** Leaving `tateTensorPairEquiv _ _ …` with underscores over a restricted representation
+  times out `isDefEq` at 200000 heartbeats.  Pass both representation arguments explicitly and set
+  `synthInstance.maxHeartbeats 800000` / `maxHeartbeats 1000000`.
+* **1314.** `stabAut_orbitFamily F x₀ hH' hH'' g a` applies verbatim with
+  `F := (…).unitsFamily.resGroup S`; `transport_adicUnitsFamily` /
+  `transport_infiniteUnitsFamily` then finish with all arguments `_`.
+* **1316.** `Tate/FamilyConst.lean` (home of `smul_orbit_of_mem_stabilizer_val` and
+  `mem_stabilizer_val_of_smul_orbit`) is **not** in the import closure of
+  `Units/IdeleTorsionTensor.lean`; import it explicitly.
+
+### (e) What the next brick is
+
+The place-by-place description is now available over the Sylow subgroup, so the remaining chain for
+row 5 is:
+
+1. the short exact sequence `0 → μ_p(K) ⊗ W → I_K[p] ⊗ W → C_K[p] ⊗ W → 0` read over `S`.  This
+   should be nearly free: `resSeq` preserves short exactness and `resSeq_cocycleSeq` &c. are all
+   `rfl` (gotcha 1114).
+2. the identification of `Ĥ^{n+4}(P, C_K[p] ⊗ W)` with a quotient of `∏_ω Ĥ^*(P ∩ D_w, μ_p(K_w) ⊗ W)`
+   coming from 1, and the description of `obs_P ∘ ι_*` as the product of the local obstructions.
+3. **the real content**: the sum-of-invariants / reciprocity input proving
+   `obs_P(range ι_*) = range obs_P` at `n = -2`.
+
+Step 3 is where the global input (reciprocity, the product formula for the `p`-th power Hilbert
+symbol — row 6, already done) finally enters; steps 1 and 2 are bookkeeping of the kind just
+completed.
+
+## 0.96 Status (2026-09-04, later still) — Poitou–Tate, read as a duality: what row 5 actually needs, and the naturality brick that was missing
+
+### (a) The question this section answers
+
+The directive was "work on Poitou–Tate, make sure it *feeds* appropriately into rows 5/6".  Row 6
+(the `p`-th power Hilbert symbol and its product formula) is done.  Row 5 is
+
+```
+Ш²(k, A)  ≅  Ш¹(k, A′)^∨                            (global duality, Poitou–Tate)
+```
+
+but §0.94 already reduced *the thing row 5 is used for* to the single equation
+
+```
+(*)     range (obs_P ∘ ι_*)  =  range obs_P ,       obs_P : Ĥ⁰(P, C_K ⊗ W) → Ĥ²(P, C_K[p] ⊗ W)
+```
+
+over a Sylow subgroup `P ≤ G = Gal(K/k)`.  So the question is not "how do I state the nine-term
+sequence" but "which duality statement, at the *finite* level the repository works at, discharges
+`(*)`".
+
+### (b) Milne's route, and why the repository does not take it
+
+Milne, *Arithmetic Duality Theorems* (local copy: `/home/alex_harmonic_fun/igp-logs/adt.txt`;
+§I.1 at line 977, Thm I.1.8 at 1183, the `(G_S, C_S)` material at 2515–2552, Thm I.4.6 at 2635,
+Thm I.4.10 at 2866) proves global duality for a **`P`-class formation** `(G_S, C_S)` by producing,
+for every finitely generated `G_S`-module `M`, maps
+
+```
+α^r(G_S, M) : Ext^r_{G_S}(M, C_S)  →  H^{2-r}(G_S, M)^∨
+```
+
+and showing `α^r` is an isomorphism for `r ≥ 1` (Thm I.4.6), whence the nine-term sequence
+(Thm I.4.10).  Formalizing that literally would require the `Ext^r_{G_S}(M, C_S)` machinery over a
+**profinite** group, plus the `S`-idele class formation as an object in its own right.
+
+The repository is built the other way round: everything lives at the *finite* level
+`Ĥ^*(G, C_K ⊗ W)` with `G = Gal(K/k)` finite, and the profinite statements are assembled from
+finite ones.  **At the finite level Milne's `α^r` factors as**
+
+```
+Ĥ^r(G, Hom(M, C_K))  --(Tate cup-product duality)-->  Ĥ^{-r-1}(G, M)^∨
+Ĥ^r(G, Hom(M, C_K))  <--(Tate–Nakayama, cup with the fundamental class)--  Ĥ^{r-2}(G, M)
+```
+
+and **both halves are already in the repository**:
+
+* Tate–Nakayama — `TateCohomology/Nakayama*.lean`, `Units/BaseTateSylow.lean` (conditional only on
+  the `Tor₁` clause, which is discharged for the modules in play).
+* Tate cup-product duality — `TateCohomology/Duality.lean` (degree `0` against degree `-1`),
+  `DualityShift.lean` (the two degree-moving identifications), `DualityDivisible.lean` (the
+  recursion over all of `ℤ`, with the criterion of Baer replacing the hypothesis on the
+  representation), culminating in
+  `tateDualEquivOfBaer : Ĥ^n(G, Hom(A, C)) ≃ₗ (Ĥ^{-n-1}(G, A) →ₗ C)` and its specialization
+  `tateCharacterEquiv` at `C = ℝ/ℤ`.
+
+**Decision (governing): stay with the `Ĥ^*(G, C_K ⊗ W)` formulation; do not build
+`Ext^r_{G_S}(M, C_S)`.**  What was actually missing was neither half of the factorization — it was
+that *the duality was not known to be compatible with a map of the representation*, which is
+precisely what turns a statement about `range` into a statement about `ker`.
+
+### (c) The dual reformulation of `(*)`
+
+Over a field of coefficients (or any dualizing `C`), for a map `u : X → Y` of finite abelian groups,
+
+```
+range u = Y   ⟺   ker (u^∨ : Y^∨ → X^∨) = 0
+range (v ∘ u) = range v   ⟺   ker (u^∨ ∘ (…)) ∩ … = …
+```
+
+and the useful form of `(*)` is: **a functional on `Ĥ²(P, C_K[p] ⊗ W)` that kills
+`range (obs_P ∘ ι_*)` kills `range obs_P`.**  Under the duality this functional *is* a class of
+`Ĥ^{-3}` of the dual representation, `obs_P^∨` *is* the map the duality attaches to `obs_P`, and
+`ι_*^∨` *is* the map attached to `ι_*`.  Getting from "the functional attached to `obs_P`" to "the
+map induced by the dual of `obs_P`" is exactly the naturality square
+
+```
+Ĥ^n(G, Hom(B, C)) --(Hom(φ,C))_*--> Ĥ^n(G, Hom(A, C))
+      |  dual                              |  dual
+      v                                    v
+Ĥ^{-n-1}(G, B)^∨  --(- ∘ φ_*)-->     Ĥ^{-n-1}(G, A)^∨
+```
+
+which is what `DualityNatural.lean` now proves, for every `φ`, every `n` and every `C` satisfying
+the criterion of Baer.
+
+### (d) The blocker inside `DualityDivisible.lean`, and its removal
+
+`tateDualEquivOfBaer` is defined by recursion on the degree.  Each step transports a duality
+against `coshiftObj A` up one degree, or a duality against `shiftObj A` down one degree, and each
+transport had to reconcile two spellings of a degree, e.g. `-(n+1)-1+1` versus `-n-1`.  Both steps
+did that with
+
+```lean
+rwa [show (-(n+1)-1+1) = -n-1 from by ring] at h
+```
+
+producing an **opaque `Eq.mpr`** in the middle of the definition.  Naturality against such a term is
+unprovable: the equation relates two expressions *both* containing `n`, so `subst` does not apply,
+and `generalize` breaks the dependent motive.
+
+Fix (commit below): add `subst`-defined degree-comparison helpers to `DualityDivisible.lean` and
+re-define the two steps in term mode against them:
+
+```lean
+def tateCoshiftEquivCongr (A : Rep ℤ G) {d n : ℤ} (h : d + 1 = n) :
+    ↥(tateModule A d) ≃ₗ[ℤ] ↥(tateModule (coshiftObj A) n) := by subst h; exact tateCoshiftEquiv A d
+
+def tateShiftEquivCongr (A : Rep ℤ G) {d n : ℤ} (h : d + 1 = n) :
+    ↥(tateModule (shiftObj A) d) ≃ₗ[ℤ] ↥(tateModule A n) := by subst h; exact tateShiftEquiv A d
+```
+
+plus `dualStepUp_apply` / `dualStepDown_apply`, both `rfl` (gotcha 1325).  With those in hand every
+naturality step is `subst h; exact <the ShiftNatural lemma>`.
+
+The refactor was **free**: nothing in the repository imports `DualityDivisible.lean` except
+`InverseGalois/CFT.lean` (gotcha 1324), so `lake build …DualityDivisible` is 8063 jobs / 49 s.  Had
+the helpers gone into `Shifting.lean` or `ShiftNatural.lean`, as first planned, most of the CFT tree
+would have been invalidated.
+
+### (e) `TateCohomology/DualityNatural.lean` — what landed
+
+`coeffDualHom φ C : coeffDualObj B C ⟶ coeffDualObj A C` (a map of representations reverses the
+direction on functionals), functorial (`coeffDualHom_id`, `coeffDualHom_comp`), and then the three
+squares:
+
+| square | statement | proof |
+| --- | --- | --- |
+| middle degrees | `tateDualZeroEquiv_naturality` | `H0mk_surjective` + `exists_Hm1mk`, then `rfl` |
+| coshift/shift | `coeffDualShiftIso_naturality` | both routes are `∑ₓ ψ x (φ (f x))` |
+| shift/coshift | `coeffDualCoshiftIso_naturality` | both routes are `∑ₓ ψ x (φ (z x))` |
+
+The recursion is carried by a predicate rather than by mirroring the construction:
+
+```lean
+def IsTateDualNatural (C : Type) [AddCommGroup C] (n : ℤ)
+    (e : ∀ A : Rep ℤ G, ↥(tateModule (coeffDualObj A C) n) ≃ₗ[ℤ]
+      (↥(tateModule A (-n - 1)) →ₗ[ℤ] C)) : Prop :=
+  ∀ {A B : Rep ℤ G} (φ : A ⟶ B) (x) (z),
+    e A (tateMap (coeffDualHom φ C) n x) z = e B x (tateMap φ (-n - 1) z)
+```
+
+with `IsTateDualNatural.degCongr`, `.stepUp`, `.stepDown` matching the three constructors of the
+recursion one for one — the point being that `tateDualEquivNat C hC m` *is literally* a term of type
+`∀ A, …`, and `tateDualEquivNeg`'s inner argument *is literally*
+`(fun A' => dualDegCongr C A' h (… A')) (shiftObj A)`, so the `Prop`-level recursion lines up with
+the data-level one exactly.  Results:
+
+```lean
+theorem tateDualEquivOfBaer_naturality_apply (C) (hC : Module.Baer ℤ C) (n : ℤ) (φ : A ⟶ B) (x) (z) :
+    tateDualEquivOfBaer C hC A n (tateMap (coeffDualHom φ C) n x) z
+      = tateDualEquivOfBaer C hC B n x (tateMap φ (-n - 1) z)
+
+theorem tateCharacterEquiv_naturality (n : ℤ) (φ : A ⟶ B) (x) (z) :
+    tateCharacterEquiv A n (tateMap (coeffDualHom φ (AddCircle (1 : ℚ))) n x) z
+      = tateCharacterEquiv B n x (tateMap φ (-n - 1) z)
+```
+
+Costs: `lake build …TateCohomology.DualityNatural` = **8066 jobs**, 13 s; full root build =
+**9679 jobs**, 0 warnings, 0 errors.
+
+### (f) Two negative findings worth not re-discovering
+
+* **`tateDualEquiv` (in `DualityShift.lean`) is `.some`-defined** — it is extracted from
+  `nonempty_tateDualEquiv` by choice, so *no* naturality statement about it is provable, and none
+  should be attempted.  The canonical version is `tateDualEquivOfBaer` in `DualityDivisible.lean`;
+  everything downstream must use that one.
+* **Gotcha 1129, sharpened.** The biquadratic counterexample refutes an idelic fundamental class:
+  `α` does not lift to `H²(G, I_K)` because `Ĥ²(G, I_K)` is a direct **sum** over the places, so a
+  class with infinitely many nonzero local components has no preimage.  This is why the route to
+  `(*)` goes through the *torsion* sequence `0 → μ_p(K) ⊗ W → I_K[p] ⊗ W → C_K[p] ⊗ W → 0` and not
+  through `I_K` itself.
+
+### (g) §0.95(e) step 1 is already landed
+
+`Units/IdeleClassTorsionSubgroup.lean` (built earlier the same day) is exactly step 1 of the §0.95(e)
+plan: `resSeq_tensorSeq_ideleClassTorsion_shortExact`,
+`range_tateδ_tensor_ideleClassTorsionRes` (the image of the connecting map is the kernel of the map
+to the ideles) and the two vanishing corollaries, the second with the hypothesis on the ideles
+replaced by the vanishing of every local factor over the `S`-orbits.  So the remaining chain is
+steps 2 and 3 only.
+
+### (h) The error sequence, continued
+
+The four-term error sequence recorded in §0.93 continues to the left as a long exact sequence:
+
+```
+… --Left(n)--> Ĥ^n(W) --…--> Ĥ^{n+2}(A[p] ⊗ W) --obs(n)--> Ĥ^{n+4}(A[p] ⊗ W) --Left(n+2)--> Ĥ^{n+2}(W) → …
+```
+
+so `range obs(n) = ker Left(n+2)` is available *if* exactness at `Ĥ^{n+4}(A[p] ⊗ W)` is proved — a
+third exactness statement of the same shape as the two already there.  That is an optional brick: it
+would let `(*)` be attacked as a statement about a kernel from the start, without invoking the
+duality at all.  Recorded, not scheduled.
+
+### (i) Gotchas recorded
+
+* **1324.** Nothing imports `TateCohomology/DualityDivisible.lean` except `InverseGalois/CFT.lean`
+  (import at `CFT.lean:662`, narrative at `CFT.lean:4295`).  Edits there cost 8063 jobs / 49 s.
+* **1325.** `LinearEquiv.symm_symm … := rfl`; `LinearEquiv.arrowCongr e₁ e₂ f x = e₂ (f (e₁.symm x))`
+  (`Mathlib/Algebra/Module/Equiv/Basic.lean:649`).  Hence `dualStepUp_apply` / `dualStepDown_apply`
+  hold by `rfl`.
+* **1326.** `tateMap_comp_apply` lives in `NakayamaNatural.lean:74`, **not** `Functorial.lean`.  To
+  keep the duality tree independent of Nakayama, declare a `private` copy.
+* **1327.** `Norm.lean:181` `exists_Hm1mk` is oriented `x = Hm1mk …`, so `obtain ⟨v, hv, rfl⟩`
+  substitutes `x`.
+* **1328.** `ShiftNatural.lean:54` uses `C` for a *representation*; a new file using `C` for
+  coefficients must not collide.
+* **1329.** `Duality.lean:279` `tateDualZeroEquiv A C h₁ h₂ = coeffDualEquiv A.ρ C h₁ h₂`.
+* **1330.** `↥(coeffDualObj A C).V` is **not** reducibly a function type: `f v` on a term of that
+  type fails with "Function expected".  Type the map as
+  `coeffDualLinear : (↥B.V →ₗ[k] C) →ₗ[k] (↥A.V →ₗ[k] C)` and let `mkHom` do the defeq; state
+  equivariance against `coeffDual B.ρ C g`, not against `(coeffDualObj B C).ρ g`.
+* **1331.** For the same reason `(ψ : G → …)` fails on a variable of type
+  `↥(coshiftObj X).V` — the coercion resolver does not unfold to find the `Subtype`.  Use `ψ.1`,
+  whose elaboration *does* whnf the type.
+* **1332.** `rw [indDualMap_apply, indDualMap_apply]` does **not** close the resulting sum equality;
+  finish with `exact Finset.sum_congr rfl fun x _ => rfl` (the two summand families are defeq
+  pointwise but live over different modules).
+* **1333.** Dot notation fails on a `def … : Prop := ∀ …`: `h.degCongr` reports
+  "The environment does not contain `Function.degCongr`" because the type is whnf'd to a `Pi`.
+  Write `IsTateDualNatural.degCongr h he` in full.  Relatedly, a statement whose only occurrence of
+  the section variable `G` is inside an implicit argument leaves `Finite ?m` stuck — pin it with
+  `(G := G)`.
+
+### (j) What the next brick is
+
+Unchanged from §0.95(e): step 2 (identify `Ĥ^{n+4}(P, C_K[p] ⊗ W)` as a quotient of
+`∏_ω Ĥ^*(P ∩ D_w, μ_p(K_w) ⊗ W)` and describe `obs_P ∘ ι_*` as the product of the local
+obstructions) and step 3 (the reciprocity input).  What §0.96 adds is that step 3 may now be run in
+its dual form: the naturality square lets a statement about `range obs_P` be converted into one
+about the kernel of the dual map, where the sum-of-invariants relation is the natural input.
+
+---
+
+## 0.97 Status (2026-09-04, later still) — the obstruction sequence extends past the obstruction, so row 5 is now an image-equals-kernel statement inside one group
+
+### (a) What landed
+
+`InverseGalois/CFT/TateCohomology/TorsionErrorLong.lean` (new, ~155 lines) and an extension of
+`InverseGalois/CFT/Units/BaseTateSylow.lean`.  Build green: the new module alone 8085 jobs,
+`BaseTateSylow` 8396 jobs, full root build **9680 jobs**, `grep -c "warning:\|error:"` = 0, 0
+sorries.
+
+New declarations, in `InverseGalois.CFT.Tate`:
+
+* `range_tateNakayamaNextMap A b M n :`
+  `range (tateNakayamaNextMap A b M n) = ker (tateMap (cocycleTensorSeq (shiftObj A) b M).g (n+1))`
+* `range_tateNakayamaTwoNextMap` — the same for the cocycle attached to a class in degree two.
+* `range_tateNakayamaPTorsionErrorRight A α W hW hT n :`
+  `range (tateNakayamaPTorsionErrorRight … n) = ker (tateNakayamaPTorsionErrorLeft … (n+1))`
+* `exact_tateNakayamaPTorsionErrorRightLeft` — the same as `Function.Exact`.
+* `range_resTateNakayamaPTorsionErrorRight`, `exact_resTateNakayamaPTorsionErrorRightLeft` — over a
+  subgroup.
+
+and in `InverseGalois.CFT`:
+
+* `resBaseTateNakayamaPTorsionLeft k K W hW S n` — the map entering the comparison for the idele
+  class group with the fundamental class, read on a subgroup `S`.
+* `range_resBaseTateNakayamaPTorsionRight k K W hW S n :`
+  `range (obs_S n) = ker (resBaseTateNakayamaPTorsionLeft k K W hW S (n+1))`
+* `range_shaTorusPTorsionMap_of_sylow_ker` — the row-5 criterion with the right-hand side of `(*)`
+  replaced by that kernel.
+
+### (b) The mathematics
+
+The four-term sequence of `TensorTorsionError.lean` is a window on the long exact sequence of
+`cocycleTensorSeq (shiftObj A) (tateTwoCocycle A α) W`, which is
+`0 → shiftObj A ⊗ W → cocycleTensorObj → W → 0`.  Writing `E(n)` for
+`cocycleTensorObjPTorsionEquiv A α W hW hT n`, an isomorphism
+`Ĥ^n(cocycleTensorObj) ≅ Ĥ^{n+3}(A[p] ⊗ W)`, the two error maps are literally
+
+```
+errorLeft  n = (tateMap g n)   ∘ E(n)⁻¹      : Ĥ^{n+3}(A[p]⊗W) → Ĥ^n(W)
+errorRight n = E(n+1) ∘ (tateMap f (n+1)) ∘ (tateNakayamaIso)⁻¹
+                                             : Ĥ^{n+2}(A⊗W) → Ĥ^{n+4}(A[p]⊗W)
+```
+
+so exactness of the long exact sequence at `Ĥ^{n+1}(cocycleTensorObj)` — i.e.
+`range (tateMap f (n+1)) = ker (tateMap g (n+1))`, which is `tateExact_map_map` — transports along
+`E(n+1)` to `range (errorRight n) = ker (errorLeft (n+1))`.  The whole thing is therefore one long
+exact sequence
+
+```
+… --errorLeft n--> Ĥ^n(W) --TN--> Ĥ^{n+2}(A⊗W) --errorRight n--> Ĥ^{n+4}(A[p]⊗W)
+   --errorLeft (n+1)--> Ĥ^{n+1}(W) --TN--> …
+```
+
+alternating between the coefficients, their tensor product with the representation, and the vectors
+killed by the prime.
+
+### (c) The new shape of row 5
+
+§0.94(b) stated the remaining content of row 5 as, for `P` a Sylow `p`-subgroup of `Gal(K/k)`,
+
+```
+(*)   Submodule.map obs_P (range ι_*) = range obs_P
+```
+
+The right-hand side was, until now, opaque: `range obs_P` is the image of a map out of a group we
+have no independent handle on.  §0.97 replaces it by an explicitly described subgroup of the target:
+
+```
+(*)   Submodule.map obs_P (range ι_*) = ker (Left_P (n+1))
+```
+
+with both sides living inside `Ĥ^{n+4}(P, C_K[p] ⊗ W)`, the group that §0.95 decomposes into local
+pieces.  `Left_P (n+1) : Ĥ^{n+4}(P, C_K[p] ⊗ W) → Ĥ^{n+1}(P, W)` is `resBaseTateNakayamaPTorsionLeft`
+— an explicit linear map, not a `range`.  This is the form in which the reciprocity input can be
+fed: at `n = -2` the target `Ĥ^{-1}(P, W)` is the norm-kernel of `W`, and the sum-of-invariants
+relation is exactly a statement that a product of local classes lands in it.
+
+### (d) What did *not* change
+
+The two remaining steps of §0.95(e) are untouched: step 2 (the local decomposition of
+`Ĥ^{n+4}(P, C_K[p] ⊗ W)` and the componentwise description of `obs_P ∘ ι_*`) and step 3 (the
+reciprocity input).  What §0.97 buys is that step 3's *target* is now a kernel of an explicit map
+rather than an image of an inaccessible one, so step 2's local decomposition has something concrete
+to be compared against.
+
+### (e) Lean facts learned
+
+* **1334.** `tateExact_map_map hX n : Function.Exact (tateMap X.f n) (tateMap X.g n)` lives at
+  `TateCohomology/Graded.lean:131`, next to `tateExact_map_δ` (146) and `tateExact_δ_map` (162).
+  `LinearMap.exact_iff` does **not** apply to it directly (the maps are `ModuleCat` homs, not
+  `LinearMap`s); the repo idiom, at `TateNakayamaError.lean:94`, is
+  `ext x; simp only [LinearMap.mem_range, LinearMap.mem_ker]; exact (tateExact_map_map … x).symm`.
+* **1335.** For `E` a `LinearEquiv`, the shape `range (E ∘ₗ f) = ker (g ∘ₗ E.symm)` closes with
+  `rw [LinearMap.range_comp, <range f = ker g>, LinearMap.ker_comp]` followed by
+  `exact Submodule.map_equiv_eq_comap_symm _ _`.
+* **1336.** `Units/BaseTateSylow.lean` is a leaf — only `InverseGalois/CFT.lean` imports it — so
+  editing it costs 8396 jobs, and a new `TateCohomology/` module it depends on costs 8085.
+* **1337.** Reflowing a paragraph in a module docstring can push the *next* line over 100
+  characters; re-run the character-accurate length check after every rewrap, not once at the end.
+
+### (f) What the next brick is
+
+Unchanged in substance from §0.95(e)/§0.96(j), now with the sharper target of (c):
+
+1. **Step 2.** Present `Ĥ^{n+4}(P, C_K[p] ⊗ W)` through the short exact sequence of
+   `Units/IdeleClassTorsionSubgroup.lean` and the orbit product of
+   `Units/IdeleTorsionSubgroup.lean`, and describe `obs_P ∘ ι_*` componentwise.
+2. **Step 3.** The reciprocity input, now in the form `map obs_P (range ι_*) = ker (Left_P (n+1))`,
+   optionally run in the dual form supplied by `DualityNatural.lean`.
+
+---
+
+## 0.98 Status (2026-09-04, later) — the first half of step 2 is **landed**, and two structural facts about the second half
+
+### (a) What landed
+
+`InverseGalois/CFT/Units/IdeleClassTorsionSubgroupLocal.lean` (full root build **9681 jobs**, 0
+warnings, 0 errors).  It is the subgroup analogue of `Units/IdeleClassTorsionLocal.lean`, i.e. the
+*target of the obstruction*, presented locally, over an arbitrary `S ≤ Gal(K|k)` — and therefore
+over a Sylow `p`-subgroup `P`, which is the only case the criterion of `Units/BaseTateSylow.lean`
+ever asks about.
+
+```lean
+theorem ker_tateδ_tensor_ideleClassTorsionRes (n : ℤ) :
+    LinearMap.ker (tateδ (resSeq_tensorSeq_ideleClassTorsion_shortExact hp W S) n).hom
+      = LinearMap.range (tateMap
+        (resHom S (tensorHomLeft W (ideleToIdeleClassTorsion k K (p : ℤ)))) n).hom
+
+abbrev localTorsionResFamily (n : ℤ) : Type :=      -- ∏ over S-orbits of places of K
+  (∀ ω : orbitRel.Quotient ↥S (InfinitePlace K), …) × (∀ ω : orbitRel.Quotient ↥S (…), …)
+
+theorem exists_localTorsionRes_tateMap_eq_of_isZero (n : ℤ)
+    (h : Limits.IsZero (tateModule (resObj S (tensorObj (torsionRep globalUnitsAut (p:ℤ)) W)) (n+1)))
+    (x : tateModule (resObj S (tensorObj (torsionRep (ideleClassAutHom k K) (p : ℤ)) W)) n) :
+    ∃ y : localTorsionResFamily (p := p) W S w₀ v₀ n,
+      tateMap (resHom S (tensorHomLeft W (ideleToIdeleClassTorsion k K (p : ℤ)))) n
+        ((ideleTorsionTensorTateResEquiv S W e w₀ v₀ n).symm y) = x
+```
+
+and the bridge to the shape `BaseTateSylow.lean` states the obstruction in,
+
+```lean
+def ideleClassTorsionNsmulResEquiv (n : ℤ) :
+    ↥(tateModule (tensorObj (nsmulTorsion (resObj S (ideleClassRep k K)) p) (resObj S W)) n)
+      ≃ₗ[ℤ] ↥(tateModule (resObj S (tensorObj (torsionRep (ideleClassAutHom k K) (p:ℤ)) W)) n) :=
+  tateTensorNsmulTorsionRepEquiv ((ideleClassAutHom k K).comp S.subtype) p (resObj S W) n
+```
+
+which is accepted **verbatim**: `resObj S (repOfAddAut φ)` and `repOfAddAut (φ.comp S.subtype)` are
+definitionally equal, as are `resObj S (torsionRep φ m)` and `torsionRep (φ.comp S.subtype) m` and
+(gotcha 1297) `resObj S (tensorObj A W)` and `tensorObj (resObj S A) (resObj S W)`.  So
+`tateTensorNsmulTorsionRepEquiv` from `Units/NsmulTorsionRep.lean`, stated for a bare finite group,
+already *is* the subgroup bridge; no new transport was needed.
+
+So the **target** of `obs_P` is now a group presented entirely by local data.  What is still missing
+from step 2 is the description of `obs_P ∘ ι_*` — and (b) says that description cannot take the
+shape §0.93(d) assumed.
+
+### (b) Negative result — `Ĥ^*(P, I_K ⊗ W)` has **no** local product (or sum) description
+
+§0.88(d) and §0.93(d) both list "Shapiro for `I_K ⊗ M`" as a pending brick, on the analogy with
+`Ĥ^*(G, I_K) = ⊕_v Ĥ^*(D_w, K_w^×)` and with the landed
+`Ĥ^*(S, I_K[p] ⊗ W) ≅ ∏_ω Ĥ^*(S ∩ D_w, μ_p(K_w) ⊗ W)` of `Units/IdeleTorsionSubgroup.lean`.  **The
+naive form is false.**
+
+*Why the torsion case works.*  Two facts, both worth keeping:
+
+* for any family `(M_w)`, the natural map `(∏_w M_w)/p → ∏_w (M_w/p)` is an isomorphism (surjective
+  componentwise; injective because `(p x_w)_w = p·(x_w)_w`);
+* for `W` a **finite-dimensional** `𝔽_p`-vector space, `− ⊗_{𝔽_p} W ≅ (−)^{dim W}` commutes with
+  arbitrary products.
+
+Together: `(∏_w M_w) ⊗_ℤ W ≅ ∏_w (M_w ⊗_ℤ W)` whenever `W` is killed by `p` and finite-dimensional.
+This is exactly what makes `I_K[p] = ∏_w μ_p(K_w)` survive tensoring, and it is what
+`ideleTorsionTensorTateResEquiv` rests on.
+
+*Why the full-idele case fails.*  `I_K ⊗ W` is the restricted product `∏'_w (K_w^× ⊗ W)` with
+respect to `O_w^× ⊗ W`, so `Ĥ^*(P, I_K ⊗ W) = colim_S Ĥ^*(P, I_{K,S} ⊗ W)` with
+
+```
+Ĥ^*(P, I_{K,S} ⊗ W)  =  ∏_{ω ⊆ S} Ĥ^*(P_w, K_w^× ⊗ W)  ×  ∏_{ω ⊄ S} Ĥ^*(P_w, O_w^× ⊗ W).
+```
+
+For `I_K` itself the second product vanishes for `S ⊇ Ram(K|k)`, because the local units of an
+unramified extension are cohomologically trivial.  **After tensoring with `W` they do not.**  Take
+`M` cohomologically trivial over a group `D`; from `0 → M[p] → M → pM → 0` and
+`0 → pM → M → M/pM → 0` one gets `Ĥ^i(D, M/pM) ≅ Ĥ^{i+1}(D, pM) ≅ Ĥ^{i+2}(D, M[p])`.  With
+`M = O_w^×`, `M[p] = μ_p(K_w)`, `W = 𝔽_p` trivial (so `M ⊗ W = M/pM`):
+
+```
+Ĥ^i(D_w, O_w^× ⊗ 𝔽_p)  ≅  Ĥ^{i+2}(D_w, μ_p(K_w)).
+```
+
+Concretely, over `k = ℚ(ζ_p)` with `K|k` cyclic of degree `p` and `w` an *unramified* place with
+`D_w` of order `p`: `Ĥ^0(D_w, O_w^× ⊗ 𝔽_p) ≅ Ĥ^2(D_w, μ_p) ≅ Ĥ^0(D_w, μ_p) = μ_p/μ_p^p ≅ ℤ/p ≠ 0`.
+By Chebotarev infinitely many places are of that kind, so the second product has infinitely many
+nonzero factors for **every** finite `S`.
+
+*What survives.*  The colimit is filtered, so `range ι_* = ⋃_S range (ι_{S,*})` inside the fixed
+group `Ĥ^{n+2}(P, C_K ⊗ W)`: a class comes from the ideles iff it comes from the `S`-ideles for
+**some** finite `S`.  That is the classical formulation (Tate's tori paper works with `I_{K,S}`
+throughout, never with a product formula for `I_K ⊗ W`), and it is what step 2's second half has to
+be built on.  The brick to schedule is therefore **`Ĥ^*(P, I_{K,S} ⊗ W)` for a finite `S`**, not a
+product formula for `I_K ⊗ W`.
+
+### (c) Negative result — lattice dévissage on `W` is circular; free `𝔽_p[P]`-dévissage shifts the degree but has no base case
+
+Two dévissages suggest themselves for reducing the `p`-torsion criterion to the torsion-free one of
+§0.88(b) (`range_baseShaTorusMap`).  Neither works, for opposite reasons.
+
+**Lattice resolution.**  Take `0 → X_1 → X_0 → W → 0` with `X_i` `P`-lattices.  Tensoring with `C_K`
+gives the four-term sequence `0 → Tor_1(C_K,W) → C_K⊗X_1 → C_K⊗X_0 → C_K⊗W → 0`, and
+`Tor_1(C_K,W) = C_K[p] ⊗ W` — **the same obstruction group** the four-term error sequence of
+`TensorTorsionError.lean` produces.  So the lattice case cannot be leveraged by presentation; the
+Tor term reproduces the difficulty verbatim.
+
+**Free `𝔽_p[P]`-resolution.**  Take `0 → W' → F → W → 0` with `F` free over `𝔽_p[P]`.  Because every
+term is an `𝔽_p`-vector space, `X ⊗_ℤ − = (X/p) ⊗_{𝔽_p} −` on this sequence, which is exact for
+**any** `X`; and `X ⊗_ℤ 𝔽_p[P]^d ≅ Ind_1^P((X/p)^d)` is induced, so `Ĥ^*(P, X ⊗ F) = 0`.  Hence the
+connecting map is an isomorphism `Ĥ^m(P, X ⊗ W) ≅ Ĥ^{m+1}(P, X ⊗ W')`, **naturally in `X`** — so it
+carries the whole diagram (`E`, `I`, `C`, `C[p]`) at once.  Cup product commutes with connecting
+maps, so `TN` is carried too, and
+
+> the row-5 criterion at `(W, m)` holds **iff** it holds at `(W', m+1)`.
+
+Since `𝔽_p[P]` is self-injective (`P` a `p`-group, so `𝔽_p[P]` is a Frobenius algebra and free =
+injective), `W` also *embeds* in a free module, so the shift runs downwards as well.  Consequently
+**the criterion, quantified over all `W`, is independent of the degree**: it may be checked in
+whichever degree is most convenient.  That is a real simplification of the target, but it is a
+reduction with no base case — every degree remains equally open.
+
+A tempting corollary is false and worth writing down: "if `W = N/pN` for a `P`-lattice `N` then
+`TN_W` is an isomorphism" does **not** follow from `TN_N` being one, because the bottom row of the
+would-be ladder is not exact: `C_K ⊗ N --p--> C_K ⊗ N` has kernel `(C_K ⊗ N)[p] ⊇ C_K[p] ⊗ N ≠ 0`.
+
+### (d) Lean notes
+
+* **1338.** `resObj S (repOfAddAut φ)` is **definitionally** `repOfAddAut (φ.comp S.subtype)`, and
+  likewise `resObj S (torsionRep φ m) = torsionRep (φ.comp S.subtype) m`.  Combined with gotcha
+  1297 this means every `Units/NsmulTorsionRep.lean` statement, though phrased for a bare finite
+  group, applies to a subgroup of the Galois group with no transport at all — just instantiate
+  `G := ↥S` and `φ := (…).comp S.subtype`.
+* **1339.** A hypothesis such as `hp : p.Prime` that appears only in the *proof term* and not in the
+  statement is **not** auto-included, even when the statement's other arguments were themselves
+  formed with it in a previous declaration.  `exists_localTorsionRes_tateMap_eq_of_isZero` needed an
+  explicit `include hp in`; `exists_localTorsionRes_tateMap_eq`, whose statement mentions
+  `resSeq_tensorSeq_ideleClassTorsion_shortExact hp W S`, did not.
+* **1340.** Composing a `tateMap` with an `AddEquiv` between two `∀ ω, tateModule …`-products via
+  `AddEquiv.toIntLinearEquiv` invites the `ℤ`-smul instance diamond of gotcha 850 (the Pi type gets
+  `Pi.module ℤ` from the `ModuleCat ℤ` factors, not `AddCommGroup.toIntModule`).  The repo idiom in
+  `Units/IdeleClassTorsionLocal.lean` — state the result as `∃ y, f ((equiv).symm y) = x`, applying
+  the equivalence to *elements* — sidesteps it entirely and is what this file uses.
+* **1341.** `lake build InverseGalois.CFT.Units.IdeleClassTorsionSubgroupLocal` type-checks under
+  `lake env lean` in ≈2 min; the full root build with it is **9681 jobs**.
+
+### (e) What the next brick is
+
+1. **Step 2, second half.**  `Ĥ^*(P, I_{K,S} ⊗ W)` for a finite `S` containing the ramified and
+   archimedean places, as the product of the local factors at `S` and the unit factors outside it,
+   and `range ι_*` as the union over `S` of the images.  (Replaces the impossible product formula
+   for `I_K ⊗ W`; see (b).)
+2. **Step 3.**  The reciprocity input, in the form `map obs_P (range ι_*) = ker (Left_P (n+1))`.
+   The exact sequence it must consume — `0 → Br(K|k) → ⊕_w Br(K_w|k_v) --Σ inv--> ℚ/ℤ`, i.e. ABHN
+   (`eq_one_of_mem_sha2`) plus reciprocity (`totalInvariant_eq_one_base`) — is already in the repo;
+   what is missing is the machine that carries it from `K^×` coefficients to `K^× ⊗ W`
+   coefficients, and that machine is Tate–Nakayama duality for the class formation.
+
+---
+
+## 0.99 Status (2026-09-04, latest) — the projection formula absorbs every local contribution, so only the *local cokernels* are left; plus the exact place Poitou–Tate enters Schmidt–Wingberg
+
+### (a) What landed
+
+Commit `f11f281` (previous session) added `TateCohomology/NakayamaNextNatural.lean` and
+`Units/DecompositionNakayamaNext.lean` (the map *leaving* the comparison is natural in the
+representation, and at a decomposition group its values on the classes from the completion are the
+image of the purely local ones), plus two theorems in `Units/BaseTateSylow.lean`.  Full root build
+**9683 jobs**, 0 warnings, 0 sorries.
+
+This session added three theorems, no new modules:
+
+* `Tate.tateCor_tateMap_tensorHomLeft_tateNakayamaTwoMap` and
+  `Tate.map_tateCor_range_tateNakayamaTwoMap_le` in
+  `TateCohomology/NakayamaSubgroup.lean` — **the projection formula for the comparison**: if
+  `φ : A' ⟶ resObj H A` carries `β` to `tateRes H A 2 α`, then
+  `cor_H ( (tensorHomLeft _ φ)_* ( TN_{A'} β x ) ) = TN_A α (cor_H x)`, hence
+  `cor_H ( φ_* ( range TN_{A'} ) ) ≤ range TN_A`.
+  Proof: `tateMap_tensorHomLeft_tateNakayamaTwoMap` turns the left side into
+  `cor_H (resTateNakayamaTwoMap H A α M n x)`, and `tateCor_tateNakayamaTwoMap` finishes.
+* `map_tateCor_range_tateNakayamaTwoMap_decompositionUnits_le` in
+  `Units/DecompositionNakayama.lean` — the same, specialised to `H = D_w` and
+  `φ = decompositionPlaceIdeleClass k w`, discharged by `tateMap_localizedFundamentalClass`.
+* `range_shaTorusPTorsionMap_of_sylow_nakayama` in `Units/BaseTateSylow.lean` — the row-5 criterion
+  in the canonical form of gotcha 1076, with **no obstruction in the statement at all**:
+  ```
+  range (resTateNakayamaTwoMap P (ideleClassRep k K) (baseFundamentalClass k K) W n)
+    ⊔ range (tateMap (resHom P (tensorHomLeft W (ideleToIdeleClass k K))) (n+1+1)).hom = ⊤
+  ```
+  implies `range (shaTorusPTorsionMap k K W hW n) = ker (…globalUnitsToIdele…)`.  Discharged by
+  `range_shaTorusPTorsionMap_of_sylow_sup` after `rw [ker_resBaseTateNakayamaPTorsionRight]`.
+
+### (b) Where Poitou–Tate actually enters Schmidt–Wingberg
+
+Read off `sw.txt` lines 1255–1345.  In the whole paper **Poitou–Tate is used exactly once**, inside
+the Claim of step 2, and only as
+
+>  `Ш²(k, E(n,τ)) ≅ Ш¹(k, E(n,τ)′)^∨`,  where `E′ = Hom(E, μ_p)`.
+
+Everything downstream is elementary: `E′` is a *trivial* `G_K`-module, so the Hasse principle gives
+`Ш¹(k,E′) ↪ H¹(K|k, E′)`; dualising that injection gives the surjection
+
+>  `Ĥ^{-2}(G, E(n,τ)(-1)) ↠ Ш²(k, E(n,τ))`,
+
+which is the map the Claim needs, and it is natural in `π : F(m) ↠ F(n)`.  Proposition 6 is then
+applied with **`k = -2`** and `T = Hom(μ_p, ℤ/pℤ)` — a **one-dimensional** `T`, fixed in advance.
+SW state explicitly (line ~340) that Prop 6 is used only for `k = 2` and `k = -2`.
+
+### (c) Consequence: row 5 at `n = -2` repairs §0.87(a) without recreating its circularity
+
+§0.87(a) refuted the §0.84(c) Hochschild–Serre route because its step 3 needed
+`dim T₀ ≤ #G² · dim E(m,τ)` with `m = r·n`, and the binder order of
+`exists_genericShrink_res_cohomology_eq_zero` made that circular: the module `T` whose cohomology
+had to be killed grew with `m`.
+
+The route of record does **not** have that defect.  Its inputs are:
+
+1. §0.84(c) steps 1–2, both already proven: `Ш²(K,E) = 0` (`eq_one_of_mem_sha2`) and the degree-two
+   Hochschild–Serre sequence (§0.85/§0.86), giving `Ш²(k,E) ⊆ inf H²(G,E)` modulo transgression;
+2. **row 5 at `n = -2`**, i.e. `Ш¹(G, K^× ⊗ W) = image of Ĥ^{-2}(G,W)`, with `W = E(-1)` and the
+   Kummer identification of §0.88(a);
+3. Prop 6 at `k = -2` with `T = Hom(μ_p, 𝔽_p)` — **one-dimensional and fixed a priori**, so the
+   §0.87(a) circularity cannot recur;
+4. Prop 6 at `k = 2` with `T = 𝔽_p` trivial, to kill the residual inflated class.
+
+The two shrinks compose: for a target `n` take `m₁ = m₀^{(2)}(n)` and then `m = m₀^{(-2)}(m₁)`; the
+surjection `F(m) ↠ F(m₁)` kills the transgression and `F(m₁) ↠ F(n)` kills the inflated class.
+
+### (d) The projection formula absorbs the local Tate–Nakayama contributions
+
+With (a) in hand the shape of step 3 collapses.  Write `P` for a `p`-Sylow of `G`, `w` for a place,
+`P_w = P ∩ D_w`.  The criterion is `range TN_P ⊔ range ι_* = ⊤` inside `Ĥ^{n+2}(P, C_K ⊗ W)`.
+Decompose `range ι_*` over the places (§0.98(e) item 1).  At each place the *local* comparison
+`TN_w` produces classes which, by
+`map_tateCor_range_tateNakayamaTwoMap_decompositionUnits_le`, corestrict **into `range TN_P`**.
+So the local Tate–Nakayama part of `range ι_*` contributes nothing new, and the whole content of
+step 3 is that the **local cokernels** span:
+
+>  `ker Left_P (n+1)  =  Σ_w cor_w ( ker Left_w (n+1) )`   inside `Ĥ^{n+4}(P, C_K[p] ⊗ W)`,
+
+where `cor_w` is `Ĥ^{n+4}(P_w, μ_p(K_w) ⊗ W) → Ĥ^{n+4}(P, I_K[p] ⊗ W) → Ĥ^{n+4}(P, C_K[p] ⊗ W)`.
+
+* The `⊇` inclusion needs exactly one compatibility, `Left_P ∘ cor_w = cor_{P_w}^P ∘ Left_w`, i.e.
+  **naturality of `Left`** — see (e).  (Compare gotcha 1345: in the ambient equation the `⊆`
+  direction is the automatic one; here, after the decomposition, the roles have swapped, because
+  `⊇` is the statement that the local pieces *land* in the right place.)
+* The `⊆` inclusion is the reciprocity content and has **no plan yet**.
+
+### (e) Scope of the `Left`-naturality brick
+
+`Left_A(n) = tateMap g_A n ∘ E_A(n)⁻¹` where `g_A = (cocycleTensorSeq (shiftObj A) (tateTwoCocycle A
+α) W).g` and `E_A = cocycleTensorObjPTorsionEquiv`.  The relation `ψ ≫ g_B = g_A` is **free** from
+`cocycleTensorSeqHom`'s `comm₂₃` (its `τ₃` is `𝟙 W`).  So `Left`-naturality is *exactly* naturality
+of `E`, which decomposes into four pieces:
+
+1. `tateMapIso (cocycleTensorIso …)` — formal;
+2. `tensorPTorsionShiftFreeEquiv` (`TensorPTorsionShift.lean:536`) — **the substantial one**: built
+   from the free presentation `kerSeq (freeHom E)` via `modNsmul`, `modCycleSeq`, `modTorSeq`,
+   `modTorTorsionIso` and two `tateδ`s, so it needs functoriality of `freeObj`/`freeHom`/`kerObj`
+   plus `tateδ`-naturality (`DeltaNatural.lean`);
+3. `tateMapIso (tensorIsoLeft W (cocycleNsmulTorsionIso …).symm)` — formal;
+4. `tensorShiftNsmulTorsionEquiv` — formal.
+
+Estimate: 600+ lines over 2–3 modules.
+
+### (f) Shortcuts ruled out this session
+
+* **Dévissage of `W` to the trivial module `𝔽_p`.**  Legitimate (`𝔽_p[P]` is local for a `p`-group
+  `P`, so every composition factor is trivial) but useless: `W = 𝔽_p` already contains the
+  difficulty, since `Ш¹(P, K^×/p)` is a Selmer-type group.
+* **Lattice resolution `0 → X_1 → X_0 → W → 0` with `X_0` free over `ℤ[P]`.**  Then
+  `Ĥ^*(P, C_K ⊗ X_0) = 0`, so the induced inclusion `range TN_W ⊇ range v_* = 0` says nothing.
+  Consistent with §0.98(c).  (The *other* dévissage, `0 → X --p--> X → W → 0` when `W` lifts to a
+  lattice, replaces `W` by `μ_p(K) ⊗ W` in the connecting term — not obviously easier, and it needs
+  `W` liftable.)
+* **Milne, *Arithmetic Duality Theorems*.**  Grepped `adt.txt`: it has **no** finite-group-level
+  Ш-duality theorem; all of its I.4 material is phrased over `G_S`.
+* **`K^× ⊗ W` as a Cartier dual.**  `Hom(W^∨, K^×) = W ⊗ μ_p ≠ K^× ⊗ W`, so the finite-level
+  Tate/Nakayama duality for tori does not extend to these coefficients.  Corroborates §0.88(c):
+  the `p`-torsion case is genuinely Poitou–Tate.
+* **`E(n,τ)` free over `𝔽_p[G]`.**  True for `τ = (1,1)` (`F/F^p[F,F] = 𝔽_p[G]^d`, and then
+  `Ĥ^*(G, C_K ⊗ 𝔽_p[G]^d) = 0` and row 5 would be vacuous), but **false in general**: for `p` odd
+  the degree-two graded piece is `Λ²(𝔽_p[G]^d)`, on which the stabiliser of a basis pair `{g,h}` is
+  `⟨hg^{-1}⟩` when `hg^{-1}` is an involution.  So `E(n,τ)` is a sum of `Ind_H^G` of modules over
+  subgroups `H` with nontrivial `H` in general, and no free lunch.  (Unverified against SW; recorded
+  only to close off the "maybe the coefficients are always induced" hope.)
+* **The unramified places impose no condition.**  For `x ∈ H²(G,E)` inflated to `H²(k,E)` and `v`
+  unramified in `K`, the composite `H²(G,E) → H²(D_w,E) → H²(k_v,E)` factors through
+  `H²(Ẑ, E) = 0` because `G_{k_v} ↠ Ẑ ↠ D_w`.  So `Ш²(k,E) ∩ inf H²(G,E)` is cut out by the
+  **ramified and archimedean** places only.  A real simplification of the *statement*, but it does
+  not by itself produce the surjection of (b).
+
+### (g) Gotchas
+
+1342. `rw [tateMap_comp_apply]` FAILS on a goal whose inner map is `(cocycleTensorSeq X b M).f` —
+      use explicitly-typed `have h1/h2/h3 := tateMap_comp_apply _ _ _ _` and chain with
+      `refine h1.trans ?_` / `rw [h2]` / `refine h3.trans ?_` / `exact congrArg …`; also write
+      `tateMap φ n x` as a plain application, never `(tateMap φ n).hom x` in a `show`.
+1343. Full root build with `NakayamaNextNatural.lean` + `DecompositionNakayamaNext.lean` + the
+      extended `BaseTateSylow.lean` is **9683 jobs**; `lake build …NakayamaNextNatural` alone is
+      8086 jobs (~10 s); `BaseTateSylow` + `DecompositionNakayamaNext` together is 8685 jobs
+      (~2 min).
+1344. `rw [tateMap_localizedFundamentalClass k w] at h` succeeds even when the rewritten term occurs
+      in the *type of an existential binder*.
+1345. (MATH) In `map obs_P (range ι_{P,*}) = range obs_P`, the `⊆` inclusion is **automatic**
+      (`range obs_P = ker Left_P` and `Left_P ∘ obs_P = 0`); all content is in `⊇`.
+1346. `Submodule.map f (Submodule.map g (LinearMap.range h))` membership unpacks with
+      `rintro _ ⟨_, ⟨_, ⟨x, rfl⟩, rfl⟩, rfl⟩`, and the witness proof must then be the **`.symm`** of
+      the projection formula, since `LinearMap.range` membership is `∃ y, f y = x`.
+
+### (h) Next
+
+1. The `Left`-naturality brick of (e) — it makes the `⊇` half of (d) automatic.
+2. Step 2's second half (§0.98(e) item 1): `Ĥ^*(P, I_{K,S} ⊗ W)` for finite `S`, and
+   `range ι_* = ⋃_S range ι_{S,*}`.  `Units/SIdeleClass.lean` (`SIdele`, `sIdeleDiag`,
+   `sIdeleClassSES`), `SIdeleHerbrand.lean`, `SIdeleNorm.lean`, `AdicSIdeles.lean` and
+   `AdicOrbitTate.lean` are the base to build on.
+3. Step 3's `⊆` half — still the wall.
+
+---
+
+## 1.00 Status (2026-09-04, latest) — row 5 is now a single named hypothesis, and the Tor route is refuted
+
+### (a) What landed
+
+Commits `0db1ee4` and `dce307e`; full root build **9684 jobs**, 0 warnings, 0 errors, 0 sorries,
+axioms `[propext, Choice, Quot.sound]`.
+
+* `Units/IdeleClassTorsionSubgroup.lean` (`0db1ee4`) — step 2 bookkeeping.
+  `range_tateMap_tensor_ideleClassTorsionRes`: the classes of `Ĥ^n(S, C_K[p] ⊗ W)` coming from the
+  ideles are exactly `ker δ`.  `exists_ideleTorsionLocal_of_tateδ_eq_zero` /
+  `tateδ_tateMap_ideleTorsionLocal_eq_zero`: each such class is the class of a family of *purely
+  local* classes, one per `S`-orbit of places, via `ideleTorsionTensorTateResEquiv`.  Both are
+  stated in the gotcha-1340 shape `∃ y, f ((equiv).symm y) = x` to dodge the ℤ-smul diamond.
+* **`Units/NakayamaSpan.lean`** (`dce307e`) — the wall, named.
+
+```
+def HasIdeleClassNakayamaSpan (k K : Type) … (p : ℕ) [Fact p.Prime] : Prop :=
+  ∀ W : Rep ℤ Gal(K/k), (∀ w : ↥W.V, p • w = 0) → ∀ (P : Sylow p Gal(K/k)) (n : ℤ),
+    LinearMap.range (resTateNakayamaTwoMap ↑P (ideleClassRep k K) (baseFundamentalClass k K) W n)
+      ⊔ LinearMap.range (tateMap (resHom ↑P
+          (tensorHomLeft W (ideleToIdeleClass k K))) (n + 1 + 1)).hom = ⊤
+```
+
+  with `range_shaTorusPTorsionMap_of_span` deriving row 5 from it (`Sylow.nonempty` supplies the
+  subgroup, so none appears in the conclusion), plus its surjectivity readings
+  `exists_shaTorusPTorsionMap_of_span` and `exists_shaTorusPTorsionMap_one_of_span`.  The latter is
+  literally the map §0.99(b) says Schmidt–Wingberg needs:
+
+>  `Ĥ^{-2}(G, W)  ↠  Ш¹(G, K^× ⊗ W)`,  `W = E(-1)`.
+
+  This is the repository's standard treatment of an out-of-reach step: a `Prop`-valued `def`, never
+  an axiom and never a `sorry`.
+  `hasIdeleClassNakayamaSpan_of_not_dvd` discharges it unconditionally when `p ∤ [K:k]`: the Sylow
+  subgroup is then trivial and `card_nsmul_eq_zero_tateModule` makes every module in sight vanish.
+  So the hypothesis is non-vacuous and correct in the degenerate case; only `p | [K:k]` is open.
+
+### (b) The remaining chain to `FrattiniKernelEP`, in full
+
+1. `Ш²(K, E) = 0` — **done** (`eq_one_of_mem_sha2`).
+2. degree-two Hochschild–Serre, giving `Ш²(k,E) ⊆ inf H²(G,E)` modulo transgression — **done**
+   (§0.85/§0.86).
+3. `Ĥ^{-2}(G, E(-1)) ↠ Ш¹(G, K^× ⊗ E(-1))` — **done conditionally**
+   (`exists_shaTorusPTorsionMap_one_of_span`).
+4. Kummer, as `G`-modules: `K^× ⊗ E(-1) ≅ H¹(K, E)` when `μ_p ⊆ K` — **missing** (§0.90(c) item 2).
+5. `Ш¹(G, H¹(K,E)) ↠ Ш²(k, E)`, the edge map of 2 restricted to the locally trivial classes —
+   **missing**, but elementary given 1 and 2.
+6. Prop 6 at `k = -2` with the one-dimensional `T = Hom(μ_p, 𝔽_p)`, and at `k = 2` with `T = 𝔽_p`
+   — **done** (`Shafarevich/Shrink.lean`), composed as in §0.99(c).
+
+So exactly two elementary bricks (4, 5) and one hypothesis (`HasIdeleClassNakayamaSpan`) stand
+between the repository and all-solvable.
+
+### (c) Why the span is hard — a refutation to not re-derive
+
+The repository's Tate–Nakayama for a general coefficient module `W` is conditional on
+`Tor₁^ℤ(C_K, W)` being cohomologically trivial.  For `W` killed by `p`,
+
+>  `Tor₁^ℤ(C_K, W) ≅ C_K[p] ⊗_{𝔽_p} W`,
+
+so it is tempting to hope `C_K[p]` is cohomologically trivial and thereby get the span for free.
+**It is not.**  From `1 → K^× → I_K → C_K → 1`,
+
+>  `1 → μ_p(K) → I_K[p] → C_K[p] → ker(K^×/K^{×p} → I_K/I_K^p) → 1`,
+
+and `I_K[p] = ∏_v μ_p(K_v)` — a *full* product, since roots of unity are units everywhere — which
+is `∏_{orbits} Ind_{D_w}^{G} μ_p(K_w)`.  Shapiro then gives `Ĥ^*(G, I_K[p]) = ⊕_v Ĥ^*(D_w, μ_p(K_w))`,
+generally nonzero.  (The last term of the four is where Grunwald–Wang and the Wang counterexample
+live.)  So no dévissage of the coefficients and no Tor computation removes the arithmetic input.
+
+Together with §0.98(b) (no local product description of `Ĥ^*(P, I_K ⊗ W)`), §0.98(c) (lattice
+dévissage is circular) and §0.99(f), the class-formation machinery is now exhausted: it computes
+`coker TN = range obs = ker Left`, and nothing more.
+
+### (d) Orientation of the two halves of §0.99(d), restated
+
+For `ker Left_P (n+1) = Σ_w cor_w (ker Left_w (n+1))`:
+
+* `⊇` (`ker Left_P ⊇ Σ_w cor_w(…)`) is the naturality of `Left` — it is a *prerequisite* for using
+  the other half, since it is what lets a local class be recognised inside `Right_P(range ι_*)`,
+  but on its own it proves nothing about the span.
+* `⊆` is the reciprocity content, i.e. exactly the input Poitou–Tate supplies in the literature.
+
+### (e) Lean notes
+
+* An `Int`-numeral degree such as `(-2 : ℤ) + 1 + 1 + 1` **is** `rfl`-equal to `1`, but supplying an
+  argument of the `1`-form to a lemma stated in the `+1+1+1`-form raises *Application type
+  mismatch*: the elaborator checks argument types at a lower transparency.  Work around it with
+  `refine lemma … ?_ ?_` — unification against the goal assigns the value argument, leaving only the
+  side condition, which `exact` then closes at default transparency.  (gotcha 1347)
+* `Sylow.nonempty` (`Mathlib/GroupTheory/Sylow.lean:177`) is an instance, so
+  `obtain ⟨P⟩ : Nonempty (Sylow p Gal(K/k)) := inferInstance` is all that is needed to drop a Sylow
+  subgroup out of a statement. (gotcha 1348)
+
+### (f) Next, with the bricks already on the shelf
+
+1. **Brick 4** — the Kummer identification as `G`-modules.  Its core is already present:
+   `Profinite/KummerHom.lean` has `IsKummerData`, `IsKummerData.kummerEquiv`
+   (`K^×/(K^×)^n ≅ SmoothH1 G_K μ_n`), `ker_kummerHom`, `kummerHom_surjective`, and
+   `Profinite/KummerRes.lean` has the restriction behaviour (`resH1_kummerClass_eq_one_iff`,
+   `map_localPowers` — the locally trivial classes are the units that are `n`-th powers in every
+   completion).  What is missing is (i) equivariance of `kummerEquiv` for the *outer* group
+   `Gal(K/k)`, and (ii) the twist `E ≅ μ_p ⊗ Hom(μ_p, E)` when `μ_p ⊆ K`, which turns
+   `SmoothH1 G_K μ_p ⊗ Hom(μ_p,E)` into `SmoothH1 G_K E`.
+2. **Brick 5** — the edge map on locally trivial classes.  `Profinite/Transgression.lean`
+   (`exists_comapH2_eq_of_transgression`) is the degree-two inflation–restriction input and
+   `Profinite/ShaComap.lean` the functoriality of `sha2`; `eq_one_of_mem_sha2` is input 1.
+3. **A restructuring worth considering before either.**  Inputs 1 and 2 already give
+   `Ш²(k,E) ⊆ inf H²(G,E)`, so the *target* of the surjection lives inside a finite-level group.
+   Bricks 4 and 5 may therefore be replaceable by a purely finite-level construction of
+   `Ш¹(G, K^× ⊗ W) → H²(G, E)`, avoiding the profinite/finite bridge altogether.
+4. `Left`-naturality (§0.99(e)), then step 3's `⊆` — still the wall.
+
+### (g) The twist can be made to disappear
+
+`W = E(-1) = Hom(μ_p, E)` is a genuine twist only while `μ_p ⊄ k`.  As soon as `μ_p ⊆ k` the
+Galois group `G = Gal(K/k)` acts trivially on `μ_p`, a choice of primitive `p`-th root of unity
+gives a `G`-isomorphism `Hom(μ_p, E) ≅ E`, and brick 4 collapses to
+
+>  `K^× ⊗ E ≅ H¹(K, E)`  —  `kummerEquiv` tensored with `E`, plus `G`-equivariance.
+
+And `μ_p ⊆ k` may be *assumed*: `[k(μ_p) : k]` divides `p - 1`, hence is prime to `p`, while every
+module in sight is killed by `p`.  So restriction to `k(μ_p)` is injective and corestriction is
+surjective on all the groups involved — the same res–cor device the repository already uses to
+reduce row 5 to a Sylow subgroup (`surjective_tateCor_sylow_of_prime`,
+`range_shaTorusPTorsionMap_of_sylow`).  Doing this *first* is likely the cheapest path through
+bricks 4 and 5: it removes the twist, makes `μ_p` a trivial module everywhere, and makes the
+Kummer sequence over `K` a sequence of `G`-modules with no coefficient subtleties.  The abstract engine for
+this is already present and general: `TateCohomology/SylowSurjective.lean` has
+`surjective_tateCor_of_coprime` (corestriction from a subgroup of index prime to a multiple killing
+the cohomology is onto) and `nsmul_eq_zero_tateModule_of_nsmul`, and
+`TateCohomology/SylowInjective.lean` has `eq_zero_of_tateRes_eq_zero`.  Neither is phrased for a
+Sylow subgroup, so both apply verbatim to `Gal(K/k(μ_p)) ≤ Gal(K/k)`; what is missing is only the
+base-field plumbing (and the compatibility of `baseFundamentalClass` with the change of base, which
+§0.92 flags as the one thing its `.choose` definition does not supply).
+
+---
+
+## 1.01 Status (2026-09-05) — sufficient conditions for the span, and the `Left`-naturality brick of §0.99(e) is **not** needed
+
+### (a) What landed
+
+Full root build **9685 jobs**, 0 warnings, 0 errors, 0 sorries.
+
+1. **`Units/NakayamaSpan.lean`**, two new sufficient conditions for `HasIdeleClassNakayamaSpan`:
+
+   * `hasIdeleClassNakayamaSpan_of_isZero` — if `Ĥ^{n+4}(P, C_K[p] ⊗ W)` vanishes for every Sylow
+     `P`, every `W` killed by `p` and every `n`, the span holds.  Reason: that group is where the
+     obstruction lands, so `obs_P = 0`, so `ker obs_P = ⊤`, and `ker obs_P = range TN_P`
+     (`ker_resBaseTateNakayamaPTorsionRight`) already fills the whole group before the ideles
+     contribute anything.  The proof is five lines: transport the vanishing across
+     `isZero_tateModule_tensorObj_nsmulTorsion_repOfAddAut`, then `top_sup_eq`.
+   * `hasIdeleClassNakayamaSpan_of_isZero_idele` — the same conclusion from vanishing of
+     `Ĥ^{n+4}(P, I_K[p] ⊗ W)` **and** `Ĥ^{n+5}(P, μ_p(K) ⊗ W)`, via the squeeze
+     `isZero_tateModule_tensor_ideleClassTorsionRes`.  The first of the two is a condition **place
+     by place** (Shapiro: `Ĥ^*(P, I_K[p] ⊗ W) = ⊕_ω Ĥ^*(P_w, μ_p(K_w) ⊗ W)`), so this reduces the
+     span to data read off the local extensions.
+
+2. **`TateCohomology/NakayamaNextRestrict.lean`** (new module) — the map leaving the comparison of
+   Tate and Nakayama against a subgroup:
+
+   * `resNakayamaIso` — the two identifications of degree, read on a subgroup — together with
+     `tateRes_tateNakayamaIso`, `tateCor_resNakayamaIso` and the two `symm` versions.
+   * `resTateNakayamaNextMap`, `tateRes_tateNakayamaNextMap`, **`tateCor_tateNakayamaNextMap`**, and
+     `map_range_resTateNakayamaNextMap`:
+
+     >  `cor_H ( range obs_H )  =  range obs_G`   whenever `cor_H` is onto on `Ĥ^{n+2}(–, A ⊗ M)`.
+
+   * `resTateNakayamaTwoNextMap` and the same three statements for the cocycle attached to a
+     prescribed class in degree two.
+
+### (b) Why (2) replaces the 600-line brick of §0.99(e)
+
+§0.99(d) phrased row 5's remaining half as an identity between **kernels of `Left`**, and §0.99(e)
+costed the `⊇` half as naturality of `Left` — a large ladder of squares.  That is avoidable.
+`range_resBaseTateNakayamaPTorsionRight` (`Units/BaseTateSylow.lean:130`) says
+
+>  `range obs_S (n)  =  ker Left_S (n+1)`
+
+for **every** subgroup `S`, so every statement §0.99(d) makes about `ker Left` is literally a
+statement about `range obs`, and the identity to prove becomes
+
+>  `range obs_P  =  Σ_w cor_w ( range obs_{P_w} )`.
+
+The `⊇` half of *that* is `tateCor_tateNakayamaTwoNextMap` — landed above, four lines — because
+`map_resBaseTateNakayamaPTorsionRight_eq_range_iff` (`BaseTateSylow.lean:143`) strips the
+`cocycleTensorObjPTorsionEquiv` off any spanning statement and leaves exactly
+`tateNakayamaTwoNextMap`.  **`Left`-naturality is off the critical path.**  Item 4 of §1.00(f)
+should be read as: *step 3's `⊆` only.*
+
+### (c) The structure of `C_K[p]`, from Grunwald–Wang
+
+`exists_pow_eq_of_forall_localPow_outside_of_prime` (`CFT/GrunwaldWang.lean:226`) needs only the
+**finite** places and tolerates a finite exceptional set, and it carries no roots-of-unity
+hypothesis.  Hence for *every* prime `p`
+
+>  `ker( K^×/(K^×)^p → I_K/I_K^p ) = 1`,   so   `C_K[p] ≅ I_K[p] / μ_p(K)`
+
+— the four-term sequence of §1.00(c) collapses to three terms.  This is the exact sequence the
+repository already carries as `resSeq_tensorSeq_ideleClassTorsion_shortExact`
+(`Units/IdeleClassTorsionSubgroup.lean:81`); the observation is that Grunwald–Wang is what makes it
+short, and that it is short for *every* `p`, not only for `p` odd or `μ_p ⊆ K`.  It does **not**
+make `C_K[p]` cohomologically trivial (§1.00(c) stands): the middle term `⊕_w Ĥ^*(P_w, μ_p(K_w))` is
+generally nonzero, which is precisely why (a)(2) is a *sufficient* condition and not a proof.
+
+### (d) What is left
+
+* Step 3's `⊆` — `range obs_P ⊆ Σ_w cor_w(range obs_{P_w})`.  Still the reciprocity wall; this is
+  where Poitou–Tate enters in the literature.  The best lead remains `C_K[p] ≅ I_K[p]/μ_p(K)` plus
+  Shapiro: the obstruction is a map out of `Ĥ^{n+2}(P, C_K[p] ⊗ W)`, whose only non-local input is
+  the `μ_p(K)` term, and the reciprocity law is exactly a statement about that term.
+* Bricks 4 and 5 of §1.00(b), unchanged — and §1.00(g)'s reduction to `μ_p ⊆ k` first.
+
+### (e) Lean notes
+
+* `lake build InverseGalois.CFT.Units.NakayamaSpan` with the two new imports is **8410 jobs, ~93 s**;
+  `…TateCohomology.NakayamaNextRestrict` is **8072 jobs, ~24 s**.  (gotcha 1349)
+* `rw [tateCor_naturality]` / `rw [tateRes_naturality]` **fail** on a goal whose morphism is
+  `(cocycleTensorSeq S b M).f` while the surrounding `tateCor`/`tateRes` names the object as
+  `cocycleTensorObj S b M`: the two are defeq only by unfolding the non-reducible `cocycleTensorSeq`
+  and taking a structure projection, which `rw`'s keyed matching will not do.  Instantiating the
+  lemma's implicit objects explicitly — `tateRes_naturality (A := tensorObj (shiftObj A) M)
+  (B := cocycleTensorObj (shiftObj A) b M) H …` — elaborates fine (argument types are checked at
+  default transparency) and produces a hypothesis in the `cocycleTensorObj` form; `exact h` then
+  closes the goal.  (gotcha 1352)
+
+---
+
+## 1.02 Status (2026-09-05, later) — the span is now a statement about a *family* of subgroups, read entirely on the map leaving the comparison
+
+### (a) What landed
+
+Commit `a2ebcf5`.  Full root build **9685 jobs**, 0 warnings, 0 errors, 0 sorries; axioms of every
+new declaration are `[propext, Classical.choice, Quot.sound]`.
+
+1. **`Units/NakayamaSpan.lean`** — `hasIdeleClassNakayamaSpan_of_next`.  The named hypothesis
+   `HasIdeleClassNakayamaSpan k K p` is now implied by a statement in which the comparison of Tate
+   and Nakayama does not appear at all, only the map *leaving* it:
+
+   >  `map obs_P ( range ι_{P,*} )  =  range obs_P`   for every `p`-torsion `W`, every Sylow `P`,
+   >  every degree.
+
+   Proof: `ker_resBaseTateNakayamaPTorsionRight` rewrites `range TN_P` as `ker obs_P`, `sup_comm`,
+   then `map_eq_range_iff_sup_ker_eq_top` (`Units/IdeleTorusShaSharp.lean:68`) converts the `⊔ = ⊤`
+   into the image identity, and `map_resBaseTateNakayamaPTorsionRight_eq_range_iff` strips the
+   `cocycleTensorObjPTorsionEquiv`.  This matters because `obs` is *natural in the coefficients* and
+   the comparison is not, so only in this form can the places be brought to bear.
+
+2. **`TateCohomology/NakayamaNextRestrict.lean`** — the family assembly,
+   `map_range_eq_range_of_iSup_cor` and its degree-two specialisation
+   `map_range_eq_range_of_iSup_cor_two`.  Given a family of subgroups `Hs : ι → Subgroup G` and, for
+   each `i`, an explicit submodule `V i ⊆ Ĥ^{n+2}(Hs i, A ⊗ M)` with
+
+   * `hV` — `cor_{Hs i} (V i) ≤ range ι_*`, and
+   * `hglob` — `range obs_G ≤ ⨆_i cor_{Hs i} ( obs_{Hs i} (V i) )`,
+
+   the conclusion is `map obs_G (range ι_*) = range obs_G`, exactly the hypothesis of (1).  The proof
+   is four lines and consumes `tateCor_tateNakayamaNextMap`: a value produced on a subgroup out of a
+   class whose corestriction `ι_*` already reaches is a value produced on the whole group out of a
+   class `ι_*` reaches.
+
+### (b) The shape of the family hypothesis, corrected
+
+The previous session's draft of (2) took the hypothesis in the form *"on each subgroup, `obs`
+attains on the local ideles every value it attains at all"*.  That is **not** what the decomposition
+brick supplies and is in general false at a single place — a single decomposition group sees only
+one local factor, and §0.99's projection formula gives the inclusion in the wrong direction
+(gotcha 1277).  The usable form quantifies over an explicit family of submodules `V i` and asks only
+that the *corestrictions* cover, which is what Shapiro produces.  Four wrapper lemmas built on the
+old form (`sup_range_eq_top_iff_map_range`, `sup_range_eq_top_of_iSup_cor`, and their `_two`
+versions) were deleted along with a private copy of the generic linear-algebra lemma the repository
+already had.
+
+### (c) What is left, unchanged in substance
+
+* `hglob` at the family of decomposition subgroups of `P` — i.e. still
+  `range obs_P ⊆ Σ_w cor_w(range obs_{P_w})`, the reciprocity wall of §1.01(d).  The assembly above
+  is the consumer that has been waiting for it; nothing else is missing on that side.
+* `hV` for the same family — the easy direction, Shapiro's decomposition of `range ι_*`; deliberately
+  not yet wired up, because `hglob` has no proof and the machinery would be unconsumed.
+* Bricks 4 and 5 of §1.00(b), and §1.00(g)'s reduction to `μ_p ⊆ k` first.
+
+### (d) Lean notes
+
+* `map_eq_range_iff_sup_ker_eq_top (f : M →ₗ[R] N) (S : Submodule R M) : Submodule.map f S =
+  LinearMap.range f ↔ S ⊔ LinearMap.ker f = ⊤` already exists at
+  `Units/IdeleTorusShaSharp.lean:68`, used at `BaseTateSylow.lean:189`.  Do not re-derive it in a
+  `TateCohomology/` module — `IdeleTorusShaSharp` does not import `NakayamaNextRestrict`, so the two
+  copies would not even clash at elaboration time.  (gotcha 1353)
+* `Units/BaseTateSylow.lean:213` already carries `range_shaTorusPTorsionMap_of_sylow_next`, the
+  "next map" form of the Sylow criterion.  (gotcha 1355)
+* There is **no** `Gal(K/k)`-action on `SmoothH1 G_K M` anywhere under `CFT/Profinite/`; bricks 4/5
+  would have to build it.  (gotcha 1356)
+* No module under `CFT/` mentions `IsInverseGalois` except the four `Scholz/*` files: there is no
+  general bridge from `SmoothH2` classes to embedding problems, and the only EP↔arithmetic bridge is
+  `CFT/Kummer/CentralEmbeddingPlaces.lean`, whose `exists_surjective_hom_of_forall_place_lift`
+  needs a **central** kernel.  (gotcha 1357)
+
+---
+
+## 1.03 Status (2026-09-05, later still) — **brick 5 is done at the profinite level**, and the local condition is the *localised* one
+
+### (a) What landed
+
+Commits `73f68ec`, `c7faa77`, `565db26`, `a1c110a`, `b9bd14d`, `d07b7fd`, `6ed5e84`, `782d566`.
+Full root build **9691 jobs**, 0 warnings, 0 errors, 0 sorries.
+
+The whole of brick 5 of §1.00(b), in the profinite language of `CFT/Profinite/`, is now a theorem.
+The tower, bottom to top:
+
+1. **`Profinite/Transgression.lean`** (`73f68ec`, strengthened in `d07b7fd`) — the raw descent.  A
+   smooth two cocycle `a` whose restriction to `π.ker` is the coboundary of a smooth `b` is
+   corrected by four successive twists into a cocycle inflated from the quotient, provided the
+   transgression of the twisted cocycle is the coboundary of a smooth homomorphism.  Each correction
+   is built by decomposing an element along its coset, so smoothness survives, but the order matters:
+   the last two corrections need an open normal subgroup cut out by the trivialisation the first two
+   produce.  `exists_comapH2_eq_of_locally_coboundary` packages this with the local input in the form
+   `smoothH2Mk_mem_sha2` delivers, and `exists_comapH2_eq_of_mem_sha2` is then a one-liner.
+2. **`Profinite/H1Conj.lean`** (`c7faa77`) — the conjugation action of the ambient group on
+   `SmoothH1 ↥N M` for `N` normal, with the subgroup acting trivially, so it is an action of the
+   quotient.  **This retires gotcha 1356**, which said no such action existed.
+3. **`Profinite/TransgressionClass.lean`** (`b9bd14d`) — `IsTransgressionDatum`, the four conditions
+   a transgression satisfies, and `transClass`, the class in `SmoothH1 G (SmoothH1 ↥N M)` they
+   define.  `transClass_eq_one_iff` is the equivalence with trivialisation by a smooth homomorphism;
+   the hard direction needs the trivialising homomorphism on the kernel to be extendable smoothly to
+   the whole group, which is why `HasOpenNormalBasis` (true for compact groups) appears.
+4. **`Profinite/TransgressionRestrict.lean`** (`6ed5e84`, `782d566`) — the local side.  A
+   transgression restricted to a subgroup `D` in both variables is a transgression for
+   `N.subgroupOf D`, hence has a class `localTransClass` of its own; the localisation homomorphism
+   `resCoeffH1` restricts a class to `D` and its coefficients to `N ⊓ D` at the same time; and
+   `resCoeffH1 (transClass h) = localTransClass h D` is `rfl`.  The everywhere locally trivial
+   classes of that localised system are `sha1Loc`, and the capstone is
+
+   >  `exists_comapH2_eq_of_sha1Loc_eq_bot` — a class of `H²(G,M)` which is locally trivial on a
+   >  family `S` and dies on `π.ker` is inflated from the discrete quotient, as soon as
+   >  `sha1Loc M π.ker S = ⊥`.
+
+### (b) A correction to §1.00(b) item 5: which `Ш¹` it is
+
+Item 5 was written as `Ш¹(G, H¹(K,E))` with the localisation `H¹(G_v, H¹(K,E))` — the *same*
+coefficients restricted.  That is **not** what local triviality of the class supplies.  The
+transgression is functorial in the whole extension: for `D ≤ G_k` with image `D̄` in `G`,
+
+>  `H²(G_k,M)₁ --tg--> H¹(G, H¹(N,M))`
+>  `      | res_D                | res_{D̄} then localise the coefficients`
+>  `H²(D,M)₁  --tg--> H¹(D̄, H¹(D ⊓ N, M))`
+
+so `res_D α = 0` only forces the image of `tg α` in `H¹(D̄, H¹(D ⊓ N, M))` to vanish — the
+coefficients are localised along with the class.  This is strictly weaker than the naive reading, so
+the theorem obtained is strictly stronger, and it is also the *correct* target: the arithmetic
+`Ш¹(G, K^× ⊗ W)` of step 3 is defined as `ker( H¹(G, K^×⊗W) → H¹(G, I_K⊗W) )`, and Shapiro turns the
+right-hand side into `⊕_v H¹(D_w, K_w^×⊗W)` — the coefficients localised.  The two match.
+
+### (c) What is left for brick 5's arithmetic side
+
+`sha1Loc M π.ker S` lives in `SmoothH1 G_k (SmoothH1 G_K M)` while the arithmetic `Ш¹` lives in
+`H¹(Gal(K/k), –)`.  Two elementary steps bridge them, neither yet written:
+
+1. **Inflation.** `G_K` acts trivially on `SmoothH1 G_K M` (`conjH1_eq_self_of_mem`), so the
+   transgression cochain factors through `Gal(K/k)` and the class is inflated; inflation is
+   injective in degree one (`Profinite/Quotient.lean`), so `sha1Loc = ⊥` follows from the
+   finite-level statement plus compatibility of the localisations.
+2. **Brick 4**, unchanged: `SmoothH1 G_K E ≅ K^× ⊗ W` as `Gal(K/k)`-modules, with
+   `SmoothH1 G_{K_w} E ≅ K_w^× ⊗ W` compatibly.  `Profinite/KummerConj.lean` (`565db26`, `a1c110a`)
+   already carries the equivariance half; the twist half collapses once §1.00(g)'s reduction to
+   `μ_p ⊆ k` is done.
+
+### (d) Lean notes
+
+* `transClass_eq_one`'s smoothness hypothesis was weakened from `IsSmooth₁ φ` to
+  `IsSmooth₁ (fun x : ↥N => φ ↑x)` — the proof only ever used the latter.  Callers supply
+  `isSmooth₁_comp (continuous_subtype N) hφs`.  (gotcha 1418)
+* `isSmooth₁_comp` (`Profinite/Res.lean`) needs an explicit `rw [map_mul f x n]`: `f (x*n) = f x * f n`
+  is defeq only for a `MonoidHom.mk'` built with an `rfl` proof, not for a general `MonoidHom`.
+  (gotcha 1419)
+* `abel` treats `Additive.ofMul 1` as an atom, so the `Additive.ofMul.injective; simp only [...];
+  abel` idiom must include `ofMul_one` whenever a literal `1` can appear (e.g. from `1 / a`).
+  (gotcha 1413)
+* `Subgroup.normal_subgroupOf` and `Subgroup.instMulDistribMulAction` are both instances, and the
+  subgroup action is `SMul.comp` along the coercion, so `(σ : ↥D) • m` is *definitionally*
+  `(↑σ : G) • m`.  That is why `resSubH1_smul` and `resCoeffH1_transClass` are both `rfl`.
+  (gotcha 1421)
+* `Profinite/Coeff.lean` is **not** reachable from `Profinite/TransgressionClass.lean`; a module
+  wanting `coeffH1` must import it explicitly.  (gotcha 1422)
+
+---
+
+## 1.04 Status (2026-09-05, latest) — the transgression is always inflated, so its local conditions are a group of the *finite* quotient
+
+### (a) What landed
+
+Commit `3fc2890`, `InverseGalois/CFT/Profinite/TransgressionInflate.lean`.  Full root build **9692
+jobs**, 0 warnings, 0 errors, 0 sorries.
+
+This is item 1 of §1.03(c), the inflation half of brick 5's arithmetic side.
+
+1. **The transgression is trivial on the kernel.**  `IsTransgressionDatum.apply_one` reads the
+   cocycle condition at `σ = τ = 1` and `x ∈ N`: it says `t 1 x = t 1 x * t 1 x`, so `t 1 x = 1`.
+   With the left-invariance condition `t (n σ) x = t σ x` for `n ∈ N` this gives
+   `IsTransgressionDatum.apply_eq_one_of_mem`: `t n x = 1` for all `n, x ∈ N`.  Hence
+   `transCochain_eq_one_of_mem` — the transgression cochain is identically `1` on `N`.
+2. **So the transgression class is inflated.**  `N` acts trivially on `SmoothH1 ↥N M`
+   (`conjH1_eq_self_of_mem`, made an instance `actsTrivially_smoothH1`), and a smooth cocycle that
+   is trivial on an open normal subgroup on which the coefficients are fixed is inflated
+   (`exists_inflH1_eq`, `Profinite/Quotient.lean`).  `exists_inflH1_transClass` therefore produces
+   `x : SmoothH1 (G ⧸ N) (SmoothH1 ↥N M)` with `inflH1 x = transClass h`.
+3. **Localising an inflated class is inflating its localisation.**  With
+   `quotSubHom : ↥D ⧸ N.subgroupOf D →* G ⧸ N` and the coefficient map `resSubH1 N D`, the
+   composite `resCoeffQuotH1 N D` is defined on the quotient groups alone, and
+
+   >  `resCoeffH1 N D ∘ inflH1 N = inflH1 (N.subgroupOf D) ∘ resCoeffQuotH1 N D`
+
+   is **`rfl`** once the class is written as `smoothH1Mk` of a cocycle.  Since inflation is
+   injective in degree one, `resCoeffH1 N D (inflH1 x) = 1 ↔ resCoeffQuotH1 N D x = 1`.
+4. **The hypothesis is now a group of the quotient.**  `sha1Level M N hop S` is the subgroup of
+   `SmoothH1 (G ⧸ N) (SmoothH1 ↥N M)` cut out by the localisations, and `sha1Level_eq` presents it
+   as `⨅ D ∈ S, (resCoeffQuotH1 N D hop).ker`.  For `G = G_k`, `N = G_K` this is literally
+   `Ш¹(Gal(K/k), H¹(G_K, M))` with the coefficients localised at each `D`, exactly the group
+   §1.03(b) identified.  The capstone `exists_comapH2_eq_of_sha1Level_eq_bot` is the descent
+   theorem conditioned on it, and `transClass_eq_one_of_sha1Level` the step that consumes it.
+
+### (b) What is left of brick 5's arithmetic side
+
+Only brick 4, unchanged in substance: `SmoothH1 G_K E ≅ K^× ⊗ W` as `Gal(K/k)`-modules, with
+`SmoothH1 G_{K_w} E ≅ K_w^× ⊗ W` compatibly with `resSubH1`.  Two sub-bridges:
+
+1. **The language bridge.**  `sha1Level` lives in `SmoothH1` of the *discrete* group `G_k ⧸ G_K`,
+   while `Ш¹(Gal(K/k), K^×⊗W)` lives in `tateModule … 1 = groupCohomology … 1`.  On a discrete group
+   the smoothness condition is empty, so the two cohomologies agree; this is
+   `Profinite/Discrete.lean`.
+2. **The coefficient bridge**, which is brick 4 proper: Kummer plus the twist.  The equivariance
+   half is `Profinite/KummerConj.lean`; the twist is
+   `Hom_{cont}(G_K, μ_p) ⊗_{𝔽_p} W ≅ Hom_{cont}(G_K, μ_p ⊗ W)`, an isomorphism because `W` is a
+   finite-dimensional `𝔽_p`-vector space, checked on a basis (the map itself is natural, so the
+   basis does not survive into the statement).  Note that the twist does **not** need `μ_p ⊆ k`:
+   the map `a ⊗ w ↦ (x ↦ w(x α / α))`, `α^p = a`, is `Gal(K/k)`-equivariant for the diagonal action
+   on `K^× ⊗ Hom(μ_p, E)` as it stands.  §1.00(g)'s reduction remains available but is not a
+   prerequisite.
+
+### (c) Lean notes
+
+* `IsTransgressionDatum` forces `t 1 x = 1` for `x ∈ N`: the cocycle condition at `σ = τ = 1` gives
+  `a = a * a`, closed by `left_eq_mul.1`.  (gotcha 1429)
+* `refine ⟨fun h => lemma _ _ _ ?_, …⟩` is illegal when the `?_` needs the lambda-bound `h` — the
+  metavariable is created outside the lambda.  Symptom: two errors, *don't know how to synthesize
+  placeholder* and *unsolved goals* listing a goal without `h`.  Use `constructor` and `intro h`
+  bullets.  (gotcha 1430)
+* `resCoeffH1 N D (inflH1 N A hop x) = inflH1 (N.subgroupOf D) A_D _ (resCoeffQuotH1 N D hop x)` is
+  `rfl` after `obtain ⟨u, hu, hs, rfl⟩ := smoothH1Mk_surjective x`: `comapH1` and `coeffH1` compose
+  definitionally on `smoothH1Mk`.  (gotcha 1431)
+* `waitbuild.sh` may not create its log file at all while waiting for memory; a missing log is not
+  an error.  (gotcha 1433)
+
+---
+
+## 1.05 Status (2026-09-05, latest) — **brick 4's construction side is built**: the first cohomology of the subgroup fixing a field *is* the units tensor the homomorphisms of the roots of unity, equivariantly and compatibly with restriction
+
+### (a) What landed
+
+Seven modules under `InverseGalois/CFT/Profinite/`, none of them previously recorded here.  Commits
+`f1d3382` (`TwistRes`, `KummerTower`) and the present one (`TwistTensor`, plus the tensor-level
+additions to `KummerTwist`); the first four landed with the profinite Kummer group.  Full root build
+**9700 jobs**, 0 warnings, 0 errors, 0 sorries.
+
+This is brick 4 of §1.04(b), the coefficient bridge, on its construction side.  The target is
+
+>  `SmoothH1 G_K E ≅ K^× ⊗_ℤ Hom(μ_p, E)` as `Gal(K/k)`-modules,
+>  compatibly with restriction to a decomposition subgroup.
+
+The route is not "compose four isomorphisms" (the abandoned plan of gotcha 1445) but **build the
+map directly and characterise it**, which is why every statement below is an equation between two
+maps rather than a diagram chase.
+
+1. **`Pi.lean` — the algebra of coefficient maps.**  A homomorphism of the coefficients induces a
+   map of first cohomologies by postcomposing a cocycle (`coeffH1`); when the coefficients are acted
+   on trivially this is functorial in the coefficients, so `coeffH1End` makes the endomorphisms of
+   the coefficient group act on the cohomology, and `smoothH1PiHom` compares the cohomology of a
+   product of coefficient groups with the product of the cohomologies.
+2. **`Twist.lean` — the twist itself.**  Given a class `κ a ∈ H¹(G, M)` provided by an element `a`
+   of a base group and a homomorphism `w : M →* E` of the coefficients, `twistClass κ a w` is
+   `coeffH1 w (κ a)`.  It is bimultiplicative, hence `twistMap` out of
+   `Additive A ⊗[ℤ] Additive (M →* E)`; and when `M` is cyclic, `E` is killed by `p`, `κ` is
+   surjective with kernel the `p`-th powers and `E ≅ ∏ M`, `twistEquiv` upgrades `twistMap` to an
+   isomorphism.  The coordinates `twistCoord` are what invert it.
+3. **`TwistConj.lean` — equivariance on a pure tensor.**  The first cohomology of a *normal*
+   subgroup `N ◁ G` carries the conjugation action of `G`, and for `coeffH1` to commute with it the
+   homomorphism of the coefficients must move too: `homSMul σ w = σ ∘ w ∘ σ⁻¹`.  This is an action
+   (`homMulDistribMulAction`), `conjH1_coeffH1` is the commutation, and `conjH1_twistClass` is the
+   equivariance of the twist on a pure tensor, conditional on the classes the base group provides
+   being equivariant (`hκ : conjH1 σ (κ a) = κ (ρ σ a)`).
+4. **`KummerTwist.lean` — the arithmetic instance.**  For `K` an intermediate field of a Galois
+   `Ω/k`, `kummerSubHom` is surjective with the `p`-th powers as kernel, which is exactly the datum
+   `twistEquiv` consumes, so
+
+   >  `kummerTwistEquiv : Additive (↥K)ˣ ⊗[ℤ] Additive (M →* E) ≃+ Additive (SmoothH1 ↥K.fixingSubgroup E)`.
+
+   `conjH1_kummerTwistClass` is its `Gal(Ω/k)`-equivariance on a pure tensor, obtained from
+   `conjH1_kummerSubHom` with `ρ σ = AlgEquiv.restrictNormalHom ↥K σ • ·`.
+5. **`TwistRes.lean` — naturality in the group.**  A homomorphism `π` of base groups induces
+   `comapH1` by precomposing a cocycle, `coeffH1` by postcomposing; `comapH1_coeffH1` says **the two
+   compositions are equal on the nose** (both are `smoothH1Mk` of the same cochain).  Hence
+   `comapH1_twistMap`: once the classes the base group provides are carried along by some
+   `ν : A →* A'`, the whole twisting map is carried to the twisting map of the image, tensored with
+   the identity on `M →* E`.  Two instances are packaged: `resInclH1` along an inclusion of
+   subgroups, and `resSubH1 N D` for the part of `N` lying inside `D` — read on `G_k` with
+   `N = G_K` and `D` a decomposition subgroup, that is **localisation at a place**.
+6. **`KummerTower.lean` — naturality along a tower of fields.**  For `K ≤ L` the Kummer *cochain*
+   of a unit `a ∈ (↥K)ˣ`, restricted to `L.fixingSubgroup`, is the Kummer cochain of `j a` read
+   upstairs (`kummerSubCochain_tower`), because the cochain is *characterised* — the chosen `p`-th
+   roots of `a` upstairs and downstairs are two roots of the same element of `Ω`, so they have the
+   same coboundary — and so the two cochains agree *before* any class is taken.  Feeding this into
+   `comapH1_twistMap` gives `resInclH1_kummerTwistEquiv`: **through the identification, restricting
+   a class is including the units.**
+7. **`TwistTensor.lean` — equivariance of the whole map.**  `homSMulHom σ` packages `homSMul σ` as
+   an endomorphism of `M →* E`, and
+
+   >  `conjH1 σ ∘ twistMap κ = twistMap κ ∘ (ρ σ ⊗ homSMulHom σ)`
+
+   is `conjH1_twistMap`, by `TensorProduct.induction_on` off `conjH1_twistClass`.  For the action to
+   be an action of the *quotient*, `N` must move both factors trivially; on the second factor that
+   is automatic (`homSMul_eq_self_of_mem`: a subgroup acting trivially on source and target acts
+   trivially on the homomorphisms between them).  On the arithmetic side `KummerTwist.lean` now
+   carries `conjH1_kummerTwistMap` / `conjH1_kummerTwistEquiv` together with the two triviality
+   facts `smul_units_eq_self_of_mem_fixingSubgroup` (an automorphism fixing `K` pointwise restricts
+   to `1`, by `IntermediateField.restrictNormalHom_ker`) and
+   `homSMul_eq_self_of_mem_fixingSubgroup`.
+
+### (b) What is left of brick 4
+
+Two items, both packaging rather than mathematics:
+
+1. **Descend the action.**  Everything above is stated for `Gal(Ω/k)` acting through
+   `K.fixingSubgroup`-triviality.  `Profinite/Quotient.lean` already has the general machinery —
+   `class ActsTrivially N M`, `quotientAut N M : G ⧸ N →* MulAut M`,
+   `instance quotientMulDistribMulAction`, `quotientMk_smul … = rfl`, `isSmoothAction_of_actsTrivially`
+   — and `TransgressionInflate.lean:92` instantiates it for `SmoothH1 ↥N M`.  What is missing is only
+   the *arithmetic* instantiation: `homMulDistribMulAction` is a `def`, not an `instance`, and the
+   transport along `Gal(Ω/k) ⧸ K.fixingSubgroup ≃* Gal(↥K/k)` (which is
+   `QuotientGroup.quotientKerEquivOfSurjective` applied to `AlgEquiv.restrictNormalHom`, its kernel
+   being `IntermediateField.restrictNormalHom_ker`) has not been written down.  (gotcha 1467)
+2. **The local `hν`.**  `resSubH1_twistClass` / `resSubH1_twistMap` are in place abstractly; the
+   arithmetic hypothesis they still want is the identification of `↥(N.subgroupOf D)` — for
+   `N = K.fixingSubgroup` and `D` a decomposition subgroup — with `↥L.fixingSubgroup` for
+   `L = K ⊔ fixedField D`.  That needs `D` closed and the infinite Galois correspondence, plus the
+   henselization-versus-completion comparison `(K ⊔ F)^× / p ≅ K_w^× / p`.
+
+Then the language bridge of §1.04(b) item 1 (`Profinite/Discrete.lean`) carries the result into
+`tateModule … 1` and it can feed `sha1Level`.
+
+### (c) Strategic reconnaissance: the reciprocity wall is where it looked
+
+A pass over `Units/NakayamaSpan.lean`, `Units/BaseTate.lean`, `Units/BaseFundamental.lean`,
+`Units/GlobalTate.lean` and `Units/IdeleTorusShaTorsion.lean` settled three things about row 5, all
+negative, and one about the shape of the endgame.
+
+* **The sufficient conditions in `NakayamaSpan.lean` are not a proof route.**  Both
+  `hasIdeleClassNakayamaSpan_of_isZero` and `_of_isZero_idele` ask a Tate group of the ideles to
+  vanish, and it does not.  Take `k = ℚ`, `K = ℚ(i)`, `p = 2`, `G = P = ℤ/2`.  Then
+  `I_K[2] = ⊕_w μ_2(K_w) = ⊕_v Ind_{G_v}^G ℤ/2`, and `Ĥ⁰(G_v, ℤ/2)` is `0` for split `v`
+  (`G_v = 1`) but `ℤ/2` for non-split `v`.  So `Ĥ⁰(G, I_K[2]) = ⊕_{v \text{ non-split}} ℤ/2 ≠ 0`.
+  The conditions are genuinely only sufficient.  (gotcha 1468)
+* **No reformulation of the span escapes reciprocity.**  `range ι_* = ker δ` for the connecting map
+  `δ : Ĥ^{n+2}(P, C ⊗ W) → Ĥ^{n+3}(P, K^× ⊗ W)`, so
+  `range TN_P ⊔ range ι_* = ⊤ ⟺ range (δ ∘ TN_P) = range δ ⟺ Ш^{n+3}(P, K^× ⊗ W) = range shaTorusPTorsionMap`,
+  which is row 5 itself.  The span is a restatement, not a reduction.  (gotcha 1469)
+* **The structural blocker is `.choose`.**  `baseFundamentalClass k K` is
+  `(exists_zsmul_eq_zero_imp_dvd_H2_ideleClassRep_base k K).choose`, and it is built from
+  `globalFundamentalClass`, itself `.choose` (`_of_rat` restricts, `_of_top` inflates, `_base` takes
+  the normal closure over ℚ).  The global-versus-local comparison square that row 5 needs cannot be
+  written against an opaque class; it wants the invariant-theoretic construction out of
+  `localInvariantHom` plus Hasse reciprocity, i.e. the `CFT/Brauer/` tower.  That is the largest
+  single remaining item in the whole file.  (gotcha 1118)
+* **There are two independent hypothesis routes to all-solvable.**  `Main.lean:71`
+  `isSolvable_isInverseGalois_of_splitPrimePowerEP` needs `SplitPrimePowerEP` *alone*, and
+  `Generic.lean:256` `splitPrimePowerEP_of_genericSplitEP` reduces that to `∀ ℓ, GenericSplitEP ℓ`.
+  The `FrattiniKernelEP` route is the other.  Brick 4 is needed on both, which is why it is the
+  right thing to be building while the reciprocity tower is unaffordable.  (gotcha 1470)
+* Note also that the `Units/` side's "everywhere locally trivial" is
+  `ker (tateMap (tensorHomLeft W (globalUnitsToIdele k K)) n)` — through the *ideles*, i.e. with
+  localised coefficients by Shapiro, which is exactly the correction §1.03(b) made on the profinite
+  side.  The two sides are asking the same question.  (gotcha 1471)
+
+### (d) Lean notes
+
+* The general machinery for a quotient action on `SmoothH1` already exists in
+  `Profinite/Quotient.lean`; gotcha 1356 ("no arithmetic `Gal(K/k)`-action on `SmoothH1 G_K M`")
+  means only that the arithmetic instantiation is missing.  (gotcha 1467)
+* `TensorProduct.induction_on` naturality proofs want `simp only [map_zero]` and
+  `simp only [map_add, hz, hz']`, never `rw`; the `tmul` case is
+  `rw [TensorProduct.map_tmul]; exact congrArg Additive.ofMul (…)`, and `Additive.ofMul a` is
+  definitionally `a`, so `x.toMul` closes the coercion gap.  (gotchas 1461, 1454)
+* `MonoidHom.mk' (homSMul σ) (homSMul_mul σ)` is the whole of `homSMulHom`: `mk'` wants only
+  `MulOneClass` on the source and `Group` on the target, and `M →* E` is a `CommGroup`.
+* A statement mentioning `AlgEquiv.restrictNormalHom (↥K) σ • a` for `a : (↥K)ˣ` times out
+  instance search at the default budget; it needs
+  `set_option synthInstance.maxHeartbeats 400000` and `set_option maxHeartbeats 1000000`.
+  (gotcha 1381, now also for `smul_units_eq_self_of_mem_fixingSubgroup`)
+* `restrictNormalHom_eq_one_of_mem_fixingSubgroup` already exists, in `Brauer/SmoothLevel.lean:87`.
+  A duplicate in `Profinite/` is not caught by `lake build <Module>` — it surfaces only at the root
+  build, as *environment already contains …* on the `import` line of `InverseGalois/CFT.lean`.
+  Grep the whole of `InverseGalois/` for a new name, not just the subdirectory.  (gotcha 1472)
+
+---
+
+## 1.06 Status (2026-09-05, latest) — the twisted Kummer identification descends to `Gal(K/k)`
+
+Commit `719ac8b`, full root build green: **9703 jobs, 0 warnings, 0 errors, 0 sorries.**
+
+### (a) What landed
+
+Three new modules and two one-word promotions finish the "as `Gal(K/k)`-modules" half of brick 4.
+
+* `Profinite/QuotientAction.lean` — the additive form of `Profinite/Quotient.lean`.  A new class
+  `AddActsTrivially N T` (each element of `N` fixes every point of the `AddCommGroup` `T`) and, from
+  it, `instance quotientDistribMulAction : DistribMulAction (G ⧸ N) T` built by lifting
+  `DistribMulAction.toAddAut G T` through `QuotientGroup.lift`; `quotientAddMk_smul` is `rfl`.  This
+  is needed because a tensor product is an additive group and there is no writing it otherwise,
+  while the coefficients and their cohomology stay multiplicative.
+* `Profinite/TwistAction.lean` — `instance tensorDistribMulAction : DistribMulAction G (Additive A
+  ⊗[ℤ] Additive B)`, the *diagonal* action, built from `tensorSMulMap` (a `TensorProduct.map` of the
+  two `MulDistribMulAction.toMonoidHom`s) with `tensorSMulMap_one` / `tensorSMulMap_comp` proved by
+  `TensorProduct.ext'`.  Then `tensorSMul_eq_self_of_forall`, the instance
+  `actsTrivially_tensor : [ActsTrivially N A] → [ActsTrivially N B] → AddActsTrivially N (Additive A
+  ⊗[ℤ] Additive B)`, and `conjH1_twistMap_smul`, which is `conjH1_twistMap` with the tensor map
+  replaced by `σ • z`.
+* `Profinite/KummerAction.lean` — the arithmetic instantiation.
+  `noncomputable instance restrictUnitsMulDistribMulAction : MulDistribMulAction Gal(Ω/k) ((↥K)ˣ)`
+  is `MulDistribMulAction.compHom ((↥K)ˣ) (AlgEquiv.restrictNormalHom (↥K))` (so `σ • a` is
+  *definitionally* `restrictNormalHom (↥K) σ • a`, and every earlier statement lines up on the
+  nose); `instance actsTrivially_units` and the theorem `actsTrivially_hom` say the subgroup fixing
+  the field moves neither factor; `conjH1_kummerTwistEquiv_smul` is the equivariance in action form;
+  and **`kummerTwistEquiv_smul` is the payoff** —
+  for `g : Gal(Ω/k) ⧸ K.fixingSubgroup`,
+  `kummerTwistEquiv … (g • z) = Additive.ofMul (g • (kummerTwistEquiv … z).toMul)`,
+  proved by `QuotientGroup.mk_surjective` and one `exact`, everything else being `rfl`.
+* `Profinite/TwistConj.lean`: `homMulDistribMulAction` promoted from `def` to `instance`.
+* `Profinite/Krull.lean`: `normal_fixingSubgroup` promoted from `theorem` to `instance`, so
+  `K.fixingSubgroup.Normal` is now found by instance search (this retires gotcha 1380).  `Normal` is
+  a `Prop`-valued class, so no diamond can bite; the full build confirms no regression.
+
+### (b) The trap that shaped the design  (gotcha 1478 — MATH/Lean)
+
+The first draft also declared `instance additiveDistribMulAction : DistribMulAction G (Additive M)`
+from `MulDistribMulAction G M`, so that the *target* `Additive (SmoothH1 ↥N E)` would carry the
+quotient action too.  **That instance silently destroys `tensorDistribMulAction`.**  With a
+`G`-action on `Additive A` in scope, Mathlib's own `TensorProduct` left action
+(`DistribMulAction R' (M ⊗[R] N)` for `R'` acting on the left factor) becomes applicable to
+`Additive A ⊗[ℤ] Additive B`, and it is found *first*: `σ • x ⊗ₜ y` then means
+`(σ • x) ⊗ₜ y`, not the diagonal `(σ • x) ⊗ₜ (σ • y)`.  The symptom is a `show` tactic failing on
+what looks like a defeq goal, plus a `whnf` timeout.  The two actions are genuinely different, so
+this is not a diamond to be papered over with priorities: the fix is to *not* give `Additive M` a
+global `G`-action, and to write the target side as `Additive.ofMul (g • _.toMul)` instead.
+
+The consequence for packaging: when the identification is finally read as an isomorphism of
+`Rep ℤ Gal(K/k)`, the source must be built with `Rep.ofDistribMulAction ℤ Q _` out of
+`tensorDistribMulAction`, and the target with `Rep.ofMulDistribMulAction Q (SmoothH1 ↥N E)` (whose
+carrier is already `Additive` of the cohomology).  No `Additive`-valued action instance is needed
+anywhere.
+
+### (c) What is left of brick 4
+
+1. **The `Rep` packaging.**  Assemble `kummerTwistEquiv` + `kummerTwistEquiv_smul` into an
+   isomorphism in `Rep ℤ (Gal(Ω/k) ⧸ K.fixingSubgroup)`, then transport along
+   `Gal(Ω/k) ⧸ K.fixingSubgroup ≃* Gal(↥K/k)` (this is
+   `QuotientGroup.quotientKerEquivOfSurjective` applied to `AlgEquiv.restrictNormalHom (↥K)`, whose
+   kernel is `IntermediateField.restrictNormalHom_ker`), and finally through
+   `Profinite/Discrete.lean` into `groupCohomology` / `tateModule`, so that
+   `Ш¹(Gal(K/k), K^× ⊗ W)` can be spoken about at the finite level.
+2. **The remaining local step** — supply `hν` for the `resSubH1 N D` case: identify
+   `↥(N.subgroupOf D)` (for `N = K.fixingSubgroup`, `D` a decomposition subgroup) with
+   `↥L.fixingSubgroup` for `L = K ⊔ fixedField D`.  Needs `D` closed / the infinite Galois
+   correspondence, plus `(K ⊔ F)^× / p ≅ K_w^× / p`.
+
+### (d) Lean notes
+
+* An `instance` whose body mentions `AlgEquiv.restrictNormalHom` must be `noncomputable`.
+* Section variables used only in the *proof term* of a `theorem` are not auto-included (gotcha
+  1289); `include hfix in` is required, and it goes *after* the `set_option … in` lines and *before*
+  the docstring.
+* `rw`'s closing `rfl` is reducible-transparency only: after `rw [one_smul, one_smul]` a goal
+  `Additive.ofMul (Additive.toMul x) ⊗ₜ y = x ⊗ₜ y` is still open — add an explicit `rfl`
+  (gotcha 1473).
+* `MulDistribMulAction.compHom` / `DistribMulAction.compHom` are `abbrev`s taking the acted-on type
+  explicitly (gotcha 1476); `DistribMulAction.toAddAut G T` and `AddAut.applyDistribMulAction` are
+  the additive counterparts of `MulDistribMulAction.toMulAut` used in `Profinite/Quotient.lean`.
+* `Units/InfiniteTowerDescent.lean` takes ~1000 s in a full build — after
+  `Units/CompositumFundamental.lean` it is the second most expensive module in the CFT tree.
+
+---
+
+## 1.07 Status (2026-09-05, latest) — the Kummer tower no longer needs the intermediate field to be finite over the base
+
+Full root build green: **9703 jobs, 0 warnings, 0 errors, 0 sorries.**
+
+### (a) Why this was blocking
+
+The remaining local step of brick 4 (§1.06(c) item 2) localises a class at a place.  On the profinite
+side a place is a *decomposition subgroup* `D ≤ Gal(Ω/k)`, and the field it corresponds to is
+`F = fixedField D`.  The identification to be proved reads the part of `N = K.fixingSubgroup` lying
+inside `D` as the subgroup fixing the compositum `L = K ⊔ F`.
+
+The first attempt tried to run this over the base `k`.  It cannot be: `L` is normal over `F` (because
+`K` is normal over `k`, so `K ⊔ F` is normal over `F`), but **not** over `k`, and the localised
+coefficients carry an action of `↥D ⧸ (N ⊓ D) ≅ Gal(L/F)`.  So the whole Kummer/twist tower has to be
+usable with `F` as the base field — and `F/k` is infinite, being the fixed field of a decomposition
+subgroup.  Every module in that tower carried `[FiniteDimensional k ↥K]`.  (gotcha 1491)
+
+### (b) The hypothesis was consumed in exactly two places
+
+Both are in `Profinite/FixingSubgroup.lean`, the only place in the repo where the Krull topology of
+`Gal(Ω/↥K)` is compared with the subspace topology on `K.fixingSubgroup ≤ Gal(Ω/k)`.  Both used
+finiteness only to move a finite extension across the intermediate field, and both can instead use
+that *a finite extension is generated by a finite set of elements, each integral over the base*:
+
+* `continuous_galSubHom`.  Given `F/k` finite, take a finite generating set `t` with
+  `adjoin k t = F`; then `E := adjoin ↥K t` is finite over `↥K` because each generator is integral
+  over `k`, hence over `↥K` (`IsIntegral.tower_top`).  An automorphism fixing `E` fixes `F`, because
+  `restrictScalars k E = K ⊔ adjoin k t ⊇ F`.
+* `isSmoothHom_fixingSubgroupEquiv`.  Given `E/↥K` finite, take a finite generating set `t` with
+  `adjoin ↥K t = E`; then `E₀ := adjoin k t` is finite over `k`, and the open subgroup
+  `E'.fixingSubgroup ∩ K.fixingSubgroup` (for `E'` a finite *normal* extension inside
+  `E₀.fixingSubgroup`) maps into `E.fixingSubgroup`.
+
+The finite generating set comes from `IntermediateField.essFiniteType_iff.1 inferInstance : F.FG`
+(gotcha 1486): `Algebra.EssFiniteType.of_finiteType` is an instance, so a finitely generated
+intermediate field is available from `FiniteDimensional` with no work.
+
+The removal then propagates with no further proof changes to `Profinite/KummerConj.lean`,
+`Profinite/KummerTwist.lean`, `Profinite/KummerTower.lean` and `Profinite/KummerAction.lean` — the
+Kummer statements never used finiteness, only the two topological facts above.
+
+### (c) Lean notes
+
+* `IntermediateField.restrictScalars_adjoin_eq_sup` needs the base named explicitly,
+  `restrictScalars_adjoin_eq_sup (F := k) K S`; otherwise Lean infers `F := ↥K` and reports a type
+  mismatch.  (gotcha 1487)
+* For `IntermediateField`, `le_sup_right hx` fails to elaborate ("Function expected at
+  `le_sup_right`").  Hoist the membership into a `have` and write
+  `SetLike.le_def.mp le_sup_right hxt`.  (gotcha 1488)
+* To show a subgroup lands inside `(adjoin F S).fixingSubgroup`, use the Galois connection rather
+  than working element by element: `rw [← IntermediateField.le_iff_le, ← ht]` then
+  `IntermediateField.adjoin_le_iff.2` and `IntermediateField.mem_fixedField_iff`.  (gotcha 1489)
+* Mathlib v4.28 has **no** lemma comparing the Krull topology of `Gal(Ω/L)` with the subspace
+  topology on `L.fixingSubgroup`; `Profinite/FixingSubgroup.lean` is the only source.  The Mathlib
+  bricks that do exist and are used here are `IntermediateField.fixingSubgroup_sup`
+  (`Galois/Basic.lean:261`), `le_iff_le` (:232), `mem_fixedField_iff` (:213), `fixingSubgroupEquiv`
+  (:268), `InfiniteGalois.fixingSubgroup_fixedField` (`Galois/Infinite.lean:144`) and
+  `finiteDimensional_adjoin` (`Adjoin/Basic.lean:569`).  (gotcha 1490)
+
+---
+
+## 1.08 Status (2026-09-05, latest) — **brick 4 is built on both sides**: the localisation of a Kummer class at a place, and the identification read in the category of representations
+
+Commits `39ef23b` (`Profinite/KummerLocal.lean`) and the present one (`Profinite/KummerRep.lean`).
+
+### (a) The local step (§1.06(c) item 2)
+
+`Profinite/KummerLocal.lean`.  Localising a class of `N = K.fixingSubgroup` at a place `D` means
+`resSubH1 N D`, whose target is the first cohomology of `↥(N.subgroupOf D)`.  The module identifies
+that with the subgroup fixing the compositum, in three moves.
+
+* `interEquiv N D hH : ↥(N.subgroupOf D) ≃* ↥H` for any `H` with `g ∈ H ↔ g ∈ N ∧ g ∈ D`.  Both
+  sides are elements of the big group lying in both subgroups, and both carry the topology induced
+  from it, so the identification and its inverse are continuous (`continuous_induced_rng` twice) and
+  it is a smooth homomorphism.  `comapInterH1` is the map it induces in the first cohomology.
+* `resSubH1_eq_comapInterH1 : resSubH1 N D z = comapInterH1 N D hH (resInclH1 hle z)`.  Both sides
+  substitute the same element of the big group into the cocycle, so after
+  `obtain ⟨u, hu, hs, rfl⟩ := smoothH1Mk_surjective z` the goal is closed by a bare `rfl`.
+* `mem_fixingSubgroup_sup_iff` (`fixingSubgroup_sup` + `Subgroup.mem_inf`) and
+  `fixingSubgroup_fixedField_of_isClosed` (`InfiniteGalois.fixingSubgroup_fixedField ⟨D, hD⟩`)
+  supply the hypothesis `hH` for `H = (K ⊔ fixedField D).fixingSubgroup`.
+
+The two payoffs are `resSubH1_kummerSubHom_sup` and `resSubH1_kummerTwistEquiv_sup`: **localising a
+Kummer class at a place is including the units of `K` into the units of `K ⊔ fixedField D`**, and
+the same through the twisted identification.  Routing through `resInclH1` and reusing
+`resInclH1_kummerSubHom` / `resInclH1_kummerTwistEquiv` from `KummerTower.lean` avoids all
+`TensorProduct.map … LinearMap.id` bookkeeping.  Note the design choice: the Kummer data `hL` for
+the compositum is a *hypothesis*, exactly as in `KummerTower.lean`; constructing it from `hK` would
+need "the `p`-th roots of unity in `K ⊔ F` are those in `K`", which is a separate arithmetic fact
+and not what this module is about.
+
+Still open on the local side, and needed only where the profinite side meets the idelic one:
+`(K ⊔ F)^× / p ≅ K_w^× / p`, the henselization-versus-completion comparison.
+
+### (b) The `Rep` packaging (§1.06(c) item 1)
+
+`Profinite/KummerRep.lean`.  Two generic bricks and their arithmetic instantiation.
+
+* `repIsoOfAddEquiv Q S T e he : Rep.ofDistribMulAction ℤ Q T ≅ Rep.ofMulDistribMulAction Q S`, for
+  `e : T ≃+ Additive S` with `e (g • t) = Additive.ofMul (g • (e t).toMul)`.  One line:
+  `Action.mkIso e.toIntLinearEquiv.toModuleIso fun g => ModuleCat.hom_ext (LinearMap.ext …)`.  Both
+  directions are `rfl` on elements (`repIsoOfAddEquiv_hom_apply`, `_inv_apply`).
+* `smoothH1EquivOfAddEquiv : SmoothH1 Q S ≃* Multiplicative ↥(H1 (Rep.ofDistribMulAction ℤ Q T))`
+  for discrete `Q`, being `discreteSmoothH1Equiv` followed by
+  `(groupCohomology.functor ℤ Q 1).mapIso` of the above, read as an `AddEquiv` through
+  `Iso.toLinearEquiv` and wrapped by `AddEquiv.toMultiplicative`.
+* `kummerRepIso` and `kummerSmoothH1Equiv` instantiate them at `Q = Gal(Ω/k) ⧸ K.fixingSubgroup`,
+  `S = SmoothH1 ↥K.fixingSubgroup E`, `T = Additive (↥K)ˣ ⊗[ℤ] Additive (M →* E)`, with `he` being
+  exactly `kummerTwistEquiv_smul` from `KummerAction.lean` and the discreteness of `Q` coming from
+  `QuotientGroup.discreteTopology hop`.
+* `kummerSha1` is `sha1Level E K.fixingSubgroup hop S` carried across, and `sha1Level_eq_bot_iff`
+  says **the two readings vanish together**.  That is the sentence the local-global input to
+  `exists_comapH2_eq_of_sha1Level_eq_bot` has to be proved in: a statement about
+  `H¹` of a *finite* group with coefficients in `K^× ⊗ Hom(μ_p, E)`.
+
+What is deliberately *not* done: presenting the finite group as `K ≃ₐ[k] K` rather than as
+`Gal(Ω/k) ⧸ K.fixingSubgroup`.  The two are isomorphic (`QuotientGroup.quotientKerEquivOfSurjective`
+of `AlgEquiv.restrictNormalHom ↥K`), but transporting the *action* onto `(↥K)ˣ` along that iso would
+put a second `Gal(↥K/k)`-action on the units beside the natural one, which is the diamond the
+development already refused once.  The clean route is invariance of `groupCohomology` under a group
+isomorphism, via `Action.res` — a separate, reusable brick, and Mathlib v4.28 has no such lemma
+(`Functoriality.lean` has `congr` only for two *equal* homomorphisms).  It is wanted only when the
+`Units/` side actually consumes the group, so it is deferred rather than guessed at.
+
+### (c) Lean notes
+
+* `smoothH1Mk_congr rfl _ _ _ _` frequently cannot synthesize its implicit cochain arguments when
+  the two sides are only definitionally equal; a bare `rfl` does the job.  (gotcha 1492)
+* `InfiniteGalois.fixingSubgroup_fixedField` takes a bundled `ClosedSubgroup`; `⟨D, hD⟩` with
+  `hD : IsClosed (D : Set G)` is the anonymous constructor.  (gotcha 1494)
+* `Rep.ofMulDistribMulAction (M G : Type)` and the repo's `discreteSmoothH1Equiv (G M : Type)` are
+  both `Type 0`-only, so the whole packaging section is stated with `k Ω M E J : Type`.
+* `Rep.ofDistribMulAction ℤ Q T` needs `SMulCommClass Q ℤ T`; it is found automatically from
+  `DistribMulAction Q T` on an `AddCommGroup`.
+* The doc heading convention in this file is `## 1.0N Status (…)` with no `§`.  (gotcha 1495)
+
+---
+
+## 1.09 Status (2026-09-05, latest) — brick 4 now speaks the language of `Units/`: the level group is `Gal(K/k)`, not a quotient
+
+`Profinite/KummerFinite.lean`; full root build **9706 jobs**, 0 warnings, 0 errors, 0 sorries.
+
+### (a) The deferred brick of §1.08(b) was already in the repository — correction
+
+§1.08(b) says the invariance of `groupCohomology` under an isomorphism of groups is "a separate,
+reusable brick, and Mathlib v4.28 has no such lemma".  The second half is true of *Mathlib*
+(`Functoriality.lean`'s `congr` compares two **equal** homomorphisms) but false of the repository:
+`TateCohomology/GroupCongr.lean`, namespace `InverseGalois.CFT.Tate`, has had the whole brick since
+the Tate–Nakayama tower was built:
+
+```
+bijective_cochainsMap_f     isIso_cochainsMap_of_bijective
+groupCohomologyCongr (e : G ≃* G') (φ : (Action.res _ ↑e).obj A ⟶ B) (hφ : Bijective ⇑φ.hom.hom) (n)
+  : groupCohomology A n ≅ groupCohomology B n
+groupCohomologyCongr_hom (= groupCohomology.map ↑e φ n, by rfl)
+groupCohomologyResCongr    tateModuleCongrSucc    tateOneCongr    tateTwoCongr
+```
+
+universe-polymorphic in `{k G G' : Type u}`.  The mandatory grep-before-writing rule caught the
+duplicate before it was written.  (gotcha 1499)
+
+### (b) What the new module does
+
+The level group is presented twice: `Gal(Ω/k) ⧸ K.fixingSubgroup`, which is what inflation of a
+cochain produces, and `Gal(↥K/k)`, which is what `Units/` computes with (`globalUnitsRep k K`,
+`tensorObj … W`, `HasIdeleClassNakayamaSpan`).  `Profinite/KummerFinite.lean` identifies them and
+carries the twisted Kummer statement across.
+
+* `repIsoOfEquivSmul e B φ hφ : (Action.res _ ↑e).obj B ≅ Rep.ofDistribMulAction ℤ G T`, for
+  `e : G ≃* G'`, `B : Rep ℤ G'`, `φ : T ≃+ ↥B.V` and
+  `hφ : ∀ g t, φ (g • t) = B.ρ (e g) (φ t)`.  Same one-liner as `repIsoOfAddEquiv`, with `φ.symm`
+  in place of `φ` because the restricted representation is the *source*.
+* `groupCohomologyEquivOfSmul` = `Tate.groupCohomologyCongr` of that, in every degree;
+  `h1MulEquivOfSmul` is degree one wrapped in `Multiplicative` so that it composes with
+  `smoothH1EquivOfAddEquiv`.
+* `quotientFixingSubgroupEquiv K : Gal(Ω/k) ⧸ K.fixingSubgroup ≃* Gal(↥K/k)`, being
+  `QuotientGroup.liftEquiv _ (restrictNormalHom_surjective_level K)
+  (IntermediateField.restrictNormalHom_ker K).symm`; `quotientFixingSubgroupEquiv_mk` is `rfl`.
+* `kummerFiniteH1Equiv` composes `kummerSmoothH1Equiv` with `h1MulEquivOfSmul`, giving
+  **`SmoothH1 (Gal(Ω/k) ⧸ K.fixingSubgroup) (SmoothH1 ↥K.fixingSubgroup E) ≃* Multiplicative ↥(H1 B)`**
+  for *any* `B : Rep ℤ Gal(↥K/k)` together with an intertwiner
+  `φ : Additive (↥K)ˣ ⊗[ℤ] Additive (M →* E) ≃+ ↥B.V`.  `kummerFiniteSha1` carries `sha1Level`
+  along it and `sha1Level_eq_bot_iff_finite` says the two readings vanish together.
+
+Taking `B` as a parameter rather than constructing it is what keeps §1.08(b)'s diamond away: no
+second `Gal(↥K/k)`-action is ever put on `(↥K)ˣ`.  The consumer supplies
+`B = tensorObj (globalUnitsRep k ↥K) W` with `W` the representation on `Additive (M →* E)`, and
+proves `hφ` — which, by `restrictUnits_smul` (`rfl`) and `quotientFixingSubgroupEquiv_mk` (`rfl`),
+is an equality of the two *definitionally identical* actions on the left tensor factor.
+
+### (c) The chain as it now stands
+
+>  `Ĥ^{-2}(G, W)  ↠  Ш¹_{idelic}(G, K^× ⊗ W)`  — brick 3, conditional on the span
+>  `Ш¹(G, K^× ⊗ W) ≅ sha1Level`                — brick 4, **done** (§1.05–§1.08 + this module)
+>  `sha1Level = ⊥  ⇒  Ш²(k,E) ⊆ inf`           — brick 5, **done** (§1.03–§1.04)
+>  `Ĥ^{-2}(G, W) = 0` after shrinking `G`      — Prop 6, **done** (`Shafarevich/Shrink.lean`)
+
+with `W = E(-1) = Hom(μ_p, E)`.  So the surjection chain closes as soon as the two Ш's are the
+same group, i.e. as soon as **"trivial on every decomposition subgroup" and "trivial in the ideles"
+agree**.  That is the one comparison §1.08(a) already flagged: `(K ⊔ F)^× / p ≅ K_w^× / p`,
+henselization versus completion, together with Shapiro for `Ĥ^*(G, I_K ⊗ W)`.  It is now the *only*
+thing between the profinite tower and the idelic one, and it is arithmetic rather than formal.
+
+### (d) Lean notes
+
+* `Rep.ofDistribMulAction ℤ G T` and `Tate.groupCohomologyCongr` compose without any universe
+  gymnastics as long as everything is `Type` (i.e. `Type 0`), which the packaging already was.
+* `Action.mkIso`'s `comm` obligation, applied to an element, reads `f (M.ρ g x) = N.ρ g (f x)`:
+  source action first, then the map.  With `f = φ.symm` the proof is
+  `rw [φ.apply_symm_apply] at hb; show …; rw [← hb, φ.symm_apply_apply]`.
+* `Function.Bijective ⇑(iso).hom.hom.hom` — three `.hom`s for an `Iso` in `Rep` (Iso, `Action.Hom`,
+  `ModuleCat.Hom`), where `groupCohomologyCongr`'s hypothesis takes two for a bare morphism.  It is
+  closed by `φ.symm.bijective`.
+* `QuotientGroup.liftEquiv (hφ : Surjective φ) (HN : N = φ.ker) : G ⧸ N ≃* H`, with `liftEquiv_coe`
+  a `simp` lemma and `rfl`; Mathlib's `InfiniteGalois.normalAutEquivQuotient` is the same
+  construction but phrased through `fixedField H`, so it is not directly usable here.
+
+---
+
+## 1.10 Status (2026-09-05, latest) — **gap (ii-b) is closed**: the twisted cohomology of the ideles in degree one injects into that of the full product of the local unit groups
+
+New modules `Tate/FamilyTrunc.lean`, `Tate/LiftInvariants.lean`, `Tate/FamilyInvariant.lean`,
+`Tate/FamilyTensorFinsupp.lean`, `Units/InvariantUniformizer.lean`,
+`Units/IdeleValuationSplit.lean`, `Units/IdeleFullCompare.lean`; `Tate/FamilyConst.lean` rewritten
+around the constant family (the old Shapiro-for-permutation-modules content of that file was dead
+code and is gone; its two orbit/stabiliser helpers moved to `Tate/FamilyOrbits.lean`).
+
+### (a) The statement
+
+`Units/IdeleFullCompare.lean`:
+
+```
+injective_tateMap_one_tensor_ideleToFullIdele
+  (W : Rep ℤ Gal(K/k)) {p d : ℕ} [Fact p.Prime] (e : ↥W.V ≃+ (Fin d → ZMod p)) :
+  Function.Injective (Tate.tateMap (tensorHomLeft W (ideleToFullIdele k K)) 1)
+```
+
+`Ĥ¹(G, I_K ⊗ W) ↪ Ĥ¹(G, ∏_v K_v^× ⊗ W)`, for a finite Galois group and coefficients of finite rank
+over `𝔽_p`.  Composed with the Shapiro decomposition of the *full* product
+(`Units/IdeleTensorOrbit.lean`, `Tate/FamilyTensorFull.lean`) this says **`Ш_dec ⊆ Ш_idelic`**: a
+class trivial on every decomposition subgroup is trivial in the whole product, hence already
+trivial in the restricted product.  The reverse inclusion `Ш_idelic ⊆ Ш_dec` is gotcha 1514 and was
+already available, so the two Ш's of §1.09(c) are the same group *modulo* the henselization-vs-
+completion comparison, which is gap (ii-a) and is untouched.
+
+### (b) Route A, as built
+
+The obstruction was that `I_K ⊆ ∏_v K_v^×` is not a `G`-retract (gotcha 1589) and the quotient is
+not cohomologically trivial (gotcha 1538), so nothing formal gives injectivity.  What does give it
+is a *lifting of invariants* in degree zero:
+
+>  `Ĥ⁰` is invariants-modulo-norms, so a map along which every invariant of the target lifts to an
+>  invariant of the source is surjective there (`Tate.surjective_tateMap_zero_of_lift`); in a short
+>  exact sequence a degree in which the quotient map is surjective is a degree out of which the
+>  connecting map vanishes, so the inclusion of the sub is injective one degree up
+>  (`Tate.injective_tateMap_succ_of_surjective`).  Combined:
+>  `Tate.injective_tateMap_one_of_lift_invariants`.
+
+The lifting is supplied by the vector of valuations.  Write `V := fullIdeleVal : ∏_v K_v^× → ∏_v ℤ`
+(`Units/IdeleValuationSplit.lean`), a map of representations onto the *permutation* module
+`placeIntRep k K = orbitSectionsRep (constFamily (HeightOneSpectrum (𝓞 K)) ℤ Gal(K/k))`, whose
+kernel-up-to-finite-support is exactly `idele K`.  A right inverse `S := valSection s` needs a
+`G`-invariant family `s` of local units which are uniformizers at all but finitely many places;
+`Units/InvariantUniformizer.lean` builds it from `Tate/FamilyInvariant.lean` (choose a value at one
+index of each orbit fixed by the stabiliser there, transport around the orbit) plus the fact that
+the decomposition group *is* the stabiliser and that only the places dividing the different fail to
+carry a uniformizer fixed by it.
+
+Then, for `a₀ ∈ (∏_v K_v^× ) ⊗ W` with all `g·a₀ − a₀ ∈ I_K ⊗ W`:
+
+1. `V(a₀) ∈ (∏_v ℤ) ⊗ W` is moved by `G` only in finitely many places
+   (`mem_finsuppTensor_of_mem_range`, using that `V` carries `I_K` into the finitely-supported
+   sections);
+2. `Tate/FamilyTensorFinsupp.lean`'s `exists_rho_invariant_sub_finsuppTensor` replaces it by an
+   invariant `n'` differing in finitely many places only — this is `Tate/FamilyTrunc.lean`'s
+   truncation on the finite invariant saturation, transported across the bijection
+   `bijective_sectionsTensorMap_of_equivPi` (which needs no hypothesis on the family, only
+   `e : ↥W.V ≃+ (Fin d → ZMod p)`);
+3. `S(n')` is invariant, and `S(n') − a₀ = −S(V(a₀) − n') − (a₀ − S(V(a₀)))` lies in `I_K ⊗ W`,
+   the first term by `valSectionHom_mem_range_of_finsuppTensor` and the second by
+   `sub_valSectionHom_mem_range`.
+
+The short exact sequence `0 → I_K → ∏_v K_v^× → Q → 0` survives tensoring with `W` even though `W`
+is not flat, by `Tate.tensorSeq_shortExact_of_injective_modNsmul` plus
+`injective_modNsmulHom_ideleToFullIdele` (the integers have no torsion, so the inclusion stays
+injective mod `p`).
+
+### (c) Lean notes
+
+* **gotcha 1622 (elaboration, important).**  The `binop%` elaborator behind `-`/`+` **ignores type
+  ascriptions** when computing the max type of the operands: writing
+  `familyAut g X - (sectionsTensorMap … : ∀ _ : HeightOneSpectrum (𝓞 K), ℤ ⊗[ℤ] ↥W.V)` still fails
+  with `failed to synthesize HSub …`.  The fix is never to hand-write a mixed-type subtraction —
+  restructure so that the subtraction appears only in a goal *generated* by instantiating a lemma
+  (goals produced by unification never go through `binop%`).  That is why
+  `exists_rho_invariant_sub_finsuppTensor` exists as an abstract lemma at all.
+* **gotcha 1623.**  For `⟨a - b, proof⟩` where `a - b` trips `HSub`, write `⟨_, proof⟩` and let the
+  placeholder be inferred from the proof's type.
+* **gotcha 1624.**  Prefer `refine LinearMap.mem_range.2 ⟨witness, ?_⟩` over building a
+  `have hstep : LHS = RHS`: the `refine` route inherits the goal's already-fixed instances, whereas
+  the `have` re-elaborates from scratch and hits `binop%`.
+* **gotcha 1631 (elaboration, important).**  `exact Tate.injective_tateMap_one_of_lift_invariants
+  hXT hlift` against the goal `Function.Injective (tateMap (tensorHomLeft W (ideleToFullIdele k K))
+  1)` **times out at `isDefEq`** (>1M heartbeats, ~120 s) even though
+  `(Tate.tensorSeq W (ideleFullShortComplex k K)).f = tensorHomLeft W (ideleToFullIdele k K)` is
+  `rfl` *instantly* on its own, and even though the same `exact` against the goal stated with
+  `(Tate.tensorSeq W …).f` succeeds instantly.  The unifier gets lost inside `tateMap` before it
+  ever compares the morphism arguments.  **Fix:** bind the `rfl` as a `have` and rewrite the goal
+  first —
+  ```lean
+  have hfeq : (Tate.tensorSeq W (ideleFullShortComplex k K)).f
+      = tensorHomLeft W (ideleToFullIdele k K) := rfl
+  rw [← hfeq]
+  exact Tate.injective_tateMap_one_of_lift_invariants hXT hlift
+  ```
+  which runs in 0.7 s.  This is the operational form of gotcha 1612 ("never `rw` across the
+  `tensorSeq`-vs-`tensorObj` defeq boundary — convert with a typed `have`").
+* **gotcha 1632.**  `attribute [local reducible] Tate.tensorSeq` is **rejected** ("failed to set
+  `[local reducible]` … affects the term indexing datastructures used by `simp` and type class
+  resolution"), so the reducibility route to the same fix is not available.
+* **gotcha 1633 (diagnosis recipe).**  To localise a whnf/isDefEq timeout, copy the theorem into
+  `.scratch/`, stub its prerequisites with `sorry`, and put `set_option profiler true in` on it;
+  the per-tactic breakdown names the culprit (`tactic execution of … exact took 119s`).  A scratch
+  probe importing `Mathlib` plus a couple of repo modules elaborates in ~60 s, about 2.5× cheaper
+  than the real `lake build` of the module.
+* `Tate/FamilyConst.lean`'s old `tateConstEquiv`/`tateConstOrbitEquiv`/
+  `isZero_tateModule_constFamily` were referenced nowhere; but the file also carried
+  `smul_orbit_of_mem_stabilizer_val` and `mem_stabilizer_val_of_smul_orbit`, which
+  `Units/IdeleTorsionSubgroup.lean` *does* use.  A per-module `lake build` never sees this: only the
+  root build does (gotcha 1472 again, in the deletion direction).
+
+### (d) Where Shafarevich stands
+
+Unchanged from §1.09 except that (ii-b) is now a theorem:
+
+>  `Ĥ^{-2}(G, W)  ↠  Ш¹_{idelic}(G, K^× ⊗ W)`  — brick 3, conditional on `HasIdeleClassNakayamaSpan`
+>  `Ш¹(G, K^× ⊗ W) ≅ sha1Level`                — brick 4, done
+>  `sha1Level = ⊥  ⇒  Ш²(k,E) ⊆ inf`           — brick 5, done
+>  `Ĥ^{-2}(G, W) = 0` after shrinking `G`      — Prop 6, done
+>  `Ш_dec = Ш_idelic`                          — (ii-b) **done**, (ii-a) open
+
+The two open items are therefore (i) `HasIdeleClassNakayamaSpan` — the reciprocity identity
+`ker Left_P = Σ_w cor_w(ker Left_w)`, blocked on `baseFundamentalClass` being `.choose`-defined —
+and (ii-a) the henselization-vs-completion comparison `(K ⊔ F)^×/p ≅ K_w^×/p`.
+
+---
+
+## 1.11 Status (2026-09-06, latest)
+
+### (a) Two modules landed
+
+* **`Profinite/KummerLocalQuot.lean`** (commit `4655267`, full root build **9733 jobs**, clean).
+  The local comparison of `KummerLocalCompare.lean`, restated on the *finite quotient*
+  `↥D ⧸ K.fixingSubgroup.subgroupOf D` of a decomposition subgroup rather than on `↥D` itself.
+  Three theorems, all delegating to `KummerLocalCompare`:
+  `coeffH1_eq_one_of_coeffQuotH1_eq_one`,
+  `coeffH1_resQuotH1_eq_one_of_resCoeffQuotH1_eq_one`,
+  `coeffH1_resQuotH1_eq_one_of_mem_sha1Level`.
+  This is the level the transgression's obstruction actually reads (finding 1787): the coefficients
+  `SmoothH1 ↥K.fixingSubgroup E` are acted on through the quotient, so "locally trivial" is already
+  a statement about the finite quotient, and rewriting the comparison there costs nothing —
+  surjectivity of localisation and the description of its kernel are statements about the
+  coefficients alone, with no reference to the acting group.
+* **`Profinite/KummerTransport.lean`** (new).  The twisted Kummer identification
+  `kummerFiniteH1Equiv`, **computed on cocycles**, plus the naturality square that gap (ii-a)
+  needs.  See (b) and (c).
+
+### (b) The Kummer identification is computable on cocycles
+
+`kummerFiniteH1Equiv = (kummerSmoothH1Equiv …).trans (h1MulEquivOfSmul (quotientFixingSubgroupEquiv
+K) B φ hφ)` and `kummerSmoothH1Equiv` is `smoothH1EquivOfAddEquiv` after a `discreteSmoothH1Equiv`.
+Each of those two transports is built out of a `.symm` of a `Tate.groupCohomologyCongr`, so the
+naive reading is that the composite is an *inverse* map and therefore useless on explicit cocycles.
+That reading is wrong.
+
+* **1806 (Mathlib naming).**  `MulEquiv.apply_eq_iff_eq_symm_apply` does **not** exist.  The two
+  real lemmas are `MulEquiv.symm_apply_eq (e) : e.symm x = y ↔ x = e y`
+  (`Algebra/Group/Equiv/Defs.lean:344`) and `MulEquiv.eq_symm_apply (e) : y = e.symm x ↔ e y = x`
+  (:348).  `rw [← MulEquiv.eq_symm_apply]` turns `e a = b` into `a = e.symm b`.
+* **1807 (decisive).**  Applying `MulEquiv.eq_symm_apply` twice flips the goal so that only the
+  *forward* `groupCohomology.map` appears, and both resulting unfolding lemmas are literally
+  `rfl`:
+  ```lean
+  theorem h1MulEquivOfSmul_symm_ofAdd (z : ↥(groupCohomology B 1)) :
+      (h1MulEquivOfSmul e B φ hφ).symm (Multiplicative.ofAdd z)
+        = Multiplicative.ofAdd (groupCohomology.map (e : Q →* G)
+            (repIsoOfEquivSmul e B φ hφ).hom 1 z) := rfl
+
+  theorem smoothH1EquivOfAddEquiv_symm_ofAdd
+      (z : ↥(groupCohomology (Rep.ofDistribMulAction ℤ Q T) 1)) :
+      (smoothH1EquivOfAddEquiv Q S T κ hκ).symm (Multiplicative.ofAdd z)
+        = (discreteSmoothH1Equiv Q S).symm (Multiplicative.ofAdd
+            (groupCohomology.map (MonoidHom.id Q) (repIsoOfAddEquiv Q S T κ hκ).hom 1 z)) := rfl
+  ```
+  Both are in `KummerTransport.lean`.
+* **1808 (Mathlib map).**  `groupCohomology.functor k G n` has `map φ := map (MonoidHom.id _) φ n`
+  (`Functoriality.lean:483`); `H1` is `abbrev H1 := groupCohomology A 1` (`LowDegree.lean:927`);
+  `cochainsMap₁ f φ x = fun g => φ.hom.hom (x (f g))` (`Functoriality.lean:165`);
+  `coe_mapCocycles₁ : ⇑(mapCocycles₁ f φ x) = cochainsMap₁ f φ x` is `rfl` (:297);
+  `H1π_comp_map` (:317) is `@[reassoc (attr := simp), elementwise (attr := simp)]`, giving
+  `H1π_comp_map_apply : map f φ 1 (H1π A x) = H1π B (mapCocycles₁ f φ x)`.
+* **1809 (repo map, the Tate maps on cocycles in degree one).**
+  `Tate.tateRes_one_H1π (H) : tateRes H A 1 (H1π A b) = H1π (resObj H A) (resCocycles₁ H A b)`
+  (`TateCohomology/RestrictOne.lean:130`), with `resCocycles₁ H A b = ⟨fun h => b (h : G), _⟩`
+  (`TateTheorem.lean:92`);
+  `Tate.tateMap_one_H1π (φ) : tateMap φ 1 (H1π A b) = H1π B (homCocycles₁ φ b)`
+  (`NakayamaNatural.lean:114`), with `homCocycles₁_apply : homCocycles₁ φ b τ = φ.hom.hom (b τ)`
+  (:100, `rfl`).
+* **1812 (repo map, reuse).**  `GroupCohomology/H2Transport.lean:68` already has exactly the
+  morphism of representations needed —
+  `transportRepHom (e : G ≃* G') (φ : A ≃ₗ[k] B) (hφ) : (Action.res _ (e.symm : G' →* G)).obj A ⟶ B`
+  — so `KummerTransport.lean` does **not** define its own (and must not: the name is taken, gotcha
+  1472).  Its universe constraint is `{k : Type u} {G G' : Type u}`, which for `k = ℤ` forces the
+  acting groups into `Type`; every group in this part of the tower already is.
+
+The payoff is `KummerTransport.lean`'s
+
+```lean
+noncomputable def transportCocycles₁ {u : Q → S} (hu : IsMulCocycle₁ u) :
+    groupCohomology.cocycles₁ B :=
+  mapCocycles₁ (e.symm : G →* Q)
+    (transportRepHom e (transportUnitsEquiv κ B φ) (transportUnitsEquiv_intertwine κ hκ e B φ hφ))
+    (cocyclesOfIsMulCocycle₁ hu)
+
+theorem transportCocycles₁_apply (hu) (g : G) :
+    transportCocycles₁ κ hκ e B φ hφ hu g = φ (κ.symm (Additive.ofMul (u (e.symm g)))) := rfl
+
+theorem h1MulEquivOfSmul_smoothH1Mk (hu) (hs) :
+    h1MulEquivOfSmul e B φ hφ (smoothH1EquivOfAddEquiv Q S T κ hκ (smoothH1Mk u hu hs))
+      = Multiplicative.ofAdd (groupCohomology.H1π B (transportCocycles₁ κ hκ e B φ hφ hu))
+```
+
+i.e. **the class of a smooth one cocycle is the class of an explicitly given one cocycle**, and no
+cocycle condition has to be proved by hand (`mapCocycles₁` supplies it).
+
+### (c) The naturality square for gap (ii-a), step 2
+
+`KummerTransport.lean`'s main theorem is the generic square.  Global data
+`(Q, S, T, κ, hκ, e : Q ≃* G, B, φ, hφ)` with `G` finite; local data
+`(Q', S', T', κ', hκ', e' : Q' ≃* ↥H, B', φ', hφ')` for a subgroup `H ≤ G`; a smooth `π : Q' →* Q`
+with `hπ : ∀ g s, g • s = π g • s`; a `ψ : S →* S'` with `hψ : ∀ g s, ψ (g • s) = g • ψ s`; a
+`Φ : resObj H B ⟶ B'`; and the two compatibilities
+
+```lean
+(hcomm : ∀ g : Q', ((e' g : ↥H) : G) = e (π g))
+(hcoef : ∀ t : T,
+  Φ.hom.hom (φ t) = φ' (κ'.symm (Additive.ofMul (ψ (Additive.toMul (κ t))))))
+```
+
+give
+
+```lean
+theorem tateMap_tateRes_eq_zero_of_coeffH1_comapH1_eq_one (hu) (hs)
+    (hx : coeffH1 ψ hψ (comapH1 π hπ hsm (smoothH1Mk u hu hs)) = 1) :
+    tateMap Φ 1 (tateRes H B 1 (Multiplicative.toAdd
+      (h1MulEquivOfSmul e B φ hφ
+        (smoothH1EquivOfAddEquiv Q S T κ hκ (smoothH1Mk u hu hs))))) = 0
+```
+
+The proof is a pointwise comparison of two cocycles on `↥H`: on the Tate side
+`h ↦ Φ.hom.hom (φ (κ.symm (ofMul (u (e.symm ↑h)))))`, on the smooth side
+`h ↦ φ' (κ'.symm (ofMul (ψ (u (π (e'.symm h))))))`; `hcomm` identifies the arguments and `hcoef`
+the coefficients.
+
+* **1813 (Lean).**  `↥((Action.res _ f).obj (Rep.ofMulDistribMulAction Q S)).V` does not reduce to
+  `Additive S` during *elaboration* of a `show`, so `Additive.toMul s` there fails with
+  `failed to synthesize HSMul Q ↑(…).V ?m`.  Pin it: write `@Additive.toMul S (@id (Additive S) s)`
+  (and `@id (Additive S) s` wherever the bare `s` occurs), which forces the defeq check at default
+  transparency and succeeds.  Use the *same* spelling on both sides of the `show` or the closing
+  `rfl` will be left over.
+* **1814 (Lean).**  Section *data* variables used only inside a tactic proof are not
+  auto-included either, exactly like hypotheses (gotcha 747): `include κ' hκ' e' φ' hφ' hcomm hcoef
+  in` is needed even though `κ'`, `e'`, `φ'` are `(…)`-explicit data.  Order (gotcha 18):
+  `omit … in` first, then `include … in`, then the docstring.
+
+### (d) Where Shafarevich stands
+
+Unchanged from §1.10(d):
+
+>  `Ĥ^{-2}(G, W)  ↠  Ш¹_{idelic}(G, K^× ⊗ W)`  — brick 3, conditional on `HasIdeleClassNakayamaSpan`
+>  `Ш¹(G, K^× ⊗ W) ≅ sha1Level`                — brick 4, done
+>  `sha1Level = ⊥  ⇒  Ш²(k,E) ⊆ inf`           — brick 5, done
+>  `Ĥ^{-2}(G, W) = 0` after shrinking `G`      — Prop 6, done
+>  `Ш_dec = Ш_idelic`                          — (ii-b) done, (ii-a) open
+
+with (ii-a) now decomposed into four steps, of which **step 2 is done**:
+
+1. **1b** — the group isomorphism `↥(stabilizer Gal(Ω/k) P) ⧸ L.fixingSubgroup.subgroupOf
+   (stabilizer Gal(Ω/k) P) ≃* ↥(stabilizer Gal(↥L/k) v)`, from
+   `QuotientGroup.liftEquiv _ (stabilizerRestrictPrime_surjective L hv) (Subgroup.ext …)`
+   (`Units/HasseTwoDecomposition.lean`), and its archimedean twin.  Finding **1810**:
+   `[IsGalois k ↥L]` already supplies `L.fixingSubgroup.Normal`
+   (`Mathlib/FieldTheory/Galois/Basic.lean:452` and `Profinite/Krull.lean:56`), so no extra
+   instance argument is needed.
+2. **2** — the transport and the square: **done**, `Profinite/KummerTransport.lean`.
+3. **1c** — the coefficient map `ψ_v` and its equivariance, with kernel condition supplied by
+   `tensor_adicUnitHom_eq_zero_of_tensor_sup_eq_zero` /
+   `tensor_infiniteUnitHom_eq_zero_of_tensor_sup_eq_zero`
+   (`Kummer/DecompositionLocalPower.lean:200/216`) and surjectivity by
+   `surjective_tensor_sup_of_stabilizer_ideal` / `_infinitePlace`
+   (`Kummer/SupPowSurjective.lean:432/445`).
+4. **3** — the commuting square of representations
+   `resHom _ (tensorHomLeft W (globalUnitsToIdele k K)) ≫ ideleAdicLocalHom k K W v
+   = tensorHomLeft (resObj _ W) (localUnitsHom v)` (an `ext` on pure tensors), then
+   `tateRes_naturality` + `tateMap_comp_apply` feed both hypotheses of
+   `eq_zero_of_forall_local_idele` (`Units/IdeleLocalVanish.lean:155`), giving
+   `kummerFiniteSha1 ≤ ker (tateMap (tensorHomLeft W (globalUnitsToIdele k K)) 1)`.
+
+---
+
+## 1.12 Status (2026-09-06, later) — **gap (ii-a) is closed**: an everywhere locally trivial Kummer class dies in the ideles
+
+### (a) Two modules landed (commit `b350215`, full root build **9738 jobs**, clean)
+
+* **`Kummer/SupKummerData.lean`** — Kummer data ascend.  `isKummerData_of_le (hK : IsKummerData ↥K
+  Ω M ιK p) (hKL : K ≤ L) (hroot : ∀ x : Ωˣ, ∃ y : Ωˣ, y ^ p = x) : IsKummerData ↥L Ω M
+  ((unitsInclusion hKL).comp ιK) p`, with the action of `Gal(Ω/↥L)` on `M` taken to be the trivial
+  one (`trivialMulDistribMulAction`).  Only one clause has content: a primitive `p`-th root of
+  unity of `K` stays primitive in `L`, so every `p`-th root of unity of `L` is one of its powers and
+  therefore already in the image of `ιK`.  Also `unitsInclusion`, `injective_unitsInclusion`,
+  `algebraMap_unitsInclusion`.
+* **`Units/KummerIdele.lean`** — the assembly.  Three theorems:
+  `tateMap_tateRes_kummerFiniteH1Equiv_adic_eq_zero`,
+  `tateMap_tateRes_kummerFiniteH1Equiv_infinite_eq_zero`, and the capstone
+  `tateMap_globalUnitsToIdele_kummerFiniteH1Equiv_eq_zero`:
+
+  ```lean
+  theorem tateMap_globalUnitsToIdele_kummerFiniteH1Equiv_eq_zero
+      (eW : ↥W.V ≃+ (Fin dW → ZMod p))
+      {z : SmoothH1 (Gal(Ω/k) ⧸ K.fixingSubgroup) (SmoothH1 ↥K.fixingSubgroup E)}
+      (hz : z ∈ sha1Level E K.fixingSubgroup hop (decompositionSubgroups k Ω)) :
+      tateMap (tensorHomLeft W (globalUnitsToIdele k ↥K)) 1
+        (Multiplicative.toAdd (kummerFiniteH1Equiv hK htriv htrivEK α hEp hfix
+          (tensorObj (globalUnitsRep k ↥K) W) φ hφ hop z)) = 0
+  ```
+
+That is exactly `Ш_dec ⊆ Ш_idelic` read through brick 4's identification, so **gap (ii-a) is
+closed** and steps 1b, 1c and 3 of §1.11(d) are all done.
+
+### (b) How the place argument runs
+
+For a finite place `v` of `K`: `Ideal.exists_ideal_over_prime_of_isIntegral` produces a prime `P`
+of `𝓞 Ω` above `v` (gotcha 1848); `fixingSubgroup_fixedField_of_mem_decompositionSubgroups`
+(`Units/DecompositionClosed.lean`) writes `stabilizer Gal(Ω/k) P` as `F.fixingSubgroup` for an
+intermediate field `F`; the local argument then lives on the compositum `K ⊔ F`, where
+`isKummerData_of_le` supplies the Kummer data, `surjective_tensor_sup_of_stabilizer_ideal`
+(`Kummer/SupPowSurjective.lean`) the surjectivity and
+`tensor_adicUnitHom_eq_zero_of_tensor_sup_eq_zero` (`Kummer/DecompositionLocalPower.lean`) the
+kernel condition, and `globalUnitsAdicLocalHom_apply` (`Units/GlobalUnitsLocal.lean`) identifies the
+evaluation at `v` with `adicUnitHom v ⊗ id`.  All of it is handed to
+`tateMap_tateRes_kummerFiniteH1Equiv_eq_zero_of_tensor_eq_zero`
+(`Profinite/KummerLocalTate.lean:246-351`).  The archimedean twin is structurally identical, with
+`NumberField.InfinitePlace.comap_surjective` in place of the prime-above idiom.
+
+The two local vanishings feed `tateMap_globalUnitsToIdele_eq_zero`
+(`Units/GlobalUnitsLocal.lean:135`).
+
+### (c) Gotchas
+
+* **1849 (decisive).**  Writing `stabilizerQuotientEquivPrime ↥K hPunder` (the *coerced* type)
+  where the lemma wants the `IntermediateField k Ω` itself does **not** give a type error: Lean
+  grinds through unification and reports `(deterministic) timeout at whnf` **at the `theorem`
+  line**, even at `maxHeartbeats 1000000`.  Gotcha 29 again — a whnf timeout on a declaration that
+  mentions an `IntermediateField`-valued lemma is very likely a `↥E`-vs-`E` slip.
+* **1850 (recipe).**  To localise a whnf timeout in a long tactic proof: copy the file into
+  `.scratch/`, truncate the proof with `sorry`, and typecheck with
+  `time env -u LD_LIBRARY_PATH lake env lean -Dlinter.style.multiGoal=true .scratch/<f>.lean`.
+  Re-adding the `have`s one at a time isolates the offender in a handful of ~50 s iterations.
+* **1851 (Mathlib).**  `IsPrimitiveRoot.isUnit` takes `p ≠ 0`, not `0 < p`.
+* **1852 (instance).**  The `MulAction Gal(Ω/k) (Ideal (𝓞 Ω))` behind `stabilizer Gal(Ω/k) P` is the
+  *pointwise* action, so a file writing that needs `open scoped Pointwise`.
+* **1853 (Mathlib).**  `NumberField.InfinitePlace.comap_surjective (k := ↥L) (K := Ω)` needs
+  `[Algebra.IsAlgebraic ↥L Ω]`, from `Algebra.IsAlgebraic.tower_top (K := k) (L := ↥L) (A := Ω)`.
+* **1854 (Mathlib).**  `H1 A` is an abbrev for `groupCohomology A 1` (`LowDegree.lean:927`), so
+  `kummerFiniteH1Equiv`'s codomain `Multiplicative ↥(H1 B)` feeds `tateRes`/`tateMap` directly.
+* **1855 (build cost).**  `lake build InverseGalois.CFT.Units.KummerIdele` = 8391 jobs;
+  `…Kummer.SupKummerData` = 8037 jobs.
+
+### (d) Where Shafarevich stands
+
+> ` Ĥ^{-2}(G, W)  ↠  Ш¹_idelic(G, K^× ⊗ W)`  — brick 3, conditional on `HasIdeleClassNakayamaSpan`
+> ` Ш¹(G, K^× ⊗ W) ≅ sha1Level`              — brick 4, done
+> ` sha1Level = ⊥  ⇒  Ш²(k,E) ⊆ inf`         — brick 5, done
+> ` Ĥ^{-2}(G, W) = 0` after shrinking `G`    — Prop 6, done
+> ` Ш_dec = Ш_idelic`                        — **(ii-a) and (ii-b) both done**
+
+so **`HasIdeleClassNakayamaSpan` (§1.00, gap (i)) is the only mathematical content still missing**
+from row 5.  The reciprocity identity it names is
+`ker Left_P = Σ_w cor_w (ker Left_w)`, and the obstacle recorded at §0.90/§1.00 is that
+`baseFundamentalClass` (`Units/BaseTate.lean:60`) is `.choose`-defined, so it must first be rebuilt
+invariant-theoretically out of `localInvariantHom` plus reciprocity
+(`Brauer/TotalInvariant.lean`, `Brauer/BaseReciprocity.lean`).
+
+---
+
+## 1.13 **REFUTATION** (2026-09-06) — `HasIdeleClassNakayamaSpan` as stated is FALSE
+
+**Do not attempt to prove `HasIdeleClassNakayamaSpan k K p` in its current, `∀ W`-quantified
+form.**  It is false: there is a number field `k`, a finite Galois extension `K/k` and a prime `p`
+for which the span fails at `W = 𝔽_p` (trivial action) and `n = -2`.  What follows is the
+computation, the counterexample, and what has to replace the hypothesis.
+
+Throughout: `G = Gal(K/k)`, `I = I_K` the ideles, `C = C_K` the idele classes, `p` an odd prime,
+`μ_p ⊆ k` (so `μ_p` is the trivial `G`-module `𝔽_p`).  `Ĥ` is Tate cohomology of the finite group
+`G`; `D_v ≤ G` are the decomposition subgroups; `Ш^i(G,A) = ker(Ĥ^i(G,A) → ∏_v Ĥ^i(D_v,A))`.
+Take `P = G` (i.e. `G` a `p`-group), so the Sylow subgroup in the statement of the span is all of
+`G` and drops out.
+
+### (a) At `n = -2` and `W` trivial, the Tate–Nakayama term contributes **nothing**
+
+The span at `(W, n)` reads `range TN_W(n) ⊔ range ι_*(n+2) = ⊤` inside `Ĥ^{n+2}(G, C ⊗ W)`, where
+`ι_* : Ĥ^{n+2}(G, I ⊗ W) → Ĥ^{n+2}(G, C ⊗ W)`.  Put `n = -2`, `W = 𝔽_p`.
+
+* `TN` is natural in the coefficient module.  Along the reduction `ℤ ↠ 𝔽_p` the square
+
+  ```
+  Ĥ^{-2}(G, ℤ)  --TN-->  Ĥ⁰(G, C)
+       |                    |
+       v                    v
+  Ĥ^{-2}(G, 𝔽_p) --TN-->  Ĥ⁰(G, C/p)
+  ```
+
+  commutes, and the **left vertical is surjective**: the Bockstein gives
+  `Ĥ^{-2}(G,ℤ) → Ĥ^{-2}(G,𝔽_p) → Ĥ^{-1}(G,ℤ)` and `Ĥ^{-1}(G,ℤ) = 0`.  Hence
+  `range TN_{𝔽_p}(-2) = image(Ĥ⁰(G,C) → Ĥ⁰(G,C/p))` (the top `TN` is Tate's isomorphism
+  `Ĥ^{-2}(G,ℤ) ≅ Ĥ⁰(G,C)`, so the top row is onto `Ĥ⁰(G,C)`).
+* `Ĥ⁰(G, I) → Ĥ⁰(G, C)` is **surjective**, because the next term is `Ĥ¹(G, K^×) = 0`
+  (Hilbert 90).  Combined with naturality of `I → C` in the reduction square,
+
+  > `range TN_{𝔽_p}(-2) ⊆ range ι_*(0)`.
+
+**So at `W` trivial and `n = -2` the span is *equivalent* to `range ι_* = ⊤`, i.e. to
+`Ш¹(G, K^× ⊗ W) = 0` — which is precisely the conclusion it is used to derive.**  The whole
+Tate–Nakayama tower is doing no work in that instance.  (This is special to trivial `W`: the same
+argument works for any `W` that is a quotient of a lattice `Y` with `Ĥ^{n-1}(G,Y) → Ĥ^{n-1}(G,W)`
+zero, e.g. any trivial `W = 𝔽_p^d`; for a genuinely non-trivial `W` the `TN` term is strictly
+bigger than the idelic one, because `Ĥ²(G,I) → Ĥ²(G,C)` need **not** be surjective —
+its image is `(1/lcm_v |D_v|)ℤ/ℤ` inside `Ĥ²(G,C) ≅ (1/|G|)ℤ/ℤ`, which is the content of
+gotcha 1129, "there is no idelic fundamental class".)
+
+### (b) The cokernel of `ι_*` at `n = -2` is `Ш²(G, μ_p)`
+
+Bockstein for a `G`-module `M`, `i = 0`:
+`0 → Ĥ⁰(G,M)/p → Ĥ⁰(G,M/p) → Ĥ¹(G,M[p]) → 0` (the right-hand map is onto because `p` kills
+`Ĥ¹(G,M[p])`), naturally in `M`.  Apply it to `M = I` over `M = C`:
+
+```
+0 → Ĥ⁰(G,I)/p → Ĥ⁰(G,I/p) → Ĥ¹(G,I[p]) → 0
+       | (a)         | (b)        | (c)
+0 → Ĥ⁰(G,C)/p → Ĥ⁰(G,C/p) → Ĥ¹(G,C[p]) → 0
+```
+
+`(a)` is onto by Hilbert 90 as above, so the snake lemma gives `coker(b) ≅ coker(c)`.  Now
+Grunwald–Wang at prime exponent — **already in the repo**, `exists_pow_eq_of_forall_localPow_
+outside_of_prime` (`CFT/GrunwaldWang.lean:226`) — makes `0 → μ_p → I[p] → C[p] → 0` exact
+(§1.01(c), `resSeq_tensorSeq_ideleClassTorsion_shortExact`).  Since `I[p] = ∏_w μ_p =
+∏_v Ind_{D_v}^G μ_p`, Shapiro plus "Tate cohomology of a finite group commutes with products"
+gives `Ĥ^i(G, I[p]) = ∏_v Ĥ^i(D_v, μ_p)` with the map from `Ĥ^i(G, μ_p)` being the product of the
+restrictions.  Hence
+
+> **`coker(ι_* : Ĥ⁰(G, I/p) → Ĥ⁰(G, C/p)) ≅ Ш²(G, μ_p)`,**
+
+and by (a), **the span at `(W = 𝔽_p, n = -2)` holds if and only if `Ш²(G, μ_p) = 0`.**
+
+### (c) A `(k, K, p)` with `Ш²(G, μ_p) ≠ 0`
+
+*Group theory.*  For `G = (ℤ/p)²`, `p` odd, the exponent-`p` Heisenberg extension
+`1 → ℤ/p → H → (ℤ/p)² → 1` (with `H = ⟨a,b : a^p = b^p = [a,b]^p = 1, [a,b]` central`⟩`) is
+non-split, so its class `0 ≠ x₁x₂ ∈ H²(G, 𝔽_p)`; but over any cyclic `C = ⟨(s,t)⟩ ≤ G` the
+preimage is `⟨a^s b^t, z⟩ ≅ (ℤ/p)²` (exponent `p`!), so `res_C(x₁x₂) = 0`.  Equivalently, in
+`H^*(G,𝔽_p) = Λ(x₁,x₂) ⊗ 𝔽_p[y₁,y₂]`, `res_C(a·x₁x₂ + b·y₁ + c·y₂) = (bs+ct)·y`, which vanishes for
+every `(s,t) ≠ 0` iff `b = c = 0`.  So `Ш²_ω((ℤ/p)², 𝔽_p) = ⟨x₁x₂⟩ ≅ 𝔽_p ≠ 0` for odd `p`
+(and `= 0` for `p = 2`).
+
+*Arithmetic realisation.*  `p = 3`, `k = ℚ(μ_3) = ℚ(√-3)`, `K = k(α^{1/3}, β^{1/3})` with `α, β`
+independent modulo cubes chosen so that
+
+* `α = π₁` a prime element, `β = π₂ ·` (a cube) with `π₂` a prime element;
+* `β ∈ (k_v^×)³` for every `v ∣ 3` and for `v = v₁` (the place of `π₁`);
+* `α ∈ (k_{v₂}^×)³`, arranged by picking `𝔭₂` split in `k(α^{1/3})` (Chebotarev).
+
+Then: `v₁` ramifies only in `k(α^{1/3})`, so `D_{v₁}` is cyclic of order 3; symmetrically for `v₂`;
+every `v ∣ 3` splits in `k(β^{1/3})` so `D_v ≤ Gal(k(α^{1/3})/k)` is cyclic; the unique archimedean
+place is complex, `D_∞ = 1`; every other place is unramified, so `D_v = ⟨Frob_v⟩` is cyclic.  **All
+decomposition subgroups are cyclic**, hence `Ш²(G, μ_3) ⊇ Ш²_ω((ℤ/3)², 𝔽_3) ≠ 0`.
+
+Therefore `HasIdeleClassNakayamaSpan ℚ(μ_3) K 3` is **false**, and
+`kummerFiniteH1Equiv_eq_one_of_span` / `sha1Level_eq_bot_of_span`
+(`Units/KummerShaBot.lean`) are **vacuous** for such a `K`.  Both remain true theorems; they just
+cannot be discharged by proving their hypothesis in general.
+
+Note the structural reason: by Chebotarev **every cyclic subgroup of `G` is a decomposition
+subgroup**, so `Ш^i(G,A) ⊆ Ш^i_ω(G,A)` always, and the span can only ever hold when the
+Tate–Šafarevič group of the *finite* group `G` over its decomposition subgroups vanishes.  That is
+a condition on `K`, not a theorem about `K`.
+
+### (d) A positive by-product: `Ш²(k, μ_p) = 0` with **no** Poitou–Tate
+
+At the level of the full absolute Galois group the answer is the opposite.  Kummer
+`0 → μ_p → 𝔾_m → 𝔾_m → 0` plus Hilbert 90 gives, globally and at every place,
+`0 → k^×/(k^×)^p → H²(k, μ_p) → Br(k)[p] → 0`.  A locally trivial class maps to a locally trivial
+Brauer class, which vanishes by Albert–Brauer–Hasse–Noether — **already in the repo**,
+`eq_one_of_mem_sha2`; so it comes from an `α ∈ k^×/(k^×)^p` that is a local `p`-th power
+everywhere, hence a global `p`-th power by Grunwald–Wang at prime exponent — **also already in the
+repo**.  So
+
+> **`Ш²(k, μ_p) = 0` for every number field `k` and every prime `p`, from two theorems the repo
+> already has.**
+
+Consequently every class of `Ш²(G, μ_p)` dies under inflation to `G_k`, hence dies at some finite
+level: for every `K` there is `K' ⊇ K` with `inf(Ш²(Gal(K/k), μ_p)) = 0` in `H²(Gal(K'/k), μ_p)`.
+This does **not** give `Ш²(Gal(K'/k), μ_p) = 0` (new classes appear at level `K'`), so it does not
+repair the span; but it does say the correct shape of the hypothesis is an **`∃ K`** statement, and
+it is the germ of the replacement.
+
+### (e) What has to change
+
+1. **Refactor the hypothesis to be per-coefficient and per-degree.**  `HasIdeleClassNakayamaSpan`
+   quantifies over *all* `W` and *all* `n`, and is used at exactly one pair: `W = E(-1)` and
+   `n = -2`.  A predicate `HasIdeleClassNakayamaSpanAt k K p W n` is not refuted by (c) — the
+   counterexample only kills the instance `W = 𝔽_p`.  (When `μ_p ⊆ k` and the kernel `E` of the
+   embedding problem is the *trivial* module `𝔽_p`, though — the central `ℤ/p` case, which is a
+   genuine case of `FrattiniKernelEP` — `W = E(-1)` **is** trivial, and by (a)+(b) the span is
+   then literally equivalent to `Ш²(G, μ_p) = 0`.  So the refactor makes the statement honest, not
+   provable.)
+2. **The chooser of `K` must be the consumer.**  Row 5's real statement is
+   `∃ K ⊇ k(μ_p, E)` — compatible with whatever the Šafarevič induction needs — such that the span
+   holds at `W = E(-1)`, `n = -2`.  Sufficient conditions worth having in Lean, in increasing
+   order of usefulness:
+   * *some* place `v` has `D_v ⊇` a Sylow `p`-subgroup of `G` ⟹ `Ш^i(G, A) = 0` for every `p`-torsion
+     `A` and every `i` (restriction to a Sylow subgroup is injective on `p`-primary parts) ⟹ the
+     span for every `W` and every `n`.  Cheap to state, but only satisfiable when the Sylow
+     subgroup is a *local* Galois group — restrictive.
+   * `Ш²_ω(G, μ_p ⊗ W) = 0`, which subsumes the above and is the sharp form of (b).
+3. **Or abandon the Tate–Nakayama route at `n = -2` altogether** and take Schmidt–Wingberg's own
+   road: Poitou–Tate `Ш²(k,E) ≅ Ш¹(k,E′)^∨` with `E′ = Hom(E, μ_p)`, then
+   `Ш¹(k,E′) ↪ H¹(G,E′)` and finite-group Tate duality `Ĥ^i(G,M)^∨ ≅ Ĥ^{-i-1}(G, M^D)` to get
+   `Ĥ^{-2}(G, E(-1)) ↠ Ш²(k, E)`.  The repo has neither the Poitou–Tate pairing nor finite-group
+   Tate duality yet.  By §0.99(b) this is the *only* place Schmidt–Wingberg use Poitou–Tate.
+
+### (f) A caution about "reduce to `Ш²(k,E) ⊆ inf H²(G,E)`"
+
+That containment is, on its own, **vacuous**: continuous cochain cohomology of a profinite group
+with discrete coefficients is the filtered colimit of the finite-level cohomologies, so *every*
+class of `H²(k,E)` is inflated from some finite `K'`.  The content of row 5 is therefore not the
+containment but its **uniformity**: `K` (and hence `G`) must be fixed *before* the finitely many
+classes that Schmidt–Wingberg's Proposition 6 is allowed to kill are chosen, because Prop 6's
+threshold `m₀` depends on the number `t` of classes.  Any restructuring of rows 5/6 has to keep
+that quantifier order — see §0.87(a), where losing it is exactly the recorded circularity.
+
+### (g) Reading of SW Proposition 6 (`sw.txt:258–345`), for the record
+
+Prop 6 does **not** make `Ĥ^k(G, E(m,τ) ⊗ T)` vanish.  It says: given `n, t, k, T, τ`, there is
+`m₀ ≥ n` such that for all `m ≥ m₀` and *any prescribed* `x₁, …, x_t ∈ Ĥ^k(G, E(m,τ) ⊗ T)` there
+is a surjective pro-`p`-`G`-operator homomorphism `ψ : F(m) ↠ F(n)` whose induced map kills
+`x₁, …, x_t`.  The proof dimension-shifts to `k = -1` via `A_k = I_G^{-(k+1)}`, uses Lemma 5's
+`G`-equivariant surjection `κ(d) : (F(d)/F(d)_2)^{⊗j} ↠ F(d)^{(τ)}/F(d)^{(τ+1)}`, takes `m = rn`
+with `r` large and applies Proposition 2.  This is why row 5 is *not* subsumed by Prop 6: to feed
+Prop 6 one needs a **fixed, `m`-independent** number of generating classes, and the only source of
+such a bound in SW is the duality `Ĥ^{-2}(G, E(m,τ)(-1)) ↠ Ш²(k, E(m,τ))` with the
+one-dimensional `T = Hom(μ_p, 𝔽_p)`.
+
+---
+
+## 1.14 Status (2026-09-06, later) — the brick-3/4/5 route is **doubly** broken; the Poitou–Tate chain, costed brick by brick; one brick landed
+
+### (a) The second, independent reason the current route cannot finish
+
+§1.13 refuted the *hypothesis* `HasIdeleClassNakayamaSpan`.  Even granting it, the route dies a
+second time, and the second death is not repairable by weakening the span.
+
+Look at what `KummerShaBot.lean` actually needs.  Both
+`kummerFiniteH1Equiv_eq_one_of_span` and `sha1Level_eq_bot_of_span` take
+
+```
+(hzero : ∀ y : ↥(tateModule W (-2)), y = 0)
+```
+
+— the **total vanishing** of `Ĥ^{-2}(G, W)`.  That is what makes the argument work: the class dies
+in the ideles, Tate–Nakayama produces it from `Ĥ^{-2}(G,W)`, and there is nothing there for it to
+be produced from.
+
+Schmidt–Wingberg's Proposition 6 cannot supply that.  Prop 6 (see §1.13(g)) makes a **prescribed
+finite list** `x₁, …, x_t` of classes die, at the cost of raising `m`; it never makes the whole
+group `Ĥ^{-2}(G, E(m,τ) ⊗ T)` vanish, and it cannot, because `F(m)` grows with `m` and so does its
+cohomology.  So `hzero` is not a hypothesis SW's construction is able to discharge, and no
+adjustment of the *span* hypothesis changes that: the two hypotheses sit in different arguments.
+
+Why SW's own route does not have this problem: it never asks for total vanishing.  Poitou–Tate
+gives a **surjection**
+
+```
+Ĥ^{-2}(G, E(-1))  ↠  Ш²(k, E)
+```
+
+so the single obstruction class `ε ∈ Ш²(k,E)` of the embedding problem has a **single** preimage
+`x ∈ Ĥ^{-2}(G, E(-1))`, and Prop 6 is invoked with **`t = 1`**.  One prescribed class, killed by
+one enlargement of `m`.  That is the whole reason the duality is in SW's proof at all.
+
+**Conclusion.**  Bricks 3/4/5 (`Ĥ^{-2}(G,W) ↠ Ш¹(G, K^× ⊗ W)` → `sha1Level = ⊥` →
+`Ш²(k,E) ⊆ inf`) are abandoned *as a route to* `FrattiniKernelEP`.  The Lean statements stay —
+they are true theorems under their hypotheses, and brick 5 in particular is reused below — but the
+plan of discharging their hypotheses is dropped.  Poitou–Tate is unavoidable.
+
+### (b) The Poitou–Tate chain, brick by brick
+
+Write `G = Gal(K/k)`, `E` a finite elementary abelian `p`-group with a `G_k`-action factoring
+through `G`, and `E′ = Hom(E, μ_p)` its Cartier dual.  The target is the surjection above.  It
+decomposes into four independent steps:
+
+1. **Global duality** `Ш²(k, E) ≅ Ш¹(k, E′)^∨`.  *Missing — the monster.*  This is Poitou–Tate
+   proper.  The repository already has the pairing that must induce it: `CFT/PoitouTate/CupDual.lean`
+   builds `cupDual : H¹(G_k, E) → H¹(G_k, E′) → H²(G_k, μ_p)`, proves it preserves local
+   triviality on both sides, and proves the product formula
+   `∏_v inv_v ⟨·,·⟩_v = 1` for the unit symbols.  What is missing is exactness/perfectness, which
+   is where Tate's local duality and a compactness argument enter.
+2. **`Ш¹(k, E′) ↪ H¹(G, E′)`.**  Cheap.  `Ш¹(K, E′) = 0` for `E′` a finite module with trivial
+   `G_K`-action, by Chebotarev (a class of `Hom(G_K, E′)` vanishing on every decomposition group
+   vanishes on every Frobenius, hence on a dense set).  Then inflation–restriction.
+3. **`H¹(G, E′) ≅ Ĥ^{-2}(G, E(-1))^∨`.**  **Already a theorem.**  `Tate.tateDualEquiv`
+   (`CFT/TateCohomology/DualityShift.lean:373`) gives, for any finite `G` and any `p`-torsion
+   `A`, `Ĥⁿ(G, Hom(A, C)) ≅ Ĥ^{-n-1}(G, A)^∨`.  Take `C = 𝔽_p`, `A = E(-1)`, `n = 1`.
+4. **Dualise back.**  Finite `𝔽_p`-vector spaces, formal.
+
+*(Steps 3 and 4 were rebuilt and landed as a single unconditional brick on 2026-09-06 — see §1.15.
+The `tateDualEquiv` of step 3 turned out to be unusable as stated, and the replacement pairing is
+built out of `tateCharacterEquiv` instead.)*
+
+The degree-2 analogue of step 2 — `Ш²(k,E) ⊆ ker(res : H²(k,E) → H²(K,E))` — is *also* needed,
+both to make `Ш²(k,E)` a finite-group-cohomology object and because it is precisely the hypothesis
+`hb` of brick 5 (`exists_comapH2_eq_of_sha1Level_eq_bot`, `Profinite/TransgressionInflate.lean:277`,
+which asks the cocycle to be a coboundary on `π.ker`).  That is what landed today.
+
+### (c) Landed: an everywhere locally trivial class with split finite coefficients dies over the splitting field
+
+Two files.
+
+`InverseGalois/CFT/Profinite/PiTwo.lean` (new) is the degree-two half of `Profinite/Pi.lean`:
+`IsSmooth₂.apply`, `isSmooth₂_pi_iff`, `isMulCocycle₂_pi_iff`, `smoothH2PiHom`,
+`smoothH2PiHom_injective` / `_surjective`, `smoothH2PiEquiv`, `coeffH2Equiv`, `coeffH2_id`,
+`coeffH2_comp`, and the two that make the whole thing usable against `sha2`:
+
+```lean
+theorem resH2_coeffH2 (H : Subgroup G) (x : SmoothH2 G M) :
+    resH2 H (coeffH2 φ hφ x) = coeffH2 φ _ (resH2 H x)
+
+theorem coeffH2_mem_sha2 {S : Set (Subgroup G)} {x : SmoothH2 G M} (hx : x ∈ sha2 M S) :
+    coeffH2 φ hφ x ∈ sha2 N S
+```
+
+Both are `rfl` after destructuring the class into a cocycle: restriction and a coefficient map are
+composition of the cocycle with something, on the source and on the target respectively.  Note that
+injectivity of `smoothH2PiHom` needs `Fintype ι`, unlike degree one — in degree one the primitive
+of a coboundary is an *element* of the coefficients, in degree two it is a *cochain*, and a family
+of smooth cochains is smooth only for a finite family.
+
+`InverseGalois/CFT/Units/DecompositionRestrict.lean` gains
+
+```lean
+theorem eq_one_of_mem_sha2_of_mulEquivPi_intermediate
+    (hπ : ∀ (g : Gal(Ω/K)) (e : E), g • e = galRestrictScalarsHom k K Ω g • e)
+    {n : ℕ} [NeZero n] {ζ : K} (hζ : IsPrimitiveRoot ζ n)
+    (htrivE : ∀ (g : Gal(Ω/K)) (e : E), g • e = e)
+    (htrivM : ∀ (g : Gal(Ω/K)) (m : M), g • m = m)
+    {J : Type*} [Fintype J] (α : E ≃* (J → M))
+    {ι : M →* Kˣ} (hιinj : Function.Injective ι) (hιpow : ∀ m : M, ι m ^ n = 1)
+    (hιsurj : ∀ y : Kˣ, y ^ n = 1 → ∃ m : M, ι m = y)
+    (z : SmoothH2 Gal(Ω/k) E) (hz : z ∈ sha2 E (decompositionSubgroups k Ω)) :
+    comapH2 (galRestrictScalarsHom k K Ω) hπ (isSmoothHom_galRestrictScalarsHom k K Ω) z = 1
+```
+
+which is exactly `Ш²(k, E) ⊆ ker(res_{G_K})` for a finite `E` of exponent `n` split by `K ∋ μ_n`.
+The proof is four lines of content: restrict the class to `G_K` (it stays everywhere locally
+trivial, `comapH2_mem_sha2_decompositionSubgroups`), transport along `α` (which is `G_K`-equivariant
+because *both* actions are trivial), project to a factor, and apply `eq_one_of_mem_sha2` — whose
+first consumer this is.  `smoothH2PiHom_injective` puts the factors back together.
+
+This is the first arithmetic input to the Poitou–Tate chain that the repository can prove outright,
+and it is reusable: it is simultaneously step 2′ of §1.14(b) and hypothesis `hb` of brick 5.
+
+### (d) Where Shafarevich stands
+
+Unchanged from §1.12(d) except: rows 5 and 8 are now understood to be *the same missing thing*
+(global duality), row 5's Tate–Nakayama formulation is dead (§1.13, §1.14(a)), and the chain in
+§1.14(b) is the replacement, with steps 3 and 4 already done and step 2′ done today.  Step 1 —
+Poitou–Tate proper — is the sole remaining mathematical wall between the repository and
+unconditional Shafarevich for solvable groups.  Everything nilpotent is complete and unconditional.
+
+---
+
+## 1.15 Status (2026-09-06, later still) — steps 3 + 4 of the Poitou–Tate chain landed, unconditionally
+
+### (a) What is now a theorem
+
+Two new modules, both sorry- and axiom-free, both in the default build (root build **9742 jobs**,
+0 warnings):
+
+`InverseGalois/CFT/TateCohomology/Pontryagin.lean` — ℚ/ℤ-valued Pontryagin duality for finite
+abelian groups, from scratch:
+
+```lean
+theorem card_characterModule (A : Type*) [AddCommGroup A] [Finite A] :
+    Nat.card (CharacterModule A) = Nat.card A
+theorem bijective_evalDual [Finite M] : Function.Bijective (evalDual M)
+```
+
+plus `circleGen`, `card_circleTorsion`, `zmodCharacterEquiv`, `piCharacterEquiv`,
+`finite_characterModule`, `card_linearDual`, `finite_linearDual`, `injective_evalDual`.  The cyclic
+case is the torsion of `AddCircle (1 : ℚ)`, which is `zmultiples ((n:ℚ)⁻¹)`, of order exactly `n`;
+the general case is `AddCommGroup.equiv_directSum_zmod_of_finite'` plus a product formula for
+characters.  Recovery is then counting: evaluation is injective (a nonzero element is separated by
+some character, `CharacterModule.exists_character_apply_ne_zero_of_ne_zero`) and injective between
+equinumerous finite sets is bijective.
+
+Mathlib has **no** ℚ/ℤ-valued Pontryagin duality; `AddChar`/`Circle` duality is ℂ-valued and does
+not transfer, so this had to be built.
+
+`InverseGalois/CFT/TateCohomology/DualityFinite.lean` — the cohomological consequence:
+
+```lean
+def tateDualPairing (A : Rep ℤ G) [Finite ↥A.V] (n : ℤ) :
+    ↥(tateModule A n) ≃ₗ[ℤ]
+      (↥(tateModule (coeffDualObj A (AddCircle (1 : ℚ))) (-n - 1)) →ₗ[ℤ] AddCircle (1 : ℚ))
+
+theorem tateDualPairing_naturality (φ : A ⟶ B) (n : ℤ) (x) (z) :
+    tateDualPairing B n (tateMap φ n x) z
+      = tateDualPairing A n x (tateMap (coeffDualHom φ (AddCircle (1 : ℚ))) (-n - 1) z)
+
+theorem exists_tateDualPairing_eq (n : ℤ) {T : Type} [AddCommGroup T] [Module ℤ T]
+    (ι : T →ₗ[ℤ] ↥(tateModule (coeffDualObj A (AddCircle (1 : ℚ))) (-n - 1)))
+    (hι : Function.Injective ι) (χ : T →ₗ[ℤ] AddCircle (1 : ℚ)) :
+    ∃ x : ↥(tateModule A n), ∀ t : T, tateDualPairing A n x (ι t) = χ t
+```
+
+together with `doubleDualHom` (evaluation `A ⟶ (A^∨)^∨`), `doubleDualHom_naturality`,
+`isIso_doubleDualHom`, and `bijective_tateMap_of_comp`.
+
+### (b) Why it is stated this way
+
+Three design decisions, each forced.
+
+**Dualise the coefficients, not the Tate module.**  The naive step 4 — "`Ĥⁿ(A)` is finite, so
+double-dualise it" — needs finiteness of a *Tate module*, which the repository only ever obtains as
+a hypothesis.  Dualising at the level of the *representation* needs only `Finite ↥A.V`, which is
+free for the modules Shafarevich cares about (`E` is a finite elementary abelian `p`-group).  So
+`tateDualPairing` is `Ĥⁿ(A) ≅ Ĥ^{-n-1}(A^∨)^∨` obtained by transporting the isomorphism of
+representations `A ≅ (A^∨)^∨` through `tateMap` and composing with the already-proven
+`tateCharacterEquiv`.
+
+**Not `tateDualEquiv`.**  §1.14(b) step 3 named `Tate.tateDualEquiv`
+(`CFT/TateCohomology/DualityShift.lean:373`).  It is `.some`-defined — extracted from an
+existence statement — so it carries **no naturality whatsoever**, and naturality is exactly what
+the eventual argument needs (the pairing must intertwine `res`/`inf`).  The usable object is
+`tateCharacterEquiv` (`DualityDivisible.lean:207`) together with `tateCharacterEquiv_naturality`
+(`DualityNatural.lean`), which is what `tateDualPairing` is built from.
+
+**The realisation lemma is stated over an abstract injection, not a `Submodule`.**  See finding
+1904 below; it is also the more usable form, since `Ш¹(k,E′) ↪ H¹(G,E′)` arrives as an injection of
+a separately-defined object, not as a literal submodule.
+
+### (c) How it feeds rows 5/6
+
+With `n = -2` and `A = E(-1)`, `tateDualPairing` reads
+
+```
+Ĥ^{-2}(G, E(-1))  ≅  (Ĥ^{1}(G, E(-1)^∨))^∨ = H¹(G, E′)^∨
+```
+
+(`-(-2) - 1 = 1`), and `exists_tateDualPairing_eq`, fed the injection `Ш¹(k,E′) ↪ H¹(G,E′)` of step
+2, gives the **surjection**
+
+```
+Ĥ^{-2}(G, E(-1))  ↠  Ш¹(k, E′)^∨
+```
+
+which is exactly the left half of SW's `Ĥ^{-2}(G, E(-1)) ↠ Ш²(k,E)`.  The surjectivity comes from
+Baer (`baer_addCircle`), not from any counting, so no finiteness of `Ш¹` is needed.
+
+**What is left of the chain**, in dependency order:
+
+1. `E(-1)^∨ ≅ E′` as representations of `G` — the Cartier-duality bookkeeping identifying the
+   coefficient dual of the Tate twist with `Hom(E, μ_p)`.  Mechanical but not yet written.
+2. Step 2, `Ш¹(k,E′) ↪ H¹(G,E′)`.  Cheap: `eq_one_of_mem_sha1`
+   (`Units/InfiniteDecomposition.lean`) plus inflation–restriction (`Profinite/InfRes.lean`).
+3. Step 1, `Ш²(k,E) ≅ Ш¹(k,E′)^∨` — still the monster, still the sole wall.
+
+### (d) Findings
+
+* **1897.** `Nat.bijective_iff_injective_and_card [Finite β] (f : α → β) :
+  Bijective f ↔ Injective f ∧ Nat.card α = Nat.card β`, `Mathlib/SetTheory/Cardinal/Finite.lean:104`
+  (the `Fintype` version needs `[Fintype α] [Fintype β]`).
+* **1898.** `Module.Baer.extension_property (h) (f : M →ₗ[R] N) (hf : Injective f) (g : M →ₗ[R] Q) :
+  ∃ h, h ∘ₗ f = g`, `Mathlib/Algebra/Module/Injective.lean:371`.
+* **1899 (the ℤ-module instance diamond — the blocker).**  A declaration stated with only
+  `[AddCommGroup M]` silently commits to `AddCommGroup.toIntModule M`.  For `A : Rep ℤ G`, `↥A.V`
+  carries `A.V.isModule` instead.  The two are *propositionally* equal
+  (`AddCommMonoid.subsingletonIntModule`) but **not definitionally**, so `mkHom (evalDual ↥A.V)`,
+  `Action.mkIso (…).toModuleIso` and `exact bijective_evalDual ↥A.V` all fail with "application
+  type mismatch".  **Fix:** state such lemmas with an explicit `[Module ℤ M]` binder, and convert
+  `M →+ N` to `M →ₗ[ℤ] N` with `map_intCast_smul f ℤ ℤ n x`, never `AddMonoidHom.toIntLinearMap`
+  (which re-commits to `toIntModule`).
+* **1900.** `Mathlib/Algebra/Module/NatInt.lean`: `Int.cast_smul_eq_zsmul` (:172),
+  `AddCommGroup.uniqueIntModule` (:186), `AddCommMonoid.subsingletonIntModule` (:192),
+  `map_intCast_smul` (:197) — the last is the instance-polymorphic tool.
+* **1901 (duplicate).** `InverseGalois.CFT.Tate.intLinear` already exists at
+  `TateCohomology/PTorsionTrivial.lean:110`; a third copy of the idea is `intLinearOfAddHom` at
+  `TensorPi.lean:67`.  `Pontryagin.lean` imports `PTorsionTrivial` and reuses it, adding only the
+  missing `@[simp] intLinear_apply` and `intLinearEquiv`.
+* **1902.** `coeffDualObj` / `coeffDualHom` / `mkHom` do not consume `[Finite G]`, so sections
+  defining maps into `coeffDualObj` must omit it or `linter.unusedSectionVars` fires.
+* **1903.** After `LinearMap.ext fun f => …` with domain `↥(coeffDualObj A C).V`, the binder `f` is
+  not syntactically a function and `show f (A.ρ g v) = …` fails with "Function expected".  Ascribe
+  it: `fun (f : ↥A.V →ₗ[k] C) => …`.
+* **1904.** `Submodule ℤ X` triggers the same diamond as 1899 (`AddCommGroup.toIntModule ↥S` vs
+  `S.module`).  State realisation lemmas over an abstract `{T} [AddCommGroup T] [Module ℤ T]` with
+  an injective `ι`, not over a `Submodule`.
+
+---
+
+## 1.16 Status (2026-09-06, later still) — the Cartier brick landed: **a cyclic representation is dual to the maps out of it, in every degree**
+
+### (a) What is now a theorem
+
+`InverseGalois/CFT/TateCohomology/CyclicDual.lean` (new, sorry- and axiom-free; full root build
+**9743 jobs**, 0 warnings) proves, for `A B : Rep ℤ G` with `G` finite, `↥A.V` finite **cyclic**,
+and `B` killed by `Nat.card ↥A.V`:
+
+* `cartierIso : linHomObj B A ≅ coeffDualObj (linHomObj A B) (AddCircle (1 : ℚ))` — **the maps into
+  a cyclic representation are the functionals on the maps out of it**, as objects of `Rep ℤ G`;
+* `cartierPairing (n : ℤ) : ↥(tateModule (linHomObj A B) n) ≃ₗ[ℤ]
+  (↥(tateModule (linHomObj B A) (-n - 1)) →ₗ[ℤ] AddCircle (1 : ℚ))`;
+* `exists_cartierPairing_eq` — every character of a submodule of
+  `Ĥ^{-n-1}(G, Hom(B,A))` is `cartierPairing` against a single class of `Ĥⁿ(G, Hom(A,B))`.
+
+Supporting bricks, all reusable:
+
+* `cyclicChar M : M →+ AddCircle (1 : ℚ)` and `cyclicChar_injective` — **an injective character of
+  a finite cyclic group** (its image is the `Nat.card M`-torsion of the rational circle);
+* `exists_comp_cyclicChar` — every character of a group killed by `Nat.card M` factors through it;
+* `bijective_evalGen` — **evaluation at a generator is a bijection `(M →+ B) ≃ B`** when `B` is
+  killed by `Nat.card M`;
+* `comp_comm_of_isAddCyclic` — **the endomorphisms of a cyclic group commute**;
+* `linHomObj A B : Rep k G` for `[CommRing k]` — the conjugation action on `↥A.V →ₗ[k] ↥B.V`
+  (the pre-existing `homRep` in `GroupCohomology/TateTwist.lean:123` demands `[Field k]` and is
+  therefore unusable at `k = ℤ`).
+
+### (b) Why the proof needs no counting
+
+`Φ f = χ ∘ f ∘ ev`, where `ev : Hom(A,B) ≅ B` is evaluation at a generator `a₀` of `↥A.V` and
+`χ : ↥A.V ↪ ℚ/ℤ` has range the `Nat.card ↥A.V`-torsion.  Both factors are already bijections, so
+`Φ` is one; no comparison of orders and no finiteness of any Tate module enters.  Equivariance
+needs exactly `A.ρ g ∘ₗ ψ = ψ ∘ₗ A.ρ g` for `ψ = f ∘ₗ B.ρ g⁻¹ ∘ₗ x`, i.e. commutativity of
+`End(↥A.V)`, which holds because `↥A.V` is cyclic.
+
+### (c) How it feeds rows 5/6
+
+With `A := μ_p` (cyclic of order `p`), `B := E` and `n = -2`:
+`Ĥ^{-2}(G, Hom(μ_p, E)) ≅ (Ĥ¹(G, Hom(E, μ_p)))^∨ = H¹(G, E′)^∨` — using `tateModule X 1 =
+groupCohomology X 1` by `rfl` (finding 900).  `exists_cartierPairing_eq` then turns an injection
+`Ш¹(k, E′) ↪ H¹(G, E′)` into a surjection `Ĥ^{-2}(G, E(-1)) ↠ Ш¹(k, E′)^∨`, which is the shape SW
+Proposition 6 consumes.  The remaining chain item is step 2, the injection
+`Ш¹(k, E′) ↪ H¹(G, E′)`, and then step 1 (`Ш²(k,E) ≅ Ш¹(k,E′)^∨`), still the sole wall.
+
+### (d) Findings
+
+* **1905.** `CharacterModule A := A →+ AddCircle (1 : ℚ)`,
+  `Mathlib/Algebra/Module/CharacterModule.lean:46` — a plain `→+`, not a bundled linear map.
+* **1906.** `ZMod.lift : {f : ℤ →+ A // f n = 0} ≃ (ZMod n →+ A)`,
+  `Mathlib/Data/ZMod/Basic.lean:1136`, with `ZMod.lift_coe` (:1150), `lift_comp_coe` (:1157),
+  `lift_comp_castAddHom` (:1161).
+* **1907.** `zmodAddCyclicAddEquiv [AddGroup G] (h : IsAddCyclic G) : ZMod (Nat.card G) ≃+ G`,
+  `Mathlib/GroupTheory/SpecificGroups/Cyclic.lean:784`; `addEquivOfAddCyclicCardEq` (:812);
+  `AddSubgroup.isAddCyclic_zmultiples` is an instance (:72); `IsAddCyclic.exists_generator` (:56).
+  Mathlib has **no** `End (ZMod n) ≃ ZMod n`.
+* **1908.** Finite-group Tate duality is already a theorem:
+  `Tate.tateDualEquiv (C) (n) (A) (hA : ∀ v, p • v = 0)`,
+  `CFT/TateCohomology/DualityShift.lean:373` — but it is `.some`-defined and so carries no
+  naturality; `DualityFinite.lean`'s `tateDualPairing` is the usable one.
+* **1909 (MATH — the Cartier route).** See §1.16(b): the pairing is a composition of two
+  bijections, so no counting argument is needed.
+* **1910.** `Rep ℤ G` forces `G : Type 0` (`Rep k G` needs `k G : Type u`, and `ℤ : Type 0`).
+  Declare `{G : Type} [Group G]`, not `{G : Type u}`.
+* **1911 (the linear-map-space ℤ-module diamond).** `Rep.of (Representation.linHom A.ρ B.ρ)`
+  written directly at `k = ℤ` fails: *synthesized* `AddCommGroup.toIntModule (↑A.V →ₗ[ℤ] ↑B.V)`,
+  *inferred* `LinearMap.module`.  **Fix:** define the object generically in `k` with `[CommRing k]`
+  (exactly as `coeffDualObj` does), so `Module k (V →ₗ[k] W)` can only resolve to
+  `LinearMap.module`; then instantiate at `k = ℤ`.
+* **1912 (the fix for 1903, generalised).** `↥(linHomObj A B).V` does not auto-unfold for `CoeFun`,
+  so `x (cyclicGen ↥A.V)` gives "Function expected".  A **type ascription on the term**,
+  `(x : ↥A.V →ₗ[ℤ] ↥B.V) …`, does **not** help — ascription elaborates `x` against the expected
+  type and returns `x` with its original type.  Only a **binder** annotation works:
+  `LinearMap.ext fun (x : ↥A.V →ₗ[ℤ] ↥B.V) => …`.  Where the binder is not yours to annotate
+  (a structure-instance field, or `intro` against `Function.Injective`), either `show ∀ F : <good
+  type>, …` before `intro`, or hoist the statement into a standalone lemma whose binders you do
+  control (this is why `cartierFun_injective` / `cartierFun_surjective` are phrased over
+  `↥B.V →ₗ[ℤ] ↥A.V` and `bijective_cartierLinear` is a one-line consequence).
+* **1913.** `AddMonoidHom.congr_fun` does not exist.  Use `DFunLike.congr_fun`.  (And it produces
+  `((χ).comp f) y`, not `χ (f y)` — state the `have` with the shape you want and let defeq do the
+  work, rather than `rw`-ing it.)
+* **1914.** `LinearMap.lcomp ℤ N f` / `LinearMap.compRight ℤ f` at `S = R = ℤ` require
+  `SMulCommClass ℤ ℤ ↥A.V`, which is **not** synthesized for a `ModuleCat ℤ` carrier.
+  `LinearMap.llcomp` is too semilinear to be worth the `RingHomCompTriple` hypotheses.
+* **1915.** `LinearMap.applyₗ : M →ₗ[R] (M →ₗ[R] M₂) →ₗ[R] M₂`,
+  `Mathlib/Algebra/Module/LinearMap/End.lean:387` — this *does* work at `k = ℤ` against a
+  `ModuleCat` carrier, and is how `evalGen` is built.
+* **1916 (the recipe for a linear map into an object-derived type).** When the codomain is
+  `↥(coeffDualObj X C).V`, building the map as a `LinearMap` structure instance forces a
+  `map_smul'` obligation whose `•` on the *domain* is picked by whichever instance elaboration
+  reaches first — and a standalone `c • f` over `↥B.V →ₗ[ℤ] ↥A.V` picks `SubNegMonoid.toZSMul`,
+  not `LinearMap.module`, so the two never match.  **Fix:** build an `AddMonoidHom` (only
+  `map_zero'` / `map_add'`, both instance-free) and apply `intLinear`, whose own `map_smul'` is
+  proved by `map_intCast_smul f ℤ ℤ c v` and is therefore valid for *any* `Module ℤ` instance.
+* **1917.** `omit [Finite ↥A.V] in` before a docstring before `theorem` is the right order, and
+  `omit … in include h in` chains in that order (rule 18 confirmed again for `↥A.V`-shaped
+  instance arguments).
+
+---
+
+## 1.17 Status (2026-09-06, later still) — **steps 2, 3 and 4 of the Poitou–Tate chain are all theorems**: `Ĥ^{-2}(G, E(-1)) ↠ Ш¹(k, E′)^∨`
+
+### (a) What is now a theorem
+
+Two commits, both sorry- and axiom-free, full root build **9744 jobs**, 0 warnings.
+
+**Step 2 — `Ш¹(k, M) ↪ H¹(Gal(F/k), M)`** (commit `d26b0e5`).  It turned out that the harder half
+of this was *already in the repository*: `Units/HasseInflation.lean` had the inflation statement and
+`Units/HasseDecomposition.lean` the level machinery.  What was missing was the Ш-shaped packaging,
+now added to `Units/HasseDecomposition.lean` (in a new `Sha` section, which needed
+`open scoped Pointwise` — finding 1918) and `Units/DecompositionRestrict.lean`:
+
+```lean
+theorem eq_one_of_mem_sha1_intermediate            -- DecompositionRestrict.lean
+theorem exists_galInflH1_eq_of_mem_sha1            -- HasseDecomposition.lean
+theorem sha1_le_range_galInflH1
+def     shaInflH1        : ↥(sha1 M (decompositionSubgroups k Ω)) →* SmoothH1 (Gal(F/k)) M
+theorem galInflH1_shaInflH1
+theorem shaInflH1_injective
+```
+
+The mathematical content: an everywhere locally trivial class is trivial on every decomposition
+subgroup, hence (by the pre-existing local-global brick for the level) inflated from the finite
+Galois level `F` that trivialises the coefficients; and inflation from a level is injective by
+inflation–restriction, because the restriction to `Gal(Ω/F)` of an inflated class vanishes and the
+kernel of inflation is `H¹` of the quotient acting on invariants, which is `0` here.
+
+**Steps 3 + 4 assembled — `InverseGalois/CFT/PoitouTate/ShaTate.lean`** (new, commit `fe0e416`).
+This glues step 2 to the Cartier pairing of §1.16:
+
+```lean
+def     h1AddEquiv (A : Rep ℤ G) :
+          ↥(H1 (Rep.ofMulDistribMulAction G (Multiplicative ↥A.V))) ≃+ ↥(H1 A)
+def     smoothH1RepHom (A : Rep ℤ G) :
+          Additive (SmoothH1 G (Multiplicative ↥A.V)) →+ ↥(H1 A)
+theorem smoothH1RepHom_injective
+def     restrictRepAction (X : Rep ℤ (↥F ≃ₐ[k] ↥F)) :
+          MulDistribMulAction Gal(Ω/k) (Multiplicative ↥X.V)
+theorem restrictRepAction_smul
+def     shaTateHom :
+          Additive ↥(sha1 (Multiplicative ↥(linHomObj B A).V) (decompositionSubgroups k Ω)) →+
+            ↥(tateModule (linHomObj B A) 1)
+theorem shaTateHom_injective
+def     shaTateLinear                              -- the same, as a ℤ-linear map
+theorem shaTateLinear_injective
+
+theorem exists_cartierPairing_sha_eq (hB : ∀ b : ↥B.V, Nat.card ↥A.V • b = 0)
+    (χ : Additive ↥(sha1 (Multiplicative ↥(linHomObj B A).V) (decompositionSubgroups k Ω)) →ₗ[ℤ]
+      AddCircle (1 : ℚ)) :
+    ∃ x : ↥(tateModule (linHomObj A B) (-2)),
+      ∀ t, cartierPairing A B hB (-2) x (shaTateLinear F A B hπ t) = χ t
+```
+
+With `A := μ_p`, `B := E`, so that `linHomObj B A = E′ = Hom(E, μ_p)` and
+`linHomObj A B = E(-1) = Hom(μ_p, E)`, the last line **is**
+
+```
+Ĥ^{-2}(G, E(-1))  ↠  Ш¹(k, E′)^∨ ,
+```
+
+the left half of SW's `Ĥ^{-2}(G, E(-1)) ↠ Ш²(k,E)`.
+
+### (b) Why the smooth/complete comparison is the whole trick
+
+`sha1` and `shaInflH1` live in the **profinite, multiplicative, smooth-cochain** world; the Cartier
+pairing lives in the **finite-group, additive, `Rep ℤ G`** world.  The bridge is three already-built
+isomorphisms, composed:
+
+1. `discreteSmoothH1Equiv` (`Profinite/Discrete.lean:138`) — on a *finite* group with the discrete
+   topology, smoothness of a cochain is vacuous, so `SmoothH1 G M = H¹(G, M)` in the multiplicative
+   sense.
+2. `repIso` (`GroupCohomology/CyclicTate.lean:110`) — `Rep.ofMulDistribMulAction G (Multiplicative
+   ↥A.V) ≅ A`, so multiplicative and additive `H¹` agree.
+3. `H1 A = groupCohomology A 1 = tateModule A 1` by `rfl` (findings 900, 1921).
+
+The only genuinely new plumbing is `restrictRepAction`: the level's action must be transported up to
+the whole `Gal(Ω/k)` so that `sha1` and `decompositionSubgroups` typecheck.  `MulDistribMulAction.
+compHom` along `AlgEquiv.restrictNormalHom F` does it, and the resulting compatibility hypothesis
+`hπ` is then `fun _ _ => rfl` (finding 1926).  Smoothness of that pulled-back action is automatic
+because the kernel of `restrictNormalHom` is open normal (finding 1925).
+
+### (c) What is left — step 1, and nothing else
+
+The chain of §1.14(b) now reads:
+
+| step | statement | status |
+|---|---|---|
+| 4 | `Ĥ^{-2}(G, X) ≅ (Ĥ¹(G, X^∨))^∨`, realisation over an injection | ✅ `exists_tateDualPairing_eq`, §1.15 |
+| 3 | `E(-1)^∨ ≅ E′`, i.e. `linHomObj B A ≅ coeffDualObj (linHomObj A B) ℚ/ℤ` | ✅ `cartierIso`, §1.16 |
+| 2 | `Ш¹(k, E′) ↪ H¹(G, E′)` | ✅ `shaInflH1_injective` + `shaTateLinear_injective` |
+| 3+4+2 | `Ĥ^{-2}(G, E(-1)) ↠ Ш¹(k, E′)^∨` | ✅ `exists_cartierPairing_sha_eq` |
+| 1 | `Ш²(k, E) ≅ Ш¹(k, E′)^∨` — **Poitou–Tate global duality** | ❌ the sole wall |
+
+Step 1 is to be stated as a named `Prop`-valued hypothesis (never an axiom) and then attacked.  Two
+things are already known about how *not* to attack it:
+
+* **Finding 1920.** The repository's `cupDual` (`PoitouTate/CupDual.lean`) is a `H¹ × H¹ → H²`
+  pairing, **not** the Poitou–Tate `Ш² × Ш¹` pairing.  A naive cup product of a class in `Ш²` with
+  one in `Ш¹` would land in `H³(k_v, μ_p) = 0` (since `cd(k_v) = 2`), so it carries no information;
+  the real pairing is Cassels–Tate-style, built from a *global* lift of a local trivialisation.  The
+  optimistic sentence in §1.14(b) about reusing `cupDual` is hereby corrected.
+* **Finding 1922.** SW invoke Tate–Poitou duality explicitly (`sw.txt:1290–1340`).  There is no
+  lighter substitute anywhere in their text — the duality genuinely has to be built.
+
+The two plausible first bricks are (i) **local Tate duality** `H^i(k_v, M) × H^{2-i}(k_v, M′) →
+H²(k_v, μ_p) ≅ ℚ/ℤ`, from which the global pairing is assembled by summing local invariants, or
+(ii) the **Cassels–Tate construction** of the `Ш² × Ш¹` pairing directly.  (i) is the more
+repository-friendly: `localInvariantHom` and the reciprocity law are already theorems.
+
+### (d) Findings
+
+* **1918.** `HasseDecomposition.lean` needed `open scoped Pointwise` for
+  `stabilizer Gal(K/k) (Ideal (𝓞 K))` to elaborate in the new `Sha` section.
+* **1919.** `decompositionSubgroups k Ω` does **not** actually consume `[NumberField k]`; including
+  it in a section `variable` list fires `linter.unusedSectionVars`.
+* **1921.** `Mathlib/.../LowDegree.lean:927` reads `abbrev H1 := groupCohomology A 1`, so `H1 A`,
+  `groupCohomology A 1` and `tateModule A 1` are all `rfl`-equal.
+* **1923 (BUILD — a real unifier pathology).**  Applying
+  `Tate.exists_cartierPairing_eq A B hB (-2) ι hι χ` where `ι`'s type is *written* at degree `1`
+  while the lemma expects `(-n - 1)` with `n = -2` **times out** at `isDefEq`/`whnf`, even at
+  2 000 000 heartbeats — as a direct term, via `refine … ?_ ?_ χ`, **and** via a type ascription
+  `(ι : _ →ₗ[ℤ] ↥(tateModule X (-(-2 : ℤ) - 1)))`.  Yet every ingredient in isolation is instant:
+  `rfl` between the two carrier types, between the two `LinearMap` types, on the element coercion,
+  on `Function.Injective` transport, and on the `Module ℤ` instances (probes `.scratch/st2–st5`).
+  **The working idiom is to elaborate the application with no expected type and then discharge:**
+  ```lean
+  have h := exists_cartierPairing_eq A B hB (-2) (shaTateLinear F A B hπ)
+    (shaTateLinear_injective F A B hπ) χ
+  exact h
+  ```
+  Stating the lemma at a generic `n`, or with `ι` already typed at `(-(-2 : ℤ) - 1)`, is also fast.
+* **1924.** `shaInflH1` and `shaInflH1_injective` take **`M` as the first explicit argument**, then
+  `F`, then `hπ` (because `HasseDecomposition.lean` uses `variable (M) in` and `M` precedes `F`).
+* **1925.** `isSmoothAction_of_isOpenNormal_ker` (`Profinite/Comap.lean:161`) together with
+  `isOpenNormal_ker_restrictNormalHom` (`Profinite/Krull.lean:65`) produce
+  `IsSmoothAction Gal(Ω/k) M` from `hπ` **inside a `def` body with `haveI`** — the resulting type
+  never mentions the instance, and `IsSmoothAction` is a `Prop` class, so proof irrelevance makes
+  later reconstructions definitionally equal.
+* **1926.** `MulDistribMulAction.compHom A f` (`Mathlib/Algebra/GroupWithZero/Action/End.lean:50`)
+  is an `abbrev`; pulling a level action back along `AlgEquiv.restrictNormalHom F` therefore makes
+  the compatibility hypothesis provable by `fun _ _ => rfl`.
+* **1927.** `intLinear` (`PTorsionTrivial.lean:110`) is already reachable from
+  `TateCohomology/CyclicDual.lean` (used there at line 253), so no extra import of `TensorPi.lean`
+  is needed for the `AddMonoidHom → LinearMap ℤ` conversion.
+* **1928.** Full root build after `fe0e416` is **9744 jobs**;
+  `lake build InverseGalois.CFT.PoitouTate.ShaTate` alone is 8263 jobs, ~38 s.
+
+---
+
+## 1.18 Status (2026-09-06, latest) — the wall is now a **named hypothesis with a proved consequence**: `HasPoitouTateDuality ⇒ Ĥ^{-2}(G, E(-1)) ↠ Ш²(k, E)`
+
+### (a) The new module
+
+`InverseGalois/CFT/PoitouTate/ShaSurjection.lean` (imported from `CFT.lean:449`, narrative paragraph
+after the `ShaTate` one).  It does exactly two things.
+
+**It names step 1.**
+
+```lean
+def HasPoitouTateDuality : Prop :=
+  Nonempty (Additive ↥(sha2 (Multiplicative ↥B.V) (decompositionSubgroups k Ω)) ≃+
+    (Additive ↥(sha1 (Multiplicative ↥(linHomObj B A).V) (decompositionSubgroups k Ω)) →ₗ[ℤ]
+      AddCircle (1 : ℚ)))
+```
+
+i.e. `Ш²(k, B) ≅ Ш¹(k, Hom(B, A))^∨` with `A` the cyclic coefficient module and `Hom(B,A) = B′` its
+Cartier dual.  This is a `Prop`-valued `def`, in the house style of `HasIdeleClassNakayamaSpan` /
+`FrattiniKernelEP` — **never an axiom**.
+
+**It proves the consequence SW actually use.**
+
+```lean
+theorem exists_surjective_of_hasPoitouTateDuality (hd : HasPoitouTateDuality F A B) :
+    ∃ Φ : ↥(tateModule (linHomObj A B) (-2)) →+
+        Additive ↥(sha2 (Multiplicative ↥B.V) (decompositionSubgroups k Ω)),
+      Function.Surjective Φ
+```
+
+The proof is three lines of plumbing on top of §1.17: transport a locally trivial degree-two class
+across `D` to a character of `Ш¹(k, B′)`, realise that character by a class of `Ĥ^{-2}` via
+`exists_cartierPairing_eq`, done.  Supporting API: `shaTateShift` (the degree-retyped copy of
+`shaTateLinear`), `shaTateShift_injective`, `shaCharacter` / `_zero` / `_add`,
+`exists_shaCharacter_eq`, `shaDualHom`, `shaDualHom_surjective`.
+
+So the chain of §1.17(c) is now **complete as an implication**: everything except the box marked ❌
+is a theorem, and the ❌ box is a hypothesis that a downstream consumer can carry.
+
+### (b) Route survey for step 1 — what the literature actually costs
+
+* **Milne, *Arithmetic Duality Theorems*, Thm 4.10** proves Poitou–Tate through
+  `Ext^r_{G_S}(M^D, C_S)`.  That is the profinite-`Ext` route **already abandoned** in this project
+  (§0.9x): it needs derived functors of `Hom` over a profinite group ring, which Mathlib has not got
+  and which is a library-scale build in its own right.  (Finding 1933.)
+* **Tate's original proof**, recorded in Milne's NOTES (`adt.txt:3678`), is a *counting* argument for
+  finite `S`: the global Euler–Poincaré formula (Milne Thm 5.1)
+  `χ(G_S, M) · χ(G_S, M^D) = ∏_{v ∈ S} χ(K_v, M)` forces `|Ш¹_S(K, M)| = |Ш²_S(K, M^D)|`, and the
+  general case follows by passing to the limit over `S`.  This route still needs **local Tate
+  duality** plus both Euler characteristic formulas.
+* Both routes therefore bottom out at local Tate duality.  That is the first real brick, and the
+  repository is unusually well placed for it: `localInvariantHom` gives `H²(k_v, μ_n) ≅ ℤ/n`,
+  `CFT/Brauer/LocalReciprocity.lean` and `CFT/Local/NormIndex.lean` give the invariant-map machinery,
+  and `CFT/Local/HilbertSymbol.lean` / `CFT/Brauer/LocalSymbol.lean` already carry the `n`-th Hilbert
+  symbol whose **non-degeneracy** is the `i = 1`, `M = μ_n` case of the duality.
+* **Finding 1934.** A merely *one-sided non-degenerate* pairing does not suffice.  SW need the
+  canonical surjection `(Ш¹)^∨ ↠ Ш²` in order to fit it into their commutative square with
+  `E(m,τ) → E(n,τ)`; a non-canonical splitting breaks the naturality that square depends on.  So
+  full perfectness — genuine Poitou–Tate — is what has to be built.
+
+### (c) Findings
+
+* **1929 (BUILD).**  The gotcha-1923 degree-numeral pathology recurs at *every* `.comp` or
+  structure-field proof that crosses the `tateModule X 1` vs `tateModule X (-(-2 : ℤ) - 1)`
+  boundary.  The general fix is a **degree-retyped copy of the map**, introduced once as a `def`:
+  ```lean
+  def shaTateShift :
+      Additive ↥(sha1 (Multiplicative ↥(linHomObj B A).V) (decompositionSubgroups k Ω)) →ₗ[ℤ]
+        ↥(tateModule (linHomObj B A) (-(-2 : ℤ) - 1)) :=
+    shaTateLinear F A B hπ
+  ```
+  A single coercion in a `def` body is fast; afterwards every use matches syntactically and
+  `exists_cartierPairing_eq` applies as a direct term, with no `have … exact` dance.
+* **1930 (BUILD).**  Even with the shift in place, the `map_zero'` / `map_add'` fields of an
+  `AddMonoidHom` whose `toFun` crosses that boundary still time out at `isDefEq` when proved by
+  `rw`.  **Pure terms work:**
+  ```lean
+  map_zero' := (congrArg D.symm (shaCharacter_zero F A B hπ hB)).trans (_root_.map_zero D.symm)
+  map_add' x y :=
+    (congrArg D.symm (shaCharacter_add F A B hπ hB x y)).trans (_root_.map_add D.symm _ _)
+  ```
+* **1931.**  A downstream module reusing `Multiplicative ↥X.V` for `X : Rep ℤ G` must re-declare
+  `attribute [local instance] repMulDistribMulAction` — it is `local` in `CyclicTate.lean` and does
+  **not** propagate to importers.  Symptom: `failed to synthesize HSMul Gal(↥F/k) (Multiplicative
+  ↑(linHomObj B A).V) ?m`.
+* **1932.**  `lake build InverseGalois.CFT.PoitouTate.ShaSurjection` is 8264 jobs, ~116 s.
+* **1933 (MATH).**  See (b): Milne's Thm 4.10 route is the abandoned profinite-`Ext` one; Tate's
+  original is a counting argument off the Euler–Poincaré formulas.
+* **1934 (MATH).**  See (b): one-sided non-degeneracy is not enough; SW need the canonical
+  surjection.
+
+---
+
+## 1.19 Status (2026-09-06, latest) — the wall is **weaker than an isomorphism**, and the connecting step of a coefficient sequence is a theorem
+
+### (a) `HasShaDualInjection`: SW need only the left kernel to vanish
+
+Finding **1934** of §1.18 said SW's Claim needs the full duality `Ш²(k,E) ≅ Ш¹(k,E′)^∨`.  That is
+too strong, and re-deriving the argument shows why.  SW's shrinking step runs:
+
+1. take `ε ∈ Ш²(k,E)` and read it as a character `α_E(ε)` of `Ш¹(k,E′)`;
+2. lift that character to a class `ε̃ ∈ Ĥ^{-2}(G, E(-1))` — this is
+   `exists_shaCharacter_eq`, already a theorem (§1.17);
+3. shrink the level so that `ε̃` dies;
+4. by naturality the character `α_{E'}(ε')` of the shrunk class is zero;
+5. conclude `ε' = 0`.
+
+Step 5 uses **only** that `α` has trivial kernel.  Surjectivity of `α` is never used: step 2 already
+supplies every character from the complete cohomology side, which is exactly what the repo proved.
+So the named wall can be weakened from a bijection to an injection, and
+`InverseGalois/CFT/PoitouTate/ShaSurjection.lean` now carries
+
+```lean
+def HasShaDualInjection : Prop :=
+  ∃ α : Additive ↥(sha2 (Multiplicative ↥B.V) (decompositionSubgroups k Ω)) →+
+      (Additive ↥(sha1 (Multiplicative ↥(linHomObj B A).V) (decompositionSubgroups k Ω)) →ₗ[ℤ]
+        AddCircle (1 : ℚ)),
+    Function.Injective α
+```
+
+with three theorems around it:
+
+* `hasShaDualInjection_of_hasPoitouTateDuality` — the old, stronger hypothesis implies it;
+* `hasShaDualInjection_of_subsingleton` — **where `Ш²` vanishes the hypothesis is free**, so any
+  future vanishing theorem discharges it outright;
+* `exists_injective_forall_shaCharacter_eq` — the consumable form: an injective `α` together with
+  the fact that *every* `α ε` is `shaCharacter … x` for some `x` in complete cohomology of the
+  level in degree minus two.  That is precisely the pair of facts steps 2 and 5 consume.
+
+### (b) The connecting step of a short exact sequence of coefficients
+
+`InverseGalois/CFT/Profinite/` had functoriality in the coefficients (`Coeff.lean`) and the
+inflation–restriction transgression, but **no connecting map** for a short exact sequence
+`1 → E → M → Q → 1` of coefficients.  Every route to Poitou–Tate needs one: dimension shifting
+lowers a statement about `H²` to a statement about `H¹`, where reciprocity is available.
+
+`InverseGalois/CFT/Profinite/Connecting.lean` supplies it, in explicit-cochain form, for smooth
+cochains on an arbitrary topological group:
+
+* `isMulCocycle₁_iff_coboundary₂_eq_one` — a one-cochain is a cocycle iff its `coboundary₂` is
+  trivial.  (The name `coboundary₂_eq_one_iff` was already taken by `Profinite/KummerTwo.lean`.)
+* `exists_lift_of_isMulCocycle₁` — **the passage `H¹(G,Q) → H²(G,E)`**: a smooth `Q`-cocycle `u`
+  lifts termwise to a smooth `M`-cochain `v` (choose a set-theoretic section of the surjection `π`
+  and note that a section of a smooth function is smooth for the same open normal subgroup), and
+  `coboundary₂ v` is killed by `π`, hence equals `coeffMap₂ ι a` for a smooth `E`-valued
+  two-cocycle `a`.
+* `coeffH2_eq_one_of_lift` — such an `a` dies in `H²(G,M)`, because there its cocycle is visibly
+  `coboundary₂ v`.
+* `exists_lift_of_coeffH2_eq_one` — **the converse, which is what a dimension-shifting argument
+  actually consumes**: a class of `H²(G,E)` that dies in `H²(G,M)` is `coboundary₂ v` for a smooth
+  `v`, and `coeffMap₁ π v` is then a smooth `Q`-cocycle carrying it back.
+* `smoothH2Mk_eq_of_lift` — independence of the lift: two lifts of the same `Q`-cochain differ by a
+  smooth `E`-valued cochain `c` (smooth for `N ⊓ N'`), so the two `E`-cocycles differ by
+  `coboundary₂ c`.
+
+Exactness in the middle of `H¹(G,Q) → H²(G,E) → H²(G,M)` is the conjunction of the third and fourth
+bullets.  No packaged `δ` as a group homomorphism is built: the consumable statement is the
+existential one, and building `δ` would require descending through the quotient by coboundaries
+with no gain for the argument in view.
+
+### (c) Where Poitou–Tate now stands
+
+Rows 5 and 8 of the §0.36 table are unchanged as *mathematics*, but the shape of the debt is
+sharper:
+
+| what | state |
+| --- | --- |
+| `Ĥ^{-2}(G,E(-1)) ≅ Ĥ^1(G,E′)^∨` (Cartier) | theorem — `exists_cartierPairing_eq` |
+| `Ш¹(k,E′) ↪ H¹(G,E′)` and its dual | theorem — `shaInflH1_injective`, `exists_shaCharacter_eq` |
+| `Ш²(k,E) ↪ Ш¹(k,E′)^∨` | `HasShaDualInjection` — the sole hypothesis |
+| dimension shifting `H²(G,E) → H¹(G,Q)` | theorem — `Profinite/Connecting.lean` |
+
+The twist bookkeeping was re-verified: with `T = Hom(μ_p, ℤ/p)` and `E′ = Hom(E, μ_p)`, the Cartier
+dual of `E′` is `E ⊗ T = E(-1)`, so the two chains meet where they should.
+
+Three further mathematical facts about the setting were pinned down, and they say why the cheap
+escapes do not work:
+
+* Over `K` (where `E` has trivial action and `μ_p ⊆ K`), `E|_{G_K} ≅ (ℤ/p)^d`, so
+  `Ш²(K, E|_K) = 0` by `eq_one_of_mem_sha2` and `Ш¹(K, E′|_K) = 0` by `eq_one_of_mem_sha1`.  Hence
+  `Ш²(k,E) ⊆ ker(res_{G_K})`.  This does **not** put `Ш²(k,E)` inside `inf H²(G,E)`: the five-term
+  sequence stops one step short and leaves a transgression obstruction in `H¹(G, H¹(G_K,E))`, which
+  is exactly the abandoned brick-3/4/5 territory of §1.14.
+* `Ш²(k,E) = 0` is **false** in general — by duality it is `Ш¹(k,E′)^∨`, and `Ш¹` of a module with
+  non-trivial action is the classical Tate–Shafarevich group of a torus, non-zero already for a
+  biquadratic field (cf. finding **1129**).  Were it zero SW would not need the shrinking step at
+  all.  For trivial coefficients it *is* zero, which is consistent with the classical
+  Scholz–Reichardt case already proven in the repo.
+* The dimension-shifting route `E ↪ Coind_{G_K}^{G_k}(E|_{G_K})` gives `Ш²(k, Coind) ≅ Ш²(K,E|_K)
+  = 0`, hence `Ш²(k,E) ⊆ im δ` with `δ : H¹(k,Q) → H²(k,E)` — this is now available as soon as
+  Shapiro for `Ш` is in place, `Connecting.lean` being the other half.
+
+### (d) Findings
+
+* **1934 (MATH) — corrected.**  Supersedes the §1.18 entry.  Only "left kernel zero + naturality"
+  is needed, not a bijection; see (a).
+* **1935 (MATH).**  SW's Claim is exactly three steps, two of which are theorems; see the table in
+  (c).
+* **1936 (MATH).**  `Ш²(k,E) ⊆ ker(res_{G_K})`, but not inside `inf H²(G,E)`; see (c).
+* **1937 (MATH).**  The coinduced dimension-shifting route and what it still needs; see (c).
+* **1938 (REPO).**  `CFT/Local/HilbertSymbol.lean` is Serre's **quadratic** (`p = 2`, `±1`-valued)
+  symbol from *A Course in Arithmetic*.  The `n`-th power norm residue symbol is
+  `localKummerSymbol`/`localSymbol` in `CFT/Brauer/LocalSymbol.lean` (`ℚ/ℤ`-valued, bimultiplicative,
+  killed by `n`, trivial on `n`-th powers).
+* **1939 (MATH/PLAN).**  Local Tate duality in degree one for `μ_q` is nearly free from what is
+  already there: `Local/KummerNonNorm.lean` gives one-sided non-degeneracy and
+  `Local/AdicPowIndex.lean`'s `index_range_powMonoidHom_units_adicCompletion` gives finiteness of
+  `k_v^×/(k_v^×)^q`; both sides of the pairing are the *same* finite group, so injective on one side
+  forces perfect.
+* **1940 (REPO).**  `Profinite/` had no connecting homomorphism before `Connecting.lean` — only
+  `Coeff.lean` and `Transgression*.lean`.
+* **1941 (REPO).**  `coboundary₂_eq_one_iff` is already taken by `Profinite/KummerTwo.lean`; hence
+  `isMulCocycle₁_iff_coboundary₂_eq_one`.
+* **1942 (REPO, conventions).**  `IsMulCocycle₁ f : ∀ g h, f (g*h) = g • f h * f g`
+  (Mathlib `LowDegree.lean:611`); `IsMulCocycle₂ f : ∀ g h j, f (g*h,j) * f (g,h) = g • f (h,j) *
+  f (g,h*j)` (:615); `coboundary₂ u := fun p => p.1 • u p.2 / u (p.1 * p.2) * u p.1`
+  (`GroupCohomology/IndexTwo.lean:59`).
+* **1943 (REPO).**  `isMulCocycle₁_smul_div` is at `Profinite/Kummer.lean:61`, a heavy import;
+  reprove inline in a lightweight module.
+* **1944 (LEAN).**  `group` does **not** use commutativity, so it fails on
+  `X / (X * Y) * Y = 1` in a `CommGroup`.  The working chain is
+  `rw [div_mul_eq_div_div, div_self', one_div, inv_mul_cancel]`.
+* **1945 (BUILD).**  `lake build InverseGalois.CFT.Profinite.Connecting` is 8029 jobs, ~12 s on a
+  warm tree; the full root build at this commit is **9746 jobs**, 0 warnings.
+
+---
+
+## 1.20 Status (2026-09-06, latest) — **corestriction is a theorem in degrees one and two**
+
+`InverseGalois/CFT/Profinite/Corestriction.lean` supplies the transfer that the smooth-profinite
+toolkit was missing entirely (finding 1946: there was no corestriction anywhere under
+`CFT/Profinite/`).  For a subgroup `H ≤ G` of finite index with a section `σ : G ⧸ H → G` of the
+projection:
+
+* `transversalElt H σ hσ g x := (σ (g • x))⁻¹ * g * σ x ∈ H`, with the cocycle rule
+  `transversalElt (g₁ * g₂) x = transversalElt g₁ (g₂ • x) * transversalElt g₂ x`;
+* `corCochain₁ H σ hσ u g := ∏ x : G ⧸ H, σ (g • x) • u (transversalElt H σ hσ g x)`;
+* it takes cocycles to cocycles, coboundaries to coboundaries (of `∏ x, σ x • t`), and smooth
+  cochains to smooth cochains under `HasOpenNormalCore H`;
+* `hasOpenNormalCore_of_isOpen` discharges that side condition for an open subgroup of a **compact**
+  group, so the hypothesis is never left dangling in the Galois setting;
+* `corH1 H σ hσ hcore : SmoothH1 ↥H M →* SmoothH1 G M`, and
+  **`corH1_resH1 : corH1 (resH1 H c) = c ^ Fintype.card (G ⧸ H)`.**
+
+That last identity is the tool for §1.00(g) (reduce to `μ_p ⊆ k` by res–cor) and for the Sylow
+reductions.  Left cosets `G ⧸ H` were chosen over right cosets because they line up with Mathlib's
+`MulAction G (G ⧸ H)` and `QuotientGroup.eq`.
+
+**Degree two, same file, same day.**  The averaged 2-cochain is
+
+```
+corCochain₂ a (g₁, g₂) = ∏ x : G ⧸ H, σ ((g₁ * g₂) • x) •
+    a (transversalElt g₁ (g₂ • x), transversalElt g₂ x)
+```
+
+and the whole degree-two layer is now proven:
+
+* `isMulCocycle₂_corCochain₂` — the cocycle check is termwise, and reduces to `IsMulCocycle₂ a` at
+  the three transversal elements after rewriting the four terms into a common indexing
+  (`transversalElt_mul` for two of them, a reindexing by `MulAction.toPerm j` for a third);
+* `corCochain₂_coboundary₂ : cor₂ (coboundary₂ u) = coboundary₂ (cor₁ u)` — an **exact** identity,
+  not just up to a coboundary, so the descent to cohomology is a plain `QuotientGroup.map`;
+* `isSmooth₂_corCochain₂_of_isSmooth₂` under the same `HasOpenNormalCore H` as in degree one;
+* `corH2 H σ hσ hcore : SmoothH2 ↥H M →* SmoothH2 G M`, with `corH2_smoothH2Mk` the computation
+  rule;
+* **`corH2_resH2 : corH2 (resH2 H c) = c ^ Fintype.card (G ⧸ H)`.**
+
+The last one is *not* an exact identity at the cochain level — unlike degree one it needs a genuine
+correcting 1-cochain,
+
+```
+corAux₁ a g = (∏ x, a (σ (g • x), transversalElt g x)) / ∏ x, a (g, σ x)
+```
+
+with `corCochain₂_comap₂ : cor₂ (res a) = a ^ [G : H] * coboundary₂ (corAux₁ a)`.  That identity
+is exactly three applications of the 2-cocycle relation — at `(σ ((g₁g₂) • x), A, B)`, at
+`(g₁, σ (g₂ • x), B)` and at `(g₁, g₂, σ x)`, where `A = transversalElt g₁ (g₂ • x)` and
+`B = transversalElt g₂ x` — followed by a seven-factor abelian-group rearrangement and two
+reindexings of the product by `MulAction.toPerm g₂`.  Smoothness of `corAux₁` needs an open normal
+`N ≤ H`, which `HasOpenNormalCore` supplies when applied at `⊤`; intersect it with the subgroup
+that makes `a` smooth.
+
+With `corH2_resH2` in hand, §1.00(g) — reduce to `μ_p ⊆ k` by res–cor, killing the `[G : H]`-torsion
+prime to `p` — is unblocked in the degree where the Ш² statements live.
+
+### Lean and Mathlib gotchas, continued
+
+* **1951 (LEAN).**  `σ (g • x)⁻¹` parses as `σ ((g • x)⁻¹)` — function application binds looser than
+  a postfix `⁻¹` on its argument.  Write `(σ (g • x))⁻¹`.  Symptom: `failed to synthesize
+  Inv (G ⧸ H)`.
+* **1952 (MATHLIB).**  `mul_eq_left : a * b = a ↔ b = 1` and `mul_eq_right : a * b = b ↔ a = 1`
+  (`Algebra/Group/Basic.lean:233/254`).  `self_eq_mul_left` does **not** exist.
+* **1953 (MATHLIB).**  `inv_div : (a / b)⁻¹ = b / a` (`Algebra/Group/Basic.lean:392`),
+  `inv_div_inv : a⁻¹ / b⁻¹ = b / a` (:526), and
+  `smul_inv' (r : M) (x : A) : r • x⁻¹ = (r • x)⁻¹` (`Algebra/Group/Action/Basic.lean:203`).
+* **1954 (MATHLIB).**  `Finset.smul_prod' : r • ∏ i ∈ s, f i = ∏ i ∈ s, r • f i`
+  (`Algebra/BigOperators/GroupWithZero/Action.lean:75`).  `Finset.prod_inv_distrib` takes an
+  explicit `f`, so use it as `rw [← Finset.prod_inv_distrib]`, not through `.trans`.
+* **1955 (MATHLIB).**  `Subgroup.quotient_finite_of_isOpen (U : Subgroup G) (h : IsOpen ↑U) :
+  Finite (G ⧸ U)` is at `Topology/Algebra/OpenSubgroup.lean:292` — inside `namespace Subgroup`
+  (which spans 240–314), **not** `namespace OpenSubgroup`.  Together with
+  `Subgroup.finiteIndex_of_finite_quotient`, `Subgroup.normalCore_isClosed`
+  (`ClosedSubgroup.lean:99`) and `Subgroup.isOpen_of_isClosed_of_finiteIndex` this is the whole
+  "the normal core of an open subgroup of a compact group is open" chain.
+* **1956 (MATHLIB).**  `MulAction.Quotient.smul_mk`/`smul_coe` are `rfl`;
+  `QuotientGroup.eq : (a : α ⧸ s) = b ↔ a⁻¹ * b ∈ s` (`Coset/Defs.lean:196`).
+* **1957 (REPO).**  `Cochain.lean` has `smoothH2Mk_eq_iff`/`smoothH2Mk_congr` but **no degree-one
+  analogues** (`smoothH1Mk_eq_iff`, `smoothH1Mk_congr`, `smoothH1Mk_pow` do not exist);
+  `smoothH1Mk_surjective` (:303) and `smoothH1Mk_mul` (:341) do.  Workaround used in
+  `corH1_resH1`: `(map_pow (QuotientGroup.mk' _) ⟨u, hu, hs⟩ n).symm` then `QuotientGroup.eq` and
+  `Subgroup.mem_subgroupOf`.
+* **1958 (REPO).**  In `QuotientGroup.map`'s side condition the coboundary hypothesis arrives as
+  `ht : (fun g => g • t / t) = (smoothCocycle₁ ↥H M).subtype ⟨u, _⟩`, and `rw [← ht]` misses a goal
+  mentioning the raw `u`.  Insert `have ht' : (fun h : ↥H => h • t / t) = u := ht` (defeq through
+  the coercion) and rewrite with `ht'`.
+* **1959 (BUILD).**  A `cat >> file` append lands **after** the closing `end InverseGalois.CFT`,
+  producing a cascade of "unknown identifier"/autoImplicit errors.  Move the namespace-end to the
+  tail afterwards, or use `Edit`/`Write`.
+* **1960 (BUILD).**  `lake build InverseGalois.CFT.Profinite.Corestriction` is 8030 jobs, ~16 s on
+  a warm tree.
+* **1961 (BUILD).**  A full root build at commit `0c3b8d6` is **9747 jobs**, 0 warnings.
+* **1962 (HISTORY).**  `InverseGalois/CFT/` starts at commit `a1527ef`, 2026-08-21; as of
+  2026-09-06 that is 17 calendar days and 593 commits.  The nilpotent case of Shafarevich landed
+  eight days in.  Useful when calibrating an estimate: the *right* unit for "how much is left" in
+  this repo is days, not months.
+* **1963 (MATHLIB).**  `IsMulCocycle₂ (f : G × G → M) : ∀ g h j, f (g * h, j) * f (g, h) =
+  g • f (h, j) * f (g, h * j)` — `RepresentationTheory/Homological/GroupCohomology/LowDegree.lean:615`.
+  Note which side the `g •` is on; it is not the arrangement in every textbook.
+* **1964 (REPO).**  `IsSmooth₂ (a : G × G → M) : ∃ N, IsOpenNormal N ∧ ∀ x y : G, ∀ n ∈ N,
+  ∀ m ∈ N, a (x * n, y * m) = a (x, y)` (`Cochain.lean:84`); the carrier of `smoothCoboundary₂` is
+  `{a | ∃ u : G → M, IsSmooth₁ u ∧ coboundary₂ u = a}`; `smoothH2Mk_surjective` is at
+  `Cochain.lean:310`; `comap₂ π a = fun p => a (π p.1, π p.2)` (`Comap.lean:54`, `comap₂_apply`
+  :60); `resH2 := comapH2 H.subtype (fun _ _ => rfl) (isSmoothHom_subtype H)` (`Res.lean:119`,
+  `resH2_smoothH2Mk` :129).
+* **1965 (LEAN).**  `mul_smul` takes the two **group** elements and the point:
+  `← mul_smul g (h * j) x`, never `← mul_smul g ((h * j) • x)`.  The wrong shape reports
+  "Type mismatch … has type `G ⧸ H` but is expected to have type `G`", which reads like a coset
+  problem and is not one.
+* **1966 (LEAN).**  To use a smoothness hypothesis `hsm x y n hn m hm : a (x * n, y * m) = a (x, y)`
+  where the goal has no `* 1`, instantiate it — `have hone := hsm _ _ 1 N.one_mem _ hm` — and finish
+  with `rwa [mul_one] at hone`.  A `show` writing `… * 1` into the goal is **not** accepted as
+  defeq by the `show` tactic here.
+* **1967 (LEAN).**  Associativity/commutativity normalisation in a `CommGroup` that `group` cannot
+  do (finding 1944: `group` ignores commutativity):
+  `simp only [div_eq_mul_inv, mul_inv, inv_inv]` then
+  `simp only [mul_assoc, mul_comm, mul_left_comm]`.  This closed both the seven-factor res–cor
+  rearrangement and the per-term identity inside it.
+* **1968 (MATHLIB).**  `eq_mul_inv_of_mul_eq (h : a * c = b) : a = b * c⁻¹` is the workhorse for
+  turning a cocycle relation into a substitution.  For the mirrored orientation use
+  `eq_mul_inv_of_mul_eq ((mul_comm _ _).trans h.symm)`.
+* **1969 (MATH).**  The degree-two res–cor identity, as verified in Lean: with
+  `c g = ∏ x, a (σ (g • x), transversalElt g x)` and `d g = ∏ x, a (g, σ x)`,
+  `cor₂ (res a) = a ^ [G : H] · ∂ (c / d)`.  It follows from exactly three applications of the
+  2-cocycle relation; no further identity is needed.
+
+---
+
+## 1.21 Status (2026-09-06, latest) — **the norm residue symbol is nondegenerate, for every exponent**
+
+The first brick of local Tate duality identified in §1.18(b) — the `i = 1`, `M = μ_n` case — is now a
+theorem.  `InverseGalois/CFT/Brauer/LocalSymbolNondegenerate.lean`:
+
+* `one_lt_finrank_kummerLevel h hnp : 1 < finrank K ↥(kummerLevel h b)` for `b` not an `n`-th power;
+* `exists_kummerSymbolUnits_ne_one_of_not_isPow hres hnp :
+  ∃ a, kummerSymbolUnits h (mulZMod n) a b ≠ 1`;
+* `exists_localSymbol_ne_one_of_not_isPow` and `exists_localSymbol_ne_one_of_not_isPow_left` —
+  the same for the norm residue symbol, in either argument;
+* `forall_localSymbol_eq_one_iff_isPow` / `forall_localSymbol_eq_one_iff_isPow'` —
+  **the kernel of the norm residue symbol is exactly the `n`-th powers, on either side.**
+
+### (a) The argument, and what it does *not* need
+
+The route that first suggested itself went through the tame decomposition
+`localSymbol_eq_one_iff_isPow` and needed "some unit of the valuation ring is not an `n`-th power",
+i.e. a counting statement about `O^×/(O^×)^n`.  That is available in the repository only as
+`index_range_powMonoidHom_localUnitGroup_of_valued_eq_one` (`Local/UnitPowIndex.lean:156`), which
+demands an extra normalisation hypothesis `hsurj : Function.Surjective (Valued.v : K → ℤᵐ⁰)`
+together with `[∀ k : ℤ, Finite (gradedAdd K k)]` — neither of which a general `IsUnitValGen K m`
+supplies.  **That route was abandoned.**
+
+The route that works runs entirely through the *level* of a single element and needs no counting at
+all.  If `b` is not an `n`-th power then `Nat.card Gal(kummerLevel h b / K) ≠ 1`
+(`exists_pow_eq_of_card_gal_kummerLevel_eq_one`, `Brauer/TameEvaluation.lean:82`), hence
+`1 < finrank`; the level is cyclic (`exists_generator_kummerLevel_index`); a cyclic extension of a
+local field of degree `> 1` has a non-norm (`exists_notMem_normSubgroup`, from the norm-index
+theorem `Local/CyclicNormIndex.lean`); and
+`kummerSymbolUnits_eq_one_iff_norm_kummerLevel` (`Brauer/SymbolNorm.lean:65`) says the symbol is
+trivial exactly on the norms.  Consequently the statement holds
+
+* for **every** exponent `n` — no primality;
+* with **no** condition relating `n` to the residue characteristic — no tameness;
+* with **no** choice of uniformiser, and no appeal to the tame decomposition of the symbol.
+
+Skew symmetry (`localSymbol_mul_swap`) transports it from the right argument to the left.
+
+### (b) Where this leaves rows 5/8
+
+Row 4 of the §0.36 table was already marked done through `Local/KummerNonNorm.lean`; what is new is
+the statement at the level of the *symbol as a pairing*, in both arguments and with no side
+conditions, which is the form the Poitou–Tate assembly will consume.  The next brick, if the local
+route (i) of §1.17(c) is continued, is to package this as a **perfect** pairing: for prime `n = p`
+the group `Kˣ/(Kˣ)^p` is a finite `𝔽_p`-vector space and a nondegenerate bilinear form on a
+finite-dimensional space induces an isomorphism onto the dual.  That needs finiteness of
+`Kˣ/(Kˣ)^p` for a local field in the repository's axiomatisation, which is *not* yet available for
+the same reason the counting route above failed — it is exactly the `hsurj`-dependent index
+statement.  So the honest order of work is: normalise the valuation (or generalise
+`UnitPowIndex.lean` off `hsurj`) **before** attempting perfectness.
+
+### (c) Findings
+
+* **1970 (REPO — decisive).**  `Brauer/TameEvaluation.lean` already contains far more than its name
+  suggests: `exists_pow_eq_of_card_gal_kummerLevel_eq_one` (:82),
+  `localKummerSymbol_eq_one_iff_kummerSymbolUnits` (:168), `localSymbol_uniformiser_eq_one_iff`
+  (:187), `localSymbol_eq_one_iff_isPow` (:205, the full kernel of the *tame* symbol),
+  `localSymbol_unit_uniformiser_eq_one_iff` (:219), `orderOf_localSymbol_uniformiser` (:233),
+  `not_mem_normSubgroup_kummerLevel` (:128), `eq_top_of_units_le_of_uniformiser_mem` (:57).
+  Grep it before writing anything about local symbols.
+* **1971 (REPO).**  `TameEvaluation.lean` imports `TameSymbol.lean` which imports
+  `LocalSymbolUnits.lean`, so the single import `InverseGalois.CFT.Brauer.TameEvaluation` reaches
+  `LocalSymbol`, `LocalSymbolUnits`, `SymbolNorm` and `Local/CyclicNormIndex` as well.
+* **1972 (REPO).**  `NormSubgroup.lean:35/40`:
+  `normSubgroup K L := (Units.map (Algebra.norm K : L →* K)).range` and
+  `mem_normSubgroup_iff (a : Kˣ) : a ∈ normSubgroup K L ↔ ∃ b : Lˣ, Algebra.norm K (b : L) = a`.
+  Note gotcha 29: `exists_notMem_normSubgroup K L` takes a bare `Type`, so it is applied to
+  `↥(kummerLevel h b)`, while lemmas taking an `IntermediateField` argument take `kummerLevel h b`.
+* **1973 (MATHLIB).**  `IntermediateField.finrank_eq_one_iff : finrank F K = 1 ↔ K = ⊥` is at
+  `FieldTheory/IntermediateField/Adjoin/Basic.lean:275` (`rank_eq_one_iff` :270,
+  `finrank_eq_one_iff_eq_top` :305), and `IntermediateField.mem_bot` at
+  `.../Adjoin/Defs.lean:99`.  **`Mathlib/FieldTheory/Adjoin.lean` does not exist** in the v4.28
+  pin.  In the end none of these were needed — `IsGalois.card_aut_eq_finrank` plus `omega` is
+  shorter.
+* **1974 (LEAN).**  `linter.unusedSectionVars` fired on `[CompleteSpace K] [ProperSpace K]` in
+  `one_lt_finrank_kummerLevel`.  Rather than `omit … in`, the file is split into three sections so
+  that the purely Kummer-theoretic lemma sits in a section carrying no valuation hypotheses at all.
+  Splitting sections is almost always cleaner than an `omit` when a file mixes hypothesis levels.
+* **1975 (REPO).**  `Local/UnitValuation.lean:210` `unitValDiv (hm : IsUnitValGen A m) :
+  Additive Aˣ →+ ℤ`, with `ker_unitValDiv` (:227) and `unitValDiv_surjective` (:238).
+* **1976 (BUILD).**  `lake build InverseGalois.CFT.Brauer.LocalSymbolNondegenerate` is 8451 jobs,
+  ~10 s.  A full root build with it is **9748 jobs**, 0 warnings.
+
+---
+
+## 1.22 Status (2026-09-06, latest) — **the norm residue symbol is a perfect pairing**
+
+`InverseGalois/CFT/Brauer/LocalSymbolPerfect.lean` upgrades yesterday's nondegeneracy to
+**perfectness**, which is the form rows 5/8 actually consume:
+
+* `card_monoidHom_qModZ : Nat.card (A →* Multiplicative QModZ) = Nat.card A` for any finite abelian
+  `A`, and `finite_monoidHom_qModZ`.
+* `localSymbolLeftQuot` / `localSymbolDual` — the symbol against a fixed element, descended to
+  `Kˣ ⧸ (powMonoidHom n).range`, and the resulting map `Kˣ →* (Kˣ/(Kˣ)ⁿ)^∨`.
+* `ker_localSymbolDual : (localSymbolDual …).ker = (powMonoidHom n : Kˣ →* Kˣ).range` — the whole
+  content of §1.21, repackaged as a kernel.
+* `localSymbolQuotDual`, `injective_localSymbolQuotDual` — the classes inject into their own
+  character group.
+* `surjective_localSymbolDual`, `bijective_localSymbolQuotDual`,
+  `localSymbolQuotEquivDual : (Kˣ ⧸ (Kˣ)ⁿ) ≃* ((Kˣ ⧸ (Kˣ)ⁿ) →* Multiplicative QModZ)` — **perfect
+  pairing.**
+* `exists_forall_localSymbol_eq` — the quotient-free consumer form: a character `χ : Kˣ →*
+  Multiplicative QModZ` with `χ (cⁿ) = 1` for all `c` is `χ = localSymbol · b` for a single `b`.
+
+### (a) The `hsurj` worry of §1.21(b) evaporated
+
+§1.21(b) predicted that perfectness would be blocked on finiteness of `Kˣ/(Kˣ)ⁿ`, which in the
+repository's axiomatisation is the `hsurj`-dependent index statement.  That prediction was wrong in
+a useful way.  Two things changed it:
+
+1. **Finiteness is a hypothesis, not a conclusion.**  The three perfectness theorems carry
+   `[Finite (Kˣ ⧸ (powMonoidHom n : Kˣ →* Kˣ).range)]` as an instance binder.  Nothing in the proof
+   of perfectness needs to know *why* the classes are finite.
+2. **The consumer already has it.**  `Kummer/LocalPowRepresentatives.lean` proves
+   `finiteIndex_range_powMonoidHom_units_adicCompletion` (:55) and
+   `…_infiniteCompletion` (:72) for a number field, from `Local/AdicPowIndex.lean` and
+   `Local/InfinitePowIndex.lean` — **with no `hsurj` anywhere**, because at a completion of a number
+   field the index formula is already available in normalised form.  `Subgroup.FiniteIndex` gives
+   the `Finite` instance.
+
+So a first draft that carried `hsurj : Function.Surjective (Valued.v : K → ℤᵐ⁰)` and
+`[∀ k : ℤ, Finite (gradedAdd K k)]` through three lemmas (`index_range_powMonoidHom_units_ne_zero`,
+`finiteIndex_range_powMonoidHom_units`, `finite_quotient_range_powMonoidHom_units`, built on
+`TrivialIndex.index_range_powMonoidHom_units_padicValNat`) was **deleted**: it duplicated existing
+work in a strictly weaker form.  Generalising `UnitPowIndex.lean` off `hsurj` is therefore **not**
+on the critical path after all.
+
+### (b) What this is, mathematically
+
+For a local field `K` containing the `n`-th roots of unity, `Kˣ/(Kˣ)ⁿ ≅ H¹(G_K, μ_n)` by Kummer
+theory and `μ_n ≅ ℤ/n` after choosing `ζ`, so the perfect pairing
+
+  `Kˣ/(Kˣ)ⁿ  ×  Kˣ/(Kˣ)ⁿ  →  ℚ/ℤ`
+
+**is local Tate duality in degree one for `μ_n`** — the case actually used by Schmidt–Wingberg at
+`sw.txt:720`, and the only case row 8 needs.  It is now a theorem of the repository with no
+hypothesis beyond finiteness of the classes.
+
+### (c) Where this leaves row 8
+
+The plan of §1.19 is unchanged and now has its first brick.  The remaining inputs to
+
+  `H¹(k_S|K, μ_p) → ∏_{v ∈ S} H¹(K_v, μ_p) → H¹(k_S|K, ℤ/p)^∨`  exact,
+
+i.e. "the image of the Selmer group `K(S,p)` in `⊕_{v∈S} K_v^×/p` is **maximal isotropic** for the
+symbol pairing", are:
+
+1. **isotropy** — the product formula for the Hilbert symbol, which is row 6, already a theorem
+   (`totalInvariant_smoothBrauerHom_kummerSymbolUnits`);
+2. **the dimension count** `Σ_{v∈S} dim_{𝔽_p} K_v^×/p = 2 · dim_{𝔽_p} K(S,p)`, from the local index
+   formula (`index_range_powMonoidHom_units_adicCompletion`) together with Dirichlet's `S`-unit
+   theorem and `Cl_S(K)/p = 1` for `S` large;
+3. **injectivity** of `K(S,p) → ∏_{v∈S} K_v^×/p` when `Cl_S(K)/p = 1`;
+4. the linear algebra "isotropic of half the dimension ⟹ equal to its own orthogonal complement",
+   for which `localSymbolQuotEquivDual` is exactly the ingredient that turns an orthogonal
+   complement into an annihilator of known dimension.
+
+Item 2 is the one with a possible Mathlib gap (the `S`-unit theorem); items 1 and 4 are now in
+hand.
+
+### (d) Findings
+
+* **1977 (REPO — decisive).**  `Kummer/LocalPowRepresentatives.lean` already proves
+  `finiteIndex_range_powMonoidHom_units_adicCompletion` (:55) and
+  `finiteIndex_range_powMonoidHom_units_infiniteCompletion` (:72) for a number field, plus
+  `exists_finite_pow_representatives_adicCompletion` (:86) and `…_infiniteCompletion` (:138).
+  **Grep `powMonoidHom` before writing any local-index lemma.**
+* **1978 (LEAN).**  `ext x` on a goal `f = g` with `f g : (Kˣ ⧸ P) →* M` goes *all the way through*
+  `QuotientGroup`'s ext lemma and hands back `x : Kˣ`.  A following
+  `induction x using QuotientGroup.induction_on` then fails with "Invalid target: x has type Kˣ but
+  is expected to have type ?m ⧸ ?m".  (`injective_iff_map_eq_one` does **not** do this — there the
+  `induction` is required.)
+* **1979 (LEAN).**  For the side goal of `QuotientGroup.lift N f h`, `rw [← MonoidHom.mem_ker, …]`
+  misfires; `MonoidHom.mem_ker.mp (by rw [ker_…]; exact hx)` works.
+* **1980 (MATHLIB).**  `MonoidHom.toAdditiveLeft : (α →* Multiplicative β) ≃ (Additive α →+ β)` at
+  `Mathlib/Algebra/Group/TypeTags/Hom.lean:96`; `AddMonoidHom.toMultiplicativeLeft` at :109;
+  `MonoidHom.toAdditiveRight` at :135.  The primed names (`MonoidHom.toAdditive'`, `toAdditive''`,
+  …) are **deprecated aliases** since 2025-09-19.
+* **1981 (MATHLIB).**  `rootsOfUnity.fintype` (`RingTheory/RootsOfUnity/Basic.lean:234`) is inside
+  `section IsDomain` with `variable [NeZero k] [CommRing R] [IsDomain R]`, so
+  `Finite ↥(rootsOfUnity n K)` needs **`[NeZero n]`**, not merely `n ≠ 0`.
+* **1982 (REPO).**  `Tate.intLinearEquiv : (M →+ N) ≃ (M →ₗ[ℤ] N)` (~`Pontryagin.lean:170`) and
+  `Tate.card_linearDual [Finite M] : Nat.card (M →ₗ[ℤ] AddCircle (1 : ℚ)) = Nat.card M` (:180);
+  `Tate.card_characterModule` (:133), `Tate.finite_characterModule` (:153).  `QModZ`
+  (`Brauer/CyclicInvariant.lean:63`) is reducibly `AddCircle (1 : ℚ)`, so these compose directly.
+* **1983 (BUILD).**  `lake build InverseGalois.CFT.Brauer.LocalSymbolPerfect` is 8453 jobs, ~13 s.
+
+---
+
+## 1.23 Status (2026-09-06, later) — **the product formula for the power residue symbol**
+
+Commit `5e11f05`.  Two new modules, both sorry- and axiom-free; full root build **9752 jobs, 0
+warnings**.
+
+### (a) `Brauer/PlaceSymbol.lean` — brick B6
+
+The gap flagged in §1.22(c) was that the repository knew the product formula only at the level of
+*Brauer invariants* (`finprod_placeInvariant_mul_prod_infinitePlaceInvariant_eq_one`), and knew the
+*symbol* only at a single completion (`Brauer/PlaceRadical.lean`).  Nothing equated the two at a
+place.  `PlaceSymbol.lean` closes that:
+
+* `finrank_adicCompletion_eq_one_of_card_gal_eq_one`,
+  `exists_algebraMap_adicCompletion_eq_of_card_gal_eq_one` — a place of `K` whose decomposition
+  group is trivial has `K_w = k_v`, stated as surjectivity of `algebraMap`.  The route is
+  `Module.finrank_eq_one_iff_of_nonzero'` applied at `1`; `Algebra.bijective_algebraMap_iff` does
+  **not** apply (the codomain is not an `IntermediateField`).
+* `placeInvariant_cyclicBrauerHom_eq_one_of_card_gal_eq_one` — at such a place the algebra splits,
+  because the norm from a degree-one extension is the identity (`Algebra.norm_algebraMap`,
+  `pow_one`).
+* `placeInvariant_cyclicBrauerHom_of_globalRadical` — the opposite extreme: when the decomposition
+  group is everything, the *global* radical presentation `β^n = b`, `σ₀ β = ζβ` transports to the
+  completion, so `PlaceRadical`'s local computation applies verbatim.  The transport is two
+  `IsScalarTower.algebraMap_apply` rewrites in each of `hpow'` and `hact'`, plus
+  `hβ : (localDecompositionEquiv k w σ) β = σ₀ β`, obtained as
+  `congrArg (fun f => f β) hrestr` after `Subgroup.index_mul_card` forces the index to be `1`.
+* `placeInvariant_cyclicBrauerHom_eq_inv_localSymbol` — for **prime** `n` those are the only two
+  cases (`Nat.Prime.eq_one_or_self_of_dvd` on
+  `Nat.card Gal(K_w/k_v) ∣ Nat.card Gal(K/k) = n`), so at *every* finite place
+
+  `placeInvariant k v (cyclicBrauerHom hσ₀ a) = ((a, b)_v)⁻¹`.
+
+### (b) `Brauer/SymbolProduct.lean` — the global product formula
+
+`finprod_localSymbol_eq_one` proves, for a number field `k` with a primitive `n`-th root of unity,
+`n` prime, `k` totally complex,
+
+  `∏ᶠ v : HeightOneSpectrum (𝓞 k), (a, b)_v = 1`   for all `a b : kˣ`,
+
+together with a `Finset` form `prod_localSymbol_eq_one` (over any `S` containing the support) and
+the two `_of_ne_two` variants that drop the totally-complex hypothesis.
+
+The proof splits on whether `b` is already an `n`-th power.  If it is, every local symbol is `1`
+(`localSymbol_eq_one_of_isPow_right`) and `finprod_congr`/`finprod_one` finish.  If it is not,
+`X^n - C b` is irreducible (`X_pow_sub_C_irreducible_of_prime`), its splitting field is a cyclic
+degree-`n` extension carrying the radical `rootOfSplitsXPowSubC`, and `autEquivZmod` supplies the
+generator `σ₀` with `σ₀ β = ζβ`.  Then (a) rewrites every finite-place Brauer invariant as an
+inverse symbol, and the infinite places contribute nothing.
+
+**The hypothesis on the field is free for odd prime exponent.**  `isTotallyComplex_of_isPrimitiveRoot`:
+a number field containing a primitive `n`-th root of unity with `2 < n` has no real place
+(`NumberField.InfinitePlace.IsPrimitiveRoot.nrRealPlaces_eq_zero_of_two_lt` +
+`NumberField.nrRealPlaces_eq_zero_iff`).  Since row 8 is only ever used at odd `p`, the product
+formula is unconditional there.
+
+This is exactly the ingredient Schmidt–Wingberg invoke at `sw.txt:760`: *"recall that for arbitrary
+classes `a`, `b` … we have the product formula `∏_{P ∈ S(K)} (a, b)_P = 1` for the Hilbert
+symbol"*.
+
+### (c) The row-8 brick list, revised
+
+| # | brick | status |
+|---|---|---|
+| B1 | `dim_{𝔽_p} K(S,p) = |S|` | ✅ `index_range_powMonoidHom_sUnits` (`Units/SUnitIndex.lean:163`) |
+| B2 | Dirichlet `S`-unit theorem | ✅ subsumed by B1 — **not** a separate gap after all |
+| B3 | `dim_{𝔽_p} W = 2·|S|` | ✅ `relIndex_powSIdele_of_isPrimitiveRoot` (`Units/PowIdele.lean:156`) |
+| B4 | Selmer injectivity | ✅ `exists_pow_eq_of_forall_localPow` (`Kummer/PowerCriterion.lean:132`) with `T = ∅` |
+| B5 | local perfect pairing | ✅ `localSymbolQuotEquivDual`, `exists_forall_localSymbol_eq` (§1.22) |
+| B6 | `placeInvariant = symbol⁻¹` at every place | ✅ `Brauer/PlaceSymbol.lean` |
+| B6′ | global product formula in symbol form | ✅ `Brauer/SymbolProduct.lean` |
+| B7 | annihilator calculus for a perfect pairing | ✅ `PoitouTate/Isotropic.lean` |
+| B8 | local self-orthogonality of the units at `v ∤ p` | ✅ `perpSubgroup_unramifiedClasses` (`PoitouTate/Unramified.lean`) |
+| B9 | assembly `V = V^⊥` | ✅ `perpSubgroup_selmerGroup` (`PoitouTate/Selmer.lean`) |
+
+Item 2 of §1.22(c) — the one flagged as "a possible Mathlib gap" — is **not** a gap: B1 and B3
+were already theorems of the repository.
+
+### (d) Findings
+
+* **2007 (BUILD).**  The ASCII slot for `import …Brauer.PlaceSymbol` in `CFT.lean` is between
+  `PlaceSubcyclotomicPower` and `PlaceTotallyRamified` (`Su` < `Sy` < `T`), not where the previous
+  plan predicted.  `SymbolProduct` sorts between `SymbolNorm` and `SymbolSteinberg`.
+* **2008/2009 (BUILD).**  `lake build …Brauer.PlaceSymbol` = 8623 jobs ~25 s;
+  `…Brauer.SymbolProduct` = 8624 jobs ~31 s.  Full root build with both = **9752 jobs**.
+* **2010 (MATHLIB — trap).**  The lemma is
+  `NumberField.InfinitePlace.IsPrimitiveRoot.nrRealPlaces_eq_zero_of_two_lt`
+  (`InfinitePlace/Basic.lean:495`): the `IsPrimitiveRoot` namespace is *nested inside*
+  `NumberField.InfinitePlace`, so **dot notation `hζ.nrRealPlaces_eq_zero_of_two_lt` fails** with
+  "the environment does not contain `IsPrimitiveRoot.nrRealPlaces_eq_zero_of_two_lt`".  Use the
+  fully qualified name with explicit arguments.
+* **2011 (MATHLIB).**  `NumberField.nrRealPlaces_eq_zero_iff : nrRealPlaces K = 0 ↔
+  IsTotallyComplex K` at `TotallyRealComplex.lean:214`; `IsTotallyComplex` is an `@[mk_iff] class`
+  with the single field `isComplex`; `isTotallyComplex_of_algebra` at `:228`.
+* **2012 (LEAN).**  To prove `y ∈ Subgroup.zpowers (Multiplicative.ofAdd (1 : ZMod n))`, the goal
+  after `refine ⟨_, ?_⟩` is **un-beta-reduced** — `(fun x => Multiplicative.ofAdd 1 ^ x) … = y` —
+  so `rw [← ofAdd_zsmul]` reports "did not find an occurrence".  Insert an explicit `show` first.
+* **2013 (MATHLIB).**  `finprod_congr`, `finprod_one`, `finprod_inv_distrib` and
+  `finprod_eq_prod_of_mulSupport_subset` all work on `Multiplicative QModZ`; a `calc` step
+  `∏ᶠ v : ι, _ = ∏ᶠ _ : ι, (1 : M) := finprod_congr hall` elaborates with `_` for the body.
+* **2016 (REPO).**  `infinitePlaceInvariant_of_isComplex` is an equation of **`MonoidHom`s**, so
+  applying it to a class is `rw [...]` followed by `rfl`.
+* **2017 (MATH).**  Routing the global product formula through `kummerLevel`/`IsKummerData` over an
+  `IntermediateField k Ω` is the wrong shape; the `SplittingField` template of
+  `Kummer/PowerCriterion.lean:148–177` is the right one and transplanted first time.
+
+---
+
+## 1.24 Status (2026-09-06, later still) — **B8 and B9 are done: `V = V^⊥`**
+
+Two new modules close the last two bricks of the row-8 list, both sorry- and axiom-free
+(`[propext, Classical.choice, Quot.sound]`).
+
+### (a) `InverseGalois/CFT/PoitouTate/Unramified.lean` (B8)
+
+The local half.  For a local field `K` with `μ_n ⊆ K`, `n` prime, and residue characteristic prime
+to `n`:
+
+* `unitValMod hm n : Kˣ →* Multiplicative (ZMod n)` reads the normalised valuation mod `n`;
+  `unitValModQuot` factors it through the classes, `unramifiedClasses hm n` is its kernel, and
+  `index_unramifiedClasses` / `card_unramifiedClasses` say the index and the order are both `n`
+  (a uniformiser gives surjectivity, `n`-th powers give factorisation).
+* `localSymbol_eq_one_of_dvd_unitValDiv`: two classes with valuation divisible by `n` pair
+  trivially — split each representative as `unit · (π^r)^n`, kill the powers by bimultiplicativity,
+  and finish with `localSymbol_eq_one_of_valued_eq_one`.
+* `perpSubgroup_unramifiedClasses`: with `Nat.card (Kˣ/(Kˣ)^n) = n * n`, `perpSubgroup_eq_self`
+  turns isotropy into equality.  `perpSubgroup_unramifiedClasses_adicCompletion` is the same at a
+  finite place `v ∤ n` of a number field, the cardinality coming from
+  `index_range_powMonoidHom_units_adicCompletion`.
+
+### (b) `InverseGalois/CFT/PoitouTate/Selmer.lean` (B9)
+
+The global half.  `S` is presented as a `Fintype Y` with an injective `ι : Y → HeightOneSpectrum`,
+so that `Set.range ι` is literally the set the `S`-unit API wants (finding 2033).
+
+* `localClasses v n` (`abbrev`), `localClassHom`, `sUnitClassHom ι n : ↥(sUnits K (Set.range ι))
+  →* ∀ y, localClasses (ι y) n`, and `selmerGroup ι n` = its range.
+* `ker_sUnitClassHom` = **B4 instantiated at `T = ∅`**: the kernel is exactly the `n`-th powers.
+  `hsurj` is trivially `⟨1, one_mem _, …⟩`, `hbinf` is `exists_pow_eq_completion_of_isComplex`
+  (every element of `ℂ` is an `n`-th power), `hbunit` is `valuation_eq_one_of_mem_sUnits`.
+* `card_selmerGroup = n ^ (#∞ + #Y)` by Noether I plus B1
+  (`index_range_powMonoidHom_sUnits`).
+* `card_pi_localClasses = n ^ (2 (#∞ + #Y))` by `Nat.card_pi` + `Finset.prod_image` +
+  `prod_index_range_powMonoidHom_units_of_isPrimitiveRoot`, every *infinite* index being `1`
+  because `μ_n ⊆ K` with `2 < n` forces `IsTotallyComplex K`.
+* `selmerGroup_le_perpSubgroup` is the product formula `prod_localSymbol_eq_one`, the symbols
+  outside `S` being trivial by `localSymbol_eq_one_of_valued_eq_one`.
+* `perpSubgroup_selmerGroup`: `perpSubgroup_eq_self` + `injective_flip_piPairing`.  **`V = V^⊥`.**
+
+The two hypotheses that stay are `hnι` (`S` contains every place above `n`) and `hrepr` (every
+divisor supported outside `S` is principal) — both are inputs the caller supplies by enlarging `S`.
+
+### (c) Findings
+
+* **2026 (BUILD — resolves 2025).**  The missing `PerfectField (v.adicCompletion K)` is really a
+  missing `CharZero`: Mathlib's `PerfectField.ofCharZero` is an instance
+  (`FieldTheory/Perfect.lean:260`), and the repo's `charZero_adicCompletion` lives at
+  `Brauer/PlaceInvariant.lean:113`.  **Importing `InverseGalois.CFT.Brauer.PlaceInvariant` supplies
+  it**; `Local/AdicLocalField.lean` does not.
+* **2027 (REPO — name clash).**  `sUnitLocalHom` already exists at
+  `Kummer/LocalSurjective.lean:97`.  `localClasses`, `localClassHom`, `sUnitClassHom`,
+  `selmerGroup`, `localSymbolPiPairing` were all free.
+* **2028 (LEAN).**  `← _root_.map_pow` fails on `↑x ^ n = 1` when `↑` is `QuotientGroup.mk` — `mk`
+  is a bare function, not a bundled hom.  Use `← QuotientGroup.mk_pow`.
+* **2029 (LEAN).**  `congrFun (MonoidHom.mem_ker.mp ha) i` on a Pi-valued hom leaves `1 i` on the
+  right; `rw [Pi.one_apply]` must come before `QuotientGroup.eq_one_iff`.
+* **2030 (BUILD).**  `lake build …PoitouTate.Unramified` = 8459 jobs ~37 s;
+  `…PoitouTate.Selmer` = **8631 jobs ~17 s**.
+* **2031 (REPO).**  `Units/PrimeAbove.lean` is the "three shapes of `v ∤ n`" hub:
+  `valuation_eq_one_iff_notMem` (:41), `valuation_natCast_eq_one_iff` (:47),
+  `valued_natCast_eq_one_iff` (:53), `finitePlace_natCast_eq_one_iff` (:68).  Chain with
+  `valued_intCast_eq_one_iff_not_dvd` (`Local/PrimeResidue.lean:83`).
+* **2032 (REPO).**  `Units/SUnitValuation.lean:39/44` gives `valuation_eq_one_iff_ord_eq_zero` and
+  `valuation_eq_one_of_mem_sUnits`; `HeightOneSpectrum.valuedAdicCompletion_eq_valuation'`
+  transports to the completion, via the `rfl` bridge for `Units.map (algebraMap …)`.
+* **2033 (MATH — B9 design).**  Index the local product by a `Fintype Y` with injective `ι`, not by
+  `↥T` for a `Finset T`: rewriting `Set.range Subtype.val = ↑T` inside `↥(sUnits K …)` is a
+  dependent rewrite.  Use `Finset.univ.image ι` only where a `Finset` product is needed.
+* **2034 (LEAN).**  `HasEnoughRootsOfUnity K n` from a primitive root:
+  `⟨⟨ζ, hζ⟩, rootsOfUnity.isCyclic K n⟩`.
+* **2035 (LEAN — the Pi-of-quotients instance diamond, IMPORTANT).**  For
+  `A := (y : Y) → (Kᵥˣ ⧸ (powMonoidHom n).range)` with *concrete* `Kᵥ`, `MulOneClass A` resolves to
+  `Pi.mulOneClass` while `Group A` resolves to `Pi.group`.  They **are** defeq (`rfl` proves it),
+  but a lemma whose codomain is a *metavariable* — `MonoidHom.range`, `perpSubgroup`, `piPairing`,
+  `quotientKerEquivRange` — gets stuck trying to invert the projection
+  `Group.toDivInvMonoid.toMulOneClass ?inst =?= Pi.mulOneClass …` and reports a bogus
+  "Application type mismatch".  **Fix: pin the type explicitly** —
+  `MonoidHom.range (N := …)`, `perpSubgroup (A := …)`, `piPairing (A := …)`,
+  `quotientKerEquivRange (H := …)`.  With the type given, the defeq check runs on concrete terms
+  and succeeds.  The abstract-`CommGroup` version of the same statement typechecks with no help,
+  so this only bites on real number-field types.
+* **2036 (REPO).**  `index_range_powMonoidHom_sUnits` (`Units/SUnitIndex.lean:163`) takes the
+  exponent **explicitly** — `variable … (n : ℕ)` at `:102` — so it is
+  `index_range_powMonoidHom_sUnits n hinj`, not `… hinj`.
+
+---
+
+## 1.25 Status (2026-09-06, later still) — **Shapiro's lemma for smooth cochains: the coinduced module loses nothing in degrees one and two**
+
+New module `InverseGalois/CFT/Profinite/Coinduced.lean`, sorry- and axiom-free; full root build
+**9755 jobs, 0 warnings**.
+
+### (a) Why this brick
+
+Every dévissage in Poitou–Tate runs through induced/coinduced modules: one embeds a finite module
+`E` into `Coind_{G_K}^{G_k}(E|_{G_K})` for a finite Galois `K|k` that splits the action, and reads
+off the cohomology of the coinduced piece by Shapiro.  Before this module the repo had *no*
+Shapiro at the profinite/smooth level at all — the two files named `Shapiro.lean`
+(`CFT/Tate/Shapiro.lean`, `CFT/TateCohomology/Shapiro.lean`) are both for **finite-group** Tate
+cohomology (finding 761).
+
+### (b) What is in the file
+
+For `H : Subgroup G` and a `↥H`-module `M` (multiplicative, `CommGroup`):
+
+* `smoothCoind H M : Subgroup (G → M)` — the functions with `f (h * x) = h • f x`;
+  `smoothCoindAction` makes `G` act by `(g • f) x = f (x * g)`.
+* `smoothCoindEval H M : ↥(smoothCoind H M) →* M`, `f ↦ f 1`, is `↥H`-equivariant
+  (`smoothCoindEval_smul`).
+* `smoothShapiroH1 = coeffH1 smoothCoindEval ∘ resH1 H`, likewise `smoothShapiroH2`.
+* **`smoothShapiroH1_injective`** — no hypothesis on `H` whatsoever.
+* **`smoothShapiroH2_injective`** — `[H.Normal]` and `HasOpenNormalCore H` (the latter is free for
+  an open subgroup of a compact group, `hasOpenNormalCore_of_isOpen`).  **No finite index needed.**
+* `sha1_smoothCoind_eq_bot`, `sha2_smoothCoind_eq_bot` — if `H` itself belongs to the family `S`,
+  a coinduced module has no everywhere locally trivial class in that degree.
+* Coset bookkeeping: `coindRep H σ x = σ ↑x`, `coindPart H σ hσ x = x * (coindRep H σ x)⁻¹ : ↥H`,
+  with `coindPart_mul_coindRep`, `coindPart_subgroup_mul`, `coindRep_subgroup_mul`,
+  `coindRep_mul_mem`, `coindPart_mul_mem`.
+
+### (c) The proofs, in one paragraph each
+
+**Degree 1.**  Write `φ x = (u x) 1` for a smooth cocycle `u` of the coinduced module.  Reading
+`IsMulCocycle₁ u` at the neutral element gives `(u y) x = φ (x y) / φ x` and, for `h : ↥H`,
+`φ (h x) = h • φ x * φ h`.  If the Shapiro image dies there is `t` with `h • t / t = φ h`, and
+`F x := φ x * t` is then *equivariant*, i.e. lies in `smoothCoind H M`; and
+`(g • F / F) z = φ (z g) / φ z = (u g) z`, so `u` is the coboundary of `F`.
+
+**Degree 2.**  Write `Φ x y = (a (x, y)) 1`.  Reading `IsMulCocycle₂ a` at the neutral element
+gives the two identities the file records as `smoothCoind_cocycle₂_apply`
+(`(a (x,y)) z = Φ (z x) y * Φ z x / Φ z (x y)`) and `smoothCoind_cocycle₂_smul`
+(`Φ (h z) x * Φ h z = h • Φ z x * Φ h (z x)`).  The ansatz
+
+```
+U x z := Φ z x * w (z * x) / w z
+```
+
+satisfies `coboundary₂ U = a` for **any** function `w` — the three `w`-factors cancel.  So the only
+condition on `w` is that each `U x` be equivariant, and *that* forces
+`ψ (h, t) := Φ h t * w (h t) / (h • w t)` to be independent of `t`.  A primitive `v` of the
+restricted cocycle supplies exactly such a `w`: split `t = τ t * ρ t` with `τ t : ↥H` and `ρ t` the
+chosen coset representative, and put `w t := v (τ t) / Φ (τ t) (ρ t)`.  The identity
+`w (h t) = v h * (h • w t) / Φ h t` (the file's `hwmul`) then follows from the coboundary equation
+at `(h, τ t)` and the cocycle identity at `(h, τ t, ρ t)`.  Smoothness of `U` is where
+`HasOpenNormalCore` enters: intersect the open normal subgroup of `a` with an open normal subgroup
+of `G` inside the one where `v` is constant; right translation by `n` fixes `ρ` and multiplies `τ`
+by the conjugate `ρ n ρ⁻¹`, which lies in both.
+
+### (d) What this does **not** yet give
+
+`Ш^i(k, Coind_{G_K}^{G_k} M) ≅ Ш^i(K, M)` — the statement the dévissage actually consumes — needs
+two more bricks on top of injectivity:
+
+1. **Surjectivity** of `smoothShapiroH1`/`smoothShapiroH2` (same transversal machinery, run
+   backwards: build a cocycle of `G` from one of `H`).  ✅ **DONE**, see §1.27.
+2. **Compatibility with localisation**: `res_{D_v} Coind_H^G M ≅ ∏_{w | v} Coind_{H ∩ D_w}^{D_v} M`,
+   i.e. the double-coset formula, which is what turns `Ш` over `k` into `Ш` over `K`.
+
+Until (2) exists, the usable consequence is the weak one recorded as `sha*_smoothCoind_eq_bot`.
+
+### (e) Two prime-to-`p` reductions that make any base case *trivial* coefficients
+
+Recorded here because they are cheap and they shape every remaining dévissage.  For `E` a finite
+`𝔽_p[G]`-module, `G = Gal(K|k)`:
+
+1. Replace `k` by `k(μ_p)`.  The degree divides `p − 1`, so it is prime to `p`; `corH2_resH2`
+   (`Profinite/Corestriction.lean:686`) plus `orderOf ∣ gcd(p^a, [k(μ_p):k]) = 1` says nothing is
+   lost.  **WLOG `μ_p ⊆ k`.**
+2. Replace `k` by the fixed field of a `p`-Sylow `P ≤ G`.  The index is prime to `p`, same
+   argument.  **WLOG `G` is a `p`-group**, whence every simple `𝔽_p[G]`-module is trivial and `E`
+   has a `G`-filtration with all graded pieces `𝔽_p ≅ μ_p`.
+
+⚠️ What this does **not** do: naive induction along that filtration does **not** prove `Ш² = 0` —
+the lift of an everywhere locally trivial class need not be everywhere locally trivial.  The
+inductive statement has to be the full duality, not `Ш`-vanishing.
+
+### (f) Findings
+
+* **2037 (REPO).**  `coboundary₂` is defined in the **repo**, not Mathlib:
+  `InverseGalois/CFT/GroupCohomology/IndexTwo.lean:59`,
+  `def coboundary₂ (u : G → M) : G × G → M := fun p => p.1 • u p.2 / u (p.1 * p.2) * u p.1`,
+  with `coboundary₂_apply` at `:61`.
+* **2038 (MATHLIB).**  `IsMulCocycle₁` / `IsMulCocycle₂` are at
+  `Mathlib/RepresentationTheory/**Homological**/GroupCohomology/LowDegree.lean:611/615` (note the
+  `Homological/` component).  Companions there: `map_one_of_isMulCocycle₁`,
+  `map_one_fst_of_isMulCocycle₂`, `map_one_snd_of_isMulCocycle₂`, `map_inv_of_isMulCocycle₁`.
+* **2039 (MATHLIB).**  `MulDistribMulAction`'s *fields* are `smul_mul` and `smul_one`
+  (`Algebra/Group/Action/Defs.lean:598`); the exported simp lemmas are `smul_mul'`, and — for a
+  `Group`/`DivisionMonoid` target — `smul_inv'` and `smul_div'`
+  (`Algebra/Group/Action/Basic.lean:203/206`).
+* **2040 (MATHLIB).**  `QuotientGroup.eq : (↑a : α ⧸ s) = ↑b ↔ a⁻¹ * b ∈ s`
+  (`GroupTheory/Coset/Defs.lean:196`).  A section of `G ⧸ H` with no `Quotient.out` defeq pain:
+  `⟨Function.surjInv QuotientGroup.mk_surjective, Function.surjInv_eq _⟩`.
+* **2041 (REPO — name clash).**  `coind`, `coindV`, `coindEval` are **taken** in
+  `InverseGalois.CFT.Tate` (`CFT/TateCohomology/Shapiro.lean:138/141/143/172`).  Hence the
+  `smoothCoind*` / `smoothShapiro*` prefix.  `coindRep`, `coindPart`, `shapiro` were free.
+* **2042 (REPO — already done).**  SW's step "`Ш¹(k, E′) ↪ H¹(Gal(K|k), E′)`" is a repo theorem:
+  `shaInflH1` (`Units/HasseDecomposition.lean:145`), `galInflH1_shaInflH1` (:153),
+  `shaInflH1_injective` (:162), on `exists_galInflH1_eq_of_mem_sha1` (:119) and
+  `sha1_le_range_galInflH1` (:139).
+* **2043 (REPO — already done).**  `Ш`-compatibility under base change to an intermediate field is
+  a repo theorem: `Units/DecompositionRestrict.lean` — `eq_one_of_mem_sha1_intermediate` (:190),
+  `eq_one_of_mem_sha2_of_isPrimitiveRoot_intermediate` (:204), and the two `comapH*_mem_sha*`
+  lemmas (:158/:167).  ⚠️ These are stated through `galRestrictScalarsHom k K Ω`, **not** through
+  `resH1/resH2` on `K.fixingSubgroup`, so a Shapiro brick stated for a `Subgroup` needs a transport
+  step to meet them.
+* **2044 (LEAN — REUSABLE, IMPORTANT).**  There is no `abel` for multiplicative commutative groups
+  and `group` does not use commutativity.  **The reliable idiom is to transfer:**
+  ```lean
+  refine Additive.ofMul.injective ?_
+  simp only [ofMul_mul, ofMul_div, ofMul_inv]
+  abel
+  ```
+  (`ofMul_mul/ofMul_inv/ofMul_div` at `Algebra/Group/TypeTags/Basic.lean:166/372/405`, all root
+  namespace).  This closes *any* identity in a `CommGroup`; when a hypothesis `A * B = C * D` is
+  needed, first `rw` one atom away (`hA : A = C * D / B` via `mul_div_cancel_right`) and then
+  transfer.  The file's four `private theorem coindAlg*` are all one-liners this way.
+* **2045 (LEAN).**  `isMulCocycle₁_coeffMap₁ _ hφ …` and `IsSmooth₁.coeffMap₁ _` **fail** with
+  `_` for the coefficient homomorphism when the expected type is a raw lambda: unifying
+  `coeffMap₁ ?φ (comap₁ H.subtype u)` with `fun h => ↑(u ↑h) 1` is higher-order.  Pass the
+  homomorphism explicitly (`(smoothCoindEval H M)`); the remaining defeq then goes through.
+* **2046 (LEAN).**  State a "computed on cocycles" lemma with the *target* cocycle/smoothness
+  proofs as **explicit hypotheses** (`… (ha' : IsMulCocycle₂ …) (hs' : IsSmooth₂ …) : … := rfl`).
+  Proof irrelevance makes it `rfl` regardless, and the caller is free to supply whatever proof it
+  already has — much more robust than reproducing the canonical proof term.
+* **2047 (MATH — the ansatz was derived, not guessed).**  In degree 2 the *general* solution of
+  `coboundary₂ U = a` inside the coinduced module is `U x z = Φ z x * w (z x) / w z` for an
+  arbitrary `w`; the coinduced condition then pins `w` down to the transversal formula.  This is
+  why no finite index is needed — nothing is averaged over the cosets, one representative per coset
+  suffices.
+* **2048 (REPO — a real ceiling).**  There is **no `SmoothH3`** under `CFT/Profinite/`, so a
+  Cassels–Tate style 3-cochain construction is not available.  This is the reason the
+  **dimension-shifted, degree-1 Selmer** formulation of row 5 —
+  `Ш²(A) ≅ Sel_L(Q) / im H¹(k, I)` with `L_v = im H¹(k_v, I)` — is the right target: every pairing
+  in it is `H¹ × H¹ → H²`, which `Profinite/Cup.lean` supports.
+* **2049 (BUILD).**  `lake build …Profinite.Coinduced` is cheap; full root build with it
+  = **9755 jobs**.
+
+### (g) Routes rejected here
+
+* Descending `Ш²` by inflation from `Ш²(K, M|_K) = 0` — `ker res` is not controlled.
+* Proving `Ш²(k, E) = 0` by induction along an `𝔽_p`-filtration — see (e).
+* Using the repo's `cupDual` as the Poitou–Tate `Ш² × Ш¹` pairing — it is an `H¹ × H¹ → H²`
+  pairing (finding 1920).
+* Greenberg–Wiles as an independent input — it is a corollary of Poitou–Tate, so circular.
+
+---
+
+## 1.26 Status (2026-09-06, latest) — **the exactness of the Poitou–Tate upper line, in the only form SW Thm 13 consumes**
+
+Two new modules, `InverseGalois/CFT/PoitouTate/LocalConditions.lean` and
+`InverseGalois/CFT/PoitouTate/Prescribed.lean`, both sorry- and axiom-free; full root build
+**9757 jobs, 0 warnings**.
+
+### (a) The realisation that unlocked this
+
+SW Theorem 13 does not need the nine-term Poitou–Tate sequence.  It needs exactly one consequence
+of it, quoted in the proof as *"by the exactness of the upper line we find a class
+`z_{n+1} ∈ H¹(k_S|K, μ_p)` with properties (1), (2), (3)"*: a **global class with prescribed local
+behaviour**, the obstruction to its existence being a pairing condition against a computable
+subgroup.
+
+For `A = μ_p` that upper line **is already proven in this repo**.  `perpSubgroup_selmerGroup`
+(`PoitouTate/Selmer.lean:323`) says the classes of the `S`-units are their own orthogonal
+complement inside `∏_{v ∈ S} K_v^× / (K_v^×)^p` under the product of the norm residue symbols —
+`V = V^⊥`, i.e. `V` is a maximal isotropic subgroup of a nondegenerately paired finite group.
+Everything SW extracts from Poitou–Tate in this step is pure linear algebra on top of that one
+sentence.  The two new modules are that linear algebra (abstract), and its instantiation at a
+number field (concrete).
+
+### (b) `LocalConditions.lean` — the abstract statement
+
+For a pairing `φ : A →* A →* M` on a **finite** commutative group `A`:
+
+* `perpSubgroupLeft φ V` — `{a | ∀ b ∈ V, φ a b = 1}`, the complement in the *first* argument
+  (the repo already had `perpSubgroup`, the complement in the second).  `mem_perpSubgroupLeft`,
+  `flip_flip_pairing`, `perpSubgroup_bot`, `perpSubgroupLeft_bot`.
+* `injective_of_injective_flip` — for finite `A`, a pairing injective in one argument is injective
+  in the other (counting: `|A| ≤ |Hom(A, M)|` both ways).
+* **`perpSubgroupLeft_eq_self`** — if `φ` is nondegenerate and `perpSubgroup φ V = V`, then
+  `perpSubgroupLeft φ V = V` as well.  This is what makes "unramified" a *two-sided* condition
+  with no extra work.
+* `perpSubgroup_inf_perpSubgroupLeft` — `(V ⊓ L^⊥)^⊥ ⊇ V^⊥ ⊔ L`, the easy half.
+* **`exists_mul_eq_of_forall_pairing_eq_one`** — the theorem the whole file exists for.  If `φ` is
+  nondegenerate, `V^⊥ = V`, and `c ∈ A` pairs trivially with every element of `V ⊓ L^⊥`, then
+  `c ∈ V ⊔ L`, i.e. **`∃ a ∈ V, ∃ l ∈ L, a * l = c`.**  The proof is the duality
+  `(V ⊓ L^⊥)^⊥ = V^⊥ ⊔ L` for finite groups, read at `V^⊥ = V`.
+* `section Pi` — `flip_piPairing`, `perpSubgroup_piPairing_pi`, **`perpSubgroupLeft_piPairing_pi`**:
+  the orthogonal complement of a product subgroup under a product pairing is the product of the
+  complements, in either argument.
+
+### (c) `Prescribed.lean` — the same, read at a number field
+
+* `localClassPairing hres hζ v` — the norm residue symbol at a finite place, on
+  `localClasses v n = (K_v)^× / ((K_v)^×)^n`; `localSymbolPiPairing_eq_piPairing` identifies the
+  product of these with the abstract `piPairing` **by `rfl`**.
+* `localUnramified v n` and `finite_localClasses v` (from
+  `finiteIndex_range_powMonoidHom_units_adicCompletion`).
+* **`perpSubgroupLeft_localUnramified`** — at a place not dividing `n`, the unramified classes are
+  their own complement on the left too.  Immediate from `perpSubgroupLeft_eq_self` plus the
+  already-proven right-hand statement `perpSubgroup_unramifiedClasses_adicCompletion`.
+* **`exists_sUnitClass_mul_eq`** — for `n` an odd prime, `ι` an injective family of finite places
+  containing every place above `n`, and `L` an arbitrary family of local conditions: if `c` pairs
+  trivially with every `S`-unit class in `selmerGroup ι n ⊓ ∏_y L_y^⊥`, then
+  `∃ a ∈ selmerGroup ι n, ∃ l ∈ ∏_y L_y, a * l = c`.
+* **`exists_sUnitClass_mul_eq_unramified`** — the shape actually used: each place either prescribes
+  the class **exactly** (`L y = ⊥`, dual `D y = ⊤`) or **up to an unramified class**
+  (`L y = D y = localUnramified`).  So the test subgroup is *the `S`-units unramified at the places
+  of the second kind*, and the conclusion is a global `S`-unit hitting the prescribed classes
+  exactly at the first kind of place and up to ramification at the second.
+
+### (d) The dictionary to SW Theorem 13
+
+| SW (`sw.txt:657` ff.) | here |
+| --- | --- |
+| `K(S, p) = {a ∈ K^× / (K^×)^p : v(a) ≡ 0 (p) ∀ v ∉ S}` | `selmerGroup ι p` |
+| `∏_{v ∈ S} K_v^× / (K_v^×)^p` | `(y : Y) → localClasses (ι y) p` |
+| the Poitou–Tate pairing on it | `localSymbolPiPairing` |
+| `K(S,p)` is maximal isotropic | `perpSubgroup_selmerGroup` (already proven, §1.24) |
+| `T_n ⊆ S`, class prescribed exactly at `T_n` | `L y = ⊥` |
+| unramified off `T_n` | `L y = localUnramified (ι y) p` |
+| the test group `K(T_n, p)` | `selmerGroup ι p ⊓ ∏_y D_y` |
+| *"by exactness of the upper line, ∃ `z_{n+1}`"* | `exists_sUnitClass_mul_eq_unramified` |
+
+The induction in SW Thm 13 moves one place at a time from the "unramified" part into the "exact"
+part; the theorem above is stated for an arbitrary such split, so it is the induction *step*, ready
+to be iterated.
+
+### (e) Two things this route does **not** need
+
+1. **No skew-symmetry of the norm residue symbol.**  `exists_mul_eq_of_forall_pairing_eq_one` only
+   ever uses `V^⊥ = V` and nondegeneracy; the pairing is never required to satisfy
+   `φ a b = (φ b a)⁻¹`.  That is fortunate: `localSymbol`'s skew-symmetry is a genuinely separate
+   (and for even `n` false-as-naively-stated) theorem.
+2. **No `G_S` machinery.**  Nothing here mentions the Galois group of the maximal `S`-ramified
+   extension, restricted ramification cohomology, or the eight-term sequence.  The whole "upper
+   line" is consumed through the idelic Kummer picture, which the repo already has.
+
+### (f) Findings
+
+* **2050 (TOOLING).**  In a `python3` read/replace/write heredoc, the search string must reproduce
+  the file's *exact* leading whitespace — a tactic bullet line begins `    · ` (four spaces, `·`,
+  space), **not** six spaces.  A silent no-op replace is the failure mode; diagnose with
+  `sed -n '<N>p' <file> | od -c`.
+* **2051 (LEAN — REUSABLE, IMPORTANT).**  When a lemma's `[CommGroup A]` (or
+  `[∀ i, CommGroup (A i)]`) instance argument is still a **metavariable** while Lean unifies the
+  lemma's conclusion with the goal, and the concrete type is a quotient of the units of an adic
+  completion (`localClasses v n = (v.adicCompletion K)ˣ ⧸ (powMonoidHom n).range`), Lean cannot
+  match `CommGroup.toGroup ?inst` against the synthesised `QuotientGroup.Quotient.group N`.  It
+  instead **eta-expands the quotient group structure field by field** (`Quot.lift`,
+  `Quotient.map₂`, `npow := fun n x => x ^ n`), dragging in the completion's entire ring tower
+  (`Field.toCommRing`, `UniformSpace.Completion.commRing`, `WithVal.instField`, `Semiring.npow`).
+  The result is a `(deterministic) timeout at whnf` that does **not** go away at 2 000 000
+  heartbeats.  **Fix: apply the lemma with `@` and supply the instances explicitly**
+  (`inferInstance` / `(fun _ => inferInstance)`).  Equivalently, `have key := lemma (A := …) …`
+  with *no expected type* also works, because TC synthesis then runs before unification.
+* **2052 (LEAN — DIAGNOSIS).**  `set_option trace.Meta.isDefEq.onFailure true` together with a
+  deliberately **low** `maxHeartbeats` (20 000) localises 2051: the tail of the trace shows
+  `(?m.NNN y).1.1.1.1.1 =?= { mul := Quotient.map₂ … }`, a metavariable instance being projected
+  against an expanded structure.  `set_option diagnostics true` complements it by naming the
+  unfolded declarations.
+* **2053 (LEAN).**  `CommGroup.toGroup` takes its `CommGroup` argument **instance-implicitly**, so
+  `CommGroup.toGroup inst` is a "function expected" error; write `@CommGroup.toGroup _ inst`.
+* **2054 (REPO — `@`-argument orders).**  `Isotropic.lean`'s `section Pi` has variables
+  `{ι} [Fintype ι] {A : ι → Type*} [∀ i, CommGroup (A i)] {M} [CommGroup M]` with `[DecidableEq ι]`
+  as a *theorem-local* binder on `injective_flip_piPairing`, so the order is
+  `@injective_flip_piPairing ι instFintype A instCG M instCGM instDecEq φ hφ`.
+  `LocalConditions.lean`'s `section Pi` already has `[DecidableEq ι]` in the variable line, so
+  there the order is `@perpSubgroupLeft_piPairing_pi ι instFintype instDecEq A instCG M instCGM φ L`.
+* **2055 (REPO — instance paths on the completion).**
+  `#synth Monoid (v.adicCompletion K)` = `Field.toSemifield.toDivisionSemiring.toMonoidWithZero.toMonoid`;
+  `#synth CommMonoid (v.adicCompletion K)` =
+  `(UniformSpace.Completion.commRing (WithVal (HeightOneSpectrum.valuation K v))).toCommMonoid`;
+  `Monoid Uˣ = Units.instMonoid`, `Group Uˣ = Units.instGroup`,
+  `CommGroup Uˣ = Units.instCommGroupUnits`;
+  `Group (localClasses v n) = QuotientGroup.Quotient.group (powMonoidHom n).range`,
+  `CommGroup (localClasses v n) = QuotientGroup.Quotient.commGroup …`;
+  `Group/CommGroup ((y : Y) → localClasses (ι y) n)` = `Pi.group` / `Pi.commGroup`.  Cross-path
+  `rfl`s at the **top level** are cheap; the blowup of 2051 only happens under a binder with a
+  metavariable instance.
+* **2056 (BUILD).**  `lake build InverseGalois.CFT.PoitouTate.Prescribed` = **8633 jobs**, ~14 s
+  once fixed (32–37 s while erroring).  Full root build with both new modules = **9757 jobs**.
+
+### (g) What is still missing for SW Theorem 13
+
+`exists_sUnitClass_mul_eq_unramified` supplies the *existence* half.  The rest of Thm 13 is:
+
+1. **Čebotarev** to choose the next auxiliary place `P_{n+1}` with prescribed Frobenius image.
+2. The **pigeonhole ("shoe box")** argument bounding how many places have to be tried.
+3. The **local duality at unramified places** used to read the condition at `P_{n+1}` off the
+   symbol — this is B8, already proven.
+4. The **product formula** `∏_{v} (a, b)_v = 1` — already proven (§1.23).
+5. The `p = 2` variant (three elements / a partition instead of two elements); the theorem above
+   assumes `2 < n` because `perpSubgroup_selmerGroup` does.
+
+Then SW Thms 14 and 15 turn Thm 13 into `GenericSplitEP ℓ`
+(`Solvable/Shafarevich/Generic.lean:250`) → `SplitPrimePowerEP` → Shafarevich.
+
+### (h) Routes rejected here
+
+* Using the repo's `cupDual` for this step — wrong pairing (finding 1920), and unnecessary: the
+  idelic symbol *is* the upper-line pairing.
+* Proving skew-symmetry of `localSymbol` first — not needed, see (e).
+* Building the eight-term `k_S` sequence — not needed for Thm 13, see (a).
+
+---
+
+## 1.27 Status (2026-09-06, latest) — **Shapiro's lemma is now an isomorphism: the coinduced module loses nothing *and* misses nothing**
+
+§1.25(d) listed exactly two bricks between `smoothShapiro*_injective` and the statement the row-5
+dévissage consumes.  **Brick 1 is done.**  `smoothShapiroH1` and `smoothShapiroH2` are bijective for
+a normal subgroup with an open normal core, and are packaged as `MulEquiv`s.
+
+### (a) The two constructions
+
+Write `τ = coindPart H σ hσ : G → ↥H` and `ρ = coindRep H σ : G → G` for the splitting
+`z = ρ z · τ z` attached to a section `σ` of `G ↠ G ⧸ H`.  Everything below needs `σ` normalised at
+the neutral coset, `σ (1 : G ⧸ H) = 1`, which is free: `exists_coindSection` takes any section and
+patches its value at one point.  With that normalisation `ρ 1 = 1` and `τ 1 = 1`, and — this is the
+whole point — **the Shapiro image of the extension is literally the cocycle one started from**, so
+no coboundary correction is ever needed.
+
+**Degree one.**  Given a smooth `1`-cocycle `v : ↥H → M`, put
+
+```
+U : G → Coind_H^G M,     (U g) z  =  v (τ (z · g)) / v (τ z).
+```
+
+* *Lands in the coinduced module.* `τ (h · z) = h · τ z` (`coindPart_subgroup_mul`), so the numerator
+  and denominator each pick up a factor `h • (−)` by the cocycle relation of `v`, and the quotient is
+  exactly `h • ((U g) z)`.
+* *Is a cocycle.* `(U (g₁ g₂)) z = (U g₂) (z g₁) · (U g₁) z` is the telescoping identity
+  `A/C = (A/B)(B/C)` after `z (g₁ g₂) = (z g₁) g₂`; `div_mul_div_cancel` closes it.
+* *Is smooth.* If `v` kills `N' ⊴ᵒ H` and `N ≤ N' ∩ H` is an open normal subgroup of `G`
+  (`HasOpenNormalCore`), then `τ (z g n) = τ (z g) · n'` with `n'` a `ρ (z g)`-conjugate of `n`,
+  still in `N`; so `U (g n) = U g`.
+* *Restricts back to `v`.* `(U h) 1 = v (τ h) / v (τ 1) = v h / v 1 = v h`, using
+  `coindPart_of_mem`, `coindPart_one` and `groupCohomology.map_one_of_isMulCocycle₁`.
+
+**Degree two.**  Given a smooth `2`-cocycle `b : ↥H × ↥H → M`, put
+
+```
+Φ : G → G → M,           Φ z x  =  b (τ z, τ (ρ z · x)),
+A : G × G → Coind_H^G M, (A (x, y)) z  =  Φ (z x) y · Φ z x / Φ z (x y).
+```
+
+Three observations make the Lean proof short, and they are worth recording because they are what one
+would otherwise rediscover painfully:
+
+1. **The cocycle relation of `A` is an identity in `Φ` alone** — it is the statement that a "divided
+   difference" of `Φ` is a cocycle, true for *any* `Φ` whatsoever.  In the file it is the private
+   abelian-group identity `coindAlgFive`.
+2. **The equivariance of `A (x, y)` is precisely `IsMulCocycle₂ b`,** read at the splitting of a
+   product.  Concretely `Φ (h z) x = h • Φ z x · b (h, τ (z x)) / b (h, τ z)` (this is `hΦH`, and its
+   proof is one `rw` plus `hb h (τ z) (τ (ρ z · x))`), after which the three error terms cancel
+   telescopically — the private identity `coindAlgSix`.  The input to `hΦH` is
+   `coindPart_mul : τ (z x) = τ z · τ (ρ z · x)`, the multiplicativity of the splitting, which in
+   turn rests on `coindRep_coindRep_mul : ρ (ρ z · x) = ρ (z x)` and **uses normality of `H`**.
+3. **Smoothness has to be proved in *both* variables of `Φ`** (`hΦsmOne`, `hΦsmTwo`), because
+   `A (x n, y m)` shifts `Φ`'s first argument as well as its second; the bookkeeping
+   `x n (y m) = x y (y⁻¹ n y) m` uses normality of the open core `N` in `G`.
+
+Restriction back to `b`: `(A (h₁, h₂)) 1 = Φ h₁ h₂ · Φ 1 h₁ / Φ 1 (h₁ h₂) = b (h₁, h₂) · b(1,1) /
+b(1,1)`, using `groupCohomology.map_one_fst_of_isMulCocycle₂` twice.
+
+### (b) New API in `InverseGalois/CFT/Profinite/Coinduced.lean`
+
+Fourteen declarations, all sorry- and axiom-free:
+
+| name | statement |
+| --- | --- |
+| `exists_coindSection` | a section of `G ↠ G ⧸ H` with `σ (1 : G ⧸ H) = 1` |
+| `coindRep_of_mem` | `x ∈ H → ρ x = 1` |
+| `coindRep_coindRep_mul` | `ρ (ρ z · x) = ρ (z x)` (needs `[H.Normal]`) |
+| `coindPart_of_mem` | `τ (h : G) = h` |
+| `coindPart_one` | `τ 1 = 1` |
+| `coindPart_mul` | `τ (z x) = τ z · τ (ρ z · x)` |
+| `smoothShapiroH1_surjective`, `smoothShapiroH2_surjective` | the two constructions above |
+| `smoothShapiroH1_bijective`, `smoothShapiroH2_bijective` | with §1.25's injectivity |
+| `smoothShapiroH1Equiv`, `smoothShapiroH2Equiv` (+ `_apply` simp lemmas) | the `MulEquiv` packaging |
+
+plus the two private abelian-group identities `coindAlgFive`, `coindAlgSix`.
+
+So, for `H ⊴ G` with an open normal core and any `↥H`-module `M`:
+
+```
+SmoothH1 G ↥(smoothCoind H M) ≃* SmoothH1 ↥H M
+SmoothH2 G ↥(smoothCoind H M) ≃* SmoothH2 ↥H M
+```
+
+### (c) What remains for the row-5 reduction
+
+Only §1.25(d) item 2: the **double-coset / localisation formula**
+`res_{D_v} Coind_H^G M ≅ ∏_{w | v} Coind_{H ∩ D_w}^{D_v} M`.  Shapiro alone identifies the *global*
+cohomologies; item 2 is what identifies the *local conditions* on both sides and hence turns `Ш`
+over `k` into `Ш` over `K`.
+
+### (d) Findings
+
+* **2057 (REPO).**  `smoothH1Mk_congr` lives in `CFT/Profinite/H1Conj.lean:83`, **not** in
+  `Cochain.lean`; `smoothH2Mk_congr` lives in `CFT/Profinite/Cochain.lean:316`.  Their argument
+  orders **differ**: `smoothH1Mk_congr (huv : u = v) hu hus hv hvs` puts the equation *first*,
+  `smoothH2Mk_congr ha has hb hbs (h : a = b)` puts it *last*.
+* **2058 (NAME CLASH).**  `H1Conj.lean:58` defines `InverseGalois.CFT.map_one_of_isMulCocycle₁`,
+  which shadows Mathlib's `groupCohomology.map_one_of_isMulCocycle₁` in any file that imports
+  `H1Conj` inside `namespace InverseGalois.CFT`.  Always write the `groupCohomology.` prefix
+  explicitly (same for `map_one_fst_of_isMulCocycle₂`, for symmetry of style).
+* **2059 (MATHLIB).**  `QuotientGroup.eq_one_iff`
+  (`Mathlib/GroupTheory/QuotientGroup/Defs.lean:120`) requires `[N.Normal]`.  To normalise a coset
+  section of a not-yet-known-normal subgroup, phrase the condition as `σ ((1 : G) : G ⧸ H) = 1` and
+  reason with `QuotientGroup.eq` instead.
+* **2060 (MATHLIB).**  `smul_div'` is at `Mathlib/Algebra/Group/Action/Basic.lean:206`:
+  `r • (x / y) = r • x / r • y`.
+* **2061 (LEAN).**  After `refine ⟨fun x => if … then … else …, fun x => ?_, _⟩` the goal contains an
+  unreduced beta-redex, so `rw [if_pos …]` reports "did not find an occurrence".  Insert
+  `dsimp only` first.
+* **2062 (LEAN).**  A function introduced by `obtain ⟨A, hAdef⟩ : ∃ A, ∀ …, … = …` is an **opaque
+  local**: `show` cannot see through it and fails with "not definitionally equal".  Produce a
+  `have hval := hAdef … …` and rewrite with it, or `show` only the un-unfolded form.
+* **2063 (BUILD).**  `lake build InverseGalois.CFT.Profinite.Coinduced` = **8033 jobs**, 53 s.  Full
+  root build with this change = **9757 jobs** (unchanged: no new module).
+
+### (e) Routes rejected here
+
+* A **right-coset (non-normal) splitting** for the degree-2 argument.  `coindPart_mul` — the
+  multiplicativity of the splitting that carries the whole degree-2 proof — is false without
+  `[H.Normal]`, and the general case would need the genuine double-coset bookkeeping.  Since every
+  use in the row-5 dévissage has `H = G_K` normal in `H = G_k`, this costs nothing.
+* Correcting the Shapiro image by an explicit coboundary.  Unnecessary once `σ` is normalised at the
+  neutral coset: the image is the original cocycle **on the nose**, so the final step is
+  `smoothH*Mk_congr` on an equality of functions rather than a computation in cohomology.
+
+---
+
+## 1.28 Status (2026-09-06, latest) — **the concrete Kummer dictionary for SW Thm 13: ramification is a congruence, and the Galois group moves it**
+
+### (a) Why this, and why now
+
+§1.26 established that SW Theorem 13 consumes only the **upper line** of the Tate–Poitou diagram,
+which is already a theorem here (`exists_sUnitClass_mul_eq_unramified`), and §0.41(c) established
+that the Chebotarev input Thm 13 needs is only Frobenius-**up-to-a-scalar**, which is already a
+theorem here (`exists_relStabilizer_eq_zpowers`).  Re-reading the proof (`sw.txt:657–780`) against
+those two facts, the remaining content of the odd-`p` half is *bookkeeping in the Kummer idiom*:
+
+| SW | repo |
+| --- | --- |
+| `H¹(k_S\|K, μ_p)` | `selmerGroup ι p` |
+| `H¹(K_𝔓, μ_p)` | `localClasses 𝔓 p` |
+| `H¹_nr(K_𝔓, μ_p)` | `localUnramified 𝔓 p` |
+| `H¹/H¹_nr ≅ ℤ/p` | `unitValModQuot (isUnitValGen_one …) p` |
+| `(a,b)_𝔓` | `localSymbol` / `localClassPairing` |
+| `∏_{𝔓 ∈ S(K)} (a,b)_𝔓 = 1` | `prod_localSymbol_eq_one_of_ne_two` |
+| local duality at `𝔓 ∤ p` | `perpSubgroupLeft_localUnramified` |
+
+Two entries of that table were *not* yet connected to the arithmetic of a global unit, and both are
+used on every line of the construction:
+
+1. **which way a class ramifies** — SW's condition (1) reads `(z_i)_{𝔓_i} ≡ λ_i · Frob_{𝔓_i}`
+   modulo `H¹_nr`, and `(z_i)_𝔓 ∈ H¹_nr` for `𝔓 ≠ 𝔓_i`.  In the Kummer idiom that is a statement
+   about the **valuation of a global unit**, not about a cocycle;
+2. **the Galois transport** — conditions (1)/(3) are stated at `𝔓_i` and then *used* at `σ𝔓_i` for
+   `σ ∈ G(K|k) ∖ {1}`, and the whole closing symbol chain lives at the moved places.
+
+`InverseGalois/CFT/PoitouTate/GlobalClasses.lean` supplies exactly these two.
+
+### (b) Ramification is a congruence
+
+`placeValue v a` (`Brauer/PlaceExponent.lean:107`) is already the valuation of `a ∈ Kˣ` at the
+finite place `v`, normalised so a uniformiser has value `1`.  It is *definitionally* the same
+composite as the one `unitValModQuot` reads on the local classes, so the dictionary is `rfl`:
+
+```lean
+theorem unitValModQuot_localClassHom (v) (n) (a : Kˣ) :
+    unitValModQuot (isUnitValGen_one (valued_adicCompletion_surjective v)) n (localClassHom v n a)
+      = Multiplicative.ofAdd ((placeValue v a : ℤ) : ZMod n) := rfl
+
+theorem localClassHom_mem_localUnramified_iff [NeZero n] (v) (a : Kˣ) :
+    localClassHom v n a ∈ localUnramified v n ↔ (n : ℤ) ∣ placeValue v a
+```
+
+So SW's condition (1) is, verbatim, `placeValue 𝔓_i z_i ≡ λ_i (mod p)` with `λ_i ≠ 0`, together
+with `p ∣ placeValue 𝔓 z_i` for every other `𝔓` — a congruence between integers.  No cocycle, no
+inertia subgroup, no local duality is needed to *state* it.
+
+### (c) The Galois transport
+
+`adicCompletionGalEquiv v σ : v.adicCompletion K ≃+* (σ • v).adicCompletion K`
+(`Local/AdicAction.lean:165`) is an isometry, so it moves units to units, `n`-th powers to `n`-th
+powers, and preserves the valuation.  Packaging that:
+
+| declaration | statement |
+| --- | --- |
+| `adicCompletionGalEquiv_algebraMap` | the isomorphism sends `algebraMap K _ x` to `algebraMap K _ (σ x)` |
+| `adicUnitsGalEquiv v σ` | `(v.adicCompletion K)ˣ ≃* ((σ • v).adicCompletion K)ˣ` |
+| `adicUnitsGalEquiv_map_algebraMap` | it matches the image of `a : Kˣ` with the image of `galUnits σ a` |
+| `unitVal_adicUnitsGalEquiv`, `unitValDiv_adicUnitsGalEquiv` | it preserves the valuation of a unit |
+| `placeValue_galSmul` | `placeValue (σ • v) (galUnits σ a) = placeValue v a` |
+| `map_range_powMonoidHom` | any `e : G ≃* H` of commutative groups carries `n`-th powers onto `n`-th powers |
+| `localClassesGalEquiv σ v n` | `localClasses v n ≃* localClasses (σ • v) n` |
+| `localClassesGalEquiv_mk` | it is induced by `adicUnitsGalEquiv` |
+| `localClassesGalEquiv_localClassHom` | it matches `localClassHom v n a` with `localClassHom (σ • v) n (galUnits σ a)` |
+| `unitValModQuot_localClassesGalEquiv` | it preserves the valuation modulo `n` |
+| `localClassesGalEquiv_mem_localUnramified_iff`, `map_localUnramified_localClassesGalEquiv` | it carries `localUnramified v n` **onto** `localUnramified (σ • v) n` |
+
+Combining (b) and (c): the transported condition (1) at `σ𝔓_i` is
+`placeValue (σ • 𝔓_i) (galUnits σ z_i) = placeValue 𝔓_i z_i ≡ λ_i (mod p)` — the *same* congruence.
+This is what makes the closing chain of Thm 13 a computation with the product formula alone.
+
+### (d) What this deliberately does **not** do
+
+**Galois invariance of the symbol itself** — `localSymbol_{σv}(σa, σb) = χ(σ) · localSymbol_v(a,b)`
+— was scoped out and is *not* needed for the odd-`p` half.  Re-reading `sw.txt:770–780` line by
+line, the six-step closing chain uses only: the pigeonhole equality `φ_N(z_i) = φ_N(z_N)`,
+condition (1) read at a moved place (which is (c) above, **not** invariance of the symbol),
+condition (3), and the product formula.  Transporting `HasResidueChar` / `IsUnitValGen` /
+`isKummerData_zmod` through `adicCompletionGalEquiv` — which is what invariance of the symbol would
+cost — is therefore avoided entirely.
+
+### (e) Findings
+
+* **2064 (LEAN).** `QuotientGroup.congr G' H' e he` (`GroupTheory/QuotientGroup/Defs.lean:392`) is
+  the right way to move a quotient along a `MulEquiv`; its `congr_mk` is `rfl`, so the compatibility
+  lemma for the induced map on classes needs no `simp` at all.
+* **2065 (LEAN).** `unitVal x = WithZero.log (Valued.v ↑x)` *by definition*
+  (`Local/UnitValuation.lean:95`), so a `show` down to `WithZero.log (Valued.v _)` followed by
+  `valued_adicCompletionGalEquiv` is the whole proof that the Galois move preserves valuations —
+  no API for `unitVal` under ring isomorphisms is required.
+* **2066 (LEAN).** `placeValue` (`Brauer/PlaceExponent.lean:107`) and
+  `unitValModQuot ∘ localClassHom` (`PoitouTate/Unramified.lean:113`, `PoitouTate/Selmer.lean:131`)
+  are the *same* composite up to `Multiplicative.ofAdd` and `Int.cast`, so the bridge between the
+  Brauer-side and the Selmer-side normalisations is `rfl`.  Worth knowing before writing a proof.
+* **2067 (BUILD).** `lake build InverseGalois.CFT.PoitouTate.GlobalClasses` = 8634 jobs, 28 s; the
+  full root build with it = **9758 jobs**, 0 warnings, 0 errors.
+
+### (f) Routes rejected here
+
+* Putting `adicCompletionGalEquiv_algebraMap` into `Local/AdicAction.lean`, next to
+  `adicCompletionGalEquiv_coe` where it topically belongs.  `AdicAction` is deep in the CFT
+  dependency tree, so editing it triggers a rebuild of essentially the whole of `CFT/Units/`
+  (`Units/CompositumFundamental.lean` alone is 414–650 s).  A leaf module costs 28 s.
+* Stating the Galois transport as an action of `Gal(K/k)` on a *bundled* family
+  `∀ v, localClasses v n`.  The places move, so the family is not a `G`-module in the naive sense
+  (only the product over an orbit is); every use in Thm 13 is at a single moved place, so the
+  place-to-place `MulEquiv` is both sufficient and much lighter.
+
+---
+
+## 1.29 Status (2026-09-06, latest) — **the unramified half of the tame symbol: one uniformiser sees everything**
+
+`InverseGalois/CFT/Brauer/TameUnramified.lean`, 4 theorems, no new hypotheses.
+`lake build InverseGalois.CFT.Brauer.TameUnramified` = 8451 jobs / 16 s; full root build =
+**9759 jobs**, 0 warnings, 0 errors, 0 sorries, 0 axioms beyond the three.
+
+### (a) Why this, and why now
+
+SW Thm 13 (`sw.txt:657`) closes with a six-step Hilbert-symbol chain (`sw.txt:720`ff.).  Every
+symbol in that chain has an **unramified** left argument — the class `a` produced by the upper line
+(`exists_sUnitClass_mul_eq_unramified`, §1.26) lies in `localUnramified v n`, i.e. `n ∣ v(a)`.  The
+chain then compares the symbol of that fixed `a` against *different* second arguments, at
+*different* places.  For that comparison to be usable one needs the symbol against an unramified
+argument to be a **single number** — one value in `μ_n` per place — with the dependence on the
+second argument reduced to an exponent.  That is exactly what this module supplies.
+
+Note what this *replaces*.  The obvious way to get "a single number" is the power residue
+character: `TameResidue`/`TamePower` compute the tame symbol in terms of the power residue exponent
+`j` of a unit of the valuation ring.  That route works, but it drags in the whole `j`-exponent
+apparatus (a chosen root, an order-one-less-than-the-residue-count subgroup, the class modulo the
+integers) and every statement then has to be transported through it.  **Evaluating instead against
+a uniformiser is the same information with none of the apparatus**: it lands directly in the group
+where the symbol already lives, and the two theorems below say it is complete and faithful.  Call
+it the *value at Frobenius*, since for an unramified class that is what the symbol against a
+uniformiser is.
+
+### (b) The two headline statements
+
+Fix a complete discretely valued field `K` with perfect residue field of characteristic `p`, a
+primitive `n`-th root of unity `ζ ∈ K` with `n` prime and `p ∤ n`, a generator `m` of the value
+group, and a uniformiser `π` with `unitValDiv hm π = 1`.  Write `v(x) := unitValDiv hm x`.  For
+`a : Kˣ` with `n ∣ v(a)`:
+
+```
+localSymbol hres hm hζ a b = localSymbol hres hm hζ a π ^ v(b)        -- for every b
+localSymbol hres hm hζ a π = 1  ↔  ∃ c : Kˣ, c ^ n = a
+```
+
+So on `localUnramified v n` the symbol is *determined by* and *determines* the class: it factors
+through a single injective evaluation into `μ_n`, and against an arbitrary second argument it is
+that value raised to `v(b)`.
+
+### (c) The proof, in one paragraph
+
+The symbol is killed by `n` (`pow_localSymbol_eq_one`) and is multiplicative in each argument
+(`localSymbol_zpow_left`), so `π^{ns}` pairs trivially with everything —
+`localSymbol_zpow_eq_one_of_dvd`.  Hence for `n ∣ v(a)` one may replace `a` by
+`a · π^{-v(a)}`, which is a *unit of the valuation ring*
+(`valued_mul_zpow_uniformiser`), without changing any symbol —
+`localSymbol_mul_zpow_uniformiser`.  Split the second argument the same way, `b = π^{v(b)} · w`
+with `w` a unit of the valuation ring; the unit-against-unit term dies
+(`localSymbol_eq_one_of_valued_eq_one`, which is where `n` prime and `p ∤ n` are consumed) and only
+the `π^{v(b)}` term survives.  For the kernel, `localSymbol_unit_uniformiser_eq_one_iff`
+(`TameEvaluation.lean:219`) already says a unit of the valuation ring pairs trivially with `π` iff
+it is an `n`-th power; multiplying by `π^{v(a)} = π^{sn} = (π^s)^n` changes neither side, which is
+the whole content of the two `rintro` branches.
+
+### (d) Declarations
+
+| name | statement |
+| --- | --- |
+| `localSymbol_zpow_eq_one_of_dvd` | `n ∣ i → (a^i, b) = 1` |
+| `localSymbol_mul_zpow_uniformiser` | `n ∣ v(a) → (a, c) = (a·π^{-v(a)}, c)` |
+| `localSymbol_eq_zpow_uniformiser` | `n ∣ v(a) → (a, b) = (a, π)^{v(b)}` |
+| `localSymbol_uniformiser_eq_one_iff_of_dvd` | `n ∣ v(a) → ((a, π) = 1 ↔ a ∈ (Kˣ)^n)` |
+
+The uniformiser is a *hypothesis* (`hπ : v(π) = 1`), not a choice made inside the module; existence
+is `exists_unitValDiv_eq_one` (`Brauer/TameSymbol.lean:54`), and the number-field wrapper will pin
+one per place.  Nothing here is stated at the level of `localClasses`; the descent to classes is
+immediate from the second theorem but belongs with the per-place wrapper, not here.
+
+### (e) Findings
+
+* **2068 (LEAN).** In `localSymbol_uniformiser_eq_one_iff_of_dvd`'s `mpr` branch, after `neg_mul`
+  the goal carries `π ^ (-(s * n))` while the `hπs : π^(s*n) = π^(v a)` rewrite is looking for the
+  *positive* exponent and silently fails to fire.  The fix is not a better `conv` but a different
+  route: `rw [..., neg_mul, hs, mul_comm (n : ℤ) s]` closes it, i.e. push the divisibility witness
+  `hs : v(a) = n * s` in and commute, rather than pulling `hπs` out.  Generic lesson: when a
+  `zpow` rewrite is blocked by a `neg`, rewrite the *exponent's definition* instead of the power.
+* **2069 (BUILD).** `lake build InverseGalois.CFT.Brauer.TameUnramified` = 8451 jobs / 16 s; the
+  full root build with it = **9759 jobs**.  The Tame block of imports in `CFT.lean` (now lines
+  98–104) is in narrative, not alphabetical, order; the new module goes at its end, before
+  `Brauer.LocalUnramified`.
+
+### (f) Routes rejected here
+
+* Routing the unramified evaluation through the power residue character (`TameResidue`/`TamePower`)
+  — see (a): same information, far more apparatus, and every downstream statement would have to
+  carry the `j`-exponent normalisation and its two sign conventions.
+* Stating the evaluation as a `MonoidHom localUnramified v n → μ_n` in this module.  The target
+  group of `localSymbol` is stated in terms of the local datum `hres`/`hm`/`hζ`, so a bundled
+  homomorphism here would have to fix that datum before the number-field wrapper picks it; the
+  wrapper is where the bundling belongs.
+* Dropping the primality of `n`.  `localSymbol_eq_one_of_valued_eq_one`
+  (`Brauer/LocalSymbolUnits.lean:142`) needs it, and Thm 13 only ever uses prime `n = p`.
+
+---
+
+## 1.30 Status (2026-09-06, latest) — **the closing chain of SW Thm 13 is two applications of one reciprocity law**
+
+`InverseGalois/CFT/Brauer/TameUnramified.lean` (extended: `frobValue` + 7 lemmas) and the new
+`InverseGalois/CFT/Brauer/SymbolReciprocity.lean` (`placeFrobValue` + 7 lemmas).
+`lake build InverseGalois.CFT.Brauer.SymbolReciprocity` = 8626 jobs / 24 s.
+
+### (a) Reading SW's closing chain correctly — the `σ` is on the *element*, not only on the place
+
+`sw.txt:760`ff. prints the six-step chain that finishes the odd-`p` case of Thm 13.  The extraction
+has lost superscripts, and read literally the chain is **false**: line 2 would say
+`z_i(Frob_{σP_i}) = (z_i, z_i)_{σP_i}`, but for odd `p` the symbol of an element against itself is
+identically trivial (`(a,a) = (a,-1)` and `μ_p` has odd order), and line 3 would then say `1 = 1`.
+Condition (3) is printed as `(z_{n+1})_{σP_i} = (z_i)_{σP_i}`, which combined with `z = z_i + z_N`
+would give `z_{σP_i} = 2(z_i)_{σP_i}`, not the `z_{σP_i} = 0` the text asserts two lines later.
+
+The consistent reading — the one that makes every line true and the conclusion follow — is:
+
+* condition (3) is `(z_{n+1})_{σP_i} = −(z_i)_{σP_i}` (a lost minus sign), and
+* the second argument of each symbol is the **Galois conjugate** `z^σ`, not the same element.
+
+With that reading the chain is, writing `ev_P(a)` for the value of an unramified `a` at `Frob_P`:
+
+```
+ev_{σP_N}(z_N) = ev_{σP_i}(z_i)          pigeonhole:  φ_N(z_i) = φ_N(z_N)
+               = ev_{P_i}(z_i^σ)          reciprocity: z_i ram only at P_i, z_i^σ ram only at σP_i
+               = ev_{P_i}(z_N^σ)^{-1}     condition (3) at σ^{-1}
+               = ev_{σP_N}(z_i)^{-1}      reciprocity: z_i ram only at P_i, z_N^σ ram only at σP_N
+```
+
+so `ev_{σP_N}(z_i z_N) = 1`, hence `z = z_i z_N` is trivial at `σP_N` because the evaluation is
+faithful on unramified classes (§1.29).  **Both middle steps are the same theorem.**  This is why
+brick B of §1.28 (`placeValue_galSmul`, `localClassesGalEquiv`) was the right thing to build: the
+chain runs on Galois conjugates of the `z_i`, and all it needs of the Galois action is that it
+moves valuations along with places.
+
+### (b) The reciprocity law, stated
+
+`placeFrobValue_zpow_eq_zpow` (`Brauer/SymbolReciprocity.lean`).  Let `k` be a number field with
+`ζ ∈ k` a primitive `n`-th root of unity, `n` an odd prime, and let `P v` be the residue
+characteristic at `v`.  Let `a b : kˣ` and `v ≠ w` finite places with `P v ∤ n`, `P w ∤ n`, and
+
+* `n ∣ placeValue u a` for every `u ≠ v`,
+* `n ∣ placeValue u b` for every `u ≠ w`,
+* `a` is an `n`-th power in `k_u` for every `u` with `P u ∣ n`.
+
+Then
+
+```
+placeFrobValue hres hζ w a ^ placeValue w b = placeFrobValue hres hζ v b ^ placeValue v a.
+```
+
+Only `a` needs the condition at the places above `n`; in the application both `z_i` and `z_i^σ`
+have it, since SW's condition (2) makes `(z_i)_P = 0` for `P ∩ k ∈ Ram ∪ S_p ∪ S_∞`.
+
+### (c) The layer underneath: `frobValue`
+
+Added to `TameUnramified.lean`:
+
+| name | statement |
+| --- | --- |
+| `localSymbol_eq_zpow_uniformiser_right` | `n ∣ v(b) → (a,b) = ((b,π)^{v(a)})⁻¹` |
+| `frobValue` | `Kˣ →* Multiplicative QModZ`, `a ↦ (a, π₀)` for a chosen uniformiser `π₀` |
+| `frobValue_eq_localSymbol` | `n ∣ v(a) → frobValue a = (a,π)` for **every** uniformiser `π` |
+| `localSymbol_eq_frobValue_zpow` | `n ∣ v(a) → (a,b) = frobValue a ^ v(b)` |
+| `localSymbol_eq_frobValue_zpow_right` | `n ∣ v(b) → (a,b) = (frobValue b ^ v(a))⁻¹` |
+| `frobValue_eq_one_iff` | `n ∣ v(a) → (frobValue a = 1 ↔ a ∈ (Kˣ)ⁿ)` |
+| `pow_frobValue_eq_one` | `frobValue a ^ n = 1` |
+| `localSymbol_eq_one_of_dvd_of_dvd` | `n ∣ v(a) → n ∣ v(b) → (a,b) = 1` |
+
+`frobValue` is defined with `Classical.choose` on `exists_unitValDiv_eq_one`, but
+`frobValue_eq_localSymbol` says the choice is invisible on the unramified classes — which is the
+only place it is ever used.  That is *not* a `.choose`-opacity trap of the kind at
+`baseFundamentalClass` (gotcha 1118): the characterisation lemma covers the whole domain of use.
+It is a `MonoidHom` (via `MonoidHom.flip`), so multiplicativity in `a` — which the last step of the
+chain needs, `ev(z_i z_N) = ev(z_i) ev(z_N)` — is free.
+
+At the number-field level `placeFrobValue hres hζ v a` is the same thing applied to the image of
+`a` in `k_v`, mirroring `placeValue`.
+
+### (d) Findings
+
+* **2070 (LEAN).** `MonoidHom.flip` (`Mathlib/Algebra/Group/Hom/Instances.lean:209`) turns the
+  bilinear `localSymbol : Kˣ →* Kˣ →* Multiplicative QModZ` into a `MonoidHom` in its *first*
+  argument with the second one fixed; `MonoidHom.flip_apply` (`:219`) is the unfolding lemma, and
+  the composite is `rfl`-equal to the plain application, so `frobValue_apply` is `rfl`.
+* **2071 (LEAN).** `localSymbol_mul_swap` (`Brauer/LocalSymbolUnits.lean:155`) is skew symmetry in
+  the form `(a,b)·(b,a) = 1` with **no** tameness hypothesis, so the mirror of any unramified
+  evaluation is one `eq_inv_of_mul_eq_one_right` away.  §1.26(e) rejected *proving* skew symmetry;
+  it did not need to — it was already there.
+* **2072 (LEAN).** `HeightOneSpectrum (𝓞 k)` has no `DecidableEq` instance, so a two-element
+  `Finset` of places must be built under `classical` inside the proof; `Finset.prod_pair hvw` then
+  splits `prod_localSymbol_eq_one_of_ne_two`'s finite product.
+* **2073 (LEAN).** `rw [..., hs, zpow_mul, zpow_natCast, pow_frobValue_eq_one, one_zpow]` closes
+  `x ^ v(b) = 1` from `hs : v(b) = n * s`; inserting `mul_comm` before `zpow_mul` produces
+  `(x^s)^n` with a *nat* outer exponent, which `pow_frobValue_eq_one` cannot see.
+* **2074 (BUILD).** `lake build InverseGalois.CFT.Brauer.SymbolReciprocity` = 8626 jobs / 24 s.
+
+### (e) Routes rejected here
+
+* Making the evaluation depend on a chosen family of uniformisers threaded through every statement.
+  `frobValue_eq_localSymbol` shows the value is uniformiser-independent on exactly the classes it is
+  applied to, so a single `Classical.choose` inside the definition costs nothing downstream.
+* Requiring the second unit to be a power at the places above `n` as well.  Only the argument whose
+  symbol is being killed needs it, and asking for less keeps the hypothesis discharged by SW's
+  condition (2) alone.
+* Bundling the reciprocity as a statement about `localClasses`.  It is a statement about elements of
+  `kˣ`; the descent to classes is `frobValue_eq_one_iff` and belongs where the Selmer group is.
 
 ---
 

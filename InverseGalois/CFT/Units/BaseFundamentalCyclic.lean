@@ -1,0 +1,118 @@
+/-
+Copyright (c) 2026. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
+import Mathlib
+import InverseGalois.CFT.Units.BaseTate
+
+/-!
+# The second cohomology of the idele class group is cyclic of order the degree
+
+Two facts about the idele class group of a Galois extension of number fields are already available
+and pull in opposite directions.  The second cohomology has at most as many elements as the Galois
+group, by the dévissage through cyclic extensions; and the fundamental class is annihilated by
+exactly the multiples of the degree, so the subgroup of its multiples has at least as many elements
+as the Galois group.  Together they force both counts to be exact.
+
+So the second cohomology of the idele class group of a Galois extension of number fields is a
+cyclic group of order exactly the degree, and the fundamental class is one of its generators.  This
+is the arithmetic content of the two inequalities of class field theory, in the form in which the
+invariant map of a global class formation is built: a cyclic group of order `n` is the group of
+`n`-th parts of a rational modulo the integers once a generator has been named, and the fundamental
+class is the generator to name.
+
+## Main results
+
+* `InverseGalois.CFT.finite_tateModule_ideleClassRep_two`,
+  `InverseGalois.CFT.card_tateModule_ideleClassRep_two`: **the complete cohomology of the idele
+  class group in degree two is finite with exactly as many elements as the Galois group.**
+* `InverseGalois.CFT.addOrderOf_baseFundamentalClass`: **the fundamental class has order the degree
+  of the extension.**
+* `InverseGalois.CFT.zmultiples_baseFundamentalClass_eq_top`,
+  `InverseGalois.CFT.exists_zsmul_baseFundamentalClass`: **the fundamental class generates.**
+* `InverseGalois.CFT.isAddCyclic_tateModule_ideleClassRep_two`: **the complete cohomology of the
+  idele class group in degree two is cyclic.**
+
+## Tags
+
+number field, idele class group, fundamental class, class formation, Tate cohomology, cyclic
+-/
+
+namespace InverseGalois.CFT
+
+open CategoryTheory NumberField
+
+noncomputable section
+
+open Tate
+
+variable (k K : Type) [Field k] [NumberField k] [Field K] [NumberField K] [Algebra k K]
+  [IsGalois k K]
+
+/-- **The complete cohomology of the idele class group in degree two is finite.** -/
+theorem finite_tateModule_ideleClassRep_two :
+    Finite ↥(tateModule (ideleClassRep k K) 2) :=
+  (finite_and_card_H2_ideleClassRep_general (k := k) (K := K)).1
+
+/-- **The complete cohomology of the idele class group in degree two has at most as many elements
+as the Galois group.** -/
+theorem card_tateModule_ideleClassRep_two_le :
+    Nat.card ↥(tateModule (ideleClassRep k K) 2) ≤ Nat.card Gal(K/k) :=
+  (finite_and_card_H2_ideleClassRep_general (k := k) (K := K)).2
+
+/-- **The fundamental class generates the complete cohomology of the idele class group in degree
+two.**  The subgroup of its multiples has at least as many elements as the degree, because only the
+multiples of the degree annihilate it, and the whole group has at most that many. -/
+theorem exists_zsmul_baseFundamentalClass (y : tateModule (ideleClassRep k K) 2) :
+    ∃ m : ℤ, y = m • baseFundamentalClass k K :=
+  haveI := finite_tateModule_ideleClassRep_two k K
+  exists_zsmul_of_card_le (card_tateModule_ideleClassRep_two_le k K)
+    (zsmul_baseFundamentalClass_eq_zero_imp_dvd k K) y
+
+/-- **The fundamental class has order the degree of the extension**: the order of the Galois group
+annihilates every class, and only the multiples of the degree annihilate this one. -/
+theorem addOrderOf_baseFundamentalClass :
+    addOrderOf (baseFundamentalClass k K) = Nat.card Gal(K/k) := by
+  refine Nat.dvd_antisymm (addOrderOf_dvd_iff_nsmul_eq_zero.2
+    (card_nsmul_eq_zero_tateModule (ideleClassRep k K) 2 (baseFundamentalClass k K))) ?_
+  have h : ((addOrderOf (baseFundamentalClass k K) : ℤ)) • baseFundamentalClass k K = 0 := by
+    rw [natCast_zsmul]
+    exact addOrderOf_nsmul_eq_zero _
+  exact_mod_cast zsmul_baseFundamentalClass_eq_zero_imp_dvd k K _ h
+
+/-- **The multiples of the fundamental class exhaust the complete cohomology of the idele class
+group in degree two.** -/
+theorem zmultiples_baseFundamentalClass_eq_top :
+    AddSubgroup.zmultiples (baseFundamentalClass k K) = ⊤ := by
+  refine (AddSubgroup.eq_top_iff' _).2 fun y => ?_
+  obtain ⟨m, hm⟩ := exists_zsmul_baseFundamentalClass k K y
+  exact AddSubgroup.mem_zmultiples_iff.2 ⟨m, hm.symm⟩
+
+/-- **The complete cohomology of the idele class group in degree two has exactly as many elements
+as the Galois group.** -/
+theorem card_tateModule_ideleClassRep_two :
+    Nat.card ↥(tateModule (ideleClassRep k K) 2) = Nat.card Gal(K/k) := by
+  rw [← addOrderOf_baseFundamentalClass k K, ← Nat.card_zmultiples,
+    zmultiples_baseFundamentalClass_eq_top k K, AddSubgroup.card_top]
+
+/-- **The complete cohomology of the idele class group in degree two is cyclic**, generated by the
+fundamental class. -/
+theorem isAddCyclic_tateModule_ideleClassRep_two :
+    IsAddCyclic ↥(tateModule (ideleClassRep k K) 2) :=
+  ⟨baseFundamentalClass k K,
+    fun y => (exists_zsmul_baseFundamentalClass k K y).imp fun _ hm => hm.symm⟩
+
+/-- **A class of the idele class group in degree two annihilated by exactly the multiples of the
+degree is again a generator**, so the fundamental class is characterised up to a multiple prime to
+the degree by its annihilator alone. -/
+theorem zmultiples_eq_top_of_zsmul_eq_zero_imp_dvd {α : tateModule (ideleClassRep k K) 2}
+    (hα : ∀ m : ℤ, m • α = 0 → (Nat.card Gal(K/k) : ℤ) ∣ m) :
+    AddSubgroup.zmultiples α = ⊤ := by
+  haveI := finite_tateModule_ideleClassRep_two k K
+  refine (AddSubgroup.eq_top_iff' _).2 fun y => ?_
+  obtain ⟨m, hm⟩ := exists_zsmul_of_card_le (card_tateModule_ideleClassRep_two_le k K) hα y
+  exact AddSubgroup.mem_zmultiples_iff.2 ⟨m, hm.symm⟩
+
+end
+
+end InverseGalois.CFT

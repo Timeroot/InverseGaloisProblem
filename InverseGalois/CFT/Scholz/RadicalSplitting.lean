@@ -9,10 +9,10 @@ import InverseGalois.CFT.Scholz.RadicalTower
 /-!
 # The power residue criterion for splitting in a radical field
 
-Let `ℓ` be a prime, let `v` be an integer and let `q` be a prime congruent to one modulo `ℓ` and
-prime to `v`.  If `v` is an `ℓ`-th power modulo `q`, then `q` splits completely in the field
-obtained by adjoining to the rationals the `ℓ`-th roots of unity together with the `ℓ`-th roots of
-`v`.
+Let `ℓ` be a positive natural number, let `v` be an integer and let `q` be a prime congruent to one
+modulo `ℓ` and prime to `v`.  If `v` is an `ℓ`-th power modulo `q`, then `q` splits completely in
+the field obtained by adjoining to the rationals the `ℓ`-th roots of unity together with the
+`ℓ`-th roots of `v`.
 
 The proof is a direct computation with the two conditions defining a totally split prime at a
 prime `Q` of the ring of integers above `q`: that inertia is trivial and that the arithmetic
@@ -22,17 +22,19 @@ to `q` and satisfying `c ^ ((q - 1) / ℓ) ≡ 1` modulo `q`.  For inertia the i
 `σ α ≡ α`; for Frobenius it is `σ α ≡ α ^ q`, and `α ^ q = α · c ^ ((q - 1) / ℓ) ≡ α`, so it is
 again `σ α ≡ α`.  Now `σ α` is `α` times an `ℓ`-th root of unity `ξ`, so `(ξ - 1) α ∈ Q`; the
 generator `α` is not in `Q` because its `ℓ`-th power is prime to `q`, so `ξ ≡ 1`, and distinct
-`ℓ`-th roots of unity stay distinct modulo `Q` because `ξ - 1` divides `ℓ` and `q ≠ ℓ`.  Hence `σ`
-fixes every generator and is the identity.
+`ℓ`-th roots of unity stay distinct modulo `Q` because a root of unity congruent to one has
+vanishing complementary factor `1 + ξ + ⋯ + ξ ^ (ℓ - 1)`, which is congruent to `ℓ`, and `q` does
+not divide `ℓ`.  Hence `σ` fixes every generator and is the identity.
 
 ## Main results
 
-* `InverseGalois.CFT.eq_one_of_pow_eq_one_of_sub_mem`: an `ℓ`-th root of unity congruent to one
-  modulo a prime above a rational prime different from `ℓ` is one.
+* `InverseGalois.CFT.eq_one_of_pow_eq_one_of_sub_mem_of_not_dvd`: an `n`-th root of unity congruent
+  to one modulo a prime above a rational prime not dividing `n` is one.
 * `InverseGalois.CFT.eq_one_of_forall_radicalGens_fixed`: an automorphism of a radical field fixing
   every generator is the identity.
-* `InverseGalois.CFT.splitsCompletely_radicalField`: **a prime congruent to one modulo `ℓ` modulo
-  which an integer is an `ℓ`-th power splits completely in the radical field of that integer.**
+* `InverseGalois.CFT.splitsCompletely_radicalField_of_dvd`: **a prime congruent to one modulo `ℓ`
+  modulo which an integer is an `ℓ`-th power splits completely in the radical field of that
+  integer.**
 
 ## Tags
 
@@ -47,30 +49,45 @@ attribute [local instance] Int.ideal_span_isMaximal_of_prime
 
 /-! ### Roots of unity modulo a prime -/
 
+/-- **An `n`-th root of unity congruent to one modulo a prime above a rational prime not dividing
+`n`** is equal to one.  Were it not one, the complementary factor `1 + ξ + ⋯ + ξ ^ (n - 1)` of
+`ξ ^ n - 1` would vanish; but modulo the prime that factor is congruent to `n`, so the rational
+prime underneath would divide `n`. -/
+theorem eq_one_of_pow_eq_one_of_sub_mem_of_not_dvd {K : Type*} [Field K] [NumberField K] {n q : ℕ}
+    (hnq : ¬ q ∣ n) {Q : Ideal (𝓞 K)} [Q.IsPrime]
+    [Q.LiesOver (Ideal.span {(q : ℤ)})] {ξ : 𝓞 K} (hpow : ξ ^ n = 1) (hsub : ξ - 1 ∈ Q) :
+    ξ = 1 := by
+  by_contra hne1
+  have hgeom : (∑ i ∈ Finset.range n, ξ ^ i) * (ξ - 1) = 0 := by
+    rw [geom_sum_mul, hpow, sub_self]
+  have hsum : (∑ i ∈ Finset.range n, ξ ^ i) = 0 :=
+    (mul_eq_zero.mp hgeom).resolve_right (sub_ne_zero.mpr hne1)
+  have hξ1 : Ideal.Quotient.mk Q ξ = 1 := by
+    rw [← sub_eq_zero, ← map_one (Ideal.Quotient.mk Q), ← map_sub]
+    exact Ideal.Quotient.eq_zero_iff_mem.mpr hsub
+  have hnQ : ((n : ℕ) : 𝓞 K) ∈ Q := by
+    refine Ideal.Quotient.eq_zero_iff_mem.mp ?_
+    have h2 : Ideal.Quotient.mk Q (∑ i ∈ Finset.range n, ξ ^ i) = ((n : ℕ) : 𝓞 K ⧸ Q) := by
+      rw [map_sum]
+      simp [hξ1]
+    rw [hsum, map_zero] at h2
+    rw [map_natCast, ← h2]
+  have hunder : Ideal.span {(q : ℤ)} = Q.under ℤ := Ideal.LiesOver.over
+  have hmem : (n : ℤ) ∈ Ideal.span {(q : ℤ)} := by
+    rw [hunder]
+    show algebraMap ℤ (𝓞 K) (n : ℤ) ∈ Q
+    simpa using hnQ
+  rw [Ideal.mem_span_singleton] at hmem
+  exact hnq (by exact_mod_cast hmem)
+
 /-- **An `ℓ`-th root of unity congruent to one modulo a prime above a rational prime other than
-`ℓ`** is equal to one.  A nontrivial `ℓ`-th root of unity `ξ` is primitive, so `ξ - 1` divides `ℓ`;
-were `ξ - 1` in the prime, `ℓ` would lie in it too, forcing the rational prime underneath to be
-`ℓ`. -/
+`ℓ`** is equal to one, for `ℓ` prime: a prime other than `ℓ` does not divide `ℓ`. -/
 theorem eq_one_of_pow_eq_one_of_sub_mem {K : Type*} [Field K] [NumberField K] {ℓ q : ℕ}
     (hℓ : ℓ.Prime) (hq : q.Prime) (hne : q ≠ ℓ) {Q : Ideal (𝓞 K)} [Q.IsPrime]
     [Q.LiesOver (Ideal.span {(q : ℤ)})] {ξ : 𝓞 K} (hpow : ξ ^ ℓ = 1) (hsub : ξ - 1 ∈ Q) :
-    ξ = 1 := by
-  by_contra hne1
-  have hord : orderOf ξ ∣ ℓ := orderOf_dvd_of_pow_eq_one hpow
-  have hordne : orderOf ξ ≠ 1 := fun h => hne1 (orderOf_eq_one_iff.mp h)
-  have hordeq : orderOf ξ = ℓ := (hℓ.eq_one_or_self_of_dvd _ hord).resolve_left hordne
-  have hprim : IsPrimitiveRoot ξ ℓ := hordeq ▸ IsPrimitiveRoot.orderOf ξ
-  obtain ⟨z, -, hz⟩ := hprim.self_sub_one_pow_dvd_order (k := 1) hℓ.one_lt
-  have hlQ : ((ℓ : ℕ) : 𝓞 K) ∈ Q := by
-    rw [hz, pow_one]
-    exact Ideal.mul_mem_left _ _ hsub
-  have hunder : Ideal.span {(q : ℤ)} = Q.under ℤ := Ideal.LiesOver.over
-  have hmem : (ℓ : ℤ) ∈ Ideal.span {(q : ℤ)} := by
-    rw [hunder]
-    show algebraMap ℤ (𝓞 K) (ℓ : ℤ) ∈ Q
-    simpa using hlQ
-  rw [Ideal.mem_span_singleton] at hmem
-  exact hne ((Nat.prime_dvd_prime_iff_eq hq hℓ).mp (by exact_mod_cast hmem))
+    ξ = 1 :=
+  eq_one_of_pow_eq_one_of_sub_mem_of_not_dvd
+    (fun h => hne ((Nat.prime_dvd_prime_iff_eq hq hℓ).mp h)) hpow hsub
 
 /-! ### Automorphisms fixing the generators -/
 
@@ -144,15 +161,14 @@ theorem exists_intCast_pow_eq_of_mem_radicalGens (hq : q.Prime)
 completely in the radical field of that integer.**  At a prime `Q` above it, both the triviality of
 inertia and the triviality of the Frobenius say that the automorphism in question moves each
 generator by an `ℓ`-th root of unity congruent to one modulo `Q`, hence fixes it. -/
-theorem splitsCompletely_radicalField (hℓ : ℓ.Prime) (hq : q.Prime) (hdvd : ℓ ∣ q - 1)
+theorem splitsCompletely_radicalField_of_dvd (hℓ : ℓ ≠ 0) (hq : q.Prime) (hdvd : ℓ ∣ q - 1)
     (hqv : ¬ (q : ℤ) ∣ v) (hvpow : (v : ZMod q) ^ ((q - 1) / ℓ) = 1) :
     SplitsCompletely ↥(radicalField ℓ ({(v : ℚ)} : Finset ℚ)) q := by
   haveI : Fact q.Prime := ⟨hq⟩
   have hq2 : 2 ≤ q := hq.two_le
-  have hl2 : 2 ≤ ℓ := hℓ.two_le
-  have hqℓ : q ≠ ℓ := by
-    rintro rfl
-    have := Nat.le_of_dvd (by omega) hdvd
+  have hqℓ : ¬ q ∣ ℓ := by
+    intro h
+    have := Nat.le_of_dvd (by omega) (h.trans hdvd)
     omega
   obtain ⟨Q, hQmax, hQover⟩ := Ideal.exists_maximal_ideal_liesOver_of_isIntegral
     (R := ℤ) (S := 𝓞 ↥(radicalField ℓ ({(v : ℚ)} : Finset ℚ))) (Ideal.span {(q : ℤ)})
@@ -175,20 +191,20 @@ theorem splitsCompletely_radicalField (hℓ : ℓ.Prime) (hq : q.Prime) (hdvd : 
     intro σ hσ
     refine eq_one_of_forall_radicalGens_fixed fun α hα => ?_
     obtain ⟨c, hqc, -, hcα⟩ := exists_intCast_pow_eq_of_mem_radicalGens hq hqv hvpow hα
-    obtain ⟨β, hβ, hβpow⟩ := exists_ringOfIntegers_pow_eq hℓ.ne_zero hcα
+    obtain ⟨β, hβ, hβpow⟩ := exists_ringOfIntegers_pow_eq hℓ hcα
     have hβQ : β ∉ Q := by
       intro hmem
-      exact hqc ((hQint c).mp (hβpow ▸ Ideal.pow_mem_of_mem Q hmem ℓ hℓ.pos))
+      exact hqc ((hQint c).mp (hβpow ▸ Ideal.pow_mem_of_mem Q hmem ℓ (Nat.pos_of_ne_zero hℓ)))
     have hc0 : c ≠ 0 := fun h => hqc (h ▸ dvd_zero _)
     have hcK : ((c : ℤ) : ↥(radicalField ℓ ({(v : ℚ)} : Finset ℚ))) ≠ 0 := Int.cast_ne_zero.mpr hc0
     have hα0 : α ≠ 0 := by
       intro h
-      rw [h, zero_pow hℓ.ne_zero] at hcα
+      rw [h, zero_pow hℓ] at hcα
       exact hcK hcα.symm
     have hpow1 : (σ α * α⁻¹) ^ ℓ = 1 := by
       rw [mul_pow, ← map_pow, inv_pow, hcα, map_intCast, mul_inv_cancel₀ hcK]
     obtain ⟨ξ, hξ, hξpow'⟩ := exists_ringOfIntegers_pow_eq (S := ({(v : ℚ)} : Finset ℚ))
-      hℓ.ne_zero (c := 1) (α := σ α * α⁻¹) (by rw [hpow1]; push_cast; ring)
+      hℓ (c := 1) (α := σ α * α⁻¹) (by rw [hpow1]; push_cast; ring)
     have hξpow : ξ ^ ℓ = 1 := by simpa using hξpow'
     have hmul : σ • β - β = (ξ - 1) * β := by
       apply RingOfIntegers.ext
@@ -198,7 +214,7 @@ theorem splitsCompletely_radicalField (hℓ : ℓ.Prime) (hq : q.Prime) (hdvd : 
     have hsub : ξ - 1 ∈ Q :=
       ((Ideal.IsPrime.mul_mem_iff_mem_or_mem ‹Q.IsPrime›).mp (hmul ▸ hσ β (hβ ▸ hα))).resolve_right
         hβQ
-    have hξ1 : ξ = 1 := eq_one_of_pow_eq_one_of_sub_mem hℓ hq hqℓ hξpow hsub
+    have hξ1 : ξ = 1 := eq_one_of_pow_eq_one_of_sub_mem_of_not_dvd hqℓ hξpow hsub
     have hfin : σ α * α⁻¹ = 1 := by rw [← hξ, hξ1]; rfl
     field_simp at hfin
     exact hfin
@@ -208,7 +224,7 @@ theorem splitsCompletely_radicalField (hℓ : ℓ.Prime) (hq : q.Prime) (hdvd : 
         β ^ q - β ∈ Q := by
     intro β hβmem
     obtain ⟨c, -, hcpow, hcα⟩ := exists_intCast_pow_eq_of_mem_radicalGens hq hqv hvpow hβmem
-    obtain ⟨β', hβ', hβpow⟩ := exists_ringOfIntegers_pow_eq hℓ.ne_zero hcα
+    obtain ⟨β', hβ', hβpow⟩ := exists_ringOfIntegers_pow_eq hℓ hcα
     rw [show β' = β from RingOfIntegers.ext hβ'] at hβpow
     have hq1 : q = ℓ * ((q - 1) / ℓ) + 1 := by rw [Nat.mul_div_cancel' hdvd]; omega
     have hexp : β ^ q - β = ((c ^ ((q - 1) / ℓ) - 1 : ℤ) :
@@ -229,5 +245,12 @@ theorem splitsCompletely_radicalField (hℓ : ℓ.Prime) (hq : q.Prime) (hdvd : 
   rw [hcard] at h1
   have h2 := Ideal.add_mem Q h1 (hβq β hβmem)
   rwa [sub_add_sub_cancel] at h2
+
+/-- **A prime congruent to one modulo a prime `ℓ` modulo which an integer is an `ℓ`-th power splits
+completely in the radical field of that integer.** -/
+theorem splitsCompletely_radicalField (hℓ : ℓ.Prime) (hq : q.Prime) (hdvd : ℓ ∣ q - 1)
+    (hqv : ¬ (q : ℤ) ∣ v) (hvpow : (v : ZMod q) ^ ((q - 1) / ℓ) = 1) :
+    SplitsCompletely ↥(radicalField ℓ ({(v : ℚ)} : Finset ℚ)) q :=
+  splitsCompletely_radicalField_of_dvd hℓ.ne_zero hq hdvd hqv hvpow
 
 end InverseGalois.CFT

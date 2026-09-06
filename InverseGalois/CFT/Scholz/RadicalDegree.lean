@@ -26,6 +26,10 @@ strictly larger leaves room for degree two, where the union bound gives nothing.
   of that number.
 * `InverseGalois.CFT.finrank_sup_radicalField_singleton`: **that compositum has degree exactly `ℓ`
   times the degree of the field**, when the number has no `ℓ`-th root in it.
+* `InverseGalois.CFT.two_le_finrank_adjoin_of_notMem`: an element outside a field generates an
+  extension of degree at least two.
+* `InverseGalois.CFT.le_finrank_sup_radicalField_singleton`: **a lower bound for the degree of the
+  compositum**, from a lower bound for the relative degree of one `ℓ`-th root.
 
 ## Tags
 
@@ -119,6 +123,25 @@ section Degree
 
 variable {A : IntermediateField ℚ (AlgebraicClosure ℚ)} {m : ℚ} {α ζ : AlgebraicClosure ℚ}
 
+/-- The image in the algebraic closure of a rational number, read through an intermediate field, is
+the same however it is computed. -/
+theorem algebraMap_intermediateField_eq (A : IntermediateField ℚ (AlgebraicClosure ℚ)) (m : ℚ) :
+    algebraMap ↥A (AlgebraicClosure ℚ) (algebraMap ℚ ↥A m)
+      = algebraMap ℚ (AlgebraicClosure ℚ) m :=
+  (IsScalarTower.algebraMap_apply ℚ ↥A (AlgebraicClosure ℚ) m).symm
+
+/-- The degree over a field of an `ℓ`-th root of a rational number is `ℓ` as soon as `X ^ ℓ` minus
+the number is irreducible there, that polynomial then being the minimal polynomial of the root. -/
+theorem finrank_adjoin_of_irreducible (hℓ : ℓ ≠ 0)
+    (hirr : Irreducible (X ^ ℓ - C (algebraMap ℚ ↥A m)))
+    (hα : α ^ ℓ = algebraMap ℚ (AlgebraicClosure ℚ) m) :
+    finrank ↥A ↥(IntermediateField.adjoin ↥A ({α} : Set (AlgebraicClosure ℚ))) = ℓ := by
+  have haeval : Polynomial.aeval α (X ^ ℓ - C (algebraMap ℚ ↥A m)) = 0 := by
+    rw [map_sub, map_pow, aeval_X, aeval_C, algebraMap_intermediateField_eq, hα, sub_self]
+  have hmonic : (X ^ ℓ - C (algebraMap ℚ ↥A m)).Monic := Polynomial.monic_X_pow_sub_C _ hℓ
+  rw [IntermediateField.adjoin.finrank ⟨_, hmonic, haeval⟩,
+    ← minpoly.eq_of_irreducible_of_monic hirr haeval hmonic, natDegree_X_pow_sub_C]
+
 /-- The degree over a field of an `ℓ`-th root of a rational number without an `ℓ`-th root there is
 the prime `ℓ`: the polynomial `X ^ ℓ` minus the number is then irreducible, hence is the minimal
 polynomial of the root. -/
@@ -126,19 +149,28 @@ theorem finrank_adjoin_of_forall_pow_ne (hℓ : ℓ.Prime)
     (hm : ∀ u ∈ A, u ^ ℓ ≠ algebraMap ℚ (AlgebraicClosure ℚ) m)
     (hα : α ^ ℓ = algebraMap ℚ (AlgebraicClosure ℚ) m) :
     finrank ↥A ↥(IntermediateField.adjoin ↥A ({α} : Set (AlgebraicClosure ℚ))) = ℓ := by
-  have hmap : algebraMap ↥A (AlgebraicClosure ℚ) (algebraMap ℚ ↥A m)
-      = algebraMap ℚ (AlgebraicClosure ℚ) m :=
-    (IsScalarTower.algebraMap_apply ℚ ↥A (AlgebraicClosure ℚ) m).symm
-  have haeval : Polynomial.aeval α (X ^ ℓ - C (algebraMap ℚ ↥A m)) = 0 := by
-    rw [map_sub, map_pow, aeval_X, aeval_C, hmap, hα, sub_self]
-  have hmonic : (X ^ ℓ - C (algebraMap ℚ ↥A m)).Monic :=
-    Polynomial.monic_X_pow_sub_C _ hℓ.ne_zero
-  have hirr : Irreducible (X ^ ℓ - C (algebraMap ℚ ↥A m)) := by
-    refine X_pow_sub_C_irreducible_of_prime hℓ fun b hb => hm (b : AlgebraicClosure ℚ) b.2 ?_
-    rw [← hmap, ← hb, map_pow]
-    rfl
-  rw [IntermediateField.adjoin.finrank ⟨_, hmonic, haeval⟩,
-    ← minpoly.eq_of_irreducible_of_monic hirr haeval hmonic, natDegree_X_pow_sub_C]
+  refine finrank_adjoin_of_irreducible hℓ.ne_zero ?_ hα
+  refine X_pow_sub_C_irreducible_of_prime hℓ fun b hb => hm (b : AlgebraicClosure ℚ) b.2 ?_
+  rw [← algebraMap_intermediateField_eq A m, ← hb, map_pow]
+  rfl
+
+/-- **An element of the algebraic closure outside a field generates an extension of degree at least
+two** over it. -/
+theorem two_le_finrank_adjoin_of_notMem (hαA : α ∉ A) :
+    2 ≤ finrank ↥A ↥(IntermediateField.adjoin ↥A ({α} : Set (AlgebraicClosure ℚ))) := by
+  have hint : IsIntegral ↥A α :=
+    IsIntegral.tower_top (R := ℚ) (Algebra.IsIntegral.isIntegral (R := ℚ) α)
+  haveI : FiniteDimensional ↥A ↥(IntermediateField.adjoin ↥A ({α} : Set (AlgebraicClosure ℚ))) :=
+    IntermediateField.adjoin.finiteDimensional hint
+  have hpos : 0 < finrank ↥A ↥(IntermediateField.adjoin ↥A ({α} : Set (AlgebraicClosure ℚ))) :=
+    Module.finrank_pos
+  have hne : finrank ↥A ↥(IntermediateField.adjoin ↥A ({α} : Set (AlgebraicClosure ℚ))) ≠ 1 := by
+    intro h
+    rw [IntermediateField.finrank_eq_one_iff] at h
+    obtain ⟨a, ha⟩ := IntermediateField.mem_bot.mp
+      (h ▸ IntermediateField.subset_adjoin ↥A ({α} : Set (AlgebraicClosure ℚ)) rfl)
+    exact hαA (ha ▸ a.2)
+  omega
 
 /-- **The compositum of a field of `ℓ`-th roots of unity with the radical field of a rational
 number having no `ℓ`-th root there has degree exactly `ℓ` times the degree of the field.**  The
@@ -158,6 +190,22 @@ theorem finrank_sup_radicalField_singleton (hℓ : ℓ.Prime) (hζ : IsPrimitive
   rw [sup_radicalField_singleton_eq_sup_adjoin hℓ.ne_zero hζ hζA hm0 hα,
     ← IntermediateField.restrictScalars_adjoin_eq_sup]
   exact key.symm
+
+/-- **A lower bound for the degree of the compositum of a field of `ℓ`-th roots of unity with the
+radical field of a rational number**, in terms of a lower bound for the relative degree of one
+`ℓ`-th root of that number. -/
+theorem le_finrank_sup_radicalField_singleton (hℓ : ℓ ≠ 0) (hζ : IsPrimitiveRoot ζ ℓ) (hζA : ζ ∈ A)
+    (hm0 : m ≠ 0) (hα : α ^ ℓ = algebraMap ℚ (AlgebraicClosure ℚ) m) {n : ℕ}
+    (hn : n ≤ finrank ↥A ↥(IntermediateField.adjoin ↥A ({α} : Set (AlgebraicClosure ℚ)))) :
+    n * finrank ℚ ↥A ≤ finrank ℚ ↥(A ⊔ radicalField ℓ ({m} : Finset ℚ)) := by
+  have key := Module.finrank_mul_finrank ℚ ↥A
+    ↥(IntermediateField.adjoin ↥A ({α} : Set (AlgebraicClosure ℚ)))
+  rw [sup_radicalField_singleton_eq_sup_adjoin hℓ hζ hζA hm0 hα,
+    ← IntermediateField.restrictScalars_adjoin_eq_sup]
+  show n * finrank ℚ ↥A
+    ≤ finrank ℚ ↥(IntermediateField.adjoin ↥A ({α} : Set (AlgebraicClosure ℚ)))
+  rw [← key, mul_comm n]
+  exact Nat.mul_le_mul le_rfl hn
 
 end Degree
 
