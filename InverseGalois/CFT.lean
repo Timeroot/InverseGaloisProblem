@@ -639,6 +639,7 @@ import InverseGalois.CFT.Tate.FamilySigma
 import InverseGalois.CFT.Tate.FamilyTensor
 import InverseGalois.CFT.Tate.FamilyTensorFinsupp
 import InverseGalois.CFT.Tate.FamilyTensorFull
+import InverseGalois.CFT.Tate.FamilyTensorLocal
 import InverseGalois.CFT.Tate.FamilyTensorOrbit
 import InverseGalois.CFT.Tate.FamilyTorsion
 import InverseGalois.CFT.Tate.FamilyTrunc
@@ -4434,6 +4435,15 @@ it that are available here.
   rank over the prime field are the sections of the tensored family**, and **the complete
   cohomology of those tensored sections is the product over the orbits of the local
   contributions** — which is the group of ideles, place by place, in its decomposition groups.
+* `InverseGalois.CFT.Tate.FamilyTensorLocal` twists the detection of a class at the indices.  Since
+  the coefficients pass through the sections, a class of the first cohomology of the twisted
+  sections is a class of the sections of the twisted family, and the coboundary theorem for families
+  applies to it; the local hypothesis it needs is the given one, because evaluation at an index
+  commutes with tensoring and the twisted family at a fixed index is the module there tensored with
+  the restricted coefficients.  So **a class of the first cohomology of the twisted sections
+  vanishes as soon as, at every index, its restriction to the stabiliser followed by evaluation
+  there vanishes** — the local-global statement the ideles need, with no isomorphism onto a
+  coinduced module anywhere in it.
 * `InverseGalois.CFT.Tate.FamilyTensorFinsupp` reads the support of such a tensored section.  The
   comparison with the sections of the tensored family is computed coordinatewise, so its value at
   an index is assembled from the values of the coordinates there and vanishes wherever all of them
