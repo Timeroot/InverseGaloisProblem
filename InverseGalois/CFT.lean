@@ -101,6 +101,7 @@ import InverseGalois.CFT.Brauer.TameOdd
 import InverseGalois.CFT.Brauer.TamePower
 import InverseGalois.CFT.Brauer.TameResidue
 import InverseGalois.CFT.Brauer.TameValue
+import InverseGalois.CFT.Brauer.TameUnramified
 import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
 import InverseGalois.CFT.Brauer.NormAdjust
@@ -6145,6 +6146,18 @@ it that are available here.
   congruent to a power of the chosen one is the class, modulo the integers, of the opposite of that
   power divided by the exponent**, and the two normalisations of the uniformiser and the two orders
   of the arguments give the three remaining signs.
+* `InverseGalois.CFT.Brauer.TameUnramified` evaluates the symbol against an argument whose valuation
+  the exponent divides.  The symbol is killed by the exponent, so a power of a uniformiser whose
+  exponent is a multiple of the exponent pairs trivially with everything, and such an argument may
+  be replaced by the unit of the valuation ring left after dividing by the matching power of a
+  uniformiser without changing any of its symbols.  Splitting the second argument the same way
+  leaves the symbol of two units of the valuation ring, which is trivial, so **the tame norm residue
+  symbol of an element whose valuation the exponent divides, against anything, is its symbol against
+  a uniformiser raised to the divided valuation of the second argument**.  Multiplying by a power of
+  a uniformiser changes neither the symbol nor the property of being a power, and the kernel of the
+  symbol of a unit of the valuation ring against a uniformiser is exactly the powers, so **that
+  symbol against a uniformiser is trivial exactly when the element is a power**, and reading it is a
+  faithful reading of the class of the element.
 * `InverseGalois.CFT.Local.RatUniformiser` supplies that local datum over the rationals.  The
   ramification index of a finite place of the rationals is at most the degree of the rationals over
   themselves and is positive, so **a finite place of the rationals is unramified over the rational

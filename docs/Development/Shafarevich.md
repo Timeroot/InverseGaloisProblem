@@ -14080,6 +14080,104 @@ cost — is therefore avoided entirely.
 
 ---
 
+## 1.29 Status (2026-09-06, latest) — **the unramified half of the tame symbol: one uniformiser sees everything**
+
+`InverseGalois/CFT/Brauer/TameUnramified.lean`, 4 theorems, no new hypotheses.
+`lake build InverseGalois.CFT.Brauer.TameUnramified` = 8451 jobs / 16 s; full root build =
+**9759 jobs**, 0 warnings, 0 errors, 0 sorries, 0 axioms beyond the three.
+
+### (a) Why this, and why now
+
+SW Thm 13 (`sw.txt:657`) closes with a six-step Hilbert-symbol chain (`sw.txt:720`ff.).  Every
+symbol in that chain has an **unramified** left argument — the class `a` produced by the upper line
+(`exists_sUnitClass_mul_eq_unramified`, §1.26) lies in `localUnramified v n`, i.e. `n ∣ v(a)`.  The
+chain then compares the symbol of that fixed `a` against *different* second arguments, at
+*different* places.  For that comparison to be usable one needs the symbol against an unramified
+argument to be a **single number** — one value in `μ_n` per place — with the dependence on the
+second argument reduced to an exponent.  That is exactly what this module supplies.
+
+Note what this *replaces*.  The obvious way to get "a single number" is the power residue
+character: `TameResidue`/`TamePower` compute the tame symbol in terms of the power residue exponent
+`j` of a unit of the valuation ring.  That route works, but it drags in the whole `j`-exponent
+apparatus (a chosen root, an order-one-less-than-the-residue-count subgroup, the class modulo the
+integers) and every statement then has to be transported through it.  **Evaluating instead against
+a uniformiser is the same information with none of the apparatus**: it lands directly in the group
+where the symbol already lives, and the two theorems below say it is complete and faithful.  Call
+it the *value at Frobenius*, since for an unramified class that is what the symbol against a
+uniformiser is.
+
+### (b) The two headline statements
+
+Fix a complete discretely valued field `K` with perfect residue field of characteristic `p`, a
+primitive `n`-th root of unity `ζ ∈ K` with `n` prime and `p ∤ n`, a generator `m` of the value
+group, and a uniformiser `π` with `unitValDiv hm π = 1`.  Write `v(x) := unitValDiv hm x`.  For
+`a : Kˣ` with `n ∣ v(a)`:
+
+```
+localSymbol hres hm hζ a b = localSymbol hres hm hζ a π ^ v(b)        -- for every b
+localSymbol hres hm hζ a π = 1  ↔  ∃ c : Kˣ, c ^ n = a
+```
+
+So on `localUnramified v n` the symbol is *determined by* and *determines* the class: it factors
+through a single injective evaluation into `μ_n`, and against an arbitrary second argument it is
+that value raised to `v(b)`.
+
+### (c) The proof, in one paragraph
+
+The symbol is killed by `n` (`pow_localSymbol_eq_one`) and is multiplicative in each argument
+(`localSymbol_zpow_left`), so `π^{ns}` pairs trivially with everything —
+`localSymbol_zpow_eq_one_of_dvd`.  Hence for `n ∣ v(a)` one may replace `a` by
+`a · π^{-v(a)}`, which is a *unit of the valuation ring*
+(`valued_mul_zpow_uniformiser`), without changing any symbol —
+`localSymbol_mul_zpow_uniformiser`.  Split the second argument the same way, `b = π^{v(b)} · w`
+with `w` a unit of the valuation ring; the unit-against-unit term dies
+(`localSymbol_eq_one_of_valued_eq_one`, which is where `n` prime and `p ∤ n` are consumed) and only
+the `π^{v(b)}` term survives.  For the kernel, `localSymbol_unit_uniformiser_eq_one_iff`
+(`TameEvaluation.lean:219`) already says a unit of the valuation ring pairs trivially with `π` iff
+it is an `n`-th power; multiplying by `π^{v(a)} = π^{sn} = (π^s)^n` changes neither side, which is
+the whole content of the two `rintro` branches.
+
+### (d) Declarations
+
+| name | statement |
+| --- | --- |
+| `localSymbol_zpow_eq_one_of_dvd` | `n ∣ i → (a^i, b) = 1` |
+| `localSymbol_mul_zpow_uniformiser` | `n ∣ v(a) → (a, c) = (a·π^{-v(a)}, c)` |
+| `localSymbol_eq_zpow_uniformiser` | `n ∣ v(a) → (a, b) = (a, π)^{v(b)}` |
+| `localSymbol_uniformiser_eq_one_iff_of_dvd` | `n ∣ v(a) → ((a, π) = 1 ↔ a ∈ (Kˣ)^n)` |
+
+The uniformiser is a *hypothesis* (`hπ : v(π) = 1`), not a choice made inside the module; existence
+is `exists_unitValDiv_eq_one` (`Brauer/TameSymbol.lean:54`), and the number-field wrapper will pin
+one per place.  Nothing here is stated at the level of `localClasses`; the descent to classes is
+immediate from the second theorem but belongs with the per-place wrapper, not here.
+
+### (e) Findings
+
+* **2068 (LEAN).** In `localSymbol_uniformiser_eq_one_iff_of_dvd`'s `mpr` branch, after `neg_mul`
+  the goal carries `π ^ (-(s * n))` while the `hπs : π^(s*n) = π^(v a)` rewrite is looking for the
+  *positive* exponent and silently fails to fire.  The fix is not a better `conv` but a different
+  route: `rw [..., neg_mul, hs, mul_comm (n : ℤ) s]` closes it, i.e. push the divisibility witness
+  `hs : v(a) = n * s` in and commute, rather than pulling `hπs` out.  Generic lesson: when a
+  `zpow` rewrite is blocked by a `neg`, rewrite the *exponent's definition* instead of the power.
+* **2069 (BUILD).** `lake build InverseGalois.CFT.Brauer.TameUnramified` = 8451 jobs / 16 s; the
+  full root build with it = **9759 jobs**.  The Tame block of imports in `CFT.lean` (now lines
+  98–104) is in narrative, not alphabetical, order; the new module goes at its end, before
+  `Brauer.LocalUnramified`.
+
+### (f) Routes rejected here
+
+* Routing the unramified evaluation through the power residue character (`TameResidue`/`TamePower`)
+  — see (a): same information, far more apparatus, and every downstream statement would have to
+  carry the `j`-exponent normalisation and its two sign conventions.
+* Stating the evaluation as a `MonoidHom localUnramified v n → μ_n` in this module.  The target
+  group of `localSymbol` is stated in terms of the local datum `hres`/`hm`/`hζ`, so a bundled
+  homomorphism here would have to fix that datum before the number-field wrapper picks it; the
+  wrapper is where the bundling belongs.
+* Dropping the primality of `n`.  `localSymbol_eq_one_of_valued_eq_one`
+  (`Brauer/LocalSymbolUnits.lean:142`) needs it, and Thm 13 only ever uses prime `n = p`.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
