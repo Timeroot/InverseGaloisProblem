@@ -446,6 +446,7 @@ import InverseGalois.CFT.PiDual
 import InverseGalois.CFT.PiIndex
 import InverseGalois.CFT.PoitouTate.CupDual
 import InverseGalois.CFT.PoitouTate.Dual
+import InverseGalois.CFT.PoitouTate.ShaTate
 import InverseGalois.CFT.PrimeProductSquare
 import InverseGalois.CFT.Profinite.Cochain
 import InverseGalois.CFT.Profinite.Coeff
@@ -5439,6 +5440,17 @@ it that are available here.
   is the Brauer group, so **the local invariants of the pairing of a class with a dual class
   multiply to one over all places** — a product formula of which the one for the power residue
   symbol is the case where the module and its dual are both the roots of unity.
+* `InverseGalois.CFT.PoitouTate.ShaTate` reads the everywhere locally trivial classes as characters
+  of complete cohomology.  A class of the first cohomology dying on every decomposition subgroup is
+  inflated from the finite Galois level trivialising the coefficients, and inflation from a level
+  is injective; on a finite group with the discrete topology smoothness is no condition, so the
+  cohomology of the level is the ordinary cohomology of the additive copy of the coefficients,
+  which is complete cohomology in degree one.  Thus **the everywhere locally trivial classes sit
+  inside the complete cohomology of the level.**  When the coefficients are the maps of a finite
+  module into a finite cyclic one killing it, that complete cohomology is dual to complete
+  cohomology in degree minus two of the maps the other way and the rational circle is injective, so
+  **every character of the everywhere locally trivial classes is the pairing against a single class
+  in degree minus two.**
 * `InverseGalois.CFT.Profinite.Hilbert90` is the arithmetic input.  A smooth cocycle is constant on
   the cosets of the subgroup fixing a finite Galois level and its values are fixed by that
   subgroup, hence lie in the level, so choosing a preimage of each automorphism of the level turns
