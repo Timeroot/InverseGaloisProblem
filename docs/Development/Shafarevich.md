@@ -12023,6 +12023,91 @@ with (ii-a) now decomposed into four steps, of which **step 2 is done**:
 
 ---
 
+## 1.12 Status (2026-09-06, later) — **gap (ii-a) is closed**: an everywhere locally trivial Kummer class dies in the ideles
+
+### (a) Two modules landed (commit `b350215`, full root build **9738 jobs**, clean)
+
+* **`Kummer/SupKummerData.lean`** — Kummer data ascend.  `isKummerData_of_le (hK : IsKummerData ↥K
+  Ω M ιK p) (hKL : K ≤ L) (hroot : ∀ x : Ωˣ, ∃ y : Ωˣ, y ^ p = x) : IsKummerData ↥L Ω M
+  ((unitsInclusion hKL).comp ιK) p`, with the action of `Gal(Ω/↥L)` on `M` taken to be the trivial
+  one (`trivialMulDistribMulAction`).  Only one clause has content: a primitive `p`-th root of
+  unity of `K` stays primitive in `L`, so every `p`-th root of unity of `L` is one of its powers and
+  therefore already in the image of `ιK`.  Also `unitsInclusion`, `injective_unitsInclusion`,
+  `algebraMap_unitsInclusion`.
+* **`Units/KummerIdele.lean`** — the assembly.  Three theorems:
+  `tateMap_tateRes_kummerFiniteH1Equiv_adic_eq_zero`,
+  `tateMap_tateRes_kummerFiniteH1Equiv_infinite_eq_zero`, and the capstone
+  `tateMap_globalUnitsToIdele_kummerFiniteH1Equiv_eq_zero`:
+
+  ```lean
+  theorem tateMap_globalUnitsToIdele_kummerFiniteH1Equiv_eq_zero
+      (eW : ↥W.V ≃+ (Fin dW → ZMod p))
+      {z : SmoothH1 (Gal(Ω/k) ⧸ K.fixingSubgroup) (SmoothH1 ↥K.fixingSubgroup E)}
+      (hz : z ∈ sha1Level E K.fixingSubgroup hop (decompositionSubgroups k Ω)) :
+      tateMap (tensorHomLeft W (globalUnitsToIdele k ↥K)) 1
+        (Multiplicative.toAdd (kummerFiniteH1Equiv hK htriv htrivEK α hEp hfix
+          (tensorObj (globalUnitsRep k ↥K) W) φ hφ hop z)) = 0
+  ```
+
+That is exactly `Ш_dec ⊆ Ш_idelic` read through brick 4's identification, so **gap (ii-a) is
+closed** and steps 1b, 1c and 3 of §1.11(d) are all done.
+
+### (b) How the place argument runs
+
+For a finite place `v` of `K`: `Ideal.exists_ideal_over_prime_of_isIntegral` produces a prime `P`
+of `𝓞 Ω` above `v` (gotcha 1848); `fixingSubgroup_fixedField_of_mem_decompositionSubgroups`
+(`Units/DecompositionClosed.lean`) writes `stabilizer Gal(Ω/k) P` as `F.fixingSubgroup` for an
+intermediate field `F`; the local argument then lives on the compositum `K ⊔ F`, where
+`isKummerData_of_le` supplies the Kummer data, `surjective_tensor_sup_of_stabilizer_ideal`
+(`Kummer/SupPowSurjective.lean`) the surjectivity and
+`tensor_adicUnitHom_eq_zero_of_tensor_sup_eq_zero` (`Kummer/DecompositionLocalPower.lean`) the
+kernel condition, and `globalUnitsAdicLocalHom_apply` (`Units/GlobalUnitsLocal.lean`) identifies the
+evaluation at `v` with `adicUnitHom v ⊗ id`.  All of it is handed to
+`tateMap_tateRes_kummerFiniteH1Equiv_eq_zero_of_tensor_eq_zero`
+(`Profinite/KummerLocalTate.lean:246-351`).  The archimedean twin is structurally identical, with
+`NumberField.InfinitePlace.comap_surjective` in place of the prime-above idiom.
+
+The two local vanishings feed `tateMap_globalUnitsToIdele_eq_zero`
+(`Units/GlobalUnitsLocal.lean:135`).
+
+### (c) Gotchas
+
+* **1849 (decisive).**  Writing `stabilizerQuotientEquivPrime ↥K hPunder` (the *coerced* type)
+  where the lemma wants the `IntermediateField k Ω` itself does **not** give a type error: Lean
+  grinds through unification and reports `(deterministic) timeout at whnf` **at the `theorem`
+  line**, even at `maxHeartbeats 1000000`.  Gotcha 29 again — a whnf timeout on a declaration that
+  mentions an `IntermediateField`-valued lemma is very likely a `↥E`-vs-`E` slip.
+* **1850 (recipe).**  To localise a whnf timeout in a long tactic proof: copy the file into
+  `.scratch/`, truncate the proof with `sorry`, and typecheck with
+  `time env -u LD_LIBRARY_PATH lake env lean -Dlinter.style.multiGoal=true .scratch/<f>.lean`.
+  Re-adding the `have`s one at a time isolates the offender in a handful of ~50 s iterations.
+* **1851 (Mathlib).**  `IsPrimitiveRoot.isUnit` takes `p ≠ 0`, not `0 < p`.
+* **1852 (instance).**  The `MulAction Gal(Ω/k) (Ideal (𝓞 Ω))` behind `stabilizer Gal(Ω/k) P` is the
+  *pointwise* action, so a file writing that needs `open scoped Pointwise`.
+* **1853 (Mathlib).**  `NumberField.InfinitePlace.comap_surjective (k := ↥L) (K := Ω)` needs
+  `[Algebra.IsAlgebraic ↥L Ω]`, from `Algebra.IsAlgebraic.tower_top (K := k) (L := ↥L) (A := Ω)`.
+* **1854 (Mathlib).**  `H1 A` is an abbrev for `groupCohomology A 1` (`LowDegree.lean:927`), so
+  `kummerFiniteH1Equiv`'s codomain `Multiplicative ↥(H1 B)` feeds `tateRes`/`tateMap` directly.
+* **1855 (build cost).**  `lake build InverseGalois.CFT.Units.KummerIdele` = 8391 jobs;
+  `…Kummer.SupKummerData` = 8037 jobs.
+
+### (d) Where Shafarevich stands
+
+> ` Ĥ^{-2}(G, W)  ↠  Ш¹_idelic(G, K^× ⊗ W)`  — brick 3, conditional on `HasIdeleClassNakayamaSpan`
+> ` Ш¹(G, K^× ⊗ W) ≅ sha1Level`              — brick 4, done
+> ` sha1Level = ⊥  ⇒  Ш²(k,E) ⊆ inf`         — brick 5, done
+> ` Ĥ^{-2}(G, W) = 0` after shrinking `G`    — Prop 6, done
+> ` Ш_dec = Ш_idelic`                        — **(ii-a) and (ii-b) both done**
+
+so **`HasIdeleClassNakayamaSpan` (§1.00, gap (i)) is the only mathematical content still missing**
+from row 5.  The reciprocity identity it names is
+`ker Left_P = Σ_w cor_w (ker Left_w)`, and the obstacle recorded at §0.90/§1.00 is that
+`baseFundamentalClass` (`Units/BaseTate.lean:60`) is `.choose`-defined, so it must first be rebuilt
+invariant-theoretically out of `localInvariantHom` plus reciprocity
+(`Brauer/TotalInvariant.lean`, `Brauer/BaseReciprocity.lean`).
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
