@@ -12277,6 +12277,128 @@ one-dimensional `T = Hom(μ_p, 𝔽_p)`.
 
 ---
 
+## 1.14 Status (2026-09-06, later) — the brick-3/4/5 route is **doubly** broken; the Poitou–Tate chain, costed brick by brick; one brick landed
+
+### (a) The second, independent reason the current route cannot finish
+
+§1.13 refuted the *hypothesis* `HasIdeleClassNakayamaSpan`.  Even granting it, the route dies a
+second time, and the second death is not repairable by weakening the span.
+
+Look at what `KummerShaBot.lean` actually needs.  Both
+`kummerFiniteH1Equiv_eq_one_of_span` and `sha1Level_eq_bot_of_span` take
+
+```
+(hzero : ∀ y : ↥(tateModule W (-2)), y = 0)
+```
+
+— the **total vanishing** of `Ĥ^{-2}(G, W)`.  That is what makes the argument work: the class dies
+in the ideles, Tate–Nakayama produces it from `Ĥ^{-2}(G,W)`, and there is nothing there for it to
+be produced from.
+
+Schmidt–Wingberg's Proposition 6 cannot supply that.  Prop 6 (see §1.13(g)) makes a **prescribed
+finite list** `x₁, …, x_t` of classes die, at the cost of raising `m`; it never makes the whole
+group `Ĥ^{-2}(G, E(m,τ) ⊗ T)` vanish, and it cannot, because `F(m)` grows with `m` and so does its
+cohomology.  So `hzero` is not a hypothesis SW's construction is able to discharge, and no
+adjustment of the *span* hypothesis changes that: the two hypotheses sit in different arguments.
+
+Why SW's own route does not have this problem: it never asks for total vanishing.  Poitou–Tate
+gives a **surjection**
+
+```
+Ĥ^{-2}(G, E(-1))  ↠  Ш²(k, E)
+```
+
+so the single obstruction class `ε ∈ Ш²(k,E)` of the embedding problem has a **single** preimage
+`x ∈ Ĥ^{-2}(G, E(-1))`, and Prop 6 is invoked with **`t = 1`**.  One prescribed class, killed by
+one enlargement of `m`.  That is the whole reason the duality is in SW's proof at all.
+
+**Conclusion.**  Bricks 3/4/5 (`Ĥ^{-2}(G,W) ↠ Ш¹(G, K^× ⊗ W)` → `sha1Level = ⊥` →
+`Ш²(k,E) ⊆ inf`) are abandoned *as a route to* `FrattiniKernelEP`.  The Lean statements stay —
+they are true theorems under their hypotheses, and brick 5 in particular is reused below — but the
+plan of discharging their hypotheses is dropped.  Poitou–Tate is unavoidable.
+
+### (b) The Poitou–Tate chain, brick by brick
+
+Write `G = Gal(K/k)`, `E` a finite elementary abelian `p`-group with a `G_k`-action factoring
+through `G`, and `E′ = Hom(E, μ_p)` its Cartier dual.  The target is the surjection above.  It
+decomposes into four independent steps:
+
+1. **Global duality** `Ш²(k, E) ≅ Ш¹(k, E′)^∨`.  *Missing — the monster.*  This is Poitou–Tate
+   proper.  The repository already has the pairing that must induce it: `CFT/PoitouTate/CupDual.lean`
+   builds `cupDual : H¹(G_k, E) → H¹(G_k, E′) → H²(G_k, μ_p)`, proves it preserves local
+   triviality on both sides, and proves the product formula
+   `∏_v inv_v ⟨·,·⟩_v = 1` for the unit symbols.  What is missing is exactness/perfectness, which
+   is where Tate's local duality and a compactness argument enter.
+2. **`Ш¹(k, E′) ↪ H¹(G, E′)`.**  Cheap.  `Ш¹(K, E′) = 0` for `E′` a finite module with trivial
+   `G_K`-action, by Chebotarev (a class of `Hom(G_K, E′)` vanishing on every decomposition group
+   vanishes on every Frobenius, hence on a dense set).  Then inflation–restriction.
+3. **`H¹(G, E′) ≅ Ĥ^{-2}(G, E(-1))^∨`.**  **Already a theorem.**  `Tate.tateDualEquiv`
+   (`CFT/TateCohomology/DualityShift.lean:373`) gives, for any finite `G` and any `p`-torsion
+   `A`, `Ĥⁿ(G, Hom(A, C)) ≅ Ĥ^{-n-1}(G, A)^∨`.  Take `C = 𝔽_p`, `A = E(-1)`, `n = 1`.
+4. **Dualise back.**  Finite `𝔽_p`-vector spaces, formal.
+
+The degree-2 analogue of step 2 — `Ш²(k,E) ⊆ ker(res : H²(k,E) → H²(K,E))` — is *also* needed,
+both to make `Ш²(k,E)` a finite-group-cohomology object and because it is precisely the hypothesis
+`hb` of brick 5 (`exists_comapH2_eq_of_sha1Level_eq_bot`, `Profinite/TransgressionInflate.lean:277`,
+which asks the cocycle to be a coboundary on `π.ker`).  That is what landed today.
+
+### (c) Landed: an everywhere locally trivial class with split finite coefficients dies over the splitting field
+
+Two files.
+
+`InverseGalois/CFT/Profinite/PiTwo.lean` (new) is the degree-two half of `Profinite/Pi.lean`:
+`IsSmooth₂.apply`, `isSmooth₂_pi_iff`, `isMulCocycle₂_pi_iff`, `smoothH2PiHom`,
+`smoothH2PiHom_injective` / `_surjective`, `smoothH2PiEquiv`, `coeffH2Equiv`, `coeffH2_id`,
+`coeffH2_comp`, and the two that make the whole thing usable against `sha2`:
+
+```lean
+theorem resH2_coeffH2 (H : Subgroup G) (x : SmoothH2 G M) :
+    resH2 H (coeffH2 φ hφ x) = coeffH2 φ _ (resH2 H x)
+
+theorem coeffH2_mem_sha2 {S : Set (Subgroup G)} {x : SmoothH2 G M} (hx : x ∈ sha2 M S) :
+    coeffH2 φ hφ x ∈ sha2 N S
+```
+
+Both are `rfl` after destructuring the class into a cocycle: restriction and a coefficient map are
+composition of the cocycle with something, on the source and on the target respectively.  Note that
+injectivity of `smoothH2PiHom` needs `Fintype ι`, unlike degree one — in degree one the primitive
+of a coboundary is an *element* of the coefficients, in degree two it is a *cochain*, and a family
+of smooth cochains is smooth only for a finite family.
+
+`InverseGalois/CFT/Units/DecompositionRestrict.lean` gains
+
+```lean
+theorem eq_one_of_mem_sha2_of_mulEquivPi_intermediate
+    (hπ : ∀ (g : Gal(Ω/K)) (e : E), g • e = galRestrictScalarsHom k K Ω g • e)
+    {n : ℕ} [NeZero n] {ζ : K} (hζ : IsPrimitiveRoot ζ n)
+    (htrivE : ∀ (g : Gal(Ω/K)) (e : E), g • e = e)
+    (htrivM : ∀ (g : Gal(Ω/K)) (m : M), g • m = m)
+    {J : Type*} [Fintype J] (α : E ≃* (J → M))
+    {ι : M →* Kˣ} (hιinj : Function.Injective ι) (hιpow : ∀ m : M, ι m ^ n = 1)
+    (hιsurj : ∀ y : Kˣ, y ^ n = 1 → ∃ m : M, ι m = y)
+    (z : SmoothH2 Gal(Ω/k) E) (hz : z ∈ sha2 E (decompositionSubgroups k Ω)) :
+    comapH2 (galRestrictScalarsHom k K Ω) hπ (isSmoothHom_galRestrictScalarsHom k K Ω) z = 1
+```
+
+which is exactly `Ш²(k, E) ⊆ ker(res_{G_K})` for a finite `E` of exponent `n` split by `K ∋ μ_n`.
+The proof is four lines of content: restrict the class to `G_K` (it stays everywhere locally
+trivial, `comapH2_mem_sha2_decompositionSubgroups`), transport along `α` (which is `G_K`-equivariant
+because *both* actions are trivial), project to a factor, and apply `eq_one_of_mem_sha2` — whose
+first consumer this is.  `smoothH2PiHom_injective` puts the factors back together.
+
+This is the first arithmetic input to the Poitou–Tate chain that the repository can prove outright,
+and it is reusable: it is simultaneously step 2′ of §1.14(b) and hypothesis `hb` of brick 5.
+
+### (d) Where Shafarevich stands
+
+Unchanged from §1.12(d) except: rows 5 and 8 are now understood to be *the same missing thing*
+(global duality), row 5's Tate–Nakayama formulation is dead (§1.13, §1.14(a)), and the chain in
+§1.14(b) is the replacement, with steps 3 and 4 already done and step 2′ done today.  Step 1 —
+Poitou–Tate proper — is the sole remaining mathematical wall between the repository and
+unconditional Shafarevich for solvable groups.  Everything nilpotent is complete and unconditional.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —

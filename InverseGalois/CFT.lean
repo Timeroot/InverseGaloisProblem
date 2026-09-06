@@ -475,6 +475,7 @@ import InverseGalois.CFT.Profinite.KummerTransport
 import InverseGalois.CFT.Profinite.KummerTwist
 import InverseGalois.CFT.Profinite.KummerTwo
 import InverseGalois.CFT.Profinite.Pi
+import InverseGalois.CFT.Profinite.PiTwo
 import InverseGalois.CFT.Profinite.Quotient
 import InverseGalois.CFT.Profinite.QuotientAction
 import InverseGalois.CFT.Profinite.Krull
@@ -5455,6 +5456,16 @@ it that are available here.
   coefficient map acts on cochains by composition, so **the passage to cohomology respects
   composition, the identity and — the coefficients being abelian — pointwise multiplication of
   coefficient maps**, and therefore carries a power of the identity to that power of the class.
+* `InverseGalois.CFT.Profinite.PiTwo` reads the second cohomology of a product the same way.  The
+  cocycle identity is an equation between values, so it holds in a product exactly when it holds in
+  every factor, and for a finite family smoothness is again smoothness factor by factor; where the
+  finiteness is spent a second time is injectivity, because a class dying in every factor is a
+  family of coboundaries and the one cochains they come from have to be assembled into a single
+  smooth one cochain.  So **the second cohomology of a finite product of coefficients is the
+  product of the second cohomologies**, and transport along an isomorphism of the coefficients
+  again carries a class to a family of classes.  Restriction to a subgroup commutes with a map of
+  the coefficients — both are composition of the cocycle with something — so **a map of the
+  coefficients preserves being everywhere locally trivial**.
 * `InverseGalois.CFT.Profinite.Twist` puts the coefficients back together, and is the shape in
   which Kummer theory reaches a lifting problem.  The coefficients of such a problem are a finite
   module killed by a prime, which as an abstract group is a product of copies of the roots of
@@ -5703,7 +5714,11 @@ it that are available here.
   a prime of the ring of integers and an archimedean place are the same objects over either base,
   so **a decomposition subgroup over the intermediate field sits inside one over the base.**  Hence
   an everywhere locally trivial class of the second cohomology with roots of unity coefficients
-  **dies as soon as one passes to a field containing a primitive root of unity.**
+  **dies as soon as one passes to a field containing a primitive root of unity.**  A finite module
+  on which the group over the intermediate field acts trivially, and which is killed by the order
+  of the roots of unity, is a product of copies of them; reading the class factor by factor gives
+  the same conclusion there, so **an everywhere locally trivial class with coefficients in a
+  finite module split by the intermediate field dies over that field.**
 * `InverseGalois.CFT.Brauer.CyclicNormResidue` composes the invariant of a local field with the
   cyclic algebra construction: **the norm residue symbol of a cyclic extension of a local field.**
   The norm index of such an extension is the degree, whatever the ramification, so **its relative
