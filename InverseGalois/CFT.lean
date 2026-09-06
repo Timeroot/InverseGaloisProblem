@@ -839,6 +839,7 @@ import InverseGalois.CFT.Units.GaloisAction
 import InverseGalois.CFT.Units.GeneratingPrimes
 import InverseGalois.CFT.Units.GlobalFundamental
 import InverseGalois.CFT.Units.GlobalTate
+import InverseGalois.CFT.Units.GlobalUnitsLocal
 import InverseGalois.CFT.Units.HasseNorm
 import InverseGalois.CFT.Units.Herbrand
 import InverseGalois.CFT.Units.Idele
@@ -4533,6 +4534,16 @@ it that are available here.
   gives **a class of the first cohomology of the twisted ideles that is trivial in every
   decomposition subgroup is trivial** — the local-global statement in the form the Shafarevich
   tower consumes, with no isomorphism onto a coinduced module used anywhere along the way.
+* `InverseGalois.CFT.Units.GlobalUnitsLocal` reads the units of the field themselves that way.  A
+  unit becomes an idele on the diagonal and an idele has a component at every place, and the whole
+  passage from the one to the other is transparent: the diagonal is defined componentwise, the
+  ideles sit inside the product of the local unit groups by inclusion, each half of that product is
+  a projection, and evaluating a section at an index is evaluation.  So **the twisted units read in
+  the decomposition subgroup of a place and evaluated there are the embedding of the units into the
+  completion, tensored with the identity of the coefficients** — a map the comparison of a
+  decomposition subgroup with a completion knows how to annihilate — and chaining that with the
+  previous file gives **a class of the first cohomology of the twisted units whose local class
+  vanishes at every place dies in the ideles.**
 * `InverseGalois.CFT.Tate.FamilyResGroup` observes that all of this is available on a subgroup of
   the acting group with nothing to prove.  A subgroup moves the index set by the restricted action
   and transports the modules by the same isomorphisms, so it acts on the same family; the sections
