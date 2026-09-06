@@ -12337,6 +12337,10 @@ decomposes into four independent steps:
    `A`, `Ĥⁿ(G, Hom(A, C)) ≅ Ĥ^{-n-1}(G, A)^∨`.  Take `C = 𝔽_p`, `A = E(-1)`, `n = 1`.
 4. **Dualise back.**  Finite `𝔽_p`-vector spaces, formal.
 
+*(Steps 3 and 4 were rebuilt and landed as a single unconditional brick on 2026-09-06 — see §1.15.
+The `tateDualEquiv` of step 3 turned out to be unusable as stated, and the replacement pairing is
+built out of `tateCharacterEquiv` instead.)*
+
 The degree-2 analogue of step 2 — `Ш²(k,E) ⊆ ker(res : H²(k,E) → H²(K,E))` — is *also* needed,
 both to make `Ш²(k,E)` a finite-group-cohomology object and because it is precisely the hypothesis
 `hb` of brick 5 (`exists_comapH2_eq_of_sha1Level_eq_bot`, `Profinite/TransgressionInflate.lean:277`,
@@ -12396,6 +12400,135 @@ Unchanged from §1.12(d) except: rows 5 and 8 are now understood to be *the same
 §1.14(b) is the replacement, with steps 3 and 4 already done and step 2′ done today.  Step 1 —
 Poitou–Tate proper — is the sole remaining mathematical wall between the repository and
 unconditional Shafarevich for solvable groups.  Everything nilpotent is complete and unconditional.
+
+---
+
+## 1.15 Status (2026-09-06, later still) — steps 3 + 4 of the Poitou–Tate chain landed, unconditionally
+
+### (a) What is now a theorem
+
+Two new modules, both sorry- and axiom-free, both in the default build (root build **9742 jobs**,
+0 warnings):
+
+`InverseGalois/CFT/TateCohomology/Pontryagin.lean` — ℚ/ℤ-valued Pontryagin duality for finite
+abelian groups, from scratch:
+
+```lean
+theorem card_characterModule (A : Type*) [AddCommGroup A] [Finite A] :
+    Nat.card (CharacterModule A) = Nat.card A
+theorem bijective_evalDual [Finite M] : Function.Bijective (evalDual M)
+```
+
+plus `circleGen`, `card_circleTorsion`, `zmodCharacterEquiv`, `piCharacterEquiv`,
+`finite_characterModule`, `card_linearDual`, `finite_linearDual`, `injective_evalDual`.  The cyclic
+case is the torsion of `AddCircle (1 : ℚ)`, which is `zmultiples ((n:ℚ)⁻¹)`, of order exactly `n`;
+the general case is `AddCommGroup.equiv_directSum_zmod_of_finite'` plus a product formula for
+characters.  Recovery is then counting: evaluation is injective (a nonzero element is separated by
+some character, `CharacterModule.exists_character_apply_ne_zero_of_ne_zero`) and injective between
+equinumerous finite sets is bijective.
+
+Mathlib has **no** ℚ/ℤ-valued Pontryagin duality; `AddChar`/`Circle` duality is ℂ-valued and does
+not transfer, so this had to be built.
+
+`InverseGalois/CFT/TateCohomology/DualityFinite.lean` — the cohomological consequence:
+
+```lean
+def tateDualPairing (A : Rep ℤ G) [Finite ↥A.V] (n : ℤ) :
+    ↥(tateModule A n) ≃ₗ[ℤ]
+      (↥(tateModule (coeffDualObj A (AddCircle (1 : ℚ))) (-n - 1)) →ₗ[ℤ] AddCircle (1 : ℚ))
+
+theorem tateDualPairing_naturality (φ : A ⟶ B) (n : ℤ) (x) (z) :
+    tateDualPairing B n (tateMap φ n x) z
+      = tateDualPairing A n x (tateMap (coeffDualHom φ (AddCircle (1 : ℚ))) (-n - 1) z)
+
+theorem exists_tateDualPairing_eq (n : ℤ) {T : Type} [AddCommGroup T] [Module ℤ T]
+    (ι : T →ₗ[ℤ] ↥(tateModule (coeffDualObj A (AddCircle (1 : ℚ))) (-n - 1)))
+    (hι : Function.Injective ι) (χ : T →ₗ[ℤ] AddCircle (1 : ℚ)) :
+    ∃ x : ↥(tateModule A n), ∀ t : T, tateDualPairing A n x (ι t) = χ t
+```
+
+together with `doubleDualHom` (evaluation `A ⟶ (A^∨)^∨`), `doubleDualHom_naturality`,
+`isIso_doubleDualHom`, and `bijective_tateMap_of_comp`.
+
+### (b) Why it is stated this way
+
+Three design decisions, each forced.
+
+**Dualise the coefficients, not the Tate module.**  The naive step 4 — "`Ĥⁿ(A)` is finite, so
+double-dualise it" — needs finiteness of a *Tate module*, which the repository only ever obtains as
+a hypothesis.  Dualising at the level of the *representation* needs only `Finite ↥A.V`, which is
+free for the modules Shafarevich cares about (`E` is a finite elementary abelian `p`-group).  So
+`tateDualPairing` is `Ĥⁿ(A) ≅ Ĥ^{-n-1}(A^∨)^∨` obtained by transporting the isomorphism of
+representations `A ≅ (A^∨)^∨` through `tateMap` and composing with the already-proven
+`tateCharacterEquiv`.
+
+**Not `tateDualEquiv`.**  §1.14(b) step 3 named `Tate.tateDualEquiv`
+(`CFT/TateCohomology/DualityShift.lean:373`).  It is `.some`-defined — extracted from an
+existence statement — so it carries **no naturality whatsoever**, and naturality is exactly what
+the eventual argument needs (the pairing must intertwine `res`/`inf`).  The usable object is
+`tateCharacterEquiv` (`DualityDivisible.lean:207`) together with `tateCharacterEquiv_naturality`
+(`DualityNatural.lean`), which is what `tateDualPairing` is built from.
+
+**The realisation lemma is stated over an abstract injection, not a `Submodule`.**  See finding
+1904 below; it is also the more usable form, since `Ш¹(k,E′) ↪ H¹(G,E′)` arrives as an injection of
+a separately-defined object, not as a literal submodule.
+
+### (c) How it feeds rows 5/6
+
+With `n = -2` and `A = E(-1)`, `tateDualPairing` reads
+
+```
+Ĥ^{-2}(G, E(-1))  ≅  (Ĥ^{1}(G, E(-1)^∨))^∨ = H¹(G, E′)^∨
+```
+
+(`-(-2) - 1 = 1`), and `exists_tateDualPairing_eq`, fed the injection `Ш¹(k,E′) ↪ H¹(G,E′)` of step
+2, gives the **surjection**
+
+```
+Ĥ^{-2}(G, E(-1))  ↠  Ш¹(k, E′)^∨
+```
+
+which is exactly the left half of SW's `Ĥ^{-2}(G, E(-1)) ↠ Ш²(k,E)`.  The surjectivity comes from
+Baer (`baer_addCircle`), not from any counting, so no finiteness of `Ш¹` is needed.
+
+**What is left of the chain**, in dependency order:
+
+1. `E(-1)^∨ ≅ E′` as representations of `G` — the Cartier-duality bookkeeping identifying the
+   coefficient dual of the Tate twist with `Hom(E, μ_p)`.  Mechanical but not yet written.
+2. Step 2, `Ш¹(k,E′) ↪ H¹(G,E′)`.  Cheap: `eq_one_of_mem_sha1`
+   (`Units/InfiniteDecomposition.lean`) plus inflation–restriction (`Profinite/InfRes.lean`).
+3. Step 1, `Ш²(k,E) ≅ Ш¹(k,E′)^∨` — still the monster, still the sole wall.
+
+### (d) Findings
+
+* **1897.** `Nat.bijective_iff_injective_and_card [Finite β] (f : α → β) :
+  Bijective f ↔ Injective f ∧ Nat.card α = Nat.card β`, `Mathlib/SetTheory/Cardinal/Finite.lean:104`
+  (the `Fintype` version needs `[Fintype α] [Fintype β]`).
+* **1898.** `Module.Baer.extension_property (h) (f : M →ₗ[R] N) (hf : Injective f) (g : M →ₗ[R] Q) :
+  ∃ h, h ∘ₗ f = g`, `Mathlib/Algebra/Module/Injective.lean:371`.
+* **1899 (the ℤ-module instance diamond — the blocker).**  A declaration stated with only
+  `[AddCommGroup M]` silently commits to `AddCommGroup.toIntModule M`.  For `A : Rep ℤ G`, `↥A.V`
+  carries `A.V.isModule` instead.  The two are *propositionally* equal
+  (`AddCommMonoid.subsingletonIntModule`) but **not definitionally**, so `mkHom (evalDual ↥A.V)`,
+  `Action.mkIso (…).toModuleIso` and `exact bijective_evalDual ↥A.V` all fail with "application
+  type mismatch".  **Fix:** state such lemmas with an explicit `[Module ℤ M]` binder, and convert
+  `M →+ N` to `M →ₗ[ℤ] N` with `map_intCast_smul f ℤ ℤ n x`, never `AddMonoidHom.toIntLinearMap`
+  (which re-commits to `toIntModule`).
+* **1900.** `Mathlib/Algebra/Module/NatInt.lean`: `Int.cast_smul_eq_zsmul` (:172),
+  `AddCommGroup.uniqueIntModule` (:186), `AddCommMonoid.subsingletonIntModule` (:192),
+  `map_intCast_smul` (:197) — the last is the instance-polymorphic tool.
+* **1901 (duplicate).** `InverseGalois.CFT.Tate.intLinear` already exists at
+  `TateCohomology/PTorsionTrivial.lean:110`; a third copy of the idea is `intLinearOfAddHom` at
+  `TensorPi.lean:67`.  `Pontryagin.lean` imports `PTorsionTrivial` and reuses it, adding only the
+  missing `@[simp] intLinear_apply` and `intLinearEquiv`.
+* **1902.** `coeffDualObj` / `coeffDualHom` / `mkHom` do not consume `[Finite G]`, so sections
+  defining maps into `coeffDualObj` must omit it or `linter.unusedSectionVars` fires.
+* **1903.** After `LinearMap.ext fun f => …` with domain `↥(coeffDualObj A C).V`, the binder `f` is
+  not syntactically a function and `show f (A.ρ g v) = …` fails with "Function expected".  Ascribe
+  it: `fun (f : ↥A.V →ₗ[k] C) => …`.
+* **1904.** `Submodule ℤ X` triggers the same diamond as 1899 (`AddCommGroup.toIntModule ↥S` vs
+  `S.module`).  State realisation lemmas over an abstract `{T} [AddCommGroup T] [Module ℤ T]` with
+  an injective `ι`, not over a `Submodule`.
 
 ---
 

@@ -703,6 +703,7 @@ import InverseGalois.CFT.TateCohomology.DeltaRetract
 import InverseGalois.CFT.TateCohomology.DeltaShift
 import InverseGalois.CFT.TateCohomology.Duality
 import InverseGalois.CFT.TateCohomology.DualityDivisible
+import InverseGalois.CFT.TateCohomology.DualityFinite
 import InverseGalois.CFT.TateCohomology.DualityNatural
 import InverseGalois.CFT.TateCohomology.DualityShift
 import InverseGalois.CFT.TateCohomology.Exact
@@ -726,6 +727,7 @@ import InverseGalois.CFT.TateCohomology.PGroupInvariants
 import InverseGalois.CFT.TateCohomology.PGroupTrivial
 import InverseGalois.CFT.TateCohomology.PTorsionTrivial
 import InverseGalois.CFT.TateCohomology.Pair
+import InverseGalois.CFT.TateCohomology.Pontryagin
 import InverseGalois.CFT.TateCohomology.Product
 import InverseGalois.CFT.TateCohomology.Restrict
 import InverseGalois.CFT.TateCohomology.RestrictDelta
@@ -4685,6 +4687,28 @@ it that are available here.
   statement about an image needs, because a class lies in the image of a map exactly when every
   functional killing the image kills it, so a question about the image of one map turns into a
   question about the kernel of the map the duality attaches to it.
+* `InverseGalois.CFT.TateCohomology.Pontryagin` counts the characters of a finite commutative group
+  and recovers the group from them.  A cyclic group of an order has as many characters as the
+  circle of the rationals has elements killed by that order, and those elements are the multiples
+  of the reciprocal of the order, an element of exactly that order; so **a cyclic group has as many
+  characters as elements**, and since the characters of a finite product are the products of the
+  characters, the structure theorem for finite commutative groups gives the same count in general.
+  Reading an element as the functional "evaluate at me" is then injective, a nonzero element being
+  detected by some character, and an injection between finite sets of the same size is a bijection:
+  **a finite commutative group is the characters of its characters.**
+* `InverseGalois.CFT.TateCohomology.DualityFinite` turns that recovery into a statement about
+  complete cohomology.  The evaluation of a representation in the functionals on its functionals is
+  a map of representations, compatible with every map of representations, and for a representation
+  with finitely many vectors it is an isomorphism; complete cohomology carries an isomorphism to a
+  bijection, so composing with the duality identifies **the classes of a representation with
+  finitely many vectors, in any degree, with the characters of the classes of its functionals in
+  the complementary degree** -- and that identification too is compatible with every map of
+  representations.  Because the circle of the rationals receives every functional defined on a
+  submodule, the identification is more than a count: **every character of a submodule of the
+  complete cohomology of the functionals is the pairing against some class of the complementary
+  degree**, which is the form a duality argument takes when the submodule is the part of the
+  cohomology cut out by conditions at the places and one wants a single class inducing a prescribed
+  functional on it.
 * `InverseGalois.CFT.TateCohomology.TateClassCount` turns the classical hypotheses of Tate's
   theorem into a count.  **An element of a finite commutative group annihilated by exactly the
   multiples of the order of the group generates the group**, because the subgroup of its multiples
