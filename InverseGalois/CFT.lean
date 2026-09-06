@@ -897,6 +897,7 @@ import InverseGalois.CFT.Units.InflationDescent
 import InverseGalois.CFT.Units.InvariantUniformizer
 import InverseGalois.CFT.Units.KummerDecomposition
 import InverseGalois.CFT.Units.KummerIdele
+import InverseGalois.CFT.Units.KummerShaBot
 import InverseGalois.CFT.Units.LocalCoboundaryTwist
 import InverseGalois.CFT.Units.LocalDegreeLcm
 import InverseGalois.CFT.Units.LocalEmbedding
@@ -4565,6 +4566,14 @@ it that are available here.
   identification the criterion needs.  Feeding the two families of local vanishings to the
   detection theorem of the previous file gives **the class of the twisted units attached to an
   everywhere locally trivial Kummer class dies in the ideles.**
+* `InverseGalois.CFT.Units.KummerShaBot` draws the conclusion.  A class that dies in the ideles is
+  produced by the comparison of Tate and Nakayama out of the complete cohomology of the coefficients
+  three degrees lower, as soon as that comparison spans together with the classes coming from the
+  ideles; so if the coefficients have no complete cohomology in degree minus two there is nothing
+  for the class to be produced from, and it is trivial.  The reading of a locally trivial class over
+  the Galois group of the level is injective, so **the everywhere locally trivial classes of a level
+  are all trivial** under those two conditions — one a statement about the extension alone, the
+  other about the group alone, and neither about the lifting problem.
 * `InverseGalois.CFT.Tate.FamilyResGroup` observes that all of this is available on a subgroup of
   the acting group with nothing to prove.  A subgroup moves the index set by the restricted action
   and transports the modules by the same isomorphisms, so it acts on the same family; the sections
