@@ -623,6 +623,7 @@ import InverseGalois.CFT.Tate.FamilyCoboundaryOne
 import InverseGalois.CFT.Tate.FamilyCoind
 import InverseGalois.CFT.Tate.FamilyConst
 import InverseGalois.CFT.Tate.FamilyFree
+import InverseGalois.CFT.Tate.FamilyH1Local
 import InverseGalois.CFT.Tate.FamilyInvariant
 import InverseGalois.CFT.Tate.FamilyNorm
 import InverseGalois.CFT.Tate.FamilyOrbit
@@ -2029,6 +2030,13 @@ it that are available here.
   and corrected by the value of the cocycle at that group element.  Independence of the choice of
   that group element is exactly the local identity at the representative, so no transversal and no
   finiteness of any kind is needed.
+* `InverseGalois.CFT.Tate.FamilyH1Local` reads that as a statement about cohomology classes.
+  Evaluation at an index is a map of representations of any subgroup fixing the index, so a class
+  in the first cohomology of the sections has a local class at every index: restrict to the
+  stabiliser, then evaluate.  **A class all of whose local classes vanish is zero.**  This is
+  Shapiro's lemma in the only form the ideles need, and it costs nothing beyond the coboundary
+  theorem: the local hypothesis is consumed at the level of cochains, so no naturality statement
+  for a comparison of coinduced modules ever has to be proved.
 * `InverseGalois.CFT.Tate.CyclicAction` states that computation for a cyclic group acting
   transitively on a finite set, where the orbit–stabiliser theorem reads the Herbrand quotient of
   the free lattice as the order of the stabiliser of a point: the form in which the places of a
