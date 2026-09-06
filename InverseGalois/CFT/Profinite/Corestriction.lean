@@ -51,6 +51,18 @@ reducing a question about a group to the same question about a subgroup.
 * `InverseGalois.CFT.corH1`: **corestriction in the first cohomology.**
 * `InverseGalois.CFT.corH1_resH1`: **corestriction after restriction raises a class to the index of
   the subgroup.**
+* `InverseGalois.CFT.corCochain₂`: the average of a two cochain of the subgroup over the cosets.
+* `InverseGalois.CFT.isMulCocycle₂_corCochain₂`: **the average of a two cocycle is a two cocycle.**
+* `InverseGalois.CFT.corCochain₂_coboundary₂`: the average of a coboundary is the coboundary of the
+  average.
+* `InverseGalois.CFT.isSmooth₂_corCochain₂_of_isSmooth₂`: the average of a smooth two cochain is
+  smooth.
+* `InverseGalois.CFT.corH2`: **corestriction in the second cohomology.**
+* `InverseGalois.CFT.corAux₁`: the one cochain correcting the average of a restricted two cocycle.
+* `InverseGalois.CFT.corCochain₂_comap₂`: the average of a restricted two cocycle is the cocycle
+  raised to the number of cosets, times the coboundary of that correcting cochain.
+* `InverseGalois.CFT.corH2_resH2`: **corestriction after restriction raises a class of the second
+  cohomology to the index of the subgroup.**
 
 ## Tags
 
@@ -357,5 +369,343 @@ theorem hasOpenNormalCore_of_isOpen (hH : IsOpen (H : Set G)) : HasOpenNormalCor
     rwa [show m = n from Subtype.ext hmn] at hm
 
 end Compact
+
+
+/-! ### The average of a two cochain over the cosets -/
+
+section Two
+
+variable {G : Type*} [Group G] (H : Subgroup G) (σ : G ⧸ H → G)
+  (hσ : ∀ x : G ⧸ H, (σ x : G ⧸ H) = x)
+  {M : Type*} [CommGroup M] [MulDistribMulAction G M]
+
+include hσ
+
+/-- Multiplying a group element on the right by a member of a normal subgroup contained in the
+subgroup leaves the cosets alone. -/
+theorem smul_mul_right_of_mem {N : Subgroup G} (hN : N.Normal) (hNH : N ≤ H) (g : G) {n : G}
+    (hn : n ∈ N) (x : G ⧸ H) : (g * n) • x = g • x :=
+  (transversalElt_mul_right H σ hσ hN hNH g hn x).1
+
+/-- **The corestriction of a two cochain of the subgroup**: the product over the cosets of its
+values at the pairs of transversal elements, each carried back by the chosen representative. -/
+def corCochain₂ [Fintype (G ⧸ H)] (a : ↥H × ↥H → M) : G × G → M :=
+  fun p => ∏ x : G ⧸ H, σ ((p.1 * p.2) • x) •
+    a (transversalElt H σ hσ p.1 (p.2 • x), transversalElt H σ hσ p.2 x)
+
+/-- The corestriction of a two cochain, read at a pair of group elements. -/
+theorem corCochain₂_apply [Fintype (G ⧸ H)] (a : ↥H × ↥H → M) (g₁ g₂ : G) :
+    corCochain₂ H σ hσ a (g₁, g₂) = ∏ x : G ⧸ H, σ ((g₁ * g₂) • x) •
+      a (transversalElt H σ hσ g₁ (g₂ • x), transversalElt H σ hσ g₂ x) := rfl
+
+/-- **The corestriction of a two cocycle is a two cocycle.**  Written over the cosets translated so
+that every term is carried back by the same representative, the four products in the cocycle
+relation match term by term, and what is left at each coset is the cocycle relation for the three
+transversal elements. -/
+theorem isMulCocycle₂_corCochain₂ [Fintype (G ⧸ H)] {a : ↥H × ↥H → M} (ha : IsMulCocycle₂ a) :
+    IsMulCocycle₂ (corCochain₂ H σ hσ a) := by
+  intro g h j
+  have e1 : corCochain₂ H σ hσ a (g * h, j)
+      = ∏ x : G ⧸ H, σ ((g * h * j) • x) •
+        a (transversalElt H σ hσ g (h • (j • x)) * transversalElt H σ hσ h (j • x),
+          transversalElt H σ hσ j x) := by
+    rw [corCochain₂_apply]
+    refine Finset.prod_congr rfl fun x _ => ?_
+    rw [transversalElt_mul H σ hσ]
+  have e2 : corCochain₂ H σ hσ a (g, h)
+      = ∏ x : G ⧸ H, σ ((g * h * j) • x) •
+        a (transversalElt H σ hσ g (h • (j • x)), transversalElt H σ hσ h (j • x)) := by
+    rw [corCochain₂_apply]
+    refine (Fintype.prod_equiv (MulAction.toPerm j) _ _ fun x => ?_).symm
+    rw [mul_smul (g * h) j x]
+    rfl
+  have e3 : g • corCochain₂ H σ hσ a (h, j)
+      = ∏ x : G ⧸ H, σ ((g * h * j) • x) •
+        (transversalElt H σ hσ g ((h * j) • x) •
+          a (transversalElt H σ hσ h (j • x), transversalElt H σ hσ j x)) := by
+    rw [corCochain₂_apply, Finset.smul_prod']
+    refine Finset.prod_congr rfl fun x _ => ?_
+    rw [smul_smul, ← mul_coe_transversalElt H σ hσ g ((h * j) • x), ← mul_smul g (h * j) x,
+      ← mul_assoc g h j, ← smul_smul, subgroupSmul_eq]
+  have e4 : corCochain₂ H σ hσ a (g, h * j)
+      = ∏ x : G ⧸ H, σ ((g * h * j) • x) •
+        a (transversalElt H σ hσ g ((h * j) • x),
+          transversalElt H σ hσ h (j • x) * transversalElt H σ hσ j x) := by
+    rw [corCochain₂_apply, ← mul_assoc]
+    refine Finset.prod_congr rfl fun x _ => ?_
+    rw [transversalElt_mul H σ hσ]
+  rw [e1, e2, e3, e4, ← Finset.prod_mul_distrib, ← Finset.prod_mul_distrib]
+  refine Finset.prod_congr rfl fun x _ => ?_
+  rw [← smul_mul', ← smul_mul']
+  congr 1
+  rw [mul_smul h j x]
+  exact ha _ _ _
+
+/-- Corestriction is multiplicative in the two cochain. -/
+theorem corCochain₂_mul [Fintype (G ⧸ H)] (a b : ↥H × ↥H → M) :
+    corCochain₂ H σ hσ (a * b) = corCochain₂ H σ hσ a * corCochain₂ H σ hσ b := by
+  funext p
+  obtain ⟨g₁, g₂⟩ := p
+  simp only [corCochain₂_apply, Pi.mul_apply, smul_mul']
+  exact Finset.prod_mul_distrib
+
+/-- **The corestriction of a coboundary is the coboundary of the corestriction.**  This is what
+makes the average descend from cocycles to classes in degree two. -/
+theorem corCochain₂_coboundary₂ [Fintype (G ⧸ H)] (u : ↥H → M) :
+    corCochain₂ H σ hσ (coboundary₂ u) = coboundary₂ (corCochain₁ H σ hσ u) := by
+  funext p
+  obtain ⟨g₁, g₂⟩ := p
+  show corCochain₂ H σ hσ (coboundary₂ u) (g₁, g₂)
+    = g₁ • corCochain₁ H σ hσ u g₂ / corCochain₁ H σ hσ u (g₁ * g₂) * corCochain₁ H σ hσ u g₁
+  have e1 : g₁ • corCochain₁ H σ hσ u g₂
+      = ∏ x : G ⧸ H, σ ((g₁ * g₂) • x) •
+        (transversalElt H σ hσ g₁ (g₂ • x) • u (transversalElt H σ hσ g₂ x)) := by
+    rw [corCochain₁_apply, Finset.smul_prod']
+    refine Finset.prod_congr rfl fun x _ => ?_
+    rw [smul_smul, ← mul_coe_transversalElt H σ hσ g₁ (g₂ • x), ← mul_smul g₁ g₂ x,
+      ← smul_smul, subgroupSmul_eq]
+  have e3 : corCochain₁ H σ hσ u g₁
+      = ∏ x : G ⧸ H, σ ((g₁ * g₂) • x) • u (transversalElt H σ hσ g₁ (g₂ • x)) := by
+    rw [corCochain₁_apply]
+    refine (Fintype.prod_equiv (MulAction.toPerm g₂) _ _ fun x => ?_).symm
+    rw [mul_smul g₁ g₂ x]
+    rfl
+  rw [e1, e3, corCochain₁_apply, corCochain₂_apply, ← Finset.prod_div_distrib,
+    ← Finset.prod_mul_distrib]
+  refine Finset.prod_congr rfl fun x _ => ?_
+  rw [← smul_div', ← smul_mul']
+  congr 1
+  show transversalElt H σ hσ g₁ (g₂ • x) • u (transversalElt H σ hσ g₂ x)
+      / u (transversalElt H σ hσ g₁ (g₂ • x) * transversalElt H σ hσ g₂ x)
+      * u (transversalElt H σ hσ g₁ (g₂ • x)) = _
+  rw [← transversalElt_mul H σ hσ]
+
+section Smooth
+
+variable [TopologicalSpace G]
+
+/-- A two cochain constant on the cosets of a subgroup open and normal in the whole group and
+contained in the subgroup has a corestriction constant on the cosets of that same subgroup. -/
+theorem isSmooth₂_corCochain₂ [Fintype (G ⧸ H)] {N : Subgroup G} (hN : IsOpenNormal N)
+    (hNH : N ≤ H) {a : ↥H × ↥H → M}
+    (ha : ∀ y z n m : ↥H, (n : G) ∈ N → (m : G) ∈ N → a (y * n, z * m) = a (y, z)) :
+    IsSmooth₂ (corCochain₂ H σ hσ a) := by
+  refine ⟨N, hN, fun g₁ g₂ n hn m hm => ?_⟩
+  have hprod : (g₁ * n) * (g₂ * m) = (g₁ * g₂) * ((g₂⁻¹ * n * g₂) * m) := by group
+  have hmemN : (g₂⁻¹ * n * g₂) * m ∈ N :=
+    N.mul_mem (hN.normal.conj_mem' n hn g₂) hm
+  have hcos : ∀ x : G ⧸ H, ((g₁ * n) * (g₂ * m)) • x = (g₁ * g₂) • x := by
+    intro x
+    rw [hprod]
+    exact smul_mul_right_of_mem H σ hσ hN.normal hNH _ hmemN x
+  rw [corCochain₂_apply, corCochain₂_apply]
+  refine Finset.prod_congr rfl fun x _ => ?_
+  obtain ⟨hx2, ht2⟩ := transversalElt_mul_right H σ hσ hN.normal hNH g₂ hm x
+  obtain ⟨_, ht1⟩ := transversalElt_mul_right H σ hσ hN.normal hNH g₁ hn (g₂ • x)
+  rw [hcos x, hx2, ht1, ht2, ha]
+  · exact hN.normal.conj_mem' n hn (σ (g₂ • x))
+  · exact hN.normal.conj_mem' m hm (σ x)
+
+/-- **The corestriction of a smooth two cochain is smooth**, for a subgroup with an open normal
+core. -/
+theorem isSmooth₂_corCochain₂_of_isSmooth₂ [Fintype (G ⧸ H)] (hcore : HasOpenNormalCore H)
+    {a : ↥H × ↥H → M} (ha : IsSmooth₂ a) : IsSmooth₂ (corCochain₂ H σ hσ a) := by
+  obtain ⟨N', hN', h⟩ := ha
+  obtain ⟨N, hN, hNH, hmem⟩ := hcore N' hN'
+  exact isSmooth₂_corCochain₂ H σ hσ hN hNH
+    fun y z n m hn hm => h y z n (hmem n hn) m (hmem m hm)
+
+end Smooth
+
+end Two
+
+
+/-! ### Corestriction in the second cohomology -/
+
+section Descent2
+
+variable {G : Type*} [Group G] [TopologicalSpace G] (H : Subgroup G) (σ : G ⧸ H → G)
+  (hσ : ∀ x : G ⧸ H, (σ x : G ⧸ H) = x)
+  {M : Type*} [CommGroup M] [MulDistribMulAction G M] [Fintype (G ⧸ H)]
+
+include hσ
+
+/-- Corestriction on smooth two cocycles. -/
+def corCocycle₂ (hcore : HasOpenNormalCore H) :
+    smoothCocycle₂ ↥H M →* smoothCocycle₂ G M where
+  toFun a := ⟨corCochain₂ H σ hσ a.1, isMulCocycle₂_corCochain₂ H σ hσ a.2.1,
+    isSmooth₂_corCochain₂_of_isSmooth₂ H σ hσ hcore a.2.2⟩
+  map_one' := by
+    refine Subtype.ext (funext fun p => ?_)
+    obtain ⟨g₁, g₂⟩ := p
+    show ∏ x : G ⧸ H, σ ((g₁ * g₂) • x) • (1 : M) = 1
+    simp
+  map_mul' a b := Subtype.ext (corCochain₂_mul H σ hσ a.1 b.1)
+
+/-- **Corestriction in the second cohomology.** -/
+def corH2 (hcore : HasOpenNormalCore H) : SmoothH2 ↥H M →* SmoothH2 G M :=
+  QuotientGroup.map _ _ (corCocycle₂ H σ hσ hcore) <| by
+    rintro ⟨a, ha, has⟩ ⟨u, hus, hcb⟩
+    have hcb' : coboundary₂ u = a := hcb
+    refine Subgroup.mem_comap.2 ⟨corCochain₁ H σ hσ u,
+      isSmooth₁_corCochain₁_of_isSmooth₁ H σ hσ hcore hus, ?_⟩
+    show coboundary₂ (corCochain₁ H σ hσ u) = corCochain₂ H σ hσ a
+    rw [← hcb']
+    exact (corCochain₂_coboundary₂ H σ hσ u).symm
+
+/-- **Corestriction in the second cohomology is computed on cocycles.** -/
+theorem corH2_smoothH2Mk (hcore : HasOpenNormalCore H) {a : ↥H × ↥H → M} (ha : IsMulCocycle₂ a)
+    (has : IsSmooth₂ a) :
+    corH2 H σ hσ hcore (smoothH2Mk a ha has)
+      = smoothH2Mk (corCochain₂ H σ hσ a) (isMulCocycle₂_corCochain₂ H σ hσ ha)
+        (isSmooth₂_corCochain₂_of_isSmooth₂ H σ hσ hcore has) := rfl
+
+end Descent2
+
+
+/-! ### Corestriction after restriction in degree two -/
+
+section ResCor
+
+variable {G : Type*} [Group G] [TopologicalSpace G] (H : Subgroup G) (σ : G ⧸ H → G)
+  (hσ : ∀ x : G ⧸ H, (σ x : G ⧸ H) = x)
+  {M : Type*} [CommGroup M] [MulDistribMulAction G M] [Fintype (G ⧸ H)]
+
+include hσ
+
+/-- The one cochain correcting the corestriction of a restricted two cocycle: at a group element,
+the values of the cocycle at the chosen representatives paired with the transversal elements,
+divided by its values at the element paired with the chosen representatives. -/
+def corAux₁ (a : G × G → M) : G → M :=
+  fun g => (∏ x : G ⧸ H, a (σ (g • x), (transversalElt H σ hσ g x : G)))
+    / ∏ x : G ⧸ H, a (g, σ x)
+
+omit [MulDistribMulAction G M] in
+/-- The correcting one cochain is constant on the cosets of a subgroup open and normal in the whole
+group and contained in the subgroup, whenever the two cocycle is. -/
+theorem isSmooth₁_corAux₁ {N : Subgroup G} (hN : IsOpenNormal N) (hNH : N ≤ H) {a : G × G → M}
+    (hsm : ∀ x y : G, ∀ n ∈ N, ∀ m ∈ N, a (x * n, y * m) = a (x, y)) :
+    IsSmooth₁ (corAux₁ H σ hσ a) := by
+  refine ⟨N, hN, fun g n hn => ?_⟩
+  show (∏ x : G ⧸ H, a (σ ((g * n) • x), (transversalElt H σ hσ (g * n) x : G)))
+      / ∏ x : G ⧸ H, a (g * n, σ x)
+    = (∏ x : G ⧸ H, a (σ (g • x), (transversalElt H σ hσ g x : G)))
+      / ∏ x : G ⧸ H, a (g, σ x)
+  congr 1
+  · refine Finset.prod_congr rfl fun x _ => ?_
+    obtain ⟨hx, ht⟩ := transversalElt_mul_right H σ hσ hN.normal hNH g hn x
+    rw [hx, ht, Subgroup.coe_mul]
+    have hone := hsm (σ (g • x)) (transversalElt H σ hσ g x : G) 1 N.one_mem
+      ((σ x)⁻¹ * n * σ x) (hN.normal.conj_mem' n hn (σ x))
+    rwa [mul_one] at hone
+  · refine Finset.prod_congr rfl fun x _ => ?_
+    have hone := hsm g (σ x) n hn 1 N.one_mem
+    rwa [mul_one] at hone
+
+omit [TopologicalSpace G] in
+/-- **The corestriction of a restricted two cocycle is the cocycle raised to the number of cosets,
+times the coboundary of the correcting one cochain.**  The three applications of the cocycle
+relation that produce this are at the chosen representative against the two transversal elements,
+at the first group element against the chosen representative and the second transversal element,
+and at the two group elements against the chosen representative. -/
+theorem corCochain₂_comap₂ {a : G × G → M} (ha : IsMulCocycle₂ a) :
+    corCochain₂ H σ hσ (comap₂ H.subtype a)
+      = a ^ Fintype.card (G ⧸ H) * coboundary₂ (corAux₁ H σ hσ a) := by
+  funext p
+  obtain ⟨g₁, g₂⟩ := p
+  have hterm : ∀ x : G ⧸ H,
+      σ ((g₁ * g₂) • x) • comap₂ H.subtype a
+          (transversalElt H σ hσ g₁ (g₂ • x), transversalElt H σ hσ g₂ x)
+        = (g₁ • a (σ (g₂ • x), (transversalElt H σ hσ g₂ x : G)))
+          * a (g₁ * g₂, σ x) * a (g₁, g₂)
+          * (g₁ • a (g₂, σ x))⁻¹ * (a (g₁, σ (g₂ • x)))⁻¹
+          * a (σ ((g₁ * g₂) • x), (transversalElt H σ hσ g₁ (g₂ • x) : G))
+          * (a (σ ((g₁ * g₂) • x), (transversalElt H σ hσ (g₁ * g₂) x : G)))⁻¹ := by
+    intro x
+    have hrA : σ ((g₁ * g₂) • x) * (transversalElt H σ hσ g₁ (g₂ • x) : G)
+        = g₁ * σ (g₂ • x) := by
+      rw [← mul_coe_transversalElt H σ hσ g₁ (g₂ • x), mul_smul g₁ g₂ x]
+    have htB : σ (g₂ • x) * (transversalElt H σ hσ g₂ x : G) = g₂ * σ x :=
+      mul_coe_transversalElt H σ hσ g₂ x
+    have hAB : (transversalElt H σ hσ g₁ (g₂ • x) : G) * (transversalElt H σ hσ g₂ x : G)
+        = (transversalElt H σ hσ (g₁ * g₂) x : G) := by
+      rw [transversalElt_mul H σ hσ]
+      rfl
+    have h1 := ha (σ ((g₁ * g₂) • x)) (transversalElt H σ hσ g₁ (g₂ • x) : G)
+      (transversalElt H σ hσ g₂ x : G)
+    rw [hrA, hAB] at h1
+    have h2 := ha g₁ (σ (g₂ • x)) (transversalElt H σ hσ g₂ x : G)
+    rw [htB] at h2
+    have h3 := ha g₁ g₂ (σ x)
+    have k1 := eq_mul_inv_of_mul_eq h1.symm
+    have k2 := eq_mul_inv_of_mul_eq h2
+    have k3 := eq_mul_inv_of_mul_eq ((mul_comm _ _).trans h3.symm)
+    show σ ((g₁ * g₂) • x) • a ((transversalElt H σ hσ g₁ (g₂ • x) : G),
+      (transversalElt H σ hσ g₂ x : G)) = _
+    rw [k1, k2, k3]
+    simp only [mul_assoc, mul_comm, mul_left_comm]
+  have hC₁ : ∏ x : G ⧸ H, a (σ ((g₁ * g₂) • x), (transversalElt H σ hσ g₁ (g₂ • x) : G))
+      = ∏ y : G ⧸ H, a (σ (g₁ • y), (transversalElt H σ hσ g₁ y : G)) := by
+    refine Fintype.prod_equiv (MulAction.toPerm g₂) _ _ fun x => ?_
+    rw [mul_smul g₁ g₂ x]
+    rfl
+  have hD₁ : ∏ x : G ⧸ H, a (g₁, σ (g₂ • x)) = ∏ y : G ⧸ H, a (g₁, σ y) :=
+    Fintype.prod_equiv (MulAction.toPerm g₂) _ _ fun _ => rfl
+  show corCochain₂ H σ hσ (comap₂ H.subtype a) (g₁, g₂)
+    = a (g₁, g₂) ^ Fintype.card (G ⧸ H)
+      * (g₁ • corAux₁ H σ hσ a g₂ / corAux₁ H σ hσ a (g₁ * g₂) * corAux₁ H σ hσ a g₁)
+  rw [corCochain₂_apply, Finset.prod_congr rfl fun x (_ : x ∈ Finset.univ) => hterm x]
+  simp only [Finset.prod_mul_distrib, Finset.prod_inv_distrib, ← Finset.smul_prod',
+    Finset.prod_const, Finset.card_univ, hC₁, hD₁]
+  show _ = a (g₁, g₂) ^ Fintype.card (G ⧸ H)
+    * (g₁ • ((∏ x : G ⧸ H, a (σ (g₂ • x), (transversalElt H σ hσ g₂ x : G)))
+          / ∏ x : G ⧸ H, a (g₂, σ x))
+      / ((∏ x : G ⧸ H, a (σ ((g₁ * g₂) • x), (transversalElt H σ hσ (g₁ * g₂) x : G)))
+          / ∏ x : G ⧸ H, a (g₁ * g₂, σ x))
+      * ((∏ x : G ⧸ H, a (σ (g₁ • x), (transversalElt H σ hσ g₁ x : G)))
+          / ∏ x : G ⧸ H, a (g₁, σ x)))
+  rw [smul_div']
+  have hgen : ∀ p q r s t u v : M,
+      p * q * r * s⁻¹ * t⁻¹ * u * v⁻¹ = r * (p / s / (v / q) * (u / t)) := by
+    intro p q r s t u v
+    simp only [div_eq_mul_inv, mul_inv, inv_inv]
+    simp only [mul_assoc, mul_comm, mul_left_comm]
+  exact hgen _ _ _ _ _ _ _
+
+omit [MulDistribMulAction G M] in
+/-- **The correcting one cochain of a smooth two cocycle is smooth**, for a subgroup with an open
+normal core. -/
+theorem isSmooth₁_corAux₁_of_isSmooth₂ (hcore : HasOpenNormalCore H) {a : G × G → M}
+    (hs : IsSmooth₂ a) : IsSmooth₁ (corAux₁ H σ hσ a) := by
+  obtain ⟨N, hN, h⟩ := hs
+  obtain ⟨N₁, hN₁, hN₁H, _⟩ := hcore ⊤ isOpenNormal_top
+  exact isSmooth₁_corAux₁ H σ hσ (hN.inf hN₁) (le_trans inf_le_right hN₁H)
+    fun x y n hn m hm => h x y n hn.1 m hm.1
+
+/-- **Corestriction after restriction raises a class of the second cohomology to the index.** -/
+theorem corH2_resH2 (hcore : HasOpenNormalCore H) (c : SmoothH2 G M) :
+    corH2 H σ hσ hcore (resH2 H c) = c ^ Fintype.card (G ⧸ H) := by
+  obtain ⟨a, ha, hs, rfl⟩ := smoothH2Mk_surjective c
+  rw [resH2_smoothH2Mk, corH2_smoothH2Mk]
+  have hmk : (smoothH2Mk a ha hs) ^ Fintype.card (G ⧸ H)
+      = QuotientGroup.mk ((⟨a, ha, hs⟩ : smoothCocycle₂ G M) ^ Fintype.card (G ⧸ H)) :=
+    (map_pow (QuotientGroup.mk' ((smoothCoboundary₂ G M).subgroupOf (smoothCocycle₂ G M)))
+      ⟨a, ha, hs⟩ _).symm
+  rw [hmk]
+  refine QuotientGroup.eq.2 (Subgroup.mem_subgroupOf.2 ?_)
+  refine ⟨(corAux₁ H σ hσ a)⁻¹, (isSmooth₁_corAux₁_of_isSmooth₂ H σ hσ hcore hs).inv, ?_⟩
+  have hcoe : ((⟨a, ha, hs⟩ : smoothCocycle₂ G M) ^ Fintype.card (G ⧸ H) : G × G → M)
+      = a ^ Fintype.card (G ⧸ H) := by
+    simp
+  show coboundary₂ (corAux₁ H σ hσ a)⁻¹
+    = (corCochain₂ H σ hσ (comap₂ H.subtype a))⁻¹
+      * ((⟨a, ha, hs⟩ : smoothCocycle₂ G M) ^ Fintype.card (G ⧸ H) : G × G → M)
+  rw [hcoe, corCochain₂_comap₂ H σ hσ ha, coboundary₂_inv]
+  have hgen : ∀ p q : G × G → M, q⁻¹ = (p * q)⁻¹ * p := by
+    intro p q
+    rw [mul_inv, mul_comm p⁻¹ q⁻¹, mul_assoc, inv_mul_cancel, mul_one]
+  exact hgen _ _
+
+end ResCor
 
 end InverseGalois.CFT

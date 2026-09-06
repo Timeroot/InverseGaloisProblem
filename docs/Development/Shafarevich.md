@@ -13006,7 +13006,7 @@ escapes do not work:
 
 ---
 
-## 1.20 Status (2026-09-06, latest) — **corestriction in degree one is a theorem**
+## 1.20 Status (2026-09-06, latest) — **corestriction is a theorem in degrees one and two**
 
 `InverseGalois/CFT/Profinite/Corestriction.lean` supplies the transfer that the smooth-profinite
 toolkit was missing entirely (finding 1946: there was no corestriction anywhere under
@@ -13027,10 +13027,42 @@ That last identity is the tool for §1.00(g) (reduce to `μ_p ⊆ k` by res–co
 reductions.  Left cosets `G ⧸ H` were chosen over right cosets because they line up with Mathlib's
 `MulAction G (G ⧸ H)` and `QuotientGroup.eq`.
 
-**Next brick**: degree-two corestriction.  The formulas are derived and checked on paper —
-`corCochain₂ a (g₁, g₂) := ∏ x, σ ((g₁ * g₂) • x) • a (transversalElt g₁ (g₂ • x),
-transversalElt g₂ x)` is a 2-cocycle, and `cor₂ ∘ coboundary₂ = coboundary₂ ∘ cor₁` exactly, which
-makes the descent to `SmoothH2` and `corH2_resH2 = pow [G : H]` immediate.
+**Degree two, same file, same day.**  The averaged 2-cochain is
+
+```
+corCochain₂ a (g₁, g₂) = ∏ x : G ⧸ H, σ ((g₁ * g₂) • x) •
+    a (transversalElt g₁ (g₂ • x), transversalElt g₂ x)
+```
+
+and the whole degree-two layer is now proven:
+
+* `isMulCocycle₂_corCochain₂` — the cocycle check is termwise, and reduces to `IsMulCocycle₂ a` at
+  the three transversal elements after rewriting the four terms into a common indexing
+  (`transversalElt_mul` for two of them, a reindexing by `MulAction.toPerm j` for a third);
+* `corCochain₂_coboundary₂ : cor₂ (coboundary₂ u) = coboundary₂ (cor₁ u)` — an **exact** identity,
+  not just up to a coboundary, so the descent to cohomology is a plain `QuotientGroup.map`;
+* `isSmooth₂_corCochain₂_of_isSmooth₂` under the same `HasOpenNormalCore H` as in degree one;
+* `corH2 H σ hσ hcore : SmoothH2 ↥H M →* SmoothH2 G M`, with `corH2_smoothH2Mk` the computation
+  rule;
+* **`corH2_resH2 : corH2 (resH2 H c) = c ^ Fintype.card (G ⧸ H)`.**
+
+The last one is *not* an exact identity at the cochain level — unlike degree one it needs a genuine
+correcting 1-cochain,
+
+```
+corAux₁ a g = (∏ x, a (σ (g • x), transversalElt g x)) / ∏ x, a (g, σ x)
+```
+
+with `corCochain₂_comap₂ : cor₂ (res a) = a ^ [G : H] * coboundary₂ (corAux₁ a)`.  That identity
+is exactly three applications of the 2-cocycle relation — at `(σ ((g₁g₂) • x), A, B)`, at
+`(g₁, σ (g₂ • x), B)` and at `(g₁, g₂, σ x)`, where `A = transversalElt g₁ (g₂ • x)` and
+`B = transversalElt g₂ x` — followed by a seven-factor abelian-group rearrangement and two
+reindexings of the product by `MulAction.toPerm g₂`.  Smoothness of `corAux₁` needs an open normal
+`N ≤ H`, which `HasOpenNormalCore` supplies when applied at `⊤`; intersect it with the subgroup
+that makes `a` smooth.
+
+With `corH2_resH2` in hand, §1.00(g) — reduce to `μ_p ⊆ k` by res–cor, killing the `[G : H]`-torsion
+prime to `p` — is unblocked in the degree where the Ш² statements live.
 
 ### Lean and Mathlib gotchas, continued
 
@@ -13067,6 +13099,40 @@ makes the descent to `SmoothH2` and `corH2_resH2 = pow [G : H]` immediate.
   tail afterwards, or use `Edit`/`Write`.
 * **1960 (BUILD).**  `lake build InverseGalois.CFT.Profinite.Corestriction` is 8030 jobs, ~16 s on
   a warm tree.
+* **1961 (BUILD).**  A full root build at commit `0c3b8d6` is **9747 jobs**, 0 warnings.
+* **1962 (HISTORY).**  `InverseGalois/CFT/` starts at commit `a1527ef`, 2026-08-21; as of
+  2026-09-06 that is 17 calendar days and 593 commits.  The nilpotent case of Shafarevich landed
+  eight days in.  Useful when calibrating an estimate: the *right* unit for "how much is left" in
+  this repo is days, not months.
+* **1963 (MATHLIB).**  `IsMulCocycle₂ (f : G × G → M) : ∀ g h j, f (g * h, j) * f (g, h) =
+  g • f (h, j) * f (g, h * j)` — `RepresentationTheory/Homological/GroupCohomology/LowDegree.lean:615`.
+  Note which side the `g •` is on; it is not the arrangement in every textbook.
+* **1964 (REPO).**  `IsSmooth₂ (a : G × G → M) : ∃ N, IsOpenNormal N ∧ ∀ x y : G, ∀ n ∈ N,
+  ∀ m ∈ N, a (x * n, y * m) = a (x, y)` (`Cochain.lean:84`); the carrier of `smoothCoboundary₂` is
+  `{a | ∃ u : G → M, IsSmooth₁ u ∧ coboundary₂ u = a}`; `smoothH2Mk_surjective` is at
+  `Cochain.lean:310`; `comap₂ π a = fun p => a (π p.1, π p.2)` (`Comap.lean:54`, `comap₂_apply`
+  :60); `resH2 := comapH2 H.subtype (fun _ _ => rfl) (isSmoothHom_subtype H)` (`Res.lean:119`,
+  `resH2_smoothH2Mk` :129).
+* **1965 (LEAN).**  `mul_smul` takes the two **group** elements and the point:
+  `← mul_smul g (h * j) x`, never `← mul_smul g ((h * j) • x)`.  The wrong shape reports
+  "Type mismatch … has type `G ⧸ H` but is expected to have type `G`", which reads like a coset
+  problem and is not one.
+* **1966 (LEAN).**  To use a smoothness hypothesis `hsm x y n hn m hm : a (x * n, y * m) = a (x, y)`
+  where the goal has no `* 1`, instantiate it — `have hone := hsm _ _ 1 N.one_mem _ hm` — and finish
+  with `rwa [mul_one] at hone`.  A `show` writing `… * 1` into the goal is **not** accepted as
+  defeq by the `show` tactic here.
+* **1967 (LEAN).**  Associativity/commutativity normalisation in a `CommGroup` that `group` cannot
+  do (finding 1944: `group` ignores commutativity):
+  `simp only [div_eq_mul_inv, mul_inv, inv_inv]` then
+  `simp only [mul_assoc, mul_comm, mul_left_comm]`.  This closed both the seven-factor res–cor
+  rearrangement and the per-term identity inside it.
+* **1968 (MATHLIB).**  `eq_mul_inv_of_mul_eq (h : a * c = b) : a = b * c⁻¹` is the workhorse for
+  turning a cocycle relation into a substitution.  For the mirrored orientation use
+  `eq_mul_inv_of_mul_eq ((mul_comm _ _).trans h.symm)`.
+* **1969 (MATH).**  The degree-two res–cor identity, as verified in Lean: with
+  `c g = ∏ x, a (σ (g • x), transversalElt g x)` and `d g = ∏ x, a (g, σ x)`,
+  `cor₂ (res a) = a ^ [G : H] · ∂ (c / d)`.  It follows from exactly three applications of the
+  2-cocycle relation; no further identity is needed.
 
 ---
 

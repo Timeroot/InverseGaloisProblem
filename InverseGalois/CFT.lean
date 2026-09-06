@@ -5308,7 +5308,18 @@ it that are available here.
   the normal core of an open subgroup of finite index being open again.  The point of the
   construction is that **the average of a restricted class is the class raised to the number of
   cosets**, which is what kills the part of a class prime to the index and reduces a question about
-  a group to the same question about a subgroup.
+  a group to the same question about a subgroup.  The same average works one degree up, on a
+  cochain of two variables: the two arguments are taken at the discrepancy of the first element
+  along the coset already translated by the second, and at the discrepancy of the second, and the
+  whole term is carried back by the representative chosen for the coset translated by the product.
+  Its cocycle relation is the cocycle relation of the original at the three discrepancies, and it
+  turns the coboundary of a cochain of one variable into the coboundary of that cochain's average
+  exactly, so it too descends to cohomology.  Here, though, the average of a restricted class is
+  the class raised to the number of cosets only after correcting by an explicit cochain of one
+  variable, the quotient of the value at a chosen representative and a discrepancy by the value at
+  the element and a chosen representative; the correction is produced by three applications of the
+  cocycle relation, and it is a coboundary, so **the identity survives in cohomology in the second
+  degree as well**.
 * `InverseGalois.CFT.Profinite.Comap` composes a cochain with a homomorphism into a group acting on
   the same module.  The cocycle relation and the coboundary are both preserved because the two
   actions agree, so all that is needed is that composition preserve smoothness, and two conditions
