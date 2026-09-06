@@ -13967,6 +13967,119 @@ over `k` into `Ш` over `K`.
 
 ---
 
+## 1.28 Status (2026-09-06, latest) — **the concrete Kummer dictionary for SW Thm 13: ramification is a congruence, and the Galois group moves it**
+
+### (a) Why this, and why now
+
+§1.26 established that SW Theorem 13 consumes only the **upper line** of the Tate–Poitou diagram,
+which is already a theorem here (`exists_sUnitClass_mul_eq_unramified`), and §0.41(c) established
+that the Chebotarev input Thm 13 needs is only Frobenius-**up-to-a-scalar**, which is already a
+theorem here (`exists_relStabilizer_eq_zpowers`).  Re-reading the proof (`sw.txt:657–780`) against
+those two facts, the remaining content of the odd-`p` half is *bookkeeping in the Kummer idiom*:
+
+| SW | repo |
+| --- | --- |
+| `H¹(k_S\|K, μ_p)` | `selmerGroup ι p` |
+| `H¹(K_𝔓, μ_p)` | `localClasses 𝔓 p` |
+| `H¹_nr(K_𝔓, μ_p)` | `localUnramified 𝔓 p` |
+| `H¹/H¹_nr ≅ ℤ/p` | `unitValModQuot (isUnitValGen_one …) p` |
+| `(a,b)_𝔓` | `localSymbol` / `localClassPairing` |
+| `∏_{𝔓 ∈ S(K)} (a,b)_𝔓 = 1` | `prod_localSymbol_eq_one_of_ne_two` |
+| local duality at `𝔓 ∤ p` | `perpSubgroupLeft_localUnramified` |
+
+Two entries of that table were *not* yet connected to the arithmetic of a global unit, and both are
+used on every line of the construction:
+
+1. **which way a class ramifies** — SW's condition (1) reads `(z_i)_{𝔓_i} ≡ λ_i · Frob_{𝔓_i}`
+   modulo `H¹_nr`, and `(z_i)_𝔓 ∈ H¹_nr` for `𝔓 ≠ 𝔓_i`.  In the Kummer idiom that is a statement
+   about the **valuation of a global unit**, not about a cocycle;
+2. **the Galois transport** — conditions (1)/(3) are stated at `𝔓_i` and then *used* at `σ𝔓_i` for
+   `σ ∈ G(K|k) ∖ {1}`, and the whole closing symbol chain lives at the moved places.
+
+`InverseGalois/CFT/PoitouTate/GlobalClasses.lean` supplies exactly these two.
+
+### (b) Ramification is a congruence
+
+`placeValue v a` (`Brauer/PlaceExponent.lean:107`) is already the valuation of `a ∈ Kˣ` at the
+finite place `v`, normalised so a uniformiser has value `1`.  It is *definitionally* the same
+composite as the one `unitValModQuot` reads on the local classes, so the dictionary is `rfl`:
+
+```lean
+theorem unitValModQuot_localClassHom (v) (n) (a : Kˣ) :
+    unitValModQuot (isUnitValGen_one (valued_adicCompletion_surjective v)) n (localClassHom v n a)
+      = Multiplicative.ofAdd ((placeValue v a : ℤ) : ZMod n) := rfl
+
+theorem localClassHom_mem_localUnramified_iff [NeZero n] (v) (a : Kˣ) :
+    localClassHom v n a ∈ localUnramified v n ↔ (n : ℤ) ∣ placeValue v a
+```
+
+So SW's condition (1) is, verbatim, `placeValue 𝔓_i z_i ≡ λ_i (mod p)` with `λ_i ≠ 0`, together
+with `p ∣ placeValue 𝔓 z_i` for every other `𝔓` — a congruence between integers.  No cocycle, no
+inertia subgroup, no local duality is needed to *state* it.
+
+### (c) The Galois transport
+
+`adicCompletionGalEquiv v σ : v.adicCompletion K ≃+* (σ • v).adicCompletion K`
+(`Local/AdicAction.lean:165`) is an isometry, so it moves units to units, `n`-th powers to `n`-th
+powers, and preserves the valuation.  Packaging that:
+
+| declaration | statement |
+| --- | --- |
+| `adicCompletionGalEquiv_algebraMap` | the isomorphism sends `algebraMap K _ x` to `algebraMap K _ (σ x)` |
+| `adicUnitsGalEquiv v σ` | `(v.adicCompletion K)ˣ ≃* ((σ • v).adicCompletion K)ˣ` |
+| `adicUnitsGalEquiv_map_algebraMap` | it matches the image of `a : Kˣ` with the image of `galUnits σ a` |
+| `unitVal_adicUnitsGalEquiv`, `unitValDiv_adicUnitsGalEquiv` | it preserves the valuation of a unit |
+| `placeValue_galSmul` | `placeValue (σ • v) (galUnits σ a) = placeValue v a` |
+| `map_range_powMonoidHom` | any `e : G ≃* H` of commutative groups carries `n`-th powers onto `n`-th powers |
+| `localClassesGalEquiv σ v n` | `localClasses v n ≃* localClasses (σ • v) n` |
+| `localClassesGalEquiv_mk` | it is induced by `adicUnitsGalEquiv` |
+| `localClassesGalEquiv_localClassHom` | it matches `localClassHom v n a` with `localClassHom (σ • v) n (galUnits σ a)` |
+| `unitValModQuot_localClassesGalEquiv` | it preserves the valuation modulo `n` |
+| `localClassesGalEquiv_mem_localUnramified_iff`, `map_localUnramified_localClassesGalEquiv` | it carries `localUnramified v n` **onto** `localUnramified (σ • v) n` |
+
+Combining (b) and (c): the transported condition (1) at `σ𝔓_i` is
+`placeValue (σ • 𝔓_i) (galUnits σ z_i) = placeValue 𝔓_i z_i ≡ λ_i (mod p)` — the *same* congruence.
+This is what makes the closing chain of Thm 13 a computation with the product formula alone.
+
+### (d) What this deliberately does **not** do
+
+**Galois invariance of the symbol itself** — `localSymbol_{σv}(σa, σb) = χ(σ) · localSymbol_v(a,b)`
+— was scoped out and is *not* needed for the odd-`p` half.  Re-reading `sw.txt:770–780` line by
+line, the six-step closing chain uses only: the pigeonhole equality `φ_N(z_i) = φ_N(z_N)`,
+condition (1) read at a moved place (which is (c) above, **not** invariance of the symbol),
+condition (3), and the product formula.  Transporting `HasResidueChar` / `IsUnitValGen` /
+`isKummerData_zmod` through `adicCompletionGalEquiv` — which is what invariance of the symbol would
+cost — is therefore avoided entirely.
+
+### (e) Findings
+
+* **2064 (LEAN).** `QuotientGroup.congr G' H' e he` (`GroupTheory/QuotientGroup/Defs.lean:392`) is
+  the right way to move a quotient along a `MulEquiv`; its `congr_mk` is `rfl`, so the compatibility
+  lemma for the induced map on classes needs no `simp` at all.
+* **2065 (LEAN).** `unitVal x = WithZero.log (Valued.v ↑x)` *by definition*
+  (`Local/UnitValuation.lean:95`), so a `show` down to `WithZero.log (Valued.v _)` followed by
+  `valued_adicCompletionGalEquiv` is the whole proof that the Galois move preserves valuations —
+  no API for `unitVal` under ring isomorphisms is required.
+* **2066 (LEAN).** `placeValue` (`Brauer/PlaceExponent.lean:107`) and
+  `unitValModQuot ∘ localClassHom` (`PoitouTate/Unramified.lean:113`, `PoitouTate/Selmer.lean:131`)
+  are the *same* composite up to `Multiplicative.ofAdd` and `Int.cast`, so the bridge between the
+  Brauer-side and the Selmer-side normalisations is `rfl`.  Worth knowing before writing a proof.
+* **2067 (BUILD).** `lake build InverseGalois.CFT.PoitouTate.GlobalClasses` = 8634 jobs, 28 s; the
+  full root build with it = **9758 jobs**, 0 warnings, 0 errors.
+
+### (f) Routes rejected here
+
+* Putting `adicCompletionGalEquiv_algebraMap` into `Local/AdicAction.lean`, next to
+  `adicCompletionGalEquiv_coe` where it topically belongs.  `AdicAction` is deep in the CFT
+  dependency tree, so editing it triggers a rebuild of essentially the whole of `CFT/Units/`
+  (`Units/CompositumFundamental.lean` alone is 414–650 s).  A leaf module costs 28 s.
+* Stating the Galois transport as an action of `Gal(K/k)` on a *bundled* family
+  `∀ v, localClasses v n`.  The places move, so the family is not a `G`-module in the naive sense
+  (only the product over an orbit is); every use in Thm 13 is at a single moved place, so the
+  place-to-place `MulEquiv` is both sufficient and much lighter.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —

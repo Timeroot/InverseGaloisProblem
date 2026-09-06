@@ -450,6 +450,7 @@ import InverseGalois.CFT.PiDual
 import InverseGalois.CFT.PiIndex
 import InverseGalois.CFT.PoitouTate.CupDual
 import InverseGalois.CFT.PoitouTate.Dual
+import InverseGalois.CFT.PoitouTate.GlobalClasses
 import InverseGalois.CFT.PoitouTate.Isotropic
 import InverseGalois.CFT.PoitouTate.LocalConditions
 import InverseGalois.CFT.PoitouTate.Prescribed
@@ -6863,4 +6864,15 @@ it that are available here.
   them is met, place by place, by the class of a unit outside the set**.  Splitting a set of places
   this way and moving places from the second part to the first one at a time is the induction
   behind the construction of a number with prescribed local behaviour.
+
+* `InverseGalois.CFT.PoitouTate.GlobalClasses` supplies the dictionary that induction is run
+  through.  The valuation modulo the exponent of the class of a unit of the number field at a
+  finite place is the value of that unit at the place, so the class is unramified exactly when the
+  exponent divides that value: a condition on the ramification of a class is a congruence on an
+  integer.  A Galois automorphism carries the completion at a place isometrically onto the
+  completion at the image of the place, hence carries the powers onto the powers and identifies
+  the classes at the two places; that identification matches the class of a unit with the class of
+  its image, preserves the valuation modulo the exponent and **carries the unramified classes onto
+  the unramified classes**, so a prescription of local behaviour transports along the Galois group
+  with nothing lost.
 -/
