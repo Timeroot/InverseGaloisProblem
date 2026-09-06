@@ -32,6 +32,9 @@ cyclic representation with the maps out of it, and the extension of a character 
 * `InverseGalois.CFT.HasPoitouTateDuality`: **the everywhere locally trivial classes of the second
   cohomology are the characters of the everywhere locally trivial classes of the first cohomology
   of the Cartier dual.**
+* `InverseGalois.CFT.HasShaDualInjection`: the half of that statement an embedding problem consumes
+  - the everywhere locally trivial classes of the second cohomology are read injectively as such
+  characters.
 * `InverseGalois.CFT.shaCharacter`: the character of the everywhere locally trivial classes cut out
   by a class of complete cohomology in degree minus two.
 * `InverseGalois.CFT.shaDualHom`: the resulting map of complete cohomology in degree minus two into
@@ -41,6 +44,13 @@ cyclic representation with the maps out of it, and the extension of a character 
 
 * `InverseGalois.CFT.exists_shaCharacter_eq`: every character of the everywhere locally trivial
   classes of the first cohomology is cut out by a class of complete cohomology.
+* `InverseGalois.CFT.hasShaDualInjection_of_hasPoitouTateDuality`,
+  `InverseGalois.CFT.hasShaDualInjection_of_subsingleton`: the injective reading follows from the
+  duality, and holds for free when there are no everywhere locally trivial classes of the second
+  cohomology.
+* `InverseGalois.CFT.exists_injective_forall_shaCharacter_eq`: **every everywhere locally trivial
+  class of the second cohomology is cut out by a class of complete cohomology of the level, and is
+  determined by the character it cuts out.**
 * `InverseGalois.CFT.shaDualHom_surjective`,
   `InverseGalois.CFT.exists_surjective_of_hasPoitouTateDuality`: **complete cohomology of the level
   in degree minus two covers the everywhere locally trivial classes of the second cohomology.**
@@ -75,6 +85,35 @@ def HasPoitouTateDuality : Prop :=
   Nonempty (Additive ↥(sha2 (Multiplicative ↥B.V) (decompositionSubgroups k Ω)) ≃+
     (Additive ↥(sha1 (Multiplicative ↥(linHomObj B A).V) (decompositionSubgroups k Ω)) →ₗ[ℤ]
       AddCircle (1 : ℚ)))
+
+/-- **One half of global duality**: the everywhere locally trivial classes of the second cohomology
+are read *injectively* as characters of the everywhere locally trivial classes of the first
+cohomology of the Cartier dual.  Only this half is consumed by an embedding problem: a class of the
+second cohomology is then pinned down by the character it cuts out, and the characters are already
+exhausted by the complete cohomology of a finite level. -/
+def HasShaDualInjection : Prop :=
+  ∃ α : Additive ↥(sha2 (Multiplicative ↥B.V) (decompositionSubgroups k Ω)) →+
+      (Additive ↥(sha1 (Multiplicative ↥(linHomObj B A).V) (decompositionSubgroups k Ω)) →ₗ[ℤ]
+        AddCircle (1 : ℚ)),
+    Function.Injective α
+
+omit [IsGalois k Ω] [FiniteDimensional k ↥F] [IsGalois k ↥F] [NumberField ↥F]
+  [IsAddCyclic ↥A.V] [Finite ↥A.V] [Finite ↥B.V] in
+/-- A duality between the two groups of everywhere locally trivial classes gives the injective
+reading. -/
+theorem hasShaDualInjection_of_hasPoitouTateDuality (hd : HasPoitouTateDuality F A B) :
+    HasShaDualInjection F A B :=
+  hd.elim fun D => ⟨D.toAddMonoidHom, D.injective⟩
+
+omit [IsGalois k Ω] [FiniteDimensional k ↥F] [IsGalois k ↥F] [NumberField ↥F]
+  [IsAddCyclic ↥A.V] [Finite ↥A.V] [Finite ↥B.V] in
+/-- Where there are no everywhere locally trivial classes of the second cohomology at all, the zero
+reading is injective. -/
+theorem hasShaDualInjection_of_subsingleton
+    (h : Subsingleton ↥(sha2 (Multiplicative ↥B.V) (decompositionSubgroups k Ω))) :
+    HasShaDualInjection F A B :=
+  ⟨0, fun x y _ =>
+    Additive.toMul.injective (h.allEq (Additive.toMul x) (Additive.toMul y))⟩
 
 variable (hπ : ∀ (g : Gal(Ω/k)) (m : Multiplicative ↥(linHomObj B A).V),
     g • m = AlgEquiv.restrictNormalHom F g • m)
@@ -129,6 +168,19 @@ theorem exists_shaCharacter_eq
   obtain ⟨x, hx⟩ := exists_cartierPairing_eq A B hB (-2) (shaTateShift F A B hπ)
     (shaTateShift_injective F A B hπ) χ
   exact ⟨x, LinearMap.ext hx⟩
+
+/-- **What an embedding problem consumes.**  Given the injective reading of the everywhere locally
+trivial classes of the second cohomology as characters, every such class is cut out by a class of
+complete cohomology of the level in degree minus two, and is determined by the character it cuts
+out.  A class of complete cohomology that dies under a change of coefficients therefore forces the
+locally trivial class it came from to die with it. -/
+theorem exists_injective_forall_shaCharacter_eq (h : HasShaDualInjection F A B) :
+    ∃ α : Additive ↥(sha2 (Multiplicative ↥B.V) (decompositionSubgroups k Ω)) →+
+        (Additive ↥(sha1 (Multiplicative ↥(linHomObj B A).V) (decompositionSubgroups k Ω)) →ₗ[ℤ]
+          AddCircle (1 : ℚ)),
+      Function.Injective α ∧ ∀ ε, ∃ x : ↥(tateModule (linHomObj A B) (-2)),
+        shaCharacter F A B hπ hB x = α ε :=
+  h.elim fun α hα => ⟨α, hα, fun ε => exists_shaCharacter_eq F A B hπ hB (α ε)⟩
 
 /-- **Complete cohomology of the level in degree minus two, in the everywhere locally trivial
 classes of the second cohomology**, read through a duality between those classes and the characters

@@ -452,6 +452,7 @@ import InverseGalois.CFT.PrimeProductSquare
 import InverseGalois.CFT.Profinite.Cochain
 import InverseGalois.CFT.Profinite.Coeff
 import InverseGalois.CFT.Profinite.Comap
+import InverseGalois.CFT.Profinite.Connecting
 import InverseGalois.CFT.Profinite.Cup
 import InverseGalois.CFT.Profinite.Discrete
 import InverseGalois.CFT.Profinite.FixingSubgroup
@@ -5284,6 +5285,16 @@ it that are available here.
   subgroup stays constant there, so smoothness is preserved; a coboundary goes to the coboundary of
   the image of its primitive.  So **there is a homomorphism of the cohomology of the source
   coefficients into that of the target**, in degree one and in degree two, computed on cocycles.
+* `InverseGalois.CFT.Profinite.Connecting` takes a short exact sequence of coefficients and lifts a
+  cocycle of the quotient term by term to the module.  The lift is not a cocycle, but its
+  coboundary is killed by the projection, so it has its values in the submodule, and it is a smooth
+  cocycle there; a second lift differs from the first by a cochain of the submodule, so the class
+  it gives in the second cohomology of the submodule is the same.  The passage is **exact in the
+  middle**: a class obtained this way dies in the second cohomology of the module, because there
+  its cocycle is visibly a coboundary, and conversely a class that dies there is the coboundary of
+  a cochain whose projection is a cocycle of the quotient carrying it back.  This is what lowers a
+  question about the second cohomology to a question about the first, where the reciprocity law is
+  available.
 * `InverseGalois.CFT.Profinite.Comap` composes a cochain with a homomorphism into a group acting on
   the same module.  The cocycle relation and the coboundary are both preserved because the two
   actions agree, so all that is needed is that composition preserve smoothness, and two conditions

@@ -12872,6 +12872,140 @@ is a theorem, and the ❌ box is a hypothesis that a downstream consumer can car
 
 ---
 
+## 1.19 Status (2026-09-06, latest) — the wall is **weaker than an isomorphism**, and the connecting step of a coefficient sequence is a theorem
+
+### (a) `HasShaDualInjection`: SW need only the left kernel to vanish
+
+Finding **1934** of §1.18 said SW's Claim needs the full duality `Ш²(k,E) ≅ Ш¹(k,E′)^∨`.  That is
+too strong, and re-deriving the argument shows why.  SW's shrinking step runs:
+
+1. take `ε ∈ Ш²(k,E)` and read it as a character `α_E(ε)` of `Ш¹(k,E′)`;
+2. lift that character to a class `ε̃ ∈ Ĥ^{-2}(G, E(-1))` — this is
+   `exists_shaCharacter_eq`, already a theorem (§1.17);
+3. shrink the level so that `ε̃` dies;
+4. by naturality the character `α_{E'}(ε')` of the shrunk class is zero;
+5. conclude `ε' = 0`.
+
+Step 5 uses **only** that `α` has trivial kernel.  Surjectivity of `α` is never used: step 2 already
+supplies every character from the complete cohomology side, which is exactly what the repo proved.
+So the named wall can be weakened from a bijection to an injection, and
+`InverseGalois/CFT/PoitouTate/ShaSurjection.lean` now carries
+
+```lean
+def HasShaDualInjection : Prop :=
+  ∃ α : Additive ↥(sha2 (Multiplicative ↥B.V) (decompositionSubgroups k Ω)) →+
+      (Additive ↥(sha1 (Multiplicative ↥(linHomObj B A).V) (decompositionSubgroups k Ω)) →ₗ[ℤ]
+        AddCircle (1 : ℚ)),
+    Function.Injective α
+```
+
+with three theorems around it:
+
+* `hasShaDualInjection_of_hasPoitouTateDuality` — the old, stronger hypothesis implies it;
+* `hasShaDualInjection_of_subsingleton` — **where `Ш²` vanishes the hypothesis is free**, so any
+  future vanishing theorem discharges it outright;
+* `exists_injective_forall_shaCharacter_eq` — the consumable form: an injective `α` together with
+  the fact that *every* `α ε` is `shaCharacter … x` for some `x` in complete cohomology of the
+  level in degree minus two.  That is precisely the pair of facts steps 2 and 5 consume.
+
+### (b) The connecting step of a short exact sequence of coefficients
+
+`InverseGalois/CFT/Profinite/` had functoriality in the coefficients (`Coeff.lean`) and the
+inflation–restriction transgression, but **no connecting map** for a short exact sequence
+`1 → E → M → Q → 1` of coefficients.  Every route to Poitou–Tate needs one: dimension shifting
+lowers a statement about `H²` to a statement about `H¹`, where reciprocity is available.
+
+`InverseGalois/CFT/Profinite/Connecting.lean` supplies it, in explicit-cochain form, for smooth
+cochains on an arbitrary topological group:
+
+* `isMulCocycle₁_iff_coboundary₂_eq_one` — a one-cochain is a cocycle iff its `coboundary₂` is
+  trivial.  (The name `coboundary₂_eq_one_iff` was already taken by `Profinite/KummerTwo.lean`.)
+* `exists_lift_of_isMulCocycle₁` — **the passage `H¹(G,Q) → H²(G,E)`**: a smooth `Q`-cocycle `u`
+  lifts termwise to a smooth `M`-cochain `v` (choose a set-theoretic section of the surjection `π`
+  and note that a section of a smooth function is smooth for the same open normal subgroup), and
+  `coboundary₂ v` is killed by `π`, hence equals `coeffMap₂ ι a` for a smooth `E`-valued
+  two-cocycle `a`.
+* `coeffH2_eq_one_of_lift` — such an `a` dies in `H²(G,M)`, because there its cocycle is visibly
+  `coboundary₂ v`.
+* `exists_lift_of_coeffH2_eq_one` — **the converse, which is what a dimension-shifting argument
+  actually consumes**: a class of `H²(G,E)` that dies in `H²(G,M)` is `coboundary₂ v` for a smooth
+  `v`, and `coeffMap₁ π v` is then a smooth `Q`-cocycle carrying it back.
+* `smoothH2Mk_eq_of_lift` — independence of the lift: two lifts of the same `Q`-cochain differ by a
+  smooth `E`-valued cochain `c` (smooth for `N ⊓ N'`), so the two `E`-cocycles differ by
+  `coboundary₂ c`.
+
+Exactness in the middle of `H¹(G,Q) → H²(G,E) → H²(G,M)` is the conjunction of the third and fourth
+bullets.  No packaged `δ` as a group homomorphism is built: the consumable statement is the
+existential one, and building `δ` would require descending through the quotient by coboundaries
+with no gain for the argument in view.
+
+### (c) Where Poitou–Tate now stands
+
+Rows 5 and 8 of the §0.36 table are unchanged as *mathematics*, but the shape of the debt is
+sharper:
+
+| what | state |
+| --- | --- |
+| `Ĥ^{-2}(G,E(-1)) ≅ Ĥ^1(G,E′)^∨` (Cartier) | theorem — `exists_cartierPairing_eq` |
+| `Ш¹(k,E′) ↪ H¹(G,E′)` and its dual | theorem — `shaInflH1_injective`, `exists_shaCharacter_eq` |
+| `Ш²(k,E) ↪ Ш¹(k,E′)^∨` | `HasShaDualInjection` — the sole hypothesis |
+| dimension shifting `H²(G,E) → H¹(G,Q)` | theorem — `Profinite/Connecting.lean` |
+
+The twist bookkeeping was re-verified: with `T = Hom(μ_p, ℤ/p)` and `E′ = Hom(E, μ_p)`, the Cartier
+dual of `E′` is `E ⊗ T = E(-1)`, so the two chains meet where they should.
+
+Three further mathematical facts about the setting were pinned down, and they say why the cheap
+escapes do not work:
+
+* Over `K` (where `E` has trivial action and `μ_p ⊆ K`), `E|_{G_K} ≅ (ℤ/p)^d`, so
+  `Ш²(K, E|_K) = 0` by `eq_one_of_mem_sha2` and `Ш¹(K, E′|_K) = 0` by `eq_one_of_mem_sha1`.  Hence
+  `Ш²(k,E) ⊆ ker(res_{G_K})`.  This does **not** put `Ш²(k,E)` inside `inf H²(G,E)`: the five-term
+  sequence stops one step short and leaves a transgression obstruction in `H¹(G, H¹(G_K,E))`, which
+  is exactly the abandoned brick-3/4/5 territory of §1.14.
+* `Ш²(k,E) = 0` is **false** in general — by duality it is `Ш¹(k,E′)^∨`, and `Ш¹` of a module with
+  non-trivial action is the classical Tate–Shafarevich group of a torus, non-zero already for a
+  biquadratic field (cf. finding **1129**).  Were it zero SW would not need the shrinking step at
+  all.  For trivial coefficients it *is* zero, which is consistent with the classical
+  Scholz–Reichardt case already proven in the repo.
+* The dimension-shifting route `E ↪ Coind_{G_K}^{G_k}(E|_{G_K})` gives `Ш²(k, Coind) ≅ Ш²(K,E|_K)
+  = 0`, hence `Ш²(k,E) ⊆ im δ` with `δ : H¹(k,Q) → H²(k,E)` — this is now available as soon as
+  Shapiro for `Ш` is in place, `Connecting.lean` being the other half.
+
+### (d) Findings
+
+* **1934 (MATH) — corrected.**  Supersedes the §1.18 entry.  Only "left kernel zero + naturality"
+  is needed, not a bijection; see (a).
+* **1935 (MATH).**  SW's Claim is exactly three steps, two of which are theorems; see the table in
+  (c).
+* **1936 (MATH).**  `Ш²(k,E) ⊆ ker(res_{G_K})`, but not inside `inf H²(G,E)`; see (c).
+* **1937 (MATH).**  The coinduced dimension-shifting route and what it still needs; see (c).
+* **1938 (REPO).**  `CFT/Local/HilbertSymbol.lean` is Serre's **quadratic** (`p = 2`, `±1`-valued)
+  symbol from *A Course in Arithmetic*.  The `n`-th power norm residue symbol is
+  `localKummerSymbol`/`localSymbol` in `CFT/Brauer/LocalSymbol.lean` (`ℚ/ℤ`-valued, bimultiplicative,
+  killed by `n`, trivial on `n`-th powers).
+* **1939 (MATH/PLAN).**  Local Tate duality in degree one for `μ_q` is nearly free from what is
+  already there: `Local/KummerNonNorm.lean` gives one-sided non-degeneracy and
+  `Local/AdicPowIndex.lean`'s `index_range_powMonoidHom_units_adicCompletion` gives finiteness of
+  `k_v^×/(k_v^×)^q`; both sides of the pairing are the *same* finite group, so injective on one side
+  forces perfect.
+* **1940 (REPO).**  `Profinite/` had no connecting homomorphism before `Connecting.lean` — only
+  `Coeff.lean` and `Transgression*.lean`.
+* **1941 (REPO).**  `coboundary₂_eq_one_iff` is already taken by `Profinite/KummerTwo.lean`; hence
+  `isMulCocycle₁_iff_coboundary₂_eq_one`.
+* **1942 (REPO, conventions).**  `IsMulCocycle₁ f : ∀ g h, f (g*h) = g • f h * f g`
+  (Mathlib `LowDegree.lean:611`); `IsMulCocycle₂ f : ∀ g h j, f (g*h,j) * f (g,h) = g • f (h,j) *
+  f (g,h*j)` (:615); `coboundary₂ u := fun p => p.1 • u p.2 / u (p.1 * p.2) * u p.1`
+  (`GroupCohomology/IndexTwo.lean:59`).
+* **1943 (REPO).**  `isMulCocycle₁_smul_div` is at `Profinite/Kummer.lean:61`, a heavy import;
+  reprove inline in a lightweight module.
+* **1944 (LEAN).**  `group` does **not** use commutativity, so it fails on
+  `X / (X * Y) * Y = 1` in a `CommGroup`.  The working chain is
+  `rw [div_mul_eq_div_div, div_self', one_div, inv_mul_cancel]`.
+* **1945 (BUILD).**  `lake build InverseGalois.CFT.Profinite.Connecting` is 8029 jobs, ~12 s on a
+  warm tree; the full root build at this commit is **9746 jobs**, 0 warnings.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
