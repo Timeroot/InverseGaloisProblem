@@ -453,6 +453,7 @@ import InverseGalois.CFT.Profinite.Cochain
 import InverseGalois.CFT.Profinite.Coeff
 import InverseGalois.CFT.Profinite.Comap
 import InverseGalois.CFT.Profinite.Connecting
+import InverseGalois.CFT.Profinite.Corestriction
 import InverseGalois.CFT.Profinite.Cup
 import InverseGalois.CFT.Profinite.Discrete
 import InverseGalois.CFT.Profinite.FixingSubgroup
@@ -5295,6 +5296,19 @@ it that are available here.
   a cochain whose projection is a cocycle of the quotient carrying it back.  This is what lowers a
   question about the second cohomology to a question about the first, where the reciprocity law is
   available.
+* `InverseGalois.CFT.Profinite.Corestriction` goes the other way from restriction.  Choose one
+  element in each left coset of a subgroup of finite index; a group element carries the chosen
+  representative of a coset into the coset of the chosen representative of the translated coset,
+  and the discrepancy is an element of the subgroup obeying a cocycle rule of its own along a
+  product.  Averaging a cochain of the subgroup at those elements, each term carried back by the
+  chosen representative, sends cocycles to cocycles and coboundaries to coboundaries, so it
+  **descends to a homomorphism of the first cohomology of the subgroup into that of the whole
+  group**.  Smoothness needs an open normal subgroup of the whole group inside a given open normal
+  subgroup of the subgroup, which is available whenever the subgroup is open in a compact group,
+  the normal core of an open subgroup of finite index being open again.  The point of the
+  construction is that **the average of a restricted class is the class raised to the number of
+  cosets**, which is what kills the part of a class prime to the index and reduces a question about
+  a group to the same question about a subgroup.
 * `InverseGalois.CFT.Profinite.Comap` composes a cochain with a homomorphism into a group acting on
   the same module.  The cocycle relation and the coboundary are both preserved because the two
   actions agree, so all that is needed is that composition preserve smoothness, and two conditions

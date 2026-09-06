@@ -13006,6 +13006,70 @@ escapes do not work:
 
 ---
 
+## 1.20 Status (2026-09-06, latest) — **corestriction in degree one is a theorem**
+
+`InverseGalois/CFT/Profinite/Corestriction.lean` supplies the transfer that the smooth-profinite
+toolkit was missing entirely (finding 1946: there was no corestriction anywhere under
+`CFT/Profinite/`).  For a subgroup `H ≤ G` of finite index with a section `σ : G ⧸ H → G` of the
+projection:
+
+* `transversalElt H σ hσ g x := (σ (g • x))⁻¹ * g * σ x ∈ H`, with the cocycle rule
+  `transversalElt (g₁ * g₂) x = transversalElt g₁ (g₂ • x) * transversalElt g₂ x`;
+* `corCochain₁ H σ hσ u g := ∏ x : G ⧸ H, σ (g • x) • u (transversalElt H σ hσ g x)`;
+* it takes cocycles to cocycles, coboundaries to coboundaries (of `∏ x, σ x • t`), and smooth
+  cochains to smooth cochains under `HasOpenNormalCore H`;
+* `hasOpenNormalCore_of_isOpen` discharges that side condition for an open subgroup of a **compact**
+  group, so the hypothesis is never left dangling in the Galois setting;
+* `corH1 H σ hσ hcore : SmoothH1 ↥H M →* SmoothH1 G M`, and
+  **`corH1_resH1 : corH1 (resH1 H c) = c ^ Fintype.card (G ⧸ H)`.**
+
+That last identity is the tool for §1.00(g) (reduce to `μ_p ⊆ k` by res–cor) and for the Sylow
+reductions.  Left cosets `G ⧸ H` were chosen over right cosets because they line up with Mathlib's
+`MulAction G (G ⧸ H)` and `QuotientGroup.eq`.
+
+**Next brick**: degree-two corestriction.  The formulas are derived and checked on paper —
+`corCochain₂ a (g₁, g₂) := ∏ x, σ ((g₁ * g₂) • x) • a (transversalElt g₁ (g₂ • x),
+transversalElt g₂ x)` is a 2-cocycle, and `cor₂ ∘ coboundary₂ = coboundary₂ ∘ cor₁` exactly, which
+makes the descent to `SmoothH2` and `corH2_resH2 = pow [G : H]` immediate.
+
+### Lean and Mathlib gotchas, continued
+
+* **1951 (LEAN).**  `σ (g • x)⁻¹` parses as `σ ((g • x)⁻¹)` — function application binds looser than
+  a postfix `⁻¹` on its argument.  Write `(σ (g • x))⁻¹`.  Symptom: `failed to synthesize
+  Inv (G ⧸ H)`.
+* **1952 (MATHLIB).**  `mul_eq_left : a * b = a ↔ b = 1` and `mul_eq_right : a * b = b ↔ a = 1`
+  (`Algebra/Group/Basic.lean:233/254`).  `self_eq_mul_left` does **not** exist.
+* **1953 (MATHLIB).**  `inv_div : (a / b)⁻¹ = b / a` (`Algebra/Group/Basic.lean:392`),
+  `inv_div_inv : a⁻¹ / b⁻¹ = b / a` (:526), and
+  `smul_inv' (r : M) (x : A) : r • x⁻¹ = (r • x)⁻¹` (`Algebra/Group/Action/Basic.lean:203`).
+* **1954 (MATHLIB).**  `Finset.smul_prod' : r • ∏ i ∈ s, f i = ∏ i ∈ s, r • f i`
+  (`Algebra/BigOperators/GroupWithZero/Action.lean:75`).  `Finset.prod_inv_distrib` takes an
+  explicit `f`, so use it as `rw [← Finset.prod_inv_distrib]`, not through `.trans`.
+* **1955 (MATHLIB).**  `Subgroup.quotient_finite_of_isOpen (U : Subgroup G) (h : IsOpen ↑U) :
+  Finite (G ⧸ U)` is at `Topology/Algebra/OpenSubgroup.lean:292` — inside `namespace Subgroup`
+  (which spans 240–314), **not** `namespace OpenSubgroup`.  Together with
+  `Subgroup.finiteIndex_of_finite_quotient`, `Subgroup.normalCore_isClosed`
+  (`ClosedSubgroup.lean:99`) and `Subgroup.isOpen_of_isClosed_of_finiteIndex` this is the whole
+  "the normal core of an open subgroup of a compact group is open" chain.
+* **1956 (MATHLIB).**  `MulAction.Quotient.smul_mk`/`smul_coe` are `rfl`;
+  `QuotientGroup.eq : (a : α ⧸ s) = b ↔ a⁻¹ * b ∈ s` (`Coset/Defs.lean:196`).
+* **1957 (REPO).**  `Cochain.lean` has `smoothH2Mk_eq_iff`/`smoothH2Mk_congr` but **no degree-one
+  analogues** (`smoothH1Mk_eq_iff`, `smoothH1Mk_congr`, `smoothH1Mk_pow` do not exist);
+  `smoothH1Mk_surjective` (:303) and `smoothH1Mk_mul` (:341) do.  Workaround used in
+  `corH1_resH1`: `(map_pow (QuotientGroup.mk' _) ⟨u, hu, hs⟩ n).symm` then `QuotientGroup.eq` and
+  `Subgroup.mem_subgroupOf`.
+* **1958 (REPO).**  In `QuotientGroup.map`'s side condition the coboundary hypothesis arrives as
+  `ht : (fun g => g • t / t) = (smoothCocycle₁ ↥H M).subtype ⟨u, _⟩`, and `rw [← ht]` misses a goal
+  mentioning the raw `u`.  Insert `have ht' : (fun h : ↥H => h • t / t) = u := ht` (defeq through
+  the coercion) and rewrite with `ht'`.
+* **1959 (BUILD).**  A `cat >> file` append lands **after** the closing `end InverseGalois.CFT`,
+  producing a cascade of "unknown identifier"/autoImplicit errors.  Move the namespace-end to the
+  tail afterwards, or use `Edit`/`Write`.
+* **1960 (BUILD).**  `lake build InverseGalois.CFT.Profinite.Corestriction` is 8030 jobs, ~16 s on
+  a warm tree.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
