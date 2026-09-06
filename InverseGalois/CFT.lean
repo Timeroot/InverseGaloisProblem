@@ -180,6 +180,7 @@ import InverseGalois.CFT.Brauer.SubcyclotomicSplit
 import InverseGalois.CFT.Brauer.SymbolCyclicAlgebra
 import InverseGalois.CFT.Brauer.SymbolNorm
 import InverseGalois.CFT.Brauer.SymbolProduct
+import InverseGalois.CFT.Brauer.SymbolReciprocity
 import InverseGalois.CFT.Brauer.SymbolSteinberg
 import InverseGalois.CFT.Brauer.TensorSimple
 import InverseGalois.CFT.Brauer.TotalInvariant
@@ -6824,6 +6825,18 @@ it that are available here.
   **the power residue symbols of two units of a number field multiply to one over the finite
   places**, with no hypothesis on the field beyond containing the roots of unity when the exponent
   is an odd prime.
+* `InverseGalois.CFT.Brauer.SymbolReciprocity` reads that product formula between two units each
+  ramified at a single place.  A unit whose value at a place is divisible by the exponent has a
+  value at the Frobenius automorphism of that place, its symbol there against a uniformiser, and
+  the symbol at such a place is that value raised to the value of the other argument.  Take two
+  units, each of value divisible by the exponent at every finite place but one, and let the first
+  be a power in every completion whose residue characteristic divides the exponent.  Then the
+  symbol is trivial at the places of that residue characteristic because the first unit is a power
+  there, and trivial away from the two exceptional places because both units have value divisible
+  by the exponent, so the product formula reduces to the two exceptional places: **the value of the
+  first unit at the Frobenius automorphism of the exceptional place of the second, raised to the
+  value of the second there, is the value of the second at the Frobenius automorphism of the
+  exceptional place of the first, raised to the value of the first there.**
 * `InverseGalois.CFT.PoitouTate.Unramified` names the local half of the resulting duality.  A class
   of a local field modulo powers is unramified when the value of any representative is divisible by
   the exponent; reading the value modulo the exponent is a homomorphism onto the integers modulo it,

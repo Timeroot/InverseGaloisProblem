@@ -14178,6 +14178,116 @@ immediate from the second theorem but belongs with the per-place wrapper, not he
 
 ---
 
+## 1.30 Status (2026-09-06, latest) — **the closing chain of SW Thm 13 is two applications of one reciprocity law**
+
+`InverseGalois/CFT/Brauer/TameUnramified.lean` (extended: `frobValue` + 7 lemmas) and the new
+`InverseGalois/CFT/Brauer/SymbolReciprocity.lean` (`placeFrobValue` + 7 lemmas).
+`lake build InverseGalois.CFT.Brauer.SymbolReciprocity` = 8626 jobs / 24 s.
+
+### (a) Reading SW's closing chain correctly — the `σ` is on the *element*, not only on the place
+
+`sw.txt:760`ff. prints the six-step chain that finishes the odd-`p` case of Thm 13.  The extraction
+has lost superscripts, and read literally the chain is **false**: line 2 would say
+`z_i(Frob_{σP_i}) = (z_i, z_i)_{σP_i}`, but for odd `p` the symbol of an element against itself is
+identically trivial (`(a,a) = (a,-1)` and `μ_p` has odd order), and line 3 would then say `1 = 1`.
+Condition (3) is printed as `(z_{n+1})_{σP_i} = (z_i)_{σP_i}`, which combined with `z = z_i + z_N`
+would give `z_{σP_i} = 2(z_i)_{σP_i}`, not the `z_{σP_i} = 0` the text asserts two lines later.
+
+The consistent reading — the one that makes every line true and the conclusion follow — is:
+
+* condition (3) is `(z_{n+1})_{σP_i} = −(z_i)_{σP_i}` (a lost minus sign), and
+* the second argument of each symbol is the **Galois conjugate** `z^σ`, not the same element.
+
+With that reading the chain is, writing `ev_P(a)` for the value of an unramified `a` at `Frob_P`:
+
+```
+ev_{σP_N}(z_N) = ev_{σP_i}(z_i)          pigeonhole:  φ_N(z_i) = φ_N(z_N)
+               = ev_{P_i}(z_i^σ)          reciprocity: z_i ram only at P_i, z_i^σ ram only at σP_i
+               = ev_{P_i}(z_N^σ)^{-1}     condition (3) at σ^{-1}
+               = ev_{σP_N}(z_i)^{-1}      reciprocity: z_i ram only at P_i, z_N^σ ram only at σP_N
+```
+
+so `ev_{σP_N}(z_i z_N) = 1`, hence `z = z_i z_N` is trivial at `σP_N` because the evaluation is
+faithful on unramified classes (§1.29).  **Both middle steps are the same theorem.**  This is why
+brick B of §1.28 (`placeValue_galSmul`, `localClassesGalEquiv`) was the right thing to build: the
+chain runs on Galois conjugates of the `z_i`, and all it needs of the Galois action is that it
+moves valuations along with places.
+
+### (b) The reciprocity law, stated
+
+`placeFrobValue_zpow_eq_zpow` (`Brauer/SymbolReciprocity.lean`).  Let `k` be a number field with
+`ζ ∈ k` a primitive `n`-th root of unity, `n` an odd prime, and let `P v` be the residue
+characteristic at `v`.  Let `a b : kˣ` and `v ≠ w` finite places with `P v ∤ n`, `P w ∤ n`, and
+
+* `n ∣ placeValue u a` for every `u ≠ v`,
+* `n ∣ placeValue u b` for every `u ≠ w`,
+* `a` is an `n`-th power in `k_u` for every `u` with `P u ∣ n`.
+
+Then
+
+```
+placeFrobValue hres hζ w a ^ placeValue w b = placeFrobValue hres hζ v b ^ placeValue v a.
+```
+
+Only `a` needs the condition at the places above `n`; in the application both `z_i` and `z_i^σ`
+have it, since SW's condition (2) makes `(z_i)_P = 0` for `P ∩ k ∈ Ram ∪ S_p ∪ S_∞`.
+
+### (c) The layer underneath: `frobValue`
+
+Added to `TameUnramified.lean`:
+
+| name | statement |
+| --- | --- |
+| `localSymbol_eq_zpow_uniformiser_right` | `n ∣ v(b) → (a,b) = ((b,π)^{v(a)})⁻¹` |
+| `frobValue` | `Kˣ →* Multiplicative QModZ`, `a ↦ (a, π₀)` for a chosen uniformiser `π₀` |
+| `frobValue_eq_localSymbol` | `n ∣ v(a) → frobValue a = (a,π)` for **every** uniformiser `π` |
+| `localSymbol_eq_frobValue_zpow` | `n ∣ v(a) → (a,b) = frobValue a ^ v(b)` |
+| `localSymbol_eq_frobValue_zpow_right` | `n ∣ v(b) → (a,b) = (frobValue b ^ v(a))⁻¹` |
+| `frobValue_eq_one_iff` | `n ∣ v(a) → (frobValue a = 1 ↔ a ∈ (Kˣ)ⁿ)` |
+| `pow_frobValue_eq_one` | `frobValue a ^ n = 1` |
+| `localSymbol_eq_one_of_dvd_of_dvd` | `n ∣ v(a) → n ∣ v(b) → (a,b) = 1` |
+
+`frobValue` is defined with `Classical.choose` on `exists_unitValDiv_eq_one`, but
+`frobValue_eq_localSymbol` says the choice is invisible on the unramified classes — which is the
+only place it is ever used.  That is *not* a `.choose`-opacity trap of the kind at
+`baseFundamentalClass` (gotcha 1118): the characterisation lemma covers the whole domain of use.
+It is a `MonoidHom` (via `MonoidHom.flip`), so multiplicativity in `a` — which the last step of the
+chain needs, `ev(z_i z_N) = ev(z_i) ev(z_N)` — is free.
+
+At the number-field level `placeFrobValue hres hζ v a` is the same thing applied to the image of
+`a` in `k_v`, mirroring `placeValue`.
+
+### (d) Findings
+
+* **2070 (LEAN).** `MonoidHom.flip` (`Mathlib/Algebra/Group/Hom/Instances.lean:209`) turns the
+  bilinear `localSymbol : Kˣ →* Kˣ →* Multiplicative QModZ` into a `MonoidHom` in its *first*
+  argument with the second one fixed; `MonoidHom.flip_apply` (`:219`) is the unfolding lemma, and
+  the composite is `rfl`-equal to the plain application, so `frobValue_apply` is `rfl`.
+* **2071 (LEAN).** `localSymbol_mul_swap` (`Brauer/LocalSymbolUnits.lean:155`) is skew symmetry in
+  the form `(a,b)·(b,a) = 1` with **no** tameness hypothesis, so the mirror of any unramified
+  evaluation is one `eq_inv_of_mul_eq_one_right` away.  §1.26(e) rejected *proving* skew symmetry;
+  it did not need to — it was already there.
+* **2072 (LEAN).** `HeightOneSpectrum (𝓞 k)` has no `DecidableEq` instance, so a two-element
+  `Finset` of places must be built under `classical` inside the proof; `Finset.prod_pair hvw` then
+  splits `prod_localSymbol_eq_one_of_ne_two`'s finite product.
+* **2073 (LEAN).** `rw [..., hs, zpow_mul, zpow_natCast, pow_frobValue_eq_one, one_zpow]` closes
+  `x ^ v(b) = 1` from `hs : v(b) = n * s`; inserting `mul_comm` before `zpow_mul` produces
+  `(x^s)^n` with a *nat* outer exponent, which `pow_frobValue_eq_one` cannot see.
+* **2074 (BUILD).** `lake build InverseGalois.CFT.Brauer.SymbolReciprocity` = 8626 jobs / 24 s.
+
+### (e) Routes rejected here
+
+* Making the evaluation depend on a chosen family of uniformisers threaded through every statement.
+  `frobValue_eq_localSymbol` shows the value is uniformiser-independent on exactly the classes it is
+  applied to, so a single `Classical.choose` inside the definition costs nothing downstream.
+* Requiring the second unit to be a power at the places above `n` as well.  Only the argument whose
+  symbol is being killed needs it, and asking for less keeps the hypothesis discharged by SW's
+  condition (2) alone.
+* Bundling the reciprocity as a statement about `localClasses`.  It is a statement about elements of
+  `kˣ`; the descent to classes is `frobValue_eq_one_iff` and belongs where the Selmer group is.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
