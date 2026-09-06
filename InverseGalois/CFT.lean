@@ -130,6 +130,7 @@ import InverseGalois.CFT.Brauer.PlaceSubcyclotomic
 import InverseGalois.CFT.Brauer.PlaceSubcyclotomicBase
 import InverseGalois.CFT.Brauer.PlaceSubcyclotomicFibre
 import InverseGalois.CFT.Brauer.PlaceSubcyclotomicPower
+import InverseGalois.CFT.Brauer.PlaceSymbol
 import InverseGalois.CFT.Brauer.PlaceTotallyRamified
 import InverseGalois.CFT.Brauer.PlaceUnitValue
 import InverseGalois.CFT.Brauer.PlaceUnramified
@@ -177,6 +178,7 @@ import InverseGalois.CFT.Brauer.SubcyclotomicReciprocity
 import InverseGalois.CFT.Brauer.SubcyclotomicSplit
 import InverseGalois.CFT.Brauer.SymbolCyclicAlgebra
 import InverseGalois.CFT.Brauer.SymbolNorm
+import InverseGalois.CFT.Brauer.SymbolProduct
 import InverseGalois.CFT.Brauer.SymbolSteinberg
 import InverseGalois.CFT.Brauer.TensorSimple
 import InverseGalois.CFT.Brauer.TotalInvariant
@@ -448,6 +450,7 @@ import InverseGalois.CFT.PiDual
 import InverseGalois.CFT.PiIndex
 import InverseGalois.CFT.PoitouTate.CupDual
 import InverseGalois.CFT.PoitouTate.Dual
+import InverseGalois.CFT.PoitouTate.Isotropic
 import InverseGalois.CFT.PoitouTate.ShaSurjection
 import InverseGalois.CFT.PoitouTate.ShaTate
 import InverseGalois.CFT.PrimeProductSquare
@@ -5934,6 +5937,16 @@ it that are available here.
   degree one for the roots of unity, read entirely through the symbol; finiteness of the classes is
   left as a hypothesis, so that the statement applies verbatim to a completion of a number field at
   either kind of place, where the local index formula supplies it.
+* `InverseGalois.CFT.PoitouTate.Isotropic` draws the consequence a perfect pairing has for a
+  subgroup.  Identifying a finite abelian group with its own characters carries the elements
+  pairing trivially with a subgroup onto the characters killing that subgroup, and those are the
+  characters of the quotient, of which there are as many as there are elements of the quotient:
+  **a subgroup and its orthogonal complement have complementary orders**.  So a subgroup pairing
+  trivially with itself is at most half the group, and **one that is exactly half is its own
+  orthogonal complement** — the shape the global duality statement takes for the classes of a
+  number field modulo powers.  A pairing on a product of groups is assembled by multiplying the
+  values on the factors, and is nondegenerate as soon as each factor is, a single factor being
+  isolated by pairing against an element supported there.
 * `InverseGalois.CFT.Brauer.TameValue` computes the value itself.  The level of a unit of the
   valuation ring which is not a power of prime order is the radical extension by that unit, and the
   reduction of the minimal polynomial of the chosen root stays irreducible, so **that level is
@@ -6737,4 +6750,28 @@ it that are available here.
   be quantified over the primes and infinite places of the extension.  The result is **the Hasse
   norm theorem: an element of the base field of a cyclic extension of number fields is a norm
   exactly when it is a norm from the completion of the extension at every place**.
+* `InverseGalois.CFT.Brauer.PlaceSymbol` makes the local reading of a cyclic algebra uniform over
+  all the finite places at once, when the extension has prime degree and is presented by a radical
+  of the base.  A decomposition group is then a subgroup of a group of prime order, so it is
+  everything or it is trivial.  Where it is everything the completion of the extension is again
+  presented by the image of the radical, the chosen generator restricts to the local one with no
+  correcting power, and the invariant is the inverse of the power residue symbol of the coefficient
+  against the radicand.  Where it is trivial the completion of the extension is the completion of
+  the base: the coefficient is its own norm and the invariant vanishes, while the radical itself
+  descends, so the radicand is a local power and the symbol is trivial as well.  Hence **at every
+  finite place the invariant of a cyclic algebra over a cyclic extension of prime degree presented
+  by a radical is the inverse of the power residue symbol of its coefficient against the radicand**
+  — the identification which turns the product formula for the invariants into the product formula
+  for the symbol.
+* `InverseGalois.CFT.Brauer.SymbolProduct` makes that turn.  Given two units of a number field
+  containing a primitive root of unity of prime order, either the second is already a power, and
+  every local symbol is trivial, or the polynomial cutting out its root is irreducible and its
+  splitting field is a cyclic extension of that degree presented by a radical — the automorphism
+  matching the chosen root of unity generates the Galois group and multiplies the radical by it.
+  At every finite place the invariant of the cyclic algebra built on the first unit is then the
+  inverse of the local symbol, and a field with a root of unity of order bigger than two has no
+  real place, so no archimedean invariant survives.  Global reciprocity therefore says exactly that
+  **the power residue symbols of two units of a number field multiply to one over the finite
+  places**, with no hypothesis on the field beyond containing the roots of unity when the exponent
+  is an odd prime.
 -/
