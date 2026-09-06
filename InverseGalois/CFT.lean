@@ -671,6 +671,7 @@ import InverseGalois.CFT.Tate.Pi
 import InverseGalois.CFT.Tate.PiSplit
 import InverseGalois.CFT.Tate.Primes
 import InverseGalois.CFT.Tate.Prod
+import InverseGalois.CFT.Tate.ProdH1
 import InverseGalois.CFT.Tate.QuotientFixed
 import InverseGalois.CFT.Tate.RealBasis
 import InverseGalois.CFT.Tate.RealForm
@@ -859,6 +860,7 @@ import InverseGalois.CFT.Units.IdeleCoboundary
 import InverseGalois.CFT.Units.IdeleFixed
 import InverseGalois.CFT.Units.IdeleFullCompare
 import InverseGalois.CFT.Units.IdeleGen
+import InverseGalois.CFT.Units.IdeleLocalVanish
 import InverseGalois.CFT.Units.IdeleNorm
 import InverseGalois.CFT.Units.IdeleNormTower
 import InverseGalois.CFT.Units.IdeleOrbitTate
@@ -4444,6 +4446,16 @@ it that are available here.
   vanishes as soon as, at every index, its restriction to the stabiliser followed by evaluation
   there vanishes** — the local-global statement the ideles need, with no isomorphism onto a
   coinduced module anywhere in it.
+* `InverseGalois.CFT.Tate.ProdH1` cuts a representation into two pieces.  A pair of maps out of a
+  representation whose combined effect is a bijection presents it as a product of the two targets,
+  and in degree one the two coboundary witnesses of the two images assemble to a single element,
+  which is a coboundary witness for the cocycle itself: **a class of the first cohomology vanishes
+  as soon as both of its images do.**  The pair wanted is the two projections of a product of two
+  modules acted on componentwise, and its twist by coefficients, which is available with no
+  hypothesis on the two modules because a tensor product commutes with a product of *two* of them.
+  The ideles of a number field are such a product, of the infinite places and the finite ones, and
+  their local unit groups are killed by no integer, so this is the only form of the splitting that
+  reaches them.
 * `InverseGalois.CFT.Tate.FamilyTensorFinsupp` reads the support of such a tensored section.  The
   comparison with the sections of the tensored family is computed coordinatewise, so its value at
   an index is assembled from the values of the coordinates there and vanishes wherever all of them
@@ -4508,6 +4520,16 @@ it that are available here.
   complete cohomology of the ideles in degree one injects into that of the product of all the local
   unit groups** — so a class trivial on every decomposition group, which by the orbit decomposition
   is a class trivial in the whole product, is already trivial in the ideles.
+* `InverseGalois.CFT.Units.IdeleLocalVanish` draws that conclusion.  The product of all the local
+  unit groups is a product of the infinite places and the finite ones, so a class of its twisted
+  first cohomology vanishes as soon as both of its projections do; and each half is the sections of
+  a family indexed by the places of that kind, where a twisted class is detected at the indices.
+  Restriction to the decomposition subgroup of a place commutes with reading the ideles at the
+  places of one kind, so the local hypothesis at a place is exactly the local hypothesis the
+  detection theorem wants there.  Chaining the three steps with the injection of the previous file
+  gives **a class of the first cohomology of the twisted ideles that is trivial in every
+  decomposition subgroup is trivial** — the local-global statement in the form the Shafarevich
+  tower consumes, with no isomorphism onto a coinduced module used anywhere along the way.
 * `InverseGalois.CFT.Tate.FamilyResGroup` observes that all of this is available on a subgroup of
   the acting group with nothing to prove.  A subgroup moves the index set by the restricted action
   and transports the modules by the same isomorphisms, so it acts on the same family; the sections
