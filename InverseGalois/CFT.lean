@@ -469,6 +469,7 @@ import InverseGalois.CFT.Profinite.KummerLocalSurjective
 import InverseGalois.CFT.Profinite.KummerRep
 import InverseGalois.CFT.Profinite.KummerRes
 import InverseGalois.CFT.Profinite.KummerTower
+import InverseGalois.CFT.Profinite.KummerTransport
 import InverseGalois.CFT.Profinite.KummerTwist
 import InverseGalois.CFT.Profinite.KummerTwo
 import InverseGalois.CFT.Profinite.Pi
@@ -5556,6 +5557,18 @@ it that are available here.
   units with a representation of the coefficients, which is the object the theorems of Tate and of
   Nakayama are stated about.  The everywhere locally trivial classes travel along it and the two
   readings of them vanish together.
+* `InverseGalois.CFT.Profinite.KummerTransport` writes that identification on cocycles.  Both of the
+  transports it is assembled from — the one along the identification of the coefficients and the one
+  along the isomorphism of the acting groups — are the map induced by a homomorphism of the acting
+  groups together with a map of the representations, in the forward direction, so **the class of a
+  smooth one cocycle with values in the units is the class of the one cocycle read at the inverse
+  isomorphism of the groups with its values carried across the identification of the
+  coefficients.**  That is what makes the identification usable: restriction to a subgroup reads a
+  cocycle at the elements of the subgroup and a map of representations applies to its values, while
+  on the smooth side composition with a homomorphism of the acting groups and with a map of the
+  coefficients does the same thing, so when the two homomorphisms agree and the two identifications
+  of the coefficients agree the two cocycles are equal.  Hence **a smooth class whose localisation
+  at a subgroup is trivial has vanishing image in the complete cohomology of that subgroup.**
 * `InverseGalois.CFT.Profinite.Symbol` pairs two units of the base.  Cupping their Kummer classes
   along a pairing of the roots of unity with themselves gives **the `n`-th power symbol**, a
   bimultiplicative map on the units of the base with values in the second cohomology; it is killed

@@ -11860,6 +11860,169 @@ and (ii-a) the henselization-vs-completion comparison `(K ⊔ F)^×/p ≅ K_w^×
 
 ---
 
+## 1.11 Status (2026-09-06, latest)
+
+### (a) Two modules landed
+
+* **`Profinite/KummerLocalQuot.lean`** (commit `4655267`, full root build **9733 jobs**, clean).
+  The local comparison of `KummerLocalCompare.lean`, restated on the *finite quotient*
+  `↥D ⧸ K.fixingSubgroup.subgroupOf D` of a decomposition subgroup rather than on `↥D` itself.
+  Three theorems, all delegating to `KummerLocalCompare`:
+  `coeffH1_eq_one_of_coeffQuotH1_eq_one`,
+  `coeffH1_resQuotH1_eq_one_of_resCoeffQuotH1_eq_one`,
+  `coeffH1_resQuotH1_eq_one_of_mem_sha1Level`.
+  This is the level the transgression's obstruction actually reads (finding 1787): the coefficients
+  `SmoothH1 ↥K.fixingSubgroup E` are acted on through the quotient, so "locally trivial" is already
+  a statement about the finite quotient, and rewriting the comparison there costs nothing —
+  surjectivity of localisation and the description of its kernel are statements about the
+  coefficients alone, with no reference to the acting group.
+* **`Profinite/KummerTransport.lean`** (new).  The twisted Kummer identification
+  `kummerFiniteH1Equiv`, **computed on cocycles**, plus the naturality square that gap (ii-a)
+  needs.  See (b) and (c).
+
+### (b) The Kummer identification is computable on cocycles
+
+`kummerFiniteH1Equiv = (kummerSmoothH1Equiv …).trans (h1MulEquivOfSmul (quotientFixingSubgroupEquiv
+K) B φ hφ)` and `kummerSmoothH1Equiv` is `smoothH1EquivOfAddEquiv` after a `discreteSmoothH1Equiv`.
+Each of those two transports is built out of a `.symm` of a `Tate.groupCohomologyCongr`, so the
+naive reading is that the composite is an *inverse* map and therefore useless on explicit cocycles.
+That reading is wrong.
+
+* **1806 (Mathlib naming).**  `MulEquiv.apply_eq_iff_eq_symm_apply` does **not** exist.  The two
+  real lemmas are `MulEquiv.symm_apply_eq (e) : e.symm x = y ↔ x = e y`
+  (`Algebra/Group/Equiv/Defs.lean:344`) and `MulEquiv.eq_symm_apply (e) : y = e.symm x ↔ e y = x`
+  (:348).  `rw [← MulEquiv.eq_symm_apply]` turns `e a = b` into `a = e.symm b`.
+* **1807 (decisive).**  Applying `MulEquiv.eq_symm_apply` twice flips the goal so that only the
+  *forward* `groupCohomology.map` appears, and both resulting unfolding lemmas are literally
+  `rfl`:
+  ```lean
+  theorem h1MulEquivOfSmul_symm_ofAdd (z : ↥(groupCohomology B 1)) :
+      (h1MulEquivOfSmul e B φ hφ).symm (Multiplicative.ofAdd z)
+        = Multiplicative.ofAdd (groupCohomology.map (e : Q →* G)
+            (repIsoOfEquivSmul e B φ hφ).hom 1 z) := rfl
+
+  theorem smoothH1EquivOfAddEquiv_symm_ofAdd
+      (z : ↥(groupCohomology (Rep.ofDistribMulAction ℤ Q T) 1)) :
+      (smoothH1EquivOfAddEquiv Q S T κ hκ).symm (Multiplicative.ofAdd z)
+        = (discreteSmoothH1Equiv Q S).symm (Multiplicative.ofAdd
+            (groupCohomology.map (MonoidHom.id Q) (repIsoOfAddEquiv Q S T κ hκ).hom 1 z)) := rfl
+  ```
+  Both are in `KummerTransport.lean`.
+* **1808 (Mathlib map).**  `groupCohomology.functor k G n` has `map φ := map (MonoidHom.id _) φ n`
+  (`Functoriality.lean:483`); `H1` is `abbrev H1 := groupCohomology A 1` (`LowDegree.lean:927`);
+  `cochainsMap₁ f φ x = fun g => φ.hom.hom (x (f g))` (`Functoriality.lean:165`);
+  `coe_mapCocycles₁ : ⇑(mapCocycles₁ f φ x) = cochainsMap₁ f φ x` is `rfl` (:297);
+  `H1π_comp_map` (:317) is `@[reassoc (attr := simp), elementwise (attr := simp)]`, giving
+  `H1π_comp_map_apply : map f φ 1 (H1π A x) = H1π B (mapCocycles₁ f φ x)`.
+* **1809 (repo map, the Tate maps on cocycles in degree one).**
+  `Tate.tateRes_one_H1π (H) : tateRes H A 1 (H1π A b) = H1π (resObj H A) (resCocycles₁ H A b)`
+  (`TateCohomology/RestrictOne.lean:130`), with `resCocycles₁ H A b = ⟨fun h => b (h : G), _⟩`
+  (`TateTheorem.lean:92`);
+  `Tate.tateMap_one_H1π (φ) : tateMap φ 1 (H1π A b) = H1π B (homCocycles₁ φ b)`
+  (`NakayamaNatural.lean:114`), with `homCocycles₁_apply : homCocycles₁ φ b τ = φ.hom.hom (b τ)`
+  (:100, `rfl`).
+* **1812 (repo map, reuse).**  `GroupCohomology/H2Transport.lean:68` already has exactly the
+  morphism of representations needed —
+  `transportRepHom (e : G ≃* G') (φ : A ≃ₗ[k] B) (hφ) : (Action.res _ (e.symm : G' →* G)).obj A ⟶ B`
+  — so `KummerTransport.lean` does **not** define its own (and must not: the name is taken, gotcha
+  1472).  Its universe constraint is `{k : Type u} {G G' : Type u}`, which for `k = ℤ` forces the
+  acting groups into `Type`; every group in this part of the tower already is.
+
+The payoff is `KummerTransport.lean`'s
+
+```lean
+noncomputable def transportCocycles₁ {u : Q → S} (hu : IsMulCocycle₁ u) :
+    groupCohomology.cocycles₁ B :=
+  mapCocycles₁ (e.symm : G →* Q)
+    (transportRepHom e (transportUnitsEquiv κ B φ) (transportUnitsEquiv_intertwine κ hκ e B φ hφ))
+    (cocyclesOfIsMulCocycle₁ hu)
+
+theorem transportCocycles₁_apply (hu) (g : G) :
+    transportCocycles₁ κ hκ e B φ hφ hu g = φ (κ.symm (Additive.ofMul (u (e.symm g)))) := rfl
+
+theorem h1MulEquivOfSmul_smoothH1Mk (hu) (hs) :
+    h1MulEquivOfSmul e B φ hφ (smoothH1EquivOfAddEquiv Q S T κ hκ (smoothH1Mk u hu hs))
+      = Multiplicative.ofAdd (groupCohomology.H1π B (transportCocycles₁ κ hκ e B φ hφ hu))
+```
+
+i.e. **the class of a smooth one cocycle is the class of an explicitly given one cocycle**, and no
+cocycle condition has to be proved by hand (`mapCocycles₁` supplies it).
+
+### (c) The naturality square for gap (ii-a), step 2
+
+`KummerTransport.lean`'s main theorem is the generic square.  Global data
+`(Q, S, T, κ, hκ, e : Q ≃* G, B, φ, hφ)` with `G` finite; local data
+`(Q', S', T', κ', hκ', e' : Q' ≃* ↥H, B', φ', hφ')` for a subgroup `H ≤ G`; a smooth `π : Q' →* Q`
+with `hπ : ∀ g s, g • s = π g • s`; a `ψ : S →* S'` with `hψ : ∀ g s, ψ (g • s) = g • ψ s`; a
+`Φ : resObj H B ⟶ B'`; and the two compatibilities
+
+```lean
+(hcomm : ∀ g : Q', ((e' g : ↥H) : G) = e (π g))
+(hcoef : ∀ t : T,
+  Φ.hom.hom (φ t) = φ' (κ'.symm (Additive.ofMul (ψ (Additive.toMul (κ t))))))
+```
+
+give
+
+```lean
+theorem tateMap_tateRes_eq_zero_of_coeffH1_comapH1_eq_one (hu) (hs)
+    (hx : coeffH1 ψ hψ (comapH1 π hπ hsm (smoothH1Mk u hu hs)) = 1) :
+    tateMap Φ 1 (tateRes H B 1 (Multiplicative.toAdd
+      (h1MulEquivOfSmul e B φ hφ
+        (smoothH1EquivOfAddEquiv Q S T κ hκ (smoothH1Mk u hu hs))))) = 0
+```
+
+The proof is a pointwise comparison of two cocycles on `↥H`: on the Tate side
+`h ↦ Φ.hom.hom (φ (κ.symm (ofMul (u (e.symm ↑h)))))`, on the smooth side
+`h ↦ φ' (κ'.symm (ofMul (ψ (u (π (e'.symm h))))))`; `hcomm` identifies the arguments and `hcoef`
+the coefficients.
+
+* **1813 (Lean).**  `↥((Action.res _ f).obj (Rep.ofMulDistribMulAction Q S)).V` does not reduce to
+  `Additive S` during *elaboration* of a `show`, so `Additive.toMul s` there fails with
+  `failed to synthesize HSMul Q ↑(…).V ?m`.  Pin it: write `@Additive.toMul S (@id (Additive S) s)`
+  (and `@id (Additive S) s` wherever the bare `s` occurs), which forces the defeq check at default
+  transparency and succeeds.  Use the *same* spelling on both sides of the `show` or the closing
+  `rfl` will be left over.
+* **1814 (Lean).**  Section *data* variables used only inside a tactic proof are not
+  auto-included either, exactly like hypotheses (gotcha 747): `include κ' hκ' e' φ' hφ' hcomm hcoef
+  in` is needed even though `κ'`, `e'`, `φ'` are `(…)`-explicit data.  Order (gotcha 18):
+  `omit … in` first, then `include … in`, then the docstring.
+
+### (d) Where Shafarevich stands
+
+Unchanged from §1.10(d):
+
+>  `Ĥ^{-2}(G, W)  ↠  Ш¹_{idelic}(G, K^× ⊗ W)`  — brick 3, conditional on `HasIdeleClassNakayamaSpan`
+>  `Ш¹(G, K^× ⊗ W) ≅ sha1Level`                — brick 4, done
+>  `sha1Level = ⊥  ⇒  Ш²(k,E) ⊆ inf`           — brick 5, done
+>  `Ĥ^{-2}(G, W) = 0` after shrinking `G`      — Prop 6, done
+>  `Ш_dec = Ш_idelic`                          — (ii-b) done, (ii-a) open
+
+with (ii-a) now decomposed into four steps, of which **step 2 is done**:
+
+1. **1b** — the group isomorphism `↥(stabilizer Gal(Ω/k) P) ⧸ L.fixingSubgroup.subgroupOf
+   (stabilizer Gal(Ω/k) P) ≃* ↥(stabilizer Gal(↥L/k) v)`, from
+   `QuotientGroup.liftEquiv _ (stabilizerRestrictPrime_surjective L hv) (Subgroup.ext …)`
+   (`Units/HasseTwoDecomposition.lean`), and its archimedean twin.  Finding **1810**:
+   `[IsGalois k ↥L]` already supplies `L.fixingSubgroup.Normal`
+   (`Mathlib/FieldTheory/Galois/Basic.lean:452` and `Profinite/Krull.lean:56`), so no extra
+   instance argument is needed.
+2. **2** — the transport and the square: **done**, `Profinite/KummerTransport.lean`.
+3. **1c** — the coefficient map `ψ_v` and its equivariance, with kernel condition supplied by
+   `tensor_adicUnitHom_eq_zero_of_tensor_sup_eq_zero` /
+   `tensor_infiniteUnitHom_eq_zero_of_tensor_sup_eq_zero`
+   (`Kummer/DecompositionLocalPower.lean:200/216`) and surjectivity by
+   `surjective_tensor_sup_of_stabilizer_ideal` / `_infinitePlace`
+   (`Kummer/SupPowSurjective.lean:432/445`).
+4. **3** — the commuting square of representations
+   `resHom _ (tensorHomLeft W (globalUnitsToIdele k K)) ≫ ideleAdicLocalHom k K W v
+   = tensorHomLeft (resObj _ W) (localUnitsHom v)` (an `ext` on pure tensors), then
+   `tateRes_naturality` + `tateMap_comp_apply` feed both hypotheses of
+   `eq_zero_of_forall_local_idele` (`Units/IdeleLocalVanish.lean:155`), giving
+   `kummerFiniteSha1 ≤ ker (tateMap (tensorHomLeft W (globalUnitsToIdele k K)) 1)`.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
