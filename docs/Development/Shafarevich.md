@@ -14513,6 +14513,115 @@ steps carry the *same* invertible exponent and it cancels.  Concretely, in `Clos
 
 ---
 
+## 1.33 Status (2026-09-07, later still) — **the Chebotarev input of SW Thm 13 is a theorem**: a prescribed decomposition group over the base, normal only over an intermediate field
+
+Same day as §1.32, which set out the plan; this section records that the plan is carried out.  Two
+commits: the degree-one density refinement, and the base change proper.  Full root build **9763
+jobs, 0 warnings, 0 sorries**.
+
+### (a) Step 1–4 of §1.32(b): the degree-one refinement — `NumberTheory/DegreeOneDensity.lean`
+
+The absolute norm of a prime is a power of its residue characteristic, so either
+`absNorm 𝔭 = resChar 𝔭` or `(resChar 𝔭)² ≤ absNorm 𝔭` (`sq_resChar_le_absNorm`: the cofactor of
+the least prime factor is itself a divisor exceeding one, hence at least the least prime factor).
+The second kind is negligible:
+
+* `summable_resCharSqInv` — `∑_𝔭 (resChar 𝔭)^{-2}` converges, because at most `[K : ℚ]` primes
+  share a residue characteristic (`summable_of_fiber_bound` + `tsum_fiber_le`) and `∑_p p^{-2}`
+  converges;
+* `idealSum_compl_degreeOneSet_le` — hence the Dirichlet series over the bad primes is bounded by
+  the *constant* `resCharSqSum K`, uniformly in `s`;
+* `hasIdealDensity_compl_degreeOneSet` — dividing by `log(1/(s-1)) → ∞` gives density `0`;
+* `idealDensity_le_of_subset_union₂` — the union bound now tolerates a finite set **and** a
+  density-zero set;
+* `infinite_setOf_splitsCompletelyIn_not_splitsCompletelyIn_degreeOne` — infinitely many primes of
+  residue degree one over `ℚ` split completely in the smaller Galois extension and not in the
+  larger.
+
+`exists_relStabilizer_eq_zpowers` and `exists_relArithFrobAt_mem_zpowers`
+(`CFT/RelativeFrobenius.lean`) then carry the extra conclusion `absNorm v.asIdeal = resChar v` at
+no cost: the only change in the proof is which infinitude lemma is invoked.
+
+### (b) The base change — `CFT/RelativeFrobeniusBase.lean`
+
+`k ⊆ F ⊆ N`, `N/k` Galois, `σ ∈ Gal(N/F)` of prime order with `⟨σ⟩` normal **in `Gal(N/F)` only**.
+`exists_relStabilizer_eq_zpowers_restrictScalars` produces a prime `v` of `k` outside a prescribed
+finite set, unramified in `N`, of residue degree one over `ℚ`, and a prime `P` of `N` over it with
+
+```
+MulAction.stabilizer Gal(N/k) P = Subgroup.zpowers (σ.restrictScalars k)
+Subgroup.zpowers (arithFrobAt (𝓞 k) Gal(N/k) P) = Subgroup.zpowers (σ.restrictScalars k)
+```
+
+The proof is the four-line descent
+
+1. apply `exists_relStabilizer_eq_zpowers` over the base `F`, avoiding the primes of `F` above
+   `T ∪ Ram(N|k)` — a finite set by `finite_preimage_primeBelow`;
+2. the prime `w` it returns has `absNorm w = resChar w` prime, and `absNorm w` is a power of
+   `absNorm v` with `absNorm v ≥ 2`, so `absNorm v = absNorm w` (`absNorm_primeBelow_eq`) and `v`
+   is itself of residue degree one (`absNorm_primeBelow_eq_resChar`);
+3. reading `absNorm P` as a power of `absNorm v` and as a power of `absNorm w` gives
+   `f(P/v) = f(P/w)` (`inertiaDeg_primeBelow_eq`, `Nat.pow_right_injective`); both primes are
+   unramified, so `card D_{P/v} = f(P/v) = f(P/w) = card D_{P/w} = orderOf σ`;
+4. `σ.restrictScalars k ∈ D_{P/v}` (`relRestrictScalars_mem_stabilizer`) and
+   `orderOf (σ.restrictScalars k) = orderOf σ`, so the two groups of equal order are equal.
+
+**This is exactly SW's `P_{n+1}`.**  Take `F = K`, `N = MΩ`, `σ` the element of `Gal(N/K)` with
+`σ|_Ω = 1`, `σ|_M = τ_ξ`.  `Gal(N/K)` is abelian, so `⟨σ⟩` is normal there; `D = ⟨σ⟩ ⊆ Gal(N/Ω)`
+is complete splitting in `Ω`; and `D ∩ Gal(N/K)`-triviality of the `Gal(K/k)`-action makes the
+conjugates `P^τ`, `τ ≠ 1`, distinct primes, which is what conditions (1) and (3) of the recursion
+need.
+
+### (c) What the plan of §1.32(b) got wrong, and the cheaper route
+
+§1.32 planned the descent through *complete splitting*: `absNorm 𝔮 = resChar 𝔮` ⟹
+`SplitsCompletelyIn k F 𝔭` ⟹ `D_{P/𝔭} ≤ Gal(N/F)` by `relStabilizer_le_of_splitsCompletelyIn`.
+That does work, but `sq_le_absNorm_of_not_splitsCompletelyIn` needs `𝔭` unramified in `F` **and**
+`F/k` Galois, so it costs an extra hypothesis and an extra exclusion.
+
+The route actually taken never mentions `SplitsCompletelyIn`: the inclusion
+`⟨σ.restrictScalars k⟩ ⊆ D_{P/𝔭}` is free, and *cardinality* closes the gap.  So `F/k` need not be
+Galois, and the only exclusions are the prescribed set and the primes ramifying in `N` — both
+already needed.  Complete splitting in `F` is then a **consequence**, not a hypothesis.
+
+### (d) Findings
+
+* **2087 (LEAN).** Inside an anonymous-constructor divisibility witness `⟨c, by rw [hm]; ring⟩`, a
+  `rw [hm]` with `hm : N = a * m` rewrites *every* occurrence of `N`, including the one inside
+  `N.minFac` on the right.  Use `by rw [mul_comm]; exact hm`.
+* **2088 (LEAN).** `tsum_fiber_le` (`NumberTheory/SplitDensity.lean:560`) needs its `F` argument
+  **explicit** when `F` is a lambda: higher-order unification cannot solve
+  `?F ↑v =?= ↑(resChar ↑v) ^ (-2)`.  Supplying only `c` instead leaves `K` undeterminable
+  (`typeclass instance problem is stuck NumberField ?m`).  Supply `F`, then `show`, then `rw`.
+* **2090 (MATH).** In SW Thm 13, `M/K` is elementary abelian but `M/k` is not abelian, so
+  `Gal(N/Ω)` is *not* central in `Gal(N/k)`; `⟨σ⟩` normal in `Gal(N/k)` would need `τ_ξ` to span a
+  `Gal(K/k)`-stable line.  The base change is genuinely required.
+* **2091 (MATH).** The cardinality descent of (b)3–(b)4, which replaces the splitting descent of
+  §1.32(b).
+* **2093 (MATHLIB).** `IntermediateField.fixingSubgroupEquiv` (`FieldTheory/Galois/Basic.lean:268`)
+  and `AlgEquiv.restrictScalars_injective` (`Algebra/Algebra/Tower.lean:248`).  Both directions of
+  the first preserve the underlying function, so the ideal actions agree; but with the cardinality
+  route only `restrictScalars` is needed, and `(τ.restrictScalars k) • P = τ • P` is `rfl` after
+  `Ideal.mem_pointwise_smul_iff_inv_smul_mem`.
+* **2094 (MATHLIB).** The ring-of-integers action is
+  `instance [MulSemiringAction G K] : MulSemiringAction G (𝓞 K)`
+  (`NumberTheory/NumberField/Basic.lean:128`), and `IsScalarTower (𝓞 k) (𝓞 K) (𝓞 L)` is
+  `inst_isScalarTower` at `:230`.
+* **2096 (BUILD).** `lake build InverseGalois.CFT.RelativeFrobeniusBase` = 8033 jobs / 33 s; full
+  root build = **9763 jobs**.
+
+### (e) Routes rejected here
+
+* The "normal core over `k`" route (replace `fixedField ⟨σ⟩` by `fixedField (core ⟨σ⟩)`): when the
+  core is trivial no such prime exists, and split-density is conjugation-invariant, so it provably
+  cannot pin the specific class `ξ` SW needs.
+* Hoping `Gal(N/Ω)` is central in `Gal(N/k)` (finding 2090).
+* The splitting descent of §1.32(b), superseded by (c).
+* Proving multiplicativity of `e` and `f` along the tower `k ⊆ F ⊆ N`: absolute norms already
+  encode `f`, and `e = 1` is available by excluding `Ram(N|k)`.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
