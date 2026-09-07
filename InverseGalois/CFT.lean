@@ -480,6 +480,7 @@ import InverseGalois.CFT.PoitouTate.Selmer
 import InverseGalois.CFT.PoitouTate.ShaSurjection
 import InverseGalois.CFT.PoitouTate.ShaTate
 import InverseGalois.CFT.PoitouTate.SplitClass
+import InverseGalois.CFT.PoitouTate.SplitPlaceGenerate
 import InverseGalois.CFT.PoitouTate.SplitPlacePower
 import InverseGalois.CFT.PoitouTate.TorsionCharacter
 import InverseGalois.CFT.PoitouTate.TwoPlaces
@@ -7205,4 +7206,20 @@ it that are available here.
   field already forces the top field to be strictly larger: **outside any prescribed finite set of
   primes of the base there is a completely split prime of the middle field at which one of the
   radicands is not a power in the completion.**
+
+* `InverseGalois.CFT.PoitouTate.SplitPlaceGenerate` goes the other way, and makes finitely many
+  completely split places detect a radical.  Above a prime of the base splitting completely in an
+  intermediate field the decomposition group restricts to the trivial group there, so it fixes that
+  field; conversely a prime all of whose decomposition groups lie in a normal subgroup splits
+  completely in the fixed field of that subgroup.  Feeding the two into the density theorem shows
+  that the decomposition groups at the primes above the completely split primes generate the whole
+  subgroup fixing the intermediate field: were the containment strict, the fixed field of the
+  subgroup they generate would be strictly larger, so a prime avoiding the prescribed finite set
+  would split completely in the intermediate field and not in that fixed field, while belonging to
+  the prescribed collection forces it to split there after all.  Only finitely many automorphisms
+  occur among the generators, so finitely many primes of the base already suffice.  Since an
+  automorphism in a decomposition group fixes a radical exactly when the radicand is a power in the
+  completion below: **there are finitely many completely split primes of an intermediate field,
+  avoiding any prescribed finite set of primes of the base, at which being a local power forces a
+  radicand whose radical lies in the top field to be a power already in the intermediate field.**
 -/
