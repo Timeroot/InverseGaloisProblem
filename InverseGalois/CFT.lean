@@ -454,6 +454,7 @@ import InverseGalois.CFT.PGroupCompositum
 import InverseGalois.CFT.PairwiseResidue
 import InverseGalois.CFT.PiDual
 import InverseGalois.CFT.PiIndex
+import InverseGalois.CFT.PoitouTate.BasePrescription
 import InverseGalois.CFT.PoitouTate.ChebotarevPlace
 import InverseGalois.CFT.PoitouTate.ClassSetAvoid
 import InverseGalois.CFT.PoitouTate.ClosingChain
@@ -975,6 +976,7 @@ import InverseGalois.CFT.Units.SUnitHerbrand
 import InverseGalois.CFT.Units.SUnitIndex
 import InverseGalois.CFT.Units.SUnitValuation
 import InverseGalois.CFT.Units.SolvableNorm
+import InverseGalois.CFT.Units.SplitCompletion
 import InverseGalois.CFT.Units.SplitNorm
 import InverseGalois.CFT.Units.SplitOutside
 import InverseGalois.CFT.Units.SplitPlaces
@@ -2724,6 +2726,11 @@ it that are available here.
   an automorphism over the completion of the base is continuous, hence preserves the unit ball and
   restricts to the extension.  So the elements fixed by the decomposition group are exactly those
   coming from the completion of the base.
+* `InverseGalois.CFT.Units.SplitCompletion` draws the consequence at a prime where there is no
+  decomposition group at all.  The fixed-point condition is then empty, so **the completion of the
+  base field is the whole completion of the extension**: the prime is completely split and the
+  extension has bought nothing there.  In particular a root of unity of the extension, transported
+  into the completion and pulled back, gives a root of unity of the completion of the base.
 * `InverseGalois.CFT.Units.DecompositionGalois` packages that as an isomorphism of groups: the
   decomposition group at a prime **is** the Galois group of the completion over the completion of
   the prime below, so its order is the local degree.
@@ -7160,4 +7167,14 @@ it that are available here.
   there**, and two units with the same local classes above a place have norms with the same local
   class there; and since at a prime unramified in the extension the order of a norm is the sum of
   the orders of the conjugates, a unit unramified above such a prime has an unramified norm.
+
+* `InverseGalois.CFT.PoitouTate.BasePrescription` sends the two-place construction down that map.
+  The constructed unit and the prescribed one have the same classes at every place above a place of
+  the given set, so their norms have the same class there; away from that set the constructed unit
+  is unramified except at the two exceptional places, so its norm is unramified at every prime of
+  the base unramified in the extension and lying under neither.  At the two exceptional places the
+  decomposition group is trivial, so the completion of the base already carries the roots of unity
+  the upper field was assumed to contain: **there is a number of the base field, a norm from the
+  upper one, agreeing with the norm of the prescribed unit on the given set of places and, outside
+  it, either unramified or living over a completion containing the roots of unity.**
 -/
