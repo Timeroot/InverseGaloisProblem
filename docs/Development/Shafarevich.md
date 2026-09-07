@@ -15254,3 +15254,128 @@ Landed as:
 * Wikipedia, *Shafarevich's theorem on solvable Galois groups* —
   <https://en.wikipedia.org/wiki/Shafarevich%27s_theorem_on_solvable_Galois_groups>;
   *Semiabelian group* — <https://en.wikipedia.org/wiki/Semiabelian_group>.
+
+---
+
+## 1.39 Status (2026-09-07, latest) — **SW Thm 13 for `A = μ_p`, odd `p`, is a theorem**
+
+The two-place theorem produces a unit `z` of the *upper* field `K`.  SW's Thm 13 wants a class
+`x ∈ H¹(k_S|k, A)` with `x_q = (cor^K_k y)_q` for `q ∈ T` and `x_q` *cyclic* for `q ∉ T`, obtained
+as `x = cor^K_k z`.  Two things had to be built to get from one to the other.
+
+### (a) `cor` is the norm
+
+`H¹(k, μ_p) ≅ kˣ/(kˣ)^p` by Hilbert 90 **unconditionally** — no need for `μ_p ⊆ k` (finding 2287).
+So in Kummer currency `cor^K_k : H¹(K,μ_p) → H¹(k,μ_p)` is exactly `N_{K/k} : Kˣ/p → kˣ/p`, and the
+whole of Thm 13 for `A = μ_p` is a statement about `N_{K/k}(z)`.
+
+### (b) The norm is local–global compatible
+
+`PoitouTate/NormLocalPower.lean` (new).  Read inside one completion `K_w`, the conjugates of an
+element factor along the cosets of the decomposition group,
+
+  ∏_{σ ∈ G} σ t  =  ∏_{L ∈ G/D_w} ∏_{d ∈ D_w} (d · out(L)⁻¹) t,
+
+and the inner product is `algebraMap (N_{K_w/k_q} z_L)` for `z_L` the transport of `t` along
+`out(L)`.  Hence:
+
+* `exists_pow_eq_algebraMap_norm`: if `t` is a `p`-th power in `K_{σw}` for **every** `σ`, then
+  `N_{K/k} t` is a `p`-th power in `k_q`;
+* `localClassHom_norm_eq_one` / `localClassHom_norm_eq_of_forall_eq`: the same in the currency
+  `localClasses q p`, and hence "same local classes above `q` ⇒ same local class of the norms";
+* `ord_algebraMap_eq_ramIdx_mul` and `dvd_ord_norm_of_forall_dvd`: `ord_q(N t) = Σ_σ ord_{σw}(t)`
+  when `e(w|q) = 1`, so divisibility by `p` of all the upstairs orders passes to the norm;
+* `localClassHom_norm_mem_localUnramified`: unramified above an unramified `q` ⇒ unramified at `q`.
+
+The direction that is **false** and must not be attempted: `N t ∈ (k_q^×)^p` does *not* follow from
+`algebraMap k K_w (N t)` being a `p`-th power in `K_w`.  The proof must go through the product over
+`G`, one coset at a time.
+
+The `e`/`f` bookkeeping people usually do here is unnecessary (**finding 2286**): in SW Thm 13
+`T ⊇ Ram(Ω|k) ∪ S_p ∪ S_∞` and `K ⊆ Ω`, so every prime of `k` ramified in `K|k` already lies in `T`;
+for `q ∉ T` one has `e(w|q) = 1` and there is no inertia degree at all in the identity.  And
+`valuation_algebraMap` (`Units/PlaceComap.lean:213`) already gives `e`, so nothing has to be built
+out of `Ideal.map_algebraMap_eq_finset_prod_pow` + `Associates.count`.
+
+### (c) Cyclicity is free at the two exceptional places
+
+`Units/SplitCompletion.lean` (new).  `mem_range_algebraMap_iff_forall_stabilizer_smul_eq` says the
+elements of `K_w` fixed by `D_w` are those coming from `k_q`.  If `D_w = ⊥` the condition is empty,
+so `algebraMap k_q → K_w` is **surjective** — the completions agree.  Therefore `μ_p ⊆ K` gives
+`μ_p ⊆ k_q` at every completely split `q`, and every class of `k_q^×/p` there is split by a cyclic
+(Kummer) extension.  This is exactly SW's "cyclic" clause: away from `T` the norm is either
+unramified (hence cyclic) or sits at one of the two exceptional places, whose completion contains
+`μ_p`.
+
+Note SW's own remark "in the case `A = μ_p` the cyclicity condition is trivially satisfied" is about
+condition **(b)** on `z`, i.e. upstairs over `K ⊇ μ_p`; the downstairs clause on `x` is the one that
+needs (c).
+
+### (d) What landed
+
+`PoitouTate/BasePrescription.lean` (new):
+
+* `exists_base_places_norm_class_eq_of_split` — the full statement, with the two exceptional primes
+  `Q`, `R` of `K` still visible: `x = N_{K/k} z`, `x_q = (N y)_q` for `q` under `T`, `x` unramified
+  at every `q` under neither `Q` nor `R` and not under `T`, and `Q`, `R` completely split in `K|k`
+  and in `Ω|k`, with `q_Q ≠ q_R` and neither under `T`.
+* `exists_base_norm_class_unramified_or_isPrimitiveRoot` — SW's statement: for every `q` not under
+  `T`, `x_q` is unramified **or** `k_q` contains a primitive `p`-th root of unity.
+
+One hypothesis is new relative to `exists_two_places_sUnit_class_eq_of_split`:
+`hTram : ∀ v, ramIdx (𝓞 k) v ≠ 1 → v ∈ T`, which is SW's `T ⊇ Ram(Ω|k)` read at the places of `K`.
+
+Build green, 9787 jobs, 0 warnings, 0 sorries.
+
+### (e) What is left of Thm 13
+
+1. **`p = 2`** (`sw.txt:781`ff): the three-element combinatorial version with the partition
+   `{G₁,G₂,G₃}` of `G∖{1}`.  It needs a `p = 2` analogue of `exists_two_places_sUnit_class_eq`,
+   which currently assumes `2 < p`, plus SW's "Claim" (`(z_i)^σ_{P_i} = 0` for `σ` an involution),
+   whose proof runs through `z̃_i = a + bα` and a coprimality argument.
+2. **General `A`** — SW's dévissage `A = A₀ ⊕ μ_p` is invalid for a general `𝔽_p[G]`-module when
+   `p ∣ |G|`.  It also needs `H¹(K, A)` for general finite `A`, which is a different currency from
+   the Kummer one everything above is written in.
+
+Neither is on the critical path for the *statement* now available, which is what SW Thm 15 Step 4
+consumes for the cyclic-kernel layers.
+
+### (f) Findings
+
+* **2279 (MATHLIB).** `smul_pow` needs `[IsScalarTower M α α]`.  For a `MulDistribMulAction` the
+  right lemma is `smul_pow' (r) (x) (n) : r • x ^ n = (r • x) ^ n`.
+* **2280 (MATHLIB).** `WithZero.exp`/`log` in `Mathlib/Algebra/GroupWithZero/WithZero.lean`:
+  `exp_injective` (:367), `exp_inj` (:370), `log_exp` (:394), `exp_log` (:395), `exp_add` (:406),
+  `exp_nsmul (n : ℕ)` (:412), `exp_zsmul (n : ℤ)` (:458).  Order lemmas are in
+  `Algebra/Order/GroupWithZero/Canonical.lean`.
+* **2281 (REPO, KEY).** `valuation_algebraMap` (`Units/PlaceComap.lean:213`):
+  `w.valuation K (algebraMap k K x) = (primeUnder A w).valuation k x ^ ramIdx A w`.  `ramIdx` at
+  `:57`, `ramIdx_ne_zero` at `:72`.
+* **2282 (REPO, KEY).** `ord_galSmul (σ) (v) (x) : ord K (σ • v) (σ x) = ord K v x`
+  (`Units/Places.lean:106`); domain-level `ord_smul_place` at `:79`.
+* **2283 (REPO).** `valuation_eq_exp_neg_ord` (`Rigidity/RET/Genus/OrdValuation.lean:57`),
+  `intValuation_eq_exp_neg_ord` (`:49`).
+* **2284 (REPO).** `placeValue_eq_neg_ord` (`PoitouTate/SUnitReduce.lean:50`).
+* **2285 (REPO).** `exists_pow_eq_of_localClassHom_eq_one` (`PoitouTate/RecursionClose.lean:100`).
+* **2286 (MATH, KEY).** See (b): `T ⊇ Ram(Ω|k)` kills the `e`/`f` bookkeeping.
+* **2287 (MATH).** `H¹(k, μ_p) ≅ kˣ/p` by Hilbert 90 unconditionally, so `cor` is the norm.
+* **2288 (LEAN).** `Subgroup.groupEquivQuotientProdSubgroup` (`Coset/Basic.lean:334`) is awkward to
+  compute with (its middle step is `simp; rfl`); hand-build `cosetProdEquiv` instead.
+* **2289 (REPO).** `mem_range_algebraMap_iff_forall_stabilizer_smul_eq`
+  (`Units/CompletionGalois.lean:317`) is the whole content of (c); the infinite-place analogue is
+  `…_infinite` (`Units/InfiniteGalois.lean:277`).
+* **2290 (LEAN).** With `h : stabilizer G w = ⊥`, do **not** rewrite along `h` (gotcha 2201): write
+  `rw [show σ = 1 from Subtype.ext ((Subgroup.eq_bot_iff_forall _).1 h _ σ.2), one_smul]`.
+* **2291 (MATHLIB).** `IsPrimitiveRoot.map_of_injective` / `.of_map_of_injective`
+  (`RingTheory/RootsOfUnity/PrimitiveRoots.lean:283,292`).
+* **2292 (REPO).** `exists_smul_eq_of_primeUnder_eq` (`Units/Places.lean:177`) and
+  `exists_primeUnder_eq (A) (B)` (`Units/OrbitPlaces.lean:47`) — the two orbit facts the descent
+  needs; `primeUnder_smul_eq` at `Units/Places.lean:152`.
+* **2293 (BUILD).** `lake build InverseGalois.CFT.PoitouTate.NormLocalPower` = 8641 jobs,
+  `… .Units.SplitCompletion` = 8220 jobs; root build 9787 jobs.
+
+### (g) Routes rejected here
+
+* `Ideal.relNorm` / inertia-degree bookkeeping for the unramified half — unnecessary by 2286.
+* `Subgroup.groupEquivQuotientProdSubgroup` in place of a hand-built `cosetProdEquiv`.
+* Concluding `N t ∈ (k_q^×)^p` from `algebraMap k K_w (N t)` being a `p`-th power in `K_w`.
