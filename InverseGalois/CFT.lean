@@ -156,6 +156,7 @@ import InverseGalois.CFT.Brauer.RealCorrector
 import InverseGalois.CFT.Brauer.RealCyclicSign
 import InverseGalois.CFT.Brauer.RealInvariant
 import InverseGalois.CFT.Brauer.RealPlace
+import InverseGalois.CFT.Brauer.RealSymbol
 import InverseGalois.CFT.Brauer.RealSymbolProduct
 import InverseGalois.CFT.Brauer.ResidueBaseChange
 import InverseGalois.CFT.Brauer.ResidueCard
@@ -6950,6 +6951,19 @@ it that are available here.
   units of a number field multiply to one over the finite places whenever the second argument is
   nowhere negative** — the form in which the product formula is consumed for the exponent two, where
   the prescription made at the archimedean places is that the element be a local square.
+* `InverseGalois.CFT.Brauer.RealSymbol` removes the restriction on the second argument by giving the
+  real places a symbol of their own.  A pair of real units pairs to the class of one half exactly
+  when both are negative, and that pairing is the invariant of the cyclic algebra they present over
+  the reals, the kernel of which is the group of norms from the complex numbers, that is the
+  positive reals.  Read through the embedding attached to a real place of a number field it becomes
+  a symbol at that place, trivial at a complex place.  It is the missing archimedean factor: when
+  the radicand is positive at a real place the radical extension embeds into the reals over the
+  place and the invariant vanishes there, and when it is negative the extension has no such
+  embedding, so restriction identifies its Galois group with the Galois group of the complex numbers
+  over the reals and the invariant becomes the sign of the coefficient — in both cases exactly the
+  new symbol.  Global reciprocity therefore reads **the power residue symbols of two units at the
+  finite places, multiplied by their symbols at the infinite places, give one**, the product formula
+  over all the places and with no hypothesis on either argument.
 * `InverseGalois.CFT.Brauer.SymbolReciprocity` reads that product formula between two units each
   ramified at a single place.  A unit whose value at a place is divisible by the exponent has a
   value at the Frobenius automorphism of that place, its symbol there against a uniformiser, and
