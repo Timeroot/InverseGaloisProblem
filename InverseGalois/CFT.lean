@@ -464,6 +464,7 @@ import InverseGalois.CFT.PoitouTate.FrobeniusCharacter
 import InverseGalois.CFT.PoitouTate.GlobalClasses
 import InverseGalois.CFT.PoitouTate.Isotropic
 import InverseGalois.CFT.PoitouTate.LocalConditions
+import InverseGalois.CFT.PoitouTate.NormLocalPower
 import InverseGalois.CFT.PoitouTate.PlaceUniformiser
 import InverseGalois.CFT.PoitouTate.Prescribed
 import InverseGalois.CFT.PoitouTate.RadicalPlace
@@ -7149,4 +7150,14 @@ it that are available here.
   whose failure to be a unit outside that set happens only at places completely split in the
   auxiliary field, there are two such places and a unit ramified exactly at them realising the
   prescribed behaviour**.
+
+* `InverseGalois.CFT.PoitouTate.NormLocalPower` carries that behaviour down to the base field.  The
+  construction produces an element of the auxiliary field, and what is wanted is its norm; read
+  inside a single completion, the conjugates of an element group into the cosets of the
+  decomposition group, and each group is a norm from that completion down to the completion of the
+  prime below, so the norm is a product of local norms.  Hence **an element which is a `p`-th power
+  in the completion at every place above a place of the base has a norm which is a `p`-th power
+  there**, and two units with the same local classes above a place have norms with the same local
+  class there; and since at a prime unramified in the extension the order of a norm is the sum of
+  the orders of the conjugates, a unit unramified above such a prime has an unramified norm.
 -/
