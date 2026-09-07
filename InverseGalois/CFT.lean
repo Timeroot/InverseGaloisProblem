@@ -492,6 +492,7 @@ import InverseGalois.CFT.PoitouTate.SupRadicandChar
 import InverseGalois.CFT.PoitouTate.TorsionCharacter
 import InverseGalois.CFT.PoitouTate.TwoPlaces
 import InverseGalois.CFT.PoitouTate.TwoPlacesFree
+import InverseGalois.CFT.PoitouTate.TwoPlacesKill
 import InverseGalois.CFT.PoitouTate.TwoPlacesRadical
 import InverseGalois.CFT.PoitouTate.Unramified
 import InverseGalois.CFT.PrimeProductSquare
@@ -7322,4 +7323,15 @@ it that are available here.
   **two places completely split in a compositum with a radical second factor, killing every radicand
   of that factor, and a unit ramified exactly at the two of them realising a prescribed local
   behaviour.**
+
+* `InverseGalois.CFT.PoitouTate.TwoPlacesKill` builds the compositum the construction runs over out
+  of the only things one actually has: the auxiliary field and the radicands.  Adjoining a chosen
+  root of each radicand inside a fixed normal closure gives a field which is normal over the bottom
+  of the tower as soon as the family of radicands is stable there, finite and Galois over the
+  auxiliary field, and presented as the compositum of the auxiliary field with the field the
+  radicals generate over the middle field -- a field normal over the middle field, its radicands
+  lying there.  The places the construction returns are completely split in the compositum, hence
+  in the auxiliary field beneath it.  So: **two places completely split in the auxiliary field,
+  killing every member of a stable family of radicands, and a unit ramified exactly at the two of
+  them realising a prescribed local behaviour**, with no compositum in sight.
 -/

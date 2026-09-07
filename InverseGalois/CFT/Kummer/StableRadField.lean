@@ -27,6 +27,10 @@ the bottom field generate the extension over the bottom field.  Together they pr
 field as a compositum of the intermediate field with a field generated over the bottom field by
 radicals alone.
 
+That second factor is itself normal over the bottom field, for the same reason as before and with
+no stability hypothesis at all: its generators are roots of elements of the bottom field, so a
+conjugate of a generator is a root of the very same element.
+
 ## Main results
 
 * `InverseGalois.CFT.adjoin_range_val_eq_top`: a family generates, over the base, the field it
@@ -41,6 +45,9 @@ radicals alone.
   `InverseGalois.CFT.finiteDimensional_ambientRadField_of_forall`,
   `InverseGalois.CFT.isGalois_ambientRadField_of_forall`: it is finite and Galois over the
   intermediate field it is built on.
+* `InverseGalois.CFT.normal_adjoin_radicals`: **the field a family of radicals of elements of the
+  base field generates over it is normal over it**, as soon as the base contains a primitive root
+  of unity of the exponent.
 
 ## Tags
 
@@ -186,5 +193,42 @@ theorem isGalois_ambientRadField_of_forall [Finite ι] [Normal k A] [CharZero �
   exact ⟨⟩
 
 end Family
+
+/-! ### Radicals of elements of the base field -/
+
+section BaseRadicals
+
+variable {F E : Type*} [Field F] [Field E] [Algebra F E] {p : ℕ} {ι : Type*} {α : ι → E}
+
+/-- **A `p`-th root of unity of an extension lies in the field a family generates over the base**,
+because the base already contains a primitive one. -/
+theorem mem_adjoin_of_pow_eq_one [NeZero p] {ζ : F} (hζ : IsPrimitiveRoot ζ p) (α : ι → E)
+    {x : E} (hx : x ^ p = 1) : x ∈ IntermediateField.adjoin F (Set.range α) := by
+  obtain ⟨i, -, rfl⟩ := (hζ.map_of_injective (algebraMap F E).injective).eq_pow_of_pow_eq_one hx
+  exact pow_mem ((IntermediateField.adjoin F (Set.range α)).algebraMap_mem ζ) i
+
+/-- **The field a family of `p`-th roots of elements of the base field generates over it is normal
+over it.**  A conjugate of such a radical is a `p`-th root of the same radicand, so it differs from
+the radical by a `p`-th root of unity, which the base field already contains. -/
+theorem normal_adjoin_radicals [Normal F E] (hp : p.Prime) {ζ : F} (hζ : IsPrimitiveRoot ζ p)
+    {b : ι → F} (hb : ∀ i, b i ≠ 0) (hα : ∀ i, α i ^ p = algebraMap F E (b i)) :
+    Normal F ↥(IntermediateField.adjoin F (Set.range α)) := by
+  haveI : NeZero p := ⟨hp.ne_zero⟩
+  refine IntermediateField.normal_iff_forall_map_le.2 fun τ => ?_
+  rw [IntermediateField.map_le_iff_le_comap]
+  refine IntermediateField.adjoin_le_iff.2 ?_
+  rintro _ ⟨i, rfl⟩
+  show τ (α i) ∈ IntermediateField.adjoin F (Set.range α)
+  have hbne : algebraMap F E (b i) ≠ 0 :=
+    (map_ne_zero_iff _ (algebraMap F E).injective).2 (hb i)
+  have hne : α i ≠ 0 := fun h => hbne (by rw [← hα i, h, zero_pow hp.ne_zero])
+  have hone : (τ (α i) / α i) ^ p = 1 := by
+    rw [div_pow, ← _root_.map_pow, hα i, AlgHom.commutes, div_self hbne]
+  have hsplit : τ (α i) = τ (α i) / α i * α i := (div_mul_cancel₀ _ hne).symm
+  rw [hsplit]
+  exact mul_mem (mem_adjoin_of_pow_eq_one hζ α hone)
+    (IntermediateField.subset_adjoin F (Set.range α) ⟨i, rfl⟩)
+
+end BaseRadicals
 
 end InverseGalois.CFT
