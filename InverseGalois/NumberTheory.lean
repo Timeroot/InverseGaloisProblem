@@ -1,3 +1,4 @@
+import InverseGalois.NumberTheory.DegreeOneDensity
 import InverseGalois.NumberTheory.IdealEulerProduct
 import InverseGalois.NumberTheory.IdealNormCount
 import InverseGalois.NumberTheory.IntegerPointsSublinear
@@ -47,6 +48,13 @@ import InverseGalois.NumberTheory.SplitSubfield
   degree `n` have Dirichlet density `1/n` among the primes of the base, so that of two Galois
   extensions of different degrees, infinitely many primes of the base split completely in the
   smaller but not in the larger.
+* `InverseGalois.NumberTheory.DegreeOneDensity` refines that comparison to primes with the
+  smallest possible residue field: a prime of a number field either has absolute norm equal to its
+  residue characteristic or has absolute norm at least the square of it, and the second kind has
+  Dirichlet density zero, since at most `[K : ℚ]` primes share a residue characteristic and the
+  reciprocal squares of the rational primes are summable.  So infinitely many primes of residue
+  degree one over the rationals split completely in the smaller of two Galois extensions and not in
+  the larger.
 * `InverseGalois.NumberTheory.SplitReduction` turns a completely split prime `q` into a ring
   homomorphism from the ring of integers onto `ZMod q` fixing the rational integers, so that
   radicals and roots of unity in the field descend to `ZMod q`.
