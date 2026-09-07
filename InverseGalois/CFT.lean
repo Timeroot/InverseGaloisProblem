@@ -485,6 +485,7 @@ import InverseGalois.CFT.PoitouTate.Selmer
 import InverseGalois.CFT.PoitouTate.ShaSurjection
 import InverseGalois.CFT.PoitouTate.ShaTate
 import InverseGalois.CFT.PoitouTate.SplitClass
+import InverseGalois.CFT.PoitouTate.SplitFamily
 import InverseGalois.CFT.PoitouTate.SplitLocalPower
 import InverseGalois.CFT.PoitouTate.SplitPlaceGenerate
 import InverseGalois.CFT.PoitouTate.SplitPlacePower
@@ -7331,7 +7332,22 @@ it that are available here.
   auxiliary field, and presented as the compositum of the auxiliary field with the field the
   radicals generate over the middle field -- a field normal over the middle field, its radicands
   lying there.  The places the construction returns are completely split in the compositum, hence
-  in the auxiliary field beneath it.  So: **two places completely split in the auxiliary field,
-  killing every member of a stable family of radicands, and a unit ramified exactly at the two of
-  them realising a prescribed local behaviour**, with no compositum in sight.
+  in the auxiliary field beneath it.  Both properties pass to the conjugates of the two places, a
+  conjugate of a place with trivial decomposition group again lying below a place with trivial
+  decomposition group; and the conjugates are what a later coordinate sees.  So: **two places all
+  of whose conjugates are completely split in the auxiliary field and kill every member of a stable
+  family of radicands, and a unit ramified exactly at the two of them realising a prescribed local
+  behaviour**, with no compositum in sight.
+
+* `InverseGalois.CFT.PoitouTate.SplitFamily` spends one such pair of places on each coordinate of a
+  prescription with values in a module of several coordinates.  What has to be arranged is that the
+  coordinates not interfere: the unit built for one coordinate must be a local power at the
+  exceptional places of every other coordinate and at all of their conjugates.  Both directions of
+  that come for free from running the construction over a growing set of places.  An earlier unit is
+  a local power at a later place because the later pair is asked to kill the conjugates of all the
+  earlier units.  A later unit is a local power at an earlier place because the earlier places, and
+  their conjugates, have by then been put into the set carrying the prescription, where the
+  prescription of the later coordinate is trivial.  So: **for every number of coordinates, a family
+  of pairs of places and of units ramified exactly at them, realising a prescribed local behaviour
+  coordinate by coordinate and not interfering with one another.**
 -/
