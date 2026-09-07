@@ -465,6 +465,7 @@ import InverseGalois.CFT.PoitouTate.LocalConditions
 import InverseGalois.CFT.PoitouTate.PlaceUniformiser
 import InverseGalois.CFT.PoitouTate.Prescribed
 import InverseGalois.CFT.PoitouTate.RadicalPlace
+import InverseGalois.CFT.PoitouTate.SUnitPlace
 import InverseGalois.CFT.PoitouTate.Selmer
 import InverseGalois.CFT.PoitouTate.ShaSurjection
 import InverseGalois.CFT.PoitouTate.ShaTate
@@ -7011,4 +7012,14 @@ it that are available here.
   generator and therefore trivial.  Together: **outside any prescribed finite set of places of the
   bottom field there is a completely split place at which the Frobenius character is trivial
   exactly at the units the given character kills**.
+
+* `InverseGalois.CFT.PoitouTate.SUnitPlace` feeds the `S`-units in.  For a set of finite places
+  carried into itself by the automorphisms over the base, the group of `S`-units meets every
+  demand of that construction: it is saturated, its quotient by the powers of prime exponent is
+  finite of known order and so has a basis, and it is carried into itself by every embedding of an
+  ambient algebraically closed field, since such an embedding restricts to an automorphism of the
+  number field and that automorphism permutes the chosen places.  The radicals of the basis are
+  available in the ambient field for the same reason it is algebraically closed, so **a character
+  of a subgroup of the `S`-units, trivial on the powers of prime exponent it contains, is read off
+  by the Frobenius automorphism at a completely split place outside any prescribed finite set**.
 -/

@@ -14724,6 +14724,164 @@ Then, for `M/K` Galois, `w` a prime of `M`, `Q = primeUnder (O K) w`, `u` a unit
 
 ---
 
+## 1.35 Status (2026-09-07, latest) — **bricks E and C are theorems**: a character of the `S`-units is read off by a Frobenius at a completely split place
+
+Landed, sorry- and axiom-free.  Six modules, in dependency order:
+
+| module | commit | what it says |
+| --- | --- | --- |
+| `CFT/PoitouTate/ChebotarevPlace.lean` | `dcad99e` | brick E: the Chebotarev step over the *intermediate* base |
+| `CFT/Kummer/RadicalAut.lean` | — | brick C-1: automorphisms of a radical field of prime exponent |
+| `CFT/Kummer/PowBasisExtend.lean` | — | brick C-2: a character of a subgroup is realised by an automorphism |
+| `CFT/Kummer/AmbientRadical.lean` | — | brick C-3a: the same, inside a *prescribed* ambient field |
+| `CFT/Kummer/RadicalNormal.lean` | — | brick C-3b: that field is normal over the bottom |
+| `CFT/PoitouTate/RadicalPlace.lean` | `7d274bf` | brick C-4: character `->` place, in a 4-field tower |
+| `CFT/PoitouTate/SUnitPlace.lean` | *this section* | brick C-5: the group of units is the `S`-units |
+
+The end product is
+
+```lean
+theorem exists_place_frobValue_eq_one_iff_character_sUnits (hp : p.Prime)
+    {X : Set (HeightOneSpectrum (𝓞 ↥Ω))} (hXfin : X.Finite)
+    (hXstab : ∀ (σ : Gal(↥Ω/k)) {v}, v ∈ X → σ • v ∈ X)
+    {ζ : K} (hζ : IsPrimitiveRoot ζ p) (hres : ∀ v, HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
+    {U : Subgroup (↥Ω)ˣ} (hU : U ≤ sUnits ↥Ω X) (Φ : ↥U →* (↥Ω)ˣ)
+    (hΦ : ∀ u (hu : u ∈ U) y, u = y ^ p → Φ ⟨u, hu⟩ = 1) (hne : ∃ u : ↥U, Φ u ≠ 1)
+    (T : Finset (HeightOneSpectrum (𝓞 k))) :
+    ∃ V : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 k) V ∉ T ∧
+      stabilizer Gal(↥Ω/k) V = ⊥ ∧ ¬ Pc (primeUnder (𝓞 K) V) ∣ p ∧
+      ∀ (u : Kˣ) (hu : Units.map (algebraMap K ↥Ω : K →* ↥Ω) u ∈ U),
+        (p : ℤ) ∣ placeValue (primeUnder (𝓞 K) V) u →
+          (placeFrobValue hres hζ (primeUnder (𝓞 K) V) u = 1 ↔ Φ ⟨_, hu⟩ = 1)
+```
+
+in the ambient setting `k ⊆ K ⊆ Ω ⊆ A`, with `A` algebraically closed and normal over `k`,
+`Ω : IntermediateField k A` a number field normal over `k`, and `ζ ∈ K` a primitive `p`-th root of
+unity.  Nothing about the radical field `N` survives in the statement: the caller sees only the
+bottom three floors of the tower.
+
+### (a) Brick E — the Chebotarev step (recap, `ChebotarevPlace.lean`)
+
+`exists_place_placeFrobValue_eq_one_iff_smul_eq`: for `k ⊆ K ⊆ F ⊆ N` with `N/k` Galois,
+`σ : N ≃ₐ[F] N` generating a normal subgroup of prime order `p` of `Gal(N/F)`, and any finite
+`T ⊆ HeightOneSpectrum (𝓞 k)`, there is `W : HeightOneSpectrum (𝓞 N)` with
+`primeUnder (𝓞 k) W ∉ T`, `stabilizer Gal(N/k) W = zpowers (σ.restrictScalars k)`,
+`¬ Pc (primeUnder (𝓞 K) W) ∣ p`, and, for `u : Kˣ` with `p ∣ placeValue _ u` and `b : N` a
+`p`-th root of `u`, `placeFrobValue _ u = 1 ↔ σ b = b`.
+
+### (b) Bricks C-1 … C-3 — the radical field inside a prescribed ambient
+
+The obstruction (finding 2109 above) was that `PowBasis.ext` is an abstract splitting field with
+no `Algebra k` instance.  The fix is to take the radicals as *given* elements of the ambient field:
+
+```lean
+abbrev ambientRadField (Ω : IntermediateField k A) (w : ι → A) : IntermediateField ↥Ω A :=
+  IntermediateField.adjoin ↥Ω (Set.range w)
+```
+
+with `hw : ∀ i, w i ^ p = algebraMap ↥Ω A (P.rad i)`.  `AmbientRadical.lean` transports every
+statement about `P.ext` to any such field (`P.setupOfRoots`, `P.exists_root_ambient`,
+`P.exists_aut_fix_iff_ambient`), and `RadicalNormal.lean` adds what the tower needs:
+
+* `IsEmbeddingStable Ω B` — every `τ : A →ₐ[k] A` carries `B ≤ (↥Ω)ˣ` into itself;
+* `normal_ambientRadField` — **under that hypothesis the radical field is normal over `k`.**  The
+  proof is the only real content: `τ (w i)` is a `p`-th root of `τ (g i) ∈ B`, which already has a
+  root `v` inside the field, so `τ (w i) / v` is a `p`-th root of unity, and `Ω` contains a
+  primitive one (`mem_ambientRadField_of_pow_eq_one`).
+
+Two Mathlib lemmas make the normality proof three lines: `IntermediateField.restrictScalars_normal`
+is `Iff.rfl` (finding 2164) and `IntermediateField.restrictScalars_adjoin_eq_sup` takes the base
+field first (finding 2165, and note `k` is the *first* argument).
+
+`RadicalAut.lean` supplies the order statement: automorphisms of a field generated over `Ω` by
+radicals of prime exponent commute and are killed by `p`, so a non-identity one has order exactly
+`p` and generates a normal subgroup (`orderOf_eq_of_adjoin_radical`,
+`normal_zpowers_of_adjoin_radical`).
+
+### (c) Brick C-4 — complete splitting is free (`RadicalPlace.lean`)
+
+`stabilizer_eq_bot_of_stabilizer_eq_zpowers`: if `stabilizer Gal(N/k) W = zpowers (σ.restrictScalars k)`
+for some `σ : N ≃ₐ[F] N`, then `stabilizer Gal(F/k) (primeUnder (𝓞 F) W) = ⊥`.
+
+This is what lets SW take `S = cs(Ω|k) ∪ T`: the prime produced by Chebotarev is automatically
+completely split in `Ω`, because the generator of its decomposition group is an automorphism *over*
+`Ω`.  The argument (finding 2174): given `τ ∈ Gal(F/k)` fixing the prime below, lift it to
+`t ∈ Gal(N/k)` by `AlgEquiv.restrictNormalHom_surjective`; `t • W` and `W` lie over the same prime
+of `F`, so `exists_smul_eq_of_primeUnder_eq` gives `ρ ∈ Gal(N/F)` with `ρ • (t • W) = W`; hence
+`ρ ∘ t` is a power of `σ.restrictScalars k`, and applying `restrictNormalHom F` kills every factor,
+leaving `τ = 1`.
+
+### (d) Brick C-5 — the group of units is the `S`-units (`SUnitPlace.lean`)
+
+Everything the previous brick asks of `B` is a theorem for `B = sUnits ↥Ω X`, `X` a finite
+`Gal(Ω/k)`-stable set of finite places of `Ω`:
+
+* saturation `hsat` — `mem_sUnits_of_pow_mem` (the order at a prime outside `X` is killed by `p`);
+* finiteness `hfin` — `card_powQuotient_sUnits` computes
+  `Nat.card (powQuotient (sUnits ↥Ω X) p) = p ^ (#InfinitePlace Ω + #X)`, and
+  `Nat.finite_of_card_ne_zero` does the rest;
+* the basis `P` — `nonempty_powBasis_sUnits`;
+* stability `hstab` — `isEmbeddingStable_sUnits`, new here: an embedding `τ : A →ₐ[k] A` restricts
+  to `τ.restrictNormal' ↥Ω : Gal(↥Ω/k)` (this needs `Normal k ↥Ω`, and `AlgHom.normal_bijective`
+  makes the restriction an equivalence for free), and `galUnits_mem_sUnits` (`Units/SUnit.lean:223`)
+  says the `S`-units are stable under that;
+* the radicals `w` — `IsAlgClosed.exists_pow_nat_eq`, since `A` is algebraically closed.
+
+`HasEnoughRootsOfUnity ↥Ω p`, needed by the two `SUnitExt` lemmas, comes from `ζ ∈ K ⊆ Ω` and
+`rootsOfUnity.isCyclic`.
+
+### (e) What the recursion step still needs
+
+1. **The identification `V = selmerGroup ι n ⊓ pi D` = image of `sUnits K T_n`** (finding 2105).
+2. **The single recursion step**: feed `exists_place_frobValue_eq_one_iff_character_sUnits` the
+   character `Φ` cut out by `exists_zpow_eq_of_forall_eq_one`, and produce `(Q, z_{n+1})` via
+   `exists_sUnitClass_mul_eq_unramified` (`PoitouTate/Prescribed.lean:141`).
+3. **The recursion itself**, feeding `exists_lt_placeFrobValue_eq` and `localClassHom_mul_eq_one`
+   (`PoitouTate/ClosingChain.lean:208` / `:283`), and then the induction on `dim_{F_p} A`.
+4. The general-`A` dévissage and the `p = 2` case of SW Thm 13.
+
+### (f) Findings
+
+* **2171 (REPO, COLLISION).** `restrictNormalHom_restrictScalars` already exists at
+  `Units/IdeleNormTower.lean:61`, with `(k F)` **explicit**: `restrictNormalHom_restrictScalars k F ρ`.
+* **2172 (MATHLIB).** `NumberField.of_module_finite` takes **both** fields explicitly.  Companions:
+  `of_intermediateField` (an instance), `of_subfield`, `of_tower`, `of_ringEquiv`
+  (`NumberField/Basic.lean:70`–`:90`).
+* **2173 (MATHLIB/LEAN).** For `Ω : IntermediateField k A` and `N : IntermediateField ↥Ω A`,
+  `IntermediateField.algebra'` and `IntermediateField.isScalarTower` supply `Algebra k ↥N`,
+  `Algebra K ↥N`, `IsScalarTower k ↥Ω ↥N`, `IsScalarTower K ↥Ω ↥N` automatically.  The **only**
+  missing instance is `IsScalarTower k K ↥N`, from `IsScalarTower.of_algebraMap_eq` plus three
+  rewrites.
+* **2174 (MATH).** The complete-splitting argument of (c).
+* **2176 (REPO).** `PowBasis` (`Kummer/PowBasis.lean:158`) has fields `g`, `mem`, `indep`, `span`,
+  and `P.rad i = ((P.g i : Kˣ) : K)` (`:202`).  `Kummer.Setup` (`Rigidity/RET/KummerIndep.lean:39`)
+  has `zeta`, `g`, `w`, `isPrimitiveRoot`, `g_ne_zero`, `w_pow`, `adjoin_eq_top`, `indep`.
+* **2177 (REPO).** `primeUnder_primeUnder k F w` (`Units/PlaceTower.lean:58`, `k F` explicit);
+  `primeUnder_smul F σ w` (`Units/PlaceRestrict.lean:92`, `F` explicit);
+  `algebraMap_restrictNormalHom` (`PlaceRestrict.lean:60`); `placeValue`
+  (`Brauer/PlaceExponent.lean:107`).
+* **2178 (MATHLIB).** `AlgHom.restrictNormal' ϕ E : Gal(E/F)` (`Normal/Defs.lean:153`) turns an
+  embedding of the ambient field into an automorphism of a normal intermediate field, and
+  `AlgHom.restrictNormal_commutes` (`:157`) is the compatibility.  Both need only `[Normal F E]`.
+* **2179 (MATHLIB).** `IsAlgClosed.exists_pow_nat_eq (x : k) {n} (hn : 0 < n) : ∃ z, z ^ n = x`
+  (`FieldTheory/IsAlgClosed/Basic.lean:93`) — `n` is implicit.
+* **2180 (MATHLIB).** `HasEnoughRootsOfUnity` has fields `prim : ∃ m, IsPrimitiveRoot m n` (an
+  existential, *not* a `Nonempty (primitiveRoots n M)`) and `cyc`, so
+  `⟨⟨ζ, hζ⟩, rootsOfUnity.isCyclic K p⟩` builds one from a primitive root.
+* **2181 (BUILD).** `lake build InverseGalois.CFT.PoitouTate.SUnitPlace` = **8650 jobs / ~23 s**.
+
+### (g) Routes rejected here
+
+* Stating brick C-5 with an equivariant family `ι : Y → HeightOneSpectrum (𝓞 Ω)` (the shape of
+  `SUnitExt.lean`) rather than a stable set `X`: the caller would have to build the `MulAction` on
+  `Y` anyway, so the module does it once, with `Y := ↥X` and `ι := Subtype.val`.
+* Requiring only `Normal k A` and asking the caller for the radicals: `IsAlgClosed A` costs
+  nothing (the recursion lives inside a fixed algebraic closure of `k`) and removes a hypothesis.
+* Putting `isEmbeddingStable_sUnits` in `Kummer/RadicalNormal.lean`: that module deliberately knows
+  nothing about number fields or `S`-units.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
