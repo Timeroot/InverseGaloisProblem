@@ -156,6 +156,7 @@ import InverseGalois.CFT.Brauer.RealCorrector
 import InverseGalois.CFT.Brauer.RealCyclicSign
 import InverseGalois.CFT.Brauer.RealInvariant
 import InverseGalois.CFT.Brauer.RealPlace
+import InverseGalois.CFT.Brauer.RealSymbolProduct
 import InverseGalois.CFT.Brauer.ResidueBaseChange
 import InverseGalois.CFT.Brauer.ResidueCard
 import InverseGalois.CFT.Brauer.ResidueCardDegree
@@ -6937,7 +6938,18 @@ it that are available here.
   real place, so no archimedean invariant survives.  Global reciprocity therefore says exactly that
   **the power residue symbols of two units of a number field multiply to one over the finite
   places**, with no hypothesis on the field beyond containing the roots of unity when the exponent
-  is an odd prime.
+  is an odd prime.  The vanishing of the archimedean invariants is isolated as a hypothesis, so the
+  same reciprocity computation is available over a field which does have real places.
+* `InverseGalois.CFT.Brauer.RealSymbolProduct` supplies that hypothesis for the one exponent a field
+  with a real place can carry the roots of unity of.  An archimedean invariant vanishes as soon as
+  the splitting field embeds into the reals over the embedding attached to the place, because the
+  relative Brauer group of the completion at a real place is the relative Brauer group of the reals
+  and it grows along an algebra map.  For a radical extension of degree two that embedding exists
+  exactly when the radicand is not negative at the place, the polynomial cutting out its square root
+  splitting over the reals into the two square roots.  Hence **the power residue symbols of two
+  units of a number field multiply to one over the finite places whenever the second argument is
+  nowhere negative** — the form in which the product formula is consumed for the exponent two, where
+  the prescription made at the archimedean places is that the element be a local square.
 * `InverseGalois.CFT.Brauer.SymbolReciprocity` reads that product formula between two units each
   ramified at a single place.  A unit whose value at a place is divisible by the exponent has a
   value at the Frobenius automorphism of that place, its symbol there against a uniformiser, and
