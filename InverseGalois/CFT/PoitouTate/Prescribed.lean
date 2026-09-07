@@ -26,6 +26,8 @@ theorem for algebraic numbers with prescribed local behaviour.
 
 ## Main results
 
+* `InverseGalois.CFT.isCyclic_localUnramified`: the unramified classes at a finite place not
+  dividing a prime exponent are cyclic.
 * `InverseGalois.CFT.perpSubgroupLeft_localUnramified`: the unramified classes at a finite place
   not dividing the exponent are their own orthogonal complement on the left as well as on the
   right.
@@ -74,6 +76,22 @@ noncomputable def localUnramified (v : HeightOneSpectrum (𝓞 K)) (n : ℕ) :
 theorem finite_localClasses (v : HeightOneSpectrum (𝓞 K)) : Finite (localClasses v n) := by
   haveI := finiteIndex_range_powMonoidHom_units_adicCompletion v (NeZero.ne n)
   infer_instance
+
+/-- **The unramified classes at a finite place not dividing the exponent number the exponent.**
+There are the exponent squared classes in all, and the unramified ones have index the exponent. -/
+theorem card_localUnramified {ζ : K} (hζ : IsPrimitiveRoot ζ n) (v : HeightOneSpectrum (𝓞 K))
+    (hv : FinitePlace.mk v ((n : ℕ) : K) = 1) :
+    Nat.card ↥(localUnramified v n) = n :=
+  card_unramifiedClasses (isUnitValGen_one (valued_adicCompletion_surjective v))
+    (card_quotient_range_powMonoidHom_adicCompletion hζ v hv)
+
+/-- **The unramified classes at a finite place not dividing a prime exponent are cyclic**, being a
+group of prime order. -/
+theorem isCyclic_localUnramified (hn : n.Prime) {ζ : K} (hζ : IsPrimitiveRoot ζ n)
+    (v : HeightOneSpectrum (𝓞 K)) (hv : FinitePlace.mk v ((n : ℕ) : K) = 1) :
+    IsCyclic ↥(localUnramified v n) :=
+  haveI := Fact.mk hn
+  isCyclic_of_prime_card (card_localUnramified hζ v hv)
 
 /-- **The unramified classes at a finite place not dividing the exponent are their own orthogonal
 complement on the left** as well as on the right. -/
