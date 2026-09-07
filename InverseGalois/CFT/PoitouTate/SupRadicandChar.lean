@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Kummer.SupRadicalSplit
 import InverseGalois.CFT.PoitouTate.GlobalClasses
 import InverseGalois.CFT.PoitouTate.NormLocalPower
 import InverseGalois.CFT.PoitouTate.SUnitReduce
@@ -44,6 +45,12 @@ again trivial.
 * `InverseGalois.CFT.prescriptionChar_eq_one_of_pow_mul`: the same, with the first factor given as
   a radicand of an extension splitting completely where the prescription is not carried by a
   global unit.
+* `InverseGalois.CFT.prescriptionChar_eq_one_of_factor`: the same, with each factor given as a
+  radicand of its own extension.
+* `InverseGalois.CFT.prescriptionChar_eq_one_of_pow_sup`: **the prescription character kills every
+  radicand of a compositum** of an extension splitting completely off the prescribed set and
+  unramified outside it, with one whose Galois group is abelian of exponent the exponent and which
+  is unramified on the prescribed set.
 
 ## Tags
 
@@ -268,5 +275,115 @@ theorem prescriptionChar_eq_one_of_pow_mul (hn : n.Prime) (hn2 : n ≠ 2)
   exact localClassHom_eq_one_of_stabilizer_eq_bot (NeZero.ne n) hζ hw hb
 
 end Radicand
+
+/-! ### The two factors as radicands of two extensions -/
+
+section Factor
+
+variable {K M₁ M₂ : Type} [Field K] [NumberField K] [Field M₁] [NumberField M₁] [Algebra K M₁]
+  [IsGalois K M₁] [Field M₂] [NumberField M₂] [Algebra K M₂] {n : ℕ} [NeZero n]
+  {P E : HeightOneSpectrum (𝓞 K) → ℕ}
+
+/-- **The prescription character kills a product of a radicand of one extension and a radicand of
+another**, when the first extension splits completely where the prescription is not carried by a
+global unit and is unramified outside the prescribed set, and the second is unramified on the
+prescribed set.  Splitting completely makes the local class of the first factor trivial, while an
+unramified place reads the value of a radicand as a multiple of the exponent. -/
+theorem prescriptionChar_eq_one_of_factor (hn : n.Prime) (hn2 : n ≠ 2)
+    (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
+    {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T Tn : Finset (HeightOneSpectrum (𝓞 K))} (hT : T ⊆ Tn)
+    (hnTn : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → v ∈ Tn)
+    {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n} {g : Kˣ}
+    (hg : g ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))))
+    (hc : ∀ v ∈ T, c v = localClassHom v n g) (hcT : ∀ v ∈ Tn, v ∉ T → c v = 1)
+    (hcunr : ∀ v ∈ T, c v ∈ localUnramified v n)
+    (hcn : ∀ v ∈ T, FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → c v = 1)
+    (hsplit : ∀ v ∈ Tn, v ∉ T → ∃ w : HeightOneSpectrum (𝓞 M₁),
+      primeUnder (𝓞 K) w = v ∧ stabilizer Gal(M₁/K) w = ⊥)
+    (hram₁ : ∀ v ∉ Tn, ∃ w : HeightOneSpectrum (𝓞 M₁),
+      primeUnder (𝓞 K) w = v ∧ ramIdx (𝓞 K) w = 1)
+    (hram₂ : ∀ v ∈ T, ∃ w : HeightOneSpectrum (𝓞 M₂),
+      primeUnder (𝓞 K) w = v ∧ ramIdx (𝓞 K) w = 1)
+    {u u₁ u₂ : Kˣ} (hu : u = u₁ * u₂) {y₁ : M₁} (hy₁ : algebraMap K M₁ (u₁ : K) = y₁ ^ n)
+    {y₂ : M₂} (hy₂ : algebraMap K M₂ (u₂ : K) = y₂ ^ n) :
+    prescriptionChar hres hζ Tn c u = 1 := by
+  refine prescriptionChar_eq_one_of_pow_mul hn hn2 hres hζ hT hnTn hg hc hcT hcunr hcn hsplit
+    hu hy₁ (fun v hv => ?_) (fun v hv => ?_)
+  · obtain ⟨w, rfl, hw⟩ := hram₁ v hv
+    exact dvd_placeValue_of_pow_eq_of_ramIdx_eq_one hn.ne_zero w hw hy₁
+  · obtain ⟨w, rfl, hw⟩ := hram₂ v hv
+    exact dvd_placeValue_of_pow_eq_of_ramIdx_eq_one hn.ne_zero w hw hy₂
+
+end Factor
+
+/-! ### A radicand of a compositum -/
+
+section Compositum
+
+variable {K M₁ M₂ L : Type} [Field K] [NumberField K] [Field M₁] [NumberField M₁] [Algebra K M₁]
+  [IsGalois K M₁] [Field M₂] [NumberField M₂] [Algebra K M₂] [Normal K M₂] [Field L]
+  [NumberField L] [Algebra K L] [IsGalois K L] [Algebra M₁ L] [IsScalarTower K M₁ L]
+  [Algebra M₂ L] [IsScalarTower K M₂ L] {n : ℕ} [NeZero n]
+  {P E : HeightOneSpectrum (𝓞 K) → ℕ}
+
+/-- **The prescription character kills every radicand of a compositum of two extensions**, the
+first splitting completely where the prescription is not carried by a global unit and unramified
+outside the prescribed set, the second with abelian Galois group of exponent the exponent and
+unramified on the prescribed set.  The radicand factors as a radicand of the first extension times
+a radicand of the second, and each factor is then killed for its own reason. -/
+theorem prescriptionChar_eq_one_of_pow_sup (hn : n.Prime) (hn2 : n ≠ 2)
+    (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
+    {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T Tn : Finset (HeightOneSpectrum (𝓞 K))} (hT : T ⊆ Tn)
+    (hnTn : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → v ∈ Tn)
+    {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n} {g : Kˣ}
+    (hg : g ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))))
+    (hc : ∀ v ∈ T, c v = localClassHom v n g) (hcT : ∀ v ∈ Tn, v ∉ T → c v = 1)
+    (hcunr : ∀ v ∈ T, c v ∈ localUnramified v n)
+    (hcn : ∀ v ∈ T, FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → c v = 1)
+    (hsup : (IsScalarTower.toAlgHom K M₁ L).fieldRange ⊔
+      (IsScalarTower.toAlgHom K M₂ L).fieldRange = ⊤)
+    (hcomm : ∀ σ τ : M₂ ≃ₐ[K] M₂, σ * τ = τ * σ) (hexp : ∀ σ : M₂ ≃ₐ[K] M₂, σ ^ n = 1)
+    (hsplit : ∀ v ∈ Tn, v ∉ T → ∃ w : HeightOneSpectrum (𝓞 M₁),
+      primeUnder (𝓞 K) w = v ∧ stabilizer Gal(M₁/K) w = ⊥)
+    (hram₁ : ∀ v ∉ Tn, ∃ w : HeightOneSpectrum (𝓞 M₁),
+      primeUnder (𝓞 K) w = v ∧ ramIdx (𝓞 K) w = 1)
+    (hram₂ : ∀ v ∈ T, ∃ w : HeightOneSpectrum (𝓞 M₂),
+      primeUnder (𝓞 K) w = v ∧ ramIdx (𝓞 K) w = 1)
+    {u : Kˣ} {b : L} (hb : algebraMap K L (u : K) = b ^ n) :
+    prescriptionChar hres hζ Tn c u = 1 := by
+  classical
+  have φ₁ : M₁ ≃ₐ[K] ↥(IsScalarTower.toAlgHom K M₁ L).fieldRange :=
+    AlgEquiv.ofInjectiveField (IsScalarTower.toAlgHom K M₁ L)
+  have φ₂ : M₂ ≃ₐ[K] ↥(IsScalarTower.toAlgHom K M₂ L).fieldRange :=
+    AlgEquiv.ofInjectiveField (IsScalarTower.toAlgHom K M₂ L)
+  haveI : Normal K ↥(IsScalarTower.toAlgHom K M₁ L).fieldRange := Normal.of_algEquiv φ₁
+  haveI : Normal K ↥(IsScalarTower.toAlgHom K M₂ L).fieldRange := Normal.of_algEquiv φ₂
+  have e₂ := AlgEquiv.autCongr φ₂
+  obtain ⟨b₁, b₂, hmul, ⟨x₁, hx₁, hx₁pow⟩, ⟨x₂, hx₂, hx₂pow⟩⟩ :=
+    exists_mul_eq_pow_of_pow_mem_sup hn hζ hsup
+      (fun σ τ => by simpa using congrArg e₂ (hcomm (e₂.symm σ) (e₂.symm τ)))
+      (fun σ => by simpa using congrArg e₂ (hexp (e₂.symm σ)))
+      (b := ((u : Kˣ) : K)) u.ne_zero hb.symm
+  have hb₁ : b₁ ≠ 0 := by
+    intro h
+    rw [h, zero_mul] at hmul
+    exact u.ne_zero hmul
+  have hb₂ : b₂ ≠ 0 := by
+    intro h
+    rw [h, mul_zero] at hmul
+    exact u.ne_zero hmul
+  obtain ⟨y₁, hy₁⟩ := AlgHom.mem_fieldRange.1 hx₁
+  obtain ⟨y₂, hy₂⟩ := AlgHom.mem_fieldRange.1 hx₂
+  have hy₁' : algebraMap M₁ L y₁ = x₁ := hy₁
+  have hy₂' : algebraMap M₂ L y₂ = x₂ := hy₂
+  refine prescriptionChar_eq_one_of_factor hn hn2 hres hζ hT hnTn hg hc hcT hcunr hcn hsplit
+    hram₁ hram₂ (u₁ := Units.mk0 b₁ hb₁) (u₂ := Units.mk0 b₂ hb₂) (by ext; simpa using hmul)
+    (y₁ := y₁) ?_ (y₂ := y₂) ?_
+  · refine (algebraMap M₁ L).injective ?_
+    rw [← IsScalarTower.algebraMap_apply, _root_.map_pow, hy₁', hx₁pow, Units.val_mk0]
+  · refine (algebraMap M₂ L).injective ?_
+    rw [← IsScalarTower.algebraMap_apply, _root_.map_pow, hy₂', hx₂pow, Units.val_mk0]
+
+end Compositum
 
 end InverseGalois.CFT

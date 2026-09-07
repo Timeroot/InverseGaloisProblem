@@ -159,4 +159,79 @@ theorem galEquivProd_apply (h : A ⊓ B = ⊥) (σ : Gal(↥(A ⊔ B)/F)) :
 
 end Galois
 
+/-! ### Generating the compositum over an intermediate base field -/
+
+section Tower
+
+variable {k K N P : Type*} [Field k] [Field K] [Field N] [Field P] [Algebra k K] [Algebra k N]
+  [Algebra K N] [Algebra k P] [Algebra K P] [IsScalarTower k K P] [Algebra N P]
+  [IsScalarTower K N P] [IsScalarTower k N P]
+
+/-- An intermediate field of an extension of the base field is the same set of elements whichever
+of the two fields it is read over. -/
+theorem restrictScalars_fieldRange :
+    ((IsScalarTower.toAlgHom K N P).fieldRange).restrictScalars k
+      = (IsScalarTower.toAlgHom k N P).fieldRange :=
+  SetLike.ext' <| by
+    rw [IntermediateField.coe_restrictScalars, AlgHom.coe_fieldRange, AlgHom.coe_fieldRange,
+      IsScalarTower.coe_toAlgHom', IsScalarTower.coe_toAlgHom']
+
+/-- Two intermediate fields generating an extension over the base field also generate it over any
+intermediate field: generating is a statement about sets of elements. -/
+theorem sup_eq_top_of_restrictScalars_sup_eq_top {X Y : IntermediateField K P}
+    (h : X.restrictScalars k ⊔ Y.restrictScalars k = ⊤) : X ⊔ Y = ⊤ := by
+  have hle : X.restrictScalars k ⊔ Y.restrictScalars k ≤ (X ⊔ Y).restrictScalars k :=
+    sup_le
+      (fun x hx => (IntermediateField.mem_restrictScalars k).2
+        (SetLike.le_def.1 le_sup_left ((IntermediateField.mem_restrictScalars k).1 hx)))
+      (fun x hx => (IntermediateField.mem_restrictScalars k).2
+        (SetLike.le_def.1 le_sup_right ((IntermediateField.mem_restrictScalars k).1 hx)))
+  refine le_antisymm le_top fun x _ => ?_
+  have hx : x ∈ X.restrictScalars k ⊔ Y.restrictScalars k := by
+    rw [h]
+    exact IntermediateField.mem_top
+  exact (IntermediateField.mem_restrictScalars k).1 (hle hx)
+
+end Tower
+
+section Sup
+
+variable {k K M : Type*} [Field k] [Field K] [Field M] [Algebra k K] [Algebra k M]
+
+/-- The image of an intermediate field inside a larger one is that intermediate field, read
+inside the larger one. -/
+theorem fieldRange_eq_restrict_of_coe {E C : IntermediateField k M} (hle : E ≤ C)
+    [Algebra ↥E ↥C] [IsScalarTower k ↥E ↥C]
+    (h : ∀ x : ↥E, ((algebraMap ↥E ↥C x : ↥C) : M) = (x : M)) :
+    (IsScalarTower.toAlgHom k ↥E ↥C).fieldRange = IntermediateField.restrict hle := by
+  refine IntermediateField.ext fun x => ?_
+  rw [AlgHom.mem_fieldRange, IntermediateField.mem_restrict]
+  constructor
+  · rintro ⟨y, rfl⟩
+    have hy : ((IsScalarTower.toAlgHom k ↥E ↥C y : ↥C) : M) = (y : M) := h y
+    exact hy ▸ y.2
+  · exact fun hx => ⟨⟨(x : M), hx⟩, Subtype.ext (h ⟨(x : M), hx⟩)⟩
+
+variable (E₁ E₂ : IntermediateField k M) [Algebra K ↥(E₁ ⊔ E₂)] [IsScalarTower k K ↥(E₁ ⊔ E₂)]
+  [Algebra K ↥E₁] [Algebra ↥E₁ ↥(E₁ ⊔ E₂)]
+  [IsScalarTower K ↥E₁ ↥(E₁ ⊔ E₂)] [IsScalarTower k ↥E₁ ↥(E₁ ⊔ E₂)]
+  [Algebra K ↥E₂] [Algebra ↥E₂ ↥(E₁ ⊔ E₂)]
+  [IsScalarTower K ↥E₂ ↥(E₁ ⊔ E₂)] [IsScalarTower k ↥E₂ ↥(E₁ ⊔ E₂)]
+
+/-- **The two copies of two intermediate fields inside their compositum generate it over any
+intermediate base field.**  Whether the compositum is generated is a statement about sets of
+elements, which does not see the base field it is read over. -/
+theorem fieldRange_sup_fieldRange_eq_top
+    (hE₁ : ∀ x : ↥E₁, ((algebraMap ↥E₁ ↥(E₁ ⊔ E₂) x : ↥(E₁ ⊔ E₂)) : M) = (x : M))
+    (hE₂ : ∀ x : ↥E₂, ((algebraMap ↥E₂ ↥(E₁ ⊔ E₂) x : ↥(E₁ ⊔ E₂)) : M) = (x : M)) :
+    (IsScalarTower.toAlgHom K ↥E₁ ↥(E₁ ⊔ E₂)).fieldRange ⊔
+      (IsScalarTower.toAlgHom K ↥E₂ ↥(E₁ ⊔ E₂)).fieldRange = ⊤ := by
+  refine sup_eq_top_of_restrictScalars_sup_eq_top (k := k) ?_
+  rw [restrictScalars_fieldRange, restrictScalars_fieldRange,
+    fieldRange_eq_restrict_of_coe (le_sup_left : E₁ ≤ E₁ ⊔ E₂) hE₁,
+    fieldRange_eq_restrict_of_coe (le_sup_right : E₂ ≤ E₁ ⊔ E₂) hE₂]
+  exact restrict_sup_restrict E₁ E₂
+
+end Sup
+
 end InverseGalois.CFT
