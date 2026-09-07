@@ -14401,6 +14401,118 @@ needs a product of *three* elements against the partition `{G₁,G₂,G₃}` of 
 
 ---
 
+## 1.32 Status (2026-09-07, later) — **which Chebotarev the recursion actually needs**
+
+Same day as §1.31.  Reading SW's choice of `P_{n+1}` against what the repo can prove changed the
+shape of `ClosingChain.lean`, so this section records the diagnosis and the resulting
+generalisation.  Full root build 9761 jobs, 0 warnings, 0 sorries.
+
+### (a) What the recursion asks for
+
+SW take `S = cs(Ω|k) ∪ T` and choose `P_{n+1} ∈ S ∖ T_n(K)` such that the image of `ξ` in
+`H¹(k_{T_n}|K, ℤ/p)^∨` is `Frob_{P_{n+1}}`.  Unwinding the two sides:
+
+* `H¹(k_{T_n}|K, ℤ/p) = Hom(Gal(M/K), ℤ/p)` for `M` the maximal elementary abelian `p`-extension
+  of `K` unramified outside `T_n`, so its dual **is** `Gal(M/K)` and the condition is
+  `Frob_{P_{n+1}} = τ_ξ` for one prescribed `τ_ξ ∈ Gal(M/K)`;
+* `P_{n+1} ∈ S ∖ T_n(K)` means `P_{n+1} ∩ k` is completely split in `Ω` (the finitely many primes
+  of `T` are excluded by `∉ T_n(K)`).
+
+So the input is: **a prime of `K` with prescribed Frobenius in a Kummer extension `M/K`, lying over
+a prime of `k` split completely in `Ω`.**  SW's remark that `ξ` and `y` have the same (trivial)
+image in `H¹(Ω|K, ℤ/p)^∨` is exactly the compatibility `τ_ξ|_{M ∩ Ω} = 1` that makes the two
+conditions simultaneously satisfiable.
+
+Both conditions are one condition on `N = MΩ`, which is Galois over `k`: writing `σ ∈ Gal(N/k)` for
+the element with `σ|_Ω = 1` and `σ|_M = τ_ξ`, they say **the decomposition group of some prime of
+`N` over `k` is exactly `⟨σ⟩`** — complete splitting in `Ω` is the statement `D ⊆ Gal(N/Ω)`, which
+`D = ⟨σ⟩` already gives.
+
+### (b) Why `exists_relStabilizer_eq_zpowers` does not apply over `k`
+
+`CFT/RelativeFrobenius.lean:273` produces exactly such a prime, but requires
+`(Subgroup.zpowers σ).Normal`.  Over the base `k` that asks the line `⟨τ_ξ⟩ ⊆ Gal(M/M ∩ Ω)` to be
+`Gal(Ω|k)`-stable, which is false for a general `ξ`.  Full Chebotarev, which would need no
+normality, is out of reach: it needs `L(1, χ) ≠ 0`, and the repo's density stack stops at Dedekind
+zeta and its simple pole.
+
+**The fix is to change the base, not the theorem.**  `Gal(N/Ω) ≅ Gal(M/M ∩ Ω)` is *abelian*, so
+over the base `Ω` every subgroup is normal and `exists_relStabilizer_eq_zpowers` applies verbatim.
+The price is one extra condition on the prime `𝔮` of `Ω` it returns: `𝔮` must have residue degree
+one over `k`, since only then does `D_{𝔓/𝔮} = D_{𝔓/𝔭}` and only then is `𝔭 = 𝔮 ∩ k` completely
+split in `Ω`.
+
+That condition is *free* in density terms: the primes of a number field of residue degree `> 1`
+over `ℚ` — a fortiori over any subfield — have Dirichlet density zero, because
+`N𝔮 ≥ (resChar 𝔮)²` for those and `∑_𝔮 (resChar 𝔮)^{-2}` converges.  So the plan is
+
+1. `HasIdealDensity {𝔮 | absNorm 𝔮 ≠ resChar 𝔮} 0` (elementary: `p = minFac (absNorm 𝔮)` and
+   `absNorm 𝔮 ≠ p` force `p² ≤ absNorm 𝔮`);
+2. `idealDensity_le_of_subset_union` with a density-zero set in place of the finite one;
+3. `infinite_setOf_splitsCompletelyIn_not_splitsCompletelyIn` intersected with the degree-one
+   primes;
+4. the same conclusion for `exists_relStabilizer_eq_zpowers`, with `absNorm v = resChar v` added.
+
+Stating the extra condition as *degree one over `ℚ`* rather than *degree one over `k`* keeps it
+base-independent, so it can be added to the existing theorem instead of a tower version of it.
+
+### (c) The invertible residue, and why it must be carried through the whole chain
+
+Even over `Ω` the theorem pins the Frobenius only up to an invertible power: its conclusion is
+`Subgroup.zpowers (arithFrobAt …) = Subgroup.zpowers σ`, i.e. `Frob = σ^j` with `j` prime to `p`,
+and no argument in the repo can do better (that is what full Chebotarev is *for*).  Consequently
+SW's condition (1) is only available in the weakened form
+
+```
+placeValue P_i (z_i) ≡ m_i [ZMOD p]        with m_i invertible mod p
+```
+
+rather than `≡ 1`.  Three repairs were tried and rejected:
+
+* **rescaling `z_i` by `m_i^{-1}`** — breaks conditions (2) and (3), which are equalities of the
+  *values*, not of the classes they generate;
+* **scaling the prescribed data at `T_n` by `j`** — the scaling would have to be the same for every
+  `i`, which forces `j_N ≡ ±1`;
+* **taking `z = z_i^a z_N^b`** — matching (2) at `T(K)` forces `a = b = 1`.
+
+The repair that works is to **augment the pigeonhole** so that it also matches `m_i mod n`.  Then
+`m_i = m_N = m` and the four-row chain of §1.31(d) goes through unchanged, because both reciprocity
+steps carry the *same* invertible exponent and it cancels.  Concretely, in `ClosingChain.lean`:
+
+* the `Cancel` section replaces `zpow_eq_self_of_modEq_one` by `zpow_eq_zpow_of_modEq`
+  (`x^n = 1 → p ≡ q [ZMOD n] → x^p = x^q`) and `eq_of_zpow_eq_zpow_of_isCoprime`
+  (`x^n = y^n = 1 → IsCoprime m n → x^m = y^m → x = y`, by Bézout);
+* `placeFrobValue_eq_placeFrobValue` takes `{m : ℤ} (hm : IsCoprime m n)` and the two hypotheses
+  `placeValue v a ≡ m`, `placeValue w b ≡ m`;
+* `exists_lt_placeFrobValue_eq` pigeonholes into
+  `(univ.pi fun _ : Gal(K/k) => {x | x ^ n = 1}) ×ˢ (univ : Set (ZMod n))` and returns the extra
+  conjunct `placeValue (Pl N) (z N) ≡ placeValue (Pl i) (z i) [ZMOD n]`;
+* `placeFrobValue_mul_eq_one` and `localClassHom_mul_eq_one` take
+  `IsCoprime (placeValue Q zi) n` and `placeValue R zN ≡ placeValue Q zi [ZMOD n]`.
+
+### (d) Findings
+
+* **2079 (LEAN).** `ZMod.intCast_eq_intCast_iff` (Mathlib `Data/ZMod/Basic.lean:487`) takes all
+  three arguments **explicitly**: `(a b : ℤ) (c : ℕ) : (a : ZMod c) = b ↔ a ≡ b [ZMOD c]`.
+* **2080 (MATH).** `Int.ModEq.dvd` on `hpq : p ≡ q [ZMOD n]` yields `n ∣ q - p`, so the witness
+  equation is `p = q - n * s`, not `p = q + n * s`.  The wrong sign is caught only by `ring` and it
+  reports the residual goal `p = q * 2 - p`.
+* **2081 (MATH, IMPORTANT).** The Frobenius-density diagnosis of (b) and the invertible-residue
+  repair of (c).
+
+### (e) Routes rejected here
+
+* Using `exists_relStabilizer_eq_zpowers` over the base `k` (normality fails, see (b)).
+* Proving full Chebotarev density over a number field (needs `L(1, χ) ≠ 0`).
+* Proving the classical Frobenius density theorem for a general `σ`, via
+  `log ζ_E(s) = ∑_𝔭 d_E(𝔭) N𝔭^{-s} + O(1)` for a non-Galois `E = N^{⟨σ⟩}`.  It is the textbook
+  route and it does work, but it needs the fibre-sum estimate re-proved without `IsGalois`; the
+  base change of (b) reaches the same conclusion out of the Galois estimate already in the repo.
+* Handling the invertible power at the end of the construction rather than inside the pigeonhole;
+  see the three rejected repairs in (c).
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —

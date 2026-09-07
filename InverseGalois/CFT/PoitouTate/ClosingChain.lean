@@ -11,12 +11,13 @@ import InverseGalois.CFT.PoitouTate.GlobalClasses
 
 The construction of an algebraic number with prescribed local behaviour produces a sequence of
 units of a Galois extension of number fields, each of which is ramified at exactly one finite
-place, the value at that place being one modulo the exponent, and each of which is arranged to
+place, the value at that place being prime to the exponent, and each of which is arranged to
 cancel the values of its predecessors along the Galois group.  The element wanted is a product of
 two members of that sequence, chosen so that their values at the Frobenius automorphisms of the
-moved places agree; the pigeonhole principle produces such a pair because those values are killed
-by the exponent, and the elements of the rationals modulo the integers killed by the exponent are
-finite in number.
+moved places agree and their values at their own places agree modulo the exponent; the pigeonhole
+principle produces such a pair because the former are killed by the exponent, and the elements of
+the rationals modulo the integers killed by the exponent are finite in number, while the latter
+range over the residues modulo the exponent.
 
 For such a pair the product is trivial at every moved place.  The chain of equalities which shows
 this is two applications of one reciprocity law.  Moving a place by an automorphism and moving the
@@ -31,7 +32,8 @@ place are mutually inverse.
 ## Main results
 
 * `InverseGalois.CFT.placeFrobValue_eq_placeFrobValue`: reciprocity between two units each
-  ramified at a single place, where the value at that place is one modulo the exponent.
+  ramified at a single place, where the two values there agree modulo the exponent and are prime
+  to it.
 * `InverseGalois.CFT.finite_setOf_pow_eq_one`: the elements of the rationals modulo the integers
   killed by the exponent are finite in number.
 * `InverseGalois.CFT.exists_lt_placeFrobValue_eq`: **the pigeonhole principle for a sequence of
@@ -56,16 +58,29 @@ open IsDedekindDomain NumberField
 
 open scoped Pointwise
 
-/-! ### Cancelling an exponent congruent to one -/
+/-! ### Cancelling an exponent prime to the order -/
 
 section Cancel
 
-/-- An element killed by `n` is unchanged by an exponent congruent to one modulo `n`. -/
-theorem zpow_eq_self_of_modEq_one {G : Type*} [Group G] {x : G} {n : ℕ} (hx : x ^ n = 1)
-    {m : ℤ} (hm : m ≡ 1 [ZMOD (n : ℤ)]) : x ^ m = x := by
-  obtain ⟨s, hs⟩ := hm.dvd
-  have hm' : m = 1 - (n : ℤ) * s := by rw [← hs]; ring
-  rw [hm', zpow_sub, zpow_one, zpow_mul, zpow_natCast, hx, one_zpow, inv_one, mul_one]
+/-- An element killed by `n` sees only the residue of an exponent modulo `n`. -/
+theorem zpow_eq_zpow_of_modEq {G : Type*} [Group G] {x : G} {n : ℕ} (hx : x ^ n = 1)
+    {p q : ℤ} (hpq : p ≡ q [ZMOD (n : ℤ)]) : x ^ p = x ^ q := by
+  obtain ⟨s, hs⟩ := hpq.dvd
+  have hp : p = q - (n : ℤ) * s := by rw [← hs]; ring
+  rw [hp, zpow_sub, zpow_mul, zpow_natCast, hx, one_zpow, inv_one, mul_one]
+
+/-- Two elements killed by `n` which agree after being raised to an exponent prime to `n` are
+equal. -/
+theorem eq_of_zpow_eq_zpow_of_isCoprime {G : Type*} [Group G] {x y : G} {n : ℕ} (hx : x ^ n = 1)
+    (hy : y ^ n = 1) {m : ℤ} (hm : IsCoprime m (n : ℤ)) (h : x ^ m = y ^ m) : x = y := by
+  obtain ⟨u, v, huv⟩ := hm
+  have hxn : x ^ (n : ℤ) = 1 := by rw [zpow_natCast, hx]
+  have hyn : y ^ (n : ℤ) = 1 := by rw [zpow_natCast, hy]
+  calc x = x ^ (u * m + v * (n : ℤ)) := by rw [huv, zpow_one]
+    _ = (x ^ m) ^ u * (x ^ (n : ℤ)) ^ v := by rw [zpow_add, zpow_mul', zpow_mul']
+    _ = (y ^ m) ^ u * (y ^ (n : ℤ)) ^ v := by rw [h, hxn, hyn]
+    _ = y ^ (u * m + v * (n : ℤ)) := by rw [zpow_add, zpow_mul', zpow_mul']
+    _ = y := by rw [huv, zpow_one]
 
 end Cancel
 
@@ -76,9 +91,9 @@ section Normalised
 variable {k : Type} [Field k] [NumberField k] {n : ℕ} [NeZero n]
   {P E : HeightOneSpectrum (𝓞 k) → ℕ}
 
-/-- **Reciprocity between two units each ramified at a single place**, where the value at that
-place is one modulo the exponent: the value of each at the Frobenius automorphism of the
-exceptional place of the other are equal. -/
+/-- **Reciprocity between two units each ramified at a single place**, where the two values at
+those places agree modulo the exponent and are prime to it: the values of each at the Frobenius
+automorphism of the exceptional place of the other are equal. -/
 theorem placeFrobValue_eq_placeFrobValue (hn : n.Prime) (hn2 : n ≠ 2)
     (hres : ∀ v : HeightOneSpectrum (𝓞 k), HasResidueChar (v.adicCompletion k) (P v) (E v))
     {ζ : k} (hζ : IsPrimitiveRoot ζ n) {v w : HeightOneSpectrum (𝓞 k)} (hvw : v ≠ w)
@@ -88,11 +103,14 @@ theorem placeFrobValue_eq_placeFrobValue (hn : n.Prime) (hn2 : n ≠ 2)
     (hap : ∀ u : HeightOneSpectrum (𝓞 k), P u ∣ n →
       ∃ c : (u.adicCompletion k)ˣ,
         c ^ n = Units.map (algebraMap k (u.adicCompletion k)).toMonoidHom a)
-    (hav : placeValue v a ≡ 1 [ZMOD (n : ℤ)]) (hbw : placeValue w b ≡ 1 [ZMOD (n : ℤ)]) :
+    {m : ℤ} (hm : IsCoprime m (n : ℤ)) (hav : placeValue v a ≡ m [ZMOD (n : ℤ)])
+    (hbw : placeValue w b ≡ m [ZMOD (n : ℤ)]) :
     placeFrobValue hres hζ w a = placeFrobValue hres hζ v b := by
   have h := placeFrobValue_zpow_eq_zpow hn hn2 hres hζ hvw hvn hwn ha hb hap
-  rwa [zpow_eq_self_of_modEq_one (pow_placeFrobValue_eq_one hres hζ w a) hbw,
-    zpow_eq_self_of_modEq_one (pow_placeFrobValue_eq_one hres hζ v b) hav] at h
+  rw [zpow_eq_zpow_of_modEq (pow_placeFrobValue_eq_one hres hζ w a) hbw,
+    zpow_eq_zpow_of_modEq (pow_placeFrobValue_eq_one hres hζ v b) hav] at h
+  exact eq_of_zpow_eq_zpow_of_isCoprime (pow_placeFrobValue_eq_one hres hζ w a)
+    (pow_placeFrobValue_eq_one hres hζ v b) hm h
 
 /-- The value of a unit of a number field at a finite place is additive. -/
 theorem placeValue_mul (v : HeightOneSpectrum (𝓞 k)) (a b : kˣ) :
@@ -186,29 +204,36 @@ theorem dvd_placeValue_galUnits (σ : Gal(K/k)) {v : HeightOneSpectrum (𝓞 K)}
 
 /-- **The pigeonhole principle for a sequence of units and a sequence of places**: two members of
 the sequence have the same value at the Frobenius automorphism of their own place, moved by any
-automorphism of the extension. -/
+automorphism of the extension, and the same value at their own place modulo the exponent. -/
 theorem exists_lt_placeFrobValue_eq [FiniteDimensional k K]
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) (Pl : ℕ → HeightOneSpectrum (𝓞 K)) (z : ℕ → Kˣ) :
-    ∃ i N : ℕ, i < N ∧ ∀ σ : Gal(K/k),
-      placeFrobValue hres hζ (σ • Pl N) (z N) = placeFrobValue hres hζ (σ • Pl i) (z i) := by
-  have hfin : (Set.univ.pi fun _ : Gal(K/k) => {x : Multiplicative QModZ | x ^ n = 1}).Finite :=
-    Set.Finite.pi fun _ => finite_setOf_pow_eq_one n
+    ∃ i N : ℕ, i < N ∧ placeValue (Pl N) (z N) ≡ placeValue (Pl i) (z i) [ZMOD (n : ℤ)] ∧
+      ∀ σ : Gal(K/k),
+        placeFrobValue hres hζ (σ • Pl N) (z N) = placeFrobValue hres hζ (σ • Pl i) (z i) := by
+  have hfin : ((Set.univ.pi fun _ : Gal(K/k) => {x : Multiplicative QModZ | x ^ n = 1}) ×ˢ
+      (Set.univ : Set (ZMod n))).Finite :=
+    (Set.Finite.pi fun _ => finite_setOf_pow_eq_one n).prod Set.finite_univ
   have hmaps : Set.MapsTo
-      (fun i : ℕ => fun σ : Gal(K/k) => placeFrobValue hres hζ (σ • Pl i) (z i)) Set.univ
-      (Set.univ.pi fun _ : Gal(K/k) => {x : Multiplicative QModZ | x ^ n = 1}) :=
-    fun _ _ _ _ => pow_placeFrobValue_eq_one hres hζ _ _
+      (fun i : ℕ => ((fun σ : Gal(K/k) => placeFrobValue hres hζ (σ • Pl i) (z i)),
+        ((placeValue (Pl i) (z i) : ℤ) : ZMod n))) Set.univ
+      ((Set.univ.pi fun _ : Gal(K/k) => {x : Multiplicative QModZ | x ^ n = 1}) ×ˢ
+        (Set.univ : Set (ZMod n))) :=
+    fun _ _ => ⟨fun _ _ => pow_placeFrobValue_eq_one hres hζ _ _, Set.mem_univ _⟩
   obtain ⟨i, -, j, -, hij, hfeq⟩ := Set.infinite_univ.exists_ne_map_eq_of_mapsTo hmaps hfin
+  have hval : placeValue (Pl i) (z i) ≡ placeValue (Pl j) (z j) [ZMOD (n : ℤ)] :=
+    (ZMod.intCast_eq_intCast_iff _ _ _).1 (congrArg Prod.snd hfeq)
+  have hfrob := congrArg Prod.fst hfeq
   rcases lt_or_gt_of_ne hij with h | h
-  · exact ⟨i, j, h, fun σ => congrFun hfeq.symm σ⟩
-  · exact ⟨j, i, h, fun σ => congrFun hfeq σ⟩
+  · exact ⟨i, j, h, hval.symm, fun σ => congrFun hfrob.symm σ⟩
+  · exact ⟨j, i, h, hval, fun σ => congrFun hfrob σ⟩
 
 /-- **The closing chain**: two units of a Galois extension of number fields, each ramified at a
-single place with value one there modulo the exponent, the first of which is a power in every
-completion whose residue characteristic divides the exponent, whose values at the Frobenius
-automorphism of their own place moved by an automorphism agree, and whose Galois conjugates have
-mutually inverse values at the exceptional place of the first, have a product which is trivial at
-the moved place. -/
+single place with the same value there modulo the exponent and prime to it, the first of which is
+a power in every completion whose residue characteristic divides the exponent, whose values at the
+Frobenius automorphism of their own place moved by an automorphism agree, and whose Galois
+conjugates have mutually inverse values at the exceptional place of the first, have a product which
+is trivial at the moved place. -/
 theorem placeFrobValue_mul_eq_one (hn : n.Prime) (hn2 : n ≠ 2)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {σ : Gal(K/k)} {Q R : HeightOneSpectrum (𝓞 K)}
@@ -216,7 +241,8 @@ theorem placeFrobValue_mul_eq_one (hn : n.Prime) (hn2 : n ≠ 2)
     (hσRn : ¬ P (σ • R) ∣ n) {zi zN : Kˣ}
     (hzi : ∀ u : HeightOneSpectrum (𝓞 K), u ≠ Q → (n : ℤ) ∣ placeValue u zi)
     (hzN : ∀ u : HeightOneSpectrum (𝓞 K), u ≠ R → (n : ℤ) ∣ placeValue u zN)
-    (hziQ : placeValue Q zi ≡ 1 [ZMOD (n : ℤ)]) (hzNR : placeValue R zN ≡ 1 [ZMOD (n : ℤ)])
+    (hziQ : IsCoprime (placeValue Q zi) (n : ℤ))
+    (hzNR : placeValue R zN ≡ placeValue Q zi [ZMOD (n : ℤ)])
     (hzip : ∀ u : HeightOneSpectrum (𝓞 K), P u ∣ n →
       ∃ c : (u.adicCompletion K)ˣ,
         c ^ n = Units.map (algebraMap K (u.adicCompletion K)).toMonoidHom zi)
@@ -226,10 +252,12 @@ theorem placeFrobValue_mul_eq_one (hn : n.Prime) (hn2 : n ≠ 2)
     placeFrobValue hres hζ (σ • R) (zi * zN) = 1 := by
   have h1 : placeFrobValue hres hζ (σ • Q) zi = placeFrobValue hres hζ Q (galUnits σ zi) :=
     placeFrobValue_eq_placeFrobValue hn hn2 hres hζ hQσQ hQn hσQn hzi
-      (dvd_placeValue_galUnits σ hzi) hzip hziQ (by rw [placeValue_galSmul]; exact hziQ)
+      (dvd_placeValue_galUnits σ hzi) hzip hziQ (Int.ModEq.refl _)
+      (by rw [placeValue_galSmul])
   have h2 : placeFrobValue hres hζ (σ • R) zi = placeFrobValue hres hζ Q (galUnits σ zN) :=
     placeFrobValue_eq_placeFrobValue hn hn2 hres hζ hQσR hQn hσRn hzi
-      (dvd_placeValue_galUnits σ hzN) hzip hziQ (by rw [placeValue_galSmul]; exact hzNR)
+      (dvd_placeValue_galUnits σ hzN) hzip hziQ (Int.ModEq.refl _)
+      (by rw [placeValue_galSmul]; exact hzNR)
   have hcond' : placeFrobValue hres hζ Q (galUnits σ zi)
       = (placeFrobValue hres hζ Q (galUnits σ zN))⁻¹ := by rw [hcond, inv_inv]
   rw [placeFrobValue_mul, hpigeon, h1, hcond', ← h2]
@@ -259,7 +287,8 @@ theorem localClassHom_mul_eq_one (hn : n.Prime) (hn2 : n ≠ 2)
     (hσQn : ¬ P (σ • Q) ∣ n) (hσRn : ¬ P (σ • R) ∣ n) {zi zN : Kˣ}
     (hzi : ∀ u : HeightOneSpectrum (𝓞 K), u ≠ Q → (n : ℤ) ∣ placeValue u zi)
     (hzN : ∀ u : HeightOneSpectrum (𝓞 K), u ≠ R → (n : ℤ) ∣ placeValue u zN)
-    (hziQ : placeValue Q zi ≡ 1 [ZMOD (n : ℤ)]) (hzNR : placeValue R zN ≡ 1 [ZMOD (n : ℤ)])
+    (hziQ : IsCoprime (placeValue Q zi) (n : ℤ))
+    (hzNR : placeValue R zN ≡ placeValue Q zi [ZMOD (n : ℤ)])
     (hzip : ∀ u : HeightOneSpectrum (𝓞 K), P u ∣ n →
       ∃ c : (u.adicCompletion K)ˣ,
         c ^ n = Units.map (algebraMap K (u.adicCompletion K)).toMonoidHom zi)
