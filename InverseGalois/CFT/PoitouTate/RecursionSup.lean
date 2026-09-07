@@ -18,7 +18,8 @@ the second, and the character kills each factor for its own reason: the first fa
 power where the prescription is not carried by a global unit and has value a multiple of the
 exponent outside the prescribed set, while the second has value a multiple of the exponent on the
 prescribed set.  So the step runs over the compositum as soon as the first factor splits completely
-off the prescribed set and is unramified outside it, and the second is unramified on it.
+off the prescribed set and is unramified outside it, and the second is unramified on the part of it
+away from the exponent.
 
 The two copies of the factors inside the compositum have to generate it over the bottom field, and
 that is a statement about sets of elements which does not see the field it is read over: it holds
@@ -61,7 +62,8 @@ variable {k A K : Type} [Field k] [NumberField k] [Field A] [Algebra k A] [Norma
 extensions of the bottom field.**  The prescription is carried by a global `S`-unit on part of the
 prescribed set and is trivial on the rest; the first extension splits completely on that rest and
 is unramified outside the prescribed set, and the second extension is abelian of exponent the
-exponent and unramified on the part carrying the global unit.  Then the character of the `S`-units
+exponent and unramified away from the exponent on the part carrying the global unit.  Then the
+character of the `S`-units
 is killed by every radicand of the middle field, because a radicand factors along the two
 extensions, and the step produces a new place, completely split in the middle field, together with
 an `S`-unit meeting the prescription and ramified exactly there. -/
@@ -87,7 +89,7 @@ theorem exists_place_sUnit_prescribed_of_sup (hp : p.Prime) (hodd : 2 < p)
       primeUnder (𝓞 K) w = v ∧ stabilizer Gal(M₁/K) w = ⊥)
     (hram₁ : ∀ v ∉ Tn, ∃ w : HeightOneSpectrum (𝓞 M₁),
       primeUnder (𝓞 K) w = v ∧ ramIdx (𝓞 K) w = 1)
-    (hram₂ : ∀ v ∈ T, ∃ w : HeightOneSpectrum (𝓞 M₂),
+    (hram₂ : ∀ v ∈ T, FinitePlace.mk v ((p : ℕ) : K) = 1 → ∃ w : HeightOneSpectrum (𝓞 M₂),
       primeUnder (𝓞 K) w = v ∧ ramIdx (𝓞 K) w = 1) :
     ∃ V : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 k) V ∉ Tk ∧
       stabilizer Gal(↥Ω/k) V = ⊥ ∧ ¬ Pc (primeUnder (𝓞 K) V) ∣ p ∧

@@ -354,6 +354,7 @@ import InverseGalois.CFT.Kummer.RadicalAut
 import InverseGalois.CFT.Kummer.RadicalCharacter
 import InverseGalois.CFT.Kummer.RadicalClosure
 import InverseGalois.CFT.Kummer.RadicalNormal
+import InverseGalois.CFT.Kummer.RadicalRamIdx
 import InverseGalois.CFT.Kummer.RadicandLevel
 import InverseGalois.CFT.Kummer.RamifiedCyclotomicPlace
 import InverseGalois.CFT.Kummer.RootIndex
@@ -365,6 +366,7 @@ import InverseGalois.CFT.Kummer.SupKummerData
 import InverseGalois.CFT.Kummer.SupPowSurjective
 import InverseGalois.CFT.Kummer.SupRadicalSplit
 import InverseGalois.CFT.Kummer.Unramified
+import InverseGalois.CFT.Kummer.UnramifiedOrd
 import InverseGalois.CFT.Level
 import InverseGalois.CFT.Local.AdicAction
 import InverseGalois.CFT.Local.AdicFamily
@@ -2335,6 +2337,21 @@ it that are available here.
   divides `p`, which the place avoids, so the element fixes every radical and the radicals generate:
   the extension is unramified at every place away from the exponent at which the radicands are
   units.
+* `InverseGalois.CFT.Kummer.UnramifiedOrd` weakens the hypothesis on the radicands from being units
+  to having order a multiple of the exponent.  Only the radicand modulo `p`-th powers of the base
+  matters, and a radical may be divided by any nonzero scalar of the base without changing the
+  field the radicals generate, since each new radical is an old one over a scalar and each old one
+  is a new one times a scalar.  Dividing by the power of a coordinate at the place whose exponent
+  is the order of the radicand over the exponent makes the new radicand a unit at the place, and
+  the previous bound applies to the rescaled family: the extension is unramified at every place
+  away from the exponent at which every radicand has order a multiple of the exponent.
+* `InverseGalois.CFT.Kummer.RadicalRamIdx` turns that into a prime with ramification index one.  An
+  extension unramified at a prime has ramification index one there, and a prime of the base always
+  carries a prime of the extension above it; a natural number has normalised absolute value one at
+  a prime exactly when the prime avoids it, and a prime of the extension avoids it exactly when the
+  prime below does, so the hypothesis at the top is read off downstairs: **above a prime of the
+  base away from the exponent at which every radicand has order a multiple of the exponent there is
+  a prime of the radical extension with ramification index one.**
 * `InverseGalois.CFT.Kummer.CongruentRadical` sharpens that bound at the exponent itself.  There a
   radical extension is usually ramified, and the criterion which separates the radicands that
   ramify from those that do not is a congruence: if the radicand is a unit at the place and

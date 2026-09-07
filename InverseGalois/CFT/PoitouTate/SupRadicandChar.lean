@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Kummer.RadicalRamIdx
 import InverseGalois.CFT.Kummer.SupRadicalSplit
 import InverseGalois.CFT.PoitouTate.GlobalClasses
 import InverseGalois.CFT.PoitouTate.NormLocalPower
@@ -50,7 +51,7 @@ again trivial.
 * `InverseGalois.CFT.prescriptionChar_eq_one_of_pow_sup`: **the prescription character kills every
   radicand of a compositum** of an extension splitting completely off the prescribed set and
   unramified outside it, with one whose Galois group is abelian of exponent the exponent and which
-  is unramified on the prescribed set.
+  is unramified on the part of the prescribed set away from the exponent.
 
 ## Tags
 
@@ -66,13 +67,6 @@ open IsDedekindDomain MulAction NumberField Rigidity.RET
 section Unramified
 
 variable {K M : Type} [Field K] [NumberField K] [Field M] [NumberField M] [Algebra K M]
-
-/-- **A place of an extension of number fields at which the extension is unramified has
-ramification index one.** -/
-theorem ramIdx_eq_one_of_isUnramifiedAt (w : HeightOneSpectrum (𝓞 M))
-    [Algebra.IsUnramifiedAt (𝓞 K) w.asIdeal] : ramIdx (𝓞 K) w = 1 := by
-  haveI : w.asIdeal.IsPrime := w.isPrime
-  exact Ideal.ramificationIdx_eq_one_of_isUnramifiedAt w.ne_bot
 
 /-- **The exponent divides the value of a radicand at a place unramified in the extension where it
 becomes a power.**  The order of the radicand at the place above is the exponent times the order of
@@ -197,14 +191,14 @@ theorem prescriptionChar_eq_one_of_localClassHom_eq_one (hn : n.Prime) (hn2 : n 
 Away from that part the factors disappear outright, and on it the class of the unit and the
 prescribed class are both unramified at a place not dividing the exponent, where the unramified
 classes are their own orthogonal complement; at a place dividing the exponent the prescription is
-trivial again. -/
+trivial again, so nothing is asked of the unit there. -/
 theorem prescriptionChar_eq_one_of_dvd_placeValue (hn : n.Prime)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T Tn : Finset (HeightOneSpectrum (𝓞 K))}
     {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n}
     (hcT : ∀ v ∈ Tn, v ∉ T → c v = 1) (hcunr : ∀ v ∈ T, c v ∈ localUnramified v n)
     (hcn : ∀ v ∈ T, FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → c v = 1)
-    {u : Kˣ} (hu : ∀ v ∈ T, (n : ℤ) ∣ placeValue v u) :
+    {u : Kˣ} (hu : ∀ v ∈ T, FinitePlace.mk v ((n : ℕ) : K) = 1 → (n : ℤ) ∣ placeValue v u) :
     prescriptionChar hres hζ Tn c u = 1 := by
   classical
   rw [prescriptionChar_apply]
@@ -214,7 +208,7 @@ theorem prescriptionChar_eq_one_of_dvd_placeValue (hn : n.Prime)
     · have hmem : localClassHom v n u ∈ perpSubgroupLeft (A := localClasses v n)
           (localClassPairing hres hζ v) (localUnramified v n) := by
         rw [perpSubgroupLeft_localUnramified hres hζ hn hvn]
-        exact (localClassHom_mem_localUnramified_iff v u).2 (hu v hvT)
+        exact (localClassHom_mem_localUnramified_iff v u).2 (hu v hvT hvn)
       exact mem_perpSubgroupLeft.1 hmem _ (hcunr v hvT)
     · rw [hcn v hvT hvn]
       exact _root_.map_one _
@@ -235,7 +229,7 @@ theorem prescriptionChar_eq_one_of_mul (hn : n.Prime) (hn2 : n ≠ 2)
     {u u₁ u₂ : Kˣ} (hu : u = u₁ * u₂)
     (h1 : ∀ v ∈ Tn, v ∉ T → localClassHom v n u₁ = 1)
     (h1out : ∀ v ∉ Tn, (n : ℤ) ∣ placeValue v u₁)
-    (h2 : ∀ v ∈ T, (n : ℤ) ∣ placeValue v u₂) :
+    (h2 : ∀ v ∈ T, FinitePlace.mk v ((n : ℕ) : K) = 1 → (n : ℤ) ∣ placeValue v u₂) :
     prescriptionChar hres hζ Tn c u = 1 := by
   rw [hu, _root_.map_mul,
     prescriptionChar_eq_one_of_localClassHom_eq_one hn hn2 hres hζ hT hnTn hg hc h1 h1out,
@@ -267,7 +261,7 @@ theorem prescriptionChar_eq_one_of_pow_mul (hn : n.Prime) (hn2 : n ≠ 2)
       primeUnder (𝓞 K) w = v ∧ stabilizer Gal(M/K) w = ⊥)
     {u u₁ u₂ : Kˣ} (hu : u = u₁ * u₂) {b : M} (hb : algebraMap K M (u₁ : K) = b ^ n)
     (h1out : ∀ v ∉ Tn, (n : ℤ) ∣ placeValue v u₁)
-    (h2 : ∀ v ∈ T, (n : ℤ) ∣ placeValue v u₂) :
+    (h2 : ∀ v ∈ T, FinitePlace.mk v ((n : ℕ) : K) = 1 → (n : ℤ) ∣ placeValue v u₂) :
     prescriptionChar hres hζ Tn c u = 1 := by
   refine prescriptionChar_eq_one_of_mul hn hn2 hres hζ hT hnTn hg hc hcT hcunr hcn hu
     (fun v hv hv0 => ?_) h1out h2
@@ -286,9 +280,10 @@ variable {K M₁ M₂ : Type} [Field K] [NumberField K] [Field M₁] [NumberFiel
 
 /-- **The prescription character kills a product of a radicand of one extension and a radicand of
 another**, when the first extension splits completely where the prescription is not carried by a
-global unit and is unramified outside the prescribed set, and the second is unramified on the
-prescribed set.  Splitting completely makes the local class of the first factor trivial, while an
-unramified place reads the value of a radicand as a multiple of the exponent. -/
+global unit and is unramified outside the prescribed set, and the second is unramified on the part
+of the prescribed set away from the exponent.  Splitting completely makes the local class of the
+first factor trivial, while an unramified place reads the value of a radicand as a multiple of the
+exponent. -/
 theorem prescriptionChar_eq_one_of_factor (hn : n.Prime) (hn2 : n ≠ 2)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T Tn : Finset (HeightOneSpectrum (𝓞 K))} (hT : T ⊆ Tn)
@@ -302,16 +297,16 @@ theorem prescriptionChar_eq_one_of_factor (hn : n.Prime) (hn2 : n ≠ 2)
       primeUnder (𝓞 K) w = v ∧ stabilizer Gal(M₁/K) w = ⊥)
     (hram₁ : ∀ v ∉ Tn, ∃ w : HeightOneSpectrum (𝓞 M₁),
       primeUnder (𝓞 K) w = v ∧ ramIdx (𝓞 K) w = 1)
-    (hram₂ : ∀ v ∈ T, ∃ w : HeightOneSpectrum (𝓞 M₂),
+    (hram₂ : ∀ v ∈ T, FinitePlace.mk v ((n : ℕ) : K) = 1 → ∃ w : HeightOneSpectrum (𝓞 M₂),
       primeUnder (𝓞 K) w = v ∧ ramIdx (𝓞 K) w = 1)
     {u u₁ u₂ : Kˣ} (hu : u = u₁ * u₂) {y₁ : M₁} (hy₁ : algebraMap K M₁ (u₁ : K) = y₁ ^ n)
     {y₂ : M₂} (hy₂ : algebraMap K M₂ (u₂ : K) = y₂ ^ n) :
     prescriptionChar hres hζ Tn c u = 1 := by
   refine prescriptionChar_eq_one_of_pow_mul hn hn2 hres hζ hT hnTn hg hc hcT hcunr hcn hsplit
-    hu hy₁ (fun v hv => ?_) (fun v hv => ?_)
+    hu hy₁ (fun v hv => ?_) (fun v hv hvn => ?_)
   · obtain ⟨w, rfl, hw⟩ := hram₁ v hv
     exact dvd_placeValue_of_pow_eq_of_ramIdx_eq_one hn.ne_zero w hw hy₁
-  · obtain ⟨w, rfl, hw⟩ := hram₂ v hv
+  · obtain ⟨w, rfl, hw⟩ := hram₂ v hv hvn
     exact dvd_placeValue_of_pow_eq_of_ramIdx_eq_one hn.ne_zero w hw hy₂
 
 end Factor
@@ -329,8 +324,9 @@ variable {K M₁ M₂ L : Type} [Field K] [NumberField K] [Field M₁] [NumberFi
 /-- **The prescription character kills every radicand of a compositum of two extensions**, the
 first splitting completely where the prescription is not carried by a global unit and unramified
 outside the prescribed set, the second with abelian Galois group of exponent the exponent and
-unramified on the prescribed set.  The radicand factors as a radicand of the first extension times
-a radicand of the second, and each factor is then killed for its own reason. -/
+unramified on the part of the prescribed set away from the exponent.  The radicand factors as a
+radicand of the first extension times a radicand of the second, and each factor is then killed for
+its own reason. -/
 theorem prescriptionChar_eq_one_of_pow_sup (hn : n.Prime) (hn2 : n ≠ 2)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T Tn : Finset (HeightOneSpectrum (𝓞 K))} (hT : T ⊆ Tn)
@@ -347,7 +343,7 @@ theorem prescriptionChar_eq_one_of_pow_sup (hn : n.Prime) (hn2 : n ≠ 2)
       primeUnder (𝓞 K) w = v ∧ stabilizer Gal(M₁/K) w = ⊥)
     (hram₁ : ∀ v ∉ Tn, ∃ w : HeightOneSpectrum (𝓞 M₁),
       primeUnder (𝓞 K) w = v ∧ ramIdx (𝓞 K) w = 1)
-    (hram₂ : ∀ v ∈ T, ∃ w : HeightOneSpectrum (𝓞 M₂),
+    (hram₂ : ∀ v ∈ T, FinitePlace.mk v ((n : ℕ) : K) = 1 → ∃ w : HeightOneSpectrum (𝓞 M₂),
       primeUnder (𝓞 K) w = v ∧ ramIdx (𝓞 K) w = 1)
     {u : Kˣ} {b : L} (hb : algebraMap K L (u : K) = b ^ n) :
     prescriptionChar hres hζ Tn c u = 1 := by
