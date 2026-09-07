@@ -492,6 +492,7 @@ import InverseGalois.CFT.PoitouTate.SupRadicandChar
 import InverseGalois.CFT.PoitouTate.TorsionCharacter
 import InverseGalois.CFT.PoitouTate.TwoPlaces
 import InverseGalois.CFT.PoitouTate.TwoPlacesFree
+import InverseGalois.CFT.PoitouTate.TwoPlacesRadical
 import InverseGalois.CFT.PoitouTate.Unramified
 import InverseGalois.CFT.PrimeProductSquare
 import InverseGalois.CFT.Profinite.Cochain
@@ -7310,4 +7311,15 @@ it that are available here.
   radicand of the second factor.  So: **the recursion steps over a compositum with a radical second
   factor knowing nothing of that factor beyond its radicands, and hands back a place at which all of
   them are trivial** — which is what lets the place be used again as an exceptional place later on.
+
+* `InverseGalois.CFT.PoitouTate.TwoPlacesRadical` runs the two-place construction over such a
+  compositum.  The construction asks that the places where the unit it starts from fails to be a
+  unit, and which are not among the places carrying the prescription, be completely split in the
+  auxiliary field; over a compositum the places already spoken for are split in the first factor
+  only, so the unit one has cannot start it.  One step of the recursion over the compositum moves
+  the prescription onto a unit which fails to be a unit at a single new place, and that place is
+  completely split in the whole compositum, so the construction may be started from there.  So:
+  **two places completely split in a compositum with a radical second factor, killing every radicand
+  of that factor, and a unit ramified exactly at the two of them realising a prescribed local
+  behaviour.**
 -/
