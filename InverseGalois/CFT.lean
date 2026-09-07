@@ -456,6 +456,7 @@ import InverseGalois.CFT.PiDual
 import InverseGalois.CFT.PiIndex
 import InverseGalois.CFT.PoitouTate.ChebotarevPlace
 import InverseGalois.CFT.PoitouTate.ClosingChain
+import InverseGalois.CFT.PoitouTate.ConjugatePlace
 import InverseGalois.CFT.PoitouTate.CupDual
 import InverseGalois.CFT.PoitouTate.Dual
 import InverseGalois.CFT.PoitouTate.FrobeniusCharacter
@@ -465,6 +466,8 @@ import InverseGalois.CFT.PoitouTate.LocalConditions
 import InverseGalois.CFT.PoitouTate.PlaceUniformiser
 import InverseGalois.CFT.PoitouTate.Prescribed
 import InverseGalois.CFT.PoitouTate.RadicalPlace
+import InverseGalois.CFT.PoitouTate.Recursion
+import InverseGalois.CFT.PoitouTate.RecursionClose
 import InverseGalois.CFT.PoitouTate.RecursionStep
 import InverseGalois.CFT.PoitouTate.SUnitCharacter
 import InverseGalois.CFT.PoitouTate.SUnitPlace
@@ -474,6 +477,7 @@ import InverseGalois.CFT.PoitouTate.ShaSurjection
 import InverseGalois.CFT.PoitouTate.ShaTate
 import InverseGalois.CFT.PoitouTate.SplitClass
 import InverseGalois.CFT.PoitouTate.TorsionCharacter
+import InverseGalois.CFT.PoitouTate.TwoPlaces
 import InverseGalois.CFT.PoitouTate.Unramified
 import InverseGalois.CFT.PrimeProductSquare
 import InverseGalois.CFT.Profinite.Cochain
@@ -7085,4 +7089,45 @@ it that are available here.
   the class of an `S`-unit: **outside any prescribed finite set of places of the bottom field there
   is a completely split place, together with an `S`-unit whose local classes meet the prescription
   at the old places and which is ramified exactly at the new one**.
+
+* `InverseGalois.CFT.PoitouTate.ConjugatePlace` moves that splitting condition around a tower.  A
+  place of the top field with trivial decomposition group over the bottom lies above a place of an
+  intermediate field with trivial decomposition group: an automorphism of the intermediate field
+  fixing the place below lifts to the top, the lift moves the place to another one above the same
+  place, an automorphism over the intermediate field carries it back, and the composite fixes the
+  place, hence is trivial, so the lift restricts to the identity.  Conjugating the place upstairs by
+  a lift and reading the decomposition group of the conjugate as a conjugate subgroup gives the
+  companion statement, that **every conjugate of the place below a completely split place is again
+  the place below a completely split place**, which is what lets a prescription indexed by the
+  places of the intermediate field be imposed at a whole orbit at once.
+
+* `InverseGalois.CFT.PoitouTate.Recursion` runs the step over and over.  The data carried along is a
+  finite stable set of places, a prescription on all places, and the places and units produced so
+  far; the invariant records that the prescription is unramified on the set, agrees with a fixed
+  unit on a fixed subset, is met by completely split places outside it, and that each produced unit
+  is ramified exactly at its own place, meets the fixed prescription on the fixed subset, and is
+  cancelled by the prescription at every nontrivial conjugate of its place.  One step adds the new
+  place together with its whole orbit, prescribing the trivial class at the place itself and the
+  inverse of the new unit's class at each of its other conjugates, which is exactly what the
+  invariant asks of every later unit: **the invariant can be maintained for any number of steps**.
+
+* `InverseGalois.CFT.PoitouTate.RecursionClose` stops the recursion and multiplies two of its units
+  together.  The value of a unit at a place, modulo the exponent, and the values at the Frobenius
+  automorphisms of the conjugates of its place, take finitely many values in all, so a bound
+  computed before the recursion begins forces two stages to agree in every one of them, and a
+  product of two units whose data agree is the number the closing chain was written for.  So for a
+  prescription that is unramified on the fixed set and trivial at the places over the exponent,
+  **there are two completely split places, not conjugate to each other and each with trivial
+  decomposition group, and a unit ramified exactly at the two of them, realising the square of the
+  prescription on the fixed set and having trivial local class at every nontrivial conjugate of
+  either place**.
+
+* `InverseGalois.CFT.PoitouTate.TwoPlaces` supplies the step that recursion runs on.  Taking the
+  splitting condition to be "lies below a place of the auxiliary field with trivial decomposition
+  group over the bottom", the conjugates of such a place satisfy it again, and one step of the
+  recursion over the auxiliary field is exactly the construction of a Chebotarev place, its
+  prescribed set of places of the bottom field being the image of the current set: **for a
+  prescription on a stable finite set there are two such places and a single unit ramified exactly
+  at them, meeting the square of the prescription and vanishing at all their nontrivial
+  conjugates**.
 -/
