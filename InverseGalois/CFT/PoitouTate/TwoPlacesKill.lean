@@ -24,11 +24,16 @@ in the bottom field.  Every hypothesis the construction over a compositum makes 
 and the two places it returns are completely split in the whole compositum, hence in the auxiliary
 field, and kill every radicand.
 
+Both properties pass to the conjugates of the two places: a conjugate of a place with trivial
+decomposition group again lies below a place with trivial decomposition group, and that is all the
+argument that killed the radicands used.  The conjugates are what a later coordinate of the
+construction sees, so it is at them that the two properties are needed.
+
 ## Main results
 
 * `InverseGalois.CFT.exists_two_places_sUnit_kill`: **two places completely split in the auxiliary
-  field, killing every member of a stable family of radicands, together with a unit ramified
-  exactly at the two of them and realising a prescribed local behaviour.**
+  field, all of whose conjugates kill every member of a stable family of radicands, together with a
+  unit ramified exactly at the two of them and realising a prescribed local behaviour.**
 
 ## Tags
 
@@ -53,13 +58,14 @@ variable {k A K : Type} [Field k] [NumberField k] [Field A] [Algebra k A] [Norma
   [IsScalarTower k K ↥Ω] [IsScalarTower K ↥Ω A] [IsGalois K ↥Ω]
   {p : ℕ} [NeZero p] {Pc Ec : HeightOneSpectrum (𝓞 K) → ℕ}
 
-/-- **Two places completely split in the auxiliary field, killing a stable family of radicands, and
-a unit ramified exactly at them realising a prescribed local behaviour.**  Adjoining a chosen `p`-th
-root of each radicand to the auxiliary field produces a field normal over the bottom of the tower
-and presented as a compositum of the auxiliary field with a field generated over the middle field by
-radicals of its own elements; running the two-place construction over that compositum returns two
-places completely split there, hence completely split in the auxiliary field, at which every
-radicand is already a `p`-th power. -/
+/-- **Two places all of whose conjugates are completely split in the auxiliary field and kill a
+stable family of radicands, and a unit ramified exactly at them realising a prescribed local
+behaviour.**  Adjoining a chosen `p`-th root of each radicand to the auxiliary field produces a
+field normal over the bottom of the tower and presented as a compositum of the auxiliary field with
+a field generated over the middle field by radicals of its own elements; running the two-place
+construction over that compositum returns two places completely split there, hence completely split
+in the auxiliary field, at which every radicand is already a `p`-th power.  Conjugating the place
+upstairs carries both properties along. -/
 theorem exists_two_places_sUnit_kill (hp : p.Prime) (hodd : 2 < p)
     {ζ : K} (hζ : IsPrimitiveRoot ζ p)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
@@ -85,11 +91,12 @@ theorem exists_two_places_sUnit_kill (hp : p.Prime) (hodd : 2 < p)
     (hram : ∀ v ∉ Tn, ∃ W : HeightOneSpectrum (𝓞 ↥Ω),
       primeUnder (𝓞 K) W = v ∧ ramIdx (𝓞 K) W = 1) :
     ∃ Q R : HeightOneSpectrum (𝓞 K), Q ∉ Tn ∧ R ∉ Tn ∧
-      (∃ W : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) W = Q ∧
+      (∀ σ : Gal(K/k), ∃ W : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) W = σ • Q ∧
         stabilizer Gal(↥Ω/k) W = ⊥) ∧
-      (∃ W : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) W = R ∧
+      (∀ σ : Gal(K/k), ∃ W : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) W = σ • R ∧
         stabilizer Gal(↥Ω/k) W = ⊥) ∧
-      (∀ i, localClassHom Q p (b i) = 1) ∧ (∀ i, localClassHom R p (b i) = 1) ∧
+      (∀ (σ : Gal(K/k)) (i), localClassHom (σ • Q) p (b i) = 1) ∧
+      (∀ (σ : Gal(K/k)) (i), localClassHom (σ • R) p (b i) = 1) ∧
       (∀ σ : Gal(K/k), Q ≠ σ • R) ∧
       stabilizer Gal(K/k) Q = ⊥ ∧ stabilizer Gal(K/k) R = ⊥ ∧
       ∃ z : Kˣ, (∀ v ∈ Tn, localClassHom v p z = c v) ∧
@@ -166,20 +173,25 @@ theorem exists_two_places_sUnit_kill (hp : p.Prime) (hodd : 2 < p)
   have hβgen : IntermediateField.adjoin K (Set.range β) = ⊤ :=
     adjoin_range_val_eq_top (K := K) α
   -- the two places over the compositum
-  obtain ⟨Q, R, hQT, hRT, hQspl, hRspl, hQb, hRb, hQR, hQstab, hRstab, z, hzT, hzunr, hzQ, hzR,
+  obtain ⟨Q, R, hQT, hRT, hQspl, hRspl, -, -, hQR, hQstab, hRstab, z, hzT, hzunr, hzQ, hzR,
     hzQc, hzRc⟩ :=
     exists_two_places_sUnit_radical (Ω := Ω') (M₁ := ↥Ω) (M₂ := ↥M₂) hp hodd hζ hres hT hTstable
       hpTn hrepr hcunr hg hc hcT hcn hsup hβpow hβgen hord hsplit hram
-  -- and their descent to the auxiliary field
-  have hdesc : ∀ {V : HeightOneSpectrum (𝓞 K)},
+  -- their conjugates, and the descent of those to the auxiliary field
+  have hconj : ∀ {V : HeightOneSpectrum (𝓞 K)},
       (∃ W : HeightOneSpectrum (𝓞 ↥Ω'), primeUnder (𝓞 K) W = V ∧
-        stabilizer Gal(↥Ω'/k) W = ⊥) →
-      ∃ W : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) W = V ∧
-        stabilizer Gal(↥Ω/k) W = ⊥ := by
-    rintro V ⟨W, hW1, hW2⟩
-    exact ⟨primeUnder (𝓞 ↥Ω) W, (primeUnder_primeUnder K ↥Ω W).trans hW1,
-      stabilizer_primeUnder_eq_bot (K := ↥Ω) hW2⟩
-  exact ⟨Q, R, hQT, hRT, hdesc hQspl, hdesc hRspl, hQb, hRb, hQR, hQstab, hRstab, z, hzT, hzunr,
+        stabilizer Gal(↥Ω'/k) W = ⊥) → ∀ σ : Gal(K/k),
+      (∃ W : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) W = σ • V ∧
+        stabilizer Gal(↥Ω/k) W = ⊥) ∧ ∀ i, localClassHom (σ • V) p (b i) = 1 := by
+    rintro V ⟨W, hW1, hW2⟩ σ
+    obtain ⟨W', hW'1, hW'2⟩ := exists_primeUnder_eq_smul_stabilizer_eq_bot (K := K) hW2 σ
+    rw [hW1] at hW'1
+    refine ⟨⟨primeUnder (𝓞 ↥Ω) W', (primeUnder_primeUnder K ↥Ω W').trans hW'1,
+      stabilizer_primeUnder_eq_bot (K := ↥Ω) hW'2⟩, fun i => ?_⟩
+    rw [← hW'1]
+    exact localClassHom_eq_one_of_stabilizer_base_eq_bot hW'2 (hβpow i)
+  exact ⟨Q, R, hQT, hRT, fun σ => (hconj hQspl σ).1, fun σ => (hconj hRspl σ).1,
+    fun σ => (hconj hQspl σ).2, fun σ => (hconj hRspl σ).2, hQR, hQstab, hRstab, z, hzT, hzunr,
     hzQ, hzR, hzQc, hzRc⟩
 
 end Kill
