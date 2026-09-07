@@ -14288,6 +14288,119 @@ At the number-field level `placeFrobValue hres hζ v a` is the same thing applie
 
 ---
 
+## 1.31 Status (2026-09-07, latest) — **the closing chain of SW Thm 13 is a theorem**
+
+`InverseGalois/CFT/PoitouTate/ClosingChain.lean` (new, 12 declarations) plus `placeFrobValue_inv`
+in `Brauer/SymbolReciprocity.lean`.  `lake build InverseGalois.CFT.PoitouTate.ClosingChain` = 8637
+jobs / 22 s; full root build 9761 jobs, 0 warnings, 0 sorries.
+
+§1.30 read SW's chain and built the reciprocity law it runs on.  This section runs it.  The
+capstone is `localClassHom_mul_eq_one`: under SW's conditions (1)(2)(3) and the pigeonhole
+equality, `z_i z_N` is **trivial in `localClasses (σ • R) n`** — i.e. an `n`-th power in the
+completion at the moved place — which is exactly the conclusion the theorem needs, stated in the
+Selmer-group idiom rather than in terms of the symbol.
+
+### (a) Normalising the reciprocity law away from its exponents
+
+`placeFrobValue_zpow_eq_zpow` carries an exponent on each side, `ev_w(a)^{v_w(b)} =
+ev_v(b)^{v_v(a)}`.  SW's condition (1) says `(z_i)_{P_i} ≡ Frob_{P_i}` as an *equality of classes*,
+so the ramification exponent is exactly `1` mod `p` — and that is precisely what cancels the two
+exponents.  `zpow_eq_self_of_modEq_one` (`x^n = 1 → m ≡ 1 [ZMOD n] → x^m = x`) plus
+`pow_placeFrobValue_eq_one` turns the law into the bare equality
+
+```
+placeFrobValue hres hζ w a = placeFrobValue hres hζ v b     (`placeFrobValue_eq_placeFrobValue`)
+```
+
+under the two extra hypotheses `placeValue v a ≡ 1 [ZMOD n]`, `placeValue w b ≡ 1 [ZMOD n]`.  This
+is the *only* place condition (1)'s normalisation is used, and it is used twice.
+
+### (b) The pigeonhole, and why `Multiplicative QModZ` is not a problem
+
+The values live in `Multiplicative QModZ`, which is infinite, so the pigeonhole needs the
+`n`-torsion subset.  `mem_range_zmodQModZ_of_nsmul_eq_zero` → `mem_range_zmodQModZ_of_pow_eq_one` →
+`finite_setOf_pow_eq_one` show `{x | x ^ n = 1}` sits inside `Set.range (ofAdd ∘ zmodQModZ n)`,
+hence is finite.  `Set.Finite.pi` lifts that to the function space `Gal(K/k) → Multiplicative QModZ`
+(finite because `[FiniteDimensional k K]`), and `Set.Infinite.exists_ne_map_eq_of_mapsTo` on `ℕ`
+gives `exists_lt_placeFrobValue_eq`: for *any* sequence of places `Pl` and units `z`, there are
+`i < N` with `ev_{σP_N}(z_N) = ev_{σP_i}(z_i)` **simultaneously for every `σ`**.  No property of
+the sequence is needed — the pigeonhole is pure torsion-counting, which is why it is stated for an
+arbitrary pair of sequences and applied later.
+
+### (c) Condition (3) is stated on conjugates, never on the symbol
+
+`placeFrobValue` is **not** Galois-equivariant: `σζ ≠ ζ` whenever `μ_p ⊄ k`, and the whole point
+of Thm 13 is the case `μ_p ⊄ k`.  So the chain lemma states condition (3) directly at `Q` as
+
+```
+ev_Q(z_N^σ) = ev_Q(z_i^σ)⁻¹
+```
+
+— an equation between values at a *fixed* place, of *conjugated* elements.  `galUnits σ` and
+`dvd_placeValue_galUnits` (a conjugate of a unit ramified only at `v` is ramified only at `σ • v`,
+by `placeValue_galSmul`) supply the hypotheses of (a) for the conjugates.  The transport of SW's
+condition (3) as it is actually produced — an equality of *local classes* — into this form is
+`placeFrobValue_galUnits_eq_inv`, which routes through `localClassesGalEquiv` (an isomorphism of
+classes, which **is** equivariant) and then through `placeFrobValue_eq_of_localClassHom_eq`.  The
+symbol's non-equivariance is never touched.
+
+### (d) The chain
+
+`placeFrobValue_mul_eq_one` is §1.30(a)'s four-line chain, verbatim:
+
+| step | lemma |
+| --- | --- |
+| `ev_{σP_N}(z_N) = ev_{σP_i}(z_i)` | hypothesis `hpigeon` (from (b)) |
+| `ev_{σP_i}(z_i) = ev_{P_i}(z_i^σ)` | `placeFrobValue_eq_placeFrobValue` at `Q ≠ σ • Q` |
+| `ev_{P_i}(z_i^σ) = ev_{P_i}(z_N^σ)⁻¹` | hypothesis `hcond` (condition (3)) |
+| `ev_{P_i}(z_N^σ) = ev_{σP_N}(z_i)` | `placeFrobValue_eq_placeFrobValue` at `Q ≠ σ • R` |
+
+so `ev_{σP_N}(z_i z_N) = ev_{σP_N}(z_i) · ev_{σP_N}(z_N) = 1` by `placeFrobValue_mul`.  Both middle
+`ev` steps are one theorem applied twice, as predicted.
+
+### (e) The class-level reading
+
+`placeFrobValue_eq_of_localClassHom_eq` (equal local classes ⇒ equal values, by multiplicativity
+and `pow_frobValue_eq_one`) and `localClassHom_eq_one_of_placeFrobValue_eq_one` (its converse at an
+unramified place, from `placeFrobValue_eq_one_iff`) are the dictionary between the symbol and
+`localClasses`.  With `placeValue_mul` to check that `z_i z_N` is still unramified at `σ • R`, the
+capstone `localClassHom_mul_eq_one` states the conclusion where Thm 13 will consume it.
+
+### (f) What is left of Thm 13 (odd `p`)
+
+The **recursive construction** of `z_1, z_2, …` satisfying (1)(2)(3): Chebotarev choosing
+`P_{n+1} ∈ S ∖ T_n(K)` with prescribed image in `H¹(k_{T_n}|K, ℤ/p)^∨`
+(`exists_relStabilizer_eq_zpowers`), then `exists_sUnitClass_mul_eq_unramified` to produce
+`z_{n+1}`; then the induction on `dim_{𝔽_p} A`.  Two known gaps beyond that: SW's general-`A`
+dévissage writes `A = A_0 ⊕ μ_p`, which is not available for a general `𝔽_p[G]`-module when
+`p ∣ |G|` (the `A = μ_p` case being built is unaffected), and the `p = 2` case (`sw.txt:790`ff.)
+needs a product of *three* elements against the partition `{G₁,G₂,G₃}` of `G ∖ {1}`.
+
+### (g) Findings
+
+* **2075 (LEAN).** `Ne.lt_or_lt` cannot be used with dot notation on a hypothesis `hij : i ≠ j`
+  produced by `Set.Infinite.exists_ne_map_eq_of_mapsTo`: Lean unfolds `Ne` to `i = j → False` and
+  resolves the projection to the non-existent `Function.lt_or_lt`.  Use `lt_or_gt_of_ne hij`.
+* **2076 (LEAN).** With the goal `x ∈ Set.range fun c => f c`, `refine ⟨c, ?_⟩` leaves an
+  un-beta-reduced `(fun c => f c) c = x` on which `rw` fails.  Insert an explicit `show f c = x`.
+* **2077 (LEAN).** `powMonoidHom n c` is *defeq* to `c ^ n`, so after
+  `MonoidHom.mem_range.1 ((QuotientGroup.eq_one_iff _).1 hd)` a bare re-ascription
+  `have hc' : c ^ n = … := hc` works and lets `_root_.map_pow` fire.
+* **2078 (BUILD).** `lake build InverseGalois.CFT.PoitouTate.ClosingChain` = 8637 jobs / 22 s; full
+  root build with it = 9761 jobs, `grep -c "warning:\|error:"` = 0.
+
+### (h) Routes rejected here
+
+* Relying on Galois-equivariance of `placeFrobValue` (or of `localSymbol`) to state condition (3)
+  at the moved place.  It is **false** when `μ_p ⊄ k`, which is the case of interest; see (c).
+* Stating the pigeonhole for the specific sequence built by the recursion.  It needs nothing but
+  `n`-torsion, so it is stated for arbitrary `Pl` and `z` and costs one hypothesis at the call site.
+* Deriving the chain's second and fourth steps from two different lemmas.  They are the same
+  reciprocity law with the roles of `(v, w)` swapped; keeping them one theorem is what made the
+  normalisation of (a) worth isolating.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —

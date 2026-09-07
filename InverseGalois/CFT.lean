@@ -450,6 +450,7 @@ import InverseGalois.CFT.PGroupCompositum
 import InverseGalois.CFT.PairwiseResidue
 import InverseGalois.CFT.PiDual
 import InverseGalois.CFT.PiIndex
+import InverseGalois.CFT.PoitouTate.ClosingChain
 import InverseGalois.CFT.PoitouTate.CupDual
 import InverseGalois.CFT.PoitouTate.Dual
 import InverseGalois.CFT.PoitouTate.GlobalClasses
@@ -6901,4 +6902,15 @@ it that are available here.
   its image, preserves the valuation modulo the exponent and **carries the unramified classes onto
   the unramified classes**, so a prescription of local behaviour transports along the Galois group
   with nothing lost.
+
+* `InverseGalois.CFT.PoitouTate.ClosingChain` closes the construction.  The number wanted is a
+  product of two members of a sequence of units of the extension, each ramified at a single place
+  with value one there modulo the exponent, each arranged to cancel the values of its predecessors
+  along the Galois group.  The values of a unit at the Frobenius automorphisms of the places moved
+  by the Galois group are killed by the exponent, and the elements of the rationals modulo the
+  integers killed by the exponent are finite in number, so **the pigeonhole principle produces two
+  members of the sequence with the same values**.  For such a pair the reciprocity law between two
+  units each ramified at a single place, applied first to the earlier unit against its own Galois
+  conjugate and then to it against the conjugate of the later one, turns that equality and the
+  cancellation into the statement that **the product of the two is trivial at every moved place**.
 -/
