@@ -482,6 +482,7 @@ import InverseGalois.CFT.PoitouTate.ShaTate
 import InverseGalois.CFT.PoitouTate.SplitClass
 import InverseGalois.CFT.PoitouTate.SplitPlaceGenerate
 import InverseGalois.CFT.PoitouTate.SplitPlacePower
+import InverseGalois.CFT.PoitouTate.SupRadicandChar
 import InverseGalois.CFT.PoitouTate.TorsionCharacter
 import InverseGalois.CFT.PoitouTate.TwoPlaces
 import InverseGalois.CFT.PoitouTate.TwoPlacesFree
@@ -7222,4 +7223,21 @@ it that are available here.
   completion below: **there are finitely many completely split primes of an intermediate field,
   avoiding any prescribed finite set of primes of the base, at which being a local power forces a
   radicand whose radical lies in the top field to be a power already in the intermediate field.**
+
+* `InverseGalois.CFT.PoitouTate.SupRadicandChar` splits the radicands the prescription character has
+  to kill between two extensions, which is what a compositum asks for.  A radicand of a compositum
+  is a radicand of the first extension times a radicand of the second, and each factor is killed for
+  its own reason.  The first is killed the way a radicand of a single extension is, by the local
+  class being trivial where the extension splits completely and the product formula finishing off
+  what is left; carrying that argument out on classes instead of on units is what makes it available
+  here, a factor of a radicand no longer being a unit away from the places in play, and all that is
+  needed of it is that its value be divisible by the exponent.  The second is killed by
+  orthogonality: where the prescription is trivial there is nothing to prove, and where it is not
+  the place is one at which the second extension is unramified, so the local class of the factor is
+  unramified, and the unramified classes away from the exponent are their own orthogonal complement.
+  What makes the second reason available is that the exponent divides the value of a radicand at a
+  place unramified in the extension where it becomes a power, the order there being the exponent
+  times the order of the root.  So: **the prescription character kills a product of a radicand
+  splitting completely off the part of the prescription carried by a global unit and a radicand
+  unramified on that part.**
 -/

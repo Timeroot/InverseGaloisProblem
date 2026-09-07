@@ -33,9 +33,12 @@ character and to the value at the Frobenius automorphism.
   decomposition group over the base has trivial decomposition group over an intermediate field.
 * `InverseGalois.CFT.inv_placeFrobValue_zpow_mul_prescriptionChar_eq_one`: **the pairing at the new
   place cancels the prescription character** when the two exponents are inverse to one another.
-* `InverseGalois.CFT.exists_place_sUnit_prescribed`: **one step of the recursion** — a new place,
-  outside the prescribed set and completely split, together with an `S`-unit meeting the
-  prescription at the old places and ramified exactly at the new one.
+* `InverseGalois.CFT.exists_place_sUnit_prescribed_of_rad`: **one step of the recursion** — a new
+  place, outside the prescribed set and completely split, together with an `S`-unit meeting the
+  prescription at the old places and ramified exactly at the new one, granted that the character
+  of the `S`-units kills every radicand of the middle field.
+* `InverseGalois.CFT.exists_place_sUnit_prescribed`: the same, for a prescription coming from a
+  global `S`-unit away from the places at which the middle field splits completely.
 
 ## Tags
 
@@ -132,19 +135,21 @@ variable {k A K : Type} [Field k] [NumberField k] [Field A] [Algebra k A] [Norma
   [IsScalarTower k K ↥Ω] [IsScalarTower K ↥Ω A] [IsGalois K ↥Ω] {p : ℕ} [NeZero p]
   {Pc Ec : HeightOneSpectrum (𝓞 K) → ℕ}
 
+omit [IsGalois K ↥Ω] in
 /-- **One step of the recursion prescribing local classes.**  Outside a prescribed finite set of
 places of the bottom field there is a place, completely split in the middle field, together with an
 `S`-unit whose local classes meet the prescription at the old places and which is ramified exactly
-at the new place.  The character of the `S`-units cut out by the prescription is killed by every
-radicand of the middle field, so the construction of a Chebotarev place applies to it and produces
-a place at which that character is a fixed power, prime to the exponent, of the value at the
-Frobenius automorphism; prescribing at the new place a power of a uniformiser with the inverse
-exponent makes the total pairing trivial, and the prescription is met. -/
-theorem exists_place_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
+at the new place.  The hypothesis is that the character of the `S`-units cut out by the
+prescription is killed by every radicand of the middle field, which is what the construction of a
+Chebotarev place demands of it; that construction then produces a place at which the character is
+a fixed power, prime to the exponent, of the value at the Frobenius automorphism, and prescribing
+at the new place a power of a uniformiser with the inverse exponent makes the total pairing
+trivial, so the prescription is met. -/
+theorem exists_place_sUnit_prescribed_of_rad (hp : p.Prime) (hodd : 2 < p)
     {ζ : K} (hζ : IsPrimitiveRoot ζ p)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
-    (Tk : Finset (HeightOneSpectrum (𝓞 k))) {T Tn : Finset (HeightOneSpectrum (𝓞 K))}
-    (hT : T ⊆ Tn) (hTk : ∀ v ∈ Tn, primeUnder (𝓞 k) v ∈ Tk)
+    (Tk : Finset (HeightOneSpectrum (𝓞 k))) {Tn : Finset (HeightOneSpectrum (𝓞 K))}
+    (hTk : ∀ v ∈ Tn, primeUnder (𝓞 k) v ∈ Tk)
     (hpTn : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → v ∈ Tn)
     (hrepr : ∀ m : HeightOneSpectrum (𝓞 K) → ℤ,
       (∀ᶠ v : HeightOneSpectrum (𝓞 K) in Filter.cofinite, m v = 0) →
@@ -152,10 +157,9 @@ theorem exists_place_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
         Rigidity.RET.ord K v (a : K) = m v)
     {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v p}
     (hcunr : ∀ v ∈ Tn, c v ∈ localUnramified v p)
-    {g : Kˣ} (hg : g ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))))
-    (hc : ∀ v ∈ T, c v = localClassHom v p g)
-    (hsplit : ∀ v ∈ Tn, v ∉ T → ∃ w : HeightOneSpectrum (𝓞 ↥Ω),
-      primeUnder (𝓞 K) w = v ∧ stabilizer Gal(↥Ω/k) w = ⊥) :
+    (hrad : ∀ u ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))), ∀ y : (↥Ω)ˣ,
+      Units.map (algebraMap K ↥Ω : K →* ↥Ω) u = y ^ p →
+      prescriptionChar hres hζ Tn c u = 1) :
     ∃ V : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 k) V ∉ Tk ∧
       stabilizer Gal(↥Ω/k) V = ⊥ ∧ ¬ Pc (primeUnder (𝓞 K) V) ∣ p ∧
       primeUnder (𝓞 K) V ∉ Tn ∧
@@ -166,7 +170,6 @@ theorem exists_place_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
           (p : ℤ) ∣ placeValue v z) ∧
         ¬ (p : ℤ) ∣ placeValue (primeUnder (𝓞 K) V) z := by
   classical
-  have hp2 : p ≠ 2 := by omega
   haveI : IsGalois k ↥Ω := ⟨⟩
   -- the finite, Galois stable set of primes of the middle field above the prescribed set
   have hXfin : {w : HeightOneSpectrum (𝓞 ↥Ω) |
@@ -202,20 +205,11 @@ theorem exists_place_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
       ((prescriptionChar hres hζ Tn c).comp
         (sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K)))).subtype) u ^ p = 1 :=
     fun u => pow_prescriptionChar_eq_one hres hζ Tn c (u : Kˣ)
-  have hsplitK : ∀ v ∈ Tn, v ∉ T → ∃ w : HeightOneSpectrum (𝓞 ↥Ω),
-      primeUnder (𝓞 K) w = v ∧ stabilizer Gal(↥Ω/K) w = ⊥ := by
-    intro v hv hvT
-    obtain ⟨w, hw1, hw2⟩ := hsplit v hv hvT
-    exact ⟨w, hw1, stabilizer_eq_bot_of_stabilizer_base_eq_bot hw2⟩
   have hχpow : ∀ (u : ↥(sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))))) (y : (↥Ω)ˣ),
       Units.map (algebraMap K ↥Ω : K →* ↥Ω) (u : Kˣ) = y ^ p →
       ((prescriptionChar hres hζ Tn c).comp
-        (sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K)))).subtype) u = 1 := by
-    intro u y hy
-    have hb : algebraMap K ↥Ω ((u : Kˣ) : K) = ((y : (↥Ω)ˣ) : ↥Ω) ^ p := by
-      have hy' := congrArg Units.val hy
-      rwa [Units.coe_map, MonoidHom.coe_coe, Units.val_pow_eq_pow_val] at hy'
-    exact prescriptionChar_eq_one_of_pow hp hp2 hres hζ hT subset_rfl hpTn hg hc hsplitK u.2 hb
+        (sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K)))).subtype) u = 1 :=
+    fun u y hy => hrad (u : Kˣ) u.2 y hy
   -- the Chebotarev place
   obtain ⟨V, hVT, hVstab, hVP, j, hj, hjval⟩ :=
     exists_place_placeFrobValue_eq_zpow_character hp hXfin hXstab hζ hres hW Tk hWval
@@ -383,6 +377,49 @@ theorem exists_place_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
     rw [Pi.mul_apply, hc'not ⟨Q, hQS⟩ hQTn, sUnitClassHom_apply] at h
     exact not_dvd_placeValue_of_localClassHom_mul_eq hlQ hjt h
   exact ⟨V, hVT, hVstab, hVP, hQTn, (w : Kˣ), hzmem, hzTn, hzval, hzQ⟩
+
+/-- **One step of the recursion prescribing local classes, for a prescription coming from a global
+`S`-unit away from the places at which the middle field splits completely.**  There the character
+of the `S`-units is killed by every radicand of the middle field for the concrete reason that a
+radicand is already a power in the completion at a completely split place, so what is left is a
+product of norm residue symbols of two `S`-units and the product formula applies. -/
+theorem exists_place_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
+    {ζ : K} (hζ : IsPrimitiveRoot ζ p)
+    (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
+    (Tk : Finset (HeightOneSpectrum (𝓞 k))) {T Tn : Finset (HeightOneSpectrum (𝓞 K))}
+    (hT : T ⊆ Tn) (hTk : ∀ v ∈ Tn, primeUnder (𝓞 k) v ∈ Tk)
+    (hpTn : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → v ∈ Tn)
+    (hrepr : ∀ m : HeightOneSpectrum (𝓞 K) → ℤ,
+      (∀ᶠ v : HeightOneSpectrum (𝓞 K) in Filter.cofinite, m v = 0) →
+      ∃ a : Kˣ, ∀ v ∉ (Tn : Set (HeightOneSpectrum (𝓞 K))),
+        Rigidity.RET.ord K v (a : K) = m v)
+    {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v p}
+    (hcunr : ∀ v ∈ Tn, c v ∈ localUnramified v p)
+    {g : Kˣ} (hg : g ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))))
+    (hc : ∀ v ∈ T, c v = localClassHom v p g)
+    (hsplit : ∀ v ∈ Tn, v ∉ T → ∃ w : HeightOneSpectrum (𝓞 ↥Ω),
+      primeUnder (𝓞 K) w = v ∧ stabilizer Gal(↥Ω/k) w = ⊥) :
+    ∃ V : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 k) V ∉ Tk ∧
+      stabilizer Gal(↥Ω/k) V = ⊥ ∧ ¬ Pc (primeUnder (𝓞 K) V) ∣ p ∧
+      primeUnder (𝓞 K) V ∉ Tn ∧
+      ∃ z : Kˣ, z ∈ sUnits K (insert (primeUnder (𝓞 K) V)
+          (Tn : Set (HeightOneSpectrum (𝓞 K)))) ∧
+        (∀ v ∈ Tn, localClassHom v p z = c v) ∧
+        (∀ v : HeightOneSpectrum (𝓞 K), v ≠ primeUnder (𝓞 K) V →
+          (p : ℤ) ∣ placeValue v z) ∧
+        ¬ (p : ℤ) ∣ placeValue (primeUnder (𝓞 K) V) z := by
+  have hp2 : p ≠ 2 := by omega
+  have hsplitK : ∀ v ∈ Tn, v ∉ T → ∃ w : HeightOneSpectrum (𝓞 ↥Ω),
+      primeUnder (𝓞 K) w = v ∧ stabilizer Gal(↥Ω/K) w = ⊥ := by
+    intro v hv hvT
+    obtain ⟨w, hw1, hw2⟩ := hsplit v hv hvT
+    exact ⟨w, hw1, stabilizer_eq_bot_of_stabilizer_base_eq_bot hw2⟩
+  refine exists_place_sUnit_prescribed_of_rad hp hodd hζ hres Tk hTk hpTn hrepr hcunr
+    fun u hu y hy => ?_
+  have hb : algebraMap K ↥Ω ((u : Kˣ) : K) = ((y : (↥Ω)ˣ) : ↥Ω) ^ p := by
+    have hy' := congrArg Units.val hy
+    rwa [Units.coe_map, MonoidHom.coe_coe, Units.val_pow_eq_pow_val] at hy'
+  exact prescriptionChar_eq_one_of_pow hp hp2 hres hζ hT subset_rfl hpTn hg hc hsplitK hu hb
 
 end Step
 
