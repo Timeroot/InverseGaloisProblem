@@ -15743,3 +15743,143 @@ of `T` are multiples of the exponent.  Normality over `k` is needed for `Spl` to
 `Gal(K|k)`-stable predicate in `exists_prescribed_two_places`, and it is obtained by adjoining the
 roots of the whole `Gal(K|k)`-orbit of each `z_i` rather than of `z_i` alone; the orbit inherits
 the divisibility of the values because `T` is `Gal(K|k)`-stable.
+
+## §1.43 Module D: the two-place construction with the compositum built for it, and one pair of places per coordinate
+
+### (a) Module D-4: `PoitouTate/TwoPlacesKill.lean`
+
+`exists_two_places_sUnit_radical` (D-3, §1.41) takes the compositum `Ω'`, and both of its factors
+`M₁`, `M₂`, as data.  In the situation it is meant for only the auxiliary field `Ω` and the
+radicands `b : ι → Kˣ` are given: the second factor has to be built out of the radicands and the
+compositum out of `Ω` and that factor.  D-4 does that, and its statement mentions neither.
+
+The construction is `N := ambientRadField Ω w`, where `w i` is a chosen `p`-th root of `b i` in the
+fixed algebraic closure `A`; `Ω' := N.restrictScalars k`; `M₁ := ↥Ω`; and
+`M₂ := IntermediateField.adjoin K (Set.range α)` with `α i : ↥Ω'` the radical `w i` read in `Ω'`.
+The pieces that had to be checked, all of them already in `Kummer/StableRadField.lean` except the
+last:
+
+* `normal_ambientRadField_of_forall` — `Ω'|k` is normal, because the family `{b i}` is carried into
+  itself by `Gal(K|k)` and hence, after `AlgHom.restrictNormal'`, by every `k`-algebra
+  endomorphism of `A`;
+* `finiteDimensional_ambientRadField_of_forall`, `isGalois_ambientRadField_of_forall` — `Ω'|Ω` is
+  finite and Galois;
+* `adjoin_range_val_eq_top` + `fieldRange_sup_adjoin_eq_top` — `Ω'` is the compositum of `Ω` and
+  `M₂` inside itself, which is `hsup`;
+* `normal_adjoin_radicals` (**new**, the `BaseRadicals` section of `Kummer/StableRadField.lean`) —
+  `M₂|K` is normal.  The point is that the radicands lie in `K` itself, so for any `τ` the ratio
+  `τ(α i)/α i` is a `p`-th root of unity, hence a power of `ζ ∈ K`, hence in the adjunction; no
+  stability hypothesis on the family is needed for this one, only that the radicands be in the base.
+
+The `Algebra`/`IsScalarTower` stack over `Ω'` has to be built by hand (`letI algΩ`, `letI algK`,
+five `IsScalarTower.of_algebraMap_eq fun _ => rfl`), because `Ω'` is a `restrictScalars` of an
+intermediate field of `A|Ω` and none of the tower instances are found by unification.  Finding 2385
+(use `letI`, never `haveI`, for the two `Algebra` instances) is what makes the later defeq checks go
+through.
+
+### (b) Module D-4': the conjugates
+
+The rank condition that a later coordinate has to satisfy is a condition at **every conjugate** of
+the two places, not only at the two places themselves — a Galois-stable prescription sees the whole
+orbit.  Both properties D-4 delivers pass to the conjugates, and the proof is four lines
+(`hconj` in `TwoPlacesKill.lean`):
+
+* `exists_primeUnder_eq_smul_stabilizer_eq_bot` (`PoitouTate/ConjugatePlace.lean`) moves a place of
+  `Ω'` with trivial decomposition group over `k` to one lying above `σ • Q`, still with trivial
+  decomposition group;
+* `stabilizer_primeUnder_eq_bot` pushes that down to `Ω`;
+* `localClassHom_eq_one_of_stabilizer_base_eq_bot` (`PoitouTate/RecursionRadical.lean`) is the same
+  argument that killed the radicands at `Q`, applied at `σ • Q`.
+
+So the first four clauses of `exists_two_places_sUnit_kill` are now `σ`-indexed.
+
+### (c) Module D-5: `PoitouTate/SplitFamily.lean`
+
+The multi-coordinate construction of §1.41(i).  The bookkeeping is a `Prop`-valued structure
+
+```
+IsTwoPlaceFamily Ω p Tn c d S Q R z
+```
+
+with `d` the number of coordinates built so far, `S` the finite set of places already spent,
+`Q R : ℕ → HeightOneSpectrum (𝓞 K)` the two sequences of exceptional places and `z : ℕ → Kˣ` the
+units.  Indexing by `ℕ` rather than `Fin d` avoids every `Fin` cast: the step extends with
+`Function.update _ d _` and all eighteen fields are guarded by `∀ i < d`.  The fields are
+`subset`, `stable`, `split`, `memQ`, `memR`, `notMemQ`, `notMemR`, `prescribed`, `unram`, `ramQ`,
+`ramR`, `conjQ`, `conjR`, `crossQ`, `crossR`, `ne`, `stabQ`, `stabR`; the two `cross` fields are the
+non-interference, and everything else is what one coordinate of D-4 returns.
+
+**The step** `exists_isTwoPlaceFamily_succ` runs D-4 with `Tn := S`, prescription
+`c' v := if v ∈ T then c d v else 1`, and radical family
+
+```
+b : Fin d × Gal(K/k) → Kˣ,   b (i, σ) = galUnits σ (z i)
+```
+
+— the `Gal(K|k)`-orbits of all the earlier units.  D-4's three hypotheses on that family:
+
+* `hw` — a `p`-th root of each `b q` in `A`, from `IsAlgClosed.exists_pow_nat_eq`;
+* `hstab` — `σ (b (i, τ)) = b (i, σ * τ)`, one `AlgEquiv.mul_apply`;
+* `hord` — at `v ∈ T` away from `p`, `p ∣ ord_v(σ (z i))`.  By `ord_galSmul` this is
+  `p ∣ ord_{σ⁻¹ • v}(z i)`; `σ⁻¹ • v ∈ Tn` because `Tn` is stable, `Q i, R i ∉ Tn` by `notMemQ`,
+  `notMemR`, so `unram` applies and `placeValue_eq_neg_ord` converts.
+
+**Cross-coordinate triviality comes from two different sources.**  For `i < j` (an earlier unit at a
+later place) it is D-4's conjugate radicand-kill clause at step `j`, evaluated at
+`b (⟨i, _⟩, 1) = z i`.  For `i > j` (a later unit at an earlier place) it is the prescription being
+trivial off `T`: the conjugates of `Q j`, `R j` were put into `S` at step `j`, and step `i` gives
+`localClassHom v p (z i) = c' v = 1` for every `v ∈ S ∖ T`.  The two are not the same argument and
+neither one covers both directions.
+
+Places outside `T` and outside all the orbits need no separate treatment: they are unramified for
+every `z i`, and an unramified class lies in `localUnramified v p`, which is cyclic of order `p`, so
+its tensor rank is at most one automatically.
+
+**The enlarged set** is `S ∪ (Gal(K/k) • Qn) ∪ (Gal(K/k) • Rn)`, finite because `Gal(K|k)` is
+(`Set.finite_range`), introduced as an opaque `S'` together with a membership `Iff` so that no
+`Finset` unfolding leaks into the eighteen field proofs.
+
+**The base case** `d = 0` takes `S := Tn`, `z := fun _ => 1`, and `Q = R = fun _ => v₀` for an
+arbitrary place; `Nonempty (HeightOneSpectrum (𝓞 K))` comes from
+`Ring.not_isField_iff_exists_prime` and `NumberField.RingOfIntegers.not_isField`.  Every
+`∀ i < 0` field is `fun i hi => absurd hi (Nat.not_lt_zero i)`, and `stable` is the hypothesis that
+`Tn` is `Gal(K|k)`-stable — which is also what `hord` needs in the step, so it is the only stability
+hypothesis in the module.
+
+Root build green, 9800 jobs, 0 warnings, 0 sorries.
+
+### (d) Findings
+
+* **2390 (REPO).** `galUnits (σ : Gal(K/k)) : Kˣ ≃* Kˣ := Units.mapEquiv σ.toRingEquiv.toMulEquiv`
+  at `Units/SUnit.lean:187`, with `coe_galUnits_apply : ((galUnits σ u : Kˣ) : K) = σ (u : K) := rfl`
+  at `:191`.  This is the Galois action on `Kˣ` to use when building stable families of radicands;
+  `galUnits 1 u = u` is `Units.ext rfl`.
+* **2391 (MATHLIB).** `Nonempty (HeightOneSpectrum (𝓞 K))` is three lines from
+  `Ring.not_isField_iff_exists_prime` (`RingTheory/Ideal/Basic.lean:282`) and
+  `NumberField.RingOfIntegers.not_isField` (`NumberTheory/NumberField/Basic.lean:299`, `K`
+  explicit).  There is no such instance in Mathlib.
+* **2392 (MATHLIB).** `IsAlgClosed.exists_pow_nat_eq (x : k) (hn : 0 < n) : ∃ z, z ^ n = x`
+  (`FieldTheory/IsAlgClosed/Basic.lean:93`).
+* **2393 (REPO).** `Finite Gal(K/k)` is found by instance search for number fields, so
+  `(Set.range fun σ : Gal(K/k) => σ • Q).Finite := Set.finite_range _` and its `.toFinset` are
+  available for building orbit `Finset`s.
+* **2394 (LEAN, KEY).** `rcases (h : i < d + 1) …` split as `i < d ∨ i = d` **substitutes `d` away**,
+  replacing it by `i` everywhere: `subst` eliminates the right-hand variable.  Hypothesis *names*
+  survive, but any literal `d` written later in the tactic block becomes an unknown identifier.
+  Write `_` for the index instead of `d` (`exact (hcT _ v hv hvT).symm`).
+* **2395 (LEAN).** `Function.update_self (a) (v) (f) : update f a v a = v` and
+  `Function.update_of_ne (h : a ≠ a') (v) (f) : update f a' v a = f a` are the current names
+  (not `update_same` / `update_noteq`).
+* **2396 (LEAN, BUILD).** An eighteen-field structure instance whose fields each do a `rcases` and a
+  `rw` over `localClasses`/`adicCompletion` blows the default 200000 heartbeats even with no single
+  hard step; the symptom is a `(deterministic) timeout at whnf` reported both at the `theorem` line
+  and at an innocuous `rcases` in the middle.  `set_option maxHeartbeats 1600000` at file level is
+  the fix — the file then takes 96 s.
+
+### (e) What is next
+
+Module E: the general-`A` Theorem 13, `A = μ_p ⊗ W`.  D-5 supplies the geometry — a pair of places
+per coordinate, non-interfering — and what remains is to package the coordinates into a single class
+in `H¹(k, μ_p ⊗ W)` and to run the downstairs step.  The two remaining inputs are unchanged: the
+rank-one condition at each exceptional place, which is what `conjQ`/`conjR`/`crossQ`/`crossR` were
+arranged to give, and the `p = 2` case of Theorem 13, still blocked by `hodd : 2 < p`.
