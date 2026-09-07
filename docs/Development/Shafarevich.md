@@ -15883,3 +15883,146 @@ per coordinate, non-interfering — and what remains is to package the coordinat
 in `H¹(k, μ_p ⊗ W)` and to run the downstairs step.  The two remaining inputs are unchanged: the
 rank-one condition at each exceptional place, which is what `conjQ`/`conjR`/`crossQ`/`crossR` were
 arranged to give, and the `p = 2` case of Theorem 13, still blocked by `hodd : 2 < p`.
+
+## §1.44 Module E: the rank-one condition, and the family carried down to the base field
+
+### (a) Module E-1: `PoitouTate/RankOne.lean`
+
+A class with values in a module of several coordinates is split by a **cyclic** extension of a
+completion exactly when the local classes of its coordinates all lie in one cyclic subgroup of the
+classes of that completion.  In the concrete Kummer currency the module is `μ_p ⊗ W`, the
+coordinates are units `z i` of `K`, and the condition reads
+
+```
+∃ u : localClasses v p, ∀ i < d, localClassHom v p (z i) ∈ Subgroup.zpowers u
+```
+
+`exists_forall_localClassHom_mem_zpowers` proves it for the D-5 family at **every** place outside
+the prescribed part `T`, by a three-way case split that is exhaustive:
+
+* `v` is a conjugate `σ • Q j` or `σ • R j` of an exceptional place of some coordinate `j`.  Then
+  `crossQ`/`crossR` say that *every other* coordinate is trivial at `v`, so the class of `z j`
+  generates.  This is exactly what the non-interference fields of `IsTwoPlaceFamily` were arranged
+  for.
+* `v ∈ Tn` but `v ∉ T`.  Then `prescribed` says the class of every coordinate equals the
+  prescription `c i v`, which is trivial off `T`; take `u = 1`.
+* otherwise.  Then `v ∉ Tn`, so `v ∤ p` (`hpTn` contrapositive), and `v` is neither `Q i` nor `R i`
+  for any `i < d`, so `unram` gives that every coordinate is unramified at `v`.  The unramified
+  classes at a place away from the exponent form a group of order `p`, hence cyclic; take `u` a
+  generator.
+
+The last bullet needed the order of `localUnramified v p`, which turned out to be already in the
+repo one lemma away.  `PoitouTate/Prescribed.lean` gains
+
+* `card_localUnramified` — `Nat.card ↥(localUnramified v p) = p`, from `card_unramifiedClasses`
+  (index `p` inside a group of order `p * p`) and `card_quotient_range_powMonoidHom_adicCompletion`;
+* `isCyclic_localUnramified` — a group of prime order is cyclic.
+
+Built green, 8688 jobs.
+
+### (b) Module E-2: `PoitouTate/BaseFamily.lean`
+
+The downstairs half of Theorem 13: the family is carried from `K` to the base field `k` **by the
+coordinate-wise norm**, `x i := N_{K|k}(z i)`, and the conclusion is stated in the same concrete
+currency.  Two theorems.
+
+`exists_base_norm_class_of_isTwoPlaceFamily` takes an `IsTwoPlaceFamily` and produces, for the
+norms:
+
+1. **on `T`** — at every `v ∈ T` and every `i < d`,
+   `localClassHom (primeUnder k v) p (N z i) = localClassHom (primeUnder k v) p (N g i)`, i.e. the
+   norms realise the same prescription downstairs that the given `g i` do.  One line:
+   `localClassHom_norm_eq_of_forall_eq` reduces to `∀ σ, localClassHom (σ • v) p (z i) = …`, and
+   that is `prescribed` followed by `hc` at the conjugate place, using that `T` and `Tn` are
+   `Gal(K|k)`-stable.
+2. **off `T`** — at every place `q` of `k` under no place of `T`, **either** all `d` norms are
+   unramified at `q`, **or** `μ_p ⊆ k_q` and all `d` norms lie in `Subgroup.zpowers u` for a single
+   local class `u`.
+
+The second clause splits on whether `q` lies under one of the exceptional places.  If it does, say
+`q = primeUnder k (Q j)`, then `stabQ` (trivial decomposition group of `Q j` over `k`) gives
+`μ_p ⊆ k_q` via `exists_isPrimitiveRoot_adicCompletion_of_stabilizer_eq_bot`, and `crossQ` plus
+`localClassHom_norm_eq_one` make **every other** coordinate's norm trivial at `q`, so the `j`-th
+generates.  If it does not, lift `q` to a place `P` of `K` (`exists_primeUnder_eq`); `P ∉ T`, so
+`hTram` gives `ramIdx k P = 1`, and `unram` at every conjugate of `P` feeds
+`localClassHom_norm_mem_localUnramified`.
+
+Note what this does **not** use: E-1.  The downstairs rank-one statement needs only the
+non-interference fields and the norm lemmas of `NormLocalPower.lean`; the upstairs statement E-1 is
+what the *splitting-field* reading of the same condition will want.  Also, a base place `q` under no
+exceptional place and under no place of `T` needs no separate `Tn ∖ T` case, because a trivial class
+is unramified.
+
+`exists_base_family_norm_class_eq` chains this with `exists_isTwoPlaceFamily` (D-5) and states the
+whole of the concrete Theorem 13 with no family in sight:
+
+> **for every number of coordinates, there are numbers of the base field, each a norm from `K`,
+> realising a prescribed set of local classes at the places of `T`, and at every place outside `T`
+> either all unramified or all powers of a single local class over a completion containing the
+> `p`-th roots of unity.**
+
+Built green first try, 8691 jobs.  Root build green, 9802 jobs, 0 warnings, 0 sorries.
+
+### (c) The `p = 2` case is exactly the archimedean-places problem
+
+`hodd : 2 < p` is threaded through the whole `PoitouTate` recursion tower, but grepping it to its
+origin shows it bottoms out at **one** place: `haveI := isTotallyComplex_of_isPrimitiveRoot hodd hζ`
+in `Selmer.lean:298` (`selmerGroup_le_perpSubgroup`) and `Selmer.lean:335`
+(`perpSubgroup_selmerGroup`).  Everything else merely passes it along.  `IsTotallyComplex K` is in
+turn what lets
+
+* `prod_localSymbol_eq_one` (`Brauer/SymbolProduct.lean:170`) run the Hilbert-symbol product formula
+  over the **finite** places alone — the archimedean invariants are all zero
+  (`infinitePlaceInvariant_of_isComplex`);
+* `card_pi_localClasses` (`Selmer.lean:241`) and `card_selmerGroup` (`Selmer.lean:269`) do their
+  counts with no archimedean factor: `index_range_powMonoidHom_units_isComplex` says a complex
+  completion has no `p`-th power quotient, and `ker_sUnitClassHom` (`:169`) uses
+  `exists_pow_eq_completion_of_isComplex`.
+
+So the `p = 2` case of Theorem 13 is not a different combinatorial argument bolted onto the present
+one — it is the *same* argument run over a `K` with real places, and the missing input is the
+archimedean half of the self-duality: the real local symbol `ℝ^×/2 × ℝ^×/2 → ½ℤ/ℤ`, its
+contribution to the product formula, and the factor `2^{r_1}` it puts into the Selmer count.  SW's
+own `p = 2` treatment (`sw.txt:781`ff) — the partition `G ∖ {1} = G₁ ⊔ G₂ ⊔ G₃` with `G₁` the
+involutions and `G₂ = G₃^{-1}`, conditions (1)–(4), and the Claim `(z_i)^{σ P_i} = 0` for `σ ∈ G₁`
+proved from `z̃_i = a + bα` and coprimality — sits **on top** of that, not instead of it.
+
+### (d) The cohomological packaging, and why it waits
+
+The statement above is in coordinates, and Theorem 13 as SW state it is about a class
+`x ∈ H¹(k_S|k, A)` for `A = μ_p ⊗ W`.  The translation is not the identity: `H¹(k, μ_p ⊗ W)` is
+`(k^×/p) ⊗ W` only when `G_k` acts trivially on `W`, and the `𝔽_p`-basis of `W` in which the
+coordinates are taken need not be `G`-stable.  Deciding the right intermediate currency needs the
+Theorem 15 frame — `F(n)`, `E(n,ν)`, proper solutions — which does not exist in the repo yet, so
+the coordinate form is the right thing to have banked in the meantime: every consumer in Step 4 of
+Theorem 15 uses Theorem 13 exactly through its cyclicity clause ("the decomposition groups of the
+new ramification are cyclic, hence the local extensions are cyclic of order `p`, in particular
+totally ramified"), and that is clause 2 above verbatim.
+
+### (e) Findings
+
+* **2397 (REPO, KEY).** `card_quotient_range_powMonoidHom_adicCompletion hζ v hv :
+  Nat.card ((v.adicCompletion K)ˣ ⧸ (powMonoidHom n).range) = n * n` at
+  `PoitouTate/Unramified.lean:222`, in the section `AdicPlace`.  With `card_unramifiedClasses`
+  (`:153`) this is `Nat.card ↥(localUnramified v n) = n`.
+* **2398 (MATH, KEY).** The `hodd` trace of (c): two lines in `Selmer.lean`.
+* **2399 (LEAN).** When a new module's statement mentions a structure declared in a big `variable`
+  block, the cure for `linter.unusedSectionVars` is to **trim the variable block**, not to write a
+  long `omit … in`.  `IsTwoPlaceFamily Ω p Tn c d S Q R z` needs only
+  `{k A K : Type} [Field k] [NumberField k] [Field A] [Algebra k A] [Field K] [NumberField K]
+  [Algebra k K] {Ω : IntermediateField k A} [NumberField ↥Ω] [Algebra K ↥Ω] {p : ℕ} [NeZero p]`.
+* **2400 (MATH).** The downstairs rank-one clause needs only `crossQ`/`crossR` and
+  `localClassHom_norm_eq_one`; it is independent of E-1.
+* **2401 (REPO).** `PoitouTate/NormLocalPower.lean`, with `k` and `w` both **explicit**:
+  `localClassHom_norm_eq_one k w (hp : p ≠ 0) t (ht : ∀ σ, localClassHom (σ • w) p t = 1)` (`:180`);
+  `localClassHom_norm_eq_of_forall_eq k w hp t s (hts : ∀ σ, …)` (`:200`);
+  `localClassHom_norm_mem_localUnramified k w [IsGalois k K] (he : ramIdx (𝓞 k) w = 1) t
+  (ht : ∀ σ, … ∈ localUnramified (σ • w) p)` (`:260`).  And
+  `exists_isPrimitiveRoot_adicCompletion_of_stabilizer_eq_bot k w hζ (h : stabilizer Gal(K/k) w = ⊥)`
+  at `Units/SplitCompletion.lean:60`.
+
+### (f) What is next
+
+The archimedean half of the Selmer self-duality, which is what unlocks `p = 2`: the real local
+symbol and its place in the product formula, then the two counts of `Selmer.lean` with a `2^{r_1}`
+in them.
