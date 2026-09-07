@@ -18,9 +18,9 @@ ambient algebraically closed field, because such an embedding restricts to an au
 number field, which permutes the primes of `X`.  Radicals of the basis are available in the ambient
 field for the same reason it is algebraically closed.
 
-Hence a non-trivial character of a subgroup of the `S`-units, trivial on the powers of exponent a
-prime that the subgroup contains, is read off by the Frobenius automorphism at a finite place, and
-that place can be taken outside any prescribed finite set and completely split in the number field.
+Hence a character of a subgroup of the `S`-units, trivial on the powers of exponent a prime that
+the subgroup contains, is read off by the Frobenius automorphism at a finite place, and that place
+can be taken outside any prescribed finite set and completely split in the number field.
 
 ## Main results
 
@@ -88,7 +88,7 @@ theorem exists_place_frobValue_eq_one_iff_character_sUnits (hp : p.Prime)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
     {U : Subgroup (↥Ω)ˣ} (hU : U ≤ sUnits ↥Ω X) (Φ : ↥U →* (↥Ω)ˣ)
     (hΦ : ∀ (u : (↥Ω)ˣ) (hu : u ∈ U) (y : (↥Ω)ˣ), u = y ^ p → Φ ⟨u, hu⟩ = 1)
-    (hne : ∃ u : ↥U, Φ u ≠ 1) (T : Finset (HeightOneSpectrum (𝓞 k))) :
+    (T : Finset (HeightOneSpectrum (𝓞 k))) :
     ∃ V : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 k) V ∉ T ∧
       stabilizer Gal(↥Ω/k) V = ⊥ ∧ ¬ Pc (primeUnder (𝓞 K) V) ∣ p ∧
       ∀ (u : Kˣ) (hu : Units.map (algebraMap K ↥Ω : K →* ↥Ω) u ∈ U),
@@ -118,7 +118,7 @@ theorem exists_place_frobValue_eq_one_iff_character_sUnits (hp : p.Prime)
   rw [hrange] at P
   choose w hw using fun i => IsAlgClosed.exists_pow_nat_eq (algebraMap ↥Ω A (P.rad i)) hp.pos
   exact exists_place_placeFrobValue_eq_one_iff_character hp P hstab
-    (fun _ hy => mem_sUnits_of_pow_mem hp.ne_zero hy) hfin hζ w hw hres hU Φ hΦ hne T
+    (fun _ hy => mem_sUnits_of_pow_mem hp.ne_zero hy) hfin hζ w hw hres hU Φ hΦ T
 
 end Assemble
 

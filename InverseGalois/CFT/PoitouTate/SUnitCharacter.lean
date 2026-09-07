@@ -22,8 +22,8 @@ Feeding the translated character to the construction of a place prescribed by a 
 `S`-units therefore produces a finite place at which the value at the Frobenius automorphism is
 trivial exactly where the given character is.  Two characters killed by a prime, the first trivial
 wherever the second is, are proportional, so the value at the Frobenius automorphism of that place
-is a fixed power of the given character, and the exponent is prime to the order because the given
-character is not trivial.
+is a fixed power of the given character; the exponent is prime to the order because the two
+characters are trivial at the same places, and for a trivial character it can be taken to be one.
 
 ## Main definitions
 
@@ -154,7 +154,7 @@ theorem exists_place_frobValue_eq_one_iff_torsionChar (hp : p.Prime)
     {U : Subgroup (↥Ω)ˣ} (hU : U ≤ sUnits ↥Ω X) (χ : ↥U →* Multiplicative QModZ)
     (hχ : ∀ u, χ u ^ p = 1)
     (hχpow : ∀ (u : (↥Ω)ˣ) (hu : u ∈ U) (y : (↥Ω)ˣ), u = y ^ p → χ ⟨u, hu⟩ = 1)
-    (hne : ∃ u : ↥U, χ u ≠ 1) (T : Finset (HeightOneSpectrum (𝓞 k))) :
+    (T : Finset (HeightOneSpectrum (𝓞 k))) :
     ∃ V : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 k) V ∉ T ∧
       stabilizer Gal(↥Ω/k) V = ⊥ ∧ ¬ Pc (primeUnder (𝓞 K) V) ∣ p ∧
       ∀ (u : Kˣ) (hu : Units.map (algebraMap K ↥Ω : K →* ↥Ω) u ∈ U),
@@ -167,10 +167,7 @@ theorem exists_place_frobValue_eq_one_iff_torsionChar (hp : p.Prime)
   obtain ⟨V, hVT, hVstab, hVP, hViff⟩ :=
     exists_place_frobValue_eq_one_iff_character_sUnits hp hXfin hXstab hζ hres hU
       (rootOfUnityChar hζu χ hχ)
-      (fun u hu y hy => (rootOfUnityChar_eq_one_iff hζu χ hχ _).2 (hχpow u hu y hy))
-      (by
-        obtain ⟨u, hu⟩ := hne
-        exact ⟨u, fun h => hu ((rootOfUnityChar_eq_one_iff hζu χ hχ u).1 h)⟩) T
+      (fun u hu y hy => (rootOfUnityChar_eq_one_iff hζu χ hχ _).2 (hχpow u hu y hy)) T
   exact ⟨V, hVT, hVstab, hVP, fun u hu hdvd =>
     (hViff u hu hdvd).trans (rootOfUnityChar_eq_one_iff hζu χ hχ _)⟩
 
@@ -193,8 +190,7 @@ theorem exists_place_placeFrobValue_eq_zpow_character (hp : p.Prime)
       (p : ℤ) ∣ placeValue Q u)
     (χ : ↥W →* Multiplicative QModZ) (hχ : ∀ u, χ u ^ p = 1)
     (hχpow : ∀ (u : ↥W) (y : (↥Ω)ˣ),
-      Units.map (algebraMap K ↥Ω : K →* ↥Ω) (u : Kˣ) = y ^ p → χ u = 1)
-    (hne : ∃ u, χ u ≠ 1) :
+      Units.map (algebraMap K ↥Ω : K →* ↥Ω) (u : Kˣ) = y ^ p → χ u = 1) :
     ∃ V : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 k) V ∉ T ∧
       stabilizer Gal(↥Ω/k) V = ⊥ ∧ ¬ Pc (primeUnder (𝓞 K) V) ∣ p ∧
       ∃ j : ℤ, ¬ (p : ℤ) ∣ j ∧
@@ -213,13 +209,7 @@ theorem exists_place_placeFrobValue_eq_zpow_character (hp : p.Prime)
         obtain ⟨v, hv, rfl⟩ := hu
         show χ ((W.equivMapOfInjective _ hfinj).symm ⟨_, _⟩) = 1
         rw [hesymm v hv]
-        exact hχpow ⟨v, hv⟩ y hy)
-      (by
-        obtain ⟨u, hu⟩ := hne
-        refine ⟨W.equivMapOfInjective _ hfinj u, ?_⟩
-        show χ ((W.equivMapOfInjective _ hfinj).symm
-          ((W.equivMapOfInjective _ hfinj) u)) ≠ 1
-        rwa [MulEquiv.symm_apply_apply]) T
+        exact hχpow ⟨v, hv⟩ y hy) T
   refine ⟨V, hVT, hVstab, hVP, ?_⟩
   have hQT : primeUnder (𝓞 k) (primeUnder (𝓞 K) V) ∉ T := by
     rwa [primeUnder_primeUnder k K V]
@@ -236,10 +226,18 @@ theorem exists_place_placeFrobValue_eq_zpow_character (hp : p.Prime)
     ((placeFrobValueHom hres hζ (primeUnder (𝓞 K) V)).comp W.subtype) χ
     (fun u => by rw [hFapp u]; exact pow_placeFrobValue_eq_one hres hζ _ _) hχ
     fun u h => (hFapp u).trans ((hkey u).2 h)
-  obtain ⟨u₀, hu₀⟩ := hne
-  exact ⟨j, not_dvd_of_zpow_eq_ne_one hχ (x := u₀) (fun h =>
-    hu₀ ((hkey u₀).1 ((hFapp u₀).symm.trans ((hj u₀).trans h)))),
-    fun u => (hFapp u).symm.trans (hj u)⟩
+  by_cases hne : ∃ u, χ u ≠ 1
+  · obtain ⟨u₀, hu₀⟩ := hne
+    exact ⟨j, not_dvd_of_zpow_eq_ne_one hχ (x := u₀) (fun h =>
+      hu₀ ((hkey u₀).1 ((hFapp u₀).symm.trans ((hj u₀).trans h)))),
+      fun u => (hFapp u).symm.trans (hj u)⟩
+  · push_neg at hne
+    refine ⟨1, ?_, fun u => ?_⟩
+    · intro hdvd
+      have hp1 : p ∣ 1 := by exact_mod_cast hdvd
+      exact hp.ne_one (Nat.dvd_one.mp hp1)
+    · rw [hne u, one_zpow]
+      exact (hkey u).2 (hne u)
 
 end Place
 

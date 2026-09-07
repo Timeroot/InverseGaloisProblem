@@ -25,6 +25,11 @@ the units the character kills.  The place is completely split in the field the r
 from: the automorphism fixes that field, so the decomposition group there is trivial, an assertion
 about the bottom two floors of the tower which no longer mentions the radicals.
 
+Only a non-trivial character is realised by a non-trivial automorphism, and only a non-trivial
+automorphism has prime order; the trivial character is therefore read off by a different place,
+one completely split in the radical field itself, at which every unit of the group is a power in
+the completion because a radical of it is already there.
+
 The last point is the only one needing an argument.  A decomposition group upstairs restricts into
 the decomposition group downstairs, and the restriction is onto because every automorphism of the
 middle field lifts to the top and the automorphisms over the middle field permute the places above
@@ -155,7 +160,9 @@ completely split in the field the radicals are taken from, at which the value at
 automorphism is trivial exactly at the units the character kills.**  The character is realised by
 an automorphism of the radical field, of prime order and generating a normal subgroup; the place
 whose decomposition group over the bottom field is that subgroup then reads the character off, and
-is completely split because the automorphism fixes the field the radicals are taken from. -/
+is completely split because the automorphism fixes the field the radicals are taken from.  A
+trivial character is read off instead by a place completely split in the radical field itself,
+where every radical of a unit of the group lives. -/
 theorem exists_place_placeFrobValue_eq_one_iff_character (hp : p.Prime) (P : PowBasis B p s)
     (hstab : IsEmbeddingStable Ω B) (hsat : ∀ y : (↥Ω)ˣ, y ^ p ∈ B → y ∈ B)
     (hfin : Finite (powQuotient B p)) {ζ : K} (hζ : IsPrimitiveRoot ζ p) (w : Fin s → A)
@@ -163,7 +170,7 @@ theorem exists_place_placeFrobValue_eq_one_iff_character (hp : p.Prime) (P : Pow
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
     {U : Subgroup (↥Ω)ˣ} (hU : U ≤ B) (Φ : ↥U →* (↥Ω)ˣ)
     (hΦ : ∀ (u : (↥Ω)ˣ) (hu : u ∈ U) (y : (↥Ω)ˣ), u = y ^ p → Φ ⟨u, hu⟩ = 1)
-    (hne : ∃ u : ↥U, Φ u ≠ 1) (T : Finset (HeightOneSpectrum (𝓞 k))) :
+    (T : Finset (HeightOneSpectrum (𝓞 k))) :
     ∃ V : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 k) V ∉ T ∧
       stabilizer Gal(↥Ω/k) V = ⊥ ∧ ¬ Pc (primeUnder (𝓞 K) V) ∣ p ∧
       ∀ (u : Kˣ) (hu : Units.map (algebraMap K ↥Ω : K →* ↥Ω) u ∈ U),
@@ -182,23 +189,43 @@ theorem exists_place_placeFrobValue_eq_one_iff_character (hp : p.Prime) (P : Pow
       ← IsScalarTower.algebraMap_apply K ↥Ω ↥(ambientRadField Ω w)]
   haveI : IsGalois k ↥Ω := ⟨⟩
   haveI : IsGalois k ↥(ambientRadField Ω w) := ⟨⟩
-  obtain ⟨σ, hord, hnormσ, hσ⟩ :=
-    exists_aut_ambientRadField_of_character P hp hζΩ hfin hsat w hw hU Φ hΦ hne
-  obtain ⟨W, hWT, -, hWk, hWP, hWfrob⟩ :=
-    exists_place_placeFrobValue_eq_one_iff_smul_eq (k := k) (K := K) (F := ↥Ω)
-      (N := ↥(ambientRadField Ω w)) hp hres hζ hnormσ (by rw [hord]; exact hp) T
-  refine ⟨primeUnder (𝓞 ↥Ω) W, ?_, stabilizer_eq_bot_of_stabilizer_eq_zpowers hWk, ?_, ?_⟩
-  · rwa [primeUnder_primeUnder k ↥Ω W]
-  · rwa [primeUnder_primeUnder K ↥Ω W]
-  · intro u hu hdvd
-    rw [primeUnder_primeUnder K ↥Ω W] at hdvd ⊢
-    obtain ⟨b, hbmem, hb⟩ := exists_mem_pow_eq_ambientRadField P hζΩ w hw (hU hu)
-    have hbpow : (⟨b, hbmem⟩ : ↥(ambientRadField Ω w)) ^ p =
-        algebraMap K ↥(ambientRadField Ω w) (u : K) := by
-      rw [IsScalarTower.algebraMap_apply K ↥Ω ↥(ambientRadField Ω w)]
-      exact Subtype.ext hb
-    rw [hWfrob u hdvd _ hbpow]
-    exact hσ _ hu ⟨b, hbmem⟩ (Subtype.ext hb)
+  by_cases hne : ∃ u : ↥U, Φ u ≠ 1
+  · obtain ⟨σ, hord, hnormσ, hσ⟩ :=
+      exists_aut_ambientRadField_of_character P hp hζΩ hfin hsat w hw hU Φ hΦ hne
+    obtain ⟨W, hWT, -, hWk, hWP, hWfrob⟩ :=
+      exists_place_placeFrobValue_eq_one_iff_smul_eq (k := k) (K := K) (F := ↥Ω)
+        (N := ↥(ambientRadField Ω w)) hp hres hζ hnormσ (by rw [hord]; exact hp) T
+    refine ⟨primeUnder (𝓞 ↥Ω) W, ?_, stabilizer_eq_bot_of_stabilizer_eq_zpowers hWk, ?_, ?_⟩
+    · rwa [primeUnder_primeUnder k ↥Ω W]
+    · rwa [primeUnder_primeUnder K ↥Ω W]
+    · intro u hu hdvd
+      rw [primeUnder_primeUnder K ↥Ω W] at hdvd ⊢
+      obtain ⟨b, hbmem, hb⟩ := exists_mem_pow_eq_ambientRadField P hζΩ w hw (hU hu)
+      have hbpow : (⟨b, hbmem⟩ : ↥(ambientRadField Ω w)) ^ p =
+          algebraMap K ↥(ambientRadField Ω w) (u : K) := by
+        rw [IsScalarTower.algebraMap_apply K ↥Ω ↥(ambientRadField Ω w)]
+        exact Subtype.ext hb
+      rw [hWfrob u hdvd _ hbpow]
+      exact hσ _ hu ⟨b, hbmem⟩ (Subtype.ext hb)
+  · push_neg at hne
+    obtain ⟨W, hWT, hWk, hWP, hWfrob⟩ :=
+      exists_place_placeFrobValue_eq_one_of_split (k := k) (K := K)
+        (N := ↥(ambientRadField Ω w)) hp hres hζ T
+    have hWbot : stabilizer Gal(↥Ω/k) (primeUnder (𝓞 ↥Ω) W) = ⊥ :=
+      stabilizer_eq_bot_of_stabilizer_eq_zpowers (σ := 1) (by
+        rw [hWk, show ((1 : Gal(↥(ambientRadField Ω w)/↥Ω)).restrictScalars k) = 1 from
+          AlgEquiv.ext fun _ => rfl, Subgroup.zpowers_one_eq_bot])
+    refine ⟨primeUnder (𝓞 ↥Ω) W, ?_, hWbot, ?_, ?_⟩
+    · rwa [primeUnder_primeUnder k ↥Ω W]
+    · rwa [primeUnder_primeUnder K ↥Ω W]
+    · intro u hu hdvd
+      rw [primeUnder_primeUnder K ↥Ω W] at hdvd ⊢
+      obtain ⟨b, hbmem, hb⟩ := exists_mem_pow_eq_ambientRadField P hζΩ w hw (hU hu)
+      have hbpow : (⟨b, hbmem⟩ : ↥(ambientRadField Ω w)) ^ p =
+          algebraMap K ↥(ambientRadField Ω w) (u : K) := by
+        rw [IsScalarTower.algebraMap_apply K ↥Ω ↥(ambientRadField Ω w)]
+        exact Subtype.ext hb
+      exact iff_of_true (hWfrob u hdvd _ hbpow) (hne ⟨_, hu⟩)
 
 end Assemble
 

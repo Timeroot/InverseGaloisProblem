@@ -15007,6 +15007,92 @@ defeq is ever demanded of the elaborator.  This is the same family as gotchas 20
 
 ---
 
+## 1.37 Status (2026-09-07, latest) — **the degenerate case**: the Chebotarev step no longer asks the prescription character to be non-trivial
+
+Bricks C, D and E all carried a hypothesis `hne : ∃ u, χ u ≠ 1`.  It entered at the bottom, in
+`exists_aut_ambientRadField_of_character` (`RadicalPlace.lean:109`): the automorphism `σ` of the
+radical field realising `χ` is built with **prime order**, hence `σ ≠ 1`, hence `χ ≠ 1`.  That is
+genuinely needed *there*, and stays.  But it must not survive to the top, because the recursion of
+SW Thm 13 has to produce a new prime `P_{n+1}` at **every** stage, including the stages where the
+prescription character `ξ` happens to have trivial image in `H¹(Ω|K, ℤ/p)^∨`.  Carrying `hne` as an
+assembly-time hypothesis is therefore not an option; nor is skipping the degenerate stage.
+
+### (a) The degenerate branch costs no new density theory
+
+For `χ = 1` the place to produce is one whose decomposition group is **trivial**, not one whose
+decomposition group is `⟨σ⟩` for a prime-order `σ`.  Both halves of that were already in the repo:
+
+1. `infinite_relSplitSet` (finding 2199) says the primes of the base that split completely in a
+   Galois extension are infinite in number, so one of them avoids any prescribed `Finset`;
+2. `relStabilizer_eq_bot_iff` (finding 2200) converts `SplitsCompletelyIn` into
+   `stabilizer Gal(N/k) P = ⊥`.
+
+Together these give the new `exists_stabilizer_eq_bot` (`ChebotarevPlace.lean`), the `σ = 1`
+analogue of `exists_relStabilizer_place_eq_zpowers_restrictScalars`.
+
+### (b) Reading the Frobenius character at such a place
+
+The `zpowers`-flavoured `placeFrobValue_eq_one_iff_smul_eq` wants a *prime-order* generator, so it
+cannot be used.  The right brick is the more primitive
+`placeFrobValue_eq_one_iff_forall_stabilizer_smul_eq` (`FrobeniusCharacter.lean:88`), which
+quantifies over the whole decomposition group and asks for no primality: with the group trivial the
+quantified statement is vacuous and every unit with a radical upstairs has trivial Frobenius value.
+That is `exists_place_placeFrobValue_eq_one_of_split` (`ChebotarevPlace.lean`), whose only real
+work is avoiding, in addition to the prescribed set `T`, the finitely many places whose residue
+characteristic is `p` — so that the Kummer description of the local powers applies.
+
+Descending the triviality from the base `k` to the intermediate field `K` is
+`stabilizer_eq_bot_of_base`, four lines from `AlgEquiv.restrictScalars_injective`.
+
+### (c) Where the branch was spliced in
+
+`hne` was removed **outright** (no `'`-variants) from
+
+* `exists_place_placeFrobValue_eq_one_iff_character` (`RadicalPlace.lean`),
+* `exists_place_frobValue_eq_one_iff_character_sUnits` (`SUnitPlace.lean`),
+* `exists_place_frobValue_eq_one_iff_torsionChar` and brick D
+  `exists_place_placeFrobValue_eq_zpow_character` (`SUnitCharacter.lean`),
+
+each of which now opens with `by_cases hne`.  In `RadicalPlace` the two branches call the two
+Chebotarev theorems and then share the same radical-lifting tail; in brick D the degenerate branch
+returns the exponent `j = 1`, which is prime to `p` because `p ≠ 1`, and the identity
+`placeFrobValue … u = χ u ^ 1` is exactly the trivial-on-both-sides case of `hkey`.
+
+So brick D's conclusion — *a place, outside `T`, completely split in `Ω`, at which the Frobenius
+character is a fixed power `χ^j` with `p ∤ j`* — now holds for **every** character `χ` killed by
+`p` and trivial on the local `p`-th powers.  That is the interface the recursion needs.
+
+### (d) Findings
+
+* **2197 (MATHLIB).** `Set.Infinite.exists_notMem_finset (hs : s.Infinite) (t : Finset α) :`
+  `∃ a ∈ s, a ∉ t` (`Data/Set/Finite/Basic.lean:823`).
+* **2198 (MATHLIB).** `Nat.card_ne_zero : Nat.card α ≠ 0 ↔ Nonempty α ∧ Finite α`
+  (`SetTheory/Cardinal/Finite.lean:80`); `Subgroup.zpowers_one_eq_bot`
+  (`Algebra/Group/Subgroup/ZPowers/Basic.lean:138`) and `Subgroup.zpowers_eq_bot` (`:131`).
+* **2199 (REPO, KEY).** `infinite_relSplitSet [IsGalois k L] : (relSplitSet k L).Infinite`
+  (`NumberTheory/RelativeSplitDensity.lean:671`) — the completely split case of Chebotarev is
+  already available, with no new density work.  Companions in the same file:
+  `relSplitSet k L := {v | SplitsCompletelyIn k L v}` (`:417`), `SplitsCompletelyIn` (`:300`),
+  `card_relFiber_eq_of_splitsCompletelyIn` (`:306`), `primeBelow` (`:245`).
+* **2200 (REPO).** `relStabilizer_eq_bot_iff (P : Ideal (𝓞 L)) [P.IsPrime] (hP : P ≠ ⊥) :`
+  `stabilizer Gal(L/k) P = ⊥ ↔ ramificationIdx … = 1 ∧ inertiaDeg … = 1`
+  (`CFT/RelativeFrobenius.lean:117`), with `card_relStabilizer` (`:89`).  `primeUnder (𝓞 k) W` and
+  `primeBelow k W` are the same structure — convert with
+  `HeightOneSpectrum.ext (congrArg HeightOneSpectrum.asIdeal hW)`.
+* **2201 (LEAN, GOTCHA).** Rewriting `hmem : ↑σ ∈ stabilizer Gal(N/K) W` along
+  `stabilizer Gal(N/K) W = ⊥` fails with **"motive is not type correct"**, because `σ` is an element
+  of the very subgroup being rewritten.  Use `(Subgroup.eq_bot_iff_forall _).1 h _ σ.2`.
+
+### (e) Routes rejected here
+
+* Adding `'`-suffixed variants of the character theorems instead of removing `hne` outright — the
+  recursion would then have to case-split at assembly time on a condition it cannot decide.
+* Carrying `hne` as a hypothesis of the recursion step: the degenerate case genuinely arises, at
+  every stage.
+* Proving a fresh density theorem for completely split primes: `infinite_relSplitSet` exists.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —

@@ -32,6 +32,13 @@ Reading the residue characteristic of a place off a completion of the number fie
 piece of bookkeeping this needs: a rational prime is the residue characteristic of a completion
 exactly when the place lies over it, because its valuation there is then less than one.
 
+The trivial automorphism is left out by the construction above, which asks the prescribed
+automorphism to have prime order, and it is reached separately.  Infinitely many primes of the base
+split completely in a Galois extension, so one of them avoids any prescribed finite set; a prime
+above such a one is unramified of residue degree one, which is to say that its decomposition group
+is trivial, and then every unit with a radical in the extension is a power in the completion, so
+its value at the Frobenius automorphism is trivial.
+
 ## Main results
 
 * `InverseGalois.CFT.resChar_eq_of_hasResidueChar`: the residue characteristic of a completion is
@@ -48,6 +55,10 @@ exactly when the place lies over it, because its valuation there is then less th
 * `InverseGalois.CFT.exists_place_placeFrobValue_eq_one_iff_smul_eq`: **the value at the Frobenius
   automorphism of that place is trivial exactly at the units whose radicals the given automorphism
   fixes.**
+* `InverseGalois.CFT.exists_stabilizer_eq_bot`: **a Galois extension has, above a prime of the base
+  avoiding any prescribed finite set, a prime with trivial decomposition group.**
+* `InverseGalois.CFT.exists_place_placeFrobValue_eq_one_of_split`: **at such a place the value at
+  the Frobenius automorphism is trivial at every unit with a radical in the extension.**
 
 ## Tags
 
@@ -234,5 +245,99 @@ theorem exists_place_placeFrobValue_eq_one_iff_smul_eq (hn : n.Prime)
     fun u hu b hb => placeFrobValue_eq_one_iff_smul_eq hn hres hζ hPn hWK hu hb⟩
 
 end Prescribe
+
+/-! ### A place with trivial decomposition group -/
+
+section Split
+
+variable {k N : Type*} [Field k] [NumberField k] [Field N] [NumberField N] [Algebra k N]
+  [IsGalois k N]
+
+/-- **Above a prime of the base avoiding any prescribed finite set, a Galois extension of number
+fields has a prime with trivial decomposition group.**  Infinitely many primes of the base split
+completely in the extension, so one of them avoids the prescribed set; the primes above it are
+unramified of residue degree one, which is exactly the triviality of their decomposition group. -/
+theorem exists_stabilizer_eq_bot (T : Finset (HeightOneSpectrum (𝓞 k))) :
+    ∃ W : HeightOneSpectrum (𝓞 N), primeUnder (𝓞 k) W ∉ T ∧
+      MulAction.stabilizer Gal(N/k) W = ⊥ := by
+  obtain ⟨v, hv, hvT⟩ := (infinite_relSplitSet (k := k) (L := N)).exists_notMem_finset T
+  have hcard := card_relFiber_eq_of_splitsCompletelyIn (k := k) (L := N) hv
+  have hnonempty : Nonempty ↥(primeBelow k ⁻¹' {v} : Set (HeightOneSpectrum (𝓞 N))) :=
+    (Nat.card_ne_zero.mp (by
+      rw [hcard]
+      exact (Module.finrank_pos (R := k) (M := N)).ne')).1
+  obtain ⟨⟨W, hWmem⟩⟩ := hnonempty
+  have hW : primeBelow k W = v := hWmem
+  have hunder : primeUnder (𝓞 k) W = v := HeightOneSpectrum.ext
+    (congrArg HeightOneSpectrum.asIdeal hW)
+  refine ⟨W, by rw [hunder]; exact hvT, ?_⟩
+  haveI : W.asIdeal.IsPrime := W.isPrime
+  haveI : W.asIdeal.LiesOver v.asIdeal := ⟨(congrArg HeightOneSpectrum.asIdeal hW).symm⟩
+  obtain ⟨he, hf⟩ := hv W.asIdeal ⟨W.isPrime, inferInstance⟩
+  rw [stabilizer_eq_stabilizer_asIdeal, relStabilizer_eq_bot_iff W.asIdeal W.ne_bot,
+    show W.asIdeal.under (𝓞 k) = v.asIdeal from congrArg HeightOneSpectrum.asIdeal hW]
+  exact ⟨he, hf⟩
+
+end Split
+
+/-! ### The Frobenius character of a completely split place -/
+
+section SplitPrescribe
+
+variable {k K N : Type} [Field k] [NumberField k] [Field K] [NumberField K] [Field N]
+  [NumberField N] [Algebra k K] [Algebra k N] [Algebra K N] [IsScalarTower k K N] [IsGalois k N]
+  {n : ℕ} [NeZero n] {P E : HeightOneSpectrum (𝓞 K) → ℕ}
+
+omit [NumberField k] [NumberField K] [NumberField N] [IsGalois k N] in
+/-- The decomposition group over an intermediate field of a prime with trivial decomposition group
+over the base is trivial, because restriction of scalars is injective. -/
+theorem stabilizer_eq_bot_of_base {W : HeightOneSpectrum (𝓞 N)}
+    (hW : MulAction.stabilizer Gal(N/k) W = ⊥) : MulAction.stabilizer Gal(N/K) W = ⊥ := by
+  rw [stabilizer_eq_stabilizer_asIdeal] at hW ⊢
+  refine (Subgroup.eq_bot_iff_forall _).2 fun τ hτ => ?_
+  have h1 : τ.restrictScalars k ∈ MulAction.stabilizer Gal(N/k) W.asIdeal := by
+    rw [MulAction.mem_stabilizer_iff, relRestrictScalars_smul_ideal]
+    exact hτ
+  rw [hW, Subgroup.mem_bot] at h1
+  exact AlgEquiv.restrictScalars_injective k (h1.trans (AlgEquiv.ext fun _ => rfl).symm)
+
+/-- **Above any prescribed finite set of finite places of the base there is a place of the top
+field, with trivial decomposition group, at which the value at the Frobenius automorphism is
+trivial at every unit with a radical in the top field.**  The places whose residue characteristic
+is the exponent are finite in number and can be avoided along with the prescribed set, which puts
+the place in the range of the Kummer description of the units that are powers in its completion;
+a trivial decomposition group fixes every radical. -/
+theorem exists_place_placeFrobValue_eq_one_of_split (hn : n.Prime)
+    (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
+    {ζ : K} (hζ : IsPrimitiveRoot ζ n) (T : Finset (HeightOneSpectrum (𝓞 k))) :
+    ∃ W : HeightOneSpectrum (𝓞 N), primeUnder (𝓞 k) W ∉ T ∧
+      MulAction.stabilizer Gal(N/k) W = ⊥ ∧ ¬ P (primeUnder (𝓞 K) W) ∣ n ∧
+      ∀ u : Kˣ, (n : ℤ) ∣ placeValue (primeUnder (𝓞 K) W) u →
+        ∀ b : N, b ^ n = algebraMap K N (u : K) →
+          placeFrobValue hres hζ (primeUnder (𝓞 K) W) u = 1 := by
+  classical
+  haveI : IsGalois K N := IsGalois.tower_top_of_isGalois k K N
+  have hfib : (resChar ⁻¹' {n} : Set (HeightOneSpectrum (𝓞 k))).Finite := Set.toFinite _
+  obtain ⟨W, hWT, hWk⟩ := exists_stabilizer_eq_bot (N := N) (T ∪ hfib.toFinset)
+  rw [Finset.mem_union, not_or] at hWT
+  obtain ⟨hWT, hWn⟩ := hWT
+  have hPn : ¬ P (primeUnder (𝓞 K) W) ∣ n := by
+    intro hdvd
+    refine hWn (hfib.mem_toFinset.mpr ?_)
+    have h1 : resChar (primeUnder (𝓞 K) W) = P (primeUnder (𝓞 K) W) :=
+      resChar_eq_of_hasResidueChar (hres _)
+    have h2 : P (primeUnder (𝓞 K) W) = n :=
+      (Nat.prime_dvd_prime_iff_eq (hres _).prime hn).mp hdvd
+    show resChar (primeUnder (𝓞 k) W) = n
+    rw [resChar_primeUnder (k := k) W, ← resChar_primeUnder (k := K) W, h1, h2]
+  refine ⟨W, hWT, hWk, hPn, fun u hu b hb => ?_⟩
+  rw [placeFrobValue_eq_one_iff_forall_stabilizer_smul_eq hn hres hζ W hPn hu hb]
+  intro σ
+  have hσ : (σ : Gal(N/K)) = 1 :=
+    (Subgroup.eq_bot_iff_forall _).1 (stabilizer_eq_bot_of_base (k := k) hWk) _ σ.2
+  rw [hσ]
+  rfl
+
+end SplitPrescribe
 
 end InverseGalois.CFT
