@@ -118,19 +118,24 @@ variable {k K : Type} [Field k] [Field K] [NumberField K] [Algebra k K] [FiniteD
 
 /-- **Two completely split places and a unit ramified exactly at those two places**, realising the
 square of a prescribed local behaviour on a fixed Galois stable set of places containing all the
-places above the exponent, and trivial at every nontrivial conjugate of the two places.  The two
-places are produced by running the recursion past the bound supplied by the pigeonhole principle,
-and the unit is the product of the two units attached to the two agreeing stages. -/
+places above the exponent, and trivial at every nontrivial conjugate of the two places.  The
+recursion starts from a possibly larger Galois stable set, all of whose further places already
+satisfy the splitting condition; the two places are produced by running it past the bound supplied
+by the pigeonhole principle, and the unit is the product of the two units attached to the two
+agreeing stages. -/
 theorem exists_prescribed_two_places (hp : p.Prime) (hp2 : p ≠ 2)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ p) {Spl : HeightOneSpectrum (𝓞 K) → Prop}
     (hSpl : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), Spl v → Spl (σ • v))
-    {T : Finset (HeightOneSpectrum (𝓞 K))}
+    {T S₀ : Finset (HeightOneSpectrum (𝓞 K))}
     (hTstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ T → σ • v ∈ T)
+    (hTS : T ⊆ S₀)
+    (hSstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ S₀ → σ • v ∈ S₀)
+    (hSsplit : ∀ v ∈ S₀, v ∉ T → Spl v)
     (hpT : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → v ∈ T)
     {g : Kˣ} (hgunr : ∀ v ∈ T, localClassHom v p g ∈ localUnramified v p)
     (hgp : ∀ v ∈ T, Pc v ∣ p → localClassHom v p g = 1)
-    (hstep : ∀ S : Finset (HeightOneSpectrum (𝓞 K)), T ⊆ S →
+    (hstep : ∀ S : Finset (HeightOneSpectrum (𝓞 K)), S₀ ⊆ S →
       (∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ S → σ • v ∈ S) →
       ∀ c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v p,
         (∀ v ∈ S, c v ∈ localUnramified v p) → (∀ v ∈ T, c v = localClassHom v p g) →
@@ -148,7 +153,7 @@ theorem exists_prescribed_two_places (hp : p.Prime) (hp2 : p ≠ 2)
         (∀ σ : Gal(K/k), σ ≠ 1 → localClassHom (σ • Q) p z = 1) ∧
         (∀ σ : Gal(K/k), σ ≠ 1 → localClassHom (σ • R) p z = 1) := by
   obtain ⟨M, hM⟩ := exists_bound_placeFrobValue_eq (k := k) hres hζ
-  obtain ⟨d, hd⟩ := exists_recInv hSpl hTstable hgunr hstep M
+  obtain ⟨d, hd⟩ := exists_recInv hSpl hTS hSstable hSsplit hgunr hstep M
   obtain ⟨i, N, hiN, hNM, hvalcong, hfrobeq⟩ := hM d.chosen d.unit
   have hiM : i < M := hiN.trans hNM
   -- a place outside the fixed set has residue characteristic prime to the exponent

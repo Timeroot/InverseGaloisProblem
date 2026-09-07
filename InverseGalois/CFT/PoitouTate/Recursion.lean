@@ -67,9 +67,11 @@ places satisfy the given splitting condition, have trivial decomposition group, 
 non-conjugate; and each unit is ramified exactly at its own place. -/
 structure RecInv (k : Type) {K : Type} [Field k] [Field K] [NumberField K] [Algebra k K]
     {p : ℕ} [NeZero p] (Spl : HeightOneSpectrum (𝓞 K) → Prop)
-    (T : Finset (HeightOneSpectrum (𝓞 K))) (g : Kˣ) (n : ℕ) (d : RecData K p) : Prop where
-  /-- the fixed set of places is part of the current one -/
-  subset : T ⊆ d.places
+    (T S₀ : Finset (HeightOneSpectrum (𝓞 K))) (g : Kˣ) (n : ℕ) (d : RecData K p) : Prop where
+  /-- the prescribed set of places is part of the initial one -/
+  fixed : T ⊆ S₀
+  /-- the initial set of places is part of the current one -/
+  subset : S₀ ⊆ d.places
   /-- the current set of places is stable under the Galois group -/
   stable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ d.places → σ • v ∈ d.places
   /-- the prescription is everywhere unramified -/
@@ -107,7 +109,7 @@ section Recursion
 
 variable {k K : Type} [Field k] [Field K] [NumberField K] [Algebra k K] [FiniteDimensional k K]
   {p : ℕ} [NeZero p] {Spl : HeightOneSpectrum (𝓞 K) → Prop}
-  {T : Finset (HeightOneSpectrum (𝓞 K))} {g : Kˣ}
+  {T S₀ : Finset (HeightOneSpectrum (𝓞 K))} {g : Kˣ}
 
 /-- **One step of the recursion.**  The new place is not conjugate to any place of the current set,
 because that set is stable under the Galois group; so the prescription may be extended by the
@@ -115,7 +117,7 @@ inverse of the class of the new unit at every nontrivial conjugate of the new pl
 trivial class at the new place itself. -/
 theorem exists_recInv_succ
     (hSpl : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), Spl v → Spl (σ • v))
-    (hstep : ∀ S : Finset (HeightOneSpectrum (𝓞 K)), T ⊆ S →
+    (hstep : ∀ S : Finset (HeightOneSpectrum (𝓞 K)), S₀ ⊆ S →
       (∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ S → σ • v ∈ S) →
       ∀ c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v p,
         (∀ v ∈ S, c v ∈ localUnramified v p) → (∀ v ∈ T, c v = localClassHom v p g) →
@@ -124,8 +126,8 @@ theorem exists_recInv_succ
           ∃ w : Kˣ, (∀ v ∈ S, localClassHom v p w = c v) ∧
             (∀ v : HeightOneSpectrum (𝓞 K), v ≠ Q → (p : ℤ) ∣ placeValue v w) ∧
             ¬ (p : ℤ) ∣ placeValue Q w)
-    (n : ℕ) (d : RecData K p) (hd : RecInv k Spl T g n d) :
-    ∃ d' : RecData K p, RecInv k Spl T g (n + 1) d' := by
+    (n : ℕ) (d : RecData K p) (hd : RecInv k Spl T S₀ g n d) :
+    ∃ d' : RecData K p, RecInv k Spl T S₀ g (n + 1) d' := by
   classical
   obtain ⟨Q, hQS, hQSpl, hQstab, w, hwS, hwunr, hwram⟩ :=
     hstep d.places hd.subset hd.stable d.pres hd.unram hd.presT hd.split
@@ -165,7 +167,7 @@ theorem exists_recInv_succ
   obtain ⟨z', hz'ne, hz'n⟩ : ∃ z' : ℕ → Kˣ, (∀ i, i ≠ n → z' i = d.unit i) ∧ z' n = w :=
     ⟨fun i => if i = n then w else d.unit i, fun _ hi => if_neg hi, if_pos rfl⟩
   -- the invariants, one by one
-  have hsub : T ⊆ S' := fun v hv => (hS' v).2 (Or.inl (hd.subset hv))
+  have hsub : S₀ ⊆ S' := fun v hv => (hS' v).2 (Or.inl (hd.subset hv))
   have hstab : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ S' → σ • v ∈ S' := by
     intro σ v hv
     rcases (hS' v).1 hv with h | ⟨τ, rfl⟩
@@ -183,7 +185,7 @@ theorem exists_recInv_succ
       · rw [hc'new v hvS hvQ]
         exact inv_mem ((localClassHom_mem_localUnramified_iff v w).2 (hwunr v hvQ))
   have hpresT : ∀ v ∈ T, c' v = localClassHom v p g :=
-    fun v hv => (hc'old v (hd.subset hv)).trans (hd.presT v hv)
+    fun v hv => (hc'old v (hd.subset (hd.fixed hv))).trans (hd.presT v hv)
   have hsplit : ∀ v ∈ S', v ∉ T → Spl v := by
     intro v hv hvT
     rcases (hS' v).1 hv with h | ⟨τ, rfl⟩
@@ -202,7 +204,7 @@ theorem exists_recInv_succ
     · rw [hPl'ne i h.ne]
       exact hd.chosenNotMem i h
     · rw [hPl'n]
-      exact fun hQT => hQnot (hd.subset hQT)
+      exact fun hQT => hQnot (hd.subset (hd.fixed hQT))
   have hchosenStab : ∀ i < n + 1, stabilizer Gal(K/k) (Pl' i) = ⊥ := by
     intro i hi
     rcases Nat.lt_succ_iff_lt_or_eq.1 hi with h | rfl
@@ -244,7 +246,7 @@ theorem exists_recInv_succ
     rcases Nat.lt_succ_iff_lt_or_eq.1 hi with h | rfl
     · rw [hz'ne i h.ne]
       exact hd.unitPres i h v hv
-    · rw [hz'n, hwS v (hd.subset hv)]
+    · rw [hz'n, hwS v (hd.subset (hd.fixed hv))]
       exact hd.presT v hv
   have hpresConj : ∀ i < n + 1, ∀ σ : Gal(K/k), σ ≠ 1 →
       c' (σ • Pl' i) = (localClassHom (σ • Pl' i) p (z' i))⁻¹ := by
@@ -263,17 +265,19 @@ theorem exists_recInv_succ
       exact hd.unitConj i h j h' hij σ hσ
     · rw [hz'ne i h.ne, hz'n, hPl'ne i h.ne, hwS _ (hd.stable σ _ (hd.chosenMem i h))]
       exact hd.presConj i h σ hσ
-  exact ⟨⟨S', c', Pl', z'⟩, hsub, hstab, hunram, hpresT, hsplit, hchosenMem, hchosenNotMem,
-    hchosenStab, hchosenNe, hunitUnram, hunitRam, hunitPres, hpresConj, hunitConj⟩
+  exact ⟨⟨S', c', Pl', z'⟩, hd.fixed, hsub, hstab, hunram, hpresT, hsplit, hchosenMem,
+    hchosenNotMem, hchosenStab, hchosenNe, hunitUnram, hunitRam, hunitPres, hpresConj, hunitConj⟩
 
 /-- **The recursion runs for arbitrarily many steps.**  The initial data prescribes the class of
-the fixed unit on the fixed set and nothing else; a single run of the construction supplies a place
-and a unit to start the sequences with. -/
+the fixed unit on the prescribed set and the trivial class on the rest of the initial set; a single
+run of the construction supplies a place and a unit to start the sequences with. -/
 theorem exists_recInv
     (hSpl : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), Spl v → Spl (σ • v))
-    (hTstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ T → σ • v ∈ T)
+    (hTS : T ⊆ S₀)
+    (hSstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ S₀ → σ • v ∈ S₀)
+    (hSsplit : ∀ v ∈ S₀, v ∉ T → Spl v)
     (hgunr : ∀ v ∈ T, localClassHom v p g ∈ localUnramified v p)
-    (hstep : ∀ S : Finset (HeightOneSpectrum (𝓞 K)), T ⊆ S →
+    (hstep : ∀ S : Finset (HeightOneSpectrum (𝓞 K)), S₀ ⊆ S →
       (∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ S → σ • v ∈ S) →
       ∀ c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v p,
         (∀ v ∈ S, c v ∈ localUnramified v p) → (∀ v ∈ T, c v = localClassHom v p g) →
@@ -282,13 +286,24 @@ theorem exists_recInv
           ∃ w : Kˣ, (∀ v ∈ S, localClassHom v p w = c v) ∧
             (∀ v : HeightOneSpectrum (𝓞 K), v ≠ Q → (p : ℤ) ∣ placeValue v w) ∧
             ¬ (p : ℤ) ∣ placeValue Q w)
-    (n : ℕ) : ∃ d : RecData K p, RecInv k Spl T g n d := by
+    (n : ℕ) : ∃ d : RecData K p, RecInv k Spl T S₀ g n d := by
+  classical
   induction n with
   | zero =>
-    obtain ⟨Q, -, -, -, -⟩ := hstep T subset_rfl hTstable (fun v => localClassHom v p g) hgunr
-      (fun _ _ => rfl) (fun _ hv hvT => absurd hv hvT)
-    refine ⟨⟨T, fun v => localClassHom v p g, fun _ => Q, fun _ => 1⟩, subset_rfl, hTstable,
-      hgunr, fun _ _ => rfl, fun _ hv hvT => absurd hv hvT, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+    obtain ⟨c₀, hc₀T, hc₀not⟩ : ∃ c₀ : (v : HeightOneSpectrum (𝓞 K)) → localClasses v p,
+        (∀ v ∈ T, c₀ v = localClassHom v p g) ∧ ∀ v ∉ T, c₀ v = 1 :=
+      ⟨fun v => if v ∈ T then localClassHom v p g else 1, fun _ hv => if_pos hv,
+        fun _ hv => if_neg hv⟩
+    have hc₀unr : ∀ v ∈ S₀, c₀ v ∈ localUnramified v p := by
+      intro v _
+      by_cases hvT : v ∈ T
+      · rw [hc₀T v hvT]
+        exact hgunr v hvT
+      · rw [hc₀not v hvT]
+        exact one_mem _
+    obtain ⟨Q, -, -, -, -⟩ := hstep S₀ subset_rfl hSstable c₀ hc₀unr hc₀T hSsplit
+    refine ⟨⟨S₀, c₀, fun _ => Q, fun _ => 1⟩, hTS, subset_rfl, hSstable, hc₀unr, hc₀T, hSsplit,
+      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
     all_goals exact fun i hi => absurd hi (Nat.not_lt_zero i)
   | succ m ih =>
     obtain ⟨d, hd⟩ := ih
