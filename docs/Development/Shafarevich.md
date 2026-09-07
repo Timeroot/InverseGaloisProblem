@@ -15337,8 +15337,9 @@ Build green, 9787 jobs, 0 warnings, 0 sorries.
    `p ∣ |G|`.  It also needs `H¹(K, A)` for general finite `A`, which is a different currency from
    the Kummer one everything above is written in.
 
-Neither is on the critical path for the *statement* now available, which is what SW Thm 15 Step 4
-consumes for the cyclic-kernel layers.
+**Both are on the critical path** (finding 2302).  SW Thm 15 Step 4 (`sw.txt:1620`) applies Thm 13
+verbatim with `Ω = N_n` and `A = E(n,ν)`, a general finite `𝔽_p[Gal(N_n|k)]`-module, not `μ_p`; and
+Step 2 needs Tate–Poitou `Ш²(k, E(n,ν)) ≅ Ш¹(k, E(n,ν)′)` (finding 2303), i.e. row 5.  See §1.40.
 
 ### (f) Findings
 
@@ -15379,3 +15380,142 @@ consumes for the cyclic-kernel layers.
 * `Ideal.relNorm` / inertia-degree bookkeeping for the unramified half — unnecessary by 2286.
 * `Subgroup.groupEquivQuotientProdSubgroup` in place of a hand-built `cosetProdEquiv`.
 * Concluding `N t ∈ (k_q^×)^p` from `algebraMap k K_w (N t)` being a `p`-th power in `K_w`.
+
+## 1.40 Status (2026-09-07, latest) — **the general-`A` case of SW Thm 13: why the dévissage fails, and the replacement**
+
+### (a) The general-`A` case is unavoidable
+
+SW Thm 15 Step 4 (`sw.txt:1620`) applies Thm 13 with `Ω = N_n` and `A = E(n,ν)`.  `E(n,ν)` is a
+general finite `𝔽_p[Gal(N_n|k)]`-module, not `μ_p` (**finding 2302**).  Step 2 of the same theorem
+needs Tate–Poitou `Ш²(k, E(n,ν)) ≅ Ш¹(k, E(n,ν)′)`, i.e. **row 5** (**finding 2303**).  So neither
+the general-`A` case of Thm 13 nor row 5 can be routed around.
+
+### (b) SW's dévissage is invalid
+
+SW write "let `A = A₀ ⊕ μ_p`" and induct on `|A|` (**finding 2299**).  A finite `𝔽_p[G]`-module with
+`p ∣ |G|` need not decompose that way at all — `𝔽_p[ℤ/p]` is indecomposable and not semisimple — so
+there is no such `A₀`, and no filtration repair works either: the *statement* of Thm 13 is not
+preserved by extensions of modules, because the local conditions ("`x_q` cyclic for `q ∉ T`") do not
+propagate along a short exact sequence.
+
+### (c) The currency: `A = μ_p ⊗ W`
+
+Write `W := Hom(μ_p, A)`, a finite `𝔽_p`-vector space with `G`-action; then `A ≅ μ_p ⊗_{𝔽_p} W`
+canonically, and `H¹(K, A) ≅ (Kˣ/p) ⊗ W` by Hilbert 90 (**finding 2287** applied coefficient-wise).
+In this currency:
+
+* the **prescription** half of Thm 13 is a *formal* consequence of the `μ_p` case: pick an
+  `𝔽_p`-basis of `W`, run the `μ_p` theorem once per coordinate, tensor back (**finding 2308**);
+* **cyclicity** is *not* formal.  `x_q ∈ (K_q^×/p) ⊗ W` is cyclic (i.e. split by a cyclic extension)
+  exactly when its **tensor rank is ≤ 1**.  A sum of `d` coordinate-wise constructions has rank up
+  to `d`, so the coordinates must be built to share a single `W`-direction at each bad place.
+
+### (d) The replacement: a parallel multi-component two-place recursion (finding 2307)
+
+Run the two-place recursion for all `d = dim W` coordinates **simultaneously**, with a *separate*
+pair of exceptional places `(Q_j, R_j)` per coordinate `j`.  At `Q_j`, `R_j` the class has a nonzero
+component only in the `j`-th direction, hence rank one, hence cyclic; everywhere else outside `T`
+every coordinate is unramified, hence rank zero.  Two things this needs and the old proof did not:
+
+* the auxiliary places must be chosen **coordinate by coordinate**, not once for all `d` (a single
+  shared `Q` gives a rank-`d` class at `Q`);
+* the recursion must be closed with the classes of *all* coordinates simultaneously present in the
+  orthogonality relation, since the Hilbert-symbol product formula is what pins the last place.
+
+### (e) The splitting lemma the recursion needs (finding 2305)
+
+The step that trims a class down to a prescribed subextension needs
+
+> `V(Ω·K̃) = V(Ω) · V(K̃)`,
+
+`V(F) := {b ∈ Kˣ : b ∈ (Fˣ)^p}`, for `K̃|K` **elementary abelian**.  The group-theoretic content is:
+`H` finite, `M, N ⊴ H`, `M ∩ N = 1`, `H/M` elementary abelian ⟹ every `χ : H → ℤ/p` splits as
+`χ₁ · χ₂` with `χ₁|_N = 1`, `χ₂|_M = 1`.  The elementary-abelian hypothesis is **essential**: with
+`A = B = ℤ/p²`, `C = ℤ/p` there is a counterexample.
+
+Realising a character by a radical needs no cohomology at all — it is the Lagrange resolvent
+(**finding 2306**), and the repo already had it: `exists_radical`
+(`Kummer/RadicalCharacter.lean:104`) (**finding 2311**).
+
+### (f) What landed: `Kummer/SupRadicalSplit.lean` (Module A)
+
+* `exists_linearMap_extend_of_injective` — a linear form on a subspace of an `𝔽_p`-vector space
+  extends (`LinearMap.exists_extend` + `LinearEquiv.ofInjective`).
+* `exists_addMonoidHom_extend_of_injective` — the same for an injection of abelian groups killed by
+  `p`, via `AddCommGroup.zmodModule` + `AddMonoidHom.toZModLinearMap`.
+* `exists_character_add_eq_of_disjoint_ker` — the group-theoretic split of (e), with `A` **not**
+  assumed commutative.
+* `exists_mul_eq_pow_of_pow_mem_sup` — the field statement: `E₁ ⊔ E₂ = ⊤`, `Gal(E₂|K)` abelian of
+  exponent dividing `p`, `μ_p ⊆ K`, `b ∈ Kˣ` a `p`-th power in `L` ⟹ `b = b₁ b₂` with `b₁` a `p`-th
+  power in `E₁` and `b₂` a `p`-th power in `E₂`.
+
+### (g) Findings
+
+* **2302 (MATH, KEY).** SW Thm 15 Step 4 (`sw.txt:1620`) applies Thm 13 with `A = E(n,ν)`: the
+  general-`A` case is on the critical path.
+* **2303 (MATH, KEY).** SW Thm 15 Step 2 needs `Ш²(k,E) ≅ Ш¹(k,E′)`, i.e. row 5.
+* **2304 (MATH, KEY).** SW's diagram chase requires `Σ_{P∈T'} ⟨θ_P, b_P⟩ = 0` for every
+  `b ∈ H¹(Ω'|K, ℤ/p)`.
+* **2305 (MATH, KEY).** The `V(ΩK̃) = V(Ω)V(K̃)` splitting; group form and counterexample as in (e).
+* **2306 (MATH, KEY).** Realising a character by a radical is the Lagrange resolvent.
+* **2307 (MATH, KEY).** The parallel multi-component two-place recursion replaces SW's dévissage.
+* **2308 (MATH).** The *prescription* theorem tensors; *cyclicity* does not.
+* **2309 (MATH).** Trimming the test group is possible only at places where `ŷ` may ramify, i.e. in
+  `cs(Ω'|k)`.
+* **2310 (MATH).** For `L = K_P(z^{1/p})` ramified of degree `p`, `K_P^× ∩ (L^×)^p = (K_P^×)^p⟨z⟩`.
+* **2311 (REPO, KEY).** `Kummer/RadicalCharacter.lean` already has the whole Lagrange-resolvent
+  brick: `rootHom` (`:49`) with `@[simp] rootHom_apply` (`:64`), `exists_eq_mul_of_forall_fixed`
+  (`:81`), `exists_radical` (`:104`).  Section variables `[Field K] [Field M] [Algebra K M]
+  [FiniteDimensional K M] [IsGalois K M] {ℓ : ℕ}`; `rootHom` needs `[NeZero ℓ]` and a `CommGroup`
+  target.
+* **2312 (MATHLIB).** `linearIndependent_monoidHom` (`LinearAlgebra/LinearIndependent/Basic.lean:486`),
+  `LinearMap.exists_extend` (`LinearAlgebra/Basis/VectorSpace.lean:288`);
+  `Algebra/Module/ZMod.lean`: `AddCommGroup.zmodModule` (`:43`, reducible non-instance — `letI`),
+  `AddMonoidHom.toZModLinearMap` (`:79`, **`n` is the first explicit argument**),
+  `AddSubgroup.toZModSubmodule` (`:102`); `MonoidHom.toAdditiveLeft`
+  (`Algebra/Group/TypeTags/Hom.lean:96`), `toAdditive` (`:47`), `toAdditiveRight` (`:136`).
+* **2313 (MATHLIB).** `AlgEquiv.restrictNormalHom (E)` (`FieldTheory/Normal/Defs.lean:184`, the
+  **intermediate** field is the explicit argument), `restrictNormalHom_apply` (`:187`),
+  `restrictNormal_commutes` (`:173`), `restrictNormalHom_surjective (E)`
+  (`Normal/Basic.lean:233`, where **`E` is the BIG field**: call it as
+  `AlgEquiv.restrictNormalHom_surjective (F := K) (K₁ := ↥E₁) L`); `IntermediateField.normal_sup`
+  and `finiteDimensional_sup` are instances; `IntermediateField.adjoin_union`
+  (`Adjoin/Defs.lean:446`), `adjoin_self` (`:432`); `IsPrimitiveRoot.eq_pow_of_pow_eq_one`
+  (`RootsOfUnity/PrimitiveRoots.lean:543`), `IsPrimitiveRoot.eq_orderOf` (`:209`).
+* **2314 (MATHLIB/REPO).** `AlgHom.ext_of_adjoin_eq_top` is the **Subalgebra** version
+  (`Algebra/Subalgebra/Lattice.lean:801`); the bridge from `IntermediateField.adjoin … = ⊤` is
+  `algebraAdjoin_eq_top_of_adjoin_eq_top` (`Kummer/RadicalAut.lean:108`).
+* **2315 (DESIGN, KEY).** Do **not** build `H/[H,H]H^p` or use `Abelianization H` for the character
+  split: `M ∩ N = 1` in `H` does not give trivial intersection of the images in `H^{ab}`.  Use
+  `π : H ↠ Gal(K̃|K) = B` directly (`π|_N` is injective because `M ∩ N = 1`) and extend the
+  functional from `π(N) ⊆ Additive B`.  `A = Gal(Ω|K)` need **not** be commutative — build `χa` by
+  `Classical.choose` on `πa`-preimages, not `QuotientGroup.lift`.
+* **2316 (LEAN, KEY — the `letI`/`FunLike` trap).**  After
+  `letI : Module (ZMod p) V := AddCommGroup.zmodModule hV`, the *type* `W →ₗ[ZMod p] V` elaborates
+  and `inferInstance` finds `Module (ZMod p) V`, but instance search for
+  `FunLike (W →ₗ[ZMod p] V) W V` reports **"typeclass instance problem is stuck"**, so `ι' w` fails
+  with "Function expected".  Supplying `LinearMap.instFunLike` explicitly works, and so does an
+  ordinary `[Module (ZMod p) V]` binder.  **Fix: put the linear-algebra step in its own lemma with
+  instance binders** and apply it under the `letI`s; the coercion in the applied lemma's statement
+  is already fixed, so nothing has to be re-synthesised.
+* **2317 (LEAN).** `MonoidHom.mem_ker` takes **no** explicit argument: write `MonoidHom.mem_ker.1 h`,
+  not `(MonoidHom.mem_ker _).1 h`.  `self_eq_add_right` does not exist in this Mathlib — close
+  `χ 1 = 0` from `h : χ 1 = χ 1 + χ 1` with `linear_combination -h`.
+* **2318 (MATHLIB).** `pow_eq_pow_iff_modEq` (`GroupTheory/OrderOfElement.lean:579`) needs
+  `[LeftCancelMonoid G]`, which a **field is not** under multiplication.  In a field use
+  `IsOfFinOrder.pow_eq_pow_iff_modEq` (`:561`) with
+  `isOfFinOrder_iff_pow_eq_one.2 ⟨p, hp.pos, hζ.pow_eq_one⟩`, then rewrite the order with
+  `← hζ.eq_orderOf`.
+* **2319 (LEAN).** Gotcha 2251 again: after `refine ⟨fun a => ψ (Classical.choose (ha a)), …⟩` the
+  residual goals are **not** beta-reduced — `dsimp only` before any `rw`.
+
+### (h) Routes rejected here
+
+* SW's `A = A₀ ⊕ μ_p` dévissage and every filtration repair of it.
+* `H/[H,H]H^p`, `Abelianization H`, and `QuotientGroup.lift` for the character split;
+  `W := Additive ↥(ker πa)` as the source module (`ker πa` need not be commutative — use
+  `N₀ := (ker πa).map πb ≤ B`).
+* Re-proving the Lagrange resolvent (already `exists_radical`).
+* Kummer generation of `E₂` by radicals plus the degree-`p` local lemma, then induction on the
+  number of radicals: needs Kummer duality for elementary abelian extensions, absent from Mathlib.
+* A single shared exceptional place `Q` for all `d` coordinates (gives a rank-`d`, non-cyclic class).

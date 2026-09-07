@@ -363,6 +363,7 @@ import InverseGalois.CFT.Kummer.SUnitUnramified
 import InverseGalois.CFT.Kummer.SecondInequality
 import InverseGalois.CFT.Kummer.SupKummerData
 import InverseGalois.CFT.Kummer.SupPowSurjective
+import InverseGalois.CFT.Kummer.SupRadicalSplit
 import InverseGalois.CFT.Kummer.Unramified
 import InverseGalois.CFT.Level
 import InverseGalois.CFT.Local.AdicAction
@@ -7177,4 +7178,17 @@ it that are available here.
   the upper field was assumed to contain: **there is a number of the base field, a norm from the
   upper one, agreeing with the norm of the prescribed unit on the given set of places and, outside
   it, either unramified or living over a completion containing the roots of unity.**
+
+* `InverseGalois.CFT.Kummer.SupRadicalSplit` separates a radicand along a compositum.  A `p`-th root
+  of an element of the base has all its conjugates differing from it by `p`-th roots of unity, so it
+  carries a character of the Galois group with values in the integers modulo `p`.  Two normal
+  subextensions whose compositum is everything present that Galois group inside the product of the
+  two smaller ones; the kernel of the first projection is then carried injectively into the second
+  quotient, and when that quotient is abelian and killed by `p` it is a vector space over the field
+  with `p` elements, so the restriction of the character extends to it by linear algebra and the
+  remainder descends to the first quotient.  Hilbert's theorem 90 turns each of the two characters
+  back into a radical of the corresponding subextension, and the original root differs from their
+  product by an element of the base: **an element of the base which becomes a `p`-th power in the
+  compositum is a product of one which is already a `p`-th power in the first subextension and one
+  which is already a `p`-th power in the second.**
 -/
