@@ -480,6 +480,7 @@ import InverseGalois.CFT.PoitouTate.Selmer
 import InverseGalois.CFT.PoitouTate.ShaSurjection
 import InverseGalois.CFT.PoitouTate.ShaTate
 import InverseGalois.CFT.PoitouTate.SplitClass
+import InverseGalois.CFT.PoitouTate.SplitPlacePower
 import InverseGalois.CFT.PoitouTate.TorsionCharacter
 import InverseGalois.CFT.PoitouTate.TwoPlaces
 import InverseGalois.CFT.PoitouTate.TwoPlacesFree
@@ -7191,4 +7192,17 @@ it that are available here.
   product by an element of the base: **an element of the base which becomes a `p`-th power in the
   compositum is a product of one which is already a `p`-th power in the first subextension and one
   which is already a `p`-th power in the second.**
+
+* `InverseGalois.CFT.PoitouTate.SplitPlacePower` finds a completely split place at which a radicand
+  is not a local power.  For a tower of number fields whose middle and top layers are both normal
+  over the base, the primes of the base splitting completely in the middle field but not in the top
+  one are infinite in number, so one of them avoids any prescribed finite set; above it the
+  splitting fails, so the decomposition group over the base is nontrivial, and it restricts to the
+  trivial group on the middle field, so its elements are automorphisms over that field.  When the
+  middle field carries the roots of unity of a prime exponent and the top field is generated over it
+  by radicals of that exponent, an automorphism over the middle field fixes a radical exactly when
+  its radicand is a power in the completion below, and a radicand which is not a power in the middle
+  field already forces the top field to be strictly larger: **outside any prescribed finite set of
+  primes of the base there is a completely split prime of the middle field at which one of the
+  radicands is not a power in the completion.**
 -/
