@@ -455,6 +455,7 @@ import InverseGalois.CFT.PairwiseResidue
 import InverseGalois.CFT.PiDual
 import InverseGalois.CFT.PiIndex
 import InverseGalois.CFT.PoitouTate.ChebotarevPlace
+import InverseGalois.CFT.PoitouTate.ClassSetAvoid
 import InverseGalois.CFT.PoitouTate.ClosingChain
 import InverseGalois.CFT.PoitouTate.ConjugatePlace
 import InverseGalois.CFT.PoitouTate.CupDual
@@ -478,6 +479,7 @@ import InverseGalois.CFT.PoitouTate.ShaTate
 import InverseGalois.CFT.PoitouTate.SplitClass
 import InverseGalois.CFT.PoitouTate.TorsionCharacter
 import InverseGalois.CFT.PoitouTate.TwoPlaces
+import InverseGalois.CFT.PoitouTate.TwoPlacesFree
 import InverseGalois.CFT.PoitouTate.Unramified
 import InverseGalois.CFT.PrimeProductSquare
 import InverseGalois.CFT.Profinite.Cochain
@@ -7130,4 +7132,21 @@ it that are available here.
   prescription on a stable finite set there are two such places and a single unit ramified exactly
   at them, meeting the square of the prescription and vanishing at all their nontrivial
   conjugates**.
+
+* `InverseGalois.CFT.PoitouTate.ClassSetAvoid` frees the hypothesis that construction is run under.
+  The recursion asks that every finitely supported system of orders be realised away from its finite
+  set of places, which holds away from the primes occurring in a chosen system of representatives of
+  the ideal classes; those representatives may be multiplied by principal ideals, and an element of
+  a number field can be given whatever orders one likes at finitely many places, so **the primes
+  supporting the ideal classes can be chosen to avoid any prescribed finite set**, and to be stable
+  under the Galois group whenever that set is.
+
+* `InverseGalois.CFT.PoitouTate.TwoPlacesFree` runs the two-place construction with that freedom
+  spent.  The primes carrying the ideal classes are chosen away from the fixed set and from the
+  places where the unit being prescribed fails to be a unit, and adjoined to the fixed set; there
+  the unit is a unit, so its class is unramified, and they do not lie over the exponent, so nothing
+  is asked of them: **for a stable finite set containing the places over the exponent, and a unit
+  whose failure to be a unit outside that set happens only at places completely split in the
+  auxiliary field, there are two such places and a unit ramified exactly at them realising the
+  prescribed behaviour**.
 -/
