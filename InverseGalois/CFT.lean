@@ -465,11 +465,14 @@ import InverseGalois.CFT.PoitouTate.LocalConditions
 import InverseGalois.CFT.PoitouTate.PlaceUniformiser
 import InverseGalois.CFT.PoitouTate.Prescribed
 import InverseGalois.CFT.PoitouTate.RadicalPlace
+import InverseGalois.CFT.PoitouTate.RecursionStep
 import InverseGalois.CFT.PoitouTate.SUnitCharacter
 import InverseGalois.CFT.PoitouTate.SUnitPlace
+import InverseGalois.CFT.PoitouTate.SUnitReduce
 import InverseGalois.CFT.PoitouTate.Selmer
 import InverseGalois.CFT.PoitouTate.ShaSurjection
 import InverseGalois.CFT.PoitouTate.ShaTate
+import InverseGalois.CFT.PoitouTate.SplitClass
 import InverseGalois.CFT.PoitouTate.TorsionCharacter
 import InverseGalois.CFT.PoitouTate.Unramified
 import InverseGalois.CFT.PrimeProductSquare
@@ -960,6 +963,7 @@ import InverseGalois.CFT.Units.SIdeleClass
 import InverseGalois.CFT.Units.SIdeleHerbrand
 import InverseGalois.CFT.Units.SIdeleNorm
 import InverseGalois.CFT.Units.SUnit
+import InverseGalois.CFT.Units.SUnitAbove
 import InverseGalois.CFT.Units.SUnitHerbrand
 import InverseGalois.CFT.Units.SUnitIndex
 import InverseGalois.CFT.Units.SUnitValuation
@@ -7037,4 +7041,48 @@ it that are available here.
   Together: **outside any prescribed finite set of places of the bottom field there is a
   completely split place at which the Frobenius character is a fixed power, prime to the exponent,
   of a given character of the units of the middle field**.
+
+* `InverseGalois.CFT.Units.SUnitAbove` carries the `S`-units into an extension.  The order of an
+  element at a prime of the extension is not read off from its order below unless the element is
+  integral, and an `S`-unit is a quotient whose numerator and denominator may well be divisible by
+  primes outside `S`, so the primes of `S` are cleared one at a time.  A power of every prime is
+  principal, the exponent being the order of the class group, and dividing by a power of a
+  generator of such a principal power removes one prime from `S` while changing nothing at the
+  primes of the extension above the others, a generator of a power of a prime having order zero at
+  every prime of the extension above a different one.  When no primes are left the `S`-unit is a
+  unit of the ring of integers, which stays a unit upstairs: **an `S`-unit of a number field is a
+  unit for the primes of an extension above `S`**.
+
+* `InverseGalois.CFT.PoitouTate.SplitClass` builds the character a prescription defines and says
+  what kills it.  Pairing the local classes of a unit, at the finite places of a finite set,
+  against a prescribed assignment of local classes gives a character of the units of the field,
+  killed by the exponent because every local class is.  At a place over which the middle field
+  splits completely the decomposition group above is trivial, so a radical of a radicand is fixed
+  by it, which by Kummer theory in the completion says the radicand is already a power there and
+  makes its factor of the character disappear.  So when all but finitely many of the prescribed
+  classes come from a single global `S`-unit, and the middle field splits completely wherever they
+  do not, the character of a radicand is a product of norm residue symbols of two `S`-units over
+  the whole set, and **the prescription character kills every radicand**, by the product formula.
+
+* `InverseGalois.CFT.PoitouTate.SUnitReduce` compares the `S`-units of one set of places with those
+  of one more.  The value of a unit at a finite place is minus its order at the corresponding
+  prime, so an `S`-unit is exactly a unit whose value vanishes away from the set, and adding one
+  prime enlarges the group by exactly one value.  When the field has enough units to realise a
+  prescribed system of orders away from the set, which is the proviso the construction of a
+  Chebotarev place is run with anyway, that one value can be cleared: **an `S`-unit for one more
+  place, whose value there is divisible by the exponent, is an `S`-unit for the smaller set times a
+  power of that exponent**, and a character killed by the exponent does not see the power.
+
+* `InverseGalois.CFT.PoitouTate.RecursionStep` takes one step of the recursion with those three.  A
+  place whose decomposition group over the bottom field is trivial has trivial decomposition group
+  over the middle field as well, the automorphisms over the middle field being among those over the
+  bottom, so the prescription character is killed by every radicand of the middle field and the
+  construction of a Chebotarev place applies to it.  The place it returns lies outside the
+  prescribed set and reads that character as a fixed power, prime to the exponent, of the value at
+  the Frobenius automorphism; prescribing at the new place a power of a uniformiser with the
+  inverse exponent makes the total pairing trivial, the two contributions cancelling on the old
+  `S`-units and the enlargement of the set costing nothing.  The prescription is therefore met by
+  the class of an `S`-unit: **outside any prescribed finite set of places of the bottom field there
+  is a completely split place, together with an `S`-unit whose local classes meet the prescription
+  at the old places and which is ramified exactly at the new one**.
 -/
