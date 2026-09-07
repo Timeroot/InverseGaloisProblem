@@ -14724,7 +14724,7 @@ Then, for `M/K` Galois, `w` a prime of `M`, `Q = primeUnder (O K) w`, `u` a unit
 
 ---
 
-## 1.35 Status (2026-09-07, latest) — **bricks E and C are theorems**: a character of the `S`-units is read off by a Frobenius at a completely split place
+## 1.35 Status (2026-09-07, later still) — **bricks E and C are theorems**: a character of the `S`-units is read off by a Frobenius at a completely split place
 
 Landed, sorry- and axiom-free.  Six modules, in dependency order:
 
@@ -14835,7 +14835,8 @@ Everything the previous brick asks of `B` is a theorem for `B = sUnits ↥Ω X`,
 1. **The identification `V = selmerGroup ι n ⊓ pi D` = image of `sUnits K T_n`** (finding 2105).
 2. **The single recursion step**: feed `exists_place_frobValue_eq_one_iff_character_sUnits` the
    character `Φ` cut out by `exists_zpow_eq_of_forall_eq_one`, and produce `(Q, z_{n+1})` via
-   `exists_sUnitClass_mul_eq_unramified` (`PoitouTate/Prescribed.lean:141`).
+   `exists_sUnitClass_mul_eq_unramified` (`PoitouTate/Prescribed.lean:141`).  (The first half of
+   this is brick D, done in §1.36; what remains is the production of `z_{n+1}`.)
 3. **The recursion itself**, feeding `exists_lt_placeFrobValue_eq` and `localClassHom_mul_eq_one`
    (`PoitouTate/ClosingChain.lean:208` / `:283`), and then the induction on `dim_{F_p} A`.
 4. The general-`A` dévissage and the `p = 2` case of SW Thm 13.
@@ -14879,6 +14880,130 @@ Everything the previous brick asks of `B` is a theorem for `B = sUnits ↥Ω X`,
   nothing (the recursion lives inside a fixed algebraic closure of `k`) and removes a hypothesis.
 * Putting `isEmbeddingStable_sUnits` in `Kummer/RadicalNormal.lean`: that module deliberately knows
   nothing about number fields or `S`-units.
+
+---
+
+## 1.36 Status (2026-09-07, latest) — **brick D is a theorem**: the Chebotarev place reads a `QModZ`-valued character as a power of the Frobenius character
+
+Brick C-5 (§1.35) produces a completely split place `V` at which the Frobenius character has the
+*same kernel* as a prescribed character `Φ : ↑U →* (↥Ω)ˣ` of a subgroup of the `S`-units.  SW's
+Thm 13 needs two more things from it, and `InverseGalois/CFT/PoitouTate/SUnitCharacter.lean`
+supplies both.
+
+### (a) The currency conversion
+
+Everything upstream of the recursion — `placeFrobValue`, `localSymbol`, the local invariants —
+takes values in `Multiplicative QModZ`, while brick C-5 wants a character with values in the units
+of the field the radicals are taken from.  The two are the same thing once a primitive `p`-th root
+of unity is fixed:
+
+* `exists_zmodQModZ_eq_of_pow_eq_one` (`TorsionCharacter.lean:45`) names a value killed by `p` by a
+  residue mod `p`, and `zmodQModZ_injective` says the name is unique — so
+  `pTorsionResidue χ hχ : G → ZMod p` is well defined, additive (`pTorsionResidue_mul`), and
+  vanishes exactly where `χ` is trivial (`pTorsionResidue_eq_zero_iff`);
+* `IsPrimitiveRoot.zmodEquivZPowers : ZMod p ≃+ Additive ↥(Subgroup.zpowers ζ)` (finding 2185) names
+  the powers of `ζ` by residues mod `p`, faithfully
+  (`coe_zmodEquivZPowers_eq_one_iff`).
+
+Composing gives `rootOfUnityChar hζ χ hχ : G →* Rˣ` with
+`rootOfUnityChar_eq_one_iff : rootOfUnityChar hζ χ hχ g = 1 ↔ χ g = 1`.  Feeding that to brick C-5
+is `exists_place_frobValue_eq_one_iff_torsionChar`: the same conclusion, phrased for a
+`Multiplicative QModZ`-valued character of the `S`-units.
+
+### (b) From "same kernel" to "a fixed power"
+
+`exists_place_placeFrobValue_eq_zpow_character` is the theorem the recursion calls.  It takes a
+character `χ : ↑W →* Multiplicative QModZ` of a subgroup `W ≤ Kˣ` of the **middle** field, transports
+it to `Subgroup.map (Units.map (algebraMap K ↥Ω)) W` — a field embedding is injective, so
+`Subgroup.equivMapOfInjective` (finding 2190) is available and is `rfl` on elements — and returns
+
+```
+∃ V, primeUnder (𝓞 k) V ∉ T ∧ stabilizer Gal(↥Ω/k) V = ⊥ ∧ ¬ Pc (primeUnder (𝓞 K) V) ∣ p ∧
+  ∃ j : ℤ, ¬ (p : ℤ) ∣ j ∧ ∀ u : ↑W, placeFrobValue hres hζ (primeUnder (𝓞 K) V) ↑u = χ u ^ j
+```
+
+The upgrade from kernel equality to proportionality is `exists_zpow_eq_of_forall_eq_one`
+(`TorsionCharacter.lean:81`), and `not_dvd_of_zpow_eq_ne_one` (`:100`) says `j` is prime to `p`
+because `χ` is not trivial.  The hypothesis `hWval` (`p ∣ placeValue Q u` for every `Q` outside `T`)
+is what brick C-5's conclusion asks of a unit before it says anything about it, and
+`primeUnder_primeUnder k K V` (finding 2193) bridges `primeUnder (𝓞 k) V ∉ T` to the same statement
+for `primeUnder (𝓞 k) (primeUnder (𝓞 K) V)`.
+
+### (c) Why the `j` is not a defect
+
+Finding 2081: the repo's Chebotarev pins a Frobenius only up to an invertible power.  SW's Thm 13
+writes *"choose a prime `P_{n+1} ∈ S ∖ T_n(K)` such that the image of `ξ` in
+`H¹(k_{T_n}|K, ℤ/p)^∨` is equal to `Frob P_{n+1}`"* — an equality.  Finding **2194**: via Kummer
+(`μ_p ⊆ K`) that dual is a character group of the `T_n`-units mod `p`-th powers, and the
+`j`-ambiguity is repaired downstream by rescaling `z_{n+1}`, exactly as the recursion already does
+elsewhere.  So the proportionality output is the right interface, not a weakening.
+
+### (d) The whnf trap, and how it was cleared
+
+The statement of `exists_place_placeFrobValue_eq_zpow_character` elaborates in a second; the
+*proof* timed out at `whnf` even at `maxHeartbeats 1000000`, and the error was reported at the
+`theorem` line (gotcha 1849).  Bisecting with a truncated copy in `.scratch/` (gotcha 1850)
+localised it to a single line:
+
+```lean
+fun u => pow_placeFrobValueHom_eq_one hres hζ _ _        -- times out
+fun u => pow_placeFrobValue_eq_one   hres hζ _ _        -- fine, after rewriting
+```
+
+**Finding 2195 (LEAN, KEY).** Unifying `(f.comp W.subtype) u` with `placeFrobValueHom hres hζ ?v ?a`
+— i.e. with a head applied to **metavariables** — sends `whnf` through the definition of
+`placeFrobValueHom` into `frobValue`/`adicCompletion` territory and never comes back.  With the
+arguments given explicitly there are no metavariables, the unifier compares the two sides
+structurally after one `delta` of `MonoidHom.comp`, and the check is instant.  The fix is a single
+bridging `have`,
+
+```lean
+have hFapp : ∀ u : ↑W, ((placeFrobValueHom hres hζ Q).comp W.subtype) u
+    = placeFrobValue hres hζ Q (u : Kˣ) :=
+  fun u => placeFrobValueHom_apply hres hζ Q (u : Kˣ)
+```
+
+after which every use of the composed hom is routed through `hFapp` and no `placeFrobValue`
+defeq is ever demanded of the elaborator.  This is the same family as gotchas 2051–2055.
+
+### (e) Findings
+
+* **2184 (MATHLIB).** `Subgroup.zpowersEquivZPowers` (`GroupTheory/OrderOfElement.lean:978`) is only
+  an `Equiv`, not a `MulEquiv`, and needs `[Finite G]` — useless for transporting a character out of
+  the infinite group `Multiplicative QModZ`.
+* **2185 (MATHLIB, KEY).** `IsPrimitiveRoot.zmodEquivZPowers (h : IsPrimitiveRoot ζ k) :`
+  `ZMod k ≃+ Additive ↥(Subgroup.zpowers ζ)` (`RingTheory/RootsOfUnity/PrimitiveRoots.lean:435`),
+  in a section with `variable [CommRing R] {ζ : Rˣ}` — so `ζ` must be a **unit**.
+* **2186 (MATHLIB).** `IsPrimitiveRoot.isUnit` (`:124`) and `isUnit_unit` (`:167`) turn a primitive
+  root of a field into a primitive root in the units:
+  `⟨(hζ.isUnit hp.ne_zero).unit, hζ.isUnit_unit hp.ne_zero⟩`.
+* **2187 (MATHLIB).** `toMul_eq_one {x : Additive α} : x.toMul = 1 ↔ x = 0` is **root-level**
+  (`Algebra/Group/TypeTags/Basic.lean:232`), *not* in namespace `Additive`; inside
+  `InverseGalois.CFT` write `_root_.toMul_eq_one`.
+* **2189 (MATHLIB).** `Units.map_injective (hf : Function.Injective f) : Function.Injective`
+  `(Units.map f)` (`Algebra/Group/Units/Hom.lean:94`).
+* **2190 (MATHLIB).** `Subgroup.equivMapOfInjective H f hf : H ≃* H.map f`
+  (`Algebra/Group/Subgroup/Map.lean:478`) is **`rfl`** on elements (`:483`), so
+  `e.symm ⟨f u, _⟩ = ⟨u, _⟩` is `e.symm_apply_eq.2 (Subtype.ext rfl)`.
+* **2191 (REPO).** `placeFrobValueHom hres hζ v : Kˣ →* Multiplicative QModZ` already exists
+  (`PoitouTate/FrobeniusCharacter.lean:56`), with `placeFrobValueHom_apply` (`:64`, `rfl`) and
+  `pow_placeFrobValueHom_eq_one` (`:70`) — no new bundling was needed.
+* **2192 (REPO).** `zmodQModZ (n : ℕ) [NeZero n] : ZMod n →+ QModZ` (`Brauer/CyclicInvariant.lean:101`),
+  with `zmodQModZ_intCast` (`:104`) and `zmodQModZ_injective` (`:111`).
+* **2193 (REPO).** `primeUnder_primeUnder (k F) w` (`Units/PlaceTower.lean:58`), `(k F)` explicit,
+  needs `[IsScalarTower k F K]`.
+* **2194 (MATH, KEY).** The SW Thm 13 dictionary of (c).
+* **2195 (LEAN, KEY).** The metavariable-headed `whnf` trap of (d).
+* **2196 (BUILD).** Full root build with `SUnitCharacter` = **9774 jobs**, 0 warnings, 0 errors.
+
+### (f) Routes rejected here
+
+* `Subgroup.zpowersEquivZPowers` as the character transport (finding 2184).
+* `mulEquivOfCyclicCardEq` between `↥(nsmulTorsionQModZ p)` and `↥(rootsOfUnity p ↥Ω)`: it wants
+  cyclicity and a cardinality equality for both sides; `zmodEquivZPowers` wants neither.
+* `set … with …` for the big subgroup and character terms inside the proof — it duplicates the
+  term into the local context and made the `whnf` blow-up of (d) worse, not better.
+* Raising `maxHeartbeats`: the trap of (d) is unbounded, not slow.
 
 ---
 

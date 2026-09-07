@@ -465,6 +465,7 @@ import InverseGalois.CFT.PoitouTate.LocalConditions
 import InverseGalois.CFT.PoitouTate.PlaceUniformiser
 import InverseGalois.CFT.PoitouTate.Prescribed
 import InverseGalois.CFT.PoitouTate.RadicalPlace
+import InverseGalois.CFT.PoitouTate.SUnitCharacter
 import InverseGalois.CFT.PoitouTate.SUnitPlace
 import InverseGalois.CFT.PoitouTate.Selmer
 import InverseGalois.CFT.PoitouTate.ShaSurjection
@@ -7022,4 +7023,18 @@ it that are available here.
   available in the ambient field for the same reason it is algebraically closed, so **a character
   of a subgroup of the `S`-units, trivial on the powers of prime exponent it contains, is read off
   by the Frobenius automorphism at a completely split place outside any prescribed finite set**.
+
+* `InverseGalois.CFT.PoitouTate.SUnitCharacter` puts that construction in the currency the
+  recursion actually spends.  The characters the recursion carries take their values in the
+  elements of the rationals modulo the integers killed by the prime, and those elements are named
+  without repetition by the residues modulo the prime, which in turn name the powers of a
+  primitive root of unity of that order; so such a character translates into a character with
+  values in the roots of unity, faithfully, and the translation is trivial exactly where the
+  character is.  A field embedding is injective, so a character of a group of units of a middle
+  field transports to the image of that group in the top field, where the prescription of a place
+  applies to it.  Two characters killed by a prime, the first trivial wherever the second is, are
+  proportional, and the exponent is prime to the order as soon as the second is not trivial.
+  Together: **outside any prescribed finite set of places of the bottom field there is a
+  completely split place at which the Frobenius character is a fixed power, prime to the exponent,
+  of a given character of the units of the middle field**.
 -/
