@@ -24,13 +24,23 @@ Running the count therefore turns a solution at one level, for every number of l
 single solution at that level whose lifting obstruction to the next level dies on every member of
 the family: the class of the extension one layer gives already dies on the images of those
 subgroups, and an obstruction which is inflated from a class already trivial upstairs is trivial.
-The obstruction of the step is thus an everywhere locally trivial class, and what is left of the
-step is to make such classes vanish.
+
+The family the count consumes is finite, while the family against which local triviality is
+measured is the whole of the decomposition subgroups, and the difference matters: a class trivial at
+finitely many places need not be trivial.  Along the members the finite family does not name the
+step is asked outright to be locally solvable, which the structure of the local groups there
+supplies.  The obstruction of the step is then an everywhere locally trivial class, and what is left
+of the step is to make such classes vanish.
 
 Granting that there is no such class the lift exists, and the step is reduced to its two remaining
 clauses, that the lift is again onto and again trivial along the family.  The statements are proved
 here, the first over an arbitrary abstract group, since nothing about a Galois group is used until
 the obstruction itself is formed.
+
+## Main definitions
+
+* `InverseGalois.Shafarevich.HasLocalLift` — the step is solvable along every member of the wider
+  family which the finite one does not name.
 
 ## Main results
 
@@ -101,19 +111,53 @@ theorem exists_operatorHom_forall_exists_subgroup_resH2_extensionClass_eq_one (�
 
 /-! ### The obstruction of the step is everywhere locally trivial -/
 
+/-- **The step is solvable along every member of the wider family which the finite one does not
+name.**
+
+Local triviality of the obstruction is measured against the whole family of decomposition
+subgroups, which is far larger than the finite family the shrinking count consumes; along the finite
+family the extension itself is made to split, and along the rest the step is asked outright to have
+a local solution.  In the arithmetic the members not named are the places at which the field cut out
+is unramified, where the local group is procyclic and any element of the group above generates a
+lift, and the places at which it is ramified but the base field splits completely, where a root of a
+uniformizer produces one.
+
+The condition is asked of every solution at the level which is smooth, over the base realization
+and trivial along the finite family, since which solution the count produces is settled only after
+the count has been run. -/
+def HasLocalLift (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] (n : ℕ) (S : Type)
+    [Group S] [Finite S] (j : ℕ) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
+    (φ : Gal(Ω/k) →* U) {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k))
+    (T : Set (Subgroup Gal(Ω/k))) : Prop :=
+  ∀ Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j, IsSmoothHom Φ →
+    (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) →
+    (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) →
+    ∀ A ∈ T, A ∉ Set.range D →
+      ∃ g : ↥A →* GenericQuot ℓ U n S (j + 1),
+        IsSmooth₁ (g : ↥A → GenericQuot ℓ U n S (j + 1)) ∧
+          ∀ x : ↥A, (layerExtension ℓ (genericAut U n S) j).rightHom (g x) = Φ x
+
 /-- **Solutions at one level of the filtration for every number of letters give a single solution
 whose obstruction to the next level is everywhere locally trivial.**
 
 The count which makes the class of the extension die on the prescribed family asks for some number
 of letters; a solution is available at that number, and the count then produces a surjection onto
 the group with fewer letters over which the class does die.  The obstruction of the step is
-inflated from that class, so it dies on the family too, and the whole of what is left of the step
-is to make an everywhere locally trivial class vanish. -/
+inflated from that class, so it dies on the finite family too.
+
+The family against which local triviality is measured may be much larger than the finite one the
+count consumes, and for the arithmetic it has to be: local triviality at finitely many places is a
+far weaker statement than local triviality everywhere.  Along the extra members the step is asked
+outright to be locally solvable, which is what the structure of the local groups there provides.
+The whole of what is left of the step is then to make an everywhere locally trivial class
+vanish. -/
 theorem exists_levelSolution_liftObstructionClass_mem_sha2 (ℓ : ℕ) [Fact ℓ.Prime] (U : Type)
     [Group U] [Finite U] [TopologicalSpace U] [DiscreteTopology U] (n : ℕ) (S : Type) [Group S]
     [Finite S] (hS : IsPGroup ℓ S) (j : ℕ) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
     (φ : Gal(Ω/k) →* U) [MulDistribMulAction Gal(Ω/k) ↥(layerSub ℓ (Generic U n S) j)] {t : ℕ}
-    (D : Fin t → Subgroup Gal(Ω/k)) (σn : (layerExtension ℓ (genericAut U n S) j).Section)
+    (D : Fin t → Subgroup Gal(Ω/k)) (T : Set (Subgroup Gal(Ω/k)))
+    (hvan : HasLocalLift ℓ U n S j φ D T)
+    (σn : (layerExtension ℓ (genericAut U n S) j).Section)
     (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) m j) :
     ∃ Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j, Function.Surjective Φ ∧ IsSmoothHom Φ ∧
       (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) ∧
@@ -122,21 +166,27 @@ theorem exists_levelSolution_liftObstructionClass_mem_sha2 (ℓ : ℕ) [Fact ℓ
             x • v = (layerExtension ℓ (genericAut U n S) j).conjActHom (Φ x) v)
           (hker : IsOpenNormal Φ.ker),
         liftObstructionClass (layerExtension ℓ (genericAut U n S) j) Φ hact hker σn
-          ∈ sha2 ↥(layerSub ℓ (Generic U n S) j) (Set.range D) := by
+          ∈ sha2 ↥(layerSub ℓ (Generic U n S) j) T := by
   obtain ⟨m, hm⟩ :=
     exists_operatorHom_forall_exists_subgroup_resH2_extensionClass_eq_one ℓ U n S hS j φ D σn
   obtain ⟨Φ₀, hsurj, hsm, hright, hloc⟩ := h m
   obtain ⟨α, hα, hαsurj, hres⟩ := hm Φ₀ hright fun ν => hloc (D ν) ⟨ν, rfl⟩
-  refine ⟨(layerSemidirectMap ℓ hα j).comp Φ₀,
-    (layerSemidirectMap_surjective ℓ hα j hαsurj).comp hsurj,
-    isSmoothHom_comp hsm (isSmoothHom_of_continuous continuous_of_discreteTopology),
-    fun x => hright x, ?_, fun hact hker => ?_⟩
-  · rintro _ ⟨ν, rfl⟩ x hx hx1
+  set Φ := (layerSemidirectMap ℓ hα j).comp Φ₀ with hΦdef
+  have hΦsm : IsSmoothHom Φ :=
+    isSmoothHom_comp hsm (isSmoothHom_of_continuous continuous_of_discreteTopology)
+  have hΦright : ∀ x, SemidirectProduct.rightHom (Φ x) = φ x := fun x => hright x
+  have hΦloc : ∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1 := by
+    rintro _ ⟨ν, rfl⟩ x hx hx1
     show layerSemidirectMap ℓ hα j (Φ₀ x) = 1
     rw [hloc (D ν) ⟨ν, rfl⟩ x hx hx1, _root_.map_one]
-  · exact liftObstructionClass_mem_sha2_of_extensionClass
-      (layerExtension ℓ (genericAut U n S) j) ((layerSemidirectMap ℓ hα j).comp Φ₀)
-      (smul_eq_conjActHom_genericLayer ℓ U n S j) hact hker σn hres
+  refine ⟨Φ, (layerSemidirectMap_surjective ℓ hα j hαsurj).comp hsurj, hΦsm, hΦright, hΦloc,
+    fun hact hker => mem_sha2.2 fun A hA => ?_⟩
+  by_cases hAD : A ∈ Set.range D
+  · exact mem_sha2.1 (liftObstructionClass_mem_sha2_of_extensionClass
+      (layerExtension ℓ (genericAut U n S) j) Φ
+      (smul_eq_conjActHom_genericLayer ℓ U n S j) hact hker σn hres) A hAD
+  · exact (resH2_liftObstructionClass_eq_one_iff (layerExtension ℓ (genericAut U n S) j) Φ
+      hact hker σn A).2 (hvan Φ hΦsm hΦright hΦloc A hA hAD)
 
 /-! ### The lift itself, once there is no locally trivial class -/
 
@@ -151,15 +201,17 @@ theorem exists_lift_of_levelSolution (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Gr
     (hS : IsPGroup ℓ S) (j : ℕ) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
     (φ : Gal(Ω/k) →* U) [MulDistribMulAction Gal(Ω/k) ↥(layerSub ℓ (Generic U n S) j)]
     (hactφ : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U n S) j)), x • v = φ x • v) {t : ℕ}
-    (D : Fin t → Subgroup Gal(Ω/k)) (σn : (layerExtension ℓ (genericAut U n S) j).Section)
-    (hbot : sha2 ↥(layerSub ℓ (Generic U n S) j) (Set.range D) = ⊥)
+    (D : Fin t → Subgroup Gal(Ω/k)) (T : Set (Subgroup Gal(Ω/k)))
+    (hvan : HasLocalLift ℓ U n S j φ D T)
+    (σn : (layerExtension ℓ (genericAut U n S) j).Section)
+    (hbot : sha2 ↥(layerSub ℓ (Generic U n S) j) T = ⊥)
     (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) m j) :
     ∃ (Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j) (f : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)),
       Function.Surjective Φ ∧ IsSmoothHom Φ ∧ (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) ∧
         (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) ∧ IsSmoothHom f ∧
           ∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (f x) = Φ x := by
   obtain ⟨Φ, hsurj, hsm, hright, hloc, hsha⟩ :=
-    exists_levelSolution_liftObstructionClass_mem_sha2 ℓ U n S hS j φ D σn h
+    exists_levelSolution_liftObstructionClass_mem_sha2 ℓ U n S hS j φ D T hvan σn h
   have hact : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U n S) j)),
       x • v = (layerExtension ℓ (genericAut U n S) j).conjActHom (Φ x) v := by
     intro x v

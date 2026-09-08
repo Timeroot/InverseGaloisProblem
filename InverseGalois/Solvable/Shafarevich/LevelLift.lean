@@ -37,25 +37,29 @@ open InverseGalois.CFT
 attribute [local instance] genericQuotAction
 
 /-- **A solution at one level lifts to a smooth surjection at the next level over the base
-realization.**  Enough letters make the class of the layer die on every member of the family, so
-the obstruction to lifting is everywhere locally trivial and by hypothesis therefore trivial; the
-lift which results is smooth and projects to the base realization, and past the first layer it is
-onto because the layer generates nothing.  Along a member of the family, wherever the base
-realization is trivial the lift lands in the layer. -/
+realization.**  Enough letters make the class of the layer die on every member of the finite family
+along which the solution is trivial, and on the remaining members of the wider family, against
+which local triviality is measured, the step is locally solvable outright; being everywhere locally
+trivial the obstruction is by hypothesis trivial.  The lift which results is smooth and
+projects to the base realization, and past the first layer it is onto because the layer generates
+nothing.  Along a member of the finite family, wherever the base realization is trivial the lift
+lands in the layer. -/
 theorem exists_lift_surjective_of_levelSolution (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U]
     [Finite U] [TopologicalSpace U] [DiscreteTopology U] (n : ℕ) (S : Type) [Group S] [Finite S]
     (hS : IsPGroup ℓ S) {j : ℕ} (hj : 1 ≤ j) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
     (φ : Gal(Ω/k) →* U) [MulDistribMulAction Gal(Ω/k) ↥(layerSub ℓ (Generic U n S) j)]
     (hactφ : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U n S) j)), x • v = φ x • v) {t : ℕ}
-    (D : Fin t → Subgroup Gal(Ω/k)) (σn : (layerExtension ℓ (genericAut U n S) j).Section)
-    (hbot : sha2 ↥(layerSub ℓ (Generic U n S) j) (Set.range D) = ⊥)
+    (D : Fin t → Subgroup Gal(Ω/k)) (T : Set (Subgroup Gal(Ω/k)))
+    (hvan : HasLocalLift ℓ U n S j φ D T)
+    (σn : (layerExtension ℓ (genericAut U n S) j).Section)
+    (hbot : sha2 ↥(layerSub ℓ (Generic U n S) j) T = ⊥)
     (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) m j) :
     ∃ f : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1), Function.Surjective f ∧ IsSmoothHom f ∧
       (∀ x, SemidirectProduct.rightHom (f x) = φ x) ∧
         ∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 →
           f x ∈ (layerExtension ℓ (genericAut U n S) j).inl.range := by
   obtain ⟨Φ, f, hsurj, -, hright, hloc, hfsm, hf⟩ :=
-    exists_lift_of_levelSolution ℓ U n S hS j φ hactφ D σn hbot h
+    exists_lift_of_levelSolution ℓ U n S hS j φ hactφ D T hvan σn hbot h
   have hcomp : Function.Surjective ((layerExtension ℓ (genericAut U n S) j).rightHom.comp f) := by
     intro y
     obtain ⟨x, hx⟩ := hsurj y

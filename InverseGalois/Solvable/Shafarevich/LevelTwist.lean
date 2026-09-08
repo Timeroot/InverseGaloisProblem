@@ -51,13 +51,15 @@ theorem levelSolution_succ_of_hasCocyclePrescription (ℓ : ℕ) [Fact ℓ.Prime
     (hS : IsPGroup ℓ S) {j : ℕ} (hj : 1 ≤ j) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
     (φ : Gal(Ω/k) →* U) [MulDistribMulAction Gal(Ω/k) ↥(layerSub ℓ (Generic U n S) j)]
     (hactφ : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U n S) j)), x • v = φ x • v) {t : ℕ}
-    (D : Fin t → Subgroup Gal(Ω/k)) (σn : (layerExtension ℓ (genericAut U n S) j).Section)
-    (hbot : sha2 ↥(layerSub ℓ (Generic U n S) j) (Set.range D) = ⊥)
+    (D : Fin t → Subgroup Gal(Ω/k)) (T : Set (Subgroup Gal(Ω/k)))
+    (hvan : HasLocalLift ℓ U n S j φ D T)
+    (σn : (layerExtension ℓ (genericAut U n S) j).Section)
+    (hbot : sha2 ↥(layerSub ℓ (Generic U n S) j) T = ⊥)
     (hpres : HasCocyclePrescription ↥(layerSub ℓ (Generic U n S) j) fun ν => D ν ⊓ φ.ker)
     (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) m j) :
     LevelSolution ℓ U S φ (Set.range D) n (j + 1) := by
   obtain ⟨Φ, f, hsurj, -, hright, hloc, hfsm, hf⟩ :=
-    exists_lift_of_levelSolution ℓ U n S hS j φ hactφ D σn hbot h
+    exists_lift_of_levelSolution ℓ U n S hS j φ hactφ D T hvan σn hbot h
   have hact : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U n S) j)),
       x • v = (layerExtension ℓ (genericAut U n S) j).conjActHom (Φ x) v := by
     intro x v
