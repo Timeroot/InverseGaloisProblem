@@ -34,6 +34,7 @@ import InverseGalois.Solvable.Shafarevich.LayerExtension
 import InverseGalois.Solvable.Shafarevich.LayerSplit
 import InverseGalois.Solvable.Shafarevich.LayerSection
 import InverseGalois.Solvable.Shafarevich.LayerTower
+import InverseGalois.Solvable.Shafarevich.LevelSolution
 
 /-!
 # Shafarevich's theorem
@@ -206,4 +207,15 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   from one layer to the next, and that step is isolated as a single named statement:
   **`Shafarevich.GenericLayerStepEP` for every prime implies the split embedding problem with a
   kernel of prime power order, and hence Shafarevich's theorem.**
+* `InverseGalois.Solvable.Shafarevich.LevelSolution` fixes the order in which that step has
+  to be taken.  A step between realizations known only to exist cannot be taken, because the
+  subgroups the count has to kill a class on come from the places at which the realization
+  already reached is completely decomposed, and a realization known only to exist names no
+  places.  So the base realization is fixed once, as a smooth surjection of the Galois group
+  of an algebraic closure, and each rung of the ladder carries a smooth surjection projecting
+  onto it and trivial along a family of subgroups chosen once from the base realization
+  alone.  Both ends of the ladder survive the extra clause, and the step between them becomes
+  a statement whose quantifiers are in the order the arithmetic can meet:
+  **`Shafarevich.GenericLevelStepEP` for every prime implies the split embedding problem with
+  a kernel of prime power order, and hence Shafarevich's theorem.**
 -/
