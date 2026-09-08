@@ -775,6 +775,7 @@ import InverseGalois.CFT.TateCohomology.CocycleExtension
 import InverseGalois.CFT.TateCohomology.CohomTrivial
 import InverseGalois.CFT.TateCohomology.Cyclic
 import InverseGalois.CFT.TateCohomology.CyclicDual
+import InverseGalois.CFT.TateCohomology.CyclicDualNatural
 import InverseGalois.CFT.TateCohomology.CyclicVanishing
 import InverseGalois.CFT.TateCohomology.DeltaCoshift
 import InverseGalois.CFT.TateCohomology.DeltaNatural
@@ -4926,6 +4927,20 @@ it that are available here.
   cyclic representation to be the roots of unity of a prime order, the maps out of it are a twist
   and the maps into it are the dual in the sense of Cartier, so this is the duality that turns a
   statement about classes of the dual into a statement about classes of the twist.
+* `InverseGalois.CFT.TateCohomology.CyclicDualNatural` moves that duality along a change of the
+  second representation.  A map of the second representation moves the two sides of the pairing in
+  opposite directions: **the maps into the target are carried forward by composing after it, the
+  maps out of the target are carried backward by composing before it**, and both readings are maps
+  of representations because composition of linear maps is associative and the map of
+  representations commutes with the action.  Under the identification of the previous file the two
+  readings agree: composing a map into the source, then the map of representations, then a map out
+  of the target, is the same triple composite whichever pair is bracketed, and the character reads
+  off the same value.  Combining that agreement with the naturality of the duality against the
+  rational circle gives what a shrinking argument runs on -- **a class carried forward along a map
+  of the coefficients, paired against a class of the complementary degree downstairs, is the class
+  itself paired against that class carried backward.**  So a class of the complete cohomology in a
+  fixed degree may be produced before the change of coefficients is chosen, and the character it
+  cuts out is killed by exactly the changes which kill the class.
 * `InverseGalois.CFT.TateCohomology.TateClassCount` turns the classical hypotheses of Tate's
   theorem into a count.  **An element of a finite commutative group annihilated by exactly the
   multiples of the order of the group generates the group**, because the subgroup of its multiples
