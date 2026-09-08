@@ -514,6 +514,7 @@ import InverseGalois.CFT.Profinite.CoindLocal
 import InverseGalois.CFT.Profinite.CoindVanish
 import InverseGalois.CFT.Profinite.Coinduced
 import InverseGalois.CFT.Profinite.Comap
+import InverseGalois.CFT.Profinite.ComapIso
 import InverseGalois.CFT.Profinite.Connecting
 import InverseGalois.CFT.Profinite.Corestriction
 import InverseGalois.CFT.Profinite.Cup
@@ -5596,6 +5597,13 @@ it that are available here.
   cohomology of the target into that of the source**, in degree one and in degree two, computed on
   cocycles; the first condition is restriction to a closed subgroup and the second is inflation
   from a finite level.
+* `InverseGalois.CFT.Profinite.ComapIso` records that this pulling back is functorial, two of them
+  in succession being the one along the composite, and that it commutes with a map of the
+  coefficients, both operations being composition of the same cocycle with something.  What that is
+  for is transport: **pulling back along an isomorphism is injective**, since the pullback along the
+  inverse undoes it, so a class which becomes trivial after transport was already trivial.  That is
+  what lets an obstruction be moved between a decomposition subgroup and the one below it at a place
+  which is completely decomposed, the projection being an isomorphism of the two.
 * `InverseGalois.CFT.Profinite.InfRes` reads off what smoothness alone forces.  A smooth one
   cocycle is trivial on the subgroup it is smooth for, and the values of a smooth cocycle in either
   degree are fixed by that subgroup, so a cocycle constant on the cosets of the kernel of a

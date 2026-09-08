@@ -30,6 +30,7 @@ import InverseGalois.Solvable.Shafarevich.SemidirectHomology
 import InverseGalois.Solvable.Shafarevich.GenericHomology
 import InverseGalois.Solvable.Shafarevich.GenericCohomology
 import InverseGalois.Solvable.Shafarevich.LayerSmooth
+import InverseGalois.Solvable.Shafarevich.LayerExtension
 
 /-!
 # Shafarevich's theorem
@@ -172,4 +173,12 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   unchanged, because it only ever looks at the values a cocycle takes: **finitely many second
   cohomology classes of a subgroup of the operator group, with coefficients in a layer, are
   annihilated all at once by one surjective homomorphism onto the intended rank.**
+* `InverseGalois.Solvable.Shafarevich.LayerExtension` assembles the group one layer at a time.
+  Dividing an operator group by one term of the filtration rather than the next presents the larger
+  quotient, with its operators alongside, as an extension of the smaller one by the layer between
+  them; a homomorphism commuting with the operators induces a morphism of two such extensions.
+  Since the layer is central in the quotient it sits inside, **conjugation in the extension moves it
+  only by the operators**, so the class of the extension is a class for the action the count is
+  formed with, and killing that class is exactly solving the embedding problem one step further up
+  the filtration.
 -/
