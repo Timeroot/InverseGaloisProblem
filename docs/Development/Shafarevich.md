@@ -18096,3 +18096,132 @@ without any zeta-reduction in `isDefEq`.
 
 **2582 (BUILD).**  `lake build InverseGalois.Solvable.Shafarevich.LevelRung` = **8087 jobs / 15 s**;
 the full build is **9840 jobs**, ~4 min when only the `Solvable` cone rebuilds.
+
+## §1.61 The middle conjunct replaced: `HasInflatedSha`, and the double shrink in Lean
+
+### (a) What landed
+
+`0f5aed0`, new module `InverseGalois/Solvable/Shafarevich/LevelShrink.lean`, plus refactors of
+`LevelTwist.lean`, `LevelRung.lean` and `InverseGalois/Solvable/Shafarevich.lean`.  Full build
+green: **9841 jobs, 0 errors, 0 warnings**.  §1.60(e) is now realized in Lean, and the conjunct
+§1.60(d) flagged as mathematically false for `j ≥ 1` is gone from `HasRungData`.
+
+* `galLayerAction` **moved** from `LevelRung.lean` to `LevelShrink.lean` (finding 2583).
+* `HasInflatedSha` — the new middle conjunct.
+* `coeffH2_liftObstructionClass_layerSemidirect` — the naturality brick the composition needed.
+* `exists_lift_of_levelSolution_of_hasInflatedSha` — the six steps of §1.60(e), end to end.
+* `levelSolution_succ_of_exists_lift` — `LevelTwist`'s rung, refactored to take the lift as a
+  hypothesis so that both routes to it share one proof.
+* `levelSolution_succ_of_hasInflatedSha` — the rung along the new route.
+
+### (b) `HasInflatedSha`, stated without an intermediate field
+
+```lean
+def HasInflatedSha (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] [TopologicalSpace U]
+    (n : ℕ) (S : Type) [Group S] [Finite S] (j : ℕ) {k Ω : Type*} [Field k] [Field Ω]
+    [Algebra k Ω] (φ : Gal(Ω/k) →* U) (T : Set (Subgroup Gal(Ω/k))) : Prop :=
+  ∀ hsm : IsSmoothHom φ,
+    @sha2 Gal(Ω/k) _ _ ↥(layerSub ℓ (Generic U n S) j) _ (galLayerAction ℓ U n S j φ) T ≤
+      (@comapH2 Gal(Ω/k) U ↥(layerSub ℓ (Generic U n S) j) _ _ _ _ _
+        (galLayerAction ℓ U n S j φ) _ φ (fun _ _ => rfl) hsm).range
+```
+
+This is SW Thm 15 Step 2's Claim, in the repo's own vocabulary.  Two design points.
+
+* **No `K`.**  `sha2_le_range_galInflH2` (`ShaInflate.lean:108`) writes the conclusion as
+  `≤ (galInflH2 K hπ).range` for `K := Ω^{ker φ}`.  Since `φ` factors as `e ∘ restrictNormalHom K`
+  with `e : Gal(K/k) ≃* U` an isomorphism, the two ranges coincide, and inflating along `φ` itself
+  removes the intermediate field and the `IsGalois`/`fixingSubgroup` plumbing from the statement of
+  the hypothesis.  The arithmetic that discharges it is free to reintroduce `K`.
+* **The smoothness hypothesis is *inside* the `Prop`.**  `comapH2` needs `IsSmoothHom φ` to be
+  defined at all, and `HasRungData` is stated before `φ` is known to be smooth, so `HasInflatedSha`
+  quantifies over the proof.  Proof irrelevance makes this cost nothing at the use site.
+
+### (c) The double shrink in Lean: `exists_lift_of_levelSolution_of_hasInflatedSha`
+
+The six steps of §1.60(e), in the order the Lean proof takes them.
+
+1. `obtain ⟨r, hr⟩ : ∃ r, (j+1) * (1 * Nat.card U ^ 2 * finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j))
+   < r := ⟨_, Nat.lt_succ_self _⟩`.  Everything on the left is fixed by `n, j, U, S, ℓ`.
+2. Two layer actions are installed at once, `galLayerAction … (r*n) …` and `galLayerAction … n …`.
+3. `exists_levelSolution_liftObstructionClass_mem_sha2` at target `r*n` gives `Φ_N`, surjective,
+   smooth, over `φ`, trivial along `D`, with `liftObstructionClass … ∈ sha2 … T`.
+4. `hinfl (r*n) hsmφ` writes that class as `comapH2 φ y` for a single `y ∈ SmoothH2 U (Layer(r*n,j))`.
+5. `exists_genericShrink_forall_coeffH2_eq_one U r n S hS (MonoidHom.id U) … hr (fun _ : Fin 1 => y)`
+   returns a surjective `genericShrink U r n S a` killing `y`.  `H := U`, `f := id`, `t := 1`.
+6. `coeffH2_liftObstructionClass_layerSemidirect` identifies the obstruction of
+   `(layerSemidirectMap ℓ hα j).comp Φ_N` with the image of the obstruction of `Φ_N`, which by (4)
+   and (5) is `comapH2 φ 1 = 1`; `liftObstructionClass_eq_one_iff` then produces the lift.
+
+`layerSemidirectMap` preserves `SemidirectProduct.rightHom` *definitionally* (`= ⟨pCentralMap p n f
+x.left, x.right⟩` by `rfl`, `LayerExtension.lean:232`), so `hΦright` is `fun x => hNright x` with no
+rewriting, and the triviality along `D` is `map_one`.
+
+### (d) The naturality brick
+
+```lean
+theorem coeffH2_liftObstructionClass_layerSemidirect … :
+    coeffH2 (layerSubMap ℓ α j) hcomm
+        (liftObstructionClass (layerExtension ℓ (genericAut U m S) j) Φ hactm hkerm σm)
+      = liftObstructionClass (layerExtension ℓ (genericAut U n S) j)
+          ((layerSemidirectMap ℓ hα j).comp Φ) hactn hkern σn
+```
+
+Both sides are the extension class pulled back, and the proof is a four-link chain of lemmas that
+were already in the repo:
+
+`comapH2_extensionClass` (`EmbeddingClass.lean:125`, `rfl`) turns each `liftObstructionClass` into a
+`comapH2` of an `extensionClass`; `coeffH2_comapH2` (`ComapIso.lean:~123`) commutes the coefficient
+map past the pullback along `Φ`; `coeffH2_extensionClass_eq_comapH2` (`ExtensionCoeff.lean`) is the
+statement that a *map of extensions* carries the class downstairs to the class upstairs read through
+the layers; `comapH2_comapH2` (`ComapIso.lean:78`) collapses the two pullbacks.  The map of
+extensions is `layerSemidirectMap ℓ hα (j+1)` over `layerSemidirectMap ℓ hα j`, whose two
+compatibility clauses are `inl_layerSemidirectMap` and `rightHom_layerSemidirectMap`
+(`LayerExtension.lean:244/253`).
+
+### (e) `HasRungData`, final form
+
+```lean
+def HasRungData … : Prop :=
+  (∀ n : ℕ, LevelSolution ℓ U S φ (Set.range D) n 1) ∧
+    ∀ n j : ℕ, 1 ≤ j → HasLocalLift ℓ U n S j φ D T ∧ HasInflatedSha ℓ U n S j φ T ∧
+      @HasCocyclePrescription Gal(Ω/k) _ _ ↥(layerSub ℓ (Generic U n S) j) _
+        (galLayerAction ℓ U n S j φ) t fun ν => D ν ⊓ φ.ker
+```
+
+`levelSolution_succ_of_hasRungData` and `genericLevelStepEP_of_hasRungData` gained an
+`IsSmoothHom φ` argument, which `GenericLevelStepEP` already supplies.
+
+**This is now the exact home of wall #1.**  `HasInflatedSha` is row 5 — Poitou–Tate global duality
+— and nothing else in the ladder asks for it.  The other two conjuncts (`HasLocalLift`,
+`HasCocyclePrescription`) and the first rung are arithmetic of a different kind, listed in
+§1.60(f).
+
+### (f) Findings
+
+**2583 (REPO).**  `galLayerAction` has **moved** from `LevelRung.lean` to `LevelShrink.lean`.
+
+**2584 (LEAN).**  `congrArg` applied to a `MonoidHom` (e.g. `coeffH2 f h`) is fragile — the
+elaborator will not see the coercion as a function to generalize.  Write
+`congrArg (fun z => coeffH2 f h z) e` with an explicit lambda.
+
+**2585 (LEAN).**  Because the equivariance and smoothness arguments of `coeffH2`/`comapH2` are
+`Prop`s, `rw` fails on a chain of these identities: the proof terms differ syntactically.  Chain
+with `refine Eq.trans … ?_` / `exact` instead — unification is up to proof irrelevance, so the
+mismatched proofs are absorbed.
+
+**2586 (LEAN).**  To hold two `letI` layer actions (`galLayerAction … (r*n) …` and
+`galLayerAction … n …`) at once without instance ambiguity, obtain `r` as an **opaque** local —
+`obtain ⟨r, hr⟩ : ∃ r, … < r := ⟨_, Nat.lt_succ_self _⟩` — rather than `set r := …`.  A `set`
+leaves the body reducible and the two instances become confusable.
+
+**2587 (MATH, KEY).**  The second shrink **cannot** be run against `G_k`.
+`exists_genericShrink_forall_coeffH2_eq_one` needs `(j+1) * (t * Nat.card H ^ 2 * finrank(Layer)) <
+r` with `r` fixed *before* the class is known, so `H` must be a group whose order is bounded
+independently of the number of letters.  `Gal(Ω/k)` is not; the operator group `U` is.  This is
+exactly why the obstruction has to be written as an **inflated** class first, and hence exactly why
+`HasInflatedSha`, and not some weaker local statement, is what the composition consumes.
+
+**2588 (BUILD).**  `lake build InverseGalois.Solvable.Shafarevich.LevelShrink` = **8081 jobs /
+63 s**; `lake build InverseGalois.Solvable.Shafarevich` = 8223 jobs / 13 s; the full build is
+**9841 jobs**.
