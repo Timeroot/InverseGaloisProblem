@@ -255,9 +255,10 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   single class the first run leaves behind: the rank it asks for is settled by the operator group,
   the intended number of letters and the layer alone, so a solution with that many times as many
   letters is produced, its obstruction written as an inflated class, and the class killed.  Pushing
-  the solution down carries its obstruction to the image of what was killed, so **a solution at one
-  level lifts to the next as soon as the everywhere locally trivial classes of the layer are
-  inflated from the operator group.**
+  the solution down carries its obstruction to the image of what was killed.  What the ladder
+  consumes is isolated as one condition, that **every everywhere locally trivial class of the layer
+  at a number of letters fixed in advance die under a shrinking down to the intended number**;
+  inflation is one way of meeting it, and **a solution at one level then lifts to the next.**
 * `InverseGalois.Solvable.Shafarevich.LevelTwist` pays that price and closes the rung.  The lifts of
   an embedding problem form a torsor under the one cocycles of the kernel, and along a member of the
   family where the base realization is trivial the discrepancy is a smooth homomorphism into the
@@ -281,7 +282,7 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   carries no guarantee of being onto; each member of the finite family is asked to have a finite
   elementary quotient; and at every later rung two things are asked, for every number of letters â€”
   that the step be locally solvable along the members of the wider family the finite one does not
-  name, and that every everywhere locally trivial class of the layer be inflated from the operator
-  group.  Granted that package, **the step of the ladder holds**, and with it every split embedding
-  problem with a kernel of prime power order.
+  name, and that every everywhere locally trivial class of the layer be killed by a shrinking.
+  Granted that package, **the step of the ladder holds**, and with it every split embedding problem
+  with a kernel of prime power order.
 -/

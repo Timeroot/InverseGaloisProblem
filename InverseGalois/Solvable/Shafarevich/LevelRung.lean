@@ -21,8 +21,8 @@ since the layer there is the Frattini layer and a lift over it need not be onto;
 finite family is asked to have a finite elementary quotient, which for a decomposition subgroup is
 what local class field theory supplies; and at every later rung two things are asked, for every
 number of letters: that the step be locally solvable along the members of the wider family the
-finite one does not name, and that every everywhere locally trivial class of the layer be inflated
-from the operator group.
+finite one does not name, and that every everywhere locally trivial class of the layer be killed by
+a shrinking.
 
 Granted that package, one rung follows from the previous one, and hence, by the ladder already
 built, every split embedding problem with a kernel of prime power order.
@@ -61,14 +61,14 @@ and a lift across it carries no guarantee of being onto.  Each member of the fin
 to have a finite elementary quotient, which local class field theory supplies for a decomposition
 subgroup.  At every later rung two things are asked, for every number of letters: that the step be
 locally solvable along the members of the wider family which the finite one does not name, and that
-every everywhere locally trivial class of the layer be inflated from the operator group. -/
+every everywhere locally trivial class of the layer be killed by a shrinking. -/
 def HasRungData (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] [TopologicalSpace U]
     [DiscreteTopology U] (S : Type) [Group S] [Finite S] {k Ω : Type*} [Field k] [Field Ω]
     [Algebra k Ω] (φ : Gal(Ω/k) →* U) {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k))
     (T : Set (Subgroup Gal(Ω/k))) : Prop :=
   (∀ n : ℕ, LevelSolution ℓ U S φ (Set.range D) n 1) ∧
     (∀ ν : Fin t, HasFiniteElementaryQuotient ℓ (D ν ⊓ φ.ker)) ∧
-      ∀ n j : ℕ, 1 ≤ j → HasLocalLift ℓ U n S j φ D T ∧ HasInflatedSha ℓ U n S j φ T
+      ∀ n j : ℕ, 1 ≤ j → HasLocalLift ℓ U n S j φ D T ∧ HasShrinkableSha ℓ U n S j φ T
 
 /-! ### One rung -/
 
@@ -78,7 +78,7 @@ trivial classes being carried away by a second shrinking and the discrepancy alo
 third. -/
 theorem levelSolution_succ_of_hasRungData (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U]
     [TopologicalSpace U] [DiscreteTopology U] (S : Type) [Group S] [Finite S] (hS : IsPGroup ℓ S)
-    {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω] (φ : Gal(Ω/k) →* U) (hsmφ : IsSmoothHom φ)
+    {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω] (φ : Gal(Ω/k) →* U)
     {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k)) (T : Set (Subgroup Gal(Ω/k)))
     (hdata : HasRungData ℓ U S φ D T) (j : ℕ)
     (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) m j) (n : ℕ) :
@@ -87,7 +87,7 @@ theorem levelSolution_succ_of_hasRungData (ℓ : ℕ) [Fact ℓ.Prime] (U : Type
   | zero => exact hdata.1 n
   | succ j =>
     have hj : 1 ≤ j + 1 := Nat.le_add_left 1 j
-    exact levelSolution_succ_of_hasFiniteElementaryQuotient ℓ U n S hS hj φ hsmφ D T
+    exact levelSolution_succ_of_hasFiniteElementaryQuotient ℓ U n S hS hj φ D T
       (fun m => (hdata.2.2 m (j + 1) hj).1) (fun m => (hdata.2.2 m (j + 1) hj).2) hdata.2.1 h
 
 end InverseGalois.Shafarevich
@@ -111,6 +111,6 @@ theorem genericLevelStepEP_of_hasRungData (ℓ : ℕ) [Fact ℓ.Prime]
   intro S U _ _ _ _ _ _ Ω _ _ _ _ φ hS hsurj hsm
   obtain ⟨t, D, T, hdata⟩ := h S U Ω φ hS hsurj hsm
   exact ⟨Set.range D,
-    fun j hj n => levelSolution_succ_of_hasRungData ℓ U S hS φ hsm D T hdata j hj n⟩
+    fun j hj n => levelSolution_succ_of_hasRungData ℓ U S hS φ D T hdata j hj n⟩
 
 end Shafarevich

@@ -10,8 +10,8 @@ import InverseGalois.Solvable.Shafarevich.LevelTwist
 # The lift made trivial along the family, by a third shrinking
 
 A solution at one level of the descending `ℓ`-central series lifts to the next once the everywhere
-locally trivial classes of the layer are inflated from the operator group, and the lift produced is
-smooth, onto and over the base realization.  What it is not yet is trivial along the family of
+locally trivial classes of the layer are killed by a shrinking, and the lift produced is smooth,
+onto and over the base realization.  What it is not yet is trivial along the family of
 subgroups the local conditions name.  Along a member of the family where the base realization is
 trivial the lift takes its values in the layer, where it is a homomorphism; so the whole of the
 discrepancy is a finite family of homomorphisms from those subgroups into the layer, and killing
@@ -38,8 +38,8 @@ trivial along the family, and nothing else about it has changed.
   quotient.
 * `InverseGalois.Shafarevich.exists_lift_eq_one_of_levelSolution` — **a solution at one level gives
   a lift at the next which is trivial along the family**, granted that every everywhere locally
-  trivial class of the layer is inflated from the operator group and that the members of the family
-  have finite elementary quotients.
+  trivial class of the layer is killed by a shrinking and that the members of the family have
+  finite elementary quotients.
 * `InverseGalois.Shafarevich.levelSolution_succ_of_hasFiniteElementaryQuotient` — **and hence one
   whole rung of the ladder, with nothing asked of the first cohomology.**
 
@@ -105,18 +105,19 @@ theorem hasFiniteElementaryQuotient_of_le (ℓ : ℕ) {Γ : Type u} [Group Γ] [
 /-- **A solution at one level of the filtration gives a lift at the next which is trivial along the
 family.**
 
-The lift itself is produced by the second shrinking, from the inflatedness of the everywhere locally
-trivial classes.  Along a member of the family where the base realization is trivial the solution is
-trivial too, so the lift lands in the layer and is a homomorphism there; the finite elementary
-quotient of the member bounds the number of values it takes, and that bound is known before the
-solution is chosen.  A third shrinking onto the intended number of letters therefore carries all of
-those values to one at once, and the lift pushed down is trivial along the whole family. -/
+The lift itself is produced by the second shrinking, which kills the everywhere locally trivial
+class the obstruction is.  Along a member of the family where the base realization is trivial the
+solution is trivial too, so the lift lands in the layer and is a homomorphism there; the finite
+elementary quotient of the member bounds the number of values it takes, and that bound is known
+before the solution is chosen.  A third shrinking onto the intended number of letters therefore
+carries all of those values to one at once, and the lift pushed down is trivial along the whole
+family. -/
 theorem exists_lift_eq_one_of_levelSolution (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U]
     [Finite U] [TopologicalSpace U] [DiscreteTopology U] (n : ℕ) (S : Type) [Group S] [Finite S]
     (hS : IsPGroup ℓ S) (j : ℕ) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
-    (φ : Gal(Ω/k) →* U) (hsmφ : IsSmoothHom φ) {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k))
+    (φ : Gal(Ω/k) →* U) {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k))
     (T : Set (Subgroup Gal(Ω/k))) (hvan : ∀ m : ℕ, HasLocalLift ℓ U m S j φ D T)
-    (hinfl : ∀ m : ℕ, HasInflatedSha ℓ U m S j φ T)
+    (hsh : ∀ m : ℕ, HasShrinkableSha ℓ U m S j φ T)
     (hfin : ∀ ν : Fin t, HasFiniteElementaryQuotient ℓ (D ν ⊓ φ.ker))
     (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) m j) :
     ∃ (Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j) (f : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)),
@@ -134,7 +135,7 @@ theorem exists_lift_eq_one_of_levelSolution (ℓ : ℕ) [Fact ℓ.Prime] (U : Ty
     ((ν : Fin t) × Q ν)
   -- a lift at that number of letters
   obtain ⟨Φ₁, f₁, hsurj₁, hsm₁, hright₁, hloc₁, hfsm₁, hf₁⟩ :=
-    exists_lift_of_levelSolution_of_hasInflatedSha ℓ U m S hS j φ hsmφ D T hvan hinfl h
+    exists_lift_of_levelSolution_of_hasShrinkableSha ℓ U m S hS j φ D T hvan (hsh m) h
   have hf₁s : IsSmooth₁ (f₁ : Gal(Ω/k) → GenericQuot ℓ U m S (j + 1)) :=
     isSmooth₁_of_isOpenNormal_ker (isOpenNormal_ker_of_isSmoothHom hfsm₁)
   have hDloc : ∀ ν : Fin t, ∀ x ∈ D ν ⊓ φ.ker, Φ₁ x = 1 := fun ν x hx =>
@@ -175,15 +176,15 @@ layer a lift over a surjection is again a surjection, the layer generating nothi
 theorem levelSolution_succ_of_hasFiniteElementaryQuotient (ℓ : ℕ) [Fact ℓ.Prime] (U : Type)
     [Group U] [Finite U] [TopologicalSpace U] [DiscreteTopology U] (n : ℕ) (S : Type) [Group S]
     [Finite S] (hS : IsPGroup ℓ S) {j : ℕ} (hj : 1 ≤ j) {k Ω : Type*} [Field k] [Field Ω]
-    [Algebra k Ω] (φ : Gal(Ω/k) →* U) (hsmφ : IsSmoothHom φ) {t : ℕ}
+    [Algebra k Ω] (φ : Gal(Ω/k) →* U) {t : ℕ}
     (D : Fin t → Subgroup Gal(Ω/k)) (T : Set (Subgroup Gal(Ω/k)))
     (hvan : ∀ m : ℕ, HasLocalLift ℓ U m S j φ D T)
-    (hinfl : ∀ m : ℕ, HasInflatedSha ℓ U m S j φ T)
+    (hsh : ∀ m : ℕ, HasShrinkableSha ℓ U m S j φ T)
     (hfin : ∀ ν : Fin t, HasFiniteElementaryQuotient ℓ (D ν ⊓ φ.ker))
     (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) m j) :
     LevelSolution ℓ U S φ (Set.range D) n (j + 1) := by
   obtain ⟨Φ, f, hsurj, -, hright, -, hfsm, hf, hloc⟩ :=
-    exists_lift_eq_one_of_levelSolution ℓ U n S hS j φ hsmφ D T hvan hinfl hfin h
+    exists_lift_eq_one_of_levelSolution ℓ U n S hS j φ D T hvan hsh hfin h
   have hcomp :
       Function.Surjective ((layerExtension ℓ (genericAut U n S) j).rightHom.comp f) := by
     intro y

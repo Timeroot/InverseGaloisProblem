@@ -31,15 +31,21 @@ killed, so the pushed down solution lifts.
   operator group through the base realization.
 * `InverseGalois.Shafarevich.HasInflatedSha` — every everywhere locally trivial class with
   coefficients in a layer is inflated from the operator group along the base realization.
+* `InverseGalois.Shafarevich.HasShrinkableSha` — **every everywhere locally trivial class with
+  coefficients in a layer at a number of letters fixed in advance dies under a shrinking down to
+  the intended number**; this is the whole of what the arithmetic has to supply.
 
 ## Main results
 
+* `InverseGalois.Shafarevich.hasShrinkableSha_of_hasInflatedSha` — an inflated class is shrinkable.
 * `InverseGalois.Shafarevich.coeffH2_liftObstructionClass_layerSemidirect` — **the obstruction of a
   solution pushed down along a homomorphism of generic operator groups is the obstruction upstairs,
   read through the induced map of the layers.**
-* `InverseGalois.Shafarevich.exists_lift_of_levelSolution_of_hasInflatedSha` — **a solution at one
-  level lifts to the next as soon as every everywhere locally trivial class of the layer is
-  inflated from the operator group.**
+* `InverseGalois.Shafarevich.exists_lift_of_levelSolution_of_hasShrinkableSha` — **a solution at one
+  level lifts to the next as soon as every everywhere locally trivial class of the layer is killed
+  by a shrinking.**
+* `InverseGalois.Shafarevich.exists_lift_of_levelSolution_of_hasInflatedSha` — the same, from
+  inflation.
 
 ## Tags
 
@@ -80,6 +86,58 @@ def HasInflatedSha (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] 
     @sha2 Gal(Ω/k) _ _ ↥(layerSub ℓ (Generic U n S) j) _ (galLayerAction ℓ U n S j φ) T ≤
       (@comapH2 Gal(Ω/k) U ↥(layerSub ℓ (Generic U n S) j) _ _ _ _ _
         (galLayerAction ℓ U n S j φ) _ φ (fun _ _ => rfl) hsm).range
+
+/-- **Every everywhere locally trivial class of the second cohomology with coefficients in a layer
+at some number of letters fixed in advance dies under a shrinking down to the intended number.**
+
+This is the whole of what the arithmetic has to supply for a solution to move one step up the
+descending `ℓ`-central series.  The number of letters to start from has to be announced before the
+class is known, because the solution whose obstruction the class is gets produced only afterwards;
+that is exactly the shape the counting arguments have, since the rank they ask for depends on the
+operator group, the intended number of letters and the layer alone.
+
+The shrinking is asked to be onto, so that the solution pushed down along it is again onto, and to
+commute with the operators, so that it induces a map of the layers and of the levels. -/
+def HasShrinkableSha (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] [TopologicalSpace U]
+    (n : ℕ) (S : Type) [Group S] [Finite S] (j : ℕ) {k Ω : Type*} [Field k] [Field Ω]
+    [Algebra k Ω] (φ : Gal(Ω/k) →* U) (T : Set (Subgroup Gal(Ω/k))) : Prop :=
+  letI := galLayerAction ℓ U n S j φ
+  ∃ N : ℕ,
+    letI := galLayerAction ℓ U N S j φ
+    ∀ ε ∈ sha2 ↥(layerSub ℓ (Generic U N S) j) T,
+      ∃ (α : Generic U N S →* Generic U n S) (hα : IsOperatorHom α), Function.Surjective α ∧
+        coeffH2 (layerSubMap ℓ α j)
+          (layerSubMap_smul_comm φ (fun _ _ => rfl) (fun _ _ => rfl) hα) ε = 1
+
+/-- **An everywhere locally trivial class inflated from the operator group is shrinkable.**  The
+count is insensitive to everything but the order of the group carrying the class, and the operator
+group has an order fixed in advance, so the rank the shrinking asks for is settled by the operator
+group, the intended number of letters and the layer alone.  The class upstairs is killed there, and
+the class it inflates to is killed with it. -/
+theorem hasShrinkableSha_of_hasInflatedSha (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U]
+    [TopologicalSpace U] (n : ℕ) (S : Type) [Group S] [Finite S] (hS : IsPGroup ℓ S) (j : ℕ)
+    {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω] (φ : Gal(Ω/k) →* U) (hsmφ : IsSmoothHom φ)
+    (T : Set (Subgroup Gal(Ω/k))) (hinfl : ∀ m : ℕ, HasInflatedSha ℓ U m S j φ T) :
+    HasShrinkableSha ℓ U n S j φ T := by
+  -- the rank the shrinking needs, fixed before anything about the class is known
+  obtain ⟨r, hr⟩ : ∃ r : ℕ, (j + 1) * (1 * Nat.card U ^ 2 *
+      Module.finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j)) < r := ⟨_, Nat.lt_succ_self _⟩
+  letI := galLayerAction ℓ U (r * n) S j φ
+  letI := galLayerAction ℓ U n S j φ
+  refine ⟨r * n, fun ε hε => ?_⟩
+  -- the class is inflated from a single class of the operator group
+  obtain ⟨y, hy⟩ := MonoidHom.mem_range.1 (hinfl (r * n) hsmφ hε)
+  -- and the count kills that one
+  obtain ⟨a, hasurj, ha⟩ := exists_genericShrink_forall_coeffH2_eq_one U r n S hS
+    (MonoidHom.id U) (fun _ _ => rfl) (fun _ _ => rfl) hr fun _ : Fin 1 => y
+  have hα : IsOperatorHom (genericShrink U r n S a) := isOperatorHom_genericShrink U r n S a
+  have hy1 : coeffH2 (layerSubMap ℓ (genericShrink U r n S a) j) (layerSubMap_smul hα) y = 1 :=
+    ha 0
+  refine ⟨genericShrink U r n S a, hα, hasurj, ?_⟩
+  rw [← hy]
+  refine Eq.trans (coeffH2_comapH2 (fun _ _ => rfl) (fun _ _ => rfl) hsmφ
+    (layerSubMap_smul_comm φ (fun _ _ => rfl) (fun _ _ => rfl) hα) (layerSubMap_smul hα) y) ?_
+  rw [hy1, _root_.map_one]
 
 /-! ### Pushing an obstruction down -/
 
@@ -146,64 +204,54 @@ theorem coeffH2_liftObstructionClass_layerSemidirect (ℓ : ℕ) [Fact ℓ.Prime
   refine Eq.trans (congrArg (fun z => comapH2 Φ hΦn hsmΦ z) hcmp) ?_
   exact comapH2_comapH2 hΦn (fun _ _ => rfl) hsmΦ hsmψ _
 
-/-! ### The lift, once the locally trivial classes are inflated -/
+/-! ### The lift, once the locally trivial classes are shrinkable -/
 
 /-- **A solution at one level of the filtration lifts to the next as soon as every everywhere
-locally trivial class with coefficients in the layer is inflated from the operator group.**
+locally trivial class with coefficients in the layer is killed by a shrinking.**
 
-The rank the second shrinking asks for depends on the operator group, the intended number of
-letters and the layer alone, so it is fixed before a solution is chosen.  A solution with that many
-times as many letters is produced whose obstruction is everywhere locally trivial, hence inflated
-from a single class of the operator group; the second shrinking kills that class, and the solution
-pushed down to the intended number of letters has for obstruction the image of the class that was
-killed.  The lift is a homomorphism to the group one layer up over the pushed down solution, and
-nothing more: whether it is onto, and whether it is again trivial along the family, is left
-open. -/
-theorem exists_lift_of_levelSolution_of_hasInflatedSha (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U]
-    [Finite U] [TopologicalSpace U] [DiscreteTopology U] (n : ℕ) (S : Type) [Group S] [Finite S]
-    (hS : IsPGroup ℓ S) (j : ℕ) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
-    (φ : Gal(Ω/k) →* U) (hsmφ : IsSmoothHom φ) {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k))
+The number of letters the shrinking starts from is announced before a solution is chosen.  A
+solution with that many letters is produced whose obstruction is everywhere locally trivial, hence
+killed by a shrinking down to the intended number of letters; the solution pushed down along that
+shrinking has for obstruction the image of the class that was killed.  The lift is a homomorphism
+to the group one layer up over the pushed down solution, and nothing more: whether it is onto, and
+whether it is again trivial along the family, is left open. -/
+theorem exists_lift_of_levelSolution_of_hasShrinkableSha (ℓ : ℕ) [Fact ℓ.Prime] (U : Type)
+    [Group U] [Finite U] [TopologicalSpace U] [DiscreteTopology U] (n : ℕ) (S : Type) [Group S]
+    [Finite S] (hS : IsPGroup ℓ S) (j : ℕ) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
+    (φ : Gal(Ω/k) →* U) {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k))
     (T : Set (Subgroup Gal(Ω/k))) (hvan : ∀ m : ℕ, HasLocalLift ℓ U m S j φ D T)
-    (hinfl : ∀ m : ℕ, HasInflatedSha ℓ U m S j φ T)
+    (hsh : HasShrinkableSha ℓ U n S j φ T)
     (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) m j) :
     ∃ (Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j) (f : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)),
       Function.Surjective Φ ∧ IsSmoothHom Φ ∧ (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) ∧
         (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) ∧ IsSmoothHom f ∧
           ∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (f x) = Φ x := by
-  -- the rank the second shrinking needs, fixed before anything about the solution is known
-  obtain ⟨r, hr⟩ : ∃ r : ℕ, (j + 1) * (1 * Nat.card U ^ 2 *
-      Module.finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j)) < r := ⟨_, Nat.lt_succ_self _⟩
-  letI := galLayerAction ℓ U (r * n) S j φ
+  -- the number of letters to start from, fixed before anything about the solution is known
+  obtain ⟨N, hN⟩ := hsh
+  letI := galLayerAction ℓ U N S j φ
   letI := galLayerAction ℓ U n S j φ
   -- a set theoretic section of each of the two extensions
-  have hsurjN := (layerExtension ℓ (genericAut U (r * n) S) j).rightHom_surjective
-  let σN : (layerExtension ℓ (genericAut U (r * n) S) j).Section :=
+  have hsurjN := (layerExtension ℓ (genericAut U N S) j).rightHom_surjective
+  let σN : (layerExtension ℓ (genericAut U N S) j).Section :=
     ⟨Function.surjInv hsurjN, Function.rightInverse_surjInv hsurjN⟩
   have hsurjn := (layerExtension ℓ (genericAut U n S) j).rightHom_surjective
   let σn : (layerExtension ℓ (genericAut U n S) j).Section :=
     ⟨Function.surjInv hsurjn, Function.rightInverse_surjInv hsurjn⟩
-  -- a solution at the larger number of letters whose obstruction is everywhere locally trivial
+  -- a solution at that number of letters whose obstruction is everywhere locally trivial
   obtain ⟨ΦN, hNsurj, hNsm, hNright, hNloc, hNsha⟩ :=
-    exists_levelSolution_liftObstructionClass_mem_sha2 ℓ U (r * n) S hS j φ D T (hvan (r * n)) σN h
-  have hactN : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U (r * n) S) j)),
-      x • v = (layerExtension ℓ (genericAut U (r * n) S) j).conjActHom (ΦN x) v := by
+    exists_levelSolution_liftObstructionClass_mem_sha2 ℓ U N S hS j φ D T (hvan N) σN h
+  have hactN : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U N S) j)),
+      x • v = (layerExtension ℓ (genericAut U N S) j).conjActHom (ΦN x) v := by
     intro x v
     rw [show x • v = φ x • v from rfl, ← hNright x]
-    exact (genericQuotAction_smul ℓ U (r * n) (r * n) S j (ΦN x) v).symm.trans
-      (smul_eq_conjActHom_genericLayer ℓ U (r * n) S j (ΦN x) v)
+    exact (genericQuotAction_smul ℓ U N N S j (ΦN x) v).symm.trans
+      (smul_eq_conjActHom_genericLayer ℓ U N S j (ΦN x) v)
   have hkerN : IsOpenNormal ΦN.ker := isOpenNormal_ker_of_isSmoothHom hNsm
-  -- the obstruction is inflated from a single class of the operator group
-  obtain ⟨y, hy⟩ := MonoidHom.mem_range.1 (hinfl (r * n) hsmφ (hNsha hactN hkerN))
-  -- the second shrinking kills that class
-  obtain ⟨a, hasurj, ha⟩ := exists_genericShrink_forall_coeffH2_eq_one U r n S hS
-    (MonoidHom.id U) (fun _ _ => rfl) (fun _ _ => rfl) hr fun _ : Fin 1 => y
-  have hα : IsOperatorHom (genericShrink U r n S a) := isOperatorHom_genericShrink U r n S a
-  have hcomm : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U (r * n) S) j)),
-      layerSubMap ℓ (genericShrink U r n S a) j (x • v)
-        = x • layerSubMap ℓ (genericShrink U r n S a) j v :=
+  -- the shrinking that kills the obstruction
+  obtain ⟨α, hα, hasurj, hzero⟩ := hN _ (hNsha hactN hkerN)
+  have hcomm : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U N S) j)),
+      layerSubMap ℓ α j (x • v) = x • layerSubMap ℓ α j v :=
     layerSubMap_smul_comm φ (fun _ _ => rfl) (fun _ _ => rfl) hα
-  have hy1 : coeffH2 (layerSubMap ℓ (genericShrink U r n S a) j) (layerSubMap_smul hα) y = 1 :=
-    ha 0
   -- the pushed down solution
   have hΦsm : IsSmoothHom ((layerSemidirectMap ℓ hα j).comp ΦN) :=
     isSmoothHom_comp hNsm (isSmoothHom_of_continuous continuous_of_discreteTopology)
@@ -224,14 +272,6 @@ theorem exists_lift_of_levelSolution_of_hasInflatedSha (ℓ : ℕ) [Fact ℓ.Pri
       (smul_eq_conjActHom_genericLayer ℓ U n S j (((layerSemidirectMap ℓ hα j).comp ΦN) x) v)
   have hkerΦ : IsOpenNormal ((layerSemidirectMap ℓ hα j).comp ΦN).ker :=
     isOpenNormal_ker_of_isSmoothHom hΦsm
-  -- the obstruction of the pushed down solution is the image of the class that was killed
-  have hzero : coeffH2 (layerSubMap ℓ (genericShrink U r n S a) j) hcomm
-      (liftObstructionClass (layerExtension ℓ (genericAut U (r * n) S) j) ΦN hactN hkerN σN)
-        = 1 := by
-    rw [← hy]
-    refine Eq.trans (coeffH2_comapH2 (fun _ _ => rfl) (fun _ _ => rfl) hsmφ hcomm
-      (layerSubMap_smul hα) y) ?_
-    rw [hy1, _root_.map_one]
   obtain ⟨f, hfsm, hf⟩ :=
     (liftObstructionClass_eq_one_iff (layerExtension ℓ (genericAut U n S) j)
       ((layerSemidirectMap ℓ hα j).comp ΦN) hactΦ hkerΦ σn).1
@@ -240,5 +280,23 @@ theorem exists_lift_of_levelSolution_of_hasInflatedSha (ℓ : ℕ) [Fact ℓ.Pri
   exact ⟨(layerSemidirectMap ℓ hα j).comp ΦN, f,
     (layerSemidirectMap_surjective ℓ hα j hasurj).comp hNsurj, hΦsm, hΦright, hΦloc,
     isSmoothHom_of_isSmooth₁ hfsm, hf⟩
+
+/-- **A solution at one level of the filtration lifts to the next as soon as every everywhere
+locally trivial class with coefficients in the layer is inflated from the operator group.**  An
+inflated class is shrinkable, because the count is insensitive to everything but the order of the
+group carrying the class. -/
+theorem exists_lift_of_levelSolution_of_hasInflatedSha (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U]
+    [Finite U] [TopologicalSpace U] [DiscreteTopology U] (n : ℕ) (S : Type) [Group S] [Finite S]
+    (hS : IsPGroup ℓ S) (j : ℕ) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
+    (φ : Gal(Ω/k) →* U) (hsmφ : IsSmoothHom φ) {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k))
+    (T : Set (Subgroup Gal(Ω/k))) (hvan : ∀ m : ℕ, HasLocalLift ℓ U m S j φ D T)
+    (hinfl : ∀ m : ℕ, HasInflatedSha ℓ U m S j φ T)
+    (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) m j) :
+    ∃ (Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j) (f : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)),
+      Function.Surjective Φ ∧ IsSmoothHom Φ ∧ (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) ∧
+        (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) ∧ IsSmoothHom f ∧
+          ∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (f x) = Φ x :=
+  exists_lift_of_levelSolution_of_hasShrinkableSha ℓ U n S hS j φ D T hvan
+    (hasShrinkableSha_of_hasInflatedSha ℓ U n S hS j φ hsmφ T hinfl) h
 
 end InverseGalois.Shafarevich
