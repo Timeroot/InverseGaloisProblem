@@ -28,6 +28,7 @@ import InverseGalois.Solvable.Shafarevich.HomologyOne
 import InverseGalois.Solvable.Shafarevich.SemidirectHomology
 import InverseGalois.Solvable.Shafarevich.GenericHomology
 import InverseGalois.Solvable.Shafarevich.GenericCohomology
+import InverseGalois.Solvable.Shafarevich.LayerSmooth
 
 /-!
 # Shafarevich's theorem
@@ -159,4 +160,12 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   the classes to be killed may be classes of any finite group mapping into the operator group, in
   any single degree and with coefficients in a layer tensored with a fixed representation.  That is
   the form in which the count meets the decomposition subgroups of a finite set of places.
+* `InverseGalois.Solvable.Shafarevich.LayerSmooth` runs the same count in the language in which the
+  embedding problems are posed, that of cochains on a topological group.  A layer is written
+  additively but is the additive copy of a subgroup of a quotient of the group, and the operator
+  group acts on that subgroup by automorphisms, so a layer is a multiplicative module and the map
+  induced by a homomorphism commuting with the operators is equivariant.  The count then applies
+  unchanged, because it only ever looks at the values a cocycle takes: **finitely many second
+  cohomology classes of a subgroup of the operator group, with coefficients in a layer, are
+  annihilated all at once by one surjective homomorphism onto the intended rank.**
 -/
