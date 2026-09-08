@@ -54,6 +54,8 @@ really are field extensions.
   when its obstruction class vanishes.**
 * `InverseGalois.CFT.liftObstructionClass_mem_sha2`: **an embedding problem solvable over every
   subgroup of a family has an obstruction class trivial on that family.**
+* `InverseGalois.CFT.exists_smooth_lift_of_sha2_eq_bot`: **a locally solvable embedding problem is
+  solvable** as soon as there is no everywhere locally trivial class.
 * `InverseGalois.CFT.isOpenNormal_ker_of_isSmooth₁`,
   `InverseGalois.CFT.isSmooth₁_of_isOpenNormal_ker`: for a homomorphism of topological groups,
   smoothness is having an open kernel.
@@ -285,6 +287,17 @@ theorem liftObstructionClass_mem_sha2 (hker : IsOpenNormal ρ.ker) (σ : S.Secti
     liftObstructionClass S ρ hact hker σ ∈ sha2 N T := by
   refine mem_sha2.2 fun D hD => ?_
   exact (resH2_liftObstructionClass_eq_one_iff S ρ hact hker σ D).2 (h D hD)
+
+include hact in
+/-- **A locally solvable embedding problem is solvable as soon as there is no everywhere locally
+trivial class.**  The obstruction lies in that group, so it vanishes and the solution is the lift
+its vanishing produces. -/
+theorem exists_smooth_lift_of_sha2_eq_bot (hker : IsOpenNormal ρ.ker) (σ : S.Section)
+    {T : Set (Subgroup Γ)} (hbot : sha2 N T = ⊥)
+    (h : ∀ D ∈ T, ∃ f : ↥D →* E, IsSmooth₁ (f : ↥D → E) ∧ ∀ d : ↥D, S.rightHom (f d) = ρ (d : Γ)) :
+    ∃ f : Γ →* E, IsSmooth₁ (f : Γ → E) ∧ ∀ γ, S.rightHom (f γ) = ρ γ :=
+  (liftObstructionClass_eq_one_iff S ρ hact hker σ).1 <|
+    (Subgroup.eq_bot_iff_forall _).1 hbot _ (liftObstructionClass_mem_sha2 S ρ hact hker σ h)
 
 end Restrict
 

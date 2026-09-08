@@ -517,6 +517,7 @@ import InverseGalois.CFT.Profinite.Connecting
 import InverseGalois.CFT.Profinite.Corestriction
 import InverseGalois.CFT.Profinite.Cup
 import InverseGalois.CFT.Profinite.Discrete
+import InverseGalois.CFT.Profinite.EmbeddingClass
 import InverseGalois.CFT.Profinite.EmbeddingObstruction
 import InverseGalois.CFT.Profinite.FixingSubgroup
 import InverseGalois.CFT.Profinite.H1Conj
@@ -5715,6 +5716,18 @@ it that are available here.
   problem solvable on every member of a family of subgroups has its class in the everywhere locally
   trivial ones.**  That is the shape in which an embedding problem over a number field, solvable at
   every place, presents itself to the local-global theorems.
+* `InverseGalois.CFT.Profinite.EmbeddingClass` finds the source that obstruction is inflated from.
+  On a discrete group the trivial subgroup is open, so the identity has open kernel and the
+  construction applies to the identity of the quotient itself: that is **the class of the
+  extension**, which vanishes exactly when the extension splits, there being no smoothness left to
+  ask of a lift of the identity.  **The obstruction of an arbitrary embedding problem is that one
+  class read through the homomorphism** — the same factor set composed with the same map, so the
+  identity is definitional — and the same holds after restricting to a subgroup, the restricted
+  obstruction being the class of the extension over a subgroup containing the image, read through
+  the map of subgroups the homomorphism induces.  What this buys is local solvability without any
+  cohomology: **an embedding problem is solvable on a subgroup whose image lies in a subgroup over
+  which the extension splits**, so a family of such subgroups puts the obstruction in the everywhere
+  locally trivial classes, and if there are none the problem is solved outright.
 * `InverseGalois.CFT.Profinite.H1Conj` puts the quotient back on what restriction produced.  An
   element of the ambient group conjugates a normal subgroup into itself, so substituting the
   conjugate and then acting on the coefficients carries a cochain on the subgroup to another one,
