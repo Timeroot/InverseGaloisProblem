@@ -266,6 +266,7 @@ import InverseGalois.CFT.GroupCohomology.InflationRestriction
 import InverseGalois.CFT.GroupCohomology.MapCoboundary
 import InverseGalois.CFT.GroupCohomology.MapInjective
 import InverseGalois.CFT.GroupCohomology.OfCocycle
+import InverseGalois.CFT.GroupCohomology.SemidirectExtension
 import InverseGalois.CFT.GroupCohomology.SylowRes
 import InverseGalois.CFT.GroupCohomology.TateTwist
 import InverseGalois.CFT.GroupCohomology.ToCocycle
@@ -1575,6 +1576,16 @@ it that are available here.
   the factor set of the upper one, pushed forward along the map of kernels, is the factor set of
   the lower one pulled back along the map of quotients, up to the coboundary of the function
   comparing the two sections.
+* `InverseGalois.CFT.GroupCohomology.SemidirectExtension` builds the extension a central series
+  gives.  A group with operators, divided by a subgroup which is central in it and which the
+  operators preserve, is an extension of the semidirect product below by that subgroup, the operator
+  group being carried along untouched; this is the shape in which a group is assembled one layer of
+  a central series at a time.  Conjugation inside that extension moves the kernel only by the
+  operators, since an element of the normal factor commutes with a central subgroup, so **the action
+  of the quotient on the kernel is the action of the operator group read through the projection of
+  the semidirect product.**  That is the identification a cohomological reading asks for, the class
+  of an extension being formed for conjugation while the count which kills it is formed for the
+  operators.
 * `InverseGalois.CFT.GroupCohomology.Pullback` reads an embedding problem as a single extension:
   the fibre product of the middle term of an extension with a group mapping into the quotient is an
   extension of that group by the same kernel, its factor set is the original factor set read through

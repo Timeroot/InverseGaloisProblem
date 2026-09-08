@@ -4,6 +4,7 @@ import InverseGalois.Solvable.Shafarevich.Reduction
 import InverseGalois.Solvable.Shafarevich.Main
 import InverseGalois.Solvable.Shafarevich.PrimePower
 import InverseGalois.Solvable.Shafarevich.SplitAbelian
+import InverseGalois.Solvable.Shafarevich.QuotientChar
 import InverseGalois.Solvable.Shafarevich.AbelianKernel
 import InverseGalois.Solvable.Shafarevich.MinimalKernel
 import InverseGalois.Solvable.Shafarevich.FrattiniKernel
@@ -61,6 +62,9 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
 * `InverseGalois.Solvable.Shafarevich.PrimePower` reduces nilpotent kernels to kernels of prime
   power order.
 * `InverseGalois.Solvable.Shafarevich.SplitAbelian` records the unconditional abelian case.
+* `InverseGalois.Solvable.Shafarevich.QuotientChar` hands the operators of a group with operators
+  down to a quotient by a characteristic subgroup, functorially, which is how a filtration by
+  characteristic subgroups becomes a tower of groups with the same operators.
 * `InverseGalois.Solvable.Shafarevich.AbelianKernel` peels the centre off a `p`-group kernel one
   layer at a time, reducing the arithmetic hypothesis further to embedding problems whose kernel
   is abelian.
