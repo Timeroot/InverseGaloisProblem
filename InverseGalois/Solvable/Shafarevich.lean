@@ -39,6 +39,7 @@ import InverseGalois.Solvable.Shafarevich.LevelObstruction
 import InverseGalois.Solvable.Shafarevich.LayerFrattini
 import InverseGalois.Solvable.Shafarevich.LevelLift
 import InverseGalois.Solvable.Shafarevich.LevelTwist
+import InverseGalois.Solvable.Shafarevich.LevelRung
 
 /-!
 # Shafarevich's theorem
@@ -251,4 +252,14 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   all at once, and disturbs neither smoothness, nor the projection, nor surjectivity.  So **a
   solution at one level, past the first, gives a solution at the next**, in exchange for one
   prescription of restrictions of a smooth one cocycle along the family.
+* `InverseGalois.Solvable.Shafarevich.LevelRung` collects what the ladder now asks of the arithmetic
+  into a single condition and climbs the whole of it.  A finite family of subgroups and a wider
+  family against which local triviality is measured are chosen once from the base realization; the
+  first rung is asked for outright, the layer there being the Frattini layer, across which a lift
+  carries no guarantee of being onto; and at every later rung three things are asked, for every
+  number of letters â€” that the step be locally solvable along the members of the wider family the
+  finite one does not name, that no class of the layer be everywhere locally trivial, and that
+  restrictions of a smooth one cocycle with values in the layer be prescribable along the finite
+  family.  Granted that package, **the step of the ladder holds**, and with it every split embedding
+  problem with a kernel of prime power order.
 -/
