@@ -17484,3 +17484,117 @@ one about the whole group, and the repo's count never needed the whole group.
   values but with no bound known in advance.  This is not a defect: in Thm 15 the classes genuinely
   live on `Gal(N/k)` and its decomposition subgroups, and inflation to `G_k` is the separate,
   already-built step `galInflH2`.
+
+## §1.57 Step 0 of SW Thm 15: the extension of one layer, split over the places
+
+### (a) What landed
+
+Four commits, `438d582` → `a8b3f2e`, turn §1.56's count into the statement SW's Step 1(a) needs.
+
+* `InverseGalois/CFT/Profinite/ExtensionCoeff.lean` (rewritten, `438d582`) — a **morphism of
+  extensions over a varying quotient**.  `map_smul_of_extensionMap` says a morphism is equivariant
+  on the kernels, and `coeffH2_extensionClass_eq_comapH2` says the class of the extension above,
+  read through the map of the kernels, is the class of the extension below **pulled back along the
+  map of the quotients**.  The earlier fixed-quotient statements survive as corollaries obtained by
+  taking `φ = id` and cancelling the pullback with `comapH2_id`.
+* `InverseGalois/CFT/GroupCohomology/SemidirectExtension.lean` (`80d4524`) — `semidirectExtension`,
+  the `GroupExtension` built from an injection, a surjection, exactness and a compatibility with the
+  operators; `conjActHom_semidirectExtension` computes its conjugation action.
+  `Shafarevich/QuotientChar.lean` gains `quotientChar`, the character of the operator group acting
+  on a quotient (moved out of `AbelianKernel.lean`).
+* `InverseGalois/CFT/Profinite/ComapIso.lean` (`c5c3618`, extended in `a8b3f2e`) — functoriality of
+  `comapH1`/`comapH2`, compatibility with `coeffH1`/`coeffH2`, injectivity of the pullback along an
+  isomorphism, and `resH2_range_eq_one_of_comapH2_eq_one`.
+* `InverseGalois/Solvable/Shafarevich/LayerExtension.lean` (`c5c3618`) — `layerExtension`, one layer
+  of the descending `p`-central series of a group *with operators* presented as a `GroupExtension`
+  of semidirect products, plus `layerSemidirectMap` and the two compatibilities
+  `inl_layerSemidirectMap` / `rightHom_layerSemidirectMap` in exactly the `hinl`/`hright` shape
+  `coeffH2_extensionClass_eq_comapH2` consumes.
+* `InverseGalois/Solvable/Shafarevich/LayerSplit.lean` (`a8b3f2e`) — the assembly.
+
+### (b) The statement produced
+
+```
+exists_operatorHom_forall_resH2_extensionClass_eq_one
+    (ℓ) [Fact ℓ.Prime] (U) [Group U] [Finite U] [TopologicalSpace U] [DiscreteTopology U]
+    (n) (S) [Group S] [Finite S] (hS : IsPGroup ℓ S) (j t) (P : Fin t → Subgroup U)
+    (σn : (layerExtension ℓ (genericAut U n S) j).Section) :
+  ∃ m, ∀ s : ∀ ν, ↥(P ν) →* GenericQuot ℓ U m S j,
+    (∀ ν y, SemidirectProduct.rightHom (s ν y) = (y : U)) →
+    ∃ (α : Generic U m S →* Generic U n S) (hα : IsOperatorHom α), Function.Surjective α ∧
+      ∀ ν, resH2 ((layerSemidirectMap ℓ hα j).comp (s ν)).range (extensionClass … σn) = 1
+```
+
+* **2560 (MATH/SCOPE).** This is SW Thm 15 Step 1(a) with the induced module removed.  SW invokes
+  Prop 6 with `T = Ind_{G_p}^G 𝔽_p` and `c = 2` precisely to turn a statement about a decomposition
+  subgroup into one about the whole group; the repo's count works on a subgroup directly, so the
+  induction is unnecessary.  SW's own remark ("replace `T` by the direct sum of `Ind_{G_p}^G 𝔽_p`,
+  where `p` runs through `Ram(K|k) ∪ S_p ∪ S_∞` … we deal with all these primes within one shrinking
+  process") is realised by the sigma index type `(ν : Fin t) × (↥(P ν) × ↥(P ν))` in
+  `exists_genericShrink_forall_subgroupCoeffH2_eq_one`.
+
+* **2561 (MATH).** The order of the quantifiers matters and is the strong one: `m` is produced
+  **before** the sections are given.  The rank the count needs depends only on `t`, on the orders of
+  the `P ν` and on `finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j)`, none of which mention the
+  sections.  In the arithmetic this is what lets the field `N` be constructed after the group.
+
+* **2562 (MATH).** The hypothesis on a section is only `rightHom ∘ s ν = ↑`, i.e. that `s ν` is a
+  right inverse to the projection over `P ν`.  That is exactly what a place completely decomposed in
+  the field the level above cuts out provides: its decomposition subgroup in the big group maps
+  isomorphically onto the decomposition subgroup below, and the inverse of that isomorphism is `s ν`.
+  Injectivity of `s ν` is then automatic (take `rightHom` of both sides), so no separate hypothesis
+  is needed and no `Subgroup` of the big group appears in the statement.
+
+### (c) The Lean findings
+
+* **2563 (LEAN, KEY).** `coeffH2_extensionClass_eq_comapH2` **must have `S₁`, `S₂`, `α`, `ψ`, `φ`
+  pinned by name** at the `GenericQuot` call site.  Left implicit, elaboration hits a
+  `(deterministic) timeout at whnf` that survives `maxHeartbeats 2000000` (9m19s).  The cause is
+  argument order: `hact : ∀ g n, g • n = φ g • n` is elaborated *before* `hright`, so `fun _ _ => rfl`
+  is checked while `φ` is still a metavariable, and the unifier tries to solve for a homomorphism out
+  of a `SemidirectProduct` of a quotient of a quotient of a free pro-`ℓ` group.  With
+  `(φ := layerSemidirectMap ℓ hα j)` and the other four pinned, the same line elaborates in seconds.
+  The same pinning is needed on `map_smul_of_extensionMap`.
+
+* **2564 (LEAN).** For the *same* reason, do not build the transport (`MonoidHom.ofInjective`,
+  the subgroup action, `comapH2_comapH2`, `comapH2_congr`) inline in a proof whose context already
+  holds the big `hcmp`.  Factor it into `resH2_range_eq_one_of_comapH2_eq_one`, stated over abstract
+  discrete groups; there the same chase is instantaneous.  Inside *that* lemma the pinning is needed
+  once more: `comapH2_comapH2` must be given `(π := (MonoidHom.ofInjective hinj : G →* ↥f.range))`
+  and `(ρ := f.range.subtype)`, because the subgroup action reduces `(ofInjective hinj g) • m` to
+  `f g • m` and the unifier otherwise picks `π := f`.
+
+* **2565 (LEAN).** `MonoidHom.ofInjective {f : G →* N} (hf : Injective f) : G ≃* f.range`
+  (Mathlib `Algebra/Group/Subgroup/Ker.lean:185`).  The name is `MonoidHom.ofInjective`, **not**
+  `MulEquiv.ofInjective` (zero hits in v4.28).  `MonoidHom.ofInjective_apply` is `rfl`, which is what
+  makes `H.subtype.comp ↑e = f` provable by `MonoidHom.ext fun _ => rfl`.
+
+* **2566 (LEAN).** `GroupExtension.Section` (Mathlib `GroupTheory/GroupExtension/Defs.lean:241`) has
+  no default instance.  Build one with
+  `⟨Function.surjInv S.rightHom_surjective, Function.rightInverse_surjInv _⟩`.
+
+* **2567 (LEAN).** `IsOperatorHom α` (`GenericHomology.lean:93`) unfolds *literally* to the `hf`
+  hypothesis shape of `layerSemidirectMap`, so `layerSemidirectMap ℓ hα j` typechecks with no
+  massaging.  Beware the argument lists, which differ because of a `variable {P}` in
+  `LayerExtension.lean`: `pCentralProj_comp_pCentralAut p j χ`, `layerSub_central p j`,
+  `layerSemidirectMap ℓ hα j` (its `n` is its own binder), but `inl_layerSemidirectMap ℓ j hα` and
+  `rightHom_layerSemidirectMap ℓ j hα` (section `j` first, then `hf`).
+
+* **2568 (LEAN).** `GenericQuot` carries its own `⊥` `TopologicalSpace` and `DiscreteTopology`
+  instances and a single cross-level action `genericQuotAction ℓ U m n S j`, exported as a `def` and
+  made a **local** instance.  Importers must re-declare `attribute [local instance]
+  genericQuotAction` (the gotcha-1931 idiom).  Do **not** also import `LayerExtension`'s
+  `layerSemidirectAction`: the two are defeq but not syntactically equal, and having both in scope
+  reintroduces the unification blowup of 2563.
+
+### (d) What is now missing between here and Thm 15
+
+Step 0 exists as a group-theoretic theorem.  The remaining chain, in order:
+
+1. produce the sections from arithmetic — a place completely decomposed in `N|k` gives
+   `s ν : ↥(P ν) →* GenericQuot ℓ U m S j` with `rightHom ∘ s ν = ↑` (Chebotarev, already available
+   as `CFT/…/SplitDensityFamily` and the decomposition-subgroup dictionary);
+2. inflate: `resH2 … = 1` on the finite group is turned into a statement about `G_k` by
+   `galInflH2`, whose kernel is controlled by `sha2_le_range_galInflH2`;
+3. Steps 1(b), 1(c) (unramified and ramified primes), Step 2 (which can use
+   `sha2_le_range_galInflH2_of_isoInducedRep` instead of Poitou–Tate) and Steps 3–4.
