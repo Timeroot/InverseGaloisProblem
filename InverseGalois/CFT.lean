@@ -5741,18 +5741,21 @@ it that are available here.
   cohomology: **an embedding problem is solvable on a subgroup whose image lies in a subgroup over
   which the extension splits**, so a family of such subgroups puts the obstruction in the everywhere
   locally trivial classes, and if there are none the problem is solved outright.
-* `InverseGalois.CFT.Profinite.ExtensionCoeff` compares two extensions of one group.  A
-  homomorphism of the middle terms which carries the first kernel into the second and induces the
-  identity below is equivariant on the kernels, both actions being conjugation inside the
-  extension, so it induces a map of the second cohomology; and **the class of the extension above
-  goes to the class of the extension below**, the two factor sets differing by the coboundary of
-  the function comparing a transported section with a section below, which on a discrete group is
-  smooth for nothing.  Restriction to a subgroup commutes with a map of the coefficients, so the
-  same holds after restricting, and that is the reading a shrinking construction wants: **the
-  extension below splits over a subgroup as soon as the map of the kernels kills the restriction to
-  that subgroup of the class of the extension above.**  The classes to be killed are then finitely
-  many classes of subgroups with coefficients in the kernel, which is the shape a counting argument
-  can reach.
+* `InverseGalois.CFT.Profinite.ExtensionCoeff` compares two extensions.  A homomorphism of the
+  middle terms which carries the first kernel into the second and covers a homomorphism of the
+  quotients is equivariant on the kernels, both actions being conjugation inside the respective
+  extension, so it induces a map of the second cohomology of the quotient above; and **the class of
+  the extension above goes to the class of the extension below, pulled back along the map of the
+  quotients**, the two factor sets differing by the coboundary of the function comparing a
+  transported section with a section below, which on a discrete group is smooth for nothing.  This
+  is the generality a construction indexed by levels asks for, since the two extensions it compares
+  sit over the levels it is moving between; over a fixed quotient the pullback is the identity and
+  the two classes simply correspond.  Restriction to a subgroup commutes with a map of the
+  coefficients, so the same holds after restricting, and that is the reading a shrinking
+  construction wants: **the extension below splits over a subgroup as soon as the map of the kernels
+  kills the restriction to that subgroup of the class of the extension above.**  The classes to be
+  killed are then finitely many classes of subgroups with coefficients in the kernel, which is the
+  shape a counting argument can reach.
 * `InverseGalois.CFT.Profinite.H1Conj` puts the quotient back on what restriction produced.  An
   element of the ambient group conjugates a normal subgroup into itself, so substituting the
   conjugate and then acting on the coefficients carries a cochain on the subgroup to another one,
