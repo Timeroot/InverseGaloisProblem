@@ -18642,3 +18642,161 @@ See (b).
 
 **2616 (BUILD).**  `lake build InverseGalois.Solvable.Shafarevich.LevelCoverOperator` = 8083 jobs,
 ~13 s.  `…Shafarevich.HomologyIntegral` = 8084 jobs, ~86 s.
+
+## §1.65 Gap 3 closed: the coefficients are the same, and the whole feed is one hypothesis
+
+§1.64 left three things between the CFT theorem `exists_tateMap_imp_coeffH2_eq_one`
+(`CFT/PoitouTate/ShaCover.lean`) and the ladder's `HasShrinkableSha`.  Two were shape; the third,
+item (c)3, was the **coefficient identification**.  It is now closed, and with it the entire feed
+collapses to a single named hypothesis about global duality.
+
+### (a) `tateModule X (-2)` needs no transport at all
+
+Finding 2597 said `tateModule A (-((m:ℤ)+2)) = groupHomology A (m+1)` by `rfl`.  Sharpened:
+
+* `groupHomology.H1 A` is an `abbrev` for `groupHomology A 1` (Mathlib `LowDegree.lean:890`);
+* `tateModule A (-2) = groupHomology A 1` **and** `tateMap φ (-2) = groupHomology.map (id) φ 1`,
+  both by definitional match on `Int.negSucc 1`.
+
+So the class CFT hands back and the class the ladder consumes are *the same object of the same
+category*.  `hasIntegralShaTateCover_of_hasTateShaCover` needed no `show`, no coercion, no
+transport — only the change of coefficients.
+
+### (b) The two readings of the coefficients
+
+CFT carries `linHomObj A B = Hom(A, B)`; the ladder carries `genericLayerTensor U N S ℓ j W`
+`= Layer ⊗ W`.  Take `A = intRep M` with `M` a one-dimensional `𝔽_ℓ`-representation of the level
+(the μ_ℓ slot), `B = intRep (genericLayer U N S ℓ j)` and `W = dualRep M`.  Then
+
+```
+Layer ⊗ M^∨  ≅  Hom(M, Layer)
+```
+
+is `linHomTensorEquiv` (`Solvable/Shafarevich/LinHomTensor.lean`), the classical
+`dualTensorHomEquiv` after a `TensorProduct.comm`.  Two separate steps are needed to make it an
+isomorphism of the *integral* representations the duality lives in:
+
+* `IntLinHom.lean`: `intLinHomIso M L : intRep (linHomObj M L) ≅ linHomObj (intRep M) (intRep L)` —
+  a `ZMod ℓ`-linear map between `ZMod ℓ`-vector spaces is exactly an additive map, so this is
+  `LinearMap.toAddMonoidHom` in both directions and is `rfl` on elements; plus
+  `intLinHomIso_naturality` for post-composition.
+* `LinHomTensor.lean`: `linHomTensorIso M L : Rep.of (tprod L.ρ (dualRep M).ρ) ≅ linHomObj M L`
+  with `linHomTensorIso_naturality`, the compatibility with a map of the *target*, stated with the
+  tensor-side morphism as a hypothesis `(hΨ : ∀ x, Ψ.hom x = LinearMap.rTensor _ ψ.hom.hom x)` so
+  that `operatorTensorRep` — which is *defined* as `rTensor` — matches it by `fun _ => rfl`.
+
+Composed (`layerLinHomIso`, `LayerDuality.lean`) and combined with `intRepIso`/`intRepMap` these
+give `layerLinHomIso_naturality`: **the identification commutes with every shrinking of the level.**
+
+`Rep.of_ρ` is `rfl` (Mathlib `Rep.lean:80`), so `genericLayerTensor U n S ℓ j W` unifies
+definitionally with `Rep.of (Representation.tprod (genericLayer …).ρ W.ρ)` and no coercion help is
+needed anywhere.
+
+### (c) The transport runs *forward*
+
+`LinHomTensor.lean` originally carried the backward transport (from a vanishing on the `X`-side to
+a vanishing on the `Y`-side).  What the feed needs is the other direction: given
+`e.hom ≫ v = u ≫ e'.hom` and a class `x` **downstairs on `Y`**, a vanishing of
+`map u (map e.inv x)` gives a vanishing of `map v x`.  Two lines, from `map_map_iso_inv e.symm`.
+`map_eq_zero_of_isoSquare` now states that version.
+
+### (d) `HasTateShaCover`, and the chain in full
+
+```lean
+def HasTateShaCover : Prop :=
+  letI := galLayerAction ℓ U N S j φ
+  ∀ ε ∈ sha2 ↥(layerSub ℓ (Generic U N S) j) T,
+    ∃ x : ↥(tateModule (linHomObj (intRep M) (intRep (genericLayer U N S ℓ j))) (-2)),
+      ∀ n α (hα : IsOperatorHom α),
+        tateMap (linHomPostHom (intRep M) (intRepMap (operatorLayerRep hα ℓ j))) (-2) x = 0 →
+          coeffH2 (layerSubMap ℓ α j) … ε = 1
+```
+
+The `∃ x, ∀ n α hα` order is the whole point: `x` is produced by `exists_cartierPairing_sha_eq`
+from the character alone, *before* any shrinking is chosen, exactly as `HasIntegralShaTateCover`
+demands.  The chain is now
+
+```
+HasShrinkShaDualInjection      (global duality — the ONLY hypothesis)
+  ⟹ HasTateShaCover            hasTateShaCover_of_hasShrinkShaDualInjection
+  ⟹ HasIntegralShaTateCover    hasIntegralShaTateCover_of_hasTateShaCover
+  ⟹ HasOperatorShaTateCover    hasOperatorShaTateCover_of_hasIntegralShaTateCover
+  ⟹ HasShaTateCover            hasShaTateCover_of_hasOperatorShaTateCover
+  ⟹ HasShrinkableSha           hasShrinkableSha_of_hasShaTateCover
+```
+
+and `hasShrinkableSha_of_hasShrinkShaDualInjection` is the composite:
+
+```lean
+theorem hasShrinkableSha_of_hasShrinkShaDualInjection (hS : IsPGroup ℓ S)
+    (hcard : ℓ ∣ Nat.card ↥M.V) (h : ∀ N : ℕ, HasShrinkShaDualInjection F S j M N) (n : ℕ) :
+    HasShrinkableSha ℓ (↥F ≃ₐ[k] ↥F) n S j (AlgEquiv.restrictNormalHom (K₁ := Ω) F)
+      (decompositionSubgroups k Ω)
+```
+
+This discharges the **second conjunct** of `HasRungData` (`LevelRung.lean:71`) outright.
+
+### (e) What `HasShrinkShaDualInjection` says — wall #1, in its final shape
+
+```lean
+def HasShrinkShaDualInjection (N : ℕ) : Prop :=
+  ∃ α : Additive ↥(sha2 (Multiplicative ↥B_N.V) (decompositionSubgroups k Ω)) →+
+      (Additive ↥(sha1 (Multiplicative ↥(linHomObj B_N (intRep M)).V) …) →ₗ[ℤ] AddCircle (1:ℚ)),
+    ∀ n α₀ (hα₀ : IsOperatorHom α₀),
+      ∃ α', Function.Injective α' ∧ IsShaDualNatural F (intRep M) … α α'
+```
+
+with `B_n := intRep (genericLayer Gal(F/k) n S ℓ j)`.  In words: **Poitou–Tate global duality
+`Ш²(k, B) ≅ Ш¹(k, Hom(B, μ_ℓ))^∨`** for the finite Galois module `B` = a layer of the level,
+together with its naturality in `B`.  Only the *downstairs* copy has to be injective.
+
+This is the whole of what the arithmetic still owes on the Ш side.  Note the shape it is asked in:
+one `α` at level `N` valid for *all* shrinkings — which is automatic for any duality worth the
+name, since `α` does not mention the shrinking at all.
+
+### Findings
+
+**2617 (MATHLIB/REPO, KEY).**  `groupHomology.H1 A` is an `abbrev` for `groupHomology A 1`
+(`LowDegree.lean:890`), and `tateModule A (-2) = groupHomology A 1`,
+`tateMap φ (-2) = groupHomology.map (MonoidHom.id G) φ 1`, all by `rfl`.  The CFT class and the
+ladder class are literally the same object; no transport is needed between §1.63 and §1.64.
+
+**2618 (MATHLIB).**  `Rep.of_ρ` is `rfl` (`Rep.lean:80`), so `Rep.of (Representation.tprod X.ρ Y.ρ)`
+unifies definitionally with any `def` wrapping it.
+
+**2619 (LEAN, KEY).**  A bare `letI := f a b c` in a *theorem statement* leaves the ambient `HSMul`
+**stuck** ("typeclass instance problem is stuck, it is often due to metavariables") whenever `f`
+has an implicit argument that only the *expected type* would determine — here the prime `ℓ` of
+`galIntLayerAction`.  The cure is a named argument, `letI := galIntLayerAction (ℓ := ℓ) F S j N`,
+not a type ascription on the `letI` and not restating the type of the bound variable.
+
+**2620 (LEAN).**  A `letI` in a theorem *statement* is invisible to the *proof*: a lemma whose own
+instance arguments are stated at a defeq-but-not-syntactically-equal type (here
+`↥(layerSub …)` versus `Multiplicative ↥(intRep (genericLayer …)).V`) will fail to synthesize.
+Re-introduce the instances at the lemma's own shape with `letI` **inside** the `by` block; `exact`
+then closes the goal up to defeq.
+
+**2621 (LEAN).**  `AlgEquiv.restrictNormalHom F` inside a tactic block needs `(K₁ := Ω)`; without it
+`IsScalarTower k ↥F ?m` is stuck.  In a *statement* the expected type usually supplies it.
+
+**2622 (LEAN).**  The `unusedSectionVars` linter is only accurate once the declaration *elaborates*
+(cf. finding 1044): while `repMulHom_operatorLayerRep_smul` was failing, `[IsGalois k ↥F]` looked
+unused; once it compiled, `Normal k ↥F` was needed by `restrictNormalHom` and the `omit` had to be
+trimmed.  Never freeze an `omit` list from a failing build.
+
+**2623 (REPO).**  `Finite ↥(intRep A).V` and `IsAddCyclic ↥(intRep A).V` are **not** found by
+`inferInstance` even though they hold by `‹…›`: typeclass search will not unfold
+`intRep`/`Rep.of`/`ModuleCat.of`.  `instFiniteIntRep`/`instIsAddCyclicIntRep`
+(`LayerDuality.lean`) supply them.  By contrast `Finite (↥F ≃ₐ[k] ↥F)`,
+`TopologicalSpace (↥F ≃ₐ[k] ↥F)`, `Finite (Layer ℓ (Generic U n S) j)` and
+`Finite ↥(genericLayer U n S ℓ j).V` all *are* found directly.
+
+**2624 (REPO).**  `MulDistribMulAction.compHom _ (AlgEquiv.restrictNormalHom (K₁ := Ω) F)` gives the
+Galois action on `Multiplicative ↥(linHomObj (intRep (genericLayer …)) (intRep M)).V` through the
+level, and CFT's `hπ : ∀ g m, g • m = AlgEquiv.restrictNormalHom F g • m` then holds by
+`fun _ _ => rfl`.
+
+**2625 (BUILD).**  `hasTateShaCover_of_hasShrinkShaDualInjection` needs
+`set_option maxHeartbeats 1000000 in`: the final `exact` unifies `coeffH2 (repMulHom (intRepMap …))`
+with `coeffH2 (layerSubMap ℓ α j)` and `galIntLayerAction` with `galLayerAction`, both only up to
+defeq.  `lake build …Shafarevich.LayerDuality` = 8323 jobs, ~54 s; full root build = **9853 jobs**.

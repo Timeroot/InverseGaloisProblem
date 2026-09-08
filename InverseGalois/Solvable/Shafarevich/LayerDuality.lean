@@ -50,6 +50,8 @@ hypothesis.
   complete cohomology is the governing class of first homology the ladder consumes.**
 * `InverseGalois.Shafarevich.hasTateShaCover_of_hasShrinkShaDualInjection`: **global duality
   produces the governing class of complete cohomology.**
+* `InverseGalois.Shafarevich.hasShrinkableSha_of_hasShrinkShaDualInjection`: **global duality makes
+  every everywhere locally trivial class of a layer shrinkable.**
 
 ## Tags
 
@@ -280,6 +282,24 @@ theorem hasTateShaCover_of_hasShrinkShaDualInjection (hcard : ℓ ∣ Nat.card �
     (intRepMap (operatorLayerRep hα₀ ℓ j)) (repMulHom_operatorLayerRep_smul F hα₀)
     (nsmul_layer_eq_zero F S j M hcard N) (nsmul_layer_eq_zero F S j M hcard n) hinj hnat
     ⟨ε, hε⟩ x hx hkill
+
+/-- **Global duality makes every everywhere locally trivial class of a layer shrinkable.**  The
+governing class of complete cohomology is the governing class of first homology, a covering by
+integral homology classes is a covering, a covering by the homology of the level is a covering by
+the homology of the semidirect product, and a covered class is a shrinkable class. -/
+theorem hasShrinkableSha_of_hasShrinkShaDualInjection (hS : IsPGroup ℓ S)
+    (hcard : ℓ ∣ Nat.card ↥M.V) (h : ∀ N : ℕ, HasShrinkShaDualInjection F S j M N) (n : ℕ) :
+    HasShrinkableSha ℓ (↥F ≃ₐ[k] ↥F) n S j (AlgEquiv.restrictNormalHom (K₁ := Ω) F)
+      (decompositionSubgroups k Ω) :=
+  hasShrinkableSha_of_hasShaTateCover ℓ (↥F ≃ₐ[k] ↥F) n S hS j
+      (AlgEquiv.restrictNormalHom F) (decompositionSubgroups k Ω) (dualRep M) fun N =>
+    hasShaTateCover_of_hasOperatorShaTateCover ℓ (↥F ≃ₐ[k] ↥F) N S j
+        (AlgEquiv.restrictNormalHom F) (decompositionSubgroups k Ω) (dualRep M) <|
+      hasOperatorShaTateCover_of_hasIntegralShaTateCover ℓ (↥F ≃ₐ[k] ↥F) N S j
+          (AlgEquiv.restrictNormalHom F) (decompositionSubgroups k Ω) (dualRep M) <|
+        hasIntegralShaTateCover_of_hasTateShaCover N S j (AlgEquiv.restrictNormalHom F)
+          (decompositionSubgroups k Ω) M
+          (hasTateShaCover_of_hasShrinkShaDualInjection F S j M hcard N (h N))
 
 end Duality
 
