@@ -37,6 +37,7 @@ import InverseGalois.Solvable.Shafarevich.LayerTower
 import InverseGalois.Solvable.Shafarevich.LevelSolution
 import InverseGalois.Solvable.Shafarevich.LevelObstruction
 import InverseGalois.Solvable.Shafarevich.LayerFrattini
+import InverseGalois.Solvable.Shafarevich.LevelLift
 
 /-!
 # Shafarevich's theorem
@@ -235,4 +236,11 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   together with it generates the group is already the group.  The operator group carried alongside
   is no obstacle, the layer sitting inside the normal factor, so pulling a supplement back to that
   factor is enough, and **past the first layer a lift over a surjection is a surjection.**
+* `InverseGalois.Solvable.Shafarevich.LevelLift` puts those two together and reads off what is
+  left.  A solution at one level, taken with enough letters, lifts to the next level, and three of
+  the four clauses asked of a solution there come with it: **the lift is smooth, it projects to the
+  base realization, and past the first layer it is onto.**  The fourth clause is not free, but its
+  failure is confined: along a member of the family, wherever the base realization is trivial, the
+  lift lands in the layer.  So the entire remaining content of one rung of the ladder is a
+  prescription of restrictions in the layer, in degree one.
 -/

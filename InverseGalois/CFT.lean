@@ -546,6 +546,7 @@ import InverseGalois.CFT.Profinite.KummerTower
 import InverseGalois.CFT.Profinite.KummerTransport
 import InverseGalois.CFT.Profinite.KummerTwist
 import InverseGalois.CFT.Profinite.KummerTwo
+import InverseGalois.CFT.Profinite.LiftTwist
 import InverseGalois.CFT.Profinite.Pi
 import InverseGalois.CFT.Profinite.PiTwo
 import InverseGalois.CFT.Profinite.Quotient
@@ -5772,6 +5773,17 @@ it that are available here.
   cohomology: **an embedding problem is solvable on a subgroup whose image lies in a subgroup over
   which the extension splits**, so a family of such subgroups puts the obstruction in the everywhere
   locally trivial classes, and if there are none the problem is solved outright.
+* `InverseGalois.CFT.Profinite.LiftTwist` moves between the solutions once there is one.
+  Multiplying a lift by a one cocycle with values in the kernel gives **again a lift**: the cocycle
+  condition is precisely what makes the product multiplicative, conjugation inside the extension
+  being the action on the kernel, and the projection kills the kernel so nothing changes downstairs.
+  Smoothness survives, the two open normal subgroups on whose cosets the lift and the cocycle are
+  constant meeting in an open normal subgroup.  The use is a lift asked to be trivial along a family
+  of subgroups: **along a subgroup where the map to the quotient is trivial the lift is a
+  homomorphism into the kernel**, so the failure is one homomorphism per member of the family, and
+  **a twist by a cocycle restricting to the inverse of that homomorphism is trivial there**.  The
+  whole of what is left is therefore a question about prescribing the restrictions of a class of the
+  first cohomology — the shape in which the local conditions of the solvable programme meet duality.
 * `InverseGalois.CFT.Profinite.ExtensionCoeff` compares two extensions.  A homomorphism of the
   middle terms which carries the first kernel into the second and covers a homomorphism of the
   quotients is equivariant on the kernels, both actions being conjugation inside the respective
