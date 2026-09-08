@@ -38,6 +38,7 @@ import InverseGalois.Solvable.Shafarevich.LevelSolution
 import InverseGalois.Solvable.Shafarevich.LevelObstruction
 import InverseGalois.Solvable.Shafarevich.LayerFrattini
 import InverseGalois.Solvable.Shafarevich.LevelLift
+import InverseGalois.Solvable.Shafarevich.LevelShrink
 import InverseGalois.Solvable.Shafarevich.LevelTwist
 import InverseGalois.Solvable.Shafarevich.LevelRung
 
@@ -245,6 +246,17 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   failure is confined: along a member of the family, wherever the base realization is trivial, the
   lift lands in the layer.  So the entire remaining content of one rung of the ladder is a
   prescription of restrictions in the layer, in degree one.
+* `InverseGalois.Solvable.Shafarevich.LevelShrink` removes the demand that no class be everywhere
+  locally trivial, which over a number field is false.  What is true there is that such a class is
+  inflated from the finite quotient the base realization cuts out, and that is enough, because the
+  shrinking count is insensitive to everything but the order of the group carrying the class, and
+  the operator group has an order fixed in advance.  So the count is run a second time, on the
+  single class the first run leaves behind: the rank it asks for is settled by the operator group,
+  the intended number of letters and the layer alone, so a solution with that many times as many
+  letters is produced, its obstruction written as an inflated class, and the class killed.  Pushing
+  the solution down carries its obstruction to the image of what was killed, so **a solution at one
+  level lifts to the next as soon as the everywhere locally trivial classes of the layer are
+  inflated from the operator group.**
 * `InverseGalois.Solvable.Shafarevich.LevelTwist` pays that price and closes the rung.  The lifts of
   an embedding problem form a torsor under the one cocycles of the kernel, and along a member of the
   family where the base realization is trivial the discrepancy is a smooth homomorphism into the
@@ -258,8 +270,8 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   first rung is asked for outright, the layer there being the Frattini layer, across which a lift
   carries no guarantee of being onto; and at every later rung three things are asked, for every
   number of letters â€” that the step be locally solvable along the members of the wider family the
-  finite one does not name, that no class of the layer be everywhere locally trivial, and that
-  restrictions of a smooth one cocycle with values in the layer be prescribable along the finite
-  family.  Granted that package, **the step of the ladder holds**, and with it every split embedding
-  problem with a kernel of prime power order.
+  finite one does not name, that every everywhere locally trivial class of the layer be inflated
+  from the operator group, and that restrictions of a smooth one cocycle with values in the layer be
+  prescribable along the finite family.  Granted that package, **the step of the ladder holds**, and
+  with it every split embedding problem with a kernel of prime power order.
 -/

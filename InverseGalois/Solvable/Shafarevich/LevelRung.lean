@@ -18,17 +18,15 @@ The list has four entries.  A finite family of subgroups and a wider family agai
 triviality is measured are chosen once from the base realization; then the first rung is asked for
 outright, since the layer there is the Frattini layer and a lift over it need not be onto; and at
 every later rung three things are asked, for every number of letters: that the step be locally
-solvable along the members of the wider family the finite one does not name, that no class of the
-layer be everywhere locally trivial, and that restrictions of a smooth one cocycle with values in
-the layer be prescribable along the finite family.
+solvable along the members of the wider family the finite one does not name, that every everywhere
+locally trivial class of the layer be inflated from the operator group, and that restrictions of a
+smooth one cocycle with values in the layer be prescribable along the finite family.
 
 Granted that package, one rung follows from the previous one, and hence, by the ladder already
 built, every split embedding problem with a kernel of prime power order.
 
 ## Main definitions
 
-* `InverseGalois.Shafarevich.galLayerAction` — the Galois group acts on a layer of a generic
-  operator group through the base realization.
 * `InverseGalois.Shafarevich.HasRungData` — **everything the arithmetic has to supply for the whole
   ladder**, gathered into one condition.
 
@@ -47,15 +45,6 @@ namespace InverseGalois.Shafarevich
 
 open InverseGalois.CFT
 
-/-! ### The action on a layer through the base realization -/
-
-/-- **The Galois group acts on a layer of a generic operator group through the base realization.**
-The operator group acts on every layer, and the base realization is a homomorphism onto it. -/
-def galLayerAction (ℓ : ℕ) (U : Type) [Group U] [Finite U] (n : ℕ) (S : Type) [Group S] [Finite S]
-    (j : ℕ) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω] (φ : Gal(Ω/k) →* U) :
-    MulDistribMulAction Gal(Ω/k) ↥(layerSub ℓ (Generic U n S) j) :=
-  MulDistribMulAction.compHom _ φ
-
 /-! ### The arithmetic the ladder consumes -/
 
 /-- **Everything the arithmetic has to supply for the whole ladder.**
@@ -68,28 +57,27 @@ infinite places, and the second is the family of all decomposition subgroups.
 The first rung is asked for outright, because the layer there is the Frattini layer of the group
 and a lift across it carries no guarantee of being onto.  At every later rung three things are
 asked, for every number of letters: that the step be locally solvable along the members of the
-wider family which the finite one does not name, that no class of the layer be everywhere locally
-trivial, and that the restrictions of a smooth one cocycle with values in the layer be prescribable
-along the finite family. -/
+wider family which the finite one does not name, that every everywhere locally trivial class of the
+layer be inflated from the operator group, and that the restrictions of a smooth one cocycle with
+values in the layer be prescribable along the finite family. -/
 def HasRungData (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] [TopologicalSpace U]
     [DiscreteTopology U] (S : Type) [Group S] [Finite S] {k Ω : Type*} [Field k] [Field Ω]
     [Algebra k Ω] (φ : Gal(Ω/k) →* U) {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k))
     (T : Set (Subgroup Gal(Ω/k))) : Prop :=
   (∀ n : ℕ, LevelSolution ℓ U S φ (Set.range D) n 1) ∧
-    ∀ n j : ℕ, 1 ≤ j → HasLocalLift ℓ U n S j φ D T ∧
-      @sha2 Gal(Ω/k) _ _ ↥(layerSub ℓ (Generic U n S) j) _ (galLayerAction ℓ U n S j φ) T = ⊥ ∧
-        @HasCocyclePrescription Gal(Ω/k) _ _ ↥(layerSub ℓ (Generic U n S) j) _
-          (galLayerAction ℓ U n S j φ) t fun ν => D ν ⊓ φ.ker
+    ∀ n j : ℕ, 1 ≤ j → HasLocalLift ℓ U n S j φ D T ∧ HasInflatedSha ℓ U n S j φ T ∧
+      @HasCocyclePrescription Gal(Ω/k) _ _ ↥(layerSub ℓ (Generic U n S) j) _
+        (galLayerAction ℓ U n S j φ) t fun ν => D ν ⊓ φ.ker
 
 /-! ### One rung -/
 
 /-- **One rung of the ladder, from the arithmetic.**  At the bottom the package supplies the rung
 itself; past it the three conditions of the package are exactly the three the rung consumes, the
-section of the extension one layer gives coming from the surjectivity built into an extension. -/
+locally trivial classes being carried away by a second shrinking. -/
 theorem levelSolution_succ_of_hasRungData (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U]
     [TopologicalSpace U] [DiscreteTopology U] (S : Type) [Group S] [Finite S] (hS : IsPGroup ℓ S)
-    {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω] (φ : Gal(Ω/k) →* U) {t : ℕ}
-    (D : Fin t → Subgroup Gal(Ω/k)) (T : Set (Subgroup Gal(Ω/k)))
+    {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω] (φ : Gal(Ω/k) →* U) (hsmφ : IsSmoothHom φ)
+    {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k)) (T : Set (Subgroup Gal(Ω/k)))
     (hdata : HasRungData ℓ U S φ D T) (j : ℕ)
     (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) m j) (n : ℕ) :
     LevelSolution ℓ U S φ (Set.range D) n (j + 1) := by
@@ -98,10 +86,9 @@ theorem levelSolution_succ_of_hasRungData (ℓ : ℕ) [Fact ℓ.Prime] (U : Type
   | succ j =>
     have hj : 1 ≤ j + 1 := Nat.le_add_left 1 j
     letI := galLayerAction ℓ U n S (j + 1) φ
-    obtain ⟨hloc, hbot, hpres⟩ := hdata.2 n (j + 1) hj
-    exact levelSolution_succ_of_hasCocyclePrescription ℓ U n S hS hj φ (fun _ _ => rfl) D T hloc
-      ⟨Function.surjInv (layerExtension ℓ (genericAut U n S) (j + 1)).rightHom_surjective,
-        Function.rightInverse_surjInv _⟩ hbot hpres h
+    exact levelSolution_succ_of_hasInflatedSha ℓ U n S hS hj φ hsmφ (fun _ _ => rfl) D T
+      (fun m => (hdata.2 m (j + 1) hj).1) (fun m => (hdata.2 m (j + 1) hj).2.1)
+      (hdata.2 n (j + 1) hj).2.2 h
 
 end InverseGalois.Shafarevich
 
@@ -123,6 +110,7 @@ theorem genericLevelStepEP_of_hasRungData (ℓ : ℕ) [Fact ℓ.Prime]
     GenericLevelStepEP ℓ := by
   intro S U _ _ _ _ _ _ Ω _ _ _ _ φ hS hsurj hsm
   obtain ⟨t, D, T, hdata⟩ := h S U Ω φ hS hsurj hsm
-  exact ⟨Set.range D, fun j hj n => levelSolution_succ_of_hasRungData ℓ U S hS φ D T hdata j hj n⟩
+  exact ⟨Set.range D,
+    fun j hj n => levelSolution_succ_of_hasRungData ℓ U S hS φ hsm D T hdata j hj n⟩
 
 end Shafarevich
