@@ -38,6 +38,7 @@ import InverseGalois.Solvable.Shafarevich.LevelSolution
 import InverseGalois.Solvable.Shafarevich.LevelObstruction
 import InverseGalois.Solvable.Shafarevich.LayerFrattini
 import InverseGalois.Solvable.Shafarevich.LevelLift
+import InverseGalois.Solvable.Shafarevich.LevelTwist
 
 /-!
 # Shafarevich's theorem
@@ -243,4 +244,11 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   failure is confined: along a member of the family, wherever the base realization is trivial, the
   lift lands in the layer.  So the entire remaining content of one rung of the ladder is a
   prescription of restrictions in the layer, in degree one.
+* `InverseGalois.Solvable.Shafarevich.LevelTwist` pays that price and closes the rung.  The lifts of
+  an embedding problem form a torsor under the one cocycles of the kernel, and along a member of the
+  family where the base realization is trivial the discrepancy is a smooth homomorphism into the
+  layer; a single global cocycle restricting to the inverses of those homomorphisms cancels them
+  all at once, and disturbs neither smoothness, nor the projection, nor surjectivity.  So **a
+  solution at one level, past the first, gives a solution at the next**, in exchange for one
+  prescription of restrictions of a smooth one cocycle along the family.
 -/

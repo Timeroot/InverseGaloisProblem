@@ -26,15 +26,21 @@ classes of the first cohomology.
 ## Main definitions
 
 * `InverseGalois.CFT.twistLift`: **a lift twisted by a one cocycle**, again a lift.
+* `InverseGalois.CFT.HasCocyclePrescription`: **the restrictions of a smooth one cocycle along a
+  family of subgroups can be prescribed at will.**
 
 ## Main results
 
 * `InverseGalois.CFT.rightHom_twistLift`, `InverseGalois.CFT.isSmooth₁_twistLift` — the twisted
   lift is again over the same map and again smooth.
-* `InverseGalois.CFT.exists_hom_inl_eq` — **along a subgroup where the map to the quotient is
-  trivial a lift is a homomorphism into the kernel.**
+* `InverseGalois.CFT.exists_hom_inl_eq` and `InverseGalois.CFT.isSmooth₁_of_inl_comp` — **along a
+  subgroup where the map to the quotient is trivial a lift is a smooth homomorphism into the
+  kernel.**
 * `InverseGalois.CFT.twistLift_eq_one` — **a twist by a cocycle restricting to the inverse of that
   homomorphism is trivial along the subgroup.**
+* `InverseGalois.CFT.exists_lift_eq_one_of_hasCocyclePrescription` — **a lift can be corrected to
+  one which is trivial along a whole family of subgroups**, as soon as restrictions of cocycles
+  along that family can be prescribed.
 
 ## Tags
 
@@ -44,6 +50,24 @@ group extension, embedding problem, lift, one cocycle, torsor, Galois cohomology
 namespace InverseGalois.CFT
 
 open GroupExtension groupCohomology
+
+/-! ### Prescribing the restrictions of a cocycle -/
+
+/-- **The restrictions of a smooth one cocycle along a family of subgroups can be prescribed at
+will.**
+
+The family is asked to act trivially on the coefficients, which is what makes the question
+well posed: on a subgroup acting trivially a one cocycle restricts to a homomorphism, and two
+cohomologous cocycles restrict to the *same* homomorphism, there being no coboundaries left.  So
+this says exactly that the map from the first cohomology to the product of the groups of smooth
+homomorphisms of the members of the family is onto.  Smoothness is asked of what is prescribed
+because the restriction of a smooth cocycle is smooth. -/
+def HasCocyclePrescription {Γ : Type*} [Group Γ] [TopologicalSpace Γ] (M : Type*) [CommGroup M]
+    [MulDistribMulAction Γ M] {t : ℕ} (D : Fin t → Subgroup Γ) : Prop :=
+  (∀ (ν : Fin t), ∀ x ∈ D ν, ∀ m : M, x • m = m) →
+    ∀ a : (ν : Fin t) → ↥(D ν) →* M, (∀ ν : Fin t, IsSmooth₁ ((a ν : ↥(D ν) →* M) : ↥(D ν) → M)) →
+      ∃ c : Γ → M, IsMulCocycle₁ c ∧ IsSmooth₁ c ∧
+        ∀ (ν : Fin t) (x : ↥(D ν)), c (x : Γ) = a ν x
 
 section Twist
 
@@ -127,6 +151,15 @@ theorem exists_hom_inl_eq (D : Subgroup Γ) (hD : ∀ x ∈ D, ρ x = 1) :
   rw [← hval, MonoidHom.ofInjective_apply]
   rfl
 
+omit [MulDistribMulAction Γ N] in
+/-- **That homomorphism is smooth**, the lift being smooth and the kernel embedded. -/
+theorem isSmooth₁_of_inl_comp {D : Subgroup Γ} {a : ↥D → N}
+    (ha : ∀ x : ↥D, S.inl (a x) = f (x : Γ)) (hfs : IsSmooth₁ (f : Γ → E)) : IsSmooth₁ a := by
+  obtain ⟨A, hA, hAf⟩ := isSmooth₁_comp (continuous_subtype D) hfs
+  refine ⟨A, hA, fun x m hm => S.inl_injective ?_⟩
+  rw [ha, ha]
+  exact hAf x m hm
+
 omit [TopologicalSpace Γ] in
 include hact hf hc in
 /-- **A twist by a cocycle restricting to the inverse of the defect is trivial along the
@@ -134,6 +167,38 @@ subgroup.** -/
 theorem twistLift_eq_one {D : Subgroup Γ} {a : Γ → N} (ha : ∀ x ∈ D, S.inl (a x) = f x)
     (hca : ∀ x ∈ D, c x * a x = 1) {x : Γ} (hx : x ∈ D) : twistLift S hact hf hc x = 1 := by
   rw [twistLift_apply, ← ha x hx, ← _root_.map_mul, hca x hx, _root_.map_one]
+
+/-! ### Correcting a lift along a whole family -/
+
+include hact hf in
+/-- **A lift can be corrected to one which is trivial along a whole family of subgroups**, as soon
+as the restrictions of a cocycle along that family can be prescribed.  Along each member the lift
+is a homomorphism into the kernel; a cocycle restricting to the inverses of those homomorphisms
+twists the lift into one which is trivial along every member at once, and the twist disturbs
+neither the map to the quotient nor smoothness. -/
+theorem exists_lift_eq_one_of_hasCocyclePrescription {t : ℕ} (D : Fin t → Subgroup Γ)
+    (hD : ∀ (ν : Fin t), ∀ x ∈ D ν, ρ x = 1) (hpres : HasCocyclePrescription N D)
+    (hfs : IsSmooth₁ (f : Γ → E)) :
+    ∃ g : Γ →* E, (∀ γ : Γ, S.rightHom (g γ) = ρ γ) ∧ IsSmooth₁ (g : Γ → E) ∧
+      ∀ (ν : Fin t), ∀ x ∈ D ν, g x = 1 := by
+  have htriv : ∀ (ν : Fin t), ∀ x ∈ D ν, ∀ m : N, x • m = m := by
+    intro ν x hx m
+    have h1 : S.conjActHom (ρ x) = 1 := by rw [hD ν x hx, _root_.map_one]
+    rw [hact x m, h1]
+    rfl
+  choose a ha using fun ν => exists_hom_inl_eq S hf (D ν) (hD ν)
+  have hbs : ∀ ν : Fin t, IsSmooth₁ (((a ν)⁻¹ : ↥(D ν) →* N) : ↥(D ν) → N) := by
+    intro ν
+    obtain ⟨A, hA, hAa⟩ := isSmooth₁_of_inl_comp S (ha ν) hfs
+    refine ⟨A, hA, fun x m hm => ?_⟩
+    show (a ν (x * m))⁻¹ = (a ν x)⁻¹
+    rw [hAa x m hm]
+  obtain ⟨c, hc, hcs, hca⟩ := hpres htriv (fun ν => (a ν)⁻¹) hbs
+  refine ⟨twistLift S hact hf hc, rightHom_twistLift S hact hf hc,
+    isSmooth₁_twistLift S hact hf hc hfs hcs, fun ν x hx => ?_⟩
+  have h1 : S.inl (a ν ⟨x, hx⟩) = f x := ha ν ⟨x, hx⟩
+  have h2 : c x = (a ν ⟨x, hx⟩)⁻¹ := hca ν ⟨x, hx⟩
+  rw [twistLift_apply, ← h1, h2, ← _root_.map_mul, inv_mul_cancel, _root_.map_one]
 
 end Twist
 
