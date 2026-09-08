@@ -551,6 +551,7 @@ import InverseGalois.CFT.Profinite.PiTwo
 import InverseGalois.CFT.Profinite.Quotient
 import InverseGalois.CFT.Profinite.QuotientAction
 import InverseGalois.CFT.Profinite.Krull
+import InverseGalois.CFT.Profinite.Realize
 import InverseGalois.CFT.Profinite.Res
 import InverseGalois.CFT.Profinite.ResInflate
 import InverseGalois.CFT.Profinite.ShaComap
@@ -5716,6 +5717,17 @@ it that are available here.
   conversely an open subgroup is a neighbourhood of the identity and so contains one of them, which
   makes the finite Galois levels cofinal and gives **every class of the first or second cohomology
   of an infinite Galois group a representative at a finite Galois level.**
+* `InverseGalois.CFT.Profinite.Realize` draws the consequence for the inverse Galois problem
+  itself.  A homomorphism of the Galois group of an arbitrary Galois extension onto a finite group
+  carrying the discrete topology is smooth exactly when its kernel contains an open normal
+  subgroup, and the levels being cofinal the kernel then contains one that fixes a finite Galois
+  intermediate field.  So the homomorphism factors through the Galois group of that field, the
+  factor is again onto, and **a smooth surjection onto a finite group realizes that group as a
+  Galois group over the base**.  The converse holds too, a finite Galois extension embedding into
+  an algebraically closed one and restriction to its image being smooth and onto, so over the
+  rationals **being an inverse Galois group is exactly being a smooth quotient of the Galois group
+  of an algebraic closure**.  This is the step at which a construction that assembles its extension
+  one open subgroup at a time hands its answer back.
 * `InverseGalois.CFT.Profinite.Res` goes the other way, along the inclusion of a subgroup: the
   subspace topology makes the inclusion continuous and the subgroup inherits smoothness of the
   action, so composing a cochain with it is **restriction to that subgroup**, and its triviality
