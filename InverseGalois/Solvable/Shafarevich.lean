@@ -35,6 +35,7 @@ import InverseGalois.Solvable.Shafarevich.LayerSplit
 import InverseGalois.Solvable.Shafarevich.LayerSection
 import InverseGalois.Solvable.Shafarevich.LayerTower
 import InverseGalois.Solvable.Shafarevich.LevelSolution
+import InverseGalois.Solvable.Shafarevich.LevelObstruction
 
 /-!
 # Shafarevich's theorem
@@ -218,4 +219,12 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   a statement whose quantifiers are in the order the arithmetic can meet:
   **`Shafarevich.GenericLevelStepEP` for every prime implies the split embedding problem with
   a kernel of prime power order, and hence Shafarevich's theorem.**
+* `InverseGalois.Solvable.Shafarevich.LevelObstruction` spends the two clauses a solution at one
+  level carries.  Being trivial on a member of the family wherever the base realization is says the
+  projection onto the operator group is injective there, and the image downstairs is settled by the
+  base realization alone, so the count may be run before the solution is chosen; running it at the
+  number of letters the count asks for, and reading the class of the extension one layer gives
+  through the resulting map, leaves **a single solution at the level whose obstruction to the next
+  level dies on every member of the family.**  What is left of the step is to make an everywhere
+  locally trivial class vanish.
 -/

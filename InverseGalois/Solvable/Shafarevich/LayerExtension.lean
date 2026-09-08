@@ -51,6 +51,8 @@ homomorphism of the quotients.
 * `InverseGalois.Shafarevich.inl_layerSemidirectMap` and
   `InverseGalois.Shafarevich.rightHom_layerSemidirectMap` — **an equivariant homomorphism induces a
   morphism of the two extensions.**
+* `InverseGalois.Shafarevich.layerSemidirectMap_surjective` — an equivariant homomorphism which is
+  onto induces a morphism which is onto.
 
 ## Tags
 
@@ -235,6 +237,16 @@ def layerSemidirectMap (n : ℕ) :
 @[simp]
 theorem layerSemidirectMap_apply (n : ℕ) (x : (P ⧸ pCentral p P n) ⋊[pCentralAut p χ n] U) :
     layerSemidirectMap p hf n x = ⟨pCentralMap p n f x.left, x.right⟩ := rfl
+
+/-- **An equivariant homomorphism which is onto induces a morphism of semidirect products which is
+onto**, the operator group being carried along untouched. -/
+theorem layerSemidirectMap_surjective (n : ℕ) (hfs : Function.Surjective f) :
+    Function.Surjective (layerSemidirectMap p hf n) := by
+  rintro ⟨y, u⟩
+  induction y using QuotientGroup.induction_on with
+  | _ x =>
+    obtain ⟨z, rfl⟩ := hfs x
+    exact ⟨⟨QuotientGroup.mk z, u⟩, rfl⟩
 
 /-- **The morphism of extensions carries the kernel above into the kernel below**, the map of the
 kernels being the map of layers. -/
