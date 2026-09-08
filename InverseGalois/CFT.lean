@@ -517,6 +517,7 @@ import InverseGalois.CFT.Profinite.Connecting
 import InverseGalois.CFT.Profinite.Corestriction
 import InverseGalois.CFT.Profinite.Cup
 import InverseGalois.CFT.Profinite.Discrete
+import InverseGalois.CFT.Profinite.DiscreteComap
 import InverseGalois.CFT.Profinite.EmbeddingClass
 import InverseGalois.CFT.Profinite.EmbeddingObstruction
 import InverseGalois.CFT.Profinite.FixingSubgroup
@@ -5701,6 +5702,17 @@ it that are available here.
   says the representing cocycle is a coboundary there.  A family of subgroups then cuts out the
   classes dying on every member of it, the shape in which the everywhere locally trivial classes of
   a number field appear once a place is read as a decomposition subgroup.
+* `InverseGalois.CFT.Profinite.DiscreteComap` makes that seam a seam of maps and not only of groups.
+  Both languages move a cocycle in the same two ways, along a homomorphism of the acting group and
+  along an equivariant homomorphism of the coefficients, and the comparison is built cocycle by
+  cocycle, so **it carries pullback along a smooth homomorphism, and restriction to a subgroup, to
+  the induced maps of ordinary cohomology**, and likewise for a homomorphism of the coefficients;
+  every square is the same function read twice.  What this is for is that **the restriction of a
+  smooth class to a subgroup is trivial exactly when an ordinary restriction map kills its class**,
+  and a class is everywhere locally trivial exactly when that happens on every subgroup of the
+  family.  A vanishing theorem proved by counting cochains with coefficients in a module over a
+  finite ring — the shape in which the operator groups of the solvable programme are handled — can
+  therefore be spent directly on an embedding problem written with smooth cochains.
 * `InverseGalois.CFT.Profinite.EmbeddingObstruction` measures an embedding problem by a class of
   that cohomology.  A homomorphism of a topological group to the quotient of an extension with
   abelian kernel pulls the extension back to an extension of the topological group itself, and the
