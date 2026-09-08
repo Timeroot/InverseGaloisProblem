@@ -16467,3 +16467,140 @@ not on the critical path.
 * **2470 (REPO).** `krullTopology_discreteTopology_of_finiteDimensional` (Mathlib
   `FieldTheory/KrullTopology.lean:250`) is an instance, so `DiscreteTopology (↥K ≃ₐ[k] ↥K)` for a
   finite `K/k` is automatic.
+
+## §1.48 The wall re-measured: what `hsha1` really costs, and four structural findings
+
+§1.47 landed Route 2 and left the endgame resting on `hsha1`.  This section corrects the impression
+§1.47(d) gives of how cheap that is, records why Route 2's *conclusion* nevertheless survives the
+obvious counterexample, and writes down four new structural facts about the wall together with two
+"already done" discoveries that retire pending items.
+
+### (a) Correction to §1.47(d): `sha1Level … = ⊥` is false in general
+
+§1.47(d) presents `hsha1` as needing only (1) the span and (2) `tateModule W (-2) = 0`.  Item (2) is
+not a side condition one may simply assume: taking `W` **trivial** and `n = -2`, §1.13(a)(b) already
+showed that the whole package collapses to
+
+```
+sha1Level = ⊥   ⟺   Ш²(Gal(K/k), μ_p) = 0 ,
+```
+
+and that is **false**.  The refutation is the one of §1.13: `p = 3`, `k = ℚ(μ_3)`,
+`K = k(α^{1/3}, β^{1/3})` with `G = Gal(K/k) ≅ (ℤ/3)²`, `Ш²_ω(G, 𝔽_3) = ⟨x₁x₂⟩ ≠ 0` (the Heisenberg
+class), and the `α, β` chosen so that every decomposition subgroup is cyclic.  So `hsha1` is a real
+hypothesis about `(K/k, W)`, not a bookkeeping artefact, and the two inputs of §1.47(d) are **not**
+independent: input (2) already implies a nontrivial vanishing statement.
+
+### (b) Route 2's conclusion survives that counterexample
+
+What the Heisenberg example refutes is `sha1Level = ⊥`, i.e. the vanishing of the *target* of the
+obstruction.  It does not refute Route 2's conclusion `Ш²(k, E) ⊆ inf H²(Gal(K/k), E)`.  In the
+example `W` is trivial, so `E ≅ μ_p^d`, and then §1.13(d) gives `Ш²(k, E) = 0` outright: the
+conclusion holds vacuously while the hypothesis fails.
+
+The honest formulation of the remaining work is therefore:
+
+> **the obstruction map** `obs : Ш²(k, E) → sha1Level` **is zero**,
+
+not "its target vanishes".  `exists_shaTorusPTorsionMap_eq_kummerFiniteH1Equiv_of_spanAt`
+(`Units/KummerShaBot.lean`) was refactored in the previous stretch precisely so that the *witness*
+survives — an argument that shows a **prescribed** class dies needs the class, not merely the
+knowledge that the ambient group is trivial.  That refactor is what makes the honest formulation
+reachable at all.
+
+### (c) Route 2 is not vacuous in the sense of §1.13(f)
+
+§1.13(f) worried that a statement of the form "for every `K` there is a bigger `K'` …" is useless
+because the classes move with `K`.  Route 2 escapes this: `K = k(μ_p, E)` is determined by the
+*coefficients*, hence fixed **before** any class of `Ш²(k, E)` is named.  The uniformity SW
+Proposition 6 needs is therefore genuinely delivered; the relevant count (finding 2452) is
+`t · |G|^c · finrank(Layer(n, ν) ⊗ T)` with `t = 1`, `c = 2`, `T = 𝔽_p`, `H = U = G`.
+
+### (d) The §1.13(e) sufficient condition cannot be arranged by enlarging `K`
+
+§1.13(e)'s first bullet — "some place `v` has `D_v ⊇ Syl_p(G)`" — is a *sufficient* condition for the
+span.  It cannot be bought by passing to a larger Galois `K' ⊇ K`.  Restriction of decomposition
+groups is surjective, `D_v(K'/k) ↠ D_v(K/k)`, and a Sylow `p`-subgroup of `Gal(K'/k)` maps onto one
+of `Gal(K/k)`; so `D_v(K'/k) ⊇ Syl_p(Gal(K'/k))` forces `D_v(K/k) ⊇ Syl_p(Gal(K/k))` for the
+**given** `K`.  Enlarging the field can only make the condition harder, never easier.  (And the
+cruder condition `D_v = G` is outright impossible whenever `G` is non-solvable, local Galois groups
+being solvable.)
+
+### (e) The Sylow reduction *is* valid for Route 2
+
+Let `p` be the exponent's prime, `P ∈ Syl_p(G)` and `k_P = K^P`.  Then
+
+* `res : Ш²(k, A)[p] → Ш²(k_P, A)` is injective, because `cor ∘ res = [G : P]` and `[G : P]` is
+  prime to `p`;
+* inflation and corestriction commute across the two levels:
+  `cor_{k_P/k} ∘ inf_P = inf_G ∘ cor_{P→G}`.
+
+Hence `Ш²(k_P, A) ⊆ inf H²(P, A)` implies `Ш²(k, A) ⊆ inf H²(G, A)`.  So Route 2's target may always
+be proved with `G` a `p`-group.  This is a genuine reduction, but not a solution: the Heisenberg
+counterexample of (a) is already a `p`-group, so the reduction alone does not close the wall.
+
+### (f) `Ш¹(k, A) = Ш¹_ω(Gal(K/k), A)`
+
+For `A` finite with trivial `G_K`-action, inflation–restriction gives `H¹(D_v, A) ↪ H¹(k_v, A)` in
+degree one, so a class of `H¹(Gal(K/k), A)` is locally trivial at `v` **as a class over `k`** exactly
+when it is locally trivial at `D_v` **as a class over the finite group**.  Combined with the already
+proven injectivity `shaInflH1_injective` (`Units/HasseDecomposition.lean`), this identifies
+
+```
+Ш¹(k, A)  =  Ш¹_ω(Gal(K/k), A) ,
+```
+
+a purely finite-group object.  This is what would make Route 1's right-hand side computable; it is
+degree-one only, and the corresponding statement in degree two is exactly what fails (see (a)).
+
+### (g) The dévissage `0 → E → V → U → 0`, and where its obstruction lands
+
+`𝔽_p[G]` is self-injective, so any `W` embeds in a free module `F = 𝔽_p[G]^d`.  Put
+`V = μ_p ⊗ F ≅ Ind_{G_K}^{G_k}(μ_p)^d` and `U = V / E`.  Then:
+
+* `Ш²(k, V) ≅ Ш²(K, μ_p)^d = 0` (Shapiro plus §1.13's `Ш²(k, μ_p) = 0` over the field containing
+  `μ_p`), so `Ш²(k, E) ⊆ im δ` — this is finding 1937 realised concretely;
+* `H^i(G, V) = 0` for all `i`, so `δ_G : H¹(G, U) ↠ H²(G, E)`;
+* `H¹(k, V) ↠ H¹(K, V)^G`, and `inf H¹(G, U) = ker(H¹(k, U) → H¹(K, U))`.
+
+Route 2's target then becomes: *lift `res_K y` to a `G`-invariant class of `H¹(K, V)`*.  The
+obstruction lies in `H¹(G, C)` with `C = im(H¹(K, E) → H¹(K, V)) ≅ ((K^×/p) ⊗ W)/δ_K(U)`, and
+`H¹(K, V) ≅ Ind_1^G(K^×/p)` is `G`-cohomologically trivial, so `Ĥ^i(G, C) ≅ Ĥ^{i-1}(G, im)`.  This
+is the cleanest reformulation found so far: it moves the wall from a `Ш` statement to a statement
+about the Tate cohomology of a single explicit `G`-module.
+
+### (h) Dévissage cannot transport Poitou–Tate duality
+
+Tempting though (g) is as a route to Route 1, it does not work there: **`Ш` is not an exact
+functor**, so a short exact sequence of coefficients gives no ladder of `Ш`-groups and hence no
+five-lemma argument.  Duality has to be proved for the coefficients one actually has.  Relatedly,
+the Poitou–Tate pairing `Ш² × Ш¹ → ℚ/ℤ` is a *secondary* (Cassels–Tate-style) pairing: `a ∪ b`
+lands in `H³(k, μ_p)`, is locally a coboundary, and the pairing is the sum of local invariants of
+the difference between a global trivialisation and the local ones.  Constructing that pairing is
+routine; **non-degeneracy is the theorem**, and none of the dévissage machinery produces it.
+
+### (i) Two "already done" discoveries
+
+* **Pending item (g) of the task list is retired.**  The planned generalisation of
+  `exists_genericShrink_map_eq_zero` (`Solvable/Shafarevich/LayerCohomology.lean`) to an arbitrary
+  finite group already exists as `Solvable/Shafarevich/GenericCohomology.lean`'s
+  `exists_genericShrink_res_cohomology_eq_zero` and `exists_operatorHom_res_cohomology_eq_zero`:
+  SW Proposition 6 in cohomological degree, for any `f : H →* U` with `H` finite and coefficients
+  `genericLayerTensor U m S ℓ j T`.  That is exactly SW Theorem 15 Step 1(a)'s requirement, and it
+  needs no Shapiro lemma.
+* **Finding 1939 is retired.**  `localSymbolQuotEquivDual` (`Brauer/LocalSymbolPerfect.lean:186`) is
+  local Tate duality in degree one for `μ_n`, and `perpSubgroup_selmerGroupFull`
+  (`PoitouTate/Selmer.lean:360`) is the Kummer/Selmer form of Poitou–Tate self-duality (`V = V^⊥`).
+  Both were already in the tree.
+
+### (j) Net position
+
+The wall is genuinely Poitou–Tate, in one of two shapes:
+
+1. **Route 1** — `HasShaDualInjection`, i.e. `Ш²(k, E) ↪ Ш¹(k, E′)^∨` (`PoitouTate/ShaSurjection.lean`
+   already packages everything downstream of it);
+2. **Route 2** — the vanishing of the obstruction map `obs : Ш²(k, E) → sha1Level` of (b), for which
+   (e) allows `G` to be taken a `p`-group and (g) rewrites the obstruction as a Tate-cohomology
+   statement about `C = ((K^×/p) ⊗ W)/δ_K(U)`.
+
+Neither has a cheap proof.  Everything else in rows 5, 8 and 9 is now downstream of one of these two.

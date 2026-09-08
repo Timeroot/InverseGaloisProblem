@@ -965,6 +965,7 @@ import InverseGalois.CFT.Units.InvariantUniformizer
 import InverseGalois.CFT.Units.KummerDecomposition
 import InverseGalois.CFT.Units.KummerIdele
 import InverseGalois.CFT.Units.KummerShaBot
+import InverseGalois.CFT.Units.KummerShaLevel
 import InverseGalois.CFT.Units.LocalCoboundaryTwist
 import InverseGalois.CFT.Units.LocalDegreeLcm
 import InverseGalois.CFT.Units.LocalEmbedding
@@ -973,6 +974,7 @@ import InverseGalois.CFT.Units.LocalNorm
 import InverseGalois.CFT.Units.LocalPowIdele
 import InverseGalois.CFT.Units.LocalSqrtNegOne
 import InverseGalois.CFT.Units.NakayamaSpan
+import InverseGalois.CFT.Units.NakayamaSpanLocal
 import InverseGalois.CFT.Units.NormIndex
 import InverseGalois.CFT.Units.NsmulTorsionRep
 import InverseGalois.CFT.Units.OrbitPlaces
@@ -5401,6 +5403,37 @@ it that are available here.
   trivial in the ideles, is reached from two degrees below zero.  **The span holds whenever the
   prime does not divide the degree of the extension**, since a Sylow subgroup is then trivial and
   the order of a group annihilates its complete cohomology, so nothing is left to span.
+* `InverseGalois.CFT.Units.NakayamaSpanLocal` asks the span only where it is used — at one choice of
+  coefficients and one degree — and makes it local.  The elements of the ideles killed by a prime
+  are nothing but a root of unity at every place, with no restriction at all, so their complete
+  cohomology over a subgroup of the Galois group is the product, over the orbits of the subgroup on
+  the places of the extension, of the complete cohomology of the stabiliser there with coefficients
+  in the roots of unity of the completion.  What is left of the criterion after that substitution
+  mentions only the finite group and its subgroups: **the span holds in a degree as soon as, over a
+  Sylow subgroup for the prime, the stabiliser of every place has no complete cohomology of the
+  roots of unity of the completion tensored with the coefficients in the degree the obstruction
+  lands in, and the roots of unity of the whole field tensored with the coefficients have none one
+  degree higher.**  Both conditions are vanishing statements about the cohomology of a finite group
+  in a fixed degree, and there are only finitely many subgroups to check, so a construction which is
+  free to modify the coefficient module can arrange them.
+* `InverseGalois.CFT.Units.KummerShaLevel` makes the choice of coefficients that the whole argument
+  was waiting for.  The reading of an everywhere locally trivial class of a level was set up against
+  an arbitrary representation identified with the units of the level tensored with the homomorphisms
+  of the roots of unity into the kernel of the lifting problem, because the identification is what
+  the cohomological argument uses; but the homomorphisms themselves carry an action of the Galois
+  group by transport of structure, the subgroup fixing the level moves them trivially when the roots
+  of unity are fixed by everything and the kernel is fixed by that subgroup, and so they are already
+  a representation of the Galois group of the level.  Against that choice the identification is the
+  identity map, its equivariance is the description of the diagonal action on a tensor product, and
+  the representation, the identification and the equivariance all disappear from every statement.
+  What is left is **the everywhere locally trivial classes of a level all vanish as soon as three
+  complete cohomology groups do**: over a Sylow subgroup for the prime, the stabiliser of every
+  place of the level with coefficients the roots of unity of the completion tensored with the
+  homomorphisms into the kernel, in degree two; the whole Sylow subgroup with coefficients the roots
+  of unity of the level tensored with those homomorphisms, in degree three; and the Galois group of
+  the level with coefficients the homomorphisms themselves, two degrees below zero.  Each is a
+  vanishing statement about a finite group in a fixed degree, and none of them mentions the lifting
+  problem beyond its kernel.
 * `InverseGalois.CFT.Units.BaseArtin` puts a name on the left hand side of that identification.
   Composing it with the description of the complete cohomology of the trivial integral
   representation in degree minus two gives **the reciprocity isomorphism between the abelianization
