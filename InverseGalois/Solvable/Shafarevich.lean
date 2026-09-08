@@ -32,6 +32,7 @@ import InverseGalois.Solvable.Shafarevich.GenericCohomology
 import InverseGalois.Solvable.Shafarevich.LayerSmooth
 import InverseGalois.Solvable.Shafarevich.LayerExtension
 import InverseGalois.Solvable.Shafarevich.LayerSplit
+import InverseGalois.Solvable.Shafarevich.LayerTower
 
 /-!
 # Shafarevich's theorem
@@ -190,4 +191,11 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   and transporting the result back along an isomorphism onto the image gives: **after one
   shrinking, the extension one layer gives splits over the image of each of finitely many
   prescribed sections.**
+* `InverseGalois.Solvable.Shafarevich.LayerTower` assembles the filtration into a ladder.  The
+  descending `p`-central series of a finite `p`-group starts at the whole group and reaches the
+  trivial subgroup, so the semidirect product the generic problem asks for is the top of a finite
+  tower whose bottom is the operator group alone.  Both ends being free, what is left is the step
+  from one layer to the next, and that step is isolated as a single named statement:
+  **`Shafarevich.GenericLayerStepEP` for every prime implies the split embedding problem with a
+  kernel of prime power order, and hence Shafarevich's theorem.**
 -/
