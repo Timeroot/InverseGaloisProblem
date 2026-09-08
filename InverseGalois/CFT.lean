@@ -491,6 +491,7 @@ import InverseGalois.CFT.PoitouTate.ShaInduced
 import InverseGalois.CFT.PoitouTate.ShaInflate
 import InverseGalois.CFT.PoitouTate.ShaInflateLevel
 import InverseGalois.CFT.PoitouTate.ShaSurjection
+import InverseGalois.CFT.PoitouTate.ShaSylow
 import InverseGalois.CFT.PoitouTate.ShaTate
 import InverseGalois.CFT.PoitouTate.SplitClass
 import InverseGalois.CFT.PoitouTate.SplitFamily
@@ -546,6 +547,7 @@ import InverseGalois.CFT.Profinite.Res
 import InverseGalois.CFT.Profinite.ResInflate
 import InverseGalois.CFT.Profinite.ShaComap
 import InverseGalois.CFT.Profinite.ShaRestrict
+import InverseGalois.CFT.Profinite.SylowVanish
 import InverseGalois.CFT.Profinite.Symbol
 import InverseGalois.CFT.Profinite.SymbolCyclic
 import InverseGalois.CFT.Profinite.Transgression
@@ -809,6 +811,7 @@ import InverseGalois.CFT.TateCohomology.Shift
 import InverseGalois.CFT.TateCohomology.ShiftNatural
 import InverseGalois.CFT.TateCohomology.ShiftSplit
 import InverseGalois.CFT.TateCohomology.Shifting
+import InverseGalois.CFT.TateCohomology.SylowInduced
 import InverseGalois.CFT.TateCohomology.SylowInjective
 import InverseGalois.CFT.TateCohomology.RestrictOne
 import InverseGalois.CFT.TateCohomology.SylowSurjective
@@ -4493,6 +4496,13 @@ it that are available here.
   functions on the group has no complete cohomology, in any degree, after any chain of restrictions
   and against any tensor factor** — which is the shape in which a vanishing criterion asks for a
   condition at a Sylow subgroup and then again at the stabiliser of a place inside it.
+* `InverseGalois.CFT.TateCohomology.SylowInduced` sharpens that condition to a Sylow subgroup.  A
+  class of the complete cohomology of coefficients killed by a power of a prime is seen faithfully
+  after restriction to a Sylow subgroup for that prime, and a representation whose restriction
+  there is the functions on that subgroup has nothing for a class to restrict to.  So **being the
+  functions on one Sylow subgroup, rather than on the whole group, already forces the complete
+  cohomology of coefficients killed by a power of the prime to vanish** — which matters because a
+  Sylow subgroup is small enough that a construction free to enlarge the extension can arrange it.
 * `InverseGalois.CFT.TateCohomology.TensorTor` measures what is lost when the coefficients are
   presented.  Tensoring a representation with a presentation of the coefficients is right exact but
   not exact: the map from the sub of the presentation into its middle term need no longer be
@@ -5563,6 +5573,13 @@ it that are available here.
   being exactly the identity to check.  So **a module of a discrete group which is the functions on
   the group has no second cohomology at all**, and nothing about the group is used beyond the fact
   that a cochain on a discrete group is smooth.
+* `InverseGalois.CFT.Profinite.SylowVanish` makes the same reduction one degree up, for the smooth
+  cohomology of a finite discrete group.  Corestriction after restriction raises a class of the
+  second cohomology to the index of the subgroup, and coefficients killed by a number kill that
+  cohomology by the same number; when index and number are coprime the two leave nothing.  The
+  smoothness the corestriction needs is free on a discrete group, every subgroup having an open
+  normal core there, so **a finite discrete group whose second cohomology vanishes on a Sylow
+  subgroup, with coefficients killed by a power of that prime, has no second cohomology at all.**
 * `InverseGalois.CFT.Profinite.Transgression` supplies what degree two needs beyond that reading.
   A class restricting trivially to the kernel is not yet constant on its cosets: it has to be
   corrected by successive twists, and the correction is only available once the transgression of
@@ -5780,6 +5797,14 @@ it that are available here.
   **a kernel which is the functions on the Galois group of a finite Kummer extension has no
   everywhere locally trivial class in the second cohomology of the absolute Galois group.**  That is
   the input global duality was wanted for, obtained without it.
+* `InverseGalois.CFT.PoitouTate.ShaSylow` asks that hypothesis only of a Sylow subgroup.  The
+  coefficients are killed by the prime, so every complete cohomology group in sight is seen
+  faithfully on a Sylow subgroup for it, and so is the second cohomology of the Galois group of the
+  level; the homomorphisms of the roots of unity into a kernel which is the functions on a subgroup
+  are again the functions on that subgroup, exactly as they were over the whole group.  Hence **a
+  kernel which is the functions on a Sylow subgroup of the Galois group of a finite Kummer
+  extension has no everywhere locally trivial class in the second cohomology**, which is the same
+  conclusion at a fraction of the cost.
 * `InverseGalois.CFT.Profinite.Hilbert90` is the arithmetic input.  A smooth cocycle is constant on
   the cosets of the subgroup fixing a finite Galois level and its values are fixed by that
   subgroup, hence lie in the level, so choosing a preimage of each automorphism of the level turns

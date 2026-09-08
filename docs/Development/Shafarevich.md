@@ -16758,3 +16758,181 @@ group, or `localClassHom` with a localisation map of `SmoothH1`.
 * **2481 (MATH).** `Ш²(k, μ_p ⊗ 𝔽_p[G]^d) = 0`, provable from the new criterion alone — see (c).
 * **2482 (BUILD).** `InverseGalois.CFT.Units.KummerShaLevel` is 8498 jobs, 76 s; the root build is
   9812 jobs.
+
+## §1.50 The induced-coefficient criterion, and its sharpening to a Sylow subgroup
+
+§1.49(b) showed that the three vanishing conditions of `sha2_le_range_galInflH2_of_isZero_local`
+are equivalent to one: the coefficient module `W = Hom(μ_p, E)` is cohomologically trivial over
+`G = Gal(K/k)`, i.e. free over `𝔽_p[Syl_p(G)]`.  This section records the two rounds of work that
+turned that observation into theorems, the mathematical limits discovered along the way, and the
+new blocker on the cohomological dictionary.
+
+### (a) Round one: being the functions on the whole group
+
+Three modules, commit `79d0d30`, root build 9815 jobs:
+
+* `TateCohomology/InducedIso.lean` — `resInducedIso`, `resIsoInducedRep` (being the functions on
+  the group is inherited by every subgroup, with values in the functions on the cosets),
+  `isZero_tateModule_*_of_isoInducedRep` (three forms: bare, after restriction, against a tensor
+  factor on either side), and — the recognition principle — `repEval` / `inducedRepIsoOfBijective`:
+  a single linear map `φ` out of `A` whose record of values `a ↦ (x ↦ φ(ρ(x)a))` is bijective
+  exhibits `A ≅ Rep.of (inducedRep k G Y)`.
+* `Profinite/CoindVanish.lean` — the multiplicative twin: `translateEval`, `translateEvalHom`,
+  `translateEvalEquiv`, `homTranslate`, `homCompHom`, `bijective_homTranslate` (homomorphisms into
+  a module which is the functions on the group are again the functions on the group), and
+  `subsingleton_smoothH2_of_bijective_translateEval` — an explicit contraction, freezing the first
+  argument of a two cocycle read through `π`.
+* `PoitouTate/ShaInduced.lean` — the assembly.  `kummerHomEval`, `kummerHomAutLevel_toMul_apply`
+  (the level acts on `Hom(μ_p,E)` through the values, because `μ_p` is fixed),
+  `bijective_repEval_kummerHomEval`, and the capstone
+  `sha2_eq_bot_of_bijective_translateEval : sha2 E (decompositionSubgroups k Ω) = ⊥`.
+
+The hypothesis is a single map `π : E →* X` whose translates separate and exhaust: `translateEval
+(G := Gal(K/k)) π` bijective.  It discharges all three conditions **and** kills `SmoothH2 Gal(K/k)
+E`, so the image of inflation is trivial and the locally trivial classes are not merely inflated
+from somewhere — they are gone.
+
+### (b) Round two: only a Sylow subgroup is needed
+
+Three more modules:
+
+* `TateCohomology/SylowInduced.lean` — `eq_zero_tateModule_of_isoInducedRep_sylow`: for `A` killed
+  by `p^j`, an iso `resObj ↑P A ≅ Rep.of (inducedRep k ↥↑P X)` at a single Sylow `P` forces
+  `tateModule A n = 0` in **every** degree.  Two lines: `eq_zero_of_tateRes_sylow_eq_zero` against
+  `isZero_tateModule_of_isoInducedRep` and `nsmul_eq_zero_tateModule_of_nsmul`.
+* `Profinite/SylowVanish.lean` — the same reduction for smooth `H²`.
+  `hasOpenNormalCore_of_discreteTopology` (free on a discrete group: the normal core of the pushed
+  forward subgroup is open because everything is), then
+  `subsingleton_smoothH2_of_index_coprime` via `corH2_resH2` with the transversal `Quotient.out`,
+  and `subsingleton_smoothH2_of_sylow`.
+* `PoitouTate/ShaSylow.lean` — `repEval_kummerHomEval_resObj_apply`,
+  `bijective_repEval_kummerHomEval_resObj` (the level-side lemmas, restated over an arbitrary
+  subgroup `H ≤ Gal(K/k)`), and
+
+  ```
+  sha2_eq_bot_of_bijective_translateEval_sylow (π : E →* X)
+    (hbij : ∀ P : Sylow p Gal(↥K/k),
+      Function.Bijective (translateEval (G := ↥(P : Subgroup Gal(↥K/k))) π)) :
+    sha2 E (decompositionSubgroups k Ω) = ⊥
+  ```
+
+The `∀ P` costs nothing: Sylow subgroups are conjugate and all have the same order, so one and the
+same value group `X` works for all of them.  The two `∀ P`-quantified tensor conditions are
+discharged per `P` from `hbij P`; the degree `-2` condition and the `SmoothH2` vanishing are
+discharged at **one** arbitrary `P₀` (obtained from the `Sylow.nonempty` instance), because `E` is
+killed by `p` and both restrictions are injective there.
+
+This is the sharp form of finding 2479.  What a construction has to arrange is that
+`Hom(μ_p, E) ≅ 𝔽_p[P]^d` for a Sylow `p`-subgroup `P` of `Gal(K/k)` — not for the whole group.
+
+### (c) The free-layer shortcut is refuted
+
+The tempting move is to note that SW's Step-2 layers `E(d,ν)` are built out of `𝔽_p[G]^d` and hope
+the criterion applies to them verbatim.  It does not.  The layers are *quotients* of
+`(𝔽_p[G]^d)^{⊗ν}` (free Lie-algebra layers), and a quotient of a free module need not be free.
+
+Counterexample.  `G = C_2 = ⟨σ⟩`, `k = 𝔽_2`, `V = 𝔽_2[C_2]^2 = ⟨x_1, σx_1, x_2, σx_2⟩`.  The second
+free-Lie layer is `L_2(V) = Λ²V`, of dimension 6, and `σ` fixes `x_1 ∧ σx_1` and `x_2 ∧ σx_2`.  So
+`Λ²V ≅ triv² ⊕ free²` — not free, and `Ĥ⁰(C_2, Λ²V) ≠ 0`.  Layers are projective only for `ν < p`
+(where the Dynkin idempotent is available).  So the Sylow criterion **cannot** make SW's Claim
+trivial; the Claim still needs the duality.
+
+### (d) The cohomological dictionary is blocked on Krasner's lemma
+
+The dictionary of §1.49(f) needs `H¹(K_v, μ_p) ≅ localClasses v p`.  But:
+
+* `localClasses v n` (`PoitouTate/Selmer.lean:105`) is an `abbrev` for
+  `(v.adicCompletion K)ˣ ⧸ range (powMonoidHom n)`, and `localClassHom` (`:109`) goes through
+  `Units.map (algebraMap K (v.adicCompletion K))`.  The **completion** is genuinely in the
+  statement.
+* `decompositionSubgroups k K` (`Units/InfiniteDecomposition.lean:222`) is the union of the
+  stabilisers of the nonzero primes of `𝓞 K` and of the infinite places — **no completions
+  anywhere**.
+
+Bridging the two is `D_w ≅ G_{K_v}`, whose clean proof is Kummer theory on both sides plus
+Krasner's lemma.  Mathlib v4.28 has **no Krasner lemma** (`grep -rli krasner` over `Mathlib/`
+returns nothing), so this has to be built from scratch.  That is a real, self-contained workstream,
+not a lookup.
+
+### (e) A corollary in reach, not yet taken
+
+Taking `P = 1` in (b) — i.e. `p ∤ [K:k]` — every module is "induced" over the trivial group, so
+`Ш²(k,E) = 0` whenever the prime does not divide the degree of the level.  Formalising it needs
+`resObj H A ≅ Rep.of (inducedRep k ↥H ↥A.V)` for `Subsingleton ↥H` (ten lines, via `repEval` of the
+identity) and the vanishing of `SmoothH2` of a trivial group; deferred as off the critical path.
+
+### (f) Net position
+
+Unchanged in substance from §1.49(f): the wall is still row 5, in the honest formulation "the
+obstruction map `Ш²(k,E) → sha1Level` is zero" (Route 2) or `HasShaDualInjection` (Route 1).  What
+(a)–(b) buy is that the *cohomologically trivial* case is now completely closed, cheaply, and at
+the sharp hypothesis.  The next bricks, in order:
+
+1. a corollary of (b) feeding `ShaSurjection.lean`'s `hasShaDualInjection_of_subsingleton`;
+2. Krasner / `D_w ≅ G_{K_v}`, unblocking the cohomological dictionary of §1.49(f);
+3. SW's `p = 2` case of Theorem 13 (`sw.txt` @781–868) and the general-`A` dévissage (@869).
+
+### (g) Findings
+
+* **2483 (BUILD).** A **failed** `lake build <Module>` leaves the previously built olean in place,
+  so a subsequent `lake env lean` probe of a dependent silently uses the stale one.
+* **2484 (BUILD).** Several `lake env lean` probes may run concurrently; only `lake build` is
+  serialised.
+* **2485 (LEAN).** `resObj_tensorObj` is a `rfl` the unifier cannot see through inside
+  `tateModule (…)`; insert an explicit `rw [resObj_tensorObj]` before applying a tensor lemma.
+* **2486 (LEAN).** `indRestrictIso H (Rep.trivial k G X)` elaborates directly at the type
+  `resObj H (Rep.of (inducedRep k G X)) ≅ Rep.of (inducedRep k ↥H ((G ⧸ H) → X))`.
+* **2487 (LEAN).** `coindEval` is already taken in `InverseGalois.CFT.Tate`; the new reading map is
+  `repEval`.
+* **2488 (REPO).** `Profinite/Coinduced.lean` already proves Shapiro in both degrees.
+* **2489 (REPO).** `hasOpenNormalCore_of_isOpen` is at `Profinite/Corestriction.lean:349` and needs
+  `[IsTopologicalGroup G] [CompactSpace G]`.  For a discrete group prefer the new
+  `hasOpenNormalCore_of_discreteTopology`, which needs neither.
+* **2490 (LEAN).** For `map_one'`/`map_mul'` of a bundled hom into a Pi type, `rw`'s trailing `rfl`
+  does not see through `Pi.one`/`Pi.mul` — `rw [Pi.one_apply]` / `rw [Pi.mul_apply]` explicitly.
+* **2491 (LEAN).** `MonoidHom.mk'`'s proof obligation arrives un-beta-reduced, so
+  `rw [_root_.map_mul]` fails; insert an explicit `show` first.
+* **2492 (LEAN).** `MulEquiv.ofBijective` is noncomputable, so any `def` built from it needs
+  `noncomputable`.
+* **2493 (LEAN, KEY).** `rw` fails to match a pattern whose bound variable is typed `↥(kummerHomRep
+  M E).V` against the same-printing pattern typed `Additive (M →* E)`.  Use explicit
+  `Eq.trans`/`congrArg` chains, which check defeq, instead of `rw`.
+* **2494 (LEAN).** An element of `↥A.V` cannot take `.toMul`.  State the lemma so the LHS lives at
+  the syntactic `Additive (…)` type.  Passing such an element *as an argument* where `Additive (…)`
+  is expected does work.
+* **2495 (LEAN).** With `variable (K …)` earlier and `variable (M) in` immediately before a `def`,
+  the explicit-argument order is `K` then `M` (`kummerHomEval K M π`).
+* **2496 (WORKFLOW).** When `unusedSectionVars` lists many instances, split the file into a
+  pruned-variable section rather than a long `omit [...] in` chain.
+* **2497 (BUILD).** Root build after the round-one modules = 9815 jobs.
+* **2498 (REPO).** `Profinite/Corestriction.lean`: `corH2` (:546), `corH2_smoothH2Mk` (:557),
+  `corH2_resH2 … : corH2 … (resH2 H c) = c ^ Fintype.card (G ⧸ H)` (:686), `HasOpenNormalCore`
+  (:216), transversal helpers from :78.
+* **2499 (REPO).** `TateCohomology/SylowInjective.lean`: `eq_zero_of_coprime_nsmul`,
+  `index_smul_eq_zero_of_tateRes_eq_zero`, `eq_zero_of_tateRes_eq_zero`,
+  `eq_zero_of_tateRes_sylow_eq_zero`.
+* **2500 (REPO).** `Profinite/Res.lean`: `resH1` (:115), `resH2` (:119), and the instance
+  `isSmoothAction_subtype` (:110).
+* **2501 (MATH).** `translateEval` bijectivity ⟺ `E` free over `𝔽_p[G]`; the sharp criterion needs
+  only freeness over `𝔽_p[Syl_p(G)]`, and `Syl_p(G)` acts trivially on `μ_p`, so `W = E(-1)` is
+  `𝔽_p[P]`-free iff `E` is.
+* **2502 (MATH).** Corollary in reach: `p ∤ [K:k] ⟹ Ш²(k,E) = 0` — see (e).
+* **2503 (MATH, KEY).** SW's layers `E(d,ν)` are *quotients* of `(𝔽_p[G]^d)^{⊗ν}`, not free — see
+  (c).  The free-layer shortcut is refuted.
+* **2504 (MATHLIB GAP).** Mathlib v4.28 has **no Krasner lemma**.
+* **2505 (REPO).** `localClasses v n` (`PoitouTate/Selmer.lean:105`) and `localClassHom` (:109) both
+  go through `v.adicCompletion K`.
+* **2506 (REPO).** `decompositionSubgroups k K` (`Units/InfiniteDecomposition.lean:222`) mentions no
+  completions.
+* **2507 (REPO).** `Tate.nsmul_eq_zero_tateModule_of_nsmul` (`SylowSurjective.lean:82`) already
+  gives "a multiple killing the coefficients kills their complete cohomology" — do not rebuild it
+  from `nsmulHom`.
+* **2508 (REPO).** `smoothH2_pow_eq_one` — "the second cohomology of coefficients killed by `n` is
+  killed by `n`" — already exists, at `Profinite/Symbol.lean:268`, inside a Kummer-symbol file.
+* **2509 (MATHLIB).** There is **no** `Nat.Coprime.eq_one_of_dvd` in v4.28.  The lemma wanted is
+  `Nat.eq_one_of_dvd_coprimes (h : Coprime a b) (hka : k ∣ a) (hkb : k ∣ b) : k = 1`
+  (`Mathlib/Data/Nat/GCD/Basic.lean:223`).
+* **2510 (LEAN).** For `H : Subgroup G` and `x : ↥H`, the actions `x • e` and `(↑x : G) • e` are
+  defeq but `rw`'s trailing `rfl` does not close the gap; add an explicit `rfl` tactic line.
+* **2511 (BUILD).** `TateCohomology.SylowInduced` = 8062 jobs, 19 s; `Profinite.SylowVanish` = 8043
+  jobs, 22 s; `PoitouTate.ShaSylow` = 8516 jobs, 146 s.
