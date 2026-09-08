@@ -101,7 +101,7 @@ theorem exists_place_sUnit_prescribed_of_sup (hp : p.Prime) (hodd : 2 < p)
           (p : ℤ) ∣ placeValue v z) ∧
         ¬ (p : ℤ) ∣ placeValue (primeUnder (𝓞 K) V) z := by
   have hp2 : p ≠ 2 := by omega
-  refine exists_place_sUnit_prescribed_of_rad hp hodd hζ hres Tk hTk hpTn hrepr hcunr
+  refine exists_place_sUnit_prescribed_of_rad hp hζ hres Tk hTk hpTn hrepr hcunr
     fun u hu y hy => ?_
   have hb : algebraMap K ↥Ω ((u : Kˣ) : K) = ((y : (↥Ω)ˣ) : ↥Ω) ^ p := by
     have hy' := congrArg Units.val hy

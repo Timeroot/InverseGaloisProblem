@@ -16026,3 +16026,158 @@ totally ramified"), and that is clause 2 above verbatim.
 The archimedean half of the Selmer self-duality, which is what unlocks `p = 2`: the real local
 symbol and its place in the product formula, then the two counts of `Selmer.lean` with a `2^{r_1}`
 in them.
+
+## §1.45 The archimedean half of the Selmer self-duality, and the exact map of what still needs an odd exponent
+
+§1.44(f) named the next task: *"the archimedean half of the Selmer self-duality, which is what
+unlocks `p = 2`: the real local symbol and its place in the product formula, then the two counts of
+`Selmer.lean` with a `2^{r_1}` in them."*  Both halves are now done.  This section records what
+landed, and — more usefully — the *exact* remaining dependence of the recursion chain on `2 < p`,
+which turns out to be two named places and not a diffuse condition.
+
+### (a) The symbol at a real place and the product formula over all the places
+
+`CFT/Brauer/RealPlace.lean` and `CFT/Brauer/RealSymbol.lean` (commits `d0ad8af`, `9ebe504`) give
+
+* `realSign : ℝˣ →* Multiplicative (ZMod 2)`, the sign of a real unit (`RealPlace.lean:82`);
+* `archSymbol k w a b` for `w : InfinitePlace k`: the sign pairing at a real place, trivial at a
+  complex one;
+* `prod_localSymbol_mul_prod_archSymbol_eq_one` (`RealSymbol.lean:444`): **the product formula over
+  all the places**,
+  `(∏_{v ∈ S} localSymbol_v a b) * (∏_{w : InfinitePlace k} archSymbol k w a b) = 1`
+  for any finite `S` outside which the finite symbols are trivial.
+
+The old `prod_localSymbol_eq_one_of_ne_two` (`Brauer/SymbolProduct.lean:227`) is exactly this with
+the archimedean factor discarded, which is legitimate only when the field is totally complex —
+i.e., by `isTotallyComplex_of_isPrimitiveRoot`, only when the prime exponent is odd.
+
+### (b) The classes at the infinite places
+
+`CFT/PoitouTate/InfiniteClasses.lean` (new) is the archimedean mirror of `localClasses`:
+
+* `infClasses w n := w.Completionˣ ⧸ (powMonoidHom n).range` and
+  `infClassHom w n : Kˣ →* infClasses w n`;
+* `finite_infClasses`, and `card_pi_infClasses n = 2 ^ (number of real places)` when `2 ∣ n`
+  (trivial otherwise), through `Local/InfinitePowIndex.lean`;
+* `infSymbolQuotDual w n : infClasses w n →* infClasses w n →* Multiplicative QModZ` with
+  `injective_flip_infSymbolQuotDual` — the archimedean classes are their own perfect pairing;
+* `infSymbolQuotDual_infClassHom`: the symbol on classes *is* `archSymbol`, provided `2 ∣ n` at a
+  real place, which `two_dvd_of_isReal_of_isPrimitiveRoot` supplies from `ζ ∈ K`;
+* `archSymbol_eq_one_of_infClassHom_eq_one` and
+  `prod_archSymbol_eq_one_of_infClassHom_eq_one`: **the archimedean factor of the product formula
+  disappears as soon as the second argument is a local power at every infinite place**;
+* `infClassHom_eq_one_of_ne_two`: for an **odd** prime exponent with `ζ ∈ K` there is nothing to
+  ask at the infinite places at all — the field is totally complex and every unit of a complex
+  completion is an `n`-th power.  This is the one-line bridge every odd-exponent caller uses.
+
+### (c) The product of two pairings
+
+`Isotropic.lean` gains `prodPairing ψ φ : (A × B) →* (A × B) →* M` with `prodPairing_apply` (`rfl`)
+and `injective_flip_prodPairing`; `LocalConditions.lean` gains the matching
+`perpSubgroupLeft_prodPairing_prod` (the perp of `H.prod K` is `H^⊥.prod K^⊥`) and
+`perpSubgroupLeft_top` (the perp of `⊤` is `⊥` for a perfect pairing).  These are what let the
+finite and the infinite places be carried in one group without a `Sum`-indexed `Pi`, which was the
+design decision (finding 2431).
+
+### (d) The Selmer group is self-dual with the infinite places included
+
+`Selmer.lean` is rewritten around
+
+```
+fullClassHom ι n : Kˣ →* (((y : Y) → localClasses (ι y) n) × ((w : InfinitePlace K) → infClasses w n))
+selmerGroupFull ι n := (fullClassHom ι n).range ∘ (sUnits …).subtype
+fullPairing hres hζ ι := prodPairing (localSymbolPiPairing hres hζ ι) (infSymbolPiPairing K n)
+```
+
+and the two counts now read
+
+* `card_prod_classes`: the whole group has order `n ^ (2 * |Y|) * (card of the archimedean part)`;
+* `card_selmerGroupFull`: the image of the `S`-units has order exactly the square root of that,
+  the archimedean index being what makes the count come out at `n = 2` as well;
+
+so `perpSubgroup_selmerGroupFull` — **the classes of the `S`-units are precisely their own
+orthogonal complement in the local classes at the places of `S` together with the infinite
+places** — holds with **no hypothesis on `n` beyond primality**.  `perpSubgroup_selmerGroup` (the
+finite-places-only statement) and the three `IsTotallyComplex`-gated bridge lemmas are deleted:
+they were false at `n = 2` (finding 2407).
+
+`Prescribed.lean` follows: `exists_sUnitClass_mul_eq` and `exists_sUnitClass_mul_eq_unramified`
+lose their `2 < n`, and their orthogonality hypothesis `hc` now *hands the caller* the extra fact
+
+```
+(∀ w : InfinitePlace K, infClassHom w n (u : Kˣ) = 1) →
+```
+
+about the `S`-unit being tested.  That is the input a `p = 2` caller needs in order to run the full
+product formula, and an odd-`p` caller simply ignores it.
+
+### (e) The sharp form of the prescription character
+
+`SplitClass.lean`'s `prescriptionChar_eq_one_of_pow` is restated in the sharp form: instead of
+`(hn2 : n ≠ 2)` it takes
+
+```
+(huinf : ∀ w : InfinitePlace K, infClassHom w n u = 1)
+```
+
+about the radicand `u`, and runs `prod_localSymbol_mul_prod_archSymbol_eq_one` together with
+`prod_archSymbol_eq_one_of_infClassHom_eq_one`.  Downstream,
+`RecursionStep.lean`'s `exists_place_sUnit_prescribed_of_rad` — the actual recursion step, the one
+that produces the Chebotarev place and the `S`-unit meeting the prescription — **no longer needs
+`2 < p` at all**.  Its odd-exponent caller `exists_place_sUnit_prescribed` discharges `huinf` with
+`infClassHom_eq_one_of_ne_two`.
+
+### (f) What still needs an odd exponent, precisely
+
+Two places, and only two.
+
+1. **`SupRadicandChar.lean`'s compositum chain.**  `prescriptionChar_eq_one_of_pow_sup` splits a
+   radicand `u` of a compositum `M₁ · M₂` as `u = u₁ u₂` with `u₁` a radicand of `M₁` and `u₂` one
+   of `M₂`, and kills the `u₁` factor by the product formula.  The factors `u₁, u₂` are produced
+   *inside* the proof by `exists_mul_eq_pow_of_pow_mem_sup`, so there is no hypothesis slot in which
+   a caller could say that `u₁` is positive at the real places: the sharp form of
+   `prod_localClassPairing_eq_one_of_dvd_placeValue` would need an archimedean condition on a unit
+   the theorem itself manufactures.  Making this `p = 2`-capable means arranging the splitting so
+   that the first factor is totally positive, which is a genuine addition, not a re-statement.
+
+2. **`TwoPlaces.lean:141`, the halving trick.**  `exists_two_places_sUnit_prescribed` only realises
+   the **square** `localClassHom v p (g ^ 2)` of the prescription, and
+   `exists_two_places_sUnit_class_eq` un-squares it by raising to `(p + 1) / 2`, using
+   `hp.odd_of_ne_two` and `hsq : (p + 1) / 2 * 2 = p + 1`.  At `p = 2` there is no such exponent.
+   This is the real wall of the two-place closing step.
+
+Neither is on the critical path right now: SW prove Theorem 13 at `p = 2` by a **different**
+argument (sw.txt @781, finding 2403 — it needs only `0 ≤ ι_u(b)`), not by running the same
+recursion.  So the chain above `RecursionStep` stays odd-only on purpose, and the archimedean
+machinery of (a)–(d) is banked for the `p = 2` case when it is written.
+
+### (g) Findings
+
+* **2441 (LEAN, KEY).** Even with explicit `(A := …) (B := …) (M := …)`, a
+  `show Function.Injective (prodPairing …).flip` against a goal stated through `fullPairing` times
+  out at `whnf` (1000000 heartbeats).  The cure is **`rw [fullPairing]`** — the def's equation
+  lemma rewrites syntactically and never enters `whnf`.
+* **2442 (LEAN).** `rw [_root_.map_one]` on `ψ 1 x` with `ψ : B →* B →* M` already collapses the
+  application to `1`, so a following `MonoidHom.one_apply` in the same `rw` list fails.  Use
+  `rw […, _root_.map_one, mul_one]`.
+* **2443 (MATH, KEY).** The `p = 2` wall map — see (f) above.  The three "upgradeable" sites were
+  `Brauer/SymbolReciprocity.lean:147`, `SplitClass.lean:130` and the `SupRadicandChar.lean` chain;
+  only the second has been upgraded, because only there does the tested unit come from a caller.
+* **2444 (MATH, KEY).** The right interface fix is for `exists_sUnitClass_mul_eq` to *give* its
+  caller `∀ w, infClassHom w n u = 1` rather than to *ask* for `n ≠ 2`.
+* **2445 (REPO).** `archSymbol K w a b` depends only on the classes of `a` and `b`, and the
+  hypothesis constrains the **second** argument.
+* **2446 (REPO).** Argument-slot bookkeeping: `SplitClass.lean` calls the product formula as
+  `… hζ g u S`, so it is the radicand `u` that must be archimedean-trivial; `SupRadicandChar.lean`
+  calls it as `… hζ b a S`, so there it is `a`.
+* **2447 (BUILD).** Module job counts this session: `InfiniteClasses` 8631, `Selmer` 8634,
+  `Prescribed` 8636, `RecursionStep` 8671, `RecursionRadical` 8682; the root build is 9805.
+* **2448 (LEAN).** `Subgroup.index_eq_one : H.index = 1 ↔ H = ⊤`, so
+  `rw [← Subgroup.index_eq_one]` is the way to turn "the `n`-th powers are everything" into an index
+  computation; with `index_range_powMonoidHom_units_congr` and
+  `index_range_powMonoidHom_units_complex` that proves `infClassHom_eq_one_of_ne_two` in five lines.
+* **2449 (REPO).** Removing a hypothesis from a theorem whose only use was to feed a *renamed*
+  downstream lemma shows up as a `linter.unusedSectionVars`-style `unused variable` warning at the
+  binder, not as an error: after generalising `SplitClass.prescriptionChar_eq_one_of_pow` the
+  `hodd` of `exists_place_sUnit_prescribed_of_rad` became dead, which is how the generalisation of
+  the recursion step was discovered rather than planned.

@@ -113,9 +113,11 @@ theorem perpSubgroupLeft_localUnramified
 
 /-- **An assignment of local classes orthogonal to the `S`-units obeying the dual conditions is
 congruent modulo the conditions to the class of an `S`-unit.**  The classes of the `S`-units are
-their own orthogonal complement, and the counting theorem for a maximal isotropic subgroup turns
-that into the prescription. -/
-theorem exists_sUnitClass_mul_eq (hn : n.Prime) (hodd : 2 < n)
+their own orthogonal complement inside the local classes at the places of `S` together with the
+infinite places, and the counting theorem for a maximal isotropic subgroup turns that into the
+prescription.  Nothing is asked at an infinite place, so the `S`-units to test against are the ones
+which are local powers at every infinite place. -/
+theorem exists_sUnitClass_mul_eq (hn : n.Prime)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {ι : Y → HeightOneSpectrum (𝓞 K)}
     (hinj : Function.Injective ι)
@@ -125,38 +127,55 @@ theorem exists_sUnitClass_mul_eq (hn : n.Prime) (hodd : 2 < n)
       ∃ a : Kˣ, ∀ v ∉ Set.range ι, Rigidity.RET.ord K v (a : K) = m v)
     (L : ∀ y : Y, Subgroup (localClasses (ι y) n))
     {c : (y : Y) → localClasses (ι y) n}
-    (hc : ∀ b ∈ selmerGroup ι n ⊓ Subgroup.pi Set.univ
+    (hc : ∀ u : ↥(sUnits K (Set.range ι)),
+      (∀ w : InfinitePlace K, infClassHom w n ((u : Kˣ)) = 1) →
+      sUnitClassHom ι n u ∈ Subgroup.pi Set.univ
         (fun y => perpSubgroupLeft (A := localClasses (ι y) n)
-          (localClassPairing hres hζ (ι y)) (L y)),
-      localSymbolPiPairing hres hζ ι b c = 1) :
+          (localClassPairing hres hζ (ι y)) (L y)) →
+      localSymbolPiPairing hres hζ ι (sUnitClassHom ι n u) c = 1) :
     ∃ a ∈ selmerGroup ι n, ∃ l ∈ Subgroup.pi Set.univ L, a * l = c := by
   classical
   haveI : ∀ y : Y, Finite (localClasses (ι y) n) := fun y => finite_localClasses (ι y)
   haveI : Finite ((y : Y) → localClasses (ι y) n) := Pi.finite
-  have hperp : perpSubgroupLeft (A := (y : Y) → localClasses (ι y) n)
-        (piPairing (A := fun y => localClasses (ι y) n)
-          fun y => localClassPairing hres hζ (ι y)) (Subgroup.pi Set.univ L)
-      = Subgroup.pi Set.univ fun y => perpSubgroupLeft (A := localClasses (ι y) n)
-        (localClassPairing hres hζ (ι y)) (L y) :=
-    @perpSubgroupLeft_piPairing_pi Y _ _ (fun y => localClasses (ι y) n)
-      (fun _ => inferInstance) (Multiplicative QModZ) _
-      (fun y => localClassPairing hres hζ (ι y)) L
-  refine @exists_mul_eq_of_forall_pairing_eq_one ((y : Y) → localClasses (ι y) n) inferInstance
-    inferInstance (localSymbolPiPairing hres hζ ι)
-    (@injective_flip_piPairing Y _ (fun y => localClasses (ι y) n) (fun _ => inferInstance)
-      (Multiplicative QModZ) _ _ (fun y => localClassPairing hres hζ (ι y))
-      fun y => injective_flip_localSymbolQuotDual (hres (ι y))
-        (isUnitValGen_one (valued_adicCompletion_surjective (ι y)))
-        (hζ.map_of_injective (algebraMap K ((ι y).adicCompletion K)).injective))
-    (selmerGroup ι n) (perpSubgroup_selmerGroup hn hodd hres hζ hinj hnι hrepr)
-    (Subgroup.pi Set.univ L) c fun b hb => hc b ?_
-  rw [← hperp]
-  exact hb
+  haveI : ∀ w : InfinitePlace K, Finite (infClasses w n) :=
+    fun w => finite_infClasses w (NeZero.ne n)
+  haveI : Finite ((w : InfinitePlace K) → infClasses w n) := Pi.finite
+  haveI : Finite (((y : Y) → localClasses (ι y) n) ×
+    ((w : InfinitePlace K) → infClasses w n)) := inferInstance
+  have hflipinf : Function.Injective (infSymbolPiPairing K n).flip :=
+    injective_flip_infSymbolPiPairing K (NeZero.ne n)
+  have hflip : Function.Injective (fullPairing hres hζ ι).flip := by
+    rw [fullPairing]
+    exact injective_flip_prodPairing
+      (injective_flip_piPairing fun y => injective_flip_localSymbolQuotDual _ _ _) hflipinf
+  have hperp : perpSubgroupLeft (A := ((y : Y) → localClasses (ι y) n) ×
+          ((w : InfinitePlace K) → infClasses w n)) (fullPairing hres hζ ι)
+        ((Subgroup.pi Set.univ L).prod (⊤ : Subgroup ((w : InfinitePlace K) → infClasses w n)))
+      = (Subgroup.pi Set.univ fun y => perpSubgroupLeft (A := localClasses (ι y) n)
+          (localClassPairing hres hζ (ι y)) (L y)).prod ⊥ := by
+    rw [fullPairing, perpSubgroupLeft_prodPairing_prod,
+      perpSubgroupLeft_top (injective_of_injective_flip hflipinf),
+      localSymbolPiPairing_eq_piPairing, perpSubgroupLeft_piPairing_pi]
+  have hmain : ∃ x ∈ selmerGroupFull ι n, ∃ z ∈ (Subgroup.pi Set.univ L).prod
+      (⊤ : Subgroup ((w : InfinitePlace K) → infClasses w n)),
+      x * z = ((c, 1) : ((y : Y) → localClasses (ι y) n) ×
+        ((w : InfinitePlace K) → infClasses w n)) := by
+    refine exists_mul_eq_of_forall_pairing_eq_one hflip
+      (perpSubgroup_selmerGroupFull hn hres hζ hinj hnι hrepr) fun b hb => ?_
+    rw [hperp] at hb
+    obtain ⟨hbS, hbP⟩ := Subgroup.mem_inf.1 hb
+    obtain ⟨u, rfl⟩ := hbS
+    have hb2 : (fullClassHom ι n u).2 = 1 := Subgroup.mem_bot.1 (Subgroup.mem_prod.1 hbP).2
+    rw [fullPairing, prodPairing_apply, hb2, _root_.map_one, mul_one]
+    exact hc u (fun w => congrFun hb2 w) (Subgroup.mem_prod.1 hbP).1
+  obtain ⟨x, hx, z, hz, hxz⟩ := hmain
+  obtain ⟨u, rfl⟩ := hx
+  exact ⟨sUnitClassHom ι n u, ⟨u, rfl⟩, z.1, (Subgroup.mem_prod.1 hz).1, congrArg Prod.fst hxz⟩
 
 /-- **An assignment of local classes prescribed exactly at some places and up to an unramified
 class at the others is met by the class of an `S`-unit**, as soon as it is orthogonal to the
-`S`-units unramified at the places of the second kind. -/
-theorem exists_sUnitClass_mul_eq_unramified (hn : n.Prime) (hodd : 2 < n)
+`S`-units unramified at the places of the second kind and a local power at every infinite place. -/
+theorem exists_sUnitClass_mul_eq_unramified (hn : n.Prime)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {ι : Y → HeightOneSpectrum (𝓞 K)}
     (hinj : Function.Injective ι)
@@ -169,12 +188,14 @@ theorem exists_sUnitClass_mul_eq_unramified (hn : n.Prime) (hodd : 2 < n)
       (FinitePlace.mk (ι y) ((n : ℕ) : K) = 1 ∧ L y = localUnramified (ι y) n ∧
         D y = localUnramified (ι y) n))
     {c : (y : Y) → localClasses (ι y) n}
-    (hc : ∀ b ∈ selmerGroup ι n ⊓ Subgroup.pi Set.univ D,
-      localSymbolPiPairing hres hζ ι b c = 1) :
+    (hc : ∀ u : ↥(sUnits K (Set.range ι)),
+      (∀ w : InfinitePlace K, infClassHom w n ((u : Kˣ)) = 1) →
+      sUnitClassHom ι n u ∈ Subgroup.pi Set.univ D →
+      localSymbolPiPairing hres hζ ι (sUnitClassHom ι n u) c = 1) :
     ∃ a ∈ selmerGroup ι n, ∃ l ∈ Subgroup.pi Set.univ L, a * l = c := by
-  refine exists_sUnitClass_mul_eq hn hodd hres hζ hinj hnι hrepr L fun b hb => hc b ?_
-  refine Subgroup.mem_inf.2 ⟨(Subgroup.mem_inf.1 hb).1, (Subgroup.mem_pi _).2 fun y _ => ?_⟩
-  have h := (Subgroup.mem_pi _).1 (Subgroup.mem_inf.1 hb).2 y (Set.mem_univ y)
+  refine exists_sUnitClass_mul_eq hn hres hζ hinj hnι hrepr L fun u huinf hb => hc u huinf ?_
+  refine (Subgroup.mem_pi _).2 fun y _ => ?_
+  have h := (Subgroup.mem_pi _).1 hb y (Set.mem_univ y)
   rcases hLD y with ⟨hL, hD⟩ | ⟨hv, hL, hD⟩
   · rw [hD]
     exact Subgroup.mem_top _

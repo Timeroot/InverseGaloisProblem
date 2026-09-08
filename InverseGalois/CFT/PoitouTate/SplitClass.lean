@@ -126,8 +126,9 @@ variable {K M : Type} [Field K] [NumberField K] [Field M] [NumberField M] [Algeb
 part of the prescription carried by a global unit the extension splits completely, so the local
 class of a radicand there is trivial and its factor disappears; what is left is the product over
 the remaining places of the norm residue symbols of two `S`-units, which is the same as the
-product over all of `S` for the same reason, and the product formula sends that to one. -/
-theorem prescriptionChar_eq_one_of_pow (hn : n.Prime) (hn2 : n ≠ 2)
+product over all of `S` for the same reason, and the product formula over all the places sends that
+to one, the radicand being a local power at every infinite place. -/
+theorem prescriptionChar_eq_one_of_pow (hn : n.Prime)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T₀ T S : Finset (HeightOneSpectrum (𝓞 K))}
     (hT₀ : T₀ ⊆ T) (hTS : T ⊆ S)
@@ -137,7 +138,8 @@ theorem prescriptionChar_eq_one_of_pow (hn : n.Prime) (hn2 : n ≠ 2)
     (hc : ∀ v ∈ T₀, c v = localClassHom v n g)
     (hsplit : ∀ v ∈ S, v ∉ T₀ → ∃ w : HeightOneSpectrum (𝓞 M),
       primeUnder (𝓞 K) w = v ∧ stabilizer Gal(M/K) w = ⊥)
-    {u : Kˣ} (hu : u ∈ sUnits K (S : Set (HeightOneSpectrum (𝓞 K)))) {b : M}
+    {u : Kˣ} (hu : u ∈ sUnits K (S : Set (HeightOneSpectrum (𝓞 K))))
+    (huinf : ∀ w : InfinitePlace K, infClassHom w n u = 1) {b : M}
     (hb : algebraMap K M (u : K) = b ^ n) :
     prescriptionChar hres hζ T c u = 1 := by
   classical
@@ -162,8 +164,11 @@ theorem prescriptionChar_eq_one_of_pow (hn : n.Prime) (hn2 : n ≠ 2)
     Finset.prod_subset (hT₀.trans hTS) fun v hv hv0 => by
       rw [hzero v hv hv0, _root_.map_one, MonoidHom.one_apply]
   rw [e3]
-  have hprod := prod_localSymbol_eq_one_of_ne_two hn hn2 hres hζ g u S ?_
-  · simpa only [← localClassPairing_eq_localSymbol hres hζ] using hprod
+  have harch : ∏ w : InfinitePlace K, archSymbol K w g u = 1 :=
+    prod_archSymbol_eq_one_of_infClassHom_eq_one hn hζ g huinf
+  have hprod := prod_localSymbol_mul_prod_archSymbol_eq_one hn hres hζ g u S ?_
+  · rw [harch, mul_one] at hprod
+    simpa only [← localClassPairing_eq_localSymbol hres hζ] using hprod
   · intro v hvS
     have hnv : FinitePlace.mk v ((n : ℕ) : K) = 1 := by
       by_contra hcon

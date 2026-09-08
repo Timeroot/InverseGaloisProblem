@@ -470,6 +470,7 @@ import InverseGalois.CFT.PoitouTate.CupDual
 import InverseGalois.CFT.PoitouTate.Dual
 import InverseGalois.CFT.PoitouTate.FrobeniusCharacter
 import InverseGalois.CFT.PoitouTate.GlobalClasses
+import InverseGalois.CFT.PoitouTate.InfiniteClasses
 import InverseGalois.CFT.PoitouTate.Isotropic
 import InverseGalois.CFT.PoitouTate.LocalConditions
 import InverseGalois.CFT.PoitouTate.NormLocalPower
@@ -6989,20 +6990,33 @@ it that are available here.
   self-pairing upgrades trivial self-pairing to equality: **the unramified classes of a local field
   are precisely their own orthogonal complement under the norm residue symbol.**  That is the local
   condition cutting out the Selmer group in the global duality argument.
+* `InverseGalois.CFT.PoitouTate.InfiniteClasses` supplies the companion of that local condition at
+  an infinite place, which is what lets the exponent be two.  Every unit of a complex completion is
+  a power, so there is a single class there whatever the exponent; the powers of a real completion
+  are all of it for an odd exponent and the positive units for an even one, so there are two
+  classes in the even case.  Pairing two classes by the sign symbol when the exponent is even and
+  trivially when it is odd therefore **pins an infinite class down: a class pairing trivially with
+  every class of the same place is trivial** — vacuously where there is one class, and because a
+  positive real is a square where there are two.  Read on the classes coming from the global field
+  this is the symbol at an infinite place built from the cyclic algebra, which the product formula
+  already accounts for, and the product over all the infinite places inherits the same
+  nondegeneracy coordinate by coordinate.
 * `InverseGalois.CFT.PoitouTate.Selmer` supplies the global half.  Each unit of a number field
   outside a finite set of finite places has a class in the units of each of those completions
-  modulo powers, and for a set carrying every prime above the exponent and large enough that every
-  divisor outside it is principal, **that map is faithful on the units outside the set**: one which
-  is a power locally at each place of the set is a power at every infinite place too, the field
-  being totally complex once it carries a root of unity of order bigger than two, and is a unit
-  elsewhere, so the criterion for a radical to be trivial applies.  Counting with the index of the
-  powers in those units, the image is the exponent raised to the number of places of the set, and
-  the local index formula makes the whole product of local classes the exponent raised to twice
-  that, so **the image is exactly a square root of the whole**.  It pairs trivially with itself by
-  the product formula, the symbols outside the set being symbols of two units of a valuation ring
-  away from its residue characteristic, and the counting lemma turns the inclusion into an
-  equality: **the classes of the units outside a set of places are precisely their own orthogonal
-  complement in the local classes at those places.**
+  modulo powers and a class at each infinite place, and for a set carrying every prime above the
+  exponent and large enough that every divisor outside it is principal, **that map is faithful on
+  the units outside the set**: one which is a power locally at each place of the set and at each
+  infinite place, and is a unit elsewhere, meets the criterion for a radical to be trivial.  Taking
+  the infinite places along is what removes any hypothesis on the exponent, the two classes of a
+  real completion in the even case being exactly what an odd exponent makes vacuous.  Counting with
+  the index of the powers in those units, the image is the exponent raised to the number of places
+  of the set together with the infinite places, and the local index formula makes the whole product
+  of local classes the exponent raised to twice that, so **the image is exactly a square root of
+  the whole**.  It pairs trivially with itself by the product formula over all the places, the
+  symbols outside the set being symbols of two units of a valuation ring away from its residue
+  characteristic, and the counting lemma turns the inclusion into an equality: **the classes of the
+  units outside a set of places are precisely their own orthogonal complement in the local classes
+  at those places and at the infinite places.**
 * `InverseGalois.CFT.PoitouTate.LocalConditions` extracts from that self-duality the statement one
   actually builds extensions with.  A pairing has two orthogonal complements, one for each
   argument, and they agree on a subgroup already known to be its own complement on one side,

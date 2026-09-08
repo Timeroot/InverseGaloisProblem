@@ -145,7 +145,7 @@ Chebotarev place demands of it; that construction then produces a place at which
 a fixed power, prime to the exponent, of the value at the Frobenius automorphism, and prescribing
 at the new place a power of a uniformiser with the inverse exponent makes the total pairing
 trivial, so the prescription is met. -/
-theorem exists_place_sUnit_prescribed_of_rad (hp : p.Prime) (hodd : 2 < p)
+theorem exists_place_sUnit_prescribed_of_rad (hp : p.Prime)
     {ζ : K} (hζ : IsPrimitiveRoot ζ p)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
     (Tk : Finset (HeightOneSpectrum (𝓞 k))) {Tn : Finset (HeightOneSpectrum (𝓞 K))}
@@ -307,13 +307,16 @@ theorem exists_place_sUnit_prescribed_of_rad (hp : p.Prime) (hodd : 2 < p)
   set F : HeightOneSpectrum (𝓞 K) → Kˣ → Multiplicative QModZ := fun v u =>
     localClassPairing hres hζ v (localClassHom v p u)
       (if v ∈ Tn then c v else placeUniformiserClass v p t) with hFdef
-  have horth : ∀ b ∈ selmerGroup (Subtype.val : ↥(insert Q Tn) → HeightOneSpectrum (𝓞 K)) p
-        ⊓ Subgroup.pi Set.univ D,
+  have horth : ∀ u : ↥(sUnits K (Set.range
+        (Subtype.val : ↥(insert Q Tn) → HeightOneSpectrum (𝓞 K)))),
+      (∀ v : InfinitePlace K, infClassHom v p ((u : Kˣ)) = 1) →
+      sUnitClassHom (Subtype.val : ↥(insert Q Tn) → HeightOneSpectrum (𝓞 K)) p u
+        ∈ Subgroup.pi Set.univ D →
       localSymbolPiPairing hres hζ
-        (Subtype.val : ↥(insert Q Tn) → HeightOneSpectrum (𝓞 K)) b c' = 1 := by
-    intro b hb
-    obtain ⟨hbsel, hbD⟩ := Subgroup.mem_inf.1 hb
-    obtain ⟨w, rfl⟩ := hbsel
+          (Subtype.val : ↥(insert Q Tn) → HeightOneSpectrum (𝓞 K))
+          (sUnitClassHom (Subtype.val : ↥(insert Q Tn) → HeightOneSpectrum (𝓞 K)) p u) c'
+        = 1 := by
+    intro w _ hbD
     have hu : (w : Kˣ) ∈ sUnits K (insert Q (Tn : Set (HeightOneSpectrum (𝓞 K)))) := hsub w.2
     have hdvdQ : (p : ℤ) ∣ placeValue Q (w : Kˣ) := by
       have h := (Subgroup.mem_pi _).1 hbD ⟨Q, hQS⟩ (Set.mem_univ _)
@@ -340,7 +343,7 @@ theorem exists_place_sUnit_prescribed_of_rad (hp : p.Prime) (hodd : 2 < p)
           exact inv_placeFrobValue_zpow_mul_prescriptionChar_eq_one hres hζ hQTn hrepr c hjj'
             hjval' hu hdvdQ
   -- the `S`-unit meeting the prescription
-  obtain ⟨aa, haa, l, hl, hal⟩ := exists_sUnitClass_mul_eq_unramified hp hodd hres hζ
+  obtain ⟨aa, haa, l, hl, hal⟩ := exists_sUnitClass_mul_eq_unramified hp hres hζ
     (ι := (Subtype.val : ↥(insert Q Tn) → HeightOneSpectrum (𝓞 K))) Subtype.val_injective hnι
     hrepr' L D hLD horth
   obtain ⟨w, rfl⟩ := haa
@@ -414,12 +417,13 @@ theorem exists_place_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
     intro v hv hvT
     obtain ⟨w, hw1, hw2⟩ := hsplit v hv hvT
     exact ⟨w, hw1, stabilizer_eq_bot_of_stabilizer_base_eq_bot hw2⟩
-  refine exists_place_sUnit_prescribed_of_rad hp hodd hζ hres Tk hTk hpTn hrepr hcunr
+  refine exists_place_sUnit_prescribed_of_rad hp hζ hres Tk hTk hpTn hrepr hcunr
     fun u hu y hy => ?_
   have hb : algebraMap K ↥Ω ((u : Kˣ) : K) = ((y : (↥Ω)ˣ) : ↥Ω) ^ p := by
     have hy' := congrArg Units.val hy
     rwa [Units.coe_map, MonoidHom.coe_coe, Units.val_pow_eq_pow_val] at hy'
-  exact prescriptionChar_eq_one_of_pow hp hp2 hres hζ hT subset_rfl hpTn hg hc hsplitK hu hb
+  exact prescriptionChar_eq_one_of_pow hp hres hζ hT subset_rfl hpTn hg hc hsplitK hu
+    (fun w => infClassHom_eq_one_of_ne_two hp hp2 hζ w _) hb
 
 end Step
 

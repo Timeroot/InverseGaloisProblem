@@ -52,6 +52,10 @@ at a time, since the pairing on a product is the product of the pairings.
 * `InverseGalois.CFT.perpSubgroup_piPairing_pi`, `InverseGalois.CFT.perpSubgroupLeft_piPairing_pi`:
   the orthogonal complement of a product of subgroups is the product of the orthogonal
   complements.
+* `InverseGalois.CFT.perpSubgroup_prodPairing_prod`,
+  `InverseGalois.CFT.perpSubgroupLeft_prodPairing_prod`: the same for a pairing assembled from two
+  factors.
+* `InverseGalois.CFT.perpSubgroupLeft_top`: only the unit pairs trivially with the whole group.
 
 ## Tags
 
@@ -267,5 +271,62 @@ theorem perpSubgroupLeft_piPairing_pi (φ : ∀ i, A i →* A i →* M) (L : ∀
   rfl
 
 end Pi
+
+/-! ### Conditions imposed on two factors -/
+
+section Prod
+
+variable {A B M : Type*} [CommGroup A] [CommGroup B] [CommGroup M]
+
+/-- Exchanging the two arguments of a pairing on a product of two groups exchanges them on each
+factor. -/
+theorem flip_prodPairing (φ : A →* A →* M) (ψ : B →* B →* M) :
+    (prodPairing φ ψ).flip = prodPairing φ.flip ψ.flip := by
+  ext b a
+  rfl
+
+/-- **The orthogonal complement of a product of two subgroups is the product of the orthogonal
+complements**: an element supported in a single factor isolates that factor from the pairing. -/
+theorem perpSubgroup_prodPairing_prod (φ : A →* A →* M) (ψ : B →* B →* M) (V : Subgroup A)
+    (W : Subgroup B) :
+    perpSubgroup (prodPairing φ ψ) (V.prod W)
+      = (perpSubgroup φ V).prod (perpSubgroup ψ W) := by
+  ext b
+  constructor
+  · intro hb
+    refine Subgroup.mem_prod.2
+      ⟨mem_perpSubgroup.2 fun x hx => ?_, mem_perpSubgroup.2 fun y hy => ?_⟩
+    · have h := mem_perpSubgroup.1 hb (x, 1) (Subgroup.mem_prod.2 ⟨hx, one_mem _⟩)
+      rw [prodPairing_apply, _root_.map_one, MonoidHom.one_apply, mul_one] at h
+      exact h
+    · have h := mem_perpSubgroup.1 hb (1, y) (Subgroup.mem_prod.2 ⟨one_mem _, hy⟩)
+      rw [prodPairing_apply, _root_.map_one, MonoidHom.one_apply, one_mul] at h
+      exact h
+  · intro hb
+    refine mem_perpSubgroup.2 fun a ha => ?_
+    rw [prodPairing_apply, mem_perpSubgroup.1 (Subgroup.mem_prod.1 hb).1 a.1
+        (Subgroup.mem_prod.1 ha).1,
+      mem_perpSubgroup.1 (Subgroup.mem_prod.1 hb).2 a.2 (Subgroup.mem_prod.1 ha).2, one_mul]
+
+/-- **The orthogonal complement on the left of a product of two subgroups is the product of the
+orthogonal complements on the left.** -/
+theorem perpSubgroupLeft_prodPairing_prod (φ : A →* A →* M) (ψ : B →* B →* M) (V : Subgroup A)
+    (W : Subgroup B) :
+    perpSubgroupLeft (prodPairing φ ψ) (V.prod W)
+      = (perpSubgroupLeft φ V).prod (perpSubgroupLeft ψ W) := by
+  rw [perpSubgroupLeft, flip_prodPairing, perpSubgroup_prodPairing_prod]
+  rfl
+
+/-- **Only the unit pairs trivially with the whole group** under a nondegenerate pairing. -/
+theorem perpSubgroupLeft_top {φ : A →* A →* M} (hφ : Function.Injective φ) :
+    perpSubgroupLeft φ (⊤ : Subgroup A) = ⊥ := by
+  refine le_antisymm (fun b hb => Subgroup.mem_bot.2 ?_) (fun b hb => ?_)
+  · refine (injective_iff_map_eq_one φ).1 hφ b ?_
+    ext a
+    exact mem_perpSubgroupLeft.1 hb a (Subgroup.mem_top a)
+  · rw [Subgroup.mem_bot.1 hb]
+    exact mem_perpSubgroupLeft.2 fun a _ => by rw [_root_.map_one, MonoidHom.one_apply]
+
+end Prod
 
 end InverseGalois.CFT
