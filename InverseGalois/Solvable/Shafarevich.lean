@@ -41,6 +41,7 @@ import InverseGalois.Solvable.Shafarevich.LevelLift
 import InverseGalois.Solvable.Shafarevich.LevelShrink
 import InverseGalois.Solvable.Shafarevich.LevelTwist
 import InverseGalois.Solvable.Shafarevich.LevelLocal
+import InverseGalois.Solvable.Shafarevich.LevelCover
 import InverseGalois.Solvable.Shafarevich.LevelRung
 
 /-!
@@ -275,6 +276,16 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   number alone.  A shrinking down to the intended number of letters carries all of those values to
   one at once, so **a solution at one level, past the first, gives a solution at the next** with
   nothing asked of the first cohomology.
+* `InverseGalois.Solvable.Shafarevich.LevelCover` says where the one surviving condition is to come
+  from.  Inflation from the operator group meets it, but inflation is not what a number field
+  offers; what a number field offers is duality, under which the everywhere locally trivial classes
+  of the second cohomology are the characters of the everywhere locally trivial classes of the first
+  cohomology of the Cartier dual, those inject into the first cohomology of a finite level, and the
+  characters of the first cohomology of a finite group are its first homology.  So the classes to be
+  killed are covered by the first homology of the level with coefficients in the layer twisted by a
+  fixed module, and the count already run on that homology asks for a rank settled by the operator
+  group, the intended number of letters, the layer and the twist alone.  Granted the covering and
+  the naturality of the reading in the coefficients, **a covered class is a shrinkable class.**
 * `InverseGalois.Solvable.Shafarevich.LevelRung` collects what the ladder now asks of the arithmetic
   into a single condition and climbs the whole of it.  A finite family of subgroups and a wider
   family against which local triviality is measured are chosen once from the base realization; the
