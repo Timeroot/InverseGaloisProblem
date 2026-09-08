@@ -17598,3 +17598,113 @@ Step 0 exists as a group-theoretic theorem.  The remaining chain, in order:
    `galInflH2`, whose kernel is controlled by `sha2_le_range_galInflH2`;
 3. Steps 1(b), 1(c) (unramified and ramified primes), Step 2 (which can use
    `sha2_le_range_galInflH2_of_isoInducedRep` instead of Poitou–Tate) and Steps 3–4.
+
+---
+
+## §1.58 The `p`-central series as a ladder: `GenericLayerStepEP`
+
+### (a) What landed
+
+Commit `c778eac`, new module `InverseGalois/Solvable/Shafarevich/LayerTower.lean` (155 lines),
+wired into `InverseGalois/Solvable/Shafarevich.lean` (import + narrative paragraph).  Full build
+green: **9831 jobs, 0 errors, 0 warnings**.
+
+The point is bookkeeping, not mathematics, but it is the bookkeeping that turns "SW Theorem 15" from
+a paragraph of prose into a single Lean `Prop` with a proof obligation of fixed shape.
+
+### (b) The statement
+
+```lean
+def GenericLayerStepEP (ℓ : ℕ) : Prop :=
+  ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U], IsPGroup ℓ S → IsInverseGalois U →
+    ∀ j : ℕ, (∀ m : ℕ, IsInverseGalois (GenericQuot ℓ U m S j)) →
+      ∀ n : ℕ, IsInverseGalois (GenericQuot ℓ U n S (j + 1))
+
+theorem genericSplitEP_of_genericLayerStepEP {ℓ : ℕ} [Fact ℓ.Prime] (h : GenericLayerStepEP ℓ) :
+    GenericSplitEP ℓ
+
+theorem splitPrimePowerEP_of_genericLayerStepEP (h : ∀ ℓ : ℕ, ℓ.Prime → GenericLayerStepEP ℓ) :
+    SplitPrimePowerEP
+```
+
+Three things about the shape are deliberate.
+
+1. **The induction hypothesis quantifies over `m` again.**  Solving at layer `j + 1` for `n` letters
+   is allowed to use the solution at layer `j` for *any* number of letters.  That is exactly what
+   §1.57's `exists_operatorHom_forall_resH2_extensionClass_eq_one` consumes: it *produces* the
+   number of letters `m` it needs and only afterwards receives the sections it has to kill, so the
+   step cannot be run with `m = n` fixed in advance.
+
+2. **The conclusion is stated with `GenericQuot`, not with a bare kernel.**  The operator group `U`
+   rides alongside at every rung, so each rung is again a split embedding problem of the same kind,
+   and the ladder never leaves the class of groups the induction is about.
+
+3. **Primality is only needed at the two ends.**  `GenericLayerStepEP ℓ` itself makes sense for any
+   `ℓ`; `Fact ℓ.Prime` enters only through `exists_pCentral_eq_bot`.  Hence the prime-restricted
+   `splitPrimePowerEP_of_genericLayerStepEP`, which is the honest entry point — the pre-existing
+   `splitPrimePowerEP_of_genericSplitEP` asks for `∀ ℓ : ℕ` including composite `ℓ`, where the
+   `p`-central series need not terminate and the statement is not the one anybody wants to prove.
+
+### (c) The two ends of the ladder
+
+Both are three-line arguments once the right Mathlib brick is named.
+
+* **Bottom (`j = 0`).**  `pCentral p P 0 = ⊤` holds by `rfl`, so
+  `QuotientGroup.subsingleton_quotient_top` gives `Subsingleton (P ⧸ pCentral p P 0)` with no
+  rewriting at all; this is registered as the instance `subsingleton_quotient_pCentral_zero`.  Then
+  `Shafarevich.rightEquivOfSubsingleton` (`PrimePower.lean:184`) collapses the semidirect product
+  onto its right factor, giving `pCentralZeroEquiv : (P ⧸ pCentral p P 0) ⋊[pCentralAut p χ 0] U ≃* U`,
+  and `IsInverseGalois.of_mulEquiv` transports the hypothesis on `U`.
+
+* **Top (`pCentral p P j = ⊥`).**  Rather than an isomorphism, a *surjection* suffices, and a
+  surjection is cheaper: `QuotientGroup.lift _ (MonoidHom.id P)` is a homomorphism
+  `pCentralBotHom : P ⧸ pCentral p P j →* P` as soon as `pCentral p P j ≤ ker (id)`, which is the
+  hypothesis; `SemidirectProduct.map` pairs it with `MonoidHom.id U` (the commutation condition is
+  `rfl` after `QuotientGroup.induction_on`), and surjectivity is
+  `fun x => ⟨⟨QuotientGroup.mk x.left, x.right⟩, rfl⟩`.  `IsInverseGalois.of_surjective` finishes.
+  Going through `of_surjective` rather than `of_mulEquiv` avoids ever having to produce an inverse
+  or to rewrite the subgroup inside the quotient type.
+
+### (d) Lean findings
+
+* **2569 (LEAN).** `exists_pCentral_eq_bot` (`PCentral.lean:242`) has `p` **explicit** but `P`
+  **implicit**, unlike `pCentral p P n` itself where both are explicit.  Call it as
+  `exists_pCentral_eq_bot ℓ (isPGroup_generic U n S hS)`; passing the group positionally fails with
+  an application type mismatch against `IsPGroup ℓ ?m`.
+
+* **2570 (LEAN).** `Shafarevich.rightEquivOfSubsingleton` lives in the **top-level** `Shafarevich`
+  namespace (`PrimePower.lean`, which opens `SemidirectProduct`), not in `InverseGalois.Shafarevich`.
+  From inside `namespace InverseGalois.Shafarevich` write `_root_.Shafarevich.rightEquivOfSubsingleton`,
+  the same idiom `LayerExtension.lean:73` uses for `_root_.Shafarevich.quotientChar`.
+
+* **2571 (LEAN).** Avoid a `variable` block for a group of theorems whose hypotheses differ: the
+  ends-of-the-ladder theorems need `[Group U]` but not `[Finite U]`, and `linter.unusedSectionVars`
+  fires on the ones that do not use the finiteness.  Writing the binders out per declaration is
+  shorter than the `omit`s it would take.
+
+* **2572 (LEAN).** `SplitPrimePowerEP` (`PrimePower.lean:179`) binds `[Fact p.Prime]` inside the
+  `∀`, so `intro H U _ _ _ _ p hp hH φ hU` names it `hp` and `hp.out : p.Prime` is available; a
+  locally named hypothesis of class type is still found by instance search.
+
+### (e) What `GenericLayerStepEP` now demands
+
+Unfolded for the working case, the obligation is: given a realization `N|ℚ` of
+`GenericQuot ℓ U m S j` for every `m`, realize `GenericQuot ℓ U n S (j + 1)`.  The pieces already in
+the repo line up as follows.
+
+1. §1.57 supplies `m`, a surjective operator homomorphism `α : Generic U m S →* Generic U n S`, and
+   the fact that the class of the extension
+   `1 → layerSub ℓ (Generic U n S) j → GenericQuot ℓ U n S (j+1) → GenericQuot ℓ U n S j → 1`
+   restricts trivially to the image of each prescribed section.
+2. `layerSemidirectMap ℓ hα j : GenericQuot ℓ U m S j →* GenericQuot ℓ U n S j` is the surjection
+   which turns a realization at level `m` into one of `GenericQuot ℓ U n S j`, i.e. into the
+   embedding problem the step has to solve.
+3. The obstruction to solving it is `galInflH2` of that extension class
+   (`Profinite/EmbeddingObstruction.lean`, `Profinite/ExtensionCoeff.lean`).  Item 1 says it dies on
+   the decomposition subgroups of the finitely many prescribed places, so — once the sections are
+   produced from arithmetic (§1.57(d) item 1) — it lands in `sha2`, and `sha2_le_range_galInflH2`
+   (`PoitouTate/ShaInflate.lean:108`) is what turns "in `sha2`" into "inflated from a finite level",
+   which is the form a *proper* solution needs.
+
+So the chain of §1.57(d) is unchanged; what §1.58 adds is that its endpoint is now a named `Prop`
+whose consequence is Shafarevich's theorem, with no ladder bookkeeping left to do afterwards.
