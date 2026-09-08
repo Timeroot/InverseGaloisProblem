@@ -44,6 +44,9 @@ import InverseGalois.Solvable.Shafarevich.LevelLocal
 import InverseGalois.Solvable.Shafarevich.LevelCover
 import InverseGalois.Solvable.Shafarevich.LevelCoverOperator
 import InverseGalois.Solvable.Shafarevich.HomologyIntegral
+import InverseGalois.Solvable.Shafarevich.IntLinHom
+import InverseGalois.Solvable.Shafarevich.LinHomTensor
+import InverseGalois.Solvable.Shafarevich.LayerDuality
 import InverseGalois.Solvable.Shafarevich.LevelRung
 
 /-!
@@ -303,6 +306,26 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   either way, and the class of a cycle over the smaller ring governs the class of the same cycle
   over the integers for every map of the coefficients at once.  So **a covering by integral homology
   classes is a covering.**
+* `InverseGalois.Solvable.Shafarevich.IntLinHom` reads the maps of one representation into another
+  over the integers.  A linear map over the field with a prime number of elements is exactly an
+  additive map between the underlying groups, so **the maps of two representations read over the
+  integers are the integral reading of the maps between them**, and the identification commutes with
+  following a map of the target.
+* `InverseGalois.Solvable.Shafarevich.LinHomTensor` matches the two descriptions of the
+  coefficients.  A linear map out of a finite dimensional space is a sum of a value against a linear
+  form, so **the maps of one representation into another are the target tensored with the dual of
+  the source**, with the diagonal action answering to the action by conjugation; and following a map
+  of the target is, on the tensor product, that map applied to the left factor alone.  The section
+  closes with the transport the identification is for: two isomorphic pairs of coefficients joined
+  by a commuting square carry the same vanishing in first homology.
+* `InverseGalois.Solvable.Shafarevich.LayerDuality` joins the ladder to global duality.  Duality
+  produces one class of complete cohomology of the level in degree minus two, in coefficients that
+  are the maps of a fixed module into the layer; the ladder consumes one class of first homology, in
+  coefficients that are the layer tensored with the dual of that module.  Complete cohomology in
+  degree minus two is first homology and the two sets of coefficients are the same, compatibly with
+  every shrinking, so the one class produced before any shrinking is chosen is exactly the one class
+  the ladder asks for.  Granted the reading of the locally trivial classes as characters and its
+  compatibility with a shrinking, **global duality produces the governing class.**
 * `InverseGalois.Solvable.Shafarevich.LevelRung` collects what the ladder now asks of the arithmetic
   into a single condition and climbs the whole of it.  A finite family of subgroups and a wider
   family against which local triviality is measured are chosen once from the base realization; the

@@ -43,6 +43,9 @@ of the reading it is compatible with.
 
 ## Main results
 
+* `InverseGalois.CFT.coeffH2_eq_one_of_cartierPairing_eq`: **a class of complete cohomology cutting
+  out the character of an everywhere locally trivial class governs that class**, for every map of
+  the coefficients at once.
 * `InverseGalois.CFT.exists_tateMap_imp_coeffH2_eq_one`: **a single class of complete cohomology of
   the level in degree minus two whose death under the map of the coefficients forces the everywhere
   locally trivial class to die.**
@@ -112,12 +115,15 @@ variable (hB : ∀ b : ↥B.V, Nat.card ↥A.V • b = 0) (hB' : ∀ b : ↥B'.V
 
 include hB hB'
 
-/-- **A single class of complete cohomology of the level in degree minus two governs the everywhere
-locally trivial class.**  The class is produced from the character the locally trivial class cuts
-out, before the map of the coefficients is used; and once the class of complete cohomology dies
-under the map, the character of the locally trivial class carried along the map is identically
-zero, so the injectivity of the reading downstairs makes that class trivial. -/
-theorem exists_tateMap_imp_coeffH2_eq_one
+/-- **A class of complete cohomology cutting out the character of an everywhere locally trivial
+class governs that class.**  Once the class of complete cohomology dies under the map of the
+coefficients, the character of the locally trivial class carried along the map is identically zero,
+so the injectivity of the reading downstairs makes that class trivial.
+
+The class of complete cohomology is an argument here, so one class may be fed to many maps of the
+coefficients: it is cut out from the character alone, and the character is fixed before any map of
+the coefficients is chosen. -/
+theorem coeffH2_eq_one_of_cartierPairing_eq
     {α : Additive ↥(sha2 (Multiplicative ↥B.V) (decompositionSubgroups k Ω)) →+
       (Additive ↥(sha1 (Multiplicative ↥(linHomObj B A).V) (decompositionSubgroups k Ω)) →ₗ[ℤ]
         AddCircle (1 : ℚ))}
@@ -125,12 +131,11 @@ theorem exists_tateMap_imp_coeffH2_eq_one
       (Additive ↥(sha1 (Multiplicative ↥(linHomObj B' A).V) (decompositionSubgroups k Ω)) →ₗ[ℤ]
         AddCircle (1 : ℚ))}
     (hα' : Function.Injective α') (hnat : IsShaDualNatural F A hπ hπ' f hf α α')
-    (ε : ↥(sha2 (Multiplicative ↥B.V) (decompositionSubgroups k Ω))) :
-    ∃ x : ↥(tateModule (linHomObj A B) (-2)),
-      tateMap (linHomPostHom A f) (-2) x = 0 →
-        coeffH2 (repMulHom f) hf (ε : SmoothH2 Gal(Ω/k) (Multiplicative ↥B.V)) = 1 := by
-  obtain ⟨x, hx⟩ := exists_cartierPairing_sha_eq F A B hπ hB (α (Additive.ofMul ε))
-  refine ⟨x, fun hkill => ?_⟩
+    (ε : ↥(sha2 (Multiplicative ↥B.V) (decompositionSubgroups k Ω)))
+    (x : ↥(tateModule (linHomObj A B) (-2)))
+    (hx : ∀ t, cartierPairing A B hB (-2) x (shaTateLinear F A B hπ t) = α (Additive.ofMul ε) t)
+    (hkill : tateMap (linHomPostHom A f) (-2) x = 0) :
+    coeffH2 (repMulHom f) hf (ε : SmoothH2 Gal(Ω/k) (Multiplicative ↥B.V)) = 1 := by
   have hchar : α' (Additive.ofMul
       (shaCoeffH2 (repMulHom f) hf (decompositionSubgroups k Ω) ε)) = 0 := by
     refine LinearMap.ext fun t => ?_
@@ -150,6 +155,26 @@ theorem exists_tateMap_imp_coeffH2_eq_one
     congrArg Additive.toMul (hα' (hchar.trans (_root_.map_zero α').symm))
   exact congrArg (fun z : ↥(sha2 (Multiplicative ↥B'.V) (decompositionSubgroups k Ω)) =>
     (z : SmoothH2 Gal(Ω/k) (Multiplicative ↥B'.V))) hone
+
+/-- **A single class of complete cohomology of the level in degree minus two governs the everywhere
+locally trivial class.**  The class is produced from the character the locally trivial class cuts
+out, before the map of the coefficients is used; and once the class of complete cohomology dies
+under the map, the character of the locally trivial class carried along the map is identically
+zero, so the injectivity of the reading downstairs makes that class trivial. -/
+theorem exists_tateMap_imp_coeffH2_eq_one
+    {α : Additive ↥(sha2 (Multiplicative ↥B.V) (decompositionSubgroups k Ω)) →+
+      (Additive ↥(sha1 (Multiplicative ↥(linHomObj B A).V) (decompositionSubgroups k Ω)) →ₗ[ℤ]
+        AddCircle (1 : ℚ))}
+    {α' : Additive ↥(sha2 (Multiplicative ↥B'.V) (decompositionSubgroups k Ω)) →+
+      (Additive ↥(sha1 (Multiplicative ↥(linHomObj B' A).V) (decompositionSubgroups k Ω)) →ₗ[ℤ]
+        AddCircle (1 : ℚ))}
+    (hα' : Function.Injective α') (hnat : IsShaDualNatural F A hπ hπ' f hf α α')
+    (ε : ↥(sha2 (Multiplicative ↥B.V) (decompositionSubgroups k Ω))) :
+    ∃ x : ↥(tateModule (linHomObj A B) (-2)),
+      tateMap (linHomPostHom A f) (-2) x = 0 →
+        coeffH2 (repMulHom f) hf (ε : SmoothH2 Gal(Ω/k) (Multiplicative ↥B.V)) = 1 := by
+  obtain ⟨x, hx⟩ := exists_cartierPairing_sha_eq F A B hπ hB (α (Additive.ofMul ε))
+  exact ⟨x, coeffH2_eq_one_of_cartierPairing_eq F A hπ hπ' f hf hB hB' hα' hnat ε x hx⟩
 
 /-- **The governing class, from the packaged hypothesis.** -/
 theorem exists_tateMap_imp_coeffH2_eq_one_of_hasNaturalShaDualInjection
