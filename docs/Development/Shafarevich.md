@@ -17315,3 +17315,86 @@ The chain of §1.53(c) now starts one step earlier and needs no arithmetic input
   carried one step further: `discreteSmoothH2Hom` has to be shown to intertwine `resH2 H` with the
   ordinary restriction, and `Rep.ofMulDistribMulAction G N` to be matched with
   `genericLayerTensor`.  That is the next brick.
+
+## §1.55 The seam of §1.53–§1.54 made a seam of maps
+
+### (a) What was missing
+
+§1.54(c) named the next brick: `discreteSmoothH2Hom` has to intertwine `resH2 H` with the ordinary
+restriction map.  `Profinite/Discrete.lean` compares the two *groups* — `SmoothH^i(G, M)` with
+`H^i(G, Additive M)` for a discrete `G` — but says nothing about the *maps*, so a vanishing theorem
+proved with representations could not be spent on a smooth class.
+
+* **2549 (LEAN).** The comparison `discreteSmoothH2Hom` (and `discreteSmoothH1Hom`) does **not**
+  require `[DiscreteTopology G]` — only its *injectivity* and *surjectivity* do, and in degree one
+  not even injectivity (`Discrete.lean:109` carries `omit [DiscreteTopology G] in`, because a
+  one-coboundary is trivialised by a constant, which is smooth for free).  So the naturality squares
+  hold for an arbitrary topological group and only the `↔` statements need discreteness.
+
+* **2550 (LEAN, KEY).** Both squares are one `rw` and one `congrArg`.  The smooth side moves a
+  cocycle by composing with a map; the ordinary side does the same through
+  `groupCohomology.mapCocycles₂`.  So after `H2π_comp_map_apply` the two cocycles are equal by
+  `Subtype.ext rfl`, and the whole proof of each square is
+
+  ```
+  obtain ⟨a, ha, hs, rfl⟩ := smoothH2Mk_surjective x
+  rw [comapH2_smoothH2Mk, discreteSmoothH2Hom_smoothH2Mk, discreteSmoothH2Hom_smoothH2Mk]
+  simp only [_root_.toAdd_ofAdd]
+  congr 1
+  rw [groupCohomology.H2π_comp_map_apply]
+  exact congrArg _ (Subtype.ext rfl)
+  ```
+
+* **2551 (LEAN).** `toAdd_ofAdd` is a **root-level** name (Mathlib `Algebra/Group/TypeTags/Basic.lean:116`),
+  not `Multiplicative.toAdd_ofAdd`; inside `namespace InverseGalois.CFT` it must be written
+  `_root_.toAdd_ofAdd`.
+
+### (b) The new module
+
+`InverseGalois/CFT/Profinite/DiscreteComap.lean` (imports `Profinite.Coeff`, `Profinite.Discrete`,
+`Profinite.Res`).  Everything is stated for `Γ G M N : Type` — universe zero, forced by
+`Rep.ofMulDistribMulAction (M G : Type)` and by `Profinite/Discrete.lean`'s degree-two section.
+
+* `discreteRepHom ρ hact` — the identity of `Additive M`, read as a morphism
+  `(Action.res _ ρ).obj (Rep.ofMulDistribMulAction G M) ⟶ Rep.ofMulDistribMulAction Γ M`; with
+  `discreteRepHom_hom` and the instance `isIso_discreteRepHom` (via
+  `Action.isIso_of_hom_isIso`);
+* `discreteSmoothH1Hom_comapH1`, `discreteSmoothH2Hom_comapH2` — the square for pullback along a
+  smooth homomorphism;
+* `discreteResRepHom H`, `discreteSmoothH1Hom_resH1`, `discreteSmoothH2Hom_resH2` — the same for the
+  inclusion of a subgroup;
+* `resH1_eq_one_iff_map_eq_zero`, `resH2_eq_one_iff_map_eq_zero` (the latter needs
+  `[DiscreteTopology G]`), `mem_sha1_iff_forall_map_eq_zero`, `mem_sha2_iff_forall_map_eq_zero`;
+* `discreteCoeffRepHom φ hφ`, `discreteSmoothH1Hom_coeffH1`, `discreteSmoothH2Hom_coeffH2` — the
+  square for an equivariant homomorphism of the coefficients, matching the shape
+  `groupCohomology.map (MonoidHom.id H) ((Action.res _ f).map …) c` in which SW's Prop 6 delivers its
+  conclusion.
+
+* **2552 (BUILD).** `Profinite.DiscreteComap` = 8033 jobs, 22 s; full root build 9823 jobs, 0
+  warnings, 0 errors.
+
+### (c) What the remaining half of finding 2548 costs
+
+The group-direction and coefficient-direction squares are now both available, so
+`resH2 H (extensionClass S hactG σ) = 1` is interchangeable with the vanishing of an ordinary
+restriction map.  What is *not* yet available is the identification of the coefficient
+representation.
+
+* **2553 (SCOPE, KEY).** `Rep.ofMulDistribMulAction G M` is a `Rep ℤ G`; `genericLayerTensor U m S ℓ j T`
+  is a `Rep (ZMod ℓ) U`.  Mathlib has **no** change-of-rings comparison for `groupCohomology`
+  (nothing under `Mathlib/RepresentationTheory/` mentions `restrictScalars` for it), so the two
+  cannot be matched by an off-the-shelf lemma.  Two routes:
+
+  1. build the comparison — for an abelian group `V` that carries a `ZMod ℓ`-module structure, the
+     inhomogeneous cochain complexes over `ℤ` and over `ZMod ℓ` are the *same functions with the same
+     differential*, so their cohomologies are canonically additively isomorphic; or
+  2. re-run only the cohomological wrapper of Prop 6 over `ℤ`.  The content of
+     `exists_genericShrink_res_cohomology_eq_zero` is not cohomological at all: steps 1 and 3 of its
+     proof are `groupCohomology.π` surjectivity and `map_π_eq_zero`, both available over any base
+     ring, and the one substantive step is `exists_genericShrink_forall_rTensor_eq_zero`, which is
+     pure module theory about `Layer ⊗ T` and its `ZMod ℓ`-dimension and can be reused verbatim.
+
+  Route 2 is the cheaper one and does not need a single new comparison isomorphism; route 1 would be
+  the better library citizen.  Either way the layer must first appear as the `Additive` copy of a
+  `CommGroup` with a `MulDistribMulAction`, since that is how the kernel of a group extension
+  presents itself.
