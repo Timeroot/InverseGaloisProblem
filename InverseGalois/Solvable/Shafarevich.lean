@@ -36,6 +36,7 @@ import InverseGalois.Solvable.Shafarevich.LayerSection
 import InverseGalois.Solvable.Shafarevich.LayerTower
 import InverseGalois.Solvable.Shafarevich.LevelSolution
 import InverseGalois.Solvable.Shafarevich.LevelObstruction
+import InverseGalois.Solvable.Shafarevich.LayerFrattini
 
 /-!
 # Shafarevich's theorem
@@ -227,4 +228,11 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   through the resulting map, leaves **a single solution at the level whose obstruction to the next
   level dies on every member of the family.**  What is left of the step is to make an everywhere
   locally trivial class vanish.
+* `InverseGalois.Solvable.Shafarevich.LayerFrattini` disposes of the clause that a solution be
+  onto, for every layer but the first.  A layer of the descending `p`-central series is a term of
+  that series read in a quotient, and for a finite `p`-group every term past the zeroth lies in the
+  Frattini subgroup, which consists of the elements that generate nothing: a subgroup which
+  together with it generates the group is already the group.  The operator group carried alongside
+  is no obstacle, the layer sitting inside the normal factor, so pulling a supplement back to that
+  factor is enough, and **past the first layer a lift over a surjection is a surjection.**
 -/

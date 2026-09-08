@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Profinite.EmbeddingClass
+import InverseGalois.CFT.Profinite.TransgressionClass
 import InverseGalois.Solvable.Shafarevich.LayerSection
 import InverseGalois.Solvable.Shafarevich.LevelSolution
 
@@ -26,8 +27,10 @@ subgroups, and an obstruction which is inflated from a class already trivial ups
 The obstruction of the step is thus an everywhere locally trivial class, and what is left of the
 step is to make such classes vanish.
 
-Both statements are proved here, the first over an arbitrary abstract group, since nothing about a
-Galois group is used until the obstruction itself is formed.
+Granting that there is no such class the lift exists, and the step is reduced to its two remaining
+clauses, that the lift is again onto and again trivial along the family.  The statements are proved
+here, the first over an arbitrary abstract group, since nothing about a Galois group is used until
+the obstruction itself is formed.
 
 ## Main results
 
@@ -38,6 +41,8 @@ Galois group is used until the obstruction itself is formed.
 * `InverseGalois.Shafarevich.exists_levelSolution_liftObstructionClass_mem_sha2` — **solutions at
   one level for every number of letters give a single solution whose obstruction to the next level
   is everywhere locally trivial.**
+* `InverseGalois.Shafarevich.exists_lift_of_levelSolution` — **and hence, once no class is
+  everywhere locally trivial, a solution at one level lifts to the next.**
 
 ## Tags
 
@@ -132,5 +137,39 @@ theorem exists_levelSolution_liftObstructionClass_mem_sha2 (ℓ : ℕ) [Fact ℓ
   · exact liftObstructionClass_mem_sha2_of_extensionClass
       (layerExtension ℓ (genericAut U n S) j) ((layerSemidirectMap ℓ hα j).comp Φ₀)
       (smul_eq_conjActHom_genericLayer ℓ U n S j) hact hker σn hres
+
+/-! ### The lift itself, once there is no locally trivial class -/
+
+/-- **Once no class of the second cohomology is everywhere locally trivial, a solution at one level
+of the filtration lifts to the next.**
+
+The lift is a homomorphism to the group one layer up over the solution at the level, and nothing
+more: whether it is onto, and whether it is again trivial along the family, is left open, those
+being the two things the arithmetic still has to arrange. -/
+theorem exists_lift_of_levelSolution (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U]
+    [TopologicalSpace U] [DiscreteTopology U] (n : ℕ) (S : Type) [Group S] [Finite S]
+    (hS : IsPGroup ℓ S) (j : ℕ) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
+    (φ : Gal(Ω/k) →* U) [MulDistribMulAction Gal(Ω/k) ↥(layerSub ℓ (Generic U n S) j)]
+    (hactφ : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U n S) j)), x • v = φ x • v) {t : ℕ}
+    (D : Fin t → Subgroup Gal(Ω/k)) (σn : (layerExtension ℓ (genericAut U n S) j).Section)
+    (hbot : sha2 ↥(layerSub ℓ (Generic U n S) j) (Set.range D) = ⊥)
+    (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) m j) :
+    ∃ (Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j) (f : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)),
+      Function.Surjective Φ ∧ IsSmoothHom Φ ∧ (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) ∧
+        (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) ∧ IsSmoothHom f ∧
+          ∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (f x) = Φ x := by
+  obtain ⟨Φ, hsurj, hsm, hright, hloc, hsha⟩ :=
+    exists_levelSolution_liftObstructionClass_mem_sha2 ℓ U n S hS j φ D σn h
+  have hact : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U n S) j)),
+      x • v = (layerExtension ℓ (genericAut U n S) j).conjActHom (Φ x) v := by
+    intro x v
+    rw [hactφ x v, ← hright x]
+    exact (genericQuotAction_smul ℓ U n n S j (Φ x) v).symm.trans
+      (smul_eq_conjActHom_genericLayer ℓ U n S j (Φ x) v)
+  have hker : IsOpenNormal Φ.ker := isOpenNormal_ker_of_isSmoothHom hsm
+  obtain ⟨f, hfsm, hf⟩ :=
+    (liftObstructionClass_eq_one_iff (layerExtension ℓ (genericAut U n S) j) Φ hact hker σn).1
+      ((Subgroup.eq_bot_iff_forall _).1 hbot _ (hsha hact hker))
+  exact ⟨Φ, f, hsurj, hsm, hright, hloc, isSmoothHom_of_isSmooth₁ hfsm, hf⟩
 
 end InverseGalois.Shafarevich
