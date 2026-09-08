@@ -17231,3 +17231,87 @@ The chain SW Step 1 → Step 2 asks for is now assembled out of existing bricks:
   is what SW writes as `φ*(ε)`.  That needs `G` carried with its discrete topology and
   `Profinite.Discrete` to cross between smooth and ordinary cohomology; it is bookkeeping, and it is
   only needed if a step wants to compute the obstruction at the level rather than transport it.
+
+## §1.54 Where the obstruction comes from: the class of the extension
+
+### (a) What SW Step 1 actually asks
+
+§1.53 gives the obstruction of an embedding problem `(S, ρ)` as a class of `SmoothH2 Γ N` and shows
+it dies on a subgroup exactly when the problem is solvable there.  But SW Theorem 15, Step 1(a)
+never solves a local problem by hand: it says the *local group extension is split* — the extension
+`S` restricted to the decomposition subgroup `G_p ≤ G = Gal(K|k)` splits — "in particular, the
+associated local embedding problems are solvable in a trivial way" (sw.txt @1107–1111).  Turning
+that sentence into a proof needs a comparison the previous module did not have: the obstruction
+downstairs on `Γ` versus the extension class upstairs on `G`.
+
+* **2543 (MATH).** The comparison costs nothing once one notices that **the class of an extension is
+  itself an obstruction class** — the obstruction of the embedding problem given by the *identity*
+  of the quotient.  On a discrete `G` the trivial subgroup is open, so `IsOpenNormal (id G).ker`
+  holds and `liftObstructionClass S (MonoidHom.id G)` is defined; a lift of the identity is exactly
+  a splitting, and its smoothness is vacuous.  No separate construction, and no comparison of two
+  differently-built cocycles, is needed.
+
+* **2544 (LEAN, KEY).** Consequently **every naturality statement in sight is `rfl`**.  Writing
+  `fs = S.factorSet σ`, the obstruction of `(S, ρ)` is `comap₂ ρ fs`, the extension class is
+  `comap₂ id fs`, and `comap₂` composes on the nose (with `Prod`-eta and definitional proof
+  irrelevance doing the rest).  So
+
+  - `comapH2 ρ (extensionClass S) = liftObstructionClass S ρ` is `rfl`, and
+  - `resH2 D (liftObstructionClass S ρ) = comapH2 (subgroupRestrict ρ D H hle) (resH2 H
+    (extensionClass S))` is `rfl`
+
+  for any subgroup `H ≤ G` containing `ρ(D)`.  The second one is the whole of Step 1(a)'s "in
+  particular".
+
+### (b) The new module
+
+`InverseGalois/CFT/Profinite/EmbeddingClass.lean` (imports `Profinite.Discrete`,
+`Profinite.EmbeddingObstruction`).  For `G` discrete, `S : GroupExtension N E G`,
+`[MulDistribMulAction G N]` with `hactG : ∀ g n, g • n = S.conjActHom g n`:
+
+* `isOpenNormal_ker_id`, `extensionClass`, `extensionClass_eq` — the class of the extension and its
+  independence of the section;
+* `extensionClass_eq_one_iff` — it vanishes iff the extension splits;
+* `resH2_extensionClass_eq_one_iff` — it dies on `H ≤ G` iff the extension splits over `H`;
+* `subgroupRestrict`, `isOpenNormal_ker_subgroupRestrict` — the induced map `↥D →* ↥H`;
+* `smul_eq_smul_map`, `comapH2_extensionClass`,
+  `liftObstructionClass_eq_one_of_extensionClass_eq_one`;
+* `resH2_liftObstructionClass_eq_comapH2`,
+  `resH2_liftObstructionClass_eq_one_of_resH2_extensionClass_eq_one`,
+  `liftObstructionClass_mem_sha2_of_extensionClass`, `exists_smooth_lift_of_extensionClass`.
+
+Added to `Profinite/EmbeddingObstruction.lean` at the same time:
+`exists_smooth_lift_of_sha2_eq_bot` — a locally solvable embedding problem is solvable as soon as
+`sha2 N T = ⊥`.
+
+* **2545 (LEAN).** `MonoidHom.ker_codRestrict` (Mathlib `Algebra/Group/Subgroup/Ker.lean:278`) gives
+  `(f.codRestrict H h).ker = f.ker` propositionally but *not* definitionally, so
+  `isOpenNormal_ker_subgroupRestrict` has to `rw` before applying
+  `isOpenNormal_ker_comp_subtype`.  This does not disturb the `rfl` of 2544: the smoothness argument
+  of `comapH2` is a `Prop`.
+
+* **2546 (LEAN).** `exists_smooth_lift_of_extensionClass` needs `include hactG hact hker in` — `hker`
+  occurs only in the *proof*, the statement mentioning neither `liftObstructionClass` nor `ρ.ker`.
+  The three sibling theorems do mention it and are auto-included.
+
+* **2547 (BUILD).** `Profinite.EmbeddingClass` = 8036 jobs, 43 s.
+
+### (c) Net position
+
+The chain of §1.53(c) now starts one step earlier and needs no arithmetic input for its first link:
+
+0. the extension `S` splits over every subgroup of `G` which contains the image of a decomposition
+   subgroup — this is the statement SW's Prop 6 shrinking is used to *arrange*;
+1. hence `liftObstructionClass_mem_sha2_of_extensionClass` puts the obstruction in `sha2`;
+2. `sha2_le_range_galInflH2` inflates it from the finite level;
+3. `exists_genericShrink_map_eq_zero` kills the inflated class.
+
+* **2548 (SCOPE).** Step 0 is the one that still has to be *produced*, and producing it is exactly
+  where SW invokes Prop 6 with `T = Ind_{G_p}^G 𝔽_p` and `c = 2`.  The repo's Prop 6 with
+  coefficients, `exists_genericShrink_res_cohomology_eq_zero`
+  (`Solvable/Shafarevich/GenericCohomology.lean:55`), is already in exactly that shape — a finite
+  `H` mapping into the operator group `U`, coefficients a layer tensored with a fixed representation,
+  any single degree.  What is missing between the two is the seam of `Profinite/Discrete.lean`
+  carried one step further: `discreteSmoothH2Hom` has to be shown to intertwine `resH2 H` with the
+  ordinary restriction, and `Rep.ofMulDistribMulAction G N` to be matched with
+  `genericLayerTensor`.  That is the next brick.
