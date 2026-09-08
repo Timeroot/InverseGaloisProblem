@@ -24,6 +24,9 @@ and the span is a statement about the extension alone; neither mentions the lift
 
 ## Main results
 
+* `InverseGalois.CFT.exists_shaTorusPTorsionMap_eq_kummerFiniteH1Equiv_of_spanAt`: **an everywhere
+  locally trivial class of a level is produced by the comparison of Tate and Nakayama out of the
+  complete cohomology of the coefficients in degree minus two**, when the comparison spans.
 * `InverseGalois.CFT.kummerFiniteH1Equiv_eq_one_of_span`: **the reading of an everywhere locally
   trivial class over the Galois group of the level is trivial**, when the comparison spans and the
   coefficients have no complete cohomology in degree minus two.
@@ -78,6 +81,26 @@ variable (hroot : ∀ x : Ωˣ, ∃ y : Ωˣ, y ^ p = x)
 variable (hop : IsOpen (K.fixingSubgroup : Set Gal(Ω/k)))
 
 include hφmap eM hroot in
+/-- **An everywhere locally trivial class of a level is produced by the comparison of Tate and
+Nakayama out of the complete cohomology of the coefficients in degree minus two**, as soon as that
+comparison spans together with the classes coming from the ideles.  Read over the Galois group of
+the level the class dies in the ideles, and the span is exactly the statement that what dies in the
+ideles is produced by the comparison.  The witness is kept, because an argument which arranges for a
+prescribed class to die needs the class, not merely the knowledge that the group it lies in is
+trivial. -/
+theorem exists_shaTorusPTorsionMap_eq_kummerFiniteH1Equiv_of_spanAt
+    (eW : ↥W.V ≃+ (Fin dW → ZMod p)) (hWp : ∀ w : ↥W.V, p • w = 0)
+    (hspan : HasIdeleClassNakayamaSpanAt k ↥K p W (-2))
+    {z : SmoothH1 (Gal(Ω/k) ⧸ K.fixingSubgroup) (SmoothH1 ↥K.fixingSubgroup E)}
+    (hz : z ∈ sha1Level E K.fixingSubgroup hop (decompositionSubgroups k Ω)) :
+    ∃ y : ↥(tateModule W (-2)), shaTorusPTorsionMap k ↥K W hWp (-2) y
+      = Multiplicative.toAdd (kummerFiniteH1Equiv hK htriv htrivEK α hEp hfix
+        (tensorObj (globalUnitsRep k ↥K) W) φ hφ hop z) :=
+  exists_shaTorusPTorsionMap_one_of_spanAt W hWp hspan _
+    (tateMap_globalUnitsToIdele_kummerFiniteH1Equiv_eq_zero hK htriv htrivEK α hEp hfix W φ hφ
+      hφmap eM hroot hop eW hz)
+
+include hφmap eM hroot in
 /-- **The reading of an everywhere locally trivial class over the Galois group of the level is
 trivial**, as soon as the comparison of Tate and Nakayama over a Sylow subgroup spans together with
 the classes coming from the ideles and the coefficients have no complete cohomology in degree minus
@@ -91,9 +114,8 @@ theorem kummerFiniteH1Equiv_eq_one_of_span
     (hz : z ∈ sha1Level E K.fixingSubgroup hop (decompositionSubgroups k Ω)) :
     kummerFiniteH1Equiv hK htriv htrivEK α hEp hfix
       (tensorObj (globalUnitsRep k ↥K) W) φ hφ hop z = 1 := by
-  obtain ⟨y, hy⟩ := exists_shaTorusPTorsionMap_one_of_spanAt W hWp hspan _
-    (tateMap_globalUnitsToIdele_kummerFiniteH1Equiv_eq_zero hK htriv htrivEK α hEp hfix W φ hφ
-      hφmap eM hroot hop eW hz)
+  obtain ⟨y, hy⟩ := exists_shaTorusPTorsionMap_eq_kummerFiniteH1Equiv_of_spanAt hK htriv htrivEK
+    α hEp hfix W φ hφ hφmap eM hroot hop eW hWp hspan hz
   rw [hzero y, _root_.map_zero] at hy
   exact hy.symm
 
