@@ -487,6 +487,7 @@ import InverseGalois.CFT.PoitouTate.SUnitCharacter
 import InverseGalois.CFT.PoitouTate.SUnitPlace
 import InverseGalois.CFT.PoitouTate.SUnitReduce
 import InverseGalois.CFT.PoitouTate.Selmer
+import InverseGalois.CFT.PoitouTate.ShaInduced
 import InverseGalois.CFT.PoitouTate.ShaInflate
 import InverseGalois.CFT.PoitouTate.ShaInflateLevel
 import InverseGalois.CFT.PoitouTate.ShaSurjection
@@ -506,6 +507,7 @@ import InverseGalois.CFT.PoitouTate.Unramified
 import InverseGalois.CFT.PrimeProductSquare
 import InverseGalois.CFT.Profinite.Cochain
 import InverseGalois.CFT.Profinite.Coeff
+import InverseGalois.CFT.Profinite.CoindVanish
 import InverseGalois.CFT.Profinite.Coinduced
 import InverseGalois.CFT.Profinite.Comap
 import InverseGalois.CFT.Profinite.Connecting
@@ -778,6 +780,7 @@ import InverseGalois.CFT.TateCohomology.Graded
 import InverseGalois.CFT.TateCohomology.GroupCongr
 import InverseGalois.CFT.TateCohomology.HomologyJunction
 import InverseGalois.CFT.TateCohomology.Induced
+import InverseGalois.CFT.TateCohomology.InducedIso
 import InverseGalois.CFT.TateCohomology.Iterate
 import InverseGalois.CFT.TateCohomology.Junction
 import InverseGalois.CFT.TateCohomology.NakayamaCoeff
@@ -4479,6 +4482,17 @@ it that are available here.
   exact sequence of coefficients tensored with a flat representation is short exact.**  Both
   variables are needed together, because a class formation sits in the first and the coefficients
   of an embedding problem sit in the second.
+* `InverseGalois.CFT.TateCohomology.InducedIso` makes being the functions on the group into a
+  property that composes.  A representation carries, for every linear map out of it, the record of
+  the values of that map at all the translates of a vector, and when that record is bijective the
+  representation *is* the functions on the group: **a single map out of the coefficients whose
+  translates separate and exhaust recognises them as an induced module.**  The functions on a group
+  restrict, on a subgroup, to the functions on that subgroup with values in the functions on the
+  cosets, so the property passes to every subgroup, and tensoring with an arbitrary representation
+  on either side preserves the vanishing it implies.  Hence **a representation isomorphic to the
+  functions on the group has no complete cohomology, in any degree, after any chain of restrictions
+  and against any tensor factor** — which is the shape in which a vanishing criterion asks for a
+  condition at a Sylow subgroup and then again at the stabiliser of a place inside it.
 * `InverseGalois.CFT.TateCohomology.TensorTor` measures what is lost when the coefficients are
   presented.  Tensoring a representation with a presentation of the coefficients is right exact but
   not exact: the map from the sub of the presentation into its middle term need no longer be
@@ -5537,6 +5551,18 @@ it that are available here.
   inflated**, because correcting by that coboundary makes the cocycle trivial on the kernel and
   hence constant on its cosets.  In degree two the same reading gives **every class represented at
   a level is inflated from it.**
+* `InverseGalois.CFT.Profinite.CoindVanish` contracts the second cohomology of a module which is
+  the functions on the group.  The reading of a module through a homomorphism out of it — the
+  record of the values at all the translates of an element — is equivariant for translation on the
+  right, and when it is bijective the module is the functions on the group with values in the
+  target.  Homomorphisms of any group into such a module are then again the functions on the group,
+  with values in the homomorphisms into the target, because a homomorphism into a family of values
+  is a family of homomorphisms.  The vanishing itself is one explicit contraction: read a two
+  cocycle through the homomorphism, freeze its first argument, and the resulting one cochain has
+  the cocycle for its coboundary, the cocycle relation with the frozen argument in the first slot
+  being exactly the identity to check.  So **a module of a discrete group which is the functions on
+  the group has no second cohomology at all**, and nothing about the group is used beyond the fact
+  that a cochain on a discrete group is smooth.
 * `InverseGalois.CFT.Profinite.Transgression` supplies what degree two needs beyond that reading.
   A class restricting trivially to the kernel is not yet constant on its cosets: it has to be
   corrected by successive twists, and the correction is only available once the transgression of
@@ -5742,6 +5768,18 @@ it that are available here.
   homomorphisms themselves.  No duality theorem is used anywhere along the way: what buys the
   local-global principle is the arithmetic of the extension together with cohomological vanishing
   that a construction free to enlarge the extension can arrange.
+* `InverseGalois.CFT.PoitouTate.ShaInduced` spends those three conditions in one stroke and closes
+  the local-global principle in the case they can be arranged.  Suppose a single map out of the
+  kernel has the property that the record of its values at all the translates of an element is a
+  bijection onto the functions on the Galois group of the level.  The homomorphisms of the roots of
+  unity into the kernel inherit the same shape, because the roots of unity are fixed and so the
+  level acts on those homomorphisms through the values alone; being the functions on the group is
+  then carried down every subgroup and survives every tensor factor, which kills all three complete
+  cohomology groups bounding the locally trivial classes by the image of inflation.  The same
+  hypothesis kills the second cohomology at the level itself, so there is nothing left to inflate:
+  **a kernel which is the functions on the Galois group of a finite Kummer extension has no
+  everywhere locally trivial class in the second cohomology of the absolute Galois group.**  That is
+  the input global duality was wanted for, obtained without it.
 * `InverseGalois.CFT.Profinite.Hilbert90` is the arithmetic input.  A smooth cocycle is constant on
   the cosets of the subgroup fixing a finite Galois level and its values are fixed by that
   subgroup, hence lie in the level, so choosing a preimage of each automorphism of the level turns

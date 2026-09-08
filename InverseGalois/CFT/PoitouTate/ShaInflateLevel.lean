@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.PoitouTate.ShaInflate
+import InverseGalois.CFT.TateCohomology.InducedIso
 import InverseGalois.CFT.Units.KummerShaLevel
 
 /-!
@@ -110,6 +111,29 @@ theorem sha2_le_range_galInflH2_of_isZero_local
     K.fixingSubgroup_isOpen h₁ h₂ hU hzero
   exact sha2_le_range_galInflH2 K E hπ hπK hK.isPrimitiveRoot_primitiveRoot hK.smul_eq α
     hK.injective hK.pow_eq_one hK.exists_ι_eq hsha1
+
+include hπ hπK hK htriv htrivEK α hfix eM hroot in
+/-- **The everywhere locally trivial classes of the second cohomology are inflated from the Galois
+group of a finite Kummer extension whenever the maps of the roots of unity into the coefficients are
+the functions on that group.**  Being the functions on the group is inherited by every subgroup and
+is not disturbed by a tensor factor, so a single hypothesis of that shape discharges all three
+vanishing conditions at once: at the stabiliser of a place inside a Sylow subgroup, at the Sylow
+subgroup itself, and at the whole group two degrees below zero. -/
+theorem sha2_le_range_galInflH2_of_isoInducedRep {Y : Type} [AddCommGroup Y]
+    (e : kummerHomRep M E (K := K) ≅ Rep.of (inducedRep ℤ Gal(↥K/k) Y)) :
+    sha2 E (decompositionSubgroups k Ω) ≤ (galInflH2 K hπ).range := by
+  refine sha2_le_range_galInflH2_of_isZero_local K hπ hπK hK htriv htrivEK α hfix eM hroot
+    (fun P w => ?_) (fun P v => ?_) (fun P => ?_) (fun y => ?_)
+  · exact isZero_tateModule_tensorObj_right_of_isoInducedRep
+      (resIsoInducedRep (resIsoInducedRep e (P : Subgroup Gal(↥K/k)))
+        (stabilizer ↥(P : Subgroup Gal(↥K/k)) w)) _ 2
+  · exact isZero_tateModule_tensorObj_right_of_isoInducedRep
+      (resIsoInducedRep (resIsoInducedRep e (P : Subgroup Gal(↥K/k)))
+        (stabilizer ↥(P : Subgroup Gal(↥K/k)) v)) _ 2
+  · rw [resObj_tensorObj]
+    exact isZero_tateModule_tensorObj_right_of_isoInducedRep
+      (resIsoInducedRep e (P : Subgroup Gal(↥K/k))) _ 3
+  · exact eq_zero_of_isZero (isZero_tateModule_of_isoInducedRep e (-2)) y
 
 end Inflate
 
