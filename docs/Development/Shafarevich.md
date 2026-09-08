@@ -17708,3 +17708,199 @@ the repo line up as follows.
 
 So the chain of §1.57(d) is unchanged; what §1.58 adds is that its endpoint is now a named `Prop`
 whose consequence is Shafarevich's theorem, with no ladder bookkeeping left to do afterwards.
+
+## §1.59 The realization bridge, and why the ladder has to carry `φ`
+
+### (a) What landed
+
+Two commits.
+
+* `a30302f`, new module `InverseGalois/CFT/Profinite/Realize.lean` (169 lines), wired into
+  `InverseGalois/CFT.lean` (import + narrative paragraph).  Full build green: **9833 jobs, 0
+  errors, 0 warnings**.
+* `aea4f92`, new module `InverseGalois/Solvable/Shafarevich/LevelSolution.lean` (163 lines), wired
+  into `InverseGalois/Solvable/Shafarevich.lean`.  Full build green: **9834 jobs, 0 errors, 0
+  warnings**.
+
+### (b) The bridge, both ways
+
+Everything that builds a Galois extension one open subgroup at a time produces a *homomorphism of a
+profinite group*, and `IsInverseGalois` asks for a *finite extension*.  Nothing in the repo crossed
+that gap.  `Realize.lean` does, in both directions:
+
+```lean
+theorem exists_isOpenNormal_le_ker {Φ : G →* Q} (hsm : IsSmoothHom Φ) :
+    ∃ N : Subgroup G, IsOpenNormal N ∧ N ≤ Φ.ker
+
+theorem exists_level_comp_restrictNormalHom_eq (Φ : Gal(K/k) →* G) (hsm : IsSmoothHom Φ) :
+    ∃ (E : IntermediateField k K) (_ : FiniteDimensional k E) (_ : IsGalois k E)
+      (ψ : Gal(↥E/k) →* G), ∀ g : Gal(K/k), ψ (AlgEquiv.restrictNormalHom E g) = Φ g
+
+theorem exists_smooth_surjective_of_galEquiv {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
+    [IsAlgClosed Ω] [IsGalois k Ω] (L : Type*) [Field L] [Algebra k L] [FiniteDimensional k L]
+    [IsGalois k L] {G : Type*} [Group G] [TopologicalSpace G] (e : Gal(L/k) ≃* G) :
+    ∃ Φ : Gal(Ω/k) →* G, Function.Surjective Φ ∧ IsSmoothHom Φ
+
+theorem isInverseGalois_iff_exists_smooth_surjective {Ω : Type} [Field Ω] [Algebra ℚ Ω]
+    [IsAlgClosed Ω] [IsGalois ℚ Ω] {G : Type} [Group G] [TopologicalSpace G]
+    [DiscreteTopology G] : IsInverseGalois G ↔
+      ∃ Φ : Gal(Ω/ℚ) →* G, Function.Surjective Φ ∧ IsSmoothHom Φ
+```
+
+Both directions are short because the bricks were already there.  Forwards: smoothness applied to
+`⊥` (open and normal in a discrete group) puts an open normal subgroup inside the kernel;
+`exists_fixingSubgroup_le` (`Krull.lean:92`) replaces it by the subgroup fixing a finite Galois
+level; `IntermediateField.restrictNormalHom_ker` identifies that subgroup with the kernel of
+restriction, so `QuotientGroup.lift` factors `Φ` through the finite level, and
+`IsInverseGalois.of_surjective_galHom` finishes.  Backwards: `IsAlgClosed.lift` embeds the finite
+extension, `AlgEquiv.ofInjectiveField` identifies it with its image, `Normal.of_algEquiv` and
+`LinearEquiv.finiteDimensional` transport the two instances the image needs, and
+`AlgEquiv.autCongr` turns the identification into an isomorphism of Galois groups.
+
+Note that only `Normal` and `FiniteDimensional` are transported — **separability of the level is
+never used**, because surjectivity of restriction (`AlgEquiv.restrictNormalHom_surjective`) and
+openness of its kernel only ask for those two.
+
+### (c) `GenericLayerStepEP` is true, but it is not the statement to prove
+
+§1.58 isolated the step of the ladder as
+
+```lean
+∀ j, (∀ m, IsInverseGalois (GenericQuot ℓ U m S j)) → ∀ n, IsInverseGalois (GenericQuot ℓ U n S (j+1))
+```
+
+This is a correct reduction — `splitPrimePowerEP_of_genericLayerStepEP` is a theorem — but it
+cannot be proved by the natural induction, and the reason is an order-of-quantifiers problem, not a
+missing lemma.
+
+To take the step one has to make the class of the next layer die on the decomposition subgroups of
+the finitely many *bad* places (those ramified in `K|k`, those above `ℓ`, the infinite ones), and
+§1.57's count needs those subgroups **before** it can say how many letters `m` it wants.  With the
+hypothesis in the weak form above, the only handle on the realization at layer `j` is `∃ N|ℚ`, and
+the field `N` — hence its places, hence the subgroups — may be different for every `m`.  The count
+then has to be given the subgroups before it produces `m`, and the subgroups are only available
+after `m` is chosen.  Circular.
+
+SW break the circle in the *statement* of Theorem 15: they fix `φ : G_k ↠ G(K|k)` once and carry
+condition (i), "all `p ∈ Ram(K|k) ∪ S_p ∪ S_∞` are completely decomposed in `N_{ν,n}|K`", through
+the induction (sw.txt @1104–1232).  The prescribed subgroups then depend on `K` and `ℓ` alone —
+fixed before the shrinking — and the order of quantifiers is consistent.
+
+### (d) `LevelSolution`: the induction predicate that carries `φ` and the places
+
+```lean
+def LevelSolution (ℓ : ℕ) (U : Type) [Group U] (S : Type) [Group S] {k Ω : Type*} [Field k]
+    [Field Ω] [Algebra k Ω] (φ : Gal(Ω/k) →* U) (T : Set (Subgroup Gal(Ω/k))) (m j : ℕ) : Prop :=
+  ∃ Φ : Gal(Ω/k) →* GenericQuot ℓ U m S j, Function.Surjective Φ ∧ IsSmoothHom Φ ∧
+    (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) ∧ ∀ D ∈ T, ∀ x ∈ D, φ x = 1 → Φ x = 1
+```
+
+The fourth clause is the group-theoretic rendering of **"completely decomposed"**.  With
+`Gal(Ω/K) = ker φ` and `Gal(Ω/N) = ker Φ`, a place `w` of `Ω` with decomposition subgroup
+`D ≤ Gal(Ω/k)` lies over a place of `K` whose local degree in `N|K` is one exactly when
+`D ∩ ker φ ≤ ker Φ`, which is what `∀ x ∈ D, φ x = 1 → Φ x = 1` says.  No arithmetic is needed to
+*state* it, which is why the module is sorry-free today: what is missing is only the theorem that
+the decomposition subgroups of the bad places form a set `T` for which the step can be taken.
+
+Both ends of the ladder are unaffected by the extra clause:
+
+* **Bottom.**  `Φ := (pCentralZeroEquiv ℓ (genericAut U m S)).symm ∘ φ`.  Its `rightHom` is `φ` by
+  `rfl` (the inverse of `rightEquivOfSubsingleton` is `inr`), and if `φ x = 1` then `Φ x = 1` by
+  `map_one`, for **any** `T` whatsoever.
+* **Top.**  `pCentralBotSemidirectHom` covers the semidirect product asked for; composing and
+  discarding the last two clauses, `isInverseGalois_of_smooth_surjective` finishes.
+
+### (e) The quantifier order, and where `T` is chosen
+
+```lean
+def GenericLevelStepEP (ℓ : ℕ) : Prop :=
+  ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
+      [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
+      (φ : Gal(Ω/ℚ) →* U), IsPGroup ℓ S → Function.Surjective φ → IsSmoothHom φ →
+    ∃ T : Set (Subgroup Gal(Ω/ℚ)), ∀ j : ℕ,
+      (∀ m : ℕ, LevelSolution ℓ U S φ T m j) → ∀ n : ℕ, LevelSolution ℓ U S φ T n (j + 1)
+```
+
+The `∃ T` sits **after** `φ` and **before** the induction on `j`.  That placement is the whole
+content of the definition and it is forced:
+
+* after `φ`, because the bad places are the places of `K = Ω^{ker φ}`, so `T` cannot be chosen
+  before `φ` is;
+* before `j`, because the induction has to hand the *same* local conditions from one rung to the
+  next — a `T` chosen inside the induction would be a different family at every rung and would
+  prove nothing;
+* **not** universally quantified, because for `T = ∅` the step is not provable: with no local
+  conditions carried, the obstruction of the next layer cannot be shown to be everywhere locally
+  trivial and so cannot be killed.  A version of this statement with `∀ T` would be a reduction to
+  something false in spirit, which is why it is stated with `∃ T`.
+
+`Shafarevich.genericSplitEP_of_genericLevelStepEP` then instantiates `Ω := AlgebraicClosure ℚ`
+(`IsGalois ℚ (AlgebraicClosure ℚ)` comes for free from `IsAlgClosure.isGalois` since `CharZero ℚ`),
+pulls `φ` out of `IsInverseGalois U` through the bridge of (b), takes the `T` the hypothesis
+provides, climbs with `forall_levelSolution`, and lands with `exists_pCentral_eq_bot`.
+`splitPrimePowerEP_of_genericLevelStepEP` is then the same three lines as in §1.58.
+
+### (f) Lean findings
+
+**2573 (LEAN).**  There is no `Subgroup.comap_bot`.  The lemma is
+`MonoidHom.comap_bot (f : G →* N) : (⊥ : Subgroup N).comap f = f.ker`
+(`Mathlib/Algebra/Group/Subgroup/Ker.lean:270`) and it is proved by `rfl`, so `N ≤ (⊥ : Subgroup
+Q).comap Φ` and `N ≤ Φ.ker` are literally interchangeable — no rewriting needed at all.
+
+**2574 (LEAN).**  `IsAlgClosed.lift` has its target `M` implicit and takes no explicit arguments:
+`let f : L →ₐ[k] Ω := IsAlgClosed.lift` elaborates, the type ascription fixing everything.  It asks
+for `[Algebra.IsAlgebraic k L]`, which instance search finds from `[FiniteDimensional k L]`.
+
+**2575 (LEAN, ℚ-algebra diamond).**  Applying `IsInverseGalois.of_surjective_galHom ↥E ψ hψ` to an
+`E : IntermediateField ℚ K` **fails**:
+
+```
+synthesized type class instance is not definitionally equal to expression inferred by typing rules,
+synthesized  DivisionRing.toRatAlgebra
+inferred     E.algebra'
+```
+
+For base ℚ the `IntermediateField` algebra instance loses to `DivisionRing.toRatAlgebra`, and the
+two are only propositionally equal (`Algebra ℚ A` is a subsingleton, not a defeq singleton).  The
+cure that avoids `@`-application entirely: state the intermediate result as an existential whose
+`Field`/`Algebra` components are **explicit binders** — exactly the shape of `IsInverseGalois`
+itself — so that destructuring installs them as *local* instances, which then win instance search:
+
+```lean
+theorem exists_finiteGalois_surjective_of_smooth ... :
+    ∃ (L : Type) (_ : Field L) (_ : Algebra k L) (_ : FiniteDimensional k L) (_ : IsGalois k L)
+      (ψ : Gal(L/k) →* G), Function.Surjective ψ
+```
+
+Proved over a generic `k` (where no diamond exists) and consumed at `k = ℚ` after `obtain`.
+
+**2576 (LEAN).**  A `show` whose statement contains `_` in the position of a `MonoidHom.comp`
+argument fails with "pattern … is not definitionally equal to target", because the `_` becomes a
+metavariable that unification will not solve through the coercion.  Use
+`simp only [MonoidHom.coe_comp, Function.comp_apply, MulEquiv.coe_toMonoidHom]` instead of `show`.
+
+### (g) What `GenericLevelStepEP` now demands
+
+Unfolded, and with `K` the field `φ` cuts out, the obligation is: *choose the bad places of `K`;
+then, given for every `m` a smooth surjection `Φ_m : G_ℚ ↠ GenericQuot ℓ U m S j` over `φ` which is
+completely decomposed at them, produce for every `n` such a surjection one layer further up.*  The
+chain, in order:
+
+1. **Choose `T`.**  The decomposition subgroups in `Gal(Ω/ℚ)` at the places of `K` that ramify in
+   `K|ℚ`, lie above `ℓ`, or are infinite.  Finitely many, and they depend on `φ` alone.
+2. **Turn complete decomposition into a subgroup with injective projection.**  This is exactly the
+   hypothesis of `exists_operatorHom_forall_resH2_extensionClass_subgroup_eq_one` (§1.57,
+   `LayerSection.lean`): `∀ x ∈ D ν, rightHom x = 1 → x = 1`, with prescribed image `P ν ≤ U`.
+   The clause of `LevelSolution` gives it, once `D ν` is taken to be `Φ_m (D)` for `D ∈ T`.
+3. **Shrink.**  §1.57 hands back `m` and a surjective operator homomorphism `α` killing the class of
+   the layer on each `D ν`.
+4. **Inflate.**  The obstruction to lifting `Φ_m` one layer is `comapH2 Φ_m` of the extension class;
+   step 3 makes it locally trivial at the places of `T`, SW Step 1(b) (procyclic decomposition
+   group, `H²(Ẑ, M) = 0`) at the unramified ones, and SW Step 1(c) (adjoining a `p^{a+ε}`-th root of
+   a uniformizer) at the remaining ramified ones — so it lies in `Ш²`.
+5. **Kill it.**  `sha2_le_range_galInflH2` puts it in the image of inflation from a finite level and
+   `exists_genericShrink_map_eq_zero` shrinks it away (§1.54(c)).
+6. **Re-establish the clause.**  The lift must again be completely decomposed at `T`; this is SW's
+   bookkeeping in Steps 3–4 and is what makes the induction close.
+
+Items 1 and 6 are new work; 2 and 3 are done; 4 and 5 are the Poitou–Tate-shaped part.
