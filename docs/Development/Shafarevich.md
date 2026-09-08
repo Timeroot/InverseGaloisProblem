@@ -16181,3 +16181,289 @@ machinery of (a)–(d) is banked for the `p = 2` case when it is written.
   binder, not as an error: after generalising `SplitClass.prescriptionChar_eq_one_of_pow` the
   `hodd` of `exists_place_sUnit_prescribed_of_rad` became dead, which is how the generalisation of
   the recursion step was discovered rather than planned.
+
+## §1.46 Poitou–Tate: the shape of the wall, and the discovery that the endgame frame already exists
+
+This section corrects the map of the endgame drawn in §1.44(d) and replaces it with what an audit
+of the repository actually found.  Two modules landed alongside it:
+`InverseGalois/CFT/Profinite/ShaRestrict.lean` (commit `79563f8`) and
+`InverseGalois/CFT/Profinite/H2Congr.lean`.
+
+### (a) `ShaRestrict.lean`: locally trivial classes restricted to a subgroup
+
+`Profinite/ShaComap.lean` already carried the general statement that local triviality travels along
+a homomorphism, and `resH1 H` is *definitionally* `comapH1 H.subtype (fun _ _ => rfl) …`, so the
+half of the new module that says restriction preserves local triviality is a three-line corollary
+(`resH1_mem_sha1`, `resH2_mem_sha2`), once one names the family
+`restrictFamily H S = (· .comap H.subtype) '' S` that a family `S` of subgroups of `G` cuts out on
+`H`.  The other half is the res–cor coprimality argument: `corH1_resH1` raises to the index, so a
+class dying on a subgroup of finite index is killed by that index
+(`pow_index_eq_one_of_resH1_eq_one`); a class killed by the index and by a number prime to it is
+trivial (`eq_one_of_resH1_eq_one_of_coprime`); hence a locally trivial class whose order is prime to
+the index is trivial as soon as every locally trivial class of that order over the subgroup is
+(`eq_one_of_mem_sha1_of_coprime`, `eq_one_of_mem_sha2_of_coprime`, plus the `IsOpen` packaging for a
+compact group).  That is the step which moves a question about classes of prime power order to a
+Sylow subgroup.
+
+### (b) Correction to §1.44(d): the SW Theorem-15 frame already exists
+
+§1.44(d) recorded that the group-theoretic frame of Schmidt–Wingberg's Theorem 15 was still to be
+built.  That is wrong.  Under `InverseGalois/Solvable/Shafarevich/` there already are:
+
+* `Generic.lean` — SW's free pro-`p`-`G` operator group `F(n)`: `OperatorFree`, `Generic U n S`,
+  `genericAut`, `GenericSplitEP`, together with `splitPrimePowerEP_of_genericSplitEP` and
+  `genericSplitEP_of_splitPrimePowerEP`.  So **`GenericSplitEP ℓ` is the sole remaining target.**
+* `PCentral.lean` — the descending `p`-central series `F(n)(ν)`.
+* `Layer.lean` — the layers `E(n,ν) = F(n)(ν)/F(n)(ν+1)` (`layerSub`, `Layer`, `layerMk`,
+  `layerRep`, `span_layerMk_eq_top`).
+* `Shrink.lean`, `LayerWord.lean`, `LayerShrink.lean`, `LayerTensor.lean` — SW Proposition 2 and the
+  Chevalley–Warning counting that shrinks a prescribed finite set of layer elements to zero.
+* `LayerCohomology.lean` — **SW Proposition 6 in cohomological degree**:
+  `exists_genericShrink_map_eq_zero` kills finitely many classes of `H^c(G, E(m,ν))` for *any*
+  `c : ℕ` at once.  The proof goes through `map_π_eq_zero` — a morphism of representations killing
+  every value of a representing cocycle kills the class — so it needs no dimension shifting and no
+  Tate cohomology.
+* `LayerHomology.lean`, `GenericHomology.lean`, `SemidirectHomology.lean`, `HomologyOne.lean` — the
+  same in homological degree (`exists_genericShrink_homology_map_eq_zero`,
+  `exists_operatorHom_h1_eq_zero`), which is SW Proposition 6 for `k = -2` read as
+  `Ĥ^{-2}(G,·) = H_1(G,·)`.
+
+SW say explicitly (sw.txt @333) "we will apply proposition 6 only for `k = 2` and `k = -2`", so both
+instances the paper needs are present.
+
+### (c) Why Poitou–Tate enters at all, and the two routes to SW's Claim
+
+SW's Step 2 has to kill an obstruction `φ_{m,ν}(ε_ν) ∈ H²(G_k, E(m,ν))` by shrinking `F(m) ↠ F(n)`.
+Proposition 6 kills a class by killing every *value* of a representing cocycle, and the
+Chevalley–Warning count needs the number of values bounded **independently of `m`**.  A `G_k`-cocycle
+into `E(m,ν)` can take up to `|E(m,ν)|` values, which grows with `m`; a cocycle for the **fixed
+finite** group `G = Gal(K|k)` takes at most `|G|²`.  So the obstruction must first be pulled back to
+a cohomology group of `G`.  That pull-back is SW's Claim, and it is the only place the paper needs
+Tate–Poitou.  There is no cheap escape:
+
+* `K` is *not* `k(μ_p)` — in Theorem 15 it is the arbitrary given group's field, enlarged to contain
+  `μ_{p^e}` — so `[K:k]` need not be prime to `p` and the res–cor argument does not kill
+  `Ш²(k,E)`.
+* `Ш²(k,E)` depends only on `E` as a `G_k`-module, so enlarging `K` cannot help.
+* `Ш²` is genuinely nonzero for a twisted `E`, so there is no vanishing shortcut.
+* `Ш` is not exact, so dévissage through coinduced modules gives only `Ш² ⊆ im δ`.
+
+**Route 1 (SW).** Tate–Poitou `Ш²(k,E) ≅ Ш¹(k,E′)^∨` with `E′ = Hom(E,μ_p)`, then the Hasse
+principle plus the fact that `E′` is a trivial `G_K`-module give `Ш¹(k,E′) ↪ H¹(K|k,E′)`, and
+dualising gives a surjection `Ĥ^{-2}(G, E(-1)) ↠ Ш²(k,E)`.  In the repository this route is already
+*packaged*: `PoitouTate/ShaSurjection.lean` names `HasPoitouTateDuality` and its consumable half
+`HasShaDualInjection`, and derives `shaDualHom_surjective` /
+`exists_surjective_of_hasPoitouTateDuality` from it; and the middle step is already a **theorem** —
+`Units/HasseDecomposition.lean`'s `shaInflH1_injective` says an everywhere locally trivial class of
+the first cohomology is determined by the class it comes from at the field trivialising the
+coefficients, which is exactly `Ш¹(k,E′) ↪ H¹(K|k,E′)`.  What is missing is only
+`HasShaDualInjection`.
+
+**Route 2 (better, and the one the repository is actually built for).** Do not dualise at all.  Show
+directly that
+
+> a locally trivial class of `H²(G_k, E)` is **inflated** from `H²(Gal(K|k), E)`,
+
+which gives a surjection `H²(G, E) ↠ Ш²(k,E)` with `G` finite.  This is strictly better than
+Route 1 for three reasons: the surjection is inflation, so its naturality in the coefficient module
+is free (SW have to work for naturality of theirs); it lands in **cohomological degree 2**, where
+`exists_genericShrink_map_eq_zero` already applies with the trivial coefficient module `T = 𝔽_p`;
+and it needs no `(-1)`-Tate twist and no negative Tate degrees.
+
+Route 2 is exactly the content of `Profinite/TransgressionInflate.lean`'s
+`exists_comapH2_eq_of_sha1Level_eq_bot`, and it decomposes into two conditions.
+
+1. **The class dies over `K`.**  `res_{G_K} x ∈ Ш²(K,E)`, and `E` is a trivial `G_K`-module which,
+   because `μ_p ⊆ K`, is a finite product of copies of `μ_p`.  Row 3 of the table already proves
+   this vanishes: `Units/DecompositionRestrict.lean`'s
+   `eq_one_of_mem_sha2_of_mulEquivPi_intermediate`.  **Done.**
+2. **The residual obstruction vanishes.**  Inflation–restriction places the obstruction to being
+   inflated in `H¹(Gal(K|k), H¹(G_K, E))`, and local triviality puts it in the locally trivial part
+   of that group, which is precisely `sha1Level E K.fixingSubgroup hop (decompositionSubgroups k Ω)`.
+   By the twisted Kummer identification (`Profinite/KummerAction.lean`) the coefficients are
+   `K^× / (K^×)^p ⊗ Hom(μ_p, E)`, so the condition is a Grunwald–Wang-type statement about a finite
+   group with Kummer coefficients.  `Units/KummerShaBot.lean`'s `sha1Level_eq_bot_of_span` reduces it
+   to two hypotheses: `HasIdeleClassNakayamaSpanAt k K p W (-2)` and `Ĥ^{-2}(Gal(K|k), W) = 0`.
+
+So **row 5 and SW's Claim are the same wall**, and it is the one already named in §1.13:
+`HasIdeleClassNakayamaSpanAt`, i.e. `range obs_P = Σ_w cor_w (range obs_w)`.
+
+### (d) `H2Congr.lean`: the second cohomology over an intermediate field
+
+Route 2's step 1 delivers its conclusion as `comapH2 (galRestrictScalarsHom k K Ω) … z = 1`, a
+statement about `Gal(Ω/K)`; `exists_comapH2_eq_of_sha1Level_eq_bot` consumes a primitive of the
+cocycle on `K.fixingSubgroup`, a *subgroup* of `Gal(Ω/k)`.  The two are the same because Galois
+theory identifies the two groups smoothly in both directions
+(`Profinite/FixingSubgroup.lean`), but the identification has to be carried into degree two.
+`H2Congr.lean` does that: `smoothH2Congr` transports `SmoothH2` along any isomorphism of topological
+groups which is smooth both ways and matches the actions, `galSubH2Congr` is the instance for the
+Galois correspondence, and `resH2_fixingSubgroup_eq_one_iff` is the bridge — a class dies over an
+intermediate field exactly when it dies on the subgroup which fixes it.
+
+### (e) Honest cost of the two routes
+
+Route 1 needs a genuine Poitou–Tate duality.  Milne (ADT I.4.10) proves it by identifying the
+nine-term sequence with the `Ext_{G_S}(M^D, −)`-sequence of `0 → E_S → J_S → C_S → 0`, using local
+duality at every place, Shapiro for the ideles, and the abstract class-formation duality
+`α^r : Ext^r_G(M,C) → H^{2-r}(G,M)^*` of ADT I.1.8; the explicit cochain description of the pairing
+(ADT, p. 65) needs `H¹ ∪ H² → H³` cup products and the vanishing of the relevant torsion in
+`H³(G_S, E_S)`.  That is on the order of fifteen to thirty thousand lines from where the repository
+stands.  Route 2 needs only `HasIdeleClassNakayamaSpanAt`, which is a single reciprocity identity in
+machinery that already exists.  **Route 2 is the one to finish.**
+
+### (f) Findings
+
+* **2450 (REPO, KEY).** `Profinite/ShaComap.lean` already contains the general "local triviality
+  travels along a homomorphism" machinery (`subgroupHom`, `resH1_comapH1`, `comapH1_mem_sha1`,
+  `sha1_le_comap_sha1`, and the degree-two analogues).  Because `resH1 H` is definitionally
+  `comapH1 H.subtype (fun _ _ => rfl) (isSmoothHom_subtype H)`, "restriction preserves `Ш`" is a
+  three-line corollary.
+* **2451 (REPO, KEY).** The SW Theorem-15 frame already exists — see (b).  `GenericSplitEP ℓ`
+  (`Solvable/Shafarevich/Generic.lean:250`) is the sole remaining target, and both instances of
+  SW Proposition 6 are theorems.
+* **2452 (MATH, KEY).** Why the obstruction must be pulled back to a *fixed finite* group: Proposition
+  6 kills a class by killing the values of a representing cocycle, and the Chevalley–Warning count
+  needs the number of values bounded independently of `m`.  See (c).
+* **2453 (MATH).** In SW Theorems 13 and 15, `K` is not `k(μ_p)`; `[K:k]` need not be prime to `p`.
+* **2454 (MATH).** The Sylow reduction is valid: with `G_p ∈ Syl_p(G)` and `k_p = K^{G_p}`,
+  `res : Ш²(k,A)[p] → Ш²(k_p,A)` is injective since `cor ∘ res = [k_p:k]` is prime to `p`; and
+  `μ_p ⊆ k_p` because `[k_p(μ_p):k_p]` divides both `p-1` and a power of `p`.  Transport back uses
+  `x ↦ (y ↦ ⟨res x, res y⟩) = [k_p:k]·⟨x,y⟩`.
+* **2455 (MATH).** `Ш²(k,ℤ/p) = 0` and `Ш²(k,μ_p) = 0` for odd `p`, but `Ш²` is nonzero for a
+  genuinely twisted `E`, so there is no vanishing shortcut past (c).
+* **2456 (MATH, KEY).** Route 2 above: `Ш²(k,E) ⊆ im(inf)` gives a *better* surjection than SW's
+  Claim — naturality for free, cohomological degree 2, no Tate twist.
+* **2457 (REPO).** Nothing in the repository yet uses
+  `exists_comapH2_eq_of_sha1Level_eq_bot`; it is the unconsumed payoff of the whole
+  `Units/Kummer*` tower.
+* **2458 (REPO).** `sha1Level M N hop S` is `Ш¹(G/N, H¹(N,M))` for the images of `S`, i.e. exactly
+  the inflation–restriction obstruction group, not a group of `M`-valued classes.
+* **2459 (REPO).** `Units/HasseDecomposition.lean`'s `shaInflH1_injective` is SW's "Hasse principle"
+  step of the Claim, already proven: `Ш¹(k,M) ↪ H¹(Gal(F|k), M)` for `F` the field trivialising the
+  coefficients.
+* **2460 (REPO).** `galSubHom K : Gal(Ω/↥K) →* Gal(Ω/k)` (`Profinite/FixingSubgroup.lean:66`) is
+  *definitionally* `K.fixingSubgroup.subtype.comp (fixingSubgroupEquiv K).symm.toMonoidHom`, so
+  `comapH2 (galSubHom K) … z = galSubH2Congr … (resH2 K.fixingSubgroup z)` is `rfl` after
+  `smoothH2Mk_surjective`.
+* **2461 (LEAN).** `smoothH1Mk_congr` takes the equation of cochains *first*; `smoothH2Mk_congr`
+  takes it *last* (gotcha 2057).  Writing `smoothH2Mk_congr _ _ ha has (funext …)` is the shape that
+  elaborates.
+* **2462 (REPO).** `LayerCohomology.lean`'s `map_π_eq_zero` is the reusable core of Proposition 6:
+  "a morphism of representations killing every value of a cocycle kills the class".  It needs only
+  `groupCohomology.cochainsMap`, so it applies in every degree and in homology alike.
+
+## §1.47 Route 2 assembled: the everywhere locally trivial classes are inflated from the splitting field
+
+The plan set out in §1.46(c) is now carried out.  Three modules were added and the whole root build
+is green at 9809 jobs with zero errors, zero warnings and zero sorries.
+
+### (a) `Profinite/H2Congr.lean` — the degree-two Galois correspondence
+
+The file sketched in §1.46(d) is finished and builds (8035 jobs, 16 s).  `smoothH2Congr e he hs hs'`
+transports `SmoothH2 Q M ≃* SmoothH2 G M` along any `e : G ≃* Q` which is smooth in both directions
+and matches the two actions; the inverse is the transport along `e.symm`, and both round trips are
+`smoothH2Mk_congr` applied to `e.apply_symm_apply`.  `galSubH2Congr K hπ` is the instance for the
+Galois correspondence `Gal(Ω/↥K) ≃* ↥K.fixingSubgroup`, and
+
+```
+resH2_fixingSubgroup_eq_one_iff :
+  resH2 K.fixingSubgroup z = 1 ↔ comapH2 (galSubHom K) hπ (isSmoothHom_galSubHom K) z = 1
+```
+
+is the bridge.  `comapH2_galSubHom_eq` — the class read over the field *is* the class restricted to
+the fixing subgroup, transported — is `rfl` after `smoothH2Mk_surjective` (finding 2460).
+
+### (b) `Profinite/ResInflate.lean` — extending a primitive off the kernel
+
+`exists_comapH2_eq_of_sha1Level_eq_bot` (`Profinite/TransgressionInflate.lean`) wants a smooth
+cochain `b : G → M` on the *whole* group whose coboundary agrees with the cocycle on the kernel.
+What a vanishing theorem produces is `resH2 N z = 1`, i.e. a primitive `u : ↥N → M` defined on the
+kernel alone.  `exists_isSmooth₁_extend` closes the gap: extend `u` by `1` outside `N`.  Smoothness
+survives because an open subgroup of an open subgroup is open in the ambient group
+(`isOpen_coe_map_subtype`, via `IsOpen.isOpenMap_subtype_val`), so `HasOpenNormalBasis G` supplies an
+open normal `R ≤ N.map H.subtype`; translating by an element of `R` moves neither the elements of `N`
+nor those outside it across the boundary.  The package is
+
+```
+exists_comapH2_eq_of_resH2_eq_one :
+  HasOpenNormalBasis G → IsSmoothHom π → Surjective π → (π.ker acts trivially) →
+  z ∈ sha2 M S → resH2 π.ker z = 1 → sha1Level M π.ker _ S = ⊥ →
+  ∃ x : SmoothH2 Q M, comapH2 π hπ hsm x = z
+```
+
+together with `exists_comapH2_eq_of_resH2_eq_one_of_eq_ker`, the same statement with the kernel
+presented by *any* subgroup equal to it.  That variant exists purely to move a dependent `subst` into
+a light abstract context — see finding 2467.
+
+### (c) `PoitouTate/ShaInflate.lean` — the arithmetic assembly
+
+```
+exists_galInflH2_eq_of_mem_sha2 (K : IntermediateField k Ω)
+  (hπ  : ∀ g e, g • e = AlgEquiv.restrictNormalHom ↥K g • e)
+  (hπK : ∀ g e, g • e = galRestrictScalarsHom k ↥K Ω g • e)
+  (hζ : IsPrimitiveRoot ζ n) (htrivM : Gal(Ω/↥K) acts trivially on M)
+  (α : E ≃* (J → M)) (ι : M →* (↥K)ˣ injective, n-torsion, onto the n-torsion)
+  (hsha1 : sha1Level E K.fixingSubgroup _ (decompositionSubgroups k Ω) = ⊥) :
+  ∀ z ∈ sha2 E (decompositionSubgroups k Ω), ∃ x, galInflH2 K hπ x = z
+```
+
+and its `≤`-form `sha2_le_range_galInflH2`.  The proof is four steps.  `hker`: an element of
+`Gal(Ω/↥K)`, read down to `Gal(Ω/k)`, lies in `K.fixingSubgroup` (`g.commutes ⟨x, hx⟩`) and hence in
+`(restrictNormalHom ↥K).ker` by `restrictNormalHom_ker`.  `htrivE`: so `Gal(Ω/↥K)` acts trivially on
+`E`.  Then row 3's `eq_one_of_mem_sha2_of_mulEquivPi_intermediate` gives the vanishing over `K`,
+`resH2_fixingSubgroup_eq_one` turns it into `resH2 K.fixingSubgroup z = 1`, and (b) inflates.
+
+Note what makes the joint work at all: **`galSubHom K` and `galRestrictScalarsHom k ↥K Ω` are the
+same map by `rfl`** (finding 2465), so row 3's output — phrased with `galRestrictScalarsHom` — is
+accepted verbatim by `H2Congr`'s bridge, which is phrased with `galSubHom`.  No glue lemma was
+needed.
+
+### (d) Where this leaves rows 5 and 8
+
+SW's Claim (a surjection from a finite group's `H²` onto `Ш²`) is now **a theorem modulo the single
+hypothesis `hsha1`**, and `Units/KummerShaBot.lean`'s `sha1Level_eq_bot_of_span` discharges `hsha1`
+from exactly two inputs:
+
+1. `HasIdeleClassNakayamaSpanAt k ↥K p W (-2)` — the reciprocity identity
+   `range obs_P = Σ_w cor_w (range obs_w)` of §1.13, whose `⊇` half is already
+   `tateCor_tateNakayamaTwoNextMap` (`TateCohomology/NakayamaNextRestrict.lean`);
+2. `∀ y : ↥(tateModule W (-2)), y = 0` — a statement about the finite group `Gal(K/k)` and the
+   coefficient module `W` alone, with no arithmetic in it.
+
+So the entire local-global content of the endgame has been compressed to (1).  Row 5 and SW's Claim
+are, as predicted in §1.46(e), literally the same wall, and Route 1 (a full Poitou–Tate duality) is
+not on the critical path.
+
+### (e) Findings
+
+* **2463 (LEAN).** `variable (M) in` before a `def`/`theorem` reorders `M` to the position where
+  `variable {M : Type*}` was originally *declared*, not to the end of the signature.  In `H2Congr`
+  this silently produced `galSubH2Congr (K) (M) (hπ)` against call sites written
+  `galSubH2Congr K hπ M`, surfacing as "argument `hπ` … is expected to have type `Type ?u`".  Cure:
+  drop the `variable (M) in` and let `M` be inferred from `hπ`.
+* **2464 (LEAN).** A goal produced by `refine ⟨fun g => if hg : g ∈ H then … else 1, ?_⟩` is not
+  beta-reduced, so `rw [dif_pos …]` fails with "Did not find an occurrence of the pattern
+  `dite (x * n ∈ H) ?m ?m`".  Insert a bare `dsimp only` first.
+* **2465 (REPO, KEY).** `galSubHom K = galRestrictScalarsHom k ↥K Ω` by `rfl`; consequently the two
+  smoothness hypotheses `∀ g m, g • m = galSubHom K g • m` and
+  `∀ g m, g • m = galRestrictScalarsHom k ↥K Ω g • m` are defeq and the `comapH2` terms built from
+  either are interchangeable by `exact`.
+* **2466 (LEAN).** `@sha1Level`'s explicit argument order is
+  `G, [Group G], [TopologicalSpace G], [IsTopologicalGroup G], M, [CommGroup M],
+  [MulDistribMulAction G M], N, [N.Normal], hop, S` — again because of `variable (M N) in`
+  (finding 2463).
+* **2467 (LEAN, KEY).** Transporting a dependently typed statement such as `sha1Level M N hop S = ⊥`
+  across a subgroup equality by `rintro … rfl; exact h` diverges at `whnf` (> 1 000 000 heartbeats)
+  in a heavy Galois-instance context, but takes 9 s in an abstract
+  `[Group G] [TopologicalSpace G] [IsTopologicalGroup G]` context.  Cure: put the `subst` inside a
+  light group-theoretic helper and apply that from the arithmetic site.
+* **2468 (LEAN, re-confirmation of 1849/29).** Passing `↥K` where an `(L : IntermediateField k Ω)`
+  argument is expected does **not** give a type error — it gives a `(deterministic) timeout at whnf`
+  at the `theorem` line.  `isSmoothHom_restrictNormalHom` and `restrictNormalHom_surjective_level`
+  both take the intermediate field.  Fixing this dropped `ShaInflate` from >1 000 000 heartbeats to
+  19 s.
+* **2469 (REPO).** `hasOpenNormalBasis_of_compactSpace _` discharges `HasOpenNormalBasis Gal(Ω/k)`
+  with no side conditions.
+* **2470 (REPO).** `krullTopology_discreteTopology_of_finiteDimensional` (Mathlib
+  `FieldTheory/KrullTopology.lean:250`) is an instance, so `DiscreteTopology (↥K ≃ₐ[k] ↥K)` for a
+  finite `K/k` is automatic.

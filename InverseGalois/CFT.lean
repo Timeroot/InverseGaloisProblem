@@ -487,6 +487,7 @@ import InverseGalois.CFT.PoitouTate.SUnitCharacter
 import InverseGalois.CFT.PoitouTate.SUnitPlace
 import InverseGalois.CFT.PoitouTate.SUnitReduce
 import InverseGalois.CFT.PoitouTate.Selmer
+import InverseGalois.CFT.PoitouTate.ShaInflate
 import InverseGalois.CFT.PoitouTate.ShaSurjection
 import InverseGalois.CFT.PoitouTate.ShaTate
 import InverseGalois.CFT.PoitouTate.SplitClass
@@ -512,6 +513,7 @@ import InverseGalois.CFT.Profinite.Cup
 import InverseGalois.CFT.Profinite.Discrete
 import InverseGalois.CFT.Profinite.FixingSubgroup
 import InverseGalois.CFT.Profinite.H1Conj
+import InverseGalois.CFT.Profinite.H2Congr
 import InverseGalois.CFT.Profinite.Hilbert90
 import InverseGalois.CFT.Profinite.InfRes
 import InverseGalois.CFT.Profinite.Kummer
@@ -538,6 +540,7 @@ import InverseGalois.CFT.Profinite.Quotient
 import InverseGalois.CFT.Profinite.QuotientAction
 import InverseGalois.CFT.Profinite.Krull
 import InverseGalois.CFT.Profinite.Res
+import InverseGalois.CFT.Profinite.ResInflate
 import InverseGalois.CFT.Profinite.ShaComap
 import InverseGalois.CFT.Profinite.ShaRestrict
 import InverseGalois.CFT.Profinite.Symbol
@@ -5611,6 +5614,26 @@ it that are available here.
   field *is* the first cohomology of the subgroup which fixes it — the transport is carried out for
   any isomorphism of topological groups smooth in both directions, since the argument sees only the
   substitution of one variable for another.
+* `InverseGalois.CFT.Profinite.H2Congr` carries that transport into degree two.  Substituting an
+  isomorphism of topological groups into a two cochain is again invertible, by substituting the
+  inverse, so **an isomorphism of topological groups smooth in both directions is an isomorphism of
+  the second cohomologies.**  Applied to the Galois correspondence this identifies the second
+  cohomology over an intermediate field with the second cohomology of the subgroup which fixes it,
+  and it identifies the two maps that land there: reading a class over the intermediate field and
+  restricting it to the fixing subgroup differ only by that isomorphism, so **a class dies over the
+  intermediate field exactly when it dies on the subgroup which fixes it.**  This is what turns a
+  vanishing theorem stated over a field into the hypothesis a transgression argument wants, which
+  is stated on a subgroup.
+* `InverseGalois.CFT.Profinite.ResInflate` closes the last gap in that hand-over.  The descent asks
+  for a primitive of the cocycle written as a cochain on the whole group; the vanishing of a
+  restriction supplies one on the kernel alone.  Extend it by one: **a smooth one cochain on an open
+  subgroup is the restriction of a smooth one cochain on the whole group**, since an open subgroup
+  of an open subgroup is open in the ambient group and so contains an open normal subgroup of it,
+  and translating by an element of that subgroup leaves the elements of the subgroup inside and
+  those outside outside.  The descent then reads as it should: **a locally trivial class of the
+  second cohomology which dies on the kernel of a smooth surjection onto a discrete group is
+  inflated from that group**, and the kernel may be presented by any subgroup equal to it, which is
+  what a Galois correspondence hands over.
 * `InverseGalois.CFT.Profinite.Trivial` is the case of coefficients on which the group acts
   trivially, the one that carries the local-global arguments.  There the cocycle relation says
   exactly that the cochain is a homomorphism, every coboundary is trivial, and smoothness is
@@ -5659,6 +5682,18 @@ it that are available here.
   locally trivial classes of the second cohomology** — the obstruction to an embedding problem
   which the local conditions have already killed everywhere locally becomes one class of a finite
   group's complete cohomology.
+* `InverseGalois.CFT.PoitouTate.ShaInflate` reaches the same conclusion for split coefficients
+  without a duality theorem, by transgression instead.  Suppose a finite Galois extension splits the
+  coefficients into a finite product of roots of unity it already contains.  Over that extension the
+  class stays everywhere locally trivial, because the decomposition subgroups there sit inside those
+  of the base, and with the roots of unity present an everywhere locally trivial class of the second
+  cohomology vanishes; read on the subgroup fixing the extension rather than on the Galois group
+  over it, this says the class dies on the kernel of restriction to the extension.  A class dying on
+  that kernel is inflated from the quotient as soon as the everywhere locally trivial classes at the
+  level are trivial, and that is the group twisted Kummer theory computes.  So **an everywhere
+  locally trivial class of the second cohomology with coefficients split by a finite Galois
+  extension is inflated from the Galois group of that extension**: a cohomology group of a finite
+  group carries all of them, which is what a counting argument over a finite field can consume.
 * `InverseGalois.CFT.Profinite.Hilbert90` is the arithmetic input.  A smooth cocycle is constant on
   the cosets of the subgroup fixing a finite Galois level and its values are fixed by that
   subgroup, hence lie in the level, so choosing a preimage of each automorphism of the level turns
