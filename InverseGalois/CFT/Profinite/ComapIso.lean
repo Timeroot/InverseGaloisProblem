@@ -29,6 +29,8 @@ an obstruction killed on one is killed on the other.
   injective.**
 * `InverseGalois.CFT.eq_one_of_comapH2_eq_one`: a class trivial after transport along an
   isomorphism is trivial.
+* `InverseGalois.CFT.resH2_range_eq_one_of_comapH2_eq_one`: **a class whose pullback along an
+  injective homomorphism is trivial is trivial on the image of that homomorphism.**
 
 ## Tags
 
@@ -172,5 +174,32 @@ theorem eq_one_of_comapH2_eq_one (hsm : IsSmoothHom (e : G →* Q))
   comapH2_injective_of_mulEquiv e hact hsm hsm' (by rw [h, _root_.map_one])
 
 end Iso
+
+/-! ### The image of an injective homomorphism -/
+
+section Range
+
+variable {G Q M : Type*} [Group G] [TopologicalSpace G] [DiscreteTopology G] [Group Q]
+  [TopologicalSpace Q] [DiscreteTopology Q] [CommGroup M] [MulDistribMulAction G M]
+  [MulDistribMulAction Q M] {f : G →* Q} (hinj : Function.Injective f)
+  (hact : ∀ (g : G) (m : M), g • m = f g • m)
+
+include hinj hact in
+/-- **A class of the second cohomology whose pullback along an injective homomorphism is trivial is
+trivial on the image of that homomorphism.**  An injective homomorphism is an isomorphism onto its
+image, and pulling back along it is pulling back along that isomorphism after restricting. -/
+theorem resH2_range_eq_one_of_comapH2_eq_one (hsm : IsSmoothHom f) {x : SmoothH2 Q M}
+    (h : comapH2 f hact hsm x = 1) : resH2 f.range x = 1 := by
+  have hacte : ∀ (g : G) (m : M), g • m = MonoidHom.ofInjective hinj g • m := hact
+  refine eq_one_of_comapH2_eq_one (MonoidHom.ofInjective hinj) hacte
+    (isSmoothHom_of_continuous continuous_of_discreteTopology)
+    (isSmoothHom_of_continuous continuous_of_discreteTopology) ?_
+  refine Eq.trans (comapH2_comapH2 (π := (MonoidHom.ofInjective hinj : G →* ↥f.range))
+    (ρ := f.range.subtype) hacte (fun _ _ => rfl)
+    (isSmoothHom_of_continuous continuous_of_discreteTopology)
+    (isSmoothHom_subtype f.range) x) ?_
+  exact Eq.trans (comapH2_congr (π' := f) (MonoidHom.ext fun _ => rfl) _ hact _ hsm x) h
+
+end Range
 
 end InverseGalois.CFT

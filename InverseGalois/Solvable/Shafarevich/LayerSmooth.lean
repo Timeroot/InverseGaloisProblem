@@ -48,6 +48,9 @@ of the subgroup times the dimension of the layer downstairs.
 * `InverseGalois.Shafarevich.exists_operatorHom_forall_coeffH2_eq_one` — **Proposition 6 in the
   smooth language**, for a subgroup of the operator group and with the rank chosen in advance of the
   classes.
+* `InverseGalois.Shafarevich.exists_genericShrink_forall_subgroupCoeffH2_eq_one` and
+  `InverseGalois.Shafarevich.exists_operatorHom_forall_subgroupCoeffH2_eq_one` — the same, for a
+  **family** of subgroups of the operator group at once, one class on each.
 
 ## Tags
 
@@ -194,6 +197,28 @@ theorem exists_genericShrink_forall_coeffH2_eq_one {ℓ : ℕ} [Fact ℓ.Prime] 
   rw [ha ν]
   exact coboundary₂_one
 
+/-- **One class for each of finitely many subgroups of the operator group is annihilated all at once
+by a surjective shrinking homomorphism.**  The number of scalar equations is the number of values
+the cocycles take, which is the number of pairs of elements of each of the subgroups. -/
+theorem exists_genericShrink_forall_subgroupCoeffH2_eq_one {ℓ : ℕ} [Fact ℓ.Prime]
+    (hS : IsPGroup ℓ S) {j t : ℕ} [TopologicalSpace U] (P : Fin t → Subgroup U)
+    (hr : (j + 1) * (Nat.card ((ν : Fin t) × (↥(P ν) × ↥(P ν))) *
+      Module.finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j)) < r)
+    (x : ∀ ν, SmoothH2 ↥(P ν) ↥(layerSub ℓ (Generic U (r * n) S) j)) :
+    ∃ a : Fin r → ℕ, Function.Surjective (genericShrink U r n S a) ∧
+      ∀ ν, coeffH2 (layerSubMap ℓ (genericShrink U r n S a) j)
+        (layerSubMap_smul_subgroup (P ν) (isOperatorHom_genericShrink U r n S a)) (x ν) = 1 := by
+  choose d hd hs hdx using fun ν => smoothH2Mk_surjective (x ν)
+  obtain ⟨a, hsurj, ha⟩ := exists_genericShrink_forall_layerSubMap_eq_one U r n S hS hr
+    fun q : (ν : Fin t) × (↥(P ν) × ↥(P ν)) => d q.1 q.2
+  refine ⟨a, hsurj, fun ν => ?_⟩
+  rw [← hdx ν, coeffH2_smoothH2Mk]
+  refine (smoothH2Mk_eq_one_iff _ _).2 ⟨1, isSmooth₁_one, ?_⟩
+  have hν : coeffMap₂ (layerSubMap ℓ (genericShrink U r n S a) j) (d ν) = 1 :=
+    funext fun q => ha ⟨ν, q⟩
+  rw [hν]
+  exact coboundary₂_one
+
 end Smooth
 
 /-! ### Proposition 6 in the smooth language -/
@@ -220,6 +245,24 @@ theorem exists_operatorHom_forall_coeffH2_eq_one {ℓ : ℕ} [Fact ℓ.Prime] (h
   refine ⟨r * n, fun x => ?_⟩
   obtain ⟨a, hsurj, ha⟩ := exists_genericShrink_forall_coeffH2_eq_one U r n S hS P.subtype
     (fun _ _ => rfl) (fun _ _ => rfl) hr x
+  exact ⟨genericShrink U r n S a, isOperatorHom_genericShrink U r n S a, hsurj, ha⟩
+
+/-- **Proposition 6 in the smooth language, for a family of subgroups at once.**  For a large enough
+rank, one class of the second cohomology of each of finitely many subgroups of the operator group,
+with coefficients in a layer, is annihilated by a single surjective homomorphism onto the intended
+rank commuting with the operators. -/
+theorem exists_operatorHom_forall_subgroupCoeffH2_eq_one {ℓ : ℕ} [Fact ℓ.Prime] (hS : IsPGroup ℓ S)
+    {j t : ℕ} (P : Fin t → Subgroup U) :
+    ∃ m : ℕ, ∀ x : ∀ ν, SmoothH2 ↥(P ν) ↥(layerSub ℓ (Generic U m S) j),
+      ∃ (α : Generic U m S →* Generic U n S) (hα : IsOperatorHom α), Function.Surjective α ∧
+        ∀ ν, coeffH2 (layerSubMap ℓ α j) (layerSubMap_smul_subgroup (P ν) hα) (x ν) = 1 := by
+  set r : ℕ := (j + 1) * (Nat.card ((ν : Fin t) × (↥(P ν) × ↥(P ν))) *
+    Module.finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j)) + 1 with hrdef
+  have hr : (j + 1) * (Nat.card ((ν : Fin t) × (↥(P ν) × ↥(P ν))) *
+      Module.finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j)) < r := by
+    rw [hrdef]; exact Nat.lt_succ_self _
+  refine ⟨r * n, fun x => ?_⟩
+  obtain ⟨a, hsurj, ha⟩ := exists_genericShrink_forall_subgroupCoeffH2_eq_one U r n S hS P hr x
   exact ⟨genericShrink U r n S a, isOperatorHom_genericShrink U r n S a, hsurj, ha⟩
 
 end Prop6

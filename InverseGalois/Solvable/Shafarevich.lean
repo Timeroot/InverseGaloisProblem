@@ -31,6 +31,7 @@ import InverseGalois.Solvable.Shafarevich.GenericHomology
 import InverseGalois.Solvable.Shafarevich.GenericCohomology
 import InverseGalois.Solvable.Shafarevich.LayerSmooth
 import InverseGalois.Solvable.Shafarevich.LayerExtension
+import InverseGalois.Solvable.Shafarevich.LayerSplit
 
 /-!
 # Shafarevich's theorem
@@ -181,4 +182,12 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   only by the operators**, so the class of the extension is a class for the action the count is
   formed with, and killing that class is exactly solving the embedding problem one step further up
   the filtration.
+* `InverseGalois.Solvable.Shafarevich.LayerSplit` runs the count against those extension classes.
+  The subgroups the count is fed are the ones a place of a number field contributes, and a place
+  which is completely decomposed at the level reached contributes a homomorphism of a subgroup of
+  the operator group into the group one level up which is a right inverse to the projection.
+  Pulling the class of the extension back along such a section, killing the pullbacks all at once
+  and transporting the result back along an isomorphism onto the image gives: **after one
+  shrinking, the extension one layer gives splits over the image of each of finitely many
+  prescribed sections.**
 -/
