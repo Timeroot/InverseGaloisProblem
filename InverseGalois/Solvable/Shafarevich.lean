@@ -32,6 +32,7 @@ import InverseGalois.Solvable.Shafarevich.GenericCohomology
 import InverseGalois.Solvable.Shafarevich.LayerSmooth
 import InverseGalois.Solvable.Shafarevich.LayerExtension
 import InverseGalois.Solvable.Shafarevich.LayerSplit
+import InverseGalois.Solvable.Shafarevich.LayerSection
 import InverseGalois.Solvable.Shafarevich.LayerTower
 
 /-!
@@ -191,6 +192,13 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   and transporting the result back along an isomorphism onto the image gives: **after one
   shrinking, the extension one layer gives splits over the image of each of finitely many
   prescribed sections.**
+* `InverseGalois.Solvable.Shafarevich.LayerSection` restates that in the currency arithmetic deals
+  in.  A place does not hand over a section but a subgroup, its decomposition subgroup at the level
+  reached, and the place being completely decomposed there over the field the operators cut out says
+  exactly that the projection is injective on that subgroup.  A homomorphism injective on a subgroup
+  is an isomorphism of it onto its image, so it has a section over that image whose own image is the
+  subgroup one started from; and the image downstairs is settled by the base field and the place
+  alone, so it may be prescribed before the count decides how far to shrink.
 * `InverseGalois.Solvable.Shafarevich.LayerTower` assembles the filtration into a ladder.  The
   descending `p`-central series of a finite `p`-group starts at the whole group and reaches the
   trivial subgroup, so the semidirect product the generic problem asks for is the top of a finite
