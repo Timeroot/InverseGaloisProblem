@@ -17398,3 +17398,89 @@ representation.
   the better library citizen.  Either way the layer must first appear as the `Additive` copy of a
   `CommGroup` with a `MulDistribMulAction`, since that is how the kernel of a group extension
   presents itself.
+
+## §1.56 Route 3: the count never needed the cohomology at all
+
+### (a) The observation that dissolves finding 2553
+
+§1.55(c) offered two routes past the `Rep ℤ G` / `Rep (ZMod ℓ) U` mismatch.  There is a third and
+much cheaper one, and it is the one SW's own proof of Prop 6 actually uses.
+
+* **2554 (MATH/REPO, KEY).** The shrinking count is not a statement about cohomology.  Read the proof
+  of `exists_genericShrink_res_cohomology_eq_zero` (`GenericCohomology.lean:55`): it lifts each class
+  to a cocycle, applies the count to the finitely many *values* of that cocycle, and concludes.  The
+  cohomological wrapper contributes exactly two facts — that `groupCohomology.π` is surjective and
+  that a cochain map killing a cocycle kills its class.  Both are available in the smooth language
+  too, as `smoothH2Mk_surjective` and `smoothH2Mk_eq_one_iff` with the constant primitive.  So the
+  ring over which the representation is defined never enters, and no change-of-rings comparison is
+  needed.
+
+* **2555 (REPO, KEY).** The layer is *already* the `Additive` copy of a `CommGroup`:
+  `Layer p P n := Additive ↥(layerSub p P n)` is an `abbrev` (`Layer.lean:93`), and
+  `layerSubMap p f n : ↥(layerSub p P n) →* ↥(layerSub p Q n)` (`Layer.lean:167`) is the
+  multiplicative coefficient homomorphism of which `layerMap` (`Layer.lean:173`) is the additive
+  copy.  So the last sentence of §1.55(c) is already satisfied by the existing definitions: the
+  transport between the two readings is `Additive.ofMul`, and every statement of the count carries
+  over by `rfl`.
+
+### (b) The new module
+
+`InverseGalois/Solvable/Shafarevich/LayerSmooth.lean` (imports `CFT.Profinite.Coeff`,
+`CFT.Profinite.Res`, `Shafarevich.GenericHomology`).
+
+* `genericLayerSubAction` — **instance** `MulDistribMulAction U ↥(layerSub ℓ (Generic U m S) j)`,
+  built from `genericLayerRep` by conjugating with `Additive.toMul`/`Additive.ofMul`; all four
+  fields are `map_one`/`map_mul`/`map_add`/`map_zero` of the linear action.  With
+  `genericLayerSubAction_smul`, which is `rfl`.
+* `layerSubMap_smul` — the multiplicative reading of `layerMap_isOperatorHom`: a homomorphism
+  commuting with the operators induces an equivariant map of multiplicative layers.  Also `rfl`
+  modulo `Additive.ofMul`.
+* `layerSubMap_smul_comm` — the same for a group `H` acting through `f : H →* U`, taking the two
+  compatibilities `h • v = f h • v` as hypotheses (the `hact` idiom of `Profinite/Comap.lean`).
+* `layerSubMap_smul_subgroup` — the same for `P : Subgroup U`, where both compatibilities are `rfl`.
+* `exists_genericShrink_forall_layerSubMap_eq_one` — the count, multiplicatively.
+* `exists_genericShrink_forall_coeffMap₂_eq_one` — the count applied to the values of finitely many
+  two cochains on a finite group, index type `Fin t × (H × H)`.
+* `exists_genericShrink_forall_coeffH2_eq_one` — **the count on smooth second cohomology**: for
+  `H` finite acting through `f : H →* U`, finitely many classes of
+  `SmoothH2 H ↥(layerSub ℓ (Generic U (r * n) S) j)` are killed by `coeffH2 (layerSubMap ℓ …)` for
+  one surjective `genericShrink`.
+* `exists_operatorHom_forall_coeffH2_eq_one` — **Prop 6 in the smooth language**, with the rank
+  chosen in advance: for `P : Subgroup U` there is an `m` such that every family of `t` classes of
+  `SmoothH2 ↥P ↥(layerSub ℓ (Generic U m S) j)` is killed by some surjective `IsOperatorHom`
+  `α : Generic U m S →* Generic U n S`.
+
+* **2556 (LEAN).** The bound is `(j + 1) * (t * Nat.card H ^ 2 * finrank (ZMod ℓ) (Layer …)) < r`,
+  the same shape as `exists_genericShrink_res_cohomology_eq_zero` with `c = 2`; `Nat.card H ^ 2`
+  comes out of `Nat.card (Fin t × (H × H))` by `simp [Nat.card_prod, pow_two]`.
+
+* **2557 (LEAN).** The whole smooth wrapper is six lines:
+
+  ```
+  choose d hd hs hdx using fun ν => smoothH2Mk_surjective (x ν)
+  obtain ⟨a, hsurj, ha⟩ := exists_genericShrink_forall_coeffMap₂_eq_one U r n S hS hr d
+  refine ⟨a, hsurj, fun ν => ?_⟩
+  rw [← hdx ν, coeffH2_smoothH2Mk]
+  refine (smoothH2Mk_eq_one_iff _ _).2 ⟨1, isSmooth₁_one, ?_⟩
+  rw [ha ν]; exact coboundary₂_one
+  ```
+
+* **2558 (LEAN).** Because the equivariance proof appears *inside* the statement (as the second
+  explicit argument of `coeffH2`), it has to be a named lemma, not an inline `by` block — hence
+  `layerSubMap_smul_comm` and `layerSubMap_smul_subgroup` are stated separately even though each is
+  two lines.
+
+### (c) What this is worth, and the a-priori bound that constrains it
+
+This is SW Thm 15 Step 1(a) in usable form: `κ_ν(p)` is a class of `H²(G_p, E(m,ν))` with `G_p` a
+decomposition subgroup of the *finite* group `G = Gal(N/k)`, and Prop 6 with `c = 2` produces a
+`π : F(m) ↠ F(n)` killing it.  The repo's `f : H →* U` generality replaces SW's
+`T = Ind_{G_p}^G 𝔽_p` — the induced module is only there to move a statement about a subgroup into
+one about the whole group, and the repo's count never needed the whole group.
+
+* **2559 (SCOPE).** The acting group must be **finite** (or the classes inflated from a finite
+  quotient).  The count fixes `r` before the classes are given, and the number of scalar equations is
+  the number of *values* of the cocycles; a smooth cocycle on a profinite `Γ` has finitely many
+  values but with no bound known in advance.  This is not a defect: in Thm 15 the classes genuinely
+  live on `Gal(N/k)` and its decomposition subgroups, and inflation to `G_k` is the separate,
+  already-built step `galInflH2`.
