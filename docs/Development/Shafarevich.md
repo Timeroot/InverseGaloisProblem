@@ -17135,3 +17135,99 @@ remains for the dictionary of §1.49(f) is bookkeeping rather than mathematics: 
 `H¹(k_S|K, μ_p)` with `selmerGroup`, `H¹(K_v, μ_p)` with `localClasses v p`, the localisation with
 `localClassHom`, and the local symbol with the local duality pairing.  Row 5 is unchanged and still
 off the critical path (2512, 2514).
+
+## §1.53 The obstruction to a *continuous* solution of an embedding problem
+
+### (a) What was missing
+
+SW Theorem 15 is an induction whose every step is an embedding problem: given the surjection
+`ρ : G_k ↠ Gal(K/k)` and a central extension `1 → N → E → Gal(K/k) → 1`, one must lift `ρ` to
+`G_k → E`.  The repo already had the *abstract* criterion
+`GroupExtension.exists_lift_iff_cohomologyClass_pullback_eq_zero`
+(`CFT/GroupCohomology/Pullback.lean:169`): the embedding problem is solvable exactly when the class
+of the pulled back extension vanishes in `H²(Γ, N)`.
+
+* **2535 (MATH/REPO).** That criterion is **not** the one an arithmetic argument can use.  It counts
+  *all* lifts `Γ →* E`, with `Γ` an abstract group; the Galois-theoretic content of a solution is
+  that the lift is **continuous**, i.e. cuts out a field.  For a profinite `Γ` and a finite `E` this
+  is the condition that `ker f` be open, and there is no formal passage from an abstract lift to a
+  continuous one — the abstract `H²` is enormous (it sees every discontinuous cocycle) and its
+  vanishing is a strictly weaker statement than solvability of the embedding problem.
+
+  So the whole criterion has to be redone in the repo's smooth cohomology `SmoothH2 Γ N`, which is
+  the group the local-global theorems (`sha2`, `sha2_le_range_galInflH2`, `resH2`) speak about.
+
+* **2536 (MATH).** Both directions go through the *same* object, the fibre product `S.pullback ρ`,
+  and smoothness passes across it for one reason only: **a homomorphism of a topological group is
+  smooth exactly when its kernel is open and normal.**  Hence the natural hypothesis on the datum is
+  not a topology on `G` at all but `IsOpenNormal ρ.ker`, which is what
+  `ρ : G_k ↠ Gal(K/k)` supplies for a *finite* `Gal(K/k)` with no discreteness plumbing whatsoever.
+  Carrying a topology on `G` instead would force a `DiscreteTopology` instance and a continuity
+  argument at every use site.
+
+### (b) The new module
+
+`InverseGalois/CFT/Profinite/EmbeddingObstruction.lean` (imports `GroupCohomology.Pullback`,
+`Profinite.Comap`, `Profinite.Res`).  The datum is
+`S : GroupExtension N E G`, `ρ : Γ →* G`, `[MulDistribMulAction Γ N]` with
+`hact : ∀ γ n, γ • n = S.conjActHom (ρ γ) n`, and `hker : IsOpenNormal ρ.ker`.
+
+* `GroupExtension.pullbackSection` / `coe_pullbackSection` / `factorSet_pullbackSection` — a section
+  of `S` induces one of `S.pullback ρ`, whose factor set is the original factor set read through
+  `ρ`;
+* `isOpenNormal_ker_of_isSmooth₁` / `isSmooth₁_of_isOpenNormal_ker` — the smoothness dictionary of
+  2536, for a homomorphism `Γ →* E`;
+* `liftObstruction` / `liftObstruction_apply` / `isMulCocycle₂_liftObstruction` /
+  `isSmooth₂_liftObstruction` / `liftObstructionClass` / `liftObstructionClass_eq` — the obstruction
+  cocycle, its smoothness, its class in `SmoothH2 Γ N`, and its independence of the section;
+* `liftObstructionClass_eq_one_iff` — **the class vanishes exactly when `ρ` lifts through a smooth
+  homomorphism `Γ →* E`**;
+* `isOpenNormal_ker_comp_subtype`, `resH2_liftObstructionClass`,
+  `resH2_liftObstructionClass_eq_one_iff`, `liftObstructionClass_mem_sha2` — the restriction to a
+  subgroup and the local-global packaging.
+
+* **2537 (LEAN).** The repo's `IsSmooth₁ (u : G → M)` puts **no** algebraic requirement on `M`, so
+  `IsSmooth₁ (f : Γ → E)` typechecks for a homomorphism into a nonabelian group and is exactly
+  "constant on the cosets of an open normal subgroup".  This is what lets the *same* predicate state
+  the smoothness of the obstruction's trivialising cochain (valued in the abelian `N`) and of the
+  lift (valued in `E`).
+
+* **2538 (LEAN).** `factorSet_pullbackSection` is proved by `inl_injective` and then
+  `Subtype.ext (Prod.ext _ _)`: the first coordinate is the original identity `inl_factorSet` and
+  the second is `g * h * (g * h)⁻¹ = 1`.  Both coordinates need a `show` to unfold the fibre-product
+  subgroup coercion; nothing else in the file needs `simp` on those coercions.
+
+* **2539 (LEAN).** In the forward direction the lift is
+  `(S.pullbackFst ρ).comp s.toMonoidHom` for `s := (S.pullback ρ).splittingOfIsMulCoboundary₂ …`,
+  and its smoothness is checked on `N₁ ⊓ ρ.ker` — the open normal subgroup for the trivialising
+  cochain met with the kernel — via the `show` that unfolds the splitting to
+  `(S.inl (x γ))⁻¹ * σ (ρ γ)`.  In the backward direction the trivialising cochain is
+  `(S.pullback ρ).sectionRatio (pullbackSection S ρ σ) s.toSection` for `s := pullbackSplitting …`,
+  and `inl_sectionRatio` identifies it with `σ (ρ γ) * (f γ)⁻¹`; its smoothness is checked on the
+  same `N₁ ⊓ ρ.ker`.  Both cocycle identities close with the gotcha-2044 idiom
+  `apply Additive.ofMul.injective; simp only [ofMul_mul, ofMul_inv, ofMul_div]; abel`.
+
+* **2540 (LEAN/REPO, KEY).** `resH2_liftObstructionClass` is **`rfl`**: restricting the obstruction
+  class to a subgroup `D` is the obstruction class of the restricted homomorphism `ρ.comp D.subtype`
+  — the two cocycles are literally the same function of `(d₁, d₂)`.  Hence
+  `liftObstructionClass_mem_sha2` is four lines, and *local solvability of the embedding problem is
+  membership of its obstruction in `sha2`* with no comparison map in between.
+
+* **2541 (BUILD).** `Profinite.EmbeddingObstruction` = 8033 jobs, 14 s.
+
+### (c) Net position
+
+The chain SW Step 1 → Step 2 asks for is now assembled out of existing bricks:
+
+1. solve the embedding problem at every place — `liftObstructionClass_mem_sha2` puts the obstruction
+   in `sha2 N (decomposition subgroups)`;
+2. `sha2_le_range_galInflH2` (`PoitouTate/ShaInflate.lean`) says such a class is **inflated from the
+   finite level** `Gal(K/k)`;
+3. `exists_genericShrink_map_eq_zero` (`Solvable/Shafarevich/LayerCohomology.lean`, SW Prop 6) kills
+   the inflated class after shrinking the layer.
+
+* **2542 (SCOPE).** What is still not written is the bridge in the other direction: identifying
+  `liftObstructionClass` with `comapH2 ρ` of the class of `S` over the *finite* quotient `G`, which
+  is what SW writes as `φ*(ε)`.  That needs `G` carried with its discrete topology and
+  `Profinite.Discrete` to cross between smooth and ordinary cohomology; it is bookkeeping, and it is
+  only needed if a step wants to compute the obstruction at the level rather than transport it.
