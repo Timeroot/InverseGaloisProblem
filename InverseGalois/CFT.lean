@@ -517,6 +517,7 @@ import InverseGalois.CFT.Profinite.Connecting
 import InverseGalois.CFT.Profinite.Corestriction
 import InverseGalois.CFT.Profinite.Cup
 import InverseGalois.CFT.Profinite.Discrete
+import InverseGalois.CFT.Profinite.EmbeddingObstruction
 import InverseGalois.CFT.Profinite.FixingSubgroup
 import InverseGalois.CFT.Profinite.H1Conj
 import InverseGalois.CFT.Profinite.H2Congr
@@ -5699,6 +5700,21 @@ it that are available here.
   says the representing cocycle is a coboundary there.  A family of subgroups then cuts out the
   classes dying on every member of it, the shape in which the everywhere locally trivial classes of
   a number field appear once a place is read as a decomposition subgroup.
+* `InverseGalois.CFT.Profinite.EmbeddingObstruction` measures an embedding problem by a class of
+  that cohomology.  A homomorphism of a topological group to the quotient of an extension with
+  abelian kernel pulls the extension back to an extension of the topological group itself, and the
+  factor set of the pulled back extension is the factor set of the original read through the
+  homomorphism; that cochain is smooth as soon as the homomorphism has open kernel, and its class
+  does not depend on the section chosen, two sections differing by a cochain which is smooth for the
+  same reason.  **The class vanishes exactly when the homomorphism lifts through a homomorphism with
+  open kernel**: a trivialisation of the factor set is a splitting of the pulled back extension and
+  hence a lift, and conversely a lift is a splitting whose comparison with the given section
+  trivialises the factor set — smoothness passing back and forth because a homomorphism of
+  topological groups is smooth exactly when its kernel is open and normal.  Restricting the class to
+  a subgroup is the class of the same problem for the restricted homomorphism, on the nose, so **a
+  problem solvable on every member of a family of subgroups has its class in the everywhere locally
+  trivial ones.**  That is the shape in which an embedding problem over a number field, solvable at
+  every place, presents itself to the local-global theorems.
 * `InverseGalois.CFT.Profinite.H1Conj` puts the quotient back on what restriction produced.  An
   element of the ambient group conjugates a normal subgroup into itself, so substituting the
   conjugate and then acting on the coefficients carries a cochain on the subgroup to another one,
