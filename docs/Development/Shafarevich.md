@@ -17050,3 +17050,88 @@ residue is a single transgression statement.  Two vanishing criteria now exist �
 `𝔽_p[Syl_p(G)]` (§1.50) and coinduction from a subfield (§1.51(c)) — and neither reaches the free
 Lie layers at `p ∣ ν`.  **The next move is therefore not another vanishing criterion but the
 cohomological packaging of Theorem 13**, which is unblocked.
+
+## §1.52 The two readings of a local Kummer condition are the same
+
+### (a) What was missing
+
+§1.51(a) located the one link between the *idelic* language in which the degree-one Poitou–Tate
+statement `perpSubgroup_selmerGroupFull` (`PoitouTate/Selmer.lean:360`) is proven and the
+*profinite* language in which the embedding-problem machinery consumes local conditions: a class of
+`H¹` is locally trivial at a place either because the unit it comes from becomes a `p`-th power in
+the **compositum** of the level with the fixed field of the decomposition subgroup (profinite), or
+because it becomes a `p`-th power in the **completion** at the place below (idelic).
+`Kummer/DecompositionLocalPower.lean` had only compositum ⟹ completion
+(`exists_pow_adicUnitHom_of_exists_pow_sup:155`, `exists_pow_infiniteUnitHom_of_exists_pow_sup:170`).
+
+* **2528 (MATH, KEY).** The missing direction needs **no** approximation of a henselization by a
+  completion, and in particular no Krasner lemma.  If `μ_p ⊆ K` and `a ∈ K^×` becomes a `p`-th power
+  in `K_v`, then `X^p - a` *splits* in `K_v`; so every root of it in `Ω` already lies in the
+  completion below and is fixed by the whole decomposition subgroup.  One root landing in a
+  completion drags the others along because the extension a radical cuts out is Galois.
+
+* **2529 (REPO).** Consequently the direction was already three quarters proven: the finite-level
+  criteria `forall_stabilizer_smul_eq_iff_exists_pow` (`Kummer/LocalPower.lean:72`) and
+  `forall_stabilizer_smul_eq_iff_exists_pow_infinite` (`:171`) are **iffs**, and
+  `Kummer/InfiniteLevelPower.lean:79`/`:128` used only their `.1` halves.  Mirroring those two
+  proofs with `.2` gives the converse at the level of an arbitrary Galois `Ω`, using the *same*
+  descent to a finite Galois level and the *same* `stabilizerRestrictPrime` /
+  `stabilizerRestrictInfinitePlace` (`Units/HasseTwoDecomposition.lean:92`, `:365`) — except that now
+  the level map is used forwards (apply it to `σ`) instead of through its surjectivity.
+
+### (b) The new module
+
+`InverseGalois/CFT/Kummer/LocalPowerConverse.lean` (imports `Kummer.DecompositionLocalPower`):
+
+* `forall_stabilizer_smul_eq_of_exists_pow_adicCompletion` — the decomposition subgroup at a nonzero
+  prime of `𝓞 Ω` fixes every radical of a radicand which is a `p`-th power in the completion of the
+  base below;
+* `forall_stabilizer_smul_eq_of_exists_pow_infiniteCompletion` — the same at an archimedean place;
+* `mem_sup_of_forall_restrictScalars_mem`, and its two specialisations
+  `mem_sup_of_forall_stabilizer_ideal_smul_eq` / `mem_sup_of_forall_stabilizer_infinitePlace_smul_eq`;
+* `exists_pow_sup_of_mem_sup`;
+* `exists_pow_sup_of_exists_pow_adicUnitHom` and `exists_pow_sup_of_exists_pow_infiniteUnitHom` —
+  the exact converses of `DecompositionLocalPower.lean:155`/`:170`.
+
+* **2530 (MATH/REPO).** The descent into the compositum is where the real content sits, and it is a
+  three-line composite: `IntermediateField.fixingSubgroup_sup` says the automorphisms fixing `K ⊔ F`
+  are those fixing `K` *and* those fixing `F`; with `F.fixingSubgroup = stabilizer Gal(Ω/k) P` that
+  is exactly `stabilizer Gal(Ω/↥K) P` read through `AlgEquiv.restrictScalars`; and
+  `InfiniteGalois.fixedField_fixingSubgroup` (Mathlib `FieldTheory/Galois/Infinite.lean:83`) turns
+  "fixed by all of them" into "lies in `K ⊔ F`".  The last step is what makes the statement true for
+  an **infinite** `Ω` with no finiteness hypothesis anywhere.
+
+* **2531 (LEAN).** To turn `τ ∈ K.fixingSubgroup` into an element of `Gal(Ω/↥K)` use
+  `IntermediateField.fixingSubgroupEquiv K ⟨τ, hτ⟩`; the identity
+  `(fixingSubgroupEquiv K ⟨τ, hτ⟩).restrictScalars k = τ` is `AlgEquiv.ext fun _ => rfl` (the same
+  idiom as `Units/IdeleClassH1Full.lean:66`), and the two automorphisms have the *same* underlying
+  function definitionally, so no transport of the conclusion is needed.  The repo's
+  `smul_restrictScalars_ideal` / `smul_restrictScalars_infinitePlace`
+  (`Kummer/DecompositionLocalPower.lean:84`, `:89`) move the stabilizer condition across.
+
+* **2532 (LEAN).** The two `forall_stabilizer_smul_eq_of_*` proofs need the level-place equality
+  (`primeUnder (𝓞 k) w = v`, resp. `v.comap (algebraMap k ↥L) = u`) **before** the iff is used, not
+  after: `subst` it as soon as it is available, which rewrites the hypothesis `hc` about the
+  completion of the base into the shape the level criterion produces.  Reading the fixed-point
+  conclusion back upstairs is
+  `rw [coe_stabilizerRestrictPrime, AlgEquiv.restrictNormalHom_apply] at h'` applied to
+  `h' : ((stabilizerRestrictPrime L hw σ : Gal(↥L/k)) ⟨b, hbL⟩ : Ω) = b`.
+
+* **2533 (SCOPE).** The **tensor-level** converse (the analogue of
+  `tensor_adicUnitHom_eq_zero_of_tensor_sup_eq_zero`) was deliberately not written: going backwards
+  coordinate by coordinate needs a radical in `Ω` for *each* coordinate, i.e. the hypothesis that
+  `Ω` contains the `p`-th roots of every `S`-unit.  That is true in the intended application (`Ω` is
+  a big enough Galois extension) but is an extra hypothesis, so it belongs with the caller.
+
+* **2534 (BUILD).** `Kummer.LocalPowerConverse` = 8326 jobs, 22–24 s; root build 9820 jobs, clean.
+
+### (c) Net position
+
+The profinite and idelic readings of a local Kummer condition are now interchangeable in **both**
+directions, at finite and at archimedean places, for an arbitrary Galois `Ω`.  This is the piece
+§1.51(a) named as the only obstacle between `perpSubgroup_selmerGroupFull` and the embedding-problem
+side, so the **degree-one Poitou–Tate statement is now usable where SW Theorem 13 needs it**.  What
+remains for the dictionary of §1.49(f) is bookkeeping rather than mathematics: identify
+`H¹(k_S|K, μ_p)` with `selmerGroup`, `H¹(K_v, μ_p)` with `localClasses v p`, the localisation with
+`localClassHom`, and the local symbol with the local duality pairing.  Row 5 is unchanged and still
+off the critical path (2512, 2514).
