@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Profinite.Res
+import InverseGalois.CFT.Profinite.TransgressionCoeff
 import InverseGalois.CFT.Profinite.TransgressionInflate
 
 /-!
@@ -24,6 +25,11 @@ that group**, as soon as the locally trivial classes of the first cohomology at 
 quotient are trivial.  This is the form in which a vanishing theorem over a field feeds into a
 transgression argument.
 
+The same extension serves the weaker hypothesis under which the obstruction is not asked to vanish
+but only to be annihilated by a map of the coefficients: **a homomorphism of the coefficients
+killing the inflated everywhere locally trivial obstructions carries a locally trivial class dying
+on the kernel into the image of inflation.**
+
 ## Main results
 
 * `InverseGalois.CFT.exists_isSmooth₁_extend`: **a smooth one cochain on an open subgroup is the
@@ -32,6 +38,9 @@ transgression argument.
   `InverseGalois.CFT.exists_comapH2_eq_of_resH2_eq_one_of_eq_ker`: **a locally trivial class of the
   second cohomology whose restriction to the kernel of a smooth surjection onto a discrete group is
   trivial is inflated from that group.**
+* `InverseGalois.CFT.exists_comapH2_eq_coeffH2_of_resH2_eq_one`,
+  `InverseGalois.CFT.exists_comapH2_eq_coeffH2_of_resH2_eq_one_of_eq_ker`: **the same after a map of
+  the coefficients killing the inflated everywhere locally trivial obstructions.**
 
 ## Tags
 
@@ -132,5 +141,57 @@ theorem exists_comapH2_eq_of_resH2_eq_one_of_eq_ker (hbasis : HasOpenNormalBasis
   exact exists_comapH2_eq_of_resH2_eq_one hπ hbasis hsm hsurj htriv hmem hres hsha1
 
 end Package
+
+/-! ### Inflation after a map of the coefficients -/
+
+section PackageCoeff
+
+variable {G Q M M' : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
+  [Group Q] [TopologicalSpace Q] [DiscreteTopology Q] [CommGroup M] [CommGroup M']
+  [MulDistribMulAction G M] [MulDistribMulAction G M'] [MulDistribMulAction Q M']
+variable {π : G →* Q} (hπ' : ∀ (g : G) (m : M'), g • m = π g • m)
+
+/-- **A homomorphism of the coefficients killing the inflated everywhere locally trivial
+obstructions carries a locally trivial class of the second cohomology dying on the kernel of a
+smooth surjection onto a discrete group into the image of inflation.**  The vanishing of the
+restriction is a primitive of the cocycle on the kernel, and extending it by one outside the kernel
+makes it the smooth cochain on the whole group which the descent asks for; the obstruction group
+itself is not asked to be trivial. -/
+theorem exists_comapH2_eq_coeffH2_of_resH2_eq_one (hbasis : HasOpenNormalBasis G)
+    (hsm : IsSmoothHom π) (hsurj : Function.Surjective π)
+    (htriv : ∀ n ∈ π.ker, ∀ m : M, n • m = m) (htriv' : ∀ n ∈ π.ker, ∀ m : M', n • m = m)
+    (φ : M →* M') (hφ : ∀ (g : G) (m : M), φ (g • m) = g • φ m)
+    {S : Set (Subgroup G)} {z : SmoothH2 G M} (hmem : z ∈ sha2 M S) (hres : resH2 π.ker z = 1)
+    (hkill : ∀ x ∈ sha1Level M π.ker (isOpenNormal_ker_of_isSmoothHom hsm).isOpen S,
+      coeffTransH1 π.ker φ hφ
+        (inflH1 π.ker (SmoothH1 ↥π.ker M) (isOpenNormal_ker_of_isSmoothHom hsm).isOpen x) = 1) :
+    ∃ y : SmoothH2 Q M', comapH2 π hπ' hsm y = coeffH2 φ hφ z := by
+  obtain ⟨a, ha, has, rfl⟩ := smoothH2Mk_surjective z
+  obtain ⟨u, hus, hu⟩ := (resH2_eq_one_iff π.ker ha has).1 hres
+  obtain ⟨b, hbs, hb⟩ :=
+    exists_isSmooth₁_extend hbasis (isOpenNormal_ker_of_isSmoothHom hsm).isOpen hus
+  refine exists_comapH2_eq_coeffH2_of_sha1Level hπ' hbasis hsm hsurj htriv htriv' φ hφ
+    ha has hbs ?_ hmem hkill
+  intro x hx y hy
+  rw [hb y hy, hb x hx, hb (x * y) (Subgroup.mul_mem _ hx hy)]
+  exact (congrFun hu (⟨x, hx⟩, ⟨y, hy⟩)).symm
+
+/-- **The same with the kernel presented by any subgroup equal to it**, which is what a Galois
+correspondence produces: the automorphisms fixing an intermediate field are the kernel of
+restriction to it, but they are named as a fixing subgroup. -/
+theorem exists_comapH2_eq_coeffH2_of_resH2_eq_one_of_eq_ker (hbasis : HasOpenNormalBasis G)
+    (hsm : IsSmoothHom π) (hsurj : Function.Surjective π)
+    (htriv : ∀ n ∈ π.ker, ∀ m : M, n • m = m) (htriv' : ∀ n ∈ π.ker, ∀ m : M', n • m = m)
+    (φ : M →* M') (hφ : ∀ (g : G) (m : M), φ (g • m) = g • φ m)
+    {N : Subgroup G} [N.Normal] (hN : N = π.ker) (hop : IsOpen (N : Set G))
+    {S : Set (Subgroup G)} {z : SmoothH2 G M} (hmem : z ∈ sha2 M S) (hres : resH2 N z = 1)
+    (hkill : ∀ x ∈ sha1Level M N hop S,
+      coeffTransH1 N φ hφ (inflH1 N (SmoothH1 ↥N M) hop x) = 1) :
+    ∃ y : SmoothH2 Q M', comapH2 π hπ' hsm y = coeffH2 φ hφ z := by
+  subst hN
+  exact exists_comapH2_eq_coeffH2_of_resH2_eq_one hπ' hbasis hsm hsurj htriv htriv' φ hφ hmem hres
+    hkill
+
+end PackageCoeff
 
 end InverseGalois.CFT

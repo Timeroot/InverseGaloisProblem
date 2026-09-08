@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Profinite.TransgressionCocycle
+import InverseGalois.CFT.Profinite.TransgressionInflate
 
 /-!
 # The transgression class is natural in the coefficients
@@ -47,6 +48,8 @@ the kernel.
 * `InverseGalois.CFT.exists_comapH2_eq_coeffH2_of_sha1Loc`: **a homomorphism of the coefficients
   killing the everywhere locally trivial obstructions carries an everywhere locally trivial class of
   the second cohomology into the image of inflation.**
+* `InverseGalois.CFT.exists_comapH2_eq_coeffH2_of_sha1Level`: **the same, with the obstructions read
+  at the level of the quotient.**
 
 ## Tags
 
@@ -211,22 +214,25 @@ variable {G Q M M' : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G
   [MulDistribMulAction G M] [MulDistribMulAction G M'] [MulDistribMulAction Q M']
 variable {π : G →* Q} (hπ' : ∀ (g : G) (m : M'), g • m = π g • m)
 
-/-- **A homomorphism of the coefficients which kills the everywhere locally trivial obstructions
-carries an everywhere locally trivial class of the second cohomology into the image of inflation.**
-The class is represented by a cocycle trivial in the first variable along the kernel; its
-transgression class is everywhere locally trivial, so the homomorphism kills it; and the pushed
+/-- **A homomorphism of the coefficients which kills the class of every everywhere locally trivial
+transgression carries an everywhere locally trivial class of the second cohomology into the image of
+inflation.**  The class is represented by a cocycle trivial in the first variable along the kernel;
+its transgression is everywhere locally trivial, so the homomorphism kills its class; and the pushed
 forward transgression class is the transgression class of any normalised cocycle representing the
 pushed forward class, since the transgression class depends only on the cohomology class.  Nothing
 is asked of the obstruction group itself, only that the map of coefficients annihilate the part of
 it which is everywhere locally trivial. -/
-theorem exists_comapH2_eq_coeffH2_of_sha1Loc (hbasis : HasOpenNormalBasis G) (hsm : IsSmoothHom π)
-    (hsurj : Function.Surjective π) (htriv : ∀ n ∈ π.ker, ∀ m : M, n • m = m)
-    (htriv' : ∀ n ∈ π.ker, ∀ m : M', n • m = m) (φ : M →* M')
-    (hφ : ∀ (g : G) (m : M), φ (g • m) = g • φ m)
+theorem exists_comapH2_eq_coeffH2_of_localTransClass (hbasis : HasOpenNormalBasis G)
+    (hsm : IsSmoothHom π) (hsurj : Function.Surjective π)
+    (htriv : ∀ n ∈ π.ker, ∀ m : M, n • m = m) (htriv' : ∀ n ∈ π.ker, ∀ m : M', n • m = m)
+    (φ : M →* M') (hφ : ∀ (g : G) (m : M), φ (g • m) = g • φ m)
     {a : G × G → M} (ha : IsMulCocycle₂ a) (has : IsSmooth₂ a) {b : G → M} (hbs : IsSmooth₁ b)
     (hb : ∀ x ∈ π.ker, ∀ y ∈ π.ker, a (x, y) = x • b y / b (x * y) * b x)
     {S : Set (Subgroup G)} (hmem : smoothH2Mk a ha has ∈ sha2 M S)
-    (hkill : ∀ z ∈ sha1Loc M π.ker S, coeffTransH1 π.ker φ hφ z = 1) :
+    (hkill : ∀ (t : G → G → M) (h : IsTransgressionDatum π.ker M t),
+      (∀ D ∈ S, localTransClass h htriv (isOpenNormal_ker_of_isSmoothHom hsm).isOpen D = 1) →
+        coeffTransH1 π.ker φ hφ
+          (transClass h htriv (isOpenNormal_ker_of_isSmoothHom hsm).isOpen) = 1) :
     ∃ x : SmoothH2 Q M', comapH2 π hπ' hsm x = coeffH2 φ hφ (smoothH2Mk a ha has) := by
   have hop := (isOpenNormal_ker_of_isSmoothHom hsm).isOpen
   obtain ⟨c, hc, hcs, hccl, h1⟩ := exists_eq_one_on_ker hsm htriv ha has hbs hb
@@ -236,7 +242,9 @@ theorem exists_comapH2_eq_coeffH2_of_sha1Loc (hbasis : HasOpenNormalBasis G) (hs
     rw [h1 n hn y, _root_.map_one]
   have hmemc : smoothH2Mk c hc hcs ∈ sha2 M S := by rw [hccl]; exact hmem
   have hkey : coeffTransH1 π.ker φ hφ (transgressionClass htriv hop hc hcs h1) = 1 :=
-    hkill _ (transgressionClass_mem_sha1Loc htriv hop hc hcs h1 hmemc)
+    hkill _ (isTransgressionDatum_transgression htriv hc hcs h1) fun D hD =>
+      localTransClass_transgression_eq_one htriv hop hc hcs h1
+        ((smoothH2Mk_mem_sha2 hc hcs).1 hmemc D hD)
   rw [coeffH2_smoothH2Mk]
   refine exists_comapH2_eq_of_transgression hπ' hsm hsurj htriv'
     (isMulCocycle₂_coeffMap₂ φ hφ ha) (has.coeffMap₂ φ) (hbs.coeffMap₁ φ) ?_ ?_
@@ -254,6 +262,49 @@ theorem exists_comapH2_eq_coeffH2_of_sha1Loc (hbasis : HasOpenNormalBasis G) (hs
         (hcs.coeffMap₂ φ) h1' hcoh,
       transgressionClass_coeffMap₂ φ hφ htriv htriv' hop hc hcs h1 h1']
     exact hkey
+
+/-- **A homomorphism of the coefficients which kills the everywhere locally trivial obstructions
+carries an everywhere locally trivial class of the second cohomology into the image of inflation.**
+The class of a transgression whose localisations all vanish is one of those obstructions. -/
+theorem exists_comapH2_eq_coeffH2_of_sha1Loc (hbasis : HasOpenNormalBasis G) (hsm : IsSmoothHom π)
+    (hsurj : Function.Surjective π) (htriv : ∀ n ∈ π.ker, ∀ m : M, n • m = m)
+    (htriv' : ∀ n ∈ π.ker, ∀ m : M', n • m = m) (φ : M →* M')
+    (hφ : ∀ (g : G) (m : M), φ (g • m) = g • φ m)
+    {a : G × G → M} (ha : IsMulCocycle₂ a) (has : IsSmooth₂ a) {b : G → M} (hbs : IsSmooth₁ b)
+    (hb : ∀ x ∈ π.ker, ∀ y ∈ π.ker, a (x, y) = x • b y / b (x * y) * b x)
+    {S : Set (Subgroup G)} (hmem : smoothH2Mk a ha has ∈ sha2 M S)
+    (hkill : ∀ z ∈ sha1Loc M π.ker S, coeffTransH1 π.ker φ hφ z = 1) :
+    ∃ x : SmoothH2 Q M', comapH2 π hπ' hsm x = coeffH2 φ hφ (smoothH2Mk a ha has) :=
+  exists_comapH2_eq_coeffH2_of_localTransClass hπ' hbasis hsm hsurj htriv htriv' φ hφ ha has hbs hb
+    hmem fun _ h hloc => hkill _ ((transClass_mem_sha1Loc_iff h htriv _).2 hloc)
+
+/-- **A homomorphism of the coefficients which kills the everywhere locally trivial obstructions
+read at the level of the quotient carries an everywhere locally trivial class of the second
+cohomology into the image of inflation.**  The class of a transgression is inflated from the
+quotient, and the class it is inflated from is everywhere locally trivial there as soon as all the
+localisations vanish; so only the inflated obstructions have to be annihilated, and those form a
+group attached to the quotient alone. -/
+theorem exists_comapH2_eq_coeffH2_of_sha1Level (hbasis : HasOpenNormalBasis G)
+    (hsm : IsSmoothHom π) (hsurj : Function.Surjective π)
+    (htriv : ∀ n ∈ π.ker, ∀ m : M, n • m = m) (htriv' : ∀ n ∈ π.ker, ∀ m : M', n • m = m)
+    (φ : M →* M') (hφ : ∀ (g : G) (m : M), φ (g • m) = g • φ m)
+    {a : G × G → M} (ha : IsMulCocycle₂ a) (has : IsSmooth₂ a) {b : G → M} (hbs : IsSmooth₁ b)
+    (hb : ∀ x ∈ π.ker, ∀ y ∈ π.ker, a (x, y) = x • b y / b (x * y) * b x)
+    {S : Set (Subgroup G)} (hmem : smoothH2Mk a ha has ∈ sha2 M S)
+    (hkill : ∀ x ∈ sha1Level M π.ker (isOpenNormal_ker_of_isSmoothHom hsm).isOpen S,
+      coeffTransH1 π.ker φ hφ
+        (inflH1 π.ker (SmoothH1 ↥π.ker M) (isOpenNormal_ker_of_isSmoothHom hsm).isOpen x) = 1) :
+    ∃ x : SmoothH2 Q M', comapH2 π hπ' hsm x = coeffH2 φ hφ (smoothH2Mk a ha has) := by
+  have hop := (isOpenNormal_ker_of_isSmoothHom hsm).isOpen
+  refine exists_comapH2_eq_coeffH2_of_localTransClass hπ' hbasis hsm hsurj htriv htriv' φ hφ
+    ha has hbs hb hmem fun t h hloc => ?_
+  obtain ⟨x, hx⟩ := exists_inflH1_transClass h htriv hop
+  have hmemx : x ∈ sha1Level M π.ker hop S := by
+    refine mem_sha1Level.2 fun D hD => ?_
+    rw [hx, resCoeffH1_transClass]
+    exact hloc D hD
+  rw [← hx]
+  exact hkill x hmemx
 
 end Package
 
