@@ -18225,3 +18225,127 @@ exactly why the obstruction has to be written as an **inflated** class first, an
 **2588 (BUILD).**  `lake build InverseGalois.Solvable.Shafarevich.LevelShrink` = **8081 jobs /
 63 s**; `lake build InverseGalois.Solvable.Shafarevich` = 8223 jobs / 13 s; the full build is
 **9841 jobs**.
+
+## §1.62 The last group-theoretic conjunct removed: a third shrinking, and the arithmetic it spares
+
+### (a) A correction
+
+§1.61 recorded the conjunct `HasCocyclePrescription` as "provably undischargeable", on the ground
+that it demands a *global* smooth cocycle whose restriction to each `D ν` is prescribed and that
+conjugation-equivariance makes the demand contradictory.  **That reading is wrong.**  The
+hypothesis of `HasCocyclePrescription` (`Profinite/LiftTwist.lean:65`) includes
+
+```
+(∀ ν, ∀ x ∈ D ν, ∀ m : M, x • m = m)
+```
+
+so it only ever speaks about families acting *trivially* on the coefficients, and in `HasRungData`
+it is applied to `D ν ⊓ φ.ker`, where the action — which factors through `φ` — is trivial by
+construction.  The equivariance constraint `a (g x g⁻¹) = g • a x` then degenerates to
+`a (g x g⁻¹) = a x`, which a homomorphism into a commutative group satisfies automatically.  The
+statement is Grunwald–Wang-shaped (`Hom_cont(G_K, ℤ/ℓ) ↠ ∏_{w ∈ S} Hom_cont(G_{K_w}, ℤ/ℓ)`) and
+dischargeable in principle.  No refactor to a "local class prescription" is needed.
+
+### (b) But the conjunct can be *deleted*, not merely restated
+
+The right move is better than either.  Take the lift `f₁` that §1.61's double shrink produces, at
+`m` letters.  Along a member `D ν ⊓ φ.ker` of the family the solution `Φ₁` is trivial, so `f₁`
+lands in the layer, where `exists_hom_inl_eq` reads it off as a genuine **homomorphism**
+
+```
+a ν : ↥(D ν ⊓ φ.ker) →* ↥(layerSub ℓ (Generic U m S) j).
+```
+
+The whole discrepancy between "a lift" and "a solution at the next level" is this finite family of
+homomorphisms.  Pushing the lift down along an operator homomorphism `α : Generic U m S →*
+Generic U n S` replaces `a ν` by `layerSubMap ℓ α j ∘ a ν`; so it is enough to find one `α`,
+surjective and operator-commuting, killing every *value* of every `a ν`.
+
+That is exactly what the Chevalley–Warning count already does — `exists_genericShrink_forall_
+layerSubMap_eq_one` kills any finite indexed family of layer elements, provided the *size* of the
+index is fixed before the elements are.  And it is: the target `↥(layerSub ℓ (Generic U m S) j)` is
+commutative and killed by `ℓ`, so `a ν` factors through the largest elementary abelian `ℓ`-quotient
+of `D ν ⊓ φ.ker`, and *that* quotient depends only on the subgroup, not on `m`.  For a decomposition
+subgroup at a place `w` it is the largest elementary abelian `ℓ`-quotient of `G_{K_w}`, which local
+class field theory makes **finite**, of order `ℓ^(2 + [K_w : ℚ_ℓ])` or `ℓ^1`.
+
+So the price of the rung drops from *"a global cocycle with prescribed local restrictions"*
+(Grunwald–Wang / Poitou–Tate strength) to *"the local groups have finitely many characters of order
+`ℓ`"* (elementary local class field theory).
+
+### (c) What landed
+
+New brick in `LayerSmooth.lean`:
+
+```lean
+theorem exists_operatorHom_forall_layerSubMap_eq_one {ℓ : ℕ} [Fact ℓ.Prime] (hS : IsPGroup ℓ S)
+    {j : ℕ} (ι : Type*) [Finite ι] :
+    ∃ m : ℕ, ∀ v : ι → ↥(layerSub ℓ (Generic U m S) j),
+      ∃ (α : Generic U m S →* Generic U n S) (_ : IsOperatorHom α), Function.Surjective α ∧
+        ∀ c, layerSubMap ℓ α j (v c) = 1
+```
+
+— the number of letters `m` comes **out in front of** the family `v`, which is the whole content.
+
+New module `InverseGalois/Solvable/Shafarevich/LevelLocal.lean`:
+
+* `pow_eq_one_layerSub` — a layer is killed by `ℓ`;
+* `HasFiniteElementaryQuotient ℓ D` — `∃` a finite group `Q` and `q : ↥D →* Q` such that every
+  *smooth* homomorphism from `↥D` into a commutative group killed by `ℓ` factors through `q`;
+* `hasFiniteElementaryQuotient_of_le` — any normal `N ⊴ ↥D` of finite index with
+  `N ≤ commutator ↥D ⊔ ⟨x^ℓ⟩` witnesses it;
+* `exists_lift_eq_one_of_levelSolution` — the §1.61 lift, plus the extra clause
+  `∀ ν, ∀ x ∈ D ν, φ x = 1 → f x = 1`;
+* `levelSolution_succ_of_hasFiniteElementaryQuotient` — hence the whole rung.
+
+`HasRungData` (`LevelRung.lean`) is now
+
+```lean
+  (∀ n : ℕ, LevelSolution ℓ U S φ (Set.range D) n 1) ∧
+    (∀ ν : Fin t, HasFiniteElementaryQuotient ℓ (D ν ⊓ φ.ker)) ∧
+      ∀ n j : ℕ, 1 ≤ j → HasLocalLift ℓ U n S j φ D T ∧ HasInflatedSha ℓ U n S j φ T
+```
+
+and `levelSolution_succ_of_hasRungData` no longer needs a `galLayerAction` instance at all.  Build
+green, 8224 jobs for the `Shafarevich` subtree.
+
+### (d) The ledger
+
+What the arithmetic still owes, for `Shafarevich.GenericLevelStepEP ℓ`:
+
+| owed | kind | difficulty |
+|---|---|---|
+| the first rung `∀ n, LevelSolution … n 1` | Ikeda with prescribed splitting along `D` | moderate |
+| `HasFiniteElementaryQuotient ℓ (D ν ⊓ φ.ker)` | local CFT: `G_{K_w}` has finitely many order-`ℓ` characters | easy |
+| `HasLocalLift ℓ U n S j φ D T` | local solvability off the finite family | moderate |
+| `HasInflatedSha ℓ U n S j φ T` | **row 5 — Poitou–Tate global duality** | **wall #1** |
+| the family `D`, `T` itself | decomposition subgroups at the ramified/`ℓ`-adic/infinite places | plumbing |
+
+`HasInflatedSha` is now the **only** deep entry, and the only one that touches Poitou–Tate.
+
+### (e) Findings
+
+**2589 (MATH, CORRECTION).**  `HasCocyclePrescription` is **not** undischargeable; its antecedent
+restricts it to trivially-acting families and the conjugation constraint degenerates.  §1.61's
+claim to the contrary is retracted.
+
+**2590 (MATH, KEY).**  The conjunct can be **deleted**.  The local defect of a lift is a
+*homomorphism* into the layer; the layer is commutative of exponent `ℓ`; so the defect factors
+through the maximal elementary abelian `ℓ`-quotient of the local subgroup, which is finite and
+fixed in advance.  A third Chevalley–Warning shrink kills every value at once.
+
+**2591 (REPO).**  The repo does **not** follow Shafarevich's free-`ℤ[G]`-module-layer route;
+`GenericCohomology`/`GenericHomology`/`LayerWord`/`LayerTensor` implement Schmidt–Wingberg
+shrinking + Chevalley–Warning instead.  Shapiro's lemma and freeness of the layers are therefore
+*not* the available mechanism.
+
+**2592 (REPO).**  `pow_eq_one_of_mem_layerSub` (`Layer.lean:71`), `CommGroup ↥(layerSub p P n)`
+(`Layer.lean:79`) and `Module (ZMod p) (Layer p P n)` (`Layer.lean:137`) already exist.
+
+**2593 (REPO).**  `LayerExtension.lean`'s `Morphism` section variables give the call shapes
+`layerSemidirectMap p hf n`, `inl_layerSemidirectMap ℓ j hα`, `rightHom_layerSemidirectMap ℓ j hα`,
+`layerSemidirectMap_surjective ℓ hα j hsurj`.
+
+**2594 (LEAN).**  A `Prop`-valued `def` that existentially quantifies a *carrier* (`∃ Q : Type, …`)
+must put `Q` in the **same universe as the ambient group**, or `↥D ⧸ N` will not typecheck against
+it (`outParam Type` vs `Type u_1`).  Declare `universe u`, write `{Γ : Type u}` and `∃ Q : Type u`.

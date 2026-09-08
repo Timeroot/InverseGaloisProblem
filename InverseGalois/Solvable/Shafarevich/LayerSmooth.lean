@@ -45,6 +45,10 @@ of the subgroup times the dimension of the layer downstairs.
   of the second cohomology of a finite group acting through the operator group, written with smooth
   cochains with coefficients in a layer, are annihilated all at once by a surjective shrinking
   homomorphism.**
+* `InverseGalois.Shafarevich.exists_operatorHom_forall_layerSubMap_eq_one` — **finitely many
+  prescribed elements of a layer are trivialised at once by a surjective homomorphism onto the
+  intended rank commuting with the operators**, the rank to start from being fixed by the number of
+  elements alone.
 * `InverseGalois.Shafarevich.exists_operatorHom_forall_coeffH2_eq_one` — **Proposition 6 in the
   smooth language**, for a subgroup of the operator group and with the rank chosen in advance of the
   classes.
@@ -227,6 +231,25 @@ section Prop6
 
 variable (U : Type) [Group U] [Finite U] [TopologicalSpace U] (n : ℕ) (S : Type) [Group S]
   [Finite S]
+
+omit [TopologicalSpace U] in
+/-- **Finitely many prescribed elements of a layer are trivialised at once by a surjective
+homomorphism onto the intended rank commuting with the operators.**  How many letters one has to
+start from is settled by how many elements there are, so it can be fixed before the elements
+themselves are known. -/
+theorem exists_operatorHom_forall_layerSubMap_eq_one {ℓ : ℕ} [Fact ℓ.Prime] (hS : IsPGroup ℓ S)
+    {j : ℕ} (ι : Type*) [Finite ι] :
+    ∃ m : ℕ, ∀ v : ι → ↥(layerSub ℓ (Generic U m S) j),
+      ∃ (α : Generic U m S →* Generic U n S) (_ : IsOperatorHom α), Function.Surjective α ∧
+        ∀ c, layerSubMap ℓ α j (v c) = 1 := by
+  set r : ℕ := (j + 1) * (Nat.card ι *
+    Module.finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j)) + 1 with hrdef
+  have hr : (j + 1) * (Nat.card ι *
+      Module.finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j)) < r := by
+    rw [hrdef]; exact Nat.lt_succ_self _
+  refine ⟨r * n, fun v => ?_⟩
+  obtain ⟨a, hsurj, ha⟩ := exists_genericShrink_forall_layerSubMap_eq_one U r n S hS hr v
+  exact ⟨genericShrink U r n S a, isOperatorHom_genericShrink U r n S a, hsurj, ha⟩
 
 /-- **Proposition 6 in the smooth language.**  For a large enough rank, finitely many classes of the
 second cohomology of a subgroup of the operator group, written with smooth cochains with

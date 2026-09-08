@@ -40,6 +40,7 @@ import InverseGalois.Solvable.Shafarevich.LayerFrattini
 import InverseGalois.Solvable.Shafarevich.LevelLift
 import InverseGalois.Solvable.Shafarevich.LevelShrink
 import InverseGalois.Solvable.Shafarevich.LevelTwist
+import InverseGalois.Solvable.Shafarevich.LevelLocal
 import InverseGalois.Solvable.Shafarevich.LevelRung
 
 /-!
@@ -264,14 +265,23 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   all at once, and disturbs neither smoothness, nor the projection, nor surjectivity.  So **a
   solution at one level, past the first, gives a solution at the next**, in exchange for one
   prescription of restrictions of a smooth one cocycle along the family.
+* `InverseGalois.Solvable.Shafarevich.LevelLocal` removes that price too, by shrinking a third
+  time.  The discrepancy along a member of the family is a homomorphism into the layer, which is
+  killed by the prime and commutative, so it factors through the largest elementary abelian quotient
+  of that member; when the member has such a quotient finite — which for a decomposition subgroup is
+  what local class field theory says — the number of values the discrepancies can take is settled
+  before any solution is chosen, and the count then asks for a number of letters settled by that
+  number alone.  A shrinking down to the intended number of letters carries all of those values to
+  one at once, so **a solution at one level, past the first, gives a solution at the next** with
+  nothing asked of the first cohomology.
 * `InverseGalois.Solvable.Shafarevich.LevelRung` collects what the ladder now asks of the arithmetic
   into a single condition and climbs the whole of it.  A finite family of subgroups and a wider
   family against which local triviality is measured are chosen once from the base realization; the
   first rung is asked for outright, the layer there being the Frattini layer, across which a lift
-  carries no guarantee of being onto; and at every later rung three things are asked, for every
-  number of letters — that the step be locally solvable along the members of the wider family the
-  finite one does not name, that every everywhere locally trivial class of the layer be inflated
-  from the operator group, and that restrictions of a smooth one cocycle with values in the layer be
-  prescribable along the finite family.  Granted that package, **the step of the ladder holds**, and
-  with it every split embedding problem with a kernel of prime power order.
+  carries no guarantee of being onto; each member of the finite family is asked to have a finite
+  elementary quotient; and at every later rung two things are asked, for every number of letters —
+  that the step be locally solvable along the members of the wider family the finite one does not
+  name, and that every everywhere locally trivial class of the layer be inflated from the operator
+  group.  Granted that package, **the step of the ladder holds**, and with it every split embedding
+  problem with a kernel of prime power order.
 -/
