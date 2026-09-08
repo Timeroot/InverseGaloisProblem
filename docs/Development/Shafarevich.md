@@ -18800,3 +18800,110 @@ level, and CFT's `hπ : ∀ g m, g • m = AlgEquiv.restrictNormalHom F g • m`
 `set_option maxHeartbeats 1000000 in`: the final `exact` unifies `coeffH2 (repMulHom (intRepMap …))`
 with `coeffH2 (layerSubMap ℓ α j)` and `galIntLayerAction` with `galLayerAction`, both only up to
 defeq.  `lake build …Shafarevich.LayerDuality` = 8323 jobs, ~54 s; full root build = **9853 jobs**.
+
+## §1.66 Route D: the wall dissolved — *shrink* the level-one obstruction instead of proving it vanishes
+
+Everything in §1.65 is downstream of one hypothesis, `HasShrinkShaDualInjection`, and §1.48(j)
+recorded the honest verdict: that hypothesis is Poitou–Tate global duality, in one of two shapes,
+and neither shape has a cheap proof.  This section records a **third** shape, which does have one.
+
+### (a)  The two routes that are blocked, restated in one line each
+
+* **Route 1** — build `Ш²(k, B) ↪ Ш¹(k, Hom(B, μ_p))^∨` outright.  This is Tate's global duality
+  theorem; the pairing is easy and the *non-degeneracy* is the theorem.  Proving it needs local
+  duality in all three degrees for arbitrary finite modules, the sum-of-invariants formula, and a
+  dimension-shifting argument through the nine-term sequence.  A multi-month formalisation.
+* **Route 2** — prove that the obstruction map `obs : Ш²(k, E) → sha1Level` is zero.  §1.48(a)
+  refutes the stronger statement `sha1Level = ⊥` (the Heisenberg example over `k = ℚ(μ_3)`), and
+  nothing weaker is known to be provable without the duality.
+
+### (b)  Route D: do not prove the obstruction is zero, *shrink it away*
+
+Recall the shape of a rung.  The layer is `E_m = μ_p ⊗ W_m` with `W_m = Layer(m, ν)` a layer of
+the generic group on `m` letters, and the *whole point* of Schmidt–Wingberg's shrinking is that we
+are free to replace `m` by any larger number of letters and then project.  Proposition 6 says: for
+every finite `𝔽_p[G]`-module `T`, every degree `k` and every target level `n` there is an `m₀` such
+that for `m ≥ m₀` the map
+
+    H^k(G, Layer(m, ν) ⊗ T) → H^k(G, Layer(n, ν) ⊗ T)
+
+is **zero**.  The bound `m₀` depends on `T`, but on nothing else.  So a cohomology class in
+*any* fixed finite coefficient module of that shape can be killed by shrinking.
+
+The obstruction `obs(ω)` of an everywhere locally trivial class `ω ∈ Ш²(k, E_m)` lives in
+
+    sha1Level  ⊆  H¹(Gal(K/k), H¹(G_K, E_m))  =  H¹(G, (K^×/p) ⊗ W_m),
+
+by the twisted Kummer identification (`kummerTwistEquiv_smul`).  The coefficients `(K^×/p) ⊗ W_m`
+are **not** of the shape `Layer ⊗ T` with `T` finite — `K^×/p` is infinite.  That is the only
+obstacle, and (c) removes it.
+
+### (c)  The key new arithmetic input: an everywhere locally trivial level-one class comes from a
+       **fixed finite** module of `S`-units
+
+Let `S` be a finite set of places of `k` containing the archimedean ones, those above `p`, those
+ramified in `K/k`, and enough finite places that the `S`-class group of `K` is trivial.  Put
+
+    U_S := 𝓞_{K,S}^× / p,
+
+a finite `𝔽_p[G]`-module depending only on `K`, `S` and `p` — **not** on `W`.
+
+> **Claim (D1).**  `Ш¹(G, (K^×/p) ⊗ W) ⊆ image of H¹(G, U_S ⊗ W)`, for every finite
+> `𝔽_p[G]`-module `W`.
+
+*Proof.*  `G` is finite, so a cocycle `c : G → (K^×/p) ⊗ W` takes finitely many values, each a
+finite sum of pure tensors; hence `c` is valued in `U_{S'} ⊗ W` for some finite `G`-stable
+`S' ⊇ S`.  Because `Cl_S(K) = 1`, the valuation sequence
+
+    0 → U_S ⊗ W → U_{S'} ⊗ W → (⊕_{w ∈ S'∖S} 𝔽_p) ⊗ W → 0
+
+is exact — it is exact before tensoring, and `⊗_{𝔽_p}` is exact.  For `v ∈ S' ∖ S` the term
+`⊕_{w | v} 𝔽_p ⊗ W` is the module induced from the decomposition subgroup `D_v` (the extension is
+unramified at `v ∉ S`, so `G` permutes the `w | v` transitively with stabiliser `D_v`), so by
+Shapiro `H¹(G, ⊕_{w|v} W) ≅ H¹(D_v, W)` and the isomorphism is "restrict to `D_v`, then read the
+`w`-coordinate".  The `w`-coordinate of the valuation factors through the *localisation*
+`(K^×/p) ⊗ W → (K_w^×/p) ⊗ W`, because `v_w` on `K^×` is the restriction of the valuation of
+`K_w^×`.  The local condition defining `sha1Level` is exactly the vanishing of the localised
+restricted class, so the image of `[c]` in `H¹(G, ⊕_{w|v} W)` is zero for every `v ∈ S' ∖ S`.
+Exactness of the long exact sequence then puts `[c]` in the image of `H¹(G, U_S ⊗ W)`.  ∎
+
+### (d)  The two shrinks
+
+Write `T := U_S ⊗ Hom(μ_p, 𝔽_p)`, a **fixed** finite `𝔽_p[G]`-module, so that
+`U_S ⊗ W_m = Layer(m, ν) ⊗ T`.  Then for `ω ∈ Ш²(k, E_m)`:
+
+1. **Shrink one.**  Proposition 6 in degree `k = 1` with coefficients `Layer ⊗ T` gives a shrink
+   `β : Layer(m, ν) → Layer(m', ν)` for which `H¹(G, Layer(m,ν) ⊗ T) → H¹(G, Layer(m',ν) ⊗ T)` is
+   zero.  By (c) the class `obs(ω)` is in the image of that source, so `β_*(obs ω) = 0`; by
+   naturality of the obstruction, `obs(β_* ω) = 0`, so `β_* ω` is **inflated** from `Gal(K/k)`.
+2. **Shrink two.**  Proposition 6 in degree `k = 2` with `T = μ_p` gives
+   `γ : Layer(m', ν) → Layer(n, ν)` killing `H²(G, Layer ⊗ μ_p)`, hence `γ_* β_* ω = 0`.
+
+So `Ш²(k, E_m) → Ш²(k, E_n)` is the zero map for `m` large — **exactly the statement `HasTateShaCover`
+was invented to supply, and with no duality theorem anywhere.**
+
+### (e)  What Lean needs, in order
+
+The consumer side already exists: §1.61–§1.65 turn "the shrink kills `Ш²`" into the rung.  What is
+missing splits cleanly in two.
+
+**Phase 1 (cohomological plumbing, no arithmetic).**  Today `sha2_le_range_galInflH2` consumes the
+hypothesis `sha1Level = ⊥` and throws the obstruction away.  Route D needs the obstruction as a
+*witness*, and needs it to be natural in the coefficients:
+
+* the transgression datum attached to a cocycle, and the fact that its class depends only on the
+  class of the cocycle (so that the datum can be transported);
+* the pushforward of a transgression along an equivariant map of the coefficients, and
+  `transClass (h.map φ) = coeffH1 (coeffH1 φ) (transClass h)`;
+* a normalisation lemma producing, from a class trivial along the kernel, a smooth cocycle in that
+  class which is trivial in the first variable on the kernel;
+* the local vanishing of the transgression of an everywhere locally trivial class;
+* the package: **if a map of the coefficients kills the everywhere locally trivial level-one
+  classes, then it carries every everywhere locally trivial class of the second cohomology into
+  the image of inflation.**
+
+**Phase 2 (the arithmetic of (c)).**  The valuation sequence for `S`-units, `Cl_S(K) = 1`, Shapiro
+for the places above a place of `k`, and the transport through the twisted Kummer identification.
+
+**Phase 3.**  Glue Phase 1 + Phase 2 to Proposition 6 (`exists_operatorHom_res_cohomology_eq_zero`,
+already in `GenericCohomology.lean`) and discharge `HasShrinkShaDualInjection`'s consumers directly.

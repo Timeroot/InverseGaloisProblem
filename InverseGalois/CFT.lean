@@ -565,6 +565,8 @@ import InverseGalois.CFT.Profinite.Symbol
 import InverseGalois.CFT.Profinite.SymbolCyclic
 import InverseGalois.CFT.Profinite.Transgression
 import InverseGalois.CFT.Profinite.TransgressionClass
+import InverseGalois.CFT.Profinite.TransgressionCocycle
+import InverseGalois.CFT.Profinite.TransgressionCoeff
 import InverseGalois.CFT.Profinite.TransgressionInflate
 import InverseGalois.CFT.Profinite.TransgressionRestrict
 import InverseGalois.CFT.Profinite.Trivial
@@ -5729,6 +5731,30 @@ it that are available here.
   attached to the quotient alone: **the everywhere locally trivial classes of the first cohomology
   of the quotient with values in the first cohomology of the kernel**, which for a finite quotient
   is a group of ordinary group cohomology.
+* `InverseGalois.CFT.Profinite.TransgressionCocycle` stops asking that group to vanish and starts
+  carrying its elements around.  A cocycle which is trivial whenever its first argument lies in the
+  kernel has a transgression outright, all four conditions being read off the cocycle relation, so
+  such a cocycle carries **an obstruction class of its own** rather than a hypothesis about every
+  transgression at once.  Two cocycles in the same class differ by a coboundary whose cochain is,
+  along the kernel, a homomorphism, and the two transgressions then differ by the coboundary of that
+  homomorphism read in the first cohomology of the kernel; so **the obstruction depends only on the
+  class of the cocycle**, which is what lets it be transported.  A class which is a coboundary on a
+  subgroup has, by the same computation as before, a vanishing obstruction there, so **the
+  obstruction of an everywhere locally trivial class is everywhere locally trivial**: the witness
+  lands in the very group the previous file asked to be trivial.
+* `InverseGalois.CFT.Profinite.TransgressionCoeff` makes the witness natural in the coefficients.
+  Composing a transgression with an equivariant map of the coefficients is again a transgression,
+  and the resulting class is the image of the original under the map induced twice — once on the
+  coefficients of the kernel and once on those of the group — the two being equal on the nose
+  because being a transgression is a proposition.  A class trivial along the kernel may moreover be
+  normalised: twisting by two successive cochains, the first cutting the trivialisation down and the
+  second built from a section of the kernel, replaces the cocycle by one in the same class which is
+  trivial whenever its first argument lies in the kernel, and the smoothness survives because both
+  twists are constant along a subgroup read off the data.  Together these give the descent in the
+  form the arithmetic can use: **if a map of the coefficients kills the everywhere locally trivial
+  obstruction classes, then it carries every everywhere locally trivial class of the second
+  cohomology into the image of inflation** — the obstruction need not vanish, only be killed
+  downstream.
 * `InverseGalois.CFT.Profinite.Discrete` says that last clause exactly.  On a discrete group the
   trivial subgroup is open, so every cochain is smooth and every action is smooth, and the smooth
   cocycles are all the cocycles; passing to classes, **the smooth cohomology of a discrete group is
