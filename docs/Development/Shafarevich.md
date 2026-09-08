@@ -18480,3 +18480,165 @@ has to be natural in the coefficients.  See §1.63(d).
 
 **2605 (BUILD).**  `lake build InverseGalois.CFT.PoitouTate.ShaCover` = 8279 jobs, ~110 s.
 `…Profinite.ShaCoeff` = 8033, `…Units.HasseCoeff` = 8224, `…PoitouTate.ShaTateNatural` = 8277.
+
+## §1.64 The feed's two shape mismatches closed: the operator group alone, and over the integers
+
+§1.63 produced, from Poitou–Tate, **one class of complete cohomology in degree `-2` of a finite
+level that governs every change of the coefficients at once** (`exists_tateMap_imp_coeffH2_eq_one`,
+`CFT/PoitouTate/ShaCover.lean`).  What the ladder *consumes* is `HasShaTateCover`
+(`Solvable/Shafarevich/LevelCover.lean:66`).  Between the two there were, at the end of §1.63, four
+gaps.  Two of them were purely a matter of *shape* — the wrong group and the wrong base ring — and
+this section closes both.
+
+### (a) Gap 1: the wrong group.  `LevelCoverOperator.lean`
+
+`HasShaTateCover` asks for a class of
+
+```
+groupHomology.H1 (genericInflate U N S ℓ j W)      -- homology of  Generic U N S ⋊ U
+```
+
+because that is the group SW's counting argument (Proposition 7,
+`exists_operatorHom_h1_eq_zero`, `GenericHomology.lean:339`) is run in.  Arithmetic, though, only
+ever knows `U` — the Galois group of the finite level the coefficients are already defined over
+(finding 2604: **the level group does not move** with the number of letters `n`).
+
+The reconciliation is `SemidirectProduct.inr`, and it is free:
+
+* `rightHom ∘ inr = id` (`rightHom_comp_inr`), and
+* the coefficients on the semidirect product are `inflate φ B = (Action.res _ rightHom).obj B`, so
+  `(Action.res _ inr).obj (inflate φ B)` is **defeq to `B`** and the comparison morphism of
+  representations is literally `𝟙 B` (`semidirectInrHom`).  This is the same trick as `quotHom`
+  at `SemidirectHomology.lean:141`.
+
+Hence `map inr` is a section of `map rightHom` in homology (`map_rightHom_map_inr`, proved from
+`map_comp_of_eq` at `SemidirectHomology.lean:64` plus `groupHomology.map_id`), and
+`map_rightHom_naturality` (`GenericHomology.lean:190`) converts *killed after shrinking upstairs*
+into *killed on `U`*.  The new predicate
+
+```lean
+def HasOperatorShaTateCover … (W : Rep (ZMod ℓ) U) : Prop :=
+  ∀ ε ∈ sha2 ↥(layerSub ℓ (Generic U N S) j) T,
+    ∃ x : groupHomology.H1 (genericLayerTensor U N S ℓ j W),
+      ∀ n α (hα : IsOperatorHom α),
+        groupHomology.map (B := genericLayerTensor U n S ℓ j W) (MonoidHom.id U)
+          (operatorTensorRep hα ℓ j W) 1 x = 0 → coeffH2 … ε = 1
+```
+
+mentions no semidirect product at all, and
+`hasShaTateCover_of_hasOperatorShaTateCover` discharges the ladder's version from it.
+
+### (b) Gap 2: the wrong base ring.  `HomologyIntegral.lean`
+
+CFT duality lives in `Rep ℤ Gal(F/k)` — `tateModule X (-2)` **is** `groupHomology X 1` by `rfl`
+(finding 2597) — while the ladder lives in `Rep (ZMod ℓ) U`.  `groupHomology A 1 : ModuleCat ℤ` and
+`groupHomology A' 1 : ModuleCat (ZMod ℓ)` are objects of different categories, so no map between
+them can even be stated.
+
+Two routes were examined.
+
+* **Categorical.**  `ModuleCat.restrictScalars f` is both a left adjoint
+  (`ChangeOfRings.lean:644`) and a right adjoint (`:886`), so it preserves finite limits and
+  colimits; `ShortComplex.preservesHomologyOfExact` (`ShortComplex/PreservesHomology.lean:60`) is an
+  instance and `S.mapHomologyIso F` (`:445`) with naturality at `:582` would give the comparison.
+  Friction: `F.obj (ModuleCat.of (ZMod ℓ) (G →₀ V))` and `ModuleCat.of ℤ (G →₀ V)` are not
+  syntactically equal inside `inhomogeneousChains`, so every step needs a transport.  **Rejected.**
+
+* **Concrete (chosen).**  Mathlib's `GroupHomology/LowDegree.lean` presents `H₁` by generators and
+  relations in a way that is *ring-independent*:
+  `d₁₀ A := lsum k fun g => A.ρ g⁻¹ - id` (`:89`), `d₂₁ A` (`:144`),
+  `cycles₁ A := ker (d₁₀ A)` (`:325`), `boundaries₁ A := range (d₂₁ A)` (`:396`),
+  `H1π A : cycles₁ A ⟶ H1 A` (`:890`) with `instance : Epi (H1π A)` (`:896`),
+  `H1π_eq_zero_iff` (`:900`), `H1π_comp_map` + `elementwise` twin (`Functoriality.lean:348`),
+  `coe_mapCycles₁` (`:338`), `chainsMap₁ f φ := mapRange.linearMap φ ∘ₗ lmapDomain _ _ f` (`:179`).
+  Both differentials are formulas in `A.ρ` and the additive structure alone, so **the ℤ- and
+  `ZMod ℓ`-versions of `cycles₁`/`boundaries₁` are literally the same subsets of the same abelian
+  group.**
+
+So **no comparison map is needed at all**:
+
+```lean
+theorem exists_h1_map_eq_zero (A : Rep (ZMod ℓ) G) (z : groupHomology.H1 (intRep A)) :
+    ∃ x : groupHomology.H1 A, ∀ (B : Rep (ZMod ℓ) G) (ψ : A ⟶ B),
+      groupHomology.map (B := B) (MonoidHom.id G) ψ 1 x = 0 →
+        groupHomology.map (B := intRep B) (MonoidHom.id G) (intRepMap ψ) 1 z = 0
+```
+
+Proof, in five lines: `H1π` is epi, so `z = H1π_ℤ c`; take `x := H1π_{ZMod ℓ} ⟨c.1, _⟩`; if
+`map ψ x = 0` then `chainsMap₁ ψ c ∈ boundaries₁ B`, which *is* membership in
+`boundaries₁ (intRep B)`, which *is* `map (intRepMap ψ) z = 0`.
+
+`intRep A := Rep.of (V := ↥A.V) ⟨fun g => (A.ρ g).toAddMonoidHom.toIntLinearMap, …⟩` keeps the
+carrier type *literally shared*, which is what makes `d₁₀_intRep`, `d₂₁_intRep`,
+`mem_cycles₁_intRep`, `mem_boundaries₁_intRep` and `chainsMap₁_intRep` provable by `Finsupp`
+induction on `single`s (the last is `rfl`).
+
+`HasIntegralShaTateCover` is `HasOperatorShaTateCover` with the class asked for over `ℤ`, and
+`hasOperatorShaTateCover_of_hasIntegralShaTateCover` closes the chain
+
+```
+HasIntegralShaTateCover  ⟹  HasOperatorShaTateCover  ⟹  HasShaTateCover  ⟹  HasShrinkableSha
+```
+
+### (c) What is still between the CFT theorem and the ladder
+
+1. ~~Base-ring gap.~~ **Closed** — (b).
+2. ~~Group gap.~~ **Closed** — (a).
+3. **Coefficient identification.**  `linHomObj A B ≅ genericLayerTensor U N S ℓ j W` with
+   `A = μ_p` (cyclic of rank one over `𝔽_p`), `B = Multiplicative (layerSub …)` and
+   `W = Hom(μ_p, 𝔽_p)`, i.e. `Hom(A, Layer) ≅ Layer ⊗ Hom(A, 𝔽_p)`; plus matching `linHomPostHom`
+   with `operatorTensorRep`, and `Gal(F/k) ≅ U`.
+4. **`HasNaturalShaDualInjection`** — Poitou–Tate itself.  Still **wall #1**.  Recall
+   (§1.13) that `HasIdeleClassNakayamaSpanAt … (-2)` at trivial `W` is **false**, so the span route
+   must be run at the actual `W`.
+
+### Findings
+
+**2606 (LEAN, KEY).**  `groupHomology.map (MonoidHom.id U) φ n` does **not** elaborate without an
+explicit `(B := …)`: unifying `(Action.res _ (MonoidHom.id U)).obj ?B` against a concrete
+representation is higher-order and fails.  The idiom is
+`groupHomology.map (B := genericLayerTensor U n S ℓ j T) (MonoidHom.id U) (operatorTensorRep …) c`
+(already used at `GenericHomology.lean:275`).  The failure **cascades**: the enclosing `def` becomes
+non-reducible, so downstream `intro`/`obtain` fail with `Function expected` and
+``rcases failed: `x✝ : ?m` is not an inductive datatype``.  Same for `chainsMap₁` — there both
+`(A := …)` and `(B := …)` are needed when the two sides use different rings.
+
+**2607 (REPO, KEY).**  SW **Proposition 7** is *already proven*: `exists_operatorHom_h1_eq_zero`
+(`GenericHomology.lean:339`) kills finitely many `H₁` classes of `Generic U m S ⋊ U` at once by a
+surjective equivariant `α : Generic U m S →* Generic U n S`, with `m` chosen **before** the classes.
+
+**2608 (MATH/REPO, KEY).**  `SemidirectProduct.inr` is a section of `rightHom`, and the coefficients
+are inflated *along* `rightHom`, so `(Action.res _ inr).obj (inflate φ B)` is **defeq to `B`** and
+the comparison morphism is `𝟙 B`.  A `U`-homology class therefore pushes into the semidirect
+product losing nothing.
+
+**2609 (REPO).**  `map_comp_of_eq` (`SemidirectHomology.lean:64`) splits a `groupHomology.map` along
+a composite when only the *underlying linear maps* agree.
+
+**2610 (MATHLIB).**  `groupHomology.map_id : map (MonoidHom.id G) (𝟙 A) n = 𝟙 _`
+(`Functoriality.lean:162`).
+
+**2611 (MATHLIB).**  `ModuleCat.restrictScalars f` is a left *and* a right adjoint
+(`ChangeOfRings.lean:644`, `:886`); `ShortComplex.preservesHomologyOfExact` is an instance
+(`PreservesHomology.lean:60`); `S.mapHomologyIso F` at `:445`, naturality at `:582`;
+`Functor.mapAction` at `Action/Basic.lean:393`.  This is the *categorical* base-change route —
+**not** the one taken; see (b).
+
+**2612 (MATHLIB, KEY).**  The ring-independent `H1` API: `d₁₀` `:89`, `d₂₁` `:144`, `cycles₁` `:325`,
+`boundaries₁` `:396`, `H1π` `:890`, `Epi (H1π A)` `:896`, `H1π_eq_zero_iff` `:900`
+(all `GroupHomology/LowDegree.lean`); `chainsMap₁` `:179`, `mapCycles₁` `:307`, `coe_mapCycles₁`
+`:338`, `H1π_comp_map` (+ `_apply`) `:348` (all `GroupHomology/Functoriality.lean`).
+
+**2613 (MATH, KEY).**  Consequently base change in `H₁` needs **no comparison map**: epi-ness of
+`H1π`, `H1π_eq_zero_iff`, `H1π_comp_map` and carrier equality of `cycles₁`/`boundaries₁` suffice.
+See (b).
+
+**2614 (LEAN).**  `Rep.of`, `Rep.ρ` and `Rep.instAddCommGroupCarrierVModuleCat` are all
+**noncomputable**, so any `def` producing a `Rep` from another `Rep`'s `ρ` must be marked
+`noncomputable` (cf. finding 1819).
+
+**2615 (LEAN).**  `Finsupp.induction_linear`'s case names are `zero`, `add`, `single` — *not*
+`h0`/`hadd`/`hsingle`, despite the argument names in its statement.
+
+**2616 (BUILD).**  `lake build InverseGalois.Solvable.Shafarevich.LevelCoverOperator` = 8083 jobs,
+~13 s.  `…Shafarevich.HomologyIntegral` = 8084 jobs, ~86 s.

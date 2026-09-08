@@ -42,6 +42,8 @@ import InverseGalois.Solvable.Shafarevich.LevelShrink
 import InverseGalois.Solvable.Shafarevich.LevelTwist
 import InverseGalois.Solvable.Shafarevich.LevelLocal
 import InverseGalois.Solvable.Shafarevich.LevelCover
+import InverseGalois.Solvable.Shafarevich.LevelCoverOperator
+import InverseGalois.Solvable.Shafarevich.HomologyIntegral
 import InverseGalois.Solvable.Shafarevich.LevelRung
 
 /-!
@@ -286,6 +288,21 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   fixed module, and the count already run on that homology asks for a rank settled by the operator
   group, the intended number of letters, the layer and the twist alone.  Granted the covering and
   the naturality of the reading in the coefficients, **a covered class is a shrinkable class.**
+* `InverseGalois.Solvable.Shafarevich.LevelCoverOperator` asks for the covering in the shape the
+  arithmetic supplies it.  The homology the count is run in is that of the generic operator group
+  extended by the operator group, but a number field only ever knows the operator group, which is
+  the Galois group of the level the coefficients live over.  The inclusion of the operator group
+  into that extension is a section of the projection onto it, and the coefficients are inflated
+  along that projection, so a homology class of the operator group pushes into the extension losing
+  nothing.  Since the projection is natural in a shrinking, **a covering by the homology of the
+  operator group alone is a covering.**
+* `InverseGalois.Solvable.Shafarevich.HomologyIntegral` removes the last discrepancy of shape: the
+  ladder writes its coefficients over the field with a prime number of elements, while duality over
+  a number field writes them over the integers.  The first homology is computed from the action and
+  the addition alone, so the cycles and the boundaries in degree one are literally the same subsets
+  either way, and the class of a cycle over the smaller ring governs the class of the same cycle
+  over the integers for every map of the coefficients at once.  So **a covering by integral homology
+  classes is a covering.**
 * `InverseGalois.Solvable.Shafarevich.LevelRung` collects what the ladder now asks of the arithmetic
   into a single condition and climbs the whole of it.  A finite family of subgroups and a wider
   family against which local triviality is measured are chosen once from the base realization; the
