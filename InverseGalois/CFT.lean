@@ -488,6 +488,7 @@ import InverseGalois.CFT.PoitouTate.SUnitPlace
 import InverseGalois.CFT.PoitouTate.SUnitReduce
 import InverseGalois.CFT.PoitouTate.Selmer
 import InverseGalois.CFT.PoitouTate.ShaInflate
+import InverseGalois.CFT.PoitouTate.ShaInflateLevel
 import InverseGalois.CFT.PoitouTate.ShaSurjection
 import InverseGalois.CFT.PoitouTate.ShaTate
 import InverseGalois.CFT.PoitouTate.SplitClass
@@ -5727,6 +5728,20 @@ it that are available here.
   locally trivial class of the second cohomology with coefficients split by a finite Galois
   extension is inflated from the Galois group of that extension**: a cohomology group of a finite
   group carries all of them, which is what a counting argument over a finite field can consume.
+* `InverseGalois.CFT.PoitouTate.ShaInflateLevel` discharges the hypothesis that was left standing
+  there.  The everywhere locally trivial classes at the level were reduced, by the canonical choice
+  of coefficients and by the comparison of Tate and Nakayama read one place at a time, to three
+  vanishing statements about complete cohomology of subgroups of the Galois group of the splitting
+  extension; feeding them in removes the level from the hypotheses altogether.  What is left is
+  **the everywhere locally trivial classes of the second cohomology lie in the image of inflation
+  from the Galois group of a finite Kummer extension, as soon as three complete cohomology groups of
+  subgroups of that finite group vanish** — at the stabiliser of every place inside a Sylow subgroup
+  for the prime with coefficients the roots of unity of the completion tensored with the
+  homomorphisms into the kernel, at the whole Sylow subgroup with the roots of unity of the
+  extension in their place, and over the Galois group of the extension with coefficients the
+  homomorphisms themselves.  No duality theorem is used anywhere along the way: what buys the
+  local-global principle is the arithmetic of the extension together with cohomological vanishing
+  that a construction free to enlarge the extension can arrange.
 * `InverseGalois.CFT.Profinite.Hilbert90` is the arithmetic input.  A smooth cocycle is constant on
   the cosets of the subgroup fixing a finite Galois level and its values are fixed by that
   subgroup, hence lie in the level, so choosing a preimage of each automorphism of the level turns

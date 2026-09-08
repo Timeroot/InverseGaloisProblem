@@ -94,30 +94,27 @@ theorem kummerHomAut_apply (σ : Gal(Ω/k)) (w : Additive (M →* E)) :
     kummerHomAut M E σ w = Additive.ofMul (σ • w.toMul) := rfl
 
 variable {K : IntermediateField k Ω} [Normal k ↥K]
-variable (htriv : ∀ (σ : Gal(Ω/k)) (m : M), σ • m = m)
-variable (htrivEK : ∀ (x : ↥K.fixingSubgroup) (e : E), x • e = e)
+variable [ActsTrivially K.fixingSubgroup (M →* E)]
 
 omit [IsGalois k Ω] [Normal k ↥K] in
-include htriv htrivEK in
 /-- The subgroup fixing the level acts trivially on the homomorphisms, so the action descends to the
 Galois group of the level. -/
 theorem kummerHomAut_eq_one_of_mem_fixingSubgroup {σ : Gal(Ω/k)} (hσ : σ ∈ K.fixingSubgroup) :
     kummerHomAut M E σ = 1 :=
-  AddEquiv.ext fun w => Additive.toMul.injective
-    (homSMul_eq_self_of_mem_fixingSubgroup htriv htrivEK hσ w.toMul)
+  AddEquiv.ext fun w =>
+    Additive.toMul.injective (ActsTrivially.smul_eq_self (N := K.fixingSubgroup) σ hσ w.toMul)
 
 variable (M E) in
 /-- **The action of the Galois group of the level on the homomorphisms of the roots of unity into
 the kernel of a lifting problem.** -/
 def kummerHomAutLevel : Gal(↥K/k) →* AddAut (Additive (M →* E)) :=
   (QuotientGroup.lift K.fixingSubgroup (kummerHomAut M E)
-      fun _ hn => kummerHomAut_eq_one_of_mem_fixingSubgroup htriv htrivEK hn).comp
+      fun _ hn => kummerHomAut_eq_one_of_mem_fixingSubgroup hn).comp
     (quotientFixingSubgroupEquiv K).symm.toMonoidHom
 
 /-- The descended action is the original one, read on a restriction. -/
 theorem kummerHomAutLevel_restrictNormalHom (σ : Gal(Ω/k)) :
-    kummerHomAutLevel M E htriv htrivEK (AlgEquiv.restrictNormalHom ↥K σ)
-      = kummerHomAut M E σ := by
+    kummerHomAutLevel M E (K := K) (AlgEquiv.restrictNormalHom ↥K σ) = kummerHomAut M E σ := by
   have hσ : (quotientFixingSubgroupEquiv K).symm (AlgEquiv.restrictNormalHom ↥K σ)
       = (QuotientGroup.mk σ : Gal(Ω/k) ⧸ K.fixingSubgroup) :=
     (quotientFixingSubgroupEquiv K).symm_apply_eq.2 (quotientFixingSubgroupEquiv_mk K σ).symm
@@ -127,25 +124,24 @@ theorem kummerHomAutLevel_restrictNormalHom (σ : Gal(Ω/k)) :
 variable (M E) in
 /-- **The homomorphisms of the roots of unity into the kernel of a lifting problem, as a
 representation of the Galois group of the level.** -/
-def kummerHomRep : Rep ℤ Gal(↥K/k) := repOfAddAut (kummerHomAutLevel M E htriv htrivEK)
+def kummerHomRep : Rep ℤ Gal(↥K/k) := repOfAddAut (kummerHomAutLevel M E (K := K))
 
 @[simp]
 theorem kummerHomRep_ρ_apply (σ : Gal(↥K/k)) (w : Additive (M →* E)) :
-    (kummerHomRep M E htriv htrivEK).ρ σ w = kummerHomAutLevel M E htriv htrivEK σ w := rfl
+    (kummerHomRep M E (K := K)).ρ σ w = kummerHomAutLevel M E (K := K) σ w := rfl
 
 /-! ### The tensor product with the units of the level -/
 
 section Tensor
 
 variable [NumberField k] [NumberField ↥K] [IsGalois k ↥K]
-variable [ActsTrivially K.fixingSubgroup (M →* E)]
 
 variable (M E) in
 /-- The tensor product of the units of the level with the homomorphisms of the roots of unity into
 the kernel is the underlying module of the tensor product representation, on the nose. -/
 def kummerHomTensorEquiv :
     Additive (↥K)ˣ ⊗[ℤ] Additive (M →* E)
-      ≃+ ↥(tensorObj (globalUnitsRep k ↥K) (kummerHomRep M E htriv htrivEK)).V :=
+      ≃+ ↥(tensorObj (globalUnitsRep k ↥K) (kummerHomRep M E (K := K))).V :=
   AddEquiv.refl _
 
 omit [NumberField k] [NumberField ↥K] [IsGalois k ↥K] in
@@ -153,29 +149,27 @@ omit [NumberField k] [NumberField ↥K] [IsGalois k ↥K] in
 representation is equivariant** for the Galois group of the level. -/
 theorem kummerHomTensorEquiv_smul (g : Gal(Ω/k) ⧸ K.fixingSubgroup)
     (t : Additive (↥K)ˣ ⊗[ℤ] Additive (M →* E)) :
-    kummerHomTensorEquiv M E htriv htrivEK (g • t)
-      = (tensorObj (globalUnitsRep k ↥K) (kummerHomRep M E htriv htrivEK)).ρ
-          (quotientFixingSubgroupEquiv K g) (kummerHomTensorEquiv M E htriv htrivEK t) := by
+    kummerHomTensorEquiv M E (K := K) (g • t)
+      = (tensorObj (globalUnitsRep k ↥K) (kummerHomRep M E (K := K))).ρ
+          (quotientFixingSubgroupEquiv K g) (kummerHomTensorEquiv M E (K := K) t) := by
   obtain ⟨σ, rfl⟩ := QuotientGroup.mk_surjective g
   refine TensorProduct.induction_on t ?_ (fun a b => ?_) (fun x y hx hy => ?_)
   · simp
   · show Additive.ofMul (σ • a.toMul) ⊗ₜ[ℤ] Additive.ofMul (σ • b.toMul)
-        = (tensorObj (globalUnitsRep k ↥K) (kummerHomRep M E htriv htrivEK)).ρ
+        = (tensorObj (globalUnitsRep k ↥K) (kummerHomRep M E (K := K))).ρ
             (quotientFixingSubgroupEquiv K (QuotientGroup.mk σ)) (a ⊗ₜ[ℤ] b)
     rw [tensorObj_ρ_tmul, quotientFixingSubgroupEquiv_mk, kummerHomRep_ρ_apply,
       kummerHomAutLevel_restrictNormalHom, kummerHomAut_apply]
     rfl
   · rw [smul_add, _root_.map_add, _root_.map_add, _root_.map_add, hx, hy]
 
-omit [NumberField k] [NumberField ↥K] [IsGalois k ↥K]
-  [ActsTrivially K.fixingSubgroup (M →* E)] in
+omit [NumberField k] [NumberField ↥K] [IsGalois k ↥K] in
 /-- The identification of the tensor product with the underlying module of the tensor product
 representation moves only the second factor, and moves it by the identity. -/
 theorem kummerHomTensorEquiv_eq_map (t : Additive (↥K)ˣ ⊗[ℤ] Additive (M →* E)) :
-    kummerHomTensorEquiv M E htriv htrivEK t
+    kummerHomTensorEquiv M E (K := K) t
       = TensorProduct.map LinearMap.id
-          (LinearMap.id : Additive (M →* E) →ₗ[ℤ]
-            ↥(kummerHomRep M E htriv htrivEK).V) t := by
+          (LinearMap.id : Additive (M →* E) →ₗ[ℤ] ↥(kummerHomRep M E (K := K)).V) t := by
   rw [TensorProduct.map_id]
   rfl
 
@@ -206,22 +200,21 @@ variable (eM : Additive (M →* E) ≃+ (Fin d → ZMod p))
 variable (hroot : ∀ x : Ωˣ, ∃ y : Ωˣ, y ^ p = x)
 variable (hop : IsOpen (K.fixingSubgroup : Set Gal(Ω/k)))
 
-include hK α hEp hfix eM hroot in
+include hK htriv htrivEK α hEp hfix eM hroot in
 /-- **The everywhere locally trivial classes of a level all vanish**, as soon as the comparison of
 Tate and Nakayama spans at the homomorphisms of the roots of unity into the kernel in degree minus
 two and those homomorphisms have no complete cohomology there.  This is the vanishing of the second
 cohomological obstruction with the auxiliary representation, the identification and its equivariance
 all removed: what is left is a condition on the extension and a condition on the finite group. -/
 theorem sha1Level_eq_bot_of_spanAt
-    (hspan : HasIdeleClassNakayamaSpanAt k ↥K p (kummerHomRep M E htriv htrivEK) (-2))
-    (hzero : ∀ y : ↥(tateModule (kummerHomRep M E htriv htrivEK) (-2)), y = 0) :
+    (hspan : HasIdeleClassNakayamaSpanAt k ↥K p (kummerHomRep M E (K := K)) (-2))
+    (hzero : ∀ y : ↥(tateModule (kummerHomRep M E (K := K)) (-2)), y = 0) :
     sha1Level E K.fixingSubgroup hop (decompositionSubgroups k Ω) = ⊥ :=
   sha1Level_eq_bot_of_span (ρ := LinearMap.id) hK htriv htrivEK α hEp hfix _
-    (kummerHomTensorEquiv M E htriv htrivEK) (kummerHomTensorEquiv_smul htriv htrivEK)
-    (kummerHomTensorEquiv_eq_map htriv htrivEK) eM hroot hop eM
-    (fun _ => nsmul_additive_hom_eq_zero hEp _) hspan hzero
+    (kummerHomTensorEquiv M E) (kummerHomTensorEquiv_smul) (kummerHomTensorEquiv_eq_map)
+    eM hroot hop eM (fun _ => nsmul_additive_hom_eq_zero hEp _) hspan hzero
 
-include hK α hEp hfix eM hroot in
+include hK htriv htrivEK α hEp hfix eM hroot in
 /-- **The everywhere locally trivial classes of a level all vanish as soon as three complete
 cohomology groups of subgroups of the Galois group of the level do**: over a Sylow subgroup for the
 prime, the stabiliser of every place of the level has none with coefficients the roots of unity of
@@ -236,22 +229,22 @@ theorem sha1Level_eq_bot_of_isZero_local
         (G := ↥(stabilizer Gal(↥K/k) w)) (R := w.Completion)).comp
           (stabilizerSubgroupHom (P : Subgroup Gal(↥K/k)) w)) (p : ℤ))
         (resObj (stabilizer ↥(P : Subgroup Gal(↥K/k)) w)
-          (resObj (P : Subgroup Gal(↥K/k)) (kummerHomRep M E htriv htrivEK)))) 2))
+          (resObj (P : Subgroup Gal(↥K/k)) (kummerHomRep M E (K := K))))) 2))
     (h₂ : ∀ (P : Sylow p Gal(↥K/k)) (v : HeightOneSpectrum (𝓞 ↥K)), IsZero
       (tateModule (tensorObj (torsionRep ((smulUnitsAut
         (G := ↥(stabilizer Gal(↥K/k) v)) (R := v.adicCompletion ↥K)).comp
           (stabilizerSubgroupHom (P : Subgroup Gal(↥K/k)) v)) (p : ℤ))
         (resObj (stabilizer ↥(P : Subgroup Gal(↥K/k)) v)
-          (resObj (P : Subgroup Gal(↥K/k)) (kummerHomRep M E htriv htrivEK)))) 2))
+          (resObj (P : Subgroup Gal(↥K/k)) (kummerHomRep M E (K := K))))) 2))
     (hU : ∀ P : Sylow p Gal(↥K/k), IsZero (tateModule (resObj (P : Subgroup Gal(↥K/k))
       (tensorObj (torsionRep (globalUnitsAut (k := k) (K := ↥K)) (p : ℤ))
-        (kummerHomRep M E htriv htrivEK))) 3))
-    (hzero : ∀ y : ↥(tateModule (kummerHomRep M E htriv htrivEK) (-2)), y = 0) :
+        (kummerHomRep M E (K := K)))) 3))
+    (hzero : ∀ y : ↥(tateModule (kummerHomRep M E (K := K)) (-2)), y = 0) :
     sha1Level E K.fixingSubgroup hop (decompositionSubgroups k Ω) = ⊥ := by
   have hfour : ((-2 : ℤ) + 1 + 1 + 1 + 1) = 2 := by norm_num
   have hfive : ((-2 : ℤ) + 1 + 1 + 1 + 1 + 1) = 3 := by norm_num
   refine sha1Level_eq_bot_of_spanAt hK htriv htrivEK α hEp hfix eM hroot hop ?_ hzero
-  refine hasIdeleClassNakayamaSpanAt_of_isZero_local (kummerHomRep M E htriv htrivEK)
+  refine hasIdeleClassNakayamaSpanAt_of_isZero_local (kummerHomRep M E (K := K))
     (fun _ => nsmul_additive_hom_eq_zero hEp _) eM (-2) (fun P w => ?_) (fun P v => ?_)
     (fun P => ?_)
   · rw [hfour]; exact h₁ P w
