@@ -17904,3 +17904,195 @@ chain, in order:
    bookkeeping in Steps 3–4 and is what makes the induction close.
 
 Items 1 and 6 are new work; 2 and 3 are done; 4 and 5 are the Poitou–Tate-shaped part.
+
+## §1.60 The rung assembled: `HasLocalLift`, `HasRungData`, and the exact shape of what the arithmetic still owes
+
+### (a) What landed
+
+Four commits, in order.
+
+* `LevelObstruction.lean` — `exists_operatorHom_forall_exists_subgroup_resH2_extensionClass_eq_one`
+  (§1.57's count, phrased for a homomorphism over the operator group),
+  `exists_levelSolution_liftObstructionClass_mem_sha2`, `exists_lift_of_levelSolution`.
+* `LayerFrattini.lean` — past the first layer a lift over a surjection is a surjection.
+* `LevelLift.lean` — `exists_lift_surjective_of_levelSolution`.
+* `LevelTwist.lean` — `levelSolution_succ_of_hasCocyclePrescription`: **one whole rung**, in
+  exchange for one prescription of restrictions in degree one.
+* `29e2b2f` — the family against which local triviality is measured separated from the finite family
+  the count consumes, with the new named hypothesis `HasLocalLift`.
+* `ee55d35`, new module `InverseGalois/Solvable/Shafarevich/LevelRung.lean` — `galLayerAction`,
+  `HasRungData`, `levelSolution_succ_of_hasRungData`, `genericLevelStepEP_of_hasRungData`.  Full
+  build green: **9840 jobs, 0 errors, 0 warnings**.
+
+### (b) Two families, not one
+
+The count of §1.57 consumes a **finite** family `D : Fin t → Subgroup Gal(Ω/k)` — the decomposition
+subgroups at the bad places.  Local triviality of the obstruction, on the other hand, has to be
+measured against **all** decomposition subgroups, because `Ш²` is what a duality or an inflation
+theorem can reach and "trivial at finitely many places" is not.  The first version of the rung
+conflated the two and asked `sha2 M (Set.range D) = ⊥`, which is a statement about finitely many
+places and cannot be the one the arithmetic supplies.
+
+The separation is `sha2 M T = ⊥` for an arbitrary family `T ⊇ Set.range D`, together with
+
+```lean
+def HasLocalLift (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] (n : ℕ) (S : Type)
+    [Group S] [Finite S] (j : ℕ) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
+    (φ : Gal(Ω/k) →* U) {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k))
+    (T : Set (Subgroup Gal(Ω/k))) : Prop :=
+  ∀ Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j, IsSmoothHom Φ →
+    (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) →
+    (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) →
+    ∀ A ∈ T, A ∉ Set.range D →
+      ∃ g : ↥A →* GenericQuot ℓ U n S (j + 1),
+        IsSmooth₁ (g : ↥A → GenericQuot ℓ U n S (j + 1)) ∧
+          ∀ x : ↥A, (layerExtension ℓ (genericAut U n S) j).rightHom (g x) = Φ x
+```
+
+which is SW Step 1(b)+(c) verbatim: *along the places the finite family does not name, the step is
+locally solvable.*  `sha2_mono` (`Res.lean:192`) makes the pair strictly weaker than the old single
+hypothesis, and the branch is discharged by `resH2_liftObstructionClass_eq_one_iff`
+(`EmbeddingObstruction.lean:271`).
+
+**MATH CORRECTION (finding 2577).**  The first attempt at the extra hypothesis was
+`∀ z, resH2 A z = 1` — *"the extra members carry no second cohomology at all"*.  It builds, and it
+is **false**: a decomposition subgroup at a good place is `Ẑ`-like only for the *unramified*
+quotient; the full local group has `H²(G_{k_v}, μ_n) = Br(k_v)[n] ≅ ℤ/n ≠ 0`.  The correct
+condition away from the finite bad family is *local solvability of the step*, not `H²`-vanishing.
+
+### (c) `HasRungData` and `genericLevelStepEP_of_hasRungData`
+
+```lean
+def HasRungData (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] [TopologicalSpace U]
+    [DiscreteTopology U] (S : Type) [Group S] [Finite S] {k Ω : Type*} [Field k] [Field Ω]
+    [Algebra k Ω] (φ : Gal(Ω/k) →* U) {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k))
+    (T : Set (Subgroup Gal(Ω/k))) : Prop :=
+  (∀ n : ℕ, LevelSolution ℓ U S φ (Set.range D) n 1) ∧
+    ∀ n j : ℕ, 1 ≤ j → HasLocalLift ℓ U n S j φ D T ∧
+      @sha2 Gal(Ω/k) _ _ ↥(layerSub ℓ (Generic U n S) j) _ (galLayerAction ℓ U n S j φ) T = ⊥ ∧
+        @HasCocyclePrescription Gal(Ω/k) _ _ ↥(layerSub ℓ (Generic U n S) j) _
+          (galLayerAction ℓ U n S j φ) t fun ν => D ν ⊓ φ.ker
+```
+
+`genericLevelStepEP_of_hasRungData` derives `GenericLevelStepEP ℓ` from it, with
+`T := Set.range D` handed to `GenericLevelStepEP`'s `∃ T`.  The first conjunct is the rung
+`j = 0 → 1` asked for outright, because `layerSub ℓ P 0 = P/Φ(P)` is the Frattini *quotient*, not a
+subgroup of the Frattini subgroup, so `LayerFrattini` does not apply and a lift across it need not
+be onto.
+
+Three Lean notes.  `galLayerAction := MulDistribMulAction.compHom _ φ`, so `hactφ` is `fun _ _ =>
+rfl`.  The conjuncts are written with `@` and the explicit instance rather than a term-level `letI`,
+so that a `letI := galLayerAction …` at the use site produces syntactically the same instance.  A
+`GroupExtension.Section` is always available — `rightHom_surjective` is a *field* of
+`GroupExtension` (Mathlib `GroupExtension/Defs.lean:70`), so
+`⟨Function.surjInv S.rightHom_surjective, Function.rightInverse_surjInv _⟩` builds one; there is no
+`Nonempty` instance in Mathlib.
+
+### (d) ⚠️ The `sha2 = ⊥` conjunct is *too strong* for `j ≥ 1` (finding 2578, MATH, KEY)
+
+`HasRungData` is a correct sufficient condition and `genericLevelStepEP_of_hasRungData` is a
+theorem, but the middle conjunct is not what the arithmetic can supply, and it should not be built
+on further.  Reasons, in increasing order of decisiveness.
+
+1. `Ш²(k, M) ≅ Ш¹(k, M^D)^∨` (Poitou–Tate), and `Ш¹` of a Galois module with non-cyclic splitting
+   group is not zero in general.  Only `Ш¹_ω` — classes dying on every *cyclic* subgroup — is
+   forced to contain it, by Chebotarev.
+2. Where it *is* zero: if `M` is free over `𝔽_ℓ[U]` then `M` is a direct sum of `n` copies of `Ind_{ker φ}^{G_k} 𝔽_ℓ`, and
+   Shapiro turns `Ш²(k, M)` into `Ш²(K, 𝔽_ℓ)^n ≅ (Ш¹(K, μ_ℓ)^∨)^n = 0` (Grunwald–Wang is not
+   special at exponent `ℓ`).  This is exactly `ShaInduced.lean`'s
+   `sha2_eq_bot_of_bijective_translateEval` (`:154`), whose module docstring records that no duality
+   theorem is used.
+3. The Frattini layer `j = 0` **is** free over `𝔽_ℓ[U]` — `Generic U n S / Φ(Generic U n S) =
+   𝔽_ℓ[U]^n`.  Higher layers are **not**: the lower-central layers of a free group on a free
+   `U`-set have basic commutators `[x_{i,u}, x_{i,u'}]` with the *same* first index, whose
+   stabilizers in `U` are non-trivial.  Growing `n` shrinks the non-free part in proportion but
+   never removes it, which is precisely why SW need a shrinking argument rather than a vanishing
+   theorem.
+
+So: at `j = 0` the conjunct is provable and harmless; at `j ≥ 1` it has to be replaced by the
+composition of (e).
+
+### (e) The Step-1 / Step-2 composition is **not** circular, and it needs only ONE class
+
+The worry was that Step 2's shrinking bound depends on the number of classes to be killed, that the
+classes are the whole of `Ш²`, and that `Ш²` grows with the number of letters.  It does not, because
+the class to be killed is a *single* one, known before the second shrink is chosen.  The order:
+
+1. **Target `n` is given.**  `exists_genericShrink_map_eq_zero` (`LayerCohomology.lean:104`) asks
+   for `(j+1) * (t * Nat.card U ^ c * finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j)) < r` with
+   `t = 1`, `c = 2`.  Every quantity on the left depends on `n, j, U, S, ℓ` only, so **`r` is fixed
+   now**, before anything about the solution is known.
+2. **Set `N := r * n`.**  Run §1.57's count at target `N`: it returns `m`, and for every solution
+   at level `j` with `m` letters an operator homomorphism `α : Generic U m S ↠ Generic U N S`
+   with `res_{Φ(D_ν)} (extensionClass) = 1`.
+3. **Build `Φ_N : Gal(Ω/k) ↠ GenericQuot ℓ U N S j`** and its obstruction
+   `ω_N = comapH2 Φ_N (extensionClass)`.  Step 1(b)/(c) plus step 2 put `ω_N ∈ Ш²(Gal(Ω/k),
+   Layer(N, j))`.
+4. **Inflate.**  `sha2_le_range_galInflH2` (`ShaInflate.lean:108`) writes `ω_N = galInflH2 K hπ x`
+   for a **single** `x ∈ SmoothH2 (Gal(K/k)) (Layer(N,j))`, provided `K := Ω^{ker φ}` contains
+   `μ_ℓ` — which is arranged by enlarging `U` at the start, exactly as SW enlarge `K` to contain
+   `μ_{p^e}`.
+5. **Shrink again.**  Apply `exists_genericShrink_map_eq_zero` with `t = 1` and that one class: it
+   returns `a : Fin r → ℕ` with `genericShrink U r n S a : Generic U (r*n) S ↠ Generic U n S`
+   surjective and the image of `x` in `H²(U, Layer(n,j))` zero.
+6. **Push down.**  `Φ_n :=` (the induced map on `GenericQuot`) `∘ Φ_N`.  It is again surjective,
+   again over `φ`, again trivial along `D`.  Its obstruction is the image of `ω_N`, which is the
+   inflation of the image of `x`, which is `1`.  So the obstruction is trivial **outright** — the
+   `sha2 = ⊥` hypothesis disappears, and with it the need to re-establish local triviality.
+
+Note what step 6 buys: the obstruction is not merely locally trivial, it is trivial, so the branch
+of `exists_levelSolution_liftObstructionClass_mem_sha2` that goes through `HasLocalLift` is only
+needed to place `ω_N` in `Ш²` in step 3 — it is still needed, but nothing downstream of it is.
+
+### (f) What is still owed, after (e)
+
+The composition of (e) turns the middle conjunct of `HasRungData` into the hypotheses of
+`sha2_le_range_galInflH2`, of which one is hard:
+
+```lean
+hsha1 : sha1Level E K.fixingSubgroup K.fixingSubgroup_isOpen (decompositionSubgroups k Ω) = ⊥
+```
+
+Unwound: with `E` the layer (trivial `Gal(Ω/K)`-action) and twisted Kummer theory,
+`H¹(Gal(Ω/K), E) ≅ (K^×/(K^×)^ℓ) ⊗ Hom(μ_ℓ, E)`, so `hsha1` is
+
+  `Ш¹(Gal(K/k), (K^×/ℓ) ⊗ Hom(μ_ℓ, E)) = 0`,
+
+which is the same group §1.48–§1.50 measured: `ShaInflateLevel.lean:86` discharges it from three
+Tate-cohomology vanishing conditions, and `:122` discharges those from
+`kummerHomRep M E ≅ Rep.of (inducedRep ℤ Gal(K/k) Y)` — i.e. from `E` being *induced*.  The layer is
+induced at `j = 0` and not at `j ≥ 1`, so `:122` does not apply and finding **2479** (the three
+conditions ⟺ `W` free over `𝔽_p[Syl_p(G)]`) says the criterion as it stands cannot reach the higher
+layers either.  This is the same wall as §1.51: **Poitou–Tate, or a genuinely new route to `Ш¹` of
+a non-induced coefficient module.**
+
+The other two conjuncts of `HasRungData` are independent of it:
+
+* the **first rung** `∀ n, LevelSolution ℓ U S φ (Set.range D) n 1`.  The kernel is `𝔽_ℓ[U]^n`, so
+  this is Ikeda's theorem — `Shafarevich.splitAbelianEP` is already a theorem — *except* that
+  `LevelSolution` asks for a solution **over the fixed `φ`** and **completely decomposed along
+  `D`**, neither of which `SplitAbelianEP` (`IsInverseGalois U → IsInverseGalois (A ⋊[φ] U)`)
+  provides.  Lifting the wreath-product construction of `Ikeda.lean` to an embedding-problem
+  statement with prescribed local behaviour is a self-contained piece of work.
+* the **prescription** `HasCocyclePrescription`.  Shapiro reduces it to trivial coefficients over
+  `K`, and then it is Kummer theory plus `CFT/GrunwaldWang.lean`'s
+  `exists_ne_zero_forall_pow_mul_eq_adicCompletion`, or degree-one Poitou–Tate exactness
+  (`perpSubgroup_selmerGroupFull`, `PoitouTate/Selmer.lean:360`).
+
+### (g) Lean findings
+
+**2579 (LEAN).**  `MulDistribMulAction.compHom` lives at
+`Mathlib/Algebra/GroupWithZero/Action/End.lean:50` (not in `Algebra/Group/Action/`), signature
+`MulDistribMulAction.compHom (A) [Monoid N] (f : N →* M) : MulDistribMulAction N A`.  Its `smul` is
+`f a • b` by `rfl`.
+
+**2580 (LEAN).**  Writing a `Prop`-valued `def` whose conjuncts need a *non-canonical* instance:
+prefer `@f _ _ _ M _ (theInstance …) args` over a term-level `letI`/`have`.  The `@` form is
+syntactically stable, so a `letI := theInstance …` in the consuming proof makes the goal match
+without any zeta-reduction in `isDefEq`.
+
+**2581 (LEAN).**  `Nat.le_add_left 1 j : 1 ≤ j + 1`.  Prefer it to `Nat.eq_zero_or_pos`, whose
+`0 < j` is `LT.lt`-headed and does not `exact`-match a `1 ≤ j` hypothesis without unfolding.
+
+**2582 (BUILD).**  `lake build InverseGalois.Solvable.Shafarevich.LevelRung` = **8087 jobs / 15 s**;
+the full build is **9840 jobs**, ~4 min when only the `Solvable` cone rebuilds.
