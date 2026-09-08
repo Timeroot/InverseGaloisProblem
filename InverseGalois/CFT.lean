@@ -343,6 +343,7 @@ import InverseGalois.CFT.Kummer.InflationRootsOfUnity
 import InverseGalois.CFT.Kummer.LevelOne
 import InverseGalois.CFT.Kummer.LocalPowRepresentatives
 import InverseGalois.CFT.Kummer.LocalPower
+import InverseGalois.CFT.Kummer.LocalPowerConverse
 import InverseGalois.CFT.Kummer.LocalPowerRange
 import InverseGalois.CFT.Kummer.LocalSurjective
 import InverseGalois.CFT.Kummer.Pairing
@@ -2258,6 +2259,17 @@ it that are available here.
   of finite rank over the field with `p` elements, where divisibility by `p` is read coordinate by
   coordinate along a basis of the coefficients; so the comparison for a single unit carries the
   whole class from the compositum to the completion, at a prime and at an archimedean place alike.
+* `InverseGalois.CFT.Kummer.LocalPowerConverse` closes that comparison in the other direction.  The
+  criterion for an extension of number fields is an equivalence, so the descent to a level reads
+  backwards as well: a radicand which is a `p`-th power in the completion of the base below a place
+  has all of its radicals fixed by the decomposition subgroup there.  For a unit of a level that
+  turns a `p`-th power in the completion at the place below into a `p`-th power in the compositum of
+  the level with the fixed field of the decomposition subgroup, as soon as the whole extension
+  contains a radical at all: the radical is fixed by every automorphism over the level lying in the
+  subgroup, the automorphisms fixing the compositum are exactly those, and a subfield is the fixed
+  field of the automorphisms fixing it.  No approximation of a henselization by a completion is
+  involved, the extension cut out by a radical being Galois, so one root landing in a completion
+  drags the others along with it.
 * `InverseGalois.CFT.Kummer.LocalPowRepresentatives` makes the local power classes finite and
   represents them globally.  The `n`-th powers have finite index in the units of a completion of a
   number field, the index being the product of the absolute value of `n` there with the number of
