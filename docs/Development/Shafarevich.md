@@ -18349,3 +18349,134 @@ shrinking + Chevalley–Warning instead.  Shapiro's lemma and freeness of the la
 **2594 (LEAN).**  A `Prop`-valued `def` that existentially quantifies a *carrier* (`∃ Q : Type, …`)
 must put `Q` in the **same universe as the ambient group**, or `↥D ⧸ N` will not typecheck against
 it (`outParam Type` vs `Type u_1`).  Declare `universe u`, write `{Γ : Type u}` and `∃ Q : Type u`.
+
+## §1.63 The Poitou–Tate feed made *natural*: one class of complete cohomology that governs every shrink
+
+### (a) What the ladder actually needs from Poitou–Tate
+
+`HasInflatedSha` — the sole deep entry of the §1.62(d) ledger — is consumed through
+`HasShaTateCover` (`Solvable/Shafarevich/LevelCover.lean:66`), whose shape is
+
+> for each everywhere locally trivial class `ε` of the second cohomology there is **one** class `x`
+> of the complete cohomology of a finite group in degree `-2`, produced **before** the shrinking is
+> chosen, such that *any* coefficient change killing `x` also kills `ε`.
+
+The quantifier order is the whole point.  Chevalley–Warning (`exists_operatorHom_forall_layerSubMap_
+eq_one`) kills a *fixed finite family of elements* chosen after the number of letters; so the class
+`x` has to exist first and the shrink second.  `ShaSurjection.lean` already gave the *pointwise*
+statement (`exists_shaCharacter_eq`: every character is the pairing against a single class), but
+nothing said that the single class **moves correctly** when the coefficients are changed.  Supplying
+that naturality is what this section does.
+
+### (b) The three legs
+
+Write `A` for the cyclic representation, `B ⟶ B'` for the coefficient change `f`, `Λ(B) =
+linHomObj B A` for the Cartier dual.  The chain
+`Ш²(B) --α--> Hom(Ш¹(Λ B), ℚ/ℤ)`, `Ш¹(Λ B) --shaTateLinear--> Ĥ¹(Gal(F/k), Λ B)`,
+`Ĥ¹(Λ B) × Ĥ^{-2}(linHomObj A B) --cartierPairing--> ℚ/ℤ` has to commute with `f` in all three
+places.
+
+* **(N3) the pairing.**  `cartierPairing_naturality` (`TateCohomology/CyclicDualNatural.lean:127`) —
+  landed in the previous session, wired into `CFT.lean` and pushed as `1a60a4a`.
+* **(N2) the reading at the level.**  New, three modules:
+  * `CFT/Profinite/ShaCoeff.lean` — degree-one twins of `resH2_coeffH2` / `coeffH2_mem_sha2`, plus
+    the bundled cut-downs `shaCoeffH1` and `shaCoeffH2`.
+  * `CFT/Units/HasseCoeff.lean` — `galInflH1_coeffH1` (one line from `coeffH1_comapH1`, because
+    `galInflH1 = comapH1 (restrictNormalHom F)`) and `shaInflH1_shaCoeffH1` (four lines, via
+    `galInflH1_injective` + `galInflH1_shaInflH1`).
+  * `CFT/PoitouTate/ShaTateNatural.lean` — `repMulHom`, `discreteCoeffRepHom_comp_repIso`,
+    `h1AddEquiv_apply` (**`rfl`**), `h1AddEquiv_tateMap`, `smoothH1RepHom_coeffH1`, assembled into
+    `shaTateHom_shaCoeffH1` and `shaTateLinear_shaCoeffH1`.
+* **(N1) the duality itself.**  *Cannot* be a theorem here — it is Poitou–Tate.  Named as a
+  hypothesis: `IsShaDualNatural` in the new `CFT/PoitouTate/ShaCover.lean`.
+
+### (c) The payoff
+
+`CFT/PoitouTate/ShaCover.lean`:
+
+```lean
+def IsShaDualNatural (α …) (α' …) : Prop :=
+  ∀ ε t, α' (ofMul (shaCoeffH2 (repMulHom f) hf _ (toMul ε))) t
+       = α ε (ofMul (shaCoeffH1 (repMulHom (linHomPreHom A f)) _ _ (toMul t)))
+
+def HasNaturalShaDualInjection : Prop :=
+  ∃ α α', Function.Injective α' ∧ IsShaDualNatural F A hπ hπ' f hf α α'
+
+theorem exists_tateMap_imp_coeffH2_eq_one (hα' : Function.Injective α')
+    (hnat : IsShaDualNatural F A hπ hπ' f hf α α') (ε : ↥(sha2 (Multiplicative ↥B.V) …)) :
+    ∃ x : ↥(tateModule (linHomObj A B) (-2)),
+      tateMap (linHomPostHom A f) (-2) x = 0 →
+        coeffH2 (repMulHom f) hf (ε : SmoothH2 Gal(Ω/k) (Multiplicative ↥B.V)) = 1
+```
+
+This is the CFT-side shadow of `HasShaTateCover`, with the quantifiers in the right order: `x` comes
+from `exists_cartierPairing_sha_eq` applied to `α ε`, before `f` is used at all.
+
+### (d) A worry that turned out to be unfounded
+
+Earlier notes flagged that `HasShaTateCover` changes **both** the group (`Generic U N S ⋊ U →
+Generic U n S ⋊ U`) and the coefficients, whereas the CFT statement changes only the coefficients.
+The Galois side is fine: the level `F` is the fixed field of `ker φ`, and `Gal(Ω/k)` acts on the
+layer *through `U`* (`galLayerAction`), so **the level group does not move when `N` does** — only the
+layer does.  The semidirect-product group in the Shafarevich count is bridged by
+`SemidirectProduct.inr` / `rightHom` (`rightHom ∘ inr = id`, and `operatorSemidirect hα ∘ inr_N =
+inr_n`), which converts a vanishing at `Γ_n` into a vanishing at `U`.
+
+### (e) What is still between this and `HasShaTateCover`
+
+1. **Base-ring gap.**  CFT duality lives in `Rep ℤ G`; the ladder lives in `Rep (ZMod ℓ) U`.
+   `groupHomology (A : Rep ℤ G) 1 : ModuleCat ℤ` and `groupHomology (A' : Rep (ZMod ℓ) G) 1 :
+   ModuleCat (ZMod ℓ)` are different types; a restriction-of-scalars comparison (exact functor
+   commutes with homology) is needed.
+2. **`linHomObj A B ≅ Layer ⊗ T`** — an isomorphism, since `A = μ_p` is cyclic of rank one; and
+   `linHomPostHom` has to be matched with `operatorTensorRep`.
+3. `tateModule X (-2) = groupHomology X 1` is **free** (`rfl`, finding 2597).
+4. `HasNaturalShaDualInjection` itself — i.e. Poitou–Tate.  Still wall #1.
+
+### (f) Findings
+
+**2595 (REPO, KEY).**  `discreteSmoothH1Hom_coeffH1` **already existed** at
+`CFT/Profinite/DiscreteComap.lean:210` (degree-two twin `discreteSmoothH2Hom_coeffH2` at `:223`).
+It is the entire cocycle-level leg of (N2); no new cocycle work was needed.
+`discreteCoeffRepHom` is at `:202` and does not in fact need `[TopologicalSpace G]`.
+
+**2596 (REPO).**  `Graded.lean:85`: `tateMap φ (.ofNat (m+1)) = groupCohomology.map (MonoidHom.id G)
+φ (m+1)`, so `tateMap φ 1 = groupCohomology.map (id) φ 1` by `rfl`; `:87` is the homology twin.
+
+**2597 (REPO).**  `Graded.lean:78`: `tateModule A (-((m : ℤ) + 2)) = groupHomology A (m+1)` **by
+`rfl`**, so `tateModule A (-2)` *is* `groupHomology A 1` definitionally.
+
+**2598 (LEAN/REPO).**  `h1AddEquiv A w = tateMap (repIso A).hom 1 w` holds **by `rfl`** — the
+`Iso.toLinearEquiv.toAddEquiv` chain unfolds to `functor.map i.hom`.  This collapses the whole
+`groupCohomology.functor`/`mapIso` layer to one `tateMap_comp_apply` plus one
+`Action.hom_ext _ _ (ModuleCat.hom_ext (LinearMap.ext fun _ => rfl))` square.
+
+**2599 (LEAN).**  `omit [X] in` chained *before* `include h in` works, and is the cure for
+`unusedSectionVars` on a declaration that also needs `include`.
+
+**2600 (LEAN).**  `python3 - <<'PY' … PY` heredocs doing plain `str.replace` with
+`io.open(..., encoding='utf-8')` preserve Lean Unicode (`↥ π Ω ℤ`) byte-exactly.  `Edit`/`Write`
+remain preferred for authored text.
+
+**2601 (LEAN, KEY).**  `-(-2 : ℤ) - 1` versus `1` as a `tateModule` index is **cheap** to check
+defeq (`tateModule X (-(-2:ℤ)-1) = tateModule X 1 := rfl` fits in 100 000 heartbeats, as does the
+`tateMap` version).  `cartierPairing`'s second argument is typed `-n-1`, so mixing the two forms is
+harmless — do **not** contort statements to avoid it.
+
+**2602 (LEAN, KEY).**  What *is* expensive: `rw [LinearMap.zero_apply]` on a goal
+`α' (…) t = (0 : _ →ₗ[ℤ] _) t` where `α'` is a *hypothesis* additive map into a linear-map type —
+keyed matching tries to unify `α' (…)` with `0` and times out at `isDefEq` (200 000 heartbeats).
+Cure: never rewrite the `0` side.  Prove the naked `… = 0` statement as a `have` and close the goal
+with `exact h`, letting `LinearMap.zero_apply`'s own `rfl` do the work.
+
+**2603 (LEAN).**  Section variables used only inside a *tactic* proof are not auto-included
+(gotcha 747) — this bit again with `hB`/`hB'` in `ShaCover.lean`; symptom is
+`Unknown identifier 'hB'` **plus** a spurious `(deterministic) timeout at whnf` at the `theorem`
+line and a `(kernel) unknown constant` for the *next* theorem.  Fix the `include`, not the timeout.
+
+**2604 (MATH/REPO).**  The Shafarevich ladder's level group **does not move** with the number of
+letters: `Gal(Ω/k)` acts on the layer through `U` via `galLayerAction`, so the CFT statement only
+has to be natural in the coefficients.  See §1.63(d).
+
+**2605 (BUILD).**  `lake build InverseGalois.CFT.PoitouTate.ShaCover` = 8279 jobs, ~110 s.
+`…Profinite.ShaCoeff` = 8033, `…Units.HasseCoeff` = 8224, `…PoitouTate.ShaTateNatural` = 8277.

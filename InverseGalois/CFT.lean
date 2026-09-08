@@ -489,12 +489,14 @@ import InverseGalois.CFT.PoitouTate.SUnitCharacter
 import InverseGalois.CFT.PoitouTate.SUnitPlace
 import InverseGalois.CFT.PoitouTate.SUnitReduce
 import InverseGalois.CFT.PoitouTate.Selmer
+import InverseGalois.CFT.PoitouTate.ShaCover
 import InverseGalois.CFT.PoitouTate.ShaInduced
 import InverseGalois.CFT.PoitouTate.ShaInflate
 import InverseGalois.CFT.PoitouTate.ShaInflateLevel
 import InverseGalois.CFT.PoitouTate.ShaSurjection
 import InverseGalois.CFT.PoitouTate.ShaSylow
 import InverseGalois.CFT.PoitouTate.ShaTate
+import InverseGalois.CFT.PoitouTate.ShaTateNatural
 import InverseGalois.CFT.PoitouTate.SplitClass
 import InverseGalois.CFT.PoitouTate.SplitFamily
 import InverseGalois.CFT.PoitouTate.SplitLocalPower
@@ -555,6 +557,7 @@ import InverseGalois.CFT.Profinite.Krull
 import InverseGalois.CFT.Profinite.Realize
 import InverseGalois.CFT.Profinite.Res
 import InverseGalois.CFT.Profinite.ResInflate
+import InverseGalois.CFT.Profinite.ShaCoeff
 import InverseGalois.CFT.Profinite.ShaComap
 import InverseGalois.CFT.Profinite.ShaRestrict
 import InverseGalois.CFT.Profinite.SylowVanish
@@ -913,6 +916,7 @@ import InverseGalois.CFT.Units.HasseLevel
 import InverseGalois.CFT.Units.InfiniteDecomposition
 import InverseGalois.CFT.Units.InfiniteDecompositionField
 import InverseGalois.CFT.Units.HasseInflation
+import InverseGalois.CFT.Units.HasseCoeff
 import InverseGalois.CFT.Units.HasseDecomposition
 import InverseGalois.CFT.Units.HasseTwo
 import InverseGalois.CFT.Units.HasseTwoDecomposition
@@ -3225,6 +3229,15 @@ it that are available here.
   decomposition subgroups rather than at the places of a level: **a class dying on the stabiliser of
   every nonzero prime of the ring of integers of the top field is inflated from the field
   trivialising its coefficients**, with no level left in the hypothesis.
+* `InverseGalois.CFT.Units.HasseCoeff` makes that reading at the level move with the coefficients.
+  Inflation from a finite Galois level is pullback along restriction to the level, and pullback
+  composes a cocycle on the other side from a map of the coefficients, so the two commute.  An
+  everywhere locally trivial class is determined by the class of the level it inflates from, and
+  inflation is injective, so comparing the two ways of reading a class at the level comes down to
+  comparing what they inflate to, where the commuting just noted settles it.  So **reading an
+  everywhere locally trivial class at the level commutes with a map of the coefficients** - what a
+  duality argument needs in order to move the dual side of a pairing while the class being tested
+  stays fixed.
 * `InverseGalois.CFT.Units.HasseTwo` does the same one degree up, with the roots of unity of the
   base field for coefficients.  A class of the second cohomology of the absolute Galois group is
   represented by a two-cocycle inflated from a finite Galois level, and there its values are units
@@ -5894,6 +5907,15 @@ it that are available here.
   cohomology in degree minus two of the maps the other way and the rational circle is injective, so
   **every character of the everywhere locally trivial classes is the pairing against a single class
   in degree minus two.**
+* `InverseGalois.CFT.PoitouTate.ShaTateNatural` carries that reading through the three steps it is
+  built from.  Inflation from the level commutes with a map of the coefficients; the comparison
+  between the smooth cohomology of a discrete group and ordinary cohomology is computed on cocycles,
+  where both operations are compositions; and the identification of the representation attached to
+  an action with the representation one started with is an isomorphism through which a map of
+  representations factors either way.  The coefficients wanted here are the maps of a module into a
+  fixed cyclic one, which a map of the module carries backwards by composing before it.  So **the
+  everywhere locally trivial classes read in the complete cohomology of the level move backwards
+  along a map of the coefficients, compatibly with the reading itself.**
 * `InverseGalois.CFT.PoitouTate.ShaSurjection` turns that exhaustion around.  Global duality for a
   finite module over a number field compares the everywhere locally trivial classes of the second
   cohomology with the characters of the everywhere locally trivial classes of the first cohomology
@@ -5904,6 +5926,19 @@ it that are available here.
   locally trivial classes of the second cohomology** — the obstruction to an embedding problem
   which the local conditions have already killed everywhere locally becomes one class of a finite
   group's complete cohomology.
+* `InverseGalois.CFT.PoitouTate.ShaCover` produces from that covering a single class which governs
+  every change of the coefficients at once.  The class of complete cohomology cutting out the
+  character of an everywhere locally trivial class is chosen once, before any change of coefficients
+  is named.  A map of the coefficients then moves the three ingredients compatibly: it carries the
+  locally trivial classes of the second cohomology forward, it carries those of the first cohomology
+  of the Cartier dual backward, and it carries the pairing along with them.  Feeding those three
+  compatibilities into one another, the character cut out by the class carried forward is the
+  character of the locally trivial class carried forward.  So **if the single class of complete
+  cohomology dies under the map, the everywhere locally trivial class dies with it** - exactly what
+  an embedding problem consumes, since a group-theoretic construction that kills a class of the
+  complete cohomology of a finite group then kills the obstruction.  Two of the three
+  compatibilities are theorems; the third, the compatibility of the duality itself, is named as a
+  hypothesis alongside the injectivity of the reading.
 * `InverseGalois.CFT.PoitouTate.ShaInflate` reaches the same conclusion for split coefficients
   without a duality theorem, by transgression instead.  Suppose a finite Galois extension splits the
   coefficients into a finite product of roots of unity it already contains.  Over that extension the
@@ -6023,6 +6058,13 @@ it that are available here.
   again carries a class to a family of classes.  Restriction to a subgroup commutes with a map of
   the coefficients — both are composition of the cocycle with something — so **a map of the
   coefficients preserves being everywhere locally trivial**.
+* `InverseGalois.CFT.Profinite.ShaCoeff` supplies the same two statements one degree down, which is
+  the degree a duality argument reads the dual side in.  Restriction to a subgroup and a map of the
+  coefficients are again compositions of the cocycle on opposite sides, so they commute, and a class
+  of the first cohomology dying on every subgroup of a family still dies on every one of them after
+  the coefficients are moved.  **A map of the coefficients therefore cuts down to the everywhere
+  locally trivial classes**, in the first cohomology as well as the second, and both cut-downs are
+  named so that a pairing can move one side while the other stays fixed.
 * `InverseGalois.CFT.Profinite.Twist` puts the coefficients back together, and is the shape in
   which Kummer theory reaches a lifting problem.  The coefficients of such a problem are a finite
   module killed by a prime, which as an abstract group is a product of copies of the roots of
