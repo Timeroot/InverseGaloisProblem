@@ -16604,3 +16604,157 @@ The wall is genuinely Poitou–Tate, in one of two shapes:
    statement about `C = ((K^×/p) ⊗ W)/δ_K(U)`.
 
 Neither has a cheap proof.  Everything else in rows 5, 8 and 9 is now downstream of one of these two.
+
+## §1.49 The level made canonical, and the exact reach of the vanishing criterion
+
+Two modules landed (commit `1b32fea`, root build green at 9812 jobs, zero errors, zero warnings,
+zero sorries):
+
+* `CFT/Units/KummerShaLevel.lean` — the homomorphisms `Hom(μ_p, E)` are made into a
+  `Rep ℤ Gal(K|k)` in their own right (`kummerHomAut`, `kummerHomAutLevel`, `kummerHomRep`), so that
+  the Kummer identification of §1.47 becomes the **identity map** (`kummerHomTensorEquiv` is
+  `AddEquiv.refl`), and its `Gal(K|k)`-equivariance is proved directly
+  (`kummerHomTensorEquiv_smul`).  On top of that, `sha1Level_eq_bot_of_spanAt` and
+  `sha1Level_eq_bot_of_isZero_local`.
+* `CFT/PoitouTate/ShaInflateLevel.lean` — `sha2_le_range_galInflH2_of_isZero_local`, which composes
+  that with §1.47's `sha2_le_range_galInflH2`: **`Ш²(k,E) ⊆ inf H²(Gal(K|k), E)` as soon as three
+  complete cohomology groups of subgroups of the finite group `G = Gal(K|k)` vanish.**  No duality
+  theorem occurs anywhere in the chain.
+
+### (a) The three conditions, unwound
+
+Write `W = Hom(μ_p, E)`, `G = Gal(K|k)`, `P ∈ Syl_p(G)`.  The hypotheses of
+`sha2_le_range_galInflH2_of_isZero_local` are
+
+1. `Ĥ²(Stab_P(w), μ_p(K_w) ⊗ W) = 0` for every place `w` of `K`, finite or infinite;
+2. `Ĥ³(P, μ_p(K) ⊗ W) = 0`;
+3. `Ĥ^{-2}(G, W) = 0`.
+
+The standing hypothesis `htriv` of the whole tower says `μ_p ⊆ k`, so `μ_p` carries the **trivial**
+`G`-action, and `μ_p(K_w) = μ_p ≅ ℤ/p` for every `w` (a field has at most `p` solutions of
+`x^p = 1`; for odd `p` the field is totally complex so no real place intervenes).  Hence every
+tensor factor disappears and the three conditions read
+
+1. `Ĥ²(P ∩ D_w, W) = 0` for every place `w`;
+2. `Ĥ³(P, W) = 0`;
+3. `Ĥ^{-2}(G, W) = 0`.
+
+### (b) The three conditions are **equivalent to one**, and that one is cohomological triviality
+
+`W` is killed by `p` and `P` is a `p`-group, so `TateCohomology/PGroupTrivial.lean`'s
+`isZero_tateModule_of_isZero_single` applies: *a representation of a `p`-group in characteristic `p`
+with no complete cohomology in one degree has none in any degree*, i.e. it is a **free**
+`𝔽_p[P]`-module.  Therefore
+
+> condition 2 alone implies conditions 1 and 3, and all three together are equivalent to
+> **`W` being free as an `𝔽_p[P]`-module** — restriction of a free module to a subgroup is free,
+> and a `p`-group's Sylow subgroup carries the whole `p`-part of `G`-cohomology.
+
+This is a sharp measurement of the criterion's reach, and it is a negative one for the general case:
+`W` is inflated from `Gal(K₀|k)` where `K₀ ⊆ K` is the field that splits `E`, so a nontrivial
+subgroup of `P` acts trivially on `W` and `W` is never free unless `p ∤ [K:K₀]` and `W` is already
+free over a Sylow subgroup of `Gal(K₀|k)`.  For SW's Theorem 13 the module of interest is
+`A = μ_p`, i.e. `W = 𝔽_p` **trivial**, and then freeness means `P = 1`, i.e. `p ∤ |G|` — the case
+`hasIdeleClassNakayamaSpan_of_not_dvd` already covered.  **So the local criterion does not close
+row 5.**
+
+### (c) What it does buy: `Ш²(k, μ_p ⊗ 𝔽_p[G]^d) = 0`
+
+The criterion is exactly right for the *induced* coefficients of the dévissage §1.48(g).  With
+`W = 𝔽_p[G]^d` free, all three conditions hold, the theorem gives
+`Ш²(k,V) ⊆ inf H²(G,V)`, and `H²(G,V) = 0` because `V` is `G`-cohomologically trivial; hence
+
+```
+Ш²(k, V) = 0 ,   V = μ_p ⊗ 𝔽_p[G]^d ≅ Ind_{G_K}^{G_k}(μ_p)^d .
+```
+
+That is finding 1937's first bullet, obtained **without Shapiro** and without row 3.  It is a real
+payoff, but §1.48(g) already recorded that the dévissage then circles back: the obstruction to
+descending the lift lands in `H¹(G, C)` with `C = im(H¹(K,E) → H¹(K,V))`, and since `K^×/p` is an
+`𝔽_p`-vector space and `W ↪ F` is split injective over `𝔽_p`, that image is `(K^×/p) ⊗ W = H¹(K,E)`
+on the nose.  So `H¹(G, C)` is the inflation–restriction obstruction group we started from.  The
+dévissage is a genuine identity, not a reduction.
+
+### (d) Where Tate–Poitou is really used in SW, twice
+
+Re-reading the paper pins two independent uses.
+
+* **Theorem 13** (sw.txt @700–722).  In the two-row diagram the *lower* line is
+  `H¹(k_S|K, μ_p) → ∏'_{S} H¹(K_P, μ_p) → H¹(k_S|K, ℤ/p)^∨`, and the proof needs precisely its
+  **exactness at the middle term** in order to produce `z_{n+1}` from the assembled local datum `ξ`.
+  This is the `A = μ_p` case of Poitou–Tate exactness at `P¹`.
+* **Theorem 15, Step 2, the Claim** (sw.txt @1305–1342).  Here the full duality
+  `Ш²(k,A) ≅ Ш¹(k,A')^∨` is used, and nothing weaker will do: it is what converts the Hasse
+  principle `Ш¹(k,A') ↪ H¹(G,A')` into the surjection `Ĥ^{-2}(G,A) ↠ Ш²(k,A)`.  This is row 5.
+
+### (e) **The `A = μ_n` case of Poitou–Tate exactness at `P¹` is already a theorem in the repository**
+
+`PoitouTate/Selmer.lean`'s `perpSubgroup_selmerGroupFull` says: for a number field `K` containing a
+primitive `n`-th root of unity, `n` prime, and a finite set `S` of finite places containing every
+place above `n` and large enough that every divisor supported outside `S` is principal,
+
+```
+selmerGroupFull ι n  =  (selmerGroupFull ι n)^⊥
+```
+
+inside `∏_{v ∈ S} K_v^×/n × ∏_{w | ∞} K_w^×/n`, the orthogonal complement being taken for the
+product of the local power-residue symbols and the archimedean sign symbols.  Unwinding the
+identifications `H¹(K_v, μ_n) = K_v^×/n`, `H¹(k_S|K, μ_n) = K(S,n)` and
+`H¹(K_v, ℤ/n) = (K_v^×/n)^∨` (local duality, `localSymbolQuotEquivDual`), this is **exactly**
+
+```
+im( H¹(k_S|K, μ_n) → P¹(μ_n) )  =  ker( P¹(μ_n) → H¹(k_S|K, ℤ/n)^∨ ) ,
+```
+
+i.e. Poitou–Tate exactness at `P¹` for `A = μ_n`, over any field containing `μ_n`.  The proof is the
+Greenberg–Wiles counting argument: `Sel ≤ Sel^⊥` from the product formula
+(`selmerGroupFull_le_perpSubgroup`, which is reciprocity), and `|Sel|² = |P¹|` from
+`card_selmerGroupFull` and `card_prod_classes`, so `perpSubgroup_eq_self` closes it.  **The lower
+line of SW's Theorem 13 diagram is therefore available in substance.**  What is missing is only the
+*dictionary* — nothing in the repository yet identifies `selmerGroup` with a Galois cohomology
+group, or `localClassHom` with a localisation map of `SmoothH1`.
+
+### (f) Net position, revised
+
+* Row 5 is `Ш²(k,A) ≅ Ш¹(k,A')^∨` and nothing built so far reaches it.  Route 2's conclusion is
+  equivalent to it (§1.48(b)); the vanishing criterion of (a)–(b) covers exactly the
+  cohomologically trivial coefficients.
+* The derivation of row 5 from the nine-term sequence needs, besides exactness at `P¹` which (e)
+  supplies for `μ_n`, exactness at `H¹(G_S,A')^∨` and at `H²(G_S,A)`, plus local duality in every
+  degree.  The chain is
+  `Ш²(A) = im γ ≅ H¹(G_S,A')^∨ / im β = coker(loc^∨) = (ker loc)^∨ = Ш¹(A')^∨`.
+* The next brick, and the one shared by both uses in (d), is the **cohomological dictionary**:
+  `H¹(k_S|K, μ_p) ≅ selmerGroup`, `H¹(K_v, μ_p) ≅ localClasses v p`, localisation `= localClassHom`,
+  and the local symbol `=` the local duality pairing.  With it, (e) becomes a usable exactness
+  statement and pending item (i) — packaging `BaseFamily.lean`'s coordinate-wise construction as a
+  class of `H¹(k_S|k, A)` — becomes possible.
+
+### (g) Findings
+
+* **2471 (LEAN).** `toMul_nsmul` and `ofMul_pow` live in the **root** namespace, not `Additive.*`
+  (`Mathlib/Algebra/Group/TypeTags/Basic.lean:277,281`); `Additive.toMul_nsmul` is an unknown
+  constant.  Both are `rfl`, so a `show` is the cheapest route.
+* **2472 (LEAN).** `MonoidHom.pow_apply` is at `Mathlib/Algebra/Group/Hom/Instances.lean:65`.
+* **2473 (LEAN).** Writing `Additive.toMul (p • w)` with `w : ↥W.V` where `W.V` is only *defeq* to
+  `Additive (M →* E)` gives `Function expected at …` on application.  State the lemma with
+  `w : Additive (M →* E)` and let defeq unify at the call site.
+* **2474 (LEAN).** `(quotientFixingSubgroupEquiv K).symm (AlgEquiv.restrictNormalHom ↥K σ)
+  = QuotientGroup.mk σ` is **not** `rfl`.  Prove it by
+  `(quotientFixingSubgroupEquiv K).symm_apply_eq.2 (quotientFixingSubgroupEquiv_mk K σ).symm`.
+* **2475 (LEAN).** `↥(tensorObj (repOfAddAut φ) (repOfAddAut ψ)).V` is defeq to `A ⊗[ℤ] B`, so
+  `AddEquiv.refl _` elaborates at that type.
+* **2476 (LEAN).** `globalUnitsRep` is an `abbrev`, so `[NumberField k] [NumberField ↥K]
+  [IsGalois k ↥K]` are dropped by section-variable inclusion even in statements mentioning it;
+  `omit` them or `unusedSectionVars` fires.
+* **2477 (REPO).** `sha2_le_range_galInflH2`'s explicit argument order is
+  `K E hπ hπK hζ htrivM α hιinj hιpow hιsurj hsha1` — the `variable (E) in` moves `E` before `hπ`.
+* **2478 (DESIGN).** Prefer the class `[ActsTrivially N (M →* E)]` (`Profinite/Quotient.lean:52`)
+  over explicit triviality proofs when defining **data**, because the data term then appears inside
+  downstream hypothesis *statements*.
+* **2479 (MATH, KEY).** The three vanishing conditions of `sha2_le_range_galInflH2_of_isZero_local`
+  are equivalent to a single one, `W` free over `𝔽_p[Syl_p(G)]` — see (b).
+* **2480 (REPO, KEY).** `perpSubgroup_selmerGroupFull` is Poitou–Tate exactness at `P¹` for
+  `A = μ_n` — see (e).
+* **2481 (MATH).** `Ш²(k, μ_p ⊗ 𝔽_p[G]^d) = 0`, provable from the new criterion alone — see (c).
+* **2482 (BUILD).** `InverseGalois.CFT.Units.KummerShaLevel` is 8498 jobs, 76 s; the root build is
+  9812 jobs.
