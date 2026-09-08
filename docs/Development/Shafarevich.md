@@ -16936,3 +16936,117 @@ the sharp hypothesis.  The next bricks, in order:
   defeq but `rw`'s trailing `rfl` does not close the gap; add an explicit `rfl` tactic line.
 * **2511 (BUILD).** `TateCohomology.SylowInduced` = 8062 jobs, 19 s; `Profinite.SylowVanish` = 8043
   jobs, 22 s; `PoitouTate.ShaSylow` = 8516 jobs, 146 s.
+
+## §1.51 Where Poitou–Tate is actually needed, and Shapiro's lemma for the local-global obstruction
+
+### (a) The measurement: re-reading Schmidt–Wingberg with the repo in hand
+
+§1.50 left the position as "one vanishing criterion landed, the wall itself untouched".  Before
+building more criteria it was worth asking *where in Schmidt–Wingberg the wall is actually leaned
+on*, and the answer turns out to be narrower than the nine-row table of §0.36 suggests.
+
+* **2512 (MATH, KEY).** **SW Theorem 13 — including its general-`A` dévissage — uses Poitou–Tate
+  only in degree one**, in the exactness of
+  `H¹(k_S|K, μ_p) → ⊕_{v ∈ S} H¹(K_P, μ_p) → H¹(k_S|K, ℤ/p)^∨`.  `Ш²` plays no role there at all.
+  The repo already has that exactness: it is `perpSubgroup_selmerGroupFull`
+  (`PoitouTate/Selmer.lean:360`), which is finding 2480 read forwards.  So the theorem that carries
+  the whole weight of the solvable case is *not* blocked on row 5.
+* **2513 (MATH).** `Ш²`-duality enters SW at exactly one place: **Theorem 15, Step 2**, in the
+  "Claim" that `H²(G, E(m,ν)(-1)) ↠ Ш²(k, E(m,ν))` (sw.txt @1290–1342).
+* **2514 (MATH).** **Route 2 genuinely substitutes for that Claim.**  With `T = 𝔽_p` — no Tate
+  twist — Prop 6, i.e. `exists_genericShrink_res_cohomology_eq_zero`
+  (`Solvable/Shafarevich/GenericCohomology.lean:55`), shrinks a class of `H²(G, E(m,ν))` directly.
+  So the weaker statement `Ш²(k,E) ⊆ inf H²(G,E)` is enough, and the surjection is not needed.
+* **2515 (REPO).** Half of that weaker statement is already free.  `Ш²(k,A) ⊆ ker(res_K)` holds
+  because local triviality over `k` implies local triviality over `K` and `Ш²(K,μ_p) = 0`; this is
+  what `PoitouTate/ShaInflate.lean` sells, as `exists_galInflH2_eq_of_mem_sha2` (:73) and
+  `sha2_le_range_galInflH2` (:108).  **So the entire remaining gap of Route 2 is that the
+  seven-term transgression `d₂ : ker(res_K) → H¹(G, H¹(K,A))` kills `Ш²`**, where for
+  `A = μ_p ⊗ W` the target coefficients are `H¹(K,A) = (K^×/p) ⊗ W`.
+* **2516 (MATH).** `Ш¹(k, A′)` is purely group-theoretic: Chebotarev realises every cyclic subgroup
+  of `G` as a decomposition subgroup, and `shaInflH1_injective` is proven, so
+  `Ш¹(k,A′) = Ш¹_ω(G, A′)`.  Row 5 therefore *predicts* the group-theoretic answer
+  `Ш²(k, μ_p ⊗ W) ≅ Ш¹_ω(G, W^∨)^∨`.  That is consistent with the Heisenberg counterexample of
+  §1.13, where `W` is trivial and both sides are non-zero for `G = (ℤ/p)²`.
+* **2517 (MATH).** **Prop 6 forbids enlarging `K` one class at a time.**  Its bound
+  `(j+1) · (t · |H|^c · finrank (Layer ℓ (Generic U n S) j ⊗ T)) < r` fixes `|H|` *before* `r`,
+  while the class in question lives at level `r·n`.  So there is no "shrink the problem, then take
+  a bigger Kummer extension" dodge: the wall has to be closed for the fixed `K = k(μ_p, E)`.
+* **2518 (REPO).** The Krasner gap of finding 2504 is softer than recorded.
+  `Units/HasseTwoDecomposition.lean` already bridges decomposition subgroups to completions level
+  by level (`stabilizerQuotientEquivPrime`, `stabilizerRestrictPrime_surjective`), and
+  `Approximation/PowClass.lean`'s `exists_ne_zero_pow_mul_eq_completion` is the *surjectivity* half
+  of `K^×/p ↠ K_v^×/p`.  Only the injectivity half of the henselisation-versus-completion
+  comparison is missing.
+
+### (b) The bridge: any vanishing theorem now feeds the embedding-problem machinery
+
+* **2519 (REPO).** `hasShaDualInjection_of_sha2_eq_bot` (`PoitouTate/ShaSurjection.lean`) turns
+  `Ш² = ⊥` into `HasShaDualInjection` **with no duality hypothesis at all**, and from there into
+  `exists_injective_forall_shaCharacter_eq` and `shaDualHom_surjective`, which is what an embedding
+  problem consumes.  `Unique (⊥ : Subgroup G)` is a Mathlib instance
+  (`Mathlib/Algebra/Group/Subgroup/Lattice.lean:155`), so `infer_instance` produces the
+  `Subsingleton` the older `hasShaDualInjection_of_subsingleton` wants.  Every criterion of §1.50
+  and of (c) below therefore lands where it is needed without further plumbing.
+
+### (c) Shapiro's lemma for the everywhere locally trivial classes
+
+`Profinite/CoindLocal.lean`.  Restriction to a subgroup of a subgroup is composition of the cocycle
+with the inclusion into the ambient group, so a class which dies on a subgroup dies on every
+subgroup of it.  Shapiro's map is restriction to the subgroup one coinduces from followed by
+evaluation at the neutral element, and both steps are again composition of the cocycle with
+something, so they commute with restricting further.  Hence: if every subgroup of a family imposed
+on the subgroup sits inside a subgroup of the family imposed on the whole group, Shapiro's map
+carries `Ш` into `Ш`, and being injective it leaves nothing behind.
+
+* **2520 (REPO).** The only prior `Ш`-vanishing statement for a coinduced module was
+  `sha1_smoothCoind_eq_bot` / `sha2_smoothCoind_eq_bot` (`Profinite/Coinduced.lean:295`, `:569`),
+  which asks `H ∈ S`: the subgroup one coinduces from must itself be one of the local conditions.
+  That is useless for `H = G_{K'}`, which is never a decomposition subgroup.  The new
+  `sha1_smoothCoind_eq_bot_of_sha1` / `sha2_smoothCoind_eq_bot_of_sha2` replace it by a hypothesis
+  on the *inherited* family, and `…_of_comap` specialises to the family `{D ∩ H : D ∈ S}`, which
+  always inherits.
+* **2521 (LEAN).** All three naturality squares —
+  `resH2 D' ∘ resH2 H = comapH2 (subgroupInclusion D' hle) ∘ resH2 D` and
+  `resHⁿ D' ∘ smoothShapiroHⁿ = coeffHⁿ eval ∘ resHⁿ D' ∘ resHⁿ H` — are **`rfl` after
+  `smoothHⁿMk_surjective`**.  Every map in sight is composition of the representing cocycle with
+  something, and the accompanying cocycle/smoothness proofs are irrelevant.
+* **2522 (LEAN).** For `D' : Subgroup ↥H`, the equivariance hypothesis `coeffHⁿ` wants at `↥D'` is
+  discharged by `fun (g : ↥D') f => smoothCoindEval_smul (g : ↥H) f`: the action of `↥D'` on
+  `smoothCoind H M` and on `M` is by definition the action of `(g : ↥H)`.
+* **2523 (MATH).** The mechanism is **complementary** to the Sylow/freeness criterion of §1.50, not
+  a strengthening of it.  It applies to the trivial module — coinduced from `H = G` — which is as
+  far from free over `𝔽_p[G]` as a module gets.
+
+### (d) The permutation-module idea, and where it stops
+
+* **2524 (MATH).** The projection formula gives `μ_p ⊗ 𝔽_p[G/H] ≅ Coind_{G_{K'}}^{G_k}(μ_p)` for
+  `K' = K^H`.  With (c) and the already-proven `Ш²(K', μ_p) = 0` of §1.13 (ABHN plus
+  Grunwald–Wang) this yields **`Ш²(k, μ_p ⊗ 𝔽_p[G/H]) = 0` for every subgroup `H ≤ G`**, and by
+  additivity of `Ш²` for every `p`-permutation (trivial-source) module.
+* **2525 (MATH).** **But SW's layers are not permutation modules, and the ones that are are already
+  covered.**  For `V = 𝔽_p[G]^d` free, `V^{⊗ν}` is again free — the `G`-set `G^ν` with the diagonal
+  action is free — so tensor powers fall to §1.50 and need nothing new.  `Λ^ν` of a permutation
+  module is a *signed* permutation module once `p` is odd, which is not a permutation module.  For
+  `p ∤ ν` the Dynkin idempotent `θ_ν/ν` already splits the free Lie layer `L_ν(V)` off `V^{⊗ν}`, so
+  it is projective and hence free.  The open point is exactly `p ∣ ν`, and nothing in (c) or §1.50
+  reaches it.
+* **2526 (SCOPE).** To make the brick of (c) bite arithmetically one still needs the identification
+  of the inherited family `{D ∩ G_{K'}}` with `decompositionSubgroups K' Ω`.  Both families are
+  indexed by the *same* objects — nonzero primes of `𝓞 Ω` and infinite places of `Ω`, see
+  `Units/InfiniteDecomposition.lean:198`, `:217`, `:222` — so the content is only the transport
+  along `IntermediateField.fixingSubgroupEquiv`, for which `smoothH2Congr`
+  (`Profinite/H2Congr.lean:60`) is the tool.  This was left undone deliberately: the criterion it
+  would produce is the one (d) shows does not reach SW's layers.
+* **2527 (BUILD).** `Profinite.CoindLocal` = 8034 jobs, 14–16 s.
+
+### (e) Net position
+
+Rows 1–4 and 6–7 are done.  Row 5 is *not* on the critical path for SW Theorem 13, which is the
+theorem that does the work, and which needs only the degree-one Poitou–Tate already in the repo
+(2512).  Row 5 survives only inside Theorem 15 Step 2, where Route 2 replaces it by
+`Ш²(k,E) ⊆ inf H²(G,E)` (2514), of which the `ker res_K` half is already proven (2515).  The
+residue is a single transgression statement.  Two vanishing criteria now exist — freeness over
+`𝔽_p[Syl_p(G)]` (§1.50) and coinduction from a subfield (§1.51(c)) — and neither reaches the free
+Lie layers at `p ∣ ν`.  **The next move is therefore not another vanishing criterion but the
+cohomological packaging of Theorem 13**, which is unblocked.

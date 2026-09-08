@@ -45,7 +45,8 @@ cyclic representation with the maps out of it, and the extension of a character 
 * `InverseGalois.CFT.exists_shaCharacter_eq`: every character of the everywhere locally trivial
   classes of the first cohomology is cut out by a class of complete cohomology.
 * `InverseGalois.CFT.hasShaDualInjection_of_hasPoitouTateDuality`,
-  `InverseGalois.CFT.hasShaDualInjection_of_subsingleton`: the injective reading follows from the
+  `InverseGalois.CFT.hasShaDualInjection_of_subsingleton`,
+  `InverseGalois.CFT.hasShaDualInjection_of_sha2_eq_bot`: the injective reading follows from the
   duality, and holds for free when there are no everywhere locally trivial classes of the second
   cohomology.
 * `InverseGalois.CFT.exists_injective_forall_shaCharacter_eq`: **every everywhere locally trivial
@@ -114,6 +115,16 @@ theorem hasShaDualInjection_of_subsingleton
     HasShaDualInjection F A B :=
   ⟨0, fun x y _ =>
     Additive.toMul.injective (h.allEq (Additive.toMul x) (Additive.toMul y))⟩
+
+omit [IsGalois k Ω] [FiniteDimensional k ↥F] [IsGalois k ↥F] [NumberField ↥F]
+  [IsAddCyclic ↥A.V] [Finite ↥A.V] [Finite ↥B.V] in
+/-- **Where the everywhere locally trivial classes of the second cohomology have been shown to
+vanish, the injective reading is available with no duality at all.**  This is the door through which
+a vanishing criterion enters the machinery an embedding problem consumes. -/
+theorem hasShaDualInjection_of_sha2_eq_bot
+    (h : sha2 (Multiplicative ↥B.V) (decompositionSubgroups k Ω) = ⊥) :
+    HasShaDualInjection F A B :=
+  hasShaDualInjection_of_subsingleton F A B (by rw [h]; infer_instance)
 
 variable (hπ : ∀ (g : Gal(Ω/k)) (m : Multiplicative ↥(linHomObj B A).V),
     g • m = AlgEquiv.restrictNormalHom F g • m)

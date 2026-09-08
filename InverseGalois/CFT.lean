@@ -508,6 +508,7 @@ import InverseGalois.CFT.PoitouTate.Unramified
 import InverseGalois.CFT.PrimeProductSquare
 import InverseGalois.CFT.Profinite.Cochain
 import InverseGalois.CFT.Profinite.Coeff
+import InverseGalois.CFT.Profinite.CoindLocal
 import InverseGalois.CFT.Profinite.CoindVanish
 import InverseGalois.CFT.Profinite.Coinduced
 import InverseGalois.CFT.Profinite.Comap
@@ -5542,6 +5543,23 @@ it that are available here.
   cocycle one started from exactly, so **Shapiro's lemma holds in the first and in the second
   degree**: the cohomology of the group with coefficients in a module coinduced from a normal
   subgroup with an open normal core is the cohomology of that subgroup.
+* `InverseGalois.CFT.Profinite.CoindLocal` asks what Shapiro's lemma does to the local conditions.
+  Restriction to a subgroup of a subgroup is composition of the cocycle with the inclusion into the
+  ambient group, read through the subgroup, so a class which dies on a subgroup dies on every
+  subgroup of it; and both steps of Shapiro's map, restriction to the subgroup one coinduces from
+  and evaluation at the neutral element, are again composition of the cocycle with something, so
+  they commute with restricting further.  Put together: if every subgroup of a family imposed on
+  the subgroup one coinduces from sits inside a subgroup of the family imposed on the whole group,
+  then Shapiro's map carries the classes trivial on the second family into the classes trivial on
+  the first, and being injective it leaves nothing behind.  **A coinduced module has no everywhere
+  locally trivial class, in either degree, as soon as the module one coinduces has none for the
+  family the subgroup inherits** — and the family got by meeting the ambient one with the subgroup
+  always inherits, so that is a hypothesis one can check.  This is a mechanism for vanishing of a
+  different nature from asking the coefficients to be free over the group ring: it applies to the
+  trivial module coinduced from the whole group, which is as far from free as a module gets.  Over
+  a number field the subgroups a finite extension inherits from the decomposition subgroups of the
+  base are the decomposition subgroups of the extension, so the reading is that the local-global
+  obstruction of a module coinduced from a finite extension is the obstruction of that extension.
 * `InverseGalois.CFT.Profinite.Comap` composes a cochain with a homomorphism into a group acting on
   the same module.  The cocycle relation and the coboundary are both preserved because the two
   actions agree, so all that is needed is that composition preserve smoothness, and two conditions
