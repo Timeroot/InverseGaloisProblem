@@ -19752,3 +19752,85 @@ avoid `Subgroup.equivMapOfInjective` in favour of an explicit `MonoidHom.codRest
 `⟨ν, 1, by simp⟩` will not close `D ν = (D ν).map (MulAut.conj 1).toMonoidHom`; prove
 `(MulAut.conj (1 : Γ)).toMonoidHom = MonoidHom.id Γ` by `ext x; show (1:Γ) * x * 1⁻¹ = x; group`
 first, then `Subgroup.map_id`.
+
+## §1.75 — `HasLocalLift` is done except for one Kummer statement (2026-09-09)
+
+Clause 3 of `HasRungData` — `HasLocalLift`, "the step to the next level has a local solution along
+every decomposition subgroup the finite family does not name" — is now reduced to a single
+arithmetic condition, and the reduction went through in three steps.
+
+### (a) The unramified half is an outright theorem
+
+`InverseGalois/Solvable/Shafarevich/LocalLift.lean`,
+`exists_smoothHom_lift_of_unramified`.  At a prime where the solution kills inertia there is
+nothing to ask: the previous session's `CFT/Residue/Decomposition.lean` brick
+(`exists_smoothHom_lift_of_inertia_le_ker`) says a smooth homomorphism of a decomposition subgroup
+into a finite group which kills inertia lifts along *any* surjection of finite groups, because the
+Frobenius generates the decomposition subgroup modulo inertia and modulo any open subgroup.
+
+`hasLocalLift_of_hasSplitRamifiedLift` then shows that **local solvability of the step is the
+ramified case alone**, provided (i) every member of the wider family `T` is a decomposition
+subgroup of a nonzero prime and (ii) the finite family `D` names every prime where the base
+realization ramifies.
+
+### (b) The ramified half asks nothing about the tower
+
+`hasSplitRamifiedLift_of_hasCyclicLift` (same file).  At a prime where the solution ramifies, the
+property `IsSplitTotallyRamified` supplies three clauses; only two of them are used.  The values of
+the solution `Φ` on the decomposition subgroup lie in the powers of one element, hence — by
+`exists_generator_of_le_zpowers`, a subgroup of a cyclic group being cyclic — in the powers of one
+of *their own*, say `z`.  The base realization splits completely at that prime, so `z` lies over
+the identity of the base group, so `z` lies in the free pro-`p` quotient and its order is a power
+of `ℓ` (`exists_pow_eq_one_of_rightHom_eq_one`).  The step is killed by `ℓ`
+(`pow_eq_one_of_rightHom_eq_one`), so any preimage `z'` of `z` one level up satisfies
+`orderOf z' ∣ ℓ * orderOf z`.
+
+What is left is the named condition `HasCyclicLift ℓ N A`: *a smooth character of `A` whose values
+lie in the powers of one element `f z'` of `ℓ`-power order lifts along any surjection `f` of finite
+groups with `orderOf z' ∣ ℓ * orderOf (f z')` and `orderOf z' ∣ N`.*  The bound `N` is instantiated
+at `ℓ * Nat.card (GenericQuot ℓ U n S j)`, and the condition is only demanded at primes the base
+realization splits completely — both restrictions matter, because without them the condition is
+**false**: at a prime with residue field `𝔽_q` and `v_ℓ(q-1) = a` exactly, a ramified character of
+order `ℓ^a` does not extend.
+
+### (c) The remaining ask is Kummer theory, not local class field theory
+
+This was the surprise.  The obvious reading of Schmidt–Wingberg Theorem 15 First Step (c) — "*an
+arbitrary chosen preimage of a generator has order `p^{a+ε}`, `0 ≤ ε ≤ 1`; we can solve our
+embedding problem by taking a `p^{a+ε}`-th root of `π_p`, since `μ_{p^{a+ε}} ⊆ μ_{p^e} ⊆ K ⊆ K_p`*"
+— is that one must go into the local field, take a uniformizer, and adjoin a root.  That would need
+the henselization-vs-completion dictionary and local class field theory.
+
+It does not.  The `p`-th-root construction works verbatim on the *closed subgroup* itself, over the
+algebraic closure, with no local field in sight:
+
+* a closed subgroup `A ≤ Gal(Ω/k)` is the group fixing its own fixed field `F` (infinite Galois
+  correspondence, already in the repo as `fixingSubgroup_fixedField_of_isClosed`), and `Ω/F` is
+  Galois, and the correspondence is continuous both ways
+  (`CFT/Profinite/FixingSubgroup.lean`), so **Hilbert's theorem ninety holds for `A`**;
+* a smooth character `χ : A → Ωˣ` with `χ^n = 1` has *fixed* values as soon as `μ_{nd}` is fixed by
+  `A`, hence is a one cocycle, hence `χ(σ) = σβ/β` for a single `β : Ωˣ`;
+* `Ω` is algebraically closed, so `β = γ^d`; put `χ'(σ) := σγ/γ`.  Then `(χ')^d = χ`, and
+  `(χ')^{nd} = σ(β^n)/β^n = 1` because `β^n` is `A`-fixed, so `χ'` lands in `μ_{nd}`, which is
+  fixed, which is exactly what makes `χ'` a *homomorphism*;
+* `χ'` is smooth for a reason owing nothing to `χ`: its kernel contains the automorphisms fixing
+  `k(γ)`, a finite extension.
+
+That is `InverseGalois/CFT/Profinite/CharacterRoot.lean`:
+`isMulCoboundary₁_of_isMulCocycle₁_smooth_subgroup` and `exists_smoothHom_pow_eq`, both landed
+sorry-free.  The moral: **the ramified local case of Scholz–Reichardt costs Hilbert 90 plus roots
+of unity in the base field, and no local class field theory at all.**
+
+### (d) What is left on this clause
+
+Two pieces of plumbing:
+
+1. From `exists_smoothHom_pow_eq` to `HasCyclicLift`: transport a character valued in
+   `Subgroup.zpowers (f z')` to one valued in `μ_q(Ω)` and back to `Subgroup.zpowers z'`, along
+   `IsPrimitiveRoot.zmodEquivZPowers`, with a primitive `m`-th root of unity `ξ : Ωˣ` and
+   `ζ := ξ^d` matching `f z'`.  Purely formal, fiddly with `ZMod`/`orderOf` coercions.
+2. The two hypotheses of the transported statement: the decomposition subgroup is **closed** (an
+   intersection of clopen conditions `{σ | σ x ∈ P}`, since the action on `Ω` discrete is
+   continuous), and `μ_N ⊆ k` for `N = ℓ * Nat.card (GenericQuot ℓ U n S j)` — which is Schmidt
+   and Wingberg's standing "enlarge `K` so that `μ_{p^e} ⊆ K`", and must be threaded through the
+   ladder as a hypothesis on the base field.
