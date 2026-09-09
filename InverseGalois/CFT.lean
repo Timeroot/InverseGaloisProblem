@@ -476,6 +476,7 @@ import InverseGalois.CFT.PoitouTate.InfiniteClasses
 import InverseGalois.CFT.PoitouTate.Isotropic
 import InverseGalois.CFT.PoitouTate.LocalConditions
 import InverseGalois.CFT.PoitouTate.LocalOrdBridge
+import InverseGalois.CFT.PoitouTate.LocalOrdKummer
 import InverseGalois.CFT.PoitouTate.NormLocalPower
 import InverseGalois.CFT.PoitouTate.OrbitCoboundary
 import InverseGalois.CFT.PoitouTate.PlaceUniformiser
@@ -6108,6 +6109,17 @@ it that are available here.
   units of the subextension as coefficients, comes from the units of the finite set of places where
   the valuation is not taken** — a finitely generated module, whose cohomology over the finite
   quotient is finite.
+* `InverseGalois.CFT.PoitouTate.LocalOrdKummer` builds the dictionary.  A homomorphism out of the
+  first cohomology of the decomposition subgroup computing the valuation exists as soon as
+  localisation at the place is onto and kills only classes whose valuation vanishes: the first makes
+  it defined everywhere, the second makes it well defined, and its equivariance is inherited from
+  the equivariance of the two maps compared, the decomposition subgroup fixing the place.  Under the
+  twisted Kummer identification both conditions become conditions on the inclusion of the units of
+  the subextension into the units of its compositum with the fixed field of the decomposition
+  subgroup, tensored with the coefficients — **surjectivity of that inclusion, and vanishing of the
+  valuation on what it kills** — and the second holds whenever the valuation factors through a
+  homomorphism of the units already met by the inclusion, the local unit at the place being such a
+  homomorphism.
 * `InverseGalois.CFT.PoitouTate.ShaKummerShrink` composes the whole chain into one statement.  A
   class of the second cohomology trivial on every decomposition subgroup names an obstruction to
   being inflated from the Galois group of the splitting extension; twisted Kummer theory reads that
