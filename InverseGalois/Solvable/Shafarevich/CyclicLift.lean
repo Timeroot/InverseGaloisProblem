@@ -24,16 +24,16 @@ transport in the other direction carries the root character into the group the l
 The two transports agree at the generators, which is why the lifted character composed with the
 surjection is the character one started with.
 
-So the whole of the ramified case rests on one condition about the base field: that the roots of
-unity of the order in play are fixed by the Galois group, that is, that the base field contains
-them.  Nothing about the prime — its ramification, its residue field, the local field at it —
-enters, and the only property of its decomposition subgroup that is used is that it is closed,
-which every decomposition subgroup is.
+So the whole of the ramified case rests on one condition: that the roots of unity of the order in
+play are fixed by the decomposition subgroup, that is, that the local field at the prime contains
+them.  Nothing else about the prime — its ramification, its residue field — enters, and the only
+property of its decomposition subgroup that is used is that it is closed, which every decomposition
+subgroup is.
 
-The two halves then assemble.  At a prime where the solution kills inertia the unramified case
-applies, and at one where it does not the cyclic character lifts, so **the step has a local
-solution at every prime as soon as the base field carries the roots of unity of the prime times
-the order of the group at the level in play**.
+That condition is exactly the last clause of the restriction the solutions of the ladder already
+carry, so nothing has to be assumed for it.  The two halves then assemble: at a prime where the
+solution kills inertia the unramified case applies, and at one where it does not the cyclic
+character lifts, so **the step has a local solution at every prime**.
 
 ## Main definitions
 
@@ -46,9 +46,9 @@ the order of the group at the level in play**.
 
 * `InverseGalois.Shafarevich.hasCyclicLift_of_fixed_rootsOfUnity` — **a cyclic character of a
   closed subgroup lifts as soon as the roots of unity of its order are fixed.**
-* `InverseGalois.Shafarevich.hasLocalLift_of_fixed_rootsOfUnity` — **the step of the tower has a
-  local solution at every prime as soon as the base field carries the roots of unity of the order
-  in play.**
+* `InverseGalois.Shafarevich.hasLocalLift_isSplitTotallyRamified` — **the step of the tower has a
+  local solution at every prime**, the restriction the solutions carry supplying the roots of unity
+  the lifting calls for.
 
 ## Tags
 
@@ -225,25 +225,24 @@ variable (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] (n : ℕ) 
   [Finite S] (j : ℕ) {k Ω : Type*} [Field k] [NumberField k] [Field Ω] [Algebra k Ω]
   [IsGalois k Ω] [IsAlgClosed Ω]
 
-/-- **The step of the tower has a local solution at every prime as soon as the base field carries
-the roots of unity of the prime times the order of the group at the level in play.**
+/-- **The step of the tower has a local solution at every prime.**
 
 At a prime where the solution kills inertia the local solution comes from the Frobenius alone.  At
 a prime where it does not, the solution splits completely and is totally ramified there, so its
-restriction to the decomposition subgroup is cyclic, and the decomposition subgroup being closed
-the cyclic character lifts as soon as the roots of unity are in the base field. -/
-theorem hasLocalLift_of_fixed_rootsOfUnity (hS : IsPGroup ℓ S) (φ : Gal(Ω/k) →* U) {t : ℕ}
+restriction to the decomposition subgroup is cyclic and the local field carries the roots of unity
+that restriction calls for; the decomposition subgroup being closed, the cyclic character lifts.
+Nothing beyond the restriction the solutions already carry is asked, so the condition is met
+outright. -/
+theorem hasLocalLift_isSplitTotallyRamified (hS : IsPGroup ℓ S) (φ : Gal(Ω/k) →* U) {t : ℕ}
     (D : Fin t → Subgroup Gal(Ω/k)) (T : Set (Subgroup Gal(Ω/k)))
     (hT : ∀ A ∈ T, ∃ P : Ideal (𝓞 Ω), P.IsPrime ∧ P ≠ ⊥ ∧ A = stabilizer Gal(Ω/k) P)
     (hD : ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
-      stabilizer Gal(Ω/k) P ∉ conjFamily D → ∀ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1)
-    (hμ : ∀ ζ : Ωˣ, ζ ^ (ℓ * Nat.card (GenericQuot ℓ U n S j)) = 1 →
-      ∀ σ : Gal(Ω/k), σ • ζ = ζ) :
+      stabilizer Gal(Ω/k) P ∉ conjFamily D → ∀ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1) :
     HasLocalLift ℓ U n S j φ D T (IsSplitTotallyRamified ℓ U S φ) :=
   hasLocalLift_of_hasSplitRamifiedLift ℓ U n S j φ D T hT hD
-    (hasSplitRamifiedLift_of_hasCyclicLift ℓ U n S j hS φ fun P _ _ _ =>
-      hasCyclicLift_of_fixed_rootsOfUnity ℓ (isClosed_stabilizer_ideal P) _
-        fun ζ hζ σ => hμ ζ hζ (σ : Gal(Ω/k)))
+    (hasSplitRamifiedLift_of_hasCyclicLift ℓ U n S j hS φ fun P N _ _ _ hμ =>
+      hasCyclicLift_of_fixed_rootsOfUnity ℓ (isClosed_stabilizer_ideal P) N
+        fun ζ hζ σ => hμ ζ hζ (σ : Gal(Ω/k)) σ.2)
 
 end LocalStep
 

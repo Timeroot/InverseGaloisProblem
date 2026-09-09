@@ -27,8 +27,9 @@ solution kills inertia there is nothing more to do.
 
 The second kind is left as a named condition, stated in the shape the property supplies: the base
 realization kills the whole decomposition subgroup, the solution takes no value there which it does
-not already take on inertia, and its values lie in the powers of a single element.  With the first
-kind proved, the local solvability of the step is exactly that condition.
+not already take on inertia, its values lie in the powers of a single element, and the local field
+carries the roots of unity of the order of that element times the prime.  With the first kind
+proved, the local solvability of the step is exactly that condition.
 
 That condition is then stripped of everything about the tower.  The values of the solution on a
 decomposition subgroup lie in the powers of one element, so they lie in the powers of one of their
@@ -37,9 +38,10 @@ hence lies in the kernel of the projection to the base group, hence has order a 
 What is being asked of the decomposition subgroup is therefore only this: a homomorphism of it into
 a finite group whose values lie in the powers of a single element of `p`-power order lifts along
 any surjection from a finite group which multiplies the order of that element by at most `p`.  The
-order in question is bounded, by the order of the group one level down times the prime, and the
-bound is part of the condition, because it is the bound the arithmetic must meet — a local field
-lifts such a character exactly as far as it carries roots of unity.
+order in question is bounded, by the order of the generator of the local image times the prime, and
+the bound is part of the condition, because it is the bound the arithmetic must meet — a local field
+lifts such a character exactly as far as it carries roots of unity, and the roots of unity of
+exactly that bound are what the property asks the local field to carry.
 
 ## Main definitions
 
@@ -113,7 +115,8 @@ def HasSplitRamifiedLift (φ : Gal(Ω/k) →* U) : Prop :=
     ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
       (∀ x ∈ stabilizer Gal(Ω/k) P, φ x = 1) →
       (∀ x ∈ stabilizer Gal(Ω/k) P, ∃ y ∈ Ideal.inertia Gal(Ω/k) P, Φ x = Φ y) →
-      (∃ c, ∀ x ∈ stabilizer Gal(Ω/k) P, Φ x ∈ Subgroup.zpowers c) →
+      (∃ c, (∀ x ∈ stabilizer Gal(Ω/k) P, Φ x ∈ Subgroup.zpowers c) ∧
+        ∀ ζ : Ωˣ, ζ ^ (ℓ * orderOf c) = 1 → ∀ x ∈ stabilizer Gal(Ω/k) P, x • ζ = ζ) →
         ∃ g : ↥(stabilizer Gal(Ω/k) P) →* GenericQuot ℓ U n S (j + 1),
           IsSmooth₁ (g : ↥(stabilizer Gal(Ω/k) P) → GenericQuot ℓ U n S (j + 1)) ∧
             ∀ x : ↥(stabilizer Gal(Ω/k) P),
@@ -230,20 +233,28 @@ The values of the solution on the decomposition subgroup lie in the powers of on
 the powers of one of those values, and that value lies over the identity of the base group because
 the base realization kills the whole decomposition subgroup; so its order is a power of the prime.
 Any preimage of it one level up has order at most that times the prime, since the step is killed by
-the prime, and at most the order of the group one level down times the prime.  What is left is the
-lifting of one cyclic character, which is what the condition supplies. -/
+the prime, and at most the order of the generator of the local image times the prime — which is
+exactly the order whose roots of unity the property asks the local field to carry.  What is left is
+the lifting of one cyclic character, which is what the condition supplies. -/
 theorem hasSplitRamifiedLift_of_hasCyclicLift (hS : IsPGroup ℓ S) (φ : Gal(Ω/k) →* U)
-    (hcl : ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → (∀ x ∈ stabilizer Gal(Ω/k) P, φ x = 1) →
-      HasCyclicLift ℓ (ℓ * Nat.card (GenericQuot ℓ U n S j)) (stabilizer Gal(Ω/k) P)) :
+    (hcl : ∀ (P : Ideal (𝓞 Ω)) (N : ℕ), P.IsPrime → P ≠ ⊥ →
+      (∀ x ∈ stabilizer Gal(Ω/k) P, φ x = 1) →
+      (∀ ζ : Ωˣ, ζ ^ N = 1 → ∀ x ∈ stabilizer Gal(Ω/k) P, x • ζ = ζ) →
+        HasCyclicLift ℓ N (stabilizer Gal(Ω/k) P)) :
     HasSplitRamifiedLift ℓ U n S j φ := by
   intro Φ hsm hover P hPp hPbot hsplit _ hcyc
-  obtain ⟨c, hc⟩ := hcyc
+  obtain ⟨c, hc, hμ⟩ := hcyc
   haveI : Finite (GenericQuot ℓ U n S (j + 1)) :=
     Finite.of_equiv _ SemidirectProduct.equivProd.symm
   have hrange : (Φ.comp (stabilizer Gal(Ω/k) P).subtype).range ≤ Subgroup.zpowers c := by
     rintro _ ⟨x, rfl⟩
     exact hc (x : Gal(Ω/k)) x.2
   obtain ⟨z, hzmem, hz⟩ := exists_generator_of_le_zpowers hrange
+  have hzc : orderOf z ∣ orderOf c := by
+    obtain ⟨i, hi⟩ := Subgroup.mem_zpowers_iff.1 (hrange hzmem)
+    refine orderOf_dvd_of_pow_eq_one ?_
+    rw [← hi, ← zpow_natCast (c ^ i) (orderOf c), ← zpow_mul, mul_comm, zpow_mul, zpow_natCast,
+      pow_orderOf_eq_one, one_zpow]
   obtain ⟨x₀, hx₀⟩ := hzmem
   have hz1 : SemidirectProduct.rightHom z = 1 := by
     rw [← hx₀]
@@ -258,9 +269,9 @@ theorem hasSplitRamifiedLift_of_hasCyclicLift (hS : IsPGroup ℓ S) (φ : Gal(Ω
     rw [hz', mul_comm, pow_mul]
     refine pow_eq_one_of_rightHom_eq_one ℓ U n S j ?_
     rw [_root_.map_pow, hz', pow_orderOf_eq_one]
-  have hN : orderOf z' ∣ ℓ * Nat.card (GenericQuot ℓ U n S j) :=
-    hdvd.trans (mul_dvd_mul_left ℓ (by rw [hz']; exact orderOf_dvd_natCard z))
-  exact hcl P hPp hPbot hsplit _ _ _ z' ⟨a, by rw [hz']; exact ha⟩ hdvd hN
+  have hN : orderOf z' ∣ ℓ * orderOf c :=
+    hdvd.trans (mul_dvd_mul_left ℓ (by rw [hz']; exact hzc))
+  exact hcl P (ℓ * orderOf c) hPp hPbot hsplit hμ _ _ _ z' ⟨a, by rw [hz']; exact ha⟩ hdvd hN
     (Φ.comp (stabilizer Gal(Ω/k) P).subtype)
     (isSmooth₁_comp (continuous_subtype _)
       (isSmooth₁_of_isOpenNormal_ker (isOpenNormal_ker_of_isSmoothHom hsm)))

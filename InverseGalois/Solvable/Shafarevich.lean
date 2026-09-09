@@ -354,7 +354,8 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
 * `InverseGalois.Solvable.Shafarevich.LevelRamification` names the property the package leaves free.
   What the next step needs of a solution is a restriction on where the field it cuts out ramifies
   over the field the base realization cuts out: at a prime where it does ramify, the base
-  realization must split completely and the solution must be cyclic there and totally ramified.
+  realization must split completely, the solution must be cyclic there and totally ramified, and the
+  local field must already carry the roots of unity the next layer will call for.
   Stated over the primes of the ring of integers of the whole extension the restriction mentions
   only the two subgroups such a prime carries, its decomposition subgroup and its inertia subgroup,
   so no finite level has to be named.  Every clause of it is a statement about the values a solution
@@ -435,8 +436,8 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   the prime.  So **the ramified case asks nothing but the lifting of a cyclic character of
   prime-power order** along a surjection raising that order once, at the decomposition subgroups of
   the primes the base realization splits completely, and with the order bounded by the order of the
-  group one level down times the prime â€” which is the bound a local field carrying that many roots
-  of unity meets.
+  generator of the local image times the prime â€” which is exactly the bound whose roots of unity
+  the restriction asks the local field to carry.
 * `InverseGalois.Solvable.Shafarevich.CyclicLift` closes that case.  The powers of an element are
   carried onto the powers of any other element whose order divides them, by sending one generator
   to the other; this is well defined because two exponents with the same power of the first element
@@ -445,8 +446,8 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   every order are found, and Hilbert's theorem ninety for a closed subgroup extracts a root of it
   of the complementary order; the transport in the other direction carries that root into the group
   the lift was wanted in, the two transports agreeing at the generators.  The one thing asked is
-  that the roots of unity of the order in play be fixed by the whole group, that is, that the base
-  field contain them: **the step has a local solution at every prime as soon as the base field
-  carries the roots of unity of the prime times the order of the group at the level**, and no local
-  class field theory is spent on the way.
+  that the roots of unity of the order in play be fixed by the decomposition subgroup, that is, that
+  the local field at the prime contain them â€” and that is the last clause of the restriction the
+  solutions of the ladder already carry.  So **the step has a local solution at every prime**,
+  unconditionally, and no local class field theory is spent on the way.
 -/
