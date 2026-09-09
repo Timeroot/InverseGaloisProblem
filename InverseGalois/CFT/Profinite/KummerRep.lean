@@ -38,6 +38,9 @@ readings vanish together.**
 
 * `InverseGalois.CFT.smoothH1EquivOfAddEquiv`: the smooth first cohomology of a discrete group with
   multiplicative coefficients is the first cohomology of any representation identified with them.
+* `InverseGalois.CFT.smoothH1EquivOfAddEquiv_smoothH1Mk`,
+  `InverseGalois.CFT.kummerSmoothH1Equiv_smoothH1Mk`: both identifications are computed on
+  cocycles.
 * `InverseGalois.CFT.kummerSmoothH1Equiv`: **the first cohomology of the quotient with values in
   the first cohomology of the subgroup fixing the subextension is the first cohomology of the same
   quotient with coefficients in the units of the subextension tensored with the homomorphisms of
@@ -94,6 +97,23 @@ noncomputable def smoothH1EquivOfAddEquiv :
       (((groupCohomology.functor ℤ Q 1).mapIso
         (repIsoOfAddEquiv Q S T e he)).symm.toLinearEquiv.toAddEquiv))
 
+/-- **The identification is computed on cocycles**: the class of a smooth cocycle is the class of
+the cocycle read through the identification.  Both sides are the image of the same cochain under
+the same projection, so the two agree once the cocycle conditions are matched. -/
+theorem smoothH1EquivOfAddEquiv_smoothH1Mk {u : Q → S} (hu : IsMulCocycle₁ u) (hs : IsSmooth₁ u)
+    (hc : (fun q => e.symm (Additive.ofMul (u q))) ∈
+      cocycles₁ (Rep.ofDistribMulAction ℤ Q T)) :
+    smoothH1EquivOfAddEquiv Q S T e he (smoothH1Mk u hu hs)
+      = Multiplicative.ofAdd (H1π (Rep.ofDistribMulAction ℤ Q T)
+        ⟨fun q => e.symm (Additive.ofMul (u q)), hc⟩) := by
+  have h1 : smoothH1EquivOfAddEquiv Q S T e he (smoothH1Mk u hu hs)
+      = Multiplicative.ofAdd ((groupCohomology.map (MonoidHom.id Q)
+        (repIsoOfAddEquiv Q S T e he).inv 1).hom
+          (H1π (Rep.ofMulDistribMulAction Q S) (cocyclesOfIsMulCocycle₁ hu))) := rfl
+  rw [h1, H1π_comp_map_apply]
+  exact congrArg (fun z => Multiplicative.ofAdd (H1π (Rep.ofDistribMulAction ℤ Q T) z))
+    (Subtype.ext rfl)
+
 end Generic
 
 /-! ### Kummer theory over the Galois group of the subextension -/
@@ -138,6 +158,22 @@ noncomputable def kummerSmoothH1Equiv (hop : IsOpen (K.fixingSubgroup : Set Gal(
   haveI : DiscreteTopology (Gal(Ω/k) ⧸ K.fixingSubgroup) := QuotientGroup.discreteTopology hop
   smoothH1EquivOfAddEquiv _ _ _ (kummerTwistEquiv h htriv htrivE α hEp)
     (kummerTwistEquiv_smul h htriv htrivE α hEp hfix)
+
+/-- **The twisted Kummer identification is computed on cocycles**: the class of a smooth cocycle
+with values in the first cohomology of the subgroup is the class of the cocycle read through the
+identification of that cohomology with the tensor product. -/
+theorem kummerSmoothH1Equiv_smoothH1Mk (hop : IsOpen (K.fixingSubgroup : Set Gal(Ω/k)))
+    {u : Gal(Ω/k) ⧸ K.fixingSubgroup → SmoothH1 ↥K.fixingSubgroup E}
+    (hu : IsMulCocycle₁ u) (hs : IsSmooth₁ u)
+    (hc : (fun q => (kummerTwistEquiv h htriv htrivE α hEp).symm (Additive.ofMul (u q))) ∈
+      cocycles₁ (Rep.ofDistribMulAction ℤ (Gal(Ω/k) ⧸ K.fixingSubgroup)
+        (Additive (↥K)ˣ ⊗[ℤ] Additive (M →* E)))) :
+    kummerSmoothH1Equiv h htriv htrivE α hEp hfix hop (smoothH1Mk u hu hs)
+      = Multiplicative.ofAdd (H1π (Rep.ofDistribMulAction ℤ (Gal(Ω/k) ⧸ K.fixingSubgroup)
+          (Additive (↥K)ˣ ⊗[ℤ] Additive (M →* E)))
+        ⟨fun q => (kummerTwistEquiv h htriv htrivE α hEp).symm (Additive.ofMul (u q)), hc⟩) :=
+  haveI : DiscreteTopology (Gal(Ω/k) ⧸ K.fixingSubgroup) := QuotientGroup.discreteTopology hop
+  smoothH1EquivOfAddEquiv_smoothH1Mk _ _ _ _ _ hu hs hc
 
 /-- **The everywhere locally trivial classes at the level of the quotient, read with the units of
 the subextension as coefficients.** -/

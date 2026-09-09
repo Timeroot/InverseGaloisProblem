@@ -19104,3 +19104,85 @@ The module built while chasing (a) is kept, because its second half is exactly s
   `map_tensorCoeffRep_eq_zero_of_forall_subgroup` — the theorems of (a).  They are true, and stay
   as the record of what a module shrink *would* buy; their first hypothesis is the one (b) shows
   cannot be discharged at scale.
+
+## §1.69 Claim (D1) is a theorem: the local bridge, and the instance diamond that hid it
+
+**Date: 2026-09-09.**
+
+### (a)  What landed
+
+`InverseGalois/CFT/PoitouTate/LocalOrdBridge.lean`:
+
+* `HasLocalOrdHom h htriv htrivE α hEp g S x` — **the local Kummer dictionary at one place `x`**,
+  exactly the piece §1.68(c) said had to be named.  It asserts that some `D ∈ S` (in the arithmetic
+  situation, a decomposition subgroup of `Gal(Ω/k)`)
+
+  1. has an image in `Q = Gal(Ω/k)/K.fixingSubgroup` covering `Stab_Q(x)`, and
+  2. carries a `D`-equivariant `μ : H¹_sm(N ∩ D, E) →* (M →* E)` with
+     `μ (resSubH1 N D (kummerTwistEquiv t)) = tensorVal (M →* E) g t x` for every
+     `t ∈ Kˣ ⊗ (M →* E)`.
+
+  Clause 2 is the factorisation "`a ⊗ c ↦ ord_𝔭(a)·c` goes through the localisation" in the precise
+  form the proof consumes; clause 1 is what turns "trivial on the decomposition subgroup" into
+  "trivial on the stabiliser".
+
+* `mem_range_tensorSubInclRep_of_mem_kummerSha1` — **Claim (D1)**.  For `Q` finite, a surjective
+  `Q`-equivariant valuation `g : Additive Kˣ →+ (X →₀ ℤ)` with kernel `B`, and the dictionary at
+  every place, every `y ∈ kummerSha1 … S` satisfies
+  `Multiplicative.toAdd y ∈ range (H¹(Q, B ⊗ (M →* E)) → H¹(Q, Kˣ ⊗ (M →* E)))`.
+
+  The proof: write `y = kummerSmoothH1Equiv (smoothH1Mk u hu hs)`; transport the smooth cocycle `u`
+  through `kummerTwistEquiv.symm` to a cocycle `c` of the tensor representation; at each place take
+  the `D` and `μ` of the dictionary, use `mem_sha1Level` to get `b` trivialising `u` on `D`, and
+  push `b` through `μ` — clause 2 turns `hb` into exactly the coboundary condition
+  `tensorVal (c ρ) x = ρ • μ b - μ b` for `ρ ∈ Stab_Q(x)` (clause 1 supplies a representative
+  `σ ∈ D` of `ρ`).  Then `mem_range_map_tensorSubInclRep_of_forall_stabilizer` finishes.
+
+Supporting lemmas, in `InverseGalois/CFT/Profinite/KummerRep.lean`:
+
+* `smoothH1EquivOfAddEquiv_smoothH1Mk` — the identification of `SmoothH1 Q S` with
+  `H¹(Rep.ofDistribMulAction ℤ Q T)` is computed on cocycles.  The whole content is
+  `cochainsMap₁ f φ x = fun g => φ.hom.hom (x (f g))` (Mathlib `Functoriality.lean:165`) plus
+  `H1π_comp_map_apply`; the residual goal is `Subtype.ext rfl`.
+* `kummerSmoothH1Equiv_smoothH1Mk` — its twisted-Kummer specialisation.
+
+### (b)  The instance diamond, and the one-line fix
+
+The statement of Claim (D1) would not elaborate for a long time, and the reason was neither
+mathematical nor about `H1` versus `groupCohomology`.  There are **two** `DistribMulAction` instances
+on `Additive A ⊗[ℤ] Additive C` for a quotient group `G ⧸ N`:
+
+* `tensorDistribMulAction (G ⧸ N) A C` (`Profinite/TwistAction.lean`) — the quotient acts on each
+  factor;
+* `quotientDistribMulAction N (Additive A ⊗[ℤ] Additive C)` (`Profinite/QuotientAction.lean`) — the
+  quotient of the diagonal `G`-action.
+
+They agree on pure tensors but are not definitionally equal (both smuls are stuck at a
+`Quotient.lift`).  Instance search picked the *second* everywhere in the Kummer chain and the
+*first* everywhere in `TensorOrbit`/`TensorShrink` (where `Q` is an abstract group, so the quotient
+instance cannot apply), so the two halves of Route D could not be composed at all.
+
+Fix: `quotientDistribMulAction` is now declared with `priority := 100`.  It is the general-purpose
+fallback and must not compete with the tensor instance, which is the one every theorem about tensor
+products is stated with.  The entire tree re-elaborates with **one** broken proof, `TwistCoeff.lean`
+line 150, repaired by the new
+
+    tensorSMul_quotientMk (N) (g : G) (z) : (QuotientGroup.mk g : G ⧸ N) • z = g • z := rfl
+
+in `TwistAction.lean` — the two actions do agree by `rfl` once one of them is fixed by hand.
+
+**Gotcha.** When two instances of a data-carrying class both apply, a *lower* priority on the more
+general one is the right lever; bumping the specific one changes behaviour everywhere it appears.
+
+### (c)  What is left of Route D
+
+1. **`HasLocalOrdHom` itself.**  Still the two shapes of §1.68(c) (decomposition field, or tame
+   inertia).  Now a named hypothesis with everything built on top of it, as planned.
+2. **Proposition 6 at `t = 1`** for the single preimage `w`, with `T := U_T/p ⊗ μ_p^∨`, plus the
+   coefficient bridges `Hom(μ_p, Layer) ≅ Layer ⊗ μ_p^∨` and
+   `U_T ⊗ Hom(μ_p, Layer) ≅ Layer ⊗ (U_T/p ⊗ μ_p^∨)`.
+3. **The commuting square** between `tensorCoeffRep` (tensor side) and `kummerCoeffRepHom` (Kummer
+   side); after (b) both are now stated over the *same* representation, so this should be `ext; rfl`.
+4. **Assembly into `HasShrinkableSha`** at the level ordering of finding 2716.
+5. **The family `D`/`T` from arithmetic**, instantiating `X = {v ∉ T}`, `g = ordFinsupp T`,
+   `B = sUnits ↥K T`.

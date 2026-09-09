@@ -475,6 +475,7 @@ import InverseGalois.CFT.PoitouTate.GlobalClasses
 import InverseGalois.CFT.PoitouTate.InfiniteClasses
 import InverseGalois.CFT.PoitouTate.Isotropic
 import InverseGalois.CFT.PoitouTate.LocalConditions
+import InverseGalois.CFT.PoitouTate.LocalOrdBridge
 import InverseGalois.CFT.PoitouTate.NormLocalPower
 import InverseGalois.CFT.PoitouTate.OrbitCoboundary
 import InverseGalois.CFT.PoitouTate.PlaceUniformiser
@@ -6094,6 +6095,18 @@ it that are available here.
   subgroup, the valuation of a cocycle at a place being a cocycle of the subgroup fixing that
   place; two such homomorphisms in succession annihilate every class at once, at the price of a
   hypothesis whose number of classes grows with the module.
+* `InverseGalois.CFT.PoitouTate.LocalOrdBridge` joins the two sides.  The everywhere locally trivial
+  classes produced by the theory of a lifting problem are trivial on the genuine decomposition
+  subgroups of the Galois group of the base, with coefficients restricted along them, while the
+  theorem about valuations wants triviality on the subgroup of the finite quotient fixing a place.
+  What carries one to the other is a dictionary at each place: a decomposition subgroup whose image
+  covers the subgroup fixing the place, and an equivariant homomorphism out of the first cohomology
+  there which computes the valuation of a twisted Kummer class at that place.  Given the dictionary,
+  the element trivialising the class on the decomposition subgroup is carried to an element
+  trivialising the valuation, and therefore **an everywhere locally trivial class, read with the
+  units of the subextension as coefficients, comes from the units of the finite set of places where
+  the valuation is not taken** — a finitely generated module, whose cohomology over the finite
+  quotient is finite.
 * `InverseGalois.CFT.Profinite.Hilbert90` is the arithmetic input.  A smooth cocycle is constant on
   the cosets of the subgroup fixing a finite Galois level and its values are fixed by that
   subgroup, hence lie in the level, so choosing a preimage of each automorphism of the level turns

@@ -56,8 +56,10 @@ def quotientAddAut : G ⧸ N →* AddAut T :=
   QuotientGroup.lift N (DistribMulAction.toAddAut G T) fun n hn =>
     AddEquiv.ext fun t => AddActsTrivially.smul_eq_self n hn t
 
-/-- **The action of the quotient by a subgroup acting trivially on an additive module.** -/
-instance quotientDistribMulAction : DistribMulAction (G ⧸ N) T :=
+/-- **The action of the quotient by a subgroup acting trivially on an additive module.**  This is
+given a low priority: a module which is a tensor product already carries the action of the quotient
+on each factor, and the two must not be allowed to compete. -/
+instance (priority := 100) quotientDistribMulAction : DistribMulAction (G ⧸ N) T :=
   DistribMulAction.compHom T (quotientAddAut N T)
 
 variable {N T}

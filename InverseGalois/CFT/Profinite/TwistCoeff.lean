@@ -147,7 +147,7 @@ factor.** -/
 theorem tensorCoeffMap_quotient_smul (q : G ⧸ N) (z : Additive A ⊗[ℤ] Additive (M →* E)) :
     tensorCoeffMap M E E' A φ (q • z) = q • tensorCoeffMap M E E' A φ z := by
   obtain ⟨σ, rfl⟩ := QuotientGroup.mk_surjective q
-  rw [quotientAddMk_smul, quotientAddMk_smul]
+  rw [tensorSMul_quotientMk, tensorSMul_quotientMk]
   exact tensorCoeffMap_smul φ hφ σ z
 
 end Tensor

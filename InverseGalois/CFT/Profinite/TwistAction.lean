@@ -33,6 +33,8 @@ sides descend together.
 
 * `InverseGalois.CFT.tensorSMul_eq_self_of_forall`: an element moving both factors trivially moves
   the tensor product trivially.
+* `InverseGalois.CFT.tensorSMul_quotientMk`: **the quotient by a subgroup moving both factors
+  trivially acts on the tensor product as the group does.**
 * `InverseGalois.CFT.conjH1_twistMap_smul`: **the twisting map out of the tensor product carries
   the diagonal action to conjugation.**
 
@@ -114,6 +116,12 @@ instance actsTrivially_tensor [ActsTrivially N A] [ActsTrivially N B] :
     AddActsTrivially N (Additive A ⊗[ℤ] Additive B) :=
   ⟨fun n hn => tensorSMul_eq_self_of_forall (ActsTrivially.smul_eq_self n hn)
     (ActsTrivially.smul_eq_self n hn)⟩
+
+variable (N : Subgroup G) [N.Normal] [ActsTrivially N A] [ActsTrivially N B] in
+/-- **The quotient by a subgroup moving both factors trivially acts on the tensor product as the
+group does**, the diagonal action of the quotient moving each factor as the group moves it. -/
+theorem tensorSMul_quotientMk (g : G) (z : Additive A ⊗[ℤ] Additive B) :
+    (QuotientGroup.mk g : G ⧸ N) • z = g • z := rfl
 
 end Action
 
