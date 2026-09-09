@@ -505,6 +505,7 @@ import InverseGalois.CFT.PoitouTate.SplitLocalPower
 import InverseGalois.CFT.PoitouTate.SplitPlaceGenerate
 import InverseGalois.CFT.PoitouTate.SplitPlacePower
 import InverseGalois.CFT.PoitouTate.SupRadicandChar
+import InverseGalois.CFT.PoitouTate.TensorValuation
 import InverseGalois.CFT.PoitouTate.TorsionCharacter
 import InverseGalois.CFT.PoitouTate.TwoPlaces
 import InverseGalois.CFT.PoitouTate.TwoPlacesFree
@@ -1006,6 +1007,7 @@ import InverseGalois.CFT.Units.NakayamaSpanLocal
 import InverseGalois.CFT.Units.NormIndex
 import InverseGalois.CFT.Units.NsmulTorsionRep
 import InverseGalois.CFT.Units.OrbitPlaces
+import InverseGalois.CFT.Units.OrdFinsupp
 import InverseGalois.CFT.Units.PlaceComap
 import InverseGalois.CFT.Units.PlaceIdele
 import InverseGalois.CFT.Units.PlaceRestrict
@@ -6045,6 +6047,28 @@ it that are available here.
   such functions is, after subtracting a coboundary, valued in the kernel of that map.**  The
   kernel is the group of units integral away from the finite set, so this is what carries a class
   down to coefficients over which the linear algebra of the previous file becomes finite.
+* `InverseGalois.CFT.Units.OrdFinsupp` builds the map that mechanism consumes.  Fix a finite set of
+  primes of a number field carried into itself by the Galois group; the remaining primes then carry
+  the Galois action, and reading off the order of an element at each of them gives a homomorphism
+  from the multiplicative group of the field to the free abelian group on those primes, finitely
+  supported because an element has a zero or a pole at only finitely many places.  **The vector of
+  orders is equivariant**, the group acting on the primes by permutation, and **its kernel is
+  exactly the group of units for the set**.  Once the set meets every ideal class every prescribed
+  system of orders away from it is realised, so **the vector of orders is onto**; and **a finite
+  stable set with that property exists**, obtained from the ideal classes by taking the union of
+  the translates.  This is the presentation of the units of a number field as an extension of a
+  permutation module by a finitely generated group.
+* `InverseGalois.CFT.PoitouTate.TensorValuation` carries that presentation through a tensor
+  product.  A surjection of an abelian group onto a free abelian group splits — choose an element
+  with a single prescribed order at each point of the index set and extend by linearity — so the
+  inclusion of the kernel is a retract: there is a homomorphism back from the group onto the kernel
+  whose contribution and the section's add up to the identity.  Retracts survive tensoring with no
+  flatness and no derived functors, whence **the inclusion of the kernel of a valuation onto a free
+  abelian group stays injective after tensoring with any module** and **its image is still the
+  whole kernel of the valuation.**  The splitting itself is not equivariant, but the inclusion is,
+  once the subgroup is carried into itself by the action, so it is recorded as a morphism of
+  representations; and the valuation of a tensor, read as a finitely supported family of values of
+  the module, is equivariant as well, an automorphism moving the value and the place at once.
 * `InverseGalois.CFT.Profinite.Hilbert90` is the arithmetic input.  A smooth cocycle is constant on
   the cosets of the subgroup fixing a finite Galois level and its values are fixed by that
   subgroup, hence lie in the level, so choosing a preimage of each automorphism of the level turns
