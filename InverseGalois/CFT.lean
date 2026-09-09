@@ -337,6 +337,7 @@ import InverseGalois.CFT.Kummer.Denominator
 import InverseGalois.CFT.Kummer.DyadicInertiaChar
 import InverseGalois.CFT.Kummer.DyadicPlace
 import InverseGalois.CFT.Kummer.DyadicSquareClass
+import InverseGalois.CFT.Kummer.GlobalPowRepresentatives
 import InverseGalois.CFT.Kummer.GlobalPower
 import InverseGalois.CFT.Kummer.InertiaBound
 import InverseGalois.CFT.Kummer.InfiniteLevelPower
@@ -8032,4 +8033,17 @@ it that are available here.
   finite extension the root generates, hence smooth.  So **a smooth character of a closed subgroup
   has a smooth root of any order**, as far as the roots of unity reach, and none of it costs local
   class field theory.
+
+* `InverseGalois.CFT.Kummer.GlobalPowRepresentatives` carries the finiteness of the local power
+  classes up an infinite algebraic extension.  The elements of an algebraic closure fixed by the
+  stabiliser of a prime of the closure are the henselization of the base at that prime, and the
+  claim is that **finitely many elements represent every power class of that field**, the same
+  finitely many which already represent the power classes of the completion.  A fixed element is
+  read inside a finite Galois level chosen large enough to contain it, a power root of it, a
+  primitive root of unity and power roots of the representatives; at such a level the element lies
+  in the decomposition field of the prime below, so its image in the completion is a representative
+  times a power, and the power root taken in the closure differs from a fixed one only by a root of
+  unity, which the level was chosen to contain.  Multiplying by the right power of the primitive
+  root therefore makes the root fixed, and **an element whose power comes from the completion below
+  becomes fixed by the stabiliser after such a correction**.
 -/

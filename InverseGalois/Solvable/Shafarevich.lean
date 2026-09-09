@@ -58,6 +58,8 @@ import InverseGalois.Solvable.Shafarevich.LayerShaLevel
 import InverseGalois.Solvable.Shafarevich.LayerShaDescent
 import InverseGalois.Solvable.Shafarevich.LocalLift
 import InverseGalois.Solvable.Shafarevich.CyclicLift
+import InverseGalois.Solvable.Shafarevich.ElementaryQuotient
+import InverseGalois.Solvable.Shafarevich.ElementaryQuotientDecomposition
 
 /-!
 # Shafarevich's theorem
@@ -450,4 +452,29 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   the local field at the prime contain them — and that is the last clause of the restriction the
   solutions of the ladder already carry.  So **the step has a local solution at every prime**,
   unconditionally, and no local class field theory is spent on the way.
+* `InverseGalois.Solvable.Shafarevich.ElementaryQuotient` buys the finiteness the ladder asks of
+  each member of the finite family.  A subgroup carrying only finitely many smooth characters of
+  order dividing the prime has a finite elementary quotient, the product of all of them being a
+  homomorphism into a finite group through which every smooth homomorphism into a commutative group
+  killed by the prime factors, since such a group is a vector space over the field with that many
+  elements and its nonzero vectors are separated by linear functionals.  The finiteness of the
+  characters is Kummer theory: on a subgroup fixing the roots of unity of that order, a character
+  killed by the prime is a one cocycle for the action on the units, hence the coboundary of a single
+  unit whose power is invariant, and that invariant power determines the character up to a root of
+  unity, which is invariant as well.  So **finitely many representatives of the power classes of the
+  invariants bound the characters**, and the bound survives a subgroup of finite index, a character
+  being determined by its restriction together with its values on one representative of each coset
+  — which is what lets the counting be done after the base has been enlarged to contain the roots
+  of unity.
+* `InverseGalois.Solvable.Shafarevich.ElementaryQuotientDecomposition` supplies that finiteness
+  for the members the arithmetic actually hands the ladder, the decomposition subgroups of an
+  algebraic closure of a number field cut down by the open normal subgroup the base realization
+  defines.  The counting is done over a finite Galois level chosen to contain the roots of unity of
+  the prime and to fix no more than the open subgroup does: over that level the elements fixed by
+  the part of the decomposition subgroup lying above it have finitely many power classes, and that
+  part has finite index in the whole, its quotient being carried faithfully into the Galois group of
+  the level.  Reading an automorphism over an intermediate field as one over the base is what makes
+  the two descriptions of that part agree, the reading being injective with image the subgroup
+  fixing the field and moving an ideal of the integers the same way on both sides.  So **a
+  decomposition subgroup cut down by an open normal subgroup has a finite elementary quotient**.
 -/
