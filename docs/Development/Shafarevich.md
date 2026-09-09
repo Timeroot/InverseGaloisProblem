@@ -19186,3 +19186,103 @@ general one is the right lever; bumping the specific one changes behaviour every
 4. **Assembly into `HasShrinkableSha`** at the level ordering of finding 2716.
 5. **The family `D`/`T` from arithmetic**, instantiating `X = {v ∉ T}`, `g = ordFinsupp T`,
    `B = sUnits ↥K T`.
+
+## §1.70  The witness form: swapping `∀ class. ∃ shrink` to `∃ class. ∀ shrink`
+
+### (a)  The interface Route D had was the wrong one
+
+Every theorem in the inflation chain was stated in the shape
+
+    (hzero : ∀ y ∈ kummerSha1 …, map (kummerCoeffRepHom K M E E' φ hφ) (toAdd y) = 0) →
+      coeffH2 φ hφ z ∈ range (galInflH2 K hπ')
+
+— *first* choose the homomorphism of the kernels `φ`, *then* demand that it annihilate an entire
+subgroup, `kummerSha1`.  Proposition 6 (`exists_operatorHom_res_cohomology_eq_zero`,
+`Solvable/Shafarevich/GenericCohomology.lean:90`) cannot supply such a `φ`.  Its quantifiers run
+
+    ∀ t, ∃ m, ∀ x : Fin t → H^c(… at level m …), ∃ α, α_* ∘ x = 0
+
+so **the number of classes to be killed is fixed before the level is chosen**, and the level is what
+determines `kummerSha1`.  Asking for a whole subgroup, whose size grows with the level, is asking
+for something Proposition 6 provably does not give (§1.68(b)).
+
+Reading the four proofs in the chain showed that this was pure over-statement: `hzero` is never
+applied to more than *one* class.  The obstruction to inflating a given `z` is a *single* element,
+constructed from `z` by transgression; every consumer applies `hzero` to that one element and to
+nothing else.  So the fix is a plain ∃/∀ swap, with no mathematical content lost:
+
+    ∃ y ∈ kummerSha1 …, ∀ φ hφ, map (kummerCoeffRepHom K M E E' φ hφ) (toAdd y) = 0 →
+      coeffH2 φ hφ z ∈ range (galInflH2 K hπ')
+
+This is the **witness form**.  It is strictly stronger than the old statement (specialise and use
+`hzero` at `y`), and it is the form a counting argument can consume.
+
+### (b)  The five layers
+
+The swap was pushed through the whole tower, each layer keeping its old statement as well:
+
+| module | witness-form theorem |
+|---|---|
+| `Profinite/TransgressionCoeff.lean` | `exists_sha1Level_forall_coeffH2` |
+| `Profinite/ResInflate.lean` | `exists_sha1Level_forall_coeffH2_of_resH2_eq_one[_of_eq_ker]` |
+| `PoitouTate/ShaInflate.lean` | `exists_sha1Level_forall_coeffH2_of_mem_sha2` |
+| `Profinite/KummerCoeff.lean` | `coeffTransH1_inflH1_eq_one_of_map_kummerCoeffRepHom` |
+| `PoitouTate/ShaKummerInflate.lean` | `exists_kummerSha1_forall_coeffH2_of_mem_sha2` |
+
+The bottom layer is where the witness is actually produced: `exists_inflH1_transClass` already
+returns *the* class `x` at the level with `inflH1 x = transClass …`, so the proof simply hands `x`
+out before the coefficient map is mentioned, and re-runs the old argument inside the `∀ φ`.  The
+`KummerCoeff` layer is a pure re-factoring — the old
+`coeffTransH1_inflH1_eq_one_of_kummerSha1` is now a one-line corollary of the new lemma about a
+single class.
+
+**Gotcha (2729).**  `transgressionClass` is an opaque `def`, definitionally
+`transClass (isTransgressionDatum_transgression …) htriv hop` but not syntactically; a
+`rw [← hx]` against a hypothesis about `transClass` fails with *"Did not find an occurrence of the
+pattern"*.  Insert an explicit `show … transClass … = 1` first.
+
+### (c)  Joining to the finitely generated coefficients
+
+New module `CFT/PoitouTate/ShaKummerShrink.lean`, one theorem:
+
+    exists_forall_coeffH2_of_hasLocalOrdHom :
+      (hlocal : ∀ x, HasLocalOrdHom h htriv htrivE α hEp g (decompositionSubgroups k Ω) x) →
+      z ∈ sha2 E (decompositionSubgroups k Ω) →
+        ∃ w : H¹(Gal(Ω/k) ⧸ K.fixingSubgroup, Additive ↥B ⊗[ℤ] Additive (M →* E)),
+          ∀ ψ hψ, (map (id _) (tensorCoeffRep _ (MonoidHom.compHom ψ) _) 1).hom w = 0 →
+            coeffH2 ψ hψ z ∈ range (galInflH2 K hπ')
+
+Three lines of proof: the witness form of (b) names `y ∈ kummerSha1`; Claim (D1)
+(`mem_range_tensorSubInclRep_of_mem_kummerSha1`, `LocalOrdBridge.lean`) pulls `y` back to a class
+`w` with coefficients in the units `B` of the finite set of places; and
+`map_tensorCoeffRep_eq_zero_of_map_tensorSubInclRep` (`TensorShrink.lean`) transports the
+annihilation of `w` to the annihilation of `y`.
+
+Item 3 of §1.69(c) — the commuting square between the tensor side and the Kummer side — turned out
+to be **`rfl`**:
+
+    kummerCoeffRepHom K M E E' ψ hψ
+      = tensorCoeffRep (A := (↥K)ˣ) Q (MonoidHom.compHom ψ) (compHom_quotient_smul (M := M) ψ hψ)
+
+both sides being `repHomOfAddHom Q _ _ (TensorProduct.map id (MonoidHom.toAdditive _).toIntLinearMap)`
+with a `Prop`-valued naturality field.  This is a direct dividend of the instance-priority fix of
+§1.69(b): before it, the two sides carried *different* `DistribMulAction` instances on the tensor
+product and no `rfl` was available.  The one new ingredient is
+`compHom_quotient_smul` (`Profinite/TwistCoeff.lean`), the homomorphism factor of
+`tensorCoeffMap_quotient_smul`, proved by `QuotientGroup.mk_surjective` + `comp_homSMul`.
+
+### (d)  What is left of Route D after §1.70
+
+1. **`HasLocalOrdHom`** — unchanged; the arithmetic wall (§1.68(c)).
+2. **Proposition 6 at `t = 1`** for the single `w`, with `T := U_T/p ⊗ μ_p^∨`, plus the coefficient
+   bridges `Hom(μ_p, Layer) ≅ Layer ⊗ μ_p^∨` and
+   `U_T ⊗ Hom(μ_p, Layer) ≅ Layer ⊗ (U_T/p ⊗ μ_p^∨)`, and a degree-one analogue of the degree-two
+   smoothness machinery of `LayerSmooth.lean`.
+3. **Assembly into `HasShrinkableSha`.**  Ordering of levels: target `n` → Proposition 6 in degree
+   two gives `m₂` → Proposition 6 in degree one at target `m₂` gives `m₁` → set `N := m₁`.  Open
+   design question: Route D delivers inflation from `Gal(K/k)`, *not* from the operator group `U`,
+   so `hasShrinkableSha_of_hasInflatedSha` cannot be reused verbatim — either a monoid hom
+   `Gal(K/k) →* U` is available, or the counting lemma of `LevelShrink.lean` must be re-run with
+   `H := Gal(K/k)`.
+4. **The family `D`/`T` from arithmetic**, instantiating `X = {v ∉ T}`, `g = ordFinsupp T`,
+   `B = sUnits ↥K T` (and the `Q →* Gal(K/k)` bridge of finding 2700).

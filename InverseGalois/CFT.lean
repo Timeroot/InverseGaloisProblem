@@ -496,6 +496,7 @@ import InverseGalois.CFT.PoitouTate.ShaInduced
 import InverseGalois.CFT.PoitouTate.ShaInflate
 import InverseGalois.CFT.PoitouTate.ShaInflateLevel
 import InverseGalois.CFT.PoitouTate.ShaKummerInflate
+import InverseGalois.CFT.PoitouTate.ShaKummerShrink
 import InverseGalois.CFT.PoitouTate.ShaSurjection
 import InverseGalois.CFT.PoitouTate.ShaSylow
 import InverseGalois.CFT.PoitouTate.ShaTate
@@ -6107,6 +6108,16 @@ it that are available here.
   units of the subextension as coefficients, comes from the units of the finite set of places where
   the valuation is not taken** — a finitely generated module, whose cohomology over the finite
   quotient is finite.
+* `InverseGalois.CFT.PoitouTate.ShaKummerShrink` composes the whole chain into one statement.  A
+  class of the second cohomology trivial on every decomposition subgroup names an obstruction to
+  being inflated from the Galois group of the splitting extension; twisted Kummer theory reads that
+  obstruction with the units of the extension as coefficients; the dictionary at each place carries
+  it into the units of a finite set of places.  So **an everywhere locally trivial class names a
+  single class of the first cohomology of a finite group with finitely generated coefficients, and
+  any homomorphism of the kernels annihilating that one class carries the class into the image of
+  inflation.**  The order of the two quantifiers is the point: the class is produced from the class
+  of the second cohomology alone, before the homomorphism is named, which is what lets a counting
+  argument fix in advance how many classes it must kill.
 * `InverseGalois.CFT.Profinite.Hilbert90` is the arithmetic input.  A smooth cocycle is constant on
   the cosets of the subgroup fixing a finite Galois level and its values are fixed by that
   subgroup, hence lie in the level, so choosing a preimage of each automorphism of the level turns

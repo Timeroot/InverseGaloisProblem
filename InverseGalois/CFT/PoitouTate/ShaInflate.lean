@@ -43,6 +43,8 @@ is the shape in which the everywhere locally trivial classes enter an embedding 
   of unity, is inflated from the Galois group of that extension.**
 * `InverseGalois.CFT.sha2_le_range_galInflH2`: **the everywhere locally trivial classes lie in the
   image of inflation from the splitting field.**
+* `InverseGalois.CFT.exists_sha1Level_forall_coeffH2_of_mem_sha2`: **the obstruction is a single
+  class of the level, produced before the homomorphism of the coefficients.**
 * `InverseGalois.CFT.exists_galInflH2_eq_coeffH2_of_mem_sha2`,
   `InverseGalois.CFT.coeffH2_sha2_le_range_galInflH2`: **the same after a homomorphism of the
   coefficients which merely annihilates the obstruction at the level, without it vanishing.**
@@ -169,6 +171,51 @@ theorem exists_galInflH2_eq_coeffH2_of_mem_sha2 {n : ℕ} [NeZero n] {ζ : ↥K}
     (hasOpenNormalBasis_of_compactSpace _) (isSmoothHom_restrictNormalHom K)
     (restrictNormalHom_surjective_level K) htriv htriv' φ hφ
     (IntermediateField.restrictNormalHom_ker K).symm K.fixingSubgroup_isOpen hz hres hkill
+
+/-- **An everywhere locally trivial class of the second cohomology has a single everywhere locally
+trivial obstruction at the level of a finite Galois extension splitting the coefficients, and every
+homomorphism of the coefficients annihilating that one class carries the class into the image of
+inflation from that extension.**  The obstruction is read off the class alone, before the
+homomorphism is named; that ordering is what an argument able to annihilate only a fixed number of
+classes needs. -/
+theorem exists_sha1Level_forall_coeffH2_of_mem_sha2 {n : ℕ} [NeZero n] {ζ : ↥K}
+    (hζ : IsPrimitiveRoot ζ n) (htrivM : ∀ (g : Gal(Ω/↥K)) (m : M), g • m = m)
+    {J : Type*} [Fintype J] (α : E ≃* (J → M))
+    {ι : M →* (↥K)ˣ} (hιinj : Function.Injective ι) (hιpow : ∀ m : M, ι m ^ n = 1)
+    (hιsurj : ∀ y : (↥K)ˣ, y ^ n = 1 → ∃ m : M, ι m = y)
+    (z : SmoothH2 Gal(Ω/k) E) (hz : z ∈ sha2 E (decompositionSubgroups k Ω)) :
+    ∃ x ∈ sha1Level E K.fixingSubgroup K.fixingSubgroup_isOpen (decompositionSubgroups k Ω),
+      ∀ (φ : E →* E') (hφ : ∀ (g : Gal(Ω/k)) (e : E), φ (g • e) = g • φ e),
+        coeffTransH1 K.fixingSubgroup φ hφ
+            (inflH1 K.fixingSubgroup (SmoothH1 ↥K.fixingSubgroup E)
+              K.fixingSubgroup_isOpen x) = 1 →
+          ∃ y : SmoothH2 (↥K ≃ₐ[k] ↥K) E', galInflH2 K hπ' y = coeffH2 φ hφ z := by
+  have hker : ∀ g : Gal(Ω/↥K),
+      AlgEquiv.restrictNormalHom (F := k) (K₁ := Ω) ↥K (galRestrictScalarsHom k ↥K Ω g) = 1 := by
+    intro g
+    have hmem : galRestrictScalarsHom k ↥K Ω g ∈ K.fixingSubgroup := by
+      rw [IntermediateField.mem_fixingSubgroup_iff]
+      intro x hx
+      exact g.commutes ⟨x, hx⟩
+    rwa [← IntermediateField.restrictNormalHom_ker K, MonoidHom.mem_ker] at hmem
+  have htrivE : ∀ (g : Gal(Ω/↥K)) (e : E), g • e = e := by
+    intro g e
+    rw [hπK g e, hπ _ e, hker g, one_smul]
+  have hcomap := eq_one_of_mem_sha2_of_mulEquivPi_intermediate hπK hζ htrivE htrivM α
+    hιinj hιpow hιsurj z hz
+  have hres : resH2 K.fixingSubgroup z = 1 := resH2_fixingSubgroup_eq_one K hπK hcomap
+  have htriv : ∀ g ∈ (AlgEquiv.restrictNormalHom (F := k) (K₁ := Ω) ↥K).ker,
+      ∀ e : E, g • e = e := by
+    intro g hg e
+    rw [hπ g e, MonoidHom.mem_ker.1 hg, one_smul]
+  have htriv' : ∀ g ∈ (AlgEquiv.restrictNormalHom (F := k) (K₁ := Ω) ↥K).ker,
+      ∀ e : E', g • e = e := by
+    intro g hg e
+    rw [hπ' g e, MonoidHom.mem_ker.1 hg, one_smul]
+  exact exists_sha1Level_forall_coeffH2_of_resH2_eq_one_of_eq_ker hπ'
+    (hasOpenNormalBasis_of_compactSpace _) (isSmoothHom_restrictNormalHom K)
+    (restrictNormalHom_surjective_level K) htriv htriv'
+    (IntermediateField.restrictNormalHom_ker K).symm K.fixingSubgroup_isOpen hz hres
 
 variable (E) in
 /-- **The image under a homomorphism of the coefficients killing the everywhere locally trivial

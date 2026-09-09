@@ -35,6 +35,9 @@ coefficients.**
   every everywhere locally trivial class of the second cohomology into the image of inflation.**
 * `InverseGalois.CFT.coeffH2_sha2_le_range_galInflH2_of_kummerSha1`: the same, stated on the whole
   group of everywhere locally trivial classes.
+* `InverseGalois.CFT.exists_kummerSha1_forall_coeffH2_of_mem_sha2`: **the demand is about a single
+  named class**, read through twisted Kummer theory and produced before the homomorphism of the
+  kernels is chosen.
 
 ## Tags
 
@@ -120,6 +123,31 @@ theorem coeffH2_sha2_le_range_galInflH2_of_kummerSha1
   rintro y ⟨z, hz, rfl⟩
   exact exists_galInflH2_eq_coeffH2_of_kummerSha1 K hπ hπK hπ' h htriv htrivE htrivE' α α' hEp hEp'
     hfix φ hφ hzero z hz
+
+include hπ hπK htrivE' α' hEp' in
+/-- **An everywhere locally trivial class of the second cohomology names a single everywhere locally
+trivial class of the first cohomology of the Galois group of the splitting extension, with the units
+of that extension tensored with the homomorphisms of the roots of unity as coefficients, and every
+homomorphism of the kernels whose induced morphism of representations annihilates that one class
+carries the class of the second cohomology into the image of inflation.**  The named class is the
+obstruction to inflating, read through twisted Kummer theory; it depends on the class alone, so the
+homomorphism of the kernels may be chosen afterwards.  That is the ordering a counting argument
+needs, since such arguments settle how many classes they can annihilate before seeing any of
+them. -/
+theorem exists_kummerSha1_forall_coeffH2_of_mem_sha2
+    (z : SmoothH2 Gal(Ω/k) E) (hz : z ∈ sha2 E (decompositionSubgroups k Ω)) :
+    ∃ y ∈ kummerSha1 h htriv htrivE α hEp hfix K.fixingSubgroup_isOpen
+        (decompositionSubgroups k Ω),
+      ∀ (ψ : E →* E') (hψ : ∀ (g : Gal(Ω/k)) (e : E), ψ (g • e) = g • ψ e),
+        (groupCohomology.map (MonoidHom.id (Gal(Ω/k) ⧸ K.fixingSubgroup))
+            (kummerCoeffRepHom K M E E' ψ hψ) 1).hom (Multiplicative.toAdd y) = 0 →
+          ∃ w : SmoothH2 (↥K ≃ₐ[k] ↥K) E', galInflH2 K hπ' w = coeffH2 ψ hψ z := by
+  obtain ⟨x, hx, hforall⟩ := exists_sha1Level_forall_coeffH2_of_mem_sha2 K hπ hπK hπ'
+    h.isPrimitiveRoot_primitiveRoot h.smul_eq α h.injective h.pow_eq_one h.exists_ι_eq z hz
+  refine ⟨kummerSmoothH1Equiv h htriv htrivE α hEp hfix K.fixingSubgroup_isOpen x,
+    Subgroup.mem_map_of_mem _ hx, fun ψ hψ hzero => hforall ψ hψ ?_⟩
+  exact coeffTransH1_inflH1_eq_one_of_map_kummerCoeffRepHom h htriv htrivE htrivE' α α' hEp hEp'
+    hfix ψ hψ K.fixingSubgroup_isOpen x hzero
 
 end Inflate
 

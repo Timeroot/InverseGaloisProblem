@@ -57,6 +57,8 @@ demand.  That is what lets the demand be handed to a theorem about a finite grou
   the second cohomology into the image of inflation.**
 * `InverseGalois.CFT.exists_comapH2_eq_coeffH2_of_sha1Level`: **the same, with the obstructions read
   at the level of the quotient.**
+* `InverseGalois.CFT.exists_sha1Level_forall_coeffH2`: **the obstruction is a single class of the
+  level, produced before any homomorphism of the coefficients is chosen.**
 * `InverseGalois.CFT.coeffTransH1_inflH1`: **pushing the coefficients forward commutes with
   inflation from the level.**
 * `InverseGalois.CFT.coeffTransH1_inflH1_eq_one_iff`: the obstruction attached to a class of the
@@ -316,6 +318,66 @@ theorem exists_comapH2_eq_coeffH2_of_sha1Level (hbasis : HasOpenNormalBasis G)
     exact hloc D hD
   rw [← hx]
   exact hkill x hmemx
+
+/-- **An everywhere locally trivial class of the second cohomology, trivial along the kernel, has a
+single everywhere locally trivial obstruction at the level, and every homomorphism of the
+coefficients annihilating that one class carries the class into the image of inflation.**  This is
+the previous statement with the obstruction produced *before* the homomorphism rather than after:
+the normalised cocycle representing the class, and hence the transgression it carries, are built
+from the class alone, so the demand on the homomorphism is a demand about one named class and not
+about the whole group of obstructions.  That is the form a counting argument can meet, since such
+arguments fix the number of classes they annihilate in advance. -/
+theorem exists_sha1Level_forall_coeffH2 (hbasis : HasOpenNormalBasis G)
+    (hsm : IsSmoothHom π) (hsurj : Function.Surjective π)
+    (htriv : ∀ n ∈ π.ker, ∀ m : M, n • m = m) (htriv' : ∀ n ∈ π.ker, ∀ m : M', n • m = m)
+    {a : G × G → M} (ha : IsMulCocycle₂ a) (has : IsSmooth₂ a) {b : G → M} (hbs : IsSmooth₁ b)
+    (hb : ∀ x ∈ π.ker, ∀ y ∈ π.ker, a (x, y) = x • b y / b (x * y) * b x)
+    {S : Set (Subgroup G)} (hmem : smoothH2Mk a ha has ∈ sha2 M S) :
+    ∃ x ∈ sha1Level M π.ker (isOpenNormal_ker_of_isSmoothHom hsm).isOpen S,
+      ∀ (φ : M →* M') (hφ : ∀ (g : G) (m : M), φ (g • m) = g • φ m),
+        coeffTransH1 π.ker φ hφ
+            (inflH1 π.ker (SmoothH1 ↥π.ker M)
+              (isOpenNormal_ker_of_isSmoothHom hsm).isOpen x) = 1 →
+          ∃ y : SmoothH2 Q M', comapH2 π hπ' hsm y = coeffH2 φ hφ (smoothH2Mk a ha has) := by
+  have hop := (isOpenNormal_ker_of_isSmoothHom hsm).isOpen
+  obtain ⟨c, hc, hcs, hccl, h1⟩ := exists_eq_one_on_ker hsm htriv ha has hbs hb
+  have hmemc : smoothH2Mk c hc hcs ∈ sha2 M S := by rw [hccl]; exact hmem
+  have hloc : ∀ D ∈ S,
+      localTransClass (isTransgressionDatum_transgression htriv hc hcs h1) htriv hop D = 1 :=
+    fun D hD => localTransClass_transgression_eq_one htriv hop hc hcs h1
+      ((smoothH2Mk_mem_sha2 hc hcs).1 hmemc D hD)
+  obtain ⟨x, hx⟩ :=
+    exists_inflH1_transClass (isTransgressionDatum_transgression htriv hc hcs h1) htriv hop
+  refine ⟨x, ?_, fun φ hφ hkillx => ?_⟩
+  · refine mem_sha1Level.2 fun D hD => ?_
+    rw [hx, resCoeffH1_transClass]
+    exact hloc D hD
+  · have hkey : coeffTransH1 π.ker φ hφ (transgressionClass htriv hop hc hcs h1) = 1 := by
+      show coeffTransH1 π.ker φ hφ
+        (transClass (isTransgressionDatum_transgression htriv hc hcs h1) htriv hop) = 1
+      rw [← hx]
+      exact hkillx
+    have h1' : ∀ n ∈ π.ker, ∀ y : G, coeffMap₂ φ c (n, y) = 1 := by
+      intro n hn y
+      show φ (c (n, y)) = 1
+      rw [h1 n hn y, _root_.map_one]
+    rw [coeffH2_smoothH2Mk]
+    refine exists_comapH2_eq_of_transgression hπ' hsm hsurj htriv'
+      (isMulCocycle₂_coeffMap₂ φ hφ ha) (has.coeffMap₂ φ) (hbs.coeffMap₁ φ) ?_ ?_
+    · intro s hs t ht
+      show φ (a (s, t)) = s • φ (b t) / φ (b (s * t)) * φ (b s)
+      rw [hb s hs t ht, _root_.map_mul, _root_.map_div, hφ]
+    · intro d hd hds hdcl hd1
+      refine exists_eq_smul_div_of_transClass_eq_one hbasis
+        (isTransgressionDatum_transgression htriv' hd hds hd1) htriv' hop ?_
+      have hcoh : smoothH2Mk d hd hds
+          = smoothH2Mk (coeffMap₂ φ c) (isMulCocycle₂_coeffMap₂ φ hφ hc) (hcs.coeffMap₂ φ) := by
+        rw [hdcl, ← coeffH2_smoothH2Mk φ hφ ha has, ← hccl, coeffH2_smoothH2Mk]
+      show transgressionClass htriv' hop hd hds hd1 = 1
+      rw [transgressionClass_congr htriv' hop hd hds hd1 (isMulCocycle₂_coeffMap₂ φ hφ hc)
+          (hcs.coeffMap₂ φ) h1' hcoh,
+        transgressionClass_coeffMap₂ φ hφ htriv htriv' hop hc hcs h1 h1']
+      exact hkey
 
 end Package
 

@@ -40,6 +40,9 @@ about representations of a finite group can meet.
   cohomology with the cohomology of a representation is natural in the coefficients.
 * `InverseGalois.CFT.kummerSmoothH1Equiv_coeffH1`: **the twisted Kummer identification carries the
   map of the coefficients at the level of the quotient to the map induced by composition.**
+* `InverseGalois.CFT.coeffTransH1_inflH1_eq_one_of_map_kummerCoeffRepHom`: **a homomorphism of the
+  kernels annihilating one class read through the identification kills the obstruction inflated
+  from it.**
 * `InverseGalois.CFT.coeffTransH1_inflH1_eq_one_of_kummerSha1`: **a homomorphism of the kernels
   whose induced map of representations annihilates the everywhere locally trivial classes, read
   with the units of the subextension as coefficients, kills every inflated obstruction.**
@@ -191,6 +194,24 @@ theorem kummerSmoothH1Equiv_coeffH1 (hop : IsOpen (K.fixingSubgroup : Set Gal(Ω
     (fun z => (coeffH1_kummerTwistEquiv h htriv htrivE htrivE' α α' hEp hEp' φ _ z).symm) x
 
 include htrivE' α' hEp' in
+/-- **A homomorphism of the kernels whose induced map of representations annihilates the class read
+through twisted Kummer theory kills the obstruction inflated from that class.**  The two are the
+same statement read on either side of the identification. -/
+theorem coeffTransH1_inflH1_eq_one_of_map_kummerCoeffRepHom
+    (hop : IsOpen (K.fixingSubgroup : Set Gal(Ω/k)))
+    (x : SmoothH1 (Gal(Ω/k) ⧸ K.fixingSubgroup) (SmoothH1 ↥K.fixingSubgroup E))
+    (hzero : (groupCohomology.map (MonoidHom.id (Gal(Ω/k) ⧸ K.fixingSubgroup))
+      (kummerCoeffRepHom K M E E' φ hφ) 1).hom
+        (Multiplicative.toAdd (kummerSmoothH1Equiv h htriv htrivE α hEp hfix hop x)) = 0) :
+    coeffTransH1 K.fixingSubgroup φ hφ
+        (inflH1 K.fixingSubgroup (SmoothH1 ↥K.fixingSubgroup E) hop x) = 1 := by
+  rw [coeffTransH1_inflH1_eq_one_iff K.fixingSubgroup φ hφ hop x]
+  refine (kummerSmoothH1Equiv h htriv htrivE' α' hEp' hfix hop).injective ?_
+  rw [_root_.map_one, kummerSmoothH1Equiv_coeffH1 h htriv htrivE htrivE' α α' hEp hEp' hfix φ hφ
+    hop x, hzero]
+  rfl
+
+include htrivE' α' hEp' in
 /-- **A homomorphism of the kernels whose induced map of representations annihilates the everywhere
 locally trivial classes kills every inflated obstruction.**  The obstruction attached to a class of
 the level is the image of that class, and the identification turns the two into the same
@@ -203,14 +224,9 @@ theorem coeffTransH1_inflH1_eq_one_of_kummerSha1
     (x : SmoothH1 (Gal(Ω/k) ⧸ K.fixingSubgroup) (SmoothH1 ↥K.fixingSubgroup E))
     (hx : x ∈ sha1Level E K.fixingSubgroup hop S) :
     coeffTransH1 K.fixingSubgroup φ hφ
-        (inflH1 K.fixingSubgroup (SmoothH1 ↥K.fixingSubgroup E) hop x) = 1 := by
-  have hy : kummerSmoothH1Equiv h htriv htrivE α hEp hfix hop x
-      ∈ kummerSha1 h htriv htrivE α hEp hfix hop S := Subgroup.mem_map_of_mem _ hx
-  rw [coeffTransH1_inflH1_eq_one_iff K.fixingSubgroup φ hφ hop x]
-  refine (kummerSmoothH1Equiv h htriv htrivE' α' hEp' hfix hop).injective ?_
-  rw [_root_.map_one, kummerSmoothH1Equiv_coeffH1 h htriv htrivE htrivE' α α' hEp hEp' hfix φ hφ
-    hop x, hzero _ hy]
-  rfl
+        (inflH1 K.fixingSubgroup (SmoothH1 ↥K.fixingSubgroup E) hop x) = 1 :=
+  coeffTransH1_inflH1_eq_one_of_map_kummerCoeffRepHom h htriv htrivE htrivE' α α' hEp hEp' hfix
+    φ hφ hop x (hzero _ (Subgroup.mem_map_of_mem _ hx))
 
 end Kummer
 

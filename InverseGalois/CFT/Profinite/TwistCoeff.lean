@@ -150,6 +150,15 @@ theorem tensorCoeffMap_quotient_smul (q : G ⧸ N) (z : Additive A ⊗[ℤ] Addi
   rw [tensorSMul_quotientMk, tensorSMul_quotientMk]
   exact tensorCoeffMap_smul φ hφ σ z
 
+include hφ in
+/-- **Composition with an equivariant homomorphism of the modules is equivariant for the quotient by
+a subgroup moving the homomorphisms of the cyclic coefficients trivially.**  This is the factor of
+the previous statement which lives on the homomorphisms alone. -/
+theorem compHom_quotient_smul (q : G ⧸ N) (w : M →* E) :
+    MonoidHom.compHom φ (q • w) = q • MonoidHom.compHom φ w := by
+  obtain ⟨σ, rfl⟩ := QuotientGroup.mk_surjective q
+  exact comp_homSMul φ hφ σ w
+
 end Tensor
 
 end InverseGalois.CFT

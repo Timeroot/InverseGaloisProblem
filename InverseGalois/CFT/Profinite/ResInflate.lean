@@ -41,6 +41,10 @@ on the kernel into the image of inflation.**
 * `InverseGalois.CFT.exists_comapH2_eq_coeffH2_of_resH2_eq_one`,
   `InverseGalois.CFT.exists_comapH2_eq_coeffH2_of_resH2_eq_one_of_eq_ker`: **the same after a map of
   the coefficients killing the inflated everywhere locally trivial obstructions.**
+* `InverseGalois.CFT.exists_sha1Level_forall_coeffH2_of_resH2_eq_one`,
+  `InverseGalois.CFT.exists_sha1Level_forall_coeffH2_of_resH2_eq_one_of_eq_ker`:
+  **the obstruction is a single class of the level, produced before the map of the
+  coefficients.**
 
 ## Tags
 
@@ -191,6 +195,43 @@ theorem exists_comapH2_eq_coeffH2_of_resH2_eq_one_of_eq_ker (hbasis : HasOpenNor
   subst hN
   exact exists_comapH2_eq_coeffH2_of_resH2_eq_one hπ' hbasis hsm hsurj htriv htriv' φ hφ hmem hres
     hkill
+
+/-- **A locally trivial class of the second cohomology dying on the kernel of a smooth surjection
+onto a discrete group has a single everywhere locally trivial obstruction at that group, and any
+homomorphism of the coefficients annihilating that one class carries the class into the image of
+inflation.**  The obstruction is read off the class before any homomorphism is named, which is what
+lets it be handed to an argument able to annihilate only a fixed number of classes. -/
+theorem exists_sha1Level_forall_coeffH2_of_resH2_eq_one (hbasis : HasOpenNormalBasis G)
+    (hsm : IsSmoothHom π) (hsurj : Function.Surjective π)
+    (htriv : ∀ n ∈ π.ker, ∀ m : M, n • m = m) (htriv' : ∀ n ∈ π.ker, ∀ m : M', n • m = m)
+    {S : Set (Subgroup G)} {z : SmoothH2 G M} (hmem : z ∈ sha2 M S) (hres : resH2 π.ker z = 1) :
+    ∃ x ∈ sha1Level M π.ker (isOpenNormal_ker_of_isSmoothHom hsm).isOpen S,
+      ∀ (φ : M →* M') (hφ : ∀ (g : G) (m : M), φ (g • m) = g • φ m),
+        coeffTransH1 π.ker φ hφ
+            (inflH1 π.ker (SmoothH1 ↥π.ker M)
+              (isOpenNormal_ker_of_isSmoothHom hsm).isOpen x) = 1 →
+          ∃ y : SmoothH2 Q M', comapH2 π hπ' hsm y = coeffH2 φ hφ z := by
+  obtain ⟨a, ha, has, rfl⟩ := smoothH2Mk_surjective z
+  obtain ⟨u, hus, hu⟩ := (resH2_eq_one_iff π.ker ha has).1 hres
+  obtain ⟨b, hbs, hb⟩ :=
+    exists_isSmooth₁_extend hbasis (isOpenNormal_ker_of_isSmoothHom hsm).isOpen hus
+  refine exists_sha1Level_forall_coeffH2 hπ' hbasis hsm hsurj htriv htriv' ha has hbs ?_ hmem
+  intro x hx y hy
+  rw [hb y hy, hb x hx, hb (x * y) (Subgroup.mul_mem _ hx hy)]
+  exact (congrFun hu (⟨x, hx⟩, ⟨y, hy⟩)).symm
+
+/-- **The same with the kernel presented by any subgroup equal to it.** -/
+theorem exists_sha1Level_forall_coeffH2_of_resH2_eq_one_of_eq_ker (hbasis : HasOpenNormalBasis G)
+    (hsm : IsSmoothHom π) (hsurj : Function.Surjective π)
+    (htriv : ∀ n ∈ π.ker, ∀ m : M, n • m = m) (htriv' : ∀ n ∈ π.ker, ∀ m : M', n • m = m)
+    {N : Subgroup G} [N.Normal] (hN : N = π.ker) (hop : IsOpen (N : Set G))
+    {S : Set (Subgroup G)} {z : SmoothH2 G M} (hmem : z ∈ sha2 M S) (hres : resH2 N z = 1) :
+    ∃ x ∈ sha1Level M N hop S,
+      ∀ (φ : M →* M') (hφ : ∀ (g : G) (m : M), φ (g • m) = g • φ m),
+        coeffTransH1 N φ hφ (inflH1 N (SmoothH1 ↥N M) hop x) = 1 →
+          ∃ y : SmoothH2 Q M', comapH2 π hπ' hsm y = coeffH2 φ hφ z := by
+  subst hN
+  exact exists_sha1Level_forall_coeffH2_of_resH2_eq_one hπ' hbasis hsm hsurj htriv htriv' hmem hres
 
 end PackageCoeff
 
