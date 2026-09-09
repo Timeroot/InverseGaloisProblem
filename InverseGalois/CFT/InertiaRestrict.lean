@@ -7,7 +7,9 @@ Let `N` be a number field, let `A` be an intermediate field of `N / ℚ` which i
 and let `P` be a prime of `𝓞 N`.  Membership of `σ : Gal(N/ℚ)` in the inertia group of `P` is the
 condition `σ • x - x ∈ P` for every `x : 𝓞 N`, a condition that does not refer to the base field.
 Consequently, restricting `σ` to `A` sends the inertia group of `P` into the inertia group of the
-prime of `𝓞 A` lying under `P`: for `x : 𝓞 A` the element `σ • x - x` lands in `P ∩ 𝓞 A`.
+prime of `𝓞 A` lying under `P`: for `x : 𝓞 A` the element `σ • x - x` lands in `P ∩ 𝓞 A`.  Neither
+the base field nor the finiteness of the extension plays any role there, so that much is recorded
+for an arbitrary base field and an arbitrary extension of it.
 
 This has an immediate consequence for a pair of normal subextensions `A` and `B` whose compositum
 is all of `N`.  An automorphism of `N` restricting trivially to both `A` and `B` is the identity,
@@ -33,11 +35,13 @@ open NumberField
 
 namespace InverseGalois.CFT
 
-variable {N : Type*} [Field N] [NumberField N]
+section Base
+
+variable {k N : Type*} [Field k] [Field N] [Algebra k N]
 
 /-- Restricting an automorphism of `N` to a normal subextension `A` is compatible with the
 inclusion of `𝓞 A` into `𝓞 N`. -/
-theorem algebraMap_smul_restrictNormal (A : IntermediateField ℚ N) [Normal ℚ ↥A] (σ : Gal(N/ℚ))
+theorem algebraMap_smul_restrictNormal (A : IntermediateField k N) [Normal k ↥A] (σ : Gal(N/k))
     (x : 𝓞 ↥A) :
     algebraMap (𝓞 ↥A) (𝓞 N) (σ.restrictNormal ↥A • x) = σ • algebraMap (𝓞 ↥A) (𝓞 N) x := by
   apply RingOfIntegers.ext
@@ -48,13 +52,17 @@ theorem algebraMap_smul_restrictNormal (A : IntermediateField ℚ N) [Normal ℚ
 /-- **Restriction sends inertia into inertia.**  If `σ` lies in the inertia group of a prime `P`
 of `𝓞 N`, then its restriction to a normal subextension `A` lies in the inertia group of the prime
 of `𝓞 A` lying under `P`. -/
-theorem restrictNormal_mem_inertia (A : IntermediateField ℚ N) [Normal ℚ ↥A] (P : Ideal (𝓞 N))
-    {σ : Gal(N/ℚ)} (hσ : σ ∈ Ideal.inertia Gal(N/ℚ) P) :
-    σ.restrictNormal ↥A ∈ Ideal.inertia Gal(↥A/ℚ) (P.under (𝓞 ↥A)) := by
+theorem restrictNormal_mem_inertia (A : IntermediateField k N) [Normal k ↥A] (P : Ideal (𝓞 N))
+    {σ : Gal(N/k)} (hσ : σ ∈ Ideal.inertia Gal(N/k) P) :
+    σ.restrictNormal ↥A ∈ Ideal.inertia Gal(↥A/k) (P.under (𝓞 ↥A)) := by
   intro x
   show algebraMap (𝓞 ↥A) (𝓞 N) _ ∈ P
   rw [map_sub, algebraMap_smul_restrictNormal]
   exact hσ _
+
+end Base
+
+variable {N : Type*} [Field N] [NumberField N]
 
 /-- An automorphism of `N` whose restriction to a normal subextension `A` is trivial fixes `A`
 pointwise. -/

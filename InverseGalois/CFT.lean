@@ -327,6 +327,7 @@ import InverseGalois.CFT.Kummer.AmbientRadical
 import InverseGalois.CFT.Kummer.CentralEmbedding
 import InverseGalois.CFT.Kummer.CentralEmbeddingPlaces
 import InverseGalois.CFT.Kummer.CentralEmbeddingSqrtNegOne
+import InverseGalois.CFT.Kummer.CharPlace
 import InverseGalois.CFT.Kummer.CocycleDescent
 import InverseGalois.CFT.Kummer.CongruentRadical
 import InverseGalois.CFT.Kummer.CyclicIndex
@@ -340,6 +341,7 @@ import InverseGalois.CFT.Kummer.DyadicSquareClass
 import InverseGalois.CFT.Kummer.GlobalPowRepresentatives
 import InverseGalois.CFT.Kummer.GlobalPower
 import InverseGalois.CFT.Kummer.InertiaBound
+import InverseGalois.CFT.Kummer.InertiaOrd
 import InverseGalois.CFT.Kummer.InfiniteLevelPower
 import InverseGalois.CFT.Kummer.InflationRootsOfUnity
 import InverseGalois.CFT.Kummer.LevelOne
@@ -8046,4 +8048,25 @@ it that are available here.
   unity, which the level was chosen to contain.  Multiplying by the right power of the primitive
   root therefore makes the root fixed, and **an element whose power comes from the completion below
   becomes fixed by the stabiliser after such a correction**.
+
+* `InverseGalois.CFT.Kummer.InertiaOrd` carries the criterion for a radical to be fixed by inertia
+  up an arbitrary Galois extension.  What a place away from the exponent sees of a radicand is only
+  its class modulo powers of the base field, so the criterion may be relaxed from asking the
+  radicand to be a unit at the place below to asking its order there to be a multiple of the
+  exponent, dividing the radical by the right power of a coordinate at the place; and the relaxed
+  criterion passes to an arbitrary extension by descent to a finite Galois level containing the
+  radical, since restricting an automorphism to a level carries inertia into inertia.  So **the
+  inertia subgroup at a prime away from the exponent fixes every radical whose radicand has order a
+  multiple of the exponent below**, which is the form the ramification of a Kummer character is read
+  in when the character is built place by place.
+
+* `InverseGalois.CFT.Kummer.CharPlace` reads a Kummer character at a prime.  The local class of a
+  unit at a place is trivial exactly when the unit is a power in the completion there, and that in
+  turn is exactly the statement that the decomposition subgroup at a prime above the place fixes the
+  chosen root, so **the Kummer character of a unit vanishes on a decomposition subgroup precisely
+  when the local class below vanishes**; contrapositively a unit with a nontrivial local class
+  supplies an element of the decomposition subgroup on which its character does not vanish, which is
+  how a character assembled from units with prescribed local behaviour is shown to surject.  Inertia
+  sees less than decomposition, and the character vanishes on it as soon as the order of the unit
+  below is a multiple of the exponent, so the same units also control where the character ramifies.
 -/

@@ -27,6 +27,9 @@ extension is unchanged, so the criterion for units applies to it.
 * `InverseGalois.CFT.isUnramifiedAt_of_radicals_of_dvd_ord`: **a radical extension of number fields
   is unramified at every place away from the exponent at which the order of each radicand is a
   multiple of the exponent.**
+* `InverseGalois.CFT.eq_of_mem_inertia_of_radical_of_dvd_ord`: **an element of the inertia group at
+  a place away from the exponent fixes every radical whose radicand has order a multiple of the
+  exponent at the place below.**
 
 ## Tags
 
@@ -118,6 +121,43 @@ theorem isUnramifiedAt_of_radicals_of_dvd_ord (hp : p.Prime) {ζ : K} (hζ : IsP
       simp
     rw [hval, ord_div v (Units.ne_zero _) (pow_ne_zero _ (Units.ne_zero _)),
       ord_pow v (Units.ne_zero _), hcord i, Int.mul_ediv_cancel' (hav i), sub_self]
+
+omit [IsGalois K L] in
+/-- **An element of the inertia group at a place away from the exponent fixes every radical whose
+radicand has order a multiple of the exponent at the place below.**  Dividing the radical by the
+power of a coordinate at the place whose exponent is the order of the radicand divided by the
+exponent leaves a radical whose radicand is a unit at the place, which the inertia group fixes; the
+scalar it was divided by lies in the base field and is fixed too. -/
+theorem eq_of_mem_inertia_of_radical_of_dvd_ord (hp : p.Prime) {ζ : K} (hζ : IsPrimitiveRoot ζ p)
+    {w : HeightOneSpectrum (𝓞 L)} (hpw : (p : 𝓞 L) ∉ w.asIdeal)
+    {σ : Gal(L/K)} (hσ : σ ∈ Ideal.inertia Gal(L/K) w.asIdeal) {α : L} {a : K} (hane : a ≠ 0)
+    (hav : (p : ℤ) ∣ ord K (primeUnder (𝓞 K) w) a) (hpow : α ^ p = algebraMap K L a) :
+    σ α = α := by
+  set v : HeightOneSpectrum (𝓞 K) := primeUnder (𝓞 K) w with hv
+  obtain ⟨t, htval⟩ := v.valuation_exists_uniformizer K
+  have ht0 : t ≠ 0 := by
+    intro h
+    rw [h, map_zero] at htval
+    exact WithZero.exp_ne_zero htval.symm
+  have ht : ord K v t = 1 := by
+    rw [valuation_eq_exp_neg_ord K v ht0] at htval
+    have hlog := WithZero.exp_injective htval
+    omega
+  set c : K := t ^ (ord K v a / (p : ℤ)) with hc
+  have hc0 : c ≠ 0 := zpow_ne_zero _ ht0
+  have hcL : algebraMap K L c ≠ 0 := (map_ne_zero_iff _ (algebraMap K L).injective).2 hc0
+  have hcord : ord K v c = ord K v a / (p : ℤ) := by
+    rw [hc, ord_zpow v ht0, ht, mul_one]
+  have hb : (α / algebraMap K L c) ^ p = algebraMap K L (a / c ^ p) := by
+    rw [div_pow, hpow, map_div₀, map_pow]
+  have hbv : v.valuation K (a / c ^ p) = 1 := by
+    rw [valuation_eq_one_iff_ord_eq_zero v (div_ne_zero hane (pow_ne_zero _ hc0)),
+      ord_div v hane (pow_ne_zero _ hc0), ord_pow v hc0, hcord, Int.mul_ediv_cancel' hav, sub_self]
+  have hβ : σ (α / algebraMap K L c) = α / algebraMap K L c :=
+    eq_of_mem_inertia_of_radical hp hζ hpw hσ hbv hb
+  have hcfix : σ (algebraMap K L c) = algebraMap K L c := σ.commutes c
+  calc σ α = σ (α / algebraMap K L c * algebraMap K L c) := by rw [div_mul_cancel₀ _ hcL]
+    _ = α := by rw [_root_.map_mul, hβ, hcfix, div_mul_cancel₀ _ hcL]
 
 end Radical
 
