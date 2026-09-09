@@ -476,6 +476,7 @@ import InverseGalois.CFT.PoitouTate.InfiniteClasses
 import InverseGalois.CFT.PoitouTate.Isotropic
 import InverseGalois.CFT.PoitouTate.LocalConditions
 import InverseGalois.CFT.PoitouTate.NormLocalPower
+import InverseGalois.CFT.PoitouTate.OrbitCoboundary
 import InverseGalois.CFT.PoitouTate.PlaceUniformiser
 import InverseGalois.CFT.PoitouTate.Prescribed
 import InverseGalois.CFT.PoitouTate.RadicalPlace
@@ -6031,6 +6032,19 @@ it that are available here.
   representations kills the everywhere locally trivial classes read with the units as
   coefficients** — a demand about finitely much linear algebra over a finite group, which a
   construction free to enlarge the kernel can meet.
+* `InverseGalois.CFT.PoitouTate.OrbitCoboundary` supplies the mechanism which will meet it.  The
+  units of a number field map onto the orders at the places outside a finite set, and those orders
+  form a permutation module: a group of functions of finite support on the places, with the group
+  permuting the places and moving the values.  A cocycle with values in the units can therefore be
+  measured place by place, and the measurement is a cocycle in the permutation module.  Such a
+  cocycle is a coboundary as soon as it is one at each place separately, on the subgroup fixing
+  that place — which is the statement that a permutation module has the cohomology of its
+  stabilisers, proved here directly by averaging over a choice of representative for each orbit:
+  **a cocycle of a finite group with values in functions of finite support which is a coboundary
+  on every stabiliser is a coboundary**, and hence **a cocycle with values in a module mapping onto
+  such functions is, after subtracting a coboundary, valued in the kernel of that map.**  The
+  kernel is the group of units integral away from the finite set, so this is what carries a class
+  down to coefficients over which the linear algebra of the previous file becomes finite.
 * `InverseGalois.CFT.Profinite.Hilbert90` is the arithmetic input.  A smooth cocycle is constant on
   the cosets of the subgroup fixing a finite Galois level and its values are fixed by that
   subgroup, hence lie in the level, so choosing a preimage of each automorphism of the level turns
