@@ -493,6 +493,7 @@ import InverseGalois.CFT.PoitouTate.ShaCover
 import InverseGalois.CFT.PoitouTate.ShaInduced
 import InverseGalois.CFT.PoitouTate.ShaInflate
 import InverseGalois.CFT.PoitouTate.ShaInflateLevel
+import InverseGalois.CFT.PoitouTate.ShaKummerInflate
 import InverseGalois.CFT.PoitouTate.ShaSurjection
 import InverseGalois.CFT.PoitouTate.ShaSylow
 import InverseGalois.CFT.PoitouTate.ShaTate
@@ -6017,6 +6018,19 @@ it that are available here.
   kernel which is the functions on a Sylow subgroup of the Galois group of a finite Kummer
   extension has no everywhere locally trivial class in the second cohomology**, which is the same
   conclusion at a fraction of the cost.
+* `InverseGalois.CFT.PoitouTate.ShaKummerInflate` asks nothing of the obstruction group at all, and
+  asks instead that something kill it.  The obstruction to inflating an everywhere locally trivial
+  class is a single class at the level, and it need not vanish: it is enough that a homomorphism of
+  the kernels of two lifting problems annihilate it, since the class is then inflated after the
+  homomorphism has been applied.  Twisted Kummer theory reads the whole obstruction group as the
+  first cohomology of the Galois group of the splitting extension — a finite group — with
+  coefficients in the units of that extension tensored with the homomorphisms of the roots of unity
+  into the kernel, and reads the homomorphism of the kernels as a morphism of representations of
+  that finite group.  So **an everywhere locally trivial class of the second cohomology is carried
+  into the image of inflation by any homomorphism of the kernels whose induced morphism of
+  representations kills the everywhere locally trivial classes read with the units as
+  coefficients** — a demand about finitely much linear algebra over a finite group, which a
+  construction free to enlarge the kernel can meet.
 * `InverseGalois.CFT.Profinite.Hilbert90` is the arithmetic input.  A smooth cocycle is constant on
   the cosets of the subgroup fixing a finite Galois level and its values are fixed by that
   subgroup, hence lie in the level, so choosing a preimage of each automorphism of the level turns
