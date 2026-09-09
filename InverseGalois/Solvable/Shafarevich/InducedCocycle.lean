@@ -53,6 +53,9 @@ statement about kernels alone.
 * `InverseGalois.Shafarevich.inducedNorm_surjective_of_forall_conj` — **one set inside the kernel on
   which the character is onto and whose moved conjugates the character kills makes the restriction
   of the cocycle to the kernel onto**, which is the independence of the conjugates.
+* `InverseGalois.Shafarevich.inducedNorm_surjective_of_iSup` — **a family of subgroups of the kernel
+  whose images under the character generate and which the character kills after any conjugation the
+  base realization moves does the same**, which is that count in the shape the arithmetic supplies.
 * `InverseGalois.Shafarevich.shiftCounitMap_surjective` — **the group of functions maps onto any
   group carrying an action of `U`,** compatibly with the two semidirect products.
 
@@ -258,6 +261,36 @@ theorem inducedNorm_surjective_of_forall_conj [DecidableEq U] [Fintype U] (hr : 
     Function.Surjective (inducedNorm φ r χ hr) :=
   inducedNorm_surjective_of_mulSingle φ r χ hr
     (mulSingle_mem_range_inducedNorm φ r χ hr hsurj htriv)
+
+/-- **A family of subgroups of the kernel whose images under the character generate, and which the
+character kills after any conjugation the base realization moves, makes the conjugates of the
+character jointly onto.**
+
+A single subgroup carrying the whole of the character is more than the arithmetic can give: the
+inertia subgroup at one prime is cyclic, and the layer is not.  What it can give is one such
+subgroup for each of a family of primes, their images spanning the layer between them, and the
+subgroup they generate then carries the whole of the character while still being killed after a
+conjugation, killing a family of generators of a subgroup being killing the subgroup. -/
+theorem inducedNorm_surjective_of_iSup [DecidableEq U] [Fintype U] (hr : ∀ u, φ (r u) = u)
+    {ι : Sort*} (J : ι → Subgroup ↥φ.ker) (hgen : ⨆ i, (J i).map χ = ⊤)
+    (htriv : ∀ g : G, φ g ≠ 1 → ∀ i : ι, ∀ y ∈ J i, χ (MulAut.conjNormal g y) = 1) :
+    Function.Surjective (inducedNorm φ r χ hr) := by
+  have hker : ∀ g : G, φ g ≠ 1 →
+      (⨆ i, J i) ≤ (χ.comp (MulAut.conjNormal (H := φ.ker) g).toMonoidHom).ker :=
+    fun g hg => iSup_le fun i y hy => MonoidHom.mem_ker.2 (htriv g hg i y hy)
+  refine inducedNorm_surjective_of_forall_conj φ r χ hr
+    (I := (fun x : ↥φ.ker => (x : G)) '' ((⨆ i, J i : Subgroup ↥φ.ker) : Set ↥φ.ker)) ?_ ?_
+  · intro v
+    have hv : v ∈ Subgroup.map χ (⨆ i, J i) := by
+      rw [Subgroup.map_iSup, hgen]
+      trivial
+    rw [Subgroup.mem_map] at hv
+    obtain ⟨x, hx, hxv⟩ := hv
+    exact ⟨(x : G), ⟨x, hx, rfl⟩, x.2, hxv⟩
+  · rintro g hg y ⟨x, hx, rfl⟩ hy
+    rw [show (⟨g * (x : G) * g⁻¹, hy⟩ : ↥φ.ker) = MulAut.conjNormal g x from
+      Subtype.ext (MulAut.conjNormal_apply g x).symm]
+    exact MonoidHom.mem_ker.1 (hker g hg hx)
 
 /-- **The induced homomorphism is onto as soon as its restriction to the kernel is.**  An element of
 the semidirect product is the product of one coming from the kernel, which the restriction reaches,
