@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Profinite.EmbeddingClass
+import InverseGalois.CFT.Profinite.EmbeddingConj
 import InverseGalois.CFT.Profinite.TransgressionClass
 import InverseGalois.Solvable.Shafarevich.LayerSection
 import InverseGalois.Solvable.Shafarevich.LevelSolution
@@ -39,6 +40,8 @@ the obstruction itself is formed.
 
 ## Main definitions
 
+* `InverseGalois.Shafarevich.conjFamily` — the conjugates of the members of a finite family of
+  subgroups.
 * `InverseGalois.Shafarevich.IsShrinkStable` — a property of solutions which a shrinking does not
   destroy.
 * `InverseGalois.Shafarevich.HasLocalLift` — the step is solvable along every member of the wider
@@ -70,6 +73,46 @@ open InverseGalois.CFT
 
 attribute [local instance] genericQuotAction
 
+/-! ### The conjugates of a finite family -/
+
+/-- **The conjugates of the members of a finite family of subgroups.**
+
+A family of subgroups chosen once and for all is necessarily finite, and over a number field a
+place of the base field carries not one decomposition subgroup of the absolute Galois group but a
+whole conjugacy class of them, one for each prime of the big field above it, of which there are
+infinitely many.  The family can therefore name only one member of each class, and everything
+arranged at the named member has to be transported to the others by conjugation. -/
+def conjFamily {Γ : Type*} [Group Γ] {t : ℕ} (D : Fin t → Subgroup Γ) : Set (Subgroup Γ) :=
+  {A | ∃ (ν : Fin t) (σ : Γ), A = (D ν).map (MulAut.conj σ).toMonoidHom}
+
+/-- **A member of the family is one of its own conjugates.** -/
+theorem self_mem_conjFamily {Γ : Type*} [Group Γ] {t : ℕ} (D : Fin t → Subgroup Γ) (ν : Fin t) :
+    D ν ∈ conjFamily D := by
+  refine ⟨ν, 1, ?_⟩
+  have h1 : (MulAut.conj (1 : Γ)).toMonoidHom = MonoidHom.id Γ := by
+    ext x
+    show (1 : Γ) * x * 1⁻¹ = x
+    group
+  rw [h1, Subgroup.map_id]
+
+/-- **Triviality along a family wherever a homomorphism is trivial extends to the conjugates of the
+family.**  Conjugating an element of a conjugate back into the family changes the value of both
+homomorphisms by conjugation, which neither creates nor destroys triviality. -/
+theorem eq_one_of_mem_conjFamily {Γ V W : Type*} [Group Γ] [Group V] [Group W] (φ : Γ →* V)
+    (Φ : Γ →* W) {t : ℕ} {D : Fin t → Subgroup Γ}
+    (h : ∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) :
+    ∀ A ∈ conjFamily D, ∀ x ∈ A, φ x = 1 → Φ x = 1 := by
+  rintro _ ⟨ν, σ, rfl⟩ x hx hx1
+  obtain ⟨y, hy, rfl⟩ := Subgroup.mem_map.1 hx
+  show Φ (σ * y * σ⁻¹) = 1
+  have hy1 : φ y = 1 := by
+    have := hx1
+    rw [show (MulAut.conj σ).toMonoidHom y = σ * y * σ⁻¹ from rfl, _root_.map_mul,
+      _root_.map_mul, _root_.map_inv] at this
+    simpa using this
+  rw [_root_.map_mul, _root_.map_mul, _root_.map_inv, h (D ν) ⟨ν, rfl⟩ y hy hy1]
+  simp
+
 /-! ### Splitting over the image of a completely decomposed subgroup -/
 
 /-- **A homomorphism over the operator group which is trivial on a family of subgroups wherever the
@@ -90,7 +133,7 @@ theorem exists_operatorHom_forall_exists_subgroup_resH2_extensionClass_eq_one (�
       (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) →
       (∀ (ν : Fin t), ∀ x ∈ D ν, φ x = 1 → Φ x = 1) →
       ∃ (α : Generic U m S →* Generic U n S) (hα : IsOperatorHom α), Function.Surjective α ∧
-        ∀ A ∈ Set.range D, ∃ H : Subgroup (GenericQuot ℓ U n S j),
+        ∀ A ∈ conjFamily D, ∃ H : Subgroup (GenericQuot ℓ U n S j),
           (∀ d : ↥A, ((layerSemidirectMap ℓ hα j).comp Φ) (d : Γ) ∈ H) ∧
             resH2 H (extensionClass (layerExtension ℓ (genericAut U n S) j)
               (smul_eq_conjActHom_genericLayer ℓ U n S j) σn) = 1 := by
@@ -110,9 +153,19 @@ theorem exists_operatorHom_forall_exists_subgroup_resH2_extensionClass_eq_one (�
     rw [Subgroup.map_map, hcomp]
   obtain ⟨α, hα, hαsurj, hkill⟩ := hm (fun ν => (D ν).map Φ) hinj hmap
   refine ⟨α, hα, hαsurj, ?_⟩
-  rintro _ ⟨ν, rfl⟩
-  exact ⟨((D ν).map Φ).map (layerSemidirectMap ℓ hα j),
-    fun d => Subgroup.mem_map_of_mem _ (Subgroup.mem_map_of_mem _ d.2), hkill ν⟩
+  rintro _ ⟨ν, σ, rfl⟩
+  set Ψ := (layerSemidirectMap ℓ hα j).comp Φ
+  refine ⟨(((D ν).map Φ).map (layerSemidirectMap ℓ hα j)).map
+      (MulAut.conj (Ψ σ)).toMonoidHom, fun d => ?_,
+    resH2_extensionClass_map_conj_eq_one (layerExtension ℓ (genericAut U n S) j)
+      (smul_eq_conjActHom_genericLayer ℓ U n S j) σn _ (Ψ σ) (hkill ν)⟩
+  obtain ⟨y, hy, hyd⟩ := Subgroup.mem_map.1 d.2
+  have hcoe : (d : Γ) = σ * y * σ⁻¹ := hyd.symm
+  have hmemH : Ψ y ∈ ((D ν).map Φ).map (layerSemidirectMap ℓ hα j) :=
+    Subgroup.mem_map_of_mem _ (Subgroup.mem_map_of_mem _ hy)
+  refine Subgroup.mem_map.2 ⟨Ψ y, hmemH, ?_⟩
+  show Ψ σ * Ψ y * (Ψ σ)⁻¹ = Ψ (d : Γ)
+  rw [hcoe, _root_.map_mul, _root_.map_mul, _root_.map_inv]
 
 /-! ### The obstruction of the step is everywhere locally trivial -/
 
@@ -132,9 +185,12 @@ def IsShrinkStable (ℓ : ℕ) (U : Type) [Group U] (S : Type) [Group S] {k Ω :
 name.**
 
 Local triviality of the obstruction is measured against the whole family of decomposition
-subgroups, which is far larger than the finite family the shrinking count consumes; along the finite
-family the extension itself is made to split, and along the rest the step is asked outright to have
-a local solution.  In the arithmetic the members not named are the places at which the field cut out
+subgroups, which is far larger than the finite family the shrinking count consumes; along the
+conjugates of the finite family the extension itself is made to split, and along the rest the step
+is asked outright to have a local solution.  Conjugates have to be counted as named, since a place
+of the base field carries a whole conjugacy class of decomposition subgroups and a finite family
+can name only one member of it, while what the shrinking arranges at the named member holds at all
+of them.  In the arithmetic the members not named are the places at which the field cut out
 is unramified, where the local group is procyclic and any element of the group above generates a
 lift, and the places at which it is ramified but the base field splits completely, where a root of a
 uniformizer produces one.
@@ -152,7 +208,7 @@ def HasLocalLift (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] (n
   ∀ Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j, IsSmoothHom Φ →
     (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) →
     (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) → P n j Φ →
-    ∀ A ∈ T, A ∉ Set.range D →
+    ∀ A ∈ T, A ∉ conjFamily D →
       ∃ g : ↥A →* GenericQuot ℓ U n S (j + 1),
         IsSmooth₁ (g : ↥A → GenericQuot ℓ U n S (j + 1)) ∧
           ∀ x : ↥A, (layerExtension ℓ (genericAut U n S) j).rightHom (g x) = Φ x
@@ -223,7 +279,7 @@ theorem exists_levelSolution_liftObstructionClass_mem_sha2 (ℓ : ℕ) [Fact ℓ
   have hΦP : P n j Φ := hstab m n j hα Φ₀ hP
   refine ⟨Φ, (layerSemidirectMap_surjective ℓ hα j hαsurj).comp hsurj, hΦsm, hΦright, hΦloc, hΦP,
     fun hact hker => mem_sha2.2 fun A hA => ?_⟩
-  by_cases hAD : A ∈ Set.range D
+  by_cases hAD : A ∈ conjFamily D
   · exact mem_sha2.1 (liftObstructionClass_mem_sha2_of_extensionClass
       (layerExtension ℓ (genericAut U n S) j) Φ
       (smul_eq_conjActHom_genericLayer ℓ U n S j) hact hker σn hres) A hAD

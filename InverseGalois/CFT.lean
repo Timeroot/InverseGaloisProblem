@@ -533,6 +533,7 @@ import InverseGalois.CFT.Profinite.Cup
 import InverseGalois.CFT.Profinite.Discrete
 import InverseGalois.CFT.Profinite.DiscreteComap
 import InverseGalois.CFT.Profinite.EmbeddingClass
+import InverseGalois.CFT.Profinite.EmbeddingConj
 import InverseGalois.CFT.Profinite.EmbeddingObstruction
 import InverseGalois.CFT.Profinite.ExtensionCoeff
 import InverseGalois.CFT.Profinite.FixingSubgroup
@@ -5846,6 +5847,15 @@ it that are available here.
   cohomology: **an embedding problem is solvable on a subgroup whose image lies in a subgroup over
   which the extension splits**, so a family of such subgroups puts the obstruction in the everywhere
   locally trivial classes, and if there are none the problem is solved outright.
+* `InverseGalois.CFT.Profinite.EmbeddingConj` observes that splitting is a property of the
+  conjugacy class of a subgroup and not of the subgroup: **an extension which splits over a
+  subgroup splits over every conjugate of it**, a splitting conjugated inside the extension by any
+  element above the conjugating element being a splitting over the conjugate.  Over a number field
+  this is what makes a finite family of subgroups usable at all.  A place of the base field carries
+  not one decomposition subgroup of the absolute Galois group but a whole conjugacy class of them,
+  one for each prime of the big field above it, of which there are infinitely many; a family chosen
+  once and for all can name only one member of each class, and what is arranged at the named member
+  would be of no use at the others were splitting not invariant under conjugation.
 * `InverseGalois.CFT.Profinite.LiftTwist` moves between the solutions once there is one.
   Multiplying a lift by a one cocycle with values in the kernel gives **again a lift**: the cocycle
   condition is precisely what makes the product multiplicative, conjugation inside the extension
