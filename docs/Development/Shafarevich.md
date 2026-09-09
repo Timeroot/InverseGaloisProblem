@@ -19660,3 +19660,95 @@ inertia API for the infinite `Gal(Ω/k)` — is **not** a from-scratch construct
 brick (2) is the surjectivity of `stabilizerHom` onto the residue automorphisms and the fact that
 the residue field of `𝓞 Ω` at `P` is an algebraic closure of a finite field, whose absolute Galois
 group is procyclic on Frobenius.
+
+## §1.74 — The ramification property, and a second correction: conjugates (2026-09-09)
+
+Two landings.  Full root build green at **9879 jobs, 0 errors, 0 warnings, 0 sorries** after both.
+
+**(a) `LevelRamification.lean` — the property is no longer abstract.**  §1.73's refactor left
+`LevelProperty` free; this module supplies the one SW Theorem 15 actually uses, condition (ii):
+
+```lean
+def IsSplitTotallyRamified (φ : Gal(Ω/k) →* U) : LevelProperty ℓ U S k Ω := fun _ _ Φ =>
+  ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
+    (∃ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1 ∧ Φ x ≠ 1) →
+      (∀ x ∈ stabilizer Gal(Ω/k) P, φ x = 1) ∧
+        (∀ x ∈ stabilizer Gal(Ω/k) P, ∃ y ∈ Ideal.inertia Gal(Ω/k) P, Φ x = Φ y) ∧
+          ∃ c, ∀ x ∈ stabilizer Gal(Ω/k) P, Φ x ∈ Subgroup.zpowers c
+```
+
+in words: *wherever the solution ramifies beyond the base realization, the place splits completely
+in the base realization, is totally ramified in the solution, and the local group is cyclic.*  It
+is stated over the primes of `𝓞 Ω` directly, so no finite level ever has to be named and no choice
+of a model field enters.
+
+Two design points paid off at once.  Cyclicity is written "the values lie in `Subgroup.zpowers c`"
+rather than "`IsCyclic` of the image", because that form pushes forward along a homomorphism in one
+line; and the *whole* property is preserved by post-composition (`IsSplitTotallyRamified.comp`),
+so clause 3 of `HasRungData` —
+
+```lean
+theorem isShrinkStable_isSplitTotallyRamified (φ : Gal(Ω/k) →* U) :
+    IsShrinkStable ℓ U S (IsSplitTotallyRamified ℓ U S φ) :=
+  fun _ _ _ _ hα _ hΨ => hΨ.comp (layerSemidirectMap ℓ hα _)
+```
+
+— is a one-liner.  Clause 1 (level zero) is `isSplitTotallyRamified_of_ker_le`: the level-zero map
+factors through `φ`, so its antecedent `φ x = 1 ∧ Φ x ≠ 1` is never met and the property holds
+vacuously.  **Two of the five open clauses of §1.73(e) are therefore closed.**
+
+**(b) A second correction of the same kind as §1.72(b): `HasLocalLift` was still false.**  The
+§1.73 refactor made the local hypothesis ask for a lift only at subgroups `A ∈ T` outside the named
+finite family `Set.range D`.  That is still unprovable, for a reason independent of the first
+correction.  `T = decompositionSubgroups k Ω` contains, for each place of `k`, **infinitely many**
+decomposition subgroups — one per prime of `𝓞 Ω` above it — and `Gal(Ω/k)` is transitive on them
+with a stabilizer of infinite index.  A family `D : Fin t → Subgroup` names one member of each
+class.  At any *other* member `A = σ (D ν) σ⁻¹` of the same class we had `A ∉ Set.range D`, so the
+hypothesis was invoked; but the property `P` gives nothing there, because `P`'s antecedent is about
+`Φ` and conjugating `hloc` kills `Φ` on `A ∩ ker φ` exactly as it does on `D ν ∩ ker φ`.  So the
+demand was "lift over `A`" with no information at all — false.
+
+The fix is group-theoretic and costs one lemma.  **Splitting an extension over a subgroup is a
+property of the conjugacy class of the subgroup**, since a splitting conjugated inside the
+extension by any element above the conjugating element is a splitting over the conjugate (the
+projection is onto, so such an element exists).  New module
+`InverseGalois/CFT/Profinite/EmbeddingConj.lean`:
+
+```lean
+theorem resH2_extensionClass_map_conj_eq_one (σ : S.Section) (H : Subgroup G) (g : G)
+    (h : resH2 H (extensionClass S hactG σ) = 1) :
+    resH2 (H.map (MulAut.conj g).toMonoidHom) (extensionClass S hactG σ) = 1
+```
+
+`LevelObstruction.lean` then gained
+
+```lean
+def conjFamily {Γ : Type*} [Group Γ] {t : ℕ} (D : Fin t → Subgroup Γ) : Set (Subgroup Γ) :=
+  {A | ∃ (ν : Fin t) (σ : Γ), A = (D ν).map (MulAut.conj σ).toMonoidHom}
+```
+
+with `self_mem_conjFamily` and `eq_one_of_mem_conjFamily` (trivial along `Set.range D` implies
+trivial along `conjFamily D`, so the arithmetic side never has to re-derive it).  The shrinking
+theorem `exists_operatorHom_forall_exists_subgroup_resH2_extensionClass_eq_one` now concludes over
+`conjFamily D` rather than `Set.range D`, and `HasLocalLift` excepts `conjFamily D`.  Downstream
+(`LevelShrink`, `LevelLift`, `LevelTwist`, `LevelLocal`, `LevelRung`) only passes `hvan` around, so
+**no argument changed** — only the type.  `LevelSolution` deliberately keeps `Set.range D` in its
+"trivial along the family" clause: the two are equivalent there, and keeping the smaller set avoids
+touching `HasSolutionRepair` and `HasRungData`.
+
+**(c) Where this leaves `HasRungData`.**  Three open clauses, unchanged in content from §1.73(e)
+but renumbered:
+
+1. `∀ ν, HasFiniteElementaryQuotient ℓ (D ν ⊓ φ.ker)`.
+2. `∀ n, LevelSolution … P n 1` — the first rung.
+3. `HasLocalLift` (SW Step 1(b)/1(c)) and `HasSolutionRepair` (SW Step 3).
+
+**(d) Lean findings.**  2797: a `fun` lambda proving a `def` whose binders include an *implicit*
+one must supply a binder for the implicit too, or Lean silently binds the next explicit argument to
+it and reports a type mismatch several arguments later.  2798: `congrArg (fun y => (y : G)) h`
+leaves an un-beta-reduced `(fun y => ↑y) (…)` in the hypothesis, so a following `rw` with a
+coercion simp lemma fails with "did not find an occurrence"; prefer writing the coercion out, or
+avoid `Subgroup.equivMapOfInjective` in favour of an explicit `MonoidHom.codRestrict`.  2799:
+`⟨ν, 1, by simp⟩` will not close `D ν = (D ν).map (MulAut.conj 1).toMonoidHom`; prove
+`(MulAut.conj (1 : Γ)).toMonoidHom = MonoidHom.id Γ` by `ext x; show (1:Γ) * x * 1⁻¹ = x; group`
+first, then `Subgroup.map_id`.
