@@ -591,6 +591,9 @@ import InverseGalois.CFT.Profinite.TwistTensor
 import InverseGalois.CFT.RatUnits
 import InverseGalois.CFT.RelativeFrobenius
 import InverseGalois.CFT.RelativeFrobeniusBase
+import InverseGalois.CFT.Residue.AlgClosed
+import InverseGalois.CFT.Residue.Decomposition
+import InverseGalois.CFT.Residue.FrobeniusField
 import InverseGalois.CFT.RestrictLE
 import InverseGalois.CFT.ScalarSemidirect
 import InverseGalois.CFT.Scholz.AbelianInertia
@@ -7976,4 +7979,43 @@ it that are available here.
   realising a prescription with values in a module of that many coordinates, and at every place
   outside the prescribed part either all unramified or all powers of a single local class over a
   completion carrying the roots of unity.**
+
+* `InverseGalois.CFT.Residue.AlgClosed` gives an algebraic closure the residue fields it looks as
+  though it has none of.  Its ring of integers has nonzero primes, each of them lies over a nonzero
+  prime of the integers, which is maximal, and maximality goes up along an integral extension, so
+  **a nonzero prime of the ring of integers of an arbitrary field is maximal**.  The quotient is
+  then a field, and it is algebraically closed: a monic polynomial over it lifts to a monic
+  polynomial of the same degree over the ring of integers, that one has a root in the ambient field,
+  the root is integral over the integers so it lies in the ring of integers already, and its class
+  is the root one wanted.  Below, the prime of a number field under a nonzero prime is a nonzero
+  prime of a number ring, so **the residue field downstairs is finite** and **the residue field
+  upstairs is an algebraic closure of it**.
+
+* `InverseGalois.CFT.Residue.FrobeniusField` does the finite-field side of the dictionary.  Over a
+  finite base, the elements fixed by a power of the Frobenius form a subfield of the prescribed
+  finite degree, every finite subset of an algebraic closure generates a finite subextension, and an
+  automorphism of a finite extension of a finite field is a power of the Frobenius; so **every
+  automorphism of an algebraic closure of a finite field agrees with a power of the Frobenius on any
+  prescribed finite set**, and read backwards, some power of the Frobenius undoes a given
+  automorphism there.  Restriction to the subfield of a prescribed degree is a homomorphism onto a
+  cyclic group of that order carrying the Frobenius to a generator, and a cyclic group of large
+  enough order maps onto any element of a finite group; composing, **every element of a finite group
+  is the value at the Frobenius of a homomorphism which is trivial on the automorphisms fixing a
+  single element**.
+
+* `InverseGalois.CFT.Residue.Decomposition` puts the two together at a nonzero prime of the ring of
+  integers of an algebraic closure of a number field.  The stabiliser of the prime acts on the
+  residue field over the residue field of the base, surjectively and with kernel the inertia
+  subgroup, and the same surjectivity over a finite subextension says that **an automorphism of the
+  residue field trivial on the residue field of that subextension comes from an element of the
+  stabiliser trivial on the subextension**.  An open subgroup of the stabiliser containing inertia
+  is spent on such a subextension: a power of the Frobenius matches a given element on the finite
+  image of the integers of the subextension, and what is left is corrected by an element trivial
+  there, up to inertia.  So **an arithmetic Frobenius generates the stabiliser modulo inertia**, in
+  the form that an open subgroup containing inertia and the Frobenius is everything, and **it can be
+  sent to any prescribed element of any finite group by a smooth homomorphism killing inertia**.
+  The two together lift: two homomorphisms agreeing on inertia and at the Frobenius have an open
+  equalizer, hence agree, so **an unramified smooth homomorphism from a decomposition group to a
+  finite group lifts smoothly through any surjection of finite groups** - the local half of the
+  lifting step of an embedding problem, at the places where nothing is ramified.
 -/
