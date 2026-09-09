@@ -57,6 +57,7 @@ import InverseGalois.Solvable.Shafarevich.LayerShaPlaces
 import InverseGalois.Solvable.Shafarevich.LayerShaLevel
 import InverseGalois.Solvable.Shafarevich.LayerShaDescent
 import InverseGalois.Solvable.Shafarevich.LocalLift
+import InverseGalois.Solvable.Shafarevich.CyclicLift
 
 /-!
 # Shafarevich's theorem
@@ -436,4 +437,16 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   the primes the base realization splits completely, and with the order bounded by the order of the
   group one level down times the prime â€” which is the bound a local field carrying that many roots
   of unity meets.
+* `InverseGalois.Solvable.Shafarevich.CyclicLift` closes that case.  The powers of an element are
+  carried onto the powers of any other element whose order divides them, by sending one generator
+  to the other; this is well defined because two exponents with the same power of the first element
+  differ by a multiple of its order, hence by a multiple of the order of the second.  A cyclic
+  character is thereby read inside the units of the algebraic closure, where the roots of unity of
+  every order are found, and Hilbert's theorem ninety for a closed subgroup extracts a root of it
+  of the complementary order; the transport in the other direction carries that root into the group
+  the lift was wanted in, the two transports agreeing at the generators.  The one thing asked is
+  that the roots of unity of the order in play be fixed by the whole group, that is, that the base
+  field contain them: **the step has a local solution at every prime as soon as the base field
+  carries the roots of unity of the prime times the order of the group at the level**, and no local
+  class field theory is spent on the way.
 -/
