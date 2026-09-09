@@ -520,6 +520,7 @@ import InverseGalois.CFT.PoitouTate.TwoPlacesKill
 import InverseGalois.CFT.PoitouTate.TwoPlacesRadical
 import InverseGalois.CFT.PoitouTate.Unramified
 import InverseGalois.CFT.PrimeProductSquare
+import InverseGalois.CFT.Profinite.CharacterRoot
 import InverseGalois.CFT.Profinite.Cochain
 import InverseGalois.CFT.Profinite.Coeff
 import InverseGalois.CFT.Profinite.CoindLocal
@@ -8018,4 +8019,17 @@ it that are available here.
   equalizer, hence agree, so **an unramified smooth homomorphism from a decomposition group to a
   finite group lifts smoothly through any surjection of finite groups** - the local half of the
   lifting step of an embedding problem, at the places where nothing is ramified.
+
+* `InverseGalois.CFT.Profinite.CharacterRoot` transports Hilbert's theorem ninety to a closed
+  subgroup and extracts roots of characters with it.  A closed subgroup is the group fixing its own
+  fixed field, over which the extension is Galois again, and the correspondence carrying one to the
+  other is continuous, so **a smooth one cocycle of a closed subgroup with values in the units of
+  the extension is the coboundary of a single unit**.  A smooth character killed by a number is
+  such a cocycle as soon as the roots of unity of a multiple of that number are fixed by the
+  subgroup, and then a root of its primitive of the complementary order - available because the
+  field of coefficients is algebraically closed - has a coboundary whose values are again roots of
+  unity of the multiple, hence a homomorphism, whose kernel contains the automorphisms fixing the
+  finite extension the root generates, hence smooth.  So **a smooth character of a closed subgroup
+  has a smooth root of any order**, as far as the roots of unity reach, and none of it costs local
+  class field theory.
 -/
