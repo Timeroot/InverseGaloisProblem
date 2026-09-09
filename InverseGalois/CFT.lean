@@ -531,6 +531,7 @@ import InverseGalois.CFT.Profinite.H2Congr
 import InverseGalois.CFT.Profinite.Hilbert90
 import InverseGalois.CFT.Profinite.InfRes
 import InverseGalois.CFT.Profinite.Kummer
+import InverseGalois.CFT.Profinite.KummerCoeff
 import InverseGalois.CFT.Profinite.KummerConj
 import InverseGalois.CFT.Profinite.KummerAction
 import InverseGalois.CFT.Profinite.KummerFinite
@@ -572,6 +573,7 @@ import InverseGalois.CFT.Profinite.TransgressionRestrict
 import InverseGalois.CFT.Profinite.Trivial
 import InverseGalois.CFT.Profinite.Twist
 import InverseGalois.CFT.Profinite.TwistAction
+import InverseGalois.CFT.Profinite.TwistCoeff
 import InverseGalois.CFT.Profinite.TwistConj
 import InverseGalois.CFT.Profinite.TwistRes
 import InverseGalois.CFT.Profinite.TwistTensor
@@ -5754,7 +5756,11 @@ it that are available here.
   form the arithmetic can use: **if a map of the coefficients kills the everywhere locally trivial
   obstruction classes, then it carries every everywhere locally trivial class of the second
   cohomology into the image of inflation** — the obstruction need not vanish, only be killed
-  downstream.
+  downstream.  The demand can moreover be made at the level rather than over the whole group: the
+  map of the coefficients commutes with inflation, and inflation is injective in the first
+  cohomology, so **killing the obstruction of an inflated class and killing the class it is inflated
+  from are the same demand** — a demand on the first cohomology of the quotient alone, which is the
+  shape a theorem about a finite group can meet.
 * `InverseGalois.CFT.Profinite.Discrete` says that last clause exactly.  On a discrete group the
   trivial subgroup is open, so every cochain is smooth and every action is smooth, and the smooth
   cocycles are all the cocycles; passing to classes, **the smooth cohomology of a discrete group is
@@ -6161,6 +6167,16 @@ it that are available here.
   recorded, the restriction along an inclusion of subgroups and the restriction of the first
   cohomology of a normal subgroup to the part of it lying inside another subgroup — which read on
   the Galois group of a number field is the localisation of a class at a place.
+* `InverseGalois.CFT.Profinite.TwistCoeff` makes the twist natural in the coefficients instead.  A
+  twisted class is the image of one fixed class under a homomorphism of the coefficients, so pushing
+  it forward along a second one is the twisted class of the composite, and **the whole twisting map
+  is carried to the twisting map of the new coefficients, tensored on the base group with
+  composition on the homomorphisms of the cyclic coefficients.**  The map of the tensor product that
+  names is itself equivariant, and this is where the homomorphism being equivariant is used:
+  conjugating a homomorphism of the cyclic coefficients translates its value forwards, and an
+  equivariant homomorphism commutes with that translation.  **So the induced map of the tensor
+  product is a map of modules over the group, and over the quotient by any subgroup moving neither
+  factor** — which is what lets it be read as a morphism of representations of a finite group.
 * `InverseGalois.CFT.Profinite.KummerTower` carries Kummer theory up a tower of fields.  A unit of
   an intermediate field is a unit of every larger one, the subgroup fixing the larger field sits
   inside the subgroup fixing the smaller one, and **the restriction of the Kummer class of a unit is
@@ -6221,6 +6237,19 @@ it that are available here.
   with coefficients in the units of the subextension tensored with the homomorphisms of the roots of
   unity.**  The everywhere locally trivial classes travel along it, and the two readings of them
   vanish together — which is what a local-global principle has to supply.
+* `InverseGalois.CFT.Profinite.KummerCoeff` carries a homomorphism of the kernels along with them.
+  An equivariant homomorphism of additive modules is a morphism of the associated representations,
+  and two identifications intertwining it with a homomorphism of multiplicative coefficients make a
+  commuting square; taking cohomology of that square, **the identification of the smooth first
+  cohomology with the cohomology of a representation is natural in the coefficients.**  Applied to
+  the twisted Kummer identification this says that **the map induced by a homomorphism of the
+  kernels of two lifting problems is, on the other side, the map induced by composition with it** —
+  a morphism of representations of the Galois group of the subextension, built from the identity on
+  the units and composition on the homomorphisms of the roots of unity.  That is the last step of
+  the translation: **a homomorphism of the kernels whose induced map annihilates the everywhere
+  locally trivial classes, read with the units of the subextension as coefficients, kills every
+  inflated obstruction**, so the descent of the previous files becomes a question about the first
+  cohomology of a finite group with coefficients in a tensor product.
 * `InverseGalois.CFT.Profinite.KummerFinite` names the group class field theory computes with.  The
   quotient of an infinite Galois group by the subgroup fixing a normal intermediate field is the
   Galois group of that field, restriction to it being surjective with that subgroup as kernel, and

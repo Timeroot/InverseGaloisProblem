@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Mathlib
 import InverseGalois.CFT.Profinite.TransgressionCocycle
 import InverseGalois.CFT.Profinite.TransgressionInflate
+import InverseGalois.CFT.Profinite.TwistRes
 
 /-!
 # The transgression class is natural in the coefficients
@@ -30,12 +31,18 @@ descent theorem, isolated here: a smooth cocycle whose restriction to the kernel
 of a smooth cochain is cohomologous to one which is trivial at every pair whose first entry lies in
 the kernel.
 
+The obstruction attached to a class of the level is itself a class of the level: the map of the
+coefficients commutes with inflation, and inflation is injective in the first cohomology, so
+annihilating the obstruction over the whole group and annihilating it at the level are the same
+demand.  That is what lets the demand be handed to a theorem about a finite group.
+
 ## Main definitions
 
 * `InverseGalois.CFT.transMap`: a family of maps into the coefficients, composed with a homomorphism
   of the coefficients.
 * `InverseGalois.CFT.coeffTransH1`: **the map of the first cohomology with values in the first
   cohomology of a normal subgroup induced by a homomorphism of the coefficients.**
+* `InverseGalois.CFT.coeffQuotTransH1`: the same map, read at the level of the quotient.
 
 ## Main results
 
@@ -50,6 +57,10 @@ the kernel.
   the second cohomology into the image of inflation.**
 * `InverseGalois.CFT.exists_comapH2_eq_coeffH2_of_sha1Level`: **the same, with the obstructions read
   at the level of the quotient.**
+* `InverseGalois.CFT.coeffTransH1_inflH1`: **pushing the coefficients forward commutes with
+  inflation from the level.**
+* `InverseGalois.CFT.coeffTransH1_inflH1_eq_one_iff`: the obstruction attached to a class of the
+  level is annihilated exactly when it is annihilated at the level.
 
 ## Tags
 
@@ -307,5 +318,54 @@ theorem exists_comapH2_eq_coeffH2_of_sha1Level (hbasis : HasOpenNormalBasis G)
   exact hkill x hmemx
 
 end Package
+
+/-! ### The map of the coefficients at the level of the quotient -/
+
+section Level
+
+variable {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
+variable {M M' : Type*} [CommGroup M] [CommGroup M'] [MulDistribMulAction G M]
+  [MulDistribMulAction G M']
+variable {N : Subgroup G} [hN : N.Normal]
+variable (φ : M →* M') (hφ : ∀ (g : G) (m : M), φ (g • m) = g • φ m)
+
+/-- **A homomorphism of the coefficients commutes with the action of the quotient on the first
+cohomology of a normal subgroup**, that action being the one the ambient group induces. -/
+theorem coeffH1_quotient_smul (q : G ⧸ N) (z : SmoothH1 ↥N M) :
+    coeffH1 φ (fun (g : ↥N) m => hφ (g : G) m) (q • z)
+      = q • coeffH1 φ (fun (g : ↥N) m => hφ (g : G) m) z := by
+  obtain ⟨g, rfl⟩ := QuotientGroup.mk_surjective q
+  rw [quotientMk_smul, quotientMk_smul]
+  exact coeffH1_conj φ hφ g z
+
+variable (N) in
+/-- **The map of the first cohomology of the quotient with values in the first cohomology of a
+normal subgroup induced by an equivariant homomorphism of the coefficients**, the same construction
+as over the ambient group but read at the level. -/
+def coeffQuotTransH1 :
+    SmoothH1 (G ⧸ N) (SmoothH1 ↥N M) →* SmoothH1 (G ⧸ N) (SmoothH1 ↥N M') :=
+  coeffH1 (coeffH1 φ fun (g : ↥N) m => hφ (g : G) m) (coeffH1_quotient_smul φ hφ)
+
+variable (N) in
+/-- **Pushing the coefficients forward commutes with inflation from the level**, so the obstruction
+attached to a class inflated from the quotient is itself inflated from the quotient. -/
+theorem coeffTransH1_inflH1 (hop : IsOpen (N : Set G))
+    (x : SmoothH1 (G ⧸ N) (SmoothH1 ↥N M)) :
+    coeffTransH1 N φ hφ (inflH1 N (SmoothH1 ↥N M) hop x)
+      = inflH1 N (SmoothH1 ↥N M') hop (coeffQuotTransH1 N φ hφ x) :=
+  (comapH1_coeffH1 (QuotientGroup.mk' N) (fun _ _ => rfl) (fun _ _ => rfl)
+    (isSmoothHom_mk' N hop) _ (coeffH1_quotient_smul φ hφ) (coeffH1_conj φ hφ) x).symm
+
+variable (N) in
+/-- **The obstruction attached to a class of the level is trivial exactly when it is trivial at the
+level**, inflation being injective in the first cohomology. -/
+theorem coeffTransH1_inflH1_eq_one_iff (hop : IsOpen (N : Set G))
+    (x : SmoothH1 (G ⧸ N) (SmoothH1 ↥N M)) :
+    coeffTransH1 N φ hφ (inflH1 N (SmoothH1 ↥N M) hop x) = 1
+      ↔ coeffQuotTransH1 N φ hφ x = 1 := by
+  rw [coeffTransH1_inflH1 N φ hφ hop x, ← _root_.map_one (inflH1 N (SmoothH1 ↥N M') hop)]
+  exact (inflH1_injective N (SmoothH1 ↥N M') hop).eq_iff
+
+end Level
 
 end InverseGalois.CFT
