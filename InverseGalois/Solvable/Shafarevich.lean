@@ -52,6 +52,7 @@ import InverseGalois.Solvable.Shafarevich.LayerTensorOne
 import InverseGalois.Solvable.Shafarevich.LayerPi
 import InverseGalois.Solvable.Shafarevich.LayerKummerShrink
 import InverseGalois.Solvable.Shafarevich.LayerLocalOrd
+import InverseGalois.Solvable.Shafarevich.LayerShaPlaces
 
 /-!
 # Shafarevich's theorem
@@ -369,4 +370,12 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   coordinate space over the field with as many elements as the prime, and they are, being a finite
   abelian group killed by the prime.  Since they are produced afresh at each number of letters,
   **the vector of orders is the local dictionary of a layer at every number of letters at once.**
+* `InverseGalois.Solvable.Shafarevich.LayerShaPlaces` chooses the set of places and thereby removes
+  the last hypothesis.  A finite set of primes stable under the Galois group and meeting every
+  ideal class makes the vector of orders onto; its kernel is the group of units for the set, stable
+  because the set is and finitely generated because the units of the ring of integers are and the
+  orders at the chosen primes span a subgroup of a free abelian group of finite rank.  With the
+  dictionary of the previous file that is everything the two counts require, so **every everywhere
+  locally trivial class with coefficients in a layer dies under a shrinking**, for any Kummer datum
+  over a finite Galois subextension through which the base realization factors.
 -/
