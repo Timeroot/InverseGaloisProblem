@@ -505,6 +505,7 @@ import InverseGalois.CFT.PoitouTate.SplitLocalPower
 import InverseGalois.CFT.PoitouTate.SplitPlaceGenerate
 import InverseGalois.CFT.PoitouTate.SplitPlacePower
 import InverseGalois.CFT.PoitouTate.SupRadicandChar
+import InverseGalois.CFT.PoitouTate.TensorOrbit
 import InverseGalois.CFT.PoitouTate.TensorValuation
 import InverseGalois.CFT.PoitouTate.TorsionCharacter
 import InverseGalois.CFT.PoitouTate.TwoPlaces
@@ -6069,6 +6070,17 @@ it that are available here.
   once the subgroup is carried into itself by the action, so it is recorded as a morphism of
   representations; and the valuation of a tensor, read as a finitely supported family of values of
   the module, is equivariant as well, an automorphism moving the value and the place at once.
+* `InverseGalois.CFT.PoitouTate.TensorOrbit` puts the two halves together.  Take a finite group
+  acting on an abelian group carrying a valuation onto the free abelian group on a set of places it
+  permutes, tensor with any module it acts on, and take a cocycle with values in the tensor
+  product.  Its valuation is a cocycle of the permutation module, so **as soon as that valuation is
+  a coboundary at every place, on the subgroup fixing that place, subtracting a coboundary from the
+  cocycle makes its valuation vanish identically**; and a cocycle of vanishing valuation is valued
+  in the image of the kernel, because the inclusion of the kernel stays exact after tensoring.
+  Since the correction was by a coboundary the class has not moved, so **a class which is trivial
+  at every place comes from cohomology with coefficients in the kernel of the valuation tensored
+  with the module** — for a number field, from the units for a finite set of places, whose
+  cohomology over a finite group is finite.
 * `InverseGalois.CFT.Profinite.Hilbert90` is the arithmetic input.  A smooth cocycle is constant on
   the cosets of the subgroup fixing a finite Galois level and its values are fixed by that
   subgroup, hence lie in the level, so choosing a preimage of each automorphism of the level turns

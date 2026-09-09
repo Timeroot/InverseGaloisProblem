@@ -18907,3 +18907,115 @@ for the places above a place of `k`, and the transport through the twisted Kumme
 
 **Phase 3.**  Glue Phase 1 + Phase 2 to Proposition 6 (`exists_operatorHom_res_cohomology_eq_zero`,
 already in `GenericCohomology.lean`) and discharge `HasShrinkShaDualInjection`'s consumers directly.
+
+## §1.67 Route D Phase 2 is built, and Claim (D1) turned out to need neither Shapiro nor an exact sequence
+
+Phase 1 of §1.66(e) landed earlier (`ShaKummerInflate.lean` and the transgression tower under
+`CFT/Profinite/`).  This section records **Phase 2**, which is now in the build, and a substantial
+simplification of the mathematics of §1.66(c) discovered while formalising it.
+
+### (a)  What is in the build
+
+Three modules, all sorry- and axiom-free.
+
+* **`InverseGalois/CFT/PoitouTate/OrbitCoboundary.lean`** — the group-theoretic mechanism.  A
+  finite group `Q` acting on a set `X` acts on `X →₀ W` by moving the point and the value at once
+  (`permFinsuppRep`).  The theorem
+  `exists_finsupp_eq_sub_of_forall_stabilizer` says: *a one-cocycle `d : Q → (X →₀ W)` which is a
+  coboundary at each point `x` on `Stab_Q(x)` is a coboundary.*  Proof by transport along a section
+  of the orbit map (`orbitRep`, `orbitLift`), with the finite-support bookkeeping done by hand.
+  Its consequence `exists_forall_apply_sub_eq_zero_of_forall_stabilizer` is the working form: for a
+  surjective equivariant `f : A →+ (X →₀ W)` and a cocycle `c : Q → A` locally trivial after `f`,
+  there is `a : A` with `f (c σ − (σ•a − a)) = 0` for every `σ`.  **This is Shapiro's lemma in the
+  one degree where it can be written out by hand**, and writing it out avoids having to make the
+  identification "places over `v`" ≅ "`Q/D_v`" functorial.
+
+* **`InverseGalois/CFT/Units/OrdFinsupp.lean`** — the arithmetic map that mechanism consumes.  For
+  a Galois-stable set `T` of primes of `K` (`IsGaloisStablePlaces`), `ordFinsupp T : Additive Kˣ →+
+  ({v ∉ T} →₀ ℤ)` is the vector of orders at the remaining primes.  It is equivariant
+  (`ordFinsupp_globalUnitsAut`), its kernel is exactly `sUnits K T` (`mem_ker_ordFinsupp`), it is
+  onto as soon as `T` meets every ideal class (`ordFinsupp_surjective`), and **a finite stable `T`
+  with that property exists** (`exists_finite_stable_ordFinsupp_surjective`, from the pre-existing
+  `CFT/Units/ClassSet.lean`).
+
+* **`InverseGalois/CFT/PoitouTate/TensorValuation.lean`** — everything survives tensoring.  A
+  surjection onto a free abelian group splits (`exists_addMonoidHom_add_eq_self`), so the inclusion
+  of its kernel is a **retract**; retracts survive `⊗` with no flatness and no `Tor`, whence
+  `tensorSubIncl_injective` and `range_tensorSubIncl = ker (rTensor g)`.  The inclusion is recorded
+  as a morphism of representations (`tensorSubInclRep`) once the subgroup is stable
+  (`IsStableSubgroup`), and the valuation of a tensor `tensorVal` is equivariant
+  (`tensorVal_smul`).
+
+* **`InverseGalois/CFT/PoitouTate/TensorOrbit.lean`** — the glue.
+  `exists_tensorVal_sub_eq_zero_of_forall_stabilizer` corrects a cocycle by a coboundary until its
+  valuation vanishes identically, and `mem_range_map_tensorSubInclRep_of_forall_stabilizer` reads
+  that at the level of `H¹`: **a class of `H¹(Q, Additive Kˣ ⊗ C)` whose valuation is a coboundary
+  at every place, on the subgroup fixing that place, lies in the image of
+  `H¹(Q, Additive ↥(sUnits K T) ⊗ C)`.**
+
+### (b)  The proof of Claim (D1) actually used is *shorter* than the one in §1.66(c)
+
+§1.66(c) proposed: exhibit the valuation sequence, identify the quotient term with an induced
+module, apply Shapiro, and chase the long exact sequence.  Three of those four steps turned out to
+be avoidable.
+
+* **No exact sequence, no `Tor`, no flatness.**  Because the target of the valuation is *free*, the
+  surjection splits as a map of abelian groups (not equivariantly — but that is not needed).  A
+  split short exact sequence stays exact after any tensor product, by transporting the retraction.
+  This is `tensorSubIncl_injective` / `range_tensorSubIncl`.  The splitting is non-equivariant and
+  is used only to correct a cocycle by a coboundary, so the *class* never sees it.
+
+* **No Shapiro.**  The quotient term is the permutation module `{v ∉ T} →₀ W`, and the only fact
+  needed about it is `exists_finsupp_eq_sub_of_forall_stabilizer`, which is a two-page direct
+  argument.  Identifying it with an induced module and invoking a functorial Shapiro would have
+  cost more.
+
+* **No `Cl_S(K) = 1` as a separate hypothesis.**  What is needed is exactly that `ordFinsupp T` is
+  *onto*, which is what "`T` meets every ideal class" buys, and which `ClassSet.lean` already
+  provides in the stable form.
+
+* **No `K^×/p`.**  The repo's twisted Kummer identification already lands in
+  `Additive Kˣ ⊗[ℤ] Additive (μ_p →* E)`, and the second factor is `p`-torsion, so the tensor
+  product *is* `(K^×/p) ⊗ Hom(μ_p, E)` with no quotient taken.  Working with `Kˣ` itself removes a
+  layer.
+
+### (c)  The local input is a two-liner (this supersedes the tame-inertia plan)
+
+Earlier notes proposed getting the hypothesis `hloc` — "the valuation of the cocycle is a
+coboundary at `x` on `Stab_Q(x)`" — from the tame inertia character `H¹(I_P, E) ≅ Hom(μ_p, E)`,
+with a separate treatment of the primes above `p`.  **None of that is needed.**
+
+If the class is trivial on the decomposition subgroup `D_x = Stab_Q(x)`, there is
+`b ∈ Additive Kˣ ⊗ C` with `c ρ = ρ•b − b` for all `ρ ∈ D_x`.  Apply `tensorVal (·) x`.  It is
+equivariant in the sense `tensorVal (ρ•t) x = ρ • tensorVal t (ρ⁻¹•x)`, and `ρ⁻¹•x = x` **because
+`ρ` fixes `x`** — that is the whole point of restricting to the stabiliser.  Hence
+
+    tensorVal (c ρ) x = ρ • u − u,    u := tensorVal b x,
+
+which is exactly `hloc`.  No inertia character, no ramification hypothesis, no case split at `p`.
+
+### (d)  What Phase 3 still owes
+
+1. **The bridge from `kummerSha1` to the abstract hypothesis.**  `sha1Level` is stated with the
+   genuine decomposition subgroups `D ⊆ Gal(Ω/k)` and a *coefficient* restriction `resCoeffH1`;
+   the abstract theorem wants the vanishing of the plain restriction to `Stab_Q(x) ⊆ Q =
+   Gal(Ω/k)/K.fixingSubgroup`.  Two facts are needed: naturality of `kummerSmoothH1Equiv` under
+   restriction, and "the image in `Q` of a decomposition subgroup at a place of `Ω` over `v` is the
+   stabiliser of the corresponding prime of `K`".
+
+2. **Finiteness of `H¹(Q, Additive ↥(sUnits K T) ⊗ Hom(μ_p, E))`.**  `sUnits K T` is finitely
+   generated over `ℤ` (`Module.Finite ℤ (Additive ↥(sUnits K (Set.range ι)))`, already in
+   `SUnit.lean`/`SUnitIndex.lean`), and `Hom(μ_p, E)` is `p`-torsion, so the tensor product is a
+   finite `𝔽_p`-module.  This is what supplies Proposition 6's `[Module.Finite (ZMod ℓ) T]`.
+
+3. **Proposition 6 with the right coefficients.**  Take
+   `T := U_T/p ⊗_{𝔽_p} Hom(μ_p, 𝔽_p)` so that `genericLayerTensor U m S ℓ j T ≅ U_T ⊗ Hom(μ_p, E_m)`.
+   There is **no circularity**: the `H`-action factors through the fixed finite operator group `U`,
+   so `K` — and hence `T` — does not depend on the number of letters `m`.
+
+4. **Naturality, then the discharge.**  `map (coeffRep φ) ∘ incl_* = incl'_* ∘ map (coeffRep_{U_T} φ)`;
+   if Proposition 6 kills all of the (finite) `H¹(Q, U_T ⊗ W)`, then `map (coeffRep φ)` kills the
+   image of `incl_*`, which by (a) contains `kummerSha1`.  That is exactly the `hzero` hypothesis
+   of `coeffH2_sha2_le_range_galInflH2_of_kummerSha1`, and the real Route D target on the other
+   side is `HasInflatedSha` (`LevelShrink.lean:82`), which `hasShrinkableSha_of_hasInflatedSha`
+   already converts into the rung.
