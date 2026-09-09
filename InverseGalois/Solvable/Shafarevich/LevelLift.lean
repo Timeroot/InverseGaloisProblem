@@ -50,16 +50,17 @@ theorem exists_lift_surjective_of_levelSolution (ℓ : ℕ) [Fact ℓ.Prime] (U 
     (φ : Gal(Ω/k) →* U) [MulDistribMulAction Gal(Ω/k) ↥(layerSub ℓ (Generic U n S) j)]
     (hactφ : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U n S) j)), x • v = φ x • v) {t : ℕ}
     (D : Fin t → Subgroup Gal(Ω/k)) (T : Set (Subgroup Gal(Ω/k)))
-    (hvan : HasLocalLift ℓ U n S j φ D T)
+    (P : LevelProperty ℓ U S k Ω) (hstab : IsShrinkStable ℓ U S P)
+    (hvan : HasLocalLift ℓ U n S j φ D T P)
     (σn : (layerExtension ℓ (genericAut U n S) j).Section)
     (hbot : sha2 ↥(layerSub ℓ (Generic U n S) j) T = ⊥)
-    (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) m j) :
+    (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) P m j) :
     ∃ f : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1), Function.Surjective f ∧ IsSmoothHom f ∧
       (∀ x, SemidirectProduct.rightHom (f x) = φ x) ∧
         ∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 →
           f x ∈ (layerExtension ℓ (genericAut U n S) j).inl.range := by
-  obtain ⟨Φ, f, hsurj, -, hright, hloc, hfsm, hf⟩ :=
-    exists_lift_of_levelSolution ℓ U n S hS j φ hactφ D T hvan σn hbot h
+  obtain ⟨Φ, f, hsurj, -, hright, hloc, -, hfsm, hf⟩ :=
+    exists_lift_of_levelSolution ℓ U n S hS j φ hactφ D T P hstab hvan σn hbot h
   have hcomp : Function.Surjective ((layerExtension ℓ (genericAut U n S) j).rightHom.comp f) := by
     intro y
     obtain ⟨x, hx⟩ := hsurj y

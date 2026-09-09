@@ -39,8 +39,13 @@ the obstruction itself is formed.
 
 ## Main definitions
 
+* `InverseGalois.Shafarevich.IsShrinkStable` — a property of solutions which a shrinking does not
+  destroy.
 * `InverseGalois.Shafarevich.HasLocalLift` — the step is solvable along every member of the wider
-  family which the finite one does not name.
+  family which the finite one does not name, for every solution carrying the prescribed property.
+* `InverseGalois.Shafarevich.HasSolutionRepair` — a lift which is already onto, already over the
+  base realization and already trivial along the finite family can be corrected into a solution
+  carrying the prescribed property.
 
 ## Main results
 
@@ -111,6 +116,18 @@ theorem exists_operatorHom_forall_exists_subgroup_resH2_extensionClass_eq_one (�
 
 /-! ### The obstruction of the step is everywhere locally trivial -/
 
+/-- **A property of solutions which a shrinking does not destroy.**
+
+Every statement of the ladder produces its solution by pushing an earlier one down along a
+shrinking, so a property that is to be carried up the ladder has to survive that push.  In the
+arithmetic the property is a prescription on the ramification of the field the solution cuts out,
+and a shrinking only makes that field smaller, so nothing is lost. -/
+def IsShrinkStable (ℓ : ℕ) (U : Type) [Group U] (S : Type) [Group S] {k Ω : Type*} [Field k]
+    [Field Ω] [Algebra k Ω] (P : LevelProperty ℓ U S k Ω) : Prop :=
+  ∀ (m n j : ℕ) {α : Generic U m S →* Generic U n S} (hα : IsOperatorHom α)
+    (Ψ : Gal(Ω/k) →* GenericQuot ℓ U m S j),
+    P m j Ψ → P n j ((layerSemidirectMap ℓ hα j).comp Ψ)
+
 /-- **The step is solvable along every member of the wider family which the finite one does not
 name.**
 
@@ -122,20 +139,43 @@ is unramified, where the local group is procyclic and any element of the group a
 lift, and the places at which it is ramified but the base field splits completely, where a root of a
 uniformizer produces one.
 
-The condition is asked of every solution at the level which is smooth, over the base realization
-and trivial along the finite family, since which solution the count produces is settled only after
-the count has been run. -/
+That second case is why the condition is asked only of the solutions carrying the prescribed
+property: a place at which the field cut out ramifies without the base field splitting completely
+there has no reason to admit a local solution at all, the local group having a bounded supply of
+roots of unity.  Within that restriction the condition is asked of every solution at the level which
+is smooth, over the base realization and trivial along the finite family, since which solution the
+count produces is settled only after the count has been run. -/
 def HasLocalLift (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] (n : ℕ) (S : Type)
     [Group S] [Finite S] (j : ℕ) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
     (φ : Gal(Ω/k) →* U) {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k))
-    (T : Set (Subgroup Gal(Ω/k))) : Prop :=
+    (T : Set (Subgroup Gal(Ω/k))) (P : LevelProperty ℓ U S k Ω) : Prop :=
   ∀ Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j, IsSmoothHom Φ →
     (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) →
-    (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) →
+    (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) → P n j Φ →
     ∀ A ∈ T, A ∉ Set.range D →
       ∃ g : ↥A →* GenericQuot ℓ U n S (j + 1),
         IsSmooth₁ (g : ↥A → GenericQuot ℓ U n S (j + 1)) ∧
           ∀ x : ↥A, (layerExtension ℓ (genericAut U n S) j).rightHom (g x) = Φ x
+
+/-- **A lift which is already onto, already over the base realization and already trivial along the
+finite family can be corrected into a solution carrying the prescribed property.**
+
+Every clause of a solution at the next level is supplied by such a lift except the prescribed
+property itself, and the property is not inherited: making the lift trivial along the family is
+arranged by a shrinking, and the field the shrunken lift cuts out ramifies at places the field below
+did not.  The correction is a twist by a global class of the first cohomology whose components at
+those places are prescribed, which disturbs neither the surjectivity nor the projection nor the
+triviality along the family, and which restores the property. -/
+def HasSolutionRepair (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] (n : ℕ) (S : Type)
+    [Group S] [Finite S] (j : ℕ) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
+    (φ : Gal(Ω/k) →* U) {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k))
+    (P : LevelProperty ℓ U S k Ω) : Prop :=
+  ∀ (Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j) (f : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)),
+    IsSmoothHom Φ → (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) → P n j Φ →
+    Function.Surjective f → IsSmoothHom f →
+    (∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (f x) = Φ x) →
+    (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → f x = 1) →
+    LevelSolution ℓ U S φ (Set.range D) P n (j + 1)
 
 /-- **Solutions at one level of the filtration for every number of letters give a single solution
 whose obstruction to the next level is everywhere locally trivial.**
@@ -156,12 +196,13 @@ theorem exists_levelSolution_liftObstructionClass_mem_sha2 (ℓ : ℕ) [Fact ℓ
     [Finite S] (hS : IsPGroup ℓ S) (j : ℕ) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
     (φ : Gal(Ω/k) →* U) [MulDistribMulAction Gal(Ω/k) ↥(layerSub ℓ (Generic U n S) j)] {t : ℕ}
     (D : Fin t → Subgroup Gal(Ω/k)) (T : Set (Subgroup Gal(Ω/k)))
-    (hvan : HasLocalLift ℓ U n S j φ D T)
+    (P : LevelProperty ℓ U S k Ω) (hstab : IsShrinkStable ℓ U S P)
+    (hvan : HasLocalLift ℓ U n S j φ D T P)
     (σn : (layerExtension ℓ (genericAut U n S) j).Section)
-    (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) m j) :
+    (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) P m j) :
     ∃ Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j, Function.Surjective Φ ∧ IsSmoothHom Φ ∧
       (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) ∧
-      (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) ∧
+      (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) ∧ P n j Φ ∧
       ∀ (hact : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U n S) j)),
             x • v = (layerExtension ℓ (genericAut U n S) j).conjActHom (Φ x) v)
           (hker : IsOpenNormal Φ.ker),
@@ -169,7 +210,7 @@ theorem exists_levelSolution_liftObstructionClass_mem_sha2 (ℓ : ℕ) [Fact ℓ
           ∈ sha2 ↥(layerSub ℓ (Generic U n S) j) T := by
   obtain ⟨m, hm⟩ :=
     exists_operatorHom_forall_exists_subgroup_resH2_extensionClass_eq_one ℓ U n S hS j φ D σn
-  obtain ⟨Φ₀, hsurj, hsm, hright, hloc⟩ := h m
+  obtain ⟨Φ₀, hsurj, hsm, hright, hloc, hP⟩ := h m
   obtain ⟨α, hα, hαsurj, hres⟩ := hm Φ₀ hright fun ν => hloc (D ν) ⟨ν, rfl⟩
   set Φ := (layerSemidirectMap ℓ hα j).comp Φ₀ with hΦdef
   have hΦsm : IsSmoothHom Φ :=
@@ -179,14 +220,15 @@ theorem exists_levelSolution_liftObstructionClass_mem_sha2 (ℓ : ℕ) [Fact ℓ
     rintro _ ⟨ν, rfl⟩ x hx hx1
     show layerSemidirectMap ℓ hα j (Φ₀ x) = 1
     rw [hloc (D ν) ⟨ν, rfl⟩ x hx hx1, _root_.map_one]
-  refine ⟨Φ, (layerSemidirectMap_surjective ℓ hα j hαsurj).comp hsurj, hΦsm, hΦright, hΦloc,
+  have hΦP : P n j Φ := hstab m n j hα Φ₀ hP
+  refine ⟨Φ, (layerSemidirectMap_surjective ℓ hα j hαsurj).comp hsurj, hΦsm, hΦright, hΦloc, hΦP,
     fun hact hker => mem_sha2.2 fun A hA => ?_⟩
   by_cases hAD : A ∈ Set.range D
   · exact mem_sha2.1 (liftObstructionClass_mem_sha2_of_extensionClass
       (layerExtension ℓ (genericAut U n S) j) Φ
       (smul_eq_conjActHom_genericLayer ℓ U n S j) hact hker σn hres) A hAD
   · exact (resH2_liftObstructionClass_eq_one_iff (layerExtension ℓ (genericAut U n S) j) Φ
-      hact hker σn A).2 (hvan Φ hΦsm hΦright hΦloc A hA hAD)
+      hact hker σn A).2 (hvan Φ hΦsm hΦright hΦloc hΦP A hA hAD)
 
 /-! ### The lift itself, once there is no locally trivial class -/
 
@@ -202,16 +244,17 @@ theorem exists_lift_of_levelSolution (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Gr
     (φ : Gal(Ω/k) →* U) [MulDistribMulAction Gal(Ω/k) ↥(layerSub ℓ (Generic U n S) j)]
     (hactφ : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U n S) j)), x • v = φ x • v) {t : ℕ}
     (D : Fin t → Subgroup Gal(Ω/k)) (T : Set (Subgroup Gal(Ω/k)))
-    (hvan : HasLocalLift ℓ U n S j φ D T)
+    (P : LevelProperty ℓ U S k Ω) (hstab : IsShrinkStable ℓ U S P)
+    (hvan : HasLocalLift ℓ U n S j φ D T P)
     (σn : (layerExtension ℓ (genericAut U n S) j).Section)
     (hbot : sha2 ↥(layerSub ℓ (Generic U n S) j) T = ⊥)
-    (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) m j) :
+    (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) P m j) :
     ∃ (Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j) (f : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)),
       Function.Surjective Φ ∧ IsSmoothHom Φ ∧ (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) ∧
-        (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) ∧ IsSmoothHom f ∧
+        (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) ∧ P n j Φ ∧ IsSmoothHom f ∧
           ∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (f x) = Φ x := by
-  obtain ⟨Φ, hsurj, hsm, hright, hloc, hsha⟩ :=
-    exists_levelSolution_liftObstructionClass_mem_sha2 ℓ U n S hS j φ D T hvan σn h
+  obtain ⟨Φ, hsurj, hsm, hright, hloc, hΦP, hsha⟩ :=
+    exists_levelSolution_liftObstructionClass_mem_sha2 ℓ U n S hS j φ D T P hstab hvan σn h
   have hact : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U n S) j)),
       x • v = (layerExtension ℓ (genericAut U n S) j).conjActHom (Φ x) v := by
     intro x v
@@ -222,6 +265,6 @@ theorem exists_lift_of_levelSolution (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Gr
   obtain ⟨f, hfsm, hf⟩ :=
     (liftObstructionClass_eq_one_iff (layerExtension ℓ (genericAut U n S) j) Φ hact hker σn).1
       ((Subgroup.eq_bot_iff_forall _).1 hbot _ (hsha hact hker))
-  exact ⟨Φ, f, hsurj, hsm, hright, hloc, isSmoothHom_of_isSmooth₁ hfsm, hf⟩
+  exact ⟨Φ, f, hsurj, hsm, hright, hloc, hΦP, isSmoothHom_of_isSmooth₁ hfsm, hf⟩
 
 end InverseGalois.Shafarevich

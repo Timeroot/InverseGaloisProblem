@@ -27,12 +27,23 @@ unaffected by the extra clause: at the bottom the group at the level is the base
 the base realization does the work, at the top the group at the level covers the group asked for
 and the clause is discarded.
 
+A solution is also asked to carry a property fixed in advance, which the ladder transports from one
+level to the next.  Nothing here says what the property is: it is a parameter, and the ladder is
+indifferent to it, both ends of it discarding the clause exactly as they discard the clause about
+the family.  In the arithmetic the property is the second half of the local prescription — that a
+place ramifying in the field the level cuts out over the field the base realization cuts out splits
+completely in the latter and is there totally ramified — which the local solvability of the next
+step consumes and which no amount of group theory can supply.
+
 ## Main definitions
 
+* `InverseGalois.Shafarevich.LevelProperty` — a property a solution at a level may be asked to
+  carry.
 * `InverseGalois.Shafarevich.LevelSolution` — a solution at one level of the filtration, projecting
-  onto a fixed base realization and completely decomposed along a prescribed family of subgroups.
-* `Shafarevich.GenericLevelStepEP` — **one step of the ladder**, with the family of subgroups chosen
-  once from the base realization and then held fixed.
+  onto a fixed base realization, completely decomposed along a prescribed family of subgroups and
+  carrying a prescribed property.
+* `Shafarevich.GenericLevelStepEP` — **one step of the ladder**, with the family of subgroups and
+  the property chosen once from the base realization and then held fixed.
 
 ## Main results
 
@@ -53,21 +64,37 @@ namespace InverseGalois.Shafarevich
 
 open InverseGalois.CFT
 
+/-! ### A property carried up the ladder -/
+
+/-- **A property a solution at a level may be asked to carry**, over and above being a smooth
+surjection over the base realization which is trivial along the family.
+
+The property is indexed by the number of letters and by the level, since a solution at a level is,
+and it is a parameter of everything below: no statement of the ladder inspects it, and only the
+arithmetic that feeds the ladder ever chooses it. -/
+abbrev LevelProperty (ℓ : ℕ) (U : Type) [Group U] (S : Type) [Group S] (k Ω : Type*) [Field k]
+    [Field Ω] [Algebra k Ω] :=
+  ∀ m j : ℕ, (Gal(Ω/k) →* GenericQuot ℓ U m S j) → Prop
+
 /-! ### A solution at one level -/
 
 /-- **A solution at one level of the filtration.**  A smooth surjection of the Galois group onto the
-group at that level which projects onto the given base realization, and which is trivial on each of
-a prescribed family of subgroups wherever the base realization is.
+group at that level which projects onto the given base realization, which is trivial on each of
+a prescribed family of subgroups wherever the base realization is, and which carries a prescribed
+property.
 
-The last clause says that the places the family names are completely decomposed in the field the
+The clause about the family says that the places it names are completely decomposed in the field the
 level cuts out over the field the base realization cuts out: a decomposition subgroup meets the
 kernel of the base realization exactly in the inertia and decomposition data of the smaller field,
 and asking it to lie in the kernel of the solution is asking the local degree of the bigger field
-over the smaller one to be one. -/
+over the smaller one to be one.  The clause about the property is what carries the rest of the local
+prescription up the ladder; the group theory never reads it. -/
 def LevelSolution (ℓ : ℕ) (U : Type) [Group U] (S : Type) [Group S] {k Ω : Type*} [Field k]
-    [Field Ω] [Algebra k Ω] (φ : Gal(Ω/k) →* U) (T : Set (Subgroup Gal(Ω/k))) (m j : ℕ) : Prop :=
+    [Field Ω] [Algebra k Ω] (φ : Gal(Ω/k) →* U) (T : Set (Subgroup Gal(Ω/k)))
+    (P : LevelProperty ℓ U S k Ω) (m j : ℕ) : Prop :=
   ∃ Φ : Gal(Ω/k) →* GenericQuot ℓ U m S j, Function.Surjective Φ ∧ IsSmoothHom Φ ∧
-    (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) ∧ ∀ D ∈ T, ∀ x ∈ D, φ x = 1 → Φ x = 1
+    (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) ∧
+      (∀ D ∈ T, ∀ x ∈ D, φ x = 1 → Φ x = 1) ∧ P m j Φ
 
 /-! ### The bottom of the ladder -/
 
@@ -76,12 +103,14 @@ zeroth level is the base group, so the base realization is a solution there, and
 completely decomposed everywhere over itself. -/
 theorem levelSolution_zero (ℓ : ℕ) (U : Type) [Group U] [TopologicalSpace U] [DiscreteTopology U]
     (S : Type) [Group S] {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω] (φ : Gal(Ω/k) →* U)
-    (hsurj : Function.Surjective φ) (hsm : IsSmoothHom φ) (T : Set (Subgroup Gal(Ω/k))) (m : ℕ) :
-    LevelSolution ℓ U S φ T m 0 := by
+    (hsurj : Function.Surjective φ) (hsm : IsSmoothHom φ) (T : Set (Subgroup Gal(Ω/k)))
+    (P : LevelProperty ℓ U S k Ω) (m : ℕ)
+    (hP : P m 0 ((pCentralZeroEquiv ℓ (genericAut U m S)).symm.toMonoidHom.comp φ)) :
+    LevelSolution ℓ U S φ T P m 0 := by
   refine ⟨(pCentralZeroEquiv ℓ (genericAut U m S)).symm.toMonoidHom.comp φ,
     (pCentralZeroEquiv ℓ (genericAut U m S)).symm.surjective.comp hsurj,
     isSmoothHom_comp hsm (isSmoothHom_of_continuous continuous_of_discreteTopology),
-    fun x => rfl, fun D _ x _ hx => ?_⟩
+    fun x => rfl, fun D _ x _ hx => ?_, hP⟩
   show (pCentralZeroEquiv ℓ (genericAut U m S)).symm (φ x) = 1
   rw [hx, _root_.map_one]
 
@@ -93,10 +122,10 @@ the semidirect product wanted, and a smooth surjection composed with that coveri
 smooth surjection. -/
 theorem isInverseGalois_of_levelSolution {ℓ : ℕ} (U : Type) [Group U] (S : Type) [Group S]
     {Ω : Type} [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω] {φ : Gal(Ω/ℚ) →* U}
-    {T : Set (Subgroup Gal(Ω/ℚ))} {m j : ℕ} (hj : pCentral ℓ (Generic U m S) j = ⊥)
-    (h : LevelSolution ℓ U S φ T m j) :
+    {T : Set (Subgroup Gal(Ω/ℚ))} {P : LevelProperty ℓ U S ℚ Ω} {m j : ℕ}
+    (hj : pCentral ℓ (Generic U m S) j = ⊥) (h : LevelSolution ℓ U S φ T P m j) :
     IsInverseGalois (Generic U m S ⋊[genericAut U m S] U) := by
-  obtain ⟨Φ, hsurj, hsm, -, -⟩ := h
+  obtain ⟨Φ, hsurj, hsm, -, -, -⟩ := h
   letI : TopologicalSpace (Generic U m S ⋊[genericAut U m S] U) := ⊥
   haveI : DiscreteTopology (Generic U m S ⋊[genericAut U m S] U) := ⟨rfl⟩
   exact isInverseGalois_of_smooth_surjective
@@ -123,24 +152,28 @@ series, solving at that term for *every* number of letters solves at the next te
 The solution at the previous term is required for every number of letters because the step is
 allowed to shrink: making the class of the extension die on the prescribed subgroups costs letters,
 and how many it costs is settled only once those subgroups are known.  The family being chosen
-before the induction begins is what makes that order of quantifiers consistent. -/
+before the induction begins is what makes that order of quantifiers consistent.  The property the
+solutions carry is chosen at the same moment and for the same reason, and the bottom of the ladder
+is asked for outright, since a property no statement of the ladder inspects cannot be produced by
+one. -/
 def GenericLevelStepEP (ℓ : ℕ) : Prop :=
   ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
       (φ : Gal(Ω/ℚ) →* U), IsPGroup ℓ S → Function.Surjective φ → IsSmoothHom φ →
-    ∃ T : Set (Subgroup Gal(Ω/ℚ)), ∀ j : ℕ,
-      (∀ m : ℕ, LevelSolution ℓ U S φ T m j) → ∀ n : ℕ, LevelSolution ℓ U S φ T n (j + 1)
+    ∃ (T : Set (Subgroup Gal(Ω/ℚ))) (P : LevelProperty ℓ U S ℚ Ω),
+      (∀ m : ℕ, LevelSolution ℓ U S φ T P m 0) ∧ ∀ j : ℕ,
+        (∀ m : ℕ, LevelSolution ℓ U S φ T P m j) → ∀ n : ℕ, LevelSolution ℓ U S φ T P n (j + 1)
 
 /-- **Climbing the ladder**: one step at a time solves the problem at every term of the descending
 `ℓ`-central series, for every number of letters. -/
-theorem forall_levelSolution {ℓ : ℕ} (U : Type) [Group U] [TopologicalSpace U] [DiscreteTopology U]
-    (S : Type) [Group S] {Ω : Type} [Field Ω] [Algebra ℚ Ω] {φ : Gal(Ω/ℚ) →* U}
-    (hsurj : Function.Surjective φ) (hsm : IsSmoothHom φ) {T : Set (Subgroup Gal(Ω/ℚ))}
-    (hstep : ∀ j : ℕ, (∀ m : ℕ, LevelSolution ℓ U S φ T m j) →
-      ∀ n : ℕ, LevelSolution ℓ U S φ T n (j + 1)) (j : ℕ) :
-    ∀ m : ℕ, LevelSolution ℓ U S φ T m j := by
+theorem forall_levelSolution {ℓ : ℕ} (U : Type) [Group U] (S : Type) [Group S] {Ω : Type}
+    [Field Ω] [Algebra ℚ Ω] {φ : Gal(Ω/ℚ) →* U} {T : Set (Subgroup Gal(Ω/ℚ))}
+    {P : LevelProperty ℓ U S ℚ Ω} (hbase : ∀ m : ℕ, LevelSolution ℓ U S φ T P m 0)
+    (hstep : ∀ j : ℕ, (∀ m : ℕ, LevelSolution ℓ U S φ T P m j) →
+      ∀ n : ℕ, LevelSolution ℓ U S φ T P n (j + 1)) (j : ℕ) :
+    ∀ m : ℕ, LevelSolution ℓ U S φ T P m j := by
   induction j with
-  | zero => exact fun m => levelSolution_zero ℓ U S φ hsurj hsm T m
+  | zero => exact hbase
   | succ j ih => exact fun n => hstep j ih n
 
 /-- **One layer at a time solves the generic split embedding problem.** -/
@@ -151,10 +184,9 @@ theorem genericSplitEP_of_genericLevelStepEP {ℓ : ℕ} [Fact ℓ.Prime] (h : G
   haveI : DiscreteTopology U := ⟨rfl⟩
   obtain ⟨φ, hφsurj, hφsm⟩ :=
     (isInverseGalois_iff_exists_smooth_surjective (Ω := AlgebraicClosure ℚ)).1 hU
-  obtain ⟨T, hstep⟩ := h S U (AlgebraicClosure ℚ) φ hS hφsurj hφsm
+  obtain ⟨T, P, hbase, hstep⟩ := h S U (AlgebraicClosure ℚ) φ hS hφsurj hφsm
   obtain ⟨j, hj⟩ := exists_pCentral_eq_bot ℓ (isPGroup_generic U n S hS)
-  exact isInverseGalois_of_levelSolution U S hj
-    (forall_levelSolution U S hφsurj hφsm hstep j n)
+  exact isInverseGalois_of_levelSolution U S hj (forall_levelSolution U S hbase hstep j n)
 
 /-- **One layer at a time solves every split embedding problem with a kernel of prime power
 order.** -/

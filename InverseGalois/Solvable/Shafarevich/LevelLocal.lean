@@ -41,7 +41,8 @@ trivial along the family, and nothing else about it has changed.
   trivial class of the layer is killed by a shrinking and that the members of the family have
   finite elementary quotients.
 * `InverseGalois.Shafarevich.levelSolution_succ_of_hasFiniteElementaryQuotient` — **and hence one
-  whole rung of the ladder, with nothing asked of the first cohomology.**
+  whole rung of the ladder, with nothing asked of the first cohomology beyond restoring the
+  prescribed property.**
 
 ## Tags
 
@@ -116,13 +117,14 @@ theorem exists_lift_eq_one_of_levelSolution (ℓ : ℕ) [Fact ℓ.Prime] (U : Ty
     [Finite U] [TopologicalSpace U] [DiscreteTopology U] (n : ℕ) (S : Type) [Group S] [Finite S]
     (hS : IsPGroup ℓ S) (j : ℕ) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
     (φ : Gal(Ω/k) →* U) {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k))
-    (T : Set (Subgroup Gal(Ω/k))) (hvan : ∀ m : ℕ, HasLocalLift ℓ U m S j φ D T)
+    (T : Set (Subgroup Gal(Ω/k))) (P : LevelProperty ℓ U S k Ω) (hstab : IsShrinkStable ℓ U S P)
+    (hvan : ∀ m : ℕ, HasLocalLift ℓ U m S j φ D T P)
     (hsh : ∀ m : ℕ, HasShrinkableSha ℓ U m S j φ T)
     (hfin : ∀ ν : Fin t, HasFiniteElementaryQuotient ℓ (D ν ⊓ φ.ker))
-    (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) m j) :
+    (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) P m j) :
     ∃ (Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j) (f : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)),
       Function.Surjective Φ ∧ IsSmoothHom Φ ∧ (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) ∧
-        (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) ∧ IsSmoothHom f ∧
+        (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) ∧ P n j Φ ∧ IsSmoothHom f ∧
           (∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (f x) = Φ x) ∧
             ∀ (ν : Fin t), ∀ x ∈ D ν, φ x = 1 → f x = 1 := by
   classical
@@ -134,8 +136,8 @@ theorem exists_lift_eq_one_of_levelSolution (ℓ : ℕ) [Fact ℓ.Prime] (U : Ty
   obtain ⟨m, hm⟩ := exists_operatorHom_forall_layerSubMap_eq_one U n S hS (j := j)
     ((ν : Fin t) × Q ν)
   -- a lift at that number of letters
-  obtain ⟨Φ₁, f₁, hsurj₁, hsm₁, hright₁, hloc₁, hfsm₁, hf₁⟩ :=
-    exists_lift_of_levelSolution_of_hasShrinkableSha ℓ U m S hS j φ D T hvan (hsh m) h
+  obtain ⟨Φ₁, f₁, hsurj₁, hsm₁, hright₁, hloc₁, hP₁, hfsm₁, hf₁⟩ :=
+    exists_lift_of_levelSolution_of_hasShrinkableSha ℓ U m S hS j φ D T P hstab hvan (hsh m) h
   have hf₁s : IsSmooth₁ (f₁ : Gal(Ω/k) → GenericQuot ℓ U m S (j + 1)) :=
     isSmooth₁_of_isOpenNormal_ker (isOpenNormal_ker_of_isSmoothHom hfsm₁)
   have hDloc : ∀ ν : Fin t, ∀ x ∈ D ν ⊓ φ.ker, Φ₁ x = 1 := fun ν x hx =>
@@ -153,7 +155,7 @@ theorem exists_lift_eq_one_of_levelSolution (ℓ : ℕ) [Fact ℓ.Prime] (U : Ty
   refine ⟨(layerSemidirectMap ℓ hα j).comp Φ₁, (layerSemidirectMap ℓ hα (j + 1)).comp f₁,
     (layerSemidirectMap_surjective ℓ hα j hαsurj).comp hsurj₁,
     isSmoothHom_comp hsm₁ (isSmoothHom_of_continuous continuous_of_discreteTopology),
-    fun x => hright₁ x, ?_,
+    fun x => hright₁ x, ?_, hstab m n j hα Φ₁ hP₁,
     isSmoothHom_comp hfsm₁ (isSmoothHom_of_continuous continuous_of_discreteTopology), ?_, ?_⟩
   · rintro _ ⟨ν, rfl⟩ x hx hx1
     show layerSemidirectMap ℓ hα j (Φ₁ x) = 1
@@ -170,33 +172,32 @@ theorem exists_lift_eq_one_of_levelSolution (ℓ : ℕ) [Fact ℓ.Prime] (U : Ty
 
 /-! ### One rung -/
 
-/-- **One whole rung of the ladder, with nothing asked of the first cohomology.**  The lift produced
-is already trivial along the family, so it is itself a solution at the next level: past the first
-layer a lift over a surjection is again a surjection, the layer generating nothing. -/
+/-- **One whole rung of the ladder, with nothing asked of the first cohomology beyond the repair.**
+The lift produced is already onto, already over the base realization and already trivial along the
+family — past the first layer a lift over a surjection is again a surjection, the layer generating
+nothing — so all that is left is to restore the prescribed property. -/
 theorem levelSolution_succ_of_hasFiniteElementaryQuotient (ℓ : ℕ) [Fact ℓ.Prime] (U : Type)
     [Group U] [Finite U] [TopologicalSpace U] [DiscreteTopology U] (n : ℕ) (S : Type) [Group S]
     [Finite S] (hS : IsPGroup ℓ S) {j : ℕ} (hj : 1 ≤ j) {k Ω : Type*} [Field k] [Field Ω]
     [Algebra k Ω] (φ : Gal(Ω/k) →* U) {t : ℕ}
     (D : Fin t → Subgroup Gal(Ω/k)) (T : Set (Subgroup Gal(Ω/k)))
-    (hvan : ∀ m : ℕ, HasLocalLift ℓ U m S j φ D T)
+    (P : LevelProperty ℓ U S k Ω) (hstab : IsShrinkStable ℓ U S P)
+    (hrep : HasSolutionRepair ℓ U n S j φ D P)
+    (hvan : ∀ m : ℕ, HasLocalLift ℓ U m S j φ D T P)
     (hsh : ∀ m : ℕ, HasShrinkableSha ℓ U m S j φ T)
     (hfin : ∀ ν : Fin t, HasFiniteElementaryQuotient ℓ (D ν ⊓ φ.ker))
-    (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) m j) :
-    LevelSolution ℓ U S φ (Set.range D) n (j + 1) := by
-  obtain ⟨Φ, f, hsurj, -, hright, -, hfsm, hf, hloc⟩ :=
-    exists_lift_eq_one_of_levelSolution ℓ U n S hS j φ D T hvan hsh hfin h
+    (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) P m j) :
+    LevelSolution ℓ U S φ (Set.range D) P n (j + 1) := by
+  obtain ⟨Φ, f, hsurj, hsm, hright, -, hΦP, hfsm, hf, hloc⟩ :=
+    exists_lift_eq_one_of_levelSolution ℓ U n S hS j φ D T P hstab hvan hsh hfin h
   have hcomp :
       Function.Surjective ((layerExtension ℓ (genericAut U n S) j).rightHom.comp f) := by
     intro y
     obtain ⟨x, hx⟩ := hsurj y
     exact ⟨x, (hf x).trans hx⟩
-  refine ⟨f, surjective_of_rightHom_comp_surjective ℓ (isPGroup_generic U n S hS)
-    (genericAut U n S) hj f hcomp, hfsm, fun x => ?_, ?_⟩
-  · have hproj : SemidirectProduct.rightHom (f x)
-        = SemidirectProduct.rightHom
-            ((layerExtension ℓ (genericAut U n S) j).rightHom (f x)) := rfl
-    rw [hproj, hf x, hright x]
-  · rintro _ ⟨ν, rfl⟩ x hx hx1
-    exact hloc ν x hx hx1
+  exact hrep Φ f hsm hright hΦP
+    (surjective_of_rightHom_comp_surjective ℓ (isPGroup_generic U n S hS) (genericAut U n S) hj f
+      hcomp)
+    hfsm hf hloc
 
 end InverseGalois.Shafarevich

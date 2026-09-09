@@ -233,9 +233,11 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   already reached is completely decomposed, and a realization known only to exist names no
   places.  So the base realization is fixed once, as a smooth surjection of the Galois group
   of an algebraic closure, and each rung of the ladder carries a smooth surjection projecting
-  onto it and trivial along a family of subgroups chosen once from the base realization
-  alone.  Both ends of the ladder survive the extra clause, and the step between them becomes
-  a statement whose quantifiers are in the order the arithmetic can meet:
+  onto it, trivial along a family of subgroups chosen once from the base realization alone, and
+  carrying a property likewise chosen once â€” in the arithmetic a prescription on the ramification
+  of the field it cuts out, which the local solvability of the next step needs and which no rung
+  inherits for free.  Both ends of the ladder survive the extra clauses, and the step between them
+  becomes a statement whose quantifiers are in the order the arithmetic can meet:
   **`Shafarevich.GenericLevelStepEP` for every prime implies the split embedding problem with
   a kernel of prime power order, and hence Shafarevich's theorem.**
 * `InverseGalois.Solvable.Shafarevich.LevelObstruction` spends the two clauses a solution at one
@@ -287,7 +289,8 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   before any solution is chosen, and the count then asks for a number of letters settled by that
   number alone.  A shrinking down to the intended number of letters carries all of those values to
   one at once, so **a solution at one level, past the first, gives a solution at the next** with
-  nothing asked of the first cohomology.
+  nothing asked of the first cohomology beyond restoring the prescribed property, which the
+  shrinking is free to destroy.
 * `InverseGalois.Solvable.Shafarevich.LevelCover` says where the one surviving condition is to come
   from.  Inflation from the operator group meets it, but inflation is not what a number field
   offers; what a number field offers is duality, under which the everywhere locally trivial classes
@@ -334,15 +337,17 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   the ladder asks for.  Granted the reading of the locally trivial classes as characters and its
   compatibility with a shrinking, **global duality produces the governing class.**
 * `InverseGalois.Solvable.Shafarevich.LevelRung` collects what the ladder now asks of the arithmetic
-  into a single condition and climbs the whole of it.  A finite family of subgroups and a wider
-  family against which local triviality is measured are chosen once from the base realization; the
-  first rung is asked for outright, the layer there being the Frattini layer, across which a lift
-  carries no guarantee of being onto; each member of the finite family is asked to have a finite
-  elementary quotient; and at every later rung two things are asked, for every number of letters â€”
-  that the step be locally solvable along the members of the wider family the finite one does not
-  name, and that every everywhere locally trivial class of the layer be killed by a shrinking.
-  Granted that package, **the step of the ladder holds**, and with it every split embedding problem
-  with a kernel of prime power order.
+  into a single condition and climbs the whole of it.  A finite family of subgroups, a wider family
+  against which local triviality is measured and a property the solutions are to carry are chosen
+  once from the base realization; the bottom of the ladder and the first rung are asked for
+  outright, the layer there being the Frattini layer, across which a lift carries no guarantee of
+  being onto; the property is asked to survive a shrinking; each member of the finite family is
+  asked to have a finite elementary quotient; and at every later rung three things are asked, for
+  every number of letters â€” that the step be locally solvable along the members of the wider family
+  the finite one does not name, that every everywhere locally trivial class of the layer be killed
+  by a shrinking, and that the property be restorable on a lift which already has every other
+  clause.  Granted that package, **the step of the ladder holds**, and with it every split embedding
+  problem with a kernel of prime power order.
 * `InverseGalois.Solvable.Shafarevich.LayerTensorOne` runs the count in degree one, where the
   coefficients are not a layer but a layer tensored on the left with a finitely generated abelian
   group.  Such a tensor product is infinite, but a spanning family of the left factor writes every

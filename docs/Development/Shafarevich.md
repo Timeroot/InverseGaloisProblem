@@ -19394,3 +19394,269 @@ Everything between the two is now a theorem.
   copies of the file truncated at successive tactic boundaries with `sorry` appended, lower
   `maxHeartbeats` so failures are fast, and run them **in parallel** (`lake env lean` probes may
   run concurrently).  `set_option profiler true` alone only says which *tactic* is slow, not why.
+
+## §1.72  `HasShrinkableSha` over an arbitrary number field — and a correction: `HasLocalLift` is false as stated
+
+### (a)  What landed
+
+Items (d)1 and (d)2 of §1.71 are done, and the shrinking is now unconditional over **any** number
+field.  Three modules, all sorry- and axiom-free (commit `27c5102`, full root build 9877 jobs, 0
+warnings):
+
+| module | content |
+|---|---|
+| `Solvable/Shafarevich/LayerShaPlaces.lean` | the family `D`/`T` from the arithmetic: `HasLayerLocalOrdHom` discharged from the places |
+| `Solvable/Shafarevich/LayerShaLevel.lean` | `hasShrinkableSha_of_isPrimitiveRoot` — the shrinking when `μ_ℓ ⊆ k` |
+| `CFT/Units/CyclotomicLevel.lean` | `cycLevel k Ω n`, `finrank_cycLevel_dvd_totient`, `coprime_index_fixingSubgroup_cycLevel`, `decompositionSubgroups_le_galSubHom` |
+| `Solvable/Shafarevich/LayerShaDescent.lean` | `hasShrinkableSha_of_intermediate`, `hasShrinkableSha_decompositionSubgroups` |
+
+The descent is a short circuit and it is worth recording, since the same circuit will be wanted
+again.  A class over `k` is read over the level `F = k(ζ_ℓ)`; it is still everywhere locally
+trivial there, because a decomposition subgroup over `F` maps into one over `k`
+(`decompositionSubgroups_le_galSubHom`); the shrinking over `F` kills it; killing commutes with the
+coefficient map the shrinking induces (`coeffH2_comapH2`); "dies over `F`" is "dies on
+`F.fixingSubgroup`" (`resH2_fixingSubgroup_eq_one`); and a class of order `ℓ` dying on a subgroup of
+index prime to `ℓ` is trivial (`eq_one_of_resH2_eq_one_of_coprime`).  The index is
+`[k(ζ_ℓ) : k] ∣ ℓ − 1`, hence prime to `ℓ`.  The **number of letters is inherited unchanged**: the
+descent changes the base, not the count, which is what makes it compose with the rest.
+
+Net effect:
+
+> `HasShrinkableSha ℓ U n S j φ (decompositionSubgroups k Ω)` is a **theorem** for every number
+> field `k`, every algebraic closure `Ω`, every finite `ℓ`-group `S` and every smooth `φ`.
+
+That is the whole second half of the third clause of `HasRungData`.
+
+### (b)  MATH CORRECTION: `HasLocalLift` cannot be discharged
+
+`HasLocalLift` (`LevelObstruction.lean:128`) asks, for **every** smooth `Φ` over `φ` which is
+trivial along `D`, and every `A ∈ T ∖ range D`, that the local embedding problem `Φ|_A` lift one
+layer.  **This is false**, so the clause is not merely open — it can never be proved.
+
+Counterexample.  Take `ℓ` and a rational prime `p ∉ D` with `ℓ ∥ p − 1`, so `μ_ℓ ⊆ ℚ_p` but
+`μ_{ℓ²} ⊄ ℚ_p`.  The `ℓ`-part of `Gal(ℚ_p^{ab}/ℚ_p) ≅ Ẑ × ℤ_p^×` is `ℤ_ℓ × ℤ/ℓ^c` with `c = 1`, and
+the `ℤ/ℓ` factor is the totally ramified part.  So the totally ramified character
+`G_{ℚ_p} ↠ ℤ/ℓ` cutting out `ℚ_p(π^{1/ℓ})` does **not** lift to `ℤ/ℓ²`.  A `Φ` which is newly
+ramified at such a `p` therefore has an unsolvable local embedding problem at `A = D_p`, and
+nothing in the hypotheses of `HasLocalLift` forbids such a `Φ`.
+
+Nothing in the repo is *wrong*: `genericLevelStepEP_of_hasRungData` is still a theorem, and
+`HasRungData` is still a sufficient condition.  It is simply a sufficient condition with an
+unsatisfiable conjunct.
+
+### (c)  What SW actually assume: condition (ii)
+
+Theorem 15 of Schmidt–Wingberg is deliberately *sharpened* — the solution is required to be "of a
+special type", and the induction is run on the sharpened statement:
+
+> (i) all `p ∈ Ram(K|k) ∪ S_p ∪ S_∞` are completely decomposed in `N_n|K`;
+> (ii) if `p` is ramified in `N_n|K`, then `p` splits completely in `K|k` and `N_{ν,n,p}|k_p` is a
+> (cyclic) totally ramified extension of local fields.
+
+Condition (i) is exactly the repo's "trivial along `D`" clause of `LevelSolution`.  Condition (ii)
+is **not present anywhere in the repo**, and it is precisely what makes Step 1 go through.  Step 1
+splits the places into three cases:
+
+* `p ∈ Ram(K|k) ∪ S_p ∪ S_∞` (= `range D`): handled by a shrinking that makes the local group
+  extension split — this is the repo's
+  `exists_operatorHom_forall_exists_subgroup_resH2_extensionClass_eq_one`;
+* `p ∉ D` **unramified** in `N_n|k`: `Φ|_{D_p}` factors through `D_p/I_p ≅ Ẑ`, which is free, so a
+  lift exists for trivial reasons;
+* `p ∉ D` **ramified**: this is where (ii) is spent.  By (ii), `p` splits completely in `K|k`, so
+  `K_p = k_p`; `μ_{p^e} ⊆ K` where `p^e` is the exponent of `F(n)/F(n)(ν+1)`; hence
+  `μ_{p^{a+ε}} ⊆ k_p`, and a `p^{a+ε}`-th root of a uniformizer solves the local problem, the local
+  extension being cyclic totally ramified of degree `p^a`.
+
+So the second and third bullets are the honest content of `HasLocalLift`, and the third one is only
+available under (ii).
+
+### (d)  Shrinking preserves (ii); the *lift* destroys it
+
+Both halves matter.
+
+* A shrinking `α : F(m) ↠ F(n)` can only make the field smaller, so ramification can only decrease
+  and a cyclic totally ramified local extension stays cyclic totally ramified.  SW say this
+  explicitly ("the local condition at the primes in `Ram(K|k) ∪ S_p ∪ S_∞` remains untouched within
+  the shrinking process").  Hence (ii) is a legitimate *inductive invariant*.
+* The **lift** from level `ν` to level `ν+1` creates new ramification at places nobody chose, and
+  those places need not split completely in `K|k`.  SW repair this in **Step 3**, by twisting the
+  solution by a class `ε ∈ H¹(G_k, E(n,ν))` with prescribed local components at
+  `T = T⁰ ∪ T¹ ∪ T² ∪ T³` (`T⁰` for properness, `T¹ = Ram(K|k) ∪ S_p ∪ S_∞` for (i), `T²` and `T³`
+  for (ii)).  The obstruction to the existence of such an `ε` is a `coker(k_S, T, E)`, injected by
+  Lemma 10 into a `Ш¹`, and *that* is shrunk.
+
+§1.62 replaced Step 3 by a third shrinking.  That third shrinking recovers condition **(i)** and
+properness — and it is a real saving, since it removes `HasCocyclePrescription` from the ledger —
+but it does **not** recover (ii).  That is the whole of the gap.
+
+### (e)  Four escape routes, all closed
+
+1. *Kill `res_H(ε)` on every subgroup of `GenericQuot(j)`.*  Impossible: that would split the
+   extension outright and trivialise the embedding problem.  The count only ever kills `res` on
+   subgroups meeting `ker rightHom` trivially — which is exactly the `hinj` hypothesis inside
+   `exists_operatorHom_forall_exists_subgroup_resH2_extensionClass_eq_one`.
+2. *Let `D` grow with the rung.*  Circular: `D` must be fixed before the count is run, and `∀ n` is
+   quantified **inside** `HasRungData`.
+3. *Ask the solutions to be unramified outside `D`.*  Impossible: the `ℓ`-rank of the ray class
+   group of `k` with conductor supported on `D` is bounded, so the tower cannot be built inside it.
+4. *Shrink `T`.*  `sha2 M T` is antitone in `T`, so a smaller `T` makes `HasShrinkableSha` **harder**,
+   and Route D's proof (`sha2_le_range_galInflH2`, which is the Hasse principle for `H²` with
+   roots-of-unity coefficients) genuinely needs all the places.  Enlarging `T` instead makes
+   `HasLocalLift` worse.  There is no `T` for which both clauses are cheap.
+
+### (f)  The architectural fix
+
+Condition (ii) has to be carried as an inductive invariant, and abstractly — the group-theoretic
+modules must not learn about places.  The shape:
+
+```lean
+/-- An extra property a solution at a level may be asked to carry. -/
+abbrev LevelProperty (ℓ : ℕ) (U : Type) [Group U] (S : Type) [Group S] (k Ω : Type*) [Field k]
+    [Field Ω] [Algebra k Ω] := ∀ m j : ℕ, (Gal(Ω/k) →* GenericQuot ℓ U m S j) → Prop
+```
+
+with four changes:
+
+* `LevelSolution` gains a `P : LevelProperty …` argument and the clause `P m j Φ`;
+* `HasLocalLift` gains `P` and only quantifies over `Φ` with `P n j Φ`;
+* `IsShrinkStable P` — `P m j Ψ → P n j ((layerSemidirectMap ℓ hα j).comp Ψ)` — is a new conjunct of
+  `HasRungData` (true for (ii), by the first bullet of (d));
+* `HasSolutionRepair` — SW Step 3, as a named arithmetic input: a solution at level `j+1` whose
+  projection to level `j` has `P` may be replaced by one that again is onto, again trivial along
+  `D`, and has `P`.
+
+`GenericLevelStepEP` is unaffected in meaning: the strengthened statement is the induction
+invariant, and the extra clause is discarded at the top of the ladder exactly as the "trivial along
+`T`" clause already is.
+
+### (g)  What the corrected `HasLocalLift` will need from the arithmetic
+
+Three bricks, none of which exists yet:
+
+1. **An inertia subgroup of the infinite `Gal(Ω/k)`.**  The repo's inertia API
+   (`CFT/InertiaSubgroup.lean`, `CFT/InertiaSurjective.lean`, `CFT/InertiaTransport.lean`,
+   `CFT/TameCharacter.lean`, and the Scholz-side predicates) is entirely for **finite** Galois
+   extensions.  `decompositionSubgroups k Ω` exists; there is no `inertiaSubgroups k Ω`.
+2. **`D_v/I_v` procyclic**, in the usable form: for every finite group `E` and every `y ∈ E` there
+   is a smooth `g : D_v →* E` with `g σ_v = y` and `g|_{I_v} = 1`, and two such are equal as soon as
+   they agree at `σ_v`.  Granted that, SW Step 1(b) is four lines: pick `y` over `Φ σ_v`, get `g`,
+   and `π ∘ g = Φ` because both kill `I_v` and agree at `σ_v`.
+3. **Local Kummer theory for cyclic totally ramified extensions**: `μ_{p^{a+ε}} ⊆ k_p` and a
+   uniformizer `π`, giving the lift by `π^{1/p^{a+ε}}`.  This is SW Step 1(c) and is where (ii) is
+   consumed.
+
+### (h)  Findings
+
+* **2789.**  `galSubHom K` and `galRestrictScalarsHom k ↥K Ω` agree by `rfl` on elements, but are
+  not syntactically equal; `galRestrictScalarsHom_eq_galSubHom` (`CFT/Units/CyclotomicLevel.lean`)
+  bridges them.  Neither takes `[IsGalois k Ω]` or `[NumberField k]`.
+* **2790.**  `NumberField.of_module_finite k ↥E` gives `NumberField ↥E`, and
+  `IsAlgClosure ↥E Ω := ⟨inferInstance, Algebra.IsAlgebraic.tower_top (K := k) _⟩` promotes an
+  algebraic closure of the base to one of an intermediate field.
+* **2791.**  `IsPrimitiveRoot.intermediateField_adjoin_isCyclotomicExtension` takes the base field as
+  an *explicit positional* argument **after** the dot-notation receiver: write
+  `(h.intermediateField_adjoin_isCyclotomicExtension k)`.  Symptom of omitting it: "failed to
+  synthesize instance of type class `Field K✝`".
+* **2792.**  `Subgroup.card_subgroup_dvd_card` produces a term whose type *displays* as `∃ c, …`, so
+  `.trans_eq` resolves to `Exists.trans_eq` and fails with "the environment does not contain
+  `Exists.trans_eq`".  Rewrite the goal into the `Nat.card` form first and finish with
+  `exact Subgroup.card_subgroup_dvd_card _`.
+* **2793.**  `HasEnoughRootsOfUnity.exists_primitiveRoot Ω n` needs `[IsSepClosed Ω]` and
+  `[NeZero ((n : ℕ) : Ω)]`; over an `IsAlgClosure k Ω` with `CharZero k` both are available after
+  `haveI : CharZero Ω := charZero_of_injective_algebraMap (algebraMap k Ω).injective`.
+* **2794.**  Cold-build job counts: `…Shafarevich.LayerShaDescent` = 8554 jobs (18 s);
+  `…CFT.Units.CyclotomicLevel` = 8408 jobs (15 s); the full root build is 9877 jobs.
+* **2795.**  The `Edit` tool can report "String to replace not found" on a multi-line block of
+  `InverseGalois/CFT.lean` even when `sed`/`cat -A` show the target is byte-identical.  Workaround:
+  python line-index insertion (`lines[idx:idx] = new`) guarded by
+  `assert lines[idx].startswith(…)`.  Remember `idx` is the 1-based line number minus one.
+* **2796 (MATH, KEY).**  `HasLocalLift` is false as stated — see (b).
+
+## §1.73 — The `LevelProperty` refactor, landed (2026-09-09)
+
+The architectural fix designed in §1.72(f) is now in the tree and the full root build is green
+(**9877 jobs, 0 errors, 0 warnings, 0 sorries**).  What changed, module by module:
+
+**(a) `LevelSolution.lean`.**  New
+
+```lean
+abbrev LevelProperty (ℓ : ℕ) (U : Type) [Group U] (S : Type) [Group S] (k Ω : Type*) [Field k]
+    [Field Ω] [Algebra k Ω] :=
+  ∀ m j : ℕ, (Gal(Ω/k) →* GenericQuot ℓ U m S j) → Prop
+```
+
+and `LevelSolution … (P : LevelProperty ℓ U S k Ω) (m j : ℕ)` gained the fifth clause `P m j Φ`.
+`levelSolution_zero` takes the property of the canonical level-zero map as a hypothesis;
+`isInverseGalois_of_levelSolution` simply discards the clause.  `GenericLevelStepEP ℓ` now reads
+
+```lean
+∃ (T : Set (Subgroup Gal(Ω/ℚ))) (P : LevelProperty ℓ U S ℚ Ω),
+  (∀ m : ℕ, LevelSolution ℓ U S φ T P m 0) ∧ ∀ j : ℕ,
+    (∀ m : ℕ, LevelSolution ℓ U S φ T P m j) → ∀ n : ℕ, LevelSolution ℓ U S φ T P n (j + 1)
+```
+
+— the base case is now *supplied* rather than proved inside the step, because the level-zero
+solution has to carry `P` too and only the arithmetic knows why it does.  `forall_levelSolution`
+is the resulting two-line induction and `genericSplitEP_of_genericLevelStepEP` is unchanged
+otherwise.
+
+**(b) `LevelObstruction.lean`.**  Two new definitions.  `IsShrinkStable ℓ U S P` says `P` survives
+`layerSemidirectMap` for every operator homomorphism, at every pair of letter counts and every
+degree; every statement of the ladder produces its solution by pushing an earlier one down along a
+shrinking, so nothing can be carried up without it.  `HasSolutionRepair ℓ U n S j φ D P` is SW's
+Step 3 as a named arithmetic input: a lift `f` over a solution `Φ` which is already onto, already
+smooth, already over the base realization and already trivial along the finite family is upgraded
+to a full `LevelSolution … P n (j+1)`.  `HasLocalLift` gained the antecedent `P n j Φ`, which is
+the whole point of the refactor: the local solvability at the ramified-but-not-split places is
+asked only of solutions whose ramification is already constrained.
+
+**(c) `LevelShrink.lean`, `LevelLift.lean`, `LevelTwist.lean`, `LevelLocal.lean`.**  Mechanical:
+`P` and `hstab` are threaded through, the output tuples gained the conjunct `P n j Φ` (placed
+immediately after the "trivial along the family" clause, before `IsSmoothHom f`), and the two
+theorems that used to *conclude* a `LevelSolution` at `j+1` — `levelSolution_succ_of_exists_lift`
+and `levelSolution_succ_of_hasFiniteElementaryQuotient` — now finish by applying `hrep` instead of
+assembling the anonymous constructor by hand.  This is strictly shorter: the `hproj`/`rw` step that
+re-derived `rightHom (g x) = φ x` is gone in both.
+
+**(d) `LevelRung.lean`.**  `HasRungData` is now the five-fold conjunction
+
+```lean
+(∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) P m 0) ∧
+  (∀ n : ℕ, LevelSolution ℓ U S φ (Set.range D) P n 1) ∧
+    IsShrinkStable ℓ U S P ∧
+      (∀ ν : Fin t, HasFiniteElementaryQuotient ℓ (D ν ⊓ φ.ker)) ∧
+        ∀ n j : ℕ, 1 ≤ j → HasLocalLift ℓ U n S j φ D T P ∧
+          HasShrinkableSha ℓ U n S j φ T ∧ HasSolutionRepair ℓ U n S j φ D P
+```
+
+and `genericLevelStepEP_of_hasRungData` asks its input for `∃ t D T P, HasRungData … P`.
+
+**(e) What this buys.**  The group-theoretic half of the ladder is now *complete and correct*: it
+no longer claims anything false, and every remaining demand is a named `Prop`-valued `def` about a
+number field.  Of the six clauses of `HasRungData`, one (`HasShrinkableSha`, at
+`decompositionSubgroups k Ω`) **is already a theorem** over an arbitrary number field
+(`hasShrinkableSha_decompositionSubgroups`, §1.72(a)).  The five open ones are, in increasing
+order of difficulty:
+
+1. `IsShrinkStable ℓ U S P` — for the intended `P` (a prescription on ramification) this should be
+   nearly formal, a shrinking only shrinking the field cut out.
+2. `∀ m, LevelSolution … P m 0` — the level-zero solution is essentially `φ` itself; the content
+   is only that it carries `P`.
+3. `∀ ν, HasFiniteElementaryQuotient ℓ (D ν ⊓ φ.ker)` — local class field theory: the maximal
+   elementary abelian `ℓ`-quotient of a local Galois group is finite.  Partly blocked by the
+   henselization-vs-completion gap (ii-a).
+4. `∀ n, LevelSolution … P n 1` — the first rung: Ikeda, with complete splitting along `D`.
+5. `HasLocalLift` and `HasSolutionRepair` — SW Step 1(b)/1(c) and SW Step 3.
+
+**(f) The three arithmetic bricks of §1.72(g), re-scoped.**  Reconnaissance done this session:
+`Ideal.inertia G I` (Mathlib, `RingTheory/Ideal/Defs.lean:152`) is an `abbrev` for
+`AddSubgroup.inertia I.toAddSubgroup G` and needs **no finiteness at all** — it is available
+verbatim for `G = Gal(Ω/k)` acting on `𝓞 Ω`.  Likewise `Ideal.stabilizerHom P p G :
+MulAction.stabilizer G P →* ((B ⧸ P) ≃ₐ[A ⧸ p] (B ⧸ P))` (`RingTheory/Ideal/Over.lean:318`) with
+`ker_stabilizerHom : (stabilizerHom P p G).ker = (P.inertia G).subgroupOf _`.  So brick (1) — an
+inertia API for the infinite `Gal(Ω/k)` — is **not** a from-scratch construction: it is
+`Ideal.inertia Gal(Ω/k) P` plus the family `inertiaSubgroups k Ω` in the shape of
+`InfiniteDecomposition.lean`'s `finiteDecompositionSubgroups`.  What still has to be built for
+brick (2) is the surjectivity of `stabilizerHom` onto the residue automorphisms and the fact that
+the residue field of `𝓞 Ω` at `P` is an algebraic closure of a finite field, whose absolute Galois
+group is procyclic on Frobenius.

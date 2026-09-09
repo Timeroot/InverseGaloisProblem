@@ -219,12 +219,13 @@ theorem exists_lift_of_levelSolution_of_hasShrinkableSha (ℓ : ℕ) [Fact ℓ.P
     [Group U] [Finite U] [TopologicalSpace U] [DiscreteTopology U] (n : ℕ) (S : Type) [Group S]
     [Finite S] (hS : IsPGroup ℓ S) (j : ℕ) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
     (φ : Gal(Ω/k) →* U) {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k))
-    (T : Set (Subgroup Gal(Ω/k))) (hvan : ∀ m : ℕ, HasLocalLift ℓ U m S j φ D T)
+    (T : Set (Subgroup Gal(Ω/k))) (P : LevelProperty ℓ U S k Ω) (hstab : IsShrinkStable ℓ U S P)
+    (hvan : ∀ m : ℕ, HasLocalLift ℓ U m S j φ D T P)
     (hsh : HasShrinkableSha ℓ U n S j φ T)
-    (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) m j) :
+    (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) P m j) :
     ∃ (Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j) (f : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)),
       Function.Surjective Φ ∧ IsSmoothHom Φ ∧ (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) ∧
-        (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) ∧ IsSmoothHom f ∧
+        (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) ∧ P n j Φ ∧ IsSmoothHom f ∧
           ∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (f x) = Φ x := by
   -- the number of letters to start from, fixed before anything about the solution is known
   obtain ⟨N, hN⟩ := hsh
@@ -238,8 +239,8 @@ theorem exists_lift_of_levelSolution_of_hasShrinkableSha (ℓ : ℕ) [Fact ℓ.P
   let σn : (layerExtension ℓ (genericAut U n S) j).Section :=
     ⟨Function.surjInv hsurjn, Function.rightInverse_surjInv hsurjn⟩
   -- a solution at that number of letters whose obstruction is everywhere locally trivial
-  obtain ⟨ΦN, hNsurj, hNsm, hNright, hNloc, hNsha⟩ :=
-    exists_levelSolution_liftObstructionClass_mem_sha2 ℓ U N S hS j φ D T (hvan N) σN h
+  obtain ⟨ΦN, hNsurj, hNsm, hNright, hNloc, hNP, hNsha⟩ :=
+    exists_levelSolution_liftObstructionClass_mem_sha2 ℓ U N S hS j φ D T P hstab (hvan N) σN h
   have hactN : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U N S) j)),
       x • v = (layerExtension ℓ (genericAut U N S) j).conjActHom (ΦN x) v := by
     intro x v
@@ -279,7 +280,7 @@ theorem exists_lift_of_levelSolution_of_hasShrinkableSha (ℓ : ℕ) [Fact ℓ.P
         σN σn).symm.trans hzero))
   exact ⟨(layerSemidirectMap ℓ hα j).comp ΦN, f,
     (layerSemidirectMap_surjective ℓ hα j hasurj).comp hNsurj, hΦsm, hΦright, hΦloc,
-    isSmoothHom_of_isSmooth₁ hfsm, hf⟩
+    hstab N n j hα ΦN hNP, isSmoothHom_of_isSmooth₁ hfsm, hf⟩
 
 /-- **A solution at one level of the filtration lifts to the next as soon as every everywhere
 locally trivial class with coefficients in the layer is inflated from the operator group.**  An
@@ -289,14 +290,15 @@ theorem exists_lift_of_levelSolution_of_hasInflatedSha (ℓ : ℕ) [Fact ℓ.Pri
     [Finite U] [TopologicalSpace U] [DiscreteTopology U] (n : ℕ) (S : Type) [Group S] [Finite S]
     (hS : IsPGroup ℓ S) (j : ℕ) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
     (φ : Gal(Ω/k) →* U) (hsmφ : IsSmoothHom φ) {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k))
-    (T : Set (Subgroup Gal(Ω/k))) (hvan : ∀ m : ℕ, HasLocalLift ℓ U m S j φ D T)
+    (T : Set (Subgroup Gal(Ω/k))) (P : LevelProperty ℓ U S k Ω) (hstab : IsShrinkStable ℓ U S P)
+    (hvan : ∀ m : ℕ, HasLocalLift ℓ U m S j φ D T P)
     (hinfl : ∀ m : ℕ, HasInflatedSha ℓ U m S j φ T)
-    (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) m j) :
+    (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) P m j) :
     ∃ (Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j) (f : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)),
       Function.Surjective Φ ∧ IsSmoothHom Φ ∧ (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) ∧
-        (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) ∧ IsSmoothHom f ∧
+        (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) ∧ P n j Φ ∧ IsSmoothHom f ∧
           ∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (f x) = Φ x :=
-  exists_lift_of_levelSolution_of_hasShrinkableSha ℓ U n S hS j φ D T hvan
+  exists_lift_of_levelSolution_of_hasShrinkableSha ℓ U n S hS j φ D T P hstab hvan
     (hasShrinkableSha_of_hasInflatedSha ℓ U n S hS j φ hsmφ T hinfl) h
 
 end InverseGalois.Shafarevich
