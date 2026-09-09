@@ -19286,3 +19286,111 @@ product and no `rfl` was available.  The one new ingredient is
    `H := Gal(K/k)`.
 4. **The family `D`/`T` from arithmetic**, instantiating `X = {v ∉ T}`, `g = ordFinsupp T`,
    `B = sUnits ↥K T` (and the `Q →* Gal(K/k)` bridge of finding 2700).
+
+## §1.71  Route D assembled: `HasShrinkableSha` from the local dictionary
+
+### (a)  What landed
+
+Items 2 and 3 of §1.70(d) are done.  Three new modules, all sorry- and axiom-free:
+
+| module | content |
+|---|---|
+| `Solvable/Shafarevich/LayerPi.lean` | `layerSub_pow_eq_one`, `layerPiMulEquiv` |
+| `Solvable/Shafarevich/LayerTensorOne.lean` | `exists_sum_tmul_of_span`, `exists_genericShrink_map_h1π_eq_zero`, `exists_genericShrink_map_h1_eq_zero` |
+| `Solvable/Shafarevich/LayerKummerShrink.lean` | `layerSub_smul_eq_self`, `actsTrivially_hom_layerSub`, `HasLayerLocalOrdHom`, `fixingSubgroup_le_ker`, `hasShrinkableSha_of_hasLayerLocalOrdHom` |
+
+plus two general lemmas placed in their natural homes: `coeffH2_congr`
+(`CFT/Profinite/PiTwo.lean`, beside the pre-existing `coeffH2_id`/`coeffH2_comp`) and
+`layerSubMap_comp` (`Solvable/Shafarevich/Layer.lean`, beside `layerMap_comp`).
+
+### (b)  Item 2: the count in degree one
+
+The coefficients in degree one are not a layer but `U_T ⊗_ℤ (μ_p →* Layer)`, which is infinite, so
+the count cannot be run against all of its elements.  The way round is that a *spanning family* of
+the left factor — no basis is needed, torsion is allowed — writes every element of the tensor
+product as `∑ i, b i ⊗ₜ w i` with `w i` in the right factor (`exists_sum_tmul_of_span`).  A cocycle
+on a finite group `Q` therefore has `Nat.card Q * d` coordinates in the right factor, and each
+coordinate is a homomorphism `μ_p →* Layer`, which finitely many readings in the layer determine.
+So the index set of the count is `Q × Fin d × ι` with `ι` finite, and the bound is the one the
+layer already answers: `exists_genericShrink_forall_layerSubMap_eq_one` (`LayerSmooth.lean:142`).
+No coefficient bridges of the kind item 2 of §1.70(d) anticipated were needed (finding 2742): the
+statement is parameterised by an abstract right factor `C`, an abstract family of induced maps
+`Φ : (Fin r → ℕ) → C →* C'`, and the one demand a shrinking can meet — that finitely many
+prescribed readings `coord w t` in the layer decide whether `Φ a` kills `w`.
+
+### (c)  Item 3: the assembly, and its open design question resolved
+
+The open design question of §1.70(d) item 3 is answered by the *first* alternative it lists: a
+monoid hom `f : Gal(↥K/k) →* U` is available, and the base realization `φ : Gal(Ω/k) →* U`
+factors through it, `hφ : ∀ x, φ x = f (AlgEquiv.restrictNormalHom ↥K x)`.  That single hypothesis
+does three jobs at once:
+
+* it gives `K.fixingSubgroup ≤ φ.ker` (`fixingSubgroup_le_ker`), hence the layer is fixed by the
+  subgroup fixing the finite level (`layerSub_smul_eq_self`) and so are the homomorphisms of the
+  roots of unity into it (`actsTrivially_hom_layerSub`) — the `ActsTrivially` instance every
+  transgression statement needs;
+* it makes the three `Gal(Ω/k)`-actions on the three layers in play factor through
+  `Gal(↥K/k)`, which is exactly the `hπ`/`hπ'` shape `ShaKummerShrink.lean` asks for;
+* it lets `exists_genericShrink_forall_coeffH2_eq_one` (`LayerSmooth.lean:184`) be run with
+  `H := Gal(↥K/k)` and that same `f`, so the degree-two count needs no re-run of `LevelShrink.lean`.
+
+The ordering of levels is the one §1.70(d) predicted, written multiplicatively so the shrinkings
+compose:
+
+    target n  →  r₂ (degree-two bound, index set Gal(↥K/k) × Gal(↥K/k))   → middle level r₂ * n
+              →  r₁ (degree-one bound, index set Q × Fin d × M)           → top level r₁ * (r₂ * n)
+
+Both bounds are chosen **before** `ε` is introduced, which is what makes one shrinking serve every
+class.  The final chain is: `coeffH2_congr` rewrites `layerSubMap (a₂ ∘ a₁)` as a composite
+(`layerSubMap_comp`), `coeffH2_comp` splits it, `hv` replaces the inner class by the one inflated
+from the finite level, `coeffH2_comapH2` moves the outer coefficient map through the inflation, and
+`ha₂ 0` kills what is left.
+
+### (d)  What is left of Route D
+
+1. **`HasLocalOrdHom`**, now packaged per number-of-letters as `HasLayerLocalOrdHom` — still the
+   arithmetic wall (§1.68(c)).
+2. **The family `D`/`T` from arithmetic**, instantiating `X = {v ∉ T}`, `g = ordFinsupp T`,
+   `B = sUnits ↥K T` (and the `Q →* Gal(K/k)` bridge of finding 2700).
+
+Everything between the two is now a theorem.
+
+### (e)  Findings
+
+* **2751.**  `layerSubMap_comp` is proved by `obtain ⟨x, hx, hxv⟩ := exists_layerMk
+  (Additive.ofMul v); obtain rfl : v = Additive.toMul (layerMk hx) := by rw [hxv]; rfl` — the
+  trailing `rfl` after `rw [hxv]` is required (finding 2704 again).
+* **2752.**  `coeffH2_comp` is `rfl` after `obtain ⟨a, ha, hs, rfl⟩ := smoothH2Mk_surjective z`;
+  `coeffH2_congr` is `subst h; rfl`.
+* **2753.**  Auto-inclusion of section variables follows the *declaration order of the variable
+  block*, not the order the variables are written in the theorem's own arguments.  Because
+  `f : Gal(↥K/k) →* U` mentions `U`, `U` becomes the first explicit argument of
+  `fixingSubgroup_le_ker`; the call is `fixingSubgroup_le_ker U K f hφ`.  Symptom of getting it
+  wrong: `failed to synthesize Group ↥K`.
+* **2754.**  Every `letI := galLayerAction …` needed by the proof must be introduced for *every*
+  level and *every* acting group in play — here seven of them: three `Gal(Ω/k)` actions (top,
+  middle, bottom level), three `Gal(↥K/k)` actions on the same three, and one `Gal(Ω/↥K)` action
+  through `φ.comp (galRestrictScalarsHom k ↥K Ω)`.
+* **2755.**  Definitional proof irrelevance makes all the `Prop`-valued arguments (`hker`,
+  `htrivE`, `hΦ`, `hψ`, `NeZero` instances) interchangeable, so `HasLayerLocalOrdHom` may state its
+  own `hker` as the derived term `fixingSubgroup_le_ker U K f hφ` and the proof's `letI`s still
+  match with no bridging lemma.
+* **2756.**  `IntermediateField.restrictNormalHom_ker (E : IntermediateField K L) [Normal K E] :
+  (restrictNormalHom E).ker = E.fixingSubgroup` at `Mathlib/FieldTheory/Galois/Basic.lean:408`.
+  The `Gal(L/K)` macro is at `Mathlib/FieldTheory/Galois/Notation.lean:35`, so `Gal(↥K/k)` is
+  legal.
+* **2757.**  `galRestrictScalarsHom F k K : Gal(K/k) →* Gal(K/F)` is at
+  `CFT/Units/BaseFundamental.lean:74` (not in Mathlib).
+* **2758 (IMPORTANT).**  Finding 29 (`↥E` where an `IntermediateField` is wanted) costs a
+  **21-minute `(deterministic) timeout at whnf`** rather than a type error, because Lean tries to
+  unify the sort `↥K` with `↥?L` for an unknown `?L : IntermediateField ?k ?K'`.  Here it was
+  `isSmoothHom_restrictNormalHom ↥K` for `isSmoothHom_restrictNormalHom K`; the same theorem then
+  elaborated in 123 s.  Note that Mathlib's own `AlgEquiv.restrictNormalHom` *does* take the type
+  `↥K`, so both spellings occur one line apart and neither is wrong on its own.
+* **2759.**  `coeffH2_comp` already exists (`CFT/Profinite/PiTwo.lean`) with the *opposite*
+  orientation `coeffH2 ψ hψ (coeffH2 φ hφ x) = coeffH2 (ψ.comp φ) hcomp x`; use `.symm`.  A local
+  re-definition inside `namespace InverseGalois.Shafarevich` silently shadows it.
+* **2760 (TECHNIQUE).**  To localise a `whnf` timeout inside a long tactic proof, make several
+  copies of the file truncated at successive tactic boundaries with `sorry` appended, lower
+  `maxHeartbeats` so failures are fast, and run them **in parallel** (`lake env lean` probes may
+  run concurrently).  `set_option profiler true` alone only says which *tactic* is slow, not why.

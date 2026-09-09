@@ -49,6 +49,8 @@ import InverseGalois.Solvable.Shafarevich.LinHomTensor
 import InverseGalois.Solvable.Shafarevich.LayerDuality
 import InverseGalois.Solvable.Shafarevich.LevelRung
 import InverseGalois.Solvable.Shafarevich.LayerTensorOne
+import InverseGalois.Solvable.Shafarevich.LayerPi
+import InverseGalois.Solvable.Shafarevich.LayerKummerShrink
 
 /-!
 # Shafarevich's theorem
@@ -345,4 +347,18 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   coordinate in the layer through the map the shrinking induces turns the demand back into finitely
   many scalar equations, and **one first cohomology class with those coefficients is annihilated by
   a surjective shrinking onto the intended rank.**
+* `InverseGalois.Solvable.Shafarevich.LayerPi` names the shape twisted Kummer theory asks the
+  coefficients to have.  A layer is abelian, killed by the prime and finite, so it is a finite
+  vector space over the field with that many elements; a group of that prime order is a one
+  dimensional such space; and a basis therefore writes **a layer as a finite power of any group of
+  prime order**, in particular of the roots of unity of that order.
+* `InverseGalois.Solvable.Shafarevich.LayerKummerShrink` spends the two counts, one after the
+  other, on a single everywhere locally trivial class.  Over a finite Galois subextension carrying
+  the roots of unity, twisted Kummer theory splits such a class into the obstruction to descending
+  it to that subextension, one class of the first cohomology with coefficients the units tensored
+  against the homomorphisms of the roots of unity into the layer, and what is left after the
+  descent, one class of the second cohomology of a finite group.  Enlarging the alphabet once for
+  each of the two and composing the resulting shrinkings gives **one shrinking which annihilates
+  the class**, granted the local dictionary that reads the class in the units as an order at each
+  place being avoided.
 -/
