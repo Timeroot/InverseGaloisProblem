@@ -19019,3 +19019,86 @@ which is exactly `hloc`.  No inertia character, no ramification hypothesis, no c
    of `coeffH2_sha2_le_range_galInflH2_of_kummerSha1`, and the real Route D target on the other
    side is `HasInflatedSha` (`LevelShrink.lean:82`), which `hasShrinkableSha_of_hasInflatedSha`
    already converts into the rung.
+
+---
+
+## §1.68 The local conditions are *not needed at all*: a double shrink kills the whole group
+
+**Date: 2026-09-08/09.  Status: `TensorShrink.lean` built and green; the route of §1.67(d) item 1 is
+withdrawn.**
+
+### (a)  The observation
+
+§1.67(d) item 1 planned a bridge carrying the local triviality of a class in `kummerSha1` — stated
+with the genuine decomposition subgroups of `Gal(Ω/k)` and a coefficient restriction — over to the
+abstract hypothesis `hloc` of `mem_range_map_tensorSubInclRep_of_forall_stabilizer`.  That bridge
+needed naturality of the twisted Kummer identification under restriction, and the identification of
+the image of a decomposition subgroup with a point stabiliser in the quotient.  Both are real work.
+
+**It is unnecessary.**  Look again at what `hloc` asks for: at each place `x`, the valuation
+`tensorVal (c ρ) x`, as `ρ` ranges over `Stab_Q(x)`, is a coboundary — *with values in the module
+`C` alone*.  The hypothesis is therefore about `H¹(D, C)` for the subgroups `D ≤ Q`, and those
+groups are ones the shrinking machinery already knows how to kill.
+
+Concretely: `ρ ↦ (tensorVal (c ρ) x).toMul` satisfies `d (ρτ) = ρ • d τ · d ρ`, i.e. it is a
+one-cocycle of `D = Stab_Q(x)` with values in `C`.  Suppose `φ : C →* C'` is equivariant and kills
+every such cocycle, for **every** subgroup `D ≤ Q` — that is, `H¹(D, C) → H¹(D, C')` is zero for all
+`D`.  Then the pushed-forward class `φ_* [c]` satisfies `hloc` at every place at once, so by
+`TensorOrbit` it comes from `H¹(Q, U_T ⊗ C')`.  **No local input about `c` is used: the hypothesis
+is on `φ`, not on the class.**
+
+### (b)  The double shrink
+
+Apply this twice.
+
+1. `φ : C →* C'` kills `H¹(D, C)` for every subgroup `D ≤ Q`.  Then for **every** class `y` in
+   `H¹(Q, Additive Kˣ ⊗ C)`, `φ_* y ∈ range (incl_* : H¹(Q, U_T ⊗ C') → H¹(Q, Kˣ ⊗ C'))`.
+2. `φ' : C' →* C''` kills `H¹(Q, U_T ⊗ C')`.  Since `φ'_*` commutes with `incl_*`, the composite
+   `ψ = φ' ∘ φ` kills `φ_* y`'s image, hence kills `ψ_* y` for every `y`.
+
+Conclusion: **`ψ_*` annihilates the whole of `H¹(Q, Additive Kˣ ⊗ C)`**, and in particular
+`kummerSha1`, which is one of its subgroups.  Nothing about local triviality, decomposition groups,
+the tame symbol, `resSubH1`, or `Ш` enters at any point.
+
+Both hypotheses are about finitely many finite groups: a finite group has finitely many subgroups,
+`C = Hom(μ_p, E_m)` is finite, and `U_T` is finitely generated (gotcha 2651), so
+`H¹(Q, U_T ⊗ C')` is finite.  So both are exactly what Proposition 6
+(`exists_operatorHom_res_cohomology_eq_zero`) delivers: it kills any prescribed finite family of
+classes, and killing a finite group *is* killing a finite family.  Proposition 6's shape
+`∃ m, ∀ x, ∃ α : Generic U m S →* Generic U n S` lets the *target* level `n` be fixed in advance, so
+the two shrinks compose: choose the second shrink's source level `m₂` first, then the first shrink's
+`m₁` with target `m₂`.
+
+### (c)  What landed
+
+`InverseGalois/CFT/PoitouTate/TensorShrink.lean` (green, 8067 jobs):
+
+* `tensorCoeff A φ : Additive A ⊗ Additive C →ₗ[ℤ] Additive A ⊗ Additive C'` — push the second
+  tensor factor along `φ`, with `tensorCoeff_tmul`, `tensorCoeff_comp`, `tensorCoeff_smul`,
+  `tensorVal_tensorCoeff` (the valuation commutes with it) and `tensorCoeff_tensorSubIncl` (it
+  commutes with the inclusion of the kernel of the valuation).
+* `tensorCoeffRep Q φ hφ` — the same as a map of representations.
+* `mem_range_map_tensorSubInclRep_of_forall_subgroup_cocycle` and its class-level form
+  `mem_range_map_tensorSubInclRep_of_forall_subgroup`: **step 1 above, for an arbitrary class.**
+* `map_tensorCoeffRep_eq_zero_of_forall_subgroup`: **step 2, the conclusion —
+  `ψ_* y = 0` for every `y ∈ H¹(Q, Additive A ⊗ Additive C)`.**
+
+The statement of the first hypothesis is deliberately elementary — a `∀ D : Subgroup Q`, a raw
+cocycle `d : ↥D → C` with `d (ρ * τ) = ρ • d τ * d ρ`, and a `u : C'` with `φ (d ρ) = ρ • u / u` —
+so that discharging it from Proposition 6 needs no compatibility of two `Rep` conventions.
+
+### (d)  What Phase 3 now owes (revision of §1.67(d))
+
+Item 1 is **withdrawn**.  What remains:
+
+1. Discharge `hkill` from Proposition 6 applied to each of the finitely many `D ≤ Q`, composing the
+   resulting `IsOperatorHom` shrinks.
+2. Discharge `hkill'` for `H¹(Q, Additive ↥(sUnits K T) ⊗ Additive (μ_p →* E'))`, again from
+   Proposition 6, using finite generation of `sUnits K T`.
+3. The coefficient bridges `Hom(μ_p, Layer) ≅ Layer ⊗ μ_p^∨` and
+   `U_T ⊗ Hom(μ_p, Layer) ≅ Layer ⊗ (U_T/p ⊗ μ_p^∨)` (unchanged, §1.67(d) items 2–3).
+4. Instantiate with `A := (↥K)ˣ`, `C := μ_p →* E`, `Q := Gal(Ω/k) ⧸ K.fixingSubgroup`,
+   `X := {v // v ∉ T}`, `g := ordFinsupp T`, `B := sUnits ↥K T`, transporting the `Gal(K/k)`-action
+   on `ordFinsupp` to `Q` (gotcha 2700), and feed the result into
+   `coeffTransH1_inflH1_eq_one_of_kummerSha1` → `coeffH2_sha2_le_range_galInflH2_of_kummerSha1` →
+   `HasInflatedSha`.
