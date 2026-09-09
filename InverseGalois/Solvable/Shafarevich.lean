@@ -53,6 +53,8 @@ import InverseGalois.Solvable.Shafarevich.LayerPi
 import InverseGalois.Solvable.Shafarevich.LayerKummerShrink
 import InverseGalois.Solvable.Shafarevich.LayerLocalOrd
 import InverseGalois.Solvable.Shafarevich.LayerShaPlaces
+import InverseGalois.Solvable.Shafarevich.LayerShaLevel
+import InverseGalois.Solvable.Shafarevich.LayerShaDescent
 
 /-!
 # Shafarevich's theorem
@@ -378,4 +380,23 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   dictionary of the previous file that is everything the two counts require, so **every everywhere
   locally trivial class with coefficients in a layer dies under a shrinking**, for any Kummer datum
   over a finite Galois subextension through which the base realization factors.
+* `InverseGalois.Solvable.Shafarevich.LayerShaLevel` builds the subextension and the datum rather
+  than assuming them.  The base realization is smooth and its target is finite and discrete, so the
+  subgroup it kills is open and normal and therefore contains the subgroup fixing a finite Galois
+  subextension; the realization factors through the Galois group of that subextension, which is a
+  number field because it is finite over one, and the ambient field is its algebraic closure.  The
+  datum is the residues modulo the prime read as the roots of unity of the subextension: they come
+  from the base, so the whole Galois group fixes them.  Hence **every everywhere locally trivial
+  class with coefficients in a layer dies under a shrinking**, over any number field carrying a
+  primitive root of unity of the prime order in play.
+* `InverseGalois.Solvable.Shafarevich.LayerShaDescent` removes the roots of unity from the base as
+  well.  A class over the base is read over the subextension the roots of unity generate, where it
+  is still everywhere locally trivial because a decomposition subgroup over the subextension lands
+  in one over the base; the shrinking there kills it; killing commutes with the map of the
+  coefficients the shrinking induces; and dying over a subextension is dying on the subgroup which
+  fixes it, so a class of the prime order dying there is trivial once the index of that subgroup is
+  prime to the order â€” which it is, the degree of the subextension dividing the prime minus one.
+  The number of letters is inherited unchanged, the descent changing the base and not the count, so
+  **every everywhere locally trivial class with coefficients in a layer dies under a shrinking**,
+  over an arbitrary number field.
 -/

@@ -910,6 +910,7 @@ import InverseGalois.CFT.Units.CompletionUnits
 import InverseGalois.CFT.Units.CompositumEmbed
 import InverseGalois.CFT.Units.CompositumFundamental
 import InverseGalois.CFT.Units.CyclicTrivial
+import InverseGalois.CFT.Units.CyclotomicLevel
 import InverseGalois.CFT.Units.Decomposition
 import InverseGalois.CFT.Units.DecompositionClosed
 import InverseGalois.CFT.Units.DecompositionField
@@ -6521,6 +6522,17 @@ it that are available here.
   of the roots of unity, is a product of copies of them; reading the class factor by factor gives
   the same conclusion there, so **an everywhere locally trivial class with coefficients in a
   finite module split by the intermediate field dies over that field.**
+* `InverseGalois.CFT.Units.CyclotomicLevel` builds the field to pass to.  An algebraic closure of a
+  field of characteristic zero carries a primitive root of unity of every order, and adjoining one
+  of them cuts out a cyclotomic extension of the base, hence a finite Galois subextension; an
+  automorphism of it raises the chosen root to an invertible power and is determined by that power,
+  so **the degree of the subextension divides the number of invertible residues modulo the order.**
+  The degree is the index of the subgroup fixing the subextension, the quotient by that subgroup
+  being the Galois group of the subextension, so **for a prime order that index is prime to the
+  order** — which is what lets a class of that order be chased over the subextension and brought
+  back.  Bringing it back needs the local structure to travel as well, and it does: reading an
+  automorphism over an intermediate field as an automorphism over the base is the restriction of
+  scalars, so **a decomposition subgroup over the intermediate field maps into one over the base.**
 * `InverseGalois.CFT.Brauer.CyclicNormResidue` composes the invariant of a local field with the
   cyclic algebra construction: **the norm residue symbol of a cyclic extension of a local field.**
   The norm index of such an extension is the degree, whatever the ramification, so **its relative
