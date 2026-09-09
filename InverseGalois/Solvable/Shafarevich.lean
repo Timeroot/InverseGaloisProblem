@@ -48,6 +48,7 @@ import InverseGalois.Solvable.Shafarevich.IntLinHom
 import InverseGalois.Solvable.Shafarevich.LinHomTensor
 import InverseGalois.Solvable.Shafarevich.LayerDuality
 import InverseGalois.Solvable.Shafarevich.LevelRung
+import InverseGalois.Solvable.Shafarevich.LevelRamification
 import InverseGalois.Solvable.Shafarevich.LayerTensorOne
 import InverseGalois.Solvable.Shafarevich.LayerPi
 import InverseGalois.Solvable.Shafarevich.LayerKummerShrink
@@ -348,6 +349,16 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   by a shrinking, and that the property be restorable on a lift which already has every other
   clause.  Granted that package, **the step of the ladder holds**, and with it every split embedding
   problem with a kernel of prime power order.
+* `InverseGalois.Solvable.Shafarevich.LevelRamification` names the property the package leaves free.
+  What the next step needs of a solution is a restriction on where the field it cuts out ramifies
+  over the field the base realization cuts out: at a prime where it does ramify, the base
+  realization must split completely and the solution must be cyclic there and totally ramified.
+  Stated over the primes of the ring of integers of the whole extension the restriction mentions
+  only the two subgroups such a prime carries, its decomposition subgroup and its inertia subgroup,
+  so no finite level has to be named.  Every clause of it is a statement about the values a solution
+  takes, and following a homomorphism can only identify values, so **a shrinking does not destroy
+  it**; and at the bottom of the ladder the solution is the base realization itself, which is
+  trivial wherever the base realization is, so **the bottom carries it for nothing**.
 * `InverseGalois.Solvable.Shafarevich.LayerTensorOne` runs the count in degree one, where the
   coefficients are not a layer but a layer tensored on the left with a finitely generated abelian
   group.  Such a tensor product is infinite, but a spanning family of the left factor writes every
