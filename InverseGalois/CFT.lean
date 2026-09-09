@@ -477,6 +477,7 @@ import InverseGalois.CFT.PoitouTate.Isotropic
 import InverseGalois.CFT.PoitouTate.LocalConditions
 import InverseGalois.CFT.PoitouTate.LocalOrdBridge
 import InverseGalois.CFT.PoitouTate.LocalOrdKummer
+import InverseGalois.CFT.PoitouTate.LocalOrdOutside
 import InverseGalois.CFT.PoitouTate.LocalOrdPlace
 import InverseGalois.CFT.PoitouTate.NormLocalPower
 import InverseGalois.CFT.PoitouTate.OrbitCoboundary
@@ -6130,6 +6131,14 @@ it that are available here.
   the subextension modulo `p`-th powers, and what the inclusion of the units kills already dies in
   the completion at the place, through which the valuation factors.  Hence **a prime above a finite
   place gives the dictionary there.**
+* `InverseGalois.CFT.PoitouTate.LocalOrdOutside` makes the places and the valuations concrete.  The
+  places are the primes of the subextension outside a finite set carried into itself by the Galois
+  group, and the vector of valuations is the vector of orders at them; the Galois group of the base
+  acts on those primes through its quotient by the subgroup fixing the subextension, an automorphism
+  acting by its restriction, and the vector of orders is equivariant for that action because it is
+  equivariant for the action of the Galois group of the subextension.  A prime outside the set is
+  the place of its own dictionary, the order there being the coordinate of the vector at it, so
+  **every prime outside a stable set has the dictionary.**
 * `InverseGalois.CFT.PoitouTate.ShaKummerShrink` composes the whole chain into one statement.  A
   class of the second cohomology trivial on every decomposition subgroup names an obstruction to
   being inflated from the Galois group of the splitting extension; twisted Kummer theory reads that
