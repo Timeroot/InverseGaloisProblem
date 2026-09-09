@@ -50,6 +50,10 @@ statement about kernels alone.
   cocycle to the kernel is.**
 * `InverseGalois.Shafarevich.inducedHom_eq_one` — it kills an element of the kernel of `φ` all of
   whose translates the character kills.
+* `InverseGalois.Shafarevich.inducedHom_pow_eq_one` — on the kernel of `φ` it is killed by any
+  exponent the coefficients are killed by.
+* `InverseGalois.Shafarevich.inducedHom_mem_zpowers_of_forall_ne` — **an induced value supported at
+  a single coordinate lies in the powers of another supported there.**
 * `InverseGalois.Shafarevich.inducedNorm_surjective_of_forall_conj` — **one set inside the kernel on
   which the character is onto and whose moved conjugates the character kills makes the restriction
   of the cocycle to the kernel onto**, which is the independence of the conjugates.
@@ -182,6 +186,43 @@ theorem inducedHom_apply (hr : ∀ u, φ (r u) = u) (x : G) :
 /-- The induced homomorphism lies over `φ`. -/
 theorem rightHom_inducedHom (hr : ∀ u, φ (r u) = u) (x : G) :
     SemidirectProduct.rightHom (inducedHom φ r χ hr x) = φ x := rfl
+
+/-- On the kernel of the base map the induced homomorphism is the induced cocycle, read inside the
+semidirect product. -/
+theorem inducedHom_of_mem_ker (hr : ∀ u, φ (r u) = u) {x : G} (hx : φ x = 1) :
+    inducedHom φ r χ hr x = SemidirectProduct.inl (inducedCocycle φ r χ hr x) :=
+  SemidirectProduct.ext rfl hx
+
+/-- **The induced value at an element the base map kills is killed by any exponent the coefficients
+are killed by**, the semidirect product restricting to the group of functions there. -/
+theorem inducedHom_pow_eq_one (hr : ∀ u, φ (r u) = u) {x : G} (hx : φ x = 1) {m : ℕ}
+    (hm : ∀ v : V, v ^ m = 1) : inducedHom φ r χ hr x ^ m = 1 := by
+  rw [inducedHom_of_mem_ker φ r χ hr hx, ← _root_.map_pow,
+    show inducedCocycle φ r χ hr x ^ m = 1 from funext fun u => hm _, _root_.map_one]
+
+/-- **Two elements the base map kills have induced values one a power of the other as soon as their
+induced cocycles do**, with one exponent serving every coordinate. -/
+theorem inducedHom_eq_zpow_of_cocycle (hr : ∀ u, φ (r u) = u) {x y : G} (hx : φ x = 1)
+    (hy : φ y = 1) (i : ℤ)
+    (h : ∀ u, inducedCocycle φ r χ hr y u = inducedCocycle φ r χ hr x u ^ i) :
+    inducedHom φ r χ hr y = inducedHom φ r χ hr x ^ i := by
+  rw [inducedHom_of_mem_ker φ r χ hr hx, inducedHom_of_mem_ker φ r χ hr hy, ← _root_.map_zpow]
+  exact congrArg _ (funext h)
+
+/-- **An induced value supported at a single coordinate lies in the powers of another supported
+there**, the exponent that works at that coordinate working at the others because both vanish. -/
+theorem inducedHom_mem_zpowers_of_forall_ne (hr : ∀ u, φ (r u) = u) {x y : G} (hx : φ x = 1)
+    (hy : φ y = 1) (u₀ : U) (hxu : ∀ u, u ≠ u₀ → inducedCocycle φ r χ hr x u = 1)
+    (hyu : ∀ u, u ≠ u₀ → inducedCocycle φ r χ hr y u = 1)
+    (hcyc : inducedCocycle φ r χ hr y u₀ ∈ Subgroup.zpowers (inducedCocycle φ r χ hr x u₀)) :
+    inducedHom φ r χ hr y ∈ Subgroup.zpowers (inducedHom φ r χ hr x) := by
+  obtain ⟨i, hi⟩ := Subgroup.mem_zpowers_iff.1 hcyc
+  refine Subgroup.mem_zpowers_iff.2
+    ⟨i, (inducedHom_eq_zpow_of_cocycle φ r χ hr hx hy i fun u => ?_).symm⟩
+  by_cases hu : u = u₀
+  · subst hu
+    exact hi.symm
+  · rw [hxu u hu, hyu u hu, one_zpow]
 
 /-! ### The restriction to the kernel -/
 

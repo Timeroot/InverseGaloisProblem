@@ -31,6 +31,9 @@ the restriction is inherited.
   image of a homomorphism under any homomorphism of the target.
 * `InverseGalois.Shafarevich.isSplitTotallyRamifiedHom_of_ker_le` — a homomorphism which is trivial
   wherever the base realization is carries the restriction.
+* `InverseGalois.Shafarevich.isSplitTotallyRamifiedHom_of_le_zpowers` — **a homomorphism whose
+  values on a decomposition subgroup lie in the powers of a single element killed by the prime
+  carries the restriction**, the totally ramified clause coming for free from the prime order.
 
 ## Tags
 
@@ -96,5 +99,60 @@ theorem isSplitTotallyRamifiedHom_of_ker_le {φ : Gal(Ω/k) →* U} {Φ : Gal(Ω
     (h : ∀ x, φ x = 1 → Φ x = 1) : IsSplitTotallyRamifiedHom ℓ φ Φ := by
   rintro P - - ⟨x, -, hxφ, hxΦ⟩
   exact absurd (h x hxφ) hxΦ
+
+/-- A nontrivial power of an element killed by a prime exponent has that element among its own
+powers, the exponent it is reached by being prime to the prime. -/
+theorem mem_zpowers_of_pow_prime {G : Type*} [Group G] {ℓ : ℕ} (hℓ : ℓ.Prime) {c a : G}
+    (hc : c ^ ℓ = 1) (ha : a ∈ Subgroup.zpowers c) (ha1 : a ≠ 1) : c ∈ Subgroup.zpowers a := by
+  obtain ⟨i, hi⟩ := Subgroup.mem_zpowers_iff.1 ha
+  have hcz : c ^ (ℓ : ℤ) = 1 := by rw [zpow_natCast, hc]
+  have hnd : ¬ ℓ ∣ i.natAbs := by
+    intro hd
+    refine ha1 ?_
+    obtain ⟨j, hj⟩ : (ℓ : ℤ) ∣ i := Int.dvd_natAbs.1 (Int.natCast_dvd_natCast.2 hd)
+    rw [← hi, hj, zpow_mul, hcz, one_zpow]
+  have hcop : IsCoprime i (ℓ : ℤ) := by
+    refine Int.isCoprime_iff_gcd_eq_one.2 ?_
+    have h1 : Nat.Coprime ℓ i.natAbs := (Nat.Prime.coprime_iff_not_dvd hℓ).2 hnd
+    have h2 : Nat.gcd i.natAbs ℓ = 1 := h1.symm
+    simpa [Int.gcd] using h2
+  obtain ⟨s, t, hst⟩ := hcop
+  refine Subgroup.mem_zpowers_iff.2 ⟨s, ?_⟩
+  have hkey : i * s = 1 - ℓ * t := by linear_combination hst
+  rw [← hi, ← zpow_mul, hkey, sub_eq_add_neg, zpow_add, zpow_neg, zpow_mul, hcz, one_zpow, inv_one,
+    mul_one, zpow_one]
+
+/-- **A homomorphism whose values on a decomposition subgroup lie in the powers of a single element
+killed by the prime carries the restriction.**
+
+The clause asking the homomorphism to be totally ramified is the one which would otherwise call for
+an arithmetic input, and here it costs nothing: the element of inertia witnessing the ramification
+already generates the whole local image, because the image is bounded by an element of prime order,
+so every value on the decomposition subgroup is a power of the witness and therefore a value on
+inertia.  What is left to supply is that the base realization kills the decomposition subgroup, that
+the local image is bounded by the powers of an element the prime kills, and the roots of unity
+rider, which for such an element asks only for the roots of unity of the prime squared. -/
+theorem isSplitTotallyRamifiedHom_of_le_zpowers {φ : Gal(Ω/k) →* U} {Φ : Gal(Ω/k) →* W}
+    (hℓ : ℓ.Prime)
+    (h : ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
+      ∀ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1 → Φ x ≠ 1 →
+        ∃ c : W, (∀ y ∈ stabilizer Gal(Ω/k) P, φ y = 1) ∧
+          (∀ y ∈ stabilizer Gal(Ω/k) P, Φ y ∈ Subgroup.zpowers c) ∧ c ^ ℓ = 1 ∧
+            ∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ) = 1 → ∀ y ∈ stabilizer Gal(Ω/k) P, y • ζ = ζ) :
+    IsSplitTotallyRamifiedHom ℓ φ Φ := by
+  haveI : Fact ℓ.Prime := ⟨hℓ⟩
+  rintro P hPp hPbot ⟨x, hxI, hxφ, hxΦ⟩
+  obtain ⟨c, hsplit, hle, hcpow, hμ⟩ := h P hPp hPbot x hxI hxφ hxΦ
+  have hxmem : Φ x ∈ Subgroup.zpowers c := hle x (Ideal.inertia_le_stabilizer P hxI)
+  have hcmem : c ∈ Subgroup.zpowers (Φ x) := mem_zpowers_of_pow_prime hℓ hcpow hxmem hxΦ
+  have hcne : c ≠ 1 := fun hc => hxΦ (by
+    rw [hc, Subgroup.zpowers_one_eq_bot, Subgroup.mem_bot] at hxmem
+    exact hxmem)
+  have horder : orderOf c = ℓ := orderOf_eq_prime hcpow hcne
+  refine ⟨hsplit, fun y hy => ?_, c, hle, fun ζ hζ y hy => ?_⟩
+  · obtain ⟨i, hi⟩ :=
+      Subgroup.mem_zpowers_iff.1 (Subgroup.zpowers_le.2 hcmem (hle y hy))
+    exact ⟨x ^ i, zpow_mem hxI i, by rw [_root_.map_zpow, hi]⟩
+  · exact hμ ζ (by rwa [horder] at hζ) y hy
 
 end InverseGalois.Shafarevich

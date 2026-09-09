@@ -38,6 +38,10 @@ is the count Shafarevich's number existence lemma delivers.
   by the first term of the series.
 * `InverseGalois.Shafarevich.levelSolution_one_of_character` — **a character of the kernel of the
   base realization whose conjugates are jointly onto gives a solution at the first level.**
+* `InverseGalois.Shafarevich.isSplitTotallyRamifiedHom_inducedHom` — **the homomorphism a character
+  induces carries the ramification restriction as soon as, at every prime where it ramifies, one
+  coordinate carries the whole of the character on the decomposition subgroup and is bounded there
+  by an element the prime kills.**
 * `InverseGalois.Shafarevich.levelSolution_one_of_hasLevelOneCharacter` — the character the
   arithmetic supplies gives the first rung of the ladder.
 * `InverseGalois.Shafarevich.forall_conj_mem_inducedCharKer` — along a family closed under
@@ -156,6 +160,60 @@ theorem levelSolution_one_of_character (φ : Gal(Ω/k) →* U) (T : Set (Subgrou
   · exact (hram.comp (shiftCounitMap (layerZeroAut ℓ U n S))).comp (layerZeroSemidirect ℓ U n S)
 
 end Solution
+
+/-! ### The ramification restriction, read off the character -/
+
+section Ramified
+
+open MulAction NumberField
+
+open scoped Pointwise
+
+variable {ℓ : ℕ} {U V : Type*} [Group U] [CommGroup V] {k Ω : Type*} [Field k] [Field Ω]
+  [Algebra k Ω]
+
+/-- **The homomorphism induced by a character carries the ramification restriction as soon as, at
+every prime where it ramifies, one coordinate carries the whole of the character on the
+decomposition subgroup and is bounded there by an element the prime kills.**
+
+At such a prime the values of the character on the decomposition subgroup are concentrated in a
+single coordinate, so the induced values all lie in the powers of the value at the element of
+inertia witnessing the ramification: that value is nontrivial, hence generates the cyclic group of
+prime order bounding the coordinate.  The remaining clauses — that the base realization kill the
+decomposition subgroup, and that the local field carry the roots of unity of the prime squared — are
+carried across untouched. -/
+theorem isSplitTotallyRamifiedHom_inducedHom (hℓ : ℓ.Prime) (φ : Gal(Ω/k) →* U)
+    (r : U → Gal(Ω/k)) (hr : ∀ u, φ (r u) = u) (χ : ↥φ.ker →* V) (hV : ∀ v : V, v ^ ℓ = 1)
+    (h : ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
+      ∀ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1 → inducedHom φ r χ hr x ≠ 1 →
+        ∃ (u₀ : U) (c : V), (∀ y ∈ stabilizer Gal(Ω/k) P, φ y = 1) ∧
+          (∀ y ∈ stabilizer Gal(Ω/k) P, ∀ u, u ≠ u₀ → inducedCocycle φ r χ hr y u = 1) ∧
+            (∀ y ∈ stabilizer Gal(Ω/k) P, inducedCocycle φ r χ hr y u₀ ∈ Subgroup.zpowers c) ∧
+              c ^ ℓ = 1 ∧
+                ∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ) = 1 → ∀ y ∈ stabilizer Gal(Ω/k) P, y • ζ = ζ) :
+    IsSplitTotallyRamifiedHom ℓ φ (inducedHom φ r χ hr) := by
+  refine isSplitTotallyRamifiedHom_of_le_zpowers hℓ fun P hPp hPbot x hxI hxφ hxΦ => ?_
+  obtain ⟨u₀, c, hsplit, hvan, hzp, hcℓ, hμ⟩ := h P hPp hPbot x hxI hxφ hxΦ
+  have hxst : x ∈ stabilizer Gal(Ω/k) P := Ideal.inertia_le_stabilizer P hxI
+  have hxu₀ : inducedCocycle φ r χ hr x u₀ ≠ 1 := by
+    intro h0
+    refine hxΦ ?_
+    have hzero : inducedCocycle φ r χ hr x = 1 := by
+      funext u
+      by_cases hu : u = u₀
+      · subst hu
+        exact h0
+      · exact hvan x hxst u hu
+    rw [inducedHom_of_mem_ker φ r χ hr hxφ, hzero, _root_.map_one]
+  have hcmem : c ∈ Subgroup.zpowers (inducedCocycle φ r χ hr x u₀) :=
+    mem_zpowers_of_pow_prime hℓ hcℓ (hzp x hxst) hxu₀
+  refine ⟨inducedHom φ r χ hr x, hsplit, fun y hy => ?_,
+    inducedHom_pow_eq_one φ r χ hr hxφ hV, hμ⟩
+  exact inducedHom_mem_zpowers_of_forall_ne φ r χ hr hxφ (hsplit y hy) u₀
+    (fun u hu => hvan x hxst u hu) (fun u hu => hvan y hy u hu)
+    (Subgroup.zpowers_le.2 hcmem (hzp y hy))
+
+end Ramified
 
 /-! ### The character the arithmetic is asked for -/
 
