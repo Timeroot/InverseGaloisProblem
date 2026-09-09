@@ -76,6 +76,24 @@ variable (C : Type) [CommGroup C] [MulDistribMulAction Q C]
 variable {X : Type} [MulAction Q X] [DecidableEq X]
 variable (g : Additive A →+ (X →₀ ℤ))
 
+omit [Finite Q] in
+/-- **A cocycle which is a coboundary on the subgroup fixing a place has a valuation which is a
+coboundary there.**  The valuation at a place is equivariant for the subgroup fixing that place —
+that is the whole point of restricting to it — so the valuation of the element trivialising the
+cocycle trivialises the valuation of the cocycle. -/
+theorem tensorVal_stabilizer_of_res_eq_sub
+    (hgeq : ∀ (σ : Q) (a : A) (x : X),
+      g (Additive.ofMul (σ • a)) x = g (Additive.ofMul a) (σ⁻¹ • x))
+    {c : Q → Additive A ⊗[ℤ] Additive C}
+    (hres : ∀ x : X, ∃ b : Additive A ⊗[ℤ] Additive C,
+      ∀ ρ : Q, ρ • x = x → c ρ = ρ • b - b) (x : X) :
+    ∃ u : Additive C, ∀ ρ : Q, ρ • x = x →
+      tensorVal C g (c ρ) x = Additive.ofMul (ρ • u.toMul) - u := by
+  obtain ⟨b, hb⟩ := hres x
+  refine ⟨tensorVal C g b x, fun ρ hρ => ?_⟩
+  have hinv : ρ⁻¹ • x = x := inv_smul_eq_iff.2 hρ.symm
+  rw [hb ρ hρ, map_sub, Finsupp.sub_apply, tensorVal_smul C g hgeq, hinv]
+
 /-- **A cocycle with values in the tensor product whose valuation is a coboundary at every place,
 on the subgroup fixing that place, has vanishing valuation after subtracting a coboundary.**  The
 valuation carries the cocycle to a cocycle of the permutation module on the places, where a class
@@ -150,6 +168,27 @@ theorem mem_range_map_tensorSubInclRep_of_forall_stabilizer (hg : Function.Surje
   show σ • (-t) - (-t) = tensorSubIncl C B (c' σ) - c σ
   rw [hc' σ, smul_neg]
   abel
+
+/-- **A class with coefficients in the tensor product which is trivial on the subgroup fixing each
+place comes from the tensor product of the kernel of the valuation with the module.**  This is the
+form in which the everywhere locally trivial classes are carried down to coefficients in the units
+of a number field for a finite set of places: the places are the primes outside the set, the
+subgroup fixing a place is its decomposition group, and being everywhere locally trivial is exactly
+the hypothesis. -/
+theorem mem_range_map_tensorSubInclRep_of_forall_res (hg : Function.Surjective g)
+    (hB : ∀ a : A, a ∈ B ↔ g (Additive.ofMul a) = 0)
+    (hgeq : ∀ (σ : Q) (a : A) (x : X),
+      g (Additive.ofMul (σ • a)) x = g (Additive.ofMul a) (σ⁻¹ • x))
+    (c : Q → Additive A ⊗[ℤ] Additive C)
+    (hcoc : c ∈ cocycles₁ (Rep.ofDistribMulAction ℤ Q (Additive A ⊗[ℤ] Additive C)))
+    (hres : ∀ x : X, ∃ b : Additive A ⊗[ℤ] Additive C,
+      ∀ ρ : Q, ρ • x = x → c ρ = ρ • b - b) :
+    H1π (Rep.ofDistribMulAction ℤ Q (Additive A ⊗[ℤ] Additive C)) ⟨c, hcoc⟩ ∈
+      LinearMap.range (groupCohomology.map (MonoidHom.id Q)
+        (A := Rep.ofDistribMulAction ℤ Q (Additive ↥B ⊗[ℤ] Additive C))
+        (tensorSubInclRep Q C B) 1).hom :=
+  mem_range_map_tensorSubInclRep_of_forall_stabilizer C g B hg hB hgeq c hcoc
+    (tensorVal_stabilizer_of_res_eq_sub C g hgeq hres)
 
 end Class
 
