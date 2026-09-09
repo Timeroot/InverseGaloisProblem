@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.Solvable.Shafarevich.LevelObstruction
+import InverseGalois.Solvable.Shafarevich.RamifiedHom
 
 /-!
 # The ramification a solution of the ladder is asked to carry
@@ -35,6 +36,8 @@ are all the property mentions.
 
 ## Main results
 
+* `InverseGalois.Shafarevich.isSplitTotallyRamified_iff` — the restriction the ladder asks of a
+  solution is the one read for an arbitrary target.
 * `InverseGalois.Shafarevich.IsSplitTotallyRamified.comp` — the restriction is inherited by the
   image of a solution under any homomorphism.
 * `InverseGalois.Shafarevich.isSplitTotallyRamified_of_ker_le` — a solution which is trivial
@@ -63,25 +66,27 @@ variable (ℓ : ℕ) (U : Type) [Group U] (S : Type) [Group S] {k Ω : Type*} [F
 /-- **At a prime where the solution ramifies over the base realization, the base realization
 splits completely there and the solution is cyclic and totally ramified.**
 
-The three clauses are read off the two subgroups a prime of the ring of integers of the whole
-extension carries: its stabiliser, which is the decomposition subgroup, and its inertia subgroup,
-the automorphisms acting trivially on the residue ring.  Ramifying over the base realization is
-having an element of inertia which the base realization kills and the solution does not; splitting
-completely is the base realization killing the whole decomposition subgroup; being totally ramified
-is the solution taking no value on the decomposition subgroup which it does not already take on
-inertia; and being cyclic is asked in the form that bounds it, the values on the decomposition
-subgroup lying in the powers of a single element.  That element carries a rider: the roots of unity
-of the prime times its order are fixed by the decomposition subgroup, which is to say that the
-local field at the prime already contains the roots of unity the next layer will call for. -/
+This is the restriction of `InverseGalois.Shafarevich.IsSplitTotallyRamifiedHom`, read at the groups
+the ladder names.  The three clauses are read off the two subgroups a prime of the ring of integers
+of the whole extension carries: its stabiliser, which is the decomposition subgroup, and its inertia
+subgroup, the automorphisms acting trivially on the residue ring.  Ramifying over the base
+realization is having an element of inertia which the base realization kills and the solution does
+not; splitting completely is the base realization killing the whole decomposition subgroup; being
+totally ramified is the solution taking no value on the decomposition subgroup which it does not
+already take on inertia; and being cyclic is asked in the form that bounds it, the values on the
+decomposition subgroup lying in the powers of a single element.  That element carries a rider: the
+roots of unity of the prime times its order are fixed by the decomposition subgroup, which is to say
+that the local field at the prime already contains the roots of unity the next layer will call
+for. -/
 def IsSplitTotallyRamified (φ : Gal(Ω/k) →* U) : LevelProperty ℓ U S k Ω := fun _ _ Φ =>
-  ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
-    (∃ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1 ∧ Φ x ≠ 1) →
-      (∀ x ∈ stabilizer Gal(Ω/k) P, φ x = 1) ∧
-        (∀ x ∈ stabilizer Gal(Ω/k) P, ∃ y ∈ Ideal.inertia Gal(Ω/k) P, Φ x = Φ y) ∧
-          ∃ c, (∀ x ∈ stabilizer Gal(Ω/k) P, Φ x ∈ Subgroup.zpowers c) ∧
-            ∀ ζ : Ωˣ, ζ ^ (ℓ * orderOf c) = 1 → ∀ x ∈ stabilizer Gal(Ω/k) P, x • ζ = ζ
+  IsSplitTotallyRamifiedHom ℓ φ Φ
 
 variable {ℓ U S}
+
+/-- The restriction the ladder asks of a solution is the one read for an arbitrary target. -/
+theorem isSplitTotallyRamified_iff {φ : Gal(Ω/k) →* U} {m j : ℕ}
+    {Φ : Gal(Ω/k) →* GenericQuot ℓ U m S j} :
+    IsSplitTotallyRamified ℓ U S φ m j Φ ↔ IsSplitTotallyRamifiedHom ℓ φ Φ := Iff.rfl
 
 /-- **The restriction is inherited by the image of a solution under any homomorphism.**  Every
 clause is a statement about the values the solution takes, and following a homomorphism can only
@@ -91,26 +96,15 @@ dropping to a divisor. -/
 theorem IsSplitTotallyRamified.comp {φ : Gal(Ω/k) →* U} {m n j : ℕ}
     {Φ : Gal(Ω/k) →* GenericQuot ℓ U m S j} (h : IsSplitTotallyRamified ℓ U S φ m j Φ)
     (g : GenericQuot ℓ U m S j →* GenericQuot ℓ U n S j) :
-    IsSplitTotallyRamified ℓ U S φ n j (g.comp Φ) := by
-  rintro P hPp hPbot ⟨x, hxI, hxφ, hxg⟩
-  obtain ⟨hsplit, htot, c, hc, hμ⟩ := h P hPp hPbot
-    ⟨x, hxI, hxφ, fun hx => hxg (by rw [MonoidHom.comp_apply, hx, _root_.map_one])⟩
-  refine ⟨hsplit, fun y hy => ?_, g c, fun y hy => ?_, fun ζ hζ y hy => ?_⟩
-  · obtain ⟨z, hzI, hz⟩ := htot y hy
-    exact ⟨z, hzI, by rw [MonoidHom.comp_apply, MonoidHom.comp_apply, hz]⟩
-  · obtain ⟨i, hi⟩ := Subgroup.mem_zpowers_iff.1 (hc y hy)
-    exact Subgroup.mem_zpowers_iff.2 ⟨i, by rw [← _root_.map_zpow, hi, MonoidHom.comp_apply]⟩
-  · obtain ⟨s, hs⟩ := mul_dvd_mul_left ℓ (orderOf_map_dvd g c)
-    refine hμ ζ ?_ y hy
-    rw [hs, pow_mul, hζ, one_pow]
+    IsSplitTotallyRamified ℓ U S φ n j (g.comp Φ) :=
+  IsSplitTotallyRamifiedHom.comp h g
 
 /-- **A solution which is trivial wherever the base realization is carries the restriction**, there
 being nothing to check: no prime ramifies over the base realization at all. -/
 theorem isSplitTotallyRamified_of_ker_le {φ : Gal(Ω/k) →* U} {m j : ℕ}
     {Φ : Gal(Ω/k) →* GenericQuot ℓ U m S j} (h : ∀ x, φ x = 1 → Φ x = 1) :
-    IsSplitTotallyRamified ℓ U S φ m j Φ := by
-  rintro P - - ⟨x, -, hxφ, hxΦ⟩
-  exact absurd (h x hxφ) hxΦ
+    IsSplitTotallyRamified ℓ U S φ m j Φ :=
+  isSplitTotallyRamifiedHom_of_ker_le h
 
 variable (ℓ U S)
 

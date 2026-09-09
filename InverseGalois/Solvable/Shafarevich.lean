@@ -48,7 +48,10 @@ import InverseGalois.Solvable.Shafarevich.IntLinHom
 import InverseGalois.Solvable.Shafarevich.LinHomTensor
 import InverseGalois.Solvable.Shafarevich.LayerDuality
 import InverseGalois.Solvable.Shafarevich.LevelRung
+import InverseGalois.Solvable.Shafarevich.RamifiedHom
+import InverseGalois.Solvable.Shafarevich.InducedCocycle
 import InverseGalois.Solvable.Shafarevich.LevelRamification
+import InverseGalois.Solvable.Shafarevich.LevelOneCharacter
 import InverseGalois.Solvable.Shafarevich.LayerTensorOne
 import InverseGalois.Solvable.Shafarevich.LayerPi
 import InverseGalois.Solvable.Shafarevich.LayerKummerShrink
@@ -353,6 +356,23 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   by a shrinking, and that the property be restorable on a lift which already has every other
   clause.  Granted that package, **the step of the ladder holds**, and with it every split embedding
   problem with a kernel of prime power order.
+* `InverseGalois.Solvable.Shafarevich.RamifiedHom` states that restriction for a homomorphism to an
+  arbitrary group.  Nothing in it mentions the group a homomorphism lands in, and stating it there
+  is what lets a solution be assembled in a group convenient for the arithmetic â€” a group of
+  functions on the base group, say, whose Kummer theory is transparent â€” and only afterwards pushed
+  forward to the group the ladder names.
+* `InverseGalois.Solvable.Shafarevich.InducedCocycle` builds the homomorphism such a convenient
+  group receives.  Given a homomorphism onto a group, an abelian group and a character of the kernel
+  of the homomorphism, a set theoretic section produces a one cocycle with values in the functions
+  on the group below, the coordinate at a point being the value of the character at a twisted
+  argument there, and hence a homomorphism to the semidirect product lying over the given one.  It
+  is onto as soon as the restriction of the cocycle to the kernel is, which is to say as soon as the
+  conjugates of the character are jointly onto; and an open normal subgroup on which the
+  homomorphism and the character are both trivial lies in its kernel, which is what makes it smooth.
+  Summing the translates of the coordinates then carries the functions equivariantly onto any
+  abelian group the group below acts on, so the construction reaches the semidirect products an
+  embedding problem actually names.  This is Shapiro's lemma in degree one written out, and it is
+  what **turns a character of the Galois group of a subfield into a solution over the base field.**
 * `InverseGalois.Solvable.Shafarevich.LevelRamification` names the property the package leaves free.
   What the next step needs of a solution is a restriction on where the field it cuts out ramifies
   over the field the base realization cuts out: at a prime where it does ramify, the base
@@ -364,6 +384,17 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   takes, and following a homomorphism can only identify values, so **a shrinking does not destroy
   it**; and at the bottom of the ladder the solution is the base realization itself, which is
   trivial wherever the base realization is, so **the bottom carries it for nothing**.
+* `InverseGalois.Solvable.Shafarevich.LevelOneCharacter` takes the first step of the ladder, the one
+  the group theory cannot take on its own.  The layer there is the Frattini layer of the generic
+  operator group and it is the whole of the quotient by the first term of the series, so the group
+  at the first level is that layer with the operators alongside; a solution there is a smooth
+  surjection onto it lying over the base realization, and nothing about the base realization
+  produces one.  What produces one is a character of the kernel of the base realization: inducing it
+  up and summing the translates of the coordinates gives a homomorphism onto the layer with the
+  operators alongside, onto exactly when the conjugates of the character are jointly onto, trivial
+  along the family exactly when the character kills the conjugates the family names, and smooth
+  because an open normal subgroup the character kills lies in its kernel.  So **the first rung is a
+  question about characters**, and it is the question the arithmetic answers.
 * `InverseGalois.Solvable.Shafarevich.LayerTensorOne` runs the count in degree one, where the
   coefficients are not a layer but a layer tensored on the left with a finitely generated abelian
   group.  Such a tensor product is infinite, but a spanning family of the left factor writes every
