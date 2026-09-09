@@ -51,6 +51,7 @@ import InverseGalois.Solvable.Shafarevich.LevelRung
 import InverseGalois.Solvable.Shafarevich.LayerTensorOne
 import InverseGalois.Solvable.Shafarevich.LayerPi
 import InverseGalois.Solvable.Shafarevich.LayerKummerShrink
+import InverseGalois.Solvable.Shafarevich.LayerLocalOrd
 
 /-!
 # Shafarevich's theorem
@@ -361,4 +362,11 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   each of the two and composing the resulting shrinkings gives **one shrinking which annihilates
   the class**, granted the local dictionary that reads the class in the units as an order at each
   place being avoided.
+* `InverseGalois.Solvable.Shafarevich.LayerLocalOrd` supplies that dictionary.  The places are the
+  primes of the subextension outside a set carried into itself by the Galois group and the reading
+  is the vector of orders at them, so the dictionary at a place already says everything; what it
+  asks of the coefficients is that the homomorphisms of the roots of unity into the layer be a
+  coordinate space over the field with as many elements as the prime, and they are, being a finite
+  abelian group killed by the prime.  Since they are produced afresh at each number of letters,
+  **the vector of orders is the local dictionary of a layer at every number of letters at once.**
 -/
