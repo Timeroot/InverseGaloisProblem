@@ -30,10 +30,23 @@ realization kills the whole decomposition subgroup, the solution takes no value 
 not already take on inertia, and its values lie in the powers of a single element.  With the first
 kind proved, the local solvability of the step is exactly that condition.
 
+That condition is then stripped of everything about the tower.  The values of the solution on a
+decomposition subgroup lie in the powers of one element, so they lie in the powers of one of their
+own, and that one is a value of the solution at a prime the base realization splits completely,
+hence lies in the kernel of the projection to the base group, hence has order a power of the prime.
+What is being asked of the decomposition subgroup is therefore only this: a homomorphism of it into
+a finite group whose values lie in the powers of a single element of `p`-power order lifts along
+any surjection from a finite group which multiplies the order of that element by at most `p`.  The
+order in question is bounded, by the order of the group one level down times the prime, and the
+bound is part of the condition, because it is the bound the arithmetic must meet — a local field
+lifts such a character exactly as far as it carries roots of unity.
+
 ## Main definitions
 
 * `InverseGalois.Shafarevich.HasSplitRamifiedLift` — the local solution at a prime where the
   solution ramifies and the base field splits completely.
+* `InverseGalois.Shafarevich.HasCyclicLift` — a smooth character of a subgroup with values in the
+  powers of one element of prime-power order lifts along a surjection raising that order once.
 
 ## Main results
 
@@ -42,6 +55,9 @@ kind proved, the local solvability of the step is exactly that condition.
 * `InverseGalois.Shafarevich.hasLocalLift_of_hasSplitRamifiedLift` — **local solvability of the step
   is the ramified case alone**, once the family names every prime where the base realization
   ramifies and the wider family holds nothing but decomposition subgroups.
+* `InverseGalois.Shafarevich.hasSplitRamifiedLift_of_hasCyclicLift` — **the ramified case asks
+  nothing of the tower**: it follows from the lifting of cyclic characters of prime-power order at
+  the decomposition subgroups of the primes the base realization splits completely.
 
 ## Tags
 
@@ -130,5 +146,126 @@ theorem hasLocalLift_of_hasSplitRamifiedLift (φ : Gal(Ω/k) →* U) {t : ℕ}
     exact hram Φ hsm hover P hPp hPbot hsplit htot hcyc
 
 end LocalLift
+
+section Order
+
+variable (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] (n : ℕ) (S : Type) [Group S]
+  [Finite S] (j : ℕ)
+
+omit [Fact ℓ.Prime] [Finite U] [Finite S] in
+/-- **The step is killed by the prime.**
+
+An element of the group one level up which the projection sends to the identity comes from the
+layer, and the layer is killed by the prime. -/
+theorem pow_eq_one_of_rightHom_eq_one {x : GenericQuot ℓ U n S (j + 1)}
+    (hx : (layerExtension ℓ (genericAut U n S) j).rightHom x = 1) : x ^ ℓ = 1 := by
+  have hx' : x ∈ (layerExtension ℓ (genericAut U n S) j).inl.range := by
+    rw [GroupExtension.range_inl_eq_ker_rightHom]
+    exact hx
+  obtain ⟨v, rfl⟩ := hx'
+  rw [layerExtension_inl, ← _root_.map_pow]
+  have : (v : Generic U n S ⧸ pCentral ℓ (Generic U n S) (j + 1)) ^ ℓ = 1 :=
+    pow_eq_one_of_mem_layerSub v.2
+  rw [show ((v : ↥(layerSub ℓ (Generic U n S) j)) :
+      Generic U n S ⧸ pCentral ℓ (Generic U n S) (j + 1)) ^ ℓ = 1 from this, _root_.map_one]
+
+omit [Fact ℓ.Prime] in
+/-- **An element of the group at a level lying over the identity of the base group has order a
+power of the prime.**
+
+Such an element comes from the quotient of the free pro-`p` group, which is a `p`-group. -/
+theorem exists_pow_eq_one_of_rightHom_eq_one (hS : IsPGroup ℓ S)
+    {y : GenericQuot ℓ U n S j} (hy : SemidirectProduct.rightHom y = 1) :
+    ∃ a : ℕ, y ^ ℓ ^ a = 1 := by
+  obtain ⟨a, ha⟩ := (isPGroup_generic U n S hS).to_quotient (pCentral ℓ (Generic U n S) j) y.left
+  refine ⟨a, ?_⟩
+  have hyl : y = SemidirectProduct.inl y.left := by
+    refine SemidirectProduct.ext rfl ?_
+    exact hy
+  rw [hyl, ← _root_.map_pow, ha, _root_.map_one]
+
+end Order
+
+section Generator
+
+/-- **A subgroup of the powers of an element is the powers of one of its own elements.**
+
+The powers of an element form a cyclic group, and every subgroup of a cyclic group is cyclic. -/
+theorem exists_generator_of_le_zpowers {G : Type*} [Group G] {H : Subgroup G} {c : G}
+    (hle : H ≤ Subgroup.zpowers c) : ∃ z ∈ H, ∀ y ∈ H, y ∈ Subgroup.zpowers z := by
+  haveI : IsCyclic ↥(Subgroup.zpowers c) := Subgroup.isCyclic_zpowers c
+  obtain ⟨g, hg⟩ := IsCyclic.exists_generator (α := ↥(H.subgroupOf (Subgroup.zpowers c)))
+  refine ⟨((g : ↥(Subgroup.zpowers c)) : G), Subgroup.mem_subgroupOf.1 g.2, fun y hy => ?_⟩
+  obtain ⟨i, hi⟩ := hg ⟨⟨y, hle hy⟩, Subgroup.mem_subgroupOf.2 hy⟩
+  refine ⟨i, ?_⟩
+  have := congrArg
+    (fun w : ↥(H.subgroupOf (Subgroup.zpowers c)) => ((w : ↥(Subgroup.zpowers c)) : G)) hi
+  simpa using this
+
+end Generator
+
+section CyclicLift
+
+variable (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] (n : ℕ) (S : Type) [Group S]
+  [Finite S] (j : ℕ) {k Ω : Type*} [Field k] [NumberField k] [Field Ω] [Algebra k Ω]
+  [IsGalois k Ω] [IsAlgClosed Ω]
+
+/-- **A smooth character of a subgroup with values in the powers of one element of prime-power
+order lifts along a surjection raising that order once.**
+
+The natural number bounds the order of the element upstairs, and so bounds how far the character
+being asked for goes: over a local field a character of a decomposition subgroup lifts exactly as
+far as the field carries roots of unity, so a bound on the order is what makes the condition an
+honest one to ask of a field carrying the roots of unity of that order. -/
+def HasCyclicLift (N : ℕ) (A : Subgroup Gal(Ω/k)) : Prop :=
+  ∀ (Z Z' : Type) [Group Z] [Group Z'] [Finite Z'] (f : Z' →* Z) (z' : Z'),
+    (∃ a : ℕ, orderOf (f z') = ℓ ^ a) → orderOf z' ∣ ℓ * orderOf (f z') → orderOf z' ∣ N →
+      ∀ ν : ↥A →* Z, IsSmooth₁ (ν : ↥A → Z) → (∀ x, ν x ∈ Subgroup.zpowers (f z')) →
+        ∃ ν' : ↥A →* Z', IsSmooth₁ (ν' : ↥A → Z') ∧ ∀ x, f (ν' x) = ν x
+
+omit [NumberField k] [IsGalois k Ω] [IsAlgClosed Ω] in
+/-- **The ramified case asks nothing of the tower.**
+
+The values of the solution on the decomposition subgroup lie in the powers of one element, hence in
+the powers of one of those values, and that value lies over the identity of the base group because
+the base realization kills the whole decomposition subgroup; so its order is a power of the prime.
+Any preimage of it one level up has order at most that times the prime, since the step is killed by
+the prime, and at most the order of the group one level down times the prime.  What is left is the
+lifting of one cyclic character, which is what the condition supplies. -/
+theorem hasSplitRamifiedLift_of_hasCyclicLift (hS : IsPGroup ℓ S) (φ : Gal(Ω/k) →* U)
+    (hcl : ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → (∀ x ∈ stabilizer Gal(Ω/k) P, φ x = 1) →
+      HasCyclicLift ℓ (ℓ * Nat.card (GenericQuot ℓ U n S j)) (stabilizer Gal(Ω/k) P)) :
+    HasSplitRamifiedLift ℓ U n S j φ := by
+  intro Φ hsm hover P hPp hPbot hsplit _ hcyc
+  obtain ⟨c, hc⟩ := hcyc
+  haveI : Finite (GenericQuot ℓ U n S (j + 1)) :=
+    Finite.of_equiv _ SemidirectProduct.equivProd.symm
+  have hrange : (Φ.comp (stabilizer Gal(Ω/k) P).subtype).range ≤ Subgroup.zpowers c := by
+    rintro _ ⟨x, rfl⟩
+    exact hc (x : Gal(Ω/k)) x.2
+  obtain ⟨z, hzmem, hz⟩ := exists_generator_of_le_zpowers hrange
+  obtain ⟨x₀, hx₀⟩ := hzmem
+  have hz1 : SemidirectProduct.rightHom z = 1 := by
+    rw [← hx₀]
+    show SemidirectProduct.rightHom (Φ (x₀ : Gal(Ω/k))) = 1
+    rw [hover]
+    exact hsplit (x₀ : Gal(Ω/k)) x₀.2
+  obtain ⟨b, hb⟩ := exists_pow_eq_one_of_rightHom_eq_one ℓ U n S j hS hz1
+  obtain ⟨a, -, ha⟩ := (Nat.dvd_prime_pow Fact.out).1 (orderOf_dvd_of_pow_eq_one hb)
+  obtain ⟨z', hz'⟩ := (layerExtension ℓ (genericAut U n S) j).rightHom_surjective z
+  have hdvd : orderOf z' ∣ ℓ * orderOf ((layerExtension ℓ (genericAut U n S) j).rightHom z') := by
+    refine orderOf_dvd_of_pow_eq_one ?_
+    rw [hz', mul_comm, pow_mul]
+    refine pow_eq_one_of_rightHom_eq_one ℓ U n S j ?_
+    rw [_root_.map_pow, hz', pow_orderOf_eq_one]
+  have hN : orderOf z' ∣ ℓ * Nat.card (GenericQuot ℓ U n S j) :=
+    hdvd.trans (mul_dvd_mul_left ℓ (by rw [hz']; exact orderOf_dvd_natCard z))
+  exact hcl P hPp hPbot hsplit _ _ _ z' ⟨a, by rw [hz']; exact ha⟩ hdvd hN
+    (Φ.comp (stabilizer Gal(Ω/k) P).subtype)
+    (isSmooth₁_comp (continuous_subtype _)
+      (isSmooth₁_of_isOpenNormal_ker (isOpenNormal_ker_of_isSmoothHom hsm)))
+    (fun x => by rw [hz']; exact hz _ ⟨x, rfl⟩)
+
+end CyclicLift
 
 end InverseGalois.Shafarevich

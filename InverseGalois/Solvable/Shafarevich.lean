@@ -427,5 +427,13 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   the base realization split completely and the solution cyclic and totally ramified, and that is
   named as a condition in the shape the property supplies, so that **local solvability of the step
   is the ramified case alone** once the finite family names every prime where the base realization
-  ramifies.
+  ramifies.  That case is then stripped of the tower entirely: the values of the solution on the
+  decomposition subgroup lie in the powers of one of their own, which lies over the identity of the
+  base group because the prime splits completely there, hence has order a power of the prime, and
+  any preimage of it one level up has order at most that times the prime, the step being killed by
+  the prime.  So **the ramified case asks nothing but the lifting of a cyclic character of
+  prime-power order** along a surjection raising that order once, at the decomposition subgroups of
+  the primes the base realization splits completely, and with the order bounded by the order of the
+  group one level down times the prime â€” which is the bound a local field carrying that many roots
+  of unity meets.
 -/
