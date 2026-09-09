@@ -50,6 +50,9 @@ statement about kernels alone.
   cocycle to the kernel is.**
 * `InverseGalois.Shafarevich.inducedHom_eq_one` — it kills an element of the kernel of `φ` all of
   whose translates the character kills.
+* `InverseGalois.Shafarevich.inducedNorm_surjective_of_forall_conj` — **one set inside the kernel on
+  which the character is onto and whose moved conjugates the character kills makes the restriction
+  of the cocycle to the kernel onto**, which is the independence of the conjugates.
 * `InverseGalois.Shafarevich.shiftCounitMap_surjective` — **the group of functions maps onto any
   group carrying an action of `U`,** compatibly with the two semidirect products.
 
@@ -189,6 +192,72 @@ def inducedNorm (hr : ∀ u, φ (r u) = u) : ↥φ.ker →* (U → V) :=
 
 theorem inducedNorm_apply (hr : ∀ u, φ (r u) = u) (h : ↥φ.ker) :
     inducedNorm φ r χ hr h = inducedCocycle φ r χ hr (h : G) := rfl
+
+/-- The coordinates of the restriction to the kernel are the conjugates of the character. -/
+theorem inducedNorm_apply_conj (hr : ∀ u, φ (r u) = u) (h : ↥φ.ker) (u : U)
+    (hmem : (r u)⁻¹ * (h : G) * r u ∈ φ.ker) :
+    inducedNorm φ r χ hr h u = χ ⟨(r u)⁻¹ * (h : G) * r u, hmem⟩ :=
+  inducedCocycle_apply_of_mem_ker φ r χ hr (MonoidHom.mem_ker.1 h.2) u hmem
+
+/-- **The conjugates of the character are jointly onto as soon as each single coordinate can be
+prescribed on its own.**  The values the restriction to the kernel takes form a subgroup of an
+abelian group of functions, and a function is the product of the functions supported at one point
+which agree with it there. -/
+theorem inducedNorm_surjective_of_mulSingle [DecidableEq U] [Fintype U] (hr : ∀ u, φ (r u) = u)
+    (h : ∀ (u₀ : U) (v : V), Pi.mulSingle u₀ v ∈ (inducedNorm φ r χ hr).range) :
+    Function.Surjective (inducedNorm φ r χ hr) := by
+  intro f
+  have hf : f ∈ (inducedNorm φ r χ hr).range := by
+    rw [← Finset.univ_prod_mulSingle f]
+    exact prod_mem fun u _ => h u (f u)
+  exact hf
+
+/-- **A single coordinate is prescribed by one set inside the kernel which carries the whole of the
+character and whose conjugates the base realization moves the character kills.**
+
+Conjugating an element of the set by the chosen representative of the coordinate asked for produces
+an element of the kernel whose coordinate there is the value of the character on the element, every
+other coordinate being the value of the character on a conjugate of it by something the base
+realization does not kill. -/
+theorem mulSingle_mem_range_inducedNorm [DecidableEq U] (hr : ∀ u, φ (r u) = u) {I : Set G}
+    (hsurj : ∀ v : V, ∃ y ∈ I, ∃ hy : y ∈ φ.ker, χ ⟨y, hy⟩ = v)
+    (htriv : ∀ g : G, φ g ≠ 1 → ∀ y ∈ I, ∀ hy : g * y * g⁻¹ ∈ φ.ker, χ ⟨g * y * g⁻¹, hy⟩ = 1)
+    (u₀ : U) (v : V) : Pi.mulSingle u₀ v ∈ (inducedNorm φ r χ hr).range := by
+  obtain ⟨y, hyI, hy, hyv⟩ := hsurj v
+  have hy1 : φ y = 1 := MonoidHom.mem_ker.1 hy
+  have hx : r u₀ * y * (r u₀)⁻¹ ∈ φ.ker := by
+    rw [MonoidHom.mem_ker, _root_.map_mul, _root_.map_mul, _root_.map_inv, hr, hy1, mul_one,
+      mul_inv_cancel]
+  refine ⟨⟨_, hx⟩, funext fun u => ?_⟩
+  have hconj : (r u)⁻¹ * (r u₀ * y * (r u₀)⁻¹) * r u
+      = (r u)⁻¹ * r u₀ * y * ((r u)⁻¹ * r u₀)⁻¹ := by group
+  have hmem : (r u)⁻¹ * (r u₀ * y * (r u₀)⁻¹) * r u ∈ φ.ker := by
+    rw [MonoidHom.mem_ker, hconj, _root_.map_mul, _root_.map_mul, _root_.map_inv, hy1, mul_one,
+      mul_inv_cancel]
+  have hmem' : (r u)⁻¹ * r u₀ * y * ((r u)⁻¹ * r u₀)⁻¹ ∈ φ.ker := hconj ▸ hmem
+  rw [inducedNorm_apply_conj φ r χ hr ⟨_, hx⟩ u hmem,
+    show (⟨(r u)⁻¹ * (r u₀ * y * (r u₀)⁻¹) * r u, hmem⟩ : ↥φ.ker) = ⟨_, hmem'⟩ from
+      Subtype.ext hconj]
+  by_cases hu : u = u₀
+  · subst hu
+    rw [Pi.mulSingle_eq_same, ← hyv]
+    exact congrArg χ (Subtype.ext (by group))
+  · rw [Pi.mulSingle_eq_of_ne hu]
+    refine htriv _ (fun hcon => hu ?_) y hyI hmem'
+    rw [_root_.map_mul, _root_.map_inv, hr, hr] at hcon
+    exact inv_mul_eq_one.1 hcon
+
+/-- **One set inside the kernel on which the character is onto, and which the character kills on
+every conjugate the base realization moves, makes the conjugates of the character jointly onto.**
+This is the independence count Shafarevich's construction is asked for: the set is the inertia
+subgroup at a prime the base realization moves through a whole orbit, the character is onto there,
+and it is unramified at every other prime of the orbit. -/
+theorem inducedNorm_surjective_of_forall_conj [DecidableEq U] [Fintype U] (hr : ∀ u, φ (r u) = u)
+    {I : Set G} (hsurj : ∀ v : V, ∃ y ∈ I, ∃ hy : y ∈ φ.ker, χ ⟨y, hy⟩ = v)
+    (htriv : ∀ g : G, φ g ≠ 1 → ∀ y ∈ I, ∀ hy : g * y * g⁻¹ ∈ φ.ker, χ ⟨g * y * g⁻¹, hy⟩ = 1) :
+    Function.Surjective (inducedNorm φ r χ hr) :=
+  inducedNorm_surjective_of_mulSingle φ r χ hr
+    (mulSingle_mem_range_inducedNorm φ r χ hr hsurj htriv)
 
 /-- **The induced homomorphism is onto as soon as its restriction to the kernel is.**  An element of
 the semidirect product is the product of one coming from the kernel, which the restriction reaches,
