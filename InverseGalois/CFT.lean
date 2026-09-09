@@ -477,6 +477,7 @@ import InverseGalois.CFT.PoitouTate.Isotropic
 import InverseGalois.CFT.PoitouTate.LocalConditions
 import InverseGalois.CFT.PoitouTate.LocalOrdBridge
 import InverseGalois.CFT.PoitouTate.LocalOrdKummer
+import InverseGalois.CFT.PoitouTate.LocalOrdPlace
 import InverseGalois.CFT.PoitouTate.NormLocalPower
 import InverseGalois.CFT.PoitouTate.OrbitCoboundary
 import InverseGalois.CFT.PoitouTate.PlaceUniformiser
@@ -6120,6 +6121,15 @@ it that are available here.
   valuation on what it kills** — and the second holds whenever the valuation factors through a
   homomorphism of the units already met by the inclusion, the local unit at the place being such a
   homomorphism.
+* `InverseGalois.CFT.PoitouTate.LocalOrdPlace` supplies the two conditions at a genuine place.  A
+  prime of the integers of the whole extension above the place carries both: its stabiliser is a
+  decomposition subgroup, and it covers the subgroup fixing the place because the Galois group over
+  the subextension is transitive on the primes above a given one, so an automorphism of the
+  subextension fixing the place lifts and the lift can be corrected inside that group so as to fix
+  the prime.  The fixed field of the stabiliser, composed with the subextension, is no larger than
+  the subextension modulo `p`-th powers, and what the inclusion of the units kills already dies in
+  the completion at the place, through which the valuation factors.  Hence **a prime above a finite
+  place gives the dictionary there.**
 * `InverseGalois.CFT.PoitouTate.ShaKummerShrink` composes the whole chain into one statement.  A
   class of the second cohomology trivial on every decomposition subgroup names an obstruction to
   being inflated from the Galois group of the splitting extension; twisted Kummer theory reads that
