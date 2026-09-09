@@ -6,22 +6,27 @@ import Mathlib
 import InverseGalois.CFT.PoitouTate.TensorOrbit
 
 /-!
-# Shrinking the module kills cohomology with coefficients in the multiplicative group
+# Shrinking the module kills a class carried into the kernel of the valuation
 
 A finite group acts on an abelian group carrying a valuation onto the free abelian group on a set
-of places it permutes, and on a module.  A class with coefficients in the tensor product of the two
-has, at each place, a valuation which is a one-cocycle for the subgroup fixing that place.  **If a
-homomorphism of the module kills every one-dimensional class of every subgroup, the pushed-forward
-class comes from the kernel of the valuation**, and a second homomorphism killing the classes with
-coefficients in that kernel kills the class altogether.
+of places it permutes, and on a module.  **A class with coefficients in the tensor product which
+comes from the kernel of the valuation, and whose chosen preimage there is killed by a homomorphism
+of the module, is itself killed by that homomorphism**: the homomorphism commutes with the
+inclusion of the kernel, so the image of the class is the image of zero.
 
-This is the mechanism that dispenses with local conditions entirely.  In the intended reading the
-abelian group is the multiplicative group of a number field, the places are the primes outside a
-finite set, the kernel of the valuation is the group of units for that set, and the module is a
-layer of a tower whose homomorphisms may be shrunk at will; the conclusion is that a class of the
-level dies after two shrinks, whatever it was, with no reference to the Shafarevich group.  The
-finiteness that makes it work is that the group has only finitely many subgroups and the units of a
-finite set of places are finitely generated.
+In the intended reading the abelian group is the multiplicative group of a number field, the places
+are the primes outside a finite set, the kernel of the valuation is the group of units for that
+set, and the module is a layer of a tower whose homomorphisms may be shrunk at will.  Carrying a
+class into the units for a finite set is what makes the shrinking possible at all, because the
+units for a finite set are finitely generated and so cohomology with those coefficients is finite;
+and it is enough to kill the *one* preimage one has chosen, so the class to be killed is fixed
+before the homomorphism is chosen.  That order matters: a shrink kills a prescribed finite list of
+classes, and the list must be named first.
+
+Also recorded is the variant in which the passage into the kernel is itself effected by a
+homomorphism, one killing the one-dimensional classes of every subgroup of the group; the valuation
+of a cocycle at a place is a one-cocycle for the subgroup fixing that place, so such a homomorphism
+supplies the local input at every place at once.
 
 ## Main definitions
 
@@ -30,6 +35,9 @@ finite set of places are finitely generated.
 
 ## Main results
 
+* `InverseGalois.CFT.map_tensorCoeffRep_eq_zero_of_map_tensorSubInclRep`: **a class whose chosen
+  preimage in the kernel of the valuation is killed by a homomorphism of the module is itself
+  killed by it.**
 * `InverseGalois.CFT.mem_range_map_tensorSubInclRep_of_forall_subgroup`: **a class pushed forward
   along a homomorphism killing the classes of every subgroup comes from the kernel of the
   valuation.**
@@ -233,6 +241,33 @@ theorem mem_range_map_tensorSubInclRep_of_forall_subgroup (hg : Function.Surject
   | @h z =>
     exact mem_range_map_tensorSubInclRep_of_forall_subgroup_cocycle g B φ hφ hg hB hgeq hkill _ z.2
 
+omit [Finite Q] in
+/-- **A class coming from the tensor product of the kernel of the valuation with the module, whose
+chosen preimage is killed by a homomorphism of the module, is itself killed by that
+homomorphism.**  The homomorphism commutes with the inclusion of the kernel, so the image of the
+preimage is the image of zero.  This is the form in which only *one* class need be killed: the
+preimage is chosen first and the homomorphism afterwards. -/
+theorem map_tensorCoeffRep_eq_zero_of_map_tensorSubInclRep
+    {w : H1 (Rep.ofDistribMulAction ℤ Q (Additive ↥B ⊗[ℤ] Additive C))}
+    {y : H1 (Rep.ofDistribMulAction ℤ Q (Additive A ⊗[ℤ] Additive C))}
+    (hw : (groupCohomology.map (MonoidHom.id Q)
+      (A := Rep.ofDistribMulAction ℤ Q (Additive ↥B ⊗[ℤ] Additive C))
+      (tensorSubInclRep Q C B) 1).hom w = y)
+    (hkill : (groupCohomology.map (MonoidHom.id Q)
+      (tensorCoeffRep (A := ↥B) Q φ hφ) 1).hom w = 0) :
+    (groupCohomology.map (MonoidHom.id Q) (tensorCoeffRep (A := A) Q φ hφ) 1).hom y = 0 := by
+  have hrep : tensorSubInclRep Q C B ≫ tensorCoeffRep (A := A) Q φ hφ
+      = tensorCoeffRep (A := ↥B) Q φ hφ ≫ tensorSubInclRep Q C' B := by
+    ext t
+    exact tensorCoeff_tensorSubIncl φ B t
+  have hsquare := congrArg
+    (fun m : Rep.ofDistribMulAction ℤ Q (Additive ↥B ⊗[ℤ] Additive C) ⟶
+        Rep.ofDistribMulAction ℤ Q (Additive A ⊗[ℤ] Additive C') =>
+      (groupCohomology.map (MonoidHom.id Q)
+        (A := Rep.ofDistribMulAction ℤ Q (Additive ↥B ⊗[ℤ] Additive C)) m 1).hom w) hrep
+  simp only [groupCohomology.map_id_comp, ModuleCat.hom_comp, LinearMap.comp_apply] at hsquare
+  rw [← hw, hsquare, hkill, _root_.map_zero]
+
 include hφ in
 /-- **Two homomorphisms of the module in succession, the first killing the one-dimensional classes
 of every subgroup and the second those with coefficients in the kernel of the valuation, kill every
@@ -262,17 +297,8 @@ theorem map_tensorCoeffRep_eq_zero_of_forall_subgroup (hg : Function.Surjective 
       exact tensorCoeff_comp ψ hψ t
     rw [hrep, groupCohomology.map_id_comp]
     rfl
-  have hrep : tensorSubInclRep Q C' B ≫ tensorCoeffRep (A := A) Q φ' hφ'
-      = tensorCoeffRep (A := ↥B) Q φ' hφ' ≫ tensorSubInclRep Q C'' B := by
-    ext t
-    exact tensorCoeff_tensorSubIncl φ' B t
-  have hsquare := congrArg
-    (fun m : Rep.ofDistribMulAction ℤ Q (Additive ↥B ⊗[ℤ] Additive C') ⟶
-        Rep.ofDistribMulAction ℤ Q (Additive A ⊗[ℤ] Additive C'') =>
-      (groupCohomology.map (MonoidHom.id Q)
-        (A := Rep.ofDistribMulAction ℤ Q (Additive ↥B ⊗[ℤ] Additive C')) m 1).hom w) hrep
-  simp only [groupCohomology.map_id_comp, ModuleCat.hom_comp, LinearMap.comp_apply] at hsquare
-  rw [hsplit, ← hw, hsquare, hkill' w, _root_.map_zero]
+  rw [hsplit]
+  exact map_tensorCoeffRep_eq_zero_of_map_tensorSubInclRep B φ' hφ' hw (hkill' w)
 
 end Main
 

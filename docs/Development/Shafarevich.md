@@ -19022,83 +19022,85 @@ which is exactly `hloc`.  No inertia character, no ramification hypothesis, no c
 
 ---
 
-## §1.68 The local conditions are *not needed at all*: a double shrink kills the whole group
+## §1.68 A route that does *not* work, and the sharp reason: Proposition 6 fixes the number of classes before the level
 
-**Date: 2026-09-08/09.  Status: `TensorShrink.lean` built and green; the route of §1.67(d) item 1 is
-withdrawn.**
+**Date: 2026-09-08/09.**
 
-### (a)  The observation
+### (a)  The tempting idea
 
-§1.67(d) item 1 planned a bridge carrying the local triviality of a class in `kummerSha1` — stated
-with the genuine decomposition subgroups of `Gal(Ω/k)` and a coefficient restriction — over to the
-abstract hypothesis `hloc` of `mem_range_map_tensorSubInclRep_of_forall_stabilizer`.  That bridge
-needed naturality of the twisted Kummer identification under restriction, and the identification of
-the image of a decomposition subgroup with a point stabiliser in the quotient.  Both are real work.
+§1.67(d) item 1 leaves a bridge to build: carry the local triviality of a class of `kummerSha1` —
+stated with the genuine decomposition subgroups of `Gal(Ω/k)` and with the coefficients localised —
+over to the hypothesis `hloc` of `mem_range_map_tensorSubInclRep_of_forall_stabilizer`.  That bridge
+is real arithmetic, so it is worth asking whether it can be avoided.
 
-**It is unnecessary.**  Look again at what `hloc` asks for: at each place `x`, the valuation
-`tensorVal (c ρ) x`, as `ρ` ranges over `Stab_Q(x)`, is a coboundary — *with values in the module
-`C` alone*.  The hypothesis is therefore about `H¹(D, C)` for the subgroups `D ≤ Q`, and those
-groups are ones the shrinking machinery already knows how to kill.
+It looks as though it can.  Read `hloc` again: at each place `x`, the valuation `tensorVal (c ρ) x`,
+as `ρ` runs over `Stab_Q(x)`, must be a coboundary **with values in the module `C` alone**.  So
+`hloc` is a statement about `H¹(D, C)` for the subgroups `D ≤ Q`, and shrinking the module is
+exactly the tool for killing such groups.  If `φ : C →* C'` makes `H¹(D, C) → H¹(D, C')` zero for
+*every* `D ≤ Q`, then `φ_* [c]` satisfies `hloc` at every place at once, whatever `[c]` was, and no
+local input is used at all.  A second shrink killing `H¹(Q, U_T ⊗ C')` then finishes, giving a
+**double shrink** that annihilates the whole of `H¹(Q, Kˣ ⊗ C)`.
 
-Concretely: `ρ ↦ (tensorVal (c ρ) x).toMul` satisfies `d (ρτ) = ρ • d τ · d ρ`, i.e. it is a
-one-cocycle of `D = Stab_Q(x)` with values in `C`.  Suppose `φ : C →* C'` is equivariant and kills
-every such cocycle, for **every** subgroup `D ≤ Q` — that is, `H¹(D, C) → H¹(D, C')` is zero for all
-`D`.  Then the pushed-forward class `φ_* [c]` satisfies `hloc` at every place at once, so by
-`TensorOrbit` it comes from `H¹(Q, U_T ⊗ C')`.  **No local input about `c` is used: the hypothesis
-is on `φ`, not on the class.**
+### (b)  Why it fails
 
-### (b)  The double shrink
+Proposition 6 (`exists_operatorHom_res_cohomology_eq_zero`, and Schmidt–Wingberg's Proposition 6
+itself) has the shape
 
-Apply this twice.
+    ∀ t, ∃ m, ∀ x : Fin t → H^c(H, Layer(m) ⊗ T), ∃ α : Generic U m S →* Generic U n S, α_* x = 0,
 
-1. `φ : C →* C'` kills `H¹(D, C)` for every subgroup `D ≤ Q`.  Then for **every** class `y` in
-   `H¹(Q, Additive Kˣ ⊗ C)`, `φ_* y ∈ range (incl_* : H¹(Q, U_T ⊗ C') → H¹(Q, Kˣ ⊗ C'))`.
-2. `φ' : C' →* C''` kills `H¹(Q, U_T ⊗ C')`.  Since `φ'_*` commutes with `incl_*`, the composite
-   `ψ = φ' ∘ φ` kills `φ_* y`'s image, hence kills `ψ_* y` for every `y`.
+and the quantifier order is not an artefact of the formalisation: the rank produced is
+`r ≈ (j+1) · t · |H|^c · dim (Layer(n) ⊗ T)` and `m = r·n`, so **`t` has to be known before `m`
+is**.  §1.66(b) states Proposition 6 as "the map `H^k(G, Layer(m) ⊗ T) → H^k(G, Layer(n) ⊗ T)` is
+zero"; that overstates it, and the overstatement is where the idea in (a) comes from.
 
-Conclusion: **`ψ_*` annihilates the whole of `H¹(Q, Additive Kˣ ⊗ C)`**, and in particular
-`kummerSha1`, which is one of its subgroups.  Nothing about local triviality, decomposition groups,
-the tame symbol, `resSubH1`, or `Ш` enters at any point.
+Killing all of `H¹(D, C)` means taking `t = |H¹(D, Layer(m) ⊗ T)|`, which grows with `m` — indeed
+`dim H¹(D, V)` already grows linearly in `dim V`, and `dim Layer(r·n)` grows at least linearly in
+`r`, so the required inequality `r > const · dim Layer(r·n)` has no solution.  The same objection
+kills every variant: one cannot kill a subgroup of `H¹` whose size is tied to the level.
 
-Both hypotheses are about finitely many finite groups: a finite group has finitely many subgroups,
-`C = Hom(μ_p, E_m)` is finite, and `U_T` is finitely generated (gotcha 2651), so
-`H¹(Q, U_T ⊗ C')` is finite.  So both are exactly what Proposition 6
-(`exists_operatorHom_res_cohomology_eq_zero`) delivers: it kills any prescribed finite family of
-classes, and killing a finite group *is* killing a finite family.  Proposition 6's shape
-`∃ m, ∀ x, ∃ α : Generic U m S →* Generic U n S` lets the *target* level `n` be fixed in advance, so
-the two shrinks compose: choose the second shrink's source level `m₂` first, then the first shrink's
-`m₁` with target `m₂`.
+**Only `O(1)` classes can be killed, with the bound fixed in advance.**  That is why
+`hasShrinkableSha_of_hasInflatedSha` works: it kills exactly *one* class, the single preimage of
+the obstruction under inflation from the fixed operator group.
 
-### (c)  What landed
+### (c)  What this means for Route D
 
-`InverseGalois/CFT/PoitouTate/TensorShrink.lean` (green, 8067 jobs):
+Route D is unaffected in its intended form, because it too only ever kills one class:
 
-* `tensorCoeff A φ : Additive A ⊗ Additive C →ₗ[ℤ] Additive A ⊗ Additive C'` — push the second
-  tensor factor along `φ`, with `tensorCoeff_tmul`, `tensorCoeff_comp`, `tensorCoeff_smul`,
-  `tensorVal_tensorCoeff` (the valuation commutes with it) and `tensorCoeff_tensorSubIncl` (it
-  commutes with the inclusion of the kernel of the valuation).
+1. Claim (D1) puts the single class `obs(ω) ∈ kummerSha1` in the image of
+   `H¹(Q, U_T ⊗ C) → H¹(Q, Kˣ ⊗ C)`.  **This is where the local conditions are spent, and they
+   cannot be avoided.**
+2. Choose *one* preimage `w`.  Proposition 6 with `t = 1` gives `φ` killing `w`.
+3. Naturality of `φ_*` against the inclusion gives `φ_* (obs ω) = incl_* (φ_* w) = 0`.
+
+So the plan of §1.67(d) item 1 stands: the local bridge is on the critical path.  Its content is a
+*local Kummer dictionary* — the composite `Kˣ ⊗ C → C`, `a ⊗ c ↦ ord_𝔭(a) · c`, must factor
+through the localisation `resSubH1 N D_𝔭` by a `Stab_Q(𝔭)`-equivariant map.  Two shapes for that
+factorisation, both requiring genuine arithmetic:
+
+* **Decomposition field.**  `H¹(N ∩ D_P, E) ≅ Z^× ⊗ C` by Kummer theory over the decomposition
+  field `Z = Ω^{N ∩ D_P}`, and `ord` extends to `Z^×` with values in `ℤ` because the decomposition
+  field has `e = 1`.  Needs Kummer naturality in the field and `e = 1` (Mathlib has
+  `ramificationIdxIn_mul_ramificationIdxIn` and `card_stabilizer_eq`, but no decomposition field).
+* **Tame inertia.**  `H¹(N ∩ I_P, E) = Hom_{cont}(I_P, E)` — no Kummer theory needed, because
+  inertia acts trivially on `E` — and the tame character `θ : I_P ↠ μ_p` makes
+  `θ^* : Hom(μ_p, E) → Hom(I_P, E)` an isomorphism for `𝔭 ∤ p`.  Needs the structure of tame
+  inertia, and `θ^*` must be shown to be onto, not merely injective.
+
+Both are large.  The methodology the repo uses for such a piece applies: **state it as a named
+hypothesis, build the whole of Route D on top of it, and discharge it afterwards.**
+
+### (d)  What did land: `TensorShrink.lean`
+
+The module built while chasing (a) is kept, because its second half is exactly step 2–3 above.
+
+* `tensorCoeff A φ` — push the second tensor factor along `φ : C →* C'`; with `tensorCoeff_tmul`,
+  `tensorCoeff_comp`, `tensorCoeff_smul`, `tensorVal_tensorCoeff` (the valuation commutes with it)
+  and `tensorCoeff_tensorSubIncl` (it commutes with the inclusion of the kernel of the valuation).
 * `tensorCoeffRep Q φ hφ` — the same as a map of representations.
-* `mem_range_map_tensorSubInclRep_of_forall_subgroup_cocycle` and its class-level form
-  `mem_range_map_tensorSubInclRep_of_forall_subgroup`: **step 1 above, for an arbitrary class.**
-* `map_tensorCoeffRep_eq_zero_of_forall_subgroup`: **step 2, the conclusion —
-  `ψ_* y = 0` for every `y ∈ H¹(Q, Additive A ⊗ Additive C)`.**
-
-The statement of the first hypothesis is deliberately elementary — a `∀ D : Subgroup Q`, a raw
-cocycle `d : ↥D → C` with `d (ρ * τ) = ρ • d τ * d ρ`, and a `u : C'` with `φ (d ρ) = ρ • u / u` —
-so that discharging it from Proposition 6 needs no compatibility of two `Rep` conventions.
-
-### (d)  What Phase 3 now owes (revision of §1.67(d))
-
-Item 1 is **withdrawn**.  What remains:
-
-1. Discharge `hkill` from Proposition 6 applied to each of the finitely many `D ≤ Q`, composing the
-   resulting `IsOperatorHom` shrinks.
-2. Discharge `hkill'` for `H¹(Q, Additive ↥(sUnits K T) ⊗ Additive (μ_p →* E'))`, again from
-   Proposition 6, using finite generation of `sUnits K T`.
-3. The coefficient bridges `Hom(μ_p, Layer) ≅ Layer ⊗ μ_p^∨` and
-   `U_T ⊗ Hom(μ_p, Layer) ≅ Layer ⊗ (U_T/p ⊗ μ_p^∨)` (unchanged, §1.67(d) items 2–3).
-4. Instantiate with `A := (↥K)ˣ`, `C := μ_p →* E`, `Q := Gal(Ω/k) ⧸ K.fixingSubgroup`,
-   `X := {v // v ∉ T}`, `g := ordFinsupp T`, `B := sUnits ↥K T`, transporting the `Gal(K/k)`-action
-   on `ordFinsupp` to `Q` (gotcha 2700), and feed the result into
-   `coeffTransH1_inflH1_eq_one_of_kummerSha1` → `coeffH2_sha2_le_range_galInflH2_of_kummerSha1` →
-   `HasInflatedSha`.
+* `map_tensorCoeffRep_eq_zero_of_map_tensorSubInclRep` — **step 3: a class in the image of the
+  inclusion whose chosen preimage is killed by the shrink is itself killed.**  This is the
+  `t = 1`-compatible form and is on the critical path.
+* `mem_range_map_tensorSubInclRep_of_forall_subgroup` and
+  `map_tensorCoeffRep_eq_zero_of_forall_subgroup` — the theorems of (a).  They are true, and stay
+  as the record of what a module shrink *would* buy; their first hypothesis is the one (b) shows
+  cannot be discharged at scale.

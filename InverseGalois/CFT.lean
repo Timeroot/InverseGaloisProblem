@@ -6082,17 +6082,18 @@ it that are available here.
   at every place comes from cohomology with coefficients in the kernel of the valuation tensored
   with the module** — for a number field, from the units for a finite set of places, whose
   cohomology over a finite group is finite.
-* `InverseGalois.CFT.PoitouTate.TensorShrink` supplies the hypothesis of the previous module out of
-  nothing but the module, and so dispenses with local conditions altogether.  The valuation of a
-  cocycle at a place is a cocycle of the subgroup fixing that place, with values in the module
-  alone; so **if a homomorphism of the module kills every one dimensional class of every subgroup,
-  the class pushed forward along it comes from the kernel of the valuation**, whatever the class
-  was.  A second homomorphism killing the classes with coefficients in that kernel then kills the
-  class outright, since the two homomorphisms commute with the inclusion of the kernel.  A finite
-  group has only finitely many subgroups and the units of a finite set of places are finitely
-  generated, so both hypotheses are about finitely many finite groups; **two shrinks of the module
-  therefore annihilate the whole of the first cohomology with coefficients in the multiplicative
-  group tensored with the module.**
+* `InverseGalois.CFT.PoitouTate.TensorShrink` cashes the previous module in.  Once a class is known
+  to come from the kernel of the valuation, **a homomorphism of the module which kills the one
+  preimage chosen there kills the class itself**, since the homomorphism commutes with the
+  inclusion of the kernel and so carries the image of the preimage to the image of zero.  This is
+  the shape the shrinking of a tower wants: the units for a finite set of places are finitely
+  generated, so cohomology with those coefficients is finite and a shrink can be asked to kill a
+  named finite list of its classes — but the list has to be named before the shrink is chosen, and
+  it is a single class here.  Also recorded is the variant in which the passage into the kernel is
+  itself effected by a homomorphism of the module killing the one dimensional classes of every
+  subgroup, the valuation of a cocycle at a place being a cocycle of the subgroup fixing that
+  place; two such homomorphisms in succession annihilate every class at once, at the price of a
+  hypothesis whose number of classes grows with the module.
 * `InverseGalois.CFT.Profinite.Hilbert90` is the arithmetic input.  A smooth cocycle is constant on
   the cosets of the subgroup fixing a finite Galois level and its values are fixed by that
   subgroup, hence lie in the level, so choosing a preimage of each automorphism of the level turns
