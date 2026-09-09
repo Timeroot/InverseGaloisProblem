@@ -48,6 +48,7 @@ import InverseGalois.Solvable.Shafarevich.IntLinHom
 import InverseGalois.Solvable.Shafarevich.LinHomTensor
 import InverseGalois.Solvable.Shafarevich.LayerDuality
 import InverseGalois.Solvable.Shafarevich.LevelRung
+import InverseGalois.Solvable.Shafarevich.LayerTensorOne
 
 /-!
 # Shafarevich's theorem
@@ -336,4 +337,12 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   name, and that every everywhere locally trivial class of the layer be killed by a shrinking.
   Granted that package, **the step of the ladder holds**, and with it every split embedding problem
   with a kernel of prime power order.
+* `InverseGalois.Solvable.Shafarevich.LayerTensorOne` runs the count in degree one, where the
+  coefficients are not a layer but a layer tensored on the left with a finitely generated abelian
+  group.  Such a tensor product is infinite, but a spanning family of the left factor writes every
+  element of it as a combination of finitely many members against coefficients in the right factor
+  alone, so a cocycle on a finite group has finitely many coordinates there.  Reading each
+  coordinate in the layer through the map the shrinking induces turns the demand back into finitely
+  many scalar equations, and **one first cohomology class with those coefficients is annihilated by
+  a surjective shrinking onto the intended rank.**
 -/
