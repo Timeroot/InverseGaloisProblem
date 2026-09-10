@@ -17,12 +17,17 @@ homomorphism prescribed there is carried back down to the base field by averagin
 cosets of the kernel, and the average is a cocycle over the base field for free.
 
 Averaging is faithful at the data the prescription names, provided the primes it names are
-completely decomposed in that field: the conjugates of such a prime by the representatives of the
-nontrivial cosets are all different from it, so a homomorphism asked to kill the decomposition
-subgroups of the other primes of the orbit contributes a single term to the product, and with the
-trivial coset represented by the identity that term is the value of the homomorphism itself.  So
-the average reproduces the homomorphism on the whole decomposition subgroup, and both the values
-prescribed along it and the cyclicity of those values survive the descent verbatim.
+completely decomposed in that field: the representatives of the nontrivial cosets lie outside the
+kernel and therefore move such a prime, so a homomorphism asked to kill the decomposition subgroups
+of the primes the elements outside the kernel carry it to contributes a single term to the product,
+and with the trivial coset represented by the identity that term is the value of the homomorphism
+itself.  So the average reproduces the homomorphism on the whole decomposition subgroup, and both
+the values prescribed along it and the cyclicity of those values survive the descent verbatim.
+
+Only the conjugates by elements outside the kernel are asked about, and that restriction is what
+makes the demand consistent with prescribing values along the decomposition subgroup at all: an
+element of the kernel carries the decomposition subgroup to a conjugate of itself inside the kernel,
+where a homomorphism into an abelian group repeats its values.
 
 Ramification of the average is ramification of the homomorphism somewhere in the orbit, which is
 what confines the new ramification of the average to where the homomorphism was already ramified;
@@ -79,9 +84,9 @@ This is the prescription of the repair, made one field up: the base realization 
 the layer through its kernel, so a cocycle of the kernel is a homomorphism, and the whole demand is
 one about homomorphisms into a finite abelian group.  The named primes are asked to be completely
 decomposed in the field the kernel cuts out, and the homomorphism is asked to kill the
-decomposition subgroups of the other primes of each of their orbits, so that averaging it back down
-to the base field reproduces it at the prescribed data; distinct named primes lie in distinct
-orbits, so those demands do not collide.  Each subgroup carrying a prescription is
+decomposition subgroups of the primes the elements the base realization moves carry them to, so that
+averaging it back down to the base field reproduces it at the prescribed data; distinct named primes
+lie in distinct orbits, so those demands do not collide.  Each subgroup carrying a prescription is
 either the whole decomposition subgroup of its prime or the part of inertia the base realization
 kills, the two shapes the repair produces.  The same is asked at each prime the
 homomorphism itself brings in, where it is asked in addition to be cyclic on the decomposition
@@ -115,14 +120,14 @@ def HasKernelPrescription : Prop :=
               ρ * (y : Gal(Ω/k)) * ρ⁻¹ ∈ D ν → u y = 1) ∧
             (∀ (μ : ι) (x : ↥(A μ)) (hx : (x : Gal(Ω/k)) ∈ φ.ker),
               u ⟨(x : Gal(Ω/k)), hx⟩ = layerSubMap ℓ α j (a μ x)) ∧
-            (∀ (μ : ι) (ρ : Gal(Ω/k)), ρ • Q μ ≠ Q μ →
+            (∀ (μ : ι) (ρ : Gal(Ω/k)), ρ ∉ φ.ker →
               ∀ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ stabilizer Gal(Ω/k) (ρ • Q μ) → u y = 1) ∧
             ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
               (∃ (ρ : Gal(Ω/k)) (y : ↥(φ.ker)),
                 (y : Gal(Ω/k)) ∈ Ideal.inertia Gal(Ω/k) (ρ • P) ∧ u y ≠ 1) →
               (∃ (μ : ι) (ρ : Gal(Ω/k)), P = ρ • Q μ) ∨
                 ((∀ x ∈ stabilizer Gal(Ω/k) P, F x = 1) ∧ stabilizer Gal(Ω/k) P ≤ φ.ker ∧
-                  (∀ ρ : Gal(Ω/k), ρ • P ≠ P →
+                  (∀ ρ : Gal(Ω/k), ρ ∉ φ.ker →
                     ∀ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ stabilizer Gal(Ω/k) (ρ • P) → u y = 1) ∧
                   ∃ y₀ : ↥(φ.ker), (y₀ : Gal(Ω/k)) ∈ stabilizer Gal(Ω/k) P ∧
                     ∀ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ stabilizer Gal(Ω/k) P →

@@ -92,17 +92,22 @@ reproduces the cochain on the whole decomposition subgroup.**
 
 The conjugates of the prime by the representatives of the nontrivial cosets are all different from
 the prime itself, the decomposition subgroup being contained in the subgroup; so a cochain killing
-the decomposition subgroups of all the other primes of the orbit contributes only one term to the
-product, and the trivial coset being represented by the identity that term is the value of the
-cochain itself. -/
+the decomposition subgroups of the primes the elements outside the subgroup carry it to contributes
+only one term to the product, and the trivial coset being represented by the identity that term is
+the value of the cochain itself.
+
+Only the conjugates by elements outside the subgroup are asked about, which is what leaves the
+demand compatible with a prescription along the decomposition subgroup itself: a conjugate by an
+element of the subgroup carries the decomposition subgroup to a conjugate of itself, where a
+homomorphism into an abelian group takes the very same values. -/
 theorem corCochain₁_eq_self_of_stabilizer_le [Fintype (G ⧸ H)] (hσ1 : σ 1 = 1) {u : ↥H → M}
     {α : Type*} [MulAction G α] {P : α} (hsplit : stabilizer G P ≤ H)
-    (hvan : ∀ ρ : G, ρ • P ≠ P → ∀ y : ↥H, (y : G) ∈ stabilizer G (ρ • P) → u y = 1)
+    (hvan : ∀ ρ : G, ρ ∉ H → ∀ y : ↥H, (y : G) ∈ stabilizer G (ρ • P) → u y = 1)
     {g : G} (hg : g ∈ stabilizer G P) :
     corCochain₁ H σ hσ u g = u ⟨g, hsplit hg⟩ := by
   refine corCochain₁_eq_self_of_conj H σ hσ hσ1 (hsplit hg) fun x y hx hy => ?_
-  refine hvan (σ x)⁻¹ (smul_ne_self_of_stabilizer_le hsplit
-    (fun h => section_notMem_of_ne_one hσ hx ((Subgroup.inv_mem_iff H).1 h))) y ?_
+  refine hvan (σ x)⁻¹
+    (fun h => section_notMem_of_ne_one hσ hx ((Subgroup.inv_mem_iff H).1 h)) y ?_
   refine mem_stabilizer_smul_iff.2 ?_
   rw [hy, show (σ x)⁻¹⁻¹ * ((σ x)⁻¹ * g * σ x) * (σ x)⁻¹ = g from by group]
   exact hg
