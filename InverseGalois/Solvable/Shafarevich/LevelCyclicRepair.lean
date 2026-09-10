@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.Solvable.Shafarevich.CyclicTransport
 import InverseGalois.Solvable.Shafarevich.LevelRepair
 import InverseGalois.Solvable.Shafarevich.LocalLift
 
@@ -100,11 +101,7 @@ def HasSplitCyclicRepair : Prop :=
     ∃ Ψ : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1), IsSmoothHom Ψ ∧
       (∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (Ψ x) = Φ x) ∧
       (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → Ψ x = 1) ∧
-      (∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
-        (∃ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1 ∧ Ψ x ≠ 1) →
-          (∃ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1 ∧ Φ x ≠ 1) ∨
-            ∀ x ∈ stabilizer Gal(Ω/k) P, Φ x = 1) ∧
-      IsCyclicSplitHom φ Ψ
+      IsConfinedRamifiedHom φ Φ Ψ ∧ IsCyclicSplitHom φ Ψ
 
 variable {ℓ U n S j φ D}
 

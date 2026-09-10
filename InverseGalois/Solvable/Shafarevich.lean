@@ -50,6 +50,7 @@ import InverseGalois.Solvable.Shafarevich.LayerDuality
 import InverseGalois.Solvable.Shafarevich.LevelRung
 import InverseGalois.Solvable.Shafarevich.RamifiedHom
 import InverseGalois.Solvable.Shafarevich.RamifiedTransport
+import InverseGalois.Solvable.Shafarevich.CyclicTransport
 import InverseGalois.Solvable.Shafarevich.InducedCocycle
 import InverseGalois.Solvable.Shafarevich.LevelRamification
 import InverseGalois.Solvable.Shafarevich.LevelRepair
@@ -390,6 +391,12 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   replaced by its conjugate, whose order — the only thing the roots of unity rider reads off it — is
   unchanged.  Only finitely many orbits of primes ramify, so **the restriction holds as soon as it
   holds at a family of primes meeting every orbit at which the homomorphism ramifies.**
+* `InverseGalois.Solvable.Shafarevich.CyclicTransport` does the same for what is left of the
+  restriction once total ramification and the roots of unity are gone.  That a lift ramify over the
+  base realization only where the solution below already does or else takes no value at all, and
+  that its local image be cyclic where it does, are again clauses about the decomposition and
+  inertia subgroups of a prime, so again **they move with the prime**, and **confinement and
+  cyclicity are a check at finitely many named primes.**
 * `InverseGalois.Solvable.Shafarevich.InducedCocycle` builds the homomorphism such a convenient
   group receives.  Given a homomorphism onto a group, an abelian group and a character of the kernel
   of the homomorphism, a set theoretic section produces a one cocycle with values in the functions
