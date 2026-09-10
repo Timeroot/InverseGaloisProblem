@@ -565,6 +565,7 @@ import InverseGalois.CFT.Profinite.KummerTransport
 import InverseGalois.CFT.Profinite.KummerTwist
 import InverseGalois.CFT.Profinite.KummerTwo
 import InverseGalois.CFT.Profinite.LiftTwist
+import InverseGalois.CFT.Profinite.OpenLevel
 import InverseGalois.CFT.Profinite.Pi
 import InverseGalois.CFT.Profinite.PiTwo
 import InverseGalois.CFT.Profinite.Quotient
@@ -1035,6 +1036,7 @@ import InverseGalois.CFT.Units.PowSIdeleClass
 import InverseGalois.CFT.Units.PowSIdeleNorm
 import InverseGalois.CFT.Units.PrimeAbove
 import InverseGalois.CFT.Units.RadicalDescent
+import InverseGalois.CFT.Units.RamifiedFamily
 import InverseGalois.CFT.Units.RatFundamentalClass
 import InverseGalois.CFT.Units.RatRamIdx
 import InverseGalois.CFT.Units.RatSumSquares
@@ -8091,4 +8093,24 @@ it that are available here.
   restriction to the level carries inertia to inertia, so **inertia at a prime whose place in the
   level is unramified over the base field already fixes the level**, which is how a realization cut
   out by a level is seen to be unramified away from a prescribed finite set of places.
+
+* `InverseGalois.CFT.Profinite.OpenLevel` names the level itself.  An open subgroup of a topological
+  group is closed, so the Galois correspondence for the Krull topology returns an open normal
+  subgroup from the subfield it fixes, and that subfield is finite over the base because the
+  subgroup is open and Galois over it because the subgroup is normal: **an open normal subgroup of
+  the Galois group of an infinite Galois extension is the subgroup fixing a finite Galois level**.
+  Over a number field the level is again a number field, which the instance search does not find on
+  its own — the algebra structure of an intermediate field over the base competes with the one every
+  field of characteristic zero carries over the rationals — so the passage is stated with an opaque
+  base field and instantiated afterwards.
+
+* `InverseGalois.CFT.Units.RamifiedFamily` turns a condition at the primes where a homomorphism
+  ramifies into a condition at finitely many primes.  Moving a prime by an automorphism conjugates
+  its decomposition subgroup and its inertia subgroup, and a homomorphism of the Galois group into a
+  discrete group is smooth exactly when its kernel is open, hence fixes a finite Galois level.  Only
+  finitely many places of that level ramify over the base field, and at a prime whose place in the
+  level is unramified the inertia of the big group already fixes the level and is therefore killed;
+  the group acting transitively on the primes above a place, naming one prime above each of the
+  finitely many ramified places names **a finite family of primes containing, up to the action of
+  the Galois group, every prime at which a homomorphism with open kernel ramifies**.
 -/

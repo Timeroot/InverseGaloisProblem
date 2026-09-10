@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Profinite.OpenLevel
 import InverseGalois.Solvable.Shafarevich.LevelRungData
 import InverseGalois.Solvable.Shafarevich.RootsLevel
 
@@ -24,8 +25,6 @@ lift, and that is what this file names.
 
 ## Main results
 
-* `InverseGalois.Shafarevich.exists_level_fixingSubgroup_eq` — an open normal subgroup of the
-  Galois group of an infinite Galois extension is the subgroup fixing a finite Galois level.
 * `Shafarevich.genericLevelStepEPRoots_of_solutionRepairEP` — **the repair of the property is the
   only thing between the arithmetic and the step of the ladder** for an odd prime.
 
@@ -33,44 +32,6 @@ lift, and that is what this file names.
 
 Shafarevich's theorem, embedding problem, Krull topology, level, roots of unity
 -/
-
-namespace InverseGalois.Shafarevich
-
-open InverseGalois.CFT MulAction NumberField
-
-set_option synthInstance.maxHeartbeats 800000
-set_option maxHeartbeats 1600000
-
-/-! ### A level for an open normal subgroup -/
-
-section Level
-
-/-- **An open normal subgroup of the Galois group of an infinite Galois extension is the subgroup
-fixing a finite Galois level.**  An open subgroup of a topological group is closed, so the Galois
-correspondence for the Krull topology returns it from the subfield it fixes; that subfield is
-finite over the base because the subgroup is open, and Galois over it because the subgroup is
-normal. -/
-theorem exists_level_fixingSubgroup_eq {k K : Type*} [Field k] [Field K] [Algebra k K]
-    [IsGalois k K] {N : Subgroup Gal(K/k)} (hN : IsOpenNormal N) :
-    ∃ E : IntermediateField k K, FiniteDimensional k ↥E ∧ IsGalois k ↥E ∧
-      E.fixingSubgroup = N ∧ ∀ x : K, (∀ σ ∈ N, σ x = x) → x ∈ E := by
-  haveI : N.Normal := hN.normal
-  have hfix : (IntermediateField.fixedField N).fixingSubgroup = N :=
-    InfiniteGalois.fixingSubgroup_fixedField ⟨N, Subgroup.isClosed_of_isOpen N hN.isOpen⟩
-  refine ⟨IntermediateField.fixedField N, ?_, ?_, hfix, ?_⟩
-  · exact (InfiniteGalois.isOpen_iff_finite _).1 (by rw [hfix]; exact hN.isOpen)
-  · exact (InfiniteGalois.normal_iff_isGalois _).1 (by rw [hfix]; exact hN.normal)
-  · intro x hx
-    exact (IntermediateField.mem_fixedField_iff N x).2 hx
-
-/-- A finite subextension of an extension of a number field is a number field. -/
-theorem numberField_of_finiteDimensional {k Ω : Type*} [Field k] [NumberField k] [Field Ω]
-    [Algebra k Ω] (E : IntermediateField k Ω) [FiniteDimensional k ↥E] : NumberField ↥E :=
-  NumberField.of_module_finite k ↥E
-
-end Level
-
-end InverseGalois.Shafarevich
 
 namespace Shafarevich
 

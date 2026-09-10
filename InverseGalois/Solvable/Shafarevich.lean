@@ -49,6 +49,7 @@ import InverseGalois.Solvable.Shafarevich.LinHomTensor
 import InverseGalois.Solvable.Shafarevich.LayerDuality
 import InverseGalois.Solvable.Shafarevich.LevelRung
 import InverseGalois.Solvable.Shafarevich.RamifiedHom
+import InverseGalois.Solvable.Shafarevich.RamifiedTransport
 import InverseGalois.Solvable.Shafarevich.InducedCocycle
 import InverseGalois.Solvable.Shafarevich.LevelRamification
 import InverseGalois.Solvable.Shafarevich.LevelOneCharacter
@@ -370,6 +371,13 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   is what lets a solution be assembled in a group convenient for the arithmetic — a group of
   functions on the base group, say, whose Kummer theory is transparent — and only afterwards pushed
   forward to the group the ladder names.
+* `InverseGalois.Solvable.Shafarevich.RamifiedTransport` makes that restriction a finite condition.
+  Its three clauses speak only of the decomposition and inertia subgroups of a prime and of the
+  values two homomorphisms take on them, and moving a prime by an automorphism conjugates both
+  subgroups, so **the clauses move with the prime**: the element bounding the local image is
+  replaced by its conjugate, whose order — the only thing the roots of unity rider reads off it — is
+  unchanged.  Only finitely many orbits of primes ramify, so **the restriction holds as soon as it
+  holds at a family of primes meeting every orbit at which the homomorphism ramifies.**
 * `InverseGalois.Solvable.Shafarevich.InducedCocycle` builds the homomorphism such a convenient
   group receives.  Given a homomorphism onto a group, an abelian group and a character of the kernel
   of the homomorphism, a set theoretic section produces a one cocycle with values in the functions
