@@ -36,6 +36,9 @@ theorem for algebraic numbers with prescribed local behaviour.
   `S`-unit.**
 * `InverseGalois.CFT.exists_sUnitClass_mul_eq_unramified`: the same for conditions which at each
   place either prescribe the class exactly or prescribe it up to an unramified class.
+* `InverseGalois.CFT.exists_sUnit_forall_localClassHom_eq`: **an assignment of local classes
+  orthogonal to every `S`-unit which is a local power at every infinite place is met exactly, at
+  every place of `S`, by the class of an `S`-unit.**
 
 ## Tags
 
@@ -201,6 +204,32 @@ theorem exists_sUnitClass_mul_eq_unramified (hn : n.Prime)
     exact Subgroup.mem_top _
   · rw [hL, perpSubgroupLeft_localUnramified hres hζ hn hv] at h
     rwa [hD]
+
+/-- **An assignment of local classes orthogonal to every `S`-unit which is a local power at every
+infinite place is the class of an `S`-unit at every place of `S`.**  Nothing is left free: the
+condition imposing nothing at a place is dual to the condition imposing everything, so the
+`S`-units the assignment has to pair trivially with are all of them. -/
+theorem exists_sUnit_forall_localClassHom_eq (hn : n.Prime)
+    (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
+    {ζ : K} (hζ : IsPrimitiveRoot ζ n) {ι : Y → HeightOneSpectrum (𝓞 K)}
+    (hinj : Function.Injective ι)
+    (hnι : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → v ∈ Set.range ι)
+    (hrepr : ∀ m : HeightOneSpectrum (𝓞 K) → ℤ,
+      (∀ᶠ v : HeightOneSpectrum (𝓞 K) in Filter.cofinite, m v = 0) →
+      ∃ a : Kˣ, ∀ v ∉ Set.range ι, Rigidity.RET.ord K v (a : K) = m v)
+    (c : (y : Y) → localClasses (ι y) n)
+    (hc : ∀ u : ↥(sUnits K (Set.range ι)),
+      (∀ w : InfinitePlace K, infClassHom w n ((u : Kˣ)) = 1) →
+      localSymbolPiPairing hres hζ ι (sUnitClassHom ι n u) c = 1) :
+    ∃ g : ↥(sUnits K (Set.range ι)), ∀ y : Y, localClassHom (ι y) n ((g : Kˣ)) = c y := by
+  obtain ⟨a, ha, l, hl, hal⟩ := exists_sUnitClass_mul_eq_unramified hn hres hζ hinj hnι hrepr
+    (fun _ => ⊥) (fun _ => ⊤) (fun _ => Or.inl ⟨rfl, rfl⟩) (c := c) fun u huinf _ => hc u huinf
+  obtain ⟨g, rfl⟩ := ha
+  refine ⟨g, fun y => ?_⟩
+  have hly : l y = 1 := Subgroup.mem_bot.1 ((Subgroup.mem_pi _).1 hl y (Set.mem_univ y))
+  have hy : sUnitClassHom ι n g y * l y = c y := congrFun hal y
+  rw [hly] at hy
+  exact (mul_one (sUnitClassHom ι n g y)).symm.trans hy
 
 end Prescribed
 

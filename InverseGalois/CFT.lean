@@ -493,6 +493,7 @@ import InverseGalois.CFT.PoitouTate.LocalOrdBridge
 import InverseGalois.CFT.PoitouTate.LocalOrdKummer
 import InverseGalois.CFT.PoitouTate.LocalOrdOutside
 import InverseGalois.CFT.PoitouTate.LocalOrdPlace
+import InverseGalois.CFT.PoitouTate.NamedFamily
 import InverseGalois.CFT.PoitouTate.NormLocalPower
 import InverseGalois.CFT.PoitouTate.OrbitCoboundary
 import InverseGalois.CFT.PoitouTate.PlaceUniformiser
@@ -8080,6 +8081,21 @@ it that are available here.
   realising a prescription with values in a module of that many coordinates, and at every place
   outside the prescribed part either all unramified or all powers of a single local class over a
   completion carrying the roots of unity.**
+
+* `InverseGalois.CFT.PoitouTate.NamedFamily` puts the prescription the construction runs on into the
+  shape an embedding problem hands over.  What an embedding problem names is finitely many places
+  and, at each of them, one local class per coordinate of the group being built; nothing at all is
+  said anywhere else.  Read as a prescription defined at every place — the class named where one is
+  named, and trivial elsewhere — every hypothesis of the construction collapses to a statement about
+  the named places: unramifiedness away from the distinguished part is automatic once the named
+  places lie inside it, lying on an equivariant line is asked only where a class is named,
+  triviality above the exponent is asked only at the named places above it, and the clause
+  forbidding a prescription and its conjugate from both being nontrivial holds as soon as no proper
+  conjugate of a named place is named.  What does not collapse is the global step, and that is exactly the duality:
+  a prescription is the local behaviour of an `S`-unit precisely when it is orthogonal, under the
+  product of the norm residue symbols, to every `S`-unit which is a local power at the infinite
+  places.  So: **a naming of local classes at finitely many places, orthogonal in that sense, has a
+  family of pairs of places and of units realising it coordinate by coordinate.**
 
 * `InverseGalois.CFT.Residue.AlgClosed` gives an algebraic closure the residue fields it looks as
   though it has none of.  Its ring of integers has nonzero primes, each of them lies over a nonzero
