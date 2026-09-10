@@ -129,7 +129,8 @@ restricts there to a homomorphism.  Along the finite family the cocycle is asked
 the base realization already does.
 
 The last clause is the one which confines the new ramification.  At a prime where the cocycle
-ramifies, either that prime is one of the named ones, or it is a prime the cocycle brings in by
+ramifies along the part of inertia the base realization kills, either that prime is one of the
+named ones, or it is a prime the cocycle brings in by
 itself, and there it is asked to be cyclic and the given lift to kill the whole decomposition
 subgroup — which is what a prime chosen to split completely in the field the lift cuts out
 supplies. -/
@@ -144,7 +145,8 @@ def HasConfinedPrescription : Prop :=
       ∃ c : Gal(Ω/k) → ↥(layerSub ℓ (Generic U n S) j), IsMulCocycle₁ c ∧ IsSmooth₁ c ∧
         (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → c x = 1) ∧
         (∀ (μ : Fin s) (x : ↥(A μ)), c (x : Gal(Ω/k)) = a μ x) ∧
-        ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → (∃ x ∈ Ideal.inertia Gal(Ω/k) P, c x ≠ 1) →
+        ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
+          (∃ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1 ∧ c x ≠ 1) →
           (∃ (μ : Fin s) (ρ : Gal(Ω/k)), P = ρ • Q μ) ∨
             ((∀ x ∈ stabilizer Gal(Ω/k) P, F x = 1) ∧
               ∃ x₀ ∈ stabilizer Gal(Ω/k) P,
@@ -258,11 +260,11 @@ theorem hasSplitCyclicRepair_of_hasConfinedPrescription
         ((∀ x ∈ stabilizer Gal(Ω/k) P, f x = 1) ∧
           ∃ x₀ ∈ stabilizer Gal(Ω/k) P,
             ∀ x ∈ stabilizer Gal(Ω/k) P, c x ∈ Subgroup.zpowers (c x₀)) := by
-      obtain ⟨x, hxI, -, hxΨ⟩ := hPram
+      obtain ⟨x, hxI, hxφ, hxΨ⟩ := hPram
       by_cases hcx : c x = 1
       · refine Or.inl (hfam P hPp hPbot ⟨x, hxI, fun hfx => hxΨ ?_⟩)
         rw [hΨdef, hcx, _root_.map_one, one_mul, hfx]
-      · exact hcram P hPp hPbot ⟨x, hxI, hcx⟩
+      · exact hcram P hPp hPbot ⟨x, hxI, hxφ, hcx⟩
     rcases horbit with ⟨μ, ρ, rfl⟩ | ⟨hf1, x₀, hx₀, hgen⟩
     · have h := hAkey μ Ψ (hΨA μ) (ramifiesAt_smul_iff.1 hPram)
       exact ⟨h.1.smul ρ, h.2.smul ρ⟩
