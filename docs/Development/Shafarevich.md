@@ -20373,3 +20373,72 @@ they are cheap, and isolates the shrinking in a single lift-existence statement.
   After `refine ⟨n, ?_⟩` on a `Subgroup.zpowers` goal the target is a beta-redex, so `rw` cannot see
   the pattern; insert `show (…) ^ n = …` first (finding 3024).
 * **3111.** ROOT build after `CFT/Profinite/CorestrictionNormal.lean`: **9913** jobs.
+
+## §1.80 Even the split prescription needs a shrinking (2026-09-10)
+
+§1.79(e) offered two ways to repair clause 7 and preferred (i), carrying the splitting invariant so
+that the prescription is only ever asked at primes split completely in the base realization.  Read
+one paragraph further in step 4 of SW theorem 15 and (i) turns out to need the same medicine as
+(ii).  `sw.txt:1623`:
+
+> Similar to the situation with the class `ε` in step 3, the exact sequence
+> `H¹(K_S|K, E(n,ν)) → ∏_T H¹(K_P, E(n,ν)) → coker(K_S; T, E(n,ν))`
+> shows that the obstruction to the existence of such a `y` is `θ_n(η) = 0`.  Now we apply the
+> shrinking procedure as in step 3, but the commutative diagrams which are used there have to be
+> modified as follows: Replace in the first diagram `k` by `K` … Then we use part (ii) of theorem 7
+> instead of part (i).  **Therefore, after a further shrinking, we get a class `y` with the
+> properties above.**
+
+So the class `y ∈ H¹(k_S|K, A)` that theorem 13 consumes is *itself* only available after a
+shrinking — a second one, over `K` rather than over `k`, using theorem 7(ii) rather than 7(i).
+Theorem 13 is the cheap half; producing its input is not.
+
+### (a) Why the obstruction is really there
+
+The obstruction is `coker` of `H¹(K_S|K, A) → ∏_{P ∈ T(K)} H¹(K_P, A)`, which by SW's lemma 10
+(`sw.txt:483`) injects into `Ш¹(K_S, S ∖ T, A′)`.  Now `S = cs(N_n|k) ∪ T`, so `S ∖ T` contains
+every prime split completely in `N_n|k`; by Čebotarev a class of `H¹(K_S|K, A′)` locally trivial at
+all of them is inflated from `Gal(N_n|K)`, whence
+
+  `Ш¹(K_S, S ∖ T, A′) ≅ H¹(N_n|K, A′^{G_{N_n}})`,
+
+which is in general **nonzero**.  Since the prescription statement quantifies over all local data,
+a nonzero obstruction group makes it fail.  The conclusion is unavoidable:
+
+> **`HasConfinedPrescription ℓ U n S j φ D` at a fixed level `n` is false in general**, whether or
+> not one adds the splitting hypothesis of §1.79(d).
+
+Its shape has to change to the shape that `HasShrinkableSha` (`LevelShrink.lean:101`) already uses
+for the `H²` obstruction: **announce a level `N` in advance, and answer with a surjection**
+
+  `α : Generic U N S ↠ Generic U n S`
+
+together with the prescribed cocycle read at level `N`.  Two shrinkings then compose exactly the way
+`exists_lift_of_levelSolution_of_hasShrinkableSha` (`LevelShrink.lean:218`) already composes the
+first one with the lifting step.
+
+### (b) The revised plan for clause 7
+
+1. **`ConfinedPrescriptionSplit`** — the prescription with the splitting hypothesis of §1.79(d)
+   (nonzero prescription only at primes whose whole decomposition subgroup the base realization
+   kills), *with the announced level `N` and the surjection `α` built in*.  This is SW step 4 =
+   theorem 13 + the second shrinking.  The corestriction collapse of §1.79(a) is what turns a class
+   over `K` into one over `k`; the shoebox tower of `CFT/PoitouTate/` is what produces the class
+   over `K`; theorem 7(ii) is what kills the obstruction.
+2. **A confined lift-existence** — SW step 3: a smooth lift `f` of `Φ` across the layer whose
+   ramification, beyond `Φ`'s, is confined to primes split completely in the base realization, and
+   which has prescribed local behaviour at a fixed finite bad set.  Again with an announced `N`.
+   This replaces the `IsConfinedRamifiedHom φ Φ f` hypothesis that §1.79(e)(i) would have had to
+   thread through `HasCyclicRepair` / `HasSplitCyclicRepair` / `HasLiftRepair` by hand.
+
+The repair chain then reads: *lift confined* (step 3, first shrinking) → *repair the confined lift*
+(step 4, second shrinking), which is SW's own order and needs no invariant threaded through an
+arbitrary `f`.
+
+### (c) What is unchanged
+
+The corestriction bricks of §1.79(a) are exactly as useful under the revised plan: they are the
+`x = cor^K_k z` of theorem 13 and its clause (b), independently of how `z` is produced.  Likewise
+`CFT/PoitouTate/BaseFamily.lean`'s `exists_base_family_norm_class_eq` — the coordinate form of
+theorem 13 for `A = μ_p` and odd `p` — is unaffected; what it still needs is the cohomological
+packaging (docs §1.44(d)) and the dévissage from `A = μ_p` to a general finite `𝔽_p[G(K|k)]`-module.
