@@ -67,6 +67,7 @@ import InverseGalois.Solvable.Shafarevich.LocalLift
 import InverseGalois.Solvable.Shafarevich.RamifiedSplit
 import InverseGalois.Solvable.Shafarevich.LevelCyclicRepair
 import InverseGalois.Solvable.Shafarevich.CyclicLift
+import InverseGalois.Solvable.Shafarevich.LevelConfinedTwist
 import InverseGalois.Solvable.Shafarevich.ElementaryQuotient
 import InverseGalois.Solvable.Shafarevich.ElementaryQuotientDecomposition
 import InverseGalois.Solvable.Shafarevich.RootsLevel
@@ -562,6 +563,22 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   the local field at the prime contain them â€” and that is the last clause of the restriction the
   solutions of the ladder already carry.  So **the step has a local solution at every prime**,
   unconditionally, and no local class field theory is spent on the way.
+* `InverseGalois.Solvable.Shafarevich.LevelConfinedTwist` turns the demand about values into a
+  demand about one cocycle.  Two lifts of one solution across one layer differ by a one cocycle with
+  values in the layer, so the repair is a choice of cocycle; and only finitely many orbits of primes
+  carry any ramification of the given lift at all, one prime of each being named.  At a named prime
+  where the solution below ramifies over the base realization, the base realization kills the whole
+  decomposition subgroup, so that subgroup acts trivially on the layer and the local solution of the
+  step differs from the given lift along it by a homomorphism into the layer; prescribing the
+  cocycle to be that homomorphism makes the corrected lift agree with the local solution there,
+  which is cyclic.  At a named prime where the solution below does not ramify over the base
+  realization, the given lift already lands in the layer along the part of inertia the base
+  realization kills, and prescribing the cocycle to cancel it there makes the corrected lift
+  unramified outright.  Nowhere else does the given lift ramify, so any new ramification of the
+  corrected lift is ramification of the cocycle, and the cocycle carries its own confinement and
+  cyclicity at the primes it brings in.  So **the repair costs exactly one smooth one cocycle,
+  prescribed along finitely many subgroups of decomposition subgroups, trivial along the family and
+  ramified only where it is allowed to be**.
 * `InverseGalois.Solvable.Shafarevich.ElementaryQuotient` buys the finiteness the ladder asks of
   each member of the finite family.  A subgroup carrying only finitely many smooth characters of
   order dividing the prime has a finite elementary quotient, the product of all of them being a
