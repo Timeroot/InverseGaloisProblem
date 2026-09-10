@@ -328,6 +328,7 @@ import InverseGalois.CFT.Kummer.AmbientRadical
 import InverseGalois.CFT.Kummer.CentralEmbedding
 import InverseGalois.CFT.Kummer.CentralEmbeddingPlaces
 import InverseGalois.CFT.Kummer.CentralEmbeddingSqrtNegOne
+import InverseGalois.CFT.Kummer.CharLift
 import InverseGalois.CFT.Kummer.CharLocalClass
 import InverseGalois.CFT.Kummer.CharPlace
 import InverseGalois.CFT.Kummer.CocycleDescent
@@ -8112,6 +8113,15 @@ it that are available here.
   the exponent: units whose quotient has order there a multiple of the exponent carry the same
   character on inertia.  That is the form in which an arithmetic construction prescribing local
   classes is read as one prescribing characters.
+
+* `InverseGalois.CFT.Kummer.CharLift` names the arithmetic input which runs the dictionary the other
+  way.  A decomposition subgroup is the group of automorphisms over the field it fixes, and the base
+  field is dense in that field at the place below, so **a character of a decomposition subgroup, or
+  of the inertia subgroup inside it, ought to be the Kummer character of a unit of the base field**.
+  Granted that, a character to be prescribed is named by a class in the completion at the place
+  below: any unit carrying that class carries the prescribed character there.  That is what turns a
+  demand on characters — which is what a lift of a realization makes — into a demand on local
+  classes, which is what an arithmetic construction supplies.
 
 * `InverseGalois.CFT.Units.StablePlaces` collects the three demands a prescription of local
   behaviour makes on the set of places it prescribes at.  The places carrying a nonzero natural
