@@ -68,6 +68,7 @@ import InverseGalois.Solvable.Shafarevich.RootsLevel
 import InverseGalois.Solvable.Shafarevich.LevelOneArith
 import InverseGalois.Solvable.Shafarevich.LevelOneFamily
 import InverseGalois.Solvable.Shafarevich.LevelOneTwoPlace
+import InverseGalois.Solvable.Shafarevich.LevelOneDecomposition
 
 /-!
 # Shafarevich's theorem
@@ -563,4 +564,11 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   trivial decomposition group in the level by construction and every prime is unramified in a field
   over itself.  So **a Galois stable finite set of places carrying the ideal classes and the places
   above the exponent gives the first rung of the ladder its character**.
+* `InverseGalois.Solvable.Shafarevich.LevelOneDecomposition` names the finite family the ladder is
+  climbed along.  A prime of the integers of the whole extension is chosen above each place of the
+  stable set, and the stabilisers of those primes are the family: each of them, cut down by the
+  kernel of the base realization, has a finite elementary quotient because it is a decomposition
+  subgroup, and the character of the previous file dies on all of them because the places it spends
+  are places of the set.  So **a prescribed finite set of places of a level is covered by a finite
+  family of primes whose stabilisers carry both conditions the first rung asks of the family**.
 -/
