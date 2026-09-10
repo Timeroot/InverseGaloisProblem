@@ -197,7 +197,7 @@ theorem hasCyclicLift_of_fixed_rootsOfUnity {A : Subgroup Gal(Ω/k)}
   have hz'ξ : orderOf z' ∣ orderOf ξ := by rw [← hξ.eq_orderOf, hmdef]
   set ν'₀ : Subgroup.zpowers ξ →* Z' := zpowersLift hz'ξ with hν'₀def
   set ν' : ↥A →* Z' := ν'₀.comp (χ'.codRestrict _ hmem') with hν'def
-  refine ⟨ν', ?_, ?_⟩
+  refine ⟨ν', ?_, ?_, ?_⟩
   · obtain ⟨M, hM, hu⟩ := hχ's
     refine ⟨M, hM, fun a n hn => ?_⟩
     show ν'₀ _ = ν'₀ _
@@ -214,6 +214,9 @@ theorem hasCyclicLift_of_fixed_rootsOfUnity {A : Subgroup Gal(Ω/k)}
       zpow_eq_zpow_of_orderOf_dvd (by rw [hζord, hqdef]) (hζi.symm.trans hζj)
     rw [hν'i, map_zpow, hfin]
     exact hj
+  · intro σ
+    obtain ⟨i, hi⟩ := hmem' σ
+    exact ⟨i, (zpowersLift_apply hz'ξ (u := χ'.codRestrict _ hmem' σ) hi.symm).symm⟩
 
 end CyclicLift
 

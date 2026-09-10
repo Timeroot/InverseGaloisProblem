@@ -111,7 +111,9 @@ supplies at a prime where it ramifies over the base realization: the base realiz
 whole decomposition subgroup, the solution takes no value on the decomposition subgroup which it
 does not already take on inertia, and its values there lie in the powers of a single element.  What
 is asked is the same local solution the unramified case supplies, a homomorphism of the
-decomposition subgroup into the group at the next level over the solution. -/
+decomposition subgroup into the group at the next level over the solution — and one which is again
+cyclic, its values lying in the powers of a single element, as a lift of a cyclic character across
+a step of the prime should be. -/
 def HasSplitRamifiedLift (φ : Gal(Ω/k) →* U) : Prop :=
   ∀ Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j, IsSmoothHom Φ →
     (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) →
@@ -122,8 +124,9 @@ def HasSplitRamifiedLift (φ : Gal(Ω/k) →* U) : Prop :=
         ∀ ζ : Ωˣ, ζ ^ (ℓ * orderOf c) = 1 → ∀ x ∈ stabilizer Gal(Ω/k) P, x • ζ = ζ) →
         ∃ g : ↥(stabilizer Gal(Ω/k) P) →* GenericQuot ℓ U n S (j + 1),
           IsSmooth₁ (g : ↥(stabilizer Gal(Ω/k) P) → GenericQuot ℓ U n S (j + 1)) ∧
-            ∀ x : ↥(stabilizer Gal(Ω/k) P),
-              (layerExtension ℓ (genericAut U n S) j).rightHom (g x) = Φ (x : Gal(Ω/k))
+            (∀ x : ↥(stabilizer Gal(Ω/k) P),
+              (layerExtension ℓ (genericAut U n S) j).rightHom (g x) = Φ (x : Gal(Ω/k))) ∧
+            ∃ w : GenericQuot ℓ U n S (j + 1), ∀ x, g x ∈ Subgroup.zpowers w
 
 /-- **Local solvability of the step is the ramified case alone.**
 
@@ -149,7 +152,8 @@ theorem hasLocalLift_of_hasSplitRamifiedLift (φ : Gal(Ω/k) →* U) {t : ℕ}
     obtain ⟨x, hxI, hx1⟩ := hunr
     obtain ⟨hsplit, htot, hcyc⟩ :=
       hprop P hPp hPbot ⟨x, hxI, hD P hPp hPbot hAD x hxI, hx1⟩
-    exact hram Φ hsm hover P hPp hPbot hsplit htot hcyc
+    obtain ⟨g, hgs, hgr, -⟩ := hram Φ hsm hover P hPp hPbot hsplit htot hcyc
+    exact ⟨g, hgs, hgr⟩
 
 end LocalLift
 
@@ -250,12 +254,14 @@ order lifts along a surjection raising that order once.**
 The natural number bounds the order of the element upstairs, and so bounds how far the character
 being asked for goes: over a local field a character of a decomposition subgroup lifts exactly as
 far as the field carries roots of unity, so a bound on the order is what makes the condition an
-honest one to ask of a field carrying the roots of unity of that order. -/
+honest one to ask of a field carrying the roots of unity of that order.  The lift asked for is
+again cyclic, its values lying in the powers of the element the order was raised at. -/
 def HasCyclicLift (N : ℕ) (A : Subgroup Gal(Ω/k)) : Prop :=
   ∀ (Z Z' : Type) [Group Z] [Group Z'] [Finite Z'] (f : Z' →* Z) (z' : Z'),
     (∃ a : ℕ, orderOf (f z') = ℓ ^ a) → orderOf z' ∣ ℓ * orderOf (f z') → orderOf z' ∣ N →
       ∀ ν : ↥A →* Z, IsSmooth₁ (ν : ↥A → Z) → (∀ x, ν x ∈ Subgroup.zpowers (f z')) →
-        ∃ ν' : ↥A →* Z', IsSmooth₁ (ν' : ↥A → Z') ∧ ∀ x, f (ν' x) = ν x
+        ∃ ν' : ↥A →* Z', IsSmooth₁ (ν' : ↥A → Z') ∧ (∀ x, f (ν' x) = ν x) ∧
+          ∀ x, ν' x ∈ Subgroup.zpowers z'
 
 omit [NumberField k] [IsGalois k Ω] [IsAlgClosed Ω] in
 /-- **The ramified case asks nothing of the tower.**
@@ -302,11 +308,13 @@ theorem hasSplitRamifiedLift_of_hasCyclicLift (hS : IsPGroup ℓ S) (φ : Gal(Ω
     rw [_root_.map_pow, hz', pow_orderOf_eq_one]
   have hN : orderOf z' ∣ ℓ * orderOf c :=
     hdvd.trans (mul_dvd_mul_left ℓ (by rw [hz']; exact hzc))
-  exact hcl P (ℓ * orderOf c) hPp hPbot hsplit hμ _ _ _ z' ⟨a, by rw [hz']; exact ha⟩ hdvd hN
-    (Φ.comp (stabilizer Gal(Ω/k) P).subtype)
-    (isSmooth₁_comp (continuous_subtype _)
-      (isSmooth₁_of_isOpenNormal_ker (isOpenNormal_ker_of_isSmoothHom hsm)))
-    (fun x => by rw [hz']; exact hz _ ⟨x, rfl⟩)
+  obtain ⟨ν', hν's, hν'f, hν'm⟩ :=
+    hcl P (ℓ * orderOf c) hPp hPbot hsplit hμ _ _ _ z' ⟨a, by rw [hz']; exact ha⟩ hdvd hN
+      (Φ.comp (stabilizer Gal(Ω/k) P).subtype)
+      (isSmooth₁_comp (continuous_subtype _)
+        (isSmooth₁_of_isOpenNormal_ker (isOpenNormal_ker_of_isSmoothHom hsm)))
+      (fun x => by rw [hz']; exact hz _ ⟨x, rfl⟩)
+  exact ⟨ν', hν's, hν'f, z', hν'm⟩
 
 end CyclicLift
 
