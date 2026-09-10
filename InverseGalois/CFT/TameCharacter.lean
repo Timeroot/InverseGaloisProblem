@@ -20,6 +20,8 @@ element `σ` of the inertia group at `P` satisfies `σ • π ≡ c * π` modulo
   decomposition group on the residue field.
 * `InverseGalois.CFT.tameChar_injective`: in the tame case, that is when the residue
   characteristic does not divide the order of the inertia group, the tame character is injective.
+* `InverseGalois.CFT.exists_orderOf_eq_ringChar_pow`: an element of the kernel of the tame
+  character has order a power of the residue characteristic.
 * `InverseGalois.CFT.card_inertia_dvd_sub_one_of_liesOver`: if `K / ℚ` is abelian and the prime
   `Q` lies over the rational prime `p`, which does not divide the order of the inertia group at
   `Q`, then that order divides `p - 1`.
@@ -355,6 +357,44 @@ theorem mem_pow_orderOf_of_smul_eq (hP : P ≠ ⊥) {σ : Gal(K/ℚ)}
     ht ▸ Ideal.mem_map_of_mem _ (show t ∈ P.under (𝓞 F) from Ideal.mem_comap.2 (ht ▸ hsP))
   exact he ▸ Ideal.le_pow_ramificationIdx hmem
 
+/-- **The residue characteristic divides the order of a nontrivial element of the kernel of the
+tame character.**  Summing a uniformizer over the powers of the element gives an invariant element
+of `P`, which therefore lies in the power of `P` named by the order; the element being in the
+kernel, that sum differs from the order times the uniformizer by an element of `P ^ 2`, so the
+order times the uniformizer lies in `P ^ 2` and the order lies in `P`. -/
+theorem ringChar_dvd_orderOf_of_tameChar_eq_one (h : IsUniformizer P π)
+    {σ : Ideal.inertia Gal(K/ℚ) P} (hσ1 : tameChar h σ = 1)
+    (hne : orderOf (σ : Gal(K/ℚ)) ≠ 1) :
+    ringChar (𝓞 K ⧸ P) ∣ orderOf (σ : Gal(K/ℚ)) := by
+  have hmpos : 0 < orderOf (σ : Gal(K/ℚ)) := orderOf_pos _
+  have hm2 : 2 ≤ orderOf (σ : Gal(K/ℚ)) := by omega
+  have hker : ∀ i : ℕ, ((σ : Gal(K/ℚ)) ^ i) • π - π ∈ P ^ 2 := by
+    intro i
+    have hpow : tameChar h (σ ^ i) = 1 := by rw [map_pow, hσ1, one_pow]
+    simpa using (tameChar_eq_one_iff h (σ ^ i)).1 hpow
+  obtain ⟨s, hsdef⟩ : ∃ s : 𝓞 K,
+      s = ∑ i ∈ Finset.range (orderOf (σ : Gal(K/ℚ))), ((σ : Gal(K/ℚ)) ^ i) • π := ⟨_, rfl⟩
+  have hfix : (σ : Gal(K/ℚ)) • s = s := by
+    rw [hsdef]; exact smul_sum_range_orderOf _ _
+  have hsP : s ∈ P := by
+    rw [hsdef]
+    refine Submodule.sum_mem _ fun i _ => ?_
+    have hmem : ((σ : Gal(K/ℚ)) ^ i) • π - π ∈ P := Ideal.pow_le_self two_ne_zero (hker i)
+    simpa using Ideal.add_mem P hmem h.1
+  have hs2 : s ∈ P ^ 2 :=
+    Ideal.pow_le_pow_right hm2 (mem_pow_orderOf_of_smul_eq h.ne_bot σ.2 hfix hsP)
+  have hdiff : s - ((orderOf (σ : Gal(K/ℚ)) : ℕ) : 𝓞 K) * π ∈ P ^ 2 := by
+    have hrw : ∑ i ∈ Finset.range (orderOf (σ : Gal(K/ℚ))), (((σ : Gal(K/ℚ)) ^ i) • π - π) =
+        s - ((orderOf (σ : Gal(K/ℚ)) : ℕ) : 𝓞 K) * π := by
+      rw [Finset.sum_sub_distrib, Finset.sum_const, Finset.card_range, nsmul_eq_mul, hsdef]
+    rw [← hrw]
+    exact Submodule.sum_mem _ fun i _ => hker i
+  have hmul : ((orderOf (σ : Gal(K/ℚ)) : ℕ) : 𝓞 K) * π ∈ P ^ 2 := by
+    simpa using Submodule.sub_mem (P ^ 2) hs2 hdiff
+  refine ringChar.dvd ?_
+  rw [← map_natCast (Ideal.Quotient.mk P)]
+  exact Ideal.Quotient.eq_zero_iff_mem.2 (h.mem_of_mul_mem_sq hmul)
+
 /-- **Tameness gives injectivity**: if the residue characteristic at `P` does not divide the
 order of the inertia group at `P`, then the tame character is injective. -/
 theorem tameChar_injective (h : IsUniformizer P π)
@@ -367,35 +407,41 @@ theorem tameChar_injective (h : IsUniformizer P π)
     exact orderOf_dvd_natCard σ
   have hm1 : orderOf (σ : Gal(K/ℚ)) = 1 := by
     by_contra hne
-    have hmpos : 0 < orderOf (σ : Gal(K/ℚ)) := orderOf_pos _
-    have hm2 : 2 ≤ orderOf (σ : Gal(K/ℚ)) := by omega
-    have hker : ∀ i : ℕ, ((σ : Gal(K/ℚ)) ^ i) • π - π ∈ P ^ 2 := by
-      intro i
-      have hpow : tameChar h (σ ^ i) = 1 := by rw [map_pow, hσ1, one_pow]
-      simpa using (tameChar_eq_one_iff h (σ ^ i)).1 hpow
-    obtain ⟨s, hsdef⟩ : ∃ s : 𝓞 K,
-        s = ∑ i ∈ Finset.range (orderOf (σ : Gal(K/ℚ))), ((σ : Gal(K/ℚ)) ^ i) • π := ⟨_, rfl⟩
-    have hfix : (σ : Gal(K/ℚ)) • s = s := by
-      rw [hsdef]; exact smul_sum_range_orderOf _ _
-    have hsP : s ∈ P := by
-      rw [hsdef]
-      refine Submodule.sum_mem _ fun i _ => ?_
-      have hmem : ((σ : Gal(K/ℚ)) ^ i) • π - π ∈ P := Ideal.pow_le_self two_ne_zero (hker i)
-      simpa using Ideal.add_mem P hmem h.1
-    have hs2 : s ∈ P ^ 2 :=
-      Ideal.pow_le_pow_right hm2 (mem_pow_orderOf_of_smul_eq h.ne_bot σ.2 hfix hsP)
-    have hdiff : s - ((orderOf (σ : Gal(K/ℚ)) : ℕ) : 𝓞 K) * π ∈ P ^ 2 := by
-      have hrw : ∑ i ∈ Finset.range (orderOf (σ : Gal(K/ℚ))), (((σ : Gal(K/ℚ)) ^ i) • π - π) =
-          s - ((orderOf (σ : Gal(K/ℚ)) : ℕ) : 𝓞 K) * π := by
-        rw [Finset.sum_sub_distrib, Finset.sum_const, Finset.card_range, nsmul_eq_mul, hsdef]
-      rw [← hrw]
-      exact Submodule.sum_mem _ fun i _ => hker i
-    have hmul : ((orderOf (σ : Gal(K/ℚ)) : ℕ) : 𝓞 K) * π ∈ P ^ 2 := by
-      simpa using Submodule.sub_mem (P ^ 2) hs2 hdiff
-    refine hp (dvd_trans (ringChar.dvd ?_) hmdvd)
-    rw [← map_natCast (Ideal.Quotient.mk P)]
-    exact Ideal.Quotient.eq_zero_iff_mem.2 (h.mem_of_mul_mem_sq hmul)
+    exact hp ((ringChar_dvd_orderOf_of_tameChar_eq_one h hσ1 hne).trans hmdvd)
   exact Subtype.ext (orderOf_eq_one_iff.1 hm1)
+
+attribute [local instance] Ideal.Quotient.field in
+/-- **An element of the kernel of the tame character has order a power of the residue
+characteristic.**  Its power by the largest power of the characteristic dividing its order is
+again in the kernel and has order prime to the characteristic, so that order is one. -/
+theorem exists_orderOf_eq_ringChar_pow (h : IsUniformizer P π)
+    {σ : Ideal.inertia Gal(K/ℚ) P} (hσ1 : tameChar h σ = 1) :
+    ∃ j : ℕ, orderOf (σ : Gal(K/ℚ)) = ringChar (𝓞 K ⧸ P) ^ j := by
+  haveI := isMaximal_of_ne_bot P h.ne_bot
+  haveI := finite_quotient_of_ne_bot P h.ne_bot
+  set p := ringChar (𝓞 K ⧸ P) with hpdef
+  haveI : CharP (𝓞 K ⧸ P) p := ringChar.charP _
+  have hp : p.Prime := CharP.char_is_prime (𝓞 K ⧸ P) p
+  set d := orderOf σ with hddef
+  have hd0 : d ≠ 0 := (orderOf_pos σ).ne'
+  have hcoe : orderOf (σ : Gal(K/ℚ)) = d := Subgroup.orderOf_coe σ
+  refine ⟨d.factorization p, ?_⟩
+  rw [hcoe]
+  have hdvd : p ^ d.factorization p ∣ d := Nat.ordProj_dvd d p
+  have hpow : orderOf (σ ^ p ^ d.factorization p) = d / p ^ d.factorization p := by
+    rw [orderOf_pow' _ (pow_ne_zero _ hp.pos.ne'), ← hddef, Nat.gcd_eq_right hdvd]
+  have hone : orderOf ((σ ^ p ^ d.factorization p : Ideal.inertia Gal(K/ℚ) P) :
+      Gal(K/ℚ)) = 1 := by
+    by_contra hne
+    have htame : tameChar h (σ ^ p ^ d.factorization p) = 1 := by
+      rw [map_pow, hσ1, one_pow]
+    have hdd := ringChar_dvd_orderOf_of_tameChar_eq_one h htame hne
+    rw [Subgroup.orderOf_coe, hpow, ← hpdef] at hdd
+    exact Nat.not_dvd_ordCompl hp hd0 hdd
+  rw [Subgroup.orderOf_coe, hpow] at hone
+  calc d = p ^ d.factorization p * (d / p ^ d.factorization p) :=
+        (Nat.ordProj_mul_ordCompl_eq_self d p).symm
+    _ = p ^ d.factorization p := by rw [hone, mul_one]
 
 end Injectivity
 

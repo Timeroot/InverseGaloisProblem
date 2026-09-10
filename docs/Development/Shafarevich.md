@@ -20979,3 +20979,83 @@ characters factor through the image `J` of `I_P` in `I_w(M/ℚ)`.  Every element
 has `p`-power order, where `p` is the residue characteristic, and `p ∤ n` because `(n : 𝓞 Ω) ∉ P`;
 so both characters kill `J ∩ ker tameChar` and factor through `J / (J ∩ ker tameChar)`, which
 embeds in `(𝓞 M ⧸ w)ˣ` — cyclic.  And `Hom(cyclic, ZMod n)` is cyclic.
+
+## §1.87 `HasKummerCharInertiaLift` is a theorem (2026-09-10)
+
+Step (A) of the plan of §1.85(c) is done, and with §1.86's step (B) the input is discharged.  Two
+new sorry-free modules; the route taken is a variant of the one announced, which turned out to be
+cheaper.
+
+### (a) The variant: "one generator, modulo an open subgroup and a prime-to-`n` power"
+
+The announced route was to show that the group of smooth characters of `I_P` is cyclic and then
+compare orders.  What is actually needed — and what is much easier to state in Lean, since it
+never mentions a `Hom` group — is a statement about the *group* `I_P` itself:
+
+> **`exists_mem_inertia_forall_pow_mem`** (`CFT/InertiaTameLevel.lean:121`).  For `P` a nonzero
+> prime of `𝓞 Ω` with `(n : 𝓞 Ω) ∉ P` and `N ≤ Gal(Ω/K)` open, there are `g ∈ I_P` and `m` with
+> `gcd(m, n) = 1` such that every `x ∈ I_P` satisfies `(x · g^{-j})^m ∈ N` for some `j`.
+
+Any character `χ : I_P → ZMod n` killed on `I_P ∩ N` then satisfies `m · χ(x g^{-j}) = 0`, hence
+`χ(x) = j · χ(g)` because `m` is invertible mod `n`: **a character trivial on an open subgroup is
+determined by its value at `g`, with a multiplier `j` depending only on `x`, not on the
+character.**  That last clause is the whole point — two characters trivial on the *same* open
+subgroup get the *same* `j`, so no cyclicity of a `Hom` group is needed.
+
+### (b) `InverseGalois/CFT/InertiaTameLevel.lean` (new, ~195 lines)
+
+* `exists_forall_mul_pow_inv_mem_ker` — for `T : G →* C` with `C` finite cyclic, one `g` accounts
+  for the whole image: `∀ x, ∃ j, T (x · (g^j)⁻¹) = 1`.  (Pure group theory.)
+* `isAlgClosure_rat_of_isAlgClosed` — an algebraically closed algebraic extension of a number
+  field is an algebraic closure of `ℚ`; `Algebra.IsAlgebraic.trans ℚ K Ω` takes its three type
+  arguments **explicitly**.
+* `exists_rationalLevel_forall_smul_eq` — an open `N ≤ Gal(Ω/K)` contains every automorphism
+  trivial on some `M` finite Galois over `ℚ`.  `krullTopology_mem_nhds_one_iff` gives a finite
+  `E / K`; `Module.Finite.trans` makes it finite over `ℚ`; `IntermediateField.normalClosure ℚ
+  (E.restrictScalars ℚ) Ω` is the level.  No normal-core lemma is needed.
+* `exists_mem_inertia_forall_pow_mem` — the statement of (a).  At the level `M`, `w = P ∩ 𝓞 M`,
+  `tameChar` at a uniformizer of `w` maps `I_w(M/ℚ)` into the cyclic `(𝓞 M ⧸ w)ˣ`; its kernel
+  consists of elements of `p`-power order (`exists_orderOf_eq_ringChar_pow`, new in
+  `TameCharacter.lean`), and `p ∤ n` because `(n : 𝓞 Ω) ∉ P`.  Take `m = ordProj[p](#I_w(M/ℚ))`.
+
+`TameCharacter.lean` gained `exists_orderOf_eq_ringChar_pow`: an element of `ker tameChar` has
+order a power of the residue characteristic.  Proof: its power by `ordProj[p]` of its order is
+still in the kernel and has order `ordCompl[p]`, which must be `1` by finding 3225.
+
+### (c) `InverseGalois/CFT/Kummer/InertiaCharLift.lean` (new, ~245 lines)
+
+* `zmodChar_one_eq_zero`, `zmodChar_pow` — an abstract additive character `G → ZMod n`.
+* `kummerChar_units_pow` — `kummerChar h (a^m) g = m • kummerChar h a g` (induction on
+  `kummerChar_mul_units`).
+* `exists_isOpen_forall_kummerChar_eq_zero` — `kummerChar h a` vanishes on an open subgroup, read
+  off `h.cochain_isSmooth₁ a` at `x = 1`.
+* `exists_mem_inertia_not_dvd_kummerChar` — **the sharpening of step (B)**: if `ord_v (a) = 1` and
+  `q` is a prime factor of `n`, some `σ ∈ I_P` has `q ∤ kummerChar h a σ` in `ZMod n`.  Otherwise
+  `n ∣ val(kummerChar h a σ) · (n/q)` for every `σ`, so `σ` fixes `β := root(a)^{n/q}` (the root of
+  unity `R` satisfies `R^n = 1`), while `β^q = a`; and `exists_mem_inertia_smul_ne_of_ord_eq_one'`
+  of §1.86 at the primitive `q`-th root `ζ^{n/q}` says inertia moves `β`.
+* `hasKummerCharInertiaLift` — **the theorem.**  Pick `v` below `P` and `a ∈ Kˣ` with
+  `ord_v a = 1` (`exists_ord_eq_one` + `ne_zero_of_ord_eq_one`, `RET/Genus/OrdLog.lean`); let `N'`
+  be the open subgroup killing `kummerChar h a` and `N` the one killing `χ`; apply (a) at `N ⊓ N'`.
+  Both `χ` and `ψ₀ := kummerChar h a` are then `j`-multiples of their value at `g`, with the same
+  `j`.  `ψ₀ g` is a unit of `ZMod n`: otherwise a prime `q ∣ gcd(val(ψ₀ g), n)` divides `ψ₀` on all
+  of `I_P`, contradicting the previous item.  So `χ = s · ψ₀` with `s = χ(g)·(ψ₀ g)^{-1}`, and
+  `a ^ s.val` carries `χ`.
+
+`exists_localClass_forall_kummerChar_eq` (`CFT/Kummer/CharLift.lean:85`) can now be used with no
+hypothesis: `hasKummerCharInertiaLift h` discharges it.
+
+### (d) Lean notes
+
+* `Nat.ordProj_dvd`, `Nat.not_dvd_ordCompl`, `Nat.ordProj_mul_ordCompl_eq_self`,
+  `Nat.Prime.pow_dvd_iff_dvd_ordProj` — Mathlib v4.28.0 spells these **camelCase**.
+* Repo lemmas taking an `(L : IntermediateField k K)` argument must get `M`, not `↥M`.  Passing
+  `↥M` to `restrictNormal_mem_inertia` produced a 1.6M-heartbeat `whnf` timeout at the `theorem`
+  line, localised by the truncated-`sorry`-copy bisection of gotcha 2760.
+* `Subgroup.orderOf_coe` must be rewritten **in the hypothesis** (`rw [...] at ha`); forward in the
+  goal the pattern `orderOf ↑?a` does not match and `rw [← ha]` leaves instance search stuck on
+  `Group ?m`.
+* `Ideal.Quotient.isDomain` is already an instance for a prime ideal, so
+  `attribute [local instance] Ideal.Quotient.field` is not needed to get `IsCyclic (𝓞 M ⧸ w)ˣ`.
+* `IsPrimitiveRoot.pow (hn : 0 < N) (h : IsPrimitiveRoot ζ N) (hprod : N = a * b)` gives
+  `IsPrimitiveRoot (ζ ^ a) b` — the positivity hypothesis comes first.
