@@ -66,6 +66,7 @@ import InverseGalois.Solvable.Shafarevich.ElementaryQuotient
 import InverseGalois.Solvable.Shafarevich.ElementaryQuotientDecomposition
 import InverseGalois.Solvable.Shafarevich.RootsLevel
 import InverseGalois.Solvable.Shafarevich.LevelOneArith
+import InverseGalois.Solvable.Shafarevich.LevelOneFamily
 
 /-!
 # Shafarevich's theorem
@@ -541,4 +542,16 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   prime where the induced homomorphism ramifies must lie over one of the two places attached to the
   single surviving coordinate.  Hence **a two-place family of units gives the first rung of the
   ladder its character**.
+* `InverseGalois.Solvable.Shafarevich.LevelOneFamily` kills that character on the prescribed
+  subgroups.  Those subgroups are decomposition subgroups, at a prime above each place of a Galois
+  stable set of places of the level and at each archimedean place.  A unit which is a local power at
+  a place of the set stays a local power in the completion of any extension, so the whole
+  decomposition subgroup at a prime above it fixes every root of the unit, and stability of the set
+  carries this to every conjugate.  At an archimedean place an automorphism fixing the place either
+  is the identity or composes the embedding with complex conjugation, hence squares to one; such an
+  involution multiplies a root of the unit by a root of unity the level already contains, and
+  applying it twice forces that root of unity to be a square root of one, which for an odd prime
+  exponent leaves only one.  So **a family of units which are local powers along a stable set of
+  places gives a character killed on the decomposition subgroups of that set and on the archimedean
+  ones**.
 -/
