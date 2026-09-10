@@ -80,6 +80,7 @@ import InverseGalois.Solvable.Shafarevich.LevelOneDecomposition
 import InverseGalois.Solvable.Shafarevich.LocalLiftInfinite
 import InverseGalois.Solvable.Shafarevich.LevelRungData
 import InverseGalois.Solvable.Shafarevich.LevelStepRepair
+import InverseGalois.Solvable.Shafarevich.LayerCoord
 
 /-!
 # Shafarevich's theorem
@@ -722,4 +723,11 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   no lift at all — **a prescription of one smooth one cocycle with values in the layer**, along
   finitely many subgroups of decomposition subgroups, trivial along the family and ramified only
   where it is allowed to be.
+* `InverseGalois.Solvable.Shafarevich.LayerCoord` names coordinates on a layer.  A basis over the
+  field with `ℓ` elements having been chosen, an element of a layer is the tuple of its coordinates
+  and **a homomorphism into a layer is a tuple of additive characters**; a demand that such a
+  homomorphism take given values on a subgroup is therefore a demand on each character separately,
+  which is the currency an arithmetic construction deals in.  The generation clauses never needed
+  this, a family indexed by the elements of the layer generating it whatever the coordinates are,
+  but a prescription of values does.
 -/
