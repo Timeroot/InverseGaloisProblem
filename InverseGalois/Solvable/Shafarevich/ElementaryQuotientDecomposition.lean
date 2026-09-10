@@ -177,7 +177,7 @@ theorem hasFiniteElementaryQuotient_stabilizer_inf {ℓ : ℕ} [Fact ℓ.Prime]
   -- the representatives, taken over the level
   haveI : NumberField ↥M := NumberField.of_module_finite k ↥M
   haveI : IsGalois ↥M Ω := IsGalois.tower_top_of_isGalois k ↥M Ω
-  obtain ⟨T, hTfin, hT⟩ :=
+  obtain ⟨T, hTfin, -, hT⟩ :=
     exists_finite_pow_representatives_stabilizer (k := ↥M) (Ω := Ω) (NeZero.ne ℓ) hP
   have hrep : ∀ x : Ω, x ≠ 0 →
       (∀ σ : ↥(stabilizer Gal(Ω/k) P ⊓ M.fixingSubgroup), (σ : Gal(Ω/k)) x = x) →

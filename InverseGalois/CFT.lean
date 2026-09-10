@@ -331,6 +331,7 @@ import InverseGalois.CFT.Kummer.CentralEmbeddingSqrtNegOne
 import InverseGalois.CFT.Kummer.CharLift
 import InverseGalois.CFT.Kummer.CharLocalClass
 import InverseGalois.CFT.Kummer.CharPlace
+import InverseGalois.CFT.Kummer.CharStabilizer
 import InverseGalois.CFT.Kummer.CocycleDescent
 import InverseGalois.CFT.Kummer.CongruentRadical
 import InverseGalois.CFT.Kummer.CyclicIndex
@@ -8114,14 +8115,23 @@ it that are available here.
   character on inertia.  That is the form in which an arithmetic construction prescribing local
   classes is read as one prescribing characters.
 
-* `InverseGalois.CFT.Kummer.CharLift` names the arithmetic input which runs the dictionary the other
-  way.  A decomposition subgroup is the group of automorphisms over the field it fixes, and the base
-  field is dense in that field at the place below, so **a character of a decomposition subgroup, or
-  of the inertia subgroup inside it, ought to be the Kummer character of a unit of the base field**.
-  Granted that, a character to be prescribed is named by a class in the completion at the place
-  below: any unit carrying that class carries the prescribed character there.  That is what turns a
-  demand on characters — which is what a lift of a realization makes — into a demand on local
-  classes, which is what an arithmetic construction supplies.
+* `InverseGalois.CFT.Kummer.CharStabilizer` runs the dictionary the other way along a whole
+  decomposition subgroup, and unconditionally.  The stabilizer of a prime is a closed subgroup, so
+  Hilbert's theorem ninety holds for it and a smooth character of it with values in the roots of
+  unity is the coboundary of a unit of the extension; the power of that unit by the exponent is
+  fixed by the stabilizer, and finitely many units of the base field represent every power class
+  fixed there.  Hence **every character of a decomposition subgroup is the Kummer character of a
+  unit of the base field**.
+
+* `InverseGalois.CFT.Kummer.CharLift` names what is left, which is the same statement along the
+  inertia subgroup.  There the reading is available only away from the exponent: at a prime above
+  the exponent the characters of inertia are the classes modulo powers of the maximal unramified
+  extension, which the units of the completion do not exhaust, while away from it they are cyclic
+  of the exponent and carried by a uniformizer.  Granted that, a character to be prescribed is named
+  by a class in the completion at the place below: any unit carrying that class carries the
+  prescribed character there.  That is what turns a demand on characters — which is what a lift of a
+  realization makes — into a demand on local classes, which is what an arithmetic construction
+  supplies.
 
 * `InverseGalois.CFT.Units.StablePlaces` collects the three demands a prescription of local
   behaviour makes on the set of places it prescribes at.  The places carrying a nonzero natural

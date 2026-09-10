@@ -102,7 +102,7 @@ prime, so its image in the completion is a representative times a power, and the
 power root over the closure is fixed by the stabilizer once it is corrected by a root of unity. -/
 theorem exists_finite_pow_representatives_stabilizer {ℓ : ℕ} (hℓ : ℓ ≠ 0)
     {P : Ideal (𝓞 Ω)} [P.IsPrime] (hP : P ≠ ⊥) :
-    ∃ T : Set Ω, T.Finite ∧ ∀ x : Ω, x ≠ 0 →
+    ∃ T : Set Ω, T.Finite ∧ (∀ y ∈ T, ∃ b : kˣ, y = algebraMap k Ω (b : k)) ∧ ∀ x : Ω, x ≠ 0 →
       (∀ σ : ↥(stabilizer Gal(Ω/k) P), (σ : Gal(Ω/k)) x = x) →
         ∃ a ∈ T, ∃ c : Ω, (∀ σ : ↥(stabilizer Gal(Ω/k) P), (σ : Gal(Ω/k)) c = c) ∧
           x = a * c ^ ℓ := by
@@ -117,7 +117,9 @@ theorem exists_finite_pow_representatives_stabilizer {ℓ : ℕ} (hℓ : ℓ ≠
   obtain ⟨T₀, hT₀fin, hT₀⟩ := exists_finite_pow_representatives_adicCompletion (K := k) v hℓ
   choose α hα using fun a : kˣ =>
     IsAlgClosed.exists_pow_nat_eq (k := Ω) (algebraMap k Ω (a : k)) hℓpos
-  refine ⟨(fun a : kˣ => algebraMap k Ω (a : k)) '' T₀, hT₀fin.image _, ?_⟩
+  refine ⟨(fun a : kˣ => algebraMap k Ω (a : k)) '' T₀, hT₀fin.image _, ?_, ?_⟩
+  · rintro _ ⟨b, -, rfl⟩
+    exact ⟨b, rfl⟩
   intro x hx0 hx
   obtain ⟨β, hβ⟩ := IsAlgClosed.exists_pow_nat_eq (k := Ω) x hℓpos
   have hsfin : (insert x (insert β (insert ζ (α '' T₀)))).Finite :=
@@ -223,6 +225,20 @@ theorem exists_finite_pow_representatives_stabilizer {ℓ : ℕ} (hℓ : ℓ ≠
     rw [← h2, hfix (stabilizerRestrictPrime M hw σ)]
     exact hcval
   · rw [hcpow, mul_comm, div_mul_cancel₀ _ hA0]
+
+/-- **An element fixed by the stabilizer of a prime is a unit of the base field times a power of a
+fixed element.**  This is the finiteness statement with the representative named directly as a unit
+of the base field, which is the form in which the power class of a fixed element is compared with
+the power classes coming from below. -/
+theorem exists_units_mul_pow_eq_of_forall_stabilizer_smul_eq {ℓ : ℕ} (hℓ : ℓ ≠ 0)
+    {P : Ideal (𝓞 Ω)} [P.IsPrime] (hP : P ≠ ⊥) {x : Ω} (hx0 : x ≠ 0)
+    (hx : ∀ σ : ↥(stabilizer Gal(Ω/k) P), (σ : Gal(Ω/k)) x = x) :
+    ∃ (b : kˣ) (c : Ω), (∀ σ : ↥(stabilizer Gal(Ω/k) P), (σ : Gal(Ω/k)) c = c) ∧
+      x = algebraMap k Ω (b : k) * c ^ ℓ := by
+  obtain ⟨T, -, hTrep, hT⟩ := exists_finite_pow_representatives_stabilizer (k := k) hℓ hP
+  obtain ⟨a, haT, c, hcfix, hac⟩ := hT x hx0 hx
+  obtain ⟨b, hb⟩ := hTrep a haT
+  exact ⟨b, c, hcfix, by rw [← hb]; exact hac⟩
 
 end Representatives
 
