@@ -6,9 +6,10 @@ import Mathlib
 import InverseGalois.CFT.Profinite.LiftTwist
 import InverseGalois.CFT.Units.RamifiedFamily
 import InverseGalois.Solvable.Shafarevich.LevelCyclicRepair
+import InverseGalois.Solvable.Shafarevich.LevelFlatTwist
 
 /-!
-# The repair, in exchange for one prescription in degree one
+# The repair, in exchange for a prescription in degree one at completely decomposed primes
 
 Two lifts of one solution across one layer differ by a one cocycle with values in the layer, so the
 repair the ladder asks for is a choice of cocycle.  What the corrected lift is asked to be is
@@ -16,31 +17,38 @@ trivial along the finite family, confined in its new ramification over the base 
 ramification occurring only where the solution below already ramifies or else kills the whole
 decomposition subgroup — and cyclic in its local image wherever that new ramification occurs.
 
-Only finitely many orbits of primes carry any ramification of the given lift at all, and one prime
-of each can be named.  At such a prime the solution below either ramifies over the base realization,
-and then the local solvability of the step supplies a local lift which is again cyclic, and the
-cocycle is prescribed on the decomposition subgroup to be the discrepancy between that local lift
-and the given one, so that the corrected lift agrees with it there; or it does not, and then the
-given lift lands in the layer along inertia and the cocycle is prescribed to cancel it, so that the
-corrected lift is unramified there outright.  Away from those primes the cocycle is asked to be
-unramified, save at primes it introduces itself, where it is asked to be cyclic and the given lift
-to vanish on the whole decomposition subgroup.
+The given lift is flattened first, so that its ramification over the base realization is already
+confined; every prime at which it then ramifies has its whole decomposition subgroup killed by the
+base realization, save those at which the solution below ramifies too, where the same is true for a
+different reason.  That is what lets the sharper prescription be asked for only at primes completely
+decomposed in the field the base realization cuts out.
+
+Only finitely many orbits of primes carry any ramification of the flattened lift at all, and one
+prime of each can be named.  At such a prime the solution below either ramifies over the base
+realization, and then the local solvability of the step supplies a local lift which is again cyclic,
+and the cocycle is prescribed on the decomposition subgroup to be the discrepancy between that local
+lift and the flattened one, so that the corrected lift agrees with it there; or it does not, and
+then the flattened lift lands in the layer along inertia and the cocycle is prescribed to cancel it,
+so that the corrected lift is unramified there outright.  Away from those primes the cocycle is
+asked to be unramified, save at primes it introduces itself, where it is asked to be cyclic and the
+flattened lift to vanish on the whole decomposition subgroup.
 
 That is everything: at a named prime the prescription answers, at a prime the cocycle introduces
-the clause it carries answers, and at any other prime neither the given lift nor the cocycle
+the clause it carries answers, and at any other prime neither the flattened lift nor the cocycle
 ramifies, so neither does the corrected one.
 
 ## Main definitions
 
 * `InverseGalois.Shafarevich.HasConfinedPrescription` — **a smooth one cocycle with values in the
-  layer can be prescribed along finitely many subgroups of decomposition subgroups at once, be
-  trivial along the finite family, and ramify only where it is allowed to.**
+  layer can be prescribed along finitely many subgroups of decomposition subgroups of completely
+  decomposed primes at once, be trivial along the finite family, and ramify only where it is
+  allowed to.**
 
 ## Main results
 
 * `InverseGalois.Shafarevich.hasSplitCyclicRepair_of_hasConfinedPrescription` — **the repair is
-  bought with one such prescription**, granted the local solvability of the step at the primes where
-  the solution below ramifies over the base realization.
+  bought with one such prescription and one flat one**, granted the local solvability of the step at
+  the primes where the solution below ramifies over the base realization.
 
 ## Tags
 
@@ -125,8 +133,10 @@ allowed to.**
 The subgroups the cocycle is prescribed along are asked to sit inside the decomposition subgroups of
 finitely many named primes and inside the kernel of the base realization, which is what makes the
 prescription well posed: on such a subgroup the action on the layer is trivial, so a cocycle
-restricts there to a homomorphism.  Along the finite family the cocycle is asked to vanish wherever
-the base realization already does.
+restricts there to a homomorphism.  The named primes are themselves asked to be completely
+decomposed in the field the base realization cuts out — their whole decomposition subgroups lie in
+its kernel — which is what allows the prescription to be made over that field and carried down.
+Along the finite family the cocycle is asked to vanish wherever the base realization already does.
 
 The last clause is the one which confines the new ramification.  At a prime where the cocycle
 ramifies along the part of inertia the base realization kills, either that prime is one of the
@@ -135,19 +145,20 @@ itself, and there it is asked to be cyclic and the given lift to kill the whole 
 subgroup — which is what a prime chosen to split completely in the field the lift cuts out
 supplies. -/
 def HasConfinedPrescription : Prop :=
-  ∀ (F : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)) (s : ℕ) (Q : Fin s → Ideal (𝓞 Ω))
-      (A : Fin s → Subgroup Gal(Ω/k))
-      (a : (μ : Fin s) → ↥(A μ) →* ↥(layerSub ℓ (Generic U n S) j)),
+  ∀ (F : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)) (ι : Type) [Finite ι]
+      (Q : ι → Ideal (𝓞 Ω)) (A : ι → Subgroup Gal(Ω/k))
+      (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U n S) j)),
     IsSmoothHom F → (∀ μ, (Q μ).IsPrime) → (∀ μ, Q μ ≠ ⊥) →
+    (∀ μ, stabilizer Gal(Ω/k) (Q μ) ≤ φ.ker) →
     (∀ μ, A μ ≤ stabilizer Gal(Ω/k) (Q μ)) → (∀ μ, A μ ≤ φ.ker) →
     (∀ μ, IsSmooth₁ ((a μ : ↥(A μ) →* ↥(layerSub ℓ (Generic U n S) j)) :
       ↥(A μ) → ↥(layerSub ℓ (Generic U n S) j))) →
       ∃ c : Gal(Ω/k) → ↥(layerSub ℓ (Generic U n S) j), IsMulCocycle₁ c ∧ IsSmooth₁ c ∧
         (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → c x = 1) ∧
-        (∀ (μ : Fin s) (x : ↥(A μ)), c (x : Gal(Ω/k)) = a μ x) ∧
+        (∀ (μ : ι) (x : ↥(A μ)), c (x : Gal(Ω/k)) = a μ x) ∧
         ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
           (∃ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1 ∧ c x ≠ 1) →
-          (∃ (μ : Fin s) (ρ : Gal(Ω/k)), P = ρ • Q μ) ∨
+          (∃ (μ : ι) (ρ : Gal(Ω/k)), P = ρ • Q μ) ∨
             ((∀ x ∈ stabilizer Gal(Ω/k) P, F x = 1) ∧
               ∃ x₀ ∈ stabilizer Gal(Ω/k) P,
                 ∀ x ∈ stabilizer Gal(Ω/k) P, c x ∈ Subgroup.zpowers (c x₀))
@@ -155,29 +166,39 @@ def HasConfinedPrescription : Prop :=
 variable {ℓ U n S j φ D}
 
 omit [Fact ℓ.Prime] [IsAlgClosed Ω] in
-/-- **The repair is bought with one prescription in degree one.**
+/-- **The repair is bought with two prescriptions in degree one.**
 
-The primes at which the given lift ramifies meet finitely many orbits and one prime of each is
+The given lift is first flattened: the weaker prescription corrects it to a lift whose new
+ramification over the base realization occurs only where the solution below already ramifies, or
+else at primes the solution below kills the whole decomposition subgroup of — which are exactly the
+primes completely decomposed in the field it cuts out.  That is what makes the second prescription
+admissible, its named primes being asked to be of that kind.
+
+The primes at which the flattened lift ramifies meet finitely many orbits and one prime of each is
 named.  At a named prime where the solution below ramifies over the base realization, the base
 realization kills the whole decomposition subgroup, so the subgroup acts trivially on the layer and
-the local lift the step supplies differs from the given lift by a homomorphism into the layer;
+the local lift the step supplies differs from the flattened lift by a homomorphism into the layer;
 prescribing the cocycle to be that homomorphism makes the corrected lift agree with the local lift
 there, and the local lift is cyclic.  At a named prime where the solution below does not ramify over
-the base realization, the given lift lands in the layer along the part of inertia the base
+the base realization, the flattened lift lands in the layer along the part of inertia the base
 realization kills, and prescribing the cocycle to be the inverse of it there makes the corrected
 lift trivial on that part, so it does not ramify over the base realization at all.
 
-At a prime which is not named, the given lift does not ramify, so any new ramification of the
+At a prime which is not named, the flattened lift does not ramify, so any new ramification of the
 corrected lift is ramification of the cocycle; and there the last clause of the prescription
-supplies both the vanishing of the given lift on the whole decomposition subgroup — whence the
+supplies both the vanishing of the flattened lift on the whole decomposition subgroup — whence the
 solution below vanishes there too, and confinement holds — and the cyclicity of the cocycle, which
-is the cyclicity of the corrected lift since the given lift is trivial. -/
+is the cyclicity of the corrected lift since the flattened lift is trivial. -/
 theorem hasSplitCyclicRepair_of_hasConfinedPrescription
     (hactφ : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U n S) j)), x • v = φ x • v)
     (hram : HasSplitRamifiedLift ℓ U n S j φ)
+    (hflat : HasFlatPrescription ℓ U n S j φ D)
     (hpres : HasConfinedPrescription ℓ U n S j φ D) :
     HasSplitCyclicRepair ℓ U n S j φ D := by
-  intro Φ f hΦsm hΦright hΦP hfsm hfright hfD
+  intro Φ f₀ hΦsm hΦright hΦP hf₀sm hf₀right hf₀D
+  obtain ⟨f, hfsm, hfright, hfD, hfconf⟩ :=
+    exists_confinedRamifiedHom_lift_of_hasFlatPrescription hactφ hflat Φ hΦright f₀ hf₀sm hf₀right
+      hf₀D
   have hfs : IsSmooth₁ (f : Gal(Ω/k) → GenericQuot ℓ U n S (j + 1)) :=
     isSmooth₁_of_isOpenNormal_ker (isOpenNormal_ker_of_isSmoothHom hfsm)
   have hact : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U n S) j)),
@@ -188,16 +209,23 @@ theorem hasSplitCyclicRepair_of_hasConfinedPrescription
       (smul_eq_conjActHom_genericLayer ℓ U n S j (Φ x) v)
   obtain ⟨s, Pr, hPrp, hPrbot, hfam⟩ :=
     exists_ramified_family (isOpenNormal_ker_of_isSmoothHom hfsm)
-  have hstep : ∀ μ : Fin s, ∃ (A : Subgroup Gal(Ω/k))
+  have hQker : ∀ μ : {μ : Fin s // RamifiesAt φ f (Pr μ)},
+      stabilizer Gal(Ω/k) (Pr (μ : Fin s)) ≤ φ.ker := by
+    rintro ⟨μ, hμ⟩ x hx
+    rcases hfconf (Pr μ) (hPrp μ) (hPrbot μ) hμ with hΦram | hΦ1
+    · exact MonoidHom.mem_ker.2 ((hΦP (Pr μ) (hPrp μ) (hPrbot μ) hΦram).1 x hx)
+    · exact MonoidHom.mem_ker.2 (by rw [← hΦright x, hΦ1 x hx, _root_.map_one])
+  have hstep : ∀ μ : {μ : Fin s // RamifiesAt φ f (Pr μ)}, ∃ (A : Subgroup Gal(Ω/k))
       (a : ↥A →* ↥(layerSub ℓ (Generic U n S) j)),
-      A ≤ stabilizer Gal(Ω/k) (Pr μ) ∧ A ≤ φ.ker ∧
+      A ≤ stabilizer Gal(Ω/k) (Pr (μ : Fin s)) ∧ A ≤ φ.ker ∧
         IsSmooth₁ ((a : ↥A →* ↥(layerSub ℓ (Generic U n S) j)) :
           ↥A → ↥(layerSub ℓ (Generic U n S) j)) ∧
         ∀ Ψ : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1),
           (∀ x : ↥A, Ψ (x : Gal(Ω/k)) =
             (layerExtension ℓ (genericAut U n S) j).inl (a x) * f (x : Gal(Ω/k))) →
-            RamifiesAt φ Ψ (Pr μ) → IsCyclicSplitAt φ Ψ (Pr μ) ∧ IsConfinedAt φ Φ (Pr μ) := by
-    intro μ
+            RamifiesAt φ Ψ (Pr (μ : Fin s)) →
+              IsCyclicSplitAt φ Ψ (Pr (μ : Fin s)) ∧ IsConfinedAt φ Φ (Pr (μ : Fin s)) := by
+    rintro ⟨μ, _⟩
     by_cases hΦram : RamifiesAt φ Φ (Pr μ)
     · obtain ⟨hsplit, htot, hcyc⟩ := hΦP (Pr μ) (hPrp μ) (hPrbot μ) hΦram
       obtain ⟨g, hgs, hgr, w, hgw⟩ :=
@@ -246,38 +274,41 @@ theorem hasSplitCyclicRepair_of_hasConfinedPrescription
         rw [h1, ← ha₀ ⟨x, hmem⟩, ← _root_.map_mul, inv_mul_cancel, _root_.map_one]
   choose A a hAstab hAker hasm hAkey using hstep
   obtain ⟨c, hc, hcs, hcD, hca, hcram⟩ :=
-    hpres f s Pr A a hfsm hPrp hPrbot hAstab hAker hasm
+    hpres f {μ : Fin s // RamifiesAt φ f (Pr μ)} (fun μ => Pr (μ : Fin s)) A a hfsm
+      (fun μ => hPrp _) (fun μ => hPrbot _) hQker hAstab hAker hasm
   have main : ∀ Ψ : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1),
       (∀ x, Ψ x = (layerExtension ℓ (genericAut U n S) j).inl (c x) * f x) →
       ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → RamifiesAt φ Ψ P →
         IsCyclicSplitAt φ Ψ P ∧ IsConfinedAt φ Φ P := by
     intro Ψ hΨdef
-    have hΨA : ∀ (μ : Fin s) (x : ↥(A μ)), Ψ (x : Gal(Ω/k)) =
+    have hΨA : ∀ (μ : {μ : Fin s // RamifiesAt φ f (Pr μ)}) (x : ↥(A μ)), Ψ (x : Gal(Ω/k)) =
         (layerExtension ℓ (genericAut U n S) j).inl (a μ x) * f (x : Gal(Ω/k)) :=
       fun μ x => by rw [hΨdef, hca μ x]
     intro P hPp hPbot hPram
-    have horbit : (∃ (μ : Fin s) (ρ : Gal(Ω/k)), P = ρ • Pr μ) ∨
-        ((∀ x ∈ stabilizer Gal(Ω/k) P, f x = 1) ∧
-          ∃ x₀ ∈ stabilizer Gal(Ω/k) P,
-            ∀ x ∈ stabilizer Gal(Ω/k) P, c x ∈ Subgroup.zpowers (c x₀)) := by
-      obtain ⟨x, hxI, hxφ, hxΨ⟩ := hPram
-      by_cases hcx : c x = 1
-      · refine Or.inl (hfam P hPp hPbot ⟨x, hxI, fun hfx => hxΨ ?_⟩)
-        rw [hΨdef, hcx, _root_.map_one, one_mul, hfx]
-      · exact hcram P hPp hPbot ⟨x, hxI, hxφ, hcx⟩
-    rcases horbit with ⟨μ, ρ, rfl⟩ | ⟨hf1, x₀, hx₀, hgen⟩
-    · have h := hAkey μ Ψ (hΨA μ) (ramifiesAt_smul_iff.1 hPram)
+    by_cases hfram : RamifiesAt φ f P
+    · obtain ⟨x, hxI, -, hx1⟩ := id hfram
+      obtain ⟨μ, ρ, rfl⟩ := hfam P hPp hPbot ⟨x, hxI, hx1⟩
+      have hμ : RamifiesAt φ f (Pr μ) := ramifiesAt_smul_iff.1 hfram
+      have h := hAkey ⟨μ, hμ⟩ Ψ (hΨA ⟨μ, hμ⟩) (ramifiesAt_smul_iff.1 hPram)
       exact ⟨h.1.smul ρ, h.2.smul ρ⟩
-    · have hΦ1 : ∀ x ∈ stabilizer Gal(Ω/k) P, Φ x = 1 := by
-        intro x hx
-        rw [← hfright x, hf1 x hx, _root_.map_one]
-      have hφ1 : ∀ x ∈ stabilizer Gal(Ω/k) P, φ x = 1 := by
-        intro x hx
-        rw [← hΦright x, hΦ1 x hx, _root_.map_one]
-      refine ⟨⟨hφ1, x₀, hx₀, fun x hx => ?_⟩, Or.inr hΦ1⟩
-      obtain ⟨i, hi⟩ := Subgroup.mem_zpowers_iff.1 (hgen x hx)
-      refine Subgroup.mem_zpowers_iff.2 ⟨i, ?_⟩
-      rw [hΨdef, hΨdef, hf1 x hx, hf1 x₀ hx₀, mul_one, mul_one, ← _root_.map_zpow, hi]
+    · obtain ⟨x, hxI, hxφ, hxΨ⟩ := id hPram
+      have hfx : f x = 1 := by
+        by_contra h
+        exact hfram ⟨x, hxI, hxφ, h⟩
+      have hcx : c x ≠ 1 := fun h =>
+        hxΨ (by rw [hΨdef, h, _root_.map_one, one_mul, hfx])
+      rcases hcram P hPp hPbot ⟨x, hxI, hxφ, hcx⟩ with ⟨μ, ρ, rfl⟩ | ⟨hf1, x₀, hx₀, hgen⟩
+      · exact absurd (μ.2.smul ρ) hfram
+      · have hΦ1 : ∀ x ∈ stabilizer Gal(Ω/k) P, Φ x = 1 := by
+          intro x hx
+          rw [← hfright x, hf1 x hx, _root_.map_one]
+        have hφ1 : ∀ x ∈ stabilizer Gal(Ω/k) P, φ x = 1 := by
+          intro x hx
+          rw [← hΦright x, hΦ1 x hx, _root_.map_one]
+        refine ⟨⟨hφ1, x₀, hx₀, fun y hy => ?_⟩, Or.inr hΦ1⟩
+        obtain ⟨i, hi⟩ := Subgroup.mem_zpowers_iff.1 (hgen y hy)
+        refine Subgroup.mem_zpowers_iff.2 ⟨i, ?_⟩
+        rw [hΨdef, hΨdef, hf1 y hy, hf1 x₀ hx₀, mul_one, mul_one, ← _root_.map_zpow, hi]
   refine ⟨twistLift (layerExtension ℓ (genericAut U n S) j) hact hfright hc,
     isSmoothHom_twistLift _ hact hfright hc hfs hcs,
     rightHom_twistLift _ hact hfright hc, fun ν x hx hx1 => ?_,

@@ -20442,3 +20442,133 @@ The corestriction bricks of §1.79(a) are exactly as useful under the revised pl
 `CFT/PoitouTate/BaseFamily.lean`'s `exists_base_family_norm_class_eq` — the coordinate form of
 theorem 13 for `A = μ_p` and odd `p` — is unaffected; what it still needs is the cohomological
 packaging (docs §1.44(d)) and the dévissage from `A = μ_p` to a general finite `𝔽_p[G(K|k)]`-module.
+
+---
+
+## §1.81 The two-stage repair, landed (2026-09-10)
+
+§1.80 announced that the repair had to be split in two, following SW's steps 3 and 4.  It is now
+split, and both halves build.
+
+### (a) The new module: `InverseGalois/Solvable/Shafarevich/LevelFlatTwist.lean`
+
+```lean
+def HasFlatPrescription : Prop :=
+  ∀ (F : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)) (ι : Type) [Finite ι]
+      (Q : ι → Ideal (𝓞 Ω)) (A : ι → Subgroup Gal(Ω/k))
+      (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U n S) j)),
+    IsSmoothHom F → (∀ μ, (Q μ).IsPrime) → (∀ μ, Q μ ≠ ⊥) →
+    (∀ μ, A μ ≤ stabilizer Gal(Ω/k) (Q μ)) → (∀ μ, A μ ≤ φ.ker) →
+    (∀ μ, IsSmooth₁ (⇑(a μ))) →
+      ∃ c, IsMulCocycle₁ c ∧ IsSmooth₁ c ∧
+        (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → c x = 1) ∧
+        (∀ (μ : ι) (x : ↥(A μ)), c (x : Gal(Ω/k)) = a μ x) ∧
+        ∀ P, P.IsPrime → P ≠ ⊥ →
+          (∃ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1 ∧ c x ≠ 1) →
+          (∃ (μ : ι) (ρ : Gal(Ω/k)), P = ρ • Q μ) ∨ ∀ x ∈ stabilizer Gal(Ω/k) P, F x = 1
+```
+
+This is `HasConfinedPrescription` **minus** the cyclicity conjunct of the last clause and **minus**
+any hypothesis that the named primes split.  It is strictly the weaker demand, and it is the one
+that can be met over `k` directly — SW's step 3 makes its class `ε ∈ H¹(G_S, E(n,ν))` over `k` with
+no corestriction anywhere.
+
+The theorem it buys:
+
+```lean
+theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
+    (hactφ : ∀ x v, x • v = φ x • v) (hpres : HasFlatPrescription ℓ U n S j φ D)
+    (Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j) (hΦright : ∀ x, SemidirectProduct.rightHom (Φ x) = φ x)
+    (f : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)) (hfsm : IsSmoothHom f)
+    (hfright : ∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (f x) = Φ x)
+    (hfD : ∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → f x = 1) :
+    ∃ g, IsSmoothHom g ∧ (∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (g x) = Φ x) ∧
+      (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → g x = 1) ∧ IsConfinedRamifiedHom φ Φ g
+```
+
+Index type: `ι := {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ)}` where `Pr` is `exists_ramified_family`'s
+family for `f`; `A μ := Ideal.inertia Gal(Ω/k) (Pr μ) ⊓ φ.ker`; `a μ := a₀⁻¹` with `a₀` from
+`LiftTwist.exists_hom_inl_eq`.  This is exactly the old "case B" of
+`hasSplitCyclicRepair_of_hasConfinedPrescription`, lifted out.  There is no circularity: at a `μ`
+where `f` was already unramified over `φ`, `a₀` is forced to be trivial, so the same prescription
+covers the primes it does not need to move.
+
+Confinement proof, in three cases:
+
+* `RamifiesAt φ f P` — then `P` is in the orbit of some named `Pr μ`.  If `RamifiesAt φ Φ (Pr μ)`
+  we are done (`Or.inl`, transported by `RamifiesAt.smul`).  If not, `μ` is in the index and the
+  prescription forces `¬ RamifiesAt φ Ψ (Pr μ)`, contradicting the hypothesis.
+* `¬ RamifiesAt φ f P` but the corrected lift ramifies — then the *cocycle* ramifies, and the last
+  clause fires.  Its `Or.inl` branch names a `μ` in the index, contradiction again; its `Or.inr`
+  branch gives `∀ x ∈ stabilizer P, f x = 1`, hence `Φ x = rightHom (f x) = 1`, which is
+  `IsConfinedAt`'s second disjunct.
+
+### (b) `LevelConfinedTwist.lean`, stage 2
+
+Three changes to `HasConfinedPrescription`:
+
+1. The index is now `(ι : Type) [Finite ι] (Q : ι → Ideal (𝓞 Ω))`, not `(s : ℕ) (Q : Fin s → …)`.
+   This is what lets a *subtype* of `Fin s` be passed directly, with no `Finset.equivFin`
+   reindexing.  `isCyclicSplitHom_of_family` and `isConfinedRamifiedHom_of_family` already took a
+   general `{ι : Type*}`, so nothing downstream noticed.
+2. A new hypothesis `(∀ μ, stabilizer Gal(Ω/k) (Q μ) ≤ φ.ker)` — **the named primes are completely
+   decomposed in the field the base realization cuts out.**  This is the whole point of the split:
+   §1.79 established that corestriction can only reproduce a prescription at such primes.
+3. (Landed separately, commit `cce7978`.)  The antecedent of the confinement clause is
+   `∃ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1 ∧ c x ≠ 1` — the ramification witness is read *inside*
+   `ker φ`, matching `RamifiesAt`.
+
+`hasSplitCyclicRepair_of_hasConfinedPrescription` now takes `HasFlatPrescription` as well.  It
+begins by running stage 1 on the incoming lift `f₀`, obtaining a flattened `f` with
+`IsConfinedRamifiedHom φ Φ f`, and then runs the old argument on `f` with index
+`ι := {μ : Fin s // RamifiesAt φ f (Pr μ)}`.
+
+The new hypothesis (2) is discharged for that index by `hQker`: for `μ` with
+`RamifiesAt φ f (Pr μ)`, `IsConfinedRamifiedHom φ Φ f` gives `IsConfinedAt φ Φ (Pr μ)`, and
+
+* case `RamifiesAt φ Φ (Pr μ)`: `hΦP`'s first component (`IsSplitTotallyRamifiedHom`) already says
+  `∀ x ∈ stabilizer, φ x = 1`;
+* case `∀ x ∈ stabilizer, Φ x = 1`: then `φ x = rightHom (Φ x) = 1`.
+
+So in both cases `stabilizer Gal(Ω/k) (Pr μ) ≤ φ.ker`. **This is the step that makes the whole
+architecture work** — the flattening does not merely tidy the lift, it *manufactures* the splitting
+hypothesis that the corestriction descent will need.
+
+### (c) The one real proof change: `main` case-splits on `RamifiesAt φ f P` first
+
+The old `main` case-split was on `c x = 1`, which let an unnamed prime fall into the
+`hfam`/`Or.inl` branch.  With a *subtype* index that is no longer sound: a prime named by `hfam`
+need not be in the index.  The new order is
+
+```lean
+by_cases hfram : RamifiesAt φ f P
+· -- P is in the orbit of Pr μ, and μ IS in the index (that is the index condition)
+· -- f x = 1 at the inertia witness, so c x ≠ 1, and the confinement clause fires;
+  -- its Or.inl branch names μ in the index, so RamifiesAt φ f (ρ • Pr μ) = P — contradiction
+```
+
+The contradiction in the second branch is the one-liner `exact absurd (μ.2.smul ρ) hfram`: the
+index condition `μ.2 : RamifiesAt φ f (Pr ↑μ)` transported along `ρ` is exactly what `hfram`
+denies.
+
+### (d) The EP level
+
+`LevelStepRepair.lean` gains `Shafarevich.FlatPrescriptionEP`, the `(S, U, Ω, φ, t, D, n, j)`-
+quantified form of `HasFlatPrescription` over `ℚ`, and both
+`splitCyclicRepairEP_of_confinedPrescriptionEP` and `genericLevelStepEPRoots_of_confinedPrescriptionEP`
+now take `FlatPrescriptionEP ℓ` alongside `ConfinedPrescriptionEP ℓ`.  Nothing consumed
+`ConfinedPrescriptionEP` yet, so this is the only churn.
+
+**So clause 7 of `HasRungData` now costs two prescriptions, not one**: a weak one at arbitrary
+primes (SW step 3, provable over `k`) and a sharp one at completely decomposed primes (SW step 4,
+provable over `K` and carried down by `corCochain₁`).
+
+### (e) Build
+
+| target | jobs | time |
+|---|---|---|
+| `Shafarevich.LevelFlatTwist` (cold) | 8280 | 23 s |
+| `Shafarevich.LevelStepRepair` | 8837 | — |
+| ROOT | 9915 | — |
+
+0 errors, 0 warnings, 0 sorries.
