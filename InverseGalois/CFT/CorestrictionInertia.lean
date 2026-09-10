@@ -1,0 +1,146 @@
+/-
+Copyright (c) 2026. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
+import Mathlib
+import InverseGalois.CFT.Profinite.CorestrictionNormal
+import InverseGalois.CFT.Units.RamifiedFamily
+
+/-!
+# The average of a cochain of a normal subgroup, read at a prime
+
+At an element of a normal subgroup the average of a cochain over the cosets is the product, over
+the cosets, of the value of the cochain at the conjugate of that element by the chosen
+representative.  Conjugating an element moves the prime it decomposes or ramifies at, so the whole
+of that product is a statement about the orbit of one prime: the average, read at the decomposition
+subgroup of a prime, sees the cochain at the decomposition subgroups of all the primes in the orbit.
+
+Two things follow, and they are the two halves of what a prescription needs.
+
+The first is that a prime whose decomposition subgroup lies inside the normal subgroup — a prime
+split completely in the extension the subgroup cuts out — has as many conjugates as there are
+cosets, one for each, and they are all distinct.  So if the cochain is asked to vanish at the
+decomposition subgroups of all the conjugates but one, the product collapses and the average
+reproduces the cochain exactly on the decomposition subgroup of the prime that survives.  A
+prescription made over the big field at one prime of a split orbit is therefore carried down to the
+small field unchanged.
+
+The second is the confinement.  Where the average ramifies, the cochain ramifies at some prime of
+the orbit; contrapositively, a cochain unramified along a whole orbit averages to a cochain
+unramified along it.  The new ramification of the average is thus no wider than the orbit of the
+ramification of the cochain.
+
+## Main results
+
+* `InverseGalois.CFT.smul_ne_self_of_stabilizer_le`: a prime whose decomposition subgroup lies in a
+  subgroup is moved by every element outside that subgroup.
+* `InverseGalois.CFT.section_notMem_of_ne_one`: the representative of a nontrivial coset lies
+  outside the subgroup.
+* `InverseGalois.CFT.corCochain₁_eq_self_of_stabilizer_le`: **at a prime split completely in the
+  extension the normal subgroup cuts out, the average reproduces the cochain on the whole
+  decomposition subgroup**, as soon as the cochain kills the decomposition subgroups of the other
+  primes of the orbit.
+* `InverseGalois.CFT.corCochain₁_eq_one_of_forall_stabilizer`: the average kills the decomposition
+  subgroup of a prime whose whole orbit the cochain kills.
+* `InverseGalois.CFT.exists_mem_inertia_smul_of_corCochain₁_ne_one`: **where the average ramifies
+  the cochain ramifies at a prime of the same orbit.**
+* `InverseGalois.CFT.corCochain₁_eq_one_of_forall_inertia`: the average is unramified at a prime
+  along whose whole orbit the cochain is unramified.
+
+## Tags
+
+class field theory, corestriction, transfer, inertia, decomposition group, ramification
+-/
+
+namespace InverseGalois.CFT
+
+open MulAction groupCohomology
+
+open scoped Pointwise
+
+/-! ### A prime split completely in the subgroup -/
+
+section Split
+
+variable {G : Type*} [Group G]
+
+/-- **A point whose stabilizer lies inside a subgroup is moved by every element outside that
+subgroup.** -/
+theorem smul_ne_self_of_stabilizer_le {H : Subgroup G} {α : Type*} [MulAction G α] {P : α}
+    (hsplit : stabilizer G P ≤ H) {ρ : G} (hρ : ρ ∉ H) : ρ • P ≠ P := fun h =>
+  hρ (hsplit (mem_stabilizer_iff.2 h))
+
+/-- **The representative of a nontrivial coset lies outside the subgroup.** -/
+theorem section_notMem_of_ne_one {H : Subgroup G} [H.Normal] {σ : G ⧸ H → G}
+    (hσ : ∀ x : G ⧸ H, (σ x : G ⧸ H) = x) {x : G ⧸ H} (hx : x ≠ 1) : σ x ∉ H := fun h =>
+  hx ((hσ x).symm.trans ((QuotientGroup.eq_one_iff _).2 h))
+
+end Split
+
+/-! ### The average along the orbit of a prime -/
+
+section Orbit
+
+variable {G : Type*} [Group G] (H : Subgroup G) [H.Normal] (σ : G ⧸ H → G)
+  (hσ : ∀ x : G ⧸ H, (σ x : G ⧸ H) = x)
+  {M : Type*} [CommGroup M] [MulDistribMulAction G M]
+
+include hσ
+
+/-- **At a prime split completely in the extension the normal subgroup cuts out, the average
+reproduces the cochain on the whole decomposition subgroup.**
+
+The conjugates of the prime by the representatives of the nontrivial cosets are all different from
+the prime itself, the decomposition subgroup being contained in the subgroup; so a cochain killing
+the decomposition subgroups of all the other primes of the orbit contributes only one term to the
+product, and the trivial coset being represented by the identity that term is the value of the
+cochain itself. -/
+theorem corCochain₁_eq_self_of_stabilizer_le [Fintype (G ⧸ H)] (hσ1 : σ 1 = 1) {u : ↥H → M}
+    {α : Type*} [MulAction G α] {P : α} (hsplit : stabilizer G P ≤ H)
+    (hvan : ∀ ρ : G, ρ • P ≠ P → ∀ y : ↥H, (y : G) ∈ stabilizer G (ρ • P) → u y = 1)
+    {g : G} (hg : g ∈ stabilizer G P) :
+    corCochain₁ H σ hσ u g = u ⟨g, hsplit hg⟩ := by
+  refine corCochain₁_eq_self_of_conj H σ hσ hσ1 (hsplit hg) fun x y hx hy => ?_
+  refine hvan (σ x)⁻¹ (smul_ne_self_of_stabilizer_le hsplit
+    (fun h => section_notMem_of_ne_one hσ hx ((Subgroup.inv_mem_iff H).1 h))) y ?_
+  refine mem_stabilizer_smul_iff.2 ?_
+  rw [hy, show (σ x)⁻¹⁻¹ * ((σ x)⁻¹ * g * σ x) * (σ x)⁻¹ = g from by group]
+  exact hg
+
+/-- **The average kills the decomposition subgroup of a prime whose whole orbit the cochain
+kills.** -/
+theorem corCochain₁_eq_one_of_forall_stabilizer [Fintype (G ⧸ H)] {u : ↥H → M} {α : Type*}
+    [MulAction G α] {P : α}
+    (hvan : ∀ (ρ : G) (y : ↥H), (y : G) ∈ stabilizer G (ρ • P) → u y = 1)
+    {g : G} (hgH : g ∈ H) (hg : g ∈ stabilizer G P) :
+    corCochain₁ H σ hσ u g = 1 := by
+  refine corCochain₁_eq_one_of_conj H σ hσ hgH fun x y hy => hvan (σ x)⁻¹ y ?_
+  refine mem_stabilizer_smul_iff.2 ?_
+  rw [hy, show (σ x)⁻¹⁻¹ * ((σ x)⁻¹ * g * σ x) * (σ x)⁻¹ = g from by group]
+  exact hg
+
+/-- **Where the average ramifies the cochain ramifies at a prime of the same orbit.**  A term of the
+product which is nontrivial is the value of the cochain at a conjugate of the given element, and a
+conjugate of an element of inertia is an element of the inertia of the conjugate prime. -/
+theorem exists_mem_inertia_smul_of_corCochain₁_ne_one [Fintype (G ⧸ H)] {R : Type*} [CommRing R]
+    [MulSemiringAction G R] {u : ↥H → M} {P : Ideal R} {g : G} (hgH : g ∈ H)
+    (hgI : g ∈ Ideal.inertia G P) (h : corCochain₁ H σ hσ u g ≠ 1) :
+    ∃ (ρ : G) (y : ↥H), (y : G) ∈ Ideal.inertia G (ρ • P) ∧ u y ≠ 1 := by
+  obtain ⟨x, y, hy, hu⟩ := exists_ne_one_of_corCochain₁_ne_one H σ hσ hgH h
+  refine ⟨(σ x)⁻¹, y, mem_inertia_smul_iff.2 ?_, hu⟩
+  rw [hy, show (σ x)⁻¹⁻¹ * ((σ x)⁻¹ * g * σ x) * (σ x)⁻¹ = g from by group]
+  exact hgI
+
+/-- **The average is unramified at a prime along whose whole orbit the cochain is unramified.** -/
+theorem corCochain₁_eq_one_of_forall_inertia [Fintype (G ⧸ H)] {R : Type*} [CommRing R]
+    [MulSemiringAction G R] {u : ↥H → M} {P : Ideal R}
+    (hvan : ∀ (ρ : G) (y : ↥H), (y : G) ∈ Ideal.inertia G (ρ • P) → u y = 1) {g : G} (hgH : g ∈ H)
+    (hgI : g ∈ Ideal.inertia G P) : corCochain₁ H σ hσ u g = 1 := by
+  by_contra hc
+  obtain ⟨ρ, y, hy, hu⟩ :=
+    exists_mem_inertia_smul_of_corCochain₁_ne_one H σ hσ hgH hgI hc
+  exact hu (hvan ρ y hy)
+
+end Orbit
+
+end InverseGalois.CFT

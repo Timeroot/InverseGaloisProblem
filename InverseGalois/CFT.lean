@@ -200,6 +200,7 @@ import InverseGalois.CFT.CharacterSpan
 import InverseGalois.CFT.Compositum
 import InverseGalois.CFT.CompositumBase
 import InverseGalois.CFT.CompositumLift
+import InverseGalois.CFT.CorestrictionInertia
 import InverseGalois.CFT.CutField
 import InverseGalois.CFT.Cyclotomic.AuxiliarySubfield
 import InverseGalois.CFT.Cyclotomic.BuildingBlock
@@ -5613,6 +5614,18 @@ it that are available here.
   other way round, the collapse says that **where the average is nontrivial the cochain was already
   nontrivial at a conjugate**, which is what confines the ramification of the average to the places
   where the cochain was ramified.
+* `InverseGalois.CFT.CorestrictionInertia` reads the average at a prime.  Conjugating an element
+  moves the prime it decomposes or ramifies at, so the product over the cosets is a statement about
+  the orbit of one prime: the average, read at the decomposition subgroup of a prime, sees the
+  cochain at the decomposition subgroups of all the primes of the orbit.  A prime split completely
+  in the extension the subgroup cuts out has one conjugate for each coset and they are all
+  distinct, so a cochain killing the decomposition subgroups of all the conjugates but one leaves a
+  single term and **the average reproduces the cochain on the whole decomposition subgroup of the
+  prime that survives** — a prescription made over the big field at one prime of a split orbit is
+  carried down to the small field unchanged.  The other half is the confinement: **where the average
+  ramifies the cochain ramifies at a prime of the same orbit**, so a cochain unramified along a
+  whole orbit averages to a cochain unramified along it, and the new ramification of the average is
+  no wider than the orbit of the ramification of the cochain.
 * `InverseGalois.CFT.Profinite.Coinduced` builds, out of a module for a subgroup, a module for the
   whole group: the functions on the group that are equivariant for the subgroup acting on the left,
   the whole group acting by translation on the right.  Evaluation at the neutral element is
