@@ -31,6 +31,8 @@ clauses at the named primes checks them everywhere, and the restriction becomes 
   with the prime.**
 * `InverseGalois.Shafarevich.isSplitTotallyRamifiedHom_of_family` — **the restriction holds as soon
   as it holds at a family of primes meeting every orbit at which the homomorphism ramifies.**
+* `InverseGalois.Shafarevich.exists_family_isSplitTotallyRamifiedHom` — **the restriction a smooth
+  homomorphism is asked to carry is a check at finitely many primes.**
 
 ## Tags
 
@@ -130,5 +132,26 @@ theorem isSplitTotallyRamifiedHom_of_family {φ : Gal(Ω/k) →* U} {Φ : Gal(Ω
   intro Q hQp hQbot hram
   obtain ⟨ν, ρ, rfl⟩ := hfam Q hQp hQbot hram
   exact (h ν).smul ρ
+
+/-! ### The restriction is a finite check -/
+
+section Finite
+
+variable [NumberField k] [IsGalois k Ω]
+
+/-- **The restriction a smooth homomorphism is asked to carry is a check at finitely many primes.**
+The primes at which such a homomorphism ramifies meet finitely many orbits, one prime of each can be
+named, and the clauses at a named prime carry to its whole orbit. -/
+theorem exists_family_isSplitTotallyRamifiedHom {φ : Gal(Ω/k) →* U} {Φ : Gal(Ω/k) →* W}
+    (hΦ : IsOpenNormal Φ.ker) :
+    ∃ (s : ℕ) (Pr : Fin s → Ideal (𝓞 Ω)), (∀ ν, (Pr ν).IsPrime) ∧ (∀ ν, Pr ν ≠ ⊥) ∧
+      ((∀ ν, IsSplitTotallyRamifiedAt ℓ φ Φ (Pr ν)) → IsSplitTotallyRamifiedHom ℓ φ Φ) := by
+  obtain ⟨s, Pr, hp, hbot, hfam⟩ := exists_ramified_family hΦ
+  refine ⟨s, Pr, hp, hbot, fun h => isSplitTotallyRamifiedHom_of_family (fun Q hQp hQbot hram => ?_)
+    h⟩
+  obtain ⟨x, hxI, _, hxΦ⟩ := hram
+  exact hfam Q hQp hQbot ⟨x, hxI, hxΦ⟩
+
+end Finite
 
 end InverseGalois.Shafarevich

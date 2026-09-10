@@ -52,6 +52,7 @@ import InverseGalois.Solvable.Shafarevich.RamifiedHom
 import InverseGalois.Solvable.Shafarevich.RamifiedTransport
 import InverseGalois.Solvable.Shafarevich.InducedCocycle
 import InverseGalois.Solvable.Shafarevich.LevelRamification
+import InverseGalois.Solvable.Shafarevich.LevelRepair
 import InverseGalois.Solvable.Shafarevich.LevelOneCharacter
 import InverseGalois.Solvable.Shafarevich.CharacterProduct
 import InverseGalois.Solvable.Shafarevich.LayerTensorOne
@@ -401,6 +402,13 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   takes, and following a homomorphism can only identify values, so **a shrinking does not destroy
   it**; and at the bottom of the ladder the solution is the base realization itself, which is
   trivial wherever the base realization is, so **the bottom carries it for nothing**.
+* `InverseGalois.Solvable.Shafarevich.LevelRepair` cuts the repair the ladder asks of the arithmetic
+  down to its arithmetic core.  Of the four clauses of a solution, three survive replacing a lift by
+  another lift of the same solution below: such a replacement is again over the base realization,
+  because the projection of the layer extension leaves the operator coordinate alone, and it is
+  again onto, because past the first layer the layer sits in the Frattini subgroup of the normal
+  factor and a lift over a surjection therefore generates.  So **what the arithmetic has to produce
+  is only some lift carrying the restriction**, and whether it is onto is not its concern.
 * `InverseGalois.Solvable.Shafarevich.LevelOneCharacter` takes the first step of the ladder, the one
   the group theory cannot take on its own.  The layer there is the Frattini layer of the generic
   operator group and it is the whole of the quotient by the first term of the series, so the group

@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Profinite.OpenLevel
+import InverseGalois.Solvable.Shafarevich.LevelRepair
 import InverseGalois.Solvable.Shafarevich.LevelRungData
 import InverseGalois.Solvable.Shafarevich.RootsLevel
 
@@ -18,15 +19,23 @@ the restricted step of the ladder puts in the base realization sit inside it.  F
 family and the family to the package leaves a single condition, the repair of the property on a
 lift, and that is what this file names.
 
+The condition is named twice.  The form the ladder consumes asks for a whole solution back; the form
+the arithmetic is actually asked for only asks for a lift, being onto costing nothing past the first
+layer.  The second implies the first.
+
 ## Main definitions
 
 * `Shafarevich.SolutionRepairEP` — **the repair of the property on a lift, asked of every base
   realization over the rationals**.
+* `Shafarevich.LiftRepairEP` — the same repair, asked to return only a lift.
 
 ## Main results
 
+* `Shafarevich.solutionRepairEP_of_liftRepairEP` — **repairing a lift repairs a solution**.
 * `Shafarevich.genericLevelStepEPRoots_of_solutionRepairEP` — **the repair of the property is the
   only thing between the arithmetic and the step of the ladder** for an odd prime.
+* `Shafarevich.genericLevelStepEPRoots_of_liftRepairEP` — the same step, in exchange for the repair
+  of a lift alone.
 
 ## Tags
 
@@ -54,8 +63,28 @@ base field splits completely and the local extension is cyclic and totally ramif
 def SolutionRepairEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
   ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
-      (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), 1 ≤ j →
+      (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
     HasSolutionRepair ℓ U n S j φ D (IsSplitTotallyRamified ℓ U S φ)
+
+/-- **The repair of the property, asked to return only a lift.**
+
+The data is the same as for `Shafarevich.SolutionRepairEP` and what is asked back is less: a lift
+over the same solution below, again smooth and again trivial along the family, which carries the
+restriction.  Nothing is asked about it being onto. -/
+def LiftRepairEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
+  ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
+      [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
+      (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
+    HasLiftRepair ℓ U n S j φ D
+
+/-- **Repairing a lift repairs a solution.**  Past the first layer the layer lies in the Frattini
+subgroup of the normal factor, so a lift over a solution which is onto is itself onto; and a lift
+over a solution below is over the base realization, the projection of the layer extension leaving
+the operator coordinate alone. -/
+theorem solutionRepairEP_of_liftRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (h : LiftRepairEP ℓ) :
+    SolutionRepairEP ℓ := by
+  intro S U _ _ _ _ _ _ Ω _ _ _ _ φ t D n j hS hj
+  exact hasSolutionRepair_of_hasLiftRepair ℓ U n S hS hj (h S U Ω φ t D n j hS hj)
 
 /-! ### The step -/
 
@@ -91,6 +120,11 @@ theorem genericLevelStepEPRoots_of_solutionRepairEP (ℓ : ℕ) [Fact ℓ.Prime]
     simpa using congrArg Units.val hy
   obtain ⟨t, Pr, -, hdata⟩ :=
     exists_family_rungData hodd hS hsurj hsm K hKker hζ hmu ∅ Set.finite_empty
-  exact ⟨t, _, _, _, hdata fun n j hj => h S U Ω φ t _ n j hj⟩
+  exact ⟨t, _, _, _, hdata fun n j hj => h S U Ω φ t _ n j hS hj⟩
+
+/-- **The step of the ladder, in exchange for the repair of a lift alone.** -/
+theorem genericLevelStepEPRoots_of_liftRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (hodd : 2 < ℓ)
+    (h : LiftRepairEP ℓ) : GenericLevelStepEPRoots ℓ (ℓ * ℓ) :=
+  genericLevelStepEPRoots_of_solutionRepairEP ℓ hodd (solutionRepairEP_of_liftRepairEP ℓ h)
 
 end Shafarevich
