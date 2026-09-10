@@ -6,6 +6,7 @@ import Mathlib
 import InverseGalois.CFT.Profinite.OpenLevel
 import InverseGalois.Solvable.Shafarevich.LevelConfinedTwist
 import InverseGalois.Solvable.Shafarevich.LevelCyclicRepair
+import InverseGalois.Solvable.Shafarevich.LevelKernelPrescription
 import InverseGalois.Solvable.Shafarevich.LevelRepair
 import InverseGalois.Solvable.Shafarevich.LevelRungData
 import InverseGalois.Solvable.Shafarevich.LevelShrink
@@ -43,6 +44,7 @@ makes it cyclic at the completely decomposed primes the first leaves behind.
 * `Shafarevich.FlatPrescriptionEP` — the flattening as a prescription in degree one.
 * `Shafarevich.ConfinedPrescriptionEP` — the repair as a prescription in degree one at completely
   decomposed primes.
+* `Shafarevich.KernelPrescriptionEP` — the sharp prescription, made one field up as a homomorphism.
 
 ## Main results
 
@@ -63,6 +65,10 @@ makes it cyclic at the completely decomposed primes the first leaves behind.
   confining the new ramification and making it cyclic.
 * `Shafarevich.genericLevelStepEPRoots_of_confinedPrescriptionEP` — the same step, in exchange for
   the prescriptions in degree one alone.
+* `Shafarevich.confinedPrescriptionEP_of_kernelPrescriptionEP` — **the sharp prescription may be
+  made one field up**, where the action on the layer is trivial and a cocycle is a homomorphism.
+* `Shafarevich.genericLevelStepEPRoots_of_kernelPrescriptionEP` — the same step, with the sharp
+  prescription made one field up.
 
 ## Tags
 
@@ -194,6 +200,32 @@ def ConfinedPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
     letI := galLayerAction ℓ U n S j φ
     HasConfinedPrescription ℓ U n S j φ D
 
+/-- **The sharp prescription, made one field up.**
+
+The data is the same once more, and what is asked back is not a cocycle over the rationals but a
+smooth homomorphism into the layer defined on the kernel of the base realization, the action there
+being trivial: prescribed along the same subgroups, killing the conjugates of the finite family and
+the decomposition subgroups of all but one prime of each orbit it is allowed to ramify in, and
+cyclic on the decomposition subgroup of each prime it brings in itself. -/
+def KernelPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
+  ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
+      [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
+      (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
+      (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
+    letI := galLayerAction ℓ U n S j φ
+    HasKernelPrescription ℓ U n S j φ D
+
+/-- **The sharp prescription may be made one field up.**  The base realization acts trivially on the
+layer through its own kernel, so over the field that kernel cuts out a cocycle is a homomorphism;
+averaging a prescribed homomorphism over the cosets of the kernel carries the whole prescription
+back down, the primes it names being completely decomposed there. -/
+theorem confinedPrescriptionEP_of_kernelPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime]
+    (h : KernelPrescriptionEP ℓ) : ConfinedPrescriptionEP ℓ := by
+  intro S U _ _ _ _ _ _ Ω _ _ _ _ φ t D n j hS hj hmu
+  letI := galLayerAction ℓ U n S j φ
+  exact hasConfinedPrescription_of_hasKernelPrescription (fun _ _ => rfl)
+    (h S U Ω φ t D n j hS hj hmu)
+
 /-- **The repair is bought with two prescriptions in degree one**, the step being locally solvable
 at every prime.
 
@@ -274,5 +306,12 @@ theorem genericLevelStepEPRoots_of_confinedPrescriptionEP (ℓ : ℕ) [Fact ℓ.
     (hflat : FlatPrescriptionEP ℓ) (h : ConfinedPrescriptionEP ℓ) : GenericLevelStepEPRoots ℓ :=
   genericLevelStepEPRoots_of_splitCyclicRepairEP ℓ hodd
     (splitCyclicRepairEP_of_confinedPrescriptionEP ℓ hflat h)
+
+/-- **The step of the ladder, with the sharp prescription made one field up** — where the action on
+the layer is trivial and a cocycle is a homomorphism. -/
+theorem genericLevelStepEPRoots_of_kernelPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] (hodd : 2 < ℓ)
+    (hflat : FlatPrescriptionEP ℓ) (h : KernelPrescriptionEP ℓ) : GenericLevelStepEPRoots ℓ :=
+  genericLevelStepEPRoots_of_confinedPrescriptionEP ℓ hodd hflat
+    (confinedPrescriptionEP_of_kernelPrescriptionEP ℓ h)
 
 end Shafarevich

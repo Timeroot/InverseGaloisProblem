@@ -143,8 +143,11 @@ ramifies along the part of inertia the base realization kills, either that prime
 named ones, or it is a prime the cocycle brings in by
 itself, and there it is asked to be cyclic and the given lift to kill the whole decomposition
 subgroup — which is what a prime chosen to split completely in the field the lift cuts out
-supplies. -/
+supplies.
+
+The base realization is asked to be smooth, its kernel open, that field being a finite extension. -/
 def HasConfinedPrescription : Prop :=
+  IsOpen (φ.ker : Set Gal(Ω/k)) →
   ∀ (F : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)) (ι : Type) [Finite ι]
       (Q : ι → Ideal (𝓞 Ω)) (A : ι → Subgroup Gal(Ω/k))
       (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U n S) j)),
@@ -196,6 +199,10 @@ theorem hasSplitCyclicRepair_of_hasConfinedPrescription
     (hpres : HasConfinedPrescription ℓ U n S j φ D) :
     HasSplitCyclicRepair ℓ U n S j φ D := by
   intro Φ f₀ hΦsm hΦright hΦP hf₀sm hf₀right hf₀D
+  have hφopen : IsOpen (φ.ker : Set Gal(Ω/k)) := by
+    refine Subgroup.isOpen_mono (H₁ := Φ.ker) (fun x hx => MonoidHom.mem_ker.2 ?_)
+      (isOpenNormal_ker_of_isSmoothHom hΦsm).isOpen
+    rw [← hΦright x, MonoidHom.mem_ker.1 hx, _root_.map_one]
   obtain ⟨f, hfsm, hfright, hfD, hfconf⟩ :=
     exists_confinedRamifiedHom_lift_of_hasFlatPrescription hactφ hflat Φ hΦright f₀ hf₀sm hf₀right
       hf₀D
@@ -274,7 +281,7 @@ theorem hasSplitCyclicRepair_of_hasConfinedPrescription
         rw [h1, ← ha₀ ⟨x, hmem⟩, ← _root_.map_mul, inv_mul_cancel, _root_.map_one]
   choose A a hAstab hAker hasm hAkey using hstep
   obtain ⟨c, hc, hcs, hcD, hca, hcram⟩ :=
-    hpres f {μ : Fin s // RamifiesAt φ f (Pr μ)} (fun μ => Pr (μ : Fin s)) A a hfsm
+    hpres hφopen f {μ : Fin s // RamifiesAt φ f (Pr μ)} (fun μ => Pr (μ : Fin s)) A a hfsm
       (fun μ => hPrp _) (fun μ => hPrbot _) hQker hAstab hAker hasm
   have main : ∀ Ψ : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1),
       (∀ x, Ψ x = (layerExtension ℓ (genericAut U n S) j).inl (c x) * f x) →

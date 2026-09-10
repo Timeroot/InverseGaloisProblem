@@ -20572,3 +20572,101 @@ provable over `K` and carried down by `corCochain₁`).
 | ROOT | 9915 | — |
 
 0 errors, 0 warnings, 0 sorries.
+
+## §1.82 The sharp prescription descends to a homomorphism one field up (2026-09-10)
+
+### (a) The new module
+
+`InverseGalois/Solvable/Shafarevich/LevelKernelPrescription.lean` (new, ~185 lines, sorry-free).
+
+It carries `HasKernelPrescription ℓ U n S j φ D`, the SW step 4 prescription made over
+`K = Ω^{ker φ}` instead of over `k`, and
+
+```
+hasConfinedPrescription_of_hasKernelPrescription
+  (hactφ : ∀ x v, x • v = φ x • v)
+  (hpres : HasKernelPrescription ℓ U n S j φ D) :
+  HasConfinedPrescription ℓ U n S j φ D
+```
+
+The point of the descent is that **over `K` there is no cocycle condition left**: `Gal(Ω/k)` acts
+on `layerSub ℓ (Generic U n S) j` through `φ`, so `ker φ` acts trivially, so a cocycle of `ker φ`
+is a homomorphism
+
+```
+u : ↥(φ.ker) →* ↥(layerSub ℓ (Generic U n S) j)
+```
+
+into a *finite abelian* `ℓ`-group.  The whole of the remaining arithmetic is therefore a statement
+about smooth characters of `G_K` with prescribed local behaviour — exactly the shape class field
+theory answers.
+
+### (b) What `HasKernelPrescription` asks
+
+Same antecedents as `HasConfinedPrescription` (a smooth `F`, a finite index `ι`, primes `Q μ` with
+`stabilizer (Q μ) ≤ ker φ`, subgroups `A μ ≤ stabilizer (Q μ) ⊓ ker φ`, smooth homomorphisms
+`a μ : A μ →* layer`), and back:
+
+1. `IsSmooth₁ ⇑u`;
+2. `∀ ν ρ y, ρ * ↑y * ρ⁻¹ ∈ D ν → u y = 1` — the family is killed **at every conjugate**;
+3. `u ⟨↑x, hx⟩ = a μ x` — the prescribed values;
+4. `ρ • Q μ ≠ Q μ → ∀ y ∈ stabilizer (ρ • Q μ), u y = 1` — **all but one prime of each named
+   orbit is killed**;
+5. if `u` ramifies anywhere in the orbit of `P`, then `P` is one of the named orbits, or else
+   `(∀ x ∈ stabilizer P, F x = 1) ∧ stabilizer P ≤ ker φ ∧ (u kills the other primes of the orbit
+   of P) ∧ (u is cyclic on stabilizer P)`.
+
+Clauses 2 and 4 are the price of averaging; they are exactly SW's "`z_{P^τ} = 0` for `τ ≠ 1`".
+
+### (c) Why the descent is faithful
+
+`corCochain₁ φ.ker σ hσ ⇑u` is a cocycle (`isMulCocycle₁_corCochain₁` on
+`isMulCocycle₁_of_hom htriv u`) and smooth (`isSmooth₁_corCochain₁_of_isSmooth₁` +
+`hasOpenNormalCore_of_isOpen`).  The three interesting clauses come from `CorestrictionInertia.lean`
+verbatim:
+
+| clause of `HasConfinedPrescription` | brick |
+|---|---|
+| family | `corCochain₁_eq_one_of_conj` with `ρ := σ z` |
+| prescribed values | `corCochain₁_eq_self_of_stabilizer_le` at `Q μ`, `hsplit := hQker μ` |
+| confinement | `exists_mem_inertia_smul_of_corCochain₁_ne_one`, then `corCochain₁_eq_self_of_stabilizer_le` again at the *new* prime |
+
+The second application is legitimate because clause 5 hands back `stabilizer P ≤ ker φ` — the new
+prime is completely decomposed in `K` too, which is what makes cyclicity survive the average
+unchanged rather than being smeared over the orbit.
+
+### (d) One antecedent added: `IsOpen (φ.ker : Set Gal(Ω/k))`
+
+`isSmooth₁_corCochain₁_of_isSmooth₁` needs `HasOpenNormalCore φ.ker`, which needs `φ.ker` open.
+`IsSmoothHom φ` cannot be used: `U` carries no topology in the `LevelConfinedTwist`/`LevelFlatTwist`
+variable blocks, and the EP-level defs do not assume `φ` smooth.  So `HasConfinedPrescription` and
+`HasKernelPrescription` both gained a leading
+
+```
+IsOpen (φ.ker : Set Gal(Ω/k)) →
+```
+
+antecedent.  **This costs nothing anywhere else**: the sole consumer,
+`hasSplitCyclicRepair_of_hasConfinedPrescription`, already has `Φ` with `IsSmoothHom Φ` and
+`rightHom (Φ x) = φ x`, so `Φ.ker ≤ φ.ker` and `Subgroup.isOpen_mono` gives it in three lines.  No
+churn up the `…RepairEP` chain.
+
+### (e) The EP level
+
+`LevelStepRepair.lean` gains `Shafarevich.KernelPrescriptionEP`,
+`confinedPrescriptionEP_of_kernelPrescriptionEP` and
+`genericLevelStepEPRoots_of_kernelPrescriptionEP (ℓ) (hodd : 2 < ℓ) (hflat : FlatPrescriptionEP ℓ)
+(h : KernelPrescriptionEP ℓ)`.
+
+**Clause 7 of `HasRungData` now costs**: `FlatPrescriptionEP ℓ` (a cocycle over `k`, SW step 3) and
+`KernelPrescriptionEP ℓ` (a *homomorphism* over `K`, SW step 4).
+
+### (f) Build
+
+| target | jobs | time |
+|---|---|---|
+| `Shafarevich.LevelKernelPrescription` (cold) | 8285 | 24 s |
+| `Shafarevich.LevelStepRepair` | 8840 | 14 s |
+| ROOT | 9916 | — |
+
+0 errors, 0 warnings, 0 sorries.

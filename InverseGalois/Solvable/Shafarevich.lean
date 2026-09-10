@@ -69,6 +69,7 @@ import InverseGalois.Solvable.Shafarevich.LevelCyclicRepair
 import InverseGalois.Solvable.Shafarevich.CyclicLift
 import InverseGalois.Solvable.Shafarevich.LevelFlatTwist
 import InverseGalois.Solvable.Shafarevich.LevelConfinedTwist
+import InverseGalois.Solvable.Shafarevich.LevelKernelPrescription
 import InverseGalois.Solvable.Shafarevich.ElementaryQuotient
 import InverseGalois.Solvable.Shafarevich.ElementaryQuotientDecomposition
 import InverseGalois.Solvable.Shafarevich.RootsLevel
@@ -594,6 +595,20 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   **the repair costs exactly one smooth one cocycle, prescribed along finitely many subgroups of
   decomposition subgroups of completely decomposed primes, trivial along the family and ramified
   only where it is allowed to be**.
+* `InverseGalois.Solvable.Shafarevich.LevelKernelPrescription` makes that cocycle one field up.  The
+  base realization acts on the layer through itself, so through its own kernel it acts trivially,
+  and over the field that kernel cuts out a cocycle is nothing but a homomorphism into a finite
+  abelian group.  A homomorphism prescribed there is carried back down by averaging it over the
+  cosets of the kernel, and the average is a cocycle over the base field for free.  Averaging is
+  faithful at the data the prescription names because the primes it names are completely decomposed
+  in that field: the representatives of the nontrivial cosets move such a prime, and the
+  homomorphism is asked to kill the decomposition subgroups of the primes they move it to, so a
+  single term survives the product and, the trivial coset being represented by the identity, that
+  term is the value of the homomorphism itself.  The prescribed values and their cyclicity descend
+  verbatim, ramification of the average is ramification of the homomorphism somewhere in the same
+  orbit, and the finite family, killed at every conjugate, is killed by the average outright.  So
+  **the repair costs one smooth homomorphism of the kernel of the base realization into the
+  layer**.
 * `InverseGalois.Solvable.Shafarevich.ElementaryQuotient` buys the finiteness the ladder asks of
   each member of the finite family.  A subgroup carrying only finitely many smooth characters of
   order dividing the prime has a finite elementary quotient, the product of all of them being a
