@@ -20222,3 +20222,154 @@ Poitou–Tate (SW Lemma 10, `sw.txt:483`).
   (`LevelShrink.lean:82`) is the template.  With that `letI` in place, a hypothesis of the form
   `∀ x v, x • v = φ x • v` is `fun _ _ => rfl`.
 * **3107.** Cold-build job counts: `Shafarevich.LevelStepRepair` **8836**, ROOT **9912**.
+
+## §1.79 Corestriction, and the exact shape of Schmidt–Wingberg's theorem 13 (2026-09-10)
+
+Clause 7 of `HasRungData` is `ConfinedPrescriptionEP ℓ`, and §1.78(d) recorded that its missing
+arithmetic input is SW theorem 13.  This section builds the group-theoretic half of the bridge —
+corestriction read at the elements of the normal subgroup — and then reads SW's theorem 13 and step
+4 of theorem 15 closely enough to see **exactly which prescriptions corestriction can deliver**.
+The conclusion is a correction to the shape of `HasConfinedPrescription`, recorded in (d) and (e).
+
+### (a) The corestriction bricks
+
+`InverseGalois/CFT/Profinite/Corestriction.lean` already had the whole transfer:
+`transversalElt H σ hσ g x = (σ (g • x))⁻¹ * g * σ x`, the average
+`corCochain₁ H σ hσ u g = ∏ x, σ (g • x) • u (transversalElt H σ hσ g x)`, the facts that it takes
+cocycles to cocycles, coboundaries to coboundaries and smooth cochains to smooth cochains (the last
+through `HasOpenNormalCore`, which `hasOpenNormalCore_of_isOpen` supplies for an open subgroup of a
+compact group), the induced map `corH1` on `SmoothH1`, and `corH1_resH1 : cor (res c) = c ^ [G : H]`.
+
+New this section: `InverseGalois/CFT/Profinite/CorestrictionNormal.lean` (commit `54a2d39`), which
+reads the average at the elements of `H` itself when `H` is *normal*.
+
+* `smul_quotient_eq_self_of_mem` — an element of a normal subgroup fixes every coset of it.
+* `coe_transversalElt_of_mem` — hence for `g ∈ H` the transversal element is the plain conjugate,
+  `(transversalElt H σ hσ g x : G) = (σ x)⁻¹ * g * σ x`, with no translation of the coset.
+* `corCochain₁_eq_single` — **the collapse.**  If `u` kills the conjugate of `g` by every
+  representative except `σ x₀`, then `corCochain₁ H σ hσ u g = σ x₀ • u y₀`, where `y₀` is the
+  surviving conjugate.
+* `corCochain₁_eq_self_of_conj` — the case `x₀ = 1` together with `σ 1 = 1`: the average reproduces
+  `u` exactly.  `exists_section_one` says a section may always be normalized so that `σ 1 = 1`.
+* `corCochain₁_mem_zpowers_of_single` — a single surviving term carries a bound: if `u y₀` is a
+  power of `w` then the average is a power of `σ x₀ • w`.  This is how cyclicity of a local image
+  survives corestriction.
+* `corCochain₁_eq_one_of_conj` and its contrapositive `exists_ne_one_of_corCochain₁_ne_one` — **the
+  confinement.**  Where the average is nontrivial the cochain was already nontrivial at a conjugate.
+  Applied to an inertia subgroup: the average can only ramify at a place lying under a place where
+  the cochain already ramified.
+
+Build green, ROOT **9913** jobs, 0 warnings.
+
+### (b) What theorem 13 actually delivers
+
+`sw.txt:657`.  Given finite Galois extensions `Γ | K | k` of global fields with `μ_p ⊆ K`, a finite
+set `T` of primes of `k` with `T ⊇ Ram(Γ|k) ∪ S_p ∪ S_∞`, `S = cs(Γ|k) ∪ T`, a finite
+`𝔽_p[G(K|k)]`-module `A` and a class `y ∈ H¹(k_S|K, A)` such that
+
+> `y_P` is unramified for `P ∈ T(K)` and `y_P = 0` for `P ∩ k ∈ Ram(K|k) ∪ S_p ∪ S_∞`,
+
+there is `x ∈ H¹(k_S|k, A)` with
+
+> `x_p = (cor^K_k y)_p` for `p ∈ T`, and `x_p` cyclic for all `p ∉ T`.
+
+Two things must be read carefully.
+
+1. **The prescription at `T` is not arbitrary.**  It is the local component of a *corestriction* of
+   a class over `K`.  At a prime `p` that does not split completely in `K|k` this is a norm, and the
+   achievable prescriptions there form the image of the local norm, not all of `H¹(k_p, A)`.
+2. **The proof is exactly the collapse of (a).**  SW put `x = cor^K_k z` and reduce to constructing
+   `z ∈ H¹(k_S|K, A)` with (a) `z_P = y_P` for `P ∈ T(K)`, and (b) at a `P ∉ T(K)` where `z` is
+   ramified, `z_P` cyclic and **`z_{σP} = 0` for every `σ ∈ G(K|k) ∖ {1}`**.  Clause (b) is
+   `corCochain₁_eq_single`'s hypothesis verbatim, and the passage `x = cor z` is `corH1`.
+
+### (c) Why the collapse forces the prescribed primes to split completely
+
+Here is the obstruction in our own language, and it is unconditional.  Let `H = ker φ = G_K`, so
+that `H` acts trivially on the layer `M` and a cochain `u : H → M` with `IsMulCocycle₁ u` is
+literally a homomorphism, hence factors through `H^{ab}`.  Let `A ≤ H` be the piece on which a
+value `a ≠ 1` is to be prescribed, and let `A ≤ stabilizer(Q)` for a prime `Q` of `Ω`.
+
+Suppose the prime `q = Q ∩ 𝓞_K` does *not* split completely over `k`, i.e. some `τ ∈ G(K|k) ∖ {1}`
+fixes `q`.  Pick representatives `σ x₀` and `σ x` of the two cosets with `x ≠ x₀`.  Then
+`(σ x)⁻¹ • Q` and `(σ x₀)⁻¹ • Q` lie over the *same* prime of `K`, so they are `H`-conjugate: there
+is `ρ ∈ H` with `(σ x)⁻¹ A (σ x) = ρ ((σ x₀)⁻¹ A (σ x₀)) ρ⁻¹`.  Since `M` is abelian and `u` is a
+homomorphism on `H`, `u (ρ g ρ⁻¹) = u g`.  So `u` kills one of the two conjugates if and only if it
+kills the other, and the collapse of `corCochain₁_eq_single` is unavailable: the average at `A` is a
+genuine norm `∏_x σ x • u((σ x)⁻¹ g σ x)` and cannot reproduce an arbitrary `a`.
+
+The condition "`q` splits completely in `K|k`" is, in the repo's language,
+`∀ x ∈ stabilizer Gal(Ω/k) Q, φ x = 1` — the base realization kills the whole decomposition
+subgroup of `Q`.
+
+### (d) The consequence for `HasConfinedPrescription`
+
+`HasConfinedPrescription` (`LevelConfinedTwist.lean:100`) quantifies over *arbitrary* primes `Q μ`,
+subgroups `A μ ≤ stabilizer(Q μ) ⊓ ker φ` and smooth homomorphisms `a μ : A μ →* M`.  By (c) it is
+**not** reachable by corestriction as stated.  Its consumer
+`hasSplitCyclicRepair_of_hasConfinedPrescription` produces the data in two cases:
+
+* **Case A** (`Φ` ramifies at `Pr μ` over `φ`).  There `A μ = stabilizer Gal(Ω/k) (Pr μ)` and the
+  proof already has `hsplit : ∀ x ∈ stabilizer Gal(Ω/k) (Pr μ), φ x = 1` — the prime **does** split
+  completely in the base realization.  Corestriction applies.
+* **Case B** (`Φ` unramified at `Pr μ` over `φ`).  There `A μ = Ideal.inertia Gal(Ω/k) (Pr μ) ⊓ φ.ker`
+  and the prescribed value is the inverse of the given lift `f` read through `inl`; nothing says
+  `Pr μ` splits completely.  Corestriction does not apply.
+
+And case B cannot be dodged by weakening the conclusion: `IsConfinedAt φ Φ (Pr μ)` at a prime where
+`Φ` is unramified demands that `Φ` kill the whole decomposition subgroup, which is again the
+splitting condition.  So at a non-split case-B prime the corrected lift must be made *unramified*,
+and the prescription is forced.
+
+### (e) Where the invariant really lives, in SW
+
+Step 4 of theorem 15 (`sw.txt:1579`) says of the primes needing repair:
+
+> for `p ∈ Ram(N_{n+1}|K) ∖ Ram(N_n|K)` the local extension `(N_{n+1})_p | k_p` might not be
+> (cyclic) totally ramified.  **But we know that for such a prime `p` the extension `(N_n)_p | k_p`
+> is trivial.**
+
+That is precisely our case-B splitting hypothesis, and SW get it for free because of how step 3
+produced `φ_{n,ν+1}`: its class lives in `H¹(k_S|k, A)` with
+
+> `S = cs(N_n|k) ∪ T`,  `T = Ram(N_{n+1}|k) ∪ S_p ∪ S_∞ ∪ T'`,  and `x_p = 0` for
+> `p ∈ Ram(N_n|k) ∪ S_p ∪ S_∞ ∪ T'`.
+
+The ramification of the correcting class is confined to `S`; at the fixed bad set `T` the
+prescription is zero, so *all new ramification is at primes of `cs(N_n|k)`* — split completely in
+the base realization.  Step 4 then only ever has to prescribe at split primes, and SW's own
+parenthesis in step 4 says so out loud: "*we fix one (p splits completely in K|k) prolongation
+`p₀ ∈ S(K)` of `p` to `K`*", with `η_P = 0` at every other prolongation and at every `P` over
+`Ram(N_n|k) ∪ S_p ∪ S_∞ ∪ T'`.
+
+So the invariant that makes corestriction usable is **produced by step 3, not by step 4**.  Our
+chain does not have it, because `HasSplitCyclicRepair` (`LevelCyclicRepair.lean:95`) quantifies over
+an *arbitrary* smooth lift `f` of `Φ`.  Two honest ways out:
+
+* **(i) Carry the invariant.**  Split clause 7 in two.  A *split* prescription
+  (`ConfinedPrescriptionSplit`) with the extra hypothesis
+  `∀ μ, ∀ x ∈ stabilizer Gal(Ω/k) (Q μ), φ x = 1`, provable by corestriction from theorem 13; and a
+  strengthened lift-existence delivering an `f` whose ramification beyond `Φ`'s is confined to
+  primes split completely in the base realization, together with prescribed local behaviour at a
+  fixed finite bad set.  The second is SW's step 3 and needs the surjectivity half of Poitou–Tate
+  plus a shrinking, in the `HasShrinkableSha` shape (`∃ N, ∀ ε, ∃ α : Generic U N S ↠ Generic U n S`).
+* **(ii) Prove the prescription over `k` directly.**  Keep the current statement and discharge it
+  from Poitou–Tate over `k` with the layer's genuine `Gal(K|k)`-action, killing the cokernel
+  `coker(k_{S,T,A}) ↪ Ш¹(k_S, S ∖ T, A′)` by shrinking.  This is SW's step 3 obstruction again, now
+  with no help from corestriction.
+
+Either way the shrinking is unavoidable, so (i) is the better bargain: it keeps the *confinement*
+and *cyclicity* clauses — the hard geometric content — inside the corestriction collapse, where
+they are cheap, and isolates the shrinking in a single lift-existence statement.
+
+### (f) Lean findings
+
+* **3108.** `QuotientGroup.mk_one` will not elaborate against a goal whose left side is still a
+  metavariable-headed coercion; the statement is `rfl`, so use `rfl`.
+* **3109.** `Function.update_self` refuses to unify inside a `refine ⟨_, _, Function.update_self …⟩`
+  anonymous constructor (the function argument stays a metavariable).  Discharge the component in a
+  separate tactic block with `rw [Function.update_self]`.
+* **3110.** `smul_zpow'` is the `ℤ` analogue of `smul_pow'`, oriented `r • x ^ n = (r • x) ^ n`.
+  After `refine ⟨n, ?_⟩` on a `Subgroup.zpowers` goal the target is a beta-redex, so `rw` cannot see
+  the pattern; insert `show (…) ^ n = …` first (finding 3024).
+* **3111.** ROOT build after `CFT/Profinite/CorestrictionNormal.lean`: **9913** jobs.
