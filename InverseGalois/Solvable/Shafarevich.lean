@@ -63,6 +63,8 @@ import InverseGalois.Solvable.Shafarevich.LayerShaPlaces
 import InverseGalois.Solvable.Shafarevich.LayerShaLevel
 import InverseGalois.Solvable.Shafarevich.LayerShaDescent
 import InverseGalois.Solvable.Shafarevich.LocalLift
+import InverseGalois.Solvable.Shafarevich.RamifiedSplit
+import InverseGalois.Solvable.Shafarevich.LevelCyclicRepair
 import InverseGalois.Solvable.Shafarevich.CyclicLift
 import InverseGalois.Solvable.Shafarevich.ElementaryQuotient
 import InverseGalois.Solvable.Shafarevich.ElementaryQuotientDecomposition
@@ -504,6 +506,26 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   the primes the base realization splits completely, and with the order bounded by the order of the
   generator of the local image times the prime â€” which is exactly the bound whose roots of unity
   the restriction asks the local field to carry.
+* `InverseGalois.Solvable.Shafarevich.RamifiedSplit` reads the restriction at a single prime where
+  the solution below splits completely, which is where a repaired lift is allowed to acquire new
+  ramification.  The values of the lift on the decomposition subgroup lie over the identity of the
+  solution below, so they come from the layer and are killed by the prime, and the base realization
+  kills the decomposition subgroup.  What is then left of the restriction is a single clause: that
+  the local image be cyclic.  It gives the totally ramified clause because a cyclic image killed by
+  the prime has prime order as soon as the prime ramifies at all, so the image of inertia, being a
+  nontrivial subgroup of it, is the whole of it; and it gives the roots of unity clause because the
+  order of the generator divides the prime, and the base realization is asked to fix the roots of
+  unity of order its square.  So **cyclicity is the whole of the restriction at a prime the solution
+  below splits completely.**
+* `InverseGalois.Solvable.Shafarevich.LevelCyclicRepair` reads the repair prime by prime.  A prime
+  at which a lift ramifies over the base realization is of one of three kinds according to the
+  solution below: it may already ramify there, in which case the restriction is asked of the lift
+  outright; it may neither ramify nor split completely there, in which case the restriction cannot
+  be met at all and the lift is asked not to ramify; or it may split completely there, in which case
+  the lift is asked only for a cyclic local image.  So **the repair the ladder needs is the
+  production of a lift whose new ramification is confined to the primes at which the solution below
+  splits completely and is cyclic there** â€” a demand about ramification alone, which is the shape
+  the class field theory answers in.
 * `InverseGalois.Solvable.Shafarevich.CyclicLift` closes that case.  The powers of an element are
   carried onto the powers of any other element whose order divides them, by sending one generator
   to the other; this is well defined because two exponents with the same power of the first element
@@ -621,5 +643,8 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   lie in it, the restricted step of the ladder having asked the realization to fix those of order
   the square of the prime, so the family and with it six of the seven clauses are available for
   every base realization at once.  So **for an odd prime the repair of the property on a lift is
-  the only thing between the arithmetic and the step of the ladder**.
+  the only thing between the arithmetic and the step of the ladder**.  The residual condition is
+  named in three forms, each implying the one before it: a repair returning a whole solution, a
+  repair returning only a lift, and a repair returning a lift whose ramification is described one
+  prime at a time.
 -/
