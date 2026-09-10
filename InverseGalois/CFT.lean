@@ -1004,6 +1004,7 @@ import InverseGalois.CFT.Units.IdeleTower
 import InverseGalois.CFT.Units.IdeleValuationSplit
 import InverseGalois.CFT.Units.InertPlace
 import InverseGalois.CFT.Units.InertiaFinite
+import InverseGalois.CFT.Units.InertiaLift
 import InverseGalois.CFT.Units.InfiniteComap
 import InverseGalois.CFT.Units.InfiniteFixed
 import InverseGalois.CFT.Units.InfiniteGalois
@@ -8152,6 +8153,16 @@ it that are available here.
   restriction to the level carries inertia to inertia, so **inertia at a prime whose place in the
   level is unramified over the base field already fixes the level**, which is how a realization cut
   out by a level is seen to be unramified away from a prescribed finite set of places.
+
+* `InverseGalois.CFT.Units.InertiaLift` runs that comparison the other way.  An element of inertia
+  at a place of a level fixes the place, so it lifts to an automorphism of the whole extension
+  fixing a prescribed prime above it; the lift acts on the residue field of the prime, trivially
+  over the residue field of the place, since the element it restricts to moves an integer of the
+  level by an element of the place.  The stabiliser of a prime surjects onto the automorphisms of
+  the residue extension for a profinite group acting continuously just as for a finite one, so the
+  lift may be corrected over the level to act trivially on the residue field, which leaves its
+  restriction unchanged and puts it in inertia: **restriction carries inertia at a prime onto
+  inertia at the place below it**, however large the extension.
 
 * `InverseGalois.CFT.Profinite.OpenLevel` names the level itself.  An open subgroup of a topological
   group is closed, so the Galois correspondence for the Krull topology returns an open normal

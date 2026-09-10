@@ -20801,3 +20801,129 @@ IsTotallyRamifiedBelow φ ((layerSemidirectMap ℓ hα j).comp Φ) Ψ
 | `Shafarevich.LevelStepRepair` | 8840 | — |
 
 0 errors, 0 warnings, 0 sorries.
+
+## §1.84 A prescription cannot ask a homomorphism to be two things at one prime (2026-09-10)
+
+### (a) The defect
+
+`HasKernelPrescription` (`LevelKernelPrescription.lean:101`) asks, at once, for a homomorphism
+`u : ker φ →* layer` which
+
+1. takes prescribed values on `A μ ≤ stabilizer(Q μ)` (clause `hua`), and
+2. **kills** `stabilizer(ρ • Q μ)` for every `ρ` (clause `huorb`),
+
+the second clause being what makes the corestriction reproduce the first
+(`corCochain₁_eq_self_of_stabilizer_le`, `CFT/CorestrictionInertia.lean:103`).
+
+Taken literally the two clauses contradict each other.  Put `ρ ∈ ker φ`.  Then
+
+```
+stabilizer(ρ • Q μ) = ρ · stabilizer(Q μ) · ρ⁻¹
+```
+
+and for `y ∈ stabilizer(Q μ) ∩ ker φ` the element `ρ y ρ⁻¹` again lies in `ker φ`, so clause 2
+demands `u (ρ y ρ⁻¹) = 1`.  But `u` lands in an **abelian** group and `ρ ∈ ker φ = dom u`, so
+`u (ρ y ρ⁻¹) = u y`.  Clause 2 with `ρ ∈ ker φ` therefore forces `u` to vanish on the very subgroup
+clause 1 prescribes it on.  Any nonzero prescription makes `HasKernelPrescription` **false**.
+
+### (b) The repair
+
+`ρ ∉ φ.ker` is added to clauses 4 (`huorb`) and 5c of `HasKernelPrescription`.  That is exactly the
+hypothesis the corestriction needs and no more: the average
+`corCochain₁ (ker φ) σ hσ u` runs over the coset representatives `σ x`, and the term at the trivial
+coset is `u` itself, so the vanishing is only ever *applied* at `ρ = (σ x)⁻¹` with `x ≠ 1`, i.e. at
+`ρ ∉ ker φ` (`section_notMem_of_ne_one`).  `corCochain₁_eq_self_of_stabilizer_le` was weakened to
+match:
+
+```lean
+(hvan : ∀ ρ : G, ρ ∉ H → ∀ y : ↥H, (y : G) ∈ stabilizer G (ρ • P) → u y = 1)
+```
+
+Nothing downstream noticed: the descent
+`hasConfinedPrescription_of_hasKernelPrescription` only ever produces `ρ` outside the kernel.
+
+Root build after the repair: 9920 jobs, 0 errors, 0 warnings, 0 sorries.  Commit `6da9225`.
+
+## §1.85 Inertia lifts from a level, unconditionally (2026-09-10)
+
+### (a) What was missing
+
+The repo had only the easy half of the comparison between inertia upstairs and inertia at a level:
+`restrictNormal_mem_inertia` (`CFT/InertiaRestrict.lean`) sends `I_P(Ω/k)` into `I_v(L/k)`.  The
+surjectivity was available **only at a finite level and only over `ℚ`**
+(`map_inertia_eq_inertia`, `CFT/InertiaSurjective.lean:74`), by a counting argument that needs
+`card_inertia_eq_mul` (`CFT/UnramifiedCompositum.lean:94`), also `ℚ`-only.  Mathlib has no
+infinite-level inertia surjectivity at all.
+
+### (b) The cheap proof
+
+Mathlib *does* have the profinite decomposition statement:
+
+```lean
+theorem Ideal.Quotient.stabilizerHom_surjective_of_profinite
+    (P : Ideal A) (Q : Ideal B) [Q.IsPrime] [Q.LiesOver P] [Algebra.IsInvariant A B G] :
+    Function.Surjective (Ideal.Quotient.stabilizerHom Q P G)
+```
+
+(`Mathlib/RingTheory/Invariant/Profinite.lean:172`), for a profinite `G` acting continuously on a
+discrete `B`.  `InfiniteDecomposition.lean` already supplies every instance it wants for
+`G = Gal(K/↥L)`, `B = 𝓞 K`, `A = 𝓞 ↥L`.  That turns inertia lifting into three lines of
+bookkeeping, done in the new `CFT/Units/InertiaLift.lean`:
+
+1. `τ ∈ I_v(L/k)` fixes `v`, so `exists_mem_stabilizer_restrictNormalHom_eq` gives
+   `σ₀ ∈ Gal(K/k)` with `σ₀ • P = P` and `restrictNormalHom L σ₀ = τ`.
+2. Re-base the residue action of `σ₀⁻¹` from `𝓞 k ⧸ P∩𝓞k` to `𝓞 ↥L ⧸ v`.  The commutes-condition
+   for `AlgEquiv.ofRingEquiv` is `algebraMap (τ⁻¹ • z) - algebraMap z ∈ P`, which is *exactly*
+   `τ⁻¹ ∈ I_v(L/k)` read through `algebraMap_smul_restrictNormal`; `stabilizerHom_apply` and
+   `algebraMap_mk_of_liesOver` are both `rfl`, so nothing else is needed.
+3. Surjectivity over the level produces `ρ₀ ∈ stabilizer Gal(K/↥L) P` with that residue action, and
+   `ρ := ρ₀.restrictScalars k * σ₀` restricts to `τ` (`restrictNormalHom_restrictScalars`) and acts
+   trivially on `𝓞 K ⧸ P`, i.e. lies in `I_P(Ω/k)`.
+
+```lean
+theorem exists_mem_inertia_restrictNormalHom_eq {P : Ideal (𝓞 K)} [P.IsPrime]
+    {v : HeightOneSpectrum (𝓞 ↥L)} (hv : v.asIdeal = Ideal.under (𝓞 ↥L) P) {τ : Gal(↥L/k)}
+    (hτ : τ ∈ Ideal.inertia Gal(↥L/k) v.asIdeal) :
+    ∃ ρ : Gal(K/k), ρ ∈ Ideal.inertia Gal(K/k) P ∧
+      AlgEquiv.restrictNormalHom (F := k) (K₁ := K) ↥L ρ = τ
+
+theorem map_inertia_restrictNormalHom … :
+    (Ideal.inertia Gal(K/k) P).map (AlgEquiv.restrictNormalHom ↥L)
+      = Ideal.inertia Gal(↥L/k) v.asIdeal
+```
+
+Neither statement asks for `NumberField k`, nor for `K/k` finite: the base need only be the field
+the level is normal over.  `lake build …Units.InertiaLift` = 8212 jobs.
+
+Two Lean traps on the way: `algebraMap_smul_restrictNormal` and `restrictNormal_mem_inertia` take
+an `IntermediateField` argument, so they must be applied to `L`, **not** `↥L` (gotcha 29); and
+`τ • v = v` for `v : HeightOneSpectrum` needs `synthInstance.maxHeartbeats 400000` plus the
+`HeightOneSpectrum.ext (by rw [asIdeal_smul]; …)` idiom, since
+`MulAction Gal(↥L/k) (Ideal (𝓞 ↥L))` is expensive to synthesize.
+
+### (c) Why it is wanted: the route to `HasKummerCharInertiaLift`
+
+`HasKummerCharInertiaLift` (`CFT/Kummer/CharLift.lean:69`) is the last named local input of the
+converse Kummer dictionary: *every smooth character `χ : I_P(Ω/K) → ZMod n` at a prime away from
+`n` is `kummerChar` of a unit of `K`.*  It is genuinely true only because `μ_n ⊆ K`: a character
+coming from `Kˣ` is the restriction of a character of the whole decomposition subgroup, hence is
+Frobenius-invariant, and Frobenius acts on the tame `n`-part of inertia by `q`-th powers — but
+`μ_n ⊆ K` forces `n ∣ q - 1` at every `v ∤ n`, so the invariance is automatic.  The two halves:
+
+* **(A) the smooth characters of `I_P` form a cyclic group of order dividing `n`.**  A smooth `χ`
+  is trivial on `I_P ∩ N` for an open `N`; shrinking `N` to be normal in `Gal(Ω/ℚ)` makes the level
+  `M = Ω^N` finite Galois over `ℚ`, and `χ` factors through the image `J` of `I_P` in
+  `Gal(M/ℚ)`, a subgroup of `I_w(M/ℚ)`.  `tameChar` (`CFT/TameCharacter.lean`, base `ℚ`, which is
+  why the level is taken Galois over `ℚ`) has a kernel every element of which has `p`-power order
+  — by finding 3225, `tameChar σ = 1 → orderOf σ = 1 ∨ p ∣ orderOf σ`, applied to the prime-to-`p`
+  part — and `χ` kills such elements because `p ∤ n`.  So `χ` factors through
+  `J / (J ∩ ker tameChar) ↪ (𝓞M ⧸ w)ˣ`, cyclic.
+* **(B) `ψ := kummerChar h π` is surjective for `π ∈ Kˣ` with `ord_v π = 1`.**  If the image were
+  `d·ZMod n` with `d > 1` then `I_P` would fix `β := π^{1/d}`; `K(β)/K` is Galois (`μ_d ⊆ K`), so
+  by `map_inertia_restrictNormalHom` its inertia at `w = P ∩ 𝓞 K(β)` is the image of `I_P` and is
+  therefore trivial, whence `e(w/v) = 1` by `card_inertia_eq_ramIdx` (`CFT/BaseRamification.lean:56`,
+  already stated over a general base).  But `d · ord_w β = ord_w π = e(w/v) · ord_v π = 1`, so
+  `d = 1`.
+
+Given (A) and (B), every smooth `χ` is `m·ψ = kummerChar h (π^m)` and the input is discharged.
+Step (B) is precisely what the new brick was built for.
