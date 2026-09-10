@@ -1054,6 +1054,7 @@ import InverseGalois.CFT.Units.SplitPlaces
 import InverseGalois.CFT.Units.SplitPowIdele
 import InverseGalois.CFT.Units.SplitPowNorm
 import InverseGalois.CFT.Units.StablePlaceIdele
+import InverseGalois.CFT.Units.StablePlaces
 import InverseGalois.CFT.Units.TowerCoboundary
 import InverseGalois.CFT.Units.TowerDescent
 import InverseGalois.CFT.Units.UnitLattice
@@ -8069,4 +8070,13 @@ it that are available here.
   how a character assembled from units with prescribed local behaviour is shown to surject.  Inertia
   sees less than decomposition, and the character vanishes on it as soon as the order of the unit
   below is a multiple of the exponent, so the same units also control where the character ramifies.
+
+* `InverseGalois.CFT.Units.StablePlaces` collects the three demands a prescription of local
+  behaviour makes on the set of places it prescribes at.  The places carrying a nonzero natural
+  number are the prime factors of the ideal it generates, so there are finitely many of them; the
+  set carrying the ideal classes is already stable under the Galois group over the base field; and
+  the union of the translates of a finite set is finite and stable.  Adjoining these to each other
+  only enlarges the set, which weakens the demand that a system of orders away from it be realised,
+  so **every finite set of places lies inside a finite Galois stable set containing the places
+  above a prescribed exponent and carrying the ideal classes**.
 -/
