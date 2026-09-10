@@ -22,12 +22,15 @@ values are then reassembled.
 
 * `InverseGalois.Shafarevich.layerDim` — the dimension of a layer over the field with `ℓ` elements.
 * `InverseGalois.Shafarevich.layerCoord` — the coordinates of an element of a layer.
+* `InverseGalois.Shafarevich.layerBasis` — the basis the coordinates are read against.
 * `InverseGalois.Shafarevich.layerHomOfCoord` — **the homomorphism into a layer assembled from a
   tuple of additive characters.**
 
 ## Main results
 
 * `InverseGalois.Shafarevich.layerSub_ext` — an element of a layer is determined by its coordinates.
+* `InverseGalois.Shafarevich.prod_layerBasis_pow_layerCoord` — **an element of a layer is the
+  product of the powers of the basis by its coordinates.**
 * `InverseGalois.Shafarevich.layerCoord_layerHomOfCoord` — the coordinates of the assembled
   homomorphism are the characters it was assembled from.
 * `InverseGalois.Shafarevich.layerHomOfCoord_eq_of_coord_eq` — **the assembled homomorphism agrees
@@ -58,7 +61,31 @@ noncomputable def layerCoordEquiv :
 noncomputable def layerCoord (e : ↥(layerSub ℓ P j)) (i : Fin (layerDim ℓ P j)) : ZMod ℓ :=
   (layerCoordEquiv ℓ P j e i).toAdd
 
+/-- The basis of a layer the coordinates are read against. -/
+noncomputable def layerBasis (t : Fin (layerDim ℓ P j)) : ↥(layerSub ℓ P j) :=
+  (layerCoordEquiv ℓ P j).symm (Pi.mulSingle t (Multiplicative.ofAdd (1 : ZMod ℓ)))
+
 variable {ℓ P j}
+
+/-- An element of the basis of a layer is killed by the exponent. -/
+theorem layerBasis_pow_eq_one (t : Fin (layerDim ℓ P j)) : layerBasis ℓ P j t ^ ℓ = 1 :=
+  layerSub_pow_eq_one ℓ P j _
+
+/-- **An element of a layer is the product of the powers of the basis by its coordinates.** -/
+theorem prod_layerBasis_pow_layerCoord (e : ↥(layerSub ℓ P j)) :
+    ∏ t, layerBasis ℓ P j t ^ (layerCoord ℓ P j e t).val = e := by
+  haveI : NeZero ℓ := ⟨(Fact.out : ℓ.Prime).ne_zero⟩
+  refine (layerCoordEquiv ℓ P j).injective (funext fun t => ?_)
+  rw [_root_.map_prod]
+  simp only [layerBasis, _root_.map_pow, MulEquiv.apply_symm_apply]
+  rw [Finset.prod_apply, Finset.prod_eq_single t]
+  · rw [Pi.pow_apply, Pi.mulSingle_eq_same, ← ofAdd_nsmul, nsmul_eq_mul, mul_one,
+      ZMod.natCast_rightInverse _]
+    rfl
+  · intro s _ hs
+    rw [Pi.pow_apply, Pi.mulSingle_eq_of_ne (Ne.symm hs), one_pow]
+  · intro h
+    exact absurd (Finset.mem_univ t) h
 
 /-- An element of a layer is determined by its coordinates. -/
 theorem layerSub_ext {e e' : ↥(layerSub ℓ P j)}

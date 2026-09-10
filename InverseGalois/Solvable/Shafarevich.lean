@@ -82,6 +82,7 @@ import InverseGalois.Solvable.Shafarevich.LevelRungData
 import InverseGalois.Solvable.Shafarevich.LevelStepRepair
 import InverseGalois.Solvable.Shafarevich.LayerCoord
 import InverseGalois.Solvable.Shafarevich.KernelKummer
+import InverseGalois.Solvable.Shafarevich.KernelPrimeClass
 
 /-!
 # Shafarevich's theorem
@@ -743,4 +744,13 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   of the family is a local power; it is trivial along the inertia subgroup at a prime away from the
   exponent where every unit has order divisible by the exponent; and it takes a prescribed value
   wherever the characters of the units take the coordinates of that value.
+* `InverseGalois.Solvable.Shafarevich.KernelPrimeClass` turns the prescription at a named prime into
+  the currency itself.  Over the level the base realization cuts out the subgroup carrying a
+  prescription is either the whole decomposition subgroup at that prime or the whole inertia
+  subgroup there — the part of inertia the base realization kills is all of it once one is over the
+  level — so Kummer theory names each coordinate of the prescribed homomorphism by **a class in the
+  completion at the place below**, and any family of units of the level carrying those classes
+  assembles into a homomorphism restricting to the prescribed one.  Smoothness of the prescription
+  is what makes each of those characters trivial on an open subgroup, an open subgroup of a subgroup
+  of a Galois group containing the automorphisms of it which fix a finite extension of the base.
 -/
