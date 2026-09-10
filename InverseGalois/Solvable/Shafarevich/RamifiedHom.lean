@@ -24,6 +24,8 @@ the restriction is inherited.
   ramifies over the base realization, the base realization splits completely, the homomorphism is
   cyclic and totally ramified there, and the local field carries the roots of unity the next layer
   calls for.**
+* `InverseGalois.Shafarevich.IsCyclicRamifiedHom` — the same restriction with the roots of unity
+  rider dropped, a condition purely about the values the homomorphism takes.
 
 ## Main results
 
@@ -34,6 +36,8 @@ the restriction is inherited.
 * `InverseGalois.Shafarevich.isSplitTotallyRamifiedHom_of_le_zpowers` — **a homomorphism whose
   values on a decomposition subgroup lie in the powers of a single element killed by the prime
   carries the restriction**, the totally ramified clause coming for free from the prime order.
+* `InverseGalois.Shafarevich.isSplitTotallyRamifiedHom_of_isCyclicRamifiedHom` — **a uniform bound
+  on the order of the values restores the roots of unity rider.**
 
 ## Tags
 
@@ -154,5 +158,45 @@ theorem isSplitTotallyRamifiedHom_of_le_zpowers {φ : Gal(Ω/k) →* U} {Φ : Ga
       Subgroup.mem_zpowers_iff.1 (Subgroup.zpowers_le.2 hcmem (hle y hy))
     exact ⟨x ^ i, zpow_mem hxI i, by rw [_root_.map_zpow, hi]⟩
   · exact hμ ζ (by rwa [horder] at hζ) y hy
+
+/-! ### The restriction with the roots of unity taken out of it -/
+
+variable (ℓ) in
+/-- **At a prime where the homomorphism ramifies over the base realization, the base realization
+splits completely there and the homomorphism is cyclic and totally ramified** — the restriction
+with the roots of unity rider dropped.
+
+The rider is the only clause of the restriction which mentions the field rather than the values of
+the homomorphism, and it is the only one which cannot be read off a single prime in isolation: it
+asks the local field to carry the roots of unity of the prime times the order of the local image,
+an order which grows as the ladder is climbed.  Dropping it leaves a condition purely about values,
+and the rider is then restored once and for all from a single bound on the order of every value —
+which is what the exponent of the test group supplies.  The element bounding the local image is
+asked to be one of the values, so that the bound applies to it. -/
+def IsCyclicRamifiedHom (φ : Gal(Ω/k) →* U) (Φ : Gal(Ω/k) →* W) : Prop :=
+  ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
+    (∃ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1 ∧ Φ x ≠ 1) →
+      (∀ x ∈ stabilizer Gal(Ω/k) P, φ x = 1) ∧
+        (∀ x ∈ stabilizer Gal(Ω/k) P, ∃ y ∈ Ideal.inertia Gal(Ω/k) P, Φ x = Φ y) ∧
+          ∃ x₀ ∈ stabilizer Gal(Ω/k) P,
+            ∀ x ∈ stabilizer Gal(Ω/k) P, Φ x ∈ Subgroup.zpowers (Φ x₀)
+
+/-- **A uniform bound on the order of the values restores the roots of unity rider.**
+
+Where the homomorphism ramifies over the base realization the base realization kills the whole
+decomposition subgroup, so every value there is killed by the bound; in particular the value
+bounding the local image is, and the roots of unity the rider asks for are among those of order the
+prime times the bound, which the base realization is asked to fix outright. -/
+theorem isSplitTotallyRamifiedHom_of_isCyclicRamifiedHom {M : ℕ} {φ : Gal(Ω/k) →* U}
+    {Φ : Gal(Ω/k) →* W} (htors : ∀ x, φ x = 1 → Φ x ^ M = 1)
+    (hmu : ∀ ζ : Ωˣ, ζ ^ (ℓ * M) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ)
+    (h : IsCyclicRamifiedHom φ Φ) : IsSplitTotallyRamifiedHom ℓ φ Φ := by
+  intro P hPp hPbot hram
+  obtain ⟨hsplit, htot, x₀, hx₀, hgen⟩ := h P hPp hPbot hram
+  refine ⟨hsplit, htot, Φ x₀, hgen, fun ζ hζ x hx => ?_⟩
+  refine hmu ζ ?_ x (hsplit x hx)
+  obtain ⟨d, hd⟩ : ℓ * orderOf (Φ x₀) ∣ ℓ * M :=
+    mul_dvd_mul_left ℓ (orderOf_dvd_of_pow_eq_one (htors x₀ (hsplit x₀ hx₀)))
+  rw [hd, pow_mul, hζ, one_pow]
 
 end InverseGalois.Shafarevich

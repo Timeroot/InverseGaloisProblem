@@ -30,7 +30,8 @@ ladder which is only ever asked about base realizations whose fixed field contai
 ## Main definitions
 
 * `Shafarevich.GenericLevelStepEPRoots` — **the step of the ladder, asked only of base realizations
-  whose kernel fixes the roots of unity of a prescribed order.**
+  whose kernel fixes the roots of unity of order the square of the prime times the exponent of the
+  kernel of the embedding problem.**
 
 ## Main results
 
@@ -99,18 +100,21 @@ open InverseGalois.CFT InverseGalois.Shafarevich
 /-! ### The step of the ladder over a base with the roots of unity -/
 
 /-- **One step of the ladder of the descending `ℓ`-central series, asked only over a base
-realization whose field contains the `m`-th roots of unity.**
+realization whose field contains enough roots of unity.**
 
 This is the step of the ladder with one hypothesis added to the base realization: the subgroup it
-kills is required to fix every `m`-th root of unity, which is to say that the field the realization
-cuts out contains them.  Everything else — the family of subgroups and the property chosen in
-advance, the bottom of the ladder asked for outright, and one rung following from the previous
-one for every number of letters — is unchanged. -/
-def GenericLevelStepEPRoots (ℓ m : ℕ) : Prop :=
+kills is required to fix every root of unity of order the square of the prime times the exponent of
+the test group, which is to say that the field the realization cuts out contains them.  That is the
+bound the ramification restriction is measured against, and it is uniform: a solution at any rung
+and for any number of letters takes, at a prime where the base realization splits completely, only
+values killed by the exponent of the test group.  Everything else — the family of subgroups and the
+property chosen in advance, the bottom of the ladder asked for outright, and one rung following from
+the previous one for every number of letters — is unchanged. -/
+def GenericLevelStepEPRoots (ℓ : ℕ) : Prop :=
   ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
       (φ : Gal(Ω/ℚ) →* U), IsPGroup ℓ S → Function.Surjective φ → IsSmoothHom φ →
-      (∀ x ∈ φ.ker, ∀ ζ : Ω, ζ ^ m = 1 → x ζ = ζ) →
+      (∀ x ∈ φ.ker, ∀ ζ : Ω, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → x ζ = ζ) →
     ∃ (T : Set (Subgroup Gal(Ω/ℚ))) (P : LevelProperty ℓ U S ℚ Ω),
       (∀ i : ℕ, LevelSolution ℓ U S φ T P i 0) ∧ ∀ j : ℕ,
         (∀ i : ℕ, LevelSolution ℓ U S φ T P i j) → ∀ n : ℕ, LevelSolution ℓ U S φ T P n (j + 1)
@@ -118,14 +122,14 @@ def GenericLevelStepEPRoots (ℓ m : ℕ) : Prop :=
 /-- **The arithmetic package buys the restricted step of the ladder just as it buys the
 unrestricted one**, the extra hypothesis on the base realization being carried straight through to
 the place where the package is supplied. -/
-theorem genericLevelStepEPRoots_of_hasRungData (ℓ m : ℕ) [Fact ℓ.Prime]
+theorem genericLevelStepEPRoots_of_hasRungData (ℓ : ℕ) [Fact ℓ.Prime]
     (h : ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
         [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
         (φ : Gal(Ω/ℚ) →* U), IsPGroup ℓ S → Function.Surjective φ → IsSmoothHom φ →
-        (∀ x ∈ φ.ker, ∀ ζ : Ω, ζ ^ m = 1 → x ζ = ζ) →
+        (∀ x ∈ φ.ker, ∀ ζ : Ω, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → x ζ = ζ) →
       ∃ (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (T : Set (Subgroup Gal(Ω/ℚ)))
           (P : LevelProperty ℓ U S ℚ Ω), HasRungData ℓ U S φ D T P) :
-    GenericLevelStepEPRoots ℓ m := by
+    GenericLevelStepEPRoots ℓ := by
   intro S U _ _ _ _ _ _ Ω _ _ _ _ φ hS hsurj hsm hroots
   obtain ⟨t, D, T, P, hdata⟩ := h S U Ω φ hS hsurj hsm hroots
   exact ⟨Set.range D, P, hdata.1,
@@ -134,18 +138,19 @@ theorem genericLevelStepEPRoots_of_hasRungData (ℓ m : ℕ) [Fact ℓ.Prime]
 /-! ### The reduction -/
 
 /-- **A cyclotomic level solves the generic split embedding problem over its own Galois group.**
-The Galois group of a finite Galois extension containing the `m`-th roots of unity is realized by
-restriction from the algebraic closure, and the subgroup that restriction kills fixes the extension
-and hence those roots of unity, so the restricted step of the ladder applies to it. -/
-theorem isInverseGalois_generic_of_genericLevelStepEPRoots {ℓ m : ℕ} [Fact ℓ.Prime]
-    (h : GenericLevelStepEPRoots ℓ m) (S : Type) [Group S] [Finite S] (hS : IsPGroup ℓ S) (n : ℕ)
+The Galois group of a finite Galois extension containing the roots of unity of order the square of
+the prime times the exponent of the kernel is realized by restriction from the algebraic closure,
+and the subgroup that restriction kills fixes the extension and hence those roots of unity, so the
+restricted step of the ladder applies to it. -/
+theorem isInverseGalois_generic_of_genericLevelStepEPRoots {ℓ : ℕ} [Fact ℓ.Prime]
+    (h : GenericLevelStepEPRoots ℓ) (S : Type) [Group S] [Finite S] (hS : IsPGroup ℓ S) (n : ℕ)
     (E : IntermediateField ℚ (AlgebraicClosure ℚ)) [FiniteDimensional ℚ ↥E] [IsGalois ℚ ↥E]
-    (hroots : ∀ ζ : AlgebraicClosure ℚ, ζ ^ m = 1 → ζ ∈ E) :
+    (hroots : ∀ ζ : AlgebraicClosure ℚ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ζ ∈ E) :
     IsInverseGalois (Generic Gal(↥E/ℚ) n S ⋊[genericAut Gal(↥E/ℚ) n S] Gal(↥E/ℚ)) := by
   letI : TopologicalSpace Gal(↥E/ℚ) := ⊥
   haveI : DiscreteTopology Gal(↥E/ℚ) := ⟨rfl⟩
   have hker : ∀ x ∈ (AlgEquiv.restrictNormalHom (F := ℚ) (K₁ := AlgebraicClosure ℚ) ↥E).ker,
-      ∀ ζ : AlgebraicClosure ℚ, ζ ^ m = 1 → x ζ = ζ := by
+      ∀ ζ : AlgebraicClosure ℚ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → x ζ = ζ := by
     intro x hx ζ hζ
     rw [IntermediateField.restrictNormalHom_ker] at hx
     simp only [IntermediateField.mem_fixingSubgroup_iff] at hx
@@ -167,13 +172,15 @@ extension containing the roots of unity of the prescribed order, and the same ke
 pulled back along that covering poses a problem over the larger group.  The restricted step solves
 the generic problem there, hence the pulled back one, and the original problem is its quotient by a
 map which is the identity on the kernel and the covering on the outer factor. -/
-theorem splitPrimePowerEP_of_genericLevelStepEPRoots {m : ℕ → ℕ} (hm : ∀ ℓ, m ℓ ≠ 0)
-    (h : ∀ ℓ : ℕ, ℓ.Prime → GenericLevelStepEPRoots ℓ (m ℓ)) : SplitPrimePowerEP := by
+theorem splitPrimePowerEP_of_genericLevelStepEPRoots
+    (h : ∀ ℓ : ℕ, ℓ.Prime → GenericLevelStepEPRoots ℓ) : SplitPrimePowerEP := by
   intro H U _ _ _ _ p hp hH φ hU
-  haveI : NeZero (m p) := ⟨hm p⟩
+  haveI : NeZero (p * p * Monoid.exponent H) :=
+    ⟨mul_ne_zero (mul_ne_zero hp.out.ne_zero hp.out.ne_zero) Monoid.exponent_ne_zero_of_finite⟩
   letI : TopologicalSpace U := ⊥
   haveI : DiscreteTopology U := ⟨rfl⟩
-  obtain ⟨E, hfin, hgal, π, hπsurj, hroots⟩ := exists_level_containing_roots U hU (m p)
+  obtain ⟨E, hfin, hgal, π, hπsurj, hroots⟩ :=
+    exists_level_containing_roots U hU (p * p * Monoid.exponent H)
   haveI := hfin
   haveI := hgal
   have hgen : IsInverseGalois (H ⋊[φ.comp π] Gal(↥E/ℚ)) :=

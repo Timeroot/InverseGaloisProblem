@@ -60,6 +60,9 @@ exactly that bound are what the property asks the local field to carry.
 * `InverseGalois.Shafarevich.hasSplitRamifiedLift_of_hasCyclicLift` — **the ramified case asks
   nothing of the tower**: it follows from the lifting of cyclic characters of prime-power order at
   the decomposition subgroups of the primes the base realization splits completely.
+* `InverseGalois.Shafarevich.pow_exponent_eq_one_of_rightHom_eq_one` — **an element of the group at
+  a level lying over the identity of the base group is killed by the exponent of the test group**,
+  whatever the level and however many letters.
 
 ## Tags
 
@@ -186,6 +189,34 @@ theorem exists_pow_eq_one_of_rightHom_eq_one (hS : IsPGroup ℓ S)
     refine SemidirectProduct.ext rfl ?_
     exact hy
   rw [hyl, ← _root_.map_pow, ha, _root_.map_one]
+
+omit [Fact ℓ.Prime] [Group U] [Finite U] [Finite S] in
+/-- **The generic operator group is killed by the exponent of the test group.**
+
+It is the free operator group divided by the elements every homomorphism to the test group kills,
+and the exponent power of any element is such an element. -/
+theorem pow_exponent_eq_one_generic (x : Generic U n S) : x ^ Monoid.exponent S = 1 := by
+  obtain ⟨y, rfl⟩ := QuotientGroup.mk_surjective x
+  rw [← QuotientGroup.mk_pow]
+  refine (QuotientGroup.eq_one_iff _).2 ((mem_testPi_ker U n S).2 fun f => ?_)
+  rw [_root_.map_pow, Monoid.pow_exponent_eq_one]
+
+omit [Fact ℓ.Prime] [Finite U] [Finite S] in
+/-- **An element of the group at a level lying over the identity of the base group is killed by the
+exponent of the test group.**
+
+Such an element comes from a quotient of the generic operator group, and the generic operator group
+is killed by that exponent.  This is the uniform bound the roots of unity the ladder asks the base
+realization to carry are measured against: at a prime where the base realization splits completely
+every value of a solution is killed by it, whatever the level and however many letters. -/
+theorem pow_exponent_eq_one_of_rightHom_eq_one {y : GenericQuot ℓ U n S j}
+    (hy : SemidirectProduct.rightHom y = 1) : y ^ Monoid.exponent S = 1 := by
+  have hyl : y = SemidirectProduct.inl y.left := by
+    refine SemidirectProduct.ext rfl ?_
+    exact hy
+  obtain ⟨g, hg⟩ := QuotientGroup.mk_surjective (s := pCentral ℓ (Generic U n S) j) y.left
+  rw [hyl, ← _root_.map_pow, ← hg, ← QuotientGroup.mk_pow, pow_exponent_eq_one_generic,
+    QuotientGroup.mk_one, _root_.map_one]
 
 end Order
 

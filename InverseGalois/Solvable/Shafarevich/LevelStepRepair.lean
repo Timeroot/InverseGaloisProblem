@@ -67,13 +67,13 @@ the restriction on ramification is in hand, and what is asked is that the restri
 The layer must be past the first, the layer there being the Frattini layer, and the property is the
 one the family is built for, that the field a solution cuts out ramify only at primes where the
 base field splits completely and the local extension is cyclic and totally ramified.  The base
-realization is asked to fix the roots of unity of order the square of the prime, which is what the
-restricted step of the ladder puts into it. -/
+realization is asked to fix the roots of unity of order the square of the prime times the exponent
+of the test group, which is what the restricted step of the ladder puts into it. -/
 def SolutionRepairEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
   ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
       (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
-      (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
+      (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
     HasSolutionRepair ℓ U n S j φ D (IsSplitTotallyRamified ℓ U S φ)
 
 /-- **The repair of the property, asked to return only a lift.**
@@ -85,7 +85,7 @@ def LiftRepairEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
   ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
       (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
-      (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
+      (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
     HasLiftRepair ℓ U n S j φ D
 
 /-- **The repair of the property, with the property read prime by prime.**
@@ -98,7 +98,7 @@ def CyclicRepairEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
   ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
       (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
-      (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
+      (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
     HasCyclicRepair ℓ U n S j φ D
 
 /-- **Repairing a lift repairs a solution.**  Past the first layer the layer lies in the Frattini
@@ -112,12 +112,14 @@ theorem solutionRepairEP_of_liftRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (h : LiftR
 
 /-- **Confining the new ramification and making it cyclic repairs a lift.**  At a prime where the
 solution below splits completely the values of a lift on the decomposition subgroup come from the
-layer and are killed by the prime, and the base realization fixes the roots of unity of order the
-square of the prime, so cyclicity is the whole of what the restriction asks there. -/
+generic operator group and are killed by the exponent of the test group, and the base realization
+fixes the roots of unity of order the prime times that exponent, so cyclicity is the whole of what
+the restriction asks there. -/
 theorem liftRepairEP_of_cyclicRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (h : CyclicRepairEP ℓ) :
     LiftRepairEP ℓ := by
   intro S U _ _ _ _ _ _ Ω _ _ _ _ φ t D n j hS hj hmu
-  exact hasLiftRepair_of_hasCyclicRepair hmu (h S U Ω φ t D n j hS hj hmu)
+  refine hasLiftRepair_of_hasCyclicRepair (fun ζ hζ => hmu ζ ?_) (h S U Ω φ t D n j hS hj hmu)
+  rw [mul_right_comm, pow_mul, hζ, one_pow]
 
 /-! ### The step -/
 
@@ -129,8 +131,8 @@ prime lie in that level because the realization is asked to fix those of order i
 level with its root of unity produces the finite family carrying six of the seven clauses of the
 package the ladder consumes.  The seventh is supplied. -/
 theorem genericLevelStepEPRoots_of_solutionRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (hodd : 2 < ℓ)
-    (h : SolutionRepairEP ℓ) : GenericLevelStepEPRoots ℓ (ℓ * ℓ) := by
-  refine genericLevelStepEPRoots_of_hasRungData ℓ (ℓ * ℓ) ?_
+    (h : SolutionRepairEP ℓ) : GenericLevelStepEPRoots ℓ := by
+  refine genericLevelStepEPRoots_of_hasRungData ℓ ?_
   intro S U _ _ _ _ _ _ Ω _ _ _ _ φ hS hsurj hsm hroots
   haveI : IsAlgClosure ℚ Ω := ⟨inferInstance, inferInstance⟩
   haveI : NeZero ℓ := ⟨(Fact.out : ℓ.Prime).ne_zero⟩
@@ -140,29 +142,32 @@ theorem genericLevelStepEPRoots_of_solutionRepairEP (ℓ : ℕ) [Fact ℓ.Prime]
   haveI := hgal
   haveI : NumberField ↥K := numberField_of_finiteDimensional K
   obtain ⟨z, hz⟩ := exists_isPrimitiveRoot_of_isAlgClosure ℚ Ω ℓ
-  have hzsq : z ^ (ℓ * ℓ) = 1 := by
-    rw [pow_mul, hz.pow_eq_one, one_pow]
+  have hzsq : z ^ (ℓ * ℓ * Monoid.exponent S) = 1 := by
+    rw [pow_mul, pow_mul, hz.pow_eq_one, one_pow, one_pow]
   have hzK : z ∈ K := hKmem z fun σ hσ => hroots σ hσ z hzsq
   have hζ : IsPrimitiveRoot (⟨z, hzK⟩ : ↥K) ℓ :=
     IsPrimitiveRoot.of_map_of_injective (f := algebraMap ↥K Ω) hz (algebraMap ↥K Ω).injective
-  have hmu : ∀ y : Ωˣ, y ^ (ℓ * ℓ) = 1 → ∀ σ ∈ φ.ker, σ • y = y := by
+  have hmuE : ∀ y : Ωˣ, y ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • y = y := by
     intro y hy σ hσ
     refine Units.ext ?_
     show σ ((y : Ω)) = (y : Ω)
     refine hroots σ hσ (y : Ω) ?_
     simpa using congrArg Units.val hy
+  have hmu : ∀ y : Ωˣ, y ^ (ℓ * ℓ) = 1 → ∀ σ ∈ φ.ker, σ • y = y := by
+    refine fun y hy => hmuE y ?_
+    rw [pow_mul, hy, one_pow]
   obtain ⟨t, Pr, -, hdata⟩ :=
     exists_family_rungData hodd hS hsurj hsm K hKker hζ hmu ∅ Set.finite_empty
-  exact ⟨t, _, _, _, hdata fun n j hj => h S U Ω φ t _ n j hS hj hmu⟩
+  exact ⟨t, _, _, _, hdata fun n j hj => h S U Ω φ t _ n j hS hj hmuE⟩
 
 /-- **The step of the ladder, in exchange for the repair of a lift alone.** -/
 theorem genericLevelStepEPRoots_of_liftRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (hodd : 2 < ℓ)
-    (h : LiftRepairEP ℓ) : GenericLevelStepEPRoots ℓ (ℓ * ℓ) :=
+    (h : LiftRepairEP ℓ) : GenericLevelStepEPRoots ℓ :=
   genericLevelStepEPRoots_of_solutionRepairEP ℓ hodd (solutionRepairEP_of_liftRepairEP ℓ h)
 
 /-- **The step of the ladder, in exchange for the repair read prime by prime.** -/
 theorem genericLevelStepEPRoots_of_cyclicRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (hodd : 2 < ℓ)
-    (h : CyclicRepairEP ℓ) : GenericLevelStepEPRoots ℓ (ℓ * ℓ) :=
+    (h : CyclicRepairEP ℓ) : GenericLevelStepEPRoots ℓ :=
   genericLevelStepEPRoots_of_liftRepairEP ℓ hodd (liftRepairEP_of_cyclicRepairEP ℓ h)
 
 end Shafarevich

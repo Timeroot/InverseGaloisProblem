@@ -373,7 +373,12 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   arbitrary group.  Nothing in it mentions the group a homomorphism lands in, and stating it there
   is what lets a solution be assembled in a group convenient for the arithmetic â€” a group of
   functions on the base group, say, whose Kummer theory is transparent â€” and only afterwards pushed
-  forward to the group the ladder names.
+  forward to the group the ladder names.  The same file separates out the part of the restriction
+  that is about values alone, dropping the clause that asks the local field for roots of unity, and
+  shows that **a uniform bound on the order of the values restores that clause**: if every value the
+  homomorphism takes where the base realization is trivial is killed by one fixed number, then a
+  base realization fixing the roots of unity of the prime times that number turns the restriction
+  read off values into the restriction itself.
 * `InverseGalois.Solvable.Shafarevich.RamifiedTransport` makes that restriction a finite condition.
   Its three clauses speak only of the decomposition and inertia subgroups of a prime and of the
   values two homomorphisms take on them, and moving a prime by an automorphism conjugates both
@@ -505,7 +510,11 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   prime-power order** along a surjection raising that order once, at the decomposition subgroups of
   the primes the base realization splits completely, and with the order bounded by the order of the
   generator of the local image times the prime â€” which is exactly the bound whose roots of unity
-  the restriction asks the local field to carry.
+  the restriction asks the local field to carry.  That bound is itself bounded, and uniformly: the
+  generic operator group is the free operator group divided by what every homomorphism into the test
+  group kills, so **it is killed by the exponent of the test group**, and a value of a solution
+  lying over the identity of the base group comes from it, whatever the level and however many
+  letters.
 * `InverseGalois.Solvable.Shafarevich.RamifiedSplit` reads the restriction at a single prime where
   the solution below splits completely, which is where a repaired lift is allowed to acquire new
   ramification.  The values of the lift on the decomposition subgroup lie over the identity of the
@@ -517,15 +526,17 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   order of the generator divides the prime, and the base realization is asked to fix the roots of
   unity of order its square.  So **cyclicity is the whole of the restriction at a prime the solution
   below splits completely.**
-* `InverseGalois.Solvable.Shafarevich.LevelCyclicRepair` reads the repair prime by prime.  A prime
-  at which a lift ramifies over the base realization is of one of three kinds according to the
-  solution below: it may already ramify there, in which case the restriction is asked of the lift
-  outright; it may neither ramify nor split completely there, in which case the restriction cannot
-  be met at all and the lift is asked not to ramify; or it may split completely there, in which case
-  the lift is asked only for a cyclic local image.  So **the repair the ladder needs is the
-  production of a lift whose new ramification is confined to the primes at which the solution below
-  splits completely and is cyclic there** â€” a demand about ramification alone, which is the shape
-  the class field theory answers in.
+* `InverseGalois.Solvable.Shafarevich.LevelCyclicRepair` takes the roots of unity out of the repair.
+  All but one clause of the restriction is a statement about the values a lift takes on the
+  decomposition and inertia subgroups of a prime; the remaining clause is about the field, the local
+  field being asked to carry the roots of unity of the prime times the order of the local image, and
+  that order is not fixed in advance because it may grow as the ladder is climbed.  It is bounded,
+  though, by the exponent of the test group, which depends on neither the level nor the number of
+  letters, so **asking the base realization to fix the roots of unity of the prime times that
+  exponent discharges the field clause once and for all**.  What is left is a demand about values
+  alone: **a lift, trivial along the family, which ramifies over the base realization only where the
+  base realization splits completely and is cyclic and totally ramified there** â€” the shape the
+  class field theory answers in.
 * `InverseGalois.Solvable.Shafarevich.CyclicLift` closes that case.  The powers of an element are
   carried onto the powers of any other element whose order divides them, by sending one generator
   to the other; this is well defined because two exponents with the same power of the first element
@@ -641,8 +652,9 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   normal, so the subfield it fixes is a finite Galois extension whose fixing subgroup is exactly
   that kernel, and it is a number field because the base is.  The roots of unity of order the prime
   lie in it, the restricted step of the ladder having asked the realization to fix those of order
-  the square of the prime, so the family and with it six of the seven clauses are available for
-  every base realization at once.  So **for an odd prime the repair of the property on a lift is
+  the square of the prime times the exponent of the kernel, so the family and with it six of the
+  seven clauses are available for every base realization at once.  So **for an odd prime the repair
+  of the property on a lift is
   the only thing between the arithmetic and the step of the ladder**.  The residual condition is
   named in three forms, each implying the one before it: a repair returning a whole solution, a
   repair returning only a lift, and a repair returning a lift whose ramification is described one
