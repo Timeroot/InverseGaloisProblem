@@ -328,6 +328,7 @@ import InverseGalois.CFT.Kummer.AmbientRadical
 import InverseGalois.CFT.Kummer.CentralEmbedding
 import InverseGalois.CFT.Kummer.CentralEmbeddingPlaces
 import InverseGalois.CFT.Kummer.CentralEmbeddingSqrtNegOne
+import InverseGalois.CFT.Kummer.CharLocalClass
 import InverseGalois.CFT.Kummer.CharPlace
 import InverseGalois.CFT.Kummer.CocycleDescent
 import InverseGalois.CFT.Kummer.CongruentRadical
@@ -8100,6 +8101,17 @@ it that are available here.
   how a character assembled from units with prescribed local behaviour is shown to surject.  Inertia
   sees less than decomposition, and the character vanishes on it as soon as the order of the unit
   below is a multiple of the exponent, so the same units also control where the character ramifies.
+
+* `InverseGalois.CFT.Kummer.CharLocalClass` turns that reading into a dictionary.  The Kummer
+  character is additive in the unit, so the characters of two units agree at an automorphism exactly
+  when the character of their quotient vanishes there; combined with the vanishing criterion this
+  says that **the class of a unit in a completion and the Kummer character it carries on a
+  decomposition subgroup above that place are the same piece of information**.  Two units with the
+  same local class are indistinguishable there by any character built out of them, and conversely
+  the local class is read off the character.  One subgroup down the same holds at a place away from
+  the exponent: units whose quotient has order there a multiple of the exponent carry the same
+  character on inertia.  That is the form in which an arithmetic construction prescribing local
+  classes is read as one prescribing characters.
 
 * `InverseGalois.CFT.Units.StablePlaces` collects the three demands a prescription of local
   behaviour makes on the set of places it prescribes at.  The places carrying a nonzero natural

@@ -76,7 +76,10 @@ the layer through its kernel, so a cocycle of the kernel is a homomorphism, and 
 one about homomorphisms into a finite abelian group.  The named primes are asked to be completely
 decomposed in the field the kernel cuts out, and the homomorphism is asked to kill the
 decomposition subgroups of the other primes of each of their orbits, so that averaging it back down
-to the base field reproduces it at the prescribed data.  The same is asked at each prime the
+to the base field reproduces it at the prescribed data; distinct named primes lie in distinct
+orbits, so those demands do not collide.  Each subgroup carrying a prescription is
+either the whole decomposition subgroup of its prime or the part of inertia the base realization
+kills, the two shapes the repair produces.  The same is asked at each prime the
 homomorphism itself brings in, where it is asked in addition to be cyclic on the decomposition
 subgroup and the given lift to kill that subgroup outright.
 
@@ -89,8 +92,11 @@ def HasKernelPrescription : Prop :=
       (Q : ι → Ideal (𝓞 Ω)) (A : ι → Subgroup Gal(Ω/k))
       (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U n S) j)),
     IsSmoothHom F → (∀ μ, (Q μ).IsPrime) → (∀ μ, Q μ ≠ ⊥) →
+    (∀ (μ ν : ι) (ρ : Gal(Ω/k)), ρ • Q μ = Q ν → μ = ν) →
     (∀ μ, stabilizer Gal(Ω/k) (Q μ) ≤ φ.ker) →
     (∀ μ, A μ ≤ stabilizer Gal(Ω/k) (Q μ)) → (∀ μ, A μ ≤ φ.ker) →
+    (∀ μ, A μ = stabilizer Gal(Ω/k) (Q μ) ∨
+      A μ = Ideal.inertia Gal(Ω/k) (Q μ) ⊓ φ.ker) →
     (∀ μ, IsSmooth₁ ((a μ : ↥(A μ) →* ↥(layerSub ℓ (Generic U n S) j)) :
       ↥(A μ) → ↥(layerSub ℓ (Generic U n S) j))) →
       ∃ u : ↥(φ.ker) →* ↥(layerSub ℓ (Generic U n S) j),
@@ -136,9 +142,9 @@ theorem hasConfinedPrescription_of_hasKernelPrescription
     (hpres : HasKernelPrescription ℓ U n S j φ D) :
     HasConfinedPrescription ℓ U n S j φ D := by
   classical
-  intro hφopen F ι _ Q A a hFsm hQp hQbot hQker hAstab hAker hasm
+  intro hφopen F ι _ Q A a hFsm hQp hQbot hQorb hQker hAstab hAker hAcase hasm
   obtain ⟨u, husm, huD, hua, huorb, huram⟩ :=
-    hpres hφopen F ι Q A a hFsm hQp hQbot hQker hAstab hAker hasm
+    hpres hφopen F ι Q A a hFsm hQp hQbot hQorb hQker hAstab hAker hAcase hasm
   haveI : Finite (Gal(Ω/k) ⧸ φ.ker) :=
     Finite.of_injective _ (QuotientGroup.kerLift_injective φ)
   haveI : Fintype (Gal(Ω/k) ⧸ φ.ker) := Fintype.ofFinite _

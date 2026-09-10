@@ -133,17 +133,19 @@ allowed to.**
 The subgroups the cocycle is prescribed along are asked to sit inside the decomposition subgroups of
 finitely many named primes and inside the kernel of the base realization, which is what makes the
 prescription well posed: on such a subgroup the action on the layer is trivial, so a cocycle
-restricts there to a homomorphism.  The named primes are themselves asked to be completely
-decomposed in the field the base realization cuts out — their whole decomposition subgroups lie in
-its kernel — which is what allows the prescription to be made over that field and carried down.
-Along the finite family the cocycle is asked to vanish wherever the base realization already does.
+restricts there to a homomorphism.  The named primes are asked to lie in pairwise distinct orbits,
+so that no two prescriptions are made at conjugate primes.  Each such subgroup is either the whole
+decomposition subgroup or the part of inertia the base realization kills, the two shapes the repair
+produces.  The named primes are themselves asked to be completely decomposed in the field the base
+realization cuts out — their whole decomposition subgroups lie in its kernel — which is what allows
+the prescription to be made over that field and carried down.  Along the finite family the cocycle
+is asked to vanish wherever the base realization already does.
 
 The last clause is the one which confines the new ramification.  At a prime where the cocycle
 ramifies along the part of inertia the base realization kills, either that prime is one of the
-named ones, or it is a prime the cocycle brings in by
-itself, and there it is asked to be cyclic and the given lift to kill the whole decomposition
-subgroup — which is what a prime chosen to split completely in the field the lift cuts out
-supplies.
+named ones, or it is a prime the cocycle brings in by itself, and there it is asked to be cyclic
+and the given lift to kill the whole decomposition subgroup — which is what a prime chosen to split
+completely in the field the lift cuts out supplies.
 
 The base realization is asked to be smooth, its kernel open, that field being a finite extension. -/
 def HasConfinedPrescription : Prop :=
@@ -152,8 +154,11 @@ def HasConfinedPrescription : Prop :=
       (Q : ι → Ideal (𝓞 Ω)) (A : ι → Subgroup Gal(Ω/k))
       (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U n S) j)),
     IsSmoothHom F → (∀ μ, (Q μ).IsPrime) → (∀ μ, Q μ ≠ ⊥) →
+    (∀ (μ ν : ι) (ρ : Gal(Ω/k)), ρ • Q μ = Q ν → μ = ν) →
     (∀ μ, stabilizer Gal(Ω/k) (Q μ) ≤ φ.ker) →
     (∀ μ, A μ ≤ stabilizer Gal(Ω/k) (Q μ)) → (∀ μ, A μ ≤ φ.ker) →
+    (∀ μ, A μ = stabilizer Gal(Ω/k) (Q μ) ∨
+      A μ = Ideal.inertia Gal(Ω/k) (Q μ) ⊓ φ.ker) →
     (∀ μ, IsSmooth₁ ((a μ : ↥(A μ) →* ↥(layerSub ℓ (Generic U n S) j)) :
       ↥(A μ) → ↥(layerSub ℓ (Generic U n S) j))) →
       ∃ c : Gal(Ω/k) → ↥(layerSub ℓ (Generic U n S) j), IsMulCocycle₁ c ∧ IsSmooth₁ c ∧
@@ -168,6 +173,8 @@ def HasConfinedPrescription : Prop :=
 
 variable {ℓ U n S j φ D}
 
+set_option synthInstance.maxHeartbeats 800000 in
+set_option maxHeartbeats 1600000 in
 omit [Fact ℓ.Prime] [IsAlgClosed Ω] in
 /-- **The repair is bought with two prescriptions in degree one.**
 
@@ -225,6 +232,8 @@ theorem hasSplitCyclicRepair_of_hasConfinedPrescription
   have hstep : ∀ μ : {μ : Fin s // RamifiesAt φ f (Pr μ)}, ∃ (A : Subgroup Gal(Ω/k))
       (a : ↥A →* ↥(layerSub ℓ (Generic U n S) j)),
       A ≤ stabilizer Gal(Ω/k) (Pr (μ : Fin s)) ∧ A ≤ φ.ker ∧
+        (A = stabilizer Gal(Ω/k) (Pr (μ : Fin s)) ∨
+          A = Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ⊓ φ.ker) ∧
         IsSmooth₁ ((a : ↥A →* ↥(layerSub ℓ (Generic U n S) j)) :
           ↥A → ↥(layerSub ℓ (Generic U n S) j)) ∧
         ∀ Ψ : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1),
@@ -249,7 +258,8 @@ theorem hasSplitCyclicRepair_of_hasConfinedPrescription
       obtain ⟨z, hzmem, hz⟩ := exists_generator_of_le_zpowers hrange
       obtain ⟨x₀, hx₀⟩ := hzmem
       refine ⟨stabilizer Gal(Ω/k) (Pr μ), a, le_rfl,
-        fun x hx => MonoidHom.mem_ker.2 (hsplit x hx), has, fun Ψ hΨ _ => ⟨⟨hsplit, ?_⟩, ?_⟩⟩
+        fun x hx => MonoidHom.mem_ker.2 (hsplit x hx), Or.inl rfl, has,
+        fun Ψ hΨ _ => ⟨⟨hsplit, ?_⟩, ?_⟩⟩
       · have hΨ0 : Ψ ((x₀ : ↥(stabilizer Gal(Ω/k) (Pr μ))) : Gal(Ω/k)) = z :=
           ((hΨ x₀).trans (hafg x₀)).trans hx₀
         refine ⟨(x₀ : Gal(Ω/k)), x₀.2, fun x hx => ?_⟩
@@ -266,7 +276,8 @@ theorem hasSplitCyclicRepair_of_hasConfinedPrescription
         exists_hom_inl_eq (layerExtension ℓ (genericAut U n S) j) hfright
           (Ideal.inertia Gal(Ω/k) (Pr μ) ⊓ φ.ker) hΦ1
       refine ⟨Ideal.inertia Gal(Ω/k) (Pr μ) ⊓ φ.ker, a₀⁻¹,
-        le_trans inf_le_left (Ideal.inertia_le_stabilizer (Pr μ)), inf_le_right, ?_, ?_⟩
+        le_trans inf_le_left (Ideal.inertia_le_stabilizer (Pr μ)), inf_le_right, Or.inr rfl,
+        ?_, ?_⟩
       · obtain ⟨B, hB, hBa⟩ :=
           isSmooth₁_of_inl_comp (layerExtension ℓ (genericAut U n S) j) ha₀ hfs
         refine ⟨B, hB, fun x m hm => ?_⟩
@@ -279,25 +290,67 @@ theorem hasSplitCyclicRepair_of_hasConfinedPrescription
         have h1 : Ψ x = (layerExtension ℓ (genericAut U n S) j).inl ((a₀ ⟨x, hmem⟩)⁻¹) * f x :=
           hΨ ⟨x, hmem⟩
         rw [h1, ← ha₀ ⟨x, hmem⟩, ← _root_.map_mul, inv_mul_cancel, _root_.map_one]
-  choose A a hAstab hAker hasm hAkey using hstep
+  choose A a hAstab hAker hAcase hasm hAkey using hstep
+  have hmin : ∀ μ : Fin s, RamifiesAt φ f (Pr μ) →
+      ∃ μ' : Fin s, (RamifiesAt φ f (Pr μ') ∧
+        ∀ ν, ν < μ' → ¬∃ ρ : Gal(Ω/k), Pr μ' = ρ • Pr ν) ∧
+        ∃ τ : Gal(Ω/k), Pr μ = τ • Pr μ' := by
+    classical
+    intro μ hμ
+    set Trep : Finset (Fin s) :=
+      Finset.univ.filter (fun ν => ∃ ρ : Gal(Ω/k), Pr μ = ρ • Pr ν) with hTrep
+    have hmemT : ∀ ν, ν ∈ Trep ↔ ∃ ρ : Gal(Ω/k), Pr μ = ρ • Pr ν := by
+      intro ν
+      rw [hTrep, Finset.mem_filter]
+      exact ⟨fun h => h.2, fun h => ⟨Finset.mem_univ _, h⟩⟩
+    have hne : Trep.Nonempty := ⟨μ, (hmemT μ).2 ⟨1, (one_smul Gal(Ω/k) (Pr μ)).symm⟩⟩
+    obtain ⟨τ, hτ⟩ := (hmemT _).1 (Trep.min'_mem hne)
+    refine ⟨Trep.min' hne, ⟨?_, ?_⟩, τ, hτ⟩
+    · refine (ramifiesAt_smul_iff (ρ := τ)).1 ?_
+      rwa [← hτ]
+    · rintro ν hν ⟨ρ, hρ⟩
+      refine absurd (Trep.min'_le ν ((hmemT ν).2 ⟨τ * ρ, ?_⟩)) (not_le.2 hν)
+      rw [hτ, hρ, mul_smul τ ρ (Pr ν)]
+  have hQorb : ∀ (μ ν : {μ : Fin s // RamifiesAt φ f (Pr μ) ∧
+        ∀ ν, ν < μ → ¬∃ ρ : Gal(Ω/k), Pr μ = ρ • Pr ν}) (ρ : Gal(Ω/k)),
+      ρ • Pr (μ : Fin s) = Pr (ν : Fin s) → μ = ν := by
+    rintro ⟨μ, _, hμmin⟩ ⟨ν, _, hνmin⟩ ρ hρ
+    refine Subtype.ext ?_
+    rcases lt_trichotomy μ ν with h | h | h
+    · exact absurd ⟨ρ, hρ.symm⟩ (hνmin μ h)
+    · exact h
+    · refine absurd ⟨ρ⁻¹, ?_⟩ (hμmin ν h)
+      rw [← hρ]
+      exact (inv_smul_smul ρ (Pr μ)).symm
   obtain ⟨c, hc, hcs, hcD, hca, hcram⟩ :=
-    hpres hφopen f {μ : Fin s // RamifiesAt φ f (Pr μ)} (fun μ => Pr (μ : Fin s)) A a hfsm
-      (fun μ => hPrp _) (fun μ => hPrbot _) hQker hAstab hAker hasm
+    hpres hφopen f {μ : Fin s // RamifiesAt φ f (Pr μ) ∧
+        ∀ ν, ν < μ → ¬∃ ρ : Gal(Ω/k), Pr μ = ρ • Pr ν} (fun μ => Pr (μ : Fin s))
+      (fun μ => A ⟨μ.1, μ.2.1⟩) (fun μ => a ⟨μ.1, μ.2.1⟩) hfsm
+      (fun μ => hPrp _) (fun μ => hPrbot _) hQorb (fun μ => hQker ⟨μ.1, μ.2.1⟩)
+      (fun μ => hAstab ⟨μ.1, μ.2.1⟩) (fun μ => hAker ⟨μ.1, μ.2.1⟩)
+      (fun μ => hAcase ⟨μ.1, μ.2.1⟩) (fun μ => hasm ⟨μ.1, μ.2.1⟩)
   have main : ∀ Ψ : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1),
       (∀ x, Ψ x = (layerExtension ℓ (genericAut U n S) j).inl (c x) * f x) →
       ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → RamifiesAt φ Ψ P →
         IsCyclicSplitAt φ Ψ P ∧ IsConfinedAt φ Φ P := by
     intro Ψ hΨdef
-    have hΨA : ∀ (μ : {μ : Fin s // RamifiesAt φ f (Pr μ)}) (x : ↥(A μ)), Ψ (x : Gal(Ω/k)) =
-        (layerExtension ℓ (genericAut U n S) j).inl (a μ x) * f (x : Gal(Ω/k)) :=
+    have hΨA : ∀ (μ : {μ : Fin s // RamifiesAt φ f (Pr μ) ∧
+        ∀ ν, ν < μ → ¬∃ ρ : Gal(Ω/k), Pr μ = ρ • Pr ν}) (x : ↥(A ⟨μ.1, μ.2.1⟩)),
+        Ψ (x : Gal(Ω/k)) = (layerExtension ℓ (genericAut U n S) j).inl (a ⟨μ.1, μ.2.1⟩ x) *
+          f (x : Gal(Ω/k)) :=
       fun μ x => by rw [hΨdef, hca μ x]
     intro P hPp hPbot hPram
     by_cases hfram : RamifiesAt φ f P
     · obtain ⟨x, hxI, -, hx1⟩ := id hfram
       obtain ⟨μ, ρ, rfl⟩ := hfam P hPp hPbot ⟨x, hxI, hx1⟩
       have hμ : RamifiesAt φ f (Pr μ) := ramifiesAt_smul_iff.1 hfram
-      have h := hAkey ⟨μ, hμ⟩ Ψ (hΨA ⟨μ, hμ⟩) (ramifiesAt_smul_iff.1 hPram)
-      exact ⟨h.1.smul ρ, h.2.smul ρ⟩
+      obtain ⟨μ', hμ', τ, hτ⟩ := hmin μ hμ
+      have hPeq : ρ • Pr μ = (ρ * τ) • Pr μ' := by rw [hτ, mul_smul ρ τ (Pr μ')]
+      have hPram' : RamifiesAt φ Ψ (Pr μ') :=
+        (ramifiesAt_smul_iff (ρ := ρ * τ)).1 (by rwa [← hPeq])
+      have h := hAkey ⟨μ', hμ'.1⟩ Ψ (hΨA ⟨μ', hμ'⟩) hPram'
+      rw [hPeq]
+      exact ⟨h.1.smul (ρ * τ), h.2.smul (ρ * τ)⟩
     · obtain ⟨x, hxI, hxφ, hxΨ⟩ := id hPram
       have hfx : f x = 1 := by
         by_contra h
@@ -305,7 +358,7 @@ theorem hasSplitCyclicRepair_of_hasConfinedPrescription
       have hcx : c x ≠ 1 := fun h =>
         hxΨ (by rw [hΨdef, h, _root_.map_one, one_mul, hfx])
       rcases hcram P hPp hPbot ⟨x, hxI, hxφ, hcx⟩ with ⟨μ, ρ, rfl⟩ | ⟨hf1, x₀, hx₀, hgen⟩
-      · exact absurd (μ.2.smul ρ) hfram
+      · exact absurd (μ.2.1.smul ρ) hfram
       · have hΦ1 : ∀ x ∈ stabilizer Gal(Ω/k) P, Φ x = 1 := by
           intro x hx
           rw [← hfright x, hf1 x hx, _root_.map_one]
