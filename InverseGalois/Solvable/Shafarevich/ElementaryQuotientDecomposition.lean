@@ -35,6 +35,8 @@ same way, so it matches the stabilizers of a prime on the two sides.
   is one over that field, read over the base.**
 * `InverseGalois.Shafarevich.mem_stabilizer_galSubHom_iff`: **stabilizing a prime is the same
   condition on the two sides.**
+* `InverseGalois.Shafarevich.mem_inertia_galSubHom_iff`: **inertia at a prime is read the same way
+  on the two sides.**
 * `InverseGalois.Shafarevich.finite_quotient_fixingSubgroup_subgroupOf`: **the part of a subgroup
   fixing a finite Galois level has finite index in it.**
 * `InverseGalois.Shafarevich.hasFiniteElementaryQuotient_stabilizer_inf`: **a decomposition subgroup
@@ -90,6 +92,25 @@ omit [IsGalois k Ω] in
 theorem mem_stabilizer_galSubHom_iff (τ : Gal(Ω/↥K)) (P : Ideal (𝓞 Ω)) :
     galSubHom K τ ∈ stabilizer Gal(Ω/k) P ↔ τ ∈ stabilizer Gal(Ω/↥K) P := by
   rw [mem_stabilizer_iff, mem_stabilizer_iff, smul_ideal_galSubHom]
+
+omit [IsGalois k Ω] in
+/-- An automorphism over a level acts on the integers of the whole extension the way it does read
+over the base field. -/
+theorem smul_ringOfIntegers_galSubHom (τ : Gal(Ω/↥K)) (b : 𝓞 Ω) :
+    galSubHom K τ • b = τ • b := Subtype.ext rfl
+
+omit [IsGalois k Ω] in
+/-- An automorphism over a level acts on the units of the whole extension the way it does read over
+the base field. -/
+theorem smul_units_galSubHom (τ : Gal(Ω/↥K)) (β : Ωˣ) : galSubHom K τ • β = τ • β :=
+  Units.ext rfl
+
+omit [IsGalois k Ω] in
+/-- Inertia at a prime is read the same way over the base field and over a level. -/
+theorem mem_inertia_galSubHom_iff (τ : Gal(Ω/↥K)) (P : Ideal (𝓞 Ω)) :
+    galSubHom K τ ∈ Ideal.inertia Gal(Ω/k) P ↔ τ ∈ Ideal.inertia Gal(Ω/↥K) P := by
+  simp only [AddSubgroup.mem_inertia]
+  exact forall_congr' fun b => by rw [smul_ringOfIntegers_galSubHom]
 
 omit [IsGalois k Ω] in
 /-- The quotient of a subgroup by the part of it fixing a finite Galois level is finite, that

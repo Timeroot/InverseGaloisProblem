@@ -47,8 +47,6 @@ coordinates and the other cosets vanish for the same reason as before.
 
 ## Main results
 
-* `InverseGalois.Shafarevich.mem_inertia_galSubHom_iff` — inertia is read the same way over the
-  base field and over a level.
 * `InverseGalois.Shafarevich.hasLevelOneCharacter_of_places` — **a family of units of a level, each
   failing to be a local power at exactly one place of its own and a local power at every place
   attached to any other member and at every proper conjugate of its own, gives the first rung of
@@ -96,30 +94,6 @@ theorem mem_stabilizer_conj {P : α} {x : G} (hx : x ∈ stabilizer G P) (g : G)
   rw [mem_stabilizer_iff, mul_smul, mul_smul, inv_smul_smul, mem_stabilizer_iff.1 hx]
 
 end Stab
-
-/-! ### Reading an automorphism over a level -/
-
-section Bridge
-
-variable {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω] (K : IntermediateField k Ω)
-
-/-- An automorphism over a level acts on the integers of the whole extension the way it does read
-over the base field. -/
-theorem smul_ringOfIntegers_galSubHom (τ : Gal(Ω/↥K)) (b : 𝓞 Ω) :
-    galSubHom K τ • b = τ • b := Subtype.ext rfl
-
-/-- An automorphism over a level acts on the units of the whole extension the way it does read over
-the base field. -/
-theorem smul_units_galSubHom (τ : Gal(Ω/↥K)) (β : Ωˣ) : galSubHom K τ • β = τ • β :=
-  Units.ext rfl
-
-/-- Inertia at a prime is read the same way over the base field and over a level. -/
-theorem mem_inertia_galSubHom_iff (τ : Gal(Ω/↥K)) (P : Ideal (𝓞 Ω)) :
-    galSubHom K τ ∈ Ideal.inertia Gal(Ω/k) P ↔ τ ∈ Ideal.inertia Gal(Ω/↥K) P := by
-  simp only [AddSubgroup.mem_inertia]
-  exact forall_congr' fun b => by rw [smul_ringOfIntegers_galSubHom]
-
-end Bridge
 
 /-! ### The place below a prime -/
 

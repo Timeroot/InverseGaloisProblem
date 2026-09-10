@@ -81,6 +81,7 @@ import InverseGalois.Solvable.Shafarevich.LocalLiftInfinite
 import InverseGalois.Solvable.Shafarevich.LevelRungData
 import InverseGalois.Solvable.Shafarevich.LevelStepRepair
 import InverseGalois.Solvable.Shafarevich.LayerCoord
+import InverseGalois.Solvable.Shafarevich.KernelKummer
 
 /-!
 # Shafarevich's theorem
@@ -730,4 +731,16 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   which is the currency an arithmetic construction deals in.  The generation clauses never needed
   this, a family indexed by the elements of the layer generating it whatever the coordinates are,
   but a prescription of values does.
+* `InverseGalois.Solvable.Shafarevich.KernelKummer` supplies the currency.  The kernel of the base
+  realization is the group of automorphisms over the level it cuts out, and over that level Kummer
+  theory is available: a unit of the level has an `â„“`-th root in the algebraic closure and the way
+  the automorphisms move that root is an additive character of the kernel.  Read against a family
+  of elements of the layer, a family of units of the level therefore assembles into **a
+  homomorphism of the kernel into the layer**, and everything the prescription asks of such a
+  homomorphism becomes a statement about one unit at a time: it is trivial at an automorphism
+  fixing all the roots, hence on the subgroup cutting out the finite level they generate, which is
+  what makes it smooth; it is trivial along the decomposition subgroup at a prime where every unit
+  of the family is a local power; it is trivial along the inertia subgroup at a prime away from the
+  exponent where every unit has order divisible by the exponent; and it takes a prescribed value
+  wherever the characters of the units take the coordinates of that value.
 -/

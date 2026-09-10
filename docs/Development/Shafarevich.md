@@ -21059,3 +21059,103 @@ hypothesis: `hasKummerCharInertiaLift h` discharges it.
   `attribute [local instance] Ideal.Quotient.field` is not needed to get `IsCyclic (𝓞 M ⧸ w)ˣ`.
 * `IsPrimitiveRoot.pow (hn : 0 < N) (h : IsPrimitiveRoot ζ N) (hprod : N = a * b)` gives
   `IsPrimitiveRoot (ζ ^ a) b` — the positivity hypothesis comes first.
+
+## §1.88 A prescription at a named prime must be isotropic (2026-09-10)
+
+Two things happened.  The first is bookkeeping: the four modules built for the ramified
+prescription — `CFT/PoitouTate/CyclicPairing.lean`, `CFT/PoitouTate/SupRadicandCyclic.lean`,
+`CFT/PoitouTate/ClosingChainRamified.lean` and `CFT/Kummer/RadicandDescent.lean` — are now
+imported from `InverseGalois/CFT.lean` and described in its prose, and the whole
+`Tr`-relativisation of the two-place chain
+
+```
+CyclicPairing → ClosingChainRamified → SupRadicandCyclic
+  → RecursionRadical / RecursionSup / RecursionClose / Recursion / RecursionStep
+  → TwoPlacesFree / TwoPlacesKill → SplitFamily → RankOne / BaseFamily
+```
+
+is on `main` with a green root build of 9929 jobs.  `exists_isTwoPlaceFamily_zpowers` is the new
+entry point: it takes a distinguished Galois-stable part `Tr ⊆ Tn` of the prescribed set on which
+the constructed units are *allowed* to ramify, together with a Galois-equivariant family of lines
+`D : v → localClasses v p` and the hypothesis
+
+```
+hDc : ∀ i, ∀ v ∈ Tn, c i v ∈ Subgroup.zpowers (D v)
+```
+
+saying that at every prescribed place all the coordinates of the prescription lie on one line.
+
+The second is a defect, and it is the reason the line hypothesis is there.
+
+### The defect
+
+`HasKernelPrescription ℓ` (`Solvable/Shafarevich/LevelKernelPrescription.lean:101`) asks, for an
+arbitrary finite family of primes `Q μ` of `Ω`, an arbitrary subgroup `A μ` equal to the
+stabilizer or to the inertia of `Q μ`, and an arbitrary smooth homomorphism
+`a μ : A μ → layerSub ℓ (Generic U N S) j`, for a homomorphism `u` of the kernel into the layer
+which restricts to `a μ` on `A μ`, is unramified away from the named primes, and is trivial on the
+conjugates.  **As stated this is false.**
+
+Kummer theory over the auxiliary field `K` (which contains `μ_ℓ`) turns each `ZMod ℓ`-character
+`χ ∘ u` of `Gal(Ω/K)` into a class `z_χ ∈ K^×/(K^×)^ℓ`, and the product formula for the `ℓ`-th
+power residue symbol gives, for any two characters `χ, χ′` of the layer,
+
+```
+∏_w (z_χ , z_χ′)_w = 1 .
+```
+
+Every factor is forced to be trivial by the clauses of `HasKernelPrescription`:
+
+* where `u` is unramified the two local classes lie on the unramified line, which is cyclic, so
+  the symbol vanishes by `localSymbol_self_eq_one` (`ℓ` odd);
+* at a conjugate `ρ • Q μ` with `ρ ∉ φ.ker` the prescription is trivial;
+* the archimedean places contribute nothing for odd `ℓ`.
+
+So `HasKernelPrescription` **implies** the reciprocity relation
+
+```
+∏_μ ( c_χ(v μ) , c_χ′(v μ) )_{v μ} = 1
+```
+
+for every pair of characters of the layer, and that is a genuine constraint on the input `a`.  It
+is violated: take one named prime `Q`, lying over a place `v` of `K` away from `ℓ` and completely
+split in `K|k`, put `A = stabilizer(Q) = G_{K_v}`, and let `a` be a smooth surjection onto a layer
+of rank two.  The two coordinates then span `localClasses v ℓ ≅ (ZMod ℓ)²`, on which the Hilbert
+symbol is a *perfect* alternating pairing, so the single factor is non-trivial.  This is the same
+species of defect as §1.84: a prescription which asks for too much at one prime.
+
+### What Schmidt–Wingberg actually assume
+
+Theorem 15 of Schmidt–Wingberg carries the local shape of the solution as an explicit inductive
+condition:
+
+> (ii) If `p` is ramified in `N_n|K`, then `p` splits completely in `K|k` and `N_{ν,n,p}|k_p` is a
+> **(cyclic)** totally ramified extension of local fields.
+
+and First Step (c) uses it at once: *"Let `p ∈ Ram(N_n|K)`.  Then `p` splits completely in `K|k`
+and `G_p(N_n|K) ≅ ℤ/p^a ℤ` by condition (ii)."*  Condition (i) makes the primes over `p`, the
+primes ramified in `K|k` and the archimedean primes completely decomposed, i.e. the local
+behaviour there is trivial.  So SW never prescribe a non-cyclic local homomorphism, and the
+reciprocity relation above holds for them for free.
+
+### The two repairs
+
+1. **Cyclic values.**  Add
+   `∀ μ, ∃ x₀ : ↥(A μ), ∀ x : ↥(A μ), a μ x ∈ Subgroup.zpowers (a μ x₀)`
+   to `HasKernelPrescription` and to `HasConfinedPrescription`.  This is *exactly* the shape
+   `exists_isTwoPlaceFamily_zpowers` consumes, and it is SW's condition (ii).  Its drawback is at
+   the consumer: in `hasSplitCyclicRepair_of_hasConfinedPrescription`
+   (`LevelConfinedTwist.lean:217`) the prescription is `a = g · f⁻¹` with only `g` cyclic — the
+   flat lift `f` is not — so the hypothesis is not immediately available there.
+2. **A product relation.**  Replace the per-place line hypothesis `hDc` of the two-place chain by
+   the weaker demand that the *product over the distinguished part* of the symbols be trivial.
+   Every place of `Tr` enters the closing chain and the radicand-killing step only inside a
+   product over `Tr`, so the same proofs go through, and the consumer can then discharge the
+   hypothesis by the global product formula applied to the flat lift `f` — the `f`-terms of the
+   expansion of `(g_χ − f_χ , g_χ′ − f_χ′)` are exactly what reciprocity kills.
+
+Repair 2 is the correct one, and repair 1 is a special case of it.  The construction of the
+arithmetic bridge — Kummer basis of the layer, local classes from
+`exists_localClass_forall_kummerChar_eq`, `Tr` = the Galois orbit of the named places, the family
+from `exists_isTwoPlaceFamily_zpowers`, and `u y := ∏_t b t ^ (kummerChar hkd (z t) (eK y)).val` —
+is the same for both, so it is built first under the cyclic hypothesis and generalised afterwards.
