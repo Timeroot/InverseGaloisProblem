@@ -29,11 +29,18 @@ decomposition group again lies below a place with trivial decomposition group, a
 argument that killed the radicands used.  The conjugates are what a later coordinate of the
 construction sees, so it is at them that the two properties are needed.
 
+None of this depends on the prescription being unramified: the compositum is built out of the
+radicands alone.  So the same construction serves a prescription that is allowed to be ramified on
+a distinguished stable part of the prescribed set, once the line carrying its classes and those of
+the radicands there is supplied along with it.
+
 ## Main results
 
 * `InverseGalois.CFT.exists_two_places_sUnit_kill`: **two places completely split in the auxiliary
   field, all of whose conjugates kill every member of a stable family of radicands, together with a
   unit ramified exactly at the two of them and realising a prescribed local behaviour.**
+* `InverseGalois.CFT.exists_two_places_sUnit_kill_zpowers`: **the same for a prescription which is
+  allowed to be ramified on a distinguished stable part of the prescribed set.**
 
 ## Tags
 
@@ -177,6 +184,146 @@ theorem exists_two_places_sUnit_kill (hp : p.Prime) (hodd : 2 < p)
     hzQc, hzRc⟩ :=
     exists_two_places_sUnit_radical (Ω := Ω') (M₁ := ↥Ω) (M₂ := ↥M₂) hp hodd hζ hres hT hTstable
       hpTn hrepr hcunr hg hc hcT hcn hsup hβpow hβgen hord hsplit hram
+  -- their conjugates, and the descent of those to the auxiliary field
+  have hconj : ∀ {V : HeightOneSpectrum (𝓞 K)},
+      (∃ W : HeightOneSpectrum (𝓞 ↥Ω'), primeUnder (𝓞 K) W = V ∧
+        stabilizer Gal(↥Ω'/k) W = ⊥) → ∀ σ : Gal(K/k),
+      (∃ W : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) W = σ • V ∧
+        stabilizer Gal(↥Ω/k) W = ⊥) ∧ ∀ i, localClassHom (σ • V) p (b i) = 1 := by
+    rintro V ⟨W, hW1, hW2⟩ σ
+    obtain ⟨W', hW'1, hW'2⟩ := exists_primeUnder_eq_smul_stabilizer_eq_bot (K := K) hW2 σ
+    rw [hW1] at hW'1
+    refine ⟨⟨primeUnder (𝓞 ↥Ω) W', (primeUnder_primeUnder K ↥Ω W').trans hW'1,
+      stabilizer_primeUnder_eq_bot (K := ↥Ω) hW'2⟩, fun i => ?_⟩
+    rw [← hW'1]
+    exact localClassHom_eq_one_of_stabilizer_base_eq_bot hW'2 (hβpow i)
+  exact ⟨Q, R, hQT, hRT, fun σ => (hconj hQspl σ).1, fun σ => (hconj hRspl σ).1,
+    fun σ => (hconj hQspl σ).2, fun σ => (hconj hRspl σ).2, hQR, hQstab, hRstab, z, hzT, hzunr,
+    hzQ, hzR, hzQc, hzRc⟩
+
+/-- **Two places all of whose conjugates are completely split in the auxiliary field and kill a
+stable family of radicands, and a unit ramified exactly at them realising a prescription which may
+be ramified where it is carried.**  On a distinguished stable part of the prescribed set the
+prescription is allowed to be ramified, provided it is supported at no more than one place of each
+orbit there and its class lies, together with the classes of the radicands, on one line; away from
+that part the unit produced is unramified.  The compositum the construction runs over is built, as
+in the unramified case, by adjoining a chosen `p`-th root of each radicand to the auxiliary
+field. -/
+theorem exists_two_places_sUnit_kill_zpowers (hp : p.Prime) (hodd : 2 < p)
+    {ζ : K} (hζ : IsPrimitiveRoot ζ p)
+    (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
+    {Tr T Tn : Finset (HeightOneSpectrum (𝓞 K))} (hTr : Tr ⊆ T) (hT : T ⊆ Tn)
+    (hTrstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ Tr → σ • v ∈ Tr)
+    (hTstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ Tn → σ • v ∈ Tn)
+    (hpTn : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → v ∈ Tn)
+    (hrepr : ∀ m : HeightOneSpectrum (𝓞 K) → ℤ,
+      (∀ᶠ v : HeightOneSpectrum (𝓞 K) in Filter.cofinite, m v = 0) →
+      ∃ a : Kˣ, ∀ v ∉ (Tn : Set (HeightOneSpectrum (𝓞 K))),
+        Rigidity.RET.ord K v (a : K) = m v)
+    {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v p}
+    (hcunr : ∀ v ∈ Tn, v ∉ Tr → c v ∈ localUnramified v p)
+    (hcfree : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr, c (σ • v) = 1 ∨ c v = 1)
+    {g : Kˣ} (hg : g ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))))
+    (hc : ∀ v ∈ T, c v = localClassHom v p g) (hcT : ∀ v ∈ Tn, v ∉ T → c v = 1)
+    (hcn : ∀ v ∈ T, FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → c v = 1)
+    {ι : Type*} [Finite ι] {b : ι → Kˣ} {w : ι → A}
+    (hw : ∀ i, w i ^ p = algebraMap K A ((b i : K)))
+    (hstab : ∀ (σ : Gal(K/k)) (i : ι), ∃ j, σ (b i : K) = (b j : K))
+    {D : (v : HeightOneSpectrum (𝓞 K)) → localClasses v p}
+    (hDc : ∀ v ∈ T, c v ∈ Subgroup.zpowers (D v))
+    (hDb : ∀ v ∈ T, ∀ i, localClassHom v p (b i) ∈ Subgroup.zpowers (D v))
+    (hsplit : ∀ v ∈ Tn, v ∉ T → ∃ W : HeightOneSpectrum (𝓞 ↥Ω),
+      primeUnder (𝓞 K) W = v ∧ stabilizer Gal(↥Ω/K) W = ⊥)
+    (hram : ∀ v ∉ Tn, ∃ W : HeightOneSpectrum (𝓞 ↥Ω),
+      primeUnder (𝓞 K) W = v ∧ ramIdx (𝓞 K) W = 1) :
+    ∃ Q R : HeightOneSpectrum (𝓞 K), Q ∉ Tn ∧ R ∉ Tn ∧
+      (∀ σ : Gal(K/k), ∃ W : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) W = σ • Q ∧
+        stabilizer Gal(↥Ω/k) W = ⊥) ∧
+      (∀ σ : Gal(K/k), ∃ W : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) W = σ • R ∧
+        stabilizer Gal(↥Ω/k) W = ⊥) ∧
+      (∀ (σ : Gal(K/k)) (i), localClassHom (σ • Q) p (b i) = 1) ∧
+      (∀ (σ : Gal(K/k)) (i), localClassHom (σ • R) p (b i) = 1) ∧
+      (∀ σ : Gal(K/k), Q ≠ σ • R) ∧
+      stabilizer Gal(K/k) Q = ⊥ ∧ stabilizer Gal(K/k) R = ⊥ ∧
+      ∃ z : Kˣ, (∀ v ∈ Tn, localClassHom v p z = c v) ∧
+        (∀ v : HeightOneSpectrum (𝓞 K), v ∉ Tr → v ≠ Q → v ≠ R → (p : ℤ) ∣ placeValue v z) ∧
+        ¬ (p : ℤ) ∣ placeValue Q z ∧ ¬ (p : ℤ) ∣ placeValue R z ∧
+        (∀ σ : Gal(K/k), σ ≠ 1 → localClassHom (σ • Q) p z = 1) ∧
+        (∀ σ : Gal(K/k), σ ≠ 1 → localClassHom (σ • R) p z = 1) := by
+  classical
+  -- the radicands, read in the auxiliary field
+  let a : ι → ↥Ω := fun i => algebraMap K ↥Ω ((b i : K))
+  have haw : ∀ i, w i ^ p = algebraMap ↥Ω A (a i) := by
+    intro i
+    rw [hw i]
+    exact IsScalarTower.algebraMap_apply K ↥Ω A _
+  have hane : ∀ i, a i ≠ 0 := fun i =>
+    (map_ne_zero_iff _ (algebraMap K ↥Ω).injective).2 (Units.ne_zero (b i))
+  have hζΩ : IsPrimitiveRoot (algebraMap K ↥Ω ζ) p :=
+    hζ.map_of_injective (algebraMap K ↥Ω).injective
+  have hstabA : ∀ (τ : A →ₐ[k] A) (i : ι),
+      ∃ j, τ (algebraMap ↥Ω A (a i)) = algebraMap ↥Ω A (a j) := by
+    intro τ i
+    obtain ⟨j, hj⟩ := hstab (AlgHom.restrictNormal' τ K) i
+    refine ⟨j, ?_⟩
+    show τ (algebraMap ↥Ω A (algebraMap K ↥Ω ((b i : K)))) =
+      algebraMap ↥Ω A (algebraMap K ↥Ω ((b j : K)))
+    rw [← IsScalarTower.algebraMap_apply K ↥Ω A, ← IsScalarTower.algebraMap_apply K ↥Ω A, ← hj]
+    show τ (algebraMap K A ((b i : K))) = algebraMap K A (AlgHom.restrictNormal τ K ((b i : K)))
+    rw [AlgHom.restrictNormal_commutes]
+  -- the compositum of the auxiliary field with the radicals
+  let N : IntermediateField ↥Ω A := ambientRadField Ω w
+  let Ω' : IntermediateField k A := N.restrictScalars k
+  letI algΩ : Algebra ↥Ω ↥Ω' := inferInstanceAs (Algebra ↥Ω ↥N)
+  haveI twrk : IsScalarTower k ↥Ω ↥Ω' := IsScalarTower.of_algebraMap_eq fun _ => rfl
+  haveI twrΩA : IsScalarTower ↥Ω ↥Ω' A := IsScalarTower.of_algebraMap_eq fun _ => rfl
+  letI algK : Algebra K ↥Ω' := ((algebraMap ↥Ω ↥Ω').comp (algebraMap K ↥Ω)).toAlgebra
+  haveI twrKΩ : IsScalarTower K ↥Ω ↥Ω' := IsScalarTower.of_algebraMap_eq fun _ => rfl
+  haveI twrkK : IsScalarTower k K ↥Ω' := IsScalarTower.of_algebraMap_eq fun x => by
+    rw [IsScalarTower.algebraMap_apply k ↥Ω ↥Ω', IsScalarTower.algebraMap_apply K ↥Ω ↥Ω',
+      IsScalarTower.algebraMap_apply k K ↥Ω]
+  haveI twrKA : IsScalarTower K ↥Ω' A := IsScalarTower.of_algebraMap_eq fun x => by
+    rw [IsScalarTower.algebraMap_apply K ↥Ω ↥Ω', ← IsScalarTower.algebraMap_apply ↥Ω ↥Ω' A,
+      ← IsScalarTower.algebraMap_apply K ↥Ω A]
+  haveI hfd : FiniteDimensional ↥Ω ↥Ω' :=
+    finiteDimensional_ambientRadField_of_forall (a := a) hp.ne_zero haw
+  haveI hnf : NumberField ↥Ω' := NumberField.of_module_finite ↥Ω ↥Ω'
+  haveI hnk : Normal k ↥Ω' := normal_ambientRadField_of_forall hp hζΩ hane haw hstabA
+  haveI hgΩ : IsGalois ↥Ω ↥Ω' := isGalois_ambientRadField_of_forall hp hζΩ hane haw
+  haveI : Normal K ↥Ω' := Normal.tower_top_of_normal k K ↥Ω'
+  haveI : IsGalois K ↥Ω' := ⟨⟩
+  haveI : IsGalois k ↥Ω := ⟨⟩
+  haveI : IsGalois k ↥Ω' := ⟨⟩
+  -- the second factor of the compositum
+  let α : ι → ↥Ω' := fun i => ⟨w i, mem_ambientRadField Ω w i⟩
+  have hgenΩ : IntermediateField.adjoin ↥Ω (Set.range α) = ⊤ :=
+    adjoin_range_val_eq_top (K := ↥Ω) w
+  have hαpow : ∀ i, α i ^ p = algebraMap K ↥Ω' ((b i : K)) := by
+    intro i
+    refine Subtype.ext ?_
+    show w i ^ p = _
+    rw [hw i]
+    exact IsScalarTower.algebraMap_apply K ↥Ω A _
+  let M₂ : IntermediateField K ↥Ω' := IntermediateField.adjoin K (Set.range α)
+  haveI : NumberField ↥M₂ := ⟨⟩
+  haveI : Normal K ↥M₂ := normal_adjoin_radicals hp hζ (fun i => Units.ne_zero (b i)) hαpow
+  have hsup : (IsScalarTower.toAlgHom K ↥Ω ↥Ω').fieldRange ⊔
+      (IsScalarTower.toAlgHom K ↥M₂ ↥Ω').fieldRange = ⊤ := by
+    have h := fieldRange_sup_adjoin_eq_top (K := K) (L := ↥Ω) (M := ↥Ω') hgenΩ
+    rwa [show (IsScalarTower.toAlgHom K ↥M₂ ↥Ω').fieldRange = M₂ from
+      IntermediateField.fieldRange_val (S := M₂)]
+  -- the radicals, read in the second factor
+  let β : ι → ↥M₂ := fun i =>
+    ⟨α i, IntermediateField.subset_adjoin K (Set.range α) ⟨i, rfl⟩⟩
+  have hβpow : ∀ i, β i ^ p = algebraMap K ↥M₂ ((b i : K)) := fun i => Subtype.ext (hαpow i)
+  have hβgen : IntermediateField.adjoin K (Set.range β) = ⊤ :=
+    adjoin_range_val_eq_top (K := K) α
+  -- the two places over the compositum
+  obtain ⟨Q, R, hQT, hRT, hQspl, hRspl, -, -, hQR, hQstab, hRstab, z, hzT, hzunr, hzQ, hzR,
+    hzQc, hzRc⟩ :=
+    exists_two_places_sUnit_radical_zpowers (Ω := Ω') (M₁ := ↥Ω) (M₂ := ↥M₂) hp hodd hζ hres hTr
+      hT hTrstable hTstable hpTn hrepr hcunr hcfree hg hc hcT hcn hsup hβpow hβgen hDc hDb hsplit
+      hram
   -- their conjugates, and the descent of those to the auxiliary field
   have hconj : ∀ {V : HeightOneSpectrum (𝓞 K)},
       (∃ W : HeightOneSpectrum (𝓞 ↥Ω'), primeUnder (𝓞 K) W = V ∧

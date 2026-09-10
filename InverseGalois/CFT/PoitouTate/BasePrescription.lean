@@ -91,8 +91,9 @@ theorem exists_base_places_norm_class_eq_of_split (hp : p.Prime) (hodd : 2 < p)
         localClassHom q p x ∈ localUnramified q p := by
   classical
   obtain ⟨Q, R, hQT, hRT, hQspl, hRspl, hQR, hQstab, hRstab, z, hzT, hzunr, -, -, -, -⟩ :=
-    exists_two_places_sUnit_class_eq_of_split (Ω := Ω) hp hodd hζ hres hTstable hpT hysplit
-      hyunr hyp
+    exists_two_places_sUnit_class_eq_of_split (Ω := Ω) (Tr := ∅) hp hodd hζ hres hTstable
+      (Finset.empty_subset T) (fun _ v hv => absurd hv (Finset.notMem_empty v)) hpT hysplit
+      (fun v hv _ => hyunr v hv) (fun _ _ v hv => absurd hv (Finset.notMem_empty v)) hyp
   have hTQ : ∀ v ∈ T, primeUnder (𝓞 k) v ≠ primeUnder (𝓞 k) Q := by
     intro v hv hcon
     obtain ⟨σ, hσ⟩ := exists_smul_eq_of_primeUnder_eq (A := 𝓞 k) (G := Gal(K/k)) hcon
@@ -112,7 +113,7 @@ theorem exists_base_places_norm_class_eq_of_split (hp : p.Prime) (hodd : 2 < p)
     have hPT : P ∉ T := fun hc => hq P hc rfl
     refine localClassHom_norm_mem_localUnramified k P (not_not.1 fun hc => hPT (hTram P hc)) z
       fun σ => (localClassHom_mem_localUnramified_iff (σ • P) z).2 ?_
-    refine hzunr (σ • P) (fun hc => hqQ ?_) (fun hc => hqR ?_)
+    refine hzunr (σ • P) (Finset.notMem_empty _) (fun hc => hqQ ?_) (fun hc => hqR ?_)
     · rw [← hc, primeUnder_smul_eq]
     · rw [← hc, primeUnder_smul_eq]
 

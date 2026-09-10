@@ -99,7 +99,8 @@ theorem hasLevelOneCharacter_of_stable (hℓ : ℓ.Prime) (hodd : 2 < ℓ) (n : 
   refine hasLevelOneCharacter_of_places_nat hℓ hodd.ne' n hsurj Tf K hKker hζ hmu
     (Tn := (Tn : Set (HeightOneSpectrum (𝓞 ↥K)))) (fun σ v hv => hTnst σ v hv)
     (fun v hv => hpTn v fun hc => (finitePlace_natCast_eq_one_iff v ℓ).1 hc hv) hTfsh _ le_rfl
-    Q R z (fun i hi v hv => hfam.prescribed i hi v hv) hfam.unram hfam.ramQ hfam.conjQ hfam.conjR
+    Q R z (fun i hi v hv => hfam.prescribed i hi v hv)
+    (fun i hi v => hfam.unram i hi v (Finset.notMem_empty v)) hfam.ramQ hfam.conjQ hfam.conjR
     hfam.crossQ hfam.crossR hfam.stabQ hfam.stabR
 
 end Places

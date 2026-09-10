@@ -6,6 +6,7 @@ import Mathlib
 import InverseGalois.CFT.Compositum
 import InverseGalois.CFT.PoitouTate.RecursionStep
 import InverseGalois.CFT.PoitouTate.SupRadicandChar
+import InverseGalois.CFT.PoitouTate.SupRadicandCyclic
 
 /-!
 # One step of the recursion over a compositum of two auxiliary extensions
@@ -21,6 +22,13 @@ prescribed set.  So the step runs over the compositum as soon as the first facto
 off the prescribed set and is unramified outside it, and the second is unramified on the part of it
 away from the exponent.
 
+The second factor has a second reason to be killed, one that asks nothing about ramification: the
+character is isotropic on a cyclic group of classes, so the factor pairs trivially with the
+prescription as soon as every radicand of the second extension has, at a place where the
+prescription is carried, a class on the line of the prescribed class.  That is what lets the step
+run for a prescription which is ramified where it is carried, and the `S`-unit it produces is then
+ramified at the new place and, apart from where the prescription is carried, nowhere else.
+
 The two copies of the factors inside the compositum have to generate it over the bottom field, and
 that is a statement about sets of elements which does not see the field it is read over: it holds
 for the compositum of two intermediate fields of any extension of the base.
@@ -31,6 +39,11 @@ for the compositum of two intermediate fields of any extension of the base.
   compositum** — a new place, outside the prescribed set and completely split in the compositum,
   together with an `S`-unit meeting the prescription at the old places and ramified exactly at the
   new one.
+* `InverseGalois.CFT.exists_place_sUnit_prescribed_of_sup_zpowers`: **the same for a prescription
+  which may be ramified where it is carried**, at the price of asking that every radicand of the
+  second extension have its class there on the line of the prescribed class; the `S`-unit produced
+  is then ramified at the new place and, apart from where the prescription is carried, nowhere
+  else.
 
 ## Tags
 
@@ -101,13 +114,73 @@ theorem exists_place_sUnit_prescribed_of_sup (hp : p.Prime) (hodd : 2 < p)
           (p : ℤ) ∣ placeValue v z) ∧
         ¬ (p : ℤ) ∣ placeValue (primeUnder (𝓞 K) V) z := by
   have hp2 : p ≠ 2 := by omega
-  refine exists_place_sUnit_prescribed_of_rad hp hζ hres Tk hTk hpTn hrepr hcunr
+  have hrad : ∀ u ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))), ∀ y : (↥Ω)ˣ,
+      Units.map (algebraMap K ↥Ω : K →* ↥Ω) u = y ^ p →
+      prescriptionChar hres hζ Tn c u = 1 := by
+    intro u hu y hy
+    have hb : algebraMap K ↥Ω ((u : Kˣ) : K) = ((y : (↥Ω)ˣ) : ↥Ω) ^ p := by
+      have hy' := congrArg Units.val hy
+      rwa [Units.coe_map, MonoidHom.coe_coe, Units.val_pow_eq_pow_val] at hy'
+    exact prescriptionChar_eq_one_of_pow_sup hp hp2 hres hζ hT hpTn hg hc hcT
+      (fun v hv => hcunr v (hT hv)) hcn hsup hcomm hexp hsplit hram₁ hram₂ hb
+  obtain ⟨V, hVT, hVstab, hVP, hQTn, z, hzmem, hzTn, hzval, hzQ⟩ :=
+    exists_place_sUnit_prescribed_of_rad (T := (∅ : Finset (HeightOneSpectrum (𝓞 K))))
+      hp hζ hres Tk hTk hpTn hrepr (fun v hv _ => hcunr v hv) hrad
+  exact ⟨V, hVT, hVstab, hVP, hQTn, z, hzmem, hzTn,
+    fun v hvQ => hzval v (Finset.notMem_empty v) hvQ, hzQ⟩
+
+omit [NumberField M₂] in
+/-- **One step of the recursion prescribing local classes over a compositum, for a prescription
+which may be ramified where it is carried.**  The place of the unramifiedness of the prescription
+is taken by isotropy of the pairing on a cyclic group of classes: it is asked instead that every
+radicand of the second extension have, at a place where the prescription is carried, a class on the
+line of the prescribed class.  The `S`-unit produced meets the prescription at the old places, is
+ramified at the new place, and outside the part of the prescribed set carrying the prescription has
+value a multiple of the exponent. -/
+theorem exists_place_sUnit_prescribed_of_sup_zpowers (hp : p.Prime) (hodd : 2 < p)
+    {ζ : K} (hζ : IsPrimitiveRoot ζ p)
+    (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
+    (Tk : Finset (HeightOneSpectrum (𝓞 k))) {T Tn : Finset (HeightOneSpectrum (𝓞 K))}
+    (hT : T ⊆ Tn) (hTk : ∀ v ∈ Tn, primeUnder (𝓞 k) v ∈ Tk)
+    (hpTn : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → v ∈ Tn)
+    (hrepr : ∀ m : HeightOneSpectrum (𝓞 K) → ℤ,
+      (∀ᶠ v : HeightOneSpectrum (𝓞 K) in Filter.cofinite, m v = 0) →
+      ∃ a : Kˣ, ∀ v ∉ (Tn : Set (HeightOneSpectrum (𝓞 K))),
+        Rigidity.RET.ord K v (a : K) = m v)
+    {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v p}
+    {g : Kˣ} (hg : g ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))))
+    (hc : ∀ v ∈ T, c v = localClassHom v p g) (hcT : ∀ v ∈ Tn, v ∉ T → c v = 1)
+    (hsup : (IsScalarTower.toAlgHom K M₁ ↥Ω).fieldRange ⊔
+      (IsScalarTower.toAlgHom K M₂ ↥Ω).fieldRange = ⊤)
+    (hcomm : ∀ σ τ : M₂ ≃ₐ[K] M₂, σ * τ = τ * σ) (hexp : ∀ σ : M₂ ≃ₐ[K] M₂, σ ^ p = 1)
+    (hsplit : ∀ v ∈ Tn, v ∉ T → ∃ w : HeightOneSpectrum (𝓞 M₁),
+      primeUnder (𝓞 K) w = v ∧ stabilizer Gal(M₁/K) w = ⊥)
+    (hram₁ : ∀ v ∉ Tn, ∃ w : HeightOneSpectrum (𝓞 M₁),
+      primeUnder (𝓞 K) w = v ∧ ramIdx (𝓞 K) w = 1)
+    (hcyc₂ : ∀ v ∈ T, ∃ d : localClasses v p, c v ∈ Subgroup.zpowers d ∧
+      ∀ w : Kˣ, (∃ y : M₂, algebraMap K M₂ (w : K) = y ^ p) →
+        localClassHom v p w ∈ Subgroup.zpowers d) :
+    ∃ V : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 k) V ∉ Tk ∧
+      stabilizer Gal(↥Ω/k) V = ⊥ ∧ ¬ Pc (primeUnder (𝓞 K) V) ∣ p ∧
+      primeUnder (𝓞 K) V ∉ Tn ∧
+      ∃ z : Kˣ, z ∈ sUnits K (insert (primeUnder (𝓞 K) V)
+          (Tn : Set (HeightOneSpectrum (𝓞 K)))) ∧
+        (∀ v ∈ Tn, localClassHom v p z = c v) ∧
+        (∀ v : HeightOneSpectrum (𝓞 K), v ∉ T → v ≠ primeUnder (𝓞 K) V →
+          (p : ℤ) ∣ placeValue v z) ∧
+        ¬ (p : ℤ) ∣ placeValue (primeUnder (𝓞 K) V) z := by
+  have hp2 : p ≠ 2 := by omega
+  have hcunr : ∀ v ∈ Tn, v ∉ T → c v ∈ localUnramified v p := by
+    intro v hv hvT
+    rw [hcT v hv hvT]
+    exact one_mem _
+  refine exists_place_sUnit_prescribed_of_rad (T := T) hp hζ hres Tk hTk hpTn hrepr hcunr
     fun u hu y hy => ?_
   have hb : algebraMap K ↥Ω ((u : Kˣ) : K) = ((y : (↥Ω)ˣ) : ↥Ω) ^ p := by
     have hy' := congrArg Units.val hy
     rwa [Units.coe_map, MonoidHom.coe_coe, Units.val_pow_eq_pow_val] at hy'
-  exact prescriptionChar_eq_one_of_pow_sup hp hp2 hres hζ hT hpTn hg hc hcT
-    (fun v hv => hcunr v (hT hv)) hcn hsup hcomm hexp hsplit hram₁ hram₂ hb
+  exact prescriptionChar_eq_one_of_pow_sup_zpowers hp hp2 hres hζ hT hpTn hg hc hcT
+    hsup hcomm hexp hsplit hram₁ hcyc₂ hb
 
 end SupStep
 

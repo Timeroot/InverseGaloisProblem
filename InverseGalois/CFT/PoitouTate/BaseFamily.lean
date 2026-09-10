@@ -66,14 +66,15 @@ one of the exceptional places of some coordinate, where every other coordinate i
 the completion carries the roots of unity, or lies under no exceptional place at all, where every
 coordinate is unramified. -/
 theorem exists_base_norm_class_of_isTwoPlaceFamily (hp : p.Prime) {ζ : K}
-    (hζ : IsPrimitiveRoot ζ p) {T Tn : Finset (HeightOneSpectrum (𝓞 K))} (hT : T ⊆ Tn)
+    (hζ : IsPrimitiveRoot ζ p) {Tr T Tn : Finset (HeightOneSpectrum (𝓞 K))} (hTr : Tr ⊆ T)
+    (hT : T ⊆ Tn)
     (hTstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ T → σ • v ∈ T)
     (hTnst : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ Tn → σ • v ∈ Tn)
     (hTram : ∀ v : HeightOneSpectrum (𝓞 K), ramIdx (𝓞 k) v ≠ 1 → v ∈ T)
     {c : ℕ → (v : HeightOneSpectrum (𝓞 K)) → localClasses v p} {g : ℕ → Kˣ}
     (hc : ∀ (i : ℕ), ∀ v ∈ T, c i v = localClassHom v p (g i))
     {d : ℕ} {S : Finset (HeightOneSpectrum (𝓞 K))} {Q R : ℕ → HeightOneSpectrum (𝓞 K)}
-    {z : ℕ → Kˣ} (h : IsTwoPlaceFamily Ω p Tn c d S Q R z) :
+    {z : ℕ → Kˣ} (h : IsTwoPlaceFamily Ω p Tr Tn c d S Q R z) :
     (∀ i < d, ∀ v ∈ T,
         localClassHom (primeUnder (𝓞 k) v) p (Units.map (Algebra.norm k : K →* k) (z i))
           = localClassHom (primeUnder (𝓞 k) v) p
@@ -115,8 +116,9 @@ theorem exists_base_norm_class_of_isTwoPlaceFamily (hp : p.Prime) {ζ : K}
     have hPT : P ∉ T := fun hcon => hq P hcon rfl
     refine Or.inl fun i hi => localClassHom_norm_mem_localUnramified k P
       (not_not.1 fun hcon => hPT (hTram P hcon)) (z i) fun σ => ?_
+    have hσP : σ • P ∉ Tr := fun hcon => hPT (by simpa using hTstable σ⁻¹ _ (hTr hcon))
     refine (localClassHom_mem_localUnramified_iff (σ • P) (z i)).2
-      (h.unram i hi (σ • P) (fun hcon => (hA i hi).1 ?_) fun hcon => (hA i hi).2 ?_)
+      (h.unram i hi (σ • P) hσP (fun hcon => (hA i hi).1 ?_) fun hcon => (hA i hi).2 ?_)
     · rw [← hcon, primeUnder_smul_eq]
     · rw [← hcon, primeUnder_smul_eq]
 
@@ -173,7 +175,8 @@ theorem exists_base_family_norm_class_eq (hp : p.Prime) (hodd : 2 < p) {ζ : K}
     exists_isTwoPlaceFamily (Ω := Ω) hp hodd hζ hres hT hTnst hpTn hrepr hcunr hg hc hcT hcn
       hsplit hram d
   obtain ⟨hxT, hxq⟩ :=
-    exists_base_norm_class_of_isTwoPlaceFamily (Ω := Ω) hp hζ hT hTstable hTnst hTram hc hfam
+    exists_base_norm_class_of_isTwoPlaceFamily (Ω := Ω) hp hζ (Finset.empty_subset T) hT hTstable
+      hTnst hTram hc hfam
   exact ⟨fun i => Units.map (Algebra.norm k : K →* k) (z i), fun i => ⟨z i, rfl⟩, hxT, hxq⟩
 
 end Base

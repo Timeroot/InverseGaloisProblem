@@ -23,6 +23,10 @@ which do not lie over the exponent.  What remains is a statement about the place
 about: a finite stable set containing those over the exponent, and a unit whose failure to be a unit
 outside it happens only at places completely split in the auxiliary field.
 
+The distinguished part of the fixed set where the prescription is allowed to be ramified is
+untouched by the enlargement, the places carrying the ideal classes being places where the unit is
+a unit.
+
 ## Main results
 
 * `InverseGalois.CFT.exists_two_places_sUnit_class_eq_of_split`: **two places completely split in
@@ -61,14 +65,18 @@ prescription untouched. -/
 theorem exists_two_places_sUnit_class_eq_of_split (hp : p.Prime) (hodd : 2 < p)
     {ζ : K} (hζ : IsPrimitiveRoot ζ p)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
-    {T : Finset (HeightOneSpectrum (𝓞 K))}
+    {Tr T : Finset (HeightOneSpectrum (𝓞 K))}
     (hTstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ T → σ • v ∈ T)
+    (hTrT : Tr ⊆ T)
+    (hTrstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ Tr → σ • v ∈ Tr)
     (hpT : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → v ∈ T)
     {y : Kˣ}
     (hysplit : ∀ v : HeightOneSpectrum (𝓞 K), v ∉ T → Rigidity.RET.ord K v (y : K) ≠ 0 →
       ∃ w : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) w = v ∧
         stabilizer Gal(↥Ω/k) w = ⊥)
-    (hyunr : ∀ v ∈ T, localClassHom v p y ∈ localUnramified v p)
+    (hyunr : ∀ v ∈ T, v ∉ Tr → localClassHom v p y ∈ localUnramified v p)
+    (hyfree : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
+      localClassHom (σ • v) p y = 1 ∨ localClassHom v p y = 1)
     (hyp : ∀ v ∈ T, Pc v ∣ p → localClassHom v p y = 1) :
     ∃ Q R : HeightOneSpectrum (𝓞 K), Q ∉ T ∧ R ∉ T ∧
       (∃ w : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) w = Q ∧
@@ -78,7 +86,7 @@ theorem exists_two_places_sUnit_class_eq_of_split (hp : p.Prime) (hodd : 2 < p)
       (∀ σ : Gal(K/k), Q ≠ σ • R) ∧
       stabilizer Gal(K/k) Q = ⊥ ∧ stabilizer Gal(K/k) R = ⊥ ∧
       ∃ z : Kˣ, (∀ v ∈ T, localClassHom v p z = localClassHom v p y) ∧
-        (∀ v : HeightOneSpectrum (𝓞 K), v ≠ Q → v ≠ R → (p : ℤ) ∣ placeValue v z) ∧
+        (∀ v : HeightOneSpectrum (𝓞 K), v ∉ Tr → v ≠ Q → v ≠ R → (p : ℤ) ∣ placeValue v z) ∧
         ¬ (p : ℤ) ∣ placeValue Q z ∧ ¬ (p : ℤ) ∣ placeValue R z ∧
         (∀ σ : Gal(K/k), σ ≠ 1 → localClassHom (σ • Q) p z = 1) ∧
         (∀ σ : Gal(K/k), σ ≠ 1 → localClassHom (σ • R) p z = 1) := by
@@ -161,10 +169,11 @@ theorem exists_two_places_sUnit_class_eq_of_split (hp : p.Prime) (hodd : 2 < p)
     intro v hv
     by_contra hc
     exact hXE v hv (Finset.mem_union_right _ ((Set.Finite.mem_toFinset _).2 (hYsupp v hc)))
-  have hyunr' : ∀ v ∈ T', localClassHom v p y ∈ localUnramified v p := by
-    intro v hv
+  have hTrT' : Tr ⊆ T' := fun v hv => (hT' v).2 (Or.inl (hTrT hv))
+  have hyunr' : ∀ v ∈ T', v ∉ Tr → localClassHom v p y ∈ localUnramified v p := by
+    intro v hv hvTr
     rcases (hT' v).1 hv with h | h
-    · exact hyunr v h
+    · exact hyunr v h hvTr
     · refine (localClassHom_mem_localUnramified_iff v y).2 ?_
       rw [placeValue_eq_neg_ord, hyzero v h, neg_zero]
       exact dvd_zero _
@@ -175,8 +184,8 @@ theorem exists_two_places_sUnit_class_eq_of_split (hp : p.Prime) (hodd : 2 < p)
     · exact absurd (Finset.mem_union_left _ (hpT v fun hone =>
         not_dvd_of_finitePlace_natCast_eq_one (hres v) hone hdvd)) (hXE v h)
   obtain ⟨Q, R, hQT, hRT, hQspl, hRspl, hQR, hQstab, hRstab, z, hzT, hzunr, hzQ, hzR, hzQc,
-    hzRc⟩ := exists_two_places_sUnit_class_eq (Ω := Ω) hp hodd hζ hres hT'stable hT'S hSstable
-      hSsplit hpT' hreprS hyS hyunr' hyp'
+    hzRc⟩ := exists_two_places_sUnit_class_eq (Ω := Ω) hp hodd hζ hres hT'stable hTrT' hTrstable
+      hT'S hSstable hSsplit hpT' hreprS hyS hyunr' hyfree hyp'
   exact ⟨Q, R, fun hc => hQT ((hT' Q).2 (Or.inl hc)), fun hc => hRT ((hT' R).2 (Or.inl hc)),
     hQspl, hRspl, hQR, hQstab, hRstab, z, fun v hv => hzT v ((hT' v).2 (Or.inl hv)),
     hzunr, hzQ, hzR, hzQc, hzRc⟩

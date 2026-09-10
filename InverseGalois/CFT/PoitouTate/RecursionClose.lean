@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.PoitouTate.ClosingChain
+import InverseGalois.CFT.PoitouTate.ClosingChainRamified
 import InverseGalois.CFT.PoitouTate.Recursion
 
 /-!
@@ -22,6 +23,11 @@ themselves.
 The bound on the number of stages is what makes this usable: it is read off before the recursion
 is started, so the whole argument takes place inside a single stage of the recursion and no
 coherence between the successive stages has to be arranged.
+
+The prescription may be ramified on a distinguished stable part of the fixed set, provided it is
+supported at no more than one place of each orbit of that part.  Then the two units are ramified
+there too, and the two applications of the reciprocity law which close the chain absorb those
+places because the classes they compare lie on one line.
 
 ## Main results
 
@@ -122,38 +128,44 @@ places above the exponent, and trivial at every nontrivial conjugate of the two 
 recursion starts from a possibly larger Galois stable set, all of whose further places already
 satisfy the splitting condition; the two places are produced by running it past the bound supplied
 by the pigeonhole principle, and the unit is the product of the two units attached to the two
-agreeing stages. -/
+agreeing stages.  Away from a distinguished stable part of the fixed set, where the prescription
+is supported at no more than one place of each orbit, the unit produced is unramified. -/
 theorem exists_prescribed_two_places (hp : p.Prime) (hp2 : p ≠ 2)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ p) {Spl : HeightOneSpectrum (𝓞 K) → Prop}
     (hSpl : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), Spl v → Spl (σ • v))
-    {T S₀ : Finset (HeightOneSpectrum (𝓞 K))}
+    {Tr T S₀ : Finset (HeightOneSpectrum (𝓞 K))}
     (hTstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ T → σ • v ∈ T)
+    (hTrT : Tr ⊆ T)
+    (hTrstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ Tr → σ • v ∈ Tr)
     (hTS : T ⊆ S₀)
     (hSstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ S₀ → σ • v ∈ S₀)
     (hSsplit : ∀ v ∈ S₀, v ∉ T → Spl v)
     (hpT : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → v ∈ T)
-    {g : Kˣ} (hgunr : ∀ v ∈ T, localClassHom v p g ∈ localUnramified v p)
+    {g : Kˣ} (hgunr : ∀ v ∈ T, v ∉ Tr → localClassHom v p g ∈ localUnramified v p)
+    (hgfree : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
+      localClassHom (σ • v) p g = 1 ∨ localClassHom v p g = 1)
     (hgp : ∀ v ∈ T, Pc v ∣ p → localClassHom v p g = 1)
     (hstep : ∀ S : Finset (HeightOneSpectrum (𝓞 K)), S₀ ⊆ S →
       (∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ S → σ • v ∈ S) →
       ∀ c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v p,
-        (∀ v ∈ S, c v ∈ localUnramified v p) → (∀ v ∈ T, c v = localClassHom v p g) →
+        (∀ v ∈ S, v ∉ Tr → c v ∈ localUnramified v p) →
+        (∀ v ∈ T, c v = localClassHom v p g) →
         (∀ v ∈ S, v ∉ T → Spl v) →
         ∃ Q : HeightOneSpectrum (𝓞 K), Q ∉ S ∧ Spl Q ∧ stabilizer Gal(K/k) Q = ⊥ ∧
           ∃ w : Kˣ, (∀ v ∈ S, localClassHom v p w = c v) ∧
-            (∀ v : HeightOneSpectrum (𝓞 K), v ≠ Q → (p : ℤ) ∣ placeValue v w) ∧
+            (∀ v : HeightOneSpectrum (𝓞 K), v ∉ Tr → v ≠ Q → (p : ℤ) ∣ placeValue v w) ∧
             ¬ (p : ℤ) ∣ placeValue Q w) :
     ∃ Q R : HeightOneSpectrum (𝓞 K), Q ∉ T ∧ R ∉ T ∧ Spl Q ∧ Spl R ∧
       (∀ σ : Gal(K/k), Q ≠ σ • R) ∧
       stabilizer Gal(K/k) Q = ⊥ ∧ stabilizer Gal(K/k) R = ⊥ ∧
       ∃ z : Kˣ, (∀ v ∈ T, localClassHom v p z = localClassHom v p (g ^ 2)) ∧
-        (∀ v : HeightOneSpectrum (𝓞 K), v ≠ Q → v ≠ R → (p : ℤ) ∣ placeValue v z) ∧
+        (∀ v : HeightOneSpectrum (𝓞 K), v ∉ Tr → v ≠ Q → v ≠ R → (p : ℤ) ∣ placeValue v z) ∧
         ¬ (p : ℤ) ∣ placeValue Q z ∧ ¬ (p : ℤ) ∣ placeValue R z ∧
         (∀ σ : Gal(K/k), σ ≠ 1 → localClassHom (σ • Q) p z = 1) ∧
         (∀ σ : Gal(K/k), σ ≠ 1 → localClassHom (σ • R) p z = 1) := by
   obtain ⟨M, hM⟩ := exists_bound_placeFrobValue_eq (k := k) hres hζ
-  obtain ⟨d, hd⟩ := exists_recInv hSpl hTS hSstable hSsplit hgunr hstep M
+  obtain ⟨d, hd⟩ := exists_recInv hSpl hTrT hTS hSstable hSsplit hgunr hstep M
   obtain ⟨i, N, hiN, hNM, hvalcong, hfrobeq⟩ := hM d.chosen d.unit
   have hiM : i < M := hiN.trans hNM
   -- a place outside the fixed set has residue characteristic prime to the exponent
@@ -166,6 +178,7 @@ theorem exists_prescribed_two_places (hp : p.Prime) (hp2 : p ≠ 2)
       have h := hTstable σ⁻¹ _ hmem
       rw [inv_smul_smul] at h
       exact hv h
+  have hnotTr : ∀ v : HeightOneSpectrum (𝓞 K), v ∉ T → v ∉ Tr := fun v hv hmem => hv (hTrT hmem)
   have hQnotT : d.chosen i ∉ T := hd.chosenNotMem i hiM
   have hRnotT : d.chosen N ∉ T := hd.chosenNotMem N hNM
   have hQR : ∀ σ : Gal(K/k), d.chosen i ≠ σ • d.chosen N :=
@@ -198,29 +211,39 @@ theorem exists_prescribed_two_places (hp : p.Prime) (hp2 : p ≠ 2)
     have h := placeFrobValue_galUnits_eq_inv hres hζ σ (σ⁻¹ • d.chosen i)
       (hd.unitConj i hiM N hNM hiN σ⁻¹ (inv_ne_one.2 hσ))
     rwa [smul_inv_smul] at h
+  -- on the distinguished part the classes compared by the closing chain lie on one line
+  have hiso : ∀ σ : Gal(K/k), ∀ u ∈ Tr, ∃ e : localClasses u p,
+      localClassHom u p (d.unit i) ∈ Subgroup.zpowers e ∧
+      localClassHom u p (galUnits σ (d.unit i)) ∈ Subgroup.zpowers e ∧
+      localClassHom u p (galUnits σ (d.unit N)) ∈ Subgroup.zpowers e := fun σ =>
+    exists_zpowers_of_prescription (T := Tr) (cT := fun v => localClassHom v p g) hTrstable σ
+      (hgfree σ) (fun v hv => hd.unitPres i hiM v (hTrT hv))
+      (fun v hv => hd.unitPres N hNM v (hTrT hv))
   -- the two places and the unit
   refine ⟨d.chosen i, d.chosen N, hQnotT, hRnotT, hd.split _ (hd.chosenMem i hiM) hQnotT,
     hd.split _ (hd.chosenMem N hNM) hRnotT, hQR, hd.chosenStab i hiM, hd.chosenStab N hNM,
     d.unit i * d.unit N, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · intro v hv
     rw [_root_.map_mul, hd.unitPres i hiM v hv, hd.unitPres N hNM v hv, _root_.map_pow, pow_two]
-  · intro v hvQ hvR
+  · intro v hvTr hvQ hvR
     rw [placeValue_mul]
-    exact dvd_add (hd.unitUnram i hiM v hvQ) (hd.unitUnram N hNM v hvR)
+    exact dvd_add (hd.unitUnram i hiM v hvTr hvQ) (hd.unitUnram N hNM v hvTr hvR)
   · intro hdvd
     refine hd.unitRam i hiM ?_
-    have h := dvd_sub hdvd (hd.unitUnram N hNM _ hQRne)
+    have h := dvd_sub hdvd (hd.unitUnram N hNM _ (hnotTr _ hQnotT) hQRne)
     rwa [placeValue_mul, add_sub_cancel_right] at h
   · intro hdvd
     refine hd.unitRam N hNM ?_
-    have h := dvd_sub hdvd (hd.unitUnram i hiM _ (Ne.symm hQRne))
+    have h := dvd_sub hdvd (hd.unitUnram i hiM _ (hnotTr _ hRnotT) (Ne.symm hQRne))
     rwa [placeValue_mul, add_sub_cancel_left] at h
   · intro σ hσ
     rw [_root_.map_mul, hd.unitConj i hiM N hNM hiN σ hσ, mul_inv_cancel]
   · intro σ hσ
-    exact localClassHom_mul_eq_one hp hp2 hres hζ (hQσQ σ hσ) (hQR σ) (hRσR σ hσ)
-      (hnotT _ hQnotT) (hnotT _ (hTnot σ _ hQnotT)) (hnotT _ (hTnot σ _ hRnotT))
-      (hd.unitUnram i hiM) (hd.unitUnram N hNM) hziQ hvalcong hzip (hfrobeq σ) (hcond σ hσ)
+    exact localClassHom_mul_eq_one_of_isotropic hp hp2 hres hζ hTrstable (hQσQ σ hσ) (hQR σ)
+      (hRσR σ hσ) (hnotTr _ hQnotT) (hnotTr _ hRnotT) (hnotT _ hQnotT)
+      (hnotT _ (hTnot σ _ hQnotT)) (hnotT _ (hTnot σ _ hRnotT))
+      (hd.unitUnram i hiM) (hd.unitUnram N hNM) hziQ hvalcong hzip (hiso σ) (hfrobeq σ)
+      (hcond σ hσ)
 
 end Close
 

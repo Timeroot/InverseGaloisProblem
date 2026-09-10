@@ -35,8 +35,9 @@ character and to the value at the Frobenius automorphism.
   place cancels the prescription character** when the two exponents are inverse to one another.
 * `InverseGalois.CFT.exists_place_sUnit_prescribed_of_rad`: **one step of the recursion** — a new
   place, outside the prescribed set and completely split, together with an `S`-unit meeting the
-  prescription at the old places and ramified exactly at the new one, granted that the character
-  of the `S`-units kills every radicand of the middle field.
+  prescription at the old places and ramified at the new one and, apart from a named part of the
+  prescribed set, nowhere else, granted that the character of the `S`-units kills every radicand
+  of the middle field.
 * `InverseGalois.CFT.exists_place_sUnit_prescribed`: the same, for a prescription coming from a
   global `S`-unit away from the places at which the middle field splits completely.
 
@@ -138,8 +139,9 @@ variable {k A K : Type} [Field k] [NumberField k] [Field A] [Algebra k A] [Norma
 omit [IsGalois K ↥Ω] in
 /-- **One step of the recursion prescribing local classes.**  Outside a prescribed finite set of
 places of the bottom field there is a place, completely split in the middle field, together with an
-`S`-unit whose local classes meet the prescription at the old places and which is ramified exactly
-at the new place.  The hypothesis is that the character of the `S`-units cut out by the
+`S`-unit whose local classes meet the prescription at the old places and which is ramified at the
+new place and, away from a named part of the prescribed set on which the prescription may itself be
+ramified, nowhere else.  The hypothesis is that the character of the `S`-units cut out by the
 prescription is killed by every radicand of the middle field, which is what the construction of a
 Chebotarev place demands of it; that construction then produces a place at which the character is
 a fixed power, prime to the exponent, of the value at the Frobenius automorphism, and prescribing
@@ -155,8 +157,9 @@ theorem exists_place_sUnit_prescribed_of_rad (hp : p.Prime)
       (∀ᶠ v : HeightOneSpectrum (𝓞 K) in Filter.cofinite, m v = 0) →
       ∃ a : Kˣ, ∀ v ∉ (Tn : Set (HeightOneSpectrum (𝓞 K))),
         Rigidity.RET.ord K v (a : K) = m v)
+    {T : Finset (HeightOneSpectrum (𝓞 K))}
     {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v p}
-    (hcunr : ∀ v ∈ Tn, c v ∈ localUnramified v p)
+    (hcunr : ∀ v ∈ Tn, v ∉ T → c v ∈ localUnramified v p)
     (hrad : ∀ u ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))), ∀ y : (↥Ω)ˣ,
       Units.map (algebraMap K ↥Ω : K →* ↥Ω) u = y ^ p →
       prescriptionChar hres hζ Tn c u = 1) :
@@ -166,7 +169,7 @@ theorem exists_place_sUnit_prescribed_of_rad (hp : p.Prime)
       ∃ z : Kˣ, z ∈ sUnits K (insert (primeUnder (𝓞 K) V)
           (Tn : Set (HeightOneSpectrum (𝓞 K)))) ∧
         (∀ v ∈ Tn, localClassHom v p z = c v) ∧
-        (∀ v : HeightOneSpectrum (𝓞 K), v ≠ primeUnder (𝓞 K) V →
+        (∀ v : HeightOneSpectrum (𝓞 K), v ∉ T → v ≠ primeUnder (𝓞 K) V →
           (p : ℤ) ∣ placeValue v z) ∧
         ¬ (p : ℤ) ∣ placeValue (primeUnder (𝓞 K) V) z := by
   classical
@@ -358,10 +361,11 @@ theorem exists_place_sUnit_prescribed_of_rad (hp : p.Prime)
       exact Subgroup.mem_bot.1 hmem
     rw [Pi.mul_apply, hlv, hc'mem ⟨v, hvS⟩ hv] at h
     exact (mul_one _).symm.trans h
-  have hzval : ∀ v : HeightOneSpectrum (𝓞 K), v ≠ Q → (p : ℤ) ∣ placeValue v (w : Kˣ) := by
-    intro v hvQ
+  have hzval : ∀ v : HeightOneSpectrum (𝓞 K), v ∉ T → v ≠ Q →
+      (p : ℤ) ∣ placeValue v (w : Kˣ) := by
+    intro v hvT hvQ
     by_cases hv : v ∈ Tn
-    · have hcv := hcunr v hv
+    · have hcv := hcunr v hv hvT
       rw [← hzTn v hv] at hcv
       exact (localClassHom_mem_localUnramified_iff v (w : Kˣ)).1 hcv
     · have hvnot : v ∉ insert Q (Tn : Set (HeightOneSpectrum (𝓞 K))) := by
@@ -385,11 +389,13 @@ theorem exists_place_sUnit_prescribed_of_rad (hp : p.Prime)
 `S`-unit away from the places at which the middle field splits completely.**  There the character
 of the `S`-units is killed by every radicand of the middle field for the concrete reason that a
 radicand is already a power in the completion at a completely split place, so what is left is a
-product of norm residue symbols of two `S`-units and the product formula applies. -/
+product of norm residue symbols of two `S`-units and the product formula applies.  The prescription
+is allowed to be ramified on a named part of the prescribed set, and the unit produced is then
+ramified at the new place and on that part only. -/
 theorem exists_place_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
     {ζ : K} (hζ : IsPrimitiveRoot ζ p)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
-    (Tk : Finset (HeightOneSpectrum (𝓞 k))) {T Tn : Finset (HeightOneSpectrum (𝓞 K))}
+    (Tk : Finset (HeightOneSpectrum (𝓞 k))) {Tr T Tn : Finset (HeightOneSpectrum (𝓞 K))}
     (hT : T ⊆ Tn) (hTk : ∀ v ∈ Tn, primeUnder (𝓞 k) v ∈ Tk)
     (hpTn : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → v ∈ Tn)
     (hrepr : ∀ m : HeightOneSpectrum (𝓞 K) → ℤ,
@@ -397,7 +403,7 @@ theorem exists_place_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
       ∃ a : Kˣ, ∀ v ∉ (Tn : Set (HeightOneSpectrum (𝓞 K))),
         Rigidity.RET.ord K v (a : K) = m v)
     {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v p}
-    (hcunr : ∀ v ∈ Tn, c v ∈ localUnramified v p)
+    (hcunr : ∀ v ∈ Tn, v ∉ Tr → c v ∈ localUnramified v p)
     {g : Kˣ} (hg : g ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))))
     (hc : ∀ v ∈ T, c v = localClassHom v p g)
     (hsplit : ∀ v ∈ Tn, v ∉ T → ∃ w : HeightOneSpectrum (𝓞 ↥Ω),
@@ -408,7 +414,7 @@ theorem exists_place_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
       ∃ z : Kˣ, z ∈ sUnits K (insert (primeUnder (𝓞 K) V)
           (Tn : Set (HeightOneSpectrum (𝓞 K)))) ∧
         (∀ v ∈ Tn, localClassHom v p z = c v) ∧
-        (∀ v : HeightOneSpectrum (𝓞 K), v ≠ primeUnder (𝓞 K) V →
+        (∀ v : HeightOneSpectrum (𝓞 K), v ∉ Tr → v ≠ primeUnder (𝓞 K) V →
           (p : ℤ) ∣ placeValue v z) ∧
         ¬ (p : ℤ) ∣ placeValue (primeUnder (𝓞 K) V) z := by
   have hp2 : p ≠ 2 := by omega
@@ -417,13 +423,16 @@ theorem exists_place_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
     intro v hv hvT
     obtain ⟨w, hw1, hw2⟩ := hsplit v hv hvT
     exact ⟨w, hw1, stabilizer_eq_bot_of_stabilizer_base_eq_bot hw2⟩
-  refine exists_place_sUnit_prescribed_of_rad hp hζ hres Tk hTk hpTn hrepr hcunr
-    fun u hu y hy => ?_
-  have hb : algebraMap K ↥Ω ((u : Kˣ) : K) = ((y : (↥Ω)ˣ) : ↥Ω) ^ p := by
-    have hy' := congrArg Units.val hy
-    rwa [Units.coe_map, MonoidHom.coe_coe, Units.val_pow_eq_pow_val] at hy'
-  exact prescriptionChar_eq_one_of_pow hp hres hζ hT subset_rfl hpTn hg hc hsplitK hu
-    (fun w => infClassHom_eq_one_of_ne_two hp hp2 hζ w _) hb
+  have hrad : ∀ u ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))), ∀ y : (↥Ω)ˣ,
+      Units.map (algebraMap K ↥Ω : K →* ↥Ω) u = y ^ p →
+      prescriptionChar hres hζ Tn c u = 1 := by
+    intro u hu y hy
+    have hb : algebraMap K ↥Ω ((u : Kˣ) : K) = ((y : (↥Ω)ˣ) : ↥Ω) ^ p := by
+      have hy' := congrArg Units.val hy
+      rwa [Units.coe_map, MonoidHom.coe_coe, Units.val_pow_eq_pow_val] at hy'
+    exact prescriptionChar_eq_one_of_pow hp hres hζ hT subset_rfl hpTn hg hc hsplitK hu
+      (fun w => infClassHom_eq_one_of_ne_two hp hp2 hζ w _) hb
+  exact exists_place_sUnit_prescribed_of_rad (T := Tr) hp hζ hres Tk hTk hpTn hrepr hcunr hrad
 
 end Step
 

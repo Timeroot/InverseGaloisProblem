@@ -50,12 +50,12 @@ there; or it carries a trivial prescription, in which case every coordinate is t
 no coordinate is ramified there and the place does not divide the exponent, in which case every
 coordinate lies in the unramified classes, which are cyclic. -/
 theorem exists_forall_localClassHom_mem_zpowers (hp : p.Prime) {ζ : K}
-    (hζ : IsPrimitiveRoot ζ p) {T Tn : Finset (HeightOneSpectrum (𝓞 K))}
+    (hζ : IsPrimitiveRoot ζ p) {Tr T Tn : Finset (HeightOneSpectrum (𝓞 K))} (hTr : Tr ⊆ T)
     (hpTn : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → v ∈ Tn)
     {c : ℕ → (v : HeightOneSpectrum (𝓞 K)) → localClasses v p}
     (hcT : ∀ (i : ℕ), ∀ v ∈ Tn, v ∉ T → c i v = 1)
     {d : ℕ} {S : Finset (HeightOneSpectrum (𝓞 K))} {Q R : ℕ → HeightOneSpectrum (𝓞 K)}
-    {z : ℕ → Kˣ} (h : IsTwoPlaceFamily Ω p Tn c d S Q R z)
+    {z : ℕ → Kˣ} (h : IsTwoPlaceFamily Ω p Tr Tn c d S Q R z)
     {v : HeightOneSpectrum (𝓞 K)} (hv : v ∉ T) :
     ∃ u : localClasses v p, ∀ i < d, localClassHom v p (z i) ∈ Subgroup.zpowers u := by
   classical
@@ -84,7 +84,7 @@ theorem exists_forall_localClassHom_mem_zpowers (hp : p.Prime) {ζ : K}
         exact hvTn (hpTn v hcon)
       have hmem : ∀ i, i < d → localClassHom v p (z i) ∈ localUnramified v p := fun i hi =>
         (localClassHom_mem_localUnramified_iff v (z i)).2
-          (h.unram i hi v (hne i hi).1 (hne i hi).2)
+          (h.unram i hi v (fun hcon => hv (hTr hcon)) (hne i hi).1 (hne i hi).2)
       obtain ⟨gU, hgU⟩ := (isCyclic_localUnramified hp hζ v hvp).exists_generator
       refine ⟨(gU : localClasses v p), fun i hi => ?_⟩
       obtain ⟨m, hm⟩ := hgU ⟨localClassHom v p (z i), hmem i hi⟩
