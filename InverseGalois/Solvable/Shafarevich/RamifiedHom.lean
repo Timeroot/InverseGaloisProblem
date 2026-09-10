@@ -26,6 +26,8 @@ the restriction is inherited.
   calls for.**
 * `InverseGalois.Shafarevich.IsCyclicRamifiedHom` — the same restriction with the roots of unity
   rider dropped, a condition purely about the values the homomorphism takes.
+* `InverseGalois.Shafarevich.IsCyclicSplitHom` — the same restriction with total ramification
+  dropped as well, leaving splitting and a cyclic local image.
 
 ## Main results
 
@@ -38,6 +40,9 @@ the restriction is inherited.
   carries the restriction**, the totally ramified clause coming for free from the prime order.
 * `InverseGalois.Shafarevich.isSplitTotallyRamifiedHom_of_isCyclicRamifiedHom` — **a uniform bound
   on the order of the values restores the roots of unity rider.**
+* `InverseGalois.Shafarevich.isCyclicRamifiedHom_of_isCyclicSplitHom` — **a cyclic local image over
+  a totally ramified one is itself totally ramified**, so a construction never has to arrange total
+  ramification by hand.
 
 ## Tags
 
@@ -126,6 +131,60 @@ theorem mem_zpowers_of_pow_prime {G : Type*} [Group G] {ℓ : ℕ} (hℓ : ℓ.P
   rw [← hi, ← zpow_mul, hkey, sub_eq_add_neg, zpow_add, zpow_neg, zpow_mul, hcz, one_zpow, inv_one,
     mul_one, zpow_one]
 
+/-- **An element of prime power order lies in a subgroup of its own powers as soon as the subgroup
+is nontrivial and comes within a factor the prime kills of it.**
+
+If the element differs from a member of the subgroup by one the prime kills, then the `ℓ`-th power
+of the element already lies in the subgroup, the two `ℓ`-th powers agreeing.  Either the factor is
+itself an `ℓ`-th power of the element, and then it lies in the subgroup along with it; or it is not,
+and then the order of the element is at most the prime, so any nontrivial member of the subgroup
+generates the element outright. -/
+theorem mem_of_pow_prime_pow {G : Type*} [Group G] {ℓ : ℕ} (hℓ : ℓ.Prime) {g : G} {a : ℕ}
+    (hg : g ^ ℓ ^ a = 1) {H : Subgroup G} (hH : H ≤ Subgroup.zpowers g) (hHne : H ≠ ⊥)
+    {y : G} (hyH : y ∈ H) (hy : (g * y⁻¹) ^ ℓ = 1) : g ∈ H := by
+  obtain ⟨s, hs⟩ := Subgroup.mem_zpowers_iff.1 (hH hyH)
+  obtain ⟨t, ht⟩ : ∃ t : ℤ, g ^ t = g * y⁻¹ :=
+    Subgroup.mem_zpowers_iff.1 (mul_mem (Subgroup.mem_zpowers g) (inv_mem (hH hyH)))
+  have hsum : g ^ (t + s) = g := by
+    rw [zpow_add, ht, hs]
+    group
+  have htl : g ^ (t * (ℓ : ℤ)) = 1 := by rw [zpow_mul, ht, zpow_natCast, hy]
+  have hts : g ^ (t + s - 1) = 1 := by rw [zpow_sub, hsum, zpow_one, mul_inv_cancel]
+  have hgl : g ^ (ℓ : ℕ) ∈ H := by
+    have h1 : g ^ ((s - 1) * (ℓ : ℤ)) = 1 := by
+      have he : (s - 1) * (ℓ : ℤ) = (t + s - 1) * ℓ - t * ℓ := by ring
+      rw [he, zpow_sub, zpow_mul, hts, one_zpow, htl, mul_inv_cancel]
+    have hyl : y ^ (ℓ : ℕ) = g ^ (ℓ : ℕ) := by
+      have he : s * (ℓ : ℤ) = (s - 1) * ℓ + ℓ := by ring
+      rw [← hs, ← zpow_natCast (g ^ s) ℓ, ← zpow_mul, ← zpow_natCast g ℓ, he, zpow_add, h1,
+        one_mul]
+    rw [← hyl]
+    exact pow_mem hyH ℓ
+  by_cases hdvd : (ℓ : ℤ) ∣ t
+  · obtain ⟨u, hu⟩ := hdvd
+    have hmem : g * y⁻¹ ∈ H := by
+      rw [← ht, hu, zpow_mul, zpow_natCast]
+      exact zpow_mem hgl u
+    simpa using mul_mem hmem hyH
+  · obtain ⟨b, -, hb⟩ := (Nat.dvd_prime_pow hℓ).1 (orderOf_dvd_of_pow_eq_one hg)
+    have hordz : ((ℓ : ℤ) ^ b) ∣ t * (ℓ : ℤ) := by
+      have h := orderOf_dvd_iff_zpow_eq_one.2 htl
+      rwa [hb, Nat.cast_pow] at h
+    have hb1 : b ≤ 1 := by
+      by_contra hcon
+      obtain ⟨c, rfl⟩ : ∃ c, b = c + 2 := ⟨b - 2, by omega⟩
+      have hlne : (ℓ : ℤ) ≠ 0 := Int.natCast_ne_zero.2 hℓ.ne_zero
+      have h2 : ((ℓ : ℤ) ^ (c + 1)) * (ℓ : ℤ) ∣ t * (ℓ : ℤ) := by rwa [pow_succ] at hordz
+      exact hdvd ((dvd_pow_self (ℓ : ℤ) (Nat.succ_ne_zero c)).trans
+        ((mul_dvd_mul_iff_right hlne).1 h2))
+    have hgpow : g ^ (ℓ : ℕ) = 1 :=
+      orderOf_dvd_iff_pow_eq_one.1 (by rw [hb]; simpa using pow_dvd_pow ℓ hb1)
+    obtain ⟨z, hzH, hz1⟩ : ∃ z ∈ H, z ≠ 1 := by
+      by_contra hcon
+      push_neg at hcon
+      exact hHne (le_bot_iff.1 fun z hz => Subgroup.mem_bot.2 (hcon z hz))
+    exact Subgroup.zpowers_le.2 hzH (mem_zpowers_of_pow_prime hℓ hgpow (hH hzH) hz1)
+
 /-- **A homomorphism whose values on a decomposition subgroup lie in the powers of a single element
 killed by the prime carries the restriction.**
 
@@ -198,5 +257,60 @@ theorem isSplitTotallyRamifiedHom_of_isCyclicRamifiedHom {M : ℕ} {φ : Gal(Ω/
   obtain ⟨d, hd⟩ : ℓ * orderOf (Φ x₀) ∣ ℓ * M :=
     mul_dvd_mul_left ℓ (orderOf_dvd_of_pow_eq_one (htors x₀ (hsplit x₀ hx₀)))
   rw [hd, pow_mul, hζ, one_pow]
+
+/-! ### The restriction with total ramification taken out of it as well -/
+
+/-- **At a prime where the homomorphism ramifies over the base realization, the base realization
+splits completely there and the local image is cyclic** — the restriction with both the roots of
+unity rider and total ramification dropped.
+
+What is left is what a construction has to arrange by hand: the base realization must split
+completely wherever the homomorphism newly ramifies, and the local image there must be generated by
+a single value.  Total ramification is not an extra demand on the construction, being a consequence
+of cyclicity once the layer below is totally ramified. -/
+def IsCyclicSplitHom (φ : Gal(Ω/k) →* U) (Φ : Gal(Ω/k) →* W) : Prop :=
+  ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
+    (∃ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1 ∧ Φ x ≠ 1) →
+      (∀ x ∈ stabilizer Gal(Ω/k) P, φ x = 1) ∧
+        ∃ x₀ ∈ stabilizer Gal(Ω/k) P,
+          ∀ x ∈ stabilizer Gal(Ω/k) P, Φ x ∈ Subgroup.zpowers (Φ x₀)
+
+/-- **A cyclic local image over a totally ramified one is itself totally ramified.**
+
+At a prime where the homomorphism ramifies over the base realization, the base realization kills the
+whole decomposition subgroup, so every value there has order a power of the prime, and the local
+image is generated by the value at a single element.  The homomorphism below is totally ramified
+there, so that element agrees below with one of the inertia subgroup, and the two values differ by
+one the prime kills.  That is exactly the situation in which an element of prime power order is
+forced into a nontrivial subgroup of its own powers, and the inertia subgroup has nontrivial image
+because the homomorphism ramifies there — so the generator lies in the image of inertia, and with it
+the whole local image. -/
+theorem isCyclicRamifiedHom_of_isCyclicSplitHom (hℓ : ℓ.Prime) {φ : Gal(Ω/k) →* U}
+    {Φ : Gal(Ω/k) →* W} {Ψ : Gal(Ω/k) →* W'} {π : W' →* W} (hover : ∀ x, π (Ψ x) = Φ x)
+    (hker : ∀ y : W', π y = 1 → y ^ ℓ = 1)
+    (hord : ∀ x : Gal(Ω/k), φ x = 1 → ∃ a : ℕ, Ψ x ^ ℓ ^ a = 1)
+    (hbelow : ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
+      (∃ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1 ∧ Ψ x ≠ 1) →
+        ∀ x ∈ stabilizer Gal(Ω/k) P, ∃ y ∈ Ideal.inertia Gal(Ω/k) P, Φ x = Φ y)
+    (h : IsCyclicSplitHom φ Ψ) : IsCyclicRamifiedHom φ Ψ := by
+  intro P hPp hPbot hram
+  obtain ⟨hsplit, x₀, hx₀, hgen⟩ := h P hPp hPbot hram
+  refine ⟨hsplit, fun x hx => ?_, x₀, hx₀, hgen⟩
+  set H : Subgroup W' := (Ideal.inertia Gal(Ω/k) P).map Ψ with hHdef
+  have hHle : H ≤ Subgroup.zpowers (Ψ x₀) := by
+    rintro - ⟨y, hy, rfl⟩
+    exact hgen y (Ideal.inertia_le_stabilizer P hy)
+  obtain ⟨z, hzI, -, hz1⟩ := hram
+  have hHne : H ≠ ⊥ := fun hbot => hz1 (Subgroup.mem_bot.1 (hbot ▸ Subgroup.mem_map_of_mem Ψ hzI))
+  obtain ⟨y₀, hy₀I, hy₀⟩ :=
+    hbelow P hPp hPbot ⟨z, hzI, hsplit z (Ideal.inertia_le_stabilizer P hzI), hz1⟩ x₀ hx₀
+  obtain ⟨a, ha⟩ := hord x₀ (hsplit x₀ hx₀)
+  have hy : (Ψ x₀ * (Ψ y₀)⁻¹) ^ ℓ = 1 := by
+    refine hker _ ?_
+    rw [_root_.map_mul, _root_.map_inv, hover, hover, hy₀, mul_inv_cancel]
+  have hx₀H : Ψ x₀ ∈ H :=
+    mem_of_pow_prime_pow hℓ ha hHle hHne (Subgroup.mem_map_of_mem Ψ hy₀I) hy
+  obtain ⟨y, hyI, hyx⟩ := Subgroup.mem_map.1 (Subgroup.zpowers_le.2 hx₀H (hgen x hx))
+  exact ⟨y, hyI, hyx.symm⟩
 
 end InverseGalois.Shafarevich

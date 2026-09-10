@@ -20,10 +20,13 @@ the restricted step of the ladder puts in the base realization sit inside it.  F
 family and the family to the package leaves a single condition, the repair of the property on a
 lift, and that is what this file names.
 
-The condition is named three times.  The form the ladder consumes asks for a whole solution back;
-the form the arithmetic is actually asked for only asks for a lift, being onto costing nothing past
-the first layer; and the form the class field theory can answer asks for a lift whose ramification
-is described prime by prime.  Each implies the one before.
+The condition is named four times.  The form the ladder consumes asks for a whole solution back; the
+form the arithmetic is actually asked for only asks for a lift, being onto costing nothing past the
+first layer; the form the class field theory can answer asks for a lift whose ramification is
+described prime by prime; and the last form drops even total ramification, which is a consequence of
+cyclicity over a totally ramified solution below.  Each implies the one before, so the last is all
+the arithmetic owes: a lift ramifying only where the solution below splits completely, with cyclic
+local image there.
 
 ## Main definitions
 
@@ -31,18 +34,23 @@ is described prime by prime.  Each implies the one before.
   realization over the rationals**.
 * `Shafarevich.LiftRepairEP` — the same repair, asked to return only a lift.
 * `Shafarevich.CyclicRepairEP` — the same repair, with the property read prime by prime.
+* `Shafarevich.SplitCyclicRepairEP` — the same repair, with total ramification dropped as well.
 
 ## Main results
 
 * `Shafarevich.solutionRepairEP_of_liftRepairEP` — **repairing a lift repairs a solution**.
 * `Shafarevich.liftRepairEP_of_cyclicRepairEP` — **confining the new ramification and making it
   cyclic repairs a lift**.
+* `Shafarevich.cyclicRepairEP_of_splitCyclicRepairEP` — **confining the new ramification and making
+  it cyclic is all the arithmetic owes**.
 * `Shafarevich.genericLevelStepEPRoots_of_solutionRepairEP` — **the repair of the property is the
   only thing between the arithmetic and the step of the ladder** for an odd prime.
 * `Shafarevich.genericLevelStepEPRoots_of_liftRepairEP` — the same step, in exchange for the repair
   of a lift alone.
 * `Shafarevich.genericLevelStepEPRoots_of_cyclicRepairEP` — the same step, in exchange for the
   repair read prime by prime.
+* `Shafarevich.genericLevelStepEPRoots_of_splitCyclicRepairEP` — the same step, in exchange for
+  confining the new ramification and making it cyclic.
 
 ## Tags
 
@@ -101,6 +109,19 @@ def CyclicRepairEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
       (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
     HasCyclicRepair ℓ U n S j φ D
 
+/-- **The repair of the property, with total ramification dropped as well.**
+
+The data is the same once more, and what is asked back is the least of all: a lift whose new
+ramification over the base realization occurs only at primes where the solution below splits
+completely, and whose local image is cyclic there.  Being totally ramified is not asked for, being
+a consequence of cyclicity over a totally ramified solution below. -/
+def SplitCyclicRepairEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
+  ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
+      [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
+      (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
+      (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
+    HasSplitCyclicRepair ℓ U n S j φ D
+
 /-- **Repairing a lift repairs a solution.**  Past the first layer the layer lies in the Frattini
 subgroup of the normal factor, so a lift over a solution which is onto is itself onto; and a lift
 over a solution below is over the base realization, the projection of the layer extension leaving
@@ -120,6 +141,15 @@ theorem liftRepairEP_of_cyclicRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (h : CyclicR
   intro S U _ _ _ _ _ _ Ω _ _ _ _ φ t D n j hS hj hmu
   refine hasLiftRepair_of_hasCyclicRepair (fun ζ hζ => hmu ζ ?_) (h S U Ω φ t D n j hS hj hmu)
   rw [mul_right_comm, pow_mul, hζ, one_pow]
+
+/-- **Confining the new ramification and making it cyclic is all the arithmetic owes.**  Total
+ramification at the primes where the new ramification occurs follows from cyclicity there, the
+solution below being totally ramified wherever it ramifies at all and trivial on the decomposition
+subgroup at the remaining primes. -/
+theorem cyclicRepairEP_of_splitCyclicRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (h : SplitCyclicRepairEP ℓ) :
+    CyclicRepairEP ℓ := by
+  intro S U _ _ _ _ _ _ Ω _ _ _ _ φ t D n j hS hj hmu
+  exact hasCyclicRepair_of_hasSplitCyclicRepair hS (h S U Ω φ t D n j hS hj hmu)
 
 /-! ### The step -/
 
@@ -169,5 +199,11 @@ theorem genericLevelStepEPRoots_of_liftRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (ho
 theorem genericLevelStepEPRoots_of_cyclicRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (hodd : 2 < ℓ)
     (h : CyclicRepairEP ℓ) : GenericLevelStepEPRoots ℓ :=
   genericLevelStepEPRoots_of_liftRepairEP ℓ hodd (liftRepairEP_of_cyclicRepairEP ℓ h)
+
+/-- **The step of the ladder, in exchange for confining the new ramification and making it cyclic**
+— the least the arithmetic can be asked for. -/
+theorem genericLevelStepEPRoots_of_splitCyclicRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (hodd : 2 < ℓ)
+    (h : SplitCyclicRepairEP ℓ) : GenericLevelStepEPRoots ℓ :=
+  genericLevelStepEPRoots_of_cyclicRepairEP ℓ hodd (cyclicRepairEP_of_splitCyclicRepairEP ℓ h)
 
 end Shafarevich

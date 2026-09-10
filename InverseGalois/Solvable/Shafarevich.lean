@@ -378,7 +378,11 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   shows that **a uniform bound on the order of the values restores that clause**: if every value the
   homomorphism takes where the base realization is trivial is killed by one fixed number, then a
   base realization fixing the roots of unity of the prime times that number turns the restriction
-  read off values into the restriction itself.
+  read off values into the restriction itself.  It then drops total ramification too, and shows that
+  **a cyclic local image over a totally ramified one is itself totally ramified**: the generator of
+  the local image agrees one layer down with a value on inertia, the two differ by an element the
+  prime kills, and an element of prime power order in that position lies in any nontrivial subgroup
+  of its own powers.  So splitting and cyclicity are all a construction ever has to arrange.
 * `InverseGalois.Solvable.Shafarevich.RamifiedTransport` makes that restriction a finite condition.
   Its three clauses speak only of the decomposition and inertia subgroups of a prime and of the
   values two homomorphisms take on them, and moving a prime by an automorphism conjugates both
@@ -535,8 +539,10 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   letters, so **asking the base realization to fix the roots of unity of the prime times that
   exponent discharges the field clause once and for all**.  What is left is a demand about values
   alone: **a lift, trivial along the family, which ramifies over the base realization only where the
-  base realization splits completely and is cyclic and totally ramified there** â€” the shape the
-  class field theory answers in.
+  base realization splits completely and is cyclic and totally ramified there**.  Being totally
+  ramified is then dropped as well, being a consequence of cyclicity, and what the class field
+  theory is left to answer is **a lift whose new ramification is confined to primes the solution
+  below splits completely and whose local image there is cyclic**.
 * `InverseGalois.Solvable.Shafarevich.CyclicLift` closes that case.  The powers of an element are
   carried onto the powers of any other element whose order divides them, by sending one generator
   to the other; this is well defined because two exponents with the same power of the first element
@@ -656,7 +662,7 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   seven clauses are available for every base realization at once.  So **for an odd prime the repair
   of the property on a lift is
   the only thing between the arithmetic and the step of the ladder**.  The residual condition is
-  named in three forms, each implying the one before it: a repair returning a whole solution, a
-  repair returning only a lift, and a repair returning a lift whose ramification is described one
-  prime at a time.
+  named in four forms, each implying the one before it: a repair returning a whole solution, a
+  repair returning only a lift, a repair returning a lift whose ramification is described one prime
+  at a time, and a repair returning a lift whose new ramification is merely confined and cyclic.
 -/
