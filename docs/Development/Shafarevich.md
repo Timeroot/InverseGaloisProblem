@@ -20140,3 +20140,85 @@ Two remarks on how our formulation differs from SW's, both in our favour:
 * **3104.** `genericLayerSubAction` (`LayerSmooth.lean:78`) is a real **instance**, so `φ x • v`
   elaborates with no `attribute` line; only `genericQuotAction` needs `attribute [local instance]`.
 * **3105.** Cold-build job counts: `Shafarevich.LevelConfinedTwist` 8280, ROOT 9912.
+
+## §1.78 — The prescription carried to the EP level (2026-09-10)
+
+Commit `74a7e9a`.  §1.77 reduced the residual condition of the step, `HasSplitCyclicRepair`,
+to a single cocycle prescription `HasConfinedPrescription`, for a fixed base field, a fixed
+algebraic closure and a fixed `φ`.  This section records the last plumbing step: the same
+reduction at the level of the *quantified* propositions (the `…EP` forms) that the ladder
+actually consumes.
+
+### (a) The fifth form
+
+`InverseGalois/Solvable/Shafarevich/LevelStepRepair.lean` now names the residual condition five
+times, each implying the one before it:
+
+```
+ConfinedPrescriptionEP ℓ  ⟹  SplitCyclicRepairEP ℓ  ⟹  CyclicRepairEP ℓ
+   ⟹  LiftRepairEP ℓ  ⟹  SolutionRepairEP ℓ  ⟹  GenericLevelStepEPRoots ℓ      (2 < ℓ)
+```
+
+with
+
+```lean
+def ConfinedPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
+  ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
+      [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
+      (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ),
+      IsPGroup ℓ S → 1 ≤ j →
+      (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
+    letI := galLayerAction ℓ U n S j φ
+    HasConfinedPrescription ℓ U n S j φ D
+```
+
+and the two bridges `splitCyclicRepairEP_of_confinedPrescriptionEP` and
+`genericLevelStepEPRoots_of_confinedPrescriptionEP`.
+
+### (b) Fixing the layer action at the EP level
+
+`HasConfinedPrescription` is stated for an arbitrary `MulDistribMulAction Gal(Ω/k) ↥(layerSub …)`,
+because the sub-file that proves the bridge does not want to commit to one.  At the EP level the
+action *is* determined: it is the one pulled back along `φ`,
+
+```lean
+galLayerAction ℓ U n S j φ : MulDistribMulAction Gal(Ω/k) ↥(layerSub ℓ (Generic U n S) j) :=
+  MulDistribMulAction.compHom _ φ                                   -- `LevelShrink.lean:66`
+```
+
+which is a `def`, not an instance (`φ` is not inferrable), so the EP statement must introduce it
+with `letI := galLayerAction ℓ U n S j φ` *inside* the binder chain, after `φ` is in scope.  This
+is exactly the idiom `HasInflatedSha` already used, and it is what makes the hypothesis `hactφ`
+of `hasSplitCyclicRepair_of_hasConfinedPrescription` — "the ambient action agrees with the one
+through `φ`" — discharge by `fun _ _ => rfl`.
+
+### (c) Local solvability of the bridge is a theorem
+
+`hasSplitCyclicRepair_of_hasConfinedPrescription` also consumes `HasSplitRamifiedLift`, i.e. that
+each local obstruction is already solvable with a *cyclic* lift.  At the EP level this is supplied
+unconditionally by the chain
+
+```
+hasSplitRamifiedLift_of_hasCyclicLift                  -- LocalLift.lean:262
+  ∘ hasCyclicLift_of_fixed_rootsOfUnity                -- CyclicLift.lean
+  ∘ isClosed_stabilizer_ideal
+```
+
+using precisely the roots-of-unity rider `∀ ζ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → …` that
+`RootsLevel.lean` already threads through every EP form.  So nothing local is left: the whole of
+clause 7 is now the *global* prescription.
+
+### (d) Scoreboard
+
+`HasRungData` clauses 1, 3, 4, 5, 6 are theorems.  Clause 2 (the first rung) is open.  Clause 7 is
+`ConfinedPrescriptionEP ℓ`, whose only missing arithmetic input is the surjectivity half of
+Poitou–Tate (SW Lemma 10, `sw.txt:483`).
+
+### (e) Lean findings
+
+* **3106.** `galLayerAction ℓ U n S j φ` (`LevelShrink.lean:66`) is a `def`, not an instance.  A
+  quantified statement that mentions `layerSub` with the action through `φ` must write
+  `letI := galLayerAction ℓ U n S j φ` after the `φ` binder and before the body; `HasInflatedSha`
+  (`LevelShrink.lean:82`) is the template.  With that `letI` in place, a hypothesis of the form
+  `∀ x v, x • v = φ x • v` is `fun _ _ => rfl`.
+* **3107.** Cold-build job counts: `Shafarevich.LevelStepRepair` **8836**, ROOT **9912**.
