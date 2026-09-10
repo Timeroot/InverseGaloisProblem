@@ -52,6 +52,7 @@ import InverseGalois.Solvable.Shafarevich.RamifiedHom
 import InverseGalois.Solvable.Shafarevich.InducedCocycle
 import InverseGalois.Solvable.Shafarevich.LevelRamification
 import InverseGalois.Solvable.Shafarevich.LevelOneCharacter
+import InverseGalois.Solvable.Shafarevich.CharacterProduct
 import InverseGalois.Solvable.Shafarevich.LayerTensorOne
 import InverseGalois.Solvable.Shafarevich.LayerPi
 import InverseGalois.Solvable.Shafarevich.LayerKummerShrink
@@ -396,6 +397,14 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   along the family exactly when the character kills the conjugates the family names, and smooth
   because an open normal subgroup the character kills lies in its kernel.  So **the first rung is a
   question about characters**, and it is the question the arithmetic answers.
+* `InverseGalois.Solvable.Shafarevich.CharacterProduct` assembles that character coordinate by
+  coordinate.  What the arithmetic supplies is a family of additive characters with values in the
+  cyclic group of order the exponent, one for each element of the layer, and the character wanted is
+  the product of the powers of those elements by the values of the family.  Indexing by the elements
+  themselves rather than by a basis makes the generating hypothesis free, so **the product is onto
+  together with its conjugates as soon as each coordinate is realised with value one somewhere the
+  others vanish**, and **it carries the ramification restriction as soon as, at every prime where it
+  ramifies, one coordinate survives on one coset of the decomposition subgroup and nowhere else**.
 * `InverseGalois.Solvable.Shafarevich.LayerTensorOne` runs the count in degree one, where the
   coefficients are not a layer but a layer tensored on the left with a finitely generated abelian
   group.  Such a tensor product is infinite, but a spanning family of the left factor writes every
