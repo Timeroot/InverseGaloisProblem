@@ -67,6 +67,7 @@ import InverseGalois.Solvable.Shafarevich.ElementaryQuotientDecomposition
 import InverseGalois.Solvable.Shafarevich.RootsLevel
 import InverseGalois.Solvable.Shafarevich.LevelOneArith
 import InverseGalois.Solvable.Shafarevich.LevelOneFamily
+import InverseGalois.Solvable.Shafarevich.LevelOneTwoPlace
 
 /-!
 # Shafarevich's theorem
@@ -554,4 +555,12 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   exponent leaves only one.  So **a family of units which are local powers along a stable set of
   places gives a character killed on the decomposition subgroups of that set and on the archimedean
   ones**.
+* `InverseGalois.Solvable.Shafarevich.LevelOneTwoPlace` supplies the units themselves.  The
+  two-place construction of the Poitou-Tate directory produces a family of units over a Galois
+  stable finite set of places carrying the ideal classes and the places above the exponent, once an
+  auxiliary field is named in which the places outside the set are unramified and the places inside
+  it split completely; the level itself serves, since the places the construction spends have
+  trivial decomposition group in the level by construction and every prime is unramified in a field
+  over itself.  So **a Galois stable finite set of places carrying the ideal classes and the places
+  above the exponent gives the first rung of the ladder its character**.
 -/
