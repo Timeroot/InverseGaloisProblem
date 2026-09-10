@@ -175,7 +175,9 @@ The data is the same once more, and what is asked back is no lift at all but a s
 with values in the layer: prescribed along finitely many subgroups of decomposition subgroups at
 primes named in advance, trivial along the finite family wherever the base realization already is,
 and ramifying only at those named primes or else at primes where the given lift kills the whole
-decomposition subgroup.  Nothing is asked of the local image, and the named primes are arbitrary. -/
+decomposition subgroup.  Nothing is asked of the local image, and the named primes are arbitrary.
+The prescription announces the number of letters its data is read at and answers at the number
+asked for. -/
 def FlatPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
   ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
@@ -191,7 +193,8 @@ with values in the layer: prescribed along finitely many subgroups of decomposit
 primes named in advance and completely decomposed in the field the base realization cuts out,
 trivial along the finite family wherever the base realization already is, and ramifying only at
 those named primes or else at primes where the given lift kills the whole decomposition subgroup and
-the cocycle is cyclic. -/
+the cocycle is cyclic.  The prescription announces the number of letters its data is read at and
+answers at the number asked for. -/
 def ConfinedPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
   ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
@@ -206,7 +209,8 @@ The data is the same once more, and what is asked back is not a cocycle over the
 smooth homomorphism into the layer defined on the kernel of the base realization, the action there
 being trivial: prescribed along the same subgroups, killing the conjugates of the finite family and
 the decomposition subgroups of all but one prime of each orbit it is allowed to ramify in, and
-cyclic on the decomposition subgroup of each prime it brings in itself. -/
+cyclic on the decomposition subgroup of each prime it brings in itself.  The prescription announces
+the number of letters its data is read at and answers at the number asked for. -/
 def KernelPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
   ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
@@ -240,8 +244,8 @@ theorem splitCyclicRepairEP_of_confinedPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prim
   intro S U _ _ _ _ _ _ Ω _ _ _ _ φ t D n j hS hj hmu
   letI := galLayerAction ℓ U n S j φ
   refine hasSplitCyclicRepair_of_hasConfinedPrescription (fun _ _ => rfl) ?_
-    (hflat S U Ω φ t D n j hS hj hmu) (h S U Ω φ t D n j hS hj hmu)
-  exact hasSplitRamifiedLift_of_hasCyclicLift ℓ U n S j hS φ fun P N _ _ _ hμ =>
+    (fun m => hflat S U Ω φ t D m j hS hj hmu) (h S U Ω φ t D n j hS hj hmu)
+  exact fun m => hasSplitRamifiedLift_of_hasCyclicLift ℓ U m S j hS φ fun P N _ _ _ hμ =>
     hasCyclicLift_of_fixed_rootsOfUnity ℓ (isClosed_stabilizer_ideal P) N
       fun ζ hζ σ => hμ ζ hζ (σ : Gal(Ω/ℚ)) σ.2
 

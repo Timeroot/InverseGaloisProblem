@@ -126,6 +126,14 @@ theorem pCentralMap_mk (f : P →* Q) (x : P) :
 
 theorem pCentralMap_succ (f : P →* Q) : pCentralMap p (n + 1) f = quotientMap p f n := rfl
 
+/-- **The map of quotients is functorial**, a composite of homomorphisms inducing the composite
+map. -/
+theorem pCentralMap_comp {R : Type*} [Group R] (g : Q →* R) (f : P →* Q) :
+    (pCentralMap p n g).comp (pCentralMap p n f) = pCentralMap p n (g.comp f) := by
+  refine MonoidHom.ext fun y => ?_
+  induction y using QuotientGroup.induction_on with
+  | _ x => rfl
+
 /-- The projection commutes with the map induced by a homomorphism. -/
 theorem pCentralProj_comp_pCentralMap (f : P →* Q) :
     (pCentralProj p Q n).comp (pCentralMap p (n + 1) f)
@@ -261,6 +269,15 @@ theorem rightHom_layerSemidirectMap
       = layerSemidirectMap p hf j ((layerExtension p χ j).rightHom x) := by
   refine SemidirectProduct.ext ?_ rfl
   exact DFunLike.congr_fun (pCentralProj_comp_pCentralMap p j f) x.left
+
+/-- **The morphism of extensions is functorial**, a composite of two equivariant homomorphisms
+inducing the composite morphism. -/
+theorem layerSemidirectMap_comp {R : Type*} [Group R] {χ'' : U →* MulAut R} {g : Q →* R}
+    (hg : ∀ u : U, g.comp (χ' u).toMonoidHom = (χ'' u).toMonoidHom.comp g)
+    (hgf : ∀ u : U, (g.comp f).comp (χ u).toMonoidHom = (χ'' u).toMonoidHom.comp (g.comp f))
+    (n : ℕ) (x : (P ⧸ pCentral p P n) ⋊[pCentralAut p χ n] U) :
+    layerSemidirectMap p hg n (layerSemidirectMap p hf n x) = layerSemidirectMap p hgf n x :=
+  SemidirectProduct.ext (DFunLike.congr_fun (pCentralMap_comp p n g f) x.left) rfl
 
 end Morphism
 

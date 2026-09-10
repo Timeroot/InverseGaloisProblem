@@ -30,11 +30,16 @@ be named, so both conditions become checks at finitely many primes.
   the base realization or kills the whole decomposition subgroup.
 * `InverseGalois.Shafarevich.IsConfinedRamifiedHom` — **the new ramification of a lift is
   confined.**
+* `InverseGalois.Shafarevich.IsTotallyRamifiedAt` — at a prime, the homomorphism takes no value on
+  the decomposition subgroup it does not already take on inertia.
+* `InverseGalois.Shafarevich.IsTotallyRamifiedBelow` — **the solution below is totally ramified
+  wherever the lift ramifies.**
 
 ## Main results
 
 * `InverseGalois.Shafarevich.RamifiesAt.smul`, `InverseGalois.Shafarevich.IsCyclicSplitAt.smul`,
-  `InverseGalois.Shafarevich.IsConfinedAt.smul` — **the clauses move with the prime.**
+  `InverseGalois.Shafarevich.IsConfinedAt.smul`,
+  `InverseGalois.Shafarevich.IsTotallyRamifiedAt.smul` — **the clauses move with the prime.**
 * `InverseGalois.Shafarevich.isCyclicSplitHom_of_family`,
   `InverseGalois.Shafarevich.isConfinedRamifiedHom_of_family` — either condition holds as soon as
   it holds at a family of primes meeting every orbit at which the lift ramifies.
@@ -174,6 +179,54 @@ theorem isConfinedRamifiedHom_of_family {φ : Gal(Ω/k) →* U} {Φ : Gal(Ω/k) 
   intro Q hQp hQbot hram
   obtain ⟨ν, ρ, rfl⟩ := hfam Q hQp hQbot hram
   exact (h ν (ramifiesAt_smul_iff.1 hram)).smul ρ
+
+/-! ### Total ramification, at one prime -/
+
+/-- **The homomorphism takes no value on the decomposition subgroup of a prime it does not already
+take on the inertia subgroup there.** -/
+def IsTotallyRamifiedAt (Φ : Gal(Ω/k) →* W) (P : Ideal (𝓞 Ω)) : Prop :=
+  ∀ x ∈ stabilizer Gal(Ω/k) P, ∃ y ∈ Ideal.inertia Gal(Ω/k) P, Φ x = Φ y
+
+/-- **The solution below is totally ramified wherever the lift ramifies over the base
+realization.**  This is the clause under which a cyclic local image is automatically totally
+ramified. -/
+def IsTotallyRamifiedBelow (φ : Gal(Ω/k) →* U) (Φ : Gal(Ω/k) →* W) (Ψ : Gal(Ω/k) →* W') : Prop :=
+  ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → RamifiesAt φ Ψ P → IsTotallyRamifiedAt Φ P
+
+/-- A homomorphism killing the whole decomposition subgroup is totally ramified there, the identity
+lying in inertia. -/
+theorem isTotallyRamifiedAt_of_forall_eq_one {Φ : Gal(Ω/k) →* W} {P : Ideal (𝓞 Ω)}
+    (h : ∀ x ∈ stabilizer Gal(Ω/k) P, Φ x = 1) : IsTotallyRamifiedAt Φ P :=
+  fun x hx => ⟨1, one_mem _, by rw [h x hx, _root_.map_one]⟩
+
+/-- **Total ramification survives a homomorphism out of the target**, a matching value on inertia
+being carried along with the value it matches. -/
+theorem IsTotallyRamifiedAt.comp {Φ : Gal(Ω/k) →* W} {P : Ideal (𝓞 Ω)}
+    (h : IsTotallyRamifiedAt Φ P) (g : W →* W') : IsTotallyRamifiedAt (g.comp Φ) P :=
+  fun x hx => by
+    obtain ⟨y, hyI, hy⟩ := h x hx
+    exact ⟨y, hyI, congrArg g hy⟩
+
+/-- **Total ramification depends only on the values of the homomorphism.** -/
+theorem IsTotallyRamifiedAt.congr {Φ Φ' : Gal(Ω/k) →* W} {P : Ideal (𝓞 Ω)}
+    (h : IsTotallyRamifiedAt Φ P) (he : ∀ x, Φ x = Φ' x) : IsTotallyRamifiedAt Φ' P :=
+  fun x hx => by
+    obtain ⟨y, hyI, hy⟩ := h x hx
+    exact ⟨y, hyI, by rw [← he, ← he, hy]⟩
+
+/-- **Total ramification moves with the prime**, both subgroups at a moved prime being the
+conjugates of the subgroups at the prime. -/
+theorem IsTotallyRamifiedAt.smul {Φ : Gal(Ω/k) →* W} {P : Ideal (𝓞 Ω)}
+    (h : IsTotallyRamifiedAt Φ P) (ρ : Gal(Ω/k)) : IsTotallyRamifiedAt Φ (ρ • P) := by
+  have hconj : ∀ x : Gal(Ω/k), Φ x = Φ ρ * Φ (ρ⁻¹ * x * ρ) * (Φ ρ)⁻¹ := by
+    intro x
+    simp only [_root_.map_mul, _root_.map_inv]
+    group
+  intro x hx
+  obtain ⟨y, hyI, hy⟩ := h _ (mem_stabilizer_smul_iff.1 hx)
+  refine ⟨ρ * y * ρ⁻¹, ?_, ?_⟩
+  · exact mem_inertia_smul_iff.2 (by rwa [show ρ⁻¹ * (ρ * y * ρ⁻¹) * ρ = y from by group])
+  · rw [hconj x, hy, _root_.map_mul, _root_.map_mul, _root_.map_inv]
 
 /-! ### Both conditions are a finite check -/
 

@@ -54,18 +54,26 @@ restriction, and a lift of it across the next layer which is onto, smooth, over 
 trivial on the part of each member of the finite family the base realization already kills.  What is
 asked back is less: another lift over the same solution, again smooth and again trivial along the
 family, which carries the restriction — and nothing about it being onto, that being free past the
-first layer. -/
+first layer.
+
+The repair may spend a shrinking of its own: it announces the number of letters it wants the given
+lift read at, and answers with a surjection onto the number asked for and a lift over the pushed
+down solution.  That is the same bargain the count against the second cohomology strikes, and it
+costs nothing, solutions being available at every number of letters. -/
 def HasLiftRepair (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] (n : ℕ) (S : Type)
     [Group S] [Finite S] (j : ℕ) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
     (φ : Gal(Ω/k) →* U) {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k)) : Prop :=
-  ∀ (Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j) (f : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)),
-    IsSmoothHom Φ → (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) →
-    IsSplitTotallyRamifiedHom ℓ φ Φ → Function.Surjective f → IsSmoothHom f →
-    (∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (f x) = Φ x) →
-    (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → f x = 1) →
-    ∃ Ψ : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1), IsSmoothHom Ψ ∧
-      (∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (Ψ x) = Φ x) ∧
-        (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → Ψ x = 1) ∧ IsSplitTotallyRamifiedHom ℓ φ Ψ
+  ∃ N : ℕ,
+    ∀ (Φ : Gal(Ω/k) →* GenericQuot ℓ U N S j) (f : Gal(Ω/k) →* GenericQuot ℓ U N S (j + 1)),
+      IsSmoothHom Φ → (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) →
+      IsSplitTotallyRamifiedHom ℓ φ Φ → Function.Surjective f → IsSmoothHom f →
+      (∀ x, (layerExtension ℓ (genericAut U N S) j).rightHom (f x) = Φ x) →
+      (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → f x = 1) →
+      ∃ (α : Generic U N S →* Generic U n S) (hα : IsOperatorHom α), Function.Surjective α ∧
+        ∃ Ψ : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1), IsSmoothHom Ψ ∧
+          (∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (Ψ x)
+            = layerSemidirectMap ℓ hα j (Φ x)) ∧
+          (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → Ψ x = 1) ∧ IsSplitTotallyRamifiedHom ℓ φ Ψ
 
 /-! ### The repair the ladder consumes -/
 
@@ -73,26 +81,29 @@ def HasLiftRepair (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] (
 
 A lift over the solution below is over the base realization, the projection of the extension leaving
 the operator coordinate alone; and it is onto, because the solution below is onto — the given lift
-being onto and the projection of the extension being onto — and a lift over a surjection generates
-the group one layer up together with the layer, which past the first layer lies in the Frattini
-subgroup of the normal factor. -/
+being onto, the projection of the extension being onto and the shrinking the repair spends being
+onto — and a lift over a surjection generates the group one layer up together with the layer, which
+past the first layer lies in the Frattini subgroup of the normal factor. -/
 theorem hasSolutionRepair_of_hasLiftRepair (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U]
     (n : ℕ) (S : Type) [Group S] [Finite S] (hS : IsPGroup ℓ S) {j : ℕ} (hj : 1 ≤ j)
     {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω] {φ : Gal(Ω/k) →* U} {t : ℕ}
     {D : Fin t → Subgroup Gal(Ω/k)} (h : HasLiftRepair ℓ U n S j φ D) :
     HasSolutionRepair ℓ U n S j φ D (IsSplitTotallyRamified ℓ U S φ) := by
-  intro Φ f hΦsm hΦright hΦP hfsurj hfsm hfright hfD
-  obtain ⟨Ψ, hΨsm, hΨright, hΨD, hΨP⟩ := h Φ f hΦsm hΦright hΦP hfsurj hfsm hfright hfD
+  obtain ⟨N, h⟩ := h
+  refine ⟨N, fun Φ f hΦsm hΦright hΦP hfsurj hfsm hfright hfD => ?_⟩
+  obtain ⟨α, hα, hαsurj, Ψ, hΨsm, hΨright, hΨD, hΨP⟩ :=
+    h Φ f hΦsm hΦright hΦP hfsurj hfsm hfright hfD
   refine ⟨Ψ, ?_, hΨsm, ?_, ?_, hΨP⟩
   · refine surjective_of_rightHom_comp_surjective ℓ (isPGroup_generic U n S hS)
       (genericAut U n S) hj Ψ fun y => ?_
-    obtain ⟨w, hw⟩ := (layerExtension ℓ (genericAut U n S) j).rightHom_surjective y
-    obtain ⟨z, hz⟩ := hfsurj w
-    exact ⟨z, by rw [MonoidHom.comp_apply, hΨright z, ← hfright z, hz, hw]⟩
+    obtain ⟨w, hw⟩ := layerSemidirectMap_surjective ℓ hα j hαsurj y
+    obtain ⟨v, hv⟩ := (layerExtension ℓ (genericAut U N S) j).rightHom_surjective w
+    obtain ⟨z, hz⟩ := hfsurj v
+    exact ⟨z, by rw [MonoidHom.comp_apply, hΨright z, ← hfright z, hz, hv, hw]⟩
   · intro x
-    have hr := congrArg SemidirectProduct.rightHom (hΨright x)
-    rw [hΦright x] at hr
-    exact hr
+    have hr : SemidirectProduct.rightHom (Ψ x) = SemidirectProduct.rightHom (Φ x) :=
+      congrArg SemidirectProduct.rightHom (hΨright x)
+    rw [hr, hΦright x]
   · rintro A ⟨ν, rfl⟩ x hx hx1
     exact hΨD ν x hx hx1
 

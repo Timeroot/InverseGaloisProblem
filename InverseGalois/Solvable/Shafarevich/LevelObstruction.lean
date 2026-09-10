@@ -221,17 +221,24 @@ property itself, and the property is not inherited: making the lift trivial alon
 arranged by a shrinking, and the field the shrunken lift cuts out ramifies at places the field below
 did not.  The correction is a twist by a global class of the first cohomology whose components at
 those places are prescribed, which disturbs neither the surjectivity nor the projection nor the
-triviality along the family, and which restores the property. -/
+triviality along the family, and which restores the property.
+
+The correction is allowed a shrinking of its own, so the lift it consumes is read at a number of
+letters announced in advance while the solution it returns is at the number asked for.  That is the
+same bargain the count against the second cohomology strikes: the arithmetic buys the property at
+whatever number of letters it needs and pushes the result down.  Solutions are available at every
+number of letters, so announcing one costs nothing. -/
 def HasSolutionRepair (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] (n : ℕ) (S : Type)
     [Group S] [Finite S] (j : ℕ) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
     (φ : Gal(Ω/k) →* U) {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k))
     (P : LevelProperty ℓ U S k Ω) : Prop :=
-  ∀ (Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j) (f : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)),
-    IsSmoothHom Φ → (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) → P n j Φ →
-    Function.Surjective f → IsSmoothHom f →
-    (∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (f x) = Φ x) →
-    (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → f x = 1) →
-    LevelSolution ℓ U S φ (Set.range D) P n (j + 1)
+  ∃ N : ℕ,
+    ∀ (Φ : Gal(Ω/k) →* GenericQuot ℓ U N S j) (f : Gal(Ω/k) →* GenericQuot ℓ U N S (j + 1)),
+      IsSmoothHom Φ → (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) → P N j Φ →
+      Function.Surjective f → IsSmoothHom f →
+      (∀ x, (layerExtension ℓ (genericAut U N S) j).rightHom (f x) = Φ x) →
+      (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → f x = 1) →
+      LevelSolution ℓ U S φ (Set.range D) P n (j + 1)
 
 /-- **Solutions at one level of the filtration for every number of letters give a single solution
 whose obstruction to the next level is everywhere locally trivial.**

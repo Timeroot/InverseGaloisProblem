@@ -20670,3 +20670,134 @@ churn up the `…RepairEP` chain.
 | ROOT | 9916 | — |
 
 0 errors, 0 warnings, 0 sorries.
+
+---
+
+## §1.83 The announced level, threaded through the whole repair chain (2026-09-10)
+
+§1.80(a) proved that `HasConfinedPrescription` at a *fixed* level `n` is false in general: the
+obstruction group `Ш¹(K_S, S ∖ T, A′) ≅ H¹(N_n|K, A′^{G_{N_n}})` is nonzero, and only a shrinking
+kills it.  This section records the refactor that gives every link of the repair chain the shape
+`HasShrinkableSha` already had — **announce a number of letters `N`, answer with a surjection onto
+the number asked for.**
+
+### (a) The uniform shape
+
+Every one of
+
+```
+HasSolutionRepair  HasLiftRepair  HasCyclicRepair  HasSplitCyclicRepair
+HasFlatPrescription  HasConfinedPrescription  HasKernelPrescription
+```
+
+now reads
+
+```lean
+def Has… : Prop :=
+  ∃ N : ℕ, <antecedents, with Φ / f / F / Q / A / a all read at level N> →
+    ∃ (α : Generic U N S →* Generic U n S) (_ : IsOperatorHom α), Function.Surjective α ∧
+      <the answer, at level n>
+```
+
+`IsOperatorHom α` (`GenericHomology.lean:93`) is literally
+`∀ u : U, α.comp (genericAut U m S u).toMonoidHom = (genericAut U n S u).toMonoidHom.comp α`,
+i.e. exactly the equivariance `layerSemidirectMap` wants, and `IsOperatorHom.comp` (`:96`) composes
+two of them (outer argument first).
+
+### (b) The two functoriality bricks
+
+Composing two announced shrinkings needs the induced maps to compose, which they had no lemma for.
+Added to `LayerExtension.lean`:
+
+```lean
+theorem pCentralMap_comp (g : Q →* R) (f : P →* Q) :
+    (pCentralMap p n g).comp (pCentralMap p n f) = pCentralMap p n (g.comp f)
+
+theorem layerSemidirectMap_comp (hg …) (hgf …) (n : ℕ) (x) :
+    layerSemidirectMap p hg n (layerSemidirectMap p hf n x) = layerSemidirectMap p hgf n x
+```
+
+Both are one-liners (`QuotientGroup.induction_on` + `rfl`, then `SemidirectProduct.ext`), but
+without them the `rightHom` clause of the composite answer cannot be stated, let alone proved.
+
+`CyclicTransport.lean` also gained the trivial-but-needed
+
+```lean
+theorem IsTotallyRamifiedAt.congr (h : IsTotallyRamifiedAt Φ P) (he : ∀ x, Φ x = Φ' x) :
+    IsTotallyRamifiedAt Φ' P
+```
+
+because the composite `(layerSemidirectMap ℓ hα₂ j).comp Φ₁` and
+`(layerSemidirectMap ℓ (hα₂.comp hα₁) j).comp Φ` are equal only *pointwise*, by
+`layerSemidirectMap_comp`, not syntactically.
+
+### (c) How the two shrinkings compose
+
+In `hasSplitCyclicRepair_of_hasConfinedPrescription`:
+
+| stage | announces | answers with |
+|---|---|---|
+| flat prescription (SW step 3) | `N₁` | `α₁ : Generic U N₁ S ↠ Generic U N₂ S` |
+| confined prescription (SW step 4) | `N₂` | `α₂ : Generic U N₂ S ↠ Generic U n S` |
+| `HasSplitCyclicRepair` | `N₁` | `α₂.comp α₁` |
+
+The middle level `N₂` is the one the *confined* prescription announces, so it must be obtained
+first (`obtain ⟨N₂, hpres⟩ := hpres`) and only then fed to the flat prescription
+(`exists_confinedRamifiedHom_lift_of_hasFlatPrescription (n := N₂) …`), which announces `N₁` in
+response.  That is why `hflat` and `hram` are now asked **at every level** (`∀ m : ℕ, …`): the
+level they are needed at is not known until the confined prescription has spoken.
+
+### (d) The one subtle proof change
+
+The incoming lift `Φ` lives at level `N₁`.  After the first shrinking the object the second stage
+sees is
+
+```lean
+Φ₁ := (layerSemidirectMap ℓ hα₁ j).comp Φ  :  Gal(Ω/k) →* GenericQuot ℓ U N₂ S j
+```
+
+and **`α₁` can kill ramification**: `RamifiesAt φ Φ (Pr μ)` does not imply `RamifiesAt φ Φ₁ (Pr μ)`.
+So the per-prime case split inside the proof is on `RamifiesAt φ Φ₁ (Pr μ)`, not on `Φ`.  As a
+consequence the local-lift step has to be stated *before* the second shrinking is known, i.e.
+generalized over an unknown `β`:
+
+```lean
+∀ (β : Generic U N₂ S →* Generic U n S) (hβ : IsOperatorHom β)
+    (Ψ : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)),
+  (∀ x : ↥A, Ψ ↑x = inl (layerSubMap ℓ β j (a x)) * layerSemidirectMap ℓ hβ (j + 1) (f ↑x)) →
+    RamifiesAt φ Ψ (Pr μ) → IsCyclicSplitAt φ Ψ (Pr μ) ∧ IsTotallyRamifiedAt Φ₁ (Pr μ)
+```
+
+with `β := α₂` instantiated only at the very end.  `Φ₁` is introduced *opaquely* — one `obtain`
+bundling its defining equation, smoothness, `rightHom` and `IsSplitTotallyRamifiedHom` — which also
+keeps `whnf` away from `layerSemidirectMap`'s body.
+
+The total-ramification half comes free: `IsSplitTotallyRamifiedHom`'s second clause is
+*definitionally* `IsTotallyRamifiedAt Φ P`, and `IsSplitTotallyRamifiedHom.comp` pushes it along
+`layerSemidirectMap ℓ hα₁ j`.
+
+### (e) `HasSplitCyclicRepair`'s confinement clause
+
+It is no longer `IsConfinedRamifiedHom φ Φ Ψ` but
+
+```lean
+IsTotallyRamifiedBelow φ ((layerSemidirectMap ℓ hα j).comp Φ) Ψ
+```
+
+— read against the *pushed-down* `Φ`, which is the only version living at the same level as `Ψ`.
+
+### (f) Files touched
+
+`LayerExtension.lean`, `CyclicTransport.lean`, `LevelObstruction.lean`, `LevelLocal.lean`,
+`LevelRepair.lean`, `LevelCyclicRepair.lean`, `LevelTwist.lean`, `LevelFlatTwist.lean`,
+`LevelConfinedTwist.lean`, `LevelKernelPrescription.lean`, `LevelStepRepair.lean`.
+
+### (g) Build
+
+| target | jobs | time |
+|---|---|---|
+| `Shafarevich.LevelConfinedTwist` | 8281 | 94 s (that file alone) |
+| `Shafarevich.LevelKernelPrescription` | 8285 | 53 s |
+| `Shafarevich.LevelStepRepair` | 8840 | — |
+
+0 errors, 0 warnings, 0 sorries.

@@ -38,15 +38,16 @@ splitting and a cyclic local image.
 * `InverseGalois.Shafarevich.HasCyclicRepair` — **the repair, with the roots of unity taken out of
   it**.
 * `InverseGalois.Shafarevich.HasSplitCyclicRepair` — the repair with total ramification taken out
-  of it as well, the new ramification asked only to be confined and cyclic.
+  of it as well, the new ramification asked only to be cyclic and to sit over a totally ramified
+  solution below.
 
 ## Main results
 
 * `InverseGalois.Shafarevich.hasLiftRepair_of_hasCyclicRepair` — **the repair about values alone is
   the repair**, for a base realization fixing the roots of unity of the prime times the exponent of
   the test group.
-* `InverseGalois.Shafarevich.hasCyclicRepair_of_hasSplitCyclicRepair` — **a confined cyclic local
-  image is automatically totally ramified**.
+* `InverseGalois.Shafarevich.hasCyclicRepair_of_hasSplitCyclicRepair` — **a cyclic local image over
+  a totally ramified solution below is automatically totally ramified**.
 
 ## Tags
 
@@ -72,65 +73,77 @@ restriction, and a lift of it across the next layer which is smooth, over that s
 on the part of each member of the finite family the base realization already kills.  What is asked
 back is another such lift whose ramification over the base realization is cyclic and totally
 ramified at every prime where it occurs, with nothing asked about the roots of unity in the local
-field. -/
+field.
+
+As for the repair the ladder consumes, the number of letters the given lift is read at is announced
+in advance and the answer comes with a surjection onto the number asked for. -/
 def HasCyclicRepair : Prop :=
-  ∀ (Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j) (f : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)),
-    IsSmoothHom Φ → (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) →
-    IsSplitTotallyRamifiedHom ℓ φ Φ → IsSmoothHom f →
-    (∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (f x) = Φ x) →
-    (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → f x = 1) →
-    ∃ Ψ : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1), IsSmoothHom Ψ ∧
-      (∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (Ψ x) = Φ x) ∧
-      (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → Ψ x = 1) ∧ IsCyclicRamifiedHom φ Ψ
+  ∃ N : ℕ,
+    ∀ (Φ : Gal(Ω/k) →* GenericQuot ℓ U N S j) (f : Gal(Ω/k) →* GenericQuot ℓ U N S (j + 1)),
+      IsSmoothHom Φ → (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) →
+      IsSplitTotallyRamifiedHom ℓ φ Φ → IsSmoothHom f →
+      (∀ x, (layerExtension ℓ (genericAut U N S) j).rightHom (f x) = Φ x) →
+      (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → f x = 1) →
+      ∃ (α : Generic U N S →* Generic U n S) (hα : IsOperatorHom α), Function.Surjective α ∧
+        ∃ Ψ : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1), IsSmoothHom Ψ ∧
+          (∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (Ψ x)
+            = layerSemidirectMap ℓ hα j (Φ x)) ∧
+          (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → Ψ x = 1) ∧ IsCyclicRamifiedHom φ Ψ
 
 /-! ### The repair with total ramification taken out of it -/
 
 /-- **The repair with total ramification taken out of it as well.**
 
 The data is that of `InverseGalois.Shafarevich.HasCyclicRepair` and what is asked back is less: a
-lift whose new ramification over the base realization is *confined* — at every prime where the lift
-ramifies over the base realization but the solution below does not, the solution below is asked to
-kill the whole decomposition subgroup — and whose local image is cyclic wherever it ramifies.
-Nothing is asked about total ramification, nor about the roots of unity in the local field. -/
+lift whose local image is cyclic wherever it ramifies over the base realization, and over which the
+solution below is totally ramified wherever that happens.  Nothing is asked about the lift itself
+being totally ramified, nor about the roots of unity in the local field.
+
+Total ramification of the solution below is what the flattening of the lift supplies: at a prime
+where the lift newly ramifies, either the solution below ramifies there too and is totally ramified
+by the restriction it carries, or it takes no value at all on the decomposition subgroup. -/
 def HasSplitCyclicRepair : Prop :=
-  ∀ (Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j) (f : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)),
-    IsSmoothHom Φ → (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) →
-    IsSplitTotallyRamifiedHom ℓ φ Φ → IsSmoothHom f →
-    (∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (f x) = Φ x) →
-    (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → f x = 1) →
-    ∃ Ψ : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1), IsSmoothHom Ψ ∧
-      (∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (Ψ x) = Φ x) ∧
-      (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → Ψ x = 1) ∧
-      IsConfinedRamifiedHom φ Φ Ψ ∧ IsCyclicSplitHom φ Ψ
+  ∃ N : ℕ,
+    ∀ (Φ : Gal(Ω/k) →* GenericQuot ℓ U N S j) (f : Gal(Ω/k) →* GenericQuot ℓ U N S (j + 1)),
+      IsSmoothHom Φ → (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) →
+      IsSplitTotallyRamifiedHom ℓ φ Φ → IsSmoothHom f →
+      (∀ x, (layerExtension ℓ (genericAut U N S) j).rightHom (f x) = Φ x) →
+      (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → f x = 1) →
+      ∃ (α : Generic U N S →* Generic U n S) (hα : IsOperatorHom α), Function.Surjective α ∧
+        ∃ Ψ : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1), IsSmoothHom Ψ ∧
+          (∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (Ψ x)
+            = layerSemidirectMap ℓ hα j (Φ x)) ∧
+          (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → Ψ x = 1) ∧
+          IsTotallyRamifiedBelow φ ((layerSemidirectMap ℓ hα j).comp Φ) Ψ ∧ IsCyclicSplitHom φ Ψ
 
 variable {ℓ U n S j φ D}
 
-/-- **A confined cyclic local image is automatically totally ramified.**
+/-- **A cyclic local image over a totally ramified solution below is automatically totally
+ramified.**
 
 At a prime where the lift ramifies over the base realization, the base realization kills the whole
 decomposition subgroup, so every value of the lift there has order a power of the prime; and the
-local image is generated by the value at one element.  Confinement says that one layer down that
-element is matched by an element of inertia — either because the solution below is itself totally
-ramified there, or because it takes no value at all on the decomposition subgroup — so the generator
+local image is generated by the value at one element.  The solution below being totally ramified
+there says that one layer down that element is matched by an element of inertia, so the generator
 and a value on inertia differ by an element of the layer, which the prime kills.  The image of
 inertia is nontrivial because the lift ramifies there, and an element of prime power order within a
 factor the prime kills of a nontrivial subgroup of its own powers lies in that subgroup. -/
 theorem hasCyclicRepair_of_hasSplitCyclicRepair (hS : IsPGroup ℓ S)
     (h : HasSplitCyclicRepair ℓ U n S j φ D) : HasCyclicRepair ℓ U n S j φ D := by
-  intro Φ f hΦsm hΦright hΦP hfsm hfright hfD
-  obtain ⟨Ψ, hΨsm, hΨright, hΨD, hconf, hcyc⟩ := h Φ f hΦsm hΦright hΦP hfsm hfright hfD
+  obtain ⟨N, h⟩ := h
+  refine ⟨N, fun Φ f hΦsm hΦright hΦP hfsm hfright hfD => ?_⟩
+  obtain ⟨α, hα, hαsurj, Ψ, hΨsm, hΨright, hΨD, hbelow, hcyc⟩ :=
+    h Φ f hΦsm hΦright hΦP hfsm hfright hfD
   have hright : ∀ x, SemidirectProduct.rightHom (Ψ x) = φ x := by
     intro x
-    have hr := congrArg SemidirectProduct.rightHom (hΨright x)
-    rw [hΦright x] at hr
-    exact hr
-  refine ⟨Ψ, hΨsm, hΨright, hΨD, isCyclicRamifiedHom_of_isCyclicSplitHom (Fact.out : ℓ.Prime)
-    hΨright (fun y hy => pow_eq_one_of_rightHom_eq_one ℓ U n S j hy)
-    (fun x hx => exists_pow_eq_one_of_rightHom_eq_one ℓ U n S (j + 1) hS (by rw [hright x, hx]))
-    (fun P hPp hPbot hram => ?_) hcyc⟩
-  rcases hconf P hPp hPbot hram with hΦram | hΦ1
-  · exact (hΦP P hPp hPbot hΦram).2.1
-  · exact fun x hx => ⟨1, one_mem _, by rw [hΦ1 x hx, _root_.map_one]⟩
+    have hr : SemidirectProduct.rightHom (Ψ x) = SemidirectProduct.rightHom (Φ x) :=
+      congrArg SemidirectProduct.rightHom (hΨright x)
+    rw [hr, hΦright x]
+  exact ⟨α, hα, hαsurj, Ψ, hΨsm, hΨright, hΨD,
+    isCyclicRamifiedHom_of_isCyclicSplitHom (Fact.out : ℓ.Prime) hΨright
+      (fun y hy => pow_eq_one_of_rightHom_eq_one ℓ U n S j hy)
+      (fun x hx => exists_pow_eq_one_of_rightHom_eq_one ℓ U n S (j + 1) hS (by rw [hright x, hx]))
+      hbelow hcyc⟩
 
 /-! ### The repair about values alone is the repair -/
 
@@ -145,14 +158,16 @@ those are among the ones the base realization is asked to fix. -/
 theorem hasLiftRepair_of_hasCyclicRepair
     (hmu : ∀ ζ : Ωˣ, ζ ^ (ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ)
     (h : HasCyclicRepair ℓ U n S j φ D) : HasLiftRepair ℓ U n S j φ D := by
-  intro Φ f hΦsm hΦright hΦP _ hfsm hfright hfD
-  obtain ⟨Ψ, hΨsm, hΨright, hΨD, hcyc⟩ := h Φ f hΦsm hΦright hΦP hfsm hfright hfD
+  obtain ⟨N, h⟩ := h
+  refine ⟨N, fun Φ f hΦsm hΦright hΦP _ hfsm hfright hfD => ?_⟩
+  obtain ⟨α, hα, hαsurj, Ψ, hΨsm, hΨright, hΨD, hcyc⟩ :=
+    h Φ f hΦsm hΦright hΦP hfsm hfright hfD
   have hright : ∀ x, SemidirectProduct.rightHom (Ψ x) = φ x := by
     intro x
-    have hr := congrArg SemidirectProduct.rightHom (hΨright x)
-    rw [hΦright x] at hr
-    exact hr
-  refine ⟨Ψ, hΨsm, hΨright, hΨD,
+    have hr : SemidirectProduct.rightHom (Ψ x) = SemidirectProduct.rightHom (Φ x) :=
+      congrArg SemidirectProduct.rightHom (hΨright x)
+    rw [hr, hΦright x]
+  refine ⟨α, hα, hαsurj, Ψ, hΨsm, hΨright, hΨD,
     isSplitTotallyRamifiedHom_of_isCyclicRamifiedHom (fun x hx => ?_) hmu hcyc⟩
   exact pow_exponent_eq_one_of_rightHom_eq_one ℓ U n S (j + 1) (by rw [hright x, hx])
 

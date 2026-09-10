@@ -56,42 +56,49 @@ and past the first layer it is onto, the layer generating nothing.  The fourth i
 prescription: along a member of the family, wherever the base realization is trivial, the lift is a
 homomorphism into the layer, and twisting by a cocycle which restricts to the inverses of those
 homomorphisms kills them all at once without disturbing the other three.  The prescribed property
-the solution is to carry is not one of the four, and it is restored at the end. -/
+the solution is to carry is not one of the four, and it is restored at the end.
+
+The repair announces the number of letters it wants its lift read at, so the lift and the
+prescription are asked for at every number of letters. -/
 theorem levelSolution_succ_of_exists_lift (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U]
     [Finite U] [TopologicalSpace U] [DiscreteTopology U] (n : ℕ) (S : Type) [Group S] [Finite S]
     (hS : IsPGroup ℓ S) {j : ℕ} (hj : 1 ≤ j) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
-    (φ : Gal(Ω/k) →* U) [MulDistribMulAction Gal(Ω/k) ↥(layerSub ℓ (Generic U n S) j)]
-    (hactφ : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U n S) j)), x • v = φ x • v) {t : ℕ}
+    (φ : Gal(Ω/k) →* U) {t : ℕ}
     (D : Fin t → Subgroup Gal(Ω/k)) (P : LevelProperty ℓ U S k Ω)
     (hrep : HasSolutionRepair ℓ U n S j φ D P)
-    (hpres : HasCocyclePrescription ↥(layerSub ℓ (Generic U n S) j) fun ν => D ν ⊓ φ.ker)
-    (hlift : ∃ (Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j)
-        (f : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)),
+    (hpres : ∀ m : ℕ,
+      letI := galLayerAction ℓ U m S j φ
+      HasCocyclePrescription ↥(layerSub ℓ (Generic U m S) j) fun ν => D ν ⊓ φ.ker)
+    (hlift : ∀ m : ℕ, ∃ (Φ : Gal(Ω/k) →* GenericQuot ℓ U m S j)
+        (f : Gal(Ω/k) →* GenericQuot ℓ U m S (j + 1)),
       Function.Surjective Φ ∧ IsSmoothHom Φ ∧ (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) ∧
-        (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) ∧ P n j Φ ∧ IsSmoothHom f ∧
-          ∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (f x) = Φ x) :
+        (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) ∧ P m j Φ ∧ IsSmoothHom f ∧
+          ∀ x, (layerExtension ℓ (genericAut U m S) j).rightHom (f x) = Φ x) :
     LevelSolution ℓ U S φ (Set.range D) P n (j + 1) := by
-  obtain ⟨Φ, f, hsurj, hsm, hright, hloc, hΦP, hfsm, hf⟩ := hlift
-  have hact : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U n S) j)),
-      x • v = (layerExtension ℓ (genericAut U n S) j).conjActHom (Φ x) v := by
+  obtain ⟨N, hrep⟩ := hrep
+  letI := galLayerAction ℓ U N S j φ
+  obtain ⟨Φ, f, hsurj, hsm, hright, hloc, hΦP, hfsm, hf⟩ := hlift N
+  have hact : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U N S) j)),
+      x • v = (layerExtension ℓ (genericAut U N S) j).conjActHom (Φ x) v := by
     intro x v
-    rw [hactφ x v, ← hright x]
-    exact (genericQuotAction_smul ℓ U n n S j (Φ x) v).symm.trans
-      (smul_eq_conjActHom_genericLayer ℓ U n S j (Φ x) v)
+    show φ x • v = (layerExtension ℓ (genericAut U N S) j).conjActHom (Φ x) v
+    rw [← hright x]
+    exact (genericQuotAction_smul ℓ U N N S j (Φ x) v).symm.trans
+      (smul_eq_conjActHom_genericLayer ℓ U N S j (Φ x) v)
   have hD : ∀ (ν : Fin t), ∀ x ∈ D ν ⊓ φ.ker, Φ x = 1 := fun ν x hx =>
     hloc (D ν) ⟨ν, rfl⟩ x (Subgroup.mem_inf.1 hx).1
       (MonoidHom.mem_ker.1 (Subgroup.mem_inf.1 hx).2)
   obtain ⟨g, hgright, hgs, hg1⟩ :=
-    exists_lift_eq_one_of_hasCocyclePrescription (layerExtension ℓ (genericAut U n S) j) hact hf
-      (fun ν => D ν ⊓ φ.ker) hD hpres
+    exists_lift_eq_one_of_hasCocyclePrescription (layerExtension ℓ (genericAut U N S) j) hact hf
+      (fun ν => D ν ⊓ φ.ker) hD (hpres N)
       (isSmooth₁_of_isOpenNormal_ker (isOpenNormal_ker_of_isSmoothHom hfsm))
   have hcomp :
-      Function.Surjective ((layerExtension ℓ (genericAut U n S) j).rightHom.comp g) := by
+      Function.Surjective ((layerExtension ℓ (genericAut U N S) j).rightHom.comp g) := by
     intro y
     obtain ⟨x, hx⟩ := hsurj y
     exact ⟨x, (hgright x).trans hx⟩
   exact hrep Φ g hsm hright hΦP
-    (surjective_of_rightHom_comp_surjective ℓ (isPGroup_generic U n S hS) (genericAut U n S) hj g
+    (surjective_of_rightHom_comp_surjective ℓ (isPGroup_generic U N S hS) (genericAut U N S) hj g
       hcomp)
     (isSmoothHom_of_isSmooth₁ hgs) hgright fun ν x hx hx1 =>
       hg1 ν x (Subgroup.mem_inf.2 ⟨hx, MonoidHom.mem_ker.2 hx1⟩)
@@ -103,19 +110,24 @@ family. -/
 theorem levelSolution_succ_of_hasCocyclePrescription (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U]
     [Finite U] [TopologicalSpace U] [DiscreteTopology U] (n : ℕ) (S : Type) [Group S] [Finite S]
     (hS : IsPGroup ℓ S) {j : ℕ} (hj : 1 ≤ j) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
-    (φ : Gal(Ω/k) →* U) [MulDistribMulAction Gal(Ω/k) ↥(layerSub ℓ (Generic U n S) j)]
-    (hactφ : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U n S) j)), x • v = φ x • v) {t : ℕ}
+    (φ : Gal(Ω/k) →* U) {t : ℕ}
     (D : Fin t → Subgroup Gal(Ω/k)) (T : Set (Subgroup Gal(Ω/k)))
     (P : LevelProperty ℓ U S k Ω) (hstab : IsShrinkStable ℓ U S P)
     (hrep : HasSolutionRepair ℓ U n S j φ D P)
-    (hvan : HasLocalLift ℓ U n S j φ D T P)
-    (σn : (layerExtension ℓ (genericAut U n S) j).Section)
-    (hbot : sha2 ↥(layerSub ℓ (Generic U n S) j) T = ⊥)
-    (hpres : HasCocyclePrescription ↥(layerSub ℓ (Generic U n S) j) fun ν => D ν ⊓ φ.ker)
+    (hvan : ∀ m : ℕ, HasLocalLift ℓ U m S j φ D T P)
+    (σ : ∀ m : ℕ, (layerExtension ℓ (genericAut U m S) j).Section)
+    (hbot : ∀ m : ℕ,
+      letI := galLayerAction ℓ U m S j φ
+      sha2 ↥(layerSub ℓ (Generic U m S) j) T = ⊥)
+    (hpres : ∀ m : ℕ,
+      letI := galLayerAction ℓ U m S j φ
+      HasCocyclePrescription ↥(layerSub ℓ (Generic U m S) j) fun ν => D ν ⊓ φ.ker)
     (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) P m j) :
     LevelSolution ℓ U S φ (Set.range D) P n (j + 1) :=
-  levelSolution_succ_of_exists_lift ℓ U n S hS hj φ hactφ D P hrep hpres
-    (exists_lift_of_levelSolution ℓ U n S hS j φ hactφ D T P hstab hvan σn hbot h)
+  levelSolution_succ_of_exists_lift ℓ U n S hS hj φ D P hrep hpres fun m =>
+    letI := galLayerAction ℓ U m S j φ
+    exists_lift_of_levelSolution ℓ U m S hS j φ (fun _ _ => rfl) D T P hstab (hvan m) (σ m)
+      (hbot m) h
 
 /-- **A solution at one level of the filtration, past the first, gives a solution at the next**,
 granted that every everywhere locally trivial class with coefficients in the layer is inflated from
@@ -128,18 +140,18 @@ quotient the base realization cuts out, and a second shrinking kills what is inf
 theorem levelSolution_succ_of_hasInflatedSha (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U]
     [Finite U] [TopologicalSpace U] [DiscreteTopology U] (n : ℕ) (S : Type) [Group S] [Finite S]
     (hS : IsPGroup ℓ S) {j : ℕ} (hj : 1 ≤ j) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
-    (φ : Gal(Ω/k) →* U) (hsmφ : IsSmoothHom φ)
-    [MulDistribMulAction Gal(Ω/k) ↥(layerSub ℓ (Generic U n S) j)]
-    (hactφ : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U n S) j)), x • v = φ x • v) {t : ℕ}
+    (φ : Gal(Ω/k) →* U) (hsmφ : IsSmoothHom φ) {t : ℕ}
     (D : Fin t → Subgroup Gal(Ω/k)) (T : Set (Subgroup Gal(Ω/k)))
     (P : LevelProperty ℓ U S k Ω) (hstab : IsShrinkStable ℓ U S P)
     (hrep : HasSolutionRepair ℓ U n S j φ D P)
     (hvan : ∀ m : ℕ, HasLocalLift ℓ U m S j φ D T P)
     (hinfl : ∀ m : ℕ, HasInflatedSha ℓ U m S j φ T)
-    (hpres : HasCocyclePrescription ↥(layerSub ℓ (Generic U n S) j) fun ν => D ν ⊓ φ.ker)
+    (hpres : ∀ m : ℕ,
+      letI := galLayerAction ℓ U m S j φ
+      HasCocyclePrescription ↥(layerSub ℓ (Generic U m S) j) fun ν => D ν ⊓ φ.ker)
     (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) P m j) :
     LevelSolution ℓ U S φ (Set.range D) P n (j + 1) :=
-  levelSolution_succ_of_exists_lift ℓ U n S hS hj φ hactφ D P hrep hpres
-    (exists_lift_of_levelSolution_of_hasInflatedSha ℓ U n S hS j φ hsmφ D T P hstab hvan hinfl h)
+  levelSolution_succ_of_exists_lift ℓ U n S hS hj φ D P hrep hpres fun m =>
+    exists_lift_of_levelSolution_of_hasInflatedSha ℓ U m S hS j φ hsmφ D T P hstab hvan hinfl h
 
 end InverseGalois.Shafarevich

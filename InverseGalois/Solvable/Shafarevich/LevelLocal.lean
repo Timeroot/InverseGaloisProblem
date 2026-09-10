@@ -175,7 +175,11 @@ theorem exists_lift_eq_one_of_levelSolution (ℓ : ℕ) [Fact ℓ.Prime] (U : Ty
 /-- **One whole rung of the ladder, with nothing asked of the first cohomology beyond the repair.**
 The lift produced is already onto, already over the base realization and already trivial along the
 family — past the first layer a lift over a surjection is again a surjection, the layer generating
-nothing — so all that is left is to restore the prescribed property. -/
+nothing — so all that is left is to restore the prescribed property.
+
+The repair announces the number of letters it wants its lift read at, and the lift is produced at
+that number: solutions are available at every number of letters, and every hypothesis the rung
+consumes is asked at every number too. -/
 theorem levelSolution_succ_of_hasFiniteElementaryQuotient (ℓ : ℕ) [Fact ℓ.Prime] (U : Type)
     [Group U] [Finite U] [TopologicalSpace U] [DiscreteTopology U] (n : ℕ) (S : Type) [Group S]
     [Finite S] (hS : IsPGroup ℓ S) {j : ℕ} (hj : 1 ≤ j) {k Ω : Type*} [Field k] [Field Ω]
@@ -188,15 +192,16 @@ theorem levelSolution_succ_of_hasFiniteElementaryQuotient (ℓ : ℕ) [Fact ℓ.
     (hfin : ∀ ν : Fin t, HasFiniteElementaryQuotient ℓ (D ν ⊓ φ.ker))
     (h : ∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) P m j) :
     LevelSolution ℓ U S φ (Set.range D) P n (j + 1) := by
+  obtain ⟨N, hrep⟩ := hrep
   obtain ⟨Φ, f, hsurj, hsm, hright, -, hΦP, hfsm, hf, hloc⟩ :=
-    exists_lift_eq_one_of_levelSolution ℓ U n S hS j φ D T P hstab hvan hsh hfin h
+    exists_lift_eq_one_of_levelSolution ℓ U N S hS j φ D T P hstab hvan hsh hfin h
   have hcomp :
-      Function.Surjective ((layerExtension ℓ (genericAut U n S) j).rightHom.comp f) := by
+      Function.Surjective ((layerExtension ℓ (genericAut U N S) j).rightHom.comp f) := by
     intro y
     obtain ⟨x, hx⟩ := hsurj y
     exact ⟨x, (hf x).trans hx⟩
   exact hrep Φ f hsm hright hΦP
-    (surjective_of_rightHom_comp_surjective ℓ (isPGroup_generic U n S hS) (genericAut U n S) hj f
+    (surjective_of_rightHom_comp_surjective ℓ (isPGroup_generic U N S hS) (genericAut U N S) hj f
       hcomp)
     hfsm hf hloc
 
