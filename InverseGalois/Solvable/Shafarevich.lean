@@ -70,6 +70,8 @@ import InverseGalois.Solvable.Shafarevich.LevelOneFamily
 import InverseGalois.Solvable.Shafarevich.LevelOneTwoPlace
 import InverseGalois.Solvable.Shafarevich.LevelOneDecomposition
 import InverseGalois.Solvable.Shafarevich.LocalLiftInfinite
+import InverseGalois.Solvable.Shafarevich.LevelRungData
+import InverseGalois.Solvable.Shafarevich.LevelStepRepair
 
 /-!
 # Shafarevich's theorem
@@ -586,4 +588,22 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   image; the inverse of that isomorphism is the lift, and it factors through the same open subgroup
   the solution does, so it is smooth.  So **the step of the ladder is locally solvable along every
   decomposition subgroup, at the finite and at the infinite places together**.
+* `InverseGalois.Solvable.Shafarevich.LevelRungData` collects the clauses.  The package the ladder
+  consumes asks seven things of the arithmetic, and six of them are now theorems: the bottom of the
+  ladder and the stability of the property under a shrinking are free, the property being a
+  restriction on ramification over the base realization; the first rung and the finite elementary
+  quotients come from the family of primes above a prescribed finite set of places; local
+  solvability of the step comes from the third property of that family together with the
+  archimedean coprimality; and the shrinking away of the everywhere locally trivial classes is the
+  Kummer-theoretic statement proved over an arbitrary number field.  So **a prescribed finite set
+  of places of a level is covered by a finite family for which the repair of the property on a lift
+  is the only thing the ladder still asks of the arithmetic**.
+* `InverseGalois.Solvable.Shafarevich.LevelStepRepair` spends the level.  Over the rationals the
+  level the family is built from costs nothing: the kernel of a smooth realization is open and
+  normal, so the subfield it fixes is a finite Galois extension whose fixing subgroup is exactly
+  that kernel, and it is a number field because the base is.  The roots of unity of order the prime
+  lie in it, the restricted step of the ladder having asked the realization to fix those of order
+  the square of the prime, so the family and with it six of the seven clauses are available for
+  every base realization at once.  So **for an odd prime the repair of the property on a lift is
+  the only thing between the arithmetic and the step of the ladder**.
 -/
