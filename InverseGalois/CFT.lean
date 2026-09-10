@@ -533,6 +533,7 @@ import InverseGalois.CFT.Profinite.Comap
 import InverseGalois.CFT.Profinite.ComapIso
 import InverseGalois.CFT.Profinite.Connecting
 import InverseGalois.CFT.Profinite.Corestriction
+import InverseGalois.CFT.Profinite.CorestrictionNormal
 import InverseGalois.CFT.Profinite.Cup
 import InverseGalois.CFT.Profinite.Discrete
 import InverseGalois.CFT.Profinite.DiscreteComap
@@ -5599,6 +5600,19 @@ it that are available here.
   the element and a chosen representative; the correction is produced by three applications of the
   cocycle relation, and it is a coboundary, so **the identity survives in cohomology in the second
   degree as well**.
+* `InverseGalois.CFT.Profinite.CorestrictionNormal` reads the average at the elements of the
+  subgroup itself, when the subgroup is normal.  Such an element fixes every coset, so the
+  discrepancy by which it carries one chosen representative to the next is just its conjugate by
+  that representative, and **the average is the product over the cosets of the values of the cochain
+  at the conjugates**, each carried back by the representative.  That product is what lets one
+  average a cochain of the subgroup into a cochain of the whole group taking assigned values on a
+  piece of the subgroup: if the cochain kills every conjugate of a group element but one, **the
+  product collapses to the single surviving term**, so the assigned values are reproduced exactly
+  once the trivial coset is represented by the identity, which one can always arrange, and a bound
+  on the surviving value by the powers of one coefficient is inherited by the average.  Read the
+  other way round, the collapse says that **where the average is nontrivial the cochain was already
+  nontrivial at a conjugate**, which is what confines the ramification of the average to the places
+  where the cochain was ramified.
 * `InverseGalois.CFT.Profinite.Coinduced` builds, out of a module for a subgroup, a module for the
   whole group: the functions on the group that are equivariant for the subgroup acting on the left,
   the whole group acting by translation on the right.  Evaluation at the neutral element is
