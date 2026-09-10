@@ -3,9 +3,11 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Units.InertiaFinite
 import InverseGalois.CFT.Units.InfiniteDecomposition
 import InverseGalois.CFT.Units.StablePlaces
 import InverseGalois.Solvable.Shafarevich.ElementaryQuotientDecomposition
+import InverseGalois.Solvable.Shafarevich.LevelObstruction
 import InverseGalois.Solvable.Shafarevich.LevelOneTwoPlace
 
 /-!
@@ -17,20 +19,26 @@ is a family of decomposition subgroups at finite places, one for each place of a
 of places of the level the base realization cuts out, and this file builds it.
 
 The set of places is the one carrying the ideal classes and the places above the exponent, enlarged
-so as to contain any prescribed finite set of places; above each of its members a prime of the
-integers of the whole extension is chosen, and the stabilisers of those primes are the family.
-Two things are then true of the family at once.  Each of its members, cut down by the kernel of the
-base realization, has a finite elementary quotient, because that is what local class field theory
-says of a decomposition subgroup.  And the first rung of the ladder has its character over it,
-because the places the two-place construction spends are places of the set the family is indexed by,
-so the character the construction produces dies on every member.
+so as to contain the places which ramify in the level and any prescribed finite set of places;
+above each of its members a prime of the integers of the whole extension is chosen, and the
+stabilisers of those primes are the family.  Three things are then true of the family at once.
+Each of its members, cut down by the kernel of the base realization, has a finite elementary
+quotient, because that is what local class field theory says of a decomposition subgroup.  The
+first rung of the ladder has its character over it, because the places the two-place construction
+spends are places of the set the family is indexed by, so the character the construction produces
+dies on every member.  And away from the conjugates of the family the base realization kills
+inertia: a prime whose place of the level is not in the set is a prime whose place is unramified,
+so the inertia there already fixes the level, while a prime whose place is in the set is, the
+Galois group acting transitively on the primes above a prime of the level, a conjugate of one of
+the chosen primes.
 
 ## Main results
 
 * `InverseGalois.Shafarevich.exists_decomposition_family`: a finite family of primes of the whole
   extension, containing one above each member of a prescribed finite set of places of the level,
-  whose stabilisers have finite elementary quotients against the kernel of the base realization and
-  carry the character of the first rung of the ladder.
+  whose stabilisers have finite elementary quotients against the kernel of the base realization,
+  carry the character of the first rung of the ladder, and outside whose conjugates the base
+  realization is unramified.
 
 ## Tags
 
@@ -57,8 +65,8 @@ variable {ℓ : ℕ} {U S : Type} [Group U] [Finite U] [TopologicalSpace U] [Dis
 attribute [local instance] zmodTrivialAction
 
 /-- **A prescribed finite set of places of a level is covered by a finite family of primes of the
-whole extension whose stabilisers have finite elementary quotients and carry the character of the
-first rung of the ladder.** -/
+whole extension whose stabilisers have finite elementary quotients, carry the character of the
+first rung of the ladder, and outside whose conjugates the base realization kills inertia.** -/
 theorem exists_decomposition_family (hℓ : ℓ.Prime) (hodd : 2 < ℓ)
     {φ : Gal(Ω/k) →* U} (hsurj : Function.Surjective φ) (hsm : IsSmoothHom φ)
     (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K]
@@ -68,16 +76,22 @@ theorem exists_decomposition_family (hℓ : ℓ.Prime) (hodd : 2 < ℓ)
     ∃ (t : ℕ) (Pr : Fin t → Ideal (𝓞 Ω)), (∀ ν, (Pr ν).IsPrime) ∧ (∀ ν, Pr ν ≠ ⊥) ∧
       (∀ v ∈ X, ∃ ν, Ideal.under (𝓞 ↥K) (Pr ν) = v.asIdeal) ∧
       (∀ ν, HasFiniteElementaryQuotient ℓ (stabilizer Gal(Ω/k) (Pr ν) ⊓ φ.ker)) ∧
-      ∀ n : ℕ, HasLevelOneCharacter ℓ U S φ
-        (Set.range fun ν => stabilizer Gal(Ω/k) (Pr ν)) n := by
+      (∀ n : ℕ, HasLevelOneCharacter ℓ U S φ
+        (Set.range fun ν => stabilizer Gal(Ω/k) (Pr ν)) n) ∧
+      ∀ Q : Ideal (𝓞 Ω), Q.IsPrime → Q ≠ ⊥ →
+        stabilizer Gal(Ω/k) Q ∉ conjFamily (fun ν => stabilizer Gal(Ω/k) (Pr ν)) →
+        ∀ x ∈ Ideal.inertia Gal(Ω/k) Q, φ x = 1 := by
   classical
   haveI : Fact ℓ.Prime := ⟨hℓ⟩
   obtain ⟨Tn, hXTn, hTnst, hpTn, hrepr⟩ :=
-    exists_stable_ord_places k ↥K (ℓ := ℓ) hℓ.ne_zero X hX
+    exists_stable_ord_places k ↥K (ℓ := ℓ) hℓ.ne_zero
+      (X ∪ {v : HeightOneSpectrum (𝓞 ↥K) | Ideal.inertia Gal(↥K/k) v.asIdeal ≠ ⊥})
+      (hX.union (finite_setOf_inertia_ne_bot (k := k) (K := ↥K)))
   choose Pf hPfp hPfbot hPfunder using fun v : HeightOneSpectrum (𝓞 ↥K) =>
     exists_stabilizer_prime_restrictNormalHom_eq (K := Ω) K (τ := 1) (v := v) (one_smul _ v)
   refine ⟨Tn.card, fun ν => Pf (Tn.equivFin.symm ν), fun ν => hPfp _, fun ν => hPfbot _,
-    fun v hv => ⟨Tn.equivFin ⟨v, hXTn hv⟩, ?_⟩, fun ν => ?_, fun n => ?_⟩
+    fun v hv => ⟨Tn.equivFin ⟨v, hXTn (Or.inl hv)⟩, ?_⟩, fun ν => ?_, fun n => ?_,
+    fun Q hQp hQbot hQnot x hx => ?_⟩
   · simp only [Equiv.symm_apply_apply]
     exact (hPfunder v).1
   · haveI := hPfp (Tn.equivFin.symm ν : HeightOneSpectrum (𝓞 ↥K))
@@ -88,6 +102,29 @@ theorem exists_decomposition_family (hℓ : ℓ.Prime) (hodd : 2 < ℓ)
     exact Or.inl ⟨Pf (Tn.equivFin.symm ν), hPfp _,
       ⟨((Tn.equivFin.symm ν : { x // x ∈ Tn }) : HeightOneSpectrum (𝓞 ↥K)),
         (Tn.equivFin.symm ν).2, (hPfunder _).1.symm⟩, rfl⟩
+  · haveI := hQp
+    haveI : (Ideal.under (𝓞 ↥K) Q).IsPrime := Ideal.IsPrime.under _ Q
+    set w : HeightOneSpectrum (𝓞 ↥K) :=
+      ⟨Ideal.under (𝓞 ↥K) Q, inferInstance, Ideal.under_ne_bot _ hQbot⟩ with hwdef
+    by_cases hw : w ∈ Tn
+    · refine absurd ?_ hQnot
+      have hkk : Ideal.under (𝓞 k) (Pf w) = Ideal.under (𝓞 k) Q := by
+        rw [← Ideal.under_under (A := 𝓞 k) (B := 𝓞 ↥K) (Pf w),
+          ← Ideal.under_under (A := 𝓞 k) (B := 𝓞 ↥K) Q, (hPfunder w).1]
+      haveI := hPfp w
+      obtain ⟨ρ, hρ⟩ := exists_smul_eq_of_under_eq_ringOfIntegers (F := k) (K := Ω) (Pf w) Q hkk
+      refine ⟨Tn.equivFin ⟨w, hw⟩, ρ, ?_⟩
+      simp only [Equiv.symm_apply_apply]
+      rw [hρ]
+      exact stabilizer_smul_eq_stabilizer_map_conj ρ (Pf w)
+    · have hbot : Ideal.inertia Gal(↥K/k) w.asIdeal = ⊥ := by
+        by_contra hc
+        exact hw (hXTn (Or.inr hc))
+      have hunr := (inertia_eq_bot_iff_isUnramifiedAt_base (k := k) (K := ↥K) w.asIdeal
+        w.ne_bot).1 hbot
+      have hfix := inertia_le_fixingSubgroup_of_isUnramifiedAt (k := k) (Ω := Ω) K hQbot hunr hx
+      rw [hKker, MonoidHom.mem_ker] at hfix
+      exact hfix
 
 end Family
 

@@ -69,6 +69,7 @@ import InverseGalois.Solvable.Shafarevich.LevelOneArith
 import InverseGalois.Solvable.Shafarevich.LevelOneFamily
 import InverseGalois.Solvable.Shafarevich.LevelOneTwoPlace
 import InverseGalois.Solvable.Shafarevich.LevelOneDecomposition
+import InverseGalois.Solvable.Shafarevich.LocalLiftInfinite
 
 /-!
 # Shafarevich's theorem
@@ -569,6 +570,20 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   stable set, and the stabilisers of those primes are the family: each of them, cut down by the
   kernel of the base realization, has a finite elementary quotient because it is a decomposition
   subgroup, and the character of the previous file dies on all of them because the places it spends
-  are places of the set.  So **a prescribed finite set of places of a level is covered by a finite
-  family of primes whose stabilisers carry both conditions the first rung asks of the family**.
+  are places of the set.  Enlarging the set by the finitely many places which ramify in the level
+  buys a third property at no cost, that away from the conjugates of the family the base
+  realization kills inertia: a prime whose place of the level is outside the set is unramified
+  there, so its inertia already fixes the level, and a prime whose place is inside the set is a
+  conjugate of a chosen one.  So **a prescribed finite set of places of a level is covered by a
+  finite family of primes whose stabilisers carry every condition the first rung asks of the
+  family**.
+* `InverseGalois.Solvable.Shafarevich.LocalLiftInfinite` closes local solvability at the remaining
+  places.  The family the local conditions are read on holds the decomposition subgroups at the
+  archimedean places too, and there an automorphism fixing the place is an involution, so the image
+  of the decomposition subgroup is killed by two while the layer being added is killed by the odd
+  prime the ladder climbs.  The kernel of the surjection therefore has order coprime to the image,
+  the preimage of the image splits over that kernel, and a complement maps isomorphically onto the
+  image; the inverse of that isomorphism is the lift, and it factors through the same open subgroup
+  the solution does, so it is smooth.  So **the step of the ladder is locally solvable along every
+  decomposition subgroup, at the finite and at the infinite places together**.
 -/
