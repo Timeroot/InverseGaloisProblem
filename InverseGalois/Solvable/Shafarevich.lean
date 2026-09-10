@@ -65,6 +65,7 @@ import InverseGalois.Solvable.Shafarevich.CyclicLift
 import InverseGalois.Solvable.Shafarevich.ElementaryQuotient
 import InverseGalois.Solvable.Shafarevich.ElementaryQuotientDecomposition
 import InverseGalois.Solvable.Shafarevich.RootsLevel
+import InverseGalois.Solvable.Shafarevich.LevelOneArith
 
 /-!
 # Shafarevich's theorem
@@ -527,4 +528,17 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   the covering on the outer factor is the problem one started from.  So **the step of the ladder
   need only be taken over base realizations whose field already contains the roots of unity of a
   prescribed order**, which is what Kummer theory over that field asks for.
+* `InverseGalois.Solvable.Shafarevich.LevelOneArith` answers the first rung's question with units.
+  A family of units of a finite level, one for each element of the layer, each of which fails to be
+  a local power at exactly one place of its own, is a local power at every proper conjugate of its
+  two places, and is a local power at both places attached to any other member, becomes the
+  character wanted by taking the `â„“`-th root of each unit and reading the resulting character of the
+  automorphisms over the level.  The arithmetic of a unit is the arithmetic of its character: the
+  character vanishes on the inertia at a prime where the unit has valuation divisible by the prime,
+  and on the whole decomposition subgroup at a prime where the unit is a local power.  So each place
+  where a member is not a local power produces one element of the layer and kills every other
+  coordinate there, every conjugate the base map moves lands where all the coordinates vanish, and a
+  prime where the induced homomorphism ramifies must lie over one of the two places attached to the
+  single surviving coordinate.  Hence **a two-place family of units gives the first rung of the
+  ladder its character**.
 -/
