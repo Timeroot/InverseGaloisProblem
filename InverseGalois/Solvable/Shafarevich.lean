@@ -686,7 +686,10 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   seven clauses are available for every base realization at once.  So **for an odd prime the repair
   of the property on a lift is
   the only thing between the arithmetic and the step of the ladder**.  The residual condition is
-  named in four forms, each implying the one before it: a repair returning a whole solution, a
+  named in five forms, each implying the one before it: a repair returning a whole solution, a
   repair returning only a lift, a repair returning a lift whose ramification is described one prime
-  at a time, and a repair returning a lift whose new ramification is merely confined and cyclic.
+  at a time, a repair returning a lift whose new ramification is merely confined and cyclic, and —
+  no lift at all — **a prescription of one smooth one cocycle with values in the layer**, along
+  finitely many subgroups of decomposition subgroups, trivial along the family and ramified only
+  where it is allowed to be.
 -/

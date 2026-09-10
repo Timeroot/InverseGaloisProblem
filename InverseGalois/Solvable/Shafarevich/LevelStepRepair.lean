@@ -4,9 +4,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.Profinite.OpenLevel
+import InverseGalois.Solvable.Shafarevich.LevelConfinedTwist
 import InverseGalois.Solvable.Shafarevich.LevelCyclicRepair
 import InverseGalois.Solvable.Shafarevich.LevelRepair
 import InverseGalois.Solvable.Shafarevich.LevelRungData
+import InverseGalois.Solvable.Shafarevich.LevelShrink
 import InverseGalois.Solvable.Shafarevich.RootsLevel
 
 /-!
@@ -20,13 +22,15 @@ the restricted step of the ladder puts in the base realization sit inside it.  F
 family and the family to the package leaves a single condition, the repair of the property on a
 lift, and that is what this file names.
 
-The condition is named four times.  The form the ladder consumes asks for a whole solution back; the
+The condition is named five times.  The form the ladder consumes asks for a whole solution back; the
 form the arithmetic is actually asked for only asks for a lift, being onto costing nothing past the
 first layer; the form the class field theory can answer asks for a lift whose ramification is
-described prime by prime; and the last form drops even total ramification, which is a consequence of
-cyclicity over a totally ramified solution below.  Each implies the one before, so the last is all
-the arithmetic owes: a lift ramifying only where the solution below splits completely, with cyclic
-local image there.
+described prime by prime; the next drops even total ramification, which is a consequence of
+cyclicity over a totally ramified solution below; and the last drops the lift altogether, two lifts
+of one solution differing by a one cocycle with values in the layer.  Each implies the one before,
+so the last is all the arithmetic owes: **one smooth one cocycle, prescribed along finitely many
+subgroups of decomposition subgroups, trivial along the family and ramified only where it is
+allowed to be**.
 
 ## Main definitions
 
@@ -35,6 +39,7 @@ local image there.
 * `Shafarevich.LiftRepairEP` — the same repair, asked to return only a lift.
 * `Shafarevich.CyclicRepairEP` — the same repair, with the property read prime by prime.
 * `Shafarevich.SplitCyclicRepairEP` — the same repair, with total ramification dropped as well.
+* `Shafarevich.ConfinedPrescriptionEP` — the repair as a prescription in degree one.
 
 ## Main results
 
@@ -43,6 +48,8 @@ local image there.
   cyclic repairs a lift**.
 * `Shafarevich.cyclicRepairEP_of_splitCyclicRepairEP` — **confining the new ramification and making
   it cyclic is all the arithmetic owes**.
+* `Shafarevich.splitCyclicRepairEP_of_confinedPrescriptionEP` — **and that is bought with one
+  prescription in degree one**, the step being locally solvable at every prime.
 * `Shafarevich.genericLevelStepEPRoots_of_solutionRepairEP` — **the repair of the property is the
   only thing between the arithmetic and the step of the ladder** for an odd prime.
 * `Shafarevich.genericLevelStepEPRoots_of_liftRepairEP` — the same step, in exchange for the repair
@@ -51,6 +58,8 @@ local image there.
   repair read prime by prime.
 * `Shafarevich.genericLevelStepEPRoots_of_splitCyclicRepairEP` — the same step, in exchange for
   confining the new ramification and making it cyclic.
+* `Shafarevich.genericLevelStepEPRoots_of_confinedPrescriptionEP` — the same step, in exchange for
+  the prescription in degree one alone.
 
 ## Tags
 
@@ -151,6 +160,37 @@ theorem cyclicRepairEP_of_splitCyclicRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (h : 
   intro S U _ _ _ _ _ _ Ω _ _ _ _ φ t D n j hS hj hmu
   exact hasCyclicRepair_of_hasSplitCyclicRepair hS (h S U Ω φ t D n j hS hj hmu)
 
+/-- **The repair as a prescription in degree one.**
+
+The data is the same once more, and what is asked back is no lift at all but a smooth one cocycle
+with values in the layer: prescribed along finitely many subgroups of decomposition subgroups at
+primes named in advance, trivial along the finite family wherever the base realization already is,
+and ramifying only at those named primes or else at primes where the given lift kills the whole
+decomposition subgroup and the cocycle is cyclic. -/
+def ConfinedPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
+  ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
+      [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
+      (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
+      (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
+    letI := galLayerAction ℓ U n S j φ
+    HasConfinedPrescription ℓ U n S j φ D
+
+/-- **The repair is bought with one prescription in degree one**, the step being locally solvable at
+every prime.
+
+Two lifts of one solution across one layer differ by a one cocycle with values in the layer, and the
+prescription makes the corrected lift agree, at each of the finitely many orbits of primes where the
+given lift ramifies, either with the cyclic local solution of the step or with the trivial one. -/
+theorem splitCyclicRepairEP_of_confinedPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime]
+    (h : ConfinedPrescriptionEP ℓ) : SplitCyclicRepairEP ℓ := by
+  intro S U _ _ _ _ _ _ Ω _ _ _ _ φ t D n j hS hj hmu
+  letI := galLayerAction ℓ U n S j φ
+  refine hasSplitCyclicRepair_of_hasConfinedPrescription (fun _ _ => rfl) ?_
+    (h S U Ω φ t D n j hS hj hmu)
+  exact hasSplitRamifiedLift_of_hasCyclicLift ℓ U n S j hS φ fun P N _ _ _ hμ =>
+    hasCyclicLift_of_fixed_rootsOfUnity ℓ (isClosed_stabilizer_ideal P) N
+      fun ζ hζ σ => hμ ζ hζ (σ : Gal(Ω/ℚ)) σ.2
+
 /-! ### The step -/
 
 /-- **The repair of the property is the only thing between the arithmetic and the step of the
@@ -205,5 +245,12 @@ theorem genericLevelStepEPRoots_of_cyclicRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (
 theorem genericLevelStepEPRoots_of_splitCyclicRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (hodd : 2 < ℓ)
     (h : SplitCyclicRepairEP ℓ) : GenericLevelStepEPRoots ℓ :=
   genericLevelStepEPRoots_of_cyclicRepairEP ℓ hodd (cyclicRepairEP_of_splitCyclicRepairEP ℓ h)
+
+/-- **The step of the ladder, in exchange for the prescription in degree one alone** — the last
+thing between the arithmetic and every finite solvable group. -/
+theorem genericLevelStepEPRoots_of_confinedPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] (hodd : 2 < ℓ)
+    (h : ConfinedPrescriptionEP ℓ) : GenericLevelStepEPRoots ℓ :=
+  genericLevelStepEPRoots_of_splitCyclicRepairEP ℓ hodd
+    (splitCyclicRepairEP_of_confinedPrescriptionEP ℓ h)
 
 end Shafarevich
