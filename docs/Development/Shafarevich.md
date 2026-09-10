@@ -21159,3 +21159,95 @@ arithmetic bridge — Kummer basis of the layer, local classes from
 `exists_localClass_forall_kummerChar_eq`, `Tr` = the Galois orbit of the named places, the family
 from `exists_isTwoPlaceFamily_zpowers`, and `u y := ∏_t b t ^ (kummerChar hkd (z t) (eK y)).val` —
 is the same for both, so it is built first under the cyclic hypothesis and generalised afterwards.
+
+## §1.89 The ramification clause of `HasKernelPrescription` was unsatisfiable (2026-09-10)
+
+### The defect
+
+`HasKernelPrescription` (`InverseGalois/Solvable/Shafarevich/LevelKernelPrescription.lean`) asks a
+homomorphism `u : ↥φ.ker →* layer` to ramify only where it is allowed to.  As first written, the
+clause read
+
+```lean
+∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
+  (∃ (ρ : Gal(Ω/k)) (y : ↥(φ.ker)),
+    (y : Gal(Ω/k)) ∈ Ideal.inertia Gal(Ω/k) (ρ • P) ∧ u y ≠ 1) →
+  (∃ (μ : ι) (ρ : Gal(Ω/k)), P = ρ • Q μ) ∨
+    ((∀ x ∈ stabilizer Gal(Ω/k) P, F x = 1) ∧ stabilizer Gal(Ω/k) P ≤ φ.ker ∧
+      (∀ ρ : Gal(Ω/k), ρ ∉ φ.ker →
+        ∀ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ stabilizer Gal(Ω/k) (ρ • P) → u y = 1) ∧
+      ∃ y₀ : ↥(φ.ker), …)
+```
+
+The antecedent is quantified over the whole `Gal(Ω/k)`-orbit of `P`, while the conclusion forbids
+`u` from surviving on the decomposition subgroup of any *proper* conjugate of `P`.  Those two are
+inconsistent as soon as `u` ramifies anywhere outside the named orbits.
+
+Concretely: let `P₀` be a prime, not in the orbit of any `Q μ`, at which `u` genuinely ramifies, and
+let `ρ₀ ∉ φ.ker`.  Apply the clause at `P := ρ₀ • P₀`.  Its antecedent holds — take `ρ := ρ₀⁻¹`, so
+that `ρ • P = P₀`, and the witness of the ramification at `P₀`.  The left disjunct fails, `P` not
+being in a named orbit.  So the right disjunct must hold; and its third sub-clause, read at
+`ρ := ρ₀⁻¹`, demands that `u` vanish on `stabilizer Gal(Ω/k) P₀ ∩ φ.ker` — which contradicts the
+ramification at `P₀`, inertia being contained in the decomposition subgroup.
+
+So the definition could never be satisfied by any construction that ramifies at all.  This is a
+statement-level defect, not a gap: nothing was proved from it that is now false, but nothing could
+have been.
+
+### The repair
+
+Make the antecedent a statement about `P` itself:
+
+```lean
+(∃ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ Ideal.inertia Gal(Ω/k) P ∧ u y ≠ 1) →
+```
+
+The clause now says: *at a prime where `u` itself ramifies*, either the prime is named, or `u` is
+supported on that one prime of its orbit and cyclic there.  That is exactly the shape the two-place
+family delivers — the family of units is prescribed at one place and is a local power at every
+proper conjugate of it — and it is what the confinement clause below wants.
+
+### Why the descent still goes through
+
+`hasConfinedPrescription_of_hasKernelPrescription` averages `u` over the cosets of `φ.ker` and must
+produce the confinement clause of `HasConfinedPrescription` at a prime `P` where the *average*
+ramifies.  With the weaker antecedent the descent has to be re-derived, because the clause can no
+longer be read at `P` directly.  The point is that the coset which makes the average ramify is
+recoverable, and everything transports along its representative.
+
+`exists_mem_inertia_section_of_corCochain₁_ne_one` (`InverseGalois/CFT/CorestrictionInertia.lean`)
+is the recorded form of the old `exists_mem_inertia_smul_of_corCochain₁_ne_one`: where the average
+is nontrivial at `g ∈ inertia P ∩ φ.ker`, there is a coset `x` and a `y ∈ φ.ker` with
+`(y : G) = (σ x)⁻¹ g σ x`, lying in the inertia subgroup at `P₁ := (σ x)⁻¹ • P`, at which `u` is
+nontrivial.  So the repaired clause applies at `P₁`, with the representative `σ x` recorded.
+
+Three things then descend from `P₁` to `P`.
+
+* *The named case.*  `P₁ = ρ • Q μ` gives `P = (σ x * ρ) • Q μ`.
+* *The lift kills the decomposition subgroup.*  `F` is a homomorphism, so
+  `F ((σ x)⁻¹ z σ x) = 1` gives `F z = 1`; and conjugation carries `stabilizer P` onto
+  `stabilizer P₁`.
+* *Cyclicity.*  This is `exists_forall_mem_zpowers_corCochain₁`, the new theorem of
+  `CorestrictionInertia.lean`.  Given `stabilizer G P₁ ≤ H`, the vanishing of `u` on the
+  decomposition subgroups of `τ • P₁` for every `τ ∉ H`, and cyclicity of `u` on
+  `stabilizer G P₁ ∩ H` against `y₀`, the average is cyclic on `stabilizer G P` against
+  `g₀ := σ x * y₀ * (σ x)⁻¹`.  The proof is the collapse of the product: for `g ∈ stabilizer G P`
+  and a coset `x' ≠ x`, the conjugate `(σ x')⁻¹ g σ x'` stabilises `(σ x')⁻¹ • P = τ • P₁` with
+  `τ := (σ x')⁻¹ σ x ∉ H`, so `u` kills it; only the term at `x` survives, and it is
+  `σ x • u ((σ x)⁻¹ g σ x)`, a power of `σ x • u y₀ = corCochain₁ u g₀`.
+
+Note that `stabilizer G P ≤ H` is *derived*, not assumed: it is the conjugate of
+`stabilizer G P₁ ≤ H` and `H` is normal.
+
+### Consequences
+
+The consistency of the repaired clause with the third sub-clause is what forces the hypothesis
+`stabilizer Gal(Ω/k) P ≤ φ.ker` to be carried in the right disjunct: it says `P` is completely
+decomposed in the level `K` that `φ.ker` cuts out, hence that the place of `K` below `P` has trivial
+decomposition group over `k`, hence that the proper conjugates of that place are *different* places
+— which is where the family of units is asked to be a local power.  Without it the demand would
+again be self-contradictory.
+
+`HasKernelPrescription` has no producer yet; `KernelPrescriptionEP` merely wraps it and
+`confinedPrescriptionEP_of_kernelPrescriptionEP` merely consumes it, so the repair is confined to
+the two files.

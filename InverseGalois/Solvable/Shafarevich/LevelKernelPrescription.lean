@@ -123,8 +123,7 @@ def HasKernelPrescription : Prop :=
             (∀ (μ : ι) (ρ : Gal(Ω/k)), ρ ∉ φ.ker →
               ∀ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ stabilizer Gal(Ω/k) (ρ • Q μ) → u y = 1) ∧
             ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
-              (∃ (ρ : Gal(Ω/k)) (y : ↥(φ.ker)),
-                (y : Gal(Ω/k)) ∈ Ideal.inertia Gal(Ω/k) (ρ • P) ∧ u y ≠ 1) →
+              (∃ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ Ideal.inertia Gal(Ω/k) P ∧ u y ≠ 1) →
               (∃ (μ : ι) (ρ : Gal(Ω/k)), P = ρ • Q μ) ∨
                 ((∀ x ∈ stabilizer Gal(Ω/k) P, F x = 1) ∧ stabilizer Gal(Ω/k) P ≤ φ.ker ∧
                   (∀ ρ : Gal(Ω/k), ρ ∉ φ.ker →
@@ -147,10 +146,16 @@ open.
 At a named prime the average reproduces the homomorphism on the whole decomposition subgroup: the
 prime is completely decomposed in that field, so the representatives of the nontrivial cosets move
 it, and the homomorphism was asked to kill the decomposition subgroups of the primes they move it
-to.  The prescribed values therefore descend verbatim, and so does cyclicity at a prime the
-homomorphism brings in — the given lift killing the whole decomposition subgroup there is what says
-that prime, too, is completely decomposed.  Where the average ramifies the homomorphism ramifies
-somewhere in the orbit of the same prime, which is what keeps the confinement clause.
+to.  The prescribed values therefore descend verbatim.
+
+Where the average ramifies the homomorphism ramifies at the prime one of the representatives carries
+the given one to, which is what keeps the confinement clause; and everything asked of the
+homomorphism there descends along that same representative.  The given lift kills the decomposition
+subgroup of the prime it is asked at, hence kills the conjugate subgroup as well; and the prime
+being completely decomposed in that field the other representatives move it, so the average again
+collapses to the one term, and its values on the decomposition subgroup of the given prime are the
+values of the homomorphism carried across — powers of a single one of them exactly when those
+were.
 
 The number of letters the data is read at, and the shrinking the prescription spends, are passed
 along unchanged: averaging is over the cosets of the kernel and does not touch the layer. -/
@@ -186,14 +191,23 @@ theorem hasConfinedPrescription_of_hasKernelPrescription
     rw [corCochain₁_eq_self_of_stabilizer_le φ.ker σ hσ hσ1 (hQker μ) (huorb μ) hmem]
     exact hua μ x (hQker μ hmem)
   · rintro P hPp hPbot ⟨g, hgI, hgφ, hgc⟩
-    refine (huram P hPp hPbot (exists_mem_inertia_smul_of_corCochain₁_ne_one φ.ker σ hσ
-      (MonoidHom.mem_ker.2 hgφ) hgI hgc)).imp id fun h => ?_
-    obtain ⟨hF1, hker, hvan, y₀, hy₀, hgen⟩ := h
-    refine ⟨hF1, (y₀ : Gal(Ω/k)), hy₀, fun x hx => ?_⟩
-    rw [corCochain₁_eq_self_of_stabilizer_le φ.ker σ hσ hσ1 hker hvan hx,
-      (corCochain₁_eq_self_of_stabilizer_le φ.ker σ hσ hσ1 hker hvan hy₀).trans
-        (congrArg u (Subtype.ext rfl))]
-    exact hgen _ hx
+    haveI := hPp
+    obtain ⟨x, y, hyI, hy1⟩ := exists_mem_inertia_section_of_corCochain₁_ne_one φ.ker σ hσ
+      (MonoidHom.mem_ker.2 hgφ) hgI hgc
+    have hPne : (σ x)⁻¹ • P ≠ ⊥ := by
+      intro hbot
+      exact hPbot (by simpa using congrArg (fun I : Ideal (𝓞 Ω) => σ x • I) hbot)
+    rcases huram ((σ x)⁻¹ • P) inferInstance hPne ⟨y, hyI, hy1⟩ with ⟨μ, ρ, hρ⟩ | h
+    · exact Or.inl ⟨μ, σ x * ρ, by rw [mul_smul, ← hρ, smul_inv_smul]⟩
+    · obtain ⟨hF1, hker, hvan, y₀, hy₀, hgen⟩ := h
+      refine Or.inr ⟨fun z hz => ?_,
+        exists_forall_mem_zpowers_corCochain₁ φ.ker σ hσ x hker hvan y₀ hy₀ hgen⟩
+      have hmem : (σ x)⁻¹ * z * σ x ∈ stabilizer Gal(Ω/k) ((σ x)⁻¹ • P) := by
+        refine mem_stabilizer_smul_iff.2 ?_
+        rw [show (σ x)⁻¹⁻¹ * ((σ x)⁻¹ * z * σ x) * (σ x)⁻¹ = z from by group]
+        exact hz
+      rw [show z = σ x * ((σ x)⁻¹ * z * σ x) * (σ x)⁻¹ from by group, _root_.map_mul,
+        _root_.map_mul, _root_.map_inv, hF1 _ hmem, mul_one, mul_inv_cancel]
 
 end Kernel
 
