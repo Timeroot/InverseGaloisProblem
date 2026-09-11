@@ -93,6 +93,10 @@ variable {U : Type} [Group U] {S : Type} [Group S] {l m n : ℕ}
 def IsOperatorHom (α : Generic U m S →* Generic U n S) : Prop :=
   ∀ u : U, α.comp (genericAut U m S u).toMonoidHom = (genericAut U n S u).toMonoidHom.comp α
 
+/-- The identity commutes with the operators. -/
+theorem isOperatorHom_id : IsOperatorHom (MonoidHom.id (Generic U n S)) := fun u => by
+  rw [MonoidHom.id_comp, MonoidHom.comp_id]
+
 theorem IsOperatorHom.comp {β : Generic U m S →* Generic U n S}
     {α : Generic U l S →* Generic U m S} (hβ : IsOperatorHom β) (hα : IsOperatorHom α) :
     IsOperatorHom (β.comp α) := fun u => by
