@@ -27,7 +27,7 @@ be named, so both conditions become checks at finitely many primes.
 * `InverseGalois.Shafarevich.IsCyclicSplitAt` — the base realization splits completely at a prime
   and the local image of the lift is cyclic there.
 * `InverseGalois.Shafarevich.IsConfinedAt` — at a prime, the solution below either ramifies over
-  the base realization or kills the whole decomposition subgroup.
+  the base realization or a homomorphism it covers kills the whole decomposition subgroup.
 * `InverseGalois.Shafarevich.IsConfinedRamifiedHom` — **the new ramification of a lift is
   confined.**
 * `InverseGalois.Shafarevich.IsTotallyRamifiedAt` — at a prime, the homomorphism takes no value on
@@ -59,8 +59,8 @@ open InverseGalois.CFT
 
 open scoped Pointwise
 
-variable {U W W' : Type*} [Group U] [Group W] [Group W'] {k Ω : Type*} [Field k] [Field Ω]
-  [Algebra k Ω]
+variable {U W W' W'' : Type*} [Group U] [Group W] [Group W'] [Group W''] {k Ω : Type*} [Field k]
+  [Field Ω] [Algebra k Ω]
 
 /-! ### Conjugating a value -/
 
@@ -145,25 +145,32 @@ theorem isCyclicSplitHom_of_family {φ : Gal(Ω/k) →* U} {Φ : Gal(Ω/k) →* 
 
 /-! ### Confinement, at one prime -/
 
-/-- At a prime, the solution below either ramifies over the base realization or takes no value at
-all on the decomposition subgroup. -/
-def IsConfinedAt (φ : Gal(Ω/k) →* U) (Φ : Gal(Ω/k) →* W) (P : Ideal (𝓞 Ω)) : Prop :=
-  RamifiesAt φ Φ P ∨ ∀ x ∈ stabilizer Gal(Ω/k) P, Φ x = 1
+/-- At a prime, the solution below either ramifies over the base realization or a homomorphism it
+covers takes no value at all on the decomposition subgroup.
+
+The two clauses are read against two different homomorphisms because that is how much the arithmetic
+supplies: the ramification is that of the solution the restriction is carried on, while the
+vanishing is that of the solution carried down to the level the local conditions are read at. -/
+def IsConfinedAt (φ : Gal(Ω/k) →* U) (Φ : Gal(Ω/k) →* W) (Φ' : Gal(Ω/k) →* W'')
+    (P : Ideal (𝓞 Ω)) : Prop :=
+  RamifiesAt φ Φ P ∨ ∀ x ∈ stabilizer Gal(Ω/k) P, Φ' x = 1
 
 /-- **The new ramification of a lift is confined**: at every prime where the lift ramifies over the
 base realization, the solution below either ramifies there too or kills the whole decomposition
 subgroup. -/
-def IsConfinedRamifiedHom (φ : Gal(Ω/k) →* U) (Φ : Gal(Ω/k) →* W) (Ψ : Gal(Ω/k) →* W') : Prop :=
-  ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → RamifiesAt φ Ψ P → IsConfinedAt φ Φ P
+def IsConfinedRamifiedHom (φ : Gal(Ω/k) →* U) (Φ : Gal(Ω/k) →* W) (Φ' : Gal(Ω/k) →* W'')
+    (Ψ : Gal(Ω/k) →* W') : Prop :=
+  ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → RamifiesAt φ Ψ P → IsConfinedAt φ Φ Φ' P
 
 /-- **Confinement moves with the prime.** -/
-theorem IsConfinedAt.smul {φ : Gal(Ω/k) →* U} {Φ : Gal(Ω/k) →* W} {P : Ideal (𝓞 Ω)}
-    (h : IsConfinedAt φ Φ P) (ρ : Gal(Ω/k)) : IsConfinedAt φ Φ (ρ • P) := by
+theorem IsConfinedAt.smul {φ : Gal(Ω/k) →* U} {Φ : Gal(Ω/k) →* W} {Φ' : Gal(Ω/k) →* W''}
+    {P : Ideal (𝓞 Ω)} (h : IsConfinedAt φ Φ Φ' P) (ρ : Gal(Ω/k)) :
+    IsConfinedAt φ Φ Φ' (ρ • P) := by
   rcases h with hram | h1
   · exact Or.inl (hram.smul ρ)
   · refine Or.inr fun x hx => ?_
     have hx1 := h1 _ (mem_stabilizer_smul_iff.1 hx)
-    have hxx : Φ ρ * Φ (ρ⁻¹ * x * ρ) * (Φ ρ)⁻¹ = Φ x := by
+    have hxx : Φ' ρ * Φ' (ρ⁻¹ * x * ρ) * (Φ' ρ)⁻¹ = Φ' x := by
       simp only [_root_.map_mul, _root_.map_inv]
       group
     rw [← hxx, hx1, mul_one, mul_inv_cancel]
@@ -171,11 +178,11 @@ theorem IsConfinedAt.smul {φ : Gal(Ω/k) →* U} {Φ : Gal(Ω/k) →* W} {P : I
 /-- **Confinement holds as soon as it holds at a family of primes meeting every orbit at which the
 lift ramifies.** -/
 theorem isConfinedRamifiedHom_of_family {φ : Gal(Ω/k) →* U} {Φ : Gal(Ω/k) →* W}
-    {Ψ : Gal(Ω/k) →* W'} {ι : Type*} {Pr : ι → Ideal (𝓞 Ω)}
+    {Φ' : Gal(Ω/k) →* W''} {Ψ : Gal(Ω/k) →* W'} {ι : Type*} {Pr : ι → Ideal (𝓞 Ω)}
     (hfam : ∀ Q : Ideal (𝓞 Ω), Q.IsPrime → Q ≠ ⊥ → RamifiesAt φ Ψ Q →
       ∃ (ν : ι) (ρ : Gal(Ω/k)), Q = ρ • Pr ν)
-    (h : ∀ ν, RamifiesAt φ Ψ (Pr ν) → IsConfinedAt φ Φ (Pr ν)) :
-    IsConfinedRamifiedHom φ Φ Ψ := by
+    (h : ∀ ν, RamifiesAt φ Ψ (Pr ν) → IsConfinedAt φ Φ Φ' (Pr ν)) :
+    IsConfinedRamifiedHom φ Φ Φ' Ψ := by
   intro Q hQp hQbot hram
   obtain ⟨ν, ρ, rfl⟩ := hfam Q hQp hQbot hram
   exact (h ν (ramifiesAt_smul_iff.1 hram)).smul ρ
@@ -239,10 +246,10 @@ variable [NumberField k] [IsGalois k Ω]
 The primes at which the lift ramifies at all meet finitely many orbits, one prime of each can be
 named, and both conditions carry from a named prime to its whole orbit. -/
 theorem exists_family_cyclicSplit_confined {φ : Gal(Ω/k) →* U} {Φ : Gal(Ω/k) →* W}
-    {Ψ : Gal(Ω/k) →* W'} (hΨ : IsOpenNormal Ψ.ker) :
+    {Φ' : Gal(Ω/k) →* W''} {Ψ : Gal(Ω/k) →* W'} (hΨ : IsOpenNormal Ψ.ker) :
     ∃ (s : ℕ) (Pr : Fin s → Ideal (𝓞 Ω)), (∀ ν, (Pr ν).IsPrime) ∧ (∀ ν, Pr ν ≠ ⊥) ∧
-      ((∀ ν, RamifiesAt φ Ψ (Pr ν) → IsCyclicSplitAt φ Ψ (Pr ν) ∧ IsConfinedAt φ Φ (Pr ν)) →
-        IsCyclicSplitHom φ Ψ ∧ IsConfinedRamifiedHom φ Φ Ψ) := by
+      ((∀ ν, RamifiesAt φ Ψ (Pr ν) → IsCyclicSplitAt φ Ψ (Pr ν) ∧ IsConfinedAt φ Φ Φ' (Pr ν)) →
+        IsCyclicSplitHom φ Ψ ∧ IsConfinedRamifiedHom φ Φ Φ' Ψ) := by
   obtain ⟨s, Pr, hp, hbot, hfam⟩ := exists_ramified_family hΨ
   have hfam' : ∀ Q : Ideal (𝓞 Ω), Q.IsPrime → Q ≠ ⊥ → RamifiesAt φ Ψ Q →
       ∃ (ν : Fin s) (ρ : Gal(Ω/k)), Q = ρ • Pr ν := by

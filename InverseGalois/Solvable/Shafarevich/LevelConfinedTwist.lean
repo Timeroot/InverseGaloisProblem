@@ -154,7 +154,9 @@ The last clause is the one which confines the new ramification.  At a prime wher
 ramifies along the part of inertia the base realization kills, either that prime is one of the
 named ones, or it is a prime the cocycle brings in by itself, and there it is asked to be cyclic
 and the given lift to kill the whole decomposition subgroup — which is what a prime chosen to split
-completely in the field the lift cuts out supplies.
+completely in the field the lift cuts out supplies.  The lift the vanishing is read of is the given
+one carried down along the shrinking the prescription spends, so the field to split completely in
+sits at the number of letters asked for, whatever number the data is read at.
 
 No named prime is allowed to sit over the finite family: its decomposition subgroup is asked to
 escape every conjugate of every subgroup of the family, so that the prescribed values there do not
@@ -184,14 +186,14 @@ def HasConfinedPrescription : Prop :=
       (∀ μ, ∃ x₀ : ↥(A μ), ∀ x : ↥(A μ), a μ x ∈ Subgroup.zpowers (a μ x₀)) →
       (∀ (μ : ι) (ν : Fin t) (ρ : Gal(Ω/k)),
         ∃ y ∈ stabilizer Gal(Ω/k) (Q μ), ρ * y * ρ⁻¹ ∉ D ν) →
-        ∃ (α : Generic U N S →* Generic U n S) (_ : IsOperatorHom α), Function.Surjective α ∧
+        ∃ (α : Generic U N S →* Generic U n S) (hα : IsOperatorHom α), Function.Surjective α ∧
           ∃ c : Gal(Ω/k) → ↥(layerSub ℓ (Generic U n S) j), IsMulCocycle₁ c ∧ IsSmooth₁ c ∧
             (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → c x = 1) ∧
             (∀ (μ : ι) (x : ↥(A μ)), c (x : Gal(Ω/k)) = layerSubMap ℓ α j (a μ x)) ∧
             ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
               (∃ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1 ∧ c x ≠ 1) →
               (∃ (μ : ι) (ρ : Gal(Ω/k)), P = ρ • Q μ) ∨
-                ((∀ x ∈ stabilizer Gal(Ω/k) P, F x = 1) ∧
+                ((∀ x ∈ stabilizer Gal(Ω/k) P, layerSemidirectMap ℓ hα (j + 1) (F x) = 1) ∧
                   ∃ x₀ ∈ stabilizer Gal(Ω/k) P,
                     ∀ x ∈ stabilizer Gal(Ω/k) P, c x ∈ Subgroup.zpowers (c x₀))
 
@@ -228,10 +230,10 @@ sitting over it, and a named prime is one it ramifies at.
 
 At a prime which is not named, the flattened lift does not ramify, so any new ramification of the
 corrected lift is ramification of the cocycle; and there the last clause of the prescription
-supplies both the vanishing of the flattened lift on the whole decomposition subgroup — whence the
-solution below vanishes there too, and is totally ramified for want of any value at all — and the
-cyclicity of the cocycle, which is the cyclicity of the corrected lift since the flattened lift is
-trivial.
+supplies both the vanishing of the flattened lift carried down on the whole decomposition subgroup —
+whence the solution below carried down vanishes there too, and is totally ramified for want of any
+value at all — and the cyclicity of the cocycle, which is the cyclicity of the corrected lift since
+the flattened lift carried down is trivial.
 
 Each prescription is read at the number of letters it announces and answers at the number asked
 for; the two shrinkings compose, and the solution below is carried down along their composite.  The
@@ -269,6 +271,12 @@ theorem hasSplitCyclicRepair_of_hasConfinedPrescription (hS : IsPGroup ℓ S)
     intro x
     rw [hcompapp x]
     exact hfright₀ x
+  have hfconf' : ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → RamifiesAt φ f P →
+      RamifiesAt φ Φ P ∨ ∀ x ∈ stabilizer Gal(Ω/k) P, Φ₁ x = 1 := by
+    intro P hPp hPbot hram
+    rcases hfconf P hPp hPbot hram with h | h
+    · exact Or.inl h
+    · exact Or.inr fun x hx => by rw [hcompapp x]; exact h x hx
   have hfs : IsSmooth₁ (f : Gal(Ω/k) → GenericQuot ℓ U N₂ S (j + 1)) :=
     isSmooth₁_of_isOpenNormal_ker (isOpenNormal_ker_of_isSmoothHom hfsm)
   have hactΦ₁ : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U N₂ S) j)),
@@ -283,9 +291,9 @@ theorem hasSplitCyclicRepair_of_hasConfinedPrescription (hS : IsPGroup ℓ S)
   have hQker : ∀ μ : {μ : Fin s // RamifiesAt φ f (Pr μ)},
       stabilizer Gal(Ω/k) (Pr (μ : Fin s)) ≤ φ.ker := by
     rintro ⟨μ, hμ⟩ x hx
-    rcases hfconf (Pr μ) (hPrp μ) (hPrbot μ) hμ with hΦram | hΦ1
+    rcases hfconf' (Pr μ) (hPrp μ) (hPrbot μ) hμ with hΦram | hΦ1
     · exact MonoidHom.mem_ker.2 ((hΦP (Pr μ) (hPrp μ) (hPrbot μ) hΦram).1 x hx)
-    · exact MonoidHom.mem_ker.2 (by rw [← hΦright x, hΦ1 x hx, _root_.map_one])
+    · exact MonoidHom.mem_ker.2 (by rw [← hΦ₁right x, hΦ1 x hx, _root_.map_one])
   have hfr : ∀ x, SemidirectProduct.rightHom (f x) = φ x := by
     intro x
     show SemidirectProduct.rightHom
@@ -335,10 +343,9 @@ theorem hasSplitCyclicRepair_of_hasConfinedPrescription (hS : IsPGroup ℓ S)
         obtain ⟨y, hyI, hy⟩ := htot₀ x hx
         exact ⟨y, hyI, by rw [hcompapp, hcompapp, hy]⟩
       · have hΦ1 : ∀ x ∈ stabilizer Gal(Ω/k) (Pr μ), Φ₁ x = 1 := by
-          rcases hfconf (Pr μ) (hPrp μ) (hPrbot μ) hμ with h | h
+          rcases hfconf' (Pr μ) (hPrp μ) (hPrbot μ) hμ with h | h
           · exact absurd h hΦram
-          · intro x hx
-            rw [hcompapp, h x hx, _root_.map_one]
+          · exact h
         intro x hx
         exact ⟨1, Subgroup.one_mem _, by rw [hΦ1 x hx, _root_.map_one]⟩
     have hℓP : (ℓ : 𝓞 Ω) ∉ Pr μ := by
@@ -455,7 +462,7 @@ theorem hasSplitCyclicRepair_of_hasConfinedPrescription (hS : IsPGroup ℓ S)
       (∀ x, Ψ x = (layerExtension ℓ (genericAut U n S) j).inl (c x)
         * ((layerSemidirectMap ℓ hα₂ (j + 1)).comp f) x) →
       ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → RamifiesAt φ Ψ P →
-        IsCyclicSplitAt φ Ψ P ∧ IsTotallyRamifiedAt Φ₁ P := by
+        IsCyclicSplitAt φ Ψ P ∧ IsTotallyRamifiedAt ((layerSemidirectMap ℓ hα₂ j).comp Φ₁) P := by
     intro Ψ hΨdef
     have hΨA : ∀ (μ : {μ : Fin s // RamifiesAt φ f (Pr μ) ∧
         ∀ ν, ν < μ → ¬∃ ρ : Gal(Ω/k), Pr μ = ρ • Pr ν}) (x : ↥(A ⟨μ.1, μ.2.1⟩)),
@@ -474,7 +481,7 @@ theorem hasSplitCyclicRepair_of_hasConfinedPrescription (hS : IsPGroup ℓ S)
         (ramifiesAt_smul_iff (ρ := ρ * τ)).1 (by rwa [← hPeq])
       have h := hAkey ⟨μ', hμ'.1⟩ α₂ hα₂ Ψ (hΨA ⟨μ', hμ'⟩) hPram'
       rw [hPeq]
-      exact ⟨h.1.smul (ρ * τ), h.2.smul (ρ * τ)⟩
+      exact ⟨h.1.smul (ρ * τ), (h.2.comp (layerSemidirectMap ℓ hα₂ j)).smul (ρ * τ)⟩
     · obtain ⟨x, hxI, hxφ, hxΨ⟩ := id hPram
       have hfx : f x = 1 := by
         by_contra h
@@ -483,17 +490,19 @@ theorem hasSplitCyclicRepair_of_hasConfinedPrescription (hS : IsPGroup ℓ S)
         hxΨ (by rw [hΨdef, h, _root_.map_one, one_mul, MonoidHom.comp_apply, hfx, _root_.map_one])
       rcases hcram P hPp hPbot ⟨x, hxI, hxφ, hcx⟩ with ⟨μ, ρ, rfl⟩ | ⟨hf1, x₀, hx₀, hgen⟩
       · exact absurd (μ.2.1.smul ρ) hfram
-      · have hΦ₁1 : ∀ x ∈ stabilizer Gal(Ω/k) P, Φ₁ x = 1 := by
+      · have hΦ₂1 : ∀ x ∈ stabilizer Gal(Ω/k) P,
+            ((layerSemidirectMap ℓ hα₂ j).comp Φ₁) x = 1 := by
           intro x hx
-          rw [← hfright x, hf1 x hx, _root_.map_one]
+          show layerSemidirectMap ℓ hα₂ j (Φ₁ x) = 1
+          rw [← hfright x, ← rightHom_layerSemidirectMap ℓ j hα₂, hf1 x hx, _root_.map_one]
         have hφ1 : ∀ x ∈ stabilizer Gal(Ω/k) P, φ x = 1 := by
           intro x hx
-          rw [← hΦ₁right x, hΦ₁1 x hx, _root_.map_one]
-        refine ⟨⟨hφ1, x₀, hx₀, fun y hy => ?_⟩, isTotallyRamifiedAt_of_forall_eq_one hΦ₁1⟩
+          rw [← hΦ₂right x, hΦ₂1 x hx, _root_.map_one]
+        refine ⟨⟨hφ1, x₀, hx₀, fun y hy => ?_⟩, isTotallyRamifiedAt_of_forall_eq_one hΦ₂1⟩
         obtain ⟨i, hi⟩ := Subgroup.mem_zpowers_iff.1 (hgen y hy)
         refine Subgroup.mem_zpowers_iff.2 ⟨i, ?_⟩
         rw [hΨdef, hΨdef, MonoidHom.comp_apply, MonoidHom.comp_apply, hf1 y hy, hf1 x₀ hx₀,
-          _root_.map_one, mul_one, mul_one, ← _root_.map_zpow, hi]
+          mul_one, mul_one, ← _root_.map_zpow, hi]
   have hαsurj : Function.Surjective ((α₂.comp α₁ : Generic U N₁ S →* Generic U n S) :
       Generic U N₁ S → Generic U n S) := hα₂surj.comp hα₁surj
   have hcong : ∀ x, ((layerSemidirectMap ℓ hα₂ j).comp Φ₁) x
@@ -510,8 +519,7 @@ theorem hasSplitCyclicRepair_of_hasConfinedPrescription (hS : IsPGroup ℓ S)
     twistLift (layerExtension ℓ (genericAut U n S) j) hact hf₂right hc,
     isSmoothHom_twistLift _ hact hf₂right hc hf₂s hcs, h6, fun ν x hx hx1 => ?_,
     fun P hPp hPbot h =>
-      ((main _ (twistLift_apply _ hact hf₂right hc) P hPp hPbot h).2.comp
-        (layerSemidirectMap ℓ hα₂ j)).congr hcong,
+      (main _ (twistLift_apply _ hact hf₂right hc) P hPp hPbot h).2.congr hcong,
     fun P hPp hPbot h =>
       (main _ (twistLift_apply _ hact hf₂right hc) P hPp hPbot h).1⟩
   rw [twistLift_apply, hcD ν x hx hx1, _root_.map_one, one_mul, MonoidHom.comp_apply,

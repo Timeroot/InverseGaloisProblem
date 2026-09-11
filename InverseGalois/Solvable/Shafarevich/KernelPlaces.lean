@@ -289,7 +289,8 @@ theorem hasKernelPrescription_of_places (K : IntermediateField k Ω) [FiniteDime
         rw [placeUnder_asIdeal, ← asIdeal_smul_placeUnder K (hQbot μ) ρ, hρ, ← hvσ]
       obtain ⟨τ, -, hτ⟩ := exists_mem_fixingSubgroup_smul_eq_of_placeUnder_eq K hbot hPbot hpl
       exact Or.inl ⟨μ, τ * ρ, by rw [mul_smul]; exact hτ⟩
-    · refine Or.inr ⟨fun x hx => MonoidHom.mem_ker.1 (hEF (hsplit P hPp hPbot rfl hx)),
+    · refine Or.inr ⟨fun x hx => by
+          rw [MonoidHom.mem_ker.1 (hEF (hsplit P hPp hPbot rfl hx)), _root_.map_one],
         fun x hx => hEK (hsplit P hPp hPbot rfl hx), fun ρ hρ y' hy' => ?_, ?_⟩
       · have hσ : AlgEquiv.restrictNormalHom (F := k) (K₁ := Ω) ↥K ρ ≠ 1 := fun h0 =>
           hρ ((restrictNormalHom_eq_one_iff_mem_ker hKker ρ).1 h0)

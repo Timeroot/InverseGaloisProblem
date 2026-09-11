@@ -80,7 +80,10 @@ The last clause is the one which confines the new ramification, and it asks less
 prescription the cyclic repair is bought with: at a prime where the cocycle ramifies along the part
 of inertia the base realization kills, either that prime is one of the named ones, or it is a prime
 the cocycle brings in by itself, and there only the vanishing of the given lift on the whole
-decomposition subgroup is demanded, nothing about the local image of the cocycle.
+decomposition subgroup is demanded, nothing about the local image of the cocycle.  That vanishing is
+read of the lift carried down along the shrinking the prescription spends rather than of the lift
+itself, which is what keeps the level the clause is a splitting condition in at the number of
+letters asked for.
 
 The prescription may spend a shrinking of its own: it announces the number of letters the data is
 read at, and answers with a surjection onto the number asked for and a cocycle at that number, the
@@ -94,13 +97,14 @@ def HasFlatPrescription : Prop :=
       (∀ μ, A μ ≤ stabilizer Gal(Ω/k) (Q μ)) → (∀ μ, A μ ≤ φ.ker) →
       (∀ μ, IsSmooth₁ ((a μ : ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)) :
         ↥(A μ) → ↥(layerSub ℓ (Generic U N S) j))) →
-        ∃ (α : Generic U N S →* Generic U n S) (_ : IsOperatorHom α), Function.Surjective α ∧
+        ∃ (α : Generic U N S →* Generic U n S) (hα : IsOperatorHom α), Function.Surjective α ∧
           ∃ c : Gal(Ω/k) → ↥(layerSub ℓ (Generic U n S) j), IsMulCocycle₁ c ∧ IsSmooth₁ c ∧
             (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → c x = 1) ∧
             (∀ (μ : ι) (x : ↥(A μ)), c (x : Gal(Ω/k)) = layerSubMap ℓ α j (a μ x)) ∧
             ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
               (∃ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1 ∧ c x ≠ 1) →
-              (∃ (μ : ι) (ρ : Gal(Ω/k)), P = ρ • Q μ) ∨ ∀ x ∈ stabilizer Gal(Ω/k) P, F x = 1
+              (∃ (μ : ι) (ρ : Gal(Ω/k)), P = ρ • Q μ) ∨
+                ∀ x ∈ stabilizer Gal(Ω/k) P, layerSemidirectMap ℓ hα (j + 1) (F x) = 1
 
 variable {ℓ U n S j φ D}
 
@@ -119,13 +123,14 @@ orbit of a named one; if the named one is one of those the prescription was made
 lift does not ramify there, contradiction, so the solution below ramifies at it and confinement
 holds.  If the given lift does not ramify at a prime but the corrected one does, the cocycle
 ramifies there, and the last clause of the prescription puts that prime either in the orbit of a
-named prime — impossible again, for the same reason — or at a place where the given lift, hence the
-solution below, kills the whole decomposition subgroup.
+named prime — impossible again, for the same reason — or at a place where the given lift carried
+down, hence the solution below carried down, kills the whole decomposition subgroup.
 
 The shrinking the prescription spends is passed on: the lift given is read at the number of letters
 the prescription announces, and the corrected lift lives at the number asked for, over the pushed
-down solution.  Confinement is still read against the solution below at the announced number, which
-is what the sharper prescription is bought against. -/
+down solution.  Confinement is read against the solution below at the announced number for its
+ramification clause and against the pushed down solution for its vanishing clause, which is what the
+sharper prescription is bought against. -/
 theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
     (hactφ : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U n S) j)), x • v = φ x • v)
     (hpres : HasFlatPrescription ℓ U n S j φ D) :
@@ -138,7 +143,8 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
         ∃ g : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1), IsSmoothHom g ∧
           (∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (g x)
             = layerSemidirectMap ℓ hα j (Φ x)) ∧
-          (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → g x = 1) ∧ IsConfinedRamifiedHom φ Φ g := by
+          (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → g x = 1) ∧
+          IsConfinedRamifiedHom φ Φ ((layerSemidirectMap ℓ hα j).comp Φ) g := by
   obtain ⟨N, hpres⟩ := hpres
   refine ⟨N, fun Φ hΦright f hfsm hfright hfD => ?_⟩
   have hfs : IsSmooth₁ (f : Gal(Ω/k) → GenericQuot ℓ U N S (j + 1)) :=
@@ -199,7 +205,7 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
   have main : ∀ Ψ : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1),
       (∀ x, Ψ x = (layerExtension ℓ (genericAut U n S) j).inl (c x)
         * ((layerSemidirectMap ℓ hα (j + 1)).comp f) x) →
-      IsConfinedRamifiedHom φ Φ Ψ := by
+      IsConfinedRamifiedHom φ Φ ((layerSemidirectMap ℓ hα j).comp Φ) Ψ := by
     intro Ψ hΨdef
     have hkey : ∀ μ : {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ)},
         ¬ RamifiesAt φ Ψ (Pr (μ : Fin s)) := by
@@ -226,7 +232,8 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
       rcases hcram P hPp hPbot ⟨x, hxI, hxφ, hcx⟩ with ⟨μ, ρ, rfl⟩ | hf1
       · exact absurd (ramifiesAt_smul_iff.1 hram) (hkey μ)
       · refine Or.inr fun y hy => ?_
-        rw [← hfright y, hf1 y hy, _root_.map_one]
+        show layerSemidirectMap ℓ hα j (Φ y) = 1
+        rw [← hfright y, ← rightHom_layerSemidirectMap ℓ j hα, hf1 y hy, _root_.map_one]
   refine ⟨α, hα, hαsurj, twistLift (layerExtension ℓ (genericAut U n S) j) hact hf'right hc,
     isSmoothHom_twistLift _ hact hf'right hc hf's hcs,
     rightHom_twistLift _ hact hf'right hc, fun ν x hx hx1 => ?_,

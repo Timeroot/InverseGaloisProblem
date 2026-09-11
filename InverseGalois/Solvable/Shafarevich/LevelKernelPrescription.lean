@@ -90,7 +90,10 @@ lie in distinct orbits, so those demands do not collide.  Each subgroup carrying
 the whole decomposition subgroup of its prime, the one shape the repair produces.  The same is asked
 at each prime the
 homomorphism itself brings in, where it is asked in addition to be cyclic on the decomposition
-subgroup and the given lift to kill that subgroup outright.
+subgroup and the given lift to kill that subgroup outright.  The lift the killing is read of is the
+given one carried down along the shrinking the prescription spends, so the field the named primes
+are asked to split completely in sits at the number of letters asked for however many letters the
+data is read at.
 
 The prescribed homomorphisms are asked to have cyclic image, which is what the reciprocity law
 leaves room for.  The classes in the completions which name the coordinates of a prescription are
@@ -130,7 +133,7 @@ def HasKernelPrescription : Prop :=
       (∀ μ, ∃ x₀ : ↥(A μ), ∀ x : ↥(A μ), a μ x ∈ Subgroup.zpowers (a μ x₀)) →
       (∀ (μ : ι) (ν : Fin t) (ρ : Gal(Ω/k)),
         ∃ y ∈ stabilizer Gal(Ω/k) (Q μ), ρ * y * ρ⁻¹ ∉ D ν) →
-        ∃ (α : Generic U N S →* Generic U n S) (_ : IsOperatorHom α), Function.Surjective α ∧
+        ∃ (α : Generic U N S →* Generic U n S) (hα : IsOperatorHom α), Function.Surjective α ∧
           ∃ u : ↥(φ.ker) →* ↥(layerSub ℓ (Generic U n S) j),
             IsSmooth₁ ((u : ↥(φ.ker) →* ↥(layerSub ℓ (Generic U n S) j)) :
               ↥(φ.ker) → ↥(layerSub ℓ (Generic U n S) j)) ∧
@@ -143,7 +146,8 @@ def HasKernelPrescription : Prop :=
             ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
               (∃ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ Ideal.inertia Gal(Ω/k) P ∧ u y ≠ 1) →
               (∃ (μ : ι) (ρ : Gal(Ω/k)), P = ρ • Q μ) ∨
-                ((∀ x ∈ stabilizer Gal(Ω/k) P, F x = 1) ∧ stabilizer Gal(Ω/k) P ≤ φ.ker ∧
+                ((∀ x ∈ stabilizer Gal(Ω/k) P, layerSemidirectMap ℓ hα (j + 1) (F x) = 1) ∧
+                  stabilizer Gal(Ω/k) P ≤ φ.ker ∧
                   (∀ ρ : Gal(Ω/k), ρ ∉ φ.ker →
                     ∀ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ stabilizer Gal(Ω/k) (ρ • P) → u y = 1) ∧
                   ∃ y₀ : ↥(φ.ker), (y₀ : Gal(Ω/k)) ∈ stabilizer Gal(Ω/k) P ∧
@@ -224,8 +228,11 @@ theorem hasConfinedPrescription_of_hasKernelPrescription
         refine mem_stabilizer_smul_iff.2 ?_
         rw [show (σ x)⁻¹⁻¹ * ((σ x)⁻¹ * z * σ x) * (σ x)⁻¹ = z from by group]
         exact hz
+      have hG1 : ∀ w ∈ stabilizer Gal(Ω/k) ((σ x)⁻¹ • P),
+          ((layerSemidirectMap ℓ hα (j + 1)).comp F) w = 1 := fun w hw => hF1 w hw
+      show ((layerSemidirectMap ℓ hα (j + 1)).comp F) z = 1
       rw [show z = σ x * ((σ x)⁻¹ * z * σ x) * (σ x)⁻¹ from by group, _root_.map_mul,
-        _root_.map_mul, _root_.map_inv, hF1 _ hmem, mul_one, mul_inv_cancel]
+        _root_.map_mul, _root_.map_inv, hG1 _ hmem, mul_one, mul_inv_cancel]
 
 end Kernel
 
