@@ -42,6 +42,8 @@ decomposition subgroup.
 
 * `InverseGalois.CFT.exists_smul_eq_of_under_eq_ringOfIntegers`: **the Galois group of an arbitrary
   Galois extension acts transitively on the primes of its integers above a prime of the base.**
+* `InverseGalois.CFT.exists_mem_stabilizer_restrictNormalHom_eq`: **an automorphism of a level
+  fixing a place there is the restriction of an automorphism fixing a prescribed prime above.**
 * `InverseGalois.CFT.exists_stabilizer_prime_restrictNormalHom_eq`: **an automorphism of a level
   fixing a place there is the restriction of an automorphism fixing a prime above.**
 * `InverseGalois.CFT.eq_one_of_finiteDecomposition`,
@@ -158,6 +160,25 @@ variable {k K : Type*} [Field k] [NumberField k] [Field K] [Algebra k K] [IsGalo
 
 omit [NumberField k] [NumberField ↥L] in
 /-- **An automorphism of a level fixing a finite place there is the restriction of an automorphism
+of the whole extension fixing a prescribed prime of its integers above that place.**  The
+restriction of any lift of the automorphism carries the prime to another prime above the same
+place, and the Galois group over the level moves the second back to the first. -/
+theorem exists_mem_stabilizer_restrictNormalHom_eq {τ : Gal(↥L/k)}
+    {v : HeightOneSpectrum (𝓞 ↥L)} (hv : τ • v = v) (P : Ideal (𝓞 K)) [P.IsPrime]
+    (hPunder : Ideal.under (𝓞 ↥L) P = v.asIdeal) :
+    ∃ ρ : Gal(K/k), ρ • P = P ∧
+      AlgEquiv.restrictNormalHom (F := k) (K₁ := K) ↥L ρ = τ := by
+  obtain ⟨σ₀, hσ₀⟩ := restrictNormalHom_surjective_level L τ
+  have h1 : Ideal.under (𝓞 ↥L) (σ₀ • P) = Ideal.under (𝓞 ↥L) P := by
+    rw [under_smul_ringOfIntegers ↥L, hσ₀, hPunder, ← asIdeal_smul, hv]
+  obtain ⟨ρ₀, hρ₀⟩ := exists_smul_eq_of_under_eq_ringOfIntegers (F := ↥L) (σ₀ • P) P h1
+  refine ⟨ρ₀.restrictScalars k * σ₀, ?_, ?_⟩
+  · rw [mul_smul]
+    exact hρ₀.symm
+  · rw [map_mul, restrictNormalHom_restrictScalars k ↥L ρ₀, one_mul, hσ₀]
+
+omit [NumberField k] [NumberField ↥L] in
+/-- **An automorphism of a level fixing a finite place there is the restriction of an automorphism
 of the whole extension fixing a prime of its integers above that place.**  Some prime lies above,
 the restriction of any lift of the automorphism carries it to another prime above the same place,
 and the Galois group over the level moves the second back to the first. -/
@@ -176,14 +197,7 @@ theorem exists_stabilizer_prime_restrictNormalHom_eq {τ : Gal(↥L/k)}
     refine v.ne_bot ?_
     rw [← hPunder, h, Ideal.under_def, ← RingHom.ker_eq_comap_bot,
       RingOfIntegers.ker_algebraMap_eq_bot]
-  obtain ⟨σ₀, hσ₀⟩ := restrictNormalHom_surjective_level L τ
-  have h1 : Ideal.under (𝓞 ↥L) (σ₀ • P) = Ideal.under (𝓞 ↥L) P := by
-    rw [under_smul_ringOfIntegers ↥L, hσ₀, hPunder, ← asIdeal_smul, hv]
-  obtain ⟨ρ₀, hρ₀⟩ := exists_smul_eq_of_under_eq_ringOfIntegers (F := ↥L) (σ₀ • P) P h1
-  refine ⟨P, hPp, hPbot, hPunder, ρ₀.restrictScalars k * σ₀, ?_, ?_⟩
-  · rw [mul_smul]
-    exact hρ₀.symm
-  · rw [map_mul, restrictNormalHom_restrictScalars k ↥L ρ₀, one_mul, hσ₀]
+  exact ⟨P, hPp, hPbot, hPunder, exists_mem_stabilizer_restrictNormalHom_eq L hv P hPunder⟩
 
 end Lift
 

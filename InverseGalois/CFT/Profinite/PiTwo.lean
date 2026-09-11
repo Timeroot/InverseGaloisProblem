@@ -204,6 +204,15 @@ theorem coeffH2_id (hid : ∀ (g : G) (m : M), MonoidHom.id M (g • m) = g • 
   obtain ⟨a, ha, hs, rfl⟩ := smoothH2Mk_surjective x
   rfl
 
+omit [CommGroup P] [MulDistribMulAction G P] in
+/-- Equal coefficient maps induce the same map in cohomology. -/
+theorem coeffH2_congr {φ ψ : M →* N} (h : φ = ψ)
+    (hφ : ∀ (g : G) (m : M), φ (g • m) = g • φ m)
+    (hψ : ∀ (g : G) (m : M), ψ (g • m) = g • ψ m) (x : SmoothH2 G M) :
+    coeffH2 φ hφ x = coeffH2 ψ hψ x := by
+  subst h
+  rfl
+
 /-- **Composing the coefficient maps composes the maps induced in cohomology.** -/
 theorem coeffH2_comp (φ : M →* N) (hφ : ∀ (g : G) (m : M), φ (g • m) = g • φ m) (ψ : N →* P)
     (hψ : ∀ (g : G) (n : N), ψ (g • n) = g • ψ n)

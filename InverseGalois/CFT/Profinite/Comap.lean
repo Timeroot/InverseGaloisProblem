@@ -30,6 +30,8 @@ smooth, not only the smooth ones.
 
 * `InverseGalois.CFT.isSmoothHom_of_continuous`,
   `InverseGalois.CFT.isSmoothHom_of_isOpenNormal_ker`: the two sources of the smoothness condition.
+* `InverseGalois.CFT.isSmoothHom_of_isSmooth₁`: a homomorphism smooth as a cochain is smooth as a
+  homomorphism.
 * `InverseGalois.CFT.isSmooth₂_comap₂_of_isOpenNormal_ker`: with an open kernel every composed
   cochain is smooth.
 * `InverseGalois.CFT.comapH2_smoothH2Mk`: the map in cohomology is computed on cocycles.
@@ -101,6 +103,17 @@ theorem isSmoothHom_of_continuous {π : G →* Q} (hc : Continuous π) : IsSmoot
 theorem isSmoothHom_of_isOpenNormal_ker {π : G →* Q} (hker : IsOpenNormal π.ker) :
     IsSmoothHom π := fun N _ =>
   ⟨π.ker, hker, fun x hx => Subgroup.mem_comap.2 (by rw [MonoidHom.mem_ker.mp hx]; exact N.one_mem)⟩
+
+/-- **A homomorphism which is smooth as a one cochain is smooth as a homomorphism.**  A cochain is
+smooth when it is constant on the cosets of an open normal subgroup, and for a homomorphism the
+value on that subgroup is the value at the identity, so the subgroup lies in the kernel and every
+preimage contains it. -/
+theorem isSmoothHom_of_isSmooth₁ {π : G →* Q} (hπ : IsSmooth₁ (π : G → Q)) : IsSmoothHom π := by
+  obtain ⟨N, hN, hu⟩ := hπ
+  refine fun P _ => ⟨N, hN, fun n hn => Subgroup.mem_comap.2 ?_⟩
+  have hn1 : π n = 1 := by simpa using hu 1 n hn
+  rw [hn1]
+  exact P.one_mem
 
 variable {M : Type*} {π : G →* Q}
 

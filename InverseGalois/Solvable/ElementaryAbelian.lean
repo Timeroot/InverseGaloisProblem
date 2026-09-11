@@ -22,6 +22,8 @@ already.
 
 * `InverseGalois.exists_addEquiv_of_forall_nsmul_eq_zero`: a finite abelian group killed by a prime
   and of order a power of it is a coordinate space over the field with that many elements.
+* `InverseGalois.exists_rank_addEquiv_of_forall_nsmul_eq_zero`: the same without prescribing the
+  order, the rank being read off instead.
 * `InverseGalois.exists_mulEquiv_multiplicative_of_pow_eq_one`: **a finite abelian group of
   exponent dividing `p` and order `p ^ d` is the elementary abelian group of rank `d`.**
 * `InverseGalois.exists_mulEquiv_freePClass_one`: the same group is the free object of rank `d` and
@@ -51,6 +53,16 @@ theorem exists_addEquiv_of_forall_nsmul_eq_zero {p d : ℕ} [Fact p.Prime] {A : 
     show p ^ Module.finrank (ZMod p) A = p ^ d
     rw [← hpow, ← hcard]
   exact ⟨(Module.finBasisOfFinrankEq (ZMod p) A hfr).equivFun.toAddEquiv⟩
+
+/-- **A finite abelian group killed by a prime is a coordinate space over the field with that many
+elements**, of some rank.  Its order is a power of the prime because the group is a vector space
+over that field. -/
+theorem exists_rank_addEquiv_of_forall_nsmul_eq_zero {p : ℕ} [Fact p.Prime] {A : Type*}
+    [AddCommGroup A] [Finite A] (hexp : ∀ x : A, p • x = 0) :
+    ∃ d : ℕ, Nonempty (A ≃+ (Fin d → ZMod p)) := by
+  haveI : Module (ZMod p) A := AddCommGroup.zmodModule hexp
+  refine ⟨Module.finrank (ZMod p) A, exists_addEquiv_of_forall_nsmul_eq_zero hexp ?_⟩
+  rw [Module.natCard_eq_pow_finrank (K := ZMod p) (V := A), Nat.card_zmod]
 
 variable {p d : ℕ} {G : Type*} [Group G]
 

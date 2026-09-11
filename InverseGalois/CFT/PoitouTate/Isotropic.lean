@@ -22,7 +22,8 @@ themselves by the product formula, so they are precisely their own orthogonal co
 
 A pairing on a finite product of groups is assembled from pairings on the factors by multiplying
 the local values.  It is nondegenerate as soon as each factor is, because a single factor can be
-isolated by pairing against an element supported there.
+isolated by pairing against an element supported there.  The same holds for a product of two
+groups, which is how the finite and the infinite places of a number field are carried together.
 
 ## Main results
 
@@ -34,6 +35,8 @@ isolated by pairing against an element supported there.
   is the square root of the order of the group is its own orthogonal complement.**
 * `InverseGalois.CFT.injective_flip_piPairing`: **a product of nondegenerate pairings is
   nondegenerate.**
+* `InverseGalois.CFT.injective_flip_prodPairing`: the same for a pairing assembled from two
+  factors.
 
 ## Tags
 
@@ -182,5 +185,63 @@ theorem injective_flip_piPairing [DecidableEq ι] {φ : ∀ i, A i →* A i →*
     exact absurd (Finset.mem_univ j) hj
 
 end Pi
+
+/-! ### A pairing on a product of two groups -/
+
+section Prod
+
+variable {A B M : Type*} [CommGroup A] [CommGroup B] [CommGroup M]
+
+/-- The pairing on a product of two groups whose value is the product of the values of a pairing on
+each factor. -/
+def prodPairing (φ : A →* A →* M) (ψ : B →* B →* M) : A × B →* A × B →* M where
+  toFun a :=
+    { toFun := fun b => φ a.1 b.1 * ψ a.2 b.2
+      map_one' := by rw [Prod.fst_one, Prod.snd_one, _root_.map_one, _root_.map_one, one_mul]
+      map_mul' := fun b c => by
+        show φ a.1 (b.1 * c.1) * ψ a.2 (b.2 * c.2) = _
+        rw [_root_.map_mul, _root_.map_mul, mul_mul_mul_comm] }
+  map_one' := by
+    ext b
+    rw [MonoidHom.one_apply]
+    show φ (1 : A) b.1 * ψ (1 : B) b.2 = 1
+    rw [_root_.map_one, _root_.map_one, MonoidHom.one_apply, MonoidHom.one_apply, one_mul]
+  map_mul' a a' := by
+    ext b
+    show φ (a.1 * a'.1) b.1 * ψ (a.2 * a'.2) b.2 = _
+    rw [_root_.map_mul, _root_.map_mul, MonoidHom.mul_apply, MonoidHom.mul_apply,
+      mul_mul_mul_comm]
+    rfl
+
+@[simp]
+theorem prodPairing_apply (φ : A →* A →* M) (ψ : B →* B →* M) (a b : A × B) :
+    prodPairing φ ψ a b = φ a.1 b.1 * ψ a.2 b.2 := rfl
+
+/-- **A pairing on a product of two groups made of nondegenerate pairings is nondegenerate**: an
+element pairing trivially with everything pairs trivially with the elements supported in a single
+factor, which pins down its component there. -/
+theorem injective_flip_prodPairing {φ : A →* A →* M} {ψ : B →* B →* M}
+    (hφ : Function.Injective φ.flip) (hψ : Function.Injective ψ.flip) :
+    Function.Injective (prodPairing φ ψ).flip := by
+  rw [injective_iff_map_eq_one]
+  rintro ⟨b₁, b₂⟩ hb
+  have h₁ : b₁ = 1 := by
+    refine (injective_iff_map_eq_one φ.flip).1 hφ b₁ ?_
+    ext a
+    have h := congrArg (fun f => f (a, 1)) hb
+    simp only [MonoidHom.flip_apply, prodPairing_apply, MonoidHom.one_apply] at h
+    rw [_root_.map_one, MonoidHom.one_apply, mul_one] at h
+    exact h
+  have h₂ : b₂ = 1 := by
+    refine (injective_iff_map_eq_one ψ.flip).1 hψ b₂ ?_
+    ext a
+    have h := congrArg (fun f => f (1, a)) hb
+    simp only [MonoidHom.flip_apply, prodPairing_apply, MonoidHom.one_apply] at h
+    rw [_root_.map_one, MonoidHom.one_apply, one_mul] at h
+    exact h
+  rw [h₁, h₂]
+  rfl
+
+end Prod
 
 end InverseGalois.CFT

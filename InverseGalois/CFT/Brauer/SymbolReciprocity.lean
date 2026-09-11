@@ -33,6 +33,8 @@ value at a Frobenius automorphism raised to a value, and they are mutually inver
 
 ## Main results
 
+* `InverseGalois.CFT.placeFrobValue_mul`, `InverseGalois.CFT.placeFrobValue_inv`: the value at a
+  Frobenius automorphism is a homomorphism.
 * `InverseGalois.CFT.placeFrobValue_eq_one_iff`: the value of a unit at the Frobenius automorphism
   of a place where it is unramified is trivial exactly when it is a power in the completion.
 * `InverseGalois.CFT.localSymbol_eq_placeFrobValue_zpow`,
@@ -83,6 +85,13 @@ theorem placeFrobValue_mul (hres : ∀ v : HeightOneSpectrum (𝓞 k),
     placeFrobValue hres hζ v (a * b)
       = placeFrobValue hres hζ v a * placeFrobValue hres hζ v b := by
   rw [placeFrobValue_def, placeFrobValue_def, placeFrobValue_def, _root_.map_mul, _root_.map_mul]
+
+/-- The value at a Frobenius automorphism takes a reciprocal to a reciprocal. -/
+theorem placeFrobValue_inv (hres : ∀ v : HeightOneSpectrum (𝓞 k),
+    HasResidueChar (v.adicCompletion k) (P v) (E v)) {ζ : k} (hζ : IsPrimitiveRoot ζ n)
+    (v : HeightOneSpectrum (𝓞 k)) (a : kˣ) :
+    placeFrobValue hres hζ v a⁻¹ = (placeFrobValue hres hζ v a)⁻¹ := by
+  rw [placeFrobValue_def, placeFrobValue_def, _root_.map_inv, _root_.map_inv]
 
 /-- The value at a Frobenius automorphism is killed by the exponent. -/
 theorem pow_placeFrobValue_eq_one (hres : ∀ v : HeightOneSpectrum (𝓞 k),

@@ -14288,6 +14288,943 @@ At the number-field level `placeFrobValue hres hζ v a` is the same thing applie
 
 ---
 
+## 1.31 Status (2026-09-07, latest) — **the closing chain of SW Thm 13 is a theorem**
+
+`InverseGalois/CFT/PoitouTate/ClosingChain.lean` (new, 12 declarations) plus `placeFrobValue_inv`
+in `Brauer/SymbolReciprocity.lean`.  `lake build InverseGalois.CFT.PoitouTate.ClosingChain` = 8637
+jobs / 22 s; full root build 9761 jobs, 0 warnings, 0 sorries.
+
+§1.30 read SW's chain and built the reciprocity law it runs on.  This section runs it.  The
+capstone is `localClassHom_mul_eq_one`: under SW's conditions (1)(2)(3) and the pigeonhole
+equality, `z_i z_N` is **trivial in `localClasses (σ • R) n`** — i.e. an `n`-th power in the
+completion at the moved place — which is exactly the conclusion the theorem needs, stated in the
+Selmer-group idiom rather than in terms of the symbol.
+
+### (a) Normalising the reciprocity law away from its exponents
+
+`placeFrobValue_zpow_eq_zpow` carries an exponent on each side, `ev_w(a)^{v_w(b)} =
+ev_v(b)^{v_v(a)}`.  SW's condition (1) says `(z_i)_{P_i} ≡ Frob_{P_i}` as an *equality of classes*,
+so the ramification exponent is exactly `1` mod `p` — and that is precisely what cancels the two
+exponents.  `zpow_eq_self_of_modEq_one` (`x^n = 1 → m ≡ 1 [ZMOD n] → x^m = x`) plus
+`pow_placeFrobValue_eq_one` turns the law into the bare equality
+
+```
+placeFrobValue hres hζ w a = placeFrobValue hres hζ v b     (`placeFrobValue_eq_placeFrobValue`)
+```
+
+under the two extra hypotheses `placeValue v a ≡ 1 [ZMOD n]`, `placeValue w b ≡ 1 [ZMOD n]`.  This
+is the *only* place condition (1)'s normalisation is used, and it is used twice.
+
+### (b) The pigeonhole, and why `Multiplicative QModZ` is not a problem
+
+The values live in `Multiplicative QModZ`, which is infinite, so the pigeonhole needs the
+`n`-torsion subset.  `mem_range_zmodQModZ_of_nsmul_eq_zero` → `mem_range_zmodQModZ_of_pow_eq_one` →
+`finite_setOf_pow_eq_one` show `{x | x ^ n = 1}` sits inside `Set.range (ofAdd ∘ zmodQModZ n)`,
+hence is finite.  `Set.Finite.pi` lifts that to the function space `Gal(K/k) → Multiplicative QModZ`
+(finite because `[FiniteDimensional k K]`), and `Set.Infinite.exists_ne_map_eq_of_mapsTo` on `ℕ`
+gives `exists_lt_placeFrobValue_eq`: for *any* sequence of places `Pl` and units `z`, there are
+`i < N` with `ev_{σP_N}(z_N) = ev_{σP_i}(z_i)` **simultaneously for every `σ`**.  No property of
+the sequence is needed — the pigeonhole is pure torsion-counting, which is why it is stated for an
+arbitrary pair of sequences and applied later.
+
+### (c) Condition (3) is stated on conjugates, never on the symbol
+
+`placeFrobValue` is **not** Galois-equivariant: `σζ ≠ ζ` whenever `μ_p ⊄ k`, and the whole point
+of Thm 13 is the case `μ_p ⊄ k`.  So the chain lemma states condition (3) directly at `Q` as
+
+```
+ev_Q(z_N^σ) = ev_Q(z_i^σ)⁻¹
+```
+
+— an equation between values at a *fixed* place, of *conjugated* elements.  `galUnits σ` and
+`dvd_placeValue_galUnits` (a conjugate of a unit ramified only at `v` is ramified only at `σ • v`,
+by `placeValue_galSmul`) supply the hypotheses of (a) for the conjugates.  The transport of SW's
+condition (3) as it is actually produced — an equality of *local classes* — into this form is
+`placeFrobValue_galUnits_eq_inv`, which routes through `localClassesGalEquiv` (an isomorphism of
+classes, which **is** equivariant) and then through `placeFrobValue_eq_of_localClassHom_eq`.  The
+symbol's non-equivariance is never touched.
+
+### (d) The chain
+
+`placeFrobValue_mul_eq_one` is §1.30(a)'s four-line chain, verbatim:
+
+| step | lemma |
+| --- | --- |
+| `ev_{σP_N}(z_N) = ev_{σP_i}(z_i)` | hypothesis `hpigeon` (from (b)) |
+| `ev_{σP_i}(z_i) = ev_{P_i}(z_i^σ)` | `placeFrobValue_eq_placeFrobValue` at `Q ≠ σ • Q` |
+| `ev_{P_i}(z_i^σ) = ev_{P_i}(z_N^σ)⁻¹` | hypothesis `hcond` (condition (3)) |
+| `ev_{P_i}(z_N^σ) = ev_{σP_N}(z_i)` | `placeFrobValue_eq_placeFrobValue` at `Q ≠ σ • R` |
+
+so `ev_{σP_N}(z_i z_N) = ev_{σP_N}(z_i) · ev_{σP_N}(z_N) = 1` by `placeFrobValue_mul`.  Both middle
+`ev` steps are one theorem applied twice, as predicted.
+
+### (e) The class-level reading
+
+`placeFrobValue_eq_of_localClassHom_eq` (equal local classes ⇒ equal values, by multiplicativity
+and `pow_frobValue_eq_one`) and `localClassHom_eq_one_of_placeFrobValue_eq_one` (its converse at an
+unramified place, from `placeFrobValue_eq_one_iff`) are the dictionary between the symbol and
+`localClasses`.  With `placeValue_mul` to check that `z_i z_N` is still unramified at `σ • R`, the
+capstone `localClassHom_mul_eq_one` states the conclusion where Thm 13 will consume it.
+
+### (f) What is left of Thm 13 (odd `p`)
+
+The **recursive construction** of `z_1, z_2, …` satisfying (1)(2)(3): Chebotarev choosing
+`P_{n+1} ∈ S ∖ T_n(K)` with prescribed image in `H¹(k_{T_n}|K, ℤ/p)^∨`
+(`exists_relStabilizer_eq_zpowers`), then `exists_sUnitClass_mul_eq_unramified` to produce
+`z_{n+1}`; then the induction on `dim_{𝔽_p} A`.  Two known gaps beyond that: SW's general-`A`
+dévissage writes `A = A_0 ⊕ μ_p`, which is not available for a general `𝔽_p[G]`-module when
+`p ∣ |G|` (the `A = μ_p` case being built is unaffected), and the `p = 2` case (`sw.txt:790`ff.)
+needs a product of *three* elements against the partition `{G₁,G₂,G₃}` of `G ∖ {1}`.
+
+### (g) Findings
+
+* **2075 (LEAN).** `Ne.lt_or_lt` cannot be used with dot notation on a hypothesis `hij : i ≠ j`
+  produced by `Set.Infinite.exists_ne_map_eq_of_mapsTo`: Lean unfolds `Ne` to `i = j → False` and
+  resolves the projection to the non-existent `Function.lt_or_lt`.  Use `lt_or_gt_of_ne hij`.
+* **2076 (LEAN).** With the goal `x ∈ Set.range fun c => f c`, `refine ⟨c, ?_⟩` leaves an
+  un-beta-reduced `(fun c => f c) c = x` on which `rw` fails.  Insert an explicit `show f c = x`.
+* **2077 (LEAN).** `powMonoidHom n c` is *defeq* to `c ^ n`, so after
+  `MonoidHom.mem_range.1 ((QuotientGroup.eq_one_iff _).1 hd)` a bare re-ascription
+  `have hc' : c ^ n = … := hc` works and lets `_root_.map_pow` fire.
+* **2078 (BUILD).** `lake build InverseGalois.CFT.PoitouTate.ClosingChain` = 8637 jobs / 22 s; full
+  root build with it = 9761 jobs, `grep -c "warning:\|error:"` = 0.
+
+### (h) Routes rejected here
+
+* Relying on Galois-equivariance of `placeFrobValue` (or of `localSymbol`) to state condition (3)
+  at the moved place.  It is **false** when `μ_p ⊄ k`, which is the case of interest; see (c).
+* Stating the pigeonhole for the specific sequence built by the recursion.  It needs nothing but
+  `n`-torsion, so it is stated for arbitrary `Pl` and `z` and costs one hypothesis at the call site.
+* Deriving the chain's second and fourth steps from two different lemmas.  They are the same
+  reciprocity law with the roles of `(v, w)` swapped; keeping them one theorem is what made the
+  normalisation of (a) worth isolating.
+
+---
+
+## 1.32 Status (2026-09-07, later) — **which Chebotarev the recursion actually needs**
+
+Same day as §1.31.  Reading SW's choice of `P_{n+1}` against what the repo can prove changed the
+shape of `ClosingChain.lean`, so this section records the diagnosis and the resulting
+generalisation.  Full root build 9761 jobs, 0 warnings, 0 sorries.
+
+### (a) What the recursion asks for
+
+SW take `S = cs(Ω|k) ∪ T` and choose `P_{n+1} ∈ S ∖ T_n(K)` such that the image of `ξ` in
+`H¹(k_{T_n}|K, ℤ/p)^∨` is `Frob_{P_{n+1}}`.  Unwinding the two sides:
+
+* `H¹(k_{T_n}|K, ℤ/p) = Hom(Gal(M/K), ℤ/p)` for `M` the maximal elementary abelian `p`-extension
+  of `K` unramified outside `T_n`, so its dual **is** `Gal(M/K)` and the condition is
+  `Frob_{P_{n+1}} = τ_ξ` for one prescribed `τ_ξ ∈ Gal(M/K)`;
+* `P_{n+1} ∈ S ∖ T_n(K)` means `P_{n+1} ∩ k` is completely split in `Ω` (the finitely many primes
+  of `T` are excluded by `∉ T_n(K)`).
+
+So the input is: **a prime of `K` with prescribed Frobenius in a Kummer extension `M/K`, lying over
+a prime of `k` split completely in `Ω`.**  SW's remark that `ξ` and `y` have the same (trivial)
+image in `H¹(Ω|K, ℤ/p)^∨` is exactly the compatibility `τ_ξ|_{M ∩ Ω} = 1` that makes the two
+conditions simultaneously satisfiable.
+
+Both conditions are one condition on `N = MΩ`, which is Galois over `k`: writing `σ ∈ Gal(N/k)` for
+the element with `σ|_Ω = 1` and `σ|_M = τ_ξ`, they say **the decomposition group of some prime of
+`N` over `k` is exactly `⟨σ⟩`** — complete splitting in `Ω` is the statement `D ⊆ Gal(N/Ω)`, which
+`D = ⟨σ⟩` already gives.
+
+### (b) Why `exists_relStabilizer_eq_zpowers` does not apply over `k`
+
+`CFT/RelativeFrobenius.lean:273` produces exactly such a prime, but requires
+`(Subgroup.zpowers σ).Normal`.  Over the base `k` that asks the line `⟨τ_ξ⟩ ⊆ Gal(M/M ∩ Ω)` to be
+`Gal(Ω|k)`-stable, which is false for a general `ξ`.  Full Chebotarev, which would need no
+normality, is out of reach: it needs `L(1, χ) ≠ 0`, and the repo's density stack stops at Dedekind
+zeta and its simple pole.
+
+**The fix is to change the base, not the theorem.**  `Gal(N/Ω) ≅ Gal(M/M ∩ Ω)` is *abelian*, so
+over the base `Ω` every subgroup is normal and `exists_relStabilizer_eq_zpowers` applies verbatim.
+The price is one extra condition on the prime `𝔮` of `Ω` it returns: `𝔮` must have residue degree
+one over `k`, since only then does `D_{𝔓/𝔮} = D_{𝔓/𝔭}` and only then is `𝔭 = 𝔮 ∩ k` completely
+split in `Ω`.
+
+That condition is *free* in density terms: the primes of a number field of residue degree `> 1`
+over `ℚ` — a fortiori over any subfield — have Dirichlet density zero, because
+`N𝔮 ≥ (resChar 𝔮)²` for those and `∑_𝔮 (resChar 𝔮)^{-2}` converges.  So the plan is
+
+1. `HasIdealDensity {𝔮 | absNorm 𝔮 ≠ resChar 𝔮} 0` (elementary: `p = minFac (absNorm 𝔮)` and
+   `absNorm 𝔮 ≠ p` force `p² ≤ absNorm 𝔮`);
+2. `idealDensity_le_of_subset_union` with a density-zero set in place of the finite one;
+3. `infinite_setOf_splitsCompletelyIn_not_splitsCompletelyIn` intersected with the degree-one
+   primes;
+4. the same conclusion for `exists_relStabilizer_eq_zpowers`, with `absNorm v = resChar v` added.
+
+Stating the extra condition as *degree one over `ℚ`* rather than *degree one over `k`* keeps it
+base-independent, so it can be added to the existing theorem instead of a tower version of it.
+
+### (c) The invertible residue, and why it must be carried through the whole chain
+
+Even over `Ω` the theorem pins the Frobenius only up to an invertible power: its conclusion is
+`Subgroup.zpowers (arithFrobAt …) = Subgroup.zpowers σ`, i.e. `Frob = σ^j` with `j` prime to `p`,
+and no argument in the repo can do better (that is what full Chebotarev is *for*).  Consequently
+SW's condition (1) is only available in the weakened form
+
+```
+placeValue P_i (z_i) ≡ m_i [ZMOD p]        with m_i invertible mod p
+```
+
+rather than `≡ 1`.  Three repairs were tried and rejected:
+
+* **rescaling `z_i` by `m_i^{-1}`** — breaks conditions (2) and (3), which are equalities of the
+  *values*, not of the classes they generate;
+* **scaling the prescribed data at `T_n` by `j`** — the scaling would have to be the same for every
+  `i`, which forces `j_N ≡ ±1`;
+* **taking `z = z_i^a z_N^b`** — matching (2) at `T(K)` forces `a = b = 1`.
+
+The repair that works is to **augment the pigeonhole** so that it also matches `m_i mod n`.  Then
+`m_i = m_N = m` and the four-row chain of §1.31(d) goes through unchanged, because both reciprocity
+steps carry the *same* invertible exponent and it cancels.  Concretely, in `ClosingChain.lean`:
+
+* the `Cancel` section replaces `zpow_eq_self_of_modEq_one` by `zpow_eq_zpow_of_modEq`
+  (`x^n = 1 → p ≡ q [ZMOD n] → x^p = x^q`) and `eq_of_zpow_eq_zpow_of_isCoprime`
+  (`x^n = y^n = 1 → IsCoprime m n → x^m = y^m → x = y`, by Bézout);
+* `placeFrobValue_eq_placeFrobValue` takes `{m : ℤ} (hm : IsCoprime m n)` and the two hypotheses
+  `placeValue v a ≡ m`, `placeValue w b ≡ m`;
+* `exists_lt_placeFrobValue_eq` pigeonholes into
+  `(univ.pi fun _ : Gal(K/k) => {x | x ^ n = 1}) ×ˢ (univ : Set (ZMod n))` and returns the extra
+  conjunct `placeValue (Pl N) (z N) ≡ placeValue (Pl i) (z i) [ZMOD n]`;
+* `placeFrobValue_mul_eq_one` and `localClassHom_mul_eq_one` take
+  `IsCoprime (placeValue Q zi) n` and `placeValue R zN ≡ placeValue Q zi [ZMOD n]`.
+
+### (d) Findings
+
+* **2079 (LEAN).** `ZMod.intCast_eq_intCast_iff` (Mathlib `Data/ZMod/Basic.lean:487`) takes all
+  three arguments **explicitly**: `(a b : ℤ) (c : ℕ) : (a : ZMod c) = b ↔ a ≡ b [ZMOD c]`.
+* **2080 (MATH).** `Int.ModEq.dvd` on `hpq : p ≡ q [ZMOD n]` yields `n ∣ q - p`, so the witness
+  equation is `p = q - n * s`, not `p = q + n * s`.  The wrong sign is caught only by `ring` and it
+  reports the residual goal `p = q * 2 - p`.
+* **2081 (MATH, IMPORTANT).** The Frobenius-density diagnosis of (b) and the invertible-residue
+  repair of (c).
+
+### (e) Routes rejected here
+
+* Using `exists_relStabilizer_eq_zpowers` over the base `k` (normality fails, see (b)).
+* Proving full Chebotarev density over a number field (needs `L(1, χ) ≠ 0`).
+* Proving the classical Frobenius density theorem for a general `σ`, via
+  `log ζ_E(s) = ∑_𝔭 d_E(𝔭) N𝔭^{-s} + O(1)` for a non-Galois `E = N^{⟨σ⟩}`.  It is the textbook
+  route and it does work, but it needs the fibre-sum estimate re-proved without `IsGalois`; the
+  base change of (b) reaches the same conclusion out of the Galois estimate already in the repo.
+* Handling the invertible power at the end of the construction rather than inside the pigeonhole;
+  see the three rejected repairs in (c).
+
+---
+
+## 1.33 Status (2026-09-07, later still) — **the Chebotarev input of SW Thm 13 is a theorem**: a prescribed decomposition group over the base, normal only over an intermediate field
+
+Same day as §1.32, which set out the plan; this section records that the plan is carried out.  Two
+commits: the degree-one density refinement, and the base change proper.  Full root build **9763
+jobs, 0 warnings, 0 sorries**.
+
+### (a) Step 1–4 of §1.32(b): the degree-one refinement — `NumberTheory/DegreeOneDensity.lean`
+
+The absolute norm of a prime is a power of its residue characteristic, so either
+`absNorm 𝔭 = resChar 𝔭` or `(resChar 𝔭)² ≤ absNorm 𝔭` (`sq_resChar_le_absNorm`: the cofactor of
+the least prime factor is itself a divisor exceeding one, hence at least the least prime factor).
+The second kind is negligible:
+
+* `summable_resCharSqInv` — `∑_𝔭 (resChar 𝔭)^{-2}` converges, because at most `[K : ℚ]` primes
+  share a residue characteristic (`summable_of_fiber_bound` + `tsum_fiber_le`) and `∑_p p^{-2}`
+  converges;
+* `idealSum_compl_degreeOneSet_le` — hence the Dirichlet series over the bad primes is bounded by
+  the *constant* `resCharSqSum K`, uniformly in `s`;
+* `hasIdealDensity_compl_degreeOneSet` — dividing by `log(1/(s-1)) → ∞` gives density `0`;
+* `idealDensity_le_of_subset_union₂` — the union bound now tolerates a finite set **and** a
+  density-zero set;
+* `infinite_setOf_splitsCompletelyIn_not_splitsCompletelyIn_degreeOne` — infinitely many primes of
+  residue degree one over `ℚ` split completely in the smaller Galois extension and not in the
+  larger.
+
+`exists_relStabilizer_eq_zpowers` and `exists_relArithFrobAt_mem_zpowers`
+(`CFT/RelativeFrobenius.lean`) then carry the extra conclusion `absNorm v.asIdeal = resChar v` at
+no cost: the only change in the proof is which infinitude lemma is invoked.
+
+### (b) The base change — `CFT/RelativeFrobeniusBase.lean`
+
+`k ⊆ F ⊆ N`, `N/k` Galois, `σ ∈ Gal(N/F)` of prime order with `⟨σ⟩` normal **in `Gal(N/F)` only**.
+`exists_relStabilizer_eq_zpowers_restrictScalars` produces a prime `v` of `k` outside a prescribed
+finite set, unramified in `N`, of residue degree one over `ℚ`, and a prime `P` of `N` over it with
+
+```
+MulAction.stabilizer Gal(N/k) P = Subgroup.zpowers (σ.restrictScalars k)
+Subgroup.zpowers (arithFrobAt (𝓞 k) Gal(N/k) P) = Subgroup.zpowers (σ.restrictScalars k)
+```
+
+The proof is the four-line descent
+
+1. apply `exists_relStabilizer_eq_zpowers` over the base `F`, avoiding the primes of `F` above
+   `T ∪ Ram(N|k)` — a finite set by `finite_preimage_primeBelow`;
+2. the prime `w` it returns has `absNorm w = resChar w` prime, and `absNorm w` is a power of
+   `absNorm v` with `absNorm v ≥ 2`, so `absNorm v = absNorm w` (`absNorm_primeBelow_eq`) and `v`
+   is itself of residue degree one (`absNorm_primeBelow_eq_resChar`);
+3. reading `absNorm P` as a power of `absNorm v` and as a power of `absNorm w` gives
+   `f(P/v) = f(P/w)` (`inertiaDeg_primeBelow_eq`, `Nat.pow_right_injective`); both primes are
+   unramified, so `card D_{P/v} = f(P/v) = f(P/w) = card D_{P/w} = orderOf σ`;
+4. `σ.restrictScalars k ∈ D_{P/v}` (`relRestrictScalars_mem_stabilizer`) and
+   `orderOf (σ.restrictScalars k) = orderOf σ`, so the two groups of equal order are equal.
+
+**This is exactly SW's `P_{n+1}`.**  Take `F = K`, `N = MΩ`, `σ` the element of `Gal(N/K)` with
+`σ|_Ω = 1`, `σ|_M = τ_ξ`.  `Gal(N/K)` is abelian, so `⟨σ⟩` is normal there; `D = ⟨σ⟩ ⊆ Gal(N/Ω)`
+is complete splitting in `Ω`; and `D ∩ Gal(N/K)`-triviality of the `Gal(K/k)`-action makes the
+conjugates `P^τ`, `τ ≠ 1`, distinct primes, which is what conditions (1) and (3) of the recursion
+need.
+
+### (c) What the plan of §1.32(b) got wrong, and the cheaper route
+
+§1.32 planned the descent through *complete splitting*: `absNorm 𝔮 = resChar 𝔮` ⟹
+`SplitsCompletelyIn k F 𝔭` ⟹ `D_{P/𝔭} ≤ Gal(N/F)` by `relStabilizer_le_of_splitsCompletelyIn`.
+That does work, but `sq_le_absNorm_of_not_splitsCompletelyIn` needs `𝔭` unramified in `F` **and**
+`F/k` Galois, so it costs an extra hypothesis and an extra exclusion.
+
+The route actually taken never mentions `SplitsCompletelyIn`: the inclusion
+`⟨σ.restrictScalars k⟩ ⊆ D_{P/𝔭}` is free, and *cardinality* closes the gap.  So `F/k` need not be
+Galois, and the only exclusions are the prescribed set and the primes ramifying in `N` — both
+already needed.  Complete splitting in `F` is then a **consequence**, not a hypothesis.
+
+### (d) Findings
+
+* **2087 (LEAN).** Inside an anonymous-constructor divisibility witness `⟨c, by rw [hm]; ring⟩`, a
+  `rw [hm]` with `hm : N = a * m` rewrites *every* occurrence of `N`, including the one inside
+  `N.minFac` on the right.  Use `by rw [mul_comm]; exact hm`.
+* **2088 (LEAN).** `tsum_fiber_le` (`NumberTheory/SplitDensity.lean:560`) needs its `F` argument
+  **explicit** when `F` is a lambda: higher-order unification cannot solve
+  `?F ↑v =?= ↑(resChar ↑v) ^ (-2)`.  Supplying only `c` instead leaves `K` undeterminable
+  (`typeclass instance problem is stuck NumberField ?m`).  Supply `F`, then `show`, then `rw`.
+* **2090 (MATH).** In SW Thm 13, `M/K` is elementary abelian but `M/k` is not abelian, so
+  `Gal(N/Ω)` is *not* central in `Gal(N/k)`; `⟨σ⟩` normal in `Gal(N/k)` would need `τ_ξ` to span a
+  `Gal(K/k)`-stable line.  The base change is genuinely required.
+* **2091 (MATH).** The cardinality descent of (b)3–(b)4, which replaces the splitting descent of
+  §1.32(b).
+* **2093 (MATHLIB).** `IntermediateField.fixingSubgroupEquiv` (`FieldTheory/Galois/Basic.lean:268`)
+  and `AlgEquiv.restrictScalars_injective` (`Algebra/Algebra/Tower.lean:248`).  Both directions of
+  the first preserve the underlying function, so the ideal actions agree; but with the cardinality
+  route only `restrictScalars` is needed, and `(τ.restrictScalars k) • P = τ • P` is `rfl` after
+  `Ideal.mem_pointwise_smul_iff_inv_smul_mem`.
+* **2094 (MATHLIB).** The ring-of-integers action is
+  `instance [MulSemiringAction G K] : MulSemiringAction G (𝓞 K)`
+  (`NumberTheory/NumberField/Basic.lean:128`), and `IsScalarTower (𝓞 k) (𝓞 K) (𝓞 L)` is
+  `inst_isScalarTower` at `:230`.
+* **2096 (BUILD).** `lake build InverseGalois.CFT.RelativeFrobeniusBase` = 8033 jobs / 33 s; full
+  root build = **9763 jobs**.
+
+### (e) Routes rejected here
+
+* The "normal core over `k`" route (replace `fixedField ⟨σ⟩` by `fixedField (core ⟨σ⟩)`): when the
+  core is trivial no such prime exists, and split-density is conjugation-invariant, so it provably
+  cannot pin the specific class `ξ` SW needs.
+* Hoping `Gal(N/Ω)` is central in `Gal(N/k)` (finding 2090).
+* The splitting descent of §1.32(b), superseded by (c).
+* Proving multiplicativity of `e` and `f` along the tower `k ⊆ F ⊆ N`: absolute norms already
+  encode `f`, and `e = 1` is available by excluding `Ram(N|k)`.
+
+---
+
+## 1.34 Status (2026-09-07, later still) — **three bricks of the recursion step of SW Thm 13**
+
+Landed, sorry- and axiom-free, full root build green at **9766 jobs**, 0 warnings:
+
+* `CFT/PoitouTate/PlaceUniformiser.lean` — the ramified prescription at the new prime.
+* `CFT/PoitouTate/TorsionCharacter.lean` — two characters killed by a prime with nested kernels
+  are proportional.
+* `CFT/PoitouTate/FrobeniusCharacter.lean` — where the Frobenius character vanishes, read by
+  Kummer theory.
+
+### (a) `PlaceUniformiser`: the prescription at `P_{n+1}`
+
+`localClasses v n = (K_v)^x / n` is generated by `localUnramified v n` together with the class of
+a uniformiser, and the quotient is cyclic of order `n`.  So the prescription at the new prime `Q`
+is `placeUniformiserClass Q n j = [pi_Q ^ j]`, and:
+
+* `unitValModQuot_placeUniformiserClass` — its valuation mod `n` is `j`;
+* `placeUniformiserClass_notMem_localUnramified` — it is ramified as soon as `not (n | j)`;
+* `localClassPairing_localClassHom_placeUniformiserClass` — for `u` unramified at `Q`,
+  `<[u]_Q, [pi_Q^j]> = (placeFrobValue Q u ^ j)^{-1}`.  (Note finding 2099: the "unramified"
+  argument of `localClassPairing` goes on the **left**, so this is
+  `localSymbol_eq_frobValue_zpow_right`.)
+* `placeValue_modEq_of_localClassHom_mul_eq` / `not_dvd_placeValue_of_localClassHom_mul_eq` — the
+  `S`-unit produced by `exists_sUnitClass_mul_eq_unramified` then has
+  `placeValue Q a === j [ZMOD n]`, hence is ramified at `Q`.  This is what feeds hypothesis
+  `hziQ : IsCoprime (placeValue Q zi) n` of `localClassHom_mul_eq_one`.
+
+### (b) `TorsionCharacter`: the invertible residue, disposed of once and for all
+
+`exists_zpow_eq_of_forall_eq_one`: for `n` prime and `f g : G ->* Multiplicative QModZ` with all
+values killed by `n`, if `g x = 1` implies `f x = 1` then `f = g ^ j` for some `j : Z`; and `j` is
+prime to `n` as soon as some `f x != 1` (`not_dvd_of_zpow_eq_ne_one`).
+
+The engine is `mem_zpowers_of_pow_eq_one`: the `n`-torsion of `QModZ` is the image of
+`zmodQModZ n`, and `ZMod n` is a **field**, so any non-identity element of that torsion generates
+all of it.  Given that, the standard argument works: pick `x0` with `g x0 != 1`, match at `x0`,
+and note every `g x` is a power of `g x0`, so `f * (g^j)^{-1}` kills `ker g` and `x0`, hence
+everything.
+
+This is exactly finding 2081 (Chebotarev pins the Frobenius only up to an invertible power) turned
+into a lemma: a prescription that only fixes *where* a character vanishes is insensitive to the
+ambiguity.  It is the reason the recursion may prescribe `c_Q = [pi_Q^j]` for an unknown `j`.
+
+### (c) `FrobeniusCharacter`: where the Frobenius character vanishes
+
+`placeFrobValueHom hres hzeta v : K^x ->* Multiplicative QModZ` bundles `placeFrobValue`.
+Then, for `M/K` Galois, `w` a prime of `M`, `Q = primeUnder (O K) w`, `u` a unit with
+`n | placeValue Q u`, and `b : M` with `b ^ n = u`:
+
+* `placeFrobValue_eq_one_iff_forall_stabilizer_smul_eq` —
+  `placeFrobValue Q u = 1  <->  every element of the decomposition group at `w` fixes `b`.
+  Both sides say `u` is an `n`-th power in `K_Q`: the left by `placeFrobValue_eq_one_iff`, the
+  right by `forall_stabilizer_smul_eq_iff_exists_pow` (`Kummer/LocalPower.lean:72`).  The only
+  glue needed is units-versus-field-elements, `exists_units_pow_eq_of_pow_eq_coe`.
+* `placeFrobValue_eq_one_iff_smul_eq` — the same with `stabilizer = zpowers sigma`, i.e.
+  `placeFrobValue Q u = 1 <-> sigma b = b`.  This is the form the Chebotarev brick
+  `exists_relStabilizer_eq_zpowers_restrictScalars` produces.
+
+### (d) What the recursion step still needs
+
+1. **Brick E (plumbing).** Restate `exists_relStabilizer_eq_zpowers_restrictScalars` at the level
+   of `HeightOneSpectrum (O N)` and over the *intermediate* base `K` (tower `k <= K <= F <= N`,
+   `F = Omega`): from `stabilizer Gal(N/k) P = zpowers (sigma.restrictScalars k)` deduce
+   `stabilizer Gal(N/K) W = zpowers (sigma.restrictScalars K)`, using
+   `AlgEquiv.restrictScalars_injective` and `asIdeal_smul` (`Units/Places.lean:70`, `rfl`).
+2. **Brick C (the mathematical crux).** Kummer surjectivity over `Omega`: given a character `Phi`
+   of `U = sUnits K T_n` trivial on `U ∩ (Omega^x)^n`, produce `sigma` in `Gal(N/Omega)` with
+   `{u : sigma b_u = b_u} = ker Phi`.  `PowBasis.exists_aut_radOf_iff` (`Kummer/Pairing.lean:212`)
+   is exactly this statement, with `c : Fin s -> Z` the coordinates of `Phi` in a basis of the
+   image of `U` in `Omega^x/(Omega^x)^n`.
+3. **The identification `V = selmerGroup ι n ⊓ pi D` = image of `sUnits K T_n`** (finding 2105).
+4. The recursion itself and the induction on `dim_{F_p} A`.
+
+### (e) Findings
+
+* **2107 (REPO).** `localUnramified v n` does not need `[NeZero n]`; several statements about it
+  therefore need `omit [NeZero n] in`.  The `linter.unusedSectionVars` warning cascades: removing
+  the instance from a lemma makes its *callers* stop needing it too.
+* **2108 (LEAN).** `Subgroup.zpowers` membership obtained by the anonymous constructor produces an
+  **unreduced beta-redex** `(fun x => t ^ x) m = y`, which `rw` cannot use.  Always go through
+  `Subgroup.mem_zpowers_iff.1` / `.2`.
+* **2109 (MATHLIB).** `ZMod.intCast_surjective` (`Data/ZMod/Basic.lean:227`) needs no `NeZero`;
+  `ofAdd_zsmul` at `Algebra/Group/TypeTags/Basic.lean:443`.
+* **2110 (REPO).** The `n`-torsion of `QModZ` is available twice: `mem_nsmulTorsionQModZ_iff_exists`
+  (`Brauer/RelativeTorsion.lean:80`, additive, plus a cardinality count) and
+  `mem_range_zmodQModZ_of_pow_eq_one` (`PoitouTate/ClosingChain.lean:170`, multiplicative).  The
+  first has the lighter import.
+* **2111 (BUILD).** Full root build with the three new modules = **9766 jobs**.
+
+### (f) Routes rejected here
+
+* Bundling the Frobenius character as a map out of `localClasses` rather than out of `K^x`: the
+  Kummer dictionary is stated on units, and `localClassHom` already mediates.
+* Proving directly that `placeFrobValue Q u` *equals* the Kummer symbol `Frob_Q(b)/b`: that needs
+  the residue-field computation `u^{(NQ-1)/n}`, and is not needed — matching kernels plus
+  `TorsionCharacter` gives proportionality, which is all the prescription can use anyway.
+* Using `PowBasis`'s own extension `P.ext = Kummer.RadExt n P.rad` as the field `N` of the
+  Chebotarev step: it is an abstract type with no `Algebra k` instance, so the tower
+  `k <= K <= Omega <= N` cannot be expressed; brick C must be run inside a fixed ambient field.
+
+---
+
+## 1.35 Status (2026-09-07, later still) — **bricks E and C are theorems**: a character of the `S`-units is read off by a Frobenius at a completely split place
+
+Landed, sorry- and axiom-free.  Six modules, in dependency order:
+
+| module | commit | what it says |
+| --- | --- | --- |
+| `CFT/PoitouTate/ChebotarevPlace.lean` | `dcad99e` | brick E: the Chebotarev step over the *intermediate* base |
+| `CFT/Kummer/RadicalAut.lean` | — | brick C-1: automorphisms of a radical field of prime exponent |
+| `CFT/Kummer/PowBasisExtend.lean` | — | brick C-2: a character of a subgroup is realised by an automorphism |
+| `CFT/Kummer/AmbientRadical.lean` | — | brick C-3a: the same, inside a *prescribed* ambient field |
+| `CFT/Kummer/RadicalNormal.lean` | — | brick C-3b: that field is normal over the bottom |
+| `CFT/PoitouTate/RadicalPlace.lean` | `7d274bf` | brick C-4: character `->` place, in a 4-field tower |
+| `CFT/PoitouTate/SUnitPlace.lean` | *this section* | brick C-5: the group of units is the `S`-units |
+
+The end product is
+
+```lean
+theorem exists_place_frobValue_eq_one_iff_character_sUnits (hp : p.Prime)
+    {X : Set (HeightOneSpectrum (𝓞 ↥Ω))} (hXfin : X.Finite)
+    (hXstab : ∀ (σ : Gal(↥Ω/k)) {v}, v ∈ X → σ • v ∈ X)
+    {ζ : K} (hζ : IsPrimitiveRoot ζ p) (hres : ∀ v, HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
+    {U : Subgroup (↥Ω)ˣ} (hU : U ≤ sUnits ↥Ω X) (Φ : ↥U →* (↥Ω)ˣ)
+    (hΦ : ∀ u (hu : u ∈ U) y, u = y ^ p → Φ ⟨u, hu⟩ = 1) (hne : ∃ u : ↥U, Φ u ≠ 1)
+    (T : Finset (HeightOneSpectrum (𝓞 k))) :
+    ∃ V : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 k) V ∉ T ∧
+      stabilizer Gal(↥Ω/k) V = ⊥ ∧ ¬ Pc (primeUnder (𝓞 K) V) ∣ p ∧
+      ∀ (u : Kˣ) (hu : Units.map (algebraMap K ↥Ω : K →* ↥Ω) u ∈ U),
+        (p : ℤ) ∣ placeValue (primeUnder (𝓞 K) V) u →
+          (placeFrobValue hres hζ (primeUnder (𝓞 K) V) u = 1 ↔ Φ ⟨_, hu⟩ = 1)
+```
+
+in the ambient setting `k ⊆ K ⊆ Ω ⊆ A`, with `A` algebraically closed and normal over `k`,
+`Ω : IntermediateField k A` a number field normal over `k`, and `ζ ∈ K` a primitive `p`-th root of
+unity.  Nothing about the radical field `N` survives in the statement: the caller sees only the
+bottom three floors of the tower.
+
+### (a) Brick E — the Chebotarev step (recap, `ChebotarevPlace.lean`)
+
+`exists_place_placeFrobValue_eq_one_iff_smul_eq`: for `k ⊆ K ⊆ F ⊆ N` with `N/k` Galois,
+`σ : N ≃ₐ[F] N` generating a normal subgroup of prime order `p` of `Gal(N/F)`, and any finite
+`T ⊆ HeightOneSpectrum (𝓞 k)`, there is `W : HeightOneSpectrum (𝓞 N)` with
+`primeUnder (𝓞 k) W ∉ T`, `stabilizer Gal(N/k) W = zpowers (σ.restrictScalars k)`,
+`¬ Pc (primeUnder (𝓞 K) W) ∣ p`, and, for `u : Kˣ` with `p ∣ placeValue _ u` and `b : N` a
+`p`-th root of `u`, `placeFrobValue _ u = 1 ↔ σ b = b`.
+
+### (b) Bricks C-1 … C-3 — the radical field inside a prescribed ambient
+
+The obstruction (finding 2109 above) was that `PowBasis.ext` is an abstract splitting field with
+no `Algebra k` instance.  The fix is to take the radicals as *given* elements of the ambient field:
+
+```lean
+abbrev ambientRadField (Ω : IntermediateField k A) (w : ι → A) : IntermediateField ↥Ω A :=
+  IntermediateField.adjoin ↥Ω (Set.range w)
+```
+
+with `hw : ∀ i, w i ^ p = algebraMap ↥Ω A (P.rad i)`.  `AmbientRadical.lean` transports every
+statement about `P.ext` to any such field (`P.setupOfRoots`, `P.exists_root_ambient`,
+`P.exists_aut_fix_iff_ambient`), and `RadicalNormal.lean` adds what the tower needs:
+
+* `IsEmbeddingStable Ω B` — every `τ : A →ₐ[k] A` carries `B ≤ (↥Ω)ˣ` into itself;
+* `normal_ambientRadField` — **under that hypothesis the radical field is normal over `k`.**  The
+  proof is the only real content: `τ (w i)` is a `p`-th root of `τ (g i) ∈ B`, which already has a
+  root `v` inside the field, so `τ (w i) / v` is a `p`-th root of unity, and `Ω` contains a
+  primitive one (`mem_ambientRadField_of_pow_eq_one`).
+
+Two Mathlib lemmas make the normality proof three lines: `IntermediateField.restrictScalars_normal`
+is `Iff.rfl` (finding 2164) and `IntermediateField.restrictScalars_adjoin_eq_sup` takes the base
+field first (finding 2165, and note `k` is the *first* argument).
+
+`RadicalAut.lean` supplies the order statement: automorphisms of a field generated over `Ω` by
+radicals of prime exponent commute and are killed by `p`, so a non-identity one has order exactly
+`p` and generates a normal subgroup (`orderOf_eq_of_adjoin_radical`,
+`normal_zpowers_of_adjoin_radical`).
+
+### (c) Brick C-4 — complete splitting is free (`RadicalPlace.lean`)
+
+`stabilizer_eq_bot_of_stabilizer_eq_zpowers`: if `stabilizer Gal(N/k) W = zpowers (σ.restrictScalars k)`
+for some `σ : N ≃ₐ[F] N`, then `stabilizer Gal(F/k) (primeUnder (𝓞 F) W) = ⊥`.
+
+This is what lets SW take `S = cs(Ω|k) ∪ T`: the prime produced by Chebotarev is automatically
+completely split in `Ω`, because the generator of its decomposition group is an automorphism *over*
+`Ω`.  The argument (finding 2174): given `τ ∈ Gal(F/k)` fixing the prime below, lift it to
+`t ∈ Gal(N/k)` by `AlgEquiv.restrictNormalHom_surjective`; `t • W` and `W` lie over the same prime
+of `F`, so `exists_smul_eq_of_primeUnder_eq` gives `ρ ∈ Gal(N/F)` with `ρ • (t • W) = W`; hence
+`ρ ∘ t` is a power of `σ.restrictScalars k`, and applying `restrictNormalHom F` kills every factor,
+leaving `τ = 1`.
+
+### (d) Brick C-5 — the group of units is the `S`-units (`SUnitPlace.lean`)
+
+Everything the previous brick asks of `B` is a theorem for `B = sUnits ↥Ω X`, `X` a finite
+`Gal(Ω/k)`-stable set of finite places of `Ω`:
+
+* saturation `hsat` — `mem_sUnits_of_pow_mem` (the order at a prime outside `X` is killed by `p`);
+* finiteness `hfin` — `card_powQuotient_sUnits` computes
+  `Nat.card (powQuotient (sUnits ↥Ω X) p) = p ^ (#InfinitePlace Ω + #X)`, and
+  `Nat.finite_of_card_ne_zero` does the rest;
+* the basis `P` — `nonempty_powBasis_sUnits`;
+* stability `hstab` — `isEmbeddingStable_sUnits`, new here: an embedding `τ : A →ₐ[k] A` restricts
+  to `τ.restrictNormal' ↥Ω : Gal(↥Ω/k)` (this needs `Normal k ↥Ω`, and `AlgHom.normal_bijective`
+  makes the restriction an equivalence for free), and `galUnits_mem_sUnits` (`Units/SUnit.lean:223`)
+  says the `S`-units are stable under that;
+* the radicals `w` — `IsAlgClosed.exists_pow_nat_eq`, since `A` is algebraically closed.
+
+`HasEnoughRootsOfUnity ↥Ω p`, needed by the two `SUnitExt` lemmas, comes from `ζ ∈ K ⊆ Ω` and
+`rootsOfUnity.isCyclic`.
+
+### (e) What the recursion step still needs
+
+1. **The identification `V = selmerGroup ι n ⊓ pi D` = image of `sUnits K T_n`** (finding 2105).
+2. **The single recursion step**: feed `exists_place_frobValue_eq_one_iff_character_sUnits` the
+   character `Φ` cut out by `exists_zpow_eq_of_forall_eq_one`, and produce `(Q, z_{n+1})` via
+   `exists_sUnitClass_mul_eq_unramified` (`PoitouTate/Prescribed.lean:141`).  (The first half of
+   this is brick D, done in §1.36; what remains is the production of `z_{n+1}`.)
+3. **The recursion itself**, feeding `exists_lt_placeFrobValue_eq` and `localClassHom_mul_eq_one`
+   (`PoitouTate/ClosingChain.lean:208` / `:283`), and then the induction on `dim_{F_p} A`.
+4. The general-`A` dévissage and the `p = 2` case of SW Thm 13.
+
+### (f) Findings
+
+* **2171 (REPO, COLLISION).** `restrictNormalHom_restrictScalars` already exists at
+  `Units/IdeleNormTower.lean:61`, with `(k F)` **explicit**: `restrictNormalHom_restrictScalars k F ρ`.
+* **2172 (MATHLIB).** `NumberField.of_module_finite` takes **both** fields explicitly.  Companions:
+  `of_intermediateField` (an instance), `of_subfield`, `of_tower`, `of_ringEquiv`
+  (`NumberField/Basic.lean:70`–`:90`).
+* **2173 (MATHLIB/LEAN).** For `Ω : IntermediateField k A` and `N : IntermediateField ↥Ω A`,
+  `IntermediateField.algebra'` and `IntermediateField.isScalarTower` supply `Algebra k ↥N`,
+  `Algebra K ↥N`, `IsScalarTower k ↥Ω ↥N`, `IsScalarTower K ↥Ω ↥N` automatically.  The **only**
+  missing instance is `IsScalarTower k K ↥N`, from `IsScalarTower.of_algebraMap_eq` plus three
+  rewrites.
+* **2174 (MATH).** The complete-splitting argument of (c).
+* **2176 (REPO).** `PowBasis` (`Kummer/PowBasis.lean:158`) has fields `g`, `mem`, `indep`, `span`,
+  and `P.rad i = ((P.g i : Kˣ) : K)` (`:202`).  `Kummer.Setup` (`Rigidity/RET/KummerIndep.lean:39`)
+  has `zeta`, `g`, `w`, `isPrimitiveRoot`, `g_ne_zero`, `w_pow`, `adjoin_eq_top`, `indep`.
+* **2177 (REPO).** `primeUnder_primeUnder k F w` (`Units/PlaceTower.lean:58`, `k F` explicit);
+  `primeUnder_smul F σ w` (`Units/PlaceRestrict.lean:92`, `F` explicit);
+  `algebraMap_restrictNormalHom` (`PlaceRestrict.lean:60`); `placeValue`
+  (`Brauer/PlaceExponent.lean:107`).
+* **2178 (MATHLIB).** `AlgHom.restrictNormal' ϕ E : Gal(E/F)` (`Normal/Defs.lean:153`) turns an
+  embedding of the ambient field into an automorphism of a normal intermediate field, and
+  `AlgHom.restrictNormal_commutes` (`:157`) is the compatibility.  Both need only `[Normal F E]`.
+* **2179 (MATHLIB).** `IsAlgClosed.exists_pow_nat_eq (x : k) {n} (hn : 0 < n) : ∃ z, z ^ n = x`
+  (`FieldTheory/IsAlgClosed/Basic.lean:93`) — `n` is implicit.
+* **2180 (MATHLIB).** `HasEnoughRootsOfUnity` has fields `prim : ∃ m, IsPrimitiveRoot m n` (an
+  existential, *not* a `Nonempty (primitiveRoots n M)`) and `cyc`, so
+  `⟨⟨ζ, hζ⟩, rootsOfUnity.isCyclic K p⟩` builds one from a primitive root.
+* **2181 (BUILD).** `lake build InverseGalois.CFT.PoitouTate.SUnitPlace` = **8650 jobs / ~23 s**.
+
+### (g) Routes rejected here
+
+* Stating brick C-5 with an equivariant family `ι : Y → HeightOneSpectrum (𝓞 Ω)` (the shape of
+  `SUnitExt.lean`) rather than a stable set `X`: the caller would have to build the `MulAction` on
+  `Y` anyway, so the module does it once, with `Y := ↥X` and `ι := Subtype.val`.
+* Requiring only `Normal k A` and asking the caller for the radicals: `IsAlgClosed A` costs
+  nothing (the recursion lives inside a fixed algebraic closure of `k`) and removes a hypothesis.
+* Putting `isEmbeddingStable_sUnits` in `Kummer/RadicalNormal.lean`: that module deliberately knows
+  nothing about number fields or `S`-units.
+
+---
+
+## 1.36 Status (2026-09-07, latest) — **brick D is a theorem**: the Chebotarev place reads a `QModZ`-valued character as a power of the Frobenius character
+
+Brick C-5 (§1.35) produces a completely split place `V` at which the Frobenius character has the
+*same kernel* as a prescribed character `Φ : ↑U →* (↥Ω)ˣ` of a subgroup of the `S`-units.  SW's
+Thm 13 needs two more things from it, and `InverseGalois/CFT/PoitouTate/SUnitCharacter.lean`
+supplies both.
+
+### (a) The currency conversion
+
+Everything upstream of the recursion — `placeFrobValue`, `localSymbol`, the local invariants —
+takes values in `Multiplicative QModZ`, while brick C-5 wants a character with values in the units
+of the field the radicals are taken from.  The two are the same thing once a primitive `p`-th root
+of unity is fixed:
+
+* `exists_zmodQModZ_eq_of_pow_eq_one` (`TorsionCharacter.lean:45`) names a value killed by `p` by a
+  residue mod `p`, and `zmodQModZ_injective` says the name is unique — so
+  `pTorsionResidue χ hχ : G → ZMod p` is well defined, additive (`pTorsionResidue_mul`), and
+  vanishes exactly where `χ` is trivial (`pTorsionResidue_eq_zero_iff`);
+* `IsPrimitiveRoot.zmodEquivZPowers : ZMod p ≃+ Additive ↥(Subgroup.zpowers ζ)` (finding 2185) names
+  the powers of `ζ` by residues mod `p`, faithfully
+  (`coe_zmodEquivZPowers_eq_one_iff`).
+
+Composing gives `rootOfUnityChar hζ χ hχ : G →* Rˣ` with
+`rootOfUnityChar_eq_one_iff : rootOfUnityChar hζ χ hχ g = 1 ↔ χ g = 1`.  Feeding that to brick C-5
+is `exists_place_frobValue_eq_one_iff_torsionChar`: the same conclusion, phrased for a
+`Multiplicative QModZ`-valued character of the `S`-units.
+
+### (b) From "same kernel" to "a fixed power"
+
+`exists_place_placeFrobValue_eq_zpow_character` is the theorem the recursion calls.  It takes a
+character `χ : ↑W →* Multiplicative QModZ` of a subgroup `W ≤ Kˣ` of the **middle** field, transports
+it to `Subgroup.map (Units.map (algebraMap K ↥Ω)) W` — a field embedding is injective, so
+`Subgroup.equivMapOfInjective` (finding 2190) is available and is `rfl` on elements — and returns
+
+```
+∃ V, primeUnder (𝓞 k) V ∉ T ∧ stabilizer Gal(↥Ω/k) V = ⊥ ∧ ¬ Pc (primeUnder (𝓞 K) V) ∣ p ∧
+  ∃ j : ℤ, ¬ (p : ℤ) ∣ j ∧ ∀ u : ↑W, placeFrobValue hres hζ (primeUnder (𝓞 K) V) ↑u = χ u ^ j
+```
+
+The upgrade from kernel equality to proportionality is `exists_zpow_eq_of_forall_eq_one`
+(`TorsionCharacter.lean:81`), and `not_dvd_of_zpow_eq_ne_one` (`:100`) says `j` is prime to `p`
+because `χ` is not trivial.  The hypothesis `hWval` (`p ∣ placeValue Q u` for every `Q` outside `T`)
+is what brick C-5's conclusion asks of a unit before it says anything about it, and
+`primeUnder_primeUnder k K V` (finding 2193) bridges `primeUnder (𝓞 k) V ∉ T` to the same statement
+for `primeUnder (𝓞 k) (primeUnder (𝓞 K) V)`.
+
+### (c) Why the `j` is not a defect
+
+Finding 2081: the repo's Chebotarev pins a Frobenius only up to an invertible power.  SW's Thm 13
+writes *"choose a prime `P_{n+1} ∈ S ∖ T_n(K)` such that the image of `ξ` in
+`H¹(k_{T_n}|K, ℤ/p)^∨` is equal to `Frob P_{n+1}`"* — an equality.  Finding **2194**: via Kummer
+(`μ_p ⊆ K`) that dual is a character group of the `T_n`-units mod `p`-th powers, and the
+`j`-ambiguity is repaired downstream by rescaling `z_{n+1}`, exactly as the recursion already does
+elsewhere.  So the proportionality output is the right interface, not a weakening.
+
+### (d) The whnf trap, and how it was cleared
+
+The statement of `exists_place_placeFrobValue_eq_zpow_character` elaborates in a second; the
+*proof* timed out at `whnf` even at `maxHeartbeats 1000000`, and the error was reported at the
+`theorem` line (gotcha 1849).  Bisecting with a truncated copy in `.scratch/` (gotcha 1850)
+localised it to a single line:
+
+```lean
+fun u => pow_placeFrobValueHom_eq_one hres hζ _ _        -- times out
+fun u => pow_placeFrobValue_eq_one   hres hζ _ _        -- fine, after rewriting
+```
+
+**Finding 2195 (LEAN, KEY).** Unifying `(f.comp W.subtype) u` with `placeFrobValueHom hres hζ ?v ?a`
+— i.e. with a head applied to **metavariables** — sends `whnf` through the definition of
+`placeFrobValueHom` into `frobValue`/`adicCompletion` territory and never comes back.  With the
+arguments given explicitly there are no metavariables, the unifier compares the two sides
+structurally after one `delta` of `MonoidHom.comp`, and the check is instant.  The fix is a single
+bridging `have`,
+
+```lean
+have hFapp : ∀ u : ↑W, ((placeFrobValueHom hres hζ Q).comp W.subtype) u
+    = placeFrobValue hres hζ Q (u : Kˣ) :=
+  fun u => placeFrobValueHom_apply hres hζ Q (u : Kˣ)
+```
+
+after which every use of the composed hom is routed through `hFapp` and no `placeFrobValue`
+defeq is ever demanded of the elaborator.  This is the same family as gotchas 2051–2055.
+
+### (e) Findings
+
+* **2184 (MATHLIB).** `Subgroup.zpowersEquivZPowers` (`GroupTheory/OrderOfElement.lean:978`) is only
+  an `Equiv`, not a `MulEquiv`, and needs `[Finite G]` — useless for transporting a character out of
+  the infinite group `Multiplicative QModZ`.
+* **2185 (MATHLIB, KEY).** `IsPrimitiveRoot.zmodEquivZPowers (h : IsPrimitiveRoot ζ k) :`
+  `ZMod k ≃+ Additive ↥(Subgroup.zpowers ζ)` (`RingTheory/RootsOfUnity/PrimitiveRoots.lean:435`),
+  in a section with `variable [CommRing R] {ζ : Rˣ}` — so `ζ` must be a **unit**.
+* **2186 (MATHLIB).** `IsPrimitiveRoot.isUnit` (`:124`) and `isUnit_unit` (`:167`) turn a primitive
+  root of a field into a primitive root in the units:
+  `⟨(hζ.isUnit hp.ne_zero).unit, hζ.isUnit_unit hp.ne_zero⟩`.
+* **2187 (MATHLIB).** `toMul_eq_one {x : Additive α} : x.toMul = 1 ↔ x = 0` is **root-level**
+  (`Algebra/Group/TypeTags/Basic.lean:232`), *not* in namespace `Additive`; inside
+  `InverseGalois.CFT` write `_root_.toMul_eq_one`.
+* **2189 (MATHLIB).** `Units.map_injective (hf : Function.Injective f) : Function.Injective`
+  `(Units.map f)` (`Algebra/Group/Units/Hom.lean:94`).
+* **2190 (MATHLIB).** `Subgroup.equivMapOfInjective H f hf : H ≃* H.map f`
+  (`Algebra/Group/Subgroup/Map.lean:478`) is **`rfl`** on elements (`:483`), so
+  `e.symm ⟨f u, _⟩ = ⟨u, _⟩` is `e.symm_apply_eq.2 (Subtype.ext rfl)`.
+* **2191 (REPO).** `placeFrobValueHom hres hζ v : Kˣ →* Multiplicative QModZ` already exists
+  (`PoitouTate/FrobeniusCharacter.lean:56`), with `placeFrobValueHom_apply` (`:64`, `rfl`) and
+  `pow_placeFrobValueHom_eq_one` (`:70`) — no new bundling was needed.
+* **2192 (REPO).** `zmodQModZ (n : ℕ) [NeZero n] : ZMod n →+ QModZ` (`Brauer/CyclicInvariant.lean:101`),
+  with `zmodQModZ_intCast` (`:104`) and `zmodQModZ_injective` (`:111`).
+* **2193 (REPO).** `primeUnder_primeUnder (k F) w` (`Units/PlaceTower.lean:58`), `(k F)` explicit,
+  needs `[IsScalarTower k F K]`.
+* **2194 (MATH, KEY).** The SW Thm 13 dictionary of (c).
+* **2195 (LEAN, KEY).** The metavariable-headed `whnf` trap of (d).
+* **2196 (BUILD).** Full root build with `SUnitCharacter` = **9774 jobs**, 0 warnings, 0 errors.
+
+### (f) Routes rejected here
+
+* `Subgroup.zpowersEquivZPowers` as the character transport (finding 2184).
+* `mulEquivOfCyclicCardEq` between `↥(nsmulTorsionQModZ p)` and `↥(rootsOfUnity p ↥Ω)`: it wants
+  cyclicity and a cardinality equality for both sides; `zmodEquivZPowers` wants neither.
+* `set … with …` for the big subgroup and character terms inside the proof — it duplicates the
+  term into the local context and made the `whnf` blow-up of (d) worse, not better.
+* Raising `maxHeartbeats`: the trap of (d) is unbounded, not slow.
+
+---
+
+## 1.37 Status (2026-09-07, latest) — **the degenerate case**: the Chebotarev step no longer asks the prescription character to be non-trivial
+
+Bricks C, D and E all carried a hypothesis `hne : ∃ u, χ u ≠ 1`.  It entered at the bottom, in
+`exists_aut_ambientRadField_of_character` (`RadicalPlace.lean:109`): the automorphism `σ` of the
+radical field realising `χ` is built with **prime order**, hence `σ ≠ 1`, hence `χ ≠ 1`.  That is
+genuinely needed *there*, and stays.  But it must not survive to the top, because the recursion of
+SW Thm 13 has to produce a new prime `P_{n+1}` at **every** stage, including the stages where the
+prescription character `ξ` happens to have trivial image in `H¹(Ω|K, ℤ/p)^∨`.  Carrying `hne` as an
+assembly-time hypothesis is therefore not an option; nor is skipping the degenerate stage.
+
+### (a) The degenerate branch costs no new density theory
+
+For `χ = 1` the place to produce is one whose decomposition group is **trivial**, not one whose
+decomposition group is `⟨σ⟩` for a prime-order `σ`.  Both halves of that were already in the repo:
+
+1. `infinite_relSplitSet` (finding 2199) says the primes of the base that split completely in a
+   Galois extension are infinite in number, so one of them avoids any prescribed `Finset`;
+2. `relStabilizer_eq_bot_iff` (finding 2200) converts `SplitsCompletelyIn` into
+   `stabilizer Gal(N/k) P = ⊥`.
+
+Together these give the new `exists_stabilizer_eq_bot` (`ChebotarevPlace.lean`), the `σ = 1`
+analogue of `exists_relStabilizer_place_eq_zpowers_restrictScalars`.
+
+### (b) Reading the Frobenius character at such a place
+
+The `zpowers`-flavoured `placeFrobValue_eq_one_iff_smul_eq` wants a *prime-order* generator, so it
+cannot be used.  The right brick is the more primitive
+`placeFrobValue_eq_one_iff_forall_stabilizer_smul_eq` (`FrobeniusCharacter.lean:88`), which
+quantifies over the whole decomposition group and asks for no primality: with the group trivial the
+quantified statement is vacuous and every unit with a radical upstairs has trivial Frobenius value.
+That is `exists_place_placeFrobValue_eq_one_of_split` (`ChebotarevPlace.lean`), whose only real
+work is avoiding, in addition to the prescribed set `T`, the finitely many places whose residue
+characteristic is `p` — so that the Kummer description of the local powers applies.
+
+Descending the triviality from the base `k` to the intermediate field `K` is
+`stabilizer_eq_bot_of_base`, four lines from `AlgEquiv.restrictScalars_injective`.
+
+### (c) Where the branch was spliced in
+
+`hne` was removed **outright** (no `'`-variants) from
+
+* `exists_place_placeFrobValue_eq_one_iff_character` (`RadicalPlace.lean`),
+* `exists_place_frobValue_eq_one_iff_character_sUnits` (`SUnitPlace.lean`),
+* `exists_place_frobValue_eq_one_iff_torsionChar` and brick D
+  `exists_place_placeFrobValue_eq_zpow_character` (`SUnitCharacter.lean`),
+
+each of which now opens with `by_cases hne`.  In `RadicalPlace` the two branches call the two
+Chebotarev theorems and then share the same radical-lifting tail; in brick D the degenerate branch
+returns the exponent `j = 1`, which is prime to `p` because `p ≠ 1`, and the identity
+`placeFrobValue … u = χ u ^ 1` is exactly the trivial-on-both-sides case of `hkey`.
+
+So brick D's conclusion — *a place, outside `T`, completely split in `Ω`, at which the Frobenius
+character is a fixed power `χ^j` with `p ∤ j`* — now holds for **every** character `χ` killed by
+`p` and trivial on the local `p`-th powers.  That is the interface the recursion needs.
+
+### (d) Findings
+
+* **2197 (MATHLIB).** `Set.Infinite.exists_notMem_finset (hs : s.Infinite) (t : Finset α) :`
+  `∃ a ∈ s, a ∉ t` (`Data/Set/Finite/Basic.lean:823`).
+* **2198 (MATHLIB).** `Nat.card_ne_zero : Nat.card α ≠ 0 ↔ Nonempty α ∧ Finite α`
+  (`SetTheory/Cardinal/Finite.lean:80`); `Subgroup.zpowers_one_eq_bot`
+  (`Algebra/Group/Subgroup/ZPowers/Basic.lean:138`) and `Subgroup.zpowers_eq_bot` (`:131`).
+* **2199 (REPO, KEY).** `infinite_relSplitSet [IsGalois k L] : (relSplitSet k L).Infinite`
+  (`NumberTheory/RelativeSplitDensity.lean:671`) — the completely split case of Chebotarev is
+  already available, with no new density work.  Companions in the same file:
+  `relSplitSet k L := {v | SplitsCompletelyIn k L v}` (`:417`), `SplitsCompletelyIn` (`:300`),
+  `card_relFiber_eq_of_splitsCompletelyIn` (`:306`), `primeBelow` (`:245`).
+* **2200 (REPO).** `relStabilizer_eq_bot_iff (P : Ideal (𝓞 L)) [P.IsPrime] (hP : P ≠ ⊥) :`
+  `stabilizer Gal(L/k) P = ⊥ ↔ ramificationIdx … = 1 ∧ inertiaDeg … = 1`
+  (`CFT/RelativeFrobenius.lean:117`), with `card_relStabilizer` (`:89`).  `primeUnder (𝓞 k) W` and
+  `primeBelow k W` are the same structure — convert with
+  `HeightOneSpectrum.ext (congrArg HeightOneSpectrum.asIdeal hW)`.
+* **2201 (LEAN, GOTCHA).** Rewriting `hmem : ↑σ ∈ stabilizer Gal(N/K) W` along
+  `stabilizer Gal(N/K) W = ⊥` fails with **"motive is not type correct"**, because `σ` is an element
+  of the very subgroup being rewritten.  Use `(Subgroup.eq_bot_iff_forall _).1 h _ σ.2`.
+
+### (e) Routes rejected here
+
+* Adding `'`-suffixed variants of the character theorems instead of removing `hne` outright — the
+  recursion would then have to case-split at assembly time on a condition it cannot decide.
+* Carrying `hne` as a hypothesis of the recursion step: the degenerate case genuinely arises, at
+  every stage.
+* Proving a fresh density theorem for completely split primes: `infinite_relSplitSet` exists.
+
+---
+
+## 1.38 Status (2026-09-07, latest) — **the recursion no longer assumes anything about the class group**
+
+The two-place theorem `exists_two_places_sUnit_class_eq` (`PoitouTate/TwoPlaces.lean`) closes the
+recursion of SW Thm 13: for a prescription on a stable finite set `T` of places it produces two
+completely split, mutually non-conjugate places `Q`, `R` with trivial decomposition group, and a
+single unit `z` ramified exactly at `Q` and `R` which realises the prescription on `T` and dies at
+every nontrivial conjugate of either place.  It carried one hypothesis that was not an input of the
+theorem it is meant to prove:
+
+```
+hrepr : ∀ m, (∀ᶠ v in cofinite, m v = 0) → ∃ a : Kˣ, ∀ v ∉ S₀, ord K v a = m v
+```
+
+i.e. *every finitely supported system of orders is realised away from `S₀`* — equivalently, the
+ideal class group is generated by the classes of the primes of `S₀` (finding 2261).
+
+### (a) The two sets are decoupled first
+
+The recursion runs with **two** finite stable sets: `T`, on which the prescription is imposed and
+which must contain the places over `p`; and `S₀ ⊇ T`, outside of which the unit `y` being prescribed
+is a unit, and every place of which outside `T` must be completely split in the auxiliary field `Ω`
+(finding 2257: SW Thm 15 Step 4 applies Thm 13 with an infinite `cs(N_n|k) ∪ T`, so the two cannot
+be identified).  `hrepr` is asked of `S₀`, and asking it of a **larger** set is a **weaker**
+hypothesis (finding 2260), so the discharge has room to enlarge.
+
+The splitting condition on `S₀ ∖ T` cannot be traded for a trivial prescription there: in
+`prescriptionChar_eq_one_of_pow` (`SplitClass.lean:130`) the step `e3` extends `∏_{v ∈ T} ⟨u,g⟩_v`
+to `∏_{v ∈ S₀} ⟨u,g⟩_v`, which the product formula then kills, using `localClassHom v p u = 1` at
+the split places (`localClassHom_eq_one_of_stabilizer_eq_bot`, `:56`).  Prescribing `c v = 1` gives
+`⟨u, c_v⟩_v = 1`, not `⟨u, g⟩_v = 1`, which is what the product formula needs (finding 2270).
+
+### (b) Enlarge `T`, not `S₀`
+
+Enlarging `S₀` by primes generating the class group is the obvious move and it does **not** work:
+those primes would then have to be completely split in `Ω`, which is a Chebotarev statement with a
+non-vanishing `L(1,χ)` behind it.  Enlarging `T` does work, because the four conditions `T` carries
+are all *vacuous* at a prime `v` which is neither over `p` nor in the support of `y`:
+
+| condition on `v ∈ T` | why it is free at such a `v` |
+|---|---|
+| `localClassHom v p y ∈ localUnramified v p` | `ord_v y = 0`, so `placeValue v y = 0` and `p ∣ 0` |
+| `Pc v ∣ p → localClassHom v p y = 1` | `Pc v ∣ p` forces `v` over `p`, excluded |
+| stability under `Gal(K/k)` | the added set is taken stable |
+| `T ⊆ S₀` and `S₀ ∖ T` split | `S₀` is taken to be `T` together with the orbit of `supp y` |
+
+So the whole discharge is: pick the primes carrying the ideal classes **disjoint from**
+`E := T ∪ Gal(K/k)·supp(y)`, and put them into `T`.
+
+### (c) Moving the class representatives off a finite set
+
+`Units/ClassSet.lean` already had exactly the `hrepr` statement (finding 2266): choose one
+fractional ideal in each class and let the exceptional set be the primes where some representative
+has a nonzero exponent.  What was missing is control of *which* primes those are.  Mathlib v4.28 has
+no "every ideal class contains an ideal coprime to a given ideal", and it is not needed: the
+representatives can simply be corrected.  If `rep0 q` is any representative and `x q ∈ Kˣ` has
+`ord_v (x q) = -count_v (rep0 q)` for every `v ∈ E` — which
+`exists_units_placeValue_eq` (`Brauer/PrescribedValue.lean:124`) supplies — then
+`rep q := rep0 q · (x q)` is in the same class and has `count_v (rep q) = 0` on all of `E`.
+
+Landed as:
+
+* `exists_ord_repr_of_forall_count` (`Units/ClassSet.lean`), the old proof of
+  `exists_finite_ord_repr` reorganised to take an **arbitrary** section `rep` of
+  `QuotientGroup.mk' (toPrincipalIdeal (𝓞 K) K).range` and to conclude at every prime where all the
+  `rep q` have zero exponent.  Stating it over that quotient rather than over `ClassGroup (𝓞 K)`
+  makes the class-comparison step of the old proof the one-liner `(hrep _).symm` instead of a
+  `ClassGroup.equiv` detour.  `exists_finite_ord_repr` is now four lines on top of it, and the two
+  supporting pieces `Finite ((FractionalIdeal (𝓞 K)⁰ K)ˣ ⧸ (toPrincipalIdeal (𝓞 K) K).range)` (an
+  instance, from `ClassGroup.equiv`) and `exists_rep_quotient` are separately available.
+* `exists_finite_ord_repr_disjoint` and `exists_finite_stable_ord_repr_disjoint`
+  (`PoitouTate/ClassSetAvoid.lean`, new): the same finite set, disjoint from a prescribed finite
+  set `E`, and stable under `Gal(K/k)` when `E` is.
+* `exists_two_places_sUnit_class_eq_of_split` (`PoitouTate/TwoPlacesFree.lean`, new): the two-place
+  theorem with `S₀` and `hrepr` both gone.  Its remaining hypotheses are exactly the ones SW Thm 13
+  hands it — `T` stable and containing the places over `p`, `y` unramified and trivial-over-`p` on
+  `T`, and every place outside `T` where `y` fails to be a unit completely split in `Ω`.
+
+### (d) Findings
+
+* **2266 (REPO, KEY).** `Units/ClassSet.lean` already contains the `hrepr` statement:
+  `exists_finite_ord_repr (K)`, `exists_ord_repr_of_isPrincipalIdealRing (K)` and the Galois-stable
+  `exists_finite_stable_ord_repr`.  Consumers: `Units/FirstInequality.lean:99`,
+  `Units/RatFundamentalClass.lean:143,174`, `Kummer/SecondInequality.lean:224`.
+* **2267 (REPO, KEY).** `exists_units_placeValue_eq (T : Finset _) (n : _ → ℤ) :`
+  `∃ θ : Kˣ, ∀ W ∈ T, placeValue W θ = n W` (`Brauer/PrescribedValue.lean:124`), section variables
+  `{K : Type}` — so consumers must also be at `Type`, not `Type*`.  Same file:
+  `exists_forall_intValuation_eq` (`:55`), `placeOrd_algebraMap_of_intValuation` (`:96`),
+  `exists_algebraMap_eq_of_placeOrd_le_zero` (`:111`),
+  `exists_integral_div_of_forall_placeValue_eq_zero` (`:152`).
+* **2268 (REPO).** `placeValue_eq_neg_ord (v) (a : Kˣ) : placeValue v a = -ord K v (a : K)`
+  (`PoitouTate/SUnitReduce.lean:50`).
+* **2269 (REPO).** The `ord` API is `Rigidity/RET/Genus/Ord.lean`: `ord_def` (`rfl`, `:52`),
+  `ord_zero`, `ord_one`, `ord_mul` (both factors nonzero), `ord_inv` (`@[simp]`, no hypothesis),
+  `ord_div`, `ord_pow`, `ord_zpow`, `ord_finite (x : K)` (`:95`, **no** nonzero hypothesis),
+  `ord_algebraMap`, `ord_nonneg`, `mem_iff_ord_pos`.
+* **2270 (MATH, KEY).** Why `S₀ ∖ T` must be *split* and not merely *trivially prescribed* — see (a).
+* **2271 (MATHLIB).** `IsDedekindDomain.exists_forall_sub_mem_ideal`
+  (`RingTheory/DedekindDomain/Ideal/Lemmas.lean:847`), with `quotientEquivPiOfFinsetProdEq` (`:826`)
+  and `exists_representative_mod_finset` (`:836`).
+* **2272 (MATHLIB).** `RingTheory/ClassGroup.lean`: `toPrincipalIdeal` is `irreducible_def` (`:46`);
+  `coe_toPrincipalIdeal` (`:58`); `PrincipalIdeals.normal` (`:76`); `ClassGroup.mk_eq_mk` (`:121`)
+  is stated **only over `FractionRing R`**; `ClassGroup.induction` (`:168`); `ClassGroup.equiv K`
+  (`:179`).
+* **2273 (MATH, KEY).** The discharge plan of (b).
+* **2274 (LEAN, DESIGN).** Build the corrected representatives with
+  `obtain ⟨rep, hrepapp⟩ : ∃ rep, ∀ q, rep q = … := ⟨_, fun _ => rfl⟩` rather than `set … with`
+  (finding 2251), and get `Finite` of the quotient from `ClassGroup.equiv`.
+* **2276 (LEAN, GOTCHA).** `Set.mem_iUnion.2 ⟨σ * τ, u, hu, ?_⟩` for a union of images along a
+  lambda leaves the residual goal **un-beta-reduced** — `(fun v => (σ * τ) • v) u = σ • v` — and
+  `rw [mul_smul]` cannot fire.  Insert `show (σ * τ) • u = σ • v`.  Same family as 2251.
+* **2277 (LEAN).** `exists_primeUnder_eq_smul_stabilizer_eq_bot` (`ConjugatePlace.lean:75`) needs
+  `IsGalois k ↥Ω`, which is **not** `inferInstance` — open with `haveI : IsGalois k ↥Ω := ⟨⟩`
+  (gotcha 447).
+* **2278 (BUILD).** `lake build InverseGalois.CFT.PoitouTate.ClassSetAvoid` = 8486 jobs;
+  `… .TwoPlacesFree` = 8674 jobs.  Editing `Units/ClassSet.lean` rebuilds the whole idele-class
+  tower, including `Units/CompositumFundamental` (~750 s) and `Units/InfiniteTowerDescent`
+  (~870 s) — budget half an hour for any change to that file.
+
+### (e) Routes rejected here
+
+* Enlarging `S₀` rather than `T` with class-group-generating primes: those primes would have to be
+  completely split in `Ω`, i.e. Chebotarev with `L(1,χ) ≠ 0`.
+* A third set inside `S₀` carrying a trivial prescription and no splitting requirement — refuted by
+  finding 2270.
+* Looking for "every ideal class contains an ideal coprime to a given ideal" in Mathlib v4.28: it is
+  not there, and `exists_units_placeValue_eq` makes it unnecessary.
+* Rebuilding the class-representative machinery through `ClassGroup.mk`: the quotient
+  `(FractionalIdeal (𝓞 K)⁰ K)ˣ ⧸ (toPrincipalIdeal (𝓞 K) K).range` is the right index, and using it
+  removes the `ClassGroup.equiv` round trip from the old proof.
+
+---
+
 ## Sources
 
 * J.-P. Serre, *Topics in Galois Theory*, Harvard 1988, notes by H. Darmon —
@@ -14317,3 +15254,6309 @@ At the number-field level `placeFrobValue hres hζ v a` is the same thing applie
 * Wikipedia, *Shafarevich's theorem on solvable Galois groups* —
   <https://en.wikipedia.org/wiki/Shafarevich%27s_theorem_on_solvable_Galois_groups>;
   *Semiabelian group* — <https://en.wikipedia.org/wiki/Semiabelian_group>.
+
+---
+
+## 1.39 Status (2026-09-07, latest) — **SW Thm 13 for `A = μ_p`, odd `p`, is a theorem**
+
+The two-place theorem produces a unit `z` of the *upper* field `K`.  SW's Thm 13 wants a class
+`x ∈ H¹(k_S|k, A)` with `x_q = (cor^K_k y)_q` for `q ∈ T` and `x_q` *cyclic* for `q ∉ T`, obtained
+as `x = cor^K_k z`.  Two things had to be built to get from one to the other.
+
+### (a) `cor` is the norm
+
+`H¹(k, μ_p) ≅ kˣ/(kˣ)^p` by Hilbert 90 **unconditionally** — no need for `μ_p ⊆ k` (finding 2287).
+So in Kummer currency `cor^K_k : H¹(K,μ_p) → H¹(k,μ_p)` is exactly `N_{K/k} : Kˣ/p → kˣ/p`, and the
+whole of Thm 13 for `A = μ_p` is a statement about `N_{K/k}(z)`.
+
+### (b) The norm is local–global compatible
+
+`PoitouTate/NormLocalPower.lean` (new).  Read inside one completion `K_w`, the conjugates of an
+element factor along the cosets of the decomposition group,
+
+  ∏_{σ ∈ G} σ t  =  ∏_{L ∈ G/D_w} ∏_{d ∈ D_w} (d · out(L)⁻¹) t,
+
+and the inner product is `algebraMap (N_{K_w/k_q} z_L)` for `z_L` the transport of `t` along
+`out(L)`.  Hence:
+
+* `exists_pow_eq_algebraMap_norm`: if `t` is a `p`-th power in `K_{σw}` for **every** `σ`, then
+  `N_{K/k} t` is a `p`-th power in `k_q`;
+* `localClassHom_norm_eq_one` / `localClassHom_norm_eq_of_forall_eq`: the same in the currency
+  `localClasses q p`, and hence "same local classes above `q` ⇒ same local class of the norms";
+* `ord_algebraMap_eq_ramIdx_mul` and `dvd_ord_norm_of_forall_dvd`: `ord_q(N t) = Σ_σ ord_{σw}(t)`
+  when `e(w|q) = 1`, so divisibility by `p` of all the upstairs orders passes to the norm;
+* `localClassHom_norm_mem_localUnramified`: unramified above an unramified `q` ⇒ unramified at `q`.
+
+The direction that is **false** and must not be attempted: `N t ∈ (k_q^×)^p` does *not* follow from
+`algebraMap k K_w (N t)` being a `p`-th power in `K_w`.  The proof must go through the product over
+`G`, one coset at a time.
+
+The `e`/`f` bookkeeping people usually do here is unnecessary (**finding 2286**): in SW Thm 13
+`T ⊇ Ram(Ω|k) ∪ S_p ∪ S_∞` and `K ⊆ Ω`, so every prime of `k` ramified in `K|k` already lies in `T`;
+for `q ∉ T` one has `e(w|q) = 1` and there is no inertia degree at all in the identity.  And
+`valuation_algebraMap` (`Units/PlaceComap.lean:213`) already gives `e`, so nothing has to be built
+out of `Ideal.map_algebraMap_eq_finset_prod_pow` + `Associates.count`.
+
+### (c) Cyclicity is free at the two exceptional places
+
+`Units/SplitCompletion.lean` (new).  `mem_range_algebraMap_iff_forall_stabilizer_smul_eq` says the
+elements of `K_w` fixed by `D_w` are those coming from `k_q`.  If `D_w = ⊥` the condition is empty,
+so `algebraMap k_q → K_w` is **surjective** — the completions agree.  Therefore `μ_p ⊆ K` gives
+`μ_p ⊆ k_q` at every completely split `q`, and every class of `k_q^×/p` there is split by a cyclic
+(Kummer) extension.  This is exactly SW's "cyclic" clause: away from `T` the norm is either
+unramified (hence cyclic) or sits at one of the two exceptional places, whose completion contains
+`μ_p`.
+
+Note SW's own remark "in the case `A = μ_p` the cyclicity condition is trivially satisfied" is about
+condition **(b)** on `z`, i.e. upstairs over `K ⊇ μ_p`; the downstairs clause on `x` is the one that
+needs (c).
+
+### (d) What landed
+
+`PoitouTate/BasePrescription.lean` (new):
+
+* `exists_base_places_norm_class_eq_of_split` — the full statement, with the two exceptional primes
+  `Q`, `R` of `K` still visible: `x = N_{K/k} z`, `x_q = (N y)_q` for `q` under `T`, `x` unramified
+  at every `q` under neither `Q` nor `R` and not under `T`, and `Q`, `R` completely split in `K|k`
+  and in `Ω|k`, with `q_Q ≠ q_R` and neither under `T`.
+* `exists_base_norm_class_unramified_or_isPrimitiveRoot` — SW's statement: for every `q` not under
+  `T`, `x_q` is unramified **or** `k_q` contains a primitive `p`-th root of unity.
+
+One hypothesis is new relative to `exists_two_places_sUnit_class_eq_of_split`:
+`hTram : ∀ v, ramIdx (𝓞 k) v ≠ 1 → v ∈ T`, which is SW's `T ⊇ Ram(Ω|k)` read at the places of `K`.
+
+Build green, 9787 jobs, 0 warnings, 0 sorries.
+
+### (e) What is left of Thm 13
+
+1. **`p = 2`** (`sw.txt:781`ff): the three-element combinatorial version with the partition
+   `{G₁,G₂,G₃}` of `G∖{1}`.  It needs a `p = 2` analogue of `exists_two_places_sUnit_class_eq`,
+   which currently assumes `2 < p`, plus SW's "Claim" (`(z_i)^σ_{P_i} = 0` for `σ` an involution),
+   whose proof runs through `z̃_i = a + bα` and a coprimality argument.
+2. **General `A`** — SW's dévissage `A = A₀ ⊕ μ_p` is invalid for a general `𝔽_p[G]`-module when
+   `p ∣ |G|`.  It also needs `H¹(K, A)` for general finite `A`, which is a different currency from
+   the Kummer one everything above is written in.
+
+**Both are on the critical path** (finding 2302).  SW Thm 15 Step 4 (`sw.txt:1620`) applies Thm 13
+verbatim with `Ω = N_n` and `A = E(n,ν)`, a general finite `𝔽_p[Gal(N_n|k)]`-module, not `μ_p`; and
+Step 2 needs Tate–Poitou `Ш²(k, E(n,ν)) ≅ Ш¹(k, E(n,ν)′)` (finding 2303), i.e. row 5.  See §1.40.
+
+### (f) Findings
+
+* **2279 (MATHLIB).** `smul_pow` needs `[IsScalarTower M α α]`.  For a `MulDistribMulAction` the
+  right lemma is `smul_pow' (r) (x) (n) : r • x ^ n = (r • x) ^ n`.
+* **2280 (MATHLIB).** `WithZero.exp`/`log` in `Mathlib/Algebra/GroupWithZero/WithZero.lean`:
+  `exp_injective` (:367), `exp_inj` (:370), `log_exp` (:394), `exp_log` (:395), `exp_add` (:406),
+  `exp_nsmul (n : ℕ)` (:412), `exp_zsmul (n : ℤ)` (:458).  Order lemmas are in
+  `Algebra/Order/GroupWithZero/Canonical.lean`.
+* **2281 (REPO, KEY).** `valuation_algebraMap` (`Units/PlaceComap.lean:213`):
+  `w.valuation K (algebraMap k K x) = (primeUnder A w).valuation k x ^ ramIdx A w`.  `ramIdx` at
+  `:57`, `ramIdx_ne_zero` at `:72`.
+* **2282 (REPO, KEY).** `ord_galSmul (σ) (v) (x) : ord K (σ • v) (σ x) = ord K v x`
+  (`Units/Places.lean:106`); domain-level `ord_smul_place` at `:79`.
+* **2283 (REPO).** `valuation_eq_exp_neg_ord` (`Rigidity/RET/Genus/OrdValuation.lean:57`),
+  `intValuation_eq_exp_neg_ord` (`:49`).
+* **2284 (REPO).** `placeValue_eq_neg_ord` (`PoitouTate/SUnitReduce.lean:50`).
+* **2285 (REPO).** `exists_pow_eq_of_localClassHom_eq_one` (`PoitouTate/RecursionClose.lean:100`).
+* **2286 (MATH, KEY).** See (b): `T ⊇ Ram(Ω|k)` kills the `e`/`f` bookkeeping.
+* **2287 (MATH).** `H¹(k, μ_p) ≅ kˣ/p` by Hilbert 90 unconditionally, so `cor` is the norm.
+* **2288 (LEAN).** `Subgroup.groupEquivQuotientProdSubgroup` (`Coset/Basic.lean:334`) is awkward to
+  compute with (its middle step is `simp; rfl`); hand-build `cosetProdEquiv` instead.
+* **2289 (REPO).** `mem_range_algebraMap_iff_forall_stabilizer_smul_eq`
+  (`Units/CompletionGalois.lean:317`) is the whole content of (c); the infinite-place analogue is
+  `…_infinite` (`Units/InfiniteGalois.lean:277`).
+* **2290 (LEAN).** With `h : stabilizer G w = ⊥`, do **not** rewrite along `h` (gotcha 2201): write
+  `rw [show σ = 1 from Subtype.ext ((Subgroup.eq_bot_iff_forall _).1 h _ σ.2), one_smul]`.
+* **2291 (MATHLIB).** `IsPrimitiveRoot.map_of_injective` / `.of_map_of_injective`
+  (`RingTheory/RootsOfUnity/PrimitiveRoots.lean:283,292`).
+* **2292 (REPO).** `exists_smul_eq_of_primeUnder_eq` (`Units/Places.lean:177`) and
+  `exists_primeUnder_eq (A) (B)` (`Units/OrbitPlaces.lean:47`) — the two orbit facts the descent
+  needs; `primeUnder_smul_eq` at `Units/Places.lean:152`.
+* **2293 (BUILD).** `lake build InverseGalois.CFT.PoitouTate.NormLocalPower` = 8641 jobs,
+  `… .Units.SplitCompletion` = 8220 jobs; root build 9787 jobs.
+
+### (g) Routes rejected here
+
+* `Ideal.relNorm` / inertia-degree bookkeeping for the unramified half — unnecessary by 2286.
+* `Subgroup.groupEquivQuotientProdSubgroup` in place of a hand-built `cosetProdEquiv`.
+* Concluding `N t ∈ (k_q^×)^p` from `algebraMap k K_w (N t)` being a `p`-th power in `K_w`.
+
+## 1.40 Status (2026-09-07, latest) — **the general-`A` case of SW Thm 13: why the dévissage fails, and the replacement**
+
+### (a) The general-`A` case is unavoidable
+
+SW Thm 15 Step 4 (`sw.txt:1620`) applies Thm 13 with `Ω = N_n` and `A = E(n,ν)`.  `E(n,ν)` is a
+general finite `𝔽_p[Gal(N_n|k)]`-module, not `μ_p` (**finding 2302**).  Step 2 of the same theorem
+needs Tate–Poitou `Ш²(k, E(n,ν)) ≅ Ш¹(k, E(n,ν)′)`, i.e. **row 5** (**finding 2303**).  So neither
+the general-`A` case of Thm 13 nor row 5 can be routed around.
+
+### (b) SW's dévissage is invalid
+
+SW write "let `A = A₀ ⊕ μ_p`" and induct on `|A|` (**finding 2299**).  A finite `𝔽_p[G]`-module with
+`p ∣ |G|` need not decompose that way at all — `𝔽_p[ℤ/p]` is indecomposable and not semisimple — so
+there is no such `A₀`, and no filtration repair works either: the *statement* of Thm 13 is not
+preserved by extensions of modules, because the local conditions ("`x_q` cyclic for `q ∉ T`") do not
+propagate along a short exact sequence.
+
+### (c) The currency: `A = μ_p ⊗ W`
+
+Write `W := Hom(μ_p, A)`, a finite `𝔽_p`-vector space with `G`-action; then `A ≅ μ_p ⊗_{𝔽_p} W`
+canonically, and `H¹(K, A) ≅ (Kˣ/p) ⊗ W` by Hilbert 90 (**finding 2287** applied coefficient-wise).
+In this currency:
+
+* the **prescription** half of Thm 13 is a *formal* consequence of the `μ_p` case: pick an
+  `𝔽_p`-basis of `W`, run the `μ_p` theorem once per coordinate, tensor back (**finding 2308**);
+* **cyclicity** is *not* formal.  `x_q ∈ (K_q^×/p) ⊗ W` is cyclic (i.e. split by a cyclic extension)
+  exactly when its **tensor rank is ≤ 1**.  A sum of `d` coordinate-wise constructions has rank up
+  to `d`, so the coordinates must be built to share a single `W`-direction at each bad place.
+
+### (d) The replacement: a parallel multi-component two-place recursion (finding 2307)
+
+Run the two-place recursion for all `d = dim W` coordinates **simultaneously**, with a *separate*
+pair of exceptional places `(Q_j, R_j)` per coordinate `j`.  At `Q_j`, `R_j` the class has a nonzero
+component only in the `j`-th direction, hence rank one, hence cyclic; everywhere else outside `T`
+every coordinate is unramified, hence rank zero.  Two things this needs and the old proof did not:
+
+* the auxiliary places must be chosen **coordinate by coordinate**, not once for all `d` (a single
+  shared `Q` gives a rank-`d` class at `Q`);
+* the recursion must be closed with the classes of *all* coordinates simultaneously present in the
+  orthogonality relation, since the Hilbert-symbol product formula is what pins the last place.
+
+### (e) The splitting lemma the recursion needs (finding 2305)
+
+The step that trims a class down to a prescribed subextension needs
+
+> `V(Ω·K̃) = V(Ω) · V(K̃)`,
+
+`V(F) := {b ∈ Kˣ : b ∈ (Fˣ)^p}`, for `K̃|K` **elementary abelian**.  The group-theoretic content is:
+`H` finite, `M, N ⊴ H`, `M ∩ N = 1`, `H/M` elementary abelian ⟹ every `χ : H → ℤ/p` splits as
+`χ₁ · χ₂` with `χ₁|_N = 1`, `χ₂|_M = 1`.  The elementary-abelian hypothesis is **essential**: with
+`A = B = ℤ/p²`, `C = ℤ/p` there is a counterexample.
+
+Realising a character by a radical needs no cohomology at all — it is the Lagrange resolvent
+(**finding 2306**), and the repo already had it: `exists_radical`
+(`Kummer/RadicalCharacter.lean:104`) (**finding 2311**).
+
+### (f) What landed: `Kummer/SupRadicalSplit.lean` (Module A)
+
+* `exists_linearMap_extend_of_injective` — a linear form on a subspace of an `𝔽_p`-vector space
+  extends (`LinearMap.exists_extend` + `LinearEquiv.ofInjective`).
+* `exists_addMonoidHom_extend_of_injective` — the same for an injection of abelian groups killed by
+  `p`, via `AddCommGroup.zmodModule` + `AddMonoidHom.toZModLinearMap`.
+* `exists_character_add_eq_of_disjoint_ker` — the group-theoretic split of (e), with `A` **not**
+  assumed commutative.
+* `exists_mul_eq_pow_of_pow_mem_sup` — the field statement: `E₁ ⊔ E₂ = ⊤`, `Gal(E₂|K)` abelian of
+  exponent dividing `p`, `μ_p ⊆ K`, `b ∈ Kˣ` a `p`-th power in `L` ⟹ `b = b₁ b₂` with `b₁` a `p`-th
+  power in `E₁` and `b₂` a `p`-th power in `E₂`.
+
+### (g) Findings
+
+* **2302 (MATH, KEY).** SW Thm 15 Step 4 (`sw.txt:1620`) applies Thm 13 with `A = E(n,ν)`: the
+  general-`A` case is on the critical path.
+* **2303 (MATH, KEY).** SW Thm 15 Step 2 needs `Ш²(k,E) ≅ Ш¹(k,E′)`, i.e. row 5.
+* **2304 (MATH, KEY).** SW's diagram chase requires `Σ_{P∈T'} ⟨θ_P, b_P⟩ = 0` for every
+  `b ∈ H¹(Ω'|K, ℤ/p)`.
+* **2305 (MATH, KEY).** The `V(ΩK̃) = V(Ω)V(K̃)` splitting; group form and counterexample as in (e).
+* **2306 (MATH, KEY).** Realising a character by a radical is the Lagrange resolvent.
+* **2307 (MATH, KEY).** The parallel multi-component two-place recursion replaces SW's dévissage.
+* **2308 (MATH).** The *prescription* theorem tensors; *cyclicity* does not.
+* **2309 (MATH).** Trimming the test group is possible only at places where `ŷ` may ramify, i.e. in
+  `cs(Ω'|k)`.
+* **2310 (MATH).** For `L = K_P(z^{1/p})` ramified of degree `p`, `K_P^× ∩ (L^×)^p = (K_P^×)^p⟨z⟩`.
+* **2311 (REPO, KEY).** `Kummer/RadicalCharacter.lean` already has the whole Lagrange-resolvent
+  brick: `rootHom` (`:49`) with `@[simp] rootHom_apply` (`:64`), `exists_eq_mul_of_forall_fixed`
+  (`:81`), `exists_radical` (`:104`).  Section variables `[Field K] [Field M] [Algebra K M]
+  [FiniteDimensional K M] [IsGalois K M] {ℓ : ℕ}`; `rootHom` needs `[NeZero ℓ]` and a `CommGroup`
+  target.
+* **2312 (MATHLIB).** `linearIndependent_monoidHom` (`LinearAlgebra/LinearIndependent/Basic.lean:486`),
+  `LinearMap.exists_extend` (`LinearAlgebra/Basis/VectorSpace.lean:288`);
+  `Algebra/Module/ZMod.lean`: `AddCommGroup.zmodModule` (`:43`, reducible non-instance — `letI`),
+  `AddMonoidHom.toZModLinearMap` (`:79`, **`n` is the first explicit argument**),
+  `AddSubgroup.toZModSubmodule` (`:102`); `MonoidHom.toAdditiveLeft`
+  (`Algebra/Group/TypeTags/Hom.lean:96`), `toAdditive` (`:47`), `toAdditiveRight` (`:136`).
+* **2313 (MATHLIB).** `AlgEquiv.restrictNormalHom (E)` (`FieldTheory/Normal/Defs.lean:184`, the
+  **intermediate** field is the explicit argument), `restrictNormalHom_apply` (`:187`),
+  `restrictNormal_commutes` (`:173`), `restrictNormalHom_surjective (E)`
+  (`Normal/Basic.lean:233`, where **`E` is the BIG field**: call it as
+  `AlgEquiv.restrictNormalHom_surjective (F := K) (K₁ := ↥E₁) L`); `IntermediateField.normal_sup`
+  and `finiteDimensional_sup` are instances; `IntermediateField.adjoin_union`
+  (`Adjoin/Defs.lean:446`), `adjoin_self` (`:432`); `IsPrimitiveRoot.eq_pow_of_pow_eq_one`
+  (`RootsOfUnity/PrimitiveRoots.lean:543`), `IsPrimitiveRoot.eq_orderOf` (`:209`).
+* **2314 (MATHLIB/REPO).** `AlgHom.ext_of_adjoin_eq_top` is the **Subalgebra** version
+  (`Algebra/Subalgebra/Lattice.lean:801`); the bridge from `IntermediateField.adjoin … = ⊤` is
+  `algebraAdjoin_eq_top_of_adjoin_eq_top` (`Kummer/RadicalAut.lean:108`).
+* **2315 (DESIGN, KEY).** Do **not** build `H/[H,H]H^p` or use `Abelianization H` for the character
+  split: `M ∩ N = 1` in `H` does not give trivial intersection of the images in `H^{ab}`.  Use
+  `π : H ↠ Gal(K̃|K) = B` directly (`π|_N` is injective because `M ∩ N = 1`) and extend the
+  functional from `π(N) ⊆ Additive B`.  `A = Gal(Ω|K)` need **not** be commutative — build `χa` by
+  `Classical.choose` on `πa`-preimages, not `QuotientGroup.lift`.
+* **2316 (LEAN, KEY — the `letI`/`FunLike` trap).**  After
+  `letI : Module (ZMod p) V := AddCommGroup.zmodModule hV`, the *type* `W →ₗ[ZMod p] V` elaborates
+  and `inferInstance` finds `Module (ZMod p) V`, but instance search for
+  `FunLike (W →ₗ[ZMod p] V) W V` reports **"typeclass instance problem is stuck"**, so `ι' w` fails
+  with "Function expected".  Supplying `LinearMap.instFunLike` explicitly works, and so does an
+  ordinary `[Module (ZMod p) V]` binder.  **Fix: put the linear-algebra step in its own lemma with
+  instance binders** and apply it under the `letI`s; the coercion in the applied lemma's statement
+  is already fixed, so nothing has to be re-synthesised.
+* **2317 (LEAN).** `MonoidHom.mem_ker` takes **no** explicit argument: write `MonoidHom.mem_ker.1 h`,
+  not `(MonoidHom.mem_ker _).1 h`.  `self_eq_add_right` does not exist in this Mathlib — close
+  `χ 1 = 0` from `h : χ 1 = χ 1 + χ 1` with `linear_combination -h`.
+* **2318 (MATHLIB).** `pow_eq_pow_iff_modEq` (`GroupTheory/OrderOfElement.lean:579`) needs
+  `[LeftCancelMonoid G]`, which a **field is not** under multiplication.  In a field use
+  `IsOfFinOrder.pow_eq_pow_iff_modEq` (`:561`) with
+  `isOfFinOrder_iff_pow_eq_one.2 ⟨p, hp.pos, hζ.pow_eq_one⟩`, then rewrite the order with
+  `← hζ.eq_orderOf`.
+* **2319 (LEAN).** Gotcha 2251 again: after `refine ⟨fun a => ψ (Classical.choose (ha a)), …⟩` the
+  residual goals are **not** beta-reduced — `dsimp only` before any `rw`.
+
+### (h) Routes rejected here
+
+* SW's `A = A₀ ⊕ μ_p` dévissage and every filtration repair of it.
+* `H/[H,H]H^p`, `Abelianization H`, and `QuotientGroup.lift` for the character split;
+  `W := Additive ↥(ker πa)` as the source module (`ker πa` need not be commutative — use
+  `N₀ := (ker πa).map πb ≤ B`).
+* Re-proving the Lagrange resolvent (already `exists_radical`).
+* Kummer generation of `E₂` by radicals plus the degree-`p` local lemma, then induction on the
+  number of radicals: needs Kummer duality for elementary abelian extensions, absent from Mathlib.
+* A single shared exceptional place `Q` for all `d` coordinates (gives a rank-`d`, non-cyclic class).
+
+## 1.41 Status (2026-09-07, latest) — **the recursion step runs over a compositum**
+
+### (a) Where this sits
+
+§1.40 fixed the currency of the general-`A` case of SW Thm 13 (`A = μ_p ⊗ W`) and identified the
+replacement for SW's invalid dévissage: a parallel multi-component recursion in which each
+coordinate gets its own pair of exceptional places.  The obstruction to running that recursion is
+that at the exceptional places of coordinate `j` the *earlier* coordinates must be **trivial**, not
+merely unramified — otherwise the tensor rank at that place exceeds one and the class is not
+cyclic.  Triviality at a place is splitting completely in the field cut out by the earlier
+coordinates, so the Chebotarev search of the recursion step has to run inside
+
+> `Ω' = Ω ⊔ K̃`,
+
+`K̃` the elementary abelian extension of `K` generated by the earlier coordinates' radicals.  The
+recursion step, however, asks of its middle field that the character of the `S`-units cut out by
+the prescription kill **every radicand of it**, and a radicand of `Ω'` is not a radicand of `Ω`.
+This section records the three modules that close that gap.
+
+### (b) Module A — splitting the radicand (`Kummer/SupRadicalSplit.lean`, `ce57895`)
+
+Already described in §1.40(f).  Its output is `exists_mul_eq_pow_of_pow_mem_sup`: with
+`E₁ ⊔ E₂ = ⊤` inside `L|K` Galois, `Gal(E₂|K)` abelian of exponent dividing `p` and `μ_p ⊆ K`, a
+`b ∈ Kˣ` which is a `p`-th power in `L` is `b₁ b₂` with `bᵢ` a `p`-th power in `Eᵢ`.
+
+### (c) Module B — the completely split places detect a radical (`dd2a6df`, `ac32f23`)
+
+`PoitouTate/SplitPlacePower.lean` and `PoitouTate/SplitPlaceGenerate.lean`: outside any prescribed
+finite set of primes of the base there is a prime, completely split in an intermediate field, at
+which a radicand that is not already a power in that field is not a local power either; and,
+dually, the decomposition groups at the completely split primes generate the fixing subgroup, so
+finitely many primes of the base suffice.
+
+### (d) Module C — the prescription character on a split radicand (`c36f7ba` and this session)
+
+`PoitouTate/SupRadicandChar.lean`.  The chain, bottom up:
+
+* `ramIdx_eq_one_of_isUnramifiedAt`, `dvd_placeValue_of_pow_eq_of_ramIdx_eq_one` — at a place
+  unramified in the extension where the radicand becomes a power, the exponent divides the value of
+  the radicand, the order upstairs being the exponent times the order of the root and the order
+  downstairs being the same because `e = 1`.
+* `prod_localClassPairing_eq_one_of_dvd_placeValue` — the Hilbert-symbol product formula, carried
+  out on **classes** rather than on units.  This is the step that makes the whole factorisation
+  possible: a factor of a radicand is no longer an `S`-unit for the set in play, and all that is
+  left of that hypothesis is that its value be divisible by the exponent.
+* `prescriptionChar_eq_one_of_localClassHom_eq_one` (α₁) and
+  `prescriptionChar_eq_one_of_dvd_placeValue` (α₂) — the two halves.  α₁ kills a factor which is a
+  local power where the prescription is not carried by the global unit; α₂ kills a factor whose
+  local classes on the part carrying the global unit are unramified, by self-orthogonality of the
+  unramified classes away from the exponent.
+* `prescriptionChar_eq_one_of_mul`, `prescriptionChar_eq_one_of_pow_mul`,
+  `prescriptionChar_eq_one_of_factor` — assembly.
+* `prescriptionChar_eq_one_of_pow_sup` — Module A plugged in: **the prescription character kills
+  every radicand of a compositum** whose first factor splits completely off the part of the
+  prescription carried by a global unit and is unramified outside the prescribed set, and whose
+  second factor is abelian of exponent `p` and unramified on that part.
+
+### (e) The currency of the compositum (finding 2364)
+
+The first draft of `prescriptionChar_eq_one_of_pow_sup` was stated with
+`E₁ E₂ : IntermediateField K L`.  That is a trap: the eventual caller holds
+`IntermediateField k A` fields and would have to transport `HeightOneSpectrum (𝓞 ↥E₁)` and
+`stabilizer Gal(↥E₁/K)` across the identification.  Restated in **abstract-tower currency**
+(`M₁ M₂ L` with `[Algebra Mᵢ L] [IsScalarTower K Mᵢ L]`, and `hsup` about
+`(IsScalarTower.toAlgHom K Mᵢ L).fieldRange`) the proof needs only injectivity of
+`algebraMap Mᵢ L` to pull a root back from `↥fieldRange` to `Mᵢ`, and **no place transport is ever
+needed** — the places stay on `Mᵢ`.
+
+### (f) The `hsup` hypothesis (`CFT/Compositum.lean`, new `Tower`/`Sup` sections)
+
+What is left is to produce `hsup` for `L = ↥(Ω ⊔ N)`, `M₁ = ↥Ω`, `M₂ = ↥N`.  The repo already had
+the **base-field** version, `restrict_sup_restrict` (`Compositum.lean:49`).  Generating is a
+statement about sets of elements and does not see the field it is read over, so the bridge to an
+intermediate base is:
+
+* `restrictScalars_fieldRange` — an intermediate field of an extension of the base is the same set
+  of elements whichever of the two fields it is read over;
+* `sup_eq_top_of_restrictScalars_sup_eq_top` — two intermediate fields generating over the base
+  generate over anything in between;
+* `fieldRange_eq_restrict_of_coe` — the copy of an intermediate field inside a larger one is that
+  intermediate field again.  This one **must** carry the hypothesis
+  `∀ x : ↥E, ((algebraMap ↥E ↥C x : ↥C) : M) = (x : M)`: an `Algebra ↥E ↥C` instance is not pinned
+  down by `IsScalarTower k ↥E ↥C`, since a `k`-embedding may land on a conjugate (finding 2365);
+* `fieldRange_sup_fieldRange_eq_top` — the conclusion.
+
+### (g) `PoitouTate/RecursionSup.lean`
+
+`exists_place_sUnit_prescribed_of_sup`: the step of the recursion with the middle field generated
+by `M₁` and `M₂` over `K`.  Same conclusion as `exists_place_sUnit_prescribed` — a new place,
+outside the prescribed set and with trivial decomposition group over the base, plus an `S`-unit
+meeting the prescription at the old places and ramified exactly at the new one — with `hsplit` and
+`hram₁` asked of `M₁`, `hram₂`/`hcomm`/`hexp` of `M₂`, and `hsup` tying them to the middle field.
+
+### (h) Findings
+
+* **2360 (MATHLIB, KEY).** `AlgEquiv.ofInjectiveField (f : E →ₐ[R] F) : E ≃ₐ[R] f.range`
+  (`Algebra/Algebra/Subalgebra/Basic.lean:629`).  `↥f.range` and `↥f.fieldRange` are close enough
+  that `have φ : M ≃ₐ[K] ↥(g).fieldRange := AlgEquiv.ofInjectiveField g` typechecks — but **the
+  `AlgHom` must be given explicitly**, not as `_`: a metavariable will not unfold `fieldRange` to
+  `range`.  Mathlib's own idiom is `show L ≃ₐ[K] i.fieldRange from AlgEquiv.ofInjectiveField i`.
+* **2361 (MATHLIB).** `Normal.of_algEquiv [h : Normal F E] (f : E ≃ₐ[F] E') : Normal F E'`
+  (`FieldTheory/Normal/Defs.lean:80`); `AlgEquiv.autCongr (ϕ : A₁ ≃ₐ[R] A₂) : (A₁ ≃ₐ[R] A₁) ≃*
+  (A₂ ≃ₐ[R] A₂)` (`Algebra/Algebra/Equiv.lean:672`).  Transporting "abelian of exponent `n`" across
+  `autCongr` is one line each: with `have e₂ := AlgEquiv.autCongr φ₂` (a bodyless `have` is fine),
+  `fun σ τ => by simpa using congrArg e₂ (hcomm (e₂.symm σ) (e₂.symm τ))`.
+* **2362 (MATHLIB).** `AlgHom.fieldRange` and friends are in
+  `FieldTheory/IntermediateField/Basic.lean`: `fieldRange` :503, `coe_fieldRange` :507,
+  `mem_fieldRange` :517, `fieldRange_val` :540, `lift` :622, `restrictScalars` :661,
+  `mem_restrictScalars` :681, `restrictScalars_injective` :685, `extendScalars` :793,
+  `restrict (h : F ≤ E) : IntermediateField K ↥E := (IntermediateField.inclusion h).fieldRange`
+  :855, `mem_restrict` :858, `lift_restrict` :862, `restrict_algEquiv` :873.
+* **2363 (REPO, KEY).** `CFT/Compositum.lean:49` already had `restrict_sup_restrict`, proven by
+  `rw [← lift_inj, lift_top, lift_sup, lift_restrict, lift_restrict]`.  `Compositum.lean` imports
+  only `Mathlib`, so importing it anywhere is free.
+* **2364 (LEAN, DESIGN).** Abstract-tower currency for compositum lemmas — see (e).
+* **2365 (MATH).** An `Algebra ↥E ↥(E ⊔ F)` instance is not determined by
+  `IsScalarTower k ↥E ↥(E ⊔ F)`: a `k`-embedding may have a conjugate range (`E = ℚ(2^{1/3})`,
+  `F = ℚ(ω 2^{1/3})`), so `fieldRange` lemmas must carry the coercion hypothesis.
+* **2366 (MATHLIB).** `IntermediateField.mem_restrictScalars` takes the base field as an
+  **explicit** first argument: write `(IntermediateField.mem_restrictScalars k).1 hx`.
+* **2367 (LEAN).** `le_sup_left` cannot be applied directly to a membership proof when the order is
+  a `SetLike` one and the arguments are metavariables ("Function expected at `le_sup_left`").  Route
+  through `SetLike.le_def.1 le_sup_left hx`.
+
+### (i) What is next
+
+The multi-component (`d`-fold) two-place construction of §1.40(d): re-run
+`PoitouTate/TwoPlaces.lean` and `PoitouTate/TwoPlacesFree.lean` in `⊗ W` currency with a separate
+pair `(Q_j, R_j)` per coordinate, closing each coordinate with
+`exists_place_sUnit_prescribed_of_sup` over `Ω ⊔ K̃_j`.
+
+## 1.42 Status (2026-09-07, later) — **the ramification hypothesis of the compositum step is discharged**
+
+### (a) Where this sits
+
+`exists_place_sUnit_prescribed_of_sup` (§1.41(g)) asks of the second factor `M₂` of the middle
+field that it be *unramified* at the places of `T` — the part of the prescribed set carried by the
+global unit.  In the intended application `M₂ = K̃`, the elementary abelian extension of `K`
+generated by the radicals of the earlier coordinates' units `z_1, …, z_{j-1}`, and those units are
+**not** units at the places of `T`: all the recursion guarantees is that their values there are
+multiples of the exponent.  So the hypothesis as first stated was not dischargeable, and this was
+the blocker for Module D.  Two independent reductions close it.
+
+### (b) The `v ∤ p` guard (finding 2369)
+
+Reading `prescriptionChar_eq_one_of_dvd_placeValue` again shows that the divisibility hypothesis on
+the unit is consumed **only** at the places `v ∈ T` with `FinitePlace.mk v ((p : ℕ) : K) = 1`, i.e.
+the places away from the exponent: at `v ∣ p` the prescription is already trivial (`hcn : c v = 1`)
+and the corresponding factor of the Hilbert-symbol product drops out on its own.  So `hu`, `h2` and
+`hram₂` may all be **guarded** by `FinitePlace.mk v ((p : ℕ) : K) = 1`, throughout
+`PoitouTate/SupRadicandChar.lean` (`prescriptionChar_eq_one_of_dvd_placeValue`, `_of_mul`,
+`_of_pow_mul`, `_of_factor`, `_of_pow_sup`) and `PoitouTate/RecursionSup.lean`.
+
+This matters because it removes the need for any "a local `p`-th power at `v ∣ p` splits
+completely" theory over a general number field.  The repo has that theory only **ℚ-specifically**
+(`Scholz/RadicalSplitting.lean`, `CFT/SplitSup.lean` — gotcha 2102), and building it over a general
+`K` would have meant completion- and decomposition-group work of the size of a module of its own.
+
+### (c) The rescaling reduction (`Kummer/UnramifiedOrd.lean`)
+
+`isUnramifiedAt_of_radicals` (`Kummer/Unramified.lean:190`) asks that every radicand be a **unit**
+at the place below.  Only the radicand modulo `p`-th powers of the base matters, so this can be
+relaxed to `p ∣ ord_v(radicand)`:
+
+* `adjoin_range_div_algebraMap` — dividing each radical `α i` by a nonzero scalar `c i` of the base
+  changes nothing about the field the radicals generate: each new radical is an old one over a
+  scalar and each old one is a new one times a scalar.
+* `isUnramifiedAt_of_radicals_of_dvd_ord` — with `t` a uniformizer at `v = primeUnder K w` and
+  `c i := t ^ (ord_v(a i) / p)`, the rescaled radicand `a i / (c i)^p` has order zero at `v`, hence
+  is a unit there, and the rescaled radicals generate the same extension.  **A radical extension of
+  number fields is unramified at every place away from the exponent at which the order of every
+  radicand is a multiple of the exponent.**
+
+Only one place is in play at a time, which is what makes the rescaling legitimate: no single
+scalar has to work for all places at once.
+
+### (d) The shape `hram₂` wants (`Kummer/RadicalRamIdx.lean`)
+
+`hram₂` asks for a prime of `M₂` above `v` with ramification index one.  The new module supplies
+exactly that:
+
+* `ramIdx_eq_one_of_isUnramifiedAt` — **moved here** from `PoitouTate/SupRadicandChar.lean` and
+  generalised from `Type` to `Type*`.  `Kummer/UnramifiedOrd.lean` cannot see it where it was, and
+  inverting the `Kummer` → `PoitouTate` layering would have been wrong.
+* `exists_primeUnder_ramIdx_eq_one_of_radicals` — some prime `w` of `M₂` lies above `v`
+  (`exists_primeUnder_eq`); `v ∤ p` transports up to `w ∤ p` because `w ∩ 𝓞 K = v`; (c) then makes
+  the extension unramified at `w`, and the previous item reads off the index.  Conclusion:
+  `∃ w, primeUnder (𝓞 K) w = v ∧ ramIdx (𝓞 K) w = 1` — **verbatim the body of the guarded
+  `hram₂`**.
+
+Root build green, 9794 jobs, 0 warnings, 0 sorries.
+
+### (e) Findings
+
+* **2368 (REPO).** `Rigidity.RET.exists_ord_eq_one : ∃ t : K, ord K v t = 1` lives at
+  `Rigidity/RET/Genus/OrdLog.lean:53` and is **not** reachable from `Kummer/Unramified.lean` +
+  `Units/SUnitValuation.lean`.  Rather than drag in the import, inline the six lines:
+  `v.valuation_exists_uniformizer K`, `WithZero.exp_ne_zero`, `valuation_eq_exp_neg_ord`
+  (`Rigidity/RET/Genus/OrdValuation.lean:57`, reachable via `Units/SUnitValuation.lean`),
+  `WithZero.exp_injective`, `omega`.
+* **2369 (MATH, KEY).** The `v ∤ p` guard of (b).
+* **2370 (REPO).** `finitePlace_natCast_eq_one_iff` (`Units/PrimeAbove.lean:69`):
+  `FinitePlace.mk v ((n : ℕ) : K) = 1 ↔ (n : 𝓞 K) ∉ v.asIdeal`.  `Units/PrimeAbove.lean` imports
+  only `Mathlib`, so it is free to import.
+* **2371 (REPO).** `ramIdx` is defined at `Units/PlaceComap.lean:57` as
+  `Ideal.ramificationIdx (algebraMap A B) (primeUnder A w).asIdeal w.asIdeal`, with `A` **explicit**.
+* **2372 (REPO).** The climb-a-prime-into-the-extension idiom is
+  `rw [← hw, primeUnder_asIdeal, Ideal.under_def, Ideal.mem_comap, map_natCast]`
+  (`Kummer/SUnitUnramified.lean:55`).
+* **2373 (REPO).** The generic radical-extension machinery is `Rigidity/RET/KummerBase.lean`:
+  `RadExt n g`, `radRoot` (`:72`), `radRoot_pow` (`:74`), `adjoin_radRoot_eq_top` (`:91`),
+  `setupOfIndep` (`:120`).  `Kummer/PowBasis.lean` wraps it as
+  `structure PowBasis (B : Subgroup Kˣ) (p s : ℕ)` (`:158`) with `rad : Fin s → K` (`:202`).
+
+### (f) What is next
+
+Module D itself.  With `hram₂` dischargeable, the remaining construction is the field `K̃`: an
+intermediate field of `A|k`, **normal over `k`**, containing `K`, abelian of exponent `p` over `K`,
+generated by `p`-th roots of a `Gal(K|k)`-stable family of units of `K` whose values at the places
+of `T` are multiples of the exponent.  Normality over `k` is needed for `Spl` to be a
+`Gal(K|k)`-stable predicate in `exists_prescribed_two_places`, and it is obtained by adjoining the
+roots of the whole `Gal(K|k)`-orbit of each `z_i` rather than of `z_i` alone; the orbit inherits
+the divisibility of the values because `T` is `Gal(K|k)`-stable.
+
+## §1.43 Module D: the two-place construction with the compositum built for it, and one pair of places per coordinate
+
+### (a) Module D-4: `PoitouTate/TwoPlacesKill.lean`
+
+`exists_two_places_sUnit_radical` (D-3, §1.41) takes the compositum `Ω'`, and both of its factors
+`M₁`, `M₂`, as data.  In the situation it is meant for only the auxiliary field `Ω` and the
+radicands `b : ι → Kˣ` are given: the second factor has to be built out of the radicands and the
+compositum out of `Ω` and that factor.  D-4 does that, and its statement mentions neither.
+
+The construction is `N := ambientRadField Ω w`, where `w i` is a chosen `p`-th root of `b i` in the
+fixed algebraic closure `A`; `Ω' := N.restrictScalars k`; `M₁ := ↥Ω`; and
+`M₂ := IntermediateField.adjoin K (Set.range α)` with `α i : ↥Ω'` the radical `w i` read in `Ω'`.
+The pieces that had to be checked, all of them already in `Kummer/StableRadField.lean` except the
+last:
+
+* `normal_ambientRadField_of_forall` — `Ω'|k` is normal, because the family `{b i}` is carried into
+  itself by `Gal(K|k)` and hence, after `AlgHom.restrictNormal'`, by every `k`-algebra
+  endomorphism of `A`;
+* `finiteDimensional_ambientRadField_of_forall`, `isGalois_ambientRadField_of_forall` — `Ω'|Ω` is
+  finite and Galois;
+* `adjoin_range_val_eq_top` + `fieldRange_sup_adjoin_eq_top` — `Ω'` is the compositum of `Ω` and
+  `M₂` inside itself, which is `hsup`;
+* `normal_adjoin_radicals` (**new**, the `BaseRadicals` section of `Kummer/StableRadField.lean`) —
+  `M₂|K` is normal.  The point is that the radicands lie in `K` itself, so for any `τ` the ratio
+  `τ(α i)/α i` is a `p`-th root of unity, hence a power of `ζ ∈ K`, hence in the adjunction; no
+  stability hypothesis on the family is needed for this one, only that the radicands be in the base.
+
+The `Algebra`/`IsScalarTower` stack over `Ω'` has to be built by hand (`letI algΩ`, `letI algK`,
+five `IsScalarTower.of_algebraMap_eq fun _ => rfl`), because `Ω'` is a `restrictScalars` of an
+intermediate field of `A|Ω` and none of the tower instances are found by unification.  Finding 2385
+(use `letI`, never `haveI`, for the two `Algebra` instances) is what makes the later defeq checks go
+through.
+
+### (b) Module D-4': the conjugates
+
+The rank condition that a later coordinate has to satisfy is a condition at **every conjugate** of
+the two places, not only at the two places themselves — a Galois-stable prescription sees the whole
+orbit.  Both properties D-4 delivers pass to the conjugates, and the proof is four lines
+(`hconj` in `TwoPlacesKill.lean`):
+
+* `exists_primeUnder_eq_smul_stabilizer_eq_bot` (`PoitouTate/ConjugatePlace.lean`) moves a place of
+  `Ω'` with trivial decomposition group over `k` to one lying above `σ • Q`, still with trivial
+  decomposition group;
+* `stabilizer_primeUnder_eq_bot` pushes that down to `Ω`;
+* `localClassHom_eq_one_of_stabilizer_base_eq_bot` (`PoitouTate/RecursionRadical.lean`) is the same
+  argument that killed the radicands at `Q`, applied at `σ • Q`.
+
+So the first four clauses of `exists_two_places_sUnit_kill` are now `σ`-indexed.
+
+### (c) Module D-5: `PoitouTate/SplitFamily.lean`
+
+The multi-coordinate construction of §1.41(i).  The bookkeeping is a `Prop`-valued structure
+
+```
+IsTwoPlaceFamily Ω p Tn c d S Q R z
+```
+
+with `d` the number of coordinates built so far, `S` the finite set of places already spent,
+`Q R : ℕ → HeightOneSpectrum (𝓞 K)` the two sequences of exceptional places and `z : ℕ → Kˣ` the
+units.  Indexing by `ℕ` rather than `Fin d` avoids every `Fin` cast: the step extends with
+`Function.update _ d _` and all eighteen fields are guarded by `∀ i < d`.  The fields are
+`subset`, `stable`, `split`, `memQ`, `memR`, `notMemQ`, `notMemR`, `prescribed`, `unram`, `ramQ`,
+`ramR`, `conjQ`, `conjR`, `crossQ`, `crossR`, `ne`, `stabQ`, `stabR`; the two `cross` fields are the
+non-interference, and everything else is what one coordinate of D-4 returns.
+
+**The step** `exists_isTwoPlaceFamily_succ` runs D-4 with `Tn := S`, prescription
+`c' v := if v ∈ T then c d v else 1`, and radical family
+
+```
+b : Fin d × Gal(K/k) → Kˣ,   b (i, σ) = galUnits σ (z i)
+```
+
+— the `Gal(K|k)`-orbits of all the earlier units.  D-4's three hypotheses on that family:
+
+* `hw` — a `p`-th root of each `b q` in `A`, from `IsAlgClosed.exists_pow_nat_eq`;
+* `hstab` — `σ (b (i, τ)) = b (i, σ * τ)`, one `AlgEquiv.mul_apply`;
+* `hord` — at `v ∈ T` away from `p`, `p ∣ ord_v(σ (z i))`.  By `ord_galSmul` this is
+  `p ∣ ord_{σ⁻¹ • v}(z i)`; `σ⁻¹ • v ∈ Tn` because `Tn` is stable, `Q i, R i ∉ Tn` by `notMemQ`,
+  `notMemR`, so `unram` applies and `placeValue_eq_neg_ord` converts.
+
+**Cross-coordinate triviality comes from two different sources.**  For `i < j` (an earlier unit at a
+later place) it is D-4's conjugate radicand-kill clause at step `j`, evaluated at
+`b (⟨i, _⟩, 1) = z i`.  For `i > j` (a later unit at an earlier place) it is the prescription being
+trivial off `T`: the conjugates of `Q j`, `R j` were put into `S` at step `j`, and step `i` gives
+`localClassHom v p (z i) = c' v = 1` for every `v ∈ S ∖ T`.  The two are not the same argument and
+neither one covers both directions.
+
+Places outside `T` and outside all the orbits need no separate treatment: they are unramified for
+every `z i`, and an unramified class lies in `localUnramified v p`, which is cyclic of order `p`, so
+its tensor rank is at most one automatically.
+
+**The enlarged set** is `S ∪ (Gal(K/k) • Qn) ∪ (Gal(K/k) • Rn)`, finite because `Gal(K|k)` is
+(`Set.finite_range`), introduced as an opaque `S'` together with a membership `Iff` so that no
+`Finset` unfolding leaks into the eighteen field proofs.
+
+**The base case** `d = 0` takes `S := Tn`, `z := fun _ => 1`, and `Q = R = fun _ => v₀` for an
+arbitrary place; `Nonempty (HeightOneSpectrum (𝓞 K))` comes from
+`Ring.not_isField_iff_exists_prime` and `NumberField.RingOfIntegers.not_isField`.  Every
+`∀ i < 0` field is `fun i hi => absurd hi (Nat.not_lt_zero i)`, and `stable` is the hypothesis that
+`Tn` is `Gal(K|k)`-stable — which is also what `hord` needs in the step, so it is the only stability
+hypothesis in the module.
+
+Root build green, 9800 jobs, 0 warnings, 0 sorries.
+
+### (d) Findings
+
+* **2390 (REPO).** `galUnits (σ : Gal(K/k)) : Kˣ ≃* Kˣ := Units.mapEquiv σ.toRingEquiv.toMulEquiv`
+  at `Units/SUnit.lean:187`, with `coe_galUnits_apply : ((galUnits σ u : Kˣ) : K) = σ (u : K) := rfl`
+  at `:191`.  This is the Galois action on `Kˣ` to use when building stable families of radicands;
+  `galUnits 1 u = u` is `Units.ext rfl`.
+* **2391 (MATHLIB).** `Nonempty (HeightOneSpectrum (𝓞 K))` is three lines from
+  `Ring.not_isField_iff_exists_prime` (`RingTheory/Ideal/Basic.lean:282`) and
+  `NumberField.RingOfIntegers.not_isField` (`NumberTheory/NumberField/Basic.lean:299`, `K`
+  explicit).  There is no such instance in Mathlib.
+* **2392 (MATHLIB).** `IsAlgClosed.exists_pow_nat_eq (x : k) (hn : 0 < n) : ∃ z, z ^ n = x`
+  (`FieldTheory/IsAlgClosed/Basic.lean:93`).
+* **2393 (REPO).** `Finite Gal(K/k)` is found by instance search for number fields, so
+  `(Set.range fun σ : Gal(K/k) => σ • Q).Finite := Set.finite_range _` and its `.toFinset` are
+  available for building orbit `Finset`s.
+* **2394 (LEAN, KEY).** `rcases (h : i < d + 1) …` split as `i < d ∨ i = d` **substitutes `d` away**,
+  replacing it by `i` everywhere: `subst` eliminates the right-hand variable.  Hypothesis *names*
+  survive, but any literal `d` written later in the tactic block becomes an unknown identifier.
+  Write `_` for the index instead of `d` (`exact (hcT _ v hv hvT).symm`).
+* **2395 (LEAN).** `Function.update_self (a) (v) (f) : update f a v a = v` and
+  `Function.update_of_ne (h : a ≠ a') (v) (f) : update f a' v a = f a` are the current names
+  (not `update_same` / `update_noteq`).
+* **2396 (LEAN, BUILD).** An eighteen-field structure instance whose fields each do a `rcases` and a
+  `rw` over `localClasses`/`adicCompletion` blows the default 200000 heartbeats even with no single
+  hard step; the symptom is a `(deterministic) timeout at whnf` reported both at the `theorem` line
+  and at an innocuous `rcases` in the middle.  `set_option maxHeartbeats 1600000` at file level is
+  the fix — the file then takes 96 s.
+
+### (e) What is next
+
+Module E: the general-`A` Theorem 13, `A = μ_p ⊗ W`.  D-5 supplies the geometry — a pair of places
+per coordinate, non-interfering — and what remains is to package the coordinates into a single class
+in `H¹(k, μ_p ⊗ W)` and to run the downstairs step.  The two remaining inputs are unchanged: the
+rank-one condition at each exceptional place, which is what `conjQ`/`conjR`/`crossQ`/`crossR` were
+arranged to give, and the `p = 2` case of Theorem 13, still blocked by `hodd : 2 < p`.
+
+## §1.44 Module E: the rank-one condition, and the family carried down to the base field
+
+### (a) Module E-1: `PoitouTate/RankOne.lean`
+
+A class with values in a module of several coordinates is split by a **cyclic** extension of a
+completion exactly when the local classes of its coordinates all lie in one cyclic subgroup of the
+classes of that completion.  In the concrete Kummer currency the module is `μ_p ⊗ W`, the
+coordinates are units `z i` of `K`, and the condition reads
+
+```
+∃ u : localClasses v p, ∀ i < d, localClassHom v p (z i) ∈ Subgroup.zpowers u
+```
+
+`exists_forall_localClassHom_mem_zpowers` proves it for the D-5 family at **every** place outside
+the prescribed part `T`, by a three-way case split that is exhaustive:
+
+* `v` is a conjugate `σ • Q j` or `σ • R j` of an exceptional place of some coordinate `j`.  Then
+  `crossQ`/`crossR` say that *every other* coordinate is trivial at `v`, so the class of `z j`
+  generates.  This is exactly what the non-interference fields of `IsTwoPlaceFamily` were arranged
+  for.
+* `v ∈ Tn` but `v ∉ T`.  Then `prescribed` says the class of every coordinate equals the
+  prescription `c i v`, which is trivial off `T`; take `u = 1`.
+* otherwise.  Then `v ∉ Tn`, so `v ∤ p` (`hpTn` contrapositive), and `v` is neither `Q i` nor `R i`
+  for any `i < d`, so `unram` gives that every coordinate is unramified at `v`.  The unramified
+  classes at a place away from the exponent form a group of order `p`, hence cyclic; take `u` a
+  generator.
+
+The last bullet needed the order of `localUnramified v p`, which turned out to be already in the
+repo one lemma away.  `PoitouTate/Prescribed.lean` gains
+
+* `card_localUnramified` — `Nat.card ↥(localUnramified v p) = p`, from `card_unramifiedClasses`
+  (index `p` inside a group of order `p * p`) and `card_quotient_range_powMonoidHom_adicCompletion`;
+* `isCyclic_localUnramified` — a group of prime order is cyclic.
+
+Built green, 8688 jobs.
+
+### (b) Module E-2: `PoitouTate/BaseFamily.lean`
+
+The downstairs half of Theorem 13: the family is carried from `K` to the base field `k` **by the
+coordinate-wise norm**, `x i := N_{K|k}(z i)`, and the conclusion is stated in the same concrete
+currency.  Two theorems.
+
+`exists_base_norm_class_of_isTwoPlaceFamily` takes an `IsTwoPlaceFamily` and produces, for the
+norms:
+
+1. **on `T`** — at every `v ∈ T` and every `i < d`,
+   `localClassHom (primeUnder k v) p (N z i) = localClassHom (primeUnder k v) p (N g i)`, i.e. the
+   norms realise the same prescription downstairs that the given `g i` do.  One line:
+   `localClassHom_norm_eq_of_forall_eq` reduces to `∀ σ, localClassHom (σ • v) p (z i) = …`, and
+   that is `prescribed` followed by `hc` at the conjugate place, using that `T` and `Tn` are
+   `Gal(K|k)`-stable.
+2. **off `T`** — at every place `q` of `k` under no place of `T`, **either** all `d` norms are
+   unramified at `q`, **or** `μ_p ⊆ k_q` and all `d` norms lie in `Subgroup.zpowers u` for a single
+   local class `u`.
+
+The second clause splits on whether `q` lies under one of the exceptional places.  If it does, say
+`q = primeUnder k (Q j)`, then `stabQ` (trivial decomposition group of `Q j` over `k`) gives
+`μ_p ⊆ k_q` via `exists_isPrimitiveRoot_adicCompletion_of_stabilizer_eq_bot`, and `crossQ` plus
+`localClassHom_norm_eq_one` make **every other** coordinate's norm trivial at `q`, so the `j`-th
+generates.  If it does not, lift `q` to a place `P` of `K` (`exists_primeUnder_eq`); `P ∉ T`, so
+`hTram` gives `ramIdx k P = 1`, and `unram` at every conjugate of `P` feeds
+`localClassHom_norm_mem_localUnramified`.
+
+Note what this does **not** use: E-1.  The downstairs rank-one statement needs only the
+non-interference fields and the norm lemmas of `NormLocalPower.lean`; the upstairs statement E-1 is
+what the *splitting-field* reading of the same condition will want.  Also, a base place `q` under no
+exceptional place and under no place of `T` needs no separate `Tn ∖ T` case, because a trivial class
+is unramified.
+
+`exists_base_family_norm_class_eq` chains this with `exists_isTwoPlaceFamily` (D-5) and states the
+whole of the concrete Theorem 13 with no family in sight:
+
+> **for every number of coordinates, there are numbers of the base field, each a norm from `K`,
+> realising a prescribed set of local classes at the places of `T`, and at every place outside `T`
+> either all unramified or all powers of a single local class over a completion containing the
+> `p`-th roots of unity.**
+
+Built green first try, 8691 jobs.  Root build green, 9802 jobs, 0 warnings, 0 sorries.
+
+### (c) The `p = 2` case is exactly the archimedean-places problem
+
+`hodd : 2 < p` is threaded through the whole `PoitouTate` recursion tower, but grepping it to its
+origin shows it bottoms out at **one** place: `haveI := isTotallyComplex_of_isPrimitiveRoot hodd hζ`
+in `Selmer.lean:298` (`selmerGroup_le_perpSubgroup`) and `Selmer.lean:335`
+(`perpSubgroup_selmerGroup`).  Everything else merely passes it along.  `IsTotallyComplex K` is in
+turn what lets
+
+* `prod_localSymbol_eq_one` (`Brauer/SymbolProduct.lean:170`) run the Hilbert-symbol product formula
+  over the **finite** places alone — the archimedean invariants are all zero
+  (`infinitePlaceInvariant_of_isComplex`);
+* `card_pi_localClasses` (`Selmer.lean:241`) and `card_selmerGroup` (`Selmer.lean:269`) do their
+  counts with no archimedean factor: `index_range_powMonoidHom_units_isComplex` says a complex
+  completion has no `p`-th power quotient, and `ker_sUnitClassHom` (`:169`) uses
+  `exists_pow_eq_completion_of_isComplex`.
+
+So the `p = 2` case of Theorem 13 is not a different combinatorial argument bolted onto the present
+one — it is the *same* argument run over a `K` with real places, and the missing input is the
+archimedean half of the self-duality: the real local symbol `ℝ^×/2 × ℝ^×/2 → ½ℤ/ℤ`, its
+contribution to the product formula, and the factor `2^{r_1}` it puts into the Selmer count.  SW's
+own `p = 2` treatment (`sw.txt:781`ff) — the partition `G ∖ {1} = G₁ ⊔ G₂ ⊔ G₃` with `G₁` the
+involutions and `G₂ = G₃^{-1}`, conditions (1)–(4), and the Claim `(z_i)^{σ P_i} = 0` for `σ ∈ G₁`
+proved from `z̃_i = a + bα` and coprimality — sits **on top** of that, not instead of it.
+
+### (d) The cohomological packaging, and why it waits
+
+The statement above is in coordinates, and Theorem 13 as SW state it is about a class
+`x ∈ H¹(k_S|k, A)` for `A = μ_p ⊗ W`.  The translation is not the identity: `H¹(k, μ_p ⊗ W)` is
+`(k^×/p) ⊗ W` only when `G_k` acts trivially on `W`, and the `𝔽_p`-basis of `W` in which the
+coordinates are taken need not be `G`-stable.  Deciding the right intermediate currency needs the
+Theorem 15 frame — `F(n)`, `E(n,ν)`, proper solutions — which does not exist in the repo yet, so
+the coordinate form is the right thing to have banked in the meantime: every consumer in Step 4 of
+Theorem 15 uses Theorem 13 exactly through its cyclicity clause ("the decomposition groups of the
+new ramification are cyclic, hence the local extensions are cyclic of order `p`, in particular
+totally ramified"), and that is clause 2 above verbatim.
+
+### (e) Findings
+
+* **2397 (REPO, KEY).** `card_quotient_range_powMonoidHom_adicCompletion hζ v hv :
+  Nat.card ((v.adicCompletion K)ˣ ⧸ (powMonoidHom n).range) = n * n` at
+  `PoitouTate/Unramified.lean:222`, in the section `AdicPlace`.  With `card_unramifiedClasses`
+  (`:153`) this is `Nat.card ↥(localUnramified v n) = n`.
+* **2398 (MATH, KEY).** The `hodd` trace of (c): two lines in `Selmer.lean`.
+* **2399 (LEAN).** When a new module's statement mentions a structure declared in a big `variable`
+  block, the cure for `linter.unusedSectionVars` is to **trim the variable block**, not to write a
+  long `omit … in`.  `IsTwoPlaceFamily Ω p Tn c d S Q R z` needs only
+  `{k A K : Type} [Field k] [NumberField k] [Field A] [Algebra k A] [Field K] [NumberField K]
+  [Algebra k K] {Ω : IntermediateField k A} [NumberField ↥Ω] [Algebra K ↥Ω] {p : ℕ} [NeZero p]`.
+* **2400 (MATH).** The downstairs rank-one clause needs only `crossQ`/`crossR` and
+  `localClassHom_norm_eq_one`; it is independent of E-1.
+* **2401 (REPO).** `PoitouTate/NormLocalPower.lean`, with `k` and `w` both **explicit**:
+  `localClassHom_norm_eq_one k w (hp : p ≠ 0) t (ht : ∀ σ, localClassHom (σ • w) p t = 1)` (`:180`);
+  `localClassHom_norm_eq_of_forall_eq k w hp t s (hts : ∀ σ, …)` (`:200`);
+  `localClassHom_norm_mem_localUnramified k w [IsGalois k K] (he : ramIdx (𝓞 k) w = 1) t
+  (ht : ∀ σ, … ∈ localUnramified (σ • w) p)` (`:260`).  And
+  `exists_isPrimitiveRoot_adicCompletion_of_stabilizer_eq_bot k w hζ (h : stabilizer Gal(K/k) w = ⊥)`
+  at `Units/SplitCompletion.lean:60`.
+
+### (f) What is next
+
+The archimedean half of the Selmer self-duality, which is what unlocks `p = 2`: the real local
+symbol and its place in the product formula, then the two counts of `Selmer.lean` with a `2^{r_1}`
+in them.
+
+## §1.45 The archimedean half of the Selmer self-duality, and the exact map of what still needs an odd exponent
+
+§1.44(f) named the next task: *"the archimedean half of the Selmer self-duality, which is what
+unlocks `p = 2`: the real local symbol and its place in the product formula, then the two counts of
+`Selmer.lean` with a `2^{r_1}` in them."*  Both halves are now done.  This section records what
+landed, and — more usefully — the *exact* remaining dependence of the recursion chain on `2 < p`,
+which turns out to be two named places and not a diffuse condition.
+
+### (a) The symbol at a real place and the product formula over all the places
+
+`CFT/Brauer/RealPlace.lean` and `CFT/Brauer/RealSymbol.lean` (commits `d0ad8af`, `9ebe504`) give
+
+* `realSign : ℝˣ →* Multiplicative (ZMod 2)`, the sign of a real unit (`RealPlace.lean:82`);
+* `archSymbol k w a b` for `w : InfinitePlace k`: the sign pairing at a real place, trivial at a
+  complex one;
+* `prod_localSymbol_mul_prod_archSymbol_eq_one` (`RealSymbol.lean:444`): **the product formula over
+  all the places**,
+  `(∏_{v ∈ S} localSymbol_v a b) * (∏_{w : InfinitePlace k} archSymbol k w a b) = 1`
+  for any finite `S` outside which the finite symbols are trivial.
+
+The old `prod_localSymbol_eq_one_of_ne_two` (`Brauer/SymbolProduct.lean:227`) is exactly this with
+the archimedean factor discarded, which is legitimate only when the field is totally complex —
+i.e., by `isTotallyComplex_of_isPrimitiveRoot`, only when the prime exponent is odd.
+
+### (b) The classes at the infinite places
+
+`CFT/PoitouTate/InfiniteClasses.lean` (new) is the archimedean mirror of `localClasses`:
+
+* `infClasses w n := w.Completionˣ ⧸ (powMonoidHom n).range` and
+  `infClassHom w n : Kˣ →* infClasses w n`;
+* `finite_infClasses`, and `card_pi_infClasses n = 2 ^ (number of real places)` when `2 ∣ n`
+  (trivial otherwise), through `Local/InfinitePowIndex.lean`;
+* `infSymbolQuotDual w n : infClasses w n →* infClasses w n →* Multiplicative QModZ` with
+  `injective_flip_infSymbolQuotDual` — the archimedean classes are their own perfect pairing;
+* `infSymbolQuotDual_infClassHom`: the symbol on classes *is* `archSymbol`, provided `2 ∣ n` at a
+  real place, which `two_dvd_of_isReal_of_isPrimitiveRoot` supplies from `ζ ∈ K`;
+* `archSymbol_eq_one_of_infClassHom_eq_one` and
+  `prod_archSymbol_eq_one_of_infClassHom_eq_one`: **the archimedean factor of the product formula
+  disappears as soon as the second argument is a local power at every infinite place**;
+* `infClassHom_eq_one_of_ne_two`: for an **odd** prime exponent with `ζ ∈ K` there is nothing to
+  ask at the infinite places at all — the field is totally complex and every unit of a complex
+  completion is an `n`-th power.  This is the one-line bridge every odd-exponent caller uses.
+
+### (c) The product of two pairings
+
+`Isotropic.lean` gains `prodPairing ψ φ : (A × B) →* (A × B) →* M` with `prodPairing_apply` (`rfl`)
+and `injective_flip_prodPairing`; `LocalConditions.lean` gains the matching
+`perpSubgroupLeft_prodPairing_prod` (the perp of `H.prod K` is `H^⊥.prod K^⊥`) and
+`perpSubgroupLeft_top` (the perp of `⊤` is `⊥` for a perfect pairing).  These are what let the
+finite and the infinite places be carried in one group without a `Sum`-indexed `Pi`, which was the
+design decision (finding 2431).
+
+### (d) The Selmer group is self-dual with the infinite places included
+
+`Selmer.lean` is rewritten around
+
+```
+fullClassHom ι n : Kˣ →* (((y : Y) → localClasses (ι y) n) × ((w : InfinitePlace K) → infClasses w n))
+selmerGroupFull ι n := (fullClassHom ι n).range ∘ (sUnits …).subtype
+fullPairing hres hζ ι := prodPairing (localSymbolPiPairing hres hζ ι) (infSymbolPiPairing K n)
+```
+
+and the two counts now read
+
+* `card_prod_classes`: the whole group has order `n ^ (2 * |Y|) * (card of the archimedean part)`;
+* `card_selmerGroupFull`: the image of the `S`-units has order exactly the square root of that,
+  the archimedean index being what makes the count come out at `n = 2` as well;
+
+so `perpSubgroup_selmerGroupFull` — **the classes of the `S`-units are precisely their own
+orthogonal complement in the local classes at the places of `S` together with the infinite
+places** — holds with **no hypothesis on `n` beyond primality**.  `perpSubgroup_selmerGroup` (the
+finite-places-only statement) and the three `IsTotallyComplex`-gated bridge lemmas are deleted:
+they were false at `n = 2` (finding 2407).
+
+`Prescribed.lean` follows: `exists_sUnitClass_mul_eq` and `exists_sUnitClass_mul_eq_unramified`
+lose their `2 < n`, and their orthogonality hypothesis `hc` now *hands the caller* the extra fact
+
+```
+(∀ w : InfinitePlace K, infClassHom w n (u : Kˣ) = 1) →
+```
+
+about the `S`-unit being tested.  That is the input a `p = 2` caller needs in order to run the full
+product formula, and an odd-`p` caller simply ignores it.
+
+### (e) The sharp form of the prescription character
+
+`SplitClass.lean`'s `prescriptionChar_eq_one_of_pow` is restated in the sharp form: instead of
+`(hn2 : n ≠ 2)` it takes
+
+```
+(huinf : ∀ w : InfinitePlace K, infClassHom w n u = 1)
+```
+
+about the radicand `u`, and runs `prod_localSymbol_mul_prod_archSymbol_eq_one` together with
+`prod_archSymbol_eq_one_of_infClassHom_eq_one`.  Downstream,
+`RecursionStep.lean`'s `exists_place_sUnit_prescribed_of_rad` — the actual recursion step, the one
+that produces the Chebotarev place and the `S`-unit meeting the prescription — **no longer needs
+`2 < p` at all**.  Its odd-exponent caller `exists_place_sUnit_prescribed` discharges `huinf` with
+`infClassHom_eq_one_of_ne_two`.
+
+### (f) What still needs an odd exponent, precisely
+
+Two places, and only two.
+
+1. **`SupRadicandChar.lean`'s compositum chain.**  `prescriptionChar_eq_one_of_pow_sup` splits a
+   radicand `u` of a compositum `M₁ · M₂` as `u = u₁ u₂` with `u₁` a radicand of `M₁` and `u₂` one
+   of `M₂`, and kills the `u₁` factor by the product formula.  The factors `u₁, u₂` are produced
+   *inside* the proof by `exists_mul_eq_pow_of_pow_mem_sup`, so there is no hypothesis slot in which
+   a caller could say that `u₁` is positive at the real places: the sharp form of
+   `prod_localClassPairing_eq_one_of_dvd_placeValue` would need an archimedean condition on a unit
+   the theorem itself manufactures.  Making this `p = 2`-capable means arranging the splitting so
+   that the first factor is totally positive, which is a genuine addition, not a re-statement.
+
+2. **`TwoPlaces.lean:141`, the halving trick.**  `exists_two_places_sUnit_prescribed` only realises
+   the **square** `localClassHom v p (g ^ 2)` of the prescription, and
+   `exists_two_places_sUnit_class_eq` un-squares it by raising to `(p + 1) / 2`, using
+   `hp.odd_of_ne_two` and `hsq : (p + 1) / 2 * 2 = p + 1`.  At `p = 2` there is no such exponent.
+   This is the real wall of the two-place closing step.
+
+Neither is on the critical path right now: SW prove Theorem 13 at `p = 2` by a **different**
+argument (sw.txt @781, finding 2403 — it needs only `0 ≤ ι_u(b)`), not by running the same
+recursion.  So the chain above `RecursionStep` stays odd-only on purpose, and the archimedean
+machinery of (a)–(d) is banked for the `p = 2` case when it is written.
+
+### (g) Findings
+
+* **2441 (LEAN, KEY).** Even with explicit `(A := …) (B := …) (M := …)`, a
+  `show Function.Injective (prodPairing …).flip` against a goal stated through `fullPairing` times
+  out at `whnf` (1000000 heartbeats).  The cure is **`rw [fullPairing]`** — the def's equation
+  lemma rewrites syntactically and never enters `whnf`.
+* **2442 (LEAN).** `rw [_root_.map_one]` on `ψ 1 x` with `ψ : B →* B →* M` already collapses the
+  application to `1`, so a following `MonoidHom.one_apply` in the same `rw` list fails.  Use
+  `rw […, _root_.map_one, mul_one]`.
+* **2443 (MATH, KEY).** The `p = 2` wall map — see (f) above.  The three "upgradeable" sites were
+  `Brauer/SymbolReciprocity.lean:147`, `SplitClass.lean:130` and the `SupRadicandChar.lean` chain;
+  only the second has been upgraded, because only there does the tested unit come from a caller.
+* **2444 (MATH, KEY).** The right interface fix is for `exists_sUnitClass_mul_eq` to *give* its
+  caller `∀ w, infClassHom w n u = 1` rather than to *ask* for `n ≠ 2`.
+* **2445 (REPO).** `archSymbol K w a b` depends only on the classes of `a` and `b`, and the
+  hypothesis constrains the **second** argument.
+* **2446 (REPO).** Argument-slot bookkeeping: `SplitClass.lean` calls the product formula as
+  `… hζ g u S`, so it is the radicand `u` that must be archimedean-trivial; `SupRadicandChar.lean`
+  calls it as `… hζ b a S`, so there it is `a`.
+* **2447 (BUILD).** Module job counts this session: `InfiniteClasses` 8631, `Selmer` 8634,
+  `Prescribed` 8636, `RecursionStep` 8671, `RecursionRadical` 8682; the root build is 9805.
+* **2448 (LEAN).** `Subgroup.index_eq_one : H.index = 1 ↔ H = ⊤`, so
+  `rw [← Subgroup.index_eq_one]` is the way to turn "the `n`-th powers are everything" into an index
+  computation; with `index_range_powMonoidHom_units_congr` and
+  `index_range_powMonoidHom_units_complex` that proves `infClassHom_eq_one_of_ne_two` in five lines.
+* **2449 (REPO).** Removing a hypothesis from a theorem whose only use was to feed a *renamed*
+  downstream lemma shows up as a `linter.unusedSectionVars`-style `unused variable` warning at the
+  binder, not as an error: after generalising `SplitClass.prescriptionChar_eq_one_of_pow` the
+  `hodd` of `exists_place_sUnit_prescribed_of_rad` became dead, which is how the generalisation of
+  the recursion step was discovered rather than planned.
+
+## §1.46 Poitou–Tate: the shape of the wall, and the discovery that the endgame frame already exists
+
+This section corrects the map of the endgame drawn in §1.44(d) and replaces it with what an audit
+of the repository actually found.  Two modules landed alongside it:
+`InverseGalois/CFT/Profinite/ShaRestrict.lean` (commit `79563f8`) and
+`InverseGalois/CFT/Profinite/H2Congr.lean`.
+
+### (a) `ShaRestrict.lean`: locally trivial classes restricted to a subgroup
+
+`Profinite/ShaComap.lean` already carried the general statement that local triviality travels along
+a homomorphism, and `resH1 H` is *definitionally* `comapH1 H.subtype (fun _ _ => rfl) …`, so the
+half of the new module that says restriction preserves local triviality is a three-line corollary
+(`resH1_mem_sha1`, `resH2_mem_sha2`), once one names the family
+`restrictFamily H S = (· .comap H.subtype) '' S` that a family `S` of subgroups of `G` cuts out on
+`H`.  The other half is the res–cor coprimality argument: `corH1_resH1` raises to the index, so a
+class dying on a subgroup of finite index is killed by that index
+(`pow_index_eq_one_of_resH1_eq_one`); a class killed by the index and by a number prime to it is
+trivial (`eq_one_of_resH1_eq_one_of_coprime`); hence a locally trivial class whose order is prime to
+the index is trivial as soon as every locally trivial class of that order over the subgroup is
+(`eq_one_of_mem_sha1_of_coprime`, `eq_one_of_mem_sha2_of_coprime`, plus the `IsOpen` packaging for a
+compact group).  That is the step which moves a question about classes of prime power order to a
+Sylow subgroup.
+
+### (b) Correction to §1.44(d): the SW Theorem-15 frame already exists
+
+§1.44(d) recorded that the group-theoretic frame of Schmidt–Wingberg's Theorem 15 was still to be
+built.  That is wrong.  Under `InverseGalois/Solvable/Shafarevich/` there already are:
+
+* `Generic.lean` — SW's free pro-`p`-`G` operator group `F(n)`: `OperatorFree`, `Generic U n S`,
+  `genericAut`, `GenericSplitEP`, together with `splitPrimePowerEP_of_genericSplitEP` and
+  `genericSplitEP_of_splitPrimePowerEP`.  So **`GenericSplitEP ℓ` is the sole remaining target.**
+* `PCentral.lean` — the descending `p`-central series `F(n)(ν)`.
+* `Layer.lean` — the layers `E(n,ν) = F(n)(ν)/F(n)(ν+1)` (`layerSub`, `Layer`, `layerMk`,
+  `layerRep`, `span_layerMk_eq_top`).
+* `Shrink.lean`, `LayerWord.lean`, `LayerShrink.lean`, `LayerTensor.lean` — SW Proposition 2 and the
+  Chevalley–Warning counting that shrinks a prescribed finite set of layer elements to zero.
+* `LayerCohomology.lean` — **SW Proposition 6 in cohomological degree**:
+  `exists_genericShrink_map_eq_zero` kills finitely many classes of `H^c(G, E(m,ν))` for *any*
+  `c : ℕ` at once.  The proof goes through `map_π_eq_zero` — a morphism of representations killing
+  every value of a representing cocycle kills the class — so it needs no dimension shifting and no
+  Tate cohomology.
+* `LayerHomology.lean`, `GenericHomology.lean`, `SemidirectHomology.lean`, `HomologyOne.lean` — the
+  same in homological degree (`exists_genericShrink_homology_map_eq_zero`,
+  `exists_operatorHom_h1_eq_zero`), which is SW Proposition 6 for `k = -2` read as
+  `Ĥ^{-2}(G,·) = H_1(G,·)`.
+
+SW say explicitly (sw.txt @333) "we will apply proposition 6 only for `k = 2` and `k = -2`", so both
+instances the paper needs are present.
+
+### (c) Why Poitou–Tate enters at all, and the two routes to SW's Claim
+
+SW's Step 2 has to kill an obstruction `φ_{m,ν}(ε_ν) ∈ H²(G_k, E(m,ν))` by shrinking `F(m) ↠ F(n)`.
+Proposition 6 kills a class by killing every *value* of a representing cocycle, and the
+Chevalley–Warning count needs the number of values bounded **independently of `m`**.  A `G_k`-cocycle
+into `E(m,ν)` can take up to `|E(m,ν)|` values, which grows with `m`; a cocycle for the **fixed
+finite** group `G = Gal(K|k)` takes at most `|G|²`.  So the obstruction must first be pulled back to
+a cohomology group of `G`.  That pull-back is SW's Claim, and it is the only place the paper needs
+Tate–Poitou.  There is no cheap escape:
+
+* `K` is *not* `k(μ_p)` — in Theorem 15 it is the arbitrary given group's field, enlarged to contain
+  `μ_{p^e}` — so `[K:k]` need not be prime to `p` and the res–cor argument does not kill
+  `Ш²(k,E)`.
+* `Ш²(k,E)` depends only on `E` as a `G_k`-module, so enlarging `K` cannot help.
+* `Ш²` is genuinely nonzero for a twisted `E`, so there is no vanishing shortcut.
+* `Ш` is not exact, so dévissage through coinduced modules gives only `Ш² ⊆ im δ`.
+
+**Route 1 (SW).** Tate–Poitou `Ш²(k,E) ≅ Ш¹(k,E′)^∨` with `E′ = Hom(E,μ_p)`, then the Hasse
+principle plus the fact that `E′` is a trivial `G_K`-module give `Ш¹(k,E′) ↪ H¹(K|k,E′)`, and
+dualising gives a surjection `Ĥ^{-2}(G, E(-1)) ↠ Ш²(k,E)`.  In the repository this route is already
+*packaged*: `PoitouTate/ShaSurjection.lean` names `HasPoitouTateDuality` and its consumable half
+`HasShaDualInjection`, and derives `shaDualHom_surjective` /
+`exists_surjective_of_hasPoitouTateDuality` from it; and the middle step is already a **theorem** —
+`Units/HasseDecomposition.lean`'s `shaInflH1_injective` says an everywhere locally trivial class of
+the first cohomology is determined by the class it comes from at the field trivialising the
+coefficients, which is exactly `Ш¹(k,E′) ↪ H¹(K|k,E′)`.  What is missing is only
+`HasShaDualInjection`.
+
+**Route 2 (better, and the one the repository is actually built for).** Do not dualise at all.  Show
+directly that
+
+> a locally trivial class of `H²(G_k, E)` is **inflated** from `H²(Gal(K|k), E)`,
+
+which gives a surjection `H²(G, E) ↠ Ш²(k,E)` with `G` finite.  This is strictly better than
+Route 1 for three reasons: the surjection is inflation, so its naturality in the coefficient module
+is free (SW have to work for naturality of theirs); it lands in **cohomological degree 2**, where
+`exists_genericShrink_map_eq_zero` already applies with the trivial coefficient module `T = 𝔽_p`;
+and it needs no `(-1)`-Tate twist and no negative Tate degrees.
+
+Route 2 is exactly the content of `Profinite/TransgressionInflate.lean`'s
+`exists_comapH2_eq_of_sha1Level_eq_bot`, and it decomposes into two conditions.
+
+1. **The class dies over `K`.**  `res_{G_K} x ∈ Ш²(K,E)`, and `E` is a trivial `G_K`-module which,
+   because `μ_p ⊆ K`, is a finite product of copies of `μ_p`.  Row 3 of the table already proves
+   this vanishes: `Units/DecompositionRestrict.lean`'s
+   `eq_one_of_mem_sha2_of_mulEquivPi_intermediate`.  **Done.**
+2. **The residual obstruction vanishes.**  Inflation–restriction places the obstruction to being
+   inflated in `H¹(Gal(K|k), H¹(G_K, E))`, and local triviality puts it in the locally trivial part
+   of that group, which is precisely `sha1Level E K.fixingSubgroup hop (decompositionSubgroups k Ω)`.
+   By the twisted Kummer identification (`Profinite/KummerAction.lean`) the coefficients are
+   `K^× / (K^×)^p ⊗ Hom(μ_p, E)`, so the condition is a Grunwald–Wang-type statement about a finite
+   group with Kummer coefficients.  `Units/KummerShaBot.lean`'s `sha1Level_eq_bot_of_span` reduces it
+   to two hypotheses: `HasIdeleClassNakayamaSpanAt k K p W (-2)` and `Ĥ^{-2}(Gal(K|k), W) = 0`.
+
+So **row 5 and SW's Claim are the same wall**, and it is the one already named in §1.13:
+`HasIdeleClassNakayamaSpanAt`, i.e. `range obs_P = Σ_w cor_w (range obs_w)`.
+
+### (d) `H2Congr.lean`: the second cohomology over an intermediate field
+
+Route 2's step 1 delivers its conclusion as `comapH2 (galRestrictScalarsHom k K Ω) … z = 1`, a
+statement about `Gal(Ω/K)`; `exists_comapH2_eq_of_sha1Level_eq_bot` consumes a primitive of the
+cocycle on `K.fixingSubgroup`, a *subgroup* of `Gal(Ω/k)`.  The two are the same because Galois
+theory identifies the two groups smoothly in both directions
+(`Profinite/FixingSubgroup.lean`), but the identification has to be carried into degree two.
+`H2Congr.lean` does that: `smoothH2Congr` transports `SmoothH2` along any isomorphism of topological
+groups which is smooth both ways and matches the actions, `galSubH2Congr` is the instance for the
+Galois correspondence, and `resH2_fixingSubgroup_eq_one_iff` is the bridge — a class dies over an
+intermediate field exactly when it dies on the subgroup which fixes it.
+
+### (e) Honest cost of the two routes
+
+Route 1 needs a genuine Poitou–Tate duality.  Milne (ADT I.4.10) proves it by identifying the
+nine-term sequence with the `Ext_{G_S}(M^D, −)`-sequence of `0 → E_S → J_S → C_S → 0`, using local
+duality at every place, Shapiro for the ideles, and the abstract class-formation duality
+`α^r : Ext^r_G(M,C) → H^{2-r}(G,M)^*` of ADT I.1.8; the explicit cochain description of the pairing
+(ADT, p. 65) needs `H¹ ∪ H² → H³` cup products and the vanishing of the relevant torsion in
+`H³(G_S, E_S)`.  That is on the order of fifteen to thirty thousand lines from where the repository
+stands.  Route 2 needs only `HasIdeleClassNakayamaSpanAt`, which is a single reciprocity identity in
+machinery that already exists.  **Route 2 is the one to finish.**
+
+### (f) Findings
+
+* **2450 (REPO, KEY).** `Profinite/ShaComap.lean` already contains the general "local triviality
+  travels along a homomorphism" machinery (`subgroupHom`, `resH1_comapH1`, `comapH1_mem_sha1`,
+  `sha1_le_comap_sha1`, and the degree-two analogues).  Because `resH1 H` is definitionally
+  `comapH1 H.subtype (fun _ _ => rfl) (isSmoothHom_subtype H)`, "restriction preserves `Ш`" is a
+  three-line corollary.
+* **2451 (REPO, KEY).** The SW Theorem-15 frame already exists — see (b).  `GenericSplitEP ℓ`
+  (`Solvable/Shafarevich/Generic.lean:250`) is the sole remaining target, and both instances of
+  SW Proposition 6 are theorems.
+* **2452 (MATH, KEY).** Why the obstruction must be pulled back to a *fixed finite* group: Proposition
+  6 kills a class by killing the values of a representing cocycle, and the Chevalley–Warning count
+  needs the number of values bounded independently of `m`.  See (c).
+* **2453 (MATH).** In SW Theorems 13 and 15, `K` is not `k(μ_p)`; `[K:k]` need not be prime to `p`.
+* **2454 (MATH).** The Sylow reduction is valid: with `G_p ∈ Syl_p(G)` and `k_p = K^{G_p}`,
+  `res : Ш²(k,A)[p] → Ш²(k_p,A)` is injective since `cor ∘ res = [k_p:k]` is prime to `p`; and
+  `μ_p ⊆ k_p` because `[k_p(μ_p):k_p]` divides both `p-1` and a power of `p`.  Transport back uses
+  `x ↦ (y ↦ ⟨res x, res y⟩) = [k_p:k]·⟨x,y⟩`.
+* **2455 (MATH).** `Ш²(k,ℤ/p) = 0` and `Ш²(k,μ_p) = 0` for odd `p`, but `Ш²` is nonzero for a
+  genuinely twisted `E`, so there is no vanishing shortcut past (c).
+* **2456 (MATH, KEY).** Route 2 above: `Ш²(k,E) ⊆ im(inf)` gives a *better* surjection than SW's
+  Claim — naturality for free, cohomological degree 2, no Tate twist.
+* **2457 (REPO).** Nothing in the repository yet uses
+  `exists_comapH2_eq_of_sha1Level_eq_bot`; it is the unconsumed payoff of the whole
+  `Units/Kummer*` tower.
+* **2458 (REPO).** `sha1Level M N hop S` is `Ш¹(G/N, H¹(N,M))` for the images of `S`, i.e. exactly
+  the inflation–restriction obstruction group, not a group of `M`-valued classes.
+* **2459 (REPO).** `Units/HasseDecomposition.lean`'s `shaInflH1_injective` is SW's "Hasse principle"
+  step of the Claim, already proven: `Ш¹(k,M) ↪ H¹(Gal(F|k), M)` for `F` the field trivialising the
+  coefficients.
+* **2460 (REPO).** `galSubHom K : Gal(Ω/↥K) →* Gal(Ω/k)` (`Profinite/FixingSubgroup.lean:66`) is
+  *definitionally* `K.fixingSubgroup.subtype.comp (fixingSubgroupEquiv K).symm.toMonoidHom`, so
+  `comapH2 (galSubHom K) … z = galSubH2Congr … (resH2 K.fixingSubgroup z)` is `rfl` after
+  `smoothH2Mk_surjective`.
+* **2461 (LEAN).** `smoothH1Mk_congr` takes the equation of cochains *first*; `smoothH2Mk_congr`
+  takes it *last* (gotcha 2057).  Writing `smoothH2Mk_congr _ _ ha has (funext …)` is the shape that
+  elaborates.
+* **2462 (REPO).** `LayerCohomology.lean`'s `map_π_eq_zero` is the reusable core of Proposition 6:
+  "a morphism of representations killing every value of a cocycle kills the class".  It needs only
+  `groupCohomology.cochainsMap`, so it applies in every degree and in homology alike.
+
+## §1.47 Route 2 assembled: the everywhere locally trivial classes are inflated from the splitting field
+
+The plan set out in §1.46(c) is now carried out.  Three modules were added and the whole root build
+is green at 9809 jobs with zero errors, zero warnings and zero sorries.
+
+### (a) `Profinite/H2Congr.lean` — the degree-two Galois correspondence
+
+The file sketched in §1.46(d) is finished and builds (8035 jobs, 16 s).  `smoothH2Congr e he hs hs'`
+transports `SmoothH2 Q M ≃* SmoothH2 G M` along any `e : G ≃* Q` which is smooth in both directions
+and matches the two actions; the inverse is the transport along `e.symm`, and both round trips are
+`smoothH2Mk_congr` applied to `e.apply_symm_apply`.  `galSubH2Congr K hπ` is the instance for the
+Galois correspondence `Gal(Ω/↥K) ≃* ↥K.fixingSubgroup`, and
+
+```
+resH2_fixingSubgroup_eq_one_iff :
+  resH2 K.fixingSubgroup z = 1 ↔ comapH2 (galSubHom K) hπ (isSmoothHom_galSubHom K) z = 1
+```
+
+is the bridge.  `comapH2_galSubHom_eq` — the class read over the field *is* the class restricted to
+the fixing subgroup, transported — is `rfl` after `smoothH2Mk_surjective` (finding 2460).
+
+### (b) `Profinite/ResInflate.lean` — extending a primitive off the kernel
+
+`exists_comapH2_eq_of_sha1Level_eq_bot` (`Profinite/TransgressionInflate.lean`) wants a smooth
+cochain `b : G → M` on the *whole* group whose coboundary agrees with the cocycle on the kernel.
+What a vanishing theorem produces is `resH2 N z = 1`, i.e. a primitive `u : ↥N → M` defined on the
+kernel alone.  `exists_isSmooth₁_extend` closes the gap: extend `u` by `1` outside `N`.  Smoothness
+survives because an open subgroup of an open subgroup is open in the ambient group
+(`isOpen_coe_map_subtype`, via `IsOpen.isOpenMap_subtype_val`), so `HasOpenNormalBasis G` supplies an
+open normal `R ≤ N.map H.subtype`; translating by an element of `R` moves neither the elements of `N`
+nor those outside it across the boundary.  The package is
+
+```
+exists_comapH2_eq_of_resH2_eq_one :
+  HasOpenNormalBasis G → IsSmoothHom π → Surjective π → (π.ker acts trivially) →
+  z ∈ sha2 M S → resH2 π.ker z = 1 → sha1Level M π.ker _ S = ⊥ →
+  ∃ x : SmoothH2 Q M, comapH2 π hπ hsm x = z
+```
+
+together with `exists_comapH2_eq_of_resH2_eq_one_of_eq_ker`, the same statement with the kernel
+presented by *any* subgroup equal to it.  That variant exists purely to move a dependent `subst` into
+a light abstract context — see finding 2467.
+
+### (c) `PoitouTate/ShaInflate.lean` — the arithmetic assembly
+
+```
+exists_galInflH2_eq_of_mem_sha2 (K : IntermediateField k Ω)
+  (hπ  : ∀ g e, g • e = AlgEquiv.restrictNormalHom ↥K g • e)
+  (hπK : ∀ g e, g • e = galRestrictScalarsHom k ↥K Ω g • e)
+  (hζ : IsPrimitiveRoot ζ n) (htrivM : Gal(Ω/↥K) acts trivially on M)
+  (α : E ≃* (J → M)) (ι : M →* (↥K)ˣ injective, n-torsion, onto the n-torsion)
+  (hsha1 : sha1Level E K.fixingSubgroup _ (decompositionSubgroups k Ω) = ⊥) :
+  ∀ z ∈ sha2 E (decompositionSubgroups k Ω), ∃ x, galInflH2 K hπ x = z
+```
+
+and its `≤`-form `sha2_le_range_galInflH2`.  The proof is four steps.  `hker`: an element of
+`Gal(Ω/↥K)`, read down to `Gal(Ω/k)`, lies in `K.fixingSubgroup` (`g.commutes ⟨x, hx⟩`) and hence in
+`(restrictNormalHom ↥K).ker` by `restrictNormalHom_ker`.  `htrivE`: so `Gal(Ω/↥K)` acts trivially on
+`E`.  Then row 3's `eq_one_of_mem_sha2_of_mulEquivPi_intermediate` gives the vanishing over `K`,
+`resH2_fixingSubgroup_eq_one` turns it into `resH2 K.fixingSubgroup z = 1`, and (b) inflates.
+
+Note what makes the joint work at all: **`galSubHom K` and `galRestrictScalarsHom k ↥K Ω` are the
+same map by `rfl`** (finding 2465), so row 3's output — phrased with `galRestrictScalarsHom` — is
+accepted verbatim by `H2Congr`'s bridge, which is phrased with `galSubHom`.  No glue lemma was
+needed.
+
+### (d) Where this leaves rows 5 and 8
+
+SW's Claim (a surjection from a finite group's `H²` onto `Ш²`) is now **a theorem modulo the single
+hypothesis `hsha1`**, and `Units/KummerShaBot.lean`'s `sha1Level_eq_bot_of_span` discharges `hsha1`
+from exactly two inputs:
+
+1. `HasIdeleClassNakayamaSpanAt k ↥K p W (-2)` — the reciprocity identity
+   `range obs_P = Σ_w cor_w (range obs_w)` of §1.13, whose `⊇` half is already
+   `tateCor_tateNakayamaTwoNextMap` (`TateCohomology/NakayamaNextRestrict.lean`);
+2. `∀ y : ↥(tateModule W (-2)), y = 0` — a statement about the finite group `Gal(K/k)` and the
+   coefficient module `W` alone, with no arithmetic in it.
+
+So the entire local-global content of the endgame has been compressed to (1).  Row 5 and SW's Claim
+are, as predicted in §1.46(e), literally the same wall, and Route 1 (a full Poitou–Tate duality) is
+not on the critical path.
+
+### (e) Findings
+
+* **2463 (LEAN).** `variable (M) in` before a `def`/`theorem` reorders `M` to the position where
+  `variable {M : Type*}` was originally *declared*, not to the end of the signature.  In `H2Congr`
+  this silently produced `galSubH2Congr (K) (M) (hπ)` against call sites written
+  `galSubH2Congr K hπ M`, surfacing as "argument `hπ` … is expected to have type `Type ?u`".  Cure:
+  drop the `variable (M) in` and let `M` be inferred from `hπ`.
+* **2464 (LEAN).** A goal produced by `refine ⟨fun g => if hg : g ∈ H then … else 1, ?_⟩` is not
+  beta-reduced, so `rw [dif_pos …]` fails with "Did not find an occurrence of the pattern
+  `dite (x * n ∈ H) ?m ?m`".  Insert a bare `dsimp only` first.
+* **2465 (REPO, KEY).** `galSubHom K = galRestrictScalarsHom k ↥K Ω` by `rfl`; consequently the two
+  smoothness hypotheses `∀ g m, g • m = galSubHom K g • m` and
+  `∀ g m, g • m = galRestrictScalarsHom k ↥K Ω g • m` are defeq and the `comapH2` terms built from
+  either are interchangeable by `exact`.
+* **2466 (LEAN).** `@sha1Level`'s explicit argument order is
+  `G, [Group G], [TopologicalSpace G], [IsTopologicalGroup G], M, [CommGroup M],
+  [MulDistribMulAction G M], N, [N.Normal], hop, S` — again because of `variable (M N) in`
+  (finding 2463).
+* **2467 (LEAN, KEY).** Transporting a dependently typed statement such as `sha1Level M N hop S = ⊥`
+  across a subgroup equality by `rintro … rfl; exact h` diverges at `whnf` (> 1 000 000 heartbeats)
+  in a heavy Galois-instance context, but takes 9 s in an abstract
+  `[Group G] [TopologicalSpace G] [IsTopologicalGroup G]` context.  Cure: put the `subst` inside a
+  light group-theoretic helper and apply that from the arithmetic site.
+* **2468 (LEAN, re-confirmation of 1849/29).** Passing `↥K` where an `(L : IntermediateField k Ω)`
+  argument is expected does **not** give a type error — it gives a `(deterministic) timeout at whnf`
+  at the `theorem` line.  `isSmoothHom_restrictNormalHom` and `restrictNormalHom_surjective_level`
+  both take the intermediate field.  Fixing this dropped `ShaInflate` from >1 000 000 heartbeats to
+  19 s.
+* **2469 (REPO).** `hasOpenNormalBasis_of_compactSpace _` discharges `HasOpenNormalBasis Gal(Ω/k)`
+  with no side conditions.
+* **2470 (REPO).** `krullTopology_discreteTopology_of_finiteDimensional` (Mathlib
+  `FieldTheory/KrullTopology.lean:250`) is an instance, so `DiscreteTopology (↥K ≃ₐ[k] ↥K)` for a
+  finite `K/k` is automatic.
+
+## §1.48 The wall re-measured: what `hsha1` really costs, and four structural findings
+
+§1.47 landed Route 2 and left the endgame resting on `hsha1`.  This section corrects the impression
+§1.47(d) gives of how cheap that is, records why Route 2's *conclusion* nevertheless survives the
+obvious counterexample, and writes down four new structural facts about the wall together with two
+"already done" discoveries that retire pending items.
+
+### (a) Correction to §1.47(d): `sha1Level … = ⊥` is false in general
+
+§1.47(d) presents `hsha1` as needing only (1) the span and (2) `tateModule W (-2) = 0`.  Item (2) is
+not a side condition one may simply assume: taking `W` **trivial** and `n = -2`, §1.13(a)(b) already
+showed that the whole package collapses to
+
+```
+sha1Level = ⊥   ⟺   Ш²(Gal(K/k), μ_p) = 0 ,
+```
+
+and that is **false**.  The refutation is the one of §1.13: `p = 3`, `k = ℚ(μ_3)`,
+`K = k(α^{1/3}, β^{1/3})` with `G = Gal(K/k) ≅ (ℤ/3)²`, `Ш²_ω(G, 𝔽_3) = ⟨x₁x₂⟩ ≠ 0` (the Heisenberg
+class), and the `α, β` chosen so that every decomposition subgroup is cyclic.  So `hsha1` is a real
+hypothesis about `(K/k, W)`, not a bookkeeping artefact, and the two inputs of §1.47(d) are **not**
+independent: input (2) already implies a nontrivial vanishing statement.
+
+### (b) Route 2's conclusion survives that counterexample
+
+What the Heisenberg example refutes is `sha1Level = ⊥`, i.e. the vanishing of the *target* of the
+obstruction.  It does not refute Route 2's conclusion `Ш²(k, E) ⊆ inf H²(Gal(K/k), E)`.  In the
+example `W` is trivial, so `E ≅ μ_p^d`, and then §1.13(d) gives `Ш²(k, E) = 0` outright: the
+conclusion holds vacuously while the hypothesis fails.
+
+The honest formulation of the remaining work is therefore:
+
+> **the obstruction map** `obs : Ш²(k, E) → sha1Level` **is zero**,
+
+not "its target vanishes".  `exists_shaTorusPTorsionMap_eq_kummerFiniteH1Equiv_of_spanAt`
+(`Units/KummerShaBot.lean`) was refactored in the previous stretch precisely so that the *witness*
+survives — an argument that shows a **prescribed** class dies needs the class, not merely the
+knowledge that the ambient group is trivial.  That refactor is what makes the honest formulation
+reachable at all.
+
+### (c) Route 2 is not vacuous in the sense of §1.13(f)
+
+§1.13(f) worried that a statement of the form "for every `K` there is a bigger `K'` …" is useless
+because the classes move with `K`.  Route 2 escapes this: `K = k(μ_p, E)` is determined by the
+*coefficients*, hence fixed **before** any class of `Ш²(k, E)` is named.  The uniformity SW
+Proposition 6 needs is therefore genuinely delivered; the relevant count (finding 2452) is
+`t · |G|^c · finrank(Layer(n, ν) ⊗ T)` with `t = 1`, `c = 2`, `T = 𝔽_p`, `H = U = G`.
+
+### (d) The §1.13(e) sufficient condition cannot be arranged by enlarging `K`
+
+§1.13(e)'s first bullet — "some place `v` has `D_v ⊇ Syl_p(G)`" — is a *sufficient* condition for the
+span.  It cannot be bought by passing to a larger Galois `K' ⊇ K`.  Restriction of decomposition
+groups is surjective, `D_v(K'/k) ↠ D_v(K/k)`, and a Sylow `p`-subgroup of `Gal(K'/k)` maps onto one
+of `Gal(K/k)`; so `D_v(K'/k) ⊇ Syl_p(Gal(K'/k))` forces `D_v(K/k) ⊇ Syl_p(Gal(K/k))` for the
+**given** `K`.  Enlarging the field can only make the condition harder, never easier.  (And the
+cruder condition `D_v = G` is outright impossible whenever `G` is non-solvable, local Galois groups
+being solvable.)
+
+### (e) The Sylow reduction *is* valid for Route 2
+
+Let `p` be the exponent's prime, `P ∈ Syl_p(G)` and `k_P = K^P`.  Then
+
+* `res : Ш²(k, A)[p] → Ш²(k_P, A)` is injective, because `cor ∘ res = [G : P]` and `[G : P]` is
+  prime to `p`;
+* inflation and corestriction commute across the two levels:
+  `cor_{k_P/k} ∘ inf_P = inf_G ∘ cor_{P→G}`.
+
+Hence `Ш²(k_P, A) ⊆ inf H²(P, A)` implies `Ш²(k, A) ⊆ inf H²(G, A)`.  So Route 2's target may always
+be proved with `G` a `p`-group.  This is a genuine reduction, but not a solution: the Heisenberg
+counterexample of (a) is already a `p`-group, so the reduction alone does not close the wall.
+
+### (f) `Ш¹(k, A) = Ш¹_ω(Gal(K/k), A)`
+
+For `A` finite with trivial `G_K`-action, inflation–restriction gives `H¹(D_v, A) ↪ H¹(k_v, A)` in
+degree one, so a class of `H¹(Gal(K/k), A)` is locally trivial at `v` **as a class over `k`** exactly
+when it is locally trivial at `D_v` **as a class over the finite group**.  Combined with the already
+proven injectivity `shaInflH1_injective` (`Units/HasseDecomposition.lean`), this identifies
+
+```
+Ш¹(k, A)  =  Ш¹_ω(Gal(K/k), A) ,
+```
+
+a purely finite-group object.  This is what would make Route 1's right-hand side computable; it is
+degree-one only, and the corresponding statement in degree two is exactly what fails (see (a)).
+
+### (g) The dévissage `0 → E → V → U → 0`, and where its obstruction lands
+
+`𝔽_p[G]` is self-injective, so any `W` embeds in a free module `F = 𝔽_p[G]^d`.  Put
+`V = μ_p ⊗ F ≅ Ind_{G_K}^{G_k}(μ_p)^d` and `U = V / E`.  Then:
+
+* `Ш²(k, V) ≅ Ш²(K, μ_p)^d = 0` (Shapiro plus §1.13's `Ш²(k, μ_p) = 0` over the field containing
+  `μ_p`), so `Ш²(k, E) ⊆ im δ` — this is finding 1937 realised concretely;
+* `H^i(G, V) = 0` for all `i`, so `δ_G : H¹(G, U) ↠ H²(G, E)`;
+* `H¹(k, V) ↠ H¹(K, V)^G`, and `inf H¹(G, U) = ker(H¹(k, U) → H¹(K, U))`.
+
+Route 2's target then becomes: *lift `res_K y` to a `G`-invariant class of `H¹(K, V)`*.  The
+obstruction lies in `H¹(G, C)` with `C = im(H¹(K, E) → H¹(K, V)) ≅ ((K^×/p) ⊗ W)/δ_K(U)`, and
+`H¹(K, V) ≅ Ind_1^G(K^×/p)` is `G`-cohomologically trivial, so `Ĥ^i(G, C) ≅ Ĥ^{i-1}(G, im)`.  This
+is the cleanest reformulation found so far: it moves the wall from a `Ш` statement to a statement
+about the Tate cohomology of a single explicit `G`-module.
+
+### (h) Dévissage cannot transport Poitou–Tate duality
+
+Tempting though (g) is as a route to Route 1, it does not work there: **`Ш` is not an exact
+functor**, so a short exact sequence of coefficients gives no ladder of `Ш`-groups and hence no
+five-lemma argument.  Duality has to be proved for the coefficients one actually has.  Relatedly,
+the Poitou–Tate pairing `Ш² × Ш¹ → ℚ/ℤ` is a *secondary* (Cassels–Tate-style) pairing: `a ∪ b`
+lands in `H³(k, μ_p)`, is locally a coboundary, and the pairing is the sum of local invariants of
+the difference between a global trivialisation and the local ones.  Constructing that pairing is
+routine; **non-degeneracy is the theorem**, and none of the dévissage machinery produces it.
+
+### (i) Two "already done" discoveries
+
+* **Pending item (g) of the task list is retired.**  The planned generalisation of
+  `exists_genericShrink_map_eq_zero` (`Solvable/Shafarevich/LayerCohomology.lean`) to an arbitrary
+  finite group already exists as `Solvable/Shafarevich/GenericCohomology.lean`'s
+  `exists_genericShrink_res_cohomology_eq_zero` and `exists_operatorHom_res_cohomology_eq_zero`:
+  SW Proposition 6 in cohomological degree, for any `f : H →* U` with `H` finite and coefficients
+  `genericLayerTensor U m S ℓ j T`.  That is exactly SW Theorem 15 Step 1(a)'s requirement, and it
+  needs no Shapiro lemma.
+* **Finding 1939 is retired.**  `localSymbolQuotEquivDual` (`Brauer/LocalSymbolPerfect.lean:186`) is
+  local Tate duality in degree one for `μ_n`, and `perpSubgroup_selmerGroupFull`
+  (`PoitouTate/Selmer.lean:360`) is the Kummer/Selmer form of Poitou–Tate self-duality (`V = V^⊥`).
+  Both were already in the tree.
+
+### (j) Net position
+
+The wall is genuinely Poitou–Tate, in one of two shapes:
+
+1. **Route 1** — `HasShaDualInjection`, i.e. `Ш²(k, E) ↪ Ш¹(k, E′)^∨` (`PoitouTate/ShaSurjection.lean`
+   already packages everything downstream of it);
+2. **Route 2** — the vanishing of the obstruction map `obs : Ш²(k, E) → sha1Level` of (b), for which
+   (e) allows `G` to be taken a `p`-group and (g) rewrites the obstruction as a Tate-cohomology
+   statement about `C = ((K^×/p) ⊗ W)/δ_K(U)`.
+
+Neither has a cheap proof.  Everything else in rows 5, 8 and 9 is now downstream of one of these two.
+
+## §1.49 The level made canonical, and the exact reach of the vanishing criterion
+
+Two modules landed (commit `1b32fea`, root build green at 9812 jobs, zero errors, zero warnings,
+zero sorries):
+
+* `CFT/Units/KummerShaLevel.lean` — the homomorphisms `Hom(μ_p, E)` are made into a
+  `Rep ℤ Gal(K|k)` in their own right (`kummerHomAut`, `kummerHomAutLevel`, `kummerHomRep`), so that
+  the Kummer identification of §1.47 becomes the **identity map** (`kummerHomTensorEquiv` is
+  `AddEquiv.refl`), and its `Gal(K|k)`-equivariance is proved directly
+  (`kummerHomTensorEquiv_smul`).  On top of that, `sha1Level_eq_bot_of_spanAt` and
+  `sha1Level_eq_bot_of_isZero_local`.
+* `CFT/PoitouTate/ShaInflateLevel.lean` — `sha2_le_range_galInflH2_of_isZero_local`, which composes
+  that with §1.47's `sha2_le_range_galInflH2`: **`Ш²(k,E) ⊆ inf H²(Gal(K|k), E)` as soon as three
+  complete cohomology groups of subgroups of the finite group `G = Gal(K|k)` vanish.**  No duality
+  theorem occurs anywhere in the chain.
+
+### (a) The three conditions, unwound
+
+Write `W = Hom(μ_p, E)`, `G = Gal(K|k)`, `P ∈ Syl_p(G)`.  The hypotheses of
+`sha2_le_range_galInflH2_of_isZero_local` are
+
+1. `Ĥ²(Stab_P(w), μ_p(K_w) ⊗ W) = 0` for every place `w` of `K`, finite or infinite;
+2. `Ĥ³(P, μ_p(K) ⊗ W) = 0`;
+3. `Ĥ^{-2}(G, W) = 0`.
+
+The standing hypothesis `htriv` of the whole tower says `μ_p ⊆ k`, so `μ_p` carries the **trivial**
+`G`-action, and `μ_p(K_w) = μ_p ≅ ℤ/p` for every `w` (a field has at most `p` solutions of
+`x^p = 1`; for odd `p` the field is totally complex so no real place intervenes).  Hence every
+tensor factor disappears and the three conditions read
+
+1. `Ĥ²(P ∩ D_w, W) = 0` for every place `w`;
+2. `Ĥ³(P, W) = 0`;
+3. `Ĥ^{-2}(G, W) = 0`.
+
+### (b) The three conditions are **equivalent to one**, and that one is cohomological triviality
+
+`W` is killed by `p` and `P` is a `p`-group, so `TateCohomology/PGroupTrivial.lean`'s
+`isZero_tateModule_of_isZero_single` applies: *a representation of a `p`-group in characteristic `p`
+with no complete cohomology in one degree has none in any degree*, i.e. it is a **free**
+`𝔽_p[P]`-module.  Therefore
+
+> condition 2 alone implies conditions 1 and 3, and all three together are equivalent to
+> **`W` being free as an `𝔽_p[P]`-module** — restriction of a free module to a subgroup is free,
+> and a `p`-group's Sylow subgroup carries the whole `p`-part of `G`-cohomology.
+
+This is a sharp measurement of the criterion's reach, and it is a negative one for the general case:
+`W` is inflated from `Gal(K₀|k)` where `K₀ ⊆ K` is the field that splits `E`, so a nontrivial
+subgroup of `P` acts trivially on `W` and `W` is never free unless `p ∤ [K:K₀]` and `W` is already
+free over a Sylow subgroup of `Gal(K₀|k)`.  For SW's Theorem 13 the module of interest is
+`A = μ_p`, i.e. `W = 𝔽_p` **trivial**, and then freeness means `P = 1`, i.e. `p ∤ |G|` — the case
+`hasIdeleClassNakayamaSpan_of_not_dvd` already covered.  **So the local criterion does not close
+row 5.**
+
+### (c) What it does buy: `Ш²(k, μ_p ⊗ 𝔽_p[G]^d) = 0`
+
+The criterion is exactly right for the *induced* coefficients of the dévissage §1.48(g).  With
+`W = 𝔽_p[G]^d` free, all three conditions hold, the theorem gives
+`Ш²(k,V) ⊆ inf H²(G,V)`, and `H²(G,V) = 0` because `V` is `G`-cohomologically trivial; hence
+
+```
+Ш²(k, V) = 0 ,   V = μ_p ⊗ 𝔽_p[G]^d ≅ Ind_{G_K}^{G_k}(μ_p)^d .
+```
+
+That is finding 1937's first bullet, obtained **without Shapiro** and without row 3.  It is a real
+payoff, but §1.48(g) already recorded that the dévissage then circles back: the obstruction to
+descending the lift lands in `H¹(G, C)` with `C = im(H¹(K,E) → H¹(K,V))`, and since `K^×/p` is an
+`𝔽_p`-vector space and `W ↪ F` is split injective over `𝔽_p`, that image is `(K^×/p) ⊗ W = H¹(K,E)`
+on the nose.  So `H¹(G, C)` is the inflation–restriction obstruction group we started from.  The
+dévissage is a genuine identity, not a reduction.
+
+### (d) Where Tate–Poitou is really used in SW, twice
+
+Re-reading the paper pins two independent uses.
+
+* **Theorem 13** (sw.txt @700–722).  In the two-row diagram the *lower* line is
+  `H¹(k_S|K, μ_p) → ∏'_{S} H¹(K_P, μ_p) → H¹(k_S|K, ℤ/p)^∨`, and the proof needs precisely its
+  **exactness at the middle term** in order to produce `z_{n+1}` from the assembled local datum `ξ`.
+  This is the `A = μ_p` case of Poitou–Tate exactness at `P¹`.
+* **Theorem 15, Step 2, the Claim** (sw.txt @1305–1342).  Here the full duality
+  `Ш²(k,A) ≅ Ш¹(k,A')^∨` is used, and nothing weaker will do: it is what converts the Hasse
+  principle `Ш¹(k,A') ↪ H¹(G,A')` into the surjection `Ĥ^{-2}(G,A) ↠ Ш²(k,A)`.  This is row 5.
+
+### (e) **The `A = μ_n` case of Poitou–Tate exactness at `P¹` is already a theorem in the repository**
+
+`PoitouTate/Selmer.lean`'s `perpSubgroup_selmerGroupFull` says: for a number field `K` containing a
+primitive `n`-th root of unity, `n` prime, and a finite set `S` of finite places containing every
+place above `n` and large enough that every divisor supported outside `S` is principal,
+
+```
+selmerGroupFull ι n  =  (selmerGroupFull ι n)^⊥
+```
+
+inside `∏_{v ∈ S} K_v^×/n × ∏_{w | ∞} K_w^×/n`, the orthogonal complement being taken for the
+product of the local power-residue symbols and the archimedean sign symbols.  Unwinding the
+identifications `H¹(K_v, μ_n) = K_v^×/n`, `H¹(k_S|K, μ_n) = K(S,n)` and
+`H¹(K_v, ℤ/n) = (K_v^×/n)^∨` (local duality, `localSymbolQuotEquivDual`), this is **exactly**
+
+```
+im( H¹(k_S|K, μ_n) → P¹(μ_n) )  =  ker( P¹(μ_n) → H¹(k_S|K, ℤ/n)^∨ ) ,
+```
+
+i.e. Poitou–Tate exactness at `P¹` for `A = μ_n`, over any field containing `μ_n`.  The proof is the
+Greenberg–Wiles counting argument: `Sel ≤ Sel^⊥` from the product formula
+(`selmerGroupFull_le_perpSubgroup`, which is reciprocity), and `|Sel|² = |P¹|` from
+`card_selmerGroupFull` and `card_prod_classes`, so `perpSubgroup_eq_self` closes it.  **The lower
+line of SW's Theorem 13 diagram is therefore available in substance.**  What is missing is only the
+*dictionary* — nothing in the repository yet identifies `selmerGroup` with a Galois cohomology
+group, or `localClassHom` with a localisation map of `SmoothH1`.
+
+### (f) Net position, revised
+
+* Row 5 is `Ш²(k,A) ≅ Ш¹(k,A')^∨` and nothing built so far reaches it.  Route 2's conclusion is
+  equivalent to it (§1.48(b)); the vanishing criterion of (a)–(b) covers exactly the
+  cohomologically trivial coefficients.
+* The derivation of row 5 from the nine-term sequence needs, besides exactness at `P¹` which (e)
+  supplies for `μ_n`, exactness at `H¹(G_S,A')^∨` and at `H²(G_S,A)`, plus local duality in every
+  degree.  The chain is
+  `Ш²(A) = im γ ≅ H¹(G_S,A')^∨ / im β = coker(loc^∨) = (ker loc)^∨ = Ш¹(A')^∨`.
+* The next brick, and the one shared by both uses in (d), is the **cohomological dictionary**:
+  `H¹(k_S|K, μ_p) ≅ selmerGroup`, `H¹(K_v, μ_p) ≅ localClasses v p`, localisation `= localClassHom`,
+  and the local symbol `=` the local duality pairing.  With it, (e) becomes a usable exactness
+  statement and pending item (i) — packaging `BaseFamily.lean`'s coordinate-wise construction as a
+  class of `H¹(k_S|k, A)` — becomes possible.
+
+### (g) Findings
+
+* **2471 (LEAN).** `toMul_nsmul` and `ofMul_pow` live in the **root** namespace, not `Additive.*`
+  (`Mathlib/Algebra/Group/TypeTags/Basic.lean:277,281`); `Additive.toMul_nsmul` is an unknown
+  constant.  Both are `rfl`, so a `show` is the cheapest route.
+* **2472 (LEAN).** `MonoidHom.pow_apply` is at `Mathlib/Algebra/Group/Hom/Instances.lean:65`.
+* **2473 (LEAN).** Writing `Additive.toMul (p • w)` with `w : ↥W.V` where `W.V` is only *defeq* to
+  `Additive (M →* E)` gives `Function expected at …` on application.  State the lemma with
+  `w : Additive (M →* E)` and let defeq unify at the call site.
+* **2474 (LEAN).** `(quotientFixingSubgroupEquiv K).symm (AlgEquiv.restrictNormalHom ↥K σ)
+  = QuotientGroup.mk σ` is **not** `rfl`.  Prove it by
+  `(quotientFixingSubgroupEquiv K).symm_apply_eq.2 (quotientFixingSubgroupEquiv_mk K σ).symm`.
+* **2475 (LEAN).** `↥(tensorObj (repOfAddAut φ) (repOfAddAut ψ)).V` is defeq to `A ⊗[ℤ] B`, so
+  `AddEquiv.refl _` elaborates at that type.
+* **2476 (LEAN).** `globalUnitsRep` is an `abbrev`, so `[NumberField k] [NumberField ↥K]
+  [IsGalois k ↥K]` are dropped by section-variable inclusion even in statements mentioning it;
+  `omit` them or `unusedSectionVars` fires.
+* **2477 (REPO).** `sha2_le_range_galInflH2`'s explicit argument order is
+  `K E hπ hπK hζ htrivM α hιinj hιpow hιsurj hsha1` — the `variable (E) in` moves `E` before `hπ`.
+* **2478 (DESIGN).** Prefer the class `[ActsTrivially N (M →* E)]` (`Profinite/Quotient.lean:52`)
+  over explicit triviality proofs when defining **data**, because the data term then appears inside
+  downstream hypothesis *statements*.
+* **2479 (MATH, KEY).** The three vanishing conditions of `sha2_le_range_galInflH2_of_isZero_local`
+  are equivalent to a single one, `W` free over `𝔽_p[Syl_p(G)]` — see (b).
+* **2480 (REPO, KEY).** `perpSubgroup_selmerGroupFull` is Poitou–Tate exactness at `P¹` for
+  `A = μ_n` — see (e).
+* **2481 (MATH).** `Ш²(k, μ_p ⊗ 𝔽_p[G]^d) = 0`, provable from the new criterion alone — see (c).
+* **2482 (BUILD).** `InverseGalois.CFT.Units.KummerShaLevel` is 8498 jobs, 76 s; the root build is
+  9812 jobs.
+
+## §1.50 The induced-coefficient criterion, and its sharpening to a Sylow subgroup
+
+§1.49(b) showed that the three vanishing conditions of `sha2_le_range_galInflH2_of_isZero_local`
+are equivalent to one: the coefficient module `W = Hom(μ_p, E)` is cohomologically trivial over
+`G = Gal(K/k)`, i.e. free over `𝔽_p[Syl_p(G)]`.  This section records the two rounds of work that
+turned that observation into theorems, the mathematical limits discovered along the way, and the
+new blocker on the cohomological dictionary.
+
+### (a) Round one: being the functions on the whole group
+
+Three modules, commit `79d0d30`, root build 9815 jobs:
+
+* `TateCohomology/InducedIso.lean` — `resInducedIso`, `resIsoInducedRep` (being the functions on
+  the group is inherited by every subgroup, with values in the functions on the cosets),
+  `isZero_tateModule_*_of_isoInducedRep` (three forms: bare, after restriction, against a tensor
+  factor on either side), and — the recognition principle — `repEval` / `inducedRepIsoOfBijective`:
+  a single linear map `φ` out of `A` whose record of values `a ↦ (x ↦ φ(ρ(x)a))` is bijective
+  exhibits `A ≅ Rep.of (inducedRep k G Y)`.
+* `Profinite/CoindVanish.lean` — the multiplicative twin: `translateEval`, `translateEvalHom`,
+  `translateEvalEquiv`, `homTranslate`, `homCompHom`, `bijective_homTranslate` (homomorphisms into
+  a module which is the functions on the group are again the functions on the group), and
+  `subsingleton_smoothH2_of_bijective_translateEval` — an explicit contraction, freezing the first
+  argument of a two cocycle read through `π`.
+* `PoitouTate/ShaInduced.lean` — the assembly.  `kummerHomEval`, `kummerHomAutLevel_toMul_apply`
+  (the level acts on `Hom(μ_p,E)` through the values, because `μ_p` is fixed),
+  `bijective_repEval_kummerHomEval`, and the capstone
+  `sha2_eq_bot_of_bijective_translateEval : sha2 E (decompositionSubgroups k Ω) = ⊥`.
+
+The hypothesis is a single map `π : E →* X` whose translates separate and exhaust: `translateEval
+(G := Gal(K/k)) π` bijective.  It discharges all three conditions **and** kills `SmoothH2 Gal(K/k)
+E`, so the image of inflation is trivial and the locally trivial classes are not merely inflated
+from somewhere — they are gone.
+
+### (b) Round two: only a Sylow subgroup is needed
+
+Three more modules:
+
+* `TateCohomology/SylowInduced.lean` — `eq_zero_tateModule_of_isoInducedRep_sylow`: for `A` killed
+  by `p^j`, an iso `resObj ↑P A ≅ Rep.of (inducedRep k ↥↑P X)` at a single Sylow `P` forces
+  `tateModule A n = 0` in **every** degree.  Two lines: `eq_zero_of_tateRes_sylow_eq_zero` against
+  `isZero_tateModule_of_isoInducedRep` and `nsmul_eq_zero_tateModule_of_nsmul`.
+* `Profinite/SylowVanish.lean` — the same reduction for smooth `H²`.
+  `hasOpenNormalCore_of_discreteTopology` (free on a discrete group: the normal core of the pushed
+  forward subgroup is open because everything is), then
+  `subsingleton_smoothH2_of_index_coprime` via `corH2_resH2` with the transversal `Quotient.out`,
+  and `subsingleton_smoothH2_of_sylow`.
+* `PoitouTate/ShaSylow.lean` — `repEval_kummerHomEval_resObj_apply`,
+  `bijective_repEval_kummerHomEval_resObj` (the level-side lemmas, restated over an arbitrary
+  subgroup `H ≤ Gal(K/k)`), and
+
+  ```
+  sha2_eq_bot_of_bijective_translateEval_sylow (π : E →* X)
+    (hbij : ∀ P : Sylow p Gal(↥K/k),
+      Function.Bijective (translateEval (G := ↥(P : Subgroup Gal(↥K/k))) π)) :
+    sha2 E (decompositionSubgroups k Ω) = ⊥
+  ```
+
+The `∀ P` costs nothing: Sylow subgroups are conjugate and all have the same order, so one and the
+same value group `X` works for all of them.  The two `∀ P`-quantified tensor conditions are
+discharged per `P` from `hbij P`; the degree `-2` condition and the `SmoothH2` vanishing are
+discharged at **one** arbitrary `P₀` (obtained from the `Sylow.nonempty` instance), because `E` is
+killed by `p` and both restrictions are injective there.
+
+This is the sharp form of finding 2479.  What a construction has to arrange is that
+`Hom(μ_p, E) ≅ 𝔽_p[P]^d` for a Sylow `p`-subgroup `P` of `Gal(K/k)` — not for the whole group.
+
+### (c) The free-layer shortcut is refuted
+
+The tempting move is to note that SW's Step-2 layers `E(d,ν)` are built out of `𝔽_p[G]^d` and hope
+the criterion applies to them verbatim.  It does not.  The layers are *quotients* of
+`(𝔽_p[G]^d)^{⊗ν}` (free Lie-algebra layers), and a quotient of a free module need not be free.
+
+Counterexample.  `G = C_2 = ⟨σ⟩`, `k = 𝔽_2`, `V = 𝔽_2[C_2]^2 = ⟨x_1, σx_1, x_2, σx_2⟩`.  The second
+free-Lie layer is `L_2(V) = Λ²V`, of dimension 6, and `σ` fixes `x_1 ∧ σx_1` and `x_2 ∧ σx_2`.  So
+`Λ²V ≅ triv² ⊕ free²` — not free, and `Ĥ⁰(C_2, Λ²V) ≠ 0`.  Layers are projective only for `ν < p`
+(where the Dynkin idempotent is available).  So the Sylow criterion **cannot** make SW's Claim
+trivial; the Claim still needs the duality.
+
+### (d) The cohomological dictionary is blocked on Krasner's lemma
+
+The dictionary of §1.49(f) needs `H¹(K_v, μ_p) ≅ localClasses v p`.  But:
+
+* `localClasses v n` (`PoitouTate/Selmer.lean:105`) is an `abbrev` for
+  `(v.adicCompletion K)ˣ ⧸ range (powMonoidHom n)`, and `localClassHom` (`:109`) goes through
+  `Units.map (algebraMap K (v.adicCompletion K))`.  The **completion** is genuinely in the
+  statement.
+* `decompositionSubgroups k K` (`Units/InfiniteDecomposition.lean:222`) is the union of the
+  stabilisers of the nonzero primes of `𝓞 K` and of the infinite places — **no completions
+  anywhere**.
+
+Bridging the two is `D_w ≅ G_{K_v}`, whose clean proof is Kummer theory on both sides plus
+Krasner's lemma.  Mathlib v4.28 has **no Krasner lemma** (`grep -rli krasner` over `Mathlib/`
+returns nothing), so this has to be built from scratch.  That is a real, self-contained workstream,
+not a lookup.
+
+### (e) A corollary in reach, not yet taken
+
+Taking `P = 1` in (b) — i.e. `p ∤ [K:k]` — every module is "induced" over the trivial group, so
+`Ш²(k,E) = 0` whenever the prime does not divide the degree of the level.  Formalising it needs
+`resObj H A ≅ Rep.of (inducedRep k ↥H ↥A.V)` for `Subsingleton ↥H` (ten lines, via `repEval` of the
+identity) and the vanishing of `SmoothH2` of a trivial group; deferred as off the critical path.
+
+### (f) Net position
+
+Unchanged in substance from §1.49(f): the wall is still row 5, in the honest formulation "the
+obstruction map `Ш²(k,E) → sha1Level` is zero" (Route 2) or `HasShaDualInjection` (Route 1).  What
+(a)–(b) buy is that the *cohomologically trivial* case is now completely closed, cheaply, and at
+the sharp hypothesis.  The next bricks, in order:
+
+1. a corollary of (b) feeding `ShaSurjection.lean`'s `hasShaDualInjection_of_subsingleton`;
+2. Krasner / `D_w ≅ G_{K_v}`, unblocking the cohomological dictionary of §1.49(f);
+3. SW's `p = 2` case of Theorem 13 (`sw.txt` @781–868) and the general-`A` dévissage (@869).
+
+### (g) Findings
+
+* **2483 (BUILD).** A **failed** `lake build <Module>` leaves the previously built olean in place,
+  so a subsequent `lake env lean` probe of a dependent silently uses the stale one.
+* **2484 (BUILD).** Several `lake env lean` probes may run concurrently; only `lake build` is
+  serialised.
+* **2485 (LEAN).** `resObj_tensorObj` is a `rfl` the unifier cannot see through inside
+  `tateModule (…)`; insert an explicit `rw [resObj_tensorObj]` before applying a tensor lemma.
+* **2486 (LEAN).** `indRestrictIso H (Rep.trivial k G X)` elaborates directly at the type
+  `resObj H (Rep.of (inducedRep k G X)) ≅ Rep.of (inducedRep k ↥H ((G ⧸ H) → X))`.
+* **2487 (LEAN).** `coindEval` is already taken in `InverseGalois.CFT.Tate`; the new reading map is
+  `repEval`.
+* **2488 (REPO).** `Profinite/Coinduced.lean` already proves Shapiro in both degrees.
+* **2489 (REPO).** `hasOpenNormalCore_of_isOpen` is at `Profinite/Corestriction.lean:349` and needs
+  `[IsTopologicalGroup G] [CompactSpace G]`.  For a discrete group prefer the new
+  `hasOpenNormalCore_of_discreteTopology`, which needs neither.
+* **2490 (LEAN).** For `map_one'`/`map_mul'` of a bundled hom into a Pi type, `rw`'s trailing `rfl`
+  does not see through `Pi.one`/`Pi.mul` — `rw [Pi.one_apply]` / `rw [Pi.mul_apply]` explicitly.
+* **2491 (LEAN).** `MonoidHom.mk'`'s proof obligation arrives un-beta-reduced, so
+  `rw [_root_.map_mul]` fails; insert an explicit `show` first.
+* **2492 (LEAN).** `MulEquiv.ofBijective` is noncomputable, so any `def` built from it needs
+  `noncomputable`.
+* **2493 (LEAN, KEY).** `rw` fails to match a pattern whose bound variable is typed `↥(kummerHomRep
+  M E).V` against the same-printing pattern typed `Additive (M →* E)`.  Use explicit
+  `Eq.trans`/`congrArg` chains, which check defeq, instead of `rw`.
+* **2494 (LEAN).** An element of `↥A.V` cannot take `.toMul`.  State the lemma so the LHS lives at
+  the syntactic `Additive (…)` type.  Passing such an element *as an argument* where `Additive (…)`
+  is expected does work.
+* **2495 (LEAN).** With `variable (K …)` earlier and `variable (M) in` immediately before a `def`,
+  the explicit-argument order is `K` then `M` (`kummerHomEval K M π`).
+* **2496 (WORKFLOW).** When `unusedSectionVars` lists many instances, split the file into a
+  pruned-variable section rather than a long `omit [...] in` chain.
+* **2497 (BUILD).** Root build after the round-one modules = 9815 jobs.
+* **2498 (REPO).** `Profinite/Corestriction.lean`: `corH2` (:546), `corH2_smoothH2Mk` (:557),
+  `corH2_resH2 … : corH2 … (resH2 H c) = c ^ Fintype.card (G ⧸ H)` (:686), `HasOpenNormalCore`
+  (:216), transversal helpers from :78.
+* **2499 (REPO).** `TateCohomology/SylowInjective.lean`: `eq_zero_of_coprime_nsmul`,
+  `index_smul_eq_zero_of_tateRes_eq_zero`, `eq_zero_of_tateRes_eq_zero`,
+  `eq_zero_of_tateRes_sylow_eq_zero`.
+* **2500 (REPO).** `Profinite/Res.lean`: `resH1` (:115), `resH2` (:119), and the instance
+  `isSmoothAction_subtype` (:110).
+* **2501 (MATH).** `translateEval` bijectivity ⟺ `E` free over `𝔽_p[G]`; the sharp criterion needs
+  only freeness over `𝔽_p[Syl_p(G)]`, and `Syl_p(G)` acts trivially on `μ_p`, so `W = E(-1)` is
+  `𝔽_p[P]`-free iff `E` is.
+* **2502 (MATH).** Corollary in reach: `p ∤ [K:k] ⟹ Ш²(k,E) = 0` — see (e).
+* **2503 (MATH, KEY).** SW's layers `E(d,ν)` are *quotients* of `(𝔽_p[G]^d)^{⊗ν}`, not free — see
+  (c).  The free-layer shortcut is refuted.
+* **2504 (MATHLIB GAP).** Mathlib v4.28 has **no Krasner lemma**.
+* **2505 (REPO).** `localClasses v n` (`PoitouTate/Selmer.lean:105`) and `localClassHom` (:109) both
+  go through `v.adicCompletion K`.
+* **2506 (REPO).** `decompositionSubgroups k K` (`Units/InfiniteDecomposition.lean:222`) mentions no
+  completions.
+* **2507 (REPO).** `Tate.nsmul_eq_zero_tateModule_of_nsmul` (`SylowSurjective.lean:82`) already
+  gives "a multiple killing the coefficients kills their complete cohomology" — do not rebuild it
+  from `nsmulHom`.
+* **2508 (REPO).** `smoothH2_pow_eq_one` — "the second cohomology of coefficients killed by `n` is
+  killed by `n`" — already exists, at `Profinite/Symbol.lean:268`, inside a Kummer-symbol file.
+* **2509 (MATHLIB).** There is **no** `Nat.Coprime.eq_one_of_dvd` in v4.28.  The lemma wanted is
+  `Nat.eq_one_of_dvd_coprimes (h : Coprime a b) (hka : k ∣ a) (hkb : k ∣ b) : k = 1`
+  (`Mathlib/Data/Nat/GCD/Basic.lean:223`).
+* **2510 (LEAN).** For `H : Subgroup G` and `x : ↥H`, the actions `x • e` and `(↑x : G) • e` are
+  defeq but `rw`'s trailing `rfl` does not close the gap; add an explicit `rfl` tactic line.
+* **2511 (BUILD).** `TateCohomology.SylowInduced` = 8062 jobs, 19 s; `Profinite.SylowVanish` = 8043
+  jobs, 22 s; `PoitouTate.ShaSylow` = 8516 jobs, 146 s.
+
+## §1.51 Where Poitou–Tate is actually needed, and Shapiro's lemma for the local-global obstruction
+
+### (a) The measurement: re-reading Schmidt–Wingberg with the repo in hand
+
+§1.50 left the position as "one vanishing criterion landed, the wall itself untouched".  Before
+building more criteria it was worth asking *where in Schmidt–Wingberg the wall is actually leaned
+on*, and the answer turns out to be narrower than the nine-row table of §0.36 suggests.
+
+* **2512 (MATH, KEY).** **SW Theorem 13 — including its general-`A` dévissage — uses Poitou–Tate
+  only in degree one**, in the exactness of
+  `H¹(k_S|K, μ_p) → ⊕_{v ∈ S} H¹(K_P, μ_p) → H¹(k_S|K, ℤ/p)^∨`.  `Ш²` plays no role there at all.
+  The repo already has that exactness: it is `perpSubgroup_selmerGroupFull`
+  (`PoitouTate/Selmer.lean:360`), which is finding 2480 read forwards.  So the theorem that carries
+  the whole weight of the solvable case is *not* blocked on row 5.
+* **2513 (MATH).** `Ш²`-duality enters SW at exactly one place: **Theorem 15, Step 2**, in the
+  "Claim" that `H²(G, E(m,ν)(-1)) ↠ Ш²(k, E(m,ν))` (sw.txt @1290–1342).
+* **2514 (MATH).** **Route 2 genuinely substitutes for that Claim.**  With `T = 𝔽_p` — no Tate
+  twist — Prop 6, i.e. `exists_genericShrink_res_cohomology_eq_zero`
+  (`Solvable/Shafarevich/GenericCohomology.lean:55`), shrinks a class of `H²(G, E(m,ν))` directly.
+  So the weaker statement `Ш²(k,E) ⊆ inf H²(G,E)` is enough, and the surjection is not needed.
+* **2515 (REPO).** Half of that weaker statement is already free.  `Ш²(k,A) ⊆ ker(res_K)` holds
+  because local triviality over `k` implies local triviality over `K` and `Ш²(K,μ_p) = 0`; this is
+  what `PoitouTate/ShaInflate.lean` sells, as `exists_galInflH2_eq_of_mem_sha2` (:73) and
+  `sha2_le_range_galInflH2` (:108).  **So the entire remaining gap of Route 2 is that the
+  seven-term transgression `d₂ : ker(res_K) → H¹(G, H¹(K,A))` kills `Ш²`**, where for
+  `A = μ_p ⊗ W` the target coefficients are `H¹(K,A) = (K^×/p) ⊗ W`.
+* **2516 (MATH).** `Ш¹(k, A′)` is purely group-theoretic: Chebotarev realises every cyclic subgroup
+  of `G` as a decomposition subgroup, and `shaInflH1_injective` is proven, so
+  `Ш¹(k,A′) = Ш¹_ω(G, A′)`.  Row 5 therefore *predicts* the group-theoretic answer
+  `Ш²(k, μ_p ⊗ W) ≅ Ш¹_ω(G, W^∨)^∨`.  That is consistent with the Heisenberg counterexample of
+  §1.13, where `W` is trivial and both sides are non-zero for `G = (ℤ/p)²`.
+* **2517 (MATH).** **Prop 6 forbids enlarging `K` one class at a time.**  Its bound
+  `(j+1) · (t · |H|^c · finrank (Layer ℓ (Generic U n S) j ⊗ T)) < r` fixes `|H|` *before* `r`,
+  while the class in question lives at level `r·n`.  So there is no "shrink the problem, then take
+  a bigger Kummer extension" dodge: the wall has to be closed for the fixed `K = k(μ_p, E)`.
+* **2518 (REPO).** The Krasner gap of finding 2504 is softer than recorded.
+  `Units/HasseTwoDecomposition.lean` already bridges decomposition subgroups to completions level
+  by level (`stabilizerQuotientEquivPrime`, `stabilizerRestrictPrime_surjective`), and
+  `Approximation/PowClass.lean`'s `exists_ne_zero_pow_mul_eq_completion` is the *surjectivity* half
+  of `K^×/p ↠ K_v^×/p`.  Only the injectivity half of the henselisation-versus-completion
+  comparison is missing.
+
+### (b) The bridge: any vanishing theorem now feeds the embedding-problem machinery
+
+* **2519 (REPO).** `hasShaDualInjection_of_sha2_eq_bot` (`PoitouTate/ShaSurjection.lean`) turns
+  `Ш² = ⊥` into `HasShaDualInjection` **with no duality hypothesis at all**, and from there into
+  `exists_injective_forall_shaCharacter_eq` and `shaDualHom_surjective`, which is what an embedding
+  problem consumes.  `Unique (⊥ : Subgroup G)` is a Mathlib instance
+  (`Mathlib/Algebra/Group/Subgroup/Lattice.lean:155`), so `infer_instance` produces the
+  `Subsingleton` the older `hasShaDualInjection_of_subsingleton` wants.  Every criterion of §1.50
+  and of (c) below therefore lands where it is needed without further plumbing.
+
+### (c) Shapiro's lemma for the everywhere locally trivial classes
+
+`Profinite/CoindLocal.lean`.  Restriction to a subgroup of a subgroup is composition of the cocycle
+with the inclusion into the ambient group, so a class which dies on a subgroup dies on every
+subgroup of it.  Shapiro's map is restriction to the subgroup one coinduces from followed by
+evaluation at the neutral element, and both steps are again composition of the cocycle with
+something, so they commute with restricting further.  Hence: if every subgroup of a family imposed
+on the subgroup sits inside a subgroup of the family imposed on the whole group, Shapiro's map
+carries `Ш` into `Ш`, and being injective it leaves nothing behind.
+
+* **2520 (REPO).** The only prior `Ш`-vanishing statement for a coinduced module was
+  `sha1_smoothCoind_eq_bot` / `sha2_smoothCoind_eq_bot` (`Profinite/Coinduced.lean:295`, `:569`),
+  which asks `H ∈ S`: the subgroup one coinduces from must itself be one of the local conditions.
+  That is useless for `H = G_{K'}`, which is never a decomposition subgroup.  The new
+  `sha1_smoothCoind_eq_bot_of_sha1` / `sha2_smoothCoind_eq_bot_of_sha2` replace it by a hypothesis
+  on the *inherited* family, and `…_of_comap` specialises to the family `{D ∩ H : D ∈ S}`, which
+  always inherits.
+* **2521 (LEAN).** All three naturality squares —
+  `resH2 D' ∘ resH2 H = comapH2 (subgroupInclusion D' hle) ∘ resH2 D` and
+  `resHⁿ D' ∘ smoothShapiroHⁿ = coeffHⁿ eval ∘ resHⁿ D' ∘ resHⁿ H` — are **`rfl` after
+  `smoothHⁿMk_surjective`**.  Every map in sight is composition of the representing cocycle with
+  something, and the accompanying cocycle/smoothness proofs are irrelevant.
+* **2522 (LEAN).** For `D' : Subgroup ↥H`, the equivariance hypothesis `coeffHⁿ` wants at `↥D'` is
+  discharged by `fun (g : ↥D') f => smoothCoindEval_smul (g : ↥H) f`: the action of `↥D'` on
+  `smoothCoind H M` and on `M` is by definition the action of `(g : ↥H)`.
+* **2523 (MATH).** The mechanism is **complementary** to the Sylow/freeness criterion of §1.50, not
+  a strengthening of it.  It applies to the trivial module — coinduced from `H = G` — which is as
+  far from free over `𝔽_p[G]` as a module gets.
+
+### (d) The permutation-module idea, and where it stops
+
+* **2524 (MATH).** The projection formula gives `μ_p ⊗ 𝔽_p[G/H] ≅ Coind_{G_{K'}}^{G_k}(μ_p)` for
+  `K' = K^H`.  With (c) and the already-proven `Ш²(K', μ_p) = 0` of §1.13 (ABHN plus
+  Grunwald–Wang) this yields **`Ш²(k, μ_p ⊗ 𝔽_p[G/H]) = 0` for every subgroup `H ≤ G`**, and by
+  additivity of `Ш²` for every `p`-permutation (trivial-source) module.
+* **2525 (MATH).** **But SW's layers are not permutation modules, and the ones that are are already
+  covered.**  For `V = 𝔽_p[G]^d` free, `V^{⊗ν}` is again free — the `G`-set `G^ν` with the diagonal
+  action is free — so tensor powers fall to §1.50 and need nothing new.  `Λ^ν` of a permutation
+  module is a *signed* permutation module once `p` is odd, which is not a permutation module.  For
+  `p ∤ ν` the Dynkin idempotent `θ_ν/ν` already splits the free Lie layer `L_ν(V)` off `V^{⊗ν}`, so
+  it is projective and hence free.  The open point is exactly `p ∣ ν`, and nothing in (c) or §1.50
+  reaches it.
+* **2526 (SCOPE).** To make the brick of (c) bite arithmetically one still needs the identification
+  of the inherited family `{D ∩ G_{K'}}` with `decompositionSubgroups K' Ω`.  Both families are
+  indexed by the *same* objects — nonzero primes of `𝓞 Ω` and infinite places of `Ω`, see
+  `Units/InfiniteDecomposition.lean:198`, `:217`, `:222` — so the content is only the transport
+  along `IntermediateField.fixingSubgroupEquiv`, for which `smoothH2Congr`
+  (`Profinite/H2Congr.lean:60`) is the tool.  This was left undone deliberately: the criterion it
+  would produce is the one (d) shows does not reach SW's layers.
+* **2527 (BUILD).** `Profinite.CoindLocal` = 8034 jobs, 14–16 s.
+
+### (e) Net position
+
+Rows 1–4 and 6–7 are done.  Row 5 is *not* on the critical path for SW Theorem 13, which is the
+theorem that does the work, and which needs only the degree-one Poitou–Tate already in the repo
+(2512).  Row 5 survives only inside Theorem 15 Step 2, where Route 2 replaces it by
+`Ш²(k,E) ⊆ inf H²(G,E)` (2514), of which the `ker res_K` half is already proven (2515).  The
+residue is a single transgression statement.  Two vanishing criteria now exist — freeness over
+`𝔽_p[Syl_p(G)]` (§1.50) and coinduction from a subfield (§1.51(c)) — and neither reaches the free
+Lie layers at `p ∣ ν`.  **The next move is therefore not another vanishing criterion but the
+cohomological packaging of Theorem 13**, which is unblocked.
+
+## §1.52 The two readings of a local Kummer condition are the same
+
+### (a) What was missing
+
+§1.51(a) located the one link between the *idelic* language in which the degree-one Poitou–Tate
+statement `perpSubgroup_selmerGroupFull` (`PoitouTate/Selmer.lean:360`) is proven and the
+*profinite* language in which the embedding-problem machinery consumes local conditions: a class of
+`H¹` is locally trivial at a place either because the unit it comes from becomes a `p`-th power in
+the **compositum** of the level with the fixed field of the decomposition subgroup (profinite), or
+because it becomes a `p`-th power in the **completion** at the place below (idelic).
+`Kummer/DecompositionLocalPower.lean` had only compositum ⟹ completion
+(`exists_pow_adicUnitHom_of_exists_pow_sup:155`, `exists_pow_infiniteUnitHom_of_exists_pow_sup:170`).
+
+* **2528 (MATH, KEY).** The missing direction needs **no** approximation of a henselization by a
+  completion, and in particular no Krasner lemma.  If `μ_p ⊆ K` and `a ∈ K^×` becomes a `p`-th power
+  in `K_v`, then `X^p - a` *splits* in `K_v`; so every root of it in `Ω` already lies in the
+  completion below and is fixed by the whole decomposition subgroup.  One root landing in a
+  completion drags the others along because the extension a radical cuts out is Galois.
+
+* **2529 (REPO).** Consequently the direction was already three quarters proven: the finite-level
+  criteria `forall_stabilizer_smul_eq_iff_exists_pow` (`Kummer/LocalPower.lean:72`) and
+  `forall_stabilizer_smul_eq_iff_exists_pow_infinite` (`:171`) are **iffs**, and
+  `Kummer/InfiniteLevelPower.lean:79`/`:128` used only their `.1` halves.  Mirroring those two
+  proofs with `.2` gives the converse at the level of an arbitrary Galois `Ω`, using the *same*
+  descent to a finite Galois level and the *same* `stabilizerRestrictPrime` /
+  `stabilizerRestrictInfinitePlace` (`Units/HasseTwoDecomposition.lean:92`, `:365`) — except that now
+  the level map is used forwards (apply it to `σ`) instead of through its surjectivity.
+
+### (b) The new module
+
+`InverseGalois/CFT/Kummer/LocalPowerConverse.lean` (imports `Kummer.DecompositionLocalPower`):
+
+* `forall_stabilizer_smul_eq_of_exists_pow_adicCompletion` — the decomposition subgroup at a nonzero
+  prime of `𝓞 Ω` fixes every radical of a radicand which is a `p`-th power in the completion of the
+  base below;
+* `forall_stabilizer_smul_eq_of_exists_pow_infiniteCompletion` — the same at an archimedean place;
+* `mem_sup_of_forall_restrictScalars_mem`, and its two specialisations
+  `mem_sup_of_forall_stabilizer_ideal_smul_eq` / `mem_sup_of_forall_stabilizer_infinitePlace_smul_eq`;
+* `exists_pow_sup_of_mem_sup`;
+* `exists_pow_sup_of_exists_pow_adicUnitHom` and `exists_pow_sup_of_exists_pow_infiniteUnitHom` —
+  the exact converses of `DecompositionLocalPower.lean:155`/`:170`.
+
+* **2530 (MATH/REPO).** The descent into the compositum is where the real content sits, and it is a
+  three-line composite: `IntermediateField.fixingSubgroup_sup` says the automorphisms fixing `K ⊔ F`
+  are those fixing `K` *and* those fixing `F`; with `F.fixingSubgroup = stabilizer Gal(Ω/k) P` that
+  is exactly `stabilizer Gal(Ω/↥K) P` read through `AlgEquiv.restrictScalars`; and
+  `InfiniteGalois.fixedField_fixingSubgroup` (Mathlib `FieldTheory/Galois/Infinite.lean:83`) turns
+  "fixed by all of them" into "lies in `K ⊔ F`".  The last step is what makes the statement true for
+  an **infinite** `Ω` with no finiteness hypothesis anywhere.
+
+* **2531 (LEAN).** To turn `τ ∈ K.fixingSubgroup` into an element of `Gal(Ω/↥K)` use
+  `IntermediateField.fixingSubgroupEquiv K ⟨τ, hτ⟩`; the identity
+  `(fixingSubgroupEquiv K ⟨τ, hτ⟩).restrictScalars k = τ` is `AlgEquiv.ext fun _ => rfl` (the same
+  idiom as `Units/IdeleClassH1Full.lean:66`), and the two automorphisms have the *same* underlying
+  function definitionally, so no transport of the conclusion is needed.  The repo's
+  `smul_restrictScalars_ideal` / `smul_restrictScalars_infinitePlace`
+  (`Kummer/DecompositionLocalPower.lean:84`, `:89`) move the stabilizer condition across.
+
+* **2532 (LEAN).** The two `forall_stabilizer_smul_eq_of_*` proofs need the level-place equality
+  (`primeUnder (𝓞 k) w = v`, resp. `v.comap (algebraMap k ↥L) = u`) **before** the iff is used, not
+  after: `subst` it as soon as it is available, which rewrites the hypothesis `hc` about the
+  completion of the base into the shape the level criterion produces.  Reading the fixed-point
+  conclusion back upstairs is
+  `rw [coe_stabilizerRestrictPrime, AlgEquiv.restrictNormalHom_apply] at h'` applied to
+  `h' : ((stabilizerRestrictPrime L hw σ : Gal(↥L/k)) ⟨b, hbL⟩ : Ω) = b`.
+
+* **2533 (SCOPE).** The **tensor-level** converse (the analogue of
+  `tensor_adicUnitHom_eq_zero_of_tensor_sup_eq_zero`) was deliberately not written: going backwards
+  coordinate by coordinate needs a radical in `Ω` for *each* coordinate, i.e. the hypothesis that
+  `Ω` contains the `p`-th roots of every `S`-unit.  That is true in the intended application (`Ω` is
+  a big enough Galois extension) but is an extra hypothesis, so it belongs with the caller.
+
+* **2534 (BUILD).** `Kummer.LocalPowerConverse` = 8326 jobs, 22–24 s; root build 9820 jobs, clean.
+
+### (c) Net position
+
+The profinite and idelic readings of a local Kummer condition are now interchangeable in **both**
+directions, at finite and at archimedean places, for an arbitrary Galois `Ω`.  This is the piece
+§1.51(a) named as the only obstacle between `perpSubgroup_selmerGroupFull` and the embedding-problem
+side, so the **degree-one Poitou–Tate statement is now usable where SW Theorem 13 needs it**.  What
+remains for the dictionary of §1.49(f) is bookkeeping rather than mathematics: identify
+`H¹(k_S|K, μ_p)` with `selmerGroup`, `H¹(K_v, μ_p)` with `localClasses v p`, the localisation with
+`localClassHom`, and the local symbol with the local duality pairing.  Row 5 is unchanged and still
+off the critical path (2512, 2514).
+
+## §1.53 The obstruction to a *continuous* solution of an embedding problem
+
+### (a) What was missing
+
+SW Theorem 15 is an induction whose every step is an embedding problem: given the surjection
+`ρ : G_k ↠ Gal(K/k)` and a central extension `1 → N → E → Gal(K/k) → 1`, one must lift `ρ` to
+`G_k → E`.  The repo already had the *abstract* criterion
+`GroupExtension.exists_lift_iff_cohomologyClass_pullback_eq_zero`
+(`CFT/GroupCohomology/Pullback.lean:169`): the embedding problem is solvable exactly when the class
+of the pulled back extension vanishes in `H²(Γ, N)`.
+
+* **2535 (MATH/REPO).** That criterion is **not** the one an arithmetic argument can use.  It counts
+  *all* lifts `Γ →* E`, with `Γ` an abstract group; the Galois-theoretic content of a solution is
+  that the lift is **continuous**, i.e. cuts out a field.  For a profinite `Γ` and a finite `E` this
+  is the condition that `ker f` be open, and there is no formal passage from an abstract lift to a
+  continuous one — the abstract `H²` is enormous (it sees every discontinuous cocycle) and its
+  vanishing is a strictly weaker statement than solvability of the embedding problem.
+
+  So the whole criterion has to be redone in the repo's smooth cohomology `SmoothH2 Γ N`, which is
+  the group the local-global theorems (`sha2`, `sha2_le_range_galInflH2`, `resH2`) speak about.
+
+* **2536 (MATH).** Both directions go through the *same* object, the fibre product `S.pullback ρ`,
+  and smoothness passes across it for one reason only: **a homomorphism of a topological group is
+  smooth exactly when its kernel is open and normal.**  Hence the natural hypothesis on the datum is
+  not a topology on `G` at all but `IsOpenNormal ρ.ker`, which is what
+  `ρ : G_k ↠ Gal(K/k)` supplies for a *finite* `Gal(K/k)` with no discreteness plumbing whatsoever.
+  Carrying a topology on `G` instead would force a `DiscreteTopology` instance and a continuity
+  argument at every use site.
+
+### (b) The new module
+
+`InverseGalois/CFT/Profinite/EmbeddingObstruction.lean` (imports `GroupCohomology.Pullback`,
+`Profinite.Comap`, `Profinite.Res`).  The datum is
+`S : GroupExtension N E G`, `ρ : Γ →* G`, `[MulDistribMulAction Γ N]` with
+`hact : ∀ γ n, γ • n = S.conjActHom (ρ γ) n`, and `hker : IsOpenNormal ρ.ker`.
+
+* `GroupExtension.pullbackSection` / `coe_pullbackSection` / `factorSet_pullbackSection` — a section
+  of `S` induces one of `S.pullback ρ`, whose factor set is the original factor set read through
+  `ρ`;
+* `isOpenNormal_ker_of_isSmooth₁` / `isSmooth₁_of_isOpenNormal_ker` — the smoothness dictionary of
+  2536, for a homomorphism `Γ →* E`;
+* `liftObstruction` / `liftObstruction_apply` / `isMulCocycle₂_liftObstruction` /
+  `isSmooth₂_liftObstruction` / `liftObstructionClass` / `liftObstructionClass_eq` — the obstruction
+  cocycle, its smoothness, its class in `SmoothH2 Γ N`, and its independence of the section;
+* `liftObstructionClass_eq_one_iff` — **the class vanishes exactly when `ρ` lifts through a smooth
+  homomorphism `Γ →* E`**;
+* `isOpenNormal_ker_comp_subtype`, `resH2_liftObstructionClass`,
+  `resH2_liftObstructionClass_eq_one_iff`, `liftObstructionClass_mem_sha2` — the restriction to a
+  subgroup and the local-global packaging.
+
+* **2537 (LEAN).** The repo's `IsSmooth₁ (u : G → M)` puts **no** algebraic requirement on `M`, so
+  `IsSmooth₁ (f : Γ → E)` typechecks for a homomorphism into a nonabelian group and is exactly
+  "constant on the cosets of an open normal subgroup".  This is what lets the *same* predicate state
+  the smoothness of the obstruction's trivialising cochain (valued in the abelian `N`) and of the
+  lift (valued in `E`).
+
+* **2538 (LEAN).** `factorSet_pullbackSection` is proved by `inl_injective` and then
+  `Subtype.ext (Prod.ext _ _)`: the first coordinate is the original identity `inl_factorSet` and
+  the second is `g * h * (g * h)⁻¹ = 1`.  Both coordinates need a `show` to unfold the fibre-product
+  subgroup coercion; nothing else in the file needs `simp` on those coercions.
+
+* **2539 (LEAN).** In the forward direction the lift is
+  `(S.pullbackFst ρ).comp s.toMonoidHom` for `s := (S.pullback ρ).splittingOfIsMulCoboundary₂ …`,
+  and its smoothness is checked on `N₁ ⊓ ρ.ker` — the open normal subgroup for the trivialising
+  cochain met with the kernel — via the `show` that unfolds the splitting to
+  `(S.inl (x γ))⁻¹ * σ (ρ γ)`.  In the backward direction the trivialising cochain is
+  `(S.pullback ρ).sectionRatio (pullbackSection S ρ σ) s.toSection` for `s := pullbackSplitting …`,
+  and `inl_sectionRatio` identifies it with `σ (ρ γ) * (f γ)⁻¹`; its smoothness is checked on the
+  same `N₁ ⊓ ρ.ker`.  Both cocycle identities close with the gotcha-2044 idiom
+  `apply Additive.ofMul.injective; simp only [ofMul_mul, ofMul_inv, ofMul_div]; abel`.
+
+* **2540 (LEAN/REPO, KEY).** `resH2_liftObstructionClass` is **`rfl`**: restricting the obstruction
+  class to a subgroup `D` is the obstruction class of the restricted homomorphism `ρ.comp D.subtype`
+  — the two cocycles are literally the same function of `(d₁, d₂)`.  Hence
+  `liftObstructionClass_mem_sha2` is four lines, and *local solvability of the embedding problem is
+  membership of its obstruction in `sha2`* with no comparison map in between.
+
+* **2541 (BUILD).** `Profinite.EmbeddingObstruction` = 8033 jobs, 14 s.
+
+### (c) Net position
+
+The chain SW Step 1 → Step 2 asks for is now assembled out of existing bricks:
+
+1. solve the embedding problem at every place — `liftObstructionClass_mem_sha2` puts the obstruction
+   in `sha2 N (decomposition subgroups)`;
+2. `sha2_le_range_galInflH2` (`PoitouTate/ShaInflate.lean`) says such a class is **inflated from the
+   finite level** `Gal(K/k)`;
+3. `exists_genericShrink_map_eq_zero` (`Solvable/Shafarevich/LayerCohomology.lean`, SW Prop 6) kills
+   the inflated class after shrinking the layer.
+
+* **2542 (SCOPE).** What is still not written is the bridge in the other direction: identifying
+  `liftObstructionClass` with `comapH2 ρ` of the class of `S` over the *finite* quotient `G`, which
+  is what SW writes as `φ*(ε)`.  That needs `G` carried with its discrete topology and
+  `Profinite.Discrete` to cross between smooth and ordinary cohomology; it is bookkeeping, and it is
+  only needed if a step wants to compute the obstruction at the level rather than transport it.
+
+## §1.54 Where the obstruction comes from: the class of the extension
+
+### (a) What SW Step 1 actually asks
+
+§1.53 gives the obstruction of an embedding problem `(S, ρ)` as a class of `SmoothH2 Γ N` and shows
+it dies on a subgroup exactly when the problem is solvable there.  But SW Theorem 15, Step 1(a)
+never solves a local problem by hand: it says the *local group extension is split* — the extension
+`S` restricted to the decomposition subgroup `G_p ≤ G = Gal(K|k)` splits — "in particular, the
+associated local embedding problems are solvable in a trivial way" (sw.txt @1107–1111).  Turning
+that sentence into a proof needs a comparison the previous module did not have: the obstruction
+downstairs on `Γ` versus the extension class upstairs on `G`.
+
+* **2543 (MATH).** The comparison costs nothing once one notices that **the class of an extension is
+  itself an obstruction class** — the obstruction of the embedding problem given by the *identity*
+  of the quotient.  On a discrete `G` the trivial subgroup is open, so `IsOpenNormal (id G).ker`
+  holds and `liftObstructionClass S (MonoidHom.id G)` is defined; a lift of the identity is exactly
+  a splitting, and its smoothness is vacuous.  No separate construction, and no comparison of two
+  differently-built cocycles, is needed.
+
+* **2544 (LEAN, KEY).** Consequently **every naturality statement in sight is `rfl`**.  Writing
+  `fs = S.factorSet σ`, the obstruction of `(S, ρ)` is `comap₂ ρ fs`, the extension class is
+  `comap₂ id fs`, and `comap₂` composes on the nose (with `Prod`-eta and definitional proof
+  irrelevance doing the rest).  So
+
+  - `comapH2 ρ (extensionClass S) = liftObstructionClass S ρ` is `rfl`, and
+  - `resH2 D (liftObstructionClass S ρ) = comapH2 (subgroupRestrict ρ D H hle) (resH2 H
+    (extensionClass S))` is `rfl`
+
+  for any subgroup `H ≤ G` containing `ρ(D)`.  The second one is the whole of Step 1(a)'s "in
+  particular".
+
+### (b) The new module
+
+`InverseGalois/CFT/Profinite/EmbeddingClass.lean` (imports `Profinite.Discrete`,
+`Profinite.EmbeddingObstruction`).  For `G` discrete, `S : GroupExtension N E G`,
+`[MulDistribMulAction G N]` with `hactG : ∀ g n, g • n = S.conjActHom g n`:
+
+* `isOpenNormal_ker_id`, `extensionClass`, `extensionClass_eq` — the class of the extension and its
+  independence of the section;
+* `extensionClass_eq_one_iff` — it vanishes iff the extension splits;
+* `resH2_extensionClass_eq_one_iff` — it dies on `H ≤ G` iff the extension splits over `H`;
+* `subgroupRestrict`, `isOpenNormal_ker_subgroupRestrict` — the induced map `↥D →* ↥H`;
+* `smul_eq_smul_map`, `comapH2_extensionClass`,
+  `liftObstructionClass_eq_one_of_extensionClass_eq_one`;
+* `resH2_liftObstructionClass_eq_comapH2`,
+  `resH2_liftObstructionClass_eq_one_of_resH2_extensionClass_eq_one`,
+  `liftObstructionClass_mem_sha2_of_extensionClass`, `exists_smooth_lift_of_extensionClass`.
+
+Added to `Profinite/EmbeddingObstruction.lean` at the same time:
+`exists_smooth_lift_of_sha2_eq_bot` — a locally solvable embedding problem is solvable as soon as
+`sha2 N T = ⊥`.
+
+* **2545 (LEAN).** `MonoidHom.ker_codRestrict` (Mathlib `Algebra/Group/Subgroup/Ker.lean:278`) gives
+  `(f.codRestrict H h).ker = f.ker` propositionally but *not* definitionally, so
+  `isOpenNormal_ker_subgroupRestrict` has to `rw` before applying
+  `isOpenNormal_ker_comp_subtype`.  This does not disturb the `rfl` of 2544: the smoothness argument
+  of `comapH2` is a `Prop`.
+
+* **2546 (LEAN).** `exists_smooth_lift_of_extensionClass` needs `include hactG hact hker in` — `hker`
+  occurs only in the *proof*, the statement mentioning neither `liftObstructionClass` nor `ρ.ker`.
+  The three sibling theorems do mention it and are auto-included.
+
+* **2547 (BUILD).** `Profinite.EmbeddingClass` = 8036 jobs, 43 s.
+
+### (c) Net position
+
+The chain of §1.53(c) now starts one step earlier and needs no arithmetic input for its first link:
+
+0. the extension `S` splits over every subgroup of `G` which contains the image of a decomposition
+   subgroup — this is the statement SW's Prop 6 shrinking is used to *arrange*;
+1. hence `liftObstructionClass_mem_sha2_of_extensionClass` puts the obstruction in `sha2`;
+2. `sha2_le_range_galInflH2` inflates it from the finite level;
+3. `exists_genericShrink_map_eq_zero` kills the inflated class.
+
+* **2548 (SCOPE).** Step 0 is the one that still has to be *produced*, and producing it is exactly
+  where SW invokes Prop 6 with `T = Ind_{G_p}^G 𝔽_p` and `c = 2`.  The repo's Prop 6 with
+  coefficients, `exists_genericShrink_res_cohomology_eq_zero`
+  (`Solvable/Shafarevich/GenericCohomology.lean:55`), is already in exactly that shape — a finite
+  `H` mapping into the operator group `U`, coefficients a layer tensored with a fixed representation,
+  any single degree.  What is missing between the two is the seam of `Profinite/Discrete.lean`
+  carried one step further: `discreteSmoothH2Hom` has to be shown to intertwine `resH2 H` with the
+  ordinary restriction, and `Rep.ofMulDistribMulAction G N` to be matched with
+  `genericLayerTensor`.  That is the next brick.
+
+## §1.55 The seam of §1.53–§1.54 made a seam of maps
+
+### (a) What was missing
+
+§1.54(c) named the next brick: `discreteSmoothH2Hom` has to intertwine `resH2 H` with the ordinary
+restriction map.  `Profinite/Discrete.lean` compares the two *groups* — `SmoothH^i(G, M)` with
+`H^i(G, Additive M)` for a discrete `G` — but says nothing about the *maps*, so a vanishing theorem
+proved with representations could not be spent on a smooth class.
+
+* **2549 (LEAN).** The comparison `discreteSmoothH2Hom` (and `discreteSmoothH1Hom`) does **not**
+  require `[DiscreteTopology G]` — only its *injectivity* and *surjectivity* do, and in degree one
+  not even injectivity (`Discrete.lean:109` carries `omit [DiscreteTopology G] in`, because a
+  one-coboundary is trivialised by a constant, which is smooth for free).  So the naturality squares
+  hold for an arbitrary topological group and only the `↔` statements need discreteness.
+
+* **2550 (LEAN, KEY).** Both squares are one `rw` and one `congrArg`.  The smooth side moves a
+  cocycle by composing with a map; the ordinary side does the same through
+  `groupCohomology.mapCocycles₂`.  So after `H2π_comp_map_apply` the two cocycles are equal by
+  `Subtype.ext rfl`, and the whole proof of each square is
+
+  ```
+  obtain ⟨a, ha, hs, rfl⟩ := smoothH2Mk_surjective x
+  rw [comapH2_smoothH2Mk, discreteSmoothH2Hom_smoothH2Mk, discreteSmoothH2Hom_smoothH2Mk]
+  simp only [_root_.toAdd_ofAdd]
+  congr 1
+  rw [groupCohomology.H2π_comp_map_apply]
+  exact congrArg _ (Subtype.ext rfl)
+  ```
+
+* **2551 (LEAN).** `toAdd_ofAdd` is a **root-level** name (Mathlib `Algebra/Group/TypeTags/Basic.lean:116`),
+  not `Multiplicative.toAdd_ofAdd`; inside `namespace InverseGalois.CFT` it must be written
+  `_root_.toAdd_ofAdd`.
+
+### (b) The new module
+
+`InverseGalois/CFT/Profinite/DiscreteComap.lean` (imports `Profinite.Coeff`, `Profinite.Discrete`,
+`Profinite.Res`).  Everything is stated for `Γ G M N : Type` — universe zero, forced by
+`Rep.ofMulDistribMulAction (M G : Type)` and by `Profinite/Discrete.lean`'s degree-two section.
+
+* `discreteRepHom ρ hact` — the identity of `Additive M`, read as a morphism
+  `(Action.res _ ρ).obj (Rep.ofMulDistribMulAction G M) ⟶ Rep.ofMulDistribMulAction Γ M`; with
+  `discreteRepHom_hom` and the instance `isIso_discreteRepHom` (via
+  `Action.isIso_of_hom_isIso`);
+* `discreteSmoothH1Hom_comapH1`, `discreteSmoothH2Hom_comapH2` — the square for pullback along a
+  smooth homomorphism;
+* `discreteResRepHom H`, `discreteSmoothH1Hom_resH1`, `discreteSmoothH2Hom_resH2` — the same for the
+  inclusion of a subgroup;
+* `resH1_eq_one_iff_map_eq_zero`, `resH2_eq_one_iff_map_eq_zero` (the latter needs
+  `[DiscreteTopology G]`), `mem_sha1_iff_forall_map_eq_zero`, `mem_sha2_iff_forall_map_eq_zero`;
+* `discreteCoeffRepHom φ hφ`, `discreteSmoothH1Hom_coeffH1`, `discreteSmoothH2Hom_coeffH2` — the
+  square for an equivariant homomorphism of the coefficients, matching the shape
+  `groupCohomology.map (MonoidHom.id H) ((Action.res _ f).map …) c` in which SW's Prop 6 delivers its
+  conclusion.
+
+* **2552 (BUILD).** `Profinite.DiscreteComap` = 8033 jobs, 22 s; full root build 9823 jobs, 0
+  warnings, 0 errors.
+
+### (c) What the remaining half of finding 2548 costs
+
+The group-direction and coefficient-direction squares are now both available, so
+`resH2 H (extensionClass S hactG σ) = 1` is interchangeable with the vanishing of an ordinary
+restriction map.  What is *not* yet available is the identification of the coefficient
+representation.
+
+* **2553 (SCOPE, KEY).** `Rep.ofMulDistribMulAction G M` is a `Rep ℤ G`; `genericLayerTensor U m S ℓ j T`
+  is a `Rep (ZMod ℓ) U`.  Mathlib has **no** change-of-rings comparison for `groupCohomology`
+  (nothing under `Mathlib/RepresentationTheory/` mentions `restrictScalars` for it), so the two
+  cannot be matched by an off-the-shelf lemma.  Two routes:
+
+  1. build the comparison — for an abelian group `V` that carries a `ZMod ℓ`-module structure, the
+     inhomogeneous cochain complexes over `ℤ` and over `ZMod ℓ` are the *same functions with the same
+     differential*, so their cohomologies are canonically additively isomorphic; or
+  2. re-run only the cohomological wrapper of Prop 6 over `ℤ`.  The content of
+     `exists_genericShrink_res_cohomology_eq_zero` is not cohomological at all: steps 1 and 3 of its
+     proof are `groupCohomology.π` surjectivity and `map_π_eq_zero`, both available over any base
+     ring, and the one substantive step is `exists_genericShrink_forall_rTensor_eq_zero`, which is
+     pure module theory about `Layer ⊗ T` and its `ZMod ℓ`-dimension and can be reused verbatim.
+
+  Route 2 is the cheaper one and does not need a single new comparison isomorphism; route 1 would be
+  the better library citizen.  Either way the layer must first appear as the `Additive` copy of a
+  `CommGroup` with a `MulDistribMulAction`, since that is how the kernel of a group extension
+  presents itself.
+
+## §1.56 Route 3: the count never needed the cohomology at all
+
+### (a) The observation that dissolves finding 2553
+
+§1.55(c) offered two routes past the `Rep ℤ G` / `Rep (ZMod ℓ) U` mismatch.  There is a third and
+much cheaper one, and it is the one SW's own proof of Prop 6 actually uses.
+
+* **2554 (MATH/REPO, KEY).** The shrinking count is not a statement about cohomology.  Read the proof
+  of `exists_genericShrink_res_cohomology_eq_zero` (`GenericCohomology.lean:55`): it lifts each class
+  to a cocycle, applies the count to the finitely many *values* of that cocycle, and concludes.  The
+  cohomological wrapper contributes exactly two facts — that `groupCohomology.π` is surjective and
+  that a cochain map killing a cocycle kills its class.  Both are available in the smooth language
+  too, as `smoothH2Mk_surjective` and `smoothH2Mk_eq_one_iff` with the constant primitive.  So the
+  ring over which the representation is defined never enters, and no change-of-rings comparison is
+  needed.
+
+* **2555 (REPO, KEY).** The layer is *already* the `Additive` copy of a `CommGroup`:
+  `Layer p P n := Additive ↥(layerSub p P n)` is an `abbrev` (`Layer.lean:93`), and
+  `layerSubMap p f n : ↥(layerSub p P n) →* ↥(layerSub p Q n)` (`Layer.lean:167`) is the
+  multiplicative coefficient homomorphism of which `layerMap` (`Layer.lean:173`) is the additive
+  copy.  So the last sentence of §1.55(c) is already satisfied by the existing definitions: the
+  transport between the two readings is `Additive.ofMul`, and every statement of the count carries
+  over by `rfl`.
+
+### (b) The new module
+
+`InverseGalois/Solvable/Shafarevich/LayerSmooth.lean` (imports `CFT.Profinite.Coeff`,
+`CFT.Profinite.Res`, `Shafarevich.GenericHomology`).
+
+* `genericLayerSubAction` — **instance** `MulDistribMulAction U ↥(layerSub ℓ (Generic U m S) j)`,
+  built from `genericLayerRep` by conjugating with `Additive.toMul`/`Additive.ofMul`; all four
+  fields are `map_one`/`map_mul`/`map_add`/`map_zero` of the linear action.  With
+  `genericLayerSubAction_smul`, which is `rfl`.
+* `layerSubMap_smul` — the multiplicative reading of `layerMap_isOperatorHom`: a homomorphism
+  commuting with the operators induces an equivariant map of multiplicative layers.  Also `rfl`
+  modulo `Additive.ofMul`.
+* `layerSubMap_smul_comm` — the same for a group `H` acting through `f : H →* U`, taking the two
+  compatibilities `h • v = f h • v` as hypotheses (the `hact` idiom of `Profinite/Comap.lean`).
+* `layerSubMap_smul_subgroup` — the same for `P : Subgroup U`, where both compatibilities are `rfl`.
+* `exists_genericShrink_forall_layerSubMap_eq_one` — the count, multiplicatively.
+* `exists_genericShrink_forall_coeffMap₂_eq_one` — the count applied to the values of finitely many
+  two cochains on a finite group, index type `Fin t × (H × H)`.
+* `exists_genericShrink_forall_coeffH2_eq_one` — **the count on smooth second cohomology**: for
+  `H` finite acting through `f : H →* U`, finitely many classes of
+  `SmoothH2 H ↥(layerSub ℓ (Generic U (r * n) S) j)` are killed by `coeffH2 (layerSubMap ℓ …)` for
+  one surjective `genericShrink`.
+* `exists_operatorHom_forall_coeffH2_eq_one` — **Prop 6 in the smooth language**, with the rank
+  chosen in advance: for `P : Subgroup U` there is an `m` such that every family of `t` classes of
+  `SmoothH2 ↥P ↥(layerSub ℓ (Generic U m S) j)` is killed by some surjective `IsOperatorHom`
+  `α : Generic U m S →* Generic U n S`.
+
+* **2556 (LEAN).** The bound is `(j + 1) * (t * Nat.card H ^ 2 * finrank (ZMod ℓ) (Layer …)) < r`,
+  the same shape as `exists_genericShrink_res_cohomology_eq_zero` with `c = 2`; `Nat.card H ^ 2`
+  comes out of `Nat.card (Fin t × (H × H))` by `simp [Nat.card_prod, pow_two]`.
+
+* **2557 (LEAN).** The whole smooth wrapper is six lines:
+
+  ```
+  choose d hd hs hdx using fun ν => smoothH2Mk_surjective (x ν)
+  obtain ⟨a, hsurj, ha⟩ := exists_genericShrink_forall_coeffMap₂_eq_one U r n S hS hr d
+  refine ⟨a, hsurj, fun ν => ?_⟩
+  rw [← hdx ν, coeffH2_smoothH2Mk]
+  refine (smoothH2Mk_eq_one_iff _ _).2 ⟨1, isSmooth₁_one, ?_⟩
+  rw [ha ν]; exact coboundary₂_one
+  ```
+
+* **2558 (LEAN).** Because the equivariance proof appears *inside* the statement (as the second
+  explicit argument of `coeffH2`), it has to be a named lemma, not an inline `by` block — hence
+  `layerSubMap_smul_comm` and `layerSubMap_smul_subgroup` are stated separately even though each is
+  two lines.
+
+### (c) What this is worth, and the a-priori bound that constrains it
+
+This is SW Thm 15 Step 1(a) in usable form: `κ_ν(p)` is a class of `H²(G_p, E(m,ν))` with `G_p` a
+decomposition subgroup of the *finite* group `G = Gal(N/k)`, and Prop 6 with `c = 2` produces a
+`π : F(m) ↠ F(n)` killing it.  The repo's `f : H →* U` generality replaces SW's
+`T = Ind_{G_p}^G 𝔽_p` — the induced module is only there to move a statement about a subgroup into
+one about the whole group, and the repo's count never needed the whole group.
+
+* **2559 (SCOPE).** The acting group must be **finite** (or the classes inflated from a finite
+  quotient).  The count fixes `r` before the classes are given, and the number of scalar equations is
+  the number of *values* of the cocycles; a smooth cocycle on a profinite `Γ` has finitely many
+  values but with no bound known in advance.  This is not a defect: in Thm 15 the classes genuinely
+  live on `Gal(N/k)` and its decomposition subgroups, and inflation to `G_k` is the separate,
+  already-built step `galInflH2`.
+
+## §1.57 Step 0 of SW Thm 15: the extension of one layer, split over the places
+
+### (a) What landed
+
+Four commits, `438d582` → `a8b3f2e`, turn §1.56's count into the statement SW's Step 1(a) needs.
+
+* `InverseGalois/CFT/Profinite/ExtensionCoeff.lean` (rewritten, `438d582`) — a **morphism of
+  extensions over a varying quotient**.  `map_smul_of_extensionMap` says a morphism is equivariant
+  on the kernels, and `coeffH2_extensionClass_eq_comapH2` says the class of the extension above,
+  read through the map of the kernels, is the class of the extension below **pulled back along the
+  map of the quotients**.  The earlier fixed-quotient statements survive as corollaries obtained by
+  taking `φ = id` and cancelling the pullback with `comapH2_id`.
+* `InverseGalois/CFT/GroupCohomology/SemidirectExtension.lean` (`80d4524`) — `semidirectExtension`,
+  the `GroupExtension` built from an injection, a surjection, exactness and a compatibility with the
+  operators; `conjActHom_semidirectExtension` computes its conjugation action.
+  `Shafarevich/QuotientChar.lean` gains `quotientChar`, the character of the operator group acting
+  on a quotient (moved out of `AbelianKernel.lean`).
+* `InverseGalois/CFT/Profinite/ComapIso.lean` (`c5c3618`, extended in `a8b3f2e`) — functoriality of
+  `comapH1`/`comapH2`, compatibility with `coeffH1`/`coeffH2`, injectivity of the pullback along an
+  isomorphism, and `resH2_range_eq_one_of_comapH2_eq_one`.
+* `InverseGalois/Solvable/Shafarevich/LayerExtension.lean` (`c5c3618`) — `layerExtension`, one layer
+  of the descending `p`-central series of a group *with operators* presented as a `GroupExtension`
+  of semidirect products, plus `layerSemidirectMap` and the two compatibilities
+  `inl_layerSemidirectMap` / `rightHom_layerSemidirectMap` in exactly the `hinl`/`hright` shape
+  `coeffH2_extensionClass_eq_comapH2` consumes.
+* `InverseGalois/Solvable/Shafarevich/LayerSplit.lean` (`a8b3f2e`) — the assembly.
+
+### (b) The statement produced
+
+```
+exists_operatorHom_forall_resH2_extensionClass_eq_one
+    (ℓ) [Fact ℓ.Prime] (U) [Group U] [Finite U] [TopologicalSpace U] [DiscreteTopology U]
+    (n) (S) [Group S] [Finite S] (hS : IsPGroup ℓ S) (j t) (P : Fin t → Subgroup U)
+    (σn : (layerExtension ℓ (genericAut U n S) j).Section) :
+  ∃ m, ∀ s : ∀ ν, ↥(P ν) →* GenericQuot ℓ U m S j,
+    (∀ ν y, SemidirectProduct.rightHom (s ν y) = (y : U)) →
+    ∃ (α : Generic U m S →* Generic U n S) (hα : IsOperatorHom α), Function.Surjective α ∧
+      ∀ ν, resH2 ((layerSemidirectMap ℓ hα j).comp (s ν)).range (extensionClass … σn) = 1
+```
+
+* **2560 (MATH/SCOPE).** This is SW Thm 15 Step 1(a) with the induced module removed.  SW invokes
+  Prop 6 with `T = Ind_{G_p}^G 𝔽_p` and `c = 2` precisely to turn a statement about a decomposition
+  subgroup into one about the whole group; the repo's count works on a subgroup directly, so the
+  induction is unnecessary.  SW's own remark ("replace `T` by the direct sum of `Ind_{G_p}^G 𝔽_p`,
+  where `p` runs through `Ram(K|k) ∪ S_p ∪ S_∞` … we deal with all these primes within one shrinking
+  process") is realised by the sigma index type `(ν : Fin t) × (↥(P ν) × ↥(P ν))` in
+  `exists_genericShrink_forall_subgroupCoeffH2_eq_one`.
+
+* **2561 (MATH).** The order of the quantifiers matters and is the strong one: `m` is produced
+  **before** the sections are given.  The rank the count needs depends only on `t`, on the orders of
+  the `P ν` and on `finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j)`, none of which mention the
+  sections.  In the arithmetic this is what lets the field `N` be constructed after the group.
+
+* **2562 (MATH).** The hypothesis on a section is only `rightHom ∘ s ν = ↑`, i.e. that `s ν` is a
+  right inverse to the projection over `P ν`.  That is exactly what a place completely decomposed in
+  the field the level above cuts out provides: its decomposition subgroup in the big group maps
+  isomorphically onto the decomposition subgroup below, and the inverse of that isomorphism is `s ν`.
+  Injectivity of `s ν` is then automatic (take `rightHom` of both sides), so no separate hypothesis
+  is needed and no `Subgroup` of the big group appears in the statement.
+
+### (c) The Lean findings
+
+* **2563 (LEAN, KEY).** `coeffH2_extensionClass_eq_comapH2` **must have `S₁`, `S₂`, `α`, `ψ`, `φ`
+  pinned by name** at the `GenericQuot` call site.  Left implicit, elaboration hits a
+  `(deterministic) timeout at whnf` that survives `maxHeartbeats 2000000` (9m19s).  The cause is
+  argument order: `hact : ∀ g n, g • n = φ g • n` is elaborated *before* `hright`, so `fun _ _ => rfl`
+  is checked while `φ` is still a metavariable, and the unifier tries to solve for a homomorphism out
+  of a `SemidirectProduct` of a quotient of a quotient of a free pro-`ℓ` group.  With
+  `(φ := layerSemidirectMap ℓ hα j)` and the other four pinned, the same line elaborates in seconds.
+  The same pinning is needed on `map_smul_of_extensionMap`.
+
+* **2564 (LEAN).** For the *same* reason, do not build the transport (`MonoidHom.ofInjective`,
+  the subgroup action, `comapH2_comapH2`, `comapH2_congr`) inline in a proof whose context already
+  holds the big `hcmp`.  Factor it into `resH2_range_eq_one_of_comapH2_eq_one`, stated over abstract
+  discrete groups; there the same chase is instantaneous.  Inside *that* lemma the pinning is needed
+  once more: `comapH2_comapH2` must be given `(π := (MonoidHom.ofInjective hinj : G →* ↥f.range))`
+  and `(ρ := f.range.subtype)`, because the subgroup action reduces `(ofInjective hinj g) • m` to
+  `f g • m` and the unifier otherwise picks `π := f`.
+
+* **2565 (LEAN).** `MonoidHom.ofInjective {f : G →* N} (hf : Injective f) : G ≃* f.range`
+  (Mathlib `Algebra/Group/Subgroup/Ker.lean:185`).  The name is `MonoidHom.ofInjective`, **not**
+  `MulEquiv.ofInjective` (zero hits in v4.28).  `MonoidHom.ofInjective_apply` is `rfl`, which is what
+  makes `H.subtype.comp ↑e = f` provable by `MonoidHom.ext fun _ => rfl`.
+
+* **2566 (LEAN).** `GroupExtension.Section` (Mathlib `GroupTheory/GroupExtension/Defs.lean:241`) has
+  no default instance.  Build one with
+  `⟨Function.surjInv S.rightHom_surjective, Function.rightInverse_surjInv _⟩`.
+
+* **2567 (LEAN).** `IsOperatorHom α` (`GenericHomology.lean:93`) unfolds *literally* to the `hf`
+  hypothesis shape of `layerSemidirectMap`, so `layerSemidirectMap ℓ hα j` typechecks with no
+  massaging.  Beware the argument lists, which differ because of a `variable {P}` in
+  `LayerExtension.lean`: `pCentralProj_comp_pCentralAut p j χ`, `layerSub_central p j`,
+  `layerSemidirectMap ℓ hα j` (its `n` is its own binder), but `inl_layerSemidirectMap ℓ j hα` and
+  `rightHom_layerSemidirectMap ℓ j hα` (section `j` first, then `hf`).
+
+* **2568 (LEAN).** `GenericQuot` carries its own `⊥` `TopologicalSpace` and `DiscreteTopology`
+  instances and a single cross-level action `genericQuotAction ℓ U m n S j`, exported as a `def` and
+  made a **local** instance.  Importers must re-declare `attribute [local instance]
+  genericQuotAction` (the gotcha-1931 idiom).  Do **not** also import `LayerExtension`'s
+  `layerSemidirectAction`: the two are defeq but not syntactically equal, and having both in scope
+  reintroduces the unification blowup of 2563.
+
+### (d) What is now missing between here and Thm 15
+
+Step 0 exists as a group-theoretic theorem.  The remaining chain, in order:
+
+1. produce the sections from arithmetic — a place completely decomposed in `N|k` gives
+   `s ν : ↥(P ν) →* GenericQuot ℓ U m S j` with `rightHom ∘ s ν = ↑` (Chebotarev, already available
+   as `CFT/…/SplitDensityFamily` and the decomposition-subgroup dictionary);
+2. inflate: `resH2 … = 1` on the finite group is turned into a statement about `G_k` by
+   `galInflH2`, whose kernel is controlled by `sha2_le_range_galInflH2`;
+3. Steps 1(b), 1(c) (unramified and ramified primes), Step 2 (which can use
+   `sha2_le_range_galInflH2_of_isoInducedRep` instead of Poitou–Tate) and Steps 3–4.
+
+---
+
+## §1.58 The `p`-central series as a ladder: `GenericLayerStepEP`
+
+### (a) What landed
+
+Commit `c778eac`, new module `InverseGalois/Solvable/Shafarevich/LayerTower.lean` (155 lines),
+wired into `InverseGalois/Solvable/Shafarevich.lean` (import + narrative paragraph).  Full build
+green: **9831 jobs, 0 errors, 0 warnings**.
+
+The point is bookkeeping, not mathematics, but it is the bookkeeping that turns "SW Theorem 15" from
+a paragraph of prose into a single Lean `Prop` with a proof obligation of fixed shape.
+
+### (b) The statement
+
+```lean
+def GenericLayerStepEP (ℓ : ℕ) : Prop :=
+  ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U], IsPGroup ℓ S → IsInverseGalois U →
+    ∀ j : ℕ, (∀ m : ℕ, IsInverseGalois (GenericQuot ℓ U m S j)) →
+      ∀ n : ℕ, IsInverseGalois (GenericQuot ℓ U n S (j + 1))
+
+theorem genericSplitEP_of_genericLayerStepEP {ℓ : ℕ} [Fact ℓ.Prime] (h : GenericLayerStepEP ℓ) :
+    GenericSplitEP ℓ
+
+theorem splitPrimePowerEP_of_genericLayerStepEP (h : ∀ ℓ : ℕ, ℓ.Prime → GenericLayerStepEP ℓ) :
+    SplitPrimePowerEP
+```
+
+Three things about the shape are deliberate.
+
+1. **The induction hypothesis quantifies over `m` again.**  Solving at layer `j + 1` for `n` letters
+   is allowed to use the solution at layer `j` for *any* number of letters.  That is exactly what
+   §1.57's `exists_operatorHom_forall_resH2_extensionClass_eq_one` consumes: it *produces* the
+   number of letters `m` it needs and only afterwards receives the sections it has to kill, so the
+   step cannot be run with `m = n` fixed in advance.
+
+2. **The conclusion is stated with `GenericQuot`, not with a bare kernel.**  The operator group `U`
+   rides alongside at every rung, so each rung is again a split embedding problem of the same kind,
+   and the ladder never leaves the class of groups the induction is about.
+
+3. **Primality is only needed at the two ends.**  `GenericLayerStepEP ℓ` itself makes sense for any
+   `ℓ`; `Fact ℓ.Prime` enters only through `exists_pCentral_eq_bot`.  Hence the prime-restricted
+   `splitPrimePowerEP_of_genericLayerStepEP`, which is the honest entry point — the pre-existing
+   `splitPrimePowerEP_of_genericSplitEP` asks for `∀ ℓ : ℕ` including composite `ℓ`, where the
+   `p`-central series need not terminate and the statement is not the one anybody wants to prove.
+
+### (c) The two ends of the ladder
+
+Both are three-line arguments once the right Mathlib brick is named.
+
+* **Bottom (`j = 0`).**  `pCentral p P 0 = ⊤` holds by `rfl`, so
+  `QuotientGroup.subsingleton_quotient_top` gives `Subsingleton (P ⧸ pCentral p P 0)` with no
+  rewriting at all; this is registered as the instance `subsingleton_quotient_pCentral_zero`.  Then
+  `Shafarevich.rightEquivOfSubsingleton` (`PrimePower.lean:184`) collapses the semidirect product
+  onto its right factor, giving `pCentralZeroEquiv : (P ⧸ pCentral p P 0) ⋊[pCentralAut p χ 0] U ≃* U`,
+  and `IsInverseGalois.of_mulEquiv` transports the hypothesis on `U`.
+
+* **Top (`pCentral p P j = ⊥`).**  Rather than an isomorphism, a *surjection* suffices, and a
+  surjection is cheaper: `QuotientGroup.lift _ (MonoidHom.id P)` is a homomorphism
+  `pCentralBotHom : P ⧸ pCentral p P j →* P` as soon as `pCentral p P j ≤ ker (id)`, which is the
+  hypothesis; `SemidirectProduct.map` pairs it with `MonoidHom.id U` (the commutation condition is
+  `rfl` after `QuotientGroup.induction_on`), and surjectivity is
+  `fun x => ⟨⟨QuotientGroup.mk x.left, x.right⟩, rfl⟩`.  `IsInverseGalois.of_surjective` finishes.
+  Going through `of_surjective` rather than `of_mulEquiv` avoids ever having to produce an inverse
+  or to rewrite the subgroup inside the quotient type.
+
+### (d) Lean findings
+
+* **2569 (LEAN).** `exists_pCentral_eq_bot` (`PCentral.lean:242`) has `p` **explicit** but `P`
+  **implicit**, unlike `pCentral p P n` itself where both are explicit.  Call it as
+  `exists_pCentral_eq_bot ℓ (isPGroup_generic U n S hS)`; passing the group positionally fails with
+  an application type mismatch against `IsPGroup ℓ ?m`.
+
+* **2570 (LEAN).** `Shafarevich.rightEquivOfSubsingleton` lives in the **top-level** `Shafarevich`
+  namespace (`PrimePower.lean`, which opens `SemidirectProduct`), not in `InverseGalois.Shafarevich`.
+  From inside `namespace InverseGalois.Shafarevich` write `_root_.Shafarevich.rightEquivOfSubsingleton`,
+  the same idiom `LayerExtension.lean:73` uses for `_root_.Shafarevich.quotientChar`.
+
+* **2571 (LEAN).** Avoid a `variable` block for a group of theorems whose hypotheses differ: the
+  ends-of-the-ladder theorems need `[Group U]` but not `[Finite U]`, and `linter.unusedSectionVars`
+  fires on the ones that do not use the finiteness.  Writing the binders out per declaration is
+  shorter than the `omit`s it would take.
+
+* **2572 (LEAN).** `SplitPrimePowerEP` (`PrimePower.lean:179`) binds `[Fact p.Prime]` inside the
+  `∀`, so `intro H U _ _ _ _ p hp hH φ hU` names it `hp` and `hp.out : p.Prime` is available; a
+  locally named hypothesis of class type is still found by instance search.
+
+### (e) What `GenericLayerStepEP` now demands
+
+Unfolded for the working case, the obligation is: given a realization `N|ℚ` of
+`GenericQuot ℓ U m S j` for every `m`, realize `GenericQuot ℓ U n S (j + 1)`.  The pieces already in
+the repo line up as follows.
+
+1. §1.57 supplies `m`, a surjective operator homomorphism `α : Generic U m S →* Generic U n S`, and
+   the fact that the class of the extension
+   `1 → layerSub ℓ (Generic U n S) j → GenericQuot ℓ U n S (j+1) → GenericQuot ℓ U n S j → 1`
+   restricts trivially to the image of each prescribed section.
+2. `layerSemidirectMap ℓ hα j : GenericQuot ℓ U m S j →* GenericQuot ℓ U n S j` is the surjection
+   which turns a realization at level `m` into one of `GenericQuot ℓ U n S j`, i.e. into the
+   embedding problem the step has to solve.
+3. The obstruction to solving it is `galInflH2` of that extension class
+   (`Profinite/EmbeddingObstruction.lean`, `Profinite/ExtensionCoeff.lean`).  Item 1 says it dies on
+   the decomposition subgroups of the finitely many prescribed places, so — once the sections are
+   produced from arithmetic (§1.57(d) item 1) — it lands in `sha2`, and `sha2_le_range_galInflH2`
+   (`PoitouTate/ShaInflate.lean:108`) is what turns "in `sha2`" into "inflated from a finite level",
+   which is the form a *proper* solution needs.
+
+So the chain of §1.57(d) is unchanged; what §1.58 adds is that its endpoint is now a named `Prop`
+whose consequence is Shafarevich's theorem, with no ladder bookkeeping left to do afterwards.
+
+## §1.59 The realization bridge, and why the ladder has to carry `φ`
+
+### (a) What landed
+
+Two commits.
+
+* `a30302f`, new module `InverseGalois/CFT/Profinite/Realize.lean` (169 lines), wired into
+  `InverseGalois/CFT.lean` (import + narrative paragraph).  Full build green: **9833 jobs, 0
+  errors, 0 warnings**.
+* `aea4f92`, new module `InverseGalois/Solvable/Shafarevich/LevelSolution.lean` (163 lines), wired
+  into `InverseGalois/Solvable/Shafarevich.lean`.  Full build green: **9834 jobs, 0 errors, 0
+  warnings**.
+
+### (b) The bridge, both ways
+
+Everything that builds a Galois extension one open subgroup at a time produces a *homomorphism of a
+profinite group*, and `IsInverseGalois` asks for a *finite extension*.  Nothing in the repo crossed
+that gap.  `Realize.lean` does, in both directions:
+
+```lean
+theorem exists_isOpenNormal_le_ker {Φ : G →* Q} (hsm : IsSmoothHom Φ) :
+    ∃ N : Subgroup G, IsOpenNormal N ∧ N ≤ Φ.ker
+
+theorem exists_level_comp_restrictNormalHom_eq (Φ : Gal(K/k) →* G) (hsm : IsSmoothHom Φ) :
+    ∃ (E : IntermediateField k K) (_ : FiniteDimensional k E) (_ : IsGalois k E)
+      (ψ : Gal(↥E/k) →* G), ∀ g : Gal(K/k), ψ (AlgEquiv.restrictNormalHom E g) = Φ g
+
+theorem exists_smooth_surjective_of_galEquiv {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
+    [IsAlgClosed Ω] [IsGalois k Ω] (L : Type*) [Field L] [Algebra k L] [FiniteDimensional k L]
+    [IsGalois k L] {G : Type*} [Group G] [TopologicalSpace G] (e : Gal(L/k) ≃* G) :
+    ∃ Φ : Gal(Ω/k) →* G, Function.Surjective Φ ∧ IsSmoothHom Φ
+
+theorem isInverseGalois_iff_exists_smooth_surjective {Ω : Type} [Field Ω] [Algebra ℚ Ω]
+    [IsAlgClosed Ω] [IsGalois ℚ Ω] {G : Type} [Group G] [TopologicalSpace G]
+    [DiscreteTopology G] : IsInverseGalois G ↔
+      ∃ Φ : Gal(Ω/ℚ) →* G, Function.Surjective Φ ∧ IsSmoothHom Φ
+```
+
+Both directions are short because the bricks were already there.  Forwards: smoothness applied to
+`⊥` (open and normal in a discrete group) puts an open normal subgroup inside the kernel;
+`exists_fixingSubgroup_le` (`Krull.lean:92`) replaces it by the subgroup fixing a finite Galois
+level; `IntermediateField.restrictNormalHom_ker` identifies that subgroup with the kernel of
+restriction, so `QuotientGroup.lift` factors `Φ` through the finite level, and
+`IsInverseGalois.of_surjective_galHom` finishes.  Backwards: `IsAlgClosed.lift` embeds the finite
+extension, `AlgEquiv.ofInjectiveField` identifies it with its image, `Normal.of_algEquiv` and
+`LinearEquiv.finiteDimensional` transport the two instances the image needs, and
+`AlgEquiv.autCongr` turns the identification into an isomorphism of Galois groups.
+
+Note that only `Normal` and `FiniteDimensional` are transported — **separability of the level is
+never used**, because surjectivity of restriction (`AlgEquiv.restrictNormalHom_surjective`) and
+openness of its kernel only ask for those two.
+
+### (c) `GenericLayerStepEP` is true, but it is not the statement to prove
+
+§1.58 isolated the step of the ladder as
+
+```lean
+∀ j, (∀ m, IsInverseGalois (GenericQuot ℓ U m S j)) → ∀ n, IsInverseGalois (GenericQuot ℓ U n S (j+1))
+```
+
+This is a correct reduction — `splitPrimePowerEP_of_genericLayerStepEP` is a theorem — but it
+cannot be proved by the natural induction, and the reason is an order-of-quantifiers problem, not a
+missing lemma.
+
+To take the step one has to make the class of the next layer die on the decomposition subgroups of
+the finitely many *bad* places (those ramified in `K|k`, those above `ℓ`, the infinite ones), and
+§1.57's count needs those subgroups **before** it can say how many letters `m` it wants.  With the
+hypothesis in the weak form above, the only handle on the realization at layer `j` is `∃ N|ℚ`, and
+the field `N` — hence its places, hence the subgroups — may be different for every `m`.  The count
+then has to be given the subgroups before it produces `m`, and the subgroups are only available
+after `m` is chosen.  Circular.
+
+SW break the circle in the *statement* of Theorem 15: they fix `φ : G_k ↠ G(K|k)` once and carry
+condition (i), "all `p ∈ Ram(K|k) ∪ S_p ∪ S_∞` are completely decomposed in `N_{ν,n}|K`", through
+the induction (sw.txt @1104–1232).  The prescribed subgroups then depend on `K` and `ℓ` alone —
+fixed before the shrinking — and the order of quantifiers is consistent.
+
+### (d) `LevelSolution`: the induction predicate that carries `φ` and the places
+
+```lean
+def LevelSolution (ℓ : ℕ) (U : Type) [Group U] (S : Type) [Group S] {k Ω : Type*} [Field k]
+    [Field Ω] [Algebra k Ω] (φ : Gal(Ω/k) →* U) (T : Set (Subgroup Gal(Ω/k))) (m j : ℕ) : Prop :=
+  ∃ Φ : Gal(Ω/k) →* GenericQuot ℓ U m S j, Function.Surjective Φ ∧ IsSmoothHom Φ ∧
+    (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) ∧ ∀ D ∈ T, ∀ x ∈ D, φ x = 1 → Φ x = 1
+```
+
+The fourth clause is the group-theoretic rendering of **"completely decomposed"**.  With
+`Gal(Ω/K) = ker φ` and `Gal(Ω/N) = ker Φ`, a place `w` of `Ω` with decomposition subgroup
+`D ≤ Gal(Ω/k)` lies over a place of `K` whose local degree in `N|K` is one exactly when
+`D ∩ ker φ ≤ ker Φ`, which is what `∀ x ∈ D, φ x = 1 → Φ x = 1` says.  No arithmetic is needed to
+*state* it, which is why the module is sorry-free today: what is missing is only the theorem that
+the decomposition subgroups of the bad places form a set `T` for which the step can be taken.
+
+Both ends of the ladder are unaffected by the extra clause:
+
+* **Bottom.**  `Φ := (pCentralZeroEquiv ℓ (genericAut U m S)).symm ∘ φ`.  Its `rightHom` is `φ` by
+  `rfl` (the inverse of `rightEquivOfSubsingleton` is `inr`), and if `φ x = 1` then `Φ x = 1` by
+  `map_one`, for **any** `T` whatsoever.
+* **Top.**  `pCentralBotSemidirectHom` covers the semidirect product asked for; composing and
+  discarding the last two clauses, `isInverseGalois_of_smooth_surjective` finishes.
+
+### (e) The quantifier order, and where `T` is chosen
+
+```lean
+def GenericLevelStepEP (ℓ : ℕ) : Prop :=
+  ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
+      [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
+      (φ : Gal(Ω/ℚ) →* U), IsPGroup ℓ S → Function.Surjective φ → IsSmoothHom φ →
+    ∃ T : Set (Subgroup Gal(Ω/ℚ)), ∀ j : ℕ,
+      (∀ m : ℕ, LevelSolution ℓ U S φ T m j) → ∀ n : ℕ, LevelSolution ℓ U S φ T n (j + 1)
+```
+
+The `∃ T` sits **after** `φ` and **before** the induction on `j`.  That placement is the whole
+content of the definition and it is forced:
+
+* after `φ`, because the bad places are the places of `K = Ω^{ker φ}`, so `T` cannot be chosen
+  before `φ` is;
+* before `j`, because the induction has to hand the *same* local conditions from one rung to the
+  next — a `T` chosen inside the induction would be a different family at every rung and would
+  prove nothing;
+* **not** universally quantified, because for `T = ∅` the step is not provable: with no local
+  conditions carried, the obstruction of the next layer cannot be shown to be everywhere locally
+  trivial and so cannot be killed.  A version of this statement with `∀ T` would be a reduction to
+  something false in spirit, which is why it is stated with `∃ T`.
+
+`Shafarevich.genericSplitEP_of_genericLevelStepEP` then instantiates `Ω := AlgebraicClosure ℚ`
+(`IsGalois ℚ (AlgebraicClosure ℚ)` comes for free from `IsAlgClosure.isGalois` since `CharZero ℚ`),
+pulls `φ` out of `IsInverseGalois U` through the bridge of (b), takes the `T` the hypothesis
+provides, climbs with `forall_levelSolution`, and lands with `exists_pCentral_eq_bot`.
+`splitPrimePowerEP_of_genericLevelStepEP` is then the same three lines as in §1.58.
+
+### (f) Lean findings
+
+**2573 (LEAN).**  There is no `Subgroup.comap_bot`.  The lemma is
+`MonoidHom.comap_bot (f : G →* N) : (⊥ : Subgroup N).comap f = f.ker`
+(`Mathlib/Algebra/Group/Subgroup/Ker.lean:270`) and it is proved by `rfl`, so `N ≤ (⊥ : Subgroup
+Q).comap Φ` and `N ≤ Φ.ker` are literally interchangeable — no rewriting needed at all.
+
+**2574 (LEAN).**  `IsAlgClosed.lift` has its target `M` implicit and takes no explicit arguments:
+`let f : L →ₐ[k] Ω := IsAlgClosed.lift` elaborates, the type ascription fixing everything.  It asks
+for `[Algebra.IsAlgebraic k L]`, which instance search finds from `[FiniteDimensional k L]`.
+
+**2575 (LEAN, ℚ-algebra diamond).**  Applying `IsInverseGalois.of_surjective_galHom ↥E ψ hψ` to an
+`E : IntermediateField ℚ K` **fails**:
+
+```
+synthesized type class instance is not definitionally equal to expression inferred by typing rules,
+synthesized  DivisionRing.toRatAlgebra
+inferred     E.algebra'
+```
+
+For base ℚ the `IntermediateField` algebra instance loses to `DivisionRing.toRatAlgebra`, and the
+two are only propositionally equal (`Algebra ℚ A` is a subsingleton, not a defeq singleton).  The
+cure that avoids `@`-application entirely: state the intermediate result as an existential whose
+`Field`/`Algebra` components are **explicit binders** — exactly the shape of `IsInverseGalois`
+itself — so that destructuring installs them as *local* instances, which then win instance search:
+
+```lean
+theorem exists_finiteGalois_surjective_of_smooth ... :
+    ∃ (L : Type) (_ : Field L) (_ : Algebra k L) (_ : FiniteDimensional k L) (_ : IsGalois k L)
+      (ψ : Gal(L/k) →* G), Function.Surjective ψ
+```
+
+Proved over a generic `k` (where no diamond exists) and consumed at `k = ℚ` after `obtain`.
+
+**2576 (LEAN).**  A `show` whose statement contains `_` in the position of a `MonoidHom.comp`
+argument fails with "pattern … is not definitionally equal to target", because the `_` becomes a
+metavariable that unification will not solve through the coercion.  Use
+`simp only [MonoidHom.coe_comp, Function.comp_apply, MulEquiv.coe_toMonoidHom]` instead of `show`.
+
+### (g) What `GenericLevelStepEP` now demands
+
+Unfolded, and with `K` the field `φ` cuts out, the obligation is: *choose the bad places of `K`;
+then, given for every `m` a smooth surjection `Φ_m : G_ℚ ↠ GenericQuot ℓ U m S j` over `φ` which is
+completely decomposed at them, produce for every `n` such a surjection one layer further up.*  The
+chain, in order:
+
+1. **Choose `T`.**  The decomposition subgroups in `Gal(Ω/ℚ)` at the places of `K` that ramify in
+   `K|ℚ`, lie above `ℓ`, or are infinite.  Finitely many, and they depend on `φ` alone.
+2. **Turn complete decomposition into a subgroup with injective projection.**  This is exactly the
+   hypothesis of `exists_operatorHom_forall_resH2_extensionClass_subgroup_eq_one` (§1.57,
+   `LayerSection.lean`): `∀ x ∈ D ν, rightHom x = 1 → x = 1`, with prescribed image `P ν ≤ U`.
+   The clause of `LevelSolution` gives it, once `D ν` is taken to be `Φ_m (D)` for `D ∈ T`.
+3. **Shrink.**  §1.57 hands back `m` and a surjective operator homomorphism `α` killing the class of
+   the layer on each `D ν`.
+4. **Inflate.**  The obstruction to lifting `Φ_m` one layer is `comapH2 Φ_m` of the extension class;
+   step 3 makes it locally trivial at the places of `T`, SW Step 1(b) (procyclic decomposition
+   group, `H²(Ẑ, M) = 0`) at the unramified ones, and SW Step 1(c) (adjoining a `p^{a+ε}`-th root of
+   a uniformizer) at the remaining ramified ones — so it lies in `Ш²`.
+5. **Kill it.**  `sha2_le_range_galInflH2` puts it in the image of inflation from a finite level and
+   `exists_genericShrink_map_eq_zero` shrinks it away (§1.54(c)).
+6. **Re-establish the clause.**  The lift must again be completely decomposed at `T`; this is SW's
+   bookkeeping in Steps 3–4 and is what makes the induction close.
+
+Items 1 and 6 are new work; 2 and 3 are done; 4 and 5 are the Poitou–Tate-shaped part.
+
+## §1.60 The rung assembled: `HasLocalLift`, `HasRungData`, and the exact shape of what the arithmetic still owes
+
+### (a) What landed
+
+Four commits, in order.
+
+* `LevelObstruction.lean` — `exists_operatorHom_forall_exists_subgroup_resH2_extensionClass_eq_one`
+  (§1.57's count, phrased for a homomorphism over the operator group),
+  `exists_levelSolution_liftObstructionClass_mem_sha2`, `exists_lift_of_levelSolution`.
+* `LayerFrattini.lean` — past the first layer a lift over a surjection is a surjection.
+* `LevelLift.lean` — `exists_lift_surjective_of_levelSolution`.
+* `LevelTwist.lean` — `levelSolution_succ_of_hasCocyclePrescription`: **one whole rung**, in
+  exchange for one prescription of restrictions in degree one.
+* `29e2b2f` — the family against which local triviality is measured separated from the finite family
+  the count consumes, with the new named hypothesis `HasLocalLift`.
+* `ee55d35`, new module `InverseGalois/Solvable/Shafarevich/LevelRung.lean` — `galLayerAction`,
+  `HasRungData`, `levelSolution_succ_of_hasRungData`, `genericLevelStepEP_of_hasRungData`.  Full
+  build green: **9840 jobs, 0 errors, 0 warnings**.
+
+### (b) Two families, not one
+
+The count of §1.57 consumes a **finite** family `D : Fin t → Subgroup Gal(Ω/k)` — the decomposition
+subgroups at the bad places.  Local triviality of the obstruction, on the other hand, has to be
+measured against **all** decomposition subgroups, because `Ш²` is what a duality or an inflation
+theorem can reach and "trivial at finitely many places" is not.  The first version of the rung
+conflated the two and asked `sha2 M (Set.range D) = ⊥`, which is a statement about finitely many
+places and cannot be the one the arithmetic supplies.
+
+The separation is `sha2 M T = ⊥` for an arbitrary family `T ⊇ Set.range D`, together with
+
+```lean
+def HasLocalLift (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] (n : ℕ) (S : Type)
+    [Group S] [Finite S] (j : ℕ) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω]
+    (φ : Gal(Ω/k) →* U) {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k))
+    (T : Set (Subgroup Gal(Ω/k))) : Prop :=
+  ∀ Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j, IsSmoothHom Φ →
+    (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) →
+    (∀ A ∈ Set.range D, ∀ x ∈ A, φ x = 1 → Φ x = 1) →
+    ∀ A ∈ T, A ∉ Set.range D →
+      ∃ g : ↥A →* GenericQuot ℓ U n S (j + 1),
+        IsSmooth₁ (g : ↥A → GenericQuot ℓ U n S (j + 1)) ∧
+          ∀ x : ↥A, (layerExtension ℓ (genericAut U n S) j).rightHom (g x) = Φ x
+```
+
+which is SW Step 1(b)+(c) verbatim: *along the places the finite family does not name, the step is
+locally solvable.*  `sha2_mono` (`Res.lean:192`) makes the pair strictly weaker than the old single
+hypothesis, and the branch is discharged by `resH2_liftObstructionClass_eq_one_iff`
+(`EmbeddingObstruction.lean:271`).
+
+**MATH CORRECTION (finding 2577).**  The first attempt at the extra hypothesis was
+`∀ z, resH2 A z = 1` — *"the extra members carry no second cohomology at all"*.  It builds, and it
+is **false**: a decomposition subgroup at a good place is `Ẑ`-like only for the *unramified*
+quotient; the full local group has `H²(G_{k_v}, μ_n) = Br(k_v)[n] ≅ ℤ/n ≠ 0`.  The correct
+condition away from the finite bad family is *local solvability of the step*, not `H²`-vanishing.
+
+### (c) `HasRungData` and `genericLevelStepEP_of_hasRungData`
+
+```lean
+def HasRungData (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] [TopologicalSpace U]
+    [DiscreteTopology U] (S : Type) [Group S] [Finite S] {k Ω : Type*} [Field k] [Field Ω]
+    [Algebra k Ω] (φ : Gal(Ω/k) →* U) {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k))
+    (T : Set (Subgroup Gal(Ω/k))) : Prop :=
+  (∀ n : ℕ, LevelSolution ℓ U S φ (Set.range D) n 1) ∧
+    ∀ n j : ℕ, 1 ≤ j → HasLocalLift ℓ U n S j φ D T ∧
+      @sha2 Gal(Ω/k) _ _ ↥(layerSub ℓ (Generic U n S) j) _ (galLayerAction ℓ U n S j φ) T = ⊥ ∧
+        @HasCocyclePrescription Gal(Ω/k) _ _ ↥(layerSub ℓ (Generic U n S) j) _
+          (galLayerAction ℓ U n S j φ) t fun ν => D ν ⊓ φ.ker
+```
+
+`genericLevelStepEP_of_hasRungData` derives `GenericLevelStepEP ℓ` from it, with
+`T := Set.range D` handed to `GenericLevelStepEP`'s `∃ T`.  The first conjunct is the rung
+`j = 0 → 1` asked for outright, because `layerSub ℓ P 0 = P/Φ(P)` is the Frattini *quotient*, not a
+subgroup of the Frattini subgroup, so `LayerFrattini` does not apply and a lift across it need not
+be onto.
+
+Three Lean notes.  `galLayerAction := MulDistribMulAction.compHom _ φ`, so `hactφ` is `fun _ _ =>
+rfl`.  The conjuncts are written with `@` and the explicit instance rather than a term-level `letI`,
+so that a `letI := galLayerAction …` at the use site produces syntactically the same instance.  A
+`GroupExtension.Section` is always available — `rightHom_surjective` is a *field* of
+`GroupExtension` (Mathlib `GroupExtension/Defs.lean:70`), so
+`⟨Function.surjInv S.rightHom_surjective, Function.rightInverse_surjInv _⟩` builds one; there is no
+`Nonempty` instance in Mathlib.
+
+### (d) ⚠️ The `sha2 = ⊥` conjunct is *too strong* for `j ≥ 1` (finding 2578, MATH, KEY)
+
+`HasRungData` is a correct sufficient condition and `genericLevelStepEP_of_hasRungData` is a
+theorem, but the middle conjunct is not what the arithmetic can supply, and it should not be built
+on further.  Reasons, in increasing order of decisiveness.
+
+1. `Ш²(k, M) ≅ Ш¹(k, M^D)^∨` (Poitou–Tate), and `Ш¹` of a Galois module with non-cyclic splitting
+   group is not zero in general.  Only `Ш¹_ω` — classes dying on every *cyclic* subgroup — is
+   forced to contain it, by Chebotarev.
+2. Where it *is* zero: if `M` is free over `𝔽_ℓ[U]` then `M` is a direct sum of `n` copies of `Ind_{ker φ}^{G_k} 𝔽_ℓ`, and
+   Shapiro turns `Ш²(k, M)` into `Ш²(K, 𝔽_ℓ)^n ≅ (Ш¹(K, μ_ℓ)^∨)^n = 0` (Grunwald–Wang is not
+   special at exponent `ℓ`).  This is exactly `ShaInduced.lean`'s
+   `sha2_eq_bot_of_bijective_translateEval` (`:154`), whose module docstring records that no duality
+   theorem is used.
+3. The Frattini layer `j = 0` **is** free over `𝔽_ℓ[U]` — `Generic U n S / Φ(Generic U n S) =
+   𝔽_ℓ[U]^n`.  Higher layers are **not**: the lower-central layers of a free group on a free
+   `U`-set have basic commutators `[x_{i,u}, x_{i,u'}]` with the *same* first index, whose
+   stabilizers in `U` are non-trivial.  Growing `n` shrinks the non-free part in proportion but
+   never removes it, which is precisely why SW need a shrinking argument rather than a vanishing
+   theorem.
+
+So: at `j = 0` the conjunct is provable and harmless; at `j ≥ 1` it has to be replaced by the
+composition of (e).
+
+### (e) The Step-1 / Step-2 composition is **not** circular, and it needs only ONE class
+
+The worry was that Step 2's shrinking bound depends on the number of classes to be killed, that the
+classes are the whole of `Ш²`, and that `Ш²` grows with the number of letters.  It does not, because
+the class to be killed is a *single* one, known before the second shrink is chosen.  The order:
+
+1. **Target `n` is given.**  `exists_genericShrink_map_eq_zero` (`LayerCohomology.lean:104`) asks
+   for `(j+1) * (t * Nat.card U ^ c * finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j)) < r` with
+   `t = 1`, `c = 2`.  Every quantity on the left depends on `n, j, U, S, ℓ` only, so **`r` is fixed
+   now**, before anything about the solution is known.
+2. **Set `N := r * n`.**  Run §1.57's count at target `N`: it returns `m`, and for every solution
+   at level `j` with `m` letters an operator homomorphism `α : Generic U m S ↠ Generic U N S`
+   with `res_{Φ(D_ν)} (extensionClass) = 1`.
+3. **Build `Φ_N : Gal(Ω/k) ↠ GenericQuot ℓ U N S j`** and its obstruction
+   `ω_N = comapH2 Φ_N (extensionClass)`.  Step 1(b)/(c) plus step 2 put `ω_N ∈ Ш²(Gal(Ω/k),
+   Layer(N, j))`.
+4. **Inflate.**  `sha2_le_range_galInflH2` (`ShaInflate.lean:108`) writes `ω_N = galInflH2 K hπ x`
+   for a **single** `x ∈ SmoothH2 (Gal(K/k)) (Layer(N,j))`, provided `K := Ω^{ker φ}` contains
+   `μ_ℓ` — which is arranged by enlarging `U` at the start, exactly as SW enlarge `K` to contain
+   `μ_{p^e}`.
+5. **Shrink again.**  Apply `exists_genericShrink_map_eq_zero` with `t = 1` and that one class: it
+   returns `a : Fin r → ℕ` with `genericShrink U r n S a : Generic U (r*n) S ↠ Generic U n S`
+   surjective and the image of `x` in `H²(U, Layer(n,j))` zero.
+6. **Push down.**  `Φ_n :=` (the induced map on `GenericQuot`) `∘ Φ_N`.  It is again surjective,
+   again over `φ`, again trivial along `D`.  Its obstruction is the image of `ω_N`, which is the
+   inflation of the image of `x`, which is `1`.  So the obstruction is trivial **outright** — the
+   `sha2 = ⊥` hypothesis disappears, and with it the need to re-establish local triviality.
+
+Note what step 6 buys: the obstruction is not merely locally trivial, it is trivial, so the branch
+of `exists_levelSolution_liftObstructionClass_mem_sha2` that goes through `HasLocalLift` is only
+needed to place `ω_N` in `Ш²` in step 3 — it is still needed, but nothing downstream of it is.
+
+### (f) What is still owed, after (e)
+
+The composition of (e) turns the middle conjunct of `HasRungData` into the hypotheses of
+`sha2_le_range_galInflH2`, of which one is hard:
+
+```lean
+hsha1 : sha1Level E K.fixingSubgroup K.fixingSubgroup_isOpen (decompositionSubgroups k Ω) = ⊥
+```
+
+Unwound: with `E` the layer (trivial `Gal(Ω/K)`-action) and twisted Kummer theory,
+`H¹(Gal(Ω/K), E) ≅ (K^×/(K^×)^ℓ) ⊗ Hom(μ_ℓ, E)`, so `hsha1` is
+
+  `Ш¹(Gal(K/k), (K^×/ℓ) ⊗ Hom(μ_ℓ, E)) = 0`,
+
+which is the same group §1.48–§1.50 measured: `ShaInflateLevel.lean:86` discharges it from three
+Tate-cohomology vanishing conditions, and `:122` discharges those from
+`kummerHomRep M E ≅ Rep.of (inducedRep ℤ Gal(K/k) Y)` — i.e. from `E` being *induced*.  The layer is
+induced at `j = 0` and not at `j ≥ 1`, so `:122` does not apply and finding **2479** (the three
+conditions ⟺ `W` free over `𝔽_p[Syl_p(G)]`) says the criterion as it stands cannot reach the higher
+layers either.  This is the same wall as §1.51: **Poitou–Tate, or a genuinely new route to `Ш¹` of
+a non-induced coefficient module.**
+
+The other two conjuncts of `HasRungData` are independent of it:
+
+* the **first rung** `∀ n, LevelSolution ℓ U S φ (Set.range D) n 1`.  The kernel is `𝔽_ℓ[U]^n`, so
+  this is Ikeda's theorem — `Shafarevich.splitAbelianEP` is already a theorem — *except* that
+  `LevelSolution` asks for a solution **over the fixed `φ`** and **completely decomposed along
+  `D`**, neither of which `SplitAbelianEP` (`IsInverseGalois U → IsInverseGalois (A ⋊[φ] U)`)
+  provides.  Lifting the wreath-product construction of `Ikeda.lean` to an embedding-problem
+  statement with prescribed local behaviour is a self-contained piece of work.
+* the **prescription** `HasCocyclePrescription`.  Shapiro reduces it to trivial coefficients over
+  `K`, and then it is Kummer theory plus `CFT/GrunwaldWang.lean`'s
+  `exists_ne_zero_forall_pow_mul_eq_adicCompletion`, or degree-one Poitou–Tate exactness
+  (`perpSubgroup_selmerGroupFull`, `PoitouTate/Selmer.lean:360`).
+
+### (g) Lean findings
+
+**2579 (LEAN).**  `MulDistribMulAction.compHom` lives at
+`Mathlib/Algebra/GroupWithZero/Action/End.lean:50` (not in `Algebra/Group/Action/`), signature
+`MulDistribMulAction.compHom (A) [Monoid N] (f : N →* M) : MulDistribMulAction N A`.  Its `smul` is
+`f a • b` by `rfl`.
+
+**2580 (LEAN).**  Writing a `Prop`-valued `def` whose conjuncts need a *non-canonical* instance:
+prefer `@f _ _ _ M _ (theInstance …) args` over a term-level `letI`/`have`.  The `@` form is
+syntactically stable, so a `letI := theInstance …` in the consuming proof makes the goal match
+without any zeta-reduction in `isDefEq`.
+
+**2581 (LEAN).**  `Nat.le_add_left 1 j : 1 ≤ j + 1`.  Prefer it to `Nat.eq_zero_or_pos`, whose
+`0 < j` is `LT.lt`-headed and does not `exact`-match a `1 ≤ j` hypothesis without unfolding.
+
+**2582 (BUILD).**  `lake build InverseGalois.Solvable.Shafarevich.LevelRung` = **8087 jobs / 15 s**;
+the full build is **9840 jobs**, ~4 min when only the `Solvable` cone rebuilds.
+
+## §1.61 The middle conjunct replaced: `HasInflatedSha`, and the double shrink in Lean
+
+### (a) What landed
+
+`0f5aed0`, new module `InverseGalois/Solvable/Shafarevich/LevelShrink.lean`, plus refactors of
+`LevelTwist.lean`, `LevelRung.lean` and `InverseGalois/Solvable/Shafarevich.lean`.  Full build
+green: **9841 jobs, 0 errors, 0 warnings**.  §1.60(e) is now realized in Lean, and the conjunct
+§1.60(d) flagged as mathematically false for `j ≥ 1` is gone from `HasRungData`.
+
+* `galLayerAction` **moved** from `LevelRung.lean` to `LevelShrink.lean` (finding 2583).
+* `HasInflatedSha` — the new middle conjunct.
+* `coeffH2_liftObstructionClass_layerSemidirect` — the naturality brick the composition needed.
+* `exists_lift_of_levelSolution_of_hasInflatedSha` — the six steps of §1.60(e), end to end.
+* `levelSolution_succ_of_exists_lift` — `LevelTwist`'s rung, refactored to take the lift as a
+  hypothesis so that both routes to it share one proof.
+* `levelSolution_succ_of_hasInflatedSha` — the rung along the new route.
+
+### (b) `HasInflatedSha`, stated without an intermediate field
+
+```lean
+def HasInflatedSha (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] [TopologicalSpace U]
+    (n : ℕ) (S : Type) [Group S] [Finite S] (j : ℕ) {k Ω : Type*} [Field k] [Field Ω]
+    [Algebra k Ω] (φ : Gal(Ω/k) →* U) (T : Set (Subgroup Gal(Ω/k))) : Prop :=
+  ∀ hsm : IsSmoothHom φ,
+    @sha2 Gal(Ω/k) _ _ ↥(layerSub ℓ (Generic U n S) j) _ (galLayerAction ℓ U n S j φ) T ≤
+      (@comapH2 Gal(Ω/k) U ↥(layerSub ℓ (Generic U n S) j) _ _ _ _ _
+        (galLayerAction ℓ U n S j φ) _ φ (fun _ _ => rfl) hsm).range
+```
+
+This is SW Thm 15 Step 2's Claim, in the repo's own vocabulary.  Two design points.
+
+* **No `K`.**  `sha2_le_range_galInflH2` (`ShaInflate.lean:108`) writes the conclusion as
+  `≤ (galInflH2 K hπ).range` for `K := Ω^{ker φ}`.  Since `φ` factors as `e ∘ restrictNormalHom K`
+  with `e : Gal(K/k) ≃* U` an isomorphism, the two ranges coincide, and inflating along `φ` itself
+  removes the intermediate field and the `IsGalois`/`fixingSubgroup` plumbing from the statement of
+  the hypothesis.  The arithmetic that discharges it is free to reintroduce `K`.
+* **The smoothness hypothesis is *inside* the `Prop`.**  `comapH2` needs `IsSmoothHom φ` to be
+  defined at all, and `HasRungData` is stated before `φ` is known to be smooth, so `HasInflatedSha`
+  quantifies over the proof.  Proof irrelevance makes this cost nothing at the use site.
+
+### (c) The double shrink in Lean: `exists_lift_of_levelSolution_of_hasInflatedSha`
+
+The six steps of §1.60(e), in the order the Lean proof takes them.
+
+1. `obtain ⟨r, hr⟩ : ∃ r, (j+1) * (1 * Nat.card U ^ 2 * finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j))
+   < r := ⟨_, Nat.lt_succ_self _⟩`.  Everything on the left is fixed by `n, j, U, S, ℓ`.
+2. Two layer actions are installed at once, `galLayerAction … (r*n) …` and `galLayerAction … n …`.
+3. `exists_levelSolution_liftObstructionClass_mem_sha2` at target `r*n` gives `Φ_N`, surjective,
+   smooth, over `φ`, trivial along `D`, with `liftObstructionClass … ∈ sha2 … T`.
+4. `hinfl (r*n) hsmφ` writes that class as `comapH2 φ y` for a single `y ∈ SmoothH2 U (Layer(r*n,j))`.
+5. `exists_genericShrink_forall_coeffH2_eq_one U r n S hS (MonoidHom.id U) … hr (fun _ : Fin 1 => y)`
+   returns a surjective `genericShrink U r n S a` killing `y`.  `H := U`, `f := id`, `t := 1`.
+6. `coeffH2_liftObstructionClass_layerSemidirect` identifies the obstruction of
+   `(layerSemidirectMap ℓ hα j).comp Φ_N` with the image of the obstruction of `Φ_N`, which by (4)
+   and (5) is `comapH2 φ 1 = 1`; `liftObstructionClass_eq_one_iff` then produces the lift.
+
+`layerSemidirectMap` preserves `SemidirectProduct.rightHom` *definitionally* (`= ⟨pCentralMap p n f
+x.left, x.right⟩` by `rfl`, `LayerExtension.lean:232`), so `hΦright` is `fun x => hNright x` with no
+rewriting, and the triviality along `D` is `map_one`.
+
+### (d) The naturality brick
+
+```lean
+theorem coeffH2_liftObstructionClass_layerSemidirect … :
+    coeffH2 (layerSubMap ℓ α j) hcomm
+        (liftObstructionClass (layerExtension ℓ (genericAut U m S) j) Φ hactm hkerm σm)
+      = liftObstructionClass (layerExtension ℓ (genericAut U n S) j)
+          ((layerSemidirectMap ℓ hα j).comp Φ) hactn hkern σn
+```
+
+Both sides are the extension class pulled back, and the proof is a four-link chain of lemmas that
+were already in the repo:
+
+`comapH2_extensionClass` (`EmbeddingClass.lean:125`, `rfl`) turns each `liftObstructionClass` into a
+`comapH2` of an `extensionClass`; `coeffH2_comapH2` (`ComapIso.lean:~123`) commutes the coefficient
+map past the pullback along `Φ`; `coeffH2_extensionClass_eq_comapH2` (`ExtensionCoeff.lean`) is the
+statement that a *map of extensions* carries the class downstairs to the class upstairs read through
+the layers; `comapH2_comapH2` (`ComapIso.lean:78`) collapses the two pullbacks.  The map of
+extensions is `layerSemidirectMap ℓ hα (j+1)` over `layerSemidirectMap ℓ hα j`, whose two
+compatibility clauses are `inl_layerSemidirectMap` and `rightHom_layerSemidirectMap`
+(`LayerExtension.lean:244/253`).
+
+### (e) `HasRungData`, final form
+
+```lean
+def HasRungData … : Prop :=
+  (∀ n : ℕ, LevelSolution ℓ U S φ (Set.range D) n 1) ∧
+    ∀ n j : ℕ, 1 ≤ j → HasLocalLift ℓ U n S j φ D T ∧ HasInflatedSha ℓ U n S j φ T ∧
+      @HasCocyclePrescription Gal(Ω/k) _ _ ↥(layerSub ℓ (Generic U n S) j) _
+        (galLayerAction ℓ U n S j φ) t fun ν => D ν ⊓ φ.ker
+```
+
+`levelSolution_succ_of_hasRungData` and `genericLevelStepEP_of_hasRungData` gained an
+`IsSmoothHom φ` argument, which `GenericLevelStepEP` already supplies.
+
+**This is now the exact home of wall #1.**  `HasInflatedSha` is row 5 — Poitou–Tate global duality
+— and nothing else in the ladder asks for it.  The other two conjuncts (`HasLocalLift`,
+`HasCocyclePrescription`) and the first rung are arithmetic of a different kind, listed in
+§1.60(f).
+
+### (f) Findings
+
+**2583 (REPO).**  `galLayerAction` has **moved** from `LevelRung.lean` to `LevelShrink.lean`.
+
+**2584 (LEAN).**  `congrArg` applied to a `MonoidHom` (e.g. `coeffH2 f h`) is fragile — the
+elaborator will not see the coercion as a function to generalize.  Write
+`congrArg (fun z => coeffH2 f h z) e` with an explicit lambda.
+
+**2585 (LEAN).**  Because the equivariance and smoothness arguments of `coeffH2`/`comapH2` are
+`Prop`s, `rw` fails on a chain of these identities: the proof terms differ syntactically.  Chain
+with `refine Eq.trans … ?_` / `exact` instead — unification is up to proof irrelevance, so the
+mismatched proofs are absorbed.
+
+**2586 (LEAN).**  To hold two `letI` layer actions (`galLayerAction … (r*n) …` and
+`galLayerAction … n …`) at once without instance ambiguity, obtain `r` as an **opaque** local —
+`obtain ⟨r, hr⟩ : ∃ r, … < r := ⟨_, Nat.lt_succ_self _⟩` — rather than `set r := …`.  A `set`
+leaves the body reducible and the two instances become confusable.
+
+**2587 (MATH, KEY).**  The second shrink **cannot** be run against `G_k`.
+`exists_genericShrink_forall_coeffH2_eq_one` needs `(j+1) * (t * Nat.card H ^ 2 * finrank(Layer)) <
+r` with `r` fixed *before* the class is known, so `H` must be a group whose order is bounded
+independently of the number of letters.  `Gal(Ω/k)` is not; the operator group `U` is.  This is
+exactly why the obstruction has to be written as an **inflated** class first, and hence exactly why
+`HasInflatedSha`, and not some weaker local statement, is what the composition consumes.
+
+**2588 (BUILD).**  `lake build InverseGalois.Solvable.Shafarevich.LevelShrink` = **8081 jobs /
+63 s**; `lake build InverseGalois.Solvable.Shafarevich` = 8223 jobs / 13 s; the full build is
+**9841 jobs**.
+
+## §1.62 The last group-theoretic conjunct removed: a third shrinking, and the arithmetic it spares
+
+### (a) A correction
+
+§1.61 recorded the conjunct `HasCocyclePrescription` as "provably undischargeable", on the ground
+that it demands a *global* smooth cocycle whose restriction to each `D ν` is prescribed and that
+conjugation-equivariance makes the demand contradictory.  **That reading is wrong.**  The
+hypothesis of `HasCocyclePrescription` (`Profinite/LiftTwist.lean:65`) includes
+
+```
+(∀ ν, ∀ x ∈ D ν, ∀ m : M, x • m = m)
+```
+
+so it only ever speaks about families acting *trivially* on the coefficients, and in `HasRungData`
+it is applied to `D ν ⊓ φ.ker`, where the action — which factors through `φ` — is trivial by
+construction.  The equivariance constraint `a (g x g⁻¹) = g • a x` then degenerates to
+`a (g x g⁻¹) = a x`, which a homomorphism into a commutative group satisfies automatically.  The
+statement is Grunwald–Wang-shaped (`Hom_cont(G_K, ℤ/ℓ) ↠ ∏_{w ∈ S} Hom_cont(G_{K_w}, ℤ/ℓ)`) and
+dischargeable in principle.  No refactor to a "local class prescription" is needed.
+
+### (b) But the conjunct can be *deleted*, not merely restated
+
+The right move is better than either.  Take the lift `f₁` that §1.61's double shrink produces, at
+`m` letters.  Along a member `D ν ⊓ φ.ker` of the family the solution `Φ₁` is trivial, so `f₁`
+lands in the layer, where `exists_hom_inl_eq` reads it off as a genuine **homomorphism**
+
+```
+a ν : ↥(D ν ⊓ φ.ker) →* ↥(layerSub ℓ (Generic U m S) j).
+```
+
+The whole discrepancy between "a lift" and "a solution at the next level" is this finite family of
+homomorphisms.  Pushing the lift down along an operator homomorphism `α : Generic U m S →*
+Generic U n S` replaces `a ν` by `layerSubMap ℓ α j ∘ a ν`; so it is enough to find one `α`,
+surjective and operator-commuting, killing every *value* of every `a ν`.
+
+That is exactly what the Chevalley–Warning count already does — `exists_genericShrink_forall_
+layerSubMap_eq_one` kills any finite indexed family of layer elements, provided the *size* of the
+index is fixed before the elements are.  And it is: the target `↥(layerSub ℓ (Generic U m S) j)` is
+commutative and killed by `ℓ`, so `a ν` factors through the largest elementary abelian `ℓ`-quotient
+of `D ν ⊓ φ.ker`, and *that* quotient depends only on the subgroup, not on `m`.  For a decomposition
+subgroup at a place `w` it is the largest elementary abelian `ℓ`-quotient of `G_{K_w}`, which local
+class field theory makes **finite**, of order `ℓ^(2 + [K_w : ℚ_ℓ])` or `ℓ^1`.
+
+So the price of the rung drops from *"a global cocycle with prescribed local restrictions"*
+(Grunwald–Wang / Poitou–Tate strength) to *"the local groups have finitely many characters of order
+`ℓ`"* (elementary local class field theory).
+
+### (c) What landed
+
+New brick in `LayerSmooth.lean`:
+
+```lean
+theorem exists_operatorHom_forall_layerSubMap_eq_one {ℓ : ℕ} [Fact ℓ.Prime] (hS : IsPGroup ℓ S)
+    {j : ℕ} (ι : Type*) [Finite ι] :
+    ∃ m : ℕ, ∀ v : ι → ↥(layerSub ℓ (Generic U m S) j),
+      ∃ (α : Generic U m S →* Generic U n S) (_ : IsOperatorHom α), Function.Surjective α ∧
+        ∀ c, layerSubMap ℓ α j (v c) = 1
+```
+
+— the number of letters `m` comes **out in front of** the family `v`, which is the whole content.
+
+New module `InverseGalois/Solvable/Shafarevich/LevelLocal.lean`:
+
+* `pow_eq_one_layerSub` — a layer is killed by `ℓ`;
+* `HasFiniteElementaryQuotient ℓ D` — `∃` a finite group `Q` and `q : ↥D →* Q` such that every
+  *smooth* homomorphism from `↥D` into a commutative group killed by `ℓ` factors through `q`;
+* `hasFiniteElementaryQuotient_of_le` — any normal `N ⊴ ↥D` of finite index with
+  `N ≤ commutator ↥D ⊔ ⟨x^ℓ⟩` witnesses it;
+* `exists_lift_eq_one_of_levelSolution` — the §1.61 lift, plus the extra clause
+  `∀ ν, ∀ x ∈ D ν, φ x = 1 → f x = 1`;
+* `levelSolution_succ_of_hasFiniteElementaryQuotient` — hence the whole rung.
+
+`HasRungData` (`LevelRung.lean`) is now
+
+```lean
+  (∀ n : ℕ, LevelSolution ℓ U S φ (Set.range D) n 1) ∧
+    (∀ ν : Fin t, HasFiniteElementaryQuotient ℓ (D ν ⊓ φ.ker)) ∧
+      ∀ n j : ℕ, 1 ≤ j → HasLocalLift ℓ U n S j φ D T ∧ HasInflatedSha ℓ U n S j φ T
+```
+
+and `levelSolution_succ_of_hasRungData` no longer needs a `galLayerAction` instance at all.  Build
+green, 8224 jobs for the `Shafarevich` subtree.
+
+### (d) The ledger
+
+What the arithmetic still owes, for `Shafarevich.GenericLevelStepEP ℓ`:
+
+| owed | kind | difficulty |
+|---|---|---|
+| the first rung `∀ n, LevelSolution … n 1` | Ikeda with prescribed splitting along `D` | moderate |
+| `HasFiniteElementaryQuotient ℓ (D ν ⊓ φ.ker)` | local CFT: `G_{K_w}` has finitely many order-`ℓ` characters | easy |
+| `HasLocalLift ℓ U n S j φ D T` | local solvability off the finite family | moderate |
+| `HasInflatedSha ℓ U n S j φ T` | **row 5 — Poitou–Tate global duality** | **wall #1** |
+| the family `D`, `T` itself | decomposition subgroups at the ramified/`ℓ`-adic/infinite places | plumbing |
+
+`HasInflatedSha` is now the **only** deep entry, and the only one that touches Poitou–Tate.
+
+### (e) Findings
+
+**2589 (MATH, CORRECTION).**  `HasCocyclePrescription` is **not** undischargeable; its antecedent
+restricts it to trivially-acting families and the conjugation constraint degenerates.  §1.61's
+claim to the contrary is retracted.
+
+**2590 (MATH, KEY).**  The conjunct can be **deleted**.  The local defect of a lift is a
+*homomorphism* into the layer; the layer is commutative of exponent `ℓ`; so the defect factors
+through the maximal elementary abelian `ℓ`-quotient of the local subgroup, which is finite and
+fixed in advance.  A third Chevalley–Warning shrink kills every value at once.
+
+**2591 (REPO).**  The repo does **not** follow Shafarevich's free-`ℤ[G]`-module-layer route;
+`GenericCohomology`/`GenericHomology`/`LayerWord`/`LayerTensor` implement Schmidt–Wingberg
+shrinking + Chevalley–Warning instead.  Shapiro's lemma and freeness of the layers are therefore
+*not* the available mechanism.
+
+**2592 (REPO).**  `pow_eq_one_of_mem_layerSub` (`Layer.lean:71`), `CommGroup ↥(layerSub p P n)`
+(`Layer.lean:79`) and `Module (ZMod p) (Layer p P n)` (`Layer.lean:137`) already exist.
+
+**2593 (REPO).**  `LayerExtension.lean`'s `Morphism` section variables give the call shapes
+`layerSemidirectMap p hf n`, `inl_layerSemidirectMap ℓ j hα`, `rightHom_layerSemidirectMap ℓ j hα`,
+`layerSemidirectMap_surjective ℓ hα j hsurj`.
+
+**2594 (LEAN).**  A `Prop`-valued `def` that existentially quantifies a *carrier* (`∃ Q : Type, …`)
+must put `Q` in the **same universe as the ambient group**, or `↥D ⧸ N` will not typecheck against
+it (`outParam Type` vs `Type u_1`).  Declare `universe u`, write `{Γ : Type u}` and `∃ Q : Type u`.
+
+## §1.63 The Poitou–Tate feed made *natural*: one class of complete cohomology that governs every shrink
+
+### (a) What the ladder actually needs from Poitou–Tate
+
+`HasInflatedSha` — the sole deep entry of the §1.62(d) ledger — is consumed through
+`HasShaTateCover` (`Solvable/Shafarevich/LevelCover.lean:66`), whose shape is
+
+> for each everywhere locally trivial class `ε` of the second cohomology there is **one** class `x`
+> of the complete cohomology of a finite group in degree `-2`, produced **before** the shrinking is
+> chosen, such that *any* coefficient change killing `x` also kills `ε`.
+
+The quantifier order is the whole point.  Chevalley–Warning (`exists_operatorHom_forall_layerSubMap_
+eq_one`) kills a *fixed finite family of elements* chosen after the number of letters; so the class
+`x` has to exist first and the shrink second.  `ShaSurjection.lean` already gave the *pointwise*
+statement (`exists_shaCharacter_eq`: every character is the pairing against a single class), but
+nothing said that the single class **moves correctly** when the coefficients are changed.  Supplying
+that naturality is what this section does.
+
+### (b) The three legs
+
+Write `A` for the cyclic representation, `B ⟶ B'` for the coefficient change `f`, `Λ(B) =
+linHomObj B A` for the Cartier dual.  The chain
+`Ш²(B) --α--> Hom(Ш¹(Λ B), ℚ/ℤ)`, `Ш¹(Λ B) --shaTateLinear--> Ĥ¹(Gal(F/k), Λ B)`,
+`Ĥ¹(Λ B) × Ĥ^{-2}(linHomObj A B) --cartierPairing--> ℚ/ℤ` has to commute with `f` in all three
+places.
+
+* **(N3) the pairing.**  `cartierPairing_naturality` (`TateCohomology/CyclicDualNatural.lean:127`) —
+  landed in the previous session, wired into `CFT.lean` and pushed as `1a60a4a`.
+* **(N2) the reading at the level.**  New, three modules:
+  * `CFT/Profinite/ShaCoeff.lean` — degree-one twins of `resH2_coeffH2` / `coeffH2_mem_sha2`, plus
+    the bundled cut-downs `shaCoeffH1` and `shaCoeffH2`.
+  * `CFT/Units/HasseCoeff.lean` — `galInflH1_coeffH1` (one line from `coeffH1_comapH1`, because
+    `galInflH1 = comapH1 (restrictNormalHom F)`) and `shaInflH1_shaCoeffH1` (four lines, via
+    `galInflH1_injective` + `galInflH1_shaInflH1`).
+  * `CFT/PoitouTate/ShaTateNatural.lean` — `repMulHom`, `discreteCoeffRepHom_comp_repIso`,
+    `h1AddEquiv_apply` (**`rfl`**), `h1AddEquiv_tateMap`, `smoothH1RepHom_coeffH1`, assembled into
+    `shaTateHom_shaCoeffH1` and `shaTateLinear_shaCoeffH1`.
+* **(N1) the duality itself.**  *Cannot* be a theorem here — it is Poitou–Tate.  Named as a
+  hypothesis: `IsShaDualNatural` in the new `CFT/PoitouTate/ShaCover.lean`.
+
+### (c) The payoff
+
+`CFT/PoitouTate/ShaCover.lean`:
+
+```lean
+def IsShaDualNatural (α …) (α' …) : Prop :=
+  ∀ ε t, α' (ofMul (shaCoeffH2 (repMulHom f) hf _ (toMul ε))) t
+       = α ε (ofMul (shaCoeffH1 (repMulHom (linHomPreHom A f)) _ _ (toMul t)))
+
+def HasNaturalShaDualInjection : Prop :=
+  ∃ α α', Function.Injective α' ∧ IsShaDualNatural F A hπ hπ' f hf α α'
+
+theorem exists_tateMap_imp_coeffH2_eq_one (hα' : Function.Injective α')
+    (hnat : IsShaDualNatural F A hπ hπ' f hf α α') (ε : ↥(sha2 (Multiplicative ↥B.V) …)) :
+    ∃ x : ↥(tateModule (linHomObj A B) (-2)),
+      tateMap (linHomPostHom A f) (-2) x = 0 →
+        coeffH2 (repMulHom f) hf (ε : SmoothH2 Gal(Ω/k) (Multiplicative ↥B.V)) = 1
+```
+
+This is the CFT-side shadow of `HasShaTateCover`, with the quantifiers in the right order: `x` comes
+from `exists_cartierPairing_sha_eq` applied to `α ε`, before `f` is used at all.
+
+### (d) A worry that turned out to be unfounded
+
+Earlier notes flagged that `HasShaTateCover` changes **both** the group (`Generic U N S ⋊ U →
+Generic U n S ⋊ U`) and the coefficients, whereas the CFT statement changes only the coefficients.
+The Galois side is fine: the level `F` is the fixed field of `ker φ`, and `Gal(Ω/k)` acts on the
+layer *through `U`* (`galLayerAction`), so **the level group does not move when `N` does** — only the
+layer does.  The semidirect-product group in the Shafarevich count is bridged by
+`SemidirectProduct.inr` / `rightHom` (`rightHom ∘ inr = id`, and `operatorSemidirect hα ∘ inr_N =
+inr_n`), which converts a vanishing at `Γ_n` into a vanishing at `U`.
+
+### (e) What is still between this and `HasShaTateCover`
+
+1. **Base-ring gap.**  CFT duality lives in `Rep ℤ G`; the ladder lives in `Rep (ZMod ℓ) U`.
+   `groupHomology (A : Rep ℤ G) 1 : ModuleCat ℤ` and `groupHomology (A' : Rep (ZMod ℓ) G) 1 :
+   ModuleCat (ZMod ℓ)` are different types; a restriction-of-scalars comparison (exact functor
+   commutes with homology) is needed.
+2. **`linHomObj A B ≅ Layer ⊗ T`** — an isomorphism, since `A = μ_p` is cyclic of rank one; and
+   `linHomPostHom` has to be matched with `operatorTensorRep`.
+3. `tateModule X (-2) = groupHomology X 1` is **free** (`rfl`, finding 2597).
+4. `HasNaturalShaDualInjection` itself — i.e. Poitou–Tate.  Still wall #1.
+
+### (f) Findings
+
+**2595 (REPO, KEY).**  `discreteSmoothH1Hom_coeffH1` **already existed** at
+`CFT/Profinite/DiscreteComap.lean:210` (degree-two twin `discreteSmoothH2Hom_coeffH2` at `:223`).
+It is the entire cocycle-level leg of (N2); no new cocycle work was needed.
+`discreteCoeffRepHom` is at `:202` and does not in fact need `[TopologicalSpace G]`.
+
+**2596 (REPO).**  `Graded.lean:85`: `tateMap φ (.ofNat (m+1)) = groupCohomology.map (MonoidHom.id G)
+φ (m+1)`, so `tateMap φ 1 = groupCohomology.map (id) φ 1` by `rfl`; `:87` is the homology twin.
+
+**2597 (REPO).**  `Graded.lean:78`: `tateModule A (-((m : ℤ) + 2)) = groupHomology A (m+1)` **by
+`rfl`**, so `tateModule A (-2)` *is* `groupHomology A 1` definitionally.
+
+**2598 (LEAN/REPO).**  `h1AddEquiv A w = tateMap (repIso A).hom 1 w` holds **by `rfl`** — the
+`Iso.toLinearEquiv.toAddEquiv` chain unfolds to `functor.map i.hom`.  This collapses the whole
+`groupCohomology.functor`/`mapIso` layer to one `tateMap_comp_apply` plus one
+`Action.hom_ext _ _ (ModuleCat.hom_ext (LinearMap.ext fun _ => rfl))` square.
+
+**2599 (LEAN).**  `omit [X] in` chained *before* `include h in` works, and is the cure for
+`unusedSectionVars` on a declaration that also needs `include`.
+
+**2600 (LEAN).**  `python3 - <<'PY' … PY` heredocs doing plain `str.replace` with
+`io.open(..., encoding='utf-8')` preserve Lean Unicode (`↥ π Ω ℤ`) byte-exactly.  `Edit`/`Write`
+remain preferred for authored text.
+
+**2601 (LEAN, KEY).**  `-(-2 : ℤ) - 1` versus `1` as a `tateModule` index is **cheap** to check
+defeq (`tateModule X (-(-2:ℤ)-1) = tateModule X 1 := rfl` fits in 100 000 heartbeats, as does the
+`tateMap` version).  `cartierPairing`'s second argument is typed `-n-1`, so mixing the two forms is
+harmless — do **not** contort statements to avoid it.
+
+**2602 (LEAN, KEY).**  What *is* expensive: `rw [LinearMap.zero_apply]` on a goal
+`α' (…) t = (0 : _ →ₗ[ℤ] _) t` where `α'` is a *hypothesis* additive map into a linear-map type —
+keyed matching tries to unify `α' (…)` with `0` and times out at `isDefEq` (200 000 heartbeats).
+Cure: never rewrite the `0` side.  Prove the naked `… = 0` statement as a `have` and close the goal
+with `exact h`, letting `LinearMap.zero_apply`'s own `rfl` do the work.
+
+**2603 (LEAN).**  Section variables used only inside a *tactic* proof are not auto-included
+(gotcha 747) — this bit again with `hB`/`hB'` in `ShaCover.lean`; symptom is
+`Unknown identifier 'hB'` **plus** a spurious `(deterministic) timeout at whnf` at the `theorem`
+line and a `(kernel) unknown constant` for the *next* theorem.  Fix the `include`, not the timeout.
+
+**2604 (MATH/REPO).**  The Shafarevich ladder's level group **does not move** with the number of
+letters: `Gal(Ω/k)` acts on the layer through `U` via `galLayerAction`, so the CFT statement only
+has to be natural in the coefficients.  See §1.63(d).
+
+**2605 (BUILD).**  `lake build InverseGalois.CFT.PoitouTate.ShaCover` = 8279 jobs, ~110 s.
+`…Profinite.ShaCoeff` = 8033, `…Units.HasseCoeff` = 8224, `…PoitouTate.ShaTateNatural` = 8277.
+
+## §1.64 The feed's two shape mismatches closed: the operator group alone, and over the integers
+
+§1.63 produced, from Poitou–Tate, **one class of complete cohomology in degree `-2` of a finite
+level that governs every change of the coefficients at once** (`exists_tateMap_imp_coeffH2_eq_one`,
+`CFT/PoitouTate/ShaCover.lean`).  What the ladder *consumes* is `HasShaTateCover`
+(`Solvable/Shafarevich/LevelCover.lean:66`).  Between the two there were, at the end of §1.63, four
+gaps.  Two of them were purely a matter of *shape* — the wrong group and the wrong base ring — and
+this section closes both.
+
+### (a) Gap 1: the wrong group.  `LevelCoverOperator.lean`
+
+`HasShaTateCover` asks for a class of
+
+```
+groupHomology.H1 (genericInflate U N S ℓ j W)      -- homology of  Generic U N S ⋊ U
+```
+
+because that is the group SW's counting argument (Proposition 7,
+`exists_operatorHom_h1_eq_zero`, `GenericHomology.lean:339`) is run in.  Arithmetic, though, only
+ever knows `U` — the Galois group of the finite level the coefficients are already defined over
+(finding 2604: **the level group does not move** with the number of letters `n`).
+
+The reconciliation is `SemidirectProduct.inr`, and it is free:
+
+* `rightHom ∘ inr = id` (`rightHom_comp_inr`), and
+* the coefficients on the semidirect product are `inflate φ B = (Action.res _ rightHom).obj B`, so
+  `(Action.res _ inr).obj (inflate φ B)` is **defeq to `B`** and the comparison morphism of
+  representations is literally `𝟙 B` (`semidirectInrHom`).  This is the same trick as `quotHom`
+  at `SemidirectHomology.lean:141`.
+
+Hence `map inr` is a section of `map rightHom` in homology (`map_rightHom_map_inr`, proved from
+`map_comp_of_eq` at `SemidirectHomology.lean:64` plus `groupHomology.map_id`), and
+`map_rightHom_naturality` (`GenericHomology.lean:190`) converts *killed after shrinking upstairs*
+into *killed on `U`*.  The new predicate
+
+```lean
+def HasOperatorShaTateCover … (W : Rep (ZMod ℓ) U) : Prop :=
+  ∀ ε ∈ sha2 ↥(layerSub ℓ (Generic U N S) j) T,
+    ∃ x : groupHomology.H1 (genericLayerTensor U N S ℓ j W),
+      ∀ n α (hα : IsOperatorHom α),
+        groupHomology.map (B := genericLayerTensor U n S ℓ j W) (MonoidHom.id U)
+          (operatorTensorRep hα ℓ j W) 1 x = 0 → coeffH2 … ε = 1
+```
+
+mentions no semidirect product at all, and
+`hasShaTateCover_of_hasOperatorShaTateCover` discharges the ladder's version from it.
+
+### (b) Gap 2: the wrong base ring.  `HomologyIntegral.lean`
+
+CFT duality lives in `Rep ℤ Gal(F/k)` — `tateModule X (-2)` **is** `groupHomology X 1` by `rfl`
+(finding 2597) — while the ladder lives in `Rep (ZMod ℓ) U`.  `groupHomology A 1 : ModuleCat ℤ` and
+`groupHomology A' 1 : ModuleCat (ZMod ℓ)` are objects of different categories, so no map between
+them can even be stated.
+
+Two routes were examined.
+
+* **Categorical.**  `ModuleCat.restrictScalars f` is both a left adjoint
+  (`ChangeOfRings.lean:644`) and a right adjoint (`:886`), so it preserves finite limits and
+  colimits; `ShortComplex.preservesHomologyOfExact` (`ShortComplex/PreservesHomology.lean:60`) is an
+  instance and `S.mapHomologyIso F` (`:445`) with naturality at `:582` would give the comparison.
+  Friction: `F.obj (ModuleCat.of (ZMod ℓ) (G →₀ V))` and `ModuleCat.of ℤ (G →₀ V)` are not
+  syntactically equal inside `inhomogeneousChains`, so every step needs a transport.  **Rejected.**
+
+* **Concrete (chosen).**  Mathlib's `GroupHomology/LowDegree.lean` presents `H₁` by generators and
+  relations in a way that is *ring-independent*:
+  `d₁₀ A := lsum k fun g => A.ρ g⁻¹ - id` (`:89`), `d₂₁ A` (`:144`),
+  `cycles₁ A := ker (d₁₀ A)` (`:325`), `boundaries₁ A := range (d₂₁ A)` (`:396`),
+  `H1π A : cycles₁ A ⟶ H1 A` (`:890`) with `instance : Epi (H1π A)` (`:896`),
+  `H1π_eq_zero_iff` (`:900`), `H1π_comp_map` + `elementwise` twin (`Functoriality.lean:348`),
+  `coe_mapCycles₁` (`:338`), `chainsMap₁ f φ := mapRange.linearMap φ ∘ₗ lmapDomain _ _ f` (`:179`).
+  Both differentials are formulas in `A.ρ` and the additive structure alone, so **the ℤ- and
+  `ZMod ℓ`-versions of `cycles₁`/`boundaries₁` are literally the same subsets of the same abelian
+  group.**
+
+So **no comparison map is needed at all**:
+
+```lean
+theorem exists_h1_map_eq_zero (A : Rep (ZMod ℓ) G) (z : groupHomology.H1 (intRep A)) :
+    ∃ x : groupHomology.H1 A, ∀ (B : Rep (ZMod ℓ) G) (ψ : A ⟶ B),
+      groupHomology.map (B := B) (MonoidHom.id G) ψ 1 x = 0 →
+        groupHomology.map (B := intRep B) (MonoidHom.id G) (intRepMap ψ) 1 z = 0
+```
+
+Proof, in five lines: `H1π` is epi, so `z = H1π_ℤ c`; take `x := H1π_{ZMod ℓ} ⟨c.1, _⟩`; if
+`map ψ x = 0` then `chainsMap₁ ψ c ∈ boundaries₁ B`, which *is* membership in
+`boundaries₁ (intRep B)`, which *is* `map (intRepMap ψ) z = 0`.
+
+`intRep A := Rep.of (V := ↥A.V) ⟨fun g => (A.ρ g).toAddMonoidHom.toIntLinearMap, …⟩` keeps the
+carrier type *literally shared*, which is what makes `d₁₀_intRep`, `d₂₁_intRep`,
+`mem_cycles₁_intRep`, `mem_boundaries₁_intRep` and `chainsMap₁_intRep` provable by `Finsupp`
+induction on `single`s (the last is `rfl`).
+
+`HasIntegralShaTateCover` is `HasOperatorShaTateCover` with the class asked for over `ℤ`, and
+`hasOperatorShaTateCover_of_hasIntegralShaTateCover` closes the chain
+
+```
+HasIntegralShaTateCover  ⟹  HasOperatorShaTateCover  ⟹  HasShaTateCover  ⟹  HasShrinkableSha
+```
+
+### (c) What is still between the CFT theorem and the ladder
+
+1. ~~Base-ring gap.~~ **Closed** — (b).
+2. ~~Group gap.~~ **Closed** — (a).
+3. **Coefficient identification.**  `linHomObj A B ≅ genericLayerTensor U N S ℓ j W` with
+   `A = μ_p` (cyclic of rank one over `𝔽_p`), `B = Multiplicative (layerSub …)` and
+   `W = Hom(μ_p, 𝔽_p)`, i.e. `Hom(A, Layer) ≅ Layer ⊗ Hom(A, 𝔽_p)`; plus matching `linHomPostHom`
+   with `operatorTensorRep`, and `Gal(F/k) ≅ U`.
+4. **`HasNaturalShaDualInjection`** — Poitou–Tate itself.  Still **wall #1**.  Recall
+   (§1.13) that `HasIdeleClassNakayamaSpanAt … (-2)` at trivial `W` is **false**, so the span route
+   must be run at the actual `W`.
+
+### Findings
+
+**2606 (LEAN, KEY).**  `groupHomology.map (MonoidHom.id U) φ n` does **not** elaborate without an
+explicit `(B := …)`: unifying `(Action.res _ (MonoidHom.id U)).obj ?B` against a concrete
+representation is higher-order and fails.  The idiom is
+`groupHomology.map (B := genericLayerTensor U n S ℓ j T) (MonoidHom.id U) (operatorTensorRep …) c`
+(already used at `GenericHomology.lean:275`).  The failure **cascades**: the enclosing `def` becomes
+non-reducible, so downstream `intro`/`obtain` fail with `Function expected` and
+``rcases failed: `x✝ : ?m` is not an inductive datatype``.  Same for `chainsMap₁` — there both
+`(A := …)` and `(B := …)` are needed when the two sides use different rings.
+
+**2607 (REPO, KEY).**  SW **Proposition 7** is *already proven*: `exists_operatorHom_h1_eq_zero`
+(`GenericHomology.lean:339`) kills finitely many `H₁` classes of `Generic U m S ⋊ U` at once by a
+surjective equivariant `α : Generic U m S →* Generic U n S`, with `m` chosen **before** the classes.
+
+**2608 (MATH/REPO, KEY).**  `SemidirectProduct.inr` is a section of `rightHom`, and the coefficients
+are inflated *along* `rightHom`, so `(Action.res _ inr).obj (inflate φ B)` is **defeq to `B`** and
+the comparison morphism is `𝟙 B`.  A `U`-homology class therefore pushes into the semidirect
+product losing nothing.
+
+**2609 (REPO).**  `map_comp_of_eq` (`SemidirectHomology.lean:64`) splits a `groupHomology.map` along
+a composite when only the *underlying linear maps* agree.
+
+**2610 (MATHLIB).**  `groupHomology.map_id : map (MonoidHom.id G) (𝟙 A) n = 𝟙 _`
+(`Functoriality.lean:162`).
+
+**2611 (MATHLIB).**  `ModuleCat.restrictScalars f` is a left *and* a right adjoint
+(`ChangeOfRings.lean:644`, `:886`); `ShortComplex.preservesHomologyOfExact` is an instance
+(`PreservesHomology.lean:60`); `S.mapHomologyIso F` at `:445`, naturality at `:582`;
+`Functor.mapAction` at `Action/Basic.lean:393`.  This is the *categorical* base-change route —
+**not** the one taken; see (b).
+
+**2612 (MATHLIB, KEY).**  The ring-independent `H1` API: `d₁₀` `:89`, `d₂₁` `:144`, `cycles₁` `:325`,
+`boundaries₁` `:396`, `H1π` `:890`, `Epi (H1π A)` `:896`, `H1π_eq_zero_iff` `:900`
+(all `GroupHomology/LowDegree.lean`); `chainsMap₁` `:179`, `mapCycles₁` `:307`, `coe_mapCycles₁`
+`:338`, `H1π_comp_map` (+ `_apply`) `:348` (all `GroupHomology/Functoriality.lean`).
+
+**2613 (MATH, KEY).**  Consequently base change in `H₁` needs **no comparison map**: epi-ness of
+`H1π`, `H1π_eq_zero_iff`, `H1π_comp_map` and carrier equality of `cycles₁`/`boundaries₁` suffice.
+See (b).
+
+**2614 (LEAN).**  `Rep.of`, `Rep.ρ` and `Rep.instAddCommGroupCarrierVModuleCat` are all
+**noncomputable**, so any `def` producing a `Rep` from another `Rep`'s `ρ` must be marked
+`noncomputable` (cf. finding 1819).
+
+**2615 (LEAN).**  `Finsupp.induction_linear`'s case names are `zero`, `add`, `single` — *not*
+`h0`/`hadd`/`hsingle`, despite the argument names in its statement.
+
+**2616 (BUILD).**  `lake build InverseGalois.Solvable.Shafarevich.LevelCoverOperator` = 8083 jobs,
+~13 s.  `…Shafarevich.HomologyIntegral` = 8084 jobs, ~86 s.
+
+## §1.65 Gap 3 closed: the coefficients are the same, and the whole feed is one hypothesis
+
+§1.64 left three things between the CFT theorem `exists_tateMap_imp_coeffH2_eq_one`
+(`CFT/PoitouTate/ShaCover.lean`) and the ladder's `HasShrinkableSha`.  Two were shape; the third,
+item (c)3, was the **coefficient identification**.  It is now closed, and with it the entire feed
+collapses to a single named hypothesis about global duality.
+
+### (a) `tateModule X (-2)` needs no transport at all
+
+Finding 2597 said `tateModule A (-((m:ℤ)+2)) = groupHomology A (m+1)` by `rfl`.  Sharpened:
+
+* `groupHomology.H1 A` is an `abbrev` for `groupHomology A 1` (Mathlib `LowDegree.lean:890`);
+* `tateModule A (-2) = groupHomology A 1` **and** `tateMap φ (-2) = groupHomology.map (id) φ 1`,
+  both by definitional match on `Int.negSucc 1`.
+
+So the class CFT hands back and the class the ladder consumes are *the same object of the same
+category*.  `hasIntegralShaTateCover_of_hasTateShaCover` needed no `show`, no coercion, no
+transport — only the change of coefficients.
+
+### (b) The two readings of the coefficients
+
+CFT carries `linHomObj A B = Hom(A, B)`; the ladder carries `genericLayerTensor U N S ℓ j W`
+`= Layer ⊗ W`.  Take `A = intRep M` with `M` a one-dimensional `𝔽_ℓ`-representation of the level
+(the μ_ℓ slot), `B = intRep (genericLayer U N S ℓ j)` and `W = dualRep M`.  Then
+
+```
+Layer ⊗ M^∨  ≅  Hom(M, Layer)
+```
+
+is `linHomTensorEquiv` (`Solvable/Shafarevich/LinHomTensor.lean`), the classical
+`dualTensorHomEquiv` after a `TensorProduct.comm`.  Two separate steps are needed to make it an
+isomorphism of the *integral* representations the duality lives in:
+
+* `IntLinHom.lean`: `intLinHomIso M L : intRep (linHomObj M L) ≅ linHomObj (intRep M) (intRep L)` —
+  a `ZMod ℓ`-linear map between `ZMod ℓ`-vector spaces is exactly an additive map, so this is
+  `LinearMap.toAddMonoidHom` in both directions and is `rfl` on elements; plus
+  `intLinHomIso_naturality` for post-composition.
+* `LinHomTensor.lean`: `linHomTensorIso M L : Rep.of (tprod L.ρ (dualRep M).ρ) ≅ linHomObj M L`
+  with `linHomTensorIso_naturality`, the compatibility with a map of the *target*, stated with the
+  tensor-side morphism as a hypothesis `(hΨ : ∀ x, Ψ.hom x = LinearMap.rTensor _ ψ.hom.hom x)` so
+  that `operatorTensorRep` — which is *defined* as `rTensor` — matches it by `fun _ => rfl`.
+
+Composed (`layerLinHomIso`, `LayerDuality.lean`) and combined with `intRepIso`/`intRepMap` these
+give `layerLinHomIso_naturality`: **the identification commutes with every shrinking of the level.**
+
+`Rep.of_ρ` is `rfl` (Mathlib `Rep.lean:80`), so `genericLayerTensor U n S ℓ j W` unifies
+definitionally with `Rep.of (Representation.tprod (genericLayer …).ρ W.ρ)` and no coercion help is
+needed anywhere.
+
+### (c) The transport runs *forward*
+
+`LinHomTensor.lean` originally carried the backward transport (from a vanishing on the `X`-side to
+a vanishing on the `Y`-side).  What the feed needs is the other direction: given
+`e.hom ≫ v = u ≫ e'.hom` and a class `x` **downstairs on `Y`**, a vanishing of
+`map u (map e.inv x)` gives a vanishing of `map v x`.  Two lines, from `map_map_iso_inv e.symm`.
+`map_eq_zero_of_isoSquare` now states that version.
+
+### (d) `HasTateShaCover`, and the chain in full
+
+```lean
+def HasTateShaCover : Prop :=
+  letI := galLayerAction ℓ U N S j φ
+  ∀ ε ∈ sha2 ↥(layerSub ℓ (Generic U N S) j) T,
+    ∃ x : ↥(tateModule (linHomObj (intRep M) (intRep (genericLayer U N S ℓ j))) (-2)),
+      ∀ n α (hα : IsOperatorHom α),
+        tateMap (linHomPostHom (intRep M) (intRepMap (operatorLayerRep hα ℓ j))) (-2) x = 0 →
+          coeffH2 (layerSubMap ℓ α j) … ε = 1
+```
+
+The `∃ x, ∀ n α hα` order is the whole point: `x` is produced by `exists_cartierPairing_sha_eq`
+from the character alone, *before* any shrinking is chosen, exactly as `HasIntegralShaTateCover`
+demands.  The chain is now
+
+```
+HasShrinkShaDualInjection      (global duality — the ONLY hypothesis)
+  ⟹ HasTateShaCover            hasTateShaCover_of_hasShrinkShaDualInjection
+  ⟹ HasIntegralShaTateCover    hasIntegralShaTateCover_of_hasTateShaCover
+  ⟹ HasOperatorShaTateCover    hasOperatorShaTateCover_of_hasIntegralShaTateCover
+  ⟹ HasShaTateCover            hasShaTateCover_of_hasOperatorShaTateCover
+  ⟹ HasShrinkableSha           hasShrinkableSha_of_hasShaTateCover
+```
+
+and `hasShrinkableSha_of_hasShrinkShaDualInjection` is the composite:
+
+```lean
+theorem hasShrinkableSha_of_hasShrinkShaDualInjection (hS : IsPGroup ℓ S)
+    (hcard : ℓ ∣ Nat.card ↥M.V) (h : ∀ N : ℕ, HasShrinkShaDualInjection F S j M N) (n : ℕ) :
+    HasShrinkableSha ℓ (↥F ≃ₐ[k] ↥F) n S j (AlgEquiv.restrictNormalHom (K₁ := Ω) F)
+      (decompositionSubgroups k Ω)
+```
+
+This discharges the **second conjunct** of `HasRungData` (`LevelRung.lean:71`) outright.
+
+### (e) What `HasShrinkShaDualInjection` says — wall #1, in its final shape
+
+```lean
+def HasShrinkShaDualInjection (N : ℕ) : Prop :=
+  ∃ α : Additive ↥(sha2 (Multiplicative ↥B_N.V) (decompositionSubgroups k Ω)) →+
+      (Additive ↥(sha1 (Multiplicative ↥(linHomObj B_N (intRep M)).V) …) →ₗ[ℤ] AddCircle (1:ℚ)),
+    ∀ n α₀ (hα₀ : IsOperatorHom α₀),
+      ∃ α', Function.Injective α' ∧ IsShaDualNatural F (intRep M) … α α'
+```
+
+with `B_n := intRep (genericLayer Gal(F/k) n S ℓ j)`.  In words: **Poitou–Tate global duality
+`Ш²(k, B) ≅ Ш¹(k, Hom(B, μ_ℓ))^∨`** for the finite Galois module `B` = a layer of the level,
+together with its naturality in `B`.  Only the *downstairs* copy has to be injective.
+
+This is the whole of what the arithmetic still owes on the Ш side.  Note the shape it is asked in:
+one `α` at level `N` valid for *all* shrinkings — which is automatic for any duality worth the
+name, since `α` does not mention the shrinking at all.
+
+### Findings
+
+**2617 (MATHLIB/REPO, KEY).**  `groupHomology.H1 A` is an `abbrev` for `groupHomology A 1`
+(`LowDegree.lean:890`), and `tateModule A (-2) = groupHomology A 1`,
+`tateMap φ (-2) = groupHomology.map (MonoidHom.id G) φ 1`, all by `rfl`.  The CFT class and the
+ladder class are literally the same object; no transport is needed between §1.63 and §1.64.
+
+**2618 (MATHLIB).**  `Rep.of_ρ` is `rfl` (`Rep.lean:80`), so `Rep.of (Representation.tprod X.ρ Y.ρ)`
+unifies definitionally with any `def` wrapping it.
+
+**2619 (LEAN, KEY).**  A bare `letI := f a b c` in a *theorem statement* leaves the ambient `HSMul`
+**stuck** ("typeclass instance problem is stuck, it is often due to metavariables") whenever `f`
+has an implicit argument that only the *expected type* would determine — here the prime `ℓ` of
+`galIntLayerAction`.  The cure is a named argument, `letI := galIntLayerAction (ℓ := ℓ) F S j N`,
+not a type ascription on the `letI` and not restating the type of the bound variable.
+
+**2620 (LEAN).**  A `letI` in a theorem *statement* is invisible to the *proof*: a lemma whose own
+instance arguments are stated at a defeq-but-not-syntactically-equal type (here
+`↥(layerSub …)` versus `Multiplicative ↥(intRep (genericLayer …)).V`) will fail to synthesize.
+Re-introduce the instances at the lemma's own shape with `letI` **inside** the `by` block; `exact`
+then closes the goal up to defeq.
+
+**2621 (LEAN).**  `AlgEquiv.restrictNormalHom F` inside a tactic block needs `(K₁ := Ω)`; without it
+`IsScalarTower k ↥F ?m` is stuck.  In a *statement* the expected type usually supplies it.
+
+**2622 (LEAN).**  The `unusedSectionVars` linter is only accurate once the declaration *elaborates*
+(cf. finding 1044): while `repMulHom_operatorLayerRep_smul` was failing, `[IsGalois k ↥F]` looked
+unused; once it compiled, `Normal k ↥F` was needed by `restrictNormalHom` and the `omit` had to be
+trimmed.  Never freeze an `omit` list from a failing build.
+
+**2623 (REPO).**  `Finite ↥(intRep A).V` and `IsAddCyclic ↥(intRep A).V` are **not** found by
+`inferInstance` even though they hold by `‹…›`: typeclass search will not unfold
+`intRep`/`Rep.of`/`ModuleCat.of`.  `instFiniteIntRep`/`instIsAddCyclicIntRep`
+(`LayerDuality.lean`) supply them.  By contrast `Finite (↥F ≃ₐ[k] ↥F)`,
+`TopologicalSpace (↥F ≃ₐ[k] ↥F)`, `Finite (Layer ℓ (Generic U n S) j)` and
+`Finite ↥(genericLayer U n S ℓ j).V` all *are* found directly.
+
+**2624 (REPO).**  `MulDistribMulAction.compHom _ (AlgEquiv.restrictNormalHom (K₁ := Ω) F)` gives the
+Galois action on `Multiplicative ↥(linHomObj (intRep (genericLayer …)) (intRep M)).V` through the
+level, and CFT's `hπ : ∀ g m, g • m = AlgEquiv.restrictNormalHom F g • m` then holds by
+`fun _ _ => rfl`.
+
+**2625 (BUILD).**  `hasTateShaCover_of_hasShrinkShaDualInjection` needs
+`set_option maxHeartbeats 1000000 in`: the final `exact` unifies `coeffH2 (repMulHom (intRepMap …))`
+with `coeffH2 (layerSubMap ℓ α j)` and `galIntLayerAction` with `galLayerAction`, both only up to
+defeq.  `lake build …Shafarevich.LayerDuality` = 8323 jobs, ~54 s; full root build = **9853 jobs**.
+
+## §1.66 Route D: the wall dissolved — *shrink* the level-one obstruction instead of proving it vanishes
+
+Everything in §1.65 is downstream of one hypothesis, `HasShrinkShaDualInjection`, and §1.48(j)
+recorded the honest verdict: that hypothesis is Poitou–Tate global duality, in one of two shapes,
+and neither shape has a cheap proof.  This section records a **third** shape, which does have one.
+
+### (a)  The two routes that are blocked, restated in one line each
+
+* **Route 1** — build `Ш²(k, B) ↪ Ш¹(k, Hom(B, μ_p))^∨` outright.  This is Tate's global duality
+  theorem; the pairing is easy and the *non-degeneracy* is the theorem.  Proving it needs local
+  duality in all three degrees for arbitrary finite modules, the sum-of-invariants formula, and a
+  dimension-shifting argument through the nine-term sequence.  A multi-month formalisation.
+* **Route 2** — prove that the obstruction map `obs : Ш²(k, E) → sha1Level` is zero.  §1.48(a)
+  refutes the stronger statement `sha1Level = ⊥` (the Heisenberg example over `k = ℚ(μ_3)`), and
+  nothing weaker is known to be provable without the duality.
+
+### (b)  Route D: do not prove the obstruction is zero, *shrink it away*
+
+Recall the shape of a rung.  The layer is `E_m = μ_p ⊗ W_m` with `W_m = Layer(m, ν)` a layer of
+the generic group on `m` letters, and the *whole point* of Schmidt–Wingberg's shrinking is that we
+are free to replace `m` by any larger number of letters and then project.  Proposition 6 says: for
+every finite `𝔽_p[G]`-module `T`, every degree `k` and every target level `n` there is an `m₀` such
+that for `m ≥ m₀` the map
+
+    H^k(G, Layer(m, ν) ⊗ T) → H^k(G, Layer(n, ν) ⊗ T)
+
+is **zero**.  The bound `m₀` depends on `T`, but on nothing else.  So a cohomology class in
+*any* fixed finite coefficient module of that shape can be killed by shrinking.
+
+The obstruction `obs(ω)` of an everywhere locally trivial class `ω ∈ Ш²(k, E_m)` lives in
+
+    sha1Level  ⊆  H¹(Gal(K/k), H¹(G_K, E_m))  =  H¹(G, (K^×/p) ⊗ W_m),
+
+by the twisted Kummer identification (`kummerTwistEquiv_smul`).  The coefficients `(K^×/p) ⊗ W_m`
+are **not** of the shape `Layer ⊗ T` with `T` finite — `K^×/p` is infinite.  That is the only
+obstacle, and (c) removes it.
+
+### (c)  The key new arithmetic input: an everywhere locally trivial level-one class comes from a
+       **fixed finite** module of `S`-units
+
+Let `S` be a finite set of places of `k` containing the archimedean ones, those above `p`, those
+ramified in `K/k`, and enough finite places that the `S`-class group of `K` is trivial.  Put
+
+    U_S := 𝓞_{K,S}^× / p,
+
+a finite `𝔽_p[G]`-module depending only on `K`, `S` and `p` — **not** on `W`.
+
+> **Claim (D1).**  `Ш¹(G, (K^×/p) ⊗ W) ⊆ image of H¹(G, U_S ⊗ W)`, for every finite
+> `𝔽_p[G]`-module `W`.
+
+*Proof.*  `G` is finite, so a cocycle `c : G → (K^×/p) ⊗ W` takes finitely many values, each a
+finite sum of pure tensors; hence `c` is valued in `U_{S'} ⊗ W` for some finite `G`-stable
+`S' ⊇ S`.  Because `Cl_S(K) = 1`, the valuation sequence
+
+    0 → U_S ⊗ W → U_{S'} ⊗ W → (⊕_{w ∈ S'∖S} 𝔽_p) ⊗ W → 0
+
+is exact — it is exact before tensoring, and `⊗_{𝔽_p}` is exact.  For `v ∈ S' ∖ S` the term
+`⊕_{w | v} 𝔽_p ⊗ W` is the module induced from the decomposition subgroup `D_v` (the extension is
+unramified at `v ∉ S`, so `G` permutes the `w | v` transitively with stabiliser `D_v`), so by
+Shapiro `H¹(G, ⊕_{w|v} W) ≅ H¹(D_v, W)` and the isomorphism is "restrict to `D_v`, then read the
+`w`-coordinate".  The `w`-coordinate of the valuation factors through the *localisation*
+`(K^×/p) ⊗ W → (K_w^×/p) ⊗ W`, because `v_w` on `K^×` is the restriction of the valuation of
+`K_w^×`.  The local condition defining `sha1Level` is exactly the vanishing of the localised
+restricted class, so the image of `[c]` in `H¹(G, ⊕_{w|v} W)` is zero for every `v ∈ S' ∖ S`.
+Exactness of the long exact sequence then puts `[c]` in the image of `H¹(G, U_S ⊗ W)`.  ∎
+
+### (d)  The two shrinks
+
+Write `T := U_S ⊗ Hom(μ_p, 𝔽_p)`, a **fixed** finite `𝔽_p[G]`-module, so that
+`U_S ⊗ W_m = Layer(m, ν) ⊗ T`.  Then for `ω ∈ Ш²(k, E_m)`:
+
+1. **Shrink one.**  Proposition 6 in degree `k = 1` with coefficients `Layer ⊗ T` gives a shrink
+   `β : Layer(m, ν) → Layer(m', ν)` for which `H¹(G, Layer(m,ν) ⊗ T) → H¹(G, Layer(m',ν) ⊗ T)` is
+   zero.  By (c) the class `obs(ω)` is in the image of that source, so `β_*(obs ω) = 0`; by
+   naturality of the obstruction, `obs(β_* ω) = 0`, so `β_* ω` is **inflated** from `Gal(K/k)`.
+2. **Shrink two.**  Proposition 6 in degree `k = 2` with `T = μ_p` gives
+   `γ : Layer(m', ν) → Layer(n, ν)` killing `H²(G, Layer ⊗ μ_p)`, hence `γ_* β_* ω = 0`.
+
+So `Ш²(k, E_m) → Ш²(k, E_n)` is the zero map for `m` large — **exactly the statement `HasTateShaCover`
+was invented to supply, and with no duality theorem anywhere.**
+
+### (e)  What Lean needs, in order
+
+The consumer side already exists: §1.61–§1.65 turn "the shrink kills `Ш²`" into the rung.  What is
+missing splits cleanly in two.
+
+**Phase 1 (cohomological plumbing, no arithmetic).**  Today `sha2_le_range_galInflH2` consumes the
+hypothesis `sha1Level = ⊥` and throws the obstruction away.  Route D needs the obstruction as a
+*witness*, and needs it to be natural in the coefficients:
+
+* the transgression datum attached to a cocycle, and the fact that its class depends only on the
+  class of the cocycle (so that the datum can be transported);
+* the pushforward of a transgression along an equivariant map of the coefficients, and
+  `transClass (h.map φ) = coeffH1 (coeffH1 φ) (transClass h)`;
+* a normalisation lemma producing, from a class trivial along the kernel, a smooth cocycle in that
+  class which is trivial in the first variable on the kernel;
+* the local vanishing of the transgression of an everywhere locally trivial class;
+* the package: **if a map of the coefficients kills the everywhere locally trivial level-one
+  classes, then it carries every everywhere locally trivial class of the second cohomology into
+  the image of inflation.**
+
+**Phase 2 (the arithmetic of (c)).**  The valuation sequence for `S`-units, `Cl_S(K) = 1`, Shapiro
+for the places above a place of `k`, and the transport through the twisted Kummer identification.
+
+**Phase 3.**  Glue Phase 1 + Phase 2 to Proposition 6 (`exists_operatorHom_res_cohomology_eq_zero`,
+already in `GenericCohomology.lean`) and discharge `HasShrinkShaDualInjection`'s consumers directly.
+
+## §1.67 Route D Phase 2 is built, and Claim (D1) turned out to need neither Shapiro nor an exact sequence
+
+Phase 1 of §1.66(e) landed earlier (`ShaKummerInflate.lean` and the transgression tower under
+`CFT/Profinite/`).  This section records **Phase 2**, which is now in the build, and a substantial
+simplification of the mathematics of §1.66(c) discovered while formalising it.
+
+### (a)  What is in the build
+
+Three modules, all sorry- and axiom-free.
+
+* **`InverseGalois/CFT/PoitouTate/OrbitCoboundary.lean`** — the group-theoretic mechanism.  A
+  finite group `Q` acting on a set `X` acts on `X →₀ W` by moving the point and the value at once
+  (`permFinsuppRep`).  The theorem
+  `exists_finsupp_eq_sub_of_forall_stabilizer` says: *a one-cocycle `d : Q → (X →₀ W)` which is a
+  coboundary at each point `x` on `Stab_Q(x)` is a coboundary.*  Proof by transport along a section
+  of the orbit map (`orbitRep`, `orbitLift`), with the finite-support bookkeeping done by hand.
+  Its consequence `exists_forall_apply_sub_eq_zero_of_forall_stabilizer` is the working form: for a
+  surjective equivariant `f : A →+ (X →₀ W)` and a cocycle `c : Q → A` locally trivial after `f`,
+  there is `a : A` with `f (c σ − (σ•a − a)) = 0` for every `σ`.  **This is Shapiro's lemma in the
+  one degree where it can be written out by hand**, and writing it out avoids having to make the
+  identification "places over `v`" ≅ "`Q/D_v`" functorial.
+
+* **`InverseGalois/CFT/Units/OrdFinsupp.lean`** — the arithmetic map that mechanism consumes.  For
+  a Galois-stable set `T` of primes of `K` (`IsGaloisStablePlaces`), `ordFinsupp T : Additive Kˣ →+
+  ({v ∉ T} →₀ ℤ)` is the vector of orders at the remaining primes.  It is equivariant
+  (`ordFinsupp_globalUnitsAut`), its kernel is exactly `sUnits K T` (`mem_ker_ordFinsupp`), it is
+  onto as soon as `T` meets every ideal class (`ordFinsupp_surjective`), and **a finite stable `T`
+  with that property exists** (`exists_finite_stable_ordFinsupp_surjective`, from the pre-existing
+  `CFT/Units/ClassSet.lean`).
+
+* **`InverseGalois/CFT/PoitouTate/TensorValuation.lean`** — everything survives tensoring.  A
+  surjection onto a free abelian group splits (`exists_addMonoidHom_add_eq_self`), so the inclusion
+  of its kernel is a **retract**; retracts survive `⊗` with no flatness and no `Tor`, whence
+  `tensorSubIncl_injective` and `range_tensorSubIncl = ker (rTensor g)`.  The inclusion is recorded
+  as a morphism of representations (`tensorSubInclRep`) once the subgroup is stable
+  (`IsStableSubgroup`), and the valuation of a tensor `tensorVal` is equivariant
+  (`tensorVal_smul`).
+
+* **`InverseGalois/CFT/PoitouTate/TensorOrbit.lean`** — the glue.
+  `exists_tensorVal_sub_eq_zero_of_forall_stabilizer` corrects a cocycle by a coboundary until its
+  valuation vanishes identically, and `mem_range_map_tensorSubInclRep_of_forall_stabilizer` reads
+  that at the level of `H¹`: **a class of `H¹(Q, Additive Kˣ ⊗ C)` whose valuation is a coboundary
+  at every place, on the subgroup fixing that place, lies in the image of
+  `H¹(Q, Additive ↥(sUnits K T) ⊗ C)`.**
+
+### (b)  The proof of Claim (D1) actually used is *shorter* than the one in §1.66(c)
+
+§1.66(c) proposed: exhibit the valuation sequence, identify the quotient term with an induced
+module, apply Shapiro, and chase the long exact sequence.  Three of those four steps turned out to
+be avoidable.
+
+* **No exact sequence, no `Tor`, no flatness.**  Because the target of the valuation is *free*, the
+  surjection splits as a map of abelian groups (not equivariantly — but that is not needed).  A
+  split short exact sequence stays exact after any tensor product, by transporting the retraction.
+  This is `tensorSubIncl_injective` / `range_tensorSubIncl`.  The splitting is non-equivariant and
+  is used only to correct a cocycle by a coboundary, so the *class* never sees it.
+
+* **No Shapiro.**  The quotient term is the permutation module `{v ∉ T} →₀ W`, and the only fact
+  needed about it is `exists_finsupp_eq_sub_of_forall_stabilizer`, which is a two-page direct
+  argument.  Identifying it with an induced module and invoking a functorial Shapiro would have
+  cost more.
+
+* **No `Cl_S(K) = 1` as a separate hypothesis.**  What is needed is exactly that `ordFinsupp T` is
+  *onto*, which is what "`T` meets every ideal class" buys, and which `ClassSet.lean` already
+  provides in the stable form.
+
+* **No `K^×/p`.**  The repo's twisted Kummer identification already lands in
+  `Additive Kˣ ⊗[ℤ] Additive (μ_p →* E)`, and the second factor is `p`-torsion, so the tensor
+  product *is* `(K^×/p) ⊗ Hom(μ_p, E)` with no quotient taken.  Working with `Kˣ` itself removes a
+  layer.
+
+### (c)  The local input is a two-liner (this supersedes the tame-inertia plan)
+
+Earlier notes proposed getting the hypothesis `hloc` — "the valuation of the cocycle is a
+coboundary at `x` on `Stab_Q(x)`" — from the tame inertia character `H¹(I_P, E) ≅ Hom(μ_p, E)`,
+with a separate treatment of the primes above `p`.  **None of that is needed.**
+
+If the class is trivial on the decomposition subgroup `D_x = Stab_Q(x)`, there is
+`b ∈ Additive Kˣ ⊗ C` with `c ρ = ρ•b − b` for all `ρ ∈ D_x`.  Apply `tensorVal (·) x`.  It is
+equivariant in the sense `tensorVal (ρ•t) x = ρ • tensorVal t (ρ⁻¹•x)`, and `ρ⁻¹•x = x` **because
+`ρ` fixes `x`** — that is the whole point of restricting to the stabiliser.  Hence
+
+    tensorVal (c ρ) x = ρ • u − u,    u := tensorVal b x,
+
+which is exactly `hloc`.  No inertia character, no ramification hypothesis, no case split at `p`.
+
+### (d)  What Phase 3 still owes
+
+1. **The bridge from `kummerSha1` to the abstract hypothesis.**  `sha1Level` is stated with the
+   genuine decomposition subgroups `D ⊆ Gal(Ω/k)` and a *coefficient* restriction `resCoeffH1`;
+   the abstract theorem wants the vanishing of the plain restriction to `Stab_Q(x) ⊆ Q =
+   Gal(Ω/k)/K.fixingSubgroup`.  Two facts are needed: naturality of `kummerSmoothH1Equiv` under
+   restriction, and "the image in `Q` of a decomposition subgroup at a place of `Ω` over `v` is the
+   stabiliser of the corresponding prime of `K`".
+
+2. **Finiteness of `H¹(Q, Additive ↥(sUnits K T) ⊗ Hom(μ_p, E))`.**  `sUnits K T` is finitely
+   generated over `ℤ` (`Module.Finite ℤ (Additive ↥(sUnits K (Set.range ι)))`, already in
+   `SUnit.lean`/`SUnitIndex.lean`), and `Hom(μ_p, E)` is `p`-torsion, so the tensor product is a
+   finite `𝔽_p`-module.  This is what supplies Proposition 6's `[Module.Finite (ZMod ℓ) T]`.
+
+3. **Proposition 6 with the right coefficients.**  Take
+   `T := U_T/p ⊗_{𝔽_p} Hom(μ_p, 𝔽_p)` so that `genericLayerTensor U m S ℓ j T ≅ U_T ⊗ Hom(μ_p, E_m)`.
+   There is **no circularity**: the `H`-action factors through the fixed finite operator group `U`,
+   so `K` — and hence `T` — does not depend on the number of letters `m`.
+
+4. **Naturality, then the discharge.**  `map (coeffRep φ) ∘ incl_* = incl'_* ∘ map (coeffRep_{U_T} φ)`;
+   if Proposition 6 kills all of the (finite) `H¹(Q, U_T ⊗ W)`, then `map (coeffRep φ)` kills the
+   image of `incl_*`, which by (a) contains `kummerSha1`.  That is exactly the `hzero` hypothesis
+   of `coeffH2_sha2_le_range_galInflH2_of_kummerSha1`, and the real Route D target on the other
+   side is `HasInflatedSha` (`LevelShrink.lean:82`), which `hasShrinkableSha_of_hasInflatedSha`
+   already converts into the rung.
+
+---
+
+## §1.68 A route that does *not* work, and the sharp reason: Proposition 6 fixes the number of classes before the level
+
+**Date: 2026-09-08/09.**
+
+### (a)  The tempting idea
+
+§1.67(d) item 1 leaves a bridge to build: carry the local triviality of a class of `kummerSha1` —
+stated with the genuine decomposition subgroups of `Gal(Ω/k)` and with the coefficients localised —
+over to the hypothesis `hloc` of `mem_range_map_tensorSubInclRep_of_forall_stabilizer`.  That bridge
+is real arithmetic, so it is worth asking whether it can be avoided.
+
+It looks as though it can.  Read `hloc` again: at each place `x`, the valuation `tensorVal (c ρ) x`,
+as `ρ` runs over `Stab_Q(x)`, must be a coboundary **with values in the module `C` alone**.  So
+`hloc` is a statement about `H¹(D, C)` for the subgroups `D ≤ Q`, and shrinking the module is
+exactly the tool for killing such groups.  If `φ : C →* C'` makes `H¹(D, C) → H¹(D, C')` zero for
+*every* `D ≤ Q`, then `φ_* [c]` satisfies `hloc` at every place at once, whatever `[c]` was, and no
+local input is used at all.  A second shrink killing `H¹(Q, U_T ⊗ C')` then finishes, giving a
+**double shrink** that annihilates the whole of `H¹(Q, Kˣ ⊗ C)`.
+
+### (b)  Why it fails
+
+Proposition 6 (`exists_operatorHom_res_cohomology_eq_zero`, and Schmidt–Wingberg's Proposition 6
+itself) has the shape
+
+    ∀ t, ∃ m, ∀ x : Fin t → H^c(H, Layer(m) ⊗ T), ∃ α : Generic U m S →* Generic U n S, α_* x = 0,
+
+and the quantifier order is not an artefact of the formalisation: the rank produced is
+`r ≈ (j+1) · t · |H|^c · dim (Layer(n) ⊗ T)` and `m = r·n`, so **`t` has to be known before `m`
+is**.  §1.66(b) states Proposition 6 as "the map `H^k(G, Layer(m) ⊗ T) → H^k(G, Layer(n) ⊗ T)` is
+zero"; that overstates it, and the overstatement is where the idea in (a) comes from.
+
+Killing all of `H¹(D, C)` means taking `t = |H¹(D, Layer(m) ⊗ T)|`, which grows with `m` — indeed
+`dim H¹(D, V)` already grows linearly in `dim V`, and `dim Layer(r·n)` grows at least linearly in
+`r`, so the required inequality `r > const · dim Layer(r·n)` has no solution.  The same objection
+kills every variant: one cannot kill a subgroup of `H¹` whose size is tied to the level.
+
+**Only `O(1)` classes can be killed, with the bound fixed in advance.**  That is why
+`hasShrinkableSha_of_hasInflatedSha` works: it kills exactly *one* class, the single preimage of
+the obstruction under inflation from the fixed operator group.
+
+### (c)  What this means for Route D
+
+Route D is unaffected in its intended form, because it too only ever kills one class:
+
+1. Claim (D1) puts the single class `obs(ω) ∈ kummerSha1` in the image of
+   `H¹(Q, U_T ⊗ C) → H¹(Q, Kˣ ⊗ C)`.  **This is where the local conditions are spent, and they
+   cannot be avoided.**
+2. Choose *one* preimage `w`.  Proposition 6 with `t = 1` gives `φ` killing `w`.
+3. Naturality of `φ_*` against the inclusion gives `φ_* (obs ω) = incl_* (φ_* w) = 0`.
+
+So the plan of §1.67(d) item 1 stands: the local bridge is on the critical path.  Its content is a
+*local Kummer dictionary* — the composite `Kˣ ⊗ C → C`, `a ⊗ c ↦ ord_𝔭(a) · c`, must factor
+through the localisation `resSubH1 N D_𝔭` by a `Stab_Q(𝔭)`-equivariant map.  Two shapes for that
+factorisation, both requiring genuine arithmetic:
+
+* **Decomposition field.**  `H¹(N ∩ D_P, E) ≅ Z^× ⊗ C` by Kummer theory over the decomposition
+  field `Z = Ω^{N ∩ D_P}`, and `ord` extends to `Z^×` with values in `ℤ` because the decomposition
+  field has `e = 1`.  Needs Kummer naturality in the field and `e = 1` (Mathlib has
+  `ramificationIdxIn_mul_ramificationIdxIn` and `card_stabilizer_eq`, but no decomposition field).
+* **Tame inertia.**  `H¹(N ∩ I_P, E) = Hom_{cont}(I_P, E)` — no Kummer theory needed, because
+  inertia acts trivially on `E` — and the tame character `θ : I_P ↠ μ_p` makes
+  `θ^* : Hom(μ_p, E) → Hom(I_P, E)` an isomorphism for `𝔭 ∤ p`.  Needs the structure of tame
+  inertia, and `θ^*` must be shown to be onto, not merely injective.
+
+Both are large.  The methodology the repo uses for such a piece applies: **state it as a named
+hypothesis, build the whole of Route D on top of it, and discharge it afterwards.**
+
+### (d)  What did land: `TensorShrink.lean`
+
+The module built while chasing (a) is kept, because its second half is exactly step 2–3 above.
+
+* `tensorCoeff A φ` — push the second tensor factor along `φ : C →* C'`; with `tensorCoeff_tmul`,
+  `tensorCoeff_comp`, `tensorCoeff_smul`, `tensorVal_tensorCoeff` (the valuation commutes with it)
+  and `tensorCoeff_tensorSubIncl` (it commutes with the inclusion of the kernel of the valuation).
+* `tensorCoeffRep Q φ hφ` — the same as a map of representations.
+* `map_tensorCoeffRep_eq_zero_of_map_tensorSubInclRep` — **step 3: a class in the image of the
+  inclusion whose chosen preimage is killed by the shrink is itself killed.**  This is the
+  `t = 1`-compatible form and is on the critical path.
+* `mem_range_map_tensorSubInclRep_of_forall_subgroup` and
+  `map_tensorCoeffRep_eq_zero_of_forall_subgroup` — the theorems of (a).  They are true, and stay
+  as the record of what a module shrink *would* buy; their first hypothesis is the one (b) shows
+  cannot be discharged at scale.
+
+## §1.69 Claim (D1) is a theorem: the local bridge, and the instance diamond that hid it
+
+**Date: 2026-09-09.**
+
+### (a)  What landed
+
+`InverseGalois/CFT/PoitouTate/LocalOrdBridge.lean`:
+
+* `HasLocalOrdHom h htriv htrivE α hEp g S x` — **the local Kummer dictionary at one place `x`**,
+  exactly the piece §1.68(c) said had to be named.  It asserts that some `D ∈ S` (in the arithmetic
+  situation, a decomposition subgroup of `Gal(Ω/k)`)
+
+  1. has an image in `Q = Gal(Ω/k)/K.fixingSubgroup` covering `Stab_Q(x)`, and
+  2. carries a `D`-equivariant `μ : H¹_sm(N ∩ D, E) →* (M →* E)` with
+     `μ (resSubH1 N D (kummerTwistEquiv t)) = tensorVal (M →* E) g t x` for every
+     `t ∈ Kˣ ⊗ (M →* E)`.
+
+  Clause 2 is the factorisation "`a ⊗ c ↦ ord_𝔭(a)·c` goes through the localisation" in the precise
+  form the proof consumes; clause 1 is what turns "trivial on the decomposition subgroup" into
+  "trivial on the stabiliser".
+
+* `mem_range_tensorSubInclRep_of_mem_kummerSha1` — **Claim (D1)**.  For `Q` finite, a surjective
+  `Q`-equivariant valuation `g : Additive Kˣ →+ (X →₀ ℤ)` with kernel `B`, and the dictionary at
+  every place, every `y ∈ kummerSha1 … S` satisfies
+  `Multiplicative.toAdd y ∈ range (H¹(Q, B ⊗ (M →* E)) → H¹(Q, Kˣ ⊗ (M →* E)))`.
+
+  The proof: write `y = kummerSmoothH1Equiv (smoothH1Mk u hu hs)`; transport the smooth cocycle `u`
+  through `kummerTwistEquiv.symm` to a cocycle `c` of the tensor representation; at each place take
+  the `D` and `μ` of the dictionary, use `mem_sha1Level` to get `b` trivialising `u` on `D`, and
+  push `b` through `μ` — clause 2 turns `hb` into exactly the coboundary condition
+  `tensorVal (c ρ) x = ρ • μ b - μ b` for `ρ ∈ Stab_Q(x)` (clause 1 supplies a representative
+  `σ ∈ D` of `ρ`).  Then `mem_range_map_tensorSubInclRep_of_forall_stabilizer` finishes.
+
+Supporting lemmas, in `InverseGalois/CFT/Profinite/KummerRep.lean`:
+
+* `smoothH1EquivOfAddEquiv_smoothH1Mk` — the identification of `SmoothH1 Q S` with
+  `H¹(Rep.ofDistribMulAction ℤ Q T)` is computed on cocycles.  The whole content is
+  `cochainsMap₁ f φ x = fun g => φ.hom.hom (x (f g))` (Mathlib `Functoriality.lean:165`) plus
+  `H1π_comp_map_apply`; the residual goal is `Subtype.ext rfl`.
+* `kummerSmoothH1Equiv_smoothH1Mk` — its twisted-Kummer specialisation.
+
+### (b)  The instance diamond, and the one-line fix
+
+The statement of Claim (D1) would not elaborate for a long time, and the reason was neither
+mathematical nor about `H1` versus `groupCohomology`.  There are **two** `DistribMulAction` instances
+on `Additive A ⊗[ℤ] Additive C` for a quotient group `G ⧸ N`:
+
+* `tensorDistribMulAction (G ⧸ N) A C` (`Profinite/TwistAction.lean`) — the quotient acts on each
+  factor;
+* `quotientDistribMulAction N (Additive A ⊗[ℤ] Additive C)` (`Profinite/QuotientAction.lean`) — the
+  quotient of the diagonal `G`-action.
+
+They agree on pure tensors but are not definitionally equal (both smuls are stuck at a
+`Quotient.lift`).  Instance search picked the *second* everywhere in the Kummer chain and the
+*first* everywhere in `TensorOrbit`/`TensorShrink` (where `Q` is an abstract group, so the quotient
+instance cannot apply), so the two halves of Route D could not be composed at all.
+
+Fix: `quotientDistribMulAction` is now declared with `priority := 100`.  It is the general-purpose
+fallback and must not compete with the tensor instance, which is the one every theorem about tensor
+products is stated with.  The entire tree re-elaborates with **one** broken proof, `TwistCoeff.lean`
+line 150, repaired by the new
+
+    tensorSMul_quotientMk (N) (g : G) (z) : (QuotientGroup.mk g : G ⧸ N) • z = g • z := rfl
+
+in `TwistAction.lean` — the two actions do agree by `rfl` once one of them is fixed by hand.
+
+**Gotcha.** When two instances of a data-carrying class both apply, a *lower* priority on the more
+general one is the right lever; bumping the specific one changes behaviour everywhere it appears.
+
+### (c)  What is left of Route D
+
+1. **`HasLocalOrdHom` itself.**  Still the two shapes of §1.68(c) (decomposition field, or tame
+   inertia).  Now a named hypothesis with everything built on top of it, as planned.
+2. **Proposition 6 at `t = 1`** for the single preimage `w`, with `T := U_T/p ⊗ μ_p^∨`, plus the
+   coefficient bridges `Hom(μ_p, Layer) ≅ Layer ⊗ μ_p^∨` and
+   `U_T ⊗ Hom(μ_p, Layer) ≅ Layer ⊗ (U_T/p ⊗ μ_p^∨)`.
+3. **The commuting square** between `tensorCoeffRep` (tensor side) and `kummerCoeffRepHom` (Kummer
+   side); after (b) both are now stated over the *same* representation, so this should be `ext; rfl`.
+4. **Assembly into `HasShrinkableSha`** at the level ordering of finding 2716.
+5. **The family `D`/`T` from arithmetic**, instantiating `X = {v ∉ T}`, `g = ordFinsupp T`,
+   `B = sUnits ↥K T`.
+
+## §1.70  The witness form: swapping `∀ class. ∃ shrink` to `∃ class. ∀ shrink`
+
+### (a)  The interface Route D had was the wrong one
+
+Every theorem in the inflation chain was stated in the shape
+
+    (hzero : ∀ y ∈ kummerSha1 …, map (kummerCoeffRepHom K M E E' φ hφ) (toAdd y) = 0) →
+      coeffH2 φ hφ z ∈ range (galInflH2 K hπ')
+
+— *first* choose the homomorphism of the kernels `φ`, *then* demand that it annihilate an entire
+subgroup, `kummerSha1`.  Proposition 6 (`exists_operatorHom_res_cohomology_eq_zero`,
+`Solvable/Shafarevich/GenericCohomology.lean:90`) cannot supply such a `φ`.  Its quantifiers run
+
+    ∀ t, ∃ m, ∀ x : Fin t → H^c(… at level m …), ∃ α, α_* ∘ x = 0
+
+so **the number of classes to be killed is fixed before the level is chosen**, and the level is what
+determines `kummerSha1`.  Asking for a whole subgroup, whose size grows with the level, is asking
+for something Proposition 6 provably does not give (§1.68(b)).
+
+Reading the four proofs in the chain showed that this was pure over-statement: `hzero` is never
+applied to more than *one* class.  The obstruction to inflating a given `z` is a *single* element,
+constructed from `z` by transgression; every consumer applies `hzero` to that one element and to
+nothing else.  So the fix is a plain ∃/∀ swap, with no mathematical content lost:
+
+    ∃ y ∈ kummerSha1 …, ∀ φ hφ, map (kummerCoeffRepHom K M E E' φ hφ) (toAdd y) = 0 →
+      coeffH2 φ hφ z ∈ range (galInflH2 K hπ')
+
+This is the **witness form**.  It is strictly stronger than the old statement (specialise and use
+`hzero` at `y`), and it is the form a counting argument can consume.
+
+### (b)  The five layers
+
+The swap was pushed through the whole tower, each layer keeping its old statement as well:
+
+| module | witness-form theorem |
+|---|---|
+| `Profinite/TransgressionCoeff.lean` | `exists_sha1Level_forall_coeffH2` |
+| `Profinite/ResInflate.lean` | `exists_sha1Level_forall_coeffH2_of_resH2_eq_one[_of_eq_ker]` |
+| `PoitouTate/ShaInflate.lean` | `exists_sha1Level_forall_coeffH2_of_mem_sha2` |
+| `Profinite/KummerCoeff.lean` | `coeffTransH1_inflH1_eq_one_of_map_kummerCoeffRepHom` |
+| `PoitouTate/ShaKummerInflate.lean` | `exists_kummerSha1_forall_coeffH2_of_mem_sha2` |
+
+The bottom layer is where the witness is actually produced: `exists_inflH1_transClass` already
+returns *the* class `x` at the level with `inflH1 x = transClass …`, so the proof simply hands `x`
+out before the coefficient map is mentioned, and re-runs the old argument inside the `∀ φ`.  The
+`KummerCoeff` layer is a pure re-factoring — the old
+`coeffTransH1_inflH1_eq_one_of_kummerSha1` is now a one-line corollary of the new lemma about a
+single class.
+
+**Gotcha (2729).**  `transgressionClass` is an opaque `def`, definitionally
+`transClass (isTransgressionDatum_transgression …) htriv hop` but not syntactically; a
+`rw [← hx]` against a hypothesis about `transClass` fails with *"Did not find an occurrence of the
+pattern"*.  Insert an explicit `show … transClass … = 1` first.
+
+### (c)  Joining to the finitely generated coefficients
+
+New module `CFT/PoitouTate/ShaKummerShrink.lean`, one theorem:
+
+    exists_forall_coeffH2_of_hasLocalOrdHom :
+      (hlocal : ∀ x, HasLocalOrdHom h htriv htrivE α hEp g (decompositionSubgroups k Ω) x) →
+      z ∈ sha2 E (decompositionSubgroups k Ω) →
+        ∃ w : H¹(Gal(Ω/k) ⧸ K.fixingSubgroup, Additive ↥B ⊗[ℤ] Additive (M →* E)),
+          ∀ ψ hψ, (map (id _) (tensorCoeffRep _ (MonoidHom.compHom ψ) _) 1).hom w = 0 →
+            coeffH2 ψ hψ z ∈ range (galInflH2 K hπ')
+
+Three lines of proof: the witness form of (b) names `y ∈ kummerSha1`; Claim (D1)
+(`mem_range_tensorSubInclRep_of_mem_kummerSha1`, `LocalOrdBridge.lean`) pulls `y` back to a class
+`w` with coefficients in the units `B` of the finite set of places; and
+`map_tensorCoeffRep_eq_zero_of_map_tensorSubInclRep` (`TensorShrink.lean`) transports the
+annihilation of `w` to the annihilation of `y`.
+
+Item 3 of §1.69(c) — the commuting square between the tensor side and the Kummer side — turned out
+to be **`rfl`**:
+
+    kummerCoeffRepHom K M E E' ψ hψ
+      = tensorCoeffRep (A := (↥K)ˣ) Q (MonoidHom.compHom ψ) (compHom_quotient_smul (M := M) ψ hψ)
+
+both sides being `repHomOfAddHom Q _ _ (TensorProduct.map id (MonoidHom.toAdditive _).toIntLinearMap)`
+with a `Prop`-valued naturality field.  This is a direct dividend of the instance-priority fix of
+§1.69(b): before it, the two sides carried *different* `DistribMulAction` instances on the tensor
+product and no `rfl` was available.  The one new ingredient is
+`compHom_quotient_smul` (`Profinite/TwistCoeff.lean`), the homomorphism factor of
+`tensorCoeffMap_quotient_smul`, proved by `QuotientGroup.mk_surjective` + `comp_homSMul`.
+
+### (d)  What is left of Route D after §1.70
+
+1. **`HasLocalOrdHom`** — unchanged; the arithmetic wall (§1.68(c)).
+2. **Proposition 6 at `t = 1`** for the single `w`, with `T := U_T/p ⊗ μ_p^∨`, plus the coefficient
+   bridges `Hom(μ_p, Layer) ≅ Layer ⊗ μ_p^∨` and
+   `U_T ⊗ Hom(μ_p, Layer) ≅ Layer ⊗ (U_T/p ⊗ μ_p^∨)`, and a degree-one analogue of the degree-two
+   smoothness machinery of `LayerSmooth.lean`.
+3. **Assembly into `HasShrinkableSha`.**  Ordering of levels: target `n` → Proposition 6 in degree
+   two gives `m₂` → Proposition 6 in degree one at target `m₂` gives `m₁` → set `N := m₁`.  Open
+   design question: Route D delivers inflation from `Gal(K/k)`, *not* from the operator group `U`,
+   so `hasShrinkableSha_of_hasInflatedSha` cannot be reused verbatim — either a monoid hom
+   `Gal(K/k) →* U` is available, or the counting lemma of `LevelShrink.lean` must be re-run with
+   `H := Gal(K/k)`.
+4. **The family `D`/`T` from arithmetic**, instantiating `X = {v ∉ T}`, `g = ordFinsupp T`,
+   `B = sUnits ↥K T` (and the `Q →* Gal(K/k)` bridge of finding 2700).
+
+## §1.71  Route D assembled: `HasShrinkableSha` from the local dictionary
+
+### (a)  What landed
+
+Items 2 and 3 of §1.70(d) are done.  Three new modules, all sorry- and axiom-free:
+
+| module | content |
+|---|---|
+| `Solvable/Shafarevich/LayerPi.lean` | `layerSub_pow_eq_one`, `layerPiMulEquiv` |
+| `Solvable/Shafarevich/LayerTensorOne.lean` | `exists_sum_tmul_of_span`, `exists_genericShrink_map_h1π_eq_zero`, `exists_genericShrink_map_h1_eq_zero` |
+| `Solvable/Shafarevich/LayerKummerShrink.lean` | `layerSub_smul_eq_self`, `actsTrivially_hom_layerSub`, `HasLayerLocalOrdHom`, `fixingSubgroup_le_ker`, `hasShrinkableSha_of_hasLayerLocalOrdHom` |
+
+plus two general lemmas placed in their natural homes: `coeffH2_congr`
+(`CFT/Profinite/PiTwo.lean`, beside the pre-existing `coeffH2_id`/`coeffH2_comp`) and
+`layerSubMap_comp` (`Solvable/Shafarevich/Layer.lean`, beside `layerMap_comp`).
+
+### (b)  Item 2: the count in degree one
+
+The coefficients in degree one are not a layer but `U_T ⊗_ℤ (μ_p →* Layer)`, which is infinite, so
+the count cannot be run against all of its elements.  The way round is that a *spanning family* of
+the left factor — no basis is needed, torsion is allowed — writes every element of the tensor
+product as `∑ i, b i ⊗ₜ w i` with `w i` in the right factor (`exists_sum_tmul_of_span`).  A cocycle
+on a finite group `Q` therefore has `Nat.card Q * d` coordinates in the right factor, and each
+coordinate is a homomorphism `μ_p →* Layer`, which finitely many readings in the layer determine.
+So the index set of the count is `Q × Fin d × ι` with `ι` finite, and the bound is the one the
+layer already answers: `exists_genericShrink_forall_layerSubMap_eq_one` (`LayerSmooth.lean:142`).
+No coefficient bridges of the kind item 2 of §1.70(d) anticipated were needed (finding 2742): the
+statement is parameterised by an abstract right factor `C`, an abstract family of induced maps
+`Φ : (Fin r → ℕ) → C →* C'`, and the one demand a shrinking can meet — that finitely many
+prescribed readings `coord w t` in the layer decide whether `Φ a` kills `w`.
+
+### (c)  Item 3: the assembly, and its open design question resolved
+
+The open design question of §1.70(d) item 3 is answered by the *first* alternative it lists: a
+monoid hom `f : Gal(↥K/k) →* U` is available, and the base realization `φ : Gal(Ω/k) →* U`
+factors through it, `hφ : ∀ x, φ x = f (AlgEquiv.restrictNormalHom ↥K x)`.  That single hypothesis
+does three jobs at once:
+
+* it gives `K.fixingSubgroup ≤ φ.ker` (`fixingSubgroup_le_ker`), hence the layer is fixed by the
+  subgroup fixing the finite level (`layerSub_smul_eq_self`) and so are the homomorphisms of the
+  roots of unity into it (`actsTrivially_hom_layerSub`) — the `ActsTrivially` instance every
+  transgression statement needs;
+* it makes the three `Gal(Ω/k)`-actions on the three layers in play factor through
+  `Gal(↥K/k)`, which is exactly the `hπ`/`hπ'` shape `ShaKummerShrink.lean` asks for;
+* it lets `exists_genericShrink_forall_coeffH2_eq_one` (`LayerSmooth.lean:184`) be run with
+  `H := Gal(↥K/k)` and that same `f`, so the degree-two count needs no re-run of `LevelShrink.lean`.
+
+The ordering of levels is the one §1.70(d) predicted, written multiplicatively so the shrinkings
+compose:
+
+    target n  →  r₂ (degree-two bound, index set Gal(↥K/k) × Gal(↥K/k))   → middle level r₂ * n
+              →  r₁ (degree-one bound, index set Q × Fin d × M)           → top level r₁ * (r₂ * n)
+
+Both bounds are chosen **before** `ε` is introduced, which is what makes one shrinking serve every
+class.  The final chain is: `coeffH2_congr` rewrites `layerSubMap (a₂ ∘ a₁)` as a composite
+(`layerSubMap_comp`), `coeffH2_comp` splits it, `hv` replaces the inner class by the one inflated
+from the finite level, `coeffH2_comapH2` moves the outer coefficient map through the inflation, and
+`ha₂ 0` kills what is left.
+
+### (d)  What is left of Route D
+
+1. **`HasLocalOrdHom`**, now packaged per number-of-letters as `HasLayerLocalOrdHom` — still the
+   arithmetic wall (§1.68(c)).
+2. **The family `D`/`T` from arithmetic**, instantiating `X = {v ∉ T}`, `g = ordFinsupp T`,
+   `B = sUnits ↥K T` (and the `Q →* Gal(K/k)` bridge of finding 2700).
+
+Everything between the two is now a theorem.
+
+### (e)  Findings
+
+* **2751.**  `layerSubMap_comp` is proved by `obtain ⟨x, hx, hxv⟩ := exists_layerMk
+  (Additive.ofMul v); obtain rfl : v = Additive.toMul (layerMk hx) := by rw [hxv]; rfl` — the
+  trailing `rfl` after `rw [hxv]` is required (finding 2704 again).
+* **2752.**  `coeffH2_comp` is `rfl` after `obtain ⟨a, ha, hs, rfl⟩ := smoothH2Mk_surjective z`;
+  `coeffH2_congr` is `subst h; rfl`.
+* **2753.**  Auto-inclusion of section variables follows the *declaration order of the variable
+  block*, not the order the variables are written in the theorem's own arguments.  Because
+  `f : Gal(↥K/k) →* U` mentions `U`, `U` becomes the first explicit argument of
+  `fixingSubgroup_le_ker`; the call is `fixingSubgroup_le_ker U K f hφ`.  Symptom of getting it
+  wrong: `failed to synthesize Group ↥K`.
+* **2754.**  Every `letI := galLayerAction …` needed by the proof must be introduced for *every*
+  level and *every* acting group in play — here seven of them: three `Gal(Ω/k)` actions (top,
+  middle, bottom level), three `Gal(↥K/k)` actions on the same three, and one `Gal(Ω/↥K)` action
+  through `φ.comp (galRestrictScalarsHom k ↥K Ω)`.
+* **2755.**  Definitional proof irrelevance makes all the `Prop`-valued arguments (`hker`,
+  `htrivE`, `hΦ`, `hψ`, `NeZero` instances) interchangeable, so `HasLayerLocalOrdHom` may state its
+  own `hker` as the derived term `fixingSubgroup_le_ker U K f hφ` and the proof's `letI`s still
+  match with no bridging lemma.
+* **2756.**  `IntermediateField.restrictNormalHom_ker (E : IntermediateField K L) [Normal K E] :
+  (restrictNormalHom E).ker = E.fixingSubgroup` at `Mathlib/FieldTheory/Galois/Basic.lean:408`.
+  The `Gal(L/K)` macro is at `Mathlib/FieldTheory/Galois/Notation.lean:35`, so `Gal(↥K/k)` is
+  legal.
+* **2757.**  `galRestrictScalarsHom F k K : Gal(K/k) →* Gal(K/F)` is at
+  `CFT/Units/BaseFundamental.lean:74` (not in Mathlib).
+* **2758 (IMPORTANT).**  Finding 29 (`↥E` where an `IntermediateField` is wanted) costs a
+  **21-minute `(deterministic) timeout at whnf`** rather than a type error, because Lean tries to
+  unify the sort `↥K` with `↥?L` for an unknown `?L : IntermediateField ?k ?K'`.  Here it was
+  `isSmoothHom_restrictNormalHom ↥K` for `isSmoothHom_restrictNormalHom K`; the same theorem then
+  elaborated in 123 s.  Note that Mathlib's own `AlgEquiv.restrictNormalHom` *does* take the type
+  `↥K`, so both spellings occur one line apart and neither is wrong on its own.
+* **2759.**  `coeffH2_comp` already exists (`CFT/Profinite/PiTwo.lean`) with the *opposite*
+  orientation `coeffH2 ψ hψ (coeffH2 φ hφ x) = coeffH2 (ψ.comp φ) hcomp x`; use `.symm`.  A local
+  re-definition inside `namespace InverseGalois.Shafarevich` silently shadows it.
+* **2760 (TECHNIQUE).**  To localise a `whnf` timeout inside a long tactic proof, make several
+  copies of the file truncated at successive tactic boundaries with `sorry` appended, lower
+  `maxHeartbeats` so failures are fast, and run them **in parallel** (`lake env lean` probes may
+  run concurrently).  `set_option profiler true` alone only says which *tactic* is slow, not why.
+
+## §1.72  `HasShrinkableSha` over an arbitrary number field — and a correction: `HasLocalLift` is false as stated
+
+### (a)  What landed
+
+Items (d)1 and (d)2 of §1.71 are done, and the shrinking is now unconditional over **any** number
+field.  Three modules, all sorry- and axiom-free (commit `27c5102`, full root build 9877 jobs, 0
+warnings):
+
+| module | content |
+|---|---|
+| `Solvable/Shafarevich/LayerShaPlaces.lean` | the family `D`/`T` from the arithmetic: `HasLayerLocalOrdHom` discharged from the places |
+| `Solvable/Shafarevich/LayerShaLevel.lean` | `hasShrinkableSha_of_isPrimitiveRoot` — the shrinking when `μ_ℓ ⊆ k` |
+| `CFT/Units/CyclotomicLevel.lean` | `cycLevel k Ω n`, `finrank_cycLevel_dvd_totient`, `coprime_index_fixingSubgroup_cycLevel`, `decompositionSubgroups_le_galSubHom` |
+| `Solvable/Shafarevich/LayerShaDescent.lean` | `hasShrinkableSha_of_intermediate`, `hasShrinkableSha_decompositionSubgroups` |
+
+The descent is a short circuit and it is worth recording, since the same circuit will be wanted
+again.  A class over `k` is read over the level `F = k(ζ_ℓ)`; it is still everywhere locally
+trivial there, because a decomposition subgroup over `F` maps into one over `k`
+(`decompositionSubgroups_le_galSubHom`); the shrinking over `F` kills it; killing commutes with the
+coefficient map the shrinking induces (`coeffH2_comapH2`); "dies over `F`" is "dies on
+`F.fixingSubgroup`" (`resH2_fixingSubgroup_eq_one`); and a class of order `ℓ` dying on a subgroup of
+index prime to `ℓ` is trivial (`eq_one_of_resH2_eq_one_of_coprime`).  The index is
+`[k(ζ_ℓ) : k] ∣ ℓ − 1`, hence prime to `ℓ`.  The **number of letters is inherited unchanged**: the
+descent changes the base, not the count, which is what makes it compose with the rest.
+
+Net effect:
+
+> `HasShrinkableSha ℓ U n S j φ (decompositionSubgroups k Ω)` is a **theorem** for every number
+> field `k`, every algebraic closure `Ω`, every finite `ℓ`-group `S` and every smooth `φ`.
+
+That is the whole second half of the third clause of `HasRungData`.
+
+### (b)  MATH CORRECTION: `HasLocalLift` cannot be discharged
+
+`HasLocalLift` (`LevelObstruction.lean:128`) asks, for **every** smooth `Φ` over `φ` which is
+trivial along `D`, and every `A ∈ T ∖ range D`, that the local embedding problem `Φ|_A` lift one
+layer.  **This is false**, so the clause is not merely open — it can never be proved.
+
+Counterexample.  Take `ℓ` and a rational prime `p ∉ D` with `ℓ ∥ p − 1`, so `μ_ℓ ⊆ ℚ_p` but
+`μ_{ℓ²} ⊄ ℚ_p`.  The `ℓ`-part of `Gal(ℚ_p^{ab}/ℚ_p) ≅ Ẑ × ℤ_p^×` is `ℤ_ℓ × ℤ/ℓ^c` with `c = 1`, and
+the `ℤ/ℓ` factor is the totally ramified part.  So the totally ramified character
+`G_{ℚ_p} ↠ ℤ/ℓ` cutting out `ℚ_p(π^{1/ℓ})` does **not** lift to `ℤ/ℓ²`.  A `Φ` which is newly
+ramified at such a `p` therefore has an unsolvable local embedding problem at `A = D_p`, and
+nothing in the hypotheses of `HasLocalLift` forbids such a `Φ`.
+
+Nothing in the repo is *wrong*: `genericLevelStepEP_of_hasRungData` is still a theorem, and
+`HasRungData` is still a sufficient condition.  It is simply a sufficient condition with an
+unsatisfiable conjunct.
+
+### (c)  What SW actually assume: condition (ii)
+
+Theorem 15 of Schmidt–Wingberg is deliberately *sharpened* — the solution is required to be "of a
+special type", and the induction is run on the sharpened statement:
+
+> (i) all `p ∈ Ram(K|k) ∪ S_p ∪ S_∞` are completely decomposed in `N_n|K`;
+> (ii) if `p` is ramified in `N_n|K`, then `p` splits completely in `K|k` and `N_{ν,n,p}|k_p` is a
+> (cyclic) totally ramified extension of local fields.
+
+Condition (i) is exactly the repo's "trivial along `D`" clause of `LevelSolution`.  Condition (ii)
+is **not present anywhere in the repo**, and it is precisely what makes Step 1 go through.  Step 1
+splits the places into three cases:
+
+* `p ∈ Ram(K|k) ∪ S_p ∪ S_∞` (= `range D`): handled by a shrinking that makes the local group
+  extension split — this is the repo's
+  `exists_operatorHom_forall_exists_subgroup_resH2_extensionClass_eq_one`;
+* `p ∉ D` **unramified** in `N_n|k`: `Φ|_{D_p}` factors through `D_p/I_p ≅ Ẑ`, which is free, so a
+  lift exists for trivial reasons;
+* `p ∉ D` **ramified**: this is where (ii) is spent.  By (ii), `p` splits completely in `K|k`, so
+  `K_p = k_p`; `μ_{p^e} ⊆ K` where `p^e` is the exponent of `F(n)/F(n)(ν+1)`; hence
+  `μ_{p^{a+ε}} ⊆ k_p`, and a `p^{a+ε}`-th root of a uniformizer solves the local problem, the local
+  extension being cyclic totally ramified of degree `p^a`.
+
+So the second and third bullets are the honest content of `HasLocalLift`, and the third one is only
+available under (ii).
+
+### (d)  Shrinking preserves (ii); the *lift* destroys it
+
+Both halves matter.
+
+* A shrinking `α : F(m) ↠ F(n)` can only make the field smaller, so ramification can only decrease
+  and a cyclic totally ramified local extension stays cyclic totally ramified.  SW say this
+  explicitly ("the local condition at the primes in `Ram(K|k) ∪ S_p ∪ S_∞` remains untouched within
+  the shrinking process").  Hence (ii) is a legitimate *inductive invariant*.
+* The **lift** from level `ν` to level `ν+1` creates new ramification at places nobody chose, and
+  those places need not split completely in `K|k`.  SW repair this in **Step 3**, by twisting the
+  solution by a class `ε ∈ H¹(G_k, E(n,ν))` with prescribed local components at
+  `T = T⁰ ∪ T¹ ∪ T² ∪ T³` (`T⁰` for properness, `T¹ = Ram(K|k) ∪ S_p ∪ S_∞` for (i), `T²` and `T³`
+  for (ii)).  The obstruction to the existence of such an `ε` is a `coker(k_S, T, E)`, injected by
+  Lemma 10 into a `Ш¹`, and *that* is shrunk.
+
+§1.62 replaced Step 3 by a third shrinking.  That third shrinking recovers condition **(i)** and
+properness — and it is a real saving, since it removes `HasCocyclePrescription` from the ledger —
+but it does **not** recover (ii).  That is the whole of the gap.
+
+### (e)  Four escape routes, all closed
+
+1. *Kill `res_H(ε)` on every subgroup of `GenericQuot(j)`.*  Impossible: that would split the
+   extension outright and trivialise the embedding problem.  The count only ever kills `res` on
+   subgroups meeting `ker rightHom` trivially — which is exactly the `hinj` hypothesis inside
+   `exists_operatorHom_forall_exists_subgroup_resH2_extensionClass_eq_one`.
+2. *Let `D` grow with the rung.*  Circular: `D` must be fixed before the count is run, and `∀ n` is
+   quantified **inside** `HasRungData`.
+3. *Ask the solutions to be unramified outside `D`.*  Impossible: the `ℓ`-rank of the ray class
+   group of `k` with conductor supported on `D` is bounded, so the tower cannot be built inside it.
+4. *Shrink `T`.*  `sha2 M T` is antitone in `T`, so a smaller `T` makes `HasShrinkableSha` **harder**,
+   and Route D's proof (`sha2_le_range_galInflH2`, which is the Hasse principle for `H²` with
+   roots-of-unity coefficients) genuinely needs all the places.  Enlarging `T` instead makes
+   `HasLocalLift` worse.  There is no `T` for which both clauses are cheap.
+
+### (f)  The architectural fix
+
+Condition (ii) has to be carried as an inductive invariant, and abstractly — the group-theoretic
+modules must not learn about places.  The shape:
+
+```lean
+/-- An extra property a solution at a level may be asked to carry. -/
+abbrev LevelProperty (ℓ : ℕ) (U : Type) [Group U] (S : Type) [Group S] (k Ω : Type*) [Field k]
+    [Field Ω] [Algebra k Ω] := ∀ m j : ℕ, (Gal(Ω/k) →* GenericQuot ℓ U m S j) → Prop
+```
+
+with four changes:
+
+* `LevelSolution` gains a `P : LevelProperty …` argument and the clause `P m j Φ`;
+* `HasLocalLift` gains `P` and only quantifies over `Φ` with `P n j Φ`;
+* `IsShrinkStable P` — `P m j Ψ → P n j ((layerSemidirectMap ℓ hα j).comp Ψ)` — is a new conjunct of
+  `HasRungData` (true for (ii), by the first bullet of (d));
+* `HasSolutionRepair` — SW Step 3, as a named arithmetic input: a solution at level `j+1` whose
+  projection to level `j` has `P` may be replaced by one that again is onto, again trivial along
+  `D`, and has `P`.
+
+`GenericLevelStepEP` is unaffected in meaning: the strengthened statement is the induction
+invariant, and the extra clause is discarded at the top of the ladder exactly as the "trivial along
+`T`" clause already is.
+
+### (g)  What the corrected `HasLocalLift` will need from the arithmetic
+
+Three bricks, none of which exists yet:
+
+1. **An inertia subgroup of the infinite `Gal(Ω/k)`.**  The repo's inertia API
+   (`CFT/InertiaSubgroup.lean`, `CFT/InertiaSurjective.lean`, `CFT/InertiaTransport.lean`,
+   `CFT/TameCharacter.lean`, and the Scholz-side predicates) is entirely for **finite** Galois
+   extensions.  `decompositionSubgroups k Ω` exists; there is no `inertiaSubgroups k Ω`.
+2. **`D_v/I_v` procyclic**, in the usable form: for every finite group `E` and every `y ∈ E` there
+   is a smooth `g : D_v →* E` with `g σ_v = y` and `g|_{I_v} = 1`, and two such are equal as soon as
+   they agree at `σ_v`.  Granted that, SW Step 1(b) is four lines: pick `y` over `Φ σ_v`, get `g`,
+   and `π ∘ g = Φ` because both kill `I_v` and agree at `σ_v`.
+3. **Local Kummer theory for cyclic totally ramified extensions**: `μ_{p^{a+ε}} ⊆ k_p` and a
+   uniformizer `π`, giving the lift by `π^{1/p^{a+ε}}`.  This is SW Step 1(c) and is where (ii) is
+   consumed.
+
+### (h)  Findings
+
+* **2789.**  `galSubHom K` and `galRestrictScalarsHom k ↥K Ω` agree by `rfl` on elements, but are
+  not syntactically equal; `galRestrictScalarsHom_eq_galSubHom` (`CFT/Units/CyclotomicLevel.lean`)
+  bridges them.  Neither takes `[IsGalois k Ω]` or `[NumberField k]`.
+* **2790.**  `NumberField.of_module_finite k ↥E` gives `NumberField ↥E`, and
+  `IsAlgClosure ↥E Ω := ⟨inferInstance, Algebra.IsAlgebraic.tower_top (K := k) _⟩` promotes an
+  algebraic closure of the base to one of an intermediate field.
+* **2791.**  `IsPrimitiveRoot.intermediateField_adjoin_isCyclotomicExtension` takes the base field as
+  an *explicit positional* argument **after** the dot-notation receiver: write
+  `(h.intermediateField_adjoin_isCyclotomicExtension k)`.  Symptom of omitting it: "failed to
+  synthesize instance of type class `Field K✝`".
+* **2792.**  `Subgroup.card_subgroup_dvd_card` produces a term whose type *displays* as `∃ c, …`, so
+  `.trans_eq` resolves to `Exists.trans_eq` and fails with "the environment does not contain
+  `Exists.trans_eq`".  Rewrite the goal into the `Nat.card` form first and finish with
+  `exact Subgroup.card_subgroup_dvd_card _`.
+* **2793.**  `HasEnoughRootsOfUnity.exists_primitiveRoot Ω n` needs `[IsSepClosed Ω]` and
+  `[NeZero ((n : ℕ) : Ω)]`; over an `IsAlgClosure k Ω` with `CharZero k` both are available after
+  `haveI : CharZero Ω := charZero_of_injective_algebraMap (algebraMap k Ω).injective`.
+* **2794.**  Cold-build job counts: `…Shafarevich.LayerShaDescent` = 8554 jobs (18 s);
+  `…CFT.Units.CyclotomicLevel` = 8408 jobs (15 s); the full root build is 9877 jobs.
+* **2795.**  The `Edit` tool can report "String to replace not found" on a multi-line block of
+  `InverseGalois/CFT.lean` even when `sed`/`cat -A` show the target is byte-identical.  Workaround:
+  python line-index insertion (`lines[idx:idx] = new`) guarded by
+  `assert lines[idx].startswith(…)`.  Remember `idx` is the 1-based line number minus one.
+* **2796 (MATH, KEY).**  `HasLocalLift` is false as stated — see (b).
+
+## §1.73 — The `LevelProperty` refactor, landed (2026-09-09)
+
+The architectural fix designed in §1.72(f) is now in the tree and the full root build is green
+(**9877 jobs, 0 errors, 0 warnings, 0 sorries**).  What changed, module by module:
+
+**(a) `LevelSolution.lean`.**  New
+
+```lean
+abbrev LevelProperty (ℓ : ℕ) (U : Type) [Group U] (S : Type) [Group S] (k Ω : Type*) [Field k]
+    [Field Ω] [Algebra k Ω] :=
+  ∀ m j : ℕ, (Gal(Ω/k) →* GenericQuot ℓ U m S j) → Prop
+```
+
+and `LevelSolution … (P : LevelProperty ℓ U S k Ω) (m j : ℕ)` gained the fifth clause `P m j Φ`.
+`levelSolution_zero` takes the property of the canonical level-zero map as a hypothesis;
+`isInverseGalois_of_levelSolution` simply discards the clause.  `GenericLevelStepEP ℓ` now reads
+
+```lean
+∃ (T : Set (Subgroup Gal(Ω/ℚ))) (P : LevelProperty ℓ U S ℚ Ω),
+  (∀ m : ℕ, LevelSolution ℓ U S φ T P m 0) ∧ ∀ j : ℕ,
+    (∀ m : ℕ, LevelSolution ℓ U S φ T P m j) → ∀ n : ℕ, LevelSolution ℓ U S φ T P n (j + 1)
+```
+
+— the base case is now *supplied* rather than proved inside the step, because the level-zero
+solution has to carry `P` too and only the arithmetic knows why it does.  `forall_levelSolution`
+is the resulting two-line induction and `genericSplitEP_of_genericLevelStepEP` is unchanged
+otherwise.
+
+**(b) `LevelObstruction.lean`.**  Two new definitions.  `IsShrinkStable ℓ U S P` says `P` survives
+`layerSemidirectMap` for every operator homomorphism, at every pair of letter counts and every
+degree; every statement of the ladder produces its solution by pushing an earlier one down along a
+shrinking, so nothing can be carried up without it.  `HasSolutionRepair ℓ U n S j φ D P` is SW's
+Step 3 as a named arithmetic input: a lift `f` over a solution `Φ` which is already onto, already
+smooth, already over the base realization and already trivial along the finite family is upgraded
+to a full `LevelSolution … P n (j+1)`.  `HasLocalLift` gained the antecedent `P n j Φ`, which is
+the whole point of the refactor: the local solvability at the ramified-but-not-split places is
+asked only of solutions whose ramification is already constrained.
+
+**(c) `LevelShrink.lean`, `LevelLift.lean`, `LevelTwist.lean`, `LevelLocal.lean`.**  Mechanical:
+`P` and `hstab` are threaded through, the output tuples gained the conjunct `P n j Φ` (placed
+immediately after the "trivial along the family" clause, before `IsSmoothHom f`), and the two
+theorems that used to *conclude* a `LevelSolution` at `j+1` — `levelSolution_succ_of_exists_lift`
+and `levelSolution_succ_of_hasFiniteElementaryQuotient` — now finish by applying `hrep` instead of
+assembling the anonymous constructor by hand.  This is strictly shorter: the `hproj`/`rw` step that
+re-derived `rightHom (g x) = φ x` is gone in both.
+
+**(d) `LevelRung.lean`.**  `HasRungData` is now the five-fold conjunction
+
+```lean
+(∀ m : ℕ, LevelSolution ℓ U S φ (Set.range D) P m 0) ∧
+  (∀ n : ℕ, LevelSolution ℓ U S φ (Set.range D) P n 1) ∧
+    IsShrinkStable ℓ U S P ∧
+      (∀ ν : Fin t, HasFiniteElementaryQuotient ℓ (D ν ⊓ φ.ker)) ∧
+        ∀ n j : ℕ, 1 ≤ j → HasLocalLift ℓ U n S j φ D T P ∧
+          HasShrinkableSha ℓ U n S j φ T ∧ HasSolutionRepair ℓ U n S j φ D P
+```
+
+and `genericLevelStepEP_of_hasRungData` asks its input for `∃ t D T P, HasRungData … P`.
+
+**(e) What this buys.**  The group-theoretic half of the ladder is now *complete and correct*: it
+no longer claims anything false, and every remaining demand is a named `Prop`-valued `def` about a
+number field.  Of the six clauses of `HasRungData`, one (`HasShrinkableSha`, at
+`decompositionSubgroups k Ω`) **is already a theorem** over an arbitrary number field
+(`hasShrinkableSha_decompositionSubgroups`, §1.72(a)).  The five open ones are, in increasing
+order of difficulty:
+
+1. `IsShrinkStable ℓ U S P` — for the intended `P` (a prescription on ramification) this should be
+   nearly formal, a shrinking only shrinking the field cut out.
+2. `∀ m, LevelSolution … P m 0` — the level-zero solution is essentially `φ` itself; the content
+   is only that it carries `P`.
+3. `∀ ν, HasFiniteElementaryQuotient ℓ (D ν ⊓ φ.ker)` — local class field theory: the maximal
+   elementary abelian `ℓ`-quotient of a local Galois group is finite.  Partly blocked by the
+   henselization-vs-completion gap (ii-a).
+4. `∀ n, LevelSolution … P n 1` — the first rung: Ikeda, with complete splitting along `D`.
+5. `HasLocalLift` and `HasSolutionRepair` — SW Step 1(b)/1(c) and SW Step 3.
+
+**(f) The three arithmetic bricks of §1.72(g), re-scoped.**  Reconnaissance done this session:
+`Ideal.inertia G I` (Mathlib, `RingTheory/Ideal/Defs.lean:152`) is an `abbrev` for
+`AddSubgroup.inertia I.toAddSubgroup G` and needs **no finiteness at all** — it is available
+verbatim for `G = Gal(Ω/k)` acting on `𝓞 Ω`.  Likewise `Ideal.stabilizerHom P p G :
+MulAction.stabilizer G P →* ((B ⧸ P) ≃ₐ[A ⧸ p] (B ⧸ P))` (`RingTheory/Ideal/Over.lean:318`) with
+`ker_stabilizerHom : (stabilizerHom P p G).ker = (P.inertia G).subgroupOf _`.  So brick (1) — an
+inertia API for the infinite `Gal(Ω/k)` — is **not** a from-scratch construction: it is
+`Ideal.inertia Gal(Ω/k) P` plus the family `inertiaSubgroups k Ω` in the shape of
+`InfiniteDecomposition.lean`'s `finiteDecompositionSubgroups`.  What still has to be built for
+brick (2) is the surjectivity of `stabilizerHom` onto the residue automorphisms and the fact that
+the residue field of `𝓞 Ω` at `P` is an algebraic closure of a finite field, whose absolute Galois
+group is procyclic on Frobenius.
+
+## §1.74 — The ramification property, and a second correction: conjugates (2026-09-09)
+
+Two landings.  Full root build green at **9879 jobs, 0 errors, 0 warnings, 0 sorries** after both.
+
+**(a) `LevelRamification.lean` — the property is no longer abstract.**  §1.73's refactor left
+`LevelProperty` free; this module supplies the one SW Theorem 15 actually uses, condition (ii):
+
+```lean
+def IsSplitTotallyRamified (φ : Gal(Ω/k) →* U) : LevelProperty ℓ U S k Ω := fun _ _ Φ =>
+  ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
+    (∃ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1 ∧ Φ x ≠ 1) →
+      (∀ x ∈ stabilizer Gal(Ω/k) P, φ x = 1) ∧
+        (∀ x ∈ stabilizer Gal(Ω/k) P, ∃ y ∈ Ideal.inertia Gal(Ω/k) P, Φ x = Φ y) ∧
+          ∃ c, ∀ x ∈ stabilizer Gal(Ω/k) P, Φ x ∈ Subgroup.zpowers c
+```
+
+in words: *wherever the solution ramifies beyond the base realization, the place splits completely
+in the base realization, is totally ramified in the solution, and the local group is cyclic.*  It
+is stated over the primes of `𝓞 Ω` directly, so no finite level ever has to be named and no choice
+of a model field enters.
+
+Two design points paid off at once.  Cyclicity is written "the values lie in `Subgroup.zpowers c`"
+rather than "`IsCyclic` of the image", because that form pushes forward along a homomorphism in one
+line; and the *whole* property is preserved by post-composition (`IsSplitTotallyRamified.comp`),
+so clause 3 of `HasRungData` —
+
+```lean
+theorem isShrinkStable_isSplitTotallyRamified (φ : Gal(Ω/k) →* U) :
+    IsShrinkStable ℓ U S (IsSplitTotallyRamified ℓ U S φ) :=
+  fun _ _ _ _ hα _ hΨ => hΨ.comp (layerSemidirectMap ℓ hα _)
+```
+
+— is a one-liner.  Clause 1 (level zero) is `isSplitTotallyRamified_of_ker_le`: the level-zero map
+factors through `φ`, so its antecedent `φ x = 1 ∧ Φ x ≠ 1` is never met and the property holds
+vacuously.  **Two of the five open clauses of §1.73(e) are therefore closed.**
+
+**(b) A second correction of the same kind as §1.72(b): `HasLocalLift` was still false.**  The
+§1.73 refactor made the local hypothesis ask for a lift only at subgroups `A ∈ T` outside the named
+finite family `Set.range D`.  That is still unprovable, for a reason independent of the first
+correction.  `T = decompositionSubgroups k Ω` contains, for each place of `k`, **infinitely many**
+decomposition subgroups — one per prime of `𝓞 Ω` above it — and `Gal(Ω/k)` is transitive on them
+with a stabilizer of infinite index.  A family `D : Fin t → Subgroup` names one member of each
+class.  At any *other* member `A = σ (D ν) σ⁻¹` of the same class we had `A ∉ Set.range D`, so the
+hypothesis was invoked; but the property `P` gives nothing there, because `P`'s antecedent is about
+`Φ` and conjugating `hloc` kills `Φ` on `A ∩ ker φ` exactly as it does on `D ν ∩ ker φ`.  So the
+demand was "lift over `A`" with no information at all — false.
+
+The fix is group-theoretic and costs one lemma.  **Splitting an extension over a subgroup is a
+property of the conjugacy class of the subgroup**, since a splitting conjugated inside the
+extension by any element above the conjugating element is a splitting over the conjugate (the
+projection is onto, so such an element exists).  New module
+`InverseGalois/CFT/Profinite/EmbeddingConj.lean`:
+
+```lean
+theorem resH2_extensionClass_map_conj_eq_one (σ : S.Section) (H : Subgroup G) (g : G)
+    (h : resH2 H (extensionClass S hactG σ) = 1) :
+    resH2 (H.map (MulAut.conj g).toMonoidHom) (extensionClass S hactG σ) = 1
+```
+
+`LevelObstruction.lean` then gained
+
+```lean
+def conjFamily {Γ : Type*} [Group Γ] {t : ℕ} (D : Fin t → Subgroup Γ) : Set (Subgroup Γ) :=
+  {A | ∃ (ν : Fin t) (σ : Γ), A = (D ν).map (MulAut.conj σ).toMonoidHom}
+```
+
+with `self_mem_conjFamily` and `eq_one_of_mem_conjFamily` (trivial along `Set.range D` implies
+trivial along `conjFamily D`, so the arithmetic side never has to re-derive it).  The shrinking
+theorem `exists_operatorHom_forall_exists_subgroup_resH2_extensionClass_eq_one` now concludes over
+`conjFamily D` rather than `Set.range D`, and `HasLocalLift` excepts `conjFamily D`.  Downstream
+(`LevelShrink`, `LevelLift`, `LevelTwist`, `LevelLocal`, `LevelRung`) only passes `hvan` around, so
+**no argument changed** — only the type.  `LevelSolution` deliberately keeps `Set.range D` in its
+"trivial along the family" clause: the two are equivalent there, and keeping the smaller set avoids
+touching `HasSolutionRepair` and `HasRungData`.
+
+**(c) Where this leaves `HasRungData`.**  Three open clauses, unchanged in content from §1.73(e)
+but renumbered:
+
+1. `∀ ν, HasFiniteElementaryQuotient ℓ (D ν ⊓ φ.ker)`.
+2. `∀ n, LevelSolution … P n 1` — the first rung.
+3. `HasLocalLift` (SW Step 1(b)/1(c)) and `HasSolutionRepair` (SW Step 3).
+
+**(d) Lean findings.**  2797: a `fun` lambda proving a `def` whose binders include an *implicit*
+one must supply a binder for the implicit too, or Lean silently binds the next explicit argument to
+it and reports a type mismatch several arguments later.  2798: `congrArg (fun y => (y : G)) h`
+leaves an un-beta-reduced `(fun y => ↑y) (…)` in the hypothesis, so a following `rw` with a
+coercion simp lemma fails with "did not find an occurrence"; prefer writing the coercion out, or
+avoid `Subgroup.equivMapOfInjective` in favour of an explicit `MonoidHom.codRestrict`.  2799:
+`⟨ν, 1, by simp⟩` will not close `D ν = (D ν).map (MulAut.conj 1).toMonoidHom`; prove
+`(MulAut.conj (1 : Γ)).toMonoidHom = MonoidHom.id Γ` by `ext x; show (1:Γ) * x * 1⁻¹ = x; group`
+first, then `Subgroup.map_id`.
+
+## §1.75 — `HasLocalLift` is done except for one Kummer statement (2026-09-09)
+
+Clause 3 of `HasRungData` — `HasLocalLift`, "the step to the next level has a local solution along
+every decomposition subgroup the finite family does not name" — is now reduced to a single
+arithmetic condition, and the reduction went through in three steps.
+
+### (a) The unramified half is an outright theorem
+
+`InverseGalois/Solvable/Shafarevich/LocalLift.lean`,
+`exists_smoothHom_lift_of_unramified`.  At a prime where the solution kills inertia there is
+nothing to ask: the previous session's `CFT/Residue/Decomposition.lean` brick
+(`exists_smoothHom_lift_of_inertia_le_ker`) says a smooth homomorphism of a decomposition subgroup
+into a finite group which kills inertia lifts along *any* surjection of finite groups, because the
+Frobenius generates the decomposition subgroup modulo inertia and modulo any open subgroup.
+
+`hasLocalLift_of_hasSplitRamifiedLift` then shows that **local solvability of the step is the
+ramified case alone**, provided (i) every member of the wider family `T` is a decomposition
+subgroup of a nonzero prime and (ii) the finite family `D` names every prime where the base
+realization ramifies.
+
+### (b) The ramified half asks nothing about the tower
+
+`hasSplitRamifiedLift_of_hasCyclicLift` (same file).  At a prime where the solution ramifies, the
+property `IsSplitTotallyRamified` supplies three clauses; only two of them are used.  The values of
+the solution `Φ` on the decomposition subgroup lie in the powers of one element, hence — by
+`exists_generator_of_le_zpowers`, a subgroup of a cyclic group being cyclic — in the powers of one
+of *their own*, say `z`.  The base realization splits completely at that prime, so `z` lies over
+the identity of the base group, so `z` lies in the free pro-`p` quotient and its order is a power
+of `ℓ` (`exists_pow_eq_one_of_rightHom_eq_one`).  The step is killed by `ℓ`
+(`pow_eq_one_of_rightHom_eq_one`), so any preimage `z'` of `z` one level up satisfies
+`orderOf z' ∣ ℓ * orderOf z`.
+
+What is left is the named condition `HasCyclicLift ℓ N A`: *a smooth character of `A` whose values
+lie in the powers of one element `f z'` of `ℓ`-power order lifts along any surjection `f` of finite
+groups with `orderOf z' ∣ ℓ * orderOf (f z')` and `orderOf z' ∣ N`.*  The bound `N` is instantiated
+at `ℓ * Nat.card (GenericQuot ℓ U n S j)`, and the condition is only demanded at primes the base
+realization splits completely — both restrictions matter, because without them the condition is
+**false**: at a prime with residue field `𝔽_q` and `v_ℓ(q-1) = a` exactly, a ramified character of
+order `ℓ^a` does not extend.
+
+### (c) The remaining ask is Kummer theory, not local class field theory
+
+This was the surprise.  The obvious reading of Schmidt–Wingberg Theorem 15 First Step (c) — "*an
+arbitrary chosen preimage of a generator has order `p^{a+ε}`, `0 ≤ ε ≤ 1`; we can solve our
+embedding problem by taking a `p^{a+ε}`-th root of `π_p`, since `μ_{p^{a+ε}} ⊆ μ_{p^e} ⊆ K ⊆ K_p`*"
+— is that one must go into the local field, take a uniformizer, and adjoin a root.  That would need
+the henselization-vs-completion dictionary and local class field theory.
+
+It does not.  The `p`-th-root construction works verbatim on the *closed subgroup* itself, over the
+algebraic closure, with no local field in sight:
+
+* a closed subgroup `A ≤ Gal(Ω/k)` is the group fixing its own fixed field `F` (infinite Galois
+  correspondence, already in the repo as `fixingSubgroup_fixedField_of_isClosed`), and `Ω/F` is
+  Galois, and the correspondence is continuous both ways
+  (`CFT/Profinite/FixingSubgroup.lean`), so **Hilbert's theorem ninety holds for `A`**;
+* a smooth character `χ : A → Ωˣ` with `χ^n = 1` has *fixed* values as soon as `μ_{nd}` is fixed by
+  `A`, hence is a one cocycle, hence `χ(σ) = σβ/β` for a single `β : Ωˣ`;
+* `Ω` is algebraically closed, so `β = γ^d`; put `χ'(σ) := σγ/γ`.  Then `(χ')^d = χ`, and
+  `(χ')^{nd} = σ(β^n)/β^n = 1` because `β^n` is `A`-fixed, so `χ'` lands in `μ_{nd}`, which is
+  fixed, which is exactly what makes `χ'` a *homomorphism*;
+* `χ'` is smooth for a reason owing nothing to `χ`: its kernel contains the automorphisms fixing
+  `k(γ)`, a finite extension.
+
+That is `InverseGalois/CFT/Profinite/CharacterRoot.lean`:
+`isMulCoboundary₁_of_isMulCocycle₁_smooth_subgroup` and `exists_smoothHom_pow_eq`, both landed
+sorry-free.  The moral: **the ramified local case of Scholz–Reichardt costs Hilbert 90 plus roots
+of unity in the base field, and no local class field theory at all.**
+
+### (d) What is left on this clause
+
+Two pieces of plumbing:
+
+1. From `exists_smoothHom_pow_eq` to `HasCyclicLift`: transport a character valued in
+   `Subgroup.zpowers (f z')` to one valued in `μ_q(Ω)` and back to `Subgroup.zpowers z'`, along
+   `IsPrimitiveRoot.zmodEquivZPowers`, with a primitive `m`-th root of unity `ξ : Ωˣ` and
+   `ζ := ξ^d` matching `f z'`.  Purely formal, fiddly with `ZMod`/`orderOf` coercions.
+2. The two hypotheses of the transported statement: the decomposition subgroup is **closed** (an
+   intersection of clopen conditions `{σ | σ x ∈ P}`, since the action on `Ω` discrete is
+   continuous), and `μ_N ⊆ k` for `N = ℓ * Nat.card (GenericQuot ℓ U n S j)` — which is Schmidt
+   and Wingberg's standing "enlarge `K` so that `μ_{p^e} ⊆ K`", and must be threaded through the
+   ladder as a hypothesis on the base field.
+
+## §1.76 — Clause 4 is a theorem: decomposition subgroups have finite elementary quotients (2026-09-09)
+
+Clause 4 of `HasRungData` — `∀ ν, HasFiniteElementaryQuotient ℓ (D ν ⊓ φ.ker)` — is now proven for
+the members the arithmetic actually hands the ladder, unconditionally and with **no local class
+field theory**.  Three modules landed.
+
+### (a) What the clause really asks
+
+`HasFiniteElementaryQuotient ℓ A` (`LevelLocal.lean:77`) says: there is *one* finite group `Q` and
+one homomorphism `q : A → Q`, chosen before any coefficients are named, through which every smooth
+homomorphism from `A` into every commutative group killed by `ℓ` factors.  The third shrinking of
+§1.62 consumes exactly this: it needs to know, in advance of choosing a solution, how many values
+the discrepancy along `D ν` can take.
+
+The module docstring of `LevelLocal.lean` said this "is what local class field theory supplies".
+It does not have to.  Taking `Q` to be the (finite) group of **all** smooth characters
+`A → Multiplicative (ZMod ℓ)`, with `q` the evaluation map, works: an `M` killed by `ℓ` is an
+`𝔽_ℓ`-vector space, its nonzero vectors are separated by linear functionals, and the product of all
+the characters is injective on the image, so every `a : A →* M` factors.  That is
+`hasFiniteElementaryQuotient_of_finite_smoothZModChar`.  So the whole clause reduces to a **count**:
+
+> the closed subgroup `A ≤ Gal(Ω/k)` carries only finitely many smooth characters of order `ℓ`.
+
+### (b) The count is Kummer theory
+
+`InverseGalois/Solvable/Shafarevich/ElementaryQuotient.lean`.  Suppose `A` fixes `μ_ℓ`.  A character
+`χ : A →* Ωˣ` with `χ^ℓ = 1` then has `A`-fixed values, so it is a one cocycle; by Hilbert 90 for a
+closed subgroup (`isMulCoboundary₁_of_isMulCocycle₁_smooth_subgroup`, §1.75(c)) it is
+`σ ↦ σβ/β` for a single `β`.  Then `β^ℓ` is `A`-invariant, and `β` is determined by `β^ℓ` up to
+`μ_ℓ`, which is fixed — so `χ` is determined by the class of `β^ℓ` in
+
+    (Ω^×)^A / ((Ω^×)^A)^ℓ.
+
+Hence `finite_smoothTorsionChar`: **finitely many representatives of the `ℓ`-th power classes of the
+invariants bound the characters.**  `finite_smoothZModChar_of_finite_pow_representatives` transports
+this along `zmodRootHom` to characters valued in `Multiplicative (ZMod ℓ)`.
+
+Two more general-purpose bricks in the same file:
+
+* `finite_smoothZModChar_of_le` — the bound survives passage to a subgroup of **finite index**, a
+  character being determined by its restriction plus its values on coset representatives.  This is
+  what lets the count be done after the base has been enlarged to contain `μ_ℓ` (finding 2893: no
+  coprimality, no normality needed).
+* `hasFiniteElementaryQuotient_of_finite` — a *finite* subgroup trivially has one, namely itself.
+  This is the archimedean case: the decomposition subgroup at an infinite place of `Ω/ℚ` is
+  generated by a complex conjugation and has order at most two, so it needs none of the above.
+
+### (c) The finitely many power classes
+
+`InverseGalois/CFT/Kummer/GlobalPowRepresentatives.lean`, the arithmetic input:
+`exists_finite_pow_representatives_stabilizer` — for `Ω` an algebraic closure of a number field `k`
+and `P` a nonzero prime of `𝓞 Ω`, there is a **finite** `T ⊆ Ω` such that every
+`stabilizer Gal(Ω/k) P`-invariant `x ≠ 0` is `a · c^ℓ` with `a ∈ T` and `c` again invariant.
+
+The proof descends to a finite Galois level `M ∋ x` and works in the *decomposition field* of the
+level, where the statement becomes finiteness of `K_v^×/(K_v^×)^ℓ` read on the henselization; the
+supporting lemma `exists_pow_smul_eq_of_pow_eq_pow` says that if `b^ℓ` comes from the completion of
+the base then `b` can be corrected by a root of unity so as to be stabilizer-fixed.  No `μ_ℓ ⊆ k`
+hypothesis: the root of unity lives in the level.
+
+**By-product: this also closes gap (ii-a) on the row-5 critical path** — the henselization-versus-
+completion comparison `(K ⊔ F)^× / p = K_w^× / p`.
+
+### (d) The assembly, and the intermediate-field bridge
+
+`InverseGalois/Solvable/Shafarevich/ElementaryQuotientDecomposition.lean`:
+
+    hasFiniteElementaryQuotient_stabilizer_inf :
+      P.IsPrime → P ≠ ⊥ → IsOpenNormal N →
+        HasFiniteElementaryQuotient ℓ (stabilizer Gal(Ω/k) P ⊓ N)
+
+which is exactly `D ν ⊓ φ.ker` at a finite place, `φ.ker` being open normal because `φ` is smooth.
+
+The argument picks a finite Galois level `M` that (i) contains a primitive `ℓ`-th root of unity and
+(ii) has `M.fixingSubgroup ≤ N` — the second by `exists_fixingSubgroup_le` plus the `F.FG` idiom,
+the first by enlarging the generating set.  Then:
+
+* `stabilizer P ⊓ M.fixingSubgroup` fixes `μ_ℓ` and is closed, and (c) over the base `M` bounds its
+  characters;
+* it has finite index in `stabilizer P ⊓ N`, because the quotient injects into `Gal(M/k)`
+  (`finite_quotient_fixingSubgroup_subgroupOf`, via `restrictNormalHom_ker`);
+* so `finite_smoothZModChar_of_le` transports the bound up, and (a) finishes.
+
+The one piece of friction was the **bridge** between `Gal(Ω/↥M)` and `Gal(Ω/k)`.  The count in (c)
+is stated for `stabilizer Gal(Ω/↥M) P`; the ladder wants `stabilizer Gal(Ω/k) P ⊓ M.fixingSubgroup`.
+Four small lemmas identify them:
+
+* `galSubHom_mem_fixingSubgroup`, `exists_galSubHom_eq` — the reading is a bijection onto
+  `M.fixingSubgroup` (via `IntermediateField.fixingSubgroupEquiv` and `coe_fixingSubgroupEquiv_symm`);
+* `smul_ideal_galSubHom`, `mem_stabilizer_galSubHom_iff` — it does not change the action on ideals of
+  `𝓞 Ω`, so the two stabilizer conditions agree.
+
+### (e) The scoreboard now
+
+| # | clause | status |
+|---|---|---|
+| 1 | `∀ m, LevelSolution … m 0` | ✅ |
+| 2 | `∀ n, LevelSolution … n 1` | ❌ **open** — the first rung (Ikeda + complete splitting along `D` + the Scholz roots-of-unity clause) |
+| 3 | `IsShrinkStable` | ✅ |
+| 4 | `∀ ν, HasFiniteElementaryQuotient ℓ (D ν ⊓ φ.ker)` | ✅ **this section** |
+| 5 | `HasLocalLift` | ✅ (§1.75) |
+| 6 | `HasShrinkableSha` | ✅ (§1.71) |
+| 7 | `HasSolutionRepair` | ❌ **open** — SW Step 3 |
+
+### (f) Lean findings
+
+* **2896.** `set A := <subgroup expr> with hA` then `hA ▸ x.2` fails ("failed to compute motive").
+  In a proof that unfolds such an abbreviation repeatedly, do not `set` at all — write the `⊓`
+  longhand so `Subgroup.mem_inf.1 x.2` applies directly.
+* **2897.** `coe_smul_ringOfIntegers` will not rewrite `↑((galSubHom K τ)⁻¹ • b) = ↑(τ⁻¹ • b)`.
+  Use `rw [← _root_.map_inv (galSubHom K) τ]; exact Subtype.ext rfl`.
+* **2898.** The two `MulAction`s on `Ideal (𝓞 Ω)` are defeq through `galSubHom`, but `Iff.rfl` does
+  not close the stabilizer transfer — route it through `smul_ideal_galSubHom`.
+* **2899.** Cold-build job counts: `Kummer.GlobalPowRepresentatives` 8332,
+  `Shafarevich.ElementaryQuotient` 8406, `Shafarevich.ElementaryQuotientDecomposition` 8408.
+
+## §1.77 — Clause 7 reduced to one prescription in degree one (2026-09-10)
+
+Clause 7 of `HasRungData` — `HasSolutionRepair`, SW's Step 3 — is now reduced, through five
+successive weakenings, to a single arithmetic statement about one cocycles.  Everything in this
+section is landed, sorry-free and axiom-free; ROOT build **9912 jobs, 0 warnings**.
+
+### (a) The four-form chain
+
+`LevelStepRepair.lean` states the repair in four progressively weaker forms, all quantified over
+the same data (`S U Ω φ t D n j`, `IsPGroup ℓ S`, `1 ≤ j`, and the roots-of-unity rider
+`ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ`):
+
+    SplitCyclicRepairEP ℓ  ⟹  CyclicRepairEP ℓ  ⟹  LiftRepairEP ℓ  ⟹  SolutionRepairEP ℓ
+                                                                    ⟹  GenericLevelStepEPRoots ℓ
+
+with `cyclicRepairEP_of_splitCyclicRepairEP`, `liftRepairEP_of_cyclicRepairEP`,
+`solutionRepairEP_of_liftRepairEP`, `genericLevelStepEPRoots_of_splitCyclicRepairEP` (the last
+still carrying `2 < ℓ`; the `ℓ = 2` case of the *bridges* is open, though the `ℓ = 2` rung itself
+is a theorem — see the nilpotent-case entry in the memory index).  The `Has…` forms behind them,
+in `LevelRepair.lean` and `LevelCyclicRepair.lean`, are `HasSolutionRepair`, `HasLiftRepair`,
+`HasCyclicRepair`, `HasSplitCyclicRepair`.
+
+Each arrow drops one demand:
+
+* **onto → lift.**  Past the first layer the layer sits inside the Frattini subgroup of the normal
+  factor, so a lift over an onto solution is itself onto.  Nothing arithmetic.
+* **roots of unity → values.**  The awkward clause of the restriction is not about values but about
+  the field: the local field is asked to carry `μ_{ℓ·ord}` where `ord` is the order of the local
+  image, and that order is not fixed in advance.  It is bounded, though: a value of a solution at a
+  prime where the base realization splits completely lies over the identity of the base group,
+  hence comes from the generic operator group, hence is killed by `Monoid.exponent S` — a bound
+  depending on neither the level `j` nor the number of letters `n`.  So asking the base realization
+  to fix `μ_{ℓ·exponent S}` discharges the field clause once and for all
+  (`hasLiftRepair_of_hasCyclicRepair`).  **This is the corrected bound**: it is the exponent of the
+  *test* group `S`, not of the layer and not of `U`.
+* **totally ramified → cyclic.**  `hasCyclicRepair_of_hasSplitCyclicRepair`.  At a prime where the
+  lift ramifies over the base realization the base realization kills the whole decomposition
+  subgroup, so every value there has `ℓ`-power order, and the local image is generated by one of
+  them.  *Confinement* says that one layer down that generator is matched by an element of inertia
+  — either the solution below is itself totally ramified there, or it takes no value at all on the
+  decomposition subgroup — so generator and inertia value differ by an element of the layer, which
+  `ℓ` kills.  An element of `ℓ`-power order in that position is forced into the image of inertia as
+  soon as that image is nontrivial, which it is because the lift ramifies.  So **cyclic plus
+  confined is automatically totally ramified**, and the arithmetic is only ever asked for a cyclic
+  local image.
+
+### (b) Reading the restriction one prime at a time
+
+`CyclicTransport.lean` is the dictionary.  Three predicates at a single prime `P`:
+
+* `RamifiesAt φ Φ P := ∃ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1 ∧ Φ x ≠ 1` — the lift ramifies over
+  the base realization;
+* `IsCyclicSplitAt φ Φ P` — the base realization kills `stabilizer P`, and the values of `Φ` there
+  all lie in the powers of one of them;
+* `IsConfinedAt φ Φ P := RamifiesAt φ Φ P ∨ ∀ x ∈ stabilizer Gal(Ω/k) P, Φ x = 1`.
+
+All three are stable under the Galois action on primes (`RamifiesAt.smul`, `ramifiesAt_smul_iff`,
+`IsCyclicSplitAt.smul`, `IsConfinedAt.smul`), which is what turns a statement about *every* prime
+into a statement about *one prime of each orbit* — the shape `exists_ramified_family`
+(`CFT/Units/RamifiedFamily.lean:86`) delivers, and the reason the whole clause is a **finite
+check**.
+
+### (c) Local solvability, strengthened to cyclic
+
+`HasSplitRamifiedLift` and `HasCyclicLift` (`LocalLift.lean`, `CyclicLift.lean`) were strengthened:
+the local lift they produce is not merely a lift over `Φ` on the decomposition subgroup, it is
+**cyclic** — its conclusion now carries `∃ w, ∀ x, g x ∈ Subgroup.zpowers w`.  The strengthening is
+free: the character-transport construction of `CyclicLift.lean` already produced its lift inside
+`Subgroup.zpowers` of the image of a generator, so the extra clause is
+`zpowersLift_apply` applied to the codomain restriction.  `hasLocalLift_of_hasSplitRamifiedLift`
+simply discards it.
+
+This is what makes the repair possible at a prime where the solution below ramifies: the corrected
+lift is *made equal* to the local one there, so cyclicity is inherited rather than argued.
+
+### (d) `LevelConfinedTwist`: the repair is a choice of cocycle
+
+`InverseGalois/Solvable/Shafarevich/LevelConfinedTwist.lean`.  Two lifts of one solution across one
+layer differ by a one cocycle with values in the layer, so the repair is a choice of cocycle
+(`twistLift` and friends, `CFT/Profinite/LiftTwist.lean`).  The main theorem is
+
+    hasSplitCyclicRepair_of_hasConfinedPrescription :
+      (∀ x v, x • v = φ x • v) → HasSplitRamifiedLift ℓ U n S j φ →
+        HasConfinedPrescription ℓ U n S j φ D → HasSplitCyclicRepair ℓ U n S j φ D
+
+The proof names one prime `Pr μ` of each orbit carrying ramification of the given lift `f`
+(`exists_ramified_family`) and splits on whether the solution below ramifies there:
+
+* **Case A — `RamifiesAt φ Φ (Pr μ)`.**  Then `IsSplitTotallyRamifiedHom` gives that `φ` kills
+  `stabilizer (Pr μ)`, so that subgroup acts trivially on the layer, and (c) gives a *cyclic* local
+  lift `g` of `Φ` there.  Take `A μ := stabilizer (Pr μ)` and prescribe the cocycle to be the
+  discrepancy `a` with `inl (a x) * f x = g x`.  Then the twisted lift restricted to `A μ` **is**
+  `g`, hence cyclic; confinement holds by `Or.inl`.
+* **Case B — not.**  Then `Φ` is trivial on `inertia (Pr μ) ⊓ φ.ker`, so `f` lands in the layer
+  there (`exists_hom_inl_eq`).  Take `A μ := inertia (Pr μ) ⊓ φ.ker` and prescribe the *inverse* of
+  that.  The twisted lift is then trivial on `A μ`, so it does not ramify over the base realization
+  at `Pr μ` at all and both clauses are vacuous.
+
+At a prime outside the family `f` does not ramify, so any new ramification of the twist is
+ramification of the cocycle, and the last clause of `HasConfinedPrescription` supplies both halves
+there: `f` kills the whole decomposition subgroup (whence so does `Φ`, and so does `φ`) and the
+cocycle is cyclic there (whence so is the twist, `f` being trivial).
+
+The one brick `LiftTwist.lean` was missing is the private
+
+    exists_hom_inl_mul_eq (S : GroupExtension N E G) (hfix : ∀ x ∈ A, ∀ v, S.conjActHom (ρ x) v = v)
+      (hf : ∀ γ, S.rightHom (f γ) = ρ γ) (hfs : IsSmooth₁ f)
+      (hg : ∀ x : ↥A, S.rightHom (g x) = ρ ↑x) (hgs : IsSmooth₁ g) :
+      ∃ a : ↥A →* N, IsSmooth₁ a ∧ ∀ x : ↥A, S.inl (a x) * f ↑x = g x
+
+— the *discrepancy between two lifts along a subgroup acting trivially on the kernel*.  `LiftTwist`
+only had `exists_hom_inl_eq`, the case `g = 1` (finding 3100).  Multiplicativity of the discrepancy
+is exactly the triviality of the action along `A`; smoothness is the intersection of the two open
+normal subgroups the two lifts are constant on.
+
+### (e) The design decision: no compatibility hypothesis
+
+`HasConfinedPrescription` prescribes homomorphisms `a μ` on the `A μ` **and** asks the cocycle to
+vanish on `D ν ⊓ φ.ker`.  Should it also *hypothesise* that the two demands are consistent — that
+`a μ` vanishes where `A μ` meets `D ν`?
+
+In case B it would be provable (`f` is already trivial on `D ν ⊓ φ.ker`, so the discrepancy is).
+In case A it is **not**: it would require `g x = 1` on `D ν ∩ stabilizer (Pr μ)`, and `g` comes
+from purely local field theory, which knows nothing about `D`.  So the hypothesis is *not* added:
+both demands sit in the **conclusion** of `HasConfinedPrescription`, which therefore asserts that
+they can be met simultaneously.  This matches the pre-existing convention of `HasCocyclePrescription`
+in `LiftTwist.lean`, which likewise prescribes arbitrary smooth homomorphisms on a family of
+subgroups with no compatibility side condition.  If the discharger needs a refinement, it will be
+added then.
+
+### (f) What `HasConfinedPrescription` costs, in SW's terms
+
+SW's Step 3 (`sw.txt:1417–1503`) constructs exactly the local data our case split produces — a
+`δ_p ∈ H¹(k_p, E(n,χ))` for each `p ∈ T`, chosen by the three-way split `T¹`/`T²`/`T³` — and then
+says: *"it is therefore sufficient to show the existence of an element `ε ∈ H¹(G_S, E(n,χ))` with
+`ε_p = δ_p` for all `p ∈ T`"*.  The obstruction is the image of `(δ_p)_p` in
+
+    coker(k_S, T, A) := coker ( H¹(G_S, A) → ∏_{p ∈ T} H¹(k_p, A) ) ,
+
+and **Lemma 10** (`sw.txt:483`), a consequence of local plus global duality, is the exact sequence
+
+    0 → Ш¹(k_S, A′) → Ш¹(k_S, S∖T, A′) → coker(k_S, T, A)^∨ → 0,       A′ = Hom(A, μ_p).
+
+SW then *shrink* `Ш¹(k_S, S∖T, A′)` to zero by Proposition 7 (`sw.txt:333`) — which is precisely
+what our **clause 6, `HasShrinkableSha`, already proves** (§1.71).  So:
+
+> the sole new arithmetic input for clause 7 is the **surjectivity half of Poitou–Tate**: if every
+> class of `H¹(G_S, A′)` which is locally trivial at every `p ∈ S∖T` vanishes, then local conditions
+> at the finitely many primes of `T` are realised by a global class unramified outside `S`.
+
+Two remarks on how our formulation differs from SW's, both in our favour:
+
+1. We never fix `S`.  The "confined" clause lets the cocycle ramify at primes of its own choosing,
+   provided it is cyclic there and the lift below kills the whole decomposition subgroup.  That is
+   weaker than "unramified outside `S`" and is what a Chebotarev-chosen auxiliary prime supplies.
+2. `A μ ≤ φ.ker`, so the action on the layer along `A μ` is trivial and `a μ` is an honest
+   homomorphism into a trivial module; combined with the roots of unity the ladder already puts in
+   the base (`RootsLevel.lean`), this is the situation the twisted Kummer identification
+   `kummerTwistEquiv_smul` (`CFT/Profinite/KummerAction.lean`) turns into a statement about
+   `K^× ⊗ Hom(μ_ℓ, E)` — where the `PoitouTate/` tower's maximal-isotropic Selmer duality
+   (`PoitouTate/Selmer.lean`, `PoitouTate/Prescribed.lean`) already lives.
+
+### (g) The scoreboard now
+
+| # | clause | status |
+|---|---|---|
+| 1 | `∀ m, LevelSolution … m 0` | ✅ |
+| 2 | `∀ n, LevelSolution … n 1` | ❌ **open** — the first rung |
+| 3 | `IsShrinkStable` | ✅ |
+| 4 | `∀ ν, HasFiniteElementaryQuotient ℓ (D ν ⊓ φ.ker)` | ✅ (§1.76) |
+| 5 | `HasLocalLift` | ✅ (§1.75), now strengthened to cyclic (c) |
+| 6 | `HasShrinkableSha` | ✅ (§1.71) |
+| 7 | `HasSolutionRepair` | ⏳ reduced to `HasConfinedPrescription` — **this section** |
+
+### (h) Lean findings
+
+* **3100.** `LiftTwist.exists_hom_inl_eq` is stated only for the *global* section-variable lift `f`;
+  there is no version for a homomorphism defined on a subgroup, and no "discrepancy between two
+  lifts" lemma.  Hence (d).
+* **3101.** `conjActHom`, `conjActHom_rightHom` and `inl_conjActHom` are **repo** declarations in
+  `InverseGalois/CFT/GroupCohomology/ToCocycle.lean` (namespace `GroupExtension`, lines 64/69/75),
+  *not* Mathlib.  `inl_conjActHom (e) (n) : S.inl (S.conjActHom (S.rightHom e) n) = e * S.inl n * e⁻¹`.
+* **3102.** `Ideal.inertia_le_stabilizer (P : Ideal R) : inertia M P ≤ MulAction.stabilizer M P` —
+  Mathlib `RingTheory/Ideal/Pointwise.lean:150`; `M` is implicit, inferred from the goal.
+* **3103.** `continuous_subtype (H : Subgroup G) : Continuous H.subtype` (`CFT/Profinite/Res.lean:77`)
+  and `isSmooth₁_comp` (`Res.lean:60`) are how a global smooth map is restricted to a subgroup.
+* **3104.** `genericLayerSubAction` (`LayerSmooth.lean:78`) is a real **instance**, so `φ x • v`
+  elaborates with no `attribute` line; only `genericQuotAction` needs `attribute [local instance]`.
+* **3105.** Cold-build job counts: `Shafarevich.LevelConfinedTwist` 8280, ROOT 9912.
+
+## §1.78 — The prescription carried to the EP level (2026-09-10)
+
+Commit `74a7e9a`.  §1.77 reduced the residual condition of the step, `HasSplitCyclicRepair`,
+to a single cocycle prescription `HasConfinedPrescription`, for a fixed base field, a fixed
+algebraic closure and a fixed `φ`.  This section records the last plumbing step: the same
+reduction at the level of the *quantified* propositions (the `…EP` forms) that the ladder
+actually consumes.
+
+### (a) The fifth form
+
+`InverseGalois/Solvable/Shafarevich/LevelStepRepair.lean` now names the residual condition five
+times, each implying the one before it:
+
+```
+ConfinedPrescriptionEP ℓ  ⟹  SplitCyclicRepairEP ℓ  ⟹  CyclicRepairEP ℓ
+   ⟹  LiftRepairEP ℓ  ⟹  SolutionRepairEP ℓ  ⟹  GenericLevelStepEPRoots ℓ      (2 < ℓ)
+```
+
+with
+
+```lean
+def ConfinedPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
+  ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
+      [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
+      (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ),
+      IsPGroup ℓ S → 1 ≤ j →
+      (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
+    letI := galLayerAction ℓ U n S j φ
+    HasConfinedPrescription ℓ U n S j φ D
+```
+
+and the two bridges `splitCyclicRepairEP_of_confinedPrescriptionEP` and
+`genericLevelStepEPRoots_of_confinedPrescriptionEP`.
+
+### (b) Fixing the layer action at the EP level
+
+`HasConfinedPrescription` is stated for an arbitrary `MulDistribMulAction Gal(Ω/k) ↥(layerSub …)`,
+because the sub-file that proves the bridge does not want to commit to one.  At the EP level the
+action *is* determined: it is the one pulled back along `φ`,
+
+```lean
+galLayerAction ℓ U n S j φ : MulDistribMulAction Gal(Ω/k) ↥(layerSub ℓ (Generic U n S) j) :=
+  MulDistribMulAction.compHom _ φ                                   -- `LevelShrink.lean:66`
+```
+
+which is a `def`, not an instance (`φ` is not inferrable), so the EP statement must introduce it
+with `letI := galLayerAction ℓ U n S j φ` *inside* the binder chain, after `φ` is in scope.  This
+is exactly the idiom `HasInflatedSha` already used, and it is what makes the hypothesis `hactφ`
+of `hasSplitCyclicRepair_of_hasConfinedPrescription` — "the ambient action agrees with the one
+through `φ`" — discharge by `fun _ _ => rfl`.
+
+### (c) Local solvability of the bridge is a theorem
+
+`hasSplitCyclicRepair_of_hasConfinedPrescription` also consumes `HasSplitRamifiedLift`, i.e. that
+each local obstruction is already solvable with a *cyclic* lift.  At the EP level this is supplied
+unconditionally by the chain
+
+```
+hasSplitRamifiedLift_of_hasCyclicLift                  -- LocalLift.lean:262
+  ∘ hasCyclicLift_of_fixed_rootsOfUnity                -- CyclicLift.lean
+  ∘ isClosed_stabilizer_ideal
+```
+
+using precisely the roots-of-unity rider `∀ ζ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → …` that
+`RootsLevel.lean` already threads through every EP form.  So nothing local is left: the whole of
+clause 7 is now the *global* prescription.
+
+### (d) Scoreboard
+
+`HasRungData` clauses 1, 3, 4, 5, 6 are theorems.  Clause 2 (the first rung) is open.  Clause 7 is
+`ConfinedPrescriptionEP ℓ`, whose only missing arithmetic input is the surjectivity half of
+Poitou–Tate (SW Lemma 10, `sw.txt:483`).
+
+### (e) Lean findings
+
+* **3106.** `galLayerAction ℓ U n S j φ` (`LevelShrink.lean:66`) is a `def`, not an instance.  A
+  quantified statement that mentions `layerSub` with the action through `φ` must write
+  `letI := galLayerAction ℓ U n S j φ` after the `φ` binder and before the body; `HasInflatedSha`
+  (`LevelShrink.lean:82`) is the template.  With that `letI` in place, a hypothesis of the form
+  `∀ x v, x • v = φ x • v` is `fun _ _ => rfl`.
+* **3107.** Cold-build job counts: `Shafarevich.LevelStepRepair` **8836**, ROOT **9912**.
+
+## §1.79 Corestriction, and the exact shape of Schmidt–Wingberg's theorem 13 (2026-09-10)
+
+Clause 7 of `HasRungData` is `ConfinedPrescriptionEP ℓ`, and §1.78(d) recorded that its missing
+arithmetic input is SW theorem 13.  This section builds the group-theoretic half of the bridge —
+corestriction read at the elements of the normal subgroup — and then reads SW's theorem 13 and step
+4 of theorem 15 closely enough to see **exactly which prescriptions corestriction can deliver**.
+The conclusion is a correction to the shape of `HasConfinedPrescription`, recorded in (d) and (e).
+
+### (a) The corestriction bricks
+
+`InverseGalois/CFT/Profinite/Corestriction.lean` already had the whole transfer:
+`transversalElt H σ hσ g x = (σ (g • x))⁻¹ * g * σ x`, the average
+`corCochain₁ H σ hσ u g = ∏ x, σ (g • x) • u (transversalElt H σ hσ g x)`, the facts that it takes
+cocycles to cocycles, coboundaries to coboundaries and smooth cochains to smooth cochains (the last
+through `HasOpenNormalCore`, which `hasOpenNormalCore_of_isOpen` supplies for an open subgroup of a
+compact group), the induced map `corH1` on `SmoothH1`, and `corH1_resH1 : cor (res c) = c ^ [G : H]`.
+
+New this section: `InverseGalois/CFT/Profinite/CorestrictionNormal.lean` (commit `54a2d39`), which
+reads the average at the elements of `H` itself when `H` is *normal*.
+
+* `smul_quotient_eq_self_of_mem` — an element of a normal subgroup fixes every coset of it.
+* `coe_transversalElt_of_mem` — hence for `g ∈ H` the transversal element is the plain conjugate,
+  `(transversalElt H σ hσ g x : G) = (σ x)⁻¹ * g * σ x`, with no translation of the coset.
+* `corCochain₁_eq_single` — **the collapse.**  If `u` kills the conjugate of `g` by every
+  representative except `σ x₀`, then `corCochain₁ H σ hσ u g = σ x₀ • u y₀`, where `y₀` is the
+  surviving conjugate.
+* `corCochain₁_eq_self_of_conj` — the case `x₀ = 1` together with `σ 1 = 1`: the average reproduces
+  `u` exactly.  `exists_section_one` says a section may always be normalized so that `σ 1 = 1`.
+* `corCochain₁_mem_zpowers_of_single` — a single surviving term carries a bound: if `u y₀` is a
+  power of `w` then the average is a power of `σ x₀ • w`.  This is how cyclicity of a local image
+  survives corestriction.
+* `corCochain₁_eq_one_of_conj` and its contrapositive `exists_ne_one_of_corCochain₁_ne_one` — **the
+  confinement.**  Where the average is nontrivial the cochain was already nontrivial at a conjugate.
+  Applied to an inertia subgroup: the average can only ramify at a place lying under a place where
+  the cochain already ramified.
+
+Build green, ROOT **9913** jobs, 0 warnings.
+
+### (b) What theorem 13 actually delivers
+
+`sw.txt:657`.  Given finite Galois extensions `Γ | K | k` of global fields with `μ_p ⊆ K`, a finite
+set `T` of primes of `k` with `T ⊇ Ram(Γ|k) ∪ S_p ∪ S_∞`, `S = cs(Γ|k) ∪ T`, a finite
+`𝔽_p[G(K|k)]`-module `A` and a class `y ∈ H¹(k_S|K, A)` such that
+
+> `y_P` is unramified for `P ∈ T(K)` and `y_P = 0` for `P ∩ k ∈ Ram(K|k) ∪ S_p ∪ S_∞`,
+
+there is `x ∈ H¹(k_S|k, A)` with
+
+> `x_p = (cor^K_k y)_p` for `p ∈ T`, and `x_p` cyclic for all `p ∉ T`.
+
+Two things must be read carefully.
+
+1. **The prescription at `T` is not arbitrary.**  It is the local component of a *corestriction* of
+   a class over `K`.  At a prime `p` that does not split completely in `K|k` this is a norm, and the
+   achievable prescriptions there form the image of the local norm, not all of `H¹(k_p, A)`.
+2. **The proof is exactly the collapse of (a).**  SW put `x = cor^K_k z` and reduce to constructing
+   `z ∈ H¹(k_S|K, A)` with (a) `z_P = y_P` for `P ∈ T(K)`, and (b) at a `P ∉ T(K)` where `z` is
+   ramified, `z_P` cyclic and **`z_{σP} = 0` for every `σ ∈ G(K|k) ∖ {1}`**.  Clause (b) is
+   `corCochain₁_eq_single`'s hypothesis verbatim, and the passage `x = cor z` is `corH1`.
+
+### (c) Why the collapse forces the prescribed primes to split completely
+
+Here is the obstruction in our own language, and it is unconditional.  Let `H = ker φ = G_K`, so
+that `H` acts trivially on the layer `M` and a cochain `u : H → M` with `IsMulCocycle₁ u` is
+literally a homomorphism, hence factors through `H^{ab}`.  Let `A ≤ H` be the piece on which a
+value `a ≠ 1` is to be prescribed, and let `A ≤ stabilizer(Q)` for a prime `Q` of `Ω`.
+
+Suppose the prime `q = Q ∩ 𝓞_K` does *not* split completely over `k`, i.e. some `τ ∈ G(K|k) ∖ {1}`
+fixes `q`.  Pick representatives `σ x₀` and `σ x` of the two cosets with `x ≠ x₀`.  Then
+`(σ x)⁻¹ • Q` and `(σ x₀)⁻¹ • Q` lie over the *same* prime of `K`, so they are `H`-conjugate: there
+is `ρ ∈ H` with `(σ x)⁻¹ A (σ x) = ρ ((σ x₀)⁻¹ A (σ x₀)) ρ⁻¹`.  Since `M` is abelian and `u` is a
+homomorphism on `H`, `u (ρ g ρ⁻¹) = u g`.  So `u` kills one of the two conjugates if and only if it
+kills the other, and the collapse of `corCochain₁_eq_single` is unavailable: the average at `A` is a
+genuine norm `∏_x σ x • u((σ x)⁻¹ g σ x)` and cannot reproduce an arbitrary `a`.
+
+The condition "`q` splits completely in `K|k`" is, in the repo's language,
+`∀ x ∈ stabilizer Gal(Ω/k) Q, φ x = 1` — the base realization kills the whole decomposition
+subgroup of `Q`.
+
+### (d) The consequence for `HasConfinedPrescription`
+
+`HasConfinedPrescription` (`LevelConfinedTwist.lean:100`) quantifies over *arbitrary* primes `Q μ`,
+subgroups `A μ ≤ stabilizer(Q μ) ⊓ ker φ` and smooth homomorphisms `a μ : A μ →* M`.  By (c) it is
+**not** reachable by corestriction as stated.  Its consumer
+`hasSplitCyclicRepair_of_hasConfinedPrescription` produces the data in two cases:
+
+* **Case A** (`Φ` ramifies at `Pr μ` over `φ`).  There `A μ = stabilizer Gal(Ω/k) (Pr μ)` and the
+  proof already has `hsplit : ∀ x ∈ stabilizer Gal(Ω/k) (Pr μ), φ x = 1` — the prime **does** split
+  completely in the base realization.  Corestriction applies.
+* **Case B** (`Φ` unramified at `Pr μ` over `φ`).  There `A μ = Ideal.inertia Gal(Ω/k) (Pr μ) ⊓ φ.ker`
+  and the prescribed value is the inverse of the given lift `f` read through `inl`; nothing says
+  `Pr μ` splits completely.  Corestriction does not apply.
+
+And case B cannot be dodged by weakening the conclusion: `IsConfinedAt φ Φ (Pr μ)` at a prime where
+`Φ` is unramified demands that `Φ` kill the whole decomposition subgroup, which is again the
+splitting condition.  So at a non-split case-B prime the corrected lift must be made *unramified*,
+and the prescription is forced.
+
+### (e) Where the invariant really lives, in SW
+
+Step 4 of theorem 15 (`sw.txt:1579`) says of the primes needing repair:
+
+> for `p ∈ Ram(N_{n+1}|K) ∖ Ram(N_n|K)` the local extension `(N_{n+1})_p | k_p` might not be
+> (cyclic) totally ramified.  **But we know that for such a prime `p` the extension `(N_n)_p | k_p`
+> is trivial.**
+
+That is precisely our case-B splitting hypothesis, and SW get it for free because of how step 3
+produced `φ_{n,ν+1}`: its class lives in `H¹(k_S|k, A)` with
+
+> `S = cs(N_n|k) ∪ T`,  `T = Ram(N_{n+1}|k) ∪ S_p ∪ S_∞ ∪ T'`,  and `x_p = 0` for
+> `p ∈ Ram(N_n|k) ∪ S_p ∪ S_∞ ∪ T'`.
+
+The ramification of the correcting class is confined to `S`; at the fixed bad set `T` the
+prescription is zero, so *all new ramification is at primes of `cs(N_n|k)`* — split completely in
+the base realization.  Step 4 then only ever has to prescribe at split primes, and SW's own
+parenthesis in step 4 says so out loud: "*we fix one (p splits completely in K|k) prolongation
+`p₀ ∈ S(K)` of `p` to `K`*", with `η_P = 0` at every other prolongation and at every `P` over
+`Ram(N_n|k) ∪ S_p ∪ S_∞ ∪ T'`.
+
+So the invariant that makes corestriction usable is **produced by step 3, not by step 4**.  Our
+chain does not have it, because `HasSplitCyclicRepair` (`LevelCyclicRepair.lean:95`) quantifies over
+an *arbitrary* smooth lift `f` of `Φ`.  Two honest ways out:
+
+* **(i) Carry the invariant.**  Split clause 7 in two.  A *split* prescription
+  (`ConfinedPrescriptionSplit`) with the extra hypothesis
+  `∀ μ, ∀ x ∈ stabilizer Gal(Ω/k) (Q μ), φ x = 1`, provable by corestriction from theorem 13; and a
+  strengthened lift-existence delivering an `f` whose ramification beyond `Φ`'s is confined to
+  primes split completely in the base realization, together with prescribed local behaviour at a
+  fixed finite bad set.  The second is SW's step 3 and needs the surjectivity half of Poitou–Tate
+  plus a shrinking, in the `HasShrinkableSha` shape (`∃ N, ∀ ε, ∃ α : Generic U N S ↠ Generic U n S`).
+* **(ii) Prove the prescription over `k` directly.**  Keep the current statement and discharge it
+  from Poitou–Tate over `k` with the layer's genuine `Gal(K|k)`-action, killing the cokernel
+  `coker(k_{S,T,A}) ↪ Ш¹(k_S, S ∖ T, A′)` by shrinking.  This is SW's step 3 obstruction again, now
+  with no help from corestriction.
+
+Either way the shrinking is unavoidable, so (i) is the better bargain: it keeps the *confinement*
+and *cyclicity* clauses — the hard geometric content — inside the corestriction collapse, where
+they are cheap, and isolates the shrinking in a single lift-existence statement.
+
+### (f) Lean findings
+
+* **3108.** `QuotientGroup.mk_one` will not elaborate against a goal whose left side is still a
+  metavariable-headed coercion; the statement is `rfl`, so use `rfl`.
+* **3109.** `Function.update_self` refuses to unify inside a `refine ⟨_, _, Function.update_self …⟩`
+  anonymous constructor (the function argument stays a metavariable).  Discharge the component in a
+  separate tactic block with `rw [Function.update_self]`.
+* **3110.** `smul_zpow'` is the `ℤ` analogue of `smul_pow'`, oriented `r • x ^ n = (r • x) ^ n`.
+  After `refine ⟨n, ?_⟩` on a `Subgroup.zpowers` goal the target is a beta-redex, so `rw` cannot see
+  the pattern; insert `show (…) ^ n = …` first (finding 3024).
+* **3111.** ROOT build after `CFT/Profinite/CorestrictionNormal.lean`: **9913** jobs.
+
+## §1.80 Even the split prescription needs a shrinking (2026-09-10)
+
+§1.79(e) offered two ways to repair clause 7 and preferred (i), carrying the splitting invariant so
+that the prescription is only ever asked at primes split completely in the base realization.  Read
+one paragraph further in step 4 of SW theorem 15 and (i) turns out to need the same medicine as
+(ii).  `sw.txt:1623`:
+
+> Similar to the situation with the class `ε` in step 3, the exact sequence
+> `H¹(K_S|K, E(n,ν)) → ∏_T H¹(K_P, E(n,ν)) → coker(K_S; T, E(n,ν))`
+> shows that the obstruction to the existence of such a `y` is `θ_n(η) = 0`.  Now we apply the
+> shrinking procedure as in step 3, but the commutative diagrams which are used there have to be
+> modified as follows: Replace in the first diagram `k` by `K` … Then we use part (ii) of theorem 7
+> instead of part (i).  **Therefore, after a further shrinking, we get a class `y` with the
+> properties above.**
+
+So the class `y ∈ H¹(k_S|K, A)` that theorem 13 consumes is *itself* only available after a
+shrinking — a second one, over `K` rather than over `k`, using theorem 7(ii) rather than 7(i).
+Theorem 13 is the cheap half; producing its input is not.
+
+### (a) Why the obstruction is really there
+
+The obstruction is `coker` of `H¹(K_S|K, A) → ∏_{P ∈ T(K)} H¹(K_P, A)`, which by SW's lemma 10
+(`sw.txt:483`) injects into `Ш¹(K_S, S ∖ T, A′)`.  Now `S = cs(N_n|k) ∪ T`, so `S ∖ T` contains
+every prime split completely in `N_n|k`; by Čebotarev a class of `H¹(K_S|K, A′)` locally trivial at
+all of them is inflated from `Gal(N_n|K)`, whence
+
+  `Ш¹(K_S, S ∖ T, A′) ≅ H¹(N_n|K, A′^{G_{N_n}})`,
+
+which is in general **nonzero**.  Since the prescription statement quantifies over all local data,
+a nonzero obstruction group makes it fail.  The conclusion is unavoidable:
+
+> **`HasConfinedPrescription ℓ U n S j φ D` at a fixed level `n` is false in general**, whether or
+> not one adds the splitting hypothesis of §1.79(d).
+
+Its shape has to change to the shape that `HasShrinkableSha` (`LevelShrink.lean:101`) already uses
+for the `H²` obstruction: **announce a level `N` in advance, and answer with a surjection**
+
+  `α : Generic U N S ↠ Generic U n S`
+
+together with the prescribed cocycle read at level `N`.  Two shrinkings then compose exactly the way
+`exists_lift_of_levelSolution_of_hasShrinkableSha` (`LevelShrink.lean:218`) already composes the
+first one with the lifting step.
+
+### (b) The revised plan for clause 7
+
+1. **`ConfinedPrescriptionSplit`** — the prescription with the splitting hypothesis of §1.79(d)
+   (nonzero prescription only at primes whose whole decomposition subgroup the base realization
+   kills), *with the announced level `N` and the surjection `α` built in*.  This is SW step 4 =
+   theorem 13 + the second shrinking.  The corestriction collapse of §1.79(a) is what turns a class
+   over `K` into one over `k`; the shoebox tower of `CFT/PoitouTate/` is what produces the class
+   over `K`; theorem 7(ii) is what kills the obstruction.
+2. **A confined lift-existence** — SW step 3: a smooth lift `f` of `Φ` across the layer whose
+   ramification, beyond `Φ`'s, is confined to primes split completely in the base realization, and
+   which has prescribed local behaviour at a fixed finite bad set.  Again with an announced `N`.
+   This replaces the `IsConfinedRamifiedHom φ Φ f` hypothesis that §1.79(e)(i) would have had to
+   thread through `HasCyclicRepair` / `HasSplitCyclicRepair` / `HasLiftRepair` by hand.
+
+The repair chain then reads: *lift confined* (step 3, first shrinking) → *repair the confined lift*
+(step 4, second shrinking), which is SW's own order and needs no invariant threaded through an
+arbitrary `f`.
+
+### (c) What is unchanged
+
+The corestriction bricks of §1.79(a) are exactly as useful under the revised plan: they are the
+`x = cor^K_k z` of theorem 13 and its clause (b), independently of how `z` is produced.  Likewise
+`CFT/PoitouTate/BaseFamily.lean`'s `exists_base_family_norm_class_eq` — the coordinate form of
+theorem 13 for `A = μ_p` and odd `p` — is unaffected; what it still needs is the cohomological
+packaging (docs §1.44(d)) and the dévissage from `A = μ_p` to a general finite `𝔽_p[G(K|k)]`-module.
+
+---
+
+## §1.81 The two-stage repair, landed (2026-09-10)
+
+§1.80 announced that the repair had to be split in two, following SW's steps 3 and 4.  It is now
+split, and both halves build.
+
+### (a) The new module: `InverseGalois/Solvable/Shafarevich/LevelFlatTwist.lean`
+
+```lean
+def HasFlatPrescription : Prop :=
+  ∀ (F : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)) (ι : Type) [Finite ι]
+      (Q : ι → Ideal (𝓞 Ω)) (A : ι → Subgroup Gal(Ω/k))
+      (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U n S) j)),
+    IsSmoothHom F → (∀ μ, (Q μ).IsPrime) → (∀ μ, Q μ ≠ ⊥) →
+    (∀ μ, A μ ≤ stabilizer Gal(Ω/k) (Q μ)) → (∀ μ, A μ ≤ φ.ker) →
+    (∀ μ, IsSmooth₁ (⇑(a μ))) →
+      ∃ c, IsMulCocycle₁ c ∧ IsSmooth₁ c ∧
+        (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → c x = 1) ∧
+        (∀ (μ : ι) (x : ↥(A μ)), c (x : Gal(Ω/k)) = a μ x) ∧
+        ∀ P, P.IsPrime → P ≠ ⊥ →
+          (∃ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1 ∧ c x ≠ 1) →
+          (∃ (μ : ι) (ρ : Gal(Ω/k)), P = ρ • Q μ) ∨ ∀ x ∈ stabilizer Gal(Ω/k) P, F x = 1
+```
+
+This is `HasConfinedPrescription` **minus** the cyclicity conjunct of the last clause and **minus**
+any hypothesis that the named primes split.  It is strictly the weaker demand, and it is the one
+that can be met over `k` directly — SW's step 3 makes its class `ε ∈ H¹(G_S, E(n,ν))` over `k` with
+no corestriction anywhere.
+
+The theorem it buys:
+
+```lean
+theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
+    (hactφ : ∀ x v, x • v = φ x • v) (hpres : HasFlatPrescription ℓ U n S j φ D)
+    (Φ : Gal(Ω/k) →* GenericQuot ℓ U n S j) (hΦright : ∀ x, SemidirectProduct.rightHom (Φ x) = φ x)
+    (f : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)) (hfsm : IsSmoothHom f)
+    (hfright : ∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (f x) = Φ x)
+    (hfD : ∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → f x = 1) :
+    ∃ g, IsSmoothHom g ∧ (∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom (g x) = Φ x) ∧
+      (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → g x = 1) ∧ IsConfinedRamifiedHom φ Φ g
+```
+
+Index type: `ι := {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ)}` where `Pr` is `exists_ramified_family`'s
+family for `f`; `A μ := Ideal.inertia Gal(Ω/k) (Pr μ) ⊓ φ.ker`; `a μ := a₀⁻¹` with `a₀` from
+`LiftTwist.exists_hom_inl_eq`.  This is exactly the old "case B" of
+`hasSplitCyclicRepair_of_hasConfinedPrescription`, lifted out.  There is no circularity: at a `μ`
+where `f` was already unramified over `φ`, `a₀` is forced to be trivial, so the same prescription
+covers the primes it does not need to move.
+
+Confinement proof, in three cases:
+
+* `RamifiesAt φ f P` — then `P` is in the orbit of some named `Pr μ`.  If `RamifiesAt φ Φ (Pr μ)`
+  we are done (`Or.inl`, transported by `RamifiesAt.smul`).  If not, `μ` is in the index and the
+  prescription forces `¬ RamifiesAt φ Ψ (Pr μ)`, contradicting the hypothesis.
+* `¬ RamifiesAt φ f P` but the corrected lift ramifies — then the *cocycle* ramifies, and the last
+  clause fires.  Its `Or.inl` branch names a `μ` in the index, contradiction again; its `Or.inr`
+  branch gives `∀ x ∈ stabilizer P, f x = 1`, hence `Φ x = rightHom (f x) = 1`, which is
+  `IsConfinedAt`'s second disjunct.
+
+### (b) `LevelConfinedTwist.lean`, stage 2
+
+Three changes to `HasConfinedPrescription`:
+
+1. The index is now `(ι : Type) [Finite ι] (Q : ι → Ideal (𝓞 Ω))`, not `(s : ℕ) (Q : Fin s → …)`.
+   This is what lets a *subtype* of `Fin s` be passed directly, with no `Finset.equivFin`
+   reindexing.  `isCyclicSplitHom_of_family` and `isConfinedRamifiedHom_of_family` already took a
+   general `{ι : Type*}`, so nothing downstream noticed.
+2. A new hypothesis `(∀ μ, stabilizer Gal(Ω/k) (Q μ) ≤ φ.ker)` — **the named primes are completely
+   decomposed in the field the base realization cuts out.**  This is the whole point of the split:
+   §1.79 established that corestriction can only reproduce a prescription at such primes.
+3. (Landed separately, commit `cce7978`.)  The antecedent of the confinement clause is
+   `∃ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1 ∧ c x ≠ 1` — the ramification witness is read *inside*
+   `ker φ`, matching `RamifiesAt`.
+
+`hasSplitCyclicRepair_of_hasConfinedPrescription` now takes `HasFlatPrescription` as well.  It
+begins by running stage 1 on the incoming lift `f₀`, obtaining a flattened `f` with
+`IsConfinedRamifiedHom φ Φ f`, and then runs the old argument on `f` with index
+`ι := {μ : Fin s // RamifiesAt φ f (Pr μ)}`.
+
+The new hypothesis (2) is discharged for that index by `hQker`: for `μ` with
+`RamifiesAt φ f (Pr μ)`, `IsConfinedRamifiedHom φ Φ f` gives `IsConfinedAt φ Φ (Pr μ)`, and
+
+* case `RamifiesAt φ Φ (Pr μ)`: `hΦP`'s first component (`IsSplitTotallyRamifiedHom`) already says
+  `∀ x ∈ stabilizer, φ x = 1`;
+* case `∀ x ∈ stabilizer, Φ x = 1`: then `φ x = rightHom (Φ x) = 1`.
+
+So in both cases `stabilizer Gal(Ω/k) (Pr μ) ≤ φ.ker`. **This is the step that makes the whole
+architecture work** — the flattening does not merely tidy the lift, it *manufactures* the splitting
+hypothesis that the corestriction descent will need.
+
+### (c) The one real proof change: `main` case-splits on `RamifiesAt φ f P` first
+
+The old `main` case-split was on `c x = 1`, which let an unnamed prime fall into the
+`hfam`/`Or.inl` branch.  With a *subtype* index that is no longer sound: a prime named by `hfam`
+need not be in the index.  The new order is
+
+```lean
+by_cases hfram : RamifiesAt φ f P
+· -- P is in the orbit of Pr μ, and μ IS in the index (that is the index condition)
+· -- f x = 1 at the inertia witness, so c x ≠ 1, and the confinement clause fires;
+  -- its Or.inl branch names μ in the index, so RamifiesAt φ f (ρ • Pr μ) = P — contradiction
+```
+
+The contradiction in the second branch is the one-liner `exact absurd (μ.2.smul ρ) hfram`: the
+index condition `μ.2 : RamifiesAt φ f (Pr ↑μ)` transported along `ρ` is exactly what `hfram`
+denies.
+
+### (d) The EP level
+
+`LevelStepRepair.lean` gains `Shafarevich.FlatPrescriptionEP`, the `(S, U, Ω, φ, t, D, n, j)`-
+quantified form of `HasFlatPrescription` over `ℚ`, and both
+`splitCyclicRepairEP_of_confinedPrescriptionEP` and `genericLevelStepEPRoots_of_confinedPrescriptionEP`
+now take `FlatPrescriptionEP ℓ` alongside `ConfinedPrescriptionEP ℓ`.  Nothing consumed
+`ConfinedPrescriptionEP` yet, so this is the only churn.
+
+**So clause 7 of `HasRungData` now costs two prescriptions, not one**: a weak one at arbitrary
+primes (SW step 3, provable over `k`) and a sharp one at completely decomposed primes (SW step 4,
+provable over `K` and carried down by `corCochain₁`).
+
+### (e) Build
+
+| target | jobs | time |
+|---|---|---|
+| `Shafarevich.LevelFlatTwist` (cold) | 8280 | 23 s |
+| `Shafarevich.LevelStepRepair` | 8837 | — |
+| ROOT | 9915 | — |
+
+0 errors, 0 warnings, 0 sorries.
+
+## §1.82 The sharp prescription descends to a homomorphism one field up (2026-09-10)
+
+### (a) The new module
+
+`InverseGalois/Solvable/Shafarevich/LevelKernelPrescription.lean` (new, ~185 lines, sorry-free).
+
+It carries `HasKernelPrescription ℓ U n S j φ D`, the SW step 4 prescription made over
+`K = Ω^{ker φ}` instead of over `k`, and
+
+```
+hasConfinedPrescription_of_hasKernelPrescription
+  (hactφ : ∀ x v, x • v = φ x • v)
+  (hpres : HasKernelPrescription ℓ U n S j φ D) :
+  HasConfinedPrescription ℓ U n S j φ D
+```
+
+The point of the descent is that **over `K` there is no cocycle condition left**: `Gal(Ω/k)` acts
+on `layerSub ℓ (Generic U n S) j` through `φ`, so `ker φ` acts trivially, so a cocycle of `ker φ`
+is a homomorphism
+
+```
+u : ↥(φ.ker) →* ↥(layerSub ℓ (Generic U n S) j)
+```
+
+into a *finite abelian* `ℓ`-group.  The whole of the remaining arithmetic is therefore a statement
+about smooth characters of `G_K` with prescribed local behaviour — exactly the shape class field
+theory answers.
+
+### (b) What `HasKernelPrescription` asks
+
+Same antecedents as `HasConfinedPrescription` (a smooth `F`, a finite index `ι`, primes `Q μ` with
+`stabilizer (Q μ) ≤ ker φ`, subgroups `A μ ≤ stabilizer (Q μ) ⊓ ker φ`, smooth homomorphisms
+`a μ : A μ →* layer`), and back:
+
+1. `IsSmooth₁ ⇑u`;
+2. `∀ ν ρ y, ρ * ↑y * ρ⁻¹ ∈ D ν → u y = 1` — the family is killed **at every conjugate**;
+3. `u ⟨↑x, hx⟩ = a μ x` — the prescribed values;
+4. `ρ • Q μ ≠ Q μ → ∀ y ∈ stabilizer (ρ • Q μ), u y = 1` — **all but one prime of each named
+   orbit is killed**;
+5. if `u` ramifies anywhere in the orbit of `P`, then `P` is one of the named orbits, or else
+   `(∀ x ∈ stabilizer P, F x = 1) ∧ stabilizer P ≤ ker φ ∧ (u kills the other primes of the orbit
+   of P) ∧ (u is cyclic on stabilizer P)`.
+
+Clauses 2 and 4 are the price of averaging; they are exactly SW's "`z_{P^τ} = 0` for `τ ≠ 1`".
+
+### (c) Why the descent is faithful
+
+`corCochain₁ φ.ker σ hσ ⇑u` is a cocycle (`isMulCocycle₁_corCochain₁` on
+`isMulCocycle₁_of_hom htriv u`) and smooth (`isSmooth₁_corCochain₁_of_isSmooth₁` +
+`hasOpenNormalCore_of_isOpen`).  The three interesting clauses come from `CorestrictionInertia.lean`
+verbatim:
+
+| clause of `HasConfinedPrescription` | brick |
+|---|---|
+| family | `corCochain₁_eq_one_of_conj` with `ρ := σ z` |
+| prescribed values | `corCochain₁_eq_self_of_stabilizer_le` at `Q μ`, `hsplit := hQker μ` |
+| confinement | `exists_mem_inertia_smul_of_corCochain₁_ne_one`, then `corCochain₁_eq_self_of_stabilizer_le` again at the *new* prime |
+
+The second application is legitimate because clause 5 hands back `stabilizer P ≤ ker φ` — the new
+prime is completely decomposed in `K` too, which is what makes cyclicity survive the average
+unchanged rather than being smeared over the orbit.
+
+### (d) One antecedent added: `IsOpen (φ.ker : Set Gal(Ω/k))`
+
+`isSmooth₁_corCochain₁_of_isSmooth₁` needs `HasOpenNormalCore φ.ker`, which needs `φ.ker` open.
+`IsSmoothHom φ` cannot be used: `U` carries no topology in the `LevelConfinedTwist`/`LevelFlatTwist`
+variable blocks, and the EP-level defs do not assume `φ` smooth.  So `HasConfinedPrescription` and
+`HasKernelPrescription` both gained a leading
+
+```
+IsOpen (φ.ker : Set Gal(Ω/k)) →
+```
+
+antecedent.  **This costs nothing anywhere else**: the sole consumer,
+`hasSplitCyclicRepair_of_hasConfinedPrescription`, already has `Φ` with `IsSmoothHom Φ` and
+`rightHom (Φ x) = φ x`, so `Φ.ker ≤ φ.ker` and `Subgroup.isOpen_mono` gives it in three lines.  No
+churn up the `…RepairEP` chain.
+
+### (e) The EP level
+
+`LevelStepRepair.lean` gains `Shafarevich.KernelPrescriptionEP`,
+`confinedPrescriptionEP_of_kernelPrescriptionEP` and
+`genericLevelStepEPRoots_of_kernelPrescriptionEP (ℓ) (hodd : 2 < ℓ) (hflat : FlatPrescriptionEP ℓ)
+(h : KernelPrescriptionEP ℓ)`.
+
+**Clause 7 of `HasRungData` now costs**: `FlatPrescriptionEP ℓ` (a cocycle over `k`, SW step 3) and
+`KernelPrescriptionEP ℓ` (a *homomorphism* over `K`, SW step 4).
+
+### (f) Build
+
+| target | jobs | time |
+|---|---|---|
+| `Shafarevich.LevelKernelPrescription` (cold) | 8285 | 24 s |
+| `Shafarevich.LevelStepRepair` | 8840 | 14 s |
+| ROOT | 9916 | — |
+
+0 errors, 0 warnings, 0 sorries.
+
+---
+
+## §1.83 The announced level, threaded through the whole repair chain (2026-09-10)
+
+§1.80(a) proved that `HasConfinedPrescription` at a *fixed* level `n` is false in general: the
+obstruction group `Ш¹(K_S, S ∖ T, A′) ≅ H¹(N_n|K, A′^{G_{N_n}})` is nonzero, and only a shrinking
+kills it.  This section records the refactor that gives every link of the repair chain the shape
+`HasShrinkableSha` already had — **announce a number of letters `N`, answer with a surjection onto
+the number asked for.**
+
+### (a) The uniform shape
+
+Every one of
+
+```
+HasSolutionRepair  HasLiftRepair  HasCyclicRepair  HasSplitCyclicRepair
+HasFlatPrescription  HasConfinedPrescription  HasKernelPrescription
+```
+
+now reads
+
+```lean
+def Has… : Prop :=
+  ∃ N : ℕ, <antecedents, with Φ / f / F / Q / A / a all read at level N> →
+    ∃ (α : Generic U N S →* Generic U n S) (_ : IsOperatorHom α), Function.Surjective α ∧
+      <the answer, at level n>
+```
+
+`IsOperatorHom α` (`GenericHomology.lean:93`) is literally
+`∀ u : U, α.comp (genericAut U m S u).toMonoidHom = (genericAut U n S u).toMonoidHom.comp α`,
+i.e. exactly the equivariance `layerSemidirectMap` wants, and `IsOperatorHom.comp` (`:96`) composes
+two of them (outer argument first).
+
+### (b) The two functoriality bricks
+
+Composing two announced shrinkings needs the induced maps to compose, which they had no lemma for.
+Added to `LayerExtension.lean`:
+
+```lean
+theorem pCentralMap_comp (g : Q →* R) (f : P →* Q) :
+    (pCentralMap p n g).comp (pCentralMap p n f) = pCentralMap p n (g.comp f)
+
+theorem layerSemidirectMap_comp (hg …) (hgf …) (n : ℕ) (x) :
+    layerSemidirectMap p hg n (layerSemidirectMap p hf n x) = layerSemidirectMap p hgf n x
+```
+
+Both are one-liners (`QuotientGroup.induction_on` + `rfl`, then `SemidirectProduct.ext`), but
+without them the `rightHom` clause of the composite answer cannot be stated, let alone proved.
+
+`CyclicTransport.lean` also gained the trivial-but-needed
+
+```lean
+theorem IsTotallyRamifiedAt.congr (h : IsTotallyRamifiedAt Φ P) (he : ∀ x, Φ x = Φ' x) :
+    IsTotallyRamifiedAt Φ' P
+```
+
+because the composite `(layerSemidirectMap ℓ hα₂ j).comp Φ₁` and
+`(layerSemidirectMap ℓ (hα₂.comp hα₁) j).comp Φ` are equal only *pointwise*, by
+`layerSemidirectMap_comp`, not syntactically.
+
+### (c) How the two shrinkings compose
+
+In `hasSplitCyclicRepair_of_hasConfinedPrescription`:
+
+| stage | announces | answers with |
+|---|---|---|
+| flat prescription (SW step 3) | `N₁` | `α₁ : Generic U N₁ S ↠ Generic U N₂ S` |
+| confined prescription (SW step 4) | `N₂` | `α₂ : Generic U N₂ S ↠ Generic U n S` |
+| `HasSplitCyclicRepair` | `N₁` | `α₂.comp α₁` |
+
+The middle level `N₂` is the one the *confined* prescription announces, so it must be obtained
+first (`obtain ⟨N₂, hpres⟩ := hpres`) and only then fed to the flat prescription
+(`exists_confinedRamifiedHom_lift_of_hasFlatPrescription (n := N₂) …`), which announces `N₁` in
+response.  That is why `hflat` and `hram` are now asked **at every level** (`∀ m : ℕ, …`): the
+level they are needed at is not known until the confined prescription has spoken.
+
+### (d) The one subtle proof change
+
+The incoming lift `Φ` lives at level `N₁`.  After the first shrinking the object the second stage
+sees is
+
+```lean
+Φ₁ := (layerSemidirectMap ℓ hα₁ j).comp Φ  :  Gal(Ω/k) →* GenericQuot ℓ U N₂ S j
+```
+
+and **`α₁` can kill ramification**: `RamifiesAt φ Φ (Pr μ)` does not imply `RamifiesAt φ Φ₁ (Pr μ)`.
+So the per-prime case split inside the proof is on `RamifiesAt φ Φ₁ (Pr μ)`, not on `Φ`.  As a
+consequence the local-lift step has to be stated *before* the second shrinking is known, i.e.
+generalized over an unknown `β`:
+
+```lean
+∀ (β : Generic U N₂ S →* Generic U n S) (hβ : IsOperatorHom β)
+    (Ψ : Gal(Ω/k) →* GenericQuot ℓ U n S (j + 1)),
+  (∀ x : ↥A, Ψ ↑x = inl (layerSubMap ℓ β j (a x)) * layerSemidirectMap ℓ hβ (j + 1) (f ↑x)) →
+    RamifiesAt φ Ψ (Pr μ) → IsCyclicSplitAt φ Ψ (Pr μ) ∧ IsTotallyRamifiedAt Φ₁ (Pr μ)
+```
+
+with `β := α₂` instantiated only at the very end.  `Φ₁` is introduced *opaquely* — one `obtain`
+bundling its defining equation, smoothness, `rightHom` and `IsSplitTotallyRamifiedHom` — which also
+keeps `whnf` away from `layerSemidirectMap`'s body.
+
+The total-ramification half comes free: `IsSplitTotallyRamifiedHom`'s second clause is
+*definitionally* `IsTotallyRamifiedAt Φ P`, and `IsSplitTotallyRamifiedHom.comp` pushes it along
+`layerSemidirectMap ℓ hα₁ j`.
+
+### (e) `HasSplitCyclicRepair`'s confinement clause
+
+It is no longer `IsConfinedRamifiedHom φ Φ Ψ` but
+
+```lean
+IsTotallyRamifiedBelow φ ((layerSemidirectMap ℓ hα j).comp Φ) Ψ
+```
+
+— read against the *pushed-down* `Φ`, which is the only version living at the same level as `Ψ`.
+
+### (f) Files touched
+
+`LayerExtension.lean`, `CyclicTransport.lean`, `LevelObstruction.lean`, `LevelLocal.lean`,
+`LevelRepair.lean`, `LevelCyclicRepair.lean`, `LevelTwist.lean`, `LevelFlatTwist.lean`,
+`LevelConfinedTwist.lean`, `LevelKernelPrescription.lean`, `LevelStepRepair.lean`.
+
+### (g) Build
+
+| target | jobs | time |
+|---|---|---|
+| `Shafarevich.LevelConfinedTwist` | 8281 | 94 s (that file alone) |
+| `Shafarevich.LevelKernelPrescription` | 8285 | 53 s |
+| `Shafarevich.LevelStepRepair` | 8840 | — |
+
+0 errors, 0 warnings, 0 sorries.
+
+## §1.84 A prescription cannot ask a homomorphism to be two things at one prime (2026-09-10)
+
+### (a) The defect
+
+`HasKernelPrescription` (`LevelKernelPrescription.lean:101`) asks, at once, for a homomorphism
+`u : ker φ →* layer` which
+
+1. takes prescribed values on `A μ ≤ stabilizer(Q μ)` (clause `hua`), and
+2. **kills** `stabilizer(ρ • Q μ)` for every `ρ` (clause `huorb`),
+
+the second clause being what makes the corestriction reproduce the first
+(`corCochain₁_eq_self_of_stabilizer_le`, `CFT/CorestrictionInertia.lean:103`).
+
+Taken literally the two clauses contradict each other.  Put `ρ ∈ ker φ`.  Then
+
+```
+stabilizer(ρ • Q μ) = ρ · stabilizer(Q μ) · ρ⁻¹
+```
+
+and for `y ∈ stabilizer(Q μ) ∩ ker φ` the element `ρ y ρ⁻¹` again lies in `ker φ`, so clause 2
+demands `u (ρ y ρ⁻¹) = 1`.  But `u` lands in an **abelian** group and `ρ ∈ ker φ = dom u`, so
+`u (ρ y ρ⁻¹) = u y`.  Clause 2 with `ρ ∈ ker φ` therefore forces `u` to vanish on the very subgroup
+clause 1 prescribes it on.  Any nonzero prescription makes `HasKernelPrescription` **false**.
+
+### (b) The repair
+
+`ρ ∉ φ.ker` is added to clauses 4 (`huorb`) and 5c of `HasKernelPrescription`.  That is exactly the
+hypothesis the corestriction needs and no more: the average
+`corCochain₁ (ker φ) σ hσ u` runs over the coset representatives `σ x`, and the term at the trivial
+coset is `u` itself, so the vanishing is only ever *applied* at `ρ = (σ x)⁻¹` with `x ≠ 1`, i.e. at
+`ρ ∉ ker φ` (`section_notMem_of_ne_one`).  `corCochain₁_eq_self_of_stabilizer_le` was weakened to
+match:
+
+```lean
+(hvan : ∀ ρ : G, ρ ∉ H → ∀ y : ↥H, (y : G) ∈ stabilizer G (ρ • P) → u y = 1)
+```
+
+Nothing downstream noticed: the descent
+`hasConfinedPrescription_of_hasKernelPrescription` only ever produces `ρ` outside the kernel.
+
+Root build after the repair: 9920 jobs, 0 errors, 0 warnings, 0 sorries.  Commit `6da9225`.
+
+## §1.85 Inertia lifts from a level, unconditionally (2026-09-10)
+
+### (a) What was missing
+
+The repo had only the easy half of the comparison between inertia upstairs and inertia at a level:
+`restrictNormal_mem_inertia` (`CFT/InertiaRestrict.lean`) sends `I_P(Ω/k)` into `I_v(L/k)`.  The
+surjectivity was available **only at a finite level and only over `ℚ`**
+(`map_inertia_eq_inertia`, `CFT/InertiaSurjective.lean:74`), by a counting argument that needs
+`card_inertia_eq_mul` (`CFT/UnramifiedCompositum.lean:94`), also `ℚ`-only.  Mathlib has no
+infinite-level inertia surjectivity at all.
+
+### (b) The cheap proof
+
+Mathlib *does* have the profinite decomposition statement:
+
+```lean
+theorem Ideal.Quotient.stabilizerHom_surjective_of_profinite
+    (P : Ideal A) (Q : Ideal B) [Q.IsPrime] [Q.LiesOver P] [Algebra.IsInvariant A B G] :
+    Function.Surjective (Ideal.Quotient.stabilizerHom Q P G)
+```
+
+(`Mathlib/RingTheory/Invariant/Profinite.lean:172`), for a profinite `G` acting continuously on a
+discrete `B`.  `InfiniteDecomposition.lean` already supplies every instance it wants for
+`G = Gal(K/↥L)`, `B = 𝓞 K`, `A = 𝓞 ↥L`.  That turns inertia lifting into three lines of
+bookkeeping, done in the new `CFT/Units/InertiaLift.lean`:
+
+1. `τ ∈ I_v(L/k)` fixes `v`, so `exists_mem_stabilizer_restrictNormalHom_eq` gives
+   `σ₀ ∈ Gal(K/k)` with `σ₀ • P = P` and `restrictNormalHom L σ₀ = τ`.
+2. Re-base the residue action of `σ₀⁻¹` from `𝓞 k ⧸ P∩𝓞k` to `𝓞 ↥L ⧸ v`.  The commutes-condition
+   for `AlgEquiv.ofRingEquiv` is `algebraMap (τ⁻¹ • z) - algebraMap z ∈ P`, which is *exactly*
+   `τ⁻¹ ∈ I_v(L/k)` read through `algebraMap_smul_restrictNormal`; `stabilizerHom_apply` and
+   `algebraMap_mk_of_liesOver` are both `rfl`, so nothing else is needed.
+3. Surjectivity over the level produces `ρ₀ ∈ stabilizer Gal(K/↥L) P` with that residue action, and
+   `ρ := ρ₀.restrictScalars k * σ₀` restricts to `τ` (`restrictNormalHom_restrictScalars`) and acts
+   trivially on `𝓞 K ⧸ P`, i.e. lies in `I_P(Ω/k)`.
+
+```lean
+theorem exists_mem_inertia_restrictNormalHom_eq {P : Ideal (𝓞 K)} [P.IsPrime]
+    {v : HeightOneSpectrum (𝓞 ↥L)} (hv : v.asIdeal = Ideal.under (𝓞 ↥L) P) {τ : Gal(↥L/k)}
+    (hτ : τ ∈ Ideal.inertia Gal(↥L/k) v.asIdeal) :
+    ∃ ρ : Gal(K/k), ρ ∈ Ideal.inertia Gal(K/k) P ∧
+      AlgEquiv.restrictNormalHom (F := k) (K₁ := K) ↥L ρ = τ
+
+theorem map_inertia_restrictNormalHom … :
+    (Ideal.inertia Gal(K/k) P).map (AlgEquiv.restrictNormalHom ↥L)
+      = Ideal.inertia Gal(↥L/k) v.asIdeal
+```
+
+Neither statement asks for `NumberField k`, nor for `K/k` finite: the base need only be the field
+the level is normal over.  `lake build …Units.InertiaLift` = 8212 jobs.
+
+Two Lean traps on the way: `algebraMap_smul_restrictNormal` and `restrictNormal_mem_inertia` take
+an `IntermediateField` argument, so they must be applied to `L`, **not** `↥L` (gotcha 29); and
+`τ • v = v` for `v : HeightOneSpectrum` needs `synthInstance.maxHeartbeats 400000` plus the
+`HeightOneSpectrum.ext (by rw [asIdeal_smul]; …)` idiom, since
+`MulAction Gal(↥L/k) (Ideal (𝓞 ↥L))` is expensive to synthesize.
+
+### (c) Why it is wanted: the route to `HasKummerCharInertiaLift`
+
+`HasKummerCharInertiaLift` (`CFT/Kummer/CharLift.lean:69`) is the last named local input of the
+converse Kummer dictionary: *every smooth character `χ : I_P(Ω/K) → ZMod n` at a prime away from
+`n` is `kummerChar` of a unit of `K`.*  It is genuinely true only because `μ_n ⊆ K`: a character
+coming from `Kˣ` is the restriction of a character of the whole decomposition subgroup, hence is
+Frobenius-invariant, and Frobenius acts on the tame `n`-part of inertia by `q`-th powers — but
+`μ_n ⊆ K` forces `n ∣ q - 1` at every `v ∤ n`, so the invariance is automatic.  The two halves:
+
+* **(A) the smooth characters of `I_P` form a cyclic group of order dividing `n`.**  A smooth `χ`
+  is trivial on `I_P ∩ N` for an open `N`; shrinking `N` to be normal in `Gal(Ω/ℚ)` makes the level
+  `M = Ω^N` finite Galois over `ℚ`, and `χ` factors through the image `J` of `I_P` in
+  `Gal(M/ℚ)`, a subgroup of `I_w(M/ℚ)`.  `tameChar` (`CFT/TameCharacter.lean`, base `ℚ`, which is
+  why the level is taken Galois over `ℚ`) has a kernel every element of which has `p`-power order
+  — by finding 3225, `tameChar σ = 1 → orderOf σ = 1 ∨ p ∣ orderOf σ`, applied to the prime-to-`p`
+  part — and `χ` kills such elements because `p ∤ n`.  So `χ` factors through
+  `J / (J ∩ ker tameChar) ↪ (𝓞M ⧸ w)ˣ`, cyclic.
+* **(B) `ψ := kummerChar h π` is surjective for `π ∈ Kˣ` with `ord_v π = 1`.**  If the image were
+  `d·ZMod n` with `d > 1` then `I_P` would fix `β := π^{1/d}`; `K(β)/K` is Galois (`μ_d ⊆ K`), so
+  by `map_inertia_restrictNormalHom` its inertia at `w = P ∩ 𝓞 K(β)` is the image of `I_P` and is
+  therefore trivial, whence `e(w/v) = 1` by `card_inertia_eq_ramIdx` (`CFT/BaseRamification.lean:56`,
+  already stated over a general base).  But `d · ord_w β = ord_w π = e(w/v) · ord_v π = 1`, so
+  `d = 1`.
+
+Given (A) and (B), every smooth `χ` is `m·ψ = kummerChar h (π^m)` and the input is discharged.
+Step (B) is precisely what the new brick was built for.
+
+## §1.86 Inertia moves a radical of a uniformizer (2026-09-10)
+
+Step (B) of the plan of §1.85(c) is done, in two new sorry-free modules.
+
+**`InverseGalois/CFT/Kummer/RamifiedRadical.lean`** (finite level).  For an extension of number
+fields `L / k`, a radical `b ∈ L` with `b ^ q = a ∈ k`:
+
+* `dvd_ramIdx_of_ord_eq_one` — if `ord_v a = 1` at the place `v = w ∩ k` below `w`, then
+  `q ∣ e(w / v)`.  Proof: `ord_w (a) = e(w/v) · ord_v(a) = e(w/v)` by
+  `ord_algebraMap_eq_ramIdx_mul`, and also `ord_w(a) = q · ord_w(b)` by `ord_pow`.
+* `eq_one_of_forall_smul_eq_of_adjoin_range_eq_top` — an automorphism fixing a family that
+  generates the extension is the identity (via `IntermediateField.fixingSubgroup_top`).
+* `exists_mem_inertia_smul_ne_of_ord_eq_one` — combining the two: if in addition `b` generates
+  `L / k` (phrased Galois-theoretically as `∀ σ, σ b = b → σ = 1`) and `q` is prime, then some
+  element of `I_w(L/k)` moves `b`.  Otherwise inertia would be trivial, so `e(w/v) = 1`
+  (`inertia_eq_bot_iff_ramIdx_eq_one`), contradicting `q ∣ e`.
+
+**`InverseGalois/CFT/Kummer/InertiaRamified.lean`** (arbitrary Galois `Ω / k`).
+
+* `exists_mem_inertia_smul_ne_of_ord_eq_one_level` — the same statement at a level `L ≤ Ω` the
+  radical generates, transported up along `exists_mem_inertia_restrictNormalHom_eq` (§1.85).
+* `exists_mem_inertia_smul_ne_of_ord_eq_one'` — **the theorem**: `μ_q ⊆ k`, `q` prime, `a ≠ 0`,
+  `a = b ^ q`, `ord_v a = 1` with `v` below a nonzero prime `P` of `𝓞 Ω` imply
+  `∃ σ ∈ I_P(Ω/k), σ b ≠ b`.  The level is `k(b)` itself, Galois by `normal_adjoin_radicals`
+  (the root of unity is in `k`) and finite by `IntermediateField.finiteDimensional_adjoin` with
+  `X ^ q - C a`; that it is generated by `b` is `adjoin_range_val_eq_top`.
+
+Two Lean notes worth keeping.  (i) Phrase "the radical generates" as `∀ σ, σ b = b → σ = 1`, not
+`k⟮b⟯ = ⊤`: the notation `k⟮b⟯` elaborates to `adjoin k (insert b ∅)`, which is not syntactically
+`adjoin k {b}`, and no `show` bridges them.  (ii) Keep the level abstract in a helper lemma taking
+`L` as a variable — `set`ting the intermediate field in the main proof breaks the unification with
+`adjoin_range_val_eq_top`, which typechecks only because proof irrelevance is definitional.
+
+### What remains for `HasKummerCharInertiaLift`
+
+Step (B) says: for a uniformizer `π` at the place below `P`, the character
+`ψ₀ := kummerChar h π |_{I_P}` is **nonzero**, hence — the target being `ZMod n` with `n` prime,
+or after passing to a prime divisor — of order exactly `n`.  What is left is step (A):
+
+> for any smooth `χ : I_P → ZMod n`, the subgroup `⟨χ, ψ₀⟩ ≤ Hom(I_P, ZMod n)` is **cyclic**.
+
+Given that, `⟨χ, ψ₀⟩` is cyclic of exponent dividing `n` and contains an element of order `n`, so
+it equals `⟨ψ₀⟩` and `χ = m · ψ₀ = kummerChar h (π ^ m)`, which is `HasKummerCharInertiaLift`.
+
+Cyclicity is a level statement.  Two characters are both trivial on `I_P ∩ N` for a common open
+`N`; shrink `N` to be normal in `Gal(Ω/ℚ)` (legal, `Ω / ℚ` being Galois), so the level `M = Ω^N`
+is finite Galois over `ℚ` and the base-`ℚ`-only `CFT/TameCharacter.lean` applies verbatim.  Both
+characters factor through the image `J` of `I_P` in `I_w(M/ℚ)`.  Every element of `ker tameChar`
+has `p`-power order, where `p` is the residue characteristic, and `p ∤ n` because `(n : 𝓞 Ω) ∉ P`;
+so both characters kill `J ∩ ker tameChar` and factor through `J / (J ∩ ker tameChar)`, which
+embeds in `(𝓞 M ⧸ w)ˣ` — cyclic.  And `Hom(cyclic, ZMod n)` is cyclic.
+
+## §1.87 `HasKummerCharInertiaLift` is a theorem (2026-09-10)
+
+Step (A) of the plan of §1.85(c) is done, and with §1.86's step (B) the input is discharged.  Two
+new sorry-free modules; the route taken is a variant of the one announced, which turned out to be
+cheaper.
+
+### (a) The variant: "one generator, modulo an open subgroup and a prime-to-`n` power"
+
+The announced route was to show that the group of smooth characters of `I_P` is cyclic and then
+compare orders.  What is actually needed — and what is much easier to state in Lean, since it
+never mentions a `Hom` group — is a statement about the *group* `I_P` itself:
+
+> **`exists_mem_inertia_forall_pow_mem`** (`CFT/InertiaTameLevel.lean:121`).  For `P` a nonzero
+> prime of `𝓞 Ω` with `(n : 𝓞 Ω) ∉ P` and `N ≤ Gal(Ω/K)` open, there are `g ∈ I_P` and `m` with
+> `gcd(m, n) = 1` such that every `x ∈ I_P` satisfies `(x · g^{-j})^m ∈ N` for some `j`.
+
+Any character `χ : I_P → ZMod n` killed on `I_P ∩ N` then satisfies `m · χ(x g^{-j}) = 0`, hence
+`χ(x) = j · χ(g)` because `m` is invertible mod `n`: **a character trivial on an open subgroup is
+determined by its value at `g`, with a multiplier `j` depending only on `x`, not on the
+character.**  That last clause is the whole point — two characters trivial on the *same* open
+subgroup get the *same* `j`, so no cyclicity of a `Hom` group is needed.
+
+### (b) `InverseGalois/CFT/InertiaTameLevel.lean` (new, ~195 lines)
+
+* `exists_forall_mul_pow_inv_mem_ker` — for `T : G →* C` with `C` finite cyclic, one `g` accounts
+  for the whole image: `∀ x, ∃ j, T (x · (g^j)⁻¹) = 1`.  (Pure group theory.)
+* `isAlgClosure_rat_of_isAlgClosed` — an algebraically closed algebraic extension of a number
+  field is an algebraic closure of `ℚ`; `Algebra.IsAlgebraic.trans ℚ K Ω` takes its three type
+  arguments **explicitly**.
+* `exists_rationalLevel_forall_smul_eq` — an open `N ≤ Gal(Ω/K)` contains every automorphism
+  trivial on some `M` finite Galois over `ℚ`.  `krullTopology_mem_nhds_one_iff` gives a finite
+  `E / K`; `Module.Finite.trans` makes it finite over `ℚ`; `IntermediateField.normalClosure ℚ
+  (E.restrictScalars ℚ) Ω` is the level.  No normal-core lemma is needed.
+* `exists_mem_inertia_forall_pow_mem` — the statement of (a).  At the level `M`, `w = P ∩ 𝓞 M`,
+  `tameChar` at a uniformizer of `w` maps `I_w(M/ℚ)` into the cyclic `(𝓞 M ⧸ w)ˣ`; its kernel
+  consists of elements of `p`-power order (`exists_orderOf_eq_ringChar_pow`, new in
+  `TameCharacter.lean`), and `p ∤ n` because `(n : 𝓞 Ω) ∉ P`.  Take `m = ordProj[p](#I_w(M/ℚ))`.
+
+`TameCharacter.lean` gained `exists_orderOf_eq_ringChar_pow`: an element of `ker tameChar` has
+order a power of the residue characteristic.  Proof: its power by `ordProj[p]` of its order is
+still in the kernel and has order `ordCompl[p]`, which must be `1` by finding 3225.
+
+### (c) `InverseGalois/CFT/Kummer/InertiaCharLift.lean` (new, ~245 lines)
+
+* `zmodChar_one_eq_zero`, `zmodChar_pow` — an abstract additive character `G → ZMod n`.
+* `kummerChar_units_pow` — `kummerChar h (a^m) g = m • kummerChar h a g` (induction on
+  `kummerChar_mul_units`).
+* `exists_isOpen_forall_kummerChar_eq_zero` — `kummerChar h a` vanishes on an open subgroup, read
+  off `h.cochain_isSmooth₁ a` at `x = 1`.
+* `exists_mem_inertia_not_dvd_kummerChar` — **the sharpening of step (B)**: if `ord_v (a) = 1` and
+  `q` is a prime factor of `n`, some `σ ∈ I_P` has `q ∤ kummerChar h a σ` in `ZMod n`.  Otherwise
+  `n ∣ val(kummerChar h a σ) · (n/q)` for every `σ`, so `σ` fixes `β := root(a)^{n/q}` (the root of
+  unity `R` satisfies `R^n = 1`), while `β^q = a`; and `exists_mem_inertia_smul_ne_of_ord_eq_one'`
+  of §1.86 at the primitive `q`-th root `ζ^{n/q}` says inertia moves `β`.
+* `hasKummerCharInertiaLift` — **the theorem.**  Pick `v` below `P` and `a ∈ Kˣ` with
+  `ord_v a = 1` (`exists_ord_eq_one` + `ne_zero_of_ord_eq_one`, `RET/Genus/OrdLog.lean`); let `N'`
+  be the open subgroup killing `kummerChar h a` and `N` the one killing `χ`; apply (a) at `N ⊓ N'`.
+  Both `χ` and `ψ₀ := kummerChar h a` are then `j`-multiples of their value at `g`, with the same
+  `j`.  `ψ₀ g` is a unit of `ZMod n`: otherwise a prime `q ∣ gcd(val(ψ₀ g), n)` divides `ψ₀` on all
+  of `I_P`, contradicting the previous item.  So `χ = s · ψ₀` with `s = χ(g)·(ψ₀ g)^{-1}`, and
+  `a ^ s.val` carries `χ`.
+
+`exists_localClass_forall_kummerChar_eq` (`CFT/Kummer/CharLift.lean:85`) can now be used with no
+hypothesis: `hasKummerCharInertiaLift h` discharges it.
+
+### (d) Lean notes
+
+* `Nat.ordProj_dvd`, `Nat.not_dvd_ordCompl`, `Nat.ordProj_mul_ordCompl_eq_self`,
+  `Nat.Prime.pow_dvd_iff_dvd_ordProj` — Mathlib v4.28.0 spells these **camelCase**.
+* Repo lemmas taking an `(L : IntermediateField k K)` argument must get `M`, not `↥M`.  Passing
+  `↥M` to `restrictNormal_mem_inertia` produced a 1.6M-heartbeat `whnf` timeout at the `theorem`
+  line, localised by the truncated-`sorry`-copy bisection of gotcha 2760.
+* `Subgroup.orderOf_coe` must be rewritten **in the hypothesis** (`rw [...] at ha`); forward in the
+  goal the pattern `orderOf ↑?a` does not match and `rw [← ha]` leaves instance search stuck on
+  `Group ?m`.
+* `Ideal.Quotient.isDomain` is already an instance for a prime ideal, so
+  `attribute [local instance] Ideal.Quotient.field` is not needed to get `IsCyclic (𝓞 M ⧸ w)ˣ`.
+* `IsPrimitiveRoot.pow (hn : 0 < N) (h : IsPrimitiveRoot ζ N) (hprod : N = a * b)` gives
+  `IsPrimitiveRoot (ζ ^ a) b` — the positivity hypothesis comes first.
+
+## §1.88 A prescription at a named prime must be isotropic (2026-09-10)
+
+Two things happened.  The first is bookkeeping: the four modules built for the ramified
+prescription — `CFT/PoitouTate/CyclicPairing.lean`, `CFT/PoitouTate/SupRadicandCyclic.lean`,
+`CFT/PoitouTate/ClosingChainRamified.lean` and `CFT/Kummer/RadicandDescent.lean` — are now
+imported from `InverseGalois/CFT.lean` and described in its prose, and the whole
+`Tr`-relativisation of the two-place chain
+
+```
+CyclicPairing → ClosingChainRamified → SupRadicandCyclic
+  → RecursionRadical / RecursionSup / RecursionClose / Recursion / RecursionStep
+  → TwoPlacesFree / TwoPlacesKill → SplitFamily → RankOne / BaseFamily
+```
+
+is on `main` with a green root build of 9929 jobs.  `exists_isTwoPlaceFamily_zpowers` is the new
+entry point: it takes a distinguished Galois-stable part `Tr ⊆ Tn` of the prescribed set on which
+the constructed units are *allowed* to ramify, together with a Galois-equivariant family of lines
+`D : v → localClasses v p` and the hypothesis
+
+```
+hDc : ∀ i, ∀ v ∈ Tn, c i v ∈ Subgroup.zpowers (D v)
+```
+
+saying that at every prescribed place all the coordinates of the prescription lie on one line.
+
+The second is a defect, and it is the reason the line hypothesis is there.
+
+### The defect
+
+`HasKernelPrescription ℓ` (`Solvable/Shafarevich/LevelKernelPrescription.lean:101`) asks, for an
+arbitrary finite family of primes `Q μ` of `Ω`, an arbitrary subgroup `A μ` equal to the
+stabilizer or to the inertia of `Q μ`, and an arbitrary smooth homomorphism
+`a μ : A μ → layerSub ℓ (Generic U N S) j`, for a homomorphism `u` of the kernel into the layer
+which restricts to `a μ` on `A μ`, is unramified away from the named primes, and is trivial on the
+conjugates.  **As stated this is false.**
+
+Kummer theory over the auxiliary field `K` (which contains `μ_ℓ`) turns each `ZMod ℓ`-character
+`χ ∘ u` of `Gal(Ω/K)` into a class `z_χ ∈ K^×/(K^×)^ℓ`, and the product formula for the `ℓ`-th
+power residue symbol gives, for any two characters `χ, χ′` of the layer,
+
+```
+∏_w (z_χ , z_χ′)_w = 1 .
+```
+
+Every factor is forced to be trivial by the clauses of `HasKernelPrescription`:
+
+* where `u` is unramified the two local classes lie on the unramified line, which is cyclic, so
+  the symbol vanishes by `localSymbol_self_eq_one` (`ℓ` odd);
+* at a conjugate `ρ • Q μ` with `ρ ∉ φ.ker` the prescription is trivial;
+* the archimedean places contribute nothing for odd `ℓ`.
+
+So `HasKernelPrescription` **implies** the reciprocity relation
+
+```
+∏_μ ( c_χ(v μ) , c_χ′(v μ) )_{v μ} = 1
+```
+
+for every pair of characters of the layer, and that is a genuine constraint on the input `a`.  It
+is violated: take one named prime `Q`, lying over a place `v` of `K` away from `ℓ` and completely
+split in `K|k`, put `A = stabilizer(Q) = G_{K_v}`, and let `a` be a smooth surjection onto a layer
+of rank two.  The two coordinates then span `localClasses v ℓ ≅ (ZMod ℓ)²`, on which the Hilbert
+symbol is a *perfect* alternating pairing, so the single factor is non-trivial.  This is the same
+species of defect as §1.84: a prescription which asks for too much at one prime.
+
+### What Schmidt–Wingberg actually assume
+
+Theorem 15 of Schmidt–Wingberg carries the local shape of the solution as an explicit inductive
+condition:
+
+> (ii) If `p` is ramified in `N_n|K`, then `p` splits completely in `K|k` and `N_{ν,n,p}|k_p` is a
+> **(cyclic)** totally ramified extension of local fields.
+
+and First Step (c) uses it at once: *"Let `p ∈ Ram(N_n|K)`.  Then `p` splits completely in `K|k`
+and `G_p(N_n|K) ≅ ℤ/p^a ℤ` by condition (ii)."*  Condition (i) makes the primes over `p`, the
+primes ramified in `K|k` and the archimedean primes completely decomposed, i.e. the local
+behaviour there is trivial.  So SW never prescribe a non-cyclic local homomorphism, and the
+reciprocity relation above holds for them for free.
+
+### The two repairs
+
+1. **Cyclic values.**  Add
+   `∀ μ, ∃ x₀ : ↥(A μ), ∀ x : ↥(A μ), a μ x ∈ Subgroup.zpowers (a μ x₀)`
+   to `HasKernelPrescription` and to `HasConfinedPrescription`.  This is *exactly* the shape
+   `exists_isTwoPlaceFamily_zpowers` consumes, and it is SW's condition (ii).  Its drawback is at
+   the consumer: in `hasSplitCyclicRepair_of_hasConfinedPrescription`
+   (`LevelConfinedTwist.lean:217`) the prescription is `a = g · f⁻¹` with only `g` cyclic — the
+   flat lift `f` is not — so the hypothesis is not immediately available there.
+2. **A product relation.**  Replace the per-place line hypothesis `hDc` of the two-place chain by
+   the weaker demand that the *product over the distinguished part* of the symbols be trivial.
+   Every place of `Tr` enters the closing chain and the radicand-killing step only inside a
+   product over `Tr`, so the same proofs go through, and the consumer can then discharge the
+   hypothesis by the global product formula applied to the flat lift `f` — the `f`-terms of the
+   expansion of `(g_χ − f_χ , g_χ′ − f_χ′)` are exactly what reciprocity kills.
+
+Repair 2 is the correct one, and repair 1 is a special case of it.  The construction of the
+arithmetic bridge — Kummer basis of the layer, local classes from
+`exists_localClass_forall_kummerChar_eq`, `Tr` = the Galois orbit of the named places, the family
+from `exists_isTwoPlaceFamily_zpowers`, and `u y := ∏_t b t ^ (kummerChar hkd (z t) (eK y)).val` —
+is the same for both, so it is built first under the cyclic hypothesis and generalised afterwards.
+
+## §1.89 The ramification clause of `HasKernelPrescription` was unsatisfiable (2026-09-10)
+
+### The defect
+
+`HasKernelPrescription` (`InverseGalois/Solvable/Shafarevich/LevelKernelPrescription.lean`) asks a
+homomorphism `u : ↥φ.ker →* layer` to ramify only where it is allowed to.  As first written, the
+clause read
+
+```lean
+∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
+  (∃ (ρ : Gal(Ω/k)) (y : ↥(φ.ker)),
+    (y : Gal(Ω/k)) ∈ Ideal.inertia Gal(Ω/k) (ρ • P) ∧ u y ≠ 1) →
+  (∃ (μ : ι) (ρ : Gal(Ω/k)), P = ρ • Q μ) ∨
+    ((∀ x ∈ stabilizer Gal(Ω/k) P, F x = 1) ∧ stabilizer Gal(Ω/k) P ≤ φ.ker ∧
+      (∀ ρ : Gal(Ω/k), ρ ∉ φ.ker →
+        ∀ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ stabilizer Gal(Ω/k) (ρ • P) → u y = 1) ∧
+      ∃ y₀ : ↥(φ.ker), …)
+```
+
+The antecedent is quantified over the whole `Gal(Ω/k)`-orbit of `P`, while the conclusion forbids
+`u` from surviving on the decomposition subgroup of any *proper* conjugate of `P`.  Those two are
+inconsistent as soon as `u` ramifies anywhere outside the named orbits.
+
+Concretely: let `P₀` be a prime, not in the orbit of any `Q μ`, at which `u` genuinely ramifies, and
+let `ρ₀ ∉ φ.ker`.  Apply the clause at `P := ρ₀ • P₀`.  Its antecedent holds — take `ρ := ρ₀⁻¹`, so
+that `ρ • P = P₀`, and the witness of the ramification at `P₀`.  The left disjunct fails, `P` not
+being in a named orbit.  So the right disjunct must hold; and its third sub-clause, read at
+`ρ := ρ₀⁻¹`, demands that `u` vanish on `stabilizer Gal(Ω/k) P₀ ∩ φ.ker` — which contradicts the
+ramification at `P₀`, inertia being contained in the decomposition subgroup.
+
+So the definition could never be satisfied by any construction that ramifies at all.  This is a
+statement-level defect, not a gap: nothing was proved from it that is now false, but nothing could
+have been.
+
+### The repair
+
+Make the antecedent a statement about `P` itself:
+
+```lean
+(∃ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ Ideal.inertia Gal(Ω/k) P ∧ u y ≠ 1) →
+```
+
+The clause now says: *at a prime where `u` itself ramifies*, either the prime is named, or `u` is
+supported on that one prime of its orbit and cyclic there.  That is exactly the shape the two-place
+family delivers — the family of units is prescribed at one place and is a local power at every
+proper conjugate of it — and it is what the confinement clause below wants.
+
+### Why the descent still goes through
+
+`hasConfinedPrescription_of_hasKernelPrescription` averages `u` over the cosets of `φ.ker` and must
+produce the confinement clause of `HasConfinedPrescription` at a prime `P` where the *average*
+ramifies.  With the weaker antecedent the descent has to be re-derived, because the clause can no
+longer be read at `P` directly.  The point is that the coset which makes the average ramify is
+recoverable, and everything transports along its representative.
+
+`exists_mem_inertia_section_of_corCochain₁_ne_one` (`InverseGalois/CFT/CorestrictionInertia.lean`)
+is the recorded form of the old `exists_mem_inertia_smul_of_corCochain₁_ne_one`: where the average
+is nontrivial at `g ∈ inertia P ∩ φ.ker`, there is a coset `x` and a `y ∈ φ.ker` with
+`(y : G) = (σ x)⁻¹ g σ x`, lying in the inertia subgroup at `P₁ := (σ x)⁻¹ • P`, at which `u` is
+nontrivial.  So the repaired clause applies at `P₁`, with the representative `σ x` recorded.
+
+Three things then descend from `P₁` to `P`.
+
+* *The named case.*  `P₁ = ρ • Q μ` gives `P = (σ x * ρ) • Q μ`.
+* *The lift kills the decomposition subgroup.*  `F` is a homomorphism, so
+  `F ((σ x)⁻¹ z σ x) = 1` gives `F z = 1`; and conjugation carries `stabilizer P` onto
+  `stabilizer P₁`.
+* *Cyclicity.*  This is `exists_forall_mem_zpowers_corCochain₁`, the new theorem of
+  `CorestrictionInertia.lean`.  Given `stabilizer G P₁ ≤ H`, the vanishing of `u` on the
+  decomposition subgroups of `τ • P₁` for every `τ ∉ H`, and cyclicity of `u` on
+  `stabilizer G P₁ ∩ H` against `y₀`, the average is cyclic on `stabilizer G P` against
+  `g₀ := σ x * y₀ * (σ x)⁻¹`.  The proof is the collapse of the product: for `g ∈ stabilizer G P`
+  and a coset `x' ≠ x`, the conjugate `(σ x')⁻¹ g σ x'` stabilises `(σ x')⁻¹ • P = τ • P₁` with
+  `τ := (σ x')⁻¹ σ x ∉ H`, so `u` kills it; only the term at `x` survives, and it is
+  `σ x • u ((σ x)⁻¹ g σ x)`, a power of `σ x • u y₀ = corCochain₁ u g₀`.
+
+Note that `stabilizer G P ≤ H` is *derived*, not assumed: it is the conjugate of
+`stabilizer G P₁ ≤ H` and `H` is normal.
+
+### Consequences
+
+The consistency of the repaired clause with the third sub-clause is what forces the hypothesis
+`stabilizer Gal(Ω/k) P ≤ φ.ker` to be carried in the right disjunct: it says `P` is completely
+decomposed in the level `K` that `φ.ker` cuts out, hence that the place of `K` below `P` has trivial
+decomposition group over `k`, hence that the proper conjugates of that place are *different* places
+— which is where the family of units is asked to be a local power.  Without it the demand would
+again be self-contradictory.
+
+`HasKernelPrescription` has no producer yet; `KernelPrescriptionEP` merely wraps it and
+`confinedPrescriptionEP_of_kernelPrescriptionEP` merely consumes it, so the repair is confined to
+the two files.
+
+## 1.90  The bridge from a family of units to the prescription, and the cyclic repair
+
+Two things landed here.
+
+**(a) The bridge.**  `InverseGalois/Solvable/Shafarevich/KernelPlaces.lean` introduces
+
+* `HasPrescribedUnits ℓ K D` — the arithmetic input, a single statement about the level `K`:
+  given a finite level `E ⊇ K`, a finite family of places `w μ` of `K` lying in distinct orbits,
+  and `d` classes `c μ q ∈ localClasses (w μ) ℓ` prescribed at each of them, there is a family
+  `z : Fin d → Kˣ` which is a local `ℓ`-th power at every place above `ℓ`, carries the prescribed
+  classes at the `w μ`, dies at every proper conjugate `σ • w μ`, fixes the roots the family `D`
+  is asked about, and at every other place `v` where some `z q` has order not divisible by `ℓ`
+  either sits over a named place or has `v` completely decomposed in `E` with a single coordinate
+  surviving and every proper conjugate of `v` trivial;
+* `hasCyclicKernelPrescription_of_places` — a level `K` with `K.fixingSubgroup = φ.ker`, carrying a
+  primitive `ℓ`-th root of unity and satisfying `HasPrescribedUnits ℓ K D`, satisfies the
+  prescription.
+
+The bridge takes `N := n` and `α := MonoidHom.id`, so no shrinking is spent; the homomorphism is
+`u := kummerKernelHom hKker hkd layerBasis layerBasis_pow_eq_one z`, whose coordinates are the
+Kummer characters of the `z q`; the finite level `E` is `E₀ ⊔ K` with `E₀` obtained from
+`exists_fixingSubgroup_le` applied to `F.ker ⊓ K.fixingSubgroup`.  Before this, nothing at all
+produced a `HasKernelPrescription`.
+
+**(b) The cyclic repair of §1.88.**  As first written, `HasPrescribedUnits` prescribed *arbitrary*
+classes at the named places, and so inherited the reciprocity defect of §1.88: the `ℓ`-th power
+residue product formula forces `∏_μ (c μ q , c μ q')_{w μ} = 1` (above `ℓ` the units are local
+powers, at proper conjugates the classes are trivial, at leftover places only one coordinate
+survives and the symbol is alternating for odd `ℓ`), so an unrelated family of classes is
+unsatisfiable.  The relation is empty as soon as the classes prescribed at one place lie on a single
+line, so `HasPrescribedUnits` now carries that hypothesis, and the prescription it answers is the
+new
+
+* `HasCyclicKernelPrescription` (`LevelKernelPrescription.lean`) — `HasKernelPrescription` with the
+  extra hypothesis `∀ μ, ∃ x₀, ∀ x, a μ x ∈ Subgroup.zpowers (a μ x₀)` on the prescribed
+  homomorphisms.  `hasCyclicKernelPrescription_of_hasKernelPrescription` is the trivial arrow.
+
+Producing the classes on a line is `exists_localClass_zpowers_forall_kummerKernelHom_eq`
+(`KernelPrimeCyclic.lean`), which rests on two new pieces:
+
+* `exists_zmodChar_forall_eq_smul` — the coordinates of a homomorphism `a` with cyclic image are the
+  multiples `χ t ∘ a = (χ t (a x₀)) · e` of a single character `e` of the source.  If every
+  coordinate of the generator `a x₀` vanishes then `a x₀ = 1` and `a` is trivial; otherwise one
+  coordinate `χ t₀ (a x₀)` is nonzero, hence invertible in the field `ZMod ℓ`, and
+  `e := (χ t₀ (a x₀))⁻¹ · (χ t₀ ∘ a)` works because `a x` is an integer power of `a x₀`.
+* `exists_localClass_forall_kummerChar_nsmul` (`CFT/Kummer/InertiaCharLift.lean`) — the class naming
+  a character names all its multiples: a unit whose class is the `m`-th power of the named one has
+  Kummer character `m • χ`.  The named class is the class of one unit `a₀` carrying `χ`, so its
+  `m`-th power is the class of `a₀ ^ m`, and `kummerChar_units_pow` finishes.  Supporting
+  `zmodChar_inv` and `zmodChar_zpow` were added next to `zmodChar_pow`.
+
+**What is still open.**  `HasCyclicKernelPrescription` does *not* feed
+`hasConfinedPrescription_of_hasKernelPrescription`: the consumer
+`hasSplitCyclicRepair_of_hasConfinedPrescription` builds its prescription as `a = g · f⁻¹` (branch
+`RamifiesAt φ Φ (Pr μ)`, `LevelConfinedTwist.lean`) or as `a₀⁻¹` with `inl ∘ a₀ = f` on the
+stabilizer (the other branch), and only `g` is cyclic — the flat lift `f` is not.  So the remaining
+step is exactly repair 2 of §1.88: either arrange the flat lift to be cyclic on the decomposition
+subgroups of the named primes (an extra hypothesis on `f`, which is how Schmidt–Wingberg's condition
+(ii) reads), or replace the per-place line hypothesis by the product relation over `Tr` and
+discharge it with the global product formula.
+
+## 1.91  Where `HasPrescribedUnits` will come from
+
+`HasPrescribedUnits` is now shaped to be answered by the two-place chain, whose entry point is
+`exists_isTwoPlaceFamily_zpowers` (`CFT/PoitouTate/SplitFamily.lean:619`).  The dictionary, clause by
+clause, with `K` the level and `w μ` the named places:
+
+| `HasPrescribedUnits` | `exists_isTwoPlaceFamily_zpowers` |
+| --- | --- |
+| the named places `w μ` and their conjugates | `Tr` = the Galois orbit of `{w μ}`, stable by `hTrst` |
+| `T` | `Tr` together with whatever the chain needs strictly between; a genuine `Tr ⊊ T` is required (finding 3331) |
+| places above `ℓ`, where the units are local powers | forced into `Tn` by `hpTn`, with `c i v = 1` there by `hcn` |
+| the prescribed classes `c μ q` | `c q (w μ)`, with `q` the coordinate index `i` |
+| triviality at the proper conjugates `σ • w μ` | `hcfree` — `c i (σ • v) = 1 ∨ c i v = 1` |
+| triviality outside `T` | `hcT` |
+| the line hypothesis `c μ q ∈ Subgroup.zpowers (D₀ μ)` | `hDc`, with `D` the Galois-equivariant extension of `D₀` |
+| the leftover places with a single coordinate surviving | the auxiliary pairs `Q i`, `R i` of the family |
+| complete decomposition in the finite level `E` | `hsplit`, taking `Ω` of the chain to be the field `E` cuts out |
+
+Two things have to be built before the chain can be called.
+
+1. **The line family.**  `hDgal` asks `Subgroup.zpowers (D (σ • v)) = Subgroup.zpowers
+   (localClassesGalEquiv σ v p (D v))`, so `D₀`, given only at the named places, must be transported
+   across the orbit.  This is well defined precisely because the orbits are free: the hypothesis
+   `∀ μ ν σ, σ ≠ 1 → σ • w μ ≠ w ν` of `HasPrescribedUnits` says exactly that the stabiliser of each
+   `w μ` in `Gal(K/k)` is trivial and that distinct named places lie in distinct orbits, so the `σ`
+   carrying `w μ` to a given place of the orbit is unique and `D (σ • w μ) := localClassesGalEquiv σ
+   _ _ (D₀ μ)` is unambiguous.  Off the orbit take `D v := 1`, which is consistent with `hcT`.
+2. **The identification of the two settings.**  The chain is stated for a number field `K` with
+   `Gal(K/k)`, the prescription for an `IntermediateField k Ω`; the translation is the dictionary of
+   finding 3456.
+
+The remaining obstruction on the *consumer* side (§1.90) is unchanged and is the harder of the two:
+in the ramified branch of `hstep` the prescription is `inl (a x) = g x * (f x)⁻¹`, and while
+`g x ∈ Subgroup.zpowers w` and `Φ₁` is cyclic on the decomposition subgroup, the image of the flat
+lift `f` on that subgroup is only an extension of a cyclic group by a part of the layer.  Either the
+lift has to be chosen cyclic there — the shape of Schmidt–Wingberg's condition (ii) — or the
+per-place line hypothesis has to be traded for the product relation over `Tr`.
+
+## 1.92  The `D` clause of `HasPrescribedUnits` is unsatisfiable as stated (2026-09-11)
+
+Tracing where the subgroups `D ν` of `HasPrescribedUnits ℓ K D` actually come from turns up a
+contradiction between two of its clauses.
+
+**Where `D` comes from.**  `genericLevelStepEPRoots_of_solutionRepairEP`
+(`Shafarevich/LevelStepRepair.lean:261`) calls `exists_family_rungData` (`LevelRungData.lean:69`)
+with `X = ∅`, and that theorem's `D` is literally
+
+```
+D ν = stabilizer Gal(Ω/k) (Pr ν)
+```
+
+with `Pr` produced by `exists_decomposition_family` (`LevelOneDecomposition.lean:70-104`): one prime
+of `Ω` over each place of a finite Galois stable set `Tn` of places of the level, obtained from
+`exists_stable_ord_places` and therefore containing the places ramified in the level, the places
+above `ℓ`, and whatever padding is needed to represent the ideal classes.
+
+**The contradiction.**  By `smul_eq_of_localClassHom_eq_one` (`LevelOneFamily.lean:169`), clause 4 of
+`HasPrescribedUnits` —
+
+```
+∀ ν ρ y, ρ * y * ρ⁻¹ ∈ D ν → ∀ q β, β ^ ℓ = z q → y • β = β
+```
+
+— is exactly the statement that each `z q` is a local `ℓ`-th power at *every* place of `Tn`.  Clause
+2 asks for `localClassHom (w μ) ℓ (z q) = c μ q` with `c μ q` in general nontrivial.  So the naming
+must avoid `Tn`, and nothing in the present statement says it does.  `hasCyclicKernelPrescription_of_places`
+consumes clause 4 unconditionally (`KernelPlaces.lean:207-209`), so this is not a slack that can be
+absorbed downstream.
+
+**Why the avoidance is genuinely necessary and where it has to go.**  Suppose a named prime `Q μ`
+of `Ω` is a conjugate `ρ • Pr ν`.  Decomposition subgroups of primes of `Ω` determine the prime, so
+`stabilizer (Q μ) = ρ (D ν) ρ⁻¹`; the prescription asks for `a μ` on `stabilizer (Q μ)` while the
+`D` clause of `HasKernelPrescription` — which is conjugation closed, `ρ y ρ⁻¹ ∈ D ν → u y = 1` —
+asks for triviality on the same subgroup.  Note that `HasConfinedPrescription`'s own `D` clause is
+*not* conjugation closed (`∀ x ∈ D ν, φ x = 1 → c x = 1`, `LevelConfinedTwist.lean:160-182`), so the
+clash is created by `hasConfinedPrescription_of_hasKernelPrescription`, whose averaging over cosets
+needs `u` to vanish on all conjugates.  Schmidt–Wingberg do exactly the avoidance: their new primes
+are chosen outside `S_n`.
+
+The minimal repair, in the language of the existing definitions, is to add to
+`HasKernelPrescription` and `HasCyclicKernelPrescription` the clause
+
+```
+∀ (μ : ι) (ν : Fin t) (ρ : Gal(Ω/k)), D ν ≠ stabilizer Gal(Ω/k) (ρ • Q μ)
+```
+
+which, because `Gal(Ω/K)` is transitive on the primes over a place of `K`, says exactly that no
+named place lies under any `Pr ν`, i.e. that the named places avoid `Tn`.  It then has to be
+supplied by `hasSplitCyclicRepair_of_hasConfinedPrescription`, whose named primes are the primes
+where the flattened lift ramifies — that is the part of the repair whose cost is not yet known, and
+it is deliberately deferred: the statement of `HasPrescribedUnits` is a hypothesis nothing yet
+proves, so the refactor buys nothing until the arithmetic below it is in place.
+
+**What was built instead.**  `CFT/PoitouTate/NamedUnits.lean` proves the arithmetic in the form the
+repaired statement will want, with the avoidance as an explicit hypothesis:
+
+```
+exists_units_named_prescribed :
+  (hdisj : ∀ v ∈ Tp, v ∉ Tz) → … → (horth …) → ∀ d,
+  ∃ z : ℕ → Kˣ,
+    (∀ q < d, ∀ v ∈ Tz, localClassHom v p (z q) = 1) ∧
+    (∀ q < d, ∀ w : ↥Tp, localClassHom ↑w p (z q) = cl w q) ∧
+    (∀ q < d, ∀ σ ≠ 1, ∀ w : ↥Tp, localClassHom (σ • ↑w) p (z q) = 1) ∧
+    ∀ v, (∃ q < d, ¬ (p : ℤ) ∣ placeValue v (z q)) →
+      (∃ σ w, v = σ • ↑w) ∨
+        ((∃ W, primeUnder (𝓞 K) W = v ∧ stabilizer Gal(↥Ω/k) W = ⊥) ∧
+         (∃ q₀ < d, ∀ q < d, q ≠ q₀ → localClassHom v p (z q) = 1) ∧
+         ∀ σ ≠ 1, ∀ q < d, localClassHom (σ • v) p (z q) = 1)
+```
+
+which is clause for clause the conclusion of `HasPrescribedUnits`, with `Tz` playing the role of the
+places under the `Pr ν` together with the places above `ℓ`.  Two choices make the reading work.  The
+distinguished part `Tr` of the two-place bookkeeping is taken to be the *whole orbit* of the named
+places — that is what turns `IsTwoPlaceFamily.unram` into the confinement clause, a carried place
+being either in the orbit or one of the auxiliary pairs.  And the set the prescription is made over
+is the stable set produced by `exists_stable_ord_places` from the orbit, the prescribed set `Tz` and
+the places ramified upstairs; enlarging it is free because `spreadClasses` is trivial away from the
+named places, which is precisely the triviality `Tz` was asking for.
+
+The only hypothesis left is `horth`, the orthogonality of the naming against those `S`-units which
+become an `ℓ`-th power in the upper field — the residue of §1.8x, unchanged.  Two hypotheses stay
+with the caller: `hram`, a finite set outside which the upper field is unramified, and `hdisj`, the
+avoidance above.
+
+## 1.93  `HasPrescribedUnits` is a theorem; the residue is the orthogonality of the naming (2026-09-11)
+
+Two defects were repaired at once, and what is left of the arithmetic of the sharp prescription is
+one named hypothesis.
+
+### (a) The defect: `HasPrescribedUnits` as stated was false
+
+§1.90(b) already had to add the "classes on a line" hypothesis to make room for the product formula
+*within one place*.  The same objection applies *across* places and is not repaired by any
+per-place hypothesis: with `k = K = ℚ(ζ_ℓ)`, one named place `w ∤ ℓ`, `Tz = ∅` and `d = 1`, the
+product formula for the `ℓ`-th power residue symbol forces `(u, z)_w = 1` for every `u` which is a
+unit outside `{w}`, trivial at the infinite places, and an `ℓ`-th power in the auxiliary field.  A
+class `c` failing that identity cannot be the class of any `z`.  So `HasPrescribedUnits`,
+`HasNamedPairing`, `PrescribedUnitsEP` and `NamedPairingEP` as previously stated were all false, and
+the theorem `hasPrescribedUnits_of_hasNamedPairing` was a bridge from a false hypothesis.
+
+### (b) The repair: the orthogonality becomes an antecedent
+
+`KernelPlaces.lean` now carries
+
+```
+def IsNamedOrthogonal (ℓ) (K) (hres) (hζ) (E : IntermediateField k Ω) (w : ι → HeightOneSpectrum (𝓞 ↥K))
+    (c : (μ : ι) → Fin d → localClasses (w μ) ℓ) : Prop :=
+  ∀ Tn, (∀ μ, w μ ∈ Tn) → ∀ q u,
+    (∀ y : InfinitePlace ↥K, infClassHom y ℓ u = 1) →
+    (∃ y : Ω, y ∈ E ∧ y ^ ℓ = algebraMap ↥K Ω u) →
+    localSymbolPiPairing hres hζ w (fun μ => localClassHom (w μ) ℓ u) (fun μ => c μ q) = 1
+```
+
+which is literally the `horth` hypothesis of `exists_units_named_prescribed`
+(`CFT/PoitouTate/NamedUnits.lean`) read against the naming rather than against a spread family, and
+`HasPrescribedUnits` now takes it as an extra antecedent.  With it the statement is *true*, and
+`KernelArith.lean` proves it outright:
+
+```
+theorem hasPrescribedUnits (hℓ : ℓ.Prime) (hodd : 2 < ℓ) (K) (hres) (hζ) : HasPrescribedUnits ℓ K hres hζ
+```
+
+`HasNamedPairing`, `PrescribedUnitsEP`, `NamedPairingEP` and the three bridges through them are
+deleted.
+
+Two things make the proof go through.
+
+* **No normal closure.**  `HasPrescribedUnits` now asks the auxiliary field `E` to be Galois over
+  the base — which costs the consumer nothing, since it supplies `E₀ ⊔ K` and Mathlib's
+  `IntermediateField.normal_sup` makes a join of Galois subextensions Galois (finding 3724).  So the
+  two-place construction is run over `E` itself instead of over `normalClosure k E Ω`, and the whole
+  bookkeeping that carried the splitting condition down from the closure disappears.
+* **`piPairing_eq_of_support`.**  `exists_units_named_prescribed` states its orthogonality against
+  the pairing indexed by a finite set `Tn` of places and the family `spreadClasses Tp cl t`, while
+  `IsNamedOrthogonal` states it against the pairing indexed by `ι` and `c`.  The new
+
+  ```
+  theorem piPairing_eq_of_support (φ : ∀ y, A y →* A y →* M) (he : Function.Injective e)
+      (hb : ∀ y, (∀ μ, e μ ≠ y) → b y = 1) :
+      piPairing φ a b = piPairing (fun μ => φ (e μ)) (fun μ => a (e μ)) (fun μ => b (e μ))
+  ```
+
+  is the whole bridge: `Finset.prod_subset` drops the factors outside the image of the naming and
+  `Finset.prod_image` reindexes the rest.  The case `t ≥ d`, where `spreadClasses` is trivial for a
+  different reason, is split off first.
+
+### (c) The second defect: the shrinking is not optional
+
+With the orthogonality as an antecedent, `hasKernelPrescription_of_places` needed it supplied for
+the naming its own prescribed values cut out — and, as first written, with `N := n` and
+`α := MonoidHom.id`.  That version is again false: the prescribed homomorphisms `a μ` of
+`HasKernelPrescription` are arbitrary (subject only to smoothness and cyclicity of image), the
+correspondence `a μ ↔ c μ` through local Kummer theory at `Q μ` is a bijection, and so `c` is
+arbitrary and its orthogonality is a genuine obstruction.  Killing that obstruction *is*
+Schmidt–Wingberg's fourth step, and it is killed by shrinking.
+
+So `hasKernelPrescription_of_places` now takes the number of letters `N` the data is read at as a
+parameter and asks its `horth` hypothesis to produce the shrinking:
+
+```
+(horth : ∀ (ι) [Fintype ι] (Q) (_ : ∀ μ, (Q μ).IsPrime) (hQbot) (A)
+    (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)),
+  ∃ (α : Generic U N S →* Generic U n S) (_ : IsOperatorHom α), Function.Surjective α ∧
+    ∀ c, (∀ μ z, (∀ q, localClassHom (placeUnder K (Q μ) (hQbot μ)) ℓ (z q) = c μ q) →
+            ∀ x hx, kummerKernelHom … z ⟨x, hx⟩ = layerSubMap ℓ α j (a μ x)) →
+      ∀ E, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E → IsNamedOrthogonal ℓ K hres hζ E _ c)
+```
+
+and answers with that `α`.  The rest of the proof is unchanged: the classes are produced from
+`(layerSubMap ℓ α j).comp (a μ)` rather than from `a μ`, smoothness and cyclicity of the image being
+preserved by postcomposition with a group homomorphism.
+
+### (d) The EP level
+
+`KernelStep.lean` replaces `PrescribedUnitsEP`/`NamedPairingEP` by
+
+```
+def NamedOrthogonalEP (ℓ) : Prop :=
+  ∀ S U (k Ω) φ (n j) (K) (hKker) ζ hζ hkd hres,
+    ∃ N, ∀ ι Q _ hQbot A a, ∃ α hα, Function.Surjective α ∧ ∀ c, (pinning) → ∀ E …, IsNamedOrthogonal …
+```
+
+quantified over an arbitrary base field `k` rather than over `ℚ` — instantiating a variable `k` at
+`ℚ` keeps `Algebra ℚ ↥K` equal to `IntermediateField.algebra`, whereas a `ℚ`-specific statement
+re-synthesises it as `DivisionRing.toRatAlgebra` and no longer matches the caller (gotcha 3697).
+Then
+
+* `kernelPrescriptionEP_of_namedOrthogonalEP ℓ hodd h : KernelPrescriptionEP ℓ`, which now also
+  builds `hroot`/`hkd` and `choose Pc Ec hres`, hoisted down from `hasKernelPrescription_of_places`
+  (sound because `IsKummerData` is a `Prop`, finding 3719);
+* `genericLevelStepEPRoots_of_namedOrthogonalEP ℓ hodd hflat h : GenericLevelStepEPRoots ℓ`.
+
+### (e) What is left
+
+For an odd prime the whole ladder now rests on exactly two arithmetic hypotheses:
+
+* `FlatPrescriptionEP ℓ` — Schmidt–Wingberg's third step, to be discharged with Proposition 7 (i)
+  (`exists_operatorHom_h1_eq_zero`);
+* `NamedOrthogonalEP ℓ` — Schmidt–Wingberg's fourth step, to be discharged with Proposition 7 (ii)
+  (`exists_operatorHom_h1_inl_eq_zero`): the obstruction is a single homology class in
+  `H₁(G, Layer₀ ⊗ Layer_j ⊗ T)` and `obs_α = (α_* ⊗ α_*) (obs_id)`.
+
+and, separately, the case `ℓ = 2`, every bridge in the chain carrying `hodd : 2 < ℓ`.
+
+### (f) Build
+
+Full root build green, 9946 jobs, 0 warnings, 0 sorries.

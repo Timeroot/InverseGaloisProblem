@@ -192,10 +192,24 @@ theorem layerLinear_apply (f : P →* Q) (v : Layer p P n) :
     layerLinear p f n v = layerMap p f n v := rfl
 
 @[simp]
+theorem layerSubMap_id : layerSubMap p (MonoidHom.id P) n = MonoidHom.id ↥(layerSub p P n) :=
+  MonoidHom.ext fun v => by
+    obtain ⟨x, hx, hxv⟩ := exists_layerMk (Additive.ofMul v)
+    obtain rfl : v = Additive.toMul (layerMk hx) := by rw [hxv]; rfl
+    rfl
+
+@[simp]
 theorem layerMap_id : layerMap p (MonoidHom.id P) n = AddMonoidHom.id (Layer p P n) := by
   ext v
   obtain ⟨x, hx, rfl⟩ := exists_layerMk v
   rfl
+
+theorem layerSubMap_comp {R : Type*} [Group R] (g : Q →* R) (f : P →* Q) :
+    layerSubMap p (g.comp f) n = (layerSubMap p g n).comp (layerSubMap p f n) :=
+  MonoidHom.ext fun v => by
+    obtain ⟨x, hx, hxv⟩ := exists_layerMk (Additive.ofMul v)
+    obtain rfl : v = Additive.toMul (layerMk hx) := by rw [hxv]; rfl
+    rfl
 
 theorem layerMap_comp {R : Type*} [Group R] (g : Q →* R) (f : P →* Q) :
     layerMap p (g.comp f) n = (layerMap p g n).comp (layerMap p f n) := by

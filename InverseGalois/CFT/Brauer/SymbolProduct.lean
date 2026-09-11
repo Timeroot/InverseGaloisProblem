@@ -30,6 +30,9 @@ so for an odd prime the hypothesis on the field is automatic.
 
 * `InverseGalois.CFT.isTotallyComplex_of_isPrimitiveRoot`: a number field containing a primitive
   root of unity of order bigger than two is totally complex.
+* `InverseGalois.CFT.finprod_localSymbol_eq_one_of_forall_infinitePlaceInvariant`: **the power
+  residue symbols of two units multiply to one over the finite places whenever the archimedean
+  invariants of the classes split by the radical extension vanish.**
 * `InverseGalois.CFT.finprod_localSymbol_eq_one`: **the power residue symbols of two units of a
   totally complex number field multiply to one over the finite places.**
 * `InverseGalois.CFT.prod_localSymbol_eq_one`: the same, read over a finite set of places carrying
@@ -76,16 +79,19 @@ theorem isTotallyComplex_of_isPrimitiveRoot {ζ : k} (hn : 2 < n) (hζ : IsPrimi
   NumberField.nrRealPlaces_eq_zero_iff.mp
     (NumberField.InfinitePlace.IsPrimitiveRoot.nrRealPlaces_eq_zero_of_two_lt hn hζ)
 
-/-- **The power residue symbols of two units of a totally complex number field multiply to one over
-the finite places**, for an exponent which is prime and whose roots of unity the field contains.
-An argument which is a power makes every symbol trivial; otherwise the splitting field of the
-polynomial cutting out its root is a cyclic extension of prime degree presented by a radical, at
-every finite place the invariant of the cyclic algebra built on the other argument is the inverse
-of the symbol, and the archimedean invariants vanish, so global reciprocity is the product
-formula. -/
-theorem finprod_localSymbol_eq_one [IsTotallyComplex k] (hn : n.Prime)
+/-- **The power residue symbols of two units of a number field multiply to one over the finite
+places**, for an exponent which is prime and whose roots of unity the field contains, provided
+every Brauer class split by the splitting field of the polynomial cutting out a root of the second
+argument has trivial invariant at every infinite place.  An argument which is a power makes every
+symbol trivial; otherwise that splitting field is a cyclic extension of prime degree presented by a
+radical, and at every finite place the invariant of the cyclic algebra built on the other argument
+is the inverse of the symbol, so global reciprocity is the product formula. -/
+theorem finprod_localSymbol_eq_one_of_forall_infinitePlaceInvariant (hn : n.Prime)
     (hres : ∀ v : HeightOneSpectrum (𝓞 k), HasResidueChar (v.adicCompletion k) (P v) (E v))
-    {ζ : k} (hζ : IsPrimitiveRoot ζ n) (a b : kˣ) :
+    {ζ : k} (hζ : IsPrimitiveRoot ζ n) (a b : kˣ)
+    (harch : ∀ (u : InfinitePlace k) (x : BrauerGroup.{0, 0} k),
+      x ∈ BrauerGroup.relative k (X ^ n - C (b : k)).SplittingField →
+        infinitePlaceInvariant k u x = 1) :
     ∏ᶠ v : HeightOneSpectrum (𝓞 k),
         localSymbol (hres v) (isUnitValGen_one (valued_adicCompletion_surjective v))
           (hζ.map_of_injective (algebraMap k (v.adicCompletion k)).injective)
@@ -151,10 +157,8 @@ theorem finprod_localSymbol_eq_one [IsTotallyComplex k] (hn : n.Prime)
     have hglob := finprod_placeInvariant_mul_prod_infinitePlaceInvariant_eq_one k
       (cyclicBrauerHom hσ₀ a)
     have hinf : ∏ u : InfinitePlace k,
-        infinitePlaceInvariant k u (cyclicBrauerHom hσ₀ a) = 1 := by
-      refine Finset.prod_eq_one fun u _ => ?_
-      rw [infinitePlaceInvariant_of_isComplex k (IsTotallyComplex.isComplex u)]
-      rfl
+        infinitePlaceInvariant k u (cyclicBrauerHom hσ₀ a) = 1 :=
+      Finset.prod_eq_one fun u _ => harch u _ (cyclicBrauerHom_mem_relative hσ₀ a)
     rw [hinf, mul_one] at hglob
     have hstep : ∏ᶠ v : HeightOneSpectrum (𝓞 k),
         (localSymbol (hres v) (isUnitValGen_one (valued_adicCompletion_surjective v))
@@ -164,6 +168,21 @@ theorem finprod_localSymbol_eq_one [IsTotallyComplex k] (hn : n.Prime)
       (finprod_congr fun v => (key v).symm).trans hglob
     rw [finprod_inv_distrib] at hstep
     exact inv_eq_one.mp hstep
+
+/-- **The power residue symbols of two units of a totally complex number field multiply to one over
+the finite places**, for an exponent which is prime and whose roots of unity the field contains.
+The archimedean invariants of a Brauer class over a totally complex field all vanish, so global
+reciprocity leaves exactly the product of the local symbols. -/
+theorem finprod_localSymbol_eq_one [IsTotallyComplex k] (hn : n.Prime)
+    (hres : ∀ v : HeightOneSpectrum (𝓞 k), HasResidueChar (v.adicCompletion k) (P v) (E v))
+    {ζ : k} (hζ : IsPrimitiveRoot ζ n) (a b : kˣ) :
+    ∏ᶠ v : HeightOneSpectrum (𝓞 k),
+        localSymbol (hres v) (isUnitValGen_one (valued_adicCompletion_surjective v))
+          (hζ.map_of_injective (algebraMap k (v.adicCompletion k)).injective)
+          (Units.map (algebraMap k (v.adicCompletion k)).toMonoidHom a)
+          (Units.map (algebraMap k (v.adicCompletion k)).toMonoidHom b) = 1 :=
+  finprod_localSymbol_eq_one_of_forall_infinitePlaceInvariant hn hres hζ a b fun u x _ => by
+    rw [infinitePlaceInvariant_of_isComplex k (IsTotallyComplex.isComplex u), MonoidHom.one_apply]
 
 /-- **The product formula for the power residue symbol**, read over a finite set of finite places
 outside which the symbols are trivial. -/

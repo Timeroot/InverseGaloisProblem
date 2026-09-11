@@ -48,6 +48,66 @@ section ClassSet
 
 variable (K : Type*) [Field K] [NumberField K]
 
+/-- **Away from the primes occurring in a chosen system of representatives of the ideal classes,
+every finitely supported system of orders is realised by an element of the field.**  A system of
+orders is the exponent vector of a fractional ideal, which differs from the representative of its
+class by a principal ideal; at a prime where the representative has no exponent, the generator of
+that principal ideal has the prescribed order. -/
+theorem exists_ord_repr_of_forall_count
+    (rep : (FractionalIdeal (𝓞 K)⁰ K)ˣ ⧸ (toPrincipalIdeal (𝓞 K) K).range →
+      (FractionalIdeal (𝓞 K)⁰ K)ˣ)
+    (hrep : ∀ q, QuotientGroup.mk' (toPrincipalIdeal (𝓞 K) K).range (rep q) = q)
+    (n : HeightOneSpectrum (𝓞 K) → ℤ)
+    (hn : ∀ᶠ v : HeightOneSpectrum (𝓞 K) in Filter.cofinite, n v = 0) :
+    ∃ a : Kˣ, ∀ v : HeightOneSpectrum (𝓞 K),
+      (∀ q, FractionalIdeal.count K v (rep q : FractionalIdeal (𝓞 K)⁰ K) = 0) →
+      ord K v (a : K) = n v := by
+  classical
+  set I : FractionalIdeal (𝓞 K)⁰ K := ∏ᶠ v, (v.asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^ n v with hIdef
+  have hcount : ∀ v, FractionalIdeal.count K v I = n v := fun v =>
+    FractionalIdeal.count_finprod K v n hn
+  by_cases hI0 : I = 0
+  · refine ⟨1, fun v _ => ?_⟩
+    have hv := hcount v
+    rw [hI0, FractionalIdeal.count_zero] at hv
+    rw [← hv]
+    simp
+  set Iu : (FractionalIdeal (𝓞 K)⁰ K)ˣ := Units.mk0 I hI0 with hIuDef
+  have h2 : (QuotientGroup.mk' (toPrincipalIdeal (𝓞 K) K).range) Iu
+      = (QuotientGroup.mk' (toPrincipalIdeal (𝓞 K) K).range)
+        (rep ((QuotientGroup.mk' (toPrincipalIdeal (𝓞 K) K).range) Iu)) := (hrep _).symm
+  rw [QuotientGroup.mk'_eq_mk'] at h2
+  obtain ⟨z, ⟨x, rfl⟩, hz⟩ := h2
+  refine ⟨x⁻¹, fun v hv => ?_⟩
+  have hvT := hv ((QuotientGroup.mk' (toPrincipalIdeal (𝓞 K) K).range) Iu)
+  have hzz := congrArg (fun u : (FractionalIdeal (𝓞 K)⁰ K)ˣ =>
+    FractionalIdeal.count K v (u : FractionalIdeal (𝓞 K)⁰ K)) hz
+  simp only [Units.val_mul, coe_toPrincipalIdeal] at hzz
+  rw [FractionalIdeal.count_mul K v (Units.ne_zero Iu)
+    (spanSingleton_ne_zero_iff.mpr (Units.ne_zero x)), hvT] at hzz
+  have hIuval : (Iu : FractionalIdeal (𝓞 K)⁰ K) = I := rfl
+  rw [hIuval, hcount v] at hzz
+  have hx : ord K v ((x : K)) = -n v := by
+    rw [ord_def]
+    lia
+  rw [Units.val_inv_eq_inv_val, ord_inv, hx, neg_neg]
+
+/-- The quotient of the invertible fractional ideals by the principal ones is finite, being the
+ideal class group in another guise. -/
+instance : Finite ((FractionalIdeal (𝓞 K)⁰ K)ˣ ⧸ (toPrincipalIdeal (𝓞 K) K).range) :=
+  Finite.of_equiv _ (ClassGroup.equiv K).toEquiv
+
+/-- A system of representatives for the ideal classes, as invertible fractional ideals. -/
+theorem exists_rep_quotient :
+    ∃ rep : (FractionalIdeal (𝓞 K)⁰ K)ˣ ⧸ (toPrincipalIdeal (𝓞 K) K).range →
+      (FractionalIdeal (𝓞 K)⁰ K)ˣ,
+      ∀ q, QuotientGroup.mk' (toPrincipalIdeal (𝓞 K) K).range (rep q) = q := by
+  have hsurj : ∀ q : (FractionalIdeal (𝓞 K)⁰ K)ˣ ⧸ (toPrincipalIdeal (𝓞 K) K).range,
+      ∃ I : (FractionalIdeal (𝓞 K)⁰ K)ˣ,
+        QuotientGroup.mk' (toPrincipalIdeal (𝓞 K) K).range I = q :=
+    fun q => QuotientGroup.induction_on q fun I => ⟨I, rfl⟩
+  exact ⟨fun q => (hsurj q).choose, fun q => (hsurj q).choose_spec⟩
+
 /-- **A finite set of primes away from which every finitely supported system of orders is realised
 by an element of the field.**  Choose one fractional ideal in each of the finitely many ideal
 classes and let the set be the primes where some representative is nontrivial.  A system of orders
@@ -60,46 +120,13 @@ theorem exists_finite_ord_repr :
         (∀ᶠ v : HeightOneSpectrum (𝓞 K) in Filter.cofinite, n v = 0) →
         ∃ a : Kˣ, ∀ v ∉ T, ord K v (a : K) = n v := by
   classical
-  have hsurj : ∀ c : ClassGroup (𝓞 K), ∃ I : (FractionalIdeal (𝓞 K)⁰ K)ˣ, ClassGroup.mk I = c :=
-    fun c => ClassGroup.induction (K := K) (P := fun c => ∃ I, ClassGroup.mk I = c)
-      (fun I => ⟨I, rfl⟩) c
-  choose rep hrep using hsurj
-  refine ⟨⋃ c : ClassGroup (𝓞 K),
-      {v | FractionalIdeal.count K v (rep c : FractionalIdeal (𝓞 K)⁰ K) ≠ 0}, ?_, ?_⟩
-  · exact Set.finite_iUnion fun c =>
+  obtain ⟨rep, hrep⟩ := exists_rep_quotient K
+  refine ⟨⋃ q, {v | FractionalIdeal.count K v (rep q : FractionalIdeal (𝓞 K)⁰ K) ≠ 0}, ?_,
+    fun n hn => ?_⟩
+  · exact Set.finite_iUnion fun q =>
       Filter.eventually_cofinite.mp (FractionalIdeal.finite_factors _)
-  intro n hn
-  set I : FractionalIdeal (𝓞 K)⁰ K := ∏ᶠ v, (v.asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^ n v with hIdef
-  have hcount : ∀ v, FractionalIdeal.count K v I = n v := fun v =>
-    FractionalIdeal.count_finprod K v n hn
-  by_cases hI0 : I = 0
-  · refine ⟨1, fun v _ => ?_⟩
-    have hv := hcount v
-    rw [hI0, FractionalIdeal.count_zero] at hv
-    rw [← hv]
-    simp
-  set Iu : (FractionalIdeal (𝓞 K)⁰ K)ˣ := Units.mk0 I hI0 with hIuDef
-  have h2 : (QuotientGroup.mk' (toPrincipalIdeal (𝓞 K) K).range) Iu
-      = (QuotientGroup.mk' (toPrincipalIdeal (𝓞 K) K).range) (rep (ClassGroup.mk Iu)) := by
-    have h := congrArg (ClassGroup.equiv K) (hrep (ClassGroup.mk Iu)).symm
-    simpa using h
-  rw [QuotientGroup.mk'_eq_mk'] at h2
-  obtain ⟨z, ⟨x, rfl⟩, hz⟩ := h2
-  refine ⟨x⁻¹, fun v hv => ?_⟩
-  have hvT : FractionalIdeal.count K v (rep (ClassGroup.mk Iu) : FractionalIdeal (𝓞 K)⁰ K) = 0 := by
-    by_contra hc
-    exact hv (Set.mem_iUnion.mpr ⟨ClassGroup.mk Iu, hc⟩)
-  have hzz := congrArg (fun u : (FractionalIdeal (𝓞 K)⁰ K)ˣ =>
-    FractionalIdeal.count K v (u : FractionalIdeal (𝓞 K)⁰ K)) hz
-  simp only [Units.val_mul, coe_toPrincipalIdeal] at hzz
-  rw [FractionalIdeal.count_mul K v (Units.ne_zero Iu)
-    (spanSingleton_ne_zero_iff.mpr (Units.ne_zero x)), hvT] at hzz
-  have hIuval : (Iu : FractionalIdeal (𝓞 K)⁰ K) = I := rfl
-  rw [hIuval, hcount v] at hzz
-  have hx : ord K v ((x : K)) = -n v := by
-    rw [ord_def]
-    lia
-  rw [Units.val_inv_eq_inv_val, ord_inv, hx, neg_neg]
+  · obtain ⟨a, ha⟩ := exists_ord_repr_of_forall_count K rep hrep n hn
+    exact ⟨a, fun v hv => ha v fun q => not_not.1 fun hc => hv (Set.mem_iUnion.mpr ⟨q, hc⟩)⟩
 
 /-- **When the ring of integers is principal every finitely supported system of orders is realised
 by an element of the field, at every prime at once.**  A system of orders is the exponent vector of
