@@ -84,6 +84,9 @@ This is the flat prescription, made one field up.  The base realization acts tri
 through its kernel, so a cocycle of that kernel is a homomorphism, and the whole demand is one about
 homomorphisms of a profinite group into a finite abelian group.
 
+The subgroups the values are prescribed along are the parts of inertia at the named primes which the
+base realization kills, and the named primes are away from the exponent.
+
 The homomorphism is asked to be equivariant for conjugation by the base group, the operators moving
 its values as the base realization moves the conjugating element.  That is what a cocycle over the
 base field restricts to, and it is what lets the homomorphism be extended back down along a section
@@ -105,8 +108,9 @@ def HasFlatKernelPrescription : Prop :=
         (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)),
       Function.Surjective F → IsSmoothHom F →
       (∀ x, SemidirectProduct.rightHom (F x) = φ x) →
-      (∀ μ, (Q μ).IsPrime) → (∀ μ, Q μ ≠ ⊥) →
+      (∀ μ, (Q μ).IsPrime) → (∀ μ, Q μ ≠ ⊥) → (∀ μ, (ℓ : 𝓞 Ω) ∉ Q μ) →
       (∀ μ, A μ ≤ stabilizer Gal(Ω/k) (Q μ)) → (∀ μ, A μ ≤ φ.ker) →
+      (∀ μ, A μ = Ideal.inertia Gal(Ω/k) (Q μ) ⊓ φ.ker) →
       (∀ μ, IsSmooth₁ ((a μ : ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)) :
         ↥(A μ) → ↥(layerSub ℓ (Generic U N S) j))) →
       (∀ (μ : ι) (g : Gal(Ω/k)) (x : ↥(A μ)) (hx : g * (x : Gal(Ω/k)) * g⁻¹ ∈ A μ),
@@ -169,9 +173,9 @@ theorem hasFlatPrescription_of_hasFlatKernelPrescription (hS : IsPGroup ℓ S)
   obtain ⟨N₁, hN₁⟩ := exists_operatorHom_forall_layerSubMap_eq_one U n S hS (j := j) (U × U)
   obtain ⟨N, hN⟩ := hpres N₁
   refine ⟨N, ?_⟩
-  intro F ι _ Q A a hFsurj hFsm hFright hQp hQbot hAstab hAker hasm haequiv
+  intro F ι _ Q A a hFsurj hFsm hFright hQp hQbot hQℓ hAstab hAker hAeq hasm haequiv
   obtain ⟨β, hβ, hβsurj, u, ⟨V, hV, hVu⟩, hueq, huD, hua, huram⟩ :=
-    hN F ι Q A a hFsurj hFsm hFright hQp hQbot hAstab hAker hasm haequiv
+    hN F ι Q A a hFsurj hFsm hFright hQp hQbot hQℓ hAstab hAker hAeq hasm haequiv
   have hφsurj : Function.Surjective φ := by
     intro v
     obtain ⟨y, hy⟩ := hFsurj (SemidirectProduct.inr v)

@@ -56,6 +56,8 @@ open scoped Pointwise
 
 attribute [local instance] genericQuotAction
 
+set_option maxHeartbeats 1600000
+
 /-! ### The prescription the flattening is bought with -/
 
 section Flat
@@ -70,11 +72,12 @@ variable (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] (n : ℕ) 
 of decomposition subgroups at once, be trivial along the finite family, and ramify only at the named
 primes or where the given lift kills the whole decomposition subgroup.**
 
-The subgroups the cocycle is prescribed along are asked to sit inside the decomposition subgroups of
-finitely many named primes and inside the kernel of the base realization, which is what makes the
-prescription well posed: on such a subgroup the action on the layer is trivial, so a cocycle
-restricts there to a homomorphism.  Along the finite family the cocycle is asked to vanish wherever
-the base realization already does.
+The subgroups the cocycle is prescribed along are the parts of inertia at finitely many named primes
+which the base realization kills, and the named primes are away from the exponent, which is what
+makes the prescription well posed: on such a subgroup the action on the layer is trivial, so a
+cocycle restricts there to a homomorphism, and at a prime away from the exponent that homomorphism
+is a power of a single one of its own values.  Along the finite family the cocycle is asked to
+vanish wherever the base realization already does.
 
 The prescribed homomorphisms are asked to be equivariant for conjugation, in the sense that
 conjugating an element of one of the subgroups back into that same subgroup moves the prescribed
@@ -105,8 +108,9 @@ def HasFlatPrescription : Prop :=
         (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)),
       Function.Surjective F → IsSmoothHom F →
       (∀ x, SemidirectProduct.rightHom (F x) = φ x) →
-      (∀ μ, (Q μ).IsPrime) → (∀ μ, Q μ ≠ ⊥) →
+      (∀ μ, (Q μ).IsPrime) → (∀ μ, Q μ ≠ ⊥) → (∀ μ, (ℓ : 𝓞 Ω) ∉ Q μ) →
       (∀ μ, A μ ≤ stabilizer Gal(Ω/k) (Q μ)) → (∀ μ, A μ ≤ φ.ker) →
+      (∀ μ, A μ = Ideal.inertia Gal(Ω/k) (Q μ) ⊓ φ.ker) →
       (∀ μ, IsSmooth₁ ((a μ : ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)) :
         ↥(A μ) → ↥(layerSub ℓ (Generic U N S) j))) →
       (∀ (μ : ι) (g : Gal(Ω/k)) (x : ↥(A μ)) (hx : g * (x : Gal(Ω/k)) * g⁻¹ ∈ A μ),
@@ -140,6 +144,11 @@ ramifies there, and the last clause of the prescription puts that prime either i
 named prime — impossible again, for the same reason — or at a place where the given lift carried
 down, hence the solution below carried down, kills the whole decomposition subgroup.
 
+The named primes are away from the exponent.  The finite family covers the primes above it, and
+along the family the given lift is trivial wherever the base realization is, so at a prime carrying
+the exponent the given lift does not ramify over the base realization at all and that prime is not
+among those named.
+
 The shrinking the prescription spends is passed on: the lift given is read at the number of letters
 the prescription announces, and the corrected lift lives at the number asked for, over the pushed
 down solution.  Confinement is read against the solution below at the announced number for its
@@ -147,6 +156,8 @@ ramification clause and against the pushed down solution for its vanishing claus
 sharper prescription is bought against. -/
 theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
     (hactφ : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U n S) j)), x • v = φ x • v)
+    (hℓD : ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → (ℓ : 𝓞 Ω) ∈ P →
+      ∃ (ν : Fin t) (ρ : Gal(Ω/k)), ∀ y ∈ stabilizer Gal(Ω/k) P, ρ * y * ρ⁻¹ ∈ D ν)
     (hpres : HasFlatPrescription ℓ U n S j φ D) :
     ∃ N : ℕ, ∀ (Φ : Gal(Ω/k) →* GenericQuot ℓ U N S j),
       (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) →
@@ -165,7 +176,19 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
     isSmooth₁_of_isOpenNormal_ker (isOpenNormal_ker_of_isSmoothHom hfsm)
   obtain ⟨s, Pr, hPrp, hPrbot, hfam⟩ :=
     exists_ramified_family (isOpenNormal_ker_of_isSmoothHom hfsm)
-  have hstep : ∀ μ : {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ)},
+  have hℓnot : ∀ μ : {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ) ∧ RamifiesAt φ f (Pr μ)},
+      (ℓ : 𝓞 Ω) ∉ Pr (μ : Fin s) := by
+    intro μ hmem
+    obtain ⟨x, hxI, hxφ, hx1⟩ := id μ.2.2
+    obtain ⟨ν, ρ, hν⟩ := hℓD (Pr (μ : Fin s)) (hPrp _) (hPrbot _) hmem
+    refine hx1 ?_
+    have hφc : φ (ρ * x * ρ⁻¹) = 1 := by
+      rw [_root_.map_mul, _root_.map_mul, _root_.map_inv, hxφ, mul_one, mul_inv_cancel]
+    have hconj : f (ρ * x * ρ⁻¹) = 1 :=
+      hfD ν _ (hν x (Ideal.inertia_le_stabilizer (Pr (μ : Fin s)) hxI)) hφc
+    rw [_root_.map_mul, _root_.map_mul, _root_.map_inv] at hconj
+    simpa using hconj
+  have hstep : ∀ μ : {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ) ∧ RamifiesAt φ f (Pr μ)},
       ∃ a : ↥(Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ⊓ φ.ker) →*
           ↥(layerSub ℓ (Generic U N S) j),
         IsSmooth₁ ((a : ↥(Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ⊓ φ.ker) →*
@@ -174,7 +197,7 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
             ↥(layerSub ℓ (Generic U N S) j)) ∧
         ∀ x : ↥(Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ⊓ φ.ker),
           (layerExtension ℓ (genericAut U N S) j).inl (a x) * f (x : Gal(Ω/k)) = 1 := by
-    rintro ⟨μ, hμ⟩
+    rintro ⟨μ, hμ, -⟩
     have hΦ1 : ∀ x ∈ Ideal.inertia Gal(Ω/k) (Pr μ) ⊓ φ.ker, Φ x = 1 := by
       intro x hx
       by_contra hx1
@@ -199,7 +222,8 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
       rw [← hΦright g, ← genericQuotAction_smul ℓ U N N S j (Φ g) v]
       exact smul_eq_conjActHom_genericLayer ℓ U N S j (Φ g) v
     rw [h1, ← hfright g, (layerExtension ℓ (genericAut U N S) j).inl_conjActHom]
-  have haequiv : ∀ (μ : {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ)}) (g : Gal(Ω/k))
+  have haequiv : ∀ (μ : {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ) ∧ RamifiesAt φ f (Pr μ)})
+      (g : Gal(Ω/k))
       (x : ↥(Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ⊓ φ.ker))
       (hx : g * (x : Gal(Ω/k)) * g⁻¹ ∈ Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ⊓ φ.ker),
       a μ ⟨g * (x : Gal(Ω/k)) * g⁻¹, hx⟩ = φ g • a μ x := by
@@ -217,10 +241,11 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
     rw [hfright x]
     exact hΦright x
   obtain ⟨α, hα, hαsurj, c, hc, hcs, hcD, hca, hcram⟩ :=
-    hpres f {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ)} (fun μ => Pr (μ : Fin s))
+    hpres f {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ) ∧ RamifiesAt φ f (Pr μ)}
+      (fun μ => Pr (μ : Fin s))
       (fun μ => Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ⊓ φ.ker) a hfsurj hfsm hfr (fun μ => hPrp _)
-      (fun μ => hPrbot _) (fun μ => le_trans inf_le_left (Ideal.inertia_le_stabilizer _))
-      (fun _ => inf_le_right) hasm haequiv
+      (fun μ => hPrbot _) hℓnot (fun μ => le_trans inf_le_left (Ideal.inertia_le_stabilizer _))
+      (fun _ => inf_le_right) (fun _ => rfl) hasm haequiv
   have hΦ'right : ∀ x, SemidirectProduct.rightHom (((layerSemidirectMap ℓ hα j).comp Φ) x) = φ x :=
     fun x => hΦright x
   have hf'right : ∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom
@@ -246,7 +271,7 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
         * ((layerSemidirectMap ℓ hα (j + 1)).comp f) x) →
       IsConfinedRamifiedHom φ Φ ((layerSemidirectMap ℓ hα j).comp Φ) Ψ := by
     intro Ψ hΨdef
-    have hkey : ∀ μ : {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ)},
+    have hkey : ∀ μ : {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ) ∧ RamifiesAt φ f (Pr μ)},
         ¬ RamifiesAt φ Ψ (Pr (μ : Fin s)) := by
       rintro μ ⟨x, hxI, hxφ, hxΨ⟩
       refine hxΨ ?_
@@ -261,7 +286,8 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
       obtain ⟨μ, ρ, rfl⟩ := hfam P hPp hPbot ⟨x, hxI, hx1⟩
       by_cases hΦram : RamifiesAt φ Φ (Pr μ)
       · exact Or.inl (hΦram.smul ρ)
-      · exact absurd (ramifiesAt_smul_iff.1 hram) (hkey ⟨μ, hΦram⟩)
+      · exact absurd (ramifiesAt_smul_iff.1 hram)
+          (hkey ⟨μ, hΦram, ramifiesAt_smul_iff.1 hfram⟩)
     · obtain ⟨x, hxI, hxφ, hxΨ⟩ := id hram
       have hfx : f x = 1 := by
         by_contra h

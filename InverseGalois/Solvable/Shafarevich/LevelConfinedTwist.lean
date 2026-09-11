@@ -260,7 +260,8 @@ theorem hasSplitCyclicRepair_of_hasConfinedPrescription (hS : IsPGroup ℓ S) (h
   obtain ⟨N₂, hpres⟩ := hpres
   letI := galLayerAction ℓ U N₂ S j φ
   obtain ⟨N₁, hflat'⟩ :=
-    exists_confinedRamifiedHom_lift_of_hasFlatPrescription (n := N₂) (fun _ _ => rfl) (hflat N₂)
+    exists_confinedRamifiedHom_lift_of_hasFlatPrescription (n := N₂) (fun _ _ => rfl) hℓD
+      (hflat N₂)
   refine ⟨N₁, fun Φ f₀ hΦsm hΦright hΦP hf₀surj hf₀sm hf₀right hf₀D => ?_⟩
   have hφopen : IsOpen (φ.ker : Set Gal(Ω/k)) := by
     refine Subgroup.isOpen_mono (H₁ := Φ.ker) (fun x hx => MonoidHom.mem_ker.2 ?_)
