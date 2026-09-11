@@ -76,9 +76,17 @@ in the shape the whole ladder is written in: a number of letters is announced in
 prescribed values are read at that number against a lift of the base realization which is onto and
 lies over it, and what is asked back is a surjection onto the number the prescription answers at, a
 finite level over the level below which kills that lift carried across the surjection, and the
-orthogonality, in that level, of the naming the values carried across the surjection name. -/
+orthogonality, in that level, of the naming the values carried across the surjection name.
+
+The named primes come with the three things Kummer theory needs to name their values: each subgroup
+is the whole decomposition subgroup of its prime, the prescribed homomorphism on it is continuous,
+and its image lies on a single cyclic line.  Those are what let the values at the higher number of
+letters be named by local classes on the line of the class of one unit of the level, and the naming
+downstairs is asked with the matching demand that the classes answered with lie on such a line as
+well. -/
 def NamedOrthogonalEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
-  ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] (k Ω : Type) [Field k] [Field Ω]
+  ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] (_hS : IsPGroup ℓ S)
+      (k Ω : Type) [Field k] [Field Ω]
       [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω] (φ : Gal(Ω/k) →* U) (n j : ℕ)
       (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K]
       (hKker : K.fixingSubgroup = φ.ker) (ζ : ↥K) (hζ : IsPrimitiveRoot ζ ℓ)
@@ -92,11 +100,17 @@ def NamedOrthogonalEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
         (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)),
         Function.Surjective F → IsSmoothHom F →
         (∀ x, SemidirectProduct.rightHom (F x) = φ x) →
+        (∀ μ, A μ = stabilizer Gal(Ω/k) (Q μ)) →
+        (∀ μ, IsSmooth₁ ((a μ : ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)) :
+          ↥(A μ) → ↥(layerSub ℓ (Generic U N S) j))) →
+        (∀ μ, ∃ x₀ : ↥(A μ), ∀ x : ↥(A μ), a μ x ∈ Subgroup.zpowers (a μ x₀)) →
         ∃ (α : Generic U N S →* Generic U n S) (hα : IsOperatorHom α), Function.Surjective α ∧
           ∃ E : IntermediateField k Ω, FiniteDimensional k ↥E ∧ IsGalois k ↥E ∧ K ≤ E ∧
             E.fixingSubgroup ≤ ((layerSemidirectMap ℓ hα (j + 1)).comp F).ker ∧
             ∀ c : (μ : ι) → Fin (layerDim ℓ (Generic U n S) j) →
                 localClasses (placeUnder K (Q μ) (hQbot μ)) ℓ,
+              (∀ μ, ∃ u₀ : (↥K)ˣ, ∀ q, c μ q ∈
+                Subgroup.zpowers (localClassHom (placeUnder K (Q μ) (hQbot μ)) ℓ u₀)) →
               (∀ (μ : ι) (z : Fin (layerDim ℓ (Generic U n S) j) → (↥K)ˣ),
                 (∀ q, localClassHom (placeUnder K (Q μ) (hQbot μ)) ℓ (z q) = c μ q) →
                 ∀ (x : ↥(A μ)) (hx : (x : Gal(Ω/k)) ∈ φ.ker),
@@ -186,7 +200,7 @@ theorem kernelPrescriptionEP_of_namedOrthogonalEP (ℓ : ℕ) [Fact ℓ.Prime] [
       isKummerData_zmod hζ hroot
     choose Pc Ec hres using
       fun v : HeightOneSpectrum (𝓞 ↥K) => exists_hasResidueChar_adicCompletion v
-    obtain ⟨N, horth⟩ := h S U ℚ Ω φ n j K hKker ⟨z, hzK⟩ hζ hkd hres
+    obtain ⟨N, horth⟩ := h S U hS ℚ Ω φ n j K hKker ⟨z, hzK⟩ hζ hkd hres
     exact hasKernelPrescription_of_places N K hKker hζ hkd hres hPrp hPrbot hDPr
       (exists_smul_placeUnder_of_mem K hPrp hPrbot hcovP) horth
       (hasPrescribedUnits hℓ hodd K hres hζ)

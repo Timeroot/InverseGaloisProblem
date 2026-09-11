@@ -214,11 +214,17 @@ theorem hasKernelPrescription_of_places (N : ℕ) (K : IntermediateField k Ω)
       (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)),
       Function.Surjective F → IsSmoothHom F →
       (∀ x, SemidirectProduct.rightHom (F x) = φ x) →
+      (∀ μ, A μ = stabilizer Gal(Ω/k) (Q μ)) →
+      (∀ μ, IsSmooth₁ ((a μ : ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)) :
+        ↥(A μ) → ↥(layerSub ℓ (Generic U N S) j))) →
+      (∀ μ, ∃ x₀ : ↥(A μ), ∀ x : ↥(A μ), a μ x ∈ Subgroup.zpowers (a μ x₀)) →
       ∃ (α : Generic U N S →* Generic U n S) (hα : IsOperatorHom α), Function.Surjective α ∧
         ∃ E : IntermediateField k Ω, FiniteDimensional k ↥E ∧ IsGalois k ↥E ∧ K ≤ E ∧
           E.fixingSubgroup ≤ ((layerSemidirectMap ℓ hα (j + 1)).comp F).ker ∧
           ∀ c : (μ : ι) → Fin (layerDim ℓ (Generic U n S) j) →
               localClasses (placeUnder K (Q μ) (hQbot μ)) ℓ,
+            (∀ μ, ∃ u₀ : (↥K)ˣ, ∀ q, c μ q ∈
+              Subgroup.zpowers (localClassHom (placeUnder K (Q μ) (hQbot μ)) ℓ u₀)) →
             (∀ (μ : ι) (z : Fin (layerDim ℓ (Generic U n S) j) → (↥K)ˣ),
               (∀ q, localClassHom (placeUnder K (Q μ) (hQbot μ)) ℓ (z q) = c μ q) →
               ∀ (x : ↥(A μ)) (hx : (x : Gal(Ω/k)) ∈ φ.ker),
@@ -240,7 +246,7 @@ theorem hasKernelPrescription_of_places (N : ℕ) (K : IntermediateField k Ω)
   letI : Fintype ι := Fintype.ofFinite ι
   -- the shrinking the orthogonality of the naming is bought with, and the level it is read in
   obtain ⟨α, hα, hαsurj, E, hEfin, hEgal, hKE, hEF, horth'⟩ :=
-    horth F ι Q hQp hQbot A a hFsurj hFsm hFright
+    horth F ι Q hQp hQbot A a hFsurj hFsm hFright hAcase hasm hacyc
   haveI := hEfin
   haveI := hEgal
   have hasm' : ∀ μ : ι, IsSmooth₁
@@ -318,7 +324,8 @@ theorem hasKernelPrescription_of_places (N : ℕ) (K : IntermediateField k Ω)
     exact hdisj μ (hσν ▸ hmemTz σ ν)
   obtain ⟨z, hzT, hz2, hz3, hz4⟩ := hfam E hEfin hEgal hKE ι
     (fun μ => placeUnder K (Q μ) (hQbot μ)) hinj hconj Tz hdisj hdisjℓ
-    (layerDim ℓ (Generic U n S) j) c (fun μ => ⟨u₀ μ, hcline μ⟩) (horth' c hc)
+    (layerDim ℓ (Generic U n S) j) c (fun μ => ⟨u₀ μ, hcline μ⟩)
+    (horth' c (fun μ => ⟨u₀ μ, hcline μ⟩) hc)
   have hz1 : ∀ (q : Fin (layerDim ℓ (Generic U n S) j)) (v : HeightOneSpectrum (𝓞 ↥K)),
       (ℓ : 𝓞 ↥K) ∈ v.asIdeal → localClassHom v ℓ (z q) = 1 := by
     intro q v hv

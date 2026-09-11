@@ -83,6 +83,8 @@ import InverseGalois.Solvable.Shafarevich.LocalLiftInfinite
 import InverseGalois.Solvable.Shafarevich.LevelRungData
 import InverseGalois.Solvable.Shafarevich.LevelStepRepair
 import InverseGalois.Solvable.Shafarevich.LayerCoord
+import InverseGalois.Solvable.Shafarevich.LayerMatrix
+import InverseGalois.Solvable.Shafarevich.LayerZeroChar
 import InverseGalois.Solvable.Shafarevich.KernelKummer
 import InverseGalois.Solvable.Shafarevich.KernelPrimeClass
 import InverseGalois.Solvable.Shafarevich.KernelClauses
@@ -91,6 +93,7 @@ import InverseGalois.Solvable.Shafarevich.KernelPrimeCyclic
 import InverseGalois.Solvable.Shafarevich.KernelPlaces
 import InverseGalois.Solvable.Shafarevich.KernelArith
 import InverseGalois.Solvable.Shafarevich.KernelStep
+import InverseGalois.Solvable.Shafarevich.NamedOrthogonal
 
 /-!
 # Shafarevich's theorem
@@ -759,6 +762,19 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   which is the currency an arithmetic construction deals in.  The generation clauses never needed
   this, a family indexed by the elements of the layer generating it whatever the coordinates are,
   but a prescription of values does.
+* `InverseGalois.Solvable.Shafarevich.LayerMatrix` writes a comparison map in those coordinates.
+  The coordinates are additive and read a product of powers of the basis off as the exponents, so
+  **the coordinates of the image of an element under a map of layers are the combination of its own
+  coordinates by the matrix of that map on the basis**.  That matrix is the linear relation the
+  reciprocity residues have to satisfy: the classes prescribed downstairs being the images of the
+  ones named upstairs, the symbol against them is the corresponding product of powers.
+* `InverseGalois.Solvable.Shafarevich.LayerZeroChar` names the characters of the group.  A
+  homomorphism to the residues modulo a prime kills the first term of the descending central series,
+  so it is read off from a functional on the zeroth layer, and conversely **every character of a
+  quotient by a term of that series is named by a functional on the zeroth layer**, additively in
+  the functional and naturally in the group: pulling a functional back along a homomorphism names
+  the character read through the induced map of quotients.  That naturality is what lets a relation
+  established after a shrinking be read at the level the arithmetic named.
 * `InverseGalois.Solvable.Shafarevich.KernelKummer` supplies the currency.  The kernel of the base
   realization is the group of automorphisms over the level it cuts out, and over that level Kummer
   theory is available: a unit of the level has an `â„“`-th root in the algebraic closure and the way
@@ -840,4 +856,20 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   carries a prime of the whole extension above it, which the family moves onto one of its members.
   **Every finite Galois level of the rationals containing a primitive root of unity of order the
   prime carrying such families of units buys the sharp prescription, hence the step of the ladder.**
+* `InverseGalois.Solvable.Shafarevich.NamedOrthogonal` pays the reciprocity condition and thereby
+  removes it.  The number of letters is announced first, by the count in the tensor product of the
+  zeroth layer with the layer the values live in: one vector there is annihilated by a surjection
+  onto the intended number.  The prescription at that larger number is then answered, at each named
+  prime, by local classes on the line of the class of one unit of the level, and the residues of the
+  power residue symbol against those classes assemble into a homomorphism of the units of the level
+  into the layer â€” the observation the reciprocity law has to kill.  A functional on the zeroth
+  layer names a character of the group of the letters; read through the lift of the base realization
+  it becomes a character of the Galois group over the level, and Kummer theory presents that
+  character as the character of a unit, so the observation depends on the functional alone and
+  linearly, and the naming element of the tensor product turns the whole of it into the single
+  vector the count annihilates.  The finite level is the one cutting out the kernel of the lift
+  carried across the surjection, and a unit which becomes an exponent-th power there has a Kummer
+  character killing that kernel, hence is one of the units the observation was shown to annihilate.
+  **The orthogonality of the naming holds for every prime**, so the sharp prescription is
+  unconditional and the step of the ladder is bought by the flattening alone.
 -/

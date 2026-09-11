@@ -333,6 +333,7 @@ import InverseGalois.CFT.Kummer.CharLift
 import InverseGalois.CFT.Kummer.CharLocalClass
 import InverseGalois.CFT.Kummer.CharPlace
 import InverseGalois.CFT.Kummer.CharStabilizer
+import InverseGalois.CFT.Kummer.CharSurjective
 import InverseGalois.CFT.Kummer.CocycleDescent
 import InverseGalois.CFT.Kummer.CongruentRadical
 import InverseGalois.CFT.Kummer.CyclicIndex
@@ -496,6 +497,7 @@ import InverseGalois.CFT.PoitouTate.LocalOrdPlace
 import InverseGalois.CFT.PoitouTate.NamedFamily
 import InverseGalois.CFT.PoitouTate.NamedFamilyPower
 import InverseGalois.CFT.PoitouTate.NamedFamilySplit
+import InverseGalois.CFT.PoitouTate.NamedSymbol
 import InverseGalois.CFT.PoitouTate.NamedUnits
 import InverseGalois.CFT.PoitouTate.NormLocalPower
 import InverseGalois.CFT.PoitouTate.OrbitCoboundary
@@ -8192,6 +8194,17 @@ it that are available here.
   the named ones, dying at their proper conjugates, and confined elsewhere to the conjugates of the
   named places and to completely split places with one coordinate surviving.**
 
+* `InverseGalois.CFT.PoitouTate.NamedSymbol` turns the orthogonality into a linear condition.  A
+  family of local classes having been named at finitely many finite places, the product of the norm
+  residue symbols of a unit of the base field against that family is a character of the units, and
+  its values are killed by the exponent because the classes of the completions are; so the character
+  is named by a residue modulo the exponent, additively in the unit and reading it only through its
+  classes at the named places.  A family which is a product of powers of finitely many named
+  families then has for symbol the corresponding combination of their residues, so **a linear
+  relation among the residues of the named families forces the symbol against the combination to be
+  trivial** — which is the shape the counting argument in the layers is able to deliver, the
+  coefficients of the combination being the matrix of a comparison map between layers.
+
 * `InverseGalois.CFT.Residue.AlgClosed` gives an algebraic closure the residue fields it looks as
   though it has none of.  Its ring of integers has nonzero primes, each of them lies over a nonzero
   prime of the integers, which is maximal, and maximality goes up along an integral extension, so
@@ -8312,6 +8325,16 @@ it that are available here.
   fixed by the stabilizer, and finitely many units of the base field represent every power class
   fixed there.  Hence **every character of a decomposition subgroup is the Kummer character of a
   unit of the base field**.
+
+* `InverseGalois.CFT.Kummer.CharSurjective` runs it along the whole Galois group, which is the case
+  the reciprocity argument reads its characters at.  The roots of unity lying in the base field the
+  action on them is trivial, so an additive character killed by the exponent and trivial on an open
+  subgroup is a smooth one cocycle; Hilbert's theorem ninety presents it as the coboundary of an
+  element of the extension whose power by the exponent is fixed, hence a unit of the base, and the
+  Kummer cochain of that unit is the only cochain with that coboundary.  So **every smooth character
+  of the Galois group with values in the residues modulo the exponent is the Kummer character of a
+  unit of the base field**, which is what lets the reciprocity residue be defined on the whole dual
+  of a layer rather than on a subspace of it.
 
 * `InverseGalois.CFT.Kummer.CharLift` names what is left, which is the same statement along the
   inertia subgroup.  There the reading is available only away from the exponent: at a prime above
