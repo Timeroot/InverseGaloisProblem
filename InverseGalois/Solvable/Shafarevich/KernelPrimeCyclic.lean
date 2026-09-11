@@ -19,15 +19,16 @@ places the symbol contributes nothing, so the coordinates at the named places sa
 The relation is empty as soon as the prescribed classes lie on a single line, because the symbol is
 alternating.  That is the case here whenever the prescription itself has cyclic image: the
 coordinates of a homomorphism with cyclic image are all multiples of one character of the subgroup,
-carried by one class in the completion, and the coordinates are then the powers of that one class by
-the coordinates of a generator of the image.
+carried by one unit of the level, and the coordinates are then the powers of the class of that one
+unit by the coordinates of a generator of the image.
 
 ## Main statements
 
 * `InverseGalois.Shafarevich.exists_zmodChar_forall_eq_smul` — **the coordinates of a homomorphism
   with cyclic image are the multiples of a single character** of the source.
 * `InverseGalois.Shafarevich.exists_localClass_zpowers_forall_kummerKernelHom_eq` — **a prescription
-  with cyclic values at a named prime is named by a family of classes on a single line**.
+  with cyclic values at a named prime is named by a family of classes on the line of the class of a
+  single unit of the level**.
 -/
 
 namespace InverseGalois.Shafarevich
@@ -103,15 +104,15 @@ attribute [local instance] zmodTrivialAction
 variable (hKker : K.fixingSubgroup = φ.ker)
   (h : IsKummerData ↥K Ω (Multiplicative (ZMod ℓ)) (zmodRootHom hζ) ℓ)
 
-/-- **A prescription with cyclic values at a named prime is named by a family of classes on a single
-line**: the homomorphism assembled out of any family of units of the level carrying those classes
-restricts to the prescribed one.
+/-- **A prescription with cyclic values at a named prime is named by a family of classes on the line
+of the class of a single unit of the level**: the homomorphism assembled out of any family of units
+of the level carrying those classes restricts to the prescribed one.
 
 The coordinates of the prescription are the multiples of one character of the subgroup, read over
 the level as a character of the decomposition subgroup there or of the whole inertia subgroup there,
-and such a character is named by a class in the completion at the place below in the strong sense
-that a unit whose class is a power of it carries that multiple of the character.  The coordinates
-are then carried by the powers of the one class by the coordinates of a generator of the image. -/
+and such a character is named by a unit of the level in the strong sense that a unit whose class is
+a power of the class of that one carries that multiple of the character.  The coordinates are then
+carried by the powers of the one class by the coordinates of a generator of the image. -/
 theorem exists_localClass_zpowers_forall_kummerKernelHom_eq (hlift : HasKummerCharInertiaLift h)
     (hℓ : ℓ.Prime) {M : Type*} [CommGroup M] {d : ℕ} (b : Fin d → M) (hb : ∀ t, b t ^ ℓ = 1)
     {χ : Fin d → M → ZMod ℓ} (hχ : ∀ m : M, ∏ t, b t ^ (χ t m).val = m)
@@ -121,8 +122,8 @@ theorem exists_localClass_zpowers_forall_kummerKernelHom_eq (hlift : HasKummerCh
     (hA : A = stabilizer Gal(Ω/k) P ∨ (A = Ideal.inertia Gal(Ω/k) P ⊓ φ.ker ∧ (ℓ : 𝓞 Ω) ∉ P))
     (a : ↥A →* M) (hasm : IsSmooth₁ (a : ↥A → M))
     (hcyc : ∃ x₀ : ↥A, ∀ x : ↥A, a x ∈ Subgroup.zpowers (a x₀)) :
-    ∃ (c₀ : localClasses v ℓ) (c : Fin d → localClasses v ℓ),
-      (∀ t, c t ∈ Subgroup.zpowers c₀) ∧
+    ∃ (u₀ : (↥K)ˣ) (c : Fin d → localClasses v ℓ),
+      (∀ t, c t ∈ Subgroup.zpowers (localClassHom v ℓ u₀)) ∧
         ∀ z : Fin d → (↥K)ˣ, (∀ t, localClassHom v ℓ (z t) = c t) →
           ∀ (x : ↥A) (hx : (x : Gal(Ω/k)) ∈ φ.ker),
             kummerKernelHom hKker h b hb z ⟨(x : Gal(Ω/k)), hx⟩ = a x := by
@@ -150,10 +151,10 @@ theorem exists_localClass_zpowers_forall_kummerKernelHom_eq (hlift : HasKummerCh
     · refine hetriv _ ?_
       have h1 := hcon 1 (r x) (hEN (r x) (by rw [hrc]; exact Subgroup.mem_comap.1 hx))
       rwa [one_mul, _root_.map_one] at h1
-  obtain ⟨c₀, hc₀⟩ :=
+  obtain ⟨u₀, hc₀⟩ :=
     exists_localClass_forall_kummerChar_nsmul h hlift hP hv hA' (fun x => e (r x)) hadd hsm
-  refine ⟨c₀, fun t => c₀ ^ (μ t).val,
-    fun t => Subgroup.mem_zpowers_iff.2 ⟨(μ t).val, zpow_natCast c₀ _⟩, fun z hz x hx => ?_⟩
+  refine ⟨u₀, fun t => localClassHom v ℓ u₀ ^ (μ t).val,
+    fun t => Subgroup.mem_zpowers_iff.2 ⟨(μ t).val, zpow_natCast _ _⟩, fun z hz x hx => ?_⟩
   refine kummerKernelHom_eq_of_forall_kummerChar_eq hKker h b hb z hχ fun t => ?_
   have hxA' : (kerGalEquiv hKker ⟨(x : Gal(Ω/k)), hx⟩ : Gal(Ω/↥K)) ∈ A.comap (galSubHom K) := by
     refine Subgroup.mem_comap.2 ?_

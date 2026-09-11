@@ -70,9 +70,12 @@ decomposed in a given finite level.**
 The places are named by an arbitrary finite index type, are asked to be distinct and to stay
 distinct from one another under every proper automorphism of the level, and one class modulo
 exponent-th powers is prescribed at each of them in each of the coordinates the family is indexed
-by.  The classes prescribed at one place are asked to lie on a single line, which is what the
-reciprocity law leaves room for: the power residue symbol of two coordinates over all the places is
-trivial and away from the named places contributes nothing, and the symbol is alternating.
+by.  The classes prescribed at one place are asked to lie on the line of the class of a single unit
+of the level, which is what the reciprocity law leaves room for: the power residue symbol of two
+coordinates over all the places is trivial and away from the named places contributes nothing, and
+the symbol is alternating.  Naming the line by a unit rather than by a class is what lets the lines
+at the places of one orbit be carried into one another, an automorphism of the level moving a unit
+without moving the place it is read at.
 
 The finite level in which the leftover places are asked to be completely decomposed is part of the
 demand, so that a level cutting out any prescribed finite amount of arithmetic may be named before
@@ -83,7 +86,8 @@ def HasPrescribedUnits (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥
     ∀ (ι : Type) [Finite ι] (w : ι → HeightOneSpectrum (𝓞 ↥K)), Function.Injective w →
       (∀ (μ ν : ι) (σ : Gal(↥K/k)), σ ≠ 1 → σ • w μ ≠ w ν) →
         ∀ (d : ℕ) (c : (μ : ι) → Fin d → localClasses (w μ) ℓ),
-          (∀ μ : ι, ∃ D₀ : localClasses (w μ) ℓ, ∀ q : Fin d, c μ q ∈ Subgroup.zpowers D₀) →
+          (∀ μ : ι, ∃ u : (↥K)ˣ,
+            ∀ q : Fin d, c μ q ∈ Subgroup.zpowers (localClassHom (w μ) ℓ u)) →
           ∃ z : Fin d → (↥K)ˣ,
             (∀ (q : Fin d) (v : HeightOneSpectrum (𝓞 ↥K)), (ℓ : 𝓞 ↥K) ∈ v.asIdeal →
               localClassHom v ℓ (z q) = 1) ∧
@@ -179,10 +183,10 @@ theorem hasCyclicKernelPrescription_of_places (K : IntermediateField k Ω) [Fini
       σ • placeUnder K (Q μ) (hQbot μ) ≠ placeUnder K (Q ν) (hQbot ν) :=
     fun μ ν σ hσ => placeUnder_smul_ne hKker hQbot hQorb hQker hσ μ ν
   -- the classes the prescribed values name
-  have hex : ∀ μ : ι, ∃ (c₀ : localClasses (placeUnder K (Q μ) (hQbot μ)) ℓ)
+  have hex : ∀ μ : ι, ∃ (u₀ : (↥K)ˣ)
         (c : Fin (layerDim ℓ (Generic U n S) j) →
           localClasses (placeUnder K (Q μ) (hQbot μ)) ℓ),
-      (∀ q, c q ∈ Subgroup.zpowers c₀) ∧
+      (∀ q, c q ∈ Subgroup.zpowers (localClassHom (placeUnder K (Q μ) (hQbot μ)) ℓ u₀)) ∧
       ∀ z : Fin (layerDim ℓ (Generic U n S) j) → (↥K)ˣ,
         (∀ q, localClassHom (placeUnder K (Q μ) (hQbot μ)) ℓ (z q) = c q) →
           ∀ (x : ↥(A μ)) (hx : (x : Gal(Ω/k)) ∈ φ.ker),
@@ -193,10 +197,10 @@ theorem hasCyclicKernelPrescription_of_places (K : IntermediateField k Ω) [Fini
       (χ := fun q e => layerCoord ℓ (Generic U n S) j e q) prod_layerBasis_pow_layerCoord
       (fun q e e' => layerCoord_mul e e' q) (hQbot μ) rfl (Or.inl (hAcase μ)) (a μ) (hasm μ)
       (hacyc μ)
-  choose c₀ c hcline hc using hex
+  choose u₀ c hcline hc using hex
   obtain ⟨z, hz1, hz2, hz3, hz5, hz4⟩ := hfam (E₀ ⊔ K) inferInstance hKE ι
     (fun μ => placeUnder K (Q μ) (hQbot μ)) hinj hconj (layerDim ℓ (Generic U n S) j) c
-    (fun μ => ⟨c₀ μ, hcline μ⟩)
+    (fun μ => ⟨u₀ μ, hcline μ⟩)
   refine ⟨MonoidHom.id (Generic U n S), isOperatorHom_id, Function.surjective_id,
     kummerKernelHom hKker hkd (layerBasis ℓ (Generic U n S) j) layerBasis_pow_eq_one z,
     isSmooth₁_kummerKernelHom hKker hkd _ _ z, ?_, ?_, ?_, ?_⟩
