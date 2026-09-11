@@ -82,7 +82,7 @@ attribute [local instance] genericQuotAction
 
 section Covering
 
-variable (ℓ : ℕ) {k Ω : Type*} [Field k] [Field Ω] [Algebra k Ω] {t : ℕ}
+variable (ℓ : ℕ) {k Ω U : Type*} [Field k] [Field Ω] [Algebra k Ω] [Group U] {t : ℕ}
 
 /-- **The finite family covers the primes above the exponent**: the decomposition subgroup of any
 prime of the whole extension carrying the exponent is carried into a member of the family by a
@@ -94,32 +94,65 @@ def CoversAbove (D : Fin t → Subgroup Gal(Ω/k)) : Prop :=
   ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → (ℓ : 𝓞 Ω) ∈ P →
     ∃ (ν : Fin t) (ρ : Gal(Ω/k)), ∀ y ∈ stabilizer Gal(Ω/k) P, ρ * y * ρ⁻¹ ∈ D ν
 
+/-- **The finite family covers the primes the base realization ramifies at**: the decomposition
+subgroup of any prime of the whole extension at which the base realization fails to kill inertia is
+carried into a member of the family by a conjugation.
+
+Read the other way round, a prime whose decomposition subgroup escapes every conjugate of every
+member of the family is a prime unramified in the field the base realization cuts out. -/
+def CoversRamified (φ : Gal(Ω/k) →* U) (D : Fin t → Subgroup Gal(Ω/k)) : Prop :=
+  ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → (∃ x ∈ Ideal.inertia Gal(Ω/k) P, φ x ≠ 1) →
+    ∃ (ν : Fin t) (ρ : Gal(Ω/k)), ∀ y ∈ stabilizer Gal(Ω/k) P, ρ * y * ρ⁻¹ ∈ D ν
+
 /-- **The finite family is the family of decomposition subgroups of a family of primes covering the
 primes above the exponent**, every prime of the whole extension carrying the exponent being carried
-onto a member of the family of primes by an automorphism over the base.
+onto a member of the family of primes by an automorphism over the base, and the base realization
+killing inertia at every prime whose decomposition subgroup escapes the family.
 
 This is the shape the family the ladder is climbed along actually has, and it is what the arithmetic
-reads the local conditions off: a family of subgroups alone names no places. -/
-def IsCoveringPrimeFamily (Pr : Fin t → Ideal (𝓞 Ω)) (D : Fin t → Subgroup Gal(Ω/k)) : Prop :=
+reads the local conditions off: a family of subgroups alone names no places.  The last clause is
+what the family produced from a level supplies outright, the places at which the level ramifies
+being among those the family is indexed by. -/
+def IsCoveringPrimeFamily (φ : Gal(Ω/k) →* U) (Pr : Fin t → Ideal (𝓞 Ω))
+    (D : Fin t → Subgroup Gal(Ω/k)) : Prop :=
   (∀ ν, (Pr ν).IsPrime) ∧ (∀ ν, Pr ν ≠ ⊥) ∧
     (∀ ν, D ν = stabilizer Gal(Ω/k) (Pr ν)) ∧
-    ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → (ℓ : 𝓞 Ω) ∈ P →
-      ∃ (ν : Fin t) (ρ : Gal(Ω/k)), ρ • P = Pr ν
+    (∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → (ℓ : 𝓞 Ω) ∈ P →
+      ∃ (ν : Fin t) (ρ : Gal(Ω/k)), ρ • P = Pr ν) ∧
+    ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
+      stabilizer Gal(Ω/k) P ∉ conjFamily D → ∀ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1
 
 variable {ℓ}
 
 /-- **A family of decomposition subgroups of a family of primes covering the primes above the
 exponent covers them.**  An automorphism carrying a prime onto a member of the family carries its
 decomposition subgroup onto the decomposition subgroup of that member. -/
-theorem coversAbove_of_isCoveringPrimeFamily {Pr : Fin t → Ideal (𝓞 Ω)}
-    {D : Fin t → Subgroup Gal(Ω/k)} (h : IsCoveringPrimeFamily ℓ Pr D) : CoversAbove ℓ D := by
+theorem coversAbove_of_isCoveringPrimeFamily {φ : Gal(Ω/k) →* U} {Pr : Fin t → Ideal (𝓞 Ω)}
+    {D : Fin t → Subgroup Gal(Ω/k)} (h : IsCoveringPrimeFamily ℓ φ Pr D) : CoversAbove ℓ D := by
   intro P hPp hPbot hPℓ
-  obtain ⟨ν, ρ, hρ⟩ := h.2.2.2 P hPp hPbot hPℓ
+  obtain ⟨ν, ρ, hρ⟩ := h.2.2.2.1 P hPp hPbot hPℓ
   refine ⟨ν, ρ, fun y hy => ?_⟩
   rw [h.2.2.1 ν, ← hρ]
   refine mem_stabilizer_smul_iff.2 ?_
   rw [show ρ⁻¹ * (ρ * y * ρ⁻¹) * ρ = y from by group]
   exact hy
+
+/-- **A family of decomposition subgroups outside whose conjugates the base realization kills
+inertia covers the primes the base realization ramifies at.**  A decomposition subgroup which is a
+conjugate of a member of the family is carried into that member by the inverse conjugation. -/
+theorem coversRamified_of_isCoveringPrimeFamily {φ : Gal(Ω/k) →* U} {Pr : Fin t → Ideal (𝓞 Ω)}
+    {D : Fin t → Subgroup Gal(Ω/k)} (h : IsCoveringPrimeFamily ℓ φ Pr D) : CoversRamified φ D := by
+  intro P hPp hPbot hram
+  by_cases hmem : stabilizer Gal(Ω/k) P ∈ conjFamily D
+  · obtain ⟨ν, σ, hσ⟩ := hmem
+    refine ⟨ν, σ⁻¹, fun y hy => ?_⟩
+    rw [hσ] at hy
+    obtain ⟨z, hz, rfl⟩ := hy
+    show σ⁻¹ * (σ * z * σ⁻¹) * σ⁻¹⁻¹ ∈ D ν
+    rw [show σ⁻¹ * (σ * z * σ⁻¹) * σ⁻¹⁻¹ = z from by group]
+    exact hz
+  · obtain ⟨x, hx, hx1⟩ := hram
+    exact absurd (h.2.2.2.2 P hPp hPbot hmem x hx) hx1
 
 end Covering
 
@@ -251,7 +284,7 @@ for; the two shrinkings compose, and the solution below is carried down along th
 flat prescription is therefore asked for at every number of letters. -/
 theorem hasSplitCyclicRepair_of_hasConfinedPrescription (hS : IsPGroup ℓ S) (hj : 1 ≤ j)
     (hactφ : ∀ (x : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U n S) j)), x • v = φ x • v)
-    (hℓD : CoversAbove ℓ D)
+    (hℓD : CoversAbove ℓ D) (hramD : CoversRamified φ D)
     (hflat : ∀ m : ℕ,
       letI := galLayerAction ℓ U m S j φ
       HasFlatPrescription ℓ U m S j φ D)
@@ -260,7 +293,7 @@ theorem hasSplitCyclicRepair_of_hasConfinedPrescription (hS : IsPGroup ℓ S) (h
   obtain ⟨N₂, hpres⟩ := hpres
   letI := galLayerAction ℓ U N₂ S j φ
   obtain ⟨N₁, hflat'⟩ :=
-    exists_confinedRamifiedHom_lift_of_hasFlatPrescription (n := N₂) (fun _ _ => rfl) hℓD
+    exists_confinedRamifiedHom_lift_of_hasFlatPrescription (n := N₂) (fun _ _ => rfl) hℓD hramD
       (hflat N₂)
   refine ⟨N₁, fun Φ f₀ hΦsm hΦright hΦP hf₀surj hf₀sm hf₀right hf₀D => ?_⟩
   have hφopen : IsOpen (φ.ker : Set Gal(Ω/k)) := by

@@ -166,7 +166,7 @@ theorem kernelPrescriptionEP_of_namedOrthogonalEP (ℓ : ℕ) [Fact ℓ.Prime] [
     (h : NamedOrthogonalEP ℓ) : KernelPrescriptionEP ℓ := by
   intro S U _ _ _ _ _ _ Ω _ _ _ _ φ t D n j hS hj hmu hcov
   letI := galLayerAction ℓ U n S j φ
-  obtain ⟨Pr, hPrp, hPrbot, hDPr, hcovP⟩ := hcov
+  obtain ⟨Pr, hPrp, hPrbot, hDPr, hcovP, -⟩ := hcov
   by_cases hopen : IsOpen (φ.ker : Set Gal(Ω/ℚ))
   · haveI : IsAlgClosure ℚ Ω := ⟨inferInstance, inferInstance⟩
     have hℓ : ℓ.Prime := Fact.out

@@ -69,7 +69,10 @@ ramified.
 
 The family also covers the primes above the exponent: any such prime is carried onto a member of the
 family by an automorphism over the base, which is what says that a prime whose decomposition
-subgroup escapes every conjugate of every member is a prime away from the exponent. -/
+subgroup escapes every conjugate of every member is a prime away from the exponent.  And it covers
+the primes at which the base realization ramifies: away from the conjugates of the family, inertia
+is killed by the base realization, the places at which the level ramifies being among those the
+family is indexed by. -/
 theorem exists_family_rungData (hodd : 2 < ℓ) (hS : IsPGroup ℓ S)
     {φ : Gal(Ω/k) →* U} (hsurj : Function.Surjective φ) (hsm : IsSmoothHom φ)
     (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K]
@@ -81,6 +84,9 @@ theorem exists_family_rungData (hodd : 2 < ℓ) (hS : IsPGroup ℓ S)
       (∀ ν, (Pr ν).IsPrime) ∧ (∀ ν, Pr ν ≠ ⊥) ∧
       (∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → (ℓ : 𝓞 Ω) ∈ P →
         ∃ (ν : Fin t) (ρ : Gal(Ω/k)), ρ • P = Pr ν) ∧
+      (∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
+        stabilizer Gal(Ω/k) P ∉ conjFamily (fun ν => stabilizer Gal(Ω/k) (Pr ν)) →
+        ∀ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1) ∧
         ((∀ n j : ℕ, 1 ≤ j → HasSolutionRepair ℓ U n S j φ
             (fun ν => stabilizer Gal(Ω/k) (Pr ν)) (IsSplitTotallyRamified ℓ U S φ)) →
           HasRungData ℓ U S φ (fun ν => stabilizer Gal(Ω/k) (Pr ν))
@@ -88,7 +94,7 @@ theorem exists_family_rungData (hodd : 2 < ℓ) (hS : IsPGroup ℓ S)
   haveI : IsAlgClosure k Ω := ⟨inferInstance, inferInstance⟩
   obtain ⟨t, Pr, hPrp, hPrbot, hXPr, hcov, hfeq, hchar, hD⟩ :=
     exists_decomposition_family (S := S) (Fact.out : ℓ.Prime) hodd hsurj hsm K hKker hζ hmu X hX
-  refine ⟨t, Pr, hXPr, hPrp, hPrbot, hcov,
+  refine ⟨t, Pr, hXPr, hPrp, hPrbot, hcov, hD,
     fun hrepair => ⟨?_, ?_, ?_, hfeq, fun n j hj => ⟨?_, ?_, hrepair n j hj⟩⟩⟩
   · exact fun m => levelSolution_zero_isSplitTotallyRamified ℓ U S φ hsurj hsm _ m
   · exact fun n => levelSolution_one_of_hasLevelOneCharacter (hchar n)

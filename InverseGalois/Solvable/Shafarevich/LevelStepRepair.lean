@@ -107,7 +107,7 @@ def SolutionRepairEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
       (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
       (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
-      (∃ Pr : Fin t → Ideal (𝓞 Ω), IsCoveringPrimeFamily ℓ Pr D) →
+      (∃ Pr : Fin t → Ideal (𝓞 Ω), IsCoveringPrimeFamily ℓ φ Pr D) →
     HasSolutionRepair ℓ U n S j φ D (IsSplitTotallyRamified ℓ U S φ)
 
 /-- **The repair of the property, asked to return only a lift.**
@@ -120,7 +120,7 @@ def LiftRepairEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
       (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
       (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
-      (∃ Pr : Fin t → Ideal (𝓞 Ω), IsCoveringPrimeFamily ℓ Pr D) →
+      (∃ Pr : Fin t → Ideal (𝓞 Ω), IsCoveringPrimeFamily ℓ φ Pr D) →
     HasLiftRepair ℓ U n S j φ D
 
 /-- **The repair of the property, with the property read prime by prime.**
@@ -134,7 +134,7 @@ def CyclicRepairEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
       (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
       (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
-      (∃ Pr : Fin t → Ideal (𝓞 Ω), IsCoveringPrimeFamily ℓ Pr D) →
+      (∃ Pr : Fin t → Ideal (𝓞 Ω), IsCoveringPrimeFamily ℓ φ Pr D) →
     HasCyclicRepair ℓ U n S j φ D
 
 /-- **The repair of the property, with total ramification dropped as well.**
@@ -148,7 +148,7 @@ def SplitCyclicRepairEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
       (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
       (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
-      (∃ Pr : Fin t → Ideal (𝓞 Ω), IsCoveringPrimeFamily ℓ Pr D) →
+      (∃ Pr : Fin t → Ideal (𝓞 Ω), IsCoveringPrimeFamily ℓ φ Pr D) →
     HasSplitCyclicRepair ℓ U n S j φ D
 
 /-- **Repairing a lift repairs a solution.**  Past the first layer the layer lies in the Frattini
@@ -253,7 +253,7 @@ def ConfinedPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
       (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
       (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
-      (∃ Pr : Fin t → Ideal (𝓞 Ω), IsCoveringPrimeFamily ℓ Pr D) →
+      (∃ Pr : Fin t → Ideal (𝓞 Ω), IsCoveringPrimeFamily ℓ φ Pr D) →
     letI := galLayerAction ℓ U n S j φ
     HasConfinedPrescription ℓ U n S j φ D
 
@@ -271,7 +271,7 @@ def KernelPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
       (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
       (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
-      (∃ Pr : Fin t → Ideal (𝓞 Ω), IsCoveringPrimeFamily ℓ Pr D) →
+      (∃ Pr : Fin t → Ideal (𝓞 Ω), IsCoveringPrimeFamily ℓ φ Pr D) →
     letI := galLayerAction ℓ U n S j φ
     HasKernelPrescription ℓ U n S j φ D
 
@@ -301,7 +301,7 @@ theorem splitCyclicRepairEP_of_confinedPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prim
   letI := galLayerAction ℓ U n S j φ
   obtain ⟨Pr, hPr⟩ := hcov
   exact hasSplitCyclicRepair_of_hasConfinedPrescription hS hj (fun _ _ => rfl)
-    (coversAbove_of_isCoveringPrimeFamily hPr)
+    (coversAbove_of_isCoveringPrimeFamily hPr) (coversRamified_of_isCoveringPrimeFamily hPr)
     (fun m => hflat S U Ω φ t D m j hS hj hmu) (h S U Ω φ t D n j hS hj hmu ⟨Pr, hPr⟩)
 
 /-! ### The step -/
@@ -339,10 +339,10 @@ theorem genericLevelStepEPRoots_of_solutionRepairEP (ℓ : ℕ) [Fact ℓ.Prime]
   have hmu : ∀ y : Ωˣ, y ^ (ℓ * ℓ) = 1 → ∀ σ ∈ φ.ker, σ • y = y := by
     refine fun y hy => hmuE y ?_
     rw [pow_mul, hy, one_pow]
-  obtain ⟨t, Pr, -, hPrp, hPrbot, hcov, hdata⟩ :=
+  obtain ⟨t, Pr, -, hPrp, hPrbot, hcov, hD, hdata⟩ :=
     exists_family_rungData hodd hS hsurj hsm K hKker hζ hmu ∅ Set.finite_empty
   exact ⟨t, _, _, _, hdata fun n j hj =>
-    h S U Ω φ t _ n j hS hj hmuE ⟨Pr, hPrp, hPrbot, fun _ => rfl, hcov⟩⟩
+    h S U Ω φ t _ n j hS hj hmuE ⟨Pr, hPrp, hPrbot, fun _ => rfl, hcov, hD⟩⟩
 
 /-- **The step of the ladder, in exchange for the repair of a lift alone.** -/
 theorem genericLevelStepEPRoots_of_liftRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (hodd : 2 < ℓ)
