@@ -28,17 +28,20 @@ So the arithmetic input is a single statement about the level: given a finite le
 finite family of places of the level lying in distinct orbits, and a class prescribed at each of
 them in each coordinate, there is a family of units of the level which is a local power above the
 exponent, carries the prescribed classes at the named places, dies at every proper conjugate of
-them, fixes the roots the finite family is asked about, and at every other place where some member
-has order not divisible by the exponent either sits over a named place or has that place completely
-decomposed in the given finite level with a single coordinate surviving.  That is the arithmetic
-input, and it buys the prescription outright.
+them, dies at a further prescribed finite set of places the named ones avoid, and at every other
+place where some member has order not divisible by the exponent either sits over a named place or
+has that place completely decomposed in the given finite level with a single coordinate surviving.
+That is the arithmetic input, and it buys the prescription outright: the further finite set is taken
+to be the orbit of the places below the given finite family of decomposition subgroups, and the
+named places avoid it exactly because no named prime is allowed to sit over that family.
 
 ## Main definitions
 
 * `InverseGalois.Shafarevich.HasPrescribedUnits` — **a family of units of a level can be prescribed
-  local classes at finitely many places at once, be a local power above the exponent and at the
-  proper conjugates of those places, avoid a finite family of subgroups, and be confined elsewhere
-  to places sitting over the named ones or completely decomposed in a given finite level.**
+  local classes at finitely many places at once, be a local power above the exponent, at a
+  prescribed finite set of places the named ones avoid and at the proper conjugates of the named
+  ones, and be confined elsewhere to places sitting over the named ones or completely decomposed in
+  a given finite level.**
 
 ## Main results
 
@@ -63,9 +66,9 @@ section Units
 variable {k Ω : Type} [Field k] [Field Ω] [Algebra k Ω]
 
 /-- **A family of units of a level can be prescribed local classes at finitely many places at once,
-be a local power above the exponent and at the proper conjugates of those places, avoid a finite
-family of subgroups, and be confined elsewhere to places sitting over the named ones or completely
-decomposed in a given finite level.**
+be a local power above the exponent, at a prescribed finite set of places avoided by the named ones
+and at the proper conjugates of the named ones, and be confined elsewhere to places sitting over the
+named ones or completely decomposed in a given finite level.**
 
 The places are named by an arbitrary finite index type, are asked to be distinct and to stay
 distinct from one another under every proper automorphism of the level, and one class modulo
@@ -77,25 +80,29 @@ the symbol is alternating.  Naming the line by a unit rather than by a class is 
 at the places of one orbit be carried into one another, an automorphism of the level moving a unit
 without moving the place it is read at.
 
+The set of places at which the family is asked to be a local power is prescribed along with the
+named places and is asked to avoid them, which is the only thing that keeps the two demands from
+colliding: a place carrying a nontrivial class is not a place the family is a local power at.
+
 The finite level in which the leftover places are asked to be completely decomposed is part of the
 demand, so that a level cutting out any prescribed finite amount of arithmetic may be named before
 the family is chosen. -/
-def HasPrescribedUnits (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K] {t : ℕ}
-    (D : Fin t → Subgroup Gal(Ω/k)) : Prop :=
+def HasPrescribedUnits (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
   ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → K ≤ E →
     ∀ (ι : Type) [Finite ι] (w : ι → HeightOneSpectrum (𝓞 ↥K)), Function.Injective w →
       (∀ (μ ν : ι) (σ : Gal(↥K/k)), σ ≠ 1 → σ • w μ ≠ w ν) →
+      ∀ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)), (∀ μ : ι, w μ ∉ Tz) →
         ∀ (d : ℕ) (c : (μ : ι) → Fin d → localClasses (w μ) ℓ),
           (∀ μ : ι, ∃ u : (↥K)ˣ,
             ∀ q : Fin d, c μ q ∈ Subgroup.zpowers (localClassHom (w μ) ℓ u)) →
           ∃ z : Fin d → (↥K)ˣ,
             (∀ (q : Fin d) (v : HeightOneSpectrum (𝓞 ↥K)), (ℓ : 𝓞 ↥K) ∈ v.asIdeal →
               localClassHom v ℓ (z q) = 1) ∧
+            (∀ (q : Fin d) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz →
+              localClassHom v ℓ (z q) = 1) ∧
             (∀ (μ : ι) (q : Fin d), localClassHom (w μ) ℓ (z q) = c μ q) ∧
             (∀ (μ : ι) (σ : Gal(↥K/k)), σ ≠ 1 →
               ∀ q : Fin d, localClassHom (σ • w μ) ℓ (z q) = 1) ∧
-            (∀ (ν : Fin t) (ρ y : Gal(Ω/k)), ρ * y * ρ⁻¹ ∈ D ν → ∀ (q : Fin d) (β : Ωˣ),
-              β ^ ℓ = Units.map (algebraMap ↥K Ω : ↥K →* Ω) (z q) → y • β = β) ∧
             ∀ v : HeightOneSpectrum (𝓞 ↥K), (∃ q : Fin d, ¬ (ℓ : ℤ) ∣ placeValue v (z q)) →
               (∃ (μ : ι) (σ : Gal(↥K/k)), v = σ • w μ) ∨
                 ((∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → Ideal.under (𝓞 ↥K) P = v.asIdeal →
@@ -115,6 +122,7 @@ variable {ℓ : ℕ} [Fact ℓ.Prime] {U : Type} [Group U] [Finite U] {n : ℕ} 
 
 attribute [local instance] genericQuotAction zmodTrivialAction
 
+set_option maxHeartbeats 800000 in
 /-- **A level carrying families of units prescribed at named places carries the sharp prescription
 with cyclic values.**
 
@@ -139,7 +147,9 @@ which is finite because the lift is smooth and the level is finite.  No shrinkin
 number of letters is the one asked for and the map of layers is the identity. -/
 theorem hasCyclicKernelPrescription_of_places (K : IntermediateField k Ω) [FiniteDimensional k ↥K]
     [NumberField ↥K] [IsGalois k ↥K] (hKker : K.fixingSubgroup = φ.ker) {ζ : ↥K}
-    (hζ : IsPrimitiveRoot ζ ℓ) (hfam : HasPrescribedUnits ℓ K D) :
+    (hζ : IsPrimitiveRoot ζ ℓ) {Pr : Fin t → Ideal (𝓞 Ω)} (hPrp : ∀ ν, (Pr ν).IsPrime)
+    (hPrbot : ∀ ν, Pr ν ≠ ⊥) (hDPr : ∀ ν, D ν = stabilizer Gal(Ω/k) (Pr ν))
+    (hfam : HasPrescribedUnits ℓ K) :
     HasCyclicKernelPrescription ℓ U n S j φ D := by
   classical
   have hℓ : ℓ.Prime := Fact.out
@@ -160,9 +170,10 @@ theorem hasCyclicKernelPrescription_of_places (K : IntermediateField k Ω) [Fini
   have hkd : IsKummerData ↥K Ω (Multiplicative (ZMod ℓ)) (zmodRootHom hζ) ℓ :=
     isKummerData_zmod hζ hroot
   refine ⟨n, ?_⟩
-  intro _ F ι hιfin Q A a hFsm hQp hQbot hQorb hQker _ _ hAcase hasm hacyc
+  intro _ F ι hιfin Q A a hFsm hQp hQbot hQorb hQker _ _ hAcase hasm hacyc havoid
   haveI := hιfin
   haveI : ∀ μ, (Q μ).IsPrime := hQp
+  haveI : ∀ ν, (Pr ν).IsPrime := hPrp
   -- a finite level on which the given lift and the base realization both die
   obtain ⟨E₀, hE₀fin, -, hE₀le⟩ :=
     exists_fixingSubgroup_le ((isOpenNormal_ker_of_isSmoothHom hFsm).inf
@@ -182,6 +193,31 @@ theorem hasCyclicKernelPrescription_of_places (K : IntermediateField k Ω) [Fini
   have hconj : ∀ (μ ν : ι) (σ : Gal(↥K/k)), σ ≠ 1 →
       σ • placeUnder K (Q μ) (hQbot μ) ≠ placeUnder K (Q ν) (hQbot ν) :=
     fun μ ν σ hσ => placeUnder_smul_ne hKker hQbot hQorb hQker hσ μ ν
+  -- the places carrying the finite family, and the named places avoiding them
+  obtain ⟨Tz, hmemTz, hdisj⟩ : ∃ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)),
+      (∀ (σ : Gal(↥K/k)) (ν : Fin t), σ • placeUnder K (Pr ν) (hPrbot ν) ∈ Tz) ∧
+        ∀ μ : ι, placeUnder K (Q μ) (hQbot μ) ∉ Tz := by
+    refine ⟨Finset.image
+      (fun στ : Gal(↥K/k) × Fin t => στ.1 • placeUnder K (Pr στ.2) (hPrbot στ.2)) Finset.univ,
+      fun σ ν => Finset.mem_image.2 ⟨(σ, ν), Finset.mem_univ _, rfl⟩, ?_⟩
+    intro μ hmem
+    obtain ⟨⟨σ, ν⟩, -, hσν⟩ := Finset.mem_image.1 hmem
+    have hσν' : σ • placeUnder K (Pr ν) (hPrbot ν) = placeUnder K (Q μ) (hQbot μ) := hσν
+    obtain ⟨ρ₀, hρ₀⟩ := restrictNormalHom_surjective_level K σ
+    have hbot : ρ₀ • Pr ν ≠ ⊥ := by
+      intro h0
+      exact hPrbot ν (by simpa using congrArg (fun I : Ideal (𝓞 Ω) => ρ₀⁻¹ • I) h0)
+    have hpl : placeUnder K (ρ₀ • Pr ν) hbot = placeUnder K (Q μ) (hQbot μ) := by
+      refine HeightOneSpectrum.ext ?_
+      rw [placeUnder_asIdeal, ← asIdeal_smul_placeUnder K (hPrbot ν) ρ₀, hρ₀, hσν']
+    obtain ⟨τ, -, hτ⟩ := exists_mem_fixingSubgroup_smul_eq_of_placeUnder_eq K hbot (hQbot μ) hpl
+    obtain ⟨y, hy, hyn⟩ := havoid μ ν (τ * ρ₀)⁻¹
+    have hy' : y ∈ stabilizer Gal(Ω/k) ((τ * ρ₀) • Pr ν) := by
+      rw [mul_smul, ← hτ]
+      exact hy
+    refine hyn ?_
+    rw [hDPr ν, inv_inv]
+    exact mem_stabilizer_smul_iff.1 hy'
   -- the classes the prescribed values name
   have hex : ∀ μ : ι, ∃ (u₀ : (↥K)ˣ)
         (c : Fin (layerDim ℓ (Generic U n S) j) →
@@ -198,15 +234,18 @@ theorem hasCyclicKernelPrescription_of_places (K : IntermediateField k Ω) [Fini
       (fun q e e' => layerCoord_mul e e' q) (hQbot μ) rfl (Or.inl (hAcase μ)) (a μ) (hasm μ)
       (hacyc μ)
   choose u₀ c hcline hc using hex
-  obtain ⟨z, hz1, hz2, hz3, hz5, hz4⟩ := hfam (E₀ ⊔ K) inferInstance hKE ι
-    (fun μ => placeUnder K (Q μ) (hQbot μ)) hinj hconj (layerDim ℓ (Generic U n S) j) c
-    (fun μ => ⟨u₀ μ, hcline μ⟩)
+  obtain ⟨z, hz1, hzT, hz2, hz3, hz4⟩ := hfam (E₀ ⊔ K) inferInstance hKE ι
+    (fun μ => placeUnder K (Q μ) (hQbot μ)) hinj hconj Tz hdisj
+    (layerDim ℓ (Generic U n S) j) c (fun μ => ⟨u₀ μ, hcline μ⟩)
   refine ⟨MonoidHom.id (Generic U n S), isOperatorHom_id, Function.surjective_id,
     kummerKernelHom hKker hkd (layerBasis ℓ (Generic U n S) j) layerBasis_pow_eq_one z,
     isSmooth₁_kummerKernelHom hKker hkd _ _ z, ?_, ?_, ?_, ?_⟩
   · intro ν ρ y hy
-    exact kummerKernelHom_eq_one_of_forall_smul_root_eq hKker hkd _ _ z
-      fun q β hβ => hz5 ν ρ (y : Gal(Ω/k)) hy q β hβ
+    haveI : (ρ⁻¹ • Pr ν).IsPrime := inferInstance
+    exact kummerKernelHom_eq_one_of_mem_stabilizer hKker hkd _ _ z
+      (w := AlgEquiv.restrictNormalHom (F := k) (K₁ := Ω) ↥K ρ⁻¹ • placeUnder K (Pr ν) (hPrbot ν))
+      (asIdeal_smul_placeUnder K (hPrbot ν) ρ⁻¹) (fun q => hzT q _ (hmemTz _ ν))
+      (mem_stabilizer_smul_iff.2 (by rw [inv_inv, ← hDPr ν]; exact hy))
   · intro μ x hx
     rw [layerSubMap_id, MonoidHom.id_apply]
     exact hc μ z (fun q => hz2 μ q) x hx

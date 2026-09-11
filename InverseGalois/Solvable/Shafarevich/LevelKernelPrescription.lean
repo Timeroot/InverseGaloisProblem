@@ -94,6 +94,14 @@ at each prime the
 homomorphism itself brings in, where it is asked in addition to be cyclic on the decomposition
 subgroup and the given lift to kill that subgroup outright.
 
+No named prime is allowed to sit over the finite family: its decomposition subgroup is asked to
+escape every conjugate of every subgroup of the family.  Without that the two demands would collide,
+the homomorphism being asked to vanish along the family and to take a prescribed value along the
+decomposition subgroup of the named prime.  It costs nothing, because a prime the given lift
+ramifies at over the base realization escapes the family of itself: the lift is trivial along it, so
+it is trivial along the decomposition subgroup of any prime sitting over it, and then it does not
+ramify there.
+
 The vanishing along the finite family is asked at every conjugate, which is what makes the average
 vanish along the family itself.  As for the prescription below, the base realization is asked to be
 smooth, its kernel open, that field being a finite extension, and the prescription may spend a
@@ -113,6 +121,8 @@ def HasKernelPrescription : Prop :=
       (∀ μ, A μ = stabilizer Gal(Ω/k) (Q μ)) →
       (∀ μ, IsSmooth₁ ((a μ : ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)) :
         ↥(A μ) → ↥(layerSub ℓ (Generic U N S) j))) →
+      (∀ (μ : ι) (ν : Fin t) (ρ : Gal(Ω/k)),
+        ∃ y ∈ stabilizer Gal(Ω/k) (Q μ), ρ * y * ρ⁻¹ ∉ D ν) →
         ∃ (α : Generic U N S →* Generic U n S) (_ : IsOperatorHom α), Function.Surjective α ∧
           ∃ u : ↥(φ.ker) →* ↥(layerSub ℓ (Generic U n S) j),
             IsSmooth₁ ((u : ↥(φ.ker) →* ↥(layerSub ℓ (Generic U n S) j)) :
@@ -155,6 +165,8 @@ def HasCyclicKernelPrescription : Prop :=
       (∀ μ, IsSmooth₁ ((a μ : ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)) :
         ↥(A μ) → ↥(layerSub ℓ (Generic U N S) j))) →
       (∀ μ, ∃ x₀ : ↥(A μ), ∀ x : ↥(A μ), a μ x ∈ Subgroup.zpowers (a μ x₀)) →
+      (∀ (μ : ι) (ν : Fin t) (ρ : Gal(Ω/k)),
+        ∃ y ∈ stabilizer Gal(Ω/k) (Q μ), ρ * y * ρ⁻¹ ∉ D ν) →
         ∃ (α : Generic U N S →* Generic U n S) (_ : IsOperatorHom α), Function.Surjective α ∧
           ∃ u : ↥(φ.ker) →* ↥(layerSub ℓ (Generic U n S) j),
             IsSmooth₁ ((u : ↥(φ.ker) →* ↥(layerSub ℓ (Generic U n S) j)) :
@@ -184,8 +196,8 @@ theorem hasCyclicKernelPrescription_of_hasKernelPrescription
     (hpres : HasKernelPrescription ℓ U n S j φ D) :
     HasCyclicKernelPrescription ℓ U n S j φ D := by
   obtain ⟨N, hN⟩ := hpres
-  exact ⟨N, fun hopen F ι _ Q A a hF hQp hQbot hQorb hQker hAstab hAker hAcase hasm _ =>
-    hN hopen F ι Q A a hF hQp hQbot hQorb hQker hAstab hAker hAcase hasm⟩
+  exact ⟨N, fun hopen F ι _ Q A a hF hQp hQbot hQorb hQker hAstab hAker hAcase hasm _ havoid =>
+    hN hopen F ι Q A a hF hQp hQbot hQorb hQker hAstab hAker hAcase hasm havoid⟩
 
 omit [Fact ℓ.Prime] [Finite S] [NumberField k] [IsAlgClosed Ω] in
 /-- **Averaging a prescribed homomorphism over the cosets of the kernel of the base realization
@@ -219,9 +231,9 @@ theorem hasConfinedPrescription_of_hasKernelPrescription
   classical
   obtain ⟨N, hpres⟩ := hpres
   refine ⟨N, ?_⟩
-  intro hφopen F ι _ Q A a hFsm hQp hQbot hQorb hQker hAstab hAker hAcase hasm
+  intro hφopen F ι _ Q A a hFsm hQp hQbot hQorb hQker hAstab hAker hAcase hasm havoid
   obtain ⟨α, hα, hαsurj, u, husm, huD, hua, huorb, huram⟩ :=
-    hpres hφopen F ι Q A a hFsm hQp hQbot hQorb hQker hAstab hAker hAcase hasm
+    hpres hφopen F ι Q A a hFsm hQp hQbot hQorb hQker hAstab hAker hAcase hasm havoid
   haveI : Finite (Gal(Ω/k) ⧸ φ.ker) :=
     Finite.of_injective _ (QuotientGroup.kerLift_injective φ)
   haveI : Fintype (Gal(Ω/k) ⧸ φ.ker) := Fintype.ofFinite _

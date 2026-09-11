@@ -152,6 +152,10 @@ named ones, or it is a prime the cocycle brings in by itself, and there it is as
 and the given lift to kill the whole decomposition subgroup — which is what a prime chosen to split
 completely in the field the lift cuts out supplies.
 
+No named prime is allowed to sit over the finite family: its decomposition subgroup is asked to
+escape every conjugate of every subgroup of the family, so that the prescribed values there do not
+collide with the vanishing along the family.
+
 The prescription may spend a shrinking of its own: it announces the number of letters the data is
 read at, and answers with a surjection onto the number asked for and a cocycle at that number, the
 prescribed values being carried across by the map of layers.
@@ -170,6 +174,8 @@ def HasConfinedPrescription : Prop :=
       (∀ μ, A μ = stabilizer Gal(Ω/k) (Q μ)) →
       (∀ μ, IsSmooth₁ ((a μ : ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)) :
         ↥(A μ) → ↥(layerSub ℓ (Generic U N S) j))) →
+      (∀ (μ : ι) (ν : Fin t) (ρ : Gal(Ω/k)),
+        ∃ y ∈ stabilizer Gal(Ω/k) (Q μ), ρ * y * ρ⁻¹ ∉ D ν) →
         ∃ (α : Generic U N S →* Generic U n S) (_ : IsOperatorHom α), Function.Surjective α ∧
           ∃ c : Gal(Ω/k) → ↥(layerSub ℓ (Generic U n S) j), IsMulCocycle₁ c ∧ IsSmooth₁ c ∧
             (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → c x = 1) ∧
@@ -209,6 +215,10 @@ the corrected lift trivial there, so it does not ramify over the base realizatio
 
 Either way the subgroup carrying the prescription is the whole decomposition subgroup, which is what
 lets the sharper prescription be asked for along decomposition subgroups alone.
+
+None of the named primes sits over the finite family, and nothing has to be arranged for that: the
+flattened lift is trivial along the family, hence along the decomposition subgroup of any prime
+sitting over it, and a named prime is one it ramifies at.
 
 At a prime which is not named, the flattened lift does not ramify, so any new ramification of the
 corrected lift is ramification of the cocycle; and there the last clause of the prescription
@@ -385,13 +395,24 @@ theorem hasSplitCyclicRepair_of_hasConfinedPrescription
     · refine absurd ⟨ρ⁻¹, ?_⟩ (hμmin ν h)
       rw [← hρ]
       exact (inv_smul_smul ρ (Pr μ)).symm
+  have havoid : ∀ (μ : {μ : Fin s // RamifiesAt φ f (Pr μ) ∧
+        ∀ ν, ν < μ → ¬∃ ρ : Gal(Ω/k), Pr μ = ρ • Pr ν}) (ν : Fin t) (ρ : Gal(Ω/k)),
+      ∃ y ∈ stabilizer Gal(Ω/k) (Pr (μ : Fin s)), ρ * y * ρ⁻¹ ∉ D ν := by
+    rintro ⟨μ, hμ, -⟩ ν ρ
+    obtain ⟨x, hxI, hxφ, hx1⟩ := id hμ
+    refine ⟨x, Ideal.inertia_le_stabilizer (Pr μ) hxI, fun hmem => hx1 ?_⟩
+    have hφc : φ (ρ * x * ρ⁻¹) = 1 := by
+      rw [_root_.map_mul, _root_.map_mul, _root_.map_inv, hxφ, mul_one, mul_inv_cancel]
+    have hconj : f (ρ * x * ρ⁻¹) = 1 := hfD ν _ hmem hφc
+    rw [_root_.map_mul, _root_.map_mul, _root_.map_inv] at hconj
+    simpa using hconj
   obtain ⟨α₂, hα₂, hα₂surj, c, hc, hcs, hcD, hca, hcram⟩ :=
     hpres hφopen f {μ : Fin s // RamifiesAt φ f (Pr μ) ∧
         ∀ ν, ν < μ → ¬∃ ρ : Gal(Ω/k), Pr μ = ρ • Pr ν} (fun μ => Pr (μ : Fin s))
       (fun μ => A ⟨μ.1, μ.2.1⟩) (fun μ => a ⟨μ.1, μ.2.1⟩) hfsm
       (fun μ => hPrp _) (fun μ => hPrbot _) hQorb (fun μ => hQker ⟨μ.1, μ.2.1⟩)
       (fun μ => hAstab ⟨μ.1, μ.2.1⟩) (fun μ => hAker ⟨μ.1, μ.2.1⟩)
-      (fun μ => hAcase ⟨μ.1, μ.2.1⟩) (fun μ => hasm ⟨μ.1, μ.2.1⟩)
+      (fun μ => hAcase ⟨μ.1, μ.2.1⟩) (fun μ => hasm ⟨μ.1, μ.2.1⟩) havoid
   have hΦ₂right : ∀ x, SemidirectProduct.rightHom
       (((layerSemidirectMap ℓ hα₂ j).comp Φ₁) x) = φ x := fun x => hΦ₁right x
   have hf₂right : ∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom
