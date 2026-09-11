@@ -87,6 +87,7 @@ import InverseGalois.Solvable.Shafarevich.KernelClauses
 import InverseGalois.Solvable.Shafarevich.KernelCyclic
 import InverseGalois.Solvable.Shafarevich.KernelPrimeCyclic
 import InverseGalois.Solvable.Shafarevich.KernelPlaces
+import InverseGalois.Solvable.Shafarevich.KernelArith
 
 /-!
 # Shafarevich's theorem
@@ -793,4 +794,19 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   named prime; and the finite level asked for is the one cut out by the kernel of the given lift
   together with the level itself.  **A level carrying such families of units carries the sharp
   prescription**, with no shrinking spent.
+* `InverseGalois.Solvable.Shafarevich.KernelArith` buys those families from the arithmetic.  The
+  named places are read as a finite set of places and the classes prescribed at them as a family
+  indexed by that set, the lines they lie on are spread over the orbits of the named places, and the
+  finite level the leftover places are asked to be decomposed in is replaced by its normal closure
+  over the base â€” harmlessly, since a place decomposed in the larger field is decomposed in the
+  smaller one, and only finitely many places ramify in it, a place ramifying exactly when the prime
+  below it divides the nonzero different.  With that bookkeeping the two-place construction over a
+  number field produces the family, and its four conclusions are the four clauses of the demand read
+  back through the naming.  What the construction does not carry by itself is the reciprocity
+  residue: the product of the power residue symbols of a global unit against the prescribed classes
+  vanishes over all the places at once, and away from the named places the prescription contributes
+  nothing, so what is left is a pairing condition between the classes named at the named places and
+  the units of the level which become exponent-th powers in a finite level.  **A level whose
+  prescribed classes pair trivially with those units carries the families of units the prescription
+  is made of.**
 -/
