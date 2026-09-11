@@ -494,9 +494,11 @@ import InverseGalois.CFT.PoitouTate.LocalOrdKummer
 import InverseGalois.CFT.PoitouTate.LocalOrdOutside
 import InverseGalois.CFT.PoitouTate.LocalOrdPlace
 import InverseGalois.CFT.PoitouTate.NamedFamily
+import InverseGalois.CFT.PoitouTate.NamedFamilySplit
 import InverseGalois.CFT.PoitouTate.NormLocalPower
 import InverseGalois.CFT.PoitouTate.OrbitCoboundary
 import InverseGalois.CFT.PoitouTate.OrbitLine
+import InverseGalois.CFT.PoitouTate.PartPrescribed
 import InverseGalois.CFT.PoitouTate.PlaceUniformiser
 import InverseGalois.CFT.PoitouTate.Prescribed
 import InverseGalois.CFT.PoitouTate.RadicalPlace
@@ -8110,6 +8112,26 @@ it that are available here.
   product of the norm residue symbols, to every `S`-unit which is a local power at the infinite
   places.  So: **a naming of local classes at finitely many places, orthogonal in that sense, has a
   family of pairs of places and of units realising it coordinate by coordinate.**
+
+* `InverseGalois.CFT.PoitouTate.PartPrescribed` weakens what the duality asks by asking less of the
+  prescription.  Prescribing the class at every place of `S` at once is the maximal demand, and the
+  reciprocity obstruction is correspondingly the full one; prescribing it only at part of them and
+  leaving it free at the rest is dual to the opposite local condition, so the `S`-units a
+  prescription must be tested against are only those whose class is trivial at every free place.
+  Should the free places see the `S`-units well enough to force their classes trivial where the
+  prescription is made, every factor of the product of symbols has a trivial argument and the
+  obstruction is empty.  So: **a prescription made at part of the places of `S`, at places which the
+  remaining ones detect the `S`-units at, is the class of an `S`-unit there, with no orthogonality
+  left to check.**
+
+* `InverseGalois.CFT.PoitouTate.NamedFamilySplit` hands that to the construction.  The set of places
+  the family is built over may be larger than the set the prescription is read on, provided the
+  extra ones are completely split in the upper field: a place with trivial decomposition group
+  carries no information about the upper field, so the construction repairs by itself whatever the
+  input unit does there.  The prescription therefore needs to be realised only on the smaller set,
+  and the places of the larger one are exactly the free places the detection is run at.  So: **a
+  naming whose free, completely split places detect the `S`-units has a family of pairs of places
+  and of units realising it, with no orthogonality hypothesis at all.**
 
 * `InverseGalois.CFT.Residue.AlgClosed` gives an algebraic closure the residue fields it looks as
   though it has none of.  Its ring of integers has nonzero primes, each of them lies over a nonzero
