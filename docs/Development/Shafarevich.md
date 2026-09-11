@@ -21312,3 +21312,41 @@ step is exactly repair 2 of §1.88: either arrange the flat lift to be cyclic on
 subgroups of the named primes (an extra hypothesis on `f`, which is how Schmidt–Wingberg's condition
 (ii) reads), or replace the per-place line hypothesis by the product relation over `Tr` and
 discharge it with the global product formula.
+
+## 1.91  Where `HasPrescribedUnits` will come from
+
+`HasPrescribedUnits` is now shaped to be answered by the two-place chain, whose entry point is
+`exists_isTwoPlaceFamily_zpowers` (`CFT/PoitouTate/SplitFamily.lean:619`).  The dictionary, clause by
+clause, with `K` the level and `w μ` the named places:
+
+| `HasPrescribedUnits` | `exists_isTwoPlaceFamily_zpowers` |
+| --- | --- |
+| the named places `w μ` and their conjugates | `Tr` = the Galois orbit of `{w μ}`, stable by `hTrst` |
+| `T` | `Tr` together with whatever the chain needs strictly between; a genuine `Tr ⊊ T` is required (finding 3331) |
+| places above `ℓ`, where the units are local powers | forced into `Tn` by `hpTn`, with `c i v = 1` there by `hcn` |
+| the prescribed classes `c μ q` | `c q (w μ)`, with `q` the coordinate index `i` |
+| triviality at the proper conjugates `σ • w μ` | `hcfree` — `c i (σ • v) = 1 ∨ c i v = 1` |
+| triviality outside `T` | `hcT` |
+| the line hypothesis `c μ q ∈ Subgroup.zpowers (D₀ μ)` | `hDc`, with `D` the Galois-equivariant extension of `D₀` |
+| the leftover places with a single coordinate surviving | the auxiliary pairs `Q i`, `R i` of the family |
+| complete decomposition in the finite level `E` | `hsplit`, taking `Ω` of the chain to be the field `E` cuts out |
+
+Two things have to be built before the chain can be called.
+
+1. **The line family.**  `hDgal` asks `Subgroup.zpowers (D (σ • v)) = Subgroup.zpowers
+   (localClassesGalEquiv σ v p (D v))`, so `D₀`, given only at the named places, must be transported
+   across the orbit.  This is well defined precisely because the orbits are free: the hypothesis
+   `∀ μ ν σ, σ ≠ 1 → σ • w μ ≠ w ν` of `HasPrescribedUnits` says exactly that the stabiliser of each
+   `w μ` in `Gal(K/k)` is trivial and that distinct named places lie in distinct orbits, so the `σ`
+   carrying `w μ` to a given place of the orbit is unique and `D (σ • w μ) := localClassesGalEquiv σ
+   _ _ (D₀ μ)` is unambiguous.  Off the orbit take `D v := 1`, which is consistent with `hcT`.
+2. **The identification of the two settings.**  The chain is stated for a number field `K` with
+   `Gal(K/k)`, the prescription for an `IntermediateField k Ω`; the translation is the dictionary of
+   finding 3456.
+
+The remaining obstruction on the *consumer* side (§1.90) is unchanged and is the harder of the two:
+in the ramified branch of `hstep` the prescription is `inl (a x) = g x * (f x)⁻¹`, and while
+`g x ∈ Subgroup.zpowers w` and `Φ₁` is cyclic on the decomposition subgroup, the image of the flat
+lift `f` on that subgroup is only an extension of a cyclic group by a part of the layer.  Either the
+lift has to be chosen cyclic there — the shape of Schmidt–Wingberg's condition (ii) — or the
+per-place line hypothesis has to be traded for the product relation over `Tr`.
