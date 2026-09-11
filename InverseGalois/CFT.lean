@@ -494,6 +494,7 @@ import InverseGalois.CFT.PoitouTate.LocalOrdKummer
 import InverseGalois.CFT.PoitouTate.LocalOrdOutside
 import InverseGalois.CFT.PoitouTate.LocalOrdPlace
 import InverseGalois.CFT.PoitouTate.NamedFamily
+import InverseGalois.CFT.PoitouTate.NamedFamilyPower
 import InverseGalois.CFT.PoitouTate.NamedFamilySplit
 import InverseGalois.CFT.PoitouTate.NormLocalPower
 import InverseGalois.CFT.PoitouTate.OrbitCoboundary
@@ -8151,6 +8152,18 @@ it that are available here.
   and the places of the larger one are exactly the free places the detection is run at.  So: **a
   naming whose free, completely split places detect the `S`-units has a family of pairs of places
   and of units realising it, with no orthogonality hypothesis at all.**
+
+* `InverseGalois.CFT.PoitouTate.NamedFamilyPower` asks of the free places only what they can give.
+  Detecting the `S`-units outright is too much: the free places see a unit exactly through its being
+  a power in the upper field, and a unit of the base which is already a power there is invisible to
+  every one of them.  That much, however, is what the detection theorem does deliver, so the
+  reciprocity obstruction may be cut down to it — the product of symbols only ever gets tested
+  against `S`-units which become a power upstairs.  Adjoining the detecting places to the set the
+  family is built over costs nothing, every hypothesis of the construction surviving it: stability
+  under the Galois group, the places above the exponent, representatives for the divisors,
+  and the complete splitting at exactly the added places.  So: **a naming orthogonal to those
+  `S`-units which become a power in the upper field has a family of pairs of places and of units
+  realising it, over a set of places enlarged by the detecting ones.**
 
 * `InverseGalois.CFT.Residue.AlgClosed` gives an algebraic closure the residue fields it looks as
   though it has none of.  Its ring of integers has nonzero primes, each of them lies over a nonzero
