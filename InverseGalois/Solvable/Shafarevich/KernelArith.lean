@@ -22,24 +22,18 @@ Setting the bookkeeping up is a matter of reading the named places as a finite s
 prescribed classes as a family indexed by that finite set, and the lines the classes at one place
 lie on as a family spread over the orbits of the named places, so that the line at the image of a
 place is the image of the line there.  The finite level the leftover places are asked to be
-decomposed in is replaced by its normal closure over the base, which changes nothing: a place
-decomposed in the larger field is decomposed in the smaller one, and the decomposition group of a
-prime of the closure lands in the one of the prime below it.  The places ramified in that closure
-are finitely many, because a place ramifies exactly when the prime below it divides the different
-and a nonzero ideal has finitely many prime divisors.
+decomposed in serves as the auxiliary field of the two-place construction, which is what its being
+Galois over the base is for; the decomposition group of a prime of that level lands in the one of
+the prime below it.  The places ramified in it are finitely many, because a place ramifies exactly
+when the prime below it divides the different and a nonzero ideal has finitely many prime divisors.
 
-What the construction does not carry by itself is the reciprocity residue.  The product of the
-power residue symbols over all the places of a global unit against the prescribed classes vanishes,
-and away from the named places the prescription contributes nothing, so what is left is a condition
-relating the classes named at the named places to the units of the level which become
-exponent-th powers in the auxiliary field.  That condition is named here and is the one arithmetic
-input the prescription still asks for.
-
-## Main definitions
-
-* `InverseGalois.Shafarevich.HasNamedPairing` — the classes prescribed at a finite family of places
-  pair trivially with every unit supported at those places which is an exponent-th power in a given
-  finite level and trivial at every infinite place.
+What the construction asks for beyond the bookkeeping is the reciprocity residue, and that is
+exactly the orthogonality the demand carries along with it.  The product of the power residue
+symbols over all the places of a global unit against the spread prescription runs over a finite set
+of places containing the named ones; away from the named places the spread prescription is trivial,
+so the product collapses to the named places, which is the orthogonality of the naming.  In a
+coordinate beyond the ones prescribed the spread prescription is trivial everywhere and the product
+is empty of content.
 
 ## Main results
 
@@ -50,9 +44,10 @@ input the prescription still asks for.
 * `InverseGalois.Shafarevich.stabilizer_le_fixingSubgroup_of_stabilizer_eq_bot` — **a prime of the
   closure lying over a place with trivial decomposition group in a finite level has its whole
   decomposition group fixing that level.**
-* `InverseGalois.Shafarevich.hasPrescribedUnits_of_hasNamedPairing` — **a level whose prescribed
-  classes pair trivially with the units carries the families of units the prescription is made
-  of.**
+* `InverseGalois.Shafarevich.piPairing_eq_of_support` — **a pairing read against a family supported
+  at the image of an injection is the pairing over the source of that injection.**
+* `InverseGalois.Shafarevich.hasPrescribedUnits` — **every level carries the families of units the
+  prescription is made of.**
 
 ## Tags
 
@@ -145,71 +140,66 @@ theorem stabilizer_le_fixingSubgroup_of_stabilizer_eq_bot {W : IntermediateField
 
 end Decomposition
 
-/-! ### The reciprocity residue -/
+/-! ### A pairing read against a family named at finitely many places -/
+
+section Support
+
+/-- **A pairing on a product of groups, read against a family supported at the image of an
+injection, is the pairing over the source of that injection.**  The factors outside the image
+contribute nothing, the pairing being a homomorphism in its second variable. -/
+theorem piPairing_eq_of_support {Y ι : Type*} [Fintype Y] [Fintype ι] {A : Y → Type*}
+    [∀ y, CommGroup (A y)] {M : Type*} [CommGroup M] (φ : ∀ y, A y →* A y →* M) {e : ι → Y}
+    (he : Function.Injective e) (a b : ∀ y, A y)
+    (hb : ∀ y : Y, (∀ μ : ι, e μ ≠ y) → b y = 1) :
+    piPairing φ a b = piPairing (fun μ => φ (e μ)) (fun μ => a (e μ)) (fun μ => b (e μ)) := by
+  classical
+  simp only [piPairing_apply]
+  have h1 : ∀ y ∈ (Finset.univ : Finset Y), y ∉ Finset.image e Finset.univ →
+      φ y (a y) (b y) = 1 := by
+    intro y _ hy
+    rw [hb y fun μ hμ => hy (Finset.mem_image.2 ⟨μ, Finset.mem_univ μ, hμ⟩), _root_.map_one]
+  rw [← Finset.prod_subset (Finset.subset_univ _) h1,
+    Finset.prod_image fun _ _ _ _ h => he h]
+
+end Support
+
+/-! ### The families of units -/
 
 section Pairing
 
 variable {k Ω : Type} [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsGalois k Ω]
   [IsAlgClosed Ω]
 
-/-- **The classes prescribed at a finite family of places pair trivially with every unit supported
-at those places which is an exponent-th power in a given finite level and trivial at every infinite
-place.**
-
-The product formula makes the power residue symbol of a global unit against a family of local
-classes trivial over all the places at once, and away from the named places the family prescribed
-here contributes nothing.  What is left is a condition on the classes named at the named places,
-read against the units of the level which become exponent-th powers in a finite level named along
-with them; the level enters only through the units it turns into exponent-th powers, so it is asked
-for as a subfield of the closure rather than as an extension of the level. -/
-def HasNamedPairing (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω) [NumberField ↥K]
-    {Pc Ec : HeightOneSpectrum (𝓞 ↥K) → ℕ}
-    (hres : ∀ v : HeightOneSpectrum (𝓞 ↥K), HasResidueChar (v.adicCompletion ↥K) (Pc v) (Ec v))
-    {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ) : Prop :=
-  ∀ W : IntermediateField k Ω, FiniteDimensional k ↥W → K ≤ W →
-    ∀ (Tp Tn : Finset (HeightOneSpectrum (𝓞 ↥K))), Tp ⊆ Tn →
-      ∀ (cl : (w : ↥Tp) → ℕ → localClasses (w : HeightOneSpectrum (𝓞 ↥K)) ℓ) (t : ℕ)
-        (u : ↥(sUnits ↥K (Set.range (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 ↥K))))),
-        (∀ w : InfinitePlace ↥K, infClassHom w ℓ ((u : (↥K)ˣ)) = 1) →
-        (∃ y : Ω, y ∈ W ∧ y ^ ℓ = algebraMap ↥K Ω ((u : (↥K)ˣ) : ↥K)) →
-        localSymbolPiPairing hres hζ (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 ↥K))
-          (sUnitClassHom (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 ↥K)) ℓ u)
-          (fun y => spreadClasses Tp cl t (y : HeightOneSpectrum (𝓞 ↥K))) = 1
-
-/-- **A level whose prescribed classes pair trivially with the units carries the families of units
-the prescription is made of.**
+/-- **Every level carries the families of units the prescription is made of.**
 
 The named places are read as a finite set of places and the classes prescribed at them as a family
 indexed by that set, the transport along the naming being harmless because the naming is injective.
 The lines the classes lie on are named by units of the level, which lets them be spread over the
 orbits of the named places, and the finite level the leftover places are asked to be decomposed in
-is replaced by its normal closure over the base.  With that bookkeeping the two-place construction
-produces the family of units, and each of the four clauses of the demand is one of its four
-conclusions read back through the naming. -/
-theorem hasPrescribedUnits_of_hasNamedPairing {ℓ : ℕ} [NeZero ℓ] (hℓ : ℓ.Prime) (hodd : 2 < ℓ)
+serves as the auxiliary field of the two-place construction, which is what its being Galois over the
+base is for.  With that bookkeeping the two-place construction produces the family of units, and
+each of the four clauses of the demand is one of its four conclusions read back through the naming.
+
+The reciprocity residue the construction asks for is the orthogonality of the naming, read at the
+finite set of places the units are supported at: away from the named places the spread prescription
+is trivial, so the product of the symbols collapses to the named ones.  In a coordinate beyond the
+ones prescribed the spread prescription is trivial everywhere and the product is empty. -/
+theorem hasPrescribedUnits {ℓ : ℕ} [NeZero ℓ] (hℓ : ℓ.Prime) (hodd : 2 < ℓ)
     (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [IsGalois k ↥K] [NumberField ↥K]
     {Pc Ec : HeightOneSpectrum (𝓞 ↥K) → ℕ}
     (hres : ∀ v : HeightOneSpectrum (𝓞 ↥K), HasResidueChar (v.adicCompletion ↥K) (Pc v) (Ec v))
-    {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ) (hpair : HasNamedPairing ℓ K hres hζ) :
-    HasPrescribedUnits ℓ K := by
+    {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ) :
+    HasPrescribedUnits ℓ K hres hζ := by
   classical
-  intro E hEfin hKE ι hι w hwinj hwconj Tz hTz hℓw d c hline
-  haveI := hι
+  intro E hEfin hEgal hKE ι _ w hwinj hwconj Tz hTz hℓw d c hline hnorth
   haveI := hEfin
-  letI : Fintype ι := Fintype.ofFinite ι
-  -- the finite normal level the leftover places are asked to be decomposed in
-  obtain ⟨W, hWdef⟩ : ∃ W : IntermediateField k Ω, W = normalClosure k ↥E Ω := ⟨_, rfl⟩
-  haveI : FiniteDimensional k ↥W := by
-    rw [hWdef]; exact normalClosure.is_finiteDimensional k ↥E Ω
-  haveI : Normal k ↥W := by rw [hWdef]; exact normalClosure.normal k ↥E Ω
-  haveI : IsGalois k ↥W := ⟨⟩
-  haveI : NumberField ↥W := NumberField.of_module_finite k ↥W
-  have hEW : E ≤ W := by rw [hWdef]; exact IntermediateField.le_normalClosure _
-  have hKW : K ≤ W := le_trans hKE hEW
-  letI : Algebra ↥K ↥W := inferInstanceAs (Algebra ↥K ↥(extendScalars hKW))
-  haveI : IsScalarTower k ↥K ↥W := inferInstanceAs (IsScalarTower k ↥K ↥(extendScalars hKW))
-  haveI : IsScalarTower ↥K ↥W Ω := IsScalarTower.of_algebraMap_eq fun _ => rfl
-  haveI : IsGalois ↥K ↥W := IsGalois.tower_top_of_isGalois k ↥K ↥W
+  haveI := hEgal
+  -- the finite level the leftover places are asked to be decomposed in
+  haveI : NumberField ↥E := NumberField.of_module_finite k ↥E
+  letI : Algebra ↥K ↥E := inferInstanceAs (Algebra ↥K ↥(extendScalars hKE))
+  haveI : IsScalarTower k ↥K ↥E := inferInstanceAs (IsScalarTower k ↥K ↥(extendScalars hKE))
+  haveI : IsScalarTower ↥K ↥E Ω := IsScalarTower.of_algebraMap_eq fun _ => rfl
+  haveI : IsGalois ↥K ↥E := IsGalois.tower_top_of_isGalois k ↥K ↥E
   -- the named places, read as a finite set
   obtain ⟨Tp, hTpdef⟩ : ∃ Tp : Finset (HeightOneSpectrum (𝓞 ↥K)),
       Tp = Finset.image w Finset.univ := ⟨_, rfl⟩
@@ -240,6 +230,10 @@ theorem hasPrescribedUnits_of_hasNamedPairing {ℓ : ℕ} [NeZero ℓ] (hℓ : �
     rw [hcldef]
     simp only [dif_pos q.isLt]
     exact htr (idx ⟨w μ, hwm⟩) μ (hidx ⟨w μ, hwm⟩) q
+  have hcltop : ∀ (x : ↥Tp) (t : ℕ), ¬ t < d → cl x t = 1 := by
+    intro x t ht
+    rw [hcldef]
+    simp only [dif_neg ht]
   -- the lines the classes at the named places lie on
   choose aU haU using hline
   obtain ⟨a, hadef⟩ : ∃ a : ↥Tp → (↥K)ˣ, a = fun x => aU (idx x) := ⟨_, rfl⟩
@@ -278,29 +272,57 @@ theorem hasPrescribedUnits_of_hasNamedPairing {ℓ : ℕ} [NeZero ℓ] (hℓ : �
     rw [hTpdef] at hv
     obtain ⟨μ, -, rfl⟩ := Finset.mem_image.1 hv
     exact hTz μ
-  obtain ⟨Tram, hTram⟩ := exists_finset_forall_ramIdx_eq_one ↥K ↥W
-  -- the reciprocity residue
+  obtain ⟨Tram, hTram⟩ := exists_finset_forall_ramIdx_eq_one ↥K ↥E
+  -- the reciprocity residue, read off the orthogonality of the naming
   have horth : ∀ Tn : Finset (HeightOneSpectrum (𝓞 ↥K)), Tp ⊆ Tn → ∀ (t : ℕ)
       (u : ↥(sUnits ↥K (Set.range (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 ↥K))))),
       (∀ y : InfinitePlace ↥K, infClassHom y ℓ ((u : (↥K)ˣ)) = 1) →
-      (∃ y : (↥W)ˣ, Units.map (algebraMap ↥K ↥W : ↥K →* ↥W) ((u : (↥K)ˣ)) = y ^ ℓ) →
+      (∃ y : (↥E)ˣ, Units.map (algebraMap ↥K ↥E : ↥K →* ↥E) ((u : (↥K)ˣ)) = y ^ ℓ) →
       localSymbolPiPairing hres hζ (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 ↥K))
         (sUnitClassHom (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 ↥K)) ℓ u)
         (fun y => spreadClasses Tp cl t (y : HeightOneSpectrum (𝓞 ↥K))) = 1 := by
     intro Tn hsub t u hinf hpow
-    refine hpair W inferInstance hKW Tp Tn hsub cl t u hinf ?_
-    obtain ⟨y, hy⟩ := hpow
-    refine ⟨((y : ↥W) : Ω), (y : ↥W).2, ?_⟩
-    have hval : algebraMap ↥K ↥W ((u : (↥K)ˣ) : ↥K) = ((y : ↥W)) ^ ℓ := by
-      simpa using congrArg Units.val hy
-    have hcoe : ((algebraMap ↥K ↥W ((u : (↥K)ˣ) : ↥K) : ↥W) : Ω) = (((y : ↥W) : Ω)) ^ ℓ := by
-      rw [hval]
-      push_cast
-      ring
-    rw [← hcoe, IsScalarTower.algebraMap_apply ↥K ↥W Ω]
-    rfl
+    by_cases ht : t < d
+    · have hpowE : ∃ y : Ω, y ∈ E ∧ y ^ ℓ = algebraMap ↥K Ω (((u : (↥K)ˣ) : ↥K)) := by
+        obtain ⟨y, hy⟩ := hpow
+        refine ⟨((y : ↥E) : Ω), (y : ↥E).2, ?_⟩
+        have hval : algebraMap ↥K ↥E ((u : (↥K)ˣ) : ↥K) = ((y : ↥E)) ^ ℓ := by
+          simpa using congrArg Units.val hy
+        have hcoe : ((algebraMap ↥K ↥E ((u : (↥K)ˣ) : ↥K) : ↥E) : Ω) = (((y : ↥E) : Ω)) ^ ℓ := by
+          rw [hval]
+          push_cast
+          ring
+        rw [← hcoe, IsScalarTower.algebraMap_apply ↥K ↥E Ω]
+        rfl
+      have hkey := hnorth Tn (fun μ => hsub (hmemTp μ)) ⟨t, ht⟩ u hinf hpowE
+      have hfun : (fun μ : ι => spreadClasses Tp cl t (w μ))
+          = fun μ : ι => c μ ⟨t, ht⟩ := by
+        refine funext fun μ => ?_
+        rw [spreadClasses_of_mem (hmemTp μ) t]
+        exact hclval μ (hmemTp μ) ⟨t, ht⟩
+      have hkey' : localSymbolPiPairing hres hζ w (fun μ => localClassHom (w μ) ℓ ((u : (↥K)ˣ)))
+          (fun μ => spreadClasses Tp cl t (w μ)) = 1 := by
+        rw [hfun]
+        exact hkey
+      have he : Function.Injective (fun μ : ι => (⟨w μ, hsub (hmemTp μ)⟩ : ↥Tn)) :=
+        fun μ ν h => hwinj (congrArg Subtype.val h)
+      have hb : ∀ y : ↥Tn, (∀ μ : ι, (⟨w μ, hsub (hmemTp μ)⟩ : ↥Tn) ≠ y) →
+          spreadClasses Tp cl t (y : HeightOneSpectrum (𝓞 ↥K)) = 1 := by
+        intro y hy
+        refine spreadClasses_of_notMem (fun hc => ?_) t
+        obtain ⟨μ, hμ⟩ := hmem _ hc
+        exact hy μ (Subtype.ext hμ)
+      exact Eq.trans (piPairing_eq_of_support _ he _ _ hb) hkey'
+    · have hfun : (fun y : ↥Tn => spreadClasses Tp cl t (y : HeightOneSpectrum (𝓞 ↥K))) = 1 := by
+        refine funext fun y => ?_
+        show spreadClasses Tp cl t (y : HeightOneSpectrum (𝓞 ↥K)) = 1
+        by_cases hy : (y : HeightOneSpectrum (𝓞 ↥K)) ∈ Tp
+        · rw [spreadClasses_of_mem hy t, hcltop ⟨_, hy⟩ t ht]
+        · exact spreadClasses_of_notMem hy t
+      rw [hfun]
+      exact _root_.map_one _
   obtain ⟨z, hz1, hz2, hz3, hz4⟩ := exists_units_named_prescribed (k := k) (A := Ω) (K := ↥K)
-    (Ω := W) (p := ℓ) hℓ hodd hζ hres (Tp := Tp) (Tz := Tz) (Tram := Tram) hdisj hTram
+    (Ω := E) (p := ℓ) hℓ hodd hζ hres (Tp := Tp) (Tz := Tz) (Tram := Tram) hdisj hTram
     (cl := cl) hfree hcln (D := orbitLine k Tp a ℓ) (orbitLine_zpowers_smul hfree a) hDcl horth d
   refine ⟨fun q => z (q : ℕ), fun q v hv => hz1 q q.isLt v hv, ?_, ?_, ?_⟩
   · intro μ q
@@ -316,7 +338,6 @@ theorem hasPrescribedUnits_of_hasNamedPairing {ℓ : ℕ} [NeZero ℓ] (hℓ : �
         fun σ hσ q => hconj σ hσ q q.isLt⟩
       intro P hPp hPbot hPu
       haveI := hPp
-      refine le_trans ?_ (IntermediateField.fixingSubgroup_le hEW)
       refine stabilizer_le_fixingSubgroup_of_stabilizer_eq_bot hW'st hPbot ?_
       have h1 : Ideal.under (𝓞 k) P = Ideal.under (𝓞 k) v.asIdeal := by
         rw [← hPu, Ideal.under_under]

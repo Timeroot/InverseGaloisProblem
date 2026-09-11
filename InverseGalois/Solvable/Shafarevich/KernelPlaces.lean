@@ -39,6 +39,9 @@ place is never one of them.
 
 ## Main definitions
 
+* `InverseGalois.Shafarevich.IsNamedOrthogonal` — **the classes named at finitely many places are
+  orthogonal, under the product of the power residue symbols, to the units of the level which
+  become exponent-th powers in a given finite level.**
 * `InverseGalois.Shafarevich.HasPrescribedUnits` — **a family of units of a level can be prescribed
   local classes at finitely many places at once, be a local power at a prescribed finite set of
   places the named ones avoid and at the proper conjugates of the named ones, and be confined
@@ -67,6 +70,28 @@ section Units
 
 variable {k Ω : Type} [Field k] [Field Ω] [Algebra k Ω]
 
+/-- **The classes named at finitely many places are orthogonal, under the product of the power
+residue symbols, to the units of the level which become exponent-th powers in a given finite
+level.**
+
+This is everything the reciprocity law has to say about a naming.  The product of the symbols of
+two global units over all the places of the level is trivial, and away from the named places the
+naming contributes nothing, so the product collapses to the named places; the units the naming is
+read against are those supported at any finite set of places containing the named ones, trivial at
+every infinite place, and already an exponent-th power in the finite level named along with them. -/
+def IsNamedOrthogonal (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω) [NumberField ↥K]
+    {Pc Ec : HeightOneSpectrum (𝓞 ↥K) → ℕ}
+    (hres : ∀ v : HeightOneSpectrum (𝓞 ↥K), HasResidueChar (v.adicCompletion ↥K) (Pc v) (Ec v))
+    {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ) (E : IntermediateField k Ω) {ι : Type} [Fintype ι]
+    (w : ι → HeightOneSpectrum (𝓞 ↥K)) {d : ℕ}
+    (c : (μ : ι) → Fin d → localClasses (w μ) ℓ) : Prop :=
+  ∀ Tn : Finset (HeightOneSpectrum (𝓞 ↥K)), (∀ μ : ι, w μ ∈ Tn) → ∀ (q : Fin d)
+    (u : ↥(sUnits ↥K (Set.range (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 ↥K))))),
+    (∀ y : InfinitePlace ↥K, infClassHom y ℓ ((u : (↥K)ˣ)) = 1) →
+    (∃ y : Ω, y ∈ E ∧ y ^ ℓ = algebraMap ↥K Ω (((u : (↥K)ˣ) : ↥K))) →
+    localSymbolPiPairing hres hζ w (fun μ => localClassHom (w μ) ℓ ((u : (↥K)ˣ)))
+      (fun μ => c μ q) = 1
+
 /-- **A family of units of a level can be prescribed local classes at finitely many places at once,
 be a local power at a prescribed finite set of places avoided by the named ones and at the proper
 conjugates of the named ones, and be confined elsewhere to places sitting over the named ones or
@@ -91,16 +116,24 @@ which is the same disjointness read at the exponent.
 
 The finite level in which the leftover places are asked to be completely decomposed is part of the
 demand, so that a level cutting out any prescribed finite amount of arithmetic may be named before
-the family is chosen. -/
-def HasPrescribedUnits (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
-  ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → K ≤ E →
-    ∀ (ι : Type) [Finite ι] (w : ι → HeightOneSpectrum (𝓞 ↥K)), Function.Injective w →
+the family is chosen; it is asked to be Galois over the base, which costs nothing, a level being
+contained in its normal closure and a place decomposed in the larger field decomposed in the
+smaller.  What the family costs is the orthogonality of the naming to the units of the level which
+become exponent-th powers in that finite level, which is the one residue the reciprocity law leaves
+behind. -/
+def HasPrescribedUnits (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω) [NumberField ↥K]
+    {Pc Ec : HeightOneSpectrum (𝓞 ↥K) → ℕ}
+    (hres : ∀ v : HeightOneSpectrum (𝓞 ↥K), HasResidueChar (v.adicCompletion ↥K) (Pc v) (Ec v))
+    {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ) : Prop :=
+  ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
+    ∀ (ι : Type) [Fintype ι] (w : ι → HeightOneSpectrum (𝓞 ↥K)), Function.Injective w →
       (∀ (μ ν : ι) (σ : Gal(↥K/k)), σ ≠ 1 → σ • w μ ≠ w ν) →
       ∀ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)), (∀ μ : ι, w μ ∉ Tz) →
         (∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (w μ).asIdeal) →
         ∀ (d : ℕ) (c : (μ : ι) → Fin d → localClasses (w μ) ℓ),
           (∀ μ : ι, ∃ u : (↥K)ˣ,
             ∀ q : Fin d, c μ q ∈ Subgroup.zpowers (localClassHom (w μ) ℓ u)) →
+          IsNamedOrthogonal ℓ K hres hζ E w c →
           ∃ z : Fin d → (↥K)ˣ,
             (∀ (q : Fin d) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz →
               localClassHom v ℓ (z q) = 1) ∧
@@ -120,8 +153,8 @@ end Units
 
 section Places
 
-variable {ℓ : ℕ} [Fact ℓ.Prime] {U : Type} [Group U] [Finite U] {n : ℕ} {S : Type} [Group S]
-  [Finite S] {j : ℕ} {k Ω : Type} [Field k] [Field Ω] [Algebra k Ω]
+variable {ℓ : ℕ} [Fact ℓ.Prime] [NeZero ℓ] {U : Type} [Group U] [Finite U] {n : ℕ} {S : Type}
+  [Group S] [Finite S] {j : ℕ} {k Ω : Type} [Field k] [Field Ω] [Algebra k Ω]
   [IsGalois k Ω] [IsAlgClosed Ω] {φ : Gal(Ω/k) →* U} {t : ℕ} {D : Fin t → Subgroup Gal(Ω/k)}
 
 attribute [local instance] genericQuotAction zmodTrivialAction
@@ -151,46 +184,57 @@ below the given finite family of decomposition subgroups.  The named places avoi
 named prime sits over that family, and the places above the exponent are among it by hypothesis,
 which is what makes the assembled homomorphism unramified there.
 
-The finite level is the one cut out by the kernel of the given lift together with the level itself,
-which is finite because the lift is smooth and the level is finite.  No shrinking is spent: the
-number of letters is the one asked for and the map of layers is the identity. -/
+The finite level is the normal closure of the one cut out by the kernel of the given lift together
+with the level itself, which is finite because the lift is smooth and the level is finite.  No
+shrinking is spent: the number of letters is the one asked for and the map of layers is the
+identity.
+
+The orthogonality of the classes named at the named places to the units of the level which become
+powers in that finite level is the one thing not read off the family; it is asked of the classes the
+prescribed values name, which is where the reciprocity law meets the prescription. -/
 theorem hasKernelPrescription_of_places (K : IntermediateField k Ω) [FiniteDimensional k ↥K]
     [NumberField ↥K] [IsGalois k ↥K] (hKker : K.fixingSubgroup = φ.ker) {ζ : ↥K}
-    (hζ : IsPrimitiveRoot ζ ℓ) {Pr : Fin t → Ideal (𝓞 Ω)} (hPrp : ∀ ν, (Pr ν).IsPrime)
+    (hζ : IsPrimitiveRoot ζ ℓ)
+    (hkd : IsKummerData ↥K Ω (Multiplicative (ZMod ℓ)) (zmodRootHom hζ) ℓ)
+    {Pc Ec : HeightOneSpectrum (𝓞 ↥K) → ℕ}
+    (hres : ∀ v : HeightOneSpectrum (𝓞 ↥K), HasResidueChar (v.adicCompletion ↥K) (Pc v) (Ec v))
+    {Pr : Fin t → Ideal (𝓞 Ω)} (hPrp : ∀ ν, (Pr ν).IsPrime)
     (hPrbot : ∀ ν, Pr ν ≠ ⊥) (hDPr : ∀ ν, D ν = stabilizer Gal(Ω/k) (Pr ν))
     (hℓPr : ∀ v : HeightOneSpectrum (𝓞 ↥K), (ℓ : 𝓞 ↥K) ∈ v.asIdeal →
       ∃ (σ : Gal(↥K/k)) (ν : Fin t), v = σ • placeUnder K (Pr ν) (hPrbot ν))
-    (hfam : HasPrescribedUnits ℓ K) :
+    (horth : ∀ (ι : Type) [Fintype ι] (Q : ι → Ideal (𝓞 Ω)) (_ : ∀ μ, (Q μ).IsPrime)
+      (hQbot : ∀ μ, Q μ ≠ ⊥)
+      (A : ι → Subgroup Gal(Ω/k))
+      (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U n S) j))
+      (c : (μ : ι) → Fin (layerDim ℓ (Generic U n S) j) →
+        localClasses (placeUnder K (Q μ) (hQbot μ)) ℓ),
+      (∀ (μ : ι) (z : Fin (layerDim ℓ (Generic U n S) j) → (↥K)ˣ),
+        (∀ q, localClassHom (placeUnder K (Q μ) (hQbot μ)) ℓ (z q) = c μ q) →
+        ∀ (x : ↥(A μ)) (hx : (x : Gal(Ω/k)) ∈ φ.ker),
+          kummerKernelHom hKker hkd (layerBasis ℓ (Generic U n S) j) layerBasis_pow_eq_one z
+            ⟨(x : Gal(Ω/k)), hx⟩ = a μ x) →
+      ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
+        IsNamedOrthogonal ℓ K hres hζ E (fun μ => placeUnder K (Q μ) (hQbot μ)) c)
+    (hfam : HasPrescribedUnits ℓ K hres hζ) :
     HasKernelPrescription ℓ U n S j φ D := by
   classical
   have hℓ : ℓ.Prime := Fact.out
-  haveI : NeZero ℓ := ⟨hℓ.ne_zero⟩
   haveI : IsGalois ↥K Ω := IsGalois.tower_top_of_isGalois k ↥K Ω
   have hanti : ∀ E₁ E₂ : IntermediateField k Ω, E₁ ≤ E₂ →
       E₂.fixingSubgroup ≤ E₁.fixingSubgroup := fun _ _ h => fixingSubgroup_antitone h
-  have hroot : ∀ x : (↥K)ˣ, ∃ β : Ωˣ, β ^ ℓ = Units.map (algebraMap ↥K Ω : ↥K →* Ω) x := by
-    intro x
-    obtain ⟨y, hy⟩ := IsAlgClosed.exists_pow_nat_eq (algebraMap ↥K Ω (x : ↥K)) hℓ.pos
-    have hy0 : y ≠ 0 := by
-      intro h0
-      rw [h0, zero_pow hℓ.ne_zero] at hy
-      exact (map_ne_zero_iff _ (algebraMap ↥K Ω).injective).2 x.ne_zero hy.symm
-    refine ⟨Units.mk0 y hy0, Units.ext ?_⟩
-    rw [Units.val_pow_eq_pow_val, Units.coe_map]
-    exact hy
-  have hkd : IsKummerData ↥K Ω (Multiplicative (ZMod ℓ)) (zmodRootHom hζ) ℓ :=
-    isKummerData_zmod hζ hroot
   refine ⟨n, ?_⟩
   intro _ F ι hιfin Q A a hFsm hQp hQbot hQorb hQker _ _ hAcase hasm hacyc havoid
   haveI := hιfin
   haveI : ∀ μ, (Q μ).IsPrime := hQp
   haveI : ∀ ν, (Pr ν).IsPrime := hPrp
   -- a finite level on which the given lift and the base realization both die
-  obtain ⟨E₀, hE₀fin, -, hE₀le⟩ :=
+  obtain ⟨E₀, hE₀fin, hE₀gal, hE₀le⟩ :=
     exists_fixingSubgroup_le ((isOpenNormal_ker_of_isSmoothHom hFsm).inf
       (isOpenNormal_fixingSubgroup K))
   haveI := hE₀fin
+  haveI := hE₀gal
   haveI : FiniteDimensional k ↥(E₀ ⊔ K) := inferInstance
+  haveI : IsGalois k ↥(E₀ ⊔ K) := ⟨⟩
   have hKE : K ≤ E₀ ⊔ K := le_sup_right
   have hEF : (E₀ ⊔ K).fixingSubgroup ≤ F.ker := fun x hx =>
     (Subgroup.mem_inf.1 (hE₀le (hanti E₀ (E₀ ⊔ K) le_sup_left hx))).1
@@ -249,9 +293,11 @@ theorem hasKernelPrescription_of_places (K : IntermediateField k Ω) [FiniteDime
     intro μ hmem
     obtain ⟨σ, ν, hσν⟩ := hℓPr _ hmem
     exact hdisj μ (hσν ▸ hmemTz σ ν)
-  obtain ⟨z, hzT, hz2, hz3, hz4⟩ := hfam (E₀ ⊔ K) inferInstance hKE ι
+  letI : Fintype ι := Fintype.ofFinite ι
+  obtain ⟨z, hzT, hz2, hz3, hz4⟩ := hfam (E₀ ⊔ K) inferInstance inferInstance hKE ι
     (fun μ => placeUnder K (Q μ) (hQbot μ)) hinj hconj Tz hdisj hdisjℓ
     (layerDim ℓ (Generic U n S) j) c (fun μ => ⟨u₀ μ, hcline μ⟩)
+    (horth ι Q hQp hQbot A a c hc (E₀ ⊔ K) inferInstance inferInstance hKE)
   have hz1 : ∀ (q : Fin (layerDim ℓ (Generic U n S) j)) (v : HeightOneSpectrum (𝓞 ↥K)),
       (ℓ : 𝓞 ↥K) ∈ v.asIdeal → localClassHom v ℓ (z q) = 1 := by
     intro q v hv
