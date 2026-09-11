@@ -496,6 +496,7 @@ import InverseGalois.CFT.PoitouTate.LocalOrdPlace
 import InverseGalois.CFT.PoitouTate.NamedFamily
 import InverseGalois.CFT.PoitouTate.NormLocalPower
 import InverseGalois.CFT.PoitouTate.OrbitCoboundary
+import InverseGalois.CFT.PoitouTate.OrbitLine
 import InverseGalois.CFT.PoitouTate.PlaceUniformiser
 import InverseGalois.CFT.PoitouTate.Prescribed
 import InverseGalois.CFT.PoitouTate.RadicalPlace
@@ -7682,6 +7683,19 @@ it that are available here.
   its image, preserves the valuation modulo the exponent and **carries the unramified classes onto
   the unramified classes**, so a prescription of local behaviour transports along the Galois group
   with nothing lost.
+
+* `InverseGalois.CFT.PoitouTate.OrbitLine` spreads a family of lines named at a family of places
+  over the orbits of those places.  A prescription allowed to be ramified where it is carried is
+  answered only when the classes prescribed at one place lie on a single line and the lines at the
+  places of one orbit are carried into one another by the identification of the classes, so a
+  family named at chosen places has to be extended equivariantly; that is unambiguous exactly when
+  the orbits are free, no automorphism other than the identity carrying a named place to a named
+  place.  Transporting a generator along the identification would ask for its composition law,
+  whose two sides sit at the two sides of the associativity of the action and so differ by a
+  transport of the classes along an equality of places; **carrying instead an element of the number
+  field whose class the generator is avoids that transport altogether**, a place entering the class
+  of an element only as an index, and the composition law becomes the associativity of the action
+  on the units.
 
 * `InverseGalois.CFT.PoitouTate.ClosingChain` closes the construction.  The number wanted is a
   product of two members of a sequence of units of the extension, each ramified at a single place
