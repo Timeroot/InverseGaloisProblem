@@ -77,7 +77,7 @@ Shafarevich's theorem, embedding problem, Krull topology, level, roots of unity
 
 namespace Shafarevich
 
-open InverseGalois.CFT InverseGalois.Shafarevich
+open InverseGalois.CFT InverseGalois.Shafarevich NumberField
 
 set_option synthInstance.maxHeartbeats 800000
 set_option maxHeartbeats 1600000
@@ -95,13 +95,14 @@ one the family is built for, that the field a solution cuts out ramify only at p
 base field splits completely and the local extension is cyclic and totally ramified.  The base
 realization is asked to fix the roots of unity of order the square of the prime times the exponent
 of the test group, which is what the restricted step of the ladder puts into it, and the family is
-asked to cover the primes above the prime, which is what the family produced from a level does. -/
+asked to be the family of decomposition subgroups of a family of primes covering the primes above
+the prime, which is what the family produced from a level is. -/
 def SolutionRepairEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
   ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
       (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
       (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
-      CoversAbove ℓ D →
+      (∃ Pr : Fin t → Ideal (𝓞 Ω), IsCoveringPrimeFamily ℓ Pr D) →
     HasSolutionRepair ℓ U n S j φ D (IsSplitTotallyRamified ℓ U S φ)
 
 /-- **The repair of the property, asked to return only a lift.**
@@ -114,7 +115,7 @@ def LiftRepairEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
       (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
       (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
-      CoversAbove ℓ D →
+      (∃ Pr : Fin t → Ideal (𝓞 Ω), IsCoveringPrimeFamily ℓ Pr D) →
     HasLiftRepair ℓ U n S j φ D
 
 /-- **The repair of the property, with the property read prime by prime.**
@@ -128,7 +129,7 @@ def CyclicRepairEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
       (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
       (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
-      CoversAbove ℓ D →
+      (∃ Pr : Fin t → Ideal (𝓞 Ω), IsCoveringPrimeFamily ℓ Pr D) →
     HasCyclicRepair ℓ U n S j φ D
 
 /-- **The repair of the property, with total ramification dropped as well.**
@@ -142,7 +143,7 @@ def SplitCyclicRepairEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
       (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
       (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
-      CoversAbove ℓ D →
+      (∃ Pr : Fin t → Ideal (𝓞 Ω), IsCoveringPrimeFamily ℓ Pr D) →
     HasSplitCyclicRepair ℓ U n S j φ D
 
 /-- **Repairing a lift repairs a solution.**  Past the first layer the layer lies in the Frattini
@@ -200,12 +201,14 @@ primes named in advance and completely decomposed in the field the base realizat
 trivial along the finite family wherever the base realization already is, and ramifying only at
 those named primes or else at primes where the given lift kills the whole decomposition subgroup and
 the cocycle is cyclic.  The prescription announces the number of letters its data is read at and
-answers at the number asked for. -/
+answers at the number asked for, and the finite family is named by the primes it is the family of
+decomposition subgroups of. -/
 def ConfinedPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
   ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
       (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
       (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
+      (∃ Pr : Fin t → Ideal (𝓞 Ω), IsCoveringPrimeFamily ℓ Pr D) →
     letI := galLayerAction ℓ U n S j φ
     HasConfinedPrescription ℓ U n S j φ D
 
@@ -216,12 +219,14 @@ smooth homomorphism into the layer defined on the kernel of the base realization
 being trivial: prescribed along the same subgroups, killing the conjugates of the finite family and
 the decomposition subgroups of all but one prime of each orbit it is allowed to ramify in, and
 cyclic on the decomposition subgroup of each prime it brings in itself.  The prescription announces
-the number of letters its data is read at and answers at the number asked for. -/
+the number of letters its data is read at and answers at the number asked for, and the finite family
+is named by the primes it is the family of decomposition subgroups of. -/
 def KernelPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
   ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
       (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
       (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
+      (∃ Pr : Fin t → Ideal (𝓞 Ω), IsCoveringPrimeFamily ℓ Pr D) →
     letI := galLayerAction ℓ U n S j φ
     HasKernelPrescription ℓ U n S j φ D
 
@@ -231,10 +236,10 @@ averaging a prescribed homomorphism over the cosets of the kernel carries the wh
 back down, the primes it names being completely decomposed there. -/
 theorem confinedPrescriptionEP_of_kernelPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime]
     (h : KernelPrescriptionEP ℓ) : ConfinedPrescriptionEP ℓ := by
-  intro S U _ _ _ _ _ _ Ω _ _ _ _ φ t D n j hS hj hmu
+  intro S U _ _ _ _ _ _ Ω _ _ _ _ φ t D n j hS hj hmu hcov
   letI := galLayerAction ℓ U n S j φ
   exact hasConfinedPrescription_of_hasKernelPrescription (fun _ _ => rfl)
-    (h S U Ω φ t D n j hS hj hmu)
+    (h S U Ω φ t D n j hS hj hmu hcov)
 
 /-- **The repair is bought with two prescriptions in degree one**, the finite family covering the
 primes above the prime.
@@ -249,8 +254,10 @@ theorem splitCyclicRepairEP_of_confinedPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prim
     (hflat : FlatPrescriptionEP ℓ) (h : ConfinedPrescriptionEP ℓ) : SplitCyclicRepairEP ℓ := by
   intro S U _ _ _ _ _ _ Ω _ _ _ _ φ t D n j hS hj hmu hcov
   letI := galLayerAction ℓ U n S j φ
-  exact hasSplitCyclicRepair_of_hasConfinedPrescription hS (fun _ _ => rfl) hcov
-    (fun m => hflat S U Ω φ t D m j hS hj hmu) (h S U Ω φ t D n j hS hj hmu)
+  obtain ⟨Pr, hPr⟩ := hcov
+  exact hasSplitCyclicRepair_of_hasConfinedPrescription hS (fun _ _ => rfl)
+    (coversAbove_of_isCoveringPrimeFamily hPr)
+    (fun m => hflat S U Ω φ t D m j hS hj hmu) (h S U Ω φ t D n j hS hj hmu ⟨Pr, hPr⟩)
 
 /-! ### The step -/
 
@@ -287,9 +294,10 @@ theorem genericLevelStepEPRoots_of_solutionRepairEP (ℓ : ℕ) [Fact ℓ.Prime]
   have hmu : ∀ y : Ωˣ, y ^ (ℓ * ℓ) = 1 → ∀ σ ∈ φ.ker, σ • y = y := by
     refine fun y hy => hmuE y ?_
     rw [pow_mul, hy, one_pow]
-  obtain ⟨t, Pr, -, hcov, hdata⟩ :=
+  obtain ⟨t, Pr, -, hPrp, hPrbot, hcov, hdata⟩ :=
     exists_family_rungData hodd hS hsurj hsm K hKker hζ hmu ∅ Set.finite_empty
-  exact ⟨t, _, _, _, hdata fun n j hj => h S U Ω φ t _ n j hS hj hmuE hcov⟩
+  exact ⟨t, _, _, _, hdata fun n j hj =>
+    h S U Ω φ t _ n j hS hj hmuE ⟨Pr, hPrp, hPrbot, fun _ => rfl, hcov⟩⟩
 
 /-- **The step of the ladder, in exchange for the repair of a lift alone.** -/
 theorem genericLevelStepEPRoots_of_liftRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (hodd : 2 < ℓ)

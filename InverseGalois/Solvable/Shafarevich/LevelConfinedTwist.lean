@@ -52,6 +52,8 @@ shrinkings compose, and the repair announces the number the flattening asks for.
 
 * `InverseGalois.Shafarevich.CoversAbove` — the finite family covers the primes above the exponent,
   the decomposition subgroup of any such prime being carried into a member by a conjugation.
+* `InverseGalois.Shafarevich.IsCoveringPrimeFamily` — the same, read on the family of primes the
+  finite family is the family of decomposition subgroups of.
 * `InverseGalois.Shafarevich.HasConfinedPrescription` — **a smooth one cocycle with values in the
   layer can be prescribed along finitely many subgroups of decomposition subgroups of completely
   decomposed primes at once, be trivial along the finite family, and ramify only where it is
@@ -91,6 +93,33 @@ member of the family is a prime away from the exponent, hence a tame one. -/
 def CoversAbove (D : Fin t → Subgroup Gal(Ω/k)) : Prop :=
   ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → (ℓ : 𝓞 Ω) ∈ P →
     ∃ (ν : Fin t) (ρ : Gal(Ω/k)), ∀ y ∈ stabilizer Gal(Ω/k) P, ρ * y * ρ⁻¹ ∈ D ν
+
+/-- **The finite family is the family of decomposition subgroups of a family of primes covering the
+primes above the exponent**, every prime of the whole extension carrying the exponent being carried
+onto a member of the family of primes by an automorphism over the base.
+
+This is the shape the family the ladder is climbed along actually has, and it is what the arithmetic
+reads the local conditions off: a family of subgroups alone names no places. -/
+def IsCoveringPrimeFamily (Pr : Fin t → Ideal (𝓞 Ω)) (D : Fin t → Subgroup Gal(Ω/k)) : Prop :=
+  (∀ ν, (Pr ν).IsPrime) ∧ (∀ ν, Pr ν ≠ ⊥) ∧
+    (∀ ν, D ν = stabilizer Gal(Ω/k) (Pr ν)) ∧
+    ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → (ℓ : 𝓞 Ω) ∈ P →
+      ∃ (ν : Fin t) (ρ : Gal(Ω/k)), ρ • P = Pr ν
+
+variable {ℓ}
+
+/-- **A family of decomposition subgroups of a family of primes covering the primes above the
+exponent covers them.**  An automorphism carrying a prime onto a member of the family carries its
+decomposition subgroup onto the decomposition subgroup of that member. -/
+theorem coversAbove_of_isCoveringPrimeFamily {Pr : Fin t → Ideal (𝓞 Ω)}
+    {D : Fin t → Subgroup Gal(Ω/k)} (h : IsCoveringPrimeFamily ℓ Pr D) : CoversAbove ℓ D := by
+  intro P hPp hPbot hPℓ
+  obtain ⟨ν, ρ, hρ⟩ := h.2.2.2 P hPp hPbot hPℓ
+  refine ⟨ν, ρ, fun y hy => ?_⟩
+  rw [h.2.2.1 ν, ← hρ]
+  refine mem_stabilizer_smul_iff.2 ?_
+  rw [show ρ⁻¹ * (ρ * y * ρ⁻¹) * ρ = y from by group]
+  exact hy
 
 end Covering
 

@@ -89,6 +89,7 @@ import InverseGalois.Solvable.Shafarevich.KernelCyclic
 import InverseGalois.Solvable.Shafarevich.KernelPrimeCyclic
 import InverseGalois.Solvable.Shafarevich.KernelPlaces
 import InverseGalois.Solvable.Shafarevich.KernelArith
+import InverseGalois.Solvable.Shafarevich.KernelStep
 
 /-!
 # Shafarevich's theorem
@@ -821,4 +822,13 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   the units of the level which become exponent-th powers in a finite level.  **A level whose
   prescribed classes pair trivially with those units carries the families of units the prescription
   is made of.**
+* `InverseGalois.Solvable.Shafarevich.KernelStep` closes the circle over the rationals.  A base
+  realization there cuts out a finite Galois level, the roots of unity of order the prime lie in it
+  because the realization fixes those of order its square, and the finite family the local
+  conditions are read on names the primes whose places below the families of units are prescribed
+  at.  The one thing the level asks of the family beyond its being a family of decomposition
+  subgroups is that it cover the primes above the prime, and a place of the level carrying the prime
+  carries a prime of the whole extension above it, which the family moves onto one of its members.
+  **Every finite Galois level of the rationals containing a primitive root of unity of order the
+  prime carrying such families of units buys the sharp prescription, hence the step of the ladder.**
 -/

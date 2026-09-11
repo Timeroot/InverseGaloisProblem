@@ -67,10 +67,9 @@ solutions is the restriction on their ramification: the field a solution cuts ou
 primes where the base field splits completely and the local extension is cyclic and totally
 ramified.
 
-The family also covers the primes above the exponent: the decomposition subgroup of any such prime
-is carried into a member of the family by a conjugation, which is what says that a prime whose
-decomposition subgroup escapes every conjugate of every member is a prime away from the
-exponent. -/
+The family also covers the primes above the exponent: any such prime is carried onto a member of the
+family by an automorphism over the base, which is what says that a prime whose decomposition
+subgroup escapes every conjugate of every member is a prime away from the exponent. -/
 theorem exists_family_rungData (hodd : 2 < ℓ) (hS : IsPGroup ℓ S)
     {φ : Gal(Ω/k) →* U} (hsurj : Function.Surjective φ) (hsm : IsSmoothHom φ)
     (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K]
@@ -79,9 +78,9 @@ theorem exists_family_rungData (hodd : 2 < ℓ) (hS : IsPGroup ℓ S)
     (X : Set (HeightOneSpectrum (𝓞 ↥K))) (hX : X.Finite) :
     ∃ (t : ℕ) (Pr : Fin t → Ideal (𝓞 Ω)),
       (∀ v ∈ X, ∃ ν, Ideal.under (𝓞 ↥K) (Pr ν) = v.asIdeal) ∧
+      (∀ ν, (Pr ν).IsPrime) ∧ (∀ ν, Pr ν ≠ ⊥) ∧
       (∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → (ℓ : 𝓞 Ω) ∈ P →
-        ∃ (ν : Fin t) (ρ : Gal(Ω/k)), ∀ y ∈ stabilizer Gal(Ω/k) P,
-          ρ * y * ρ⁻¹ ∈ stabilizer Gal(Ω/k) (Pr ν)) ∧
+        ∃ (ν : Fin t) (ρ : Gal(Ω/k)), ρ • P = Pr ν) ∧
         ((∀ n j : ℕ, 1 ≤ j → HasSolutionRepair ℓ U n S j φ
             (fun ν => stabilizer Gal(Ω/k) (Pr ν)) (IsSplitTotallyRamified ℓ U S φ)) →
           HasRungData ℓ U S φ (fun ν => stabilizer Gal(Ω/k) (Pr ν))
@@ -89,7 +88,7 @@ theorem exists_family_rungData (hodd : 2 < ℓ) (hS : IsPGroup ℓ S)
   haveI : IsAlgClosure k Ω := ⟨inferInstance, inferInstance⟩
   obtain ⟨t, Pr, hPrp, hPrbot, hXPr, hcov, hfeq, hchar, hD⟩ :=
     exists_decomposition_family (S := S) (Fact.out : ℓ.Prime) hodd hsurj hsm K hKker hζ hmu X hX
-  refine ⟨t, Pr, hXPr, hcov,
+  refine ⟨t, Pr, hXPr, hPrp, hPrbot, hcov,
     fun hrepair => ⟨?_, ?_, ?_, hfeq, fun n j hj => ⟨?_, ?_, hrepair n j hj⟩⟩⟩
   · exact fun m => levelSolution_zero_isSplitTotallyRamified ℓ U S φ hsurj hsm _ m
   · exact fun n => levelSolution_one_of_hasLevelOneCharacter (hchar n)

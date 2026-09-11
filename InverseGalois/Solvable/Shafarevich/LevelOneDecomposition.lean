@@ -69,8 +69,8 @@ whole extension whose stabilisers have finite elementary quotients, carry the ch
 first rung of the ladder, and outside whose conjugates the base realization kills inertia.**
 
 The set of places the family is indexed by carries the places above the exponent whatever is
-prescribed, so every prime of the whole extension carrying the exponent is a conjugate of a member
-of the family, and its whole decomposition subgroup is carried into a member by that conjugation. -/
+prescribed, so every prime of the whole extension carrying the exponent is carried onto a member of
+the family by an automorphism over the base. -/
 theorem exists_decomposition_family (hℓ : ℓ.Prime) (hodd : 2 < ℓ)
     {φ : Gal(Ω/k) →* U} (hsurj : Function.Surjective φ) (hsm : IsSmoothHom φ)
     (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K]
@@ -80,8 +80,7 @@ theorem exists_decomposition_family (hℓ : ℓ.Prime) (hodd : 2 < ℓ)
     ∃ (t : ℕ) (Pr : Fin t → Ideal (𝓞 Ω)), (∀ ν, (Pr ν).IsPrime) ∧ (∀ ν, Pr ν ≠ ⊥) ∧
       (∀ v ∈ X, ∃ ν, Ideal.under (𝓞 ↥K) (Pr ν) = v.asIdeal) ∧
       (∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → (ℓ : 𝓞 Ω) ∈ P →
-        ∃ (ν : Fin t) (ρ : Gal(Ω/k)), ∀ y ∈ stabilizer Gal(Ω/k) P,
-          ρ * y * ρ⁻¹ ∈ stabilizer Gal(Ω/k) (Pr ν)) ∧
+        ∃ (ν : Fin t) (ρ : Gal(Ω/k)), ρ • P = Pr ν) ∧
       (∀ ν, HasFiniteElementaryQuotient ℓ (stabilizer Gal(Ω/k) (Pr ν) ⊓ φ.ker)) ∧
       (∀ n : ℕ, HasLevelOneCharacter ℓ U S φ
         (Set.range fun ν => stabilizer Gal(Ω/k) (Pr ν)) n) ∧
@@ -118,9 +117,7 @@ theorem exists_decomposition_family (hℓ : ℓ.Prime) (hodd : 2 < ℓ)
     obtain ⟨ρ, hρ⟩ := exists_smul_eq_of_under_eq_ringOfIntegers (F := k) (K := Ω) (Pf w) P hkk
     refine ⟨Tn.equivFin ⟨w, hpTn w hmk⟩, ρ⁻¹, ?_⟩
     simp only [Equiv.symm_apply_apply]
-    intro y hy
-    rw [mem_stabilizer_iff] at hy ⊢
-    rw [inv_inv, mul_smul, mul_smul, ← hρ, hy, hρ, inv_smul_smul]
+    rw [hρ, inv_smul_smul]
   · haveI := hPfp (Tn.equivFin.symm ν : HeightOneSpectrum (𝓞 ↥K))
     exact hasFiniteElementaryQuotient_stabilizer_inf (hPfbot _)
       (isOpenNormal_ker_of_isSmoothHom hsm)
