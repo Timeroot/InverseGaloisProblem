@@ -26,22 +26,24 @@ cyclicity on a decomposition subgroup is the survival of a single coordinate the
 
 So the arithmetic input is a single statement about the level: given a finite level above it, a
 finite family of places of the level lying in distinct orbits, and a class prescribed at each of
-them in each coordinate, there is a family of units of the level which is a local power above the
-exponent, carries the prescribed classes at the named places, dies at every proper conjugate of
-them, dies at a further prescribed finite set of places the named ones avoid, and at every other
-place where some member has order not divisible by the exponent either sits over a named place or
-has that place completely decomposed in the given finite level with a single coordinate surviving.
-That is the arithmetic input, and it buys the prescription outright: the further finite set is taken
-to be the orbit of the places below the given finite family of decomposition subgroups, and the
-named places avoid it exactly because no named prime is allowed to sit over that family.
+them in each coordinate, there is a family of units of the level which carries the prescribed
+classes at the named places, dies at every proper conjugate of them, dies at a further prescribed
+finite set of places the named ones avoid, and at every other place where some member has order not
+divisible by the exponent either sits over a named place or has that place completely decomposed in
+the given finite level with a single coordinate surviving.  That is the arithmetic input, and it
+buys the prescription outright: the further finite set is taken to be the orbit of the places below
+the given finite family of decomposition subgroups, and the named places avoid it exactly because no
+named prime is allowed to sit over that family.  The places above the exponent are asked to be among
+those, which is what makes the assembled homomorphism unramified there, and is the reason a named
+place is never one of them.
 
 ## Main definitions
 
 * `InverseGalois.Shafarevich.HasPrescribedUnits` — **a family of units of a level can be prescribed
-  local classes at finitely many places at once, be a local power above the exponent, at a
-  prescribed finite set of places the named ones avoid and at the proper conjugates of the named
-  ones, and be confined elsewhere to places sitting over the named ones or completely decomposed in
-  a given finite level.**
+  local classes at finitely many places at once, be a local power at a prescribed finite set of
+  places the named ones avoid and at the proper conjugates of the named ones, and be confined
+  elsewhere to places sitting over the named ones or completely decomposed in a given finite
+  level.**
 
 ## Main results
 
@@ -66,9 +68,9 @@ section Units
 variable {k Ω : Type} [Field k] [Field Ω] [Algebra k Ω]
 
 /-- **A family of units of a level can be prescribed local classes at finitely many places at once,
-be a local power above the exponent, at a prescribed finite set of places avoided by the named ones
-and at the proper conjugates of the named ones, and be confined elsewhere to places sitting over the
-named ones or completely decomposed in a given finite level.**
+be a local power at a prescribed finite set of places avoided by the named ones and at the proper
+conjugates of the named ones, and be confined elsewhere to places sitting over the named ones or
+completely decomposed in a given finite level.**
 
 The places are named by an arbitrary finite index type, are asked to be distinct and to stay
 distinct from one another under every proper automorphism of the level, and one class modulo
@@ -82,7 +84,10 @@ without moving the place it is read at.
 
 The set of places at which the family is asked to be a local power is prescribed along with the
 named places and is asked to avoid them, which is the only thing that keeps the two demands from
-colliding: a place carrying a nontrivial class is not a place the family is a local power at.
+colliding: a place carrying a nontrivial class is not a place the family is a local power at.  The
+places above the exponent, where the assembled homomorphism has to be unramified, are covered by
+that set rather than by a clause of their own, and a named place is asked not to be one of them,
+which is the same disjointness read at the exponent.
 
 The finite level in which the leftover places are asked to be completely decomposed is part of the
 demand, so that a level cutting out any prescribed finite amount of arithmetic may be named before
@@ -92,12 +97,11 @@ def HasPrescribedUnits (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥
     ∀ (ι : Type) [Finite ι] (w : ι → HeightOneSpectrum (𝓞 ↥K)), Function.Injective w →
       (∀ (μ ν : ι) (σ : Gal(↥K/k)), σ ≠ 1 → σ • w μ ≠ w ν) →
       ∀ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)), (∀ μ : ι, w μ ∉ Tz) →
+        (∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (w μ).asIdeal) →
         ∀ (d : ℕ) (c : (μ : ι) → Fin d → localClasses (w μ) ℓ),
           (∀ μ : ι, ∃ u : (↥K)ˣ,
             ∀ q : Fin d, c μ q ∈ Subgroup.zpowers (localClassHom (w μ) ℓ u)) →
           ∃ z : Fin d → (↥K)ˣ,
-            (∀ (q : Fin d) (v : HeightOneSpectrum (𝓞 ↥K)), (ℓ : 𝓞 ↥K) ∈ v.asIdeal →
-              localClassHom v ℓ (z q) = 1) ∧
             (∀ (q : Fin d) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz →
               localClassHom v ℓ (z q) = 1) ∧
             (∀ (μ : ι) (q : Fin d), localClassHom (w μ) ℓ (z q) = c μ q) ∧
@@ -142,6 +146,11 @@ differing by an automorphism of the level — or that its place is completely de
 level killing the given lift, whence the whole decomposition subgroup dies there; and the surviving
 single coordinate is what makes the values on that subgroup powers of one of them.
 
+The set of places the family of units is asked to be a local power at is the orbit of the places
+below the given finite family of decomposition subgroups.  The named places avoid it because no
+named prime sits over that family, and the places above the exponent are among it by hypothesis,
+which is what makes the assembled homomorphism unramified there.
+
 The finite level is the one cut out by the kernel of the given lift together with the level itself,
 which is finite because the lift is smooth and the level is finite.  No shrinking is spent: the
 number of letters is the one asked for and the map of layers is the identity. -/
@@ -149,6 +158,8 @@ theorem hasCyclicKernelPrescription_of_places (K : IntermediateField k Ω) [Fini
     [NumberField ↥K] [IsGalois k ↥K] (hKker : K.fixingSubgroup = φ.ker) {ζ : ↥K}
     (hζ : IsPrimitiveRoot ζ ℓ) {Pr : Fin t → Ideal (𝓞 Ω)} (hPrp : ∀ ν, (Pr ν).IsPrime)
     (hPrbot : ∀ ν, Pr ν ≠ ⊥) (hDPr : ∀ ν, D ν = stabilizer Gal(Ω/k) (Pr ν))
+    (hℓPr : ∀ v : HeightOneSpectrum (𝓞 ↥K), (ℓ : 𝓞 ↥K) ∈ v.asIdeal →
+      ∃ (σ : Gal(↥K/k)) (ν : Fin t), v = σ • placeUnder K (Pr ν) (hPrbot ν))
     (hfam : HasPrescribedUnits ℓ K) :
     HasCyclicKernelPrescription ℓ U n S j φ D := by
   classical
@@ -234,9 +245,18 @@ theorem hasCyclicKernelPrescription_of_places (K : IntermediateField k Ω) [Fini
       (fun q e e' => layerCoord_mul e e' q) (hQbot μ) rfl (Or.inl (hAcase μ)) (a μ) (hasm μ)
       (hacyc μ)
   choose u₀ c hcline hc using hex
-  obtain ⟨z, hz1, hzT, hz2, hz3, hz4⟩ := hfam (E₀ ⊔ K) inferInstance hKE ι
-    (fun μ => placeUnder K (Q μ) (hQbot μ)) hinj hconj Tz hdisj
+  have hdisjℓ : ∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (placeUnder K (Q μ) (hQbot μ)).asIdeal := by
+    intro μ hmem
+    obtain ⟨σ, ν, hσν⟩ := hℓPr _ hmem
+    exact hdisj μ (hσν ▸ hmemTz σ ν)
+  obtain ⟨z, hzT, hz2, hz3, hz4⟩ := hfam (E₀ ⊔ K) inferInstance hKE ι
+    (fun μ => placeUnder K (Q μ) (hQbot μ)) hinj hconj Tz hdisj hdisjℓ
     (layerDim ℓ (Generic U n S) j) c (fun μ => ⟨u₀ μ, hcline μ⟩)
+  have hz1 : ∀ (q : Fin (layerDim ℓ (Generic U n S) j)) (v : HeightOneSpectrum (𝓞 ↥K)),
+      (ℓ : 𝓞 ↥K) ∈ v.asIdeal → localClassHom v ℓ (z q) = 1 := by
+    intro q v hv
+    obtain ⟨σ, ν, rfl⟩ := hℓPr v hv
+    exact hzT q _ (hmemTz σ ν)
   refine ⟨MonoidHom.id (Generic U n S), isOperatorHom_id, Function.surjective_id,
     kummerKernelHom hKker hkd (layerBasis ℓ (Generic U n S) j) layerBasis_pow_eq_one z,
     isSmooth₁_kummerKernelHom hKker hkd _ _ z, ?_, ?_, ?_, ?_⟩
