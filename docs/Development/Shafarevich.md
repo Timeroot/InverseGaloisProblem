@@ -21350,3 +21350,89 @@ in the ramified branch of `hstep` the prescription is `inl (a x) = g x * (f x)�
 lift `f` on that subgroup is only an extension of a cyclic group by a part of the layer.  Either the
 lift has to be chosen cyclic there — the shape of Schmidt–Wingberg's condition (ii) — or the
 per-place line hypothesis has to be traded for the product relation over `Tr`.
+
+## 1.92  The `D` clause of `HasPrescribedUnits` is unsatisfiable as stated (2026-09-11)
+
+Tracing where the subgroups `D ν` of `HasPrescribedUnits ℓ K D` actually come from turns up a
+contradiction between two of its clauses.
+
+**Where `D` comes from.**  `genericLevelStepEPRoots_of_solutionRepairEP`
+(`Shafarevich/LevelStepRepair.lean:261`) calls `exists_family_rungData` (`LevelRungData.lean:69`)
+with `X = ∅`, and that theorem's `D` is literally
+
+```
+D ν = stabilizer Gal(Ω/k) (Pr ν)
+```
+
+with `Pr` produced by `exists_decomposition_family` (`LevelOneDecomposition.lean:70-104`): one prime
+of `Ω` over each place of a finite Galois stable set `Tn` of places of the level, obtained from
+`exists_stable_ord_places` and therefore containing the places ramified in the level, the places
+above `ℓ`, and whatever padding is needed to represent the ideal classes.
+
+**The contradiction.**  By `smul_eq_of_localClassHom_eq_one` (`LevelOneFamily.lean:169`), clause 4 of
+`HasPrescribedUnits` —
+
+```
+∀ ν ρ y, ρ * y * ρ⁻¹ ∈ D ν → ∀ q β, β ^ ℓ = z q → y • β = β
+```
+
+— is exactly the statement that each `z q` is a local `ℓ`-th power at *every* place of `Tn`.  Clause
+2 asks for `localClassHom (w μ) ℓ (z q) = c μ q` with `c μ q` in general nontrivial.  So the naming
+must avoid `Tn`, and nothing in the present statement says it does.  `hasCyclicKernelPrescription_of_places`
+consumes clause 4 unconditionally (`KernelPlaces.lean:207-209`), so this is not a slack that can be
+absorbed downstream.
+
+**Why the avoidance is genuinely necessary and where it has to go.**  Suppose a named prime `Q μ`
+of `Ω` is a conjugate `ρ • Pr ν`.  Decomposition subgroups of primes of `Ω` determine the prime, so
+`stabilizer (Q μ) = ρ (D ν) ρ⁻¹`; the prescription asks for `a μ` on `stabilizer (Q μ)` while the
+`D` clause of `HasKernelPrescription` — which is conjugation closed, `ρ y ρ⁻¹ ∈ D ν → u y = 1` —
+asks for triviality on the same subgroup.  Note that `HasConfinedPrescription`'s own `D` clause is
+*not* conjugation closed (`∀ x ∈ D ν, φ x = 1 → c x = 1`, `LevelConfinedTwist.lean:160-182`), so the
+clash is created by `hasConfinedPrescription_of_hasKernelPrescription`, whose averaging over cosets
+needs `u` to vanish on all conjugates.  Schmidt–Wingberg do exactly the avoidance: their new primes
+are chosen outside `S_n`.
+
+The minimal repair, in the language of the existing definitions, is to add to
+`HasKernelPrescription` and `HasCyclicKernelPrescription` the clause
+
+```
+∀ (μ : ι) (ν : Fin t) (ρ : Gal(Ω/k)), D ν ≠ stabilizer Gal(Ω/k) (ρ • Q μ)
+```
+
+which, because `Gal(Ω/K)` is transitive on the primes over a place of `K`, says exactly that no
+named place lies under any `Pr ν`, i.e. that the named places avoid `Tn`.  It then has to be
+supplied by `hasSplitCyclicRepair_of_hasConfinedPrescription`, whose named primes are the primes
+where the flattened lift ramifies — that is the part of the repair whose cost is not yet known, and
+it is deliberately deferred: the statement of `HasPrescribedUnits` is a hypothesis nothing yet
+proves, so the refactor buys nothing until the arithmetic below it is in place.
+
+**What was built instead.**  `CFT/PoitouTate/NamedUnits.lean` proves the arithmetic in the form the
+repaired statement will want, with the avoidance as an explicit hypothesis:
+
+```
+exists_units_named_prescribed :
+  (hdisj : ∀ v ∈ Tp, v ∉ Tz) → … → (horth …) → ∀ d,
+  ∃ z : ℕ → Kˣ,
+    (∀ q < d, ∀ v ∈ Tz, localClassHom v p (z q) = 1) ∧
+    (∀ q < d, ∀ w : ↥Tp, localClassHom ↑w p (z q) = cl w q) ∧
+    (∀ q < d, ∀ σ ≠ 1, ∀ w : ↥Tp, localClassHom (σ • ↑w) p (z q) = 1) ∧
+    ∀ v, (∃ q < d, ¬ (p : ℤ) ∣ placeValue v (z q)) →
+      (∃ σ w, v = σ • ↑w) ∨
+        ((∃ W, primeUnder (𝓞 K) W = v ∧ stabilizer Gal(↥Ω/k) W = ⊥) ∧
+         (∃ q₀ < d, ∀ q < d, q ≠ q₀ → localClassHom v p (z q) = 1) ∧
+         ∀ σ ≠ 1, ∀ q < d, localClassHom (σ • v) p (z q) = 1)
+```
+
+which is clause for clause the conclusion of `HasPrescribedUnits`, with `Tz` playing the role of the
+places under the `Pr ν` together with the places above `ℓ`.  Two choices make the reading work.  The
+distinguished part `Tr` of the two-place bookkeeping is taken to be the *whole orbit* of the named
+places — that is what turns `IsTwoPlaceFamily.unram` into the confinement clause, a carried place
+being either in the orbit or one of the auxiliary pairs.  And the set the prescription is made over
+is the stable set produced by `exists_stable_ord_places` from the orbit, the prescribed set `Tz` and
+the places ramified upstairs; enlarging it is free because `spreadClasses` is trivial away from the
+named places, which is precisely the triviality `Tz` was asking for.
+
+The only hypothesis left is `horth`, the orthogonality of the naming against those `S`-units which
+become an `ℓ`-th power in the upper field — the residue of §1.8x, unchanged.  Two hypotheses stay
+with the caller: `hram`, a finite set outside which the upper field is unramified, and `hdisj`, the
+avoidance above.

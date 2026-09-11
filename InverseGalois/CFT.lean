@@ -496,6 +496,7 @@ import InverseGalois.CFT.PoitouTate.LocalOrdPlace
 import InverseGalois.CFT.PoitouTate.NamedFamily
 import InverseGalois.CFT.PoitouTate.NamedFamilyPower
 import InverseGalois.CFT.PoitouTate.NamedFamilySplit
+import InverseGalois.CFT.PoitouTate.NamedUnits
 import InverseGalois.CFT.PoitouTate.NormLocalPower
 import InverseGalois.CFT.PoitouTate.OrbitCoboundary
 import InverseGalois.CFT.PoitouTate.OrbitLine
@@ -8164,6 +8165,22 @@ it that are available here.
   and the complete splitting at exactly the added places.  So: **a naming orthogonal to those
   `S`-units which become a power in the upper field has a family of pairs of places and of units
   realising it, over a set of places enlarged by the detecting ones.**
+
+* `InverseGalois.CFT.PoitouTate.NamedUnits` keeps of the bookkeeping only the units and what is said
+  about them.  A prescription over a level wants four things: triviality at a set of places fixed in
+  advance, the named classes at the named places, death at every proper conjugate of a named place,
+  and, everywhere else that one of the units carries a place, that the place be a conjugate of a
+  named one or else completely split in the upper field with a single coordinate surviving it.  All
+  four are read off the two-place bookkeeping once its two auxiliary sets of places are chosen for
+  it: the distinguished part is taken to be the whole orbit of the named places, so that a carried
+  place which is not one of the pairs is a conjugate of a named place, and the set the prescription
+  is made over is enlarged, by a stable set carrying the ideal classes, to swallow the prescribed
+  set, the places above the exponent and the places ramified upstairs.  The enlargement is free
+  because the prescription is trivial away from the named places, which is exactly the triviality
+  the prescribed set was asking for.  So: **a naming orthogonal to the `S`-units which become a
+  power upstairs is carried by a family of units trivial on a prescribed set of places disjoint from
+  the named ones, dying at their proper conjugates, and confined elsewhere to the conjugates of the
+  named places and to completely split places with one coordinate surviving.**
 
 * `InverseGalois.CFT.Residue.AlgClosed` gives an algebraic closure the residue fields it looks as
   though it has none of.  Its ring of integers has nonzero primes, each of them lies over a nonzero
