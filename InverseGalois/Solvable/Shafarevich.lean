@@ -28,6 +28,7 @@ import InverseGalois.Solvable.Shafarevich.LayerTensor
 import InverseGalois.Solvable.Shafarevich.HomologyOne
 import InverseGalois.Solvable.Shafarevich.SemidirectHomology
 import InverseGalois.Solvable.Shafarevich.GenericHomology
+import InverseGalois.Solvable.Shafarevich.LayerDualTensor
 import InverseGalois.Solvable.Shafarevich.GenericCohomology
 import InverseGalois.Solvable.Shafarevich.LayerSmooth
 import InverseGalois.Solvable.Shafarevich.LayerExtension
@@ -220,6 +221,14 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   homology of the operator group, so the classes come from the generic group itself, where the
   coefficients are trivial and the first homology is the zeroth layer tensored with them; a second
   shrinking kills the chosen preimages there.
+* `InverseGalois.Solvable.Shafarevich.LayerDualTensor` says what the count is fed.  What the
+  arithmetic produces is not an element of a tensor product but a linear map from the dual of the
+  zeroth layer to a layer, and over a field of finite dimension the two are the same thing: a basis
+  being named, the map is the sum of the basis vectors against its values on the dual basis, and
+  contracting that sum against a functional of the target of a comparison map returns the value of
+  the map at the functional pulled back.  So a naming element killed by a comparison map has every
+  pulled back value of its map killed, which is the orthogonality the reciprocity residue is asked
+  for.
 * `InverseGalois.Solvable.Shafarevich.GenericCohomology` frees the count from the group that acts:
   the classes to be killed may be classes of any finite group mapping into the operator group, in
   any single degree and with coefficients in a layer tensored with a fixed representation.  That is
