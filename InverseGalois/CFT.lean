@@ -200,6 +200,7 @@ import InverseGalois.CFT.CharacterSpan
 import InverseGalois.CFT.Compositum
 import InverseGalois.CFT.CompositumBase
 import InverseGalois.CFT.CompositumLift
+import InverseGalois.CFT.ConjugationTrace
 import InverseGalois.CFT.CorestrictionInertia
 import InverseGalois.CFT.CutField
 import InverseGalois.CFT.Cyclotomic.AuxiliarySubfield
@@ -5663,6 +5664,28 @@ it that are available here.
   other way round, the collapse says that **where the average is nontrivial the cochain was already
   nontrivial at a conjugate**, which is what confines the ramification of the average to the places
   where the cochain was ramified.
+* `InverseGalois.CFT.ConjugationTrace` averages a homomorphism of a normal subgroup over the cosets
+  of a subgroup instead of over the whole group.  A homomorphism of the normal subgroup into a
+  module is equivariant for the conjugation action of the whole group only by accident; the trace
+  over the cosets of a subgroup **manufactures that equivariance out of nothing but equivariance for
+  the subgroup itself**, because moving the transversal by an element of the group permutes the
+  cosets and the discrepancy between the moved representative and the representative of the moved
+  coset is an element of the subgroup, where equivariance was assumed.  Equivariance is cheaper
+  still than it looks: a homomorphism of the kernel of the map the coefficients are acted on through
+  does not see conjugation by that kernel, so **equivariance for a subgroup is already equivariance
+  for its saturation**, the elements whose image is the image of a member of it — a subgroup which
+  contains the kernel, hence has finitely many cosets as soon as the image is finite.  Tracing over
+  the cosets
+  rather than over the whole group is what keeps the construction from being killed: nothing is
+  divided out along the subgroup, so a value assigned inside the subgroup survives the average
+  instead of being replaced by its norm.  The same three readings as for the average over a normal
+  subgroup are available — the trace **vanishes wherever the homomorphism vanishes on a whole
+  conjugacy-stable family**, it **collapses to the single surviving term at a point whose
+  stabiliser the subgroup was built from**, and **where the trace is nontrivial the homomorphism was
+  already nontrivial at a conjugate**, so the ramification of the trace is confined to the orbit of
+  the ramification of the homomorphism.  The coefficients are acted on through a homomorphism of the
+  ambient group onto an operator group, which is how the trace meets a module carrying an action of
+  a finite quotient rather than of the group itself.
 * `InverseGalois.CFT.CorestrictionInertia` reads the average at a prime.  Conjugating an element
   moves the prime it decomposes or ramifies at, so the product over the cosets is a statement about
   the orbit of one prime: the average, read at the decomposition subgroup of a prime, sees the

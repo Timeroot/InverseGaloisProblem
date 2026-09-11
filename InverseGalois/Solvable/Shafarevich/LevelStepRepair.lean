@@ -6,6 +6,7 @@ import Mathlib
 import InverseGalois.CFT.Profinite.OpenLevel
 import InverseGalois.Solvable.Shafarevich.LevelConfinedTwist
 import InverseGalois.Solvable.Shafarevich.LevelCyclicRepair
+import InverseGalois.Solvable.Shafarevich.LevelFlatOrbit
 import InverseGalois.Solvable.Shafarevich.LevelKernelPrescription
 import InverseGalois.Solvable.Shafarevich.LevelRepair
 import InverseGalois.Solvable.Shafarevich.LevelRungData
@@ -42,6 +43,8 @@ makes it cyclic at the completely decomposed primes the first leaves behind.
 * `Shafarevich.CyclicRepairEP` — the same repair, with the property read prime by prime.
 * `Shafarevich.SplitCyclicRepairEP` — the same repair, with total ramification dropped as well.
 * `Shafarevich.FlatPrescriptionEP` — the flattening as a prescription in degree one.
+* `Shafarevich.FlatOrbitPrescriptionEP` — the flattening, made one field up and one named prime at a
+  time.
 * `Shafarevich.ConfinedPrescriptionEP` — the repair as a prescription in degree one at completely
   decomposed primes.
 * `Shafarevich.KernelPrescriptionEP` — the sharp prescription, made one field up as a homomorphism.
@@ -55,6 +58,8 @@ makes it cyclic at the completely decomposed primes the first leaves behind.
   it cyclic is all the arithmetic owes**.
 * `Shafarevich.splitCyclicRepairEP_of_confinedPrescriptionEP` — **and that is bought with two
   prescriptions in degree one**, the finite family covering the primes above the prime.
+* `Shafarevich.flatPrescriptionEP_of_flatOrbitPrescriptionEP` — **the flattening may be made one
+  field up and one named prime at a time**, the several traces being multiplied.
 * `Shafarevich.genericLevelStepEPRoots_of_solutionRepairEP` — **the repair of the property is the
   only thing between the arithmetic and the step of the ladder** for an odd prime.
 * `Shafarevich.genericLevelStepEPRoots_of_liftRepairEP` — the same step, in exchange for the repair
@@ -192,6 +197,46 @@ def FlatPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
       (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
     letI := galLayerAction ℓ U n S j φ
     HasFlatPrescription ℓ U n S j φ D
+
+/-- **The flattening as a prescription in degree one, made one field up and one named prime at a
+time.**
+
+The data is the same once more, and what is asked back is no cocycle over the rationals but a family
+of smooth homomorphisms into the layer, one for each prime named in advance, defined on the kernel
+of the base realization, where the action is trivial.  Each is asked to be equivariant only for the
+decomposition subgroup of its own prime, to take the prescribed values along the subgroup belonging
+to that prime, to be trivial along the finite family, along the subgroups belonging to the other
+named primes and along the decomposition subgroups of the conjugates of its prime which the base
+realization separates, and to ramify only at the named primes or where the given lift kills a whole
+decomposition subgroup.  The prescription announces the number of letters its data is read at and
+answers at the number asked for. -/
+def FlatOrbitPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
+  ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
+      [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
+      (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
+      (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
+    HasFlatOrbitPrescription ℓ U n S j φ D
+
+/-- **The flattening may be made one field up and one named prime at a time.**
+
+Over the field the kernel of the base realization cuts out the action on the layer is trivial, so a
+cocycle there is a homomorphism, and extending a prescribed homomorphism along a section of the base
+realization carries the whole prescription back down, one shrinking of the operator group paying for
+the factor set of the section.
+
+Upstairs the named primes are treated one at a time: the homomorphism belonging to a named prime is
+traced over the cosets of the decomposition subgroup of that prime, saturated along the base
+realization, and the trace is equivariant for the whole group even though the homomorphism was
+equivariant only for that decomposition subgroup.  The traces are multiplied, each factor killing
+the subgroups belonging to the other named primes so that at a named prime the product collapses to
+its own factor. -/
+theorem flatPrescriptionEP_of_flatOrbitPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime]
+    (h : FlatOrbitPrescriptionEP ℓ) : FlatPrescriptionEP ℓ := by
+  intro S U _ _ _ _ _ _ Ω _ _ _ _ φ t D n j hS hj hmu
+  letI := galLayerAction ℓ U n S j φ
+  exact hasFlatPrescription_of_hasFlatKernelPrescription hS (fun _ _ => rfl)
+    fun M => hasFlatKernelPrescription_of_hasFlatOrbitPrescription
+      (h S U Ω φ t D M j hS hj hmu)
 
 /-- **The repair as a prescription in degree one at completely decomposed primes.**
 

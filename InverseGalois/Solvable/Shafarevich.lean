@@ -70,6 +70,7 @@ import InverseGalois.Solvable.Shafarevich.LevelCyclicRepair
 import InverseGalois.Solvable.Shafarevich.CyclicLift
 import InverseGalois.Solvable.Shafarevich.LevelFlatTwist
 import InverseGalois.Solvable.Shafarevich.LevelFlatKernel
+import InverseGalois.Solvable.Shafarevich.LevelFlatOrbit
 import InverseGalois.Solvable.Shafarevich.CyclicCorrection
 import InverseGalois.Solvable.Shafarevich.LevelConfinedTwist
 import InverseGalois.Solvable.Shafarevich.LevelKernelPrescription
@@ -613,6 +614,22 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   vanishing along the named subgroups and the clause confining the new ramification all transfer
   verbatim.  So **a prescription of an equivariant homomorphism on the kernel of the base
   realization, at every number of letters, buys the flat prescription over the base field**.
+* `InverseGalois.Solvable.Shafarevich.LevelFlatOrbit` buys that prescription one named prime at a
+  time.  What the prescription upstairs asks of one homomorphism is equivariance for conjugation by
+  the whole group, and the arithmetic supplying homomorphisms — a radicand and a root of unity, read
+  as a character of the kernel — supplies only the equivariance the radicand has: a radicand in the
+  field a decomposition subgroup cuts out is equivariant for that decomposition subgroup and for
+  nothing more.  The gap is closed by a trace over the cosets of that subgroup, saturated along the
+  base realization; the saturation costs nothing, a homomorphism of the kernel into an abelian group
+  not seeing conjugation by the kernel, and it contains the kernel, so its cosets are finitely many.
+  Tracing over cosets and not over the whole group is what keeps the prescribed values, a trace over
+  the whole group repeating one value as many times as the decomposition subgroup has elements and
+  such a power being trivial in an elementary abelian layer.  Several primes are named at once and
+  their decomposition subgroups differ, so each is traced separately and the traces are multiplied,
+  each factor killing the subgroups belonging to the other named primes so that at a named prime the
+  product collapses to its own factor.  So **a prescription made prime by prime, equivariant only
+  for the decomposition subgroup of the prime it belongs to, buys the flat prescription one field
+  up**.
 * `InverseGalois.Solvable.Shafarevich.CyclicCorrection` makes a two generator image cyclic.  The
   decomposition subgroup of a tame prime maps into the step by a pair of generators, one of them
   carrying the whole inertia; writing the other as a layer element times a power of the first puts
