@@ -79,7 +79,9 @@ subgroup the action on the layer is trivial, so a cocycle restricts there to a h
 prime away from the exponent that homomorphism is a power of a single one of its own values; and at
 a prime unramified below, the whole of inertia is available over the base field, so the value can be
 prescribed there at all.  Along the finite family the cocycle is asked to vanish wherever the base
-realization already does.
+realization already does, and the named primes are asked to escape that family: no conjugate of the
+decomposition subgroup of a named prime lies inside a member of it, which is what keeps the values
+prescribed at the named primes from colliding with the vanishing asked along the family.
 
 The prescribed homomorphisms are asked to be equivariant for conjugation, in the sense that
 conjugating an element of one of the subgroups back into that same subgroup moves the prescribed
@@ -118,6 +120,8 @@ def HasFlatPrescription : Prop :=
         ↥(A μ) → ↥(layerSub ℓ (Generic U N S) j))) →
       (∀ (μ : ι) (g : Gal(Ω/k)) (x : ↥(A μ)) (hx : g * (x : Gal(Ω/k)) * g⁻¹ ∈ A μ),
         a μ ⟨g * (x : Gal(Ω/k)) * g⁻¹, hx⟩ = φ g • a μ x) →
+      (∀ (μ : ι) (ν : Fin t) (ρ : Gal(Ω/k)),
+        ∃ y ∈ stabilizer Gal(Ω/k) (Q μ), ρ * y * ρ⁻¹ ∉ D ν) →
         ∃ (α : Generic U N S →* Generic U n S) (hα : IsOperatorHom α), Function.Surjective α ∧
           ∃ c : Gal(Ω/k) → ↥(layerSub ℓ (Generic U n S) j), IsMulCocycle₁ c ∧ IsSmooth₁ c ∧
             (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → c x = 1) ∧
@@ -262,6 +266,10 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
       (fun μ => Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ⊓ φ.ker) a hfsurj hfsm hfr (fun μ => hPrp _)
       (fun μ => hPrbot _) hℓnot (fun μ => le_trans inf_le_left (Ideal.inertia_le_stabilizer _))
       (fun _ => inf_le_right) (fun _ => rfl) hunr hasm haequiv
+      (fun μ ν ρ => by
+        by_contra hcon
+        push_neg at hcon
+        exact hnotD μ ⟨ν, ρ, hcon⟩)
   have hΦ'right : ∀ x, SemidirectProduct.rightHom (((layerSemidirectMap ℓ hα j).comp Φ) x) = φ x :=
     fun x => hΦright x
   have hf'right : ∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom

@@ -187,14 +187,16 @@ The data is the same once more, and what is asked back is no lift at all but a s
 with values in the layer: prescribed along finitely many subgroups of decomposition subgroups at
 primes named in advance, trivial along the finite family wherever the base realization already is,
 and ramifying only at those named primes or else at primes where the given lift kills the whole
-decomposition subgroup.  Nothing is asked of the local image, and the named primes are arbitrary.
-The prescription announces the number of letters its data is read at and answers at the number
-asked for. -/
+decomposition subgroup.  Nothing is asked of the local image, and the named primes are arbitrary
+but for escaping the finite family.  The prescription announces the number of letters its data is
+read at and answers at the number asked for, and the finite family is named by the primes it is the
+family of decomposition subgroups of. -/
 def FlatPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
   ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
       (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
       (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
+      (∃ Pr : Fin t → Ideal (𝓞 Ω), IsCoveringPrimeFamily ℓ φ Pr D) →
     letI := galLayerAction ℓ U n S j φ
     HasFlatPrescription ℓ U n S j φ D
 
@@ -209,12 +211,14 @@ to that prime, to be trivial along the finite family, along the subgroups belong
 named primes and along the decomposition subgroups of the conjugates of its prime which the base
 realization separates, and to ramify only at the named primes or where the given lift kills a whole
 decomposition subgroup.  The prescription announces the number of letters its data is read at and
-answers at the number asked for. -/
+answers at the number asked for, and the finite family is named by the primes it is the family of
+decomposition subgroups of. -/
 def FlatOrbitPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] : Prop :=
   ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] [TopologicalSpace U]
       [DiscreteTopology U] (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
       (φ : Gal(Ω/ℚ) →* U) (t : ℕ) (D : Fin t → Subgroup Gal(Ω/ℚ)) (n j : ℕ), IsPGroup ℓ S → 1 ≤ j →
       (∀ ζ : Ωˣ, ζ ^ (ℓ * ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ) →
+      (∃ Pr : Fin t → Ideal (𝓞 Ω), IsCoveringPrimeFamily ℓ φ Pr D) →
     HasFlatOrbitPrescription ℓ U n S j φ D
 
 /-- **The flattening may be made one field up and one named prime at a time.**
@@ -232,11 +236,11 @@ the subgroups belonging to the other named primes so that at a named prime the p
 its own factor. -/
 theorem flatPrescriptionEP_of_flatOrbitPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime]
     (h : FlatOrbitPrescriptionEP ℓ) : FlatPrescriptionEP ℓ := by
-  intro S U _ _ _ _ _ _ Ω _ _ _ _ φ t D n j hS hj hmu
+  intro S U _ _ _ _ _ _ Ω _ _ _ _ φ t D n j hS hj hmu hcov
   letI := galLayerAction ℓ U n S j φ
   exact hasFlatPrescription_of_hasFlatKernelPrescription hS (fun _ _ => rfl)
     fun M => hasFlatKernelPrescription_of_hasFlatOrbitPrescription
-      (h S U Ω φ t D M j hS hj hmu)
+      (h S U Ω φ t D M j hS hj hmu hcov)
 
 /-- **The repair as a prescription in degree one at completely decomposed primes.**
 
@@ -302,7 +306,8 @@ theorem splitCyclicRepairEP_of_confinedPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prim
   obtain ⟨Pr, hPr⟩ := hcov
   exact hasSplitCyclicRepair_of_hasConfinedPrescription hS hj (fun _ _ => rfl)
     (coversAbove_of_isCoveringPrimeFamily hPr) (coversRamified_of_isCoveringPrimeFamily hPr)
-    (fun m => hflat S U Ω φ t D m j hS hj hmu) (h S U Ω φ t D n j hS hj hmu ⟨Pr, hPr⟩)
+    (fun m => hflat S U Ω φ t D m j hS hj hmu ⟨Pr, hPr⟩)
+    (h S U Ω φ t D n j hS hj hmu ⟨Pr, hPr⟩)
 
 /-! ### The step -/
 
