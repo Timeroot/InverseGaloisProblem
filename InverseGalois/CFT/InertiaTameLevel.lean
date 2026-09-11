@@ -70,12 +70,12 @@ section Level
 
 /-- An algebraically closed extension of a number field is an algebraic closure of the
 rationals. -/
-theorem isAlgClosure_rat_of_isAlgClosed (K Ω : Type) [Field K] [NumberField K] [Field Ω]
+theorem isAlgClosure_rat_of_isAlgClosed (K Ω : Type*) [Field K] [NumberField K] [Field Ω]
     [Algebra K Ω] [Algebra.IsAlgebraic K Ω] [IsAlgClosed Ω] [CharZero Ω] : IsAlgClosure ℚ Ω := by
   haveI : Algebra.IsAlgebraic ℚ Ω := Algebra.IsAlgebraic.trans ℚ K Ω
   exact ⟨inferInstance, inferInstance⟩
 
-variable {K Ω : Type} [Field K] [NumberField K] [Field Ω] [Algebra K Ω] [IsGalois K Ω]
+variable {K Ω : Type*} [Field K] [NumberField K] [Field Ω] [Algebra K Ω] [IsGalois K Ω]
   [IsAlgClosed Ω] [CharZero Ω]
 
 /-- **Every open subgroup contains the automorphisms which fix a suitable finite Galois extension
@@ -104,7 +104,7 @@ end Level
 
 section Inertia
 
-variable {K Ω : Type} [Field K] [NumberField K] [Field Ω] [Algebra K Ω] [IsGalois K Ω]
+variable {K Ω : Type*} [Field K] [NumberField K] [Field Ω] [Algebra K Ω] [IsGalois K Ω]
   [IsAlgClosed Ω]
 
 set_option synthInstance.maxHeartbeats 800000 in

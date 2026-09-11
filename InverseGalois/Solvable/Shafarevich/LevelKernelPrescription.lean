@@ -45,8 +45,6 @@ of layers.  Averaging is over the cosets of the kernel and leaves that shrinking
   decomposition subgroups at once, be trivial along the conjugates of the finite family, and ramify
   only at the named primes or at primes it is cyclic at and the given lift kills the whole
   decomposition subgroup of.**
-* `InverseGalois.Shafarevich.HasCyclicKernelPrescription` — **the same, asked only of prescriptions
-  with cyclic values**, the shape the reciprocity law leaves room for.
 
 ## Main results
 
@@ -94,6 +92,14 @@ at each prime the
 homomorphism itself brings in, where it is asked in addition to be cyclic on the decomposition
 subgroup and the given lift to kill that subgroup outright.
 
+The prescribed homomorphisms are asked to have cyclic image, which is what the reciprocity law
+leaves room for.  The classes in the completions which name the coordinates of a prescription are
+otherwise unrelated to one another, and a family of units carrying an unrelated family of classes at
+a family of places is more than the reciprocity law permits: the power residue symbol of two
+coordinates over all the places is trivial, and away from the named places the symbol contributes
+nothing.  The relation is empty as soon as the coordinates lie on a single line, the symbol being
+alternating.
+
 No named prime is allowed to sit over the finite family: its decomposition subgroup is asked to
 escape every conjugate of every subgroup of the family.  Without that the two demands would collide,
 the homomorphism being asked to vanish along the family and to take a prescribed value along the
@@ -109,49 +115,6 @@ shrinking of its own: it announces the number of letters the data is read at, an
 surjection onto the number asked for and a homomorphism at that number, the prescribed values being
 carried across by the map of layers. -/
 def HasKernelPrescription : Prop :=
-  ∃ N : ℕ,
-    IsOpen (φ.ker : Set Gal(Ω/k)) →
-    ∀ (F : Gal(Ω/k) →* GenericQuot ℓ U N S (j + 1)) (ι : Type) [Finite ι]
-        (Q : ι → Ideal (𝓞 Ω)) (A : ι → Subgroup Gal(Ω/k))
-        (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)),
-      IsSmoothHom F → (∀ μ, (Q μ).IsPrime) → (∀ μ, Q μ ≠ ⊥) →
-      (∀ (μ ν : ι) (ρ : Gal(Ω/k)), ρ • Q μ = Q ν → μ = ν) →
-      (∀ μ, stabilizer Gal(Ω/k) (Q μ) ≤ φ.ker) →
-      (∀ μ, A μ ≤ stabilizer Gal(Ω/k) (Q μ)) → (∀ μ, A μ ≤ φ.ker) →
-      (∀ μ, A μ = stabilizer Gal(Ω/k) (Q μ)) →
-      (∀ μ, IsSmooth₁ ((a μ : ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)) :
-        ↥(A μ) → ↥(layerSub ℓ (Generic U N S) j))) →
-      (∀ (μ : ι) (ν : Fin t) (ρ : Gal(Ω/k)),
-        ∃ y ∈ stabilizer Gal(Ω/k) (Q μ), ρ * y * ρ⁻¹ ∉ D ν) →
-        ∃ (α : Generic U N S →* Generic U n S) (_ : IsOperatorHom α), Function.Surjective α ∧
-          ∃ u : ↥(φ.ker) →* ↥(layerSub ℓ (Generic U n S) j),
-            IsSmooth₁ ((u : ↥(φ.ker) →* ↥(layerSub ℓ (Generic U n S) j)) :
-              ↥(φ.ker) → ↥(layerSub ℓ (Generic U n S) j)) ∧
-            (∀ (ν : Fin t) (ρ : Gal(Ω/k)) (y : ↥(φ.ker)),
-              ρ * (y : Gal(Ω/k)) * ρ⁻¹ ∈ D ν → u y = 1) ∧
-            (∀ (μ : ι) (x : ↥(A μ)) (hx : (x : Gal(Ω/k)) ∈ φ.ker),
-              u ⟨(x : Gal(Ω/k)), hx⟩ = layerSubMap ℓ α j (a μ x)) ∧
-            (∀ (μ : ι) (ρ : Gal(Ω/k)), ρ ∉ φ.ker →
-              ∀ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ stabilizer Gal(Ω/k) (ρ • Q μ) → u y = 1) ∧
-            ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
-              (∃ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ Ideal.inertia Gal(Ω/k) P ∧ u y ≠ 1) →
-              (∃ (μ : ι) (ρ : Gal(Ω/k)), P = ρ • Q μ) ∨
-                ((∀ x ∈ stabilizer Gal(Ω/k) P, F x = 1) ∧ stabilizer Gal(Ω/k) P ≤ φ.ker ∧
-                  (∀ ρ : Gal(Ω/k), ρ ∉ φ.ker →
-                    ∀ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ stabilizer Gal(Ω/k) (ρ • P) → u y = 1) ∧
-                  ∃ y₀ : ↥(φ.ker), (y₀ : Gal(Ω/k)) ∈ stabilizer Gal(Ω/k) P ∧
-                    ∀ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ stabilizer Gal(Ω/k) P →
-                      u y ∈ Subgroup.zpowers (u y₀))
-
-/-- **The prescription of the repair, asked only of prescriptions with cyclic values.**
-
-The classes in the completions which name the coordinates of a prescription are unrelated to one
-another, and a family of units carrying an unrelated family of classes at a family of places is more
-than the reciprocity law permits: the power residue symbol of two coordinates over all the places is
-trivial, and away from the named places the symbol contributes nothing.  The relation is empty as
-soon as the coordinates lie on a single line, which is what asking the prescribed homomorphisms to
-have cyclic image buys, the symbol being alternating. -/
-def HasCyclicKernelPrescription : Prop :=
   ∃ N : ℕ,
     IsOpen (φ.ker : Set Gal(Ω/k)) →
     ∀ (F : Gal(Ω/k) →* GenericQuot ℓ U N S (j + 1)) (ι : Type) [Finite ι]
@@ -189,16 +152,6 @@ def HasCyclicKernelPrescription : Prop :=
 
 variable {ℓ U n S j φ D}
 
-omit [Fact ℓ.Prime] [Finite U] [Finite S] [NumberField k] [IsGalois k Ω] [IsAlgClosed Ω]
-  [MulDistribMulAction Gal(Ω/k) ↥(layerSub ℓ (Generic U n S) j)] in
-/-- The prescription of the repair answers in particular the prescriptions with cyclic values. -/
-theorem hasCyclicKernelPrescription_of_hasKernelPrescription
-    (hpres : HasKernelPrescription ℓ U n S j φ D) :
-    HasCyclicKernelPrescription ℓ U n S j φ D := by
-  obtain ⟨N, hN⟩ := hpres
-  exact ⟨N, fun hopen F ι _ Q A a hF hQp hQbot hQorb hQker hAstab hAker hAcase hasm _ havoid =>
-    hN hopen F ι Q A a hF hQp hQbot hQorb hQker hAstab hAker hAcase hasm havoid⟩
-
 omit [Fact ℓ.Prime] [Finite S] [NumberField k] [IsAlgClosed Ω] in
 /-- **Averaging a prescribed homomorphism over the cosets of the kernel of the base realization
 carries the prescription down to the base field.**
@@ -231,9 +184,9 @@ theorem hasConfinedPrescription_of_hasKernelPrescription
   classical
   obtain ⟨N, hpres⟩ := hpres
   refine ⟨N, ?_⟩
-  intro hφopen F ι _ Q A a hFsm hQp hQbot hQorb hQker hAstab hAker hAcase hasm havoid
+  intro hφopen F ι _ Q A a hFsm hQp hQbot hQorb hQker hAstab hAker hAcase hasm hacyc havoid
   obtain ⟨α, hα, hαsurj, u, husm, huD, hua, huorb, huram⟩ :=
-    hpres hφopen F ι Q A a hFsm hQp hQbot hQorb hQker hAstab hAker hAcase hasm havoid
+    hpres hφopen F ι Q A a hFsm hQp hQbot hQorb hQker hAstab hAker hAcase hasm hacyc havoid
   haveI : Finite (Gal(Ω/k) ⧸ φ.ker) :=
     Finite.of_injective _ (QuotientGroup.kerLift_injective φ)
   haveI : Fintype (Gal(Ω/k) ⧸ φ.ker) := Fintype.ofFinite _

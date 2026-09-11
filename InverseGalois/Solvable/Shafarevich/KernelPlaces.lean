@@ -47,7 +47,7 @@ place is never one of them.
 
 ## Main results
 
-* `InverseGalois.Shafarevich.hasCyclicKernelPrescription_of_places` — **a level carrying such
+* `InverseGalois.Shafarevich.hasKernelPrescription_of_places` — **a level carrying such
   families of units carries the sharp prescription with cyclic values.**
 
 ## Tags
@@ -154,14 +154,14 @@ which is what makes the assembled homomorphism unramified there.
 The finite level is the one cut out by the kernel of the given lift together with the level itself,
 which is finite because the lift is smooth and the level is finite.  No shrinking is spent: the
 number of letters is the one asked for and the map of layers is the identity. -/
-theorem hasCyclicKernelPrescription_of_places (K : IntermediateField k Ω) [FiniteDimensional k ↥K]
+theorem hasKernelPrescription_of_places (K : IntermediateField k Ω) [FiniteDimensional k ↥K]
     [NumberField ↥K] [IsGalois k ↥K] (hKker : K.fixingSubgroup = φ.ker) {ζ : ↥K}
     (hζ : IsPrimitiveRoot ζ ℓ) {Pr : Fin t → Ideal (𝓞 Ω)} (hPrp : ∀ ν, (Pr ν).IsPrime)
     (hPrbot : ∀ ν, Pr ν ≠ ⊥) (hDPr : ∀ ν, D ν = stabilizer Gal(Ω/k) (Pr ν))
     (hℓPr : ∀ v : HeightOneSpectrum (𝓞 ↥K), (ℓ : 𝓞 ↥K) ∈ v.asIdeal →
       ∃ (σ : Gal(↥K/k)) (ν : Fin t), v = σ • placeUnder K (Pr ν) (hPrbot ν))
     (hfam : HasPrescribedUnits ℓ K) :
-    HasCyclicKernelPrescription ℓ U n S j φ D := by
+    HasKernelPrescription ℓ U n S j φ D := by
   classical
   have hℓ : ℓ.Prime := Fact.out
   haveI : NeZero ℓ := ⟨hℓ.ne_zero⟩
