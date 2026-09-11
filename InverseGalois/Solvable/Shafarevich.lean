@@ -606,11 +606,13 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   realization.  The extension fails to be a cocycle only by the factor set of the section, a family
   of layer elements indexed by ordered pairs of operators — a number fixed before the number of
   letters is announced — so the number of letters can be announced large enough that one surjective
-  shrinking of the operator group annihilates the whole factor set at once.  The section is the
-  identity along the kernel, so the prescribed values, the vanishing along the named subgroups and
-  the clause confining the new ramification all transfer verbatim.  So **a prescription of an
-  equivariant homomorphism on the kernel of the base realization, at every number of letters, buys
-  the flat prescription over the base field**.
+  shrinking of the operator group annihilates the whole factor set at once.  The prescription
+  upstairs may spend a shrinking of its own, and the two compose: the number the factor set is
+  killed from is fixed first, the prescription answers at that number, and the shrinking it spends
+  comes first.  The section is the identity along the kernel, so the prescribed values, the
+  vanishing along the named subgroups and the clause confining the new ramification all transfer
+  verbatim.  So **a prescription of an equivariant homomorphism on the kernel of the base
+  realization, at every number of letters, buys the flat prescription over the base field**.
 * `InverseGalois.Solvable.Shafarevich.CyclicCorrection` makes a two generator image cyclic.  The
   decomposition subgroup of a tame prime maps into the step by a pair of generators, one of them
   carrying the whole inertia; writing the other as a layer element times a power of the first puts
