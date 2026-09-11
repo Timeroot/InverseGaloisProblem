@@ -73,6 +73,20 @@ theorem zmodChar_pow (hχ : ∀ x y : G, χ (x * y) = χ x + χ y) (x : G) (m : 
   | zero => rw [pow_zero, zero_smul, zmodChar_one_eq_zero hχ]
   | succ m ih => rw [pow_succ, hχ, ih, succ_nsmul]
 
+/-- An additive character of a group negates at an inverse. -/
+theorem zmodChar_inv (hχ : ∀ x y : G, χ (x * y) = χ x + χ y) (x : G) : χ x⁻¹ = -χ x := by
+  have h1 := hχ x x⁻¹
+  rw [mul_inv_cancel, zmodChar_one_eq_zero hχ] at h1
+  linear_combination -h1
+
+/-- An additive character of a group multiplies by the exponent at an integer power. -/
+theorem zmodChar_zpow (hχ : ∀ x y : G, χ (x * y) = χ x + χ y) (x : G) (i : ℤ) :
+    χ (x ^ i) = i • χ x := by
+  induction i using Int.induction_on with
+  | zero => rw [zpow_zero, zero_smul, zmodChar_one_eq_zero hχ]
+  | succ m ih => rw [zpow_add_one, hχ, ih, add_smul, one_smul]
+  | pred m ih => rw [zpow_sub_one, hχ, zmodChar_inv hχ, ih, sub_smul, one_smul, ← sub_eq_add_neg]
+
 end AddChar
 
 /-! ### Powers of a unit and smoothness -/
@@ -242,6 +256,35 @@ theorem hasKummerCharInertiaLift : HasKummerCharInertiaLift h := by
   simp only [nsmul_eq_mul]
   rw [ZMod.natCast_zmod_val, ← hs]
   ring
+
+/-- **A character of a decomposition subgroup, or of the inertia subgroup at a prime away from the
+exponent, is named by a class in the completion at the place below together with all its powers**: a
+unit whose class is a power of the named one carries the corresponding multiple of the character.
+
+The named class is the class of one unit carrying the character, so its power is the class of the
+same power of that unit, and the Kummer character of a power of a unit is the multiple of its Kummer
+character. -/
+theorem exists_localClass_forall_kummerChar_nsmul (hlift : HasKummerCharInertiaLift h)
+    {P : Ideal (𝓞 Ω)} [P.IsPrime] (hP : P ≠ ⊥) {v : HeightOneSpectrum (𝓞 K)}
+    (hv : v.asIdeal = Ideal.under (𝓞 K) P) {A : Subgroup Gal(Ω/K)}
+    (hA : A = stabilizer Gal(Ω/K) P ∨ (A = Ideal.inertia Gal(Ω/K) P ∧ (n : 𝓞 Ω) ∉ P))
+    (χ : ↥A → ZMod n) (hχ : ∀ x y : ↥A, χ (x * y) = χ x + χ y)
+    (hsm : ∃ N : Subgroup Gal(Ω/K), IsOpen (N : Set Gal(Ω/K)) ∧
+      ∀ x : ↥A, (x : Gal(Ω/K)) ∈ N → χ x = 0) :
+    ∃ c : localClasses v n, ∀ (m : ℕ) (a : Kˣ), localClassHom v n a = c ^ m →
+      ∀ x : ↥A, kummerChar h a (x : Gal(Ω/K)) = m • χ x := by
+  have hAle : A ≤ stabilizer Gal(Ω/K) P := by
+    rcases hA with rfl | ⟨rfl, -⟩
+    · exact le_rfl
+    · exact Ideal.inertia_le_stabilizer P
+  obtain ⟨a₀, ha₀⟩ : ∃ a : Kˣ, ∀ x : ↥A, kummerChar h a (x : Gal(Ω/K)) = χ x := by
+    rcases hA with rfl | ⟨rfl, hnP⟩
+    · exact exists_units_forall_kummerChar_eq_of_stabilizer h hP χ hχ hsm
+    · exact hlift P hP hnP χ hχ hsm
+  refine ⟨localClassHom v n a₀, fun m a hac x => ?_⟩
+  have hpow : localClassHom v n a = localClassHom v n (a₀ ^ m) := by
+    rw [hac, _root_.map_pow]
+  rw [kummerChar_eq_of_localClassHom_eq h hv hpow (hAle x.2), kummerChar_units_pow, ha₀]
 
 end Lift
 

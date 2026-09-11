@@ -21251,3 +21251,64 @@ again be self-contradictory.
 `HasKernelPrescription` has no producer yet; `KernelPrescriptionEP` merely wraps it and
 `confinedPrescriptionEP_of_kernelPrescriptionEP` merely consumes it, so the repair is confined to
 the two files.
+
+## 1.90  The bridge from a family of units to the prescription, and the cyclic repair
+
+Two things landed here.
+
+**(a) The bridge.**  `InverseGalois/Solvable/Shafarevich/KernelPlaces.lean` introduces
+
+* `HasPrescribedUnits ℓ K D` — the arithmetic input, a single statement about the level `K`:
+  given a finite level `E ⊇ K`, a finite family of places `w μ` of `K` lying in distinct orbits,
+  and `d` classes `c μ q ∈ localClasses (w μ) ℓ` prescribed at each of them, there is a family
+  `z : Fin d → Kˣ` which is a local `ℓ`-th power at every place above `ℓ`, carries the prescribed
+  classes at the `w μ`, dies at every proper conjugate `σ • w μ`, fixes the roots the family `D`
+  is asked about, and at every other place `v` where some `z q` has order not divisible by `ℓ`
+  either sits over a named place or has `v` completely decomposed in `E` with a single coordinate
+  surviving and every proper conjugate of `v` trivial;
+* `hasCyclicKernelPrescription_of_places` — a level `K` with `K.fixingSubgroup = φ.ker`, carrying a
+  primitive `ℓ`-th root of unity and satisfying `HasPrescribedUnits ℓ K D`, satisfies the
+  prescription.
+
+The bridge takes `N := n` and `α := MonoidHom.id`, so no shrinking is spent; the homomorphism is
+`u := kummerKernelHom hKker hkd layerBasis layerBasis_pow_eq_one z`, whose coordinates are the
+Kummer characters of the `z q`; the finite level `E` is `E₀ ⊔ K` with `E₀` obtained from
+`exists_fixingSubgroup_le` applied to `F.ker ⊓ K.fixingSubgroup`.  Before this, nothing at all
+produced a `HasKernelPrescription`.
+
+**(b) The cyclic repair of §1.88.**  As first written, `HasPrescribedUnits` prescribed *arbitrary*
+classes at the named places, and so inherited the reciprocity defect of §1.88: the `ℓ`-th power
+residue product formula forces `∏_μ (c μ q , c μ q')_{w μ} = 1` (above `ℓ` the units are local
+powers, at proper conjugates the classes are trivial, at leftover places only one coordinate
+survives and the symbol is alternating for odd `ℓ`), so an unrelated family of classes is
+unsatisfiable.  The relation is empty as soon as the classes prescribed at one place lie on a single
+line, so `HasPrescribedUnits` now carries that hypothesis, and the prescription it answers is the
+new
+
+* `HasCyclicKernelPrescription` (`LevelKernelPrescription.lean`) — `HasKernelPrescription` with the
+  extra hypothesis `∀ μ, ∃ x₀, ∀ x, a μ x ∈ Subgroup.zpowers (a μ x₀)` on the prescribed
+  homomorphisms.  `hasCyclicKernelPrescription_of_hasKernelPrescription` is the trivial arrow.
+
+Producing the classes on a line is `exists_localClass_zpowers_forall_kummerKernelHom_eq`
+(`KernelPrimeCyclic.lean`), which rests on two new pieces:
+
+* `exists_zmodChar_forall_eq_smul` — the coordinates of a homomorphism `a` with cyclic image are the
+  multiples `χ t ∘ a = (χ t (a x₀)) · e` of a single character `e` of the source.  If every
+  coordinate of the generator `a x₀` vanishes then `a x₀ = 1` and `a` is trivial; otherwise one
+  coordinate `χ t₀ (a x₀)` is nonzero, hence invertible in the field `ZMod ℓ`, and
+  `e := (χ t₀ (a x₀))⁻¹ · (χ t₀ ∘ a)` works because `a x` is an integer power of `a x₀`.
+* `exists_localClass_forall_kummerChar_nsmul` (`CFT/Kummer/InertiaCharLift.lean`) — the class naming
+  a character names all its multiples: a unit whose class is the `m`-th power of the named one has
+  Kummer character `m • χ`.  The named class is the class of one unit `a₀` carrying `χ`, so its
+  `m`-th power is the class of `a₀ ^ m`, and `kummerChar_units_pow` finishes.  Supporting
+  `zmodChar_inv` and `zmodChar_zpow` were added next to `zmodChar_pow`.
+
+**What is still open.**  `HasCyclicKernelPrescription` does *not* feed
+`hasConfinedPrescription_of_hasKernelPrescription`: the consumer
+`hasSplitCyclicRepair_of_hasConfinedPrescription` builds its prescription as `a = g · f⁻¹` (branch
+`RamifiesAt φ Φ (Pr μ)`, `LevelConfinedTwist.lean`) or as `a₀⁻¹` with `inl ∘ a₀ = f` on the
+stabilizer (the other branch), and only `g` is cyclic — the flat lift `f` is not.  So the remaining
+step is exactly repair 2 of §1.88: either arrange the flat lift to be cyclic on the decomposition
+subgroups of the named primes (an extra hypothesis on `f`, which is how Schmidt–Wingberg's condition
+(ii) reads), or replace the per-place line hypothesis by the product relation over `Tr` and
+discharge it with the global product formula.
