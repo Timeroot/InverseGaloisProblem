@@ -76,6 +76,12 @@ prescription well posed: on such a subgroup the action on the layer is trivial, 
 restricts there to a homomorphism.  Along the finite family the cocycle is asked to vanish wherever
 the base realization already does.
 
+The prescribed homomorphisms are asked to be equivariant for conjugation, in the sense that
+conjugating an element of one of the subgroups back into that same subgroup moves the prescribed
+value by the base realization of the conjugating element.  That is no restriction: a cocycle
+restricted to the kernel of the base realization is equivariant already, so any prescription which
+can be met at all satisfies it.
+
 The last clause is the one which confines the new ramification, and it asks less than the
 prescription the cyclic repair is bought with: at a prime where the cocycle ramifies along the part
 of inertia the base realization kills, either that prime is one of the named ones, or it is a prime
@@ -103,6 +109,8 @@ def HasFlatPrescription : Prop :=
       (∀ μ, A μ ≤ stabilizer Gal(Ω/k) (Q μ)) → (∀ μ, A μ ≤ φ.ker) →
       (∀ μ, IsSmooth₁ ((a μ : ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)) :
         ↥(A μ) → ↥(layerSub ℓ (Generic U N S) j))) →
+      (∀ (μ : ι) (g : Gal(Ω/k)) (x : ↥(A μ)) (hx : g * (x : Gal(Ω/k)) * g⁻¹ ∈ A μ),
+        a μ ⟨g * (x : Gal(Ω/k)) * g⁻¹, hx⟩ = φ g • a μ x) →
         ∃ (α : Generic U N S →* Generic U n S) (hα : IsOperatorHom α), Function.Surjective α ∧
           ∃ c : Gal(Ω/k) → ↥(layerSub ℓ (Generic U n S) j), IsMulCocycle₁ c ∧ IsSmooth₁ c ∧
             (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → c x = 1) ∧
@@ -183,6 +191,25 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
     · show (layerExtension ℓ (genericAut U N S) j).inl ((a₀ x)⁻¹) * f (x : Gal(Ω/k)) = 1
       rw [← ha₀ x, ← _root_.map_mul, inv_mul_cancel, _root_.map_one]
   choose a hasm hakey using hstep
+  have hconj : ∀ (g : Gal(Ω/k)) (v : ↥(layerSub ℓ (Generic U N S) j)),
+      (layerExtension ℓ (genericAut U N S) j).inl (φ g • v)
+        = f g * (layerExtension ℓ (genericAut U N S) j).inl v * (f g)⁻¹ := by
+    intro g v
+    have h1 : φ g • v = (layerExtension ℓ (genericAut U N S) j).conjActHom (Φ g) v := by
+      rw [← hΦright g, ← genericQuotAction_smul ℓ U N N S j (Φ g) v]
+      exact smul_eq_conjActHom_genericLayer ℓ U N S j (Φ g) v
+    rw [h1, ← hfright g, (layerExtension ℓ (genericAut U N S) j).inl_conjActHom]
+  have haequiv : ∀ (μ : {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ)}) (g : Gal(Ω/k))
+      (x : ↥(Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ⊓ φ.ker))
+      (hx : g * (x : Gal(Ω/k)) * g⁻¹ ∈ Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ⊓ φ.ker),
+      a μ ⟨g * (x : Gal(Ω/k)) * g⁻¹, hx⟩ = φ g • a μ x := by
+    intro μ g x hx
+    apply (layerExtension ℓ (genericAut U N S) j).inl_injective
+    rw [hconj g (a μ x), mul_eq_one_iff_eq_inv.1 (hakey μ ⟨g * (x : Gal(Ω/k)) * g⁻¹, hx⟩),
+      mul_eq_one_iff_eq_inv.1 (hakey μ x)]
+    show (f (g * (x : Gal(Ω/k)) * g⁻¹))⁻¹ = f g * (f (x : Gal(Ω/k)))⁻¹ * (f g)⁻¹
+    rw [_root_.map_mul, _root_.map_mul, _root_.map_inv]
+    group
   have hfr : ∀ x, SemidirectProduct.rightHom (f x) = φ x := by
     intro x
     show SemidirectProduct.rightHom
@@ -193,7 +220,7 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
     hpres f {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ)} (fun μ => Pr (μ : Fin s))
       (fun μ => Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ⊓ φ.ker) a hfsurj hfsm hfr (fun μ => hPrp _)
       (fun μ => hPrbot _) (fun μ => le_trans inf_le_left (Ideal.inertia_le_stabilizer _))
-      (fun _ => inf_le_right) hasm
+      (fun _ => inf_le_right) hasm haequiv
   have hΦ'right : ∀ x, SemidirectProduct.rightHom (((layerSemidirectMap ℓ hα j).comp Φ) x) = φ x :=
     fun x => hΦright x
   have hf'right : ∀ x, (layerExtension ℓ (genericAut U n S) j).rightHom

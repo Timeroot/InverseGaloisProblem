@@ -69,6 +69,7 @@ import InverseGalois.Solvable.Shafarevich.RamifiedSplit
 import InverseGalois.Solvable.Shafarevich.LevelCyclicRepair
 import InverseGalois.Solvable.Shafarevich.CyclicLift
 import InverseGalois.Solvable.Shafarevich.LevelFlatTwist
+import InverseGalois.Solvable.Shafarevich.LevelFlatKernel
 import InverseGalois.Solvable.Shafarevich.CyclicCorrection
 import InverseGalois.Solvable.Shafarevich.LevelConfinedTwist
 import InverseGalois.Solvable.Shafarevich.LevelKernelPrescription
@@ -599,6 +600,17 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   lift can be corrected to one whose new ramification over the base realization occurs only where
   the solution below already ramifies or else at a prime completely decomposed in the field the
   solution below cuts out**.
+* `InverseGalois.Solvable.Shafarevich.LevelFlatKernel` buys that prescription one field up.  Every
+  clause it asks for is read along the kernel of the base realization, so it is enough to prescribe
+  an equivariant smooth homomorphism there and to extend it back down along a section of the base
+  realization.  The extension fails to be a cocycle only by the factor set of the section, a family
+  of layer elements indexed by ordered pairs of operators — a number fixed before the number of
+  letters is announced — so the number of letters can be announced large enough that one surjective
+  shrinking of the operator group annihilates the whole factor set at once.  The section is the
+  identity along the kernel, so the prescribed values, the vanishing along the named subgroups and
+  the clause confining the new ramification all transfer verbatim.  So **a prescription of an
+  equivariant homomorphism on the kernel of the base realization, at every number of letters, buys
+  the flat prescription over the base field**.
 * `InverseGalois.Solvable.Shafarevich.CyclicCorrection` makes a two generator image cyclic.  The
   decomposition subgroup of a tame prime maps into the step by a pair of generators, one of them
   carrying the whole inertia; writing the other as a layer element times a power of the first puts
