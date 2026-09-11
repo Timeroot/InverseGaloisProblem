@@ -523,6 +523,7 @@ import InverseGalois.CFT.PoitouTate.ShaSylow
 import InverseGalois.CFT.PoitouTate.ShaTate
 import InverseGalois.CFT.PoitouTate.ShaTateNatural
 import InverseGalois.CFT.PoitouTate.SplitClass
+import InverseGalois.CFT.PoitouTate.SplitDetect
 import InverseGalois.CFT.PoitouTate.SplitFamily
 import InverseGalois.CFT.PoitouTate.SplitLocalPower
 import InverseGalois.CFT.PoitouTate.SplitPlaceGenerate
@@ -7956,6 +7957,24 @@ it that are available here.
   completion below: **there are finitely many completely split primes of an intermediate field,
   avoiding any prescribed finite set of primes of the base, at which being a local power forces a
   radicand whose radical lies in the top field to be a power already in the intermediate field.**
+
+* `InverseGalois.CFT.PoitouTate.SplitDetect` asks finitely many places to detect not one radicand
+  but every `S`-unit at once.  An `S`-unit of a normal extension is a power there exactly when every
+  linear functional on the quotient of the `S`-units of that extension by its powers kills it, and
+  each such functional is a character to which the density theorem attaches a place, prime to the
+  exponent, avoiding a prescribed set of primes of the base and split all the way up, at which the
+  local class of a unit is read off by that character; collecting one place for each functional
+  leaves a finite set at which triviality of the local classes already forces the unit to be a power
+  upstairs.  Two refinements make that set usable.  Allowing the unit to be a unit away from a wider
+  set of places costs nothing: its local classes being trivial off the original set, its order is
+  divisible by the exponent there, so dividing by a global element carrying the prescribed orders
+  returns it to the original set and changes none of its local classes, which the exponent kills.
+  And saturating the set over the base — adjoining every place of the field lying over a place of
+  the base already met — leaves it stable under the Galois group for free, while
+  transitivity of that group on the places above a prime of the base carries a trivial decomposition
+  group at one place above it to all of them.  So: **there is a finite Galois stable set of places,
+  avoiding a prescribed set and completely split in a prescribed normal extension, whose local
+  classes detect being a power in that extension for the `S`-units of any larger set of places.**
 
 * `InverseGalois.CFT.PoitouTate.SupRadicandChar` splits the radicands the prescription character has
   to kill between two extensions, which is what a compositum asks for.  A radicand of a compositum
