@@ -184,15 +184,18 @@ below the given finite family of decomposition subgroups.  The named places avoi
 named prime sits over that family, and the places above the exponent are among it by hypothesis,
 which is what makes the assembled homomorphism unramified there.
 
-The finite level is the normal closure of the one cut out by the kernel of the given lift together
-with the level itself, which is finite because the lift is smooth and the level is finite.  No
-shrinking is spent: the number of letters is the one asked for and the map of layers is the
-identity.
+The finite level is the join of the one cut out by the kernel of the given lift with the level
+itself, which is finite because the lift is smooth and the level is finite, and Galois over the base
+because both of its summands are.
 
 The orthogonality of the classes named at the named places to the units of the level which become
 powers in that finite level is the one thing not read off the family; it is asked of the classes the
-prescribed values name, which is where the reciprocity law meets the prescription. -/
-theorem hasKernelPrescription_of_places (K : IntermediateField k Ω) [FiniteDimensional k ↥K]
+prescribed values name, which is where the reciprocity law meets the prescription.  It is asked
+together with the shrinking it is bought with: the number of letters the data is read at is
+announced in advance, and a surjection onto the number asked for is produced along with the
+orthogonality of the naming the values carried across it name. -/
+theorem hasKernelPrescription_of_places (N : ℕ) (K : IntermediateField k Ω)
+    [FiniteDimensional k ↥K]
     [NumberField ↥K] [IsGalois k ↥K] (hKker : K.fixingSubgroup = φ.ker) {ζ : ↥K}
     (hζ : IsPrimitiveRoot ζ ℓ)
     (hkd : IsKummerData ↥K Ω (Multiplicative (ZMod ℓ)) (zmodRootHom hζ) ℓ)
@@ -205,16 +208,17 @@ theorem hasKernelPrescription_of_places (K : IntermediateField k Ω) [FiniteDime
     (horth : ∀ (ι : Type) [Fintype ι] (Q : ι → Ideal (𝓞 Ω)) (_ : ∀ μ, (Q μ).IsPrime)
       (hQbot : ∀ μ, Q μ ≠ ⊥)
       (A : ι → Subgroup Gal(Ω/k))
-      (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U n S) j))
-      (c : (μ : ι) → Fin (layerDim ℓ (Generic U n S) j) →
-        localClasses (placeUnder K (Q μ) (hQbot μ)) ℓ),
-      (∀ (μ : ι) (z : Fin (layerDim ℓ (Generic U n S) j) → (↥K)ˣ),
-        (∀ q, localClassHom (placeUnder K (Q μ) (hQbot μ)) ℓ (z q) = c μ q) →
-        ∀ (x : ↥(A μ)) (hx : (x : Gal(Ω/k)) ∈ φ.ker),
-          kummerKernelHom hKker hkd (layerBasis ℓ (Generic U n S) j) layerBasis_pow_eq_one z
-            ⟨(x : Gal(Ω/k)), hx⟩ = a μ x) →
-      ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
-        IsNamedOrthogonal ℓ K hres hζ E (fun μ => placeUnder K (Q μ) (hQbot μ)) c)
+      (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)),
+      ∃ (α : Generic U N S →* Generic U n S) (_ : IsOperatorHom α), Function.Surjective α ∧
+        ∀ c : (μ : ι) → Fin (layerDim ℓ (Generic U n S) j) →
+            localClasses (placeUnder K (Q μ) (hQbot μ)) ℓ,
+          (∀ (μ : ι) (z : Fin (layerDim ℓ (Generic U n S) j) → (↥K)ˣ),
+            (∀ q, localClassHom (placeUnder K (Q μ) (hQbot μ)) ℓ (z q) = c μ q) →
+            ∀ (x : ↥(A μ)) (hx : (x : Gal(Ω/k)) ∈ φ.ker),
+              kummerKernelHom hKker hkd (layerBasis ℓ (Generic U n S) j) layerBasis_pow_eq_one z
+                ⟨(x : Gal(Ω/k)), hx⟩ = layerSubMap ℓ α j (a μ x)) →
+          ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
+            IsNamedOrthogonal ℓ K hres hζ E (fun μ => placeUnder K (Q μ) (hQbot μ)) c)
     (hfam : HasPrescribedUnits ℓ K hres hζ) :
     HasKernelPrescription ℓ U n S j φ D := by
   classical
@@ -222,11 +226,31 @@ theorem hasKernelPrescription_of_places (K : IntermediateField k Ω) [FiniteDime
   haveI : IsGalois ↥K Ω := IsGalois.tower_top_of_isGalois k ↥K Ω
   have hanti : ∀ E₁ E₂ : IntermediateField k Ω, E₁ ≤ E₂ →
       E₂.fixingSubgroup ≤ E₁.fixingSubgroup := fun _ _ h => fixingSubgroup_antitone h
-  refine ⟨n, ?_⟩
+  refine ⟨N, ?_⟩
   intro _ F ι hιfin Q A a hFsm hQp hQbot hQorb hQker _ _ hAcase hasm hacyc havoid
   haveI := hιfin
   haveI : ∀ μ, (Q μ).IsPrime := hQp
   haveI : ∀ ν, (Pr ν).IsPrime := hPrp
+  letI : Fintype ι := Fintype.ofFinite ι
+  -- the shrinking the orthogonality of the naming is bought with
+  obtain ⟨α, hα, hαsurj, horth'⟩ := horth ι Q hQp hQbot A a
+  have hasm' : ∀ μ : ι, IsSmooth₁
+      (((layerSubMap ℓ α j).comp (a μ) : ↥(A μ) →* ↥(layerSub ℓ (Generic U n S) j)) :
+        ↥(A μ) → ↥(layerSub ℓ (Generic U n S) j)) := by
+    intro μ
+    obtain ⟨N₀, hN₀, hcon⟩ := hasm μ
+    exact ⟨N₀, hN₀, fun x y hy => congrArg (layerSubMap ℓ α j) (hcon x y hy)⟩
+  have hacyc' : ∀ μ : ι, ∃ x₀ : ↥(A μ), ∀ x : ↥(A μ),
+      ((layerSubMap ℓ α j).comp (a μ)) x ∈
+        Subgroup.zpowers (((layerSubMap ℓ α j).comp (a μ)) x₀) := by
+    intro μ
+    obtain ⟨x₀, hx₀⟩ := hacyc μ
+    refine ⟨x₀, fun x => ?_⟩
+    obtain ⟨m, hm⟩ := hx₀ x
+    have hm' : a μ x₀ ^ m = a μ x := hm
+    refine ⟨m, ?_⟩
+    show layerSubMap ℓ α j (a μ x₀) ^ m = layerSubMap ℓ α j (a μ x)
+    rw [← hm', map_zpow]
   -- a finite level on which the given lift and the base realization both die
   obtain ⟨E₀, hE₀fin, hE₀gal, hE₀le⟩ :=
     exists_fixingSubgroup_le ((isOpenNormal_ker_of_isSmoothHom hFsm).inf
@@ -282,28 +306,27 @@ theorem hasKernelPrescription_of_places (K : IntermediateField k Ω) [FiniteDime
         (∀ q, localClassHom (placeUnder K (Q μ) (hQbot μ)) ℓ (z q) = c q) →
           ∀ (x : ↥(A μ)) (hx : (x : Gal(Ω/k)) ∈ φ.ker),
             kummerKernelHom hKker hkd (layerBasis ℓ (Generic U n S) j)
-                layerBasis_pow_eq_one z ⟨(x : Gal(Ω/k)), hx⟩ = a μ x :=
+                layerBasis_pow_eq_one z ⟨(x : Gal(Ω/k)), hx⟩ = layerSubMap ℓ α j (a μ x) :=
     fun μ => exists_localClass_zpowers_forall_kummerKernelHom_eq hKker hkd
       (hasKummerCharInertiaLift hkd) hℓ (layerBasis ℓ (Generic U n S) j) layerBasis_pow_eq_one
       (χ := fun q e => layerCoord ℓ (Generic U n S) j e q) prod_layerBasis_pow_layerCoord
-      (fun q e e' => layerCoord_mul e e' q) (hQbot μ) rfl (Or.inl (hAcase μ)) (a μ) (hasm μ)
-      (hacyc μ)
+      (fun q e e' => layerCoord_mul e e' q) (hQbot μ) rfl (Or.inl (hAcase μ))
+      ((layerSubMap ℓ α j).comp (a μ)) (hasm' μ) (hacyc' μ)
   choose u₀ c hcline hc using hex
   have hdisjℓ : ∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (placeUnder K (Q μ) (hQbot μ)).asIdeal := by
     intro μ hmem
     obtain ⟨σ, ν, hσν⟩ := hℓPr _ hmem
     exact hdisj μ (hσν ▸ hmemTz σ ν)
-  letI : Fintype ι := Fintype.ofFinite ι
   obtain ⟨z, hzT, hz2, hz3, hz4⟩ := hfam (E₀ ⊔ K) inferInstance inferInstance hKE ι
     (fun μ => placeUnder K (Q μ) (hQbot μ)) hinj hconj Tz hdisj hdisjℓ
     (layerDim ℓ (Generic U n S) j) c (fun μ => ⟨u₀ μ, hcline μ⟩)
-    (horth ι Q hQp hQbot A a c hc (E₀ ⊔ K) inferInstance inferInstance hKE)
+    (horth' c hc (E₀ ⊔ K) inferInstance inferInstance hKE)
   have hz1 : ∀ (q : Fin (layerDim ℓ (Generic U n S) j)) (v : HeightOneSpectrum (𝓞 ↥K)),
       (ℓ : 𝓞 ↥K) ∈ v.asIdeal → localClassHom v ℓ (z q) = 1 := by
     intro q v hv
     obtain ⟨σ, ν, rfl⟩ := hℓPr v hv
     exact hzT q _ (hmemTz σ ν)
-  refine ⟨MonoidHom.id (Generic U n S), isOperatorHom_id, Function.surjective_id,
+  refine ⟨α, hα, hαsurj,
     kummerKernelHom hKker hkd (layerBasis ℓ (Generic U n S) j) layerBasis_pow_eq_one z,
     isSmooth₁_kummerKernelHom hKker hkd _ _ z, ?_, ?_, ?_, ?_⟩
   · intro ν ρ y hy
@@ -313,7 +336,6 @@ theorem hasKernelPrescription_of_places (K : IntermediateField k Ω) [FiniteDime
       (asIdeal_smul_placeUnder K (hPrbot ν) ρ⁻¹) (fun q => hzT q _ (hmemTz _ ν))
       (mem_stabilizer_smul_iff.2 (by rw [inv_inv, ← hDPr ν]; exact hy))
   · intro μ x hx
-    rw [layerSubMap_id, MonoidHom.id_apply]
     exact hc μ z (fun q => hz2 μ q) x hx
   · intro μ ρ hρ y hy
     have hσ : AlgEquiv.restrictNormalHom (F := k) (K₁ := Ω) ↥K ρ ≠ 1 := fun h0 =>

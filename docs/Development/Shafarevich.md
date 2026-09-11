@@ -21436,3 +21436,127 @@ The only hypothesis left is `horth`, the orthogonality of the naming against tho
 become an `ℓ`-th power in the upper field — the residue of §1.8x, unchanged.  Two hypotheses stay
 with the caller: `hram`, a finite set outside which the upper field is unramified, and `hdisj`, the
 avoidance above.
+
+## 1.93  `HasPrescribedUnits` is a theorem; the residue is the orthogonality of the naming (2026-09-11)
+
+Two defects were repaired at once, and what is left of the arithmetic of the sharp prescription is
+one named hypothesis.
+
+### (a) The defect: `HasPrescribedUnits` as stated was false
+
+§1.90(b) already had to add the "classes on a line" hypothesis to make room for the product formula
+*within one place*.  The same objection applies *across* places and is not repaired by any
+per-place hypothesis: with `k = K = ℚ(ζ_ℓ)`, one named place `w ∤ ℓ`, `Tz = ∅` and `d = 1`, the
+product formula for the `ℓ`-th power residue symbol forces `(u, z)_w = 1` for every `u` which is a
+unit outside `{w}`, trivial at the infinite places, and an `ℓ`-th power in the auxiliary field.  A
+class `c` failing that identity cannot be the class of any `z`.  So `HasPrescribedUnits`,
+`HasNamedPairing`, `PrescribedUnitsEP` and `NamedPairingEP` as previously stated were all false, and
+the theorem `hasPrescribedUnits_of_hasNamedPairing` was a bridge from a false hypothesis.
+
+### (b) The repair: the orthogonality becomes an antecedent
+
+`KernelPlaces.lean` now carries
+
+```
+def IsNamedOrthogonal (ℓ) (K) (hres) (hζ) (E : IntermediateField k Ω) (w : ι → HeightOneSpectrum (𝓞 ↥K))
+    (c : (μ : ι) → Fin d → localClasses (w μ) ℓ) : Prop :=
+  ∀ Tn, (∀ μ, w μ ∈ Tn) → ∀ q u,
+    (∀ y : InfinitePlace ↥K, infClassHom y ℓ u = 1) →
+    (∃ y : Ω, y ∈ E ∧ y ^ ℓ = algebraMap ↥K Ω u) →
+    localSymbolPiPairing hres hζ w (fun μ => localClassHom (w μ) ℓ u) (fun μ => c μ q) = 1
+```
+
+which is literally the `horth` hypothesis of `exists_units_named_prescribed`
+(`CFT/PoitouTate/NamedUnits.lean`) read against the naming rather than against a spread family, and
+`HasPrescribedUnits` now takes it as an extra antecedent.  With it the statement is *true*, and
+`KernelArith.lean` proves it outright:
+
+```
+theorem hasPrescribedUnits (hℓ : ℓ.Prime) (hodd : 2 < ℓ) (K) (hres) (hζ) : HasPrescribedUnits ℓ K hres hζ
+```
+
+`HasNamedPairing`, `PrescribedUnitsEP`, `NamedPairingEP` and the three bridges through them are
+deleted.
+
+Two things make the proof go through.
+
+* **No normal closure.**  `HasPrescribedUnits` now asks the auxiliary field `E` to be Galois over
+  the base — which costs the consumer nothing, since it supplies `E₀ ⊔ K` and Mathlib's
+  `IntermediateField.normal_sup` makes a join of Galois subextensions Galois (finding 3724).  So the
+  two-place construction is run over `E` itself instead of over `normalClosure k E Ω`, and the whole
+  bookkeeping that carried the splitting condition down from the closure disappears.
+* **`piPairing_eq_of_support`.**  `exists_units_named_prescribed` states its orthogonality against
+  the pairing indexed by a finite set `Tn` of places and the family `spreadClasses Tp cl t`, while
+  `IsNamedOrthogonal` states it against the pairing indexed by `ι` and `c`.  The new
+
+  ```
+  theorem piPairing_eq_of_support (φ : ∀ y, A y →* A y →* M) (he : Function.Injective e)
+      (hb : ∀ y, (∀ μ, e μ ≠ y) → b y = 1) :
+      piPairing φ a b = piPairing (fun μ => φ (e μ)) (fun μ => a (e μ)) (fun μ => b (e μ))
+  ```
+
+  is the whole bridge: `Finset.prod_subset` drops the factors outside the image of the naming and
+  `Finset.prod_image` reindexes the rest.  The case `t ≥ d`, where `spreadClasses` is trivial for a
+  different reason, is split off first.
+
+### (c) The second defect: the shrinking is not optional
+
+With the orthogonality as an antecedent, `hasKernelPrescription_of_places` needed it supplied for
+the naming its own prescribed values cut out — and, as first written, with `N := n` and
+`α := MonoidHom.id`.  That version is again false: the prescribed homomorphisms `a μ` of
+`HasKernelPrescription` are arbitrary (subject only to smoothness and cyclicity of image), the
+correspondence `a μ ↔ c μ` through local Kummer theory at `Q μ` is a bijection, and so `c` is
+arbitrary and its orthogonality is a genuine obstruction.  Killing that obstruction *is*
+Schmidt–Wingberg's fourth step, and it is killed by shrinking.
+
+So `hasKernelPrescription_of_places` now takes the number of letters `N` the data is read at as a
+parameter and asks its `horth` hypothesis to produce the shrinking:
+
+```
+(horth : ∀ (ι) [Fintype ι] (Q) (_ : ∀ μ, (Q μ).IsPrime) (hQbot) (A)
+    (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)),
+  ∃ (α : Generic U N S →* Generic U n S) (_ : IsOperatorHom α), Function.Surjective α ∧
+    ∀ c, (∀ μ z, (∀ q, localClassHom (placeUnder K (Q μ) (hQbot μ)) ℓ (z q) = c μ q) →
+            ∀ x hx, kummerKernelHom … z ⟨x, hx⟩ = layerSubMap ℓ α j (a μ x)) →
+      ∀ E, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E → IsNamedOrthogonal ℓ K hres hζ E _ c)
+```
+
+and answers with that `α`.  The rest of the proof is unchanged: the classes are produced from
+`(layerSubMap ℓ α j).comp (a μ)` rather than from `a μ`, smoothness and cyclicity of the image being
+preserved by postcomposition with a group homomorphism.
+
+### (d) The EP level
+
+`KernelStep.lean` replaces `PrescribedUnitsEP`/`NamedPairingEP` by
+
+```
+def NamedOrthogonalEP (ℓ) : Prop :=
+  ∀ S U (k Ω) φ (n j) (K) (hKker) ζ hζ hkd hres,
+    ∃ N, ∀ ι Q _ hQbot A a, ∃ α hα, Function.Surjective α ∧ ∀ c, (pinning) → ∀ E …, IsNamedOrthogonal …
+```
+
+quantified over an arbitrary base field `k` rather than over `ℚ` — instantiating a variable `k` at
+`ℚ` keeps `Algebra ℚ ↥K` equal to `IntermediateField.algebra`, whereas a `ℚ`-specific statement
+re-synthesises it as `DivisionRing.toRatAlgebra` and no longer matches the caller (gotcha 3697).
+Then
+
+* `kernelPrescriptionEP_of_namedOrthogonalEP ℓ hodd h : KernelPrescriptionEP ℓ`, which now also
+  builds `hroot`/`hkd` and `choose Pc Ec hres`, hoisted down from `hasKernelPrescription_of_places`
+  (sound because `IsKummerData` is a `Prop`, finding 3719);
+* `genericLevelStepEPRoots_of_namedOrthogonalEP ℓ hodd hflat h : GenericLevelStepEPRoots ℓ`.
+
+### (e) What is left
+
+For an odd prime the whole ladder now rests on exactly two arithmetic hypotheses:
+
+* `FlatPrescriptionEP ℓ` — Schmidt–Wingberg's third step, to be discharged with Proposition 7 (i)
+  (`exists_operatorHom_h1_eq_zero`);
+* `NamedOrthogonalEP ℓ` — Schmidt–Wingberg's fourth step, to be discharged with Proposition 7 (ii)
+  (`exists_operatorHom_h1_inl_eq_zero`): the obstruction is a single homology class in
+  `H₁(G, Layer₀ ⊗ Layer_j ⊗ T)` and `obs_α = (α_* ⊗ α_*) (obs_id)`.
+
+and, separately, the case `ℓ = 2`, every bridge in the chain carrying `hodd : 2 < ℓ`.
+
+### (f) Build
+
+Full root build green, 9946 jobs, 0 warnings, 0 sorries.

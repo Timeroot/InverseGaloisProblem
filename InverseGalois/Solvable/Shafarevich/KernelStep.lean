@@ -69,7 +69,12 @@ into the prescribed homomorphism on the decomposition subgroup of each named pri
 the symbols over all the places of the level is trivial and away from the named places the naming
 contributes nothing, so what is left is the product over the named places alone, read against the
 units supported at any finite set containing them, trivial at every infinite place, and already a
-power in the finite level the leftover places are asked to be decomposed in. -/
+power in the finite level the leftover places are asked to be decomposed in.
+
+The orthogonality is asked together with the shrinking it is bought with, in the shape the whole
+ladder is written in: a number of letters is announced in advance, the prescribed values are read at
+that number, and what is asked back is a surjection onto the number the prescription answers at
+together with the orthogonality of the naming the values carried across it name. -/
 def NamedOrthogonalEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
   ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] (k Ω : Type) [Field k] [Field Ω]
       [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω] (φ : Gal(Ω/k) →* U) (n j : ℕ)
@@ -78,19 +83,20 @@ def NamedOrthogonalEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
       (hkd : IsKummerData ↥K Ω (Multiplicative (ZMod ℓ)) (zmodRootHom hζ) ℓ)
       {Pc Ec : HeightOneSpectrum (𝓞 ↥K) → ℕ}
       (hres : ∀ v : HeightOneSpectrum (𝓞 ↥K),
-        HasResidueChar (v.adicCompletion ↥K) (Pc v) (Ec v))
-      (ι : Type) [Fintype ι] (Q : ι → Ideal (𝓞 Ω)) (_ : ∀ μ, (Q μ).IsPrime)
-      (hQbot : ∀ μ, Q μ ≠ ⊥) (A : ι → Subgroup Gal(Ω/k))
-      (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U n S) j))
-      (c : (μ : ι) → Fin (layerDim ℓ (Generic U n S) j) →
-        localClasses (placeUnder K (Q μ) (hQbot μ)) ℓ),
-      (∀ (μ : ι) (z : Fin (layerDim ℓ (Generic U n S) j) → (↥K)ˣ),
-        (∀ q, localClassHom (placeUnder K (Q μ) (hQbot μ)) ℓ (z q) = c μ q) →
-        ∀ (x : ↥(A μ)) (hx : (x : Gal(Ω/k)) ∈ φ.ker),
-          kummerKernelHom hKker hkd (layerBasis ℓ (Generic U n S) j) layerBasis_pow_eq_one z
-            ⟨(x : Gal(Ω/k)), hx⟩ = a μ x) →
-      ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
-        IsNamedOrthogonal ℓ K hres hζ E (fun μ => placeUnder K (Q μ) (hQbot μ)) c
+        HasResidueChar (v.adicCompletion ↥K) (Pc v) (Ec v)),
+      ∃ N : ℕ, ∀ (ι : Type) [Fintype ι] (Q : ι → Ideal (𝓞 Ω)) (_ : ∀ μ, (Q μ).IsPrime)
+        (hQbot : ∀ μ, Q μ ≠ ⊥) (A : ι → Subgroup Gal(Ω/k))
+        (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)),
+        ∃ (α : Generic U N S →* Generic U n S) (_ : IsOperatorHom α), Function.Surjective α ∧
+          ∀ c : (μ : ι) → Fin (layerDim ℓ (Generic U n S) j) →
+              localClasses (placeUnder K (Q μ) (hQbot μ)) ℓ,
+            (∀ (μ : ι) (z : Fin (layerDim ℓ (Generic U n S) j) → (↥K)ˣ),
+              (∀ q, localClassHom (placeUnder K (Q μ) (hQbot μ)) ℓ (z q) = c μ q) →
+              ∀ (x : ↥(A μ)) (hx : (x : Gal(Ω/k)) ∈ φ.ker),
+                kummerKernelHom hKker hkd (layerBasis ℓ (Generic U n S) j) layerBasis_pow_eq_one z
+                  ⟨(x : Gal(Ω/k)), hx⟩ = layerSubMap ℓ α j (a μ x)) →
+            ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
+              IsNamedOrthogonal ℓ K hres hζ E (fun μ => placeUnder K (Q μ) (hQbot μ)) c
 
 /-! ### The places of the level below the family -/
 
@@ -174,9 +180,9 @@ theorem kernelPrescriptionEP_of_namedOrthogonalEP (ℓ : ℕ) [Fact ℓ.Prime] [
       isKummerData_zmod hζ hroot
     choose Pc Ec hres using
       fun v : HeightOneSpectrum (𝓞 ↥K) => exists_hasResidueChar_adicCompletion v
-    exact hasKernelPrescription_of_places K hKker hζ hkd hres hPrp hPrbot hDPr
-      (exists_smul_placeUnder_of_mem K hPrp hPrbot hcovP)
-      (h S U ℚ Ω φ n j K hKker ⟨z, hzK⟩ hζ hkd hres)
+    obtain ⟨N, horth⟩ := h S U ℚ Ω φ n j K hKker ⟨z, hzK⟩ hζ hkd hres
+    exact hasKernelPrescription_of_places N K hKker hζ hkd hres hPrp hPrbot hDPr
+      (exists_smul_placeUnder_of_mem K hPrp hPrbot hcovP) horth
       (hasPrescribedUnits hℓ hodd K hres hζ)
   · exact ⟨0, fun hc => absurd hc hopen⟩
 
