@@ -85,8 +85,9 @@ read of the lift carried down along the shrinking the prescription spends rather
 itself, which is what keeps the level the clause is a splitting condition in at the number of
 letters asked for.
 
-The given lift is asked to be onto, which is what the repair the ladder consumes supplies and what
-makes the field it cuts out the whole of the generic quotient one field up.
+The given lift is asked to be onto and to lie over the base realization, which is what the repair
+the ladder consumes supplies and what makes the field it cuts out over the field the base
+realization cuts out the whole of the generic factor one field up.
 
 The prescription may spend a shrinking of its own: it announces the number of letters the data is
 read at, and answers with a surjection onto the number asked for and a cocycle at that number, the
@@ -96,7 +97,9 @@ def HasFlatPrescription : Prop :=
     ∀ (F : Gal(Ω/k) →* GenericQuot ℓ U N S (j + 1)) (ι : Type) [Finite ι]
         (Q : ι → Ideal (𝓞 Ω)) (A : ι → Subgroup Gal(Ω/k))
         (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)),
-      Function.Surjective F → IsSmoothHom F → (∀ μ, (Q μ).IsPrime) → (∀ μ, Q μ ≠ ⊥) →
+      Function.Surjective F → IsSmoothHom F →
+      (∀ x, SemidirectProduct.rightHom (F x) = φ x) →
+      (∀ μ, (Q μ).IsPrime) → (∀ μ, Q μ ≠ ⊥) →
       (∀ μ, A μ ≤ stabilizer Gal(Ω/k) (Q μ)) → (∀ μ, A μ ≤ φ.ker) →
       (∀ μ, IsSmooth₁ ((a μ : ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)) :
         ↥(A μ) → ↥(layerSub ℓ (Generic U N S) j))) →
@@ -180,9 +183,15 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
     · show (layerExtension ℓ (genericAut U N S) j).inl ((a₀ x)⁻¹) * f (x : Gal(Ω/k)) = 1
       rw [← ha₀ x, ← _root_.map_mul, inv_mul_cancel, _root_.map_one]
   choose a hasm hakey using hstep
+  have hfr : ∀ x, SemidirectProduct.rightHom (f x) = φ x := by
+    intro x
+    show SemidirectProduct.rightHom
+      ((layerExtension ℓ (genericAut U N S) j).rightHom (f x)) = φ x
+    rw [hfright x]
+    exact hΦright x
   obtain ⟨α, hα, hαsurj, c, hc, hcs, hcD, hca, hcram⟩ :=
     hpres f {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ)} (fun μ => Pr (μ : Fin s))
-      (fun μ => Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ⊓ φ.ker) a hfsurj hfsm (fun μ => hPrp _)
+      (fun μ => Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ⊓ φ.ker) a hfsurj hfsm hfr (fun μ => hPrp _)
       (fun μ => hPrbot _) (fun μ => le_trans inf_le_left (Ideal.inertia_le_stabilizer _))
       (fun _ => inf_le_right) hasm
   have hΦ'right : ∀ x, SemidirectProduct.rightHom (((layerSemidirectMap ℓ hα j).comp Φ) x) = φ x :=

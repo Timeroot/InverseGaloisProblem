@@ -71,10 +71,12 @@ contributes nothing, so what is left is the product over the named places alone,
 units supported at any finite set containing them, trivial at every infinite place, and already a
 power in the finite level the leftover places are asked to be decomposed in.
 
-The orthogonality is asked together with the shrinking it is bought with, in the shape the whole
-ladder is written in: a number of letters is announced in advance, the prescribed values are read at
-that number, and what is asked back is a surjection onto the number the prescription answers at
-together with the orthogonality of the naming the values carried across it name. -/
+The orthogonality is asked together with both the shrinking and the finite level it is bought with,
+in the shape the whole ladder is written in: a number of letters is announced in advance, the
+prescribed values are read at that number against a lift of the base realization which is onto and
+lies over it, and what is asked back is a surjection onto the number the prescription answers at, a
+finite level over the level below which kills that lift carried across the surjection, and the
+orthogonality, in that level, of the naming the values carried across the surjection name. -/
 def NamedOrthogonalEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
   ∀ (S U : Type) [Group S] [Finite S] [Group U] [Finite U] (k Ω : Type) [Field k] [Field Ω]
       [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω] (φ : Gal(Ω/k) →* U) (n j : ℕ)
@@ -84,18 +86,22 @@ def NamedOrthogonalEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
       {Pc Ec : HeightOneSpectrum (𝓞 ↥K) → ℕ}
       (hres : ∀ v : HeightOneSpectrum (𝓞 ↥K),
         HasResidueChar (v.adicCompletion ↥K) (Pc v) (Ec v)),
-      ∃ N : ℕ, ∀ (ι : Type) [Fintype ι] (Q : ι → Ideal (𝓞 Ω)) (_ : ∀ μ, (Q μ).IsPrime)
-        (hQbot : ∀ μ, Q μ ≠ ⊥) (A : ι → Subgroup Gal(Ω/k))
+      ∃ N : ℕ, ∀ (F : Gal(Ω/k) →* GenericQuot ℓ U N S (j + 1)) (ι : Type) [Fintype ι]
+        (Q : ι → Ideal (𝓞 Ω)) (_ : ∀ μ, (Q μ).IsPrime) (hQbot : ∀ μ, Q μ ≠ ⊥)
+        (A : ι → Subgroup Gal(Ω/k))
         (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)),
-        ∃ (α : Generic U N S →* Generic U n S) (_ : IsOperatorHom α), Function.Surjective α ∧
-          ∀ c : (μ : ι) → Fin (layerDim ℓ (Generic U n S) j) →
-              localClasses (placeUnder K (Q μ) (hQbot μ)) ℓ,
-            (∀ (μ : ι) (z : Fin (layerDim ℓ (Generic U n S) j) → (↥K)ˣ),
-              (∀ q, localClassHom (placeUnder K (Q μ) (hQbot μ)) ℓ (z q) = c μ q) →
-              ∀ (x : ↥(A μ)) (hx : (x : Gal(Ω/k)) ∈ φ.ker),
-                kummerKernelHom hKker hkd (layerBasis ℓ (Generic U n S) j) layerBasis_pow_eq_one z
-                  ⟨(x : Gal(Ω/k)), hx⟩ = layerSubMap ℓ α j (a μ x)) →
-            ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
+        Function.Surjective F → IsSmoothHom F →
+        (∀ x, SemidirectProduct.rightHom (F x) = φ x) →
+        ∃ (α : Generic U N S →* Generic U n S) (hα : IsOperatorHom α), Function.Surjective α ∧
+          ∃ E : IntermediateField k Ω, FiniteDimensional k ↥E ∧ IsGalois k ↥E ∧ K ≤ E ∧
+            E.fixingSubgroup ≤ ((layerSemidirectMap ℓ hα (j + 1)).comp F).ker ∧
+            ∀ c : (μ : ι) → Fin (layerDim ℓ (Generic U n S) j) →
+                localClasses (placeUnder K (Q μ) (hQbot μ)) ℓ,
+              (∀ (μ : ι) (z : Fin (layerDim ℓ (Generic U n S) j) → (↥K)ˣ),
+                (∀ q, localClassHom (placeUnder K (Q μ) (hQbot μ)) ℓ (z q) = c μ q) →
+                ∀ (x : ↥(A μ)) (hx : (x : Gal(Ω/k)) ∈ φ.ker),
+                  kummerKernelHom hKker hkd (layerBasis ℓ (Generic U n S) j) layerBasis_pow_eq_one z
+                    ⟨(x : Gal(Ω/k)), hx⟩ = layerSubMap ℓ α j (a μ x)) →
               IsNamedOrthogonal ℓ K hres hζ E (fun μ => placeUnder K (Q μ) (hQbot μ)) c
 
 /-! ### The places of the level below the family -/
