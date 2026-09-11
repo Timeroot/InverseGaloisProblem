@@ -92,6 +92,7 @@ import InverseGalois.Solvable.Shafarevich.KernelPrimeClass
 import InverseGalois.Solvable.Shafarevich.KernelClauses
 import InverseGalois.Solvable.Shafarevich.KernelCyclic
 import InverseGalois.Solvable.Shafarevich.KernelPrimeCyclic
+import InverseGalois.Solvable.Shafarevich.InertiaCyclic
 import InverseGalois.Solvable.Shafarevich.KernelPlaces
 import InverseGalois.Solvable.Shafarevich.KernelArith
 import InverseGalois.Solvable.Shafarevich.KernelStep
@@ -849,6 +850,14 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   image is invertible modulo the prime and divides out â€” and **the class naming a character names
   all its multiples**, a unit whose class is a power of the named one having that multiple of the
   character, so the classes prescribed at one place all lie on a single line.
+* `InverseGalois.Solvable.Shafarevich.InertiaCyclic` shows that a prescription along inertia has
+  cyclic values of its own accord.  The inertia subgroup at a prime away from the exponent is
+  carried by a single element modulo an open subgroup and modulo raising to a power prime to the
+  exponent, so **a smooth homomorphism of it into a group of that exponent has one of its own values
+  generating all of them**: what a value differs from the corresponding power of the value at that
+  element by is killed both by the prime-to-the-exponent power and by the exponent, hence trivial.
+  Read over the level the base realization cuts out, the part of inertia that realization kills is
+  the whole inertia subgroup there, so the same holds for it.
 * `InverseGalois.Solvable.Shafarevich.KernelPlaces` collects those readings into one demand on the
   level and pays the prescription with it.  A basis of the layer having been named, the homomorphism
   asked for is the one assembled out of a family of units indexed by that basis, and each clause of
