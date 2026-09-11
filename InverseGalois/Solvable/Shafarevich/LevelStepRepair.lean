@@ -255,7 +255,7 @@ theorem splitCyclicRepairEP_of_confinedPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prim
   intro S U _ _ _ _ _ _ Ω _ _ _ _ φ t D n j hS hj hmu hcov
   letI := galLayerAction ℓ U n S j φ
   obtain ⟨Pr, hPr⟩ := hcov
-  exact hasSplitCyclicRepair_of_hasConfinedPrescription hS (fun _ _ => rfl)
+  exact hasSplitCyclicRepair_of_hasConfinedPrescription hS hj (fun _ _ => rfl)
     (coversAbove_of_isCoveringPrimeFamily hPr)
     (fun m => hflat S U Ω φ t D m j hS hj hmu) (h S U Ω φ t D n j hS hj hmu ⟨Pr, hPr⟩)
 

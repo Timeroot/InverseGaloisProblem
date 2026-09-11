@@ -227,7 +227,7 @@ theorem hasKernelPrescription_of_places (N : ℕ) (K : IntermediateField k Ω)
   have hanti : ∀ E₁ E₂ : IntermediateField k Ω, E₁ ≤ E₂ →
       E₂.fixingSubgroup ≤ E₁.fixingSubgroup := fun _ _ h => fixingSubgroup_antitone h
   refine ⟨N, ?_⟩
-  intro _ F ι hιfin Q A a hFsm hQp hQbot hQorb hQker _ _ hAcase hasm hacyc havoid
+  intro _ F ι hιfin Q A a _ hFsm hQp hQbot hQorb hQker _ _ hAcase hasm hacyc havoid
   haveI := hιfin
   haveI : ∀ μ, (Q μ).IsPrime := hQp
   haveI : ∀ ν, (Pr ν).IsPrime := hPrp

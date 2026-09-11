@@ -112,7 +112,11 @@ it is trivial along the decomposition subgroup of any prime sitting over it, and
 ramify there.
 
 The vanishing along the finite family is asked at every conjugate, which is what makes the average
-vanish along the family itself.  As for the prescription below, the base realization is asked to be
+vanish along the family itself.  The given lift is asked to be onto, which is what the repair the
+ladder consumes supplies and what makes the field it cuts out the whole of the generic quotient one
+field up.
+
+As for the prescription below, the base realization is asked to be
 smooth, its kernel open, that field being a finite extension, and the prescription may spend a
 shrinking of its own: it announces the number of letters the data is read at, and answers with a
 surjection onto the number asked for and a homomorphism at that number, the prescribed values being
@@ -123,7 +127,7 @@ def HasKernelPrescription : Prop :=
     ∀ (F : Gal(Ω/k) →* GenericQuot ℓ U N S (j + 1)) (ι : Type) [Finite ι]
         (Q : ι → Ideal (𝓞 Ω)) (A : ι → Subgroup Gal(Ω/k))
         (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)),
-      IsSmoothHom F → (∀ μ, (Q μ).IsPrime) → (∀ μ, Q μ ≠ ⊥) →
+      Function.Surjective F → IsSmoothHom F → (∀ μ, (Q μ).IsPrime) → (∀ μ, Q μ ≠ ⊥) →
       (∀ (μ ν : ι) (ρ : Gal(Ω/k)), ρ • Q μ = Q ν → μ = ν) →
       (∀ μ, stabilizer Gal(Ω/k) (Q μ) ≤ φ.ker) →
       (∀ μ, A μ ≤ stabilizer Gal(Ω/k) (Q μ)) → (∀ μ, A μ ≤ φ.ker) →
@@ -188,9 +192,10 @@ theorem hasConfinedPrescription_of_hasKernelPrescription
   classical
   obtain ⟨N, hpres⟩ := hpres
   refine ⟨N, ?_⟩
-  intro hφopen F ι _ Q A a hFsm hQp hQbot hQorb hQker hAstab hAker hAcase hasm hacyc havoid
+  intro hφopen F ι _ Q A a hFsurj hFsm hQp hQbot hQorb hQker hAstab hAker hAcase hasm hacyc havoid
   obtain ⟨α, hα, hαsurj, u, husm, huD, hua, huorb, huram⟩ :=
-    hpres hφopen F ι Q A a hFsm hQp hQbot hQorb hQker hAstab hAker hAcase hasm hacyc havoid
+    hpres hφopen F ι Q A a hFsurj hFsm hQp hQbot hQorb hQker hAstab hAker hAcase hasm hacyc
+      havoid
   haveI : Finite (Gal(Ω/k) ⧸ φ.ker) :=
     Finite.of_injective _ (QuotientGroup.kerLift_injective φ)
   haveI : Fintype (Gal(Ω/k) ⧸ φ.ker) := Fintype.ofFinite _

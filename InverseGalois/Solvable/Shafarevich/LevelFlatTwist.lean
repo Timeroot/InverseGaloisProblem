@@ -85,6 +85,9 @@ read of the lift carried down along the shrinking the prescription spends rather
 itself, which is what keeps the level the clause is a splitting condition in at the number of
 letters asked for.
 
+The given lift is asked to be onto, which is what the repair the ladder consumes supplies and what
+makes the field it cuts out the whole of the generic quotient one field up.
+
 The prescription may spend a shrinking of its own: it announces the number of letters the data is
 read at, and answers with a surjection onto the number asked for and a cocycle at that number, the
 prescribed values being carried across by the map of layers. -/
@@ -93,7 +96,7 @@ def HasFlatPrescription : Prop :=
     ∀ (F : Gal(Ω/k) →* GenericQuot ℓ U N S (j + 1)) (ι : Type) [Finite ι]
         (Q : ι → Ideal (𝓞 Ω)) (A : ι → Subgroup Gal(Ω/k))
         (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)),
-      IsSmoothHom F → (∀ μ, (Q μ).IsPrime) → (∀ μ, Q μ ≠ ⊥) →
+      Function.Surjective F → IsSmoothHom F → (∀ μ, (Q μ).IsPrime) → (∀ μ, Q μ ≠ ⊥) →
       (∀ μ, A μ ≤ stabilizer Gal(Ω/k) (Q μ)) → (∀ μ, A μ ≤ φ.ker) →
       (∀ μ, IsSmooth₁ ((a μ : ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)) :
         ↥(A μ) → ↥(layerSub ℓ (Generic U N S) j))) →
@@ -136,7 +139,7 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
     (hpres : HasFlatPrescription ℓ U n S j φ D) :
     ∃ N : ℕ, ∀ (Φ : Gal(Ω/k) →* GenericQuot ℓ U N S j),
       (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) →
-      ∀ f : Gal(Ω/k) →* GenericQuot ℓ U N S (j + 1), IsSmoothHom f →
+      ∀ f : Gal(Ω/k) →* GenericQuot ℓ U N S (j + 1), Function.Surjective f → IsSmoothHom f →
       (∀ x, (layerExtension ℓ (genericAut U N S) j).rightHom (f x) = Φ x) →
       (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → f x = 1) →
       ∃ (α : Generic U N S →* Generic U n S) (hα : IsOperatorHom α), Function.Surjective α ∧
@@ -146,7 +149,7 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
           (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → g x = 1) ∧
           IsConfinedRamifiedHom φ Φ ((layerSemidirectMap ℓ hα j).comp Φ) g := by
   obtain ⟨N, hpres⟩ := hpres
-  refine ⟨N, fun Φ hΦright f hfsm hfright hfD => ?_⟩
+  refine ⟨N, fun Φ hΦright f hfsurj hfsm hfright hfD => ?_⟩
   have hfs : IsSmooth₁ (f : Gal(Ω/k) → GenericQuot ℓ U N S (j + 1)) :=
     isSmooth₁_of_isOpenNormal_ker (isOpenNormal_ker_of_isSmoothHom hfsm)
   obtain ⟨s, Pr, hPrp, hPrbot, hfam⟩ :=
@@ -179,7 +182,7 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
   choose a hasm hakey using hstep
   obtain ⟨α, hα, hαsurj, c, hc, hcs, hcD, hca, hcram⟩ :=
     hpres f {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ)} (fun μ => Pr (μ : Fin s))
-      (fun μ => Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ⊓ φ.ker) a hfsm (fun μ => hPrp _)
+      (fun μ => Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ⊓ φ.ker) a hfsurj hfsm (fun μ => hPrp _)
       (fun μ => hPrbot _) (fun μ => le_trans inf_le_left (Ideal.inertia_le_stabilizer _))
       (fun _ => inf_le_right) hasm
   have hΦ'right : ∀ x, SemidirectProduct.rightHom (((layerSemidirectMap ℓ hα j).comp Φ) x) = φ x :=

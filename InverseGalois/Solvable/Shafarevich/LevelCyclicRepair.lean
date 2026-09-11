@@ -69,9 +69,9 @@ variable (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] (n : ℕ) 
 /-- **The repair, with the roots of unity taken out of it.**
 
 The data is that of `InverseGalois.Shafarevich.HasLiftRepair`: a solution at one rung carrying the
-restriction, and a lift of it across the next layer which is smooth, over that solution and trivial
-on the part of each member of the finite family the base realization already kills.  What is asked
-back is another such lift whose ramification over the base realization is cyclic and totally
+restriction, and a lift of it across the next layer which is onto, smooth, over that solution and
+trivial on the part of each member of the finite family the base realization already kills.  What is
+asked back is another such lift whose ramification over the base realization is cyclic and totally
 ramified at every prime where it occurs, with nothing asked about the roots of unity in the local
 field.
 
@@ -81,7 +81,7 @@ def HasCyclicRepair : Prop :=
   ∃ N : ℕ,
     ∀ (Φ : Gal(Ω/k) →* GenericQuot ℓ U N S j) (f : Gal(Ω/k) →* GenericQuot ℓ U N S (j + 1)),
       IsSmoothHom Φ → (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) →
-      IsSplitTotallyRamifiedHom ℓ φ Φ → IsSmoothHom f →
+      IsSplitTotallyRamifiedHom ℓ φ Φ → Function.Surjective f → IsSmoothHom f →
       (∀ x, (layerExtension ℓ (genericAut U N S) j).rightHom (f x) = Φ x) →
       (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → f x = 1) →
       ∃ (α : Generic U N S →* Generic U n S) (hα : IsOperatorHom α), Function.Surjective α ∧
@@ -106,7 +106,7 @@ def HasSplitCyclicRepair : Prop :=
   ∃ N : ℕ,
     ∀ (Φ : Gal(Ω/k) →* GenericQuot ℓ U N S j) (f : Gal(Ω/k) →* GenericQuot ℓ U N S (j + 1)),
       IsSmoothHom Φ → (∀ x, SemidirectProduct.rightHom (Φ x) = φ x) →
-      IsSplitTotallyRamifiedHom ℓ φ Φ → IsSmoothHom f →
+      IsSplitTotallyRamifiedHom ℓ φ Φ → Function.Surjective f → IsSmoothHom f →
       (∀ x, (layerExtension ℓ (genericAut U N S) j).rightHom (f x) = Φ x) →
       (∀ ν : Fin t, ∀ x ∈ D ν, φ x = 1 → f x = 1) →
       ∃ (α : Generic U N S →* Generic U n S) (hα : IsOperatorHom α), Function.Surjective α ∧
@@ -131,9 +131,9 @@ factor the prime kills of a nontrivial subgroup of its own powers lies in that s
 theorem hasCyclicRepair_of_hasSplitCyclicRepair (hS : IsPGroup ℓ S)
     (h : HasSplitCyclicRepair ℓ U n S j φ D) : HasCyclicRepair ℓ U n S j φ D := by
   obtain ⟨N, h⟩ := h
-  refine ⟨N, fun Φ f hΦsm hΦright hΦP hfsm hfright hfD => ?_⟩
+  refine ⟨N, fun Φ f hΦsm hΦright hΦP hfsurj hfsm hfright hfD => ?_⟩
   obtain ⟨α, hα, hαsurj, Ψ, hΨsm, hΨright, hΨD, hbelow, hcyc⟩ :=
-    h Φ f hΦsm hΦright hΦP hfsm hfright hfD
+    h Φ f hΦsm hΦright hΦP hfsurj hfsm hfright hfD
   have hright : ∀ x, SemidirectProduct.rightHom (Ψ x) = φ x := by
     intro x
     have hr : SemidirectProduct.rightHom (Ψ x) = SemidirectProduct.rightHom (Φ x) :=
@@ -159,9 +159,9 @@ theorem hasLiftRepair_of_hasCyclicRepair
     (hmu : ∀ ζ : Ωˣ, ζ ^ (ℓ * Monoid.exponent S) = 1 → ∀ σ ∈ φ.ker, σ • ζ = ζ)
     (h : HasCyclicRepair ℓ U n S j φ D) : HasLiftRepair ℓ U n S j φ D := by
   obtain ⟨N, h⟩ := h
-  refine ⟨N, fun Φ f hΦsm hΦright hΦP _ hfsm hfright hfD => ?_⟩
+  refine ⟨N, fun Φ f hΦsm hΦright hΦP hfsurj hfsm hfright hfD => ?_⟩
   obtain ⟨α, hα, hαsurj, Ψ, hΨsm, hΨright, hΨD, hcyc⟩ :=
-    h Φ f hΦsm hΦright hΦP hfsm hfright hfD
+    h Φ f hΦsm hΦright hΦP hfsurj hfsm hfright hfD
   have hright : ∀ x, SemidirectProduct.rightHom (Ψ x) = φ x := by
     intro x
     have hr : SemidirectProduct.rightHom (Ψ x) = SemidirectProduct.rightHom (Φ x) :=
