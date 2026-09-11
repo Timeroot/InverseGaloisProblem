@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.Solvable.Shafarevich.KernelArith
 import InverseGalois.Solvable.Shafarevich.KernelPlaces
 import InverseGalois.Solvable.Shafarevich.LevelStepRepair
 
@@ -29,6 +30,9 @@ asked to be a local power being the orbit of the places below the finite family.
 * `Shafarevich.PrescribedUnitsEP` — **every finite Galois level of the rationals containing a
   primitive root of unity of order the prime carries the families of units prescribed at named
   places**.
+* `Shafarevich.NamedPairingEP` — **at every finite Galois level of the rationals containing a
+  primitive root of unity of order the prime, the classes named at finitely many places pair
+  trivially with the units of the level which become powers in a larger level**.
 
 ## Main results
 
@@ -38,6 +42,10 @@ asked to be a local power being the orbit of the places below the finite family.
   prescription made one field up.**
 * `Shafarevich.genericLevelStepEPRoots_of_prescribedUnitsEP` — **the step of the ladder, in
   exchange for the flattening and the families of units.**
+* `Shafarevich.prescribedUnitsEP_of_namedPairingEP` — **the families of units are bought with the
+  vanishing of one pairing alone.**
+* `Shafarevich.genericLevelStepEPRoots_of_namedPairingEP` — **the step of the ladder, in exchange
+  for the flattening and the vanishing of that pairing.**
 
 ## Tags
 
@@ -66,6 +74,35 @@ def PrescribedUnitsEP (ℓ : ℕ) : Prop :=
   ∀ (k Ω : Type) [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω]
       (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [IsGalois k ↥K] [NumberField ↥K]
       (ζ : ↥K), IsPrimitiveRoot ζ ℓ → HasPrescribedUnits ℓ K
+
+/-- **At every finite Galois level of the rationals containing a primitive root of unity of order
+the prime, the classes named at finitely many places pair trivially with the units of the level
+which become powers in a larger level.**
+
+This is what the demand of the previous definition costs once the two-place construction over a
+number field has been spent on it: the product of the power residue symbols over all the places of
+such a unit against the named classes vanishes, the product formula having already disposed of
+every place the classes are not named at. -/
+def NamedPairingEP (ℓ : ℕ) [NeZero ℓ] : Prop :=
+  ∀ (k Ω : Type) [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω]
+      (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [IsGalois k ↥K] [NumberField ↥K]
+      {Pc Ec : HeightOneSpectrum (𝓞 ↥K) → ℕ}
+      (hres : ∀ v : HeightOneSpectrum (𝓞 ↥K),
+        HasResidueChar (v.adicCompletion ↥K) (Pc v) (Ec v))
+      (ζ : ↥K) (hζ : IsPrimitiveRoot ζ ℓ), HasNamedPairing ℓ K hres hζ
+
+/-- **The families of units are bought with the vanishing of one pairing alone.**
+
+The residue characteristics of the completions of the level are named once and for all, and the
+two-place construction over a number field turns the vanishing of the pairing against them into the
+families of units the prescription is made of. -/
+theorem prescribedUnitsEP_of_namedPairingEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] (hodd : 2 < ℓ)
+    (h : NamedPairingEP ℓ) : PrescribedUnitsEP ℓ := by
+  intro k Ω _ _ _ _ _ _ K _ _ _ ζ hζ
+  classical
+  choose Pc Ec hres using
+    fun v : HeightOneSpectrum (𝓞 ↥K) => exists_hasResidueChar_adicCompletion v
+  exact hasPrescribedUnits_of_hasNamedPairing Fact.out hodd K hres hζ (h k Ω K hres ζ hζ)
 
 /-! ### The places of the level below the family -/
 
@@ -142,5 +179,12 @@ theorem genericLevelStepEPRoots_of_prescribedUnitsEP (ℓ : ℕ) [Fact ℓ.Prime
     (hflat : FlatPrescriptionEP ℓ) (h : PrescribedUnitsEP ℓ) : GenericLevelStepEPRoots ℓ :=
   genericLevelStepEPRoots_of_kernelPrescriptionEP ℓ hodd hflat
     (kernelPrescriptionEP_of_prescribedUnitsEP ℓ h)
+
+/-- **The step of the ladder, in exchange for the flattening and the vanishing of the pairing the
+named classes are read against** — the whole climb, resting on two statements of arithmetic. -/
+theorem genericLevelStepEPRoots_of_namedPairingEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] (hodd : 2 < ℓ)
+    (hflat : FlatPrescriptionEP ℓ) (h : NamedPairingEP ℓ) : GenericLevelStepEPRoots ℓ :=
+  genericLevelStepEPRoots_of_prescribedUnitsEP ℓ hodd hflat
+    (prescribedUnitsEP_of_namedPairingEP ℓ hodd h)
 
 end Shafarevich
