@@ -88,7 +88,8 @@ The subgroups the values are prescribed along are the parts of inertia at the na
 base realization kills, the named primes are away from the exponent, and inertia at a named prime is
 killed by the base realization outright, so the prime is unramified in the field that realization
 cuts out.  The named primes escape the finite family: no conjugate of the decomposition subgroup of
-one of them lies inside a member of it.
+one of them lies inside a member of it.  They are also asked to be pairwise non-conjugate, so that
+the prescriptions made at two different ones are made at two genuinely different places.
 
 The homomorphism is asked to be equivariant for conjugation by the base group, the operators moving
 its values as the base realization moves the conjugating element.  That is what a cocycle over the
@@ -112,6 +113,7 @@ def HasFlatKernelPrescription : Prop :=
       Function.Surjective F → IsSmoothHom F →
       (∀ x, SemidirectProduct.rightHom (F x) = φ x) →
       (∀ μ, (Q μ).IsPrime) → (∀ μ, Q μ ≠ ⊥) → (∀ μ, (ℓ : 𝓞 Ω) ∉ Q μ) →
+      (∀ μ ν : ι, μ ≠ ν → ∀ ρ : Gal(Ω/k), Q ν ≠ ρ • Q μ) →
       (∀ μ, A μ ≤ stabilizer Gal(Ω/k) (Q μ)) → (∀ μ, A μ ≤ φ.ker) →
       (∀ μ, A μ = Ideal.inertia Gal(Ω/k) (Q μ) ⊓ φ.ker) →
       (∀ μ, Ideal.inertia Gal(Ω/k) (Q μ) ≤ φ.ker) →
@@ -179,9 +181,10 @@ theorem hasFlatPrescription_of_hasFlatKernelPrescription (hS : IsPGroup ℓ S)
   obtain ⟨N₁, hN₁⟩ := exists_operatorHom_forall_layerSubMap_eq_one U n S hS (j := j) (U × U)
   obtain ⟨N, hN⟩ := hpres N₁
   refine ⟨N, ?_⟩
-  intro F ι _ Q A a hFsurj hFsm hFright hQp hQbot hQℓ hAstab hAker hAeq hAunr hasm haequiv hesc
+  intro F ι _ Q A a hFsurj hFsm hFright hQp hQbot hQℓ hQconj hAstab hAker hAeq hAunr hasm haequiv
+    hesc
   obtain ⟨β, hβ, hβsurj, u, ⟨V, hV, hVu⟩, hueq, huD, hua, huram⟩ :=
-    hN F ι Q A a hFsurj hFsm hFright hQp hQbot hQℓ hAstab hAker hAeq hAunr hasm haequiv hesc
+    hN F ι Q A a hFsurj hFsm hFright hQp hQbot hQℓ hQconj hAstab hAker hAeq hAunr hasm haequiv hesc
   have hφsurj : Function.Surjective φ := by
     intro v
     obtain ⟨y, hy⟩ := hFsurj (SemidirectProduct.inr v)

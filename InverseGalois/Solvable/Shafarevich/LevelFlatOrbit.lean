@@ -92,7 +92,9 @@ base realization kills, and the named primes are away from the exponent, so each
 homomorphism is a power of a single one of its own values.  Inertia at a named prime is killed by
 the base realization outright, so the prime is unramified in the field that realization cuts out and
 the whole of inertia there is already seen over the base field.  The named primes escape the finite
-family: no conjugate of the decomposition subgroup of one of them lies inside a member of it.
+family: no conjugate of the decomposition subgroup of one of them lies inside a member of it.  They
+are also asked to be pairwise non-conjugate, which is what makes the clause about the other named
+primes compatible with the prescription each homomorphism carries at its own.
 
 Equivariance is the clause that matters.  A homomorphism supplied by a radicand is equivariant for
 the group fixing the radicand, and a radicand can be placed in the field the decomposition subgroup
@@ -117,6 +119,7 @@ def HasFlatOrbitPrescription : Prop :=
       Function.Surjective F → IsSmoothHom F →
       (∀ x, SemidirectProduct.rightHom (F x) = φ x) →
       (∀ μ, (Q μ).IsPrime) → (∀ μ, Q μ ≠ ⊥) → (∀ μ, (ℓ : 𝓞 Ω) ∉ Q μ) →
+      (∀ μ ν : ι, μ ≠ ν → ∀ ρ : Gal(Ω/k), Q ν ≠ ρ • Q μ) →
       (∀ μ, A μ ≤ stabilizer Gal(Ω/k) (Q μ)) → (∀ μ, A μ ≤ φ.ker) →
       (∀ μ, A μ = Ideal.inertia Gal(Ω/k) (Q μ) ⊓ φ.ker) →
       (∀ μ, Ideal.inertia Gal(Ω/k) (Q μ) ≤ φ.ker) →
@@ -185,9 +188,10 @@ theorem hasFlatKernelPrescription_of_hasFlatOrbitPrescription
   classical
   obtain ⟨N, hN⟩ := hpres
   refine ⟨N, ?_⟩
-  intro F ι _ Q A a hFsurj hFsm hFright hQp hQbot hQℓ hAstab hAker hAeq hAunr hasm haequiv hesc
+  intro F ι _ Q A a hFsurj hFsm hFright hQp hQbot hQℓ hQconj hAstab hAker hAeq hAunr hasm haequiv
+    hesc
   obtain ⟨β, hβ, hβsurj, u, ⟨V, hV, hVu⟩, hueq, huD, huA, hua, huvan, huram⟩ :=
-    hN F ι Q A a hFsurj hFsm hFright hQp hQbot hQℓ hAstab hAker hAeq hAunr hasm haequiv hesc
+    hN F ι Q A a hFsurj hFsm hFright hQp hQbot hQℓ hQconj hAstab hAker hAeq hAunr hasm haequiv hesc
   haveI : Fintype ι := Fintype.ofFinite ι
   haveI : Finite (Gal(Ω/k) ⧸ φ.ker) := Finite.of_injective _ (QuotientGroup.kerLift_injective φ)
   haveI : (φ.ker).FiniteIndex := Subgroup.finiteIndex_of_finite_quotient

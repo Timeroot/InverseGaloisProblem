@@ -58,6 +58,36 @@ attribute [local instance] genericQuotAction
 
 set_option maxHeartbeats 1600000
 
+/-! ### Picking one point out of each orbit -/
+
+section Representatives
+
+/-- **A finite family of points of a set a group acts on has a subfamily of representatives**: the
+members of the subfamily lie in pairwise distinct orbits, and every member of the family is carried
+to one of them.  The subfamily is the set of indices least in their own orbit. -/
+theorem exists_orbit_representatives {G : Type*} [Group G] {X : Type*} [MulAction G X] {m : ℕ}
+    (P : Fin m → X) :
+    ∃ T : Finset (Fin m),
+      (∀ i ∈ T, ∀ i' ∈ T, i ≠ i' → ∀ g : G, P i' ≠ g • P i) ∧
+      ∀ i : Fin m, ∃ i' ∈ T, ∃ g : G, P i = g • P i' := by
+  classical
+  refine ⟨Finset.univ.filter (fun i => ∀ i' : Fin m, (∃ g : G, P i' = g • P i) → i ≤ i'), ?_, ?_⟩
+  · intro i hi i' hi' hne g hgi
+    rw [Finset.mem_filter] at hi hi'
+    exact hne (le_antisymm (hi.2 i' ⟨g, hgi⟩) (hi'.2 i ⟨g⁻¹, by rw [hgi, inv_smul_smul]⟩))
+  · intro i
+    obtain ⟨i', hi', hmin⟩ :=
+      Finset.exists_min_image (Finset.univ.filter (fun j => ∃ g : G, P j = g • P i)) id
+        ⟨i, Finset.mem_filter.2 ⟨Finset.mem_univ i, 1, (one_smul G (P i)).symm⟩⟩
+    rw [Finset.mem_filter] at hi'
+    obtain ⟨g, hg⟩ := hi'.2
+    refine ⟨i', Finset.mem_filter.2 ⟨Finset.mem_univ i', fun j hj => ?_⟩, g⁻¹, by
+      rw [hg, inv_smul_smul]⟩
+    obtain ⟨h, hh⟩ := hj
+    exact hmin j (Finset.mem_filter.2 ⟨Finset.mem_univ j, h * g, by rw [hh, hg, mul_smul]⟩)
+
+end Representatives
+
 /-! ### The prescription the flattening is bought with -/
 
 section Flat
@@ -81,7 +111,9 @@ a prime unramified below, the whole of inertia is available over the base field,
 prescribed there at all.  Along the finite family the cocycle is asked to vanish wherever the base
 realization already does, and the named primes are asked to escape that family: no conjugate of the
 decomposition subgroup of a named prime lies inside a member of it, which is what keeps the values
-prescribed at the named primes from colliding with the vanishing asked along the family.
+prescribed at the named primes from colliding with the vanishing asked along the family.  The named
+primes are asked to be pairwise non-conjugate for the same reason, so that the prescriptions made at
+two of them cannot collide with one another either.
 
 The prescribed homomorphisms are asked to be equivariant for conjugation, in the sense that
 conjugating an element of one of the subgroups back into that same subgroup moves the prescribed
@@ -113,6 +145,7 @@ def HasFlatPrescription : Prop :=
       Function.Surjective F → IsSmoothHom F →
       (∀ x, SemidirectProduct.rightHom (F x) = φ x) →
       (∀ μ, (Q μ).IsPrime) → (∀ μ, Q μ ≠ ⊥) → (∀ μ, (ℓ : 𝓞 Ω) ∉ Q μ) →
+      (∀ μ ν : ι, μ ≠ ν → ∀ ρ : Gal(Ω/k), Q ν ≠ ρ • Q μ) →
       (∀ μ, A μ ≤ stabilizer Gal(Ω/k) (Q μ)) → (∀ μ, A μ ≤ φ.ker) →
       (∀ μ, A μ = Ideal.inertia Gal(Ω/k) (Q μ) ⊓ φ.ker) →
       (∀ μ, Ideal.inertia Gal(Ω/k) (Q μ) ≤ φ.ker) →
@@ -187,11 +220,12 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
     isSmooth₁_of_isOpenNormal_ker (isOpenNormal_ker_of_isSmoothHom hfsm)
   obtain ⟨s, Pr, hPrp, hPrbot, hfam⟩ :=
     exists_ramified_family (isOpenNormal_ker_of_isSmoothHom hfsm)
-  have hnotD : ∀ μ : {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ) ∧ RamifiesAt φ f (Pr μ)},
+  obtain ⟨T, hTdisj, hTrep⟩ := exists_orbit_representatives (G := Gal(Ω/k)) Pr
+  have hnotD : ∀ μ : {μ : Fin s // μ ∈ T ∧ ¬ RamifiesAt φ Φ (Pr μ) ∧ RamifiesAt φ f (Pr μ)},
       ¬ ∃ (ν : Fin t) (ρ : Gal(Ω/k)),
         ∀ y ∈ stabilizer Gal(Ω/k) (Pr (μ : Fin s)), ρ * y * ρ⁻¹ ∈ D ν := by
     rintro μ ⟨ν, ρ, hν⟩
-    obtain ⟨x, hxI, hxφ, hx1⟩ := id μ.2.2
+    obtain ⟨x, hxI, hxφ, hx1⟩ := id μ.2.2.2
     refine hx1 ?_
     have hφc : φ (ρ * x * ρ⁻¹) = 1 := by
       rw [_root_.map_mul, _root_.map_mul, _root_.map_inv, hxφ, mul_one, mul_inv_cancel]
@@ -199,16 +233,16 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
       hfD ν _ (hν x (Ideal.inertia_le_stabilizer (Pr (μ : Fin s)) hxI)) hφc
     rw [_root_.map_mul, _root_.map_mul, _root_.map_inv] at hconj
     simpa using hconj
-  have hℓnot : ∀ μ : {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ) ∧ RamifiesAt φ f (Pr μ)},
+  have hℓnot : ∀ μ : {μ : Fin s // μ ∈ T ∧ ¬ RamifiesAt φ Φ (Pr μ) ∧ RamifiesAt φ f (Pr μ)},
       (ℓ : 𝓞 Ω) ∉ Pr (μ : Fin s) := fun μ hmem =>
     hnotD μ (hℓD (Pr (μ : Fin s)) (hPrp _) (hPrbot _) hmem)
-  have hunr : ∀ μ : {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ) ∧ RamifiesAt φ f (Pr μ)},
+  have hunr : ∀ μ : {μ : Fin s // μ ∈ T ∧ ¬ RamifiesAt φ Φ (Pr μ) ∧ RamifiesAt φ f (Pr μ)},
       Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ≤ φ.ker := by
     intro μ x hx
     by_contra hc
     exact hnotD μ (hramD (Pr (μ : Fin s)) (hPrp _) (hPrbot _)
       ⟨x, hx, fun h => hc (MonoidHom.mem_ker.2 h)⟩)
-  have hstep : ∀ μ : {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ) ∧ RamifiesAt φ f (Pr μ)},
+  have hstep : ∀ μ : {μ : Fin s // μ ∈ T ∧ ¬ RamifiesAt φ Φ (Pr μ) ∧ RamifiesAt φ f (Pr μ)},
       ∃ a : ↥(Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ⊓ φ.ker) →*
           ↥(layerSub ℓ (Generic U N S) j),
         IsSmooth₁ ((a : ↥(Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ⊓ φ.ker) →*
@@ -217,7 +251,7 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
             ↥(layerSub ℓ (Generic U N S) j)) ∧
         ∀ x : ↥(Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ⊓ φ.ker),
           (layerExtension ℓ (genericAut U N S) j).inl (a x) * f (x : Gal(Ω/k)) = 1 := by
-    rintro ⟨μ, hμ, -⟩
+    rintro ⟨μ, -, hμ, -⟩
     have hΦ1 : ∀ x ∈ Ideal.inertia Gal(Ω/k) (Pr μ) ⊓ φ.ker, Φ x = 1 := by
       intro x hx
       by_contra hx1
@@ -242,7 +276,7 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
       rw [← hΦright g, ← genericQuotAction_smul ℓ U N N S j (Φ g) v]
       exact smul_eq_conjActHom_genericLayer ℓ U N S j (Φ g) v
     rw [h1, ← hfright g, (layerExtension ℓ (genericAut U N S) j).inl_conjActHom]
-  have haequiv : ∀ (μ : {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ) ∧ RamifiesAt φ f (Pr μ)})
+  have haequiv : ∀ (μ : {μ : Fin s // μ ∈ T ∧ ¬ RamifiesAt φ Φ (Pr μ) ∧ RamifiesAt φ f (Pr μ)})
       (g : Gal(Ω/k))
       (x : ↥(Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ⊓ φ.ker))
       (hx : g * (x : Gal(Ω/k)) * g⁻¹ ∈ Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ⊓ φ.ker),
@@ -261,10 +295,12 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
     rw [hfright x]
     exact hΦright x
   obtain ⟨α, hα, hαsurj, c, hc, hcs, hcD, hca, hcram⟩ :=
-    hpres f {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ) ∧ RamifiesAt φ f (Pr μ)}
+    hpres f {μ : Fin s // μ ∈ T ∧ ¬ RamifiesAt φ Φ (Pr μ) ∧ RamifiesAt φ f (Pr μ)}
       (fun μ => Pr (μ : Fin s))
       (fun μ => Ideal.inertia Gal(Ω/k) (Pr (μ : Fin s)) ⊓ φ.ker) a hfsurj hfsm hfr (fun μ => hPrp _)
-      (fun μ => hPrbot _) hℓnot (fun μ => le_trans inf_le_left (Ideal.inertia_le_stabilizer _))
+      (fun μ => hPrbot _) hℓnot
+      (fun μ ν hμν ρ => hTdisj _ μ.2.1 _ ν.2.1 (fun h => hμν (Subtype.ext h)) ρ)
+      (fun μ => le_trans inf_le_left (Ideal.inertia_le_stabilizer _))
       (fun _ => inf_le_right) (fun _ => rfl) hunr hasm haequiv
       (fun μ ν ρ => by
         by_contra hcon
@@ -295,7 +331,7 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
         * ((layerSemidirectMap ℓ hα (j + 1)).comp f) x) →
       IsConfinedRamifiedHom φ Φ ((layerSemidirectMap ℓ hα j).comp Φ) Ψ := by
     intro Ψ hΨdef
-    have hkey : ∀ μ : {μ : Fin s // ¬ RamifiesAt φ Φ (Pr μ) ∧ RamifiesAt φ f (Pr μ)},
+    have hkey : ∀ μ : {μ : Fin s // μ ∈ T ∧ ¬ RamifiesAt φ Φ (Pr μ) ∧ RamifiesAt φ f (Pr μ)},
         ¬ RamifiesAt φ Ψ (Pr (μ : Fin s)) := by
       rintro μ ⟨x, hxI, hxφ, hxΨ⟩
       refine hxΨ ?_
@@ -304,6 +340,13 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
       have h1 : c x = layerSubMap ℓ α j (a μ ⟨x, hmem⟩) := hca μ ⟨x, hmem⟩
       rw [hΨdef, h1, MonoidHom.comp_apply, ← inl_layerSemidirectMap ℓ j hα, ← _root_.map_mul,
         hakey μ ⟨x, hmem⟩, _root_.map_one]
+    have hkeyall : ∀ μ : Fin s, ¬ RamifiesAt φ Φ (Pr μ) → RamifiesAt φ f (Pr μ) →
+        ¬ RamifiesAt φ Ψ (Pr μ) := by
+      intro μ hΦram hfram hΨram
+      obtain ⟨μ', hμ'T, g, hg⟩ := hTrep μ
+      rw [hg] at hΦram hfram hΨram
+      exact hkey ⟨μ', hμ'T, fun h => hΦram (h.smul g), ramifiesAt_smul_iff.1 hfram⟩
+        (ramifiesAt_smul_iff.1 hΨram)
     intro P hPp hPbot hram
     by_cases hfram : RamifiesAt φ f P
     · obtain ⟨x, hxI, -, hx1⟩ := id hfram
@@ -311,7 +354,7 @@ theorem exists_confinedRamifiedHom_lift_of_hasFlatPrescription
       by_cases hΦram : RamifiesAt φ Φ (Pr μ)
       · exact Or.inl (hΦram.smul ρ)
       · exact absurd (ramifiesAt_smul_iff.1 hram)
-          (hkey ⟨μ, hΦram, ramifiesAt_smul_iff.1 hfram⟩)
+          (hkeyall μ hΦram (ramifiesAt_smul_iff.1 hfram))
     · obtain ⟨x, hxI, hxφ, hxΨ⟩ := id hram
       have hfx : f x = 1 := by
         by_contra h

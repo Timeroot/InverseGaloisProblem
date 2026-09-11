@@ -571,6 +571,7 @@ import InverseGalois.CFT.Profinite.InfRes
 import InverseGalois.CFT.Profinite.Kummer
 import InverseGalois.CFT.Profinite.KummerCoeff
 import InverseGalois.CFT.Profinite.KummerConj
+import InverseGalois.CFT.Profinite.KummerConjTwist
 import InverseGalois.CFT.Profinite.KummerAction
 import InverseGalois.CFT.Profinite.KummerFinite
 import InverseGalois.CFT.Profinite.KummerHom
@@ -6313,6 +6314,14 @@ it that are available here.
   makes an automorphism over it leave the coefficients alone.  Transporting the Kummer isomorphism
   itself across the two topologies then puts **the units of the intermediate field modulo `n`-th
   powers on the first cohomology of the subgroup**, an isomorphism of modules over the quotient.
+* `InverseGalois.CFT.Profinite.KummerConjTwist` drops that arithmetic input.  When the small base
+  does not contain the roots of unity, an automorphism over it raises the chosen root of unity to
+  some exponent, and the same characterisation of the Kummer cochain then shows **the cochain of a
+  conjugated unit is that power of the conjugate of the cochain**: the exponent enters through the
+  coefficients and nowhere else.  Read on characters with values in the residues modulo `n`, the
+  character of a unit which the automorphism fixes up to an `n`-th power is simply multiplied by
+  the exponent when its argument is conjugated, an `n`-th power contributing nothing because its
+  chosen root may be taken to be the unit itself.
 * `InverseGalois.CFT.Profinite.KummerRes` restricts those classes.  The cochain of a unit measures
   how far a chosen root is from being fixed, and on a subgroup it is a coboundary exactly when it
   vanishes there, so **a Kummer class dies on a subgroup exactly when the unit is a power in the
