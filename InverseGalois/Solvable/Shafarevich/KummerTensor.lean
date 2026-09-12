@@ -101,6 +101,50 @@ noncomputable def coeffTensor (f : M →* M) :
 theorem coeffTensor_tmul (f : M →* M) (u : Additive (↥K)ˣ) (v : Additive M) :
     coeffTensor M f (u ⊗ₜ[ℤ] v) = u ⊗ₜ[ℤ] Additive.ofMul (f v.toMul) := rfl
 
+/-! ### The twist read off an invariance -/
+
+/-- Twisting by the inverse of an automorphism undoes the action of that automorphism on the
+radicand and raises the coefficient to the exponent. -/
+theorem twistTensor_comp_map (ρ : Gal(↥K/k)) {e : ℕ} {f ast : M →* M}
+    (hast : ∀ m, ast m ^ e = f m) :
+    (twistTensor M ρ⁻¹ e) ∘ₗ TensorProduct.map (unitsAut ρ).toIntLinearMap
+        (MonoidHom.toAdditive ast).toIntLinearMap
+      = coeffTensor M f := by
+  refine TensorProduct.ext' fun x y => ?_
+  show Additive.ofMul (ρ⁻¹ • ρ • x.toMul) ⊗ₜ[ℤ] Additive.ofMul (ast y.toMul ^ e)
+    = x ⊗ₜ[ℤ] Additive.ofMul (f y.toMul)
+  rw [inv_smul_smul, hast]
+  rfl
+
+/-- **A tensor carried to itself by an automorphism on the radicand and a map on the coefficient
+has its twist by the inverse of that automorphism equal to the tensor a second map carries it
+to**, as soon as the exponent-th power of the first map is the second.
+
+This is the shape the equivariance of the assembled homomorphism is asked in, and the hypothesis is
+the invariance of a tensor for the diagonal action twisted on the coefficient. -/
+theorem twistTensor_eq_coeffTensor_of_map_eq {ρ : Gal(↥K/k)} {e : ℕ} {f ast : M →* M}
+    (hast : ∀ m, ast m ^ e = f m) {t : Additive (↥K)ˣ ⊗[ℤ] Additive M}
+    (hinv : TensorProduct.map (unitsAut ρ).toIntLinearMap
+      (MonoidHom.toAdditive ast).toIntLinearMap t = t) :
+    twistTensor M ρ⁻¹ e t = coeffTensor M f t := by
+  calc twistTensor M ρ⁻¹ e t
+      = twistTensor M ρ⁻¹ e (TensorProduct.map (unitsAut ρ).toIntLinearMap
+          (MonoidHom.toAdditive ast).toIntLinearMap t) := by rw [hinv]
+    _ = coeffTensor M f t := LinearMap.congr_fun (twistTensor_comp_map ρ hast) t
+
+/-- **A map of a target killed by the level has an exponent-th root among the maps of the target**,
+as soon as the exponent is invertible modulo the level: that root is the power of the map by an
+inverse of the exponent. -/
+theorem exists_monoidHom_pow_eq {ℓ : ℕ} (hexp : ∀ m : M, m ^ ℓ = 1) (f : M →* M) {e e' : ℕ}
+    (he : (e' : ZMod ℓ) * (e : ZMod ℓ) = 1) : ∃ ast : M →* M, ∀ m, ast m ^ e = f m := by
+  refine ⟨(powMonoidHom e').comp f, fun m => ?_⟩
+  show (f m ^ e') ^ e = f m
+  rw [← pow_mul]
+  conv_rhs => rw [← pow_one (f m)]
+  refine pow_eq_pow_of_pow_eq_one (hexp _) ?_
+  push_cast
+  rw [he]
+
 end Twist
 
 /-! ### The homomorphism assembled out of a tensor -/
