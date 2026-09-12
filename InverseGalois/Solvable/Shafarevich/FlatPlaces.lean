@@ -118,6 +118,47 @@ def HasFlatPrescribedUnits (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω)
 
 end Units
 
+/-! ### The level killing the lift -/
+
+section Level
+
+variable {ℓ : ℕ} {U : Type} [Group U] {m n : ℕ} {S : Type} [Group S] {j : ℕ} {k Ω : Type}
+  [Field k] [Field Ω] [Algebra k Ω] [IsGalois k Ω] {φ : Gal(Ω/k) →* U}
+
+/-- **A finite level over a given one killing a lift carried across a shrinking.**
+
+A smooth homomorphism onto a discrete group has open kernel, and the kernel of the lift carried
+across the shrinking is larger still, so a finite Galois level cuts it out exactly.  That level
+contains the level the base realization cuts out because the lift lies over the base realization:
+an element killing the lift kills the base realization, so it fixes the level below. -/
+theorem exists_level_ker_le {β : Generic U m S →* Generic U n S} (hβ : IsOperatorHom β)
+    (K : IntermediateField k Ω) (hKker : K.fixingSubgroup = φ.ker)
+    (F : Gal(Ω/k) →* GenericQuot ℓ U m S (j + 1)) (hFsm : IsSmoothHom F)
+    (hFright : ∀ x, SemidirectProduct.rightHom (F x) = φ x) :
+    ∃ E : IntermediateField k Ω, FiniteDimensional k ↥E ∧ IsGalois k ↥E ∧ K ≤ E ∧
+      E.fixingSubgroup ≤ ((layerSemidirectMap ℓ hβ (j + 1)).comp F).ker := by
+  have hle : F.ker ≤ ((layerSemidirectMap ℓ hβ (j + 1)).comp F).ker := by
+    intro x hx
+    refine MonoidHom.mem_ker.2 ?_
+    show layerSemidirectMap ℓ hβ (j + 1) (F x) = 1
+    rw [MonoidHom.mem_ker.1 hx, _root_.map_one]
+  obtain ⟨E, hEfin, hEgal, hEfix, hEmem⟩ :=
+    exists_level_fixingSubgroup_eq (N := ((layerSemidirectMap ℓ hβ (j + 1)).comp F).ker)
+      ⟨inferInstance, Subgroup.isOpen_mono hle (isOpenNormal_ker_of_isSmoothHom hFsm).isOpen⟩
+  have hkerφ : ((layerSemidirectMap ℓ hβ (j + 1)).comp F).ker ≤ φ.ker := by
+    intro x hx
+    have hx1 : layerSemidirectMap ℓ hβ (j + 1) (F x) = 1 := MonoidHom.mem_ker.1 hx
+    have h2 : (layerSemidirectMap ℓ hβ (j + 1) (F x)).right = φ x := hFright x
+    rw [hx1] at h2
+    exact MonoidHom.mem_ker.2 h2.symm
+  refine ⟨E, hEfin, hEgal, fun x hx => hEmem x fun σ hσ => ?_, le_of_eq hEfix⟩
+  have hσK : σ ∈ K.fixingSubgroup := by
+    rw [hKker]
+    exact hkerφ hσ
+  exact (IntermediateField.mem_fixingSubgroup_iff _ _).1 hσK x hx
+
+end Level
+
 /-! ### The prescription -/
 
 section Places
@@ -409,6 +450,28 @@ theorem hasFlatOrbitPrescription_of_places (N : ℕ) (K : IntermediateField k Ω
       obtain ⟨τ, -, hτ⟩ := exists_mem_fixingSubgroup_smul_eq_of_placeUnder_eq K hbot hPbot hpl
       exact Or.inl ⟨ν, τ * ρ, by rw [mul_smul]; exact hτ⟩
     · exact Or.inr fun x hx => MonoidHom.mem_ker.1 (hEF (hsplit P hPp hPbot rfl hx))
+
+omit [NumberField k] in
+/-- **A level carrying units prescribed at named places carries the flat prescription**, with no
+shrinking spent.
+
+The prescription made one named prime at a time asks nothing of the operator group beyond the
+number of letters its data is read at, so that number may be answered with itself and the shrinking
+taken to be the identity.  What is left of the demand on the level is then a finite Galois level
+killing the given lift, and the kernel of a smooth lift is open, so such a level exists. -/
+theorem hasFlatOrbitPrescription_of_units (K : IntermediateField k Ω)
+    [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K]
+    (hKker : K.fixingSubgroup = φ.ker) {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ)
+    (hkd : IsKummerData ↥K Ω (Multiplicative (ZMod ℓ)) (zmodRootHom hζ) ℓ)
+    {Pr : Fin t → Ideal (𝓞 Ω)} (hPrp : ∀ ν, (Pr ν).IsPrime) (hPrbot : ∀ ν, Pr ν ≠ ⊥)
+    (hDPr : ∀ ν, D ν = stabilizer Gal(Ω/k) (Pr ν))
+    (hℓPr : ∀ v : HeightOneSpectrum (𝓞 ↥K), (ℓ : 𝓞 ↥K) ∈ v.asIdeal →
+      ∃ (σ : Gal(↥K/k)) (ν : Fin t), v = σ • placeUnder K (Pr ν) (hPrbot ν))
+    (hfam : HasFlatPrescribedUnits ℓ K) :
+    HasFlatOrbitPrescription ℓ U n S j φ D :=
+  hasFlatOrbitPrescription_of_places n K hKker hζ hkd hPrp hPrbot hDPr hℓPr
+    (fun F _ hFsm hFright => ⟨MonoidHom.id _, isOperatorHom_id, Function.surjective_id,
+      exists_level_ker_le isOperatorHom_id K hKker F hFsm hFright⟩) hfam
 
 end Places
 

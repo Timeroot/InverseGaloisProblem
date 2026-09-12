@@ -101,6 +101,7 @@ import InverseGalois.Solvable.Shafarevich.FlatPlaces
 import InverseGalois.Solvable.Shafarevich.KernelArith
 import InverseGalois.Solvable.Shafarevich.KernelStep
 import InverseGalois.Solvable.Shafarevich.NamedOrthogonal
+import InverseGalois.Solvable.Shafarevich.FlatStep
 
 /-!
 # Shafarevich's theorem
@@ -960,4 +961,12 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   character killing that kernel, hence is one of the units the observation was shown to annihilate.
   **The orthogonality of the naming holds for every prime**, so the sharp prescription is
   unconditional and the step of the ladder is bought by the flattening alone.
+* `InverseGalois.Solvable.Shafarevich.FlatStep` spends the flat assembly over the rationals exactly
+  as the sharp one is spent, and finds it cheaper on both counts.  Nothing is asked of the operator
+  group, so the number of letters the data is read at is answered with itself and no shrinking is
+  spent; and the level the prescription is asked to kill the lift in exists because the kernel of a
+  smooth homomorphism onto a discrete group is open.  Openness of the kernel of the base realization
+  is not assumed either, since the lift the prescription is handed has open kernel inside it, so
+  where that kernel fails to be open there is nothing to prescribe for.  **The step of the ladder
+  over an odd prime is bought by the units of a finite Galois level alone.**
 -/
