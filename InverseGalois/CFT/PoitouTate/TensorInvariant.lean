@@ -178,4 +178,51 @@ end Correct
 
 end Invariant
 
+/-! ### The valuation is equivariant -/
+
+section Equivariance
+
+variable {Q : Type*} [Group Q] {A : Type*} [CommGroup A] [MulDistribMulAction Q A]
+variable (C : Type*) [CommGroup C] [MulDistribMulAction Q C]
+variable {X : Type*} [MulAction Q X] [DecidableEq X]
+variable (g : Additive A →+ (X →₀ ℤ))
+
+/-- **The valuation of a tensor is equivariant** as soon as the valuation of the group itself is:
+the value of the translated tensor at the translated place is the translate of the value. -/
+theorem tensorVal_smul_apply
+    (hgeq : ∀ (σ : Q) (a : A) (x : X),
+      g (Additive.ofMul (σ • a)) (σ • x) = g (Additive.ofMul a) x)
+    (σ : Q) (t : Additive A ⊗[ℤ] Additive C) (x : X) :
+    tensorVal C g (σ • t) (σ • x) = Additive.ofMul (σ • (tensorVal C g t x).toMul) := by
+  induction t using TensorProduct.induction_on with
+  | zero => simp
+  | tmul u v =>
+      show tensorVal C g (Additive.ofMul (σ • u.toMul) ⊗ₜ[ℤ] Additive.ofMul (σ • v.toMul)) (σ • x)
+        = Additive.ofMul (σ • (tensorVal C g
+            (Additive.ofMul u.toMul ⊗ₜ[ℤ] Additive.ofMul v.toMul) x).toMul)
+      rw [tensorVal_tmul_apply, tensorVal_tmul_apply, hgeq]
+      simp [← ofMul_zpow]
+      exact (map_zpow (MulDistribMulAction.toMonoidHom C σ) (Additive.toMul v) _).symm
+  | add z z' hz hz' => simp [smul_add, hz, hz', smul_mul']
+
+/-- A tensor whose valuation is the equivariant family carried by one orbit has invariant
+valuation, so it feeds the descent above with no further hypothesis. -/
+theorem tensorVal_smul_eq_of_eq
+    (hgeq : ∀ (σ : Q) (a : A) (x : X),
+      g (Additive.ofMul (σ • a)) (σ • x) = g (Additive.ofMul a) x)
+    {t : Additive A ⊗[ℤ] Additive C} {D : X →₀ Additive C} (hD : tensorVal C g t = D)
+    (hDeq : ∀ (σ : Q) (x : X), D (σ • x) = Additive.ofMul (σ • (D x).toMul)) (σ : Q) :
+    tensorVal C g (σ • t) = tensorVal C g t := by
+  refine Finsupp.ext fun x => ?_
+  have hx : σ • (σ⁻¹ • x) = x := smul_inv_smul σ x
+  calc tensorVal C g (σ • t) x
+      = tensorVal C g (σ • t) (σ • (σ⁻¹ • x)) := by rw [hx]
+    _ = Additive.ofMul (σ • (tensorVal C g t (σ⁻¹ • x)).toMul) :=
+        tensorVal_smul_apply C g hgeq σ t (σ⁻¹ • x)
+    _ = Additive.ofMul (σ • (D (σ⁻¹ • x)).toMul) := by rw [hD]
+    _ = D (σ • (σ⁻¹ • x)) := (hDeq σ (σ⁻¹ • x)).symm
+    _ = tensorVal C g t x := by rw [hx, hD]
+
+end Equivariance
+
 end InverseGalois.CFT
