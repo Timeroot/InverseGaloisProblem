@@ -21786,3 +21786,137 @@ value `1`; `haval` (`a μ x = a μ (x₀ μ) ^ (ψ μ x).val`) turns the whole p
   Ind_Z^U 𝔽_ℓ)` route of §1.94(e);
 * discharge `FlatRadicandsEP ℓ` from `hasPrescribedUnits` + `NamedOrthogonal`;
 * `GenericLevelStepEPRoots 2`.
+
+## 1.96  `TwistedNormEP` is false, and the per-prime architecture is why (2026-09-12)
+
+§1.95 landed `TwistedNormEP ℓ` as the group-theoretic half of the flat step.  It is **false**, and
+the refutation is short enough to be checked by hand; worse, the reason it is false is a reason the
+whole *per-prime* shape of `HasFlatOrbitPrescription` cannot work.  Both files that rest on it —
+`Shafarevich/LevelFlatPlaces.lean` and `Shafarevich/LevelFlatStep.lean` — have been deleted, and
+`FlatPrescriptionEP ℓ` is again the single named hypothesis of the odd-`ℓ` step.
+
+### (a)  Every surjective operator homomorphism splits
+
+`Generic U n S` is the *relatively free* group on the `U`-set `Fin n × U` in the variety generated
+by `S`.  So if `β : Generic U N S ↠ Generic U n S` is a surjective operator homomorphism, choose
+`z i ∈ β⁻¹(x_{i,1})` for each letter and define `γ` on letters by `γ (x_{i,g}) = g • z i`.  The
+universal property gives `γ : Generic U n S →* Generic U N S` (the verbal kernel maps into the
+verbal kernel: lift `γ` to the free groups and compose with an arbitrary test map to `S`), `γ` is an
+operator homomorphism by construction, and `β ∘ γ` is an operator endomorphism of `Generic U n S`
+fixing every `x_{i,1}`, hence fixing every `x_{i,g} = g • x_{i,1}`, hence the identity.
+
+**Every surjective operator homomorphism has an operator section.**
+
+### (b)  Hence `β` can never kill `Ĥ^0`
+
+A split surjection of `𝔽_ℓ[U]`-modules stays split after any additive functor, so for every
+`Z ≤ U` and every `j` the map
+
+```
+layerSubMap ℓ β j : Layer ℓ (Generic U N S) j  ↠  Layer ℓ (Generic U n S) j
+```
+
+is split surjective, and therefore
+
+```
+Ĥ^0(Z, Layer ℓ (Generic U N S) j)  →  Ĥ^0(Z, Layer ℓ (Generic U n S) j)
+```
+
+is **surjective**, for every choice of `N` and of `β`.
+
+Now read `TwistedNormEP` with `G := U`, `ψ := id` (injective), `ee := 1` (so the twist is trivial),
+`Z μ := Z` a fixed subgroup, and `V : ι → W_N` an arbitrary family of `Z`-invariant elements.  The
+conclusion says `layerSubMap ℓ β j (V μ) = ∏_{σ} b μ σ = ∏_{σ ∈ Z} σ • (b μ 1) = N_Z(b μ 1)`, i.e.
+that every `[V μ]` dies in `Ĥ^0(Z, W_n)`.  Letting `ι` be large enough that the `V μ` exhaust
+`W_N^Z` — legitimate, since `ι` is quantified **after** `N` — the hypothesis demands that the map
+displayed above be zero.  Being surjective, it is zero only when `Ĥ^0(Z, Layer ℓ (Generic U n S) j)`
+itself vanishes.
+
+So `TwistedNormEP ℓ` is equivalent to: *`Ĥ^0(Z, Layer ℓ (Generic U n S) j) = 0` for every finite
+`U`, every finite `ℓ`-group `S`, every `n`, `j` and every `Z ≤ U`.*  That fails.  Take `ℓ = 3`,
+`U = Z = ℤ/3`, `n = 1`, and `S` a finite quotient of the free group of exponent `3` and class `3`.
+Then `V := Layer_0 = 𝔽_3[U]` is free of rank one and, by Jennings–Zassenhaus, `Layer_2` contains the
+Lie power `L_3(V)`, of dimension `(3³-3)/3 = 8`.  A free `𝔽_3[ℤ/3]`-module has dimension divisible
+by `3`, so `L_3(V)` has a Jordan block of size `< 3` and `Ĥ^0(Z, L_3(V)) ≠ 0`.
+
+(The same computation explains why the low layers looked so encouraging: `Layer_0 = 𝔽_ℓ[U]^n` is
+free, and for odd `ℓ` so is `Λ²(𝔽_ℓ[Z])` — the translation action on unordered pairs `{i,j}`,
+`i ≠ j`, of `ℤ/q` with `q` odd is free, since `2c ≡ 0 mod q` forces `c = 0`.  The first non-free Lie
+power is `L_ℓ`, which sits in `Layer_{ℓ-1}`.)
+
+### (c)  The real content: a per-prime obstruction cannot be bounded
+
+The refutation is not an artefact of over-quantifying.  Rewrite it as a counting statement.  The
+shrinking engine (`exists_genericShrink_forall_rTensor_eq_zero`,
+`exists_operatorHom_h1_eq_zero`) kills **finitely many chosen classes**, and needs
+
+```
+(j + 1) * (t * Nat.card U ^ c * finrank (Layer ℓ (Generic U n S) j ⊗ T)) < r,   N = r * n
+```
+
+where `t` is the number of classes.  In the per-prime architecture the classes are indexed by `ι` —
+one per named prime — and `ι` is handed over only after `N` is announced.  Replacing `t` by the
+dimension of the ambient obstruction space does not help: `Ĥ^0(Z, Layer_j(Generic U (r n) S))`
+contains `r n` copies of `Ĥ^0(Z, Layer_j(Generic U 1 S))` (the block retractions of (a) again), so
+it grows **linearly in `r`**, and `r > C · γ · r` has no solutions.
+
+That is the structural statement: *a family of local conditions of unbounded size cannot be paid
+for by one shrinking.*  Schmidt–Wingberg never pay per prime.  In Theorem 15 Step 3 the finitely
+many local classes `ε_p ∈ H¹(k_p, E(n,ν))`, `p ∈ T = T⁰ ∪ T¹ ∪ T² ∪ T³`, are assembled into a
+**single** global obstruction
+
+```
+η = (ε_p)_{p ∈ T} ∈ ∏_{p ∈ T} H¹(k_p, E) ↠ coker(k_S, T, E) ↪ Ш¹(k_S, S∖T, E')  (SW Lemma 10)
+```
+
+and `Ш¹(k_S, S∖T, E')` is bounded independently of `T`: taking `S ⊇ cs(N_n|k)` and using the Hasse
+principle for the `G_K`-trivial module `E'` gives `Ш¹ ↪ H¹(N_n|k, E')`, which is a quotient of
+`H_1(G, E'(-1)) = H²(G, E(-1))` — a group depending only on `G` and the layer.  One shrinking kills
+*one* element of it.  Global reciprocity is exactly the device that converts `|T|` local conditions
+into one global pairing.
+
+### (d)  Why the local half is genuinely free
+
+Nothing goes wrong locally, and this is worth recording because it is the half that survives.  For
+`p ∈ T³` — the new ramification, where `(N_n)_p | k_p` is unramified — inflation–restriction for
+`G_{k_p} ↠ Ĝ = G_{k_p}/I` and `cd(Ĝ) = cd(Ẑ) = 1` give
+
+```
+H¹(k_p, E) ↠ H¹(I, E)^{Ĝ} = E(-1)^{Z_p, tw},
+```
+
+so **every** twisted-invariant inertia character extends to the base local field: the local
+prescription has no obstruction at all, norms or not.  The norm obstruction of §1.95 is an artefact
+of solving the problem over `K` with one radicand per prime; solved over `k_p`, it is not there.
+
+Consistently, the product-formula refutation of §1.94 survives passage to a subfield: if `Z` is the
+decomposition group of `w` in `Gal(K|k)`, `F = K^Z`, and `z ∈ F^×` has `ord_u(z)` prime to `ℓ` at
+`u = w ∩ F` and is a local `ℓ`-th power at every place the prescription forbids, then pairing `z`
+against a character `χ` of `Gal(K|F) = Z` of order `ℓ` gives `∑_v inv_v(z, χ) = ord_u(z) χ(Frob_u)
+≠ 0`, because every other allowed place is completely decomposed in `K|F` and contributes nothing.
+So the rank-one ansatz fails over `F` for the same reason it fails over `K`; the escape is that the
+global class is not rank one, and that its obstruction is the single pairing of (c).
+
+### (e)  What was deleted, and what was kept
+
+* deleted: `Shafarevich/LevelFlatPlaces.lean` (`HasFlatRadicands`, `TwistedNormEP`,
+  `hasFlatOrbitPrescription_of_places`) and `Shafarevich/LevelFlatStep.lean`
+  (`FlatRadicandsEP`, `flatOrbitPrescriptionEP_of_flatRadicandsEP`,
+  `flatPrescriptionEP_of_flatRadicandsEP`, `genericLevelStepEPRoots_of_flatRadicandsEP`);
+  they are recoverable from the history at `8b1e5e6`.
+* kept: `Shafarevich/LevelFlatRadicand.lean` (the Kummer bricks: `kummerKernelHom`,
+  `kummerKernelHom_conj_of_perm`, `kummerChar_eq_of_dvd_placeValue`,
+  `exists_not_dvd_placeValue_of_kummerKernelHom_ne_one`), which are about a single level and a
+  single family of radicands and are exactly what a *global* assembly will also be built from;
+* kept: `LevelFlatKernel`/`LevelFlatOrbit`/`LevelFlatTwist`, the reduction chain down to
+  `FlatPrescriptionEP`.  `HasFlatOrbitPrescription` is now known to be the wrong intermediate — the
+  argument of (c) applies to it verbatim — but `flatPrescriptionEP_of_flatOrbitPrescriptionEP` is a
+  theorem and costs nothing to keep while the global replacement is being built.
+
+### (f)  What is left
+
+* `FlatPrescriptionEP ℓ` (SW Theorem 15 Step 3) for odd `ℓ`, by the global route of (c): the local
+  classes of (d), the Kummer description of `H¹(G_K, E)^{G}` over a level containing `μ_ℓ`, the
+  product formula for the power residue symbol (already in `CFT/`), and the one bounded obstruction
+  killed by `exists_operatorHom_h1_eq_zero`;
+* `GenericLevelStepEPRoots 2`.

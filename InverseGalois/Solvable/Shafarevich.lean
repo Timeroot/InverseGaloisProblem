@@ -95,11 +95,9 @@ import InverseGalois.Solvable.Shafarevich.KernelPrimeCyclic
 import InverseGalois.Solvable.Shafarevich.InertiaCyclic
 import InverseGalois.Solvable.Shafarevich.LevelFlatRadicand
 import InverseGalois.Solvable.Shafarevich.KernelPlaces
-import InverseGalois.Solvable.Shafarevich.LevelFlatPlaces
 import InverseGalois.Solvable.Shafarevich.KernelArith
 import InverseGalois.Solvable.Shafarevich.KernelStep
 import InverseGalois.Solvable.Shafarevich.NamedOrthogonal
-import InverseGalois.Solvable.Shafarevich.LevelFlatStep
 
 /-!
 # Shafarevich's theorem
@@ -885,24 +883,6 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   named prime; and the finite level asked for is the one cut out by the kernel of the given lift
   together with the level itself.  **A level carrying such families of units carries the sharp
   prescription**, with no shrinking spent.
-* `InverseGalois.Solvable.Shafarevich.LevelFlatPlaces` pays the prescription read one named prime at
-  a time with the conjugates of a single unit for each of them: one coefficient of the layer for
-  each automorphism of the level fixing the place below the prime, sitting over the conjugate of the
-  unit by that automorphism, and the coefficient one over every automorphism moving that place.
-  Equivariance is asked there only of the decomposition subgroup of the prime the homomorphism
-  belongs to, and such an automorphism translates the conjugates and raises every character by the
-  power by which it raises the roots of unity, so the assembly is carried by the operator group
-  exactly when the coefficients form a twisted orbit.  Nothing is therefore asked of the unit under
-  the automorphisms of the level: what is asked instead, of the layer alone, is that the value at
-  the one element where the character takes the value one be the product of such an orbit â€” a
-  twisted norm.  The characters of the conjugates agree on inertia at the named prime, two units
-  differing by an automorphism fixing the place having the same order there and a Kummer character
-  at a prime away from the exponent seeing the unit only through that order, which is what lets the
-  assembly be read as a single power.  The remaining clauses are triviality of the local class of
-  every conjugate of the unit at the corresponding place, and the leftover ramification is confined
-  exactly as before.  **A level carrying one such unit for each named place, over a layer carrying
-  the twisted norms, carries the prescription read one named prime at a time**, with one shrinking
-  spent.
 * `InverseGalois.Solvable.Shafarevich.KernelArith` buys those families from the arithmetic.  The
   named places are read as a finite set of places and the classes prescribed at them as a family
   indexed by that set, the lines they lie on are spread over the orbits of the named places, and the
@@ -943,15 +923,4 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   character killing that kernel, hence is one of the units the observation was shown to annihilate.
   **The orthogonality of the naming holds for every prime**, so the sharp prescription is
   unconditional and the step of the ladder is bought by the flattening alone.
-* `InverseGalois.Solvable.Shafarevich.LevelFlatStep` spends the flattening the same way.  The level
-  is again the one the base realization cuts out, the root of unity is again there, the closure
-  again supplies the exponent-th roots which make the two Kummer data, and the places the units are
-  asked to be local powers at are again the places below the finite family.  Where the kernel of the
-  base realization is not open there is nothing to cut out and nothing to prove, a smooth lift lying
-  over the realization having open kernel inside it.  **The step of the ladder for an odd prime is
-  bought by one statement about number fields and one about the layer**: that a level carries, for
-  each of finitely many places in pairwise distinct orbits, a unit of order there prime to the
-  exponent and a local power at the places the assembly is asked to be trivial at; and that a value
-  of a layer carried by a subgroup to its own twisted powers is the product of a twisted orbit of
-  that subgroup.
 -/
