@@ -504,6 +504,7 @@ import InverseGalois.CFT.PoitouTate.NormLocalPower
 import InverseGalois.CFT.PoitouTate.OrbitCoboundary
 import InverseGalois.CFT.PoitouTate.OrbitDivisor
 import InverseGalois.CFT.PoitouTate.OrbitLine
+import InverseGalois.CFT.PoitouTate.OrdInvariant
 import InverseGalois.CFT.PoitouTate.PartPrescribed
 import InverseGalois.CFT.PoitouTate.PlaceUniformiser
 import InverseGalois.CFT.PoitouTate.Prescribed
@@ -6236,6 +6237,13 @@ it that are available here.
   translates of that value is then forced.  **It is equivariant**, so the divisor it names is
   invariant under the whole group, and the construction costs nothing arithmetic: the only
   finiteness used is that an orbit of a finite group is finite.
+* `InverseGalois.CFT.PoitouTate.OrdInvariant` supplies the arithmetic side of that reading.  For a
+  number field the abelian group is the units, the places are the primes outside a finite set
+  stable under the Galois group, the valuation is the vector of orders and its kernel is the group
+  of units for the set.  All three requirements are already met: the order vector is onto once the
+  set carries the ideal classes, **it is equivariant** because an automorphism moves the order of
+  an element along the permutation it induces on the primes, and its kernel is the group of units
+  for the set.
 * `InverseGalois.CFT.PoitouTate.TensorInvariant` reads the same machinery in degree zero.  A tensor
   whose *valuation* is invariant under the group need not itself be invariant; the difference
   between a translate and the tensor has vanishing valuation, so it comes from the kernel of the
