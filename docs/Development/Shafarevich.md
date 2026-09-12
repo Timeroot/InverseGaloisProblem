@@ -22136,3 +22136,32 @@ family `b`, a coordinate map `coord : C → ι → layerSub`, the family `Φ` an
 `hasLayerLocalOrdHom_ordFinsupp`), so the remaining work is a Shafarevich-side module mirroring
 that one in degree zero, after which `kummerKernelHom_conj_of_perm` (`LevelFlatRadicand.lean`) and
 `hasFlatPrescription_of_hasFlatKernelPrescription` (`LevelFlatKernel.lean:176`) close the odd case.
+
+## 1.100 The Kummer packaging should be a map out of the tensor product (2026-09-12)
+
+Reading `kummerKernelHom_conj_of_perm` (`LevelFlatRadicand.lean:133`) changes step 4 of §1.98.
+
+That theorem consumes an *indexed family* `z : T → (↥K)ˣ` of radicands together with layer values
+`b : T → M`, and its equivariance clause is stated with a **permutation**: for each `g` one must
+exhibit `π : Equiv.Perm T` with `g • z (π t) = z t * s ^ ℓ` and `b t ^ e = f (b (π t))`.  Extracting
+such a family from an invariant element of `Additive Kˣ ⊗[ℤ] Additive C` is *not* automatic — an
+invariant tensor need not be a sum of orbits of pure tensors — so the plan as written in §1.98 has a
+gap at exactly that join.
+
+The gap is an artefact of the packaging, not of the mathematics.  `kummerKernelHom` is
+`u y = ∏_t b t ^ (kummerChar (z t) y).val`, which is **bilinear** in `(z, b)` and kills `ℓ`-th
+powers in `z` as soon as `C` has exponent `ℓ`.  So it factors through the tensor product: there is a
+map
+
+  `Additive Kˣ ⊗[ℤ] Additive C → (↥φ.ker →* C)`
+
+agreeing with `kummerKernelHom` on pure tensors, defined on *every* tensor.  Conjugation
+equivariance of the resulting `u` then reads off **invariance of the tensor** directly, with no
+permutation and no indexing: the permutation clause of `kummerKernelHom_conj_of_perm` is the special
+case of that statement for a tensor presented as an orbit sum.
+
+So the revised step 4 is: build the Kummer pairing as a linear map out of the tensor product, prove
+it equivariant, and feed it the invariant tensor of `exists_invariant_tensorVal_eq_orbitRadicand`.
+The prescribed-values clause of `HasFlatKernelPrescription` is then the statement that the pairing
+of the tensor against the inertia at a named prime is the prescribed `a μ`, which is where the
+valuation of the tensor — the orbit divisor, by construction — enters.
