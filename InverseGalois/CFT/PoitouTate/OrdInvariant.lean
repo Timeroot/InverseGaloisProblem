@@ -72,6 +72,15 @@ theorem mem_sUnits_iff_ordFinsupp_eq_zero (a : Kˣ) :
     a ∈ sUnits K T ↔ ordFinsupp T (Additive.ofMul a) = 0 :=
   (mem_ker_ordFinsupp T (u := Additive.ofMul a)).symm.trans AddMonoidHom.mem_ker
 
+/-- **The group of units for a stable set of primes is carried into itself by the Galois
+group.** -/
+instance isStableSubgroup_sUnits : IsStableSubgroup Gal(K/k) (sUnits K T) where
+  smul_mem σ {a} ha := by
+    refine (mem_sUnits_iff_ordFinsupp_eq_zero T (σ • a)).2 (Finsupp.ext fun y => ?_)
+    have h := ordFinsupp_smul_apply T σ a (σ⁻¹ • y)
+    rw [smul_inv_smul, (mem_sUnits_iff_ordFinsupp_eq_zero T a).1 ha] at h
+    simpa using h
+
 end Ord
 
 /-! ### The divisor carried by one orbit, realised by a tensor -/
@@ -121,6 +130,32 @@ theorem exists_tensorVal_eq_orbitRadicand (hT : Function.Surjective (ordFinsupp 
   obtain ⟨t, ht⟩ := tensorVal_surjective C (ordFinsupp T) hT (orbitRadicand Gal(K/k) w V)
   exact ⟨t, ht, tensorVal_smul_eq_of_eq C (ordFinsupp T) (ordFinsupp_smul_apply T) ht
     (orbitRadicand_smul_apply Gal(K/k) w V hV)⟩
+
+variable (C' : Type) [CommGroup C'] [MulDistribMulAction Gal(K/k) C']
+
+/-- **An invariant radicand realising the divisor carried by one orbit**, once the obstruction it
+defines is killed by a homomorphism of the coefficient module.  The realisation is automatic and
+its valuation is automatically invariant, so the whole content is the vanishing of the one class
+the tensor defines with coefficients in the units for the set. -/
+theorem exists_invariant_tensorVal_eq_orbitRadicand (hT : Function.Surjective (ordFinsupp T))
+    (w : {v : HeightOneSpectrum (𝓞 K) // v ∉ T}) (V : C)
+    {t : Additive Kˣ ⊗[ℤ] Additive C} (ht : tensorVal C (ordFinsupp T) t
+      = orbitRadicand Gal(K/k) w V)
+    (hinv : ∀ σ : Gal(K/k),
+      tensorVal C (ordFinsupp T) (σ • t) = tensorVal C (ordFinsupp T) t)
+    (φ : C →* C') (hφ : ∀ (σ : Gal(K/k)) (x : C), φ (σ • x) = σ • φ x)
+    (hzero : (groupCohomology.map (MonoidHom.id Gal(K/k))
+        (tensorCoeffRep (A := ↥(sUnits K T)) Gal(K/k) φ hφ) 1).hom
+      (tensorInvariantClass C (ordFinsupp T) (sUnits K T) hT
+        (mem_sUnits_iff_ordFinsupp_eq_zero T) hinv) = 0) :
+    ∃ s : Additive Kˣ ⊗[ℤ] Additive C',
+      (∀ σ : Gal(K/k), σ • s = s) ∧
+      ∀ y : {v : HeightOneSpectrum (𝓞 K) // v ∉ T},
+        tensorVal C' (ordFinsupp T) s y
+          = Additive.ofMul (φ (orbitRadicand Gal(K/k) w V y).toMul) := by
+  obtain ⟨s, hs, hsval⟩ := exists_invariant_tensorCoeff_of_map_tensorInvariantClass_eq_zero
+    (ordFinsupp T) (sUnits K T) hT (mem_sUnits_iff_ordFinsupp_eq_zero T) φ hφ hinv hzero
+  exact ⟨s, hs, fun y => by rw [hsval y, ht]⟩
 
 end Realise
 
