@@ -94,6 +94,7 @@ import InverseGalois.Solvable.Shafarevich.KernelCyclic
 import InverseGalois.Solvable.Shafarevich.KernelPrimeCyclic
 import InverseGalois.Solvable.Shafarevich.InertiaCyclic
 import InverseGalois.Solvable.Shafarevich.LevelFlatRadicand
+import InverseGalois.Solvable.Shafarevich.KummerTensor
 import InverseGalois.Solvable.Shafarevich.KernelPlaces
 import InverseGalois.Solvable.Shafarevich.KernelArith
 import InverseGalois.Solvable.Shafarevich.KernelStep
@@ -869,6 +870,16 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   **every smooth additive character of that part is then a multiple of it**, that part being carried
   by a single element.  A finite family of such homomorphisms is trivial off one open subgroup, the
   roots of the units generating a single finite level.
+* `InverseGalois.Solvable.Shafarevich.KummerTensor` reads the same assembly with no indexing at all.
+  The homomorphism a family of units and a family of coefficients assemble is bilinear in the two
+  families and kills the exponent-th powers of a unit, so it depends only on the tensor they define
+  and is defined on every tensor of the units of the level with the target.  A conjugation of the
+  argument then reads as a **twist** of that tensor — the radicand carried by the automorphism the
+  conjugating element induces on the level, the coefficient raised to the power by which that
+  element raises the roots of unity — and **the assembled homomorphism is moved by a map of the
+  target exactly when the twist of the tensor is the tensor that map carries it to.**  No
+  permutation of an index set is exhibited, which is what a tensor invariant for the twist, not
+  presented as a sum over orbits, is able to supply.
 * `InverseGalois.Solvable.Shafarevich.KernelPlaces` collects those readings into one demand on the
   level and pays the prescription with it.  A basis of the layer having been named, the homomorphism
   asked for is the one assembled out of a family of units indexed by that basis, and each clause of
