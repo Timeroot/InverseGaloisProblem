@@ -94,8 +94,10 @@ import InverseGalois.Solvable.Shafarevich.KernelCyclic
 import InverseGalois.Solvable.Shafarevich.KernelPrimeCyclic
 import InverseGalois.Solvable.Shafarevich.InertiaCyclic
 import InverseGalois.Solvable.Shafarevich.LevelFlatRadicand
+import InverseGalois.Solvable.Shafarevich.FlatCyclic
 import InverseGalois.Solvable.Shafarevich.KummerTensor
 import InverseGalois.Solvable.Shafarevich.KernelPlaces
+import InverseGalois.Solvable.Shafarevich.FlatPlaces
 import InverseGalois.Solvable.Shafarevich.KernelArith
 import InverseGalois.Solvable.Shafarevich.KernelStep
 import InverseGalois.Solvable.Shafarevich.NamedOrthogonal
@@ -870,6 +872,17 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   **every smooth additive character of that part is then a multiple of it**, that part being carried
   by a single element.  A finite family of such homomorphisms is trivial off one open subgroup, the
   roots of the units generating a single finite level.
+* `InverseGalois.Solvable.Shafarevich.FlatCyclic` spends that reading on a **single** unit.  A
+  prescription at one named prime is a homomorphism of the part of inertia there the base
+  realization kills, and that part is carried by a single element, so every coordinate of the
+  prescription against a basis of the layer is one and the same multiple of the Kummer character of
+  any unit whose order at the place below is prime to the exponent.  The corresponding powers of
+  that one unit therefore assemble the prescription, and **the value it is the power of is a single
+  product of basis powers**.  Conjugating the argument by an automorphism fixing the unit then
+  multiplies the character by the exponent by which that automorphism raises the roots of unity, so
+  **the assembled homomorphism is moved by any map of the layer raising that single value to that
+  exponent** â€” the equivariance a prescription made at one prime carries, at the cost of the unit
+  being fixed by the decomposition subgroup there and nothing more.
 * `InverseGalois.Solvable.Shafarevich.KummerTensor` reads the same assembly with no indexing at all.
   The homomorphism a family of units and a family of coefficients assemble is bilinear in the two
   families and kills the exponent-th powers of a unit, so it depends only on the tensor they define
@@ -894,6 +907,19 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   named prime; and the finite level asked for is the one cut out by the kernel of the given lift
   together with the level itself.  **A level carrying such families of units carries the sharp
   prescription**, with no shrinking spent.
+* `InverseGalois.Solvable.Shafarevich.FlatPlaces` does the same for the flat prescription, and the
+  demand it makes on the level is markedly cheaper.  One unit is asked for at each named place, not
+  one class in each coordinate, and the only thing asked of it at its own place is that its order
+  there be prime to the exponent; the coordinates of the prescribed homomorphism are then multiples
+  of the Kummer character of that one unit, and the powers of it by those multipliers assemble into
+  exactly what was prescribed.  Equivariance for the decomposition subgroup is bought by asking the
+  automorphisms of the level fixing the place below to fix the unit up to an exponent-th power â€” the
+  whole demand depending on the unit only through its class modulo exponent-th powers â€” an
+  automorphism multiplying the character of such a unit by the power to which it raises the roots of
+  unity.
+  Because nothing is named but a single unit, and any unit of order prime to the exponent will do,
+  **the reciprocity residue the sharp demand leaves behind is absent here**: there is no pairing
+  condition, and a level carrying such units carries the flat prescription outright.
 * `InverseGalois.Solvable.Shafarevich.KernelArith` buys those families from the arithmetic.  The
   named places are read as a finite set of places and the classes prescribed at them as a family
   indexed by that set, the lines they lie on are spread over the orbits of the named places, and the
