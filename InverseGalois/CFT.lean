@@ -535,6 +535,7 @@ import InverseGalois.CFT.PoitouTate.SplitPlaceGenerate
 import InverseGalois.CFT.PoitouTate.SplitPlacePower
 import InverseGalois.CFT.PoitouTate.SupRadicandChar
 import InverseGalois.CFT.PoitouTate.SupRadicandCyclic
+import InverseGalois.CFT.PoitouTate.TensorInvariant
 import InverseGalois.CFT.PoitouTate.TensorOrbit
 import InverseGalois.CFT.PoitouTate.TensorShrink
 import InverseGalois.CFT.PoitouTate.TensorValuation
@@ -6228,6 +6229,16 @@ it that are available here.
   subgroup, the valuation of a cocycle at a place being a cocycle of the subgroup fixing that
   place; two such homomorphisms in succession annihilate every class at once, at the price of a
   hypothesis whose number of classes grows with the module.
+* `InverseGalois.CFT.PoitouTate.TensorInvariant` reads the same machinery in degree zero.  A tensor
+  whose *valuation* is invariant under the group need not itself be invariant; the difference
+  between a translate and the tensor has vanishing valuation, so it comes from the kernel of the
+  valuation, and the resulting one cocycle there is the whole obstruction.  **A homomorphism of the
+  module which kills the class of that cocycle corrects the pushed forward tensor to an invariant
+  one with the same valuation.**  This is what a prescribed divisor asks for: the divisor built out
+  of the orbit of a place, weighted by the values a decomposition subgroup carries, is invariant by
+  construction, and what has to be produced is an invariant radicand realising it.  The obstruction
+  lives with coefficients in the units of a finite set of places, finitely generated and fixed
+  before the tower is chosen, so a single shrinking answers it.
 * `InverseGalois.CFT.PoitouTate.LocalOrdBridge` joins the two sides.  The everywhere locally trivial
   classes produced by the theory of a lifting problem are trivial on the genuine decomposition
   subgroups of the Galois group of the base, with coefficients restricted along them, while the

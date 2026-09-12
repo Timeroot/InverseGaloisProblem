@@ -21920,3 +21920,138 @@ global class is not rank one, and that its obstruction is the single pairing of 
   product formula for the power residue symbol (already in `CFT/`), and the one bounded obstruction
   killed by `exists_operatorHom_h1_eq_zero`;
 * `GenericLevelStepEPRoots 2`.
+
+## 1.97  The global replacement: the invariant divisor, and the two shrinkings (2026-09-12)
+
+§1.96(f) left `FlatPrescriptionEP ℓ` to a *global* assembly.  This section records the architecture
+of that assembly, including the exact repo lemmas that implement each step, so that the Lean work
+is transcription rather than discovery.
+
+### (a)  What the consumer actually asks for
+
+`HasFlatKernelPrescription` (`Shafarevich/LevelFlatKernel.lean:108`) is, after stripping the
+bookkeeping, this.  Fix `k`, a finite `U = Gal(K|k)` with `K = Ω^{ker φ}`, a layer
+`W = layerSub ℓ (Generic U N S) j` and finitely many *named* primes `Q μ` of `𝓞_Ω` with
+decomposition data `A μ = I(Q μ) ⊓ ker φ`, and prescribed inertia homomorphisms
+`a μ : A μ →* W` that are equivariant for conjugation by `Gal(Ω/k)` acting through `φ`.  Produce a
+single global `u : ker φ →* W` which is smooth, equivariant, trivial on the given decomposition
+groups `D ν`, restricts to `a μ` at each named prime, and is unramified outside the named primes
+(up to the escape clause).  `N` may be enlarged first, by a surjective operator hom
+`β : Generic U N S ↠ Generic U n S` — this is the *shrinking* freedom.
+
+Crucially `k`, `K`, `U`, `φ`, `D` are all fixed **before** `N` is announced.  So any finitely
+generated object built from `K` alone — in particular the `S₀`-unit group of `K` for a fixed finite
+`S₀` — is available as a coefficient module before the shrinking is chosen.  That is the whole
+reason the plan below can work.
+
+### (b)  The sharp case is already a theorem, and it is exactly `Z = 1`
+
+`HasPrescribedUnits` (`Shafarevich/KernelPlaces.lean:124`), proven as `hasPrescribedUnits`
+(`Shafarevich/KernelArith.lean:187`), is the special case in which the named primes are **completely
+split** in `K|k`: its naming hypothesis is `∀ μ ν σ, σ ≠ 1 → σ • w μ ≠ w ν`, i.e. trivial
+stabiliser.  There the equivariance clause of (a) is vacuous, because the `Gal(Ω/k)`-orbit of a
+named prime meets the prescription only once, and a rank-one radicand per prime suffices.  §1.94
+and §1.96 are the discovery that the rank-one ansatz *cannot* be pushed past `Z = 1`.
+
+### (c)  The correct local target at a named prime with decomposition group `Z`
+
+Let `p` be a named prime of `k`, unramified in `K|k`, with decomposition group `Z ≤ U` at a chosen
+`w | p`.  Equivariance forces `a` to be determined by its value `V` at `w`, and forces
+`V ∈ W(-1)^{Z,tw}`, the *twisted* `Z`-invariants (§1.95's `N^tw_Z`).  By §1.96(d) every such `V` is
+already realized by a class of `H¹(k_p, E)`: inflation–restriction plus `cd(Ẑ) = 1` gives
+`H¹(k_p, E) ↠ E(-1)^{Z_p,tw}`.  So the local problem has **no obstruction**, for any `Z`.
+
+Concretely, over `K_w`: because `p` is unramified in `K|k`, a uniformizer `π ∈ k_p` is a
+`Z`-invariant uniformizer of `K_w`, so as a `Z`-module
+
+```
+K_w^× / ℓ  ≅  𝔽_ℓ (trivial, spanned by π)  ⊕  μ_ℓ,
+```
+
+and `(K_w^×/ℓ ⊗ W(-1))^Z ⊇ π ⊗ W(-1)^{Z,tw}` surjects onto the target.  The *inertia* character of
+the Kummer class of a radicand `x` at `w` is `ord_w(x) ⊗ (-)`, so prescribing `a μ` is prescribing
+the valuation of the radicand at `w`, nothing more: the unit part of the local class at a named
+prime is **free**, and that freedom is what pays for the global obstruction in (e).
+
+### (d)  The invariant divisor exists; only its lift to a radicand is obstructed
+
+Over `K`, a family of radicands with the equivariance of
+`kummerKernelHom_conj_of_perm` (`Shafarevich/LevelFlatRadicand.lean`) is the same thing as an
+invariant element of `Div ⊗ W(-1)`.  Frobenius reciprocity makes the required invariant divisor
+explicit and unconditional:
+
+```
+x ↦ ∑_{τ ∈ U/Z} [τ w] ⊗ (τ ∗ V)          ∈ (Div_K ⊗ W(-1))^U,
+```
+
+well defined precisely because `V` is twisted-`Z`-invariant.  So
+
+```
+(Div_K ⊗ W(-1))^U  ↠  W(-1)^{Z,tw}
+```
+
+is surjective — the **divisor** side of the problem is solved with no hypothesis at all.  What
+§1.94/§1.96 refuted is the *rank-one* lift of this divisor to a radicand; the divisor itself is
+fine.  The entire remaining content is therefore:
+
+> lift the invariant divisor `∑ [τw] ⊗ (τ ∗ V)` to an invariant class in `K^×/ℓ ⊗ W(-1)`.
+
+The obstruction to that lift is a single class in `H¹(U, 𝓞_{K,S}^×/ℓ ⊗ W(-1))`: choose any global
+`x₀` with the prescribed divisor (possible after enlarging `S` by the class group, which is
+harmless because those places are not named and the escape clause of (a) covers them), and take the
+cocycle `σ ↦ σ x₀ / x₀`, which is an `S`-unit tensor because its divisor vanishes.
+
+### (e)  The two shrinkings, and why the coefficient module is fixed in advance
+
+This is exactly the situation that `CFT/PoitouTate/TensorOrbit.lean` and
+`CFT/PoitouTate/TensorShrink.lean` were built for, and they already contain the argument.
+
+* `mem_range_map_tensorSubInclRep_of_forall_subgroup` (`TensorShrink.lean`) says: a class in
+  `H¹(Q, A ⊗ C)` whose valuation cocycle is a coboundary *on every subgroup* `D ≤ Q` comes from
+  `H¹(Q, B ⊗ C)` with `B = ker(valuation)`, i.e. with **`S`-unit coefficients**.  Its hypothesis is
+  literally `∀ (D : Subgroup Q) (d : ↥D → C), (cocycle) → ∃ u, φ (d ρ) = ρ • u / u`, and a first
+  shrinking supplies it for all `D` at once: there are only finitely many subgroups of the fixed
+  finite group `U`, so `exists_operatorHom_res_cohomology_eq_zero`
+  (`Shafarevich/GenericCohomology.lean:90`, SW Proposition 6 with coefficients, any degree, any
+  `f : H →* U`) kills `H¹(D, Layer)` for every one of them simultaneously.
+* After that shrinking the class lives in `H¹(U, 𝓞_{K,S₀}^×/ℓ ⊗ Layer)` where `S₀` is the **fixed**
+  finite set (places ramified in `K|k`, places above `ℓ`, infinite places, class-group generators).
+  `𝓞_{K,S₀}^×/ℓ` is a finite `𝔽_ℓ[U]`-module *depending only on `K`*, so it is a legitimate
+  `T : Rep (ZMod ℓ) U` in the sense of `GenericCohomology.lean:90`, fixed before `N`.
+* A second shrinking, `exists_operatorHom_res_cohomology_eq_zero` with `H = U`, `c = 1`, `t = 1`
+  and coefficients `Layer ⊗ T`, kills the single chosen class.
+
+`map_tensorCoeffRep_eq_zero_of_forall_subgroup` (`TensorShrink.lean`) is the packaged statement of
+exactly this composite: *two homomorphisms of the module in succession, the first killing the
+one-dimensional classes of every subgroup and the second those with coefficients in the kernel of
+the valuation, kill every class with coefficients in the tensor product.*
+
+### (f)  Why shrinking is legitimate here but was not in §1.96
+
+Gotcha 3915: every surjective operator hom splits by relative freeness, so `Ĥ⁰(Z, W_N) ↠ Ĥ⁰(Z, W_n)`
+is surjective and a shrinking can **never** annihilate an unbounded family of Tate-`Ĥ⁰` classes.
+That is why `TwistedNormEP` — a statement quantified over all named primes and all prescriptions —
+was refutable.  But a shrinking *can* kill boundedly many classes named in advance, and (e) names
+exactly `2^{|U|}` + `1` of them, all before `N`.  SW's design is precisely this: assemble every named
+prime into **one** bounded obstruction, then shrink it away.  This is also why Poitou–Tate never has
+to be formalized abstractly for this step: `TensorOrbit`/`TensorShrink` are its shadow in the only
+case needed.
+
+### (g)  Where the norm route fits
+
+`exists_base_family_norm_class_eq` (`CFT/PoitouTate/BaseFamily.lean:139`) descends a family along
+the norm and is the coordinate form of the easy case.  It reaches exactly the primes with
+`ℓ ∤ |Z|`, since `ord_p (N_{K|k} t)` is divisible by the residue degree — and for those
+`Ĥ⁰_tw(Z, W) = 0` anyway, so the norm machinery and the easy case coincide exactly.  It is not on
+the critical path for (e), but it is the right tool for the `ℓ ∤ |Z|` primes if the general
+construction turns out to need a case split.
+
+### (h)  Plan of record
+
+1. the invariant divisor of (d) and a global radicand realizing it, over the fixed `S₀`;
+2. the valuation cocycle and the first shrinking, via
+   `mem_range_map_tensorSubInclRep_of_forall_subgroup`;
+3. `𝓞_{K,S₀}^×/ℓ` as a `Rep (ZMod ℓ) U`, and the second shrinking;
+4. feed the resulting invariant radicand family to `kummerKernelHom_conj_of_perm` to get `u`;
+5. `hasFlatPrescription_of_hasFlatKernelPrescription` (`LevelFlatKernel.lean:176`) then gives
+   `FlatPrescriptionEP ℓ` for odd `ℓ`.
