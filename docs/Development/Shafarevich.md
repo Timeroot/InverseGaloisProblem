@@ -22055,3 +22055,43 @@ construction turns out to need a case split.
 4. feed the resulting invariant radicand family to `kummerKernelHom_conj_of_perm` to get `u`;
 5. `hasFlatPrescription_of_hasFlatKernelPrescription` (`LevelFlatKernel.lean:176`) then gives
    `FlatPrescriptionEP ℓ` for odd `ℓ`.
+
+## 1.98 The two H⁰ bricks are in place (2026-09-12)
+
+Two modules landed, both sorry-free and in the default build.
+
+**`CFT/PoitouTate/OrbitDivisor.lean`** is the *source* of the prescription.  For a finite group `Q`
+permuting a set `X` of places and acting on a module `M`, a point `x₀ : X` and a value `V : M`
+fixed by `stabilizer Q x₀`, `orbitDivisor Q x₀ V : X →₀ M` is the family supported on the orbit of
+`x₀` whose value at `τ • x₀` is `τ • V`.  The two facts that matter are
+`orbitDivisor_apply_smul` (the value at a translate) and `orbitDivisor_smul_apply` (**equivariance**:
+`orbitDivisor Q x₀ V (σ • x) = σ • orbitDivisor Q x₀ V x`).  Nothing arithmetic is used; the only
+finiteness is that an orbit of a finite group is finite.  In the intended reading `X` is the set of
+primes of `K` outside a fixed finite set `S₀`, `x₀` is the named prime `w`, `Q = U = Gal(K|k)`,
+`M = W(-1)` and `V ∈ W(-1)^{Z,tw}` is the value the decomposition subgroup `Z` at `w` carries — the
+hypothesis `∀ s ∈ stabilizer, s • V = V` is exactly the twisted invariance of §1.97(c).
+
+**`CFT/PoitouTate/TensorInvariant.lean`** is the *descent*.  Given a tensor `t` whose valuation
+`tensorVal C g t` is invariant, `σ • t - t` has vanishing valuation, so by `range_tensorSubIncl` it
+lies in the image of the `S₀`-units; the resulting `tensorInvariantCocycle` is a one cocycle
+(`mem_cocycles₁_tensorInvariantCocycle`) and `tensorInvariantClass` is its class.  The payoff is
+`exists_invariant_tensorCoeff_of_map_tensorInvariantClass_eq_zero`: **a homomorphism `φ` of the
+coefficient module killing that class corrects `tensorCoeff A φ t` to a genuinely invariant tensor
+with the same valuation.**
+
+Together these reduce the global replacement for `HasFlatKernelPrescription` to three remaining
+steps:
+
+1. *equivariance of the valuation* — `tensorVal C g (σ • t) = σ • tensorVal C g t`, needing `g`
+   itself equivariant; then any `t` realising `orbitDivisor` automatically has invariant valuation
+   and feeds `TensorInvariant` with no further hypothesis;
+2. *realisation* — a global radicand with the prescribed divisor, i.e. surjectivity of `tensorVal`
+   for the `S₀`-class group, which is `tensorVal_surjective` once `S₀` is enlarged to kill the
+   class group;
+3. *the shrinking* — `exists_genericShrink_map_h1_eq_zero` applied to `tensorInvariantClass`, legal
+   because the class is named before the homomorphism (§1.97(f)) and the coefficient group
+   `𝓞_{K,S₀}^×/ℓ` is finitely generated and fixed before the tower.
+
+The output is an invariant radicand family, which `kummerKernelHom_conj_of_perm`
+(`LevelFlatRadicand.lean`) consumes, and `hasFlatPrescription_of_hasFlatKernelPrescription`
+(`LevelFlatKernel.lean:176`) then turns into `FlatPrescriptionEP ℓ` for odd `ℓ`.

@@ -502,6 +502,7 @@ import InverseGalois.CFT.PoitouTate.NamedSymbol
 import InverseGalois.CFT.PoitouTate.NamedUnits
 import InverseGalois.CFT.PoitouTate.NormLocalPower
 import InverseGalois.CFT.PoitouTate.OrbitCoboundary
+import InverseGalois.CFT.PoitouTate.OrbitDivisor
 import InverseGalois.CFT.PoitouTate.OrbitLine
 import InverseGalois.CFT.PoitouTate.PartPrescribed
 import InverseGalois.CFT.PoitouTate.PlaceUniformiser
@@ -6229,6 +6230,12 @@ it that are available here.
   subgroup, the valuation of a cocycle at a place being a cocycle of the subgroup fixing that
   place; two such homomorphisms in succession annihilate every class at once, at the price of a
   hypothesis whose number of classes grows with the module.
+* `InverseGalois.CFT.PoitouTate.OrbitDivisor` writes down what such a prescription looks like.  A
+  value is chosen at one place, fixed by the decomposition subgroup there because that subgroup
+  must fix any radicand the place is to name, and the family supported on the orbit carrying the
+  translates of that value is then forced.  **It is equivariant**, so the divisor it names is
+  invariant under the whole group, and the construction costs nothing arithmetic: the only
+  finiteness used is that an orbit of a finite group is finite.
 * `InverseGalois.CFT.PoitouTate.TensorInvariant` reads the same machinery in degree zero.  A tensor
   whose *valuation* is invariant under the group need not itself be invariant; the difference
   between a translate and the tensor has vanishing valuation, so it comes from the kernel of the
