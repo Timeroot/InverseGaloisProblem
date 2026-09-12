@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Mathlib
 import InverseGalois.CFT.PoitouTate.OrbitDivisor
 import InverseGalois.CFT.PoitouTate.TensorInvariant
+import InverseGalois.CFT.PoitouTate.TensorOrbit
 import InverseGalois.CFT.Units.OrdFinsupp
 
 /-!
@@ -28,6 +29,9 @@ Galois group on the units rather than of the additive automorphism it induces.
   form the descent asks for.
 * `InverseGalois.CFT.mem_sUnits_iff_ordFinsupp_eq_zero`: **the kernel of the order vector is the
   group of units for the set.**
+* `InverseGalois.CFT.exists_tensorVal_eq_orbitRadicand`: **a tensor realising the divisor carried
+  by one orbit, whose valuation is automatically invariant**, so that it feeds the descent with no
+  further hypothesis.
 
 ## Tags
 
@@ -36,7 +40,7 @@ number field, height one prime, order, S-unit, Galois action, valuation, descent
 
 namespace InverseGalois.CFT
 
-open IsDedekindDomain MulAction NumberField Rigidity.RET
+open IsDedekindDomain MulAction NumberField TensorProduct Rigidity.RET
 
 section Ord
 
@@ -69,5 +73,55 @@ theorem mem_sUnits_iff_ordFinsupp_eq_zero (a : Kˣ) :
   (mem_ker_ordFinsupp T (u := Additive.ofMul a)).symm.trans AddMonoidHom.mem_ker
 
 end Ord
+
+/-! ### The divisor carried by one orbit, realised by a tensor -/
+
+section Radicand
+
+variable (Q : Type*) [Group Q] [Finite Q] {X : Type*} [MulAction Q X]
+variable {C : Type*} [CommGroup C] [MulDistribMulAction Q C]
+
+/-- **The divisor carried by one orbit**, written for a module in multiplicative notation: at a
+translate of the chosen place it is the corresponding translate of the chosen value. -/
+noncomputable def orbitRadicand (x₀ : X) (V : C) : X →₀ Additive C :=
+  letI : DistribMulAction Q (Additive C) := additiveDistribMulAction Q C
+  orbitDivisor Q x₀ (Additive.ofMul V)
+
+/-- **The divisor carried by one orbit is equivariant**, in the pointwise form the descent asks
+for. -/
+theorem orbitRadicand_smul_apply (x₀ : X) (V : C) (hV : ∀ s ∈ stabilizer Q x₀, s • V = V)
+    (σ : Q) (x : X) :
+    orbitRadicand Q x₀ V (σ • x) = Additive.ofMul (σ • (orbitRadicand Q x₀ V x).toMul) :=
+  letI : DistribMulAction Q (Additive C) := additiveDistribMulAction Q C
+  orbitDivisor_smul_apply Q x₀ (Additive.ofMul V)
+    (fun s hs => congrArg Additive.ofMul (hV s hs)) σ x
+
+end Radicand
+
+/-! ### The realisation -/
+
+section Realise
+
+variable {k K : Type} [Field k] [Field K] [Algebra k K] [NumberField K] [Finite Gal(K/k)]
+variable (T : Set (HeightOneSpectrum (𝓞 K))) [IsGaloisStablePlaces k K T]
+variable [DecidableEq {v : HeightOneSpectrum (𝓞 K) // v ∉ T}]
+variable (C : Type) [CommGroup C] [MulDistribMulAction Gal(K/k) C]
+
+/-- **A tensor realising the divisor carried by one orbit, whose valuation is invariant.**  The
+order vector is onto once the set of primes carries the ideal classes, so the divisor is realised;
+it is equivariant, and the divisor carried by an orbit is equivariant, so the valuation of the
+tensor is invariant with no further hypothesis. -/
+theorem exists_tensorVal_eq_orbitRadicand (hT : Function.Surjective (ordFinsupp T))
+    (w : {v : HeightOneSpectrum (𝓞 K) // v ∉ T}) (V : C)
+    (hV : ∀ s ∈ stabilizer Gal(K/k) w, s • V = V) :
+    ∃ t : Additive Kˣ ⊗[ℤ] Additive C,
+      tensorVal C (ordFinsupp T) t = orbitRadicand Gal(K/k) w V ∧
+      ∀ σ : Gal(K/k),
+        tensorVal C (ordFinsupp T) (σ • t) = tensorVal C (ordFinsupp T) t := by
+  obtain ⟨t, ht⟩ := tensorVal_surjective C (ordFinsupp T) hT (orbitRadicand Gal(K/k) w V)
+  exact ⟨t, ht, tensorVal_smul_eq_of_eq C (ordFinsupp T) (ordFinsupp_smul_apply T) ht
+    (orbitRadicand_smul_apply Gal(K/k) w V hV)⟩
+
+end Realise
 
 end InverseGalois.CFT
