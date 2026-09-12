@@ -9,31 +9,32 @@ import InverseGalois.Solvable.Shafarevich.InertiaCyclic
 import InverseGalois.Solvable.Shafarevich.KernelKummer
 
 /-!
-# The homomorphism of the kernel carried by the powers of a single unit
+# The homomorphism of the kernel carried by a family of radicands
 
 At a prime away from the exponent, the part of inertia the base realization kills is carried by a
 single element modulo an open subgroup, so a prescribed homomorphism there is a power of one of its
-own values and the arithmetic which answers it need produce only one radicand.  This file assembles
-what one radicand gives: the homomorphism built out of the powers of a single unit of the level,
-its behaviour under conjugation of the argument, the proportionality of any smooth character of
-that part of inertia to the Kummer character of the unit, and one open subgroup on which a whole
-finite family of such homomorphisms is trivial at once.
+own values.  This file assembles what a family of radicands gives: the homomorphism built out of a
+family of units of the level, its behaviour under conjugation of the argument, the proportionality
+of any smooth character of that part of inertia to the Kummer character of a unit, and one open
+subgroup on which a whole finite family of such homomorphisms is trivial at once.
 
 The conjugation formula is what lets the prescription be made at a single prime.  An automorphism
 of the extension over the base carries the chosen root of unity to a power of itself, and it
-carries a unit which it fixes up to an exponent-th power to a unit with the same Kummer class;
-conjugating the argument of the character therefore multiplies it by that power alone, and the
-homomorphism assembled out of the powers of that unit is raised to the same power.  That is exactly
-the equivariance a prescription at one prime can ask for: equivariance for the whole group would
-ask the radicand to be rational.
+carries each radicand of the family to another one up to an exponent-th power, hence to a unit with
+that Kummer class; conjugating the argument of the character therefore permutes the characters of
+the family and multiplies them by that power alone.  If the coefficients are permuted the same way
+after being raised to that power, the assembled homomorphism is moved by the matching map of the
+target.  That is exactly the equivariance a prescription at one prime can ask for: equivariance for
+the whole group would ask the radicands to be rational.
 
 ## Main results
 
-* `InverseGalois.Shafarevich.kummerKernelHom_units_pow_apply` — the homomorphism assembled out of
-  the powers of a single unit is a single power of a single element of the target.
-* `InverseGalois.Shafarevich.kummerKernelHom_units_pow_conj` — **conjugating the argument by an
-  automorphism which fixes the radicand up to an exponent-th power raises the assembled
-  homomorphism to the power by which that automorphism raises the roots of unity.**
+* `InverseGalois.Shafarevich.kummerKernelHom_eq_prod_pow` — the homomorphism assembled out of a
+  family of units whose characters all take one value is a single power of the product of the
+  coefficients.
+* `InverseGalois.Shafarevich.kummerKernelHom_conj_of_perm` — **conjugating the argument by an
+  automorphism which permutes the radicands up to exponent-th powers moves the assembled
+  homomorphism by the matching permutation of the coefficients.**
 * `InverseGalois.Shafarevich.exists_forall_eq_mul_kummerChar` — **every smooth character of the
   part of inertia the base realization kills is proportional to the Kummer character of a unit
   whose own character there takes a unit value.**
@@ -69,13 +70,6 @@ theorem pow_eq_pow_of_pow_eq_one {M : Type*} [Monoid M] {V : M} (hV : V ^ ℓ = 
   rw [← pow_mod_of_pow_eq_one hV i, ← pow_mod_of_pow_eq_one hV j,
     (ZMod.natCast_eq_natCast_iff' i j ℓ).1 hij]
 
-/-- A product of powers of elements killed by the exponent is killed by the exponent. -/
-theorem prod_pow_val_pow_eq_one {M : Type*} [CommMonoid M] {d : ℕ} {b : Fin d → M}
-    (hb : ∀ t, b t ^ ℓ = 1) (m : Fin d → ZMod ℓ) : (∏ t, b t ^ (m t).val) ^ ℓ = 1 := by
-  rw [← Finset.prod_pow]
-  refine Finset.prod_eq_one fun t _ => ?_
-  rw [← pow_mul, mul_comm (m t).val ℓ, pow_mul, hb t, one_pow]
-
 end Pow
 
 /-! ### A character vanishing where a smooth homomorphism is trivial -/
@@ -110,45 +104,55 @@ attribute [local instance] zmodTrivialAction
 
 variable (hKker : K.fixingSubgroup = φ.ker)
   (h : IsKummerData ↥K Ω (Multiplicative (ZMod ℓ)) (zmodRootHom hζ) ℓ)
-  {M : Type*} [CommGroup M] {d : ℕ} (b : Fin d → M) (hb : ∀ t, b t ^ ℓ = 1)
+  {M : Type*} [CommGroup M] {T : Type*} [Fintype T] (b : T → M) (hb : ∀ t, b t ^ ℓ = 1)
 
 omit [NumberField ↥K] in
-/-- **The homomorphism assembled out of the powers of a single unit is a single power of a single
-element of the target**, the exponent being the Kummer character of that unit. -/
-theorem kummerKernelHom_units_pow_apply (z : (↥K)ˣ) (m : Fin d → ZMod ℓ) (y : ↥φ.ker) :
-    kummerKernelHom hKker h b hb (fun t => z ^ (m t).val) y
-      = (∏ t, b t ^ (m t).val) ^ (kummerChar h z (kerGalEquiv hKker y)).val := by
+/-- **The homomorphism assembled out of a family of units whose characters all take one and the
+same value is a single power of the product of the coefficients**, the exponent being that value.
+Coefficients equal to one may sit over units of any character at all: they contribute nothing to
+either side. -/
+theorem kummerKernelHom_eq_prod_pow (z : T → (↥K)ˣ) {x : ZMod ℓ} {y : ↥φ.ker}
+    (hy : ∀ t, b t = 1 ∨ kummerChar h (z t) (kerGalEquiv hKker y) = x) :
+    kummerKernelHom hKker h b hb z y = (∏ t, b t) ^ x.val := by
   rw [kummerKernelHom_apply, ← Finset.prod_pow]
   refine Finset.prod_congr rfl fun t _ => ?_
-  show b t ^ (kummerChar h (z ^ (m t).val) (kerGalEquiv hKker y)).val
-    = (b t ^ (m t).val) ^ (kummerChar h z (kerGalEquiv hKker y)).val
-  rw [kummerChar_units_pow, nsmul_eq_mul, ZMod.natCast_zmod_val, ZMod.val_mul,
-    pow_mod_of_pow_eq_one (hb t), ← pow_mul]
+  rcases hy t with h1 | h1
+  · rw [h1, one_pow, one_pow]
+  · rw [h1]
 
 variable [Normal k ↥K]
 
 omit [NumberField ↥K] in
-/-- **Conjugating the argument by an automorphism which fixes the radicand up to an exponent-th
-power raises the assembled homomorphism to the power by which that automorphism raises the roots of
-unity.**  The Kummer character of such a unit is multiplied by that power under conjugation of the
-argument, and the assembled homomorphism is a power of one element with the character as its
-exponent. -/
-theorem kummerKernelHom_units_pow_conj (z : (↥K)ˣ) (m : Fin d → ZMod ℓ) {g : Gal(Ω/k)} {e : ℕ}
-    (hgζ : g • kummerRootUnit Ω hζ = kummerRootUnit Ω hζ ^ e) {s : (↥K)ˣ}
-    (hgz : AlgEquiv.restrictNormalHom (↥K) g • z = z * s ^ ℓ) (y : ↥φ.ker)
+/-- **Conjugating the argument by an automorphism which permutes the radicands, up to exponent-th
+powers, moves the assembled homomorphism by the matching permutation of the coefficients.**
+
+The Kummer character of a radicand at a conjugated argument is the character of the radicand the
+automorphism carries it to, times the power by which that automorphism raises the roots of unity;
+so if the coefficients are permuted the same way, after being raised to that power and moved by the
+map of the target, the whole assembled homomorphism is moved by that map. -/
+theorem kummerKernelHom_conj_of_perm (z : T → (↥K)ˣ) {g : Gal(Ω/k)} {e : ℕ}
+    (hgζ : g • kummerRootUnit Ω hζ = kummerRootUnit Ω hζ ^ e) (π : Equiv.Perm T) (f : M →* M)
+    (hz : ∀ t, ∃ s : (↥K)ˣ, AlgEquiv.restrictNormalHom (↥K) g • z (π t) = z t * s ^ ℓ)
+    (hbe : ∀ t, b t ^ e = f (b (π t))) (y : ↥φ.ker)
     (hy : g * (y : Gal(Ω/k)) * g⁻¹ ∈ φ.ker) :
-    kummerKernelHom hKker h b hb (fun t => z ^ (m t).val) ⟨g * (y : Gal(Ω/k)) * g⁻¹, hy⟩
-      = kummerKernelHom hKker h b hb (fun t => z ^ (m t).val) y ^ e := by
+    kummerKernelHom hKker h b hb z ⟨g * (y : Gal(Ω/k)) * g⁻¹, hy⟩
+      = f (kummerKernelHom hKker h b hb z y) := by
   have hτ : galSubHom K (kerGalEquiv hKker ⟨g * (y : Gal(Ω/k)) * g⁻¹, hy⟩)
       = g * galSubHom K (kerGalEquiv hKker y) * g⁻¹ := by
     rw [galSubHom_kerGalEquiv, galSubHom_kerGalEquiv]
-  have hconj : kummerChar h z (kerGalEquiv hKker ⟨g * (y : Gal(Ω/k)) * g⁻¹, hy⟩)
-      = (e : ZMod ℓ) * kummerChar h z (kerGalEquiv hKker y) :=
-    kummerChar_conj_of_smul_eq_mul_pow h hgζ hgz hτ
-  rw [kummerKernelHom_units_pow_apply, kummerKernelHom_units_pow_apply, hconj, ← pow_mul]
-  refine pow_eq_pow_of_pow_eq_one (prod_pow_val_pow_eq_one hb m) ?_
-  push_cast [ZMod.natCast_zmod_val]
-  ring
+  calc kummerKernelHom hKker h b hb z ⟨g * (y : Gal(Ω/k)) * g⁻¹, hy⟩
+      = ∏ t, f (b (π t) ^ (kummerChar h (z (π t)) (kerGalEquiv hKker y)).val) := by
+        rw [kummerKernelHom_apply]
+        refine Finset.prod_congr rfl fun t _ => ?_
+        obtain ⟨s, hs⟩ := hz t
+        rw [kummerChar_conj_of_smul_eq_mul_pow h hgζ hs hτ, _root_.map_pow, ← hbe t, ← pow_mul]
+        refine pow_eq_pow_of_pow_eq_one (hb t) ?_
+        push_cast [ZMod.natCast_zmod_val]
+        ring
+    _ = ∏ t, f (b t ^ (kummerChar h (z t) (kerGalEquiv hKker y)).val) :=
+        Equiv.prod_comp π fun t => f (b t ^ (kummerChar h (z t) (kerGalEquiv hKker y)).val)
+    _ = f (kummerKernelHom hKker h b hb z y) := by
+        rw [kummerKernelHom_apply, _root_.map_prod]
 
 end Single
 
@@ -273,18 +277,18 @@ attribute [local instance] zmodTrivialAction
 
 variable (hKker : K.fixingSubgroup = φ.ker)
   (h : IsKummerData ↥K Ω (Multiplicative (ZMod ℓ)) (zmodRootHom hζ) ℓ)
-  {M : Type*} [CommGroup M] {d : ℕ} (b : Fin d → M) (hb : ∀ t, b t ^ ℓ = 1)
+  {M : Type*} [CommGroup M] {T : Type*} [Fintype T]
 
 /-- **One open normal subgroup on which every member of a finite family of assembled homomorphisms
 is trivial**: the subgroup cutting out the finite level generated by the level itself and the
 chosen roots of all the units of all the families. -/
 theorem exists_isOpenNormal_forall_kummerKernelHom_eq_one {ι : Type*} [Finite ι]
-    (z : ι → Fin d → (↥K)ˣ) :
+    (b : ι → T → M) (hb : ∀ (μ : ι) (t : T), b μ t ^ ℓ = 1) (z : ι → T → (↥K)ˣ) :
     ∃ V : Subgroup Gal(Ω/k), IsOpenNormal V ∧
       ∀ (μ : ι) (y : ↥φ.ker), (y : Gal(Ω/k)) ∈ V →
-        kummerKernelHom hKker h b hb (z μ) y = 1 := by
+        kummerKernelHom hKker h (b μ) (hb μ) (z μ) y = 1 := by
   classical
-  set rts : Set Ω := Set.range fun p : ι × Fin d => ((h.root (z p.1 p.2) : Ωˣ) : Ω) with hrts
+  set rts : Set Ω := Set.range fun p : ι × T => ((h.root (z p.1 p.2) : Ωˣ) : Ω) with hrts
   haveI : Finite ↥rts := by rw [hrts]; exact (Set.finite_range _).to_subtype
   haveI : FiniteDimensional k ↥(IntermediateField.adjoin k rts) :=
     IntermediateField.finiteDimensional_adjoin fun x _ => Algebra.IsIntegral.isIntegral x
@@ -295,7 +299,7 @@ theorem exists_isOpenNormal_forall_kummerKernelHom_eq_one {ι : Type*} [Finite �
     le_trans le_sup_right (IntermediateField.le_normalClosure _)
       (IntermediateField.subset_adjoin k rts hx)
   refine ⟨W.fixingSubgroup, isOpenNormal_fixingSubgroup W, fun μ y hy => ?_⟩
-  refine kummerKernelHom_eq_one hKker h b hb (z μ) fun t => ?_
+  refine kummerKernelHom_eq_one hKker h (b μ) (hb μ) (z μ) fun t => ?_
   refine (kummerChar_eq_zero_iff_smul_root_eq h (z μ t) _).2 (Units.ext ?_)
   show galSubHom K (kerGalEquiv hKker y) ((h.root (z μ t) : Ωˣ) : Ω)
     = ((h.root (z μ t) : Ωˣ) : Ω)

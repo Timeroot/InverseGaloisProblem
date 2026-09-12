@@ -886,17 +886,23 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   together with the level itself.  **A level carrying such families of units carries the sharp
   prescription**, with no shrinking spent.
 * `InverseGalois.Solvable.Shafarevich.LevelFlatPlaces` pays the prescription read one named prime at
-  a time with a single unit for each of them.  Equivariance is asked there only of the decomposition
-  subgroup of the prime the homomorphism belongs to, and that much is bought by asking the unit only
-  to be fixed, up to an exponent-th power, by the automorphisms of the level fixing the place below
-  it: such an automorphism raises the assembled homomorphism to the power by which it raises the
-  roots of unity, and comparing that at the one element where the character takes the value one with
-  the equivariance the prescribed values already have identifies the power with the action of the
-  operator group.  The remaining clauses are triviality of the local class of the unit at the
-  corresponding place, a conjugate of the prime outside the saturation being covered by the
-  invariance clause read backwards, and the leftover ramification is confined exactly as before.
-  **A level carrying one such invariant unit for each named place carries the prescription read one
-  named prime at a time**, again with no shrinking spent.
+  a time with the conjugates of a single unit for each of them: one coefficient of the layer for
+  each automorphism of the level fixing the place below the prime, sitting over the conjugate of the
+  unit by that automorphism, and the coefficient one over every automorphism moving that place.
+  Equivariance is asked there only of the decomposition subgroup of the prime the homomorphism
+  belongs to, and such an automorphism translates the conjugates and raises every character by the
+  power by which it raises the roots of unity, so the assembly is carried by the operator group
+  exactly when the coefficients form a twisted orbit.  Nothing is therefore asked of the unit under
+  the automorphisms of the level: what is asked instead, of the layer alone, is that the value at
+  the one element where the character takes the value one be the product of such an orbit â€” a
+  twisted norm.  The characters of the conjugates agree on inertia at the named prime, two units
+  differing by an automorphism fixing the place having the same order there and a Kummer character
+  at a prime away from the exponent seeing the unit only through that order, which is what lets the
+  assembly be read as a single power.  The remaining clauses are triviality of the local class of
+  every conjugate of the unit at the corresponding place, and the leftover ramification is confined
+  exactly as before.  **A level carrying one such unit for each named place, over a layer carrying
+  the twisted norms, carries the prescription read one named prime at a time**, with one shrinking
+  spent.
 * `InverseGalois.Solvable.Shafarevich.KernelArith` buys those families from the arithmetic.  The
   named places are read as a finite set of places and the classes prescribed at them as a family
   indexed by that set, the lines they lie on are spread over the orbits of the named places, and the
@@ -943,8 +949,9 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   asked to be local powers at are again the places below the finite family.  Where the kernel of the
   base realization is not open there is nothing to cut out and nothing to prove, a smooth lift lying
   over the realization having open kernel inside it.  **The step of the ladder for an odd prime is
-  bought by one statement about number fields alone**: that a level carries, for each of finitely
-  many places in pairwise distinct orbits, a unit fixed up to an exponent-th power by the
-  automorphisms fixing its place, of order there prime to the exponent, and a local power at the
-  places the assembly is asked to be trivial at.
+  bought by one statement about number fields and one about the layer**: that a level carries, for
+  each of finitely many places in pairwise distinct orbits, a unit of order there prime to the
+  exponent and a local power at the places the assembly is asked to be trivial at; and that a value
+  of a layer carried by a subgroup to its own twisted powers is the product of a twisted orbit of
+  that subgroup.
 -/

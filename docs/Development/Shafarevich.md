@@ -21560,3 +21560,229 @@ and, separately, the case `ℓ = 2`, every bridge in the chain carrying `hodd : 
 ### (f) Build
 
 Full root build green, 9946 jobs, 0 warnings, 0 sorries.
+
+## 1.94  `InvariantRadicandsEP` is false, and the rank-one ansatz is why (2026-09-12)
+
+### (a) The statement, and a counterexample
+
+`InvariantRadicandsEP ℓ` (`Shafarevich/LevelFlatStep.lean`) asks, for every number field `K`
+containing `ζ_ℓ`, every finite family of places `w μ` of `K` in pairwise distinct
+`Gal(K/k)`-orbits, and every auxiliary finite set `Tz` the named places avoid, a family of units
+`z μ ∈ K^×` with
+
+* (A) `σ • z μ = z μ · s^ℓ` for every `σ` fixing `w μ`;
+* (B) `z μ` a local `ℓ`-th power at every `v ∈ Tz`;
+* (C) `ℓ ∤ ord_{w μ}(z μ)`;
+* (D) `z μ` a local `ℓ`-th power at every proper conjugate `σ • w μ ≠ w μ`;
+* (E) `z μ` a local `ℓ`-th power at every conjugate of every other named place;
+* (F) at every other place where `ℓ ∤ ord`, either the place is a conjugate of a named one, or it
+  is completely decomposed in a prescribed finite Galois level `E ⊇ K`.
+
+This is **false for every odd prime `ℓ`**.  Take
+
+* `ℓ = 3`, `k = ℚ`, `K = ℚ(ζ_21)` (so `ζ_3 ∈ K`, `[K : ℚ] = 12`),
+* `ι = Unit`, `w` = the unique place of `K` above `37`,
+* `Tz` = the places of `K` above `3` and above `7`,
+* `E = K`.
+
+`37 ≡ 16 (mod 21)` has order `3` in `(ℤ/21)^×` and is `≡ 1 (mod 3)`, so `37` is unramified in `K`,
+its decomposition group `Z = ⟨Frob_37⟩` is cyclic of order `3`, and `Frob_37` acts trivially on
+`μ_3`.  Write `F = K^Z = ℚ(ζ_3, √-7)`, a quartic field; `K/F` is cyclic cubic, ramified only above
+`7`, and `37` splits completely in `F` with one (inert) place of `K` above each place of `F`.
+
+Both clauses (B) and (F) are compatible with these choices: `Tz` contains the places above `ℓ = 3`
+and above the primes ramified in `K/k`, which is what `CoversAbove` and `CoversRamified` supply at
+the point of use.
+
+### (b) Step 1: `Z`-invariance forces the radicand down to `F`
+
+For `Z = Gal(K/F)` cyclic, inflation–restriction reads
+
+    H^1(F, μ_ℓ) → H^1(K, μ_ℓ)^Z → H^2(Z, μ_ℓ) → H^2(F, μ_ℓ),
+
+so the invariant classes not coming from `F^×` are measured by
+`ker(H^2(Z, μ_ℓ) → Br(F)[ℓ])`.  Concretely, `[z] ∈ (K^×/(K^×)^ℓ)^Z` means `σ z = z t^ℓ`, whence
+`N_{K/F}(t)^ℓ = 1`, and `[z]` comes from `F^×` exactly when `t` can be chosen with
+`N_{K/F}(t) = 1`.  So the extra invariant classes exist **iff `μ_ℓ ∩ N_{K/F}(K^×) ≠ 1`**.
+
+(Note the naive argument "`H^1(Z, K_w^×) = 1` by Hilbert 90, so `H^2(Z, μ_ℓ) ↪ H^2(Z, K_w^×)`" is
+**wrong**: the Kummer sequence `1 → μ_ℓ → K_w^× → K_w^× → 1` is not exact, `K_w^×` not being
+`ℓ`-divisible.  The correct criterion is the norm criterion above.)
+
+For the example this is a finite computation.  `K/F` is cyclic, so Hasse's norm theorem applies:
+`ζ_3` is a global norm iff it is a local norm everywhere.  At every place unramified in `K/F` a
+unit is a local norm, and `K/F` is ramified only at the two places `𝔭 | 7`.  There
+`F_𝔭 = ℚ_7(√-7)` and `K_𝔭 = ℚ_7(ζ_7)`, so `K_𝔭 = F_𝔭 · K_0` with `K_0/ℚ_7` the ramified cubic
+subextension of `ℚ_7(ζ_7)/ℚ_7`, cut out by a character `χ_0`.  Projection formula:
+
+    inv_{F_𝔭}(ζ_3 ∪ res χ_0) = inv_{ℚ_7}(N_{F_𝔭/ℚ_7}(ζ_3) ∪ χ_0) = 2 · inv_{ℚ_7}(ζ_3 ∪ χ_0),
+
+and `inv_{ℚ_7}(ζ_3 ∪ χ_0) ≠ 0` because the norm group of `K_0/ℚ_7` is `⟨7⟩ × {u : u ≡ ±1 (7)}`
+while `ζ_3 ≡ 2` or `4 (mod 7)`.  Hence `ζ_3 ∉ N_{K/F}(K^×)`, likewise `ζ_3^2`, so
+`μ_3 ∩ N_{K/F}(K^×) = 1` and **every `Z`-invariant class is represented by some `z' ∈ F^×`**.
+
+### (c) Step 2: the product formula over `F` kills it
+
+Let `χ` be a cubic character of `F` cutting out `K/F`, and sum the local invariants of `z' ∪ χ`
+over the places of `F`:
+
+* at `v' ∈ T_F` (the places of `F` under `Tz`): `z'` is a local cube in `K_v` and `χ` restricted
+  to `F_{v'}` is inflated from the cyclic group `Gal(K_v/F_{v'})`, so both classes are inflated
+  from a cyclic group and `x ∪ x = 0` in `H^*(ℤ/ℓ, 𝔽_ℓ) = Λ(x) ⊗ 𝔽_ℓ[y]` for `ℓ` odd;
+* at the other places above `37`: clause (D) makes `z'` a local cube there, same argument;
+* at a place where `ℓ ∤ ord_{v}(z)`: clause (F) with `E = K` makes it completely decomposed in `K`,
+  so `Frob_{v'} = 1` in `Gal(K/F)` and `χ(Frob_{v'}) = 0`;
+* at every remaining place: `K/F` is unramified there, so `e(v/v') = 1` and `ℓ | ord_v(z)` gives
+  `ℓ | ord_{v'}(z')`, and the symbol vanishes;
+* at the archimedean places: `ℓ` is odd.
+
+The only surviving term is at `u = w ∩ F`, where it is `ord_u(z') · χ(Frob_u)`, nonzero because
+`ℓ ∤ ord_u(z')` (clause (C)) and `w` is inert in `K/F`.  That contradicts the product formula.  ∎
+
+### (d) What actually broke: the rank-one ansatz
+
+The honest requirement at a named prime `Q μ` is a class
+
+    u μ ∈ (H^1(K, μ_ℓ) ⊗ W)^{Z_μ},   W := Hom(μ_ℓ, layerSub ℓ (Generic U n S) j),
+
+restricting on inertia to the prescribed value `e μ := a μ x₀`.  The consumer
+`hasFlatOrbitPrescription_of_places` builds this as the **rank-one** element `z μ ⊗ e μ`, and a
+rank-one element is `Z_μ`-invariant only if each tensor factor is, which is clause (A).  Higher
+rank is not so constrained: `ker(H^2(Z, μ_ℓ ⊗ W) → H^2(F, μ_ℓ ⊗ W))` need not vanish for a
+nontrivial `W`.
+
+The right ansatz is the **`Z_μ`-trace**.  Writing `Z_μ = Stab_{Gal(K/k)}(w μ)` and `ee` for the
+cyclotomic character mod `ℓ`, set
+
+    u μ (y) := ∏_{σ ∈ Z_μ} (σ • v)^{(ee(σ)^{-1} · χ_{σ • z}(y)).val}.
+
+Equivariance is automatic: `χ_{σ z}(g y g^{-1}) = ee(g) · χ_{σ_g^{-1} σ z}(y)`, and substituting
+`τ = σ_g^{-1} σ` reindexes the product into `φ(g) • u μ (y)`.  **No invariance is asked of `z` at
+all.**  On inertia at `w μ` every `σ ∈ Z_μ` fixes `w μ`, hence `ord_{w μ}(σ z) = ord_{w μ}(z)` and
+`χ_{σ z}` and `χ_z` agree there, so
+
+    u μ (x₀) = ∏_{σ ∈ Z_μ} (σ • v)^{(ee(σ)^{-1}).val} =: N_tw(v),
+
+the norm for the Tate-twisted action `σ ∗ v = (σ • v)^{ee(σ)^{-1}}`.
+
+So the invariance clause is traded for one condition on the **layer**, not on the number field:
+
+    e μ ∈ N_tw(W),   i.e.   [e μ] = 0 in Ĥ^0(Z_μ, W(-1)).
+
+(That `e μ` lies in `W(-1)^{Z_μ}` at all is forced already: tame inertia is procyclic with
+`g x₀ g^{-1} = x₀^{ee(g)}`, so the equivariance of `a μ` reads `σ • e μ = (e μ)^{ee(σ)}`.)
+
+### (e) Why the condition is not automatic, and where it is discharged
+
+Restricted to the decomposition group, the only relation a lift satisfies is
+`f(g) f(x₀) f(g)^{-1} = f(x₀)^{ee(g)}`, which is exactly `σ • e = e^{ee}`; nothing forces `e` to be
+a twisted norm.  Nor can the prescription be dodged: at a prime where the correction is not made,
+confinement demands that the solution below kill the whole decomposition subgroup, which forces
+`Z_μ = 1`, and then the norm condition is vacuous anyway.
+
+`Z_μ` is cyclic, so `Ĥ^0(Z_μ, W(-1)) ≅ Ĥ^2(Z_μ, W(-1)) ≅ Ĥ^{-2}(Z_μ, W(-1)) = H_1(Z_μ, W(-1))`,
+and by Shapiro `H_1(Z, M) ≅ H_1(U, M ⊗ Ind_Z^U 𝔽_ℓ)`.  This is precisely the group Schmidt–Wingberg
+annihilate by shrinking in Step 1(a) of Theorem 15 (Proposition 6 with `k = 2` and
+`T = Ind_{G_p}^G 𝔽_p`), and the repo already has the shrinking engine:
+`exists_operatorHom_h1_eq_zero` (`Shafarevich/GenericHomology.lean`), Proposition 7.
+
+The `β` slot of `HasFlatOrbitPrescription` is chosen *after* the named data, so the shrinking is
+available exactly where it is needed.
+
+### (f) Consequences for the tree
+
+`InvariantRadicandsEP ℓ` is replaced by a pair:
+
+* a number-field hypothesis with clause (A) **deleted** — clauses (B)–(F) only, which is the shape
+  the already-proven sharp case `hasPrescribedUnits` (`Shafarevich/KernelArith.lean`) has;
+* a layer hypothesis: after a shrinking, every prescribed inertia value is a twisted norm along
+  the decomposition group of its prime.
+
+Two negative findings, recorded so they are not re-derived:
+
+* making the flat step's named primes split completely in `K/k` is **circular** — the splitting
+  `hQker` in `hasSplitCyclicRepair_of_hasConfinedPrescription` is derived *from* the flat step;
+* averaging inside `K` (`N_{K/F}`, weighted products) always multiplies `ord_{w}` by `|Z|` and so
+  fails exactly when `ℓ | |Z|`, which is the only case that matters.
+
+## 1.95  The trace ansatz landed: `HasFlatRadicands` + `TwistedNormEP` (2026-09-12)
+
+§1.94(d)–(f) is now Lean.  `InverseGalois/Solvable/Shafarevich/LevelFlatPlaces.lean` was rewritten
+from scratch and the refuted invariance clause is gone.
+
+### What replaced what
+
+| old | new |
+| --- | --- |
+| `HasInvariantRadicands ℓ K` (6 clauses, first = the false invariance clause) | `HasFlatRadicands ℓ K` (5 clauses, invariance **deleted**) |
+| — | `TwistedNormEP ℓ` (new; a statement about the layer alone) |
+| `InvariantRadicandsEP ℓ` | `FlatRadicandsEP ℓ` |
+| `flatOrbitPrescriptionEP_of_invariantRadicandsEP` | `flatOrbitPrescriptionEP_of_flatRadicandsEP (htw : TwistedNormEP ℓ) (h : FlatRadicandsEP ℓ)` |
+| `flatPrescriptionEP_of_invariantRadicandsEP` | `flatPrescriptionEP_of_flatRadicandsEP` |
+| `genericLevelStepEPRoots_of_invariantRadicandsEP` | `genericLevelStepEPRoots_of_flatRadicandsEP` |
+
+`HasFlatRadicands` is literally `HasInvariantRadicands` with clause (A) struck out, so its five
+surviving clauses are exactly the shape `hasPrescribedUnits` (`Shafarevich/KernelArith.lean`)
+already delivers in the sharp case.
+
+### `TwistedNormEP`
+
+```
+∀ U S n j, ∃ N, ∀ ι G (ψ : G →* U) (ee : G →* (ZMod ℓ)ˣ) (Z : ι → Subgroup G)
+    (V : ι → layerSub ℓ (Generic U N S) j),
+  Injective ψ → (∀ μ σ, σ ∈ Z μ → ψ σ • V μ = V μ ^ (ee σ).val) →
+  ∃ β : Generic U N S →* Generic U n S, IsOperatorHom β ∧ Surjective β ∧
+    ∃ b : ι → G → layerSub ℓ (Generic U n S) j,
+      (∀ μ σ, σ ∉ Z μ → b μ σ = 1) ∧
+      (∀ μ σ g, g ∈ Z μ → b μ σ ^ (ee g).val = ψ g • b μ (g⁻¹ * σ)) ∧
+      ∀ μ, layerSubMap ℓ β j (V μ) = ∏ σ, b μ σ
+```
+
+Support off `Z μ` is trivial, so `∏_{σ ∈ G} b μ σ = ∏_{σ ∈ Z μ} b μ σ`, and the translation clause
+forces `b μ g = g ∗ c` for `c := b μ 1`; so the last clause says exactly that `V μ` is a twisted
+norm `N^tw_{Z μ}(c)`, i.e. that `Ĥ^0(Z μ, W(-1))` dies after the shrinking `β`.
+
+`N` is chosen before `ι`, `G`, `Z`, `V`, matching the `β`-after-the-named-data order of
+`HasFlatOrbitPrescription`.
+
+### The construction inside `hasFlatOrbitPrescription_of_places`
+
+For a named prime `Q μ` with place `w μ = placeUnder K (Q μ)` below it and `Z μ ≤ Gal(K/k)` its
+stabiliser, the assembled homomorphism is
+`kummerKernelHom hKker hkd (b μ) _ (zz μ)` with `zz μ σ = σ • z μ` for `σ ∈ Z μ` and `= 1`
+otherwise.  The three facts that make it work:
+
+1. **No invariance is needed** — the conjugates `σ • z μ` enter under separate coefficients.
+2. **The characters of the conjugates agree on inertia at `Q μ`**:
+   `placeValue (w μ) (σ • z μ) = placeValue (w μ) (z μ)` when `σ ∈ Z μ` (via `placeValue_galSmul`
+   + `galUnits_eq_smul`), so `kummerChar_eq_of_dvd_placeValue` applies to the quotient.  This is
+   `hconjchar`, and it is what lets clause 5 read the assembly as a single power.
+3. **Clause 2 is the twisted-orbit clause**: `kummerKernelHom_conj_of_perm` with the permutation
+   `π σ = (res g)⁻¹ * σ`; `hzperm` is trivial (both sides are literally `zz μ σ`, no `ℓ`-th power
+   spent) and `hbperm` is the `TwistedNormEP` translation clause read through
+   `natCast_eq_autToPow_of_smul_kummerRootUnit`.
+
+The prescribed values are `V μ := a μ (x₀ μ)` at the element `x₀ μ` where the character takes the
+value `1`; `haval` (`a μ x = a μ (x₀ μ) ^ (ψ μ x).val`) turns the whole prescription into powers of
+`V μ`, and `hVtw` is the twisting hypothesis, obtained by lifting `σ ∈ Z μ` to `g ∈ stab(Q μ)`
+(`hlift`) and applying `haequiv` + `hψconj`.
+
+### Lean notes
+
+* `maxHeartbeats` for the file had to go `1600000 → 6400000`: heartbeats are **per declaration**
+  and this proof is ~260 lines.
+* `rw [mul_smul]` inside `localClassHom _ ℓ x = 1` is **motive-incorrect** (the `Valued`/`WithVal`
+  instance chain depends on the place).  Use the local `hlccong : v = v' → localClassHom v ℓ x = 1
+  → localClassHom v' ℓ x = 1`, proved by `rintro v v' x rfl h`.
+* `exists_not_dvd_placeValue_of_kummerKernelHom_ne_one` must be applied with `b`, `hb`, `z`
+  **explicit** (`(b μ) (hbpow μ) (zz μ)`) and its `hpz` argument hoisted into a named `have`.
+* `LevelFlatPlaces` gained `import InverseGalois.Solvable.Shafarevich.LayerShaLevel` for
+  `exists_monoidHom_comp_restrictNormalHom` (no import cycle).
+
+### What is left
+
+* discharge `TwistedNormEP ℓ` via `exists_operatorHom_h1_eq_zero`
+  (`Shafarevich/GenericHomology.lean`) — the `Ĥ^0(Z, W(-1)) ≅ H_1(Z, W(-1)) ≅ H_1(U, W(-1) ⊗
+  Ind_Z^U 𝔽_ℓ)` route of §1.94(e);
+* discharge `FlatRadicandsEP ℓ` from `hasPrescribedUnits` + `NamedOrthogonal`;
+* `GenericLevelStepEPRoots 2`.

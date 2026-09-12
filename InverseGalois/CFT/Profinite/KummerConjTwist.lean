@@ -40,8 +40,12 @@ through the coefficients alone.
   residues modulo `n`.
 * `InverseGalois.CFT.exists_smul_kummerRootUnit_eq_pow`: an automorphism over the base carries the
   chosen root of unity to one of its powers.
+* `InverseGalois.CFT.natCast_eq_autToPow_of_smul_kummerRootUnit`: **that exponent is the value of
+  the cyclotomic character at the restriction of the automorphism to the intermediate field**, so
+  it depends on the automorphism only through its restriction, and multiplicatively.
 * `InverseGalois.CFT.kummerChar_conj_of_smul_eq_mul_pow`: **the Kummer character of a unit which an
-  automorphism fixes up to an `n`-th power is multiplied by that exponent under conjugation.**
+  automorphism carries a second unit to up to an `n`-th power is the character of that second unit
+  at the conjugate automorphism, times that exponent.**
 
 ## Tags
 
@@ -160,6 +164,39 @@ theorem exists_smul_kummerRootUnit_eq_pow (σ : Gal(Ω/k)) :
   obtain ⟨e, -, he⟩ := hprim.eq_pow_of_mem_rootsOfUnity hmem
   exact ⟨e, he.symm⟩
 
+omit [IsGalois k Ω] in
+/-- **The exponent by which an automorphism over the base raises the chosen root of unity is the
+value of the cyclotomic character at its restriction to the intermediate field.**  So that
+exponent, read modulo `n`, depends on the automorphism only through its restriction, and does so
+multiplicatively. -/
+theorem natCast_eq_autToPow_of_smul_kummerRootUnit {σ : Gal(Ω/k)} {e : ℕ}
+    (hσ : σ • kummerRootUnit Ω hζ = kummerRootUnit Ω hζ ^ e) :
+    (e : ZMod n)
+      = ((hζ.autToPow k (AlgEquiv.restrictNormalHom (↥K) σ) : (ZMod n)ˣ) : ZMod n) := by
+  obtain ⟨c, hc⟩ : ∃ c : ZMod n,
+      ((hζ.autToPow k (AlgEquiv.restrictNormalHom (↥K) σ) : (ZMod n)ˣ) : ZMod n) = c := ⟨_, rfl⟩
+  rw [hc]
+  have hprim : IsPrimitiveRoot (kummerRootUnit Ω hζ) n :=
+    (isPrimitiveRoot_primitiveRootUnit hζ).map_of_injective
+      (f := Units.map (algebraMap (↥K) Ω : (↥K) →* Ω))
+      (Units.map_injective (algebraMap (↥K) Ω).injective)
+  have hres : AlgEquiv.restrictNormalHom (↥K) σ • primitiveRootUnit hζ
+      = primitiveRootUnit hζ ^ c.val := by
+    refine Units.ext ?_
+    rw [Units.val_pow_eq_pow_val]
+    show AlgEquiv.restrictNormalHom (↥K) σ ((primitiveRootUnit hζ : (↥K)ˣ) : ↥K)
+      = ((primitiveRootUnit hζ : (↥K)ˣ) : ↥K) ^ c.val
+    rw [show ((primitiveRootUnit hζ : (↥K)ˣ) : ↥K) = ζ from IsUnit.unit_spec _, ← hc]
+    exact (hζ.autToPow_spec k _).symm
+  have hsm : σ • kummerRootUnit Ω hζ = kummerRootUnit Ω hζ ^ c.val := by
+    show σ • Units.map (algebraMap ↥K Ω : ↥K →* Ω) (primitiveRootUnit hζ) = _
+    rw [smul_units_algebraMap_intermediateField, hres, _root_.map_pow]
+    rfl
+  have hmod : e ≡ c.val [MOD n] := by
+    have hme := pow_eq_pow_iff_modEq.1 (hσ.symm.trans hsm)
+    rwa [← hprim.eq_orderOf] at hme
+  rw [(ZMod.natCast_eq_natCast_iff _ _ _).2 hmod, ZMod.natCast_zmod_val]
+
 variable (h : IsKummerData ↥K Ω (Multiplicative (ZMod n)) (zmodRootHom hζ) n)
 
 omit [IsGalois k Ω] [Normal k ↥K] in
@@ -186,22 +223,24 @@ theorem kummerChar_smul_galConj {σ : Gal(Ω/k)} {e : ℕ}
     cochain_smul_galConj h σ e (unitsHom_smul_of_smul_kummerRootUnit h hσ) a τ, toAdd_pow,
     nsmul_eq_mul]
 
-/-- **The Kummer character of a unit which an automorphism over the base fixes up to an `n`-th
-power is multiplied, under conjugation of the argument by that automorphism, by the exponent by
-which it raises the chosen root of unity.** -/
+/-- **The Kummer character of a unit which an automorphism over the base carries a second unit to,
+up to an `n`-th power, is the character of that second unit at the conjugate automorphism**, times
+the exponent by which the automorphism raises the chosen root of unity.  Taking the two units equal
+reads: a unit fixed up to an `n`-th power has its character multiplied by that exponent under
+conjugation of the argument. -/
 theorem kummerChar_conj_of_smul_eq_mul_pow {σ : Gal(Ω/k)} {e : ℕ}
-    (hσ : σ • kummerRootUnit Ω hζ = kummerRootUnit Ω hζ ^ e) {a t : (↥K)ˣ}
-    (ha : AlgEquiv.restrictNormalHom (↥K) σ • a = a * t ^ n) {τ τ' : Gal(Ω/↥K)}
+    (hσ : σ • kummerRootUnit Ω hζ = kummerRootUnit Ω hζ ^ e) {a a' t : (↥K)ˣ}
+    (ha : AlgEquiv.restrictNormalHom (↥K) σ • a' = a * t ^ n) {τ τ' : Gal(Ω/↥K)}
     (hτ : galSubHom K τ' = σ * galSubHom K τ * σ⁻¹) :
-    kummerChar h a τ' = (e : ZMod n) * kummerChar h a τ := by
+    kummerChar h a τ' = (e : ZMod n) * kummerChar h a' τ := by
   have hpow : kummerChar h (a * t ^ n) τ' = kummerChar h a τ' := by
     show (h.cochain (a * t ^ n) τ').toAdd = (h.cochain a τ').toAdd
     rw [h.cochain_mul, Pi.mul_apply, cochain_pow_eq_one, mul_one]
   calc kummerChar h a τ'
       = kummerChar h (a * t ^ n) τ' := hpow.symm
-    _ = kummerChar h (AlgEquiv.restrictNormalHom (↥K) σ • a) τ' := by rw [ha]
-    _ = (e : ZMod n) * kummerChar h a (galConj K σ τ') := kummerChar_smul_galConj h hσ a τ'
-    _ = (e : ZMod n) * kummerChar h a τ := by
+    _ = kummerChar h (AlgEquiv.restrictNormalHom (↥K) σ • a') τ' := by rw [ha]
+    _ = (e : ZMod n) * kummerChar h a' (galConj K σ τ') := kummerChar_smul_galConj h hσ a' τ'
+    _ = (e : ZMod n) * kummerChar h a' τ := by
         rw [galConj_eq_of_galSubHom_conj K hτ]
 
 end Char
