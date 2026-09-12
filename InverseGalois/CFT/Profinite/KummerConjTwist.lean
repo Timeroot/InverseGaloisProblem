@@ -38,6 +38,8 @@ through the coefficients alone.
   raises the roots of unity.
 * `InverseGalois.CFT.kummerChar_smul_galConj`: the same, read on characters with values in the
   residues modulo `n`.
+* `InverseGalois.CFT.exists_smul_kummerRootUnit_eq_pow`: an automorphism over the base carries the
+  chosen root of unity to one of its powers.
 * `InverseGalois.CFT.kummerChar_conj_of_smul_eq_mul_pow`: **the Kummer character of a unit which an
   automorphism fixes up to an `n`-th power is multiplied by that exponent under conjugation.**
 
@@ -142,6 +144,21 @@ variable {K : IntermediateField k Ω} [Normal k ↥K]
 variable {n : ℕ} [NeZero n] {ζ : ↥K} {hζ : IsPrimitiveRoot ζ n}
 
 attribute [local instance] zmodTrivialAction
+
+omit [IsGalois k Ω] [Normal k ↥K] in
+/-- **An automorphism over the base carries the chosen root of unity to one of its powers.**  The
+chosen root of unity is a primitive `n`-th root of unity, and the automorphism carries it to
+another `n`-th root of unity, which is therefore one of its powers. -/
+theorem exists_smul_kummerRootUnit_eq_pow (σ : Gal(Ω/k)) :
+    ∃ e : ℕ, σ • kummerRootUnit Ω hζ = kummerRootUnit Ω hζ ^ e := by
+  have hprim : IsPrimitiveRoot (kummerRootUnit Ω hζ) n :=
+    (isPrimitiveRoot_primitiveRootUnit hζ).map_of_injective
+      (f := Units.map (algebraMap (↥K) Ω : (↥K) →* Ω))
+      (Units.map_injective (algebraMap (↥K) Ω).injective)
+  have hmem : σ • kummerRootUnit Ω hζ ∈ rootsOfUnity n Ω := by
+    rw [mem_rootsOfUnity, ← smul_pow', kummerRootUnit_pow_eq_one, smul_one]
+  obtain ⟨e, -, he⟩ := hprim.eq_pow_of_mem_rootsOfUnity hmem
+  exact ⟨e, he.symm⟩
 
 variable (h : IsKummerData ↥K Ω (Multiplicative (ZMod n)) (zmodRootHom hζ) n)
 

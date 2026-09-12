@@ -93,10 +93,13 @@ import InverseGalois.Solvable.Shafarevich.KernelClauses
 import InverseGalois.Solvable.Shafarevich.KernelCyclic
 import InverseGalois.Solvable.Shafarevich.KernelPrimeCyclic
 import InverseGalois.Solvable.Shafarevich.InertiaCyclic
+import InverseGalois.Solvable.Shafarevich.LevelFlatRadicand
 import InverseGalois.Solvable.Shafarevich.KernelPlaces
+import InverseGalois.Solvable.Shafarevich.LevelFlatPlaces
 import InverseGalois.Solvable.Shafarevich.KernelArith
 import InverseGalois.Solvable.Shafarevich.KernelStep
 import InverseGalois.Solvable.Shafarevich.NamedOrthogonal
+import InverseGalois.Solvable.Shafarevich.LevelFlatStep
 
 /-!
 # Shafarevich's theorem
@@ -858,6 +861,16 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   element by is killed both by the prime-to-the-exponent power and by the exponent, hence trivial.
   Read over the level the base realization cuts out, the part of inertia that realization kills is
   the whole inertia subgroup there, so the same holds for it.
+* `InverseGalois.Solvable.Shafarevich.LevelFlatRadicand` reads a single unit of the level as such a
+  prescription.  The homomorphism assembled out of the powers of one unit against a basis of the
+  layer has, at each element of the kernel, that basis product raised to the Kummer character of the
+  unit; and at a conjugate of that element by an automorphism carrying the unit to itself up to an
+  exponent-th power, the same value raised to the power by which the automorphism raises the roots
+  of unity.  **A unit whose order at the place below a prime is prime to the exponent has a Kummer
+  character taking a unit value** somewhere on the part of inertia the base realization kills, and
+  **every smooth additive character of that part is then a multiple of it**, that part being carried
+  by a single element.  A finite family of such homomorphisms is trivial off one open subgroup, the
+  roots of the units generating a single finite level.
 * `InverseGalois.Solvable.Shafarevich.KernelPlaces` collects those readings into one demand on the
   level and pays the prescription with it.  A basis of the layer having been named, the homomorphism
   asked for is the one assembled out of a family of units indexed by that basis, and each clause of
@@ -872,6 +885,18 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   named prime; and the finite level asked for is the one cut out by the kernel of the given lift
   together with the level itself.  **A level carrying such families of units carries the sharp
   prescription**, with no shrinking spent.
+* `InverseGalois.Solvable.Shafarevich.LevelFlatPlaces` pays the prescription read one named prime at
+  a time with a single unit for each of them.  Equivariance is asked there only of the decomposition
+  subgroup of the prime the homomorphism belongs to, and that much is bought by asking the unit only
+  to be fixed, up to an exponent-th power, by the automorphisms of the level fixing the place below
+  it: such an automorphism raises the assembled homomorphism to the power by which it raises the
+  roots of unity, and comparing that at the one element where the character takes the value one with
+  the equivariance the prescribed values already have identifies the power with the action of the
+  operator group.  The remaining clauses are triviality of the local class of the unit at the
+  corresponding place, a conjugate of the prime outside the saturation being covered by the
+  invariance clause read backwards, and the leftover ramification is confined exactly as before.
+  **A level carrying one such invariant unit for each named place carries the prescription read one
+  named prime at a time**, again with no shrinking spent.
 * `InverseGalois.Solvable.Shafarevich.KernelArith` buys those families from the arithmetic.  The
   named places are read as a finite set of places and the classes prescribed at them as a family
   indexed by that set, the lines they lie on are spread over the orbits of the named places, and the
@@ -912,4 +937,14 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   character killing that kernel, hence is one of the units the observation was shown to annihilate.
   **The orthogonality of the naming holds for every prime**, so the sharp prescription is
   unconditional and the step of the ladder is bought by the flattening alone.
+* `InverseGalois.Solvable.Shafarevich.LevelFlatStep` spends the flattening the same way.  The level
+  is again the one the base realization cuts out, the root of unity is again there, the closure
+  again supplies the exponent-th roots which make the two Kummer data, and the places the units are
+  asked to be local powers at are again the places below the finite family.  Where the kernel of the
+  base realization is not open there is nothing to cut out and nothing to prove, a smooth lift lying
+  over the realization having open kernel inside it.  **The step of the ladder for an odd prime is
+  bought by one statement about number fields alone**: that a level carries, for each of finitely
+  many places in pairwise distinct orbits, a unit fixed up to an exponent-th power by the
+  automorphisms fixing its place, of order there prime to the exponent, and a local power at the
+  places the assembly is asked to be trivial at.
 -/
