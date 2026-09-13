@@ -23196,26 +23196,169 @@ cohomology group — which is not a step this development wants to take.
 * SW also work throughout in `H¹(k_p, E)` and `H¹(k, E)` with Poitou–Tate, never in Kummer theory
   over the level, so the decomposition groups of `K|k` never appear in their argument at all.  The
   repo's `(K^×/ℓ ⊗ W)^G` formulation is what makes them appear.
-* **The shrinking lever.**  The prescribed values reach the consumer through `layerSubMap ℓ α j`
-  with `α : Generic U N S ↠ Generic U n S` a shrinking chosen *after* `Q`, `A`, `a` and the
-  decomposition groups `D μ` are known.  Discharging the norm clause therefore means: *choose a
-  shrinking that kills the finitely many classes of `V μ` in `Ĥ⁰(D μ, M_n) = M_n^{D μ}/Tr_{D μ}(M_n)`*.
-  This is the same shape as SW Prop 7 (`exists_operatorHom_h1_eq_zero`, `GenericHomology.lean:343`)
-  and is pure group theory and counting, with no arithmetic in it.  The engines are already built:
+* **The shrinking lever** was the third candidate.  The prescribed values reach the consumer through
+  `layerSubMap ℓ α j` with `α : Generic U N S ↠ Generic U n S` a shrinking, and the engines
+  (`exists_genericShrink_layerMap_eq_zero`, `LayerShrink.lean:253`, and its seven companions) do kill
+  prescribed vectors.  §1.109 shows that this lever is closed for the norm clause, on counting
+  grounds, and that the layer is never `𝔽_ℓ[D]`-free.
 
-  ```
-  exists_genericShrink_res_cohomology_eq_zero    GenericCohomology.lean:55
-  exists_genericShrink_forall_rTensor_eq_zero    GenericHomology.lean:259
-  exists_genericShrink_homology_tensor_eq_zero   GenericHomology.lean:273
-  exists_genericShrink_h1_inl_eq_zero            GenericHomology.lean:296
-  exists_genericShrink_map_eq_zero               LayerCohomology.lean:104
-  exists_genericShrink_homology_map_eq_zero      LayerHomology.lean:80
-  exists_genericShrink_mem_pCentral              LayerShrink.lean:231
-  exists_genericShrink_layerMap_eq_zero          LayerShrink.lean:253
-  ```
+## 1.109 The norm clause: every formal escape is closed (2026-09-13)
 
-  A sufficient — and possibly easier — statement is that the shrinking can be chosen to make the
-  layer a **projective `𝔽_ℓ[D]`-module** for each of the finitely many `D μ`: projectivity kills all
-  Tate cohomology, hence forces `Tr_D(M) = M^D` for every subgroup at once, and the layer of the
-  generic operator group on `r` blocks is already close to induced.  That is the next thing to
-  check.
+Four candidate escapes from the norm clause of §1.108(h) were worked out and all four fail.  The
+outcome is a *sharp* description of what any tensor construction can reach, which is recorded here so
+the route is not re-attempted.
+
+### (a) The shrinking lever cannot be aimed at the named places
+
+`exists_genericShrink_layerMap_eq_zero` (`LayerShrink.lean:253`) kills `t` prescribed vectors of the
+layer at the price of a counting bound
+
+```
+(j + 1) * (t * finrank_{ZMod ℓ} (Layer ℓ (Generic U n S) j))  <  r,      N = r * n.
+```
+
+To use it against the norm clause one would take `t = |ι|`, the number of named places.  But in
+`HasFlatPrescription` (`LevelFlatTwist.lean:140`) and `HasFlatKernelPrescription`
+(`LevelFlatKernel.lean:108`) the number of letters is announced by `∃ N : ℕ,` **before** the
+quantifier `∀ (F …) (ι : Type) [Finite ι] …` that introduces the named places.  So `|ι|` is unbounded
+relative to `N` and the bound can never be met.  The same ordering is what the ladder needs — `N` is
+the width of the group the next rung is built on — so it is not a defect to be repaired.
+
+This is why the lever *does* work for the orthogonality residue of the kernel branch
+(`isNamedOrthogonal_of_forall_layerCoord`, `NamedOrthogonal.lean:182`): there the residues against
+the named classes are summed over `μ` first, so the object to be killed is **one** vector, of a
+dimension depending on `n` alone.  The norm clause is not of that shape: it is one condition per
+named place and they cannot be summed.
+
+### (b) The layer is never a free `𝔽_ℓ[U]`-module
+
+A sufficient condition would be that the shrinking can be chosen to make `Layer ℓ (Generic U N S) j`
+projective over `𝔽_ℓ[D]` for the relevant decomposition groups, since projectivity kills all Tate
+cohomology at once.  It is false, and adding letters does not help.
+
+Take `U = ℤ/2 = ⟨σ⟩`, `ℓ = 2`, `S` trivial, so `Generic U r S` is the free group on
+`X = U × Fin r`, with `U` permuting `X` freely.  The `j = 1` layer of a free pro-`2` group on `X` is
+spanned by the squares `x²` and the commutators `[x, y]`, i.e.
+
+```
+Layer ≅ 𝔽_2[X] ⊕ Λ²(𝔽_2[X]),      dim = 2r + C(2r, 2).
+```
+
+`𝔽_2[X] = 𝔽_2[U]^r` is free, but `σ` fixes each of the `r` pairs `{(1, i), (σ, i)}`, so `Λ²` contains
+`r` trivial summands and `Ĥ⁰(U, Layer) ≠ 0` for every `r`.  At `r = 1` the layer is
+`𝔽_2[U] ⊕ 𝔽_2`, of odd dimension `3`, which is already not free over the two-dimensional `𝔽_2[U]`.
+
+### (c) The coset sum reaches the full `M^{D}` — and buys nothing
+
+There is a strictly better construction than the orbit sum of §1.108(c).  Fix a named place `w` with
+`D = Stab(w)`, let `R` be a transversal of `G/D` and let `Y` be a radicand which is `D`-invariant
+*modulo `ℓ`-th powers*.  Then
+
+```
+A  =  ∑_{x ∈ G/D} (out(x) • Y) ⊗ (out(x) • V₀)
+```
+
+is well defined (`Quotient.lift` of `σ ↦ (σ • Y) ⊗ (σ • V₀)` over `G ⧸ D`, the two clauses matching
+because `Y` is `D`-invariant mod `ℓ`-th powers and `V₀` is taken `D`-fixed), is `G`-invariant by
+reindexing along `MulAction.toPerm ρ` on `G ⧸ D`, and has
+
+```
+ord_w(A)  =  ord_w(Y) · V₀,
+```
+
+with **no** norm and **no** tameness condition: it reaches the whole of `M^D`.
+
+It buys nothing, because the hypothesis it needs on `Y` — `∀ σ, σ • w = w → ∃ y, σ • Y = Y · y^ℓ` —
+is *verbatim* clause 1 of `HasFlatPrescribedUnits` (`FlatPlaces.lean:145`), which §1.107(g) refutes.
+The orbit sum and the coset sum are the two ends of one family: the orbit sum pays with
+`Tr_D(M)` and asks nothing of the radicand; the coset sum asks the radicand to be `D`-invariant and
+pays nothing.  There is no third point on the line.
+
+### (d) The sharp ceiling
+
+Let `W = K_{S₀}^×/ℓ` and let `0 → W' → W --ord_w--> 𝔽_ℓ → 0` be the sequence of `𝔽_ℓ[D]`-modules cut
+out by the valuation at `w`.  For any `𝔽_ℓ[D]`-module `M`, tensoring is exact and the long exact
+sequence of `D`-cohomology gives
+
+> the reach of `ord_w ⊗ 1 : (W ⊗ M)^D → M^D` is exactly `ker(δ : M^D → H¹(D, W' ⊗ M))`,
+> i.e. `{ V : ε ∪ V = 0 }` where `ε ∈ H¹(D, W')` is the class of the extension.
+
+Two consequences pin the obstruction down.
+
+* If `W` happens to be `𝔽_ℓ[D]`-free then dimension shifting gives `H¹(D, W' ⊗ M) ≅ Ĥ⁰(D, M)` and
+  the reach is exactly `Tr_D(M)`: **traces and nothing more**, which is what §1.108(c) computes.
+* The reach is all of `M^D` for every `M` iff `ε = 0` iff there is a `D`-invariant class in `K^×/ℓ`
+  whose valuation at `w` is prime to `ℓ` — which is precisely the condition §1.107(e) isolates and
+  §1.107(g) refutes.
+
+So the obstruction is genuine: it is a property of the pair `(K, w)` and no cleverer tensor escapes
+it.  Passing from `D` to the full `G` only replaces `ε ∪ −` by `cor_D^G(ε ∪ −)`, and the split places
+of the confinement clause contribute nothing to it, being induced (their `δ` is a corestriction of a
+class in `H¹(1, −) = 0`).
+
+### (e) Why an invariant class is unavoidable, and what averaging costs
+
+The descent from the level to the base is an **average**.  `LevelKernelPrescription.lean:170` states
+it: a homomorphism `u : ker φ → E` is carried down by `x ↦ ∏_{ρ ∈ G/ker φ} ρ • u(ρ⁻¹ x ρ)`, which is
+a cocycle over `k` because the averaged homomorphism is equivariant.  At a named prime the average
+reproduces `u` on the whole decomposition subgroup *because the prime is completely decomposed*: the
+representatives of the nontrivial cosets move the prime elsewhere, where `u` was arranged to vanish.
+When the decomposition group `D` is nontrivial the surviving factors are exactly the `|D|`
+conjugates fixing the place, and the average reproduces `Tr_D(u)` and not `u` — which is the norm
+clause again, arrived at from the other side.
+
+Averaging is not an artefact that a better construction avoids.  Any cocycle `c` on `G_k` restricts
+on the normal subgroup `ker φ` to an equivariant homomorphism, since
+`c(σ x σ⁻¹) = σ • c(x)` follows from the cocycle identity; and conversely an equivariant
+homomorphism is what the extension along a section needs.  So
+
+> the flat prescription **is** the problem of finding an equivariant `u`, i.e. an invariant element
+> of `(K^×/ℓ ⊗ W)^G` with prescribed valuations — up to the inflation term `H¹(U, E)` and the
+> obstruction `H²(U, E)`, both of which the shrinking already absorbs.
+
+This is worth stating plainly because it settles a tempting hope: proving the flat prescription
+"directly by Poitou–Tate over `k`, bypassing the Kummer detour" would produce a cocycle, hence an
+invariant class, hence a solution of the very problem (d) bounds.  The two formulations are the same
+problem.  What (d) bounds sharply is the reach of *monomial* constructions (orbit sums and coset
+sums); `HasInvariantUnitTensor` itself — an arbitrary invariant element of `K_{S₀}^×/ℓ ⊗ M` — is
+**not** refuted by §1.107, whose counterexamples all concern a single radicand.
+
+### (f) Where the design actually differs from Schmidt–Wingberg
+
+The confined branch of the ladder already carries SW's invariant.  In
+`hasSplitCyclicRepair_of_hasConfinedPrescription` (`LevelConfinedTwist.lean:285`) the named primes
+come with `hQker : stabilizer Gal(Ω|k) (Pr μ) ≤ φ.ker` — that *is* "completely split in `K|k`" — and
+that is why the kernel branch may state its units demand with the trivial-stabilizer hypothesis
+`∀ μ ν σ, σ ≠ 1 → σ • w μ ≠ w ν` (`HasPrescribedUnits`, `KernelPlaces.lean:130`) and have it
+discharged by a theorem (`hasPrescribedUnits`, `KernelArith.lean:192`).
+
+The flat branch is different, and the difference is not bookkeeping.  Its named primes are the
+**new** ramification of an arbitrary given lift `f₀` — the primes where `f₀` ramifies and the confined
+lift `Φ` does not — and nothing constrains their decomposition in `K|k`.  Schmidt–Wingberg never
+repair an arbitrary lift: they build the solution's local behaviour directly out of `H¹(k, E)` with
+Poitou–Tate, so a "new ramification to be removed" never arises.  Locally there is no obstruction to
+removing it — `cd(Ẑ) = 1` makes `H¹(D_p, E) ↠ H¹(I_p, E)^{Frob}` surjective, and the target is
+exactly the equivariance clause `hVsmul` (`FlatPlaces.lean:401`) — so `HasFlatPrescription` itself
+should be true; it is the *Kummer-over-`K`* road to it that acquires the decomposition groups, the
+invariance, and with them the wall of (d).
+
+**Conclusion.**  Three things are now settled.
+
+1. Every *monomial* route to the norm clause is capped.  Orbit sums reach `Tr_D(M)`, coset sums reach
+   `M^D` but need the refuted clause 1 of `HasFlatPrescribedUnits`, the shrinking lever cannot be
+   aimed at the named places, and the layer is never `𝔽_ℓ[U]`-free.  The sharp ceiling of any
+   construction that names a radicand place by place is `ker(cor_D^G ∘ δ)`, (d).
+2. Reformulating the flat prescription as a cocycle problem over `k` is **not** an escape: (e).  Any
+   cocycle restricts to an equivariant homomorphism on `ker φ`, so the invariant class is forced.
+3. What is *not* settled is `HasInvariantUnitTensor` itself.  §1.107's counterexamples all concern a
+   single radicand — `HasFlatPrescribedUnits`, `FlatUnitsEP`, `DecomposedUnitsEP` — and none of them
+   touches an arbitrary invariant element of `K_{S₀}^×/ℓ ⊗ M`.  The obstruction of (d) is a class
+   `cor_D^G(ε ∪ V)` in `H¹(G, W' ⊗ M)` with `W'` the `S₀`-units, and `S₀` may be *enlarged* at will by
+   Chebotarev places completely split in `E`, which the confinement clause admits.
+
+So the next move is neither a ladder restructure nor a change of formulation, but the Poitou–Tate
+computation of that obstruction: state the flat prescription as surjectivity of a modified Selmer map
+over `k` — the local conditions being "unramified outside the named primes, prescribed on inertia at
+them, unrestricted at places split in `E`" — and kill the dual Selmer group by adding split-in-`E`
+Chebotarev places.  That is exactly Schmidt–Wingberg's Second Step, and exactly what the 71 modules
+of `InverseGalois/CFT/PoitouTate/` exist for.
