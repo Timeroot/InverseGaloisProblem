@@ -111,6 +111,7 @@ import InverseGalois.Solvable.Shafarevich.FlatDecomposed
 import InverseGalois.Solvable.Shafarevich.FlatTensorStep
 import InverseGalois.Solvable.Shafarevich.FlatTensorConfined
 import InverseGalois.Solvable.Shafarevich.FlatTensorDiagonal
+import InverseGalois.Solvable.Shafarevich.FlatDiagonalUnits
 
 /-!
 # Shafarevich's theorem
@@ -1079,4 +1080,13 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   **the surjectivity clause is a family of units cut out by local conditions**, with the single
   global demand that each unit have order prime to the exponent at its own place — which is what a
   reachable place provides — and the obstruction clause is left as the only genuine content.
+* `InverseGalois.Solvable.Shafarevich.FlatDiagonalUnits` discharges that first clause outright.
+  The units the prescription over a level already asks for are exactly the family of units the
+  clause wants, once the chosen set of places is taken to be the hull of the named ones and the
+  units are asked for at representatives of the orbits those meet: a place of the hull is a
+  translate of a representative, and moving the unit belonging to that representative by the same
+  automorphism moves neither its order nor its being a local power.  Complete decomposition in a
+  Galois level is likewise a property of a whole orbit, so the places the ramification is allowed
+  at absorb what the confinement leaves over.  **What is left of the choice of places is the
+  obstruction alone**, read at the smallest set of places there is.
 -/

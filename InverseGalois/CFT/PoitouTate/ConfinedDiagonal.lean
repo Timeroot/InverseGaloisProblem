@@ -29,12 +29,20 @@ the places where the radicand must stay inert, orders divisible by the exponent 
 where ramification is allowed, and local powers at the other named places — together with the one
 global demand that cannot be local, that the order at the place itself be prime to the exponent.
 
+Neither of the two readings notices an automorphism of the field applied to the unit and to the
+place at once: the order is unchanged, and the classes at the two places are identified by the
+automorphism, so a local power stays one.  A diagonal at one place of an orbit is therefore a
+diagonal at every place of that orbit, and only one place in each orbit has to be dealt with.
+
 ## Main results
 
 * `InverseGalois.CFT.dvd_ord_of_localClassHom_eq_one`: a unit whose local class at a place is
   trivial has order there divisible by the exponent.
 * `InverseGalois.CFT.surjective_confinedOrd_of_exists_units`: **the local conditions alone produce
   the diagonal**, so the orders of the confined units at the named places are onto.
+* `InverseGalois.CFT.ord_galUnits`, `InverseGalois.CFT.localClassHom_galUnits_eq_one_iff`: moving a
+  unit and the place it is read at together changes neither its order nor its being a local power,
+  so a diagonal at one place of an orbit is a diagonal at all of them.
 
 ## Tags
 
@@ -60,6 +68,26 @@ theorem dvd_ord_of_localClassHom_eq_one {v : HeightOneSpectrum (𝓞 K)} {a : K�
   rwa [placeValue_eq_neg_ord, dvd_neg] at hv
 
 end Order
+
+/-! ### Moving a unit and the place it is read at -/
+
+section Move
+
+variable {k K : Type} [Field k] [Field K] [Algebra k K] [NumberField K]
+
+/-- **The order of a unit at a place is the order of its image at the image of the place.** -/
+theorem ord_galUnits (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)) (a : Kˣ) :
+    ord K (σ • v) ((galUnits σ a : Kˣ) : K) = ord K v ((a : Kˣ) : K) := by
+  rw [coe_galUnits_apply]
+  exact ord_galSmul σ v ((a : Kˣ) : K)
+
+/-- **A unit is a local power at a place exactly when its image is one at the image of the
+place**, the classes at the two places being identified by the automorphism. -/
+theorem localClassHom_galUnits_eq_one_iff (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)) (n : ℕ)
+    (a : Kˣ) : localClassHom (σ • v) n (galUnits σ a) = 1 ↔ localClassHom v n a = 1 := by
+  rw [← localClassesGalEquiv_localClassHom, (localClassesGalEquiv σ v n).map_eq_one_iff]
+
+end Move
 
 /-! ### The diagonal from the local conditions -/
 

@@ -23567,3 +23567,102 @@ A useful by-product of the analysis: `HasFlatPrescribedUnits` **minus its invari
 clause refuted in §1.107(g) by `ℚ(√-23)`) is exactly the diagonal datum that half 1 needs — with
 `Xs = stableHull k K Xs₀` and `x_{σ•w_μ} := σ • Z μ`, clauses 4 and 5 give `ℓ ∣ ord` at the other
 places of `Xs`, clause 3 gives the `Tz` condition, and clause 6 gives the confinement.
+
+## §1.112 Half 1 of the choice of places is *proven* from the prescription (2026-09-13)
+
+The by-product noted at the end of §1.111 has been carried out in Lean.  Half 1 of
+`HasConfinedRadicandPlaces` — the surjectivity of `confinedOrd`, i.e. "every system of orders at the
+chosen places is realised by a confined unit" — is now a **theorem**, given the flat prescription
+with its refuted invariance clause deleted.  What is left of the choice of places is the obstruction
+clause alone.
+
+### (a) The three new modules
+
+| module | contents |
+| --- | --- |
+| `CFT/PoitouTate/RadicandPlaces.lean` (extended) | `stableCore_eq_self`, `stableHull_mono`, `stableHull_subset_of_stable`, `placeOrbitSetoid`, **`exists_orbitReps`** |
+| `CFT/PoitouTate/ConfinedDiagonal.lean` (extended) | **`ord_galUnits`**, **`localClassHom_galUnits_eq_one_iff`** — the two equivariance facts |
+| `Solvable/Shafarevich/FlatDiagonalUnits.lean` (new) | `HasFlatDiagonalUnits`, `hasFlatDiagonalUnits_of_flatPrescribedUnits`, `isGaloisStablePlaces_decomposedPlaces`, `HasConfinedObstruction`, **`hasConfinedDiagonalPlaces_of_flatDiagonalUnits`**, `FlatDiagonalUnitsEP`, `ConfinedObstructionEP`, `confinedDiagonalPlacesEP_of_flatDiagonalUnitsEP`, `genericLevelStepEPRoots_of_flatDiagonalUnitsEP` |
+
+### (b) The statement
+
+`HasFlatDiagonalUnits ℓ K` is literally `HasFlatPrescribedUnits ℓ K` with conjunct 1
+(`∀ μ σ, σ • w μ = w μ → ∃ y, σ • Z μ = Z μ * y ^ ℓ`) removed; `hasFlatDiagonalUnits_of_flatPrescribedUnits`
+is the one-line forgetful map.  Then
+
+```
+hasConfinedDiagonalPlaces_of_flatDiagonalUnits :
+  HasFlatDiagonalUnits ℓ K → HasConfinedObstruction ℓ K → HasConfinedDiagonalPlaces ℓ K
+```
+
+so, composing with §1.111's `hasConfinedRadicandPlaces_of_diagonal` and the EP chain,
+
+```
+FlatDiagonalUnitsEP ℓ  ∧  ConfinedObstructionEP ℓ  ⟹  GenericLevelStepEPRoots ℓ   (ℓ odd, + FlatReachableEP ℓ)
+```
+
+`HasConfinedObstruction` is the obstruction clause read at the **canonical** set of places
+`Xs = stableHull k K Xs₀`; no existential over `Xs` is left in it.  By §1.110(d) that is the
+favourable choice for both halves — the lever for the obstruction is the size of the *allowed* set
+`Y = allowedPlaces K E Xs₀` (deliberately infinite), not the size of `Xs`, and shrinking `Xs`
+shrinks the free module `Xs → ℤ/ℓ` the obstruction lives over.
+
+### (c) Why the prescription's units *are* the diagonal
+
+Four steps, all in `hasConfinedDiagonalPlaces_of_flatDiagonalUnits`.
+
+1. **Orbit representatives.**  The named places `Xs₀` arriving with the demand need not lie in
+   distinct orbits, but `exists_orbitReps` names one place `w μ` in each orbit `Xs₀` meets; these do
+   lie in distinct orbits (`hwdist`, which is exactly the hypothesis the prescription wants) and
+   satisfy `stableHull k K (range w) = stableHull k K Xs₀`.  The construction is
+   `ι := Quotient (placeOrbitSetoid k Xs₀)`, `w := Quotient.out`, finite because `Xs₀` is.
+2. **Transport.**  For `y ∈ stableHull k K Xs₀` pick `σ` and `μ` with `σ • y = w μ`, and set
+   `u := galUnits σ⁻¹ (Z μ)`.  The two new equivariance lemmas say that neither reading notices the
+   move: `ord_galUnits` gives `ord (σ • v) (galUnits σ a) = ord v a`, and
+   `localClassHom_galUnits_eq_one_iff` gives `localClassHom (σ • v) n (galUnits σ a) = 1 ↔
+   localClassHom v n a = 1` (the classes at `v` and `σ • v` are identified by
+   `localClassesGalEquiv`).
+3. **The four clauses.**
+   * *Inert set*: `stableHull k K Tz` is stable, so `v ∈ stableHull Tz ⇒ σ • v ∈ stableHull Tz`, and
+     clause 3 of the prescription applies there.
+   * *Other places of `Xs`*: for `z ≠ y` in the hull, write `σ • z = (στ⁻¹) • w ν`.  If `ν ≠ μ` this
+     is clause 5 (a conjugate of another named place); if `ν = μ` then `(στ⁻¹) • w μ ≠ w μ` — else
+     `σ • z = σ • y`, i.e. `z = y` — and this is clause 4.
+   * *Diagonal entry*: clause 2 plus `ord_galUnits` plus `placeValue = -ord`.
+   * *Confinement*: clause 6 leaves two cases for a place `v` with `ℓ ∤ ord v u`.  Either `σ • v` is a
+     conjugate of a named place, which puts `v` in `stableHull k K Xs₀`; or `σ • v` is completely
+     decomposed in `E`, and by `isGaloisStablePlaces_decomposedPlaces` — a corollary of
+     `forall_stabilizer_le_fixingSubgroup_smul` (`FlatNorm.lean:175`) — so is `v`, which by
+     `stableCore_eq_self` puts `v` in `stableCore k K (decomposedPlaces K E)`.  Both halves of
+     `allowedPlaces` are thereby reached.
+4. The obstruction clause is passed through verbatim to `HasConfinedObstruction`.
+
+### (d) Lean notes
+
+* `stableCore_eq_self` and `stableHull_subset_of_stable` **cannot** carry `omit [NumberField K] in`:
+  the class `IsGaloisStablePlaces` (`CFT/Units/OrdFinsupp.lean:54`) takes `[NumberField K]`, so the
+  variable is referenced.  `stableHull_mono` can.
+* `IsGaloisStablePlaces.smul_mem_iff (k := k) σ v` failed to elaborate (an unsolved `NumberField ↥K`
+  metavariable) inside the bridge; applying the instance as a projection,
+  `(isGaloisStablePlaces_stableHull k ↥K Tz).smul_mem_iff σ v`, works.
+* `placeOrbitSetoid` is deliberately **not** an instance; inside `exists_orbitReps` it is installed
+  with `letI st : Setoid ↥X := placeOrbitSetoid k X` so that `≈`, `Quotient.sound` and
+  `Quotient.mk_out` resolve.
+* `Quotient.mk_out` delivers `σ • ↑⟦⟨v, hv⟩⟧.out = ↑⟨v, hv⟩`; the coercion `↑⟨v, hv⟩` is only
+  *definitionally* `v`, so restate it with a `have ... : ... = v := hσ` before using it — a `rw` on
+  the raw form rewrites inside `⟨v, hv⟩` and fails on the motive.  The final step is
+  `eq_inv_smul_iff.2`.
+* `HasConfinedObstruction` binds `Finite ↥(stableHull k ↥K Xs₀)` and `DecidableEq ↥(...)` as
+  **explicit** `∀ (_ : …)` binders rather than instance-implicit ones, because `DecidableEq` is data
+  and the consumer must be able to hand over the very instance appearing in its own goal.
+
+### (e) Where this leaves Shafarevich
+
+The odd-`ℓ` gap is now exactly two named arithmetic statements:
+
+1. `FlatDiagonalUnitsEP ℓ` — the Schmidt–Wingberg prescription with no equivariance in it.  Still
+   needs a density input (§1.111(d)) or the unramifiedness side condition of §1.111(c).
+2. `ConfinedObstructionEP ℓ` — the genuine Poitou–Tate content of the Second Step.
+
+plus `FlatReachableEP ℓ` (group-theoretic, deliverable F2) and the `ℓ = 2` case
+`GenericLevelStepEPRoots 2`.
