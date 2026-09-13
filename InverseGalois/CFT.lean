@@ -500,6 +500,7 @@ import InverseGalois.CFT.PoitouTate.LocalOrdPlace
 import InverseGalois.CFT.PoitouTate.NamedFamily
 import InverseGalois.CFT.PoitouTate.NamedFamilyPower
 import InverseGalois.CFT.PoitouTate.NamedFamilySplit
+import InverseGalois.CFT.PoitouTate.NamedRadicand
 import InverseGalois.CFT.PoitouTate.NamedSymbol
 import InverseGalois.CFT.PoitouTate.NamedUnits
 import InverseGalois.CFT.PoitouTate.NormLocalPower
@@ -6273,6 +6274,16 @@ it that are available here.
   of coefficients annihilating the first cohomology with coefficients in the kernel of the
   valuation hands back an invariant radicand with the prescribed orbit values.**  The shrinking is
   not asked to be injective, and the prescribed value is read off after it has been applied.
+* `InverseGalois.CFT.PoitouTate.NamedRadicand` answers the demand a prescription actually makes,
+  which names not one place but finitely many of them lying in distinct orbits.  The one orbit
+  descent answers each demand on its own orbit and the answers are added: invariance survives the
+  addition and the divisors carried by distinct orbits have disjoint supports, so **one radicand
+  carries the prescribed value at every named place and no value at all away from the named
+  orbits.**  Recorded alongside is the case the construction is aimed at, in which the first
+  cohomology with coefficients in the kernel of the valuation already vanishes and the prescribed
+  values are realised in the module itself: that is the case the named places are enlarged by
+  auxiliary completely decomposed ones to arrange, the confinement clause of a prescription leaving
+  the orders at such places free.
 * `InverseGalois.CFT.PoitouTate.LocalOrdBridge` joins the two sides.  The everywhere locally trivial
   classes produced by the theory of a lifting problem are trivial on the genuine decomposition
   subgroups of the Galois group of the base, with coefficients restricted along them, while the
