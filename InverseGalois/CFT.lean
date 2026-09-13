@@ -482,6 +482,7 @@ import InverseGalois.CFT.PoitouTate.ChebotarevPlace
 import InverseGalois.CFT.PoitouTate.ClassSetAvoid
 import InverseGalois.CFT.PoitouTate.ClosingChain
 import InverseGalois.CFT.PoitouTate.ClosingChainRamified
+import InverseGalois.CFT.PoitouTate.ConfinedSurjective
 import InverseGalois.CFT.PoitouTate.ConfinedUnits
 import InverseGalois.CFT.PoitouTate.ConjugatePlace
 import InverseGalois.CFT.PoitouTate.CupDual
@@ -6269,6 +6270,17 @@ it that are available here.
   group on the named places.  Running the descent inside that subgroup rather than inside the whole
   unit group is what keeps the two standing conditions from having to be carried alongside the
   divisor, where nothing would preserve them.
+* `InverseGalois.CFT.PoitouTate.ConfinedSurjective` settles the one thing the descent inside that
+  subgroup takes for granted, that the orders at the named places are arbitrary.  Half of it costs
+  nothing: **an exponent-th power of any element of the field is a confined unit**, whatever the two
+  sets of places are, because a global power is a local one and its order is divisible by the
+  exponent everywhere at once.  The orders of the plain units are arbitrary in turn — **any
+  prescribed system of orders at finitely many places is realised**, by gluing powers of
+  uniformisers with the Chinese remainder theorem and reading the result one order beyond what was
+  asked — so the image of the vector of orders of the confined units contains every multiple of the
+  exponent, and **the whole demand collapses to the same demand read modulo the exponent**, a
+  statement about a finite module where the class group and the local conditions are what decide
+  it.
 * `InverseGalois.CFT.PoitouTate.InvariantRadicand` assembles the descent in the form a prescription
   consumes.  The divisor carried by one orbit is realised because the valuation is onto, and the
   valuation of the realising tensor is invariant because both the valuation and the divisor are
