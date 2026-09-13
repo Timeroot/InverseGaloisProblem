@@ -109,6 +109,7 @@ import InverseGalois.Solvable.Shafarevich.NamedOrthogonal
 import InverseGalois.Solvable.Shafarevich.FlatStep
 import InverseGalois.Solvable.Shafarevich.FlatDecomposed
 import InverseGalois.Solvable.Shafarevich.FlatTensorStep
+import InverseGalois.Solvable.Shafarevich.FlatTensorConfined
 
 /-!
 # Shafarevich's theorem
@@ -1054,4 +1055,16 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   order.  **The equivariance the arithmetic could not pay is paid instead by naming places the
   automorphisms of the level act tamely at**, which is a demand on the density theorem choosing them
   rather than on the level.
+* `InverseGalois.Solvable.Shafarevich.FlatTensorConfined` reads that same tensor off a descent
+  through the units of the level, and finds that the whole of what is asked is a choice of places.
+  The units the descent runs in are those which are local powers where the prescription asks for
+  one and whose order is divisible by the exponent away from the places the ramification is allowed
+  at, and the confinement clause is nothing but membership in that group once the places allowed
+  are taken to be the named ones together with those completely decomposed in the bigger level.
+  The prescribed orders cost nothing beyond the vector of orders being onto, and the invariance
+  costs exactly one class in the first cohomology with coefficients in the units of no order at the
+  places that are read â€” a group that shrinks as more places are read, and the places added may be
+  taken completely decomposed because the confinement clause leaves the order there free.  **What
+  the odd step asks of the arithmetic is a finite set of places on which the orders of the confined
+  units are arbitrary and the confined units of no order carry no first cohomology.**
 -/

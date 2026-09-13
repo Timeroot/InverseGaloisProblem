@@ -512,6 +512,7 @@ import InverseGalois.CFT.PoitouTate.PartPrescribed
 import InverseGalois.CFT.PoitouTate.PlaceUniformiser
 import InverseGalois.CFT.PoitouTate.Prescribed
 import InverseGalois.CFT.PoitouTate.RadicalPlace
+import InverseGalois.CFT.PoitouTate.RadicandPlaces
 import InverseGalois.CFT.PoitouTate.RankOne
 import InverseGalois.CFT.PoitouTate.Recursion
 import InverseGalois.CFT.PoitouTate.RecursionClose
@@ -6284,6 +6285,15 @@ it that are available here.
   values are realised in the module itself: that is the case the named places are enlarged by
   auxiliary completely decomposed ones to arrange, the confinement clause of a prescription leaving
   the orders at such places free.
+* `InverseGalois.CFT.PoitouTate.RadicandPlaces` puts an arbitrary prescription into the shape the
+  descent consumes.  The descent is run over sets of places carried into themselves by the Galois
+  group, while a prescription arrives with arbitrary ones — the named places, the places a local
+  condition is imposed at.  **The hull of a set, the places some translate of which lies in it, is
+  the smallest stable set containing it and is still finite when it is; the core, the places every
+  translate of which lies in it, is the largest stable set inside it.**  A union of stable sets
+  being stable, the two constructions together replace every set a prescription names by a stable
+  one, without moving the named places out of the set they were named in or the forbidden places
+  into it.
 * `InverseGalois.CFT.PoitouTate.LocalOrdBridge` joins the two sides.  The everywhere locally trivial
   classes produced by the theory of a lifting problem are trivial on the genuine decomposition
   subgroups of the Galois group of the base, with coefficients restricted along them, while the
