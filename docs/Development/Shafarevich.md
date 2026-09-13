@@ -22561,3 +22561,266 @@ finite set — and the obstruction to prescribing the finitely many local compon
 `coker(k_S, T, E) ↪ Ш¹(k_S, S∖T, E')`, which the shrinking annihilates through
 `H¹(N_n|k, E') ≅ H²(F(n)/Γ ⋉ G, E(-1))`.  That is Poitou–Tate, of which this repo already has 70
 modules.  The sharp route is therefore the one to push.
+
+## 1.105 The sole gap is the decomposition-invariance of the radicand, and Schmidt–Wingberg never meet it (2026-09-13)
+
+§1.104 split the flat demand into `HasFlatPrescribedUnits` (the arithmetic) and
+`HasReachableLevel` (the divisor-class half, paid for by a shrinking).  This section audits both
+against the machinery that is already proven and against Schmidt–Wingberg's own step 3, and
+locates the residue exactly.
+
+### (a) The sharp machinery has no class-group wall
+
+`exists_units_named_prescribed` (`CFT/PoitouTate/NamedUnits.lean:76`) does call
+`exists_stable_ord_places` to build a Galois-stable set carrying the ideal classes, but **the
+class-group places never appear in the ramification support of the output**.  Its conclusion is
+
+```
+∀ v, (∃ q < d, ¬ (p : ℤ) ∣ placeValue v (z q)) →
+  (∃ (σ : Gal(K/k)) (w : ↥Tp), v = σ • (w : HeightOneSpectrum (𝓞 K))) ∨
+    ((∃ W : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) W = v ∧ stabilizer Gal(↥Ω/k) W = ⊥) ∧ …)
+```
+
+so the junk lives only at the two Chebotarev-chosen auxiliary places `Q q`, `R q`, which are
+**completely split in `Ω/k`** — `Ω` being any finite Galois level named in advance.  The two-place
+trick, not the class group, pays for principality.  The obstruction that the class group used to
+represent has migrated into the reciprocity hypothesis `horth`, which is what a shrinking is spent
+on (`namedOrthogonalEP`).
+
+### (b) What is actually missing from `HasFlatPrescribedUnits`
+
+Matching that output against the six clauses of `HasFlatPrescribedUnits`
+(`Shafarevich/FlatPlaces.lean:136`):
+
+| clause | supplied by |
+|---|---|
+| 2 — `ℓ ∤ placeValue (w μ) (Z μ)` | prescribe a ramified local class at `w μ` |
+| 3 — triviality on `Tz` | output (a) |
+| 4, 5 — triviality at the other conjugates | output (c) |
+| 6 — confinement | output (d), since `stabilizer Gal(Ω/k) W = ⊥ ≤ E.fixingSubgroup` |
+| **1 — `∀ σ ∈ D_{w μ}, ∃ y, σ • Z μ = Z μ * y ^ ℓ`** | **nothing** |
+
+So the *only* thing the proven arithmetic does not give is the **decomposition-invariance of the
+radicand modulo `ℓ`-th powers**.
+
+### (c) Why averaging cannot buy it
+
+The named primes are unramified in `K|k` (`HasFlatOrbitPrescription` carries
+`∀ μ, Ideal.inertia Gal(Ω/k) (Q μ) ≤ φ.ker`), so `D_w ≤ Gal(K/k)` is cyclic of order `f_w`.
+
+* `Z := ∏_{σ ∈ D_w} σ Z₀` is exactly invariant and every other clause transfers, but
+  `ord_w Z = |D_w| · ord_w Z₀`, so it works **iff `ℓ ∤ f_w`**, and nothing in the embedding problem
+  forces that.
+* Twisting by a character, `Z := ∏_{σ ∈ D_w} σ(Z₀)^{m(σ)^{-1}}`, gives `σ Z ≡ Z^{m(σ)}`, a
+  `D_w`-**stable line**, which is all the consumer needs (see (e)); but
+  `ord_w Z = (∑_{σ} m(σ)^{-1}) ord_w Z₀` and `∑_{σ ∈ D} χ(σ) = 0` in `𝔽_ℓ` for every **nontrivial**
+  character `χ` of a cyclic group, so only the trivial character survives and we are back to `|D_w|`.
+* `N_{K/M}` for any `M` with `w` inert multiplies `ord_w` by the same factor.
+
+Structurally: let `W ⊆ K^×/(K^×)^ℓ` be the subspace cut out by clauses 3–6.  `W` is
+`D_w`-stable (each clause is), `ord_w : W → 𝔽_ℓ` is `D_w`-equivariant for the trivial action and is
+onto by the machinery.  Writing `H` for the `ℓ`-Sylow of `D_w` (cyclic, and `[D_w : H] ∣ ℓ-1` is
+invertible, so `ord_w (W^{D_w}) = ord_w (W^H)`), `ord_w` kills `(σ-1)W`, so it factors through the
+coinvariants `W_H` while `W^{H}` is the socle.  For a Jordan block of size `≥ 2` the composite
+`W^H ↪ W ↠ W_H` is **zero**.  Hence `ord_w (W^{D_w}) ≠ 0` **iff `W` has a trivial `H`-summand on
+which `ord_w` is nonzero** — not automatic, and not something the two-place construction controls.
+
+### (d) Where the invariant classes live
+
+Let `M' = K^{D_w}` be the decomposition field of `w`, `w'` the place below.  Then `e(w/w') = 1` and
+`w` is the only place of `K` over `w'`, so for `y ∈ (M')^×`
+
+```
+ord_w (ι y) = ord_{w'} (y),
+```
+
+and `ι y` is `D_w`-invariant **on the nose**.  Since `ord_{w'} : (M')^× ↠ ℤ`, the map
+`ord_w : (K^×/ℓ)^{D_w} → 𝔽_ℓ` is surjective unconditionally — clauses 1 and 2 together are free.
+(Hilbert 90 makes this sharp: `(M')^× → (K^×/ℓ)^{D_w} → H^1(D_w, μ_ℓ) → 1`, so up to one extra
+dimension every invariant class comes from the decomposition field.)  **The whole difficulty is to
+meet clauses 3–6 inside `(M')^×`.**
+
+### (e) The consumer only needs a stable line
+
+In `hasFlatOrbitPrescription_of_places` the invariance is used twice: at `hVsmul`
+(`FlatPlaces.lean:401`) and at the equivariance bullet (`:457`).  `hVsmul` is *forced* by the
+equivariance `haequiv` of the prescription — once `ord_w Z` is prime to `ℓ` the Kummer character is
+onto `𝔽_ℓ`, so `V^{e·m} = φ(g) • V` follows.  So a `D_w`-stable line suffices; by (c) that is not a
+weakening that the construction can exploit, but it is the honest form of the demand.
+
+### (f) Schmidt–Wingberg never meet this obstruction
+
+SW's step 3 (Thm 15, `sw.txt:1380–1470`) prescribes local classes `ε_p ∈ H^1(k_p, E(n,ν))` **over
+the base field's local field**, one for each `p ∈ T = T⁰ ∪ T¹ ∪ T² ∪ T³`, and glues them with
+Lemma 10 (the cokernel embeds in `Ш¹`), shrinking with Prop 7 to kill the obstruction.  A class
+over `k_p` restricts to a `G_{k_p}`-equivariant class over `(N_n)_p` automatically, so the
+equivariance is free.  Whether a prescribed equivariant class over `(N_n)_p` comes from `k_p` is
+governed by the Hochschild–Serre sequence
+
+```
+0 → H^1((N_n)_p|k_p) → H^1(k_p) → H^1((N_n)_p)^{G_{k_p}} → H^2((N_n)_p|k_p),
+```
+
+and SW discharge the `H^2` term case by case: for `p ∈ T¹` the extension `(N_n)_p|K_p` is trivial
+and the group extension splits; for `p ∈ T²` the induction hypothesis gives `K_p|k_p` **trivial**;
+for `p ∈ T³` they only need the unramified modification, and the lower arrow
+`H^1(T_{k_p})^{G_{k_p}} → H^1(T_{(N_n)_p})^{G_{k_p}}` is an isomorphism because the inertia
+subgroups coincide — i.e. the residual `H^2(G_{k_p}/T_{k_p}, -)` vanishes because `Ĝ_{k_p}/T` is
+`Ẑ`, of cohomological dimension one.
+
+The vanishing is a statement about the **profinite** local group.  The repo's design replaces the
+local class by a **global** radicand and its global Kummer character, and the corresponding
+`H^2` is over the **finite** cyclic group `D_w`, where it does not vanish.  That is the whole of the
+gap, and it is a defect of the Kummer packaging, not of the arithmetic.
+
+### (g) The two repairs, and their price
+
+1. **Run the named-units machinery with base and field both equal to `M' = K^{D_w}`.**  The Galois
+   group is then trivial, every stability hypothesis degenerates, and the output is a
+   `y ∈ (M')^×` with `ℓ ∤ ord_{w'} y`, trivial local classes on a prescribed finite set, and junk
+   confined to `w'` and to places completely split in a named finite level **of `M'`**.  Setting
+   `Z = ι y` discharges clauses 1–5 at one stroke.  The single defect is clause 6: the junk places
+   are split over `M'`, and the consumer needs them split over `k`.
+2. **Upgrade the auxiliary places to absolute residue degree one.**  If the auxiliary place `u` of
+   `M'` additionally has `f(u|p) = 1` (and `p` is unramified in `M'`, which excludes finitely many
+   `p`), then for `U` above `u` in a level `Ω` Galois over `k`,
+   `|D_U(Ω|k)| = e(U|u)e(u|p)f(U|u)f(u|p) = 1`, so splitting over `M'` upgrades to splitting over
+   `k` for free.  Since `k = ℚ` in `FlatPrescriptionEP`, this is the condition that the auxiliary
+   rational prime be split completely in the Galois closure, a Chebotarev condition of positive
+   density, so it costs nothing mathematically — it has to be threaded through the two-place
+   construction.
+
+Without (2), splitting over `M'` genuinely does not imply splitting over `k`: take `M'|k` cubic
+non-Galois with Galois closure of group `S₃`, `Gal(Ẽ|k) = S₃`, `Gal(Ẽ|M') = ⟨τ⟩`; a prime with
+`D_P = ⟨(123)⟩` meets `⟨τ⟩` trivially, so `u` splits completely in `Ẽ|M'`, yet `f(u|p) = 3`.
+
+### (h) `IsReachablePlace` is a Chebotarev condition, and `HasReachableLevel` is doubtful
+
+By Chebotarev in `E·H_K^{(ℓ)}|k`, the classes of `Cl(K)/ℓ` reachable by primes over `k`-primes split
+completely in `E` are exactly `Gal(H_K^{(ℓ)}|(E ∩ H_K^{(ℓ)}))`, so
+
+```
+(∀ w, IsReachablePlace ℓ K E w)  ⟺  E ∩ H_K^{(ℓ)} = K  ⟺  inertia generates Gal(E|K).
+```
+
+`E` must kill the lift carried down, and the shrinking cannot make `E|K` trivial, so
+`HasReachableLevel` asks that the layer extension the lift cuts out be generated by its inertia
+subgroups — not something the shrinking obviously buys.  Note also that the necessity argument in
+the docstring of `IsReachablePlace` overstates: a place completely decomposed in `E|k` has Frobenius
+in `Gal(H_K^{(ℓ)}|(E ∩ H_K^{(ℓ)}))`, not trivial Frobenius, unless `H_K^{(ℓ)} ⊆ E`.  Under repair
+(g.1) the whole hypothesis disappears, because the two-place construction pays for the divisor class
+itself.
+
+**Correction.**  "Doubtful" is too pessimistic.  The condition that the shrinking has to meet is not
+`E ∩ H_K^{(ℓ)} = K` but `β(J) = layer(n)`, where `J = ⟨f(I_v) : v⟩ ≤ layer(N)` is the (Galois
+stable) subgroup generated by the inertia subgroups.  The quotient `layer(N)/J` is
+`Gal(E₀ ∩ H_K | K)`, a quotient of `Cl(K)/ℓ`, so the index `[layer(N) : J]` is bounded independently
+of `N`.  Since `HasReachableLevel` quantifies `∀ F ∃ β` and the shrinking may be chosen after `J` is
+known, the statement reduces to: given a Galois stable `J ≤ layer(N)` of bounded index, find a
+surjective operator homomorphism `β` with `J + ker β = layer(N)` — an instance of the principle
+that boundedly many prescribed classes can be shrunk away (SW Propositions 6 and 7).  So
+`HasReachableLevel` is plausibly provable; and under repair (g.1) it is not needed at all, since
+`exists_level_ker_le` already supplies `E` and one may take `N := n`, `β := id`.
+
+## 1.106 The decomposition-invariance of the radicand cannot be traded for anything (2026-09-13)
+
+Section 1.105 located the sole odd-`ℓ` gap in clause 1 of `HasFlatPrescribedUnits`, the demand that
+the radicand at a named place be fixed, modulo `ℓ`-th powers, by the automorphisms fixing that
+place.  This section settles the question of whether the demand can be avoided, and the answer is
+no: every way of weakening it runs into a group `Ĥ⁰` which is genuinely non-zero.
+
+### (a) The induced construction: equivariance with **no** invariance at all
+
+The consumer `hasFlatOrbitPrescription_of_places` builds its homomorphism out of a single radicand,
+`u μ (y) = V^{χ_{Z μ}(y)}`, and that is why it needs `σ Z μ ≡ Z μ`.  There is a strictly more
+general construction.  Write `D` for the decomposition subgroup of the named place inside
+`Gal(K/k)`, `e : Gal(K/k) → (ℤ/ℓ)ˣ` for the cyclotomic character (well defined because `μ_ℓ ⊆ K`),
+and for `σ ∈ D` let `ĝ_σ` be any lift of `σ` to the decomposition subgroup upstairs — `φ(ĝ_σ)` does
+not depend on the lift, because two lifts differ by an element of `ker φ`.  Put
+
+    u μ (y) := ∏_{σ ∈ D} (φ(ĝ_σ) • V)^{e(σ)⁻¹ · χ_{σ Z}(y)}.
+
+Then for `g` in the decomposition subgroup upstairs, with restriction `τ ∈ D`,
+
+    u μ (g y g⁻¹) = ∏_σ (φ(ĝ_σ) • V)^{e(σ)⁻¹ e(g) χ_{τ⁻¹σ Z}(y)}
+                  = ∏_{σ'} (φ(ĝ_{τσ'}) • V)^{e(τ)⁻¹ e(σ')⁻¹ e(τ) χ_{σ' Z}(y)}
+                  = ∏_{σ'} (φ(g ĝ_{σ'}) • V)^{e(σ')⁻¹ χ_{σ' Z}(y)} = φ g • u μ (y),
+
+so the equivariance clause holds **for an arbitrary radicand `Z`** — the whole point of clause 1
+disappears.  All the vanishing clauses survive too: they are asked at `Gal(K/k)`-stable sets of
+places, and the family `{σ Z : σ ∈ D}` has its bad places inside the `D`-translates of those of `Z`.
+
+### (b) …but the prescribed value must then be a trace
+
+The construction has to reproduce the prescribed homomorphism along inertia.  Every `σ ∈ D` fixes
+the named place `w`, so `ord_w(σ Z) = ord_{σ⁻¹w}(Z) = ord_w(Z)`: along tame inertia at `w` all the
+characters `χ_{σ Z}` coincide.  The induced product therefore collapses there to
+
+    u μ |inertia = (∏_{σ ∈ D} (φ(ĝ_σ) • V)^{e(σ)⁻¹})^{χ_Z} = tr_D(V)^{χ_Z},
+
+and the prescribed value `W = layerSubMap β (a μ x₀)` must lie in the image of the trace map of `D`
+on the layer.  Since `e` kills the `ℓ`-Sylow subgroup `H ≤ D` (an `ℓ`-group has no non-trivial
+character into a group of order `ℓ-1`) and `[D : H]` is invertible mod `ℓ`, the obstruction is the
+Tate group
+
+    Ĥ⁰(H, layerSub ℓ (Generic U n S) j) = layer^H / tr_H(layer).
+
+### (c) The general shape: only an invariant line escapes
+
+The two constructions are the two ends of one family.  Let `W ⊆ K^×/ℓ` be any `D`-stable subspace
+carrying the radicands, `M := W^* ⊗ μ_ℓ`, and `δ ∈ M` the functional `ord_w`.  A `D`-equivariant
+`ψ : M → layer` gives an admissible `u μ = ψ ∘ ev`, and the prescription forces `ψ(δ) = W`.  Now
+`ord_w(σ⁻¹ z) = ord_{σ w}(z) = ord_w(z)` for `σ ∈ D`, so `δ` spans a `D`-stable **line** with
+character `e`.  Extending `δ ↦ W` from that line to all of `M` is possible for every prescribed `W`
+precisely when the line is a direct summand of `M`, and dually that asks for an element `z₀ ∈ W`
+with `ℓ ∤ ord_w(z₀)` spanning a `D`-stable line — and the character of that line must be trivial,
+because the character of `δ` is exactly `e`.  That is clause 1 again.  For `W` cyclic of length `b`
+over `𝔽_ℓ[H]` the requirement interpolates: `W ∈ (σ-1)^{b-1} · layer`, which is vacuous at `b = 1`
+(invariant radicand) and is the trace condition at `b = |H|` (free radicand orbit).
+
+### (d) The Tate group really is non-zero
+
+So everything hinges on whether `Ĥ⁰(H, layer)` vanishes for `ℓ`-subgroups `H ≤ U`.  It does not.
+`Generic U n S` is the relatively free group, in the variety generated by `S`, on the free `U`-set
+`Fin n × U`, so its `ℓ`-central layers are the homogeneous components of a relatively free
+restricted Lie algebra on a free `H`-set of generators.  Take `H = U = C_ℓ`, `n = 1`, and the
+multilinear component of degree `ℓ` — the part of the layer of multidegree `(1,1,…,1)` in the `ℓ`
+generators.  In the free Lie algebra that component has dimension `(ℓ-1)!`, and `H` permutes the
+generators cyclically.  A `𝔽_ℓ[C_ℓ]`-module is cohomologically trivial iff it is free iff all its
+Jordan blocks have size `ℓ`, which forces `ℓ` to divide the dimension; `ℓ ∤ (ℓ-1)!`.  Hence
+`Ĥ⁰ ≠ 0`.  (The naive hope that the basis of Lyndon words is permuted freely is false: `H` permutes
+the *letters*, and relabelling a Lyndon word need not produce a Lyndon word.)
+
+The prescribed value can be an arbitrary invariant: `a` is universally quantified in
+`HasFlatOrbitPrescription` subject only to equivariance along `A μ = inertia ⊓ ker φ`, and at a
+completely decomposed named prime there is no constraint at all.  The same remark shows that the
+prescription cannot be dodged by shrinking the value away — with `|ι|` arbitrary the values
+`a μ x₀` can span the whole layer, while `β` surjective keeps `layerSubMap β` surjective.  So
+`HasFlatOrbitPrescription` is not vacuous, and no choice of `β` removes the obstruction, `layer(n)`
+being fixed before `β` is chosen.
+
+**Conclusion.** Clause 1 is not tradeable.  The radicand has to be fixed by the decomposition
+subgroup modulo `ℓ`-th powers, which by Hilbert 90 (§1.105(d)) means it has to come from the
+decomposition field.
+
+### (e) What the repair looks like
+
+Let `M' := Ω^{⟨stabilizer Gal(Ω/k) (Q μ), ker φ⟩}`, an intermediate field between `k` and `K` whose
+fixing group inside `Gal(K/k)` is exactly the decomposition subgroup `D` of `w μ`.  A radicand taken
+from `(M')^×` is fixed by `D` on the nose, so clause 1 holds with `y = 1`.  The remaining clauses go
+through because:
+
+* `w μ` is unramified over `k` — the hypothesis `inertia Gal(Ω/k) (Q μ) ≤ ker φ` of
+  `HasFlatOrbitPrescription` says exactly that — so `e(w μ / w') = 1` and the order at `w μ` of an
+  element of `M'` is its order at `w'`, which `ord_{w'} : (M')^× ↠ ℤ` makes prime to `ℓ` at will;
+* `w μ` is the only place of `K` above `w'` (`K/M'` is Galois with group `D`, which is transitive on
+  the places above `w'` and fixes `w μ`), so every place of `K` at which a clause asks for
+  triviality — the members of `Tz`, the proper conjugates `σ w μ`, the conjugates of the other named
+  places — lies over a place of `M'` **different from** `w'`, and triviality can be asked there;
+* a local `ℓ`-th power downstairs is a local `ℓ`-th power upstairs, so triviality over `M'` implies
+  triviality over `K`.
+
+The one genuine defect is that the machinery run over the base `M'` confines its junk to places
+split completely in a level **over `M'`**, whereas the consumer reads the confinement over `k`.
+That is repaired by demanding absolute residue degree one at the auxiliary places, a positive
+density Chebotarev condition since `k = ℚ`; without it the implication fails (§1.105(g)).
