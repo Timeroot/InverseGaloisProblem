@@ -483,6 +483,7 @@ import InverseGalois.CFT.PoitouTate.ClassSetAvoid
 import InverseGalois.CFT.PoitouTate.ClosingChain
 import InverseGalois.CFT.PoitouTate.ClosingChainRamified
 import InverseGalois.CFT.PoitouTate.ConfinedDiagonal
+import InverseGalois.CFT.PoitouTate.ConfinedEquivariant
 import InverseGalois.CFT.PoitouTate.ConfinedSurjective
 import InverseGalois.CFT.PoitouTate.ConfinedUnits
 import InverseGalois.CFT.PoitouTate.ConjugatePlace
@@ -544,6 +545,7 @@ import InverseGalois.CFT.PoitouTate.SplitPlaceGenerate
 import InverseGalois.CFT.PoitouTate.SplitPlacePower
 import InverseGalois.CFT.PoitouTate.SupRadicandChar
 import InverseGalois.CFT.PoitouTate.SupRadicandCyclic
+import InverseGalois.CFT.PoitouTate.TensorEquivariant
 import InverseGalois.CFT.PoitouTate.TensorInvariant
 import InverseGalois.CFT.PoitouTate.TensorOrbit
 import InverseGalois.CFT.PoitouTate.TensorShrink
@@ -6262,6 +6264,17 @@ it that are available here.
   construction, and what has to be produced is an invariant radicand realising it.  The obstruction
   lives with coefficients in the units of a finite set of places, finitely generated and fixed
   before the tower is chosen, so a single shrinking answers it.
+* `InverseGalois.CFT.PoitouTate.TensorEquivariant` finds the cases where nothing has to be paid at
+  all.  The obstruction is the failure of the valuation to split *equivariantly*: given a splitting
+  carried by the group, the projection of a tensor along it is invariant and has the same
+  valuation, and the difference between the tensor and its projection trivialises the cocycle.  A
+  splitting carried by the group is a family of elements of order one at its own place and none
+  anywhere else, permuted exactly as the places are, and **such a family is free of charge when the
+  action on the places is free** — choose one element over one place of each orbit and translate it
+  around the orbit, the translate being independent of the automorphism translating precisely
+  because no automorphism fixes the place it is translated from.  So **a prescribed divisor
+  supported on places with trivial decomposition group lifts to an invariant radicand with no
+  arithmetic input whatever**, and what the shrinking is for is the places the group does fix.
 * `InverseGalois.CFT.PoitouTate.ConfinedUnits` narrows the group the descent is run in.  A
   prescription of radicands asks for three things at once: the radicand is a local power at a
   prescribed set of places, its order is divisible by the exponent at every place outside the set
@@ -6294,6 +6307,16 @@ it that are available here.
   divisible by the exponent, the value at a finite place being minus the order.  So **the local
   conditions alone produce the diagonal**, and the only demand left that is not local is that the
   order of each unit at its own place be prime to the exponent.
+* `InverseGalois.CFT.PoitouTate.ConfinedEquivariant` pays the other half of the demand, the
+  obstruction to correcting a tensor of confined units whose valuation is invariant to an invariant
+  tensor.  The vector of orders of a confined unit is equivariant, so **one confined unit for each
+  named place — of order one there and none at the other named places, and fixed by the
+  automorphisms fixing the place — splits the vector of orders equivariantly and retires the
+  obstruction outright**.  At a place no automorphism but the identity fixes, that unit is free of
+  charge: the vector of orders is onto, so a unit of order one there and none elsewhere exists
+  already, and there is nothing for it to be fixed by.  So **the arithmetic is spent only at the
+  places carrying a decomposition group**, and a divisor supported on places completely decomposed
+  in the level costs nothing whatever.
 * `InverseGalois.CFT.PoitouTate.InvariantRadicand` assembles the descent in the form a prescription
   consumes.  The divisor carried by one orbit is realised because the valuation is onto, and the
   valuation of the realising tensor is invariant because both the valuation and the divisor are

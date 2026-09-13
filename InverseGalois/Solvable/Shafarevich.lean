@@ -112,6 +112,7 @@ import InverseGalois.Solvable.Shafarevich.FlatTensorStep
 import InverseGalois.Solvable.Shafarevich.FlatTensorConfined
 import InverseGalois.Solvable.Shafarevich.FlatTensorDiagonal
 import InverseGalois.Solvable.Shafarevich.FlatDiagonalUnits
+import InverseGalois.Solvable.Shafarevich.FlatStabilizerUnits
 import InverseGalois.Solvable.Shafarevich.FlatLineUnits
 import InverseGalois.Solvable.Shafarevich.FlatUniformizerUnits
 import InverseGalois.Solvable.Shafarevich.ScholzLine
@@ -1095,6 +1096,15 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   Galois level is likewise a property of a whole orbit, so the places the ramification is allowed
   at absorb what the confinement leaves over.  **What is left of the choice of places is the
   obstruction alone**, read at the smallest set of places there is.
+* `InverseGalois.Solvable.Shafarevich.FlatStabilizerUnits` buys that obstruction with arithmetic of
+  the same shape as the diagonal.  What it costs is one confined unit for each place of the hull of
+  the named ones: of order one at that place and none at the other places of the hull, and fixed by
+  the automorphisms fixing the place â€” a unit of the decomposition field.  The vector of orders is
+  equivariant, so such a unit carries with it the unit belonging to every place of the same orbit,
+  and the family so assembled splits the vector of orders equivariantly, which trivialises the
+  obstruction of every tensor with invariant valuation.  **At a place no automorphism but the
+  identity fixes the unit is free of charge**, the vector of orders being onto, so the arithmetic is
+  spent only at the places of the hull which carry a decomposition group.
 * `InverseGalois.Solvable.Shafarevich.FlatLineUnits` produces those units without asking the orbits
   of the named places to be free.  A line of local classes named by a global unit spreads over an
   orbit only when the orbit is free, since two automorphisms carrying the named place to the same

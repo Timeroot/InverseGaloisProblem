@@ -24425,3 +24425,255 @@ vocabulary that is a statement about `HasReachableLevel`/`exists_ramified_family
   direct route through `← AlgEquiv.mul_apply` rewrites the `y` on both sides of the goal.
 * **4420.** SW's `T³` primes are **completely decomposed in `N_n|k`** (the conclusion of their Third
   Step), which is why the Fourth Step only has to remove an unramified part.
+
+## 1.120 Complete decomposition is the second source, and the Scholz threading is a dead end (2026-09-13)
+
+### (a) The second source, shipped
+
+`ScholzTower.lean` gained the complete-decomposition counterpart of §1.119's bridge (commit
+`63160de`):
+
+* `isCyclicInertiaAt_of_stabilizer_le_fixingSubgroup` — if `stabilizer Gal(Ω/k) P ≤ E.fixingSubgroup`
+  then `IsCyclicInertiaAt K E P`, with `τ = 1` and `i = 0`.  A prime completely decomposed in the
+  auxiliary field costs nothing: every automorphism fixing it already fixes `E` pointwise.
+* `isScholzPlace_of_stabilizer_le_fixingSubgroup` — the same composed with
+  `isScholzPlace_of_isCyclicInertiaAt`.
+
+The hypothesis is deliberately stated in the raw `stabilizer … ≤ E.fixingSubgroup` form (not as
+`v ∈ decomposedPlaces K E`) so that `ScholzTower.lean` need not import `FlatTensorConfined.lean`; it
+is literally the body of `decomposedPlaces` (`FlatTensorConfined.lean:73`).  The same commit weakens
+the hypotheses of the §1.119 pair from equality to `≤`.  Full build green, 9989 jobs, 0 warnings,
+0 sorries.
+
+So there are now exactly **two** unconditional sources of `IsScholzPlace`: total ramification with
+split decomposition group (the ladder invariant, §1.119) and complete decomposition (this section).
+Between them they cover `T²` and `Split(E)`.  They do **not** cover `T³`.
+
+### (b) Threading `IsScholzPlace` through the flat step is a dead end
+
+The tempting move is to add `IsScholzPlace ℓ K E (w μ)` as a *hypothesis* of the flat step, so that
+`hasScholzDiagonalUnits` discharges `HasFlatDiagonalUnits` and the cost is pushed onto whoever
+builds the named places.  That does not work, and here is the full argument.
+
+1. **`E` is pinned, and it is `N_{n+1}`.**  The confinement clause of `HasFlatKernelPrescription`
+   (`LevelFlatKernel.lean:108–138`) needs `E.fixingSubgroup ≤ ker((layerSemidirectMap ℓ hβ (j+1)).comp F)`,
+   while `IsCyclicInertiaAt K E P` is only usable with the reverse inclusion.  Together they force
+   `E = K · Fix(ker(layer ∘ F))` — the field cut out by the *lift*, with `Gal(E/K)` elementary
+   abelian of exponent `ℓ`.  There is no freedom to substitute a smaller `E`.
+2. **The named primes ramify in `E`.**  They come from `exists_ramified_family`
+   (`LevelFlatTwist.lean:221`) and are by construction the primes where the lift ramifies and the
+   old solution does not (gotcha 4346).  So they are *not* completely decomposed in `E` and (a) does
+   not apply; and they are disjoint from `T² = Ram(N_n|K)`, so §1.119 does not apply either.
+3. **At a named place the demand is exactly SW's Fourth Step.**  With `Gal(E/K)` elementary abelian
+   and `ζ_ℓ ∈ K`, Kummer duality identifies `levelPowerClasses ℓ K E w` with the dual of the
+   decomposition group `D_w(E/K)`.  Under that identification `IsScholzPlace ℓ K E w` says: either
+   `D_w = 1` (plus a fixed uniformiser) or `D_w = I_w` is cyclic of order `ℓ`, i.e. `w` is totally
+   ramified in `E`.  At a named place `I_w ≠ 1`, so the demand collapses to "the new layer is
+   split-totally-ramified at `w`" — which is precisely what SW's Fourth Step has to *produce*.
+   Assuming it as an input to the third step is circular.
+4. **Way 1 of §1.117(e) — "choose the lift" — is unavailable.**
+   `exists_confinedRamifiedHom_lift_of_hasFlatPrescription` universally quantifies the lift:
+   `LevelFlatTwist.lean:208` reads
+   `∀ f : Gal(Ω/k) →* GenericQuot ℓ U N S (j + 1), Function.Surjective f → IsSmoothHom f → …`.
+   The theorem therefore cannot pick a lift with better local ramification; the caller hands it an
+   arbitrary one.
+
+**Verdict.** `HasScholzPlaces`/`hasFlatDiagonalUnits_of_hasScholzPlaces` remain correct and useful
+statements, but they cannot be the route to `FlatDiagonalUnitsEP`: no unconditional source of
+`IsScholzPlace` reaches the named primes, and manufacturing one *is* the Fourth Step.
+
+### (c) The sharp residual at a named place
+
+One simplification is worth recording.  The named places are prime to `ℓ` (`hℓnot`,
+`LevelFlatTwist.lean:236`) and the layer is an `ℓ`-group, so the local extension is tame and the
+inertia image is automatically cyclic.  Hence at a named place the whole of `IsCyclicInertiaAt`
+reduces to a single demand:
+
+> the Frobenius at `w` is killed by the layer map — i.e. the residue extension of `E_w|K_w` is
+> trivial.
+
+Equivalently `D_w = I_w`.  That is a strictly smaller statement than "split totally ramified" and is
+the right form to aim at if the Fourth Step is ever attacked directly.
+
+### (d) Why SW do not pay this price
+
+SW's Third Step does not use their Theorem 13 in the shape the repo uses it.  Theorem 13
+(`sw.txt:636–740`) assumes a family `y_P` **unramified** on `T(K)` and vanishing on
+`Ram(K|k) ∪ S_p ∪ S_∞`, and *concludes* `x_p = (cor y)_p` on `T` together with **cyclic** local
+behaviour off `T`.  Cyclicity there is a conclusion, not a hypothesis, and for `A = μ_p` it is free.
+SW get the Third Step from Poitou–Tate (their Lemma 10 plus the shrinking of Theorem 7), not from
+Theorem 13.
+
+The repo's `HasScholzDiagonalUnits` already matches SW's *conclusion*.  The Scholz *hypothesis* is a
+repo-specific surcharge: it is what one pays for replacing Čebotarev density with a global
+reciprocity/product-formula argument on a single line of local classes (§1.115, §1.116).
+
+### (e) Čebotarev inventory, and what the repo does not have
+
+More Čebotarev is present than earlier sections assumed:
+
+* `CFT/PoitouTate/ChebotarevPlace.lean` — `exists_relStabilizer_place_eq_zpowers_restrictScalars`
+  realizes a prescribed cyclic decomposition group of prime order at a finite place, over two floors
+  of a tower at once, **outside any prescribed finite set**; plus
+  `exists_place_placeFrobValue_eq_one_iff_smul_eq`, `exists_stabilizer_eq_bot`,
+  `exists_place_placeFrobValue_eq_one_of_split`.
+* `CFT/PoitouTate/SplitPlaceGenerate.lean` — `fixingSubgroup_le_decompositionSubgroupAbove`: the
+  decomposition groups at primes above the completely split primes generate the fixing subgroup;
+  and `exists_finite_splitsCompletelyIn_pow_of_forall_localPow`, the Kummer dual.
+* `NumberTheory/SplitDensity.lean` — Dirichlet density `1/n` for completely split primes
+  (conditional on the file's `EulerProductHypothesis`).
+
+What is **absent**, confirmed by grep: there is no Artin map, no Hilbert or ray class field, no CFT
+existence theorem anywhere in `InverseGalois/` (`artinMap`/`HilbertClassField`/`rayClass`/
+`existenceTheorem`/`reciprocity` all return nothing).  This closes the §1.114(c) question: the
+"`Cl(K)/ℓ` is generated by classes of places split in `E`" half of `FlatReachableEP` cannot be
+obtained from the Kummer side alone, because the bridge "characters of `Cl(K)/ℓ` = unramified
+exponent-`ℓ` extensions" **is** the existence theorem.
+
+### (f) The open list, corrected
+
+`kernelPrescriptionEP` (`NamedOrthogonal.lean:529`) is already a **theorem** for every odd prime:
+
+```lean
+theorem kernelPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] (hodd : 2 < ℓ) :
+    KernelPrescriptionEP ℓ
+```
+
+so SW's step 4 is done.  Reading `genericLevelStepEPRoots_of_flatDiagonalUnitsEP`
+(`FlatDiagonalUnits.lean:311`), the complete open list for **odd** `ℓ` is exactly
+
+1. `FlatReachableEP ℓ` — `E ∩ H = K` (§1.114); needs the class-field existence theorem, per (e);
+2. `FlatDiagonalUnitsEP ℓ` — SW's Third Step; needs either the Fourth Step (per (b)) or a
+   Čebotarev-based proof of Theorem 13 on top of `ChebotarevPlace.lean`;
+3. `ConfinedObstructionEP ℓ` — the equivariance repair, `(A ⊗ C)^Q ↠ (D ⊗ C)^Q`.
+
+plus `GenericLevelStepEPRoots 2` for `ℓ = 2` separately.  Everything else above them in the chain is
+a theorem.
+
+### (g) Gotchas
+
+* **4421.** `exists_confinedRamifiedHom_lift_of_hasFlatPrescription` (`LevelFlatTwist.lean:199`)
+  **universally quantifies the lift `f`** (line 208).  Any plan of the form "choose a lift with
+  better local behaviour" must change that signature, not call it.
+* **4422.** The repo has **no** Artin map, Hilbert class field, ray class field or CFT existence
+  theorem.  Grep before planning any argument that silently uses `Cl(K)/ℓ ≅ Gal(H/K)`.
+* **4423.** The named primes of the prescription are prime to `ℓ`, so the local extension cut out by
+  an `ℓ`-layer there is **tame** and the inertia image is automatically cyclic: `IsCyclicInertiaAt`
+  at a named place is equivalent to `D_w = I_w`, i.e. trivial residue extension.
+* **4424.** `kernelPrescriptionEP` is a theorem for odd `ℓ` (`NamedOrthogonal.lean:529`) — SW's step
+  4 is closed, contrary to earlier sections which still list it as open.
+
+## §1.121 The obstruction is an equivariant splitting, and what it costs
+
+### (a) What landed
+
+Three modules, all green, all sorry- and axiom-free; root build **9992 jobs**, 0 warnings.
+
+* `InverseGalois/CFT/PoitouTate/TensorEquivariant.lean` (landed in the previous section, listed
+  here for completeness) — `rTensor_smul_of_smul`,
+  `tensorInvariantClass_eq_zero_of_section`, `exists_equivariant_diagonal_of_stabilizer`,
+  `exists_equivariant_diagonal`, `exists_equivariant_section_of_diagonal`,
+  `tensorInvariantClass_eq_zero_of_stabilizer`, `tensorInvariantClass_eq_zero_of_smul_eq_one`.
+* `InverseGalois/CFT/PoitouTate/ConfinedEquivariant.lean` — the same, spoken in the vocabulary of
+  confined units: `tensorInvariantClass_confinedOrd_eq_zero_of_stabilizer` and
+  `tensorInvariantClass_confinedOrd_eq_zero_of_stabilizer_nontrivial`.  The bridge is
+  `confinedOrd_smul_apply` (`CFT/PoitouTate/ConfinedUnits.lean:205`), which is *verbatim* the
+  `hgeq` hypothesis of the CFT theorems.
+* `InverseGalois/Solvable/Shafarevich/FlatStabilizerUnits.lean` —
+  `HasStabilizerConfinedUnits`, `hasConfinedObstruction_of_hasStabilizerConfinedUnits`,
+  `StabilizerConfinedUnitsEP`, `confinedObstructionEP_of_stabilizerConfinedUnitsEP`,
+  `genericLevelStepEPRoots_of_stabilizerConfinedUnitsEP`.
+
+So item 3 of the §1.120(f) open list — `ConfinedObstructionEP ℓ` — is now reduced to a statement
+about **units**, in the same currency as items 1 and 2.
+
+### (b) The sharp reading of the obstruction
+
+`tensorInvariantClass` is the obstruction to lifting an invariant element of `ℤ[X] ⊗ C` to an
+invariant element of `A ⊗ C`, where `X` is the hull of the named places, `A` the confined units and
+`g = confinedOrd : A → ℤ[X]` the vector of orders.  A **`Q`-equivariant splitting of `g`** kills it
+for every `t` at once, and by Frobenius reciprocity
+
+```
+Hom_Q(ℤ[X], A) = ∏_{orbits} Hom_Q(Ind_{D_y}^Q ℤ, A) = ∏_{orbits} A^{D_y},
+```
+
+so an equivariant splitting is *exactly* one element of `A^{D_y}` of order one at `y` and none at
+the other places of the hull, per orbit.  That is what `HasStabilizerConfinedUnits` asks for, and
+`exists_equivariant_diagonal_of_stabilizer` is the Lean form of the display: choose the element over
+one place of each orbit and translate it around, the translate being independent of the automorphism
+translating exactly because the element is `D_y`-fixed.
+
+At a place with **trivial** decomposition group nothing is owed: `hsurj` already produces a
+preimage of `single y 1` and there is nothing for it to be fixed by.  That is why
+`HasStabilizerConfinedUnits` asks for the unit only under `∃ σ ≠ 1, σ • y = y`.
+
+### (c) The demand is unsatisfiable at a ramified place — and the chain's places are unramified
+
+Let `u ∈ K^×` be fixed by `D_y = Stab_{Gal(K/k)}(y)`.  Then `u` lies in the decomposition field
+`Z = K^{D_y}`, and since `y` is the unique place of `K` over `y_Z = y ∩ Z`,
+
+```
+ord_y(u) = e(y | y_Z) · ord_{y_Z}(u) = e(y | k) · ord_{y_Z}(u),
+```
+
+because `e(y_Z | k) = f(y_Z | k) = 1`.  So **`ord_y(u) ≡ 0 mod e`**: no `D_y`-fixed element has
+order one at a place ramified over the base.  `HasStabilizerConfinedUnits ℓ K` is therefore *false*
+for any `Xs₀` containing a place ramified in `K|k`, and the hypothesis is only reachable for hulls
+of unramified places.
+
+That is not a dead end, because the named places of the chain **are** unramified in `K|k`:
+`exists_confinedRamifiedHom_lift_of_hasFlatPrescription` (`LevelFlatTwist.lean:199`) produces them
+with `hunr : Ideal.inertia Gal(Ω/k) (Pr μ) ≤ φ.ker` (`LevelFlatTwist.lean:242`), and `K` is the
+field `φ` cuts out.  What is missing is that `HasConfinedObstruction` — and its consumers
+`HasConfinedDiagonalPlaces` and `HasConfinedRadicandPlaces` — quantify over an *arbitrary* finite
+`Xs₀`, so the unramifiedness is not in scope where it is needed.  `HasConfinedDiagonalPlaces`
+already carries three side conditions on `Xs₀` (prime to `ℓ`, reachable, disjoint from `Tz`); a
+fourth, "unramified in `K|k`", threads the same way.
+
+### (d) The relaxation that makes the demand affordable: mod-`ℓ` sections
+
+The splitting is used in exactly one place in the proof of
+`tensorInvariantClass_eq_zero_of_section`: the step
+
+```
+hgsT : rTensor g ∘ rTensor s = id   on   ℤ[X] ⊗ Additive C.
+```
+
+Because `C` has exponent `ℓ`, `ℤ[X] ⊗ Additive C` is killed by `ℓ`, so `hgsT` only needs
+`g ∘ s ≡ id (mod ℓ)`.  Hence the sharp demand is not "order one at `y`, order zero elsewhere" but
+
+> a `D_y`-fixed confined unit with `ord_y ≡ 1 (mod ℓ)` and `ord_z ≡ 0 (mod ℓ)` at the other places
+> of the hull,
+
+and a unit of order merely *prime* to `ℓ` at `y` is adjusted to one by raising it to a power, which
+preserves both `D_y`-fixedness and the congruences.  That is **exactly the shape of the units
+`HasFlatDiagonalUnits` already supplies** — a local power at the other named places has order
+divisible by `ℓ` there — so after the relaxation the only thing `HasStabilizerConfinedUnits` asks
+beyond `HasFlatDiagonalUnits` is that the unit belonging to a place be fixed by the automorphisms
+fixing that place.  At a ramified place the congruence `ord_y ≡ 1 (mod ℓ)` together with
+`e | ord_y` is still unsatisfiable when `ℓ | e`, which in an `ℓ`-tower means whenever `e ≠ 1`; so
+(c) stands.
+
+### (e) Correction to gotcha 4422
+
+The repo **does** have reciprocity: `baseArtinEquiv` (`CFT/Units/BaseArtin.lean:47`) is the
+isomorphism `Additive (Gal(K/k)^ab) ≃ tateModule (ideleClassRep k K) 0` for any Galois extension of
+number fields, and `CFT/Units/DecompositionReciprocity.lean` carries it down to the decomposition
+groups.  What is genuinely absent is the **existence theorem** — that a prescribed open subgroup of
+finite index in the idele classes is a norm group — and with it the Hilbert and ray class fields.
+That is the piece `FlatReachableEP` needs; §1.120(e) overstated the gap.
+
+### (f) Gotchas
+
+* **4432.** `𝓞` is `NumberField.ringOfIntegers`: a new `CFT` module using it must
+  `open NumberField`, not merely `open IsDedekindDomain`.  With `autoImplicit` on, the failure is
+  reported as "Function expected at `𝓞`", one error per use.
+* **4433.** `haveI := hdec` for a `DecidableEq` hypothesis introduced by an *explicit* binder makes
+  the goal's instance and the term's instance differ ("synthesized type class instance is not
+  definitionally equal ... synthesized `this`, inferred `hdec`").  Use
+  `letI : DecidableEq X := hdec`, which keeps the body and so stays defeq.  For `Prop`-valued
+  classes such as `Finite`, `haveI` is fine.
+* **4434.** No `D_y`-fixed element of `K^×` has order one at a place `y` ramified over the base:
+  `e(y|k)` divides the order of every element of the decomposition field.  Any equivariant-splitting
+  argument at a ramified place is dead before it starts.
