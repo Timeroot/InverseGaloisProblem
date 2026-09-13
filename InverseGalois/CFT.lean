@@ -1087,6 +1087,7 @@ import InverseGalois.CFT.Units.SIdeleHerbrand
 import InverseGalois.CFT.Units.SIdeleNorm
 import InverseGalois.CFT.Units.SUnit
 import InverseGalois.CFT.Units.SUnitAbove
+import InverseGalois.CFT.Units.SUnitDivisible
 import InverseGalois.CFT.Units.SUnitFinite
 import InverseGalois.CFT.Units.SUnitHerbrand
 import InverseGalois.CFT.Units.SUnitIndex
@@ -6210,6 +6211,13 @@ it that are available here.
   Dirichlet's theorem, and whose quotient is the group of their orders at the chosen primes, a
   subgroup of a free abelian group of finite rank.  So finitely many of them generate, which is
   what a counting argument over the presentation asks for.
+* `InverseGalois.CFT.Units.SUnitDivisible` gathers the units of a number field whose order is
+  divisible by a fixed exponent at every place.  Such a unit is the exponent-th power of a
+  fractional ideal, and away from a finite set of places meeting every ideal class that ideal is
+  principal, so correcting the unit by the exponent-th power of a generator leaves a unit for that
+  finite set.  **A single finitely generated subgroup therefore carries all of them modulo
+  exponent-th powers**, which is what it takes for one finite extension to contain an exponent-th
+  root of every one of them at once.
 * `InverseGalois.CFT.PoitouTate.TensorValuation` carries that presentation through a tensor
   product.  A surjection of an abelian group onto a free abelian group splits — choose an element
   with a single prescribed order at each point of the index set and extend by linearity — so the
