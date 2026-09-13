@@ -36,6 +36,7 @@ at a place needs.
   lines in.
 * `InverseGalois.CFT.unitValModQuot_uniformizerLine`: at a place carrying a uniformiser fixed by its
   decomposition group the valuation of the line is one.
+* `InverseGalois.CFT.uniformizerLine_notMem_localUnramified`: the line is a ramified class there.
 * `InverseGalois.CFT.not_dvd_placeValue_of_localClassHom_eq_uniformizerLine`: **a unit of the number
   field whose class at such a place is the line there is ramified there.**
 * `InverseGalois.CFT.mem_fixedUniformizerPlaces_of_isUnramifiedAt`: an unramified place carries a
@@ -130,6 +131,20 @@ theorem unitValModQuot_uniformizerLine (n : ℕ) {v : HeightOneSpectrum (𝓞 K)
       = Multiplicative.ofAdd ((unitValDiv (isUnitValGen_one
           (valued_adicCompletion_surjective v)) (uniformizerSection k K v) : ℤ) : ZMod n) := rfl
   rw [h, unitValDiv_uniformizerSection hv]
+
+/-- **At a place carrying a uniformiser fixed by its decomposition group the line is a ramified
+class**, its valuation modulo the exponent being one. -/
+theorem uniformizerLine_notMem_localUnramified {n : ℕ} (hn : 1 < n)
+    {v : HeightOneSpectrum (𝓞 K)} (hv : v ∈ fixedUniformizerPlaces k K) :
+    uniformizerLine k n v ∉ localUnramified v n := by
+  haveI : NeZero n := ⟨by omega⟩
+  intro hmem
+  have h : unitValModQuot (isUnitValGen_one (valued_adicCompletion_surjective v)) n
+      (uniformizerLine k n v) = 1 := hmem
+  rw [unitValModQuot_uniformizerLine n hv, ofAdd_eq_one,
+    ZMod.intCast_zmod_eq_zero_iff_dvd] at h
+  have hle := Int.le_of_dvd one_pos h
+  omega
 
 /-! ### A unit carrying the line is ramified -/
 

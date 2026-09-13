@@ -23967,3 +23967,113 @@ and not the local shape of the layer.  So after this section the remaining work 
 branch is a *bookkeeping* problem, not a reciprocity one: thread (i) and (ii) down the ladder
 alongside the inertia clause.  §1.114(d) already located the cheapest place to start — the
 unramifiedness is computed and then discarded at `LevelOneDecomposition.lean:144–151`.
+
+## §1.116 The sharp line: the auxiliary field names it itself (2026-09-13)
+
+§1.115(c) recorded a generalisation and deferred it; this section carries it out, and the result is
+that the local demand left over by §1.115 answers itself out of the data already present.
+
+### (a) The line becomes a family of *subgroups*
+
+`exists_units_line_diagonal_of_scholz` (`Solvable/Shafarevich/FlatLineUnits.lean`, commit `1b600fa`)
+already took the line as an abstract family `D : ∀ v, localClasses v ℓ` with the equivariance
+hypothesis stated as
+
+```lean
+hDgal : ∀ σ v, Subgroup.zpowers (D (σ • v)) = Subgroup.zpowers (localClassesGalEquiv σ v ℓ (D v))
+```
+
+— *equality of the generated subgroups*, not of the generators.  That is the whole reason the
+freeness of the orbits disappeared (§1.113): nothing is transported along the action except a
+subgroup.  So the honest statement of the construction takes a family of **subgroups**
+
+```lean
+P : ∀ v : HeightOneSpectrum (𝓞 ↥K), Subgroup (localClasses v ℓ)
+hPgal : ∀ σ v, P (σ • v) = (P v).map (localClassesGalEquiv σ v ℓ).toMonoidHom
+hPcyc : ∀ v, ∃ d, P v = Subgroup.zpowers d
+```
+
+and produces its own generators by `choose`.  This is `exists_units_levelPower_diagonal` in the new
+module `Solvable/Shafarevich/ScholzLine.lean`.  A caller now never has to exhibit a coherent choice
+of generators, only a coherent choice of cyclic subgroups.
+
+### (b) Ramifiedness is a property of the subgroup, not of the generator
+
+The one clause of the old statement that did read a generator was the ramifiedness demand, in the
+shape `∀ a : (↥K)ˣ, localClassHom (w μ) ℓ a = d → ¬ (ℓ : ℤ) ∣ placeValue (w μ) a`.  That shape is
+unusable once the generator is produced internally: the caller's generator and the `choose`n one
+need not agree, and the naive repair (quantify over both) is *vacuous* whenever `localClassHom`
+misses the class.
+
+The right primitive is membership in the unramified subgroup.  `localUnramified v n` is by
+definition `(unitValModQuot …).ker`, hence a subgroup, so generator-independence is two lines: if
+`Subgroup.zpowers d = Subgroup.zpowers d'` and `d' ∈ localUnramified v ℓ` then
+`Subgroup.zpowers d ≤ localUnramified v ℓ` and so `d ∈ localUnramified v ℓ`.  **No primality and no
+exponent argument are needed.**  The bridge back to valuations is
+`localClassHom_mem_localUnramified_iff` (`CFT/PoitouTate/GlobalClasses.lean:75`).  The new clause is
+
+```lean
+hPram : ∀ μ, ∃ d, P (w μ) = Subgroup.zpowers d ∧ d ∉ localUnramified (w μ) ℓ
+```
+
+and the missing brick on the uniformiser side, `uniformizerLine_notMem_localUnramified`
+(`CFT/PoitouTate/UniformizerLine.lean`), says the uniformiser line is such a `d` at every place
+carrying a uniformiser fixed by its decomposition group.
+
+### (c) The units the auxiliary field turns into powers are Galois stable
+
+`levelPowerUnits n K E := {u : (↥K)ˣ | ∃ y ∈ E, y ^ n = u}` is a subgroup of `(↥K)ˣ`
+*unconditionally* — `inv_mem'` goes through even at `n = 0`, since `inv_pow`, `map_inv₀` and
+`Units.val_inv_eq_inv_val` all hold in a field with the `0⁻¹ = 0` convention, so the `def` carries no
+hypothesis.  Galois stability is the plumbing §1.115(c) costed: lift `σ : Gal(↥K/k)` to
+`ρ : Gal(Ω/k)` by `restrictNormalHom_surjective_level`, and `ρ` carries `E` into itself because
+`Normal k ↥E`.  Its image `levelPowerClasses n K E v := (levelPowerUnits n K E).map
+(localClassHom v n)` is then an equivariant family of subgroups:
+
+```lean
+levelPowerClasses n K E (σ • v) = (levelPowerClasses n K E v).map (localClassesGalEquiv σ v n)
+```
+
+(both inclusions, the backwards one by feeding `σ⁻¹`).  This is `𝒰_w` of §1.115(c), now a genuine
+Galois-stable family.
+
+### (d) The line the auxiliary field names
+
+```lean
+IsLevelPowerLine ℓ K E v :=
+  levelPowerClasses ℓ K E v ≠ ⊥ ∧ ∃ d, levelPowerClasses ℓ K E v = Subgroup.zpowers d
+
+scholzSubgroup ℓ K E v :=
+  if IsLevelPowerLine ℓ K E v then levelPowerClasses ℓ K E v
+  else Subgroup.zpowers (uniformizerLine k ℓ v)
+```
+
+Both branches are equivariant and the condition telling them apart is too — that is
+`isLevelPowerLine_smul`, which needs only that an isomorphism of groups carries cyclic subgroups to
+cyclic subgroups (`exists_zpowers_map_iff`) and is injective (`Subgroup.map_eq_bot_iff_of_injective`,
+whose subgroup argument is *explicit*).  So `scholzSubgroup_smul` holds with no hypothesis on the
+places whatsoever, and `exists_zpowers_scholzSubgroup` gives cyclicity everywhere.
+
+Feeding `P := scholzSubgroup ℓ K E` into (a) leaves exactly one condition per named place, and it is
+
+```lean
+IsScholzPlace ℓ K E v :=
+  (levelPowerClasses ℓ K E v = ⊥ ∧ v ∈ fixedUniformizerPlaces k ↥K) ∨
+    ∃ d, levelPowerClasses ℓ K E v = Subgroup.zpowers d ∧ d ∉ localUnramified v ℓ
+```
+
+— **literally Schmidt–Wingberg's alternative (i) ∨ (ii)**.  The conclusion is
+`exists_units_scholz_diagonal`: the full diagonal family of named units, in exchange for
+`IsScholzPlace` at each named place and *nothing else*.  Note that the sharp condition of §1.115(c)
+was phrased with the orthogonal complement `𝒰_w^⊥` and therefore needed nondegeneracy of the local
+pairing; the form above needs none, because the naming is placed *inside* `𝒰_w` whenever `𝒰_w` is a
+nontrivial cyclic group, and both arguments of every symbol then lie in one cyclic group, which is
+isotropic at an odd exponent by `localClassPairing_eq_one_of_mem_zpowers`.
+
+### (e) What is left
+
+The same bookkeeping as §1.115(d), now with a precise target.  Nothing in the ladder yet *produces*
+`IsScholzPlace`; what has to be threaded down from `LevelOneDecomposition.lean:144–151` through
+`HasFlatPrescription` / `HasFlatOrbitPrescription` / `CoversRamified` /
+`HasConfinedDiagonalPlaces` / `HasFlatDiagonalUnits` is precisely the invariant that each named
+place satisfies it.  The reciprocity side of `FlatDiagonalUnitsEP` is finished.
