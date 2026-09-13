@@ -24,7 +24,9 @@ many places.
 What is left is the demand read modulo the exponent: the orders of the confined units at the chosen
 places fill out the whole of the free module over the integers modulo the exponent.  That is a
 statement about a finite vector space over a finite field, and it is where the class group and the
-local conditions really enter.
+local conditions really enter.  For a prime exponent it is enough to exhibit a diagonal: one
+confined unit for each of the chosen places, whose order there is prime to the exponent and whose
+order at the other chosen places is divisible by it.
 
 ## Main results
 
@@ -34,6 +36,8 @@ local conditions really enter.
 * `InverseGalois.CFT.pow_mem_confinedUnits`: **an exponent-th power is a confined unit.**
 * `InverseGalois.CFT.surjective_confinedOrd_of_dvd_sub`: **the vector of orders of the confined
   units is onto as soon as it is onto modulo the exponent.**
+* `InverseGalois.CFT.surjective_confinedOrd_of_forall_place`: **one confined unit at each place is
+  enough**, when the exponent is prime.
 
 ## Tags
 
@@ -201,6 +205,53 @@ theorem surjective_confinedOrd_of_dvd_sub
     rw [hc, Finsupp.mapRange_apply, Finsupp.sub_apply]
   rw [hcy, Int.mul_ediv_cancel' (hu y)]
   ring
+
+/-- **One confined unit at each place is enough**: if for every place of the finite set there is a
+confined unit whose order there is prime to the exponent and whose order is divisible by the
+exponent at every other place of the set, then every system of orders on the set is realised.
+
+Read modulo a prime exponent the orders of those units form a diagonal matrix with invertible
+entries, so a product of their powers has any prescribed system of orders modulo the exponent, and
+the exponent-th powers make up the difference. -/
+theorem surjective_confinedOrd_of_forall_place (hn : Nat.Prime n)
+    (x : ↥Xs → ↥(confinedUnits K n Tz Y))
+    (hdvd : ∀ y z : ↥Xs, y ≠ z → (n : ℤ) ∣ confinedOrd n Tz Y Xs (Additive.ofMul (x y)) z)
+    (hunit : ∀ y : ↥Xs, ¬ (n : ℤ) ∣ confinedOrd n Tz Y Xs (Additive.ofMul (x y)) y) :
+    Function.Surjective (confinedOrd n Tz Y Xs) := by
+  classical
+  haveI : Fact (Nat.Prime n) := ⟨hn⟩
+  haveI : NeZero n := ⟨hn.ne_zero⟩
+  haveI : Fintype ↥Xs := Fintype.ofFinite _
+  refine surjective_confinedOrd_of_dvd_sub n Tz Y Xs fun d => ?_
+  have hone : ∀ y : ↥Xs,
+      ((confinedOrd n Tz Y Xs (Additive.ofMul (x y)) y : ℤ) : ZMod n) ≠ 0 := fun y hcon =>
+    hunit y ((ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 hcon)
+  set a : ↥Xs → ℤ := fun y => ((((d y : ℤ) : ZMod n) *
+    ((confinedOrd n Tz Y Xs (Additive.ofMul (x y)) y : ℤ) : ZMod n)⁻¹).val : ℤ) with ha
+  have hacast : ∀ y : ↥Xs, ((a y : ℤ) : ZMod n) = ((d y : ℤ) : ZMod n) *
+      ((confinedOrd n Tz Y Xs (Additive.ofMul (x y)) y : ℤ) : ZMod n)⁻¹ := by
+    intro y
+    rw [ha]
+    push_cast
+    simp
+  refine ⟨∑ y : ↥Xs, a y • Additive.ofMul (x y), fun z => ?_⟩
+  have hsum : confinedOrd n Tz Y Xs (∑ y : ↥Xs, a y • Additive.ofMul (x y)) z
+      = ∑ y : ↥Xs, a y * confinedOrd n Tz Y Xs (Additive.ofMul (x y)) z := by
+    rw [_root_.map_sum, Finset.sum_apply']
+    exact Finset.sum_congr rfl fun y _ => by
+      rw [_root_.map_zsmul, Finsupp.smul_apply, zsmul_eq_mul, Int.cast_id]
+  have hsingle : ∑ y : ↥Xs, ((a y : ℤ) : ZMod n) *
+        ((confinedOrd n Tz Y Xs (Additive.ofMul (x y)) z : ℤ) : ZMod n)
+      = ((a z : ℤ) : ZMod n) *
+        ((confinedOrd n Tz Y Xs (Additive.ofMul (x z)) z : ℤ) : ZMod n) :=
+    Finset.sum_eq_single z
+      (fun y _ hy => by
+        rw [(ZMod.intCast_zmod_eq_zero_iff_dvd _ _).2 (hdvd y z hy), mul_zero])
+      (fun hz => absurd (Finset.mem_univ z) hz)
+  refine Int.ModEq.dvd ((ZMod.intCast_eq_intCast_iff _ _ _).1 ?_)
+  rw [hsum]
+  push_cast
+  rw [hsingle, hacast z, inv_mul_cancel_right₀ (hone z)]
 
 end Confined
 

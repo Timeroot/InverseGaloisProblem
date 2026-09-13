@@ -6280,7 +6280,10 @@ it that are available here.
   asked — so the image of the vector of orders of the confined units contains every multiple of the
   exponent, and **the whole demand collapses to the same demand read modulo the exponent**, a
   statement about a finite module where the class group and the local conditions are what decide
-  it.
+  it.  For a prime exponent that last module is a vector space over a finite field, so **a diagonal
+  suffices**: one confined unit for each named place, of order prime to the exponent there and of
+  order divisible by the exponent at the other named places, and the prescribed system is a product
+  of powers of them corrected by an exponent-th power.
 * `InverseGalois.CFT.PoitouTate.InvariantRadicand` assembles the descent in the form a prescription
   consumes.  The divisor carried by one orbit is realised because the valuation is onto, and the
   valuation of the realising tensor is invariant because both the valuation and the divisor are
