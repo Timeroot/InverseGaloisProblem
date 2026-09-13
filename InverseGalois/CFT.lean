@@ -511,6 +511,7 @@ import InverseGalois.CFT.PoitouTate.NormLocalPower
 import InverseGalois.CFT.PoitouTate.OrbitCoboundary
 import InverseGalois.CFT.PoitouTate.OrbitDivisor
 import InverseGalois.CFT.PoitouTate.OrbitLine
+import InverseGalois.CFT.PoitouTate.OrbitProduct
 import InverseGalois.CFT.PoitouTate.OrdInvariant
 import InverseGalois.CFT.PoitouTate.PartPrescribed
 import InverseGalois.CFT.PoitouTate.PlaceUniformiser
@@ -6317,6 +6318,17 @@ it that are available here.
   already, and there is nothing for it to be fixed by.  So **the arithmetic is spent only at the
   places carrying a decomposition group**, and a divisor supported on places completely decomposed
   in the level costs nothing whatever.
+* `InverseGalois.CFT.PoitouTate.OrbitProduct` cuts that bill down again, to the places whose
+  decomposition group has order divisible by the exponent.  A unit of order one at a place and none
+  at the other named ones need not be fixed by the automorphisms fixing that place, but **its
+  product over them is**, and the vector of orders being equivariant that product has order the size
+  of the decomposition group at the place and none at the others: an automorphism fixing the place
+  carries the order of a translate back to the place it was already at.  The orders being read only
+  modulo the exponent, **a power of that product inverse to the size of the group modulo the
+  exponent brings the order at the place back to one** whenever the two are coprime.  For a prime
+  exponent Cauchy's theorem turns that into a statement about elements: **the obstruction costs
+  nothing at a place no automorphism of order the prime fixes**, and what the arithmetic is for is
+  the places whose decomposition group carries an element of that order.
 * `InverseGalois.CFT.PoitouTate.InvariantRadicand` assembles the descent in the form a prescription
   consumes.  The divisor carried by one orbit is realised because the valuation is onto, and the
   valuation of the realising tensor is invariant because both the valuation and the divisor are

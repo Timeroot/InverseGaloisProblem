@@ -1102,9 +1102,12 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   the automorphisms fixing the place â€” a unit of the decomposition field.  The vector of orders is
   equivariant, so such a unit carries with it the unit belonging to every place of the same orbit,
   and the family so assembled splits the vector of orders equivariantly, which trivialises the
-  obstruction of every tensor with invariant valuation.  **At a place no automorphism but the
-  identity fixes the unit is free of charge**, the vector of orders being onto, so the arithmetic is
-  spent only at the places of the hull which carry a decomposition group.
+  obstruction of every tensor with invariant valuation.  **At a place no automorphism of order the
+  prime fixes the unit is free of charge**: there the decomposition group has order prime to the
+  exponent, and the product over it of a unit the vector of orders supplies is fixed by the
+  automorphisms fixing the place and has order the size of that group there, which a power brings
+  back to one modulo the exponent.  So the arithmetic is spent only at the places of the hull whose
+  decomposition group carries an element of order the prime.
 * `InverseGalois.Solvable.Shafarevich.FlatLineUnits` produces those units without asking the orbits
   of the named places to be free.  A line of local classes named by a global unit spreads over an
   orbit only when the orbit is free, since two automorphisms carrying the named place to the same
