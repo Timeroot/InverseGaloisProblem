@@ -112,6 +112,7 @@ import InverseGalois.Solvable.Shafarevich.FlatTensorStep
 import InverseGalois.Solvable.Shafarevich.FlatTensorConfined
 import InverseGalois.Solvable.Shafarevich.FlatTensorDiagonal
 import InverseGalois.Solvable.Shafarevich.FlatDiagonalUnits
+import InverseGalois.Solvable.Shafarevich.FlatLineUnits
 import InverseGalois.Solvable.Shafarevich.FlatUniformizerUnits
 
 /-!
@@ -1090,13 +1091,23 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   Galois level is likewise a property of a whole orbit, so the places the ramification is allowed
   at absorb what the confinement leaves over.  **What is left of the choice of places is the
   obstruction alone**, read at the smallest set of places there is.
-* `InverseGalois.Solvable.Shafarevich.FlatUniformizerUnits` produces those units without asking the
-  orbits of the named places to be free.  A line of local classes named by a global unit spreads
-  over an orbit only when the orbit is free, since two automorphisms carrying the named place to
-  the same place would have to name the same line there; the invariant family of uniformisers is a
-  line at every place at once instead, equivariant on the nose, and of valuation one wherever it is
-  a uniformiser, so a unit carrying it at a named place is ramified there.  **Distinct orbits are
-  then all that is asked of the named places**, and what the construction still costs is the
-  reciprocity residue, carried as the orthogonality of the naming against the units of the level
-  which become exponent-th powers in the auxiliary field.
+* `InverseGalois.Solvable.Shafarevich.FlatLineUnits` produces those units without asking the orbits
+  of the named places to be free.  A line of local classes named by a global unit spreads over an
+  orbit only when the orbit is free, since two automorphisms carrying the named place to the same
+  place would have to name the same line there; a line given at every place at once and carried
+  along as a subgroup rather than as an element transports no generator and so asks nothing of the
+  orbits, and **distinct orbits are then all that is asked of the named places**.  What the
+  construction still costs is the reciprocity residue, the orthogonality of the naming against the
+  units of the level which become exponent-th powers in the auxiliary field; on a line that residue
+  collapses, the product of the symbols running over the named places alone and two powers of one
+  class pairing trivially at an odd exponent, so **it is a purely local demand at each named place
+  taken on its own**: the classes there of the units which become exponent-th powers in the
+  auxiliary field lie on the line.
+* `InverseGalois.Solvable.Shafarevich.FlatUniformizerUnits` names that line.  The family of local
+  unit groups carries a Galois invariant section whose value is a uniformiser at every place
+  carrying one fixed by its decomposition group, and the classes of its values are a line at every
+  place at once, equivariant on the nose and of valuation one wherever the section is a
+  uniformiser, so a unit carrying the line at a named place is ramified there.  The local demand
+  left over is then the classical condition that the extension of the completion cut out at a named
+  place be the one a root of the uniformiser generates.
 -/
