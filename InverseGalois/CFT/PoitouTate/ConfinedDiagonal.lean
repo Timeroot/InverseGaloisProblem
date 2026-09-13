@@ -1,0 +1,98 @@
+/-
+Copyright (c) 2026. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
+import Mathlib
+import InverseGalois.CFT.Kummer.CharPlace
+import InverseGalois.CFT.PoitouTate.ConfinedSurjective
+import InverseGalois.CFT.PoitouTate.SUnitReduce
+
+/-!
+# A diagonal of confined units, described by local conditions alone
+
+For a prime exponent the orders of the confined units at a finite set of places are onto as soon as
+there is a diagonal: one confined unit for each of the places, whose order there is prime to the
+exponent and whose order at the other places of the set is divisible by it.  That criterion is
+stated in terms of orders, but the units which the arithmetic actually produces are described by
+local conditions — they are asked to be local powers at prescribed places — and it is convenient to
+be able to hand those conditions over directly.
+
+The translation is a single step.  A unit which is a local power at a place is in particular
+unramified there, so its order at that place is divisible by the exponent; the value of a unit at a
+finite place is minus its order, so the divisibility transfers between the two readings without
+changing anything.  What remains is to note that the off-diagonal demand of the criterion is exactly
+the triviality of the local class at the other named places, which the same conditions already
+record.
+
+So the diagonal is produced by a family of units subject to three local demands — local powers at
+the places where the radicand must stay inert, orders divisible by the exponent outside the places
+where ramification is allowed, and local powers at the other named places — together with the one
+global demand that cannot be local, that the order at the place itself be prime to the exponent.
+
+## Main results
+
+* `InverseGalois.CFT.dvd_ord_of_localClassHom_eq_one`: a unit whose local class at a place is
+  trivial has order there divisible by the exponent.
+* `InverseGalois.CFT.surjective_confinedOrd_of_exists_units`: **the local conditions alone produce
+  the diagonal**, so the orders of the confined units at the named places are onto.
+
+## Tags
+
+number field, confined unit, local class, order, diagonal, surjective
+-/
+
+namespace InverseGalois.CFT
+
+open IsDedekindDomain NumberField Rigidity.RET
+
+/-! ### The order of a local power -/
+
+section Order
+
+variable {K : Type} [Field K] [NumberField K] {n : ℕ} [NeZero n]
+
+/-- **A unit whose local class at a place is trivial has order there divisible by the exponent.**
+The trivial class is unramified, which is the same divisibility read on the value of the unit, and
+the value at a finite place is minus the order. -/
+theorem dvd_ord_of_localClassHom_eq_one {v : HeightOneSpectrum (𝓞 K)} {a : Kˣ}
+    (h : localClassHom v n a = 1) : (n : ℤ) ∣ ord K v ((a : Kˣ) : K) := by
+  have hv := dvd_placeValue_of_localClassHom_eq_one h
+  rwa [placeValue_eq_neg_ord, dvd_neg] at hv
+
+end Order
+
+/-! ### The diagonal from the local conditions -/
+
+section Diagonal
+
+variable {K : Type} [Field K] [NumberField K] (n : ℕ)
+variable (Tz Y Xs : Set (HeightOneSpectrum (𝓞 K))) [Finite ↥Xs]
+
+/-- **The local conditions alone produce the diagonal.**  Suppose that for each named place there is
+a unit which is a local power at every place of the inert set, whose order is divisible by the
+exponent outside the allowed set, which is a local power at every other named place, and whose order
+at the place itself is prime to the exponent.  Then every system of orders at the named places is
+the system of orders of a confined unit.
+
+The first two conditions say that the unit is confined; the third gives the off-diagonal
+divisibility, because a local power is unramified; the fourth is the invertibility of the diagonal
+entry. -/
+theorem surjective_confinedOrd_of_exists_units (hn : Nat.Prime n)
+    (hu : ∀ y : ↥Xs, ∃ u : Kˣ, (∀ v ∈ Tz, localClassHom v n u = 1) ∧
+      (∀ v ∉ Y, (n : ℤ) ∣ ord K v ((u : Kˣ) : K)) ∧
+      (∀ z : ↥Xs, z ≠ y → localClassHom (z : HeightOneSpectrum (𝓞 K)) n u = 1) ∧
+      ¬ (n : ℤ) ∣ ord K (y : HeightOneSpectrum (𝓞 K)) ((u : Kˣ) : K)) :
+    Function.Surjective (confinedOrd n Tz Y Xs) := by
+  classical
+  haveI : NeZero n := ⟨hn.ne_zero⟩
+  choose u hTz hY hoff hon using hu
+  refine surjective_confinedOrd_of_forall_place n Tz Y Xs hn
+    (fun y => ⟨u y, hTz y, hY y⟩) (fun y z hyz => ?_) (fun y => ?_)
+  · rw [confinedOrd_apply]
+    exact dvd_ord_of_localClassHom_eq_one (hoff y z (Ne.symm hyz))
+  · rw [confinedOrd_apply]
+    exact hon y
+
+end Diagonal
+
+end InverseGalois.CFT

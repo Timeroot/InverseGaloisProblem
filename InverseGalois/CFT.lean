@@ -482,6 +482,7 @@ import InverseGalois.CFT.PoitouTate.ChebotarevPlace
 import InverseGalois.CFT.PoitouTate.ClassSetAvoid
 import InverseGalois.CFT.PoitouTate.ClosingChain
 import InverseGalois.CFT.PoitouTate.ClosingChainRamified
+import InverseGalois.CFT.PoitouTate.ConfinedDiagonal
 import InverseGalois.CFT.PoitouTate.ConfinedSurjective
 import InverseGalois.CFT.PoitouTate.ConfinedUnits
 import InverseGalois.CFT.PoitouTate.ConjugatePlace
@@ -6284,6 +6285,14 @@ it that are available here.
   suffices**: one confined unit for each named place, of order prime to the exponent there and of
   order divisible by the exponent at the other named places, and the prescribed system is a product
   of powers of them corrected by an exponent-th power.
+* `InverseGalois.CFT.PoitouTate.ConfinedDiagonal` states that diagonal the way the arithmetic
+  delivers it.  The units a prescription produces are described by local conditions — they are asked
+  to be local powers at the places where the radicand must stay inert, and at the named places other
+  than their own — while the criterion asks for divisibility of orders, and the two readings are the
+  same one: **a unit whose local class at a place is trivial is unramified there**, so its order is
+  divisible by the exponent, the value at a finite place being minus the order.  So **the local
+  conditions alone produce the diagonal**, and the only demand left that is not local is that the
+  order of each unit at its own place be prime to the exponent.
 * `InverseGalois.CFT.PoitouTate.InvariantRadicand` assembles the descent in the form a prescription
   consumes.  The divisor carried by one orbit is realised because the valuation is onto, and the
   valuation of the realising tensor is invariant because both the valuation and the divisor are
