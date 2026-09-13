@@ -22983,3 +22983,145 @@ whole Galois orbit of radicands the equivariance is automatic and no invariance 
 the price is that the prescribed layer value must lie in `Tr_D(layer)`.  Unlike the class-group
 obstruction above, *that* price is payable by the shrinking, which is chosen after the prescribed
 values are known — the same lever §1.104(h) uses for `HasReachableLevel`.
+
+## 1.108 The orbit sum: the equivariance is gone, the price is tameness (2026-09-13)
+
+`InverseGalois/Solvable/Shafarevich/FlatNorm.lean` carries out the programme the last paragraph of
+§1.107 names.  It is sorry- and axiom-free and it removes the class-group wall of §1.107(g)
+outright, at the cost of one condition on the *choice* of the named places.
+
+### (a) What was wrong with the rank-one tensor
+
+`HasInvariantUnitTensor` (`FlatInvariant.lean:146`) asks for a family `z : T → K^×` whose tensor
+
+```
+A  =  Σ_{q ∈ T}  z q ⊗ b q        ∈  Additive K^× ⊗_ℤ Additive M
+```
+
+is invariant for the diagonal action of `Gal(K|k)`, with prescribed order at each named place.  Any
+construction that assigns **one** unit to **one** named place makes `A` a sum of rank-one tensors
+indexed by places, and invariance of such a sum forces (the `b q` being a basis) each summand to be
+carried to a summand, hence each unit to be fixed modulo `ℓ`-th powers by the automorphisms fixing
+its own place.  That is the clause §1.107(d)–(g) refutes: over `k = ℚ(√-23)`, `K` the Hilbert class
+field, `ℓ = 3`, invariance forces the radicand into `k^×`, and then the prescribed divisor is an
+equation `0 = a·[p]` in `Cl(k) ≅ ℤ/3` with `3 ∤ a`.
+
+### (b) The orbit sum
+
+Nothing says the tensor has to be indexed by places.  Let `Y μ ∈ K^×` be a unit attached to the
+named place `w μ`, let `V₀ μ ∈ M` be an element to be chosen, and put
+
+```
+A  :=  Σ_{ν}  Σ_{σ ∈ Gal(K|k)}   (σ • Y ν)  ⊗  (σ • V₀ ν).
+```
+
+Then `ρ • A = A` for every `ρ`, because `ρ` permutes the inner index by `σ ↦ ρσ`.  **Invariance is a
+reindexing and nothing at all is asked of `Y`.**  Re-expanding each `σ • V₀ ν` in the given basis,
+`σ • V₀ ν = ∏_q (b q)^{d ν σ q}`, and pushing the exponents across the tensor (ℤ-bilinearity) puts
+`A` back into the shape the demand asks for, with
+
+```
+z q  =  ∏_ν ∏_σ  (σ • Y ν) ^ (d ν σ q).
+```
+
+This is `hA` in `hasTameInvariantUnitTensor_of_hasOrbitPrescribedUnits`.
+
+### (c) What the orbit sum prescribes
+
+The order of `z q` at a place `v` is `Σ_ν Σ_σ (d ν σ q) · ord_{σ⁻¹ v}(Y ν)`, so reading the
+prescribed value at `w μ` back through the basis gives
+
+```
+∏_q (b q)^{ord_{w μ}(z q) mod ℓ}  =  ∏_ν ∏_σ  (σ • V₀ ν) ^ ord_{σ⁻¹ • w μ}(Y ν).
+```
+
+Every term with `ν ≠ μ`, and every term with `ν = μ` but `σ⁻¹ • w μ ≠ w μ`, is killed: those are
+exactly the places at which `Y ν` is asked to be a local `ℓ`-th power, so `ℓ | ord` there and `M`
+has exponent `ℓ`.  What survives is the sum over the **stabilizer** `D μ = Stab(w μ)`:
+
+```
+∏_q (b q)^{ord_{w μ}(z q) mod ℓ}  =  ( ∏_{σ ∈ D μ} σ • V₀ μ ) ^ ord_{w μ}(Y μ)
+                                  =  N_{D μ}(V₀ μ) ^ ord_{w μ}(Y μ).
+```
+
+So the price of dropping the equivariance is exactly the one §1.106(a) predicted: **the prescribed
+value must be a norm from the subgroup fixing its place**, not merely fixed by it.
+
+### (d) Tameness pays the price
+
+`V μ` is fixed by `D μ` — that is the hypothesis the consumer supplies, and it is free.  If
+`ℓ ∤ |D μ|` then
+
+```
+V₀ μ  :=  V μ ^ e,        e  ≡  ( |D μ| · ord_{w μ}(Y μ) )⁻¹   (mod ℓ)
+```
+
+works: `σ • V₀ μ = V₀ μ` for `σ ∈ D μ`, so `N_{D μ}(V₀ μ) = V₀ μ ^ |D μ|`, and raising to
+`ord_{w μ}(Y μ)` gives `V μ ^ (e · |D μ| · ord) = V μ`.  The inverse exists because `ℤ/ℓ` is a field
+and both factors are nonzero: `ℓ ∤ |D μ|` by hypothesis, `ℓ ∤ ord_{w μ}(Y μ)` by the first clause of
+the units demand.
+
+Note that **nothing here needs `V μ` to be a norm in any nontrivial sense** — tameness collapses
+`N_{D}(M^{D}) = M^{D}`.  The whole odd-`ℓ` obstruction has moved out of the arithmetic of the level
+and into the sentence "`ℓ` does not divide the order of the decomposition group of `w μ` in
+`Gal(K|k)`", which is a condition on the *choice* of the named places.
+
+### (e) The two clause changes this forces
+
+Relative to `HasFlatPrescribedUnits` the new demand `HasOrbitPrescribedUnits` differs in exactly two
+places.
+
+1. **The equivariance clause is struck out.**  That is the point.
+2. **The prescribed set `Tz` must be avoided by the whole orbit** of each named place, not just by
+   the named place itself: `∀ μ σ, σ • w μ ∉ Tz`.  This is forced.  The order of the assembled
+   tensor at `τ • w μ` is the `τ`-conjugate of its order at `w μ`; if the demand also asked `z` to
+   be a local `ℓ`-th power at `τ • w μ` it would be asking the prescribed value at `w μ` to be
+   trivial.  Under the old rank-one reading the conjugates were harmless because each unit was
+   separately controlled; under the orbit reading they are not.
+
+   This costs the consumer nothing.  In `FlatTensor.lean` the set `Tz` is already the image of a
+   `Gal(K|k)`-stable Finset, and in the proof here it is enlarged to
+   `Tz' = { σ • v : σ ∈ Gal(K|k), v ∈ Tz }` before being handed to the units demand — a finite set,
+   the level being finite, and one the named orbits still avoid.
+
+A third, purely technical, change: the cross clause and the confinement clause are now indexed by
+`(μ, ν)` and by `(μ, v)` respectively rather than being folded per-place, because each named place
+now contributes to *every* `z q`.
+
+### (f) The confinement clause travels along the orbit
+
+The last clause of the demand confines the ramification of `z q` to the orbits of the named places
+or to places completely decomposed in the finite level `E`.  Reading it off the orbit sum produces
+a place of the form `σ⁻¹ • v`, so the confinement has to be transported back by `σ`.  For the first
+disjunct that is trivial.  For the second — "every prime of `Ω` over the place has decomposition
+group inside `E.fixingSubgroup`" — it is the new lemma
+`forall_stabilizer_le_fixingSubgroup_smul`: a prime `P` over `σ • v` is `ρ • P'` for some prime `P'`
+over `v` and some `ρ ∈ Gal(Ω|k)` lifting `σ` (restriction to a normal level is surjective), so
+`Stab(P) = ρ Stab(P') ρ⁻¹ ⊆ ρ E.fixingSubgroup ρ⁻¹ = E.fixingSubgroup`, the last equality because
+`E|k` is Galois and `E.fixingSubgroup` is therefore normal.
+
+### (g) What landed
+
+```
+HasOrbitPrescribedUnits ℓ K          -- the units demand, nothing equivariant left in it
+HasTameInvariantUnitTensor ℓ K       -- the tensor demand, at tame named places only
+hasTameInvariantUnitTensor_of_hasOrbitPrescribedUnits   (ℓ prime, K|k finite Galois)
+hasInvariantUnitTensor_of_hasTameInvariantUnitTensor    (all places of K tame)
+```
+
+plus the supporting `placeValue_prod_eq_sum`, `placeValue_smul_unit`, `localClassHom_smul_eq_one`
+and the integer-exponent helpers `zpow_finset_sum`, `finset_prod_zpow`,
+`zpow_eq_one_of_pow_eq_one`.
+
+### (h) The remaining step
+
+`hasInvariantUnitTensor_of_hasTameInvariantUnitTensor` asks every place of `K` to be tame, which is
+false in general (a place ramified or inert in `K|k` of residue degree divisible by `ℓ` fails it).
+The honest consumer is `HasTameInvariantUnitTensor`, and what has to be threaded is the tameness of
+the named places through the *place chooser*: `exists_stabilizer_eq_bot`
+(`CFT/PoitouTate/ChebotarevPlace.lean:260`, call site `:321`) already picks the named places by a
+density argument, and the condition to add there is that the chosen places be **completely split in
+`K|k`**, which makes `D μ` trivial and `ℓ ∤ |D μ|` automatic.  Chebotarev supplies completely split
+places in any density-positive quantity, so this is a strengthening of the chooser and not a new
+arithmetic input.  That is the next deliverable, and with it `InvariantUnitTensorEP ℓ` — hence
+`GenericLevelStepEPRoots ℓ` for odd `ℓ` — is bought by `HasOrbitPrescribedUnits` alone.

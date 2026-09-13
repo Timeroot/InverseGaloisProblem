@@ -102,6 +102,7 @@ import InverseGalois.Solvable.Shafarevich.KernelPlaces
 import InverseGalois.Solvable.Shafarevich.FlatPlaces
 import InverseGalois.Solvable.Shafarevich.FlatTensor
 import InverseGalois.Solvable.Shafarevich.FlatInvariant
+import InverseGalois.Solvable.Shafarevich.FlatNorm
 import InverseGalois.Solvable.Shafarevich.KernelArith
 import InverseGalois.Solvable.Shafarevich.KernelStep
 import InverseGalois.Solvable.Shafarevich.NamedOrthogonal
@@ -1038,4 +1039,19 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   of that object at the places it is not prescribed at is only that it be a local power at the
   finitely many places the finite family names.  **The step of the ladder over an odd prime is
   bought by a single invariant tensor of a finite Galois level.**
+* `InverseGalois.Solvable.Shafarevich.FlatNorm` builds that tensor out of a whole orbit and thereby
+  asks nothing equivariant of the units it is assembled from.  A tensor built with one unit per
+  named place is invariant exactly when each unit is fixed modulo exponent-th powers by the
+  automorphisms fixing its place, and that is a demand on the divisor class group which some number
+  fields refuse.  Summed over the automorphisms of the level instead — the conjugate of a unit
+  against the conjugate of a root of the value prescribed at its place — invariance is a reindexing
+  of the sum by translation and the units are free.  The order of such a tensor at a named place
+  collects one contribution per automorphism fixing that place and nothing else, the conjugates of
+  the other named places and the proper conjugates of the place itself contributing orders divisible
+  by the exponent, so what the tensor prescribes there is the norm, over the subgroup fixing the
+  place, of the chosen root.  A value fixed by that subgroup is such a norm as soon as the exponent
+  misses the order of the subgroup, being then the norm of its own power by the inverse of that
+  order.  **The equivariance the arithmetic could not pay is paid instead by naming places the
+  automorphisms of the level act tamely at**, which is a demand on the density theorem choosing them
+  rather than on the level.
 -/
