@@ -1083,6 +1083,7 @@ import InverseGalois.CFT.Units.RamifiedFamily
 import InverseGalois.CFT.Units.RatFundamentalClass
 import InverseGalois.CFT.Units.RatRamIdx
 import InverseGalois.CFT.Units.RatSumSquares
+import InverseGalois.CFT.Units.RootField
 import InverseGalois.CFT.Units.SIdeleClass
 import InverseGalois.CFT.Units.SIdeleHerbrand
 import InverseGalois.CFT.Units.SIdeleNorm
@@ -6219,6 +6220,13 @@ it that are available here.
   finite set.  **A single finitely generated subgroup therefore carries all of them modulo
   exponent-th powers**, which is what it takes for one finite extension to contain an exponent-th
   root of every one of them at once.
+* `InverseGalois.CFT.Units.RootField` builds that extension.  The elements of the intermediate
+  field having an exponent-th root in a given extension form a subgroup, so an extension holding a
+  root of each of the finitely many generators holds a root of the whole subgroup, and a unit of
+  order divisible by the exponent everywhere differs from a member of it by an exponent-th power of
+  the intermediate field itself.  Passing to the normal closure costs nothing in finiteness:
+  **one finite Galois extension of the base holds an exponent-th root of every such unit at
+  once**, which is the form in which the decomposition groups of its primes can be spoken of.
 * `InverseGalois.CFT.PoitouTate.TensorValuation` carries that presentation through a tensor
   product.  A surjection of an abelian group onto a free abelian group splits — choose an element
   with a single prescribed order at each point of the index set and extend by linearity — so the

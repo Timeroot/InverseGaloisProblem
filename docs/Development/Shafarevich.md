@@ -24829,3 +24829,77 @@ content of item 3 of the §1.120(f) list.
   `natCast_zsmul w ℓ : (ℓ : ℤ) • w = ℓ • w`.
 * **4449.** `⟨a.toMul, …⟩` produces goals mentioning `Additive.ofMul (Additive.toMul a)`, which `rw`
   will not match against `a`; insert an explicit `show`.
+
+## §1.123 Reachability without the Hilbert class field: the detection route (2026-09-13)
+
+`FlatReachableEP ℓ` is, for odd `ℓ`, one of the three hypotheses still standing between the repo
+and the whole of Shafarevich (the other two are `FlatDiagonalUnitsEP ℓ` and
+`ConfinedObstructionEP ℓ`; the `ℓ = 2` case is separate).  What it demands is
+`IsReachablePlace ℓ K E w` for every finite place `w` of the level `K`, where `E` is the auxiliary
+field the level step is allowed to choose.  §1.114 read the demand class-group-theoretically —
+`w` is reached exactly when `[w]` dies in `Cl(K)/(ℓ·Cl(K) + ⟨places split in E⟩)`, and all `w` are
+reached exactly when `E ∩ H = K` with `H` the maximal everywhere unramified elementary abelian
+`ℓ`-extension — and concluded that the arithmetic half "needs the existence half of unramified
+global class field theory, which the repo does not have".
+
+That conclusion is now superseded.  The route below never builds the Hilbert class field.  It
+replaces it by Poitou–Tate duality (which the repo has) plus Chebotarev-style generation of a
+Galois group by decomposition groups (which the repo also has), and it isolates the genuinely
+arithmetic residue as a **Kummer descent statement through `E`** rather than as the existence of a
+class field.
+
+### (a) The duality end, landed
+
+`InverseGalois.Solvable.Shafarevich.ReachableDetect.isReachablePlace_of_detecting` reduces
+`IsReachablePlace ℓ K E w` to a *detection* hypothesis: a finite family `X₀` of places of `K`,
+each sitting under a place of `k` completely decomposed in `E` (in the Ω-level form
+`stabilizer Gal(Ω/k) P ≤ E.fixingSubgroup` for every prime `P` of `𝓞 Ω` over it) and avoiding
+`w`, such that a unit of `K` of order divisible by `ℓ` at **every** place and a local `ℓ`-th power
+at each place of `X₀` is an `ℓ`-th power of `K`.  The duality is run over `X₀ ∪ {w}` together with
+the places above `ℓ` and a system of representatives of the ideal classes; the units it tests
+against are exactly the ones the detection hypothesis speaks about, so they are powers, and a
+power has trivial class at every place at once.
+
+### (b) The three bricks for supplying the detection, landed
+
+* `InverseGalois.CFT.Units.SUnitDivisible.exists_fg_forall_mul_pow`: a **single finitely generated
+  subgroup** of `Kˣ` carries, modulo `ℓ`-th powers, every unit of order divisible by `ℓ` at every
+  place.  The subgroup is the `T₀`-units for the finite set `T₀` of `exists_finite_ord_repr`;
+  dividing the divisor by `ℓ` and realising the negative of the quotient corrects the unit into a
+  `T₀`-unit, and `module_finite_sUnits` (the repo's S-unit theorem) makes those finitely generated.
+* `InverseGalois.CFT.Units.RootField.exists_isGalois_forall_exists_pow`: **one finite Galois
+  extension `M/k` inside `Ω` holds an `ℓ`-th root of every such unit at once.**  The elements with
+  a root in a given extension form a subgroup, so it is enough to adjoin a root of each of the
+  finitely many generators; the normal closure costs nothing in finiteness.
+* `InverseGalois.CFT.PoitouTate.SplitPlaceDescend.exists_finite_splitsCompletelyIn_forall_stabilizer_fixed`:
+  **finitely many primes of the base, completely decomposed in an intermediate field `E` and
+  avoiding any prescribed finite set, detect membership of `E`.**  The decomposition groups above
+  the completely decomposed primes generate `Gal(N/E)` — this is
+  `fixingSubgroup_le_decompositionSubgroupAbove`, already in the repo — and
+  `exists_finite_subset_decompositionSubgroupAbove` cuts the generating family down to finitely
+  many primes of the base.  An element of `N` fixed by all of those decomposition groups is fixed
+  by `Gal(N/E)` and so lies in `E`.  Nothing but the Galois group of `N` occurs: no place of `E`
+  and no completion, which is what makes the statement usable from the Ω-level side.
+
+### (c) What the assembly still needs
+
+With `N ⊇ E` the compositum of `E` with the root field of (b), and `X₀` the places of `K` under
+the primes of (c)'s finite set:
+
+1. `localClassHom v ℓ u = 1` says `u` is an `ℓ`-th power in `K_v`.  Turning that into "the
+   decomposition group of a prime of `N` over `v` fixes the radical `ξ`" is
+   `forall_stabilizer_smul_eq_iff_exists_pow` (`CFT/Kummer/LocalPower.lean:72`), which needs
+   `ζ_ℓ ∈ K` — available at every level of the Scholz tower.
+2. The Ω↔finite-level transport.  `SplitPlaceDescend` is stated for `E : IntermediateField k N`
+   with `N` a *type*; the Shafarevich layer has `K, E : IntermediateField k Ω`.  There is no
+   `Algebra ↥K ↥E` instance for intermediate fields, so the bridge must go through
+   `IntermediateField.comap` and `restrictNormalHom`, not through a tower of algebras.
+3. The residue: `ξ ∈ E` and `ξ^ℓ = u ∈ Kˣ` give "`u` is an `ℓ`-th power in `E`"; the detection
+   hypothesis wants "`u` is an `ℓ`-th power in `K`".  That gap is exactly `E ∩ M = K`, the Kummer
+   form of §1.114's `E ∩ H = K`.  **It cannot be avoided** — detection at places decomposed in `E`
+   can never see past `E` — and it is what the shrinking of the level (§1.114(c)) is there to pay
+   for: the kernels of the coordinate projections `Generic U N S ↠ Generic U n S` generate, so a
+   `β` can be chosen whose `E_β` meets `M` trivially over `K`.
+
+So the remaining work on `FlatReachableEP` is items 2 and 3, and item 3 is a statement about the
+freedom in choosing `β`, not about class field theory.
