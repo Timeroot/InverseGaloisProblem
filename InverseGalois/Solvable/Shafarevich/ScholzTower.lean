@@ -31,6 +31,11 @@ So a prime where a solution ramifies over the base realization lies over a Schol
 the solution cuts out, and no arithmetic input is spent on it: the alternative there is a
 consequence of the ramification restriction the ladder carries from rung to rung.
 
+The other source is complete decomposition.  A prime whose decomposition group over the base already
+fixes the auxiliary field pointwise is acted on by the identity alone, which lies in inertia, so the
+alternative holds there too; a place lying only below such primes and carrying a uniformiser fixed
+by its decomposition group is a Scholz place of the field.
+
 ## Main results
 
 * `InverseGalois.Shafarevich.IsSplitTotallyRamifiedHom.exists_inertia_generator`: **the values a
@@ -42,6 +47,12 @@ consequence of the ramification restriction the ladder carries from rung to rung
 * `InverseGalois.Shafarevich.isScholzPlace_of_isSplitTotallyRamifiedHom`: **a prime where a solution
   ramifies over the base realization lies over a Scholz place** of the level, for the field the
   solution cuts out.
+* `InverseGalois.Shafarevich.isCyclicInertiaAt_of_stabilizer_le_fixingSubgroup`: a prime whose
+  decomposition group over the base fixes the auxiliary field pointwise is acted on through the
+  powers of a single automorphism lying in inertia.
+* `InverseGalois.Shafarevich.isScholzPlace_of_stabilizer_le_fixingSubgroup`: **a place lying only
+  below primes completely decomposed in the auxiliary field is a Scholz place** there, as soon as it
+  carries a uniformiser fixed by its decomposition group.
 
 ## Tags
 
@@ -109,23 +120,22 @@ homomorphism ramifies over the base realization.
 The base realization splitting completely at the prime puts its whole decomposition subgroup inside
 the automorphisms over the level, so both the generator of the local image and the elements it
 generates may be read over the level; and two automorphisms on which the homomorphism agrees differ
-by one in its kernel, which is the group fixing the field it cuts out. -/
-theorem isCyclicInertiaAt_of_isSplitTotallyRamifiedHom (hKker : K.fixingSubgroup = φ.ker)
-    (hEker : E.fixingSubgroup = Φ.ker) (h : IsSplitTotallyRamifiedHom n φ Φ) (hPbot : P ≠ ⊥)
+by one in its kernel, and its kernel fixes the field it cuts out. -/
+theorem isCyclicInertiaAt_of_isSplitTotallyRamifiedHom (hKker : φ.ker ≤ K.fixingSubgroup)
+    (hEker : Φ.ker ≤ E.fixingSubgroup) (h : IsSplitTotallyRamifiedHom n φ Φ) (hPbot : P ≠ ⊥)
     (hram : ∃ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1 ∧ Φ x ≠ 1) :
     IsCyclicInertiaAt K E P := by
   obtain ⟨hsplit, τ, hτI, hτz⟩ := h.exists_inertia_generator ‹P.IsPrime› hPbot hram
-  have hτK : τ ∈ K.fixingSubgroup := by
-    rw [hKker, MonoidHom.mem_ker]
-    exact hsplit τ (Ideal.inertia_le_stabilizer P hτI)
+  have hτK : τ ∈ K.fixingSubgroup :=
+    hKker (MonoidHom.mem_ker.2 (hsplit τ (Ideal.inertia_le_stabilizer P hτI)))
   obtain ⟨τ', hτ'⟩ := exists_galSubHom_eq K hτK
   refine ⟨τ', (mem_inertia_galSubHom_iff K τ' P).1 (by rw [hτ']; exact hτI), fun σ hσ => ?_⟩
   obtain ⟨i, hi⟩ :=
     Subgroup.mem_zpowers_iff.1 (hτz _ ((mem_stabilizer_galSubHom_iff K σ P).2 hσ))
   refine ⟨i, fun y hy => ?_⟩
   have hmem : (galSubHom K τ' ^ i)⁻¹ * galSubHom K σ ∈ E.fixingSubgroup := by
-    rw [hEker, MonoidHom.mem_ker, _root_.map_mul, _root_.map_inv, _root_.map_zpow, hτ', hi,
-      inv_mul_cancel]
+    refine hEker (MonoidHom.mem_ker.2 ?_)
+    rw [_root_.map_mul, _root_.map_inv, _root_.map_zpow, hτ', hi, inv_mul_cancel]
   have hgy : ((galSubHom K τ' ^ i)⁻¹ * galSubHom K σ) y = y := by
     rw [IntermediateField.mem_fixingSubgroup_iff] at hmem
     exact hmem y hy
@@ -137,6 +147,24 @@ theorem isCyclicInertiaAt_of_isSplitTotallyRamifiedHom (hKker : K.fixingSubgroup
     _ = (galSubHom K τ' ^ i) (((galSubHom K τ' ^ i)⁻¹ * galSubHom K σ) y) := rfl
     _ = (galSubHom K τ' ^ i) y := by rw [hgy]
     _ = (τ' ^ i) y := by rw [← _root_.map_zpow (galSubHom K) τ' i, galSubHom_apply]
+
+omit [P.IsPrime] in
+/-- **A prime whose decomposition group over the base fixes an auxiliary field pointwise makes the
+decomposition group over the level act on that field through the powers of a single automorphism
+lying in inertia**, the identity serving as that automorphism.
+
+So a prime completely decomposed in the auxiliary field costs nothing at all: every automorphism
+fixing it already fixes the field, and the trivial power of the trivial automorphism records
+that. -/
+theorem isCyclicInertiaAt_of_stabilizer_le_fixingSubgroup
+    (hdec : stabilizer Gal(Ω/k) P ≤ E.fixingSubgroup) : IsCyclicInertiaAt K E P := by
+  refine ⟨1, one_mem _, fun σ hσ => ⟨0, fun y hy => ?_⟩⟩
+  have hmem : galSubHom K σ ∈ E.fixingSubgroup :=
+    hdec ((mem_stabilizer_galSubHom_iff K σ P).2 hσ)
+  rw [IntermediateField.mem_fixingSubgroup_iff] at hmem
+  calc σ y = galSubHom K σ y := (galSubHom_apply K σ y).symm
+    _ = y := hmem y hy
+    _ = ((1 : Gal(Ω/↥K)) ^ (0 : ℤ)) y := by rw [zpow_zero]; rfl
 
 end Tower
 
@@ -163,12 +191,25 @@ the classes the field turns into exponent-th powers are either trivial or genera
 ramified one. -/
 theorem isScholzPlace_of_isSplitTotallyRamifiedHom (hℓ : ℓ.Prime) (hℓP : (ℓ : 𝓞 Ω) ∉ P)
     (hv : w.asIdeal = Ideal.under (𝓞 ↥K) P) (hfix : w ∈ fixedUniformizerPlaces k ↥K)
-    (hKker : K.fixingSubgroup = φ.ker) (hEker : E.fixingSubgroup = Φ.ker)
+    (hKker : φ.ker ≤ K.fixingSubgroup) (hEker : Φ.ker ≤ E.fixingSubgroup)
     (hst : IsSplitTotallyRamifiedHom n φ Φ) (hPbot : P ≠ ⊥)
     (hram : ∃ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1 ∧ Φ x ≠ 1) :
     IsScholzPlace ℓ K E w :=
   isScholzPlace_of_isCyclicInertiaAt h hℓ hℓP hv hfix
     (isCyclicInertiaAt_of_isSplitTotallyRamifiedHom hKker hEker hst hPbot hram)
+
+include h in
+/-- **A place lying only below primes completely decomposed in the auxiliary field is a Scholz place
+there**, as soon as it carries a uniformiser fixed by its decomposition group.
+
+The field is fixed pointwise by the whole decomposition group, so it turns no class of the level at
+the place into an exponent-th power beyond the trivial one. -/
+theorem isScholzPlace_of_stabilizer_le_fixingSubgroup (hℓ : ℓ.Prime) (hℓP : (ℓ : 𝓞 Ω) ∉ P)
+    (hv : w.asIdeal = Ideal.under (𝓞 ↥K) P) (hfix : w ∈ fixedUniformizerPlaces k ↥K)
+    (hdec : stabilizer Gal(Ω/k) P ≤ E.fixingSubgroup) :
+    IsScholzPlace ℓ K E w :=
+  isScholzPlace_of_isCyclicInertiaAt h hℓ hℓP hv hfix
+    (isCyclicInertiaAt_of_stabilizer_le_fixingSubgroup hdec)
 
 end Place
 
