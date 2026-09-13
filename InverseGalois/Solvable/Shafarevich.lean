@@ -110,6 +110,7 @@ import InverseGalois.Solvable.Shafarevich.FlatStep
 import InverseGalois.Solvable.Shafarevich.FlatDecomposed
 import InverseGalois.Solvable.Shafarevich.FlatTensorStep
 import InverseGalois.Solvable.Shafarevich.FlatTensorConfined
+import InverseGalois.Solvable.Shafarevich.FlatTensorDiagonal
 
 /-!
 # Shafarevich's theorem
@@ -1070,4 +1071,12 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   unit of order prime to the exponent there.  **What the odd step asks of the arithmetic is a
   finite set of places on which the orders of the confined units are arbitrary and over which every
   invariant divisor of confined units is the divisor of an invariant one.**
+* `InverseGalois.Solvable.Shafarevich.FlatTensorDiagonal` states the first of those two in the form
+  the arithmetic delivers it.  For a prime exponent the orders are arbitrary as soon as there is one
+  unit per chosen place whose order there is prime to the exponent and whose order at the other
+  chosen places is divisible by it, and that last divisibility is not a separate demand: the units a
+  prescription produces are local powers at prescribed places, and a local power is unramified.  So
+  **the surjectivity clause is a family of units cut out by local conditions**, with the single
+  global demand that each unit have order prime to the exponent at its own place — which is what a
+  reachable place provides — and the obstruction clause is left as the only genuine content.
 -/

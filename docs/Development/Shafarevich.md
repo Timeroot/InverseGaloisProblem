@@ -23474,3 +23474,96 @@ independent halves:
 2. **Vanishing of the obstruction** — by (d), the auxiliary places must be chosen so that the
    connecting map of the enlargement hits the class, which is a Chebotarev condition in the field
    cut out by the class.  This is the genuine Poitou–Tate content of Schmidt–Wingberg's Second Step.
+
+## 1.111 Surjectivity of `confinedOrd`: the diagonal, and what actually obstructs it (2026-09-13)
+
+§1.110(e) split the remaining odd-`ℓ` gap `ConfinedRadicandPlacesEP` into two halves.  This section
+settles the shape of half 1 — the surjectivity of `confinedOrd` — computes exactly what obstructs
+it, and records the two modules that carry the reduction.
+
+### (a) The criterion, and the two modules
+
+`surjective_confinedOrd_of_dvd_sub` (`CFT/PoitouTate/ConfinedSurjective.lean`) had already reduced
+surjectivity to surjectivity **modulo `ℓ`**: every `ℓ`-th power of any element of the field is a
+confined unit, and the plain vector of orders is onto by the Chinese remainder theorem, so the image
+contains `ℓ · (Xs →₀ ℤ)`.  Modulo a prime `ℓ` the target is an `𝔽_ℓ`-vector space with a
+distinguished basis, so a **diagonal suffices**:
+
+* `surjective_confinedOrd_of_forall_place` — one confined unit per place of `Xs`, of order prime to
+  `ℓ` there and of order divisible by `ℓ` at the other places of `Xs`, makes the map onto.
+
+The units the arithmetic actually produces, though, are described by **local conditions** (they are
+asked to be local `ℓ`-th powers at prescribed places), not by divisibility of orders.  The two
+readings are the same one, and the bridge is one line:
+
+* `dvd_ord_of_localClassHom_eq_one` (new module `CFT/PoitouTate/ConfinedDiagonal.lean`) — a unit
+  whose local class at `v` is trivial is unramified at `v`, hence `ℓ ∣ ord_v`.  It rests on the
+  pre-existing `dvd_placeValue_of_localClassHom_eq_one` (`CFT/Kummer/CharPlace.lean:103`) together
+  with `placeValue_eq_neg_ord` (`CFT/PoitouTate/SUnitReduce.lean:50`).
+* `surjective_confinedOrd_of_exists_units` (same module) — the resulting criterion, whose hypothesis
+  is purely a family of units cut out by local conditions plus the single non-local demand
+  `¬ ℓ ∣ ord_y(u_y)`.
+
+On the Shafarevich side, `Solvable/Shafarevich/FlatTensorDiagonal.lean` restates the whole demand in
+that form: `HasConfinedDiagonalPlaces ℓ K` is `HasConfinedRadicandPlaces ℓ K` with the abstract
+`hsurj` clause replaced by the diagonal family, and `hasConfinedRadicandPlaces_of_diagonal` hands it
+back.  The EP level gets `ConfinedDiagonalPlacesEP ℓ` and
+`genericLevelStepEPRoots_of_confinedDiagonalPlacesEP`.  **Half 1 of the gap is now a statement about
+the existence of finitely many units of a number field subject to local conditions**, with the
+obstruction clause untouched as the only remaining genuine content.
+
+### (b) What obstructs the diagonal — the exact computation
+
+Fix `w ∈ Xs`, write `Tz` for the inert set and `Y ⊇ Xs` for the allowed set.  A diagonal unit at `w`
+is an `x ∈ K^×` which is a local `ℓ`-th power at every `v ∈ Tz`, has `ℓ ∣ ord_v x` for `v ∉ Y` and
+for `v ∈ Xs ∖ {w}`, and has `ℓ ∤ ord_w x`.
+
+**Claim.** Such an `x` fails to exist exactly when there is a field `M`, abelian of exponent `ℓ`
+over `K`, contained in the relevant enlargement `E`, **unramified outside `Tz`**, with
+`Frob_w ≠ 1` in `Gal(M/K)`.
+
+*Proof.* ( ⇐ ) Put `ψ(v) := Frob_v ∈ Gal(M/K) ≅ 𝔽_ℓ` for `v ∉ Tz`, and `ψ(v) := 0` for `v ∈ Tz`.
+For any `x` which is a local `ℓ`-th power at every `v ∈ Tz`, Artin reciprocity `∏_v (x, M/K)_v = 1`
+reads `ψ(div x) = 0`, because the local symbols at `Tz` are trivial (local `ℓ`-th power, `M/K` of
+exponent `ℓ`) and the symbols away from `Tz ∪ ram` are `Frob_v^{ord_v x}`.  A diagonal unit at `w`
+has `div x ≡ a·w + Σ c_i d_i (mod ℓ)` with `ℓ ∤ a` and the `d_i` outside `Y` — hence completely
+decomposed in `E`, so `Frob_{d_i} = 1`.  Therefore `a ψ(w) = 0`, i.e. `Frob_w = 1`, a contradiction.
+( ⇒ ) is Chebotarev: if no such `M` exists, the class of `w` in the relevant ray-class-type quotient
+is hit by the decomposed places, and a correction gives the unit.
+
+### (c) Consequence: the naive strengthening of `IsReachablePlace` is FALSE
+
+`Gal(E/K)` is itself an **elementary abelian `ℓ`-group** — `K.fixingSubgroup = φ.ker` and
+`E.fixingSubgroup = ker((layerSemidirectMap ℓ hβ (j+1)).comp F)`, so `Gal(E/K)` injects into a layer,
+which is an `𝔽_ℓ`-module.  So `M = E` is itself a candidate obstruction field.  Any strengthening of
+`IsReachablePlace` quantified over **all** finite avoid-sets `S` is therefore refuted: take
+`S ⊇ ram(E/K)`, and `M = E` is unramified outside `S` with `Frob_w ≠ 1` for a `w` not decomposed
+in `E`.
+
+The correct side condition is `S ∩ ram(E/K) = ∅`, i.e. **`E/K` unramified at every place of `Tz`**.
+Together with `E ∩ H_ℓ = K` (the content of `IsReachablePlace` at every place) this kills the
+obstruction.  This is precisely the classical Scholz–Reichardt situation: the odd-`ℓ` towers are
+built unramified at `ℓ` and at the previously used places.
+
+### (d) The Chebotarev ceiling, again
+
+Direction ( ⇒ ) of (b) needs Chebotarev density, which **Mathlib v4.28.0 does not have** (no file,
+no declaration matching "hebotarev").  The repo's only density input is
+`infinite_setOf_splitsCompletelyIn_not_splitsCompletelyIn_degreeOne` (used in
+`CFT/RelativeFrobenius.lean:276`): infinitely many degree-one primes of `k` split completely in `E`
+but not in `L`.  In particular the pleasant fact that *a place already completely decomposed in `E`
+is automatically reachable* (pick a second decomposed `d'` with `[d'] = [d]` in `Cl(K)`; then
+`d·d'^{-1} = (u)` has `ord_d u = 1`) is **not** currently provable here.
+
+### (e) Where this leaves the two halves
+
+1. **Surjectivity** — now `HasConfinedDiagonalPlaces`, a purely local existence statement for units.
+   Proving it outright still needs either Chebotarev or the unramifiedness side condition of (c)
+   threaded through the tower construction.
+2. **Vanishing of the obstruction** — unchanged; the genuine Poitou–Tate content of Schmidt–Wingberg's
+   Second Step.
+
+A useful by-product of the analysis: `HasFlatPrescribedUnits` **minus its invariance clause** (the
+clause refuted in §1.107(g) by `ℚ(√-23)`) is exactly the diagonal datum that half 1 needs — with
+`Xs = stableHull k K Xs₀` and `x_{σ•w_μ} := σ • Z μ`, clauses 4 and 5 give `ℓ ∣ ord` at the other
+places of `Xs`, clause 3 gives the `Tz` condition, and clause 6 gives the confinement.
