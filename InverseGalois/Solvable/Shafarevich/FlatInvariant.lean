@@ -40,8 +40,8 @@ room to be fixed with no factor of it fixed at all.
 * `InverseGalois.Shafarevich.HasInvariantUnitTensor` — **a family of units of a level can be found
   whose tensor against a named basis of a target killed by the exponent is invariant for the
   automorphisms of the level, of prescribed order at each of finitely many reachable named places
-  lying in distinct orbits, a local power at a prescribed finite set of places those avoid, and
-  confined elsewhere.**
+  lying in distinct orbits, a local power at a prescribed finite set of places the orbits of those
+  avoid, and confined elsewhere.**
 
 ## Main results
 
@@ -122,8 +122,8 @@ variable {k Ω : Type} [Field k] [Field Ω] [Algebra k Ω]
 /-- **A family of units of a level can be found whose tensor against a named basis of a target
 killed by the exponent is invariant for the automorphisms of the level, of prescribed order at each
 of finitely many named places lying in distinct orbits, a local power at a prescribed finite set of
-places those avoid, and confined elsewhere to places sitting over the named ones or completely
-decomposed in a given finite level.**
+places the orbits of those avoid, and confined elsewhere to places sitting over the named ones or
+completely decomposed in a given finite level.**
 
 The target is an arbitrary group killed by the exponent, carrying an action of the automorphisms of
 the level and a basis — a family whose powers give every element and only trivially give the
@@ -136,7 +136,10 @@ fixing their places.  The twist by the cyclotomic character, which the assembly 
 problem needs, is put back afterwards by changing the action on the target rather than the tensor.
 
 The remaining clauses are the local shape of the prescription: the units are local powers at a
-prescribed finite set of places the named places avoid, and elsewhere they are confined, a place
+prescribed finite set of places the whole orbit of each named place avoids — invariance carries the
+order of the tensor at a named place to its conjugates, so a conjugate of a named place cannot be
+asked for a local power without asking the value prescribed there to be trivial — and elsewhere
+they are confined, a place
 where some unit has order prime to the exponent sitting over a named place or having the primes
 above it completely decomposed in a finite level named in advance.  Each named place is asked to be
 reachable in that level, which is the divisor class half of the demand. -/
@@ -149,7 +152,8 @@ def HasInvariantUnitTensor (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω)
         ∀ (ι : Type) [Fintype ι] (w : ι → HeightOneSpectrum (𝓞 ↥K)) (V : ι → M),
           (∀ μ ν : ι, μ ≠ ν → ∀ σ : Gal(↥K/k), σ • w μ ≠ w ν) →
           (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ = w μ → σ • V μ = V μ) →
-          ∀ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)), (∀ μ : ι, w μ ∉ Tz) →
+          ∀ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)),
+            (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ ∉ Tz) →
             (∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (w μ).asIdeal) →
             (∀ μ : ι, IsReachablePlace ℓ K E (w μ)) →
             ∃ z : T → (↥K)ˣ,

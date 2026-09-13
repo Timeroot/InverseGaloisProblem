@@ -37,9 +37,9 @@ the exponent — is read off the family as before.
 * `InverseGalois.Shafarevich.HasFlatPrescribedTensor` — **a tensor of the units of a level with a
   target killed by the exponent and carrying a basis can be found, invariant for the automorphisms
   of the level acting diagonally, of prescribed order at each of finitely many reachable named
-  places lying in distinct orbits, a local power at a prescribed finite set of places those avoid,
-  and confined elsewhere to places sitting over the named ones or completely decomposed in a given
-  finite level.**
+  places lying in distinct orbits, a local power at a prescribed finite set of places the orbits of
+  those avoid, and confined elsewhere to places sitting over the named ones or completely decomposed
+  in a given finite level.**
 
 ## Main results
 
@@ -108,9 +108,15 @@ variable {k Ω : Type} [Field k] [Field Ω] [Algebra k Ω]
 
 /-- **A tensor of the units of a level with a target killed by the exponent can be found, invariant
 for the automorphisms of the level acting diagonally, of prescribed order at each of finitely many
-named places lying in distinct orbits, a local power at a prescribed finite set of places those
-avoid, and confined elsewhere to places sitting over the named ones or completely decomposed in a
-given finite level.**
+named places lying in distinct orbits, a local power at a prescribed finite set of places the
+orbits of those avoid, and confined elsewhere to places sitting over the named ones or completely
+decomposed in a given finite level.**
+
+The set the units are asked to be local powers at is avoided by the whole orbit of each named place
+and not merely by the named place itself.  That is forced by the invariance: the order of an
+invariant tensor at a conjugate of a named place is the conjugate of its order at that place, so
+asking the tensor to be a local power at a conjugate of a named place would ask the value
+prescribed there to be trivial.
 
 The target is an arbitrary group killed by the exponent, together with a basis of it — a family
 whose powers give every element and only trivially give the identity — and an action of the
@@ -130,8 +136,9 @@ fixing a named place carries the value there to its power by the exponent by whi
 roots of unity — which is exactly what the invariance forces, and what the prescription consumes.
 
 The remaining clauses are the local shape of the prescription, as for one unit at a time: the units
-are local powers at a prescribed finite set of places the named places avoid, which covers the
-places above the exponent and so makes the assembled homomorphism unramified there; and elsewhere
+are local powers at a prescribed finite set of places the whole orbit of each named place avoids,
+which covers the places above the exponent and so makes the assembled homomorphism unramified
+there; and elsewhere
 they are confined, a place where some unit has order prime to the exponent sitting over a named
 place or having the primes above it completely decomposed in a finite level named in advance.
 
@@ -151,7 +158,8 @@ def HasFlatPrescribedTensor (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω
             (∀ μ ν : ι, μ ≠ ν → ∀ σ : Gal(↥K/k), σ • w μ ≠ w ν) →
             (∀ (μ : ι) (σ : Gal(↥K/k)) (e : ℕ), σ ζ = ζ ^ e → σ • w μ = w μ →
               V μ ^ e = act σ (V μ)) →
-            ∀ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)), (∀ μ : ι, w μ ∉ Tz) →
+            ∀ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)),
+              (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ ∉ Tz) →
               (∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (w μ).asIdeal) →
               (∀ μ : ι, IsReachablePlace ℓ K E (w μ)) →
               ∃ z : T → (↥K)ˣ,
@@ -285,13 +293,16 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
   -- the places carrying the finite family, and the named places avoiding them
   obtain ⟨Tz, hmemTz, hdisj⟩ : ∃ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)),
       (∀ (σ : Gal(↥K/k)) (ν : Fin t), σ • placeUnder K (Pr ν) (hPrbot ν) ∈ Tz) ∧
-        ∀ μ : ι, placeUnder K (Q μ) (hQbot μ) ∉ Tz := by
+        ∀ (μ : ι) (τ : Gal(↥K/k)), τ • placeUnder K (Q μ) (hQbot μ) ∉ Tz := by
     refine ⟨Finset.image
       (fun στ : Gal(↥K/k) × Fin t => στ.1 • placeUnder K (Pr στ.2) (hPrbot στ.2)) Finset.univ,
       fun σ ν => Finset.mem_image.2 ⟨(σ, ν), Finset.mem_univ _, rfl⟩, ?_⟩
-    intro μ hmem
-    obtain ⟨⟨σ, ν⟩, -, hσν⟩ := Finset.mem_image.1 hmem
-    have hσν' : σ • placeUnder K (Pr ν) (hPrbot ν) = placeUnder K (Q μ) (hQbot μ) := hσν
+    intro μ τ₀ hmem
+    obtain ⟨⟨σ₀, ν⟩, -, hσν⟩ := Finset.mem_image.1 hmem
+    have hσν₀ : σ₀ • placeUnder K (Pr ν) (hPrbot ν) = τ₀ • placeUnder K (Q μ) (hQbot μ) := hσν
+    set σ : Gal(↥K/k) := τ₀⁻¹ * σ₀ with hσdef
+    have hσν' : σ • placeUnder K (Pr ν) (hPrbot ν) = placeUnder K (Q μ) (hQbot μ) := by
+      rw [hσdef, mul_smul, hσν₀, inv_smul_smul]
     obtain ⟨ρ₀, hρ₀⟩ := restrictNormalHom_surjective_level K σ
     have hbot : ρ₀ • Pr ν ≠ ⊥ := by
       intro h0
@@ -310,7 +321,7 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
   have hdisjℓ : ∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (placeUnder K (Q μ) (hQbot μ)).asIdeal := by
     intro μ hmem
     obtain ⟨σ, ν, hσν⟩ := hℓPr _ hmem
-    exact hdisj μ (hσν ▸ hmemTz σ ν)
+    exact hdisj μ 1 (by rw [one_smul]; exact hσν ▸ hmemTz σ ν)
   -- a reference unit of order one at each named place
   have hZex : ∀ μ : ι, ∃ Y : (↥K)ˣ, placeValue (placeUnder K (Q μ) (hQbot μ)) Y = 1 := by
     intro μ
