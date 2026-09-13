@@ -36,10 +36,10 @@ the exponent — is read off the family as before.
 
 * `InverseGalois.Shafarevich.HasFlatPrescribedTensor` — **a tensor of the units of a level with a
   target killed by the exponent and carrying a basis can be found, invariant for the automorphisms
-  of the level acting diagonally, of prescribed order at each of finitely many named places lying in
-  distinct orbits, a local power at a prescribed finite set of places those avoid, and confined
-  elsewhere to places sitting over the named ones or completely decomposed in a given finite
-  level.**
+  of the level acting diagonally, of prescribed order at each of finitely many reachable named
+  places lying in distinct orbits, a local power at a prescribed finite set of places those avoid,
+  and confined elsewhere to places sitting over the named ones or completely decomposed in a given
+  finite level.**
 
 ## Main results
 
@@ -48,8 +48,6 @@ the exponent — is read off the family as before.
   the level to that power.
 * `InverseGalois.Shafarevich.hasFlatKernelPrescription_of_tensorPlaces` — **a level carrying such a
   tensor carries the flat prescription made one field up.**
-* `InverseGalois.Shafarevich.hasFlatKernelPrescription_of_tensor` — the same, with no shrinking
-  spent.
 
 ## Tags
 
@@ -135,7 +133,11 @@ The remaining clauses are the local shape of the prescription, as for one unit a
 are local powers at a prescribed finite set of places the named places avoid, which covers the
 places above the exponent and so makes the assembled homomorphism unramified there; and elsewhere
 they are confined, a place where some unit has order prime to the exponent sitting over a named
-place or having the primes above it completely decomposed in a finite level named in advance. -/
+place or having the primes above it completely decomposed in a finite level named in advance.
+
+Each named place is asked to be reachable in that finite level, which is the divisor class half of
+the demand and the half the level has to be chosen for rather than the half the arithmetic
+supplies. -/
 def HasFlatPrescribedTensor (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω) [NumberField ↥K]
     (ζ : ↥K) : Prop :=
   ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
@@ -151,6 +153,7 @@ def HasFlatPrescribedTensor (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω
               V μ ^ e = act σ (V μ)) →
             ∀ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)), (∀ μ : ι, w μ ∉ Tz) →
               (∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (w μ).asIdeal) →
+              (∀ μ : ι, IsReachablePlace ℓ K E (w μ)) →
               ∃ z : T → (↥K)ˣ,
                 (∀ (σ : Gal(↥K/k)) (e : ℕ), σ ζ = ζ ^ e →
                   twistTensor M σ⁻¹ e (∑ q, Additive.ofMul (z q) ⊗ₜ[ℤ] Additive.ofMul (b q))
@@ -215,11 +218,7 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
     (hDPr : ∀ ν, D ν = stabilizer Gal(Ω/k) (Pr ν))
     (hℓPr : ∀ v : HeightOneSpectrum (𝓞 ↥K), (ℓ : 𝓞 ↥K) ∈ v.asIdeal →
       ∃ (σ : Gal(↥K/k)) (ν : Fin t), v = σ • placeUnder K (Pr ν) (hPrbot ν))
-    (hlevel : ∀ F : Gal(Ω/k) →* GenericQuot ℓ U N S (j + 1), Function.Surjective F →
-      IsSmoothHom F → (∀ x, SemidirectProduct.rightHom (F x) = φ x) →
-      ∃ (β : Generic U N S →* Generic U n S) (hβ : IsOperatorHom β), Function.Surjective β ∧
-        ∃ E : IntermediateField k Ω, FiniteDimensional k ↥E ∧ IsGalois k ↥E ∧ K ≤ E ∧
-          E.fixingSubgroup ≤ ((layerSemidirectMap ℓ hβ (j + 1)).comp F).ker)
+    (hlevel : HasReachableLevel ℓ U n S j φ N K)
     (hfam : HasFlatPrescribedTensor ℓ K ζ) :
     HasFlatKernelPrescription ℓ U n S j φ D := by
   classical
@@ -231,7 +230,7 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
   haveI : ∀ μ, (Q μ).IsPrime := hQp
   haveI : ∀ ν, (Pr ν).IsPrime := hPrp
   letI : Fintype ι := Fintype.ofFinite ι
-  obtain ⟨β, hβ, hβsurj, E, hEfin, hEgal, hKE, hEF⟩ := hlevel F hFsurj hFsm hFright
+  obtain ⟨β, hβ, hβsurj, E, hEfin, hEgal, hKE, hEF, hreach⟩ := hlevel F hFsurj hFsm hFright
   haveI := hEfin
   haveI := hEgal
   -- a lift of an automorphism of the level, and the operator it names
@@ -468,7 +467,7 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
       rw [hlift, _root_.map_mul, hlift, hlift])
     ι (fun μ => placeUnder K (Q μ) (hQbot μ))
     (fun μ => ∏ q, layerBasis ℓ (Generic U n S) j q ^ (c μ q).val)
-    hconjw hVcompat Tz hdisj hdisjℓ
+    hconjw hVcompat Tz hdisj hdisjℓ (fun μ => hreach _)
   have hz1 : ∀ (q : Fin (layerDim ℓ (Generic U n S) j)) (v : HeightOneSpectrum (𝓞 ↥K)),
       (ℓ : 𝓞 ↥K) ∈ v.asIdeal → localClassHom v ℓ (z q) = 1 := by
     intro q v hv
@@ -554,28 +553,6 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
       obtain ⟨τ, -, hτ⟩ := exists_mem_fixingSubgroup_smul_eq_of_placeUnder_eq K hbot hPbot hpl
       exact Or.inl ⟨ν, τ * ρ, by rw [mul_smul]; exact hτ⟩
     · exact Or.inr fun x hx => MonoidHom.mem_ker.1 (hEF (hsplit P hPp hPbot rfl hx))
-
-omit [NumberField k] in
-/-- **A level carrying an invariant tensor prescribed at named places carries the flat
-prescription**, with no shrinking spent.
-
-Nothing is asked of the operator group beyond the number of letters the data is read at, so that
-number may be answered with itself and the shrinking taken to be the identity.  What is left of the
-demand on the level is a finite Galois level killing the given lift, and the kernel of a smooth lift
-is open, so such a level exists. -/
-theorem hasFlatKernelPrescription_of_tensor (K : IntermediateField k Ω)
-    [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K]
-    (hKker : K.fixingSubgroup = φ.ker) {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ)
-    (hkd : IsKummerData ↥K Ω (Multiplicative (ZMod ℓ)) (zmodRootHom hζ) ℓ)
-    {Pr : Fin t → Ideal (𝓞 Ω)} (hPrp : ∀ ν, (Pr ν).IsPrime) (hPrbot : ∀ ν, Pr ν ≠ ⊥)
-    (hDPr : ∀ ν, D ν = stabilizer Gal(Ω/k) (Pr ν))
-    (hℓPr : ∀ v : HeightOneSpectrum (𝓞 ↥K), (ℓ : 𝓞 ↥K) ∈ v.asIdeal →
-      ∃ (σ : Gal(↥K/k)) (ν : Fin t), v = σ • placeUnder K (Pr ν) (hPrbot ν))
-    (hfam : HasFlatPrescribedTensor ℓ K ζ) :
-    HasFlatKernelPrescription ℓ U n S j φ D :=
-  hasFlatKernelPrescription_of_tensorPlaces n K hKker hζ hkd hPrp hPrbot hDPr hℓPr
-    (fun F _ hFsm hFright => ⟨MonoidHom.id _, isOperatorHom_id, Function.surjective_id,
-      exists_level_ker_le isOperatorHom_id K hKker F hFsm hFright⟩) hfam
 
 end Places
 

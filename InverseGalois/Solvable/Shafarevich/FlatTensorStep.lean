@@ -36,11 +36,11 @@ with no tracing over cosets.
 
 * `Shafarevich.flatPrescriptionEP_of_flatTensorEP` — **the tensor buys the flattening.**
 * `Shafarevich.genericLevelStepEPRoots_of_flatTensorEP` — **the step of the ladder over an odd
-  prime, in exchange for the tensor alone.**
+  prime, in exchange for the tensor and a level reaching every place.**
 * `Shafarevich.flatTensorEP_of_invariantUnitTensorEP` — the invariant tensor of units buys the
   prescribed tensor.
 * `Shafarevich.genericLevelStepEPRoots_of_invariantUnitTensorEP` — **the step of the ladder over an
-  odd prime, in exchange for the invariant tensor of units alone.**
+  odd prime, in exchange for the invariant tensor of units and a level reaching every place.**
 
 ## Tags
 
@@ -96,8 +96,8 @@ section of the base realization carries it down to the rationals.
 Openness of the kernel is not assumed: the prescription is handed a smooth lift lying over the base
 realization, whose kernel is open and lies inside it, so where the kernel is not open there is
 nothing to prescribe for. -/
-theorem flatPrescriptionEP_of_flatTensorEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] (h : FlatTensorEP ℓ) :
-    FlatPrescriptionEP ℓ := by
+theorem flatPrescriptionEP_of_flatTensorEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
+    (hreach : FlatReachableEP ℓ) (h : FlatTensorEP ℓ) : FlatPrescriptionEP ℓ := by
   intro S U _ _ _ _ _ _ Ω _ _ _ _ φ t D n j hS hj hmu hcov
   letI := galLayerAction ℓ U n S j φ
   obtain ⟨Pr, hPrp, hPrbot, hDPr, hcovP, -⟩ := hcov
@@ -133,8 +133,9 @@ theorem flatPrescriptionEP_of_flatTensorEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero 
       exact hy
     have hkd : IsKummerData ↥K Ω (Multiplicative (ZMod ℓ)) (zmodRootHom hζ) ℓ :=
       isKummerData_zmod hζ hroot
-    exact hasFlatKernelPrescription_of_tensor K hKker hζ hkd hPrp hPrbot hDPr
-      (exists_smul_placeUnder_of_mem K hPrp hPrbot hcovP) (h ℚ Ω K _ hζ)
+    obtain ⟨N, hlevel⟩ := hreach ℚ Ω S U φ M j K hKker
+    exact hasFlatKernelPrescription_of_tensorPlaces N K hKker hζ hkd hPrp hPrbot hDPr
+      (exists_smul_placeUnder_of_mem K hPrp hPrbot hcovP) hlevel (h ℚ Ω K _ hζ)
   · refine ⟨0, ?_⟩
     intro F ι _ Q A a hFsurj hFsm hFright
     refine absurd (Subgroup.isOpen_mono ?_ (isOpenNormal_ker_of_isSmoothHom hFsm).isOpen) hopen
@@ -142,11 +143,12 @@ theorem flatPrescriptionEP_of_flatTensorEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero 
     refine MonoidHom.mem_ker.2 ?_
     rw [← hFright x, MonoidHom.mem_ker.1 hx, _root_.map_one]
 
-/-- **The step of the ladder, in exchange for the tensor alone** — the one piece of arithmetic the
-whole climb over an odd prime rests on, read as a single invariant object. -/
+/-- **The step of the ladder, in exchange for the tensor and a level reaching every place** — the
+arithmetic read as a single invariant object, the levels read separately. -/
 theorem genericLevelStepEPRoots_of_flatTensorEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] (hodd : 2 < ℓ)
-    (h : FlatTensorEP ℓ) : GenericLevelStepEPRoots ℓ :=
-  genericLevelStepEPRoots_of_flatPrescriptionEP ℓ hodd (flatPrescriptionEP_of_flatTensorEP ℓ h)
+    (hreach : FlatReachableEP ℓ) (h : FlatTensorEP ℓ) : GenericLevelStepEPRoots ℓ :=
+  genericLevelStepEPRoots_of_flatPrescriptionEP ℓ hodd
+    (flatPrescriptionEP_of_flatTensorEP ℓ hreach h)
 
 /-! ### The same demand with the root of unity taken out -/
 
@@ -173,10 +175,13 @@ theorem flatTensorEP_of_invariantUnitTensorEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZe
   intro k Ω _ _ _ _ _ _ K _ _ _ ζ hζ
   exact hasFlatPrescribedTensor_of_hasInvariantUnitTensor hζ (h k Ω K ⟨ζ, hζ⟩)
 
-/-- **The step of the ladder over an odd prime, in exchange for the invariant tensor of units
-alone** — the whole climb resting on one statement about the units of a number field. -/
+/-- **The step of the ladder over an odd prime, in exchange for the invariant tensor of units and a
+level reaching every place** — the arithmetic of the climb resting on one statement about the units
+of a number field. -/
 theorem genericLevelStepEPRoots_of_invariantUnitTensorEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
-    (hodd : 2 < ℓ) (h : InvariantUnitTensorEP ℓ) : GenericLevelStepEPRoots ℓ :=
-  genericLevelStepEPRoots_of_flatTensorEP ℓ hodd (flatTensorEP_of_invariantUnitTensorEP ℓ h)
+    (hodd : 2 < ℓ) (hreach : FlatReachableEP ℓ) (h : InvariantUnitTensorEP ℓ) :
+    GenericLevelStepEPRoots ℓ :=
+  genericLevelStepEPRoots_of_flatTensorEP ℓ hodd hreach
+    (flatTensorEP_of_invariantUnitTensorEP ℓ h)
 
 end Shafarevich

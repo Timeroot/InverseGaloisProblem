@@ -22375,3 +22375,189 @@ Root build green, **9970 jobs**, 0 errors, 0 warnings, 0 sorries.  `GenericLevel
 odd `ℓ` now has three alternative sufficient hypotheses in the tree — `FlatUnitsEP ℓ`,
 `FlatTensorEP ℓ`, `InvariantUnitTensorEP ℓ` — of which the last is the weakest and the only one
 phrased purely in terms of a number field.
+
+## 1.103 All three flat EP hypotheses are FALSE: the class-group wall is an outright refutation (2026-09-13)
+
+§1.102(d) diagnosed the class-group obstruction as an obstacle to one *construction route*.  It is
+worse than that.  The obstruction refutes the hypotheses themselves: **`FlatUnitsEP ℓ`,
+`FlatTensorEP ℓ` and `InvariantUnitTensorEP ℓ` are false for every prime `ℓ`.**  The chain
+`InvariantUnitTensorEP ℓ ⟹ FlatTensorEP ℓ ⟹ FlatPrescriptionEP ℓ ⟹ GenericLevelStepEPRoots ℓ`
+and the parallel `FlatUnitsEP ℓ ⟹ FlatOrbitPrescriptionEP ℓ ⟹ …` are true theorems with
+unsatisfiable antecedents, so none of them can ever be discharged.
+
+### (a) The counterexample
+
+All three demands quantify over **every** base `k`, **every** level `K` and **every** finite Galois
+`E` with `K ≤ E`, and over **every** finite family of named places in distinct orbits.  So take
+
+* `k = K` (as an `IntermediateField k Ω`, `K = ⊥`), a number field with `μ_ℓ ⊆ K` and `ℓ ∣ h_K`;
+* `E =` a cyclic unramified degree-`ℓ` extension of `K` inside the Hilbert class field `H`;
+* `ι = Unit`, `Tz = ∅`, and `w` a place of `K`, prime to `ℓ`, with `Frob_w(E/K) ≠ 1`.
+
+Such a `K` exists for every `ℓ`: pick `F` imaginary quadratic with `ℓ ∣ h_F` and set `K = F(μ_ℓ)`.
+Then `[K : F] ∣ ℓ − 1` is prime to `ℓ`, so `K ∩ H_F = F` and `K·H_F/K` is unramified cyclic of
+degree `ℓ`, whence `ℓ ∣ h_K`.
+
+With `K = k` the group `Gal(K/k)` is trivial, so the equivariance clause and both conjugate-place
+clauses of `HasFlatPrescribedUnits` are vacuous, `Tz = ∅` kills the local-power clause, and what is
+left is exactly
+
+* `¬ (ℓ : ℤ) ∣ placeValue w Z` — i.e. `ord_w(Z) ≢ 0 (mod ℓ)`; and
+* confinement: at every `v ≠ w` with `ord_v(Z) ≢ 0 (mod ℓ)`, the place `v` is completely split
+  in `E`.
+
+Apply the Artin map of the unramified abelian extension `E/K` to the principal divisor `div(Z)`.
+It kills principal divisors, it kills every completely split place, and it kills `ℓ·(anything)`
+because `Gal(E/K)` has exponent `ℓ`.  What survives is `Frob_w^{ord_w(Z)} = 1`, and `Frob_w` has
+order `ℓ`, so `ℓ ∣ ord_w(Z)` — contradicting the second clause.  **No such `Z` exists.**
+
+The tensor form falls with it.  In `HasFlatPrescribedTensor` the coefficient family `b` is asked to
+be a *basis* (spanning, and only trivially trivial: `FlatTensor.lean:144-145`), and the confinement
+clause is stated per coordinate (`∃ q, ¬ (ℓ : ℤ) ∣ placeValue v (z q)`, `FlatTensor.lean:162`).
+Take `M = Multiplicative (ZMod ℓ)`, `T = Unit`, `act` trivial, `V ≠ 1`; the prescription clause
+`∏ q, b q ^ (placeValue w (z q) : ZMod ℓ).val = V` forces `ℓ ∤ ord_w(z)`, and the same Artin-map
+argument applies verbatim.  `InvariantUnitTensorEP ℓ ⟹ FlatTensorEP ℓ`, so it is refuted too.
+
+### (b) Why the "no pairing condition is left over" reasoning fails
+
+The docstring of `HasFlatPrescribedUnits` argues: *"the Kummer character of a unit on inertia at a
+place away from the exponent depends on the unit only through its order there.  Any unit of order
+prime to the exponent will do, the coordinates absorbing the rest, so no pairing condition is left
+over."*  The first two sentences are correct; the conclusion is not.  Scaling the prescribed class
+replaces `ord_w(Z)` by `a·ord_w(Z)` with `a` prime to `ℓ`, and the obstruction is
+`a·[w] = 0 ∈ Cl(K)/(ℓ·Cl(K) + ⟨E-split classes⟩)`.  That quotient is `ℓ`-torsion, so an invertible
+scalar `a` never turns a nonzero class into zero.  The reciprocity residue is not removed by the
+flattening; it is only moved from the *class prescribed at* `w` to the *ideal class of* `w`.
+
+This is exactly why the sharp analogue `HasPrescribedUnits` **is** a theorem (§1.93,
+`KernelArith.lean:187`) while its flat cousin is not: `hasPrescribedUnits` carries
+`IsNamedOrthogonal` as a hypothesis, and Poitou–Tate duality (`perpSubgroup_selmerGroupFull`,
+`CFT/PoitouTate/Selmer.lean`) turns that hypothesis into precisely the room the class group needs.
+The flat route deleted the hypothesis without deleting the obstruction.
+
+### (c) What is actually left, and where SW put it
+
+SW never state a class-group condition because their `S`-set formulation absorbs it into
+`coker(k_{S,T,E}) ↪ Ш¹(k_S, S∖T, E′)` (Lemma 10), and they then **spend the shrinking** on that
+cokernel: by (2) of their step 3, `Ш¹(k_{S_m}, S_m∖T_m, E′_m) ≅ H¹(N_m|k, E′_m)` receives
+`H²_o(F(m) ⋊ G, E_m(−1))`, and Thm 7(i) chooses the surjection `F(m) ↠ F(n)` killing the one
+obstruction class that matters (sw.txt 1495–1576).  There is no flat shortcut past this in SW and,
+by (a), there is none in the formalisation either.
+
+So the critical path is **not** a new arithmetic hypothesis at all.  It is:
+
+> discharge the `horth` hook of `hasKernelPrescription_of_places` (`KernelPlaces.lean:211`) —
+> the shrinking that buys `IsNamedOrthogonal` — using `exists_operatorHom_h1_eq_zero` (SW Prop 7)
+> and the Poitou–Tate machinery already in `CFT/PoitouTate/`.
+
+Everything below that hook is already proven: `hasPrescribedUnits` supplies the units, and
+`hasKernelPrescription_of_places` assembles the sharp prescription from them.
+
+### (d) Disposition of the flat modules
+
+`FlatStep.lean`, `FlatTensor.lean`, `FlatTensorStep.lean`, `FlatPlaces.lean`, `FlatInvariant.lean`,
+`FlatTwist.lean`, `FlatCyclic.lean` and `LevelFlatOrbit.lean` stay in the build: the assemblies they
+contain (units ⟹ prescription, tensor ⟹ prescription) are correct and reusable, and only the
+top-level EP *names* are unsatisfiable.  What must not happen is any further attempt to prove
+`FlatUnitsEP`, `FlatTensorEP` or `InvariantUnitTensorEP`, or any new hypothesis of that shape whose
+confinement clause names a field `E` the caller chooses.  Any replacement demand must either
+
+1. carry a reciprocity hypothesis (the `IsNamedOrthogonal` shape), or
+2. carry an explicit hypothesis that the named places are in the subgroup of `Cl(K)/ℓ` generated by
+   the `E`-split classes,
+
+and in both cases the hypothesis has to be bought with the shrinking.
+
+## 1.104 The flat demand repaired: `IsReachablePlace` / `HasReachableLevel` / `FlatReachableEP` (2026-09-13)
+
+§1.103 refuted `FlatUnitsEP`, `FlatTensorEP` and `InvariantUnitTensorEP` outright: the divisor
+class of a named place has to lie in the span of the classes of the places completely decomposed
+in the level the confinement is read in, and *that is not a statement about the arithmetic of the
+level at all* — it is a statement about which level the shrinking produced.  This section records
+the repair that was carried out, which splits the demand along exactly that seam.
+
+### (a) The seam
+
+Three declarations were added.
+
+`InverseGalois.Shafarevich.IsReachablePlace ℓ K E w` (`FlatPlaces.lean`) is the bare divisor-class
+statement: there is a unit of `K` whose order at `w` is prime to `ℓ` and whose order is divisible
+by `ℓ` at every other place except ones all of whose primes above in `Ω` have decomposition group
+inside `E.fixingSubgroup`.  It asks nothing local and nothing equivariant.  The refutation of
+§1.103 is precisely the observation that a unit answering the full prescription *witnesses*
+reachability, so reachability cannot be dropped; it is now a **hypothesis** of the three arithmetic
+demands rather than something they are expected to produce.
+
+`InverseGalois.Shafarevich.HasReachableLevel ℓ U n S j φ N K` (`FlatPlaces.lean`) is the other half:
+for every surjective smooth lift `F` at `N` letters lying over `φ`, there is a surjective operator
+hom `β : Generic U N S →* Generic U n S` and a finite Galois level `E ⊇ K` killing
+`(layerSemidirectMap ℓ hβ (j+1)).comp F` in which **every** place of `K` is reachable.
+
+`Shafarevich.FlatReachableEP ℓ` (`FlatStep.lean`) quantifies that over every base realization:
+for every `k`, `Ω`, `φ` and the level `K` its kernel cuts out, some number of letters `N` works.
+Note the quantifier order — `N` is chosen *after* `K` but *before* `F`, and `β` after `F`.  That is
+what makes the plan of (c) below possible.
+
+### (b) Mechanical consequences
+
+* `HasFlatPrescribedUnits`, `HasFlatPrescribedTensor` and `HasInvariantUnitTensor` each gained the
+  hypothesis line `(∀ μ : ι, IsReachablePlace ℓ K E (w μ)) →` immediately before their conclusion.
+* `hasFlatOrbitPrescription_of_places` and `hasFlatKernelPrescription_of_tensorPlaces` now take
+  `(hlevel : HasReachableLevel ℓ U n S j φ N K)` in place of the inline level hook, destructure a
+  `hreach` out of it and feed it to the arithmetic.
+* `hasFlatOrbitPrescription_of_units` and `hasFlatKernelPrescription_of_tensor` were **deleted**.
+  Those were the two "no shrinking spent" shortcuts, which discharged the level hook with
+  `exists_level_ker_le isOperatorHom_id`; that is exactly the refuted content.  `exists_level_ker_le`
+  itself was kept — it is how `E` will be built once `HasReachableLevel` is proven.
+* `flatOrbitPrescriptionEP_of_flatUnitsEP`, `flatPrescriptionEP_of_flatUnitsEP`,
+  `genericLevelStepEPRoots_of_flatUnitsEP`, `flatPrescriptionEP_of_flatTensorEP`,
+  `genericLevelStepEPRoots_of_flatTensorEP` and
+  `genericLevelStepEPRoots_of_invariantUnitTensorEP` all gained `(hreach : FlatReachableEP ℓ)`.
+
+`FlatReachableEP` is quantified over `(k Ω : Type)` and instantiated at `ℚ`, not stated over the
+literal `ℚ`: stating it over `ℚ` makes the `Algebra ℚ ↥K` in `[IsGalois ℚ ↥K]` elaborate through
+`DivisionRing.toRatAlgebra` rather than through `IntermediateField.algebra`, and the instance in
+the caller's context is then not found (gotcha 3970 again, in a new disguise).
+
+Root build green, 9970 jobs, 0 errors, 0 warnings, 0 sorries.
+
+### (c) What proving `HasReachableLevel` costs
+
+Write `E₀ = K · E_β` for the smallest admissible level, `V = Gal(E₀/K)` (an elementary abelian
+`ℓ`-group, a subgroup of the layer), `H` for the Hilbert class field of `K` and `d` for
+`dim_{𝔽ℓ} Cl(K)/ℓ`.  Then:
+
+* reachability of *every* place of `K` in `E₀` is **equivalent** to `H ∩ E₀ = K`.  The subgroup of
+  `Cl(K)` generated by the classes of the `E₀`-split places is `Gal(H/(H ∩ E₀))`, so the demand
+  `R + ℓCl = Cl` says the residual quotient `Gal(H ∩ E₀/K)` — itself an `ℓ`-group — is trivial;
+* `H ∩ E₀ = K` says no nontrivial subextension of `E₀/K` is everywhere unramified, i.e. the inertia
+  subgroups of `E₀/K` generate `V`;
+* let `c : Gal(Ω/K) → layer_N` be the layer component of `F` and `g₁,…,g_d ∈ Gal(Ω/K)` lifts of an
+  `𝔽ℓ`-basis of `Cl(K)/ℓ` under `Gal(Ω/K)^{ab}/ℓ ↠ Cl(K)/ℓ`.  Since the subgroup generated by the
+  inertia subgroups has exactly `Cl(K)` as its quotient in `Gal(Ω/K)^{ab}`, it suffices to choose
+  `β` with `β_*(c gᵢ) = 0` for `i = 1,…,d`;
+* killing `d` prescribed **elements of the layer** is the `c = 0`, trivial-group case of SW
+  Proposition 7, already available as `exists_operatorHom_res_cohomology_eq_zero`
+  (`GenericCohomology.lean:90`), whose `∃ m, ∀ x` shape matches the `∃ N, ∀ F` shape of
+  `FlatReachableEP` exactly.
+
+So the group-theoretic half is in hand.  The missing inputs are arithmetic and both are absent from
+the repo: **the Hilbert class field** (existence half of unramified global class field theory —
+`Gal(Ω/K)^{ab}/⟨inertia⟩ ≅ Cl(K)`) and **Chebotarev** in `EH/K`.  The repo has a Chebotarev-lite
+(`NumberTheory/SplitDensity.lean`: the completely split primes of a Galois number field have
+Dirichlet density `1/n`, hence `infinite_setOf_splitsCompletely_not_splitsCompletely`, hence
+`CFT/PoitouTate/SplitPlaceGenerate.lean`'s generation statement), which is enough for the second
+input but not for the first.
+
+### (d) Where this leaves the two routes
+
+The flat route is now *honest* and *conditional on one hypothesis about levels* rather than on a
+false statement about arithmetic — but paying for that hypothesis means building unramified class
+field theory.  The sharp route (`hasKernelPrescription_of_places`'s `horth` hook,
+`KernelPlaces.lean:211`) pays for the same content in SW's own currency instead: SW never form the
+class group, they put the whole difficulty into `H¹(k_S|k, E)` with `S = cs(N_n|k) ∪ T` — the
+maximal extension unramified outside the *infinite* set of completely split primes together with a
+finite set — and the obstruction to prescribing the finitely many local components is the image in
+`coker(k_S, T, E) ↪ Ш¹(k_S, S∖T, E')`, which the shrinking annihilates through
+`H¹(N_n|k, E') ≅ H²(F(n)/Γ ⋉ G, E(-1))`.  That is Poitou–Tate, of which this repo already has 70
+modules.  The sharp route is therefore the one to push.

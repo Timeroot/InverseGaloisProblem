@@ -17,10 +17,14 @@ of unity of order the prime lie in it because the realization is asked to fix th
 square, the finite family the local conditions are read on names a family of primes, and the places
 of the level below those primes are the places the units are prescribed at.
 
-Two things make the flat side cheaper than the sharp one.  Nothing is asked of the operator group,
-so the number of letters the data is read at may be answered with itself and no shrinking is spent;
-and nothing is left over for reciprocity to have a say in, so the whole of the arithmetic is the
-existence of the units.
+What makes the flat side cheaper than the sharp one is that nothing is named at a named place but a
+single unit, so the arithmetic is asked for units and not for classes in each coordinate and no
+pairing between the named classes is left over.  What reciprocity still has to say is said about the
+divisor of the unit, and it is said against the level the confinement is read in rather than against
+the arithmetic: the places completely decomposed in that level generate the divisor classes the
+level leaves free, and a place whose class is not among them carries no unit of the shape asked
+for.  So the demand splits in two, the units on one side and a level reaching every place on the
+other, and it is the shrinking which pays for the second.
 
 The kernel of the base realization need not be assumed open here.  The prescription is asked for a
 lift which is smooth and lies over the base realization, and the kernel of such a lift is open and
@@ -31,6 +35,8 @@ prescription is handed.
 
 * `Shafarevich.FlatUnitsEP` — **every finite Galois level of the rationals carries the units the
   flat prescription is assembled out of.**
+* `Shafarevich.FlatReachableEP` — **the shrinking the flattening spends can be spent on a level
+  reaching every place.**
 
 ## Main results
 
@@ -38,7 +44,7 @@ prescription is handed.
   field up and one named prime at a time.**
 * `Shafarevich.flatPrescriptionEP_of_flatUnitsEP` — **the units buy the flattening.**
 * `Shafarevich.genericLevelStepEPRoots_of_flatUnitsEP` — **the step of the ladder over an odd
-  prime, in exchange for the units alone.**
+  prime, in exchange for the units and a level reaching every place.**
 
 ## Tags
 
@@ -72,6 +78,24 @@ def FlatUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
       (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
     HasFlatPrescribedUnits ℓ K
 
+/-- **The shrinking the flattening spends can be spent on a level reaching every place.**
+
+The demand is the one the level the confinement is read in has to meet, asked of the level any base
+realization over the rationals cuts out: a number of letters is announced, and for every surjective
+smooth lift at that number lying over the base realization a shrinking onto the number asked for is
+produced together with a finite level killing the lift carried across it in which every place of the
+level below is reached.
+
+This is the half of the demand the arithmetic cannot answer.  Which classes the confinement leaves
+free is decided by the level, the completely decomposed places generating exactly the classes the
+level does not see, so a place whose class the level does see carries no unit of the shape the
+prescription asks for however the arithmetic is arranged. -/
+def FlatReachableEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
+  ∀ (k Ω : Type) [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω]
+      (S U : Type) [Group S] [Group U] (φ : Gal(Ω/k) →* U) (n j : ℕ)
+      (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
+    K.fixingSubgroup = φ.ker → ∃ N : ℕ, HasReachableLevel ℓ U n S j φ N K
+
 /-! ### The prescription and the step -/
 
 /-- **The units buy the flattening made one field up and one named prime at a time.**
@@ -87,7 +111,7 @@ Openness of the kernel is not assumed: the prescription is handed a smooth lift 
 realization, whose kernel is open and lies inside it, so where the kernel is not open there is
 nothing to prescribe for. -/
 theorem flatOrbitPrescriptionEP_of_flatUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
-    (h : FlatUnitsEP ℓ) : FlatOrbitPrescriptionEP ℓ := by
+    (hreach : FlatReachableEP ℓ) (h : FlatUnitsEP ℓ) : FlatOrbitPrescriptionEP ℓ := by
   intro S U _ _ _ _ _ _ Ω _ _ _ _ φ t D n j hS hj hmu hcov
   obtain ⟨Pr, hPrp, hPrbot, hDPr, hcovP, -⟩ := hcov
   by_cases hopen : IsOpen (φ.ker : Set Gal(Ω/ℚ))
@@ -121,8 +145,9 @@ theorem flatOrbitPrescriptionEP_of_flatUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZ
       exact hy
     have hkd : IsKummerData ↥K Ω (Multiplicative (ZMod ℓ)) (zmodRootHom hζ) ℓ :=
       isKummerData_zmod hζ hroot
-    exact hasFlatOrbitPrescription_of_units K hKker hζ hkd hPrp hPrbot hDPr
-      (exists_smul_placeUnder_of_mem K hPrp hPrbot hcovP) (h ℚ Ω K)
+    obtain ⟨N, hlevel⟩ := hreach ℚ Ω S U φ n j K hKker
+    exact hasFlatOrbitPrescription_of_places N K hKker hζ hkd hPrp hPrbot hDPr
+      (exists_smul_placeUnder_of_mem K hPrp hPrbot hcovP) hlevel (h ℚ Ω K)
   · refine ⟨0, ?_⟩
     intro F ι _ Q A a hFsurj hFsm hFright
     refine absurd (Subgroup.isOpen_mono ?_ (isOpenNormal_ker_of_isSmoothHom hFsm).isOpen) hopen
@@ -130,15 +155,17 @@ theorem flatOrbitPrescriptionEP_of_flatUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZ
     refine MonoidHom.mem_ker.2 ?_
     rw [← hFright x, MonoidHom.mem_ker.1 hx, _root_.map_one]
 
-/-- **The units buy the flattening.** -/
-theorem flatPrescriptionEP_of_flatUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] (h : FlatUnitsEP ℓ) :
-    FlatPrescriptionEP ℓ :=
-  flatPrescriptionEP_of_flatOrbitPrescriptionEP ℓ (flatOrbitPrescriptionEP_of_flatUnitsEP ℓ h)
+/-- **The units buy the flattening**, the shrinking being spent on a level reaching every place. -/
+theorem flatPrescriptionEP_of_flatUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
+    (hreach : FlatReachableEP ℓ) (h : FlatUnitsEP ℓ) : FlatPrescriptionEP ℓ :=
+  flatPrescriptionEP_of_flatOrbitPrescriptionEP ℓ
+    (flatOrbitPrescriptionEP_of_flatUnitsEP ℓ hreach h)
 
-/-- **The step of the ladder, in exchange for the units alone** — the one piece of arithmetic the
-whole climb over an odd prime rests on. -/
+/-- **The step of the ladder, in exchange for the units and a level reaching every place** — the two
+pieces the whole climb over an odd prime rests on, one arithmetic and one about the levels. -/
 theorem genericLevelStepEPRoots_of_flatUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] (hodd : 2 < ℓ)
-    (hunits : FlatUnitsEP ℓ) : GenericLevelStepEPRoots ℓ :=
-  genericLevelStepEPRoots_of_flatPrescriptionEP ℓ hodd (flatPrescriptionEP_of_flatUnitsEP ℓ hunits)
+    (hreach : FlatReachableEP ℓ) (hunits : FlatUnitsEP ℓ) : GenericLevelStepEPRoots ℓ :=
+  genericLevelStepEPRoots_of_flatPrescriptionEP ℓ hodd
+    (flatPrescriptionEP_of_flatUnitsEP ℓ hreach hunits)
 
 end Shafarevich
