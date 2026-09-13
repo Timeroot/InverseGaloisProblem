@@ -117,6 +117,7 @@ import InverseGalois.Solvable.Shafarevich.FlatUniformizerUnits
 import InverseGalois.Solvable.Shafarevich.ScholzLine
 import InverseGalois.Solvable.Shafarevich.ScholzDiagonal
 import InverseGalois.Solvable.Shafarevich.ScholzCyclic
+import InverseGalois.Solvable.Shafarevich.ScholzTower
 
 /-!
 # Shafarevich's theorem
@@ -1145,4 +1146,15 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   prime above which the decomposition group acts on the auxiliary field through the powers of one
   inertia element, satisfies the alternative â€” the condition on the tower which buys the arithmetic
   input of the prescription.
+* `InverseGalois.Solvable.Shafarevich.ScholzTower` supplies that condition from the ramification
+  restriction the climb already carries.  A solution over a level is asked, at every prime where it
+  ramifies over the base realization, to have the base realization split completely there and to
+  take no value on the decomposition subgroup which it does not already take on inertia, all those
+  values lying in the powers of a single element.  The values on the decomposition subgroup then
+  form a subgroup of a group of powers, hence a cyclic one, and a generator of it is by total
+  ramification a value on inertia; the complete splitting puts the decomposition subgroup inside
+  the automorphisms over the level, where the witness may be read; and two automorphisms of equal
+  value differ by one fixing the field the solution cuts out.  **So a prime where a solution
+  ramifies over the base realization lies over a Scholz place of the level for the field the
+  solution cuts out**, and the alternative costs no arithmetic at all.
 -/

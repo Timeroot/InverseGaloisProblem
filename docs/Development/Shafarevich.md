@@ -24224,3 +24224,204 @@ reaching level (`FlatReachableEP`, i.e. `E ∩ H = K`), and the Scholz invariant
 
 `ScholzLine.lean` (§1.116) and `ScholzDiagonal.lean` are in the default build; root build green at
 9987 jobs, 0 warnings, 0 sorries, axioms unchanged.
+
+## §1.118 The alternative from a cyclic decomposition group (2026-09-13)
+
+Commit `d143c0d`, new module `InverseGalois/Solvable/Shafarevich/ScholzCyclic.lean` (241 lines),
+root build green at **9988** jobs, 0 warnings, 0 sorries.
+
+### (a) What was missing
+
+§1.117 left the Scholz alternative `IsScholzPlace ℓ K E w` as an unbuyable demand *at the place where
+it is consumed*: the blanket form `ScholzPlacesEP` is false (gotcha 4393 — over `k = ℚ(ζ₃)` an
+auxiliary field with two independent radicands has a place where the local image of the radicands
+fills the whole group of classes, so neither clause of the alternative can hold).  The alternative is
+a demand on the *pair* `(w, E)`, and the only honest way to discharge it is to buy it from a
+condition on the tower.
+
+### (b) The condition on the tower
+
+```lean
+def IsCyclicInertiaAt : Prop :=
+  ∃ τ ∈ Ideal.inertia Gal(Ω/↥K) P,
+    ∀ σ ∈ stabilizer Gal(Ω/↥K) P, ∃ i : ℤ, ∀ y ∈ E, σ y = (τ ^ i) y
+```
+
+"the decomposition group of `P` over the level acts on the auxiliary field `E` through the powers of
+a single automorphism, and that automorphism may be taken in inertia".  This is *exactly* the
+classical Scholz–Reichardt hypothesis on the primes of the tower, and it matches the vocabulary
+already in `CyclicTransport.lean`:
+
+```lean
+def IsCyclicSplitAt φ Φ P : Prop :=
+  (∀ x ∈ stabilizer Gal(Ω/k) P, φ x = 1) ∧
+    ∃ x₀ ∈ stabilizer Gal(Ω/k) P, ∀ x ∈ stabilizer Gal(Ω/k) P, Φ x ∈ Subgroup.zpowers (Φ x₀)
+```
+
+### (c) The headline results
+
+```lean
+theorem levelPowerClasses_eq_bot_or_exists_zpowers (hℓ : ℓ.Prime)
+    (hv : w.asIdeal = Ideal.under (𝓞 ↥K) P)
+    (hcyc : ∀ σ ∈ stabilizer Gal(Ω/↥K) P, ∃ i : ℤ, ∀ y ∈ E, σ y = (τ ^ i) y) :
+    levelPowerClasses ℓ K E w = ⊥ ∨
+      ∃ u₀ ∈ levelPowerUnits ℓ K E, kummerChar h u₀ τ ≠ 0 ∧
+        levelPowerClasses ℓ K E w = Subgroup.zpowers (localClassHom w ℓ u₀)
+
+theorem isScholzPlace_of_isCyclicInertiaAt (hℓ : ℓ.Prime) (hℓP : (ℓ : 𝓞 Ω) ∉ P)
+    (hv : w.asIdeal = Ideal.under (𝓞 ↥K) P) (hfix : w ∈ fixedUniformizerPlaces k ↥K)
+    (hcyc : IsCyclicInertiaAt K E P) : IsScholzPlace ℓ K E w
+```
+
+### (d) The proof: root-fixing, not character algebra
+
+The natural route — "the Kummer character is a homomorphism, so a cyclic image gives a cyclic group
+of classes" — needs a power law in the *unit* argument that the CFT tree does not have, and the
+group `levelPowerUnits` is a subgroup of `(↥K)ˣ`, not of the characters.  The route that works
+avoids new CFT machinery entirely:
+
+1. For `u ∈ levelPowerUnits ℓ K E` there is a witness `y ∈ E` with `y ^ ℓ = u`.  The chosen root
+   `h.root u` and `y` are two `ℓ`-th roots of the same unit, so `smul_div_eq_of_pow_eq`
+   (`CFT/Profinite/KummerHom.lean`) says they *move alike*: `σ • h.root u / h.root u = σ • y / y`.
+   Hence
+
+   ```lean
+   theorem kummerChar_eq_zero_iff_apply_eq_self … : kummerChar h u σ = 0 ↔ σ y = y
+   ```
+
+   — the character of such a unit sees `σ` **only through its action on `E`** (gotcha 4400).
+2. So if `σ|_E = (τ^i)|_E` and `τ` kills the character, `σ` does too
+   (`zpow_apply_eq_self_of_apply_eq_self`, via `MulAction.stabilizer` and `Subgroup.zpow_mem`,
+   gotcha 4405).  The character on the whole decomposition group is therefore determined by its one
+   value at `τ`, and `localClassHom_eq_of_forall_kummerChar_eq` turns equal characters on the
+   decomposition group into equal local classes.
+3. `ZMod ℓ` is a field for `ℓ` prime, so a nonzero value at `τ` can be hit by a power `u₀ ^ m` of a
+   single unit (needing `kummerChar_pow_units`, the power law in the *unit* argument, which was
+   missing and is added in this leaf module rather than mid-tree — gotcha 4401).  That gives the
+   `zpowers` clause.
+4. If every unit of the level the field turns into a power has vanishing character at `τ`, every
+   class is trivial — the `⊥` clause.
+5. Ramification: `τ ∈ Ideal.inertia`, and `kummerChar_eq_zero_of_mem_inertia` says an unramified
+   class has vanishing character on inertia.  So the generator `localClassHom w ℓ u₀` is **not** in
+   `localUnramified`, which is the second half of the `zpowers` clause of `IsScholzPlace`.
+
+### (e) What this buys, and what is left
+
+`HasScholzPlaces` is now reducible, place by place, to a group-theoretic statement about the tower.
+The remaining link is item (d) of the plan: the auxiliary field `E` at the consumption site is the
+field cut out by the lift, and `IsCyclicSplitAt φ Φ P` should supply `IsCyclicInertiaAt K E P` at
+exactly the primes produced by `exists_ramified_family` (`LevelFlatTwist.lean:221`) — the *named*
+places, which is the only place the alternative is asked for.  Once that is threaded, the open list
+for an odd rung is the obstruction (`ConfinedObstructionEP`, the genuine Poitou–Tate content), the
+reaching level (`FlatReachableEP`, i.e. `E ∩ H = K`), and the Scholz invariant of the tower, which
+the climb must now carry as an induction hypothesis.
+
+### (f) New gotchas
+
+* **4399.** `Ideal.inertia` is a Mathlib *abbrev* (`Mathlib/RingTheory/Ideal/Defs.lean:152`);
+  `Ideal.inertia_le_stabilizer` exists.
+* **4400.** `smul_div_eq_of_pow_eq hζ h.exists_ι_eq hββ' σ` is the "two roots of the same unit move
+  alike" tool; it already carries `omit [IsGalois k Ω] [MulDistribMulAction Gal(Ω/k) M] in`.
+* **4401.** `kummerChar_pow` is the power law in the *group* argument; the one in the *unit*
+  argument (`kummerChar_pow_units`) did not exist and now lives in `ScholzCyclic.lean`.
+* **4402.** `Units.ext hσy` cannot be used inside `rw` (metavariables in `↑?a = ↑?b`) — bind it
+  with a `have` first.
+* **4403.** after `coe_root_pow h u` the goal keeps `↑(Units.mk0 y hy0) ^ ℓ`; insert `Units.val_mk0`
+  into the rewrite chain before `hy`.
+* **4404.** `Subgroup.pow_mem` takes the subgroup *explicitly* first.
+* **4405.** `hτ : τ y = y` is defeq to `τ ∈ MulAction.stabilizer (A ≃ₐ[R] A) y`, giving
+  `Subgroup.zpow_mem` for free.
+* **4406.** `Subgroup.map_eq_bot_iff`, `Subgroup.map_le_iff_le_comap` and `Subgroup.mem_comap` all
+  unify through the `levelPowerClasses` *def* at default transparency — no bridge lemma needed.
+
+## 1.119 The Scholz alternative is a consequence of the ramification restriction (2026-09-13)
+
+### (a) What was missing
+
+§1.118 reduced `IsScholzPlace ℓ K E w` — the local demand the prescription makes at a named place —
+to a purely group-theoretic condition on the tower, `IsCyclicInertiaAt K E P`: the decomposition
+group of a prime `P` of the closure over the level acts on the auxiliary field `E` through the
+powers of a single automorphism lying in the inertia group of `P`.  Nothing yet produced that
+condition.
+
+### (b) It is already carried by the climb
+
+`LevelProperty ℓ U S k Ω := ∀ m j, (Gal(Ω/k) →* GenericQuot ℓ U m S j) → Prop`
+(`Shafarevich/LevelSolution.lean:74`) is the induction-invariant slot of the ladder, and the
+invariant it carries is SW's condition (ii), already implemented as
+
+```lean
+def IsSplitTotallyRamified (φ : Gal(Ω/k) →* U) : LevelProperty ℓ U S k Ω := fun _ _ Φ =>
+  IsSplitTotallyRamifiedHom ℓ φ Φ
+```
+
+(`Shafarevich/LevelRamification.lean:81`), proven shrink-stable (`isShrinkStable_isSplitTotallyRamified`)
+and established at the bottom of the ladder (`levelSolution_zero_isSplitTotallyRamified`).  Unfolded
+(`Shafarevich/RamifiedHom.lean:75`) it says: at a prime where `Φ` ramifies over the base realization
+`φ`, (1) `φ` kills the whole decomposition subgroup, (2) `Φ` takes no value there which it does not
+already take on inertia, (3) all those values lie in the powers of a single element.
+
+### (c) The bridge
+
+New module `InverseGalois/Solvable/Shafarevich/ScholzTower.lean`:
+
+* `IsSplitTotallyRamifiedHom.exists_inertia_generator` — clauses (2)+(3) give a *single* element of
+  inertia generating the whole local image:
+  ```lean
+  (∀ x ∈ stabilizer Gal(Ω/k) P, φ x = 1) ∧
+    ∃ τ ∈ Ideal.inertia Gal(Ω/k) P,
+      ∀ x ∈ stabilizer Gal(Ω/k) P, Φ x ∈ Subgroup.zpowers (Φ τ)
+  ```
+  The image `(stabilizer Gal(Ω/k) P).map Φ` sits inside `Subgroup.zpowers c` by (3), hence is cyclic
+  (`Subgroup.isCyclic_of_le`); a generator `g` of it is `Φ x₀` for some `x₀` in the decomposition
+  subgroup, and (2) replaces `x₀` by an element of inertia with the same value.
+* `isCyclicInertiaAt_of_isSplitTotallyRamifiedHom` — with `K.fixingSubgroup = φ.ker` and
+  `E.fixingSubgroup = Φ.ker`, clause (1) puts the decomposition subgroup inside `K.fixingSubgroup`,
+  so `exists_galSubHom_eq`/`mem_inertia_galSubHom_iff`/`mem_stabilizer_galSubHom_iff`
+  (`ElementaryQuotientDecomposition.lean`) read the whole picture over the level, and
+  `Φ x = Φ (τ^i)` means `(τ^i)⁻¹ * x ∈ Φ.ker = E.fixingSubgroup`, i.e. `x y = (τ^i) y` for `y ∈ E`.
+  No normality of `E` is used.
+* `isScholzPlace_of_isSplitTotallyRamifiedHom` — composed with §1.118's
+  `isScholzPlace_of_isCyclicInertiaAt`: **a prime where a solution ramifies over the base
+  realization lies over a Scholz place of the level, for the field the solution cuts out**, with no
+  arithmetic input at all.
+
+Build green 9989 jobs, 0 warnings, 0 sorries.
+
+### (d) What is left: SW's Fourth Step
+
+The invariant applies at the primes of `T² = Ram(N_n|K)`.  The prescription's *named* primes are
+`T³ = Ram(N_{n+1}|K) \ (Ram(N_n|k) ∪ S_p ∪ S_∞)` — where an arbitrary new lift ramifies and the old
+solution does not (`exists_confinedRamifiedHom_lift_of_hasFlatPrescription`,
+`LevelFlatTwist.lean:199+`).  SW handle exactly this in their Fourth Step (`sw.txt:1406–1608`):
+
+* Step 3 already forces every newly ramified prime outside `T²` to be **completely decomposed in
+  `N_n|k`**, so at a `T³` prime the old field contributes nothing to the decomposition group and
+  `D_w(E_ab/K)` is a subgroup of the elementary abelian kernel alone.
+* Step 4 then removes the *unramified part* of `(N_{n+1})_p|(N_n)_p` at those primes, by a twist
+  `x ∈ H¹(k_S|k, E(n,ν))` built from a `y ∈ H¹(K_S|K, E(n,ν))` with `x_P = 0` at every prolongation
+  but one chosen `(P ∩ k)'`.  The new ramification this creates again sits at primes completely
+  decomposed in `N_n|k`, whose decomposition groups are therefore cyclic of order `p` and totally
+  ramified — which is condition (ii) for the next rung.
+
+So the residual is not a new invariant but the Fourth Step itself: cutting the named primes down to
+one prolongation per rational prime, with the prescription killing the others.  In the repo's
+vocabulary that is a statement about `HasReachableLevel`/`exists_ramified_family` rather than about
+`IsScholzPlace`.
+
+### (e) Gotchas
+
+* **4416.** `Subgroup.isCyclic_of_le (h : H ≤ H') [IsCyclic H'] : IsCyclic H`
+  (`Mathlib/GroupTheory/SpecificGroups/Cyclic.lean:314`) is the one-line "subgroup of a cyclic group
+  is cyclic"; with `Subgroup.isCyclic_iff_exists_zpowers_eq_top` it turns a bound
+  `H ≤ Subgroup.zpowers c` into an actual generator *inside* `H`.
+* **4417.** `Ideal.inertia_le_stabilizer` takes the ideal EXPLICIT and the group implicit:
+  `Ideal.inertia_le_stabilizer P hτI`.
+* **4418.** `IntermediateField.mem_fixingSubgroup_iff` (`Mathlib/FieldTheory/Galois/Basic.lean:250`)
+  has its intermediate field as a section variable of unclear explicitness — use
+  `rw [IntermediateField.mem_fixingSubgroup_iff] at h` rather than applying it as a term.
+* **4419.** To turn `(a⁻¹ * b) y = y` into `b y = a y` for `AlgEquiv`s, factor first:
+  `(mul_inv_cancel_left a b).symm : b = a * (a⁻¹ * b)`, then `rw [← hfac]` inside a `calc` — the
+  direct route through `← AlgEquiv.mul_apply` rewrites the `y` on both sides of the goal.
+* **4420.** SW's `T³` primes are **completely decomposed in `N_n|k`** (the conclusion of their Third
+  Step), which is why the Fourth Step only has to remove an unramified part.
