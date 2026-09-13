@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.PoitouTate.CyclicPairing
 import InverseGalois.CFT.PoitouTate.UniformizerLine
 import InverseGalois.Solvable.Shafarevich.KernelArith
 
@@ -25,8 +26,12 @@ being read at another.
 
 What the construction still costs is the reciprocity residue: the product of the power residue
 symbols of the naming against the units of the level which become exponent-th powers in the
-auxiliary field, read over the named places, has to be trivial.  That residue is carried along as
-a hypothesis, in the same form the prescription over free orbits states it.
+auxiliary field, read over the named places, has to be trivial.  On the line of the invariant
+uniformiser that residue is a purely local demand at each named place taken on its own: the classes
+there of the units which become exponent-th powers in the auxiliary field are asked to lie on the
+same line, and at an odd exponent two powers of one class pair trivially.  The demand is the
+classical condition that the extension of the completion cut out at a named place be the one a root
+of the uniformiser generates.
 
 ## Main results
 
@@ -38,6 +43,12 @@ a hypothesis, in the same form the prescription over free orbits states it.
 * `InverseGalois.Shafarevich.exists_units_uniformizerLine_diagonal` — **one unit per named place,
   ramified at its own place and trivial at the others**, which is the diagonal the orders of the
   confined units are read off.
+* `InverseGalois.Shafarevich.isNamedOrthogonal_uniformizerLine` — **the reciprocity residue of a
+  naming on the line of the invariant uniformiser is trivial** as soon as, at each named place, the
+  units of the level which become exponent-th powers in the auxiliary field have their classes on
+  that line.
+* `InverseGalois.Shafarevich.exists_units_uniformizerLine_diagonal_of_scholz` — **the diagonal, in
+  exchange for that local demand at the named places alone**.
 
 ## Tags
 
@@ -296,6 +307,76 @@ theorem exists_units_uniformizerLine_diagonal {ℓ : ℕ} [NeZero ℓ] (hℓ : �
     · rw [hσν, hz2 ν (e μ), if_neg fun hcon => hνμ (e.injective hcon)]
     · exact hz3 ν σ hσν (e μ)
   · exact hz4 v ⟨e μ, hv⟩
+
+/-! ### The reciprocity residue of a naming on the line -/
+
+omit [NumberField k] [IsGalois k Ω] [IsAlgClosed Ω] in
+/-- **A naming on the line of the invariant uniformiser is orthogonal to the units of the level
+which become exponent-th powers in the auxiliary field**, as soon as the classes of those units at
+the named places lie on that line too.
+
+The product of the symbols runs over the named places alone, and at each of them both arguments are
+powers of one class; at an odd exponent a class pairs trivially with itself, so every factor of the
+product is trivial.  What is asked of a named place is local and says nothing whatever about the
+other named places, nor about any place the naming is not made at: the class at it of a unit which
+becomes an exponent-th power in the auxiliary field is a power of the class of the uniformiser
+there. -/
+theorem isNamedOrthogonal_uniformizerLine {ℓ : ℕ} [NeZero ℓ] (hℓ : ℓ.Prime) (hodd : 2 < ℓ)
+    (K : IntermediateField k Ω) [NumberField ↥K]
+    {Pc Ec : HeightOneSpectrum (𝓞 ↥K) → ℕ}
+    (hres : ∀ v : HeightOneSpectrum (𝓞 ↥K), HasResidueChar (v.adicCompletion ↥K) (Pc v) (Ec v))
+    {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ) (E : IntermediateField k Ω)
+    {ι : Type} [Fintype ι] (w : ι → HeightOneSpectrum (𝓞 ↥K)) {d : ℕ}
+    {c : (μ : ι) → Fin d → localClasses (w μ) ℓ}
+    (hline : ∀ (μ : ι) (q : Fin d), c μ q ∈ Subgroup.zpowers (uniformizerLine k ℓ (w μ)))
+    (hscholz : ∀ (μ : ι) (u : (↥K)ˣ), (∃ y : Ω, y ∈ E ∧ y ^ ℓ = algebraMap ↥K Ω ((u : ↥K))) →
+      localClassHom (w μ) ℓ u ∈ Subgroup.zpowers (uniformizerLine k ℓ (w μ))) :
+    IsNamedOrthogonal ℓ K hres hζ E w c := by
+  have hoddℓ : Odd ℓ := hℓ.odd_of_ne_two (by omega)
+  intro Tn _ q u _ hpow
+  rw [localSymbolPiPairing_eq_piPairing, piPairing_apply]
+  exact Finset.prod_eq_one fun μ _ => localClassPairing_eq_one_of_mem_zpowers hres hζ hoddℓ (w μ)
+    (hscholz μ ((u : (↥K)ˣ)) hpow) (hline μ q)
+
+/-- **One unit per named place, ramified at its own place and trivial at the others, in exchange
+for a local demand at the named places alone.**
+
+The naming is the diagonal on the lines of the invariant uniformiser, so the reciprocity residue is
+read off those lines: at each named place the classes of the units of the level which become
+exponent-th powers in the auxiliary field are asked to be powers of the class of the uniformiser
+there, and nothing at all is asked anywhere else. -/
+theorem exists_units_uniformizerLine_diagonal_of_scholz {ℓ : ℕ} [NeZero ℓ] (hℓ : ℓ.Prime)
+    (hodd : 2 < ℓ) (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [IsGalois k ↥K]
+    [NumberField ↥K] {Pc Ec : HeightOneSpectrum (𝓞 ↥K) → ℕ}
+    (hres : ∀ v : HeightOneSpectrum (𝓞 ↥K), HasResidueChar (v.adicCompletion ↥K) (Pc v) (Ec v))
+    {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ) (E : IntermediateField k Ω)
+    (hEfin : FiniteDimensional k ↥E) (hEgal : IsGalois k ↥E) (hKE : K ≤ E)
+    {ι : Type} [Fintype ι] (w : ι → HeightOneSpectrum (𝓞 ↥K))
+    (hdist : ∀ μ ν : ι, μ ≠ ν → ∀ σ : Gal(↥K/k), σ • w μ ≠ w ν)
+    (Tz : Finset (HeightOneSpectrum (𝓞 ↥K))) (hTz : ∀ μ : ι, w μ ∉ Tz)
+    (hℓw : ∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (w μ).asIdeal)
+    (hfix : ∀ μ : ι, w μ ∈ fixedUniformizerPlaces k ↥K)
+    (hscholz : ∀ (μ : ι) (u : (↥K)ˣ), (∃ y : Ω, y ∈ E ∧ y ^ ℓ = algebraMap ↥K Ω ((u : ↥K))) →
+      localClassHom (w μ) ℓ u ∈ Subgroup.zpowers (uniformizerLine k ℓ (w μ))) :
+    ∃ Z : ι → (↥K)ˣ,
+      (∀ μ : ι, ¬ (ℓ : ℤ) ∣ placeValue (w μ) (Z μ)) ∧
+      (∀ (μ : ι) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz → localClassHom v ℓ (Z μ) = 1) ∧
+      (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ ≠ w μ → localClassHom (σ • w μ) ℓ (Z μ) = 1) ∧
+      (∀ μ ν : ι, ν ≠ μ → ∀ σ : Gal(↥K/k), localClassHom (σ • w ν) ℓ (Z μ) = 1) ∧
+      ∀ (μ : ι) (v : HeightOneSpectrum (𝓞 ↥K)), ¬ (ℓ : ℤ) ∣ placeValue v (Z μ) →
+        (∃ (ν : ι) (σ : Gal(↥K/k)), v = σ • w ν) ∨
+          ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → Ideal.under (𝓞 ↥K) P = v.asIdeal →
+            stabilizer Gal(Ω/k) P ≤ E.fixingSubgroup := by
+  classical
+  refine exists_units_uniformizerLine_diagonal hℓ hodd K hres hζ E hEfin hEgal hKE w hdist Tz hTz
+    hℓw hfix (Fintype.equivFin ι)
+    (isNamedOrthogonal_uniformizerLine hℓ hodd K hres hζ E w ?_ hscholz)
+  intro μ q
+  by_cases h : Fintype.equivFin ι μ = q
+  · rw [if_pos h]
+    exact Subgroup.mem_zpowers _
+  · rw [if_neg h]
+    exact Subgroup.one_mem _
 
 end Uniformizer
 

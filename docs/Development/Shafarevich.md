@@ -23897,3 +23897,73 @@ So the cheap way to run the uniformiser route is to thread the place-level unram
 from `exists_decomposition_family`, not to prove the converse *up* from the inertia clause.  That
 thread crosses `CoversRamified` / `HasFlatPrescription` / `HasFlatOrbitPrescription`, which are
 indexed by `φ` rather than by `K`, so it costs those three definitions an extra `K` parameter.
+
+## §1.115 The reciprocity residue on the uniformiser line is the Scholz condition (2026-09-13)
+
+§1.113 left the uniformiser route with exactly one opaque hypothesis, the `IsNamedOrthogonal`
+argument `hnorth` of `exists_units_uniformizerLine_diagonal`.  It is opaque because its statement is
+quantified over *every* finite set `Tn` of places containing the named ones and over *every*
+`Tn`-unit of `K` which is everywhere locally trivial at infinity and becomes an `ℓ`-th power in `E`;
+what it asks of such a unit is the vanishing of a product of local norm-residue symbols.  That looks
+like a global reciprocity statement, and it was costed as one.
+
+It is not.  Two facts collapse it.
+
+**(a) The product is over the named places alone.**  `localSymbolPiPairing` unfolds, by
+`localSymbolPiPairing_eq_piPairing` (`CFT/PoitouTate/Prescribed.lean:66`, a `rfl`) and
+`piPairing_apply` (`CFT/PoitouTate/Isotropic.lean:165`, also a `rfl`), to `∏ μ : ι, localClassPairing
+hres hζ (w μ) (localClassHom (w μ) ℓ u) (c μ q)`.  There is no factor at any place outside the
+family `w`, so no place the naming is not made at can contribute, whatever `Tn` is.  Consequently
+the `Tn` and the archimedean triviality clause of `IsNamedOrthogonal` are free: they never have to
+be used, and the hypothesis is discharged factor by factor by `Finset.prod_eq_one`.
+
+**(b) A cyclic group of local classes is isotropic at an odd exponent.**  This is already proven, as
+`localClassPairing_eq_one_of_mem_zpowers` (`CFT/PoitouTate/CyclicPairing.lean`): at an odd `ℓ` the
+norm-residue pairing on `localClasses v ℓ` is alternating, so any two elements of
+`Subgroup.zpowers d` pair trivially.  The naming of the uniformiser route *is* made on
+`Subgroup.zpowers (uniformizerLine k ℓ (w μ))` — that is the whole point of the route — so the
+second argument of every factor is on the line by construction.
+
+Putting (a) and (b) together, `hnorth` follows from the single local demand
+
+> at each named place `w μ`, the class `localClassHom (w μ) ℓ u` of any unit `u` of `K` which
+> becomes an `ℓ`-th power in `E` lies on the line `Subgroup.zpowers (uniformizerLine k ℓ (w μ))`,
+
+and nothing else.  That is exactly the classical **Scholz condition**, and it is exactly
+Schmidt–Wingberg's condition (ii) for the tower (`sw.txt:1091–1093`, made explicit in Step 1(c) at
+`sw.txt:1216–1222`: `N_{ν,p} = K_p(p^a√π_p)` for a prime element `π_p`, i.e. the local Kummer group
+of the layer sits on a uniformiser line).  The two new theorems in
+`Solvable/Shafarevich/FlatUniformizerUnits.lean` are
+
+* `isNamedOrthogonal_uniformizerLine` — the implication above, four lines;
+* `exists_units_uniformizerLine_diagonal_of_scholz` — the diagonal of `§1.113` with `hnorth`
+  replaced by that local demand, the diagonal naming being on the line by `Subgroup.mem_zpowers`
+  off the diagonal entry and `Subgroup.one_mem` on it.
+
+Both typecheck on the first pass.
+
+### (c) The generalisation that was deferred
+
+Nothing above uses nondegeneracy of the pairing, only that it is alternating.  The *sharp* condition
+is the other one: writing `𝒰 = {u : K(ℓ√u) ⊆ E}` for the Kummer group of `E/K` and `𝒰_w` for its
+image in `localClasses w ℓ`, the pairing at a tame place with `ζ_ℓ ∈ K` is nondegenerate, so `hnorth`
+for a *line* `D_w` is equivalent to `D_w ⊆ 𝒰_w^⊥`, and `𝒰_w^⊥` contains a ramified class iff
+`dim 𝒰_w ≤ 1` together with (`𝒰_w = 0` or `𝒰_w` itself contains a ramified class).  Naming the line
+`𝒰_w^⊥` at every place instead of the uniformiser line would therefore be a weaker hypothesis, and it
+would still be Galois equivariant, because the *subgroup* `𝒰_w^⊥` is canonical even though no
+generator of it is.  What it costs is the Galois stability of `levelPowerUnits`, which needs a lift
+of `σ : Gal(↥K/k)` to `Gal(Ω/k)` and `Normal k ↥E`.  That plumbing is more than the gain right now,
+so the uniformiser line stands and the sharp line is recorded here.
+
+### (d) What this does *not* do
+
+Schmidt–Wingberg carry conditions (i) and (ii) as *induction invariants* of the tower: (i) every
+`p ∈ Ram(K|k) ∪ S_p ∪ S_∞` is completely decomposed in `N_n|K`, and (ii) a `p` ramified in `N_n|K`
+splits completely in `K|k` and `N_{ν,n,p}|k_p` is cyclic totally ramified.  The repo's ladder carries
+neither.  `exists_confinedRamifiedHom_lift_of_hasFlatPrescription`
+(`Solvable/Shafarevich/LevelFlatTwist.lean:198`) only derives `Ideal.inertia Gal(Ω/k) (Pr μ) ≤ φ.ker`
+from `HasFlatPrescription` — unramifiedness of the named place in `K/k`, not complete decomposition
+and not the local shape of the layer.  So after this section the remaining work on the uniformiser
+branch is a *bookkeeping* problem, not a reciprocity one: thread (i) and (ii) down the ladder
+alongside the inertia clause.  §1.114(d) already located the cheapest place to start — the
+unramifiedness is computed and then discarded at `LevelOneDecomposition.lean:144–151`.
