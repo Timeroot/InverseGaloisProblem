@@ -482,6 +482,7 @@ import InverseGalois.CFT.PoitouTate.ChebotarevPlace
 import InverseGalois.CFT.PoitouTate.ClassSetAvoid
 import InverseGalois.CFT.PoitouTate.ClosingChain
 import InverseGalois.CFT.PoitouTate.ClosingChainRamified
+import InverseGalois.CFT.PoitouTate.ConfinedUnits
 import InverseGalois.CFT.PoitouTate.ConjugatePlace
 import InverseGalois.CFT.PoitouTate.CupDual
 import InverseGalois.CFT.PoitouTate.CyclicPairing
@@ -489,6 +490,7 @@ import InverseGalois.CFT.PoitouTate.Dual
 import InverseGalois.CFT.PoitouTate.FrobeniusCharacter
 import InverseGalois.CFT.PoitouTate.GlobalClasses
 import InverseGalois.CFT.PoitouTate.InfiniteClasses
+import InverseGalois.CFT.PoitouTate.InvariantRadicand
 import InverseGalois.CFT.PoitouTate.Isotropic
 import InverseGalois.CFT.PoitouTate.LocalConditions
 import InverseGalois.CFT.PoitouTate.LocalOrdBridge
@@ -6254,6 +6256,23 @@ it that are available here.
   construction, and what has to be produced is an invariant radicand realising it.  The obstruction
   lives with coefficients in the units of a finite set of places, finitely generated and fixed
   before the tower is chosen, so a single shrinking answers it.
+* `InverseGalois.CFT.PoitouTate.ConfinedUnits` narrows the group the descent is run in.  A
+  prescription of radicands asks for three things at once: the radicand is a local power at a
+  prescribed set of places, its order is divisible by the exponent at every place outside the set
+  where ramification is allowed, and at the finitely many named places its orders are the
+  prescribed ones.  The first two conditions are closed under multiplication, so **they cut out a
+  subgroup of the units**, carried into itself by the Galois group because both sets of places are;
+  the third is the value of an equivariant homomorphism from that subgroup onto the free abelian
+  group on the named places.  Running the descent inside that subgroup rather than inside the whole
+  unit group is what keeps the two standing conditions from having to be carried alongside the
+  divisor, where nothing would preserve them.
+* `InverseGalois.CFT.PoitouTate.InvariantRadicand` assembles the descent in the form a prescription
+  consumes.  The divisor carried by one orbit is realised because the valuation is onto, and the
+  valuation of the realising tensor is invariant because both the valuation and the divisor are
+  equivariant, so **the entire content is the one obstruction class, and a shrinking of the module
+  of coefficients annihilating the first cohomology with coefficients in the kernel of the
+  valuation hands back an invariant radicand with the prescribed orbit values.**  The shrinking is
+  not asked to be injective, and the prescribed value is read off after it has been applied.
 * `InverseGalois.CFT.PoitouTate.LocalOrdBridge` joins the two sides.  The everywhere locally trivial
   classes produced by the theory of a lifting problem are trivial on the genuine decomposition
   subgroups of the Galois group of the base, with coefficients restricted along them, while the
