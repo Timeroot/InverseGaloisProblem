@@ -501,6 +501,7 @@ import InverseGalois.CFT.PoitouTate.NamedFamily
 import InverseGalois.CFT.PoitouTate.NamedFamilyPower
 import InverseGalois.CFT.PoitouTate.NamedFamilySplit
 import InverseGalois.CFT.PoitouTate.NamedRadicand
+import InverseGalois.CFT.PoitouTate.NamedRadicandClass
 import InverseGalois.CFT.PoitouTate.NamedSymbol
 import InverseGalois.CFT.PoitouTate.NamedUnits
 import InverseGalois.CFT.PoitouTate.NormLocalPower
@@ -6285,6 +6286,15 @@ it that are available here.
   values are realised in the module itself: that is the case the named places are enlarged by
   auxiliary completely decomposed ones to arrange, the confinement clause of a prescription leaving
   the orders at such places free.
+* `InverseGalois.CFT.PoitouTate.NamedRadicandClass` asks for the vanishing only where the
+  obstruction lives.  The classes the descent meets are not all of the first cohomology with
+  coefficients in the kernel of the valuation, but only the obstructions of the radicands whose
+  divisor is already invariant — the image of the connecting homomorphism of the valuation, which
+  the finitely many named places govern while the whole group is governed by every place of the
+  field.  **The descent runs on that narrower hypothesis: a radicand whose divisor is invariant may
+  be corrected to an invariant radicand with the same divisor.**  Equivalently, every invariant
+  divisor with coefficients in the module is already the divisor of an invariant radicand, which is
+  what a prescription asks and nothing more.
 * `InverseGalois.CFT.PoitouTate.RadicandPlaces` puts an arbitrary prescription into the shape the
   descent consumes.  The descent is run over sets of places carried into themselves by the Galois
   group, while a prescription arrives with arbitrary ones — the named places, the places a local

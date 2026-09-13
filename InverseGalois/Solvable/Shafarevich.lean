@@ -1062,9 +1062,10 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   at, and the confinement clause is nothing but membership in that group once the places allowed
   are taken to be the named ones together with those completely decomposed in the bigger level.
   The prescribed orders cost nothing beyond the vector of orders being onto, and the invariance
-  costs exactly one class in the first cohomology with coefficients in the units of no order at the
-  places that are read — a group that shrinks as more places are read, and the places added may be
-  taken completely decomposed because the confinement clause leaves the order there free.  **What
-  the odd step asks of the arithmetic is a finite set of places on which the orders of the confined
-  units are arbitrary and the confined units of no order carry no first cohomology.**
+  costs exactly one class, the obstruction of a radicand whose divisor is already invariant — a
+  class that has more room to die as more places are read, and the places added may be taken
+  completely decomposed because the confinement clause leaves the order there free.  **What the odd
+  step asks of the arithmetic is a finite set of places on which the orders of the confined units
+  are arbitrary and over which every invariant divisor of confined units is the divisor of an
+  invariant one.**
 -/

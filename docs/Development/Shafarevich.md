@@ -23362,3 +23362,115 @@ over `k` — the local conditions being "unramified outside the named primes, pr
 them, unrestricted at places split in `E`" — and kill the dual Selmer group by adding split-in-`E`
 Chebotarev places.  That is exactly Schmidt–Wingberg's Second Step, and exactly what the 71 modules
 of `InverseGalois/CFT/PoitouTate/` exist for.
+
+## 1.110 The choice of places: the demand is stated, and the H¹ form of it is wrong (2026-09-13)
+
+§1.109 ended by naming the next move: state the flat prescription as a statement about a **choice of
+places**, and buy the invariance by enlarging the set of places whose orders are read.  That is now
+done — twice, because the first form of the statement turned out to be too strong to be true.
+
+### (a) What landed
+
+`InverseGalois/CFT/PoitouTate/RadicandPlaces.lean` (`stableHull`, `stableCore`,
+`isGaloisStablePlaces_union`) puts an arbitrary prescription into the shape the descent consumes:
+the two finite sets a prescription arrives with — the named places, the places a local power is
+asked at — are replaced by their stable hulls, which are still finite, and the set the ramification
+is confined to is a union of a hull and a core.
+
+`InverseGalois/Solvable/Shafarevich/FlatTensorConfined.lean` then reduces the odd-`ℓ` step to a
+single named hypothesis:
+
+* `decomposedPlaces K E` — the places of `K` lying below only primes completely decomposed in `E`;
+* `allowedPlaces K E Xs₀ = Xs₀ ∪ stableCore k K (decomposedPlaces K E)` — exactly the places clause
+  (d) of `HasInvariantUnitTensor` leaves the order free at, made Galois stable;
+* `HasConfinedRadicandPlaces ℓ K` — for every bigger level `E`, every finite stable `Tz` and `Xs₀`
+  and every target `C` killed by `ℓ`, a finite stable `Xs ⊇ Xs₀` exists with the vector of orders
+  `confinedOrd ℓ Tz (allowedPlaces K E Xs₀) Xs` onto **and** the descent obstruction vanishing;
+* `hasInvariantUnitTensor_of_confinedRadicandPlaces` — that buys `HasInvariantUnitTensor ℓ K`,
+* and `Shafarevich.ConfinedRadicandPlacesEP ℓ` → `InvariantUnitTensorEP ℓ` → `FlatTensorEP ℓ` →
+  `FlatPrescriptionEP ℓ` → `GenericLevelStepEPRoots ℓ`, all sorry free.
+
+The bridge is a real reduction, not a restatement: the four clauses of `HasInvariantUnitTensor` come
+out of one descent, with `placeValue = -ord` making the CFT prescription the **inverse** `(V μ)⁻¹`
+of the demanded value (gotcha 4268), and the confinement clause becoming plain membership in
+`confinedUnits`.
+
+### (b) Why the H¹ form of the demand is wrong
+
+The first version asked for `H¹(Gal(K/k), confinedSUnits ⊗ C) = 0` outright.  That is almost
+certainly **false**, for a reason that has nothing to do with the prescription:
+
+* `Additive B ⊗_ℤ Additive C = (B/B^ℓ) ⊗_{𝔽_ℓ} C` because `C` is killed by `ℓ`.
+* `B = confinedSUnits ℓ Tz Y Xs` is cut out by `ℓ ∣ ord_v` outside `Y` and `ord_v = 0` on `Xs`.  For
+  **every** place `v ∉ Y ∪ Xs` it therefore contains elements of order exactly `ℓ` at `v`, and
+  `x ↦ ord_v(x)/ℓ mod ℓ` makes `B/B^ℓ` surject onto `⨁_{v ∉ Y ∪ Xs} 𝔽_ℓ = ⨁_{orbits} Ind_{D_v}^G 𝔽_ℓ`.
+* That target has `H¹(G, − ⊗ C) = ⨁_v H¹(D_v, C)`, which is nonzero as soon as `ℓ ∣ |D_v|` for some
+  `v` — e.g. `G = ℤ/ℓ`, `C = 𝔽_ℓ` trivial, `v` inert.
+* Shrinking `Y` does not help: the quotient above exists for every `Y`, finite or not.  It is not
+  the *allowed* set that makes the group big, it is the fact that `confinedUnits` asks only for
+  `ℓ ∣ ord` away from `Y`, not for `ord = 0`.
+
+So the whole first cohomology group is governed by **every** place of the field, while a
+prescription names only finitely many.  Asking it to vanish is asking far more than the descent
+consumes.
+
+### (c) The right form: only the image of the connecting map
+
+The descent never meets an arbitrary class.  It meets the obstruction
+`tensorInvariantClass C g B hg hB ht` of a tensor `t` whose **divisor is already invariant** — the
+image of the connecting homomorphism `δ` of `0 → B ⊗ C → A ⊗ C → (Xs →₀ ℤ) ⊗ C → 0`.  Its source is
+the invariant divisors on the finitely many read places, so it is a finite dimensional space, and
+the class is independent of the lift `t` (two lifts differ by an element of `B ⊗ C`, which changes
+the cocycle by a coboundary).
+
+`InverseGalois/CFT/PoitouTate/NamedRadicandClass.lean` reruns the whole descent on that narrower
+hypothesis:
+
+* `exists_invariant_tensorVal_eq_orbitRadicand_of_class` — one orbit,
+* `exists_invariant_tensorVal_eq_of_named_of_class` — the named family,
+* `exists_invariant_confinedTensorVal_eq_of_named_of_class` — the confined units of a number field,
+
+each taking `hδ : ∀ t (ht : divisor of t is invariant), tensorInvariantClass … ht = 0` in place of
+`H¹ = 0`.  Equivalently: **every invariant divisor with coefficients in `C` is already the divisor
+of an invariant radicand.**  `HasConfinedRadicandPlaces` now asks exactly that, and nothing more.
+
+### (d) Where the Chebotarev lever actually acts
+
+Two computations settle how enlarging the read set can help, and how it cannot.
+
+Write `S` for a finite set of places, `A_S = {x : div(x) ⊆ S, x a local ℓ-th power on Tz}`,
+`B_S = A_S ∩ {ord = 0 on Xs}`, `U = A_S ∩ O_K^×`, `𝒟_S = div(B_S)`.  Then `U ∩ B_S^ℓ = U^ℓ`
+(a `y ∈ B_S` with `y^ℓ` a unit is itself a unit and already satisfies the `Tz` conditions), so
+
+    0 → U/U^ℓ → B_S/B_S^ℓ → 𝒟_S/ℓ𝒟_S → 0 .
+
+* **If `𝒟_S` is `ℤ[G]`-free**, `𝒟_S/ℓ` is projective, the sequence splits, `H¹(G, 𝒟_S/ℓ ⊗ C) = 0`
+  and `H¹(G, B_S/ℓ ⊗ C) ≅ H¹(G, (U/U^ℓ) ⊗ C)` — a group that does **not** depend on `S`.  Worse, for
+  `S ⊆ S'` the ladder over the identity of `ℤ^{Xs}` gives `δ_{S'} = ι_* ∘ δ_S`, and `ι_*` is the
+  identity on the `U` summand of both sides, hence **injective**.  Adding free orbits with principal
+  orbit divisors can therefore never kill an obstruction.
+* So the lever acts **only through the failure of `𝒟_S` to be `ℤ[G]`-free**, i.e. through the class
+  group and the `Tz` conditions: `ker(ι_*)` is the image of the connecting map of
+  `0 → B_S → B_{S'} → (divisors newly realised) → 0`, which is zero exactly when the new orbits are
+  free and principal.  This is the same mechanism as the classical Greenberg–Wiles / Taylor–Wiles
+  "add an auxiliary prime whose Frobenius sees the class", and it is a real constraint on how the
+  auxiliary completely decomposed places must be chosen: **choosing them to make the divisor group
+  bigger and freer is precisely the wrong choice.**
+
+Note this also reverses the earlier instinct about the size of the allowed set: for the `δ` form of
+the hypothesis, the **larger** the allowed set `Y`, the larger `A` and `B`, and the more room the
+obstruction has to die.  `allowedPlaces` is therefore deliberately left infinite (every completely
+decomposed place of a stable core), which is the weakest form of the demand.
+
+### (e) What is open
+
+`ConfinedRadicandPlacesEP ℓ` is now the sole odd-`ℓ` gap above `FlatReachableEP ℓ`, and it has two
+independent halves:
+
+1. **Surjectivity of `confinedOrd`** — every system of orders on `Xs` is realised by a confined
+   unit.  This is the classical `S`-unit statement: `ℓ`-th powers at the untouched places,
+   `IsReachablePlace` for the named ones, and a two place Chebotarev correction to kill the class
+   group obstruction (gotchas 4258, 4264).  Provable with the machinery already present.
+2. **Vanishing of the obstruction** — by (d), the auxiliary places must be chosen so that the
+   connecting map of the enlargement hits the class, which is a Chebotarev condition in the field
+   cut out by the class.  This is the genuine Poitou–Tate content of Schmidt–Wingberg's Second Step.

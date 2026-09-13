@@ -3,7 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
-import InverseGalois.CFT.PoitouTate.NamedRadicand
+import InverseGalois.CFT.PoitouTate.NamedRadicandClass
 import InverseGalois.CFT.PoitouTate.RadicandPlaces
 import InverseGalois.Solvable.Shafarevich.FlatTensorStep
 import InverseGalois.Solvable.Shafarevich.FlatTensorVal
@@ -18,15 +18,15 @@ the named orbits and to places completely decomposed in a bigger level.
 
 The descent through the units answers all of that at once, provided the set of places whose orders
 are read is chosen well: the orders are prescribed because the vector of orders is onto, and the
-invariance costs nothing because the only obstruction is a class in the first cohomology of the
-automorphisms of the level with coefficients in the units without order at the places that are
-read, tensored with the target.  Enlarging the set of places that are read enlarges those units,
-and the confinement clause leaves the orders at completely decomposed places free, so the places
-added may be taken there.
+invariance costs one obstruction class, the class of a radicand whose divisor is already invariant
+measuring how far it is from being invariant itself.  Enlarging the set of places that are read
+enlarges the units the correction may be made in, and the confinement clause leaves the orders at
+completely decomposed places free, so the places added may be taken there.
 
 So the whole demand collapses to a single statement about the choice of a finite set of places:
-the vector of orders on it is onto, and the units it leaves fixed carry no first cohomology with
-coefficients in the target.  This file records that statement and the reduction to it.
+the vector of orders on it is onto, and every invariant divisor of confined units with coefficients
+in the target is the divisor of an invariant one.  This file records that statement and the
+reduction to it.
 
 ## Main definitions
 
@@ -36,8 +36,7 @@ coefficients in the target.  This file records that statement and the reduction 
   to the exponent at.
 * `InverseGalois.Shafarevich.HasConfinedRadicandPlaces`: **a finite stable set of places can be
   found, containing the named ones, on which the vector of orders of the confined units is onto and
-  for which the confined units without order there carry no first cohomology with coefficients in
-  the target.**
+  over which a confined radicand with invariant divisor may be corrected to an invariant one.**
 * `Shafarevich.ConfinedRadicandPlacesEP`: that demand, made of every level.
 
 ## Main results
@@ -103,29 +102,33 @@ section Demand
 variable {k Ω : Type} [Field k] [Field Ω] [Algebra k Ω]
 
 /-- **A finite stable set of places can be found, containing the named ones, on which the vector of
-orders of the confined units is onto and for which the confined units without order there carry no
-first cohomology with coefficients in the target.**
+orders of the confined units is onto and over which a confined radicand with invariant divisor may
+be corrected to an invariant one.**
 
 The units the descent is run in are those which are local powers at a prescribed finite stable set
 of places and whose order is divisible by the exponent outside the places the ramification is
 allowed at — the named places, and those lying below only primes completely decomposed in a bigger
 level.  Two things are asked of the set of places whose orders are read: that every system of
-orders on it is realised by such a unit, and that the units among them with no order at all there,
-tensored with the target, carry no first cohomology.  The second is what an invariant radicand
-costs, and it is bought by putting more completely decomposed places into the set. -/
+orders on it is realised by such a unit, and that a radicand whose divisor is already invariant
+carries no obstruction, so that it may be corrected to an invariant radicand with the same divisor.
+The second is what an invariant radicand costs, and it is bought by putting more completely
+decomposed places into the set: the correction is made in the units the enlarged set brings in. -/
 def HasConfinedRadicandPlaces (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
   ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
     ∀ (Tz Xs₀ : Set (HeightOneSpectrum (𝓞 ↥K))) [IsGaloisStablePlaces k ↥K Tz]
         [IsGaloisStablePlaces k ↥K Xs₀],
       Tz.Finite → Xs₀.Finite → Disjoint Xs₀ Tz →
       ∀ (C : Type) [CommGroup C] [MulDistribMulAction Gal(↥K/k) C], (∀ c : C, c ^ ℓ = 1) →
-        ∃ (Xs : Set (HeightOneSpectrum (𝓞 ↥K))) (_ : Finite ↥Xs)
-          (_ : IsGaloisStablePlaces k ↥K Xs),
-          Xs₀ ⊆ Xs ∧
-            Function.Surjective (confinedOrd ℓ Tz (allowedPlaces K E Xs₀) Xs) ∧
-            ∀ c : H1 (Rep.ofDistribMulAction ℤ Gal(↥K/k)
-              (Additive ↥(confinedSUnits ℓ Tz (allowedPlaces K E Xs₀) Xs) ⊗[ℤ] Additive C)),
-              c = 0
+        ∃ (Xs : Set (HeightOneSpectrum (𝓞 ↥K))) (_ : Finite ↥Xs) (_ : DecidableEq ↥Xs)
+          (_ : IsGaloisStablePlaces k ↥K Xs) (_ : Xs₀ ⊆ Xs)
+          (hsurj : Function.Surjective (confinedOrd ℓ Tz (allowedPlaces K E Xs₀) Xs)),
+          ∀ (t : Additive ↥(confinedUnits ↥K ℓ Tz (allowedPlaces K E Xs₀)) ⊗[ℤ] Additive C)
+            (ht : ∀ σ : Gal(↥K/k),
+              tensorVal C (confinedOrd ℓ Tz (allowedPlaces K E Xs₀) Xs) (σ • t)
+                = tensorVal C (confinedOrd ℓ Tz (allowedPlaces K E Xs₀) Xs) t),
+            tensorInvariantClass C (confinedOrd ℓ Tz (allowedPlaces K E Xs₀) Xs)
+              (confinedSUnits ℓ Tz (allowedPlaces K E Xs₀) Xs) hsurj
+              (mem_confinedSUnits_iff ℓ Tz (allowedPlaces K E Xs₀) Xs) ht = 0
 
 end Demand
 
@@ -197,10 +200,9 @@ theorem hasInvariantUnitTensor_of_confinedRadicandPlaces {ℓ : ℕ} [NeZero ℓ
     refine hwTz ν (τ * σ⁻¹) ?_
     rw [mul_smul, hν, inv_smul_smul]
     exact Finset.mem_coe.1 hτ
-  obtain ⟨Xs, hXsfin, hXsstab, hXs₀Xs, hsurj, hH1⟩ :=
+  obtain ⟨Xs, hXsfin, hXsdec, hXsstab, hXs₀Xs, hsurj, hδ⟩ :=
     h E hEfin hEgal hKE (stableHull k ↥K (Tz : Set (HeightOneSpectrum (𝓞 ↥K))))
       (stableHull k ↥K (Set.range w)) hTzsfin hXs₀fin hdisj0 M hexp
-  letI : DecidableEq ↥Xs := Classical.decEq _
   have hwmem : ∀ μ : ι, w μ ∈ Xs := fun μ =>
     hXs₀Xs (subset_stableHull k ↥K (Set.range w) ⟨μ, rfl⟩)
   -- the prescribed values, read at the named places of the enlarged set
@@ -215,9 +217,9 @@ theorem hasInvariantUnitTensor_of_confinedRadicandPlaces {ℓ : ℕ} [NeZero ℓ
     obtain ⟨σ, hσ⟩ := hmem
     exact hdist ν μ (Ne.symm hμν) σ (congrArg Subtype.val hσ)
   obtain ⟨s, hsinv, hsval, -⟩ :=
-    exists_invariant_confinedTensorVal_eq_of_named_of_h1 (k := k) ℓ
+    exists_invariant_confinedTensorVal_eq_of_named_of_class (k := k) ℓ
       (stableHull k ↥K (Tz : Set (HeightOneSpectrum (𝓞 ↥K))))
-      (allowedPlaces K E (stableHull k ↥K (Set.range w))) Xs hsurj hH1
+      (allowedPlaces K E (stableHull k ↥K (Set.range w))) Xs hsurj hδ
       (fun μ => (⟨w μ, hwmem μ⟩ : ↥Xs)) (fun μ => (V μ)⁻¹) hV' hdisj'
   obtain ⟨z₀, hz₀⟩ := exists_forall_sum_tmul_eq b hspan s
   rw [hz₀] at hsval
@@ -269,8 +271,8 @@ places good enough to carry the invariant tensor.**
 For every finite stable set of places a local power is asked at, every finite stable set of named
 places avoiding it, and every target killed by the exponent, a finite stable set of places
 containing the named ones is asked for on which the vector of orders of the confined units is onto
-and for which the confined units with no order there, tensored with the target, carry no first
-cohomology. -/
+and over which a confined radicand with invariant divisor may be corrected to an invariant one with
+the same divisor. -/
 def ConfinedRadicandPlacesEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
   ∀ (k Ω : Type) [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω]
       (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
