@@ -98,10 +98,12 @@ import InverseGalois.Solvable.Shafarevich.FlatCyclic
 import InverseGalois.Solvable.Shafarevich.KummerTensor
 import InverseGalois.Solvable.Shafarevich.KernelPlaces
 import InverseGalois.Solvable.Shafarevich.FlatPlaces
+import InverseGalois.Solvable.Shafarevich.FlatTensor
 import InverseGalois.Solvable.Shafarevich.KernelArith
 import InverseGalois.Solvable.Shafarevich.KernelStep
 import InverseGalois.Solvable.Shafarevich.NamedOrthogonal
 import InverseGalois.Solvable.Shafarevich.FlatStep
+import InverseGalois.Solvable.Shafarevich.FlatTensorStep
 
 /-!
 # Shafarevich's theorem
@@ -921,6 +923,19 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   Because nothing is named but a single unit, and any unit of order prime to the exponent will do,
   **the reciprocity residue the sharp demand leaves behind is absent here**: there is no pairing
   condition, and a level carrying such units carries the flat prescription outright.
+* `InverseGalois.Solvable.Shafarevich.FlatTensor` buys the same flat prescription from a **single**
+  invariant object instead of one unit per named place.  A unit at each place must be asked to be a
+  local power at the conjugates of the *other* named places, so that the several prescriptions do
+  not disturb one another, and that is a demand made place by place which the reciprocity law has a
+  say in once the places are many.  A tensor of the units of the level with the layer, invariant for
+  the automorphisms of the level acting on the radicand and on the coefficient at once, assembles a
+  homomorphism equivariant for the **whole** base group, so nothing has to be arranged between the
+  named places and no local power is asked for at their conjugates; all that is asked at a named
+  place is that the order of the tensor there be the value the prescription forces, and that value
+  is itself compatible with the action because an automorphism fixing a place below lifts to one
+  fixing the prime, two primes with the same place below differing by an automorphism the base
+  realization kills.  **A level carrying such a tensor carries the flat prescription made one field
+  up**, whose equivariance clause is the full one.
 * `InverseGalois.Solvable.Shafarevich.KernelArith` buys those families from the arithmetic.  The
   named places are read as a finite set of places and the classes prescribed at them as a family
   indexed by that set, the lines they lie on are spread over the orbits of the named places, and the
@@ -969,4 +984,12 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   is not assumed either, since the lift the prescription is handed has open kernel inside it, so
   where that kernel fails to be open there is nothing to prescribe for.  **The step of the ladder
   over an odd prime is bought by the units of a finite Galois level alone.**
+* `InverseGalois.Solvable.Shafarevich.FlatTensorStep` spends the tensor assembly over the rationals
+  the same way, and finds it cheaper again.  The homomorphism a single invariant tensor assembles is
+  equivariant for the whole base group, so the prescription made one field up is answered in one
+  piece and carried down along a section of the base realization with nothing traced over cosets;
+  what is asked of the level is one object rather than one unit per named place, and what is asked
+  of that object at the places it is not prescribed at is only that it be a local power at the
+  finitely many places the finite family names.  **The step of the ladder over an odd prime is
+  bought by a single invariant tensor of a finite Galois level.**
 -/

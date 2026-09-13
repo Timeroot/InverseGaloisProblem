@@ -22165,3 +22165,112 @@ it equivariant, and feed it the invariant tensor of `exists_invariant_tensorVal_
 The prescribed-values clause of `HasFlatKernelPrescription` is then the statement that the pairing
 of the tensor against the inertia at a named prime is the prescribed `a μ`, which is where the
 valuation of the tensor — the orbit divisor, by construction — enters.
+
+## 1.101 `FlatTensorEP`: the flat step in exchange for one invariant tensor (2026-09-13)
+
+§1.100 said the Kummer packaging should be a map out of the tensor product.  That map was built
+(`KummerTensor.lean`, `kummerTensorKernelHom`), and this section records the two bricks that spend
+it: `Shafarevich/FlatTensor.lean` and `Shafarevich/FlatTensorStep.lean`.  Both are sorry- and
+axiom-free and in the default build.
+
+### What was replaced
+
+`FlatPlaces.lean` buys `HasFlatOrbitPrescription` from `HasFlatPrescribedUnits`: one unit `Z μ` per
+named place `w μ`, asked to be
+
+1. fixed up to an `ℓ`-th power by the automorphisms fixing `w μ`,
+2. of order at `w μ` prime to `ℓ`,
+3. a local `ℓ`-th power at a finite set `Tz`,
+4. **a local `ℓ`-th power at every conjugate `σ • w ν` of every *other* named place**,
+5. confined elsewhere.
+
+Clause 4 is the expensive one.  It is what keeps the several per-place prescriptions from disturbing
+one another, and it is a demand made place by place — §1.96 is the record of it being *false* in the
+per-prime form, and §1.97 the record of the global replacement.  It is also why the output is only
+`HasFlatOrbitPrescription` (equivariance for one decomposition subgroup at a time), which then has
+to be traced over cosets to become `HasFlatKernelPrescription`.
+
+### What replaces it
+
+`HasFlatPrescribedTensor ℓ K ζ` (`FlatTensor.lean`) asks instead for a **single** tensor
+
+  `T = Σ_q  ofMul (z q) ⊗ₜ ofMul (b q)  ∈  Additive (↥K)ˣ ⊗[ℤ] Additive M`
+
+with `M` any group killed by `ℓ`, `b` a spanning family of `M`, and `act : Gal(↥K/k) → M →* M` an
+action, subject to:
+
+* **invariance**: for every `σ` and every `e` with `σ ζ = ζ ^ e`,
+  `twistTensor M σ⁻¹ e T = coeffTensor M (act σ) T`;
+* **prescription**: `∏_q b q ^ (placeValue (w μ) (z q) : ZMod ℓ).val = V μ` at each named place;
+* **local powers at `Tz`** and **confinement**, exactly as before.
+
+There is **no clause 4**.  The named places do not have to avoid one another's conjugates, because
+a single invariant tensor is equivariant for the whole base group at once, not for one decomposition
+subgroup at a time.  The prescribed values are instead asked to be compatible with the action
+(`V μ ^ e = act σ (V μ)` whenever `σ` fixes `w μ` and `σ ζ = ζ ^ e`) — and that compatibility is
+*discharged by the consumer*, not by the arithmetic: it is exactly what equivariance of the
+prescribed homomorphism already gives.
+
+### The consumer
+
+`hasFlatKernelPrescription_of_tensorPlaces` (and its no-shrinking specialization
+`hasFlatKernelPrescription_of_tensor`) produce `HasFlatKernelPrescription` — the *full*-equivariance
+prescription, skipping `HasFlatOrbitPrescription` entirely.  The homomorphism is
+
+  `u := kummerKernelHom hKker hkd (layerBasis ℓ (Generic U n S) j) layerBasis_pow_eq_one z`,
+
+and `kummerTensorKernelHom_sum` says this is the tensor pairing applied to `T`, so
+`kummerTensorKernelHom_conj` turns the invariance of `T` into the equivariance clause verbatim.
+
+Five clause discharges, for the record:
+
+1. *Smoothness* — `exists_isOpenNormal_forall_kummerKernelHom_eq_one` at a one-element index set.
+2. *Equivariance* — `exists_smul_kummerRootUnit_eq_pow` supplies `e`; the new bridge lemma
+   `smul_kummerRootUnit_eq_pow_iff` converts `g • kummerRootUnit Ω hζ = kummerRootUnit Ω hζ ^ e`
+   into `restrictNormalHom ↥K g ζ = ζ ^ e`, which is the form the arithmetic is stated in; then
+   `kummerTensorKernelHom_conj` + two rewrites by `kummerTensorKernelHom_sum`.
+3. *Triviality along `D ν`* — `kummerKernelHom_eq_one_of_mem_stabilizer` with `Tz` chosen to contain
+   every `σ • placeUnder K (Pr ν)`.  **No conjugates are needed**, since full equivariance already
+   covers them: this is clause 4 disappearing.
+4. *Prescription on `A μ`* — coordinate extraction turned out to be **unnecessary**.  Pick a
+   reference unit `Z μ` of order exactly `1` at `placeUnder K (Q μ)` (`exists_units_placeValue_eq`).
+   Then `kummerChar_eq_of_dvd_placeValue` gives, character by character,
+   `kummerChar (z q) τ = kummerChar (Z μ ^ (placeValue (w μ) (z q) : ZMod ℓ).val) τ`, so a
+   `Finset.prod_congr` swaps the whole family for powers of the single `Z μ`; `kummerKernelHom_eq_pow`
+   then collapses the product to `(∏_q b q ^ …) ^ (kummerChar (Z μ) τ).val`, which the prescription
+   clause rewrites to `V μ ^ …`, which is `hc μ x` backwards.  Consequence: the arithmetic keeps the
+   **weaker product form** of the prescription, not a coordinate-wise one.
+5. *Confinement* — `exists_not_dvd_placeValue_of_kummerKernelHom_ne_one` + the `placeUnder`
+   bookkeeping copied from `FlatPlaces.lean`.  Cheaper than there: no power has to be divided out.
+
+The compatibility `hVcompat` is where `hstab` earns its keep: an automorphism `σ` of the level
+fixing `placeUnder K (Q μ)` is lifted to `g ∈ stabilizer Gal(Ω/k) (Q μ)` with the same image under
+`φ` — two primes with the same place below differ by an automorphism fixing the level, and such an
+automorphism lies in `φ.ker` because `K.fixingSubgroup = φ.ker`.  Conjugating by `g` and applying
+`kummerChar_conj_of_smul_eq_mul_pow` (in its **two-unit** form, `a := Z μ`, `a' := σ⁻¹ • Z μ`,
+`t := 1`) reads the prescribed value's twist off the Kummer character.
+
+### The EP layer
+
+`FlatTensorStep.lean` mirrors `FlatStep.lean`:
+
+* `FlatTensorEP ℓ` — every finite Galois level of a number field inside an algebraic closure,
+  carrying a primitive `ℓ`-th root of unity, carries the tensor.
+* `flatPrescriptionEP_of_flatTensorEP` — `FlatTensorEP ℓ ⟹ FlatPrescriptionEP ℓ`, via
+  `hasFlatPrescription_of_hasFlatKernelPrescription` directly (no orbit stage).
+* `genericLevelStepEPRoots_of_flatTensorEP hodd` — the step of the ladder over an odd prime.
+
+So the whole climb over an odd `ℓ` now rests on `FlatTensorEP ℓ` alone, an **alternative** to
+`FlatUnitsEP ℓ` (both remain in the build; neither is yet a theorem).
+
+### What is still owed
+
+1. **Invariance.**  `exists_invariant_tensorVal_eq_orbitRadicand` (`CFT/PoitouTate/OrdInvariant.lean`)
+   plus `exists_operatorHom_res_cohomology_eq_zero` should supply it, with the quantifier wrinkle of
+   gotcha 3987 (`N` must be announced before the coefficient rep is known) still to be sorted out.
+2. **The local conditions at `Tz`.**  The tensor being a local `ℓ`-th power at the places carrying
+   the `D ν` is a genuine Poitou–Tate/Selmer cokernel obstruction; SW kill the identical obstruction
+   by shrinking (sw.txt ~1506), and `hasFlatKernelPrescription_of_tensorPlaces` already takes the
+   `hlevel` shrinking hypothesis that this will be spent through.
+3. **`ℓ = 2`.**  `GenericLevelStepEPRoots 2` is untouched; every flat and sharp brick assumes
+   `2 < ℓ`.
