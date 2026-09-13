@@ -23666,3 +23666,129 @@ The odd-`ℓ` gap is now exactly two named arithmetic statements:
 
 plus `FlatReachableEP ℓ` (group-theoretic, deliverable F2) and the `ℓ = 2` case
 `GenericLevelStepEPRoots 2`.
+
+---
+
+## §1.113 The line of an invariant uniformiser, and what `horth` really asks (2026-09-13)
+
+### (a) The problem the free orbits caused
+
+`exists_units_named_prescribed` (`CFT/PoitouTate/NamedUnits.lean:90`) asks the prescribed classes at
+a named place to lie on a **line** `D v ≤ localClasses v p`, with the equivariance
+
+```lean
+hDgal : ∀ (σ : Gal(K/k)) (v), Subgroup.zpowers (D (σ • v))
+          = Subgroup.zpowers (localClassesGalEquiv σ v p (D v))
+```
+
+`orbitLine` (`CFT/PoitouTate/OrbitLine.lean`) builds such a `D` by *naming* the line at one place of
+an orbit by a global unit and *spreading* it.  Spreading needs the orbit to be **free**: if
+`σ • w = τ • w` with `σ ≠ τ` then the two transports must name the same line at `σ • w`, which
+`orbitLine` has no way to arrange.  That is why `HasPrescribedUnits` (`KernelPlaces.lean:124`)
+carries the clause `∀ μ ν σ, σ ≠ 1 → σ • w μ ≠ w ν`.
+
+`HasFlatDiagonalUnits` (`FlatDiagonalUnits.lean:85`) asks for much less: only that the named places
+lie in **distinct orbits** (`∀ μ ν, μ ≠ ν → ∀ σ, σ • w μ ≠ w ν`), with nothing said about the
+stabiliser of a named place.  So `orbitLine` cannot be used, and the gap between the two clauses was
+the last purely *formal* obstruction between the prescription and the diagonal.
+
+### (b) The fix: do not spread anything
+
+`CFT/PoitouTate/UniformizerLine.lean` (commit `0890323`) supplies `uniformizerLine k n v`, the class
+mod `n`-th powers of the value at `v` of the Galois-invariant section `uniformizerSection k K` of
+the family of local unit groups.  It is a line at **every** place at once, so:
+
+* `uniformizerLine_zpowers_smul` is `hDgal` **for free** — no freeness, no orbit bookkeeping;
+* `unitValModQuot_uniformizerLine` says its valuation is `1` at every
+  `v ∈ fixedUniformizerPlaces k K`, hence
+  `not_dvd_placeValue_of_localClassHom_eq_uniformizerLine`: a unit whose class at such a `v` is the
+  line is **ramified** at `v`, which is the other half of what the diagonal wants;
+* `mem_fixedUniformizerPlaces_of_isUnramifiedAt`: every place unramified over the base is in
+  `fixedUniformizerPlaces`, so the side condition is nearly vacuous.
+
+`Solvable/Shafarevich/FlatUniformizerUnits.lean` (new) carries this through:
+
+* `exists_units_uniformizerLine_named` — the engine call with `D := uniformizerLine k ℓ`, modelled
+  line-for-line on `hasPrescribedUnits` (`KernelArith.lean:187`), with `Function.Injective w`
+  *derived* from `hdist` at `σ = 1` and **no freeness hypothesis at all**;
+* `exists_units_uniformizerLine_diagonal` — the five clauses of `HasFlatDiagonalUnits`'s body,
+  instantiated at `d := Fintype.card ι`, `c μ q := if e μ = q then uniformizerLine k ℓ (w μ) else 1`.
+
+Note that **reachability is not used** on this route: `orbitLine` needs a global unit to name the
+line, `uniformizerLine` does not.
+
+Two hypotheses remain on `exists_units_uniformizerLine_diagonal`:
+`hfix : ∀ μ, w μ ∈ fixedUniformizerPlaces k ↥K` (nearly free) and
+`hnorth : IsNamedOrthogonal ℓ K hres hζ E w c` (`KernelPlaces.lean:82`) — the reciprocity residue.
+
+### (c) What `horth` actually asks — the computation
+
+Write `𝒰 := { u ∈ Kˣ : u ∈ (Eˣ)^ℓ } / (Kˣ)^ℓ`, a **finite** group (it is the Kummer group of the
+maximal elementary-abelian-`ℓ` subextension of `E/K`).  Then `horth`, for a prescription supported
+on the named places `Tp` with classes `c`, says
+
+> for every `u ∈ 𝒰` which is a local `ℓ`-th power at every infinite place,
+> `∏_{μ} (u, c μ)_{w μ} = 1`.
+
+Three facts pin this down:
+
+1. The quantifier over `Tn ⊇ Tp` is **vacuous**: `spreadClasses Tp cl t` vanishes off `Tp`, so the
+   product collapses to `Tp` (`piPairing_eq_of_support`, `KernelArith.lean:150`).
+2. **Auxiliary places completely decomposed in `E` contribute nothing**: there `u ∈ (Eˣ)^ℓ ⊆
+   (K_q^×)^ℓ`, so the symbol is `1`.  No amount of extra split places can repair a defect.
+3. **Unit lines at places unramified in `E` contribute nothing** either: the tame symbol of two
+   units is `1`, and `ℓ ∣ ord_v(u)` for `u ∈ 𝒰` at places unramified in `E`.
+
+So the only genuinely free local directions are the wild places `v ∣ ℓ` — and `hcln` **forbids**
+prescribing anything there (`cl w t = 1` unless `FinitePlace.mk w (ℓ : K) = 1`).
+
+### (d) With `D := uniformizerLine`, `horth` is the Scholz condition
+
+At a single named place `w`, tame and `p` odd, `(π, π)_w = 1`, so the orthogonal complement of
+`⟨π_w⟩` in `K_w^×/ℓ` is `⟨π_w⟩` itself.  Hence
+
+> `horth` at `w` ⟺ every `u ∈ 𝒰` is trivial in `K_w^×/(K_w^×)^ℓ⟨π_w⟩`
+> ⟺ `w` splits completely in the maximal elementary-abelian-`ℓ` part of `E/K` (up to `⟨π_w⟩`).
+
+More generally, for **any** equivariant line `D_w`, `horth` holds by construction iff
+`D_w ⊆ 𝒰_w^⊥`, and `𝒰_w^⊥` contains a **ramified** class iff no `u ∈ 𝒰` has a nontrivial *unit*
+class at `w` — i.e. iff `w` is never inert in a Kummer subextension of `E/K`.  That is exactly the
+classical **Scholz condition** (decomposition group `=` inertia group at `w` in `E/K`), which is
+Schmidt–Wingberg's induction invariant.
+
+### (e) …and the named places actually arising fail it
+
+`exists_confinedRamifiedHom_lift_of_hasFlatPrescription` (`LevelFlatTwist.lean:198`) produces the
+named primes at `:221` by
+
+```lean
+obtain ⟨s, Pr, hPrp, hPrbot, hfam⟩ := exists_ramified_family (isOpenNormal_ker_of_isSmoothHom hfsm)
+```
+
+i.e. they are the primes where the **arbitrary given lift `f`** ramifies over `Φ`.  Nothing about
+them can be chosen; in particular they are *ramified* in the layer field `E` of the lift — the exact
+opposite of "completely decomposed in `E`".  So `horth` is **not** automatic there.
+
+### (f) Why this is not a refutation of `HasFlatDiagonalUnits`
+
+`HasFlatDiagonalUnits` constrains only `ord_{w μ}(Z μ)` at the named places and leaves `Z μ`
+completely unconstrained at `v ∣ ℓ`; the product formula can therefore be balanced at the wild
+places.  The obstruction above is an artefact of the **engine**, which pins the class of `z` to `1`
+on the whole auxiliary set `Ts` (containing `v ∣ ℓ`, `Tram` and the class-group generators) instead
+of merely demanding `ord ≡ 0 mod ℓ` there.  The residual defect is a genuine `Ш¹`, and Schmidt–
+Wingberg pay for it with the **shrinking** (Props 6/7) — which the current architecture spends
+*before* the units are requested (§1.109(a)).
+
+Two ways forward, both real:
+
+1. **Relax the engine**: let `exists_units_named_prescribed` demand only `(ℓ : ℤ) ∣ ord_v(z)` at the
+   auxiliary places `Ts`, rather than `localClassHom v ℓ z = 1`.  That frees the wild places and
+   makes the product formula balanceable; it is a change inside `NamedUnits.lean`.
+2. **Carry the shrinking down** to the unit-existence layer, so the named places can be moved before
+   the units are asked for (this is what SW actually do).
+
+### (g) Status
+
+Root build green at **9984 jobs**, 0 warnings, 0 sorries.  `FlatUniformizerUnits.lean` closes the
+*freeness* gap outright; `hfix` is discharged by unramifiedness; `hnorth` is the one thing left
+between the prescription and `HasFlatDiagonalUnits`, and (c)–(f) say exactly what it costs.
