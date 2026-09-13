@@ -553,6 +553,7 @@ import InverseGalois.CFT.PoitouTate.TwoPlaces
 import InverseGalois.CFT.PoitouTate.TwoPlacesFree
 import InverseGalois.CFT.PoitouTate.TwoPlacesKill
 import InverseGalois.CFT.PoitouTate.TwoPlacesRadical
+import InverseGalois.CFT.PoitouTate.UniformizerLine
 import InverseGalois.CFT.PoitouTate.Unramified
 import InverseGalois.CFT.PrimeProductSquare
 import InverseGalois.CFT.Profinite.CharacterRoot
@@ -7845,6 +7846,15 @@ it that are available here.
   field whose class the generator is avoids that transport altogether**, a place entering the class
   of an element only as an index, and the composition law becomes the associativity of the action
   on the units.
+
+* `InverseGalois.CFT.PoitouTate.UniformizerLine` does the same thing without spreading anything and
+  without asking the orbits to be free.  The family of local unit groups carries a Galois invariant
+  section whose value is a uniformiser at every place carrying one fixed by its decomposition
+  group, and all but finitely many places carry one; **the classes of the values of that section
+  are a line at every place at once**, the line at the image of a place being the image of the line
+  at the place on the nose.  Its valuation is one wherever the section is a uniformiser, so a unit
+  of the number field whose class at such a place is the line there is ramified there, which is the
+  other half of what a prescription ramified at a place asks.
 
 * `InverseGalois.CFT.PoitouTate.ClosingChain` closes the construction.  The number wanted is a
   product of two members of a sequence of units of the extension, each ramified at a single place
