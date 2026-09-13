@@ -134,17 +134,20 @@ places carrying a diagonal of units described by local conditions.**
 The same demand as before, with the surjectivity of the vector of orders replaced by the family of
 units which produces it: one unit per chosen place, a local power where the radicand must stay
 inert and at the other chosen places, of order divisible by the exponent outside the places the
-ramification is allowed at, and of order at its own place prime to the exponent. -/
+ramification is allowed at, and of order at its own place prime to the exponent.
+
+The level is asked to carry a primitive root of unity of the exponent, which is what the level the
+climb reads the demand at carries anyway. -/
 def ConfinedDiagonalPlacesEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
   ∀ (k Ω : Type) [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω]
       (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
-      HasConfinedDiagonalPlaces ℓ K
+      (∃ ζ : ↥K, IsPrimitiveRoot ζ ℓ) → HasConfinedDiagonalPlaces ℓ K
 
 /-- **The demand in the local form implies the one the flat step consumes.** -/
 theorem confinedRadicandPlacesEP_of_confinedDiagonalPlacesEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
     (h : ConfinedDiagonalPlacesEP ℓ) : ConfinedRadicandPlacesEP ℓ := by
-  intro k Ω _ _ _ _ _ _ K _ _ _
-  exact hasConfinedRadicandPlaces_of_diagonal (h k Ω K)
+  intro k Ω _ _ _ _ _ _ K _ _ _ hζ
+  exact hasConfinedRadicandPlaces_of_diagonal (h k Ω K hζ)
 
 /-- **The step of the ladder over an odd prime, in exchange for a diagonal of units and a level
 reaching every place** — the arithmetic of the climb resting on the existence of finitely many units

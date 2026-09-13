@@ -24077,3 +24077,150 @@ The same bookkeeping as §1.115(d), now with a precise target.  Nothing in the l
 `HasFlatPrescription` / `HasFlatOrbitPrescription` / `CoversRamified` /
 `HasConfinedDiagonalPlaces` / `HasFlatDiagonalUnits` is precisely the invariant that each named
 place satisfies it.  The reciprocity side of `FlatDiagonalUnitsEP` is finished.
+
+## §1.117 The Scholz condition is a demand on the *tower*, not on the places (2026-09-13)
+
+§1.116 built the sharp line and reduced the reciprocity residue of the arithmetic input to
+`IsScholzPlace ℓ K E w`, the classical alternative
+
+* (i) `levelPowerClasses ℓ K E w = ⊥` and `w ∈ fixedUniformizerPlaces k ↥K`, or
+* (ii) `levelPowerClasses ℓ K E w = Subgroup.zpowers d` with `d ∉ localUnramified w ℓ`.
+
+This section closes the arithmetic leaf against that alternative, records what the alternative
+really says, and — the point of the section — records that it can **not** be asked of an arbitrary
+place, so that the remaining work is a demand on the tower rather than one more statement about the
+units of a number field.
+
+### (a) The root of unity was already being carried, and was being thrown away
+
+`InvariantUnitTensorEP ℓ` (`Shafarevich/FlatTensorStep.lean:165`) reads
+
+```lean
+(∃ ζ : ↥K, IsPrimitiveRoot ζ ℓ) → HasInvariantUnitTensor ℓ K
+```
+
+— the climb only ever reads the demand at a level containing `μ_ℓ`, and says so.  But
+`invariantUnitTensorEP_of_confinedRadicandPlacesEP` simply dropped the hypothesis, and so did every
+def below it.  Restoring it costs nothing at all above `InvariantUnitTensorEP` and makes four
+hypotheses strictly weaker:
+
+```
+ConfinedRadicandPlacesEP ℓ   ConfinedDiagonalPlacesEP ℓ   FlatDiagonalUnitsEP ℓ   ConfinedObstructionEP ℓ
+```
+
+each of which now reads `(∃ ζ : ↥K, IsPrimitiveRoot ζ ℓ) → …`.  That is what makes a Kummer
+theoretic attack on the arithmetic leaf legal at all: without `ζ_ℓ` in the level there is no
+`localClassPairing`, no power residue symbol and no line.
+
+### (b) The arithmetic leaf, unconditionally
+
+`Shafarevich/ScholzDiagonal.lean` states the arithmetic input with the alternative added as a
+hypothesis at each named place,
+
+```lean
+def HasScholzDiagonalUnits (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω) [NumberField ↥K] : Prop
+```
+
+— the five clauses of `HasFlatDiagonalUnits` under the extra clause
+`(∀ μ : ι, IsScholzPlace ℓ K E (w μ))` — and proves it outright:
+
+```lean
+theorem hasScholzDiagonalUnits {ℓ : ℕ} [NeZero ℓ] (hℓ : ℓ.Prime) (hodd : 2 < ℓ)
+    (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [IsGalois k ↥K] [NumberField ↥K]
+    (hres : ∀ v, HasResidueChar (v.adicCompletion ↥K) (Pc v) (Ec v))
+    {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ) : HasScholzDiagonalUnits ℓ K
+```
+
+`hres` is free (`exists_hasResidueChar_adicCompletion`, `CFT/Local/AdicHerbrand.lean:79`, plus
+`choose`), `hζ` is what (a) restored, and `hℓ`/`hodd` are the standing hypotheses of the odd rung.
+So **the whole arithmetic half of the flat step is discharged**, and what is left of it is the
+alternative alone.
+
+### (c) What the alternative says
+
+Let `Δ_E ⊆ K^× / (K^×)^ℓ` be the radicands the auxiliary field absorbs, i.e. the image of
+`levelPowerUnits ℓ K E = K^× ∩ (E^×)^ℓ`.  Since `ζ_ℓ ∈ K`, Kummer theory identifies `Δ_E` with the
+dual of the maximal elementary abelian quotient of `Gal(E/K)`; in particular `Δ_E ≠ 1` as soon as
+`E/K` has a quotient of order `ℓ`, which it always does here, `E` containing the field the lift cuts
+out and that being an `ℓ`-extension of `K`.
+
+At a place `w ∤ ℓ` of a level containing `μ_ℓ` the group of local classes is `(ℤ/ℓ)²` — a
+uniformiser coordinate and a unit coordinate — and `localUnramified w ℓ` is the unit coordinate.  So
+the alternative reads, in terms of the completion:
+
+* (i) holds iff **`w` splits completely in the elementary abelian part of `E/K`** (every radicand is
+  an `ℓ`-th power in `K_w`), the uniformiser clause being the naming of the line;
+* (ii) holds iff **`E/K` is cyclically and ramifiedly generated at `w`**: the local image of `Δ_E`
+  is a line containing a class of valuation prime to `ℓ`.
+
+That is exactly Scholz's condition on the primes of a Scholz–Reichardt tower, and Schmidt–Wingberg's
+(i) ∨ (ii) for the primes of theirs.
+
+### (d) The blanket form is FALSE, and the counterexample is two lines
+
+It is tempting to ask the alternative of every place at once —
+
+```lean
+def HasScholzPlaces (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
+  ∀ E, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
+    ∀ w, (ℓ : 𝓞 ↥K) ∉ w.asIdeal → IsReachablePlace ℓ K E w → IsScholzPlace ℓ K E w
+```
+
+— and to make an `EP` of it.  **That statement is false**, by the same kind of argument that killed
+`DecomposedUnitsEP` (§gotcha 4187) and `FlatUnitsEP` (§gotcha 4193).  Take
+
+```
+k = K = ℚ(ζ₃)   (class number one, no unramified abelian extensions),   ℓ = 3
+```
+
+pick a place `w ∤ 3` with residue field `𝔽_q`, `q ≡ 1 mod 3`, write `w = (π)` — principal, the class
+number being one — and pick `b ∈ K^×` prime to `w` whose residue is not a cube.  Put
+`E = K(π^{1/3}, b^{1/3})`, which is finite and Galois over `k` because `ζ₃ ∈ k`.  Then
+
+* `w` is reachable in `E`: the unit `u = π` has `ord_w u = 1` and `ord_v u = 0` for every other `v`,
+  so the second clause of `IsReachablePlace` is vacuous;
+* `levelPowerClasses 3 K E w` contains the classes of `π` and of `b`, which generate the whole of
+  `K_w^× / (K_w^×)³ ≅ (ℤ/3)²`.
+
+So it is neither `⊥` nor cyclic and the alternative fails at `w`.  Hence no `ScholzPlacesEP`, and no
+route to `GenericLevelStepEPRoots` through one; the declarations were deleted rather than left in
+the tree as a trap.  `HasScholzPlaces` itself is kept, as the hypothesis of the corollary
+`hasFlatDiagonalUnits_of_hasScholzPlaces`, and is honest there: it is a demand on a level, satisfied
+by some and not by others.
+
+### (e) Where the named places come from, and what has to change
+
+The named places are **not** chosen by the arithmetic.  They arrive from
+
+```lean
+obtain ⟨s, Pr, hPrp, hPrbot, hfam⟩ := exists_ramified_family (isOpenNormal_ker_of_isSmoothHom hfsm)
+```
+
+at `Shafarevich/LevelFlatTwist.lean:221`, inside
+`exists_confinedRamifiedHom_lift_of_hasFlatPrescription`: they are one prime from each orbit at
+which an **arbitrary** lift `f` of the solution below ramifies, and the prescription exists to
+*unramify* the corrected lift there.  Nothing in the present architecture lets a Chebotarev argument
+move them.
+
+So the alternative cannot be bought at the place where it is consumed, and the two ways out are:
+
+1. **Choose the lift.**  `f` is produced by surjectivity of the layer extension and is otherwise
+   free; if it were chosen with its new ramification confined to places the auxiliary field is
+   locally trivial or cyclically ramified at, the alternative would hold at every named place by
+   construction.  This is Schmidt–Wingberg's Step 1 read backwards.
+2. **Thread the alternative as an induction invariant.**  Add `IsScholzPlace ℓ K E (w μ)` next to
+   `IsReachablePlace ℓ K E (w μ)` in each of the nine defs that carry the named places —
+   `FlatPlaces.lean:143`, `FlatTensor.lean:164`, `FlatInvariant.lean:158`, `FlatNorm.lean:227,261,300`,
+   `FlatTensorConfined.lean:125`, `FlatTensorDiagonal.lean:83`, `FlatDiagonalUnits.lean:91` — so that
+   `HasFlatDiagonalUnits` becomes `HasScholzDiagonalUnits`, i.e. a **theorem**, and the demand
+   surfaces at `exists_confinedRamifiedHom_lift_of_hasFlatPrescription` as an explicit hypothesis
+   about the tower being built, which is where Schmidt–Wingberg keep it.
+
+Either way `FlatDiagonalUnitsEP` stops being an open arithmetic hypothesis.  The open list for an
+odd rung is then the obstruction (`ConfinedObstructionEP`, the genuine Poitou–Tate content), the
+reaching level (`FlatReachableEP`, i.e. `E ∩ H = K`), and the Scholz invariant of the tower.
+
+### (f) Bookkeeping
+
+`ScholzLine.lean` (§1.116) and `ScholzDiagonal.lean` are in the default build; root build green at
+9987 jobs, 0 warnings, 0 sorries, axioms unchanged.

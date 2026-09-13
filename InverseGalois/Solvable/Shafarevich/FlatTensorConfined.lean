@@ -270,17 +270,20 @@ For every finite set of places a local power is asked at, every finite set of na
 orbits avoid it — reachable in the bigger level and prime to the exponent — and every target killed
 by the exponent, a finite stable set of places containing the named ones is asked for on which the
 vector of orders of the confined units is onto and over which a confined radicand with invariant
-divisor may be corrected to an invariant one with the same divisor. -/
+divisor may be corrected to an invariant one with the same divisor.
+
+The level is asked to carry a primitive root of unity of the exponent, which is what the level the
+climb reads the demand at carries anyway. -/
 def ConfinedRadicandPlacesEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
   ∀ (k Ω : Type) [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω]
       (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
-      HasConfinedRadicandPlaces ℓ K
+      (∃ ζ : ↥K, IsPrimitiveRoot ζ ℓ) → HasConfinedRadicandPlaces ℓ K
 
 /-- **The choice of places buys the invariant tensor of units, level by level.** -/
 theorem invariantUnitTensorEP_of_confinedRadicandPlacesEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
     (h : ConfinedRadicandPlacesEP ℓ) : InvariantUnitTensorEP ℓ := by
-  intro k Ω _ _ _ _ _ _ K _ _ _ _
-  exact hasInvariantUnitTensor_of_confinedRadicandPlaces (h k Ω K)
+  intro k Ω _ _ _ _ _ _ K _ _ _ hζ
+  exact hasInvariantUnitTensor_of_confinedRadicandPlaces (h k Ω K hζ)
 
 /-- **The step of the ladder over an odd prime, in exchange for a choice of places and a level
 reaching every place** — the arithmetic of the climb resting on the choice of a finite set of

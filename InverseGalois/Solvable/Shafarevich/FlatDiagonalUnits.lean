@@ -283,28 +283,28 @@ open InverseGalois.CFT InverseGalois.Shafarevich
 
 /-! ### The two halves, made of every level -/
 
-/-- **Every finite Galois level of a number field inside an algebraic closure carries the units the
-prescription asks for at finitely many places lying in distinct orbits**, with no equivariance asked
-of them. -/
+/-- **Every finite Galois level of a number field inside an algebraic closure carrying a primitive
+root of unity of the exponent carries the units the prescription asks for at finitely many places
+lying in distinct orbits**, with no equivariance asked of them. -/
 def FlatDiagonalUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
   ∀ (k Ω : Type) [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω]
       (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
-      HasFlatDiagonalUnits ℓ K
+      (∃ ζ : ↥K, IsPrimitiveRoot ζ ℓ) → HasFlatDiagonalUnits ℓ K
 
-/-- **Every finite Galois level of a number field inside an algebraic closure carries no
-obstruction to correcting an invariant divisor of confined units to an invariant radicand**, over
-the hull of the named places. -/
+/-- **Every finite Galois level of a number field inside an algebraic closure carrying a primitive
+root of unity of the exponent carries no obstruction to correcting an invariant divisor of confined
+units to an invariant radicand**, over the hull of the named places. -/
 def ConfinedObstructionEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
   ∀ (k Ω : Type) [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω]
       (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
-      HasConfinedObstruction ℓ K
+      (∃ ζ : ↥K, IsPrimitiveRoot ζ ℓ) → HasConfinedObstruction ℓ K
 
 /-- **The units and the obstruction together buy the choice of places.** -/
 theorem confinedDiagonalPlacesEP_of_flatDiagonalUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
     (hunits : FlatDiagonalUnitsEP ℓ) (hobs : ConfinedObstructionEP ℓ) :
     ConfinedDiagonalPlacesEP ℓ := by
-  intro k Ω _ _ _ _ _ _ K _ _ _
-  exact hasConfinedDiagonalPlaces_of_flatDiagonalUnits (hunits k Ω K) (hobs k Ω K)
+  intro k Ω _ _ _ _ _ _ K _ _ _ hζ
+  exact hasConfinedDiagonalPlaces_of_flatDiagonalUnits (hunits k Ω K hζ) (hobs k Ω K hζ)
 
 /-- **The step of the ladder over an odd prime, in exchange for the units, the obstruction and a
 level reaching every place.** -/
