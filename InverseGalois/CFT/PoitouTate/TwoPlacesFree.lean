@@ -75,8 +75,8 @@ theorem exists_two_places_sUnit_class_eq_of_split (hp : p.Prime) (hodd : 2 < p)
       ∃ w : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) w = v ∧
         stabilizer Gal(↥Ω/k) w = ⊥)
     (hyunr : ∀ v ∈ T, v ∉ Tr → localClassHom v p y ∈ localUnramified v p)
-    (hyfree : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
-      localClassHom (σ • v) p y = 1 ∨ localClassHom v p y = 1)
+    (hyline : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
+      OnOneLineGal (fun w => localClassHom w p y) σ v)
     (hyp : ∀ v ∈ T, Pc v ∣ p → localClassHom v p y = 1) :
     ∃ Q R : HeightOneSpectrum (𝓞 K), Q ∉ T ∧ R ∉ T ∧
       (∃ w : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) w = Q ∧
@@ -185,7 +185,7 @@ theorem exists_two_places_sUnit_class_eq_of_split (hp : p.Prime) (hodd : 2 < p)
         not_dvd_of_finitePlace_natCast_eq_one (hres v) hone hdvd)) (hXE v h)
   obtain ⟨Q, R, hQT, hRT, hQspl, hRspl, hQR, hQstab, hRstab, z, hzT, hzunr, hzQ, hzR, hzQc,
     hzRc⟩ := exists_two_places_sUnit_class_eq (Ω := Ω) hp hodd hζ hres hT'stable hTrT' hTrstable
-      hT'S hSstable hSsplit hpT' hreprS hyS hyunr' hyfree hyp'
+      hT'S hSstable hSsplit hpT' hreprS hyS hyunr' hyline hyp'
   exact ⟨Q, R, fun hc => hQT ((hT' Q).2 (Or.inl hc)), fun hc => hRT ((hT' R).2 (Or.inl hc)),
     hQspl, hRspl, hQR, hQstab, hRstab, z, fun v hv => hzT v ((hT' v).2 (Or.inl hv)),
     hzunr, hzQ, hzR, hzQc, hzRc⟩

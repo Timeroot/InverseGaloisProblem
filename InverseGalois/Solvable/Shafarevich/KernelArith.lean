@@ -323,13 +323,13 @@ theorem hasPrescribedUnits {ℓ : ℕ} [NeZero ℓ] (hℓ : ℓ.Prime) (hodd : 2
       exact _root_.map_one _
   obtain ⟨z, hz1, hz2, hz3, hz4⟩ := exists_units_named_prescribed (k := k) (A := Ω) (K := ↥K)
     (Ω := E) (p := ℓ) hℓ hodd hζ hres (Tp := Tp) (Tz := Tz) (Tram := Tram) hdisj hTram
-    (cl := cl) hfree hcln (D := orbitLine k Tp a ℓ) (orbitLine_zpowers_smul hfree a) hDcl horth d
+    (cl := cl) hcln (D := orbitLine k Tp a ℓ) (orbitLine_zpowers_smul hfree a) hDcl horth d
   refine ⟨fun q => z (q : ℕ), fun q v hv => hz1 q q.isLt v hv, ?_, ?_, ?_⟩
   · intro μ q
     rw [hz2 q q.isLt ⟨w μ, hmemTp μ⟩]
     exact hclval μ (hmemTp μ) q
   · intro μ σ hσ q
-    exact hz3 q q.isLt σ ⟨w μ, hmemTp μ⟩ hσ
+    exact hz3 q q.isLt σ ⟨w μ, hmemTp μ⟩ (hfree σ hσ _ (hmemTp μ))
   · intro v hv
     obtain ⟨q, hq⟩ := hv
     rcases hz4 v ⟨q, q.isLt, hq⟩ with ⟨σ, x, hvx⟩ | ⟨⟨W', hW'u, hW'st⟩, ⟨q₀, hq₀d, hq₀⟩, hconj⟩

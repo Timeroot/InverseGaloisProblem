@@ -60,9 +60,9 @@ variable {k A K : Type} [Field k] [NumberField k] [Field A] [Algebra k A] [Norma
 
 variable (Ω) in
 /-- **A naming has a family of units carrying it, trivial on a prescribed set of places disjoint
-from the named ones, dying at every proper conjugate of a named place, and ramified only over the
-named places or at places completely split in the auxiliary field with a single coordinate
-surviving.**
+from the named ones, dying at every conjugate of a named place which is not itself named, and
+ramified only over the named places or at places completely split in the auxiliary field with a
+single coordinate surviving.**
 
 The two auxiliary sets of the two-place construction are chosen for it.  The distinguished part,
 outside which the units of the family are unramified away from their own pair of places, is the
@@ -80,7 +80,6 @@ theorem exists_units_named_prescribed (hp : p.Prime) (hodd : 2 < p) {ζ : K}
     (hram : ∀ v ∉ Tram, ∃ W : HeightOneSpectrum (𝓞 ↥Ω),
       primeUnder (𝓞 K) W = v ∧ ramIdx (𝓞 K) W = 1)
     {cl : (w : ↥Tp) → ℕ → localClasses (w : HeightOneSpectrum (𝓞 K)) p}
-    (hclfree : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ w ∈ Tp, σ • w ∉ Tp)
     (hcln : ∀ (w : ↥Tp) (t : ℕ),
       FinitePlace.mk (w : HeightOneSpectrum (𝓞 K)) ((p : ℕ) : K) ≠ 1 → cl w t = 1)
     {D : (v : HeightOneSpectrum (𝓞 K)) → localClasses v p}
@@ -98,7 +97,7 @@ theorem exists_units_named_prescribed (hp : p.Prime) (hodd : 2 < p) {ζ : K}
     ∃ z : ℕ → Kˣ,
       (∀ q < d, ∀ v ∈ Tz, localClassHom v p (z q) = 1) ∧
       (∀ q < d, ∀ w : ↥Tp, localClassHom (w : HeightOneSpectrum (𝓞 K)) p (z q) = cl w q) ∧
-      (∀ q < d, ∀ (σ : Gal(K/k)) (w : ↥Tp), σ ≠ 1 →
+      (∀ q < d, ∀ (σ : Gal(K/k)) (w : ↥Tp), σ • (w : HeightOneSpectrum (𝓞 K)) ∉ Tp →
         localClassHom (σ • (w : HeightOneSpectrum (𝓞 K))) p (z q) = 1) ∧
       ∀ v : HeightOneSpectrum (𝓞 K), (∃ q < d, ¬ (p : ℤ) ∣ placeValue v (z q)) →
         (∃ (σ : Gal(K/k)) (w : ↥Tp), v = σ • (w : HeightOneSpectrum (𝓞 K))) ∨
@@ -133,7 +132,7 @@ theorem exists_units_named_prescribed (hp : p.Prime) (hodd : 2 < p) {ζ : K}
   have hTramTs : Tram ⊆ Ts := fun v hv => hTs0 (Finset.mem_coe.2 (Finset.mem_union_right _ hv))
   obtain ⟨Tn, hTsTn, -, S, Q, R, z, hfam⟩ :=
     exists_isTwoPlaceFamily_named_of_orthogonal Ω hp hodd hζ hres hTpTr hTrTs hTrst hTsst hpTs
-      hrepr hclfree hcln hDgal hDcl
+      hrepr hcln hDgal hDcl
       (fun Tn hTn => horth Tn fun v hv => hTn (hTrTs (hTpTr hv)))
       (fun v hv => hram v fun hc => hv (hTramTs hc)) d
   refine ⟨z, ?_, ?_, ?_, ?_⟩
@@ -143,10 +142,9 @@ theorem exists_units_named_prescribed (hp : p.Prime) (hodd : 2 < p) {ζ : K}
   · intro q hq w
     rw [hfam.prescribed q hq (w : HeightOneSpectrum (𝓞 K)) (hTsTn (hTrTs (hTpTr w.2))),
       spreadClasses_of_mem w.2 q]
-  · intro q hq σ w hσ
+  · intro q hq σ w hnm
     have hmem : σ • (w : HeightOneSpectrum (𝓞 K)) ∈ Tn := hTsTn (hTrTs (hTrst σ _ (hTpTr w.2)))
-    rw [hfam.prescribed q hq _ hmem,
-      spreadClasses_of_notMem (hclfree σ hσ (w : HeightOneSpectrum (𝓞 K)) w.2) q]
+    rw [hfam.prescribed q hq _ hmem, spreadClasses_of_notMem hnm q]
   · rintro v ⟨q, hqd, hq⟩
     by_cases hvTr : v ∈ Tr
     · obtain ⟨σ, w, hw⟩ := (hmemTr v).1 hvTr

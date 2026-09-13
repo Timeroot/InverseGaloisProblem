@@ -205,6 +205,69 @@ theorem map_localUnramified_localClassesGalEquiv (σ : Gal(K/k))
     rw [← localClassesGalEquiv_mem_localUnramified_iff σ v, MulEquiv.apply_symm_apply]
     exact hy
 
+/-! ### Prescriptions lying on one line -/
+
+/-- **A prescription at the image of a place and the prescription carried there from the place
+below lie on one line.**
+
+The reciprocity law the closing chain runs on compares the class a prescription names at a place
+with the class it names at the place below carried up by the automorphism, and all it asks of the
+two is that a single class have both among its powers.  Vanishing of either of them is the crudest
+way for that to happen, and a prescription confined to the powers of a family of classes carried
+along by the automorphisms is the useful one. -/
+def OnOneLineGal (c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n) (σ : Gal(K/k))
+    (v : HeightOneSpectrum (𝓞 K)) : Prop :=
+  ∃ d : localClasses (σ • v) n, c (σ • v) ∈ Subgroup.zpowers d ∧
+    localClassesGalEquiv σ v n (c v) ∈ Subgroup.zpowers d
+
+/-- A prescription vanishing at the image of a place lies on one line there. -/
+theorem onOneLineGal_of_smul_eq_one {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n}
+    {σ : Gal(K/k)} {v : HeightOneSpectrum (𝓞 K)} (h : c (σ • v) = 1) : OnOneLineGal c σ v :=
+  ⟨localClassesGalEquiv σ v n (c v), by rw [h]; exact one_mem _, Subgroup.mem_zpowers _⟩
+
+/-- A prescription vanishing at a place lies on one line there. -/
+theorem onOneLineGal_of_eq_one {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n}
+    {σ : Gal(K/k)} {v : HeightOneSpectrum (𝓞 K)} (h : c v = 1) : OnOneLineGal c σ v :=
+  ⟨c (σ • v), Subgroup.mem_zpowers _, by rw [h, _root_.map_one]; exact one_mem _⟩
+
+/-- **A prescription vanishing at a place or at its image lies on one line there** — the crude
+freeness the closing chain used to be run with. -/
+theorem onOneLineGal_of_eq_one_or {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n}
+    {σ : Gal(K/k)} {v : HeightOneSpectrum (𝓞 K)} (h : c (σ • v) = 1 ∨ c v = 1) :
+    OnOneLineGal c σ v :=
+  h.elim onOneLineGal_of_smul_eq_one onOneLineGal_of_eq_one
+
+/-- **A prescription confined to the powers of a family of classes carried along by the
+automorphisms lies on one line at every place.**
+
+This is what a prescription spread over an orbit from a single place supplies: the line at the
+image of a place is the line at the place carried up by the automorphism, and both classes
+compared sit on it. -/
+theorem onOneLineGal_of_mem_zpowers {c D : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n}
+    {σ : Gal(K/k)} {v : HeightOneSpectrum (𝓞 K)}
+    (hD : Subgroup.zpowers (D (σ • v)) = Subgroup.zpowers (localClassesGalEquiv σ v n (D v)))
+    (hc : ∀ w : HeightOneSpectrum (𝓞 K), c w ∈ Subgroup.zpowers (D w)) : OnOneLineGal c σ v := by
+  refine ⟨D (σ • v), hc _, ?_⟩
+  rw [hD]
+  obtain ⟨m, hm⟩ := hc v
+  exact ⟨m, by rw [← hm, _root_.map_zpow]⟩
+
+/-- A power of a prescription lying on one line lies on one line. -/
+theorem OnOneLineGal.pow {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n} {σ : Gal(K/k)}
+    {v : HeightOneSpectrum (𝓞 K)} (h : OnOneLineGal c σ v) (m : ℕ) :
+    OnOneLineGal (fun w => c w ^ m) σ v := by
+  obtain ⟨d, h₁, h₂⟩ := h
+  exact ⟨d, pow_mem h₁ m, by rw [_root_.map_pow]; exact pow_mem h₂ m⟩
+
+/-- The line the classes of a unit and of its image lie on, read off the units themselves. -/
+theorem onOneLineGal_localClassHom_iff {g : Kˣ} {σ : Gal(K/k)}
+    {v : HeightOneSpectrum (𝓞 K)} :
+    OnOneLineGal (fun w => localClassHom w n g) σ v ↔
+      ∃ d : localClasses (σ • v) n, localClassHom (σ • v) n g ∈ Subgroup.zpowers d ∧
+        localClassHom (σ • v) n (galUnits σ g) ∈ Subgroup.zpowers d := by
+  rw [OnOneLineGal]
+  simp only [localClassesGalEquiv_localClassHom]
+
 end GaloisAction
 
 end InverseGalois.CFT

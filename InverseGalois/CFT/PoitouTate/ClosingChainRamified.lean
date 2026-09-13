@@ -188,12 +188,17 @@ theorem galUnits_one_apply (a : Kˣ) : galUnits (1 : Gal(K/k)) a = a :=
   Units.ext (by rw [coe_galUnits_apply, AlgEquiv.one_apply])
 
 omit [NeZero n] in
-/-- **The classes compared by the closing chain lie on one line** when the prescription carried by
-the two units is supported at no more than one place of each orbit of the prescribed set. -/
+/-- **The classes compared by the closing chain lie on one line** when at each place of the
+prescribed set the prescription there and the prescription carried there from the place below do.
+
+Two units carrying the same prescription are compared, and at a place of the prescribed set the
+three classes the chain weighs are the prescription at that place and, twice over, the prescription
+at the place below carried up by the automorphism; so a single line holding the prescription and
+its carried-up companion holds all three. -/
 theorem exists_zpowers_of_prescription
     (hT : ∀ (τ : Gal(K/k)) (u : HeightOneSpectrum (𝓞 K)), u ∈ T → τ • u ∈ T) (σ : Gal(K/k))
     {cT : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n}
-    (hfree : σ ≠ 1 → ∀ v ∈ T, cT (σ • v) = 1 ∨ cT v = 1)
+    (hline : σ ≠ 1 → ∀ v ∈ T, OnOneLineGal cT σ v)
     {a b : Kˣ} (ha : ∀ v ∈ T, localClassHom v n a = cT v)
     (hb : ∀ v ∈ T, localClassHom v n b = cT v) (u : HeightOneSpectrum (𝓞 K)) (hu : u ∈ T) :
     ∃ d : localClasses u n, localClassHom u n a ∈ Subgroup.zpowers d ∧
@@ -212,21 +217,14 @@ theorem exists_zpowers_of_prescription
       rw [← localClassesGalEquiv_localClassHom, ha v hv]
     have hgb : localClassHom (σ • v) n (galUnits σ b) = localClassesGalEquiv σ v n (cT v) := by
       rw [← localClassesGalEquiv_localClassHom, hb v hv]
-    rcases hfree hσ v hv with h | h
-    · refine ⟨localClassesGalEquiv σ v n (cT v), ?_, ?_, ?_⟩
-      · rw [ha _ (hT σ v hv), h]
-        exact one_mem _
-      · rw [hga]
-        exact Subgroup.mem_zpowers _
-      · rw [hgb]
-        exact Subgroup.mem_zpowers _
-    · refine ⟨cT (σ • v), ?_, ?_, ?_⟩
-      · rw [ha _ (hT σ v hv)]
-        exact Subgroup.mem_zpowers _
-      · rw [hga, h, _root_.map_one]
-        exact one_mem _
-      · rw [hgb, h, _root_.map_one]
-        exact one_mem _
+    obtain ⟨d, hd, hdg⟩ := hline hσ v hv
+    refine ⟨d, ?_, ?_, ?_⟩
+    · rw [ha _ (hT σ v hv)]
+      exact hd
+    · rw [hga]
+      exact hdg
+    · rw [hgb]
+      exact hdg
 
 /-- **The closing chain for units ramified on a prescribed set as well**: the product of the two
 units supplied by the pigeonhole principle is trivial at the moved place.  The two applications of

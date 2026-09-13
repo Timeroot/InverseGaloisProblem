@@ -204,11 +204,11 @@ theorem exists_two_places_sUnit_kill (hp : p.Prime) (hodd : 2 < p)
 /-- **Two places all of whose conjugates are completely split in the auxiliary field and kill a
 stable family of radicands, and a unit ramified exactly at them realising a prescription which may
 be ramified where it is carried.**  On a distinguished stable part of the prescribed set the
-prescription is allowed to be ramified, provided it is supported at no more than one place of each
-orbit there and its class lies, together with the classes of the radicands, on one line; away from
-that part the unit produced is unramified.  The compositum the construction runs over is built, as
-in the unramified case, by adjoining a chosen `p`-th root of each radicand to the auxiliary
-field. -/
+prescription is allowed to be ramified, provided its class there lies on one line with the class it
+carries from the place below, and provided its class lies, together with the classes of the
+radicands, on one line; away from that part the unit produced is unramified.  The compositum the
+construction runs over is built, as in the unramified case, by adjoining a chosen `p`-th root of
+each radicand to the auxiliary field. -/
 theorem exists_two_places_sUnit_kill_zpowers (hp : p.Prime) (hodd : 2 < p)
     {ζ : K} (hζ : IsPrimitiveRoot ζ p)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
@@ -222,7 +222,7 @@ theorem exists_two_places_sUnit_kill_zpowers (hp : p.Prime) (hodd : 2 < p)
         Rigidity.RET.ord K v (a : K) = m v)
     {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v p}
     (hcunr : ∀ v ∈ Tn, v ∉ Tr → c v ∈ localUnramified v p)
-    (hcfree : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr, c (σ • v) = 1 ∨ c v = 1)
+    (hcline : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr, OnOneLineGal c σ v)
     {g : Kˣ} (hg : g ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))))
     (hc : ∀ v ∈ T, c v = localClassHom v p g) (hcT : ∀ v ∈ Tn, v ∉ T → c v = 1)
     (hcn : ∀ v ∈ T, FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → c v = 1)
@@ -322,7 +322,7 @@ theorem exists_two_places_sUnit_kill_zpowers (hp : p.Prime) (hodd : 2 < p)
   obtain ⟨Q, R, hQT, hRT, hQspl, hRspl, -, -, hQR, hQstab, hRstab, z, hzT, hzunr, hzQ, hzR,
     hzQc, hzRc⟩ :=
     exists_two_places_sUnit_radical_zpowers (Ω := Ω') (M₁ := ↥Ω) (M₂ := ↥M₂) hp hodd hζ hres hTr
-      hT hTrstable hTstable hpTn hrepr hcunr hcfree hg hc hcT hcn hsup hβpow hβgen hDc hDb hsplit
+      hT hTrstable hTstable hpTn hrepr hcunr hcline hg hc hcT hcn hsup hβpow hβgen hDc hDb hsplit
       hram
   -- their conjugates, and the descent of those to the auxiliary field
   have hconj : ∀ {V : HeightOneSpectrum (𝓞 K)},

@@ -439,7 +439,6 @@ theorem exists_isTwoPlaceFamily_succ_zpowers (hp : p.Prime) (hodd : 2 < p)
         Rigidity.RET.ord K v (a : K) = m v)
     {c : ℕ → (v : HeightOneSpectrum (𝓞 K)) → localClasses v p}
     (hcunr : ∀ (i : ℕ), ∀ v ∈ Tn, v ∉ Tr → c i v ∈ localUnramified v p)
-    (hcfree : ∀ (i : ℕ), ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr, c i (σ • v) = 1 ∨ c i v = 1)
     {g : ℕ → Kˣ} (hg : ∀ i : ℕ, g i ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))))
     (hc : ∀ (i : ℕ), ∀ v ∈ T, c i v = localClassHom v p (g i))
     (hcT : ∀ (i : ℕ), ∀ v ∈ Tn, v ∉ T → c i v = 1)
@@ -518,10 +517,15 @@ theorem exists_isTwoPlaceFamily_succ_zpowers (hp : p.Prime) (hodd : 2 < p)
       exact hcunr d v (hT hvT) hvTr
     · rw [hc'nT v hvT]
       exact one_mem _
-  have hcfree' : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr, c' (σ • v) = 1 ∨ c' v = 1 := by
-    intro σ hσ v hv
-    rw [hc'T v (hTr hv), hc'T (σ • v) (hTr (hTrst σ v hv))]
-    exact hcfree d σ hσ v hv
+  have hDc' : ∀ v : HeightOneSpectrum (𝓞 K), c' v ∈ Subgroup.zpowers (D v) := by
+    intro v
+    by_cases hvT : v ∈ T
+    · rw [hc'T v hvT]
+      exact hDc d v (hT hvT)
+    · rw [hc'nT v hvT]
+      exact one_mem _
+  have hcline' : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr, OnOneLineGal c' σ v :=
+    fun σ _ v _ => onOneLineGal_of_mem_zpowers (hDgal σ v) hDc'
   have hgS : g d ∈ sUnits K (S : Set (HeightOneSpectrum (𝓞 K))) :=
     mem_sUnits.2 fun v hv => mem_sUnits.1 (hg d) v fun hcon => hv (h.subset hcon)
   have hcS : ∀ v ∈ T, c' v = localClassHom v p (g d) := fun v hv => by
@@ -537,7 +541,7 @@ theorem exists_isTwoPlaceFamily_succ_zpowers (hp : p.Prime) (hodd : 2 < p)
   obtain ⟨Qn, Rn, hQTn, hRTn, hQspl, hRspl, hQb, hRb, hQR, hQstab, hRstab, zn, hzT, hzunr, hzQ,
     hzR, hzQc, hzRc⟩ :=
     exists_two_places_sUnit_kill_zpowers (Ω := Ω) (Tr := Tr) (T := T) (Tn := S) hp hodd hζ hres hTr
-      (hT.trans h.subset) hTrst h.stable hpS hreprS hcunr' hcfree' hgS hcS hcTS hcnS hw hstab hDcS
+      (hT.trans h.subset) hTrst h.stable hpS hreprS hcunr' hcline' hgS hcS hcTS hcnS hw hstab hDcS
       hDbS hsplitS hramS
   refine exists_isTwoPlaceFamily_succ_of_two_places (Ω := Ω) hT hTnst hcT h hQTn hRTn hQspl hRspl
     ?_ ?_ hQR hQstab hRstab ?_ ?_ hzunr hzQ hzR hzQc hzRc
@@ -629,7 +633,6 @@ theorem exists_isTwoPlaceFamily_zpowers (hp : p.Prime) (hodd : 2 < p)
         Rigidity.RET.ord K v (a : K) = m v)
     {c : ℕ → (v : HeightOneSpectrum (𝓞 K)) → localClasses v p}
     (hcunr : ∀ (i : ℕ), ∀ v ∈ Tn, v ∉ Tr → c i v ∈ localUnramified v p)
-    (hcfree : ∀ (i : ℕ), ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr, c i (σ • v) = 1 ∨ c i v = 1)
     {g : ℕ → Kˣ} (hg : ∀ i : ℕ, g i ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))))
     (hc : ∀ (i : ℕ), ∀ v ∈ T, c i v = localClassHom v p (g i))
     (hcT : ∀ (i : ℕ), ∀ v ∈ Tn, v ∉ T → c i v = 1)
@@ -672,7 +675,7 @@ theorem exists_isTwoPlaceFamily_zpowers (hp : p.Prime) (hodd : 2 < p)
   | succ n ih =>
     obtain ⟨S, Q, R, z, hst⟩ := ih
     exact exists_isTwoPlaceFamily_succ_zpowers hp hodd hζ hres hTr hT hTrst hTnst hpTn hrepr hcunr
-      hcfree hg hc hcT hcn hDgal hDc hsplit hram hst
+      hg hc hcT hcn hDgal hDc hsplit hram hst
 
 end Step
 

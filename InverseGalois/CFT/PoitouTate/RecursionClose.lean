@@ -129,7 +129,8 @@ recursion starts from a possibly larger Galois stable set, all of whose further 
 satisfy the splitting condition; the two places are produced by running it past the bound supplied
 by the pigeonhole principle, and the unit is the product of the two units attached to the two
 agreeing stages.  Away from a distinguished stable part of the fixed set, where the prescription
-is supported at no more than one place of each orbit, the unit produced is unramified. -/
+lies on one line with the prescription carried there from the place below, the unit produced is
+unramified. -/
 theorem exists_prescribed_two_places (hp : p.Prime) (hp2 : p ≠ 2)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ p) {Spl : HeightOneSpectrum (𝓞 K) → Prop}
@@ -143,8 +144,8 @@ theorem exists_prescribed_two_places (hp : p.Prime) (hp2 : p ≠ 2)
     (hSsplit : ∀ v ∈ S₀, v ∉ T → Spl v)
     (hpT : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → v ∈ T)
     {g : Kˣ} (hgunr : ∀ v ∈ T, v ∉ Tr → localClassHom v p g ∈ localUnramified v p)
-    (hgfree : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
-      localClassHom (σ • v) p g = 1 ∨ localClassHom v p g = 1)
+    (hgline : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
+      OnOneLineGal (fun w => localClassHom w p g) σ v)
     (hgp : ∀ v ∈ T, Pc v ∣ p → localClassHom v p g = 1)
     (hstep : ∀ S : Finset (HeightOneSpectrum (𝓞 K)), S₀ ⊆ S →
       (∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ S → σ • v ∈ S) →
@@ -217,7 +218,7 @@ theorem exists_prescribed_two_places (hp : p.Prime) (hp2 : p ≠ 2)
       localClassHom u p (galUnits σ (d.unit i)) ∈ Subgroup.zpowers e ∧
       localClassHom u p (galUnits σ (d.unit N)) ∈ Subgroup.zpowers e := fun σ =>
     exists_zpowers_of_prescription (T := Tr) (cT := fun v => localClassHom v p g) hTrstable σ
-      (hgfree σ) (fun v hv => hd.unitPres i hiM v (hTrT hv))
+      (hgline σ) (fun v hv => hd.unitPres i hiM v (hTrT hv))
       (fun v hv => hd.unitPres N hNM v (hTrT hv))
   -- the two places and the unit
   refine ⟨d.chosen i, d.chosen N, hQnotT, hRnotT, hd.split _ (hd.chosenMem i hiM) hQnotT,

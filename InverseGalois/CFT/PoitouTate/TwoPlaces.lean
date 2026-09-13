@@ -79,8 +79,8 @@ theorem exists_two_places_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
         Rigidity.RET.ord K v (a : K) = m v)
     {g : Kˣ} (hg : g ∈ sUnits K (S₀ : Set (HeightOneSpectrum (𝓞 K))))
     (hgunr : ∀ v ∈ T, v ∉ Tr → localClassHom v p g ∈ localUnramified v p)
-    (hgfree : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
-      localClassHom (σ • v) p g = 1 ∨ localClassHom v p g = 1)
+    (hgline : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
+      OnOneLineGal (fun w => localClassHom w p g) σ v)
     (hgp : ∀ v ∈ T, Pc v ∣ p → localClassHom v p g = 1) :
     ∃ Q R : HeightOneSpectrum (𝓞 K), Q ∉ T ∧ R ∉ T ∧
       (∃ w : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) w = Q ∧
@@ -98,7 +98,7 @@ theorem exists_two_places_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
   haveI : IsGalois k ↥Ω := ⟨⟩
   refine exists_prescribed_two_places (Spl := fun v => ∃ w : HeightOneSpectrum (𝓞 ↥Ω),
     primeUnder (𝓞 K) w = v ∧ stabilizer Gal(↥Ω/k) w = ⊥) hp (by omega) hres hζ ?_ hTstable hTrT
-    hTrstable hTS hSstable hSsplit hpT hgunr hgfree hgp ?_
+    hTrstable hTS hSstable hSsplit hpT hgunr hgline hgp ?_
   · rintro σ v ⟨w, rfl, hw⟩
     exact exists_primeUnder_eq_smul_stabilizer_eq_bot (K := K) hw σ
   · intro S hSS _ c hcunr hc hsplit
@@ -135,8 +135,8 @@ theorem exists_two_places_sUnit_class_eq (hp : p.Prime) (hodd : 2 < p)
         Rigidity.RET.ord K v (a : K) = m v)
     {y : Kˣ} (hy : y ∈ sUnits K (S₀ : Set (HeightOneSpectrum (𝓞 K))))
     (hyunr : ∀ v ∈ T, v ∉ Tr → localClassHom v p y ∈ localUnramified v p)
-    (hyfree : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
-      localClassHom (σ • v) p y = 1 ∨ localClassHom v p y = 1)
+    (hyline : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
+      OnOneLineGal (fun w => localClassHom w p y) σ v)
     (hyp : ∀ v ∈ T, Pc v ∣ p → localClassHom v p y = 1) :
     ∃ Q R : HeightOneSpectrum (𝓞 K), Q ∉ T ∧ R ∉ T ∧
       (∃ w : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) w = Q ∧
@@ -158,17 +158,13 @@ theorem exists_two_places_sUnit_class_eq (hp : p.Prime) (hodd : 2 < p)
     rw [← pow_mul, hsq, pow_succ, _root_.map_mul, _root_.map_pow,
       pow_eq_one_of_quotient_range_powMonoidHom p (localClassHom v p y)]
     exact one_mul (localClassHom v p y)
-  have hfree : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
-      localClassHom (σ • v) p (y ^ ((p + 1) / 2)) = 1 ∨
-        localClassHom v p (y ^ ((p + 1) / 2)) = 1 := by
-    intro σ hσ v hv
-    rcases hyfree σ hσ v hv with h | h
-    · exact Or.inl (by rw [_root_.map_pow, h, one_pow])
-    · exact Or.inr (by rw [_root_.map_pow, h, one_pow])
+  have hline : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
+      OnOneLineGal (fun w => localClassHom w p (y ^ ((p + 1) / 2))) σ v := fun σ hσ v hv => by
+    simpa only [_root_.map_pow] using (hyline σ hσ v hv).pow ((p + 1) / 2)
   obtain ⟨Q, R, hQT, hRT, hQspl, hRspl, hQR, hQstab, hRstab, z, hzT, hzunr, hzQ, hzR, hzQc,
     hzRc⟩ := exists_two_places_sUnit_prescribed (Ω := Ω) hp hodd hζ hres hTstable hTrT hTrstable
       hTS hSstable hSsplit hpT hrepr (pow_mem hy ((p + 1) / 2))
-      (fun v hv hvr => by rw [_root_.map_pow]; exact pow_mem (hyunr v hv hvr) _) hfree
+      (fun v hv hvr => by rw [_root_.map_pow]; exact pow_mem (hyunr v hv hvr) _) hline
       (fun v hv hv2 => by rw [_root_.map_pow, hyp v hv hv2, one_pow])
   exact ⟨Q, R, hQT, hRT, hQspl, hRspl, hQR, hQstab, hRstab, z,
     fun v hv => (hzT v hv).trans (hkey v), hzunr, hzQ, hzR, hzQc, hzRc⟩

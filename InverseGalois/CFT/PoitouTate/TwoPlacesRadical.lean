@@ -151,9 +151,9 @@ theorem exists_two_places_sUnit_radical (hp : p.Prime) (hodd : 2 < p)
 /-- **Two places completely split in a compositum with a radical second factor, and a unit ramified
 exactly at them realising a prescription which may be ramified where it is carried.**  On a
 distinguished stable part of the prescribed set the prescription is allowed to be ramified,
-provided it is supported at no more than one place of each orbit there and its class lies, together
-with the classes of the radicands, on one line; away from that part the unit produced is
-unramified. -/
+provided its class there lies on one line with the class it carries from the place below, and
+provided its class lies, together with the classes of the radicands, on one line; away from that
+part the unit produced is unramified. -/
 theorem exists_two_places_sUnit_radical_zpowers (hp : p.Prime) (hodd : 2 < p)
     {ζ : K} (hζ : IsPrimitiveRoot ζ p)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
@@ -167,7 +167,7 @@ theorem exists_two_places_sUnit_radical_zpowers (hp : p.Prime) (hodd : 2 < p)
         Rigidity.RET.ord K v (a : K) = m v)
     {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v p}
     (hcunr : ∀ v ∈ Tn, v ∉ Tr → c v ∈ localUnramified v p)
-    (hcfree : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr, c (σ • v) = 1 ∨ c v = 1)
+    (hcline : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr, OnOneLineGal c σ v)
     {g : Kˣ} (hg : g ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))))
     (hc : ∀ v ∈ T, c v = localClassHom v p g) (hcT : ∀ v ∈ Tn, v ∉ T → c v = 1)
     (hcn : ∀ v ∈ T, FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → c v = 1)
@@ -215,12 +215,18 @@ theorem exists_two_places_sUnit_radical_zpowers (hp : p.Prime) (hodd : 2 < p)
     intro v hv hvTr
     rw [hyc v hv]
     exact hcunr v hv hvTr
-  have hyfree : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
-      localClassHom (σ • v) p y = 1 ∨ localClassHom v p y = 1 := by
+  have hyline : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
+      OnOneLineGal (fun w => localClassHom w p y) σ v := by
     intro σ hσ v hv
     have hvn : v ∈ Tn := hT (hTr hv)
-    rw [hyc v hvn, hyc (σ • v) (hTstable σ v hvn)]
-    exact hcfree σ hσ v hv
+    obtain ⟨d, hd₁, hd₂⟩ := hcline σ hσ v hv
+    refine ⟨d, ?_, ?_⟩
+    · show localClassHom (σ • v) p y ∈ Subgroup.zpowers d
+      rw [hyc (σ • v) (hTstable σ v hvn)]
+      exact hd₁
+    · show localClassesGalEquiv σ v p (localClassHom v p y) ∈ Subgroup.zpowers d
+      rw [hyc v hvn]
+      exact hd₂
   have hyp : ∀ v ∈ Tn, Pc v ∣ p → localClassHom v p y = 1 := by
     intro v hv hdvd
     rw [hyc v hv]
@@ -229,7 +235,7 @@ theorem exists_two_places_sUnit_radical_zpowers (hp : p.Prime) (hodd : 2 < p)
     · exact hcT v hv hvT
   obtain ⟨Q, R, hQT, hRT, hQspl, hRspl, hQR, hQstab, hRstab, z, hzT, hzunr, hzQ, hzR, hzQc,
     hzRc⟩ := exists_two_places_sUnit_class_eq_of_split (Ω := Ω) hp hodd hζ hres hTstable
-      (hTr.trans hT) hTrstable hpTn hysplit hyunr hyfree hyp
+      (hTr.trans hT) hTrstable hpTn hysplit hyunr hyline hyp
   refine ⟨Q, R, hQT, hRT, hQspl, hRspl, ?_, ?_, hQR, hQstab, hRstab, z,
     fun v hv => (hzT v hv).trans (hyc v hv), hzunr, hzQ, hzR, hzQc, hzRc⟩
   · obtain ⟨w, hw1, hw2⟩ := hQspl

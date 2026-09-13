@@ -70,7 +70,6 @@ theorem exists_isTwoPlaceFamily_named_split_of_sUnits (hp : p.Prime) (hodd : 2 <
       ∃ a : Kˣ, ∀ v ∉ (Tn : Set (HeightOneSpectrum (𝓞 K))),
         Rigidity.RET.ord K v (a : K) = m v)
     {cl : (w : ↥Tp) → ℕ → localClasses (w : HeightOneSpectrum (𝓞 K)) p}
-    (hclfree : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ w ∈ Tp, σ • w ∉ Tp)
     (hcln : ∀ (w : ↥Tp) (t : ℕ),
       FinitePlace.mk (w : HeightOneSpectrum (𝓞 K)) ((p : ℕ) : K) ≠ 1 → cl w t = 1)
     {D : (v : HeightOneSpectrum (𝓞 K)) → localClasses v p}
@@ -89,14 +88,10 @@ theorem exists_isTwoPlaceFamily_named_split_of_sUnits (hp : p.Prime) (hodd : 2 <
     ∃ (S : Finset (HeightOneSpectrum (𝓞 K))) (Q R : ℕ → HeightOneSpectrum (𝓞 K)) (z : ℕ → Kˣ),
       IsTwoPlaceFamily Ω p Tr Tn (spreadClasses Tp cl) d S Q R z := by
   refine exists_isTwoPlaceFamily_zpowers (Ω := Ω) hp hodd hζ hres hTr hTs
-    hTrst hTnst hpTn hrepr ?_ ?_ hg ?_ ?_ ?_ hDgal ?_ hsplit hram d
+    hTrst hTnst hpTn hrepr ?_ hg ?_ ?_ ?_ hDgal ?_ hsplit hram d
   · intro t v _ hvTr
     rw [spreadClasses_of_notMem (fun hc => hvTr (hTp hc)) t]
     exact Subgroup.one_mem _
-  · intro t σ hσ v hv
-    by_cases hvp : v ∈ Tp
-    · exact Or.inl (spreadClasses_of_notMem (hclfree σ hσ v hvp) t)
-    · exact Or.inr (spreadClasses_of_notMem hvp t)
   · intro t v hv
     by_cases hvp : v ∈ Tp
     · rw [spreadClasses_of_mem hvp t]
@@ -138,7 +133,6 @@ theorem exists_isTwoPlaceFamily_named_detecting (hp : p.Prime) (hodd : 2 < p)
       ∃ a : Kˣ, ∀ v ∉ (Tn : Set (HeightOneSpectrum (𝓞 K))),
         Rigidity.RET.ord K v (a : K) = m v)
     {cl : (w : ↥Tp) → ℕ → localClasses (w : HeightOneSpectrum (𝓞 K)) p}
-    (hclfree : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ w ∈ Tp, σ • w ∉ Tp)
     (hcln : ∀ (w : ↥Tp) (t : ℕ),
       FinitePlace.mk (w : HeightOneSpectrum (𝓞 K)) ((p : ℕ) : K) ≠ 1 → cl w t = 1)
     {D : (v : HeightOneSpectrum (𝓞 K)) → localClasses v p}
@@ -193,7 +187,7 @@ theorem exists_isTwoPlaceFamily_named_detecting (hp : p.Prime) (hodd : 2 < p)
     exact ⟨(u : Kˣ), humem, fun w hw => hu ⟨w, hTs hw⟩ hw⟩
   choose g hgS hgloc using hex
   refine exists_isTwoPlaceFamily_named_split_of_sUnits Ω hp hodd hζ hres hTp hTr hTs hTrst hTnst
-    hpTn hrepr hclfree hcln hDgal hDcl hgS ?_ ?_ hsplit hram d
+    hpTn hrepr hcln hDgal hDcl hgS ?_ ?_ hsplit hram d
   · intro t w
     have h := hgloc t (w : HeightOneSpectrum (𝓞 K)) (hTr (hTp w.2))
     rw [spreadClasses_of_mem w.2 t] at h

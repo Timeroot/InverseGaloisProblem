@@ -77,7 +77,6 @@ theorem exists_isTwoPlaceFamily_named_orthogonal (hp : p.Prime) (hodd : 2 < p)
       ∃ a : Kˣ, ∀ v ∉ (Tn : Set (HeightOneSpectrum (𝓞 K))),
         Rigidity.RET.ord K v (a : K) = m v)
     {cl : (w : ↥Tp) → ℕ → localClasses (w : HeightOneSpectrum (𝓞 K)) p}
-    (hclfree : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ w ∈ Tp, σ • w ∉ Tp)
     (hcln : ∀ (w : ↥Tp) (t : ℕ),
       FinitePlace.mk (w : HeightOneSpectrum (𝓞 K)) ((p : ℕ) : K) ≠ 1 → cl w t = 1)
     {D : (v : HeightOneSpectrum (𝓞 K)) → localClasses v p}
@@ -136,7 +135,7 @@ theorem exists_isTwoPlaceFamily_named_orthogonal (hp : p.Prime) (hodd : 2 < p)
     exact ⟨(u : Kˣ), humem, fun w hw => hu ⟨w, hTs hw⟩ hw⟩
   choose g hgS hgloc using hex
   refine exists_isTwoPlaceFamily_named_split_of_sUnits Ω hp hodd hζ hres hTp hTr hTs hTrst hTnst
-    hpTn hrepr hclfree hcln hDgal hDcl hgS ?_ ?_ hsplit hram d
+    hpTn hrepr hcln hDgal hDcl hgS ?_ ?_ hsplit hram d
   · intro t w
     have h := hgloc t (w : HeightOneSpectrum (𝓞 K)) (hTr (hTp w.2))
     rw [spreadClasses_of_mem w.2 t] at h
@@ -180,7 +179,6 @@ theorem exists_isTwoPlaceFamily_named_of_orthogonal (hp : p.Prime) (hodd : 2 < p
       ∃ a : Kˣ, ∀ v ∉ (Ts : Set (HeightOneSpectrum (𝓞 K))),
         Rigidity.RET.ord K v (a : K) = m v)
     {cl : (w : ↥Tp) → ℕ → localClasses (w : HeightOneSpectrum (𝓞 K)) p}
-    (hclfree : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ w ∈ Tp, σ • w ∉ Tp)
     (hcln : ∀ (w : ↥Tp) (t : ℕ),
       FinitePlace.mk (w : HeightOneSpectrum (𝓞 K)) ((p : ℕ) : K) ≠ 1 → cl w t = 1)
     {D : (v : HeightOneSpectrum (𝓞 K)) → localClasses v p}
@@ -221,7 +219,7 @@ theorem exists_isTwoPlaceFamily_named_of_orthogonal (hp : p.Prime) (hodd : 2 < p
   refine ⟨Ts ∪ Tf, Finset.subset_union_left, hTnst, ?_⟩
   refine exists_isTwoPlaceFamily_named_orthogonal Ω hp hodd hζ hres hTp hTr
     Finset.subset_union_left hTrst hTnst
-    (fun v hv => Finset.mem_union_left _ (hpTs v hv)) hreprn hclfree hcln hDgal hDcl
+    (fun v hv => Finset.mem_union_left _ (hpTs v hv)) hreprn hcln hDgal hDcl
     (hTfdet (Ts ∪ Tf) Finset.subset_union_right)
     (horth (Ts ∪ Tf) Finset.subset_union_left) ?_
     (fun v hv => hram v fun hc => hv (Finset.mem_union_left _ hc)) d
