@@ -40,9 +40,14 @@ demand on the choice of the named places, and the named places are chosen by a d
   elsewhere** — the demand the flat step makes with nothing equivariant left in it.
 * `InverseGalois.Shafarevich.HasTameInvariantUnitTensor` — the invariant tensor demand, made only of
   named places whose stabilizer in the automorphisms of the level has order prime to the exponent.
+* `InverseGalois.Shafarevich.HasNormInvariantUnitTensor` — the invariant tensor demand, made only of
+  prescribed values which are norms from the subgroup fixing the place they are prescribed at.
 
 ## Main results
 
+* `InverseGalois.Shafarevich.hasNormInvariantUnitTensor_of_hasOrbitPrescribedUnits` — **units asked
+  for nothing equivariant assemble into an invariant tensor wherever the prescribed value is a
+  norm** — the exact reach of the orbit sum.
 * `InverseGalois.Shafarevich.hasTameInvariantUnitTensor_of_hasOrbitPrescribedUnits` — **units asked
   for nothing equivariant assemble into an invariant tensor at places whose stabilizer is prime to
   the exponent.**
@@ -128,6 +133,32 @@ theorem localClassHom_smul_eq_one (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K
   exact h2.symm
 
 end Place
+
+/-! ### Values that are norms -/
+
+section Norm
+
+/-- **A value fixed by a finite group of automorphisms whose order is prime to the exponent is the
+product of the conjugates of one of its own powers over that group.**
+
+The power is by the inverse, modulo the exponent, of the order of the group: the product of the
+conjugates of a fixed value is that value raised to the order of the group, so the two exponents
+cancel. -/
+theorem exists_prod_smul_eq_of_card_ne_zero {G M : Type*} [Group G] [CommGroup M]
+    [MulDistribMulAction G M] {ℓ : ℕ} [NeZero ℓ] [Fact ℓ.Prime] (hexp : ∀ m : M, m ^ ℓ = 1)
+    {St : Finset G} (hcard : ((St.card : ℕ) : ZMod ℓ) ≠ 0) {V : M} (hfix : ∀ σ ∈ St, σ • V = V) :
+    ∃ V₀ : M, ∏ σ ∈ St, σ • V₀ = V := by
+  classical
+  refine ⟨V ^ (((St.card : ℕ) : ZMod ℓ)⁻¹).val, ?_⟩
+  have hc : ∀ σ ∈ St, σ • V ^ (((St.card : ℕ) : ZMod ℓ)⁻¹).val
+      = V ^ (((St.card : ℕ) : ZMod ℓ)⁻¹).val := fun σ hσ => by rw [smul_pow', hfix σ hσ]
+  rw [Finset.prod_congr rfl hc, Finset.prod_const, ← pow_mul]
+  have hcc : (((((St.card : ℕ) : ZMod ℓ)⁻¹).val * St.card : ℕ) : ZMod ℓ) = ((1 : ℕ) : ZMod ℓ) := by
+    rw [Nat.cast_mul, ZMod.natCast_zmod_val, Nat.cast_one]
+    exact inv_mul_cancel₀ hcard
+  exact (pow_eq_pow_of_pow_eq_one (hexp V) hcc).trans (pow_one V)
+
+end Norm
 
 /-! ### Complete decomposition along an orbit -/
 
@@ -241,6 +272,45 @@ def HasTameInvariantUnitTensor (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k
                     Ideal.under (𝓞 ↥K) P = v.asIdeal →
                     stabilizer Gal(Ω/k) P ≤ E.fixingSubgroup
 
+/-- **A family of units of a level can be found whose tensor against a named basis of a target
+killed by the exponent is invariant, of prescribed order at each of finitely many named places at
+which the prescribed value is a norm from the subgroup fixing the place, a local power at a
+prescribed finite set of places the orbits of those avoid, and confined elsewhere.**
+
+This is the honest shape of the invariant tensor demand.  A tensor assembled from a whole orbit
+prescribes, at a named place, the product of the conjugates over the subgroup fixing that place of
+whatever the unit belonging to the place was tensored against, so the values it can prescribe are
+exactly the norms from that subgroup and no more.  The subgroup is presented as a finite set of
+automorphisms so that the product is a product over a finite set and no finiteness of the level is
+needed to state the demand. -/
+def HasNormInvariantUnitTensor (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω) [NumberField ↥K] :
+    Prop :=
+  ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
+    ∀ (M : Type) [CommGroup M] [MulDistribMulAction Gal(↥K/k) M], (∀ m : M, m ^ ℓ = 1) →
+      ∀ (T : Type) [Fintype T] (b : T → M),
+        (∀ m : M, ∃ d : T → ZMod ℓ, ∏ q, b q ^ (d q).val = m) →
+        (∀ d : T → ZMod ℓ, ∏ q, b q ^ (d q).val = 1 → d = 0) →
+        ∀ (ι : Type) [Fintype ι] (w : ι → HeightOneSpectrum (𝓞 ↥K)) (V : ι → M),
+          (∀ μ ν : ι, μ ≠ ν → ∀ σ : Gal(↥K/k), σ • w μ ≠ w ν) →
+          (∀ (μ : ι) (St : Finset Gal(↥K/k)), (∀ σ : Gal(↥K/k), σ ∈ St ↔ σ • w μ = w μ) →
+            ∃ V₀ : M, ∏ σ ∈ St, σ • V₀ = V μ) →
+          ∀ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)),
+            (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ ∉ Tz) →
+            (∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (w μ).asIdeal) →
+            (∀ μ : ι, IsReachablePlace ℓ K E (w μ)) →
+            ∃ z : T → (↥K)ˣ,
+              (∀ σ : Gal(↥K/k),
+                σ • (∑ q, Additive.ofMul (z q) ⊗ₜ[ℤ] Additive.ofMul (b q))
+                  = ∑ q, Additive.ofMul (z q) ⊗ₜ[ℤ] Additive.ofMul (b q)) ∧
+              (∀ μ : ι, ∏ q, b q ^ ((placeValue (w μ) (z q) : ZMod ℓ)).val = V μ) ∧
+              (∀ (q : T) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz →
+                localClassHom v ℓ (z q) = 1) ∧
+              ∀ v : HeightOneSpectrum (𝓞 ↥K), (∃ q : T, ¬ (ℓ : ℤ) ∣ placeValue v (z q)) →
+                (∃ (ν : ι) (σ : Gal(↥K/k)), v = σ • w ν) ∨
+                  ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
+                    Ideal.under (𝓞 ↥K) P = v.asIdeal →
+                    stabilizer Gal(Ω/k) P ≤ E.fixingSubgroup
+
 end Demand
 
 /-! ### The orbit sum -/
@@ -251,7 +321,7 @@ variable {ℓ : ℕ} [NeZero ℓ] {k Ω : Type} [Field k] [Field Ω] [Algebra k 
   {K : IntermediateField k Ω} [NumberField ↥K] [IsGalois k ↥K] [FiniteDimensional k ↥K]
 
 /-- **Units asked for nothing equivariant assemble into an invariant tensor at the named places
-whose stabilizer has order prime to the exponent.**
+whose prescribed value is a norm from the subgroup fixing the place.**
 
 The tensor is the sum, over the named places and over all the automorphisms of the level, of the
 conjugate of the unit belonging to the place against the conjugate of a chosen root of the value
@@ -264,14 +334,13 @@ The order of the assembled tensor at a named place collects the contributions of
 fixing that place and nothing else: at a conjugate of another named place, and at a proper conjugate
 of the place itself, the units are local powers, so their orders are divisible by the exponent and
 drop out.  What survives is the product of the conjugates of the root over the subgroup fixing the
-place, raised to the order of the unit there, and the root is chosen to make that the prescribed
-value — the tameness of the stabilizer being exactly what lets the prescribed value be divided by
-the order of the subgroup. -/
-theorem hasTameInvariantUnitTensor_of_hasOrbitPrescribedUnits (hℓ : ℓ.Prime)
-    (h : HasOrbitPrescribedUnits ℓ K) : HasTameInvariantUnitTensor ℓ K := by
+place, raised to the order of the unit there, and that order is prime to the exponent, so a root
+exists as soon as the prescribed value is such a product at all. -/
+theorem hasNormInvariantUnitTensor_of_hasOrbitPrescribedUnits (hℓ : ℓ.Prime)
+    (h : HasOrbitPrescribedUnits ℓ K) : HasNormInvariantUnitTensor ℓ K := by
   classical
   haveI : Fact ℓ.Prime := ⟨hℓ⟩
-  intro E hEfin hEgal hKE M _ _ hexp T _ b hspan _ ι _ w V hdist htame hVfix Tz hwTz hℓw hreach
+  intro E hEfin hEgal hKE M _ _ hexp T _ b hspan _ ι _ w V hdist hVnorm Tz hwTz hℓw hreach
   haveI : IsGalois k ↥E := hEgal
   -- the prescribed set of places, saturated under the automorphisms of the level
   obtain ⟨Tz', hTzle, hwTz'⟩ : ∃ Tz' : Finset (HeightOneSpectrum (𝓞 ↥K)),
@@ -291,41 +360,28 @@ theorem hasTameInvariantUnitTensor_of_hasOrbitPrescribedUnits (hℓ : ℓ.Prime)
   obtain ⟨St, hStmem⟩ : ∃ St : ι → Finset Gal(↥K/k),
       ∀ (μ : ι) (σ : Gal(↥K/k)), σ ∈ St μ ↔ σ • w μ = w μ :=
     ⟨fun μ => Finset.univ.filter (fun σ => σ • w μ = w μ), fun μ σ => by simp⟩
-  have hStcard : ∀ μ : ι, (((St μ).card : ℕ) : ZMod ℓ) ≠ 0 := by
-    intro μ hcon
-    refine htame μ ?_
-    have hc : Nat.card ↥(stabilizer Gal(↥K/k) (w μ)) = (St μ).card := by
-      rw [Nat.card_congr
-        (Equiv.subtypeEquivRight (fun σ => (mem_stabilizer_iff.trans (hStmem μ σ).symm))),
-        Nat.card_eq_fintype_card, Fintype.card_coe]
-    rw [hc]
-    exact (ZMod.natCast_eq_zero_iff _ _).1 hcon
   have hocast : ∀ μ : ι, ((placeValue (w μ) (Y μ) : ℤ) : ZMod ℓ) ≠ 0 := by
     intro μ hcon
     exact hYord μ ((ZMod.intCast_zmod_eq_zero_iff_dvd _ ℓ).1 hcon)
   -- the root of the prescribed value which the orbit sum takes its norm of
-  have hfin : ∀ (X : M) (a : ZMod ℓ) (i j : ℕ),
-      a * ((i : ZMod ℓ) * (j : ZMod ℓ)) = 1 → ((X ^ a.val) ^ i) ^ j = X := by
-    intro X a i j hij
-    rw [← pow_mul, ← pow_mul]
-    have hc : ((a.val * (i * j) : ℕ) : ZMod ℓ) = ((1 : ℕ) : ZMod ℓ) := by
-      rw [Nat.cast_mul, Nat.cast_mul, ZMod.natCast_zmod_val, Nat.cast_one]
-      exact hij
+  have hfin : ∀ (X : M) (a c : ZMod ℓ), a * c = 1 → (X ^ a.val) ^ c.val = X := by
+    intro X a c hac
+    rw [← pow_mul]
+    have hc : ((a.val * c.val : ℕ) : ZMod ℓ) = ((1 : ℕ) : ZMod ℓ) := by
+      rw [Nat.cast_mul, ZMod.natCast_zmod_val, ZMod.natCast_zmod_val, Nat.cast_one]
+      exact hac
     exact (pow_eq_pow_of_pow_eq_one (hexp X) hc).trans (pow_one X)
+  choose W hW using fun μ : ι => hVnorm μ (St μ) (hStmem μ)
   obtain ⟨V₀, hV₀norm⟩ : ∃ V₀ : ι → M, ∀ μ : ι,
       (∏ σ ∈ St μ, σ • V₀ μ) ^ (((placeValue (w μ) (Y μ) : ℤ) : ZMod ℓ)).val = V μ := by
-    refine ⟨fun μ => V μ ^ ((((St μ).card : ZMod ℓ) *
-      ((placeValue (w μ) (Y μ) : ℤ) : ZMod ℓ))⁻¹).val, fun μ => ?_⟩
-    have hcong : ∀ σ ∈ St μ, σ • (V μ ^ ((((St μ).card : ZMod ℓ) *
-        ((placeValue (w μ) (Y μ) : ℤ) : ZMod ℓ))⁻¹).val)
-          = V μ ^ ((((St μ).card : ZMod ℓ) *
-            ((placeValue (w μ) (Y μ) : ℤ) : ZMod ℓ))⁻¹).val := by
-      intro σ hσ
-      rw [smul_pow', hVfix μ σ ((hStmem μ σ).1 hσ)]
-    rw [Finset.prod_congr rfl hcong, Finset.prod_const]
-    refine hfin (V μ) _ _ _ ?_
-    rw [ZMod.natCast_zmod_val]
-    exact inv_mul_cancel₀ (mul_ne_zero (hStcard μ) (hocast μ))
+    refine ⟨fun μ => W μ ^ (((placeValue (w μ) (Y μ) : ℤ) : ZMod ℓ)⁻¹).val, fun μ => ?_⟩
+    have hcong : ∀ σ ∈ St μ,
+        σ • W μ ^ (((placeValue (w μ) (Y μ) : ℤ) : ZMod ℓ)⁻¹).val
+          = (σ • W μ) ^ (((placeValue (w μ) (Y μ) : ℤ) : ZMod ℓ)⁻¹).val := by
+      intro σ _
+      rw [smul_pow']
+    rw [Finset.prod_congr rfl hcong, Finset.prod_pow, hW μ]
+    exact hfin (V μ) _ _ (inv_mul_cancel₀ (hocast μ))
   -- the coordinates of every conjugate of every root
   choose d hd using fun (μ : ι) (σ : Gal(↥K/k)) => hspan (σ • V₀ μ)
   obtain ⟨z, hzdef⟩ : ∃ z : T → (↥K)ˣ,
@@ -450,6 +506,39 @@ theorem hasTameInvariantUnitTensor_of_hasOrbitPrescribedUnits (hℓ : ℓ.Prime)
     · refine Or.inr ?_
       have hmov := forall_stabilizer_le_fixingSubgroup_smul (E := E) σ hdec
       rwa [smul_inv_smul] at hmov
+
+omit [IsGalois k Ω] [IsGalois k ↥K] [FiniteDimensional k ↥K] in
+/-- **A prescribed value fixed by the subgroup fixing its place is a norm from that subgroup as soon
+as the exponent does not divide the order of the subgroup**, so the invariant tensor demand made at
+tame places follows from the demand made where the prescribed values are norms.
+
+The norm is of the value's own power by the inverse, modulo the exponent, of the order of the
+subgroup. -/
+theorem hasTameInvariantUnitTensor_of_hasNormInvariantUnitTensor (hℓ : ℓ.Prime)
+    (h : HasNormInvariantUnitTensor ℓ K) : HasTameInvariantUnitTensor ℓ K := by
+  classical
+  haveI : Fact ℓ.Prime := ⟨hℓ⟩
+  intro E hEfin hEgal hKE M _ _ hexp T _ b hspan hindep ι _ w V hdist htame hVfix
+  refine h E hEfin hEgal hKE M hexp T b hspan hindep ι w V hdist ?_
+  intro μ St hSt
+  refine exists_prod_smul_eq_of_card_ne_zero hexp ?_ fun σ hσ => hVfix μ σ ((hSt σ).1 hσ)
+  intro hcon
+  refine htame μ ?_
+  have hc : Nat.card ↥(stabilizer Gal(↥K/k) (w μ)) = St.card := by
+    rw [Nat.card_congr (Equiv.subtypeEquivRight fun σ => mem_stabilizer_iff.trans (hSt σ).symm),
+      Nat.card_eq_fintype_card, Fintype.card_coe]
+  rw [hc]
+  exact (ZMod.natCast_eq_zero_iff _ _).1 hcon
+
+/-- **Units asked for nothing equivariant assemble into an invariant tensor at the named places
+whose stabilizer has order prime to the exponent.**
+
+The tameness of the stabilizer is exactly what lets the prescribed value be divided by the order of
+the subgroup fixing its place, which is what the orbit sum needs of it. -/
+theorem hasTameInvariantUnitTensor_of_hasOrbitPrescribedUnits (hℓ : ℓ.Prime)
+    (h : HasOrbitPrescribedUnits ℓ K) : HasTameInvariantUnitTensor ℓ K :=
+  hasTameInvariantUnitTensor_of_hasNormInvariantUnitTensor hℓ
+    (hasNormInvariantUnitTensor_of_hasOrbitPrescribedUnits hℓ h)
 
 omit [IsGalois k Ω] [IsGalois k ↥K] [FiniteDimensional k ↥K] in
 /-- **A level all of whose places have stabilizer of order prime to the exponent carries the

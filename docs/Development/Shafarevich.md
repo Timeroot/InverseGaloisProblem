@@ -23104,24 +23104,118 @@ over `v` and some `ρ ∈ Gal(Ω|k)` lifting `σ` (restriction to a normal level
 
 ```
 HasOrbitPrescribedUnits ℓ K          -- the units demand, nothing equivariant left in it
+HasNormInvariantUnitTensor ℓ K       -- the tensor demand, made only of prescribed values
+                                     --   that are norms from the subgroup fixing their place
 HasTameInvariantUnitTensor ℓ K       -- the tensor demand, at tame named places only
-hasTameInvariantUnitTensor_of_hasOrbitPrescribedUnits   (ℓ prime, K|k finite Galois)
-hasInvariantUnitTensor_of_hasTameInvariantUnitTensor    (all places of K tame)
+exists_prod_smul_eq_of_card_ne_zero                       -- fixed + tame ⇒ norm
+hasNormInvariantUnitTensor_of_hasOrbitPrescribedUnits     (ℓ prime, K|k finite Galois)
+hasTameInvariantUnitTensor_of_hasNormInvariantUnitTensor  (ℓ prime)
+hasTameInvariantUnitTensor_of_hasOrbitPrescribedUnits     (the composition of the two)
+hasInvariantUnitTensor_of_hasTameInvariantUnitTensor      (all places of K tame)
 ```
 
 plus the supporting `placeValue_prod_eq_sum`, `placeValue_smul_unit`, `localClassHom_smul_eq_one`
 and the integer-exponent helpers `zpow_finset_sum`, `finset_prod_zpow`,
 `zpow_eq_one_of_pow_eq_one`.
 
-### (h) The remaining step
+The split into `HasNormInvariantUnitTensor` and `HasTameInvariantUnitTensor` is not cosmetic.  The
+norm form is what the orbit sum *actually proves* — (c) computes the reachable prescribed value to
+be `N_{D μ}(V₀ μ)^{ord}` and nothing more — and the tame form is the corollary obtained by paying
+that price with `V₀ μ = V μ ^ e`.  Stating the primitive theorem in the norm form keeps the
+remaining obstruction visible instead of hiding it inside a hypothesis about places.
 
-`hasInvariantUnitTensor_of_hasTameInvariantUnitTensor` asks every place of `K` to be tame, which is
-false in general (a place ramified or inert in `K|k` of residue degree divisible by `ℓ` fails it).
-The honest consumer is `HasTameInvariantUnitTensor`, and what has to be threaded is the tameness of
-the named places through the *place chooser*: `exists_stabilizer_eq_bot`
-(`CFT/PoitouTate/ChebotarevPlace.lean:260`, call site `:321`) already picks the named places by a
-density argument, and the condition to add there is that the chosen places be **completely split in
-`K|k`**, which makes `D μ` trivial and `ℓ ∤ |D μ|` automatic.  Chebotarev supplies completely split
-places in any density-positive quantity, so this is a strengthening of the chooser and not a new
-arithmetic input.  That is the next deliverable, and with it `InvariantUnitTensorEP ℓ` — hence
-`GenericLevelStepEPRoots ℓ` for odd `ℓ` — is bought by `HasOrbitPrescribedUnits` alone.
+### (h) The remaining step: the norm condition
+
+The honest consumer is `HasNormInvariantUnitTensor`.  Written additively in the layer `M` (an
+`𝔽_ℓ`-module with `Gal(K|k)` acting), its one non-free clause says: for each named place `w μ` with
+decomposition group `D μ = Stab(w μ) ≤ Gal(K|k)`,
+
+```
+V μ  ∈  Tr_{D μ}(M)          (equivalently, the class of V μ in Ĥ⁰(D μ, M) vanishes).
+```
+
+`hasInvariantUnitTensor_of_hasTameInvariantUnitTensor` discharges it by asking every place of `K` to
+be tame, which is false in general; `hasTameInvariantUnitTensor_of_hasNormInvariantUnitTensor`
+discharges it at the named places only, which is the right shape but still has to be supplied.
+
+**The obvious fix does not work.**  An earlier version of this section proposed strengthening the
+place chooser `exists_stabilizer_eq_bot` (`CFT/PoitouTate/ChebotarevPlace.lean:260`) to pick the
+named places completely split in `K|k`, making `D μ = 1`.  That is wrong about which places these
+are.  The named places of the flat prescription are *not* chosen: `HasFlatPrescription`
+(`LevelFlatTwist.lean:~120`) hands us the ramification locus of an **arbitrary given lift** `f` of
+`φ`, filtered by `exists_ramified_family` to those primes ramified in `f` but not in the confined
+lift `Φ` (see `exists_confinedRamifiedHom_lift_of_hasFlatPrescription`).  Their splitting behaviour
+in `K|k` is whatever the given lift makes it.  The Chebotarev chooser governs a *different* family —
+the auxiliary primes of the base family — and strengthening it does not touch `D μ`.
+
+**Three further routes that are closed.**
+
+1. *Enlarge the level `K`.*  Decomposition groups only grow under enlargement, so this makes the
+   condition strictly harder.
+2. *Use a radicand from an intermediate field.*  With `H ≤ G := Gal(K|k)` and `a ∈ (K^H)^×`
+   supported, inside the `G`-orbit of `w`, only at the place `w_H` of `K^H` below `w`, the orbit sum
+   over `G/H` of `a ⊗ m` with `m ∈ M^H` reaches exactly
+   `ord_w(a) · Tr_{D/(D ∩ H)}(M^H)`.  `H = 1` recovers §1.108(c) (`Tr_D(M)`); `H = G` recovers the
+   rank-one tensor of §1.107 (a radicand from `k^×`, and its class-group wall); and `H = Syl_ℓ(D)`
+   gives `Tr_{D/Syl}(M^{Syl}) ⊇ [D : Syl]·M^D = M^D`, so it reaches *everything*.  The price is that
+   the radicand must live in `(K^{Syl_ℓ(D)})^×` and be supported at one place — which is exactly the
+   class-group obstruction of §1.107(g), moved down to the intermediate field.  Nothing is gained.
+3. *Buy room by enlarging `S`.*  A place completely split in `K|k` contributes an **induced**
+   `G`-module to the divisor group, so by Shapiro it contributes nothing to the obstruction; split
+   places cannot pay the price.  This confirms the reading of §1.107(e).
+
+**The exact ceiling.**  Inverting the places of a finite `G`-stable set `S₀` containing everything
+named gives the short exact sequence of `𝔽_ℓ[G]`-modules
+
+```
+0 → 𝓞_{K,S₀}^×/ℓ → K_{S₀}^×/ℓ --ord--> Div_{S₀}/ℓ → 0
+```
+
+(the surjectivity on the right is what inverting `S₀` buys, and it is where the class group is spent
+rather than obstructing).  Tensoring over `𝔽_ℓ` with `M` is exact, and taking `G`-invariants gives
+
+```
+(K_{S₀}^×/ℓ ⊗ M)^G → (Div_{S₀}/ℓ ⊗ M)^G --δ--> H¹(G, 𝓞_{K,S₀}^×/ℓ ⊗ M).
+```
+
+So a prescribed divisor-with-coefficients is reachable **iff `δ` kills it**, and `ker δ` — not
+`Tr_D(M)` place by place — is the sharp answer for the problem.  The orbit sum computes the
+sub-object of `ker δ` spanned by monomials, which is where the per-place `Tr_{D μ}(M)` comes from.
+Closing the gap between the two would mean computing `H¹(G, 𝓞_{K,S₀}^×/ℓ ⊗ M)` — an `S`-unit
+cohomology group — which is not a step this development wants to take.
+
+**What SW do instead, and the live route.**
+
+* Schmidt–Wingberg never meet this obstruction because Theorem 15 carries an inductive invariant
+  (`sw.txt:1218`, invariant (c)): *every `p ∈ Ram(N_n|K)` splits completely in `K|k`*.  With that,
+  `D μ = 1`, `Tr_{D μ} = id`, and the norm clause is vacuous — the landed tame theorem already
+  suffices.  The repo cannot use this yet only because it states the flat prescription for an
+  arbitrary lift; threading the invariant means strengthening each rung of the ladder to produce a
+  lift whose ramification is completely split in the level below.  That is a bookkeeping change, but
+  a wide one: it touches `LevelFlatTwist`, `LevelConfinedTwist` and the place chooser together.
+* SW also work throughout in `H¹(k_p, E)` and `H¹(k, E)` with Poitou–Tate, never in Kummer theory
+  over the level, so the decomposition groups of `K|k` never appear in their argument at all.  The
+  repo's `(K^×/ℓ ⊗ W)^G` formulation is what makes them appear.
+* **The shrinking lever.**  The prescribed values reach the consumer through `layerSubMap ℓ α j`
+  with `α : Generic U N S ↠ Generic U n S` a shrinking chosen *after* `Q`, `A`, `a` and the
+  decomposition groups `D μ` are known.  Discharging the norm clause therefore means: *choose a
+  shrinking that kills the finitely many classes of `V μ` in `Ĥ⁰(D μ, M_n) = M_n^{D μ}/Tr_{D μ}(M_n)`*.
+  This is the same shape as SW Prop 7 (`exists_operatorHom_h1_eq_zero`, `GenericHomology.lean:343`)
+  and is pure group theory and counting, with no arithmetic in it.  The engines are already built:
+
+  ```
+  exists_genericShrink_res_cohomology_eq_zero    GenericCohomology.lean:55
+  exists_genericShrink_forall_rTensor_eq_zero    GenericHomology.lean:259
+  exists_genericShrink_homology_tensor_eq_zero   GenericHomology.lean:273
+  exists_genericShrink_h1_inl_eq_zero            GenericHomology.lean:296
+  exists_genericShrink_map_eq_zero               LayerCohomology.lean:104
+  exists_genericShrink_homology_map_eq_zero      LayerHomology.lean:80
+  exists_genericShrink_mem_pCentral              LayerShrink.lean:231
+  exists_genericShrink_layerMap_eq_zero          LayerShrink.lean:253
+  ```
+
+  A sufficient — and possibly easier — statement is that the shrinking can be chosen to make the
+  layer a **projective `𝔽_ℓ[D]`-module** for each of the finitely many `D μ`: projectivity kills all
+  Tate cohomology, hence forces `Tr_D(M) = M^D` for every subgroup at once, and the layer of the
+  generic operator group on `r` blocks is already close to induced.  That is the next thing to
+  check.
