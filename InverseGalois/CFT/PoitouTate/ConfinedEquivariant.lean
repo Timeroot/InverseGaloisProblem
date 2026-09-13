@@ -24,6 +24,9 @@ At a place no automorphism but the identity fixes, the unit is free: the vector 
 so a unit of order one there and none elsewhere exists, and there is nothing for it to be fixed by.
 So the arithmetic is spent only at the places with a decomposition group.
 
+The splitting is read after tensoring with the module, which the exponent kills, so the orders of
+the unit are only ever asked for **up to a multiple of the exponent**.
+
 ## Main results
 
 * `InverseGalois.CFT.tensorInvariantClass_confinedOrd_eq_zero_of_stabilizer`: **one confined unit
@@ -31,6 +34,9 @@ So the arithmetic is spent only at the places with a decomposition group.
   place, kills the obstruction.**
 * `InverseGalois.CFT.tensorInvariantClass_confinedOrd_eq_zero_of_stabilizer_nontrivial`: the same,
   with the unit asked for only at the places some automorphism other than the identity fixes.
+* `InverseGalois.CFT.tensorInvariantClass_confinedOrd_eq_zero_of_stabilizer_mod`,
+  `InverseGalois.CFT.tensorInvariantClass_confinedOrd_eq_zero_of_stabilizer_mod_nontrivial`: **the
+  orders of the unit are only asked for up to the exponent of the module.**
 
 ## Tags
 
@@ -101,6 +107,58 @@ theorem tensorInvariantClass_confinedOrd_eq_zero_of_stabilizer_nontrivial
       by_contra hc
       exact hy σ hc hσ
     rw [hσ1, one_smul]
+
+/-- **The orders of the unit are only asked for up to the exponent.**
+
+The splitting of the vector of orders is used only after tensoring with a module killed by the
+exponent, so a unit whose order at its own named place is one and at the other named places is
+zero, each up to a multiple of the exponent, serves just as well as one with those orders on the
+nose. -/
+theorem tensorInvariantClass_confinedOrd_eq_zero_of_stabilizer_mod (hexp : ∀ c : C, c ^ n = 1)
+    (hsurj : Function.Surjective (confinedOrd n Tz Y Xs))
+    (hstab : ∀ y : ↥Xs, ∃ u : ↥(confinedUnits K n Tz Y),
+      (∀ z : ↥Xs, (n : ℤ) ∣ confinedOrd n Tz Y Xs (Additive.ofMul u) z - Finsupp.single y 1 z) ∧
+        ∀ σ : Gal(K/k), σ • y = y → σ • u = u)
+    {t : Additive ↥(confinedUnits K n Tz Y) ⊗[ℤ] Additive C}
+    (ht : ∀ σ : Gal(K/k), tensorVal C (confinedOrd n Tz Y Xs) (σ • t)
+      = tensorVal C (confinedOrd n Tz Y Xs) t) :
+    tensorInvariantClass C (confinedOrd n Tz Y Xs) (confinedSUnits n Tz Y Xs) hsurj
+      (mem_confinedSUnits_iff n Tz Y Xs) ht = 0 :=
+  tensorInvariantClass_eq_zero_of_stabilizer_mod C (confinedOrd n Tz Y Xs)
+    (confinedSUnits n Tz Y Xs) hsurj (mem_confinedSUnits_iff n Tz Y Xs)
+    (confinedOrd_smul_apply n Tz Y Xs) n hexp hstab ht
+
+/-- **The unit is only asked for, and only up to the exponent, at the places some automorphism
+other than the identity fixes.**
+
+Where no automorphism but the identity fixes the place, the vector of orders being onto already
+supplies a confined unit of order one there and none at the other named places, and the condition
+that the automorphisms fixing the place fix the unit asks nothing of it. -/
+theorem tensorInvariantClass_confinedOrd_eq_zero_of_stabilizer_mod_nontrivial
+    (hexp : ∀ c : C, c ^ n = 1) (hsurj : Function.Surjective (confinedOrd n Tz Y Xs))
+    (hstab : ∀ y : ↥Xs, (∃ σ : Gal(K/k), σ ≠ 1 ∧ σ • y = y) →
+      ∃ u : ↥(confinedUnits K n Tz Y),
+        (∀ z : ↥Xs, (n : ℤ) ∣ confinedOrd n Tz Y Xs (Additive.ofMul u) z - Finsupp.single y 1 z) ∧
+          ∀ σ : Gal(K/k), σ • y = y → σ • u = u)
+    {t : Additive ↥(confinedUnits K n Tz Y) ⊗[ℤ] Additive C}
+    (ht : ∀ σ : Gal(K/k), tensorVal C (confinedOrd n Tz Y Xs) (σ • t)
+      = tensorVal C (confinedOrd n Tz Y Xs) t) :
+    tensorInvariantClass C (confinedOrd n Tz Y Xs) (confinedSUnits n Tz Y Xs) hsurj
+      (mem_confinedSUnits_iff n Tz Y Xs) ht = 0 := by
+  refine tensorInvariantClass_confinedOrd_eq_zero_of_stabilizer_mod n Tz Y Xs hexp hsurj
+    (fun y => ?_) ht
+  by_cases hy : ∃ σ : Gal(K/k), σ ≠ 1 ∧ σ • y = y
+  · exact hstab y hy
+  · push_neg at hy
+    obtain ⟨a, ha⟩ := hsurj (Finsupp.single y 1)
+    refine ⟨a.toMul, fun z => ?_, fun σ hσ => ?_⟩
+    · show (n : ℤ) ∣ confinedOrd n Tz Y Xs a z - Finsupp.single y 1 z
+      rw [ha, sub_self]
+      exact dvd_zero _
+    · have hσ1 : σ = 1 := by
+        by_contra hc
+        exact hy σ hc hσ
+      rw [hσ1, one_smul]
 
 end Confined
 

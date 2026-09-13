@@ -15,10 +15,11 @@ obstruction to correcting an invariant divisor of confined units to an invariant
 file buys the second half against arithmetic of the same shape as the first.
 
 What it costs is one confined unit for each place of the hull of the named ones: a unit of order
-one at that place and none at the other places of the hull, fixed by the automorphisms fixing the
-place.  The vector of orders is equivariant, so such a unit carries with it the unit belonging to
-every place of the same orbit, and the family so assembled splits the vector of orders
-equivariantly, which trivialises the obstruction of every tensor with invariant valuation.
+one at that place and none at the other places of the hull, each read up to a multiple of the
+exponent, and fixed by the automorphisms fixing the place.  The vector of orders is equivariant, so
+such a unit carries with it the unit belonging to every place of the same orbit, and the family so
+assembled splits the vector of orders equivariantly, which trivialises the obstruction of every
+tensor with invariant valuation.
 
 The cost is nil at a place no automorphism but the identity fixes.  There the vector of orders
 being onto already supplies a unit of order one at the place and none at the others, and being
@@ -60,31 +61,34 @@ variable {k Ω : Type} [Field k] [Field Ω] [Algebra k Ω]
 /-- **The units the obstruction is bought with.**
 
 At each place of the hull of the named ones which some automorphism other than the identity fixes,
-a confined unit of order one at that place and none at the other places of the hull, fixed by the
-automorphisms fixing the place.  Nothing is asked at the places with no decomposition group. -/
+a confined unit of order one at that place and none at the other places of the hull, each up to a
+multiple of the exponent, fixed by the automorphisms fixing the place.  Nothing is asked at the
+places with no decomposition group. -/
 def HasStabilizerConfinedUnits (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
   ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
     ∀ Xs₀ Tz : Set (HeightOneSpectrum (𝓞 ↥K)), Xs₀.Finite → Tz.Finite →
       ∀ (_ : Finite ↥(stableHull k ↥K Xs₀)) (y : ↥(stableHull k ↥K Xs₀)),
         (∃ σ : Gal(↥K/k), σ ≠ 1 ∧ σ • y = y) →
         ∃ u : ↥(confinedUnits ↥K ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)),
-          confinedOrd ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) (stableHull k ↥K Xs₀)
-              (Additive.ofMul u) = Finsupp.single y 1 ∧
+          (∀ z : ↥(stableHull k ↥K Xs₀), (ℓ : ℤ) ∣
+            confinedOrd ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) (stableHull k ↥K Xs₀)
+              (Additive.ofMul u) z - Finsupp.single y 1 z) ∧
             ∀ σ : Gal(↥K/k), σ • y = y → σ • u = u
 
 /-- **The units buy the obstruction.**
 
 The vector of orders of a confined unit is equivariant, so the units asked for assemble into a
 splitting of it carried by the action, and such a splitting trivialises the obstruction of every
-tensor whose valuation is invariant. -/
+tensor whose valuation is invariant.  The splitting is read after tensoring with a module killed by
+the exponent, which is why the orders are only asked for up to a multiple of it. -/
 theorem hasConfinedObstruction_of_hasStabilizerConfinedUnits {ℓ : ℕ}
     {K : IntermediateField k Ω} [NumberField ↥K] (h : HasStabilizerConfinedUnits ℓ K) :
     HasConfinedObstruction ℓ K := by
-  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz C _ _ _hexp hfin hdec hsurj t ht
+  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz C _ _ hexp hfin hdec hsurj t ht
   haveI : Finite ↥(stableHull k ↥K Xs₀) := hfin
   letI : DecidableEq ↥(stableHull k ↥K Xs₀) := hdec
-  exact tensorInvariantClass_confinedOrd_eq_zero_of_stabilizer_nontrivial ℓ
-    (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) (stableHull k ↥K Xs₀) hsurj
+  exact tensorInvariantClass_confinedOrd_eq_zero_of_stabilizer_mod_nontrivial ℓ
+    (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) (stableHull k ↥K Xs₀) hexp hsurj
     (h E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hfin) ht
 
 end Units
