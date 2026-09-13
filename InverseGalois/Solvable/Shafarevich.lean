@@ -100,6 +100,7 @@ import InverseGalois.Solvable.Shafarevich.FlatTwist
 import InverseGalois.Solvable.Shafarevich.FlatTensorVal
 import InverseGalois.Solvable.Shafarevich.KernelPlaces
 import InverseGalois.Solvable.Shafarevich.FlatPlaces
+import InverseGalois.Solvable.Shafarevich.ReachableDetect
 import InverseGalois.Solvable.Shafarevich.FlatTensor
 import InverseGalois.Solvable.Shafarevich.FlatInvariant
 import InverseGalois.Solvable.Shafarevich.FlatNorm
@@ -956,6 +957,18 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   Because nothing is named but a single unit, and any unit of order prime to the exponent will do,
   **the reciprocity residue the sharp demand leaves behind is absent here**: there is no pairing
   condition, and a level carrying such units carries the flat prescription outright.
+* `InverseGalois.Solvable.Shafarevich.ReachableDetect` turns the one global demand that file leaves
+  — a unit of order prime to the exponent at the named place and of order divisible by it away from
+  the completely decomposed ones — into a statement about detecting powers.  Duality supplies such
+  a unit as soon as the units it has to be tested against are trivial, and those are the units
+  unramified at every place at once which are local powers at the places the duality imposes
+  nothing at.  So it is enough to exhibit finitely many places, sitting under completely decomposed
+  places of the level and away from the named one, at which being a local power already forces a
+  unit unramified everywhere to be a power of the level: the tested units are then powers, and a
+  power has trivial class at every place.  **What reachability costs is a detecting family of
+  decomposed places**, and nothing else; the places carrying the exponent and the representatives
+  of the ideal classes join the finite set the duality runs over without being asked anything,
+  because away from the detecting places the unit produced need only be unramified.
 * `InverseGalois.Solvable.Shafarevich.FlatTensor` buys the same flat prescription from a **single**
   invariant object instead of one unit per named place.  A unit at each place must be asked to be a
   local power at the conjugates of the *other* named places, so that the several prescriptions do
