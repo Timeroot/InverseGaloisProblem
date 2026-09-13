@@ -22824,3 +22824,162 @@ The one genuine defect is that the machinery run over the base `M'` confines its
 split completely in a level **over `M'`**, whereas the consumer reads the confinement over `k`.
 That is repaired by demanding absolute residue degree one at the auxiliary places, a positive
 density Chebotarev condition since `k = ℚ`; without it the implication fails (§1.105(g)).
+
+## 1.107 The decomposition field route: landed, and refuted (2026-09-13)
+
+Section 1.106 argued that the decomposition-invariance of the radicand cannot be traded away.  This
+section does three things: it removes the `Ĥ⁰` obstruction 1.106 feared (it does not bind the
+construction actually in the repo), it lands the one construction which meets the invariance clause
+on the nose — a radicand taken from the field the named place decomposes in — and it then **refutes**
+that construction with an explicit number field.  What survives is a sharp cohomological description
+of the gap.
+
+### (a) The trace obstruction of §1.106 does not bind
+
+`FlatPlaces.lean:401-440` (`hVsmul`) does not *assume* the character identity `V^{e} = φ g • V`; it
+*derives* it, from the equivariance hypothesis `haequiv` carried by the input data `a μ` together
+with `hZinv`.  The prescribed value is therefore never asked to be a trace and `Ĥ⁰(D, layer)` never
+enters.  The single-radicand construction with equivariance demanded only on
+`stabilizer Gal(Ω|k) (Q μ)` is exactly the right one, and **clause 1 (`hZinv`) is the sole
+arithmetic gap**.
+
+### (b) The primes are handed in, but they are unramified
+
+In `exists_confinedRamifiedHom_lift_of_hasFlatPrescription` (`LevelFlatTwist.lean:198-247`) the named
+primes `Q μ = Pr μ` come from `exists_ramified_family` applied to an *arbitrary given* lift `f`, so
+`ℓ ∣ |D_w|` cannot be excluded at the call site.  What *is* known is `hunr`: inertia at `Q μ` lies in
+`ker φ`, i.e. **the named place `w = Q μ ∩ K` is unramified in `K|k`**.  Hence
+
+```
+D_w = ⟨Frob_w⟩  is cyclic,   M := K^{D_w},   w is inert in the cyclic extension K|M,
+e(w|w_M) = 1,   f(w|w_M) = |D_w|,   M_{w_M} = k_p.
+```
+
+Consequences: `w` is the unique place of `K` above `w_M`; the conjugate-place clauses of
+`HasFlatPrescribedUnits` become clauses at places of `M` other than `w_M`; and `ord_w` restricted to
+`M^×` is `ord_{w_M}`.
+
+### (c) The reduction that was landed
+
+`InverseGalois/Solvable/Shafarevich/FlatDecomposed.lean` (`HasDecomposedPrescribedUnits`,
+`hasFlatPrescribedUnits_of_hasDecomposedPrescribedUnits`, `DecomposedUnitsEP`,
+`genericLevelStepEPRoots_of_decomposedUnitsEP`) records the reduction: a radicand taken from
+`decompositionField k w = K^{D_w}` is fixed *outright* by the automorphisms fixing `w`, so clause 1
+holds with the exponent-th power equal to `1`.  The only coupling between the several named places —
+the demand that the radicand at one be a local power at the conjugates of the others — folds into
+the finite prescribed set, because the named places lie in distinct orbits.  So the whole demand
+becomes a demand **at one place at a time**.  The module is sorry-free, in the default build, and
+the reduction is a genuine theorem.  It is the hypothesis that is false.
+
+### (d) The refutation
+
+Take `ℓ = 3`, `k = ℚ(√-23)` (class number `3`), `K` the Hilbert class field of `k` (cyclic of degree
+`3`, Galois over `k`), `E = K`, `Tz = ∅`, and `w` any prime of `K` inert over `k` — equivalently any
+`p` of `k` whose class generates `Cl(k)`.  Then `D_w = Gal(K|k)` and
+`decompositionField k w = k`, so `HasDecomposedPrescribedUnits 3 K` demands a `Z ∈ k^×` with
+
+* `3 ∤ ord_w Z = ord_p Z` (the place is unramified, so `e = 1`);
+* at every place `v` of `K` with `3 ∤ ord_v Z`: `v` is a conjugate of `w` — but `w` is `Gal(K|k)`
+  stable, so `v = w` — or `v` is completely decomposed in `E = K`.
+
+Writing the divisor in `k`, `(Z) = p^a · ∏ q_i^{b_i} · 𝔠^3` with `3 ∤ a` and each `q_i` split
+completely in `K|k`, i.e. `[q_i] = 0` in `Cl(k)`.  Taking classes in `Cl(k) ≅ ℤ/3` gives
+`0 = a·[p]`, and `[p]` generates because `w` is inert.  Contradiction.  The hypothesis
+`IsReachablePlace 3 K K w` **is** satisfied: the Hilbert class field of `ℚ(√-23)` has class number
+one, so `w` is principal and its generator answers the divisor demand with nothing else in its
+divisor at all.  Hence `DecomposedUnitsEP 3` is **false**.  (Nothing in the argument uses roots of
+unity, so adding `μ_ℓ ⊆ K` to the definition does not save it; it only moves the counterexample to a
+field containing `ζ_ℓ` whose class number is divisible by `ℓ`.)
+
+The same computation shows where the escape has to come from: if `K|M` is ramified at a place `u`
+with `ℓ ∣ e`, then `ord_u Z` is unconstrained (the constraint is on `ord_v = e·ord_u` upstairs) and
+the class-group identity has a free term.  When `K|M` is unramified everywhere there is no free term
+and no `Z ∈ M^×` exists.  **The invariant class must be sought in `K^×`, not in `M^×`.**
+
+### (e) The exact shape of clause 1
+
+Fix the named place `w`, put `D = D_w`, let `Split` be the set of places of `K` completely
+decomposed in `E|k`, and `S₀ = Gal(K|k)·w ∪ Split`.  Let
+
+```
+V = { x ∈ K^× : ord_v x ≡ 0 (mod ℓ) for every v ∉ S₀ }.
+```
+
+Suppose for the moment `Cl(K)/ℓ = 0`.  Then `div : V/(K^×)^ℓ ↠ Div_{S₀}/ℓ` with kernel
+`𝓞_K^×/(𝓞_K^×)^ℓ`, giving a short exact sequence of `Gal(K|k)` modules
+
+```
+1 → 𝓞_K^×/(𝓞_K^×)^ℓ → V/(K^×)^ℓ → Div_{S₀}/ℓ → 0.
+```
+
+The local clauses force `ℓ ∣ ord_{σw} Z` at every proper conjugate of `w`, so the divisor class the
+prescription asks for is `[w] ∈ (Div_{S₀}/ℓ)^D` plus an arbitrary element of `(Div_{Split}/ℓ)^D`.
+Therefore
+
+> **clause 1 at `w` holds iff `δ([w]) ∈ H¹(D, 𝓞_K^×/(𝓞_K^×)^ℓ)` lies in `δ((Div_{Split}/ℓ)^D)`.**
+
+Two facts pin this down.  First, `Split` consists of places with *trivial* decomposition group over
+`k`, so `Div_{Split}` is an **induced** `Gal(K|k)` module and its `D` invariants are spanned by the
+orbit sums `∑_{σ} σq`; such an orbit sum is the divisor of an element of `k^×` exactly when the
+prime of `k` below it is principal, and then its `δ` vanishes.  So the split places — the only free
+supply the confinement clause offers — buy **nothing** against this obstruction beyond the class of
+the `k`-prime below them.  Second, the obstruction is not local at `w`: `K_w|M_{w_M}` is unramified,
+so a uniformiser of `M_{w_M}` is one of `K_w` and the local class at `w` is `D` invariant on the
+nose.  `δ([w])` is a global unit-cohomology class.
+
+This is the honest statement of the last odd-`ℓ` gap.  It is *not* a Poitou–Tate condition and it is
+*not* a class-group condition; it is an `H¹` of the `ℓ`-torsion of the unit group of the level as a
+module over a **cyclic** decomposition group.
+
+### (f) Disposition
+
+* `FlatDecomposed.lean` stays: the reduction is a theorem and the statement is the sharpest
+  "one place at a time" form of the demand.  `DecomposedUnitsEP` must never be listed as a
+  *plausible* hypothesis — it is refuted by (d).
+* The next attack on clause 1 has to produce a class of `(K^×/(K^×)^ℓ)^{D}` that is **not** in the
+  image of `M^×`.  Hilbert 90 for `K|M` identifies that quotient exactly:
+
+  ```
+  (K^×/(K^×)^ℓ)^{D} / im(M^×)  ≅  H¹(D, (K^×)^ℓ)  ≅  ker( H²(D, μ_ℓ(K)) → H²(D, K^×) )
+                               =  ( μ_ℓ(M) ∩ N_{K|M} K^× ) / N_{K|M} μ_ℓ(K)       (D cyclic).
+  ```
+
+  So the extra supply is measured by the roots of unity of `M` which **are** norms from `K^×`
+  without being norms of roots of unity — a Hasse norm condition.  In particular, **when
+  `μ_ℓ(K) = 1` there is no extra supply at all** and every invariant class comes from `M^×`.
+
+### (g) The refutation reaches `HasFlatPrescribedUnits` itself, so `FlatUnitsEP` is FALSE
+
+Run (d) again in the same field, but now against the *unrestricted* demand.  With
+`k = ℚ(√-23)`, `K` its Hilbert class field, `ℓ = 3`, `w` inert over `k`, `E = K`, `Tz = ∅` and
+`ι = Unit`:
+
+* `ζ_3 ∉ K`, because `K|ℚ` is ramified only at `23` while `ℚ(ζ_3)|ℚ` is ramified at `3`.  Hence
+  `μ_3(K) = 1`, the cubing map `K^× → (K^×)^3` is an isomorphism of `Gal(K|k)` modules, and
+  `H¹(Gal(K|k), (K^×)^3) ≅ H¹(Gal(K|k), K^×) = 1` by Hilbert 90.
+* Therefore `(K^×/(K^×)^3)^{Gal(K|k)}` is exactly the image of `k^×`: clause 1 forces the radicand
+  to be a cube times an element of `k^×`.
+* `K|k` is unramified everywhere, so `ord_v` of an element of `k^×` is `ord_q` of it at the prime
+  below, and the confinement clause of (d) applies verbatim: `0 = a·[p]` in `Cl(k) ≅ ℤ/3` with
+  `3 ∤ a` and `[p]` a generator.  Contradiction.
+
+Every hypothesis of `HasFlatPrescribedUnits 3 K` is met — the distinct-orbit clause is vacuous for
+`ι = Unit`, `w ∉ ∅`, `3 ∉ w` for `w` away from `3`, and `IsReachablePlace 3 K K w` holds because
+`h_K = 1`.  So
+
+> **`HasFlatPrescribedUnits 3 K` is false for this `K`, and hence `FlatUnitsEP 3` is false.**
+
+This is a *second*, independent class-group wall, one level deeper than the one §1.103 found and
+§1.104 repaired: `IsReachablePlace` buys the divisor, but nothing in the current design buys the
+divisor **and** the invariance at the same time.  The same computation shows the repair pattern of
+§1.104 cannot be reapplied: strengthening `IsReachablePlace` to demand an invariant witness makes
+`HasFlatPrescribedUnits` provable-in-principle again, but pushes the identical contradiction into
+`HasReachableLevel`, which then fails in exactly this configuration (the obstruction involves only
+`Cl(k)` and is untouched by enlarging `E`).
+
+What survives, and what the next design has to use, is the observation of §1.106(a) read in the
+light of §1.107(a): the consumer does **not** have to be built from a single radicand.  Built from a
+whole Galois orbit of radicands the equivariance is automatic and no invariance is needed at all;
+the price is that the prescribed layer value must lie in `Tr_D(layer)`.  Unlike the class-group
+obstruction above, *that* price is payable by the shrinking, which is chosen after the prescribed
+values are known — the same lever §1.104(h) uses for `HasReachableLevel`.
