@@ -38,6 +38,9 @@ permutation of an index set to exhibit and no bookkeeping between the two famili
   tensor is the tensor carried by that map.**
 * `InverseGalois.Shafarevich.kummerTensorKernelHom_sum`: on the tensor a family defines it is the
   homomorphism assembled out of that family.
+* `InverseGalois.Shafarevich.exists_forall_sum_tmul_eq`: **a spanning family of the coefficient
+  presents every tensor**, so a tensor may always be read as a family of units against a family of
+  coefficients fixed in advance.
 
 ## Tags
 
@@ -62,6 +65,50 @@ theorem zmod_smul_eq_val_nsmul (c : ZMod n) (x : N) : c • x = c.val • x := b
   rw [← Nat.cast_smul_eq_nsmul (ZMod n) c.val x, ZMod.natCast_rightInverse c]
 
 end Scalar
+
+/-! ### Presenting a tensor along a spanning family of the coefficient -/
+
+section Present
+
+variable {ℓ : ℕ} {G M : Type*} [CommGroup G] [CommGroup M] {T : Type*} [Fintype T]
+
+/-- **A spanning family of the coefficient presents every tensor.**
+
+If every element of the coefficient group is a product of powers of a finite family, then every
+tensor of an arbitrary group with that coefficient is the sum of the pure tensors of a single
+family of the first group against that fixed family — the coefficient side of the presentation is
+the one given in advance, and only the radicand side is produced. -/
+theorem exists_forall_sum_tmul_eq (b : T → M)
+    (hspan : ∀ m : M, ∃ d : T → ZMod ℓ, ∏ q, b q ^ (d q).val = m)
+    (s : Additive G ⊗[ℤ] Additive M) :
+    ∃ z : T → G, s = ∑ q, Additive.ofMul (z q) ⊗ₜ[ℤ] Additive.ofMul (b q) := by
+  have hL : ∀ (m : ℕ) (x : Additive G) (y : Additive M),
+      Additive.ofMul (Additive.toMul x ^ m) ⊗ₜ[ℤ] y = x ⊗ₜ[ℤ] (m • y) := by
+    intro m x y
+    induction m with
+    | zero => simp
+    | succ i ih =>
+      rw [pow_succ, _root_.ofMul_mul, add_tmul, ih, _root_.ofMul_toMul, succ_nsmul, tmul_add]
+  induction s using TensorProduct.induction_on with
+  | zero => exact ⟨fun _ => 1, by simp⟩
+  | tmul u v =>
+    obtain ⟨d, hd⟩ := hspan (Additive.toMul v)
+    refine ⟨fun q => Additive.toMul u ^ (d q).val, ?_⟩
+    have hv : ∑ q, (d q).val • Additive.ofMul (b q) = v := by
+      have h1 : Additive.ofMul (∏ q, b q ^ (d q).val) = v := by
+        rw [hd, _root_.ofMul_toMul]
+      rw [_root_.ofMul_prod] at h1
+      simpa only [_root_.ofMul_pow] using h1
+    rw [← hv, TensorProduct.tmul_sum]
+    exact Finset.sum_congr rfl fun q _ => (hL _ u _).symm
+  | add s₁ s₂ h₁ h₂ =>
+    obtain ⟨z₁, hz₁⟩ := h₁
+    obtain ⟨z₂, hz₂⟩ := h₂
+    refine ⟨fun q => z₁ q * z₂ q, ?_⟩
+    rw [hz₁, hz₂, ← Finset.sum_add_distrib]
+    exact Finset.sum_congr rfl fun q _ => by rw [_root_.ofMul_mul, add_tmul]
+
+end Present
 
 /-! ### The twist of a tensor -/
 

@@ -96,6 +96,8 @@ import InverseGalois.Solvable.Shafarevich.InertiaCyclic
 import InverseGalois.Solvable.Shafarevich.LevelFlatRadicand
 import InverseGalois.Solvable.Shafarevich.FlatCyclic
 import InverseGalois.Solvable.Shafarevich.KummerTensor
+import InverseGalois.Solvable.Shafarevich.FlatTwist
+import InverseGalois.Solvable.Shafarevich.FlatTensorVal
 import InverseGalois.Solvable.Shafarevich.KernelPlaces
 import InverseGalois.Solvable.Shafarevich.FlatPlaces
 import InverseGalois.Solvable.Shafarevich.FlatTensor
@@ -896,6 +898,24 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   target exactly when the twist of the tensor is the tensor that map carries it to.**  No
   permutation of an index set is exhibited, which is what a tensor invariant for the twist, not
   presented as a sum over orbits, is able to supply.
+* `InverseGalois.Solvable.Shafarevich.FlatTwist` removes the twist from the demand by putting it
+  into the action.  A target killed by the exponent may be raised to the power a residue modulo the
+  exponent names, so an action of a group on such a target may be twisted by any character of the
+  group into the units modulo the exponent, and the twist is again an action because the character
+  is multiplicative and the power of a power is the power of the product.  Twisting by the character
+  inverse to the one the automorphisms of the level raise the roots of unity by turns the
+  equivariance the assembly asks for into **plain invariance of the tensor for the diagonal
+  action** — the automorphism carrying the radicand and the twisted action carrying the
+  coefficient — which is exactly the kind of object the descent through the units for a finite set
+  of places produces.
+* `InverseGalois.Solvable.Shafarevich.FlatTensorVal` reads the order of such a tensor at a place as
+  the value the prescription asks for.  A tensor of the units of the level with a target spanned by
+  a named family is the sum of the pure tensors of a family of units against that family, and the
+  valuation of such a sum at a place is the product of the powers of the named family by the orders
+  of the units there.  Since the value of a unit at a place is minus its order, and a power of an
+  element killed by the exponent is read off the residue of the exponent, **prescribing the
+  valuation of the tensor at a place prescribes exactly the product of powers the flat prescription
+  asks for**, up to the inverse the change of sign costs.
 * `InverseGalois.Solvable.Shafarevich.KernelPlaces` collects those readings into one demand on the
   level and pays the prescription with it.  A basis of the layer having been named, the homomorphism
   asked for is the one assembled out of a family of units indexed by that basis, and each clause of
