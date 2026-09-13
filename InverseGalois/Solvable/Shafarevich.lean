@@ -1064,8 +1064,10 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   The prescribed orders cost nothing beyond the vector of orders being onto, and the invariance
   costs exactly one class, the obstruction of a radicand whose divisor is already invariant â€” a
   class that has more room to die as more places are read, and the places added may be taken
-  completely decomposed because the confinement clause leaves the order there free.  **What the odd
-  step asks of the arithmetic is a finite set of places on which the orders of the confined units
-  are arbitrary and over which every invariant divisor of confined units is the divisor of an
-  invariant one.**
+  completely decomposed because the confinement clause leaves the order there free.  The named
+  places arrive reachable in the bigger level, which is what lets their orders be prescribed at
+  all: a place whose divisor class is out of reach of the completely decomposed ones carries no
+  unit of order prime to the exponent there.  **What the odd step asks of the arithmetic is a
+  finite set of places on which the orders of the confined units are arbitrary and over which every
+  invariant divisor of confined units is the divisor of an invariant one.**
 -/
