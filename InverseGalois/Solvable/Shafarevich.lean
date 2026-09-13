@@ -106,6 +106,7 @@ import InverseGalois.Solvable.Shafarevich.KernelArith
 import InverseGalois.Solvable.Shafarevich.KernelStep
 import InverseGalois.Solvable.Shafarevich.NamedOrthogonal
 import InverseGalois.Solvable.Shafarevich.FlatStep
+import InverseGalois.Solvable.Shafarevich.FlatDecomposed
 import InverseGalois.Solvable.Shafarevich.FlatTensorStep
 
 /-!
@@ -1019,6 +1020,16 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   is not assumed either, since the lift the prescription is handed has open kernel inside it, so
   where that kernel fails to be open there is nothing to prescribe for.  **The step of the ladder
   over an odd prime is bought by the units of a finite Galois level alone.**
+* `InverseGalois.Solvable.Shafarevich.FlatDecomposed` takes the one clause of that demand which is
+  not a clause at a single place — the automorphisms fixing a named place are asked to fix the unit
+  modulo exponent-th powers — and meets it on the nose, by asking the unit to come from the subfield
+  the place decomposes in.  Such a unit is fixed outright by those automorphisms, so the exponent-th
+  power the clause allows is one.  What is left interacts across the named places only through the
+  demand that the unit belonging to one of them be a local power at the conjugates of the others,
+  and that is a demand at finitely many places, so it folds into the finite set prescribed alongside
+  them; the named places lying in distinct orbits is what keeps the folded set clear of the place
+  the unit belongs to.  **The demand the odd step makes of a level is a demand at one place at a
+  time.**
 * `InverseGalois.Solvable.Shafarevich.FlatTensorStep` spends the tensor assembly over the rationals
   the same way, and finds it cheaper again.  The homomorphism a single invariant tensor assembles is
   equivariant for the whole base group, so the prescription made one field up is answered in one
