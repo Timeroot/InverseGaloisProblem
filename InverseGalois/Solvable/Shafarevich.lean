@@ -101,6 +101,7 @@ import InverseGalois.Solvable.Shafarevich.FlatTensorVal
 import InverseGalois.Solvable.Shafarevich.KernelPlaces
 import InverseGalois.Solvable.Shafarevich.FlatPlaces
 import InverseGalois.Solvable.Shafarevich.FlatTensor
+import InverseGalois.Solvable.Shafarevich.FlatInvariant
 import InverseGalois.Solvable.Shafarevich.KernelArith
 import InverseGalois.Solvable.Shafarevich.KernelStep
 import InverseGalois.Solvable.Shafarevich.NamedOrthogonal
@@ -956,6 +957,20 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   fixing the prime, two primes with the same place below differing by an automorphism the base
   realization kills.  **A level carrying such a tensor carries the flat prescription made one field
   up**, whose equivariance clause is the full one.
+* `InverseGalois.Solvable.Shafarevich.FlatInvariant` takes the root of unity out of that demand
+  altogether.  The exponent by which an automorphism raises the chosen root is well defined modulo
+  the exponent, because the root has exactly that order, and the assignment is multiplicative: it is
+  one character of the automorphisms of the level into the units modulo the exponent.  Twisting the
+  action on the target by the character inverse to it makes the equivariance asked of the tensor
+  into plain invariance for the diagonal action, and makes the compatibility asked of the prescribed
+  values into the plain statement that each value is fixed by the automorphisms fixing its place â€”
+  the two exponents cancelling in both cases because the character is inverted.  **What is left is a
+  statement about a number field and nothing else**: a family of units of the level whose tensor
+  against a named basis is invariant, whose orders at the named places are prescribed, which is a
+  local power on a prescribed finite set, and whose remaining ramification is confined.  What is
+  asked to be invariant is the tensor and not any one of the units it is assembled from: a tensor of
+  rank one is fixed only when both of its factors are, while a tensor of higher rank has room to be
+  fixed with no factor of it fixed at all.
 * `InverseGalois.Solvable.Shafarevich.KernelArith` buys those families from the arithmetic.  The
   named places are read as a finite set of places and the classes prescribed at them as a family
   indexed by that set, the lines they lie on are spread over the orbits of the named places, and the

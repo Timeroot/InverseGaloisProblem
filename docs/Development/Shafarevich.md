@@ -22274,3 +22274,104 @@ So the whole climb over an odd `ℓ` now rests on `FlatTensorEP ℓ` alone, an *
    `hlevel` shrinking hypothesis that this will be spent through.
 3. **`ℓ = 2`.**  `GenericLevelStepEPRoots 2` is untouched; every flat and sharp brick assumes
    `2 < ℓ`.
+
+## 1.102 `InvariantUnitTensorEP`: the ζ-free form of the flat demand, and the class-group wall (2026-09-13)
+
+Three glue bricks (commit `83abdae`) and one new module (`Shafarevich/FlatInvariant.lean`) turn
+`FlatTensorEP` into a statement with **no root of unity in it**.  Plus one negative finding about
+how the remaining arithmetic can and cannot be discharged.
+
+### (a) The three glue bricks
+
+* `exists_forall_sum_tmul_eq` (`KummerTensor.lean`) — every element of
+  `Additive (↥K)ˣ ⊗[ℤ] Additive M`, for `M` killed by `ℓ` and spanned by a finite family `b`, is of
+  the presented form `Σ_q ofMul (z q) ⊗ₜ ofMul (b q)`.  This is what lets the arithmetic hand back a
+  *tensor* and the consumer read it as a *family of units*.
+* `FlatTwist.lean` — `charTwistAction hexp act hone hmul χ : MulDistribMulAction G M`, the twist of
+  an action by a character `χ : G →* (ZMod ℓ)ˣ`, together with
+  `twistTensor_eq_coeffTensor_of_smul_eq`: **a tensor invariant for the diagonal action has the
+  twist the assembly asks for**, as soon as `(σ • m) ^ e = act σ m`.
+* `FlatTensorVal.lean` — `tensorVal_sum_tmul` and `prod_pow_placeValue_val_eq_of_tensorVal`:
+  the valuation of a presented tensor at a place `v ∉ T` is `ofMul (∏_q b q ^ ord_v(z q))`, and
+  since `placeValue v = -ord_v`, **prescribing `tensorVal` at `v` prescribes exactly the product of
+  powers the flat prescription asks for**, up to inversion.
+
+### (b) A basis, not merely a spanning family
+
+`HasFlatPrescribedTensor` now takes one extra hypothesis on `b`:
+
+    (∀ d : T → ZMod ℓ, ∏ q, b q ^ (d q).val = 1 → d = 0)
+
+i.e. `b` is a *basis*, not just a spanning family.  This weakens the demand (it is a hypothesis of
+the `Prop`, so more is given to the arithmetic), and the sole call site supplies it for free from
+`layerCoord_prod_layerBasis_pow` + `layerCoord_one` (`FlatTensor.lean` now imports `LayerMatrix`).
+
+The reason it is needed: the confinement clause is stated on the individual units,
+`∃ q, ℓ ∤ placeValue v (z q)`, whereas what an invariant-divisor construction naturally controls is
+`tensorVal ≠ 0`, i.e. `∏_q b q ^ ord_v(z q) ≠ 1`.  With `b` a basis the two are equivalent; with `b`
+merely spanning they are not.
+
+### (c) `HasInvariantUnitTensor` — the demand with ζ removed
+
+`rootChar hζ := hζ.autToPow k : Gal(↥K/k) →* (ZMod ℓ)ˣ` is the cyclotomic character of the level
+(Mathlib's `IsPrimitiveRoot.autToPow`; `autToPow_spec` is `ζ ^ (rootChar hζ σ).val = σ ζ`).
+`rootChar_eq_of_pow` says any `e` with `σ ζ = ζ ^ e` has `(rootChar hζ σ : ZMod ℓ) = e`, via
+`IsOfFinOrder.pow_eq_pow_iff_modEq` + `hζ.eq_orderOf` (note: **not** `pow_eq_pow_iff_modEq`, which
+wants a `LeftCancelMonoid` and so does not apply to a field).
+
+`HasInvariantUnitTensor ℓ K` is then `HasFlatPrescribedTensor ℓ K ζ` with
+
+* the action given as an honest `[MulDistribMulAction Gal(↥K/k) M]` instance rather than a raw
+  family of monoid homs,
+* the equivariance clause replaced by plain invariance `σ • T = T` of the diagonal action,
+* the compatibility clause on the prescribed values replaced by plain `σ • V μ = V μ` for `σ`
+  fixing `w μ`,
+
+and no mention of `ζ` anywhere.  `hasFlatPrescribedTensor_of_hasInvariantUnitTensor` installs
+`charTwistAction hexp act hone hmul (rootChar hζ)⁻¹` and both clauses fall out, the two exponents
+cancelling because the character is inverted.  At the EP layer,
+`InvariantUnitTensorEP ℓ ⟹ FlatTensorEP ℓ ⟹ GenericLevelStepEPRoots ℓ` (`FlatTensorStep.lean`).
+
+**Not to be confused with the refuted `InvariantRadicandsEP` of §1.94.**  That asked each *radicand*
+to be invariant up to an `ℓ`-th power — the rank-one ansatz, refuted by a product-formula argument
+over `K = ℚ(ζ₂₁)`.  What is asked here is invariance of the **tensor**, which is precisely the
+higher-rank object §1.94(d) identified as unconstrained: a rank-one tensor is fixed only when both
+factors are, a higher-rank one need fix no factor at all.
+
+### (d) The class-group wall: why the naive invariant-divisor route does not close it
+
+The obvious way to build the tensor is `exists_invariant_tensorVal_eq_orbitRadicand`
+(`CFT/PoitouTate/OrdInvariant.lean`): choose an auxiliary Galois-stable finite set `T′` of places
+so that `ordFinsupp T′` is surjective (i.e. `T′` generates `Cl(K)`), take the invariant tensor whose
+divisor is the prescribed orbit radicand, and read off `tensorVal`.  This **cannot work as stated**:
+
+* `tensorVal` is blind to the places of `T′`, so nothing constrains the units there;
+* the confinement clause demands that every place where some `z q` has order prime to `ℓ` be either
+  in a named orbit or **completely split in `E`**;
+* hence `T′` must consist of `E`-split primes *and* generate `Cl(K)`.
+
+By Chebotarev applied to `EH/k`, where `H` is the Hilbert class field of `K` (`H/k` is Galois:
+`σ(H)` is unramified abelian over `K`, hence `⊆ H`), the classes reachable by `E`-split primes are
+exactly `Gal(H/(H ∩ E))`.  Since `Cl(K)^ℓ` is also free to be nontrivial, the residual obstruction is
+`Gal(H ∩ E/K)/ℓ`, which is **not** zero in general — `Gal(E/K)` is elementary abelian `ℓ` and may
+perfectly well meet `H`.
+
+SW pay for exactly this by **spending the shrinking**: their `S = cs(N_n|k) ∪ T` and the obstruction
+`coker(k_{S,T,E}) ↪ Ш¹(k_S, S∖T, E′)` is killed by Prop 6/7 (sw.txt ~1500–1576).  Two consequences
+for the tree:
+
+1. The route must go through `hasFlatKernelPrescription_of_tensorPlaces`, which already takes the
+   `hlevel` shrinking hypothesis, **not** through the no-shrinking
+   `hasFlatKernelPrescription_of_tensor` that `flatPrescriptionEP_of_flatTensorEP` currently calls.
+2. Attempting the shrinking with coefficient rep = `sUnits/ℓ` is blocked by gotcha 3987: the rank of
+   `sUnits` depends on `|T′|`, which depends on `E`, which depends on the number of letters `m` —
+   circular.  SW's obstruction instead lives in `H²(F(m) ⋊ G, E_m(−1))` with the **fixed**
+   one-dimensional coefficient `Hom(μ_p, ℤ/p)`, which is the shape `exists_operatorHom_h1_eq_zero`
+   (Prop 7) already has.
+
+### (e) State of the build
+
+Root build green, **9970 jobs**, 0 errors, 0 warnings, 0 sorries.  `GenericLevelStepEPRoots ℓ` for
+odd `ℓ` now has three alternative sufficient hypotheses in the tree — `FlatUnitsEP ℓ`,
+`FlatTensorEP ℓ`, `InvariantUnitTensorEP ℓ` — of which the last is the weakest and the only one
+phrased purely in terms of a number field.

@@ -7,6 +7,7 @@ import InverseGalois.CFT.Brauer.PrescribedValue
 import InverseGalois.CFT.Kummer.CharLocalClass
 import InverseGalois.Solvable.Shafarevich.FlatPlaces
 import InverseGalois.Solvable.Shafarevich.KummerTensor
+import InverseGalois.Solvable.Shafarevich.LayerMatrix
 
 /-!
 # The flat prescription bought from a single invariant tensor
@@ -34,10 +35,11 @@ the exponent — is read off the family as before.
 ## Main definitions
 
 * `InverseGalois.Shafarevich.HasFlatPrescribedTensor` — **a tensor of the units of a level with a
-  target killed by the exponent can be found, invariant for the automorphisms of the level acting
-  diagonally, of prescribed order at each of finitely many named places lying in distinct orbits, a
-  local power at a prescribed finite set of places those avoid, and confined elsewhere to places
-  sitting over the named ones or completely decomposed in a given finite level.**
+  target killed by the exponent and carrying a basis can be found, invariant for the automorphisms
+  of the level acting diagonally, of prescribed order at each of finitely many named places lying in
+  distinct orbits, a local power at a prescribed finite set of places those avoid, and confined
+  elsewhere to places sitting over the named ones or completely decomposed in a given finite
+  level.**
 
 ## Main results
 
@@ -112,11 +114,11 @@ named places lying in distinct orbits, a local power at a prescribed finite set 
 avoid, and confined elsewhere to places sitting over the named ones or completely decomposed in a
 given finite level.**
 
-The target is an arbitrary group killed by the exponent, together with a family spanning it in the
-sense that every element is a product of powers of its members, and an action of the automorphisms
-of the level on it.  The tensor is asked for as a family of units indexed by that spanning family,
-which is the same thing as a tensor because the expression the homomorphism is assembled by is
-bilinear and kills the exponent-th powers.
+The target is an arbitrary group killed by the exponent, together with a basis of it — a family
+whose powers give every element and only trivially give the identity — and an action of the
+automorphisms of the level on it.  The tensor is asked for as a family of units indexed by that
+basis, which is the same thing as a tensor because the expression the homomorphism is assembled by
+is bilinear and kills the exponent-th powers.
 
 The invariance asked of it is the invariance of the diagonal action twisted on the coefficient: an
 automorphism of the level carries the radicand, and raises the coefficient to the exponent by which
@@ -140,6 +142,7 @@ def HasFlatPrescribedTensor (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω
     ∀ (M : Type) [CommGroup M], (∀ m : M, m ^ ℓ = 1) →
       ∀ (T : Type) [Fintype T] (b : T → M),
         (∀ m : M, ∃ d : T → ZMod ℓ, ∏ q, b q ^ (d q).val = m) →
+        (∀ d : T → ZMod ℓ, ∏ q, b q ^ (d q).val = 1 → d = 0) →
         ∀ act : Gal(↥K/k) → M →* M, (∀ m : M, act 1 m = m) →
           (∀ (σ τ : Gal(↥K/k)) (m : M), act (σ * τ) m = act σ (act τ m)) →
           ∀ (ι : Type) [Fintype ι] (w : ι → HeightOneSpectrum (𝓞 ↥K)) (V : ι → M),
@@ -451,6 +454,9 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
     ↥(layerSub ℓ (Generic U n S) j) (layerSub_pow_eq_one ℓ (Generic U n S) j)
     (Fin (layerDim ℓ (Generic U n S) j)) (layerBasis ℓ (Generic U n S) j)
     (fun m => ⟨layerCoord ℓ (Generic U n S) j m, prod_layerBasis_pow_layerCoord m⟩)
+    (fun d hd => funext fun i => by
+      have h := congrArg (fun m => layerCoord ℓ (Generic U n S) j m i) hd
+      simpa only [layerCoord_prod_layerBasis_pow, layerCoord_one, Pi.zero_apply] using h)
     (fun σ => MulDistribMulAction.toMonoidHom ↥(layerSub ℓ (Generic U n S) j) (φ (lift σ)))
     (fun m => by
       show φ (lift (1 : Gal(↥K/k))) • m = m

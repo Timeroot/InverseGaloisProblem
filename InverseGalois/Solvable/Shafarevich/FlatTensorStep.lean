@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.Solvable.Shafarevich.FlatInvariant
 import InverseGalois.Solvable.Shafarevich.FlatStep
 import InverseGalois.Solvable.Shafarevich.FlatTensor
 
@@ -28,12 +29,18 @@ with no tracing over cosets.
 * `Shafarevich.FlatTensorEP` — **every finite Galois level of the rationals containing the roots of
   unity of order the prime carries the invariant tensor the flat prescription is assembled out
   of.**
+* `Shafarevich.InvariantUnitTensorEP` — the same demand with the root of unity taken out of it, a
+  statement about the units of a number field alone.
 
 ## Main results
 
 * `Shafarevich.flatPrescriptionEP_of_flatTensorEP` — **the tensor buys the flattening.**
 * `Shafarevich.genericLevelStepEPRoots_of_flatTensorEP` — **the step of the ladder over an odd
   prime, in exchange for the tensor alone.**
+* `Shafarevich.flatTensorEP_of_invariantUnitTensorEP` — the invariant tensor of units buys the
+  prescribed tensor.
+* `Shafarevich.genericLevelStepEPRoots_of_invariantUnitTensorEP` — **the step of the ladder over an
+  odd prime, in exchange for the invariant tensor of units alone.**
 
 ## Tags
 
@@ -140,5 +147,36 @@ whole climb over an odd prime rests on, read as a single invariant object. -/
 theorem genericLevelStepEPRoots_of_flatTensorEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] (hodd : 2 < ℓ)
     (h : FlatTensorEP ℓ) : GenericLevelStepEPRoots ℓ :=
   genericLevelStepEPRoots_of_flatPrescriptionEP ℓ hodd (flatPrescriptionEP_of_flatTensorEP ℓ h)
+
+/-! ### The same demand with the root of unity taken out -/
+
+/-- **The demand the flat step makes of the arithmetic, written without the root of unity.**
+
+The level is still asked to carry a primitive root of unity of order the prime, since the Kummer
+theory the assembly runs on needs one, but nothing in what is asked of the level mentions it: a
+target killed by the exponent with an action of the automorphisms of the level and a named basis
+being given, and finitely many places in distinct orbits being named together with values there
+fixed by the automorphisms fixing their places, a family of units of the level is asked for whose
+tensor against the basis is invariant, whose orders at the named places give the prescribed values,
+which is a local power at a prescribed finite set of places the named places avoid, and whose
+remaining ramification is confined. -/
+def InvariantUnitTensorEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
+  ∀ (k Ω : Type) [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω]
+      (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
+      (∃ ζ : ↥K, IsPrimitiveRoot ζ ℓ) → HasInvariantUnitTensor ℓ K
+
+/-- **The invariant tensor of units buys the prescribed tensor**, the twist by the character
+inverse to the cyclotomic one turning the invariance into the equivariance the assembly asks
+for. -/
+theorem flatTensorEP_of_invariantUnitTensorEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
+    (h : InvariantUnitTensorEP ℓ) : FlatTensorEP ℓ := by
+  intro k Ω _ _ _ _ _ _ K _ _ _ ζ hζ
+  exact hasFlatPrescribedTensor_of_hasInvariantUnitTensor hζ (h k Ω K ⟨ζ, hζ⟩)
+
+/-- **The step of the ladder over an odd prime, in exchange for the invariant tensor of units
+alone** — the whole climb resting on one statement about the units of a number field. -/
+theorem genericLevelStepEPRoots_of_invariantUnitTensorEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
+    (hodd : 2 < ℓ) (h : InvariantUnitTensorEP ℓ) : GenericLevelStepEPRoots ℓ :=
+  genericLevelStepEPRoots_of_flatTensorEP ℓ hodd (flatTensorEP_of_invariantUnitTensorEP ℓ h)
 
 end Shafarevich
