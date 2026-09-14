@@ -117,6 +117,7 @@ import InverseGalois.Solvable.Shafarevich.FlatTensorConfined
 import InverseGalois.Solvable.Shafarevich.FlatTensorDiagonal
 import InverseGalois.Solvable.Shafarevich.FlatDiagonalUnits
 import InverseGalois.Solvable.Shafarevich.FlatStabilizerUnits
+import InverseGalois.Solvable.Shafarevich.FlatSylowUnits
 import InverseGalois.Solvable.Shafarevich.FlatLineUnits
 import InverseGalois.Solvable.Shafarevich.FlatUniformizerUnits
 import InverseGalois.Solvable.Shafarevich.ScholzLine
@@ -1151,6 +1152,17 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   automorphisms fixing the place and has order the size of that group there, which a power brings
   back to one modulo the exponent.  So the arithmetic is spent only at the places of the hull whose
   decomposition group carries an element of order the prime.
+* `InverseGalois.Solvable.Shafarevich.FlatSylowUnits` cuts what is asked of the automorphisms
+  fixing a place down to a subgroup of order a power of the prime.  A unit fixed modulo
+  exponent-th powers by a Sylow subgroup of those automorphisms is spread along a transversal of
+  that subgroup: an automorphism fixing the place carries a representative of a coset to a
+  representative of the translated coset up to an element of the subgroup, so the product of the
+  translates of the unit is returned to itself by reindexing along the permutation of cosets, and
+  only exponent-th powers survive.  Every representative fixes the place, so the product has order
+  there the index of the subgroup, prime to the exponent, which a power brings back to one.
+  Nothing about the subgroup is used but its index, so no normality is asked of it.  **The
+  invariance is therefore only ever read under a group of order a power of the prime**, and such a
+  group fixes the roots of unity of that order.
 * `InverseGalois.Solvable.Shafarevich.FlatLineUnits` produces those units without asking the orbits
   of the named places to be free.  A line of local classes named by a global unit spreads over an
   orbit only when the orbit is free, since two automorphisms carrying the named place to the same
