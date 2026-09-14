@@ -70,6 +70,7 @@ import InverseGalois.Solvable.Shafarevich.LevelCyclicRepair
 import InverseGalois.Solvable.Shafarevich.CyclicLift
 import InverseGalois.Solvable.Shafarevich.LevelFlatTwist
 import InverseGalois.Solvable.Shafarevich.LevelFlatKernel
+import InverseGalois.Solvable.Shafarevich.LevelFlatCover
 import InverseGalois.Solvable.Shafarevich.LevelFlatOrbit
 import InverseGalois.Solvable.Shafarevich.CyclicCorrection
 import InverseGalois.Solvable.Shafarevich.LevelConfinedTwist
@@ -643,6 +644,20 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   vanishing along the named subgroups and the clause confining the new ramification all transfer
   verbatim.  So **a prescription of an equivariant homomorphism on the kernel of the base
   realization, at every number of letters, buys the flat prescription over the base field**.
+* `InverseGalois.Solvable.Shafarevich.LevelFlatCover` lets the arithmetic pay for that prescription
+  with a covering rather than outright.  Over a number field the prescribed values are not attained
+  at the number of letters they are read at: correcting the prescribed divisor to an invariant one
+  has an obstruction, and the obstruction is a genuine class, killed only by enlarging the level.
+  That is the packaging the everywhere locally trivial classes of the second cohomology already
+  arrive in, and it is consumed the same way.  The count on first homology asks only for the
+  operator group, the number of letters the answer is wanted at, the layer and the twist, so the
+  number of letters to start from is fixed before any lift, any named prime and hence any class is
+  known; at that number the covering turns the data into one homology class, the count kills it by a
+  surjective equivariant homomorphism, and the prescription is answered at the intermediate number.
+  The two shrinkings compose, the map of layers and the morphism of extensions both being
+  functorial, so the prescribed values and the clause confining the new ramification transfer.  So
+  **a prescription covered by a class of the first homology of the level, at every number of
+  letters, buys the prescription on the kernel of the base realization**.
 * `InverseGalois.Solvable.Shafarevich.LevelFlatOrbit` buys that prescription one named prime at a
   time.  What the prescription upstairs asks of one homomorphism is equivariance for conjugation by
   the whole group, and the arithmetic supplying homomorphisms â€” a radicand and a root of unity, read
