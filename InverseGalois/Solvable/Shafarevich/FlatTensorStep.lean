@@ -58,13 +58,16 @@ set_option maxHeartbeats 1600000
 
 attribute [local instance] zmodTrivialAction
 
+-- Pin `Algebra ℚ ↥K` to the tower instance rather than `DivisionRing.toRatAlgebra`.
+attribute [local instance 2000] IntermediateField.algebra'
+
 /-! ### The arithmetic, asked of every level -/
 
 /-- **Every finite Galois level of the rationals containing the roots of unity of order the prime
 carries the invariant tensor the flat prescription is assembled out of.**
 
 The demand is the one the assembly of the flat prescription out of a single tensor makes, asked of
-every finite Galois level of an arbitrary number field inside an algebraic closure carrying a
+every finite Galois level of the rationals inside an algebraic closure carrying a
 primitive root of unity of order the prime: a target killed by the exponent, a spanning family of
 it and an action of the automorphisms of the level on it being given, and finitely many places in
 distinct orbits being named together with the values prescribed there, a tensor of the units of the
@@ -74,8 +77,8 @@ named place, a local power at a prescribed finite set of places the named places
 elsewhere to places sitting over the named ones or completely decomposed in a finite level given in
 advance. -/
 def FlatTensorEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
-  ∀ (k Ω : Type) [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω]
-      (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K]
+  ∀ (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
+      (K : IntermediateField ℚ Ω) [FiniteDimensional ℚ ↥K] [NumberField ↥K] [IsGalois ℚ ↥K]
       (ζ : ↥K), IsPrimitiveRoot ζ ℓ → HasFlatPrescribedTensor ℓ K ζ
 
 /-! ### The prescription and the step -/
@@ -136,7 +139,7 @@ theorem flatPrescriptionEP_of_flatTensorEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero 
     obtain ⟨Tz, hTz⟩ := exists_finset_mem_iff_smul_placeUnder K hPrp hPrbot
     obtain ⟨N, hlevel⟩ := hreach ℚ Ω S U φ M j K ⟨_, hζ⟩ hKker ↑Tz Tz.finite_toSet
     exact hasFlatKernelPrescription_of_tensorPlaces N K hKker hζ hkd hPrp hPrbot hDPr
-      (exists_smul_placeUnder_of_mem K hPrp hPrbot hcovP) Tz hTz hlevel (h ℚ Ω K _ hζ)
+      (exists_smul_placeUnder_of_mem K hPrp hPrbot hcovP) Tz hTz hlevel (h Ω K _ hζ)
   · refine ⟨0, ?_⟩
     intro F ι _ Q A a hFsurj hFsm hFright
     refine absurd (Subgroup.isOpen_mono ?_ (isOpenNormal_ker_of_isSmoothHom hFsm).isOpen) hopen
@@ -164,8 +167,8 @@ tensor against the basis is invariant, whose orders at the named places give the
 which is a local power at a prescribed finite set of places the named places avoid, and whose
 remaining ramification is confined. -/
 def InvariantUnitTensorEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
-  ∀ (k Ω : Type) [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω]
-      (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
+  ∀ (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
+      (K : IntermediateField ℚ Ω) [FiniteDimensional ℚ ↥K] [NumberField ↥K] [IsGalois ℚ ↥K],
       (∃ ζ : ↥K, IsPrimitiveRoot ζ ℓ) → HasInvariantUnitTensor ℓ K
 
 /-- **The invariant tensor of units buys the prescribed tensor**, the twist by the character
@@ -173,8 +176,8 @@ inverse to the cyclotomic one turning the invariance into the equivariance the a
 for. -/
 theorem flatTensorEP_of_invariantUnitTensorEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
     (h : InvariantUnitTensorEP ℓ) : FlatTensorEP ℓ := by
-  intro k Ω _ _ _ _ _ _ K _ _ _ ζ hζ
-  exact hasFlatPrescribedTensor_of_hasInvariantUnitTensor hζ (h k Ω K ⟨ζ, hζ⟩)
+  intro Ω _ _ _ _ K _ _ _ ζ hζ
+  exact hasFlatPrescribedTensor_of_hasInvariantUnitTensor hζ (h Ω K ⟨ζ, hζ⟩)
 
 /-- **The step of the ladder over an odd prime, in exchange for the invariant tensor of units** —
 the arithmetic of the climb resting on one statement about the units of a number field. -/

@@ -164,6 +164,9 @@ namespace Shafarevich
 
 open InverseGalois.CFT InverseGalois.Shafarevich
 
+-- Pin `Algebra ℚ ↥K` to the tower instance rather than `DivisionRing.toRatAlgebra`.
+attribute [local instance 2000] IntermediateField.algebra'
+
 /-! ### The arithmetic, asked of every level -/
 
 /-- **Every finite Galois level of the rationals carries units of the decomposition fields of its
@@ -177,15 +180,15 @@ conjugates of the place, of order divisible by the exponent at the second, and c
 to the conjugates of the place or to places completely decomposed in a finite level given in
 advance. -/
 def DecomposedUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
-  ∀ (k Ω : Type) [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω]
-      (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
+  ∀ (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
+      (K : IntermediateField ℚ Ω) [FiniteDimensional ℚ ↥K] [NumberField ↥K] [IsGalois ℚ ↥K],
     HasDecomposedPrescribedUnits ℓ K
 
 /-- **Units of the decomposition fields buy the units the flat prescription needs.** -/
 theorem flatUnitsEP_of_decomposedUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
     (h : DecomposedUnitsEP ℓ) : FlatUnitsEP ℓ := by
-  intro k Ω _ _ _ _ _ _ K _ _ _
-  exact hasFlatPrescribedUnits_of_hasDecomposedPrescribedUnits (h k Ω K)
+  intro Ω _ _ _ _ K _ _ _
+  exact hasFlatPrescribedUnits_of_hasDecomposedPrescribedUnits (h Ω K)
 
 /-- **The step of the ladder over an odd prime, in exchange for units of the decomposition
 fields** — the arithmetic half of the climb, read at one place at a time and with the equivariance

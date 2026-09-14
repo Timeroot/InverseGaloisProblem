@@ -65,6 +65,9 @@ set_option maxHeartbeats 1600000
 
 attribute [local instance] zmodTrivialAction
 
+-- Pin `Algebra ℚ ↥K` to the tower instance rather than `DivisionRing.toRatAlgebra`.
+attribute [local instance 2000] IntermediateField.algebra'
+
 /-! ### The arithmetic, asked of every level -/
 
 /-- **Every finite Galois level of the rationals carries the units the flat prescription is
@@ -77,8 +80,8 @@ fixing its place, of order there prime to the exponent, a local power at a presc
 places and at the conjugates of the named places other than its own, and confined elsewhere to
 places sitting over the named ones or completely decomposed in a finite level given in advance. -/
 def FlatUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
-  ∀ (k Ω : Type) [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω]
-      (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
+  ∀ (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
+      (K : IntermediateField ℚ Ω) [FiniteDimensional ℚ ↥K] [NumberField ↥K] [IsGalois ℚ ↥K],
     HasFlatPrescribedUnits ℓ K
 
 /-- **The shrinking the flattening spends can be spent on a level reaching every place.**
@@ -172,7 +175,7 @@ theorem flatOrbitPrescriptionEP_of_flatUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZ
     obtain ⟨Tz, hTz⟩ := exists_finset_mem_iff_smul_placeUnder K hPrp hPrbot
     obtain ⟨N, hlevel⟩ := hreach ℚ Ω S U φ n j K ⟨_, hζ⟩ hKker ↑Tz Tz.finite_toSet
     exact hasFlatOrbitPrescription_of_places N K hKker hζ hkd hPrp hPrbot hDPr
-      (exists_smul_placeUnder_of_mem K hPrp hPrbot hcovP) Tz hTz hlevel (h ℚ Ω K)
+      (exists_smul_placeUnder_of_mem K hPrp hPrbot hcovP) Tz hTz hlevel (h Ω K)
   · refine ⟨0, ?_⟩
     intro F ι _ Q A a hFsurj hFsm hFright
     refine absurd (Subgroup.isOpen_mono ?_ (isOpenNormal_ker_of_isSmoothHom hFsm).isOpen) hopen

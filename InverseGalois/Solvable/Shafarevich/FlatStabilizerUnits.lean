@@ -150,20 +150,23 @@ namespace Shafarevich
 
 open InverseGalois.CFT InverseGalois.Shafarevich
 
+-- Pin `Algebra ℚ ↥K` to the tower instance rather than `DivisionRing.toRatAlgebra`.
+attribute [local instance 2000] IntermediateField.algebra'
+
 /-! ### The units, made of every level -/
 
-/-- **Every finite Galois level of a number field inside an algebraic closure carrying a primitive
+/-- **Every finite Galois level of the rationals inside an algebraic closure carrying a primitive
 root of unity of the exponent carries the units the obstruction is bought with.** -/
 def StabilizerConfinedUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
-  ∀ (k Ω : Type) [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω]
-      (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
+  ∀ (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
+      (K : IntermediateField ℚ Ω) [FiniteDimensional ℚ ↥K] [NumberField ↥K] [IsGalois ℚ ↥K],
       (∃ ζ : ↥K, IsPrimitiveRoot ζ ℓ) → HasStabilizerConfinedUnits ℓ K
 
 /-- **The units buy the obstruction, at every level.** -/
 theorem confinedObstructionEP_of_stabilizerConfinedUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
     (h : StabilizerConfinedUnitsEP ℓ) : ConfinedObstructionEP ℓ := by
-  intro k Ω _ _ _ _ _ _ K _ _ _ hζ
-  exact hasConfinedObstruction_of_hasStabilizerConfinedUnits (h k Ω K hζ)
+  intro Ω _ _ _ _ K _ _ _ hζ
+  exact hasConfinedObstruction_of_hasStabilizerConfinedUnits (h Ω K hζ)
 
 /-- **The step of the ladder over an odd prime**, in exchange for the units the obstruction is
 bought with and nothing else. -/

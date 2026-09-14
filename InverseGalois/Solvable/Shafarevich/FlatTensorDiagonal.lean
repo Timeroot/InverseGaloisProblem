@@ -128,9 +128,12 @@ namespace Shafarevich
 
 open InverseGalois.CFT InverseGalois.Shafarevich
 
+-- Pin `Algebra ℚ ↥K` to the tower instance rather than `DivisionRing.toRatAlgebra`.
+attribute [local instance 2000] IntermediateField.algebra'
+
 /-! ### The demand in the local form, made of every level -/
 
-/-- **Every finite Galois level of a number field inside an algebraic closure admits a choice of
+/-- **Every finite Galois level of the rationals inside an algebraic closure admits a choice of
 places carrying a diagonal of units described by local conditions.**
 
 The same demand as before, with the surjectivity of the vector of orders replaced by the family of
@@ -141,15 +144,15 @@ ramification is allowed at, and of order at its own place prime to the exponent.
 The level is asked to carry a primitive root of unity of the exponent, which is what the level the
 climb reads the demand at carries anyway. -/
 def ConfinedDiagonalPlacesEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
-  ∀ (k Ω : Type) [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω]
-      (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
+  ∀ (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
+      (K : IntermediateField ℚ Ω) [FiniteDimensional ℚ ↥K] [NumberField ↥K] [IsGalois ℚ ↥K],
       (∃ ζ : ↥K, IsPrimitiveRoot ζ ℓ) → HasConfinedDiagonalPlaces ℓ K
 
 /-- **The demand in the local form implies the one the flat step consumes.** -/
 theorem confinedRadicandPlacesEP_of_confinedDiagonalPlacesEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
     (h : ConfinedDiagonalPlacesEP ℓ) : ConfinedRadicandPlacesEP ℓ := by
-  intro k Ω _ _ _ _ _ _ K _ _ _ hζ
-  exact hasConfinedRadicandPlaces_of_diagonal (h k Ω K hζ)
+  intro Ω _ _ _ _ K _ _ _ hζ
+  exact hasConfinedRadicandPlaces_of_diagonal (h Ω K hζ)
 
 /-- **The step of the ladder over an odd prime, in exchange for a diagonal of units** — the
 arithmetic of the climb resting on the existence of finitely many units of a number field subject to

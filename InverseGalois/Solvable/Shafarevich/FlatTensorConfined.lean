@@ -274,9 +274,12 @@ namespace Shafarevich
 
 open InverseGalois.CFT InverseGalois.Shafarevich
 
+-- Pin `Algebra ℚ ↥K` to the tower instance rather than `DivisionRing.toRatAlgebra`.
+attribute [local instance 2000] IntermediateField.algebra'
+
 /-! ### The demand, made of every level -/
 
-/-- **Every finite Galois level of a number field inside an algebraic closure admits a choice of
+/-- **Every finite Galois level of the rationals inside an algebraic closure admits a choice of
 places good enough to carry the invariant tensor.**
 
 For every finite set of places a local power is asked at, every finite set of named places whose
@@ -288,15 +291,15 @@ divisor may be corrected to an invariant one with the same divisor.
 The level is asked to carry a primitive root of unity of the exponent, which is what the level the
 climb reads the demand at carries anyway. -/
 def ConfinedRadicandPlacesEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
-  ∀ (k Ω : Type) [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω]
-      (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
+  ∀ (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
+      (K : IntermediateField ℚ Ω) [FiniteDimensional ℚ ↥K] [NumberField ↥K] [IsGalois ℚ ↥K],
       (∃ ζ : ↥K, IsPrimitiveRoot ζ ℓ) → HasConfinedRadicandPlaces ℓ K
 
 /-- **The choice of places buys the invariant tensor of units, level by level.** -/
 theorem invariantUnitTensorEP_of_confinedRadicandPlacesEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
     (h : ConfinedRadicandPlacesEP ℓ) : InvariantUnitTensorEP ℓ := by
-  intro k Ω _ _ _ _ _ _ K _ _ _ hζ
-  exact hasInvariantUnitTensor_of_confinedRadicandPlaces (h k Ω K hζ)
+  intro Ω _ _ _ _ K _ _ _ hζ
+  exact hasInvariantUnitTensor_of_confinedRadicandPlaces (h Ω K hζ)
 
 /-- **The step of the ladder over an odd prime, in exchange for a choice of places** — the
 arithmetic of the climb resting on the choice of a finite set of places of a number field. -/

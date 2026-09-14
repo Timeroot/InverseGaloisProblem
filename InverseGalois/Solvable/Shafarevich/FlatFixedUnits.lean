@@ -217,22 +217,25 @@ namespace Shafarevich
 
 open InverseGalois.CFT InverseGalois.Shafarevich
 
+-- Pin `Algebra ℚ ↥K` to the tower instance rather than `DivisionRing.toRatAlgebra`.
+attribute [local instance 2000] IntermediateField.algebra'
+
 /-! ### The units fixed on the nose, made of every level -/
 
-/-- **Every finite Galois level of a number field inside an algebraic closure carrying a primitive
+/-- **Every finite Galois level of the rationals inside an algebraic closure carrying a primitive
 root of unity of the exponent reaches, with all of the prescription, every one of its places already
 reached by a unit fixed under a subgroup of order a power of the exponent.** -/
 def FixedReachableEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
-  ∀ (k Ω : Type) [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω]
-      (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
+  ∀ (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
+      (K : IntermediateField ℚ Ω) [FiniteDimensional ℚ ↥K] [NumberField ↥K] [IsGalois ℚ ↥K],
       (∃ ζ : ↥K, IsPrimitiveRoot ζ ℓ) → HasFixedReachablePlaces ℓ K
 
 /-- **A unit fixed on the nose buys the units asked under a subgroup of order a power of the
 exponent**, at every level. -/
 theorem sylowConfinedUnitsEP_of_fixedReachableEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
     (h : FixedReachableEP ℓ) : SylowConfinedUnitsEP ℓ := by
-  intro k Ω _ _ _ _ _ _ K _ _ _ hζ
-  exact hasSylowConfinedUnits_of_hasFixedReachablePlaces (h k Ω K hζ)
+  intro Ω _ _ _ _ K _ _ _ hζ
+  exact hasSylowConfinedUnits_of_hasFixedReachablePlaces (h Ω K hζ)
 
 /-- **The step of the ladder over an odd prime**, in exchange for units fixed on the nose by a
 subgroup of order a power of the prime. -/

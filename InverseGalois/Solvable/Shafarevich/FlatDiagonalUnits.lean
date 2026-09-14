@@ -343,6 +343,9 @@ namespace Shafarevich
 
 open InverseGalois.CFT InverseGalois.Shafarevich
 
+-- Pin `Algebra ℚ ↥K` to the tower instance rather than `DivisionRing.toRatAlgebra`.
+attribute [local instance 2000] IntermediateField.algebra'
+
 /-! ### The two halves, made of every level -/
 
 /-- **Every finite Galois level of a number field inside an algebraic closure carrying a primitive
@@ -357,8 +360,8 @@ def FlatDiagonalUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
 root of unity of the exponent carries no obstruction to correcting an invariant divisor of confined
 units to an invariant radicand**, over the hull of the named places. -/
 def ConfinedObstructionEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
-  ∀ (k Ω : Type) [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω]
-      (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
+  ∀ (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
+      (K : IntermediateField ℚ Ω) [FiniteDimensional ℚ ↥K] [NumberField ↥K] [IsGalois ℚ ↥K],
       (∃ ζ : ↥K, IsPrimitiveRoot ζ ℓ) → HasConfinedObstruction ℓ K
 
 /-- **Every level carries the units**, the reachability of a named place being all they cost. -/
@@ -370,8 +373,8 @@ theorem flatDiagonalUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : FlatDiag
 theorem confinedDiagonalPlacesEP_of_flatDiagonalUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
     (hunits : FlatDiagonalUnitsEP ℓ) (hobs : ConfinedObstructionEP ℓ) :
     ConfinedDiagonalPlacesEP ℓ := by
-  intro k Ω _ _ _ _ _ _ K _ _ _ hζ
-  exact hasConfinedDiagonalPlaces_of_flatDiagonalUnits (hunits k Ω K hζ) (hobs k Ω K hζ)
+  intro Ω _ _ _ _ K _ _ _ hζ
+  exact hasConfinedDiagonalPlaces_of_flatDiagonalUnits (hunits ℚ Ω K hζ) (hobs Ω K hζ)
 
 /-- **The step of the ladder over an odd prime, in exchange for the units and the
 obstruction.** -/

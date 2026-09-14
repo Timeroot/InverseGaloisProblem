@@ -25782,3 +25782,167 @@ the degree-`ℓ` subextension of `K/M` is not in the dual Selmer group.  That is
   `single y` is not itself `P`-invariant.  Replacing `u` by `x · u'` moves the demand to `ℓ ∣ ord_y
   u'` but leaves the reciprocity obstruction exactly where it was, as it must.
 * `H¹` killed by `|G|`: useless here, `ℓ ∣ |G|` in general.
+
+## §1.131 The refutation reaches the top of the Flat tower — and it is a statement about the base field (2026-09-14)
+
+### What is refuted
+
+Not just `FixedReachableEP`.  Every unproven hypothesis of the `Flat*` tower is **false as it was
+stated**, all the way up to `FlatTensorEP`:
+
+```
+FixedReachableEP ⟹ SylowConfinedUnitsEP ⟹ StabilizerConfinedUnitsEP ⟹ ConfinedObstructionEP
+  ⟹ ConfinedDiagonalPlacesEP ⟹ ConfinedRadicandPlacesEP ⟹ InvariantUnitTensorEP ⟹ FlatTensorEP
+```
+
+and separately `DecomposedUnitsEP ⟹ FlatUnitsEP`.  Each of these was written
+
+```lean
+∀ (k Ω : Type) [Field k] [NumberField k] … (K : IntermediateField k Ω) …, Has… ℓ K
+```
+
+— quantified over **an arbitrary number field `k` as the base**.  The counterexample below breaks
+the weakest of them, `HasInvariantUnitTensor ℓ K`, whenever `μ_ℓ ⊆ k`.
+
+### The counterexample
+
+Fix an odd prime `ℓ`, a number field `k ⊇ μ_ℓ`, and `b ∈ k^×` with `K = k(b^{1/ℓ})` of degree `ℓ`.
+Write `Δ = Gal(K/k) ≅ ℤ/ℓ`.  Because `ℓ` is odd, `Δ` acts trivially on `μ_ℓ` (the cyclotomic
+character of `Gal(k̄/k)` is trivial, `μ_ℓ` already being in `k`).
+
+**Step 1 (Hilbert 90 ⇒ the invariants come from the base).**  From
+`1 → (K^×)^ℓ → K^× → K^×/(K^×)^ℓ → 1`,
+
+```
+(K^×/(K^×)^ℓ)^Δ / image(k^×)  ↪  H¹(Δ, (K^×)^ℓ),
+```
+
+and from `1 → μ_ℓ → K^× →^{x ↦ x^ℓ} (K^×)^ℓ → 1` together with `H¹(Δ, K^×) = 0`,
+
+```
+H¹(Δ, (K^×)^ℓ)  ≅  ker( H²(Δ, μ_ℓ) → H²(Δ, K^×) )  =  ker( μ_ℓ → k^×/N_{K/k}K^× ).
+```
+
+So **if `ζ_ℓ ∉ N_{K/k}(K^×)` then every `Δ`-invariant class of `K^×/(K^×)^ℓ` is represented by an
+element of `k^×`.**  Call this *Case A*.  It is arranged by a single local condition: pick a place
+`q` of `k` ramified in `K/k` with `N q ≢ 1 mod ℓ²`; the tame symbol gives
+`(ζ_ℓ, π_q)_q = ζ_ℓ^{(Nq-1)/ℓ} ≠ 1`, so `ζ_ℓ` is not even a local norm there.  (For `ℓ = 3`,
+`k = ℚ(ζ_3)` already works.)
+
+**Step 2 (the data handed to `HasInvariantUnitTensor`).**
+
+* `E := K` (the most permissive bigger level — any `E ⊇ K` works, since a place completely
+  decomposed in `E` is completely decomposed in `K`);
+* `M := Multiplicative (ZMod ℓ)` with the **trivial** `Δ`-action, `T := Unit`, `b` the generator
+  (spanning and independent, as the definition asks);
+* `Tz :=` a `Δ`-stable finite set of places of `K` containing **every place ramified over `k`**;
+* `y :=` a place of `K` **inert** over `k`, prime to `ℓ`, outside `Tz`; `ι := Unit`, `w := y`,
+  `V :=` the nontrivial element of `M`.
+
+Every hypothesis holds: `y` is unramified, so `e(y/k) = 1` and `IsBaseOrderPlace ℓ K y` holds; the
+value `V` is fixed because the action is trivial; the orbit of `y` is `{y}` because `y` is inert;
+and `IsReachablePlace ℓ K E Tz y` is a plain ray-class statement with no equivariance in it — by
+Chebotarev applied to the compositum of `E` with the exponent-`ℓ` ray class field of `K` modulo a
+high power of `Tz`, the class of `y` is matched by a place completely decomposed in `E`, and the
+difference is the divisor of the required unit.
+
+**Step 3 (the tally).**  Suppose `z ∈ K^×` answers the demand.  Invariance of `z ⊗ 1` in
+`K^× ⊗_ℤ ℤ/ℓ = K^×/(K^×)^ℓ` is exactly `Δ`-invariance of the class, so by Step 1, `z = a·c^ℓ` with
+`a ∈ k^×`.  Now sum the `ℓ`-th power Hilbert symbols `(a, b)_q` over the places `q` of `k`.
+`K/k` is cyclic of prime degree, so each `q` is split, inert or totally ramified.
+
+| place `q` of `k` | why `(a,b)_q = 1` |
+| --- | --- |
+| split in `K` | `b ∈ (k_q^×)^ℓ`, so the symbol is trivial for every first argument |
+| ramified | `v ∣ q` lies in `Tz`, so `z ∈ (K_v^×)^ℓ`, hence `a ∈ k_q^× ∩ (K_v^×)^ℓ ⊆ ⟨b⟩(k_q^×)^ℓ`, and `(b,b)_q = (-1,b)_q = 1` for `ℓ` odd |
+| inert, `≠ p` | `v ∤ q` is neither in the orbit `{y}` nor completely decomposed in `E`, so the confinement clause gives `ℓ ∣ ord_v z = ord_q a`, and for an unramified extension `N K_v^× = {x : ℓ ∣ ord_q x}` |
+| archimedean | `k` is totally complex (`μ_ℓ ⊆ k`, `ℓ` odd) |
+
+and at `p = y ∩ k`: `y` is inert and unramified, so `ord_y z = ord_p a`, which the prescription
+forces to be prime to `ℓ` — so `(a,b)_p ≠ 1`.  The product over all places is therefore `≠ 1`,
+contradicting reciprocity.  **No such `z` exists.**
+
+### Propagating the refutation downward
+
+* `HasInvariantUnitTensor ℓ K` is false, so `InvariantUnitTensorEP ℓ` is false, and so is
+  `FlatTensorEP ℓ` (over a base containing `μ_ℓ` the twist by `rootChar` is the identity, so
+  `HasFlatPrescribedTensor ℓ K ζ` is the same demand).
+* `HasConfinedObstruction ℓ K` is false at the same data.  Take `Xs₀ = {y}`, so
+  `stableHull Xs₀ = {y}`; surjectivity of `confinedOrd` is not an obstacle — it *holds*, by the same
+  ray-class argument as `IsReachablePlace`, and it hands over `u₀` with `ord_y u₀ = 1`.  Put
+  `C = Multiplicative (ZMod ℓ)` with trivial action and `t = u₀ ⊗ 1`; its valuation is invariant
+  because `Δ` fixes `y`.  If the class vanished then
+  `exists_invariant_tensorCoeff_of_map_tensorInvariantClass_eq_zero` (with `φ = id`) would return an
+  invariant `s ∈ A ⊗ ℤ/ℓ = A/A^ℓ`, i.e. a confined unit whose class is `Δ`-invariant with
+  `ord_y ≡ 1 (mod ℓ)` — refuted by the tally.
+* Hence `StabilizerConfinedUnitsEP`, `SylowConfinedUnitsEP`, `FixedReachableEP`,
+  `ConfinedDiagonalPlacesEP`, `ConfinedRadicandPlacesEP` are all false as stated.  Enlarging `Xs`
+  in `HasConfinedDiagonalPlaces`/`HasConfinedRadicandPlaces` does not help: the unit group
+  `confinedUnits ℓ (stableHull Tz) (allowedPlaces K E Xs₀)` depends on `Xs₀`, not on `Xs`, and a
+  bigger `Xs` only shrinks `confinedSUnits`.  Pick `u₀` with `confinedOrd u₀ = single y` exactly,
+  which the provided surjectivity supplies and which is invariant because `Δ` fixes `y`.
+* The same tally with `P = Δ` refutes `HasFlatPrescribedUnits`/`HasDecomposedPrescribedUnits`:
+  at an inert `y` the decomposition group is all of `Δ`, and "fixed up to an `ℓ`-th power by the
+  automorphisms fixing the place" is again `Δ`-invariance of the class.
+
+### Why the base field is the whole story
+
+Run the same tally over `k = ℚ`.  Let `K ⊇ μ_ℓ` be finite Galois over `ℚ` with group `G`, let
+`χ : G ↠ (ℤ/ℓ)^×` be the cyclotomic character (surjective, because `K ⊇ ℚ(μ_ℓ)` and `K/ℚ` is
+Galois), and let `F = K^P` for an `ℓ`-subgroup `P`.  Since `|image χ| = ℓ - 1` is prime to `ℓ`,
+`P ⊆ ker χ`, so `μ_ℓ ⊆ F` and `K ⊇ F(b^{1/ℓ})` is Kummer over `F`, and the tally above runs over
+the places of `F`.
+
+The difference is the **orbit**.  Over a base containing `μ_ℓ` the named place could be taken with
+trivial orbit.  Over `ℚ` the symbol at `v` is constrained by equivariance:
+`(a,b)_{τv} = τ((a,b)_v) = (a,b)_v^{χ(τ)}` for `τ ∈ Gal(F/ℚ)` — using `τa ≡ a` and `τb = b` modulo
+`ℓ`-th powers, and `(b,b)_v = 1`.  Two consequences:
+
+1. if the stabiliser `H` of `v` has `χ(H) ≠ 1` then `(a,b)_v` is fixed by a nontrivial power map on
+   `μ_ℓ`, hence `(a,b)_v = 1`;
+2. otherwise `H ⊆ ker χ`, the orbit is `|ker χ / H|` copies of `(ℤ/ℓ)^×`, and the product over the
+   orbit is `(a,b)_v^{Σ}` with `Σ = |ker χ / H| · Σ_{c ∈ (ℤ/ℓ)^×} c = |ker χ/H| · ℓ(ℓ-1)/2 ≡ 0`
+   mod `ℓ`, because `ℓ` is odd.
+
+**Every orbit contributes `1`.**  The reciprocity obstruction that kills the demand over a base
+containing `μ_ℓ` vanishes identically over `ℚ`: it is the trace of the cyclotomic character, and
+that trace is zero precisely because `μ_ℓ ⊄ ℚ`.  This is the same mechanism that makes
+Scholz–Reichardt work over `ℚ` and fail over `ℚ(μ_ℓ)`.
+
+### What was done
+
+Every one of the ten unproven `…EP` hypotheses of the tower was narrowed from "for every number
+field base `k`" to "for the base `ℚ`":
+
+```lean
+∀ (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
+    (K : IntermediateField ℚ Ω) [FiniteDimensional ℚ ↥K] [NumberField ↥K] [IsGalois ℚ ↥K], …
+```
+
+This loses nothing: `flatPrescriptionEP_of_flatTensorEP` and
+`flatOrbitPrescriptionEP_of_flatUnitsEP` instantiate the hypothesis **only at `k = ℚ`** — the level
+`K` there is the fixed field of `φ.ker ≤ Gal(Ω/ℚ)`.  The general-`k` form was gratuitous strength,
+and it was exactly the strength that is false.  The two *proven* members of the family,
+`flatReachableEP` and `flatDiagonalUnitsEP`, keep their general-`k` statements, since they are
+theorems.
+
+Files touched: `FlatDecomposed`, `FlatStep`, `FlatSylowUnits`, `FlatFixedUnits`,
+`FlatStabilizerUnits`, `FlatDiagonalUnits`, `FlatTensorDiagonal`, `FlatTensorConfined`,
+`FlatTensorStep`.
+
+### What this does and does not buy
+
+It removes a known refutation; it does not prove anything.  The honest reading of the tally is that
+the arithmetic demand has a *reciprocity residue*, and over `ℚ` that residue is forced to zero by
+character orthogonality rather than by any choice of the places.  So the odd-`ℓ` gap is now
+
+> `ConfinedObstructionEP ℓ` (over `ℚ`) — the vanishing, for every `ℓ`-torsion coefficient module,
+> of the obstruction to correcting an invariant divisor of confined units to an invariant radicand.
+
+with `FixedReachableEP`/`SylowConfinedUnitsEP`/`StabilizerConfinedUnitsEP` sitting above it as
+progressively stronger sufficient conditions whose `ℚ`-forms are *not* refuted but whose §1.130
+descent argument still applies verbatim to any intermediate field `F = K^P` that happens to reproduce
+the bad orbit structure.  The structural escape hatch remains the one identified in §1.130 and in
+`exists_invariant_tensorCoeff_of_map_tensorInvariantClass_eq_zero`: the obstruction only has to die
+*after* a coefficient homomorphism `φ : C → C'`, and the generic shrinking supplies such `φ` — which
+is exactly where Schmidt–Wingberg spend their Theorem 7(i) in Step 3.
