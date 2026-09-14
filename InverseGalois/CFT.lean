@@ -545,6 +545,7 @@ import InverseGalois.CFT.PoitouTate.SplitFamily
 import InverseGalois.CFT.PoitouTate.SplitLocalPower
 import InverseGalois.CFT.PoitouTate.SplitPlaceDescend
 import InverseGalois.CFT.PoitouTate.SplitPlaceGenerate
+import InverseGalois.CFT.PoitouTate.SplitPlaceMember
 import InverseGalois.CFT.PoitouTate.SplitPlacePower
 import InverseGalois.CFT.PoitouTate.SupRadicandChar
 import InverseGalois.CFT.PoitouTate.SupRadicandCyclic
@@ -8196,6 +8197,14 @@ it that are available here.
   and the field that subgroup fixes is the intermediate field itself.  Nothing but the Galois group
   of the top field occurs in the statement — no place of the intermediate field and no completion
   — which is what a descent through an intermediate field asks for.
+* `InverseGalois.CFT.PoitouTate.SplitPlaceMember` puts the two together at a finite level.  The
+  decomposition group above a prime splitting completely in an intermediate field fixes that field,
+  hence the smaller field carrying the radicand and the roots of unity, so it may be read as a
+  decomposition group over that smaller field, where the radicand being a power in the completion
+  says exactly that the radical is fixed.  **Finitely many primes of the base, splitting completely
+  in an intermediate field and avoiding any prescribed finite set, force a radical whose radicand
+  is locally a power at each of them into that field.**  No infinite extension and no place of the
+  intermediate field occurs: the whole statement lives at a finite level.
 
 * `InverseGalois.CFT.PoitouTate.SplitDetect` asks finitely many places to detect not one radicand
   but every `S`-unit at once.  An `S`-unit of a normal extension is a power there exactly when every
