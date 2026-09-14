@@ -486,6 +486,7 @@ import InverseGalois.CFT.PoitouTate.ConfinedDiagonal
 import InverseGalois.CFT.PoitouTate.ConfinedEquivariant
 import InverseGalois.CFT.PoitouTate.ConfinedSurjective
 import InverseGalois.CFT.PoitouTate.ConfinedUnits
+import InverseGalois.CFT.PoitouTate.ConfinedWeighted
 import InverseGalois.CFT.PoitouTate.ConjugatePlace
 import InverseGalois.CFT.PoitouTate.CupDual
 import InverseGalois.CFT.PoitouTate.CyclicPairing
@@ -550,7 +551,9 @@ import InverseGalois.CFT.PoitouTate.SplitPlaceMember
 import InverseGalois.CFT.PoitouTate.SplitPlacePower
 import InverseGalois.CFT.PoitouTate.SupRadicandChar
 import InverseGalois.CFT.PoitouTate.SupRadicandCyclic
+import InverseGalois.CFT.PoitouTate.TensorDescent
 import InverseGalois.CFT.PoitouTate.TensorEquivariant
+import InverseGalois.CFT.PoitouTate.TensorFree
 import InverseGalois.CFT.PoitouTate.TensorInvariant
 import InverseGalois.CFT.PoitouTate.TensorOrbit
 import InverseGalois.CFT.PoitouTate.TensorShrink
@@ -6251,6 +6254,14 @@ it that are available here.
   at every place comes from cohomology with coefficients in the kernel of the valuation tensored
   with the module** — for a number field, from the units for a finite set of places, whose
   cohomology over a finite group is finite.
+* `InverseGalois.CFT.PoitouTate.TensorFree` records the case where that hypothesis costs nothing.
+  A one cocycle vanishes at the identity, so if **no automorphism but the identity fixes a place**
+  the valuation at that place is a coboundary on the subgroup fixing it for the trivial reason that
+  the subgroup is trivial, and **every** class comes from the kernel of the valuation.  The reading
+  is what keeps the coefficients of an obstruction from growing with the places it is read at: when
+  the places a radicand is allowed order at split into a part carrying decomposition groups and a
+  part the group permutes freely, valuing only at the free part leaves the units having no order
+  anywhere in the allowed set, whose rank is that of the field alone.
 * `InverseGalois.CFT.PoitouTate.TensorShrink` cashes the previous module in.  Once a class is known
   to come from the kernel of the valuation, **a homomorphism of the module which kills the one
   preimage chosen there kills the class itself**, since the homomorphism commutes with the
@@ -6286,6 +6297,17 @@ it that are available here.
   construction, and what has to be produced is an invariant radicand realising it.  The obstruction
   lives with coefficients in the units of a finite set of places, finitely generated and fixed
   before the tower is chosen, so a single shrinking answers it.
+* `InverseGalois.CFT.PoitouTate.TensorDescent` reads that obstruction a second time.  The cocycle is
+  by construction the preimage of the difference between a translate of the tensor and the tensor,
+  so its valuation at *any* place is the difference between the translate of the valuation of the
+  tensor there and that valuation itself — and on the subgroup fixing the place, where the place
+  does not move, that is a coboundary for a single element.  The hypothesis the orbit argument makes
+  at each place is therefore automatic, at every place at once, and **the obstruction class comes
+  from the kernel of a second valuation of the coefficients, whatever the places that second
+  valuation is read at**.  Over a number field the two readings together may be arranged to leave
+  only finitely many places, so the coefficients are the units of a finite set, finitely generated
+  with a rank fixed by the field, and the class may be counted; neither freeness of the action nor
+  any local condition is needed for the second reading.
 * `InverseGalois.CFT.PoitouTate.TensorEquivariant` finds the cases where nothing has to be paid at
   all.  The obstruction is the failure of the valuation to split *equivariantly*: given a splitting
   carried by the group, the projection of a tensor along it is invariant and has the same
@@ -6307,6 +6329,19 @@ it that are available here.
   group on the named places.  Running the descent inside that subgroup rather than inside the whole
   unit group is what keeps the two standing conditions from having to be carried alongside the
   divisor, where nothing would preserve them.
+* `InverseGalois.CFT.PoitouTate.ConfinedWeighted` reads that subgroup a second time, at **every**
+  place outside a finite set.  The order alone is the wrong reading there: a confined unit has order
+  divisible by the exponent wherever ramification is not allowed, so the plain order never lands
+  outside a proper subgroup.  Divide by the exponent at exactly those places.  The result is still a
+  homomorphism, because the confinement makes every value it divides a multiple, and it is still
+  equivariant, because the set where ramification is allowed is stable; so it is a valuation onto
+  the free abelian group on the places outside the finite set, a permutation module again.  Its
+  kernel is the group of units for the finite set — and that is the point: **the coefficients of the
+  obstruction, read this second way, are the units of a finite set of places**, whose quotient by
+  the exponent-th powers has rank bounded by the field alone.  What the second reading costs is only
+  that it be onto, and that is bought by deleting from the read set finitely many places whose ideal
+  classes generate the subgroup the allowed places generate, which the finiteness of the class group
+  supplies with nothing else.
 * `InverseGalois.CFT.PoitouTate.ConfinedSurjective` settles the one thing the descent inside that
   subgroup takes for granted, that the orders at the named places are arbitrary.  Half of it costs
   nothing: **an exponent-th power of any element of the field is a confined unit**, whatever the two

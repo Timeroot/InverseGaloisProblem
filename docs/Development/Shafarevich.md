@@ -26192,3 +26192,264 @@ first of those three is Poitou–Tate; the second is `shaTateLinear` together wi
   tower;
 * then delete `ConfinedObstructionEP`, `HasConfinedObstruction`, `StabilizerConfinedUnitsEP`,
   `SylowConfinedUnitsEP`, `DecomposedUnitsEP`, `FlatUnitsEP` and `FixedReachableEP`.
+
+## §1.134 Poitou–Tate is not needed: the allowed places are free, so the obstruction has fixed coefficients (2026-09-14)
+
+§1.133 concluded that the elementary unit model cannot pay for the `Flat` branch, because the
+coefficients of the obstruction — the confined units of `K` — have rank growing with the number of
+named primes, which is announced after the level.  That conclusion is wrong, and this section
+records why, what landed first, and the architecture that replaces the Poitou–Tate plan.
+
+### What landed
+
+Step 1 of §1.133's order of work is done (`LevelFlatCover.lean`, commit `ecd7a12`).
+`FlatKernelAnswer` was split out of `HasFlatKernelPrescription`, so the answer is a named predicate,
+and `HasFlatKernelCover` asks the arithmetic for **one class of the first homology of the level**
+whose death under a shrinking makes the prescription answerable at the shrunk level;
+`hasFlatKernelPrescription_of_hasFlatKernelCover` consumes it with proposition 7 and composes the
+two shrinkings.  That packaging stays useful whichever arithmetic pays for it, since it is the only
+shape in which a shrinkable obstruction can be stated before the shrinking is chosen.
+
+### Two things checked and found not to help
+
+* The count cannot be escaped by restricting to a finitely generated submodule of the coefficients.
+  `Layer` is an `𝔽_ℓ`-vector space, so `Layer ⊗ B₀ → Layer ⊗ B` is injective and finitely many
+  classes do live in a finitely generated piece; but the dimension of that piece is bounded only by
+  `|U|` times `dim Layer` at the level the class is read at, and the counting bound needs
+  `r > (j+1)·|U|·dim(Layer_n)·dim T` with `m = r·n`.  The bound would have to be known before `m`
+  and it is not.
+* Naming the class before the shrinking and reading the arithmetic after it does not by itself
+  break the ordering, because the field `E` that `HasReachableLevel` produces exists only after the
+  shrinking, while `IsReachablePlace` is antitone in `E`; enlarging `E` to the field cut out by the
+  unshrunk lift is not available, since `exists_hasReachableLevel` buys reachability from a
+  disjointness `E ⊓ M ≤ K` that enlarging `E` destroys.
+
+### The refutation of §1.132 is carried by one *inert* place
+
+Re-read the counterexample.  `K = ℚ(ζ_9)`, `ℓ = 3`, and the named place `y` is the place over `2`.
+Two is a primitive root mod `9`, so `y` is **inert**: its decomposition group in `Gal(K|ℚ)` is the
+whole of `G`.  Every step of the tally — and in particular the surviving symbol `(a, ζ_3)_{y_F} ≠ 1`
+— uses that `ord_{y}(a) ≡ 1` at a place whose local degree is not one.  At a place split completely
+in `K|k` the same tally is empty.
+
+That is not an accident of the example.  `tensorInvariantClass_eq_zero_of_smul_eq_one`
+(`TensorEquivariant.lean`) already says the obstruction vanishes when no automorphism but the
+identity fixes a place, and `ConfinedEquivariant.lean` already says the arithmetic is spent only at
+the places with a decomposition group.  What §1.132 refuted is the demand read at a place *with* a
+decomposition group.
+
+### The allowed places are free, and that fixes the coefficients
+
+The set the radicand is allowed to ramify at is
+
+```
+allowedPlaces K E Xs₀ = stableHull k K Xs₀  ∪  stableCore k K (decomposedPlaces K E)
+```
+
+and `decomposedPlaces K E` is by definition the places `v` every prime `P` of `Ω` over which has
+`stabilizer Gal(Ω/k) P ≤ E.fixingSubgroup`.  In the `Flat` branch `K ≤ E`, so
+`E.fixingSubgroup ≤ K.fixingSubgroup = φ.ker`, and the stabiliser of `v` in `Gal(K/k)` — the image
+of `stabilizer Gal(Ω/k) P` under restriction, the action on primes over `v` being transitive — is
+**trivial**.  So:
+
+* `stableHull k K Xs₀` is the orbit hull of the **named** places: the part with decomposition
+  groups, and the part the refutation lives at;
+* `stableCore k K (decomposedPlaces K E)` is a set on which `Gal(K/k)` acts **freely**.
+
+Now run `mem_range_map_tensorSubInclRep_of_forall_stabilizer` (`TensorOrbit.lean`) a second time,
+on the obstruction itself.  Its coefficients are `B = confinedSUnits`, the confined units of order
+zero at the named places.  Give `B` the valuation "order at the allowed places outside the named
+hull".  That set carries a free action, so the local hypothesis `hloc` is vacuous — only `ρ = 1`
+fixes a point and a cocycle vanishes at `1` — and the conclusion is that the obstruction class is
+the image of a class with coefficients
+
+```
+V = { confined units of order zero at every allowed place } ,
+```
+
+that is, confined units whose divisor is `ℓ` times a divisor.  `dim_{𝔽_ℓ} V/V^ℓ` is bounded by
+`rank 𝓞_K^× + 1 + dim Cl(K)[ℓ]`: it depends on `K` alone, **not** on the named primes, not on `E`
+and not on the level.
+
+### The consequence
+
+The counting bound is therefore known in advance after all, and the class to be killed is one class
+of `H¹(Gal(K/k), V ⊗ Layer)` — exactly the shape `hasShrinkableSha_of_hasLayerLocalOrdHom`
+(`LayerKummerShrink.lean:150`) already consumes for the `Sha` branch, through
+`exists_genericShrink_map_h1_eq_zero` with a spanning family `b : Fin d → Additive ↥B` and the rank
+bound `(j+1)·(|Gal(K/k)|·d·|M|)·finrank(Layer_n) < r`.  Proposition 6 suffices; proposition 7,
+Poitou–Tate duality, `Ш¹(k_S, S∖T, E′)` and the Cartier pairing are all unnecessary for this
+branch.
+
+So the revised order of work is:
+
+* add the free-action corollary of `TensorOrbit` — every class comes from the kernel of the
+  valuation as soon as the action on the places is free;
+* instantiate it for the confined units, with the named hull removed and the decomposed core as the
+  free set, producing the fixed coefficient group `V`;
+* name the resulting class as the cover, and kill it with the counting already used by the `Sha`
+  branch, transferring back along `map_tensorCoeffRep_eq_zero_of_map_tensorSubInclRep` and
+  `exists_invariant_tensorCoeff_of_map_tensorInvariantClass_eq_zero`;
+* the two arithmetic residues are then both statements about `K` alone and neither is refutable:
+  the rank bound on `V`, and surjectivity of the order map of the confined units onto the free
+  allowed places, which is `IsReachablePlace` place by place;
+* then delete `ConfinedObstructionEP`, `HasConfinedObstruction`, `StabilizerConfinedUnitsEP`,
+  `SylowConfinedUnitsEP`, `DecomposedUnitsEP`, `FlatUnitsEP` and `FixedReachableEP`.
+
+## §1.135 The second reading needs no freeness, and its one arithmetic residue is bought by the finiteness of the class group (2026-09-14)
+
+§1.134 proposed to read the obstruction a second time at the *free* part of the allowed places.
+Two things are now settled: the freeness is not needed at all, and the surjectivity §1.134 called
+"`IsReachablePlace` place by place" is **not** that — it is a statement about the class group, and
+it is bought by removing finitely many places from the second read set.
+
+### The local hypothesis is automatic for an obstruction cocycle
+
+`mem_range_map_tensorSubInclRep_of_forall_stabilizer` (`TensorOrbit.lean:133`) asks, at each place
+`x`, for a single coefficient `u` with
+
+```
+tensorVal C g (c ρ) x = ρ • u - u      for every ρ fixing x.
+```
+
+For the obstruction cocycle this holds with `u` the valuation of the tensor itself.  By construction
+`tensorSubIncl C B (tensorInvariantCocycle … σ) = σ • t - t`
+(`tensorSubIncl_tensorInvariantCocycle`, `TensorInvariant.lean:91`), and the valuation of an
+inclusion is the restriction of the valuation of the ambient group, so
+
+```
+tensorVal C g (c ρ) x = tensorVal C G (ρ • t - t) x
+                      = ρ • (tensorVal C G t (ρ⁻¹ • x)) - tensorVal C G t x ,
+```
+
+which for `ρ` fixing `x` is exactly `ρ • u - u` with `u = tensorVal C G t x`.  **No freeness, no
+decomposition group, no local condition, and this at every place at once.**
+
+That is `TensorDescent.lean`, which has landed:
+
+* `tensorVal_tensorSubIncl` — the valuation of the inclusion of a subgroup is the restriction;
+* `mem_range_map_tensorSubInclRep_of_smul_sub` — a class whose cocycle is carried by the inclusion
+  to `σ • t - t` comes from the kernel of *any* second valuation of the subgroup;
+* `mem_range_map_tensorSubInclRep_tensorInvariantClass` — hence the obstruction class of a tensor
+  with invariant valuation comes from the kernel of a second valuation, **whatever places that
+  second valuation is read at**.
+
+The second valuation is asked only for two things: that it be the restriction of an equivariant
+valuation of the ambient group (`hres`, `hGeq`) and that it be **surjective** (`hg`).  The
+free-action corollary `TensorFree.lean` is therefore not on the path; it stays as a statement about
+`TensorOrbit` but nothing downstream needs it.
+
+### The coefficients are finite after tensoring, and §1.134's rank bound is right
+
+Write `Y = allowedPlaces K E Xs₀`, `Xs ⊇ stableHull k K Xs₀` the finite stable read set of the first
+valuation, and `B = confinedSUnits` its kernel.  `B` is of infinite rank, and `B/Bᵗ` is **infinite**
+for `ℓ`: an element of `B` may have any order at any of the infinitely many places of `Y ∖ Xs`.  So
+`B ⊗ Layer` is infinite dimensional and the count cannot be run on it.
+
+Read `B` again by the order at `Y ∖ Xs`.  Its kernel is
+
+```
+V = { x : ord = 0 on Y,  ℓ ∣ ord off Y,  a local ℓ-th power at the named places } ,
+```
+
+and `V/(V ∩ (Kˣ)^ℓ)` is **finite**: if `x ∈ V` then `div x = ℓ D` with `D` off `Y`, the class `[D]`
+lies in `Cl(K)[ℓ]`, and when `[D] = 0` we have `D = div y` with `y` of order zero on `Y`, so
+`y^ℓ ∈ V` and `x ≡ u mod (Kˣ)^ℓ` for a unit `u` of `𝓞_K`.  Hence
+
+```
+dim_{𝔽_ℓ} V/V^ℓ  ≤  r₁ + r₂ - 1 + 1 + dim_{𝔽_ℓ} Cl(K)[ℓ] ,
+```
+
+a bound in `K` alone.  Since `Layer` is an `𝔽_ℓ`-vector space, `V ⊗ Layer` is finite dimensional with
+that bound, which is what the count needs.  So §1.134's coefficient group and its rank bound are
+correct, and the earlier worry that infinite rank kills the plan was misplaced — the tensor with an
+`𝔽_ℓ`-module does the work.
+
+### But the surjectivity is a class group statement, and it fails as stated
+
+Surjectivity of `ord : B → (Y ∖ Xs →₀ ℤ)` says: for every divisor `D` supported on `Y ∖ Xs` there is
+a confined unit `x`, of order zero on `Xs`, with `div x = D + ℓ E` for some `E` supported off `Y`.
+Passing to classes, that demands
+
+```
+[D] ∈ ℓ · ⟨ [v] : v ∉ Y ⟩      for every D supported on Y ∖ Xs.
+```
+
+Taking `D = v` a single allowed place, it demands `[v] ∈ ℓ Cl(K)`, which is false as soon as
+`Cl(K)/ℓCl(K) ≠ 0` and some allowed place has a non-trivial class there.  `IsReachablePlace` does
+not repair this: it produces a unit whose order at `w` is merely **prime to `ℓ`**, and whose order at
+the places it does not name is only known to be confined — so the correction it offers is a
+correction mod `ℓ` at finitely many places, never an exact order on a cofinite set.
+
+Neither does enlarging `Xs`.  The first read set cannot absorb, because elements of `B` have order
+exactly zero there; the absorbing places must be **removed from the second read set**, not added to
+the first.
+
+### The repair: delete a finite absorbing set from the second read set
+
+Read the second valuation at `X₂ = Y ∖ (Xs ∪ Aux)` for a finite `Gal(K/k)`-stable `Aux ⊆ Y ∖ Xs`.
+Then the demand becomes
+
+```
+[D] ∈ ⟨ [v] : v ∈ Aux ⟩ + ℓ · ⟨ [v] : v ∉ Y ⟩      for every D supported on X₂,
+```
+
+and **this is bought outright by the finiteness of `Cl(K)`**: the classes `[v]`, `v ∈ Y ∖ Xs`,
+generate some subgroup of the finite group `Cl(K)`, so finitely many of them already generate it;
+take `Aux` to be such a finite subset, closed under `Gal(K/k)` — which keeps it inside `Y ∖ Xs`
+because `Y` and `Xs` are stable, and does not change the subgroup generated.  Every `v ∈ X₂` then
+has `[v] ∈ ⟨[Aux]⟩` for the trivial reason that `v ∈ Y ∖ Xs`.
+
+No Chebotarev, no Hilbert class field, no ray class field, no density: only that `Cl(K)` is finite
+and that a subgroup of a finite group is generated by a finite subset of any generating set.  This
+matters, because the honest version of the demand — "the completely decomposed places generate
+`Cl(K)`" — is **false** in general (the classes of the places split completely in `E` generate the
+subgroup trivial on `H ∩ E`, `H` the Hilbert class field), and would have been another refutable
+hypothesis.
+
+The condition at the named places is absorbed the same way.  A confined unit is also asked to be a
+local `ℓ`-th power at each `v ∈ Tz`; the obstruction to correcting a divisor to one carried by such
+a unit lies in `∏_{v ∈ Tz} K_v^× / (K_v^×)^ℓ`, which is finite (`finite_localClasses`,
+`Prescribed.lean:79`).  So the full cokernel
+
+```
+(Y ∖ Xs →₀ ℤ) / range( ord : B → (Y ∖ Xs →₀ ℤ) )
+```
+
+is a quotient of `Cl(K) × ∏_{v∈Tz} K_v^×/(K_v^×)^ℓ`, hence finite, and a finite `Aux` whose classes
+generate it exists.  This is the single arithmetic residue of the second reading, and it is neither
+deep nor refutable.
+
+### What removing `Aux` costs
+
+The coefficients grow from `V` to
+
+```
+V_Aux = { x : ord = 0 on Y ∖ Aux,  ℓ ∣ ord off Y,  a local ℓ-th power at the named places } ,
+```
+
+and the same argument gives
+
+```
+dim_{𝔽_ℓ} V_Aux/V_Aux^ℓ  ≤  r₁ + r₂ + |Aux| + dim_{𝔽_ℓ} Cl(K)[ℓ] .
+```
+
+`|Aux|` is bounded by `|Gal(K/k)|` times the number of generators of
+`Cl(K) × ∏_{v∈Tz} K_v^×/(K_v^×)^ℓ`, and `|Tz| ≤ t · [K:k]` with `t` the number of decomposition
+subgroups named in the embedding problem — fixed before the level.  Each local factor has
+`𝔽_ℓ`-dimension at most `2 + [K:ℚ]`.  So the bound is again a function of `K` and `t` alone, known
+before `N`, `W` and `ι` are chosen, which is exactly the ordering the count needs.
+
+### Revised order of work
+
+1. `TensorDescent.lean` — **done**.
+2. A concrete second valuation for the confined units: the order at `Y ∖ (Xs ∪ Aux)`, its
+   equivariance, and the identification of its kernel with `V_Aux`.
+3. The existence of `Aux`, from finiteness of `Cl(K)` and of the local class groups.
+4. Finiteness of `V_Aux/V_Aux^ℓ` and a spanning family, feeding
+   `exists_genericShrink_map_h1_eq_zero` exactly as the `Sha` branch does.
+5. Name the surviving class as the cover and transfer back along
+   `map_tensorCoeffRep_eq_zero_of_map_tensorSubInclRep` and
+   `exists_invariant_tensorCoeff_of_map_tensorInvariantClass_eq_zero`.
+6. Then delete `ConfinedObstructionEP`, `HasConfinedObstruction`, `StabilizerConfinedUnitsEP`,
+   `SylowConfinedUnitsEP`, `DecomposedUnitsEP`, `FlatUnitsEP` and `FixedReachableEP`.
