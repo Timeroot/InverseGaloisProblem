@@ -37,6 +37,8 @@ group, and the reading here is that the payment is nil at places no automorphism
 
 * `InverseGalois.CFT.rTensor_smul_of_smul`: an endomorphism carried by the action stays carried by
   it after tensoring with a module.
+* `InverseGalois.CFT.tensorInvariantClass_eq_zero_of_rTensor_comm`: it is enough that the
+  projection along the splitting be carried by the action after tensoring with the module.
 * `InverseGalois.CFT.tensorInvariantClass_eq_zero_of_section`: **a splitting of the valuation
   carried by the action kills the obstruction of every tensor with invariant valuation.**
 * `InverseGalois.CFT.exists_equivariant_of_forall_stabilizer`: one element per orbit, fixed by the
@@ -111,20 +113,24 @@ variable (hg : Function.Surjective g) (hB : ∀ a : A, a ∈ B ↔ g (Additive.o
 omit [MulAction Q X] in
 variable (C) in
 include hg hB in
-/-- **A splitting of the valuation carried by the action kills the obstruction of a tensor whose
-valuation is invariant.**
+/-- **A splitting of the valuation whose projection is carried by the action kills the obstruction
+of a tensor whose valuation is invariant.**
 
 The projection of the tensor along the splitting has the same valuation as the tensor, and the
 valuation of the tensor is literally unchanged by the action, so the projection is invariant.  The
 difference between the tensor and its projection has vanishing valuation, hence comes from the
-kernel, and its coboundary is the obstruction. -/
-theorem tensorInvariantClass_eq_zero_of_rTensor_section
+kernel, and its coboundary is the obstruction.
+
+Only the projection is asked to be carried by the action, and only after tensoring with the module;
+that is what makes room for a splitting carried by the action solely up to the exponent. -/
+theorem tensorInvariantClass_eq_zero_of_rTensor_comm
     (s : (X →₀ ℤ) →+ Additive A)
     (hgsT : ∀ n : (X →₀ ℤ) ⊗[ℤ] Additive C,
       LinearMap.rTensor (Additive C) g.toIntLinearMap
         (LinearMap.rTensor (Additive C) s.toIntLinearMap n) = n)
-    (hseq : ∀ (σ : Q) (a : A), s (g (Additive.ofMul (σ • a)))
-      = Additive.ofMul (σ • (s (g (Additive.ofMul a))).toMul))
+    (hcomm : ∀ (σ : Q) (u : Additive A ⊗[ℤ] Additive C),
+      LinearMap.rTensor (Additive C) (s.comp g).toIntLinearMap (σ • u)
+        = σ • LinearMap.rTensor (Additive C) (s.comp g).toIntLinearMap u)
     {t : Additive A ⊗[ℤ] Additive C} (ht : ∀ σ : Q, tensorVal C g (σ • t) = tensorVal C g t) :
     tensorInvariantClass C g B hg hB ht = 0 := by
   classical
@@ -142,12 +148,10 @@ theorem tensorInvariantClass_eq_zero_of_rTensor_section
     rw [show ((s.comp g).toIntLinearMap : Additive A →ₗ[ℤ] Additive A)
       = s.toIntLinearMap ∘ₗ g.toIntLinearMap from rfl, LinearMap.rTensor_comp]
     rfl
-  have hP : ∀ (σ : Q) (a : A), (s.comp g) (Additive.ofMul (σ • a))
-      = Additive.ofMul (σ • ((s.comp g) (Additive.ofMul a)).toMul) := fun σ a => hseq σ a
   have hinv : ∀ σ : Q, σ • LinearMap.rTensor (Additive C) (s.comp g).toIntLinearMap t
       = LinearMap.rTensor (Additive C) (s.comp g).toIntLinearMap t := by
     intro σ
-    rw [← rTensor_smul_of_smul C (s.comp g) hP σ t, hcomp, hgt σ, ← hcomp]
+    rw [← hcomm σ t, hcomp, hgt σ, ← hcomp]
   obtain ⟨b, hbeq⟩ : t - LinearMap.rTensor (Additive C) (s.comp g).toIntLinearMap t
       ∈ LinearMap.range (tensorSubIncl C B) := by
     rw [range_tensorSubIncl g hg hB, LinearMap.mem_ker, map_sub, hcomp, hgsT, sub_self]
@@ -156,6 +160,28 @@ theorem tensorInvariantClass_eq_zero_of_rTensor_section
   refine tensorSubIncl_injective g hg hB ?_
   rw [map_sub, tensorSubIncl_smul, hbeq, tensorSubIncl_tensorInvariantCocycle, smul_sub, hinv σ]
   abel
+
+omit [MulAction Q X] in
+variable (C) in
+include hg hB in
+/-- **A splitting of the valuation carried by the action kills the obstruction of a tensor whose
+valuation is invariant.**
+
+The projection of the tensor along the splitting has the same valuation as the tensor, and the
+valuation of the tensor is literally unchanged by the action, so the projection is invariant.  The
+difference between the tensor and its projection has vanishing valuation, hence comes from the
+kernel, and its coboundary is the obstruction. -/
+theorem tensorInvariantClass_eq_zero_of_rTensor_section
+    (s : (X →₀ ℤ) →+ Additive A)
+    (hgsT : ∀ n : (X →₀ ℤ) ⊗[ℤ] Additive C,
+      LinearMap.rTensor (Additive C) g.toIntLinearMap
+        (LinearMap.rTensor (Additive C) s.toIntLinearMap n) = n)
+    (hseq : ∀ (σ : Q) (a : A), s (g (Additive.ofMul (σ • a)))
+      = Additive.ofMul (σ • (s (g (Additive.ofMul a))).toMul))
+    {t : Additive A ⊗[ℤ] Additive C} (ht : ∀ σ : Q, tensorVal C g (σ • t) = tensorVal C g t) :
+    tensorInvariantClass C g B hg hB ht = 0 :=
+  tensorInvariantClass_eq_zero_of_rTensor_comm C g B hg hB s hgsT
+    (fun σ u => rTensor_smul_of_smul C (s.comp g) (fun σ a => hseq σ a) σ u) ht
 
 omit [MulAction Q X] in
 variable (C) in

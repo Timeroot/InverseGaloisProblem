@@ -25065,3 +25065,134 @@ intermediate `flatOrbitPrescriptionEP_of_flatUnitsEP` / `flatPrescriptionEP_of_*
    (§1.122), so a new route is needed.
 
 and separately `GenericLevelStepEPRoots 2`.
+
+## §1.125 The obstruction only reads classes mod `ℓ`-th powers (2026-09-14)
+
+Root build green, 10004 jobs, 0 warnings, 0 sorries, 0 axioms.
+
+§1.122(b) refuted `StabilizerConfinedUnitsEP ℓ` **as it was then stated**.  This section shows the
+refutation was against a demand strictly stronger than the obstruction makes, weakens the demand to
+the sharp one, and reinstates the route.
+
+### (a) The sharp reading of `ConfinedObstructionEP`
+
+With `A = confinedUnits ↥K ℓ Tz Y`, `g = confinedOrd`, `X = stableHull k ↥K Xs₀`,
+`B = confinedSUnits = ker g`, and `Q = Gal(↥K/k)`, the sequence
+
+```
+0 → B → A → ℤ[X] → 0
+```
+
+is exact (exactness on the right is `hsurj`, a hypothesis of `HasConfinedObstruction`; the kernel
+clause is `mem_confinedSUnits_iff`).  `ℤ[X]` is a free `ℤ`-module, so the sequence stays exact after
+`− ⊗_ℤ Additive C`, and `tensorInvariantClass` **is** the connecting map
+
+```
+δ : ((ℤ[X] ⊗ C)^Q) → H¹(Q, B ⊗ C).
+```
+
+Hence `ConfinedObstructionEP ℓ ⟺ δ = 0 ⟺ (A ⊗ C)^Q ↠ (ℤ[X] ⊗ C)^Q`.  Per orbit of `X` the value of
+`δ` on a generator `y` is the class of the cocycle `τ ↦ (τ a)/a` tensored with `c`, read in
+`H¹(D_y, B ⊗ C)` by Shapiro, `D_y = stabilizer Q y`.  Restriction to a Sylow `ℓ`-subgroup is
+injective on `ℓ`-torsion, so one may always assume `Q` is an `ℓ`-group.  Enlarging `Xs` to `Xs'`
+transfers `δ = 0` downward (extend a divisor by zero), so nothing is gained by shrinking the set of
+named places.
+
+### (b) The weakening, and why it escapes the §1.122(b) refutation
+
+`C` is killed by `ℓ` (`hexp : ∀ c : C, c ^ ℓ = 1`).  Therefore `A ⊗_ℤ C = (A/A^ℓ) ⊗_ℤ C`, and if
+`σ • a = a * v ^ ℓ` then in `A ⊗ C`
+
+```
+σ • (a ⊗ c) = (σ a) ⊗ (σ c) = (a * v^ℓ) ⊗ (σ c) = a ⊗ (σ c) + (ℓ • v) ⊗ (σ c) = a ⊗ (σ c),
+```
+
+exactly as if `a` were fixed.  **So the whole `TensorEquivariant` chain goes through with
+`∃ v : A, σ • a = a * v ^ ℓ` in place of `σ • a = a`.**
+
+That is a genuine weakening.  The §1.122(b) counterexample put `k = ℚ`, `K ⊇ ℚ(ζ₃)`, and produced a
+place `y` whose decomposition field is `M = ℚ(√-23)`; the demand "`σ • u = u` for every `σ` fixing
+`y`" forces `u ∈ M`, and the class group of `M` (order 3) leaves no unit of the required order.  The
+mod-`ℓ`-th-power demand does not force `u ∈ M`: by Hilbert 90 the discrepancy between "fixed" and
+"fixed mod `ℓ`-th powers" is measured by `H¹(D_y, μ_ℓ) = Hom(D_y, μ_ℓ)` (gotcha 4436 — the extra
+supply `ker(H²(D,μ_ℓ) → H²(D,K^×))` that having `ζ_ℓ ∈ K` opens up), which for a cyclic `D_y` of
+order `ℓ` is one extra copy of `ℤ/ℓ`.  The refutation used up exactly one unit of `ℤ/3`.  So the
+refuted statement and the new one are separated by precisely the room the refutation consumed, and
+`StabilizerConfinedUnitsEP ℓ` in its mod-`ℓ`-power form is **not** refuted.
+
+### (c) What landed: `CFT/PoitouTate/ModPowEquivariant.lean`
+
+The enabling refactor is in `TensorEquivariant.lean`:
+`tensorInvariantClass_eq_zero_of_rTensor_comm` replaces
+`tensorInvariantClass_eq_zero_of_rTensor_section` as the primitive.  It asks only that the
+*projection* `s ∘ g` commute with the action **after tensoring with `C`** — not that `s` itself be
+equivariant.  The old lemma is now a two-line consequence via `rTensor_smul_of_smul`.
+
+`ModPowEquivariant.lean` (new, ~300 lines) then runs the whole chain with the weakened hypothesis:
+
+| declaration | content |
+| --- | --- |
+| `zsmul_eq_zero_of_forall_pow_eq_one` | `(ℓ : ℤ) • w = 0` for `w : Additive C` when `C` has exponent `ℓ` |
+| `rTensor_smul_of_smul_mul_pow` | `P` carried by the action up to `ℓ`-th powers ⟹ `rTensor C P` commutes on the nose |
+| `exists_equivariant_of_forall_stabilizer_mul_pow` | one element per orbit, fixed up to `ℓ`-th powers by `D_y`, spreads over the orbit up to `ℓ`-th powers |
+| `exists_equivariant_diagonal_of_stabilizer_mod_pow` | the same with the diagonal condition on orders carried along |
+| `exists_equivariant_addHom_mul_pow` | linear extension of such a family is carried up to `ℓ`-th powers |
+| `exists_equivariant_section_of_diagonal_mod_pow` | the splitting, of both kinds at once |
+| `tensorInvariantClass_eq_zero_of_stabilizer_mod_pow` | **the obstruction vanishes** |
+| `tensorInvariantClass_confinedOrd_eq_zero_of_stabilizer_mod_pow` | the confined-units instance |
+| `tensorInvariantClass_confinedOrd_eq_zero_of_stabilizer_mod_pow_order` | asked only at places some `σ` of order `ℓ` fixes (Cauchy + `exists_stabilizer_fixed_of_coprime`) |
+
+Two defects have to be tracked, not one: the orbit-spread family `u` is only permuted up to `ℓ`-th
+powers, and so is the homomorphism `s` it extends to.  At a generator `single x m` the defect of `s`
+is the defect of `u` at `x` raised to `m`, which is the `single x m` case of the
+`Finsupp.induction_linear` in `exists_equivariant_addHom_mul_pow`.  Both defects are `(ℓ : ℤ) • c`
+in the first tensor factor, and
+`rw [← TensorProduct.smul_tmul', ← TensorProduct.tmul_smul, hw, TensorProduct.tmul_zero]` moves them
+to the second, where they are zero.
+
+`FlatStabilizerUnits.lean` now states `HasStabilizerConfinedUnits` with
+
+```lean
+∀ σ : Gal(↥K/k), σ • y = y →
+  ∃ v : ↥(confinedUnits ↥K ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)), σ • u = u * v ^ ℓ
+```
+
+in place of `σ • u = u`, and `hasConfinedObstruction_of_hasStabilizerConfinedUnits` is re-pointed at
+`tensorInvariantClass_confinedOrd_eq_zero_of_stabilizer_mod_pow_order`.  Nothing downstream changed:
+the file is a leaf, and `StabilizerConfinedUnitsEP ℓ ⟹ ConfinedObstructionEP ℓ ⟹
+GenericLevelStepEPRoots ℓ` is unchanged in shape.
+
+### (d) What this does *not* settle
+
+The new `StabilizerConfinedUnitsEP ℓ` is unrefuted, not proven.  Supplying it still needs, at each
+place `y` of the hull whose decomposition group has order divisible by `ℓ`:
+
+* a confined unit `u` of order `≡ 1 (mod ℓ)` at `y` and `≡ 0 (mod ℓ)` at the other places of the
+  hull, and
+* a class `[u] ∈ A/A^ℓ` fixed by `D_y`.
+
+The second is now a `D_y`-cohomology condition rather than a containment in the decomposition field,
+which is why the refutation no longer applies; but it is still arithmetic input and still wants a
+density statement to place `y`.
+
+### (e) Gotchas
+
+* **4542.** `Quotient.mk_out'` is stated with the `orbitRel` setoid unfolded; the orbit-representative
+  construction wants `MulAction.orbitRel_apply` + `MulAction.mem_orbit_iff` to read it, and
+  `Quotient.sound'` + the same pair to prove `R (σ • x) = R x`.  The block is copied verbatim from
+  `exists_equivariant_of_forall_stabilizer` (`TensorEquivariant.lean`) into
+  `exists_equivariant_of_forall_stabilizer_mul_pow`; it cannot be factored out, because the two
+  differ only in what is done with the chosen representative.
+* **4543.** `smul_comm m ((ℓ : ℤ)) (Additive.ofMul v)` is the right way to swap an `ℤ`-scalar past an
+  `ℤ`-scalar on `Additive A`; `smul_smul`/`mul_smul` would need `m * ℓ = ℓ * m` first.
+* **4544.** The confined wrapper needs **two** sections, not one: the `mod_pow` form has no use for
+  `[FiniteDimensional k K]` or `[Fact n.Prime]`, and `linter.unusedSectionVars` rejects them.  The
+  `mod_pow_order` form needs both.
+
+**Remaining gaps for Shafarevich (odd `ℓ`):**
+
+1. `FlatDiagonalUnitsEP ℓ` — SW's Third Step; needs a density input (Mathlib has no Chebotarev).
+2. `ConfinedObstructionEP ℓ` — the Poitou–Tate content; `StabilizerConfinedUnitsEP` in its
+   mod-`ℓ`-th-power form (§1.125) is the live route, the on-the-nose form being refuted (§1.122).
+
+and separately `GenericLevelStepEPRoots 2`.

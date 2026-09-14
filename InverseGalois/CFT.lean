@@ -500,6 +500,7 @@ import InverseGalois.CFT.PoitouTate.LocalOrdBridge
 import InverseGalois.CFT.PoitouTate.LocalOrdKummer
 import InverseGalois.CFT.PoitouTate.LocalOrdOutside
 import InverseGalois.CFT.PoitouTate.LocalOrdPlace
+import InverseGalois.CFT.PoitouTate.ModPowEquivariant
 import InverseGalois.CFT.PoitouTate.NamedFamily
 import InverseGalois.CFT.PoitouTate.NamedFamilyPower
 import InverseGalois.CFT.PoitouTate.NamedFamilySplit
@@ -6349,6 +6350,20 @@ it that are available here.
   exponent Cauchy's theorem turns that into a statement about elements: **the obstruction costs
   nothing at a place no automorphism of order the prime fixes**, and what the arithmetic is for is
   the places whose decomposition group carries an element of that order.
+* `InverseGalois.CFT.PoitouTate.ModPowEquivariant` cuts what is asked at those remaining places to
+  the least the obstruction can read.  The splitting of the vector of orders is spent only after
+  tensoring with the module of coefficients, and that module is killed by the exponent, so **a unit
+  which the automorphisms fixing its place move by an exponent-th power serves exactly as well as
+  one they fix.**  Two things have to be checked to run the assembly on such a unit: the family it
+  spreads into around its orbit is permuted only up to exponent-th powers, because two automorphisms
+  carrying the place of the orbit to the same place differ by one fixing it; and the homomorphism
+  that family extends to by linearity is carried by the action only up to exponent-th powers, the
+  defect at a generator being the defect of the family raised to the coefficient.  Both defects are
+  multiples of the exponent in the first factor of a tensor whose second factor the exponent kills,
+  hence zero, so **the projection along the splitting commutes with the action after tensoring**,
+  which is all the obstruction ever asked of it.  What is bought is a genuine weakening: the room
+  between a class fixed modulo exponent-th powers and an element fixed on the nose is the room
+  Hilbert's theorem 90 leaves a decomposition group, one copy of the roots of unity per cyclic one.
 * `InverseGalois.CFT.PoitouTate.InvariantRadicand` assembles the descent in the form a prescription
   consumes.  The divisor carried by one orbit is realised because the valuation is onto, and the
   valuation of the realising tensor is invariant because both the valuation and the divisor are
