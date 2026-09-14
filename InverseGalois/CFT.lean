@@ -480,6 +480,7 @@ import InverseGalois.CFT.PoitouTate.BaseFamily
 import InverseGalois.CFT.PoitouTate.BasePrescription
 import InverseGalois.CFT.PoitouTate.ChebotarevPlace
 import InverseGalois.CFT.PoitouTate.ClassSetAvoid
+import InverseGalois.CFT.PoitouTate.ClassSetBounded
 import InverseGalois.CFT.PoitouTate.ClosingChain
 import InverseGalois.CFT.PoitouTate.ClosingChainRamified
 import InverseGalois.CFT.PoitouTate.ConfinedDiagonal
@@ -959,6 +960,7 @@ import InverseGalois.CFT.Units.BaseTate
 import InverseGalois.CFT.Units.BaseTateCoeff
 import InverseGalois.CFT.Units.BaseTateSylow
 import InverseGalois.CFT.Units.BaseTateTorsion
+import InverseGalois.CFT.Units.ClassPlaces
 import InverseGalois.CFT.Units.ClassSet
 import InverseGalois.CFT.Units.CompletionCyclic
 import InverseGalois.CFT.Units.CompletionFinite
@@ -8220,6 +8222,18 @@ it that are available here.
   a number field can be given whatever orders one likes at finitely many places, so **the primes
   supporting the ideal classes can be chosen to avoid any prescribed finite set**, and to be stable
   under the Galois group whenever that set is.
+
+* `InverseGalois.CFT.Units.ClassPlaces` and `InverseGalois.CFT.PoitouTate.ClassSetBounded` decide
+  how many primes that costs.  A prime has an ideal class, and a fractional ideal supported on a set
+  of primes is the product of those primes raised to their exponents, so its class is the product of
+  their classes; replacing each prime by another of the same class moves the support and leaves the
+  class alone.  Keeping one prime for each class that occurs therefore leaves a supporting set of at
+  most as many primes as there are classes, and being a subset it still avoids whatever the original
+  avoided: **the primes supporting the ideal classes can be chosen to avoid a prescribed finite set
+  and to be at most the class number in number**, and stable under the Galois group at the cost of a
+  factor the order of the group.  The bound belongs to the field, not to the prescribed set, so it
+  is available before that set is chosen, which is what a count that fixes the size of a spanning
+  family in advance requires.
 
 * `InverseGalois.CFT.PoitouTate.TwoPlacesFree` runs the two-place construction with that freedom
   spent.  The primes carrying the ideal classes are chosen away from the fixed set and from the
