@@ -490,6 +490,7 @@ import InverseGalois.CFT.PoitouTate.ConfinedSurjective
 import InverseGalois.CFT.PoitouTate.ConfinedTGens
 import InverseGalois.CFT.PoitouTate.ConfinedUnits
 import InverseGalois.CFT.PoitouTate.ConfinedWeighted
+import InverseGalois.CFT.PoitouTate.ConfinedWeightedSurj
 import InverseGalois.CFT.PoitouTate.ConjugatePlace
 import InverseGalois.CFT.PoitouTate.CupDual
 import InverseGalois.CFT.PoitouTate.CyclicPairing
@@ -499,6 +500,7 @@ import InverseGalois.CFT.PoitouTate.GlobalClasses
 import InverseGalois.CFT.PoitouTate.InfiniteClasses
 import InverseGalois.CFT.PoitouTate.InvariantRadicand
 import InverseGalois.CFT.PoitouTate.Isotropic
+import InverseGalois.CFT.PoitouTate.LocalClassPlaces
 import InverseGalois.CFT.PoitouTate.LocalConditions
 import InverseGalois.CFT.PoitouTate.LocalOrdBridge
 import InverseGalois.CFT.PoitouTate.LocalOrdKummer
@@ -8234,6 +8236,30 @@ it that are available here.
   factor the order of the group.  The bound belongs to the field, not to the prescribed set, so it
   is available before that set is chosen, which is what a count that fixes the size of a spanning
   family in advance requires.
+
+* `InverseGalois.CFT.PoitouTate.LocalClassPlaces` refines that count by the local conditions the
+  prescription also carries.  Comparing two primes of the same ideal class produces a generator of
+  the principal ideal by which they differ, and nothing so far says the generator is a local power
+  at the named places — which is exactly what a confined unit has to be.  So divide the invertible
+  fractional ideals not by all the principal ones but only by those with such a generator.  **The
+  refinement is still a finite group**: the ideal class and the vector of local classes of a
+  generator determine the refined class, the local classes at a place are finite in number, and the
+  named places are finitely many.  Two primes of the same refined class therefore differ by the
+  divisor of an element which is a local power at every named place, and **one prime for each
+  refined class, stable under the Galois group and avoiding any prescribed stable set, is a
+  correction room whose size the field alone decides**.
+
+* `InverseGalois.CFT.PoitouTate.ConfinedWeightedSurj` spends that room on the one thing the second
+  reading was granted.  Being onto a free abelian group is a statement about one generator at a
+  time, and the generator at a place outside the finite set is hit by the element comparing that
+  place with a prime of the same refined class inside it.  The comparison supplies the local
+  conditions; what it does not supply is divisibility of the order by the exponent away from the
+  places where ramification is allowed, and there the element's own exponent-th power serves
+  instead — which costs nothing, because the reading divides by the exponent at exactly those
+  places.  So **the second reading is onto outside the named places together with the places
+  carrying the local conditions and a correction room**, and the room is bounded by the refined
+  class number times the degree, a number belonging to the field before any of the places are
+  chosen.
 
 * `InverseGalois.CFT.PoitouTate.TwoPlacesFree` runs the two-place construction with that freedom
   spent.  The primes carrying the ideal classes are chosen away from the fixed set and from the
