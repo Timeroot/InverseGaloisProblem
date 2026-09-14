@@ -25467,3 +25467,107 @@ SylowConfinedUnitsEP ℓ                          (the one remaining odd-ℓ hyp
 
 **Remaining gaps for Shafarevich (odd `ℓ`):** `SylowConfinedUnitsEP ℓ` alone — and separately
 `GenericLevelStepEPRoots 2`.
+
+## §1.128 A unit fixed on the nose, and the ramification that forbids one (2026-09-14)
+
+§1.127 cut the demand of `HasStabilizerConfinedUnits` down to a Sylow `ℓ`-subgroup `P` of the
+decomposition group: the unit has only to be fixed modulo `ℓ`-th powers by `P`, and spreading it
+along a transversal of `P` in `D_y` recovers the demand under the whole of `D_y`.  The natural next
+move is to trade "fixed modulo `ℓ`-th powers by `P`" for "fixed by `P` on the nose", because a unit
+fixed on the nose is a unit of `M = K^P`, and the arithmetic of `M` is where the reachability
+machinery of §1.123/§1.124 already lives.  That trade is what `FlatFixedUnits.lean` carries out.
+
+### The reduction
+
+`IsFixedReachablePlace ℓ K E P Tz w` is the divisor class statement of a reachable place with one
+extra clause: the witnessing unit `u ∈ K^×` is fixed by `P` outright.  Given such a `u`,
+
+* `u` is confined — a local `ℓ`-th power on `Tz`, and of order prime to `ℓ` only at the named place,
+  at places of the hull excluded in advance, or at places below primes completely decomposed in `E`;
+* `ord_y(u)` is prime to `ℓ` and `ord_z(u) ≡ 0 (mod ℓ)` for every other `z` of the hull;
+* so `u^{m'}` with `m' ≡ ord_y(u)^{-1} (mod ℓ)` has exactly the vector of orders asked for, is still
+  fixed by `P`, and is therefore fixed modulo `ℓ`-th powers by `P` with the trivial witness `v = 1`.
+
+That is `hasSylowConfinedUnits_of_hasFixedReachablePlaces`, and it compiles.
+
+### The obstruction: a fixed unit exists only where the ramification allows it
+
+Before landing the reduction as *the* remaining gap, the demand was checked against the local
+arithmetic, and it turns out **not** to be available at every place.  Write `M = K^P` and let `y_M`
+be the place of `M` below `y`.  Then
+
+    (K^×)^P = M^×,     ord_y(M^×) = e(y/y_M) · ℤ,     e(y/y_M) = |P ∩ I_y| .
+
+So a `P`-fixed unit of order prime to `ℓ` at `y` exists **iff** `ℓ ∤ |P ∩ I_y|`.  Since the consumer
+takes `P` to be a Sylow `ℓ`-subgroup of `D_y`, `P ∩ I_y` is a Sylow `ℓ`-subgroup of `I_y`, so
+`|P ∩ I_y| = ℓ^b` with `ℓ^b` the `ℓ`-part of `e(y/k)`.  **Whenever the named place is `ℓ`-ramified in
+the level, no `P`-fixed unit reaches it**, and `IsFixedReachablePlace` is unsatisfiable there.
+
+### The weaker demand is not free either: the Scholz congruence
+
+One might hope that the *original* demand — invariance only modulo `ℓ`-th powers — survives at such
+places.  It does not, in general.  Work in the completion: `L = K_y`, `F' = M_{y_M}`, and because `y`
+is the unique place of `K` above `y_M`, `Gal(L/F') = P`.  Let `q = N(y)` and `c = v_ℓ(q - 1)`.
+
+* `U_L/U_L^ℓ ≅ κ_L^×/(κ_L^×)^ℓ ≅ μ_ℓ(κ_L)`, `P`-equivariantly (the units congruent to 1 are pro-`p`
+  for `p ≠ ℓ` here, since `y ∤ ℓ`).
+* `P` is an `ℓ`-group and `Aut(μ_ℓ)` has order `ℓ - 1`, so `P` acts **trivially** on `μ_ℓ`; hence
+  `μ_ℓ ⊆ F'` and `P` acts trivially on `U_L/U_L^ℓ`.
+* Let `σ` generate `J = P ∩ I_y`, cyclic of order `ℓ^b`, and let `θ : J → κ_L^×` be the tame
+  character, `θ(σ) = σπ/π mod 𝔪`, injective, so `θ(σ)` has order exactly `ℓ^b`.
+* For `x ∈ L^×` with `v_L(x) = m`, write `x = π^m w`.  Then in `L^×/(L^×)^ℓ`,
+  `σx/x = θ(σ)^m · (σw/w) ≡ θ(σ)^m`.
+
+So `[x]` is `P`-invariant mod `ℓ`-th powers with `ℓ ∤ m` **iff** `θ(σ)` is an `ℓ`-th power in
+`κ_L^×`, i.e. iff `ℓ^{b+1} ∣ q - 1`.  This is exactly the **Scholz condition**.  When `b = 0` it is
+automatic (`μ_ℓ ⊆ K` and `y ∤ ℓ` give `ℓ ∣ q - 1`), and then the `M`-rational route above works.
+When `b ≥ 1` and `ℓ^{b+1} ∤ q - 1` the demand is **impossible**.
+
+The kernel of `B̄ = B/B^ℓ → K^×/(K^×)^ℓ` does not rescue this: `σu/u ∈ B^ℓ ⊆ (K^×)^ℓ` already, so
+the local computation applies verbatim to `B̄^{D_y}`.
+
+### Consequence for the ladder
+
+`HasStabilizerConfinedUnits` / `HasSylowConfinedUnits` — and hence `StabilizerConfinedUnitsEP` and
+`SylowConfinedUnitsEP` — are therefore **too strong as stated**: they quantify over an arbitrary
+finite `Xs₀`, and a named place that is `ℓ`-ramified in the level without the congruence
+`ℓ^{b+1} ∣ N(y) - 1` refutes them.  This matches the literature: Scholz–Reichardt chooses the
+auxiliary primes `q` with `q ≡ 1 (mod ℓ^n)` for exactly this reason.  It also means that the trace
+`HasConfinedObstruction → HasConfinedDiagonalPlaces → … → HasFlatKernelPrescription` has to be
+audited for whether the named primes `Q μ` can be `ℓ`-ramified in the level.  What is known so far:
+`HasFlatKernelPrescription` (`LevelFlatKernel.lean:108`) constrains `Q μ` only by
+`(ℓ : 𝓞 Ω) ∉ Q μ`, `A μ = Ideal.inertia Gal(Ω/k) (Q μ) ⊓ φ.ker` and
+`Ideal.inertia Gal(Ω/k) (Q μ) ≤ φ.ker` — together these say the *whole* inertia at `Q μ` lies in
+`ker φ`, whose image in `Gal(K/k)` is the `ℓ`-part.  So nothing currently forbids `ℓ ∣ e(Q μ / k)`,
+and the congruence has to be threaded down from wherever the new primes are chosen.
+
+### What was landed
+
+Rather than present a refuted statement as the remaining gap, the demand is **split in two** inside
+`FlatFixedUnits.lean`:
+
+* `HasFixedReachablePlaces ℓ K` now carries the hypothesis
+  `∃ x : K^×, (∀ σ ∈ P, σ • x = x) ∧ ¬ ℓ ∣ placeValue w x`
+  — i.e. it only asks for the rest of the prescription at places the ramification already allows.
+  This is the half the `M`-descent should supply, and it is not refuted.
+* `HasRamifiedSylowConfinedUnits ℓ K` is the original demand made **only** at the places where no
+  such `x` exists.  This is the half that carries the Scholz congruence, and it is the half now
+  known to need a condition on the named places rather than on the level.
+
+`hasSylowConfinedUnits_of_hasFixedReachablePlaces` takes both and splits on `by_cases`, and
+`genericLevelStepEPRoots_of_fixedReachableEP` correspondingly takes `FixedReachableEP ℓ` and
+`RamifiedSylowUnitsEP ℓ`.  The ladder now reads
+
+    FixedReachableEP ℓ  ∧  RamifiedSylowUnitsEP ℓ
+      ⟹ SylowConfinedUnitsEP ℓ
+      ⟹ StabilizerConfinedUnitsEP ℓ
+      ⟹ ConfinedObstructionEP ℓ
+      ⟹ GenericLevelStepEPRoots ℓ  ⟹ SplitPrimePowerEP  ⟹ Shafarevich.
+
+### Next
+
+The real repair is upstream: the named primes must be chosen with `N(Q μ) ≡ 1 (mod ℓ^{b+1})`, which
+is a Chebotarev-flavoured choice made where the prescription's primes are produced
+(`LevelStepRepair` / `KernelStep` / `LevelFlatOrbit`).  Once that congruence is a hypothesis on the
+places, `RamifiedSylowUnitsEP` can be replaced by a statement that is actually true, or the
+`ℓ`-ramified case can be excluded outright.

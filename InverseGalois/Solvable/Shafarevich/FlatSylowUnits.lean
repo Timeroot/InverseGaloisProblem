@@ -183,11 +183,13 @@ confined unit of order one at that place and none at the other places of the hul
 multiple of the exponent, whose class modulo exponent-th powers is fixed by a given subgroup of
 order a power of the exponent inside the automorphisms fixing the place.  The subgroup is arbitrary
 among those, so the demand is made of the Sylow subgroups of the decomposition group and of nothing
-larger. -/
+larger.  The place is asked to lie outside the set at which the radicand is kept inert, where an
+order of one is impossible. -/
 def HasSylowConfinedUnits (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
   ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
     ∀ Xs₀ Tz : Set (HeightOneSpectrum (𝓞 ↥K)), Xs₀.Finite → Tz.Finite →
       ∀ (_ : Finite ↥(stableHull k ↥K Xs₀)) (y : ↥(stableHull k ↥K Xs₀)),
+        (y : HeightOneSpectrum (𝓞 ↥K)) ∉ stableHull k ↥K Tz →
         (∃ σ : Gal(↥K/k), σ ≠ 1 ∧ σ ^ ℓ = 1 ∧ σ • y = y) →
         ∀ P : Subgroup Gal(↥K/k), IsPGroup ℓ ↥P → (∀ σ ∈ P, σ • y = y) →
         ∃ u : ↥(confinedUnits ↥K ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)),
@@ -211,13 +213,13 @@ theorem hasStabilizerConfinedUnits_of_hasSylowConfinedUnits {ℓ : ℕ} [Fact �
     (h : HasSylowConfinedUnits ℓ K) :
     HasStabilizerConfinedUnits ℓ K := by
   classical
-  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hfin y hy
+  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hfin y hyTz hy
   haveI := hfin
   haveI : Finite Gal(↥K/k) := Finite.of_fintype _
   obtain ⟨Q⟩ : Nonempty (Sylow ℓ ↥(stabilizer Gal(↥K/k) y)) := inferInstance
   haveI : Fintype (↥(stabilizer Gal(↥K/k) y) ⧸ (Q : Subgroup ↥(stabilizer Gal(↥K/k) y))) :=
     Fintype.ofFinite _
-  obtain ⟨u₁, hord₁, hinv₁⟩ := h E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hfin y hy
+  obtain ⟨u₁, hord₁, hinv₁⟩ := h E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hfin y hyTz hy
     ((Q : Subgroup ↥(stabilizer Gal(↥K/k) y)).map (stabilizer Gal(↥K/k) y).subtype)
     (Q.isPGroup'.of_equiv (Subgroup.equivMapOfInjective _ _ Subtype.coe_injective))
     (by rintro σ ⟨x, _, rfl⟩; exact x.2)

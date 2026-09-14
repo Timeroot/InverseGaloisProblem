@@ -118,6 +118,7 @@ import InverseGalois.Solvable.Shafarevich.FlatTensorDiagonal
 import InverseGalois.Solvable.Shafarevich.FlatDiagonalUnits
 import InverseGalois.Solvable.Shafarevich.FlatStabilizerUnits
 import InverseGalois.Solvable.Shafarevich.FlatSylowUnits
+import InverseGalois.Solvable.Shafarevich.FlatFixedUnits
 import InverseGalois.Solvable.Shafarevich.FlatLineUnits
 import InverseGalois.Solvable.Shafarevich.FlatUniformizerUnits
 import InverseGalois.Solvable.Shafarevich.ScholzLine
@@ -1163,6 +1164,20 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   Nothing about the subgroup is used but its index, so no normality is asked of it.  **The
   invariance is therefore only ever read under a group of order a power of the prime**, and such a
   group fixes the roots of unity of that order.
+* `InverseGalois.Solvable.Shafarevich.FlatFixedUnits` trades the invariance modulo exponent-th
+  powers for invariance on the nose.  Asking the unit to be fixed outright by the subgroup of order
+  a power of the prime is more than the obstruction reads, and it is what the fixed field of that
+  subgroup supplies: a group of order a power of the prime acts trivially on the roots of unity of
+  that order, so they already lie in the fixed field, and a place fixed by the subgroup and
+  unramified in the level over the fixed field is the only place of the level above its own trace
+  there.  The passage back costs only a power, which brings the order at the named place to one
+  modulo the exponent and leaves the invariance untouched.  Which places admit such a unit is
+  settled by the ramification alone, since the units the subgroup fixes are the units of its fixed
+  field and their orders at the place are the multiples of the ramification index there, so the
+  demand splits: at those places **what is asked is the divisor class statement of a reachable place
+  and nothing equivariant beyond a unit the subgroup fixes**, and at the rest the invariance is only
+  available modulo exponent-th powers, where the tame character turns the demand into a congruence
+  on the norm of the place.
 * `InverseGalois.Solvable.Shafarevich.FlatLineUnits` produces those units without asking the orbits
   of the named places to be free.  A line of local classes named by a global unit spreads over an
   orbit only when the orbit is free, since two automorphisms carrying the named place to the same

@@ -70,11 +70,16 @@ variable {k Ω : Type} [Field k] [Field Ω] [Algebra k Ω]
 At each place of the hull of the named ones which some automorphism of order the exponent fixes, a
 confined unit of order one at that place and none at the other places of the hull, each up to a
 multiple of the exponent, whose class modulo exponent-th powers the automorphisms fixing the place
-fix.  Nothing is asked at the places whose decomposition group has order prime to the exponent. -/
+fix.  Nothing is asked at the places whose decomposition group has order prime to the exponent.
+
+The place is asked to lie outside the set at which the radicand is kept inert, which it does
+whenever the orders of the confined units are onto: a unit which is a local power at a place has
+order divisible by the exponent there, so no confined unit has order one at a place of that set. -/
 def HasStabilizerConfinedUnits (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
   ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
     ∀ Xs₀ Tz : Set (HeightOneSpectrum (𝓞 ↥K)), Xs₀.Finite → Tz.Finite →
       ∀ (_ : Finite ↥(stableHull k ↥K Xs₀)) (y : ↥(stableHull k ↥K Xs₀)),
+        (y : HeightOneSpectrum (𝓞 ↥K)) ∉ stableHull k ↥K Tz →
         (∃ σ : Gal(↥K/k), σ ≠ 1 ∧ σ ^ ℓ = 1 ∧ σ • y = y) →
         ∃ u : ↥(confinedUnits ↥K ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)),
           (∀ z : ↥(stableHull k ↥K Xs₀), (ℓ : ℤ) ∣
@@ -100,9 +105,23 @@ theorem hasConfinedObstruction_of_hasStabilizerConfinedUnits {ℓ : ℕ} [Fact �
   intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz C _ _ hexp hfin hdec hsurj t ht
   haveI : Finite ↥(stableHull k ↥K Xs₀) := hfin
   letI : DecidableEq ↥(stableHull k ↥K Xs₀) := hdec
+  have hnotTz : ∀ y : ↥(stableHull k ↥K Xs₀),
+      (y : HeightOneSpectrum (𝓞 ↥K)) ∉ stableHull k ↥K Tz := by
+    intro y hy
+    haveI : NeZero ℓ := ⟨(Fact.out : ℓ.Prime).ne_zero⟩
+    obtain ⟨u, hu⟩ := hsurj (Finsupp.single y 1)
+    have hone : confinedOrd ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)
+        (stableHull k ↥K Xs₀) u y = 1 := by
+      rw [hu, Finsupp.single_eq_same]
+    have hdvd : (ℓ : ℤ) ∣ (1 : ℤ) := by
+      rw [← hone, confinedOrd_apply]
+      exact dvd_ord_of_localClassHom_eq_one (u.toMul.2.1 (y : HeightOneSpectrum (𝓞 ↥K)) hy)
+    have h2 : ((ℓ : ℤ) : ℤ) ≤ 1 := Int.le_of_dvd one_pos hdvd
+    have h3 : 2 ≤ ℓ := (Fact.out : ℓ.Prime).two_le
+    omega
   exact tensorInvariantClass_confinedOrd_eq_zero_of_stabilizer_mod_pow_order ℓ
     (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) (stableHull k ↥K Xs₀) hexp hsurj
-    (h E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hfin) ht
+    (fun y => h E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hfin y (hnotTz y)) ht
 
 end Units
 
