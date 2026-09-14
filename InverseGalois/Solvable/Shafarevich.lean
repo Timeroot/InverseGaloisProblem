@@ -101,6 +101,7 @@ import InverseGalois.Solvable.Shafarevich.FlatTensorVal
 import InverseGalois.Solvable.Shafarevich.KernelPlaces
 import InverseGalois.Solvable.Shafarevich.FlatPlaces
 import InverseGalois.Solvable.Shafarevich.ReachableDetect
+import InverseGalois.Solvable.Shafarevich.ReachableKummer
 import InverseGalois.Solvable.Shafarevich.FlatTensor
 import InverseGalois.Solvable.Shafarevich.FlatInvariant
 import InverseGalois.Solvable.Shafarevich.FlatNorm
@@ -969,6 +970,16 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   decomposed places**, and nothing else; the places carrying the exponent and the representatives
   of the ideal classes join the finite set the duality runs over without being asked anything,
   because away from the detecting places the unit produced need only be unramified.
+* `InverseGalois.Solvable.Shafarevich.ReachableKummer` supplies that detecting family.  The units
+  the detection has to run over — those whose order is divisible by the exponent at every place —
+  all acquire an exponent-th root in one and the same finite Galois extension of the base, and
+  inside the compositum of that extension with the level finitely many primes of the base splitting
+  completely in the level drive such a root into the level as soon as the unit is a local power at
+  each of them.  What remains is then a statement with no places in it at all: that a unit of the
+  level which becomes an exponent-th power in the level is one already, an independence of the
+  level from the field of roots.  **Reachability of every place costs exactly that one Kummer
+  independence**, and the passage between the closure and the compositum is by restriction, an
+  automorphism of the closure stabilising a prime restricting to one stabilising the prime below.
 * `InverseGalois.Solvable.Shafarevich.FlatTensor` buys the same flat prescription from a **single**
   invariant object instead of one unit per named place.  A unit at each place must be asked to be a
   local power at the conjugates of the *other* named places, so that the several prescriptions do
