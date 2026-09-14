@@ -109,11 +109,16 @@ the units of the fixed field, and their orders at the place run over the multipl
 ramification index of the place there, so such a unit exists exactly when the exponent does not
 divide that index.  What the demand adds is the rest of the prescription — the local powers, the
 avoided orders, and the decomposition of the remaining places in the bigger level — at a place where
-the ramification already allows it. -/
+the ramification already allows it.
+
+The subgroup is cyclic, which the unit asked for in advance already forces: its order at the place
+being prime to the exponent makes the ramification index there prime to the exponent, so a subgroup
+of order a power of the exponent fixing the place meets inertia trivially and embeds in the cyclic
+quotient of the decomposition group by inertia. -/
 def HasFixedReachablePlaces (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
   ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
     ∀ Tz : Set (HeightOneSpectrum (𝓞 ↥K)), Tz.Finite →
-      ∀ P : Subgroup Gal(↥K/k), IsPGroup ℓ ↥P →
+      ∀ P : Subgroup Gal(↥K/k), IsPGroup ℓ ↥P → IsCyclic ↥P →
         ∀ w : HeightOneSpectrum (𝓞 ↥K), (∀ σ ∈ P, σ • w = w) →
           (∃ x : (↥K)ˣ, (∀ σ ∈ P, σ • x = x) ∧ ¬ (ℓ : ℤ) ∣ placeValue w x) →
           IsFixedReachablePlace ℓ K E P (stableHull k ↥K Tz) w
@@ -144,7 +149,7 @@ theorem hasSylowConfinedUnits_of_hasFixedReachablePlaces {ℓ : ℕ} [Fact ℓ.P
     (h : HasFixedReachablePlaces ℓ K) :
     HasSylowConfinedUnits ℓ K := by
   classical
-  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz _hreach hfin _hsurj y hyTz hybase _hyσ P hP hPfix
+  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz _hreach hfin _hsurj y hyTz hybase _hyσ P hP hPcyc hPfix
   haveI := hfin
   haveI : NeZero ℓ := ⟨(Fact.out : ℓ.Prime).ne_zero⟩
   haveI := isGaloisStablePlaces_decomposedPlaces (K := K) (E := E)
@@ -155,7 +160,7 @@ theorem hasSylowConfinedUnits_of_hasFixedReachablePlaces {ℓ : ℕ} [Fact ℓ.P
   have hXexfin : ((stableHull k ↥K Xs₀) \ {(y : HeightOneSpectrum (𝓞 ↥K))}).Finite :=
     (stableHull_finite hXs₀).subset Set.diff_subset
   obtain ⟨u, hinv, hordy, hTzu, hXex, hconf⟩ :=
-    h E hEfin hEgal hKE Tz hTz P hP (y : HeightOneSpectrum (𝓞 ↥K))
+    h E hEfin hEgal hKE Tz hTz P hP hPcyc (y : HeightOneSpectrum (𝓞 ↥K))
       (fun σ hσ => congrArg Subtype.val (hPfix σ hσ)) hx hyTz _ hXexfin fun hc => hc.2 rfl
   have hmem : u ∈ confinedUnits ↥K ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) := by
     refine ⟨hTzu, fun v hv => ?_⟩

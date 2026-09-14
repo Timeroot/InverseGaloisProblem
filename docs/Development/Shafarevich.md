@@ -25672,3 +25672,113 @@ ladder is back to one hypothesis:
 
 and `FixedReachableEP ℓ` is a statement about places unramified over the base — exactly the setting
 of the `M = K^P` descent of §1.128, now with `M`-rationality unobstructed.
+
+## §1.130 What the fixed unit really has to beat: the descent to the fixed field (2026-09-14)
+
+### The threading that went in first
+
+`HasConfinedObstruction`, `HasStabilizerConfinedUnits` and `HasSylowConfinedUnits` were each dropping
+two facts that the call site already had in hand:
+
+* `hreach : ∀ v ∈ Xs₀, IsReachablePlace ℓ K E (stableHull k ↥K Tz) v` — the named places arrive
+  already reached by a unit;
+* `hsurj : Function.Surjective (confinedOrd ℓ …)` — the vector of orders of the confined units is
+  onto, which is exactly what `hasConfinedDiagonalPlaces_of_flatDiagonalUnits` proves.
+
+Both are now threaded to the bottom of the chain (commit `1097748`, build green at 10006 jobs).  The
+point of `hsurj` in particular is that it *already hands over a confined unit `u₀` with exactly the
+vector of orders asked for*: `D(u₀) = single y` on the nose, where `D = confinedOrd`.  So the only
+thing `SylowConfinedUnitsEP` still has to buy is that the class of such a unit modulo `ℓ`-th powers
+be fixed by the automorphisms fixing the place — never its existence.  That is the weakest the
+demand can be made inside this architecture.
+
+### The shape of the residual demand
+
+Write `A` for the confined units, `D : A ↠ ℤ^X` for the vector of orders over the hull `X`,
+`B = ker D`, `V = A/A^ℓ`, `W` the image of `B` in `V`.  Fix a place `y ∈ X` and put `Δ = Stab(y)`.
+`hsurj` gives `u₀ ∈ A` with `D u₀ = single y`; for `σ ∈ Δ` we get `D(σ u₀) = single y` as well, so
+
+* `β σ := σ u₀ / u₀ ∈ B`, and `β` is a 1-cocycle of `Δ` with values in `B`;
+* the demand is met exactly when `[β] = 0` in `H¹(Δ, W)` — i.e. when `β` can be corrected by a
+  `b ∈ B` so that `σ(u₀ b)/(u₀ b) ∈ A^ℓ`.
+
+Averaging over a subgroup of order prime to `ℓ` is invertible, so only the `ℓ`-Sylow `P ≤ Δ` matters;
+that is `HasSylowConfinedUnits`.  And `N_P β = 1` telescopes, so with `P` cyclic the class lives in
+`Ĥ^{-1}`-shaped data: `β ∈ ker N_P` and what is needed is `β ∈ (σ₀ - 1)B · A^ℓ`.  Hilbert 90 gives
+`β ∈ (σ₀ - 1)A` for free — the whole content is the passage from `A` to `B`.
+
+### The structure of `P`
+
+Two facts, both consequences of `IsBaseOrderPlace ℓ K y` (which since §1.129 is available in the
+much stronger form "the place is unramified in the level"):
+
+1. `IsBaseOrderPlace` says some `x` fixed by the whole group has `ℓ ∤ ord_y x`.  A unit fixed by all
+   of `Gal(K/k)` lies in `k`, and `ord_y x = e(y/k) · ord_p x`, so `ℓ ∤ e(y/k) = |I_y|`.  Hence any
+   `ℓ`-subgroup of `Δ = D_y` meets `I_y` trivially and embeds in the cyclic quotient `D_y / I_y`:
+   **`P` is cyclic**.
+2. Put `M = K^P`, `y_M = y ∩ M`.  The decomposition group of `y` in `Gal(K/M) = P` is all of `P`, so
+   `y` is the *unique* place of `K` over `y_M`, and its inertia there is `I_y ∩ P = 1`.  So
+   **`y/y_M` is unramified with residue degree `|P|`** — `y` is inert in the cyclic `ℓ`-extension
+   `K/M`.  In particular `ord_y u = ord_{y_M} u` for every `u ∈ M^×`.
+
+Also `μ_ℓ ⊆ M`: the action of `Gal(K/k)` on `μ_ℓ` factors through `(ℤ/ℓ)^×`, of order prime to `ℓ`,
+so the `ℓ`-group `P` acts trivially.
+
+### The obvious route, and why it is refuted
+
+`IsFixedReachablePlace ℓ K E P Tz y` asks for a unit fixed by `P`, i.e. for `u ∈ M^×`.  Everything
+in it then reads downstairs, and the obvious sufficient statement is `IsReachablePlace ℓ M E Tz_M
+y_M`, with `Tz_M`/`Xex_M` the places of `M` below `Tz`/`Xex` (this is legitimate: `y` is the unique
+place over `y_M`, so no place of `Tz` or of `Xex` lies over `y_M`).
+
+**That statement is false in general.**  Let `K₁` be the unique degree-`ℓ` subextension of the
+cyclic `K/M`, and write `K₁ = M(a^{1/ℓ})`.  Suppose (the bad case) that `K₁/M` is unramified outside
+`Tz_M` and that the places over `ℓ` lie in `Tz_M`.  For any `u` meeting the demand, sum the Hilbert
+symbols `(u, a)_v` over the places of `M`:
+
+* `v ∈ Tz_M`: `u ∈ (M_v^×)^ℓ`, so the symbol vanishes;
+* `v` with `ℓ ∤ ord_v u`: `v` is completely decomposed in `E ⊇ K ⊇ K₁`, so `a` is a local `ℓ`-th
+  power and the symbol vanishes;
+* any other `v`: `a` is a unit there and `ℓ ∣ ord_v u`, so the tame symbol vanishes;
+* `v = y_M`: `ℓ ∤ ord_{y_M} u` and `y_M` is **inert** in `K₁/M` (the decomposition group of `y` in
+  `Gal(K/M) = P` is everything, hence surjects onto `Gal(K₁/M)`), so the symbol is **nonzero**.
+
+The sum is therefore nonzero, contradicting reciprocity.  So the descent to `M` with the *M-level*
+local conditions cannot work, and no enlargement of the detecting set `X₀` repairs it: every place
+completely decomposed in `E` splits in `K₁ ⊆ E`, so `a` is a local `ℓ`-th power at every admissible
+detecting place and the dual Selmer group genuinely contains `⟨a⟩`.
+
+### Where the room actually is
+
+The refutation used the *M-level* local conditions.  The real demand is weaker in two places, and
+the escape has to come from there:
+
+* at `v ∈ Tz` the condition is `localClassHom v ℓ u = 1`, i.e. `u ∈ (K_v^×)^ℓ` — a strictly larger
+  subgroup of `M_{v'}^×` than `(M_{v'}^×)^ℓ` as soon as `K_v/M_{v'}` is nontrivial.  Dually, `a` is
+  then required to annihilate that larger group, which is a genuine constraint on `a`: it fails as
+  soon as some `t ∈ M_{v'}^× ∩ (K_v^×)^ℓ` is not a local norm from `(K₁)_{v'}`.  The cleanest
+  instance: if `ℓ ∣ e(K_v/M_{v'})` then a uniformiser of `M_{v'}` is an `ℓ`-th power in `K_v`, and if
+  `(K₁)_{v'}/M_{v'}` is unramified of degree `ℓ` that uniformiser is not a norm;
+* at a place `v` of `K` ramified over `M` with `ℓ ∣ e(v/v')`, the clause "`ℓ ∤ ord_v u` forces `v`
+  completely decomposed in `E`" is *vacuous*, because `ord_v u = e(v/v') · ord_{v'} u` is divisible
+  by `ℓ` automatically.  So `u` may have order prime to `ℓ` at such a `v'` without being detected,
+  and the symbol `(u,a)_{v'}` there is free to absorb the one at `y_M`.
+
+So the honest statement of the remaining arithmetic is a Poitou–Tate/Selmer computation **over
+`M = K^P`, with the local conditions at the places of `Tz_M` enlarged to `M_{v'}^× ∩ (K_v^×)^ℓ` and
+the ramified places of `K/M` left unconstrained**, whose conclusion is that the class `a` cutting out
+the degree-`ℓ` subextension of `K/M` is not in the dual Selmer group.  That is the arithmetic core of
+`FixedReachableEP ℓ` and it is not reachable by re-plumbing the existing reachability lemmas.
+
+### Routes explicitly rejected
+
+* Norm/averaging over `P`: `ord_{y_M} N_{K/M} u₀ = f(y/y_M) · ord_y u₀ = |P| · ord_y u₀`, killed by
+  `ℓ`.  The same computation kills every "product over the orbit" variant.
+* Summing `σ u₀ ⊗ σ c` over the whole group: the image is `|Δ| · (the wanted vector)`, invertible
+  exactly when `ℓ ∤ |Δ|`, which is the case already discharged.
+* Enlarging the hull `X`: the lifting condition gets strictly stronger, not weaker.
+* Using the base-field element `x` of `IsBaseOrderPlace` as the unit: its divisor is supported on the
+  whole `Gal(K/k)`-orbit of `y`, and the correction `-Σ_{z ≠ y} single z` needed to cut it down to
+  `single y` is not itself `P`-invariant.  Replacing `u` by `x · u'` moves the demand to `ℓ ∣ ord_y
+  u'` but leaves the reciprocity obstruction exactly where it was, as it must.
+* `H¹` killed by `|G|`: useless here, `ℓ ∣ |G|` in general.

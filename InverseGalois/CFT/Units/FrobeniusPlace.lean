@@ -32,6 +32,8 @@ the underlying ideals.
   is trivial exactly when the prime is unramified.
 * `InverseGalois.CFT.isCyclic_stabilizer_of_isUnramifiedAt`: **the decomposition group at an
   unramified finite place is cyclic.**
+* `InverseGalois.CFT.isCyclic_of_isPGroup_le_stabilizer`: **a subgroup of order a power of a prime
+  which does not divide the order of the inertia group, and which fixes the prime, is cyclic.**
 
 ## Tags
 
@@ -140,6 +142,48 @@ theorem isCyclic_stabilizer_of_inertia_eq_bot (P : Ideal (𝓞 K)) [P.IsPrime] (
   refine isCyclic_of_injective (Ideal.Quotient.stabilizerHom P (P.under (𝓞 k)) Gal(K/k)) ?_
   rw [← MonoidHom.ker_eq_bot_iff, Ideal.Quotient.ker_stabilizerHom, hinert]
   simp
+
+/-- **A subgroup whose order is a power of a prime not dividing the order of the inertia group at a
+prime, and which fixes that prime, is cyclic.**
+
+Such a subgroup meets inertia trivially, because an element of it has order a power of the prime and
+an element of inertia has order dividing the order of inertia.  So the reduction map to the
+automorphism group of the residue extension, whose kernel is inertia, is injective on it, and the
+automorphism group of an extension of finite fields is cyclic. -/
+theorem isCyclic_of_isPGroup_le_stabilizer {ℓ : ℕ} (hℓp : ℓ.Prime) (P : Ideal (𝓞 K)) [P.IsPrime]
+    (hP : P ≠ ⊥) (hℓ : ¬ ℓ ∣ Nat.card ↥(Ideal.inertia Gal(K/k) P)) {Q : Subgroup Gal(K/k)}
+    (hQ : IsPGroup ℓ ↥Q) (hQle : Q ≤ stabilizer Gal(K/k) P) : IsCyclic ↥Q := by
+  haveI := isMaximal_of_ne_bot_base P hP
+  haveI := finite_quotient_of_ne_bot_base P hP
+  haveI := isMaximal_under_of_ne_bot_base (k := k) P hP
+  haveI := isSeparable_residue_of_ne_bot_base (k := k) P hP
+  haveI : P.LiesOver (P.under (𝓞 k)) := ⟨rfl⟩
+  refine isCyclic_of_injective
+    ((Ideal.Quotient.stabilizerHom P (P.under (𝓞 k)) Gal(K/k)).comp (Subgroup.inclusion hQle))
+    ((injective_iff_map_eq_one _).2 fun x hx => ?_)
+  have hker : Subgroup.inclusion hQle x
+      ∈ (Ideal.inertia Gal(K/k) P).subgroupOf (stabilizer Gal(K/k) P) := by
+    rw [← Ideal.Quotient.ker_stabilizerHom P (P.under (𝓞 k)) Gal(K/k)]
+    exact hx
+  have hgI : (x : Gal(K/k)) ∈ Ideal.inertia Gal(K/k) P := Subgroup.mem_subgroupOf.1 hker
+  have hord : orderOf (x : Gal(K/k)) ∣ Nat.card ↥(Ideal.inertia Gal(K/k) P) := by
+    have h1 := orderOf_dvd_natCard (⟨(x : Gal(K/k)), hgI⟩ : ↥(Ideal.inertia Gal(K/k) P))
+    have heq : orderOf (⟨(x : Gal(K/k)), hgI⟩ : ↥(Ideal.inertia Gal(K/k) P))
+        = orderOf (x : Gal(K/k)) :=
+      (orderOf_injective (Ideal.inertia Gal(K/k) P).subtype Subtype.val_injective
+        ⟨(x : Gal(K/k)), hgI⟩).symm
+    rwa [heq] at h1
+  obtain ⟨n, hn⟩ := hQ x
+  have hdvd : orderOf (x : Gal(K/k)) ∣ ℓ ^ n := by
+    have heq : orderOf ((x : Gal(K/k))) = orderOf x :=
+      orderOf_injective Q.subtype Subtype.val_injective x
+    rw [heq]
+    exact orderOf_dvd_of_pow_eq_one hn
+  obtain ⟨m, _, hm⟩ := (Nat.dvd_prime_pow hℓp).1 hdvd
+  rcases Nat.eq_zero_or_pos m with hm0 | hm0
+  · have h1 : orderOf (x : Gal(K/k)) = 1 := by rw [hm, hm0, pow_zero]
+    exact Subtype.ext (orderOf_eq_one_iff.1 h1)
+  · exact absurd (dvd_trans (hm ▸ dvd_pow_self ℓ hm0.ne') hord) hℓ
 
 omit [NumberField k] [NumberField K] [IsGalois k K] in
 /-- The stabiliser of a finite place is the stabiliser of the underlying ideal. -/

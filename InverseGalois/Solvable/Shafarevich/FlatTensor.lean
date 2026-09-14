@@ -51,6 +51,10 @@ the exponent — is read off the family as before.
 * `InverseGalois.Shafarevich.isBaseOrderPlace_of_inertia_le_fixingSubgroup` — **a place of a level
   below a prime whose inertia fixes the level has its order taken by an element the whole group of
   automorphisms fixes**, a uniformiser of the place below.
+* `InverseGalois.Shafarevich.not_dvd_ramIdx_of_isBaseOrderPlace` — **such a place has ramification
+  index over the base field prime to the exponent.**
+* `InverseGalois.Shafarevich.isCyclic_of_isPGroup_of_isBaseOrderPlace` — **a subgroup of order a
+  power of the exponent fixing such a place is cyclic.**
 * `InverseGalois.Shafarevich.hasFlatKernelPrescription_of_tensorPlaces` — **a level carrying such a
   tensor carries the flat prescription made one field up.**
 
@@ -183,6 +187,46 @@ theorem isBaseOrderPlace_of_inertia_le_fixingSubgroup [NumberField k] [IsGalois 
   rw [← map_inertia_restrictNormalHom (k := k) (K := Ω) K (P := P) (v := placeUnder K P hP) rfl,
     Subgroup.map_eq_bot_iff, IntermediateField.restrictNormalHom_ker]
   exact h
+
+/-- **The ramification index of a place whose order is taken by an element the whole group of
+automorphisms fixes is prime to the exponent.**  Such an element lies in the base field, and its
+order at the place is its order below multiplied by the ramification index, so the exponent dividing
+the index would make it divide the order. -/
+theorem not_dvd_ramIdx_of_isBaseOrderPlace [NumberField k] {ℓ : ℕ}
+    {K : IntermediateField k Ω} [NumberField ↥K] [IsGalois k ↥K]
+    {v : HeightOneSpectrum (𝓞 ↥K)} (h : IsBaseOrderPlace ℓ K v) :
+    ¬ ℓ ∣ ramIdx (𝓞 k) v := by
+  obtain ⟨x, hx, hord⟩ := h
+  have hfix : ∀ σ : Gal(↥K/k), σ (x : ↥K) = (x : ↥K) := fun σ => congrArg Units.val (hx σ)
+  obtain ⟨q, hq⟩ := (IsGalois.mem_range_algebraMap_iff_fixed (F := k) (x : ↥K)).mpr hfix
+  have hq0 : q ≠ 0 := by
+    rintro rfl
+    rw [map_zero] at hq
+    exact x.ne_zero hq.symm
+  intro hdvd
+  refine hord ?_
+  have hpv : placeValue v x
+      = -(ramIdx (𝓞 k) v * Rigidity.RET.ord k (primeUnder (𝓞 k) v) q) := by
+    rw [placeValue_eq_neg_ord]
+    show -Rigidity.RET.ord ↥K v (x : ↥K) = _
+    rw [← hq, ord_algebraMap_eq_ramIdx_mul k v hq0]
+  rw [hpv]
+  exact Dvd.dvd.neg_right (Dvd.dvd.mul_right (Int.natCast_dvd_natCast.2 hdvd) _)
+
+/-- **A subgroup of order a power of the exponent fixing a place whose order is taken by an element
+the whole group of automorphisms fixes is cyclic.**  The ramification index there is prime to the
+exponent, so the subgroup meets inertia trivially and embeds in the cyclic quotient of the
+decomposition group by inertia. -/
+theorem isCyclic_of_isPGroup_of_isBaseOrderPlace [NumberField k] {ℓ : ℕ} (hℓp : ℓ.Prime)
+    {K : IntermediateField k Ω} [NumberField ↥K] [IsGalois k ↥K]
+    {v : HeightOneSpectrum (𝓞 ↥K)} (h : IsBaseOrderPlace ℓ K v) {P : Subgroup Gal(↥K/k)}
+    (hP : IsPGroup ℓ ↥P) (hPfix : ∀ σ ∈ P, σ • v = v) : IsCyclic ↥P := by
+  refine isCyclic_of_isPGroup_le_stabilizer hℓp v.asIdeal v.ne_bot ?_ hP ?_
+  · rw [card_inertia_eq_ramIdx]
+    exact not_dvd_ramIdx_of_isBaseOrderPlace h
+  · intro σ hσ
+    rw [← stabilizer_eq_stabilizer_asIdeal]
+    exact hPfix σ hσ
 
 /-- **A tensor of the units of a level with a target killed by the exponent can be found, invariant
 for the automorphisms of the level acting diagonally, of prescribed order at each of finitely many

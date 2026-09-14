@@ -187,6 +187,11 @@ larger.  The place is asked to lie outside the set at which the radicand is kept
 order of one is impossible, and to have its order taken by an element the whole group of
 automorphisms fixes.
 
+The subgroup is cyclic, which the two conditions on the place already force: the order of an element
+of the whole group of automorphisms being taken at the place makes the ramification index there
+prime to the exponent, so a subgroup of order a power of the exponent meets inertia trivially and
+embeds in the cyclic quotient of the decomposition group by inertia.
+
 The vector of orders is handed over as onto, so a confined unit with exactly the orders asked for is
 already at hand and what has to be bought is its class modulo exponent-th powers being fixed; the
 named places are handed over already reached by a unit as well. -/
@@ -201,7 +206,7 @@ def HasSylowConfinedUnits (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField 
           (y : HeightOneSpectrum (𝓞 ↥K)) ∉ stableHull k ↥K Tz →
           IsBaseOrderPlace ℓ K (y : HeightOneSpectrum (𝓞 ↥K)) →
           (∃ σ : Gal(↥K/k), σ ≠ 1 ∧ σ ^ ℓ = 1 ∧ σ • y = y) →
-          ∀ P : Subgroup Gal(↥K/k), IsPGroup ℓ ↥P → (∀ σ ∈ P, σ • y = y) →
+          ∀ P : Subgroup Gal(↥K/k), IsPGroup ℓ ↥P → IsCyclic ↥P → (∀ σ ∈ P, σ • y = y) →
           ∃ u : ↥(confinedUnits ↥K ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)),
             (∀ z : ↥(stableHull k ↥K Xs₀), (ℓ : ℤ) ∣
               confinedOrd ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) (stableHull k ↥K Xs₀)
@@ -217,9 +222,13 @@ transversal of that subgroup: the product of its translates is fixed modulo expo
 every automorphism fixing the place, and its order there is the index of the Sylow subgroup, which
 is prime to the exponent, so a power of the product has order one at the place.  Every
 representative fixes the place, so the vector of orders of the product agrees at every place of the
-hull with a multiple of the one asked for. -/
+hull with a multiple of the one asked for.
+
+The Sylow subgroup used is cyclic, because the order of the place is taken by an element the whole
+group of automorphisms fixes, so nothing is asked of the subgroups which are not. -/
 theorem hasStabilizerConfinedUnits_of_hasSylowConfinedUnits {ℓ : ℕ} [Fact ℓ.Prime]
-    {K : IntermediateField k Ω} [NumberField ↥K] [FiniteDimensional k ↥K]
+    [NumberField k] {K : IntermediateField k Ω} [NumberField ↥K] [FiniteDimensional k ↥K]
+    [IsGalois k ↥K]
     (h : HasSylowConfinedUnits ℓ K) :
     HasStabilizerConfinedUnits ℓ K := by
   classical
@@ -229,11 +238,17 @@ theorem hasStabilizerConfinedUnits_of_hasSylowConfinedUnits {ℓ : ℕ} [Fact �
   obtain ⟨Q⟩ : Nonempty (Sylow ℓ ↥(stabilizer Gal(↥K/k) y)) := inferInstance
   haveI : Fintype (↥(stabilizer Gal(↥K/k) y) ⧸ (Q : Subgroup ↥(stabilizer Gal(↥K/k) y))) :=
     Fintype.ofFinite _
+  have hPfix : ∀ σ ∈ (Q : Subgroup ↥(stabilizer Gal(↥K/k) y)).map
+      (stabilizer Gal(↥K/k) y).subtype, σ • y = y := by
+    rintro σ ⟨x, _, rfl⟩; exact x.2
   obtain ⟨u₁, hord₁, hinv₁⟩ :=
     h E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hreach hfin hsurj y hyTz hybase hy
       ((Q : Subgroup ↥(stabilizer Gal(↥K/k) y)).map (stabilizer Gal(↥K/k) y).subtype)
       (Q.isPGroup'.of_equiv (Subgroup.equivMapOfInjective _ _ Subtype.coe_injective))
-      (by rintro σ ⟨x, _, rfl⟩; exact x.2)
+      (isCyclic_of_isPGroup_of_isBaseOrderPlace (Fact.out : ℓ.Prime) hybase
+        (Q.isPGroup'.of_equiv (Subgroup.equivMapOfInjective _ _ Subtype.coe_injective))
+        fun σ hσ => congrArg Subtype.val (hPfix σ hσ))
+      hPfix
   obtain ⟨u, hordu, hinvu⟩ :=
     exists_forall_smul_eq_mul_pow
       (confinedOrd ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) (stableHull k ↥K Xs₀))
