@@ -1097,10 +1097,12 @@ import InverseGalois.CFT.Units.SUnit
 import InverseGalois.CFT.Units.SUnitAbove
 import InverseGalois.CFT.Units.SUnitDivisible
 import InverseGalois.CFT.Units.SUnitFinite
+import InverseGalois.CFT.Units.SUnitGens
 import InverseGalois.CFT.Units.SUnitHerbrand
 import InverseGalois.CFT.Units.SUnitIndex
 import InverseGalois.CFT.Units.SUnitValuation
 import InverseGalois.CFT.Units.SolvableNorm
+import InverseGalois.CFT.Units.SpanExtension
 import InverseGalois.CFT.Units.SpanSubgroup
 import InverseGalois.CFT.Units.SplitCompletion
 import InverseGalois.CFT.Units.SplitNorm
@@ -6231,6 +6233,20 @@ it that are available here.
   the size asked for, so **a subgroup of a group spanned by a given number of elements is spanned by
   that many elements**, and the same read along an injection lets a group presented as a subgroup of
   another consume it.
+* `InverseGalois.CFT.Units.SpanExtension` assembles the two halves of a presentation.  **A module
+  whose kernel under a linear map is spanned by one number of elements and whose range is spanned by
+  another is spanned by their sum**: lift the spanning family of the range along the map, and an
+  element differs from a combination of the lifts by an element of the kernel.  Beside it travel the
+  two conveniences the assembly runs on — a spanning family may be padded with zeroes up to any
+  larger size, which is what lets a bound stand in for a number, and **the functions from a finite
+  set to the integers are spanned by as many elements as the set has**.
+* `InverseGalois.CFT.Units.SUnitGens` reads that count on the units for a finite set of primes.
+  The orders at the chosen primes present them as an extension whose kernel is the units of the ring
+  of integers and whose range is a subgroup of the free abelian group on the primes, so **the units
+  for a finite set of primes are spanned by the generators of the units of the ring of integers
+  together with one element for each prime**.  What this buys over mere finite generation is an
+  ordering: a bound on the number of primes, known long before the primes themselves are chosen,
+  already fixes the size of the spanning family a count will consume.
 * `InverseGalois.CFT.Units.SUnitDivisible` gathers the units of a number field whose order is
   divisible by a fixed exponent at every place.  Such a unit is the exponent-th power of a
   fractional ideal, and away from a finite set of places meeting every ideal class that ideal is

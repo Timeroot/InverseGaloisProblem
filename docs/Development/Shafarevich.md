@@ -26453,3 +26453,181 @@ before `N`, `W` and `ι` are chosen, which is exactly the ordering the count nee
    `exists_invariant_tensorCoeff_of_map_tensorInvariantClass_eq_zero`.
 6. Then delete `ConfinedObstructionEP`, `HasConfinedObstruction`, `StabilizerConfinedUnitsEP`,
    `SylowConfinedUnitsEP`, `DecomposedUnitsEP`, `FlatUnitsEP` and `FixedReachableEP`.
+
+## §1.136 The size of the spanning family has to be known before the level, and that forces the second reading to be at a *finite* set of places (2026-09-14)
+
+§1.135 left one step marked "finiteness of `V_Aux/V_Aux^ℓ` and a spanning family, feeding
+`exists_genericShrink_map_h1_eq_zero` exactly as the `Sha` branch does".  Working that step out
+turns up an ordering constraint that the plan of §1.135 does not meet, and a correction to the
+bound it proposed.  Both are settled here; the outcome is a concrete and strictly smaller list of
+bricks.
+
+### (a) The ordering constraint: `d` before `N`
+
+`exists_genericShrink_map_h1_eq_zero` asks
+
+```
+(j+1) * (Nat.card (Q × Fin d × ι) * Module.finrank (Layer ℓ (Generic U n S) j)) < r
+```
+
+and answers with a shrinking down from level `N = r * n`.  So the size `d` of the spanning family
+of the *coefficients* is consumed **before** `N` is produced.  But `HasFlatKernelPrescription` is
+
+```
+∃ N, ∀ (F : Gal(Ω/k) →* GenericQuot ℓ U N S (j+1)) (ι) [Finite ι] (Q) (A) (a), … →
+  FlatKernelAnswer … N F ι Q A a
+```
+
+— the named primes `Q : ι → Ideal (𝓞 Ω)`, hence the named places `Xs`, arrive only *after* `N`.
+Any route that lets the coefficient group grow with `Xs` is therefore circular: it wants `d` to
+depend on data that `d` has already been used to produce.
+
+Two facts make this harmless.
+
+* `FlatKernelAnswer` existentially quantifies the shrinking `β` **after** all of `F`, `ι`, `Q`, `A`,
+  `a`.  Only the *level* `N` is fixed in advance, not the shrinking.  So there is no need for a
+  separate "cover" hypothesis: the level may be announced as `N = r * n'` and the two shrinkings
+  (the level's `β` and the count's `genericShrink`) composed inside the answer.
+* What must genuinely be fixed in advance is `d` alone — a *number*, not a group.  And a number is
+  cheap to fix if the coefficient group, whatever it turns out to be, always sits inside a group
+  whose generator count is bounded by data belonging to `K` alone.
+
+That is what the new brick `InverseGalois/CFT/Units/SpanSubgroup.lean` supplies.  Over a principal
+ideal domain a submodule of a module spanned by `d` elements is spanned by `d` elements: the
+preimage of the submodule under the surjection from the free module on `d` letters is free of rank
+at most `d`, and a basis of it is carried onto a spanning family, padded back up to `d` with
+zeroes.  `exists_fin_span_submodule` and `exists_fin_span_of_injective` are the two forms; the
+second is the one a group presented as a subgroup consumes.
+
+### (b) The bound of §1.135 is on the wrong quotient
+
+§1.135 proposed to read the second valuation only *inside* the allowed set, at
+`X₂ = Y ∖ (Xs ∪ Aux)`, leaving the places outside `Y` unread, and bounded
+
+```
+dim_{𝔽_ℓ} V_Aux / V_Aux^ℓ  ≤  r₁ + r₂ + |Aux| + dim Cl(K)[ℓ],
+V_Aux = {x : ord = 0 on Y ∖ Aux, ℓ ∣ ord off Y, a local ℓ-th power at the named places}.
+```
+
+The four-step filtration behind that bound (the order on `Aux` mod `ℓ`; the class of the remaining
+divisor in `Cl(K)[ℓ]`; the residual unit mod `(𝓞_K^×)^ℓ`) does bound
+`dim V_Aux / (V_Aux ∩ (K^×)^ℓ)`.  It does **not** bound `dim V_Aux / V_Aux^ℓ`, and the two differ:
+an ℓ-th root of an element of `V_Aux` need not itself be confined, because `ℓ ∣ ord_v(z^ℓ)` says
+nothing about `ord_v z`.  Explicitly, for any `v ∉ Y` pick `x` with `div x = ℓ v` plus a correction
+on `Aux`; then `x ∈ V_Aux`, but `x = w^ℓ` would force `ord_v w = 1` with `v ∉ Y`, so `w ∉ V_Aux`.
+These classes are independent as `v` ranges over the infinitely many places outside `Y`, so
+
+> `dim_{𝔽_ℓ} V_Aux / V_Aux^ℓ = ∞`.
+
+Since the coefficients enter the count through `Additive V_Aux ⊗_ℤ Additive C` with `C` killed by
+`ℓ`, that is exactly the quotient that matters, and the route through an unread infinite tail of
+places is dead.
+
+The conclusion is the opposite of §1.135's: the second reading must be at **every** place outside a
+finite set, which is precisely what `CFT/PoitouTate/ConfinedWeighted.lean` already builds.  Its
+`confinedWeightedOrd` reads the order inside `Y` and the order divided by the exponent outside it,
+lands in the free abelian group on `{v // v ∉ T}`, is equivariant, and has
+`confinedTUnits n Tz Y Xs T` for kernel.  `confinedTUnits` is a group of units for a finite set, so
+it is genuinely finitely generated, and `ConfinedWeighted.lean` already assembles the descent
+`mem_range_map_tensorSubInclRep_confinedTensorInvariantClass` from it.  The *only* hypothesis left
+open there is
+
+```
+hsurjT : Function.Surjective (confinedSWeightedOrd n Tz Y Xs T).
+```
+
+### (c) What surjectivity at a finite set costs, and why `T` must contain `Xs`
+
+The reading is indexed by the places **outside** `T`, and the elements being read have order zero at
+the named places.  So if some `v ∈ Xs` lay outside `T` its coordinate would be identically zero and
+the reading could not be onto: **`Xs ⊆ T` is forced**.  Write `T = Xs ∪ Aux` with `Aux ∩ Xs = ∅`.
+Then `confinedTUnits` consists of the confined units of order zero off `T` and off `Xs`, i.e.
+supported inside `Aux`:
+
+```
+confinedTUnits n Tz Y Xs (Xs ∪ Aux)  ↪  sUnits K Aux.
+```
+
+`Aux` is the *correction room*: the places where the element realising a prescribed reading is
+allowed an uncontrolled order.  Surjectivity is the demand that, for a target `D` of finite support
+outside `T`, there is a confined unit of order zero on `Xs` whose weighted order is `D`.  Half of it
+is free, exactly as in `ConfinedSurjective.lean`: an ℓ-th power is confined, and for `v ∉ Y` the
+weighted order of `x^ℓ` at `v` is `ord_v x` itself, while for `v ∈ Y` it is `ℓ · ord_v x`.  So the
+image contains every vector which is divisible by `ℓ` in its `Y`-coordinates, and the residue is a
+statement modulo `ℓ` about the places of `Y ∖ T` — one confined unit of order prime to `ℓ` at each
+such place, with a divisor otherwise supported on `Aux`.  That is a condition on the class of the
+place in a class group refined by the local conditions at the finitely many places of `Tz`:
+
+```
+Ψ := (Div(K) ⊕ ∏_{w ∈ Tz} K_w^× / (K_w^×)^ℓ) / image(K^×),   finite,
+```
+
+finite because it surjects onto `Cl(K)` with a quotient of `∏_{w∈Tz} K_w^×/(K_w^×)^ℓ` for kernel,
+and that product is finite by `finite_localClasses` (`Prescribed.lean:79`).
+
+### (d) The correction room can be made small, disjoint from `Xs`, and bounded by `K` alone
+
+This is the step that closes the ordering problem, and it needs no density theorem.
+
+* The places outside any finite set generate `Cl(K)`: every ideal class contains an integral ideal
+  coprime to a prescribed finite set of primes, by approximation — the same Chinese-remainder input
+  `ConfinedSurjective.lean` already uses.  The same holds for `Ψ`.
+* `Ψ` is finite.  So choose, **for each element of `Ψ` which is the class of some place outside
+  `Xs`, one such place**.  The chosen places number at most `Nat.card Ψ`, they avoid `Xs`, and their
+  classes generate `Ψ` because they realise every class a place outside `Xs` has.
+* Close the choice under `Gal(K/k)`.  Stability costs a factor `Nat.card Gal(K/k)`, and it does not
+  disturb disjointness from `Xs` because `Xs` is itself stable.
+
+So for every finite stable `Xs` there is a finite stable `Aux` with
+
+```
+Aux ∩ Xs = ∅,   ⟨[Aux]⟩ = Ψ,   |Aux| ≤ Nat.card Ψ * Nat.card Gal(K/k) =: c(K, Tz, ℓ),
+```
+
+and `c` depends on `K`, `Tz` and `ℓ` alone — all fixed before the level.  This is the honest
+replacement for §1.135's `Aux`: there the correction room was asked to live inside `Y ∖ Xs` and only
+to generate the subgroup the places of `Y ∖ Xs` generate, which is what made the unread tail
+necessary; here it is allowed anywhere off `Xs` and is asked to generate everything, which is what
+lets the tail be read.
+
+### (e) The last ingredient: the generator count of the units for a finite set
+
+With `confinedTUnits ↪ sUnits K Aux` and `|Aux| ≤ c`, `exists_fin_span_of_injective` reduces the
+whole ordering problem to a bound on the number of generators of `sUnits K S` in terms of `|S|`.
+That bound is elementary:
+
+```
+1 → 𝓞_K^× → sUnits K S → (image of ord in (S →₀ ℤ)) → 1
+```
+
+with the right-hand group a submodule of a free module of rank `|S|`, hence spanned by `|S|`
+elements by `exists_fin_span_submodule`; lifting those and adjoining a spanning family of `𝓞_K^×`
+gives
+
+```
+#gens (sUnits K S)  ≤  #gens (𝓞_K^×) + |S|.
+```
+
+So the constant the count consumes is
+
+```
+d := #gens (𝓞_K^×) + Nat.card Ψ * Nat.card Gal(K/k),
+```
+
+known from `K`, `Tz` and `ℓ`, before `N`, `W` and `ι` are chosen — which is exactly the ordering the
+count needs.
+
+### Revised order of work
+
+1. `CFT/Units/SpanSubgroup.lean` — **done**, a submodule of a `d`-spanned ℤ-module is `d`-spanned.
+2. The generator count `#gens (sUnits K S) ≤ #gens (𝓞_K^×) + |S|`.
+3. The refined class group `Ψ`, its finiteness, and the bounded stable correction room `Aux`
+   disjoint from a given finite stable `Xs`.
+4. `hsurjT` for `T = Xs ∪ Aux`: the free half from ℓ-th powers, the residue modulo `ℓ` from the
+   generation of `Ψ` by `Aux`.
+5. Feed the resulting class and spanning family into `exists_genericShrink_map_h1_eq_zero`, name the
+   surviving class and transfer it back along the Flat tower, composing the level's shrinking with
+   the count's.
+6. Delete the dead hypotheses: `ConfinedObstructionEP`, `HasConfinedObstruction`,
+   `StabilizerConfinedUnitsEP`, `SylowConfinedUnitsEP`, `DecomposedUnitsEP`, `FlatUnitsEP`,
+   `FixedReachableEP`.
