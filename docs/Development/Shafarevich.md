@@ -25946,3 +25946,249 @@ the bad orbit structure.  The structural escape hatch remains the one identified
 `exists_invariant_tensorCoeff_of_map_tensorInvariantClass_eq_zero`: the obstruction only has to die
 *after* a coefficient homomorphism `φ : C → C'`, and the generic shrinking supplies such `φ` — which
 is exactly where Schmidt–Wingberg spend their Theorem 7(i) in Step 3.
+
+## §1.132 The refutation survives the narrowing to ℚ: the cyclotomic case kills `ConfinedObstructionEP` (2026-09-14)
+
+§1.131 narrowed every open hypothesis of the Flat tower to the base field `ℚ` and argued,
+heuristically, that over `ℚ` the Hilbert-symbol tally which refutes the demand over a general base
+should cancel, because the orbit sum `Σ_{c ∈ (ℤ/ℓ)^×} c = ℓ(ℓ-1)/2` vanishes mod `ℓ`.  That argument
+carried an unstated hypothesis, and the hypothesis is **false in exactly the situation the ladder
+produces**.  This section records the counterexample over `ℚ`.
+
+### The unstated hypothesis
+
+The tally compares `(a, b)_v` with `(a, b)_{τv}` for `τ` in the Galois group of the auxiliary field
+`F = K^P` over the base.  Equivariance of the symbol gives
+
+```
+(τa, τb)_{τv} = τ((a,b)_v) = (a,b)_v^{χ(τ)},
+```
+
+where `χ` is the cyclotomic character.  §1.131 then set `τa ≡ a` and `τb ≡ b` modulo `ℓ`-th powers
+and concluded `(a,b)_{τv} = (a,b)_v^{χ(τ)}`, so that a place with `χ(Stab v) ≠ 1` contributes
+nothing and a free orbit contributes a sum `Σ_c c ≡ 0`.
+
+`a` is indeed a base-field element, so `τa = a` on the nose.  But `b` is the **Kummer radicand of the
+auxiliary cyclic extension `K₁ | F`**, and there is no reason for it to be fixed.  Write `ψ` for the
+character by which `Gal(F/k)` moves the class of `b` modulo `ℓ`-th powers.  Then
+
+```
+(a,b)_{τv} = (a,b)_v^{χ(τ)ψ(τ)^{-1}},
+```
+
+and the vanishing argument needs `χ ≠ ψ`.  The case `χ = ψ` is the case where `K₁ = F(ζ_{ℓ}^{1/ℓ})`
+— the **cyclotomic** case — and it is not an exotic one: the ladder asks the base realization to fix
+the roots of unity of order `ℓ²`, so `ℚ(ζ_{ℓ²}) ⊆ K` always, and `ℚ(ζ_{ℓ²}) | ℚ(ζ_ℓ)` is precisely
+that extension.
+
+### The counterexample
+
+Take `ℓ = 3`, `k = ℚ` and
+
+* `K = ℚ(ζ_9)`, so `G = Gal(K/ℚ) ≅ ℤ/6` is cyclic and `χ : G ↠ (ℤ/3)^×` is onto;
+* `E = K`, so `allowedPlaces K E Xs₀ = stableHull Xs₀ ∪ {places split completely in K|ℚ}` — the most
+  permissive choice the demand allows, since a larger `E` only shrinks the second set;
+* `y` = the unique place over `2`.  `2` is a primitive root mod `9`, so `2` is inert in `K|ℚ` and `y`
+  is unramified of residue degree `6`;
+* `Xs₀ = {y}`, which is already stable; `Tz = {λ}` with `λ` the unique place over `3`;
+* `C = Multiplicative (ZMod 3)` with the trivial `G`-action, so `A ⊗ C = A/A³`;
+* `t = u₀ ⊗ 1` for any confined unit `u₀` of order `1` at `y`.
+
+Every hypothesis of `HasConfinedObstruction 3 K` holds for this data.
+
+* `IsBaseOrderPlace 3 K y`: take `x = 2 ∈ ℚ^× ⊆ K^×`, fixed by all of `G`, with `ord_y(2) = 1`.
+* `IsReachablePlace 3 K K (stableHull Tz) y` and surjectivity of `confinedOrd`: both ask for a unit
+  whose divisor is `y` plus a multiple of `3` plus support on places split completely in `K|ℚ`, and
+  which is a cube locally at `λ`.  Chebotarev in the Galois closure of the ray class field of `K`
+  modulo a power of `λ` supplies degree-one primes of `K` in every ray class — a `σ` in the big group
+  restricting to `1` on `K` and to the prescribed Artin class on the ray class field exists because
+  `Gal(R̃/K) ↠ Gal(R/K)` — so the class of `y` is reachable.
+* The valuation of `t` is `G`-invariant because `G` fixes `y`.
+
+Now suppose the obstruction vanished.  Then there is `z ∈ A = confinedUnits` with `ord_y z ≡ 1 mod 3`
+whose class in `A/A³` is `G`-invariant; in particular `σz/z ∈ (K^×)³` for every `σ`.
+
+**Step 1 — the invariant class is a rational number.**  From `1 → (K^×)³ → K^× → K^×/(K^×)³ → 1`,
+the cokernel of `ℚ^× = (K^×)^G → (K^×/(K^×)³)^G` injects into `H¹(G, (K^×)³)`, and from
+`1 → μ_3 → K^× → (K^×)³ → 1` together with Hilbert 90 that group injects into `H²(G, μ_3)`.  `G` is
+cyclic, so `H²(G, μ_3) = μ_3^G / N_G μ_3`, and `μ_3^G = 1` because `χ` is onto: a generator `σ` sends
+`ζ_3 ↦ ζ_3^{-1}`.  Hence `H²(G, μ_3) = 0` and `z ≡ a` modulo `(K^×)³` for some `a ∈ ℚ^×`.
+
+**Step 2 — what confinement says about `a`.**  Modulo cubes of `ℚ^×` we may take
+`a = 2^e · 3^f · ∏_q q^{c_q}` with exponents in `{0,1,2}` and no sign.  Orders of `z` and of `a`
+agree mod `3` at every place.  So `e = ord_y(z) ≡ 1 mod 3`, and `3 | c_q` for every `q ≠ 2,3` which
+is **not** `≡ 1 mod 9`, because places over such `q` are neither `y` nor split completely in `K|ℚ`.
+Confinement at `Tz` says `a ∈ (K_λ^×)³`.
+
+**Step 3 — the tally.**  Run the cubic Hilbert symbol over `F = ℚ(ζ_3)`, which contains `μ_3`; the
+auxiliary cyclic cubic extension is `K | F = F(ζ_9) = F(ζ_3^{1/3})`, with radicand `b = ζ_3`.
+
+* The archimedean place of `F` is complex: symbol trivial.
+* `v` over `q ≡ 1 mod 9`: `q` splits completely in `K|ℚ`, so `K_v = F_v`: symbol trivial.
+* `v` over `q ≠ 2,3`, `q ≢ 1 mod 9`: `K_v|F_v` is unramified, and `3 | ord_v(a)` by Step 2, so `a`
+  is a norm: symbol trivial.
+* `v = λ_F` over `3`: here `a ∈ (K_λ^×)³ ∩ F_λ^×`.  Write `a = x³` with `x ∈ K_λ^×`.  Then
+  `σx/x ∈ μ_3 ⊆ F_λ`, a class in `H¹(Gal(K_λ|F_λ), μ_3)`.  If it is trivial then `x ∈ F_λ^×` and `a`
+  is a cube in `F_λ`: symbol trivial.  If not, `F_λ(x) = K_λ` because the degree is prime, so by
+  Kummer theory `a ≡ ζ_3^{±1}` modulo `(F_λ^×)³`, and `(ζ_3, ζ_3)_λ = (-1, ζ_3)_λ = 1` since the
+  symbol has order dividing the odd number `3` and `(-1,b)² = 1`.  Symbol trivial either way.  **This
+  closes the room §1.130 identified at the ramified place.**
+* `v = y_F`, the unique place of `F` over `2`: `2` is inert in `F|ℚ` and `K_{y}|F_{y_F}` is
+  unramified of degree `3`, so the norm group is `{x : 3 | ord(x)}`, and `ord_{y_F}(a) = e ≡ 1`.
+  **Symbol nontrivial.**
+
+The product of all local symbols is therefore `(a, ζ_3)_{y_F} ≠ 1`, contradicting reciprocity.
+
+### What is refuted
+
+`HasConfinedObstruction 3 ℚ(ζ_9)` is false, hence `ConfinedObstructionEP 3` is false, hence so is
+every hypothesis above it in the Flat tower — `StabilizerConfinedUnitsEP`, `SylowConfinedUnitsEP`,
+`DecomposedUnitsEP`, `FlatUnitsEP`, `FixedReachableEP` — each of which implies it.  A hypothesis
+which is provably false is not an acceptable place to leave the tree, so the `Flat*Units` branch has
+to be replaced, not merely completed.
+
+This is *consistent with the literature rather than in tension with it*: Schmidt–Wingberg do **not**
+prove that this obstruction vanishes.  In Theorem 15, step 3, the obstruction `δ_n(ε_n)` is a genuine
+non-zero class, and it is killed by **shrinking** — proposition 7 / theorem 7(i), the counting
+against a bigger free level.  Our demand asked for outright vanishing, which is strictly stronger
+than anything the proof of Shafarevich's theorem supplies.
+
+### The repair, and why the circularity breaks
+
+The escape is the one already visible in `exists_invariant_tensorCoeff_of_map_tensorInvariantClass_eq_zero`:
+the obstruction only has to die **after** a coefficient homomorphism, and the generic shrinking
+supplies such a homomorphism.  The interfaces already leave room for it — `HasSolutionRepair`
+announces a level `N` before reading its data and answers at the level asked for, and
+`GenericLevelStepEPRoots` hands the step *all* levels at the rung below.
+
+The apparent obstacle is a circularity: `exists_operatorHom_res_cohomology_eq_zero` fixes the twist
+`T` **before** the level `m`, while the obstruction's twist is the span of the coordinates of the
+tensor, which is produced by the arithmetic at level `m`.  If the tensor were written against a basis
+of the coefficient module, that span would have dimension growing with `dim C_m`, and the counting
+bound — which is roughly `(j+1)·|G|·finrank(Layer_n)·dim T < r`, with `m = r·n` — could never be met.
+
+It is not.  The tensor the prescription actually assembles is
+
+```
+t = Σ_{μ < ι} u_μ ⊗ c_μ,
+```
+
+one term per **named place**, and `ι` is fixed before any level is chosen.  So the cocycle
+`σ ↦ σ•t - t` takes its values in `T ⊗ C` with `T` the image in `A/A^ℓ` of the `G`-span of the `ι`
+units, of dimension at most `ι·|G|` — a bound known in advance, independent of `m`.  Only the bound
+enters the counting, so quantifying `T` *after* `m` subject to `finrank T ≤ d` is enough, and that is
+a quantifier move inside the existing counting proof, not new mathematics.
+
+So the repair has four parts:
+
+1. generalise the counting so that the twist is quantified after the level, subject to a dimension
+   bound given in advance;
+2. prove — as a theorem, not a hypothesis — that the obstruction class is the image of a class with
+   coefficients `T ⊗ C`, `T` the span of the coordinates of the tensor;
+3. rewire the consumer so that the arithmetic is read at the announced level and the answer is pushed
+   down along the surjection the counting produces;
+4. retire the refuted hypotheses.
+
+## §1.133 The repair plan of §1.132 is itself wrong: the obstruction lives over the big group (2026-09-14)
+
+§1.132 ended with a four part repair and part 1 of it — quantifying the twist after the level,
+subject to a dimension bound given in advance — was carried out
+(`exists_operatorHom_res_cohomology_eq_zero_of_finrank_le`, `GenericCohomology.lean`).  Parts 2 and 3
+do not work as written.  This section records why, and what the correct architecture is.
+
+### The counting bound has to be known before the level, and §1.132's is not
+
+`HasFlatKernelPrescription` reads
+
+```
+∃ N, ∀ (F : Gal(Ω/k) →* GenericQuot ℓ U N S (j+1)) (ι : Type) [Finite ι] (Q : ι → Ideal (𝓞 Ω)) …
+```
+
+so the level `N` is announced **before** the finite set `ι` of named primes.  §1.132 asserted the
+opposite — "`ι` is fixed before any level is chosen" — and built its dimension bound
+`dim T ≤ ι·|G|` out of it.  It is not: `ι` is the set of primes at which the smooth lift `F`
+ramifies outside the good set, and `F` is handed to the prescription only after `N` has been named.
+So a bound that grows with `|ι|` is not a bound at all.
+
+That the bound must grow with `|ι|` in the elementary unit model is easy to see.  Choose for each
+place `x` in the allowed support a lift `u_x` of the divisor `x`, and write the prescribed divisor
+with coefficients as `Σ_x u_x ⊗ c_x`.  Invariance of the divisor gives `σ·c_x = c_{σx}`, and the
+cocycle measuring the failure of the tensor to be invariant is
+
+```
+z_σ  =  Σ_x ε(σ,x) ⊗ c_{σx} ,        ε(σ,x) = (σ u_x)·u_{σx}⁻¹ ∈ B ,
+```
+
+with `B` the units of the allowed support.  Its class lies in `H¹(Q, B ⊗ C)`, `Q = Gal(K|k)`, and the
+counting that kills it solves one scalar equation per `(σ, generator of B, coordinate of C)`.  The
+rank of `B` grows with the number of allowed places, hence with `|ι|`.
+
+### Schmidt–Wingberg do not use that model
+
+In theorem 15, step 2 the obstruction is not a class of `Q` with coefficients in a unit group.  It is
+**one** class in
+
+```
+H^{-2}( F(m)/F(m)^{(ν)} ⋊ G , E(m,ν) ⊗ T ) ,      T = Hom(μ_p, ℤ/p) ,
+```
+
+reached from the idele cokernel by Poitou–Tate duality and the Hasse principle (SW's "claim": a
+canonical surjection `H^{-2}(F(n)/ν ⋊ G, E(n,ν)(-1)) ↠ Ш²(k, E(n,ν))`).  Two features of that
+packaging are exactly the two the unit model lacks:
+
+* the twist `T = Hom(μ_p, ℤ/p)` is **one dimensional** and is known before anything else;
+* there is **one** class, not one per named place — the number of named primes has been absorbed by
+  the duality, which trades `∏_{v ∈ T} H¹(k_v, E)` for a subgroup of `H¹(N|k, E')`.
+
+The group the class lives over is the Galois group of the solution field, which grows with the
+level; that is the circularity, and it is what proposition 7 exists to break.  Proposition 7 chains
+two counts: first `F(m) ↠ F(r)` kills the image in `H_1(G, E ⊗ T)` — proposition 6, whose bound
+needs only `|G|`, `t` and `dim T` — and then `F(r) ↠ F(n)` kills what is left, which by the
+homological Hochschild–Serre sequence and the universal coefficient formula is a quotient of
+`(F(r)/F(r)²)^{⊗(j+1)} ⊗ T`, a coordinate count with no group order in it.  Neither count mentions
+the order of `F(m)/F(m)^{(ν)} ⋊ G`, so `m` may be named in advance.
+
+### Proposition 7 is already here, and so is the machine that consumes it
+
+The counting half costs nothing: proposition 7 is
+`exists_operatorHom_h1_eq_zero` (`GenericHomology.lean:343`), proved from proposition 6 and the
+coordinate count through the homological Hochschild–Serre tail
+(`exists_map_inl_eq_of_map_rightHom_eq_zero`, `SemidirectHomology.lean:153`), and it is already
+consumed: `hasShrinkableSha_of_hasShaTateCover` (`LevelCover.lean:88`) turns a covering of the
+everywhere locally trivial classes by first homology of the level into the whole of clause 5 of the
+rung.  The `Flat` branch is clause 7, and it is the *only* place where a shrinkable obstruction is
+still written as an outright vanishing demand.
+
+So the packaging for step 3 is not new machinery.  It is the packaging of step 2, applied to a
+different class:
+
+```
+HasShaTateCover  :  ε ∈ Ш²(E)  ⟼  x ∈ H₁(Generic ⋊ U, E ⊗ W)   with  (α killing x) ⟹ (α killing ε)
+HasFlatCover     :  the unanswerable prescription  ⟼  x ∈ H₁(Generic ⋊ U, E ⊗ W)
+                                                        with  (α killing x) ⟹ (prescription answerable after α)
+```
+
+and the arithmetic behind the second line is Schmidt–Wingberg's own: the cokernel of
+`H¹(k_S|k, E) → ∏_{p ∈ T} H¹(k_p, E)` injects into `Ш¹(k_S, S∖T, E′)`, `Ш¹` injects into
+`H¹(N|k, E′)` because a class trivial on every decomposition group is inflated from the level, and
+`H¹(N|k, E′) ≅ H^{-2}(Gal(N|k), E(-1))` is Tate duality for the finite group of the level.  The
+first of those three is Poitou–Tate; the second is `shaTateLinear` together with
+`shaTateLinear_injective` (`CFT/PoitouTate/ShaTate.lean:165`); the third is the pairing
+`cartierPairing` already used by `hasTateShaCover_of_hasShrinkShaDualInjection`
+(`LayerDuality.lean:265`), read as an isomorphism rather than as a means of realising characters.
+
+### Revised order of work
+
+* restate the arithmetic demand of the `Flat` branch in the covered shape — one class of the first
+  homology of the level, named before the shrinking, whose death makes the prescription answerable —
+  so that the demand is one Schmidt–Wingberg actually prove rather than the strictly stronger
+  outright vanishing §1.132 refuted;
+* rewire `hasFlatKernelPrescription_of_tensorPlaces` to compose the two shrinkings, the one that
+  kills the class first and the reachability block second: `HasReachableLevel` is unharmed by that
+  order, since `layerSemidirectMap (β ∘ γ) ∘ F = layerSemidirectMap β ∘ (layerSemidirectMap γ ∘ F)`,
+  the inner composite is still surjective, smooth and over `φ`, and the reachability inequality
+  `φ.ker ≤ ker(…) ⊔ B` only weakens when the target shrinks;
+* then prove the covered demand from the three inclusions above, reusing the `CFT/PoitouTate/`
+  tower;
+* then delete `ConfinedObstructionEP`, `HasConfinedObstruction`, `StabilizerConfinedUnitsEP`,
+  `SylowConfinedUnitsEP`, `DecomposedUnitsEP`, `FlatUnitsEP` and `FixedReachableEP`.
