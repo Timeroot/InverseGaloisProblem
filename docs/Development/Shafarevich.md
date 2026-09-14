@@ -24938,3 +24938,130 @@ What is left of the route, in order:
    hypothesis has to be moved from `localClassHom v ℓ u = 1` to `∃ c, c ^ ℓ = algebraMap …`.
 3. **The residue `E ∩ M = K`.**  Still the one genuinely arithmetic step, still to be paid for by
    shrinking the level.
+
+## §1.124 `FlatReachableEP` is a theorem for every odd prime (2026-09-14)
+
+Commit `919f206`, root build green, 10003 jobs, 0 warnings, 0 sorries, 0 axioms.
+
+Items 1 and 2 of §1.123(d) were closed by `ReachableKummer.lean` (commit `905288f`); this section
+closes item 3, the residue `E ∩ M = K`, and with it the whole of `FlatReachableEP`.
+
+### (a) The two halves, restated
+
+`FlatReachableEP ℓ` (`FlatStep.lean:98`) now reads
+
+```
+∀ k Ω … (S U) (φ : Gal(Ω/k) →* U) (n j) (K : IntermediateField k Ω) …,
+  (∃ ζ : ↥K, IsPrimitiveRoot ζ ℓ) → K.fixingSubgroup = φ.ker →
+    ∃ N, HasReachableLevel ℓ U n S j φ N K
+```
+
+The roots-of-unity clause is new and free: at both call sites (`FlatStep.lean`,
+`FlatTensorStep.lean`) `hζ : IsPrimitiveRoot (⟨z, hzK⟩ : ↥K) ℓ` is already in scope, the base
+realization being asked to fix the roots of unity of order `ℓ²`.
+
+*Arithmetic half* (`ReachableKummer.lean`, commit `905288f`):
+
+```
+exists_finite_forall_isReachablePlace (hℓ : ℓ.Prime) (hodd : Odd ℓ)
+    (K : IntermediateField k Ω) [NumberField ↥K] (hζ : IsPrimitiveRoot ζ ℓ) :
+  ∃ M, K ≤ M ∧ FiniteDimensional k ↥M ∧ IsGalois k ↥M ∧
+    ∀ E, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E → E ⊓ M ≤ K →
+      ∀ w, IsReachablePlace ℓ K E w
+```
+
+The decisive point is that **`M` depends on `K` and `ℓ` only** — it is the field of radicals of
+`exists_isGalois_forall_exists_pow` (`CFT/Units/RootField.lean:48`), which adjoins an `ℓ`-th root of
+every unit of `K` whose order is divisible by `ℓ` at every place.  `M` is therefore available
+*before* any lift `F` is handed over, which is what lets the number of letters be announced in
+advance.
+
+*Group-theoretic half*: produce, from the lift, a surjective operator hom `β` whose level `E_β`
+satisfies `E_β ⊓ M ≤ K`.
+
+### (b) `ReachableBlocks.lean` — the letters, one block at a time
+
+`Generic U (r*n) S` has letters indexed by `Fin (r*n) × U`; `finProdFinEquiv : Fin r × Fin n ≃
+Fin (r*n)` cuts them into `r` blocks of `n`.  For `b : Fin r`,
+
+* `blockExp r b : Fin r → ℕ` is the indicator of `b`;
+* `blockShrink U r n S b := genericShrink U r n S (blockExp r b)`;
+* `blockGen U r n S b : Set (Generic U (r*n) S)` is the set of classes of the letters of block `b`.
+
+Three facts, all cheap:
+
+* `blockShrink_surjective` — **no finiteness, no `IsPGroup`, no coprimality hypothesis.**  The
+  general `genericShrink_surjective` needs `ℓ.Coprime (a k)` and both groups finite; here the
+  surviving exponent is literally `1`, so `pow_one` hits each letter downstairs on the nose.  This
+  is the reason to use indicator vectors rather than arbitrary ones.
+* `iSup_closure_blockGen : ⨆ b, Subgroup.closure (blockGen U r n S b) = ⊤` — via
+  `Subgroup.closure_iUnion` and `closure_range_mk_of`; the union of the blocks' letters is all the
+  letters.
+* `closure_blockGen_le_ker (hjk : j ≠ k) : closure (blockGen … j) ≤ (blockShrink … k).ker` — the
+  exponent is `0` off the block, and `pow_zero` then `QuotientGroup.mk 1 = 1` is `rfl`.
+
+### (c) `ReachableShrink.lean` — the counting
+
+Four ingredients.
+
+**The chain lemma** (pure group theory):
+
+```
+exists_iSup_ne_sup_ge (𝔅 : Fin r → Subgroup G) (B : Subgroup G) (ρ : G →* Γ) [Finite Γ]
+    (hker : ρ.ker ≤ B) (hr : Nat.card Γ ≤ r) :
+  ∃ b, (⨆ c, 𝔅 c) ≤ (⨆ c, ⨆ _ : c ≠ b, 𝔅 c) ⊔ B
+```
+
+By contradiction: if every `b` is indispensable then `Y i := (⨆ c, ⨆ _ : (c:ℕ) < i, 𝔅 c) ⊔ B` is
+strictly increasing for `i < r`.  Every `Y i` contains `ρ.ker`, so `Subgroup.comap_map_eq_self`
+makes `Subgroup.map ρ` injective on the chain and the images are strictly increasing too; induction
+gives `i + 1 ≤ Nat.card ↥(map ρ (Y i))`, and `Subgroup.card_le_card_group` at `i = r` contradicts
+`Nat.card Γ ≤ r`.  `r = 0` is handled automatically (`hr` then forces `Nat.card Γ = 0`, impossible
+for a group, but the induction never needs that — the `i = 0` base case is `Nat.card_pos`).
+
+**The preimage lemma**: for `f` surjective, `comap f (⨆ i, X i) ≤ (⨆ i, comap f (X i)) ⊔ f.ker`.
+The `⊔ f.ker` is what makes it hold with no hypothesis on the index type (in particular for `r = 0`).
+
+**The field lemma**: `inf_le_of_fixingSubgroup_le_sup` — if
+`K.fixingSubgroup ≤ E.fixingSubgroup ⊔ M.fixingSubgroup` then `E ⊓ M ≤ K`.  An element of `E ⊓ M` is
+fixed by both fixing subgroups, hence by the subgroup they generate, hence by `K.fixingSubgroup`;
+`InfiniteGalois.fixedField_fixingSubgroup` closes it.  This is the Galois-correspondence translation
+of the disjointness.
+
+**The blocks inside the lift**: `genericQuotInl ℓ U N S j := SemidirectProduct.inl.comp
+(QuotientGroup.mk' (pCentral ℓ (Generic U N S) j))`, with `range_genericQuotInl =
+rightHom.ker` and `layerSemidirectMap ℓ hβ j ∘ genericQuotInl = genericQuotInl ∘ β` (`rfl`).  Then
+`blockLift ℓ U r n S j b := Subgroup.map (genericQuotInl …) (closure (blockGen … b))` satisfies
+`⨆ b, blockLift … b = rightHom.ker` and `blockLift … c ≤ (layerSemidirectMap ℓ (blockShrink b) …).ker`
+for `c ≠ b`.
+
+Assembly, `exists_block_ker_sup_ge`: `φ.ker = comap F rightHom.ker` (because `MonoidHom.comap_ker` is
+`rfl` and `rightHom ∘ F = φ` by `MonoidHom.ext hFright`), so the preimage lemma puts `φ.ker` inside
+`(⨆ b, comap F (blockLift … b)) ⊔ F.ker`, the chain lemma drops one `b`, and the dropped-out terms
+all sit in the kernel of the `b`-th shrunken lift — as does `F.ker` itself.
+
+Top level, `exists_hasReachableLevel`: take `r := Nat.card Gal(↥M/k)`, `N := r * n`,
+`ρ := AlgEquiv.restrictNormalHom ↥M` (whose kernel is `M.fixingSubgroup` by
+`IntermediateField.restrictNormalHom_ker`), get the block `b`, take `β := blockShrink U r n S b`
+(surjective by (b)), and cut out its level exactly with `exists_level_fixingSubgroup_eq_ker` — a
+copy of `exists_level_ker_le` returning the *equality* `E.fixingSubgroup = ker(...)`, which is what
+turns `𝔅_c ≤ H_b` into `𝔅_c ≤ E_b.fixingSubgroup`.  Then
+`K.fixingSubgroup = φ.ker ≤ E_b.fixingSubgroup ⊔ M.fixingSubgroup`, so `E_b ⊓ M ≤ K`, so every place
+of `K` is reached.
+
+### (d) What this buys
+
+`flatReachableEP ℓ (hodd : 2 < ℓ) : FlatReachableEP ℓ` (`FlatStep.lean:115`).  The
+`(hreach : FlatReachableEP ℓ)` hypothesis has been removed from all eight terminal
+`genericLevelStepEPRoots_of_*` theorems (`FlatStep`, `FlatTensorStep` ×2, `FlatTensorConfined`,
+`FlatTensorDiagonal`, `FlatDiagonalUnits`, `FlatStabilizerUnits`, `FlatDecomposed`); the
+intermediate `flatOrbitPrescriptionEP_of_flatUnitsEP` / `flatPrescriptionEP_of_*` keep it, having no
+`hodd` to hand.
+
+**Remaining gaps for Shafarevich (odd `ℓ`):**
+
+1. `FlatDiagonalUnitsEP ℓ` — SW's Third Step; needs a density input (Mathlib has no Chebotarev).
+2. `ConfinedObstructionEP ℓ` — the Poitou–Tate content; `StabilizerConfinedUnitsEP` is refuted
+   (§1.122), so a new route is needed.
+
+and separately `GenericLevelStepEPRoots 2`.
