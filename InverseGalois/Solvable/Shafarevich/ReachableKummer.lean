@@ -35,6 +35,10 @@ level, because the level lies in the compositum.
 * `InverseGalois.Shafarevich.isReachablePlace_of_kummerDisjoint`: **every place of a level is
   reached once the only units of the level divisible by the exponent everywhere which become
   exponent-th powers in a finite level are the exponent-th powers already.**
+* `InverseGalois.Shafarevich.isReachablePlace_of_inf_le`: the same with the independence read as an
+  intersection with a field of roots.
+* `InverseGalois.Shafarevich.exists_finite_forall_isReachablePlace`: **one finite Galois extension
+  of the base, depending on the level below alone, decides the reachability of every place**.
 
 ## Tags
 
@@ -148,6 +152,68 @@ theorem isReachablePlace_of_kummerDisjoint {ℓ : ℕ} (hℓ : ℓ.Prime) (hodd 
           rw [primeUnder_asIdeal, primeUnder_asIdeal, primeUnder_asIdeal, Ideal.under_under])
       rw [this]
       exact hW
+
+/-- **A level meeting a field of roots only in the level below reaches every one of its places.**
+
+An exponent-th root of a unit divisible by the exponent everywhere differs from a root lying in the
+field of roots by a root of unity of the level below, so it lies in that field as well; lying also
+in the level, it lies in the intersection, which is the level below, and the unit is a power
+there. -/
+theorem isReachablePlace_of_inf_le {ℓ : ℕ} (hℓ : ℓ.Prime) (hodd : Odd ℓ)
+    {K : IntermediateField k Ω} [NumberField ↥K] {E M : IntermediateField k Ω}
+    [FiniteDimensional k ↥E] [IsGalois k ↥E] (hKE : K ≤ E) (hKM : K ≤ M) {ζ : ↥K}
+    (hζ : IsPrimitiveRoot ζ ℓ)
+    (hM : ∀ u : (↥K)ˣ, (∀ v : HeightOneSpectrum (𝓞 ↥K), (ℓ : ℤ) ∣ ord ↥K v (u : ↥K)) →
+      ∃ y ∈ M, y ^ ℓ = algebraMap (↥K) Ω (u : ↥K))
+    (hEM : E ⊓ M ≤ K) (w : HeightOneSpectrum (𝓞 ↥K)) :
+    IsReachablePlace ℓ K E w := by
+  haveI : NeZero ℓ := ⟨hℓ.ne_zero⟩
+  refine isReachablePlace_of_kummerDisjoint hℓ hodd hKE hζ (fun u hu ξ hξ hξE => ?_) w
+  have hune : algebraMap (↥K) Ω (u : ↥K) ≠ 0 :=
+    (map_ne_zero_iff _ (algebraMap (↥K) Ω).injective).2 u.ne_zero
+  have hord : ∀ v : HeightOneSpectrum (𝓞 ↥K), (ℓ : ℤ) ∣ ord ↥K v (u : ↥K) := by
+    intro v
+    have := hu v
+    rwa [placeValue_eq_neg_ord, dvd_neg] at this
+  obtain ⟨y, hyM, hy⟩ := hM u hord
+  have hyne : y ≠ 0 := fun h => hune (by rw [← hy, h, zero_pow hℓ.ne_zero])
+  have hxy : ξ ^ ℓ = y ^ ℓ := by rw [← hξ, hy]
+  have hc : (ξ * y⁻¹) ^ ℓ = 1 := by
+    rw [mul_pow, inv_pow, hxy, mul_inv_cancel₀ (pow_ne_zero _ hyne)]
+  obtain ⟨i, -, hi⟩ :=
+    (hζ.map_of_injective (algebraMap (↥K) Ω).injective).eq_pow_of_pow_eq_one hc
+  have hξM : ξ ∈ M := by
+    have hval : ξ = algebraMap (↥K) Ω (ζ : ↥K) ^ i * y := by
+      rw [hi, inv_mul_cancel_right₀ hyne]
+    rw [hval]
+    exact mul_mem (pow_mem (hKM (ζ : ↥K).2) i) hyM
+  have hξK : ξ ∈ K := hEM ⟨hξE, hξM⟩
+  have hx : (⟨ξ, hξK⟩ : ↥K) ^ ℓ = (u : ↥K) := by
+    refine (algebraMap (↥K) Ω).injective ?_
+    rw [_root_.map_pow, hξ]
+    rfl
+  have hx0 : (⟨ξ, hξK⟩ : ↥K) ≠ 0 := by
+    intro h
+    rw [h, zero_pow hℓ.ne_zero] at hx
+    exact u.ne_zero hx.symm
+  exact ⟨Units.mk0 _ hx0, Units.ext (by simpa using hx.symm)⟩
+
+/-- **One finite Galois extension of the base decides the reachability of every place of a level at
+once**: any finite level meeting it only in the level below reaches all of them.
+
+The extension is the one holding an exponent-th root of every unit divisible by the exponent at
+every place, which depends on the level below alone and not on the level the confinement is read
+in. -/
+theorem exists_finite_forall_isReachablePlace {ℓ : ℕ} (hℓ : ℓ.Prime) (hodd : Odd ℓ)
+    (K : IntermediateField k Ω) [NumberField ↥K] {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ) :
+    ∃ M : IntermediateField k Ω, K ≤ M ∧ FiniteDimensional k ↥M ∧ IsGalois k ↥M ∧
+      ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E → E ⊓ M ≤ K →
+        ∀ w : HeightOneSpectrum (𝓞 ↥K), IsReachablePlace ℓ K E w := by
+  obtain ⟨M, hKM, hMfin, hMgal, hMroot⟩ := exists_isGalois_forall_exists_pow K hℓ.ne_zero
+  refine ⟨M, hKM, hMfin, hMgal, fun E hEfin hEgal hKE hEM w => ?_⟩
+  haveI := hEfin
+  haveI := hEgal
+  exact isReachablePlace_of_inf_le hℓ hodd hKE hKM hζ hMroot hEM w
 
 end Kummer
 

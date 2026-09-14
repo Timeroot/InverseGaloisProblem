@@ -119,12 +119,12 @@ theorem confinedObstructionEP_of_stabilizerConfinedUnitsEP (ℓ : ℕ) [Fact ℓ
   intro k Ω _ _ _ _ _ _ K _ _ _ hζ
   exact hasConfinedObstruction_of_hasStabilizerConfinedUnits (h k Ω K hζ)
 
-/-- **The step of the ladder over an odd prime**, in exchange for the diagonal, the units the
-obstruction is bought with and a level reaching every place. -/
+/-- **The step of the ladder over an odd prime**, in exchange for the diagonal and the units the
+obstruction is bought with. -/
 theorem genericLevelStepEPRoots_of_stabilizerConfinedUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
-    (hodd : 2 < ℓ) (hreach : FlatReachableEP ℓ) (hunits : FlatDiagonalUnitsEP ℓ)
-    (hstab : StabilizerConfinedUnitsEP ℓ) : GenericLevelStepEPRoots ℓ :=
-  genericLevelStepEPRoots_of_flatDiagonalUnitsEP ℓ hodd hreach hunits
+    (hodd : 2 < ℓ) (hunits : FlatDiagonalUnitsEP ℓ) (hstab : StabilizerConfinedUnitsEP ℓ) :
+    GenericLevelStepEPRoots ℓ :=
+  genericLevelStepEPRoots_of_flatDiagonalUnitsEP ℓ hodd hunits
     (confinedObstructionEP_of_stabilizerConfinedUnitsEP ℓ hstab)
 
 end Shafarevich

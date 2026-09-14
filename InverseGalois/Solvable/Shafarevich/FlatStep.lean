@@ -6,6 +6,7 @@ import Mathlib
 import InverseGalois.Solvable.Shafarevich.FlatPlaces
 import InverseGalois.Solvable.Shafarevich.KernelStep
 import InverseGalois.Solvable.Shafarevich.NamedOrthogonal
+import InverseGalois.Solvable.Shafarevich.ReachableShrink
 
 /-!
 # The flattening in exchange for units alone
@@ -40,11 +41,13 @@ prescription is handed.
 
 ## Main results
 
+* `Shafarevich.flatReachableEP` — **the shrinking the flattening spends can be spent on a level
+  reaching every place**, for every odd prime.
 * `Shafarevich.flatOrbitPrescriptionEP_of_flatUnitsEP` — **the units buy the flattening made one
   field up and one named prime at a time.**
 * `Shafarevich.flatPrescriptionEP_of_flatUnitsEP` — **the units buy the flattening.**
 * `Shafarevich.genericLevelStepEPRoots_of_flatUnitsEP` — **the step of the ladder over an odd
-  prime, in exchange for the units and a level reaching every place.**
+  prime, in exchange for the units alone.**
 
 ## Tags
 
@@ -86,15 +89,33 @@ smooth lift at that number lying over the base realization a shrinking onto the 
 produced together with a finite level killing the lift carried across it in which every place of the
 level below is reached.
 
-This is the half of the demand the arithmetic cannot answer.  Which classes the confinement leaves
-free is decided by the level, the completely decomposed places generating exactly the classes the
-level does not see, so a place whose class the level does see carries no unit of the shape the
-prescription asks for however the arithmetic is arranged. -/
+Which classes the confinement leaves free is decided by the level, the completely decomposed places
+generating exactly the classes the level does not see, so a place whose class the level does see
+carries no unit of the shape the prescription asks for however the arithmetic is arranged.  The
+level below is asked to carry the roots of unity of order the prime, as it does wherever the demand
+is made. -/
 def FlatReachableEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
   ∀ (k Ω : Type) [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω]
       (S U : Type) [Group S] [Group U] (φ : Gal(Ω/k) →* U) (n j : ℕ)
       (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
-    K.fixingSubgroup = φ.ker → ∃ N : ℕ, HasReachableLevel ℓ U n S j φ N K
+    (∃ ζ : ↥K, IsPrimitiveRoot ζ ℓ) → K.fixingSubgroup = φ.ker →
+      ∃ N : ℕ, HasReachableLevel ℓ U n S j φ N K
+
+/-- **The shrinking the flattening spends can be spent on a level reaching every place**, for every
+odd prime.
+
+The field of radicals whose disjointness from the level buys reachability depends on the level below
+alone, so the number of letters may be announced before any lift is handed over: as many as the
+order of the Galois group of that field.  Reading the letters one block at a time then gives that
+many shrinkings, each surjective on the nose, whose levels contain one another's blocks; if none of
+them filled up the level below together with the field of radicals, the blocks accumulated one at a
+time would form a chain of subgroups strictly increasing all the way, longer than the group it is
+read in allows. -/
+theorem flatReachableEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] (hodd : 2 < ℓ) : FlatReachableEP ℓ := by
+  intro k Ω _ _ _ _ _ _ S U _ _ φ n j K _ _ _ hroot hKker
+  obtain ⟨ζ, hζ⟩ := hroot
+  exact exists_hasReachableLevel Fact.out (Nat.Prime.odd_of_ne_two Fact.out (by omega)) U n S j
+    K hζ hKker
 
 /-! ### The prescription and the step -/
 
@@ -145,7 +166,7 @@ theorem flatOrbitPrescriptionEP_of_flatUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZ
       exact hy
     have hkd : IsKummerData ↥K Ω (Multiplicative (ZMod ℓ)) (zmodRootHom hζ) ℓ :=
       isKummerData_zmod hζ hroot
-    obtain ⟨N, hlevel⟩ := hreach ℚ Ω S U φ n j K hKker
+    obtain ⟨N, hlevel⟩ := hreach ℚ Ω S U φ n j K ⟨_, hζ⟩ hKker
     exact hasFlatOrbitPrescription_of_places N K hKker hζ hkd hPrp hPrbot hDPr
       (exists_smul_placeUnder_of_mem K hPrp hPrbot hcovP) hlevel (h ℚ Ω K)
   · refine ⟨0, ?_⟩
@@ -161,11 +182,11 @@ theorem flatPrescriptionEP_of_flatUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero �
   flatPrescriptionEP_of_flatOrbitPrescriptionEP ℓ
     (flatOrbitPrescriptionEP_of_flatUnitsEP ℓ hreach h)
 
-/-- **The step of the ladder, in exchange for the units and a level reaching every place** — the two
-pieces the whole climb over an odd prime rests on, one arithmetic and one about the levels. -/
+/-- **The step of the ladder, in exchange for the units alone** — the level reaching every place
+being bought by the shrinking. -/
 theorem genericLevelStepEPRoots_of_flatUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] (hodd : 2 < ℓ)
-    (hreach : FlatReachableEP ℓ) (hunits : FlatUnitsEP ℓ) : GenericLevelStepEPRoots ℓ :=
+    (hunits : FlatUnitsEP ℓ) : GenericLevelStepEPRoots ℓ :=
   genericLevelStepEPRoots_of_flatPrescriptionEP ℓ hodd
-    (flatPrescriptionEP_of_flatUnitsEP ℓ hreach hunits)
+    (flatPrescriptionEP_of_flatUnitsEP ℓ (flatReachableEP ℓ hodd) hunits)
 
 end Shafarevich

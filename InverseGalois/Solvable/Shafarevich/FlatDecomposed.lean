@@ -45,7 +45,7 @@ is what keeps the demand at that place from colliding with the folded ones.
 * `InverseGalois.Shafarevich.hasFlatPrescribedUnits_of_hasDecomposedPrescribedUnits` — **units of
   the decomposition fields carry the flat prescription's units.**
 * `Shafarevich.genericLevelStepEPRoots_of_decomposedUnitsEP` — the step of the ladder over an odd
-  prime, in exchange for those units and a level reaching every place.
+  prime, in exchange for those units.
 
 ## Tags
 
@@ -180,13 +180,11 @@ theorem flatUnitsEP_of_decomposedUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero �
   intro k Ω _ _ _ _ _ _ K _ _ _
   exact hasFlatPrescribedUnits_of_hasDecomposedPrescribedUnits (h k Ω K)
 
-/-- **The step of the ladder over an odd prime, in exchange for units of the decomposition fields
-and a level reaching every place** — the arithmetic half of the climb, read at one place at a time
-and with the equivariance the prescription asks for replaced by membership in the subfield the
-place decomposes in. -/
+/-- **The step of the ladder over an odd prime, in exchange for units of the decomposition
+fields** — the arithmetic half of the climb, read at one place at a time and with the equivariance
+the prescription asks for replaced by membership in the subfield the place decomposes in. -/
 theorem genericLevelStepEPRoots_of_decomposedUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
-    (hodd : 2 < ℓ) (hreach : FlatReachableEP ℓ) (hunits : DecomposedUnitsEP ℓ) :
-    GenericLevelStepEPRoots ℓ :=
-  genericLevelStepEPRoots_of_flatUnitsEP ℓ hodd hreach (flatUnitsEP_of_decomposedUnitsEP ℓ hunits)
+    (hodd : 2 < ℓ) (hunits : DecomposedUnitsEP ℓ) : GenericLevelStepEPRoots ℓ :=
+  genericLevelStepEPRoots_of_flatUnitsEP ℓ hodd (flatUnitsEP_of_decomposedUnitsEP ℓ hunits)
 
 end Shafarevich

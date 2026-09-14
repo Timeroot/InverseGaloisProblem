@@ -306,12 +306,12 @@ theorem confinedDiagonalPlacesEP_of_flatDiagonalUnitsEP (ℓ : ℕ) [Fact ℓ.Pr
   intro k Ω _ _ _ _ _ _ K _ _ _ hζ
   exact hasConfinedDiagonalPlaces_of_flatDiagonalUnits (hunits k Ω K hζ) (hobs k Ω K hζ)
 
-/-- **The step of the ladder over an odd prime, in exchange for the units, the obstruction and a
-level reaching every place.** -/
+/-- **The step of the ladder over an odd prime, in exchange for the units and the
+obstruction.** -/
 theorem genericLevelStepEPRoots_of_flatDiagonalUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
-    (hodd : 2 < ℓ) (hreach : FlatReachableEP ℓ) (hunits : FlatDiagonalUnitsEP ℓ)
-    (hobs : ConfinedObstructionEP ℓ) : GenericLevelStepEPRoots ℓ :=
-  genericLevelStepEPRoots_of_confinedDiagonalPlacesEP ℓ hodd hreach
+    (hodd : 2 < ℓ) (hunits : FlatDiagonalUnitsEP ℓ) (hobs : ConfinedObstructionEP ℓ) :
+    GenericLevelStepEPRoots ℓ :=
+  genericLevelStepEPRoots_of_confinedDiagonalPlacesEP ℓ hodd
     (confinedDiagonalPlacesEP_of_flatDiagonalUnitsEP ℓ hunits hobs)
 
 end Shafarevich

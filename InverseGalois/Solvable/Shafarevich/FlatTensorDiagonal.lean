@@ -149,13 +149,12 @@ theorem confinedRadicandPlacesEP_of_confinedDiagonalPlacesEP (ℓ : ℕ) [Fact �
   intro k Ω _ _ _ _ _ _ K _ _ _ hζ
   exact hasConfinedRadicandPlaces_of_diagonal (h k Ω K hζ)
 
-/-- **The step of the ladder over an odd prime, in exchange for a diagonal of units and a level
-reaching every place** — the arithmetic of the climb resting on the existence of finitely many units
-of a number field subject to local conditions. -/
+/-- **The step of the ladder over an odd prime, in exchange for a diagonal of units** — the
+arithmetic of the climb resting on the existence of finitely many units of a number field subject to
+local conditions. -/
 theorem genericLevelStepEPRoots_of_confinedDiagonalPlacesEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
-    (hodd : 2 < ℓ) (hreach : FlatReachableEP ℓ) (h : ConfinedDiagonalPlacesEP ℓ) :
-    GenericLevelStepEPRoots ℓ :=
-  genericLevelStepEPRoots_of_confinedRadicandPlacesEP ℓ hodd hreach
+    (hodd : 2 < ℓ) (h : ConfinedDiagonalPlacesEP ℓ) : GenericLevelStepEPRoots ℓ :=
+  genericLevelStepEPRoots_of_confinedRadicandPlacesEP ℓ hodd
     (confinedRadicandPlacesEP_of_confinedDiagonalPlacesEP ℓ h)
 
 end Shafarevich

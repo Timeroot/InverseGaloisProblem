@@ -102,6 +102,8 @@ import InverseGalois.Solvable.Shafarevich.KernelPlaces
 import InverseGalois.Solvable.Shafarevich.FlatPlaces
 import InverseGalois.Solvable.Shafarevich.ReachableDetect
 import InverseGalois.Solvable.Shafarevich.ReachableKummer
+import InverseGalois.Solvable.Shafarevich.ReachableBlocks
+import InverseGalois.Solvable.Shafarevich.ReachableShrink
 import InverseGalois.Solvable.Shafarevich.FlatTensor
 import InverseGalois.Solvable.Shafarevich.FlatInvariant
 import InverseGalois.Solvable.Shafarevich.FlatNorm
@@ -980,6 +982,23 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   level from the field of roots.  **Reachability of every place costs exactly that one Kummer
   independence**, and the passage between the closure and the compositum is by restriction, an
   automorphism of the closure stabilising a prime restricting to one stabilising the prime below.
+* `InverseGalois.Solvable.Shafarevich.ReachableBlocks` reads the letters of a generic operator group
+  one block at a time.  Among the shrinkings attached to a vector of exponents there is, for each
+  block, the one whose vector is the indicator of that block; since the surviving exponent is one
+  and not merely prime to the residue characteristic, **that shrinking is surjective with no
+  hypothesis whatever on the groups involved**.  The blocks also cut the source into pieces: the
+  classes of the letters of one block generate a subgroup, the block subgroups jointly generate
+  everything, and the shrinking belonging to one block kills the subgroup of every other.
+* `InverseGalois.Solvable.Shafarevich.ReachableShrink` spends that combinatorics on the disjointness
+  reachability was traded for.  The field of radicals the disjointness is read against depends on
+  the level below alone, so the number of letters may be announced before any lift is handed over:
+  as many as the order of its Galois group.  Each block then gives a level containing every other
+  block's subgroup, and if no one of them filled up the level below together with the field of
+  radicals, the blocks accumulated one at a time would give a chain of subgroups strictly increasing
+  all the way â€” read in the finite group of the field of radicals, which the subgroup fixing that
+  field sitting at the bottom of the chain makes legitimate, a chain longer than the order of that
+  group.  So **some block's shrinking separates the level from the field of radicals**, the two
+  fields meet inside the level below, and every place of the level below is reached.
 * `InverseGalois.Solvable.Shafarevich.FlatTensor` buys the same flat prescription from a **single**
   invariant object instead of one unit per named place.  A unit at each place must be asked to be a
   local power at the conjugates of the *other* named places, so that the several prescriptions do

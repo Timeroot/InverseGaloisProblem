@@ -285,13 +285,11 @@ theorem invariantUnitTensorEP_of_confinedRadicandPlacesEP (ℓ : ℕ) [Fact ℓ.
   intro k Ω _ _ _ _ _ _ K _ _ _ hζ
   exact hasInvariantUnitTensor_of_confinedRadicandPlaces (h k Ω K hζ)
 
-/-- **The step of the ladder over an odd prime, in exchange for a choice of places and a level
-reaching every place** — the arithmetic of the climb resting on the choice of a finite set of
-places of a number field. -/
+/-- **The step of the ladder over an odd prime, in exchange for a choice of places** — the
+arithmetic of the climb resting on the choice of a finite set of places of a number field. -/
 theorem genericLevelStepEPRoots_of_confinedRadicandPlacesEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
-    (hodd : 2 < ℓ) (hreach : FlatReachableEP ℓ) (h : ConfinedRadicandPlacesEP ℓ) :
-    GenericLevelStepEPRoots ℓ :=
-  genericLevelStepEPRoots_of_invariantUnitTensorEP ℓ hodd hreach
+    (hodd : 2 < ℓ) (h : ConfinedRadicandPlacesEP ℓ) : GenericLevelStepEPRoots ℓ :=
+  genericLevelStepEPRoots_of_invariantUnitTensorEP ℓ hodd
     (invariantUnitTensorEP_of_confinedRadicandPlacesEP ℓ h)
 
 end Shafarevich
