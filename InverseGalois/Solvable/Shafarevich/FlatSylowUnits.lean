@@ -185,22 +185,30 @@ order a power of the exponent inside the automorphisms fixing the place.  The su
 among those, so the demand is made of the Sylow subgroups of the decomposition group and of nothing
 larger.  The place is asked to lie outside the set at which the radicand is kept inert, where an
 order of one is impossible, and to have its order taken by an element the whole group of
-automorphisms fixes. -/
+automorphisms fixes.
+
+The vector of orders is handed over as onto, so a confined unit with exactly the orders asked for is
+already at hand and what has to be bought is its class modulo exponent-th powers being fixed; the
+named places are handed over already reached by a unit as well. -/
 def HasSylowConfinedUnits (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
   ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
     ∀ Xs₀ Tz : Set (HeightOneSpectrum (𝓞 ↥K)), Xs₀.Finite → Tz.Finite →
-      ∀ (_ : Finite ↥(stableHull k ↥K Xs₀)) (y : ↥(stableHull k ↥K Xs₀)),
-        (y : HeightOneSpectrum (𝓞 ↥K)) ∉ stableHull k ↥K Tz →
-        IsBaseOrderPlace ℓ K (y : HeightOneSpectrum (𝓞 ↥K)) →
-        (∃ σ : Gal(↥K/k), σ ≠ 1 ∧ σ ^ ℓ = 1 ∧ σ • y = y) →
-        ∀ P : Subgroup Gal(↥K/k), IsPGroup ℓ ↥P → (∀ σ ∈ P, σ • y = y) →
-        ∃ u : ↥(confinedUnits ↥K ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)),
-          (∀ z : ↥(stableHull k ↥K Xs₀), (ℓ : ℤ) ∣
-            confinedOrd ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) (stableHull k ↥K Xs₀)
-              (Additive.ofMul u) z - Finsupp.single y 1 z) ∧
-            ∀ σ ∈ P,
-              ∃ v : ↥(confinedUnits ↥K ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)),
-                σ • u = u * v ^ ℓ
+      (∀ v ∈ Xs₀, IsReachablePlace ℓ K E (stableHull k ↥K Tz) v) →
+      ∀ _ : Finite ↥(stableHull k ↥K Xs₀),
+        Function.Surjective (confinedOrd ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)
+          (stableHull k ↥K Xs₀)) →
+        ∀ y : ↥(stableHull k ↥K Xs₀),
+          (y : HeightOneSpectrum (𝓞 ↥K)) ∉ stableHull k ↥K Tz →
+          IsBaseOrderPlace ℓ K (y : HeightOneSpectrum (𝓞 ↥K)) →
+          (∃ σ : Gal(↥K/k), σ ≠ 1 ∧ σ ^ ℓ = 1 ∧ σ • y = y) →
+          ∀ P : Subgroup Gal(↥K/k), IsPGroup ℓ ↥P → (∀ σ ∈ P, σ • y = y) →
+          ∃ u : ↥(confinedUnits ↥K ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)),
+            (∀ z : ↥(stableHull k ↥K Xs₀), (ℓ : ℤ) ∣
+              confinedOrd ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) (stableHull k ↥K Xs₀)
+                (Additive.ofMul u) z - Finsupp.single y 1 z) ∧
+              ∀ σ ∈ P,
+                ∃ v : ↥(confinedUnits ↥K ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)),
+                  σ • u = u * v ^ ℓ
 
 /-- **A Sylow subgroup of the decomposition group is enough.**
 
@@ -215,16 +223,17 @@ theorem hasStabilizerConfinedUnits_of_hasSylowConfinedUnits {ℓ : ℕ} [Fact �
     (h : HasSylowConfinedUnits ℓ K) :
     HasStabilizerConfinedUnits ℓ K := by
   classical
-  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hfin y hyTz hybase hy
+  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hreach hfin hsurj y hyTz hybase hy
   haveI := hfin
   haveI : Finite Gal(↥K/k) := Finite.of_fintype _
   obtain ⟨Q⟩ : Nonempty (Sylow ℓ ↥(stabilizer Gal(↥K/k) y)) := inferInstance
   haveI : Fintype (↥(stabilizer Gal(↥K/k) y) ⧸ (Q : Subgroup ↥(stabilizer Gal(↥K/k) y))) :=
     Fintype.ofFinite _
-  obtain ⟨u₁, hord₁, hinv₁⟩ := h E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hfin y hyTz hybase hy
-    ((Q : Subgroup ↥(stabilizer Gal(↥K/k) y)).map (stabilizer Gal(↥K/k) y).subtype)
-    (Q.isPGroup'.of_equiv (Subgroup.equivMapOfInjective _ _ Subtype.coe_injective))
-    (by rintro σ ⟨x, _, rfl⟩; exact x.2)
+  obtain ⟨u₁, hord₁, hinv₁⟩ :=
+    h E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hreach hfin hsurj y hyTz hybase hy
+      ((Q : Subgroup ↥(stabilizer Gal(↥K/k) y)).map (stabilizer Gal(↥K/k) y).subtype)
+      (Q.isPGroup'.of_equiv (Subgroup.equivMapOfInjective _ _ Subtype.coe_injective))
+      (by rintro σ ⟨x, _, rfl⟩; exact x.2)
   obtain ⟨u, hordu, hinvu⟩ :=
     exists_forall_smul_eq_mul_pow
       (confinedOrd ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) (stableHull k ↥K Xs₀))

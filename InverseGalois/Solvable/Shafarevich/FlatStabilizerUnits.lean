@@ -77,21 +77,30 @@ whenever the orders of the confined units are onto: a unit which is a local powe
 order divisible by the exponent there, so no confined unit has order one at a place of that set.  It
 also arrives with its order taken by an element the whole group of automorphisms fixes, which is the
 statement that its ramification index over the base field is prime to the exponent, and which is
-what leaves room for a unit fixed at the place at all. -/
+what leaves room for a unit fixed at the place at all.
+
+What has to be bought is the invariance and nothing else.  The orders of the confined units are
+handed over as onto, so a confined unit with exactly the vector of orders asked for is already
+there; what it need not be is fixed modulo exponent-th powers by the automorphisms fixing the place.
+The named places are handed over already reached by a unit as well. -/
 def HasStabilizerConfinedUnits (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
   ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
     ∀ Xs₀ Tz : Set (HeightOneSpectrum (𝓞 ↥K)), Xs₀.Finite → Tz.Finite →
-      ∀ (_ : Finite ↥(stableHull k ↥K Xs₀)) (y : ↥(stableHull k ↥K Xs₀)),
-        (y : HeightOneSpectrum (𝓞 ↥K)) ∉ stableHull k ↥K Tz →
-        IsBaseOrderPlace ℓ K (y : HeightOneSpectrum (𝓞 ↥K)) →
-        (∃ σ : Gal(↥K/k), σ ≠ 1 ∧ σ ^ ℓ = 1 ∧ σ • y = y) →
-        ∃ u : ↥(confinedUnits ↥K ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)),
-          (∀ z : ↥(stableHull k ↥K Xs₀), (ℓ : ℤ) ∣
-            confinedOrd ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) (stableHull k ↥K Xs₀)
-              (Additive.ofMul u) z - Finsupp.single y 1 z) ∧
-            ∀ σ : Gal(↥K/k), σ • y = y →
-              ∃ v : ↥(confinedUnits ↥K ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)),
-                σ • u = u * v ^ ℓ
+      (∀ v ∈ Xs₀, IsReachablePlace ℓ K E (stableHull k ↥K Tz) v) →
+      ∀ _ : Finite ↥(stableHull k ↥K Xs₀),
+        Function.Surjective (confinedOrd ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)
+          (stableHull k ↥K Xs₀)) →
+        ∀ y : ↥(stableHull k ↥K Xs₀),
+          (y : HeightOneSpectrum (𝓞 ↥K)) ∉ stableHull k ↥K Tz →
+          IsBaseOrderPlace ℓ K (y : HeightOneSpectrum (𝓞 ↥K)) →
+          (∃ σ : Gal(↥K/k), σ ≠ 1 ∧ σ ^ ℓ = 1 ∧ σ • y = y) →
+          ∃ u : ↥(confinedUnits ↥K ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)),
+            (∀ z : ↥(stableHull k ↥K Xs₀), (ℓ : ℤ) ∣
+              confinedOrd ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) (stableHull k ↥K Xs₀)
+                (Additive.ofMul u) z - Finsupp.single y 1 z) ∧
+              ∀ σ : Gal(↥K/k), σ • y = y →
+                ∃ v : ↥(confinedUnits ↥K ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)),
+                  σ • u = u * v ^ ℓ
 
 /-- **The units buy the obstruction.**
 
@@ -106,7 +115,7 @@ theorem hasConfinedObstruction_of_hasStabilizerConfinedUnits {ℓ : ℕ} [Fact �
     {K : IntermediateField k Ω} [NumberField ↥K] [FiniteDimensional k ↥K] [IsGalois k ↥K]
     (h : HasStabilizerConfinedUnits ℓ K) :
     HasConfinedObstruction ℓ K := by
-  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hbase C _ _ hexp hfin hdec hsurj t ht
+  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hbase hreach C _ _ hexp hfin hdec hsurj t ht
   haveI : Finite ↥(stableHull k ↥K Xs₀) := hfin
   letI : DecidableEq ↥(stableHull k ↥K Xs₀) := hdec
   have hnotTz : ∀ y : ↥(stableHull k ↥K Xs₀),
@@ -131,7 +140,7 @@ theorem hasConfinedObstruction_of_hasStabilizerConfinedUnits {ℓ : ℕ} [Fact �
     rwa [inv_smul_smul] at h1
   exact tensorInvariantClass_confinedOrd_eq_zero_of_stabilizer_mod_pow_order ℓ
     (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) (stableHull k ↥K Xs₀) hexp hsurj
-    (fun y => h E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hfin y (hnotTz y) (hybase y)) ht
+    (fun y => h E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hreach hfin hsurj y (hnotTz y) (hybase y)) ht
 
 end Units
 

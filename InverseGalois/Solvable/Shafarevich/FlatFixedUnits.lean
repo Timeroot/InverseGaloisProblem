@@ -144,7 +144,7 @@ theorem hasSylowConfinedUnits_of_hasFixedReachablePlaces {ℓ : ℕ} [Fact ℓ.P
     (h : HasFixedReachablePlaces ℓ K) :
     HasSylowConfinedUnits ℓ K := by
   classical
-  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hfin y hyTz hybase _hyσ P hP hPfix
+  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz _hreach hfin _hsurj y hyTz hybase _hyσ P hP hPfix
   haveI := hfin
   haveI : NeZero ℓ := ⟨(Fact.out : ℓ.Prime).ne_zero⟩
   haveI := isGaloisStablePlaces_decomposedPlaces (K := K) (E := E)

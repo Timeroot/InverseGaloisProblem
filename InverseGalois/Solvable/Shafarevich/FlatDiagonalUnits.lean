@@ -191,11 +191,16 @@ This is the second half of the demand made of a choice of places, read at the sm
 is: the places whose orders the descent reads are the translates of the named ones and nothing
 else.  The units the correction is made in are those the enlarged set of allowed places brings in,
 and that set — the named places together with everything completely decomposed in the bigger level —
-is left as large as it can be. -/
+is left as large as it can be.
+
+The named places arrive with their order taken by an element the whole group of automorphisms fixes
+and with the divisor class statement of a reachable place, both of which the choice of places is
+handed along with them. -/
 def HasConfinedObstruction (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
   ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
     ∀ Xs₀ Tz : Set (HeightOneSpectrum (𝓞 ↥K)), Xs₀.Finite → Tz.Finite →
       (∀ v ∈ Xs₀, IsBaseOrderPlace ℓ K v) →
+      (∀ v ∈ Xs₀, IsReachablePlace ℓ K E (stableHull k ↥K Tz) v) →
       ∀ (C : Type) [CommGroup C] [MulDistribMulAction Gal(↥K/k) C], (∀ c : C, c ^ ℓ = 1) →
         ∀ (_ : Finite ↥(stableHull k ↥K Xs₀)) (_ : DecidableEq ↥(stableHull k ↥K Xs₀))
           (hsurj : Function.Surjective (confinedOrd ℓ (stableHull k ↥K Tz)
@@ -328,7 +333,7 @@ theorem hasConfinedDiagonalPlaces_of_flatDiagonalUnits {ℓ : ℕ} [Fact ℓ.Pri
       rwa [placeValue_eq_neg_ord, dvd_neg] at h6
   exact ⟨stableHull k ↥K Xs₀, inferInstance, inferInstance, inferInstance,
     subset_stableHull k ↥K Xs₀, hdiagdata,
-    fun t ht => hobs E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hbase C hexp _ _ _ t ht⟩
+    fun t ht => hobs E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hbase hreach C hexp _ _ _ t ht⟩
 
 end Bridge
 
