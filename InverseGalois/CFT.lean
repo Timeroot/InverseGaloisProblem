@@ -486,6 +486,7 @@ import InverseGalois.CFT.PoitouTate.ConfinedDiagonal
 import InverseGalois.CFT.PoitouTate.ConfinedEquivariant
 import InverseGalois.CFT.PoitouTate.ConfinedSupport
 import InverseGalois.CFT.PoitouTate.ConfinedSurjective
+import InverseGalois.CFT.PoitouTate.ConfinedTGens
 import InverseGalois.CFT.PoitouTate.ConfinedUnits
 import InverseGalois.CFT.PoitouTate.ConfinedWeighted
 import InverseGalois.CFT.PoitouTate.ConjugatePlace
@@ -6371,6 +6372,17 @@ it that are available here.
   that it be onto, and that is bought by deleting from the read set finitely many places whose ideal
   classes generate the subgroup the allowed places generate, which the finiteness of the class group
   supplies with nothing else.
+* `InverseGalois.CFT.PoitouTate.ConfinedTGens` counts the coefficients that second reading leaves.
+  A unit read twice — once at the named places, once at every place outside a finite set — has no
+  order at the named places and none outside the finite set, so **its order lives on the part of the
+  finite set which is not named**, and it is a unit for that part alone.  That part is the
+  correction room, the places at which an element realising a prescribed reading is allowed an
+  order nobody asked for, and it is the only thing about the second reading that has to be small.
+  The named places arrive late and may be many; the correction room may be chosen apart from them
+  and bounded by the field alone.  So **the coefficients of the second reading are spanned by the
+  generators of the units of the ring of integers together with one element for each place of the
+  correction room** — a number known before the class is, which is what an ordering constraint
+  that fixes the size of a spanning family before the count begins needs.
 * `InverseGalois.CFT.PoitouTate.ConfinedSurjective` settles the one thing the descent inside that
   subgroup takes for granted, that the orders at the named places are arbitrary.  Half of it costs
   nothing: **an exponent-th power of any element of the field is a confined unit**, whatever the two
