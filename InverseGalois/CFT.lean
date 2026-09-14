@@ -1101,6 +1101,7 @@ import InverseGalois.CFT.Units.SUnitHerbrand
 import InverseGalois.CFT.Units.SUnitIndex
 import InverseGalois.CFT.Units.SUnitValuation
 import InverseGalois.CFT.Units.SolvableNorm
+import InverseGalois.CFT.Units.SpanSubgroup
 import InverseGalois.CFT.Units.SplitCompletion
 import InverseGalois.CFT.Units.SplitNorm
 import InverseGalois.CFT.Units.SplitOutside
@@ -6219,6 +6220,17 @@ it that are available here.
   Dirichlet's theorem, and whose quotient is the group of their orders at the chosen primes, a
   subgroup of a free abelian group of finite rank.  So finitely many of them generate, which is
   what a counting argument over the presentation asks for.
+* `InverseGalois.CFT.Units.SpanSubgroup` makes the number of generators readable off the ambient
+  group alone.  A counting argument consumes its coefficients as a spanning family of a given size,
+  and the size is fixed before the class to be counted is known, while the coefficients that arise
+  are subgroups cut out by conditions only the class decides.  Over the integers this costs nothing:
+  a family of a given size spanning a group is a surjection onto it from the free module on that
+  many letters, the preimage of a subgroup is a submodule of that free module and so is itself free
+  of no greater rank, the integers being a principal ideal domain, and a basis of the preimage is
+  carried onto a spanning family of the subgroup.  Padding with zeroes brings the family back up to
+  the size asked for, so **a subgroup of a group spanned by a given number of elements is spanned by
+  that many elements**, and the same read along an injection lets a group presented as a subgroup of
+  another consume it.
 * `InverseGalois.CFT.Units.SUnitDivisible` gathers the units of a number field whose order is
   divisible by a fixed exponent at every place.  Such a unit is the exponent-th power of a
   fractional ideal, and away from a finite set of places meeting every ideal class that ideal is
