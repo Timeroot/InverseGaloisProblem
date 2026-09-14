@@ -74,12 +74,16 @@ fix.  Nothing is asked at the places whose decomposition group has order prime t
 
 The place is asked to lie outside the set at which the radicand is kept inert, which it does
 whenever the orders of the confined units are onto: a unit which is a local power at a place has
-order divisible by the exponent there, so no confined unit has order one at a place of that set. -/
+order divisible by the exponent there, so no confined unit has order one at a place of that set.  It
+also arrives with its order taken by an element the whole group of automorphisms fixes, which is the
+statement that its ramification index over the base field is prime to the exponent, and which is
+what leaves room for a unit fixed at the place at all. -/
 def HasStabilizerConfinedUnits (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
   ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
     ∀ Xs₀ Tz : Set (HeightOneSpectrum (𝓞 ↥K)), Xs₀.Finite → Tz.Finite →
       ∀ (_ : Finite ↥(stableHull k ↥K Xs₀)) (y : ↥(stableHull k ↥K Xs₀)),
         (y : HeightOneSpectrum (𝓞 ↥K)) ∉ stableHull k ↥K Tz →
+        IsBaseOrderPlace ℓ K (y : HeightOneSpectrum (𝓞 ↥K)) →
         (∃ σ : Gal(↥K/k), σ ≠ 1 ∧ σ ^ ℓ = 1 ∧ σ • y = y) →
         ∃ u : ↥(confinedUnits ↥K ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)),
           (∀ z : ↥(stableHull k ↥K Xs₀), (ℓ : ℤ) ∣
@@ -99,10 +103,10 @@ it and the class modulo exponent-th powers is all that has to be fixed.  Where n
 order the exponent fixes the place, the product over the decomposition group supplies the unit
 unasked. -/
 theorem hasConfinedObstruction_of_hasStabilizerConfinedUnits {ℓ : ℕ} [Fact ℓ.Prime]
-    {K : IntermediateField k Ω} [NumberField ↥K] [FiniteDimensional k ↥K]
+    {K : IntermediateField k Ω} [NumberField ↥K] [FiniteDimensional k ↥K] [IsGalois k ↥K]
     (h : HasStabilizerConfinedUnits ℓ K) :
     HasConfinedObstruction ℓ K := by
-  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz C _ _ hexp hfin hdec hsurj t ht
+  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hbase C _ _ hexp hfin hdec hsurj t ht
   haveI : Finite ↥(stableHull k ↥K Xs₀) := hfin
   letI : DecidableEq ↥(stableHull k ↥K Xs₀) := hdec
   have hnotTz : ∀ y : ↥(stableHull k ↥K Xs₀),
@@ -119,9 +123,15 @@ theorem hasConfinedObstruction_of_hasStabilizerConfinedUnits {ℓ : ℕ} [Fact �
     have h2 : ((ℓ : ℤ) : ℤ) ≤ 1 := Int.le_of_dvd one_pos hdvd
     have h3 : 2 ≤ ℓ := (Fact.out : ℓ.Prime).two_le
     omega
+  have hybase : ∀ y : ↥(stableHull k ↥K Xs₀),
+      IsBaseOrderPlace ℓ K (y : HeightOneSpectrum (𝓞 ↥K)) := by
+    intro y
+    obtain ⟨σ, hσ⟩ := (mem_stableHull k ↥K Xs₀).1 y.2
+    have h1 := (hbase _ hσ).smul σ⁻¹
+    rwa [inv_smul_smul] at h1
   exact tensorInvariantClass_confinedOrd_eq_zero_of_stabilizer_mod_pow_order ℓ
     (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) (stableHull k ↥K Xs₀) hexp hsurj
-    (fun y => h E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hfin y (hnotTz y)) ht
+    (fun y => h E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hfin y (hnotTz y) (hybase y)) ht
 
 end Units
 

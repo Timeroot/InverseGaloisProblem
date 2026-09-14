@@ -143,7 +143,8 @@ the value prescribed there to be trivial, and stability is what lets the demand 
 a time — and elsewhere they are confined, a place where some unit has order prime to the exponent
 sitting over a named place or having the primes above it completely decomposed in a finite level
 named in advance.  Each named place is asked to be reachable in that level, which is the divisor
-class half of the demand. -/
+class half of the demand, and to have its order taken by an element the whole group fixes, which is
+the statement that its ramification index over the base field is prime to the exponent. -/
 def HasInvariantUnitTensor (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
   ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
     ∀ (M : Type) [CommGroup M] [MulDistribMulAction Gal(↥K/k) M], (∀ m : M, m ^ ℓ = 1) →
@@ -158,6 +159,7 @@ def HasInvariantUnitTensor (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω)
             (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ ∉ Tz) →
             (∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (w μ).asIdeal) →
             (∀ μ : ι, IsReachablePlace ℓ K E (↑Tz) (w μ)) →
+            (∀ μ : ι, IsBaseOrderPlace ℓ K (w μ)) →
             ∃ z : T → (↥K)ˣ,
               (∀ σ : Gal(↥K/k),
                 σ • (∑ q, Additive.ofMul (z q) ⊗ₜ[ℤ] Additive.ofMul (b q))
@@ -199,7 +201,7 @@ theorem hasFlatPrescribedTensor_of_hasInvariantUnitTensor {ℓ : ℕ} [NeZero �
     {K : IntermediateField k Ω} [NumberField ↥K] {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ)
     (hrad : HasInvariantUnitTensor ℓ K) : HasFlatPrescribedTensor ℓ K ζ := by
   intro E hEfin hEgal hKE M _ hexp T _ b hspan hindep act hone hmul ι _ w V hdist hVcompat Tz
-    hTzstab hwTz hwℓ hwreach
+    hTzstab hwTz hwℓ hwreach hwbase
   letI : MulDistribMulAction Gal(↥K/k) M :=
     charTwistAction hexp act hone hmul (rootChar hζ)⁻¹
   have hstab : ∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ = w μ → σ • V μ = V μ := by
@@ -214,6 +216,7 @@ theorem hasFlatPrescribedTensor_of_hasInvariantUnitTensor {ℓ : ℕ} [NeZero �
       rootChar_inv_apply, ← Units.val_mul, mul_inv_cancel, Units.val_one]
   obtain ⟨z, hzinv, hzval, hzTz, hzconf⟩ :=
     hrad E hEfin hEgal hKE M hexp T b hspan hindep ι w V hdist hstab Tz hTzstab hwTz hwℓ hwreach
+      hwbase
   refine ⟨z, fun σ e he => ?_, hzval, hzTz, hzconf⟩
   refine twistTensor_eq_coeffTensor_of_smul_eq (f := act σ) (fun m => ?_) (hzinv σ)
   exact charTwistAction_pow hexp act hone hmul ((rootChar hζ)⁻¹)

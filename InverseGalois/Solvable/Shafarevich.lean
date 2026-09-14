@@ -1173,11 +1173,10 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   there.  The passage back costs only a power, which brings the order at the named place to one
   modulo the exponent and leaves the invariance untouched.  Which places admit such a unit is
   settled by the ramification alone, since the units the subgroup fixes are the units of its fixed
-  field and their orders at the place are the multiples of the ramification index there, so the
-  demand splits: at those places **what is asked is the divisor class statement of a reachable place
-  and nothing equivariant beyond a unit the subgroup fixes**, and at the rest the invariance is only
-  available modulo exponent-th powers, where the tame character turns the demand into a congruence
-  on the norm of the place.
+  field and their orders at the place are the multiples of the ramification index there; the places
+  the obstruction is read at carry that much for free, arriving with their order taken by an element
+  the whole group of automorphisms fixes, so **what is asked is the divisor class statement of a
+  reachable place and nothing equivariant beyond a unit the subgroup fixes**.
 * `InverseGalois.Solvable.Shafarevich.FlatLineUnits` produces those units without asking the orbits
   of the named places to be free.  A line of local classes named by a global unit spreads over an
   orbit only when the orbit is free, since two automorphisms carrying the named place to the same

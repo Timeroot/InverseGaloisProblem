@@ -34,6 +34,8 @@ the exponent — is read off the family as before.
 
 ## Main definitions
 
+* `InverseGalois.Shafarevich.IsBaseOrderPlace` — a place of a level whose order is already taken,
+  prime to the exponent, by an element the whole group of automorphisms fixes.
 * `InverseGalois.Shafarevich.HasFlatPrescribedTensor` — **a tensor of the units of a level with a
   target killed by the exponent and carrying a basis can be found, invariant for the automorphisms
   of the level acting diagonally, of prescribed order at each of finitely many reachable named
@@ -46,6 +48,9 @@ the exponent — is read off the family as before.
 * `InverseGalois.Shafarevich.smul_kummerRootUnit_eq_pow_iff` — an automorphism raises the chosen
   root of unity to a power exactly when its restriction to the level raises the root of unity of
   the level to that power.
+* `InverseGalois.Shafarevich.isBaseOrderPlace_of_inertia_le_fixingSubgroup` — **a place of a level
+  below a prime whose inertia fixes the level has its order taken by an element the whole group of
+  automorphisms fixes**, a uniformiser of the place below.
 * `InverseGalois.Shafarevich.hasFlatKernelPrescription_of_tensorPlaces` — **a level carrying such a
   tensor carries the flat prescription made one field up.**
 
@@ -106,6 +111,79 @@ section Arith
 
 variable {k Ω : Type} [Field k] [Field Ω] [Algebra k Ω]
 
+/-- **A place of a level whose order is already taken, prime to the exponent, by an element the
+whole group of automorphisms fixes.**
+
+Such an element is an element of the base field, and its order at the place is the ramification
+index there, so the condition says exactly that the place is unramified over the base field, or at
+worst ramified to a degree prime to the exponent.  It is what makes a demand of invariant units at
+the place meetable at all: the elements the automorphisms fixing the place fix are the elements of
+the field those automorphisms fix, and their orders at the place run over the multiples of the
+ramification index of the place there. -/
+def IsBaseOrderPlace (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K]
+    (v : HeightOneSpectrum (𝓞 ↥K)) : Prop :=
+  ∃ x : (↥K)ˣ, (∀ σ : Gal(↥K/k), σ • x = x) ∧ ¬ (ℓ : ℤ) ∣ placeValue v x
+
+/-- **Being taken by an element the whole group fixes travels along the orbit of a place.**  Such an
+element has the same order at a translate of the place as it has there, because the automorphism
+carrying one to the other leaves it alone. -/
+theorem IsBaseOrderPlace.smul {ℓ : ℕ} {K : IntermediateField k Ω} [NumberField ↥K]
+    [IsGalois k ↥K] {v : HeightOneSpectrum (𝓞 ↥K)} (h : IsBaseOrderPlace ℓ K v)
+    (σ : Gal(↥K/k)) : IsBaseOrderPlace ℓ K (σ • v) := by
+  obtain ⟨x, hx, hord⟩ := h
+  refine ⟨x, hx, fun hc => hord ?_⟩
+  have hval : placeValue (σ • v) x = placeValue v x := by
+    rw [← placeValue_galSmul v σ x, galUnits_eq_smul, hx σ]
+  rwa [hval] at hc
+
+/-- **A place of a level unramified over the base field has its order taken by an element the whole
+group of automorphisms fixes.**  A uniformiser of the place below is such an element: the
+automorphisms of the level fix the base field pointwise, and the order of an element of the base
+field at a place of the level is its order below multiplied by the ramification index, which is one.
+-/
+theorem isBaseOrderPlace_of_inertia_eq_bot [NumberField k] {ℓ : ℕ} (hℓ : 1 < ℓ)
+    {K : IntermediateField k Ω} [NumberField ↥K] [IsGalois k ↥K]
+    {v : HeightOneSpectrum (𝓞 ↥K)} (hv : Ideal.inertia Gal(↥K/k) v.asIdeal = ⊥) :
+    IsBaseOrderPlace ℓ K v := by
+  have he : ramIdx (𝓞 k) v = 1 := (inertia_eq_bot_iff_ramIdx_eq_one v).1 hv
+  obtain ⟨π, hπ⟩ := (primeUnder (𝓞 k) v).valuation_exists_uniformizer k
+  have hπ0 : π ≠ 0 := by
+    rintro rfl
+    rw [map_zero] at hπ
+    exact (WithZero.exp_pos (a := (-1 : ℤ))).ne hπ
+  have hx0 : algebraMap k ↥K π ≠ 0 := by
+    simpa using (algebraMap k ↥K).injective.ne hπ0
+  refine ⟨Units.mk0 (algebraMap k ↥K π) hx0, fun σ => Units.ext ?_, ?_⟩
+  · show σ (algebraMap k ↥K π) = algebraMap k ↥K π
+    exact σ.commutes π
+  · have hval : v.valuation ↥K (algebraMap k ↥K π) = WithZero.exp (-1 : ℤ) := by
+      rw [valuation_algebraMap (A := 𝓞 k) v π, he, pow_one, hπ]
+    rw [Rigidity.RET.valuation_eq_exp_neg_ord ↥K v hx0] at hval
+    have hord : Rigidity.RET.ord ↥K v (algebraMap k ↥K π) = 1 := by
+      have hlog := congrArg WithZero.log hval
+      simpa using hlog
+    have hpv : placeValue v (Units.mk0 (algebraMap k ↥K π) hx0) = -1 := by
+      rw [placeValue_eq_neg_ord]
+      show -Rigidity.RET.ord ↥K v (algebraMap k ↥K π) = -1
+      rw [hord]
+    rw [hpv]
+    intro hc
+    have h2 : (ℓ : ℤ) ≤ 1 := Int.le_of_dvd one_pos (dvd_neg.1 hc)
+    omega
+
+/-- **A place of a level below a prime whose inertia fixes the level is unramified over the base
+field**, so its order is taken by an element the whole group of automorphisms fixes.  Restriction
+carries inertia at the prime onto inertia at the place below, and an inertia subgroup fixing the
+level restricts to nothing. -/
+theorem isBaseOrderPlace_of_inertia_le_fixingSubgroup [NumberField k] [IsGalois k Ω] {ℓ : ℕ}
+    (hℓ : 1 < ℓ) {K : IntermediateField k Ω} [NumberField ↥K] [IsGalois k ↥K] {P : Ideal (𝓞 Ω)}
+    [P.IsPrime] (hP : P ≠ ⊥) (h : Ideal.inertia Gal(Ω/k) P ≤ K.fixingSubgroup) :
+    IsBaseOrderPlace ℓ K (placeUnder K P hP) := by
+  refine isBaseOrderPlace_of_inertia_eq_bot hℓ ?_
+  rw [← map_inertia_restrictNormalHom (k := k) (K := Ω) K (P := P) (v := placeUnder K P hP) rfl,
+    Subgroup.map_eq_bot_iff, IntermediateField.restrictNormalHom_ker]
+  exact h
+
 /-- **A tensor of the units of a level with a target killed by the exponent can be found, invariant
 for the automorphisms of the level acting diagonally, of prescribed order at each of finitely many
 named places lying in distinct orbits, a local power at a prescribed finite set of places the
@@ -145,7 +223,8 @@ completely decomposed in a finite level named in advance.
 
 Each named place is asked to be reachable in that finite level, which is the divisor class half of
 the demand and the half the level has to be chosen for rather than the half the arithmetic
-supplies. -/
+supplies.  It is also asked to have its order taken by an element the whole group fixes, which is
+the statement that its ramification index over the base field is prime to the exponent. -/
 def HasFlatPrescribedTensor (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω) [NumberField ↥K]
     (ζ : ↥K) : Prop :=
   ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
@@ -164,6 +243,7 @@ def HasFlatPrescribedTensor (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω
               (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ ∉ Tz) →
               (∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (w μ).asIdeal) →
               (∀ μ : ι, IsReachablePlace ℓ K E (↑Tz) (w μ)) →
+              (∀ μ : ι, IsBaseOrderPlace ℓ K (w μ)) →
               ∃ z : T → (↥K)ˣ,
                 (∀ (σ : Gal(↥K/k)) (e : ℕ), σ ζ = ζ ^ e →
                   twistTensor M σ⁻¹ e (∑ q, Additive.ofMul (z q) ⊗ₜ[ℤ] Additive.ofMul (b q))
@@ -190,7 +270,6 @@ variable {ℓ : ℕ} [Fact ℓ.Prime] [NeZero ℓ] {U : Type} [Group U] [Finite 
 
 attribute [local instance] genericQuotAction zmodTrivialAction
 
-omit [NumberField k] in
 /-- **A level carrying an invariant tensor prescribed at named places carries the flat prescription
 made one field up.**
 
@@ -243,7 +322,7 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
   haveI : Fact (1 < ℓ) := ⟨hℓ.one_lt⟩
   haveI : IsGalois ↥K Ω := IsGalois.tower_top_of_isGalois k ↥K Ω
   refine ⟨N, ?_⟩
-  intro F ι _ Q A a hFsurj hFsm hFright hQp hQbot hQℓ hQconj _ hAker hAeq _ hasm haequiv hesc
+  intro F ι _ Q A a hFsurj hFsm hFright hQp hQbot hQℓ hQconj _ hAker hAeq hQunr hasm haequiv hesc
   haveI : ∀ μ, (Q μ).IsPrime := hQp
   haveI : ∀ ν, (Pr ν).IsPrime := hPrp
   letI : Fintype ι := Fintype.ofFinite ι
@@ -489,6 +568,8 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
     ι (fun μ => placeUnder K (Q μ) (hQbot μ))
     (fun μ => ∏ q, layerBasis ℓ (Generic U n S) j q ^ (c μ q).val)
     hconjw hVcompat Tz hstabTz hdisj hdisjℓ (fun μ => hreach _)
+    (fun μ => isBaseOrderPlace_of_inertia_le_fixingSubgroup hℓ.one_lt (hQbot μ)
+      (by rw [hKker]; exact hQunr μ))
   have hz1 : ∀ (q : Fin (layerDim ℓ (Generic U n S) j)) (v : HeightOneSpectrum (𝓞 ↥K)),
       (ℓ : 𝓞 ↥K) ∈ v.asIdeal → localClassHom v ℓ (z q) = 1 := by
     intro q v hv

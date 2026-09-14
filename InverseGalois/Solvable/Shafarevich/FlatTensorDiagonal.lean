@@ -81,6 +81,7 @@ def HasConfinedDiagonalPlaces (ℓ : ℕ) [Fact ℓ.Prime] (K : IntermediateFiel
     ∀ Xs₀ Tz : Set (HeightOneSpectrum (𝓞 ↥K)), Xs₀.Finite → Tz.Finite →
       (∀ v ∈ Xs₀, (ℓ : 𝓞 ↥K) ∉ v.asIdeal) →
       (∀ v ∈ Xs₀, IsReachablePlace ℓ K E (stableHull k ↥K Tz) v) →
+      (∀ v ∈ Xs₀, IsBaseOrderPlace ℓ K v) →
       (∀ v ∈ Xs₀, ∀ σ : Gal(↥K/k), σ • v ∉ Tz) →
       ∀ (C : Type) [CommGroup C] [MulDistribMulAction Gal(↥K/k) C], (∀ c : C, c ^ ℓ = 1) →
         ∃ (Xs : Set (HeightOneSpectrum (𝓞 ↥K))) (_ : Finite ↥Xs) (_ : DecidableEq ↥Xs)
@@ -109,9 +110,9 @@ confined units is onto, and the obstruction clause is carried over unchanged. -/
 theorem hasConfinedRadicandPlaces_of_diagonal {ℓ : ℕ} [Fact ℓ.Prime]
     {K : IntermediateField k Ω} [NumberField ↥K] (h : HasConfinedDiagonalPlaces ℓ K) :
     HasConfinedRadicandPlaces ℓ K := by
-  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hℓXs hreach hdisj C _ _ hexp
+  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hℓXs hreach hbase hdisj C _ _ hexp
   obtain ⟨Xs, hfin, hdec, hstab, hsub, hdiag, hcls⟩ :=
-    h E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hℓXs hreach hdisj C hexp
+    h E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hℓXs hreach hbase hdisj C hexp
   haveI := hfin
   haveI := hdec
   haveI := hstab

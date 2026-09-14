@@ -536,8 +536,10 @@ unrestricted invariant tensor demand.** -/
 theorem hasInvariantUnitTensor_of_hasTameInvariantUnitTensor
     (htame : ∀ v : HeightOneSpectrum (𝓞 ↥K), ¬ ℓ ∣ Nat.card ↥(stabilizer Gal(↥K/k) v))
     (h : HasTameInvariantUnitTensor ℓ K) : HasInvariantUnitTensor ℓ K := by
-  intro E hEfin hEgal hKE M _ _ hexp T _ b hspan hindep ι _ w V hdist
-  exact h E hEfin hEgal hKE M hexp T b hspan hindep ι w V hdist fun μ => htame (w μ)
+  intro E hEfin hEgal hKE M _ _ hexp T _ b hspan hindep ι _ w V hdist hVfix Tz hTzstab hwTz hℓw
+    hreach _
+  exact h E hEfin hEgal hKE M hexp T b hspan hindep ι w V hdist (fun μ => htame (w μ)) hVfix Tz
+    hTzstab hwTz hℓw hreach
 
 end Orbit
 

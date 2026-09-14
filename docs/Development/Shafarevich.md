@@ -25571,3 +25571,104 @@ is a Chebotarev-flavoured choice made where the prescription's primes are produc
 (`LevelStepRepair` / `KernelStep` / `LevelFlatOrbit`).  Once that congruence is a hypothesis on the
 places, `RamifiedSylowUnitsEP` can be replaced by a statement that is actually true, or the
 `ℓ`-ramified case can be excluded outright.
+
+## §1.129 The named primes are unramified in the level, so the Scholz obstruction never fires (2026-09-14)
+
+§1.128 ended with a genuine refutation and a split: `HasSylowConfinedUnits` is false at a named
+place `y` that is `ℓ`-ramified in the level without the congruence `ℓ^{b+1} ∣ N(y) - 1`, so the
+demand was cut into `HasFixedReachablePlaces` (the half the `M`-descent supplies) and
+`HasRamifiedSylowConfinedUnits` (the half carrying the Scholz congruence).  The "Next" note there
+guessed that the repair was a Chebotarev-flavoured congruence imposed where the primes are chosen.
+
+**It is much cheaper than that: the named primes are already unramified in the level, and the
+hypothesis that says so is one that `HasFlatKernelPrescription` has been carrying all along.**
+
+### The observation
+
+`HasFlatKernelPrescription` (`LevelFlatKernel.lean`) hands its consumer, among fourteen hypotheses,
+
+    hQunr : ∀ μ, Ideal.inertia Gal(Ω/k) (Q μ) ≤ φ.ker
+
+and in `hasFlatKernelPrescription_of_tensorPlaces` the kernel of `φ` is identified with the fixing
+subgroup of the level, `hKker : φ.ker = K.fixingSubgroup`.  So the inertia of each named prime fixes
+the level pointwise.  Restriction carries inertia onto inertia — that is
+`map_inertia_restrictNormalHom` (`CFT/Units/InertiaLift.lean:129`), stated for an arbitrary,
+possibly infinite Galois extension — and `IntermediateField.restrictNormalHom_ker` identifies the
+kernel of restriction with `K.fixingSubgroup`, so with `Subgroup.map_eq_bot_iff`:
+
+    I(Q μ) ≤ K.fixingSubgroup   ⟹   I(w μ) = image of I(Q μ) under restriction = ⊥ ,
+
+i.e. `e(w μ / k) = 1`.  In the notation of §1.128, `b = 0` at every named place, which is precisely
+the case §1.128 already identified as automatic.  **The Scholz condition is vacuous on the places the
+prescription actually names.**
+
+### What is asked instead: `IsBaseOrderPlace`
+
+Rather than thread "`ℓ ∤ e`", which is a statement about a ramification index and would have to be
+re-related to units at each rung, the threaded clause is the unit statement directly
+(`FlatTensor.lean`):
+
+    IsBaseOrderPlace ℓ K v  :=  ∃ x : K^×, (∀ σ : Gal(K/k), σ • x = x) ∧ ¬ (ℓ : ℤ) ∣ placeValue v x
+
+— the order at `v` is taken by an element the **whole** automorphism group fixes.  This is what the
+Sylow rung needs (a unit fixed by `P` is weaker than a unit fixed by `Gal(K/k)`, so the implication
+is free), it transports along the Galois action (`IsBaseOrderPlace.smul`, which is what the
+`stableHull` rung consumes), and it needs no fixed field.
+
+Two theorems produce it:
+
+* `isBaseOrderPlace_of_inertia_eq_bot` — at an unramified place, a uniformiser `π` of the place
+  below is such an element.  Mathlib's `valuation_exists_uniformizer` gives `π ∈ k` with
+  `v_below(π) = exp(-1)`; `valuation_algebraMap` multiplies the valuation by `e = 1`;
+  `valuation_eq_exp_neg_ord` plus `WithZero.log` turns that into `ord_v(π) = 1`; and
+  `placeValue = -ord` gives `placeValue v π = -1`, which `ℓ > 1` does not divide.  Being in the base
+  field, `π` is fixed by every `σ` by `σ.commutes`.
+* `isBaseOrderPlace_of_inertia_le_fixingSubgroup` — the three-line bridge above, turning
+  `I(Q) ≤ K.fixingSubgroup` into `I(under Q) = ⊥`.
+
+### The threading
+
+The clause was added to seven definitions and discharged once, at the top of the chain, from
+`hQunr`:
+
+| module | definition | position of the new clause |
+| --- | --- | --- |
+| `FlatTensor` | `HasFlatPrescribedTensor` | after the `IsReachablePlace` clause |
+| `FlatInvariant` | `HasInvariantUnitTensor` | after the `IsReachablePlace` clause |
+| `FlatTensorConfined` | `HasConfinedRadicandPlaces` | after the reach clause |
+| `FlatTensorDiagonal` | `HasConfinedDiagonalPlaces` | after the reach clause |
+| `FlatDiagonalUnits` | `HasConfinedObstruction` | after the finiteness clauses |
+| `FlatStabilizerUnits` | `HasStabilizerConfinedUnits` | after `y ∉ stableHull Tz` |
+| `FlatSylowUnits` | `HasSylowConfinedUnits` | after `y ∉ stableHull Tz` |
+
+`HasFlatDiagonalUnits` was deliberately left alone: it is already a theorem
+(`hasFlatDiagonalUnits`), so weakening it would be wasted.  The only non-mechanical rung is
+`FlatStabilizerUnits`, where the clause has to be transported from `Xs₀` to its stable hull:
+
+    hybase y : IsBaseOrderPlace ℓ K y   for y ∈ stableHull Xs₀,
+      obtained from y = σ • v with v ∈ Xs₀ by (hbase v _).smul σ⁻¹ and inv_smul_smul.
+
+`FlatNorm.lean` needed only an intro-and-discard patch: its three demands
+(`HasOrbitPrescribedUnits`, `HasNormInvariantUnitTensor`, `HasTameInvariantUnitTensor`) are consumed
+by nothing outside that file.
+
+One trap: an `omit [NumberField k] in` sitting before the docstring of
+`hasFlatKernelPrescription_of_tensorPlaces` stripped the instance the new bridge needs.  It was
+deleted; `NumberField k` is a section variable present at every call site.
+
+### What it buys
+
+`HasRamifiedSylowConfinedUnits` and `RamifiedSylowUnitsEP` are **deleted**.  Once the place is known
+to carry a `Gal(K/k)`-fixed unit of order prime to `ℓ`, the `by_cases` in
+`hasSylowConfinedUnits_of_hasFixedReachablePlaces` collapses: the negative branch is contradicted
+outright, so the second half of the split is not a hypothesis but a theorem-free non-case.  The
+ladder is back to one hypothesis:
+
+    FixedReachableEP ℓ
+      ⟹ SylowConfinedUnitsEP ℓ
+      ⟹ StabilizerConfinedUnitsEP ℓ
+      ⟹ ConfinedObstructionEP ℓ
+      ⟹ GenericLevelStepEPRoots ℓ  ⟹ SplitPrimePowerEP  ⟹ Shafarevich.
+
+and `FixedReachableEP ℓ` is a statement about places unramified over the base — exactly the setting
+of the `M = K^P` descent of §1.128, now with `M`-rationality unobstructed.

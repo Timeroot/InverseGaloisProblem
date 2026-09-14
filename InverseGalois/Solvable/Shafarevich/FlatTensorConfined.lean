@@ -119,12 +119,15 @@ enlarged set brings in.
 The named places arrive prime to the exponent and reachable in the bigger level past the hull of the
 places a local power is asked at, which is what the first of the two makes its living on: a place
 whose divisor class is not reached by the completely decomposed ones carries no unit of order prime
-to the exponent there at all. -/
+to the exponent there at all.  They also arrive with their order taken by an element the whole group
+of automorphisms fixes, which is the statement that their ramification index over the base field is
+prime to the exponent. -/
 def HasConfinedRadicandPlaces (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
   ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
     ∀ Xs₀ Tz : Set (HeightOneSpectrum (𝓞 ↥K)), Xs₀.Finite → Tz.Finite →
       (∀ v ∈ Xs₀, (ℓ : 𝓞 ↥K) ∉ v.asIdeal) →
       (∀ v ∈ Xs₀, IsReachablePlace ℓ K E (stableHull k ↥K Tz) v) →
+      (∀ v ∈ Xs₀, IsBaseOrderPlace ℓ K v) →
       (∀ v ∈ Xs₀, ∀ σ : Gal(↥K/k), σ • v ∉ Tz) →
       ∀ (C : Type) [CommGroup C] [MulDistribMulAction Gal(↥K/k) C], (∀ c : C, c ^ ℓ = 1) →
         ∃ (Xs : Set (HeightOneSpectrum (𝓞 ↥K))) (_ : Finite ↥Xs) (_ : DecidableEq ↥Xs)
@@ -199,7 +202,7 @@ theorem hasInvariantUnitTensor_of_confinedRadicandPlaces {ℓ : ℕ} [NeZero ℓ
     (h : HasConfinedRadicandPlaces ℓ K) : HasInvariantUnitTensor ℓ K := by
   classical
   intro E hEfin hEgal hKE M _ _ hexp T _ b hspan hindep ι _ w V hdist hstab Tz hTzstab hwTz hℓw
-    hreach
+    hreach hbase
   haveI : IsGaloisStablePlaces k ↥K (Tz : Set (HeightOneSpectrum (𝓞 ↥K))) :=
     ⟨fun σ v => ⟨fun hv => by
         have hv' := hTzstab σ⁻¹ (σ • v) hv
@@ -210,6 +213,7 @@ theorem hasInvariantUnitTensor_of_confinedRadicandPlaces {ℓ : ℕ} [NeZero ℓ
     h E hEfin hEgal hKE (Set.range w) (Tz : Set (HeightOneSpectrum (𝓞 ↥K)))
       (Set.finite_range w) Tz.finite_toSet (by rintro v ⟨μ, rfl⟩; exact hℓw μ)
       (by rintro v ⟨μ, rfl⟩; rw [hTzhull]; exact hreach μ)
+      (by rintro v ⟨μ, rfl⟩; exact hbase μ)
       (by rintro v ⟨μ, rfl⟩ σ hcon; exact hwTz μ σ (Finset.mem_coe.1 hcon)) M hexp
   have hwmem : ∀ μ : ι, w μ ∈ Xs := fun μ => hXs₀Xs ⟨μ, rfl⟩
   -- the prescribed values, read at the named places of the enlarged set

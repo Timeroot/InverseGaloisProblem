@@ -30,14 +30,10 @@ so the witness of that invariance is the trivial unit.
 Which places admit such a unit is settled by the ramification alone: the units the subgroup fixes
 are the units of its fixed field, and their orders at the place are the multiples of the
 ramification index there, so an order prime to the exponent is available exactly when the exponent
-does not divide that index.  The demand is therefore split in two.  At the places where a fixed unit
-of order prime to the exponent exists at all, the rest of the prescription is asked for alongside
-it.  At the remaining places the invariance is genuinely only available modulo exponent-th powers,
-and over the completion the tame character measures what is left: a generator of the inertia moves
-the class of such a unit by its value raised to the order, an exponent-th power exactly when the
-residue field carries the roots of unity of order the exponent times the ramification index.  That
-is a congruence on the norm of the place, so the second half is a demand on the places the
-prescription names rather than on the level.
+does not divide that index.  The places the obstruction is read at all carry that much for free.
+They arrive with their order already taken by an element the whole group of automorphisms fixes —
+the named primes are unramified in the level, so a uniformiser of the place below is such an element
+— and a unit the whole group fixes is in particular one any subgroup fixes.
 
 ## Main definitions
 
@@ -46,16 +42,14 @@ prescription names rather than on the level.
 * `InverseGalois.Shafarevich.HasFixedReachablePlaces`: every place of a level already reached by a
   unit fixed under a subgroup of order a power of the exponent, reached with all of the
   prescription.
-* `InverseGalois.Shafarevich.HasRamifiedSylowConfinedUnits`: the units the obstruction is bought
-  with, at the remaining places.
-* `Shafarevich.FixedReachableEP`, `Shafarevich.RamifiedSylowUnitsEP`: the same, made of every level.
+* `Shafarevich.FixedReachableEP`: the same, made of every level.
 
 ## Main results
 
 * `InverseGalois.Shafarevich.hasSylowConfinedUnits_of_hasFixedReachablePlaces`: **a unit fixed on
-  the nose buys the units the obstruction is bought with**, where the ramification admits one.
+  the nose buys the units the obstruction is bought with**.
 * `Shafarevich.genericLevelStepEPRoots_of_fixedReachableEP`: the step of the ladder over an odd
-  prime, in exchange for the two halves of the demand.
+  prime, in exchange for the demand.
 
 ## Tags
 
@@ -124,36 +118,6 @@ def HasFixedReachablePlaces (ℓ : ℕ) (K : IntermediateField k Ω) [NumberFiel
           (∃ x : (↥K)ˣ, (∀ σ ∈ P, σ • x = x) ∧ ¬ (ℓ : ℤ) ∣ placeValue w x) →
           IsFixedReachablePlace ℓ K E P (stableHull k ↥K Tz) w
 
-/-- **The units the obstruction is bought with, at a place no fixed unit reaches.**
-
-This is the demand of a unit under a subgroup of order a power of the exponent, made only where the
-exponent divides the ramification index of the place over the fixed field of the subgroup, so that
-no unit fixed on the nose has order prime to the exponent there and the invariance can only be had
-modulo exponent-th powers.
-
-Over the completion the room left is read by the tame character: the class of a unit of order prime
-to the exponent is moved by a generator of the inertia by the value of that character raised to that
-order, and that value is an exponent-th power exactly when the residue field carries the roots of
-unity of order the exponent times the ramification index.  So the demand here turns on a congruence
-on the norm of the place, and is a statement about the places the prescription names rather than
-about the level alone. -/
-def HasRamifiedSylowConfinedUnits (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
-  ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
-    ∀ Xs₀ Tz : Set (HeightOneSpectrum (𝓞 ↥K)), Xs₀.Finite → Tz.Finite →
-      ∀ (_ : Finite ↥(stableHull k ↥K Xs₀)) (y : ↥(stableHull k ↥K Xs₀)),
-        (y : HeightOneSpectrum (𝓞 ↥K)) ∉ stableHull k ↥K Tz →
-        (∃ σ : Gal(↥K/k), σ ≠ 1 ∧ σ ^ ℓ = 1 ∧ σ • y = y) →
-        ∀ P : Subgroup Gal(↥K/k), IsPGroup ℓ ↥P → (∀ σ ∈ P, σ • y = y) →
-        (¬ ∃ x : (↥K)ˣ, (∀ σ ∈ P, σ • x = x) ∧
-          ¬ (ℓ : ℤ) ∣ placeValue (y : HeightOneSpectrum (𝓞 ↥K)) x) →
-        ∃ u : ↥(confinedUnits ↥K ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)),
-          (∀ z : ↥(stableHull k ↥K Xs₀), (ℓ : ℤ) ∣
-            confinedOrd ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) (stableHull k ↥K Xs₀)
-              (Additive.ofMul u) z - Finsupp.single y 1 z) ∧
-            ∀ σ ∈ P,
-              ∃ v : ↥(confinedUnits ↥K ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)),
-                σ • u = u * v ^ ℓ
-
 end Reachable
 
 /-! ### The units, bought from a unit fixed on the nose -/
@@ -173,21 +137,21 @@ other places of the hull, so a power of it with exponent inverse to that order m
 has the vector of orders asked for.  Being fixed survives the power, and a unit fixed outright is
 fixed modulo exponent-th powers by the trivial witness.
 
-Whether any unit the subgroup fixes has order prime to the exponent at the place is decided by the
-ramification there, and where none does the demand is carried by the second hypothesis instead. -/
+A unit of order prime to the exponent fixed by the subgroup is available for free: the place arrives
+with its order taken by an element the whole group of automorphisms fixes. -/
 theorem hasSylowConfinedUnits_of_hasFixedReachablePlaces {ℓ : ℕ} [Fact ℓ.Prime]
     {K : IntermediateField k Ω} [NumberField ↥K] [IsGalois k ↥K] [FiniteDimensional k ↥K]
-    (h : HasFixedReachablePlaces ℓ K) (hram : HasRamifiedSylowConfinedUnits ℓ K) :
+    (h : HasFixedReachablePlaces ℓ K) :
     HasSylowConfinedUnits ℓ K := by
   classical
-  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hfin y hyTz hyσ P hP hPfix
+  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hfin y hyTz hybase _hyσ P hP hPfix
   haveI := hfin
   haveI : NeZero ℓ := ⟨(Fact.out : ℓ.Prime).ne_zero⟩
   haveI := isGaloisStablePlaces_decomposedPlaces (K := K) (E := E)
-  by_cases hx : ∃ x : (↥K)ˣ, (∀ σ ∈ P, σ • x = x) ∧
-      ¬ (ℓ : ℤ) ∣ placeValue (y : HeightOneSpectrum (𝓞 ↥K)) x
-  swap
-  · exact hram E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hfin y hyTz hyσ P hP hPfix hx
+  obtain ⟨x, hxfix, hxord⟩ := hybase
+  have hx : ∃ x : (↥K)ˣ, (∀ σ ∈ P, σ • x = x) ∧
+      ¬ (ℓ : ℤ) ∣ placeValue (y : HeightOneSpectrum (𝓞 ↥K)) x :=
+    ⟨x, fun σ _ => hxfix σ, hxord⟩
   have hXexfin : ((stableHull k ↥K Xs₀) \ {(y : HeightOneSpectrum (𝓞 ↥K))}).Finite :=
     (stableHull_finite hXs₀).subset Set.diff_subset
   obtain ⟨u, hinv, hordy, hTzu, hXex, hconf⟩ :=
@@ -258,28 +222,19 @@ def FixedReachableEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
       (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
       (∃ ζ : ↥K, IsPrimitiveRoot ζ ℓ) → HasFixedReachablePlaces ℓ K
 
-/-- **Every finite Galois level of a number field inside an algebraic closure carrying a primitive
-root of unity of the exponent carries the units the obstruction is bought with at the places whose
-ramification under the subgroup admits no fixed unit of order prime to the exponent.** -/
-def RamifiedSylowUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
-  ∀ (k Ω : Type) [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω]
-      (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
-      (∃ ζ : ↥K, IsPrimitiveRoot ζ ℓ) → HasRamifiedSylowConfinedUnits ℓ K
-
 /-- **A unit fixed on the nose buys the units asked under a subgroup of order a power of the
-exponent**, at every level, where the ramification admits such a unit. -/
+exponent**, at every level. -/
 theorem sylowConfinedUnitsEP_of_fixedReachableEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
-    (h : FixedReachableEP ℓ) (hram : RamifiedSylowUnitsEP ℓ) : SylowConfinedUnitsEP ℓ := by
+    (h : FixedReachableEP ℓ) : SylowConfinedUnitsEP ℓ := by
   intro k Ω _ _ _ _ _ _ K _ _ _ hζ
-  exact hasSylowConfinedUnits_of_hasFixedReachablePlaces (h k Ω K hζ) (hram k Ω K hζ)
+  exact hasSylowConfinedUnits_of_hasFixedReachablePlaces (h k Ω K hζ)
 
 /-- **The step of the ladder over an odd prime**, in exchange for units fixed on the nose by a
-subgroup of order a power of the prime, together with the units at the places whose ramification
-admits none. -/
+subgroup of order a power of the prime. -/
 theorem genericLevelStepEPRoots_of_fixedReachableEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
-    (hodd : 2 < ℓ) (hfix : FixedReachableEP ℓ) (hram : RamifiedSylowUnitsEP ℓ) :
+    (hodd : 2 < ℓ) (hfix : FixedReachableEP ℓ) :
     GenericLevelStepEPRoots ℓ :=
   genericLevelStepEPRoots_of_sylowConfinedUnitsEP ℓ hodd
-    (sylowConfinedUnitsEP_of_fixedReachableEP ℓ hfix hram)
+    (sylowConfinedUnitsEP_of_fixedReachableEP ℓ hfix)
 
 end Shafarevich

@@ -195,6 +195,7 @@ is left as large as it can be. -/
 def HasConfinedObstruction (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
   ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
     ∀ Xs₀ Tz : Set (HeightOneSpectrum (𝓞 ↥K)), Xs₀.Finite → Tz.Finite →
+      (∀ v ∈ Xs₀, IsBaseOrderPlace ℓ K v) →
       ∀ (C : Type) [CommGroup C] [MulDistribMulAction Gal(↥K/k) C], (∀ c : C, c ^ ℓ = 1) →
         ∀ (_ : Finite ↥(stableHull k ↥K Xs₀)) (_ : DecidableEq ↥(stableHull k ↥K Xs₀))
           (hsurj : Function.Surjective (confinedOrd ℓ (stableHull k ↥K Tz)
@@ -242,7 +243,7 @@ theorem hasConfinedDiagonalPlaces_of_flatDiagonalUnits {ℓ : ℕ} [Fact ℓ.Pri
     (hunits : HasFlatDiagonalUnits ℓ K) (hobs : HasConfinedObstruction ℓ K) :
     HasConfinedDiagonalPlaces ℓ K := by
   classical
-  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hℓXs hreach hTzavoid C _ _ hexp
+  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hℓXs hreach hbase hTzavoid C _ _ hexp
   haveI : Finite Gal(↥K/k) := Finite.of_fintype _
   haveI := isGaloisStablePlaces_decomposedPlaces (K := K) (E := E)
   obtain ⟨ι, hιfin, w, hwmem, hwdist, hwhull⟩ := exists_orbitReps (k := k) Xs₀ hXs₀
@@ -327,7 +328,7 @@ theorem hasConfinedDiagonalPlaces_of_flatDiagonalUnits {ℓ : ℕ} [Fact ℓ.Pri
       rwa [placeValue_eq_neg_ord, dvd_neg] at h6
   exact ⟨stableHull k ↥K Xs₀, inferInstance, inferInstance, inferInstance,
     subset_stableHull k ↥K Xs₀, hdiagdata,
-    fun t ht => hobs E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz C hexp _ _ _ t ht⟩
+    fun t ht => hobs E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hbase C hexp _ _ _ t ht⟩
 
 end Bridge
 
