@@ -68,11 +68,10 @@ be corrected to an invariant one.**
 
 The unit attached to a place of the set is asked to be a local power at every place where the
 radicand must stay inert, to have order divisible by the exponent outside the places the
-ramification is allowed at, to be a local power at every other place of the set, and to have order
-at its own place prime to the exponent.  The first two conditions are the confinement; the third
-gives the order divisible by the exponent at the other places of the set, since a local power is
-unramified; the fourth is the one demand that is not local, and it is what a reachable place
-provides.
+ramification is allowed at and at every other place of the set, and to have order at its own place
+prime to the exponent.  The first two conditions are the confinement; the third is the order at the
+other places of the set, which a local power there would in particular give; the fourth is the one
+demand that is not local, and it is what a reachable place provides.
 
 Modulo a prime exponent such a family is a diagonal matrix with invertible entries, so the vector of
 orders of the confined units is onto, and the second clause is then stated exactly as before. -/
@@ -88,7 +87,8 @@ def HasConfinedDiagonalPlaces (ℓ : ℕ) [Fact ℓ.Prime] (K : IntermediateFiel
           (hdiag : ∀ y : ↥Xs, ∃ u : (↥K)ˣ,
             (∀ v ∈ stableHull k ↥K Tz, localClassHom v ℓ u = 1) ∧
             (∀ v ∉ allowedPlaces K E Xs₀, (ℓ : ℤ) ∣ ord ↥K v ((u : (↥K)ˣ) : ↥K)) ∧
-            (∀ z : ↥Xs, z ≠ y → localClassHom (z : HeightOneSpectrum (𝓞 ↥K)) ℓ u = 1) ∧
+            (∀ z : ↥Xs, z ≠ y →
+              (ℓ : ℤ) ∣ ord ↥K (z : HeightOneSpectrum (𝓞 ↥K)) ((u : (↥K)ˣ) : ↥K)) ∧
             ¬ (ℓ : ℤ) ∣ ord ↥K (y : HeightOneSpectrum (𝓞 ↥K)) ((u : (↥K)ˣ) : ↥K)),
           ∀ (t : Additive ↥(confinedUnits ↥K ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀))
               ⊗[ℤ] Additive C)
@@ -102,7 +102,7 @@ def HasConfinedDiagonalPlaces (ℓ : ℕ) [Fact ℓ.Prime] (K : IntermediateFiel
                 (allowedPlaces K E Xs₀) Xs Fact.out hdiag)
               (mem_confinedSUnits_iff ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) Xs) ht = 0
 
-/-- **The diagonal of units is enough.**  The four local conditions make the family a diagonal
+/-- **The diagonal of units is enough.**  The four conditions make the family a diagonal
 matrix of orders modulo the exponent with invertible entries, so the vector of orders of the
 confined units is onto, and the obstruction clause is carried over unchanged. -/
 theorem hasConfinedRadicandPlaces_of_diagonal {ℓ : ℕ} [Fact ℓ.Prime]

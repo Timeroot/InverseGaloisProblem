@@ -49,9 +49,9 @@ prescription at the conjugated argument asks for.
 * `InverseGalois.Shafarevich.HasFlatPrescribedUnits` — **a unit of a level can be found for each of
   finitely many reachable places lying in distinct orbits, fixed by the automorphisms fixing its
   place, of order there prime to the exponent, a local power at a prescribed finite set of places
-  those avoid and at every proper conjugate of its own place and at every conjugate of the others,
-  and confined elsewhere to places sitting over the named ones or completely decomposed in a given
-  finite level.**
+  those avoid, of order divisible by the exponent at every proper conjugate of its own place and at
+  every conjugate of the others, and confined elsewhere to places sitting over the named ones or
+  completely decomposed in a given finite level.**
 * `InverseGalois.Shafarevich.HasReachableLevel` — **the shrinking can be spent on a level killing
   the lift carried down which reaches every place of the level below.**
 
@@ -101,9 +101,9 @@ def IsReachablePlace (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K]
 
 /-- **A unit of a level can be found for each of finitely many places lying in distinct orbits,
 fixed by the automorphisms fixing its place, of order there prime to the exponent, a local power at
-a prescribed finite set of places those avoid and at every proper conjugate of its own place and at
-every conjugate of the others, and confined elsewhere to places sitting over the named ones or
-completely decomposed in a given finite level.**
+a prescribed finite set of places those avoid, of order divisible by the exponent at every proper
+conjugate of its own place and at every conjugate of the others, and confined elsewhere to places
+sitting over the named ones or completely decomposed in a given finite level.**
 
 The places are named by an arbitrary finite index type and are asked to lie in distinct orbits under
 the automorphisms of the level; nothing is asked of the orbit of a single one of them, which is the
@@ -121,12 +121,13 @@ multiples of the character of any such unit.
 The remaining clauses are the local shape of the prescription.  The finite set of places the unit is
 asked to be a local power at is prescribed along with the named places and avoided by them, so that
 the two demands do not collide; the places above the exponent are covered by that set, which is what
-makes the assembled homomorphism unramified there.  The unit is also asked to be a local power at
-the proper conjugates of its own place and at every conjugate of the other named places, which is
-what lets the prescriptions made at the several named primes be multiplied without disturbing one
-another.  Elsewhere the unit is confined: at any place where its order is not divisible by the
-exponent it sits over a named place, or the primes above it are completely decomposed in a finite
-level named in advance.
+makes the assembled homomorphism unramified there.  At the proper conjugates of its own place and at
+every conjugate of the other named places the unit is asked only for an order divisible by the
+exponent, which is what lets the prescriptions made at the several named primes be multiplied
+without disturbing one another: those places are away from the exponent, where an order divisible by
+it already kills inertia, and inertia is all that is read there.  Elsewhere the unit is confined: at
+any place where its order is not divisible by the exponent it sits over a named place, or the primes
+above it are completely decomposed in a finite level named in advance.
 
 Each named place is asked to be reachable in that finite level.  That is no extra demand but the
 divisor class part of the demand itself, named separately because it is the part the level has to be
@@ -145,8 +146,8 @@ def HasFlatPrescribedUnits (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω)
           (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ = w μ → ∃ y : (↥K)ˣ, σ • Z μ = Z μ * y ^ ℓ) ∧
           (∀ μ : ι, ¬ (ℓ : ℤ) ∣ placeValue (w μ) (Z μ)) ∧
           (∀ (μ : ι) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz → localClassHom v ℓ (Z μ) = 1) ∧
-          (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ ≠ w μ → localClassHom (σ • w μ) ℓ (Z μ) = 1) ∧
-          (∀ μ ν : ι, ν ≠ μ → ∀ σ : Gal(↥K/k), localClassHom (σ • w ν) ℓ (Z μ) = 1) ∧
+          (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ ≠ w μ → (ℓ : ℤ) ∣ placeValue (σ • w μ) (Z μ)) ∧
+          (∀ μ ν : ι, ν ≠ μ → ∀ σ : Gal(↥K/k), (ℓ : ℤ) ∣ placeValue (σ • w ν) (Z μ)) ∧
           ∀ (μ : ι) (v : HeightOneSpectrum (𝓞 ↥K)), ¬ (ℓ : ℤ) ∣ placeValue v (Z μ) →
             (∃ (ν : ι) (σ : Gal(↥K/k)), v = σ • w ν) ∨
               ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → Ideal.under (𝓞 ↥K) P = v.asIdeal →
@@ -249,11 +250,12 @@ prime holds because the automorphisms of the level fixing the place below fix th
 exponent-th power: the Kummer character is multiplied by the power to which that element raises the
 roots of
 unity, and the prescribed value is raised to that same power, which is exactly what the prescription
-at the conjugated argument asks.  Triviality along the finite family and along the subgroups
-belonging to the other named primes is triviality of the local classes at the corresponding places,
-and triviality on the decomposition subgroups of the proper conjugates of the named prime is
-triviality at the proper conjugates of the place below — the conjugates the prescription leaves
-alone being exactly those the base realization cannot separate, which are those fixing the place.
+at the conjugated argument asks.  Triviality along the finite family is triviality of the local
+classes at the corresponding places.  Along the subgroups belonging to the other named primes, and
+on inertia at the proper conjugates of the named prime, only inertia is read, and those primes are
+away from the exponent, so an order divisible by the exponent at the place below already kills the
+character there — the conjugates the prescription leaves alone being exactly those the base
+realization cannot separate, which are those fixing the place.
 Where the assembled homomorphism ramifies the unit has order not divisible by the exponent at the
 place below, and the confinement clause then says the prime is a conjugate of a named one — two
 primes with the same place below differing by an automorphism of the level — or that its place is
@@ -443,6 +445,19 @@ theorem hasFlatOrbitPrescription_of_places (N : ℕ) (K : IntermediateField k Ω
       ∀ q, localClassHom v ℓ (Z μ ^ (c μ q).val) = 1 := by
     intro μ v hv q
     rw [_root_.map_pow, hv, one_pow]
+  -- the orders of the powers of a unit
+  have hpowdvd : ∀ (μ : ι) (v : HeightOneSpectrum (𝓞 ↥K)), (ℓ : ℤ) ∣ placeValue v (Z μ) →
+      ∀ q, (ℓ : ℤ) ∣ placeValue v (Z μ ^ (c μ q).val) := by
+    intro μ v hv q
+    rw [placeValue_pow]
+    exact hv.mul_left _
+  -- the named primes stay away from the exponent when they are moved
+  have hℓsm : ∀ (ν : ι) (ρ : Gal(Ω/k)), (ℓ : 𝓞 Ω) ∉ ρ • Q ν := by
+    intro ν ρ hmem
+    rw [Ideal.mem_pointwise_smul_iff_inv_smul_mem,
+      show ρ⁻¹ • ((ℓ : ℕ) : 𝓞 Ω) = ((ℓ : ℕ) : 𝓞 Ω) from
+        map_natCast (MulSemiringAction.toRingHom Gal(Ω/k) (𝓞 Ω) ρ⁻¹) ℓ] at hmem
+    exact hQℓ ν hmem
   have hz1 : ∀ (μ : ι) (v : HeightOneSpectrum (𝓞 ↥K)), (ℓ : 𝓞 ↥K) ∈ v.asIdeal →
       localClassHom v ℓ (Z μ) = 1 := by
     intro μ v hv
@@ -471,24 +486,24 @@ theorem hasFlatOrbitPrescription_of_places (N : ℕ) (K : IntermediateField k Ω
       (mem_stabilizer_smul_iff.2 (by rw [inv_inv, ← hDPr ν]; exact hyD))
   · intro μ ν hνμ ρ y hyA
     haveI : (ρ⁻¹ • Q ν).IsPrime := inferInstance
-    refine kummerKernelHom_eq_one_of_mem_stabilizer hKker hkd (layerBasis ℓ (Generic U n S) j)
-      layerBasis_pow_eq_one (fun q => Z μ ^ (c μ q).val)
+    refine kummerKernelHom_eq_one_of_mem_inertia hKker hkd (layerBasis ℓ (Generic U n S) j)
+      layerBasis_pow_eq_one (fun q => Z μ ^ (c μ q).val) hℓ (hℓsm ν ρ⁻¹)
       (w := AlgEquiv.restrictNormalHom (F := k) (K₁ := Ω) ↥K ρ⁻¹ • placeUnder K (Q ν) (hQbot ν))
       (asIdeal_smul_placeUnder K (hQbot ν) ρ⁻¹)
-      (fun q => hpow1 μ _ (hZother μ ν hνμ _) q) (mem_stabilizer_smul_iff.2 ?_)
+      (fun q => hpowdvd μ _ (hZother μ ν hνμ _) q) (mem_inertia_smul_iff.2 ?_)
     rw [inv_inv]
-    exact hAstab ν hyA
+    exact hAI ν hyA
   · intro μ x hx
     rw [kummerKernelHom_eq_pow hKker hkd (layerBasis ℓ (Generic U n S) j) layerBasis_pow_eq_one
       (Z μ) (c μ)]
     exact (hc μ x).symm
   · intro μ ρ hρ y hy
     haveI : (ρ • Q μ).IsPrime := inferInstance
-    exact kummerKernelHom_eq_one_of_mem_stabilizer hKker hkd (layerBasis ℓ (Generic U n S) j)
-      layerBasis_pow_eq_one (fun q => Z μ ^ (c μ q).val)
+    exact kummerKernelHom_eq_one_of_mem_inertia hKker hkd (layerBasis ℓ (Generic U n S) j)
+      layerBasis_pow_eq_one (fun q => Z μ ^ (c μ q).val) hℓ (hℓsm μ ρ)
       (w := AlgEquiv.restrictNormalHom (F := k) (K₁ := Ω) ↥K ρ • placeUnder K (Q μ) (hQbot μ))
       (asIdeal_smul_placeUnder K (hQbot μ) ρ)
-      (fun q => hpow1 μ _ (hZconj μ _ (hne μ ρ hρ)) q) hy
+      (fun q => hpowdvd μ _ (hZconj μ _ (hne μ ρ hρ)) q) hy
   · rintro μ P hPp hPbot ⟨y, hyI, hyne⟩
     haveI := hPp
     obtain ⟨q, hq⟩ := exists_not_dvd_placeValue_of_kummerKernelHom_ne_one hKker hkd

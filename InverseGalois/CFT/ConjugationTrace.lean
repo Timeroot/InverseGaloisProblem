@@ -58,6 +58,8 @@ killing it as well.
   equivariance for its saturation.**
 * `InverseGalois.CFT.conjTraceHom_eq_self_of_stabilizer_le`: **at a point whose stabiliser lies
   inside the subgroup the trace reproduces the homomorphism.**
+* `InverseGalois.CFT.conjTraceHom_eq_self_of_inertia`: **on inertia at a prime the trace reproduces
+  the homomorphism.**
 * `InverseGalois.CFT.exists_mem_inertia_section_of_conjTraceHom_ne_one`: **where the trace ramifies
   the homomorphism ramifies at a prime of the same orbit.**
 
@@ -269,6 +271,32 @@ theorem conjTraceHom_eq_self_of_stabilizer_le [Fintype (G ⧸ H)]
       section_notMem_of_ne_coe_one H hσ hx ((Subgroup.inv_mem_iff H).1 hc)
     refine (congrArg _ (hvan (σ x)⁻¹ hinv _ ?_)).trans (smul_one _)
     refine mem_stabilizer_smul_iff.2 ?_
+    rw [show ((σ x)⁻¹)⁻¹ * ((conjHom K (σ x)⁻¹ y : ↥K) : G) * (σ x)⁻¹ = (y : G) from by
+      rw [coe_conjHom]; group]
+    exact hy
+  rw [conjTraceHom_apply, hsingle, hσ1, inv_one, _root_.map_one φ, one_smul, conjHom_one]
+
+/-- **On inertia at a prime the trace reproduces the homomorphism**, when the homomorphism kills
+inertia at the primes the representatives of the other cosets carry that prime to.
+
+This is the reading of the previous statement along inertia rather than along the whole
+decomposition group, and it asks correspondingly less at the moved primes: the representatives of
+the other cosets lie outside the subgroup, so they move the prime, and only inertia at the moved
+prime has to be killed. -/
+theorem conjTraceHom_eq_self_of_inertia [Fintype (G ⧸ H)] {R : Type*} [CommRing R]
+    [MulSemiringAction G R] (hσ : ∀ x : G ⧸ H, (σ x : G ⧸ H) = x) (hσ1 : σ ((1 : G) : G ⧸ H) = 1)
+    {u : ↥K →* M} {P : Ideal R}
+    (hvan : ∀ ρ : G, ρ ∉ H → ∀ y : ↥K, (y : G) ∈ Ideal.inertia G (ρ • P) → u y = 1)
+    {y : ↥K} (hy : (y : G) ∈ Ideal.inertia G P) :
+    conjTraceHom K H σ φ u y = u y := by
+  classical
+  have hsingle : ∏ x : G ⧸ H, φ (σ x) • u (conjHom K (σ x)⁻¹ y)
+      = φ (σ ((1 : G) : G ⧸ H)) • u (conjHom K (σ ((1 : G) : G ⧸ H))⁻¹ y) := by
+    refine Finset.prod_eq_single _ (fun x _ hx => ?_) fun h => absurd (Finset.mem_univ _) h
+    have hinv : (σ x)⁻¹ ∉ H := fun hc =>
+      section_notMem_of_ne_coe_one H hσ hx ((Subgroup.inv_mem_iff H).1 hc)
+    refine (congrArg _ (hvan (σ x)⁻¹ hinv _ ?_)).trans (smul_one _)
+    refine mem_inertia_smul_iff.2 ?_
     rw [show ((σ x)⁻¹)⁻¹ * ((conjHom K (σ x)⁻¹ y : ↥K) : G) * (σ x)⁻¹ = (y : G) from by
       rw [coe_conjHom]; group]
     exact hy

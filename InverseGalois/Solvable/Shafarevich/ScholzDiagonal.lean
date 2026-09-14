@@ -146,8 +146,11 @@ theorem hasFlatDiagonalUnits_of_hasScholzPlaces {ℓ : ℕ} [NeZero ℓ] (hℓ :
     (hres : ∀ v : HeightOneSpectrum (𝓞 ↥K), HasResidueChar (v.adicCompletion ↥K) (Pc v) (Ec v))
     {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ) (h : HasScholzPlaces ℓ K) : HasFlatDiagonalUnits ℓ K := by
   intro E hEfin hEgal hKE ι _ w hdist Tz hwTz hℓw hreach
-  exact hasScholzDiagonalUnits hℓ hodd K hres hζ E hEfin hEgal hKE ι w hdist Tz hwTz hℓw hreach
-    fun μ => h E hEfin hEgal hKE (w μ) (hℓw μ) (hreach μ)
+  obtain ⟨Z, hZord, hZTz, hZconj, hZother, hZconf⟩ :=
+    hasScholzDiagonalUnits hℓ hodd K hres hζ E hEfin hEgal hKE ι w hdist Tz hwTz hℓw hreach
+      fun μ => h E hEfin hEgal hKE (w μ) (hℓw μ) (hreach μ)
+  exact ⟨Z, hZord, hZTz, fun μ σ hσ => dvd_placeValue_of_localClassHom_eq_one (hZconj μ σ hσ),
+    fun μ ν hνμ σ => dvd_placeValue_of_localClassHom_eq_one (hZother μ ν hνμ σ), hZconf⟩
 
 end Units
 

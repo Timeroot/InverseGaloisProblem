@@ -75,9 +75,10 @@ section Units
 variable {k Ω : Type} [Field k] [Field Ω] [Algebra k Ω]
 
 /-- **A unit of a level can be found for each of finitely many places lying in distinct orbits, of
-order there prime to the exponent, a local power at a prescribed finite set of places those avoid
-and at every proper conjugate of its own place and at every conjugate of the others, and confined
-elsewhere to places sitting over the named ones or completely decomposed in a given finite level.**
+order there prime to the exponent, a local power at a prescribed finite set of places those avoid,
+of order divisible by the exponent at every proper conjugate of its own place and at every conjugate
+of the others, and confined elsewhere to places sitting over the named ones or completely decomposed
+in a given finite level.**
 
 This is the arithmetic input of the prescription with the one clause dropped that asks the unit to
 be carried to itself, up to an exponent-th power, by the automorphisms fixing its place.  The
@@ -92,8 +93,8 @@ def HasFlatDiagonalUnits (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω) [
         ∃ Z : ι → (↥K)ˣ,
           (∀ μ : ι, ¬ (ℓ : ℤ) ∣ placeValue (w μ) (Z μ)) ∧
           (∀ (μ : ι) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz → localClassHom v ℓ (Z μ) = 1) ∧
-          (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ ≠ w μ → localClassHom (σ • w μ) ℓ (Z μ) = 1) ∧
-          (∀ μ ν : ι, ν ≠ μ → ∀ σ : Gal(↥K/k), localClassHom (σ • w ν) ℓ (Z μ) = 1) ∧
+          (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ ≠ w μ → (ℓ : ℤ) ∣ placeValue (σ • w μ) (Z μ)) ∧
+          (∀ μ ν : ι, ν ≠ μ → ∀ σ : Gal(↥K/k), (ℓ : ℤ) ∣ placeValue (σ • w ν) (Z μ)) ∧
           ∀ (μ : ι) (v : HeightOneSpectrum (𝓞 ↥K)), ¬ (ℓ : ℤ) ∣ placeValue v (Z μ) →
             (∃ (ν : ι) (σ : Gal(↥K/k)), v = σ • w ν) ∨
               ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → Ideal.under (𝓞 ↥K) P = v.asIdeal →
@@ -179,9 +180,10 @@ The chosen set of places is the hull of the named ones, and the units are asked 
 representatives of the orbits the named places meet, which have the same hull.  A place of the hull
 is a translate of one of those representatives, and the unit belonging to it is the unit of the
 representative moved by the same automorphism: its order there is the order of the original at the
-representative, prime to the exponent, and it is a local power exactly where the original was one,
-which is at the places the radicand must stay inert at, at the other translates of its own place,
-and at every translate of the other representatives — that is, at every other place of the hull.
+representative, prime to the exponent; it is a local power at the places the radicand must stay
+inert at, exactly where the original was one, and its order is divisible by the exponent at the
+other translates of its own place and at every translate of the other representatives — that is, at
+every other place of the hull.
 
 Outside the places the ramification is allowed at, the order is divisible by the exponent because
 the confinement clause leaves only two possibilities for a place where it is not: sitting over a
@@ -211,7 +213,7 @@ theorem hasConfinedDiagonalPlaces_of_flatDiagonalUnits {ℓ : ℕ} [Fact ℓ.Pri
       (∀ v ∈ stableHull k ↥K Tz, localClassHom v ℓ u = 1) ∧
       (∀ v ∉ allowedPlaces K E Xs₀, (ℓ : ℤ) ∣ ord ↥K v ((u : (↥K)ˣ) : ↥K)) ∧
       (∀ z : ↥(stableHull k ↥K Xs₀), z ≠ y →
-        localClassHom (z : HeightOneSpectrum (𝓞 ↥K)) ℓ u = 1) ∧
+        (ℓ : ℤ) ∣ ord ↥K (z : HeightOneSpectrum (𝓞 ↥K)) ((u : (↥K)ˣ) : ↥K)) ∧
       ¬ (ℓ : ℤ) ∣ ord ↥K (y : HeightOneSpectrum (𝓞 ↥K)) ((u : (↥K)ˣ) : ↥K) := by
     intro y
     have hy : (y : HeightOneSpectrum (𝓞 ↥K)) ∈ stableHull k ↥K (Set.range w) := by
@@ -249,7 +251,7 @@ theorem hasConfinedDiagonalPlaces_of_flatDiagonalUnits {ℓ : ℕ} [Fact ℓ.Pri
       obtain ⟨τ, ν, hν⟩ := hz'
       have hzσ : σ • (z : HeightOneSpectrum (𝓞 ↥K)) = (σ * τ⁻¹) • w ν := by
         rw [hν, mul_smul, inv_smul_smul]
-      have key : localClassHom (σ • (z : HeightOneSpectrum (𝓞 ↥K))) ℓ (Z μ) = 1 := by
+      have key : (ℓ : ℤ) ∣ placeValue (σ • (z : HeightOneSpectrum (𝓞 ↥K))) (Z μ) := by
         rw [hzσ]
         rcases eq_or_ne ν μ with hνμ | hνμ
         · rw [hνμ]
@@ -258,9 +260,12 @@ theorem hasConfinedDiagonalPlaces_of_flatDiagonalUnits {ℓ : ℕ} [Fact ℓ.Pri
           refine hz (Subtype.ext (smul_left_cancel σ ?_))
           rw [hzσ, hνμ, hfix, hμ]
         · exact hZother μ ν hνμ (σ * τ⁻¹)
-      have h4 := (localClassHom_galUnits_eq_one_iff (k := k) σ⁻¹
-        (σ • (z : HeightOneSpectrum (𝓞 ↥K))) ℓ (Z μ)).2 key
-      rwa [inv_smul_smul] at h4
+      have hord : ord ↥K (z : HeightOneSpectrum (𝓞 ↥K)) ((galUnits σ⁻¹ (Z μ) : (↥K)ˣ) : ↥K)
+          = ord ↥K (σ • (z : HeightOneSpectrum (𝓞 ↥K))) ((Z μ : (↥K)ˣ) : ↥K) := by
+        have h4 := ord_galUnits (k := k) σ⁻¹ (σ • (z : HeightOneSpectrum (𝓞 ↥K))) (Z μ)
+        rwa [inv_smul_smul] at h4
+      rw [hord]
+      rwa [placeValue_eq_neg_ord, dvd_neg] at key
     · have hord : ord ↥K (y : HeightOneSpectrum (𝓞 ↥K)) ((galUnits σ⁻¹ (Z μ) : (↥K)ˣ) : ↥K)
           = ord ↥K (w μ) ((Z μ : (↥K)ˣ) : ↥K) := by
         have h5 := ord_galUnits (k := k) σ⁻¹ (σ • (y : HeightOneSpectrum (𝓞 ↥K))) (Z μ)

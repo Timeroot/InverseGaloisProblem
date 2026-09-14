@@ -20,14 +20,14 @@ be able to hand those conditions over directly.
 The translation is a single step.  A unit which is a local power at a place is in particular
 unramified there, so its order at that place is divisible by the exponent; the value of a unit at a
 finite place is minus its order, so the divisibility transfers between the two readings without
-changing anything.  What remains is to note that the off-diagonal demand of the criterion is exactly
-the triviality of the local class at the other named places, which the same conditions already
-record.
+changing anything.  A local power is therefore more than the off-diagonal demand of the criterion
+asks for, and only the divisibility it implies has to be carried over.
 
-So the diagonal is produced by a family of units subject to three local demands — local powers at
-the places where the radicand must stay inert, orders divisible by the exponent outside the places
-where ramification is allowed, and local powers at the other named places — together with the one
-global demand that cannot be local, that the order at the place itself be prime to the exponent.
+So the diagonal is produced by a family of units subject to two local demands — local powers at the
+places where the radicand must stay inert and orders divisible by the exponent outside the places
+where ramification is allowed — together with the two demands at the named places themselves, that
+the order be divisible by the exponent at the other named places and prime to it at the place the
+unit belongs to.
 
 Neither of the two readings notices an automorphism of the field applied to the unit and to the
 place at once: the order is unchanged, and the classes at the two places are identified by the
@@ -98,17 +98,17 @@ variable (Tz Y Xs : Set (HeightOneSpectrum (𝓞 K))) [Finite ↥Xs]
 
 /-- **The local conditions alone produce the diagonal.**  Suppose that for each named place there is
 a unit which is a local power at every place of the inert set, whose order is divisible by the
-exponent outside the allowed set, which is a local power at every other named place, and whose order
-at the place itself is prime to the exponent.  Then every system of orders at the named places is
-the system of orders of a confined unit.
+exponent outside the allowed set and at every other named place, and whose order at the place itself
+is prime to the exponent.  Then every system of orders at the named places is the system of orders
+of a confined unit.
 
-The first two conditions say that the unit is confined; the third gives the off-diagonal
-divisibility, because a local power is unramified; the fourth is the invertibility of the diagonal
-entry. -/
+The first two conditions say that the unit is confined; the third is the off-diagonal divisibility,
+which a local power at the place would in particular give; the fourth is the invertibility of the
+diagonal entry. -/
 theorem surjective_confinedOrd_of_exists_units (hn : Nat.Prime n)
     (hu : ∀ y : ↥Xs, ∃ u : Kˣ, (∀ v ∈ Tz, localClassHom v n u = 1) ∧
       (∀ v ∉ Y, (n : ℤ) ∣ ord K v ((u : Kˣ) : K)) ∧
-      (∀ z : ↥Xs, z ≠ y → localClassHom (z : HeightOneSpectrum (𝓞 K)) n u = 1) ∧
+      (∀ z : ↥Xs, z ≠ y → (n : ℤ) ∣ ord K (z : HeightOneSpectrum (𝓞 K)) ((u : Kˣ) : K)) ∧
       ¬ (n : ℤ) ∣ ord K (y : HeightOneSpectrum (𝓞 K)) ((u : Kˣ) : K)) :
     Function.Surjective (confinedOrd n Tz Y Xs) := by
   classical
@@ -117,7 +117,7 @@ theorem surjective_confinedOrd_of_exists_units (hn : Nat.Prime n)
   refine surjective_confinedOrd_of_forall_place n Tz Y Xs hn
     (fun y => ⟨u y, hTz y, hY y⟩) (fun y z hyz => ?_) (fun y => ?_)
   · rw [confinedOrd_apply]
-    exact dvd_ord_of_localClassHom_eq_one (hoff y z (Ne.symm hyz))
+    exact hoff y z (Ne.symm hyz)
   · rw [confinedOrd_apply]
     exact hon y
 

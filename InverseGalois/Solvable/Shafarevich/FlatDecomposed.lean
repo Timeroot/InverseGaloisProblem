@@ -146,7 +146,9 @@ theorem hasFlatPrescribedUnits_of_hasDecomposedPrescribedUnits [FiniteDimensiona
       exact hconj ν μ (Finset.mem_erase.1 (Finset.mem_product.1 hmem).2).1 σ hσν
   choose Z hZdec hZord hZT hZconj hZconf using hstep
   refine ⟨Z, fun μ σ hσ => ⟨1, ?_⟩, hZord, fun μ v hv => hZT μ v (Finset.mem_union_left _ hv),
-    hZconj, fun μ ν hνμ σ => hZT μ _ (hmemTz' μ ν hνμ σ), fun μ v hv => ?_⟩
+    fun μ σ hσ => dvd_placeValue_of_localClassHom_eq_one (hZconj μ σ hσ),
+    fun μ ν hνμ σ => dvd_placeValue_of_localClassHom_eq_one (hZT μ _ (hmemTz' μ ν hνμ σ)),
+    fun μ v hv => ?_⟩
   · rw [smul_eq_of_mem_decompositionField (hZdec μ) hσ, one_pow, mul_one]
   · exact (hZconf μ v hv).imp (fun hcon => ⟨μ, hcon⟩) id
 
