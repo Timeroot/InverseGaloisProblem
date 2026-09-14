@@ -24903,3 +24903,38 @@ the primes of (c)'s finite set:
 
 So the remaining work on `FlatReachableEP` is items 2 and 3, and item 3 is a statement about the
 freedom in choosing `β`, not about class field theory.
+
+### (d) The finite-level detection theorem is proven (2026-09-14)
+
+`InverseGalois/CFT/PoitouTate/SplitPlaceMember.lean` closes item 1 of (c) and, with it, the whole
+finite-level half of the detection route:
+
+```
+exists_finite_splitsCompletelyIn_mem_of_forall_localPow
+    (K E : IntermediateField k N) (hKE : K ≤ E) (hℓ : ℓ ≠ 0) (hζ : IsPrimitiveRoot ζ ℓ)
+    (T : Finset (HeightOneSpectrum (𝓞 k))) :
+  ∃ S, S.Finite ∧ (∀ v ∈ S, v ∉ T ∧ SplitsCompletelyIn k ↥E v) ∧
+    ∀ a ξ, algebraMap ↥K N a = ξ ^ ℓ →
+      (∀ W, primeUnder (𝓞 k) W ∈ S → ∃ c, c ^ ℓ = algebraMap ↥K _ a) → ξ ∈ E
+```
+
+The `Gal(N/k)` ↔ `Gal(N/↥K)` conversion that item 1 needed is three lines: at a prime splitting
+completely in `E` the decomposition group lies in `E.fixingSubgroup`, hence in `K.fixingSubgroup`
+since `K ≤ E`; `IntermediateField.fixingSubgroupEquiv K` carries it into `Gal(N/↥K)`;
+`restrictScalars_smul_heightOneSpectrum` (`CFT/Units/BaseChangeCocycle.lean:59`) is `rfl`, so the
+prime is still stabilised, and `(fixingSubgroupEquiv K ⟨σ, _⟩).restrictScalars k = σ` is
+`AlgEquiv.ext fun _ => rfl`, so the two automorphisms act on `N` by the same function.
+
+What is left of the route, in order:
+
+1. **The Ω ↔ finite-level transport.**  `SplitPlaceMember` is stated for `K E : IntermediateField
+   k N` with `N` a type; the Shafarevich layer has `K, E : IntermediateField k Ω`.  The bridge is
+   `IntermediateField.comap` into a finite Galois `N ⊆ Ω` containing `M ⊔ E`, `M` the field of
+   `exists_isGalois_forall_exists_pow` (`CFT/Units/RootField.lean`).
+2. **The bookkeeping from `S` to `X₀`.**  `isReachablePlace_of_detecting` takes a finset `X₀` of
+   places of `↥K`; `SplitPlaceMember` produces a set `S` of primes of `k`.  Take `X₀` = the primes
+   of `↥K` above `S` (finite) and `T = {primeUnder (𝓞 k) w}`, which gives `w ∉ X₀` for free; the
+   `hX₀split` clause then follows from `SplitsCompletelyIn k ↥E` for the prime below.  The local
+   hypothesis has to be moved from `localClassHom v ℓ u = 1` to `∃ c, c ^ ℓ = algebraMap …`.
+3. **The residue `E ∩ M = K`.**  Still the one genuinely arithmetic step, still to be paid for by
+   shrinking the level.
