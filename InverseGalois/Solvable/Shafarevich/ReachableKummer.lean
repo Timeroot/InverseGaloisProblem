@@ -14,7 +14,8 @@ import InverseGalois.Solvable.Shafarevich.ReachableDetect
 /-!
 # Reaching every place of a level from a Kummer independence
 
-The units of a level whose order is divisible by the exponent at every place all have an
+The units of a level whose order is divisible by the exponent away from a prescribed finite set of
+places all have an
 exponent-th root in one and the same finite Galois extension of the base, the root field.  Inside
 the compositum of the root field with a finite level, finitely many primes of the base splitting
 completely in that level force such a root into the level as soon as the unit is a local power at
@@ -33,8 +34,9 @@ level, because the level lies in the compositum.
 ## Main results
 
 * `InverseGalois.Shafarevich.isReachablePlace_of_kummerDisjoint`: **every place of a level is
-  reached once the only units of the level divisible by the exponent everywhere which become
-  exponent-th powers in a finite level are the exponent-th powers already.**
+  reached once the only units of the level divisible by the exponent away from a prescribed finite
+  set of places which become exponent-th powers in a finite level are the exponent-th powers
+  already.**
 * `InverseGalois.Shafarevich.isReachablePlace_of_inf_le`: the same with the independence read as an
   intersection with a field of roots.
 * `InverseGalois.Shafarevich.exists_finite_forall_isReachablePlace`: **one finite Galois extension
@@ -57,25 +59,28 @@ variable {k Ω : Type} [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsGa
   [IsAlgClosed Ω]
 
 /-- **Every place of a level is reached once the only units of the level divisible by the exponent
-at every place which become exponent-th powers in a finite level are the exponent-th powers
-already.**
+away from a prescribed finite set of places which become exponent-th powers in a finite level are
+the exponent-th powers already.**
 
 Every such unit has a root in one fixed finite Galois extension of the base, and inside the
 compositum of that extension with the finite level there are finitely many primes of the base,
-splitting completely in the level and avoiding the one named, at which being a local power drives
-the root into the level.  The independence then makes the unit a power, which is exactly the
-detection the reachability of the named place is built from. -/
+splitting completely in the level and avoiding the one named together with the two prescribed sets,
+at which being a local power drives the root into the level.  The independence then makes the unit
+a power, which is exactly the detection the reachability of the named place is built from. -/
 theorem isReachablePlace_of_kummerDisjoint {ℓ : ℕ} (hℓ : ℓ.Prime) (hodd : Odd ℓ)
     {K : IntermediateField k Ω} [NumberField ↥K] {E : IntermediateField k Ω}
     [FiniteDimensional k ↥E] [IsGalois k ↥E] (hKE : K ≤ E) {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ)
-    (hdisj : ∀ u : (↥K)ˣ, (∀ v : HeightOneSpectrum (𝓞 ↥K), (ℓ : ℤ) ∣ placeValue v u) →
+    {Tz : Set (HeightOneSpectrum (𝓞 ↥K))} (hTzfin : Tz.Finite)
+    (hdisj : ∀ u : (↥K)ˣ,
+      (∀ v : HeightOneSpectrum (𝓞 ↥K), v ∉ Tz → (ℓ : ℤ) ∣ placeValue v u) →
       ∀ ξ : Ω, algebraMap (↥K) Ω (u : ↥K) = ξ ^ ℓ → ξ ∈ E → ∃ z : (↥K)ˣ, u = z ^ ℓ)
     (w : HeightOneSpectrum (𝓞 ↥K)) :
-    IsReachablePlace ℓ K E w := by
+    IsReachablePlace ℓ K E Tz w := by
   classical
+  intro hwTz Xex hXexfin hwXex
   haveI : NeZero ℓ := ⟨hℓ.ne_zero⟩
   haveI : NumberField ↥E := NumberField.of_module_finite k ↥E
-  obtain ⟨M, hKM, hMfin, hMgal, hMroot⟩ := exists_isGalois_forall_exists_pow K hℓ.ne_zero
+  obtain ⟨M, hKM, hMfin, hMgal, hMroot⟩ := exists_isGalois_forall_exists_pow K hℓ.ne_zero hTzfin
   haveI := hMfin
   haveI := hMgal
   set N₀ : IntermediateField k Ω := M ⊔ E with hN₀
@@ -102,12 +107,22 @@ theorem isReachablePlace_of_kummerDisjoint {ℓ : ℕ} (hℓ : ℓ.Prime) (hodd 
   haveI : NumberField ↥E' := NumberField.of_module_finite k ↥E'
   obtain ⟨S, hSfin, hSsplit, hforce⟩ :=
     exists_finite_splitsCompletelyIn_mem_of_forall_localPow' (K := ↥K) (N := ↥N₀) E'
-      (fun x => hKE x.2) hℓ.ne_zero hζ {primeUnder (𝓞 k) w}
+      (fun x => hKE x.2) hℓ.ne_zero hζ (insert (primeUnder (𝓞 k) w)
+        ((hTzfin.toFinset ∪ hXexfin.toFinset).image (primeUnder (𝓞 k))))
   have hX₀fin : {v : HeightOneSpectrum (𝓞 ↥K) | primeUnder (𝓞 k) v ∈ S}.Finite :=
     finite_setOf_primeUnder_mem (K := ↥K) k hSfin
-  refine isReachablePlace_of_detecting hℓ hodd hζ w hX₀fin.toFinset ?_ ?_ ?_
+  refine exists_unit_reachable_of_detecting hℓ hodd hζ Tz Xex hTzfin hXexfin w hwTz hwXex
+    hX₀fin.toFinset ?_ ?_ ?_ ?_ ?_
   · rw [Set.Finite.mem_toFinset]
-    exact fun hw => (hSsplit _ hw).1 (Finset.mem_singleton_self _)
+    exact fun hw => (hSsplit _ hw).1 (Finset.mem_insert_self _ _)
+  · intro v hv hvTz
+    rw [Set.Finite.mem_toFinset] at hv
+    exact (hSsplit _ hv).1 (Finset.mem_insert_of_mem (Finset.mem_image.2
+      ⟨v, Finset.mem_union_left _ (hTzfin.mem_toFinset.2 hvTz), rfl⟩))
+  · intro v hv hvXex
+    rw [Set.Finite.mem_toFinset] at hv
+    exact (hSsplit _ hv).1 (Finset.mem_insert_of_mem (Finset.mem_image.2
+      ⟨v, Finset.mem_union_right _ (hXexfin.mem_toFinset.2 hvXex), rfl⟩))
   · intro v hv P hPprime hPbot hPunder
     rw [Set.Finite.mem_toFinset] at hv
     haveI : P.IsPrime := hPprime
@@ -135,9 +150,9 @@ theorem isReachablePlace_of_kummerDisjoint {ℓ : ℕ} (hℓ : ℓ.Prime) (hodd 
     rw [hstep] at hcom
     exact hcom.symm
   · intro u hu hloc
-    have hord : ∀ v : HeightOneSpectrum (𝓞 ↥K), (ℓ : ℤ) ∣ ord ↥K v (u : ↥K) := by
-      intro v
-      have := hu v
+    have hord : ∀ v : HeightOneSpectrum (𝓞 ↥K), v ∉ Tz → (ℓ : ℤ) ∣ ord ↥K v (u : ↥K) := by
+      intro v hv
+      have := hu v hv
       rwa [placeValue_eq_neg_ord, dvd_neg] at this
     obtain ⟨y, hyM, hy⟩ := hMroot u hord
     refine hdisj u hu y hy.symm ?_
@@ -155,25 +170,26 @@ theorem isReachablePlace_of_kummerDisjoint {ℓ : ℕ} (hℓ : ℓ.Prime) (hodd 
 
 /-- **A level meeting a field of roots only in the level below reaches every one of its places.**
 
-An exponent-th root of a unit divisible by the exponent everywhere differs from a root lying in the
-field of roots by a root of unity of the level below, so it lies in that field as well; lying also
-in the level, it lies in the intersection, which is the level below, and the unit is a power
-there. -/
+An exponent-th root of a unit divisible by the exponent away from the prescribed set differs from a
+root lying in the field of roots by a root of unity of the level below, so it lies in that field as
+well; lying also in the level, it lies in the intersection, which is the level below, and the unit
+is a power there. -/
 theorem isReachablePlace_of_inf_le {ℓ : ℕ} (hℓ : ℓ.Prime) (hodd : Odd ℓ)
     {K : IntermediateField k Ω} [NumberField ↥K] {E M : IntermediateField k Ω}
     [FiniteDimensional k ↥E] [IsGalois k ↥E] (hKE : K ≤ E) (hKM : K ≤ M) {ζ : ↥K}
-    (hζ : IsPrimitiveRoot ζ ℓ)
-    (hM : ∀ u : (↥K)ˣ, (∀ v : HeightOneSpectrum (𝓞 ↥K), (ℓ : ℤ) ∣ ord ↥K v (u : ↥K)) →
+    (hζ : IsPrimitiveRoot ζ ℓ) {Tz : Set (HeightOneSpectrum (𝓞 ↥K))} (hTzfin : Tz.Finite)
+    (hM : ∀ u : (↥K)ˣ,
+      (∀ v : HeightOneSpectrum (𝓞 ↥K), v ∉ Tz → (ℓ : ℤ) ∣ ord ↥K v (u : ↥K)) →
       ∃ y ∈ M, y ^ ℓ = algebraMap (↥K) Ω (u : ↥K))
     (hEM : E ⊓ M ≤ K) (w : HeightOneSpectrum (𝓞 ↥K)) :
-    IsReachablePlace ℓ K E w := by
+    IsReachablePlace ℓ K E Tz w := by
   haveI : NeZero ℓ := ⟨hℓ.ne_zero⟩
-  refine isReachablePlace_of_kummerDisjoint hℓ hodd hKE hζ (fun u hu ξ hξ hξE => ?_) w
+  refine isReachablePlace_of_kummerDisjoint hℓ hodd hKE hζ hTzfin (fun u hu ξ hξ hξE => ?_) w
   have hune : algebraMap (↥K) Ω (u : ↥K) ≠ 0 :=
     (map_ne_zero_iff _ (algebraMap (↥K) Ω).injective).2 u.ne_zero
-  have hord : ∀ v : HeightOneSpectrum (𝓞 ↥K), (ℓ : ℤ) ∣ ord ↥K v (u : ↥K) := by
-    intro v
-    have := hu v
+  have hord : ∀ v : HeightOneSpectrum (𝓞 ↥K), v ∉ Tz → (ℓ : ℤ) ∣ ord ↥K v (u : ↥K) := by
+    intro v hv
+    have := hu v hv
     rwa [placeValue_eq_neg_ord, dvd_neg] at this
   obtain ⟨y, hyM, hy⟩ := hM u hord
   have hyne : y ≠ 0 := fun h => hune (by rw [← hy, h, zero_pow hℓ.ne_zero])
@@ -201,19 +217,20 @@ theorem isReachablePlace_of_inf_le {ℓ : ℕ} (hℓ : ℓ.Prime) (hodd : Odd �
 /-- **One finite Galois extension of the base decides the reachability of every place of a level at
 once**: any finite level meeting it only in the level below reaches all of them.
 
-The extension is the one holding an exponent-th root of every unit divisible by the exponent at
-every place, which depends on the level below alone and not on the level the confinement is read
-in. -/
+The extension is the one holding an exponent-th root of every unit divisible by the exponent away
+from the prescribed finite set of places, which depends on the level below and that set alone and
+not on the level the confinement is read in. -/
 theorem exists_finite_forall_isReachablePlace {ℓ : ℕ} (hℓ : ℓ.Prime) (hodd : Odd ℓ)
-    (K : IntermediateField k Ω) [NumberField ↥K] {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ) :
+    (K : IntermediateField k Ω) [NumberField ↥K] {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ)
+    {Tz : Set (HeightOneSpectrum (𝓞 ↥K))} (hTzfin : Tz.Finite) :
     ∃ M : IntermediateField k Ω, K ≤ M ∧ FiniteDimensional k ↥M ∧ IsGalois k ↥M ∧
       ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E → E ⊓ M ≤ K →
-        ∀ w : HeightOneSpectrum (𝓞 ↥K), IsReachablePlace ℓ K E w := by
-  obtain ⟨M, hKM, hMfin, hMgal, hMroot⟩ := exists_isGalois_forall_exists_pow K hℓ.ne_zero
+        ∀ w : HeightOneSpectrum (𝓞 ↥K), IsReachablePlace ℓ K E Tz w := by
+  obtain ⟨M, hKM, hMfin, hMgal, hMroot⟩ := exists_isGalois_forall_exists_pow K hℓ.ne_zero hTzfin
   refine ⟨M, hKM, hMfin, hMgal, fun E hEfin hEgal hKE hEM w => ?_⟩
   haveI := hEfin
   haveI := hEgal
-  exact isReachablePlace_of_inf_le hℓ hodd hKE hKM hζ hMroot hEM w
+  exact isReachablePlace_of_inf_le hℓ hodd hKE hKM hζ hTzfin hMroot hEM w
 
 end Kummer
 

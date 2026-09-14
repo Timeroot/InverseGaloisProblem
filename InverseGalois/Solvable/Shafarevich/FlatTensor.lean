@@ -112,11 +112,13 @@ named places lying in distinct orbits, a local power at a prescribed finite set 
 orbits of those avoid, and confined elsewhere to places sitting over the named ones or completely
 decomposed in a given finite level.**
 
-The set the units are asked to be local powers at is avoided by the whole orbit of each named place
-and not merely by the named place itself.  That is forced by the invariance: the order of an
-invariant tensor at a conjugate of a named place is the conjugate of its order at that place, so
-asking the tensor to be a local power at a conjugate of a named place would ask the value
-prescribed there to be trivial.
+The set the units are asked to be local powers at is stable under the automorphisms of the level,
+and is avoided by the whole orbit of each named place and not merely by the named place itself.
+The second is forced by the invariance: the order of an invariant tensor at a conjugate of a named
+place is the conjugate of its order at that place, so asking the tensor to be a local power at a
+conjugate of a named place would ask the value prescribed there to be trivial.  The first is what
+lets the demand be met one orbit at a time, a unit carried by an automorphism staying a local power
+at the set exactly when it was one there before.
 
 The target is an arbitrary group killed by the exponent, together with a basis of it — a family
 whose powers give every element and only trivially give the identity — and an action of the
@@ -136,11 +138,10 @@ fixing a named place carries the value there to its power by the exponent by whi
 roots of unity — which is exactly what the invariance forces, and what the prescription consumes.
 
 The remaining clauses are the local shape of the prescription, as for one unit at a time: the units
-are local powers at a prescribed finite set of places the whole orbit of each named place avoids,
-which covers the places above the exponent and so makes the assembled homomorphism unramified
-there; and elsewhere
-they are confined, a place where some unit has order prime to the exponent sitting over a named
-place or having the primes above it completely decomposed in a finite level named in advance.
+are local powers at that prescribed set of places, which covers the places above the exponent and so
+makes the assembled homomorphism unramified there; and elsewhere they are confined, a place where
+some unit has order prime to the exponent sitting over a named place or having the primes above it
+completely decomposed in a finite level named in advance.
 
 Each named place is asked to be reachable in that finite level, which is the divisor class half of
 the demand and the half the level has to be chosen for rather than the half the arithmetic
@@ -159,9 +160,10 @@ def HasFlatPrescribedTensor (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω
             (∀ (μ : ι) (σ : Gal(↥K/k)) (e : ℕ), σ ζ = ζ ^ e → σ • w μ = w μ →
               V μ ^ e = act σ (V μ)) →
             ∀ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)),
+              (∀ (σ : Gal(↥K/k)) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz → σ • v ∈ Tz) →
               (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ ∉ Tz) →
               (∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (w μ).asIdeal) →
-              (∀ μ : ι, IsReachablePlace ℓ K E (w μ)) →
+              (∀ μ : ι, IsReachablePlace ℓ K E (↑Tz) (w μ)) →
               ∃ z : T → (↥K)ˣ,
                 (∀ (σ : Gal(↥K/k)) (e : ℕ), σ ζ = ζ ^ e →
                   twistTensor M σ⁻¹ e (∑ q, Additive.ofMul (z q) ⊗ₜ[ℤ] Additive.ofMul (b q))
@@ -217,7 +219,11 @@ the power by which the roots of unity are raised.
 
 Triviality along the finite family and the confinement of the new ramification are read off the
 family presenting the tensor, exactly as for one unit at a time; no clause is needed at the
-conjugates of the named places, equivariance carrying the value there. -/
+conjugates of the named places, equivariance carrying the value there.
+
+The set of places the units are asked to be local powers at is the orbit of the places below the
+given finite family of decomposition subgroups, and it is named in advance of the level because the
+level is chosen for it. -/
 theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateField k Ω)
     [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K]
     (hKker : K.fixingSubgroup = φ.ker) {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ)
@@ -226,7 +232,10 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
     (hDPr : ∀ ν, D ν = stabilizer Gal(Ω/k) (Pr ν))
     (hℓPr : ∀ v : HeightOneSpectrum (𝓞 ↥K), (ℓ : 𝓞 ↥K) ∈ v.asIdeal →
       ∃ (σ : Gal(↥K/k)) (ν : Fin t), v = σ • placeUnder K (Pr ν) (hPrbot ν))
-    (hlevel : HasReachableLevel ℓ U n S j φ N K)
+    (Tz : Finset (HeightOneSpectrum (𝓞 ↥K)))
+    (hTz : ∀ v : HeightOneSpectrum (𝓞 ↥K), v ∈ Tz ↔
+      ∃ (σ : Gal(↥K/k)) (ν : Fin t), v = σ • placeUnder K (Pr ν) (hPrbot ν))
+    (hlevel : HasReachableLevel ℓ U n S j φ N K (↑Tz))
     (hfam : HasFlatPrescribedTensor ℓ K ζ) :
     HasFlatKernelPrescription ℓ U n S j φ D := by
   classical
@@ -291,15 +300,16 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
     · rw [_root_.map_mul, MonoidHom.mem_ker.1 hρker, one_mul]
     · rw [_root_.map_mul, (restrictNormalHom_eq_one_iff_mem_ker hKker ρ).2 hρker, one_mul]
   -- the places carrying the finite family, and the named places avoiding them
-  obtain ⟨Tz, hmemTz, hdisj⟩ : ∃ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)),
-      (∀ (σ : Gal(↥K/k)) (ν : Fin t), σ • placeUnder K (Pr ν) (hPrbot ν) ∈ Tz) ∧
-        ∀ (μ : ι) (τ : Gal(↥K/k)), τ • placeUnder K (Q μ) (hQbot μ) ∉ Tz := by
-    refine ⟨Finset.image
-      (fun στ : Gal(↥K/k) × Fin t => στ.1 • placeUnder K (Pr στ.2) (hPrbot στ.2)) Finset.univ,
-      fun σ ν => Finset.mem_image.2 ⟨(σ, ν), Finset.mem_univ _, rfl⟩, ?_⟩
+  have hmemTz : ∀ (σ : Gal(↥K/k)) (ν : Fin t),
+      σ • placeUnder K (Pr ν) (hPrbot ν) ∈ Tz := fun σ ν => (hTz _).2 ⟨σ, ν, rfl⟩
+  have hstabTz : ∀ (σ : Gal(↥K/k)) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz → σ • v ∈ Tz := by
+    intro σ v hv
+    obtain ⟨τ, ν, rfl⟩ := (hTz v).1 hv
+    exact (hTz _).2 ⟨σ * τ, ν, (mul_smul σ τ _).symm⟩
+  have hdisj : ∀ (μ : ι) (τ : Gal(↥K/k)), τ • placeUnder K (Q μ) (hQbot μ) ∉ Tz := by
     intro μ τ₀ hmem
-    obtain ⟨⟨σ₀, ν⟩, -, hσν⟩ := Finset.mem_image.1 hmem
-    have hσν₀ : σ₀ • placeUnder K (Pr ν) (hPrbot ν) = τ₀ • placeUnder K (Q μ) (hQbot μ) := hσν
+    obtain ⟨σ₀, ν, hσν⟩ := (hTz _).1 hmem
+    have hσν₀ : σ₀ • placeUnder K (Pr ν) (hPrbot ν) = τ₀ • placeUnder K (Q μ) (hQbot μ) := hσν.symm
     set σ : Gal(↥K/k) := τ₀⁻¹ * σ₀ with hσdef
     have hσν' : σ • placeUnder K (Pr ν) (hPrbot ν) = placeUnder K (Q μ) (hQbot μ) := by
       rw [hσdef, mul_smul, hσν₀, inv_smul_smul]
@@ -478,7 +488,7 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
       rw [hlift, _root_.map_mul, hlift, hlift])
     ι (fun μ => placeUnder K (Q μ) (hQbot μ))
     (fun μ => ∏ q, layerBasis ℓ (Generic U n S) j q ^ (c μ q).val)
-    hconjw hVcompat Tz hdisj hdisjℓ (fun μ => hreach _)
+    hconjw hVcompat Tz hstabTz hdisj hdisjℓ (fun μ => hreach _)
   have hz1 : ∀ (q : Fin (layerDim ℓ (Generic U n S) j)) (v : HeightOneSpectrum (𝓞 ↥K)),
       (ℓ : 𝓞 ↥K) ∈ v.asIdeal → localClassHom v ℓ (z q) = 1 := by
     intro q v hv

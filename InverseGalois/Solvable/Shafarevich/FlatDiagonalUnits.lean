@@ -31,6 +31,12 @@ the hull.  And the places the ramification is allowed at include those completel
 bigger level, which is a property of a whole orbit when that level is Galois over the base, so the
 set of them is its own stable core.
 
+The first half is then discharged outright.  A unit at a named place of order prime to the exponent
+there, a local power on the prescribed set, of order divisible by the exponent at the finitely many
+other translates of the named places and confined elsewhere, is precisely what the reachability of
+that place produces; no equivariance is asked of it, and equivariance was the only clause the
+arithmetic could not meet.
+
 What is left over is the obstruction, which is stated here for the hull of the named places — the
 smallest choice, and by the reckoning of the descent the best one, since enlarging the set of places
 whose orders are read enlarges the free module the obstruction lives over.
@@ -48,10 +54,13 @@ whose orders are read enlarges the free module the obstruction lives over.
 
 * `InverseGalois.Shafarevich.isGaloisStablePlaces_decomposedPlaces`: complete decomposition in a
   Galois level is a property of the whole orbit of a place.
+* `InverseGalois.Shafarevich.hasFlatDiagonalUnits`: **reachable places carry the units**, and
+  nothing further is asked of the level.
 * `InverseGalois.Shafarevich.hasConfinedDiagonalPlaces_of_flatDiagonalUnits`: **the units of the
   prescription are the diagonal**, so the choice of places costs only the obstruction.
-* `Shafarevich.genericLevelStepEPRoots_of_flatDiagonalUnitsEP`: the step of the ladder over an odd
-  prime, in exchange for the units and the obstruction.
+* `Shafarevich.flatDiagonalUnitsEP`: **every level carries the units.**
+* `Shafarevich.genericLevelStepEPRoots_of_confinedObstructionEP`: **the step of the ladder over an
+  odd prime, in exchange for the obstruction alone.**
 
 ## Tags
 
@@ -89,7 +98,7 @@ def HasFlatDiagonalUnits (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω) [
       (∀ μ ν : ι, μ ≠ ν → ∀ σ : Gal(↥K/k), σ • w μ ≠ w ν) →
       ∀ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)), (∀ μ : ι, w μ ∉ Tz) →
         (∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (w μ).asIdeal) →
-        (∀ μ : ι, IsReachablePlace ℓ K E (w μ)) →
+        (∀ μ : ι, IsReachablePlace ℓ K E (↑Tz) (w μ)) →
         ∃ Z : ι → (↥K)ˣ,
           (∀ μ : ι, ¬ (ℓ : ℤ) ∣ placeValue (w μ) (Z μ)) ∧
           (∀ (μ : ι) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz → localClassHom v ℓ (Z μ) = 1) ∧
@@ -107,6 +116,45 @@ theorem hasFlatDiagonalUnits_of_flatPrescribedUnits {ℓ : ℕ} [NeZero ℓ]
   intro E hEfin hEgal hKE ι _ w hdist Tz hwTz hℓw hreach
   obtain ⟨Z, _, h2, h3, h4, h5, h6⟩ := h E hEfin hEgal hKE ι w hdist Tz hwTz hℓw hreach
   exact ⟨Z, h2, h3, h4, h5, h6⟩
+
+/-- **Reachable places carry the units, and nothing further is asked of the level.**
+
+The places the unit belonging to a named place is asked to have order divisible by the exponent at
+are the translates of the named places other than that place itself; there are finitely many of
+them, the level being finite over the base and the named places finite in number, and the place
+itself is not among them.  Reachability there hands back a unit of order prime to the exponent at
+the place, a local power on the prescribed set, of order divisible by the exponent on those
+translates, and with its remaining ramification completely decomposed away from the place.  That is
+every clause at once: the place itself is the one place the confinement says nothing about, and it
+is covered by the first alternative of the clause that consumes it. -/
+theorem hasFlatDiagonalUnits {ℓ : ℕ} [NeZero ℓ] (K : IntermediateField k Ω) [NumberField ↥K]
+    [IsGalois k ↥K] [FiniteDimensional k ↥K] : HasFlatDiagonalUnits ℓ K := by
+  classical
+  intro E hEfin hEgal hKE ι _ w hdist Tz hwTz hℓw hreach
+  haveI : Finite Gal(↥K/k) := Finite.of_fintype _
+  have hstep : ∀ μ : ι, ∃ Z : (↥K)ˣ,
+      ¬ (ℓ : ℤ) ∣ placeValue (w μ) Z ∧
+      (∀ v : HeightOneSpectrum (𝓞 ↥K), v ∈ Tz → localClassHom v ℓ Z = 1) ∧
+      (∀ (σ : Gal(↥K/k)) (ν : ι), σ • w ν ≠ w μ → (ℓ : ℤ) ∣ placeValue (σ • w ν) Z) ∧
+      ∀ v : HeightOneSpectrum (𝓞 ↥K), ¬ (ℓ : ℤ) ∣ placeValue v Z →
+        (∃ (ν : ι) (σ : Gal(↥K/k)), v = σ • w ν) ∨
+          ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → Ideal.under (𝓞 ↥K) P = v.asIdeal →
+            stabilizer Gal(Ω/k) P ≤ E.fixingSubgroup := by
+    intro μ
+    obtain ⟨u, hord, hTzu, hXex, hconf⟩ :=
+      hreach μ (fun hc => hwTz μ (Finset.mem_coe.1 hc))
+        ({v : HeightOneSpectrum (𝓞 ↥K) | ∃ (σ : Gal(↥K/k)) (ν : ι), v = σ • w ν} \ {w μ})
+        (Set.Finite.subset (Set.finite_range fun p : Gal(↥K/k) × ι => p.1 • w p.2)
+          (by rintro v ⟨⟨σ, ν, rfl⟩, _⟩; exact ⟨(σ, ν), rfl⟩))
+        (fun hcon => hcon.2 rfl)
+    refine ⟨u, hord, fun v hv => hTzu v (Finset.mem_coe.2 hv),
+      fun σ ν hσν => hXex _ ⟨⟨σ, ν, rfl⟩, hσν⟩, fun v hv => ?_⟩
+    by_cases hvw : v = w μ
+    · exact Or.inl ⟨μ, 1, by rw [hvw, one_smul]⟩
+    · exact Or.inr (hconf v hvw hv)
+  choose Z hZord hZTz hZex hZconf using hstep
+  exact ⟨Z, hZord, hZTz, fun μ σ hσ => hZex μ σ μ hσ,
+    fun μ ν hνμ σ => hZex μ σ ν (hdist ν μ hνμ σ), hZconf⟩
 
 end Units
 
@@ -206,9 +254,12 @@ theorem hasConfinedDiagonalPlaces_of_flatDiagonalUnits {ℓ : ℕ} [Fact ℓ.Pri
     intro μ hcon
     obtain ⟨σ, hσ⟩ := hTzfin.mem_toFinset.1 hcon
     exact hTzavoid (w μ) (hwmem μ) σ hσ
+  have hcoeTz : (hTzfin.toFinset : Set (HeightOneSpectrum (𝓞 ↥K))) = stableHull k ↥K Tz :=
+    hTzfin.coe_toFinset
   obtain ⟨Z, hZord, hZTz, hZconj, hZother, hZconf⟩ :=
     hunits E hEfin hEgal hKE ι w hwdist hTzfin.toFinset hnotTz
-      (fun μ => hℓXs (w μ) (hwmem μ)) (fun μ => hreach (w μ) (hwmem μ))
+      (fun μ => hℓXs (w μ) (hwmem μ))
+      (fun μ => by rw [hcoeTz]; exact hreach (w μ) (hwmem μ))
   have hdiagdata : ∀ y : ↥(stableHull k ↥K Xs₀), ∃ u : (↥K)ˣ,
       (∀ v ∈ stableHull k ↥K Tz, localClassHom v ℓ u = 1) ∧
       (∀ v ∉ allowedPlaces K E Xs₀, (ℓ : ℤ) ∣ ord ↥K v ((u : (↥K)ˣ) : ↥K)) ∧
@@ -304,6 +355,11 @@ def ConfinedObstructionEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
       (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
       (∃ ζ : ↥K, IsPrimitiveRoot ζ ℓ) → HasConfinedObstruction ℓ K
 
+/-- **Every level carries the units**, the reachability of a named place being all they cost. -/
+theorem flatDiagonalUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : FlatDiagonalUnitsEP ℓ := by
+  intro k Ω _ _ _ _ _ _ K _ _ _ _
+  exact hasFlatDiagonalUnits K
+
 /-- **The units and the obstruction together buy the choice of places.** -/
 theorem confinedDiagonalPlacesEP_of_flatDiagonalUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
     (hunits : FlatDiagonalUnitsEP ℓ) (hobs : ConfinedObstructionEP ℓ) :
@@ -318,5 +374,12 @@ theorem genericLevelStepEPRoots_of_flatDiagonalUnitsEP (ℓ : ℕ) [Fact ℓ.Pri
     GenericLevelStepEPRoots ℓ :=
   genericLevelStepEPRoots_of_confinedDiagonalPlacesEP ℓ hodd
     (confinedDiagonalPlacesEP_of_flatDiagonalUnitsEP ℓ hunits hobs)
+
+/-- **The step of the ladder over an odd prime, in exchange for the obstruction alone** — the
+arithmetic of the climb resting on a single vanishing statement about the confined units of a
+number field. -/
+theorem genericLevelStepEPRoots_of_confinedObstructionEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
+    (hodd : 2 < ℓ) (hobs : ConfinedObstructionEP ℓ) : GenericLevelStepEPRoots ℓ :=
+  genericLevelStepEPRoots_of_flatDiagonalUnitsEP ℓ hodd (flatDiagonalUnitsEP ℓ) hobs
 
 end Shafarevich

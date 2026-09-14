@@ -46,8 +46,7 @@ decomposition group has order divisible by the exponent, and nothing at all at t
 * `InverseGalois.Shafarevich.hasConfinedObstruction_of_hasStabilizerConfinedUnits`: **the units buy
   the obstruction.**
 * `Shafarevich.genericLevelStepEPRoots_of_stabilizerConfinedUnitsEP`: the step of the ladder over
-  an odd prime, in exchange for the diagonal, the units of the obstruction and a level reaching
-  every place.
+  an odd prime, in exchange for the units of the obstruction alone.
 
 ## Tags
 
@@ -128,12 +127,11 @@ theorem confinedObstructionEP_of_stabilizerConfinedUnitsEP (ℓ : ℕ) [Fact ℓ
   intro k Ω _ _ _ _ _ _ K _ _ _ hζ
   exact hasConfinedObstruction_of_hasStabilizerConfinedUnits (h k Ω K hζ)
 
-/-- **The step of the ladder over an odd prime**, in exchange for the diagonal and the units the
-obstruction is bought with. -/
+/-- **The step of the ladder over an odd prime**, in exchange for the units the obstruction is
+bought with and nothing else. -/
 theorem genericLevelStepEPRoots_of_stabilizerConfinedUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
-    (hodd : 2 < ℓ) (hunits : FlatDiagonalUnitsEP ℓ) (hstab : StabilizerConfinedUnitsEP ℓ) :
-    GenericLevelStepEPRoots ℓ :=
-  genericLevelStepEPRoots_of_flatDiagonalUnitsEP ℓ hodd hunits
+    (hodd : 2 < ℓ) (hstab : StabilizerConfinedUnitsEP ℓ) : GenericLevelStepEPRoots ℓ :=
+  genericLevelStepEPRoots_of_confinedObstructionEP ℓ hodd
     (confinedObstructionEP_of_stabilizerConfinedUnitsEP ℓ hstab)
 
 end Shafarevich

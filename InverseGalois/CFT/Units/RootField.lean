@@ -6,9 +6,10 @@ import Mathlib
 import InverseGalois.CFT.Units.SUnitDivisible
 
 /-!
-# One finite Galois extension holding the roots of the everywhere divisible units
+# One finite Galois extension holding the roots of the divisible units
 
-The units of a number field whose order is divisible by a fixed exponent at every place are carried,
+The units of a number field whose order is divisible by a fixed exponent away from a prescribed
+finite set of places are carried,
 modulo exponent-th powers, by a single finitely generated subgroup.  Adjoining an exponent-th root
 of each of finitely many generators therefore produces a finite extension holding an exponent-th
 root of **every** one of them at once: the elements of the base having a root in a given extension
@@ -21,8 +22,8 @@ the form in which the decomposition groups of its primes can be spoken of.
 ## Main results
 
 * `InverseGalois.CFT.exists_isGalois_forall_exists_pow`: **one finite Galois extension of the base
-  holds an exponent-th root of every unit whose order is divisible by the exponent at every
-  place.**
+  holds an exponent-th root of every unit whose order is divisible by the exponent away from a
+  prescribed finite set of places.**
 
 ## Tags
 
@@ -39,20 +40,22 @@ variable {k Ω : Type*} [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsG
   [IsAlgClosed Ω]
 
 /-- **One finite Galois extension of the base holds an exponent-th root of every unit of an
-intermediate number field whose order is divisible by the exponent at every place.**
+intermediate number field whose order is divisible by the exponent away from a prescribed finite set
+of places.**
 
 The units in question are carried modulo exponent-th powers by a single finitely generated
 subgroup; adjoining a root of each generator to the intermediate field and passing to the normal
 closure gives the extension, because the elements having a root in it form a subgroup containing
 the generators, and a unit differs from a member of that subgroup by an exponent-th power. -/
 theorem exists_isGalois_forall_exists_pow (K : IntermediateField k Ω) [NumberField ↥K] {ℓ : ℕ}
-    (hℓ : ℓ ≠ 0) :
+    (hℓ : ℓ ≠ 0) {Tz : Set (HeightOneSpectrum (𝓞 ↥K))} (hTz : Tz.Finite) :
     ∃ M : IntermediateField k Ω, K ≤ M ∧ FiniteDimensional k ↥M ∧ IsGalois k ↥M ∧
-      ∀ u : (↥K)ˣ, (∀ v : HeightOneSpectrum (𝓞 ↥K), (ℓ : ℤ) ∣ ord ↥K v (u : ↥K)) →
+      ∀ u : (↥K)ˣ,
+        (∀ v : HeightOneSpectrum (𝓞 ↥K), v ∉ Tz → (ℓ : ℤ) ∣ ord ↥K v (u : ↥K)) →
         ∃ y ∈ M, y ^ ℓ = algebraMap (↥K) Ω (u : ↥K) := by
   classical
   haveI : FiniteDimensional k ↥K := Module.Finite.of_restrictScalars_finite ℚ k ↥K
-  obtain ⟨H, hHfg, hH⟩ := exists_fg_forall_mul_pow ↥K ℓ
+  obtain ⟨H, hHfg, hH⟩ := exists_fg_forall_mul_pow ↥K ℓ hTz
   obtain ⟨gs, hgs⟩ := hHfg
   have hroot : ∀ g : (↥K)ˣ, ∃ y : Ω, y ^ ℓ = algebraMap (↥K) Ω (g : ↥K) :=
     fun g => IsAlgClosed.exists_pow_nat_eq _ (Nat.pos_of_ne_zero hℓ)

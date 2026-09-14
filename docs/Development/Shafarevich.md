@@ -25196,3 +25196,143 @@ density statement to place `y`.
    mod-`ℓ`-th-power form (§1.125) is the live route, the on-the-nose form being refuted (§1.122).
 
 and separately `GenericLevelStepEPRoots 2`.
+
+## §1.126 `FlatDiagonalUnitsEP` is a theorem — gap 1 is closed (2026-09-14)
+
+Root build green, 10004 jobs, 0 warnings, 0 sorries, 0 axioms.
+
+Gap 1 of the odd-`ℓ` list ("SW's Third Step; needs a density input (Mathlib has no Chebotarev)") is
+**gone**.  It was never a density statement: it was a bookkeeping mismatch between what
+`IsReachablePlace` promised and what the diagonal asked for.  Generalising the promise closed it
+outright.
+
+### (a) The mismatch
+
+`IsReachablePlace ℓ K E w` used to say: for every finite set `Xex` of places missing `w`, there is a
+unit `u` of `K` with `ord_w u` prime to `ℓ` and `ord_v u ≡ 0 (mod ℓ)` for every `v ∈ Xex`, together
+with the confinement clause at the places where the order is *not* divisible by `ℓ`.
+
+`HasFlatDiagonalUnits ℓ K` asks, at finitely many places `w μ` in distinct orbits, for one unit
+`Z μ` per place which is additionally **a local `ℓ`-th power at a prescribed finite set `Tz`**
+(`localClassHom v ℓ (Z μ) = 1` for `v ∈ Tz`).  Reachability gave divisibility of the *order* at
+prescribed places, which is strictly weaker than being a local power: an unramified unit which is
+not a local power has order divisible by `ℓ` all the same.  So the diagonal could not be read off
+reachability, and the gap was booked as arithmetic input.
+
+### (b) The fix: carry `Tz` inside reachability
+
+`IsReachablePlace` now takes the set of places the unit must be a local power at as a parameter:
+
+```lean
+def IsReachablePlace (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K]
+    (E : IntermediateField k Ω) (Tz : Set (HeightOneSpectrum (𝓞 ↥K)))
+    (w : HeightOneSpectrum (𝓞 ↥K)) : Prop :=
+  w ∉ Tz → ∀ Xex : Set (HeightOneSpectrum (𝓞 ↥K)), Xex.Finite → w ∉ Xex →
+    ∃ u : (↥K)ˣ, ¬ (ℓ : ℤ) ∣ placeValue w u ∧
+      (∀ v ∈ Tz, localClassHom v ℓ u = 1) ∧
+      (∀ v ∈ Xex, (ℓ : ℤ) ∣ placeValue v u) ∧
+      ∀ v : HeightOneSpectrum (𝓞 ↥K), v ≠ w → ¬ (ℓ : ℤ) ∣ placeValue v u →
+        ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → Ideal.under (𝓞 ↥K) P = v.asIdeal →
+          stabilizer Gal(Ω/k) P ≤ E.fixingSubgroup
+```
+
+The `w ∉ Tz` guard is what makes the strengthened statement still *provable*: a place asked to be a
+local power at itself cannot also have order there prime to `ℓ`.  The proof of reachability is
+unchanged in shape — the `S`-unit which witnesses it is already produced inside the extension
+holding the roots of the prescribed units, and that extension already knew about `Tz`; the local
+power clause was simply not being recorded in the statement.  Files touched on that side:
+`CFT/Units/SUnitDivisible.lean`, `CFT/Units/RootField.lean`, `CFT/PoitouTate/ReachablePlace.lean`,
+`Shafarevich/ReachableDetect.lean`, `ReachableKummer.lean`, `ReachableShrink.lean`.
+
+### (c) The payoff: the diagonal falls straight out
+
+With the local-power clause inside reachability, `HasFlatDiagonalUnits` is immediate.  For the place
+`w μ`, take the excluded set to be
+
+```
+Xex := { σ • w ν : σ ∈ Gal(K/k), ν : ι } \ { w μ },
+```
+
+which is finite (it is a subset of the range of `(σ, ν) ↦ σ • w ν`, a map out of a finite type) and
+misses `w μ` by construction.  Reachability then hands back a unit of order prime to `ℓ` at `w μ`, a
+local power at `Tz`, and of order divisible by `ℓ` at *every* conjugate of *every* named place other
+than `w μ` itself — which is exactly the three clauses of the diagonal.  The confinement clause is
+carried over with the case split `v = w μ` (then `v` is a translate of a named place, the left
+disjunct) or `v ≠ w μ` (then reachability's own confinement clause applies).
+
+```lean
+theorem hasFlatDiagonalUnits {ℓ : ℕ} [NeZero ℓ] (K : IntermediateField k Ω) [NumberField ↥K]
+    [IsGalois k ↥K] [FiniteDimensional k ↥K] : HasFlatDiagonalUnits ℓ K
+
+theorem flatDiagonalUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : FlatDiagonalUnitsEP ℓ
+```
+
+No hypothesis at all beyond the level being a finite Galois number field.  In particular **no
+density input and no Chebotarev**.
+
+### (d) Propagating the extra parameter
+
+`Tz` had to be threaded through every statement between reachability and the diagonal.  Two routes
+consume it and they behave differently:
+
+* **Route A (units).**  `HasFlatPrescribedUnits` → `hasFlatOrbitPrescription_of_places`, and
+  `HasFlatPrescribedUnits` → `HasFlatDiagonalUnits`.  Reachability stays at `↑Tz` throughout and no
+  stability hypothesis is needed.
+* **Route B (tensor, the live path).**  `HasFlatPrescribedTensor` → `HasInvariantUnitTensor` →
+  `HasTameInvariantUnitTensor` → `HasNormInvariantUnitTensor` → `HasConfinedRadicandPlaces` →
+  `HasConfinedDiagonalPlaces`.  Here the descent runs in
+  `confinedUnits ↥K ℓ (stableHull k ↥K Tz) …`, so reachability is read at the **hull** of `Tz`, not
+  at `Tz`.
+
+The two are reconciled by requiring `Tz` to be Galois-stable in Route B.  The clause is spelled out
+longhand,
+
+```lean
+(∀ (σ : Gal(↥K/k)) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz → σ • v ∈ Tz) →
+```
+
+rather than as `IsGaloisStablePlaces`, so that `FlatTensor.lean`/`FlatInvariant.lean`/`FlatNorm.lean`
+do not have to import `stableHull`.  It is discharged for free in
+`hasFlatKernelPrescription_of_tensorPlaces`, where `Tz` is literally a Galois orbit — the new
+`exists_finset_mem_iff_smul_placeUnder` (`FlatPlaces.lean`) builds it as
+`Finset.image (fun (σ, ν) ↦ σ • placeUnder K (Pr ν) _) univ` — and converted into
+`stableHull k ↥K ↑Tz = ↑Tz` in `FlatTensorConfined.lean` by the new
+
+```lean
+theorem stableHull_eq_self [IsGaloisStablePlaces k K S] : stableHull k K S = S
+```
+
+in `CFT/PoitouTate/RadicandPlaces.lean`.
+
+A pleasant side effect: `hasNormInvariantUnitTensor_of_hasOrbitPrescribedUnits` used to saturate
+`Tz` under the action by hand before calling the orbit prescription.  With stability a hypothesis,
+the whole saturation block is deleted and `Tz` is used as it stands.
+
+### (e) The ladder now
+
+```
+StabilizerConfinedUnitsEP ℓ                     (the one remaining odd-ℓ hypothesis)
+  ⟹ ConfinedObstructionEP ℓ                     hasConfinedObstruction_of_hasStabilizerConfinedUnits
+  ⟹ GenericLevelStepEPRoots ℓ  (ℓ odd prime)    genericLevelStepEPRoots_of_confinedObstructionEP
+  ⟹ SplitPrimePowerEP                           splitPrimePowerEP_of_genericLevelStepEPRoots
+  ⟹ every finite solvable group is a Galois     isSolvable_isInverseGalois_of_splitPrimePowerEP
+     group over ℚ
+```
+
+`genericLevelStepEPRoots_of_stabilizerConfinedUnitsEP` accordingly loses its `hunits` argument.
+
+### (f) Gotchas
+
+* **4545.** A named explicit binder in a theorem *signature* whose type is a pi-type over a class is
+  registered as a local instance while the statement itself is elaborated.  That is how
+  `exists_finset_mem_iff_smul_placeUnder` can take `(hPrp : ∀ ν, (Pr ν).IsPrime)` explicitly and
+  still write `placeUnder K (Pr ν) (hPrbot ν)` in its conclusion.  Omitting `hPrp` gives
+  `failed to synthesize instance of type class (Pr στ.2).IsPrime` at the *statement*, not in the
+  proof.  `exists_smul_placeUnder_of_mem` (`KernelStep.lean:130`) is the pattern to copy.
+
+**Remaining gaps for Shafarevich (odd `ℓ`):**
+
+1. `ConfinedObstructionEP ℓ` — the Poitou–Tate content; `StabilizerConfinedUnitsEP ℓ` in its
+   mod-`ℓ`-th-power form (§1.125) is the live route, the on-the-nose form being refuted (§1.122).
+
+and separately `GenericLevelStepEPRoots 2`.

@@ -27,7 +27,8 @@ in, the subgroup fixing that field lying at the bottom of the chain — cannot b
 order of that group.  Announcing that many blocks therefore forces one of them to work.
 
 Nothing in the counting depends on the lift, only on the field of radicals, which depends on the
-level below; so the number of letters can be announced before the lift is handed over, which is the
+level below and on the set of places the units are asked to be local powers at; so the number of
+letters can be announced before the lift is handed over, once that set is named, which is the
 shape the demand is made in.
 
 ## Main definitions
@@ -327,15 +328,18 @@ theorem exists_level_fixingSubgroup_eq_ker {ℓ : ℕ} {U : Type} [Group U] {m n
 /-- **The shrinking can be spent on a level reaching every place of the level below.**
 
 The field of radicals whose disjointness from the level buys reachability depends on the level
-below alone, so the number of blocks may be announced in advance: as many as the order of its
+below and the prescribed set of places alone, so the number of blocks may be announced in advance:
+as many as the order of its
 Galois group.  One of them then survives the counting, its level fills up the level below together
 with the field of radicals, and the two fields therefore meet inside the level below, which is
 exactly the disjointness reachability was traded for. -/
 theorem exists_hasReachableLevel {ℓ : ℕ} (hℓ : ℓ.Prime) (hodd : Odd ℓ) (U : Type) [Group U]
     (n : ℕ) (S : Type) [Group S] (j : ℕ) {φ : Gal(Ω/k) →* U} (K : IntermediateField k Ω)
-    [NumberField ↥K] {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ) (hKker : K.fixingSubgroup = φ.ker) :
-    ∃ N : ℕ, HasReachableLevel ℓ U n S j φ N K := by
-  obtain ⟨M, hKM, hMfin, hMgal, hMreach⟩ := exists_finite_forall_isReachablePlace hℓ hodd K hζ
+    [NumberField ↥K] {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ) (hKker : K.fixingSubgroup = φ.ker)
+    {Tz : Set (HeightOneSpectrum (𝓞 ↥K))} (hTzfin : Tz.Finite) :
+    ∃ N : ℕ, HasReachableLevel ℓ U n S j φ N K Tz := by
+  obtain ⟨M, hKM, hMfin, hMgal, hMreach⟩ :=
+    exists_finite_forall_isReachablePlace hℓ hodd K hζ hTzfin
   haveI := hMfin
   haveI := hMgal
   haveI : Finite Gal(↥M/k) := Finite.of_fintype _

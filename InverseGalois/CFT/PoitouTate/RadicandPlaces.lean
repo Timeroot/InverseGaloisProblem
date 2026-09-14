@@ -32,6 +32,7 @@ put an arbitrary prescription into the shape the descent consumes.
 * `InverseGalois.CFT.stableCore_eq_self`: a stable set is its own core.
 * `InverseGalois.CFT.stableHull_subset_of_stable`: the hull is the smallest stable set containing
   the given one.
+* `InverseGalois.CFT.stableHull_eq_self`: a stable set is its own hull.
 * `InverseGalois.CFT.exists_orbitReps`: **a finite set of places is met by finitely many orbits**,
   and representatives of them lie in the set and have the same hull.
 
@@ -129,6 +130,11 @@ theorem stableHull_mono {S₁ S₂ : Set (HeightOneSpectrum (𝓞 K))} (h : S₁
 theorem stableHull_subset_of_stable {S T : Set (HeightOneSpectrum (𝓞 K))}
     [IsGaloisStablePlaces k K T] (h : S ⊆ T) : stableHull k K S ⊆ T :=
   fun _ ⟨σ, hσ⟩ => (IsGaloisStablePlaces.smul_mem_iff (k := k) σ _).1 (h hσ)
+
+/-- **A stable set of places is its own hull**, a place one translate of which lies in it lying in
+it itself. -/
+theorem stableHull_eq_self [IsGaloisStablePlaces k K S] : stableHull k K S = S :=
+  Set.Subset.antisymm (stableHull_subset_of_stable (k := k) subset_rfl) (subset_stableHull k K S)
 
 end Hull
 

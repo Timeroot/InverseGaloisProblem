@@ -116,13 +116,15 @@ radicand with the same divisor.  The second is what an invariant radicand costs,
 putting more completely decomposed places into the set: the correction is made in the units the
 enlarged set brings in.
 
-The named places arrive reachable in the bigger level and prime to the exponent, which is what the
-first of the two makes its living on: a place whose divisor class is not reached by the completely
-decomposed ones carries no unit of order prime to the exponent there at all. -/
+The named places arrive prime to the exponent and reachable in the bigger level past the hull of the
+places a local power is asked at, which is what the first of the two makes its living on: a place
+whose divisor class is not reached by the completely decomposed ones carries no unit of order prime
+to the exponent there at all. -/
 def HasConfinedRadicandPlaces (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
   ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
     ∀ Xs₀ Tz : Set (HeightOneSpectrum (𝓞 ↥K)), Xs₀.Finite → Tz.Finite →
-      (∀ v ∈ Xs₀, (ℓ : 𝓞 ↥K) ∉ v.asIdeal) → (∀ v ∈ Xs₀, IsReachablePlace ℓ K E v) →
+      (∀ v ∈ Xs₀, (ℓ : 𝓞 ↥K) ∉ v.asIdeal) →
+      (∀ v ∈ Xs₀, IsReachablePlace ℓ K E (stableHull k ↥K Tz) v) →
       (∀ v ∈ Xs₀, ∀ σ : Gal(↥K/k), σ • v ∉ Tz) →
       ∀ (C : Type) [CommGroup C] [MulDistribMulAction Gal(↥K/k) C], (∀ c : C, c ^ ℓ = 1) →
         ∃ (Xs : Set (HeightOneSpectrum (𝓞 ↥K))) (_ : Finite ↥Xs) (_ : DecidableEq ↥Xs)
@@ -180,8 +182,8 @@ variable {k Ω : Type} [Field k] [Field Ω] [Algebra k Ω]
 
 The two finite sets a prescription arrives with — the named places and the places a local power is
 asked for at — are the ones handed to the choice, which replaces them by their hulls; those are
-stable and still finite, and the named places still lie in distinct orbits and still avoid the
-enlarged set of local conditions, because what was asked of them was asked of their whole orbits.
+stable and still finite, and the second arrives stable already, so it is its own hull and the named
+places still avoid it, what was asked of them having been asked of their whole orbits.
 The places the ramification is allowed at are the hull of the named ones together with the
 completely decomposed ones, so the confinement clause is exactly the statement that the radicand
 lies in the group of confined units.
@@ -196,11 +198,18 @@ theorem hasInvariantUnitTensor_of_confinedRadicandPlaces {ℓ : ℕ} [NeZero ℓ
     {K : IntermediateField k Ω} [NumberField ↥K] [FiniteDimensional k ↥K]
     (h : HasConfinedRadicandPlaces ℓ K) : HasInvariantUnitTensor ℓ K := by
   classical
-  intro E hEfin hEgal hKE M _ _ hexp T _ b hspan hindep ι _ w V hdist hstab Tz hwTz hℓw hreach
+  intro E hEfin hEgal hKE M _ _ hexp T _ b hspan hindep ι _ w V hdist hstab Tz hTzstab hwTz hℓw
+    hreach
+  haveI : IsGaloisStablePlaces k ↥K (Tz : Set (HeightOneSpectrum (𝓞 ↥K))) :=
+    ⟨fun σ v => ⟨fun hv => by
+        have hv' := hTzstab σ⁻¹ (σ • v) hv
+        rwa [inv_smul_smul] at hv', fun hv => hTzstab σ v hv⟩⟩
+  have hTzhull : stableHull k ↥K (Tz : Set (HeightOneSpectrum (𝓞 ↥K)))
+      = (Tz : Set (HeightOneSpectrum (𝓞 ↥K))) := stableHull_eq_self
   obtain ⟨Xs, hXsfin, hXsdec, hXsstab, hXs₀Xs, hsurj, hδ⟩ :=
     h E hEfin hEgal hKE (Set.range w) (Tz : Set (HeightOneSpectrum (𝓞 ↥K)))
       (Set.finite_range w) Tz.finite_toSet (by rintro v ⟨μ, rfl⟩; exact hℓw μ)
-      (by rintro v ⟨μ, rfl⟩; exact hreach μ)
+      (by rintro v ⟨μ, rfl⟩; rw [hTzhull]; exact hreach μ)
       (by rintro v ⟨μ, rfl⟩ σ hcon; exact hwTz μ σ (Finset.mem_coe.1 hcon)) M hexp
   have hwmem : ∀ μ : ι, w μ ∈ Xs := fun μ => hXs₀Xs ⟨μ, rfl⟩
   -- the prescribed values, read at the named places of the enlarged set

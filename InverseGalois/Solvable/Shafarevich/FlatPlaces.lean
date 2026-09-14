@@ -57,6 +57,8 @@ prescription at the conjugated argument asks for.
 
 ## Main results
 
+* `InverseGalois.Shafarevich.exists_finset_mem_iff_smul_placeUnder` — **the orbit of the places
+  below a finite family of primes is a finite set of places.**
 * `InverseGalois.Shafarevich.hasFlatOrbitPrescription_of_places` — **a level carrying such units
   carries the flat prescription read one named prime at a time.**
 
@@ -82,22 +84,32 @@ section Units
 variable {k Ω : Type} [Field k] [Field Ω] [Algebra k Ω]
 
 /-- **The divisor the prescription asks for at a named place can be cut out at all** — there is a
-unit of the level whose order at that place is prime to the exponent and whose order is divisible by
-the exponent at every other place except ones completely decomposed in the given finite level.
+unit of the level whose order at that place is prime to the exponent, which is a local power at a
+prescribed finite set of places the named one avoids, whose order is divisible by the exponent at a
+second prescribed finite set the named one avoids, and whose order is divisible by the exponent at
+every other place except ones completely decomposed in the given finite level.
 
-This asks nothing local and nothing equivariant; it is the bare divisor class statement underneath
-the demand the prescription makes, and the demand implies it.  It cannot be dropped.  Applying the
-Artin map of the maximal unramified subextension of the finite level to the divisor of any unit
-answering the demand kills the principal divisor, kills every completely decomposed place and kills
-every order divisible by the exponent, and what is left is the Frobenius of the named place raised
-to its own order there — so a named place whose class is not reached by the completely decomposed
-ones carries no such unit at all. -/
+This asks nothing equivariant; it is the divisor class statement underneath the demand the
+prescription makes, together with the local conditions the demand reads off the same unit, and the
+demand implies it.  It cannot be dropped.  Applying the Artin map of the maximal unramified
+subextension of the finite level to the divisor of any unit answering the demand kills the principal
+divisor, kills every completely decomposed place and kills every order divisible by the exponent,
+and what is left is the Frobenius of the named place raised to its own order there — so a named
+place whose class is not reached by the completely decomposed ones carries no such unit at all.
+
+The second prescribed set is quantified over rather than fixed, because the places it has to consist
+of are the conjugates of the other named places, which are not known until the prescription names
+them. -/
 def IsReachablePlace (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K]
-    (E : IntermediateField k Ω) (w : HeightOneSpectrum (𝓞 ↥K)) : Prop :=
-  ∃ u : (↥K)ˣ, ¬ (ℓ : ℤ) ∣ placeValue w u ∧
-    ∀ v : HeightOneSpectrum (𝓞 ↥K), v ≠ w → ¬ (ℓ : ℤ) ∣ placeValue v u →
-      ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → Ideal.under (𝓞 ↥K) P = v.asIdeal →
-        stabilizer Gal(Ω/k) P ≤ E.fixingSubgroup
+    (E : IntermediateField k Ω) (Tz : Set (HeightOneSpectrum (𝓞 ↥K)))
+    (w : HeightOneSpectrum (𝓞 ↥K)) : Prop :=
+  w ∉ Tz → ∀ Xex : Set (HeightOneSpectrum (𝓞 ↥K)), Xex.Finite → w ∉ Xex →
+    ∃ u : (↥K)ˣ, ¬ (ℓ : ℤ) ∣ placeValue w u ∧
+      (∀ v ∈ Tz, localClassHom v ℓ u = 1) ∧
+      (∀ v ∈ Xex, (ℓ : ℤ) ∣ placeValue v u) ∧
+      ∀ v : HeightOneSpectrum (𝓞 ↥K), v ≠ w → ¬ (ℓ : ℤ) ∣ placeValue v u →
+        ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → Ideal.under (𝓞 ↥K) P = v.asIdeal →
+          stabilizer Gal(Ω/k) P ≤ E.fixingSubgroup
 
 /-- **A unit of a level can be found for each of finitely many places lying in distinct orbits,
 fixed by the automorphisms fixing its place, of order there prime to the exponent, a local power at
@@ -141,7 +153,7 @@ def HasFlatPrescribedUnits (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω)
       (∀ μ ν : ι, μ ≠ ν → ∀ σ : Gal(↥K/k), σ • w μ ≠ w ν) →
       ∀ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)), (∀ μ : ι, w μ ∉ Tz) →
         (∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (w μ).asIdeal) →
-        (∀ μ : ι, IsReachablePlace ℓ K E (w μ)) →
+        (∀ μ : ι, IsReachablePlace ℓ K E (↑Tz) (w μ)) →
         ∃ Z : ι → (↥K)ˣ,
           (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ = w μ → ∃ y : (↥K)ˣ, σ • Z μ = Z μ * y ^ ℓ) ∧
           (∀ μ : ι, ¬ (ℓ : ℤ) ∣ placeValue (w μ) (Z μ)) ∧
@@ -213,14 +225,19 @@ against, and that level is asked to reach every place of the level below.
 Reaching a place is the divisor class half of the demand the prescription makes there, and it is the
 half the level has to be chosen for: the places completely decomposed in the level generate the
 classes the level leaves free, so the demand is that no class be left behind, which is a statement
-about the level the lift cuts out rather than about the arithmetic of the level below. -/
-def HasReachableLevel (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
+about the level the lift cuts out rather than about the arithmetic of the level below.
+
+The set of places the units are asked to be local powers at is named in advance of the shrinking,
+because the extension holding the roots of the units the reachability is proved from depends on
+it. -/
+def HasReachableLevel (K : IntermediateField k Ω) [NumberField ↥K]
+    (Tz : Set (HeightOneSpectrum (𝓞 ↥K))) : Prop :=
   ∀ F : Gal(Ω/k) →* GenericQuot ℓ U N S (j + 1), Function.Surjective F → IsSmoothHom F →
     (∀ x, SemidirectProduct.rightHom (F x) = φ x) →
     ∃ (β : Generic U N S →* Generic U n S) (hβ : IsOperatorHom β), Function.Surjective β ∧
       ∃ E : IntermediateField k Ω, FiniteDimensional k ↥E ∧ IsGalois k ↥E ∧ K ≤ E ∧
         E.fixingSubgroup ≤ ((layerSemidirectMap ℓ hβ (j + 1)).comp F).ker ∧
-        ∀ w : HeightOneSpectrum (𝓞 ↥K), IsReachablePlace ℓ K E w
+        ∀ w : HeightOneSpectrum (𝓞 ↥K), IsReachablePlace ℓ K E Tz w
 
 end Reachable
 
@@ -233,6 +250,22 @@ variable {ℓ : ℕ} [Fact ℓ.Prime] [NeZero ℓ] {U : Type} [Group U] [Finite 
   [IsGalois k Ω] [IsAlgClosed Ω] {φ : Gal(Ω/k) →* U} {t : ℕ} {D : Fin t → Subgroup Gal(Ω/k)}
 
 attribute [local instance] genericQuotAction zmodTrivialAction
+
+omit [NumberField k] [IsGalois k Ω] [IsAlgClosed Ω] in
+/-- **The orbit of the places below a finite family of primes is a finite set of places**, a place
+lying in it exactly when it is such a translate. -/
+theorem exists_finset_mem_iff_smul_placeUnder (K : IntermediateField k Ω)
+    [FiniteDimensional k ↥K] [NumberField ↥K] {Pr : Fin t → Ideal (𝓞 Ω)}
+    (hPrp : ∀ ν, (Pr ν).IsPrime) (hPrbot : ∀ ν, Pr ν ≠ ⊥) :
+    ∃ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)), ∀ v : HeightOneSpectrum (𝓞 ↥K),
+      v ∈ Tz ↔ ∃ (σ : Gal(↥K/k)) (ν : Fin t), v = σ • placeUnder K (Pr ν) (hPrbot ν) := by
+  classical
+  letI : Fintype Gal(↥K/k) := Fintype.ofFinite _
+  refine ⟨Finset.image
+    (fun στ : Gal(↥K/k) × Fin t => στ.1 • placeUnder K (Pr στ.2) (hPrbot στ.2)) Finset.univ,
+    fun v => ?_⟩
+  simp only [Finset.mem_image, Finset.mem_univ, true_and, Prod.exists]
+  exact ⟨fun ⟨σ, ν, hσν⟩ => ⟨σ, ν, hσν.symm⟩, fun ⟨σ, ν, hσν⟩ => ⟨σ, ν, hσν.symm⟩⟩
 
 omit [NumberField k] in
 /-- **A level carrying units prescribed at named places carries the flat prescription read one named
@@ -276,10 +309,15 @@ theorem hasFlatOrbitPrescription_of_places (N : ℕ) (K : IntermediateField k Ω
     (hDPr : ∀ ν, D ν = stabilizer Gal(Ω/k) (Pr ν))
     (hℓPr : ∀ v : HeightOneSpectrum (𝓞 ↥K), (ℓ : 𝓞 ↥K) ∈ v.asIdeal →
       ∃ (σ : Gal(↥K/k)) (ν : Fin t), v = σ • placeUnder K (Pr ν) (hPrbot ν))
-    (hlevel : HasReachableLevel ℓ U n S j φ N K)
+    (Tz : Finset (HeightOneSpectrum (𝓞 ↥K)))
+    (hTz : ∀ v : HeightOneSpectrum (𝓞 ↥K), v ∈ Tz ↔
+      ∃ (σ : Gal(↥K/k)) (ν : Fin t), v = σ • placeUnder K (Pr ν) (hPrbot ν))
+    (hlevel : HasReachableLevel ℓ U n S j φ N K (↑Tz))
     (hfam : HasFlatPrescribedUnits ℓ K) :
     HasFlatOrbitPrescription ℓ U n S j φ D := by
   classical
+  have hmemTz : ∀ (σ : Gal(↥K/k)) (ν : Fin t),
+      σ • placeUnder K (Pr ν) (hPrbot ν) ∈ Tz := fun σ ν => (hTz _).2 ⟨σ, ν, rfl⟩
   have hℓ : ℓ.Prime := Fact.out
   haveI : Fact (1 < ℓ) := ⟨hℓ.one_lt⟩
   haveI : IsGalois ↥K Ω := IsGalois.tower_top_of_isGalois k ↥K Ω
@@ -326,16 +364,11 @@ theorem hasFlatOrbitPrescription_of_places (N : ℕ) (K : IntermediateField k Ω
     have hτker : τ ∈ φ.ker := by rw [← hKker]; exact hτmem
     refine hρ (τ * ρ) (mem_stabilizer_iff.2 (by rw [mul_smul]; exact hτ.symm)) ?_
     rw [_root_.map_mul, MonoidHom.mem_ker.1 hτker, one_mul]
-  -- the places carrying the finite family, and the named places avoiding them
-  obtain ⟨Tz, hmemTz, hdisj⟩ : ∃ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)),
-      (∀ (σ : Gal(↥K/k)) (ν : Fin t), σ • placeUnder K (Pr ν) (hPrbot ν) ∈ Tz) ∧
-        ∀ μ : ι, placeUnder K (Q μ) (hQbot μ) ∉ Tz := by
-    refine ⟨Finset.image
-      (fun στ : Gal(↥K/k) × Fin t => στ.1 • placeUnder K (Pr στ.2) (hPrbot στ.2)) Finset.univ,
-      fun σ ν => Finset.mem_image.2 ⟨(σ, ν), Finset.mem_univ _, rfl⟩, ?_⟩
+  -- the named places avoid the places carrying the finite family
+  have hdisj : ∀ μ : ι, placeUnder K (Q μ) (hQbot μ) ∉ Tz := by
     intro μ hmem
-    obtain ⟨⟨σ, ν⟩, -, hσν⟩ := Finset.mem_image.1 hmem
-    have hσν' : σ • placeUnder K (Pr ν) (hPrbot ν) = placeUnder K (Q μ) (hQbot μ) := hσν
+    obtain ⟨σ, ν, hσν⟩ := (hTz _).1 hmem
+    have hσν' : σ • placeUnder K (Pr ν) (hPrbot ν) = placeUnder K (Q μ) (hQbot μ) := hσν.symm
     obtain ⟨ρ₀, hρ₀⟩ := restrictNormalHom_surjective_level K σ
     have hbot : ρ₀ • Pr ν ≠ ⊥ := by
       intro h0

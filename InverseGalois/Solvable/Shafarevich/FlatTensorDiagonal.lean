@@ -79,7 +79,8 @@ def HasConfinedDiagonalPlaces (ℓ : ℕ) [Fact ℓ.Prime] (K : IntermediateFiel
     [NumberField ↥K] : Prop :=
   ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
     ∀ Xs₀ Tz : Set (HeightOneSpectrum (𝓞 ↥K)), Xs₀.Finite → Tz.Finite →
-      (∀ v ∈ Xs₀, (ℓ : 𝓞 ↥K) ∉ v.asIdeal) → (∀ v ∈ Xs₀, IsReachablePlace ℓ K E v) →
+      (∀ v ∈ Xs₀, (ℓ : 𝓞 ↥K) ∉ v.asIdeal) →
+      (∀ v ∈ Xs₀, IsReachablePlace ℓ K E (stableHull k ↥K Tz) v) →
       (∀ v ∈ Xs₀, ∀ σ : Gal(↥K/k), σ • v ∉ Tz) →
       ∀ (C : Type) [CommGroup C] [MulDistribMulAction Gal(↥K/k) C], (∀ c : C, c ^ ℓ = 1) →
         ∃ (Xs : Set (HeightOneSpectrum (𝓞 ↥K))) (_ : Finite ↥Xs) (_ : DecidableEq ↥Xs)

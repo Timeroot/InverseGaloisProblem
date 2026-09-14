@@ -86,7 +86,7 @@ def HasScholzDiagonalUnits (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω)
       (∀ μ ν : ι, μ ≠ ν → ∀ σ : Gal(↥K/k), σ • w μ ≠ w ν) →
       ∀ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)), (∀ μ : ι, w μ ∉ Tz) →
         (∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (w μ).asIdeal) →
-        (∀ μ : ι, IsReachablePlace ℓ K E (w μ)) →
+        (∀ μ : ι, IsReachablePlace ℓ K E (↑Tz) (w μ)) →
         (∀ μ : ι, IsScholzPlace ℓ K E (w μ)) →
         ∃ Z : ι → (↥K)ˣ,
           (∀ μ : ι, ¬ (ℓ : ℤ) ∣ placeValue (w μ) (Z μ)) ∧
@@ -110,8 +110,8 @@ clauses a named place comes with are granted to the condition, so nothing is ask
 the exponent or at a place the auxiliary field does not reach. -/
 def HasScholzPlaces (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
   ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
-    ∀ w : HeightOneSpectrum (𝓞 ↥K), (ℓ : 𝓞 ↥K) ∉ w.asIdeal → IsReachablePlace ℓ K E w →
-      IsScholzPlace ℓ K E w
+    ∀ (Tz : Set (HeightOneSpectrum (𝓞 ↥K))) (w : HeightOneSpectrum (𝓞 ↥K)),
+      (ℓ : 𝓞 ↥K) ∉ w.asIdeal → IsReachablePlace ℓ K E Tz w → IsScholzPlace ℓ K E w
 
 end Demand
 
@@ -148,7 +148,7 @@ theorem hasFlatDiagonalUnits_of_hasScholzPlaces {ℓ : ℕ} [NeZero ℓ] (hℓ :
   intro E hEfin hEgal hKE ι _ w hdist Tz hwTz hℓw hreach
   obtain ⟨Z, hZord, hZTz, hZconj, hZother, hZconf⟩ :=
     hasScholzDiagonalUnits hℓ hodd K hres hζ E hEfin hEgal hKE ι w hdist Tz hwTz hℓw hreach
-      fun μ => h E hEfin hEgal hKE (w μ) (hℓw μ) (hreach μ)
+      fun μ => h E hEfin hEgal hKE _ (w μ) (hℓw μ) (hreach μ)
   exact ⟨Z, hZord, hZTz, fun μ σ hσ => dvd_placeValue_of_localClassHom_eq_one (hZconj μ σ hσ),
     fun μ ν hνμ σ => dvd_placeValue_of_localClassHom_eq_one (hZother μ ν hνμ σ), hZconf⟩
 

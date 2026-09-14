@@ -133,9 +133,10 @@ theorem flatPrescriptionEP_of_flatTensorEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero 
       exact hy
     have hkd : IsKummerData ↥K Ω (Multiplicative (ZMod ℓ)) (zmodRootHom hζ) ℓ :=
       isKummerData_zmod hζ hroot
-    obtain ⟨N, hlevel⟩ := hreach ℚ Ω S U φ M j K ⟨_, hζ⟩ hKker
+    obtain ⟨Tz, hTz⟩ := exists_finset_mem_iff_smul_placeUnder K hPrp hPrbot
+    obtain ⟨N, hlevel⟩ := hreach ℚ Ω S U φ M j K ⟨_, hζ⟩ hKker ↑Tz Tz.finite_toSet
     exact hasFlatKernelPrescription_of_tensorPlaces N K hKker hζ hkd hPrp hPrbot hDPr
-      (exists_smul_placeUnder_of_mem K hPrp hPrbot hcovP) hlevel (h ℚ Ω K _ hζ)
+      (exists_smul_placeUnder_of_mem K hPrp hPrbot hcovP) Tz hTz hlevel (h ℚ Ω K _ hζ)
   · refine ⟨0, ?_⟩
     intro F ι _ Q A a hFsurj hFsm hFright
     refine absurd (Subgroup.isOpen_mono ?_ (isOpenNormal_ker_of_isSmoothHom hFsm).isOpen) hopen

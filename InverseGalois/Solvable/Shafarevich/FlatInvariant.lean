@@ -136,13 +136,14 @@ fixing their places.  The twist by the cyclotomic character, which the assembly 
 problem needs, is put back afterwards by changing the action on the target rather than the tensor.
 
 The remaining clauses are the local shape of the prescription: the units are local powers at a
-prescribed finite set of places the whole orbit of each named place avoids — invariance carries the
-order of the tensor at a named place to its conjugates, so a conjugate of a named place cannot be
-asked for a local power without asking the value prescribed there to be trivial — and elsewhere
-they are confined, a place
-where some unit has order prime to the exponent sitting over a named place or having the primes
-above it completely decomposed in a finite level named in advance.  Each named place is asked to be
-reachable in that level, which is the divisor class half of the demand. -/
+prescribed finite set of places which is stable under the automorphisms of the level and which the
+whole orbit of each named place avoids — invariance carries the order of the tensor at a named place
+to its conjugates, so a conjugate of a named place cannot be asked for a local power without asking
+the value prescribed there to be trivial, and stability is what lets the demand be met one orbit at
+a time — and elsewhere they are confined, a place where some unit has order prime to the exponent
+sitting over a named place or having the primes above it completely decomposed in a finite level
+named in advance.  Each named place is asked to be reachable in that level, which is the divisor
+class half of the demand. -/
 def HasInvariantUnitTensor (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
   ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
     ∀ (M : Type) [CommGroup M] [MulDistribMulAction Gal(↥K/k) M], (∀ m : M, m ^ ℓ = 1) →
@@ -153,9 +154,10 @@ def HasInvariantUnitTensor (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω)
           (∀ μ ν : ι, μ ≠ ν → ∀ σ : Gal(↥K/k), σ • w μ ≠ w ν) →
           (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ = w μ → σ • V μ = V μ) →
           ∀ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)),
+            (∀ (σ : Gal(↥K/k)) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz → σ • v ∈ Tz) →
             (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ ∉ Tz) →
             (∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (w μ).asIdeal) →
-            (∀ μ : ι, IsReachablePlace ℓ K E (w μ)) →
+            (∀ μ : ι, IsReachablePlace ℓ K E (↑Tz) (w μ)) →
             ∃ z : T → (↥K)ˣ,
               (∀ σ : Gal(↥K/k),
                 σ • (∑ q, Additive.ofMul (z q) ⊗ₜ[ℤ] Additive.ofMul (b q))
@@ -197,7 +199,7 @@ theorem hasFlatPrescribedTensor_of_hasInvariantUnitTensor {ℓ : ℕ} [NeZero �
     {K : IntermediateField k Ω} [NumberField ↥K] {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ)
     (hrad : HasInvariantUnitTensor ℓ K) : HasFlatPrescribedTensor ℓ K ζ := by
   intro E hEfin hEgal hKE M _ hexp T _ b hspan hindep act hone hmul ι _ w V hdist hVcompat Tz
-    hwTz hwℓ hwreach
+    hTzstab hwTz hwℓ hwreach
   letI : MulDistribMulAction Gal(↥K/k) M :=
     charTwistAction hexp act hone hmul (rootChar hζ)⁻¹
   have hstab : ∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ = w μ → σ • V μ = V μ := by
@@ -211,7 +213,7 @@ theorem hasFlatPrescribedTensor_of_hasInvariantUnitTensor {ℓ : ℕ} [NeZero �
     rw [Nat.cast_mul, Nat.cast_one, ZMod.natCast_zmod_val, ZMod.natCast_zmod_val,
       rootChar_inv_apply, ← Units.val_mul, mul_inv_cancel, Units.val_one]
   obtain ⟨z, hzinv, hzval, hzTz, hzconf⟩ :=
-    hrad E hEfin hEgal hKE M hexp T b hspan hindep ι w V hdist hstab Tz hwTz hwℓ hwreach
+    hrad E hEfin hEgal hKE M hexp T b hspan hindep ι w V hdist hstab Tz hTzstab hwTz hwℓ hwreach
   refine ⟨z, fun σ e he => ?_, hzval, hzTz, hzconf⟩
   refine twistTensor_eq_coeffTensor_of_smul_eq (f := act σ) (fun m => ?_) (hzinv σ)
   exact charTwistAction_pow hexp act hone hmul ((rootChar hζ)⁻¹)

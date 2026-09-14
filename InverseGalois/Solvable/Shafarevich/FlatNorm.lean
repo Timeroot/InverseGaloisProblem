@@ -224,7 +224,7 @@ def HasOrbitPrescribedUnits (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω
       ∀ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)),
         (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ ∉ Tz) →
         (∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (w μ).asIdeal) →
-        (∀ μ : ι, IsReachablePlace ℓ K E (w μ)) →
+        (∀ μ : ι, IsReachablePlace ℓ K E (↑Tz) (w μ)) →
         ∃ Z : ι → (↥K)ˣ,
           (∀ μ : ι, ¬ (ℓ : ℤ) ∣ placeValue (w μ) (Z μ)) ∧
           (∀ (μ : ι) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz → localClassHom v ℓ (Z μ) = 1) ∧
@@ -237,8 +237,8 @@ def HasOrbitPrescribedUnits (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω
 
 /-- **A family of units of a level can be found whose tensor against a named basis of a target
 killed by the exponent is invariant, of prescribed order at each of finitely many named places whose
-stabilizer has order prime to the exponent, a local power at a prescribed finite set of places the
-orbits of those avoid, and confined elsewhere.**
+stabilizer has order prime to the exponent, a local power at a prescribed stable finite set of
+places the orbits of those avoid, and confined elsewhere.**
 
 This is the invariant tensor demand restricted to named places at which the automorphisms of the
 level act tamely.  The restriction is exactly what turns a value fixed by the subgroup fixing a
@@ -256,9 +256,10 @@ def HasTameInvariantUnitTensor (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k
           (∀ μ : ι, ¬ ℓ ∣ Nat.card ↥(stabilizer Gal(↥K/k) (w μ))) →
           (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ = w μ → σ • V μ = V μ) →
           ∀ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)),
+            (∀ (σ : Gal(↥K/k)) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz → σ • v ∈ Tz) →
             (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ ∉ Tz) →
             (∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (w μ).asIdeal) →
-            (∀ μ : ι, IsReachablePlace ℓ K E (w μ)) →
+            (∀ μ : ι, IsReachablePlace ℓ K E (↑Tz) (w μ)) →
             ∃ z : T → (↥K)ˣ,
               (∀ σ : Gal(↥K/k),
                 σ • (∑ q, Additive.ofMul (z q) ⊗ₜ[ℤ] Additive.ofMul (b q))
@@ -275,7 +276,7 @@ def HasTameInvariantUnitTensor (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k
 /-- **A family of units of a level can be found whose tensor against a named basis of a target
 killed by the exponent is invariant, of prescribed order at each of finitely many named places at
 which the prescribed value is a norm from the subgroup fixing the place, a local power at a
-prescribed finite set of places the orbits of those avoid, and confined elsewhere.**
+prescribed stable finite set of places the orbits of those avoid, and confined elsewhere.**
 
 This is the honest shape of the invariant tensor demand.  A tensor assembled from a whole orbit
 prescribes, at a named place, the product of the conjugates over the subgroup fixing that place of
@@ -295,9 +296,10 @@ def HasNormInvariantUnitTensor (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k
           (∀ (μ : ι) (St : Finset Gal(↥K/k)), (∀ σ : Gal(↥K/k), σ ∈ St ↔ σ • w μ = w μ) →
             ∃ V₀ : M, ∏ σ ∈ St, σ • V₀ = V μ) →
           ∀ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)),
+            (∀ (σ : Gal(↥K/k)) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz → σ • v ∈ Tz) →
             (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ ∉ Tz) →
             (∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (w μ).asIdeal) →
-            (∀ μ : ι, IsReachablePlace ℓ K E (w μ)) →
+            (∀ μ : ι, IsReachablePlace ℓ K E (↑Tz) (w μ)) →
             ∃ z : T → (↥K)ˣ,
               (∀ σ : Gal(↥K/k),
                 σ • (∑ q, Additive.ofMul (z q) ⊗ₜ[ℤ] Additive.ofMul (b q))
@@ -340,22 +342,10 @@ theorem hasNormInvariantUnitTensor_of_hasOrbitPrescribedUnits (hℓ : ℓ.Prime)
     (h : HasOrbitPrescribedUnits ℓ K) : HasNormInvariantUnitTensor ℓ K := by
   classical
   haveI : Fact ℓ.Prime := ⟨hℓ⟩
-  intro E hEfin hEgal hKE M _ _ hexp T _ b hspan _ ι _ w V hdist hVnorm Tz hwTz hℓw hreach
+  intro E hEfin hEgal hKE M _ _ hexp T _ b hspan _ ι _ w V hdist hVnorm Tz hTzstab hwTz hℓw hreach
   haveI : IsGalois k ↥E := hEgal
-  -- the prescribed set of places, saturated under the automorphisms of the level
-  obtain ⟨Tz', hTzle, hwTz'⟩ : ∃ Tz' : Finset (HeightOneSpectrum (𝓞 ↥K)),
-      (∀ (σ : Gal(↥K/k)) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz → σ • v ∈ Tz') ∧
-        ∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ ∉ Tz' := by
-    refine ⟨Finset.image (fun p : Gal(↥K/k) × HeightOneSpectrum (𝓞 ↥K) => p.1 • p.2)
-      (Finset.univ ×ˢ Tz),
-      fun σ v hv => Finset.mem_image.2 ⟨(σ, v), Finset.mem_product.2 ⟨Finset.mem_univ _, hv⟩, rfl⟩,
-      ?_⟩
-    intro μ σ hmem
-    obtain ⟨⟨τ, v⟩, hmem', hτv⟩ := Finset.mem_image.1 hmem
-    exact hwTz μ (τ⁻¹ * σ)
-      (by rw [mul_smul, ← hτv, inv_smul_smul]; exact (Finset.mem_product.1 hmem').2)
   obtain ⟨Y, hYord, hYTz, hYconj, hYcross, hYconf⟩ :=
-    h E hEfin hEgal hKE ι w hdist Tz' hwTz' hℓw hreach
+    h E hEfin hEgal hKE ι w hdist Tz hwTz hℓw hreach
   -- the subgroup fixing each named place, as a finite set of automorphisms
   obtain ⟨St, hStmem⟩ : ∃ St : ι → Finset Gal(↥K/k),
       ∀ (μ : ι) (σ : Gal(↥K/k)), σ ∈ St μ ↔ σ • w μ = w μ :=
@@ -491,7 +481,7 @@ theorem hasNormInvariantUnitTensor_of_hasOrbitPrescribedUnits (hℓ : ℓ.Prime)
     rw [_root_.map_prod]
     refine Finset.prod_eq_one fun σ _ => ?_
     rw [_root_.map_pow, localClassHom_smul_eq_one σ v ℓ (Y ν)
-      (hYTz ν (σ⁻¹ • v) (hTzle σ⁻¹ v hv)), one_pow]
+      (hYTz ν (σ⁻¹ • v) (hTzstab σ⁻¹ v hv)), one_pow]
   · -- the remaining ramification is confined
     rintro v ⟨q, hq⟩
     have hex : ∃ (ν : ι) (σ : Gal(↥K/k)), ¬ (ℓ : ℤ) ∣ placeValue (σ⁻¹ • v) (Y ν) := by

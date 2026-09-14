@@ -25,18 +25,18 @@ by them outright and the exponent-th power the clause allows may be taken to be 
 
 Asking for such a unit at one named place at a time costs nothing.  The only way the demands made
 at the several named places interact is through the clause asking the unit belonging to one place
-to be a local power at every conjugate of the others, and that clause is a clause at a finite set
-of places, so it may be folded into the finite set of places prescribed along with them.  The named
-places lie in distinct orbits, so the folded set still avoids the place the unit belongs to, which
-is what keeps the demand at that place from colliding with the folded ones.
+to have an order divisible by the exponent at every conjugate of the others, and that clause is a
+clause at a finite set of places, so it is handed over as a second prescribed set.  The named
+places lie in distinct orbits, so that set avoids the place the unit belongs to, which is what
+keeps the demand at that place from colliding with the ones made at the conjugates.
 
 ## Main definitions
 
 * `InverseGalois.Shafarevich.HasDecomposedPrescribedUnits` — **a unit of the subfield a place
   decomposes in can be found at every reachable place, of order there prime to the exponent, a
   local power at a prescribed finite set of places and at the proper conjugates of its own place,
-  and confined elsewhere to the conjugates of its place or to places completely decomposed in a
-  given finite level.**
+  of order divisible by the exponent at a second prescribed finite set, and confined elsewhere to
+  the conjugates of its place or to places completely decomposed in a given finite level.**
 * `Shafarevich.DecomposedUnitsEP` — the same demand, asked of every finite Galois level of the
   rationals.
 
@@ -70,8 +70,9 @@ variable {k Ω : Type} [Field k] [NumberField k] [Field Ω] [Algebra k Ω]
 
 /-- **A unit of the subfield a place decomposes in can be found at every reachable place**, of
 order there prime to the exponent, a local power at a prescribed finite set of places that place
-avoids and at every proper conjugate of that place, and confined elsewhere to the conjugates of
-that place or to places completely decomposed in a given finite level.
+avoids and at every proper conjugate of that place, of order divisible by the exponent at a second
+prescribed finite set that place avoids, and confined elsewhere to the conjugates of that place or
+to places completely decomposed in a given finite level.
 
 The demand is made at one place at a time, and the unit is asked to lie in the subfield of the
 level which that place decomposes in rather than merely to be fixed modulo exponent-th powers by
@@ -81,15 +82,18 @@ unit at the place it belongs to and at its conjugates is asked of a single eleme
 completion, and the automorphisms of the level have nothing left to say about it.
 
 Reachability of the place in the given finite level is the divisor class half of the demand, the
-same half the prescription over the whole family names, and it is passed through unchanged. -/
+same half the prescription over the whole family names, and it is passed through unchanged; the
+set of places the unit is asked to be a local power at is the set the reachability is read
+against, the second set being asked only for an order. -/
 def HasDecomposedPrescribedUnits (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω) [NumberField ↥K]
     [IsGalois k ↥K] : Prop :=
   ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
-    ∀ (w : HeightOneSpectrum (𝓞 ↥K)) (Tz : Finset (HeightOneSpectrum (𝓞 ↥K))), w ∉ Tz →
-      (ℓ : 𝓞 ↥K) ∉ w.asIdeal → IsReachablePlace ℓ K E w →
+    ∀ (w : HeightOneSpectrum (𝓞 ↥K)) (Tz Xex : Finset (HeightOneSpectrum (𝓞 ↥K))), w ∉ Tz →
+      w ∉ Xex → (ℓ : 𝓞 ↥K) ∉ w.asIdeal → IsReachablePlace ℓ K E (↑Tz) w →
         ∃ Z : (↥K)ˣ, (Z : ↥K) ∈ decompositionField k w ∧
           ¬ (ℓ : ℤ) ∣ placeValue w Z ∧
           (∀ v : HeightOneSpectrum (𝓞 ↥K), v ∈ Tz → localClassHom v ℓ Z = 1) ∧
+          (∀ v : HeightOneSpectrum (𝓞 ↥K), v ∈ Xex → (ℓ : ℤ) ∣ placeValue v Z) ∧
           (∀ σ : Gal(↥K/k), σ • w ≠ w → localClassHom (σ • w) ℓ Z = 1) ∧
           ∀ v : HeightOneSpectrum (𝓞 ↥K), ¬ (ℓ : ℤ) ∣ placeValue v Z →
             (∃ σ : Gal(↥K/k), v = σ • w) ∨
@@ -112,42 +116,42 @@ of.**
 
 The equivariance clause is met with the exponent-th power taken to be one, a unit of the subfield
 a place decomposes in being fixed outright by the automorphisms fixing that place.  The clause
-asking the unit belonging to one named place to be a local power at every conjugate of the other
-named places is met by folding those conjugates into the finite set of places prescribed with them;
-that set is finite because the level is, and it still avoids the place the unit belongs to because
-the named places lie in distinct orbits.  The remaining clauses are clauses at the one place and
-are passed through, the confinement clause naming the place the unit belongs to among the named
-ones. -/
+asking the unit belonging to one named place to have an order divisible by the exponent at every
+conjugate of the other named places is met by handing those conjugates over as the second
+prescribed set; that set is finite because the level is, and it avoids the place the unit belongs
+to because the named places lie in distinct orbits.  The remaining clauses are clauses at the one
+place and are passed through, the confinement clause naming the place the unit belongs to among
+the named ones. -/
 theorem hasFlatPrescribedUnits_of_hasDecomposedPrescribedUnits [FiniteDimensional k ↥K]
     (h : HasDecomposedPrescribedUnits ℓ K) : HasFlatPrescribedUnits ℓ K := by
   classical
   intro E hEfin hEgal hKE ι _ w hconj Tz hwTz hℓw hreach
-  set Tz' : ι → Finset (HeightOneSpectrum (𝓞 ↥K)) := fun μ =>
-    Tz ∪ Finset.image (fun p : Gal(↥K/k) × ι => p.1 • w p.2)
-      (Finset.univ ×ˢ (Finset.univ.erase μ)) with hTz'
-  have hmemTz' : ∀ (μ ν : ι), ν ≠ μ → ∀ σ : Gal(↥K/k), σ • w ν ∈ Tz' μ := by
+  set Xex : ι → Finset (HeightOneSpectrum (𝓞 ↥K)) := fun μ =>
+    Finset.image (fun p : Gal(↥K/k) × ι => p.1 • w p.2)
+      (Finset.univ ×ˢ (Finset.univ.erase μ)) with hXex
+  have hmemXex : ∀ (μ ν : ι), ν ≠ μ → ∀ σ : Gal(↥K/k), σ • w ν ∈ Xex μ := by
     intro μ ν hνμ σ
-    refine Finset.mem_union_right _ (Finset.mem_image.2 ⟨(σ, ν), ?_, rfl⟩)
+    refine Finset.mem_image.2 ⟨(σ, ν), ?_, rfl⟩
     exact Finset.mem_product.2 ⟨Finset.mem_univ _, Finset.mem_erase.2 ⟨hνμ, Finset.mem_univ _⟩⟩
   have hstep : ∀ μ : ι, ∃ Z : (↥K)ˣ, (Z : ↥K) ∈ decompositionField k (w μ) ∧
       ¬ (ℓ : ℤ) ∣ placeValue (w μ) Z ∧
-      (∀ v : HeightOneSpectrum (𝓞 ↥K), v ∈ Tz' μ → localClassHom v ℓ Z = 1) ∧
+      (∀ v : HeightOneSpectrum (𝓞 ↥K), v ∈ Tz → localClassHom v ℓ Z = 1) ∧
+      (∀ v : HeightOneSpectrum (𝓞 ↥K), v ∈ Xex μ → (ℓ : ℤ) ∣ placeValue v Z) ∧
       (∀ σ : Gal(↥K/k), σ • w μ ≠ w μ → localClassHom (σ • w μ) ℓ Z = 1) ∧
       ∀ v : HeightOneSpectrum (𝓞 ↥K), ¬ (ℓ : ℤ) ∣ placeValue v Z →
         (∃ σ : Gal(↥K/k), v = σ • w μ) ∨
           ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ → Ideal.under (𝓞 ↥K) P = v.asIdeal →
             stabilizer Gal(Ω/k) P ≤ E.fixingSubgroup := by
     intro μ
-    refine h E hEfin hEgal hKE (w μ) (Tz' μ) ?_ (hℓw μ) (hreach μ)
-    rw [hTz', Finset.mem_union]
-    rintro (hcon | hcon)
-    · exact hwTz μ hcon
-    · obtain ⟨⟨σ, ν⟩, hmem, hσν⟩ := Finset.mem_image.1 hcon
-      exact hconj ν μ (Finset.mem_erase.1 (Finset.mem_product.1 hmem).2).1 σ hσν
-  choose Z hZdec hZord hZT hZconj hZconf using hstep
-  refine ⟨Z, fun μ σ hσ => ⟨1, ?_⟩, hZord, fun μ v hv => hZT μ v (Finset.mem_union_left _ hv),
+    refine h E hEfin hEgal hKE (w μ) Tz (Xex μ) (hwTz μ) ?_ (hℓw μ) (hreach μ)
+    rw [hXex]
+    intro hcon
+    obtain ⟨⟨σ, ν⟩, hmem, hσν⟩ := Finset.mem_image.1 hcon
+    exact hconj ν μ (Finset.mem_erase.1 (Finset.mem_product.1 hmem).2).1 σ hσν
+  choose Z hZdec hZord hZT hZX hZconj hZconf using hstep
+  refine ⟨Z, fun μ σ hσ => ⟨1, ?_⟩, hZord, hZT,
     fun μ σ hσ => dvd_placeValue_of_localClassHom_eq_one (hZconj μ σ hσ),
-    fun μ ν hνμ σ => dvd_placeValue_of_localClassHom_eq_one (hZT μ _ (hmemTz' μ ν hνμ σ)),
+    fun μ ν hνμ σ => hZX μ _ (hmemXex μ ν hνμ σ),
     fun μ v hv => ?_⟩
   · rw [smul_eq_of_mem_decompositionField (hZdec μ) hσ, one_pow, mul_one]
   · exact (hZconf μ v hv).imp (fun hcon => ⟨μ, hcon⟩) id
@@ -166,11 +170,12 @@ open InverseGalois.CFT InverseGalois.Shafarevich
 places.**
 
 The demand is the one the flat prescription is assembled out of, read one place at a time and with
-the unit asked to come from the subfield the place decomposes in: a place of the level and a finite
-set of places avoiding it are named, and a unit of the decomposition field is asked for, of order
-at the place prime to the exponent, a local power at the named set and at the proper conjugates of
-the place, and confined elsewhere to the conjugates of the place or to places completely decomposed
-in a finite level given in advance. -/
+the unit asked to come from the subfield the place decomposes in: a place of the level and two
+finite sets of places avoiding it are named, and a unit of the decomposition field is asked for, of
+order at the place prime to the exponent, a local power at the first named set and at the proper
+conjugates of the place, of order divisible by the exponent at the second, and confined elsewhere
+to the conjugates of the place or to places completely decomposed in a finite level given in
+advance. -/
 def DecomposedUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
   ∀ (k Ω : Type) [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsAlgClosed Ω] [IsGalois k Ω]
       (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
