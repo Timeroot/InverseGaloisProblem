@@ -27080,3 +27080,59 @@ The reading of condition (4) is confirmed by Schmidt–Wingberg's own verificati
 `σ • P_i` while `z_i` has no partner, and `(z_i)_{σP_i}` once it has one; for `σ ∈ G₃` the two
 values are exchanged.  Minimality of `N` is what guarantees that `z_i` has no partner at the time
 `z_j` is built.
+
+### (g) Items 1–3 landed (2026-09-15)
+
+The whole of (e) is now a theorem.  The Lean packaging is
+
+```lean
+theorem placeFrobValue_eq_one_of_isInvolution
+    (hres : ∀ w : HeightOneSpectrum (𝓞 K), HasResidueChar (w.adicCompletion K) (P w) (E w))
+    {ζ : K} (hζ : IsPrimitiveRoot ζ 2) {σ : Gal(K/k)} (hσ1 : σ ≠ 1) (hσ2 : σ * σ = 1)
+    {B : Finset (HeightOneSpectrum (𝓞 K))}
+    (hBstable : ∀ (τ : Gal(K/k)) (w : HeightOneSpectrum (𝓞 K)), w ∈ B → τ • w ∈ B)
+    (hBwild : ∀ w : HeightOneSpectrum (𝓞 K), P w ∣ 2 → w ∈ B)
+    (hBram : ∀ w : HeightOneSpectrum (𝓞 K), ramIdx (𝓞 k) w ≠ 1 → w ∈ B)
+    {v : HeightOneSpectrum (𝓞 K)} (hvB : v ∉ B) {z : Kˣ}
+    (hzB : ∀ w ∈ B, localClassHom w 2 z = 1)
+    (hzeven : ∀ w : HeightOneSpectrum (𝓞 K), w ≠ v → (2 : ℤ) ∣ placeValue w z)
+    (hzv : ¬ (2 : ℤ) ∣ placeValue v z) (hzσv : placeValue (σ • v) z = 0)
+    (hzpos : ∀ φ : K →+* ℝ, 0 < φ (z : K)) :
+    placeFrobValue hres hζ (σ • v) z = 1
+```
+
+at `InverseGalois/CFT/PoitouTate/InvolutionClaim.lean`.  Build green, 10026 jobs, 0 warnings,
+0 sorries.  The supporting modules, in the order they were built:
+
+* item 1 — `CFT/PoitouTate/FrobConjugate.lean`, `placeFrobValue_galUnits`;
+* item 3′ — `CFT/PoitouTate/LocalClassClose.lean`, the `U¹` congruence for local classes;
+* item 2 — `CFT/Local/FixedSquare.lean` (an element of a finite field of odd characteristic fixed
+  by an involution is a square) and `CFT/PoitouTate/InertSquare.lean`
+  (`localClassHom_two_eq_one_of_galUnits_eq`);
+* new here — `CFT/PoitouTate/OrdCompare.lean` (valuation comparison read off orders) and
+  `CFT/Brauer/RealSymbolPositive.lean` (the archimedean half of the product formula vanishes for a
+  totally positive second argument, and total positivity is Galois stable).
+
+Three points where the Lean proof departs from the sketch in (e), all of them simplifications:
+
+* The hypothesis at the mirror place is `placeValue (σ • v) z = 0` rather than merely even.  In the
+  recursion the stages are ramified *exactly* at their own place, so the order is zero at every
+  other place and the strengthening is free; it is what makes step 2 the two-line computation
+  `ord_{σv}(z) = 0 < ord_{σv}(σz)` instead of a case split.
+* Steps 1 and 2 are not done by the `(x, x) = (x, −1)` identity.  Instead the pair fed to the
+  product formula is `(d, σz)` with `d := z − σz`, and *both* `v` and `σ • v` are handled by
+  `localClassHom_eq_of_valuation_sub_lt`: at `σ • v` the difference `d − z = −σz` is strictly worse
+  than `z`, so `d` and `z` have the same local class there and the symbol collapses to
+  `placeFrobValue (σ • v) z`; at `v` the order of `d` is zero, i.e. even, and the order of `σz` is
+  zero too, so `v` is simply not in the support and never enters the product.  The whole product is
+  therefore taken over `insert (σ • v) Λ`, with `Λ` the places outside the bad set where `d` has
+  odd order.
+* The σ-fixed case (step 5) needs the division by two.  Two cheaper candidates for the fixed
+  element were tried and both fail: `z · σz` is automatically a square in `localClasses w 2`,
+  because `localClassHom w 2 z = localClassHom w 2 (σz)` already holds on `Λ`, so the conclusion is
+  vacuous; and `z + σz` is not close enough to `z`, since `ord_w(z − (z + σz)) = ord_w(σz)` equals
+  `ord_w(z + σz)` rather than exceeding it.  With `a := (z + σz)/2` one gets `z − a = d/2`, whose
+  order is that of `d`, strictly bigger than `ord_w(a) = ord_w(z)`.  The place `w` is tame, so
+  `ord_w 2 = 0` and neither division costs anything.
+
+What remains of the even step is items 4, 5 and 6 of (f) unchanged.

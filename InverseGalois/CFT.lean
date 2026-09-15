@@ -158,6 +158,7 @@ import InverseGalois.CFT.Brauer.RealCyclicSign
 import InverseGalois.CFT.Brauer.RealInvariant
 import InverseGalois.CFT.Brauer.RealPlace
 import InverseGalois.CFT.Brauer.RealSymbol
+import InverseGalois.CFT.Brauer.RealSymbolPositive
 import InverseGalois.CFT.Brauer.RealSymbolProduct
 import InverseGalois.CFT.Brauer.ResidueBaseChange
 import InverseGalois.CFT.Brauer.ResidueCard
@@ -503,6 +504,7 @@ import InverseGalois.CFT.PoitouTate.GlobalClasses
 import InverseGalois.CFT.PoitouTate.InertSquare
 import InverseGalois.CFT.PoitouTate.InfiniteClasses
 import InverseGalois.CFT.PoitouTate.InvariantRadicand
+import InverseGalois.CFT.PoitouTate.InvolutionClaim
 import InverseGalois.CFT.PoitouTate.Isotropic
 import InverseGalois.CFT.PoitouTate.LocalClassClose
 import InverseGalois.CFT.PoitouTate.LocalClassPlaces
@@ -525,6 +527,7 @@ import InverseGalois.CFT.PoitouTate.OrbitCoboundary
 import InverseGalois.CFT.PoitouTate.OrbitDivisor
 import InverseGalois.CFT.PoitouTate.OrbitLine
 import InverseGalois.CFT.PoitouTate.OrbitProduct
+import InverseGalois.CFT.PoitouTate.OrdCompare
 import InverseGalois.CFT.PoitouTate.OrdInvariant
 import InverseGalois.CFT.PoitouTate.PartPrescribed
 import InverseGalois.CFT.PoitouTate.PlaceUniformiser
@@ -8154,6 +8157,38 @@ it that are available here.
   fixed by an automorphism of order two, of even order at a place the automorphism fixes which is
   unramified over the base and of odd residue characteristic, is a square in the completion
   there**.
+
+* `InverseGalois.CFT.PoitouTate.OrdCompare` puts that comparison in the additive language the
+  ultrametric calculus is written in.  The adic valuation at a height one prime is the exponential
+  of the negated order there and the exponential is strictly monotone, so **one nonzero element has
+  smaller valuation than another exactly when it has larger order**; in particular a subtrahend of
+  strictly smaller order leaves the order of a difference where it found it, which is the shape the
+  ultrametric inequality takes when one of the two terms dominates.
+
+* `InverseGalois.CFT.Brauer.RealSymbolPositive` clears the archimedean half of the product formula.
+  The symbol at a complex place is trivial outright, and at a real place it is trivial as soon as
+  its second argument is positive there, so **a unit which every real embedding of the field sends
+  to a positive number contributes nothing at the infinite places**, whatever the first argument
+  is.  Positivity of that kind is a condition on the ring homomorphisms to the reals rather than on
+  the places, and read that way it is visibly carried along the Galois group, a real embedding
+  composed with an automorphism being again a real embedding.
+
+* `InverseGalois.CFT.PoitouTate.InvolutionClaim` spends the product formula on a unit and its
+  conjugate under an automorphism of order two.  Let a Galois stable set of places be given
+  containing the dyadic ones and those ramified over the base, and a unit which is a local square
+  at every place of that set, of even order at every place but one place `v` outside it, a local
+  unit at the image of `v`, and positive under every real embedding.  Pair the difference of the
+  unit and its conjugate with the conjugate itself.  At a place of the bad set the conjugate is a
+  local square and the symbol is trivial there; away from that set and away from the finitely many
+  places where the difference has odd order both arguments have even order and the symbol is
+  trivial again; at the places that remain the odd exponent turns the symbol into a value at a
+  Frobenius automorphism, and the automorphism pairs those places off with equal values, so they
+  cancel two at a time.  A place the automorphism fixes is its own partner, and there the unit is
+  congruent to the average of itself with its conjugate, which the automorphism fixes and which has
+  the same even order, so the inert local lemma makes that average a square and the contribution is
+  trivial on its own.  The archimedean factors vanish because the conjugate is positive under every
+  real embedding as well, and the symbol at the image of `v` is all that is left: **the value of
+  such a unit at the Frobenius automorphism of the conjugate place is trivial**.
 
 * `InverseGalois.CFT.PoitouTate.ChebotarevPlace` produces the place at which that happens.  An
   automorphism of prime order of a Galois extension of number fields, generating a subgroup normal
