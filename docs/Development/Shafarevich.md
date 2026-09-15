@@ -27503,3 +27503,40 @@ hypothesis `2 ∣ placeValue Q (galUnits σ z)` holds because `galUnits σ z` is
 The hypotheses `hneg` and `hiso` of the reciprocity brick are carried through verbatim, for the
 pair `(z, galUnits σ z)`; discharging them on the carrier set `T` is the caller's job, and is the
 `B ⊊ T` condition of (c).
+
+## §1.143 The three-place assembly: what each of the three orbits costs (2026-09-15)
+
+`exists_prescribed_two_places` (`RecursionClose.lean:136`) is the template.  Its three-place
+analogue runs `exists_evenRecInv` past the bound of `exists_three_occurrences`, picks the three
+stages `i < j < N` with a common invariant, and takes `z := unit i * unit j * unit N`.  All the
+clauses about `T`, the infinite places, the ramification and the non-ramification transpose
+verbatim (three factors instead of two, `g ^ 3` instead of `g ^ 2`).  What is new is the clause
+"trivial at every nontrivial conjugate of each of the three places", and the three orbits cost
+three different things.
+
+**At `σ • Q_i` the product is trivial for free.**  Write `a(σ) := localClassHom (σ • Q_i) 2 (z_i)`.
+`unitConj i j` reads the counter `count i j = 0`, so its flag is `σ ∈ L`, and `unitConj i N` reads
+`count i N = 1`, so its flag is `σ⁻¹ ∈ L`.  Hence the three factors are `a(σ)`, `a(σ)` or `1`
+according to `σ ∈ L`, and `a(σ)` or `1` according to `σ⁻¹ ∈ L`.  Since `L` meets each pair
+`{σ, σ⁻¹}` of distinct mutually inverse elements exactly once, exactly one of the two conditions
+holds and the product is `a(σ)^2 = 1`; and if `σ = σ⁻¹` then neither holds, the product is `a(σ)`,
+and `a(σ) = 1` by `placeFrobValue_eq_one_of_isInvolution`.  **No reciprocity is used here** — only
+`a^2 = 1` and the Claim.  This is why the half set has to omit the involutions.
+
+**At `σ • Q_j` and at `σ • Q_N` reciprocity is needed.**  At `σ • Q_j` the factor
+`localClassHom (σ • Q_j) 2 (z_j)` and the factor `localClassHom (σ • Q_j) 2 (z_N)` are again
+related by `unitConj j N` with `count j N = 0`, flag `σ ∈ L`; but the factor
+`localClassHom (σ • Q_j) 2 (z_i)` is *not* prescribed by the recursion — the recursion only
+prescribes later units at conjugates of earlier places.  It is reciprocity that ties it to
+`localClassHom (σ⁻¹ • Q_i) 2 (z_j)`, exactly as `localClassHom_mul_eq_one_of_isotropic_inf` does in
+the two-place assembly, and it is there that `placeFrobValue_smul_eq_placeFrobValue_inv_smul`
+(§1.142(f)) is consumed.  The same holds at `σ • Q_N`, with two unprescribed factors instead of
+one.
+
+So the remaining work is a **three-term analogue of `localClassHom_mul_eq_one_of_isotropic_inf`**:
+the two-place version pairs one unit against one conjugate of the other, and the three-place
+version must pair one unit against two conjugates.  The reciprocity brick itself
+(`placeFrobValue_eq_placeFrobValue_of_isotropic_pos`) is already in the shape the pairing needs,
+since it takes the two units as independent arguments; what has to be written is the bookkeeping
+that multiplies three values of `placeFrobValue` and uses the closed form `halfRule_mul_inv` to see
+the product collapse.
