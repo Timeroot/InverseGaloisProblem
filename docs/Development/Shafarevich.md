@@ -27136,3 +27136,156 @@ Three points where the Lean proof departs from the sketch in (e), all of them si
   `ord_w 2 = 0` and neither division costs anything.
 
 What remains of the even step is items 4, 5 and 6 of (f) unchanged.
+
+## §1.140 The three-stage system, solved in closed form; and the totally positive half of item 4 (2026-09-15)
+
+Item 4 of §1.139(f) splits cleanly in two, and this section records both halves: the *algebra* of
+the three stages (solved, in closed form, with an explicit prescription rule) and the *analysis*
+that has to replace `IsNegOnePow` everywhere the odd proof used it (three modules landed).
+
+### (a) The orientation conventions, read off the odd-`ℓ` proof
+
+Write `FV(w, z) := placeFrobValue hres hζ w z`.  The two reciprocity facts the closing chain runs
+on are, in `ClosingChainRamified.placeFrobValue_mul_eq_one_of_isotropic`, the hypotheses named `h1`
+and `h2`.  Unwound through `placeFrobValue_galUnits` — which says
+`FV(σ • v, galUnits σ a) = FV(v, a)`, hence `FV(Q, galUnits σ z) = FV(σ⁻¹ • Q, z)` — they read:
+
+* `h1`: `FV(σ • Q, z_i) = FV(σ⁻¹ • Q, z_i)` for `z_i` ramified exactly at `Q`;
+* `h2`: `FV(σ • R, z_i) = FV(σ⁻¹ • Q, z_j)` for `z_i` ramified exactly at `Q` and `z_j` at `R`.
+
+So the whole system is governed by one rule: **the value of a stage at a conjugate of another
+stage's place is the value of that other stage at the inversely conjugated place of the first.**
+`h1` is the diagonal case, and it says exactly that the diagonal function is an even function of
+`σ`.
+
+### (b) The system, and its solution
+
+Take three stages `z_i`, `z_j`, `z_N` ramified at `Q`, `R`, `S`, chosen by a **triple** pigeonhole
+so that the diagonal is the same function for all three:
+
+```
+a(σ) := FV(σ • Q, z_i) = FV(σ • R, z_j) = FV(σ • S, z_N).
+```
+
+The remaining entries are the *free* ones — they are what the prescription of the recursion fixes
+when the later stage is built, the orbit of the earlier place being inside the prescribed set by
+then:
+
+```
+X(σ) := FV(σ • Q, z_j),   Y(σ) := FV(σ • Q, z_N),   Z(σ) := FV(σ • R, z_N).
+```
+
+By (a) the three transposed entries are `FV(σ • R, z_i) = X(σ⁻¹)`, `FV(σ • S, z_i) = Y(σ⁻¹)` and
+`FV(σ • S, z_j) = Z(σ⁻¹)`.  Asking the product `z := z_i z_j z_N` to have trivial value at every
+nontrivial conjugate of each of the three places is therefore the system
+
+```
+(I)    a(σ) · X(σ)   · Y(σ)   = 1        at σ • Q
+(II)   X(σ⁻¹) · a(σ) · Z(σ)   = 1        at σ • R
+(III)  Y(σ⁻¹) · Z(σ⁻¹) · a(σ) = 1        at σ • S
+```
+
+for every `σ ≠ 1`.  Everything in sight is killed by `2` (`pow_placeFrobValue_eq_one`).  Partition
+`G ∖ {1} = G₁ ⊔ G₂ ⊔ G₃` with `G₁` the involutions and `G₃ = G₂⁻¹`, and put
+
+```
+X = Z = a on G₂, 1 elsewhere;        Y = a on G₃, 1 elsewhere.
+```
+
+Then all three equations hold: on `G₁` every term is `1` because `a = 1` there — *that* is the
+Claim, §1.139(e), already a theorem; on `G₂` the equations read `a·a·1`, `1·a·a`, `a·1·a`; on `G₃`
+they read `a·1·a`, `a·a·1`, `1·a·a`.  Note the outcome `Z = X`: the prescription of the *last*
+stage at the orbit of the *middle* place is the same function as the prescription of the middle
+stage at the orbit of the *first* place, while `Y` — the last stage at the orbit of the first
+place — is the complementary one.  (This is the point on which the "has a partner" phrasing of
+§1.139(f) had to be pinned down against the Lean orientation; the closed form above is what the
+Lean statements actually produce.)
+
+### (c) The prescription rule, stated so that it can be applied before the pigeonhole fires
+
+The recursion has to write down the prescription at the orbit of `Q_i` when stage `m > i` is built,
+long before it is known which three stages will collide.  The rule that produces `X`, `Y`, `Z`
+above uses only data available at that time.  Let
+
+```
+r(i, m) := #{ l : i < l < m and φ_l = φ_i }
+```
+
+be the number of earlier stages already sharing `z_i`'s invariant, and prescribe at `σ • Q_i`, for
+the stage `m`:
+
+```
+a_i(σ)  if (σ ∈ G₂ and r(i,m) is even) or (σ ∈ G₃ and r(i,m) is odd);      1  otherwise.
+```
+
+Run the pigeonhole with `N` **minimal** such that there are `i < j < N` with `φ_i = φ_j = φ_N`.
+Minimality says no three indices below `N` share an invariant, so `{l < N : φ_l = φ_i} = {i, j}`,
+and therefore `r(i,j) = 0`, `r(i,N) = 1`, `r(j,N) = 0`.  The rule then gives `X = a` on `G₂`,
+`Y = a` on `G₃`, `Z = a` on `G₂` — exactly the solution of (b).  This is the content of
+Schmidt–Wingberg's condition (4); the parity counter is the Lean-usable form of their "according to
+whether `z_i` already has a partner".
+
+### (d) Why `Recursion.lean` has to be rebuilt, not reused
+
+`RecInv` carries the prescription as a single function `pres : (v) → localClasses v p`, and its
+fields
+
+```
+presConj : ∀ i < n, ∀ σ ≠ 1, d.pres (σ • d.chosen i) = (localClassHom (σ • d.chosen i) p (d.unit i))⁻¹
+unitConj : ∀ i < n, ∀ j < n, i < j, ∀ σ ≠ 1,
+             localClassHom (σ • d.chosen i) p (d.unit j) = (localClassHom (σ • d.chosen i) p (d.unit i))⁻¹
+```
+
+force **one** prescription per place, shared by every later stage: in the notation of (b) that is
+`X = Y`, and then (I) reads `a = 1` for all `σ`, which is the parity obstruction of §1.139(b) in
+its cleanest form.  A stage-dependent prescription is legitimate — `hstep` only constrains `c` on
+`T`, and it is `exists_recInv_succ`'s own `hc'old : ∀ v ∈ d.places, c' v = d.pres v` that freezes
+the prescription across stages — so the even recursion needs its own `RecData`/`RecInv` in which
+`pres` is indexed by the stage, with `hc'old` weakened to hold on `T` only and the prescription at
+the orbits of earlier chosen places recomputed by the rule of (c) at each step.
+
+### (e) The analytic half: everything `IsNegOnePow` did has to be done by total positivity
+
+`IsNegOnePow K p` says `−1` is a `p`-th power in `K`; at `p = 2` that says `i ∈ K`, which forces
+`IsTotallyComplex K`, so the odd proof's use of it is not merely inconvenient at `p = 2` but
+unavailable.  Its two jobs are both discharged by **total positivity of the second argument**:
+
+* in the product formula, `infClassHom_eq_one_of_isNegOnePow` was used to kill the archimedean
+  factors; the replacement is `prod_archSymbol_eq_one_of_forall_pos`, which needs only
+  `∀ φ : K →+* ℝ, 0 < φ (b : K)`;
+* in the duality, the `S`-unit produced by `Prescribed.exists_sUnitClass_mul_eq` was *unconstrained*
+  at the infinite places; the replacement constrains it there.
+
+Three modules landed for this:
+
+* `CFT/Brauer/ReciprocityPositive.lean` — `prod_localSymbol_eq_one_of_forall_pos` and
+  `placeFrobValue_zpow_eq_zpow_of_forall_pos`, the `IsNegOnePow`-free reciprocity law between two
+  units each unramified away from a single place, with the second positive at every real embedding.
+* `CFT/PoitouTate/PositiveClasses.lean` — `forall_pos_of_forall_infClassHom_eq_one`: for an even
+  exponent, `∀ w : InfinitePlace K, infClassHom w n u = 1` implies `∀ φ : K →+* ℝ, 0 < φ (u : K)`.
+  A real embedding is the embedding of a real place, whose completion is `ℝ`, and there `u` is a
+  nonzero even power.
+* `CFT/PoitouTate/PrescribedPositive.lean` — `exists_sUnitClass_mul_eq_pos` and
+  `exists_sUnitClass_mul_eq_unramified_pos`.  The self-duality `perpSubgroup_selmerGroupFull`
+  already runs over the finite *and* infinite places, so the archimedean prescription is not new
+  architecture: it is the same theorem with the infinite component of the subgroup of admissible
+  errors taken `⊥` instead of `⊤` (`perpSubgroupLeft_bot` in place of `perpSubgroupLeft_top`).  The
+  price is visible in the hypothesis: the orthogonality that has to be checked is against **all**
+  `S`-units obeying the dual conditions at the finite places, not only those that are local powers
+  at infinity.
+
+### (f) The one place where total positivity is not yet available
+
+`SplitClass.prescriptionChar_eq_one_of_pow` still takes `huinf : ∀ w, infClassHom w n u = 1` for the
+*radicands* `u`, and uses it only to get `∏ w, archSymbol K w g u = 1`.  In the odd proof
+`RecursionStep.exists_place_sUnit_prescribed` discharges that with `infClassHom_eq_one_of_isNegOnePow`.
+Two routes are open, neither implemented:
+
+* (A) make every radicand totally positive.  This holds if no real place of `K` becomes complex in
+  `Ω` and `Ω` is generated by square roots of the (now totally positive) stages;
+* (B) use positivity of the *carrier* `g` instead, which is legitimate because the real symbol is
+  symmetric (`RealSymbol.realSymbol_comm`), at the cost of proving the corresponding
+  `archSymbol_comm`.
+
+(B) is the cheaper of the two and is the one to try first: the carrier is ours to choose, and
+`exists_sUnitClass_mul_eq_pos` now produces carriers that are local squares at every infinite place.

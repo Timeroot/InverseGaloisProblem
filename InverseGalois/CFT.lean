@@ -160,6 +160,7 @@ import InverseGalois.CFT.Brauer.RealPlace
 import InverseGalois.CFT.Brauer.RealSymbol
 import InverseGalois.CFT.Brauer.RealSymbolPositive
 import InverseGalois.CFT.Brauer.RealSymbolProduct
+import InverseGalois.CFT.Brauer.ReciprocityPositive
 import InverseGalois.CFT.Brauer.ResidueBaseChange
 import InverseGalois.CFT.Brauer.ResidueCard
 import InverseGalois.CFT.Brauer.ResidueCardDegree
@@ -531,7 +532,9 @@ import InverseGalois.CFT.PoitouTate.OrdCompare
 import InverseGalois.CFT.PoitouTate.OrdInvariant
 import InverseGalois.CFT.PoitouTate.PartPrescribed
 import InverseGalois.CFT.PoitouTate.PlaceUniformiser
+import InverseGalois.CFT.PoitouTate.PositiveClasses
 import InverseGalois.CFT.PoitouTate.Prescribed
+import InverseGalois.CFT.PoitouTate.PrescribedPositive
 import InverseGalois.CFT.PoitouTate.RadicalPlace
 import InverseGalois.CFT.PoitouTate.RadicandPlaces
 import InverseGalois.CFT.PoitouTate.RankOne
@@ -8888,4 +8891,32 @@ it that are available here.
   the group acting transitively on the primes above a place, naming one prime above each of the
   finitely many ramified places names **a finite family of primes containing, up to the action of
   the Galois group, every prime at which a homomorphism with open kernel ramifies**.
+
+* `InverseGalois.CFT.Brauer.ReciprocityPositive` states the reciprocity law between two units of a
+  number field, each unramified away from a single place, without asking minus one to be a power of
+  the exponent.  The archimedean half of the product formula is trivial for a second argument
+  positive at every real embedding, so the finite half is trivial on its own, and the two
+  exceptional places are all that survives: **the value of the first unit at the Frobenius
+  automorphism of the second place, raised to the order of the second unit there, is the value of
+  the second unit at the Frobenius automorphism of the first place, raised to the order of the
+  first**.  The hypothesis of positivity is what the exponent two needs, minus one being a square
+  only in a field with no real place at all.
+
+* `InverseGalois.CFT.PoitouTate.PositiveClasses` reads that hypothesis at the infinite places.  A
+  ring homomorphism to the reals is the embedding attached to a real infinite place, whose
+  completion is the reals, and a unit whose class at that place is trivial is there a nonzero power
+  of the exponent; when the exponent is even such a power is a square, so **a unit which is a local
+  power of an even exponent at every infinite place is positive at every real embedding**.  That
+  turns the condition the duality theorem prescribes at infinity into the condition the product
+  formula asks of a second argument.
+
+* `InverseGalois.CFT.PoitouTate.PrescribedPositive` prescribes it.  The classes of the `S`-units are
+  their own orthogonal complement inside the local classes at the places of `S` together with the
+  infinite places, and the subgroup of admissible errors at the infinite places may be taken
+  trivial rather than everything; the trivial subgroup is dual to everything, so the price is that
+  the assignment of finite classes must pair trivially with every `S`-unit obeying the dual
+  conditions at the finite places, and not merely with those which are local powers at infinity.
+  With that price paid, **an assignment of local classes orthogonal to the `S`-units obeying the
+  dual conditions is congruent modulo the conditions to the class of an `S`-unit which is a local
+  power at every infinite place**, and hence positive at every real embedding.
 -/
