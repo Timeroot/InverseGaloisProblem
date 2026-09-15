@@ -572,7 +572,7 @@ import InverseGalois.CFT.PoitouTate.TwoPlacesKill
 import InverseGalois.CFT.PoitouTate.TwoPlacesRadical
 import InverseGalois.CFT.PoitouTate.UniformizerLine
 import InverseGalois.CFT.PoitouTate.Unramified
-import InverseGalois.CFT.PoitouTate.UnramifiedOdd
+import InverseGalois.CFT.PoitouTate.UnramifiedPerp
 import InverseGalois.CFT.PrimeProductSquare
 import InverseGalois.CFT.Profinite.CharacterRoot
 import InverseGalois.CFT.Profinite.Cochain
@@ -8014,14 +8014,16 @@ it that are available here.
   the unramified classes**, so a prescription of local behaviour transports along the Galois group
   with nothing lost.
 
-* `InverseGalois.CFT.PoitouTate.UnramifiedOdd` frees the condition of being unramified from the
+* `InverseGalois.CFT.PoitouTate.UnramifiedPerp` frees the condition of being unramified from the
   place it is imposed at.  Away from the exponent that condition is its own dual, but above the
   exponent there are far more classes and the unramified ones are no longer isotropic, so only one
-  inclusion can survive — and it is the one a prescription uses.  At an odd exponent **a class
-  pairing trivially with every unramified class is unramified, at every place**: a class pairs
-  trivially with itself there, so were it ramified it would pair trivially with the subgroup it
-  generates together with the unramified classes, which is everything, the unramified classes
-  having index the prime exponent; and only the trivial class pairs trivially with everything.
+  inclusion can survive — and it is the one a prescription uses.  Whatever the exponent, **a class
+  pairing trivially with every unramified class is unramified, at every place**: minus one is
+  unramified and the symbol of a class against itself is the symbol of minus one against it, so
+  such a class pairs trivially with itself, and were it ramified it would pair trivially with the
+  subgroup it generates together with the unramified classes, which is everything, the unramified
+  classes having index the prime exponent; and only the trivial class pairs trivially with
+  everything.
   That last remark, read by itself, says that the condition imposing nothing at a place has for
   complement the trivial class alone.
 

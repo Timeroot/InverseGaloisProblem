@@ -47,7 +47,7 @@ shape the demand is made in.
 * `InverseGalois.Shafarevich.exists_block_ker_sup_ge`: **some block's level fills up the level below
   together with a prescribed subgroup.**
 * `InverseGalois.Shafarevich.exists_hasReachableLevel`: **the shrinking can be spent on a level
-  reaching every place of the level below**, for any odd prime and any level holding the roots of
+  reaching every place of the level below**, for any prime and any level holding the roots of
   unity.
 
 ## Tags
@@ -333,13 +333,13 @@ as many as the order of its
 Galois group.  One of them then survives the counting, its level fills up the level below together
 with the field of radicals, and the two fields therefore meet inside the level below, which is
 exactly the disjointness reachability was traded for. -/
-theorem exists_hasReachableLevel {ℓ : ℕ} (hℓ : ℓ.Prime) (hodd : Odd ℓ) (U : Type) [Group U]
+theorem exists_hasReachableLevel {ℓ : ℕ} (hℓ : ℓ.Prime) (U : Type) [Group U]
     (n : ℕ) (S : Type) [Group S] (j : ℕ) {φ : Gal(Ω/k) →* U} (K : IntermediateField k Ω)
     [NumberField ↥K] {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ) (hKker : K.fixingSubgroup = φ.ker)
     {Tz : Set (HeightOneSpectrum (𝓞 ↥K))} (hTzfin : Tz.Finite) :
     ∃ N : ℕ, HasReachableLevel ℓ U n S j φ N K Tz := by
   obtain ⟨M, hKM, hMfin, hMgal, hMreach⟩ :=
-    exists_finite_forall_isReachablePlace hℓ hodd K hζ hTzfin
+    exists_finite_forall_isReachablePlace hℓ K hζ hTzfin
   haveI := hMfin
   haveI := hMgal
   haveI : Finite Gal(↥M/k) := Finite.of_fintype _

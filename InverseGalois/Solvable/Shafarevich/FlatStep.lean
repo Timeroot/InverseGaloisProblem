@@ -42,7 +42,7 @@ prescription is handed.
 ## Main results
 
 * `Shafarevich.flatReachableEP` — **the shrinking the flattening spends can be spent on a level
-  reaching every place**, for every odd prime.
+  reaching every place**, for every prime.
 * `Shafarevich.flatOrbitPrescriptionEP_of_flatUnitsEP` — **the units buy the flattening made one
   field up and one named prime at a time.**
 * `Shafarevich.flatPrescriptionEP_of_flatUnitsEP` — **the units buy the flattening.**
@@ -107,7 +107,7 @@ def FlatReachableEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
         ∃ N : ℕ, HasReachableLevel ℓ U n S j φ N K Tz
 
 /-- **The shrinking the flattening spends can be spent on a level reaching every place**, for every
-odd prime.
+prime.
 
 The field of radicals whose disjointness from the level buys reachability depends on the level below
 and the named set of places alone, so the number of letters may be announced before any lift is
@@ -117,11 +117,10 @@ many shrinkings, each surjective on the nose, whose levels contain one another's
 them filled up the level below together with the field of radicals, the blocks accumulated one at a
 time would form a chain of subgroups strictly increasing all the way, longer than the group it is
 read in allows. -/
-theorem flatReachableEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] (hodd : 2 < ℓ) : FlatReachableEP ℓ := by
+theorem flatReachableEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : FlatReachableEP ℓ := by
   intro k Ω _ _ _ _ _ _ S U _ _ φ n j K _ _ _ hroot hKker Tz hTzfin
   obtain ⟨ζ, hζ⟩ := hroot
-  exact exists_hasReachableLevel Fact.out (Nat.Prime.odd_of_ne_two Fact.out (by omega)) U n S j
-    K hζ hKker hTzfin
+  exact exists_hasReachableLevel Fact.out U n S j K hζ hKker hTzfin
 
 /-! ### The prescription and the step -/
 
@@ -194,6 +193,6 @@ being bought by the shrinking. -/
 theorem genericLevelStepEPRoots_of_flatUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] (hodd : 2 < ℓ)
     (hunits : FlatUnitsEP ℓ) : GenericLevelStepEPRoots ℓ :=
   genericLevelStepEPRoots_of_flatPrescriptionEP ℓ hodd
-    (flatPrescriptionEP_of_flatUnitsEP ℓ (flatReachableEP ℓ hodd) hunits)
+    (flatPrescriptionEP_of_flatUnitsEP ℓ (flatReachableEP ℓ) hunits)
 
 end Shafarevich

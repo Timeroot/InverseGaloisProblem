@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Mathlib
 import InverseGalois.CFT.PoitouTate.GlobalClasses
 import InverseGalois.CFT.PoitouTate.SUnitReduce
-import InverseGalois.CFT.PoitouTate.UnramifiedOdd
+import InverseGalois.CFT.PoitouTate.UnramifiedPerp
 
 /-!
 # A unit ramified at one place and confined to a prescribed set of places
@@ -18,8 +18,8 @@ as the only `S`-units unramified everywhere and locally trivial at the places of
 locally trivial at every place of `S` at all.**
 
 The prescription answered is the one asking for a ramified class at the named place, asking nothing
-at the places of the set and asking for an unramified class at the remaining places.  At an odd
-prime exponent the complement of a condition of being unramified is contained in that condition at
+at the places of the set and asking for an unramified class at the remaining places.  At a prime
+exponent the complement of a condition of being unramified is contained in that condition at
 **every** place, the places above the exponent included, so the units to test against are the ones
 unramified away from the set, and the complement of the condition imposing nothing is the trivial
 class, so at the places of the set those units are locally trivial.  Those are exactly the units the
@@ -69,13 +69,13 @@ confining set, the trivial class at the places the unit must stay a local power 
 unramified class at the remaining places of the finite set the duality is run over — a set
 containing every place above the exponent.  The units it has to be tested against are those which
 are unramified away from the confining set and locally trivial at the places of it, the complement
-of a condition of being unramified being contained in that condition at an odd prime exponent, the
+of a condition of being unramified being contained in that condition at a prime exponent, the
 complement of the condition imposing nothing being the trivial class, and the complement of the
 trivial condition being everything; the hypothesis says those units have trivial class at every
 place, so they pair trivially with anything the prescription names.
 
 Outside the finite set the unit is a unit of that set and so has no order at all. -/
-theorem exists_placeValue_not_dvd_of_forall_localClassHom_eq_one (hn : n.Prime) (hodd : Odd n)
+theorem exists_placeValue_not_dvd_of_forall_localClassHom_eq_one (hn : n.Prime)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {ι : Y → HeightOneSpectrum (𝓞 K)}
     (hinj : Function.Injective ι)
@@ -131,7 +131,7 @@ theorem exists_placeValue_not_dvd_of_forall_localClassHom_eq_one (hn : n.Prime) 
       refine (localClassHom_mem_localUnramified_iff (ι y) _).1 ?_
       have h := hby y
       rw [hL1 y hyTz hy] at h
-      exact perpSubgroupLeft_localUnramified_le_of_odd hres hζ hn hodd (ι y) h
+      exact perpSubgroupLeft_localUnramified_le hres hζ hn (ι y) h
     have hone : ∀ y : Y, ι y ∉ Tz → y ≠ y₀ → ι y ∈ Sp → ι y ∉ Xex →
         localClassHom (ι y) n ((u : Kˣ)) = 1 := by
       intro y hyTz hy hyS hyX

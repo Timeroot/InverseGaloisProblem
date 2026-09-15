@@ -70,6 +70,17 @@ theorem localSymbolQuotDual_self_eq_one (hres : HasResidueChar K p e) (hm : IsUn
   induction x using QuotientGroup.induction_on with
   | _ a => exact localSymbol_self_eq_one hres hm hζ hodd a
 
+/-- **A class of a local field pairs with itself as it pairs with minus one**, read on the classes
+modulo exponent-th powers.  This holds at every exponent, odd or not. -/
+theorem localSymbolQuotDual_self_eq_neg_one (hres : HasResidueChar K p e)
+    (hm : IsUnitValGen K m) (hζ : IsPrimitiveRoot ζ n)
+    (x : Kˣ ⧸ (powMonoidHom n : Kˣ →* Kˣ).range) :
+    localSymbolQuotDual hres hm hζ x x
+      = localSymbolQuotDual hres hm hζ x
+          ((-1 : Kˣ) : Kˣ ⧸ (powMonoidHom n : Kˣ →* Kˣ).range) := by
+  induction x using QuotientGroup.induction_on with
+  | _ a => exact (localSymbol_neg_one_left_eq_self hres hm hζ a).symm
+
 /-- **A cyclic group of classes of a local field is isotropic for the norm residue symbol** at an
 odd exponent: two powers of one class pair to that class against itself, raised to the product of
 the two powers, and a class pairs trivially with itself. -/

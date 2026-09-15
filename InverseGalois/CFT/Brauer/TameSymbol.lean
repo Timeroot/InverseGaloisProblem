@@ -120,6 +120,18 @@ theorem localSymbol_self_eq_neg_one (hres : HasResidueChar K p e) (hm : IsUnitVa
     rwa [show (-π : Kˣ) = (-1 : Kˣ) * π by simp, map_mul] at h
   exact (inv_eq_of_mul_eq_one_right h1).symm.trans (inv_eq_of_mul_eq_one_right hsq)
 
+/-- **The norm residue symbol of minus one against an element is the symbol of that element against
+itself**, at every exponent.  The symbol against minus one is its own inverse, and the skew relation
+turns the inverse into the symbol read in the other order. -/
+theorem localSymbol_neg_one_left_eq_self (hres : HasResidueChar K p e) (hm : IsUnitValGen K m)
+    (hζ : IsPrimitiveRoot ζ n) (a : Kˣ) :
+    localSymbol hres hm hζ (-1) a = localSymbol hres hm hζ a a := by
+  have hsq : localSymbol hres hm hζ a (-1) * localSymbol hres hm hζ a (-1) = 1 := by
+    rw [← map_mul, show ((-1 : Kˣ)) * (-1 : Kˣ) = 1 by simp, map_one]
+  have hswap := localSymbol_mul_swap hres hm hζ a (-1)
+  rw [localSymbol_self_eq_neg_one hres hm hζ a]
+  exact (inv_eq_of_mul_eq_one_right hswap).symm.trans (inv_eq_of_mul_eq_one_right hsq)
+
 /-- **The norm residue symbol of two products of a power of a uniformiser and a unit of the
 valuation ring.**  Bilinearity splits the symbol into four pieces; the two units pair trivially,
 the skew relation moves the uniformiser out of the second argument, and the symbol of the

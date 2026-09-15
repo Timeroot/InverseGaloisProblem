@@ -152,7 +152,7 @@ invariant object, the level reaching every place bought by the shrinking. -/
 theorem genericLevelStepEPRoots_of_flatTensorEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] (hodd : 2 < ℓ)
     (h : FlatTensorEP ℓ) : GenericLevelStepEPRoots ℓ :=
   genericLevelStepEPRoots_of_flatPrescriptionEP ℓ hodd
-    (flatPrescriptionEP_of_flatTensorEP ℓ (flatReachableEP ℓ hodd) h)
+    (flatPrescriptionEP_of_flatTensorEP ℓ (flatReachableEP ℓ) h)
 
 /-! ### The same demand with the root of unity taken out -/
 

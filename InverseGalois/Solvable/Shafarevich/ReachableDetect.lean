@@ -67,7 +67,7 @@ them, is a power of the level.  The duality is then run over those places togeth
 one, the two prescribed sets, the places carrying the exponent and a system of representatives of
 the ideal classes, and the units it tests against are exactly the ones the detection hypothesis
 speaks about, so they are powers and have trivial class everywhere. -/
-theorem exists_unit_reachable_of_detecting {ℓ : ℕ} (hℓ : ℓ.Prime) (hodd : Odd ℓ)
+theorem exists_unit_reachable_of_detecting {ℓ : ℕ} (hℓ : ℓ.Prime)
     {K : IntermediateField k Ω} [NumberField ↥K] {E : IntermediateField k Ω}
     {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ) (Tz Xex : Set (HeightOneSpectrum (𝓞 ↥K)))
     (hTzfin : Tz.Finite) (hXexfin : Xex.Finite) (w : HeightOneSpectrum (𝓞 ↥K)) (hwTz : w ∉ Tz)
@@ -163,7 +163,7 @@ theorem exists_unit_reachable_of_detecting {ℓ : ℕ} (hℓ : ℓ.Prime) (hodd 
     rw [h, _root_.map_pow]
     exact pow_eq_one_of_quotient_range_powMonoidHom ℓ _
   obtain ⟨a, ha1, ha2, ha3, ha4⟩ := exists_placeValue_not_dvd_of_forall_localClassHom_eq_one
-    hℓ hodd hres hζ (ι := (Subtype.val : ↥X → HeightOneSpectrum (𝓞 ↥K)))
+    hℓ hres hζ (ι := (Subtype.val : ↥X → HeightOneSpectrum (𝓞 ↥K)))
     Subtype.val_injective hnι hrepr Tz Xex Sp ⟨w, hwX⟩ hwTz hwXex hfree
   refine ⟨a, ha1, fun v hv => ha2 ⟨v, (hX v).2 (Or.inr (Or.inr (Or.inl hv)))⟩ hv,
     fun v hv => ha3 ⟨v, (hX v).2 (Or.inr (Or.inr (Or.inr (Or.inl hv))))⟩ hv,
