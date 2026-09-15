@@ -69,13 +69,15 @@ variable {K : Type} [Field K] [NumberField K] {n : ℕ} [NeZero n]
 shape now being a unit whose class at each prescribed place lies on the line of the prescribed
 class.  A radicand of a compositum is such a product, one factor coming from each of the two
 extensions. -/
-theorem prescriptionChar_eq_one_of_mul_zpowers (hn : n.Prime) (hneg : IsNegOnePow K n)
+theorem prescriptionChar_eq_one_of_mul_zpowers (hn : n.Prime)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T Tn : Finset (HeightOneSpectrum (𝓞 K))} (hT : T ⊆ Tn)
     (hnTn : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → v ∈ Tn)
     {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n} {g : Kˣ}
     (hg : g ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))))
+    (hginf : ∀ w : InfinitePlace K, infClassHom w n g = 1)
     (hc : ∀ v ∈ T, c v = localClassHom v n g) (hcT : ∀ v ∈ Tn, v ∉ T → c v = 1)
+    (hnegT : ∀ v ∈ T, IsNegOnePow (v.adicCompletion K) n)
     {u u₁ u₂ : Kˣ} (hu : u = u₁ * u₂)
     (h1 : ∀ v ∈ Tn, v ∉ T → localClassHom v n u₁ = 1)
     (h1out : ∀ v ∉ Tn, (n : ℤ) ∣ placeValue v u₁)
@@ -83,9 +85,8 @@ theorem prescriptionChar_eq_one_of_mul_zpowers (hn : n.Prime) (hneg : IsNegOnePo
       localClassHom v n u₂ ∈ Subgroup.zpowers d ∧ c v ∈ Subgroup.zpowers d) :
     prescriptionChar hres hζ Tn c u = 1 := by
   rw [hu, _root_.map_mul,
-    prescriptionChar_eq_one_of_localClassHom_eq_one hn hneg hres hζ hT hnTn hg hc h1 h1out,
-    prescriptionChar_eq_one_of_mem_zpowers hres hζ hcT
-      (fun v _ => hneg.map (algebraMap K (v.adicCompletion K))) h2, one_mul]
+    prescriptionChar_eq_one_of_localClassHom_eq_one hn hres hζ hT hnTn hg hginf hc h1 h1out,
+    prescriptionChar_eq_one_of_mem_zpowers hres hζ hcT hnegT h2, one_mul]
 
 end Halves
 
@@ -101,13 +102,15 @@ splitting completely off the part of the prescription carried by a global unit**
 factor has its class on the line of the prescription.  At such a place the decomposition group is
 trivial, so the radicand is already a power in the completion and its local class there is
 trivial. -/
-theorem prescriptionChar_eq_one_of_pow_mul_zpowers (hn : n.Prime) (hneg : IsNegOnePow K n)
+theorem prescriptionChar_eq_one_of_pow_mul_zpowers (hn : n.Prime)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T Tn : Finset (HeightOneSpectrum (𝓞 K))} (hT : T ⊆ Tn)
     (hnTn : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → v ∈ Tn)
     {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n} {g : Kˣ}
     (hg : g ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))))
+    (hginf : ∀ w : InfinitePlace K, infClassHom w n g = 1)
     (hc : ∀ v ∈ T, c v = localClassHom v n g) (hcT : ∀ v ∈ Tn, v ∉ T → c v = 1)
+    (hnegT : ∀ v ∈ T, IsNegOnePow (v.adicCompletion K) n)
     (hsplit : ∀ v ∈ Tn, v ∉ T → ∃ w : HeightOneSpectrum (𝓞 M),
       primeUnder (𝓞 K) w = v ∧ stabilizer Gal(M/K) w = ⊥)
     {u u₁ u₂ : Kˣ} (hu : u = u₁ * u₂) {b : M} (hb : algebraMap K M (u₁ : K) = b ^ n)
@@ -115,7 +118,7 @@ theorem prescriptionChar_eq_one_of_pow_mul_zpowers (hn : n.Prime) (hneg : IsNegO
     (h2 : ∀ v ∈ T, ∃ d : localClasses v n,
       localClassHom v n u₂ ∈ Subgroup.zpowers d ∧ c v ∈ Subgroup.zpowers d) :
     prescriptionChar hres hζ Tn c u = 1 := by
-  refine prescriptionChar_eq_one_of_mul_zpowers hn hneg hres hζ hT hnTn hg hc hcT hu
+  refine prescriptionChar_eq_one_of_mul_zpowers hn hres hζ hT hnTn hg hginf hc hcT hnegT hu
     (fun v hv hv0 => ?_) h1out h2
   obtain ⟨w, rfl, hw⟩ := hsplit v hv hv0
   exact localClassHom_eq_one_of_stabilizer_eq_bot (NeZero.ne n) hζ hw hb
@@ -135,13 +138,15 @@ omit [NumberField M₂] in
 another**, when the first extension splits completely where the prescription is not carried by a
 global unit and is unramified outside the prescribed set, and every radicand of the second has its
 class on the line of the prescription where the prescription is carried. -/
-theorem prescriptionChar_eq_one_of_factor_zpowers (hn : n.Prime) (hneg : IsNegOnePow K n)
+theorem prescriptionChar_eq_one_of_factor_zpowers (hn : n.Prime)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T Tn : Finset (HeightOneSpectrum (𝓞 K))} (hT : T ⊆ Tn)
     (hnTn : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → v ∈ Tn)
     {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n} {g : Kˣ}
     (hg : g ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))))
+    (hginf : ∀ w : InfinitePlace K, infClassHom w n g = 1)
     (hc : ∀ v ∈ T, c v = localClassHom v n g) (hcT : ∀ v ∈ Tn, v ∉ T → c v = 1)
+    (hnegT : ∀ v ∈ T, IsNegOnePow (v.adicCompletion K) n)
     (hsplit : ∀ v ∈ Tn, v ∉ T → ∃ w : HeightOneSpectrum (𝓞 M₁),
       primeUnder (𝓞 K) w = v ∧ stabilizer Gal(M₁/K) w = ⊥)
     (hram₁ : ∀ v ∉ Tn, ∃ w : HeightOneSpectrum (𝓞 M₁),
@@ -152,8 +157,8 @@ theorem prescriptionChar_eq_one_of_factor_zpowers (hn : n.Prime) (hneg : IsNegOn
     {u u₁ u₂ : Kˣ} (hu : u = u₁ * u₂) {y₁ : M₁} (hy₁ : algebraMap K M₁ (u₁ : K) = y₁ ^ n)
     {y₂ : M₂} (hy₂ : algebraMap K M₂ (u₂ : K) = y₂ ^ n) :
     prescriptionChar hres hζ Tn c u = 1 := by
-  refine prescriptionChar_eq_one_of_pow_mul_zpowers hn hneg hres hζ hT hnTn hg hc hcT hsplit
-    hu hy₁ (fun v hv => ?_) (fun v hv => ?_)
+  refine prescriptionChar_eq_one_of_pow_mul_zpowers hn hres hζ hT hnTn hg hginf hc hcT hnegT
+    hsplit hu hy₁ (fun v hv => ?_) (fun v hv => ?_)
   · obtain ⟨w, rfl, hw⟩ := hram₁ v hv
     exact dvd_placeValue_of_pow_eq_of_ramIdx_eq_one hn.ne_zero w hw hy₁
   · obtain ⟨d, hcd, hwd⟩ := hcyc₂ v hv
@@ -179,13 +184,15 @@ radicand of it carrying, at a prescribed place, a class on the line of the presc
 radicand factors as a radicand of the first extension times a radicand of the second, and each
 factor is then killed for its own reason; nothing is asked about the ramification of the
 prescription. -/
-theorem prescriptionChar_eq_one_of_pow_sup_zpowers (hn : n.Prime) (hneg : IsNegOnePow K n)
+theorem prescriptionChar_eq_one_of_pow_sup_zpowers (hn : n.Prime)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T Tn : Finset (HeightOneSpectrum (𝓞 K))} (hT : T ⊆ Tn)
     (hnTn : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → v ∈ Tn)
     {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n} {g : Kˣ}
     (hg : g ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))))
+    (hginf : ∀ w : InfinitePlace K, infClassHom w n g = 1)
     (hc : ∀ v ∈ T, c v = localClassHom v n g) (hcT : ∀ v ∈ Tn, v ∉ T → c v = 1)
+    (hnegT : ∀ v ∈ T, IsNegOnePow (v.adicCompletion K) n)
     (hsup : (IsScalarTower.toAlgHom K M₁ L).fieldRange ⊔
       (IsScalarTower.toAlgHom K M₂ L).fieldRange = ⊤)
     (hcomm : ∀ σ τ : M₂ ≃ₐ[K] M₂, σ * τ = τ * σ) (hexp : ∀ σ : M₂ ≃ₐ[K] M₂, σ ^ n = 1)
@@ -223,8 +230,9 @@ theorem prescriptionChar_eq_one_of_pow_sup_zpowers (hn : n.Prime) (hneg : IsNegO
   obtain ⟨y₂, hy₂⟩ := AlgHom.mem_fieldRange.1 hx₂
   have hy₁' : algebraMap M₁ L y₁ = x₁ := hy₁
   have hy₂' : algebraMap M₂ L y₂ = x₂ := hy₂
-  refine prescriptionChar_eq_one_of_factor_zpowers hn hneg hres hζ hT hnTn hg hc hcT hsplit
-    hram₁ hcyc₂ (u₁ := Units.mk0 b₁ hb₁) (u₂ := Units.mk0 b₂ hb₂) (by ext; simpa using hmul)
+  refine prescriptionChar_eq_one_of_factor_zpowers hn hres hζ hT hnTn hg hginf hc hcT hnegT
+    hsplit hram₁ hcyc₂ (u₁ := Units.mk0 b₁ hb₁) (u₂ := Units.mk0 b₂ hb₂)
+    (by ext; simpa using hmul)
     (y₁ := y₁) ?_ (y₂ := y₂) ?_
   · refine (algebraMap M₁ L).injective ?_
     rw [← IsScalarTower.algebraMap_apply, _root_.map_pow, hy₁', hx₁pow, Units.val_mk0]
@@ -255,18 +263,19 @@ theorem prescriptionChar_eq_one_of_forall_localClassHom_eq_one
 /-- **The prescription character kills a product of a unit which is a local power at every
 prescribed place and a unit whose class lies on the line of the prescription.**  Neither half asks
 anything about the ramification of the prescription, nor about a global unit carrying it. -/
-theorem prescriptionChar_eq_one_of_mul_split (hneg : IsNegOnePow K n)
+theorem prescriptionChar_eq_one_of_mul_split
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T Tn : Finset (HeightOneSpectrum (𝓞 K))}
     {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n}
-    (hcT : ∀ v ∈ Tn, v ∉ T → c v = 1) {u u₁ u₂ : Kˣ} (hu : u = u₁ * u₂)
+    (hcT : ∀ v ∈ Tn, v ∉ T → c v = 1)
+    (hnegT : ∀ v ∈ T, IsNegOnePow (v.adicCompletion K) n)
+    {u u₁ u₂ : Kˣ} (hu : u = u₁ * u₂)
     (h1 : ∀ v ∈ Tn, localClassHom v n u₁ = 1)
     (h2 : ∀ v ∈ T, ∃ d : localClasses v n,
       localClassHom v n u₂ ∈ Subgroup.zpowers d ∧ c v ∈ Subgroup.zpowers d) :
     prescriptionChar hres hζ Tn c u = 1 := by
   rw [hu, _root_.map_mul, prescriptionChar_eq_one_of_forall_localClassHom_eq_one hres hζ c h1,
-    prescriptionChar_eq_one_of_mem_zpowers hres hζ hcT
-      (fun v _ => hneg.map (algebraMap K (v.adicCompletion K))) h2, one_mul]
+    prescriptionChar_eq_one_of_mem_zpowers hres hζ hcT hnegT h2, one_mul]
 
 end Everywhere
 
@@ -281,18 +290,19 @@ variable {K M : Type} [Field K] [NumberField K] [Field M] [NumberField M] [Algeb
 splitting completely at every prescribed place** and whose second factor has its class on the line
 of the prescription.  At such a place the decomposition group is trivial, so the radicand is already
 a power in the completion. -/
-theorem prescriptionChar_eq_one_of_pow_mul_split (hneg : IsNegOnePow K n)
+theorem prescriptionChar_eq_one_of_pow_mul_split
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T Tn : Finset (HeightOneSpectrum (𝓞 K))}
     {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n}
     (hcT : ∀ v ∈ Tn, v ∉ T → c v = 1)
+    (hnegT : ∀ v ∈ T, IsNegOnePow (v.adicCompletion K) n)
     (hsplit : ∀ v ∈ Tn, ∃ w : HeightOneSpectrum (𝓞 M),
       primeUnder (𝓞 K) w = v ∧ stabilizer Gal(M/K) w = ⊥)
     {u u₁ u₂ : Kˣ} (hu : u = u₁ * u₂) {b : M} (hb : algebraMap K M (u₁ : K) = b ^ n)
     (h2 : ∀ v ∈ T, ∃ d : localClasses v n,
       localClassHom v n u₂ ∈ Subgroup.zpowers d ∧ c v ∈ Subgroup.zpowers d) :
     prescriptionChar hres hζ Tn c u = 1 := by
-  refine prescriptionChar_eq_one_of_mul_split hneg hres hζ hcT hu (fun v hv => ?_) h2
+  refine prescriptionChar_eq_one_of_mul_split hres hζ hcT hnegT hu (fun v hv => ?_) h2
   obtain ⟨w, rfl, hw⟩ := hsplit v hv
   exact localClassHom_eq_one_of_stabilizer_eq_bot (NeZero.ne n) hζ hw hb
 
@@ -310,11 +320,12 @@ omit [NumberField M₂] in
 /-- **The prescription character kills a product of a radicand of one extension and a radicand of
 another**, when the first extension splits completely at every prescribed place and every radicand
 of the second has its class on the line of the prescription where the prescription is carried. -/
-theorem prescriptionChar_eq_one_of_factor_split (hneg : IsNegOnePow K n)
+theorem prescriptionChar_eq_one_of_factor_split
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T Tn : Finset (HeightOneSpectrum (𝓞 K))}
     {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n}
     (hcT : ∀ v ∈ Tn, v ∉ T → c v = 1)
+    (hnegT : ∀ v ∈ T, IsNegOnePow (v.adicCompletion K) n)
     (hsplit : ∀ v ∈ Tn, ∃ w : HeightOneSpectrum (𝓞 M₁),
       primeUnder (𝓞 K) w = v ∧ stabilizer Gal(M₁/K) w = ⊥)
     (hcyc₂ : ∀ v ∈ T, ∃ d : localClasses v n, c v ∈ Subgroup.zpowers d ∧
@@ -323,7 +334,7 @@ theorem prescriptionChar_eq_one_of_factor_split (hneg : IsNegOnePow K n)
     {u u₁ u₂ : Kˣ} (hu : u = u₁ * u₂) {y₁ : M₁} (hy₁ : algebraMap K M₁ (u₁ : K) = y₁ ^ n)
     {y₂ : M₂} (hy₂ : algebraMap K M₂ (u₂ : K) = y₂ ^ n) :
     prescriptionChar hres hζ Tn c u = 1 := by
-  refine prescriptionChar_eq_one_of_pow_mul_split hneg hres hζ hcT hsplit hu hy₁ fun v hv => ?_
+  refine prescriptionChar_eq_one_of_pow_mul_split hres hζ hcT hnegT hsplit hu hy₁ fun v hv => ?_
   obtain ⟨d, hcd, hwd⟩ := hcyc₂ v hv
   exact ⟨d, hwd u₂ ⟨y₂, hy₂⟩, hcd⟩
 
@@ -346,11 +357,12 @@ exponent the exponent and every radicand of it carrying, at a place where the pr
 carried, a class on the line of the prescribed class.  The radicand factors as a radicand of the
 first extension times a radicand of the second, and each factor is then killed for its own reason;
 no global unit is involved and nothing is asked about ramification. -/
-theorem prescriptionChar_eq_one_of_pow_sup_split (hn : n.Prime) (hneg : IsNegOnePow K n)
+theorem prescriptionChar_eq_one_of_pow_sup_split (hn : n.Prime)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T Tn : Finset (HeightOneSpectrum (𝓞 K))}
     {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n}
     (hcT : ∀ v ∈ Tn, v ∉ T → c v = 1)
+    (hnegT : ∀ v ∈ T, IsNegOnePow (v.adicCompletion K) n)
     (hsup : (IsScalarTower.toAlgHom K M₁ L).fieldRange ⊔
       (IsScalarTower.toAlgHom K M₂ L).fieldRange = ⊤)
     (hcomm : ∀ σ τ : M₂ ≃ₐ[K] M₂, σ * τ = τ * σ) (hexp : ∀ σ : M₂ ≃ₐ[K] M₂, σ ^ n = 1)
@@ -386,7 +398,7 @@ theorem prescriptionChar_eq_one_of_pow_sup_split (hn : n.Prime) (hneg : IsNegOne
   obtain ⟨y₂, hy₂⟩ := AlgHom.mem_fieldRange.1 hx₂
   have hy₁' : algebraMap M₁ L y₁ = x₁ := hy₁
   have hy₂' : algebraMap M₂ L y₂ = x₂ := hy₂
-  refine prescriptionChar_eq_one_of_factor_split hneg hres hζ hcT hsplit hcyc₂
+  refine prescriptionChar_eq_one_of_factor_split hres hζ hcT hnegT hsplit hcyc₂
     (u₁ := Units.mk0 b₁ hb₁) (u₂ := Units.mk0 b₂ hb₂) (by ext; simpa using hmul)
     (y₁ := y₁) ?_ (y₂ := y₂) ?_
   · refine (algebraMap M₁ L).injective ?_

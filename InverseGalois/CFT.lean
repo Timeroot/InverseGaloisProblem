@@ -486,6 +486,7 @@ import InverseGalois.CFT.PoitouTate.ChebotarevPlace
 import InverseGalois.CFT.PoitouTate.ClassSetAvoid
 import InverseGalois.CFT.PoitouTate.ClassSetBounded
 import InverseGalois.CFT.PoitouTate.ClosingChain
+import InverseGalois.CFT.PoitouTate.ClosingChainPositive
 import InverseGalois.CFT.PoitouTate.ClosingChainRamified
 import InverseGalois.CFT.PoitouTate.ConfinedDiagonal
 import InverseGalois.CFT.PoitouTate.ConfinedEquivariant
@@ -8919,4 +8920,14 @@ it that are available here.
   With that price paid, **an assignment of local classes orthogonal to the `S`-units obeying the
   dual conditions is congruent modulo the conditions to the class of an `S`-unit which is a local
   power at every infinite place**, and hence positive at every real embedding.
+
+* `InverseGalois.CFT.PoitouTate.ClosingChainPositive` closes the chain with that hypothesis in
+  place of a power of minus one.  Each of the three applications of reciprocity which make up the
+  chain has the unit produced by the recursion, or one of its conjugates, for a second argument, so
+  positivity at every real embedding of the two units the pigeonhole principle pairs is enough to
+  run the whole chain; an automorphism carries a positive unit to a positive unit, so the
+  conjugates are positive too.  Since an odd exponent has minus one for a power and asks nothing at
+  the infinite places, the two cases combine: **the product of the two units supplied by the
+  pigeonhole principle is, at every prime exponent, a local power at the moved place, as soon as
+  both are local powers at every infinite place**.
 -/

@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Mathlib
 import InverseGalois.CFT.Brauer.NegOnePow
 import InverseGalois.CFT.Brauer.RealSymbol
+import InverseGalois.CFT.Brauer.RealSymbolPositive
 import InverseGalois.CFT.Local.InfinitePowIndex
 import InverseGalois.CFT.PoitouTate.Isotropic
 
@@ -43,6 +44,10 @@ convention: an odd power exhausts the real units, so the group of classes is the
   primitive root of unity of prime order has that order equal to two.
 * `InverseGalois.CFT.infClassHom_eq_one_of_isNegOnePow`: **the infinite places ask nothing of a
   number field in which minus one is a power of the exponent.**
+* `InverseGalois.CFT.prod_archSymbol_eq_one_of_infClassHom_eq_one`,
+  `InverseGalois.CFT.prod_archSymbol_eq_one_of_infClassHom_eq_one_left`: **the archimedean half of
+  the product formula is trivial as soon as one of its two arguments is a local power at every
+  infinite place.**
 
 ## Tags
 
@@ -394,6 +399,20 @@ theorem prod_archSymbol_eq_one_of_infClassHom_eq_one {n : ℕ} (hn : n.Prime) {�
     (hb : ∀ w : InfinitePlace K, infClassHom w n b = 1) :
     ∏ w : InfinitePlace K, archSymbol K w a b = 1 :=
   Finset.prod_eq_one fun w _ => archSymbol_eq_one_of_infClassHom_eq_one hn hζ a (hb w)
+
+/-- **The symbol at an infinite place of two units of a number field is trivial as soon as the
+first is a local power there**, the symbol being symmetric. -/
+theorem archSymbol_eq_one_of_infClassHom_eq_one_left {n : ℕ} (hn : n.Prime) {ζ : K}
+    (hζ : IsPrimitiveRoot ζ n) {w : InfinitePlace K} {a : Kˣ} (ha : infClassHom w n a = 1)
+    (b : Kˣ) : archSymbol K w a b = 1 :=
+  (archSymbol_comm w a b).trans (archSymbol_eq_one_of_infClassHom_eq_one hn hζ b ha)
+
+/-- **The product over the infinite places of the symbols of two units of a number field is trivial
+as soon as the first is a local power at every infinite place.** -/
+theorem prod_archSymbol_eq_one_of_infClassHom_eq_one_left {n : ℕ} (hn : n.Prime) {ζ : K}
+    (hζ : IsPrimitiveRoot ζ n) {a : Kˣ} (ha : ∀ w : InfinitePlace K, infClassHom w n a = 1)
+    (b : Kˣ) : ∏ w : InfinitePlace K, archSymbol K w a b = 1 :=
+  Finset.prod_eq_one fun w _ => archSymbol_eq_one_of_infClassHom_eq_one_left hn hζ (ha w) b
 
 omit [NumberField K] in
 /-- A unit of a number field whose class at an infinite place is trivial is an `n`-th power in the

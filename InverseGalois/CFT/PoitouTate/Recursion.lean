@@ -69,8 +69,8 @@ structure RecData (K : Type) [Field K] [NumberField K] (p : ℕ) where
 unramified away from a distinguished part of the fixed set, agrees with the class of a fixed unit
 on the fixed set, and records the inverse of the class of each unit at the nontrivial conjugates of
 its own place; the chosen places satisfy the given splitting condition, have trivial decomposition
-group, and are pairwise non-conjugate; and each unit is ramified at its own place and, away from
-the distinguished part, nowhere else. -/
+group, and are pairwise non-conjugate; and each unit is a local power at every infinite place,
+is ramified at its own place and, away from the distinguished part, nowhere else. -/
 structure RecInv (k : Type) {K : Type} [Field k] [Field K] [NumberField K] [Algebra k K]
     {p : ℕ} [NeZero p] (Spl : HeightOneSpectrum (𝓞 K) → Prop)
     (Tr T S₀ : Finset (HeightOneSpectrum (𝓞 K))) (g : Kˣ) (n : ℕ) (d : RecData K p) : Prop where
@@ -101,6 +101,8 @@ structure RecInv (k : Type) {K : Type} [Field k] [Field K] [NumberField K] [Alge
     (p : ℤ) ∣ placeValue v (d.unit i)
   /-- each unit is ramified at its own place -/
   unitRam : ∀ i < n, ¬ (p : ℤ) ∣ placeValue (d.chosen i) (d.unit i)
+  /-- each unit is a local power at every infinite place -/
+  unitInf : ∀ i < n, ∀ w : InfinitePlace K, infClassHom w p (d.unit i) = 1
   /-- on the fixed set each unit has the class of the fixed unit -/
   unitPres : ∀ i < n, ∀ v ∈ T, localClassHom v p (d.unit i) = localClassHom v p g
   /-- at the nontrivial conjugates of a chosen place the prescription inverts its unit -/
@@ -133,12 +135,13 @@ theorem exists_recInv_succ
         (∀ v ∈ S, v ∉ T → Spl v) →
         ∃ Q : HeightOneSpectrum (𝓞 K), Q ∉ S ∧ Spl Q ∧ stabilizer Gal(K/k) Q = ⊥ ∧
           ∃ w : Kˣ, (∀ v ∈ S, localClassHom v p w = c v) ∧
+            (∀ y : InfinitePlace K, infClassHom y p w = 1) ∧
             (∀ v : HeightOneSpectrum (𝓞 K), v ∉ Tr → v ≠ Q → (p : ℤ) ∣ placeValue v w) ∧
             ¬ (p : ℤ) ∣ placeValue Q w)
     (n : ℕ) (d : RecData K p) (hd : RecInv k Spl Tr T S₀ g n d) :
     ∃ d' : RecData K p, RecInv k Spl Tr T S₀ g (n + 1) d' := by
   classical
-  obtain ⟨Q, hQS, hQSpl, hQstab, w, hwS, hwunr, hwram⟩ :=
+  obtain ⟨Q, hQS, hQSpl, hQstab, w, hwS, hwinf, hwunr, hwram⟩ :=
     hstep d.places hd.subset hd.stable d.pres hd.unram hd.presT hd.split
   -- no conjugate of the new place meets the current set
   have hconj : ∀ σ : Gal(K/k), σ • Q ∉ d.places := fun σ hmem => by
@@ -250,6 +253,13 @@ theorem exists_recInv_succ
       exact hd.unitRam i h
     · rw [hz'n, hPl'n]
       exact hwram
+  have hunitInf : ∀ i < n + 1, ∀ y : InfinitePlace K, infClassHom y p (z' i) = 1 := by
+    intro i hi y
+    rcases Nat.lt_succ_iff_lt_or_eq.1 hi with h | rfl
+    · rw [hz'ne i h.ne]
+      exact hd.unitInf i h y
+    · rw [hz'n]
+      exact hwinf y
   have hunitPres : ∀ i < n + 1, ∀ v ∈ T, localClassHom v p (z' i) = localClassHom v p g := by
     intro i hi v hv
     rcases Nat.lt_succ_iff_lt_or_eq.1 hi with h | rfl
@@ -275,7 +285,8 @@ theorem exists_recInv_succ
     · rw [hz'ne i h.ne, hz'n, hPl'ne i h.ne, hwS _ (hd.stable σ _ (hd.chosenMem i h))]
       exact hd.presConj i h σ hσ
   exact ⟨⟨S', c', Pl', z'⟩, hd.ramSub, hd.fixed, hsub, hstab, hunram, hpresT, hsplit, hchosenMem,
-    hchosenNotMem, hchosenStab, hchosenNe, hunitUnram, hunitRam, hunitPres, hpresConj, hunitConj⟩
+    hchosenNotMem, hchosenStab, hchosenNe, hunitUnram, hunitRam, hunitInf, hunitPres, hpresConj,
+    hunitConj⟩
 
 /-- **The recursion runs for arbitrarily many steps.**  The initial data prescribes the class of
 the fixed unit on the prescribed set and the trivial class on the rest of the initial set; a single
@@ -294,6 +305,7 @@ theorem exists_recInv
         (∀ v ∈ S, v ∉ T → Spl v) →
         ∃ Q : HeightOneSpectrum (𝓞 K), Q ∉ S ∧ Spl Q ∧ stabilizer Gal(K/k) Q = ⊥ ∧
           ∃ w : Kˣ, (∀ v ∈ S, localClassHom v p w = c v) ∧
+            (∀ y : InfinitePlace K, infClassHom y p w = 1) ∧
             (∀ v : HeightOneSpectrum (𝓞 K), v ∉ Tr → v ≠ Q → (p : ℤ) ∣ placeValue v w) ∧
             ¬ (p : ℤ) ∣ placeValue Q w)
     (n : ℕ) : ∃ d : RecData K p, RecInv k Spl Tr T S₀ g n d := by
@@ -313,7 +325,7 @@ theorem exists_recInv
         exact one_mem _
     obtain ⟨Q, -, -, -, -⟩ := hstep S₀ subset_rfl hSstable c₀ hc₀unr hc₀T hSsplit
     refine ⟨⟨S₀, c₀, fun _ => Q, fun _ => 1⟩, hTrT, hTS, subset_rfl, hSstable, hc₀unr, hc₀T,
-      hSsplit, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      hSsplit, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
     all_goals exact fun i hi => absurd hi (Nat.not_lt_zero i)
   | succ m ih =>
     obtain ⟨d, hd⟩ := ih
