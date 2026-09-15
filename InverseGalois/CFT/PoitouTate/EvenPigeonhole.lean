@@ -39,7 +39,8 @@ open scoped Classical in
 and the three occurrences can be taken to follow one another**: no member of the sequence strictly
 between the first two takes that value, none strictly between the last two does, and exactly one
 strictly between the first and the last does. -/
-theorem exists_three_occurrences {α : Type*} (t : Finset α) (f : ℕ → α) (hf : ∀ m, f m ∈ t) :
+theorem exists_three_occurrences {α : Type*} (t : Finset α) (f : ℕ → α)
+    (hf : ∀ m < 2 * t.card + 1, f m ∈ t) :
     ∃ i j N : ℕ, i < j ∧ j < N ∧ N < 2 * t.card + 1 ∧ f j = f i ∧ f N = f i ∧
       ((Finset.Ico (i + 1) j).filter fun l => f l = f i).card = 0 ∧
       ((Finset.Ico (j + 1) N).filter fun l => f l = f j).card = 0 ∧
@@ -47,7 +48,7 @@ theorem exists_three_occurrences {α : Type*} (t : Finset α) (f : ℕ → α) (
   classical
   obtain ⟨y, -, hy⟩ := Finset.exists_lt_card_fiber_of_mul_lt_card_of_maps_to
     (s := Finset.range (2 * t.card + 1)) (t := t) (f := f) (n := 2)
-    (fun a _ => hf a) (by rw [Finset.card_range]; omega)
+    (fun a ha => hf a (Finset.mem_range.1 ha)) (by rw [Finset.card_range]; omega)
   set F := (Finset.range (2 * t.card + 1)).filter fun x => f x = y with hFdef
   have hFmem : ∀ x, x ∈ F ↔ x < 2 * t.card + 1 ∧ f x = y := by
     intro x
@@ -128,7 +129,7 @@ open scoped Classical in
 /-- **Three stages of the recursion carrying a common invariant, with the counter even across the
 first gap, even across the second, and odd across the whole span.** -/
 theorem exists_three_stages {K : Type} [Field K] [NumberField K] {Φ : Type} (t : Finset Φ)
-    (d : EvenRecData K Φ) (hcls : ∀ m, d.cls m ∈ t) :
+    (d : EvenRecData K Φ) (hcls : ∀ m < 2 * t.card + 1, d.cls m ∈ t) :
     ∃ i j N : ℕ, i < j ∧ j < N ∧ N < 2 * t.card + 1 ∧ d.cls j = d.cls i ∧ d.cls N = d.cls i ∧
       d.count i j = 0 ∧ d.count j N = 0 ∧ d.count i N = 1 := by
   classical

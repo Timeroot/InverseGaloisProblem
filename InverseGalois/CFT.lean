@@ -500,6 +500,8 @@ import InverseGalois.CFT.PoitouTate.ConjugatePlace
 import InverseGalois.CFT.PoitouTate.CupDual
 import InverseGalois.CFT.PoitouTate.CyclicPairing
 import InverseGalois.CFT.PoitouTate.Dual
+import InverseGalois.CFT.PoitouTate.EvenChain
+import InverseGalois.CFT.PoitouTate.EvenClose
 import InverseGalois.CFT.PoitouTate.EvenPigeonhole
 import InverseGalois.CFT.PoitouTate.EvenRecursion
 import InverseGalois.CFT.PoitouTate.EvenSymmetry
@@ -8960,4 +8962,23 @@ it that are available here.
   equals the value at the inverse conjugate place**.  The two values are therefore a function of
   the pair formed by an automorphism and its inverse, which is exactly what a rule selecting one
   member of each such pair can prescribe.
+
+* `InverseGalois.CFT.PoitouTate.EvenChain` assembles the three orbits.  Three units, each ramified
+  at a single place and each carrying the same value at the Frobenius automorphism of its own place
+  moved by any automorphism, have a product which is **trivial at every nontrivial conjugate of
+  each of the three places**.  At a conjugate of the first place the second and the third unit
+  contribute the common value or nothing according as the automorphism, respectively its inverse,
+  belongs to the selected half, so exactly one contribution is made and the product is a square —
+  unless the automorphism is its own inverse, when neither is made and the common value is itself
+  trivial.  At a conjugate of the second and of the third place the same three contributions
+  appear, cyclically permuted, after reciprocity has carried the earlier units to the inversely
+  moved earlier places, which is exactly where the rule prescribes them.
+
+* `InverseGalois.CFT.PoitouTate.EvenClose` closes the recursion at the exponent two.  Running the
+  recursion past twice the number of invariants produces three stages carrying a common invariant
+  and following one another, and the product of the three units attached to them is a unit
+  **ramified at exactly three places, realising the cube of a prescribed local behaviour on the
+  fixed set of places, a local square at every infinite place, and trivial at every nontrivial
+  conjugate of any of the three places**.  That is the exponent two analogue of the two place
+  prescription, where the inverse of a class differs from the class and two units already suffice.
 -/
