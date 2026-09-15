@@ -32,6 +32,8 @@ downstream matches.
 
 * `InverseGalois.CFT.exists_half_set`: **a subset of a group meeting each pair of distinct mutually
   inverse elements exactly once.**
+* `InverseGalois.CFT.halfRule_mul_inv`: **the rule attached to a half set solves the symmetry
+  equation.**
 * `InverseGalois.CFT.EvenRecData`: the data carried along the recursion.
 * `InverseGalois.CFT.EvenRecInv`: the invariants it is required to satisfy.
 * `InverseGalois.CFT.exists_evenRecInv_succ`: **one step of the recursion.**
@@ -61,6 +63,23 @@ theorem exists_half_set (G : Type*) [Group G] :
   · simp only [Set.mem_setOf_eq, inv_inv]
     exact ⟨fun h1 h2 => absurd (h1.trans h2) (lt_irrefl σ),
       fun h1 => lt_of_le_of_ne (not_lt.1 h1) h⟩
+
+open scoped Classical in
+/-- **The rule attached to a half set solves the symmetry equation**: a family which is invariant
+under inversion and trivial at the self-inverse elements is the product of its restriction to the
+half set with the restriction of that same family to the half set read at the inverse. -/
+theorem halfRule_mul_inv {G M : Type*} [Group G] [CommGroup M] {L : Set G}
+    (hL1 : ∀ σ : G, σ = σ⁻¹ → σ ∉ L) (hL2 : ∀ σ : G, σ ≠ σ⁻¹ → (σ ∈ L ↔ σ⁻¹ ∉ L)) (a : G → M)
+    (hsym : ∀ σ : G, a σ⁻¹ = a σ) (hinv : ∀ σ : G, σ = σ⁻¹ → a σ = 1) (σ : G) :
+    (if σ ∈ L then a σ else 1) * (if σ⁻¹ ∈ L then a σ⁻¹ else 1) = a σ := by
+  by_cases hσ : σ = σ⁻¹
+  · rw [if_neg (hL1 σ hσ), if_neg (by rw [← hσ]; exact hL1 σ hσ), one_mul, hinv σ hσ]
+  · by_cases hm : σ ∈ L
+    · rw [if_pos hm, if_neg ((hL2 σ hσ).1 hm), mul_one]
+    · have hm' : σ⁻¹ ∈ L := by
+        by_contra hc
+        exact hm ((hL2 σ hσ).2 hc)
+      rw [if_neg hm, if_pos hm', one_mul, hsym]
 
 /-- **The rule read by the prescription**: an automorphism is prescribed the class of the earlier
 unit when it belongs to the chosen half of the Galois group, and its inverse is read instead as
