@@ -502,6 +502,7 @@ import InverseGalois.CFT.PoitouTate.CyclicPairing
 import InverseGalois.CFT.PoitouTate.Dual
 import InverseGalois.CFT.PoitouTate.EvenPigeonhole
 import InverseGalois.CFT.PoitouTate.EvenRecursion
+import InverseGalois.CFT.PoitouTate.EvenSymmetry
 import InverseGalois.CFT.PoitouTate.FrobConjugate
 import InverseGalois.CFT.PoitouTate.FrobeniusCharacter
 import InverseGalois.CFT.PoitouTate.GlobalClasses
@@ -8951,4 +8952,12 @@ it that are available here.
   the first and the last does.  Read through the counter of the recursion this says that **the
   counter is even across each of the two short gaps and odd across the whole span**, which is
   exactly the pattern the alternating rule turns into a solvable three-term system.
+
+* `InverseGalois.CFT.PoitouTate.EvenSymmetry` supplies the symmetry that makes the system solvable.
+  Reciprocity turns the value of a unit at the Frobenius automorphism of a conjugate of its own
+  place into the value at the place itself of the image of the unit, and reading that image at the
+  place moved back by the inverse automorphism recovers the unit: **the value at a conjugate place
+  equals the value at the inverse conjugate place**.  The two values are therefore a function of
+  the pair formed by an automorphism and its inverse, which is exactly what a rule selecting one
+  member of each such pair can prescribe.
 -/

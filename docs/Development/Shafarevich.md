@@ -27488,3 +27488,18 @@ three occurrences — `i = F.min'`, `j = (F.filter (i < ·)).min'`, `N = (F.filt
 `exists_three_stages`: `count i j = 0`, `count j N = 0`, `count i N = 1`.  The proof is entirely
 combinatorial: `F.filter (i < ·) = F.erase i` because `i` is the minimum, which is what gives the
 cardinality bounds needed for the second and third minima to exist.
+
+### (f) `InverseGalois/CFT/PoitouTate/EvenSymmetry.lean`
+
+`placeFrobValue_smul_eq_placeFrobValue_inv_smul` proves the symmetry of (a) as a theorem.  The
+route is two steps.  Reciprocity — `placeFrobValue_eq_placeFrobValue_of_isotropic_pos` with
+`a = z` ramified only at `Q`, `b = galUnits σ z` ramified only at `σ • Q`, and the common residue
+`m = placeValue Q z` — gives `FV(σ • Q, z) = FV(Q, galUnits σ z)`.  Then
+`placeFrobValue_galUnits` at the automorphism `σ⁻¹` and the place `Q`, whose unramifiedness
+hypothesis `2 ∣ placeValue Q (galUnits σ z)` holds because `galUnits σ z` is ramified only at
+`σ • Q ≠ Q`, gives `FV(σ⁻¹ • Q, galUnits σ⁻¹ (galUnits σ z)) = FV(Q, galUnits σ z)`, and
+`galUnits σ⁻¹ (galUnits σ z) = z`.  Hence `FV(σ • Q, z) = FV(σ⁻¹ • Q, z)`.
+
+The hypotheses `hneg` and `hiso` of the reciprocity brick are carried through verbatim, for the
+pair `(z, galUnits σ z)`; discharging them on the carrier set `T` is the caller's job, and is the
+`B ⊊ T` condition of (c).
