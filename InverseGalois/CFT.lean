@@ -500,6 +500,7 @@ import InverseGalois.CFT.PoitouTate.ConjugatePlace
 import InverseGalois.CFT.PoitouTate.CupDual
 import InverseGalois.CFT.PoitouTate.CyclicPairing
 import InverseGalois.CFT.PoitouTate.Dual
+import InverseGalois.CFT.PoitouTate.EvenPigeonhole
 import InverseGalois.CFT.PoitouTate.EvenRecursion
 import InverseGalois.CFT.PoitouTate.FrobConjugate
 import InverseGalois.CFT.PoitouTate.FrobeniusCharacter
@@ -8942,4 +8943,12 @@ it that are available here.
   does not, and the same pattern repeats at the conjugates of the second: **the recursion runs for
   arbitrarily many steps, and three of its stages carrying a common invariant close a chain of
   three terms** where two could only close a chain of two.
+
+* `InverseGalois.CFT.PoitouTate.EvenPigeonhole` supplies the three stages.  A sequence taking its
+  values in a finite set takes some value three times below twice the size of the set, and the
+  *first three* occurrences of such a value follow one another: no stage strictly between the first
+  two carries that value, none strictly between the last two does, and exactly one strictly between
+  the first and the last does.  Read through the counter of the recursion this says that **the
+  counter is even across each of the two short gaps and odd across the whole span**, which is
+  exactly the pattern the alternating rule turns into a solvable three-term system.
 -/

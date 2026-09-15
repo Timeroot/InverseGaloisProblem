@@ -27478,3 +27478,13 @@ directly after `refine ⟨⟨S', Pl', z', cl'⟩, …⟩` leaves the structure p
 *instance* arguments, where `dsimp only` cannot reach them, so `rw [hPl'ne …]` reports "motive is
 not type correct"; restating that one field with `show` in terms of `Pl'`, `z'`, `cl'` — which is a
 defeq change and therefore rewrites the instance arguments too — is the fix.
+
+### (e) `InverseGalois/CFT/PoitouTate/EvenPigeonhole.lean`
+
+The three stages themselves come from `exists_three_occurrences`: a sequence into a finite set `t`
+takes some value three times below `2 * t.card + 1` (pigeonhole with `n = 2`), and taking the first
+three occurrences — `i = F.min'`, `j = (F.filter (i < ·)).min'`, `N = (F.filter (j < ·)).min'` for
+`F` the fibre — makes the gaps minimal.  Read through `EvenRecData.count` this is
+`exists_three_stages`: `count i j = 0`, `count j N = 0`, `count i N = 1`.  The proof is entirely
+combinatorial: `F.filter (i < ·) = F.erase i` because `i` is the minimum, which is what gives the
+cardinality bounds needed for the second and third minima to exist.
