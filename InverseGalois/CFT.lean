@@ -416,6 +416,7 @@ import InverseGalois.CFT.Local.FiltrationAction
 import InverseGalois.CFT.Local.FiltrationFinite
 import InverseGalois.CFT.Local.FiltrationHerbrand
 import InverseGalois.CFT.Local.FixedFieldValued
+import InverseGalois.CFT.Local.FixedSquare
 import InverseGalois.CFT.Local.GaussNorm
 import InverseGalois.CFT.Local.GradedFinite
 import InverseGalois.CFT.Local.HilbertIdentities
@@ -499,6 +500,7 @@ import InverseGalois.CFT.PoitouTate.Dual
 import InverseGalois.CFT.PoitouTate.FrobConjugate
 import InverseGalois.CFT.PoitouTate.FrobeniusCharacter
 import InverseGalois.CFT.PoitouTate.GlobalClasses
+import InverseGalois.CFT.PoitouTate.InertSquare
 import InverseGalois.CFT.PoitouTate.InfiniteClasses
 import InverseGalois.CFT.PoitouTate.InvariantRadicand
 import InverseGalois.CFT.PoitouTate.Isotropic
@@ -1882,6 +1884,13 @@ it that are available here.
   nontrivial value, so the restricted value group is still nontrivial; and the isometry hypothesis
   passes to both halves of the tower, downwards by lifting an automorphism to the larger field and
   upwards by restricting scalars.
+* `InverseGalois.CFT.Local.FixedSquare` records what a fixed field buys in the finite case.  A
+  group of order two acting faithfully on a finite field cuts out a subfield over which the field
+  has degree two, so the cardinality of the field is the square of the cardinality of the subfield;
+  an element of the subfield is killed by one less than that smaller cardinality, which in odd
+  characteristic divides half of one less than the cardinality of the whole field.  Euler's
+  criterion then says that **an element of a finite field of odd characteristic fixed by an
+  involution of the field is a square**.
 * `InverseGalois.CFT.Local.CompleteNormIndex` is the local first inequality: for a cyclic extension
   whose larger field is complete and discretely valued, the Herbrand quotient of the unit group is
   the degree and Hilbert's theorem 90 makes its denominator one, so the norm subgroup of the base
@@ -8134,6 +8143,17 @@ it that are available here.
   the exponent is a power in the completion there, the units congruent to one being divisible by
   every exponent prime to that characteristic; applied to a quotient this says that **two units
   whose difference at a place is smaller than the second of them have the same local class there**.
+
+* `InverseGalois.CFT.PoitouTate.InertSquare` puts the two together at a place inert under an
+  automorphism of order two.  The map from the decomposition group at such a place to the
+  automorphisms of the residue field has the inertia group as its kernel, so at a place unramified
+  over the base the automorphism induces a nontrivial involution of the residue field, whose fixed
+  residues are squares in odd characteristic.  A uniformizer of the base field is fixed as well, so
+  a fixed unit of even order at the place may be moved to one of order zero without changing its
+  class modulo squares; that unit is congruent to a fixed residue, hence to a square.  So **a unit
+  fixed by an automorphism of order two, of even order at a place the automorphism fixes which is
+  unramified over the base and of odd residue characteristic, is a square in the completion
+  there**.
 
 * `InverseGalois.CFT.PoitouTate.ChebotarevPlace` produces the place at which that happens.  An
   automorphism of prime order of a Galois extension of number fields, generating a subgroup normal
