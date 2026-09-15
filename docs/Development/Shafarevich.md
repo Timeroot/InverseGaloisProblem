@@ -27394,3 +27394,87 @@ Deleting it costs nothing and is exactly what is needed to switch the recursion 
 `exists_sUnitClass_mul_eq_pos`, whose orthogonality hypothesis quantifies over *all* `S`-units
 obeying the dual conditions at the finite places — including those that are not local squares at
 infinity.
+
+## §1.142 The stage-dependent recursion, `EvenRecursion.lean` (2026-09-15)
+
+Item (4b) of the `GenericLevelStepEPRoots 2` plan — the `IsNegOnePow`-free reciprocity cascade —
+landed as commit `22f8db8` (full build green, 10030 jobs, 0 warnings).  This section records the
+three findings that shaped item (4c) and the module that implements it.
+
+### (a) The reciprocity symmetry `a(σ) = a(σ⁻¹)`
+
+Write `FV(v, z) := placeFrobValue hres hζ v z` and `a_i(σ) := FV(σ • Q_i, z_i)` for the diagonal
+of the recursion.  Composing the first step of the closing chain with `placeFrobValue_galUnits`
+gives
+
+  `FV(σ • Q, z) = FV(Q, galUnits σ z) = FV(σ⁻¹ • Q, z)`,
+
+so the diagonal is a *class function on the pairs `{σ, σ⁻¹}`*: `a(σ) = a(σ⁻¹)`.  This is what makes
+the three-stage system solvable.  With `X(σ) = class(z_j) @ σ • Q_i`, `Y(σ) = class(z_N) @ σ • Q_i`
+and `Z(σ) = class(z_N) @ σ • Q_j`, the three trivialisation equations read
+
+  (I) `a · X · Y = 1`  at `σ • Q_i`,
+  (II) `X(σ⁻¹) · a · Z = 1`  at `σ • Q_j`,
+  (III) `Y(σ⁻¹) · Z(σ⁻¹) · a = 1`  at `σ • Q_N`,
+
+and at `p = 2`, using `a² = 1` and `a(σ) = a(σ⁻¹)`, they collapse to `X = Z = rule₁`,
+`Y = a · rule₁` with the single requirement `rule₁(σ) · rule₁(σ⁻¹) = a(σ)`.  Choosing a *half set*
+`L ⊆ G` — one element of each pair `{σ, σ⁻¹}` with `σ ≠ σ⁻¹`, and no self-inverse element — and
+setting `rule₁ = a` on `L` and `1` off `L` solves it; on involutions both sides are `1` because
+`placeFrobValue_eq_one_of_isInvolution` already gives `a = 1` there.
+
+One shared prescription is **not** enough: it forces `X = Y`, and then (I) gives `a³ = a`, i.e.
+`a = 1`, which realises nothing.  The prescription must depend on the stage.  A parity rule
+`s i m = f i ⊕ f m` is also impossible, because `f m` would have to read the invariant of stage
+`m`, which depends on the unit of stage `m`, which depends on the prescription — circular.  What is
+left is a counter that only reads stages already passed:
+
+  `count i m = #{ l : i < l < m, cls l = cls i }`,
+
+and the rule `EvenFlag L (count i m) σ`, which is `σ ∈ L` when the counter is even and `σ⁻¹ ∈ L`
+when it is odd.
+
+### (b) Three consecutive occurrences, not a minimal one
+
+The doc's earlier design picked `N` minimal with a repeated invariant.  It is simpler to take the
+*first three* occurrences of one invariant: with `F := (Finset.range M).filter (cls · = φ₀)` and
+`i := F.min'`, `j := (F.filter (· > i)).min'`, `N := (F.filter (· > j)).min'`, the counters are
+`count i j = 0`, `count j N = 0` and `count i N = 1` — exactly the (even, even, odd) pattern the
+closed-form solution asks for.  The bound is `M := 2 * card + 1` via
+`Finset.exists_lt_card_fiber_of_mul_lt_card_of_maps_to` with `n = 2`.
+
+### (c) Three constraints the Claim imposes on the recursion
+
+`placeFrobValue_eq_one_of_isInvolution` (`InvolutionClaim.lean:401`) is already proven, and its
+hypotheses dictate the shape of the even recursion:
+
+* `hzeven : ∀ w ≠ v, (2:ℤ) ∣ placeValue w z` — the units must be unramified at *every* other place.
+  So the even recursion **drops `Tr` entirely**: no ramified prescription, hence no `IsNegOnePow`
+  machinery and `T = ∅` is allowed in the reciprocity brick.
+* `hzσv : placeValue (σ • v) z = 0` — each unit must be a genuine `S`-unit for `S₀` together with
+  its own place.  This is a *new* invariant, `unitZero`, and the step hypothesis must produce it.
+* `hzB : ∀ w ∈ B, localClassHom w 2 z = 1` for a stable `B` containing every wild place and every
+  place with nontrivial ramification index.  `B` must be a **proper** subset of `T`: taking `B = T`
+  would force the carrier `g` to be a local square on all of `T`, which realises nothing.  The
+  corresponding condition on the carrier is SW's condition (2).
+
+### (d) `InverseGalois/CFT/PoitouTate/EvenRecursion.lean`
+
+The module carries `EvenRecData` (places, chosen places, units, and the invariant of each stage)
+and `EvenRecInv`, whose fields are those of `RecInv` with the prescription removed, `unitZero`
+added, and two new ones: `clsSpec`, tying the recorded invariant of a stage to the pair formed by
+the values of its unit at the Frobenius automorphisms of the conjugates of its own place and by its
+value at its own place read modulo the exponent; and `unitConj`, saying that at a nontrivial
+conjugate of an earlier place each later unit has, according to `EvenFlag`, either the class of the
+earlier unit or the trivial class.  The prescription itself is the function
+
+  `evenPres L p T g d n v = (if v ∈ T then class g else 1) * ∏_{i<n} (if the rule selects v as a
+  conjugate of the i-th chosen place then class (unit i) else 1)`,
+
+and `exists_evenRecInv_succ` / `exists_evenRecInv` run it.  Two Lean notes.  First, `rw [one_mul]`
+fails inside `localClasses v p` (the known instance-path mismatch); `refine (one_mul (_ :
+localClasses (τ • d.chosen j) p)).trans ?_` works.  Second, proving the fields of the invariant
+directly after `refine ⟨⟨S', Pl', z', cl'⟩, …⟩` leaves the structure projections unreduced inside
+*instance* arguments, where `dsimp only` cannot reach them, so `rw [hPl'ne …]` reports "motive is
+not type correct"; restating that one field with `show` in terms of `Pl'`, `z'`, `cl'` — which is a
+defeq change and therefore rewrites the instance arguments too — is the fix.

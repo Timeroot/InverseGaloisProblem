@@ -500,6 +500,7 @@ import InverseGalois.CFT.PoitouTate.ConjugatePlace
 import InverseGalois.CFT.PoitouTate.CupDual
 import InverseGalois.CFT.PoitouTate.CyclicPairing
 import InverseGalois.CFT.PoitouTate.Dual
+import InverseGalois.CFT.PoitouTate.EvenRecursion
 import InverseGalois.CFT.PoitouTate.FrobConjugate
 import InverseGalois.CFT.PoitouTate.FrobeniusCharacter
 import InverseGalois.CFT.PoitouTate.GlobalClasses
@@ -8930,4 +8931,15 @@ it that are available here.
   the infinite places, the two cases combine: **the product of the two units supplied by the
   pigeonhole principle is, at every prime exponent, a local power at the moved place, as soon as
   both are local powers at every infinite place**.
+
+* `InverseGalois.CFT.PoitouTate.EvenRecursion` runs the recursion again with a prescription which
+  is allowed to depend on the stage.  At a nontrivial conjugate of a place chosen earlier, each
+  later stage is prescribed either the class of the earlier unit or the trivial class, according to
+  a rule reading a subset of the Galois group which meets each pair of distinct mutually inverse
+  automorphisms once together with the number of intervening stages carrying the same invariant.
+  The rule alternates with that number, so among three stages carrying a common invariant and
+  following one another the first two cancel at the conjugates of the first place while the third
+  does not, and the same pattern repeats at the conjugates of the second: **the recursion runs for
+  arbitrarily many steps, and three of its stages carrying a common invariant close a chain of
+  three terms** where two could only close a chain of two.
 -/
