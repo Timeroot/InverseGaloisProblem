@@ -364,18 +364,21 @@ theorem hasLevelOneCharacter_of_places_nat (hℓ : ℓ.Prime) (n : ℕ)
         (∃ v ∈ Tn, v.asIdeal = Ideal.under (𝓞 ↥K) P) ∧ E = stabilizer Gal(Ω/k) P) ∨
       ∃ w : InfinitePlace Ω, E = stabilizer Gal(Ω/k) w)
     (d : ℕ) (hd : Nat.card ↥(layerSub ℓ (Generic U n S) 0) ≤ d)
-    (Q R : ℕ → HeightOneSpectrum (𝓞 ↥K)) (z : ℕ → (↥K)ˣ)
+    (Q R E : ℕ → HeightOneSpectrum (𝓞 ↥K)) (z : ℕ → (↥K)ˣ)
     (hz : ∀ i < d, ∀ v ∈ Tn, localClassHom v ℓ (z i) = 1)
     (hzinf : ∀ i < d, ∀ u : InfinitePlace ↥K, infClassHom u ℓ (z i) = 1)
-    (hunram : ∀ i < d, ∀ w : HeightOneSpectrum (𝓞 ↥K), w ≠ Q i → w ≠ R i →
+    (hunram : ∀ i < d, ∀ w : HeightOneSpectrum (𝓞 ↥K), w ≠ Q i → w ≠ R i → w ≠ E i →
       (ℓ : ℤ) ∣ placeValue w (z i))
     (hramQ : ∀ i < d, ¬ (ℓ : ℤ) ∣ placeValue (Q i) (z i))
     (hconjQ : ∀ i < d, ∀ σ : Gal(↥K/k), σ ≠ 1 → localClassHom (σ • Q i) ℓ (z i) = 1)
     (hconjR : ∀ i < d, ∀ σ : Gal(↥K/k), σ ≠ 1 → localClassHom (σ • R i) ℓ (z i) = 1)
+    (hconjE : ∀ i < d, ∀ σ : Gal(↥K/k), σ ≠ 1 → localClassHom (σ • E i) ℓ (z i) = 1)
     (hcrossQ : ∀ i < d, ∀ j < d, i ≠ j → ∀ σ : Gal(↥K/k), localClassHom (σ • Q j) ℓ (z i) = 1)
     (hcrossR : ∀ i < d, ∀ j < d, i ≠ j → ∀ σ : Gal(↥K/k), localClassHom (σ • R j) ℓ (z i) = 1)
+    (hcrossE : ∀ i < d, ∀ j < d, i ≠ j → ∀ σ : Gal(↥K/k), localClassHom (σ • E j) ℓ (z i) = 1)
     (hstabQ : ∀ i < d, stabilizer Gal(↥K/k) (Q i) = ⊥)
-    (hstabR : ∀ i < d, stabilizer Gal(↥K/k) (R i) = ⊥) :
+    (hstabR : ∀ i < d, stabilizer Gal(↥K/k) (R i) = ⊥)
+    (hstabE : ∀ i < d, stabilizer Gal(↥K/k) (E i) = ⊥) :
     HasLevelOneCharacter ℓ U S φ Tf n := by
   classical
   letI : Fintype ↥(layerSub ℓ (Generic U n S) 0) := Fintype.ofFinite _
@@ -387,12 +390,15 @@ theorem hasLevelOneCharacter_of_places_nat (hℓ : ℓ.Prime) (n : ℕ)
       fun i => lt_of_lt_of_le (Fintype.equivFin _ i).2 hcard,
       fun i j h => (Fintype.equivFin _).injective (Fin.val_injective h)⟩
   refine hasLevelOneCharacter_of_places hℓ n hsurj Tf K hKker hζ hmu (fun i => Q (e i))
-    (fun i => R (e i)) (fun i => z (e i)) (fun i w hw => hz _ (helt i) w (hpTn w hw))
-    (fun i w h1 h2 => hunram _ (helt i) w h1 h2) (fun i => hramQ _ (helt i))
+    (fun i => R (e i)) (fun i => E (e i)) (fun i => z (e i))
+    (fun i w hw => hz _ (helt i) w (hpTn w hw))
+    (fun i w h1 h2 h3 => hunram _ (helt i) w h1 h2 h3) (fun i => hramQ _ (helt i))
     (fun i σ hσ => hconjQ _ (helt i) σ hσ) (fun i σ hσ => hconjR _ (helt i) σ hσ)
+    (fun i σ hσ => hconjE _ (helt i) σ hσ)
     (fun i j hij σ => hcrossQ _ (helt i) _ (helt j) (fun h => hij (heinj h)) σ)
     (fun i j hij σ => hcrossR _ (helt i) _ (helt j) (fun h => hij (heinj h)) σ)
-    (fun i => hstabQ _ (helt i)) (fun i => hstabR _ (helt i)) ?_
+    (fun i j hij σ => hcrossE _ (helt i) _ (helt j) (fun h => hij (heinj h)) σ)
+    (fun i => hstabQ _ (helt i)) (fun i => hstabR _ (helt i)) (fun i => hstabE _ (helt i)) ?_
   exact forall_conj_smul_eq_of_mem_decomposition hℓ K hKker hζ hTnst
     (fun i => hz _ (helt i)) (fun i => hzinf _ (helt i)) hTfsh
 

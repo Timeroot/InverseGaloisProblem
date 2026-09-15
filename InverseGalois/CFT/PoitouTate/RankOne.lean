@@ -54,27 +54,30 @@ theorem exists_forall_localClassHom_mem_zpowers (hp : p.Prime) {ζ : K}
     (hpTn : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → v ∈ Tn)
     {c : ℕ → (v : HeightOneSpectrum (𝓞 K)) → localClasses v p}
     (hcT : ∀ (i : ℕ), ∀ v ∈ Tn, v ∉ T → c i v = 1)
-    {d : ℕ} {S : Finset (HeightOneSpectrum (𝓞 K))} {Q R : ℕ → HeightOneSpectrum (𝓞 K)}
-    {z : ℕ → Kˣ} (h : IsTwoPlaceFamily Ω p Tr Tn c d S Q R z)
+    {d : ℕ} {S : Finset (HeightOneSpectrum (𝓞 K))} {Q R E : ℕ → HeightOneSpectrum (𝓞 K)}
+    {z : ℕ → Kˣ} (h : IsTwoPlaceFamily Ω p Tr Tn c d S Q R E z)
     {v : HeightOneSpectrum (𝓞 K)} (hv : v ∉ T) :
     ∃ u : localClasses v p, ∀ i < d, localClassHom v p (z i) ∈ Subgroup.zpowers u := by
   classical
-  by_cases hA : ∃ j < d, ∃ σ : Gal(K/k), σ • Q j = v ∨ σ • R j = v
+  by_cases hA : ∃ j < d, ∃ σ : Gal(K/k), σ • Q j = v ∨ σ • R j = v ∨ σ • E j = v
   · obtain ⟨j, hj, σ, hσ⟩ := hA
     refine ⟨localClassHom v p (z j), fun i hi => ?_⟩
     rcases eq_or_ne i j with rfl | hij
     · exact Subgroup.mem_zpowers _
-    · rcases hσ with hσ | hσ
+    · rcases hσ with hσ | hσ | hσ
       · rw [← hσ, h.crossQ i hi j hj hij σ]
         exact one_mem _
       · rw [← hσ, h.crossR i hi j hj hij σ]
         exact one_mem _
+      · rw [← hσ, h.crossE i hi j hj hij σ]
+        exact one_mem _
   · push_neg at hA
-    have hne : ∀ i, i < d → v ≠ Q i ∧ v ≠ R i := by
+    have hne : ∀ i, i < d → v ≠ Q i ∧ v ≠ R i ∧ v ≠ E i := by
       intro i hi
       have hone := hA i hi 1
-      rw [one_smul, one_smul] at hone
-      exact ⟨fun hcon => hone.1 hcon.symm, fun hcon => hone.2 hcon.symm⟩
+      rw [one_smul, one_smul, one_smul] at hone
+      exact ⟨fun hcon => hone.1 hcon.symm, fun hcon => hone.2.1 hcon.symm,
+        fun hcon => hone.2.2 hcon.symm⟩
     by_cases hvTn : v ∈ Tn
     · refine ⟨1, fun i hi => ?_⟩
       rw [h.prescribed i hi v hvTn, hcT i v hvTn hv]
@@ -84,7 +87,7 @@ theorem exists_forall_localClassHom_mem_zpowers (hp : p.Prime) {ζ : K}
         exact hvTn (hpTn v hcon)
       have hmem : ∀ i, i < d → localClassHom v p (z i) ∈ localUnramified v p := fun i hi =>
         (localClassHom_mem_localUnramified_iff v (z i)).2
-          (h.unram i hi v (fun hcon => hv (hTr hcon)) (hne i hi).1 (hne i hi).2)
+          (h.unram i hi v (fun hcon => hv (hTr hcon)) (hne i hi).1 (hne i hi).2.1 (hne i hi).2.2)
       obtain ⟨gU, hgU⟩ := (isCyclic_localUnramified hp hζ v hvp).exists_generator
       refine ⟨(gU : localClasses v p), fun i hi => ?_⟩
       obtain ⟨m, hm⟩ := hgU ⟨localClassHom v p (z i), hmem i hi⟩

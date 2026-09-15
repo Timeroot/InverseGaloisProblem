@@ -211,7 +211,7 @@ theorem kernelPrescriptionEP_of_namedOrthogonalEP (ℓ : ℕ) [Fact ℓ.Prime] [
 theorem genericLevelStepEPRoots_of_namedOrthogonalEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
     (hodd : 2 < ℓ) (hflat : FlatPrescriptionEP ℓ) (h : NamedOrthogonalEP ℓ) :
     GenericLevelStepEPRoots ℓ :=
-  genericLevelStepEPRoots_of_kernelPrescriptionEP ℓ hodd hflat
+  genericLevelStepEPRoots_of_kernelPrescriptionEP ℓ hflat
     (kernelPrescriptionEP_of_namedOrthogonalEP ℓ hodd h)
 
 end Shafarevich

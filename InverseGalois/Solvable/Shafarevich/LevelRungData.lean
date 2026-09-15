@@ -64,7 +64,7 @@ variable {ℓ : ℕ} [Fact ℓ.Prime] {U S : Type} [Group U] [Finite U] [Topolog
 /-- **A finite family of primes above a prescribed finite set of places of a level for which the
 repair of the property is the only thing the ladder still asks of the arithmetic.**
 
-The family is the one the two-place construction is read along, and the property carried by the
+The family is the one the split place construction is read along, and the property carried by the
 solutions is the restriction on their ramification: the field a solution cuts out ramifies only at
 primes where the base field splits completely and the local extension is cyclic and totally
 ramified.
@@ -80,7 +80,7 @@ The family the package is read along is larger than the family of primes, holdin
 archimedean stabiliser above each archimedean place of the base; that is what makes the local
 conditions at the infinite places vacuous, and it costs nothing, the clauses the family carries
 being obligations at the elements the base realization kills. -/
-theorem exists_family_rungData (hodd : 2 < ℓ) (hS : IsPGroup ℓ S)
+theorem exists_family_rungData (hS : IsPGroup ℓ S)
     {φ : Gal(Ω/k) →* U} (hsurj : Function.Surjective φ) (hsm : IsSmoothHom φ)
     (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K]
     (hKker : K.fixingSubgroup = φ.ker) {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ)
@@ -101,10 +101,10 @@ theorem exists_family_rungData (hodd : 2 < ℓ) (hS : IsPGroup ℓ S)
               (IsSplitTotallyRamified ℓ U S φ)) := by
   haveI : IsAlgClosure k Ω := ⟨inferInstance, inferInstance⟩
   obtain ⟨t, Pr, hPrp, hPrbot, hXPr, hcov, hfeq, hchar, hD⟩ :=
-    exists_decomposition_family (S := S) (Fact.out : ℓ.Prime) hodd hsurj hsm K hKker hζ hmu X hX
+    exists_decomposition_family (S := S) (Fact.out : ℓ.Prime) hsurj hsm K hKker hζ hmu X hX
   obtain ⟨s, W, hW⟩ := exists_infinitePlace_family k Ω
   have hE : ∀ μ : Fin s, ∀ x ∈ stabilizer Gal(Ω/k) (W μ), φ x = 1 → x = 1 := fun μ x hx hφ =>
-    eq_one_of_mem_stabilizer_infinitePlace_of_mem_ker (by omega) hmu (W μ) hx hφ
+    eq_one_of_mem_stabilizer_infinitePlace_of_mem_ker (Fact.out : ℓ.Prime).two_le hmu (W μ) hx hφ
   refine ⟨t, Pr, hXPr, hPrp, hPrbot, hcov, hD, fun hrepair =>
     ⟨t + s, Fin.append (fun ν => stabilizer Gal(Ω/k) (Pr ν))
       (fun μ => stabilizer Gal(Ω/k) (W μ)), ?_⟩⟩

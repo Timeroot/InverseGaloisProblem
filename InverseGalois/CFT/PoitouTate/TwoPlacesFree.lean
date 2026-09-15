@@ -29,6 +29,9 @@ a unit.
 
 ## Main results
 
+* `InverseGalois.CFT.exists_stable_ord_repr_sUnit_of_split`: the enlargement of a stable finite set
+  of places by a system of representatives of the ideal classes, over which every finitely
+  supported system of orders is realised and the unit is a unit.
 * `InverseGalois.CFT.exists_two_places_sUnit_class_eq_of_split`: **two places completely split in
   the auxiliary field and a unit ramified exactly at them realising a prescribed local behaviour**,
   with no hypothesis relating the fixed set of places to the ideal classes.
@@ -56,40 +59,31 @@ variable {k A K : Type} [Field k] [NumberField k] [Field A] [Algebra k A] [Norma
   [IsScalarTower k K ↥Ω] [IsScalarTower K ↥Ω A] [IsGalois K ↥Ω] {p : ℕ} [NeZero p]
   {Pc Ec : HeightOneSpectrum (𝓞 K) → ℕ}
 
-/-- **Two places completely split in the auxiliary field and a unit ramified exactly at them,
-realising a prescribed local behaviour on a stable finite set of places.**  The set is only asked to
-be stable and to contain the places over the exponent, the unit being a unit outside it except at
-places which are themselves completely split; the primes carrying the ideal classes are adjoined to
-it, and being places where the unit is a unit and which do not lie over the exponent they leave the
-prescription untouched. -/
-theorem exists_two_places_sUnit_class_eq_of_split (hp : p.Prime) (hodd : 2 < p)
-    {ζ : K} (hζ : IsPrimitiveRoot ζ p)
-    (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
-    {Tr T : Finset (HeightOneSpectrum (𝓞 K))}
+omit [IsAlgClosed A] [Algebra K A] [IsScalarTower K (↥Ω) A] [IsGalois K ↥Ω] in
+/-- **A stable finite set of places may be enlarged, without disturbing what happens on it, to a
+pair of stable finite sets over which the ideal classes are carried and the unit is a unit.**  The
+smaller set of the pair contains the places one started with and the representatives of the ideal
+classes, and the unit has order zero at every place adjoined to it; the larger one adjoins in
+addition the Galois orbit of the places where the unit fails to be a unit, and those are completely
+split in the auxiliary field. -/
+theorem exists_stable_ord_repr_sUnit_of_split
+    {T : Finset (HeightOneSpectrum (𝓞 K))}
     (hTstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ T → σ • v ∈ T)
-    (hTrT : Tr ⊆ T)
-    (hTrstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ Tr → σ • v ∈ Tr)
-    (hpT : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → v ∈ T)
     {y : Kˣ}
     (hysplit : ∀ v : HeightOneSpectrum (𝓞 K), v ∉ T → Rigidity.RET.ord K v (y : K) ≠ 0 →
       ∃ w : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) w = v ∧
-        stabilizer Gal(↥Ω/k) w = ⊥)
-    (hyunr : ∀ v ∈ T, v ∉ Tr → localClassHom v p y ∈ localUnramified v p)
-    (hyline : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
-      OnOneLineGal (fun w => localClassHom w p y) σ v)
-    (hyp : ∀ v ∈ T, Pc v ∣ p → localClassHom v p y = 1) :
-    ∃ Q R : HeightOneSpectrum (𝓞 K), Q ∉ T ∧ R ∉ T ∧
-      (∃ w : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) w = Q ∧
-        stabilizer Gal(↥Ω/k) w = ⊥) ∧
-      (∃ w : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) w = R ∧
-        stabilizer Gal(↥Ω/k) w = ⊥) ∧
-      (∀ σ : Gal(K/k), Q ≠ σ • R) ∧
-      stabilizer Gal(K/k) Q = ⊥ ∧ stabilizer Gal(K/k) R = ⊥ ∧
-      ∃ z : Kˣ, (∀ v ∈ T, localClassHom v p z = localClassHom v p y) ∧
-        (∀ v : HeightOneSpectrum (𝓞 K), v ∉ Tr → v ≠ Q → v ≠ R → (p : ℤ) ∣ placeValue v z) ∧
-        ¬ (p : ℤ) ∣ placeValue Q z ∧ ¬ (p : ℤ) ∣ placeValue R z ∧
-        (∀ σ : Gal(K/k), σ ≠ 1 → localClassHom (σ • Q) p z = 1) ∧
-        (∀ σ : Gal(K/k), σ ≠ 1 → localClassHom (σ • R) p z = 1) := by
+        stabilizer Gal(↥Ω/k) w = ⊥) :
+    ∃ T' S₀ : Finset (HeightOneSpectrum (𝓞 K)), T ⊆ T' ∧ T' ⊆ S₀ ∧
+      (∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ T' → σ • v ∈ T') ∧
+      (∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ S₀ → σ • v ∈ S₀) ∧
+      (∀ v ∈ S₀, v ∉ T' → ∃ w : HeightOneSpectrum (𝓞 ↥Ω),
+        primeUnder (𝓞 K) w = v ∧ stabilizer Gal(↥Ω/k) w = ⊥) ∧
+      (∀ m : HeightOneSpectrum (𝓞 K) → ℤ,
+        (∀ᶠ v : HeightOneSpectrum (𝓞 K) in Filter.cofinite, m v = 0) →
+        ∃ a : Kˣ, ∀ v ∉ (S₀ : Set (HeightOneSpectrum (𝓞 K))),
+          Rigidity.RET.ord K v (a : K) = m v) ∧
+      y ∈ sUnits K (S₀ : Set (HeightOneSpectrum (𝓞 K))) ∧
+      ∀ v ∈ T', v ∉ T → Rigidity.RET.ord K v (y : K) = 0 := by
   classical
   haveI : IsGalois k ↥Ω := ⟨⟩
   have hsupp : {v : HeightOneSpectrum (𝓞 K) | Rigidity.RET.ord K v (y : K) ≠ 0}.Finite :=
@@ -151,8 +145,6 @@ theorem exists_two_places_sUnit_class_eq_of_split (hp : p.Prime) (hodd : 2 < p)
     rcases (hS₀ v).1 hv with h | h
     · exact absurd h hvT'
     · exact hYsplit v h fun hc => hvT' ((hT' v).2 (Or.inl hc))
-  have hpT' : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → v ∈ T' :=
-    fun v hv => (hT' v).2 (Or.inl (hpT v hv))
   have hreprS : ∀ m : HeightOneSpectrum (𝓞 K) → ℤ,
       (∀ᶠ v : HeightOneSpectrum (𝓞 K) in Filter.cofinite, m v = 0) →
       ∃ a : Kˣ, ∀ v ∉ (S₀ : Set (HeightOneSpectrum (𝓞 K))),
@@ -169,25 +161,66 @@ theorem exists_two_places_sUnit_class_eq_of_split (hp : p.Prime) (hodd : 2 < p)
     intro v hv
     by_contra hc
     exact hXE v hv (Finset.mem_union_right _ ((Set.Finite.mem_toFinset _).2 (hYsupp v hc)))
-  have hTrT' : Tr ⊆ T' := fun v hv => (hT' v).2 (Or.inl (hTrT hv))
+  exact ⟨T', S₀, fun v hv => (hT' v).2 (Or.inl hv), hT'S, hT'stable, hSstable, hSsplit, hreprS,
+    hyS, fun v hv hvT => hyzero v (((hT' v).1 hv).resolve_left hvT)⟩
+
+/-- **Two places completely split in the auxiliary field and a unit ramified exactly at them,
+realising a prescribed local behaviour on a stable finite set of places.**  The set is only asked to
+be stable and to contain the places over the exponent, the unit being a unit outside it except at
+places which are themselves completely split; the primes carrying the ideal classes are adjoined to
+it, and being places where the unit is a unit and which do not lie over the exponent they leave the
+prescription untouched. -/
+theorem exists_two_places_sUnit_class_eq_of_split (hp : p.Prime) (hodd : 2 < p)
+    {ζ : K} (hζ : IsPrimitiveRoot ζ p)
+    (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
+    {Tr T : Finset (HeightOneSpectrum (𝓞 K))}
+    (hTstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ T → σ • v ∈ T)
+    (hTrT : Tr ⊆ T)
+    (hTrstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ Tr → σ • v ∈ Tr)
+    (hpT : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → v ∈ T)
+    {y : Kˣ}
+    (hysplit : ∀ v : HeightOneSpectrum (𝓞 K), v ∉ T → Rigidity.RET.ord K v (y : K) ≠ 0 →
+      ∃ w : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) w = v ∧
+        stabilizer Gal(↥Ω/k) w = ⊥)
+    (hyunr : ∀ v ∈ T, v ∉ Tr → localClassHom v p y ∈ localUnramified v p)
+    (hyline : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
+      OnOneLineGal (fun w => localClassHom w p y) σ v)
+    (hyp : ∀ v ∈ T, Pc v ∣ p → localClassHom v p y = 1) :
+    ∃ Q R : HeightOneSpectrum (𝓞 K), Q ∉ T ∧ R ∉ T ∧
+      (∃ w : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) w = Q ∧
+        stabilizer Gal(↥Ω/k) w = ⊥) ∧
+      (∃ w : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) w = R ∧
+        stabilizer Gal(↥Ω/k) w = ⊥) ∧
+      (∀ σ : Gal(K/k), Q ≠ σ • R) ∧
+      stabilizer Gal(K/k) Q = ⊥ ∧ stabilizer Gal(K/k) R = ⊥ ∧
+      ∃ z : Kˣ, (∀ v ∈ T, localClassHom v p z = localClassHom v p y) ∧
+        (∀ v : HeightOneSpectrum (𝓞 K), v ∉ Tr → v ≠ Q → v ≠ R → (p : ℤ) ∣ placeValue v z) ∧
+        ¬ (p : ℤ) ∣ placeValue Q z ∧ ¬ (p : ℤ) ∣ placeValue R z ∧
+        (∀ σ : Gal(K/k), σ ≠ 1 → localClassHom (σ • Q) p z = 1) ∧
+        (∀ σ : Gal(K/k), σ ≠ 1 → localClassHom (σ • R) p z = 1) := by
+  classical
+  obtain ⟨T', S₀, hTT', hT'S, hT'stable, hSstable, hSsplit, hreprS, hyS, hy0⟩ :=
+    exists_stable_ord_repr_sUnit_of_split (Ω := Ω) hTstable hysplit
+  have hpT' : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → v ∈ T' :=
+    fun v hv => hTT' (hpT v hv)
   have hyunr' : ∀ v ∈ T', v ∉ Tr → localClassHom v p y ∈ localUnramified v p := by
     intro v hv hvTr
-    rcases (hT' v).1 hv with h | h
-    · exact hyunr v h hvTr
+    by_cases hvT : v ∈ T
+    · exact hyunr v hvT hvTr
     · refine (localClassHom_mem_localUnramified_iff v y).2 ?_
-      rw [placeValue_eq_neg_ord, hyzero v h, neg_zero]
+      rw [placeValue_eq_neg_ord, hy0 v hv hvT, neg_zero]
       exact dvd_zero _
   have hyp' : ∀ v ∈ T', Pc v ∣ p → localClassHom v p y = 1 := by
     intro v hv hdvd
-    rcases (hT' v).1 hv with h | h
-    · exact hyp v h hdvd
-    · exact absurd (Finset.mem_union_left _ (hpT v fun hone =>
-        not_dvd_of_finitePlace_natCast_eq_one (hres v) hone hdvd)) (hXE v h)
+    by_cases hvT : v ∈ T
+    · exact hyp v hvT hdvd
+    · exact absurd (hpT v fun hone =>
+        not_dvd_of_finitePlace_natCast_eq_one (hres v) hone hdvd) hvT
   obtain ⟨Q, R, hQT, hRT, hQspl, hRspl, hQR, hQstab, hRstab, z, hzT, hzunr, hzQ, hzR, hzQc,
-    hzRc⟩ := exists_two_places_sUnit_class_eq (Ω := Ω) hp hodd hζ hres hT'stable hTrT' hTrstable
-      hT'S hSstable hSsplit hpT' hreprS hyS hyunr' hyline hyp'
-  exact ⟨Q, R, fun hc => hQT ((hT' Q).2 (Or.inl hc)), fun hc => hRT ((hT' R).2 (Or.inl hc)),
-    hQspl, hRspl, hQR, hQstab, hRstab, z, fun v hv => hzT v ((hT' v).2 (Or.inl hv)),
+    hzRc⟩ := exists_two_places_sUnit_class_eq (Ω := Ω) hp hodd hζ hres hT'stable
+      (hTrT.trans hTT') hTrstable hT'S hSstable hSsplit hpT' hreprS hyS hyunr' hyline hyp'
+  exact ⟨Q, R, fun hc => hQT (hTT' hc), fun hc => hRT (hTT' hc),
+    hQspl, hRspl, hQR, hQstab, hRstab, z, fun v hv => hzT v (hTT' hv),
     hzunr, hzQ, hzR, hzQc, hzRc⟩
 
 end Free

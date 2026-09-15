@@ -120,8 +120,8 @@ theorem exists_isTwoPlaceFamily_named_of_sUnits (hp : p.Prime) (hodd : 2 < p)
     (hg1 : ∀ t : ℕ, ∀ w ∈ Tn, w ∉ Tp → localClassHom w p (g t) = 1)
     (hram : ∀ v ∉ Tn, ∃ W : HeightOneSpectrum (𝓞 ↥Ω),
       primeUnder (𝓞 K) W = v ∧ ramIdx (𝓞 K) W = 1) (d : ℕ) :
-    ∃ (S : Finset (HeightOneSpectrum (𝓞 K))) (Q R : ℕ → HeightOneSpectrum (𝓞 K)) (z : ℕ → Kˣ),
-      IsTwoPlaceFamily Ω p Tr Tn (spreadClasses Tp cl) d S Q R z := by
+    ∃ (S : Finset (HeightOneSpectrum (𝓞 K))) (Q R E : ℕ → HeightOneSpectrum (𝓞 K)) (z : ℕ → Kˣ),
+      IsTwoPlaceFamily Ω p Tr Tn (spreadClasses Tp cl) d S Q R E z := by
   refine exists_isTwoPlaceFamily_zpowers (Ω := Ω) hp hodd hζ hres hTr (Finset.Subset.refl Tn)
     hTrst hTnst hpTn hrepr ?_ hg ?_ ?_ ?_ hDgal ?_ ?_ hram d
   · intro t v _ hvTr
@@ -179,8 +179,8 @@ theorem exists_isTwoPlaceFamily_named (hp : p.Prime) (hodd : 2 < p)
         (fun y => spreadClasses Tp cl t (y : HeightOneSpectrum (𝓞 K))) = 1)
     (hram : ∀ v ∉ Tn, ∃ W : HeightOneSpectrum (𝓞 ↥Ω),
       primeUnder (𝓞 K) W = v ∧ ramIdx (𝓞 K) W = 1) (d : ℕ) :
-    ∃ (S : Finset (HeightOneSpectrum (𝓞 K))) (Q R : ℕ → HeightOneSpectrum (𝓞 K)) (z : ℕ → Kˣ),
-      IsTwoPlaceFamily Ω p Tr Tn (spreadClasses Tp cl) d S Q R z := by
+    ∃ (S : Finset (HeightOneSpectrum (𝓞 K))) (Q R E : ℕ → HeightOneSpectrum (𝓞 K)) (z : ℕ → Kˣ),
+      IsTwoPlaceFamily Ω p Tr Tn (spreadClasses Tp cl) d S Q R E z := by
   classical
   have hrange : Set.range (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 K))
       = (Tn : Set (HeightOneSpectrum (𝓞 K))) := by

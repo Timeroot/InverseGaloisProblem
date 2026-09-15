@@ -98,8 +98,8 @@ theorem exists_isTwoPlaceFamily_named_orthogonal (hp : p.Prime) (hodd : 2 < p)
       primeUnder (𝓞 K) W = v ∧ stabilizer Gal(↥Ω/K) W = ⊥)
     (hram : ∀ v ∉ Tn, ∃ W : HeightOneSpectrum (𝓞 ↥Ω),
       primeUnder (𝓞 K) W = v ∧ ramIdx (𝓞 K) W = 1) (d : ℕ) :
-    ∃ (S : Finset (HeightOneSpectrum (𝓞 K))) (Q R : ℕ → HeightOneSpectrum (𝓞 K)) (z : ℕ → Kˣ),
-      IsTwoPlaceFamily Ω p Tr Tn (spreadClasses Tp cl) d S Q R z := by
+    ∃ (S : Finset (HeightOneSpectrum (𝓞 K))) (Q R E : ℕ → HeightOneSpectrum (𝓞 K)) (z : ℕ → Kˣ),
+      IsTwoPlaceFamily Ω p Tr Tn (spreadClasses Tp cl) d S Q R E z := by
   classical
   have hrange : Set.range (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 K))
       = (Tn : Set (HeightOneSpectrum (𝓞 K))) := by
@@ -197,8 +197,8 @@ theorem exists_isTwoPlaceFamily_named_of_orthogonal (hp : p.Prime) (hodd : 2 < p
       primeUnder (𝓞 K) W = v ∧ ramIdx (𝓞 K) W = 1) (d : ℕ) :
     ∃ Tn : Finset (HeightOneSpectrum (𝓞 K)), Ts ⊆ Tn ∧
       (∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ Tn → σ • v ∈ Tn) ∧
-      ∃ (S : Finset (HeightOneSpectrum (𝓞 K))) (Q R : ℕ → HeightOneSpectrum (𝓞 K)) (z : ℕ → Kˣ),
-        IsTwoPlaceFamily Ω p Tr Tn (spreadClasses Tp cl) d S Q R z := by
+      ∃ (S : Finset (HeightOneSpectrum (𝓞 K))) (Q R E : ℕ → HeightOneSpectrum (𝓞 K)) (z : ℕ → Kˣ),
+        IsTwoPlaceFamily Ω p Tr Tn (spreadClasses Tp cl) d S Q R E z := by
   classical
   obtain ⟨Tf, hTf, hTfst, hTfsp, hTfdet⟩ :=
     exists_finset_stable_split_detecting_sUnits Ω hp hζ hres (Ts.image (primeUnder (𝓞 k))) Ts

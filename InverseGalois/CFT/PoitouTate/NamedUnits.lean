@@ -64,15 +64,15 @@ from the named ones, dying at every conjugate of a named place which is not itse
 ramified only over the named places or at places completely split in the auxiliary field with a
 single coordinate surviving.**
 
-The two auxiliary sets of the two-place construction are chosen for it.  The distinguished part,
-outside which the units of the family are unramified away from their own pair of places, is the
-whole orbit of the named places; so a place carrying one of the units is a conjugate of a named
-place or one of a pair, and at a place of a pair the bookkeeping already says that the other
-coordinates die there, that the whole orbit of the place dies there, and that the place is
-completely split.  The set the prescription is made over is any Galois stable set carrying the ideal
-classes and containing the orbit, the prescribed set, the places above the exponent and the places
-ramified in the auxiliary field; over it the prescription is the naming at the named places and
-trivial everywhere else, which is what the prescribed set is asking for. -/
+The two auxiliary sets of the construction are chosen for it.  The distinguished part, outside
+which the units of the family are unramified away from their own places, is the whole orbit of the
+named places; so a place carrying one of the units is a conjugate of a named place or one of the
+places of a coordinate, and at such a place the bookkeeping already says that the other coordinates
+die there, that the whole orbit of the place dies there, and that the place is completely split.
+The set the prescription is made over is any Galois stable set carrying the ideal classes and
+containing the orbit, the prescribed set, the places above the exponent and the places ramified in
+the auxiliary field; over it the prescription is the naming at the named places and trivial
+everywhere else, which is what the prescribed set is asking for. -/
 theorem exists_units_named_prescribed (hp : p.Prime) (hodd : 2 < p) {ζ : K}
     (hζ : IsPrimitiveRoot ζ p)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
@@ -130,7 +130,7 @@ theorem exists_units_named_prescribed (hp : p.Prime) (hodd : 2 < p) {ζ : K}
   have hTzTs : Tz ⊆ Ts := fun v hv =>
     hTs0 (Finset.mem_coe.2 (Finset.mem_union_left _ (Finset.mem_union_right _ hv)))
   have hTramTs : Tram ⊆ Ts := fun v hv => hTs0 (Finset.mem_coe.2 (Finset.mem_union_right _ hv))
-  obtain ⟨Tn, hTsTn, -, S, Q, R, z, hfam⟩ :=
+  obtain ⟨Tn, hTsTn, -, S, Q, R, E, z, hfam⟩ :=
     exists_isTwoPlaceFamily_named_of_orthogonal Ω hp hodd hζ hres hTpTr hTrTs hTrst hTsst hpTs
       hrepr hcln hDgal hDcl
       (fun Tn hTn => horth Tn fun v hv => hTn (hTrTs (hTpTr hv)))
@@ -150,11 +150,11 @@ theorem exists_units_named_prescribed (hp : p.Prime) (hodd : 2 < p) {ζ : K}
     · obtain ⟨σ, w, hw⟩ := (hmemTr v).1 hvTr
       exact Or.inl ⟨σ, w, hw.symm⟩
     refine Or.inr ?_
-    have hQR : v = Q q ∨ v = R q := by
+    have hQR : v = Q q ∨ v = R q ∨ v = E q := by
       by_contra hcon
       push_neg at hcon
-      exact hq (hfam.unram q hqd v hvTr hcon.1 hcon.2)
-    rcases hQR with rfl | rfl
+      exact hq (hfam.unram q hqd v hvTr hcon.1 hcon.2.1 hcon.2.2)
+    rcases hQR with rfl | rfl | rfl
     · refine ⟨?_, ⟨q, hqd, ?_⟩, ?_⟩
       · have hS : Q q ∈ S := by
           have h1 := hfam.memQ q hqd 1
@@ -181,6 +181,19 @@ theorem exists_units_named_prescribed (hp : p.Prime) (hodd : 2 < p) {ζ : K}
         · subst hqq
           exact hfam.conjR q' hq' σ hσ
         · exact hfam.crossR q' hq' q hqd hqq σ
+    · refine ⟨?_, ⟨q, hqd, ?_⟩, ?_⟩
+      · have hS : E q ∈ S := by
+          have h1 := hfam.memE q hqd 1
+          rwa [one_smul] at h1
+        exact hfam.split _ hS (hfam.notMemE q hqd)
+      · intro q' hq' hne
+        have h1 := hfam.crossE q' hq' q hqd hne 1
+        rwa [one_smul] at h1
+      · intro σ hσ q' hq'
+        by_cases hqq : q' = q
+        · subst hqq
+          exact hfam.conjE q' hq' σ hσ
+        · exact hfam.crossE q' hq' q hqd hqq σ
 
 end NamedUnits
 

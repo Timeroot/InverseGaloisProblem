@@ -538,6 +538,7 @@ import InverseGalois.CFT.PoitouTate.OrdCompare
 import InverseGalois.CFT.PoitouTate.OrdInvariant
 import InverseGalois.CFT.PoitouTate.PartPrescribed
 import InverseGalois.CFT.PoitouTate.PlaceUniformiser
+import InverseGalois.CFT.PoitouTate.PlacesFree
 import InverseGalois.CFT.PoitouTate.PositiveClasses
 import InverseGalois.CFT.PoitouTate.Prescribed
 import InverseGalois.CFT.PoitouTate.PrescribedPositive
@@ -8992,4 +8993,15 @@ it that are available here.
   the exponent, together with the places ramified over the base, are gathered in a distinguished
   Galois stable part of the fixed set where the prescription is trivial, which is what the value at
   an involution needs.
+
+* `InverseGalois.CFT.PoitouTate.PlacesFree` puts the odd and the even construction in one shape.
+  What the induction downstream reads off a prescription is the behaviour on the fixed set, the
+  divisibility of the order away from the places produced, the indivisibility at the first of them,
+  and the triviality at their nontrivial conjugates; none of that distinguishes the places from one
+  another, so the two places of the odd construction may be read as three with the last two equal,
+  and **at every prime exponent a prescribed local behaviour is realised by a unit ramified only at
+  three places completely split in the auxiliary field**.  The ideal classes are absorbed into the
+  fixed set once and for all beforehand, and the distinguished part of the fixed set carries both
+  the places above the exponent and the places ramified over the base, which at an odd exponent is
+  no more than the places above the exponent already asked for.
 -/
