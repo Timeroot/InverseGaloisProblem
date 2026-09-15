@@ -27540,3 +27540,93 @@ version must pair one unit against two conjugates.  The reciprocity brick itself
 since it takes the two units as independent arguments; what has to be written is the bookkeeping
 that multiplies three values of `placeFrobValue` and uses the closed form `halfRule_mul_inv` to see
 the product collapse.
+
+## §1.144 🏁 The archimedean blocker of the even step is gone: name the infinite places instead of solving there (2026-09-15)
+
+Item (9) of the ℓ = 2 list — the archimedean local lift — is **closed**, and it is closed for every
+prime at once, with no arithmetic.
+
+### (a) What the blocker was
+
+`LocalLiftInfinite.lean` supplied the third clause of `HasRungData` at the archimedean places by
+**coprimality**: an automorphism fixing an infinite place is an involution, so the image of an
+archimedean decomposition subgroup under a solution is killed by 2, while the layer being added is
+killed by ℓ; for odd ℓ the two orders are coprime and Schur–Zassenhaus splits the extension.  Three
+of its theorems therefore carried `hℓ2 : ℓ ≠ 2`, and at ℓ = 2 the obstruction is genuinely
+nonzero — `Ĥ⁰(ℤ/2, Λ²𝔽₂[ℤ/2]) = 𝔽₂` — so there is no repair of that argument.
+
+### (b) The way past it
+
+`HasLocalLift ℓ U n S j φ D T P` only asks for a lift at the members `A ∈ T` with
+`A ∉ conjFamily D`.  The archimedean stabilisers can all be put **inside** `conjFamily D`: over a
+number field `k` there are finitely many archimedean places, `InfinitePlace.comap_surjective` picks
+one place `W u` of `Ω` above each place `u` of `k`, and `exists_smul_eq_of_comap_eq` moves any place
+of `Ω` to the chosen one above the same place of `k`; `stabilizer_smul_eq_stabilizer_map_conj` turns
+that into a conjugacy of stabilisers.  That is `exists_infinitePlace_family`.
+
+This is exactly what Schmidt–Wingberg do (Theorem 15, First Step (a)): the shrinking of
+Proposition 6 is run "for all the finitely many primes `p ∈ Ram(K|k) ∪ S_p ∪ S_∞`" — the
+archimedean places belong in the *named* family, not in the residual one.
+
+### (c) Why the enlargement is free
+
+The decisive point.  Every clause of the package that quantifies over the family — the family
+clause of `LevelSolution` (`∀ D ∈ T, ∀ x ∈ D, φ x = 1 → Φ x = 1`), the one of
+`HasLevelOneCharacter` (`… → (r u)⁻¹ * x * r u ∈ inducedCharKer φ χ`), the hypothesis of
+`HasSolutionRepair` (`∀ ν, ∀ x ∈ D ν, φ x = 1 → f x = 1`) and the elementary-quotient clause
+`HasFiniteElementaryQuotient ℓ (D ν ⊓ φ.ker)` — is an obligation **at the elements the base
+realization kills**.  So if a new member `A` satisfies `A ⊓ φ.ker = ⊥`, all four are satisfied by
+the identity alone, whatever the solution is.
+
+And an archimedean stabiliser does satisfy it, **uniformly in ℓ, including ℓ = 2**:
+
+* `hmu` says every `y : Ωˣ` with `y^(ℓ·ℓ) = 1` is fixed by `φ.ker`;
+* `Ω` is algebraically closed of characteristic zero, so it holds a primitive `ℓ²`-th root `ζ`,
+  and `ℓ² ≥ 4 > 2`;
+* an automorphism `σ` fixing an infinite place `w` either fixes `w.embedding`, hence is the
+  identity, or satisfies `conj ∘ w.embedding ∘ σ⁻¹ = w.embedding` (`InfinitePlace.mk_eq_iff`);
+* in the second case `σ ζ = ζ` forces `conj (w.embedding ζ) = w.embedding ζ`, i.e. a **real**
+  primitive root of unity of order more than two — impossible
+  (`conj_ne_self_of_isPrimitiveRoot`, modelled on `IsPrimitiveRoot.nrRealPlaces_eq_zero_of_two_lt`).
+
+That is `eq_one_of_mem_stabilizer_infinitePlace_of_mem_ker`.  Note the hypothesis it consumes,
+`hmu`, is already carried by `exists_family_rungData` for an entirely different reason (it is what
+makes the level hold `μ_ℓ`), so nothing new is asked of the arithmetic.
+
+### (d) What landed
+
+New module `InverseGalois/Solvable/Shafarevich/LevelArchimedean.lean`:
+
+| name | content |
+|---|---|
+| `conj_ne_self_of_isPrimitiveRoot` | a primitive root of unity of order `> 2` is moved by conjugation |
+| `eq_one_of_mem_stabilizer_infinitePlace_of_fixed` | fixing an infinite place *and* such a root ⇒ identity |
+| `eq_one_of_mem_stabilizer_infinitePlace_of_mem_ker` | the same, with the root supplied by `hmu` |
+| `exists_infinitePlace_family` | finitely many places whose stabilisers cover every archimedean stabiliser up to conjugacy |
+| `conjFamily_append_left` / `_right` | `conjFamily` of a part is inside `conjFamily` of a `Fin.append` |
+| `hasFiniteElementaryQuotient_of_forall_eq_one` | a trivial subgroup has a finite elementary quotient |
+| `levelSolution_of_forall_mem` | a solution transports to any family whose new members meet `φ.ker` trivially |
+| `hasLevelOneCharacter_of_forall_mem` | the same for the first rung's character |
+| `hasSolutionRepair_of_forall` | the same for the repair |
+| `hasLocalLift_isSplitTotallyRamified_of_forall_infinitePlace` | local solvability along **every** decomposition subgroup, once the family names the infinite places |
+| `hasRungData_append` | the whole package, for `Fin.append D E` with `E` meeting `φ.ker` trivially |
+
+`exists_family_rungData` (`LevelRungData.lean`) now returns the family of primes as before, but its
+last conjunct produces `∃ t' D, HasRungData ℓ U S φ D (decompositionSubgroups k Ω) …` — the family
+actually used is `Fin.append` of the primes and the chosen archimedean places.  The caller
+(`genericLevelStepEPRoots_of_solutionRepairEP`, `LevelStepRepair.lean`) only ever needed
+`∃ t D T P, HasRungData …`, so it destructures one level deeper and nothing else changes.
+
+`LocalLiftInfinite.lean` is **deleted** — Schur–Zassenhaus, the coprimality computation and the
+involution lemma are all dead.  (`sq_eq_one_of_mem_stabilizer_infinitePlace`, still in
+`LevelOneFamily.lean`, is used elsewhere.)
+
+### (e) What this does and does not buy
+
+`hodd : 2 < ℓ` is **gone from the local-lift half** of `exists_family_rungData`.  The hypothesis
+still sits on the theorem, but now for exactly one reason: `exists_decomposition_family` needs it,
+and through it `hasLevelOneCharacter_of_stable` needs it, at two places —
+`exists_isTwoPlaceFamily` (the two-place core, item 7 of the ℓ = 2 list) and
+`infClassHom_eq_one_of_isNegOnePow` (the odd-exponent `IsNegOnePow`, item 8/11).  So the even step
+now has exactly the shape the plan predicted: **all that is left at ℓ = 2 is the arithmetic of the
+two-place/three-place core and the de-odding cascade above it.**

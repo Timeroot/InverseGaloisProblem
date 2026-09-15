@@ -346,8 +346,9 @@ theorem genericLevelStepEPRoots_of_solutionRepairEP (ℓ : ℕ) [Fact ℓ.Prime]
     rw [pow_mul, hy, one_pow]
   obtain ⟨t, Pr, -, hPrp, hPrbot, hcov, hD, hdata⟩ :=
     exists_family_rungData hodd hS hsurj hsm K hKker hζ hmu ∅ Set.finite_empty
-  exact ⟨t, _, _, _, hdata fun n j hj =>
-    h S U Ω φ t _ n j hS hj hmuE ⟨Pr, hPrp, hPrbot, fun _ => rfl, hcov, hD⟩⟩
+  obtain ⟨t', D, hrung⟩ := hdata fun n j hj =>
+    h S U Ω φ t _ n j hS hj hmuE ⟨Pr, hPrp, hPrbot, fun _ => rfl, hcov, hD⟩
+  exact ⟨t', D, _, _, hrung⟩
 
 /-- **The step of the ladder, in exchange for the repair of a lift alone.** -/
 theorem genericLevelStepEPRoots_of_liftRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (hodd : 2 < ℓ)

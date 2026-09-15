@@ -4,9 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.Solvable.Shafarevich.LayerShaDescent
+import InverseGalois.Solvable.Shafarevich.LevelArchimedean
 import InverseGalois.Solvable.Shafarevich.LevelOneDecomposition
 import InverseGalois.Solvable.Shafarevich.LevelRung
-import InverseGalois.Solvable.Shafarevich.LocalLiftInfinite
 
 /-!
 # All but one clause of the package the ladder consumes
@@ -22,11 +22,13 @@ stabilisers of a prime above each place of a stable finite set which carries the
 places above the exponent, the places which ramify in the level and the prescribed set.  That
 family supplies three clauses outright, the first rung, the finite elementary quotients, and the
 statement that away from its conjugates the base realization kills inertia; the last of those is
-the hypothesis local solvability of the step asks of the family, and with the archimedean places
-settled by coprimality it gives local solvability along every decomposition subgroup.  The bottom
-of the ladder and the stability of the property are free, the property being a restriction on
-ramification over the base realization, and the shrinking away of the locally trivial classes is
-the Kummer-theoretic statement already proved over an arbitrary number field.
+the hypothesis local solvability of the step asks of the family, and once the family is enlarged by
+one stabiliser above each archimedean place of the base it gives local solvability along every
+decomposition subgroup.  The enlargement is free, the base realization meeting an archimedean
+stabiliser trivially.  The bottom of the ladder and the stability of the property are free too, the
+property being a restriction on ramification over the base realization, and the shrinking away of
+the locally trivial classes is the Kummer-theoretic statement already proved over an arbitrary
+number field.
 
 What is left is the repair of the property, and it is left as a hypothesis on the family the theorem
 itself produces.
@@ -72,7 +74,12 @@ family by an automorphism over the base, which is what says that a prime whose d
 subgroup escapes every conjugate of every member is a prime away from the exponent.  And it covers
 the primes at which the base realization ramifies: away from the conjugates of the family, inertia
 is killed by the base realization, the places at which the level ramifies being among those the
-family is indexed by. -/
+family is indexed by.
+
+The family the package is read along is larger than the family of primes, holding in addition one
+archimedean stabiliser above each archimedean place of the base; that is what makes the local
+conditions at the infinite places vacuous, and it costs nothing, the clauses the family carries
+being obligations at the elements the base realization kills. -/
 theorem exists_family_rungData (hodd : 2 < ℓ) (hS : IsPGroup ℓ S)
     {φ : Gal(Ω/k) →* U} (hsurj : Function.Surjective φ) (hsm : IsSmoothHom φ)
     (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K]
@@ -89,19 +96,27 @@ theorem exists_family_rungData (hodd : 2 < ℓ) (hS : IsPGroup ℓ S)
         ∀ x ∈ Ideal.inertia Gal(Ω/k) P, φ x = 1) ∧
         ((∀ n j : ℕ, 1 ≤ j → HasSolutionRepair ℓ U n S j φ
             (fun ν => stabilizer Gal(Ω/k) (Pr ν)) (IsSplitTotallyRamified ℓ U S φ)) →
-          HasRungData ℓ U S φ (fun ν => stabilizer Gal(Ω/k) (Pr ν))
-            (decompositionSubgroups k Ω) (IsSplitTotallyRamified ℓ U S φ)) := by
+          ∃ (t' : ℕ) (D : Fin t' → Subgroup Gal(Ω/k)),
+            HasRungData ℓ U S φ D (decompositionSubgroups k Ω)
+              (IsSplitTotallyRamified ℓ U S φ)) := by
   haveI : IsAlgClosure k Ω := ⟨inferInstance, inferInstance⟩
   obtain ⟨t, Pr, hPrp, hPrbot, hXPr, hcov, hfeq, hchar, hD⟩ :=
     exists_decomposition_family (S := S) (Fact.out : ℓ.Prime) hodd hsurj hsm K hKker hζ hmu X hX
-  refine ⟨t, Pr, hXPr, hPrp, hPrbot, hcov, hD,
-    fun hrepair => ⟨?_, ?_, ?_, hfeq, fun n j hj => ⟨?_, ?_, hrepair n j hj⟩⟩⟩
-  · exact fun m => levelSolution_zero_isSplitTotallyRamified ℓ U S φ hsurj hsm _ m
-  · exact fun n => levelSolution_one_of_hasLevelOneCharacter (hchar n)
-  · exact isShrinkStable_isSplitTotallyRamified ℓ U S φ
-  · exact hasLocalLift_isSplitTotallyRamified_decompositionSubgroups ℓ U n S j
-      (Nat.ne_of_lt hodd).symm hS φ _ hD
-  · exact hasShrinkableSha_decompositionSubgroups ℓ U n S j hS hsm
+  obtain ⟨s, W, hW⟩ := exists_infinitePlace_family k Ω
+  have hE : ∀ μ : Fin s, ∀ x ∈ stabilizer Gal(Ω/k) (W μ), φ x = 1 → x = 1 := fun μ x hx hφ =>
+    eq_one_of_mem_stabilizer_infinitePlace_of_mem_ker (by omega) hmu (W μ) hx hφ
+  refine ⟨t, Pr, hXPr, hPrp, hPrbot, hcov, hD, fun hrepair =>
+    ⟨t + s, Fin.append (fun ν => stabilizer Gal(Ω/k) (Pr ν))
+      (fun μ => stabilizer Gal(Ω/k) (W μ)), ?_⟩⟩
+  refine hasRungData_append ℓ U S (D := fun ν => stabilizer Gal(Ω/k) (Pr ν))
+    (E := fun μ => stabilizer Gal(Ω/k) (W μ)) hE
+    (fun m => levelSolution_zero_isSplitTotallyRamified ℓ U S φ hsurj hsm _ m)
+    (fun m => levelSolution_one_of_hasLevelOneCharacter (hchar m))
+    (isShrinkStable_isSplitTotallyRamified ℓ U S φ) hfeq (fun m j _ => ?_)
+    (fun m j _ => hasShrinkableSha_decompositionSubgroups ℓ U m S j hS hsm) hrepair
+  exact hasLocalLift_isSplitTotallyRamified_of_forall_infinitePlace ℓ U m S j hS φ _
+    (fun w => conjFamily_append_right _ _ (hW w))
+    (fun P hPp hPbot hPnot => hD P hPp hPbot fun hc => hPnot (conjFamily_append_left _ _ hc))
 
 end Assembly
 

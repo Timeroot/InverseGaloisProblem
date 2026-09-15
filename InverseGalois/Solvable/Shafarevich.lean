@@ -82,7 +82,7 @@ import InverseGalois.Solvable.Shafarevich.LevelOneArith
 import InverseGalois.Solvable.Shafarevich.LevelOneFamily
 import InverseGalois.Solvable.Shafarevich.LevelOneTwoPlace
 import InverseGalois.Solvable.Shafarevich.LevelOneDecomposition
-import InverseGalois.Solvable.Shafarevich.LocalLiftInfinite
+import InverseGalois.Solvable.Shafarevich.LevelArchimedean
 import InverseGalois.Solvable.Shafarevich.LevelRungData
 import InverseGalois.Solvable.Shafarevich.LevelStepRepair
 import InverseGalois.Solvable.Shafarevich.LayerCoord
@@ -793,14 +793,18 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet â
   conjugate of a chosen one.  So **a prescribed finite set of places of a level is covered by a
   finite family of primes whose stabilisers carry every condition the first rung asks of the
   family**.
-* `InverseGalois.Solvable.Shafarevich.LocalLiftInfinite` closes local solvability at the remaining
+* `InverseGalois.Solvable.Shafarevich.LevelArchimedean` closes local solvability at the remaining
   places.  The family the local conditions are read on holds the decomposition subgroups at the
-  archimedean places too, and there an automorphism fixing the place is an involution, so the image
-  of the decomposition subgroup is killed by two while the layer being added is killed by the odd
-  prime the ladder climbs.  The kernel of the surjection therefore has order coprime to the image,
-  the preimage of the image splits over that kernel, and a complement maps isomorphically onto the
-  image; the inverse of that isomorphism is the lift, and it factors through the same open subgroup
-  the solution does, so it is smooth.  So **the step of the ladder is locally solvable along every
+  archimedean places too, and nothing in the finite-place argument reaches them; but the conditions
+  are only read at the members of the wider family which the finite one does not name, and the
+  archimedean stabilisers are finitely many up to conjugacy, one above each archimedean place of the
+  base.  Naming them costs nothing.  The field the base realization cuts out holds a primitive root
+  of unity whose order is the square of the prime the ladder climbs, and the kernel of the
+  realization fixes it; an automorphism fixing an archimedean place and a root of unity of order
+  more than two is the identity, since otherwise it would act on the place as complex conjugation
+  and the root would be real.  So an archimedean stabiliser meets the kernel trivially, every clause
+  the family carries is an obligation at the elements the base realization kills, and the enlarged
+  family inherits all of them.  So **the step of the ladder is locally solvable along every
   decomposition subgroup, at the finite and at the infinite places together**.
 * `InverseGalois.Solvable.Shafarevich.LevelRungData` collects the clauses.  The package the ladder
   consumes asks seven things of the arithmetic, and six of them are now theorems: the bottom of the

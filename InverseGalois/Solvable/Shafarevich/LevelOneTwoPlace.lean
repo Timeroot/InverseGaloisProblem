@@ -96,10 +96,12 @@ theorem hasLevelOneCharacter_of_stable (hℓ : ℓ.Prime) (hodd : 2 < ℓ) (n : 
       (fun v _ _ => ⟨v, primeUnder_self v, Subgroup.eq_bot_of_subsingleton _⟩)
       (fun v _ => ⟨v, primeUnder_self v, ramIdx_eq_one_of_isUnramifiedAt v⟩)
       (Nat.card ↥(layerSub ℓ (Generic U n S) 0))
-  refine hasLevelOneCharacter_of_places_nat hℓ hodd.ne' n hsurj Tf K hKker hζ hmu
+  refine hasLevelOneCharacter_of_places_nat hℓ n hsurj Tf K hKker hζ hmu
     (Tn := (Tn : Set (HeightOneSpectrum (𝓞 ↥K)))) (fun σ v hv => hTnst σ v hv)
     (fun v hv => hpTn v fun hc => (finitePlace_natCast_eq_one_iff v ℓ).1 hc hv) hTfsh _ le_rfl
     Q R z (fun i hi v hv => hfam.prescribed i hi v hv)
+    (fun _ _ u => infClassHom_eq_one_of_isNegOnePow hℓ
+      (isNegOnePow_of_odd (hℓ.odd_of_ne_two hodd.ne')) hζ u _)
     (fun i hi v => hfam.unram i hi v (Finset.notMem_empty v)) hfam.ramQ hfam.conjQ hfam.conjR
     hfam.crossQ hfam.crossR hfam.stabQ hfam.stabR
 
