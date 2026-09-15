@@ -104,6 +104,7 @@ import InverseGalois.CFT.Brauer.TameValue
 import InverseGalois.CFT.Brauer.TameUnramified
 import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
+import InverseGalois.CFT.Brauer.NegOnePow
 import InverseGalois.CFT.Brauer.NormAdjust
 import InverseGalois.CFT.Brauer.NormFactors
 import InverseGalois.CFT.Brauer.NormPlaceValue
@@ -7924,6 +7925,18 @@ it that are available here.
   new symbol.  Global reciprocity therefore reads **the power residue symbols of two units at the
   finite places, multiplied by their symbols at the infinite places, give one**, the product formula
   over all the places and with no hypothesis on either argument.
+* `InverseGalois.CFT.Brauer.NegOnePow` isolates the one condition under which the archimedean
+  factor may be dropped again.  The product formula over the finite places alone holds as soon as
+  the field has no real place, and roots of unity of an odd order bigger than two already force
+  that; at the exponent two they do not, since the two roots of unity of order two lie in every
+  field, and what forces it there is a square root of minus one.  Both cases are one condition,
+  that **minus one be an exponent-th power**: at an odd exponent minus one is its own exponent-th
+  power and the condition is empty, while at the exponent two the witness is a square root of minus
+  one and a real embedding would turn it into a real number whose square is negative.  A field
+  carrying the roots of unity of a prime order in which minus one is a power of that order is
+  therefore totally complex, and **the power residue symbols of two of its units multiply to one
+  over the finite places at every prime exponent** — the same condition under which the symbol of a
+  unit against itself is trivial, so a single hypothesis carries the whole duality at every prime.
 * `InverseGalois.CFT.Brauer.SymbolReciprocity` reads that product formula between two units each
   ramified at a single place.  A unit whose value at a place is divisible by the exponent has a
   value at the Frobenius automorphism of that place, its symbol there against a uniformiser, and

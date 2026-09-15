@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Brauer.NegOnePow
 import InverseGalois.CFT.PoitouTate.ConjugatePlace
 import InverseGalois.CFT.PoitouTate.RecursionClose
 
@@ -61,7 +62,7 @@ variable {k A K : Type} [Field k] [NumberField k] [Field A] [Algebra k A] [Norma
 places.**  The unit realises the square of the prescribed behaviour on the fixed set and has
 trivial class at every nontrivial conjugate of either place; it is the product of the two units
 attached to the two stages of the recursion which the pigeonhole principle makes agree. -/
-theorem exists_two_places_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
+theorem exists_two_places_sUnit_prescribed (hp : p.Prime) (hneg : IsNegOnePow K p)
     {ζ : K} (hζ : IsPrimitiveRoot ζ p)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
     {Tr T S₀ : Finset (HeightOneSpectrum (𝓞 K))}
@@ -97,13 +98,13 @@ theorem exists_two_places_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
   classical
   haveI : IsGalois k ↥Ω := ⟨⟩
   refine exists_prescribed_two_places (Spl := fun v => ∃ w : HeightOneSpectrum (𝓞 ↥Ω),
-    primeUnder (𝓞 K) w = v ∧ stabilizer Gal(↥Ω/k) w = ⊥) hp (by omega) hres hζ ?_ hTstable hTrT
+    primeUnder (𝓞 K) w = v ∧ stabilizer Gal(↥Ω/k) w = ⊥) hp hneg hres hζ ?_ hTstable hTrT
     hTrstable hTS hSstable hSsplit hpT hgunr hgline hgp ?_
   · rintro σ v ⟨w, rfl, hw⟩
     exact exists_primeUnder_eq_smul_stabilizer_eq_bot (K := K) hw σ
   · intro S hSS _ c hcunr hc hsplit
     obtain ⟨V, -, hVstab, -, hVnew, z, -, hzS, hzunr, hzram⟩ :=
-      exists_place_sUnit_prescribed (Ω := Ω) hp hodd hζ hres
+      exists_place_sUnit_prescribed (Ω := Ω) hp hneg hζ hres
         (Finset.image (primeUnder (𝓞 k)) S) (hTS.trans hSS)
         (fun v hv => Finset.mem_image_of_mem _ hv)
         (fun v hv => hSS (hTS (hpT v hv)))
@@ -162,7 +163,8 @@ theorem exists_two_places_sUnit_class_eq (hp : p.Prime) (hodd : 2 < p)
       OnOneLineGal (fun w => localClassHom w p (y ^ ((p + 1) / 2))) σ v := fun σ hσ v hv => by
     simpa only [_root_.map_pow] using (hyline σ hσ v hv).pow ((p + 1) / 2)
   obtain ⟨Q, R, hQT, hRT, hQspl, hRspl, hQR, hQstab, hRstab, z, hzT, hzunr, hzQ, hzR, hzQc,
-    hzRc⟩ := exists_two_places_sUnit_prescribed (Ω := Ω) hp hodd hζ hres hTstable hTrT hTrstable
+    hzRc⟩ := exists_two_places_sUnit_prescribed (Ω := Ω) hp
+      (isNegOnePow_of_odd (hp.odd_of_ne_two (by omega))) hζ hres hTstable hTrT hTrstable
       hTS hSstable hSsplit hpT hrepr (pow_mem hy ((p + 1) / 2))
       (fun v hv hvr => by rw [_root_.map_pow]; exact pow_mem (hyunr v hv hvr) _) hline
       (fun v hv hv2 => by rw [_root_.map_pow, hyp v hv hv2, one_pow])

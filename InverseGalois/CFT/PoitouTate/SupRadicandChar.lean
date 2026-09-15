@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Brauer.NegOnePow
 import InverseGalois.CFT.Kummer.RadicalRamIdx
 import InverseGalois.CFT.Kummer.SupRadicalSplit
 import InverseGalois.CFT.PoitouTate.GlobalClasses
@@ -127,14 +128,15 @@ containing those over the exponent, the pairings of the classes of two units who
 the set are divisible by the exponent multiply to one: the pairing of classes is the norm residue
 symbol, whose factors outside the set are trivial by the previous lemma, so the product over the
 set is the product over all places. -/
-theorem prod_localClassPairing_eq_one_of_dvd_placeValue (hn : n.Prime) (hn2 : n ≠ 2)
+theorem prod_localClassPairing_eq_one_of_dvd_placeValue (hn : n.Prime)
+    (hneg : IsNegOnePow K n)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) (S : Finset (HeightOneSpectrum (𝓞 K)))
     (hnS : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → v ∈ S)
     {a b : Kˣ} (ha : ∀ v ∉ S, (n : ℤ) ∣ placeValue v a)
     (hb : ∀ v ∉ S, (n : ℤ) ∣ placeValue v b) :
     ∏ v ∈ S, localClassPairing hres hζ v (localClassHom v n a) (localClassHom v n b) = 1 := by
-  have hprod := prod_localSymbol_eq_one_of_ne_two hn hn2 hres hζ b a S ?_
+  have hprod := prod_localSymbol_eq_one_of_isNegOnePow hn hneg hres hζ b a S ?_
   · simpa only [← localClassPairing_eq_localSymbol hres hζ] using hprod
   · intro v hvS
     have hnv : FinitePlace.mk v ((n : ℕ) : K) = 1 := by
@@ -157,7 +159,8 @@ prescription carried by a global unit.**  Those trivial classes let the product 
 part alone, where the prescription is the class of a global unit, and then over the whole set
 again; the product formula on classes finishes it, the global unit being a unit away from the
 set. -/
-theorem prescriptionChar_eq_one_of_localClassHom_eq_one (hn : n.Prime) (hn2 : n ≠ 2)
+theorem prescriptionChar_eq_one_of_localClassHom_eq_one (hn : n.Prime)
+    (hneg : IsNegOnePow K n)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T Tn : Finset (HeightOneSpectrum (𝓞 K))} (hT : T ⊆ Tn)
     (hnTn : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → v ∈ Tn)
@@ -182,7 +185,7 @@ theorem prescriptionChar_eq_one_of_localClassHom_eq_one (hn : n.Prime) (hn2 : n 
     Finset.prod_subset hT fun v hv hv0 => by
       rw [hu v hv hv0, _root_.map_one, MonoidHom.one_apply]
   rw [e3]
-  refine prod_localClassPairing_eq_one_of_dvd_placeValue hn hn2 hres hζ Tn hnTn huout
+  refine prod_localClassPairing_eq_one_of_dvd_placeValue hn hneg hres hζ Tn hnTn huout
     fun v hv => ?_
   rw [placeValue_eq_zero_of_mem_sUnits hg fun h => hv (Finset.mem_coe.1 h)]
   exact dvd_zero _
@@ -217,7 +220,7 @@ theorem prescriptionChar_eq_one_of_dvd_placeValue (hn : n.Prime)
 
 /-- **The prescription character kills a product of the two shapes of unit it kills.**  A radicand
 of a compositum is such a product, one factor coming from each of the two extensions. -/
-theorem prescriptionChar_eq_one_of_mul (hn : n.Prime) (hn2 : n ≠ 2)
+theorem prescriptionChar_eq_one_of_mul (hn : n.Prime) (hneg : IsNegOnePow K n)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T Tn : Finset (HeightOneSpectrum (𝓞 K))} (hT : T ⊆ Tn)
     (hnTn : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → v ∈ Tn)
@@ -232,7 +235,7 @@ theorem prescriptionChar_eq_one_of_mul (hn : n.Prime) (hn2 : n ≠ 2)
     (h2 : ∀ v ∈ T, FinitePlace.mk v ((n : ℕ) : K) = 1 → (n : ℤ) ∣ placeValue v u₂) :
     prescriptionChar hres hζ Tn c u = 1 := by
   rw [hu, _root_.map_mul,
-    prescriptionChar_eq_one_of_localClassHom_eq_one hn hn2 hres hζ hT hnTn hg hc h1 h1out,
+    prescriptionChar_eq_one_of_localClassHom_eq_one hn hneg hres hζ hT hnTn hg hc h1 h1out,
     prescriptionChar_eq_one_of_dvd_placeValue hn hres hζ hcT hcunr hcn h2, one_mul]
 
 end Halves
@@ -248,7 +251,7 @@ variable {K M : Type} [Field K] [NumberField K] [Field M] [NumberField M] [Algeb
 splitting completely off the part of the prescription carried by a global unit.**  At such a place
 the decomposition group is trivial, so the radicand is already a power in the completion and its
 local class there is trivial. -/
-theorem prescriptionChar_eq_one_of_pow_mul (hn : n.Prime) (hn2 : n ≠ 2)
+theorem prescriptionChar_eq_one_of_pow_mul (hn : n.Prime) (hneg : IsNegOnePow K n)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T Tn : Finset (HeightOneSpectrum (𝓞 K))} (hT : T ⊆ Tn)
     (hnTn : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → v ∈ Tn)
@@ -263,7 +266,7 @@ theorem prescriptionChar_eq_one_of_pow_mul (hn : n.Prime) (hn2 : n ≠ 2)
     (h1out : ∀ v ∉ Tn, (n : ℤ) ∣ placeValue v u₁)
     (h2 : ∀ v ∈ T, FinitePlace.mk v ((n : ℕ) : K) = 1 → (n : ℤ) ∣ placeValue v u₂) :
     prescriptionChar hres hζ Tn c u = 1 := by
-  refine prescriptionChar_eq_one_of_mul hn hn2 hres hζ hT hnTn hg hc hcT hcunr hcn hu
+  refine prescriptionChar_eq_one_of_mul hn hneg hres hζ hT hnTn hg hc hcT hcunr hcn hu
     (fun v hv hv0 => ?_) h1out h2
   obtain ⟨w, rfl, hw⟩ := hsplit v hv hv0
   exact localClassHom_eq_one_of_stabilizer_eq_bot (NeZero.ne n) hζ hw hb
@@ -284,7 +287,7 @@ global unit and is unramified outside the prescribed set, and the second is unra
 of the prescribed set away from the exponent.  Splitting completely makes the local class of the
 first factor trivial, while an unramified place reads the value of a radicand as a multiple of the
 exponent. -/
-theorem prescriptionChar_eq_one_of_factor (hn : n.Prime) (hn2 : n ≠ 2)
+theorem prescriptionChar_eq_one_of_factor (hn : n.Prime) (hneg : IsNegOnePow K n)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T Tn : Finset (HeightOneSpectrum (𝓞 K))} (hT : T ⊆ Tn)
     (hnTn : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → v ∈ Tn)
@@ -302,7 +305,7 @@ theorem prescriptionChar_eq_one_of_factor (hn : n.Prime) (hn2 : n ≠ 2)
     {u u₁ u₂ : Kˣ} (hu : u = u₁ * u₂) {y₁ : M₁} (hy₁ : algebraMap K M₁ (u₁ : K) = y₁ ^ n)
     {y₂ : M₂} (hy₂ : algebraMap K M₂ (u₂ : K) = y₂ ^ n) :
     prescriptionChar hres hζ Tn c u = 1 := by
-  refine prescriptionChar_eq_one_of_pow_mul hn hn2 hres hζ hT hnTn hg hc hcT hcunr hcn hsplit
+  refine prescriptionChar_eq_one_of_pow_mul hn hneg hres hζ hT hnTn hg hc hcT hcunr hcn hsplit
     hu hy₁ (fun v hv => ?_) (fun v hv hvn => ?_)
   · obtain ⟨w, rfl, hw⟩ := hram₁ v hv
     exact dvd_placeValue_of_pow_eq_of_ramIdx_eq_one hn.ne_zero w hw hy₁
@@ -327,7 +330,7 @@ outside the prescribed set, the second with abelian Galois group of exponent the
 unramified on the part of the prescribed set away from the exponent.  The radicand factors as a
 radicand of the first extension times a radicand of the second, and each factor is then killed for
 its own reason. -/
-theorem prescriptionChar_eq_one_of_pow_sup (hn : n.Prime) (hn2 : n ≠ 2)
+theorem prescriptionChar_eq_one_of_pow_sup (hn : n.Prime) (hneg : IsNegOnePow K n)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T Tn : Finset (HeightOneSpectrum (𝓞 K))} (hT : T ⊆ Tn)
     (hnTn : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → v ∈ Tn)
@@ -372,7 +375,7 @@ theorem prescriptionChar_eq_one_of_pow_sup (hn : n.Prime) (hn2 : n ≠ 2)
   obtain ⟨y₂, hy₂⟩ := AlgHom.mem_fieldRange.1 hx₂
   have hy₁' : algebraMap M₁ L y₁ = x₁ := hy₁
   have hy₂' : algebraMap M₂ L y₂ = x₂ := hy₂
-  refine prescriptionChar_eq_one_of_factor hn hn2 hres hζ hT hnTn hg hc hcT hcunr hcn hsplit
+  refine prescriptionChar_eq_one_of_factor hn hneg hres hζ hT hnTn hg hc hcT hcunr hcn hsplit
     hram₁ hram₂ (u₁ := Units.mk0 b₁ hb₁) (u₂ := Units.mk0 b₂ hb₂) (by ext; simpa using hmul)
     (y₁ := y₁) ?_ (y₂ := y₂) ?_
   · refine (algebraMap M₁ L).injective ?_

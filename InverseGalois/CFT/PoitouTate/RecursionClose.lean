@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Brauer.NegOnePow
 import InverseGalois.CFT.PoitouTate.ClosingChain
 import InverseGalois.CFT.PoitouTate.ClosingChainRamified
 import InverseGalois.CFT.PoitouTate.Recursion
@@ -131,7 +132,7 @@ by the pigeonhole principle, and the unit is the product of the two units attach
 agreeing stages.  Away from a distinguished stable part of the fixed set, where the prescription
 lies on one line with the prescription carried there from the place below, the unit produced is
 unramified. -/
-theorem exists_prescribed_two_places (hp : p.Prime) (hp2 : p ≠ 2)
+theorem exists_prescribed_two_places (hp : p.Prime) (hneg : IsNegOnePow K p)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ p) {Spl : HeightOneSpectrum (𝓞 K) → Prop}
     (hSpl : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), Spl v → Spl (σ • v))
@@ -240,7 +241,7 @@ theorem exists_prescribed_two_places (hp : p.Prime) (hp2 : p ≠ 2)
   · intro σ hσ
     rw [_root_.map_mul, hd.unitConj i hiM N hNM hiN σ hσ, mul_inv_cancel]
   · intro σ hσ
-    exact localClassHom_mul_eq_one_of_isotropic hp hp2 hres hζ hTrstable (hQσQ σ hσ) (hQR σ)
+    exact localClassHom_mul_eq_one_of_isotropic hp hneg hres hζ hTrstable (hQσQ σ hσ) (hQR σ)
       (hRσR σ hσ) (hnotTr _ hQnotT) (hnotTr _ hRnotT) (hnotT _ hQnotT)
       (hnotT _ (hTnot σ _ hQnotT)) (hnotT _ (hTnot σ _ hRnotT))
       (hd.unitUnram i hiM) (hd.unitUnram N hNM) hziQ hvalcong hzip (hiso σ) (hfrobeq σ)

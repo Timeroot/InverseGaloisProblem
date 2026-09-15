@@ -3,16 +3,18 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Brauer.NegOnePow
 import InverseGalois.CFT.Brauer.TameSymbol
 import InverseGalois.CFT.PoitouTate.SplitClass
 
 /-!
 # The norm residue symbol on a cyclic group of classes
 
-At an odd exponent the norm residue symbol of an element against itself is trivial: it equals the
-symbol against minus one, and minus one is an odd power of itself.  Bilinearity then makes the
+Where minus one is an exponent-th power the norm residue symbol of an element against itself is
+trivial: it equals the symbol against minus one, which a power kills.  Bilinearity then makes the
 symbol vanish on any pair of powers of a single class, so a cyclic group of local classes is
-isotropic for the symbol.
+isotropic for the symbol.  At an odd exponent minus one is its own exponent-th power and the
+condition is empty; at the exponent two it asks the field for a square root of minus one.
 
 That is the second reason a prescription character can kill a radicand, alongside the one already
 available: the unramified classes at a place away from the exponent are their own orthogonal
@@ -24,10 +26,10 @@ against at such a place lies on the same line as it does.
 
 ## Main results
 
-* `InverseGalois.CFT.localSymbol_self_eq_one`: **at an odd exponent the norm residue symbol of an
-  element against itself is trivial.**
+* `InverseGalois.CFT.localSymbol_self_eq_one`: **where minus one is an exponent-th power the norm
+  residue symbol of an element against itself is trivial.**
 * `InverseGalois.CFT.localSymbolQuotDual_eq_one_of_mem_zpowers`: **a cyclic group of classes of a
-  local field is isotropic for the norm residue symbol** at an odd exponent.
+  local field is isotropic for the norm residue symbol** there.
 * `InverseGalois.CFT.localClassPairing_eq_one_of_mem_zpowers`: the same, at a finite place of a
   number field.
 * `InverseGalois.CFT.prescriptionChar_eq_one_of_mem_zpowers`: **the prescription character kills a
@@ -53,22 +55,23 @@ variable {K : Type} [Field K] [Valued K ℤᵐ⁰]
   [Valuation.RankOne (Valued.v : Valuation K ℤᵐ⁰)] [CompleteSpace K] [ProperSpace K]
   [PerfectField K] {m : ℤ} {p e n : ℕ} [NeZero n] {ζ : K}
 
-/-- **At an odd exponent the norm residue symbol of an element against itself is trivial.**  The
-symbol of an element against itself is its symbol against minus one, and at an odd exponent minus
-one is an exponent-th power. -/
+/-- **Where minus one is an exponent-th power the norm residue symbol of an element against itself
+is trivial.**  The symbol of an element against itself is its symbol against minus one, and a
+symbol against an exponent-th power is trivial. -/
 theorem localSymbol_self_eq_one (hres : HasResidueChar K p e) (hm : IsUnitValGen K m)
-    (hζ : IsPrimitiveRoot ζ n) (hodd : Odd n) (a : Kˣ) : localSymbol hres hm hζ a a = 1 := by
+    (hζ : IsPrimitiveRoot ζ n) (hneg : IsNegOnePow K n) (a : Kˣ) :
+    localSymbol hres hm hζ a a = 1 := by
   rw [localSymbol_self_eq_neg_one hres hm hζ a]
-  exact localSymbol_eq_one_of_isPow_right hres hm hζ a ⟨-1, hodd.neg_one_pow⟩
+  exact localSymbol_eq_one_of_isPow_right hres hm hζ a hneg
 
-/-- **At an odd exponent a class of a local field pairs trivially with itself** under the norm
-residue symbol read on the classes modulo exponent-th powers. -/
+/-- **Where minus one is an exponent-th power a class of a local field pairs trivially with
+itself** under the norm residue symbol read on the classes modulo exponent-th powers. -/
 theorem localSymbolQuotDual_self_eq_one (hres : HasResidueChar K p e) (hm : IsUnitValGen K m)
-    (hζ : IsPrimitiveRoot ζ n) (hodd : Odd n)
+    (hζ : IsPrimitiveRoot ζ n) (hneg : IsNegOnePow K n)
     (x : Kˣ ⧸ (powMonoidHom n : Kˣ →* Kˣ).range) :
     localSymbolQuotDual hres hm hζ x x = 1 := by
   induction x using QuotientGroup.induction_on with
-  | _ a => exact localSymbol_self_eq_one hres hm hζ hodd a
+  | _ a => exact localSymbol_self_eq_one hres hm hζ hneg a
 
 /-- **A class of a local field pairs with itself as it pairs with minus one**, read on the classes
 modulo exponent-th powers.  This holds at every exponent, odd or not. -/
@@ -81,16 +84,16 @@ theorem localSymbolQuotDual_self_eq_neg_one (hres : HasResidueChar K p e)
   induction x using QuotientGroup.induction_on with
   | _ a => exact (localSymbol_neg_one_left_eq_self hres hm hζ a).symm
 
-/-- **A cyclic group of classes of a local field is isotropic for the norm residue symbol** at an
-odd exponent: two powers of one class pair to that class against itself, raised to the product of
-the two powers, and a class pairs trivially with itself. -/
+/-- **A cyclic group of classes of a local field is isotropic for the norm residue symbol** where
+minus one is an exponent-th power: two powers of one class pair to that class against itself,
+raised to the product of the two powers, and a class pairs trivially with itself. -/
 theorem localSymbolQuotDual_eq_one_of_mem_zpowers (hres : HasResidueChar K p e)
-    (hm : IsUnitValGen K m) (hζ : IsPrimitiveRoot ζ n) (hodd : Odd n)
+    (hm : IsUnitValGen K m) (hζ : IsPrimitiveRoot ζ n) (hneg : IsNegOnePow K n)
     {d x y : Kˣ ⧸ (powMonoidHom n : Kˣ →* Kˣ).range} (hx : x ∈ Subgroup.zpowers d)
     (hy : y ∈ Subgroup.zpowers d) : localSymbolQuotDual hres hm hζ x y = 1 := by
   obtain ⟨i, rfl⟩ := Subgroup.mem_zpowers_iff.1 hx
   obtain ⟨j, rfl⟩ := Subgroup.mem_zpowers_iff.1 hy
-  simp only [map_zpow, MonoidHom.zpow_apply, localSymbolQuotDual_self_eq_one hres hm hζ hodd d,
+  simp only [map_zpow, MonoidHom.zpow_apply, localSymbolQuotDual_self_eq_one hres hm hζ hneg d,
     one_zpow]
 
 end Local
@@ -103,23 +106,24 @@ variable {K : Type} [Field K] [NumberField K] {n : ℕ} [NeZero n]
   {P E : HeightOneSpectrum (𝓞 K) → ℕ}
 
 /-- **A cyclic group of classes at a finite place of a number field is isotropic** for the pairing
-of local classes, at an odd exponent. -/
+of local classes, minus one being an exponent-th power in the field. -/
 theorem localClassPairing_eq_one_of_mem_zpowers
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
-    {ζ : K} (hζ : IsPrimitiveRoot ζ n) (hodd : Odd n) (v : HeightOneSpectrum (𝓞 K))
+    {ζ : K} (hζ : IsPrimitiveRoot ζ n) (hneg : IsNegOnePow K n) (v : HeightOneSpectrum (𝓞 K))
     {d x y : localClasses v n} (hx : x ∈ Subgroup.zpowers d) (hy : y ∈ Subgroup.zpowers d) :
     localClassPairing hres hζ v x y = 1 :=
   localSymbolQuotDual_eq_one_of_mem_zpowers (hres v)
     (isUnitValGen_one (valued_adicCompletion_surjective v))
-    (hζ.map_of_injective (algebraMap K (v.adicCompletion K)).injective) hodd hx hy
+    (hζ.map_of_injective (algebraMap K (v.adicCompletion K)).injective)
+    (hneg.map (algebraMap K (v.adicCompletion K))) hx hy
 
-/-- **A class at a finite place of a number field pairs trivially with itself** at an odd
-exponent. -/
+/-- **A class at a finite place of a number field pairs trivially with itself**, minus one being
+an exponent-th power in the field. -/
 theorem localClassPairing_self_eq_one
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
-    {ζ : K} (hζ : IsPrimitiveRoot ζ n) (hodd : Odd n) (v : HeightOneSpectrum (𝓞 K))
+    {ζ : K} (hζ : IsPrimitiveRoot ζ n) (hneg : IsNegOnePow K n) (v : HeightOneSpectrum (𝓞 K))
     (x : localClasses v n) : localClassPairing hres hζ v x x = 1 :=
-  localClassPairing_eq_one_of_mem_zpowers hres hζ hodd v (Subgroup.mem_zpowers x)
+  localClassPairing_eq_one_of_mem_zpowers hres hζ hneg v (Subgroup.mem_zpowers x)
     (Subgroup.mem_zpowers x)
 
 /-- **The prescription character kills a unit whose class at each prescribed place lies on the
@@ -129,7 +133,8 @@ is asked about ramification: this is the reason available to a prescription whic
 it is carried. -/
 theorem prescriptionChar_eq_one_of_mem_zpowers
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
-    {ζ : K} (hζ : IsPrimitiveRoot ζ n) (hodd : Odd n) {T Tn : Finset (HeightOneSpectrum (𝓞 K))}
+    {ζ : K} (hζ : IsPrimitiveRoot ζ n) (hneg : IsNegOnePow K n)
+    {T Tn : Finset (HeightOneSpectrum (𝓞 K))}
     {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n}
     (hcT : ∀ v ∈ Tn, v ∉ T → c v = 1) {u : Kˣ}
     (hu : ∀ v ∈ T, ∃ d : localClasses v n,
@@ -140,7 +145,7 @@ theorem prescriptionChar_eq_one_of_mem_zpowers
   refine Finset.prod_eq_one fun v hv => ?_
   by_cases hvT : v ∈ T
   · obtain ⟨d, hud, hcd⟩ := hu v hvT
-    exact localClassPairing_eq_one_of_mem_zpowers hres hζ hodd v hud hcd
+    exact localClassPairing_eq_one_of_mem_zpowers hres hζ hneg v hud hcd
   · rw [hcT v hv hvT]
     exact _root_.map_one _
 

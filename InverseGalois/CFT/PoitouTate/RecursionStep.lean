@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Brauer.NegOnePow
 import InverseGalois.CFT.PoitouTate.PlaceUniformiser
 import InverseGalois.CFT.PoitouTate.SUnitCharacter
 import InverseGalois.CFT.PoitouTate.SUnitReduce
@@ -392,7 +393,7 @@ radicand is already a power in the completion at a completely split place, so wh
 product of norm residue symbols of two `S`-units and the product formula applies.  The prescription
 is allowed to be ramified on a named part of the prescribed set, and the unit produced is then
 ramified at the new place and on that part only. -/
-theorem exists_place_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
+theorem exists_place_sUnit_prescribed (hp : p.Prime) (hneg : IsNegOnePow K p)
     {ζ : K} (hζ : IsPrimitiveRoot ζ p)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
     (Tk : Finset (HeightOneSpectrum (𝓞 k))) {Tr T Tn : Finset (HeightOneSpectrum (𝓞 K))}
@@ -417,7 +418,6 @@ theorem exists_place_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
         (∀ v : HeightOneSpectrum (𝓞 K), v ∉ Tr → v ≠ primeUnder (𝓞 K) V →
           (p : ℤ) ∣ placeValue v z) ∧
         ¬ (p : ℤ) ∣ placeValue (primeUnder (𝓞 K) V) z := by
-  have hp2 : p ≠ 2 := by omega
   have hsplitK : ∀ v ∈ Tn, v ∉ T → ∃ w : HeightOneSpectrum (𝓞 ↥Ω),
       primeUnder (𝓞 K) w = v ∧ stabilizer Gal(↥Ω/K) w = ⊥ := by
     intro v hv hvT
@@ -431,7 +431,7 @@ theorem exists_place_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
       have hy' := congrArg Units.val hy
       rwa [Units.coe_map, MonoidHom.coe_coe, Units.val_pow_eq_pow_val] at hy'
     exact prescriptionChar_eq_one_of_pow hp hres hζ hT subset_rfl hpTn hg hc hsplitK hu
-      (fun w => infClassHom_eq_one_of_ne_two hp hp2 hζ w _) hb
+      (fun w => infClassHom_eq_one_of_isNegOnePow hp hneg hζ w _) hb
   exact exists_place_sUnit_prescribed_of_rad (T := Tr) hp hζ hres Tk hTk hpTn hrepr hcunr hrad
 
 end Step

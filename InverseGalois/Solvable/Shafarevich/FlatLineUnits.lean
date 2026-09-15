@@ -336,8 +336,9 @@ theorem isNamedOrthogonal_line {ℓ : ℕ} [NeZero ℓ] (hℓ : ℓ.Prime) (hodd
   have hoddℓ : Odd ℓ := hℓ.odd_of_ne_two (by omega)
   intro Tn _ q u _ hpow
   rw [localSymbolPiPairing_eq_piPairing, piPairing_apply]
-  exact Finset.prod_eq_one fun μ _ => localClassPairing_eq_one_of_mem_zpowers hres hζ hoddℓ (w μ)
-    (hscholz μ ((u : (↥K)ˣ)) hpow) (hline μ q)
+  exact Finset.prod_eq_one fun μ _ =>
+    localClassPairing_eq_one_of_mem_zpowers hres hζ (isNegOnePow_of_odd hoddℓ) (w μ)
+      (hscholz μ ((u : (↥K)ˣ)) hpow) (hline μ q)
 
 /-- **One unit per named place, ramified at its own place and trivial at the others, in exchange
 for a local demand at the named places alone.**

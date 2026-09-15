@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Brauer.NegOnePow
 import InverseGalois.CFT.PoitouTate.RecursionRadical
 import InverseGalois.CFT.PoitouTate.TwoPlacesFree
 
@@ -107,8 +108,9 @@ theorem exists_two_places_sUnit_radical (hp : p.Prime) (hodd : 2 < p)
         (∀ σ : Gal(K/k), σ ≠ 1 → localClassHom (σ • Q) p z = 1) ∧
         (∀ σ : Gal(K/k), σ ≠ 1 → localClassHom (σ • R) p z = 1) := by
   classical
+  have hneg : IsNegOnePow K p := isNegOnePow_of_odd (hp.odd_of_ne_two (by omega))
   obtain ⟨V, -, hVstab, -, -, -, y, hyS, hyc, -, -⟩ :=
-    exists_place_sUnit_prescribed_of_radical (Ω := Ω) (M₁ := M₁) (M₂ := M₂) hp hodd hζ hres
+    exists_place_sUnit_prescribed_of_radical (Ω := Ω) (M₁ := M₁) (M₂ := M₂) hp hneg hζ hres
       (Tn.image (primeUnder (𝓞 k))) hT (fun v hv => Finset.mem_image_of_mem _ hv) hpTn hrepr
       hcunr hg hc hcT hcn hsup hpow hgen hord hsplit hram₁
   have hysplit : ∀ v : HeightOneSpectrum (𝓞 K), v ∉ Tn → Rigidity.RET.ord K v (y : K) ≠ 0 →
@@ -197,8 +199,10 @@ theorem exists_two_places_sUnit_radical_zpowers (hp : p.Prime) (hodd : 2 < p)
         (∀ σ : Gal(K/k), σ ≠ 1 → localClassHom (σ • Q) p z = 1) ∧
         (∀ σ : Gal(K/k), σ ≠ 1 → localClassHom (σ • R) p z = 1) := by
   classical
+  have hneg : IsNegOnePow K p := isNegOnePow_of_odd (hp.odd_of_ne_two (by omega))
   obtain ⟨V, -, hVstab, -, -, -, y, hyS, hyc, -, -⟩ :=
-    exists_place_sUnit_prescribed_of_radical_zpowers (Ω := Ω) (M₁ := M₁) (M₂ := M₂) hp hodd hζ hres
+    exists_place_sUnit_prescribed_of_radical_zpowers (Ω := Ω) (M₁ := M₁) (M₂ := M₂) hp hneg hζ
+      hres
       (Tn.image (primeUnder (𝓞 k))) hT (fun v hv => Finset.mem_image_of_mem _ hv) hpTn hrepr
       hg hc hcT hsup hpow hgen hDc hDb hsplit hram₁
   have hysplit : ∀ v : HeightOneSpectrum (𝓞 K), v ∉ Tn → Rigidity.RET.ord K v (y : K) ≠ 0 →

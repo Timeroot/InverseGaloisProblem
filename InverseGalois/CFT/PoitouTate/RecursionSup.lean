@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Brauer.NegOnePow
 import InverseGalois.CFT.Compositum
 import InverseGalois.CFT.PoitouTate.RecursionStep
 import InverseGalois.CFT.PoitouTate.SupRadicandChar
@@ -80,7 +81,7 @@ character of the `S`-units
 is killed by every radicand of the middle field, because a radicand factors along the two
 extensions, and the step produces a new place, completely split in the middle field, together with
 an `S`-unit meeting the prescription and ramified exactly there. -/
-theorem exists_place_sUnit_prescribed_of_sup (hp : p.Prime) (hodd : 2 < p)
+theorem exists_place_sUnit_prescribed_of_sup (hp : p.Prime) (hneg : IsNegOnePow K p)
     {ζ : K} (hζ : IsPrimitiveRoot ζ p)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
     (Tk : Finset (HeightOneSpectrum (𝓞 k))) {T Tn : Finset (HeightOneSpectrum (𝓞 K))}
@@ -113,7 +114,6 @@ theorem exists_place_sUnit_prescribed_of_sup (hp : p.Prime) (hodd : 2 < p)
         (∀ v : HeightOneSpectrum (𝓞 K), v ≠ primeUnder (𝓞 K) V →
           (p : ℤ) ∣ placeValue v z) ∧
         ¬ (p : ℤ) ∣ placeValue (primeUnder (𝓞 K) V) z := by
-  have hp2 : p ≠ 2 := by omega
   have hrad : ∀ u ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))), ∀ y : (↥Ω)ˣ,
       Units.map (algebraMap K ↥Ω : K →* ↥Ω) u = y ^ p →
       prescriptionChar hres hζ Tn c u = 1 := by
@@ -121,7 +121,7 @@ theorem exists_place_sUnit_prescribed_of_sup (hp : p.Prime) (hodd : 2 < p)
     have hb : algebraMap K ↥Ω ((u : Kˣ) : K) = ((y : (↥Ω)ˣ) : ↥Ω) ^ p := by
       have hy' := congrArg Units.val hy
       rwa [Units.coe_map, MonoidHom.coe_coe, Units.val_pow_eq_pow_val] at hy'
-    exact prescriptionChar_eq_one_of_pow_sup hp hp2 hres hζ hT hpTn hg hc hcT
+    exact prescriptionChar_eq_one_of_pow_sup hp hneg hres hζ hT hpTn hg hc hcT
       (fun v hv => hcunr v (hT hv)) hcn hsup hcomm hexp hsplit hram₁ hram₂ hb
   obtain ⟨V, hVT, hVstab, hVP, hQTn, z, hzmem, hzTn, hzval, hzQ⟩ :=
     exists_place_sUnit_prescribed_of_rad (T := (∅ : Finset (HeightOneSpectrum (𝓞 K))))
@@ -137,7 +137,7 @@ radicand of the second extension have, at a place where the prescription is carr
 line of the prescribed class.  The `S`-unit produced meets the prescription at the old places, is
 ramified at the new place, and outside the part of the prescribed set carrying the prescription has
 value a multiple of the exponent. -/
-theorem exists_place_sUnit_prescribed_of_sup_zpowers (hp : p.Prime) (hodd : 2 < p)
+theorem exists_place_sUnit_prescribed_of_sup_zpowers (hp : p.Prime) (hneg : IsNegOnePow K p)
     {ζ : K} (hζ : IsPrimitiveRoot ζ p)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
     (Tk : Finset (HeightOneSpectrum (𝓞 k))) {T Tn : Finset (HeightOneSpectrum (𝓞 K))}
@@ -169,7 +169,6 @@ theorem exists_place_sUnit_prescribed_of_sup_zpowers (hp : p.Prime) (hodd : 2 < 
         (∀ v : HeightOneSpectrum (𝓞 K), v ∉ T → v ≠ primeUnder (𝓞 K) V →
           (p : ℤ) ∣ placeValue v z) ∧
         ¬ (p : ℤ) ∣ placeValue (primeUnder (𝓞 K) V) z := by
-  have hp2 : p ≠ 2 := by omega
   have hcunr : ∀ v ∈ Tn, v ∉ T → c v ∈ localUnramified v p := by
     intro v hv hvT
     rw [hcT v hv hvT]
@@ -179,7 +178,7 @@ theorem exists_place_sUnit_prescribed_of_sup_zpowers (hp : p.Prime) (hodd : 2 < 
   have hb : algebraMap K ↥Ω ((u : Kˣ) : K) = ((y : (↥Ω)ˣ) : ↥Ω) ^ p := by
     have hy' := congrArg Units.val hy
     rwa [Units.coe_map, MonoidHom.coe_coe, Units.val_pow_eq_pow_val] at hy'
-  exact prescriptionChar_eq_one_of_pow_sup_zpowers hp hp2 hres hζ hT hpTn hg hc hcT
+  exact prescriptionChar_eq_one_of_pow_sup_zpowers hp hneg hres hζ hT hpTn hg hc hcT
     hsup hcomm hexp hsplit hram₁ hcyc₂ hb
 
 end SupStep

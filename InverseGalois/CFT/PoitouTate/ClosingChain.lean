@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Brauer.NegOnePow
 import InverseGalois.CFT.Brauer.SymbolReciprocity
 import InverseGalois.CFT.PoitouTate.GlobalClasses
 
@@ -94,7 +95,7 @@ variable {k : Type} [Field k] [NumberField k] {n : ℕ} [NeZero n]
 /-- **Reciprocity between two units each ramified at a single place**, where the two values at
 those places agree modulo the exponent and are prime to it: the values of each at the Frobenius
 automorphism of the exceptional place of the other are equal. -/
-theorem placeFrobValue_eq_placeFrobValue (hn : n.Prime) (hn2 : n ≠ 2)
+theorem placeFrobValue_eq_placeFrobValue (hn : n.Prime) (hneg : IsNegOnePow k n)
     (hres : ∀ v : HeightOneSpectrum (𝓞 k), HasResidueChar (v.adicCompletion k) (P v) (E v))
     {ζ : k} (hζ : IsPrimitiveRoot ζ n) {v w : HeightOneSpectrum (𝓞 k)} (hvw : v ≠ w)
     (hvn : ¬ P v ∣ n) (hwn : ¬ P w ∣ n) {a b : kˣ}
@@ -106,7 +107,7 @@ theorem placeFrobValue_eq_placeFrobValue (hn : n.Prime) (hn2 : n ≠ 2)
     {m : ℤ} (hm : IsCoprime m (n : ℤ)) (hav : placeValue v a ≡ m [ZMOD (n : ℤ)])
     (hbw : placeValue w b ≡ m [ZMOD (n : ℤ)]) :
     placeFrobValue hres hζ w a = placeFrobValue hres hζ v b := by
-  have h := placeFrobValue_zpow_eq_zpow hn hn2 hres hζ hvw hvn hwn ha hb hap
+  have h := placeFrobValue_zpow_eq_zpow hn hneg hres hζ hvw hvn hwn ha hb hap
   rw [zpow_eq_zpow_of_modEq (pow_placeFrobValue_eq_one hres hζ w a) hbw,
     zpow_eq_zpow_of_modEq (pow_placeFrobValue_eq_one hres hζ v b) hav] at h
   exact eq_of_zpow_eq_zpow_of_isCoprime (pow_placeFrobValue_eq_one hres hζ w a)
@@ -234,7 +235,7 @@ a power in every completion whose residue characteristic divides the exponent, w
 Frobenius automorphism of their own place moved by an automorphism agree, and whose Galois
 conjugates have mutually inverse values at the exceptional place of the first, have a product which
 is trivial at the moved place. -/
-theorem placeFrobValue_mul_eq_one (hn : n.Prime) (hn2 : n ≠ 2)
+theorem placeFrobValue_mul_eq_one (hn : n.Prime) (hneg : IsNegOnePow K n)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {σ : Gal(K/k)} {Q R : HeightOneSpectrum (𝓞 K)}
     (hQσQ : Q ≠ σ • Q) (hQσR : Q ≠ σ • R) (hQn : ¬ P Q ∣ n) (hσQn : ¬ P (σ • Q) ∣ n)
@@ -251,11 +252,11 @@ theorem placeFrobValue_mul_eq_one (hn : n.Prime) (hn2 : n ≠ 2)
       = (placeFrobValue hres hζ Q (galUnits σ zi))⁻¹) :
     placeFrobValue hres hζ (σ • R) (zi * zN) = 1 := by
   have h1 : placeFrobValue hres hζ (σ • Q) zi = placeFrobValue hres hζ Q (galUnits σ zi) :=
-    placeFrobValue_eq_placeFrobValue hn hn2 hres hζ hQσQ hQn hσQn hzi
+    placeFrobValue_eq_placeFrobValue hn hneg hres hζ hQσQ hQn hσQn hzi
       (dvd_placeValue_galUnits σ hzi) hzip hziQ (Int.ModEq.refl _)
       (by rw [placeValue_galSmul])
   have h2 : placeFrobValue hres hζ (σ • R) zi = placeFrobValue hres hζ Q (galUnits σ zN) :=
-    placeFrobValue_eq_placeFrobValue hn hn2 hres hζ hQσR hQn hσRn hzi
+    placeFrobValue_eq_placeFrobValue hn hneg hres hζ hQσR hQn hσRn hzi
       (dvd_placeValue_galUnits σ hzN) hzip hziQ (Int.ModEq.refl _)
       (by rw [placeValue_galSmul]; exact hzNR)
   have hcond' : placeFrobValue hres hζ Q (galUnits σ zi)
@@ -280,7 +281,7 @@ theorem placeFrobValue_galUnits_eq_inv
 
 /-- **The product of the two units supplied by the pigeonhole principle is a power in the
 completion at every moved place**: the closing chain, read on the classes modulo `n`-th powers. -/
-theorem localClassHom_mul_eq_one (hn : n.Prime) (hn2 : n ≠ 2)
+theorem localClassHom_mul_eq_one (hn : n.Prime) (hneg : IsNegOnePow K n)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {σ : Gal(K/k)} {Q R : HeightOneSpectrum (𝓞 K)}
     (hQσQ : Q ≠ σ • Q) (hQσR : Q ≠ σ • R) (hRσR : R ≠ σ • R) (hQn : ¬ P Q ∣ n)
@@ -297,7 +298,7 @@ theorem localClassHom_mul_eq_one (hn : n.Prime) (hn2 : n ≠ 2)
       = (placeFrobValue hres hζ Q (galUnits σ zi))⁻¹) :
     localClassHom (σ • R) n (zi * zN) = 1 := by
   refine localClassHom_eq_one_of_placeFrobValue_eq_one hn hres hζ hσRn ?_
-    (placeFrobValue_mul_eq_one hn hn2 hres hζ hQσQ hQσR hQn hσQn hσRn hzi hzN hziQ hzNR hzip
+    (placeFrobValue_mul_eq_one hn hneg hres hζ hQσQ hQσR hQn hσQn hσRn hzi hzN hziQ hzNR hzip
       hpigeon hcond)
   rw [placeValue_mul]
   exact dvd_add (hzi _ (Ne.symm hQσR)) (hzN _ (Ne.symm hRσR))

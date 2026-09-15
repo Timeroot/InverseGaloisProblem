@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Brauer.NegOnePow
 import InverseGalois.CFT.Brauer.RealSymbol
 import InverseGalois.CFT.Local.InfinitePowIndex
 import InverseGalois.CFT.PoitouTate.Isotropic
@@ -40,6 +41,8 @@ convention: an odd power exhausts the real units, so the group of classes is the
   number field is the symbol at the place**, when a real place forces the exponent to be even.
 * `InverseGalois.CFT.eq_two_of_isReal_of_isPrimitiveRoot`: a field carrying a real place and a
   primitive root of unity of prime order has that order equal to two.
+* `InverseGalois.CFT.infClassHom_eq_one_of_isNegOnePow`: **the infinite places ask nothing of a
+  number field in which minus one is a power of the exponent.**
 
 ## Tags
 
@@ -360,15 +363,13 @@ theorem two_dvd_of_isReal_of_isPrimitiveRoot {n : ℕ} (hn : n.Prime) {ζ : K}
     (hζ : IsPrimitiveRoot ζ n) {w : InfinitePlace K} (hw : w.IsReal) : 2 ∣ n := by
   rw [eq_two_of_isReal_of_isPrimitiveRoot hn hζ hw]
 
-/-- **A number field carrying a primitive root of unity of odd prime order asks nothing at the
-infinite places**: such a field is totally complex, and every unit of a complex completion is an
-`n`-th power there. -/
-theorem infClassHom_eq_one_of_ne_two {n : ℕ} (hn : n.Prime) (hn2 : n ≠ 2) {ζ : K}
+/-- **A number field in which minus one is a power of a prime order whose roots of unity it carries
+asks nothing at the infinite places**: such a field is totally complex, and every unit of a complex
+completion is an `n`-th power there. -/
+theorem infClassHom_eq_one_of_isNegOnePow {n : ℕ} (hn : n.Prime) (hneg : IsNegOnePow K n) {ζ : K}
     (hζ : IsPrimitiveRoot ζ n) (w : InfinitePlace K) (u : Kˣ) : infClassHom w n u = 1 := by
-  have hw : w.IsComplex := by
-    rcases w.isReal_or_isComplex with hw | hw
-    · exact absurd (eq_two_of_isReal_of_isPrimitiveRoot hn hζ hw) hn2
-    · exact hw
+  haveI := isTotallyComplex_of_isNegOnePow hn hζ hneg
+  have hw : w.IsComplex := IsTotallyComplex.isComplex w
   have htop : (powMonoidHom n : w.Completionˣ →* w.Completionˣ).range = ⊤ := by
     rw [← Subgroup.index_eq_one, index_range_powMonoidHom_units_congr
       (InfinitePlace.Completion.ringEquivComplexOfIsComplex hw) n,
