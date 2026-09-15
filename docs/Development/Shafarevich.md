@@ -26858,3 +26858,225 @@ the Scholz condition at the dyadic place and the failure of `2 < ℓ` in
 `genericLevelStepEPRoots_of_flatPrescriptionEP` (`NamedOrthogonal.lean:535`) are real.  The nilpotent
 case of `ℓ = 2` was closed in §1.9x by `Scholz/DyadicInitialStage.lean`, but that is the *ladder over
 ℚ*, not the generic split embedding problem over an arbitrary realized base `U`.
+
+## §1.139 The even step: the parity obstruction is real, and Schmidt–Wingberg's Claim has a Chebotarev-free proof (2026-09-15)
+
+`GenericLevelStepEPRoots ℓ` is a theorem for every odd `ℓ` (§1.138).  This section settles what
+the remaining prime costs.  It is entirely about the CFT layer — the two-place construction of
+`InverseGalois/CFT/PoitouTate/` — because that is the only place where `2 < p` is used for a
+mathematical reason rather than for bookkeeping.
+
+### (a) Where `2 < p` actually bites
+
+`exists_two_places_sUnit_prescribed` (`TwoPlaces.lean:65`) already takes `IsNegOnePow K p` rather
+than an oddness hypothesis, and already concludes
+
+```lean
+(∀ σ : Gal(K/k), σ ≠ 1 → localClassHom (σ • Q) p z = 1) ∧
+(∀ σ : Gal(K/k), σ ≠ 1 → localClassHom (σ • R) p z = 1)
+```
+
+for the product `z` of the two chosen stages.  Its `T`-class, however, is the class of `g ^ 2`,
+where `g` is the carrier.  The *only* oddness user downstream is
+`exists_two_places_sUnit_class_eq` (`TwoPlaces.lean:121`), whose whole proof is the halving
+`g := y ^ ((p + 1) / 2)`, so that `g ^ 2` has the class of `y`.  At `p = 2` halving is impossible:
+`g ^ 2` has the *trivial* class at every prescribed place, whatever `g` is.
+
+So the even case is not a matter of patching a hypothesis.  A two-stage product can only ever
+realise the trivial prescription.
+
+### (b) The parity obstruction, in the repo's own terms
+
+Write the stages of the recursion as `z_1, z_2, …`, each ramified at its own place `Q_s`, and put
+
+* `a_s(σ) := placeFrobValue (σ • Q_s) (z_s)` — the *diagonal*, the value of a stage at a proper
+  conjugate of its own place;
+* `A_{s,t}(σ) := placeFrobValue (σ • Q_t) (z_s)` for `s > t` — a *later* stage at an *earlier*
+  place.  This is free: the place is already known when the stage is built, so the prescription of
+  the recursion may name it (`RecInv.presConj`).
+
+A stage at a *later* place is not free, but reciprocity determines it: the product formula
+(`ClosingChain.placeFrobValue_eq_placeFrobValue`) turns `placeFrobValue (σ • Q_t) (z_s)` with
+`s < t` into `A_{t,s}(σ⁻¹)`.  So for a product `z := ∏_{s ∈ S} z_s` the requirement
+`placeFrobValue (σ • Q_t) z = 1` for every `t ∈ S` reads
+
+```
+a_t(σ) · ∏_{s ∈ S, s > t} A_{s,t}(σ) · ∏_{s ∈ S, s < t} A_{t,s}(σ⁻¹) = 1 .
+```
+
+Now take `σ` an **involution**, so `σ = σ⁻¹`, and multiply these equations over all `t ∈ S`.  Every
+free unknown `A_{u,v}(σ)` with `u > v` occurs exactly twice — once in the equation at `t = v` and
+once in the equation at `t = u` — so the free part squares away and what is left is
+
+```
+∏_{t ∈ S} a_t(σ) = 1   for every involution σ .
+```
+
+This is a genuine invariant of the construction: **the diagonal values at the involutions must
+cancel among themselves.**  The pigeonhole of the odd case forces all the `a_t` to be *equal* (that
+is exactly `exists_lt_placeFrobValue_eq`), so the constraint becomes `a(σ)^{#S} = 1`, satisfiable
+by taking `#S` even.  For odd `p` that is free, because `#S = 2` and the carrier can be halved.  At
+`p = 2` the `T`-class of a product of `#S` stages all carrying `g` is `g^{#S}`, which is trivial
+whenever `#S` is even.  Hence:
+
+> At `p = 2`, an even number of stages realises nothing, and an odd number of stages forces
+> `a(σ) = 1` for every involution `σ`.
+
+That is Schmidt–Wingberg's **Claim**, and the parity computation shows it is not avoidable by
+re-bracketing.  The following routes were all checked and all fail for this reason.
+
+* *Multiply the two-stage product by the carrier* — `z := z₀ · y` with `z₀` built from the carrier
+  `1`.  The `T`-class is right, but the carrier `y` handed to the two-place theorem is itself
+  produced by `exists_place_sUnit_prescribed_of_radical` and is **ramified at a fresh place `V`**,
+  and `placeFrobValue (σ • V) y` is exactly a diagonal value: the Claim for `y`.
+* *Cancel `V` by prescribing the stages there.*  `V` is known before the stages are built, so its
+  orbit may be put in the prescribed set — but then every stage has the same class there, and an
+  even number of them contributes the square, i.e. nothing.
+* *Use a stage-dependent prescription at the orbit of `V`.*  Allowed by
+  `exists_place_sUnit_prescribed` (outside `T` the prescription is free at each stage), and it does
+  kill the conjugates of `V` — but `z` is then ramified at `V` as well as at `Q` and `R`, and the
+  ramification at `V` cannot be cancelled, because the stages' class at `V` is again a square.
+* *Enlarge `Ω` by `y ^ (1/p)`* so that `placeFrobValue (σ • Q) y = 1` for free.  Legitimate, and it
+  removes the second obstruction — but `V` is then no longer completely split in `Ω`, which is what
+  `hysplit` in `TwoPlacesFree.lean` asks for; and the first obstruction (ramification at `V`)
+  survives regardless.
+* *Find an odd-size sub-product of the stages whose diagonals cancel.*  Partial sums in the finite
+  group of signatures give a block summing to zero, but tracking the parity of the block length
+  shows the block is always even when all signatures agree — which is the worst case and cannot be
+  excluded without the Claim.
+
+### (c) Why the conjugate condition cannot be dropped either
+
+It is worth recording that the conjugate clause is load bearing all the way up.  `IsTwoPlaceFamily`
+(`SplitFamily.lean:72`) carries `conjQ`/`conjR`; they are consumed in `NamedUnits.lean:169,182`,
+which feeds the last clause of `HasPrescribedUnits` (`KernelPlaces.lean:124`)
+
+```lean
+∀ σ : Gal(↥K/k), σ ≠ 1 → ∀ q : Fin d, localClassHom (σ • v) ℓ (z q) = 1
+```
+
+and that clause is what `hasKernelPrescription_of_places` (`KernelPlaces.lean:365`) turns into
+"the assembled Kummer homomorphism dies on the decomposition group of every proper conjugate of a
+newly ramified prime".  Without it the new extension is ramified in more than one conjugate over
+the base and the local behaviour at the prime below is not cyclic.  (The *rank-one* clause, by
+contrast, needs only `crossQ`/`crossR`, which come from the auxiliary field `Ω` and cost nothing at
+`p = 2`.)
+
+### (d) Schmidt–Wingberg's proof of the Claim, and its price
+
+Their argument (paper, p. 16) fixes an involution `σ`, writes `L := K^σ` and `K = L(θ)` with
+`θ² ∈ L`, decomposes a representative `z̃` as `a + bθ`, and computes
+
+```
+z(Frob σP) = (z̃, σz̃)_{σP} = (2bθ, σz̃)_{σP} = ∏_{P' ≠ σP} (2bθ, σz̃)_{P'} = ∏_{P' ∈ Λ} (2bθ, a)_{P'}
+```
+
+with `Λ` the primes dividing `2bθ` outside `S₂ ∪ S_∞ ∪ Ram(K|L)`, and finishes with an inert/split
+dichotomy.  It needs two things the repo does not have:
+
+1. **Chebotarev for ideal classes** — to replace `z̃` by `z̃x²` with `(z̃x²) = P·Q²` and `Q ≠ σQ`,
+   which is what makes `z̃` and `σz̃` coprime.  Mathlib v4.28.0 has no Chebotarev (gotcha 4305) and
+   the repo's substitute is a relative-splitting-density statement, not primes in an ideal class.
+2. The **inert local fact** `𝒪_{L,w}^× ⊆ (K_w^×)²` for `K_w/L_w` unramified quadratic.
+
+### (e) A Chebotarev-free proof of the Claim
+
+Only the second is really needed.  Fix an involution `σ`, let `z ∈ Kˣ` be a stage with
+
+* `v_P(z)` odd at its own place `P`, and `v_w(z)` **even** at every other finite place `w`
+  (`RecInv.unitUnram` — this is condition (1));
+* `z` a local `p`-th power at every place above `2`, every archimedean place and every place
+  ramified in `K|k` (condition (2), inherited from the hypothesis on `y` in Theorem 13);
+* `P ∤ 2` and `stabilizer Gal(K/k) P = ⊥`, so `σP ≠ P`.
+
+Put `d := z − σz`, so that `σd = −d`.  All symbols below are the norm-residue symbol at `p = 2`,
+where every value is its own inverse.
+
+**Step 1 (the target is a symbol in `d`).**  At `σP` one has `v(z) = 0`, `v(σz) = 1`, hence
+`v(d) = 0` and `d/z = 1 − σz/z ∈ U¹`.  Since `σP` is tame, `(d, σz)_{σP} = (z, σz)_{σP}`, and the
+right-hand side is the residue symbol `placeFrobValue (σ • P) z`, which is the quantity to be
+killed.
+
+**Step 2 (the mirror place is free).**  At `P` one has `v(z) = 1`, `v(σz) = 0`, `v(d) = 0` and
+`d/(−σz) = 1 − z/σz ∈ U¹`, so `(d, σz)_P = (−σz, σz)_P = (−1, σz)_P (σz, σz)_P = 1`, because
+`(x, x) = (x, −1)`.  So the orbit `{P, σP}` contributes exactly the target.
+
+**Step 3 (equivariance folds the product formula onto the `σ`-fixed places).**  From
+`(a, b)_{σw} = (σa, σb)_w` and `σ² = 1`,
+
+```
+(d, σz)_{σw} = (σd, z)_w = (−1, z)_w · (d, z)_w ,
+```
+
+so a two-element orbit `{w, σw}` contributes `(d, σz)_w · (d, σz)_{σw} = (−1, z)_w · (d, N(z))_w`,
+where `N(z) := z · σz ∈ L`.  The product formula `∏_w (d, σz)_w = 1` therefore reads
+
+```
+(z, σz)_{σP} = ∏_{σw = w} (d, σz)_w · ∏_{orbits {w,σw} ≠ {P,σP}} (−1, z)_w · (d, N(z))_w .
+```
+
+**Step 4 (two-element orbits away from `P` die).**  At a place above `2`, an archimedean place or a
+place ramified in `K|k`, `z` is a local square and so is `σz` (that set is `σ`-stable), hence
+`N(z)` is too and both factors are `1`.  At a tame place, write `n := v_w(z)`, `n' := v_w(σz)`, both
+even.  If `n ≠ n'` then `v_w(d) = min(n, n')` is even and `v_w(N(z)) = n + n'` is even, so the tame
+symbol is the residue of a square.  If `n = n'`, write `z = π^n z₀`, `σz = π^n w₀` with `z₀, w₀`
+units; then `v_w(d) = n + v_w(z₀ − w₀) =: e` and the tame formula gives
+`(d, N(z))_w = χ_w(z₀w₀)^e`.  When `e` is odd, `v_w(z₀ − w₀) > 0`, so `z₀ ≡ w₀` and
+`z₀w₀ ≡ z₀²` is a square residue.  Either way the factor is `1`; and `(−1, z)_w = χ_w(−1)^{v_w(z)}`
+is `1` because `v_w(z)` is even.
+
+**Step 5 (the `σ`-fixed places).**  At `σw = w` the same equivariance gives
+`(d, σz)_w = (−1, z)_w · (d, z)_w`, and `(−1, z)_w = 1` as above.  For `(d, z)_w`:
+
+* If `σ` acts *trivially* on the residue field `κ(w)`, then the whole of `⟨σ⟩` is the inertia group
+  of `w` in `K|K^σ`, so `w` is ramified in `K|K^σ`, hence ramified in `K|k`; condition (2) makes
+  `z` a local square at `w` and the symbol is `1`.
+* Otherwise `σ` acts on `κ(w)` with order `2` and `K_w | (K^σ)_{w∩K^σ}` is the unramified quadratic
+  extension.  Set `a := (z + σz)/2 ∈ K^σ`, so that `z − a = d/2` and, at a tame `w` with
+  `v_w(d) > v_w(z)`, `z/a = 1 + d/(2a) ∈ U¹` is a square, whence `(d, z)_w = (d, a)_w`.  Now `a`
+  lies in `K^σ` and `v_w(a) = v_w(z)` is even; because the extension is unramified, a uniformiser
+  `π` of `K_w` may be taken in `K^σ`, and `a/π^{v_w(a)}` is a `σ`-fixed unit, so its residue lies in
+  `κ(w)^σ = 𝔽_q ⊆ 𝔽_{q²} = κ(w)`.  Every element of `𝔽_q^×` is a square in `𝔽_{q²}^×`, since
+  `x^{(q²−1)/2} = (x^{q−1})^{(q+1)/2} = 1`; Hensel (`w ∤ 2`) lifts this, so `a` is a local square
+  and `(d, a)_w = 1`.  (If instead `v_w(d) ≤ v_w(z)` then `v_w(d)` is even — the same computation as
+  in step 4 — and the symbol is again `1`.)
+
+Every factor is `1`, so `(z, σz)_{σP} = 1`: the Claim, with no Chebotarev, no coprimality of `z̃`
+and `σz̃`, and no global `a + bθ` beyond the elementary `a = (z + σz)/2`.
+
+Two by-products of the same manipulation, recorded because they are cheaper than the Claim and may
+be useful elsewhere.  Steinberg at `x = −z/σz` gives
+
+```
+(z, σz)_w = (N_{K|K^σ}(z), z + σz)_w ,
+```
+
+both arguments in `K^σ`; and at a `σ`-fixed place this exhibits the symbol as a norm, hence as a
+square.  And the symmetry `(z, σz)_{σw} = (z, σz)_w` shows that the product formula applied to the
+pair `(z, σz)` itself gives no information at all — which is precisely why the auxiliary `d` is
+needed.
+
+### (f) What the even step costs, in order
+
+1. **Galois equivariance of the local symbol**, `(σa, σb)_{σw} = (a, b)_w`.  Not in the repo yet;
+   the nearest bricks are `ClosingChain.placeFrobValue_eq_placeFrobValue` and `galUnits`.
+2. **The inert local lemma**: at a finite place `w` with `σ • w = w`, `w ∤ 2` and `σ` acting
+   nontrivially on the residue field, every `σ`-fixed element of even valuation is a local square.
+3. **The Claim** as in (e).
+4. **The recursion with three stages**: the partition `G∖{1} = G₁ ⊔ G₂ ⊔ G₃` with `G₁` the
+   involutions and `G₃ = G₂⁻¹`, the stage-dependent prescription of Schmidt–Wingberg's condition
+   (4) — at an earlier place `σ • P_i` a later stage is prescribed `0` or `(z_i)_{σP_i}` according
+   to whether `z_i` already has a partner and whether `σ ∈ G₂` or `σ ∈ G₃` — and the triple
+   pigeonhole (`N` minimal with `φ_N(z_i) = φ_N(z_j) = φ_N(z_N)` for `i < j < N`).
+5. **Three places downstream**: `TwoPlaces` → `TwoPlacesFree` → `TwoPlacesRadical` →
+   `TwoPlacesKill` → `SplitFamily` (`IsTwoPlaceFamily` grows a third place) → `NamedFamily*` →
+   `BaseFamily` → `LevelOneFamily`.
+6. The remaining `ℓ = 2` leaves already isolated: the archimedean local lift
+   (`LocalLiftInfinite.lean:145`), `smul_eq_of_sq_eq_one` (`LevelOneFamily.lean:200,234`), and the
+   de-odding of the ~124 `(hodd : 2 < …)` sites.
+
+The reading of condition (4) is confirmed by Schmidt–Wingberg's own verification
+`z_{σP_i} = (z_i)_{σP_i} + 0 + (z_i)_{σP_i} = 0` for `σ ∈ G₂`: a later stage is prescribed `0` at
+`σ • P_i` while `z_i` has no partner, and `(z_i)_{σP_i}` once it has one; for `σ ∈ G₃` the two
+values are exchanged.  Minimality of `N` is what guarantees that `z_i` has no partner at the time
+`z_j` is built.

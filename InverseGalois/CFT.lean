@@ -496,11 +496,13 @@ import InverseGalois.CFT.PoitouTate.ConjugatePlace
 import InverseGalois.CFT.PoitouTate.CupDual
 import InverseGalois.CFT.PoitouTate.CyclicPairing
 import InverseGalois.CFT.PoitouTate.Dual
+import InverseGalois.CFT.PoitouTate.FrobConjugate
 import InverseGalois.CFT.PoitouTate.FrobeniusCharacter
 import InverseGalois.CFT.PoitouTate.GlobalClasses
 import InverseGalois.CFT.PoitouTate.InfiniteClasses
 import InverseGalois.CFT.PoitouTate.InvariantRadicand
 import InverseGalois.CFT.PoitouTate.Isotropic
+import InverseGalois.CFT.PoitouTate.LocalClassClose
 import InverseGalois.CFT.PoitouTate.LocalClassPlaces
 import InverseGalois.CFT.PoitouTate.LocalConditions
 import InverseGalois.CFT.PoitouTate.LocalOrdBridge
@@ -8118,6 +8120,20 @@ it that are available here.
   decomposition group at a prime above the place, in an extension containing a radical of the
   unit, fixes that radical exactly when the unit is a local power.  So **the Frobenius character is
   trivial at a unit exactly when a generator of the decomposition group fixes a radical of it**.
+
+* `InverseGalois.CFT.PoitouTate.FrobConjugate` moves that character along the Galois group at the
+  exponent two.  There the value at a Frobenius automorphism is killed by two, and the rationals
+  modulo the integers hold exactly two elements killed by two, so such a value is read off from its
+  triviality alone; and a unit whose value at a place the exponent divides is trivial there exactly
+  when it is a power in the completion, which an automorphism carries from a place to the image of
+  the place.  So **the value of the image of a unit at the Frobenius automorphism of the image of a
+  place is the value of the unit at the Frobenius automorphism of the place**.
+
+* `InverseGalois.CFT.PoitouTate.LocalClassClose` compares the local classes of two units which are
+  close at a place.  A unit congruent to one at a place whose residue characteristic is prime to
+  the exponent is a power in the completion there, the units congruent to one being divisible by
+  every exponent prime to that characteristic; applied to a quotient this says that **two units
+  whose difference at a place is smaller than the second of them have the same local class there**.
 
 * `InverseGalois.CFT.PoitouTate.ChebotarevPlace` produces the place at which that happens.  An
   automorphism of prime order of a Galois extension of number fields, generating a subgroup normal
