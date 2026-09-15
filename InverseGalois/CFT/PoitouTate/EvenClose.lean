@@ -57,11 +57,10 @@ variable {k K : Type} [Field k] [NumberField k] [Field K] [NumberField K] [Algeb
 
 /-- **Three places satisfying a given splitting condition, and a unit ramified exactly at those
 three places.**  The unit realises the cube of a prescribed local behaviour on a fixed Galois
-stable set of places, is a local square at every infinite place, is a local unit away from the
-initial set of places and the three places themselves, and is trivial at every nontrivial conjugate
-of any of the three.  The recursion adding one place at a time is run past twice the size of the
-finite set of invariants, so that three of its stages carry a common invariant and follow one
-another; the unit is the product of the three units attached to those stages. -/
+stable set of places, is a local square at every infinite place, and is trivial at every nontrivial
+conjugate of any of the three.  The recursion adding one place at a time is run past twice the size
+of the finite set of invariants, so that three of its stages carry a common invariant and follow
+one another; the unit is the product of the three units attached to those stages. -/
 theorem exists_prescribed_three_places
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ 2) {Spl : HeightOneSpectrum (𝓞 K) → Prop}
@@ -87,7 +86,7 @@ theorem exists_prescribed_three_places
           ∃ w : Kˣ, (∀ v ∈ S₁, localClassHom v 2 w = c v) ∧
             (∀ u : InfinitePlace K, infClassHom u 2 w = 1) ∧
             (∀ v : HeightOneSpectrum (𝓞 K), v ≠ Q → (2 : ℤ) ∣ placeValue v w) ∧
-            (∀ v : HeightOneSpectrum (𝓞 K), v ∉ S₀ → v ≠ Q → placeValue v w = 0) ∧
+            (∀ v : HeightOneSpectrum (𝓞 K), v ∉ S₁ → v ≠ Q → placeValue v w = 0) ∧
             ¬ (2 : ℤ) ∣ placeValue Q w) :
     ∃ Q R S : HeightOneSpectrum (𝓞 K), Q ∉ T ∧ R ∉ T ∧ S ∉ T ∧ Spl Q ∧ Spl R ∧ Spl S ∧
       (∀ σ : Gal(K/k), Q ≠ σ • R) ∧ (∀ σ : Gal(K/k), Q ≠ σ • S) ∧
@@ -96,7 +95,6 @@ theorem exists_prescribed_three_places
       ∃ z : Kˣ, (∀ v ∈ T, localClassHom v 2 z = localClassHom v 2 (g ^ 3)) ∧
         (∀ u : InfinitePlace K, infClassHom u 2 z = 1) ∧
         (∀ v : HeightOneSpectrum (𝓞 K), v ≠ Q → v ≠ R → v ≠ S → (2 : ℤ) ∣ placeValue v z) ∧
-        (∀ v : HeightOneSpectrum (𝓞 K), v ∉ S₀ → v ≠ Q → v ≠ R → v ≠ S → placeValue v z = 0) ∧
         ¬ (2 : ℤ) ∣ placeValue Q z ∧ ¬ (2 : ℤ) ∣ placeValue R z ∧
         ¬ (2 : ℤ) ∣ placeValue S z ∧
         (∀ σ : Gal(K/k), σ ≠ 1 → localClassHom (σ • Q) 2 z = 1) ∧
@@ -199,7 +197,7 @@ theorem exists_prescribed_three_places
     placeFrobValue_eq_one_of_isInvolution hres hζ hτ (mul_eq_one_iff_eq_inv.2 hτinv) hBstable
       hBwild hBram (fun hmem => hnotT0 i hiM (hBT hmem))
       (fun w hw => (hd.unitPres i hiM w (hBT hw)).trans (hgB w hw)) (hunram i hiM) (hram i hiM)
-      (hd.unitZero i hiM (τ • d.chosen i) (hnotS i hiM τ) (hsmulfix i hiM τ hτ)) (hpos i hiM)
+      (hd.unitZero i hiM τ hτ) (hpos i hiM)
   -- the rule followed at the nontrivial conjugates of the three places
   have hconjQj : ∀ τ : Gal(K/k), τ ≠ 1 →
       (τ ∈ L → localClassHom (τ • d.chosen i) 2 (d.unit j)
@@ -236,7 +234,7 @@ theorem exists_prescribed_three_places
       (hnotT0 j hjM), hd.split _ (hd.chosenMem N hNM) (hnotT0 N hNM),
     hd.chosenNe i hiM j hjM hij.ne, hd.chosenNe i hiM N hNM (lt_trans hij hjN).ne,
     hd.chosenNe j hjM N hNM hjN.ne, hd.chosenStab i hiM, hd.chosenStab j hjM,
-    hd.chosenStab N hNM, d.unit i * d.unit j * d.unit N, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+    hd.chosenStab N hNM, d.unit i * d.unit j * d.unit N, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · intro v hv
     rw [_root_.map_mul, _root_.map_mul, hd.unitPres i hiM v hv, hd.unitPres j hjM v hv,
       hd.unitPres N hNM v hv, _root_.map_pow, show (3 : ℕ) = 2 + 1 from rfl, pow_succ, pow_two]
@@ -245,9 +243,6 @@ theorem exists_prescribed_three_places
       hd.unitInf N hNM u]
     exact (mul_one ((1 : infClasses u 2) * 1)).trans (mul_one (1 : infClasses u 2))
   · exact hprodunram
-  · intro v hv h1 h2 h3
-    rw [placeValue_mul, placeValue_mul, hd.unitZero i hiM v hv h1, hd.unitZero j hjM v hv h2,
-      hd.unitZero N hNM v hv h3, add_zero, add_zero]
   · rw [placeValue_mul, placeValue_mul]
     have h0 := hram i hiM
     have h1 := hunram j hjM (d.chosen i) (hne0 i hiM j hjM hij.ne)

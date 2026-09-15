@@ -582,6 +582,7 @@ import InverseGalois.CFT.PoitouTate.TensorKill
 import InverseGalois.CFT.PoitouTate.TensorOrbit
 import InverseGalois.CFT.PoitouTate.TensorShrink
 import InverseGalois.CFT.PoitouTate.TensorValuation
+import InverseGalois.CFT.PoitouTate.ThreePlaces
 import InverseGalois.CFT.PoitouTate.TorsionCharacter
 import InverseGalois.CFT.PoitouTate.TwoPlaces
 import InverseGalois.CFT.PoitouTate.TwoPlacesFree
@@ -8981,4 +8982,14 @@ it that are available here.
   fixed set of places, a local square at every infinite place, and trivial at every nontrivial
   conjugate of any of the three places**.  That is the exponent two analogue of the two place
   prescription, where the inverse of a class differs from the class and two units already suffice.
+
+* `InverseGalois.CFT.PoitouTate.ThreePlaces` assembles that closing over an auxiliary field, in
+  the shape the induction downstream consumes: **three places completely split in the auxiliary
+  field, and a unit ramified exactly at those three places, realising a prescribed local behaviour
+  on the fixed set and trivial at every nontrivial conjugate of any of the three**.  The cube of
+  the prescription costs nothing at the exponent two, the square of a local class being already
+  trivial, so the behaviour is realised exactly and not merely up to a power; and the places above
+  the exponent, together with the places ramified over the base, are gathered in a distinguished
+  Galois stable part of the fixed set where the prescription is trivial, which is what the value at
+  an involution needs.
 -/

@@ -137,7 +137,7 @@ noncomputable def evenPres {k K : Type} [Field k] [Field K] [NumberField K] [Alg
 depending on the stage.  The chosen places satisfy the given splitting condition, have trivial
 decomposition group, and are pairwise non-conjugate; each unit is a local power at every infinite
 place, has the class of the fixed unit on the fixed set, is ramified at its own place and nowhere
-else, and is a unit away from the initial set of places and its own place; the invariant recorded
+else, and is a local unit at every nontrivial conjugate of its own place; the invariant recorded
 for each stage is the pair formed by its values at the Frobenius automorphisms of the conjugates of
 its own place and by its value at its own place read modulo the exponent; and at the nontrivial
 conjugates of the place of an earlier stage each later unit has, according to the rule, either the
@@ -169,9 +169,8 @@ structure EvenRecInv (k : Type) {K : Type} [Field k] [Field K] [NumberField K] [
     (p : ℤ) ∣ placeValue v (d.unit i)
   /-- each unit is ramified at its own place -/
   unitRam : ∀ i < n, ¬ (p : ℤ) ∣ placeValue (d.chosen i) (d.unit i)
-  /-- each unit is a unit away from the initial set of places and its own place -/
-  unitZero : ∀ i < n, ∀ v : HeightOneSpectrum (𝓞 K), v ∉ S₀ → v ≠ d.chosen i →
-    placeValue v (d.unit i) = 0
+  /-- each unit is a local unit at every nontrivial conjugate of its own place -/
+  unitZero : ∀ i < n, ∀ τ : Gal(K/k), τ ≠ 1 → placeValue (τ • d.chosen i) (d.unit i) = 0
   /-- each unit is a local power at every infinite place -/
   unitInf : ∀ i < n, ∀ w : InfinitePlace K, infClassHom w p (d.unit i) = 1
   /-- on the fixed set each unit has the class of the fixed unit -/
@@ -328,7 +327,7 @@ theorem exists_evenRecInv_succ
           ∃ w : Kˣ, (∀ v ∈ S, localClassHom v p w = c v) ∧
             (∀ y : InfinitePlace K, infClassHom y p w = 1) ∧
             (∀ v : HeightOneSpectrum (𝓞 K), v ≠ Q → (p : ℤ) ∣ placeValue v w) ∧
-            (∀ v : HeightOneSpectrum (𝓞 K), v ∉ S₀ → v ≠ Q → placeValue v w = 0) ∧
+            (∀ v : HeightOneSpectrum (𝓞 K), v ∉ S → v ≠ Q → placeValue v w = 0) ∧
             ¬ (p : ℤ) ∣ placeValue Q w)
     (n : ℕ) (d : EvenRecData K ((Gal(K/k) → Multiplicative QModZ) × ZMod p))
     (hd : EvenRecInv k hres hζ L Spl T S₀ g n d) :
@@ -428,15 +427,14 @@ theorem exists_evenRecInv_succ
     · rw [hz'ne i h.ne, hPl'ne i h.ne]
       exact hd.unitRam i h
   · dsimp only
-    intro i hi v hv hvne
+    intro i hi τ hτ
     rcases eq_or_lt_of_le (Nat.lt_succ_iff.1 hi) with h | h
     · subst h
-      rw [hz'n]
-      rw [hPl'n] at hvne
-      exact hwzero v hv hvne
-    · rw [hz'ne i h.ne]
-      rw [hPl'ne i h.ne] at hvne
-      exact hd.unitZero i h v hv hvne
+      rw [hz'n, hPl'n]
+      refine hwzero (τ • Q) (hconj τ) fun hfix => hτ ?_
+      exact (Subgroup.eq_bot_iff_forall _).1 hQstab τ (mem_stabilizer_iff.2 hfix)
+    · rw [hz'ne i h.ne, hPl'ne i h.ne]
+      exact hd.unitZero i h τ hτ
   · dsimp only
     intro i hi y
     rcases eq_or_lt_of_le (Nat.lt_succ_iff.1 hi) with h | h
@@ -501,7 +499,7 @@ theorem exists_evenRecInv
           ∃ w : Kˣ, (∀ v ∈ S, localClassHom v p w = c v) ∧
             (∀ y : InfinitePlace K, infClassHom y p w = 1) ∧
             (∀ v : HeightOneSpectrum (𝓞 K), v ≠ Q → (p : ℤ) ∣ placeValue v w) ∧
-            (∀ v : HeightOneSpectrum (𝓞 K), v ∉ S₀ → v ≠ Q → placeValue v w = 0) ∧
+            (∀ v : HeightOneSpectrum (𝓞 K), v ∉ S → v ≠ Q → placeValue v w = 0) ∧
             ¬ (p : ℤ) ∣ placeValue Q w)
     (n : ℕ) : ∃ d : EvenRecData K ((Gal(K/k) → Multiplicative QModZ) × ZMod p),
       EvenRecInv k hres hζ L Spl T S₀ g n d := by
