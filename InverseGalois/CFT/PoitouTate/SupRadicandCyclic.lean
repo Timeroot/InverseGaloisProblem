@@ -84,7 +84,8 @@ theorem prescriptionChar_eq_one_of_mul_zpowers (hn : n.Prime) (hneg : IsNegOnePo
     prescriptionChar hres hζ Tn c u = 1 := by
   rw [hu, _root_.map_mul,
     prescriptionChar_eq_one_of_localClassHom_eq_one hn hneg hres hζ hT hnTn hg hc h1 h1out,
-    prescriptionChar_eq_one_of_mem_zpowers hres hζ hneg hcT h2, one_mul]
+    prescriptionChar_eq_one_of_mem_zpowers hres hζ hcT
+      (fun v _ => hneg.map (algebraMap K (v.adicCompletion K))) h2, one_mul]
 
 end Halves
 
@@ -264,7 +265,8 @@ theorem prescriptionChar_eq_one_of_mul_split (hneg : IsNegOnePow K n)
       localClassHom v n u₂ ∈ Subgroup.zpowers d ∧ c v ∈ Subgroup.zpowers d) :
     prescriptionChar hres hζ Tn c u = 1 := by
   rw [hu, _root_.map_mul, prescriptionChar_eq_one_of_forall_localClassHom_eq_one hres hζ c h1,
-    prescriptionChar_eq_one_of_mem_zpowers hres hζ hneg hcT h2, one_mul]
+    prescriptionChar_eq_one_of_mem_zpowers hres hζ hcT
+      (fun v _ => hneg.map (algebraMap K (v.adicCompletion K))) h2, one_mul]
 
 end Everywhere
 

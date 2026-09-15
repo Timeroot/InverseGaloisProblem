@@ -59,11 +59,11 @@ variable {K : Type} [Field K] [NumberField K] {n : ℕ} [NeZero n]
   {P E : HeightOneSpectrum (𝓞 K) → ℕ}
 
 /-- **The norm residue symbol of two units whose classes at a place are powers of one class is
-trivial there**, minus one being a power of the exponent. -/
+trivial there**, minus one being a power of the exponent in the completion at that place. -/
 theorem localSymbol_eq_one_of_localClassHom_mem_zpowers
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
-    {ζ : K} (hζ : IsPrimitiveRoot ζ n) (hneg : IsNegOnePow K n) (v : HeightOneSpectrum (𝓞 K))
-    {a b : Kˣ}
+    {ζ : K} (hζ : IsPrimitiveRoot ζ n) (v : HeightOneSpectrum (𝓞 K))
+    (hneg : IsNegOnePow (v.adicCompletion K) n) {a b : Kˣ}
     {d : localClasses v n} (ha : localClassHom v n a ∈ Subgroup.zpowers d)
     (hb : localClassHom v n b ∈ Subgroup.zpowers d) :
     localSymbol (hres v) (isUnitValGen_one (valued_adicCompletion_surjective v))
@@ -71,7 +71,7 @@ theorem localSymbol_eq_one_of_localClassHom_mem_zpowers
         (Units.map (algebraMap K (v.adicCompletion K)).toMonoidHom a)
         (Units.map (algebraMap K (v.adicCompletion K)).toMonoidHom b) = 1 :=
   (localClassPairing_eq_localSymbol hres hζ v a b).symm.trans
-    (localClassPairing_eq_one_of_mem_zpowers hres hζ hneg v hb ha)
+    (localClassPairing_eq_one_of_mem_zpowers hres hζ v hneg hb ha)
 
 end Line
 
@@ -110,8 +110,8 @@ theorem placeFrobValue_zpow_eq_zpow_of_isotropic (hn : n.Prime) (hneg : IsNegOne
     push_neg at hu
     by_cases huT : u ∈ T
     · obtain ⟨d, hda, hdb⟩ := hiso u huT
-      exact localSymbol_eq_one_of_localClassHom_mem_zpowers hres hζ hneg u
-        hda hdb
+      exact localSymbol_eq_one_of_localClassHom_mem_zpowers hres hζ u
+        (hneg.map (algebraMap K (u.adicCompletion K))) hda hdb
     · by_cases hun : P u ∣ n
       · exact localSymbol_eq_one_of_isPow_left _ _ _ (hap u hun) _
       · exact localSymbol_eq_one_of_dvd_of_dvd _ _ _ hn hun (ha u huT hu.1) (hb u huT hu.2)

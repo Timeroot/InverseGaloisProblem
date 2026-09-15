@@ -14,7 +14,14 @@ Where minus one is an exponent-th power the norm residue symbol of an element ag
 trivial: it equals the symbol against minus one, which a power kills.  Bilinearity then makes the
 symbol vanish on any pair of powers of a single class, so a cyclic group of local classes is
 isotropic for the symbol.  At an odd exponent minus one is its own exponent-th power and the
-condition is empty; at the exponent two it asks the field for a square root of minus one.
+condition is empty; at the exponent two it asks for a square root of minus one.
+
+The symbol at a place of a number field is read in the completion there, so what it asks for is a
+square root of minus one **in the completion**, and only at the places the symbol is read at.  A
+square root in the field gives one in every completion, so the condition read place by place is
+the weaker one; at the exponent two it is satisfied at a place whose residue field has one more
+than a multiple of four elements, and a field with a real place — which can have no square root of
+minus one at all — still has plenty of such places.
 
 That is the second reason a prescription character can kill a radicand, alongside the one already
 available: the unramified classes at a place away from the exponent are their own orthogonal
@@ -106,24 +113,25 @@ variable {K : Type} [Field K] [NumberField K] {n : ℕ} [NeZero n]
   {P E : HeightOneSpectrum (𝓞 K) → ℕ}
 
 /-- **A cyclic group of classes at a finite place of a number field is isotropic** for the pairing
-of local classes, minus one being an exponent-th power in the field. -/
+of local classes, minus one being an exponent-th power in the completion there. -/
 theorem localClassPairing_eq_one_of_mem_zpowers
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
-    {ζ : K} (hζ : IsPrimitiveRoot ζ n) (hneg : IsNegOnePow K n) (v : HeightOneSpectrum (𝓞 K))
+    {ζ : K} (hζ : IsPrimitiveRoot ζ n) (v : HeightOneSpectrum (𝓞 K))
+    (hneg : IsNegOnePow (v.adicCompletion K) n)
     {d x y : localClasses v n} (hx : x ∈ Subgroup.zpowers d) (hy : y ∈ Subgroup.zpowers d) :
     localClassPairing hres hζ v x y = 1 :=
   localSymbolQuotDual_eq_one_of_mem_zpowers (hres v)
     (isUnitValGen_one (valued_adicCompletion_surjective v))
-    (hζ.map_of_injective (algebraMap K (v.adicCompletion K)).injective)
-    (hneg.map (algebraMap K (v.adicCompletion K))) hx hy
+    (hζ.map_of_injective (algebraMap K (v.adicCompletion K)).injective) hneg hx hy
 
 /-- **A class at a finite place of a number field pairs trivially with itself**, minus one being
-an exponent-th power in the field. -/
+an exponent-th power in the completion there. -/
 theorem localClassPairing_self_eq_one
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
-    {ζ : K} (hζ : IsPrimitiveRoot ζ n) (hneg : IsNegOnePow K n) (v : HeightOneSpectrum (𝓞 K))
+    {ζ : K} (hζ : IsPrimitiveRoot ζ n) (v : HeightOneSpectrum (𝓞 K))
+    (hneg : IsNegOnePow (v.adicCompletion K) n)
     (x : localClasses v n) : localClassPairing hres hζ v x x = 1 :=
-  localClassPairing_eq_one_of_mem_zpowers hres hζ hneg v (Subgroup.mem_zpowers x)
+  localClassPairing_eq_one_of_mem_zpowers hres hζ v hneg (Subgroup.mem_zpowers x)
     (Subgroup.mem_zpowers x)
 
 /-- **The prescription character kills a unit whose class at each prescribed place lies on the
@@ -133,10 +141,10 @@ is asked about ramification: this is the reason available to a prescription whic
 it is carried. -/
 theorem prescriptionChar_eq_one_of_mem_zpowers
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
-    {ζ : K} (hζ : IsPrimitiveRoot ζ n) (hneg : IsNegOnePow K n)
-    {T Tn : Finset (HeightOneSpectrum (𝓞 K))}
+    {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T Tn : Finset (HeightOneSpectrum (𝓞 K))}
     {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n}
-    (hcT : ∀ v ∈ Tn, v ∉ T → c v = 1) {u : Kˣ}
+    (hcT : ∀ v ∈ Tn, v ∉ T → c v = 1)
+    (hneg : ∀ v ∈ T, IsNegOnePow (v.adicCompletion K) n) {u : Kˣ}
     (hu : ∀ v ∈ T, ∃ d : localClasses v n,
       localClassHom v n u ∈ Subgroup.zpowers d ∧ c v ∈ Subgroup.zpowers d) :
     prescriptionChar hres hζ Tn c u = 1 := by
@@ -145,7 +153,7 @@ theorem prescriptionChar_eq_one_of_mem_zpowers
   refine Finset.prod_eq_one fun v hv => ?_
   by_cases hvT : v ∈ T
   · obtain ⟨d, hud, hcd⟩ := hu v hvT
-    exact localClassPairing_eq_one_of_mem_zpowers hres hζ hneg v hud hcd
+    exact localClassPairing_eq_one_of_mem_zpowers hres hζ v (hneg v hvT) hud hcd
   · rw [hcT v hv hvT]
     exact _root_.map_one _
 

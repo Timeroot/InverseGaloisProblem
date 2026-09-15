@@ -27289,3 +27289,108 @@ Two routes are open, neither implemented:
 
 (B) is the cheaper of the two and is the one to try first: the carrier is ours to choose, and
 `exists_sUnitClass_mul_eq_pos` now produces carriers that are local squares at every infinite place.
+
+## §1.141 The isotropy of a line is *false* at the exponent two, and the repair is to read `IsNegOnePow` **place by place** (2026-09-15)
+
+### (a) Where the odd proof secretly used `2 ∤ ℓ` a second time
+
+`§1.139`/`§1.140` treated `IsNegOnePow K ℓ` as an *archimedean* nuisance: it is what makes the
+product formula collapse to the finite places, and at `ℓ = 2` it forces `K` totally complex, so it
+had to be replaced by total positivity of the second argument.  That is only **half** of what
+`IsNegOnePow` buys in the odd proof.  The other half is local and has nothing to do with infinity:
+
+```
+localSymbolQuotDual_self_eq_neg_one   (CyclicPairing.lean:78)
+    (x, x)_v = (x, -1)_v      -- holds at EVERY exponent
+```
+
+so `(x,x)_v = 1` — the isotropy of the line `zpowers d` — needs `-1` to be an exponent-th power.
+At odd `ℓ` that is free (`isNegOnePow_of_odd`).  At `ℓ = 2` it is the Hilbert symbol `(x,-1)_v`,
+and it is **not** free.  For a tame place `v ∤ 2` with residue field of `q` elements the tame
+symbol at exponent two is
+
+```
+(a, -1)_v = ( (-1)^{(q-1)/2} )^{v(a)} ,
+```
+
+so `(a,-1)_v = 1` iff `v(a)` is even **or** `q ≡ 1 (mod 4)`.  In the case that matters — `a` a
+*ramified* class, `v(a)` odd — the symbol is `((-1)/v)`, and the line is isotropic exactly at the
+places with `N(v) ≡ 1 (mod 4)`.  That is the classical Scholz condition, arriving from the other
+side.
+
+### (b) It is on the critical path
+
+The chain is
+
+```
+FlatLineUnits.isNamedOrthogonal_line          (FlatLineUnits.lean:324)
+  <- localClassPairing_eq_one_of_mem_zpowers   (CyclicPairing.lean:110)
+  <- localSymbolQuotDual_eq_one_of_mem_zpowers (CyclicPairing.lean:90)
+```
+
+and `isNamedOrthogonal_line` is how `NamedOrthogonalEP` is proved, which `hasPrescribedUnits`
+(`KernelArith.lean:187`) and `hasScholzDiagonalUnits` (`ScholzDiagonal.lean`) both consume.  The
+ramified (`Tr` / `orbitLine`) branch is not an optional convenience: `exists_units_scholz_diagonal`
+splits on `IsScholzPlace`, and in the *second* branch the line is `zpowers d` with `d` ramified —
+exactly the bad case.  (The *first* branch, `levelPowerClasses = ⊥`, is harmless: there the class
+of the tested `S`-unit at the named place is already trivial, so the factor is `1` with no isotropy
+at all.  Only the second branch costs anything.)
+
+The same split appears in `ClosingChainRamified.lean`
+(`localSymbol_eq_one_of_localClassHom_mem_zpowers`, `placeFrobValue_*_of_isotropic`) and in
+`SupRadicandCyclic.lean` (`prescriptionChar_eq_one_of_*_zpowers`).
+
+`IsScholzPlace` (`ScholzLine.lean:264`) is a *different* condition — it is about
+`levelPowerClasses ℓ K E v` being `⊥` with a fixed uniformiser, or `zpowers d` with `d` ramified —
+and supplies nothing about `-1`.
+
+### (c) Schmidt–Wingberg do not need it, because they never use line isotropy
+
+Worth recording, since it says the gap is an artefact of *this* formalisation's design and not of
+the mathematics.  SW's conditions (1)–(4) at `p = 2` contain no congruence mod 4.  Their
+orthogonality comes from "the assembled local element `ξ` has the same image in
+`H¹(Θ|K, ℤ/p)^∨` as the global class `y`, and global classes have trivial image" — the exactness of
+the Poitou–Tate sequence, not a line.  Where the odd argument uses `(z_i,z_i)_{P_i} = 1` they
+substitute the Claim, whose Rédei-style proof is `CFT/PoitouTate/InvolutionClaim.lean`.
+
+So there are two possible repairs:
+
+1. **Keep the line design and pay the Scholz condition**: demand `-1 ∈ (K_v^×)²` at the named
+   places.  This is a *local* demand, and the hypothesis it needs is strictly weaker than the
+   global `IsNegOnePow K 2` (which a field with a real place can never satisfy).
+2. **Redo the orthogonality the SW way**, deriving it from exactness rather than from isotropy.
+
+(1) is much the smaller change, and it is what the next paragraph implements as far as the
+statements go.  What it costs downstream is that the *choice* of named places has to deliver
+`N(v) ≡ 1 (mod 4)`; that debt is now explicit and localised instead of hiding inside
+`isNegOnePow_of_odd`.
+
+### (d) The refactor: `IsNegOnePow` at a place, not in the field
+
+The isotropy lemmas are read in the completion, so the honest hypothesis is
+`IsNegOnePow (v.adicCompletion K) n`, not `IsNegOnePow K n`.  This is a strict generalisation —
+`IsNegOnePow.map (algebraMap K (v.adicCompletion K))` recovers the old form — and at odd `ℓ` the
+local statement is still free, since `isNegOnePow_of_odd` applies verbatim to the completion.
+Changed:
+
+* `CyclicPairing.localClassPairing_eq_one_of_mem_zpowers`,
+  `CyclicPairing.localClassPairing_self_eq_one` — `(v) (hneg : IsNegOnePow (v.adicCompletion K) n)`;
+* `CyclicPairing.prescriptionChar_eq_one_of_mem_zpowers` — `hneg : ∀ v ∈ T, IsNegOnePow
+  (v.adicCompletion K) n`, placed after `hcT` so that `T` is already determined when it elaborates;
+* `ClosingChainRamified.localSymbol_eq_one_of_localClassHom_mem_zpowers` — likewise.
+
+The four call sites (`SupRadicandCyclic` ×2, `ClosingChainRamified` ×1, `FlatLineUnits` ×1) pass
+`hneg.map _` or `isNegOnePow_of_odd`, so nothing else moves.  The global `IsNegOnePow K n` survives
+in `placeFrobValue_*_of_isotropic` only in its *archimedean* role — the product formula — which is
+what `ReciprocityPositive.prod_localSymbol_eq_one_of_forall_pos` replaces at `ℓ = 2`.
+
+### (e) A free simplification found along the way
+
+`IsNamedOrthogonal` (`KernelPlaces.lean:82`) carries the premise
+`(∀ y : InfinitePlace ↥K, infClassHom y ℓ (u : (↥K)ˣ) = 1)` on the `S`-units it is read against.
+No producer uses it: `grep infClassHom InverseGalois/Solvable/Shafarevich/NamedOrthogonal.lean`
+returns nothing, and `isNamedOrthogonal_line` discards it outright (`intro Tn _ q u _ hpow`).
+Deleting it costs nothing and is exactly what is needed to switch the recursion over to
+`exists_sUnitClass_mul_eq_pos`, whose orthogonality hypothesis quantifies over *all* `S`-units
+obeying the dual conditions at the finite places — including those that are not local squares at
+infinity.
