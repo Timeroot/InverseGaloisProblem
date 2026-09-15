@@ -264,7 +264,7 @@ end Units
 section Descent
 
 variable {k K : Type} [Field k] [Field K] [Algebra k K] [NumberField K] [Finite Gal(K/k)]
-variable (n : ℕ) (Tz Y Xs T : Set (HeightOneSpectrum (𝓞 K))) [Finite ↥Xs]
+variable (n : ℕ) (Tz Y Xs T : Set (HeightOneSpectrum (𝓞 K))) [Finite ↥Xs] [DecidableEq ↥Xs]
 variable [IsGaloisStablePlaces k K Tz] [IsGaloisStablePlaces k K Y]
   [IsGaloisStablePlaces k K Xs] [IsGaloisStablePlaces k K T]
 variable {C : Type} [CommGroup C] [MulDistribMulAction Gal(K/k) C]

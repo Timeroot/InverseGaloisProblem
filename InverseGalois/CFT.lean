@@ -512,6 +512,7 @@ import InverseGalois.CFT.PoitouTate.NamedFamilyPower
 import InverseGalois.CFT.PoitouTate.NamedFamilySplit
 import InverseGalois.CFT.PoitouTate.NamedRadicand
 import InverseGalois.CFT.PoitouTate.NamedRadicandClass
+import InverseGalois.CFT.PoitouTate.NamedRadicandSum
 import InverseGalois.CFT.PoitouTate.NamedSymbol
 import InverseGalois.CFT.PoitouTate.NamedUnits
 import InverseGalois.CFT.PoitouTate.NormLocalPower
@@ -560,6 +561,7 @@ import InverseGalois.CFT.PoitouTate.TensorDescent
 import InverseGalois.CFT.PoitouTate.TensorEquivariant
 import InverseGalois.CFT.PoitouTate.TensorFree
 import InverseGalois.CFT.PoitouTate.TensorInvariant
+import InverseGalois.CFT.PoitouTate.TensorKill
 import InverseGalois.CFT.PoitouTate.TensorOrbit
 import InverseGalois.CFT.PoitouTate.TensorShrink
 import InverseGalois.CFT.PoitouTate.TensorValuation
@@ -6308,6 +6310,15 @@ it that are available here.
   subgroup, the valuation of a cocycle at a place being a cocycle of the subgroup fixing that
   place; two such homomorphisms in succession annihilate every class at once, at the price of a
   hypothesis whose number of classes grows with the module.
+* `InverseGalois.CFT.PoitouTate.TensorKill` names that list without naming a class.  A class with
+  coefficients in a tensor product is killed by a homomorphism of the **second** factor as soon as
+  that homomorphism kills finitely many prescribed elements of that factor: the left factor is
+  spanned by finitely many elements, a cocycle has one value at each element of the group, and each
+  value is a combination of the spanning family against coefficients in the right factor, so
+  **killing those coefficients kills every value of the cocycle.**  The list has a length the group
+  and the spanning family alone decide, it is produced before the homomorphism is chosen, and being
+  a list of elements rather than a class it says nothing about which action the coefficients carry
+  — which is what lets a count consume it.
 * `InverseGalois.CFT.PoitouTate.OrbitDivisor` writes down what such a prescription looks like.  A
   value is chosen at one place, fixed by the decomposition subgroup there because that subgroup
   must fix any radicand the place is to name, and the family supported on the orbit carrying the
@@ -6470,6 +6481,14 @@ it that are available here.
   be corrected to an invariant radicand with the same divisor.**  Equivalently, every invariant
   divisor with coefficients in the module is already the divisor of an invariant radicand, which is
   what a prescription asks and nothing more.
+* `InverseGalois.CFT.PoitouTate.NamedRadicandSum` answers the whole prescription at the cost of one
+  class.  Answering the named places one orbit at a time costs one obstruction for each of them, so
+  a count sized to kill those obstructions would have to know how many places will be named; but the
+  divisors carried by the several orbits may be **added** into a single divisor, still equivariant
+  because each summand is, and a single radicand realises it.  **The whole prescription therefore
+  costs exactly one class**, and killing it costs a family of elements of the module indexed by the
+  group times a spanning family of the kernel of the valuation — a size the field and the set of
+  places decide before a single place is named.
 * `InverseGalois.CFT.PoitouTate.RadicandPlaces` puts an arbitrary prescription into the shape the
   descent consumes.  The descent is run over sets of places carried into themselves by the Galois
   group, while a prescription arrives with arbitrary ones — the named places, the places a local

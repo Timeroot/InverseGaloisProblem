@@ -217,6 +217,25 @@ theorem layerMap_comp {R : Type*} [Group R] (g : Q →* R) (f : P →* Q) :
   obtain ⟨x, hx, rfl⟩ := exists_layerMk v
   rfl
 
+/-- **A surjection induces a surjection of layers.**  An element of the target layer is the class of
+an element of the corresponding term of the target series, that term is the image of the term of the
+source series, and the class of a preimage is a preimage of the class. -/
+theorem surjective_layerSubMap (f : P →* Q) (hf : Function.Surjective f) :
+    Function.Surjective (layerSubMap p f n) := by
+  intro v
+  obtain ⟨y, hy, hyv⟩ := exists_layerMk (Additive.ofMul v)
+  obtain ⟨x, hx, rfl⟩ : y ∈ (pCentral p P n).map f := by
+    rw [map_pCentral p f hf n]
+    exact hy
+  refine ⟨Additive.toMul (layerMk hx), Additive.ofMul.injective ?_⟩
+  rw [← hyv]
+  rfl
+
+/-- **A surjection induces a surjection of layers**, written additively. -/
+theorem surjective_layerMap (f : P →* Q) (hf : Function.Surjective f) :
+    Function.Surjective (layerMap p f n) :=
+  surjective_layerSubMap f hf
+
 end Map
 
 /-! ### The layer as a module over the operators -/

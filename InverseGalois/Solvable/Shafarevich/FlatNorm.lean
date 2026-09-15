@@ -532,14 +532,30 @@ theorem hasTameInvariantUnitTensor_of_hasOrbitPrescribedUnits (hℓ : ℓ.Prime)
 
 omit [IsGalois k Ω] [IsGalois k ↥K] [FiniteDimensional k ↥K] in
 /-- **A level all of whose places have stabilizer of order prime to the exponent carries the
-unrestricted invariant tensor demand.** -/
+unrestricted invariant tensor demand.**
+
+No family of coefficients has to be named against the quotients here: the tame demand answers in the
+target itself, and the map onto a quotient, being equivariant, carries both the invariance of the
+tensor and the values prescribed at the named places along with it. -/
 theorem hasInvariantUnitTensor_of_hasTameInvariantUnitTensor
     (htame : ∀ v : HeightOneSpectrum (𝓞 ↥K), ¬ ℓ ∣ Nat.card ↥(stabilizer Gal(↥K/k) v))
     (h : HasTameInvariantUnitTensor ℓ K) : HasInvariantUnitTensor ℓ K := by
-  intro E hEfin hEgal hKE M _ _ hexp T _ b hspan hindep ι _ w V hdist hVfix Tz hTzstab hwTz hℓw
-    hreach _
-  exact h E hEfin hEgal hKE M hexp T b hspan hindep ι w V hdist (fun μ => htame (w μ)) hVfix Tz
-    hTzstab hwTz hℓw hreach
+  intro Tz hTzstab
+  refine ⟨0, ?_⟩
+  intro E hEfin hEgal hKE M _ _ hexp T _ b hspan hindep ι _ w V hdist hVfix hwTz hℓw hreach _
+  obtain ⟨z, hzinv, hzval, hzTz, hzconf⟩ :=
+    h E hEfin hEgal hKE M hexp T b hspan hindep ι w V hdist (fun μ => htame (w μ)) hVfix Tz
+      hTzstab hwTz hℓw hreach
+  refine ⟨Empty, inferInstance, by simp, Empty.elim, ?_⟩
+  intro M' _ _ Φ _ hΦtw _
+  have hsum : tensorCoeff (↥K)ˣ Φ (∑ q, Additive.ofMul (z q) ⊗ₜ[ℤ] Additive.ofMul (b q))
+      = ∑ q, Additive.ofMul (z q) ⊗ₜ[ℤ] Additive.ofMul (Φ (b q)) := by
+    rw [_root_.map_sum]
+    exact Finset.sum_congr rfl fun q _ => tensorCoeff_tmul Φ (z q) (b q)
+  refine ⟨z, fun σ => ?_, fun μ => ?_, hzTz, hzconf⟩
+  · rw [← hsum, ← tensorCoeff_smul Φ hΦtw σ, hzinv σ]
+  · rw [← hzval μ, _root_.map_prod]
+    exact Finset.prod_congr rfl fun q _ => (_root_.map_pow Φ (b q) _).symm
 
 end Orbit
 

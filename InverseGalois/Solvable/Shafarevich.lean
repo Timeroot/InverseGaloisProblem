@@ -117,9 +117,6 @@ import InverseGalois.Solvable.Shafarevich.FlatTensorStep
 import InverseGalois.Solvable.Shafarevich.FlatTensorConfined
 import InverseGalois.Solvable.Shafarevich.FlatTensorDiagonal
 import InverseGalois.Solvable.Shafarevich.FlatDiagonalUnits
-import InverseGalois.Solvable.Shafarevich.FlatStabilizerUnits
-import InverseGalois.Solvable.Shafarevich.FlatSylowUnits
-import InverseGalois.Solvable.Shafarevich.FlatFixedUnits
 import InverseGalois.Solvable.Shafarevich.FlatLineUnits
 import InverseGalois.Solvable.Shafarevich.FlatUniformizerUnits
 import InverseGalois.Solvable.Shafarevich.ScholzLine
@@ -1131,67 +1128,37 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   at, and the confinement clause is nothing but membership in that group once the places allowed
   are taken to be the named ones together with those completely decomposed in the bigger level.
   The prescribed orders cost nothing beyond the vector of orders being onto, and the invariance
-  costs exactly one class, the obstruction of a radicand whose divisor is already invariant — a
-  class that has more room to die as more places are read, and the places added may be taken
-  completely decomposed because the confinement clause leaves the order there free.  The named
-  places arrive reachable in the bigger level, which is what lets their orders be prescribed at
-  all: a place whose divisor class is out of reach of the completely decomposed ones carries no
-  unit of order prime to the exponent there.  **What the odd step asks of the arithmetic is a
-  finite set of places on which the orders of the confined units are arbitrary and over which every
-  invariant divisor of confined units is the divisor of an invariant one.**
-* `InverseGalois.Solvable.Shafarevich.FlatTensorDiagonal` states the first of those two in the form
-  the arithmetic delivers it.  For a prime exponent the orders are arbitrary as soon as there is one
+  costs nothing at all once the target may be cut down: reading the confined units a second time,
+  at every place outside a finite set, leaves a group spanned by boundedly many generators, and
+  killing one coefficient of the target for each generator and each automorphism of the level makes
+  the invariant radicand exist outright.  The named places arrive reachable in the bigger level,
+  which is what lets their orders be prescribed at all: a place whose divisor class is out of reach
+  of the completely decomposed ones carries no unit of order prime to the exponent there.  **What
+  the odd step asks of the arithmetic is a finite set of places on which the orders of the confined
+  units are arbitrary, together with a bound — settled before the bigger level and the named places
+  are — on the number of generators a second reading leaves.**
+* `InverseGalois.Solvable.Shafarevich.FlatTensorDiagonal` states that demand in the form the
+  arithmetic delivers it.  For a prime exponent the orders are arbitrary as soon as there is one
   unit per chosen place whose order there is prime to the exponent and whose order at the other
   chosen places is divisible by it, and that last divisibility is not a separate demand: the units a
   prescription produces are local powers at prescribed places, and a local power is unramified.  So
   **the surjectivity clause is a family of units cut out by local conditions**, with the single
   global demand that each unit have order prime to the exponent at its own place — which is what a
-  reachable place provides — and the obstruction clause is left as the only genuine content.
-* `InverseGalois.Solvable.Shafarevich.FlatDiagonalUnits` discharges that first clause outright.
-  The units the prescription over a level already asks for are exactly the family of units the
-  clause wants, once the chosen set of places is taken to be the hull of the named ones and the
+  reachable place provides.  The bound on the generators is supplied here out of theorems: the
+  correction room a second reading needs is one prime per refined class, and the coefficients the
+  reading leaves are units for that room alone, so their generators number those of the units of
+  the ring of integers plus the size of the room, both of which belong to the level and the places
+  the radicand must stay inert at.
+* `InverseGalois.Solvable.Shafarevich.FlatDiagonalUnits` discharges that demand outright.
+  The units the prescription over a level already asks for are exactly the family of units it
+  wants, once the chosen set of places is taken to be the hull of the named ones and the
   units are asked for at representatives of the orbits those meet: a place of the hull is a
   translate of a representative, and moving the unit belonging to that representative by the same
   automorphism moves neither its order nor its being a local power.  Complete decomposition in a
   Galois level is likewise a property of a whole orbit, so the places the ramification is allowed
-  at absorb what the confinement leaves over.  **What is left of the choice of places is the
-  obstruction alone**, read at the smallest set of places there is.
-* `InverseGalois.Solvable.Shafarevich.FlatStabilizerUnits` buys that obstruction with arithmetic of
-  the same shape as the diagonal.  What it costs is one confined unit for each place of the hull of
-  the named ones: of order one at that place and none at the other places of the hull, and fixed by
-  the automorphisms fixing the place — a unit of the decomposition field.  The vector of orders is
-  equivariant, so such a unit carries with it the unit belonging to every place of the same orbit,
-  and the family so assembled splits the vector of orders equivariantly, which trivialises the
-  obstruction of every tensor with invariant valuation.  **At a place no automorphism of order the
-  prime fixes the unit is free of charge**: there the decomposition group has order prime to the
-  exponent, and the product over it of a unit the vector of orders supplies is fixed by the
-  automorphisms fixing the place and has order the size of that group there, which a power brings
-  back to one modulo the exponent.  So the arithmetic is spent only at the places of the hull whose
-  decomposition group carries an element of order the prime.
-* `InverseGalois.Solvable.Shafarevich.FlatSylowUnits` cuts what is asked of the automorphisms
-  fixing a place down to a subgroup of order a power of the prime.  A unit fixed modulo
-  exponent-th powers by a Sylow subgroup of those automorphisms is spread along a transversal of
-  that subgroup: an automorphism fixing the place carries a representative of a coset to a
-  representative of the translated coset up to an element of the subgroup, so the product of the
-  translates of the unit is returned to itself by reindexing along the permutation of cosets, and
-  only exponent-th powers survive.  Every representative fixes the place, so the product has order
-  there the index of the subgroup, prime to the exponent, which a power brings back to one.
-  Nothing about the subgroup is used but its index, so no normality is asked of it.  **The
-  invariance is therefore only ever read under a group of order a power of the prime**, and such a
-  group fixes the roots of unity of that order.
-* `InverseGalois.Solvable.Shafarevich.FlatFixedUnits` trades the invariance modulo exponent-th
-  powers for invariance on the nose.  Asking the unit to be fixed outright by the subgroup of order
-  a power of the prime is more than the obstruction reads, and it is what the fixed field of that
-  subgroup supplies: a group of order a power of the prime acts trivially on the roots of unity of
-  that order, so they already lie in the fixed field, and a place fixed by the subgroup and
-  unramified in the level over the fixed field is the only place of the level above its own trace
-  there.  The passage back costs only a power, which brings the order at the named place to one
-  modulo the exponent and leaves the invariance untouched.  Which places admit such a unit is
-  settled by the ramification alone, since the units the subgroup fixes are the units of its fixed
-  field and their orders at the place are the multiples of the ramification index there; the places
-  the obstruction is read at carry that much for free, arriving with their order taken by an element
-  the whole group of automorphisms fixes, so **what is asked is the divisor class statement of a
-  reachable place and nothing equivariant beyond a unit the subgroup fixes**.
+  at absorb what the confinement leaves over.  **Nothing is left of the choice of places, so the
+  step of the ladder over an odd prime is unconditional**, read at the smallest set of places there
+  is.
 * `InverseGalois.Solvable.Shafarevich.FlatLineUnits` produces those units without asking the orbits
   of the named places to be free.  A line of local classes named by a global unit spreads over an
   orbit only when the orbit is free, since two automorphisms carrying the named place to the same

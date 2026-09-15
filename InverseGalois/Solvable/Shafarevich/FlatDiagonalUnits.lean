@@ -11,10 +11,9 @@ import InverseGalois.Solvable.Shafarevich.FlatTensorDiagonal
 /-!
 # The diagonal of units, supplied one orbit at a time
 
-The demand made of a choice of places has two halves: a diagonal of units at the chosen places, and
-the vanishing of the obstruction to correcting an invariant divisor to an invariant radicand.  This
-file discharges the first half against the arithmetic input the prescription over a level is
-already stated in terms of.
+The demand made of a choice of places asks for a diagonal of units at the chosen places.  This file
+discharges it against the arithmetic input the prescription over a level is already stated in terms
+of.
 
 That input asks, for finitely many places lying in distinct orbits, for a unit at each of them whose
 order there is prime to the exponent, which is a local power at a prescribed finite set of places,
@@ -31,24 +30,21 @@ the hull.  And the places the ramification is allowed at include those completel
 bigger level, which is a property of a whole orbit when that level is Galois over the base, so the
 set of them is its own stable core.
 
-The first half is then discharged outright.  A unit at a named place of order prime to the exponent
+The demand is then discharged outright.  A unit at a named place of order prime to the exponent
 there, a local power on the prescribed set, of order divisible by the exponent at the finitely many
 other translates of the named places and confined elsewhere, is precisely what the reachability of
 that place produces; no equivariance is asked of it, and equivariance was the only clause the
 arithmetic could not meet.
 
-What is left over is the obstruction, which is stated here for the hull of the named places — the
-smallest choice, and by the reckoning of the descent the best one, since enlarging the set of places
-whose orders are read enlarges the free module the obstruction lives over.
+The chosen set of places is the hull of the named ones — the smallest choice, and by the reckoning
+of the descent the best one, since enlarging the set of places whose orders are read enlarges the
+free module the descent runs over.
 
 ## Main definitions
 
 * `InverseGalois.Shafarevich.HasFlatDiagonalUnits`: the arithmetic input of the prescription with
   its equivariance clause dropped.
-* `InverseGalois.Shafarevich.HasConfinedObstruction`: the obstruction clause alone, read at the hull
-  of the named places.
-* `Shafarevich.FlatDiagonalUnitsEP`, `Shafarevich.ConfinedObstructionEP`: the two, made of every
-  level.
+* `Shafarevich.FlatDiagonalUnitsEP`: that input, made of every level.
 
 ## Main results
 
@@ -57,14 +53,14 @@ whose orders are read enlarges the free module the obstruction lives over.
 * `InverseGalois.Shafarevich.hasFlatDiagonalUnits`: **reachable places carry the units**, and
   nothing further is asked of the level.
 * `InverseGalois.Shafarevich.hasConfinedDiagonalPlaces_of_flatDiagonalUnits`: **the units of the
-  prescription are the diagonal**, so the choice of places costs only the obstruction.
+  prescription are the diagonal**, so the choice of places costs nothing beyond them.
 * `Shafarevich.flatDiagonalUnitsEP`: **every level carries the units.**
-* `Shafarevich.genericLevelStepEPRoots_of_confinedObstructionEP`: **the step of the ladder over an
-  odd prime, in exchange for the obstruction alone.**
+* `Shafarevich.genericLevelStepEPRoots`: **the step of the ladder over an odd prime**, with nothing
+  left to assume.
 
 ## Tags
 
-Shafarevich's theorem, embedding problem, S-unit, confined unit, diagonal, orbit, obstruction
+Shafarevich's theorem, embedding problem, S-unit, confined unit, diagonal, orbit
 -/
 
 namespace InverseGalois.Shafarevich
@@ -178,57 +174,14 @@ theorem isGaloisStablePlaces_decomposedPlaces {K E : IntermediateField k Ω} [Nu
 
 end Decomposed
 
-/-! ### The obstruction alone -/
-
-section Obstruction
-
-variable {k Ω : Type} [Field k] [Field Ω] [Algebra k Ω]
-
-/-- **A confined radicand with invariant divisor may be corrected to an invariant one**, over the
-hull of the named places.
-
-This is the second half of the demand made of a choice of places, read at the smallest choice there
-is: the places whose orders the descent reads are the translates of the named ones and nothing
-else.  The units the correction is made in are those the enlarged set of allowed places brings in,
-and that set — the named places together with everything completely decomposed in the bigger level —
-is left as large as it can be.
-
-The named places arrive with their order taken by an element the whole group of automorphisms fixes
-and with the divisor class statement of a reachable place, both of which the choice of places is
-handed along with them. -/
-def HasConfinedObstruction (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
-  ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
-    ∀ Xs₀ Tz : Set (HeightOneSpectrum (𝓞 ↥K)), Xs₀.Finite → Tz.Finite →
-      (∀ v ∈ Xs₀, IsBaseOrderPlace ℓ K v) →
-      (∀ v ∈ Xs₀, IsReachablePlace ℓ K E (stableHull k ↥K Tz) v) →
-      ∀ (C : Type) [CommGroup C] [MulDistribMulAction Gal(↥K/k) C], (∀ c : C, c ^ ℓ = 1) →
-        ∀ (_ : Finite ↥(stableHull k ↥K Xs₀)) (_ : DecidableEq ↥(stableHull k ↥K Xs₀))
-          (hsurj : Function.Surjective (confinedOrd ℓ (stableHull k ↥K Tz)
-            (allowedPlaces K E Xs₀) (stableHull k ↥K Xs₀)))
-          (t : Additive ↥(confinedUnits ↥K ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀))
-            ⊗[ℤ] Additive C)
-          (_ht : ∀ σ : Gal(↥K/k),
-            tensorVal C (confinedOrd ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)
-                (stableHull k ↥K Xs₀)) (σ • t)
-              = tensorVal C (confinedOrd ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)
-                (stableHull k ↥K Xs₀)) t),
-          tensorInvariantClass C
-            (confinedOrd ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) (stableHull k ↥K Xs₀))
-            (confinedSUnits ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)
-              (stableHull k ↥K Xs₀)) hsurj
-            (mem_confinedSUnits_iff ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀)
-              (stableHull k ↥K Xs₀)) _ht = 0
-
-end Obstruction
-
 /-! ### The units of the prescription are the diagonal -/
 
 section Bridge
 
 variable {k Ω : Type} [Field k] [Field Ω] [Algebra k Ω] [IsGalois k Ω]
 
-/-- **The units of the prescription are the diagonal**, so the choice of places costs only the
-obstruction.
+/-- **The units of the prescription are the diagonal**, so the choice of places costs nothing beyond
+them.
 
 The chosen set of places is the hull of the named ones, and the units are asked for at
 representatives of the orbits the named places meet, which have the same hull.  A place of the hull
@@ -245,10 +198,9 @@ named place, which puts it in the hull, or completely decomposed in the bigger l
 in the stable core of the completely decomposed places, that set being its own core. -/
 theorem hasConfinedDiagonalPlaces_of_flatDiagonalUnits {ℓ : ℕ} [Fact ℓ.Prime] [NeZero ℓ]
     {K : IntermediateField k Ω} [NumberField ↥K] [IsGalois k ↥K] [FiniteDimensional k ↥K]
-    (hunits : HasFlatDiagonalUnits ℓ K) (hobs : HasConfinedObstruction ℓ K) :
-    HasConfinedDiagonalPlaces ℓ K := by
+    (hunits : HasFlatDiagonalUnits ℓ K) : HasConfinedDiagonalPlaces ℓ K := by
   classical
-  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hℓXs hreach hbase hTzavoid C _ _ hexp
+  intro E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hℓXs hreach _hbase hTzavoid
   haveI : Finite Gal(↥K/k) := Finite.of_fintype _
   haveI := isGaloisStablePlaces_decomposedPlaces (K := K) (E := E)
   obtain ⟨ι, hιfin, w, hwmem, hwdist, hwhull⟩ := exists_orbitReps (k := k) Xs₀ hXs₀
@@ -332,8 +284,7 @@ theorem hasConfinedDiagonalPlaces_of_flatDiagonalUnits {ℓ : ℕ} [Fact ℓ.Pri
       have h6 := hZord μ
       rwa [placeValue_eq_neg_ord, dvd_neg] at h6
   exact ⟨stableHull k ↥K Xs₀, inferInstance, inferInstance, inferInstance,
-    subset_stableHull k ↥K Xs₀, hdiagdata,
-    fun t ht => hobs E hEfin hEgal hKE Xs₀ Tz hXs₀ hTz hbase hreach C hexp _ _ _ t ht⟩
+    subset_stableHull k ↥K Xs₀, hdiagdata⟩
 
 end Bridge
 
@@ -346,7 +297,7 @@ open InverseGalois.CFT InverseGalois.Shafarevich
 -- Pin `Algebra ℚ ↥K` to the tower instance rather than `DivisionRing.toRatAlgebra`.
 attribute [local instance 2000] IntermediateField.algebra'
 
-/-! ### The two halves, made of every level -/
+/-! ### The input, made of every level -/
 
 /-- **Every finite Galois level of a number field inside an algebraic closure carrying a primitive
 root of unity of the exponent carries the units the prescription asks for at finitely many places
@@ -356,39 +307,29 @@ def FlatDiagonalUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
       (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K],
       (∃ ζ : ↥K, IsPrimitiveRoot ζ ℓ) → HasFlatDiagonalUnits ℓ K
 
-/-- **Every finite Galois level of a number field inside an algebraic closure carrying a primitive
-root of unity of the exponent carries no obstruction to correcting an invariant divisor of confined
-units to an invariant radicand**, over the hull of the named places. -/
-def ConfinedObstructionEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : Prop :=
-  ∀ (Ω : Type) [Field Ω] [Algebra ℚ Ω] [IsAlgClosed Ω] [IsGalois ℚ Ω]
-      (K : IntermediateField ℚ Ω) [FiniteDimensional ℚ ↥K] [NumberField ↥K] [IsGalois ℚ ↥K],
-      (∃ ζ : ↥K, IsPrimitiveRoot ζ ℓ) → HasConfinedObstruction ℓ K
-
 /-- **Every level carries the units**, the reachability of a named place being all they cost. -/
 theorem flatDiagonalUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : FlatDiagonalUnitsEP ℓ := by
   intro k Ω _ _ _ _ _ _ K _ _ _ _
   exact hasFlatDiagonalUnits K
 
-/-- **The units and the obstruction together buy the choice of places.** -/
+/-- **The units buy the choice of places.** -/
 theorem confinedDiagonalPlacesEP_of_flatDiagonalUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
-    (hunits : FlatDiagonalUnitsEP ℓ) (hobs : ConfinedObstructionEP ℓ) :
-    ConfinedDiagonalPlacesEP ℓ := by
+    (hunits : FlatDiagonalUnitsEP ℓ) : ConfinedDiagonalPlacesEP ℓ := by
   intro Ω _ _ _ _ K _ _ _ hζ
-  exact hasConfinedDiagonalPlaces_of_flatDiagonalUnits (hunits ℚ Ω K hζ) (hobs Ω K hζ)
+  exact hasConfinedDiagonalPlaces_of_flatDiagonalUnits (hunits ℚ Ω K hζ)
 
-/-- **The step of the ladder over an odd prime, in exchange for the units and the
-obstruction.** -/
+/-- **The step of the ladder over an odd prime, in exchange for the units.** -/
 theorem genericLevelStepEPRoots_of_flatDiagonalUnitsEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
-    (hodd : 2 < ℓ) (hunits : FlatDiagonalUnitsEP ℓ) (hobs : ConfinedObstructionEP ℓ) :
-    GenericLevelStepEPRoots ℓ :=
+    (hodd : 2 < ℓ) (hunits : FlatDiagonalUnitsEP ℓ) : GenericLevelStepEPRoots ℓ :=
   genericLevelStepEPRoots_of_confinedDiagonalPlacesEP ℓ hodd
-    (confinedDiagonalPlacesEP_of_flatDiagonalUnitsEP ℓ hunits hobs)
+    (confinedDiagonalPlacesEP_of_flatDiagonalUnitsEP ℓ hunits)
 
-/-- **The step of the ladder over an odd prime, in exchange for the obstruction alone** — the
-arithmetic of the climb resting on a single vanishing statement about the confined units of a
-number field. -/
-theorem genericLevelStepEPRoots_of_confinedObstructionEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
-    (hodd : 2 < ℓ) (hobs : ConfinedObstructionEP ℓ) : GenericLevelStepEPRoots ℓ :=
-  genericLevelStepEPRoots_of_flatDiagonalUnitsEP ℓ hodd (flatDiagonalUnitsEP ℓ) hobs
+/-- **The step of the ladder over an odd prime**, with nothing left to assume: a place reachable in
+the bigger level carries the unit the diagonal wants there, the diagonal makes every system of
+orders at the chosen places the system of orders of a confined unit, and the correction room the
+second reading of those units needs is bounded by the refined class group of the level. -/
+theorem genericLevelStepEPRoots (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] (hodd : 2 < ℓ) :
+    GenericLevelStepEPRoots ℓ :=
+  genericLevelStepEPRoots_of_flatDiagonalUnitsEP ℓ hodd (flatDiagonalUnitsEP ℓ)
 
 end Shafarevich

@@ -71,7 +71,7 @@ open scoped Pointwise
 
 set_option synthInstance.maxHeartbeats 800000
 
-set_option maxHeartbeats 1600000
+set_option maxHeartbeats 6400000
 
 /-! ### The root of unity of the level -/
 
@@ -268,39 +268,55 @@ completely decomposed in a finite level named in advance.
 Each named place is asked to be reachable in that finite level, which is the divisor class half of
 the demand and the half the level has to be chosen for rather than the half the arithmetic
 supplies.  It is also asked to have its order taken by an element the whole group fixes, which is
-the statement that its ramification index over the base field is prime to the exponent. -/
+the statement that its ramification index over the base field is prime to the exponent.
+
+The tensor is not asked for in the target itself but in every quotient of it killing a finite family
+of elements named in advance, of a length the set of places a local power is asked at already
+bounds.  That is the order the counting argument the ladder runs needs: the arithmetic cannot be
+asked to produce a tensor in a target it has no control over, but it can be asked to name, before
+any quotient is chosen, the finitely many elements whose death makes its answer good — and a
+shrinking of the coefficients can be made to kill a family of a length fixed in advance while
+staying onto.  The prescribed values and the spanning family are read in the quotient, which is what
+makes the answer one about the quotient alone. -/
 def HasFlatPrescribedTensor (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω) [NumberField ↥K]
     (ζ : ↥K) : Prop :=
-  ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
-    ∀ (M : Type) [CommGroup M], (∀ m : M, m ^ ℓ = 1) →
-      ∀ (T : Type) [Fintype T] (b : T → M),
-        (∀ m : M, ∃ d : T → ZMod ℓ, ∏ q, b q ^ (d q).val = m) →
-        (∀ d : T → ZMod ℓ, ∏ q, b q ^ (d q).val = 1 → d = 0) →
-        ∀ act : Gal(↥K/k) → M →* M, (∀ m : M, act 1 m = m) →
-          (∀ (σ τ : Gal(↥K/k)) (m : M), act (σ * τ) m = act σ (act τ m)) →
-          ∀ (ι : Type) [Fintype ι] (w : ι → HeightOneSpectrum (𝓞 ↥K)) (V : ι → M),
-            (∀ μ ν : ι, μ ≠ ν → ∀ σ : Gal(↥K/k), σ • w μ ≠ w ν) →
-            (∀ (μ : ι) (σ : Gal(↥K/k)) (e : ℕ), σ ζ = ζ ^ e → σ • w μ = w μ →
-              V μ ^ e = act σ (V μ)) →
-            ∀ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)),
-              (∀ (σ : Gal(↥K/k)) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz → σ • v ∈ Tz) →
+  ∀ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)),
+    (∀ (σ : Gal(↥K/k)) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz → σ • v ∈ Tz) →
+    ∃ D : ℕ, ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
+      ∀ (M : Type) [CommGroup M], (∀ m : M, m ^ ℓ = 1) →
+        ∀ (T : Type) [Fintype T] (b : T → M),
+          (∀ m : M, ∃ d : T → ZMod ℓ, ∏ q, b q ^ (d q).val = m) →
+          (∀ d : T → ZMod ℓ, ∏ q, b q ^ (d q).val = 1 → d = 0) →
+          ∀ act : Gal(↥K/k) → M →* M, (∀ m : M, act 1 m = m) →
+            (∀ (σ τ : Gal(↥K/k)) (m : M), act (σ * τ) m = act σ (act τ m)) →
+            ∀ (ι : Type) [Fintype ι] (w : ι → HeightOneSpectrum (𝓞 ↥K)) (V : ι → M),
+              (∀ μ ν : ι, μ ≠ ν → ∀ σ : Gal(↥K/k), σ • w μ ≠ w ν) →
+              (∀ (μ : ι) (σ : Gal(↥K/k)) (e : ℕ), σ ζ = ζ ^ e → σ • w μ = w μ →
+                V μ ^ e = act σ (V μ)) →
               (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ ∉ Tz) →
               (∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (w μ).asIdeal) →
               (∀ μ : ι, IsReachablePlace ℓ K E (↑Tz) (w μ)) →
               (∀ μ : ι, IsBaseOrderPlace ℓ K (w μ)) →
-              ∃ z : T → (↥K)ˣ,
-                (∀ (σ : Gal(↥K/k)) (e : ℕ), σ ζ = ζ ^ e →
-                  twistTensor M σ⁻¹ e (∑ q, Additive.ofMul (z q) ⊗ₜ[ℤ] Additive.ofMul (b q))
-                    = coeffTensor M (act σ)
-                        (∑ q, Additive.ofMul (z q) ⊗ₜ[ℤ] Additive.ofMul (b q))) ∧
-                (∀ μ : ι, ∏ q, b q ^ ((placeValue (w μ) (z q) : ZMod ℓ)).val = V μ) ∧
-                (∀ (q : T) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz →
-                  localClassHom v ℓ (z q) = 1) ∧
-                ∀ v : HeightOneSpectrum (𝓞 ↥K), (∃ q : T, ¬ (ℓ : ℤ) ∣ placeValue v (z q)) →
-                  (∃ (ν : ι) (σ : Gal(↥K/k)), v = σ • w ν) ∨
-                    ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
-                      Ideal.under (𝓞 ↥K) P = v.asIdeal →
-                      stabilizer Gal(Ω/k) P ≤ E.fixingSubgroup
+              ∃ (J : Type) (_ : Finite J) (_ : Nat.card J ≤ D) (x : J → M),
+                ∀ (M' : Type) [CommGroup M'] (Φ : M →* M'), Function.Surjective Φ →
+                  ∀ act' : Gal(↥K/k) → M' →* M',
+                    (∀ (σ : Gal(↥K/k)) (m : M), Φ (act σ m) = act' σ (Φ m)) →
+                    (∀ i : J, Φ (x i) = 1) →
+                    ∃ z : T → (↥K)ˣ,
+                      (∀ (σ : Gal(↥K/k)) (e : ℕ), σ ζ = ζ ^ e →
+                        twistTensor M' σ⁻¹ e
+                            (∑ q, Additive.ofMul (z q) ⊗ₜ[ℤ] Additive.ofMul (Φ (b q)))
+                          = coeffTensor M' (act' σ)
+                              (∑ q, Additive.ofMul (z q) ⊗ₜ[ℤ] Additive.ofMul (Φ (b q)))) ∧
+                      (∀ μ : ι,
+                        ∏ q, Φ (b q) ^ ((placeValue (w μ) (z q) : ZMod ℓ)).val = Φ (V μ)) ∧
+                      (∀ (q : T) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz →
+                        localClassHom v ℓ (z q) = 1) ∧
+                      ∀ v : HeightOneSpectrum (𝓞 ↥K), (∃ q : T, ¬ (ℓ : ℤ) ∣ placeValue v (z q)) →
+                        (∃ (ν : ι) (σ : Gal(↥K/k)), v = σ • w ν) ∨
+                          ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
+                            Ideal.under (𝓞 ↥K) P = v.asIdeal →
+                            stabilizer Gal(Ω/k) P ≤ E.fixingSubgroup
 
 end Arith
 
@@ -346,8 +362,17 @@ conjugates of the named places, equivariance carrying the value there.
 
 The set of places the units are asked to be local powers at is the orbit of the places below the
 given finite family of decomposition subgroups, and it is named in advance of the level because the
-level is chosen for it. -/
-theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateField k Ω)
+level is chosen for it.
+
+The rank the generic group is read at is not the one the prescription is asked at.  The arithmetic
+names its finite family of coefficients against a rank chosen from the bound the arithmetic itself
+announces once the places carrying the local conditions are known, the count then produces a
+shrinking onto the intended rank killing that family, and the two homomorphisms are composed: the
+level is reached at the larger rank and the answer is read at the smaller one.  That is what keeps
+the argument from turning in a circle, the rank being fixed before the level rather than after
+it. -/
+theorem hasFlatKernelPrescription_of_tensorPlaces (hS : IsPGroup ℓ S)
+    (K : IntermediateField k Ω)
     [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K]
     (hKker : K.fixingSubgroup = φ.ker) {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ)
     (hkd : IsKummerData ↥K Ω (Multiplicative (ZMod ℓ)) (zmodRootHom hζ) ℓ)
@@ -358,19 +383,29 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
     (Tz : Finset (HeightOneSpectrum (𝓞 ↥K)))
     (hTz : ∀ v : HeightOneSpectrum (𝓞 ↥K), v ∈ Tz ↔
       ∃ (σ : Gal(↥K/k)) (ν : Fin t), v = σ • placeUnder K (Pr ν) (hPrbot ν))
-    (hlevel : HasReachableLevel ℓ U n S j φ N K (↑Tz))
+    (hlevel : ∀ m : ℕ, ∃ N : ℕ, HasReachableLevel ℓ U m S j φ N K (↑Tz))
     (hfam : HasFlatPrescribedTensor ℓ K ζ) :
     HasFlatKernelPrescription ℓ U n S j φ D := by
   classical
   have hℓ : ℓ.Prime := Fact.out
   haveI : Fact (1 < ℓ) := ⟨hℓ.one_lt⟩
   haveI : IsGalois ↥K Ω := IsGalois.tower_top_of_isGalois k ↥K Ω
+  have hmemTz : ∀ (σ : Gal(↥K/k)) (ν : Fin t),
+      σ • placeUnder K (Pr ν) (hPrbot ν) ∈ Tz := fun σ ν => (hTz _).2 ⟨σ, ν, rfl⟩
+  have hstabTz : ∀ (σ : Gal(↥K/k)) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz → σ • v ∈ Tz := by
+    intro σ v hv
+    obtain ⟨τ, ν, rfl⟩ := (hTz v).1 hv
+    exact (hTz _).2 ⟨σ * τ, ν, (mul_smul σ τ _).symm⟩
+  obtain ⟨Db, hfam'⟩ := hfam Tz hstabTz
+  set r : ℕ := (j + 1) * (Db * Module.finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j)) + 1
+    with hrdef
+  obtain ⟨N, hlevelN⟩ := hlevel (r * n)
   refine ⟨N, ?_⟩
   intro F ι _ Q A a hFsurj hFsm hFright hQp hQbot hQℓ hQconj _ hAker hAeq hQunr hasm haequiv hesc
   haveI : ∀ μ, (Q μ).IsPrime := hQp
   haveI : ∀ ν, (Pr ν).IsPrime := hPrp
   letI : Fintype ι := Fintype.ofFinite ι
-  obtain ⟨β, hβ, hβsurj, E, hEfin, hEgal, hKE, hEF, hreach⟩ := hlevel F hFsurj hFsm hFright
+  obtain ⟨β₁, hβ₁, hβ₁surj, E, hEfin, hEgal, hKE, hEF, hreach⟩ := hlevelN F hFsurj hFsm hFright
   haveI := hEfin
   haveI := hEgal
   -- a lift of an automorphism of the level, and the operator it names
@@ -422,13 +457,7 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
     · rw [mul_smul, ← hρ]
     · rw [_root_.map_mul, MonoidHom.mem_ker.1 hρker, one_mul]
     · rw [_root_.map_mul, (restrictNormalHom_eq_one_iff_mem_ker hKker ρ).2 hρker, one_mul]
-  -- the places carrying the finite family, and the named places avoiding them
-  have hmemTz : ∀ (σ : Gal(↥K/k)) (ν : Fin t),
-      σ • placeUnder K (Pr ν) (hPrbot ν) ∈ Tz := fun σ ν => (hTz _).2 ⟨σ, ν, rfl⟩
-  have hstabTz : ∀ (σ : Gal(↥K/k)) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz → σ • v ∈ Tz := by
-    intro σ v hv
-    obtain ⟨τ, ν, rfl⟩ := (hTz v).1 hv
-    exact (hTz _).2 ⟨σ * τ, ν, (mul_smul σ τ _).symm⟩
+  -- the named places avoid the places carrying the finite family
   have hdisj : ∀ (μ : ι) (τ : Gal(↥K/k)), τ • placeUnder K (Q μ) (hQbot μ) ∉ Tz := by
     intro μ τ₀ hmem
     obtain ⟨σ₀, ν, hσν⟩ := (hTz _).1 hmem
@@ -464,11 +493,11 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
   choose Z hZ using hZex
   -- the coordinates the prescription forces
   have hasm' : ∀ μ : ι, IsSmooth₁
-      (((layerSubMap ℓ β j).comp (a μ) : ↥(A μ) →* ↥(layerSub ℓ (Generic U n S) j)) :
-        ↥(A μ) → ↥(layerSub ℓ (Generic U n S) j)) := by
+      (((layerSubMap ℓ β₁ j).comp (a μ) : ↥(A μ) →* ↥(layerSub ℓ (Generic U (r * n) S) j)) :
+        ↥(A μ) → ↥(layerSub ℓ (Generic U (r * n) S) j)) := by
     intro μ
     obtain ⟨N₀, hN₀, hcon⟩ := hasm μ
-    exact ⟨N₀, hN₀, fun x y hy => congrArg (layerSubMap ℓ β j) (hcon x y hy)⟩
+    exact ⟨N₀, hN₀, fun x y hy => congrArg (layerSubMap ℓ β₁ j) (hcon x y hy)⟩
   have hunit : ∀ μ : ι, ∃ x₁ : ↥(A μ), IsUnit (subKummerChar hKker hkd (hAker μ) (Z μ) x₁) := by
     intro μ
     have hord : ¬ (ℓ : ℤ) ∣ Rigidity.RET.ord ↥K (placeUnder K (Q μ) (hQbot μ)) ((Z μ : ↥K)) := by
@@ -483,19 +512,19 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
       omega
     exact exists_isUnit_kummerChar_of_not_dvd_ord hKker hkd hℓ (hAeq μ) (hAker μ) (Z μ)
       (v := placeUnder K (Q μ) (hQbot μ)) rfl hord
-  have hcoord : ∀ μ : ι, ∃ c : Fin (layerDim ℓ (Generic U n S) j) → ZMod ℓ, ∀ x : ↥(A μ),
-      ((layerSubMap ℓ β j).comp (a μ)) x
-        = (∏ q, layerBasis ℓ (Generic U n S) j q ^ (c q).val)
+  have hcoord : ∀ μ : ι, ∃ c : Fin (layerDim ℓ (Generic U (r * n) S) j) → ZMod ℓ, ∀ x : ↥(A μ),
+      ((layerSubMap ℓ β₁ j).comp (a μ)) x
+        = (∏ q, layerBasis ℓ (Generic U (r * n) S) j q ^ (c q).val)
             ^ (subKummerChar hKker hkd (hAker μ) (Z μ) x).val := by
     intro μ
     obtain ⟨x₁, hx₁⟩ := hunit μ
     exact exists_forall_eq_pow_subKummerChar hKker hkd (hQbot μ) (hQℓ μ) (hAeq μ) (hAker μ)
-      layerBasis_pow_eq_one (χ := fun q e => layerCoord ℓ (Generic U n S) j e q)
+      layerBasis_pow_eq_one (χ := fun q e => layerCoord ℓ (Generic U (r * n) S) j e q)
       prod_layerBasis_pow_layerCoord (fun q e e' => layerCoord_mul e e' q)
-      ((layerSubMap ℓ β j).comp (a μ)) (hasm' μ) (Z μ) hx₁
+      ((layerSubMap ℓ β₁ j).comp (a μ)) (hasm' μ) (Z μ) hx₁
   choose c hc using hcoord
   have hVpow : ∀ μ : ι,
-      (∏ q, layerBasis ℓ (Generic U n S) j q ^ (c μ q).val) ^ ℓ = 1 :=
+      (∏ q, layerBasis ℓ (Generic U (r * n) S) j q ^ (c μ q).val) ^ ℓ = 1 :=
     fun _ => prod_pow_pow_eq_one layerBasis_pow_eq_one _
   have hx₀ : ∀ μ : ι, ∃ x₀ : ↥(A μ), subKummerChar hKker hkd (hAker μ) (Z μ) x₀ = 1 := by
     intro μ
@@ -523,16 +552,16 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
   -- the prescribed value is raised to the power by which the automorphism moves the roots
   have hVcompat : ∀ (μ : ι) (σ : Gal(↥K/k)) (e : ℕ), σ ζ = ζ ^ e →
       σ • placeUnder K (Q μ) (hQbot μ) = placeUnder K (Q μ) (hQbot μ) →
-      (∏ q, layerBasis ℓ (Generic U n S) j q ^ (c μ q).val) ^ e
-        = MulDistribMulAction.toMonoidHom ↥(layerSub ℓ (Generic U n S) j) (φ (lift σ))
-            (∏ q, layerBasis ℓ (Generic U n S) j q ^ (c μ q).val) := by
+      (∏ q, layerBasis ℓ (Generic U (r * n) S) j q ^ (c μ q).val) ^ e
+        = MulDistribMulAction.toMonoidHom ↥(layerSub ℓ (Generic U (r * n) S) j) (φ (lift σ))
+            (∏ q, layerBasis ℓ (Generic U (r * n) S) j q ^ (c μ q).val) := by
     intro μ σ e hσζ hσw
     obtain ⟨g, hgstab, hgφ, hgσ⟩ := hstab μ (lift σ) (by rw [hlift]; exact hσw)
     have hgres : AlgEquiv.restrictNormalHom (F := k) (K₁ := Ω) ↥K g = σ := by rw [hgσ, hlift]
     have hge : g • kummerRootUnit Ω hζ = kummerRootUnit Ω hζ ^ e :=
       (smul_kummerRootUnit_eq_pow_iff hζ g e).2 (by rw [hgres]; exact hσζ)
-    show (∏ q, layerBasis ℓ (Generic U n S) j q ^ (c μ q).val) ^ e
-      = φ (lift σ) • ∏ q, layerBasis ℓ (Generic U n S) j q ^ (c μ q).val
+    show (∏ q, layerBasis ℓ (Generic U (r * n) S) j q ^ (c μ q).val) ^ e
+      = φ (lift σ) • ∏ q, layerBasis ℓ (Generic U (r * n) S) j q ^ (c μ q).val
     rw [← hgφ]
     obtain ⟨x₀, hx₀1⟩ := hx₀ μ
     have hx₀I : (x₀ : Gal(Ω/k)) ∈ Ideal.inertia Gal(Ω/k) (Q μ) := hAI μ x₀.2
@@ -574,33 +603,34 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
         ⟨g * (x₀ : Gal(Ω/k)) * g⁻¹, hconjmem⟩ = (e : ZMod ℓ) := by
       simp only [subKummerChar] at hx₀1 ⊢
       rw [kummerChar_conj_of_smul_eq_mul_pow hkd hge hZa hτ, hchar0, hx₀1, mul_one]
-    have hleft : layerSubMap ℓ β j (a μ ⟨g * (x₀ : Gal(Ω/k)) * g⁻¹, hconjmem⟩)
-        = φ g • layerSubMap ℓ β j (a μ x₀) := by
-      rw [haequiv μ g x₀ hconjmem, layerSubMap_smul hβ]
-    have hright : layerSubMap ℓ β j (a μ x₀)
-        = ∏ q, layerBasis ℓ (Generic U n S) j q ^ (c μ q).val := by
+    have hleft : layerSubMap ℓ β₁ j (a μ ⟨g * (x₀ : Gal(Ω/k)) * g⁻¹, hconjmem⟩)
+        = φ g • layerSubMap ℓ β₁ j (a μ x₀) := by
+      rw [haequiv μ g x₀ hconjmem, layerSubMap_smul hβ₁]
+    have hright : layerSubMap ℓ β₁ j (a μ x₀)
+        = ∏ q, layerBasis ℓ (Generic U (r * n) S) j q ^ (c μ q).val := by
       have hx := hc μ x₀
       rw [hx₀1, ZMod.val_one, pow_one] at hx
       exact hx
-    have hleft' : layerSubMap ℓ β j (a μ ⟨g * (x₀ : Gal(Ω/k)) * g⁻¹, hconjmem⟩)
-        = (∏ q, layerBasis ℓ (Generic U n S) j q ^ (c μ q).val) ^ (e : ZMod ℓ).val := by
+    have hleft' : layerSubMap ℓ β₁ j (a μ ⟨g * (x₀ : Gal(Ω/k)) * g⁻¹, hconjmem⟩)
+        = (∏ q, layerBasis ℓ (Generic U (r * n) S) j q ^ (c μ q).val) ^ (e : ZMod ℓ).val := by
       have hx := hc μ ⟨g * (x₀ : Gal(Ω/k)) * g⁻¹, hconjmem⟩
       rw [hsub] at hx
       exact hx
-    have hkey : (∏ q, layerBasis ℓ (Generic U n S) j q ^ (c μ q).val) ^ (e : ZMod ℓ).val
-        = φ g • ∏ q, layerBasis ℓ (Generic U n S) j q ^ (c μ q).val := by
+    have hkey : (∏ q, layerBasis ℓ (Generic U (r * n) S) j q ^ (c μ q).val) ^ (e : ZMod ℓ).val
+        = φ g • ∏ q, layerBasis ℓ (Generic U (r * n) S) j q ^ (c μ q).val := by
       rw [← hleft', hleft, hright]
     rw [← hkey]
     exact pow_eq_pow_of_pow_eq_one (hVpow μ) (ZMod.natCast_zmod_val _).symm
-  -- the tensor the arithmetic supplies
-  obtain ⟨z, hzinv, hzpres, hzT, hzconf⟩ := hfam E hEfin hEgal hKE
-    ↥(layerSub ℓ (Generic U n S) j) (layerSub_pow_eq_one ℓ (Generic U n S) j)
-    (Fin (layerDim ℓ (Generic U n S) j)) (layerBasis ℓ (Generic U n S) j)
-    (fun m => ⟨layerCoord ℓ (Generic U n S) j m, prod_layerBasis_pow_layerCoord m⟩)
+  -- the family of coefficients the arithmetic names, read at a rank large enough for the count
+  obtain ⟨J, hJfin, hJcard, kill, hkill⟩ := hfam' E hEfin hEgal hKE
+    ↥(layerSub ℓ (Generic U (r * n) S) j) (layerSub_pow_eq_one ℓ (Generic U (r * n) S) j)
+    (Fin (layerDim ℓ (Generic U (r * n) S) j)) (layerBasis ℓ (Generic U (r * n) S) j)
+    (fun m => ⟨layerCoord ℓ (Generic U (r * n) S) j m, prod_layerBasis_pow_layerCoord m⟩)
     (fun d hd => funext fun i => by
-      have h := congrArg (fun m => layerCoord ℓ (Generic U n S) j m i) hd
+      have h := congrArg (fun m => layerCoord ℓ (Generic U (r * n) S) j m i) hd
       simpa only [layerCoord_prod_layerBasis_pow, layerCoord_one, Pi.zero_apply] using h)
-    (fun σ => MulDistribMulAction.toMonoidHom ↥(layerSub ℓ (Generic U n S) j) (φ (lift σ)))
+    (fun σ =>
+      MulDistribMulAction.toMonoidHom ↥(layerSub ℓ (Generic U (r * n) S) j) (φ (lift σ)))
     (fun m => by
       show φ (lift (1 : Gal(↥K/k))) • m = m
       rw [hφeq (lift 1) 1 (by rw [hlift, _root_.map_one]), _root_.map_one, one_smul])
@@ -610,21 +640,44 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
       refine congrArg (fun u : U => u • m) (hφeq _ _ ?_)
       rw [hlift, _root_.map_mul, hlift, hlift])
     ι (fun μ => placeUnder K (Q μ) (hQbot μ))
-    (fun μ => ∏ q, layerBasis ℓ (Generic U n S) j q ^ (c μ q).val)
-    hconjw hVcompat Tz hstabTz hdisj hdisjℓ (fun μ => hreach _)
+    (fun μ => ∏ q, layerBasis ℓ (Generic U (r * n) S) j q ^ (c μ q).val)
+    hconjw hVcompat hdisj hdisjℓ (fun μ => hreach _)
     (fun μ => isBaseOrderPlace_of_inertia_le_fixingSubgroup hℓ.one_lt (hQbot μ)
       (by rw [hKker]; exact hQunr μ))
-  have hz1 : ∀ (q : Fin (layerDim ℓ (Generic U n S) j)) (v : HeightOneSpectrum (𝓞 ↥K)),
+  -- the shrinking onto the intended rank which kills that family
+  haveI := hJfin
+  have hrlt : (j + 1) * (Nat.card J *
+      Module.finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j)) < r := by
+    rw [hrdef]
+    exact Nat.lt_succ_of_le (Nat.mul_le_mul_left _ (Nat.mul_le_mul_right _ hJcard))
+  obtain ⟨as, hassurj, haskill⟩ :=
+    exists_genericShrink_forall_layerSubMap_eq_one U r n S hS hrlt kill
+  set γ : Generic U (r * n) S →* Generic U n S := genericShrink U r n S as with hγdef
+  have hγ : IsOperatorHom γ := isOperatorHom_genericShrink U r n S as
+  -- the tensor the arithmetic supplies, read in the shrunk layer
+  obtain ⟨z, hzinv, hzpres, hzT, hzconf⟩ := hkill ↥(layerSub ℓ (Generic U n S) j)
+    (layerSubMap ℓ γ j) (surjective_layerSubMap γ hassurj)
+    (fun σ => MulDistribMulAction.toMonoidHom ↥(layerSub ℓ (Generic U n S) j) (φ (lift σ)))
+    (fun σ m => layerSubMap_smul hγ (φ (lift σ)) m) haskill
+  obtain ⟨bb, hbb, hbbq⟩ :
+      ∃ (bb : Fin (layerDim ℓ (Generic U (r * n) S) j) → ↥(layerSub ℓ (Generic U n S) j))
+        (_ : ∀ q, bb q ^ ℓ = 1),
+        ∀ q, bb q = layerSubMap ℓ γ j (layerBasis ℓ (Generic U (r * n) S) j q) :=
+    ⟨_, fun _ => layerSub_pow_eq_one ℓ (Generic U n S) j _, fun _ => rfl⟩
+  simp only [← hbbq] at hzinv hzpres
+  have hz1 : ∀ (q : Fin (layerDim ℓ (Generic U (r * n) S) j))
+      (v : HeightOneSpectrum (𝓞 ↥K)),
       (ℓ : 𝓞 ↥K) ∈ v.asIdeal → localClassHom v ℓ (z q) = 1 := by
     intro q v hv
     obtain ⟨σ, ν, rfl⟩ := hℓPr v hv
     exact hzT q _ (hmemTz σ ν)
-  refine ⟨β, hβ, hβsurj,
-    kummerKernelHom hKker hkd (layerBasis ℓ (Generic U n S) j) layerBasis_pow_eq_one z,
-    ?_, ?_, ?_, ?_, ?_⟩
+  have hβcomp : ∀ v : ↥(layerSub ℓ (Generic U N S) j),
+      layerSubMap ℓ (γ.comp β₁) j v = layerSubMap ℓ γ j (layerSubMap ℓ β₁ j v) :=
+    fun v => DFunLike.congr_fun (layerSubMap_comp γ β₁) v
+  refine ⟨γ.comp β₁, hγ.comp hβ₁, hassurj.comp hβ₁surj,
+    kummerKernelHom hKker hkd bb hbb z, ?_, ?_, ?_, ?_, ?_⟩
   · obtain ⟨V, hV, hV1⟩ := exists_isOpenNormal_forall_kummerKernelHom_eq_one hKker hkd
-      (fun _ : Fin 1 => layerBasis ℓ (Generic U n S) j) (fun _ q => layerBasis_pow_eq_one q)
-      (fun _ : Fin 1 => z)
+      (fun _ : Fin 1 => bb) (fun _ q => hbb q) (fun _ : Fin 1 => z)
     exact ⟨V, hV, fun y hy => hV1 0 y hy⟩
   · intro g y hy
     obtain ⟨e, hge⟩ := exists_smul_kummerRootUnit_eq_pow (hζ := hζ) g
@@ -641,15 +694,14 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
     have hmem : placeUnder K (Pr ν) (hPrbot ν) ∈ Tz := by
       have h1 := hmemTz 1 ν
       rwa [one_smul] at h1
-    exact kummerKernelHom_eq_one_of_mem_stabilizer hKker hkd
-      (layerBasis ℓ (Generic U n S) j) layerBasis_pow_eq_one z
+    exact kummerKernelHom_eq_one_of_mem_stabilizer hKker hkd bb hbb z
       (w := placeUnder K (Pr ν) (hPrbot ν)) rfl (fun q => hzT q _ hmem)
       (by rw [← hDPr ν]; exact hyD)
   · intro μ x hx
     have hτI : kerGalEquiv hKker ⟨(x : Gal(Ω/k)), hx⟩ ∈ Ideal.inertia Gal(Ω/↥K) (Q μ) := by
       rw [← mem_inertia_galSubHom_iff K, galSubHom_kerGalEquiv]
       exact hAI μ x.2
-    have hchar : ∀ q : Fin (layerDim ℓ (Generic U n S) j),
+    have hchar : ∀ q : Fin (layerDim ℓ (Generic U (r * n) S) j),
         kummerChar hkd (z q) (kerGalEquiv hKker ⟨(x : Gal(Ω/k)), hx⟩)
           = kummerChar hkd
               (Z μ ^ ((placeValue (placeUnder K (Q μ) (hQbot μ)) (z q) : ZMod ℓ)).val)
@@ -673,21 +725,24 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
         omega
       rw [h3]
       exact hval
-    have hzz : kummerKernelHom hKker hkd (layerBasis ℓ (Generic U n S) j) layerBasis_pow_eq_one z
-          ⟨(x : Gal(Ω/k)), hx⟩
-        = kummerKernelHom hKker hkd (layerBasis ℓ (Generic U n S) j) layerBasis_pow_eq_one
+    have hzz : kummerKernelHom hKker hkd bb hbb z ⟨(x : Gal(Ω/k)), hx⟩
+        = kummerKernelHom hKker hkd bb hbb
             (fun q => Z μ ^ ((placeValue (placeUnder K (Q μ) (hQbot μ)) (z q) : ZMod ℓ)).val)
             ⟨(x : Gal(Ω/k)), hx⟩ := by
       rw [kummerKernelHom_apply, kummerKernelHom_apply]
       exact Finset.prod_congr rfl fun q _ => by rw [hchar q]
-    rw [hzz, kummerKernelHom_eq_pow hKker hkd (layerBasis ℓ (Generic U n S) j)
-      layerBasis_pow_eq_one (Z μ)
+    have hfin : layerSubMap ℓ (γ.comp β₁) j (a μ x)
+        = (layerSubMap ℓ γ j (∏ q, layerBasis ℓ (Generic U (r * n) S) j q ^ (c μ q).val))
+          ^ (subKummerChar hKker hkd (hAker μ) (Z μ) x).val := by
+      rw [hβcomp, show layerSubMap ℓ β₁ j (a μ x) = ((layerSubMap ℓ β₁ j).comp (a μ)) x from rfl,
+        hc μ x, _root_.map_pow]
+    rw [hzz, kummerKernelHom_eq_pow hKker hkd bb hbb (Z μ)
       (fun q => ((placeValue (placeUnder K (Q μ) (hQbot μ)) (z q) : ZMod ℓ))), hzpres μ]
-    exact (hc μ x).symm
+    exact hfin.symm
   · rintro P hPp hPbot ⟨y, hyI, hyne⟩
     haveI := hPp
     obtain ⟨q, hq⟩ := exists_not_dvd_placeValue_of_kummerKernelHom_ne_one hKker hkd
-      (layerBasis ℓ (Generic U n S) j) layerBasis_pow_eq_one z hℓ hPbot hz1 hyI hyne
+      bb hbb z hℓ hPbot hz1 hyI hyne
     rcases hzconf (placeUnder K P hPbot) ⟨q, hq⟩ with ⟨ν, σ, hvσ⟩ | hsplit
     · obtain ⟨ρ, hρ⟩ := restrictNormalHom_surjective_level K σ
       have hbot : ρ • Q ν ≠ ⊥ := by
@@ -698,7 +753,10 @@ theorem hasFlatKernelPrescription_of_tensorPlaces (N : ℕ) (K : IntermediateFie
         rw [placeUnder_asIdeal, ← asIdeal_smul_placeUnder K (hQbot ν) ρ, hρ, ← hvσ]
       obtain ⟨τ, -, hτ⟩ := exists_mem_fixingSubgroup_smul_eq_of_placeUnder_eq K hbot hPbot hpl
       exact Or.inl ⟨ν, τ * ρ, by rw [mul_smul]; exact hτ⟩
-    · exact Or.inr fun x hx => MonoidHom.mem_ker.1 (hEF (hsplit P hPp hPbot rfl hx))
+    · refine Or.inr fun x hx => ?_
+      have h1 : layerSemidirectMap ℓ hβ₁ (j + 1) (F x) = 1 :=
+        MonoidHom.mem_ker.1 (hEF (hsplit P hPp hPbot rfl hx))
+      rw [← layerSemidirectMap_comp ℓ hβ₁ hγ (hγ.comp hβ₁) (j + 1) (F x), h1, _root_.map_one]
 
 end Places
 

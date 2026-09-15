@@ -26725,3 +26725,136 @@ by an `Iff.rfl` membership lemma.  Both spellings are available as `mem_localPow
 
 Next: item 5 — feed the surjectivity and the spanning family into
 `exists_genericShrink_map_h1_eq_zero`.
+
+## §1.138 🏁 The odd step of the ladder is a theorem: `GenericLevelStepEPRoots ℓ` for every odd prime, with nothing assumed (2026-09-15)
+
+Items 5 and 6 of §1.136's revised order of work are done.  For every prime `ℓ > 2`
+
+```
+Shafarevich.genericLevelStepEPRoots (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] (hodd : 2 < ℓ) :
+    GenericLevelStepEPRoots ℓ
+```
+
+is an unconditional theorem (`InverseGalois/Solvable/Shafarevich/FlatDiagonalUnits.lean`).  No
+`Prop`-valued `def` is left anywhere on the odd branch: `FlatReachableEP`, `FlatDiagonalUnitsEP`,
+`ConfinedDiagonalPlacesEP`, `ConfinedRadicandPlacesEP`, `InvariantUnitTensorEP`, `FlatTensorEP`,
+`FlatPrescriptionEP`, `KernelPrescriptionEP` are all discharged.  **Everything that remains of
+Shafarevich's theorem is `GenericLevelStepEPRoots 2`.**
+
+### (a) What the last step actually was
+
+The obstacle since §1.131 was the *order of quantifiers*, not any piece of arithmetic.  The
+arithmetic demand was of the shape
+
+> for a target `M` and a spanning family of it, produce a tensor of units against `M`
+
+and the Flat tower answered it by shrinking `M` to a quotient `M'` in which the bad part dies.  But
+the *number of coefficients* the shrinking can afford to kill is decided by the descent, which only
+runs after the arithmetic has been handed a target — so the arithmetic's answer had to be known
+before the target it lives in was chosen.  That is the circularity §1.131–§1.136 kept hitting from
+different sides.
+
+The fix is to make the demand **covered**: instead of answering in `M`, the arithmetic first names
+a finite family `x : J → M` of elements it needs killed, with `Nat.card J ≤ D` for a bound `D`
+fixed in advance, and only then answers — *for every* quotient `Φ : M →* M'` that kills the family.
+In Lean:
+
+```
+∃ (J : Type) (_ : Finite J) (_ : Nat.card J ≤ D) (x : J → M),
+  ∀ (M' : Type) [CommGroup M'] (Φ : M →* M'), Function.Surjective Φ → … →
+    (∀ i : J, Φ (x i) = 1) → ∃ z : T → Kˣ, …
+```
+
+and crucially the `∃ D` sits **outside** the quantifier over the bigger level `E`, the target, and
+the named places — it is allowed to depend only on the base level `K`, the exponent `ℓ` and the
+finite stable set `Tz` of places carrying local conditions.  The Flat tower then computes
+coordinates at rank `r * n` against a level homomorphism `β₁`, runs the arithmetic there, receives
+`J`, picks a shrinking `γ := genericShrink U r n S as` killing `x`, and returns `γ.comp β₁`; the
+`ker` clause survives the composition by `layerSemidirectMap_comp`.  The rank is
+`r := (j + 1) * (Db * finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j)) + 1`.
+
+The covered form was threaded through, in this order:
+`HasFlatPrescribedTensor` (`FlatTensor.lean`) → `HasInvariantUnitTensor` (`FlatInvariant.lean`) →
+`HasConfinedRadicandPlaces` (`FlatTensorConfined.lean`) → `HasConfinedDiagonalPlaces`
+(`FlatTensorDiagonal.lean`).
+
+### (b) `HasConfinedRadicandPlaces` no longer mentions a target at all
+
+The count that the covering needs is the count of generators of the *units*, not of the target, so
+the top of the chain could drop the target entirely:
+
+```
+def HasConfinedRadicandPlaces (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
+  ∀ Tz, Tz.Finite → IsGaloisStablePlaces k ↥K Tz →
+    ∃ D : ℕ, ∀ E, … → ∀ Xs₀, Xs₀.Finite → … →
+      ∃ (Xs) (_ : Finite ↥Xs) (_ : DecidableEq ↥Xs) (_ : IsGaloisStablePlaces k ↥K Xs)
+        (_ : Xs₀ ⊆ Xs) (_ : Surjective (confinedOrd ℓ Tz (allowedPlaces K E Xs₀) Xs))
+        (Tt) (_ : IsGaloisStablePlaces k ↥K Tt)
+        (_ : Surjective (confinedSWeightedOrd ℓ Tz (allowedPlaces K E Xs₀) Xs Tt))
+        (d : ℕ) (b : Fin d → Additive ↥(confinedTUnits ℓ Tz (allowedPlaces K E Xs₀) Xs Tt)),
+        Submodule.span ℤ (Set.range b) = ⊤ ∧ Nat.card Gal(↥K/k) * d ≤ D
+```
+
+`hasInvariantUnitTensor_of_confinedRadicandPlaces` consumes it by feeding `b` to
+`exists_kill_family_of_confined_named_of_span` (`CFT/PoitouTate/NamedRadicandSum.lean`), whose kill
+family is indexed by `Gal(↥K/k) × Fin d` — hence the `Nat.card Gal(↥K/k) * d` in the bound.
+
+### (c) The whole second half of the demand is a theorem, not a hypothesis
+
+The surprise of this session: once the count is phrased as "a spanning family of the coefficients of
+the second reading", **nothing has to be asked of the arithmetic for it**, because §1.137's
+`exists_surjective_confinedSWeightedOrd` and `exists_fin_span_confinedTUnits` are unconditional.
+`hasConfinedRadicandPlaces_of_diagonal` now assembles it outright:
+
+* `d₁`, `a` from `Module.Finite.exists_fin (R := ℤ) (M := Additive (𝓞 ↥K)ˣ)` — the unit group of the
+  ring of integers is a finitely generated ℤ-module;
+* `Aux`, with `Nat.card ↥Aux ≤ Nat.card Gal(↥K/k) * (2 * Nat.card (localIdealClass ↥K ℓ Tz))`, from
+  `exists_surjective_confinedSWeightedOrd`, which also gives `hsurjT` for `Tt := Xs ∪ (Tz ∪ Aux)`;
+* the correction room is taken to be `Aux' := Tz ∪ Aux`, so that `Tt = Xs ∪ Aux'` on the nose and
+  `exists_fin_span_confinedTUnits` applies with `hT := Set.Subset.rfl` and
+  `c := Nat.card ↥Tz + Nat.card Gal(↥K/k) * (2 * Nat.card (localIdealClass ↥K ℓ Tz))`
+  (`Set.ncard_union_le`, which is defeq to the `Nat.card` form since `Nat.card_coe_set_eq` is `rfl`);
+* `D := Nat.card Gal(↥K/k) * (d₁ + c)`.
+
+Every ingredient of `D` depends on `K`, `ℓ` and `Tz` only — not on `E`, not on `Xs₀`, not on the
+target — which is exactly what the new placement of `∃ D` demands.  So the only thing
+`HasConfinedDiagonalPlaces` still asks for is the diagonal of units, and `hasFlatDiagonalUnits` has
+been a theorem since §1.126.
+
+### (d) The refuted clause is gone, and with it three modules
+
+`HasConfinedDiagonalPlaces` lost its `tensorInvariantClass … = 0` clause (the one §1.132 refuted
+over ℚ), and `HasConfinedObstruction`/`ConfinedObstructionEP` are deleted outright.  That killed the
+chain that used to buy them, so the following are deleted:
+
+* `InverseGalois/Solvable/Shafarevich/FlatStabilizerUnits.lean` (`HasStabilizerConfinedUnits`,
+  `StabilizerConfinedUnitsEP`)
+* `InverseGalois/Solvable/Shafarevich/FlatSylowUnits.lean` (`HasSylowConfinedUnits`,
+  `SylowConfinedUnitsEP`)
+* `InverseGalois/Solvable/Shafarevich/FlatFixedUnits.lean` (`IsFixedReachablePlace`,
+  `HasFixedReachablePlaces`, `FixedReachableEP` — the hypothesis §1.130/§1.131 refuted)
+
+with their imports and prose bullets in `InverseGalois/Solvable/Shafarevich.lean`.
+
+### (e) Lean notes
+
+* `hasInvariantUnitTensor_of_hasTameInvariantUnitTensor` (`FlatNorm.lean`) survives the change even
+  though `Φ ∘ b` is *not* independent in a quotient: the tame demand answers in `M` itself, and the
+  answer is pushed forward along the equivariant `tensorCoeff (↥K)ˣ Φ`.  Independence of the pushed
+  family is never needed.  (This is legitimate only because the tame bridge is off the critical
+  path; for the *arithmetic* demand, "answer in `M` and push forward" was refuted in §1.135.)
+* `hasFlatKernelPrescription_of_tensorPlaces` needed `set_option maxHeartbeats 6400000` in
+  `FlatTensor.lean` — the covered form makes that one declaration much heavier.
+* `HasConfinedDiagonalPlaces` still states its local conditions at `stableHull k ↥K Tz`, while
+  `HasConfinedRadicandPlaces` takes an already-stable `Tz`.  The bridge rewrites with
+  `stableHull_eq_self` once (`rw [hhull] at hdiag`) rather than restating the diagonal demand.
+
+### (f) What is left
+
+`GenericLevelStepEPRoots 2`.  The odd argument uses the primitive `ℓ`-th root of unity twice — once
+to set up the Kummer identification the tensor lives in, once for the character twist that turns
+invariance into equivariance — and at `ℓ = 2` both degenerate: `μ₂ ⊆ ℚ` makes the twist trivial, but
+the Scholz condition at the dyadic place and the failure of `2 < ℓ` in
+`genericLevelStepEPRoots_of_flatPrescriptionEP` (`NamedOrthogonal.lean:535`) are real.  The nilpotent
+case of `ℓ = 2` was closed in §1.9x by `Scholz/DyadicInitialStage.lean`, but that is the *ladder over
+ℚ*, not the generic split embedding problem over an arbitrary realized base `U`.

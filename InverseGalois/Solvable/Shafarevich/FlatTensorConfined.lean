@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.PoitouTate.NamedRadicandClass
+import InverseGalois.CFT.PoitouTate.NamedRadicandSum
 import InverseGalois.CFT.PoitouTate.RadicandPlaces
 import InverseGalois.Solvable.Shafarevich.FlatTensorStep
 import InverseGalois.Solvable.Shafarevich.FlatTensorVal
@@ -35,9 +36,9 @@ reduction to it.
 * `InverseGalois.Shafarevich.allowedPlaces`: the places the radicand is allowed to have order prime
   to the exponent at.
 * `InverseGalois.Shafarevich.HasConfinedRadicandPlaces`: **a finite stable set of places can be
-  found, containing the named ones, on which the vector of orders of the confined units is onto and
-  over which a confined radicand with invariant divisor may be corrected to an invariant one** —
-  the named places arriving reachable in the bigger level and prime to the exponent.
+  found, containing the named ones, on which the vector of orders of the confined units is onto,
+  together with a second reading of those units leaving boundedly many generators** — the named
+  places arriving reachable in the bigger level and prime to the exponent.
 * `Shafarevich.ConfinedRadicandPlacesEP`: that demand, made of every level.
 
 ## Main results
@@ -103,46 +104,42 @@ section Demand
 variable {k Ω : Type} [Field k] [Field Ω] [Algebra k Ω]
 
 /-- **A finite stable set of places can be found, containing the named ones, on which the vector of
-orders of the confined units is onto and over which a confined radicand with invariant divisor may
-be corrected to an invariant one.**
+orders of the confined units is onto, together with a second reading of those units cutting them
+down to a family spanned by boundedly many generators.**
 
-The units the descent is run in are those which are local powers at the translates of a prescribed
-finite set of places and whose order is divisible by the exponent outside the places the
-ramification is allowed at — the translates of the named places, and those lying below only primes
-completely decomposed in a bigger level.  Two things are asked of the set of places whose orders are
-read: that every system of orders on it is realised by such a unit, and that a radicand whose
-divisor is already invariant carries no obstruction, so that it may be corrected to an invariant
-radicand with the same divisor.  The second is what an invariant radicand costs, and it is bought by
-putting more completely decomposed places into the set: the correction is made in the units the
-enlarged set brings in.
+The units the descent is run in are those which are local powers at a prescribed stable finite set
+of places and whose order is divisible by the exponent outside the places the ramification is
+allowed at — the translates of the named places, and those lying below only primes completely
+decomposed in a bigger level.  Two things are asked of the set of places whose orders are read: that
+every system of orders on it is realised by such a unit, and that reading those orders a second
+time, at every place outside a further set, be onto as well, so that what is left is finitely
+generated.  The number of generators is bounded before any of the sets is named, which is what makes
+the demand usable by a count that has to be fixed in advance.
 
-The named places arrive prime to the exponent and reachable in the bigger level past the hull of the
-places a local power is asked at, which is what the first of the two makes its living on: a place
-whose divisor class is not reached by the completely decomposed ones carries no unit of order prime
-to the exponent there at all.  They also arrive with their order taken by an element the whole group
-of automorphisms fixes, which is the statement that their ramification index over the base field is
-prime to the exponent. -/
+The named places arrive prime to the exponent and reachable in the bigger level past the places a
+local power is asked at, which is what the first of the two makes its living on: a place whose
+divisor class is not reached by the completely decomposed ones carries no unit of order prime to the
+exponent there at all.  They also arrive with their order taken by an element the whole group of
+automorphisms fixes, which is the statement that their ramification index over the base field is
+prime to the exponent.
+
+Nothing in the statement mentions a target: the count is the count of generators of the units, and
+it decides by itself how many coefficients of an arbitrary target have to die. -/
 def HasConfinedRadicandPlaces (ℓ : ℕ) (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
-  ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
-    ∀ Xs₀ Tz : Set (HeightOneSpectrum (𝓞 ↥K)), Xs₀.Finite → Tz.Finite →
-      (∀ v ∈ Xs₀, (ℓ : 𝓞 ↥K) ∉ v.asIdeal) →
-      (∀ v ∈ Xs₀, IsReachablePlace ℓ K E (stableHull k ↥K Tz) v) →
-      (∀ v ∈ Xs₀, IsBaseOrderPlace ℓ K v) →
-      (∀ v ∈ Xs₀, ∀ σ : Gal(↥K/k), σ • v ∉ Tz) →
-      ∀ (C : Type) [CommGroup C] [MulDistribMulAction Gal(↥K/k) C], (∀ c : C, c ^ ℓ = 1) →
+  ∀ Tz : Set (HeightOneSpectrum (𝓞 ↥K)), Tz.Finite → IsGaloisStablePlaces k ↥K Tz →
+    ∃ D : ℕ, ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
+      ∀ Xs₀ : Set (HeightOneSpectrum (𝓞 ↥K)), Xs₀.Finite →
+        (∀ v ∈ Xs₀, (ℓ : 𝓞 ↥K) ∉ v.asIdeal) →
+        (∀ v ∈ Xs₀, IsReachablePlace ℓ K E Tz v) →
+        (∀ v ∈ Xs₀, IsBaseOrderPlace ℓ K v) →
+        (∀ v ∈ Xs₀, ∀ σ : Gal(↥K/k), σ • v ∉ Tz) →
         ∃ (Xs : Set (HeightOneSpectrum (𝓞 ↥K))) (_ : Finite ↥Xs) (_ : DecidableEq ↥Xs)
           (_ : IsGaloisStablePlaces k ↥K Xs) (_ : Xs₀ ⊆ Xs)
-          (hsurj : Function.Surjective
-            (confinedOrd ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) Xs)),
-          ∀ (t : Additive ↥(confinedUnits ↥K ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀))
-              ⊗[ℤ] Additive C)
-            (ht : ∀ σ : Gal(↥K/k),
-              tensorVal C (confinedOrd ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) Xs) (σ • t)
-                = tensorVal C (confinedOrd ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) Xs) t),
-            tensorInvariantClass C
-              (confinedOrd ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) Xs)
-              (confinedSUnits ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) Xs) hsurj
-              (mem_confinedSUnits_iff ℓ (stableHull k ↥K Tz) (allowedPlaces K E Xs₀) Xs) ht = 0
+          (_ : Function.Surjective (confinedOrd ℓ Tz (allowedPlaces K E Xs₀) Xs))
+          (Tt : Set (HeightOneSpectrum (𝓞 ↥K))) (_ : IsGaloisStablePlaces k ↥K Tt)
+          (_ : Function.Surjective (confinedSWeightedOrd ℓ Tz (allowedPlaces K E Xs₀) Xs Tt))
+          (d : ℕ) (b : Fin d → Additive ↥(confinedTUnits ℓ Tz (allowedPlaces K E Xs₀) Xs Tt)),
+          Submodule.span ℤ (Set.range b) = ⊤ ∧ Nat.card Gal(↥K/k) * d ≤ D
 
 end Demand
 
@@ -191,30 +188,34 @@ The places the ramification is allowed at are the hull of the named ones togethe
 completely decomposed ones, so the confinement clause is exactly the statement that the radicand
 lies in the group of confined units.
 
-The descent then produces a single invariant radicand of confined units whose order at each named
-place is the prescribed value inverted — the value of a unit at a place being minus its order — and
-whose order vanishes away from the named orbits.  Presenting it along the named basis of the target
-turns it into the family of units the step asks for, its invariance is the invariance of the
-descended tensor because the inclusion of the confined units is equivariant, and its four clauses
-are read off one by one. -/
+The descent then names a finite family of coefficients, indexed by the automorphisms of the level
+times the generators the second reading leaves — so of a size the field and the set of places a
+local power is asked at decide by themselves — and in any quotient of the target killing it produces
+a single invariant radicand of confined units whose order at each named place is the prescribed
+value inverted, the value of a unit at a place being minus its order.  Presenting that radicand
+along the image of the named basis turns it into the family of units the step asks for, its
+invariance is the invariance of the descended tensor because the inclusion of the confined units is
+equivariant, and its four clauses are read off one by one. -/
 theorem hasInvariantUnitTensor_of_confinedRadicandPlaces {ℓ : ℕ} [NeZero ℓ]
     {K : IntermediateField k Ω} [NumberField ↥K] [FiniteDimensional k ↥K]
     (h : HasConfinedRadicandPlaces ℓ K) : HasInvariantUnitTensor ℓ K := by
   classical
-  intro E hEfin hEgal hKE M _ _ hexp T _ b hspan hindep ι _ w V hdist hstab Tz hTzstab hwTz hℓw
-    hreach hbase
+  intro Tz hTzstab
   haveI : IsGaloisStablePlaces k ↥K (Tz : Set (HeightOneSpectrum (𝓞 ↥K))) :=
     ⟨fun σ v => ⟨fun hv => by
         have hv' := hTzstab σ⁻¹ (σ • v) hv
         rwa [inv_smul_smul] at hv', fun hv => hTzstab σ v hv⟩⟩
-  have hTzhull : stableHull k ↥K (Tz : Set (HeightOneSpectrum (𝓞 ↥K)))
-      = (Tz : Set (HeightOneSpectrum (𝓞 ↥K))) := stableHull_eq_self
-  obtain ⟨Xs, hXsfin, hXsdec, hXsstab, hXs₀Xs, hsurj, hδ⟩ :=
-    h E hEfin hEgal hKE (Set.range w) (Tz : Set (HeightOneSpectrum (𝓞 ↥K)))
-      (Set.finite_range w) Tz.finite_toSet (by rintro v ⟨μ, rfl⟩; exact hℓw μ)
-      (by rintro v ⟨μ, rfl⟩; rw [hTzhull]; exact hreach μ)
+  obtain ⟨D, hD⟩ :=
+    h (Tz : Set (HeightOneSpectrum (𝓞 ↥K))) Tz.finite_toSet inferInstance
+  refine ⟨D, ?_⟩
+  intro E hEfin hEgal hKE M _ _ hexp T _ b hspan hindep ι _ w V hdist hstab hwTz hℓw hreach hbase
+  obtain ⟨Xs, hXsfin, hXsdec, hXsstab, hXs₀Xs, hsurj, Tt, hTtstab, hsurjT, d, bb, hbbspan,
+      hdcard⟩ :=
+    hD E hEfin hEgal hKE (Set.range w) (Set.finite_range w)
+      (by rintro v ⟨μ, rfl⟩; exact hℓw μ)
+      (by rintro v ⟨μ, rfl⟩; exact hreach μ)
       (by rintro v ⟨μ, rfl⟩; exact hbase μ)
-      (by rintro v ⟨μ, rfl⟩ σ hcon; exact hwTz μ σ (Finset.mem_coe.1 hcon)) M hexp
+      (by rintro v ⟨μ, rfl⟩ σ hcon; exact hwTz μ σ (Finset.mem_coe.1 hcon))
   have hwmem : ∀ μ : ι, w μ ∈ Xs := fun μ => hXs₀Xs ⟨μ, rfl⟩
   -- the prescribed values, read at the named places of the enlarged set
   have hV' : ∀ μ : ι, ∀ s ∈ stabilizer Gal(↥K/k) (⟨w μ, hwmem μ⟩ : ↥Xs),
@@ -227,33 +228,46 @@ theorem hasInvariantUnitTensor_of_confinedRadicandPlaces {ℓ : ℕ} [NeZero ℓ
     intro μ ν hμν hmem
     obtain ⟨σ, hσ⟩ := hmem
     exact hdist ν μ (Ne.symm hμν) σ (congrArg Subtype.val hσ)
-  obtain ⟨s, hsinv, hsval, -⟩ :=
-    exists_invariant_confinedTensorVal_eq_of_named_of_class (k := k) ℓ
-      (stableHull k ↥K (Tz : Set (HeightOneSpectrum (𝓞 ↥K))))
-      (allowedPlaces K E (Set.range w)) Xs hsurj hδ
-      (fun μ => (⟨w μ, hwmem μ⟩ : ↥Xs)) (fun μ => (V μ)⁻¹) hV' hdisj'
-  obtain ⟨z₀, hz₀⟩ := exists_forall_sum_tmul_eq b hspan s
+  obtain ⟨y, hy⟩ :=
+    exists_kill_family_of_confined_named_of_span (k := k) ℓ
+      (Tz : Set (HeightOneSpectrum (𝓞 ↥K))) (allowedPlaces K E (Set.range w)) Xs Tt hsurj hsurjT
+      bb hbbspan (fun μ => (⟨w μ, hwmem μ⟩ : ↥Xs)) (fun μ => (V μ)⁻¹) hV' hdisj'
+  refine ⟨Gal(↥K/k) × Fin d, inferInstance, ?_, y, ?_⟩
+  · rw [Nat.card_prod, Nat.card_eq_fintype_card (α := Fin d), Fintype.card_fin]
+    exact hdcard
+  intro M' _ _ Φ hΦsurj hΦeq hkill
+  obtain ⟨s, hsinv, hsval, -⟩ := hy M' Φ hΦeq hkill
+  have hexp' : ∀ m : M', m ^ ℓ = 1 := by
+    intro m
+    obtain ⟨m, rfl⟩ := hΦsurj m
+    rw [← _root_.map_pow, hexp, _root_.map_one]
+  have hspan' : ∀ m : M', ∃ c : T → ZMod ℓ, ∏ q, Φ (b q) ^ (c q).val = m := by
+    intro m
+    obtain ⟨m, rfl⟩ := hΦsurj m
+    obtain ⟨c, hc⟩ := hspan m
+    refine ⟨c, ?_⟩
+    rw [← hc, _root_.map_prod]
+    exact Finset.prod_congr rfl fun q _ => (_root_.map_pow Φ (b q) _).symm
+  obtain ⟨z₀, hz₀⟩ := exists_forall_sum_tmul_eq (fun q => Φ (b q)) hspan' s
   rw [hz₀] at hsval
   refine ⟨fun q => ((z₀ q : (↥K)ˣ)), fun σ => ?_, fun μ => ?_, fun q v hv => ?_,
     fun v hv => ?_⟩
   · -- the invariance survives the inclusion of the confined units
-    have hsum : (∑ q, Additive.ofMul ((z₀ q : (↥K)ˣ)) ⊗ₜ[ℤ] Additive.ofMul (b q))
-        = tensorSubIncl M
-            (confinedUnits ↥K ℓ (stableHull k ↥K (Tz : Set (HeightOneSpectrum (𝓞 ↥K))))
+    have hsum : (∑ q, Additive.ofMul ((z₀ q : (↥K)ˣ)) ⊗ₜ[ℤ] Additive.ofMul (Φ (b q)))
+        = tensorSubIncl M'
+            (confinedUnits ↥K ℓ (Tz : Set (HeightOneSpectrum (𝓞 ↥K)))
               (allowedPlaces K E (Set.range w))) s := by
       rw [hz₀, map_sum]
-      exact Finset.sum_congr rfl fun q _ => (tensorSubIncl_tmul M _ (z₀ q) (b q)).symm
+      exact Finset.sum_congr rfl fun q _ => (tensorSubIncl_tmul M' _ (z₀ q) (Φ (b q))).symm
     rw [hsum, ← tensorSubIncl_smul, hsinv σ]
   · -- the order at a named place is the prescribed value
     have hval := prod_pow_placeValue_val_eq_of_confinedTensorVal
-      (stableHull k ↥K (Tz : Set (HeightOneSpectrum (𝓞 ↥K))))
-      (allowedPlaces K E (Set.range w)) Xs M hexp z₀ b
-      (⟨w μ, hwmem μ⟩ : ↥Xs) ((V μ)⁻¹) (hsval μ)
-    rwa [inv_inv] at hval
+      (Tz : Set (HeightOneSpectrum (𝓞 ↥K)))
+      (allowedPlaces K E (Set.range w)) Xs M' hexp' z₀ (fun q => Φ (b q))
+      (⟨w μ, hwmem μ⟩ : ↥Xs) (Φ ((V μ)⁻¹)) (hsval μ)
+    rwa [_root_.map_inv, inv_inv] at hval
   · -- the radicand is a local power where it was asked to be
-    exact MonoidHom.mem_ker.1
-      ((z₀ q).2.1 v (subset_stableHull k ↥K (Tz : Set (HeightOneSpectrum (𝓞 ↥K)))
-        (Finset.mem_coe.2 hv)))
+    exact MonoidHom.mem_ker.1 ((z₀ q).2.1 v (Finset.mem_coe.2 hv))
   · -- and its remaining ramification is confined
     obtain ⟨q, hq⟩ := hv
     have hmem : v ∈ allowedPlaces K E (Set.range w) := by
@@ -282,11 +296,12 @@ attribute [local instance 2000] IntermediateField.algebra'
 /-- **Every finite Galois level of the rationals inside an algebraic closure admits a choice of
 places good enough to carry the invariant tensor.**
 
-For every finite set of places a local power is asked at, every finite set of named places whose
-orbits avoid it — reachable in the bigger level and prime to the exponent — and every target killed
-by the exponent, a finite stable set of places containing the named ones is asked for on which the
-vector of orders of the confined units is onto and over which a confined radicand with invariant
-divisor may be corrected to an invariant one with the same divisor.
+For every finite stable set of places a local power is asked at and every finite set of named places
+whose orbits avoid it — reachable in the bigger level and prime to the exponent — a finite stable
+set of places containing the named ones is asked for on which the vector of orders of the confined
+units is onto, together with a second reading of those units, at every place outside a further set,
+which is onto as well and leaves a group spanned by a number of generators bounded before any of the
+sets is named.
 
 The level is asked to carry a primitive root of unity of the exponent, which is what the level the
 climb reads the demand at carries anyway. -/

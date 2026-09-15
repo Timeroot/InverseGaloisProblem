@@ -41,7 +41,8 @@ room to be fixed with no factor of it fixed at all.
   whose tensor against a named basis of a target killed by the exponent is invariant for the
   automorphisms of the level, of prescribed order at each of finitely many reachable named places
   lying in distinct orbits, a local power at a prescribed finite set of places the orbits of those
-  avoid, and confined elsewhere.**
+  avoid, and confined elsewhere — in every quotient of the target killing a finite family of
+  elements named before the quotient is.**
 
 ## Main results
 
@@ -144,34 +145,45 @@ a time — and elsewhere they are confined, a place where some unit has order pr
 sitting over a named place or having the primes above it completely decomposed in a finite level
 named in advance.  Each named place is asked to be reachable in that level, which is the divisor
 class half of the demand, and to have its order taken by an element the whole group fixes, which is
-the statement that its ramification index over the base field is prime to the exponent. -/
+the statement that its ramification index over the base field is prime to the exponent.
+
+The tensor is not asked for in the target itself but in every quotient of it killing a finite family
+of elements named in advance, of a length the set of places a local power is asked at already
+bounds.  That is the order the counting argument the climb runs needs: the family is read in the
+target before any quotient of it is chosen, and the answer is then good in whichever quotient kills
+it.  The spanning family and the prescribed values are read in the quotient as well, so what is said
+is a statement about the quotient alone. -/
 def HasInvariantUnitTensor (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω) [NumberField ↥K] : Prop :=
-  ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
-    ∀ (M : Type) [CommGroup M] [MulDistribMulAction Gal(↥K/k) M], (∀ m : M, m ^ ℓ = 1) →
-      ∀ (T : Type) [Fintype T] (b : T → M),
-        (∀ m : M, ∃ d : T → ZMod ℓ, ∏ q, b q ^ (d q).val = m) →
-        (∀ d : T → ZMod ℓ, ∏ q, b q ^ (d q).val = 1 → d = 0) →
-        ∀ (ι : Type) [Fintype ι] (w : ι → HeightOneSpectrum (𝓞 ↥K)) (V : ι → M),
-          (∀ μ ν : ι, μ ≠ ν → ∀ σ : Gal(↥K/k), σ • w μ ≠ w ν) →
-          (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ = w μ → σ • V μ = V μ) →
-          ∀ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)),
-            (∀ (σ : Gal(↥K/k)) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz → σ • v ∈ Tz) →
+  ∀ Tz : Finset (HeightOneSpectrum (𝓞 ↥K)),
+    (∀ (σ : Gal(↥K/k)) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz → σ • v ∈ Tz) →
+    ∃ D : ℕ, ∀ E : IntermediateField k Ω, FiniteDimensional k ↥E → IsGalois k ↥E → K ≤ E →
+      ∀ (M : Type) [CommGroup M] [MulDistribMulAction Gal(↥K/k) M], (∀ m : M, m ^ ℓ = 1) →
+        ∀ (T : Type) [Fintype T] (b : T → M),
+          (∀ m : M, ∃ d : T → ZMod ℓ, ∏ q, b q ^ (d q).val = m) →
+          (∀ d : T → ZMod ℓ, ∏ q, b q ^ (d q).val = 1 → d = 0) →
+          ∀ (ι : Type) [Fintype ι] (w : ι → HeightOneSpectrum (𝓞 ↥K)) (V : ι → M),
+            (∀ μ ν : ι, μ ≠ ν → ∀ σ : Gal(↥K/k), σ • w μ ≠ w ν) →
+            (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ = w μ → σ • V μ = V μ) →
             (∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ ∉ Tz) →
             (∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (w μ).asIdeal) →
             (∀ μ : ι, IsReachablePlace ℓ K E (↑Tz) (w μ)) →
             (∀ μ : ι, IsBaseOrderPlace ℓ K (w μ)) →
-            ∃ z : T → (↥K)ˣ,
-              (∀ σ : Gal(↥K/k),
-                σ • (∑ q, Additive.ofMul (z q) ⊗ₜ[ℤ] Additive.ofMul (b q))
-                  = ∑ q, Additive.ofMul (z q) ⊗ₜ[ℤ] Additive.ofMul (b q)) ∧
-              (∀ μ : ι, ∏ q, b q ^ ((placeValue (w μ) (z q) : ZMod ℓ)).val = V μ) ∧
-              (∀ (q : T) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz →
-                localClassHom v ℓ (z q) = 1) ∧
-              ∀ v : HeightOneSpectrum (𝓞 ↥K), (∃ q : T, ¬ (ℓ : ℤ) ∣ placeValue v (z q)) →
-                (∃ (ν : ι) (σ : Gal(↥K/k)), v = σ • w ν) ∨
-                  ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
-                    Ideal.under (𝓞 ↥K) P = v.asIdeal →
-                    stabilizer Gal(Ω/k) P ≤ E.fixingSubgroup
+            ∃ (J : Type) (_ : Finite J) (_ : Nat.card J ≤ D) (x : J → M),
+              ∀ (M' : Type) [CommGroup M'] [MulDistribMulAction Gal(↥K/k) M'] (Φ : M →* M'),
+                Function.Surjective Φ → (∀ (σ : Gal(↥K/k)) (m : M), Φ (σ • m) = σ • Φ m) →
+                (∀ i : J, Φ (x i) = 1) →
+                ∃ z : T → (↥K)ˣ,
+                  (∀ σ : Gal(↥K/k),
+                    σ • (∑ q, Additive.ofMul (z q) ⊗ₜ[ℤ] Additive.ofMul (Φ (b q)))
+                      = ∑ q, Additive.ofMul (z q) ⊗ₜ[ℤ] Additive.ofMul (Φ (b q))) ∧
+                  (∀ μ : ι, ∏ q, Φ (b q) ^ ((placeValue (w μ) (z q) : ZMod ℓ)).val = Φ (V μ)) ∧
+                  (∀ (q : T) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz →
+                    localClassHom v ℓ (z q) = 1) ∧
+                  ∀ v : HeightOneSpectrum (𝓞 ↥K), (∃ q : T, ¬ (ℓ : ℤ) ∣ placeValue v (z q)) →
+                    (∃ (ν : ι) (σ : Gal(↥K/k)), v = σ • w ν) ∨
+                      ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
+                        Ideal.under (𝓞 ↥K) P = v.asIdeal →
+                        stabilizer Gal(Ω/k) P ≤ E.fixingSubgroup
 
 end Arith
 
@@ -196,12 +208,20 @@ exponent is the tensor carried by the map on the coefficient — becomes the pla
 tensor for the diagonal action, for the same reason.
 
 The local clauses mention neither the action nor the root of unity, and are carried across
-unchanged. -/
+unchanged.
+
+The quotient the tensor is finally read in carries the same twist.  Its action is the one the
+quotient map intertwines, which is an action because the map is onto, and the twist of it by the
+same character is what makes the invariance in the quotient into the equivariance asked for
+there. -/
 theorem hasFlatPrescribedTensor_of_hasInvariantUnitTensor {ℓ : ℕ} [NeZero ℓ]
     {K : IntermediateField k Ω} [NumberField ↥K] {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ)
     (hrad : HasInvariantUnitTensor ℓ K) : HasFlatPrescribedTensor ℓ K ζ := by
-  intro E hEfin hEgal hKE M _ hexp T _ b hspan hindep act hone hmul ι _ w V hdist hVcompat Tz
-    hTzstab hwTz hwℓ hwreach hwbase
+  intro Tz hTzstab
+  obtain ⟨D, hD⟩ := hrad Tz hTzstab
+  refine ⟨D, ?_⟩
+  intro E hEfin hEgal hKE M _ hexp T _ b hspan hindep act hone hmul ι _ w V hdist hVcompat
+    hwTz hwℓ hwreach hwbase
   letI : MulDistribMulAction Gal(↥K/k) M :=
     charTwistAction hexp act hone hmul (rootChar hζ)⁻¹
   have hstab : ∀ (μ : ι) (σ : Gal(↥K/k)), σ • w μ = w μ → σ • V μ = V μ := by
@@ -214,12 +234,35 @@ theorem hasFlatPrescribedTensor_of_hasInvariantUnitTensor {ℓ : ℕ} [NeZero �
     refine (pow_eq_pow_of_pow_eq_one (hexp (V μ)) (j := 1) ?_).trans (pow_one _)
     rw [Nat.cast_mul, Nat.cast_one, ZMod.natCast_zmod_val, ZMod.natCast_zmod_val,
       rootChar_inv_apply, ← Units.val_mul, mul_inv_cancel, Units.val_one]
-  obtain ⟨z, hzinv, hzval, hzTz, hzconf⟩ :=
-    hrad E hEfin hEgal hKE M hexp T b hspan hindep ι w V hdist hstab Tz hTzstab hwTz hwℓ hwreach
-      hwbase
+  obtain ⟨J, hJ, hJcard, x, hx⟩ :=
+    hD E hEfin hEgal hKE M hexp T b hspan hindep ι w V hdist hstab hwTz hwℓ hwreach hwbase
+  refine ⟨J, hJ, hJcard, x, ?_⟩
+  intro M' _ Φ hΦsurj act' hΦact hkill
+  have hexp' : ∀ m : M', m ^ ℓ = 1 := by
+    intro m
+    obtain ⟨m, rfl⟩ := hΦsurj m
+    rw [← _root_.map_pow, hexp, _root_.map_one]
+  have hone' : ∀ m : M', act' 1 m = m := by
+    intro m
+    obtain ⟨m, rfl⟩ := hΦsurj m
+    rw [← hΦact, hone]
+  have hmul' : ∀ (σ τ : Gal(↥K/k)) (m : M'), act' (σ * τ) m = act' σ (act' τ m) := by
+    intro σ τ m
+    obtain ⟨m, rfl⟩ := hΦsurj m
+    rw [← hΦact, hmul, hΦact, hΦact]
+  letI : MulDistribMulAction Gal(↥K/k) M' :=
+    charTwistAction hexp' act' hone' hmul' (rootChar hζ)⁻¹
+  have hΦtw : ∀ (σ : Gal(↥K/k)) (m : M), Φ (σ • m) = σ • Φ m := by
+    intro σ m
+    have hl : (σ • m : M)
+        = act σ m ^ ((((rootChar hζ)⁻¹ σ : (ZMod ℓ)ˣ) : ZMod ℓ)).val := rfl
+    have hr : (σ • Φ m : M')
+        = act' σ (Φ m) ^ ((((rootChar hζ)⁻¹ σ : (ZMod ℓ)ˣ) : ZMod ℓ)).val := rfl
+    rw [hl, hr, _root_.map_pow, hΦact]
+  obtain ⟨z, hzinv, hzval, hzTz, hzconf⟩ := hx M' Φ hΦsurj hΦtw hkill
   refine ⟨z, fun σ e he => ?_, hzval, hzTz, hzconf⟩
-  refine twistTensor_eq_coeffTensor_of_smul_eq (f := act σ) (fun m => ?_) (hzinv σ)
-  exact charTwistAction_pow hexp act hone hmul ((rootChar hζ)⁻¹)
+  refine twistTensor_eq_coeffTensor_of_smul_eq (f := act' σ) (fun m => ?_) (hzinv σ)
+  exact charTwistAction_pow hexp' act' hone' hmul' ((rootChar hζ)⁻¹)
     (rootChar_inv_mul_cast hζ he) m
 
 end Bridge
