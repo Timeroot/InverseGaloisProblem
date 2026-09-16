@@ -42,9 +42,9 @@ its own factor.
 * `InverseGalois.Shafarevich.HasFlatOrbitPrescription` — **for each named prime separately, a smooth
   homomorphism of the kernel into the layer, equivariant only for the decomposition subgroup of that
   prime, prescribed along the subgroup belonging to it, trivial along the finite family and along
-  the subgroups belonging to the other named primes, trivial on the decomposition subgroups of the
-  conjugates of its prime outside the saturation, and ramified only at the named primes or where the
-  given lift carried down kills the whole decomposition subgroup.**
+  the subgroups belonging to the other named primes, trivial on inertia at the conjugates of its
+  prime outside the saturation, and ramified only at the named primes or where the given lift
+  carried down kills the whole decomposition subgroup.**
 
 ## Main results
 
@@ -78,9 +78,9 @@ variable (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] (n : ℕ) 
 /-- **For each named prime separately, a smooth homomorphism of the kernel into the layer,
 equivariant only for the decomposition subgroup of that prime, prescribed along the subgroup
 belonging to it, trivial along the finite family and along the subgroups belonging to the other
-named primes, trivial on the decomposition subgroups of the conjugates of its prime outside the
-saturation, and ramified only at the named primes or where the given lift carried down kills the
-whole decomposition subgroup.**
+named primes, trivial on inertia at the conjugates of its prime outside the saturation, and ramified
+only at the named primes or where the given lift carried down kills the whole decomposition
+subgroup.**
 
 Everything the flat prescription over the larger field asks of one homomorphism is asked here of a
 family of homomorphisms, one for each named prime, and every clause is weakened in the same
@@ -104,7 +104,8 @@ and then the prescription could not be made at a single prime.
 The clause about the conjugates is read only outside the saturation of the decomposition subgroup
 along the base realization, which is where the trace has a coset to spend: an element whose image is
 already the image of something fixing the prime carries the prime to a conjugate the trace does not
-separate, and nothing is asked there.
+separate, and nothing is asked there.  What is asked at the conjugates is inertia alone, the
+prescription being read along inertia at the named prime and nowhere else.
 
 The clause about the other named primes is what lets the several traces be multiplied without
 disturbing one another's prescribed values.
@@ -143,7 +144,7 @@ def HasFlatOrbitPrescription : Prop :=
             (∀ (μ : ι) (x : ↥(A μ)) (hx : (x : Gal(Ω/k)) ∈ φ.ker),
               u μ ⟨(x : Gal(Ω/k)), hx⟩ = layerSubMap ℓ β j (a μ x)) ∧
             (∀ (μ : ι) (ρ : Gal(Ω/k)), (∀ s ∈ stabilizer Gal(Ω/k) (Q μ), φ s ≠ φ ρ) →
-              ∀ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ stabilizer Gal(Ω/k) (ρ • Q μ) → u μ y = 1) ∧
+              ∀ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ Ideal.inertia Gal(Ω/k) (ρ • Q μ) → u μ y = 1) ∧
             ∀ (μ : ι) (P : Ideal (𝓞 Ω)), P.IsPrime → P ≠ ⊥ →
               (∃ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ Ideal.inertia Gal(Ω/k) P ∧ u μ y ≠ 1) →
               (∃ (ν : ι) (ρ : Gal(Ω/k)), P = ρ • Q ν) ∨
@@ -174,9 +175,9 @@ of a subgroup traces to one killing that subgroup.  That is what carries the van
 finite family through, and, applied to the subgroups belonging to the other named primes, it is what
 makes the product of the traces collapse at a named prime to the trace belonging to that prime.
 
-At its own named prime the trace reproduces the homomorphism: the representatives of the other
-cosets lie outside the saturation, hence carry the prime somewhere the homomorphism was asked to
-kill the decomposition subgroup of, and the coset of the identity is represented by the identity.
+On inertia at its own named prime the trace reproduces the homomorphism: the representatives of the
+other cosets lie outside the saturation, hence carry the prime somewhere the homomorphism was asked
+to kill inertia at, and the coset of the identity is represented by the identity.
 
 Where the product ramifies one of the traces ramifies, and where a trace ramifies its homomorphism
 ramifies at a prime one representative carries the given one to; the alternative there is that the
@@ -233,9 +234,11 @@ theorem hasFlatKernelPrescription_of_hasFlatOrbitPrescription
         (fun ν _ hν => conjTraceHom_eq_one_of_forall_conj φ.ker _ (σ ν) φ
           (fun ρ z hz => huA ν μ (Ne.symm hν) ρ z hz) x.2)
         fun h => absurd (Finset.mem_univ _) h
-    rw [hcoll, conjTraceHom_eq_self_of_stabilizer_le φ.ker _ (σ μ) φ (hσ μ) (hσ1 μ)
+    have hxI : (x : Gal(Ω/k)) ∈ Ideal.inertia Gal(Ω/k) (Q μ) :=
+      (Subgroup.mem_inf.1 ((hAeq μ).le x.2)).1
+    rw [hcoll, conjTraceHom_eq_self_of_inertia φ.ker _ (σ μ) φ (hσ μ) (hσ1 μ)
       (fun ρ hρ z hz => huvan μ ρ (fun s hs hc => hρ ((mem_saturate_iff φ _).2 ⟨s, hs, hc⟩)) z hz)
-      (hAstab μ x.2)]
+      hxI]
     exact hua μ x hx
   · rintro P hPp hPbot ⟨y, hyI, hy1⟩
     haveI := hPp

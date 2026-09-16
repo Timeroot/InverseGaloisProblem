@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Brauer.NegOnePow
 import InverseGalois.CFT.Brauer.SymbolProduct
 import InverseGalois.CFT.Brauer.TameUnramified
 
@@ -139,12 +140,13 @@ theorem localSymbol_eq_placeFrobValue_zpow_right (hn : n.Prime)
   localSymbol_eq_frobValue_zpow_right _ _ _ hn hv hb _
 
 /-- **Reciprocity between two units of a number field each unramified away from a single place**,
-for an odd prime exponent whose roots of unity the field contains.  The first unit is asked to be a
+for a prime exponent whose roots of unity the field contains and of which minus one is a power.
+The first unit is asked to be a
 power in every completion whose residue characteristic divides the exponent, which makes its symbol
 trivial there; away from the two exceptional places both units have value divisible by the
 exponent, so their symbol is trivial as well; and the product formula leaves the two exceptional
 places, at each of which the symbol is a value at a Frobenius automorphism raised to a value. -/
-theorem placeFrobValue_zpow_eq_zpow (hn : n.Prime) (hn2 : n ≠ 2)
+theorem placeFrobValue_zpow_eq_zpow (hn : n.Prime) (hneg : IsNegOnePow k n)
     (hres : ∀ v : HeightOneSpectrum (𝓞 k), HasResidueChar (v.adicCompletion k) (P v) (E v))
     {ζ : k} (hζ : IsPrimitiveRoot ζ n) {v w : HeightOneSpectrum (𝓞 k)} (hvw : v ≠ w)
     (hvn : ¬ P v ∣ n) (hwn : ¬ P w ∣ n) {a b : kˣ}
@@ -167,7 +169,7 @@ theorem placeFrobValue_zpow_eq_zpow (hn : n.Prime) (hn2 : n ≠ 2)
     by_cases hun : P u ∣ n
     · exact localSymbol_eq_one_of_isPow_left _ _ _ (hap u hun) _
     · exact localSymbol_eq_one_of_dvd_of_dvd _ _ _ hn hun (ha u hu.1) (hb u hu.2)
-  have hprod := prod_localSymbol_eq_one_of_ne_two hn hn2 hres hζ a b {v, w} hS
+  have hprod := prod_localSymbol_eq_one_of_isNegOnePow hn hneg hres hζ a b {v, w} hS
   rw [Finset.prod_pair hvw, localSymbol_eq_placeFrobValue_zpow_right hn hres hζ hvn (hb v hvw) a,
     localSymbol_eq_placeFrobValue_zpow hn hres hζ hwn (ha w (Ne.symm hvw)) b] at hprod
   exact (inv_mul_eq_one.mp hprod).symm

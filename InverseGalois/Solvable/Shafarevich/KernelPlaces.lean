@@ -77,8 +77,9 @@ level.**
 This is everything the reciprocity law has to say about a naming.  The product of the symbols of
 two global units over all the places of the level is trivial, and away from the named places the
 naming contributes nothing, so the product collapses to the named places; the units the naming is
-read against are those supported at any finite set of places containing the named ones, trivial at
-every infinite place, and already an exponent-th power in the finite level named along with them. -/
+read against are those supported at any finite set of places containing the named ones and already
+an exponent-th power in the finite level named along with them, whatever they do at the infinite
+places. -/
 def IsNamedOrthogonal (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω) [NumberField ↥K]
     {Pc Ec : HeightOneSpectrum (𝓞 ↥K) → ℕ}
     (hres : ∀ v : HeightOneSpectrum (𝓞 ↥K), HasResidueChar (v.adicCompletion ↥K) (Pc v) (Ec v))
@@ -87,7 +88,6 @@ def IsNamedOrthogonal (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω) [Num
     (c : (μ : ι) → Fin d → localClasses (w μ) ℓ) : Prop :=
   ∀ Tn : Finset (HeightOneSpectrum (𝓞 ↥K)), (∀ μ : ι, w μ ∈ Tn) → ∀ (q : Fin d)
     (u : ↥(sUnits ↥K (Set.range (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 ↥K))))),
-    (∀ y : InfinitePlace ↥K, infClassHom y ℓ ((u : (↥K)ˣ)) = 1) →
     (∃ y : Ω, y ∈ E ∧ y ^ ℓ = algebraMap ↥K Ω (((u : (↥K)ˣ) : ↥K))) →
     localSymbolPiPairing hres hζ w (fun μ => localClassHom (w μ) ℓ ((u : (↥K)ˣ)))
       (fun μ => c μ q) = 1
@@ -114,6 +114,9 @@ places above the exponent, where the assembled homomorphism has to be unramified
 that set rather than by a clause of their own, and a named place is asked not to be one of them,
 which is the same disjointness read at the exponent.
 
+The classes prescribed at a named place are asked to be unramified there, which is what lets the
+family be chosen with nothing ramified prescribed anywhere at all.
+
 The finite level in which the leftover places are asked to be completely decomposed is part of the
 demand, so that a level cutting out any prescribed finite amount of arithmetic may be named before
 the family is chosen; it is asked to be Galois over the base, which costs nothing, a level being
@@ -133,6 +136,7 @@ def HasPrescribedUnits (ℓ : ℕ) [NeZero ℓ] (K : IntermediateField k Ω) [Nu
         ∀ (d : ℕ) (c : (μ : ι) → Fin d → localClasses (w μ) ℓ),
           (∀ μ : ι, ∃ u : (↥K)ˣ,
             ∀ q : Fin d, c μ q ∈ Subgroup.zpowers (localClassHom (w μ) ℓ u)) →
+          (∀ (μ : ι) (q : Fin d), c μ q ∈ localUnramified (w μ) ℓ) →
           IsNamedOrthogonal ℓ K hres hζ E w c →
           ∃ z : Fin d → (↥K)ˣ,
             (∀ (q : Fin d) (v : HeightOneSpectrum (𝓞 ↥K)), v ∈ Tz →
@@ -169,7 +173,8 @@ Each clause of the prescription is then read off the family.  The values prescri
 decomposition subgroup are the coordinates of a character of it, and each coordinate is the Kummer
 character of any unit with the right class at the place below, so prescribing the values is
 prescribing those classes; the values being cyclic, the coordinates are the multiples of one
-character of the subgroup and the classes are the powers of one class.  Triviality along the
+character of the subgroup and the classes are the powers of one class, and the values being trivial
+along inertia that one class is unramified.  Triviality along the
 conjugates of a named prime, and along the conjugates of a leftover one, is triviality of the
 classes at the conjugate places.  Where the
 assembled homomorphism ramifies, some unit of the family has order not divisible by the exponent at
@@ -239,7 +244,8 @@ theorem hasKernelPrescription_of_places (N : ℕ) (K : IntermediateField k Ω)
   have hanti : ∀ E₁ E₂ : IntermediateField k Ω, E₁ ≤ E₂ →
       E₂.fixingSubgroup ≤ E₁.fixingSubgroup := fun _ _ h => fixingSubgroup_antitone h
   refine ⟨N, ?_⟩
-  intro _ F ι hιfin Q A a hFsurj hFsm hFright hQp hQbot hQorb hQker _ _ hAcase hasm hacyc havoid
+  intro _ F ι hιfin Q A a hFsurj hFsm hFright hQp hQbot hQorb hQker _ _ hAcase hasm hacyc hainert
+    havoid
   haveI := hιfin
   haveI : ∀ μ, (Q μ).IsPrime := hQp
   haveI : ∀ ν, (Pr ν).IsPrime := hPrp
@@ -307,24 +313,31 @@ theorem hasKernelPrescription_of_places (N : ℕ) (K : IntermediateField k Ω)
         (c : Fin (layerDim ℓ (Generic U n S) j) →
           localClasses (placeUnder K (Q μ) (hQbot μ)) ℓ),
       (∀ q, c q ∈ Subgroup.zpowers (localClassHom (placeUnder K (Q μ) (hQbot μ)) ℓ u₀)) ∧
+      (∀ q, c q ∈ localUnramified (placeUnder K (Q μ) (hQbot μ)) ℓ) ∧
       ∀ z : Fin (layerDim ℓ (Generic U n S) j) → (↥K)ˣ,
         (∀ q, localClassHom (placeUnder K (Q μ) (hQbot μ)) ℓ (z q) = c q) →
           ∀ (x : ↥(A μ)) (hx : (x : Gal(Ω/k)) ∈ φ.ker),
             kummerKernelHom hKker hkd (layerBasis ℓ (Generic U n S) j)
-                layerBasis_pow_eq_one z ⟨(x : Gal(Ω/k)), hx⟩ = layerSubMap ℓ α j (a μ x) :=
-    fun μ => exists_localClass_zpowers_forall_kummerKernelHom_eq hKker hkd
-      (hasKummerCharInertiaLift hkd) hℓ (layerBasis ℓ (Generic U n S) j) layerBasis_pow_eq_one
+                layerBasis_pow_eq_one z ⟨(x : Gal(Ω/k)), hx⟩ = layerSubMap ℓ α j (a μ x) := by
+    intro μ
+    obtain ⟨u₀, c, hcline, hcunr, hc⟩ := exists_localClass_zpowers_forall_kummerKernelHom_eq
+      hKker hkd (hasKummerCharInertiaLift hkd) hℓ (layerBasis ℓ (Generic U n S) j)
+      layerBasis_pow_eq_one
       (χ := fun q e => layerCoord ℓ (Generic U n S) j e q) prod_layerBasis_pow_layerCoord
-      (fun q e e' => layerCoord_mul e e' q) (hQbot μ) rfl (Or.inl (hAcase μ))
+      (fun q e e' => layerCoord_mul e e' q) (hQbot μ)
+      (v := placeUnder K (Q μ) (hQbot μ)) rfl (Or.inl (hAcase μ))
       ((layerSubMap ℓ α j).comp (a μ)) (hasm' μ) (hacyc' μ)
-  choose u₀ c hcline hc using hex
+    exact ⟨u₀, c, hcline, hcunr fun x hx => by
+      show layerSubMap ℓ α j (a μ x) = 1
+      rw [hainert μ x hx, _root_.map_one], hc⟩
+  choose u₀ c hcline hcunr hc using hex
   have hdisjℓ : ∀ μ : ι, (ℓ : 𝓞 ↥K) ∉ (placeUnder K (Q μ) (hQbot μ)).asIdeal := by
     intro μ hmem
     obtain ⟨σ, ν, hσν⟩ := hℓPr _ hmem
     exact hdisj μ (hσν ▸ hmemTz σ ν)
   obtain ⟨z, hzT, hz2, hz3, hz4⟩ := hfam E hEfin hEgal hKE ι
     (fun μ => placeUnder K (Q μ) (hQbot μ)) hinj hconj Tz hdisj hdisjℓ
-    (layerDim ℓ (Generic U n S) j) c (fun μ => ⟨u₀ μ, hcline μ⟩)
+    (layerDim ℓ (Generic U n S) j) c (fun μ => ⟨u₀ μ, hcline μ⟩) hcunr
     (horth' c (fun μ => ⟨u₀ μ, hcline μ⟩) hc)
   have hz1 : ∀ (q : Fin (layerDim ℓ (Generic U n S) j)) (v : HeightOneSpectrum (𝓞 ↥K)),
       (ℓ : 𝓞 ↥K) ∈ v.asIdeal → localClassHom v ℓ (z q) = 1 := by

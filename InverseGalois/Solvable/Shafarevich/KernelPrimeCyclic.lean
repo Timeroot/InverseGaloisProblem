@@ -124,6 +124,8 @@ theorem exists_localClass_zpowers_forall_kummerKernelHom_eq (hlift : HasKummerCh
     (hcyc : ∃ x₀ : ↥A, ∀ x : ↥A, a x ∈ Subgroup.zpowers (a x₀)) :
     ∃ (u₀ : (↥K)ˣ) (c : Fin d → localClasses v ℓ),
       (∀ t, c t ∈ Subgroup.zpowers (localClassHom v ℓ u₀)) ∧
+      ((∀ x : ↥A, (x : Gal(Ω/k)) ∈ Ideal.inertia Gal(Ω/k) P → a x = 1) →
+          ∀ t, c t ∈ localUnramified v ℓ) ∧
         ∀ z : Fin d → (↥K)ˣ, (∀ t, localClassHom v ℓ (z t) = c t) →
           ∀ (x : ↥A) (hx : (x : Gal(Ω/k)) ∈ φ.ker),
             kummerKernelHom hKker h b hb z ⟨(x : Gal(Ω/k)), hx⟩ = a x := by
@@ -153,8 +155,27 @@ theorem exists_localClass_zpowers_forall_kummerKernelHom_eq (hlift : HasKummerCh
       rwa [one_mul, _root_.map_one] at h1
   obtain ⟨u₀, hc₀⟩ :=
     exists_localClass_forall_kummerChar_nsmul h hlift hP hv hA' (fun x => e (r x)) hadd hsm
+  have hunr : (∀ x : ↥A, (x : Gal(Ω/k)) ∈ Ideal.inertia Gal(Ω/k) P → a x = 1) →
+      localClassHom v ℓ u₀ ∈ localUnramified v ℓ := by
+    intro hainert
+    refine (localClassHom_mem_localUnramified_iff v u₀).2 ?_
+    rw [placeValue_eq_neg_ord, dvd_neg]
+    refine dvd_ord_of_forall_mem_inertia_kummerChar_eq_zero h hℓ u₀ hv fun σ hσ => ?_
+    have hσA : σ ∈ A.comap (galSubHom K) := by
+      rcases hA' with hA'' | ⟨hA'', -⟩
+      · rw [hA'']
+        exact Ideal.inertia_le_stabilizer P hσ
+      · rw [hA'']
+        exact hσ
+    have h1 := hc₀ 1 u₀ (pow_one _).symm ⟨σ, hσA⟩
+    rw [one_smul] at h1
+    rw [h1]
+    refine hetriv _ (hainert (r ⟨σ, hσA⟩) ?_)
+    rw [hrc]
+    exact (mem_inertia_galSubHom_iff K σ P).2 hσ
   refine ⟨u₀, fun t => localClassHom v ℓ u₀ ^ (μ t).val,
-    fun t => Subgroup.mem_zpowers_iff.2 ⟨(μ t).val, zpow_natCast _ _⟩, fun z hz x hx => ?_⟩
+    fun t => Subgroup.mem_zpowers_iff.2 ⟨(μ t).val, zpow_natCast _ _⟩,
+    fun hainert t => pow_mem (hunr hainert) _, fun z hz x hx => ?_⟩
   refine kummerKernelHom_eq_of_forall_kummerChar_eq hKker h b hb z hχ fun t => ?_
   have hxA' : (kerGalEquiv hKker ⟨(x : Gal(Ω/k)), hx⟩ : Gal(Ω/↥K)) ∈ A.comap (galSubHom K) := by
     refine Subgroup.mem_comap.2 ?_

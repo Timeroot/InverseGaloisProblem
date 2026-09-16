@@ -162,7 +162,7 @@ level and its closure Kummer data.  The places the family of units is prescribed
 finite family of primes, and the places above the prime are covered because the primes above it are;
 the families of units themselves are carried by the two-place construction over a number field, so
 that the orthogonality of the naming is all that is left to ask. -/
-theorem kernelPrescriptionEP_of_namedOrthogonalEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] (hodd : 2 < ℓ)
+theorem kernelPrescriptionEP_of_namedOrthogonalEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
     (h : NamedOrthogonalEP ℓ) : KernelPrescriptionEP ℓ := by
   intro S U _ _ _ _ _ _ Ω _ _ _ _ φ t D n j hS hj hmu hcov
   letI := galLayerAction ℓ U n S j φ
@@ -203,15 +203,15 @@ theorem kernelPrescriptionEP_of_namedOrthogonalEP (ℓ : ℕ) [Fact ℓ.Prime] [
     obtain ⟨N, horth⟩ := h S U hS ℚ Ω φ n j K hKker ⟨z, hzK⟩ hζ hkd hres
     exact hasKernelPrescription_of_places N K hKker hζ hkd hres hPrp hPrbot hDPr
       (exists_smul_placeUnder_of_mem K hPrp hPrbot hcovP) horth
-      (hasPrescribedUnits hℓ hodd K hres hζ)
+      (hasPrescribedUnits hℓ K hres hζ)
   · exact ⟨0, fun hc => absurd hc hopen⟩
 
 /-- **The step of the ladder, in exchange for the flattening and the orthogonality of the naming**
 — the two pieces of arithmetic the whole climb rests on. -/
 theorem genericLevelStepEPRoots_of_namedOrthogonalEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
-    (hodd : 2 < ℓ) (hflat : FlatPrescriptionEP ℓ) (h : NamedOrthogonalEP ℓ) :
+    (hflat : FlatPrescriptionEP ℓ) (h : NamedOrthogonalEP ℓ) :
     GenericLevelStepEPRoots ℓ :=
-  genericLevelStepEPRoots_of_kernelPrescriptionEP ℓ hodd hflat
-    (kernelPrescriptionEP_of_namedOrthogonalEP ℓ hodd h)
+  genericLevelStepEPRoots_of_kernelPrescriptionEP ℓ hflat
+    (kernelPrescriptionEP_of_namedOrthogonalEP ℓ h)
 
 end Shafarevich

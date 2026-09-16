@@ -61,7 +61,7 @@ makes it cyclic at the completely decomposed primes the first leaves behind.
 * `Shafarevich.flatPrescriptionEP_of_flatOrbitPrescriptionEP` — **the flattening may be made one
   field up and one named prime at a time**, the several traces being multiplied.
 * `Shafarevich.genericLevelStepEPRoots_of_solutionRepairEP` — **the repair of the property is the
-  only thing between the arithmetic and the step of the ladder** for an odd prime.
+  only thing between the arithmetic and the step of the ladder**.
 * `Shafarevich.genericLevelStepEPRoots_of_liftRepairEP` — the same step, in exchange for the repair
   of a lift alone.
 * `Shafarevich.genericLevelStepEPRoots_of_cyclicRepairEP` — the same step, in exchange for the
@@ -312,13 +312,13 @@ theorem splitCyclicRepairEP_of_confinedPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prim
 /-! ### The step -/
 
 /-- **The repair of the property is the only thing between the arithmetic and the step of the
-ladder** for an odd prime.
+ladder**.
 
 The kernel of the base realization fixes a finite Galois level, the roots of unity of order the
 prime lie in that level because the realization is asked to fix those of order its square, and the
 level with its root of unity produces the finite family carrying six of the seven clauses of the
 package the ladder consumes.  The seventh is supplied. -/
-theorem genericLevelStepEPRoots_of_solutionRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (hodd : 2 < ℓ)
+theorem genericLevelStepEPRoots_of_solutionRepairEP (ℓ : ℕ) [Fact ℓ.Prime]
     (h : SolutionRepairEP ℓ) : GenericLevelStepEPRoots ℓ := by
   refine genericLevelStepEPRoots_of_hasRungData ℓ ?_
   intro S U _ _ _ _ _ _ Ω _ _ _ _ φ hS hsurj hsm hroots
@@ -345,38 +345,39 @@ theorem genericLevelStepEPRoots_of_solutionRepairEP (ℓ : ℕ) [Fact ℓ.Prime]
     refine fun y hy => hmuE y ?_
     rw [pow_mul, hy, one_pow]
   obtain ⟨t, Pr, -, hPrp, hPrbot, hcov, hD, hdata⟩ :=
-    exists_family_rungData hodd hS hsurj hsm K hKker hζ hmu ∅ Set.finite_empty
-  exact ⟨t, _, _, _, hdata fun n j hj =>
-    h S U Ω φ t _ n j hS hj hmuE ⟨Pr, hPrp, hPrbot, fun _ => rfl, hcov, hD⟩⟩
+    exists_family_rungData hS hsurj hsm K hKker hζ hmu ∅ Set.finite_empty
+  obtain ⟨t', D, hrung⟩ := hdata fun n j hj =>
+    h S U Ω φ t _ n j hS hj hmuE ⟨Pr, hPrp, hPrbot, fun _ => rfl, hcov, hD⟩
+  exact ⟨t', D, _, _, hrung⟩
 
 /-- **The step of the ladder, in exchange for the repair of a lift alone.** -/
-theorem genericLevelStepEPRoots_of_liftRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (hodd : 2 < ℓ)
+theorem genericLevelStepEPRoots_of_liftRepairEP (ℓ : ℕ) [Fact ℓ.Prime]
     (h : LiftRepairEP ℓ) : GenericLevelStepEPRoots ℓ :=
-  genericLevelStepEPRoots_of_solutionRepairEP ℓ hodd (solutionRepairEP_of_liftRepairEP ℓ h)
+  genericLevelStepEPRoots_of_solutionRepairEP ℓ (solutionRepairEP_of_liftRepairEP ℓ h)
 
 /-- **The step of the ladder, in exchange for the repair read prime by prime.** -/
-theorem genericLevelStepEPRoots_of_cyclicRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (hodd : 2 < ℓ)
+theorem genericLevelStepEPRoots_of_cyclicRepairEP (ℓ : ℕ) [Fact ℓ.Prime]
     (h : CyclicRepairEP ℓ) : GenericLevelStepEPRoots ℓ :=
-  genericLevelStepEPRoots_of_liftRepairEP ℓ hodd (liftRepairEP_of_cyclicRepairEP ℓ h)
+  genericLevelStepEPRoots_of_liftRepairEP ℓ (liftRepairEP_of_cyclicRepairEP ℓ h)
 
 /-- **The step of the ladder, in exchange for confining the new ramification and making it cyclic**
 — the least the arithmetic can be asked for. -/
-theorem genericLevelStepEPRoots_of_splitCyclicRepairEP (ℓ : ℕ) [Fact ℓ.Prime] (hodd : 2 < ℓ)
+theorem genericLevelStepEPRoots_of_splitCyclicRepairEP (ℓ : ℕ) [Fact ℓ.Prime]
     (h : SplitCyclicRepairEP ℓ) : GenericLevelStepEPRoots ℓ :=
-  genericLevelStepEPRoots_of_cyclicRepairEP ℓ hodd (cyclicRepairEP_of_splitCyclicRepairEP ℓ h)
+  genericLevelStepEPRoots_of_cyclicRepairEP ℓ (cyclicRepairEP_of_splitCyclicRepairEP ℓ h)
 
 /-- **The step of the ladder, in exchange for the prescriptions in degree one alone** — the last
 thing between the arithmetic and every finite solvable group. -/
-theorem genericLevelStepEPRoots_of_confinedPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] (hodd : 2 < ℓ)
+theorem genericLevelStepEPRoots_of_confinedPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime]
     (hflat : FlatPrescriptionEP ℓ) (h : ConfinedPrescriptionEP ℓ) : GenericLevelStepEPRoots ℓ :=
-  genericLevelStepEPRoots_of_splitCyclicRepairEP ℓ hodd
+  genericLevelStepEPRoots_of_splitCyclicRepairEP ℓ
     (splitCyclicRepairEP_of_confinedPrescriptionEP ℓ hflat h)
 
 /-- **The step of the ladder, with the sharp prescription made one field up** — where the action on
 the layer is trivial and a cocycle is a homomorphism. -/
-theorem genericLevelStepEPRoots_of_kernelPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] (hodd : 2 < ℓ)
+theorem genericLevelStepEPRoots_of_kernelPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime]
     (hflat : FlatPrescriptionEP ℓ) (h : KernelPrescriptionEP ℓ) : GenericLevelStepEPRoots ℓ :=
-  genericLevelStepEPRoots_of_confinedPrescriptionEP ℓ hodd hflat
+  genericLevelStepEPRoots_of_confinedPrescriptionEP ℓ hflat
     (confinedPrescriptionEP_of_kernelPrescriptionEP ℓ h)
 
 end Shafarevich

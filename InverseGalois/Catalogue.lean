@@ -210,11 +210,11 @@ spaces rather than rigidity.
 
 ## Solvable groups
 
-Shafarevich's theorem — every finite solvable group is a Galois group over `ℚ` — is not in the
-catalogue, whose entries are all regular.  Its proof is arithmetic, running through class field
-theory and the Grunwald–Wang theorem, and it produces extensions of `ℚ` rather than of `ℚ(T)`: the
-regular version is open even for `p`-groups.  Its nilpotent case is nevertheless available here
-over `ℚ`, as recorded at the end of this section.  What `InverseGalois.Solvable` contributes is the
+Shafarevich's theorem — every finite solvable group is a Galois group over `ℚ` — is proved here,
+as `Shafarevich.isInverseGalois_of_isSolvable`, but it is not in the catalogue, whose entries are
+all regular.  Its proof is arithmetic, running through class field theory and the Grunwald–Wang
+theorem, and it produces extensions of `ℚ` rather than of `ℚ(T)`: the regular version is open even
+for `p`-groups.  What `InverseGalois.Solvable` contributes to the catalogue is the
 group theory that organizes the approach — the elementary abelian chief-series induction, the Sylow
 decomposition of a nilpotent group, and the presentation of every semidirect product `A ⋊[φ] H` with
 abelian `A` as a quotient of the regular wreath product `A ≀ᵣ H`.
@@ -226,9 +226,11 @@ splitting turns a nilpotent kernel into a tower of kernels of prime power order.
 `Shafarevich.isSolvable_isInverseGalois_of_splitPrimePowerEP`: Shafarevich's theorem in full
 follows from the single statement that a split embedding problem over `ℚ` whose kernel is a finite
 `p`-group is solvable.  Nothing of the group theory remains.  The neighbouring case of an
-**abelian** kernel is unconditional here — `Shafarevich.splitAbelianEP_regular`, a repackaging of
-the wreath product construction — but the two do not meet: filtering a `p`-group kernel leaves a
-residual lifting that is no longer split, and that lifting is where class field theory enters.
+**abelian** kernel is reached far more cheaply — `Shafarevich.splitAbelianEP_regular`, a
+repackaging of the wreath product construction — but the two do not meet: filtering a `p`-group
+kernel leaves a residual lifting that is no longer split, and that lifting is where class field
+theory enters.  Supplying it is what `InverseGalois.Solvable.Shafarevich` does, in
+`Shafarevich.splitPrimePowerEP`.
 
 Dentzer's class of semiabelian groups — the smallest class containing the finite abelian groups and
 closed under quotients and under semidirect products by a finite abelian group — *is* in the
@@ -249,8 +251,9 @@ The class is generated from the trivial group by iterated semidirect products by
 groups, with arbitrary actions, together with quotients; so it contains every finite group that can
 be written as an iterated split extension of abelian groups, and in particular every finite abelian
 group and every quotient of such an iterated product.  It does not contain every finite solvable
-group: a solvable group whose chief factors are not complemented need not be semiabelian, and
-Shafarevich's theorem remains outside the catalogue.
+group: a solvable group whose chief factors are not complemented need not be semiabelian, so
+Shafarevich's theorem, true over `ℚ`, still says nothing about `ℚ(T)` and remains outside the
+catalogue.
 
 Recognizing a group as semiabelian is therefore what widens the catalogue, and several criteria do
 it.  A normal abelian subgroup of cyclic quotient suffices, with no splitting hypothesis; so does a
@@ -339,6 +342,18 @@ unconditionally but over `ℚ` only,
   finite nilpotent group of order not divisible by `32`,
 * `InverseGalois.isInverseGalois_of_isPGroup_two` — **every finite `2`-group**, and
 * `IsInverseGalois.of_isNilpotent` — **every finite nilpotent group**.
+
+Past the nilpotent case the split embedding problems of Ore's reduction have to be solved
+outright, and `InverseGalois.Solvable.Shafarevich` solves them: the climb up the `p`-central series
+turns such a problem into a ladder of one-step problems, and the arithmetic of a level — a diagonal
+of units subject to local conditions at places chosen to confine the obstruction, together with the
+sharp prescription one field up which the orthogonality of the naming makes — buys each rung, at
+every prime.  So, again over `ℚ` only,
+
+* `Shafarevich.splitPrimePowerEP` — **every split embedding problem over `ℚ` whose kernel has prime
+  power order is solvable**, and
+* `Shafarevich.isInverseGalois_of_isSolvable` — **Shafarevich's theorem**: every finite solvable
+  group is a Galois group over `ℚ`.
 
 ## Main results
 

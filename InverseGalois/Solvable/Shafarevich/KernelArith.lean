@@ -6,6 +6,7 @@ import Mathlib
 import InverseGalois.CFT.PoitouTate.NamedUnits
 import InverseGalois.CFT.PoitouTate.OrbitLine
 import InverseGalois.Solvable.Shafarevich.KernelPlaces
+import InverseGalois.Solvable.Shafarevich.LevelOneTwoPlace
 
 /-!
 # The families of units the prescription is made of, bought from the arithmetic
@@ -18,12 +19,12 @@ of places, and confined everywhere else to places sitting over a named one or co
 in a given finite level.  That is exactly the shape the two-place construction over a number field
 answers, and this file matches the two.
 
-Setting the bookkeeping up is a matter of reading the named places as a finite set of places, the
-prescribed classes as a family indexed by that finite set, and the lines the classes at one place
-lie on as a family spread over the orbits of the named places, so that the line at the image of a
-place is the image of the line there.  The finite level the leftover places are asked to be
-decomposed in serves as the auxiliary field of the two-place construction, which is what its being
-Galois over the base is for; the decomposition group of a prime of that level lands in the one of
+Setting the bookkeeping up is a matter of reading the named places as a finite set of places and
+the prescribed classes as a family indexed by that finite set, spread over the orbits of the named
+places so that the prescription at a place carrying nothing named is trivial.  The finite level the
+leftover places are asked to be decomposed in serves as the auxiliary field of the two-place
+construction, which is what its being Galois over the base is for; the decomposition group of a
+prime of that level lands in the one of
 the prime below it.  The places ramified in it are finitely many, because a place ramifies exactly
 when the prime below it divides the different and a nonzero ideal has finitely many prime divisors.
 
@@ -35,12 +36,25 @@ so the product collapses to the named places, which is the orthogonality of the 
 coordinate beyond the ones prescribed the spread prescription is trivial everywhere and the product
 is empty of content.
 
+The places the construction is asked to keep away from are the places above the exponent together
+with the places ramified over the base.  Both are finite, and both are read off data an
+automorphism of the level over the base carries along: the prime below a moved prime is the prime
+below, and the automorphism carries the powers of a prime onto the powers of its image, so the
+ramification index is the same at a prime and at its image.  A named place lies in neither, its
+decomposition group over the base being trivial and the exponent being a unit there, so nothing
+ramified is prescribed anywhere at all.
+
 ## Main results
 
 * `InverseGalois.Shafarevich.exists_finset_forall_ramIdx_eq_one` — **outside a finite set of places
   every place of a number field has an unramified prime above it in a finite extension.**
 * `InverseGalois.Shafarevich.exists_prime_natCast_mem_asIdeal` — **every finite place lies above a
   rational prime**, its residue characteristic.
+* `InverseGalois.Shafarevich.ramIdx_smul` — **the ramification index over the base is the same at a
+  prime and at its image** under an automorphism of the extension over the base.
+* `InverseGalois.Shafarevich.exists_stable_bad_places` — **the places above the exponent together
+  with the places ramified over the base form a finite Galois stable set of places**, holding
+  nothing else.
 * `InverseGalois.Shafarevich.stabilizer_le_fixingSubgroup_of_stabilizer_eq_bot` — **a prime of the
   closure lying over a place with trivial decomposition group in a finite level has its whole
   decomposition group fixing that level.**
@@ -109,6 +123,76 @@ theorem exists_prime_natCast_mem_asIdeal (K : Type*) [Field K] [NumberField K]
 
 end Ramified
 
+/-! ### The places the construction keeps away from -/
+
+section Bad
+
+variable {A B : Type*} [CommRing A] [IsDedekindDomain A] [CommRing B] [IsDedekindDomain B]
+  [Algebra A B] [Algebra.IsIntegral A B] [Module.IsTorsionFree A B] [Nontrivial A]
+  {G : Type*} [Group G] [MulSemiringAction G B] [SMulCommClass G A B]
+
+omit [Module.IsTorsionFree A B] in
+variable (A) in
+/-- **The ramification index over the base is the same at a prime and at its image** under an
+automorphism of the extension over the base.  The prime below is the same at the two, and the
+automorphism carries the powers of the prime onto the powers of its image. -/
+theorem ramIdx_smul (σ : G) (v : HeightOneSpectrum B) : ramIdx A (σ • v) = ramIdx A v := by
+  rw [ramIdx, ramIdx, primeUnder_smul_eq (A := A) σ v, asIdeal_smul, Ideal.pointwise_smul_def]
+  exact Ideal.ramificationIdx_map_eq (primeUnder A v).asIdeal v.asIdeal
+    (MulSemiringAction.toAlgEquiv A B σ)
+
+end Bad
+
+section BadPlaces
+
+variable (k K : Type) [Field k] [NumberField k] [Field K] [NumberField K] [Algebra k K]
+
+omit [NumberField k] in
+/-- **A natural number of the base lies at a place exactly when it lies at every image of that
+place** under an automorphism of the field over the base. -/
+theorem finitePlace_natCast_smul_ne_one_iff (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)) (n : ℕ) :
+    FinitePlace.mk (σ • v) ((n : ℕ) : K) ≠ 1 ↔ FinitePlace.mk v ((n : ℕ) : K) ≠ 1 := by
+  have hfix : σ⁻¹ • ((n : ℕ) : 𝓞 K) = ((n : ℕ) : 𝓞 K) :=
+    _root_.map_natCast (MulSemiringAction.toRingHom Gal(K/k) (𝓞 K) σ⁻¹) n
+  simp only [ne_eq, finitePlace_natCast_eq_one_iff, not_not, asIdeal_smul,
+    Ideal.mem_pointwise_smul_iff_inv_smul_mem, hfix]
+
+variable {k K} in
+/-- **The places above the exponent together with the places ramified over the base form a finite
+Galois stable set of places**, holding nothing else.  Both sets are finite, and both are stable
+because the prime below a moved prime is the prime below and the ramification index is the same at
+a prime and at its image. -/
+theorem exists_stable_bad_places {ℓ : ℕ} (hℓ : ℓ ≠ 0) :
+    ∃ B : Finset (HeightOneSpectrum (𝓞 K)),
+      (∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ B → σ • v ∈ B) ∧
+      (∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((ℓ : ℕ) : K) ≠ 1 → v ∈ B) ∧
+      (∀ v : HeightOneSpectrum (𝓞 K), ramIdx (𝓞 k) v ≠ 1 → v ∈ B) ∧
+      ∀ v ∈ B, FinitePlace.mk v ((ℓ : ℕ) : K) ≠ 1 ∨ ramIdx (𝓞 k) v ≠ 1 := by
+  classical
+  haveI : SMulCommClass Gal(K/k) (𝓞 k) (𝓞 K) := smulCommClass_ringOfIntegers k K
+  have hfin : ({v : HeightOneSpectrum (𝓞 K) | FinitePlace.mk v ((ℓ : ℕ) : K) ≠ 1} ∪
+      {v : HeightOneSpectrum (𝓞 K) | ramIdx (𝓞 k) v ≠ 1}).Finite :=
+    (finite_setOf_finitePlace_natCast_ne_one hℓ).union (finite_setOf_ramIdx_ne_one k K)
+  refine ⟨hfin.toFinset, fun σ v hv => ?_, fun v hv => ?_, fun v hv => ?_, fun v hv => ?_⟩
+  · rw [Set.Finite.mem_toFinset] at hv ⊢
+    rcases (Set.mem_union _ _ _).1 hv with h | h
+    · refine Set.mem_union_left _ ?_
+      exact (finitePlace_natCast_smul_ne_one_iff k K σ v ℓ).2 h
+    · refine Set.mem_union_right _ ?_
+      show ramIdx (𝓞 k) (σ • v) ≠ 1
+      intro hc
+      refine h ?_
+      rw [← ramIdx_smul (𝓞 k) σ v]
+      exact hc
+  · rw [Set.Finite.mem_toFinset]
+    exact Set.mem_union_left _ hv
+  · rw [Set.Finite.mem_toFinset]
+    exact Set.mem_union_right _ hv
+  · rw [Set.Finite.mem_toFinset] at hv
+    exact (Set.mem_union _ _ _).1 hv
+
+end BadPlaces
+
 /-! ### The decomposition group of a prime over a decomposed place -/
 
 section Decomposition
@@ -174,24 +258,29 @@ variable {k Ω : Type} [Field k] [NumberField k] [Field Ω] [Algebra k Ω] [IsGa
 
 The named places are read as a finite set of places and the classes prescribed at them as a family
 indexed by that set, the transport along the naming being harmless because the naming is injective.
-The lines the classes lie on are named by units of the level, which lets them be spread over the
-orbits of the named places, and the finite level the leftover places are asked to be decomposed in
-serves as the auxiliary field of the two-place construction, which is what its being Galois over the
-base is for.  With that bookkeeping the two-place construction produces the family of units, and
-each of the four clauses of the demand is one of its four conclusions read back through the naming.
+The classes are spread over the orbits of the named places, and the finite level the leftover places
+are asked to be decomposed in serves as the auxiliary field of the two-place construction, which is
+what its being Galois over the base is for.  With that bookkeeping the two-place construction
+produces the family of units, and each of the four clauses of the demand is one of its four
+conclusions read back through the naming.
 
 The reciprocity residue the construction asks for is the orthogonality of the naming, read at the
 finite set of places the units are supported at: away from the named places the spread prescription
 is trivial, so the product of the symbols collapses to the named ones.  In a coordinate beyond the
-ones prescribed the spread prescription is trivial everywhere and the product is empty. -/
-theorem hasPrescribedUnits {ℓ : ℕ} [NeZero ℓ] (hℓ : ℓ.Prime) (hodd : 2 < ℓ)
+ones prescribed the spread prescription is trivial everywhere and the product is empty.
+
+The classes prescribed at the named places are unramified there and the named places avoid both the
+places above the exponent and the places ramified over the base, the decomposition group of a named
+place over the base being trivial.  The construction is therefore run with nothing ramified
+prescribed anywhere, which is what frees it of any demand on the exponent. -/
+theorem hasPrescribedUnits {ℓ : ℕ} [NeZero ℓ] (hℓ : ℓ.Prime)
     (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [IsGalois k ↥K] [NumberField ↥K]
     {Pc Ec : HeightOneSpectrum (𝓞 ↥K) → ℕ}
     (hres : ∀ v : HeightOneSpectrum (𝓞 ↥K), HasResidueChar (v.adicCompletion ↥K) (Pc v) (Ec v))
     {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ) :
     HasPrescribedUnits ℓ K hres hζ := by
   classical
-  intro E hEfin hEgal hKE ι _ w hwinj hwconj Tz hTz hℓw d c hline hnorth
+  intro E hEfin hEgal hKE ι _ w hwinj hwconj Tz hTz hℓw d c _hline hcunr hnorth
   haveI := hEfin
   haveI := hEgal
   -- the finite level the leftover places are asked to be decomposed in
@@ -234,39 +323,45 @@ theorem hasPrescribedUnits {ℓ : ℕ} [NeZero ℓ] (hℓ : ℓ.Prime) (hodd : 2
     intro x t ht
     rw [hcldef]
     simp only [dif_neg ht]
-  -- the lines the classes at the named places lie on
-  choose aU haU using hline
-  obtain ⟨a, hadef⟩ : ∃ a : ↥Tp → (↥K)ˣ, a = fun x => aU (idx x) := ⟨_, rfl⟩
   have hfree : ∀ σ : Gal(↥K/k), σ ≠ 1 → ∀ x ∈ Tp, σ • x ∉ Tp := by
     intro σ hσ x hx hcon
     rw [hTpdef] at hx hcon
     obtain ⟨μ, -, hμ⟩ := Finset.mem_image.1 hx
     obtain ⟨ν, -, hν⟩ := Finset.mem_image.1 hcon
     exact hwconj μ ν σ hσ (by rw [hμ, hν])
-  have hDcl : ∀ (x : ↥Tp) (t : ℕ),
-      cl x t ∈ Subgroup.zpowers (orbitLine k Tp a ℓ (x : HeightOneSpectrum (𝓞 ↥K))) := by
+  have hclunr : ∀ (x : ↥Tp) (t : ℕ),
+      cl x t ∈ localUnramified (x : HeightOneSpectrum (𝓞 ↥K)) ℓ := by
     intro x t
-    rw [orbitLine_mem hfree]
     by_cases h : t < d
     · rw [hcldef]
       simp only [dif_pos h]
       have hgen : ∀ (v : HeightOneSpectrum (𝓞 ↥K)) (hv : w (idx x) = v),
           cast (congrArg (fun v => localClasses v ℓ) hv) (c (idx x) ⟨t, h⟩)
-            ∈ Subgroup.zpowers (localClassHom v ℓ (a x)) := by
+            ∈ localUnramified v ℓ := by
         intro v hv
         subst hv
-        rw [hadef]
-        simpa using haU (idx x) ⟨t, h⟩
+        simpa using hcunr (idx x) ⟨t, h⟩
       exact hgen _ (hidx x)
     · rw [hcldef]
       simp only [dif_neg h]
       exact Subgroup.one_mem _
-  have hcln : ∀ (x : ↥Tp) (t : ℕ),
-      FinitePlace.mk (x : HeightOneSpectrum (𝓞 ↥K)) ((ℓ : ℕ) : ↥K) ≠ 1 → cl x t = 1 := by
-    intro x t hne
-    refine absurd ((finitePlace_natCast_eq_one_iff _ ℓ).2 ?_) hne
-    rw [← hidx x]
-    exact hℓw (idx x)
+  -- the places the construction keeps away from, and the named places avoiding them
+  obtain ⟨Bad, hBadst, hBadwild, hBadram, hBadmem⟩ :=
+    exists_stable_bad_places (k := k) (K := ↥K) hℓ.ne_zero
+  have hTpBad : ∀ v ∈ Tp, v ∉ Bad := by
+    intro v hv hvB
+    obtain ⟨μ, rfl⟩ := hmem v hv
+    rcases hBadmem _ hvB with hwild | hram
+    · exact hwild ((finitePlace_natCast_eq_one_iff (w μ) ℓ).2 (hℓw μ))
+    · refine hram ((inertia_eq_bot_iff_ramIdx_eq_one (w μ)).1 ?_)
+      rw [eq_bot_iff]
+      intro σ hσ
+      rw [Subgroup.mem_bot]
+      by_contra hne
+      have hst : σ • (w μ).asIdeal = (w μ).asIdeal :=
+        mem_stabilizer_iff.1 (Ideal.inertia_le_stabilizer (w μ).asIdeal hσ)
+      have hsm : σ • w μ = w μ := HeightOneSpectrum.ext (by rw [asIdeal_smul, hst])
+      exact hfree σ hne _ (hmemTp μ) (by rw [hsm]; exact hmemTp μ)
   have hdisj : ∀ v ∈ Tp, v ∉ Tz := by
     intro v hv
     rw [hTpdef] at hv
@@ -276,12 +371,11 @@ theorem hasPrescribedUnits {ℓ : ℕ} [NeZero ℓ] (hℓ : ℓ.Prime) (hodd : 2
   -- the reciprocity residue, read off the orthogonality of the naming
   have horth : ∀ Tn : Finset (HeightOneSpectrum (𝓞 ↥K)), Tp ⊆ Tn → ∀ (t : ℕ)
       (u : ↥(sUnits ↥K (Set.range (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 ↥K))))),
-      (∀ y : InfinitePlace ↥K, infClassHom y ℓ ((u : (↥K)ˣ)) = 1) →
       (∃ y : (↥E)ˣ, Units.map (algebraMap ↥K ↥E : ↥K →* ↥E) ((u : (↥K)ˣ)) = y ^ ℓ) →
       localSymbolPiPairing hres hζ (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 ↥K))
         (sUnitClassHom (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 ↥K)) ℓ u)
         (fun y => spreadClasses Tp cl t (y : HeightOneSpectrum (𝓞 ↥K))) = 1 := by
-    intro Tn hsub t u hinf hpow
+    intro Tn hsub t u hpow
     by_cases ht : t < d
     · have hpowE : ∃ y : Ω, y ∈ E ∧ y ^ ℓ = algebraMap ↥K Ω (((u : (↥K)ˣ) : ↥K)) := by
         obtain ⟨y, hy⟩ := hpow
@@ -294,7 +388,7 @@ theorem hasPrescribedUnits {ℓ : ℕ} [NeZero ℓ] (hℓ : ℓ.Prime) (hodd : 2
           ring
         rw [← hcoe, IsScalarTower.algebraMap_apply ↥K ↥E Ω]
         rfl
-      have hkey := hnorth Tn (fun μ => hsub (hmemTp μ)) ⟨t, ht⟩ u hinf hpowE
+      have hkey := hnorth Tn (fun μ => hsub (hmemTp μ)) ⟨t, ht⟩ u hpowE
       have hfun : (fun μ : ι => spreadClasses Tp cl t (w μ))
           = fun μ : ι => c μ ⟨t, ht⟩ := by
         refine funext fun μ => ?_
@@ -321,29 +415,28 @@ theorem hasPrescribedUnits {ℓ : ℕ} [NeZero ℓ] (hℓ : ℓ.Prime) (hodd : 2
         · exact spreadClasses_of_notMem hy t
       rw [hfun]
       exact _root_.map_one _
-  obtain ⟨z, hz1, hz2, hz3, hz4⟩ := exists_units_named_prescribed (k := k) (A := Ω) (K := ↥K)
-    (Ω := E) (p := ℓ) hℓ hodd hζ hres (Tp := Tp) (Tz := Tz) (Tram := Tram) hdisj hTram
-    (cl := cl) hfree hcln (D := orbitLine k Tp a ℓ) (orbitLine_zpowers_smul hfree a) hDcl horth d
+  obtain ⟨z, hz1, hz2, hz3, hz4⟩ := exists_units_named_unram_prescribed (k := k) (A := Ω)
+    (K := ↥K) (Ω := E) (p := ℓ) hℓ hζ hres (Tp := Tp) (Tz := Tz) (Tram := Tram) (B := Bad)
+    hdisj hTram hBadst hBadwild hBadram hTpBad (cl := cl) hclunr horth d
   refine ⟨fun q => z (q : ℕ), fun q v hv => hz1 q q.isLt v hv, ?_, ?_, ?_⟩
   · intro μ q
     rw [hz2 q q.isLt ⟨w μ, hmemTp μ⟩]
     exact hclval μ (hmemTp μ) q
   · intro μ σ hσ q
-    exact hz3 q q.isLt σ ⟨w μ, hmemTp μ⟩ hσ
+    exact hz3 q q.isLt σ ⟨w μ, hmemTp μ⟩ (hfree σ hσ _ (hmemTp μ))
   · intro v hv
     obtain ⟨q, hq⟩ := hv
-    rcases hz4 v ⟨q, q.isLt, hq⟩ with ⟨σ, x, hvx⟩ | ⟨⟨W', hW'u, hW'st⟩, ⟨q₀, hq₀d, hq₀⟩, hconj⟩
-    · exact Or.inl ⟨idx x, σ, by rw [hidx x]; exact hvx⟩
-    · refine Or.inr ⟨?_, ⟨⟨q₀, hq₀d⟩, fun q hqne => hq₀ q q.isLt fun hcon => hqne (Fin.ext hcon)⟩,
-        fun σ hσ q => hconj σ hσ q q.isLt⟩
-      intro P hPp hPbot hPu
-      haveI := hPp
-      refine stabilizer_le_fixingSubgroup_of_stabilizer_eq_bot hW'st hPbot ?_
-      have h1 : Ideal.under (𝓞 k) P = Ideal.under (𝓞 k) v.asIdeal := by
-        rw [← hPu, Ideal.under_under]
-      have h2 : Ideal.under (𝓞 k) W'.asIdeal = Ideal.under (𝓞 k) v.asIdeal := by
-        rw [← Ideal.under_under (A := 𝓞 k) (B := 𝓞 ↥K) W'.asIdeal, ← primeUnder_asIdeal, hW'u]
-      rw [h1, h2]
+    obtain ⟨⟨W', hW'u, hW'st⟩, ⟨q₀, hq₀d, hq₀⟩, hconj⟩ := hz4 v ⟨q, q.isLt, hq⟩
+    refine Or.inr ⟨?_, ⟨⟨q₀, hq₀d⟩, fun q hqne => hq₀ q q.isLt fun hcon => hqne (Fin.ext hcon)⟩,
+      fun σ hσ q => hconj σ hσ q q.isLt⟩
+    intro P hPp hPbot hPu
+    haveI := hPp
+    refine stabilizer_le_fixingSubgroup_of_stabilizer_eq_bot hW'st hPbot ?_
+    have h1 : Ideal.under (𝓞 k) P = Ideal.under (𝓞 k) v.asIdeal := by
+      rw [← hPu, Ideal.under_under]
+    have h2 : Ideal.under (𝓞 k) W'.asIdeal = Ideal.under (𝓞 k) v.asIdeal := by
+      rw [← Ideal.under_under (A := 𝓞 k) (B := 𝓞 ↥K) W'.asIdeal, ← primeUnder_asIdeal, hW'u]
+    rw [h1, h2]
 
 end Pairing
 

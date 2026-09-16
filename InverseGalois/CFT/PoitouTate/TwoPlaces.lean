@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Brauer.NegOnePow
 import InverseGalois.CFT.PoitouTate.ConjugatePlace
 import InverseGalois.CFT.PoitouTate.RecursionClose
 
@@ -61,13 +62,14 @@ variable {k A K : Type} [Field k] [NumberField k] [Field A] [Algebra k A] [Norma
 places.**  The unit realises the square of the prescribed behaviour on the fixed set and has
 trivial class at every nontrivial conjugate of either place; it is the product of the two units
 attached to the two stages of the recursion which the pigeonhole principle makes agree. -/
-theorem exists_two_places_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
+theorem exists_two_places_sUnit_prescribed (hp : p.Prime)
     {ζ : K} (hζ : IsPrimitiveRoot ζ p)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
     {Tr T S₀ : Finset (HeightOneSpectrum (𝓞 K))}
     (hTstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ T → σ • v ∈ T)
     (hTrT : Tr ⊆ T)
     (hTrstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ Tr → σ • v ∈ Tr)
+    (hnegTr : ∀ u ∈ Tr, IsNegOnePow (u.adicCompletion K) p)
     (hTS : T ⊆ S₀)
     (hSstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ S₀ → σ • v ∈ S₀)
     (hSsplit : ∀ v ∈ S₀, v ∉ T → ∃ w : HeightOneSpectrum (𝓞 ↥Ω),
@@ -78,9 +80,10 @@ theorem exists_two_places_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
       ∃ a : Kˣ, ∀ v ∉ (S₀ : Set (HeightOneSpectrum (𝓞 K))),
         Rigidity.RET.ord K v (a : K) = m v)
     {g : Kˣ} (hg : g ∈ sUnits K (S₀ : Set (HeightOneSpectrum (𝓞 K))))
+    (hginf : ∀ w : InfinitePlace K, infClassHom w p g = 1)
     (hgunr : ∀ v ∈ T, v ∉ Tr → localClassHom v p g ∈ localUnramified v p)
-    (hgfree : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
-      localClassHom (σ • v) p g = 1 ∨ localClassHom v p g = 1)
+    (hgline : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
+      OnOneLineGal (fun w => localClassHom w p g) σ v)
     (hgp : ∀ v ∈ T, Pc v ∣ p → localClassHom v p g = 1) :
     ∃ Q R : HeightOneSpectrum (𝓞 K), Q ∉ T ∧ R ∉ T ∧
       (∃ w : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) w = Q ∧
@@ -90,6 +93,7 @@ theorem exists_two_places_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
       (∀ σ : Gal(K/k), Q ≠ σ • R) ∧
       stabilizer Gal(K/k) Q = ⊥ ∧ stabilizer Gal(K/k) R = ⊥ ∧
       ∃ z : Kˣ, (∀ v ∈ T, localClassHom v p z = localClassHom v p (g ^ 2)) ∧
+        (∀ w : InfinitePlace K, infClassHom w p z = 1) ∧
         (∀ v : HeightOneSpectrum (𝓞 K), v ∉ Tr → v ≠ Q → v ≠ R → (p : ℤ) ∣ placeValue v z) ∧
         ¬ (p : ℤ) ∣ placeValue Q z ∧ ¬ (p : ℤ) ∣ placeValue R z ∧
         (∀ σ : Gal(K/k), σ ≠ 1 → localClassHom (σ • Q) p z = 1) ∧
@@ -97,22 +101,22 @@ theorem exists_two_places_sUnit_prescribed (hp : p.Prime) (hodd : 2 < p)
   classical
   haveI : IsGalois k ↥Ω := ⟨⟩
   refine exists_prescribed_two_places (Spl := fun v => ∃ w : HeightOneSpectrum (𝓞 ↥Ω),
-    primeUnder (𝓞 K) w = v ∧ stabilizer Gal(↥Ω/k) w = ⊥) hp (by omega) hres hζ ?_ hTstable hTrT
-    hTrstable hTS hSstable hSsplit hpT hgunr hgfree hgp ?_
+    primeUnder (𝓞 K) w = v ∧ stabilizer Gal(↥Ω/k) w = ⊥) hp hres hζ ?_ hTstable hTrT
+    hTrstable hnegTr hTS hSstable hSsplit hpT hgunr hgline hgp ?_
   · rintro σ v ⟨w, rfl, hw⟩
     exact exists_primeUnder_eq_smul_stabilizer_eq_bot (K := K) hw σ
   · intro S hSS _ c hcunr hc hsplit
-    obtain ⟨V, -, hVstab, -, hVnew, z, -, hzS, hzunr, hzram⟩ :=
-      exists_place_sUnit_prescribed (Ω := Ω) hp hodd hζ hres
+    obtain ⟨V, -, hVstab, -, hVnew, z, -, hzinf, hzS, hzunr, hzram⟩ :=
+      exists_place_sUnit_prescribed (Ω := Ω) hp hζ hres
         (Finset.image (primeUnder (𝓞 k)) S) (hTS.trans hSS)
         (fun v hv => Finset.mem_image_of_mem _ hv)
         (fun v hv => hSS (hTS (hpT v hv)))
         (fun m hm => by
           obtain ⟨a, ha⟩ := hrepr m hm
           exact ⟨a, fun v hv => ha v fun hvT => hv (Finset.mem_coe.2 (hSS (Finset.mem_coe.1 hvT)))⟩)
-        hcunr (sUnits_mono (Finset.coe_subset.2 hSS) hg) hc hsplit
+        hcunr (sUnits_mono (Finset.coe_subset.2 hSS) hg) hginf hc hsplit
     exact ⟨primeUnder (𝓞 K) V, hVnew, ⟨V, rfl, hVstab⟩,
-      stabilizer_primeUnder_eq_bot (K := K) hVstab, z, hzS, hzunr, hzram⟩
+      stabilizer_primeUnder_eq_bot (K := K) hVstab, z, hzS, hzinf, hzunr, hzram⟩
 
 /-- **Two completely split places and a unit realising a prescribed local behaviour exactly.**  The
 square in the previous statement costs nothing for an odd exponent: halving the prescription is
@@ -135,8 +139,8 @@ theorem exists_two_places_sUnit_class_eq (hp : p.Prime) (hodd : 2 < p)
         Rigidity.RET.ord K v (a : K) = m v)
     {y : Kˣ} (hy : y ∈ sUnits K (S₀ : Set (HeightOneSpectrum (𝓞 K))))
     (hyunr : ∀ v ∈ T, v ∉ Tr → localClassHom v p y ∈ localUnramified v p)
-    (hyfree : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
-      localClassHom (σ • v) p y = 1 ∨ localClassHom v p y = 1)
+    (hyline : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
+      OnOneLineGal (fun w => localClassHom w p y) σ v)
     (hyp : ∀ v ∈ T, Pc v ∣ p → localClassHom v p y = 1) :
     ∃ Q R : HeightOneSpectrum (𝓞 K), Q ∉ T ∧ R ∉ T ∧
       (∃ w : HeightOneSpectrum (𝓞 ↥Ω), primeUnder (𝓞 K) w = Q ∧
@@ -158,17 +162,16 @@ theorem exists_two_places_sUnit_class_eq (hp : p.Prime) (hodd : 2 < p)
     rw [← pow_mul, hsq, pow_succ, _root_.map_mul, _root_.map_pow,
       pow_eq_one_of_quotient_range_powMonoidHom p (localClassHom v p y)]
     exact one_mul (localClassHom v p y)
-  have hfree : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
-      localClassHom (σ • v) p (y ^ ((p + 1) / 2)) = 1 ∨
-        localClassHom v p (y ^ ((p + 1) / 2)) = 1 := by
-    intro σ hσ v hv
-    rcases hyfree σ hσ v hv with h | h
-    · exact Or.inl (by rw [_root_.map_pow, h, one_pow])
-    · exact Or.inr (by rw [_root_.map_pow, h, one_pow])
-  obtain ⟨Q, R, hQT, hRT, hQspl, hRspl, hQR, hQstab, hRstab, z, hzT, hzunr, hzQ, hzR, hzQc,
-    hzRc⟩ := exists_two_places_sUnit_prescribed (Ω := Ω) hp hodd hζ hres hTstable hTrT hTrstable
+  have hline : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ v ∈ Tr,
+      OnOneLineGal (fun w => localClassHom w p (y ^ ((p + 1) / 2))) σ v := fun σ hσ v hv => by
+    simpa only [_root_.map_pow] using (hyline σ hσ v hv).pow ((p + 1) / 2)
+  have hodd' : Odd p := hp.odd_of_ne_two (by omega)
+  obtain ⟨Q, R, hQT, hRT, hQspl, hRspl, hQR, hQstab, hRstab, z, hzT, -, hzunr, hzQ, hzR, hzQc,
+    hzRc⟩ := exists_two_places_sUnit_prescribed (Ω := Ω) hp hζ hres hTstable hTrT hTrstable
+      (fun u _ => (isNegOnePow_of_odd hodd').map (algebraMap K (u.adicCompletion K)))
       hTS hSstable hSsplit hpT hrepr (pow_mem hy ((p + 1) / 2))
-      (fun v hv hvr => by rw [_root_.map_pow]; exact pow_mem (hyunr v hv hvr) _) hfree
+      (fun w => infClassHom_eq_one_of_isNegOnePow hp (isNegOnePow_of_odd hodd') hζ w _)
+      (fun v hv hvr => by rw [_root_.map_pow]; exact pow_mem (hyunr v hv hvr) _) hline
       (fun v hv hv2 => by rw [_root_.map_pow, hyp v hv hv2, one_pow])
   exact ⟨Q, R, hQT, hRT, hQspl, hRspl, hQR, hQstab, hRstab, z,
     fun v hv => (hzT v hv).trans (hkey v), hzunr, hzQ, hzR, hzQc, hzRc⟩

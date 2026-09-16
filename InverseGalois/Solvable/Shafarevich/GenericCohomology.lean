@@ -30,6 +30,8 @@ counting the values of a cocycle on the smaller group.
   a surjective shrinking homomorphism**, provided the number of blocks is large enough.
 * `InverseGalois.Shafarevich.exists_operatorHom_res_cohomology_eq_zero` — the same, stated with the
   rank chosen in advance of the classes.
+* `InverseGalois.Shafarevich.exists_operatorHom_res_cohomology_eq_zero_of_finrank_le` — the same
+  again, with the fixed representation chosen in advance only up to its dimension.
 
 ## Tags
 
@@ -101,6 +103,35 @@ theorem exists_operatorHom_res_cohomology_eq_zero {ℓ : ℕ} [Fact ℓ.Prime] (
       Module.finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j ⊗[ZMod ℓ] T)) < r := by
     rw [hrdef]; exact Nat.lt_succ_self _
   refine ⟨r * n, fun x => ?_⟩
+  obtain ⟨a, hsurj, ha⟩ := exists_genericShrink_res_cohomology_eq_zero U r n S hS f T hr x
+  exact ⟨genericShrink U r n S a, isOperatorHom_genericShrink U r n S a, hsurj, ha⟩
+
+/-- **Proposition 6 with coefficients, the coefficients named last.**  Only the dimension of the
+fixed representation enters the count, so a bound on that dimension is all that has to be known in
+advance: for a large enough rank, finitely many cohomology classes of a finite group acting through
+the operator group, in any single degree and with coefficients in a layer tensored with *any* fixed
+representation of dimension at most the bound, are annihilated all at once by a surjective
+equivariant homomorphism onto the intended rank. -/
+theorem exists_operatorHom_res_cohomology_eq_zero_of_finrank_le {ℓ : ℕ} [Fact ℓ.Prime]
+    (hS : IsPGroup ℓ S) {j t c d : ℕ} {H : Type} [Group H] [Finite H] (f : H →* U) :
+    ∃ m : ℕ, ∀ (T : Rep (ZMod ℓ) U) [Module.Finite (ZMod ℓ) T],
+      Module.finrank (ZMod ℓ) T ≤ d →
+      ∀ x : Fin t → groupCohomology ((Action.res _ f).obj (genericLayerTensor U m S ℓ j T)) c,
+      ∃ (α : Generic U m S →* Generic U n S) (hα : IsOperatorHom α), Function.Surjective α ∧
+        ∀ ν, groupCohomology.map (MonoidHom.id H)
+          ((Action.res _ f).map (operatorTensorRep hα ℓ j T)) c (x ν) = 0 := by
+  set r : ℕ := (j + 1) * (t * Nat.card H ^ c *
+    (Module.finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j) * d)) + 1 with hrdef
+  have hrlt : (j + 1) * (t * Nat.card H ^ c *
+      (Module.finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j) * d)) < r := by
+    rw [hrdef]; exact Nat.lt_succ_self _
+  refine ⟨r * n, ?_⟩
+  intro T _ hT x
+  have hr : (j + 1) * (t * Nat.card H ^ c *
+      Module.finrank (ZMod ℓ) (Layer ℓ (Generic U n S) j ⊗[ZMod ℓ] T)) < r := by
+    refine lt_of_le_of_lt (Nat.mul_le_mul (le_refl _) (Nat.mul_le_mul (le_refl _) ?_)) hrlt
+    rw [Module.finrank_tensorProduct]
+    exact Nat.mul_le_mul (le_refl _) hT
   obtain ⟨a, hsurj, ha⟩ := exists_genericShrink_res_cohomology_eq_zero U r n S hS f T hr x
   exact ⟨genericShrink U r n S a, isOperatorHom_genericShrink U r n S a, hsurj, ha⟩
 

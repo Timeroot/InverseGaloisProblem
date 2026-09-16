@@ -73,8 +73,8 @@ theorem exists_base_norm_class_of_isTwoPlaceFamily (hp : p.Prime) {ζ : K}
     (hTram : ∀ v : HeightOneSpectrum (𝓞 K), ramIdx (𝓞 k) v ≠ 1 → v ∈ T)
     {c : ℕ → (v : HeightOneSpectrum (𝓞 K)) → localClasses v p} {g : ℕ → Kˣ}
     (hc : ∀ (i : ℕ), ∀ v ∈ T, c i v = localClassHom v p (g i))
-    {d : ℕ} {S : Finset (HeightOneSpectrum (𝓞 K))} {Q R : ℕ → HeightOneSpectrum (𝓞 K)}
-    {z : ℕ → Kˣ} (h : IsTwoPlaceFamily Ω p Tr Tn c d S Q R z) :
+    {d : ℕ} {S : Finset (HeightOneSpectrum (𝓞 K))} {Q R E : ℕ → HeightOneSpectrum (𝓞 K)}
+    {z : ℕ → Kˣ} (h : IsTwoPlaceFamily Ω p Tr Tn c d S Q R E z) :
     (∀ i < d, ∀ v ∈ T,
         localClassHom (primeUnder (𝓞 k) v) p (Units.map (Algebra.norm k : K →* k) (z i))
           = localClassHom (primeUnder (𝓞 k) v) p
@@ -90,25 +90,31 @@ theorem exists_base_norm_class_of_isTwoPlaceFamily (hp : p.Prime) {ζ : K}
   refine ⟨fun i hi v hv => ?_, fun q hq => ?_⟩
   · refine localClassHom_norm_eq_of_forall_eq k v hp.ne_zero (z i) (g i) fun σ => ?_
     rw [h.prescribed i hi (σ • v) (hTnst σ v (hT hv)), hc i (σ • v) (hTstable σ v hv)]
-  by_cases hA : ∃ j < d, primeUnder (𝓞 k) (Q j) = q ∨ primeUnder (𝓞 k) (R j) = q
+  by_cases hA : ∃ j < d, primeUnder (𝓞 k) (Q j) = q ∨ primeUnder (𝓞 k) (R j) = q ∨
+      primeUnder (𝓞 k) (E j) = q
   · obtain ⟨j, hj, hjq⟩ := hA
     refine Or.inr ⟨?_, ?_⟩
-    · rcases hjq with hjq | hjq
+    · rcases hjq with hjq | hjq | hjq
       · exact hjq ▸ exists_isPrimitiveRoot_adicCompletion_of_stabilizer_eq_bot k (Q j) hζ
           (h.stabQ j hj)
       · exact hjq ▸ exists_isPrimitiveRoot_adicCompletion_of_stabilizer_eq_bot k (R j) hζ
           (h.stabR j hj)
+      · exact hjq ▸ exists_isPrimitiveRoot_adicCompletion_of_stabilizer_eq_bot k (E j) hζ
+          (h.stabE j hj)
     · refine ⟨localClassHom q p (Units.map (Algebra.norm k : K →* k) (z j)), fun i hi => ?_⟩
       rcases eq_or_ne i j with rfl | hij
       · exact Subgroup.mem_zpowers _
       · have hone : localClassHom q p (Units.map (Algebra.norm k : K →* k) (z i)) = 1 := by
-          rcases hjq with hjq | hjq
+          rcases hjq with hjq | hjq | hjq
           · rw [← hjq]
             exact localClassHom_norm_eq_one k (Q j) hp.ne_zero (z i)
               fun σ => h.crossQ i hi j hj hij σ
           · rw [← hjq]
             exact localClassHom_norm_eq_one k (R j) hp.ne_zero (z i)
               fun σ => h.crossR i hi j hj hij σ
+          · rw [← hjq]
+            exact localClassHom_norm_eq_one k (E j) hp.ne_zero (z i)
+              fun σ => h.crossE i hi j hj hij σ
         rw [hone]
         exact one_mem _
   · push_neg at hA
@@ -118,7 +124,9 @@ theorem exists_base_norm_class_of_isTwoPlaceFamily (hp : p.Prime) {ζ : K}
       (not_not.1 fun hcon => hPT (hTram P hcon)) (z i) fun σ => ?_
     have hσP : σ • P ∉ Tr := fun hcon => hPT (by simpa using hTstable σ⁻¹ _ (hTr hcon))
     refine (localClassHom_mem_localUnramified_iff (σ • P) (z i)).2
-      (h.unram i hi (σ • P) hσP (fun hcon => (hA i hi).1 ?_) fun hcon => (hA i hi).2 ?_)
+      (h.unram i hi (σ • P) hσP (fun hcon => (hA i hi).1 ?_) (fun hcon => (hA i hi).2.1 ?_)
+        fun hcon => (hA i hi).2.2 ?_)
+    · rw [← hcon, primeUnder_smul_eq]
     · rw [← hcon, primeUnder_smul_eq]
     · rw [← hcon, primeUnder_smul_eq]
 
@@ -138,24 +146,26 @@ variable {k A K : Type} [Field k] [NumberField k] [Field A] [Algebra k A] [Norma
 with values in a module of that many coordinates, cyclically at every place outside the prescribed
 part.**  The family of units of the upper field is carried down coordinate by coordinate by the
 norm. -/
-theorem exists_base_family_norm_class_eq (hp : p.Prime) (hodd : 2 < p) {ζ : K}
+theorem exists_base_family_norm_class_eq (hp : p.Prime) {ζ : K}
     (hζ : IsPrimitiveRoot ζ p)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
-    {T Tn : Finset (HeightOneSpectrum (𝓞 K))} (hT : T ⊆ Tn)
+    {B T Tn : Finset (HeightOneSpectrum (𝓞 K))} (hBT : B ⊆ T) (hT : T ⊆ Tn)
+    (hBstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ B → σ • v ∈ B)
+    (hBwild : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → v ∈ B)
+    (hBram : ∀ v : HeightOneSpectrum (𝓞 K), ramIdx (𝓞 k) v ≠ 1 → v ∈ B)
     (hTstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ T → σ • v ∈ T)
     (hTnst : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ Tn → σ • v ∈ Tn)
-    (hpTn : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → v ∈ Tn)
-    (hTram : ∀ v : HeightOneSpectrum (𝓞 K), ramIdx (𝓞 k) v ≠ 1 → v ∈ T)
     (hrepr : ∀ m : HeightOneSpectrum (𝓞 K) → ℤ,
       (∀ᶠ v : HeightOneSpectrum (𝓞 K) in Filter.cofinite, m v = 0) →
       ∃ a : Kˣ, ∀ v ∉ (Tn : Set (HeightOneSpectrum (𝓞 K))),
         Rigidity.RET.ord K v (a : K) = m v)
     {c : ℕ → (v : HeightOneSpectrum (𝓞 K)) → localClasses v p}
     (hcunr : ∀ (i : ℕ), ∀ v ∈ Tn, c i v ∈ localUnramified v p)
+    (hcB : ∀ (i : ℕ), ∀ v ∈ B, c i v = 1)
     {g : ℕ → Kˣ} (hg : ∀ i : ℕ, g i ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))))
+    (hginf : ∀ (i : ℕ) (u : InfinitePlace K), infClassHom u p (g i) = 1)
     (hc : ∀ (i : ℕ), ∀ v ∈ T, c i v = localClassHom v p (g i))
     (hcT : ∀ (i : ℕ), ∀ v ∈ Tn, v ∉ T → c i v = 1)
-    (hcn : ∀ (i : ℕ), ∀ v ∈ T, FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → c i v = 1)
     (hsplit : ∀ v ∈ Tn, v ∉ T → ∃ W : HeightOneSpectrum (𝓞 ↥Ω),
       primeUnder (𝓞 K) W = v ∧ stabilizer Gal(↥Ω/K) W = ⊥)
     (hram : ∀ v ∉ Tn, ∃ W : HeightOneSpectrum (𝓞 ↥Ω),
@@ -171,12 +181,12 @@ theorem exists_base_family_norm_class_eq (hp : p.Prime) (hodd : 2 < p) {ζ : K}
             ∃ u : localClasses q p, ∀ i < d,
               localClassHom q p (x i) ∈ Subgroup.zpowers u) := by
   classical
-  obtain ⟨S, Q, R, z, hfam⟩ :=
-    exists_isTwoPlaceFamily (Ω := Ω) hp hodd hζ hres hT hTnst hpTn hrepr hcunr hg hc hcT hcn
-      hsplit hram d
+  obtain ⟨S, Q, R, E, z, hfam⟩ :=
+    exists_isTwoPlaceFamily (Ω := Ω) hp hζ hres hBT hT hBstable hBwild hBram hTnst hrepr hcunr
+      hcB hg hginf hc hcT hsplit hram d
   obtain ⟨hxT, hxq⟩ :=
     exists_base_norm_class_of_isTwoPlaceFamily (Ω := Ω) hp hζ (Finset.empty_subset T) hT hTstable
-      hTnst hTram hc hfam
+      hTnst (fun v hv => hBT (hBram v hv)) hc hfam
   exact ⟨fun i => Units.map (Algebra.norm k : K →* k) (z i), fun i => ⟨z i, rfl⟩, hxT, hxq⟩
 
 end Base

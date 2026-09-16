@@ -95,6 +95,11 @@ given one carried down along the shrinking the prescription spends, so the field
 are asked to split completely in sits at the number of letters asked for however many letters the
 data is read at.
 
+The prescribed homomorphisms are asked to be trivial along the inertia subgroup of their prime,
+which is what makes the local classes naming them unramified there; it costs nothing, the lift
+being corrected already carrying the whole of inertia on the generator the correction is normalised
+at.
+
 The prescribed homomorphisms are asked to have cyclic image, which is what the reciprocity law
 leaves room for.  The classes in the completions which name the coordinates of a prescription are
 otherwise unrelated to one another, and a family of units carrying an unrelated family of classes at
@@ -137,6 +142,7 @@ def HasKernelPrescription : Prop :=
       (∀ μ, IsSmooth₁ ((a μ : ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)) :
         ↥(A μ) → ↥(layerSub ℓ (Generic U N S) j))) →
       (∀ μ, ∃ x₀ : ↥(A μ), ∀ x : ↥(A μ), a μ x ∈ Subgroup.zpowers (a μ x₀)) →
+      (∀ (μ : ι) (x : ↥(A μ)), (x : Gal(Ω/k)) ∈ Ideal.inertia Gal(Ω/k) (Q μ) → a μ x = 1) →
       (∀ (μ : ι) (ν : Fin t) (ρ : Gal(Ω/k)),
         ∃ y ∈ stabilizer Gal(Ω/k) (Q μ), ρ * y * ρ⁻¹ ∉ D ν) →
         ∃ (α : Generic U N S →* Generic U n S) (hα : IsOperatorHom α), Function.Surjective α ∧
@@ -195,10 +201,10 @@ theorem hasConfinedPrescription_of_hasKernelPrescription
   obtain ⟨N, hpres⟩ := hpres
   refine ⟨N, ?_⟩
   intro hφopen F ι _ Q A a hFsurj hFsm hFright hQp hQbot hQorb hQker hAstab hAker hAcase hasm
-    hacyc havoid
+    hacyc hainert havoid
   obtain ⟨α, hα, hαsurj, u, husm, huD, hua, huorb, huram⟩ :=
     hpres hφopen F ι Q A a hFsurj hFsm hFright hQp hQbot hQorb hQker hAstab hAker hAcase hasm
-      hacyc havoid
+      hacyc hainert havoid
   haveI : Finite (Gal(Ω/k) ⧸ φ.ker) :=
     Finite.of_injective _ (QuotientGroup.kerLift_injective φ)
   haveI : Fintype (Gal(Ω/k) ⧸ φ.ker) := Fintype.ofFinite _

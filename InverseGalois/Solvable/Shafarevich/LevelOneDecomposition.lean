@@ -24,7 +24,7 @@ above each of its members a prime of the integers of the whole extension is chos
 stabilisers of those primes are the family.  Three things are then true of the family at once.
 Each of its members, cut down by the kernel of the base realization, has a finite elementary
 quotient, because that is what local class field theory says of a decomposition subgroup.  The
-first rung of the ladder has its character over it, because the places the two-place construction
+first rung of the ladder has its character over it, because the places the split place construction
 spends are places of the set the family is indexed by, so the character the construction produces
 dies on every member.  And away from the conjugates of the family the base realization kills
 inertia: a prime whose place of the level is not in the set is a prime whose place is unramified,
@@ -42,7 +42,7 @@ the chosen primes.
 
 ## Tags
 
-Shafarevich, embedding problem, decomposition subgroup, Frattini layer, two-place construction
+Shafarevich, embedding problem, decomposition subgroup, Frattini layer, split place construction
 -/
 
 namespace InverseGalois.Shafarevich
@@ -71,7 +71,7 @@ first rung of the ladder, and outside whose conjugates the base realization kill
 The set of places the family is indexed by carries the places above the exponent whatever is
 prescribed, so every prime of the whole extension carrying the exponent is carried onto a member of
 the family by an automorphism over the base. -/
-theorem exists_decomposition_family (hℓ : ℓ.Prime) (hodd : 2 < ℓ)
+theorem exists_decomposition_family (hℓ : ℓ.Prime)
     {φ : Gal(Ω/k) →* U} (hsurj : Function.Surjective φ) (hsm : IsSmoothHom φ)
     (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K]
     (hKker : K.fixingSubgroup = φ.ker) {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ)
@@ -121,7 +121,7 @@ theorem exists_decomposition_family (hℓ : ℓ.Prime) (hodd : 2 < ℓ)
   · haveI := hPfp (Tn.equivFin.symm ν : HeightOneSpectrum (𝓞 ↥K))
     exact hasFiniteElementaryQuotient_stabilizer_inf (hPfbot _)
       (isOpenNormal_ker_of_isSmoothHom hsm)
-  · refine hasLevelOneCharacter_of_stable hℓ hodd n hsurj _ K hKker hζ hmu hTnst hpTn hrepr ?_
+  · refine hasLevelOneCharacter_of_stable hℓ n hsurj _ K hKker hζ hmu hTnst hpTn hrepr ?_
     rintro E ⟨ν, rfl⟩
     exact Or.inl ⟨Pf (Tn.equivFin.symm ν), hPfp _,
       ⟨((Tn.equivFin.symm ν : { x // x ∈ Tn }) : HeightOneSpectrum (𝓞 ↥K)),

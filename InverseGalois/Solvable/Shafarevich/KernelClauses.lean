@@ -212,7 +212,8 @@ attribute [local instance] zmodTrivialAction
 
 variable (hKker : K.fixingSubgroup = φ.ker)
   (hkd : IsKummerData ↥K Ω (Multiplicative (ZMod ℓ)) (zmodRootHom hζ) ℓ)
-  {M : Type*} [CommGroup M] {d : ℕ} (b : Fin d → M) (hb : ∀ t, b t ^ ℓ = 1) (z : Fin d → (↥K)ˣ)
+  {M : Type*} [CommGroup M] {T : Type*} [Fintype T] (b : T → M) (hb : ∀ t, b t ^ ℓ = 1)
+  (z : T → (↥K)ˣ)
 
 /-- **Where the assembled homomorphism is nontrivial on inertia, some unit of the family has order
 not divisible by the exponent at the place below.**  Above the exponent the units of the family are
@@ -220,7 +221,7 @@ local powers, so the homomorphism dies on the whole decomposition subgroup there
 family all of whose orders are divisible by the exponent makes the homomorphism die on inertia. -/
 theorem exists_not_dvd_placeValue_of_kummerKernelHom_ne_one (hℓ : ℓ.Prime) {P : Ideal (𝓞 Ω)}
     [P.IsPrime] (hP : P ≠ ⊥)
-    (hpz : ∀ (t : Fin d) (w : HeightOneSpectrum (𝓞 ↥K)), (ℓ : 𝓞 ↥K) ∈ w.asIdeal →
+    (hpz : ∀ (t : T) (w : HeightOneSpectrum (𝓞 ↥K)), (ℓ : 𝓞 ↥K) ∈ w.asIdeal →
       localClassHom w ℓ (z t) = 1)
     {y : ↥φ.ker} (hy : (y : Gal(Ω/k)) ∈ Ideal.inertia Gal(Ω/k) P)
     (hne : kummerKernelHom hKker hkd b hb z y ≠ 1) :

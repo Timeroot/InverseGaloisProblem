@@ -41,7 +41,7 @@ the lift carried across the surjection.
   a comparison map are orthogonal to the units of a level as soon as the residues against the
   classes named upstairs are killed by the matrix of that map.**
 * `Shafarevich.namedOrthogonalEP` — **the orthogonality of the naming, for every prime.**
-* `Shafarevich.kernelPrescriptionEP` — **the sharp prescription made one field up, for every odd
+* `Shafarevich.kernelPrescriptionEP` — **the sharp prescription made one field up, for every
   prime, with nothing asked of the arithmetic.**
 * `Shafarevich.genericLevelStepEPRoots_of_flatPrescriptionEP` — **the step of the ladder, in
   exchange for the flattening alone.**
@@ -230,7 +230,7 @@ theorem isNamedOrthogonal_of_forall_layerCoord {ℓ : ℕ} [Fact ℓ.Prime] [NeZ
     obtain ⟨m, hm⟩ := Subgroup.mem_zpowers_iff.1 (huN μ t)
     exact ⟨uN μ ^ m, by rw [_root_.map_zpow, hm]⟩
   choose zN hzN using hzNex
-  intro Tn _ q u _ hpow
+  intro Tn _ q u hpow
   refine localSymbolPiPairing_eq_one_of_sum_namedSymbolResidue_eq_zero hres hζ
     (fun μ => placeUnder K (Q μ) (hQbot μ)) (fun t μ => cN μ t)
     (fun t => layerCoord ℓ P₂ j (layerSubMap ℓ α j (layerBasis ℓ P₁ j t)) q)
@@ -319,6 +319,8 @@ theorem namedOrthogonalEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : NamedOrtho
   have hex : ∀ μ : ι, ∃ (u₀ : (↥K)ˣ) (cμ : Fin (layerDim ℓ (Generic U N S) j) →
       localClasses (placeUnder K (Q μ) (hQbot μ)) ℓ),
       (∀ t, cμ t ∈ Subgroup.zpowers (localClassHom (placeUnder K (Q μ) (hQbot μ)) ℓ u₀)) ∧
+      ((∀ x : ↥(A μ), (x : Gal(Ω/k)) ∈ Ideal.inertia Gal(Ω/k) (Q μ) → a μ x = 1) →
+        ∀ t, cμ t ∈ localUnramified (placeUnder K (Q μ) (hQbot μ)) ℓ) ∧
       ∀ z : Fin (layerDim ℓ (Generic U N S) j) → (↥K)ˣ,
         (∀ t, localClassHom (placeUnder K (Q μ) (hQbot μ)) ℓ (z t) = cμ t) →
           ∀ (x : ↥(A μ)) (hx : (x : Gal(Ω/k)) ∈ φ.ker),
@@ -329,7 +331,7 @@ theorem namedOrthogonalEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : NamedOrtho
       (χ := fun t e => layerCoord ℓ (Generic U N S) j e t) prod_layerBasis_pow_layerCoord
       (fun t e e' => layerCoord_mul e e' t) (hQbot μ) rfl (Or.inl (hAcase μ))
       (a μ) (hasm μ) (hacyc μ)
-  choose uN cN hcNline hcN using hex
+  choose uN cN hcNline _hcNunr hcN using hex
   -- the observation: the residues of the symbol against the classes named upstairs
   have hObsAdd : ∀ t : Fin (layerDim ℓ (Generic U N S) j), ∀ v v' : (↥K)ˣ,
       namedSymbolResidue hres hζ (fun μ => placeUnder K (Q μ) (hQbot μ))
@@ -524,15 +526,15 @@ theorem namedOrthogonalEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] : NamedOrtho
   rw [hObs]
   exact mul_comm _ _
 
-/-- **The sharp prescription made one field up, for every odd prime, with nothing asked of the
+/-- **The sharp prescription made one field up, for every prime, with nothing asked of the
 arithmetic.** -/
-theorem kernelPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] (hodd : 2 < ℓ) :
+theorem kernelPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ] :
     KernelPrescriptionEP ℓ :=
-  kernelPrescriptionEP_of_namedOrthogonalEP ℓ hodd (namedOrthogonalEP ℓ)
+  kernelPrescriptionEP_of_namedOrthogonalEP ℓ (namedOrthogonalEP ℓ)
 
 /-- **The step of the ladder, in exchange for the flattening alone.** -/
 theorem genericLevelStepEPRoots_of_flatPrescriptionEP (ℓ : ℕ) [Fact ℓ.Prime] [NeZero ℓ]
-    (hodd : 2 < ℓ) (hflat : FlatPrescriptionEP ℓ) : GenericLevelStepEPRoots ℓ :=
-  genericLevelStepEPRoots_of_namedOrthogonalEP ℓ hodd hflat (namedOrthogonalEP ℓ)
+    (hflat : FlatPrescriptionEP ℓ) : GenericLevelStepEPRoots ℓ :=
+  genericLevelStepEPRoots_of_namedOrthogonalEP ℓ hflat (namedOrthogonalEP ℓ)
 
 end Shafarevich

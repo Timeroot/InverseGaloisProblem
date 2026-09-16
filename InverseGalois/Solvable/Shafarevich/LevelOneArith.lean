@@ -17,9 +17,9 @@ The first rung of the ladder asks for a character of the kernel of the base map 
 first layer, jointly onto with its conjugates, killed on an open normal subgroup and on the
 prescribed family of subgroups, and ramifying only where the rung permits.  What the arithmetic
 supplies is a family of units of a finite level, one for each element of the layer, each of which
-is a local power everywhere except at two places of its own, is a local power at every conjugate of
-those two places, and is a local power at both places belonging to any other member of the family.
-This file turns such a family into the character the rung asks for.
+is a local power everywhere except at a few places of its own, is a local power at every proper
+conjugate of those places, and is a local power at every place belonging to any other member of the
+family.  This file turns such a family into the character the rung asks for.
 
 The dictionary is Kummer theory over the level.  Adjoining an `ℓ`-th root of a unit to the algebraic
 closure gives a character of the automorphisms over the level with values in the cyclic group of
@@ -29,7 +29,7 @@ the whole decomposition subgroup at a prime where the unit is a local power.  Re
 units as a family of characters and multiplying the corresponding powers of the layer produces the
 character of the rung, and each of the three clauses becomes a statement about one place at a time.
 
-Generation is where the two places of each unit are used.  A unit that is not a local power at the
+Generation is where the places of each unit are used.  A unit that is not a local power at the
 first of its places has a nonvanishing character somewhere in the decomposition subgroup there, and
 a power of that automorphism realises the value one; every other unit is a local power at the same
 place, so all the other coordinates vanish there, and the corresponding element of the layer is
@@ -37,7 +37,7 @@ obtained on the nose.  A conjugate the base map moves carries the place to a dif
 every coordinate is a local power, so all the conjugates the generation clause has to discard do in
 fact vanish.  Ramification runs the same argument backwards: a prime where the character survives is
 a prime where some coordinate survives on inertia, so the unit of that coordinate is not a local
-power there and the place below it must be one of the two attached to it — whereupon the other
+power there and the place below it must be one of those attached to it — whereupon the other
 coordinates and the other cosets vanish for the same reason as before.
 
 ## Main definitions
@@ -132,19 +132,22 @@ theorem hasLevelOneCharacter_of_places (hℓ : ℓ.Prime) (n : ℕ) {φ : Gal(Ω
     (K : IntermediateField k Ω) [FiniteDimensional k ↥K] [NumberField ↥K] [IsGalois k ↥K]
     (hKker : K.fixingSubgroup = φ.ker) {ζ : ↥K} (hζ : IsPrimitiveRoot ζ ℓ)
     (hmu : ∀ y : Ωˣ, y ^ (ℓ * ℓ) = 1 → ∀ σ ∈ φ.ker, σ • y = y)
-    (Q R : ↥(layerSub ℓ (Generic U n S) 0) → HeightOneSpectrum (𝓞 ↥K))
+    (Q R E : ↥(layerSub ℓ (Generic U n S) 0) → HeightOneSpectrum (𝓞 ↥K))
     (z : ↥(layerSub ℓ (Generic U n S) 0) → (↥K)ˣ)
     (hpz : ∀ i, ∀ w : HeightOneSpectrum (𝓞 ↥K), (ℓ : 𝓞 ↥K) ∈ w.asIdeal →
       localClassHom w ℓ (z i) = 1)
-    (hunram : ∀ i, ∀ w : HeightOneSpectrum (𝓞 ↥K), w ≠ Q i → w ≠ R i →
+    (hunram : ∀ i, ∀ w : HeightOneSpectrum (𝓞 ↥K), w ≠ Q i → w ≠ R i → w ≠ E i →
       (ℓ : ℤ) ∣ placeValue w (z i))
     (hramQ : ∀ i, ¬ (ℓ : ℤ) ∣ placeValue (Q i) (z i))
     (hconjQ : ∀ i, ∀ σ : Gal(↥K/k), σ ≠ 1 → localClassHom (σ • Q i) ℓ (z i) = 1)
     (hconjR : ∀ i, ∀ σ : Gal(↥K/k), σ ≠ 1 → localClassHom (σ • R i) ℓ (z i) = 1)
+    (hconjE : ∀ i, ∀ σ : Gal(↥K/k), σ ≠ 1 → localClassHom (σ • E i) ℓ (z i) = 1)
     (hcrossQ : ∀ i j, i ≠ j → ∀ σ : Gal(↥K/k), localClassHom (σ • Q j) ℓ (z i) = 1)
     (hcrossR : ∀ i j, i ≠ j → ∀ σ : Gal(↥K/k), localClassHom (σ • R j) ℓ (z i) = 1)
+    (hcrossE : ∀ i j, i ≠ j → ∀ σ : Gal(↥K/k), localClassHom (σ • E j) ℓ (z i) = 1)
     (hstabQ : ∀ i, stabilizer Gal(↥K/k) (Q i) = ⊥)
     (hstabR : ∀ i, stabilizer Gal(↥K/k) (R i) = ⊥)
+    (hstabE : ∀ i, stabilizer Gal(↥K/k) (E i) = ⊥)
     (hTf : ∀ D ∈ Tf, ∀ x ∈ D, φ x = 1 → ∀ (g : Gal(Ω/k)) (i) (β : Ωˣ),
       β ^ ℓ = Units.map (algebraMap ↥K Ω : ↥K →* Ω) (z i) → (g⁻¹ * x * g) • β = β) :
     HasLevelOneCharacter ℓ U S φ Tf n := by
@@ -197,9 +200,9 @@ theorem hasLevelOneCharacter_of_places (hℓ : ℓ.Prime) (n : ℕ) {φ : Gal(Ω
       MonoidHom.mem_ker.2 hy
     rw [IntermediateField.restrictNormalHom_ker, hKker] at hmem
     exact hmem
-  -- the local behaviour of the coordinates at the two places attached to a member of the family
+  -- the local behaviour of the coordinates at the places attached to a member of the family
   have hgood : ∀ (i : ↥(layerSub ℓ (Generic U n S) 0)) (w : HeightOneSpectrum (𝓞 ↥K)),
-      (w = Q i ∨ w = R i) →
+      (w = Q i ∨ w = R i ∨ w = E i) →
       (∀ σ : Gal(↥K/k), σ • w.asIdeal = w.asIdeal → σ = 1) ∧
       (∀ (σ : Gal(↥K/k)) (j), (σ ≠ 1 ∨ j ≠ i) → localClassHom (σ • w) ℓ (z j) = 1) := by
     intro i w hw
@@ -207,9 +210,10 @@ theorem hasLevelOneCharacter_of_places (hℓ : ℓ.Prime) (n : ℕ) {φ : Gal(Ω
     · intro σ hσ
       have hmem : σ ∈ stabilizer Gal(↥K/k) w :=
         HeightOneSpectrum.ext (by rw [asIdeal_smul]; exact hσ)
-      rcases hw with rfl | rfl
+      rcases hw with rfl | rfl | rfl
       · rw [hstabQ i] at hmem; exact hmem
       · rw [hstabR i] at hmem; exact hmem
+      · rw [hstabE i] at hmem; exact hmem
     · intro σ j hcase
       by_cases hji : j = i
       · subst hji
@@ -217,13 +221,15 @@ theorem hasLevelOneCharacter_of_places (hℓ : ℓ.Prime) (n : ℕ) {φ : Gal(Ω
           rcases hcase with h | h
           · exact h
           · exact absurd rfl h
-        rcases hw with rfl | rfl
+        rcases hw with rfl | rfl | rfl
         · exact hconjQ j σ hσ1
         · exact hconjR j σ hσ1
-      · rcases hw with rfl | rfl
+        · exact hconjE j σ hσ1
+      · rcases hw with rfl | rfl | rfl
         · exact hcrossQ j i hji σ
         · exact hcrossR j i hji σ
-  -- a prime of the closure above the first of the two places attached to each member
+        · exact hcrossE j i hji σ
+  -- a prime of the closure above the first of the places attached to each member
   have hPex : ∀ i : ↥(layerSub ℓ (Generic U n S) 0), ∃ P : Ideal (𝓞 Ω), ∃ _ : P.IsPrime,
       P ≠ ⊥ ∧ Ideal.under (𝓞 ↥K) P = (Q i).asIdeal := by
     intro i
@@ -357,11 +363,11 @@ theorem hasLevelOneCharacter_of_places (hℓ : ℓ.Prime) (n : ℕ) {φ : Gal(Ω
       refine hℓnotin ?_
       rw [hw₁under, Ideal.under_def, Ideal.mem_comap, map_natCast]
       exact hin
-    have hw₁mem : w₁ = Q i₀ ∨ w₁ = R i₀ := by
+    have hw₁mem : w₁ = Q i₀ ∨ w₁ = R i₀ ∨ w₁ = E i₀ := by
       by_contra hcon
       push_neg at hcon
       exact hi₀char (kummerChar_eq_zero_of_mem_inertia hkd hℓ hℓnotinΩ hw₁under
-        (hunram i₀ w₁ hcon.1 hcon.2) hτ₁)
+        (hunram i₀ w₁ hcon.1 hcon.2.1 hcon.2.2) hτ₁)
     obtain ⟨hstab₁, hloc₁⟩ := hgood i₀ w₁ hw₁mem
     have hP₀under : Ideal.under (𝓞 ↥K) P₀
         = AlgEquiv.restrictNormalHom (F := k) (K₁ := Ω) ↥K (r u₀) • w₁.asIdeal := by

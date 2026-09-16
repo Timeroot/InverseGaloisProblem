@@ -40,6 +40,8 @@ verbatim.
 
 ## Main definitions
 
+* `InverseGalois.Shafarevich.FlatKernelAnswer` — what the prescription answers with, the data it is
+  answered for being read at a given number of letters.
 * `InverseGalois.Shafarevich.HasFlatKernelPrescription` — **an equivariant smooth homomorphism into
   the layer, defined on the kernel of the base realization, can be prescribed along finitely many
   subgroups of decomposition subgroups at once, be trivial along the finite family, and ramify only
@@ -74,6 +76,30 @@ section FlatKernel
 variable (ℓ : ℕ) [Fact ℓ.Prime] (U : Type) [Group U] [Finite U] (n : ℕ) (S : Type) [Group S]
   [Finite S] (j : ℕ) {k Ω : Type*} [Field k] [NumberField k] [Field Ω] [Algebra k Ω]
   [IsGalois k Ω] [IsAlgClosed Ω] (φ : Gal(Ω/k) →* U) {t : ℕ} (D : Fin t → Subgroup Gal(Ω/k))
+
+/-- **What the flat prescription answers with**, the data it is answered for being read at a given
+number of letters.
+
+A shrinking onto the number of letters asked for is produced together with a homomorphism of the
+kernel of the base realization into the layer there: smooth, equivariant, trivial along the finite
+family, taking the prescribed values carried across the shrinking, and ramifying only at the named
+primes or where the given lift carried down kills the whole decomposition subgroup. -/
+def FlatKernelAnswer (N : ℕ) (F : Gal(Ω/k) →* GenericQuot ℓ U N S (j + 1)) (ι : Type)
+    (Q : ι → Ideal (𝓞 Ω)) (A : ι → Subgroup Gal(Ω/k))
+    (a : (μ : ι) → ↥(A μ) →* ↥(layerSub ℓ (Generic U N S) j)) : Prop :=
+  ∃ (β : Generic U N S →* Generic U n S) (hβ : IsOperatorHom β), Function.Surjective β ∧
+    ∃ u : ↥(φ.ker) →* ↥(layerSub ℓ (Generic U n S) j),
+      (∃ V : Subgroup Gal(Ω/k), IsOpenNormal V ∧
+        ∀ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ V → u y = 1) ∧
+      (∀ (g : Gal(Ω/k)) (y : ↥(φ.ker)) (hy : g * (y : Gal(Ω/k)) * g⁻¹ ∈ φ.ker),
+        u ⟨g * (y : Gal(Ω/k)) * g⁻¹, hy⟩ = φ g • u y) ∧
+      (∀ (ν : Fin t) (y : ↥(φ.ker)), (y : Gal(Ω/k)) ∈ D ν → u y = 1) ∧
+      (∀ (μ : ι) (x : ↥(A μ)) (hx : (x : Gal(Ω/k)) ∈ φ.ker),
+        u ⟨(x : Gal(Ω/k)), hx⟩ = layerSubMap ℓ β j (a μ x)) ∧
+      ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
+        (∃ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ Ideal.inertia Gal(Ω/k) P ∧ u y ≠ 1) →
+        (∃ (μ : ι) (ρ : Gal(Ω/k)), P = ρ • Q μ) ∨
+          ∀ x ∈ stabilizer Gal(Ω/k) P, layerSemidirectMap ℓ hβ (j + 1) (F x) = 1
 
 /-- **An equivariant smooth homomorphism into the layer, defined on the kernel of the base
 realization, can be prescribed along finitely many subgroups of decomposition subgroups at once, be
@@ -123,19 +149,7 @@ def HasFlatKernelPrescription : Prop :=
         a μ ⟨g * (x : Gal(Ω/k)) * g⁻¹, hx⟩ = φ g • a μ x) →
       (∀ (μ : ι) (ν : Fin t) (ρ : Gal(Ω/k)),
         ∃ y ∈ stabilizer Gal(Ω/k) (Q μ), ρ * y * ρ⁻¹ ∉ D ν) →
-        ∃ (β : Generic U N S →* Generic U n S) (hβ : IsOperatorHom β), Function.Surjective β ∧
-          ∃ u : ↥(φ.ker) →* ↥(layerSub ℓ (Generic U n S) j),
-            (∃ V : Subgroup Gal(Ω/k), IsOpenNormal V ∧
-              ∀ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ V → u y = 1) ∧
-            (∀ (g : Gal(Ω/k)) (y : ↥(φ.ker)) (hy : g * (y : Gal(Ω/k)) * g⁻¹ ∈ φ.ker),
-              u ⟨g * (y : Gal(Ω/k)) * g⁻¹, hy⟩ = φ g • u y) ∧
-            (∀ (ν : Fin t) (y : ↥(φ.ker)), (y : Gal(Ω/k)) ∈ D ν → u y = 1) ∧
-            (∀ (μ : ι) (x : ↥(A μ)) (hx : (x : Gal(Ω/k)) ∈ φ.ker),
-              u ⟨(x : Gal(Ω/k)), hx⟩ = layerSubMap ℓ β j (a μ x)) ∧
-            ∀ P : Ideal (𝓞 Ω), P.IsPrime → P ≠ ⊥ →
-              (∃ y : ↥(φ.ker), (y : Gal(Ω/k)) ∈ Ideal.inertia Gal(Ω/k) P ∧ u y ≠ 1) →
-              (∃ (μ : ι) (ρ : Gal(Ω/k)), P = ρ • Q μ) ∨
-                ∀ x ∈ stabilizer Gal(Ω/k) P, layerSemidirectMap ℓ hβ (j + 1) (F x) = 1
+        FlatKernelAnswer ℓ U n S j φ D N F ι Q A a
 
 end FlatKernel
 

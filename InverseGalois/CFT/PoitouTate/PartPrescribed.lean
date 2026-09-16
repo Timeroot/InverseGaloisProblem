@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
 import InverseGalois.CFT.PoitouTate.Prescribed
+import InverseGalois.CFT.PoitouTate.PrescribedPositive
 
 /-!
 # A prescription made at part of the places of a set and left free at the rest
@@ -32,6 +33,9 @@ places is the class of an `S`-unit.**
 * `InverseGalois.CFT.exists_sUnit_forall_localClassHom_eq_of_detecting`: **a prescription supported
   at places the remaining ones detect the `S`-units at is met by the class of an `S`-unit**, with no
   orthogonality left to check.
+* `InverseGalois.CFT.exists_sUnit_forall_mem_localClassHom_eq_pos`: the same as the first, with the
+  `S`-unit a local power at every infinite place and the orthogonality asked against every `S`-unit
+  trivial at the remaining places, whether or not it is a local power at infinity.
 
 ## Tags
 
@@ -104,6 +108,48 @@ theorem exists_sUnit_forall_mem_localClassHom_eq (hn : n.Prime)
   obtain ⟨a, ha, l, hl, hal⟩ := exists_sUnitClass_mul_eq hn hres hζ hinj hnι hrepr L hcL
   obtain ⟨g, rfl⟩ := ha
   refine ⟨g, fun y hy => ?_⟩
+  have hly : l y = 1 := by
+    have hmem := (Subgroup.mem_pi _).1 hl y (Set.mem_univ y)
+    rw [hLbot y hy] at hmem
+    exact Subgroup.mem_bot.1 hmem
+  have hy2 : sUnitClassHom ι n g y * l y = c y := congrFun hal y
+  rw [hly] at hy2
+  exact (mul_one (sUnitClassHom ι n g y)).symm.trans hy2
+
+/-- **A prescription made at part of the places of `S` is met there by the class of an `S`-unit
+which is a local power at every infinite place**, as soon as it is orthogonal to those `S`-units
+whose class is trivial at each of the remaining places.  Leaving no room at the infinite places is
+dual to testing against the `S`-units whatever their behaviour there is. -/
+theorem exists_sUnit_forall_mem_localClassHom_eq_pos (hn : n.Prime)
+    (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
+    {ζ : K} (hζ : IsPrimitiveRoot ζ n) {ι : Y → HeightOneSpectrum (𝓞 K)}
+    (hinj : Function.Injective ι)
+    (hnι : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → v ∈ Set.range ι)
+    (hrepr : ∀ m : HeightOneSpectrum (𝓞 K) → ℤ,
+      (∀ᶠ v : HeightOneSpectrum (𝓞 K) in Filter.cofinite, m v = 0) →
+      ∃ a : Kˣ, ∀ v ∉ Set.range ι, Rigidity.RET.ord K v (a : K) = m v)
+    (Ts : Set Y) (c : (y : Y) → localClasses (ι y) n)
+    (hc : ∀ u : ↥(sUnits K (Set.range ι)),
+      (∀ y ∉ Ts, localClassHom (ι y) n ((u : Kˣ)) = 1) →
+      localSymbolPiPairing hres hζ ι (sUnitClassHom ι n u) c = 1) :
+    ∃ g : ↥(sUnits K (Set.range ι)), (∀ w : InfinitePlace K, infClassHom w n ((g : Kˣ)) = 1) ∧
+      ∀ y ∈ Ts, localClassHom (ι y) n ((g : Kˣ)) = c y := by
+  classical
+  set L : ∀ y : Y, Subgroup (localClasses (ι y) n) := fun y => if y ∈ Ts then ⊥ else ⊤ with hLdef
+  have hLbot : ∀ y ∈ Ts, L y = ⊥ := fun y hy => by rw [hLdef]; exact if_pos hy
+  have hLtop : ∀ y ∉ Ts, L y = ⊤ := fun y hy => by rw [hLdef]; exact if_neg hy
+  have hcL : ∀ u : ↥(sUnits K (Set.range ι)),
+      sUnitClassHom ι n u ∈ Subgroup.pi Set.univ
+        (fun y => perpSubgroupLeft (A := localClasses (ι y) n)
+          (localClassPairing hres hζ (ι y)) (L y)) →
+      localSymbolPiPairing hres hζ ι (sUnitClassHom ι n u) c = 1 := by
+    intro u hperp
+    refine hc u fun y hy => ?_
+    have hmem := (Subgroup.mem_pi _).1 hperp y (Set.mem_univ y)
+    rw [hLtop y hy, perpSubgroupLeft_top (injective_localClassPairing hres hζ (ι y))] at hmem
+    exact Subgroup.mem_bot.1 hmem
+  obtain ⟨g, hginf, l, hl, hal⟩ := exists_sUnitClass_mul_eq_pos hn hres hζ hinj hnι hrepr L hcL
+  refine ⟨g, hginf, fun y hy => ?_⟩
   have hly : l y = 1 := by
     have hmem := (Subgroup.mem_pi _).1 hl y (Set.mem_univ y)
     rw [hLbot y hy] at hmem

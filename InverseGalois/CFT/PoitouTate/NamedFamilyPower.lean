@@ -31,6 +31,10 @@ leaves the orthogonality against the powers of the auxiliary field as the only c
   a Galois stable set of split detecting places, a naming orthogonal to the `S`-units which become a
   power in the auxiliary field has a two-place family**, with the detection supplied by the
   enlargement.
+* `InverseGalois.CFT.exists_isTwoPlaceFamily_named_unram_orthogonal` and
+  `InverseGalois.CFT.exists_isTwoPlaceFamily_named_unram_of_orthogonal`: the same two statements for
+  an unramified naming tested against every `S`-unit which becomes a power in the auxiliary field,
+  whatever it does at the infinite places, and with nothing ramified left in the prescription.
 
 ## Tags
 
@@ -77,7 +81,6 @@ theorem exists_isTwoPlaceFamily_named_orthogonal (hp : p.Prime) (hodd : 2 < p)
       ∃ a : Kˣ, ∀ v ∉ (Tn : Set (HeightOneSpectrum (𝓞 K))),
         Rigidity.RET.ord K v (a : K) = m v)
     {cl : (w : ↥Tp) → ℕ → localClasses (w : HeightOneSpectrum (𝓞 K)) p}
-    (hclfree : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ w ∈ Tp, σ • w ∉ Tp)
     (hcln : ∀ (w : ↥Tp) (t : ℕ),
       FinitePlace.mk (w : HeightOneSpectrum (𝓞 K)) ((p : ℕ) : K) ≠ 1 → cl w t = 1)
     {D : (v : HeightOneSpectrum (𝓞 K)) → localClasses v p}
@@ -99,8 +102,8 @@ theorem exists_isTwoPlaceFamily_named_orthogonal (hp : p.Prime) (hodd : 2 < p)
       primeUnder (𝓞 K) W = v ∧ stabilizer Gal(↥Ω/K) W = ⊥)
     (hram : ∀ v ∉ Tn, ∃ W : HeightOneSpectrum (𝓞 ↥Ω),
       primeUnder (𝓞 K) W = v ∧ ramIdx (𝓞 K) W = 1) (d : ℕ) :
-    ∃ (S : Finset (HeightOneSpectrum (𝓞 K))) (Q R : ℕ → HeightOneSpectrum (𝓞 K)) (z : ℕ → Kˣ),
-      IsTwoPlaceFamily Ω p Tr Tn (spreadClasses Tp cl) d S Q R z := by
+    ∃ (S : Finset (HeightOneSpectrum (𝓞 K))) (Q R E : ℕ → HeightOneSpectrum (𝓞 K)) (z : ℕ → Kˣ),
+      IsTwoPlaceFamily Ω p Tr Tn (spreadClasses Tp cl) d S Q R E z := by
   classical
   have hrange : Set.range (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 K))
       = (Tn : Set (HeightOneSpectrum (𝓞 K))) := by
@@ -136,9 +139,93 @@ theorem exists_isTwoPlaceFamily_named_orthogonal (hp : p.Prime) (hodd : 2 < p)
     exact ⟨(u : Kˣ), humem, fun w hw => hu ⟨w, hTs hw⟩ hw⟩
   choose g hgS hgloc using hex
   refine exists_isTwoPlaceFamily_named_split_of_sUnits Ω hp hodd hζ hres hTp hTr hTs hTrst hTnst
-    hpTn hrepr hclfree hcln hDgal hDcl hgS ?_ ?_ hsplit hram d
+    hpTn hrepr hcln hDgal hDcl hgS ?_ ?_ hsplit hram d
   · intro t w
     have h := hgloc t (w : HeightOneSpectrum (𝓞 K)) (hTr (hTp w.2))
+    rw [spreadClasses_of_mem w.2 t] at h
+    exact h.symm
+  · intro t w hw hwp
+    rw [hgloc t w hw]
+    exact spreadClasses_of_notMem hwp t
+
+variable (Ω) in
+/-- **An unramified naming orthogonal to those totally positive `S`-units which become a power in
+the auxiliary field has a two-place family with nothing ramified prescribed.**
+
+The `S`-units against which the naming has to be tested are now all of those trivial at every place
+of `S` where the naming is not made, whatever they do at the infinite places; in exchange the
+`S`-unit carrying the naming is a local power at every infinite place, which is what lets the
+construction proceed with no distinguished ramified part. -/
+theorem exists_isTwoPlaceFamily_named_unram_orthogonal (hp : p.Prime)
+    {ζ : K} (hζ : IsPrimitiveRoot ζ p)
+    (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
+    {Tp B Ts Tn : Finset (HeightOneSpectrum (𝓞 K))} (hTp : Tp ⊆ Ts) (hBT : B ⊆ Ts)
+    (hTs : Ts ⊆ Tn)
+    (hBstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ B → σ • v ∈ B)
+    (hBwild : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → v ∈ B)
+    (hBram : ∀ v : HeightOneSpectrum (𝓞 K), ramIdx (𝓞 k) v ≠ 1 → v ∈ B)
+    (hTpB : ∀ v ∈ Tp, v ∉ B)
+    (hTnst : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ Tn → σ • v ∈ Tn)
+    (hrepr : ∀ m : HeightOneSpectrum (𝓞 K) → ℤ,
+      (∀ᶠ v : HeightOneSpectrum (𝓞 K) in Filter.cofinite, m v = 0) →
+      ∃ a : Kˣ, ∀ v ∉ (Tn : Set (HeightOneSpectrum (𝓞 K))),
+        Rigidity.RET.ord K v (a : K) = m v)
+    {cl : (w : ↥Tp) → ℕ → localClasses (w : HeightOneSpectrum (𝓞 K)) p}
+    (hclunr : ∀ (w : ↥Tp) (t : ℕ), cl w t ∈ localUnramified (w : HeightOneSpectrum (𝓞 K)) p)
+    (hpow : ∀ u : Kˣ, u ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))) →
+      (∀ v ∈ Tn, v ∉ Ts → localClassHom v p u = 1) →
+      ∃ y : (↥Ω)ˣ, Units.map (algebraMap K ↥Ω : K →* ↥Ω) u = y ^ p)
+    (horth : ∀ (t : ℕ)
+      (u : ↥(sUnits K (Set.range (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 K))))),
+      (∃ y : (↥Ω)ˣ, Units.map (algebraMap K ↥Ω : K →* ↥Ω) ((u : Kˣ)) = y ^ p) →
+      localSymbolPiPairing hres hζ (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 K))
+        (sUnitClassHom (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 K)) p u)
+        (fun y => spreadClasses Tp cl t (y : HeightOneSpectrum (𝓞 K))) = 1)
+    (hsplit : ∀ v ∈ Tn, v ∉ Ts → ∃ W : HeightOneSpectrum (𝓞 ↥Ω),
+      primeUnder (𝓞 K) W = v ∧ stabilizer Gal(↥Ω/K) W = ⊥)
+    (hram : ∀ v ∉ Tn, ∃ W : HeightOneSpectrum (𝓞 ↥Ω),
+      primeUnder (𝓞 K) W = v ∧ ramIdx (𝓞 K) W = 1) (d : ℕ) :
+    ∃ (S : Finset (HeightOneSpectrum (𝓞 K))) (Q R E : ℕ → HeightOneSpectrum (𝓞 K)) (z : ℕ → Kˣ),
+      IsTwoPlaceFamily Ω p ∅ Tn (spreadClasses Tp cl) d S Q R E z := by
+  classical
+  have hrange : Set.range (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 K))
+      = (Tn : Set (HeightOneSpectrum (𝓞 K))) := by
+    rw [Subtype.range_coe_subtype]
+    exact Finset.setOf_mem
+  have hnι : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((p : ℕ) : K) ≠ 1 →
+      v ∈ Set.range (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 K)) := by
+    intro v hv
+    rw [hrange]
+    exact hTs (hBT (hBwild v hv))
+  have hrepr' : ∀ m : HeightOneSpectrum (𝓞 K) → ℤ,
+      (∀ᶠ v : HeightOneSpectrum (𝓞 K) in Filter.cofinite, m v = 0) →
+      ∃ a : Kˣ, ∀ v ∉ Set.range (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 K)),
+        Rigidity.RET.ord K v (a : K) = m v := by
+    intro m hm
+    obtain ⟨a, ha⟩ := hrepr m hm
+    exact ⟨a, fun v hv => ha v (by rwa [hrange] at hv)⟩
+  have hex : ∀ t : ℕ, ∃ u : Kˣ, u ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))) ∧
+      (∀ w : InfinitePlace K, infClassHom w p u = 1) ∧
+      ∀ w ∈ Ts, localClassHom w p u = spreadClasses Tp cl t w := by
+    intro t
+    obtain ⟨u, huinf, hu⟩ := exists_sUnit_forall_mem_localClassHom_eq_pos hp hres hζ
+      (ι := (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 K))) Subtype.val_injective hnι hrepr'
+      {y : ↥Tn | (y : HeightOneSpectrum (𝓞 K)) ∈ Ts}
+      (fun y => spreadClasses Tp cl t (y : HeightOneSpectrum (𝓞 K)))
+      (by
+        intro v hvTs
+        refine horth t v (hpow (v : Kˣ) (by rw [← hrange]; exact v.2) ?_)
+        intro w hw hws
+        exact hvTs ⟨w, hw⟩ hws)
+    have humem : (u : Kˣ) ∈ sUnits K (Tn : Set (HeightOneSpectrum (𝓞 K))) := by
+      rw [← hrange]
+      exact u.2
+    exact ⟨(u : Kˣ), humem, huinf, fun w hw => hu ⟨w, hTs hw⟩ hw⟩
+  choose g hgS hginf hgloc using hex
+  refine exists_isTwoPlaceFamily_named_split_unram_of_sUnits Ω hp hζ hres hTp hBT hTs hBstable
+    hBwild hBram hTpB hTnst hrepr hclunr hgS hginf ?_ ?_ hsplit hram d
+  · intro t w
+    have h := hgloc t (w : HeightOneSpectrum (𝓞 K)) (hTp w.2)
     rw [spreadClasses_of_mem w.2 t] at h
     exact h.symm
   · intro t w hw hwp
@@ -180,7 +267,6 @@ theorem exists_isTwoPlaceFamily_named_of_orthogonal (hp : p.Prime) (hodd : 2 < p
       ∃ a : Kˣ, ∀ v ∉ (Ts : Set (HeightOneSpectrum (𝓞 K))),
         Rigidity.RET.ord K v (a : K) = m v)
     {cl : (w : ↥Tp) → ℕ → localClasses (w : HeightOneSpectrum (𝓞 K)) p}
-    (hclfree : ∀ σ : Gal(K/k), σ ≠ 1 → ∀ w ∈ Tp, σ • w ∉ Tp)
     (hcln : ∀ (w : ↥Tp) (t : ℕ),
       FinitePlace.mk (w : HeightOneSpectrum (𝓞 K)) ((p : ℕ) : K) ≠ 1 → cl w t = 1)
     {D : (v : HeightOneSpectrum (𝓞 K)) → localClasses v p}
@@ -199,8 +285,8 @@ theorem exists_isTwoPlaceFamily_named_of_orthogonal (hp : p.Prime) (hodd : 2 < p
       primeUnder (𝓞 K) W = v ∧ ramIdx (𝓞 K) W = 1) (d : ℕ) :
     ∃ Tn : Finset (HeightOneSpectrum (𝓞 K)), Ts ⊆ Tn ∧
       (∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ Tn → σ • v ∈ Tn) ∧
-      ∃ (S : Finset (HeightOneSpectrum (𝓞 K))) (Q R : ℕ → HeightOneSpectrum (𝓞 K)) (z : ℕ → Kˣ),
-        IsTwoPlaceFamily Ω p Tr Tn (spreadClasses Tp cl) d S Q R z := by
+      ∃ (S : Finset (HeightOneSpectrum (𝓞 K))) (Q R E : ℕ → HeightOneSpectrum (𝓞 K)) (z : ℕ → Kˣ),
+        IsTwoPlaceFamily Ω p Tr Tn (spreadClasses Tp cl) d S Q R E z := by
   classical
   obtain ⟨Tf, hTf, hTfst, hTfsp, hTfdet⟩ :=
     exists_finset_stable_split_detecting_sUnits Ω hp hζ hres (Ts.image (primeUnder (𝓞 k))) Ts
@@ -221,7 +307,69 @@ theorem exists_isTwoPlaceFamily_named_of_orthogonal (hp : p.Prime) (hodd : 2 < p
   refine ⟨Ts ∪ Tf, Finset.subset_union_left, hTnst, ?_⟩
   refine exists_isTwoPlaceFamily_named_orthogonal Ω hp hodd hζ hres hTp hTr
     Finset.subset_union_left hTrst hTnst
-    (fun v hv => Finset.mem_union_left _ (hpTs v hv)) hreprn hclfree hcln hDgal hDcl
+    (fun v hv => Finset.mem_union_left _ (hpTs v hv)) hreprn hcln hDgal hDcl
+    (hTfdet (Ts ∪ Tf) Finset.subset_union_right)
+    (horth (Ts ∪ Tf) Finset.subset_union_left) ?_
+    (fun v hv => hram v fun hc => hv (Finset.mem_union_left _ hc)) d
+  intro v hv hvs
+  obtain ⟨W, hW, hWbot⟩ := hTfsp v ((Finset.mem_union.1 hv).resolve_left hvs)
+  exact ⟨W, hW, stabilizer_eq_bot_of_stabilizer_base_eq_bot (k := k) hWbot⟩
+
+variable (Ω) in
+/-- **An unramified naming orthogonal to the totally positive `S`-units which become a power in the
+auxiliary field has a two-place family with nothing ramified prescribed**, over a set of places
+enlarged by a Galois stable set of places completely split in that field.
+
+The enlargement is the same as for a naming allowed to ramify, and costs the same nothing: the new
+places lie outside the stable set carrying the places above the exponent and the places ramified
+over the base, so that set still has every property the construction asks of it. -/
+theorem exists_isTwoPlaceFamily_named_unram_of_orthogonal (hp : p.Prime)
+    {ζ : K} (hζ : IsPrimitiveRoot ζ p)
+    (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (Pc v) (Ec v))
+    {Tp B Ts : Finset (HeightOneSpectrum (𝓞 K))} (hTp : Tp ⊆ Ts) (hBT : B ⊆ Ts)
+    (hBstable : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ B → σ • v ∈ B)
+    (hBwild : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((p : ℕ) : K) ≠ 1 → v ∈ B)
+    (hBram : ∀ v : HeightOneSpectrum (𝓞 K), ramIdx (𝓞 k) v ≠ 1 → v ∈ B)
+    (hTpB : ∀ v ∈ Tp, v ∉ B)
+    (hTsst : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ Ts → σ • v ∈ Ts)
+    (hrepr : ∀ m : HeightOneSpectrum (𝓞 K) → ℤ,
+      (∀ᶠ v : HeightOneSpectrum (𝓞 K) in Filter.cofinite, m v = 0) →
+      ∃ a : Kˣ, ∀ v ∉ (Ts : Set (HeightOneSpectrum (𝓞 K))),
+        Rigidity.RET.ord K v (a : K) = m v)
+    {cl : (w : ↥Tp) → ℕ → localClasses (w : HeightOneSpectrum (𝓞 K)) p}
+    (hclunr : ∀ (w : ↥Tp) (t : ℕ), cl w t ∈ localUnramified (w : HeightOneSpectrum (𝓞 K)) p)
+    (horth : ∀ Tn : Finset (HeightOneSpectrum (𝓞 K)), Ts ⊆ Tn → ∀ (t : ℕ)
+      (u : ↥(sUnits K (Set.range (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 K))))),
+      (∃ y : (↥Ω)ˣ, Units.map (algebraMap K ↥Ω : K →* ↥Ω) ((u : Kˣ)) = y ^ p) →
+      localSymbolPiPairing hres hζ (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 K))
+        (sUnitClassHom (Subtype.val : ↥Tn → HeightOneSpectrum (𝓞 K)) p u)
+        (fun y => spreadClasses Tp cl t (y : HeightOneSpectrum (𝓞 K))) = 1)
+    (hram : ∀ v ∉ Ts, ∃ W : HeightOneSpectrum (𝓞 ↥Ω),
+      primeUnder (𝓞 K) W = v ∧ ramIdx (𝓞 K) W = 1) (d : ℕ) :
+    ∃ Tn : Finset (HeightOneSpectrum (𝓞 K)), Ts ⊆ Tn ∧
+      (∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ Tn → σ • v ∈ Tn) ∧
+      ∃ (S : Finset (HeightOneSpectrum (𝓞 K))) (Q R E : ℕ → HeightOneSpectrum (𝓞 K)) (z : ℕ → Kˣ),
+        IsTwoPlaceFamily Ω p ∅ Tn (spreadClasses Tp cl) d S Q R E z := by
+  classical
+  obtain ⟨Tf, hTf, hTfst, hTfsp, hTfdet⟩ :=
+    exists_finset_stable_split_detecting_sUnits Ω hp hζ hres (Ts.image (primeUnder (𝓞 k))) Ts
+      (fun v hv => Finset.mem_image_of_mem _ hv) hrepr
+  have hTnst : ∀ (σ : Gal(K/k)) (v : HeightOneSpectrum (𝓞 K)), v ∈ Ts ∪ Tf → σ • v ∈ Ts ∪ Tf := by
+    intro σ v hv
+    rcases Finset.mem_union.1 hv with h | h
+    · exact Finset.mem_union_left _ (hTsst σ v h)
+    · exact Finset.mem_union_right _ (hTfst σ v h)
+  have hreprn : ∀ m : HeightOneSpectrum (𝓞 K) → ℤ,
+      (∀ᶠ v : HeightOneSpectrum (𝓞 K) in Filter.cofinite, m v = 0) →
+      ∃ a : Kˣ, ∀ v ∉ ((Ts ∪ Tf : Finset (HeightOneSpectrum (𝓞 K))) :
+        Set (HeightOneSpectrum (𝓞 K))), Rigidity.RET.ord K v (a : K) = m v := by
+    intro m hm
+    obtain ⟨a, ha⟩ := hrepr m hm
+    exact ⟨a, fun v hv => ha v fun hc =>
+      hv (Finset.mem_coe.2 (Finset.mem_union_left _ (Finset.mem_coe.1 hc)))⟩
+  refine ⟨Ts ∪ Tf, Finset.subset_union_left, hTnst, ?_⟩
+  refine exists_isTwoPlaceFamily_named_unram_orthogonal Ω hp hζ hres hTp hBT
+    Finset.subset_union_left hBstable hBwild hBram hTpB hTnst hreprn hclunr
     (hTfdet (Ts ∪ Tf) Finset.subset_union_right)
     (horth (Ts ∪ Tf) Finset.subset_union_left) ?_
     (fun v hv => hram v fun hc => hv (Finset.mem_union_left _ hc)) d

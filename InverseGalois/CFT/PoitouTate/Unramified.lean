@@ -130,6 +130,22 @@ theorem mk_mem_unramifiedClasses_iff [NeZero n] (hm : IsUnitValGen K m) (a : Kˣ
       ↔ (n : ℤ) ∣ unitValDiv hm (Additive.ofMul a) := by
   rw [unramifiedClasses, MonoidHom.mem_ker, unitValModQuot_mk, unitValMod_eq_one_iff]
 
+/-- **Minus one has no valuation.**  It is its own inverse, and the group of integers has no
+element of order two. -/
+theorem unitValDiv_neg_one (hm : IsUnitValGen K m) :
+    unitValDiv hm (Additive.ofMul (-1 : Kˣ)) = 0 := by
+  have hsq : Additive.ofMul (-1 : Kˣ) + Additive.ofMul (-1 : Kˣ) = 0 := by
+    rw [← _root_.ofMul_mul, neg_mul_neg, one_mul, _root_.ofMul_one]
+  have h := congrArg (unitValDiv hm) hsq
+  rw [_root_.map_add, _root_.map_zero] at h
+  omega
+
+/-- **Minus one is unramified**, its valuation being zero. -/
+theorem neg_one_mem_unramifiedClasses [NeZero n] (hm : IsUnitValGen K m) :
+    ((-1 : Kˣ) : Kˣ ⧸ (powMonoidHom n : Kˣ →* Kˣ).range) ∈ unramifiedClasses hm n := by
+  rw [mk_mem_unramifiedClasses_iff hm, unitValDiv_neg_one hm]
+  exact dvd_zero _
+
 /-- **The valuation modulo `n` is onto the integers modulo `n`**, because there is a uniformiser. -/
 theorem surjective_unitValModQuot [NeZero n] (hm : IsUnitValGen K m) :
     Function.Surjective (unitValModQuot hm n) := by

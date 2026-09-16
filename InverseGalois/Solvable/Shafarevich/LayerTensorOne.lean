@@ -3,7 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
-import InverseGalois.CFT.PoitouTate.TensorShrink
+import InverseGalois.CFT.PoitouTate.TensorKill
 import InverseGalois.Solvable.Shafarevich.LayerSmooth
 
 /-!
@@ -28,8 +28,6 @@ infinite Galois group and do not agree definitionally with the ones a layer carr
 
 ## Main results
 
-* `InverseGalois.Shafarevich.exists_sum_tmul_of_span`: **an element of a tensor product is a
-  combination of a spanning family of the left factor against coefficients in the right.**
 * `InverseGalois.Shafarevich.exists_genericShrink_map_h1_eq_zero`: **one first cohomology class of a
   finite group, with coefficients a finitely generated abelian group tensored with an abstract
   group, is annihilated by a surjective shrinking onto the intended rank.**
@@ -45,37 +43,6 @@ set_option maxHeartbeats 1000000
 namespace InverseGalois.Shafarevich
 
 open CategoryTheory InverseGalois.CFT groupCohomology TensorProduct
-
-/-! ### Coordinates along a spanning family -/
-
-section Span
-
-variable {R : Type*} [CommRing R] {A X : Type*} [AddCommGroup A] [Module R A] [AddCommGroup X]
-  [Module R X] {d : ℕ}
-
-/-- **An element of a tensor product is a combination of a spanning family of the left factor
-against coefficients in the right factor.**  No basis is asked for, only a spanning family, so the
-left factor is allowed torsion. -/
-theorem exists_sum_tmul_of_span (b : Fin d → A) (hb : Submodule.span R (Set.range b) = ⊤)
-    (z : A ⊗[R] X) : ∃ w : Fin d → X, z = ∑ i, b i ⊗ₜ[R] w i := by
-  induction z using TensorProduct.induction_on with
-  | zero => exact ⟨0, by simp⟩
-  | tmul a x =>
-    have ha : a ∈ Submodule.span R (Set.range b) := by rw [hb]; exact Submodule.mem_top
-    obtain ⟨c, hc⟩ := (Submodule.mem_span_range_iff_exists_fun R).1 ha
-    refine ⟨fun i => c i • x, ?_⟩
-    calc a ⊗ₜ[R] x = (∑ i, c i • b i) ⊗ₜ[R] x := by rw [hc]
-      _ = ∑ i, b i ⊗ₜ[R] (c i • x) := by
-            rw [TensorProduct.sum_tmul]
-            exact Finset.sum_congr rfl fun i _ => TensorProduct.smul_tmul _ _ _
-  | add z z' hz hz' =>
-    obtain ⟨w, rfl⟩ := hz
-    obtain ⟨w', rfl⟩ := hz'
-    refine ⟨w + w', ?_⟩
-    rw [← Finset.sum_add_distrib]
-    exact Finset.sum_congr rfl fun i _ => (TensorProduct.tmul_add _ _ _).symm
-
-end Span
 
 /-! ### The count in degree one -/
 

@@ -70,6 +70,7 @@ import InverseGalois.Solvable.Shafarevich.LevelCyclicRepair
 import InverseGalois.Solvable.Shafarevich.CyclicLift
 import InverseGalois.Solvable.Shafarevich.LevelFlatTwist
 import InverseGalois.Solvable.Shafarevich.LevelFlatKernel
+import InverseGalois.Solvable.Shafarevich.LevelFlatCover
 import InverseGalois.Solvable.Shafarevich.LevelFlatOrbit
 import InverseGalois.Solvable.Shafarevich.CyclicCorrection
 import InverseGalois.Solvable.Shafarevich.LevelConfinedTwist
@@ -81,7 +82,7 @@ import InverseGalois.Solvable.Shafarevich.LevelOneArith
 import InverseGalois.Solvable.Shafarevich.LevelOneFamily
 import InverseGalois.Solvable.Shafarevich.LevelOneTwoPlace
 import InverseGalois.Solvable.Shafarevich.LevelOneDecomposition
-import InverseGalois.Solvable.Shafarevich.LocalLiftInfinite
+import InverseGalois.Solvable.Shafarevich.LevelArchimedean
 import InverseGalois.Solvable.Shafarevich.LevelRungData
 import InverseGalois.Solvable.Shafarevich.LevelStepRepair
 import InverseGalois.Solvable.Shafarevich.LayerCoord
@@ -93,17 +94,43 @@ import InverseGalois.Solvable.Shafarevich.KernelClauses
 import InverseGalois.Solvable.Shafarevich.KernelCyclic
 import InverseGalois.Solvable.Shafarevich.KernelPrimeCyclic
 import InverseGalois.Solvable.Shafarevich.InertiaCyclic
+import InverseGalois.Solvable.Shafarevich.LevelFlatRadicand
+import InverseGalois.Solvable.Shafarevich.FlatCyclic
+import InverseGalois.Solvable.Shafarevich.KummerTensor
+import InverseGalois.Solvable.Shafarevich.FlatTwist
+import InverseGalois.Solvable.Shafarevich.FlatTensorVal
 import InverseGalois.Solvable.Shafarevich.KernelPlaces
+import InverseGalois.Solvable.Shafarevich.FlatPlaces
+import InverseGalois.Solvable.Shafarevich.ReachableDetect
+import InverseGalois.Solvable.Shafarevich.ReachableKummer
+import InverseGalois.Solvable.Shafarevich.ReachableBlocks
+import InverseGalois.Solvable.Shafarevich.ReachableShrink
+import InverseGalois.Solvable.Shafarevich.FlatTensor
+import InverseGalois.Solvable.Shafarevich.FlatInvariant
+import InverseGalois.Solvable.Shafarevich.FlatNorm
 import InverseGalois.Solvable.Shafarevich.KernelArith
 import InverseGalois.Solvable.Shafarevich.KernelStep
 import InverseGalois.Solvable.Shafarevich.NamedOrthogonal
+import InverseGalois.Solvable.Shafarevich.FlatStep
+import InverseGalois.Solvable.Shafarevich.FlatDecomposed
+import InverseGalois.Solvable.Shafarevich.FlatTensorStep
+import InverseGalois.Solvable.Shafarevich.FlatTensorConfined
+import InverseGalois.Solvable.Shafarevich.FlatTensorDiagonal
+import InverseGalois.Solvable.Shafarevich.FlatDiagonalUnits
+import InverseGalois.Solvable.Shafarevich.FlatLineUnits
+import InverseGalois.Solvable.Shafarevich.FlatUniformizerUnits
+import InverseGalois.Solvable.Shafarevich.ScholzLine
+import InverseGalois.Solvable.Shafarevich.ScholzDiagonal
+import InverseGalois.Solvable.Shafarevich.ScholzCyclic
+import InverseGalois.Solvable.Shafarevich.ScholzTower
+import InverseGalois.Solvable.Shafarevich.Theorem
 
 /-!
 # Shafarevich's theorem
 
 Every finite solvable group is a Galois group over `ℚ`.  The proof separates cleanly into a
-group-theoretic reduction and an arithmetic core, and this directory carries out the reduction in
-full, leaving the arithmetic core as a single named statement.
+group-theoretic reduction and an arithmetic core, and this directory carries out both: the
+reduction in the first few files, the arithmetic in the long climb that follows.
 
 The reduction is Ore's.  A nontrivial finite solvable group `G` has a nilpotent normal subgroup
 that is not contained in the Frattini subgroup, hence one admitting a *proper* supplement `U`, and
@@ -114,9 +141,10 @@ embedding problems whose kernel has prime power order.
 
 What is left is arithmetic, and it is the part of the theorem that needs class field theory: one
 must solve a split embedding problem with `p`-group kernel over `ℚ`.  The neighbouring case of an
-**abelian** kernel is already unconditional in this development, by way of the wreath product
-construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet — filtering a
-`p`-group kernel leaves a residual lifting that is no longer split.
+**abelian** kernel is reached far more cheaply, by way of the wreath product construction of
+`InverseGalois.Solvable.Wreath`, but the two cases do not meet — filtering a `p`-group kernel
+leaves a residual lifting that is no longer split, and supplying that lifting is what the long
+climb below is for.
 
 * `InverseGalois.Solvable.Shafarevich.Frattini` proves Ore's supplement theorem, that a nontrivial
   finite solvable group is the join of a nilpotent normal subgroup and a proper subgroup.
@@ -615,6 +643,20 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   vanishing along the named subgroups and the clause confining the new ramification all transfer
   verbatim.  So **a prescription of an equivariant homomorphism on the kernel of the base
   realization, at every number of letters, buys the flat prescription over the base field**.
+* `InverseGalois.Solvable.Shafarevich.LevelFlatCover` lets the arithmetic pay for that prescription
+  with a covering rather than outright.  Over a number field the prescribed values are not attained
+  at the number of letters they are read at: correcting the prescribed divisor to an invariant one
+  has an obstruction, and the obstruction is a genuine class, killed only by enlarging the level.
+  That is the packaging the everywhere locally trivial classes of the second cohomology already
+  arrive in, and it is consumed the same way.  The count on first homology asks only for the
+  operator group, the number of letters the answer is wanted at, the layer and the twist, so the
+  number of letters to start from is fixed before any lift, any named prime and hence any class is
+  known; at that number the covering turns the data into one homology class, the count kills it by a
+  surjective equivariant homomorphism, and the prescription is answered at the intermediate number.
+  The two shrinkings compose, the map of layers and the morphism of extensions both being
+  functorial, so the prescribed values and the clause confining the new ramification transfer.  So
+  **a prescription covered by a class of the first homology of the level, at every number of
+  letters, buys the prescription on the kernel of the base realization**.
 * `InverseGalois.Solvable.Shafarevich.LevelFlatOrbit` buys that prescription one named prime at a
   time.  What the prescription upstairs asks of one homomorphism is equivariance for conjugation by
   the whole group, and the arithmetic supplying homomorphisms — a radicand and a root of unity, read
@@ -753,14 +795,18 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   conjugate of a chosen one.  So **a prescribed finite set of places of a level is covered by a
   finite family of primes whose stabilisers carry every condition the first rung asks of the
   family**.
-* `InverseGalois.Solvable.Shafarevich.LocalLiftInfinite` closes local solvability at the remaining
+* `InverseGalois.Solvable.Shafarevich.LevelArchimedean` closes local solvability at the remaining
   places.  The family the local conditions are read on holds the decomposition subgroups at the
-  archimedean places too, and there an automorphism fixing the place is an involution, so the image
-  of the decomposition subgroup is killed by two while the layer being added is killed by the odd
-  prime the ladder climbs.  The kernel of the surjection therefore has order coprime to the image,
-  the preimage of the image splits over that kernel, and a complement maps isomorphically onto the
-  image; the inverse of that isomorphism is the lift, and it factors through the same open subgroup
-  the solution does, so it is smooth.  So **the step of the ladder is locally solvable along every
+  archimedean places too, and nothing in the finite-place argument reaches them; but the conditions
+  are only read at the members of the wider family which the finite one does not name, and the
+  archimedean stabilisers are finitely many up to conjugacy, one above each archimedean place of the
+  base.  Naming them costs nothing.  The field the base realization cuts out holds a primitive root
+  of unity whose order is the square of the prime the ladder climbs, and the kernel of the
+  realization fixes it; an automorphism fixing an archimedean place and a root of unity of order
+  more than two is the identity, since otherwise it would act on the place as complex conjugation
+  and the root would be real.  So an archimedean stabiliser meets the kernel trivially, every clause
+  the family carries is an obligation at the elements the base realization kills, and the enlarged
+  family inherits all of them.  So **the step of the ladder is locally solvable along every
   decomposition subgroup, at the finite and at the infinite places together**.
 * `InverseGalois.Solvable.Shafarevich.LevelRungData` collects the clauses.  The package the ladder
   consumes asks seven things of the arithmetic, and six of them are now theorems: the bottom of the
@@ -858,6 +904,55 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   element by is killed both by the prime-to-the-exponent power and by the exponent, hence trivial.
   Read over the level the base realization cuts out, the part of inertia that realization kills is
   the whole inertia subgroup there, so the same holds for it.
+* `InverseGalois.Solvable.Shafarevich.LevelFlatRadicand` reads a single unit of the level as such a
+  prescription.  The homomorphism assembled out of the powers of one unit against a basis of the
+  layer has, at each element of the kernel, that basis product raised to the Kummer character of the
+  unit; and at a conjugate of that element by an automorphism carrying the unit to itself up to an
+  exponent-th power, the same value raised to the power by which the automorphism raises the roots
+  of unity.  **A unit whose order at the place below a prime is prime to the exponent has a Kummer
+  character taking a unit value** somewhere on the part of inertia the base realization kills, and
+  **every smooth additive character of that part is then a multiple of it**, that part being carried
+  by a single element.  A finite family of such homomorphisms is trivial off one open subgroup, the
+  roots of the units generating a single finite level.
+* `InverseGalois.Solvable.Shafarevich.FlatCyclic` spends that reading on a **single** unit.  A
+  prescription at one named prime is a homomorphism of the part of inertia there the base
+  realization kills, and that part is carried by a single element, so every coordinate of the
+  prescription against a basis of the layer is one and the same multiple of the Kummer character of
+  any unit whose order at the place below is prime to the exponent.  The corresponding powers of
+  that one unit therefore assemble the prescription, and **the value it is the power of is a single
+  product of basis powers**.  Conjugating the argument by an automorphism fixing the unit then
+  multiplies the character by the exponent by which that automorphism raises the roots of unity, so
+  **the assembled homomorphism is moved by any map of the layer raising that single value to that
+  exponent** — the equivariance a prescription made at one prime carries, at the cost of the unit
+  being fixed by the decomposition subgroup there and nothing more.
+* `InverseGalois.Solvable.Shafarevich.KummerTensor` reads the same assembly with no indexing at all.
+  The homomorphism a family of units and a family of coefficients assemble is bilinear in the two
+  families and kills the exponent-th powers of a unit, so it depends only on the tensor they define
+  and is defined on every tensor of the units of the level with the target.  A conjugation of the
+  argument then reads as a **twist** of that tensor — the radicand carried by the automorphism the
+  conjugating element induces on the level, the coefficient raised to the power by which that
+  element raises the roots of unity — and **the assembled homomorphism is moved by a map of the
+  target exactly when the twist of the tensor is the tensor that map carries it to.**  No
+  permutation of an index set is exhibited, which is what a tensor invariant for the twist, not
+  presented as a sum over orbits, is able to supply.
+* `InverseGalois.Solvable.Shafarevich.FlatTwist` removes the twist from the demand by putting it
+  into the action.  A target killed by the exponent may be raised to the power a residue modulo the
+  exponent names, so an action of a group on such a target may be twisted by any character of the
+  group into the units modulo the exponent, and the twist is again an action because the character
+  is multiplicative and the power of a power is the power of the product.  Twisting by the character
+  inverse to the one the automorphisms of the level raise the roots of unity by turns the
+  equivariance the assembly asks for into **plain invariance of the tensor for the diagonal
+  action** — the automorphism carrying the radicand and the twisted action carrying the
+  coefficient — which is exactly the kind of object the descent through the units for a finite set
+  of places produces.
+* `InverseGalois.Solvable.Shafarevich.FlatTensorVal` reads the order of such a tensor at a place as
+  the value the prescription asks for.  A tensor of the units of the level with a target spanned by
+  a named family is the sum of the pure tensors of a family of units against that family, and the
+  valuation of such a sum at a place is the product of the powers of the named family by the orders
+  of the units there.  Since the value of a unit at a place is minus its order, and a power of an
+  element killed by the exponent is read off the residue of the exponent, **prescribing the
+  valuation of the tensor at a place prescribes exactly the product of powers the flat prescription
+  asks for**, up to the inverse the change of sign costs.
 * `InverseGalois.Solvable.Shafarevich.KernelPlaces` collects those readings into one demand on the
   level and pays the prescription with it.  A basis of the layer having been named, the homomorphism
   asked for is the one assembled out of a family of units indexed by that basis, and each clause of
@@ -872,6 +967,85 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   named prime; and the finite level asked for is the one cut out by the kernel of the given lift
   together with the level itself.  **A level carrying such families of units carries the sharp
   prescription**, with no shrinking spent.
+* `InverseGalois.Solvable.Shafarevich.FlatPlaces` does the same for the flat prescription, and the
+  demand it makes on the level is markedly cheaper.  One unit is asked for at each named place, not
+  one class in each coordinate, and the only thing asked of it at its own place is that its order
+  there be prime to the exponent; the coordinates of the prescribed homomorphism are then multiples
+  of the Kummer character of that one unit, and the powers of it by those multipliers assemble into
+  exactly what was prescribed.  Equivariance for the decomposition subgroup is bought by asking the
+  automorphisms of the level fixing the place below to fix the unit up to an exponent-th power — the
+  whole demand depending on the unit only through its class modulo exponent-th powers — an
+  automorphism multiplying the character of such a unit by the power to which it raises the roots of
+  unity.
+  Because nothing is named but a single unit, and any unit of order prime to the exponent will do,
+  **the reciprocity residue the sharp demand leaves behind is absent here**: there is no pairing
+  condition, and a level carrying such units carries the flat prescription outright.
+* `InverseGalois.Solvable.Shafarevich.ReachableDetect` turns the one global demand that file leaves
+  — a unit of order prime to the exponent at the named place and of order divisible by it away from
+  the completely decomposed ones — into a statement about detecting powers.  Duality supplies such
+  a unit as soon as the units it has to be tested against are trivial, and those are the units
+  unramified at every place at once which are local powers at the places the duality imposes
+  nothing at.  So it is enough to exhibit finitely many places, sitting under completely decomposed
+  places of the level and away from the named one, at which being a local power already forces a
+  unit unramified everywhere to be a power of the level: the tested units are then powers, and a
+  power has trivial class at every place.  **What reachability costs is a detecting family of
+  decomposed places**, and nothing else; the places carrying the exponent and the representatives
+  of the ideal classes join the finite set the duality runs over without being asked anything,
+  because away from the detecting places the unit produced need only be unramified.
+* `InverseGalois.Solvable.Shafarevich.ReachableKummer` supplies that detecting family.  The units
+  the detection has to run over — those whose order is divisible by the exponent at every place —
+  all acquire an exponent-th root in one and the same finite Galois extension of the base, and
+  inside the compositum of that extension with the level finitely many primes of the base splitting
+  completely in the level drive such a root into the level as soon as the unit is a local power at
+  each of them.  What remains is then a statement with no places in it at all: that a unit of the
+  level which becomes an exponent-th power in the level is one already, an independence of the
+  level from the field of roots.  **Reachability of every place costs exactly that one Kummer
+  independence**, and the passage between the closure and the compositum is by restriction, an
+  automorphism of the closure stabilising a prime restricting to one stabilising the prime below.
+* `InverseGalois.Solvable.Shafarevich.ReachableBlocks` reads the letters of a generic operator group
+  one block at a time.  Among the shrinkings attached to a vector of exponents there is, for each
+  block, the one whose vector is the indicator of that block; since the surviving exponent is one
+  and not merely prime to the residue characteristic, **that shrinking is surjective with no
+  hypothesis whatever on the groups involved**.  The blocks also cut the source into pieces: the
+  classes of the letters of one block generate a subgroup, the block subgroups jointly generate
+  everything, and the shrinking belonging to one block kills the subgroup of every other.
+* `InverseGalois.Solvable.Shafarevich.ReachableShrink` spends that combinatorics on the disjointness
+  reachability was traded for.  The field of radicals the disjointness is read against depends on
+  the level below alone, so the number of letters may be announced before any lift is handed over:
+  as many as the order of its Galois group.  Each block then gives a level containing every other
+  block's subgroup, and if no one of them filled up the level below together with the field of
+  radicals, the blocks accumulated one at a time would give a chain of subgroups strictly increasing
+  all the way — read in the finite group of the field of radicals, which the subgroup fixing that
+  field sitting at the bottom of the chain makes legitimate, a chain longer than the order of that
+  group.  So **some block's shrinking separates the level from the field of radicals**, the two
+  fields meet inside the level below, and every place of the level below is reached.
+* `InverseGalois.Solvable.Shafarevich.FlatTensor` buys the same flat prescription from a **single**
+  invariant object instead of one unit per named place.  A unit at each place must be asked to be a
+  local power at the conjugates of the *other* named places, so that the several prescriptions do
+  not disturb one another, and that is a demand made place by place which the reciprocity law has a
+  say in once the places are many.  A tensor of the units of the level with the layer, invariant for
+  the automorphisms of the level acting on the radicand and on the coefficient at once, assembles a
+  homomorphism equivariant for the **whole** base group, so nothing has to be arranged between the
+  named places and no local power is asked for at their conjugates; all that is asked at a named
+  place is that the order of the tensor there be the value the prescription forces, and that value
+  is itself compatible with the action because an automorphism fixing a place below lifts to one
+  fixing the prime, two primes with the same place below differing by an automorphism the base
+  realization kills.  **A level carrying such a tensor carries the flat prescription made one field
+  up**, whose equivariance clause is the full one.
+* `InverseGalois.Solvable.Shafarevich.FlatInvariant` takes the root of unity out of that demand
+  altogether.  The exponent by which an automorphism raises the chosen root is well defined modulo
+  the exponent, because the root has exactly that order, and the assignment is multiplicative: it is
+  one character of the automorphisms of the level into the units modulo the exponent.  Twisting the
+  action on the target by the character inverse to it makes the equivariance asked of the tensor
+  into plain invariance for the diagonal action, and makes the compatibility asked of the prescribed
+  values into the plain statement that each value is fixed by the automorphisms fixing its place —
+  the two exponents cancelling in both cases because the character is inverted.  **What is left is a
+  statement about a number field and nothing else**: a family of units of the level whose tensor
+  against a named basis is invariant, whose orders at the named places are prescribed, which is a
+  local power on a prescribed finite set, and whose remaining ramification is confined.  What is
+  asked to be invariant is the tensor and not any one of the units it is assembled from: a tensor of
+  rank one is fixed only when both of its factors are, while a tensor of higher rank has room to be
+  fixed with no factor of it fixed at all.
 * `InverseGalois.Solvable.Shafarevich.KernelArith` buys those families from the arithmetic.  The
   named places are read as a finite set of places and the classes prescribed at them as a family
   indexed by that set, the lines they lie on are spread over the orbits of the named places, and the
@@ -912,4 +1086,149 @@ construction of `InverseGalois.Solvable.Wreath`, but the two cases do not meet �
   character killing that kernel, hence is one of the units the observation was shown to annihilate.
   **The orthogonality of the naming holds for every prime**, so the sharp prescription is
   unconditional and the step of the ladder is bought by the flattening alone.
+* `InverseGalois.Solvable.Shafarevich.FlatStep` spends the flat assembly over the rationals exactly
+  as the sharp one is spent, and finds it cheaper on both counts.  Nothing is asked of the operator
+  group, so the number of letters the data is read at is answered with itself and no shrinking is
+  spent; and the level the prescription is asked to kill the lift in exists because the kernel of a
+  smooth homomorphism onto a discrete group is open.  Openness of the kernel of the base realization
+  is not assumed either, since the lift the prescription is handed has open kernel inside it, so
+  where that kernel fails to be open there is nothing to prescribe for.  **The step of the ladder
+  over an odd prime is bought by the units of a finite Galois level alone.**
+* `InverseGalois.Solvable.Shafarevich.FlatDecomposed` takes the one clause of that demand which is
+  not a clause at a single place — the automorphisms fixing a named place are asked to fix the unit
+  modulo exponent-th powers — and meets it on the nose, by asking the unit to come from the subfield
+  the place decomposes in.  Such a unit is fixed outright by those automorphisms, so the exponent-th
+  power the clause allows is one.  What is left interacts across the named places only through the
+  demand that the unit belonging to one of them be a local power at the conjugates of the others,
+  and that is a demand at finitely many places, so it folds into the finite set prescribed alongside
+  them; the named places lying in distinct orbits is what keeps the folded set clear of the place
+  the unit belongs to.  **The demand the odd step makes of a level is a demand at one place at a
+  time.**
+* `InverseGalois.Solvable.Shafarevich.FlatTensorStep` spends the tensor assembly over the rationals
+  the same way, and finds it cheaper again.  The homomorphism a single invariant tensor assembles is
+  equivariant for the whole base group, so the prescription made one field up is answered in one
+  piece and carried down along a section of the base realization with nothing traced over cosets;
+  what is asked of the level is one object rather than one unit per named place, and what is asked
+  of that object at the places it is not prescribed at is only that it be a local power at the
+  finitely many places the finite family names.  **The step of the ladder over an odd prime is
+  bought by a single invariant tensor of a finite Galois level.**
+* `InverseGalois.Solvable.Shafarevich.FlatNorm` builds that tensor out of a whole orbit and thereby
+  asks nothing equivariant of the units it is assembled from.  A tensor built with one unit per
+  named place is invariant exactly when each unit is fixed modulo exponent-th powers by the
+  automorphisms fixing its place, and that is a demand on the divisor class group which some number
+  fields refuse.  Summed over the automorphisms of the level instead — the conjugate of a unit
+  against the conjugate of a root of the value prescribed at its place — invariance is a reindexing
+  of the sum by translation and the units are free.  The order of such a tensor at a named place
+  collects one contribution per automorphism fixing that place and nothing else, the conjugates of
+  the other named places and the proper conjugates of the place itself contributing orders divisible
+  by the exponent, so what the tensor prescribes there is the norm, over the subgroup fixing the
+  place, of the chosen root.  A value fixed by that subgroup is such a norm as soon as the exponent
+  misses the order of the subgroup, being then the norm of its own power by the inverse of that
+  order.  **The equivariance the arithmetic could not pay is paid instead by naming places the
+  automorphisms of the level act tamely at**, which is a demand on the density theorem choosing them
+  rather than on the level.
+* `InverseGalois.Solvable.Shafarevich.FlatTensorConfined` reads that same tensor off a descent
+  through the units of the level, and finds that the whole of what is asked is a choice of places.
+  The units the descent runs in are those which are local powers where the prescription asks for
+  one and whose order is divisible by the exponent away from the places the ramification is allowed
+  at, and the confinement clause is nothing but membership in that group once the places allowed
+  are taken to be the named ones together with those completely decomposed in the bigger level.
+  The prescribed orders cost nothing beyond the vector of orders being onto, and the invariance
+  costs nothing at all once the target may be cut down: reading the confined units a second time,
+  at every place outside a finite set, leaves a group spanned by boundedly many generators, and
+  killing one coefficient of the target for each generator and each automorphism of the level makes
+  the invariant radicand exist outright.  The named places arrive reachable in the bigger level,
+  which is what lets their orders be prescribed at all: a place whose divisor class is out of reach
+  of the completely decomposed ones carries no unit of order prime to the exponent there.  **What
+  the odd step asks of the arithmetic is a finite set of places on which the orders of the confined
+  units are arbitrary, together with a bound — settled before the bigger level and the named places
+  are — on the number of generators a second reading leaves.**
+* `InverseGalois.Solvable.Shafarevich.FlatTensorDiagonal` states that demand in the form the
+  arithmetic delivers it.  For a prime exponent the orders are arbitrary as soon as there is one
+  unit per chosen place whose order there is prime to the exponent and whose order at the other
+  chosen places is divisible by it, and that last divisibility is not a separate demand: the units a
+  prescription produces are local powers at prescribed places, and a local power is unramified.  So
+  **the surjectivity clause is a family of units cut out by local conditions**, with the single
+  global demand that each unit have order prime to the exponent at its own place — which is what a
+  reachable place provides.  The bound on the generators is supplied here out of theorems: the
+  correction room a second reading needs is one prime per refined class, and the coefficients the
+  reading leaves are units for that room alone, so their generators number those of the units of
+  the ring of integers plus the size of the room, both of which belong to the level and the places
+  the radicand must stay inert at.
+* `InverseGalois.Solvable.Shafarevich.FlatDiagonalUnits` discharges that demand outright.
+  The units the prescription over a level already asks for are exactly the family of units it
+  wants, once the chosen set of places is taken to be the hull of the named ones and the
+  units are asked for at representatives of the orbits those meet: a place of the hull is a
+  translate of a representative, and moving the unit belonging to that representative by the same
+  automorphism moves neither its order nor its being a local power.  Complete decomposition in a
+  Galois level is likewise a property of a whole orbit, so the places the ramification is allowed
+  at absorb what the confinement leaves over.  **Nothing is left of the choice of places, so the
+  step of the ladder over an odd prime is unconditional**, read at the smallest set of places there
+  is.
+* `InverseGalois.Solvable.Shafarevich.FlatLineUnits` produces those units without asking the orbits
+  of the named places to be free.  A line of local classes named by a global unit spreads over an
+  orbit only when the orbit is free, since two automorphisms carrying the named place to the same
+  place would have to name the same line there; a line given at every place at once and carried
+  along as a subgroup rather than as an element transports no generator and so asks nothing of the
+  orbits, and **distinct orbits are then all that is asked of the named places**.  What the
+  construction still costs is the reciprocity residue, the orthogonality of the naming against the
+  units of the level which become exponent-th powers in the auxiliary field; on a line that residue
+  collapses, the product of the symbols running over the named places alone and two powers of one
+  class pairing trivially at an odd exponent, so **it is a purely local demand at each named place
+  taken on its own**: the classes there of the units which become exponent-th powers in the
+  auxiliary field lie on the line.
+* `InverseGalois.Solvable.Shafarevich.FlatUniformizerUnits` names that line.  The family of local
+  unit groups carries a Galois invariant section whose value is a uniformiser at every place
+  carrying one fixed by its decomposition group, and the classes of its values are a line at every
+  place at once, equivariant on the nose and of valuation one wherever the section is a
+  uniformiser, so a unit carrying the line at a named place is ramified there.  The local demand
+  left over is then the classical condition that the extension of the completion cut out at a named
+  place be the one a root of the uniformiser generates.
+* `InverseGalois.Solvable.Shafarevich.ScholzLine` makes the local demand answer itself.  The units
+  of the level which the auxiliary field turns into exponent-th powers form a subgroup carried into
+  itself by the automorphisms of the level, since an automorphism of the level extends to one of
+  the ambient closure and the auxiliary field is carried into itself by that extension, so their
+  classes at a place form a Galois equivariant family of subgroups of the local classes.  Naming
+  the units on the line that family cuts out where it is a nontrivial cyclic group, and on the line
+  of uniformisers everywhere else, gives an equivariant line asking nothing of anything, and what
+  it then demands of a named place is **the classical alternative**: either the auxiliary field
+  turns no class of the level there into an exponent-th power beyond the trivial one and the place
+  carries a uniformiser fixed by its decomposition group, or the classes it does turn into powers
+  there are generated by a single ramified class.
+* `InverseGalois.Solvable.Shafarevich.ScholzDiagonal` spends that alternative.  **The arithmetic
+  input of the prescription, made at named places satisfying it, is a theorem** — nothing is asked
+  beyond a primitive root of unity of the exponent in the level and the exponent being an odd
+  prime.  The alternative is a demand on the pair of a place and an auxiliary field rather than on
+  the place alone: the classes an auxiliary field turns into exponent-th powers at a place are the
+  local image of the radicands of its elementary abelian part over the level, and a field with two
+  independent radicands has places where that image is the whole group of classes.  Which places
+  the naming may be made at is therefore the business of the tower the naming is made in.
+* `InverseGalois.Solvable.Shafarevich.ScholzCyclic` reads the alternative off the tower.  A unit of
+  the level which the auxiliary field turns into an exponent-th power carries a root in that field,
+  and the chosen root of the unit differs from it by a root of unity of the level, so the Kummer
+  character of such a unit depends on an automorphism only through its action on the field.  **At a
+  prime whose decomposition group acts on the auxiliary field through the powers of a single
+  automorphism, the classes at the place below of the units the field turns into powers are
+  therefore trivial or generated by the class of one of them**, the characters taking their values
+  in a field of residues; and if that automorphism lies in the inertia group the generating class
+  is ramified, since the character of a unit whose order at the place is a multiple of the exponent
+  vanishes on inertia.  So a place carrying a uniformiser fixed by its decomposition group, at a
+  prime above which the decomposition group acts on the auxiliary field through the powers of one
+  inertia element, satisfies the alternative — the condition on the tower which buys the arithmetic
+  input of the prescription.
+* `InverseGalois.Solvable.Shafarevich.ScholzTower` supplies that condition from the ramification
+  restriction the climb already carries.  A solution over a level is asked, at every prime where it
+  ramifies over the base realization, to have the base realization split completely there and to
+  take no value on the decomposition subgroup which it does not already take on inertia, all those
+  values lying in the powers of a single element.  The values on the decomposition subgroup then
+  form a subgroup of a group of powers, hence a cyclic one, and a generator of it is by total
+  ramification a value on inertia; the complete splitting puts the decomposition subgroup inside
+  the automorphisms over the level, where the witness may be read; and two automorphisms of equal
+  value differ by one fixing the field the solution cuts out.  **So a prime where a solution
+  ramifies over the base realization lies over a Scholz place of the level for the field the
+  solution cuts out**, and the alternative costs no arithmetic at all.
+* `InverseGalois.Solvable.Shafarevich.Theorem` is the assembly.  The step of the ladder holds at
+  every prime, so the ladder climbs and every split embedding problem over `ℚ` whose kernel has
+  prime power order is solvable; **every finite solvable group is therefore a Galois group over
+  `ℚ`**.
 -/

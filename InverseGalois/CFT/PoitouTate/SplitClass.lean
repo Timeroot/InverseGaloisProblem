@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib
+import InverseGalois.CFT.Brauer.RealSymbolPositive
 import InverseGalois.CFT.Kummer.DecompositionLocalPower
 import InverseGalois.CFT.Kummer.LocalPower
 import InverseGalois.CFT.PoitouTate.Prescribed
@@ -33,6 +34,8 @@ to one.
 * `InverseGalois.CFT.prescriptionChar_eq_one_of_pow`: **the prescription character kills every
   radicand**, when the prescription comes from a global `S`-unit away from the places at which the
   extension splits completely.
+* `InverseGalois.CFT.prescriptionChar_eq_one_of_pow_forall_inf`: the same for a carrying unit which
+  is a local power at every infinite place, with nothing asked of the radicand there.
 
 ## Tags
 
@@ -122,13 +125,13 @@ section Radicand
 variable {K M : Type} [Field K] [NumberField K] [Field M] [NumberField M] [Algebra K M]
   [IsGalois K M] {n : ℕ} [NeZero n] {P E : HeightOneSpectrum (𝓞 K) → ℕ}
 
-/-- **The prescription character kills every radicand of the extension.**  At a place outside the
-part of the prescription carried by a global unit the extension splits completely, so the local
-class of a radicand there is trivial and its factor disappears; what is left is the product over
-the remaining places of the norm residue symbols of two `S`-units, which is the same as the
-product over all of `S` for the same reason, and the product formula over all the places sends that
-to one, the radicand being a local power at every infinite place. -/
-theorem prescriptionChar_eq_one_of_pow (hn : n.Prime)
+/-- **The prescription character kills every radicand of the extension whose archimedean symbols
+against the carrying unit cancel.**  At a place outside the part of the prescription carried by a
+global unit the extension splits completely, so the local class of a radicand there is trivial and
+its factor disappears; what is left is the product over the remaining places of the norm residue
+symbols of two `S`-units, which is the same as the product over all of `S` for the same reason, and
+the product formula over all the places sends that to one once the archimedean half is known to. -/
+theorem prescriptionChar_eq_one_of_pow_of_prod_archSymbol (hn : n.Prime)
     (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
     {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T₀ T S : Finset (HeightOneSpectrum (𝓞 K))}
     (hT₀ : T₀ ⊆ T) (hTS : T ⊆ S)
@@ -139,7 +142,7 @@ theorem prescriptionChar_eq_one_of_pow (hn : n.Prime)
     (hsplit : ∀ v ∈ S, v ∉ T₀ → ∃ w : HeightOneSpectrum (𝓞 M),
       primeUnder (𝓞 K) w = v ∧ stabilizer Gal(M/K) w = ⊥)
     {u : Kˣ} (hu : u ∈ sUnits K (S : Set (HeightOneSpectrum (𝓞 K))))
-    (huinf : ∀ w : InfinitePlace K, infClassHom w n u = 1) {b : M}
+    (harch : ∏ w : InfinitePlace K, archSymbol K w g u = 1) {b : M}
     (hb : algebraMap K M (u : K) = b ^ n) :
     prescriptionChar hres hζ T c u = 1 := by
   classical
@@ -164,8 +167,6 @@ theorem prescriptionChar_eq_one_of_pow (hn : n.Prime)
     Finset.prod_subset (hT₀.trans hTS) fun v hv hv0 => by
       rw [hzero v hv hv0, _root_.map_one, MonoidHom.one_apply]
   rw [e3]
-  have harch : ∏ w : InfinitePlace K, archSymbol K w g u = 1 :=
-    prod_archSymbol_eq_one_of_infClassHom_eq_one hn hζ g huinf
   have hprod := prod_localSymbol_mul_prod_archSymbol_eq_one hn hres hζ g u S ?_
   · rw [harch, mul_one] at hprod
     simpa only [← localClassPairing_eq_localSymbol hres hζ] using hprod
@@ -177,6 +178,48 @@ theorem prescriptionChar_eq_one_of_pow (hn : n.Prime)
       (not_dvd_of_finitePlace_natCast_eq_one (hres v) hnv)
       (valued_map_eq_one_of_mem_sUnits hg fun h => hvS (Finset.mem_coe.1 h))
       (valued_map_eq_one_of_mem_sUnits hu fun h => hvS (Finset.mem_coe.1 h))
+
+/-- **The prescription character kills every radicand of the extension.**  This is the previous
+statement with the archimedean half of the product formula supplied by the radicand being a local
+power at every infinite place. -/
+theorem prescriptionChar_eq_one_of_pow (hn : n.Prime)
+    (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
+    {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T₀ T S : Finset (HeightOneSpectrum (𝓞 K))}
+    (hT₀ : T₀ ⊆ T) (hTS : T ⊆ S)
+    (hnS : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → v ∈ S)
+    {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n} {g : Kˣ}
+    (hg : g ∈ sUnits K (S : Set (HeightOneSpectrum (𝓞 K))))
+    (hc : ∀ v ∈ T₀, c v = localClassHom v n g)
+    (hsplit : ∀ v ∈ S, v ∉ T₀ → ∃ w : HeightOneSpectrum (𝓞 M),
+      primeUnder (𝓞 K) w = v ∧ stabilizer Gal(M/K) w = ⊥)
+    {u : Kˣ} (hu : u ∈ sUnits K (S : Set (HeightOneSpectrum (𝓞 K))))
+    (huinf : ∀ w : InfinitePlace K, infClassHom w n u = 1) {b : M}
+    (hb : algebraMap K M (u : K) = b ^ n) :
+    prescriptionChar hres hζ T c u = 1 :=
+  prescriptionChar_eq_one_of_pow_of_prod_archSymbol hn hres hζ hT₀ hTS hnS hg hc hsplit hu
+    (prod_archSymbol_eq_one_of_infClassHom_eq_one hn hζ g huinf) hb
+
+/-- **The prescription character kills every radicand of the extension whose carrying unit is a
+local power at every infinite place.**  The archimedean half of the product formula is trivial as
+soon as one of its two arguments is a local power at the infinite places, and here it is the unit
+carrying the prescription that is: nothing is then asked of the radicand there.  At an odd exponent
+the hypothesis is automatic, and at the exponent two it is positivity under every real embedding. -/
+theorem prescriptionChar_eq_one_of_pow_forall_inf (hn : n.Prime)
+    (hres : ∀ v : HeightOneSpectrum (𝓞 K), HasResidueChar (v.adicCompletion K) (P v) (E v))
+    {ζ : K} (hζ : IsPrimitiveRoot ζ n) {T₀ T S : Finset (HeightOneSpectrum (𝓞 K))}
+    (hT₀ : T₀ ⊆ T) (hTS : T ⊆ S)
+    (hnS : ∀ v : HeightOneSpectrum (𝓞 K), FinitePlace.mk v ((n : ℕ) : K) ≠ 1 → v ∈ S)
+    {c : (v : HeightOneSpectrum (𝓞 K)) → localClasses v n} {g : Kˣ}
+    (hg : g ∈ sUnits K (S : Set (HeightOneSpectrum (𝓞 K))))
+    (hginf : ∀ w : InfinitePlace K, infClassHom w n g = 1)
+    (hc : ∀ v ∈ T₀, c v = localClassHom v n g)
+    (hsplit : ∀ v ∈ S, v ∉ T₀ → ∃ w : HeightOneSpectrum (𝓞 M),
+      primeUnder (𝓞 K) w = v ∧ stabilizer Gal(M/K) w = ⊥)
+    {u : Kˣ} (hu : u ∈ sUnits K (S : Set (HeightOneSpectrum (𝓞 K)))) {b : M}
+    (hb : algebraMap K M (u : K) = b ^ n) :
+    prescriptionChar hres hζ T c u = 1 :=
+  prescriptionChar_eq_one_of_pow_of_prod_archSymbol hn hres hζ hT₀ hTS hnS hg hc hsplit hu
+    (prod_archSymbol_eq_one_of_infClassHom_eq_one_left hn hζ hginf u) hb
 
 end Radicand
 

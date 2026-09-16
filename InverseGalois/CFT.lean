@@ -104,6 +104,7 @@ import InverseGalois.CFT.Brauer.TameValue
 import InverseGalois.CFT.Brauer.TameUnramified
 import InverseGalois.CFT.Brauer.LocalUnramified
 import InverseGalois.CFT.Brauer.MaximalSubfield
+import InverseGalois.CFT.Brauer.NegOnePow
 import InverseGalois.CFT.Brauer.NormAdjust
 import InverseGalois.CFT.Brauer.NormFactors
 import InverseGalois.CFT.Brauer.NormPlaceValue
@@ -157,7 +158,9 @@ import InverseGalois.CFT.Brauer.RealCyclicSign
 import InverseGalois.CFT.Brauer.RealInvariant
 import InverseGalois.CFT.Brauer.RealPlace
 import InverseGalois.CFT.Brauer.RealSymbol
+import InverseGalois.CFT.Brauer.RealSymbolPositive
 import InverseGalois.CFT.Brauer.RealSymbolProduct
+import InverseGalois.CFT.Brauer.ReciprocityPositive
 import InverseGalois.CFT.Brauer.ResidueBaseChange
 import InverseGalois.CFT.Brauer.ResidueCard
 import InverseGalois.CFT.Brauer.ResidueCardDegree
@@ -415,6 +418,7 @@ import InverseGalois.CFT.Local.FiltrationAction
 import InverseGalois.CFT.Local.FiltrationFinite
 import InverseGalois.CFT.Local.FiltrationHerbrand
 import InverseGalois.CFT.Local.FixedFieldValued
+import InverseGalois.CFT.Local.FixedSquare
 import InverseGalois.CFT.Local.GaussNorm
 import InverseGalois.CFT.Local.GradedFinite
 import InverseGalois.CFT.Local.HilbertIdentities
@@ -480,34 +484,68 @@ import InverseGalois.CFT.PoitouTate.BaseFamily
 import InverseGalois.CFT.PoitouTate.BasePrescription
 import InverseGalois.CFT.PoitouTate.ChebotarevPlace
 import InverseGalois.CFT.PoitouTate.ClassSetAvoid
+import InverseGalois.CFT.PoitouTate.ClassSetBounded
 import InverseGalois.CFT.PoitouTate.ClosingChain
+import InverseGalois.CFT.PoitouTate.ClosingChainPositive
 import InverseGalois.CFT.PoitouTate.ClosingChainRamified
+import InverseGalois.CFT.PoitouTate.ConfinedDiagonal
+import InverseGalois.CFT.PoitouTate.ConfinedEquivariant
+import InverseGalois.CFT.PoitouTate.ConfinedSupport
+import InverseGalois.CFT.PoitouTate.ConfinedSurjective
+import InverseGalois.CFT.PoitouTate.ConfinedTGens
+import InverseGalois.CFT.PoitouTate.ConfinedUnits
+import InverseGalois.CFT.PoitouTate.ConfinedWeighted
+import InverseGalois.CFT.PoitouTate.ConfinedWeightedSurj
 import InverseGalois.CFT.PoitouTate.ConjugatePlace
 import InverseGalois.CFT.PoitouTate.CupDual
 import InverseGalois.CFT.PoitouTate.CyclicPairing
 import InverseGalois.CFT.PoitouTate.Dual
+import InverseGalois.CFT.PoitouTate.EvenChain
+import InverseGalois.CFT.PoitouTate.EvenClose
+import InverseGalois.CFT.PoitouTate.EvenPigeonhole
+import InverseGalois.CFT.PoitouTate.EvenRecursion
+import InverseGalois.CFT.PoitouTate.EvenSymmetry
+import InverseGalois.CFT.PoitouTate.FrobConjugate
 import InverseGalois.CFT.PoitouTate.FrobeniusCharacter
 import InverseGalois.CFT.PoitouTate.GlobalClasses
+import InverseGalois.CFT.PoitouTate.InertSquare
 import InverseGalois.CFT.PoitouTate.InfiniteClasses
+import InverseGalois.CFT.PoitouTate.InvariantRadicand
+import InverseGalois.CFT.PoitouTate.InvolutionClaim
 import InverseGalois.CFT.PoitouTate.Isotropic
+import InverseGalois.CFT.PoitouTate.LocalClassClose
+import InverseGalois.CFT.PoitouTate.LocalClassPlaces
 import InverseGalois.CFT.PoitouTate.LocalConditions
 import InverseGalois.CFT.PoitouTate.LocalOrdBridge
 import InverseGalois.CFT.PoitouTate.LocalOrdKummer
 import InverseGalois.CFT.PoitouTate.LocalOrdOutside
 import InverseGalois.CFT.PoitouTate.LocalOrdPlace
+import InverseGalois.CFT.PoitouTate.ModPowEquivariant
 import InverseGalois.CFT.PoitouTate.NamedFamily
 import InverseGalois.CFT.PoitouTate.NamedFamilyPower
 import InverseGalois.CFT.PoitouTate.NamedFamilySplit
+import InverseGalois.CFT.PoitouTate.NamedRadicand
+import InverseGalois.CFT.PoitouTate.NamedRadicandClass
+import InverseGalois.CFT.PoitouTate.NamedRadicandSum
 import InverseGalois.CFT.PoitouTate.NamedSymbol
 import InverseGalois.CFT.PoitouTate.NamedUnits
 import InverseGalois.CFT.PoitouTate.NormLocalPower
 import InverseGalois.CFT.PoitouTate.OrbitCoboundary
+import InverseGalois.CFT.PoitouTate.OrbitDivisor
 import InverseGalois.CFT.PoitouTate.OrbitLine
+import InverseGalois.CFT.PoitouTate.OrbitProduct
+import InverseGalois.CFT.PoitouTate.OrdCompare
+import InverseGalois.CFT.PoitouTate.OrdInvariant
 import InverseGalois.CFT.PoitouTate.PartPrescribed
 import InverseGalois.CFT.PoitouTate.PlaceUniformiser
+import InverseGalois.CFT.PoitouTate.PlacesFree
+import InverseGalois.CFT.PoitouTate.PositiveClasses
 import InverseGalois.CFT.PoitouTate.Prescribed
+import InverseGalois.CFT.PoitouTate.PrescribedPositive
 import InverseGalois.CFT.PoitouTate.RadicalPlace
+import InverseGalois.CFT.PoitouTate.RadicandPlaces
 import InverseGalois.CFT.PoitouTate.RankOne
+import InverseGalois.CFT.PoitouTate.ReachablePlace
 import InverseGalois.CFT.PoitouTate.Recursion
 import InverseGalois.CFT.PoitouTate.RecursionClose
 import InverseGalois.CFT.PoitouTate.RecursionRadical
@@ -531,19 +569,29 @@ import InverseGalois.CFT.PoitouTate.SplitClass
 import InverseGalois.CFT.PoitouTate.SplitDetect
 import InverseGalois.CFT.PoitouTate.SplitFamily
 import InverseGalois.CFT.PoitouTate.SplitLocalPower
+import InverseGalois.CFT.PoitouTate.SplitPlaceDescend
 import InverseGalois.CFT.PoitouTate.SplitPlaceGenerate
+import InverseGalois.CFT.PoitouTate.SplitPlaceMember
 import InverseGalois.CFT.PoitouTate.SplitPlacePower
 import InverseGalois.CFT.PoitouTate.SupRadicandChar
 import InverseGalois.CFT.PoitouTate.SupRadicandCyclic
+import InverseGalois.CFT.PoitouTate.TensorDescent
+import InverseGalois.CFT.PoitouTate.TensorEquivariant
+import InverseGalois.CFT.PoitouTate.TensorFree
+import InverseGalois.CFT.PoitouTate.TensorInvariant
+import InverseGalois.CFT.PoitouTate.TensorKill
 import InverseGalois.CFT.PoitouTate.TensorOrbit
 import InverseGalois.CFT.PoitouTate.TensorShrink
 import InverseGalois.CFT.PoitouTate.TensorValuation
+import InverseGalois.CFT.PoitouTate.ThreePlaces
 import InverseGalois.CFT.PoitouTate.TorsionCharacter
 import InverseGalois.CFT.PoitouTate.TwoPlaces
 import InverseGalois.CFT.PoitouTate.TwoPlacesFree
 import InverseGalois.CFT.PoitouTate.TwoPlacesKill
 import InverseGalois.CFT.PoitouTate.TwoPlacesRadical
+import InverseGalois.CFT.PoitouTate.UniformizerLine
 import InverseGalois.CFT.PoitouTate.Unramified
+import InverseGalois.CFT.PoitouTate.UnramifiedPerp
 import InverseGalois.CFT.PrimeProductSquare
 import InverseGalois.CFT.Profinite.CharacterRoot
 import InverseGalois.CFT.Profinite.Cochain
@@ -935,6 +983,7 @@ import InverseGalois.CFT.Units.BaseTate
 import InverseGalois.CFT.Units.BaseTateCoeff
 import InverseGalois.CFT.Units.BaseTateSylow
 import InverseGalois.CFT.Units.BaseTateTorsion
+import InverseGalois.CFT.Units.ClassPlaces
 import InverseGalois.CFT.Units.ClassSet
 import InverseGalois.CFT.Units.CompletionCyclic
 import InverseGalois.CFT.Units.CompletionFinite
@@ -1066,16 +1115,21 @@ import InverseGalois.CFT.Units.RamifiedFamily
 import InverseGalois.CFT.Units.RatFundamentalClass
 import InverseGalois.CFT.Units.RatRamIdx
 import InverseGalois.CFT.Units.RatSumSquares
+import InverseGalois.CFT.Units.RootField
 import InverseGalois.CFT.Units.SIdeleClass
 import InverseGalois.CFT.Units.SIdeleHerbrand
 import InverseGalois.CFT.Units.SIdeleNorm
 import InverseGalois.CFT.Units.SUnit
 import InverseGalois.CFT.Units.SUnitAbove
+import InverseGalois.CFT.Units.SUnitDivisible
 import InverseGalois.CFT.Units.SUnitFinite
+import InverseGalois.CFT.Units.SUnitGens
 import InverseGalois.CFT.Units.SUnitHerbrand
 import InverseGalois.CFT.Units.SUnitIndex
 import InverseGalois.CFT.Units.SUnitValuation
 import InverseGalois.CFT.Units.SolvableNorm
+import InverseGalois.CFT.Units.SpanExtension
+import InverseGalois.CFT.Units.SpanSubgroup
 import InverseGalois.CFT.Units.SplitCompletion
 import InverseGalois.CFT.Units.SplitNorm
 import InverseGalois.CFT.Units.SplitOutside
@@ -1844,6 +1898,13 @@ it that are available here.
   nontrivial value, so the restricted value group is still nontrivial; and the isometry hypothesis
   passes to both halves of the tower, downwards by lifting an automorphism to the larger field and
   upwards by restricting scalars.
+* `InverseGalois.CFT.Local.FixedSquare` records what a fixed field buys in the finite case.  A
+  group of order two acting faithfully on a finite field cuts out a subfield over which the field
+  has degree two, so the cardinality of the field is the square of the cardinality of the subfield;
+  an element of the subfield is killed by one less than that smaller cardinality, which in odd
+  characteristic divides half of one less than the cardinality of the whole field.  Euler's
+  criterion then says that **an element of a finite field of odd characteristic fixed by an
+  involution of the field is a square**.
 * `InverseGalois.CFT.Local.CompleteNormIndex` is the local first inequality: for a cyclic extension
   whose larger field is complete and discretely valued, the Herbrand quotient of the unit group is
   the degree and Hilbert's theorem 90 makes its denominator one, so the norm subgroup of the base
@@ -6194,6 +6255,45 @@ it that are available here.
   Dirichlet's theorem, and whose quotient is the group of their orders at the chosen primes, a
   subgroup of a free abelian group of finite rank.  So finitely many of them generate, which is
   what a counting argument over the presentation asks for.
+* `InverseGalois.CFT.Units.SpanSubgroup` makes the number of generators readable off the ambient
+  group alone.  A counting argument consumes its coefficients as a spanning family of a given size,
+  and the size is fixed before the class to be counted is known, while the coefficients that arise
+  are subgroups cut out by conditions only the class decides.  Over the integers this costs nothing:
+  a family of a given size spanning a group is a surjection onto it from the free module on that
+  many letters, the preimage of a subgroup is a submodule of that free module and so is itself free
+  of no greater rank, the integers being a principal ideal domain, and a basis of the preimage is
+  carried onto a spanning family of the subgroup.  Padding with zeroes brings the family back up to
+  the size asked for, so **a subgroup of a group spanned by a given number of elements is spanned by
+  that many elements**, and the same read along an injection lets a group presented as a subgroup of
+  another consume it.
+* `InverseGalois.CFT.Units.SpanExtension` assembles the two halves of a presentation.  **A module
+  whose kernel under a linear map is spanned by one number of elements and whose range is spanned by
+  another is spanned by their sum**: lift the spanning family of the range along the map, and an
+  element differs from a combination of the lifts by an element of the kernel.  Beside it travel the
+  two conveniences the assembly runs on — a spanning family may be padded with zeroes up to any
+  larger size, which is what lets a bound stand in for a number, and **the functions from a finite
+  set to the integers are spanned by as many elements as the set has**.
+* `InverseGalois.CFT.Units.SUnitGens` reads that count on the units for a finite set of primes.
+  The orders at the chosen primes present them as an extension whose kernel is the units of the ring
+  of integers and whose range is a subgroup of the free abelian group on the primes, so **the units
+  for a finite set of primes are spanned by the generators of the units of the ring of integers
+  together with one element for each prime**.  What this buys over mere finite generation is an
+  ordering: a bound on the number of primes, known long before the primes themselves are chosen,
+  already fixes the size of the spanning family a count will consume.
+* `InverseGalois.CFT.Units.SUnitDivisible` gathers the units of a number field whose order is
+  divisible by a fixed exponent at every place.  Such a unit is the exponent-th power of a
+  fractional ideal, and away from a finite set of places meeting every ideal class that ideal is
+  principal, so correcting the unit by the exponent-th power of a generator leaves a unit for that
+  finite set.  **A single finitely generated subgroup therefore carries all of them modulo
+  exponent-th powers**, which is what it takes for one finite extension to contain an exponent-th
+  root of every one of them at once.
+* `InverseGalois.CFT.Units.RootField` builds that extension.  The elements of the intermediate
+  field having an exponent-th root in a given extension form a subgroup, so an extension holding a
+  root of each of the finitely many generators holds a root of the whole subgroup, and a unit of
+  order divisible by the exponent everywhere differs from a member of it by an exponent-th power of
+  the intermediate field itself.  Passing to the normal closure costs nothing in finiteness:
+  **one finite Galois extension of the base holds an exponent-th root of every such unit at
+  once**, which is the form in which the decomposition groups of its primes can be spoken of.
 * `InverseGalois.CFT.PoitouTate.TensorValuation` carries that presentation through a tensor
   product.  A surjection of an abelian group onto a free abelian group splits — choose an element
   with a single prescribed order at each point of the index set and extend by linearity — so the
@@ -6216,6 +6316,14 @@ it that are available here.
   at every place comes from cohomology with coefficients in the kernel of the valuation tensored
   with the module** — for a number field, from the units for a finite set of places, whose
   cohomology over a finite group is finite.
+* `InverseGalois.CFT.PoitouTate.TensorFree` records the case where that hypothesis costs nothing.
+  A one cocycle vanishes at the identity, so if **no automorphism but the identity fixes a place**
+  the valuation at that place is a coboundary on the subgroup fixing it for the trivial reason that
+  the subgroup is trivial, and **every** class comes from the kernel of the valuation.  The reading
+  is what keeps the coefficients of an obstruction from growing with the places it is read at: when
+  the places a radicand is allowed order at split into a part carrying decomposition groups and a
+  part the group permutes freely, valuing only at the free part leaves the units having no order
+  anywhere in the allowed set, whose rank is that of the field alone.
 * `InverseGalois.CFT.PoitouTate.TensorShrink` cashes the previous module in.  Once a class is known
   to come from the kernel of the valuation, **a homomorphism of the module which kills the one
   preimage chosen there kills the class itself**, since the homomorphism commutes with the
@@ -6228,6 +6336,205 @@ it that are available here.
   subgroup, the valuation of a cocycle at a place being a cocycle of the subgroup fixing that
   place; two such homomorphisms in succession annihilate every class at once, at the price of a
   hypothesis whose number of classes grows with the module.
+* `InverseGalois.CFT.PoitouTate.TensorKill` names that list without naming a class.  A class with
+  coefficients in a tensor product is killed by a homomorphism of the **second** factor as soon as
+  that homomorphism kills finitely many prescribed elements of that factor: the left factor is
+  spanned by finitely many elements, a cocycle has one value at each element of the group, and each
+  value is a combination of the spanning family against coefficients in the right factor, so
+  **killing those coefficients kills every value of the cocycle.**  The list has a length the group
+  and the spanning family alone decide, it is produced before the homomorphism is chosen, and being
+  a list of elements rather than a class it says nothing about which action the coefficients carry
+  — which is what lets a count consume it.
+* `InverseGalois.CFT.PoitouTate.OrbitDivisor` writes down what such a prescription looks like.  A
+  value is chosen at one place, fixed by the decomposition subgroup there because that subgroup
+  must fix any radicand the place is to name, and the family supported on the orbit carrying the
+  translates of that value is then forced.  **It is equivariant**, so the divisor it names is
+  invariant under the whole group, and the construction costs nothing arithmetic: the only
+  finiteness used is that an orbit of a finite group is finite.
+* `InverseGalois.CFT.PoitouTate.OrdInvariant` supplies the arithmetic side of that reading.  For a
+  number field the abelian group is the units, the places are the primes outside a finite set
+  stable under the Galois group, the valuation is the vector of orders and its kernel is the group
+  of units for the set.  All three requirements are already met: the order vector is onto once the
+  set carries the ideal classes, **it is equivariant** because an automorphism moves the order of
+  an element along the permutation it induces on the primes, and its kernel is the group of units
+  for the set.
+* `InverseGalois.CFT.PoitouTate.TensorInvariant` reads the same machinery in degree zero.  A tensor
+  whose *valuation* is invariant under the group need not itself be invariant; the difference
+  between a translate and the tensor has vanishing valuation, so it comes from the kernel of the
+  valuation, and the resulting one cocycle there is the whole obstruction.  **A homomorphism of the
+  module which kills the class of that cocycle corrects the pushed forward tensor to an invariant
+  one with the same valuation.**  This is what a prescribed divisor asks for: the divisor built out
+  of the orbit of a place, weighted by the values a decomposition subgroup carries, is invariant by
+  construction, and what has to be produced is an invariant radicand realising it.  The obstruction
+  lives with coefficients in the units of a finite set of places, finitely generated and fixed
+  before the tower is chosen, so a single shrinking answers it.
+* `InverseGalois.CFT.PoitouTate.TensorDescent` reads that obstruction a second time.  The cocycle is
+  by construction the preimage of the difference between a translate of the tensor and the tensor,
+  so its valuation at *any* place is the difference between the translate of the valuation of the
+  tensor there and that valuation itself — and on the subgroup fixing the place, where the place
+  does not move, that is a coboundary for a single element.  The hypothesis the orbit argument makes
+  at each place is therefore automatic, at every place at once, and **the obstruction class comes
+  from the kernel of a second valuation of the coefficients, whatever the places that second
+  valuation is read at**.  Over a number field the two readings together may be arranged to leave
+  only finitely many places, so the coefficients are the units of a finite set, finitely generated
+  with a rank fixed by the field, and the class may be counted; neither freeness of the action nor
+  any local condition is needed for the second reading.
+* `InverseGalois.CFT.PoitouTate.TensorEquivariant` finds the cases where nothing has to be paid at
+  all.  The obstruction is the failure of the valuation to split *equivariantly*: given a splitting
+  carried by the group, the projection of a tensor along it is invariant and has the same
+  valuation, and the difference between the tensor and its projection trivialises the cocycle.  A
+  splitting carried by the group is a family of elements of order one at its own place and none
+  anywhere else, permuted exactly as the places are, and **such a family is free of charge when the
+  action on the places is free** — choose one element over one place of each orbit and translate it
+  around the orbit, the translate being independent of the automorphism translating precisely
+  because no automorphism fixes the place it is translated from.  So **a prescribed divisor
+  supported on places with trivial decomposition group lifts to an invariant radicand with no
+  arithmetic input whatever**, and what the shrinking is for is the places the group does fix.
+* `InverseGalois.CFT.PoitouTate.ConfinedUnits` narrows the group the descent is run in.  A
+  prescription of radicands asks for three things at once: the radicand is a local power at a
+  prescribed set of places, its order is divisible by the exponent at every place outside the set
+  where ramification is allowed, and at the finitely many named places its orders are the
+  prescribed ones.  The first two conditions are closed under multiplication, so **they cut out a
+  subgroup of the units**, carried into itself by the Galois group because both sets of places are;
+  the third is the value of an equivariant homomorphism from that subgroup onto the free abelian
+  group on the named places.  Running the descent inside that subgroup rather than inside the whole
+  unit group is what keeps the two standing conditions from having to be carried alongside the
+  divisor, where nothing would preserve them.
+* `InverseGalois.CFT.PoitouTate.ConfinedWeighted` reads that subgroup a second time, at **every**
+  place outside a finite set.  The order alone is the wrong reading there: a confined unit has order
+  divisible by the exponent wherever ramification is not allowed, so the plain order never lands
+  outside a proper subgroup.  Divide by the exponent at exactly those places.  The result is still a
+  homomorphism, because the confinement makes every value it divides a multiple, and it is still
+  equivariant, because the set where ramification is allowed is stable; so it is a valuation onto
+  the free abelian group on the places outside the finite set, a permutation module again.  Its
+  kernel is the group of units for the finite set — and that is the point: **the coefficients of the
+  obstruction, read this second way, are the units of a finite set of places**, whose quotient by
+  the exponent-th powers has rank bounded by the field alone.  What the second reading costs is only
+  that it be onto, and that is bought by deleting from the read set finitely many places whose ideal
+  classes generate the subgroup the allowed places generate, which the finiteness of the class group
+  supplies with nothing else.
+* `InverseGalois.CFT.PoitouTate.ConfinedTGens` counts the coefficients that second reading leaves.
+  A unit read twice — once at the named places, once at every place outside a finite set — has no
+  order at the named places and none outside the finite set, so **its order lives on the part of the
+  finite set which is not named**, and it is a unit for that part alone.  That part is the
+  correction room, the places at which an element realising a prescribed reading is allowed an
+  order nobody asked for, and it is the only thing about the second reading that has to be small.
+  The named places arrive late and may be many; the correction room may be chosen apart from them
+  and bounded by the field alone.  So **the coefficients of the second reading are spanned by the
+  generators of the units of the ring of integers together with one element for each place of the
+  correction room** — a number known before the class is, which is what an ordering constraint
+  that fixes the size of a spanning family before the count begins needs.
+* `InverseGalois.CFT.PoitouTate.ConfinedSurjective` settles the one thing the descent inside that
+  subgroup takes for granted, that the orders at the named places are arbitrary.  Half of it costs
+  nothing: **an exponent-th power of any element of the field is a confined unit**, whatever the two
+  sets of places are, because a global power is a local one and its order is divisible by the
+  exponent everywhere at once.  The orders of the plain units are arbitrary in turn — **any
+  prescribed system of orders at finitely many places is realised**, by gluing powers of
+  uniformisers with the Chinese remainder theorem and reading the result one order beyond what was
+  asked — so the image of the vector of orders of the confined units contains every multiple of the
+  exponent, and **the whole demand collapses to the same demand read modulo the exponent**, a
+  statement about a finite module where the class group and the local conditions are what decide
+  it.  For a prime exponent that last module is a vector space over a finite field, so **a diagonal
+  suffices**: one confined unit for each named place, of order prime to the exponent there and of
+  order divisible by the exponent at the other named places, and the prescribed system is a product
+  of powers of them corrected by an exponent-th power.
+* `InverseGalois.CFT.PoitouTate.ConfinedDiagonal` states that diagonal the way the arithmetic
+  delivers it.  The units a prescription produces are described by local conditions — they are asked
+  to be local powers at the places where the radicand must stay inert, and at the named places other
+  than their own — while the criterion asks for divisibility of orders, and the two readings are the
+  same one: **a unit whose local class at a place is trivial is unramified there**, so its order is
+  divisible by the exponent, the value at a finite place being minus the order.  So **the local
+  conditions alone produce the diagonal**, and the only demand left that is not local is that the
+  order of each unit at its own place be prime to the exponent.
+* `InverseGalois.CFT.PoitouTate.ConfinedEquivariant` pays the other half of the demand, the
+  obstruction to correcting a tensor of confined units whose valuation is invariant to an invariant
+  tensor.  The vector of orders of a confined unit is equivariant, so **one confined unit for each
+  named place — of order one there and none at the other named places, and fixed by the
+  automorphisms fixing the place — splits the vector of orders equivariantly and retires the
+  obstruction outright**.  At a place no automorphism but the identity fixes, that unit is free of
+  charge: the vector of orders is onto, so a unit of order one there and none elsewhere exists
+  already, and there is nothing for it to be fixed by.  So **the arithmetic is spent only at the
+  places carrying a decomposition group**, and a divisor supported on places completely decomposed
+  in the level costs nothing whatever.
+* `InverseGalois.CFT.PoitouTate.OrbitProduct` cuts that bill down again, to the places whose
+  decomposition group has order divisible by the exponent.  A unit of order one at a place and none
+  at the other named ones need not be fixed by the automorphisms fixing that place, but **its
+  product over them is**, and the vector of orders being equivariant that product has order the size
+  of the decomposition group at the place and none at the others: an automorphism fixing the place
+  carries the order of a translate back to the place it was already at.  The orders being read only
+  modulo the exponent, **a power of that product inverse to the size of the group modulo the
+  exponent brings the order at the place back to one** whenever the two are coprime.  For a prime
+  exponent Cauchy's theorem turns that into a statement about elements: **the obstruction costs
+  nothing at a place no automorphism of order the prime fixes**, and what the arithmetic is for is
+  the places whose decomposition group carries an element of that order.
+* `InverseGalois.CFT.PoitouTate.ModPowEquivariant` cuts what is asked at those remaining places to
+  the least the obstruction can read.  The splitting of the vector of orders is spent only after
+  tensoring with the module of coefficients, and that module is killed by the exponent, so **a unit
+  which the automorphisms fixing its place move by an exponent-th power serves exactly as well as
+  one they fix.**  Two things have to be checked to run the assembly on such a unit: the family it
+  spreads into around its orbit is permuted only up to exponent-th powers, because two automorphisms
+  carrying the place of the orbit to the same place differ by one fixing it; and the homomorphism
+  that family extends to by linearity is carried by the action only up to exponent-th powers, the
+  defect at a generator being the defect of the family raised to the coefficient.  Both defects are
+  multiples of the exponent in the first factor of a tensor whose second factor the exponent kills,
+  hence zero, so **the projection along the splitting commutes with the action after tensoring**,
+  which is all the obstruction ever asked of it.  What is bought is a genuine weakening: the room
+  between a class fixed modulo exponent-th powers and an element fixed on the nose is the room
+  Hilbert's theorem 90 leaves a decomposition group, one copy of the roots of unity per cyclic one.
+* `InverseGalois.CFT.PoitouTate.InvariantRadicand` assembles the descent in the form a prescription
+  consumes.  The divisor carried by one orbit is realised because the valuation is onto, and the
+  valuation of the realising tensor is invariant because both the valuation and the divisor are
+  equivariant, so **the entire content is the one obstruction class, and a shrinking of the module
+  of coefficients annihilating the first cohomology with coefficients in the kernel of the
+  valuation hands back an invariant radicand with the prescribed orbit values.**  The shrinking is
+  not asked to be injective, and the prescribed value is read off after it has been applied.
+* `InverseGalois.CFT.PoitouTate.NamedRadicand` answers the demand a prescription actually makes,
+  which names not one place but finitely many of them lying in distinct orbits.  The one orbit
+  descent answers each demand on its own orbit and the answers are added: invariance survives the
+  addition and the divisors carried by distinct orbits have disjoint supports, so **one radicand
+  carries the prescribed value at every named place and no value at all away from the named
+  orbits.**  Recorded alongside is the case the construction is aimed at, in which the first
+  cohomology with coefficients in the kernel of the valuation already vanishes and the prescribed
+  values are realised in the module itself: that is the case the named places are enlarged by
+  auxiliary completely decomposed ones to arrange, the confinement clause of a prescription leaving
+  the orders at such places free.
+* `InverseGalois.CFT.PoitouTate.NamedRadicandClass` asks for the vanishing only where the
+  obstruction lives.  The classes the descent meets are not all of the first cohomology with
+  coefficients in the kernel of the valuation, but only the obstructions of the radicands whose
+  divisor is already invariant — the image of the connecting homomorphism of the valuation, which
+  the finitely many named places govern while the whole group is governed by every place of the
+  field.  **The descent runs on that narrower hypothesis: a radicand whose divisor is invariant may
+  be corrected to an invariant radicand with the same divisor.**  Equivalently, every invariant
+  divisor with coefficients in the module is already the divisor of an invariant radicand, which is
+  what a prescription asks and nothing more.
+* `InverseGalois.CFT.PoitouTate.NamedRadicandSum` answers the whole prescription at the cost of one
+  class.  Answering the named places one orbit at a time costs one obstruction for each of them, so
+  a count sized to kill those obstructions would have to know how many places will be named; but the
+  divisors carried by the several orbits may be **added** into a single divisor, still equivariant
+  because each summand is, and a single radicand realises it.  **The whole prescription therefore
+  costs exactly one class**, and killing it costs a family of elements of the module indexed by the
+  group times a spanning family of the kernel of the valuation — a size the field and the set of
+  places decide before a single place is named.
+* `InverseGalois.CFT.PoitouTate.RadicandPlaces` puts an arbitrary prescription into the shape the
+  descent consumes.  The descent is run over sets of places carried into themselves by the Galois
+  group, while a prescription arrives with arbitrary ones — the named places, the places a local
+  condition is imposed at.  **The hull of a set, the places some translate of which lies in it, is
+  the smallest stable set containing it and is still finite when it is; the core, the places every
+  translate of which lies in it, is the largest stable set inside it.**  A union of stable sets
+  being stable, the two constructions together replace every set a prescription names by a stable
+  one, without moving the named places out of the set they were named in or the forbidden places
+  into it.
+* `InverseGalois.CFT.PoitouTate.ConfinedSupport` gets the finite set of places the second reading
+  was after without reading anything a second time.  Only finitely many orders are ever prescribed,
+  so finitely many confined units already realise every prescription, and each of them has a zero or
+  a pole at finitely many places only: collect those places, close the collection under the Galois
+  group, and **the vector of orders at the named places is already onto from the confined units
+  supported inside the resulting finite stable set**.  Running the descent inside that subgroup
+  costs nothing, because the inclusion commutes with the reading, so the invariant radicand it
+  produces is a confined radicand with the orders that were asked for.  What is gained is that the
+  coefficients of the obstruction are now the units of a finite set of places — a subgroup of the
+  units for that set, hence **finitely generated by Dirichlet's theorem, and so spanned by finitely
+  many units**, which is the shape a count of a cohomology class asks its coefficients in.
 * `InverseGalois.CFT.PoitouTate.LocalOrdBridge` joins the two sides.  The everywhere locally trivial
   classes produced by the theory of a lifting problem are trivial on the genuine decomposition
   subgroups of the Galois group of the base, with coefficients restricted along them, while the
@@ -7643,6 +7950,18 @@ it that are available here.
   new symbol.  Global reciprocity therefore reads **the power residue symbols of two units at the
   finite places, multiplied by their symbols at the infinite places, give one**, the product formula
   over all the places and with no hypothesis on either argument.
+* `InverseGalois.CFT.Brauer.NegOnePow` isolates the one condition under which the archimedean
+  factor may be dropped again.  The product formula over the finite places alone holds as soon as
+  the field has no real place, and roots of unity of an odd order bigger than two already force
+  that; at the exponent two they do not, since the two roots of unity of order two lie in every
+  field, and what forces it there is a square root of minus one.  Both cases are one condition,
+  that **minus one be an exponent-th power**: at an odd exponent minus one is its own exponent-th
+  power and the condition is empty, while at the exponent two the witness is a square root of minus
+  one and a real embedding would turn it into a real number whose square is negative.  A field
+  carrying the roots of unity of a prime order in which minus one is a power of that order is
+  therefore totally complex, and **the power residue symbols of two of its units multiply to one
+  over the finite places at every prime exponent** — the same condition under which the symbol of a
+  unit against itself is trivial, so a single hypothesis carries the whole duality at every prime.
 * `InverseGalois.CFT.Brauer.SymbolReciprocity` reads that product formula between two units each
   ramified at a single place.  A unit whose value at a place is divisible by the exponent has a
   value at the Frobenius automorphism of that place, its symbol there against a uniformiser, and
@@ -7733,6 +8052,29 @@ it that are available here.
   the unramified classes**, so a prescription of local behaviour transports along the Galois group
   with nothing lost.
 
+* `InverseGalois.CFT.PoitouTate.UnramifiedPerp` frees the condition of being unramified from the
+  place it is imposed at.  Away from the exponent that condition is its own dual, but above the
+  exponent there are far more classes and the unramified ones are no longer isotropic, so only one
+  inclusion can survive — and it is the one a prescription uses.  Whatever the exponent, **a class
+  pairing trivially with every unramified class is unramified, at every place**: minus one is
+  unramified and the symbol of a class against itself is the symbol of minus one against it, so
+  such a class pairs trivially with itself, and were it ramified it would pair trivially with the
+  subgroup it generates together with the unramified classes, which is everything, the unramified
+  classes having index the prime exponent; and only the trivial class pairs trivially with
+  everything.
+  That last remark, read by itself, says that the condition imposing nothing at a place has for
+  complement the trivial class alone.
+
+* `InverseGalois.CFT.PoitouTate.ReachablePlace` spends the duality on the divisor a prescription
+  asks for.  Prescribe a ramified class at one named place, nothing at the places of a set named in
+  advance and an unramified class at the remaining places of the finite set the duality is run
+  over; the units to test against are then, by the previous module, unramified away from the set
+  and locally trivial at the places of it.  So **a unit of order prime to the exponent at the named
+  place, and of order divisible by the exponent at every other place outside the set, exists as
+  soon as those units have trivial class at every place**.  What that hypothesis asks is that the
+  places of the set detect the extensions generated by an exponent-th root of a unit unramified
+  everywhere: it is the whole arithmetic of the matter, and nothing less will do.
+
 * `InverseGalois.CFT.PoitouTate.OrbitLine` spreads a family of lines named at a family of places
   over the orbits of those places.  A prescription allowed to be ramified where it is carried is
   answered only when the classes prescribed at one place lie on a single line and the lines at the
@@ -7745,6 +8087,15 @@ it that are available here.
   field whose class the generator is avoids that transport altogether**, a place entering the class
   of an element only as an index, and the composition law becomes the associativity of the action
   on the units.
+
+* `InverseGalois.CFT.PoitouTate.UniformizerLine` does the same thing without spreading anything and
+  without asking the orbits to be free.  The family of local unit groups carries a Galois invariant
+  section whose value is a uniformiser at every place carrying one fixed by its decomposition
+  group, and all but finitely many places carry one; **the classes of the values of that section
+  are a line at every place at once**, the line at the image of a place being the image of the line
+  at the place on the nose.  Its valuation is one wherever the section is a uniformiser, so a unit
+  of the number field whose class at such a place is the line there is ramified there, which is the
+  other half of what a prescription ramified at a place asks.
 
 * `InverseGalois.CFT.PoitouTate.ClosingChain` closes the construction.  The number wanted is a
   product of two members of a sequence of units of the extension, each ramified at a single place
@@ -7792,6 +8143,63 @@ it that are available here.
   decomposition group at a prime above the place, in an extension containing a radical of the
   unit, fixes that radical exactly when the unit is a local power.  So **the Frobenius character is
   trivial at a unit exactly when a generator of the decomposition group fixes a radical of it**.
+
+* `InverseGalois.CFT.PoitouTate.FrobConjugate` moves that character along the Galois group at the
+  exponent two.  There the value at a Frobenius automorphism is killed by two, and the rationals
+  modulo the integers hold exactly two elements killed by two, so such a value is read off from its
+  triviality alone; and a unit whose value at a place the exponent divides is trivial there exactly
+  when it is a power in the completion, which an automorphism carries from a place to the image of
+  the place.  So **the value of the image of a unit at the Frobenius automorphism of the image of a
+  place is the value of the unit at the Frobenius automorphism of the place**.
+
+* `InverseGalois.CFT.PoitouTate.LocalClassClose` compares the local classes of two units which are
+  close at a place.  A unit congruent to one at a place whose residue characteristic is prime to
+  the exponent is a power in the completion there, the units congruent to one being divisible by
+  every exponent prime to that characteristic; applied to a quotient this says that **two units
+  whose difference at a place is smaller than the second of them have the same local class there**.
+
+* `InverseGalois.CFT.PoitouTate.InertSquare` puts the two together at a place inert under an
+  automorphism of order two.  The map from the decomposition group at such a place to the
+  automorphisms of the residue field has the inertia group as its kernel, so at a place unramified
+  over the base the automorphism induces a nontrivial involution of the residue field, whose fixed
+  residues are squares in odd characteristic.  A uniformizer of the base field is fixed as well, so
+  a fixed unit of even order at the place may be moved to one of order zero without changing its
+  class modulo squares; that unit is congruent to a fixed residue, hence to a square.  So **a unit
+  fixed by an automorphism of order two, of even order at a place the automorphism fixes which is
+  unramified over the base and of odd residue characteristic, is a square in the completion
+  there**.
+
+* `InverseGalois.CFT.PoitouTate.OrdCompare` puts that comparison in the additive language the
+  ultrametric calculus is written in.  The adic valuation at a height one prime is the exponential
+  of the negated order there and the exponential is strictly monotone, so **one nonzero element has
+  smaller valuation than another exactly when it has larger order**; in particular a subtrahend of
+  strictly smaller order leaves the order of a difference where it found it, which is the shape the
+  ultrametric inequality takes when one of the two terms dominates.
+
+* `InverseGalois.CFT.Brauer.RealSymbolPositive` clears the archimedean half of the product formula.
+  The symbol at a complex place is trivial outright, and at a real place it is trivial as soon as
+  its second argument is positive there, so **a unit which every real embedding of the field sends
+  to a positive number contributes nothing at the infinite places**, whatever the first argument
+  is.  Positivity of that kind is a condition on the ring homomorphisms to the reals rather than on
+  the places, and read that way it is visibly carried along the Galois group, a real embedding
+  composed with an automorphism being again a real embedding.
+
+* `InverseGalois.CFT.PoitouTate.InvolutionClaim` spends the product formula on a unit and its
+  conjugate under an automorphism of order two.  Let a Galois stable set of places be given
+  containing the dyadic ones and those ramified over the base, and a unit which is a local square
+  at every place of that set, of even order at every place but one place `v` outside it, a local
+  unit at the image of `v`, and positive under every real embedding.  Pair the difference of the
+  unit and its conjugate with the conjugate itself.  At a place of the bad set the conjugate is a
+  local square and the symbol is trivial there; away from that set and away from the finitely many
+  places where the difference has odd order both arguments have even order and the symbol is
+  trivial again; at the places that remain the odd exponent turns the symbol into a value at a
+  Frobenius automorphism, and the automorphism pairs those places off with equal values, so they
+  cancel two at a time.  A place the automorphism fixes is its own partner, and there the unit is
+  congruent to the average of itself with its conjugate, which the automorphism fixes and which has
+  the same even order, so the inert local lemma makes that average a square and the contribution is
+  trivial on its own.  The archimedean factors vanish because the conjugate is positive under every
+  real embedding as well, and the symbol at the image of `v` is all that is left: **the value of
+  such a unit at the Frobenius automorphism of the conjugate place is trivial**.
 
 * `InverseGalois.CFT.PoitouTate.ChebotarevPlace` produces the place at which that happens.  An
   automorphism of prime order of a Galois extension of number fields, generating a subgroup normal
@@ -7933,6 +8341,42 @@ it that are available here.
   supporting the ideal classes can be chosen to avoid any prescribed finite set**, and to be stable
   under the Galois group whenever that set is.
 
+* `InverseGalois.CFT.Units.ClassPlaces` and `InverseGalois.CFT.PoitouTate.ClassSetBounded` decide
+  how many primes that costs.  A prime has an ideal class, and a fractional ideal supported on a set
+  of primes is the product of those primes raised to their exponents, so its class is the product of
+  their classes; replacing each prime by another of the same class moves the support and leaves the
+  class alone.  Keeping one prime for each class that occurs therefore leaves a supporting set of at
+  most as many primes as there are classes, and being a subset it still avoids whatever the original
+  avoided: **the primes supporting the ideal classes can be chosen to avoid a prescribed finite set
+  and to be at most the class number in number**, and stable under the Galois group at the cost of a
+  factor the order of the group.  The bound belongs to the field, not to the prescribed set, so it
+  is available before that set is chosen, which is what a count that fixes the size of a spanning
+  family in advance requires.
+
+* `InverseGalois.CFT.PoitouTate.LocalClassPlaces` refines that count by the local conditions the
+  prescription also carries.  Comparing two primes of the same ideal class produces a generator of
+  the principal ideal by which they differ, and nothing so far says the generator is a local power
+  at the named places — which is exactly what a confined unit has to be.  So divide the invertible
+  fractional ideals not by all the principal ones but only by those with such a generator.  **The
+  refinement is still a finite group**: the ideal class and the vector of local classes of a
+  generator determine the refined class, the local classes at a place are finite in number, and the
+  named places are finitely many.  Two primes of the same refined class therefore differ by the
+  divisor of an element which is a local power at every named place, and **one prime for each
+  refined class, stable under the Galois group and avoiding any prescribed stable set, is a
+  correction room whose size the field alone decides**.
+
+* `InverseGalois.CFT.PoitouTate.ConfinedWeightedSurj` spends that room on the one thing the second
+  reading was granted.  Being onto a free abelian group is a statement about one generator at a
+  time, and the generator at a place outside the finite set is hit by the element comparing that
+  place with a prime of the same refined class inside it.  The comparison supplies the local
+  conditions; what it does not supply is divisibility of the order by the exponent away from the
+  places where ramification is allowed, and there the element's own exponent-th power serves
+  instead — which costs nothing, because the reading divides by the exponent at exactly those
+  places.  So **the second reading is onto outside the named places together with the places
+  carrying the local conditions and a correction room**, and the room is bounded by the refined
+  class number times the degree, a number belonging to the field before any of the places are
+  chosen.
+
 * `InverseGalois.CFT.PoitouTate.TwoPlacesFree` runs the two-place construction with that freedom
   spent.  The primes carrying the ideal classes are chosen away from the fixed set and from the
   places where the unit being prescribed fails to be a unit, and adjoined to the fixed set; there
@@ -8003,6 +8447,22 @@ it that are available here.
   completion below: **there are finitely many completely split primes of an intermediate field,
   avoiding any prescribed finite set of primes of the base, at which being a local power forces a
   radicand whose radical lies in the top field to be a power already in the intermediate field.**
+* `InverseGalois.CFT.PoitouTate.SplitPlaceDescend` keeps the same generation but reads its
+  conclusion as membership rather than as a power.  **Finitely many primes of the base, splitting
+  completely in an intermediate field and avoiding any prescribed finite set, detect membership of
+  that field**: an element of the top field fixed by every decomposition group above them is fixed
+  by the whole subgroup those groups generate, which is the subgroup fixing the intermediate field,
+  and the field that subgroup fixes is the intermediate field itself.  Nothing but the Galois group
+  of the top field occurs in the statement — no place of the intermediate field and no completion
+  — which is what a descent through an intermediate field asks for.
+* `InverseGalois.CFT.PoitouTate.SplitPlaceMember` puts the two together at a finite level.  The
+  decomposition group above a prime splitting completely in an intermediate field fixes that field,
+  hence the smaller field carrying the radicand and the roots of unity, so it may be read as a
+  decomposition group over that smaller field, where the radicand being a power in the completion
+  says exactly that the radical is fixed.  **Finitely many primes of the base, splitting completely
+  in an intermediate field and avoiding any prescribed finite set, force a radical whose radicand
+  is locally a power at each of them into that field.**  No infinite extension and no place of the
+  intermediate field occurs: the whole statement lives at a finite level.
 
 * `InverseGalois.CFT.PoitouTate.SplitDetect` asks finitely many places to detect not one radicand
   but every `S`-unit at once.  An `S`-unit of a normal extension is a power there exactly when every
@@ -8439,4 +8899,109 @@ it that are available here.
   the group acting transitively on the primes above a place, naming one prime above each of the
   finitely many ramified places names **a finite family of primes containing, up to the action of
   the Galois group, every prime at which a homomorphism with open kernel ramifies**.
+
+* `InverseGalois.CFT.Brauer.ReciprocityPositive` states the reciprocity law between two units of a
+  number field, each unramified away from a single place, without asking minus one to be a power of
+  the exponent.  The archimedean half of the product formula is trivial for a second argument
+  positive at every real embedding, so the finite half is trivial on its own, and the two
+  exceptional places are all that survives: **the value of the first unit at the Frobenius
+  automorphism of the second place, raised to the order of the second unit there, is the value of
+  the second unit at the Frobenius automorphism of the first place, raised to the order of the
+  first**.  The hypothesis of positivity is what the exponent two needs, minus one being a square
+  only in a field with no real place at all.
+
+* `InverseGalois.CFT.PoitouTate.PositiveClasses` reads that hypothesis at the infinite places.  A
+  ring homomorphism to the reals is the embedding attached to a real infinite place, whose
+  completion is the reals, and a unit whose class at that place is trivial is there a nonzero power
+  of the exponent; when the exponent is even such a power is a square, so **a unit which is a local
+  power of an even exponent at every infinite place is positive at every real embedding**.  That
+  turns the condition the duality theorem prescribes at infinity into the condition the product
+  formula asks of a second argument.
+
+* `InverseGalois.CFT.PoitouTate.PrescribedPositive` prescribes it.  The classes of the `S`-units are
+  their own orthogonal complement inside the local classes at the places of `S` together with the
+  infinite places, and the subgroup of admissible errors at the infinite places may be taken
+  trivial rather than everything; the trivial subgroup is dual to everything, so the price is that
+  the assignment of finite classes must pair trivially with every `S`-unit obeying the dual
+  conditions at the finite places, and not merely with those which are local powers at infinity.
+  With that price paid, **an assignment of local classes orthogonal to the `S`-units obeying the
+  dual conditions is congruent modulo the conditions to the class of an `S`-unit which is a local
+  power at every infinite place**, and hence positive at every real embedding.
+
+* `InverseGalois.CFT.PoitouTate.ClosingChainPositive` closes the chain with that hypothesis in
+  place of a power of minus one.  Each of the three applications of reciprocity which make up the
+  chain has the unit produced by the recursion, or one of its conjugates, for a second argument, so
+  positivity at every real embedding of the two units the pigeonhole principle pairs is enough to
+  run the whole chain; an automorphism carries a positive unit to a positive unit, so the
+  conjugates are positive too.  Since an odd exponent has minus one for a power and asks nothing at
+  the infinite places, the two cases combine: **the product of the two units supplied by the
+  pigeonhole principle is, at every prime exponent, a local power at the moved place, as soon as
+  both are local powers at every infinite place**.
+
+* `InverseGalois.CFT.PoitouTate.EvenRecursion` runs the recursion again with a prescription which
+  is allowed to depend on the stage.  At a nontrivial conjugate of a place chosen earlier, each
+  later stage is prescribed either the class of the earlier unit or the trivial class, according to
+  a rule reading a subset of the Galois group which meets each pair of distinct mutually inverse
+  automorphisms once together with the number of intervening stages carrying the same invariant.
+  The rule alternates with that number, so among three stages carrying a common invariant and
+  following one another the first two cancel at the conjugates of the first place while the third
+  does not, and the same pattern repeats at the conjugates of the second: **the recursion runs for
+  arbitrarily many steps, and three of its stages carrying a common invariant close a chain of
+  three terms** where two could only close a chain of two.
+
+* `InverseGalois.CFT.PoitouTate.EvenPigeonhole` supplies the three stages.  A sequence taking its
+  values in a finite set takes some value three times below twice the size of the set, and the
+  *first three* occurrences of such a value follow one another: no stage strictly between the first
+  two carries that value, none strictly between the last two does, and exactly one strictly between
+  the first and the last does.  Read through the counter of the recursion this says that **the
+  counter is even across each of the two short gaps and odd across the whole span**, which is
+  exactly the pattern the alternating rule turns into a solvable three-term system.
+
+* `InverseGalois.CFT.PoitouTate.EvenSymmetry` supplies the symmetry that makes the system solvable.
+  Reciprocity turns the value of a unit at the Frobenius automorphism of a conjugate of its own
+  place into the value at the place itself of the image of the unit, and reading that image at the
+  place moved back by the inverse automorphism recovers the unit: **the value at a conjugate place
+  equals the value at the inverse conjugate place**.  The two values are therefore a function of
+  the pair formed by an automorphism and its inverse, which is exactly what a rule selecting one
+  member of each such pair can prescribe.
+
+* `InverseGalois.CFT.PoitouTate.EvenChain` assembles the three orbits.  Three units, each ramified
+  at a single place and each carrying the same value at the Frobenius automorphism of its own place
+  moved by any automorphism, have a product which is **trivial at every nontrivial conjugate of
+  each of the three places**.  At a conjugate of the first place the second and the third unit
+  contribute the common value or nothing according as the automorphism, respectively its inverse,
+  belongs to the selected half, so exactly one contribution is made and the product is a square —
+  unless the automorphism is its own inverse, when neither is made and the common value is itself
+  trivial.  At a conjugate of the second and of the third place the same three contributions
+  appear, cyclically permuted, after reciprocity has carried the earlier units to the inversely
+  moved earlier places, which is exactly where the rule prescribes them.
+
+* `InverseGalois.CFT.PoitouTate.EvenClose` closes the recursion at the exponent two.  Running the
+  recursion past twice the number of invariants produces three stages carrying a common invariant
+  and following one another, and the product of the three units attached to them is a unit
+  **ramified at exactly three places, realising the cube of a prescribed local behaviour on the
+  fixed set of places, a local square at every infinite place, and trivial at every nontrivial
+  conjugate of any of the three places**.  That is the exponent two analogue of the two place
+  prescription, where the inverse of a class differs from the class and two units already suffice.
+
+* `InverseGalois.CFT.PoitouTate.ThreePlaces` assembles that closing over an auxiliary field, in
+  the shape the induction downstream consumes: **three places completely split in the auxiliary
+  field, and a unit ramified exactly at those three places, realising a prescribed local behaviour
+  on the fixed set and trivial at every nontrivial conjugate of any of the three**.  The cube of
+  the prescription costs nothing at the exponent two, the square of a local class being already
+  trivial, so the behaviour is realised exactly and not merely up to a power; and the places above
+  the exponent, together with the places ramified over the base, are gathered in a distinguished
+  Galois stable part of the fixed set where the prescription is trivial, which is what the value at
+  an involution needs.
+
+* `InverseGalois.CFT.PoitouTate.PlacesFree` puts the odd and the even construction in one shape.
+  What the induction downstream reads off a prescription is the behaviour on the fixed set, the
+  divisibility of the order away from the places produced, the indivisibility at the first of them,
+  and the triviality at their nontrivial conjugates; none of that distinguishes the places from one
+  another, so the two places of the odd construction may be read as three with the last two equal,
+  and **at every prime exponent a prescribed local behaviour is realised by a unit ramified only at
+  three places completely split in the auxiliary field**.  The ideal classes are absorbed into the
+  fixed set once and for all beforehand, and the distinguished part of the fixed set carries both
+  the places above the exponent and the places ramified over the base, which at an odd exponent is
+  no more than the places above the exponent already asked for.
 -/
