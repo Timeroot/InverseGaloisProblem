@@ -140,7 +140,7 @@ in the third, are interchanged by the exponents prime to `11`, resp. `23` — in
 `InverseGalois` does not depend on the vendored `Mathieu` library.  No Mathieu group has a
 rationally rigid triple, and `M₂₂` and `M₂₃` have no rigid triple at all, so the method stops
 there; `Aut(M₂₂) = M₂₂ : 2` does have one, and its certificate lives in the
-`MathieuRigidityM22` target.  See `docs/Development/MathieuRigidity.md`.  The same descent applies
+`MathieuRigidityM22` target.  See `docs/Development.md`.  The same descent applies
 to the simple groups `PSL₂(𝔽ₚ)` (`Rigidity.PSL27.exists_regular_numberField`,
 `Rigidity.PSL2F11.exists_regular_numberField`, and the `PSL2Large` target for
 `p = 13, 17, 19, 23, 29, 31, 37`), whose rigid triple `(2A, 3A, pA)` is irrational for the same
@@ -176,8 +176,7 @@ descend to it directly.  What the rigidity data does give is a cover of the line
 three rational points whose deck group is `PGL₂(𝔽ₚ)`, and the intermediate field cut out by
 `PSL₂(𝔽ₚ)` is then a conic through two of the three branch points, hence a rational function field
 (`RET.Descent.Index2`).  The classical route to `PSL₂(𝔽ₚ)` is different again — Shih's modular
-construction, whose arithmetic half is `Rigidity.Shih.shihPrime_iff`; see
-`docs/Development/Shih.md`.
+construction, whose arithmetic half is `Rigidity.Shih.shihPrime_iff`; see `docs/Development.md`.
 
 Over a number field the simple group is nevertheless reachable, by the same orbit-rigidity descent
 that realizes the Mathieu groups, and for every prime rather than for a sporadic list.  `PSL₂(𝔽ₚ)`

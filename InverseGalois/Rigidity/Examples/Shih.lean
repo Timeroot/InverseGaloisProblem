@@ -59,8 +59,7 @@ separated from the geometry of modular curves.
 
 The remaining ingredient — the existence of the level-`p` tower over `ℚ(X₀(N))` together with a
 lift of `w_N` acting on `p`-th roots of unity by `ζ ↦ ζ^N`, and the twist that turns it into a
-regular extension — is the geometry of modular curves and is discussed in
-`docs/Development/Shih.md`.
+regular extension — is the geometry of modular curves and is discussed in `docs/Development.md`.
 
 ## References
 

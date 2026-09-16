@@ -20,9 +20,10 @@ reflection, the rigidity method, the group-theoretic reductions for solvable gro
 auxiliary number theory.  `InverseGalois.CFT` collects the class field theory that the solvable
 case calls for.
 
-`InverseGalois.Shafarevich` joins the two routes towards the solvable case: the arithmetic
+`InverseGalois.Shafarevich` joins the two routes to the nilpotent case: the arithmetic
 Scholz–Reichardt induction, which covers the odd primes, and the geometric wreath product
-construction, which covers the prime `2`.
+construction, which covers the prime `2`.  `InverseGalois.Solvable.Shafarevich` carries the
+solvable case in full, and `Shafarevich.isInverseGalois_of_isSolvable` is the theorem itself.
 
 `InverseGalois.Catalogue` indexes the groups the project realizes, in the strongest form each
 construction gives — regularly over `ℚ(T)` in every case.

@@ -68,7 +68,7 @@ to turn that count into a conic equation.  Carrying that step out, and producing
 `BranchedRegularCover` from a `RigidityCertificate` in the first place, are geometric arguments
 about the integral model that this file takes as input rather than proving: they are the two
 hypotheses `c : BranchedRegularCover A 3` and `c.HasConicSubfield H` of
-`isRegularInverseGalois_of_conicSubfield`.  See `docs/Development/Shih.md`.
+`isRegularInverseGalois_of_conicSubfield`.  See `docs/Development.md`.
 -/
 
 open Polynomial
